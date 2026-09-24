@@ -6,7 +6,7 @@
 | Campo | Registro |
 | --- | --- |
 | Data | 23/09/2026 |
-| Versão deste documento | 1.3 |
+| Versão deste documento | 1.4 |
 | Responsável pelo produto | Ramon Santos |
 | Repositório | `acentauric/myths-valley` |
 | Caminho deste documento | `docs/DECISOES_PROTOTIPO_3D.md` |
@@ -35,6 +35,12 @@ Impacto no plano: a estrutura `assets/`, `scenes/`, `scripts/` e `tools/` deste 
 O segundo arquivo fornecido, `medieval+character+3d+model.glb`, reúne o personagem, o mesmo esqueleto de 65 ossos e 11 clipes exportados no Tripo. O protótipo passou a usar esse GLB. `idle`, `walk` e `run` são escolhidos automaticamente pela velocidade; oito gestos podem ser acionados pelas teclas 1–8 e são interrompidos quando o personagem volta a andar.
 
 O arquivo foi validado com animações no lugar, deixando deslocamento e colisões sob responsabilidade do `CharacterBody3D`. O teste integrado agora confere os nomes dos clipes e a troca entre gestos e locomoção, além das validações anteriores. O passo a passo de uso, reexportação e mapeamento está em [COMO_JOGAR_3D.md](COMO_JOGAR_3D.md).
+
+### Integração do Tripo com Codex — 23/09/2026
+
+O projeto passou a declarar um servidor MCP `tripo` em `.codex/config.toml`, executado pelo Tripo CLI oficial. Isso permite solicitar ao Codex modelos baseados em texto ou imagem, acompanhar tarefas e gerar personagens com rig e animações preset. A instalação local e o fluxo de promoção de assets estão descritos em [TRIPO_MCP.md](TRIPO_MCP.md).
+
+Credenciais permanecem no perfil local do Tripo em `%USERPROFILE%\.tripo`; nenhuma chave deve entrar no repositório. Saídas experimentais ficam em `.assets-raw/tripo/` e só são promovidas a `prototipo_3d/assets/` depois de revisão de qualidade, licença e adequação ao Godot. As operações de geração e animação consomem créditos da conta do integrante que as executar.
 
 ## 1. Objetivo e critérios de prioridade
 
