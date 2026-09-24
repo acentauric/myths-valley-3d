@@ -6,7 +6,7 @@
 | Campo | Registro |
 | --- | --- |
 | Data | 23/09/2026 |
-| Versão deste documento | 1.4 |
+| Versão deste documento | 1.5 |
 | Responsável pelo produto | Ramon Santos |
 | Repositório | `acentauric/myths-valley` |
 | Caminho deste documento | `docs/DECISOES_PROTOTIPO_3D.md` |
@@ -41,6 +41,22 @@ O arquivo foi validado com animações no lugar, deixando deslocamento e colisõ
 O projeto passou a declarar um servidor MCP `tripo` em `.codex/config.toml`, executado pelo Tripo CLI oficial. Isso permite solicitar ao Codex modelos baseados em texto ou imagem, acompanhar tarefas e gerar personagens com rig e animações preset. A instalação local e o fluxo de promoção de assets estão descritos em [TRIPO_MCP.md](TRIPO_MCP.md).
 
 Credenciais permanecem no perfil local do Tripo em `%USERPROFILE%\.tripo`; nenhuma chave deve entrar no repositório. Saídas experimentais ficam em `.assets-raw/tripo/` e só são promovidas a `prototipo_3d/assets/` depois de revisão de qualidade, licença e adequação ao Godot. As operações de geração e animação consomem créditos da conta do integrante que as executar.
+
+### Primeira casa gerada e integrada — 24/09/2026
+
+O fluxo semiautomático Tripo Studio → GLB → Godot foi validado com a casa de
+Carro Quebrado. Uma imagem limpa em perspectiva 3/4 foi criada a partir da
+referência fornecida, enviada ao Tripo Studio e processada no modelo H3.1. A
+geração consumiu 65 créditos; a tarefa registrada é
+`fef21312-d4d3-4b81-aefe-6ec4368759af`.
+
+O GLB foi exportado com texturas 2K e otimizado com glTF Transform 4.5.0. A
+versão de jogo reduziu o arquivo de aproximadamente 64,8 MB para 13 MB e a
+geometria de 1.915.732 para 273.548 triângulos. O protótipo substitui pela casa
+importada a construção procedural à direita da praça, mantendo escala automática,
+apoio no terreno e colisão simples. O original pesado permanece em
+`.assets-raw/tripo/casas/`, fora do Git; origem e condições de uso estão em
+`prototipo_3d/assets/prototipo_3d/casas/ORIGEM.md`.
 
 ## 1. Objetivo e critérios de prioridade
 

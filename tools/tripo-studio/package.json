@@ -1,0 +1,18 @@
+{
+  "name": "myths-valley-tripo-studio-automation",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Automação local e assistida do Tripo Studio com Playwright.",
+  "scripts": {
+    "extension": "node src/open-extension.mjs",
+    "open": "node src/open-tripo.mjs",
+    "mcp": "playwright-mcp --extension --output-dir output --file-paths absolute --timeout-action 10000 --timeout-navigation 120000",
+    "version:playwright": "playwright --version",
+    "version:mcp": "playwright-mcp --version"
+  },
+  "devDependencies": {
+    "@playwright/mcp": "0.0.82",
+    "playwright": "1.63.0"
+  }
+}

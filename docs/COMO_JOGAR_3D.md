@@ -36,6 +36,7 @@ Parado, o personagem reproduz `idle`. Um gesto termina naturalmente e volta para
 - Escala ajustada para 1,78 m, colisor de cápsula, aceleração, gravidade e rotação.
 - Câmera em terceira pessoa com `SpringArm3D`, zoom e reação a obstáculos.
 - Vila de teste com casas, caminhos, horta, árvores, praia, iluminação e colisões.
+- Casa de Carro Quebrado gerada no Tripo, otimizada, escalada e com colisão simples.
 - Interface, reinício de posição e três pontos de exploração.
 
 As animações foram exportadas **no lugar**: os clipes mexem o esqueleto, enquanto o `CharacterBody3D` controla o deslocamento e as colisões. Isso evita que a animação e o código tentem mover o personagem ao mesmo tempo.
@@ -74,6 +75,25 @@ O arquivo atual contém estes 11 clipes: `afraid`, `agree`, `chop`, `fold_arms`,
 
 Para trocar quais gestos cada número chama, edite somente a constante `GESTURES` em `prototipo_3d/scripts/prototipo_3d/authored_animator.gd`. Para nomes diferentes de parado/andar/correr, ajuste `MOTION_CLIPS` no mesmo arquivo. Assim o controlador de física e a câmera não precisam mudar.
 
+## Casa gerada no Tripo
+
+A casa à direita da praça, próxima à horta, usa
+`assets/prototipo_3d/casas/casa_carro_quebrado_tripo.glb`. O arquivo foi gerado
+no Tripo a partir de uma referência preparada, exportado com texturas 2K e
+otimizado antes de entrar no jogo.
+
+O original tinha aproximadamente 64,8 MB e 1.915.732 triângulos. A versão do
+protótipo tem aproximadamente 13 MB e 273.548 triângulos, com LODs e malha de
+sombra gerados pelo importador do Godot. O original permanece somente em
+`.assets-raw/tripo/casas/`, fora do Git.
+
+`world_builder.gd` instancia o GLB, ajusta sua largura para 5,2 metros, apoia a
+base no terreno e cria uma colisão `BoxShape3D` a partir dos limites reais da
+malha. Para substituir essa casa novamente, mantenha o nome estável do arquivo
+ou altere `TRIPO_HOUSE_SCENE`; confira orientação, escala, material e colisão
+antes de promover o novo asset. Origem e tarefa do Tripo estão registradas em
+`assets/prototipo_3d/casas/ORIGEM.md`.
+
 ## Substituir o personagem
 
 1. Coloque o novo GLB e suas texturas em `prototipo_3d/assets/prototipo_3d/personagem/`.
@@ -102,7 +122,9 @@ myths-valley-3D/
 ├── docs/COMO_JOGAR_3D.md
 └── prototipo_3d/
     ├── project.godot
-    ├── assets/prototipo_3d/personagem/   # GLB animado e origem
+    ├── assets/prototipo_3d/
+    │   ├── casas/                        # Casa otimizada e registro de origem
+    │   └── personagem/                   # GLB animado e origem
     ├── scenes/prototipo_3d/              # Vale e personagem reutilizável
     ├── scripts/prototipo_3d/             # Controle, animação, cenário e HUD
     └── tools/prototipo_3d/               # Inicialização e teste integrado

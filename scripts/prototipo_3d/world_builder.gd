@@ -5,6 +5,8 @@ const GRASS := Color("789b63")
 const PATH := Color("c5ad7a")
 const WOOD := Color("735139")
 const LEAVES := Color("487557")
+const TRIPO_HOUSE_SCENE := preload("res://assets/prototipo_3d/casas/casa_carro_quebrado_tripo.glb")
+const TRIPO_HOUSE_WIDTH := 5.2
 var _materials: Dictionary = {}
 var landmarks: Array[Dictionary] = [
 	{"name": "Praça da vila", "position": Vector3(0, 0, -3)},
@@ -22,7 +24,7 @@ func _ready() -> void:
 	_build_ground()
 	_build_paths()
 	_house(Vector3(-10, 0, -6), Color("dca264"), Color("9c5945"))
-	_house(Vector3(10, 0, -8), Color("e2cc9b"), Color("687f80"))
+	_tripo_house(Vector3(10, 0, -8))
 	_house(Vector3(1, 0, -16), Color("dfb980"), Color("ae6950"))
 	_build_farm()
 	_build_trees()
@@ -110,6 +112,38 @@ func _house(origin: Vector3, wall: Color, roof_color: Color) -> void:
 		_box(Vector3(0.85, 0.07, 0.19), origin + Vector3(side * 1.5, 1.93, 2.21), WOOD)
 		_box(Vector3(1.23, 0.27, 0.46), origin + Vector3(side * 1.5, 1.29, 2.35), WOOD)
 		_box(Vector3(1.09, 0.22, 0.37), origin + Vector3(side * 1.5, 1.49, 2.36), LEAVES)
+
+
+func _tripo_house(origin: Vector3) -> void:
+	var house := TRIPO_HOUSE_SCENE.instantiate() as Node3D
+	house.name = "CasaCarroQuebradoTripo"
+	add_child(house)
+	var bounds := _node_bounds(house)
+	var uniform_scale := TRIPO_HOUSE_WIDTH / bounds.size.x
+	house.scale = Vector3.ONE * uniform_scale
+	house.position = origin + Vector3(
+		-bounds.get_center().x * uniform_scale,
+		-bounds.position.y * uniform_scale,
+		-bounds.get_center().z * uniform_scale
+	)
+	var collision_size := bounds.size * uniform_scale
+	var collision_center := origin + Vector3(0, collision_size.y * 0.5, 0)
+	var shape := BoxShape3D.new()
+	shape.size = collision_size
+	_body(shape, collision_center, "CasaCarroQuebradoColisao")
+
+
+func _node_bounds(node: Node3D) -> AABB:
+	var combined := AABB()
+	var has_bounds := false
+	for child in node.find_children("*", "MeshInstance3D", true, false):
+		var mesh_instance := child as MeshInstance3D
+		var relative_transform := node.global_transform.affine_inverse() * mesh_instance.global_transform
+		var bounds := relative_transform * mesh_instance.get_aabb()
+		combined = combined.merge(bounds) if has_bounds else bounds
+		has_bounds = true
+	assert(has_bounds, "A casa importada precisa conter uma malha 3D")
+	return combined
 
 
 func _build_farm() -> void:
@@ -222,8 +256,10 @@ func _mesh(mesh: Mesh, position: Vector3, color: Color) -> MeshInstance3D:
 	return instance
 
 
-func _body(shape: Shape3D, position: Vector3) -> void:
+func _body(shape: Shape3D, position: Vector3, body_name: String = "") -> void:
 	var body := StaticBody3D.new()
+	if not body_name.is_empty():
+		body.name = body_name
 	body.position = position
 	var collision := CollisionShape3D.new()
 	collision.shape = shape
