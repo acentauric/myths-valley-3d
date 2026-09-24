@@ -1,0 +1,8 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/prototipo_3d/player_controller.gd" id="1"]
+[ext_resource type="PackedScene" path="res://assets/prototipo_3d/personagem/tripo_convert_033097b1-adc1-4d96-a77c-9a57917b5d03.fbx" id="2"]
+
+[node name="Jogador" type="CharacterBody3D"]
+script = ExtResource("1")
+model_scene = ExtResource("2")

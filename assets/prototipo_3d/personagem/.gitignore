@@ -1,0 +1,4 @@
+# O FBX contém as texturas embutidas. O Godot recria estes arquivos no import.
+*.fbm/
+tripo_convert_*_[0-9].png
+tripo_convert_*_[0-9].png.import

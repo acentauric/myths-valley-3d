@@ -6,7 +6,7 @@
 | Campo | Registro |
 | --- | --- |
 | Data | 23/09/2026 |
-| Versão deste documento | 1.1 |
+| Versão deste documento | 1.2 |
 | Responsável pelo produto | Ramon Santos |
 | Repositório | `acentauric/myths-valley` |
 | Caminho deste documento | `docs/DECISOES_PROTOTIPO_3D.md` |
@@ -17,6 +17,18 @@
 | Estado | Registro de decisões de trabalho e validações pendentes; não comprova implementação |
 
 Este documento se aplica ao **protótipo 3D da jam**. Não substitui o GDD completo nem autoriza remover funcionalidades da versão 2D. As escolhas expressas por Ramon são requisitos; os números reduzidos de conteúdo e a ordem de implementação são o recorte técnico proposto para cumprir o prazo.
+
+### Registro do primeiro teste local — 23/09/2026
+
+Foi criado um projeto Godot independente em `prototipo_3d/project.godot`, dentro da branch `prototype/myths-valley-3d`. A configuração da raiz permanece como referência executável da base 2D. O atalho `JOGAR_3D.cmd` abre a cena 3D; instruções em [COMO_JOGAR_3D.md](COMO_JOGAR_3D.md).
+
+Este teste usa o personagem fornecido em `medieval+character+3d+model.zip`: FBX texturizado, 65 ossos e nenhum clipe de animação. O controlador usa altura de 1,78 m, movimento, corrida, colisão e câmera em terceira pessoa. Um animador procedural fornece movimento provisório dos ossos. Isso ainda não valida o pipeline completo de clipes Mixamo ou a exportação Windows distribuível.
+
+Engine executada: `4.7.2.stable.official.ed1daf0bf`; Forward+ iniciado na NVIDIA GeForce GTX 1660 Ti with Max-Q Design. O ambiente pequeno de teste inclui vila, horta e costa com formas simples. Os demais sistemas de gameplay deste documento permanecem como trabalho planejado. O protótipo tem diretório de usuário próprio (`MythsValleyPrototype3D`); o passeio inicial não persiste progresso.
+
+Foi corrigida a visibilidade de partes do torso habilitando as duas faces do material na instância. O defeito foi reproduzido na pose original e deixou de aparecer no comparativo com faces duplas. O FBX original permanece intacto. Testes locais cobrem importação, textura, escala, movimento, corrida, chão, colisão, câmera, reinício e reconhecimento dos três locais do passeio.
+
+Impacto no plano: a estrutura `assets/`, `scenes/`, `scripts/` e `tools/` deste primeiro teste está sob `prototipo_3d/`. A organização evita inicializar os autoloads legados durante a validação do personagem. A integração de regras 2D será avaliada sistema a sistema. A licença de redistribuição do modelo deve ser confirmada antes de publicar seus arquivos.
 
 ## 1. Objetivo e critérios de prioridade
 
