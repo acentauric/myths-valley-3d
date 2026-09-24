@@ -1,0 +1,34 @@
+# Godot 4+
+.godot/
+*.translation
+
+# Packs baixados para avaliação (só o que entra no jogo vai para assets/)
+.assets-raw/
+
+# Chaves de API — nunca versionar
+chaves/*
+!chaves/LEIA-ME.md
+.env
+.agents/mcp_config.json
+
+
+# Exportações
+build/
+export/
+*.exe
+*.pck
+*.apk
+*.aab
+
+# Editor / SO
+.vscode/
+.idea/
+Thumbs.db
+.DS_Store
+
+# Mono / C# (caso use no futuro)
+.mono/
+data_*/
+mono_crash.*.json
+tools/temp/
+scratch/
