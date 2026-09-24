@@ -6,7 +6,7 @@
 | Campo | Registro |
 | --- | --- |
 | Data | 23/09/2026 |
-| Versão deste documento | 1.0 |
+| Versão deste documento | 1.1 |
 | Responsável pelo produto | Ramon Santos |
 | Repositório | `acentauric/myths-valley` |
 | Caminho deste documento | `docs/DECISOES_PROTOTIPO_3D.md` |
@@ -401,7 +401,8 @@ As referências técnicas sustentam compatibilidades e conceitos; a seleção da
 
 - **[R1]** `README.md` da branch `main`: declaração de Godot 4.7.2 e contexto do projeto. Caminho relativo: `../README.md`.
 - **[R2]** `project.godot` da branch `main`: renderer Compatibility, linha 4.7 e autoloads. Caminho relativo: `../project.godot`.
-- A branch `main` consultada apontava para `b5071c0284075e14b22c3537e2ddc6986087eb39`. Esse é o estado remoto observado, não uma confirmação do estado do computador local. Atualizar o registro ao criar a base efetiva do protótipo.
+- Na consulta inicial, a branch `main` remota apontava para `b5071c0284075e14b22c3537e2ddc6986087eb39`.
+- A base efetiva do protótipo foi criada em `badf62cefe2115990f7a608cc993bb945c9089e8`, depois de integrar e publicar as mudanças locais e remotas da linha 2D. Esse commit está marcado pela tag anotada `baseline-2d-pre-3d-20260923`.
 
 ### Documentação técnica
 
