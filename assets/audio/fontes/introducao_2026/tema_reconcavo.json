@@ -1,0 +1,9 @@
+﻿{
+    "destino":  "musica/tema_reconcavo.ogg",
+    "segundos":  180,
+    "grupo":  "musica",
+    "prompt":  "Original instrumental main menu score for a quiet Brazilian historical folklore exploration game, a fishing village in Reconcavo Bahia on the Bay of All Saints in 1887 at golden hour. Intimate acoustic viola caipira and nylon strings with a lyrical wooden flute answering a memorable four-note motif, soft plucked bass, a barely audible organic hand percussion pulse. Gentle 6/8, around 72 BPM, warm wistful Dorian harmony with a hopeful homecoming. A human scale, tender welcome with a subtle thread of mysterious manuscript and distant forest, never grand fantasy fanfare. Develop the motif slowly over three minutes: sparse opening 30 seconds, small melodic variations and warmer counterpoint in the middle, restful return to the original harmony and instrumentation in the final 30 seconds to support a musical loop. Constant restrained dynamics, no huge climax. Instrumental only, no voices, no choir, no synths, no modern drums, no ocean or birds embedded in the music. Soft natural recording, clean gentle transients, plenty of space for separate environmental audio and interface sounds.",
+    "loop":  true,
+    "nome":  "tema_reconcavo",
+    "modelo":  "music_v2"
+}

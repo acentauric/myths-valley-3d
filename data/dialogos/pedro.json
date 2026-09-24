@@ -1,0 +1,486 @@
+{
+  "observacao": "Falas de Pedro Nolasco da Encarnação, guia do tutorial. {jogador} é trocado pelo nome que o jogador digitar. IMPORTANTE: Pedro NÃO sabe dos mitos. Ele é um pescador de vinte e poucos anos que sabe pescar, plantar e viver ali. O que sabe de lenda são histórias soltas dos avós, e ele mesmo não acredita muito. É nos capítulos 6 e 7 que ele descobre — junto com o jogador. Texto de rascunho.",
+  "personagem": "Pedro",
+  "travessia": [
+    "Salvador, 1887. Numa gaveta do cartório, uma carta esperou três meses por alguém que a quisesse.",
+    "Um tio que você mal conheceu morreu no Recôncavo e deixou o que tinha: uma casa de taipa, um roçado cercado e nenhuma dívida.",
+    "Os outros herdeiros riram. Terra de fundo de baía não vale a passagem, disseram. E não foram.",
+    "Você foi.",
+    "O saveiro saiu da Rampa do Mercado com a maré da madrugada, carregado de telha, sal e três passageiros.",
+    "A Baía de Todos os Santos é maior do que parece no mapa: levou a manhã inteira para o outro lado virar mais que uma linha escura.",
+    "Ao meio-dia o mestre apontou uma fresta de areia entre os coqueiros e disse o nome do lugar: Bom Jesus dos Pobres.",
+    "Disse também, sem tirar a mão do leme, que ali a gente aprende a não andar na mata depois que escurece.",
+    "Você achou graça. Ele não."
+  ],
+  "abertura": [
+    "Opa! É você, né? O da capital.",
+    "Sou {npc_1_nome}. {npc_1_nome_completo}. Pescador — é o que dá pra ser aqui.",
+    "Vim te esperar no píer desde cedo. O padre leu a carta do cartório na missa de domingo e o arraial inteiro já sabe que o sobrinho do finado vinha.",
+    "Desculpe a cara de espanto. É que a travessia da capital até aqui é longa demais, e mesmo assim você veio.",
+    "Chegou na hora boa. O sol ainda tá alto."
+  ],
+  "pergunta_nome": "Antes de mais nada: como é que eu te chamo?",
+  "nome_padrao": "Viajante",
+  "depois_do_nome": [
+    "{jogador}. Bom nome. Pois então, {jogador}, seja bem-vindo ao recôncavo.",
+    "Aqui não tem o que você tem lá. Tem rio, tem mata e tem gente que acorda cedo. E só.",
+    "Vou te avisando: aqui nada muda. As coisas sempre foram assim e vão continuar sendo.",
+    "Seu tio morava lá em cima, passando o arraial. Roçado cercado, casa de taipa, terreno limpo. Ninguém mexeu em nada desde o enterro.",
+    "Fora daquela cerca, cada palmo tem dono, e dono vivo. Aqui não existe terra de ninguém.",
+    "Eu te ensino o que sei, que não é muito, mas dá pra viver. E vou junto: onde você for, eu vou atrás. Não é como se eu tivesse coisa melhor pra fazer."
+  ],
+  "passos": {
+    "andar": {
+      "fala": ["Levanta e dá uns passos, pra ver se a viagem não te deixou duro. Use W, A, S e D — ou as setas, se preferir."],
+      "titulo": "As pernas de terra firme",
+      "objetivo": "Ande com WASD ou as setas"
+    },
+    "andar_fim": [
+      "Isso. O corpo respondeu — depois de meio dia em pé num saveiro, já é alguma coisa.",
+      "Se precisar de pressa, segure Shift. Mas repare: correndo cansado não adianta, o corpo não obedece."
+    ],
+    "subir": {
+      "fala": [
+        "Agora vem comigo. A tábua do píer acaba na areia, a areia acaba na estrada, e a estrada sobe.",
+        "Vou na frente porque conheço o caminho, não porque tenho pressa. Olhe o arraial enquanto sobe: é ele que você vai ter pelo resto da vida.",
+        "Passamos pela praia, pelo riacho e pela igreja. Depois é subir até a cerca.",
+        "Eu chego primeiro e abro a porteira pra você. Ela emperra, e tem jeito."
+      ],
+      "titulo": "Do cais até a cerca",
+      "objetivo": "Siga o {npc_1_nome} do píer até o seu roçado"
+    },
+    "subir_fim": [
+      "Chegamos. Essa cerca daqui pra dentro é sua.",
+      "Repare no mato tomando o terreno. Dois meses sem ninguém e a terra já esqueceu que era roçado.",
+      "Bota a mão nela hoje. Terra parada é terra que some."
+    ],
+    "casa": {
+      "fala": [
+        "Agora a casa. Era do seu tio; desde o enterro ninguém abriu aquela porta.",
+        "Olhe o losango amarelo na tela: é pra lá que você vai. Ele serve pra toda tarefa que eu te der.",
+        "Vem comigo que eu abro. A porta emperra."
+      ],
+      "titulo": "A porta que ninguém abriu",
+      "objetivo": "Entre na casa, o {npc_1_nome} já está lá dentro"
+    },
+    "casa_fim": [
+      "Cama, baú e fogão de barro. É o que tem, e é o que basta pra começar: onde dormir, onde guardar e onde botar fogo.",
+      "Ah — e deixei dois beijus no baú. Trouxe ontem, quando vim abrir a janela pra arejar. Comida em casa fica guardada, não em cima do fogão.",
+      "Chegue perto do baú e aperte E: de mão vazia, tira o que tem dentro; com alguma coisa na mão, guarda. Beiju não estraga — deixe pra quando o braço pesar.",
+      "O resto — mesa, jirau, o oratório, a cantareira — vai entrando conforme você levantar. O lugar de cada coisa já está esperando aí dentro.",
+      "Se quiser ver o que tá carregando, aperte I. Abre a mochila inteira, e ali dá pra arrumar as coisas de lugar.",
+      "Repare naquela barra no canto de baixo: é o seu fôlego. Cada enxadada, cada machadada, gasta um tanto.",
+      "A cama devolve uma parte dele por noite. Uma parte, não tudo — corpo cansado não zera de uma vez.",
+      "Quando quiser mexer na casa, encoste nela e aperte E. Dá pra levantar parede, trocar móvel e até crescer o cômodo — a varanda alarga a casa por fora e por dentro.",
+      "Agora escute, porque isso é o mais importante que eu tenho pra te dizer."
+    ],
+    "frentes": {
+      "fala": [
+        "Roça não é fila. Ninguém aqui faz uma coisa de cada vez esperando a outra acabar.",
+        "Enquanto a mandioca cresce, você abre caminho. É assim que o dia rende.",
+        "Então são duas coisas por ora: o seu roçado e a trilha até a vila.",
+        "No alto da tela aparece a tarefa em foco. Aperte Tab pra trocar qual delas você está seguindo — a bússola muda junto.",
+        "Faça na ordem que quiser. Eu vou atrás de você de qualquer jeito.",
+        "Tem mais coisa depois. Uma de cada vez, que o dia é curto e a cabeça é uma só."
+      ]
+    },
+    "pegar": {
+      "fala": [
+        "Primeiro o roçado. As ferramentas do finado tão no baú da varanda — enxada, balde e um punhado de maniva.",
+        "A chave se perdeu, mas eu arrombei a fechadura ontem à tarde. Ele não vai reclamar.",
+        "Abre o baú e pega cada coisa. Chegue perto e aperte E."
+      ],
+      "titulo": "As ferramentas do finado",
+      "objetivo": "Abra o baú na varanda e pegue a enxada, o balde e as manivas",
+      "lista": [
+        {"id": "enxada", "texto": "A enxada"},
+        {"id": "balde", "texto": "O balde"},
+        {"id": "semente_mandioca", "texto": "O punhado de maniva"}
+      ]
+    },
+    "pegar_fim": [
+      "Guardado. O que você carrega aparece ali embaixo, na fileira.",
+      "Aperte de 1 a 6, ou role o botão do meio do mouse, pra trocar o que está na mão.",
+      "Apertando de novo o mesmo número você guarda o que estava segurando e fica de mão livre. Serve pra colher, que é coisa de mão.",
+      "Repare que a ferramenta aparece do seu lado. Ela age no chão bem à sua frente — não embaixo do pé."
+    ],
+    "roca": {
+      "fala": [
+        "Três coisas pra essa terra virar roça: abrir, plantar e molhar. Na ordem que você quiser — eu não mando na sua enxada.",
+        "A enxada abre. Qualquer chão limpo aqui dentro da cerca serve; em pedra, em caminho batido ou embaixo de construção ela não entra.",
+        "Fique de frente pro chão e aperte E. Aparece uma marca amarela no tile que vai receber a ferramenta; se ela ficar vermelha, ou a ação não cabe ali, ou seu fôlego acabou.",
+        "A maniva vai no leito aberto. E o balde molha — dá pra molhar antes de plantar, que a terra não reclama.",
+        "No alto da tela ficam as três marcas. Vá riscando."
+      ],
+      "titulo": "A primeira roça",
+      "objetivo": "Abra, plante e molhe — na ordem que quiser",
+      "lista": [
+        {"id": "arar", "texto": "Abrir a terra com a enxada"},
+        {"id": "plantar", "texto": "Enfiar a maniva no leito"},
+        {"id": "regar", "texto": "Molhar com o balde"}
+      ]
+    },
+    "roca_fim": [
+      "Pronto: roça feita. Daqui pra frente é o tempo que trabalha — planta regada cresce um pouco a cada dia.",
+      "E tem que molhar todo dia. Se passar um dia seco, ela para de crescer e você perde a semana.",
+      "Não fique parado esperando. Tem trilha pra abrir e terra pra ver — aperte Tab e escolha."
+    ],
+    "colher": {
+      "fala": [
+        "Olha lá, {jogador}: a mandioca chegou no ponto.",
+        "Deixe a mão livre — aperte de novo o número da ferramenta pra guardar — e aperte E de frente pra ela."
+      ],
+      "titulo": "O que a terra devolve",
+      "objetivo": "De mão livre, colha a mandioca madura (E)"
+    },
+    "colher_fim": [
+      "Aí está. Primeira colheita sua nesta terra, {jogador}.",
+      "Mas mandioca crua não é comida, é raiz. Falta o fogo."
+    ],
+    "cozinhar": {
+      "fala": [
+        "Volta pra casa e chega perto do fogão de barro. Aperte E ali e abre a cozinha.",
+        "Toma duas achas de lenha, que eu trouxe. A primeira coisa que se faz com mandioca é farinha: rala, prensa e torra.",
+        "Duas mandiocas dão duas farinhas. É pouco, e é assim mesmo — casa de farinha de verdade é outra história."
+      ],
+      "titulo": "Fogo e farinha",
+      "objetivo": "No fogão de casa, torre farinha (E)",
+      "lista": [
+        {"id": "farinha", "texto": "Farinha torrada", "item": "farinha", "alvo": 2}
+      ]
+    },
+    "cozinhar_fim": [
+      "Sentiu o cheiro? Isso aí é o cheiro de Bom Jesus inteiro de manhã.",
+      "Farinha sozinha enche a barriga e não sustenta. Ela é base, não prato."
+    ],
+    "pirao": {
+      "fala": [
+        "Peguei esse peixe hoje cedo, antes de te encontrar. Toma.",
+        "Com ele e a sua farinha sai pirão: cozinha o peixe, engrossa o caldo na farinha e mexe até pegar ponto.",
+        "É o prato que a gente come quando o dia foi longo. E o seu foi."
+      ],
+      "titulo": "Pirão de quem chegou",
+      "objetivo": "No fogão, faça o pirão de peixe (E)"
+    },
+    "pirao_fim": [
+      "Olha o ponto disso. Você tem mão, {jogador}, não vou nem mentir."
+    ],
+    "comer": {
+      "fala": [
+        "Agora come. Aperte I, ande até o pirão e aperte F.",
+        "Repare no fôlego subindo: é comida que devolve na hora, sem esperar a noite.",
+        "E não coma com a barriga cheia. O que passa do seu limite vai no lixo, e o jogo te avisa antes de você fazer besteira."
+      ],
+      "titulo": "A primeira refeição",
+      "objetivo": "Coma o pirão (I, depois F)"
+    },
+    "comer_fim": [
+      "Pronto: plantou, regou, colheu, torrou e comeu. O ciclo inteiro num dia.",
+      "Daqui pra frente é isso que sustenta você. Cama devolve um tanto por noite; panela devolve na hora.",
+      "Quando tiver cana, faça garapa. Quando pescar, asse o peixe. O fogão aceita tudo que a terra e o mar dão."
+    ],
+    "ponte_caida": {
+      "fala": [
+        "A fazenda do convite fica pro nascente, do outro lado do rio grande.",
+        "Desça pela estrada da praia e vá pro leste até o rio. Eu quero que você veja uma coisa com os próprios olhos."
+      ],
+      "titulo": "O que a cheia levou",
+      "objetivo": "Siga a estrada para leste até a ponte do rio grande"
+    },
+    "ponte_caida_fim": [
+      "Tá vendo? Caiu. A cheia de fevereiro levou o meio, e o que sobrou tá pendurado.",
+      "Ninguém consertou. Aqui nada muda, eu já disse — a gente espera cair e depois espera alguém.",
+      "Dessa vez o alguém somos nós. Vou em casa buscar os machados do meu avô. Me espera, ou vem junto."
+    ],
+    "buscar_machado": {
+      "fala": ["Vem comigo. A casa é na praia, perto do píer — eu vou na frente."],
+      "titulo": "Os machados do avô",
+      "objetivo": "Siga o {npc_1_nome} até a casa dele, na praia"
+    },
+    "buscar_machado_fim": [
+      "Toma. Esse tem mais idade que nós dois somados; meu avô diz que corta melhor por isso.",
+      "Ferramenta certa pra cada coisa, {jogador}: machado é pra pau, picareta é pra pedra. Na coisa errada você só bate e cansa."
+    ],
+    "lenha": {
+      "fala": [
+        "Ponte se faz de tábua, e tábua se faz de lenha. Muita lenha.",
+        "Derrube pau na mata até juntar trinta e seis. Fique de frente pra árvore, com o machado na mão, e bata — não sai no primeiro golpe."
+      ],
+      "titulo": "Trinta e seis paus",
+      "objetivo": "Junte 36 lenhas na mata (machado, E)",
+      "lista": [
+        {"id": "lenha", "texto": "Lenha derrubada", "item": "lenha", "alvo": 36}
+      ]
+    },
+    "lenha_fim": ["Chega de lenha. Agora é serrar."],
+    "tabuas": {
+      "fala": [
+        "Tem uma bancada de carpinteiro no seu terreno, a céu aberto. Encoste nela e aperte E: ali a lenha vira tábua e vira corda.",
+        "A do lado, com a planta em cima, é outra coisa — é onde se decide obra. Não confunda: uma é serrote, a outra é prumo.",
+        "A ponte pede doze tábuas e quatro cordas. Serre até ter tudo."
+      ],
+      "titulo": "Serrar e torcer",
+      "objetivo": "Na bancada da oficina, faça 12 tábuas e 4 cordas",
+      "lista": [
+        {"id": "tabua", "texto": "Tábuas serradas", "item": "tabua", "alvo": 12},
+        {"id": "corda", "texto": "Cordas torcidas", "item": "corda", "alvo": 4}
+      ]
+    },
+    "tabuas_fim": ["Material pronto. Agora é carregar até o rio."],
+    "ponte": {
+      "fala": ["Volte ao vau com tudo isso nas costas e aperte E na ponte caída. A gente levanta ela junto."],
+      "titulo": "De pé outra vez",
+      "objetivo": "Levante a ponte no vau do rio grande (E)"
+    },
+    "ponte_fim": [
+      "De pé. Olha isso, {jogador} — primeira coisa que muda aqui em vinte anos, e fomos nós.",
+      "No que meus avós contam, foi assim que o povo chegou naquela fazenda: abrindo caminho um ajudando o outro."
+    ],
+    "vilarejo": {
+      "fala": [
+        "Segunda coisa: a praça. Saia pelo portão, desça até a estrada da praia e vá pro poente.",
+        "Passa a igreja, passa o riacho, e a praça é logo ali pra dentro — um largo com um cruzeiro no meio.",
+        "Tem um mural lá que eu quero que você leia."
+      ],
+      "titulo": "Conhecer o arraial",
+      "objetivo": "Siga a estrada da praia para oeste até a praça"
+    },
+    "vilarejo_fim": [
+      "Pronto. Agora você conhece todo mundo que eu conheço.",
+      "E tem uma coisa pregada no poste da praça que eu quero que você veja. Siga o losango."
+    ],
+    "companhia": [
+      "Ó, {jogador}: eu tenho minhas coisas pra fazer, e você tem as suas.",
+      "Se quiser andar sozinho, aperte C. Eu paro de te seguir e volto pro meu canto cuidar da minha vida.",
+      "Aperta C de novo quando quiser companhia. Vale pra mim e pra qualquer um que ande com você mais pra frente."
+    ],
+    "convite": {
+      "fala": [
+        "Tá ali, no mural. Chegue de frente pra ele e aperte E.",
+        "Leia você, que estudou na capital. Eu leio devagar demais e o povo ri."
+      ],
+      "titulo": "O papel sem assinatura",
+      "objetivo": "Leia o convite no mural da praça (E)"
+    },
+    "convite_fim": [
+      "\"Compareçam. Haverá um grande evento.\" Só isso? Nem quem assina?",
+      "Chegou numa fazenda isolada, lá pros lados do mato fechado, e convidaram o vilarejo inteiro.",
+      "Terra grande daquele jeito, e ninguém nunca viu o dono. Agora manda chamar todo mundo.",
+      "Meus avós já decidiram que vão. Eu vou junto — e queria que você fosse também, {jogador}."
+    ],
+    "picareta": {
+      "fala": [
+        "Olha lá em cima, {jogador}. Naquela lombada, na boca da subida.",
+        "Choveu forte na semana que você passou embarcado. A ladeira amoleceu e uma lapa desceu rolando — parou bem atravessada na rampa, que é a subida de cá.",
+        "Dá pra chegar lá em cima dando a volta inteira pelo norte, mas é volta de meia manhã. E não é que a lombada faça falta hoje: é que pedra atravessada num caminho vira pedra atravessada pra sempre, se ninguém encostar nela.",
+        "Repare uma coisa nesse pau que você acabou de derrubar: o machado entrou fácil. Agora imagine o mesmo machado naquela pedra.",
+        "Não imagine não, que você é capaz de tentar. Toma — guarde essa picareta. Era do meu tio.",
+        "Ferramenta certa pra cada coisa: machado é pra pau, picareta é pra pedra. Na coisa errada você só bate e cansa.",
+        "E tem mais: a lapa não é só estorvo, é material. Aquela sua casa pede uma varanda — telheiro na frente, esteio de madeira, e calço de pedra embaixo de cada esteio. Só o calço são oito pedras.",
+        "A lapa dá oito certinhas. Você abre a passagem e sai de lá com o calço no ombro. Duas coisas, um serviço.",
+        "Fique de frente, aperte E, e bata até rachar — o losango te leva até ela.",
+        "E só racha o que for da sua terra ou de terra de ninguém. Aquela lombada não é de ninguém. Pedra de quintal alheio tem dono, igual ao pau."
+      ],
+      "titulo": "A lapa na boca da rampa",
+      "objetivo": "Racha a lapa da lombada e junte as 8 pedras",
+      "lista": [
+        {"id": "passagem", "texto": "Passagem da lombada aberta"},
+        {"id": "pedra", "texto": "Pedra rachada", "item": "pedra", "alvo": 8}
+      ]
+    },
+    "picareta_fim": [
+      "Passou. Subi ali agora de manhã só pra ver se dava, e dá.",
+      "E oito pedras no ombro. Dá pro calço da varanda, exatamente.",
+      "A obra inteira pede mais que isso — tábua e lenha também —, mas a pedra é a parte que não se serra: ou você racha, ou não tem.",
+      "Quando juntar o resto, encoste na casa e aperte E, que a obra tá lá esperando. Muda a casa por fora e por dentro.",
+      "E tem pedra que essa picareta ainda não racha. Quando esbarrar numa dessas, não insista: é ferramenta melhor que falta, não força."
+    ],
+    "pesca": {
+      "fala": [
+        "Agora o que eu sei de verdade. Essa vara era do meu pai.",
+        "Volte lá no píer, fique de frente pra água com a vara na mão e aperte E. A linha vai.",
+        "Aí é esperar. O peixe vem quando quer, não quando você quer — pode demorar.",
+        "Quando ferrar, eu grito. Você tem MENOS DE UM SEGUNDO pra apertar E de novo. Se dormir no ponto, ele leva a isca e some.",
+        "Traga dois peixes. Depois disso você não passa fome nunca mais, aconteça o que acontecer com a roça."
+      ],
+      "titulo": "A vara do pai do {npc_1_nome}",
+      "objetivo": "No píer, pesque 2 peixes (E pra lançar, E pra ferrar)",
+      "lista": [
+        {"id": "peixe", "texto": "Peixe na cesta", "item": "peixe", "alvo": 2}
+      ]
+    },
+    "pesca_fim": [
+      "Viu? É só atenção. Metade do arraial vive disso e a outra metade acha que é sorte.",
+      "Peixe e farinha é pirão. Pirão é dia inteiro de trabalho. Faz a conta."
+    ],
+    "talentos": {
+      "fala": [
+        "Uma última coisa, e essa nem todo mundo percebe sozinho.",
+        "Tudo que você faz — arar, plantar, derrubar, pescar, rezar — o corpo aprende. E de tanto aprender, uma hora ele muda.",
+        "Aperte K. Vai abrir uma teia com você no meio e os caminhos saindo pra tudo quanto é lado.",
+        "Cada ponto que você juntou dá pra gastar num desses caminhos. Escolha um e aperte E em cima dele.",
+        "Não tem escolha errada, só tem escolha. Gaste o que você tem."
+      ],
+      "titulo": "O corpo aprende",
+      "objetivo": "Abra a teia de talentos (K) e destrave um talento"
+    },
+    "pomar": {
+      "fala": [
+        "Você já colheu o bastante pra eu te falar de uma coisa que eu não falei no começo.",
+        "Mandioca é comida de agora. Você planta, espera, arranca, e o pé vai junto. Todo ciclo é do zero.",
+        "Pé de fruta não. Pé de fruta você planta UMA vez, cuida, e ele fica. Dá fruta, descansa, dá de novo. Enquanto você tiver vivo e ele também.",
+        "Tome estas mudas. Duas de banana, que é a que menos faz esperar, e uma de manga, que é a que mais.",
+        "Plante como você planta mandioca: are, molhe, ponha a muda. Só que não conte os dias, que dá agonia.",
+        "Meu avô dizia que quem planta manga não come manga — planta pro neto. Ele estava errado, mas não por muito."
+      ],
+      "titulo": "Quem planta manga",
+      "objetivo": "Plante uma muda de fruteira no seu roçado"
+    },
+    "pomar_fim": [
+      "Pronto. Daqui a muitos dias você passa por aqui e tem fruta onde não tinha nada.",
+      "E aí você vai lembrar deste dia e achar que valeu a pena ter esperado. Todo mundo acha."
+    ],
+    "curral_aprender": {
+      "fala": [
+        "Agora o contrário do pé de fruta: uma coisa que rende amanhã.",
+        "Só que bicho não é semente, {jogador}. Semente qualquer um enfia no chão. Bicho você tem que SABER — de quanto em quanto tempo bota, o que come, onde dorme, o que faz quando adoece.",
+        "Seu quintal tá vazio e vai continuar vazio até você aprender isso. Não adianta eu soltar galinha aí e te desejar sorte.",
+        "Abre a tal da lista de ofícios — aquela tecla K que eu te mostrei. Tem uma raiz chamada Pastoreio, e o primeiro galho dela é o Curral.",
+        "Gasta um ponto ali. Quando gastar, nós dois levantamos o galinheiro e eu te trago as primeiras três."
+      ],
+      "titulo": "O que o quintal dá",
+      "objetivo": "Destrave o Curral na raiz Pastoreio (tecla K)"
+    },
+    "curral_aprender_fim": [
+      "Pronto. Olha lá o galinheiro de pé e as três dentro.",
+      "Ponto de ofício gasto é ponto que vira coisa no chão. É assim que essa lista funciona — ela não é enfeite."
+    ],
+    "curral": {
+      "fala": [
+        "Agora vai lá ver o que elas deixaram.",
+        "Galinha bota todo dia. Chegue perto e aperte E — o ovo tá ali.",
+        "Cabra é de dois em dois dias, e dá leite. Mesma coisa: chega perto, aperta E.",
+        "Não adianta ficar em cima do bicho apertando. Ele deu, acabou; volte amanhã."
+      ],
+      "titulo": "O que o quintal dá",
+      "objetivo": "Recolha 2 ovos das galinhas",
+      "lista": [
+        {"id": "ovo", "texto": "Ovos recolhidos", "item": "ovo", "alvo": 2}
+      ]
+    },
+    "curral_fim": [
+      "Viu? Fruteira é pra daqui a muito, bicho é pra amanhã. Fazenda boa tem os dois.",
+      "Um paga o dia de hoje e o outro paga o ano que vem."
+    ],
+    "capataz": {
+      "fala": [
+        "Última coisa, e essa é a mais difícil de aceitar pra quem veio de baixo.",
+        "Uma hora a terra é mais do que o seu braço dá conta. Aí você para de trabalhar mais e começa a trabalhar melhor.",
+        "Quando a terra de um vizinho for sua, fale com quem mora nela. Vai abrir uma aba de trabalho.",
+        "Diga o que você quer que a pessoa faça — roçado, lenha, farinha, cestaria, criação — e no outro dia de manhã o que ela fez tá na sua mochila.",
+        "Só não peça serviço de lombo a quem já passou dos setenta. O Seu Benedito e a Dona Zefa fazem muita coisa, mas não capinam mais."
+      ],
+      "titulo": "O braço que não é o seu",
+      "objetivo": "Mande um morador seu trabalhar em alguma coisa"
+    },
+    "capataz_fim": [
+      "Agora tem gente trabalhando enquanto você tá longe. É assim que fazenda vira fazenda.",
+      "E guarde uma coisa: quem trabalha pra você tem nome. Use."
+    ],
+    "talentos_fim": [
+      "Pronto. Agora você não é mais só o da capital: é gente que sabe fazer uma coisa melhor que a média.",
+      "Junte mais pontos trabalhando. E olhe a teia de vez em quando — o que tá longe hoje fica perto depressa."
+    ],
+    "chapada": {
+      "fala": [
+        "Agora que você já tirou coisa do chão com a própria mão, tem uma que eu quero te mostrar.",
+        "É só pra olhar. Não é sua, que fique claro.",
+        "Saindo do portão pro nascente vêm três terras, uma atrás da outra, cada uma com a placa do dono na frente.",
+        "A primeira, colada na sua cerca, é da Dona Zefa. Depois dela vem a chapada do Seu Benedito, que é a que eu quero te mostrar.",
+        "Ele tá velho e os filhos foram tudo pra Salvador. Anda dizendo que vende, se aparecer quem queira.",
+        "Mas terra se toma pela divisa, {jogador}. Pra chegar na dele você precisa ter a da Zefa antes — não dá pra pular por cima do quintal dos outros.",
+        "Vá lá medir com os olhos. Leia as placas no caminho, que elas dizem o preço de cada uma."
+      ],
+      "titulo": "A terra do Seu Benedito",
+      "objetivo": "Vá ver a chapada do Seu Benedito, passando pela terra da Dona Zefa"
+    },
+    "chapada_fim": [
+      "Vem cá na beira comigo. É daqui que se entende o terreno.",
+      "Tá vendo a água? Ela corre o ano todo, {jogador} — nem na seca de setenta e sete ela parou.",
+      "Cabe muita coisa numa terra dessas. Casa de farinha, curral, roda d'água, moradia pra quem vier.",
+      "Mas é conversa pra quando tiver dinheiro — e pra depois da terra da Zefa, que é o que separa a sua desta aqui.",
+      "E outra: o Seu Benedito mora ali no terreno, e não sai de lá nem vendendo. Quem compra a terra herda o vizinho.",
+      "Não que isso seja ruim. Velho que plantou quarenta e duas safras sabe dessa terra o que você não vai saber em dez anos."
+    ],
+    "socorro": {
+      "fala": [
+        "Para. Olha pra sua cara. Você não bota mais esse machado no ombro hoje.",
+        "Minha mãe fez mungunzá de manhã e mandou trazer a panela inteira. Milho branco, leite de coco e canela, da panela de ferro.",
+        "Tem seis cuias aí. Come uma agora e as outras quando o braço pesar de novo — aperte I, ande até ela e aperte F.",
+        "Isso sustenta o corpo até a ponte subir. Dá pra fechar tudo hoje, se você não parar.",
+        "Só que é hoje, viu? Amanhã o corpo cobra o que você gastou. Aqui as coisas sempre foram assim."
+      ]
+    },
+    "arremate": [
+      "Olha só, {jogador}: roçado plantado, trilha aberta e terreno visto. Num dia.",
+      "Gente da capital não costuma aguentar. Você aguentou.",
+      "Agora cuide do que é seu, junte mantimento — e quando estiver pronto, a gente sobe aquela trilha até a fazenda."
+    ]
+  },
+  "recompensas": {
+    "observacao": "AQUI é comida, e aqui É POR REGRA — mas a regra é DESTE arquivo e não do jogo inteiro. No começo o teto de fôlego é 100 e a noite devolve 40, enquanto arar, derrubar e rachar custam centenas; a cozinha só abre de verdade depois da primeira colheita. Até lá o jogador não tem de onde tirar fôlego além de dormir, e o jogo vira trabalhar até acabar e ir deitar. Estas recompensas são A PONTE até ele conseguir cozinhar sozinho, e é por isso que quase todo passo do tutorial paga comida. Quem dá é sempre alguém do arraial, e o que dá é sempre o que aquela pessoa teria em casa. DEPOIS do tutorial a ponte não é mais necessária e a regra acaba: as missões do arraial pagam comida, item ou réis, conforme quem paga — ver a nota em arraial.json.",
+    "roca": {"beiju": 2},
+    "picareta": {"beiju": 2},
+    "pesca": {"cocada": 1},
+    "lenha": {"peixe_assado": 2},
+    "tabuas": {"beiju": 3},
+    "ponte": {"pirao": 2, "cocada": 2},
+    "_sobre_o_vilarejo": "A garapa da primeira ida à praça SAIU daqui: agora ela vem da mão da Dona Candinha, a garapeira, em Mundo.cena_da_garapa. Era a comida mais sem dono da lista — o jogador chegava na praça e duas cuias apareciam na mochila, sem ninguém tê-las oferecido. As que ficam nesta tabela vêm todas do Pedro ao fim de um passo, e ele comenta o que deu.",
+    "chapada": {"garapa": 1, "cocada": 1},
+    "colher": {"beiju": 1},
+    "curral": {"cocada": 2},
+    "pomar": {"beiju": 2}
+  },
+  "missoes": {
+    "crescer": "Regue todo dia e durma até a mandioca crescer"
+  },
+  "casa_convite": [
+    "Entra, {jogador}. A casa é sua desde que o cartório leu a carta — só faltava alguém empurrar essa porta."
+  ],
+  "convite_texto": [
+    "\"Aos moradores de Bom Jesus e redondezas: compareçam à fazenda no dia marcado. Haverá um grande evento, com fartura para todos.\"",
+    "\"Todos são convidados. Venham.\"",
+    "Não há assinatura. Só o selo — vermelho, sem brasão."
+  ],
+  "casa_trancada": [
+    "Calma, a casa não vai fugir. Primeiro a terra, senão a gente dorme sem comer.",
+    "Eu te mostro lá dentro daqui a pouco."
+  ],
+  "anoitecer": [
+    "Olha o sol, {jogador}. Daqui a pouco escurece.",
+    "Não precisa parar o que tá fazendo, não. Mas quando terminar, volte pra cama.",
+    "Se a madrugada passar das duas com você de pé, o corpo apaga onde estiver — e apagar no chão não descansa igual."
+  ],
+  "companhia": {
+    "dispensado": "Tá certo. Vou cuidar da minha vida ali. Grita quando precisar.",
+    "chamado": "Tô contigo. Vamos."
+  },
+  "portao": {
+    "pergunta": "Pedro ainda está te ensinando. Sair agora pula o tutorial. Tem certeza?",
+    "pulou": [
+      "Tá bom, tá bom. Vai no seu passo.",
+      "Se travar em alguma coisa, chega perto e me pergunta."
+    ]
+  },
+  "conversa_avulsa": [
+    "Já pescou hoje? Rio farto é rio madrugador.",
+    "Minha avó diz que o que troca com a gente à noite, cobra de dia. Eu acho que é conversa pra criança dormir.",
+    "A mata muda com a estação. O que é caminho no verão, some no inverno.",
+    "Aquele convite da fazenda ainda está de pé. Um dia a gente vai.",
+    "Estranho é ninguém saber quem mora naquela fazenda. Terra grande daquele jeito, e ninguém nunca viu o dono.",
+    "Se for derrubar mais pau, lembre: machado pra árvore, picareta pra pedra. E só no que é seu — pau de terreno alheio tem dono.",
+    "As terras do nascente vêm uma atrás da outra. Primeiro a da Zefa, que encosta na sua; depois a chapada do Benedito.",
+    "Quem compra terra aqui herda o vizinho junto. Ninguém sai da casa onde nasceu só porque o papel mudou de nome.",
+    "Meus avós perguntaram de você. Disseram que gente da capital não aguenta uma semana. Eu apostei que aguenta."
+  ]
+}

@@ -3,10 +3,13 @@ config_version=5
 
 [application]
 config/name="Myths' Valley — Protótipo 3D"
-run/main_scene="res://scenes/prototipo_3d/vale.tscn"
+run/main_scene="res://scenes/prototipo_3d/abertura.tscn"
 config/features=PackedStringArray("4.7", "Forward Plus")
 config/use_custom_user_dir=true
 config/custom_user_dir_name="MythsValleyPrototype3D"
+
+[autoload]
+Audio="*res://scripts/autoload/audio.gd"
 
 [display]
 window/size/viewport_width=1280

@@ -1,0 +1,9 @@
+﻿{
+    "destino":  "ambiente/mare_mansa.ogg",
+    "segundos":  24,
+    "grupo":  "efeitos",
+    "prompt":  "Seamless quiet ambience at a sheltered tropical bay shore in rural Bahia, Brazil. Gentle waves softly lap against sand and an old wooden canoe, calm water with long breathing spaces and a faint warm breeze. Distant perspective, soft even natural texture. No breaking surf, sudden splashes, birds, people, engines, voices or music. Understated peaceful game menu ambience, steady loudness, seamless looping.",
+    "loop":  true,
+    "nome":  "mare_mansa",
+    "modelo":  "eleven_text_to_sound_v2"
+}

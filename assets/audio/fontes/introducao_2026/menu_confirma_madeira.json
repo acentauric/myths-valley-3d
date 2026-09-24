@@ -1,0 +1,9 @@
+﻿{
+    "destino":  "efeitos/menu_confirma_madeira.mp3",
+    "segundos":  0.7,
+    "grupo":  "efeitos",
+    "prompt":  "A single warm softly resonant wooden clasp click followed immediately by a tiny bright wooden tap, a tasteful tactile confirmation sound as a handcrafted manuscript cover is fastened. Quick compact gesture at the start, restrained pleasant resolved feeling, soft natural decay, quiet dry close recording. No melody, no voices, no ambience, no electronic beep, no big impact, no music.",
+    "loop":  false,
+    "nome":  "menu_confirma_madeira",
+    "modelo":  "eleven_text_to_sound_v2"
+}

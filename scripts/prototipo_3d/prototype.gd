@@ -4,6 +4,7 @@ extends Node3D
 @onready var hud = $HUD
 @onready var world = $Cenario
 var _visited: Dictionary = {}
+var _step_time := 0.0
 
 func _enter_tree() -> void:
 	_bind("mv_forward", [KEY_W, KEY_UP])
@@ -18,6 +19,8 @@ func _enter_tree() -> void:
 		_bind("mv_animation_%d" % (index + 1), [KEY_1 + index])
 
 func _ready() -> void:
+	Audio.parar_narracao()
+	Audio.tocar_musica()
 	player.capture_changed.connect(hud.set_captured)
 	player.animation_requested.connect(_on_animation_requested)
 	hud.set_model_status("Seu modelo Tripo · 65 ossos\n11 animações incorporadas")
@@ -27,6 +30,17 @@ func _ready() -> void:
 	print("PROTOTYPE_READY: modelo GLB com animações, câmera e cenário carregados; user_dir=", OS.get_user_data_dir())
 
 func _process(_delta: float) -> void:
+	_step_time -= _delta
+	if player.is_on_floor() and Vector2(player.velocity.x, player.velocity.z).length() > 0.3:
+		if _step_time <= 0:
+			var running := Input.is_action_pressed("mv_run")
+			var terrain := "areia" if player.position.x < -17 else "grama"
+			if absf(player.position.x) < 2 or absf(player.position.z + 3) < 1.5:
+				terrain = "terra"
+			Audio.passo(terrain, running)
+			_step_time = 0.32 if running else 0.48
+	else:
+		_step_time = 0
 	for landmark: Dictionary in world.landmarks:
 		var landmark_name: String = landmark["name"]
 		var destination: Vector3 = landmark["position"]
@@ -44,6 +58,11 @@ func _bind(action: StringName, keys: Array) -> void:
 		var event := InputEventKey.new()
 		event.physical_keycode = key
 		InputMap.action_add_event(action, event)
+
+func _unhandled_key_input(event: InputEvent) -> void:
+	if event is InputEventKey and event.pressed and not event.echo and event.physical_keycode == KEY_M:
+		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+		get_tree().change_scene_to_file("res://scenes/prototipo_3d/abertura.tscn")
 
 
 func _on_animation_requested(label: String) -> void:

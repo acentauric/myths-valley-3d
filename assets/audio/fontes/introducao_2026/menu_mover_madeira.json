@@ -1,0 +1,9 @@
+﻿{
+    "destino":  "efeitos/menu_mover_madeira.mp3",
+    "segundos":  0.5,
+    "grupo":  "efeitos",
+    "prompt":  "One single tiny soft tactile wooden tick, a fingertip gently touching a polished dark wood book cover, delicate dry rounded click, instant at the start, very short natural decay, a refined quiet menu hover sound. No repetition, no melody, no voices, no ambience, no metallic high frequency, no reverb, no music.",
+    "loop":  false,
+    "nome":  "menu_mover_madeira",
+    "modelo":  "eleven_text_to_sound_v2"
+}

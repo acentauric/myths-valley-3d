@@ -1,0 +1,9 @@
+﻿{
+    "destino":  "ambiente/aves_reconcavo.ogg",
+    "segundos":  27,
+    "grupo":  "efeitos",
+    "prompt":  "Seamless quiet loop of distant small songbirds in the Atlantic forest by a coastal village in Bahia, Brazil at golden afternoon. Sparse soft natural melodic calls, one or two birds at a time, long silences between calls, gentle leaf air. Distant, relaxing, understated. No shrieks, parrots, gulls, rooster, crows, insects, people, voices, ocean or music. Constant quiet background, looping unobtrusively beneath acoustic game music.",
+    "loop":  true,
+    "nome":  "aves_reconcavo",
+    "modelo":  "eleven_text_to_sound_v2"
+}

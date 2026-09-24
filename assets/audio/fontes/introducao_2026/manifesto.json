@@ -1,0 +1,81 @@
+{
+  "gerado_em": "2026-09-23",
+  "provedor": "ElevenLabs",
+  "direcao": "docs/ESTRATEGIA_SONORA.md",
+  "preparacao": "tools/elevenlabs/gerar-introducao.ps1",
+  "auditoria": "tools/elevenlabs/auditar-introducao.py",
+  "arquivos": [
+    {
+      "arquivo": "musica/tema_reconcavo.ogg",
+      "duracao_decodificada_segundos": 177.0,
+      "pico_decodificado_dbfs": -4.852,
+      "rms_decodificado_dbfs": -19.188,
+      "sha256_master": "bc78a8457e48563333e652083e40f471d6cf0698806d880920f7d7b38c7a1d1b",
+      "fonte": "tema_reconcavo.mp3",
+      "sha256_fonte": "12df6c4d834792a7308a0fdda20f5ba9f940d74bb1c086b25c35192dbb5dbe97",
+      "modelo": "music_v2",
+      "duracao_solicitada_segundos": 180,
+      "prompt_completo": "tema_reconcavo.json"
+    },
+    {
+      "arquivo": "ambiente/mare_mansa.ogg",
+      "duracao_decodificada_segundos": 23.75,
+      "pico_decodificado_dbfs": -5.015,
+      "rms_decodificado_dbfs": -27.288,
+      "sha256_master": "012d0a0a477b960454e23a4faac9ff2a149e6bd90e8b62411c873ac6e625b454",
+      "fonte": "mare_mansa.mp3",
+      "sha256_fonte": "cca358ecf5fbc5fd66c24831782d360952c44093feca6cf121d3b49a714a1fda",
+      "modelo": "eleven_text_to_sound_v2",
+      "duracao_solicitada_segundos": 24,
+      "prompt_completo": "mare_mansa.json"
+    },
+    {
+      "arquivo": "ambiente/aves_reconcavo.ogg",
+      "duracao_decodificada_segundos": 26.75,
+      "pico_decodificado_dbfs": -5.484,
+      "rms_decodificado_dbfs": -28.761,
+      "sha256_master": "c1a08935df56a3b3b85282a20e11f3f56e0e09b187bbbd937b2f33c31de8b4a4",
+      "fonte": "aves_reconcavo.mp3",
+      "sha256_fonte": "11b058db0108c2b4dc2bdb954e7d8ac6a5b912568c694473aa3357b9026d5300",
+      "modelo": "eleven_text_to_sound_v2",
+      "duracao_solicitada_segundos": 27,
+      "prompt_completo": "aves_reconcavo.json"
+    },
+    {
+      "arquivo": "efeitos/menu_mover_madeira.mp3",
+      "duracao_decodificada_segundos": 0.467846,
+      "pico_decodificado_dbfs": -5.839,
+      "rms_decodificado_dbfs": -32.327,
+      "sha256_master": "051d328bdd56aacccf77ca4774cfa00d7a5a79ec0ddc3b7ad61248b02304a9f9",
+      "fonte": "menu_mover_madeira.mp3",
+      "sha256_fonte": "027b00dadbec2a6904a4679c87f8746c72dff47de620dde85d4ebb7eb0dfecc9",
+      "modelo": "eleven_text_to_sound_v2",
+      "duracao_solicitada_segundos": 0.5,
+      "prompt_completo": "menu_mover_madeira.json"
+    },
+    {
+      "arquivo": "efeitos/menu_confirma_madeira.mp3",
+      "duracao_decodificada_segundos": 0.327007,
+      "pico_decodificado_dbfs": -5.241,
+      "rms_decodificado_dbfs": -26.244,
+      "sha256_master": "d0f99350098e3ca5142c765d9fa7829b173e79a56673cb1c9bf2edbecc9750b3",
+      "fonte": "menu_confirma_madeira.mp3",
+      "sha256_fonte": "67c25b8d5010da613d007be0b47dab98f8c3691b05d05454b56436b10a740b6b",
+      "modelo": "eleven_text_to_sound_v2",
+      "duracao_solicitada_segundos": 0.7,
+      "prompt_completo": "menu_confirma_madeira.json"
+    },
+    {
+      "arquivo": "efeitos/menu_voltar_madeira.mp3",
+      "duracao_decodificada_segundos": 0.590249,
+      "pico_decodificado_dbfs": -5.415,
+      "rms_decodificado_dbfs": -30.877,
+      "sha256_master": "3399f7a91d52f82b8d0b730901d6b4d96109285208fd22a6bc1cdb1304d7a81e",
+      "fonte": "menu_voltar_madeira.mp3",
+      "sha256_fonte": "375f6670cef178689ddc3887a9e2aa09114d628b111c8836c261e2464e8a2b73",
+      "modelo": "eleven_text_to_sound_v2",
+      "duracao_solicitada_segundos": 0.6,
+      "prompt_completo": "menu_voltar_madeira.json"
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+﻿{
+    "destino":  "efeitos/menu_voltar_madeira.mp3",
+    "segundos":  0.6,
+    "grupo":  "efeitos",
+    "prompt":  "One short soft low wooden tap with a tiny dry parchment brush, the gentle return gesture of closing one manuscript page, a refined quiet game interface back sound. Instant at the start, rounded low tone, compact and unobtrusive, short natural decay. No repeated steps, no melody, no voices, no ambient noise, no electronic beep, no music.",
+    "loop":  false,
+    "nome":  "menu_voltar_madeira",
+    "modelo":  "eleven_text_to_sound_v2"
+}
