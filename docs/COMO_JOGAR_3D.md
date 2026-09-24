@@ -1,41 +1,100 @@
-# Primeiro teste jogável 3D
+# Jogar e aprender com o protótipo 3D
 
-Abra `JOGAR_3D.cmd` na raiz de `myths-valley-3D`. Ele importa os recursos e abre o jogo usando o Godot instalado em `C:\Tools\Godot`.
+Abra `JOGAR_3D.cmd` na raiz de `myths-valley-3D`. O atalho importa os recursos e abre o jogo usando o Godot instalado em `C:\Tools\Godot`.
 
-No Godot Project Manager, importe **`prototipo_3d/project.godot`** e pressione F6/F5 na cena `scenes/prototipo_3d/vale.tscn`. O `project.godot` da raiz ainda corresponde à base 2D.
+No Godot Project Manager, outra opção é importar **`prototipo_3d/project.godot`** e executar `scenes/prototipo_3d/vale.tscn`. O `project.godot` da raiz continua sendo a base 2D.
 
 ## Controles
 
 | Tecla | Ação |
 | --- | --- |
 | Clique esquerdo | Capturar o mouse e começar o passeio |
-| WASD / setas | Movimento relativo à câmera |
-| Shift | Correr |
+| WASD / setas | Mover em relação à câmera; reproduz `walk` |
+| Shift + movimento | Correr; reproduz `run` |
 | Mouse | Girar a câmera |
-| Rodinha | Aproximar/afastar a câmera |
-| F | Aproximar a câmera à frente do personagem; pressione novamente para voltar |
+| Rodinha | Aproximar ou afastar a câmera |
+| F | Observar o personagem pela frente; pressione novamente para voltar |
+| 1 | Saudação (`greet_01`) |
+| 2 | Dar tchau (`wave_goodbye_02`) |
+| 3 | Concordar (`agree`) |
+| 4 | Olhar ao redor (`look_around`) |
+| 5 | Com medo (`afraid`) |
+| 6 | Cruzar os braços (`fold_arms`) |
+| 7 | Golpear (`chop`) |
+| 8 | Nadar (`swim`) |
 | Esc | Liberar o cursor e interromper o movimento |
 | R | Voltar ao ponto inicial |
 | Alt+F4 / fechar janela | Sair |
 
-Explore a praça, a horta e a costa. O indicador acompanha os três pontos visitados.
+Parado, o personagem reproduz `idle`. Um gesto termina naturalmente e volta para `idle`; começar a andar interrompe o gesto. Explore a praça, a horta e a costa: o indicador acompanha os três pontos visitados.
 
 ## O que este teste entrega
 
-- Personagem do ZIP enviado, importado em FBX com materiais/texturas.
+- GLB do Tripo com malha, materiais, esqueleto de 65 ossos e 11 animações incorporadas.
+- Locomoção automática com os clipes `idle`, `walk` e `run`.
+- Oito animações extras acionáveis dentro do jogo pelas teclas 1–8.
 - Escala ajustada para 1,78 m, colisor de cápsula, aceleração, gravidade e rotação.
-- Câmera em terceira pessoa com SpringArm3D, zoom e reação a obstáculos.
-- Pequena vila de teste com casas, caminhos, horta, árvores, praia, iluminação e colisões.
-- Movimento provisório dos ossos para parado, caminhada e corrida.
+- Câmera em terceira pessoa com `SpringArm3D`, zoom e reação a obstáculos.
+- Vila de teste com casas, caminhos, horta, árvores, praia, iluminação e colisões.
 - Interface, reinício de posição e três pontos de exploração.
 
-O modelo tem **65 ossos e nenhum clipe de animação**. O movimento atual é procedural sobre o rig, sem IK de pés. Rigidez, pequenos deslizamentos e deformações da roupa podem aparecer. A próxima etapa do pipeline é importar clipes de parado, andar e correr do Mixamo e ajustar o retargeting.
+As animações foram exportadas **no lugar**: os clipes mexem o esqueleto, enquanto o `CharacterBody3D` controla o deslocamento e as colisões. Isso evita que a animação e o código tentem mover o personagem ao mesmo tempo.
 
-Na importação original, partes do torso desapareciam com o descarte de faces traseiras. A comparação da pose original com o material de dois lados confirmou a causa. O controlador duplica o material na instância e habilita as duas faces (`Double Sided Materials`), mantendo o FBX intacto.
+O material continua sendo duplicado apenas na instância e renderizado dos dois lados. Essa correção evita o desaparecimento de partes do torso sem alterar o arquivo 3D original.
 
-Este é o teste inicial do personagem/câmera. Farming, inventário, quests, NPCs e serviço LLM descritos no documento de decisões ainda precisam ser integrados. O passeio não grava progresso; o diretório de usuário próprio `MythsValleyPrototype3D` já separa futuros saves.
+Farming, inventário, quests, NPCs e serviço LLM descritos no documento de decisões ainda não estão integrados. O passeio também não grava progresso; o diretório de usuário `MythsValleyPrototype3D` já separa os futuros saves da versão 2D.
 
-## Estrutura
+## Como a animação funciona
+
+O fluxo é pequeno de propósito:
+
+1. `personagem.tscn` aponta para `medieval_character_animated.glb`.
+2. O Godot transforma o GLB em uma cena com `Skeleton3D`, malha e `AnimationPlayer`.
+3. `player_controller.gd` instancia o modelo, normaliza a altura e envia a velocidade atual ao animador.
+4. `authored_animator.gd` escolhe `idle`, `walk` ou `run` e mistura as transições em 0,18 segundo.
+5. As teclas 1–8 pedem clipes de gesto; qualquer movimento devolve o controle à locomoção.
+
+Abra a cena importada pelo painel **FileSystem** do Godot e selecione `AnimationPlayer` para visualizar a lista e reproduzir os clipes no editor. O protótipo usa `AnimationPlayer` diretamente; um `AnimationTree` só será necessário quando houver combinações mais complexas, como ataque durante corrida ou camadas independentes para tronco e pernas.
+
+Se um GLB futuro vier sem animações, o controlador volta automaticamente ao animador procedural antigo. Esse fallback serve para diagnóstico, não é o fluxo principal.
+
+## Exportar novamente no Tripo
+
+Para repetir o resultado apresentado:
+
+1. No espaço **Animar**, selecione os clipes desejados.
+2. Exporte no formato **GLB**.
+3. Mantenha **Exportar Esqueleto** ativado.
+4. Mantenha **Animação no Lugar** ativada para os clipes de locomoção.
+5. Copie o resultado para `prototipo_3d/assets/prototipo_3d/personagem/`.
+6. Use um nome estável, como `medieval_character_animated.glb`, e no Godot escolha **Reimport** se tiver substituído o arquivo.
+7. Confirme no `AnimationPlayer` se os nomes esperados aparecem antes de alterar o código.
+
+O arquivo atual contém estes 11 clipes: `afraid`, `agree`, `chop`, `fold_arms`, `greet_01`, `idle`, `look_around`, `run`, `swim`, `walk` e `wave_goodbye_02`.
+
+Para trocar quais gestos cada número chama, edite somente a constante `GESTURES` em `prototipo_3d/scripts/prototipo_3d/authored_animator.gd`. Para nomes diferentes de parado/andar/correr, ajuste `MOTION_CLIPS` no mesmo arquivo. Assim o controlador de física e a câmera não precisam mudar.
+
+## Substituir o personagem
+
+1. Coloque o novo GLB e suas texturas em `prototipo_3d/assets/prototipo_3d/personagem/`.
+2. Em `prototipo_3d/scenes/prototipo_3d/personagem.tscn`, altere **Model Scene** do nó `Jogador`.
+3. O controlador ajusta escala, centralização e altura. Se a frente estiver invertida, ajuste **Model Yaw Offset**; `PI` corresponde a 180°.
+4. Confira o esqueleto e os clipes no importador. Outro rig pode exigir retargeting; um GLB que já reúne o modelo e suas animações, como o atual, não precisa desse passo.
+5. Execute o teste integrado antes de enviar a mudança.
+
+## Validar pelo terminal
+
+Com o Godot 4.7.2 instalado no caminho usado pelo projeto:
+
+```powershell
+& 'C:\Tools\Godot\Godot_v4.7.2-stable_win64_console.exe' `
+  --path 'C:\VIRTUALENVS\myths-valley\myths-valley-3D\prototipo_3d' `
+  --script 'res://tools/prototipo_3d/smoke_test.gd'
+```
+
+O teste confirma modelo, textura, 65 ossos, nomes dos 11 clipes, locomoção, oito gestos, escala, chão, colisões, câmera, reinício e os três destinos. Ele precisa do renderer normal para testar entrada de mouse e produzir capturas; o modo `--headless` não representa esse trecho corretamente.
+
+## Estrutura relevante
 
 ```text
 myths-valley-3D/
@@ -43,25 +102,12 @@ myths-valley-3D/
 ├── docs/COMO_JOGAR_3D.md
 └── prototipo_3d/
     ├── project.godot
-    ├── assets/prototipo_3d/personagem/   # FBX; texturas extraídas pelo importador
-    ├── scenes/prototipo_3d/             # Vale e personagem reutilizável
-    ├── scripts/prototipo_3d/            # Controle, rig, cenário, HUD
-    └── tools/prototipo_3d/              # Inicialização e teste integrado
+    ├── assets/prototipo_3d/personagem/   # GLB animado e origem
+    ├── scenes/prototipo_3d/              # Vale e personagem reutilizável
+    ├── scripts/prototipo_3d/             # Controle, animação, cenário e HUD
+    └── tools/prototipo_3d/               # Inicialização e teste integrado
 ```
 
-O protótipo é um projeto Godot separado dentro da mesma branch. Isso permite carregar apenas seus recursos e configurações, sem inicializar os autoloads e telas da base 2D.
+Godot validado: `4.7.2.stable.official.ed1daf0bf`, renderer Forward+. Se a GPU não suportar esse perfil, execute `JOGAR_3D.cmd -Compatibility`.
 
-## Substituir o personagem
-
-1. Coloque o novo FBX ou GLB e suas texturas em `prototipo_3d/assets/prototipo_3d/personagem/`.
-2. Abra `prototipo_3d/scenes/prototipo_3d/personagem.tscn` e altere a propriedade exportada **Model Scene** do nó Jogador.
-3. O controlador ajusta escala, centralização e altura; se a frente estiver invertida, ajuste **Model Yaw Offset** em radianos (`PI` corresponde a 180°).
-4. O animador provisório reconhece os ossos `mixamorig_*` do modelo atual. Outros rigs/clipes exigem adaptação do animador; o controlador e a câmera permanecem reutilizáveis.
-
-## Engine e renderer
-
-Godot local: `4.7.2.stable.official.ed1daf0bf`. Primeiro perfil: Forward+. Se a GPU não suportar o perfil, execute `JOGAR_3D.cmd -Compatibility` ou o script PowerShell com `-Compatibility`.
-
-O atalho depende do Godot local. Uma exportação Windows distribuível depende dos templates correspondentes, ausentes nesta máquina durante a preparação. Isso é diferente de validar a execução local fora da interface do editor.
-
-Documentação do importador: [FBX via ufbx](https://docs.godotengine.org/en/stable/tutorials/assets_pipeline/importing_3d_scenes/available_formats.html). Documentação da câmera: [SpringArm3D](https://docs.godotengine.org/en/stable/classes/class_springarm3d.html).
+A máquina de preparação ainda não possui os templates de exportação Windows correspondentes. Isso não impede o teste local, mas uma versão `.exe` distribuível exige instalar os templates antes.

@@ -31,6 +31,11 @@ func _run() -> void:
 	var model: Node3D = player.get("model")
 	var skeletons := model.find_children("*", "Skeleton3D", true, false)
 	_check(skeletons.size() == 1 and skeletons[0].get_bone_count() == 65, "esqueleto com 65 ossos")
+	var expected_animations := ["afraid", "agree", "chop", "fold_arms", "greet_01", "idle", "look_around", "run", "swim", "walk", "wave_goodbye_02"]
+	var animation_names: Array = Array(player.call("get_animation_names"))
+	animation_names.sort()
+	_check(animation_names == expected_animations, "11 clipes de animação disponíveis")
+	_check(player.call("get_current_animation") == &"idle", "idle inicia automaticamente")
 	var meshes := model.find_children("*", "MeshInstance3D", true, false)
 	var textured := false
 	var double_sided := true
@@ -60,6 +65,23 @@ func _run() -> void:
 	var walking: float = await _travel(false)
 	var running: float = await _travel(true)
 	_check(running > walking * 1.35, "Shift aumenta a velocidade")
+	player.call("reset_position")
+	await _frames(18)
+	var animator: Node = player.get("animator")
+	var animation_player: AnimationPlayer = animator.get("animation_player")
+	var skeleton: Skeleton3D = skeletons[0]
+	var gesture_clips := ["greet_01", "wave_goodbye_02", "agree", "look_around", "afraid", "fold_arms", "chop", "swim"]
+	for index in range(gesture_clips.size()):
+		_trigger_animation(index + 1)
+		animation_player.advance(0.0)
+		_check(player.call("get_current_animation") == StringName(gesture_clips[index]), "gesto %d reproduz %s" % [index + 1, gesture_clips[index]])
+		_check(_pose_changes(skeleton, animation_player, animation_player.current_animation_length * 0.5), "gesto %d altera a pose" % (index + 1))
+	_trigger_animation(2)
+	animation_player.advance(animation_player.current_animation_length * 0.5)
+	await process_frame
+	await _screenshot("animation_wave.png")
+	animator.call("update_motion", 1.0, 0.0)
+	_check(player.call("get_current_animation") == &"walk", "movimento interrompe gesto e retoma locomoção")
 
 	player.call("reset_position")
 	player.global_position = Vector3(10, 0.05, -1)
@@ -127,6 +149,24 @@ func _frames(count: int) -> void:
 		player.call("set_captured", true)
 		await physics_frame
 	await process_frame
+
+
+func _trigger_animation(number: int) -> void:
+	var event := InputEventAction.new()
+	event.action = "mv_animation_%d" % number
+	event.pressed = true
+	player.call("_unhandled_input", event)
+
+
+func _pose_changes(skeleton: Skeleton3D, animation_player: AnimationPlayer, seconds: float) -> bool:
+	var before: Array[Transform3D] = []
+	for bone in range(skeleton.get_bone_count()):
+		before.append(skeleton.get_bone_pose(bone))
+	animation_player.advance(seconds)
+	for bone in range(skeleton.get_bone_count()):
+		if not before[bone].is_equal_approx(skeleton.get_bone_pose(bone)):
+			return true
+	return false
 
 
 func _screenshot(filename: String) -> void:

@@ -1,13 +1,29 @@
 # Personagem de teste
 
-Arquivo fornecido pelo usuário: `C:\Users\ramor\Downloads\JOGO\medieval+character+3d+model.zip`.
+## Arquivo animado em uso
 
-O ZIP contém um FBX `tripo_convert_033097b1-adc1-4d96-a77c-9a57917b5d03.fbx` e cinco texturas PNG na pasta `.fbm`. O FBX importado pelo Godot tem um Skeleton3D com 65 ossos `mixamorig_*`, uma malha com 23.695 vértices e nenhum clipe de animação. Altura original aproximada: 0,979 unidade; o controlador normaliza para 1,78 m.
+Arquivo fornecido pelo usuário em 23/09/2026:
 
-Uso: validação local autorizada pelo usuário. O arquivo não veio acompanhado de licença no ZIP; confirmar condições de redistribuição antes de publicar fontes/binários. Os arquivos originais de Downloads permanecem preservados.
+`C:\Users\ramor\Downloads\JOGO\medieval+character+3d+model.glb`
 
-O repositório versiona o FBX, que contém as imagens embutidas. Na primeira importação, o Godot recria cinco PNGs ao lado do modelo; esses arquivos e a pasta `.fbm` redundante são ignorados. Uma reprodução limpa confirmou a importação da malha com textura usando somente o FBX.
+O repositório preserva uma cópia com nome estável: `medieval_character_animated.glb`.
 
-O movimento provisório é criado por `scripts/prototipo_3d/provisional_animator.gd`; não se trata de clipes do Mixamo. As texturas são do modelo fornecido.
+- Tamanho: 11.601.748 bytes.
+- SHA-256: `781F5BBD208E9E7C43E2CF030F2A365A3FA69B18EB221F153E428F279B16BC50`.
+- Conteúdo verificado: uma malha texturizada, um `Skeleton3D` com 65 ossos e um `AnimationPlayer` com 11 clipes.
+- Clipes: `afraid`, `agree`, `chop`, `fold_arms`, `greet_01`, `idle`, `look_around`, `run`, `swim`, `walk` e `wave_goodbye_02`.
+- Altura original aproximada: 0,979 unidade; o controlador normaliza para 1,78 m.
 
-Correção de apresentação: o material da instância é renderizado dos dois lados. Um comparativo mostrou que partes do torso sumiam com descarte de faces traseiras mesmo na pose original. O FBX não foi modificado.
+Na tela de exportação compartilhada pelo usuário, o formato era GLB, **Exportar Esqueleto** estava ativado, as 11 animações estavam selecionadas e **Animação no Lugar** estava ativada. Essa configuração é adequada ao controle de deslocamento pelo Godot.
+
+O Godot extrai três imagens incorporadas ao lado do GLB durante a importação. Elas são artefatos reproduzíveis e estão ignoradas; a reprodução limpa parte apenas do GLB versionado.
+
+## Base anterior
+
+O ZIP original continua preservado fora do repositório em `C:\Users\ramor\Downloads\JOGO\medieval+character+3d+model.zip`. Dele veio o FBX `tripo_convert_033097b1-adc1-4d96-a77c-9a57917b5d03.fbx`, também mantido no histórico desta branch. O FBX tem o mesmo rig e texturas, mas não possui clipes. `provisional_animator.gd` permanece somente como fallback para modelos sem animação.
+
+## Uso e licença
+
+Uso local e integração ao protótipo foram solicitados pelo usuário. Nenhum dos arquivos recebidos veio acompanhado de licença. Confirmar no Tripo as condições de redistribuição antes de tornar públicos os fontes, binários ou assets do personagem. Os originais na pasta Downloads não foram modificados.
+
+Correção de apresentação: o material da instância é renderizado dos dois lados. Um comparativo mostrou que partes do torso desapareciam com descarte de faces traseiras. O GLB original permanece intacto.

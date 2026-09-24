@@ -73,7 +73,7 @@ func _ready() -> void:
 	primary.offset_top = 10
 	primary.offset_bottom = 33
 	primary.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	var secondary := _label("F observar personagem  ·  Rodinha zoom", 12, MUTED)
+	var secondary := _label("F observar  ·  1–8 testar animações  ·  Rodinha zoom", 12, MUTED)
 	controls.add_child(secondary)
 	secondary.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
 	secondary.offset_top = -29

@@ -6,7 +6,7 @@
 | Campo | Registro |
 | --- | --- |
 | Data | 23/09/2026 |
-| Versão deste documento | 1.2 |
+| Versão deste documento | 1.3 |
 | Responsável pelo produto | Ramon Santos |
 | Repositório | `acentauric/myths-valley` |
 | Caminho deste documento | `docs/DECISOES_PROTOTIPO_3D.md` |
@@ -29,6 +29,12 @@ Engine executada: `4.7.2.stable.official.ed1daf0bf`; Forward+ iniciado na NVIDIA
 Foi corrigida a visibilidade de partes do torso habilitando as duas faces do material na instância. O defeito foi reproduzido na pose original e deixou de aparecer no comparativo com faces duplas. O FBX original permanece intacto. Testes locais cobrem importação, textura, escala, movimento, corrida, chão, colisão, câmera, reinício e reconhecimento dos três locais do passeio.
 
 Impacto no plano: a estrutura `assets/`, `scenes/`, `scripts/` e `tools/` deste primeiro teste está sob `prototipo_3d/`. A organização evita inicializar os autoloads legados durante a validação do personagem. A integração de regras 2D será avaliada sistema a sistema. A licença de redistribuição do modelo deve ser confirmada antes de publicar seus arquivos.
+
+### Registro da integração de animações — 23/09/2026
+
+O segundo arquivo fornecido, `medieval+character+3d+model.glb`, reúne o personagem, o mesmo esqueleto de 65 ossos e 11 clipes exportados no Tripo. O protótipo passou a usar esse GLB. `idle`, `walk` e `run` são escolhidos automaticamente pela velocidade; oito gestos podem ser acionados pelas teclas 1–8 e são interrompidos quando o personagem volta a andar.
+
+O arquivo foi validado com animações no lugar, deixando deslocamento e colisões sob responsabilidade do `CharacterBody3D`. O teste integrado agora confere os nomes dos clipes e a troca entre gestos e locomoção, além das validações anteriores. O passo a passo de uso, reexportação e mapeamento está em [COMO_JOGAR_3D.md](COMO_JOGAR_3D.md).
 
 ## 1. Objetivo e critérios de prioridade
 

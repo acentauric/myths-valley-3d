@@ -1,7 +1,8 @@
 extends CharacterBody3D
-## A colisão e a câmera pertencem ao controlador; o FBX é uma cena substituível.
+## A colisão e a câmera pertencem ao controlador; o GLB é uma cena substituível.
 
 signal capture_changed(captured: bool)
+signal animation_requested(label: String)
 
 @export var model_scene: PackedScene
 @export var character_height: float = 1.78
@@ -48,9 +49,13 @@ func _ready() -> void:
 			model.scale *= factor
 			model.position = -Vector3(model_bounds.get_center().x, model_bounds.position.y, model_bounds.get_center().z) * factor
 		model.rotation.y = model_yaw_offset
-		animator = load("res://scripts/prototipo_3d/provisional_animator.gd").new()
+		animator = load("res://scripts/prototipo_3d/authored_animator.gd").new()
 		add_child(animator)
-		animator.configure(model)
+		if not animator.configure(model):
+			animator.queue_free()
+			animator = load("res://scripts/prototipo_3d/provisional_animator.gd").new()
+			add_child(animator)
+			animator.configure(model)
 	else:
 		push_error("A cena do personagem não foi configurada.")
 	camera_pivot = Node3D.new()
@@ -133,6 +138,12 @@ func _unhandled_input(event: InputEvent) -> void:
 		_pitch = -0.08 if inspecting else -0.19
 		_distance = 3.1 if inspecting else 5.0
 		_apply_camera()
+	for index in range(8):
+		if event.is_action_pressed("mv_animation_%d" % (index + 1)) and animator and animator.has_method("play_gesture"):
+			var label: String = animator.play_gesture(index)
+			if not label.is_empty():
+				animation_requested.emit(label)
+			break
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_APPLICATION_FOCUS_OUT:
@@ -151,6 +162,19 @@ func reset_position() -> void:
 	_distance = 5.0
 	inspecting = false
 	_apply_camera()
+
+
+func get_animation_names() -> PackedStringArray:
+	if animator and animator.has_method("get_animation_names"):
+		return animator.get_animation_names()
+	return PackedStringArray()
+
+
+func get_current_animation() -> StringName:
+	if animator and animator.has_method("get_current_animation"):
+		return animator.get_current_animation()
+	return &"procedural"
+
 
 func _apply_camera() -> void:
 	camera_pivot.rotation.y = _yaw

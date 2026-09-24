@@ -1,4 +1,8 @@
-# O FBX contém as texturas embutidas. O Godot recria estes arquivos no import.
+# O FBX e o GLB contêm texturas embutidas. O Godot recria estes arquivos no import.
 *.fbm/
 tripo_convert_*_[0-9].png
 tripo_convert_*_[0-9].png.import
+medieval_character_animated_*.jpg
+medieval_character_animated_*.jpg.import
+medieval_character_animated_*.png
+medieval_character_animated_*.png.import
