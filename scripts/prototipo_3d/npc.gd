@@ -77,8 +77,9 @@ func _ready() -> void:
 	add_child(balao)
 	voz = AudioStreamPlayer3D.new()
 	voz.name = "Voz"
-	voz.max_distance = 22.0
-	voz.unit_size = 3.0
+	voz.max_distance = 30.0
+	voz.unit_size = 7.0
+	voz.max_db = 6.0
 	voz.attenuation_model = AudioStreamPlayer3D.ATTENUATION_INVERSE_DISTANCE
 	voz.position = Vector3(0, altura * 0.85, 0)
 	add_child(voz)
@@ -95,7 +96,7 @@ func _ready() -> void:
 
 
 func _aplicar_volume() -> void:
-	voz.volume_db = Audio.volume_efeitos_db() + 4.0
+	voz.volume_db = Audio.volume_vozes_db()
 
 
 func _montar_modelo() -> void:

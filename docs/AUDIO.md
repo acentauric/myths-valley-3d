@@ -39,7 +39,7 @@ Todos os caminhos partem de `assets/audio/`; efeitos individuais são MP3 em `ef
 | `efeito("arar")` | Efeito pelo nome; `menu_mover/confirma/voltar` respeitam o pacote |
 | `passo(terreno, correndo)` | Canal independente, pequena variação de tom |
 
-Volumes públicos: `volume_musica`, `volume_efeitos`, `volume_ambiente`. Seleções públicas: `musica_menu_opcao`, `efeitos_menu_opcao`, `ambiente_menu_opcao`. Use os setters para aplicar e salvar alterações.
+Volumes públicos: `volume_musica`, `volume_efeitos`, `volume_ambiente`, `volume_vozes` (falas dos NPCs; `volume_vozes_db()` para tocadores 3D), `volume_narracao` (narração da travessia). As vozes e a narração foram normalizadas em -18 LUFS (pico -1,5 dB) com `ffmpeg loudnorm`; novos áudios de fala devem seguir o mesmo nível. Camadas do ambiente com volume próprio sobre o geral (`volume_camadas`, chaves em `CAMADAS_AMBIENTE`: `aves`, `mar`, `riacho`, `fogueira`, `mata`); ajuste com `definir_volume_camada()` e leia com `volume_camada_db()`. Ficam em AJUSTAR, aba Sons do vale. Seleções públicas: `musica_menu_opcao`, `efeitos_menu_opcao`, `ambiente_menu_opcao`. Use os setters para aplicar e salvar alterações.
 
 O passo é acionado por distância andada; `scripts/mundo/terreno.gd` identifica o chão. UI, passos e efeitos do mundo têm canais distintos. Assets ausentes geram aviso e não interrompem o jogo.
 

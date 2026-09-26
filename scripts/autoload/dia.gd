@@ -11,9 +11,15 @@ const VELOCIDADES := [0.0, 120.0, 45.0, 10.0]
 const ROTULOS_VELOCIDADE := ["Parada", "Lenta", "Normal", "Rápida"]
 const NASCER := 5.5
 const POR := 18.0
+## Hora em que o menu abre: o começo do dia.
+const INICIO_DO_DIA := 6.5
 
 var hora: float = 9.0
 var velocidade: int = 2
+## Hora em que o jogo começa (AJUSTAR → Cenário e tempo).
+var hora_inicial: float = 9.0
+## Congela a passagem do tempo (o menu controla o próprio relógio).
+var pausado := false
 var _periodo := ""
 
 
@@ -22,13 +28,14 @@ func _ready() -> void:
 	var preferencias := ConfigFile.new()
 	if preferencias.load(ARQUIVO) == OK:
 		velocidade = clampi(int(preferencias.get_value("dia", "velocidade", 2)), 0, VELOCIDADES.size() - 1)
-		hora = fmod(float(preferencias.get_value("dia", "hora_inicial", 9.0)), 24.0)
+		hora_inicial = fmod(float(preferencias.get_value("dia", "hora_inicial", 9.0)), 24.0)
+		hora = hora_inicial
 	_atualizar_periodo()
 
 
 func _process(delta: float) -> void:
 	var segundos_por_hora: float = VELOCIDADES[velocidade]
-	if segundos_por_hora <= 0.0:
+	if pausado or segundos_por_hora <= 0.0:
 		return
 	definir_hora(hora + delta / segundos_por_hora)
 
@@ -52,10 +59,10 @@ func definir_velocidade(indice: int) -> void:
 
 
 func definir_hora_inicial(nova: float) -> void:
-	definir_hora(nova)
+	hora_inicial = fposmod(nova, 24.0)
 	var preferencias := ConfigFile.new()
 	preferencias.load(ARQUIVO)
-	preferencias.set_value("dia", "hora_inicial", hora)
+	preferencias.set_value("dia", "hora_inicial", hora_inicial)
 	preferencias.save(ARQUIVO)
 
 

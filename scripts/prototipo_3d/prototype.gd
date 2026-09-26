@@ -81,12 +81,12 @@ func _montar_som() -> void:
 	ambiente.name = "Ambiente"
 	add_child(ambiente)
 	if world.ancoras.has("Pier"):
-		ambiente.fonte(AmbienteVale.MAR, world.ancoras["Pier"], 60.0, 2.0)
+		ambiente.fonte("mar", AmbienteVale.MAR, world.ancoras["Pier"], 60.0, 2.0)
 	for chave in ["Rio", "Rio 2"]:
 		if world.ancoras.has(chave):
-			ambiente.fonte(AmbienteVale.RIACHO, world.ancoras[chave], 26.0, -2.0)
+			ambiente.fonte("riacho", AmbienteVale.RIACHO, world.ancoras[chave], 26.0, -2.0)
 	if world.ancoras.has("Fogueira"):
-		ambiente.fonte(AmbienteVale.FOGUEIRA, world.ancoras["Fogueira"] + Vector3(0, 0.5, 0), 16.0, 0.0, true)
+		ambiente.fonte("fogueira", AmbienteVale.FOGUEIRA, world.ancoras["Fogueira"] + Vector3(0, 0.5, 0), 16.0, 0.0, true)
 
 
 func _montar_moradores(spawn: Vector3) -> void:
