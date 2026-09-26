@@ -23,6 +23,7 @@ func _enter_tree() -> void:
 	_bind("mv_right", [KEY_D, KEY_RIGHT])
 	_bind("mv_run", [KEY_SHIFT])
 	_bind("mv_release", [KEY_ESCAPE])
+	_bind("mv_cursor", [KEY_TAB])
 	_bind("mv_reset", [KEY_R])
 	_bind("mv_inspect", [KEY_F])
 	_bind("mv_time", [KEY_T])
@@ -36,9 +37,17 @@ func _ready() -> void:
 	var spawn: Vector3 = _ponto_de_chegada()
 	player.spawn_position = spawn
 	player.global_position = spawn
+	player.configure_click_world(world)
 	player.capture_changed.connect(hud.set_captured)
+	player.camera_lock_changed.connect(hud.set_camera_locked)
 	player.animation_requested.connect(_on_animation_requested)
+	player.navigation_status.connect(hud.set_notice)
+	hud.camera_lock_requested.connect(player.set_camera_locked)
+	world.house_interacted.connect(func(properties: Dictionary): hud.show_house_info(world.format_house_properties(properties)))
+	world.house_interaction_cleared.connect(hud.clear_house_info)
+	hud.house_info_close_requested.connect(world.clear_house_interaction)
 	hud.menu_requested.connect(_return_to_menu)
+	player.set_camera_locked(false)
 	hud.set_region_title(world.get_region_title())
 	if Estilo.procedural():
 		hud.set_model_status("Estilo procedural: personagem, casas e árvores por código")

@@ -15,6 +15,13 @@ const CASA_TAIPA_CAL_TEXTURE := preload("res://assets/prototipo_3d/materiais/cal
 const TELHA_COLONIAL_TEXTURE := preload("res://assets/prototipo_3d/materiais/telha_colonial_envelhecida_v1.png")
 ## Bancada de comparação (desenvolvimento): três mangueiras lado a lado ao sul da Praça.
 const COMPARAR_MANGUEIRAS := false
+## Camada reservada para raycasts de interação com casas (bit 13 no inspetor).
+const HOUSE_INTERACTION_LAYER := 1 << 12
+const SITE_SEARCH_STEP := 1.5
+const SITE_SEARCH_DIRECTIONS := 24
+
+signal house_interacted(properties: Dictionary)
+signal house_interaction_cleared
 
 var _materials: Dictionary = {}
 var landmarks: Array[Dictionary] = []
@@ -29,6 +36,11 @@ var _sky_material: ProceduralSkyMaterial
 var _luzes: Node3D
 ## Pontos de interesse e âncoras que os NPCs e as luzes usam (nome → posição no chão).
 var ancoras: Dictionary = {}
+var _house_targets: Array[Area3D] = []
+var _hovered_house: Area3D
+var _selected_house: Area3D
+var _house_sites: Array[Dictionary] = []
+var _manual_tree_sites: Array[Dictionary] = []
 
 
 func get_meters_per_unit() -> float:
@@ -50,6 +62,89 @@ func get_map_bounds() -> Rect2:
 
 func surface_at(world_position: Vector3) -> String:
 	return _region.surface_at(world_position) if _region else "grama"
+
+
+func is_walkable_point(world_position: Vector3) -> bool:
+	return _region != null and _region.is_walkable_point(world_position)
+
+
+## O raycast deve usar HOUSE_INTERACTION_LAYER e collide_with_areas = true.
+func get_house_properties(collider: Object) -> Dictionary:
+	var house := _house_from_collider(collider)
+	if house == null:
+		return {}
+	return (house.get_meta("house_properties") as Dictionary).duplicate(true)
+
+
+func format_house_properties(properties: Dictionary) -> String:
+	var point: Vector3 = properties["position"]
+	return "%s\nObjeto: %s\nPosição: X %s · Y %s · Z %s\nEstilo: %s" % [properties["name"], properties["object_key"], str(snappedf(point.x, 0.01)), str(snappedf(point.y, 0.01)), str(snappedf(point.z, 0.01)), properties["style"]]
+
+
+## Mostra apenas o nome e a dica de interação enquanto o cursor está sobre a casa.
+func set_hovered_house(collider: Object) -> void:
+	var house := _house_from_collider(collider)
+	if house == _hovered_house:
+		return
+	var previous := _hovered_house
+	_hovered_house = house
+	if is_instance_valid(previous):
+		_update_house_label(previous)
+	if house != null:
+		_update_house_label(house)
+
+
+## Clique esquerdo: mantém o balão de propriedades aberto para a casa escolhida.
+func interact_with_house(collider: Object) -> void:
+	var house := _house_from_collider(collider)
+	if house == null:
+		return
+	var previous := _selected_house
+	_selected_house = house
+	if is_instance_valid(previous):
+		_update_house_label(previous)
+	_update_house_label(house)
+	house_interacted.emit(get_house_properties(house))
+
+
+func clear_house_interaction() -> void:
+	var previous_hover := _hovered_house
+	var previous_selected := _selected_house
+	_hovered_house = null
+	_selected_house = null
+	if is_instance_valid(previous_hover):
+		_update_house_label(previous_hover)
+	if is_instance_valid(previous_selected) and previous_selected != previous_hover:
+		_update_house_label(previous_selected)
+	if is_instance_valid(previous_selected):
+		house_interaction_cleared.emit()
+
+
+## Um ponto livre junto à construção; Vector3.INF indica alvo sem acesso por terra.
+func get_house_destination(collider: Object, from_position: Vector3 = Vector3.ZERO) -> Vector3:
+	var house := _house_from_collider(collider)
+	if house == null or not is_walkable_point(house.global_position):
+		return Vector3.INF
+	var bounds: Vector3 = house.get_meta("house_bounds")
+	var margin := 1.2
+	var candidates: Array[Vector3] = [
+		Vector3(0, 0, bounds.z * 0.5 + margin),
+		Vector3(0, 0, -bounds.z * 0.5 - margin),
+		Vector3(bounds.x * 0.5 + margin, 0, 0),
+		Vector3(-bounds.x * 0.5 - margin, 0, 0),
+	]
+	var result := Vector3.INF
+	var best_distance := INF
+	for offset in candidates:
+		var candidate := house.to_global(offset)
+		candidate.y = house.global_position.y
+		if not is_walkable_point(candidate):
+			continue
+		var distance := candidate.distance_squared_to(from_position)
+		if distance < best_distance:
+			best_distance = distance
+			result = candidate
+	return result
 
 
 func get_feature_center(feature_name: String, kind: String = "") -> Vector3:
@@ -182,10 +277,12 @@ func _construir_vila() -> void:
 	ancoras["Casa de taipa"] = taipa
 	ancoras["Casa de Carro Quebrado"] = _u(Vector3(40, 0, -35))
 	# Casas da praça
-	_construcao("casa_taipa", taipa, 0.0, func(): _casa_de_taipa_referencia(taipa))
-	_construcao("casa_carro_quebrado", ancoras["Casa de Carro Quebrado"], 0.0, func(): _house(ancoras["Casa de Carro Quebrado"], Color("e8dcc4"), Color("a8442f")))
-	ancoras["Casa da estrada"] = Vector3(32, 0, 72)
-	_construcao("casa_taipa", Vector3(32, 0, 72), 0.0, func(): _house(Vector3(32, 0, 72), Color("dfb980"), Color("ae6950")))
+	_construcao("casa_taipa", taipa, 0.0, func(at: Vector3): _casa_de_taipa_referencia(at), 1.0, "Casa de taipa")
+	_construcao("casa_carro_quebrado", ancoras["Casa de Carro Quebrado"], 0.0, func(at: Vector3): _house(at, Color("e8dcc4"), Color("a8442f")), 1.0, "Casa de Carro Quebrado")
+	# Referência: 12°48'46.28"S 38°46'49.07"W; afastar a casa do eixo da Rua Principal.
+	var casa_estrada_referencia: Vector3 = _region.wgs84_to_world(-12.812855555555556, -38.780297222222224)
+	ancoras["Casa da estrada"] = _region.position_beside_road(casa_estrada_referencia, "Rua Principal", 10.0)
+	_construcao("casa_taipa", ancoras["Casa da estrada"], 0.0, func(at: Vector3): _house(at, Color("dfb980"), Color("ae6950")), 1.0, "Casa da estrada")
 	_build_farm()
 	_build_trees()
 	_build_details()
@@ -197,15 +294,135 @@ func _construir_vila() -> void:
 
 
 ## Construção: GLB do Tripo com colisão em caixa; senão o construtor procedural.
-func _construcao(chave: String, origin: Vector3, yaw: float, procedural: Callable, size: float = 1.0) -> Node3D:
+func _construcao(chave: String, origin: Vector3, yaw: float, procedural: Callable, size: float = 1.0, nome: String = "") -> Node3D:
+	var is_house := _is_house_key(chave)
+	var placed_origin := origin
+	if is_house:
+		var spec: Dictionary = CatalogoAssets.PECAS.get(chave, {})
+		var footprint_radius := maxf(5.5, float(spec.get("largura", 6.5)) * size * 0.75 + 1.0)
+		placed_origin = _reserve_house_site(origin, footprint_radius, nome)
+		if not placed_origin.is_finite():
+			return null
+		if not nome.is_empty():
+			ancoras[nome] = placed_origin
 	if estilo_tripo():
-		var node := CatalogoAssets.instanciar(chave, self, origin, size, yaw)
+		var node := CatalogoAssets.instanciar(chave, self, placed_origin, size, yaw)
 		if node != null:
-			CatalogoAssets.colisao(chave, node, self, origin, size, yaw)
-			_box(Vector3(node.get_meta("limites").size.x + 1.6, 0.16, node.get_meta("limites").size.z + 1.6), origin + Vector3(0, 0.08, 0), Color("958d79"), true).rotation.y = yaw
+			CatalogoAssets.colisao(chave, node, self, placed_origin, size, yaw)
+			var bounds: AABB = node.get_meta("limites")
+			_box(Vector3(bounds.size.x + 1.6, 0.16, bounds.size.z + 1.6), placed_origin + Vector3(0, 0.08, 0), Color("958d79"), true).rotation.y = yaw
+			if is_house:
+				_register_house(nome if not nome.is_empty() else chave.capitalize(), chave, placed_origin, yaw, bounds.size, "Tripo")
 			return node
-	procedural.call()
+	if is_house:
+		procedural.call(placed_origin)
+		_register_house(nome if not nome.is_empty() else chave.capitalize(), chave, placed_origin, yaw, Vector3(5.9, 5.4, 5.1), "Procedural")
+	else:
+		procedural.call()
 	return null
+
+
+func _is_house_key(chave: String) -> bool:
+	return chave.begins_with("casa_") or chave == "venda"
+
+
+func _reserve_house_site(preferred: Vector3, radius: float, name: String) -> Vector3:
+	var placed := _find_clear_site(preferred, radius, 40)
+	if not placed.is_finite():
+		push_error("Não há terreno livre para a casa: " + name)
+		return Vector3.INF
+	_house_sites.append({"position": placed, "radius": radius})
+	return placed
+
+
+func _find_clear_site(preferred: Vector3, radius: float, rings: int, check_manual_trees: bool = true) -> Vector3:
+	if _site_is_clear(preferred, radius, check_manual_trees):
+		return preferred
+	for ring in range(1, rings + 1):
+		var distance := float(ring) * SITE_SEARCH_STEP
+		for direction in range(SITE_SEARCH_DIRECTIONS):
+			var angle := TAU * float(direction) / float(SITE_SEARCH_DIRECTIONS)
+			var candidate := preferred + Vector3(cos(angle) * distance, 0.0, sin(angle) * distance)
+			if _site_is_clear(candidate, radius, check_manual_trees):
+				return candidate
+	return Vector3.INF
+
+
+func _site_is_clear(position: Vector3, radius: float, check_manual_trees: bool = true) -> bool:
+	if not _region.is_build_site_clear(position, radius):
+		return false
+	var center := Vector2(position.x, position.z)
+	for site in _house_sites:
+		var other: Vector3 = site["position"]
+		var separation: float = radius + float(site["radius"]) + 1.0
+		if center.distance_squared_to(Vector2(other.x, other.z)) < separation * separation:
+			return false
+	if check_manual_trees:
+		for site in _manual_tree_sites:
+			var other: Vector3 = site["position"]
+			var separation: float = radius + float(site["radius"]) + 1.0
+			if center.distance_squared_to(Vector2(other.x, other.z)) < separation * separation:
+				return false
+	return true
+
+
+func _register_house(nome: String, chave: String, origin: Vector3, yaw: float, bounds: Vector3, style: String) -> void:
+	var house := Area3D.new()
+	house.name = "AlvoCasa%s" % (_house_targets.size() + 1)
+	house.position = origin
+	house.rotation.y = yaw
+	house.collision_layer = HOUSE_INTERACTION_LAYER
+	house.collision_mask = 0
+	house.monitoring = false
+	house.add_to_group("interactive_house")
+	var shape := BoxShape3D.new()
+	shape.size = Vector3(maxf(bounds.x, 3.0), maxf(bounds.y, 3.0), maxf(bounds.z, 3.0))
+	var collision := CollisionShape3D.new()
+	collision.shape = shape
+	collision.position.y = shape.size.y * 0.5
+	house.add_child(collision)
+	var properties := {"name": nome, "object_key": chave, "position": origin, "style": style}
+	house.set_meta("house_properties", properties)
+	house.set_meta("house_bounds", shape.size)
+	var label := Label3D.new()
+	label.name = "PropriedadesCasa"
+	label.font_size = 30
+	label.outline_size = 8
+	label.pixel_size = 0.0034
+	label.width = 720.0
+	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	label.modulate = Color("f2dc9a")
+	label.position.y = maxf(shape.size.y + 1.0, 6.0)
+	house.add_child(label)
+	house.set_meta("house_label", label)
+	add_child(house)
+	_house_targets.append(house)
+	_update_house_label(house)
+
+
+func _house_from_collider(collider: Object) -> Area3D:
+	if collider == null or not is_instance_valid(collider):
+		return null
+	var node := collider as Node
+	while node != null:
+		if node is Area3D and _house_targets.has(node):
+			return node as Area3D
+		node = node.get_parent()
+	return null
+
+
+func _update_house_label(house: Area3D) -> void:
+	var label: Label3D = house.get_meta("house_label")
+	var properties: Dictionary = house.get_meta("house_properties")
+	if house == _selected_house:
+		label.text = format_house_properties(properties)
+		label.visible = true
+	elif house == _hovered_house:
+		label.text = "%s\nClique para ver propriedades" % properties["name"]
+		label.visible = true
+	else:
+		label.visible = false
 
 
 ## Adereço: GLB do Tripo ou peça procedural de FloraReconcavo.
@@ -243,22 +460,28 @@ func _adereco(chave: String, origin: Vector3, yaw: float = 0.0, size: float = 1.
 
 ## Árvore com nome: GLB do Tripo (colisão no tronco) ou espécie procedural.
 func _arvore(especie: String, origin: Vector3, size: float = 1.0, yaw: float = 0.0) -> void:
+	var tree_radius := maxf(2.0, size * 2.4)
+	var placed_origin := _find_clear_site(origin, tree_radius, 24, false)
+	if not placed_origin.is_finite():
+		push_warning("Não há terreno livre para a árvore: " + especie)
+		return
+	_manual_tree_sites.append({"position": placed_origin, "radius": tree_radius})
 	if estilo_tripo():
-		var node := CatalogoAssets.instanciar(especie, self, origin, size, yaw)
+		var node := CatalogoAssets.instanciar(especie, self, placed_origin, size, yaw)
 		if node != null:
-			CatalogoAssets.colisao(especie, node, self, origin, size, yaw)
+			CatalogoAssets.colisao(especie, node, self, placed_origin, size, yaw)
 			return
 	var built: Dictionary = FloraReconcavo.especie(especie, size)
 	var instance := MeshInstance3D.new()
 	instance.name = especie.capitalize()
 	instance.mesh = built.mesh
-	instance.position = origin
+	instance.position = placed_origin
 	instance.rotation.y = yaw
 	add_child(instance)
 	var shape := CylinderShape3D.new()
 	shape.radius = float(built.trunk_radius) + 0.08
 	shape.height = float(built.trunk_height)
-	_body(shape, origin + Vector3(0, float(built.trunk_height) * 0.5, 0))
+	_body(shape, placed_origin + Vector3(0, float(built.trunk_height) * 0.5, 0))
 
 
 func _build_farm() -> void:
@@ -339,10 +562,10 @@ func _build_landmark_details() -> void:
 	_construcao("capela", church, 0.0, func(): _igreja_procedural(church))
 	var bar: Vector3 = _region.get_feature_center("Bar", "poi") + Vector3(8, 0, 3)
 	ancoras["Bar"] = bar
-	_construcao("venda", bar, 0.0, func(): _house(bar, Color("c6a16d"), Color("8b523b")))
+	_construcao("venda", bar, 0.0, func(at: Vector3): _house(at, Color("c6a16d"), Color("8b523b")), 1.0, "Venda do Bar")
 	var restaurante: Vector3 = _region.get_feature_center("Restaurante", "poi") + Vector3(7, 0, 4)
 	ancoras["Restaurante"] = restaurante
-	_construcao("casa_pasto", restaurante, 0.0, func(): _house(restaurante, Color("cdbb92"), Color("97563f")))
+	_construcao("casa_pasto", restaurante, 0.0, func(at: Vector3): _house(at, Color("cdbb92"), Color("97563f")), 1.0, "Restaurante")
 	var pier: Vector3 = _region.get_feature_center("Pier", "poi")
 	ancoras["Pier"] = pier
 	var pier_dir: Vector3 = (pier - _region.get_feature_center("Praça", "poi")).normalized()

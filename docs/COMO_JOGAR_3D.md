@@ -8,10 +8,18 @@ No Godot Project Manager, outra opção é importar **`prototipo_3d/project.godo
 
 | Tecla | Ação |
 | --- | --- |
-| Clique esquerdo | Capturar o mouse e começar o passeio |
-| WASD / setas | Mover em relação à câmera; reproduz `walk` |
+| Início / câmera destravada | Mouse capturado; mover o mouse gira a câmera sem clicar |
+| Tab | Alternar entre câmera destravada e travada |
+| Botão TRAVAR CÂMERA (Esc) / DESTRAVAR CÂMERA (Tab) | Mostrar a ação disponível e seu atalho; Tab também alterna os modos |
+| Arrastar com botão esquerdo e câmera travada | Girar a câmera com o cursor visível; um clique sem arrastar ainda interage com as casas |
+| Clique direito com cursor livre | Caminhar até o chão, casa ou NPC apontado |
+| Duplo clique direito com cursor livre | Correr até o chão, casa ou NPC apontado |
+| Mouse sobre uma casa | Mostrar nome e dica de interação |
+| Clique esquerdo em uma casa | Abrir as mesmas propriedades no balão e no painel da interface, mesmo à distância |
+| Clique esquerdo fora das casas | Fechar o balão e o painel de propriedades |
+| WASD / setas | Mover em relação à câmera e cancelar a caminhada automática; reproduz `walk` |
 | Shift + movimento | Correr; reproduz `run` |
-| Mouse | Girar a câmera |
+| Mouse com câmera destravada | Girar a câmera sem pressionar botão |
 | Rodinha | Aproximar ou afastar a câmera |
 | F | Observar o personagem pela frente; pressione novamente para voltar |
 | 1 | Saudação (`greet_01`) |
@@ -22,7 +30,7 @@ No Godot Project Manager, outra opção é importar **`prototipo_3d/project.godo
 | 6 | Cruzar os braços (`fold_arms`) |
 | 7 | Golpear (`chop`) |
 | 8 | Nadar (`swim`) |
-| Esc | Liberar o cursor e interromper o movimento |
+| Esc | Travar a câmera e liberar o cursor |
 | R | Voltar ao ponto inicial |
 | Alt+F4 / fechar janela | Sair |
 
@@ -38,6 +46,8 @@ Parado, o personagem reproduz `idle`. Um gesto termina naturalmente e volta para
 - Vila de teste com casas, caminhos, horta, árvores, praia, iluminação e colisões.
 - Casa de Carro Quebrado gerada no Tripo, otimizada, escalada e com colisão simples.
 - Interface, reinício de posição e três pontos de exploração.
+
+As casas usam seus pontos geográficos como referência, mas a posição final é procurada em terra com espaço para a construção inteira, fora de todas as ruas e árvores. Árvores manuais que coincidiriam com uma casa são reposicionadas. A Casa da estrada também segue essa regra; sua coordenada KML continua sendo a referência inicial.
 
 As animações foram exportadas **no lugar**: os clipes mexem o esqueleto, enquanto o `CharacterBody3D` controla o deslocamento e as colisões. Isso evita que a animação e o código tentem mover o personagem ao mesmo tempo.
 

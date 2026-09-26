@@ -23,6 +23,7 @@ const TREE_COLLISION_INTERVAL := 0.25
 var landmarks: Array[Dictionary] = []
 var areas: Array[Dictionary] = []
 var _features: Array[Dictionary] = []
+var _projection: Dictionary = {}
 var _bounds := Rect2()
 var _background_kind := "land"
 var _land := PackedVector2Array()
@@ -32,6 +33,7 @@ var _village := PackedVector2Array()
 var _coast := PackedVector2Array()
 var _roads: Array[Dictionary] = []
 var _rivers: Array[Dictionary] = []
+var _shore_access_routes: Array[Dictionary] = []
 var _point_positions: Array[Vector2] = []
 var _open_areas: Array[PackedVector2Array] = []
 var _tree_trunks: Array[Dictionary] = []
@@ -80,6 +82,7 @@ func build_region(kml_json_path: String, scenario_json_path: String) -> void:
 	if geographic.get("region_id", "") != scenario.get("region_id", ""):
 		push_error("Os dados geográficos e o cenário pertencem a regiões diferentes.")
 		return
+	_projection = geographic.get("projection", {})
 	var bounds_data: Dictionary = scenario.get("bounds_m", geographic.get("bounds_m", {}))
 	_background_kind = String(scenario.get("background_kind", "land"))
 	_bounds = Rect2(
@@ -122,7 +125,8 @@ func build_region(kml_json_path: String, scenario_json_path: String) -> void:
 					})
 			"road":
 				if points.size() >= 2:
-					_roads.append({"name": String(feature.get("name", "")), "points": points, "width": _road_width(feature)})
+					var width := _road_width(feature)
+					_roads.append({"name": String(feature.get("name", "")), "points": points, "width": width, "bounds": _points_bounds(points).grow(width * 0.5)})
 			"river":
 				if points.size() >= 2:
 					_rivers.append({"name": String(feature.get("name", "")), "points": points, "width": _units(9.0, 4.0)})
@@ -172,6 +176,46 @@ func get_spawn_position() -> Vector3:
 	return Vector3(center.x, 0.12, center.y)
 
 
+func is_walkable_point(position: Vector3) -> bool:
+	var point := Vector2(position.x, position.z)
+	if _land.size() >= 3 and Geometry2D.is_point_in_polygon(point, _land):
+		return true
+	for road in _roads:
+		if road.bounds.has_point(point) and _distance_to_line(point, road.points) <= road.width * 0.5:
+			return true
+	for access in _shore_access_routes:
+		if access.bounds.has_point(point) and _distance_to_line(point, access.points) <= access.width * 0.5:
+			return true
+	return false
+
+
+## O círculo inteiro da construção deve ficar em terra e fora de todas as vias e árvores do mapa.
+func is_build_site_clear(position: Vector3, radius: float) -> bool:
+	if not position.is_finite() or _land.size() < 3:
+		return false
+	var center := Vector2(position.x, position.z)
+	if not Geometry2D.is_point_in_polygon(center, _land):
+		return false
+	for index in range(12):
+		var edge := center + Vector2.RIGHT.rotated(TAU * float(index) / 12.0) * radius
+		if not Geometry2D.is_point_in_polygon(edge, _land):
+			return false
+	for road in _roads:
+		var clearance: float = float(road.width) * 0.5 + radius + 1.5
+		if road.bounds.grow(clearance).has_point(center) and _distance_to_line(center, road.points) < clearance:
+			return false
+	for access in _shore_access_routes:
+		var clearance: float = float(access.width) * 0.5 + radius + 1.5
+		if access.bounds.grow(clearance).has_point(center) and _distance_to_line(center, access.points) < clearance:
+			return false
+	for trunk in _tree_trunks:
+		var tree_center: Vector2 = trunk.point
+		var separation: float = radius + maxf(float(trunk.radius), 2.0) + 1.0
+		if center.distance_squared_to(tree_center) < separation * separation:
+			return false
+	return true
+
+
 func _is_on_land(position: Vector3) -> bool:
 	return _land.size() >= 3 and Geometry2D.is_point_in_polygon(Vector2(position.x, position.z), _land)
 
@@ -191,6 +235,47 @@ func get_feature_center(feature_name: String, kind: String = "") -> Vector3:
 		center /= float(points.size())
 		return Vector3(center.x, 0.0, center.y)
 	return Vector3.ZERO
+
+
+## Usa a projeção gerada do KML local para converter latitude/longitude em unidades Godot.
+func wgs84_to_world(latitude: float, longitude: float) -> Vector3:
+	if _projection.is_empty():
+		push_error("A projeção geográfica da região não está disponível.")
+		return Vector3.INF
+	var x := (longitude - float(_projection["origin_lon"])) * float(_projection["meters_per_degree_lon"])
+	var z := (float(_projection["origin_lat"]) - latitude) * float(_projection["meters_per_degree_lat"])
+	return Vector3(x / _meters_per_unit, 0.0, z / _meters_per_unit)
+
+
+## Afasta um ponto do eixo da rua, mantendo-o no mesmo lado em que já estava.
+func position_beside_road(reference: Vector3, road_name: String, distance_from_center: float) -> Vector3:
+	var source := Vector2(reference.x, reference.z)
+	var nearest := Vector2.ZERO
+	var side := Vector2.ZERO
+	var best_distance_squared := INF
+	for road in _roads:
+		if road.name != road_name:
+			continue
+		var points: PackedVector2Array = road.points
+		for index in range(points.size() - 1):
+			var segment := points[index + 1] - points[index]
+			var length_squared := segment.length_squared()
+			if length_squared < 0.0001:
+				continue
+			var fraction := clampf((source - points[index]).dot(segment) / length_squared, 0.0, 1.0)
+			var closest := points[index] + segment * fraction
+			var distance_squared := source.distance_squared_to(closest)
+			if distance_squared < best_distance_squared:
+				best_distance_squared = distance_squared
+				nearest = closest
+			side = Vector2(-segment.y, segment.x).normalized()
+	if best_distance_squared == INF:
+		push_error("Rua não encontrada para posicionar construção: " + road_name)
+		return reference
+	if (source - nearest).dot(side) < 0.0:
+		side = -side
+	var placed := nearest + side * distance_from_center
+	return Vector3(placed.x, reference.y, placed.y)
 
 
 func surface_at(world_position: Vector3) -> String:
@@ -222,8 +307,10 @@ func _clear_region() -> void:
 	landmarks.clear()
 	areas.clear()
 	_features.clear()
+	_projection.clear()
 	_roads.clear()
 	_rivers.clear()
+	_shore_access_routes.clear()
 	_point_positions.clear()
 	_open_areas.clear()
 	_tree_trunks.clear()
@@ -246,6 +333,13 @@ func _to_points(coordinates: Array) -> PackedVector2Array:
 				result.append(point)
 	if result.size() > 2 and result[0].distance_squared_to(result[-1]) < 0.0001:
 		result.remove_at(result.size() - 1)
+	return result
+
+
+func _points_bounds(points: PackedVector2Array) -> Rect2:
+	var result := Rect2(points[0], Vector2.ZERO)
+	for point in points:
+		result = result.expand(point)
 	return result
 
 
@@ -360,7 +454,9 @@ func _build_shore_access() -> void:
 		var shore := _nearest_land_edge(destination)
 		var inland := (shore - destination).normalized()
 		var route := PackedVector2Array([shore + inland * _units(6.0, 3.0), destination])
-		_add_ribbon("Acesso " + String(landmark.name), route, _units(4.5, 3.0), 0.058, SHORE_ACCESS_COLOR, true)
+		var width := _units(4.5, 3.0)
+		_shore_access_routes.append({"points": route, "width": width, "bounds": _points_bounds(route).grow(width * 0.5)})
+		_add_ribbon("Acesso " + String(landmark.name), route, width, 0.058, SHORE_ACCESS_COLOR, true)
 
 
 func _nearest_land_edge(point: Vector2) -> Vector2:
