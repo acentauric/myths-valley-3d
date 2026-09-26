@@ -1,4 +1,7 @@
-"""Reduz a malha de um GLB do Tripo por agrupamento de vértices, preservando UVs e texturas.
+"""DESCONTINUADO (26/09/2026): use a Retopologia (Malha Smart) do próprio Tripo Studio.
+Ver docs/ASSETS_TRIPO.md. Mantido só como registro.
+
+Reduz a malha de um GLB do Tripo por agrupamento de vértices, preservando UVs e texturas.
 
 Os modelos HD do Tripo chegam com ~1,9 milhão de triângulos. Para adereços de
 cenário, agrupar vértices numa grade (vertex clustering) leva a malha a poucas
