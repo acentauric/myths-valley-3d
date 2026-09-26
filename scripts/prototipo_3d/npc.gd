@@ -107,6 +107,12 @@ func _montar_modelo() -> void:
 		if CatalogoAssets.PECAS.has(id) and CatalogoAssets.PECAS[id].has("altura"):
 			tamanho = altura / float(CatalogoAssets.PECAS[id]["altura"])
 		modelo = CatalogoAssets.instanciar(id, visual, Vector3.ZERO, tamanho, float(dados.get("yaw_modelo", 0.0)))
+		if modelo != null and not modelo.find_children("*", "AnimationPlayer", true, false).is_empty():
+			# GLB com rig e clipes do Tripo (idle/walk/run + gestos): usa o animador autoral.
+			var autoral: Node = load("res://scripts/prototipo_3d/authored_animator.gd").new()
+			add_child(autoral)
+			autoral.configure(modelo)
+			animador = autoral
 	if modelo == null:
 		var procedural := PersonagemProcedural.novo(id, altura)
 		visual.add_child(procedural)
@@ -187,7 +193,8 @@ func saudar() -> void:
 		voz.stop()
 		voz.play()
 	if animador != null and animador.has_method("play_gesture"):
-		animador.play_gesture(int(dados.get("gesto_saudacao", 0)))
+		var chave := "gesto_tripo" if animador.has_method("is_using_authored_clips") else "gesto_saudacao"
+		animador.play_gesture(int(dados.get(chave, 0)))
 	saudou.emit(self, texto)
 
 

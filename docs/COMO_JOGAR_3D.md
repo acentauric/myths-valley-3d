@@ -32,7 +32,11 @@ No Godot Project Manager, outra opção é importar **`prototipo_3d/project.godo
 | 8 | Nadar (`swim`) |
 | Esc | Travar a câmera e liberar o cursor |
 | R | Voltar ao ponto inicial |
+| T | Adiantar o relógio do vale em uma hora (ver dia e noite) |
+| M | Voltar ao menu (HOME) |
 | Alt+F4 / fechar janela | Sair |
+
+No estilo **Procedural** (AJUSTAR → Cenário e tempo) as teclas 1–8 acionam os gestos do humanoide por código (acenar, concordar, apontar, coçar a cabeça, alongar, chamar, reverência, olhar em volta). O jogador começa no píer, com o Pedro ao lado: fale com ele e siga as missões do HUD. Os moradores cumprimentam quando você chega perto. Detalhes em [VALE_VIVO_3D.md](VALE_VIVO_3D.md).
 
 Parado, o personagem reproduz `idle`. Um gesto termina naturalmente e volta para `idle`; começar a andar interrompe o gesto. Explore a praça, a horta e a costa: o indicador acompanha os três pontos visitados.
 

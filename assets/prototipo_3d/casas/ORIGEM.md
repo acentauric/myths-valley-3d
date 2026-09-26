@@ -21,3 +21,25 @@ Godot gera LODs e malha de sombra.
 A casa substitui a construção procedural localizada à direita da praça, próxima
 à horta. Escala e colisão são calculadas a partir dos limites da malha importada.
 Confirme os direitos de uso e redistribuição das referências antes de publicar.
+
+<!-- lote-2026-09-26:inicio -->
+
+## Lote em Malha Smart de 26/09/2026
+
+Geradas por texto no Tripo Studio (Modelo HD H3.1, textura 8K desligada, 55
+créditos) e passadas pela Retopologia (Quad, Malha Smart, 40 créditos) com o
+alvo de polígonos da categoria; exportadas em GLB com a textura da tabela.
+Retopologia e exportação em lote por `prototipo_3d/tools/tripo/lote_studio.js`;
+cópia para o projeto por `sincronizar_downloads.py` (originais em
+`.assets-raw/tripo/`, fora do Git). Tarefas, categorias e prompts completos em
+`prototipo_3d/tools/tripo/lote_2026-09-26.json`. Estas versões substituem as
+reduzidas por `reduzir_glb.py` e os HD anteriores descritos acima; os arquivos
+antigos continuam no histórico do Git.
+
+| Arquivo | O que é (prompt) | Tarefa Tripo | Triângulos | Textura | MB |
+| --- | --- | --- | ---: | --- | ---: |
+| `casa_carro_quebrado_tripo.glb` | weathered small house with plaster walls, wooden door and window, clay tile roof | `fef21312-d4d3-4b81-aefe-6ec4368759af` | 12.477 | 2K | 9.8 |
+
+Uso comercial: plano Max no momento da geração (ver `assets/CREDITOS.md`).
+
+<!-- lote-2026-09-26:fim -->

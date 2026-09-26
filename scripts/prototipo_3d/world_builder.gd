@@ -309,10 +309,11 @@ func _construcao(chave: String, origin: Vector3, yaw: float, procedural: Callabl
 		var node := CatalogoAssets.instanciar(chave, self, placed_origin, size, yaw)
 		if node != null:
 			CatalogoAssets.colisao(chave, node, self, placed_origin, size, yaw)
-			var bounds: AABB = node.get_meta("limites")
-			_box(Vector3(bounds.size.x + 1.6, 0.16, bounds.size.z + 1.6), placed_origin + Vector3(0, 0.08, 0), Color("958d79"), true).rotation.y = yaw
+			var piso := float(CatalogoAssets.PECAS[chave].get("piso", 0.0))
+			var limites: AABB = node.get_meta("limites")
+			_box(Vector3(limites.size.x + 1.6, 0.16, limites.size.z + 1.6), placed_origin + Vector3(0, piso + 0.08, 0), Color("958d79"), true, null, yaw)
 			if is_house:
-				_register_house(nome if not nome.is_empty() else chave.capitalize(), chave, placed_origin, yaw, bounds.size, "Tripo")
+				_register_house(nome if not nome.is_empty() else chave.capitalize(), chave, placed_origin, yaw, limites.size, "Tripo")
 			return node
 	if is_house:
 		procedural.call(placed_origin)
@@ -569,7 +570,9 @@ func _build_landmark_details() -> void:
 	var pier: Vector3 = _region.get_feature_center("Pier", "poi")
 	ancoras["Pier"] = pier
 	var pier_dir: Vector3 = (pier - _region.get_feature_center("Praça", "poi")).normalized()
-	_construcao("pier", pier, atan2(pier_dir.x, pier_dir.z), func():
+	# O modelo do Tripo é centrado; empurra-o mar adentro para começar na areia.
+	var pier_origin: Vector3 = pier + pier_dir * 4.0 if estilo_tripo() else pier
+	_construcao("pier", pier_origin, atan2(pier_dir.x, pier_dir.z), func():
 		_box(Vector3(4.5, 0.2, 17), pier + Vector3(0, -0.1, 0), Color("85684b"), true)
 		for offset in [-7.0, 0.0, 7.0]:
 			for side in [-1.8, 1.8]:
@@ -814,14 +817,15 @@ func _fence(origin: Vector3, count: int, spacing: float) -> void:
 		_box(Vector3(width, 0.12, 0.12), origin + Vector3(width * 0.5, height, 0), Color("987650"), true)
 
 
-func _box(size: Vector3, position: Vector3, color: Color, solid: bool = false, material_override: Material = null) -> MeshInstance3D:
+func _box(size: Vector3, position: Vector3, color: Color, solid: bool = false, material_override: Material = null, yaw: float = 0.0) -> MeshInstance3D:
 	var box := BoxMesh.new()
 	box.size = size
 	var instance := _mesh(box, position, color, material_override)
+	instance.rotation.y = yaw
 	if solid:
 		var shape := BoxShape3D.new()
 		shape.size = size
-		_body(shape, position)
+		_body(shape, position, "", yaw)
 	return instance
 
 
@@ -852,11 +856,12 @@ func _material_de_superficie(texture: Texture2D, uv_scale: Vector3) -> StandardM
 	return material
 
 
-func _body(shape: Shape3D, position: Vector3, body_name: String = "") -> void:
+func _body(shape: Shape3D, position: Vector3, body_name: String = "", yaw: float = 0.0) -> void:
 	var body := StaticBody3D.new()
 	if not body_name.is_empty():
 		body.name = body_name
 	body.position = position
+	body.rotation.y = yaw
 	var collision := CollisionShape3D.new()
 	collision.shape = shape
 	body.add_child(collision)

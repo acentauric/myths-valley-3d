@@ -71,3 +71,38 @@ que a redução por agrupamento de vértices.
 A primeira versão de `reduzir_glb.py` abria costuras de UV (trincas brancas na
 capela). A correção faz a posição depender só da célula espacial e usa UV média
 numa grade de 1/256; todos os modelos foram reprocessados.
+
+<!-- lote-2026-09-26:inicio -->
+
+## Lote em Malha Smart de 26/09/2026
+
+Geradas por texto no Tripo Studio (Modelo HD H3.1, textura 8K desligada, 55
+créditos) e passadas pela Retopologia (Quad, Malha Smart, 40 créditos) com o
+alvo de polígonos da categoria; exportadas em GLB com a textura da tabela.
+Retopologia e exportação em lote por `prototipo_3d/tools/tripo/lote_studio.js`;
+cópia para o projeto por `sincronizar_downloads.py` (originais em
+`.assets-raw/tripo/`, fora do Git). Tarefas, categorias e prompts completos em
+`prototipo_3d/tools/tripo/lote_2026-09-26.json`. Estas versões substituem as
+reduzidas por `reduzir_glb.py` e os HD anteriores descritos acima; os arquivos
+antigos continuam no histórico do Git.
+
+| Arquivo | O que é (prompt) | Tarefa Tripo | Triângulos | Textura | MB |
+| --- | --- | --- | ---: | --- | ---: |
+| `bananeira_tripo.glb` | Banana plant clump: several pseudostems, wide torn banana leaves arching outward, one hanging bunch of green bananas with a purple flower. | `b062ca2e-e598-4883-ba78-92328527fdf7` | 14.753 | 2K | 8.0 |
+| `cajueiro_tripo.glb` | One cashew tree (Anacardium occidentale) as a stylized game prop: low crooked twisted brown trunk leaning to one side, wide spreading light-green canopy, a few red and yellow cashew apples with nuts hanging, isolated single tree, clean silhouette, no ground plane, no text. | `6a771473-e893-43ba-bc3a-a0bc25175085` | 15.420 | 2K | 11.5 |
+| `capim_tripo.glb` | Tuft of tall dry sape grass with golden-green blades. | `bc7e5cde-6299-4675-b557-4531be8b4cb3` | 2.907 | 1K | 2.8 |
+| `coqueiro_tripo.glb` | One tall coconut palm tree (Cocos nucifera) as a stylized game prop: slender slightly curved gray-brown ringed trunk, crown of long arching green fronds, a cluster of green coconuts under the crown, isolated single tree, clean silhouette, no ground plane, no text. | `c08918f6-9cb0-4dcd-a82f-a431911d71eb` | 17.566 | 2K | 10.6 |
+| `dende_tripo.glb` | Dende oil palm tree (Elaeis guineensis): thick trunk covered in old leaf bases, dense crown of long arching fronds, clusters of red-orange oil palm fruit under the crown. | `10cb8089-bebd-4567-bcdd-377e50fac1e9` | 15.014 | 2K | 9.8 |
+| `embauba_tripo.glb` | Embauba tree (Cecropia): tall slender pale gray ringed trunk, sparse umbrella of large palmate leaves at the top with silvery undersides. | `0f288055-a1b9-48c3-b807-f251d2955282` | 2.963 | 1K | 2.7 |
+| `ipe_amarelo_tripo.glb` | Yellow ipe tree (Handroanthus) in full bloom: bare gray branches completely covered with bright yellow trumpet flowers, no leaves, medium straight trunk. | `1ebd9705-e61e-4bdc-bba7-0e0bb087b63d` | 15.148 | 2K | 11.2 |
+| `ipe_roxo_tripo.glb` | Purple ipe tree in full bloom: bare gray branches completely covered with pink-purple trumpet flowers, no leaves, medium straight trunk. | `b3e68bf4-dcb7-4239-8817-3db37ef03efe` | 15.418 | 2K | 10.8 |
+| `jaqueira_tripo.glb` | One jackfruit tree (Artocarpus heterophyllus) as a stylized game prop: straight tall brown trunk, dense rounded dark-green canopy of glossy leaves, several large bumpy yellow-green jackfruits hanging directly from the trunk, isolated single tree, clean silhouette, no ground plane, no text. | `89a0cd4a-ec5b-4628-bda2-99283599c3de` | 14.680 | 2K | 11.6 |
+| `mangueira_tripo.glb` | One mature mango tree (Mangifera indica) as a stylized game prop: short thick dark-brown trunk, very wide dense dark-green rounded canopy casting deep shade, a few small yellow-green mangoes hanging, exposed root flare, isolated single tree, clean silhouette, no ground plane, no text. | `ffa9a27a-ecc8-4d01-87ec-cdb90401b75e` | 20.453 | 2K | 12.7 |
+| `mata_a_tripo.glb` | Tall Atlantic rainforest tree: straight tall trunk with buttress roots, layered dark green dense canopy high up, a few lianas and bromeliads on the branches. | `3cbd2885-3187-4c56-a26a-eeda914a728b` | 2.489 | 1K | 2.9 |
+| `mata_b_tripo.glb` | Broad tropical hardwood tree: sturdy trunk, wide rounded dense green canopy made of layered leaf clusters, small buttress roots. | `95c933e8-c1ed-4f7f-b61c-54ab9f211ae6` | 2.436 | 1K | 3.2 |
+| `moita_tripo.glb` | Tropical flowering shrub: dense green bush covered with pink and white impatiens flowers. | `aa08254a-ac57-4596-b638-fa0f1de6a9af` | 2.370 | 1K | 3.1 |
+| `pau_brasil_tripo.glb` | broadleaf tree with textured bark and dense foliage | `d04b2e82-3526-445d-bb3e-5c766459e8a6` | 15.978 | 2K | 3.4 |
+
+Uso comercial: plano Max no momento da geração (ver `assets/CREDITOS.md`).
+
+<!-- lote-2026-09-26:fim -->

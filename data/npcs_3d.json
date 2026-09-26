@@ -1,12 +1,13 @@
 {
-  "observacao": "Moradores do arraial no protótipo 3D. Cada posto é [nome de âncora de world_builder.ancoras, deslocamento em unidades]. As falas são a primeira linha da apresentação em data/dialogos/aldeoes.json; a saudação em áudio (ElevenLabs, pt-BR) fica em assets/audio/vozes/<saudacao>.mp3. Pedro é o guia (scripts/prototipo_3d/guia_pedro.gd) e não tem postos: acompanha o jogador.",
+  "observacao": "Moradores do arraial no protótipo 3D. Cada posto é [nome de âncora de world_builder.ancoras, deslocamento em unidades]. As falas são a primeira linha da apresentação em data/dialogos/aldeoes.json; a saudação em áudio (ElevenLabs, pt-BR) fica em assets/audio/vozes/<saudacao>.mp3. Pedro é o guia (scripts/prototipo_3d/guia_pedro.gd) e não tem postos: acompanha o jogador. gesto_saudacao indexa os gestos do humanoide procedural; gesto_tripo, os clipes do GLB com rig (authored_animator.gd: 0 saudação, 1 tchau, 2 concordar, 3 olhar ao redor).",
   "guia": {
     "id": "pedro",
     "nome": "Pedro",
     "altura": 1.75,
     "saudacao": "pedro_saudacao",
     "fala": "Opa! É você, né? O da capital. Chegou na hora boa: o sol ainda tá alto.",
-    "gesto_saudacao": 0
+    "gesto_saudacao": 0,
+    "gesto_tripo": 0
   },
   "moradores": [
     {
@@ -17,12 +18,48 @@
       "fala": "Benedito. Benedito de Assis, mas aqui todo mundo diz só Seu Benedito.",
       "gesto_saudacao": 1,
       "postos": {
-        "manha": ["Casa de Carro Quebrado", [1.2, 0, 3.8]],
-        "tarde": ["Casa de Carro Quebrado", [-3.6, 0, 3.0]],
-        "entardecer": ["Bar", [3.0, 0, 4.6]],
-        "noite": ["Casa de Carro Quebrado", [0.9, 0, 3.6]],
-        "madrugada": ["Casa de Carro Quebrado", [0.9, 0, 3.6]]
-      }
+        "manha": [
+          "Casa de Carro Quebrado",
+          [
+            1.2,
+            0,
+            3.8
+          ]
+        ],
+        "tarde": [
+          "Casa de Carro Quebrado",
+          [
+            -3.6,
+            0,
+            3.0
+          ]
+        ],
+        "entardecer": [
+          "Bar",
+          [
+            3.0,
+            0,
+            4.6
+          ]
+        ],
+        "noite": [
+          "Casa de Carro Quebrado",
+          [
+            0.9,
+            0,
+            3.6
+          ]
+        ],
+        "madrugada": [
+          "Casa de Carro Quebrado",
+          [
+            0.9,
+            0,
+            3.6
+          ]
+        ]
+      },
+      "gesto_tripo": 2
     },
     {
       "id": "zefa",
@@ -32,12 +69,48 @@
       "fala": "Chegou o da capital. Tá todo mundo sabendo, não se assuste. Zefa. Eu benzo quebranto e faço chá pra quem tem febre.",
       "gesto_saudacao": 0,
       "postos": {
-        "manha": ["Casa de taipa", [-4.2, 0, 2.6]],
-        "tarde": ["Poço", [1.8, 0, 1.3]],
-        "entardecer": ["Casa de taipa", [-2.0, 0, 3.6]],
-        "noite": ["Casa de taipa", [-1.2, 0, 3.4]],
-        "madrugada": ["Casa de taipa", [-1.2, 0, 3.4]]
-      }
+        "manha": [
+          "Casa de taipa",
+          [
+            -4.2,
+            0,
+            2.6
+          ]
+        ],
+        "tarde": [
+          "Poço",
+          [
+            1.8,
+            0,
+            1.3
+          ]
+        ],
+        "entardecer": [
+          "Casa de taipa",
+          [
+            -2.0,
+            0,
+            3.6
+          ]
+        ],
+        "noite": [
+          "Casa de taipa",
+          [
+            -1.2,
+            0,
+            3.4
+          ]
+        ],
+        "madrugada": [
+          "Casa de taipa",
+          [
+            -1.2,
+            0,
+            3.4
+          ]
+        ]
+      },
+      "gesto_tripo": 0
     },
     {
       "id": "cosme",
@@ -47,12 +120,48 @@
       "fala": "Cosme. Neto da Dona Zefa. O que ela não aguenta mais fazer, eu faço. Se precisar de braço, me chama.",
       "gesto_saudacao": 0,
       "postos": {
-        "manha": ["Roçado", [2.0, 0, -1.6]],
-        "tarde": ["Roçado", [-2.6, 0, 4.4]],
-        "entardecer": ["Praça", [-3.0, 0, 5.0]],
-        "noite": ["Casa de taipa", [2.6, 0, 4.0]],
-        "madrugada": ["Casa de taipa", [2.6, 0, 4.0]]
-      }
+        "manha": [
+          "Roçado",
+          [
+            2.0,
+            0,
+            -1.6
+          ]
+        ],
+        "tarde": [
+          "Roçado",
+          [
+            -2.6,
+            0,
+            4.4
+          ]
+        ],
+        "entardecer": [
+          "Praça",
+          [
+            -3.0,
+            0,
+            5.0
+          ]
+        ],
+        "noite": [
+          "Casa de taipa",
+          [
+            2.6,
+            0,
+            4.0
+          ]
+        ],
+        "madrugada": [
+          "Casa de taipa",
+          [
+            2.6,
+            0,
+            4.0
+          ]
+        ]
+      },
+      "gesto_tripo": 0
     },
     {
       "id": "tonho",
@@ -62,12 +171,48 @@
       "fala": "Opa. Tonho. Eu puxo rede aqui no pontal desde os onze. Passa aqui de tarde, que a gente conversa com a rede no colo.",
       "gesto_saudacao": 5,
       "postos": {
-        "manha": ["Pier", [-4.5, 0, 3.6]],
-        "tarde": ["Pier", [-3.2, 0, -4.2]],
-        "entardecer": ["Bar", [-3.2, 0, 4.6]],
-        "noite": ["Casa da estrada", [1.6, 0, 3.6]],
-        "madrugada": ["Casa da estrada", [1.6, 0, 3.6]]
-      }
+        "manha": [
+          "Pier",
+          [
+            -4.5,
+            0,
+            3.6
+          ]
+        ],
+        "tarde": [
+          "Pier",
+          [
+            -3.2,
+            0,
+            -4.2
+          ]
+        ],
+        "entardecer": [
+          "Bar",
+          [
+            -3.2,
+            0,
+            4.6
+          ]
+        ],
+        "noite": [
+          "Casa da estrada",
+          [
+            1.6,
+            0,
+            3.6
+          ]
+        ],
+        "madrugada": [
+          "Casa da estrada",
+          [
+            1.6,
+            0,
+            3.6
+          ]
+        ]
+      },
+      "gesto_tripo": 1
     },
     {
       "id": "filo",
@@ -77,12 +222,48 @@
       "fala": "Chega mais, meu filho. Filó. Mãe do Tonho. Sento aqui na porta porque daqui eu vejo a estrada.",
       "gesto_saudacao": 0,
       "postos": {
-        "manha": ["Casa da estrada", [-1.4, 0, 3.6]],
-        "tarde": ["Casa da estrada", [-1.4, 0, 3.6]],
-        "entardecer": ["Casa da estrada", [1.0, 0, 4.2]],
-        "noite": ["Casa da estrada", [-0.6, 0, 3.4]],
-        "madrugada": ["Casa da estrada", [-0.6, 0, 3.4]]
-      }
+        "manha": [
+          "Casa da estrada",
+          [
+            -1.4,
+            0,
+            3.6
+          ]
+        ],
+        "tarde": [
+          "Casa da estrada",
+          [
+            -1.4,
+            0,
+            3.6
+          ]
+        ],
+        "entardecer": [
+          "Casa da estrada",
+          [
+            1.0,
+            0,
+            4.2
+          ]
+        ],
+        "noite": [
+          "Casa da estrada",
+          [
+            -0.6,
+            0,
+            3.4
+          ]
+        ],
+        "madrugada": [
+          "Casa da estrada",
+          [
+            -0.6,
+            0,
+            3.4
+          ]
+        ]
+      },
+      "gesto_tripo": 0
     },
     {
       "id": "candinha",
@@ -92,12 +273,48 @@
       "fala": "Candinha. Vendo garapa nessa praça desde antes de o senhor nascer. É aqui que se sabe das coisas.",
       "gesto_saudacao": 5,
       "postos": {
-        "manha": ["Praça", [5.6, 0, -3.2]],
-        "tarde": ["Praça", [5.6, 0, -3.2]],
-        "entardecer": ["Praça", [-5.2, 0, -3.0]],
-        "noite": ["Restaurante", [2.6, 0, 4.2]],
-        "madrugada": ["Restaurante", [2.6, 0, 4.2]]
-      }
+        "manha": [
+          "Praça",
+          [
+            5.6,
+            0,
+            -3.2
+          ]
+        ],
+        "tarde": [
+          "Praça",
+          [
+            5.6,
+            0,
+            -3.2
+          ]
+        ],
+        "entardecer": [
+          "Praça",
+          [
+            -5.2,
+            0,
+            -3.0
+          ]
+        ],
+        "noite": [
+          "Restaurante",
+          [
+            2.6,
+            0,
+            4.2
+          ]
+        ],
+        "madrugada": [
+          "Restaurante",
+          [
+            2.6,
+            0,
+            4.2
+          ]
+        ]
+      },
+      "gesto_tripo": 0
     },
     {
       "id": "damiao",
@@ -107,12 +324,48 @@
       "fala": "Bom dia. Damião. Sou o zelador daqui. Quem sobe aqui, sobe por alguém. Fique o tempo que quiser.",
       "gesto_saudacao": 6,
       "postos": {
-        "manha": ["Cemitério", [-4.2, 0, -4.6]],
-        "tarde": ["Cemitério", [4.2, 0, 4.6]],
-        "entardecer": ["Cemitério", [0.0, 0, 6.6]],
-        "noite": ["Igreja", [5.8, 0, 7.6]],
-        "madrugada": ["Igreja", [5.8, 0, 7.6]]
-      }
+        "manha": [
+          "Cemitério",
+          [
+            -4.2,
+            0,
+            -4.6
+          ]
+        ],
+        "tarde": [
+          "Cemitério",
+          [
+            4.2,
+            0,
+            4.6
+          ]
+        ],
+        "entardecer": [
+          "Cemitério",
+          [
+            0.0,
+            0,
+            6.6
+          ]
+        ],
+        "noite": [
+          "Igreja",
+          [
+            5.8,
+            0,
+            7.6
+          ]
+        ],
+        "madrugada": [
+          "Igreja",
+          [
+            5.8,
+            0,
+            7.6
+          ]
+        ]
+      },
+      "gesto_tripo": 2
     }
   ]
 }

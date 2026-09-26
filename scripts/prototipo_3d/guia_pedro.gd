@@ -91,6 +91,7 @@ func narrar(nome_audio: String, texto: String) -> void:
 		voz.stream = load(caminho)
 		voz.play()
 	if animador != null and animador.has_method("play_gesture"):
+		# Autoral: 2 = concordar; procedural: 2 = apontar.
 		animador.play_gesture(2)
 	narrou.emit(texto)
 

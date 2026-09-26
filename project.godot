@@ -36,3 +36,15 @@ window/size/min_height=540
 
 renderer/rendering_method.mobile="gl_compatibility"
 anti_aliasing/quality/msaa_3d=1
+
+[physics]
+common/physics_ticks_per_second=60
+
+[importer_defaults]
+
+texture={
+"compress/mode": 2,
+"compress/high_quality": false,
+"mipmaps/generate": true,
+"detect_3d/compress_to": 0
+}

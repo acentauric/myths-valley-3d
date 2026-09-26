@@ -68,13 +68,20 @@ func _ready() -> void:
 	visual = Node3D.new()
 	visual.name = "Visual"
 	add_child(visual)
+	# No estilo Tripo o viajante gerado no Studio substitui o GLB medieval só quando já
+	# tiver rig e clipes (AnimationPlayer); um modelo estático deslizaria sem andar.
+	var scene: PackedScene = model_scene
+	if Estilo.tripo() and CatalogoAssets.tem_tripo("viajante"):
+		var candidato := CatalogoAssets.cena("viajante")
+		if candidato != null and _tem_animacoes(candidato):
+			scene = candidato
 	if Estilo.procedural():
 		var procedural := PersonagemProcedural.novo("viajante", character_height)
 		visual.add_child(procedural)
 		model = procedural
 		animator = procedural
-	elif model_scene:
-		model = model_scene.instantiate() as Node3D
+	elif scene:
+		model = scene.instantiate() as Node3D
 		visual.add_child(model)
 		_measure_model(model)
 		if _has_bounds and model_bounds.size.y > 0.001:
@@ -109,6 +116,13 @@ func _ready() -> void:
 	spring.add_child(camera)
 	camera.current = true
 	_apply_camera()
+
+func _tem_animacoes(scene: PackedScene) -> bool:
+	var probe := scene.instantiate()
+	var animado := not probe.find_children("*", "AnimationPlayer", true, false).is_empty()
+	probe.free()
+	return animado
+
 
 func _measure_model(node: Node) -> void:
 	if node is MeshInstance3D:

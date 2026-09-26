@@ -2,80 +2,380 @@
   "observacao": "Lote de texto para 3D enviado ao Tripo Studio em 26/09/2026 (Modelo HD, H3.1, textura 8K desligada, 55 creditos cada). Chave -> id da tarefa. Categoria define pasta de destino, alvo de poligonos na retopologia e resolucao de textura na exportacao.",
   "estilo": "Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no text.",
   "categorias": {
-    "arvore_nomeada": {"pasta": "arvores", "poligonos": 8000, "textura": "2k"},
-    "arvore_mata": {"pasta": "arvores", "poligonos": 1500, "textura": "1k"},
-    "construcao": {"pasta": "construcoes", "poligonos": 6000, "textura": "2k"},
-    "adereco": {"pasta": "aderecos", "poligonos": 2000, "textura": "1k"},
-    "personagem": {"pasta": "personagens", "poligonos": 8000, "textura": "2k"},
-    "item": {"pasta": "itens", "poligonos": 1000, "textura": "1k"}
+    "arvore_nomeada": {
+      "pasta": "arvores",
+      "poligonos": 8000,
+      "textura": "2k"
+    },
+    "arvore_mata": {
+      "pasta": "arvores",
+      "poligonos": 1500,
+      "textura": "1k"
+    },
+    "construcao": {
+      "pasta": "construcoes",
+      "poligonos": 6000,
+      "textura": "2k"
+    },
+    "adereco": {
+      "pasta": "aderecos",
+      "poligonos": 2000,
+      "textura": "1k"
+    },
+    "personagem": {
+      "pasta": "personagens",
+      "poligonos": 8000,
+      "textura": "2k"
+    },
+    "item": {
+      "pasta": "itens",
+      "poligonos": 1000,
+      "textura": "1k"
+    }
   },
   "tarefas": {
-    "dende": {"id": "10cb8089-bebd-4567-bcdd-377e50fac1e9", "categoria": "arvore_nomeada"},
-    "bananeira": {"id": "b062ca2e-e598-4883-ba78-92328527fdf7", "categoria": "arvore_nomeada"},
-    "ipe_amarelo": {"id": "1ebd9705-e61e-4bdc-bba7-0e0bb087b63d", "categoria": "arvore_nomeada"},
-    "ipe_roxo": {"id": "b3e68bf4-dcb7-4239-8817-3db37ef03efe", "categoria": "arvore_nomeada"},
-    "embauba": {"id": "0f288055-a1b9-48c3-b807-f251d2955282", "categoria": "arvore_mata"},
-    "mata_a": {"id": "3cbd2885-3187-4c56-a26a-eeda914a728b", "categoria": "arvore_mata"},
-    "mata_b": {"id": "95c933e8-c1ed-4f7f-b61c-54ab9f211ae6", "categoria": "arvore_mata"},
-    "mangueira": {"id": "ffa9a27a-ecc8-4d01-87ec-cdb90401b75e", "categoria": "arvore_nomeada", "pronto": "mangueira_tripo_smart.glb"},
-    "jaqueira": {"id": "89a0cd4a-ec5b-4628-bda2-99283599c3de", "categoria": "arvore_nomeada"},
-    "cajueiro": {"id": "6a771473-e893-43ba-bc3a-a0bc25175085", "categoria": "arvore_nomeada"},
-    "coqueiro": {"id": "c08918f6-9cb0-4dcd-a82f-a431911d71eb", "categoria": "arvore_nomeada"},
-    "pau_brasil": {"id": "d04b2e82-3526-445d-bb3e-5c766459e8a6", "categoria": "arvore_nomeada"},
-    "capela": {"id": "aa30ce72-bc83-4bf5-9201-a23818d5181b", "categoria": "construcao"},
-    "poco": {"id": "b582fbdc-3dd1-4cf5-80bc-29c7fc57cbc2", "categoria": "adereco"},
-    "casa_taipa": {"id": "9ca79ab7-d4d8-498c-a65f-b8580f020602", "categoria": "construcao"},
-    "casa_carro_quebrado": {"id": "fef21312-d4d3-4b81-aefe-6ec4368759af", "categoria": "construcao"},
-    "venda": {"id": "e9bec55f-1004-44c0-a162-89d9a498f35a", "categoria": "construcao"},
-    "casa_pasto": {"id": "567602d7-b9e5-43ed-85cd-5d6db872a042", "categoria": "construcao"},
-    "pier": {"id": "3e7d72a4-e279-413e-b97a-a54dabd68ce6", "categoria": "construcao"},
-    "ponte": {"id": "660ad404-0371-4421-9ebf-67d15e293b40", "categoria": "construcao"},
-    "mirante": {"id": "4e4d78cf-fe00-499e-8570-b29cdb47f9dd", "categoria": "construcao"},
-    "cerca": {"id": "dede644a-6bd2-459d-b264-74d522459951", "categoria": "adereco"},
-    "cruzeiro": {"id": "f73bad86-1c25-447c-bfec-fc6763bc7d24", "categoria": "adereco"},
-    "tumulo": {"id": "7be03cb6-13e6-4f78-8514-776363faf8cf", "categoria": "adereco"},
-    "carroca": {"id": "bc1c9b43-0db2-4619-88ac-a5bfed38773a", "categoria": "adereco"},
-    "varal": {"id": "08413815-e367-42dd-8732-def4f5629daf", "categoria": "adereco"},
-    "lenha": {"id": "bac80f06-04b6-4303-86d5-0b435c8bb637", "categoria": "adereco"},
-    "pote": {"id": "9b2f3248-304f-485a-87c0-acb2016215c9", "categoria": "adereco"},
-    "banco": {"id": "f83875b5-8d2c-4592-958b-355758e45f17", "categoria": "adereco"},
-    "lampiao_poste": {"id": "cba6e2fa-0f24-487b-88ac-1d466a35d919", "categoria": "adereco"},
-    "candeeiro": {"id": "cd4ed038-9a30-46d5-9f5b-809582a32351", "categoria": "adereco"},
-    "fogueira": {"id": "b87c7576-4c98-45dd-8460-edf72edfc32f", "categoria": "adereco"},
-    "mandioca_canteiro": {"id": "0f75f635-c5cc-43a4-955f-870824c70ec9", "categoria": "adereco"},
-    "pedras": {"id": "3f483aaa-2572-4dac-b7f1-ef68b50f4d2c", "categoria": "adereco"},
-    "moita": {"id": "aa08254a-ac57-4596-b638-fa0f1de6a9af", "categoria": "arvore_mata"},
-    "capim": {"id": "bc7e5cde-6299-4675-b557-4531be8b4cb3", "categoria": "arvore_mata"},
-    "pedro": {"id": "c8a8039c-39c1-457f-bcf1-88d24589a941", "categoria": "personagem"},
-    "benedito": {"id": "b720f8bb-c7a6-4e46-91f8-0100aabdd33b", "categoria": "personagem"},
-    "zefa": {"id": "1f74f39d-7d84-4ccf-8743-7551022a3daa", "categoria": "personagem"},
-    "cosme": {"id": "3a6f74f1-70aa-4e87-a0f5-a7c448b9126d", "categoria": "personagem"},
-    "tonho": {"id": "b2bbbd6e-9ff5-49c5-b54b-c948eb266c0c", "categoria": "personagem"},
-    "filo": {"id": "ad015ccd-dd29-483f-b0c9-967b3e2cd1b0", "categoria": "personagem"},
-    "damiao": {"id": "5c5dc6ca-d108-41e1-a47c-f51287bd29cc", "categoria": "personagem"},
-    "viajante": {"id": "134c732b-480e-44c3-ae2d-e5657e122ad9", "categoria": "personagem"},
-    "machado": {"id": "26890ceb-e7f2-41a8-aa90-afcda1399c1a", "categoria": "item"},
-    "enxada": {"id": "7644b720-a09d-4d19-9e3a-ca47e0ac7699", "categoria": "item"},
-    "balde": {"id": "3420184a-b226-4eb0-ab2c-ac00b9c89213", "categoria": "item"},
-    "picareta": {"id": "7ab94bbb-d87d-4056-bd0b-e51989b2ed22", "categoria": "item"},
-    "foice": {"id": "95c2c4d5-1470-421b-8ac6-217bf90b0981", "categoria": "item"},
-    "regador": {"id": "0f3a4c3c-a76e-4c98-8ebc-f5055b2d2115", "categoria": "item"},
-    "vara_pescar": {"id": "5cfc39ce-cbbd-4c6b-83ab-f75ffdf659d8", "categoria": "item"},
-    "mandioca": {"id": "4da826ce-a6d7-4bcb-950f-3f1e566f1c7d", "categoria": "item"},
-    "lenha_feixe": {"id": "0bc77656-2d19-4113-bba8-3dd993a50cf0", "categoria": "item"},
-    "pedra": {"id": "1b398b11-a4fe-496a-b100-e6b33f3a40fe", "categoria": "item"},
-    "peixe": {"id": "c5e1da80-7bdf-4ba9-9a3c-ed864daf32d8", "categoria": "item"},
-    "cesto": {"id": "d450c257-3a33-4f5a-8fa3-0109121adc39", "categoria": "item"},
-    "facao": {"id": "acb9433d-b64f-4700-89a8-f5117ea551f1", "categoria": "item"},
-    "corda": {"id": "f5d6afeb-476f-4bcb-89cd-53a6789845cf", "categoria": "item"},
-    "tabua": {"id": "f19852a1-0567-4e43-8927-816acf29711c", "categoria": "item"},
-    "farinha": {"id": "13a27ff4-23df-43d4-932b-a2bcb16e47db", "categoria": "item"},
-    "chapeu": {"id": "b582f961-267c-4a3f-860d-332129b90ef9", "categoria": "item"},
-    "milho": {"id": "35ecb5d2-d31f-49fd-ae53-57f4a0603989", "categoria": "item"},
-    "cana": {"id": "190f60c0-4778-49f9-bcab-13fc8a1568bc", "categoria": "item"},
-    "moringa": {"id": "82e8febf-e287-4f11-9bdb-e8e83283a0f7", "categoria": "item"},
-    "prato_comida": {"id": "a68e3372-7ae2-4465-aa13-978011b403db", "categoria": "item"},
-    "cacho_banana": {"id": "ceaacd30-b8c6-44b3-915b-87a74f19471c", "categoria": "item"},
-    "jaca": {"id": "670baade-e150-4248-ac06-6a50008eab14", "categoria": "item"}
-  }
+    "dende": {
+      "id": "10cb8089-bebd-4567-bcdd-377e50fac1e9",
+      "categoria": "arvore_nomeada",
+      "prompt": "Dende oil palm tree (Elaeis guineensis): thick trunk covered in old leaf bases, dense crown of long arching fronds, clusters of red-orange oil palm fruit under the crown. Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no text."
+    },
+    "bananeira": {
+      "id": "b062ca2e-e598-4883-ba78-92328527fdf7",
+      "categoria": "arvore_nomeada",
+      "prompt": "Banana plant clump: several pseudostems, wide torn banana leaves arching outward, one hanging bunch of green bananas with a purple flower. Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no text."
+    },
+    "ipe_amarelo": {
+      "id": "1ebd9705-e61e-4bdc-bba7-0e0bb087b63d",
+      "categoria": "arvore_nomeada",
+      "prompt": "Yellow ipe tree (Handroanthus) in full bloom: bare gray branches completely covered with bright yellow trumpet flowers, no leaves, medium straight trunk. Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no text."
+    },
+    "ipe_roxo": {
+      "id": "b3e68bf4-dcb7-4239-8817-3db37ef03efe",
+      "categoria": "arvore_nomeada",
+      "prompt": "Purple ipe tree in full bloom: bare gray branches completely covered with pink-purple trumpet flowers, no leaves, medium straight trunk. Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no text."
+    },
+    "embauba": {
+      "id": "0f288055-a1b9-48c3-b807-f251d2955282",
+      "categoria": "arvore_mata",
+      "prompt": "Embauba tree (Cecropia): tall slender pale gray ringed trunk, sparse umbrella of large palmate leaves at the top with silvery undersides. Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no text."
+    },
+    "mata_a": {
+      "id": "3cbd2885-3187-4c56-a26a-eeda914a728b",
+      "categoria": "arvore_mata",
+      "prompt": "Tall Atlantic rainforest tree: straight tall trunk with buttress roots, layered dark green dense canopy high up, a few lianas and bromeliads on the branches. Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no text."
+    },
+    "mata_b": {
+      "id": "95c933e8-c1ed-4f7f-b61c-54ab9f211ae6",
+      "categoria": "arvore_mata",
+      "prompt": "Broad tropical hardwood tree: sturdy trunk, wide rounded dense green canopy made of layered leaf clusters, small buttress roots. Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no text."
+    },
+    "mangueira": {
+      "id": "ffa9a27a-ecc8-4d01-87ec-cdb90401b75e",
+      "categoria": "arvore_nomeada",
+      "pronto": "mangueira_tripo.glb (Malha Smart 10.000 quads, 26/09 manha)",
+      "prompt": "One mature mango tree (Mangifera indica) as a stylized game prop: short thick dark-brown trunk, very wide dense dark-green rounded canopy casting deep shade, a few small yellow-green mangoes hanging, exposed root flare, isolated single tree, clean silhouette, no ground plane, no text."
+    },
+    "jaqueira": {
+      "id": "89a0cd4a-ec5b-4628-bda2-99283599c3de",
+      "categoria": "arvore_nomeada",
+      "prompt": "One jackfruit tree (Artocarpus heterophyllus) as a stylized game prop: straight tall brown trunk, dense rounded dark-green canopy of glossy leaves, several large bumpy yellow-green jackfruits hanging directly from the trunk, isolated single tree, clean silhouette, no ground plane, no text."
+    },
+    "cajueiro": {
+      "id": "6a771473-e893-43ba-bc3a-a0bc25175085",
+      "categoria": "arvore_nomeada",
+      "prompt": "One cashew tree (Anacardium occidentale) as a stylized game prop: low crooked twisted brown trunk leaning to one side, wide spreading light-green canopy, a few red and yellow cashew apples with nuts hanging, isolated single tree, clean silhouette, no ground plane, no text."
+    },
+    "coqueiro": {
+      "id": "c08918f6-9cb0-4dcd-a82f-a431911d71eb",
+      "categoria": "arvore_nomeada",
+      "prompt": "One tall coconut palm tree (Cocos nucifera) as a stylized game prop: slender slightly curved gray-brown ringed trunk, crown of long arching green fronds, a cluster of green coconuts under the crown, isolated single tree, clean silhouette, no ground plane, no text."
+    },
+    "pau_brasil": {
+      "id": "d04b2e82-3526-445d-bb3e-5c766459e8a6",
+      "categoria": "arvore_nomeada",
+      "prompt": "broadleaf tree with textured bark and dense foliage"
+    },
+    "capela": {
+      "id": "aa30ce72-bc83-4bf5-9201-a23818d5181b",
+      "categoria": "construcao",
+      "prompt": "Small 19th-century Brazilian colonial village church (capela) as a stylized game prop: whitewashed lime plaster walls with weathered patches, single square bell tower on one side with a small bell, terracotta clay tile gable roof, arched dark wooden double door, two small windows with wooden shutters, blue painted trim, simple stone steps, isolated building, no ground plane, no text."
+    },
+    "poco": {
+      "id": "b582fbdc-3dd1-4cf5-80bc-29c7fc57cbc2",
+      "categoria": "adereco",
+      "prompt": "Old rustic stone water well from a 19th-century Brazilian village as a stylized game prop: round low wall of rough gray fieldstones, two weathered wooden posts holding a small terracotta tile roof, wooden crossbar with a rope and a wooden bucket, isolated object, no ground plane, no text."
+    },
+    "casa_taipa": {
+      "id": "9ca79ab7-d4d8-498c-a65f-b8580f020602",
+      "categoria": "construcao",
+      "prompt": "small rustic cottage with white plaster walls, brown wooden door, and red clay tile roof"
+    },
+    "casa_carro_quebrado": {
+      "id": "fef21312-d4d3-4b81-aefe-6ec4368759af",
+      "categoria": "construcao",
+      "prompt": "weathered small house with plaster walls, wooden door and window, clay tile roof"
+    },
+    "venda": {
+      "id": "e9bec55f-1004-44c0-a162-89d9a498f35a",
+      "categoria": "construcao",
+      "prompt": "Small 19th-century Brazilian village tavern and general store (venda): whitewashed plaster walls, terracotta tile roof, wide wooden double door, blue shutters, a wooden counter window, two barrels beside the door. Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no text."
+    },
+    "casa_pasto": {
+      "id": "567602d7-b9e5-43ed-85cd-5d6db872a042",
+      "categoria": "construcao",
+      "prompt": "Small colonial eating house (casa de pasto) in rural Bahia: whitewashed walls, clay tile roof, covered front porch with wooden posts, long wooden table and benches under the porch, clay pots. Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no text."
+    },
+    "pier": {
+      "id": "3e7d72a4-e279-413e-b97a-a54dabd68ce6",
+      "categoria": "construcao",
+      "prompt": "Wooden fishing pier on stilts: weathered planks, wooden posts, a mooring post with rope, small dugout canoe tied at the end. Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no text."
+    },
+    "ponte": {
+      "id": "660ad404-0371-4421-9ebf-67d15e293b40",
+      "categoria": "construcao",
+      "prompt": "Rustic wooden footbridge over a creek: plank deck with a slight arch, wooden railings and posts, weathered gray-brown wood. Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no text."
+    },
+    "mirante": {
+      "id": "4e4d78cf-fe00-499e-8570-b29cdb47f9dd",
+      "categoria": "construcao",
+      "prompt": "Wooden lookout platform (mirante) on a hill: raised plank deck on wooden posts, wooden railing, short stairs, rustic weathered wood. Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no text."
+    },
+    "cerca": {
+      "id": "dede644a-6bd2-459d-b264-74d522459951",
+      "categoria": "adereco",
+      "prompt": "Rustic wooden fence section: three rough posts and two horizontal rails, weathered wood, about four meters long. Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no text."
+    },
+    "cruzeiro": {
+      "id": "f73bad86-1c25-447c-bfec-fc6763bc7d24",
+      "categoria": "adereco",
+      "prompt": "Tall wooden cross (cruzeiro) on a stepped stone base, dark weathered wood with simple carved details. Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no text."
+    },
+    "tumulo": {
+      "id": "7be03cb6-13e6-4f78-8514-776363faf8cf",
+      "categoria": "adereco",
+      "prompt": "Old cemetery grave: low rectangular stone tomb with a small wooden cross at the head, moss and cracks. Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no text."
+    },
+    "carroca": {
+      "id": "bc1c9b43-0db2-4619-88ac-a5bfed38773a",
+      "categoria": "adereco",
+      "prompt": "Ox cart (carro de boi) from rural Brazil: two large solid wooden wheels, wooden yoke pole, plank cargo bed with side rails, no animals. Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no text."
+    },
+    "varal": {
+      "id": "08413815-e367-42dd-8732-def4f5629daf",
+      "categoria": "adereco",
+      "prompt": "Clothesline between two wooden posts with a few hanging cotton cloths and a simple dress. Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no text."
+    },
+    "lenha": {
+      "id": "bac80f06-04b6-4303-86d5-0b435c8bb637",
+      "categoria": "adereco",
+      "prompt": "Stack of split firewood logs neatly piled, bark outside and pale cut ends. Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no text."
+    },
+    "pote": {
+      "id": "9b2f3248-304f-485a-87c0-acb2016215c9",
+      "categoria": "adereco",
+      "prompt": "Large clay water pot (pote de barro) on a small stone base with a wooden lid and a tin cup hanging. Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no text."
+    },
+    "banco": {
+      "id": "f83875b5-8d2c-4592-958b-355758e45f17",
+      "categoria": "adereco",
+      "prompt": "Rustic wooden park bench with plank seat and backrest, weathered wood. Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no text."
+    },
+    "lampiao_poste": {
+      "id": "cba6e2fa-0f24-487b-88ac-1d466a35d919",
+      "categoria": "adereco",
+      "prompt": "19th-century street oil lamp on a wooden post: iron lantern with glass panes and a small metal roof, wooden post with an iron bracket. Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no text."
+    },
+    "candeeiro": {
+      "id": "cd4ed038-9a30-46d5-9f5b-809582a32351",
+      "categoria": "adereco",
+      "prompt": "Old kerosene lantern (candeeiro): small tin body, glass chimney, wire handle. Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no text."
+    },
+    "fogueira": {
+      "id": "b87c7576-4c98-45dd-8460-edf72edfc32f",
+      "categoria": "adereco",
+      "prompt": "Small campfire: ring of gray stones, a few burning logs with orange flames and embers. Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no text."
+    },
+    "mandioca_canteiro": {
+      "id": "0f75f635-c5cc-43a4-955f-870824c70ec9",
+      "categoria": "adereco",
+      "prompt": "Cassava plot: several cassava plants (manihot) with reddish stems and palmate leaves growing from a mound of dark earth. Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no text."
+    },
+    "pedras": {
+      "id": "3f483aaa-2572-4dac-b7f1-ef68b50f4d2c",
+      "categoria": "adereco",
+      "prompt": "Cluster of mossy gray boulders of different sizes. Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no text."
+    },
+    "moita": {
+      "id": "aa08254a-ac57-4596-b638-fa0f1de6a9af",
+      "categoria": "arvore_mata",
+      "prompt": "Tropical flowering shrub: dense green bush covered with pink and white impatiens flowers. Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no text."
+    },
+    "capim": {
+      "id": "bc7e5cde-6299-4675-b557-4531be8b4cb3",
+      "categoria": "arvore_mata",
+      "prompt": "Tuft of tall dry sape grass with golden-green blades. Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no text."
+    },
+    "pedro": {
+      "id": "c8a8039c-39c1-457f-bcf1-88d24589a941",
+      "categoria": "personagem",
+      "prompt": "Pedro, a young Afro-Brazilian fisherman about 25 years old from Bahia in 1887, standing in T-pose with arms straight out: straw hat, open rough cotton shirt, rolled linen trousers, barefoot, friendly face, full body character. Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no text."
+    },
+    "benedito": {
+      "id": "b720f8bb-c7a6-4e46-91f8-0100aabdd33b",
+      "categoria": "personagem",
+      "prompt": "Seu Benedito, an elderly Black farmer from Bahia in 1887, standing in T-pose with arms straight out: short white beard, straw hat, worn cotton shirt and trousers, leather sandals, weathered kind face, full body character. Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no text."
+    },
+    "zefa": {
+      "id": "1f74f39d-7d84-4ccf-8743-7551022a3daa",
+      "categoria": "personagem",
+      "prompt": "Dona Zefa, an elderly Black woman herbalist from Bahia in 1887, standing in T-pose with arms straight out: white head wrap, long cotton skirt, shawl, bead necklace, full body character. Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no text."
+    },
+    "cosme": {
+      "id": "3a6f74f1-70aa-4e87-a0f5-a7c448b9126d",
+      "categoria": "personagem",
+      "prompt": "Cosme, a teenage Afro-Brazilian boy from Bahia in 1887, standing in T-pose with arms straight out: simple cotton shirt, short trousers, barefoot, full body character. Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no text."
+    },
+    "tonho": {
+      "id": "b2bbbd6e-9ff5-49c5-b54b-c948eb266c0c",
+      "categoria": "personagem",
+      "prompt": "Tonho, a middle-aged fisherman from Bahia in 1887, standing in T-pose with arms straight out: weathered tanned face, cotton shirt, rolled trousers, fishing net over his shoulder, full body character. Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no text."
+    },
+    "filo": {
+      "id": "ad015ccd-dd29-483f-b0c9-967b3e2cd1b0",
+      "categoria": "personagem",
+      "prompt": "Dona Filo, an older Afro-Brazilian woman from Bahia in 1887, standing in T-pose with arms straight out: gray hair in a bun, long cotton dress with apron, shawl over the shoulders, full body character. Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no text."
+    },
+    "damiao": {
+      "id": "5c5dc6ca-d108-41e1-a47c-f51287bd29cc",
+      "categoria": "personagem",
+      "prompt": "Damiao, a thin middle-aged gravedigger from Bahia in 1887, standing in T-pose with arms straight out: dark vest over a white shirt, flat cap, long dark trousers, full body character. Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no text."
+    },
+    "viajante": {
+      "id": "134c732b-480e-44c3-ae2d-e5657e122ad9",
+      "categoria": "personagem",
+      "prompt": "The traveler, a young man from Salvador in 1887 arriving in the countryside, standing in T-pose with arms straight out: short dark hair, dark wool jacket, white shirt, brown trousers, leather boots, small leather satchel, full body character. Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no text."
+    },
+    "machado": {
+      "id": "26890ceb-e7f2-41a8-aa90-afcda1399c1a",
+      "categoria": "item",
+      "prompt": "Woodcutter axe: forged iron head, worn wooden handle. Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no text."
+    },
+    "enxada": {
+      "id": "7644b720-a09d-4d19-9e3a-ca47e0ac7699",
+      "categoria": "item",
+      "prompt": "Farm hoe (enxada): wide flat iron blade on a long wooden handle. Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no text."
+    },
+    "balde": {
+      "id": "3420184a-b226-4eb0-ab2c-ac00b9c89213",
+      "categoria": "item",
+      "prompt": "Wooden bucket with iron bands and a rope handle. Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no text."
+    },
+    "picareta": {
+      "id": "7ab94bbb-d87d-4056-bd0b-e51989b2ed22",
+      "categoria": "item",
+      "prompt": "Pickaxe: iron head with pointed and flat ends, wooden handle. Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no text."
+    },
+    "foice": {
+      "id": "95c2c4d5-1470-421b-8ac6-217bf90b0981",
+      "categoria": "item",
+      "prompt": "Sickle (foice): curved iron blade, short wooden handle. Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no text."
+    },
+    "regador": {
+      "id": "0f3a4c3c-a76e-4c98-8ebc-f5055b2d2115",
+      "categoria": "item",
+      "prompt": "Old tin watering can with a spout and handle, dented and patinated. Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no text."
+    },
+    "vara_pescar": {
+      "id": "5cfc39ce-cbbd-4c6b-83ab-f75ffdf659d8",
+      "categoria": "item",
+      "prompt": "Simple bamboo fishing rod with a line, cork float and hook. Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no text."
+    },
+    "mandioca": {
+      "id": "4da826ce-a6d7-4bcb-950f-3f1e566f1c7d",
+      "categoria": "item",
+      "prompt": "Wide brimmed straw hat of a Brazilian farmer. Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no text."
+    },
+    "lenha_feixe": {
+      "id": "0bc77656-2d19-4113-bba8-3dd993a50cf0",
+      "categoria": "item",
+      "prompt": "Small bundle of firewood sticks tied with rope, for carrying. Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no text."
+    },
+    "pedra": {
+      "id": "1b398b11-a4fe-496a-b100-e6b33f3a40fe",
+      "categoria": "item",
+      "prompt": "Single rough gray stone with lichen, hand sized. Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no text."
+    },
+    "peixe": {
+      "id": "c5e1da80-7bdf-4ba9-9a3c-ed864daf32d8",
+      "categoria": "item",
+      "prompt": "Fresh silver fish (mullet) from the bay, whole. Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no text."
+    },
+    "cesto": {
+      "id": "d450c257-3a33-4f5a-8fa3-0109121adc39",
+      "categoria": "item",
+      "prompt": "Woven straw basket with a handle, rustic Brazilian craft. Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no text."
+    },
+    "facao": {
+      "id": "acb9433d-b64f-4700-89a8-f5117ea551f1",
+      "categoria": "item",
+      "prompt": "Machete (facao): long steel blade, wooden handle, worn. Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no text."
+    },
+    "corda": {
+      "id": "f5d6afeb-476f-4bcb-89cd-53a6789845cf",
+      "categoria": "item",
+      "prompt": "Coil of natural fiber rope. Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no text."
+    },
+    "tabua": {
+      "id": "f19852a1-0567-4e43-8927-816acf29711c",
+      "categoria": "item",
+      "prompt": "Rough wooden plank, weathered. Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no text."
+    },
+    "farinha": {
+      "id": "13a27ff4-23df-43d4-932b-a2bcb16e47db",
+      "categoria": "item",
+      "prompt": "Burlap sack of manioc flour, open at the top showing the white flour. Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no text."
+    },
+    "chapeu": {
+      "id": "b582f961-267c-4a3f-860d-332129b90ef9",
+      "categoria": "item",
+      "prompt": "Wide brimmed straw hat of a Brazilian farmer. Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no text."
+    },
+    "milho": {
+      "id": "35ecb5d2-d31f-49fd-ae53-57f4a0603989",
+      "categoria": "item",
+      "prompt": "Three ears of corn with husks partly pulled back, yellow kernels. Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no text."
+    },
+    "cana": {
+      "id": "190f60c0-4778-49f9-bcab-13fc8a1568bc",
+      "categoria": "item",
+      "prompt": "Bundle of sugarcane stalks (cana de acucar) tied together, green and purple stalks with leaves. Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no text."
+    },
+    "moringa": {
+      "id": "82e8febf-e287-4f11-9bdb-e8e83283a0f7",
+      "categoria": "item",
+      "prompt": "Clay water jug (moringa) with a narrow neck and a small clay cup on top. Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no text."
+    },
+    "prato_comida": {
+      "id": "a68e3372-7ae2-4465-aa13-978011b403db",
+      "categoria": "item",
+      "prompt": "Clay plate with grilled fish and manioc pirao, a slice of lime, rustic Bahia meal. Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no text."
+    },
+    "cacho_banana": {
+      "id": "ceaacd30-b8c6-44b3-915b-87a74f19471c",
+      "categoria": "item",
+      "prompt": "Hanging bunch of ripe yellow bananas. Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no text."
+    },
+    "jaca": {
+      "id": "670baade-e150-4248-ac06-6a50008eab14",
+      "categoria": "item",
+      "prompt": "Whole jackfruit, large bumpy yellow-green fruit. Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no text."
+    },
+    "candinha": {
+      "id": "1dc01825-90b3-43f2-92e3-d26d13b69634",
+      "categoria": "personagem",
+      "observacao": "gerada as 19:55, com Pose em T",
+      "prompt": "Dona Candinha, elderly Afro-Brazilian street vendor woman selling sugarcane juice, white headscarf, mustard-yellow blouse, long cream skirt, barefoot, standing in a relaxed A-pose, full body. Stylized hand-painted 3D game character, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated character, no ground plane, no background, no text."
+    }
+  },
+  "estado": "26/09/2026: todas as tarefas retopologizadas (Malha Smart, alvo da categoria) e exportadas pelo lote_studio.js; GLBs em prototipo_3d/assets/prototipo_3d/<pasta>/<chave>_tripo.glb. Pedro: rig 7bc265b0 (Mixamo) e retargets 1b5b29f8 (idle, walk, run, greet_01, agree) e 57f476ba (look_around, wave_goodbye_02) prontos; falta exportar com animações pela interface."
 }

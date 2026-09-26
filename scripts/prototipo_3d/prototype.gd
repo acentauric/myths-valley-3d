@@ -53,7 +53,8 @@ func _ready() -> void:
 		hud.set_model_status("Estilo procedural: personagem, casas e árvores por código")
 		hud.set_telemetry("Procedural · 1,78 m")
 	else:
-		hud.set_model_status("Estilo Tripo: modelos do Tripo Studio (personagem GLB provisório)")
+		var viajante := "viajante do Tripo" if player.model != null and player.model.scene_file_path.ends_with("viajante_tripo.glb") else "personagem GLB provisório"
+		hud.set_model_status("Estilo Tripo: modelos do Tripo Studio (%s)" % viajante)
 		hud.set_telemetry("Tripo · 1,78 m")
 	hud.set_objective("Fale com Pedro: ele veio te esperar no píer.")
 	hud.set_notice("Bom Jesus dos Pobres, 1887 · 1 unidade = %s m" % _formatar(world.get_meters_per_unit()))

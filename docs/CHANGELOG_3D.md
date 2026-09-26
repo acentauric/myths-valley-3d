@@ -3,13 +3,46 @@
 Este histórico acompanha apenas a experiência executada em `prototipo_3d/` na
 branch `prototype/myths-valley-3d`. O projeto 2D foi a base da derivação, mas
 suas fases, versões e novidades não são entradas deste registro. Os marcos
-abaixo seguem o que mudou no 3D. A identificação atual é **v0.1.0-dev · Build #4**,
+abaixo seguem o que mudou no 3D. A identificação atual é **v0.1.0-dev · Build #5**,
 exclusiva desta derivação e ainda sem distribuição publicada.
 
 O texto clicável de versão e build no rodapé da abertura mostra resumos destes
 marcos. Os textos curtos e a identificação exibidos no jogo ficam em
 `prototipo_3d/data/historico_3d.json`; ao registrar um novo marco ou build,
 atualize esse arquivo e este documento juntos.
+
+## Build #5 — 26/09/2026 (tarde)
+
+- **Dois estilos visuais, nunca misturados.** AJUSTAR → Cenário e tempo escolhe
+  entre **Tripo** (GLBs do Tripo Studio via `catalogo_assets.gd`) e
+  **Procedural** (tudo por código, inclusive o personagem, `personagem_procedural.gd`
+  com andar, corrida e oito gestos). A mata e a orla trocam a malha instanciada
+  conforme o estilo; terreno, ruas, rios, mar, luz e som são iguais nos dois.
+- **Ciclo de dia e noite.** Autoload `Dia` (hora, velocidade Parada/Lenta/Normal/
+  Rápida, hora inicial, tecla **T**); sol, lua, céu, névoa e ambiente seguem a
+  hora em `world_builder.gd`. Relógio no HUD.
+- **Luzes de 1887** (`luzes_epoca.gd`): lampiões a óleo na Praça e no adro,
+  candeeiros nas portas, fogueira no terreiro e velas nas janelas, acendendo ao
+  entardecer com tremeluzir.
+- **Som do lugar** (`ambiente_vale.gd`): mata de dia e de noite em fusão
+  contínua, mar no píer, riacho e fogueira por proximidade (loops do ElevenLabs).
+- **Moradores** (`npc.gd`, `data/npcs_3d.json`): sete moradores com postos por
+  período, balão de fala e saudação em voz por proximidade (ElevenLabs, pt-BR).
+  **Pedro** (`guia_pedro.gd`) acompanha o jogador e narra as missões praça →
+  capela → casa de pasto → roçado → píer antes de escurecer; avisa o anoitecer.
+  O jogador chega de barco, no píer.
+- **Lote Tripo de 66 peças** (árvores, construções, adereços, personagens e os
+  itens de mão do 2D: machado, enxada, balde, cesto, moringa, farinha, peixe,
+  jaca, cacho de banana…) retopologizado em Malha Smart e exportado em 1K/2K
+  pelo console do Studio (`tools/tripo/lote_studio.js`, ver ASSETS_TRIPO.md).
+- Redutor `reduzir_glb.py` descontinuado; a Malha Smart do Tripo substitui.
+- Texturas importadas comprimidas em VRAM (`[importer_defaults]` no `project.godot`):
+  a memória de vídeo do estilo Tripo caiu de 2,49 GB para 0,74 GB, mantendo 60 FPS.
+- Catálogo ganhou `girar`, `afundar` e `piso` (peixe e tábua deitados; píer e ponte
+  com as estacas na água e tabuado caminhável). Ferramentas novas em `tools/tripo/`:
+  `sincronizar_downloads.py`, `medir_glb.py` e `registrar_origem.py`.
+- Pedro recebeu rig (Mixamo) e sete animações no Studio; a exportação animada e a dos
+  demais moradores ficam para o próximo passo (ver ASSETS_TRIPO.md).
 
 ## Em desenvolvimento — 26/09/2026
 

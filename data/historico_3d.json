@@ -1,7 +1,20 @@
 {
   "versao_atual": "0.1.0-dev",
-  "build_numero": 4,
+  "build_numero": 5,
   "entradas": [
+    {
+      "data": "26/09/2026",
+      "estado": "EM DESENVOLVIMENTO",
+      "titulo": "Dia e noite, moradores e dois estilos",
+      "mudancas": [
+        "Escolha entre o vale do Tripo e o vale procedural.",
+        "O sol nasce, se põe e os lampiões de 1887 acendem.",
+        "A mata canta de dia e de noite; o mar e o riacho soam perto.",
+        "Sete moradores com voz cumprimentam quem chega.",
+        "Pedro acompanha o jogador e narra as missões.",
+        "Sessenta e seis peças novas chegaram do Tripo."
+      ]
+    },
     {
       "data": "26/09/2026",
       "estado": "EM DESENVOLVIMENTO",

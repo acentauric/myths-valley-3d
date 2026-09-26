@@ -33,8 +33,9 @@ e nenhum asset novo deve passar por ele.
    jogo (ver [IMAGEM_PARA_MODELO_3D.md](IMAGEM_PARA_MODELO_3D.md)); texto → 3D
    serve para rascunho rápido. O prompt sempre termina com *isolated object, no
    ground plane, no text*.
-2. **Gerar** com *Modelo HD* (H3.1, Máx. qualidade): **65 créditos**. Até 100
-   tarefas em paralelo no plano Max; o lote de 30 economiza cliques.
+2. **Gerar** com *Modelo HD* (H3.1, Máx. qualidade, textura 8K desligada):
+   **55 créditos**. Até 100 tarefas em paralelo no plano Max; o lote de 30
+   economiza cliques.
 3. **Remesh → Retopologia** (Quad, Malha Smart): **40 créditos**. Alvo de
    polígonos conforme a tabela abaixo. O Tripo rebakeia as texturas na malha
    nova; não é preciso refazer UV nem textura.
@@ -45,8 +46,92 @@ e nenhum asset novo deve passar por ele.
    resolução) e em `assets/CREDITOS.md`. Conferir escala, colisão e nome no
    jogo antes de commitar.
 
-Custo por asset pronto: **~105 créditos** (≈ 230 assets por mês no plano Max).
+Custo por asset pronto: **~95 créditos** (≈ 230 assets por mês no plano Max). O
+lote de 26/09 (67 retopologias, uma geração e um rig) custou 2.755 créditos; saldo ao
+fim do dia: 17.950.
 O gargalo é a curadoria humana, não o crédito.
+
+## Lote pelo console do Studio (66 peças em 26/09/2026)
+
+Retopologia e exportação de dezenas de peças não se faz clicando. O Studio é
+uma aplicação Nuxt que conversa com `api.tripo3d.ai/v2/studio/…` e o script
+[`prototipo_3d/tools/tripo/lote_studio.js`](../prototipo_3d/tools/tripo/lote_studio.js)
+repete, na mesma sessão logada e com os mesmos cabeçalhos que a página envia,
+exatamente as chamadas da interface:
+
+| Passo | Chamada | Observação |
+|---|---|---|
+| geração base | `GET project/history/<projeto>` | o nó da malha é `tripo_node_<id da text_to_model>` |
+| retopologia | `POST operation/remesh` `{bake, face_limit, quad, smart_poly, part_name_list, project_id}` | 40 créditos; ~1–2 min |
+| andamento | `POST progress` `{ids:[…]}` | `status: running → success` |
+| exportação | `POST operation/export` `{format:"gltf", texture_size:1024\|2048, name, project_id, …}` | grátis; ~30 s |
+| arquivo | `POST operation/download_with_name` `{file_name, operator_id}` → `model_url` | o navegador baixa para `Downloads` |
+
+Uso: abrir um projeto no Studio, colar o script no console e chamar
+`__mv.lote(PLANO, 6)` com `PLANO = [{key, id, faces, tex}]` (o lote de
+26/09 está em `lote_2026-09-26.json`). O estado fica em `localStorage`
+(`mv-lote-state`) e `__mv.resumo()` mostra o andamento; a aba precisa ficar
+**visível**, porque o Chrome segura os downloads de abas escondidas. O script
+não imprime nem guarda token: reaproveita os cabeçalhos da própria página.
+
+## Do download ao jogo
+
+Depois do lote (ou de uma exportação avulsa), na raiz do repositório:
+
+```powershell
+python prototipo_3d/tools/tripo/sincronizar_downloads.py        # Downloads → assets/prototipo_3d/<pasta>/
+python prototipo_3d/tools/tripo/medir_glb.py                     # caixa, triângulos e imagens de cada GLB
+python prototipo_3d/tools/tripo/registrar_origem.py lote_2026-09-26.json Downloads/tripo_prompts_*.json
+```
+
+1. `sincronizar_downloads.py` procura `<chave>_tripo.glb` (e as cópias `(1)`, `(2)`…)
+   em Downloads, pega a mais recente, guarda uma cópia em `.assets-raw/tripo/` e copia
+   para o caminho do catálogo. Ignora arquivos acima de 25 MB (HD cru).
+2. `medir_glb.py` lê só o cabeçalho do GLB. Todo modelo do Tripo chega com o maior eixo
+   em 0,98; escolha `altura` para o que é alto e fino e `largura` para o que é deitado.
+3. Entrada em `CatalogoAssets.PECAS`. Correções disponíveis:
+   `"girar": [x, y, z]` (graus, aplicado antes de medir: o peixe e a tábua vêm de pé),
+   `"afundar"` (unidades; o píer vem com estacas e precisa entrar na água) e
+   `"piso"` (altura do tabuado caminhável que `world_builder` cria sobre píer e ponte).
+4. `registrar_origem.py` escreve a seção do lote no `ORIGEM.md` de cada pasta, com
+   tarefa, prompt, triângulos, textura e tamanho. Os prompts vêm do Studio
+   (`__mv.detail(projeto).biz_info.description`) e ficam gravados no JSON do lote.
+5. Abra o jogo nos dois estilos (AJUSTAR → Cenário e tempo) e olhe a peça de perto.
+
+## Texturas comprimidas em VRAM
+
+Cada GLB traz três texturas (cor, normal, metal/rugosidade). Com 67 modelos, a
+importação sem compressão levou a memória de vídeo a **2,49 GB**. O `project.godot`
+agora tem `[importer_defaults] texture = VRAM Compressed`, e as texturas extraídas dos
+GLBs foram reimportadas: **735 MB**, com 60 FPS e a mesma aparência a distância de jogo.
+Consequências:
+
+- texturas novas entram comprimidas; as de interface precisam ser marcadas como
+  **Lossless** no `.import`;
+- ao substituir um GLB, apague os `.import` das texturas antigas (o nome delas muda a
+  cada exportação) e deixe o Godot reimportar.
+
+## Rig e animação dos personagens (em andamento)
+
+Os nove personagens do lote foram gerados em pose T, prontos para rig. No Studio:
+
+| Passo | Onde | Custo observado |
+|---|---|---|
+| Auto Rig (Humanoide, esqueleto Mixamo) | Rig → Auto Rig; API `operation/pre_rig_check` + `operation/rigging_model` `{rig_type:"biped", spec:"mixamo"}` | 20 créditos |
+| Animações prontas | Animar → Predefinições; API `operation/retarget_model` `{animations:["preset:biped:idle", …]}`, até 5 por chamada | não descontou saldo em 26/09 |
+| Exportar com animações | Exportar → **Número de Animações** → Selecionar tudo → Exportar | grátis |
+
+Clipes pedidos para os moradores: `idle`, `walk`, `run`, `greet_01`, `agree`,
+`look_around`, `wave_goodbye_02` (o viajante leva também `chop`, `afraid`, `fold_arms`,
+`swim`). **Pedro** já tem rig e os sete clipes (projeto `c8a8039c-…`); falta exportar pela
+interface: a chamada `operation/export` com `with_animation:true` feita pelo script
+respondeu erro 1000/1004 (a interface manda `animations` com os ids das operações de
+retarget; investigar antes de automatizar).
+
+No jogo nada precisa mudar quando o GLB animado chegar: `npc.gd` usa
+`authored_animator.gd` sempre que o modelo tem `AnimationPlayer`, e o jogador só troca
+o personagem medieval pelo `viajante_tripo.glb` quando este tiver clipes. Até lá, no
+estilo Tripo os moradores aparecem em pose T, deslizando com um balanço leve.
 
 ## Orçamento por tipo de asset
 
