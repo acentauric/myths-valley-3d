@@ -411,3 +411,96 @@ static func banco_praca() -> Node3D:
 	shape.size = Vector3(2.3, 1.3, 0.7)
 	_collision(root, shape, Vector3(0, 0.65, 0))
 	return root
+
+
+## Lampião de poste a óleo (1887): poste de madeira, braço de ferro e lanterna de vidro.
+static func lampiao_poste() -> Node3D:
+	var root := Node3D.new()
+	root.name = "LampiaoPoste"
+	_box_node(root, Vector3(0.18, 3.0, 0.18), Vector3(0, 1.5, 0), MADEIRA_VELHA)
+	_box_node(root, Vector3(0.6, 0.06, 0.06), Vector3(0.25, 2.85, 0), Color("3a3a3a"))
+	_box_node(root, Vector3(0.28, 0.42, 0.28), Vector3(0.5, 2.95, 0), Color("d9c98a"))
+	var roof := PrismMesh.new()
+	roof.size = Vector3(0.4, 0.16, 0.4)
+	root.add_child(_mesh_instance(roof, Vector3(0.5, 3.24, 0), Color("3a3a3a")))
+	_box_node(root, Vector3(0.04, 0.42, 0.04), Vector3(0.36, 2.95, 0.12), Color("3a3a3a"))
+	_box_node(root, Vector3(0.04, 0.42, 0.04), Vector3(0.64, 2.95, -0.12), Color("3a3a3a"))
+	var shape := CylinderShape3D.new()
+	shape.radius = 0.16
+	shape.height = 3.0
+	_collision(root, shape, Vector3(0, 1.5, 0))
+	return root
+
+
+## Candeeiro de querosene pendurado numa porta.
+static func candeeiro() -> Node3D:
+	var root := Node3D.new()
+	root.name = "Candeeiro"
+	root.add_child(_mesh_instance(_cylinder(0.07, 0.09, 0.14, 8), Vector3(0, 0.07, 0), Color("7a6a55")))
+	root.add_child(_mesh_instance(_cylinder(0.05, 0.06, 0.16, 8), Vector3(0, 0.22, 0), Color("e8dcae")))
+	_box_node(root, Vector3(0.02, 0.12, 0.02), Vector3(0, 0.36, 0), Color("3a3a3a"))
+	return root
+
+
+## Fogueira do terreiro: pedras em roda e toras cruzadas.
+static func fogueira() -> Node3D:
+	var root := Node3D.new()
+	root.name = "Fogueira"
+	for i in range(8):
+		var angle := TAU * float(i) / 8.0
+		root.add_child(_mesh_instance(_blob(0.18, 0.22, 6, 3), Vector3(cos(angle) * 0.7, 0.1, sin(angle) * 0.7), PEDRA))
+	for i in range(3):
+		var log := _cylinder(0.08, 0.08, 0.9, 6)
+		var instance := _mesh_instance(log, Vector3(0, 0.12 + float(i) * 0.05, 0), TRONCO)
+		instance.rotation = Vector3(0.35, TAU * float(i) / 3.0, PI * 0.5)
+		root.add_child(instance)
+	root.add_child(_mesh_instance(_blob(0.2, 0.3, 6, 4), Vector3(0, 0.3, 0), Color("ff7a2a")))
+	return root
+
+
+## Túmulo de pedra com cruz de madeira.
+static func tumulo() -> Node3D:
+	var root := Node3D.new()
+	root.name = "Tumulo"
+	_box_node(root, Vector3(0.72, 0.15, 1.45), Vector3(0, 0.08, 0), Color("a9a9a0"))
+	_box_node(root, Vector3(0.12, 0.9, 0.12), Vector3(0, 0.6, -0.55), MADEIRA_VELHA)
+	_box_node(root, Vector3(0.48, 0.12, 0.12), Vector3(0, 0.72, -0.55), MADEIRA_VELHA)
+	return root
+
+
+## Pedras: rochedo de esferas achatadas.
+static func pedras() -> Node3D:
+	var root := Node3D.new()
+	root.name = "Pedras"
+	for index in range(13):
+		var rock := _blob(0.8 + float(index % 3) * 0.4, 0.8 + float(index % 4) * 0.3, 7, 4)
+		root.add_child(_mesh_instance(rock, Vector3(float(index % 5) * 2.8 - 5.6, 0.35, floorf(float(index) / 5.0) * 2.9 - 2.9), PEDRA))
+	var shape := BoxShape3D.new()
+	shape.size = Vector3(13.0, 1.4, 7.0)
+	_collision(root, shape, Vector3(0, 0.7, 0))
+	return root
+
+
+## Canteiro de mandioca: leiras de terra e pés com hastes avermelhadas.
+static func canteiro_mandioca() -> Node3D:
+	var root := Node3D.new()
+	root.name = "CanteiroMandioca"
+	for row in range(3):
+		_box_node(root, Vector3(5.6, 0.1, 0.88), Vector3(0, 0.055, float(row) * 1.35), Color("826346"))
+		for column in range(7):
+			var stem := _cylinder(0.02, 0.04, 0.9 + float(row) * 0.1, 5)
+			root.add_child(_mesh_instance(stem, Vector3(-2.3 + float(column) * 0.75, 0.5, float(row) * 1.35), Color("8d4a3c")))
+			var leaves := _blob(0.28, 0.2, 6, 3)
+			root.add_child(_mesh_instance(leaves, Vector3(-2.3 + float(column) * 0.75, 0.98 + float(row) * 0.1, float(row) * 1.35), COPA_CAJUEIRO))
+	return root
+
+
+## Moita florida (maria-sem-vergonha).
+static func moita() -> Node3D:
+	var root := Node3D.new()
+	root.name = "Moita"
+	root.add_child(_mesh_instance(_blob(0.55, 0.7, 7, 4), Vector3(0, 0.35, 0), COPA_CAJUEIRO))
+	for i in range(5):
+		var angle := TAU * float(i) / 5.0
+		root.add_child(_mesh_instance(_blob(0.09, 0.09, 5, 3), Vector3(cos(angle) * 0.4, 0.62, sin(angle) * 0.4), Color("e4c782") if i % 2 == 0 else Color("ce9d99")))
+	return root

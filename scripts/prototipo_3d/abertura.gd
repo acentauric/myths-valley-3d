@@ -3,6 +3,10 @@ extends Node3D
 const AudioToggleIcon = preload("res://scripts/prototipo_3d/audio_toggle_icon.gd")
 const VISUAL_PREFERENCES := "user://preferencias_visuais.cfg"
 const FLYOVER_SECONDS := 36.0
+const HORAS_INICIAIS := [4.5, 7.0, 12.0, 15.0, 17.5, 20.5]
+const ROTULOS_HORAS := ["Madrugada (4h30)", "Manhã (7h)", "Meio-dia", "Tarde (15h)", "Entardecer (17h30)", "Noite (20h30)"]
+## Trocar o estilo visual reconstrói a cena do menu; ao voltar, reabre a página de ajustes.
+static var _reabrir_ajustes := false
 var camera := Camera3D.new()
 var camera_target := Vector3(0, 1.5, 0)
 var map_target := Vector3.ZERO
@@ -64,7 +68,10 @@ func _ready() -> void:
 	Audio.tocar_musica(Audio.obter_caminho_musica_menu())
 	Audio.iniciar_ambiente_menu()
 	_home()
-	print("OPENING_READY: audio compartilhado e abertura 3D")
+	if _reabrir_ajustes:
+		_reabrir_ajustes = false
+		_options_mundo()
+	print("OPENING_READY: audio compartilhado e abertura 3D · estilo=%s" % Estilo.modo)
 
 func _process(delta: float) -> void:
 	elapsed += delta
@@ -113,6 +120,7 @@ func _load_visual_preference() -> void:
 func _set_flyover(option: int) -> void:
 	flyover_active = option == 1
 	var preferences := ConfigFile.new()
+	preferences.load(VISUAL_PREFERENCES)
 	preferences.set_value("menu", "sobrevoo", flyover_active)
 	if preferences.save(VISUAL_PREFERENCES) != OK:
 		push_warning("Não foi possível salvar a preferência de cenário do menu.")
@@ -400,7 +408,35 @@ func _options() -> void:
 		Audio.definir_efeitos_menu(i + 1)
 		Audio.testar_efeito_menu())
 	_choice("Paisagem sonora", ["Silêncio", "Mar", "Aves", "Mar e aves"], Audio.ambiente_menu_opcao, Audio.definir_ambiente_menu)
+	_button("CENÁRIO E TEMPO", _options_mundo)
 	_button("VOLTAR", _home)
+
+
+## Página de ajustes do mundo: estilo visual (linha mestra Tripo ou tudo procedural),
+## passagem do tempo e hora em que o vale começa.
+func _options_mundo() -> void:
+	_clear()
+	content.add_theme_constant_override("separation", 7)
+	_label("Cenário e tempo", 30)
+	_label("Estilo visual: o vale inteiro é construído num só estilo — modelos do Tripo Studio ou tudo por código, até o personagem.", 14)
+	_choice("Estilo visual", ["Tripo (modelos gerados)", "Procedural (por código)"], 0 if Estilo.tripo() else 1, _set_estilo)
+	_choice("Passagem do tempo", Dia.ROTULOS_VELOCIDADE, Dia.velocidade, Dia.definir_velocidade)
+	var hora_indice := 1
+	for indice in range(HORAS_INICIAIS.size()):
+		if absf(float(HORAS_INICIAIS[indice]) - Dia.hora) < 0.75:
+			hora_indice = indice
+	_choice("Hora inicial", ROTULOS_HORAS, hora_indice, func(i: int) -> void: Dia.definir_hora_inicial(float(HORAS_INICIAIS[i])))
+	_label("Agora no vale: %s" % Dia.texto_hora(), 14)
+	_button("VOLTAR", _options).grab_focus()
+
+
+func _set_estilo(option: int) -> void:
+	var novo: String = Estilo.TRIPO if option == 0 else Estilo.PROCEDURAL
+	if novo == Estilo.modo:
+		return
+	Estilo.definir(novo)
+	_reabrir_ajustes = true
+	get_tree().reload_current_scene()
 
 func _slider(title: String, value: float, callback: Callable) -> void:
 	var label := _label("%s · %d%%" % [title, roundi(value * 100)], 16)

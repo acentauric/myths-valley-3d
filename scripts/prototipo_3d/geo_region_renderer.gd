@@ -38,6 +38,24 @@ var _tree_trunks: Array[Dictionary] = []
 var _tree_collision_pool: Array[Dictionary] = []
 var _tree_collision_elapsed := 0.0
 var _meters_per_unit := 1.0
+var _estilo_tripo := false
+## Espécies da mata no estilo Tripo (chaves do CatalogoAssets) e no procedural (FloraReconcavo).
+const ESPECIES_MATA_TRIPO := ["mata_alta", "mata_larga", "mata_alta", "embauba", "dendezeiro"]
+
+
+func set_estilo_tripo(value: bool) -> void:
+	_estilo_tripo = value
+
+
+## Malha e transformação-base de uma espécie para MultiMesh, no estilo ativo.
+## Devolve {"mesh", "base", "altura", "tronco"}; no procedural, a base é a identidade.
+func _malha_da_especie(species: String, rng: RandomNumberGenerator) -> Dictionary:
+	if _estilo_tripo:
+		var tripo: Dictionary = CatalogoAssets.malha(species, 1.0)
+		if not tripo.is_empty():
+			return tripo
+	var built: Dictionary = FloraReconcavo.especie(species, 1.0, rng)
+	return {"mesh": built.mesh, "base": Transform3D.IDENTITY, "altura": float(built.trunk_height), "tronco": float(built.trunk_radius)}
 
 
 func set_meters_per_unit(value: float) -> void:
@@ -486,14 +504,16 @@ func _build_forest(configuration: Dictionary) -> void:
 	# Mata fechada e alta do Recôncavo: espécies procedurais com silhuetas distintas,
 	# uma MultiMesh por espécie. Modelos do Tripo entram trocando `FloraReconcavo.especie`.
 	var by_species: Dictionary = {}
+	var lista: Array = ESPECIES_MATA_TRIPO if _estilo_tripo else FloraReconcavo.ESPECIES_MATA
 	for i in range(positions.size()):
-		var species: String = FloraReconcavo.ESPECIES_MATA[rng.randi_range(0, FloraReconcavo.ESPECIES_MATA.size() - 1)]
+		var species: String = lista[rng.randi_range(0, lista.size() - 1)]
 		if not by_species.has(species):
 			by_species[species] = []
 		by_species[species].append(positions[i])
 	for species in by_species.keys():
 		var group: Array = by_species[species]
-		var built: Dictionary = FloraReconcavo.especie(species, 1.0, rng)
+		var built: Dictionary = _malha_da_especie(species, rng)
+		var base: Transform3D = built.base
 		var multimesh := MultiMesh.new()
 		multimesh.transform_format = MultiMesh.TRANSFORM_3D
 		multimesh.mesh = built.mesh
@@ -502,8 +522,8 @@ func _build_forest(configuration: Dictionary) -> void:
 			var point: Vector2 = group[i]
 			var scale := rng.randf_range(0.8, 1.25)
 			var yaw := rng.randf_range(0.0, TAU)
-			_tree_trunks.append({"point": point, "height": float(built.trunk_height) * scale, "radius": float(built.trunk_radius) * scale})
-			multimesh.set_instance_transform(i, Transform3D(Basis.from_euler(Vector3(0, yaw, 0)).scaled(Vector3.ONE * scale), Vector3(point.x, 0.0, point.y)))
+			_tree_trunks.append({"point": point, "height": minf(float(built.altura) * scale, 4.0), "radius": float(built.tronco) * scale})
+			multimesh.set_instance_transform(i, Transform3D(Basis.from_euler(Vector3(0, yaw, 0)).scaled(Vector3.ONE * scale), Vector3(point.x, 0.0, point.y)) * base)
 		var visual := MultiMeshInstance3D.new()
 		visual.name = "Mata: " + species
 		visual.multimesh = multimesh
@@ -519,7 +539,8 @@ func _build_coast_palms(rng: RandomNumberGenerator) -> void:
 	var spacing := _units(34.0, 9.0)
 	var offset_min := _units(6.0, 2.0)
 	var offset_max := _units(14.0, 5.0)
-	var built: Dictionary = FloraReconcavo.especie("coqueiro", 1.0, rng)
+	var built: Dictionary = _malha_da_especie("coqueiro", rng)
+	var modelo_base: Transform3D = built.base
 	var transforms: Array[Transform3D] = []
 	var travelled := 0.0
 	var next_at := spacing * 0.5
@@ -546,8 +567,9 @@ func _build_coast_palms(rng: RandomNumberGenerator) -> void:
 				# Rotação em Y que leva o -X local (para onde o topo pende) até `seaward` no plano XZ.
 				var yaw := atan2(seaward.y, -seaward.x)
 				var scale := rng.randf_range(0.75, 1.15)
-				transforms.append(Transform3D(Basis.from_euler(Vector3(0, yaw, 0)).scaled(Vector3.ONE * scale), Vector3(candidate.x, 0.0, candidate.y)))
-				_tree_trunks.append({"point": candidate, "height": float(built.trunk_height) * scale, "radius": float(built.trunk_radius) * scale})
+				var lean := Transform3D.IDENTITY if modelo_base == Transform3D.IDENTITY else Transform3D(Basis.from_euler(Vector3(0, 0, 0.14)), Vector3.ZERO)
+				transforms.append(Transform3D(Basis.from_euler(Vector3(0, yaw, 0)).scaled(Vector3.ONE * scale), Vector3(candidate.x, 0.0, candidate.y)) * lean * modelo_base)
+				_tree_trunks.append({"point": candidate, "height": minf(float(built.altura) * scale, 4.0), "radius": float(built.tronco) * scale})
 			next_at += spacing * rng.randf_range(0.7, 1.4)
 		travelled += length
 	if transforms.is_empty():

@@ -10,6 +10,8 @@ config/custom_user_dir_name="MythsValleyPrototype3D"
 
 [autoload]
 Audio="*res://scripts/autoload/audio.gd"
+Estilo="*res://scripts/autoload/estilo.gd"
+Dia="*res://scripts/autoload/dia.gd"
 
 [display]
 window/size/viewport_width=1280

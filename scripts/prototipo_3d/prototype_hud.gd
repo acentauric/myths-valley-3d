@@ -24,6 +24,7 @@ var _notice_label: Label
 var _notice_panel: Panel
 var _objective_label: Label
 var _capture_prompt: Panel
+var _clock_label: Label
 
 
 func _ready() -> void:
@@ -93,7 +94,7 @@ func _ready() -> void:
 	primary.offset_top = 10
 	primary.offset_bottom = 33
 	primary.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	var secondary := _label("F observar  ·  1–8 testar animações  ·  Rodinha zoom  ·  M HOME", 12, MUTED)
+	var secondary := _label("F observar  ·  1–8 gestos  ·  T avançar uma hora  ·  Rodinha zoom  ·  M HOME", 12, MUTED)
 	controls.add_child(secondary)
 	secondary.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
 	secondary.offset_top = -29
@@ -116,6 +117,20 @@ func _ready() -> void:
 	_notice_label.offset_top = -132
 	_notice_label.offset_bottom = -103
 	_notice_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+
+	# Relógio do vale: hora, período do dia e estilo visual em uso.
+	var clock_panel := _panel(Color(0.055, 0.085, 0.075, 0.82))
+	_root.add_child(clock_panel)
+	clock_panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP)
+	clock_panel.offset_left = -215
+	clock_panel.offset_right = 215
+	clock_panel.offset_top = 18
+	clock_panel.offset_bottom = 52
+	_clock_label = _label("", 15, GOLD)
+	clock_panel.add_child(_clock_label)
+	_clock_label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_clock_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_clock_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 
 	_capture_prompt = _panel(Color(0.055, 0.085, 0.075, 0.88))
 	_root.add_child(_capture_prompt)
@@ -172,6 +187,11 @@ func set_objective(value: String) -> void:
 	_objective = value
 	if is_instance_valid(_objective_label):
 		_objective_label.text = value
+
+
+func set_clock(value: String) -> void:
+	if is_instance_valid(_clock_label):
+		_clock_label.text = value
 
 
 func set_captured(value: bool) -> void:

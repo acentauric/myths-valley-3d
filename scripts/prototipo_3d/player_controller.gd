@@ -1,5 +1,6 @@
 extends CharacterBody3D
-## A colisão e a câmera pertencem ao controlador; o GLB é uma cena substituível.
+## A colisão e a câmera pertencem ao controlador; o corpo é escolhido pelo estilo visual
+## (autoload Estilo): humanoide procedural ou a cena GLB configurada (modo Tripo).
 
 signal capture_changed(captured: bool)
 signal animation_requested(label: String)
@@ -41,7 +42,12 @@ func _ready() -> void:
 	visual = Node3D.new()
 	visual.name = "Visual"
 	add_child(visual)
-	if model_scene:
+	if Estilo.procedural():
+		var procedural := PersonagemProcedural.novo("viajante", character_height)
+		visual.add_child(procedural)
+		model = procedural
+		animator = procedural
+	elif model_scene:
 		model = model_scene.instantiate() as Node3D
 		visual.add_child(model)
 		_measure_model(model)

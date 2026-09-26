@@ -20,6 +20,9 @@ const VOLUME_PASSO := -16.0
 const VOLUME_AMBIENTE := -5.0
 const VARIACAO_DO_PASSO := 0.12
 
+## Emitido quando um volume muda: os tocadores 3D do vale (NPCs, ambiente) reaplicam o seu.
+signal volumes_alterados
+
 var som_ativo: bool = true
 var musica_menu_opcao: int = 4
 var efeitos_menu_opcao: int = 2
@@ -266,6 +269,23 @@ func _sincronizar_camada(tocador: AudioStreamPlayer, caminho: String, ativo: boo
 		transicao.tween_callback(tocador.stop)
 
 
+## Volume-base (em dB) das fontes posicionais que seguem os controles de AJUSTAR.
+func volume_ambiente_db() -> float:
+	return _volume_db(VOLUME_AMBIENTE, volume_ambiente)
+
+
+func volume_efeitos_db() -> float:
+	return _volume_db(VOLUME_EFEITO, volume_efeitos)
+
+
+## Carrega um áudio já configurado para repetir (loops de ambiente do vale).
+func carregar_loop(caminho: String) -> AudioStream:
+	var fluxo := _carregar(caminho)
+	if fluxo != null:
+		_configurar_loop(fluxo)
+	return fluxo
+
+
 func _aplicar_volumes() -> void:
 	_ganho_musica = _ganho_musica
 	_efeitos.volume_db = _volume_db(VOLUME_EFEITO, volume_efeitos)
@@ -276,6 +296,7 @@ func _aplicar_volumes() -> void:
 		_aplicar_ambiente(_opcao_previa)
 	elif _ambiente_menu_ativo:
 		_aplicar_ambiente(ambiente_menu_opcao)
+	volumes_alterados.emit()
 
 
 func _aplicar_mute() -> void:

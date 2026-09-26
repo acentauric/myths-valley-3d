@@ -1,45 +1,34 @@
 extends Node3D
-## Região geográfica com detalhes artesanais junto aos pontos de interesse.
-## O catálogo define quantos metros reais cabem em uma unidade do Godot (`scale_m_per_unit`).
+## O vale de Bom Jesus dos Pobres: terreno geográfico (KML) + peças perto dos pontos de
+## interesse. Cada peça existe em dois estilos escolhidos em AJUSTAR (autoload Estilo):
+## "tripo" usa os GLBs do catálogo (CatalogoAssets); "procedural" usa FloraReconcavo e os
+## construtores deste script. Terreno, ruas, rios e mar são iguais nos dois.
+## O catálogo de regiões define quantos metros reais cabem em uma unidade (`scale_m_per_unit`).
 
 const PATH := Color("c5ad7a")
 const WOOD := Color("735139")
 const LEAVES := Color("487557")
 const GeoRegionRenderer = preload("res://scripts/prototipo_3d/geo_region_renderer.gd")
+const LuzesEpoca = preload("res://scripts/prototipo_3d/luzes_epoca.gd")
 const MAP_CATALOG := "res://data/mapas/regioes.json"
-const TRIPO_HOUSE_SCENE := preload("res://assets/prototipo_3d/casas/casa_carro_quebrado_tripo.glb")
-const TRIPO_HOUSE_WIDTH := 5.2
-const PAU_BRASIL_SCENE := preload("res://assets/prototipo_3d/arvores/pau_brasil_tripo.glb")
-## Modelos do Tripo Studio (26/09/2026), reduzidos por tools/modelos/reduzir_glb.py.
-## Cada árvore é usada em poucas instâncias; a mata e a orla continuam procedurais.
-const TRIPO_ARVORES := {
-	"mangueira": preload("res://assets/prototipo_3d/arvores/mangueira_tripo.glb"),
-	"jaqueira": preload("res://assets/prototipo_3d/arvores/jaqueira_tripo.glb"),
-	"cajueiro": preload("res://assets/prototipo_3d/arvores/cajueiro_tripo.glb"),
-	"coqueiro": preload("res://assets/prototipo_3d/arvores/coqueiro_tripo.glb"),
-}
-## Altura visual (unidades) e raio do tronco para colisão de cada modelo do Tripo.
-const TRIPO_ARVORES_MEDIDAS := {
-	"mangueira": {"altura": 7.2, "tronco": 0.55},
-	"jaqueira": {"altura": 8.4, "tronco": 0.4},
-	"cajueiro": {"altura": 5.4, "tronco": 0.42},
-	"coqueiro": {"altura": 9.5, "tronco": 0.24},
-}
-## Bancada de comparação (desenvolvimento): três mangueiras lado a lado perto da Praça.
-const COMPARAR_MANGUEIRAS := true
-const MANGUEIRA_SMART_SCENE := preload("res://assets/prototipo_3d/arvores/mangueira_tripo_smart.glb")
-const CAPELA_SCENE := preload("res://assets/prototipo_3d/construcoes/capela_tripo.glb")
-const CAPELA_WIDTH := 9.0
-const POCO_SCENE := preload("res://assets/prototipo_3d/construcoes/poco_tripo.glb")
-const POCO_HEIGHT := 3.1
 const CASA_TAIPA_CAL_TEXTURE := preload("res://assets/prototipo_3d/materiais/cal_taipa_envelhecida_v1.png")
 const TELHA_COLONIAL_TEXTURE := preload("res://assets/prototipo_3d/materiais/telha_colonial_envelhecida_v1.png")
+## Bancada de comparação (desenvolvimento): três mangueiras lado a lado ao sul da Praça.
+const COMPARAR_MANGUEIRAS := false
+
 var _materials: Dictionary = {}
 var landmarks: Array[Dictionary] = []
 var areas: Array[Dictionary] = []
 var region_title := "Vale"
 var _region = null
 var _meters_per_unit := 1.0
+var _sun: DirectionalLight3D
+var _moon: DirectionalLight3D
+var _environment: Environment
+var _sky_material: ProceduralSkyMaterial
+var _luzes: Node3D
+## Pontos de interesse e âncoras que os NPCs e as luzes usam (nome → posição no chão).
+var ancoras: Dictionary = {}
 
 
 func get_meters_per_unit() -> float:
@@ -71,6 +60,10 @@ func get_region_title() -> String:
 	return region_title
 
 
+func estilo_tripo() -> bool:
+	return Estilo.tripo()
+
+
 func _ready() -> void:
 	_build_lighting()
 	var region_data := _active_region_data()
@@ -82,20 +75,22 @@ func _ready() -> void:
 	_region.name = String(region_data.get("id", "Regiao"))
 	add_child(_region)
 	_region.set_meters_per_unit(_meters_per_unit)
+	_region.set_estilo_tripo(estilo_tripo())
 	_region.build_region(String(region_data["geometry"]), String(region_data["scenario"]))
 	landmarks = _region.landmarks
 	areas = _region.areas
+	for landmark in landmarks:
+		var nome := String(landmark["name"])
+		var contador := 2
+		while ancoras.has(nome):
+			nome = "%s %d" % [String(landmark["name"]), contador]
+			contador += 1
+		ancoras[nome] = landmark["position"]
 	if region_data["id"] == "bom_jesus_dos_pobres":
-		_casa_de_taipa_referencia(_u(Vector3(-52, 0, -27)))
-		_tripo_house(_u(Vector3(40, 0, -35)))
-		_house(Vector3(32, 0, 72), Color("dfb980"), Color("ae6950"))
-		_build_farm()
-		_build_trees()
-		_build_details()
-		_build_landmark_details()
-		_build_pecas()
-		if COMPARAR_MANGUEIRAS:
-			_bancada_mangueiras(Vector3(-2, 0, -30))
+		_construir_vila()
+	var faltando := CatalogoAssets.relatorio_faltando()
+	if estilo_tripo() and not faltando.is_empty():
+		print("CATALOGO: ", faltando)
 
 
 func _active_region_data() -> Dictionary:
@@ -115,35 +110,402 @@ func _active_region_data() -> Dictionary:
 	return {}
 
 
-func _build_lighting() -> void:
-	var sky_material := ProceduralSkyMaterial.new()
-	sky_material.sky_top_color = Color("709aaa")
-	sky_material.sky_horizon_color = Color("e8d9bc")
-	sky_material.ground_bottom_color = Color("586957")
-	sky_material.ground_horizon_color = Color("e8d9bc")
-	sky_material.sun_angle_max = 12.0
-	var sky := Sky.new()
-	sky.sky_material = sky_material
-	var environment := Environment.new()
-	environment.background_mode = Environment.BG_SKY
-	environment.sky = sky
-	environment.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
-	environment.ambient_light_color = Color("cad9d5")
-	environment.ambient_light_energy = 0.65
-	environment.tonemap_mode = Environment.TONE_MAPPER_FILMIC
-	environment.fog_enabled = false
-	var world_environment := WorldEnvironment.new()
-	world_environment.environment = environment
-	add_child(world_environment)
-	var sun := DirectionalLight3D.new()
-	sun.name = "GoldenHourSun"
-	sun.rotation_degrees = Vector3(-42, -35, 0)
-	sun.light_color = Color("fff0d0")
-	sun.light_energy = 1.05
-	sun.shadow_enabled = true
-	sun.directional_shadow_max_distance = 180.0
-	add_child(sun)
+# ---------------------------------------------------------------------------
+# Luz: sol, lua, céu e ambiente seguem o relógio do autoload Dia.
+# ---------------------------------------------------------------------------
 
+func _build_lighting() -> void:
+	_sky_material = ProceduralSkyMaterial.new()
+	_sky_material.sun_angle_max = 12.0
+	var sky := Sky.new()
+	sky.sky_material = _sky_material
+	_environment = Environment.new()
+	_environment.background_mode = Environment.BG_SKY
+	_environment.sky = sky
+	_environment.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
+	_environment.tonemap_mode = Environment.TONE_MAPPER_FILMIC
+	_environment.fog_enabled = true
+	_environment.fog_density = 0.0
+	_environment.fog_sky_affect = 0.25
+	var world_environment := WorldEnvironment.new()
+	world_environment.environment = _environment
+	add_child(world_environment)
+	_sun = DirectionalLight3D.new()
+	_sun.name = "Sol"
+	_sun.shadow_enabled = true
+	_sun.directional_shadow_max_distance = 180.0
+	_sun.directional_shadow_mode = DirectionalLight3D.SHADOW_PARALLEL_4_SPLITS
+	add_child(_sun)
+	_moon = DirectionalLight3D.new()
+	_moon.name = "Lua"
+	_moon.light_color = Color("9fb3d6")
+	_moon.shadow_enabled = false
+	add_child(_moon)
+	_aplicar_hora(Dia.hora)
+	Dia.hora_mudou.connect(_aplicar_hora)
+
+
+## Curvas de cor por hora: madrugada azul, alvorada rosada, meio-dia claro, entardecer dourado.
+func _aplicar_hora(hora: float) -> void:
+	var luz := Dia.luz_do_dia()
+	var elevacao := Dia.elevacao_solar()
+	var azimute := Dia.azimute_solar()
+	var horizonte := 1.0 - smoothstep(6.0, 22.0, absf(elevacao))
+	_sun.rotation_degrees = Vector3(-maxf(elevacao, 2.0), azimute, 0.0)
+	_sun.light_energy = lerpf(0.0, 1.15, luz)
+	_sun.light_color = Color("fff0d0").lerp(Color("ff9d5c"), horizonte * 0.85)
+	_sun.visible = luz > 0.02
+	_moon.rotation_degrees = Vector3(-52.0, -azimute + 180.0, 0.0)
+	_moon.light_energy = lerpf(0.26, 0.0, luz)
+	_moon.visible = luz < 0.98
+	var noite := 1.0 - luz
+	_sky_material.sky_top_color = Color("709aaa").lerp(Color("0b1327"), noite).lerp(Color("5e6fa8"), horizonte * luz * 0.4)
+	_sky_material.sky_horizon_color = Color("e8d9bc").lerp(Color("1a2440"), noite).lerp(Color("f2a266"), horizonte * luz * 0.7)
+	_sky_material.ground_bottom_color = Color("586957").lerp(Color("0a0e18"), noite)
+	_sky_material.ground_horizon_color = Color("e8d9bc").lerp(Color("1a2440"), noite)
+	_sky_material.sun_angle_max = lerpf(4.0, 14.0, horizonte)
+	_environment.ambient_light_color = Color("cad9d5").lerp(Color("2b3454"), noite)
+	_environment.ambient_light_energy = lerpf(0.3, 0.65, luz)
+	_environment.fog_light_color = Color("e8d9bc").lerp(Color("111a2e"), noite)
+	_environment.fog_density = lerpf(0.004, 0.0008, luz) + horizonte * luz * 0.003
+	if _luzes != null:
+		_luzes.aplicar_hora(hora)
+
+
+# ---------------------------------------------------------------------------
+# A vila: cada função decide o estilo pelo catálogo.
+# ---------------------------------------------------------------------------
+
+func _construir_vila() -> void:
+	var praca := Vector3.ZERO
+	var taipa := _u(Vector3(-52, 0, -27))
+	ancoras["Casa de taipa"] = taipa
+	ancoras["Casa de Carro Quebrado"] = _u(Vector3(40, 0, -35))
+	# Casas da praça
+	_construcao("casa_taipa", taipa, 0.0, func(): _casa_de_taipa_referencia(taipa))
+	_construcao("casa_carro_quebrado", ancoras["Casa de Carro Quebrado"], 0.0, func(): _house(ancoras["Casa de Carro Quebrado"], Color("e8dcc4"), Color("a8442f")))
+	ancoras["Casa da estrada"] = Vector3(32, 0, 72)
+	_construcao("casa_taipa", Vector3(32, 0, 72), 0.0, func(): _house(Vector3(32, 0, 72), Color("dfb980"), Color("ae6950")))
+	_build_farm()
+	_build_trees()
+	_build_details()
+	_build_landmark_details()
+	_build_pecas()
+	_build_luzes_epoca()
+	if COMPARAR_MANGUEIRAS:
+		_bancada_mangueiras(Vector3(-2, 0, -30))
+
+
+## Construção: GLB do Tripo com colisão em caixa; senão o construtor procedural.
+func _construcao(chave: String, origin: Vector3, yaw: float, procedural: Callable, size: float = 1.0) -> Node3D:
+	if estilo_tripo():
+		var node := CatalogoAssets.instanciar(chave, self, origin, size, yaw)
+		if node != null:
+			CatalogoAssets.colisao(chave, node, self, origin, size, yaw)
+			_box(Vector3(node.get_meta("limites").size.x + 1.6, 0.16, node.get_meta("limites").size.z + 1.6), origin + Vector3(0, 0.08, 0), Color("958d79"), true).rotation.y = yaw
+			return node
+	procedural.call()
+	return null
+
+
+## Adereço: GLB do Tripo ou peça procedural de FloraReconcavo.
+func _adereco(chave: String, origin: Vector3, yaw: float = 0.0, size: float = 1.0) -> Node3D:
+	if estilo_tripo():
+		var node := CatalogoAssets.instanciar(chave, self, origin, size, yaw)
+		if node != null:
+			CatalogoAssets.colisao(chave, node, self, origin, size, yaw)
+			return node
+	var peca: Node3D = null
+	match chave:
+		"poco": peca = FloraReconcavo.poco()
+		"cruzeiro": peca = FloraReconcavo.cruzeiro()
+		"carroca": peca = FloraReconcavo.carroca()
+		"varal": peca = FloraReconcavo.varal()
+		"lenha": peca = FloraReconcavo.pilha_lenha()
+		"pote": peca = FloraReconcavo.pote_agua()
+		"banco": peca = FloraReconcavo.banco_praca()
+		"cerca": peca = FloraReconcavo.cerca(4.0 * size)
+		"lampiao_poste": peca = FloraReconcavo.lampiao_poste()
+		"fogueira": peca = FloraReconcavo.fogueira()
+		"tumulo": peca = FloraReconcavo.tumulo()
+		"pedras": peca = FloraReconcavo.pedras()
+		"mandioca_canteiro": peca = FloraReconcavo.canteiro_mandioca()
+		"moita": peca = FloraReconcavo.moita()
+		"candeeiro": peca = FloraReconcavo.candeeiro()
+		_:
+			return null
+	peca.position = origin
+	peca.rotation.y = yaw
+	peca.scale = Vector3.ONE * size
+	add_child(peca)
+	return peca
+
+
+## Árvore com nome: GLB do Tripo (colisão no tronco) ou espécie procedural.
+func _arvore(especie: String, origin: Vector3, size: float = 1.0, yaw: float = 0.0) -> void:
+	if estilo_tripo():
+		var node := CatalogoAssets.instanciar(especie, self, origin, size, yaw)
+		if node != null:
+			CatalogoAssets.colisao(especie, node, self, origin, size, yaw)
+			return
+	var built: Dictionary = FloraReconcavo.especie(especie, size)
+	var instance := MeshInstance3D.new()
+	instance.name = especie.capitalize()
+	instance.mesh = built.mesh
+	instance.position = origin
+	instance.rotation.y = yaw
+	add_child(instance)
+	var shape := CylinderShape3D.new()
+	shape.radius = float(built.trunk_radius) + 0.08
+	shape.height = float(built.trunk_height)
+	_body(shape, origin + Vector3(0, float(built.trunk_height) * 0.5, 0))
+
+
+func _build_farm() -> void:
+	var origin: Vector3 = _region.get_feature_center("Fazenda", "area")
+	ancoras["Roçado"] = origin
+	if _adereco("mandioca_canteiro", origin, 0.2) == null:
+		for row in range(3):
+			_box(Vector3(5.6, 0.1, 0.88), origin + Vector3(0, 0.055, row * 1.35), Color("826346"))
+			for column in range(7):
+				var crop := CylinderMesh.new()
+				crop.top_radius = 0.02
+				crop.bottom_radius = 0.24
+				crop.height = 0.54 + row * 0.09
+				crop.radial_segments = 5
+				_mesh(crop, origin + Vector3(-2.3 + column * 0.75, 0.35, row * 1.35), Color("8fa85e"))
+	_adereco("cerca", origin + Vector3(-4, 0, 6), 0.0, 2.0)
+	_adereco("cerca", origin + Vector3(-4, 0, -3), 0.0, 2.0)
+	_box(Vector3(0.85, 1.0, 0.85), origin + Vector3(5.2, 0.5, 2), WOOD, true)
+	_box(Vector3(0.95, 0.11, 0.95), origin + Vector3(5.2, 1.0, 2), Color("b1966c"))
+
+
+func _build_trees() -> void:
+	# Posições anotadas em metros reais ao redor da Praça (a cena converte para unidades).
+	# Espécies de docs/AMBIENTACAO.md §4.
+	_arvore("pau_brasil", _u(Vector3(-82, 0, 5)))
+	var plan: Array = [
+		["mangueira", Vector3(-75, 0, -70), 1.0, 0.4],
+		["cajueiro", Vector3(-78, 0, -35), 1.0, 1.9],
+		["ipe_amarelo", Vector3(-85, 0, 47), 1.0, 0.0],
+		["jaqueira", Vector3(-44, 0, 93), 1.0, 2.6],
+		["mangueira", Vector3(55, 0, 99), 1.1, 3.1],
+		["ipe_roxo", Vector3(72, 0, 77), 0.95, 1.2],
+		["cajueiro", Vector3(85, 0, 30), 1.05, 4.0],
+		["jaqueira", Vector3(85, 0, -60), 0.9, 0.7],
+		["embauba", Vector3(44, 0, -86), 1.0, 0.0],
+		["dendezeiro", Vector3(-46, 0, -95), 1.0, 2.2],
+		["mangueira", Vector3(-34, 0, 38), 0.9, 5.2],
+		["mangueira", Vector3(22, 0, -44), 0.85, 1.6],
+	]
+	for entry in plan:
+		_arvore(String(entry[0]), _u(entry[1]), float(entry[2]), float(entry[3]))
+	var taipa := _u(Vector3(-52, 0, -27))
+	for offset in [Vector3(-3.2, 0, -4.6), Vector3(-1.6, 0, -5.9), Vector3(0.4, 0, -4.9), Vector3(-4.6, 0, -3.0)]:
+		_arvore("bananeira", taipa + offset, 0.9, offset.x * 1.3)
+	var bar: Vector3 = _region.get_feature_center("Bar", "poi")
+	for offset in [Vector3(-6.0, 0, 5.5), Vector3(-9.5, 0, 2.0)]:
+		_arvore("dendezeiro", bar + offset, 0.95, offset.z)
+	var farm: Vector3 = _region.get_feature_center("Fazenda", "area")
+	_arvore("mangueira", farm + Vector3(-9.5, 0, -6.5), 1.15, 0.9)
+	_arvore("cajueiro", farm + Vector3(9.0, 0, -8.0), 1.0, 2.4)
+	_arvore("cajueiro", farm + Vector3(11.0, 0, 8.5), 0.9, 0.3)
+	var church: Vector3 = _region.get_feature_center("Igreja", "poi")
+	_arvore("ipe_roxo", church + Vector3(-8.5, 0, 9.0), 1.0, 0.0)
+	_arvore("ipe_amarelo", church + Vector3(8.5, 0, 9.5), 1.0, 1.1)
+	var pier: Vector3 = _region.get_feature_center("Pier", "poi")
+	var toward_praca: Vector3 = (_region.get_feature_center("Praça", "poi") - pier).normalized()
+	for step in [Vector3(14.0, 0, 5.0), Vector3(20.0, 0, -4.0)]:
+		_arvore("coqueiro", pier + toward_praca * step.x + Vector3(0, 0, step.z), 1.0, step.z)
+
+
+func _build_details() -> void:
+	# Canteiros de flores da praça: moitas do Tripo ou caixinhas coloridas.
+	for i in range(28):
+		var x: float = (-25.0 + float(i % 7) * 8.0) / _meters_per_unit
+		var z: float = (-21.0 + floorf(float(i) / 7.0) * 14.0) / _meters_per_unit
+		if absf(x) < 3.0 / _meters_per_unit:
+			continue
+		if _adereco("moita", Vector3(x, 0, z), float(i) * 0.7, 0.55 + float(i % 3) * 0.12) != null:
+			continue
+		for j in range(3):
+			_box(Vector3(0.05, 0.28, 0.05), Vector3(x + j * 0.21, 0.14, z + (j % 2) * 0.25), LEAVES)
+			_box(Vector3(0.16, 0.10, 0.16), Vector3(x + j * 0.21, 0.30, z + (j % 2) * 0.25), Color("e4c782") if i % 2 == 0 else Color("ce9d99"))
+
+
+func _build_landmark_details() -> void:
+	var church: Vector3 = _region.get_feature_center("Igreja", "poi")
+	ancoras["Igreja"] = church
+	_construcao("capela", church, 0.0, func(): _igreja_procedural(church))
+	var bar: Vector3 = _region.get_feature_center("Bar", "poi") + Vector3(8, 0, 3)
+	ancoras["Bar"] = bar
+	_construcao("venda", bar, 0.0, func(): _house(bar, Color("c6a16d"), Color("8b523b")))
+	var restaurante: Vector3 = _region.get_feature_center("Restaurante", "poi") + Vector3(7, 0, 4)
+	ancoras["Restaurante"] = restaurante
+	_construcao("casa_pasto", restaurante, 0.0, func(): _house(restaurante, Color("cdbb92"), Color("97563f")))
+	var pier: Vector3 = _region.get_feature_center("Pier", "poi")
+	ancoras["Pier"] = pier
+	var pier_dir: Vector3 = (pier - _region.get_feature_center("Praça", "poi")).normalized()
+	_construcao("pier", pier, atan2(pier_dir.x, pier_dir.z), func():
+		_box(Vector3(4.5, 0.2, 17), pier + Vector3(0, -0.1, 0), Color("85684b"), true)
+		for offset in [-7.0, 0.0, 7.0]:
+			for side in [-1.8, 1.8]:
+				_box(Vector3(0.3, 1.5, 0.3), pier + Vector3(side, -0.75, offset), WOOD))
+	var bridge: Vector3 = _region.get_feature_center("Ponte", "poi")
+	ancoras["Ponte"] = bridge
+	_construcao("ponte", bridge, 0.0, func():
+		_box(Vector3(11, 0.35, 6), bridge + Vector3(0, 0.22, 0), Color("987b57"), true)
+		for side in [-2.8, 2.8]:
+			_box(Vector3(11, 0.18, 0.15), bridge + Vector3(0, 0.95, side), WOOD))
+	var lookout: Vector3 = _region.get_feature_center("Mirante", "poi")
+	ancoras["Mirante"] = lookout
+	_construcao("mirante", lookout, 0.0, func():
+		_box(Vector3(6, 0.24, 6), lookout + Vector3(0, 0.65, 0), Color("9c7a52"), true)
+		for x in [-2.8, 2.8]:
+			for z in [-2.8, 2.8]:
+				_box(Vector3(0.22, 1.45, 0.22), lookout + Vector3(x, 0.73, z), WOOD))
+	var cemetery: Vector3 = _region.get_feature_center("Cemitério", "poi")
+	ancoras["Cemitério"] = cemetery
+	for index in range(12):
+		var grave := cemetery + Vector3((index % 4) * 2.3 - 3.45, 0, floorf(index / 4.0) * 3.0 - 3.0)
+		if _adereco("tumulo", grave, 0.0, 0.9 + float(index % 3) * 0.08) == null:
+			_box(Vector3(0.72, 0.15, 1.45), grave + Vector3(0, 0.08, 0), Color("a9a9a0"))
+			_box(Vector3(0.12, 0.9, 0.12), grave + Vector3(0, 0.6, -0.55), WOOD)
+			_box(Vector3(0.48, 0.12, 0.12), grave + Vector3(0, 0.72, -0.55), WOOD)
+	var stones: Vector3 = _region.get_feature_center("Pedras", "poi")
+	ancoras["Pedras"] = stones
+	if _adereco("pedras", stones, 0.4, 1.4) == null:
+		for index in range(13):
+			var rock := SphereMesh.new()
+			rock.radius = 0.8 + (index % 3) * 0.4
+			rock.height = 0.8 + (index % 4) * 0.3
+			rock.radial_segments = 7
+			rock.rings = 4
+			_mesh(rock, stones + Vector3((index % 5) * 2.8 - 5.6, 0.35, floorf(index / 5.0) * 2.9 - 2.9), Color("929c92"))
+
+
+func _igreja_procedural(church: Vector3) -> void:
+	_box(Vector3(8, 0.25, 13), church + Vector3(0, 0.125, 0), Color("958d79"), true)
+	_box(Vector3(7.4, 5.2, 12), church + Vector3(0, 2.7, 0), Color("eee5cf"), true)
+	var roof := PrismMesh.new()
+	roof.size = Vector3(8.8, 2.6, 13.3)
+	_mesh(roof, church + Vector3(0, 6.4, 0), Color("a55b3c"))
+	_box(Vector3(2.3, 8.2, 2.3), church + Vector3(0, 4.2, 6.0), Color("e5dcc8"), true)
+	_box(Vector3(0.22, 2.0, 0.22), church + Vector3(0, 9.2, 6.0), WOOD)
+	_box(Vector3(1.4, 0.2, 0.22), church + Vector3(0, 9.45, 6.0), WOOD)
+
+
+func _build_pecas() -> void:
+	# Peças soltas do 2D (gerador_mundo.gd ADORNOS): poço e bancos na praça, cruzeiro na
+	# igreja, varal, lenha e pote na casa de taipa, carroça na fazenda.
+	ancoras["Poço"] = Vector3(4.2, 0, 5.4)
+	_adereco("poco", Vector3(4.2, 0, 5.4), 0.6)
+	_adereco("banco", _u(Vector3(-4.6, 0, -0.1)))
+	_adereco("banco", Vector3(3.2, 0, -7.0), PI)
+	var taipa := _u(Vector3(-52, 0, -27))
+	_adereco("varal", taipa + Vector3(-4.9, 0, 1.4), 0.35)
+	_adereco("lenha", taipa + Vector3(3.6, 0, -0.4), 0.0)
+	_adereco("pote", taipa + Vector3(2.4, 0, 2.9))
+	var church: Vector3 = _region.get_feature_center("Igreja", "poi")
+	_adereco("cruzeiro", church + Vector3(0, 0, 9.0))
+	var farm: Vector3 = _region.get_feature_center("Fazenda", "area")
+	_adereco("carroca", farm + Vector3(8.5, 0, -5.5), -0.6)
+	var pier: Vector3 = _region.get_feature_center("Pier", "poi")
+	_adereco("pote", pier + Vector3(1.4, 0.1, -6.5))
+	# Itens de mão espalhados como cenário (só no estilo Tripo, quando existirem).
+	if estilo_tripo():
+		var itens := [
+			["machado", taipa + Vector3(3.9, 0.55, 0.6), 0.9],
+			["cesto", taipa + Vector3(1.6, 0, 3.4), 0.2],
+			["moringa", taipa + Vector3(-1.0, 0, 3.1), 0.0],
+			["enxada", farm + Vector3(5.6, 0.0, 1.2), 1.2],
+			["balde", ancoras["Poço"] + Vector3(1.3, 0, 0.4), 0.0],
+			["peixe", pier + Vector3(-1.2, 0.05, -4.0), 1.0],
+			["vara_pescar", pier + Vector3(1.6, 0.05, -2.0), 0.3],
+			["farinha", _region.get_feature_center("Bar", "poi") + Vector3(6.0, 0, 6.5), 0.0],
+			["cacho_banana", _region.get_feature_center("Restaurante", "poi") + Vector3(5.0, 0.0, 7.6), 0.0],
+		]
+		for item in itens:
+			CatalogoAssets.instanciar(String(item[0]), self, item[1], 1.0, float(item[2]))
+
+
+## Luzes de 1887: lampiões a óleo nas esquinas da Praça, candeeiros nas portas, fogueira
+## no terreiro e velas nas janelas. Acendem ao entardecer e apagam ao amanhecer.
+func _build_luzes_epoca() -> void:
+	_luzes = LuzesEpoca.new()
+	_luzes.name = "LuzesDeEpoca"
+	add_child(_luzes)
+	var praca := Vector3.ZERO
+	var taipa := _u(Vector3(-52, 0, -27))
+	var church: Vector3 = _region.get_feature_center("Igreja", "poi")
+	var bar: Vector3 = ancoras.get("Bar", Vector3.ZERO)
+	var restaurante: Vector3 = ancoras.get("Restaurante", Vector3.ZERO)
+	var farm: Vector3 = _region.get_feature_center("Fazenda", "area")
+	var pier: Vector3 = _region.get_feature_center("Pier", "poi")
+	for corner in [Vector3(-9.0, 0, 8.5), Vector3(7.5, 0, -12.0), Vector3(8.0, 0, 9.5)]:
+		_luzes.lampiao(praca + corner, _adereco("lampiao_poste", praca + corner, 0.0))
+	_luzes.lampiao(church + Vector3(-6.0, 0, 8.0), _adereco("lampiao_poste", church + Vector3(-6.0, 0, 8.0)))
+	_luzes.candeeiro(taipa + Vector3(0.92, 2.55, 2.4), _adereco("candeeiro", taipa + Vector3(0.92, 2.45, 2.35)))
+	_luzes.candeeiro(bar + Vector3(0.0, 2.6, 3.2), _adereco("candeeiro", bar + Vector3(0.0, 2.5, 3.15)))
+	_luzes.candeeiro(restaurante + Vector3(0.0, 2.6, 3.2), _adereco("candeeiro", restaurante + Vector3(0.0, 2.5, 3.15)))
+	_luzes.candeeiro(pier + Vector3(0.0, 1.9, -7.0), _adereco("candeeiro", pier + Vector3(0.3, 1.8, -7.0)))
+	ancoras["Fogueira"] = farm + Vector3(7.0, 0, 4.5)
+	_luzes.fogueira(farm + Vector3(7.0, 0, 4.5), _adereco("fogueira", farm + Vector3(7.0, 0, 4.5)))
+	_luzes.janela(taipa + Vector3(-1.35, 1.9, 2.2))
+	_luzes.janela(church + Vector3(0, 3.6, 4.6))
+	_luzes.aplicar_hora(Dia.hora)
+
+
+func _bancada_mangueiras(origin: Vector3) -> void:
+	var spacing := 10.0
+	var procedural: Dictionary = FloraReconcavo.especie("mangueira", 1.0)
+	var proc := MeshInstance3D.new()
+	proc.name = "ComparaProcedural"
+	proc.mesh = procedural.mesh
+	proc.position = origin + Vector3(-spacing, 0, 0)
+	add_child(proc)
+	var tripo := CatalogoAssets.instanciar("mangueira", self, origin + Vector3(spacing, 0, 0), 1.0, 0.0)
+	for entry in [["Procedural", proc, origin + Vector3(-spacing, 0, 0)], ["Tripo Malha Smart", tripo, origin + Vector3(spacing, 0, 0)]]:
+		if entry[1] == null:
+			continue
+		var label := Label3D.new()
+		label.text = "%s\n%s triângulos" % [entry[0], _milhar(_contar_triangulos(entry[1]))]
+		label.font_size = 64
+		label.outline_size = 12
+		label.pixel_size = 0.006
+		label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+		label.position = (entry[2] as Vector3) + Vector3(0, 9.2, 0)
+		add_child(label)
+
+
+func _contar_triangulos(node: Node) -> int:
+	var total := 0
+	var instances: Array = node.find_children("*", "MeshInstance3D", true, false)
+	if node is MeshInstance3D:
+		instances.append(node)
+	for child in instances:
+		var mesh: Mesh = (child as MeshInstance3D).mesh
+		if mesh == null:
+			continue
+		for surface in range(mesh.get_surface_count()):
+			var arrays := mesh.surface_get_arrays(surface)
+			var indices: PackedInt32Array = arrays[Mesh.ARRAY_INDEX]
+			total += indices.size() / 3 if indices.size() > 0 else (arrays[Mesh.ARRAY_VERTEX] as PackedVector3Array).size() / 3
+	return total
+
+
+func _milhar(value: int) -> String:
+	var text := str(value)
+	var result := ""
+	while text.length() > 3:
+		result = "." + text.substr(text.length() - 3) + result
+		text = text.substr(0, text.length() - 3)
+	return text + result
+
+
+# ---------------------------------------------------------------------------
+# Construtores procedurais (estilo "procedural"): casas de caixas e materiais simples.
+# ---------------------------------------------------------------------------
 
 func _house(origin: Vector3, wall: Color, roof_color: Color) -> void:
 	_box(Vector3(5.6, 0.25, 4.8), origin + Vector3(0, 0.125, 0), Color("96968b"), true)
@@ -164,25 +526,6 @@ func _house(origin: Vector3, wall: Color, roof_color: Color) -> void:
 		_box(Vector3(0.85, 0.07, 0.19), origin + Vector3(side * 1.5, 1.93, 2.21), WOOD)
 		_box(Vector3(1.23, 0.27, 0.46), origin + Vector3(side * 1.5, 1.29, 2.35), WOOD)
 		_box(Vector3(1.09, 0.22, 0.37), origin + Vector3(side * 1.5, 1.49, 2.36), LEAVES)
-
-
-func _tripo_house(origin: Vector3) -> void:
-	var house := TRIPO_HOUSE_SCENE.instantiate() as Node3D
-	house.name = "CasaCarroQuebradoTripo"
-	add_child(house)
-	var bounds := _node_bounds(house)
-	var uniform_scale := TRIPO_HOUSE_WIDTH / bounds.size.x
-	house.scale = Vector3.ONE * uniform_scale
-	house.position = origin + Vector3(
-		-bounds.get_center().x * uniform_scale,
-		-bounds.position.y * uniform_scale,
-		-bounds.get_center().z * uniform_scale
-	)
-	var collision_size := bounds.size * uniform_scale
-	var collision_center := origin + Vector3(0, collision_size.y * 0.5, 0)
-	var shape := BoxShape3D.new()
-	shape.size = collision_size
-	_body(shape, collision_center, "CasaCarroQuebradoColisao")
 
 
 func _node_bounds(node: Node3D) -> AABB:
@@ -240,297 +583,6 @@ func _casa_de_taipa_referencia(origin: Vector3) -> void:
 	_box(Vector3(0.32, 0.54, 0.025), origin + Vector3(2.08, 2.06, 2.115), cal_suja)
 	_box(Vector3(0.58, 0.18, 0.025), origin + Vector3(-0.23, 2.76, 2.115), cal_suja)
 
-func _build_farm() -> void:
-	var origin: Vector3 = _region.get_feature_center("Fazenda", "area")
-	for row in range(3):
-		_box(Vector3(5.6, 0.1, 0.88), origin + Vector3(0, 0.055, row * 1.35), Color("826346"))
-		for column in range(7):
-			var crop := CylinderMesh.new()
-			crop.top_radius = 0.02
-			crop.bottom_radius = 0.24
-			crop.height = 0.54 + row * 0.09
-			crop.radial_segments = 5
-			_mesh(crop, origin + Vector3(-2.3 + column * 0.75, 0.35, row * 1.35), Color("8fa85e"))
-	_fence(origin + Vector3(-4, 0, 6), 6, 1.65)
-	_fence(origin + Vector3(-4, 0, -3), 6, 1.65)
-	_box(Vector3(0.85, 1.0, 0.85), origin + Vector3(5.2, 0.5, 2), WOOD, true)
-	_box(Vector3(0.95, 0.11, 0.95), origin + Vector3(5.2, 1.0, 2), Color("b1966c"))
-
-
-func _build_trees() -> void:
-	# Posições anotadas em metros reais ao redor da Praça (a cena converte para unidades).
-	# Espécies de docs/AMBIENTACAO.md §4; o pau-brasil continua sendo o modelo do Tripo.
-	_pau_brasil(_u(Vector3(-82, 0, 5)))
-	var plan: Array = [
-		["mangueira", Vector3(-75, 0, -70), 1.0, 0.4],
-		["cajueiro", Vector3(-78, 0, -35), 1.0, 1.9],
-		["ipe_amarelo", Vector3(-85, 0, 47), 1.0, 0.0],
-		["jaqueira", Vector3(-44, 0, 93), 1.0, 2.6],
-		["mangueira", Vector3(55, 0, 99), 1.1, 3.1],
-		["ipe_roxo", Vector3(72, 0, 77), 0.95, 1.2],
-		["cajueiro", Vector3(85, 0, 30), 1.05, 4.0],
-		["jaqueira", Vector3(85, 0, -60), 0.9, 0.7],
-		["embauba", Vector3(44, 0, -86), 1.0, 0.0],
-		["dendezeiro", Vector3(-46, 0, -95), 1.0, 2.2],
-		["mangueira", Vector3(-34, 0, 38), 0.9, 5.2],
-		["mangueira", Vector3(22, 0, -44), 0.85, 1.6],
-	]
-	for entry in plan:
-		_arvore(String(entry[0]), _u(entry[1]), float(entry[2]), float(entry[3]))
-	# Bananal atrás da casa de taipa, dendezeiros junto ao bar, cajueiros e mangueira na fazenda.
-	var taipa := _u(Vector3(-52, 0, -27))
-	for offset in [Vector3(-3.2, 0, -4.6), Vector3(-1.6, 0, -5.9), Vector3(0.4, 0, -4.9), Vector3(-4.6, 0, -3.0)]:
-		_arvore("bananeira", taipa + offset, 0.9, offset.x * 1.3)
-	var bar: Vector3 = _region.get_feature_center("Bar", "poi")
-	for offset in [Vector3(-6.0, 0, 5.5), Vector3(-9.5, 0, 2.0)]:
-		_arvore("dendezeiro", bar + offset, 0.95, offset.z)
-	var farm: Vector3 = _region.get_feature_center("Fazenda", "area")
-	_arvore("mangueira", farm + Vector3(-9.5, 0, -6.5), 1.15, 0.9)
-	_arvore("cajueiro", farm + Vector3(9.0, 0, -8.0), 1.0, 2.4)
-	_arvore("cajueiro", farm + Vector3(11.0, 0, 8.5), 0.9, 0.3)
-	var church: Vector3 = _region.get_feature_center("Igreja", "poi")
-	_arvore("ipe_roxo", church + Vector3(-8.5, 0, 9.0), 1.0, 0.0)
-	_arvore("ipe_amarelo", church + Vector3(8.5, 0, 9.5), 1.0, 1.1)
-	var pier: Vector3 = _region.get_feature_center("Pier", "poi")
-	var pier_shore: Vector3 = _region.get_feature_center("Praça", "poi")
-	var toward_praca := (pier_shore - pier).normalized()
-	for step in [Vector3(14.0, 0, 5.0), Vector3(20.0, 0, -4.0)]:
-		_arvore("coqueiro", pier + toward_praca * step.x + Vector3(0, 0, step.z), 1.0, step.z)
-
-
-func _pau_brasil(origin: Vector3) -> void:
-	var tree := PAU_BRASIL_SCENE.instantiate() as Node3D
-	tree.name = "PauBrasilTripo"
-	add_child(tree)
-	var bounds := AABB()
-	var has_bounds := false
-	for node in tree.find_children("*", "MeshInstance3D", true, false):
-		var part := node as MeshInstance3D
-		var part_bounds: AABB = (tree.global_transform.affine_inverse() * part.global_transform) * part.get_aabb()
-		bounds = bounds.merge(part_bounds) if has_bounds else part_bounds
-		has_bounds = true
-	if has_bounds and bounds.size.y > 0.001:
-		var factor := 5.6 / bounds.size.y
-		tree.scale = Vector3.ONE * factor
-		tree.position = origin - Vector3(bounds.get_center().x, bounds.position.y, bounds.get_center().z) * factor
-	var trunk_shape := CylinderShape3D.new()
-	trunk_shape.radius = 0.38
-	trunk_shape.height = 2.4
-	_body(trunk_shape, origin + Vector3(0, 1.2, 0))
-
-
-## Instancia um GLB do Tripo com a base no chão em `origin`, normalizado pela altura visual.
-func _modelo_tripo(scene: PackedScene, node_name: String, origin: Vector3, altura: float, yaw: float = 0.0) -> Node3D:
-	var node := scene.instantiate() as Node3D
-	node.name = node_name
-	add_child(node)
-	var bounds := _node_bounds(node)
-	var factor := altura / maxf(bounds.size.y, 0.001)
-	node.scale = Vector3.ONE * factor
-	node.rotation.y = yaw
-	var center := Vector3(bounds.get_center().x, bounds.position.y, bounds.get_center().z) * factor
-	node.position = origin - center.rotated(Vector3.UP, yaw)
-	return node
-
-
-## Três versões da mesma árvore, com placa de triângulos e tamanho: procedural,
-## HD reduzido pelo nosso script e Malha Smart (retopologia do próprio Tripo).
-func _bancada_mangueiras(origin: Vector3) -> void:
-	var spacing := 10.0
-	var procedural: Dictionary = FloraReconcavo.especie("mangueira", 1.0)
-	var entries: Array = []
-	var proc := MeshInstance3D.new()
-	proc.name = "ComparaProcedural"
-	proc.mesh = procedural.mesh
-	proc.position = origin + Vector3(-spacing, 0, 0)
-	add_child(proc)
-	entries.append(["Procedural", proc, origin + Vector3(-spacing, 0, 0)])
-	entries.append(["Tripo HD + redutor", _modelo_tripo(TRIPO_ARVORES["mangueira"], "ComparaReduzida", origin, 7.2), origin])
-	entries.append(["Tripo Malha Smart", _modelo_tripo(MANGUEIRA_SMART_SCENE, "ComparaSmart", origin + Vector3(spacing, 0, 0), 7.2), origin + Vector3(spacing, 0, 0)])
-	for entry in entries:
-		var node: Node3D = entry[1]
-		var triangles := _contar_triangulos(node)
-		var label := Label3D.new()
-		label.text = "%s\n%s triângulos" % [entry[0], _milhar(triangles)]
-		label.font_size = 64
-		label.outline_size = 12
-		label.pixel_size = 0.006
-		label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-		label.position = (entry[2] as Vector3) + Vector3(0, 9.2, 0)
-		add_child(label)
-		print("COMPARACAO %s: %d triângulos" % [entry[0], triangles])
-	# Tecla C alterna uma câmera fixa enquadrando a bancada.
-	_camera_comparacao = Camera3D.new()
-	_camera_comparacao.name = "CameraComparacao"
-	_camera_comparacao.fov = 55.0
-	add_child(_camera_comparacao)
-	_camera_comparacao.position = origin + Vector3(0, 4.2, 21)
-	_camera_comparacao.look_at(origin + Vector3(0, 4.4, 0), Vector3.UP)
-
-
-var _camera_comparacao: Camera3D
-var _camera_capela: Camera3D
-var _camera_anterior: Camera3D
-var _vitrine := 0
-
-
-## Tecla C percorre: jogador → bancada das mangueiras → capela → jogador.
-func _unhandled_key_input(event: InputEvent) -> void:
-	if _camera_comparacao == null or not (event is InputEventKey) or not event.pressed or event.echo:
-		return
-	if (event as InputEventKey).keycode != KEY_C:
-		return
-	if _vitrine == 0:
-		_camera_anterior = get_viewport().get_camera_3d()
-	_vitrine = (_vitrine + 1) % 3
-	match _vitrine:
-		1: _camera_comparacao.make_current()
-		2:
-			if _camera_capela == null:
-				var church: Vector3 = _region.get_feature_center("Igreja", "poi")
-				_camera_capela = Camera3D.new()
-				_camera_capela.fov = 50.0
-				add_child(_camera_capela)
-				_camera_capela.position = church + Vector3(-5.5, 2.4, 11.5)
-				_camera_capela.look_at(church + Vector3(0, 3.0, 2.0), Vector3.UP)
-			_camera_capela.make_current()
-		0:
-			if is_instance_valid(_camera_anterior):
-				_camera_anterior.make_current()
-
-
-func _contar_triangulos(node: Node) -> int:
-	var total := 0
-	var instances: Array = node.find_children("*", "MeshInstance3D", true, false)
-	if node is MeshInstance3D:
-		instances.append(node)
-	for child in instances:
-		var mesh: Mesh = (child as MeshInstance3D).mesh
-		if mesh == null:
-			continue
-		for surface in range(mesh.get_surface_count()):
-			var arrays := mesh.surface_get_arrays(surface)
-			var indices: PackedInt32Array = arrays[Mesh.ARRAY_INDEX]
-			total += indices.size() / 3 if indices.size() > 0 else (arrays[Mesh.ARRAY_VERTEX] as PackedVector3Array).size() / 3
-	return total
-
-
-func _milhar(value: int) -> String:
-	var text := str(value)
-	var result := ""
-	while text.length() > 3:
-		result = "." + text.substr(text.length() - 3) + result
-		text = text.substr(0, text.length() - 3)
-	return text + result
-
-
-func _arvore(especie: String, origin: Vector3, size: float = 1.0, yaw: float = 0.0) -> void:
-	if TRIPO_ARVORES.has(especie):
-		var medidas: Dictionary = TRIPO_ARVORES_MEDIDAS[especie]
-		var node := _modelo_tripo(TRIPO_ARVORES[especie], especie.capitalize() + "Tripo", origin, float(medidas.altura) * size, yaw)
-		var trunk_shape := CylinderShape3D.new()
-		trunk_shape.radius = float(medidas.tronco) * size
-		trunk_shape.height = 2.6 * size
-		_body(trunk_shape, origin + Vector3(0, 1.3 * size, 0))
-		return
-	var built: Dictionary = FloraReconcavo.especie(especie, size)
-	var instance := MeshInstance3D.new()
-	instance.name = especie.capitalize()
-	instance.mesh = built.mesh
-	instance.position = origin
-	instance.rotation.y = yaw
-	add_child(instance)
-	var shape := CylinderShape3D.new()
-	shape.radius = float(built.trunk_radius) + 0.08
-	shape.height = float(built.trunk_height)
-	_body(shape, origin + Vector3(0, float(built.trunk_height) * 0.5, 0))
-
-
-func _peca(node: Node3D, origin: Vector3, yaw: float = 0.0) -> void:
-	node.position = origin
-	node.rotation.y = yaw
-	add_child(node)
-
-
-func _build_pecas() -> void:
-	# Peças soltas do 2D (gerador_mundo.gd ADORNOS): poço e bancos na praça, cruzeiro na
-	# igreja, varal, lenha e pote na casa de taipa, carroça na fazenda.
-	_modelo_tripo(POCO_SCENE, "PocoTripo", Vector3(4.2, 0, 5.4), POCO_HEIGHT, 0.6)
-	var poco_shape := CylinderShape3D.new()
-	poco_shape.radius = 1.05
-	poco_shape.height = 1.2
-	_body(poco_shape, Vector3(4.2, 0.6, 5.4), "PocoColisao")
-	_peca(FloraReconcavo.banco_praca(), _u(Vector3(-4.6, 0, -0.1)))
-	_peca(FloraReconcavo.banco_praca(), Vector3(3.2, 0, -7.0), PI)
-	var taipa := _u(Vector3(-52, 0, -27))
-	_peca(FloraReconcavo.varal(), taipa + Vector3(-4.9, 0, 1.4), 0.35)
-	_peca(FloraReconcavo.pilha_lenha(), taipa + Vector3(3.6, 0, -0.4), 0.0)
-	_peca(FloraReconcavo.pote_agua(), taipa + Vector3(2.4, 0, 2.9))
-	var church: Vector3 = _region.get_feature_center("Igreja", "poi")
-	_peca(FloraReconcavo.cruzeiro(), church + Vector3(0, 0, 9.0))
-	var farm: Vector3 = _region.get_feature_center("Fazenda", "area")
-	_peca(FloraReconcavo.carroca(), farm + Vector3(8.5, 0, -5.5), -0.6)
-	var pier: Vector3 = _region.get_feature_center("Pier", "poi")
-	_peca(FloraReconcavo.pote_agua(), pier + Vector3(1.4, 0.1, -6.5))
-
-
-func _build_details() -> void:
-	for i in range(28):
-		var x: float = (-25.0 + float(i % 7) * 8.0) / _meters_per_unit
-		var z: float = (-21.0 + floorf(float(i) / 7.0) * 14.0) / _meters_per_unit
-		if absf(x) < 3.0 / _meters_per_unit:
-			continue
-		for j in range(3):
-			_box(Vector3(0.05, 0.28, 0.05), Vector3(x + j * 0.21, 0.14, z + (j % 2) * 0.25), LEAVES)
-			_box(Vector3(0.16, 0.10, 0.16), Vector3(x + j * 0.21, 0.30, z + (j % 2) * 0.25), Color("e4c782") if i % 2 == 0 else Color("ce9d99"))
-
-
-func _build_landmark_details() -> void:
-	var church: Vector3 = _region.get_feature_center("Igreja", "poi")
-	# Capela colonial gerada no Tripo; a frente (porta) olha para +Z, onde fica o cruzeiro.
-	var capela := CAPELA_SCENE.instantiate() as Node3D
-	capela.name = "CapelaTripo"
-	add_child(capela)
-	var capela_bounds := _node_bounds(capela)
-	var capela_scale := CAPELA_WIDTH / maxf(capela_bounds.size.x, 0.001)
-	capela.scale = Vector3.ONE * capela_scale
-	capela.position = church - Vector3(capela_bounds.get_center().x, capela_bounds.position.y, capela_bounds.get_center().z) * capela_scale
-	var capela_shape := BoxShape3D.new()
-	capela_shape.size = capela_bounds.size * capela_scale
-	_body(capela_shape, church + Vector3(0, capela_shape.size.y * 0.5, 0), "CapelaColisao")
-	_box(Vector3(capela_shape.size.x + 2.0, 0.18, capela_shape.size.z + 2.0), church + Vector3(0, 0.09, 0), Color("958d79"), true)
-	_house(_region.get_feature_center("Bar", "poi") + Vector3(8, 0, 3), Color("c6a16d"), Color("8b523b"))
-	_house(_region.get_feature_center("Restaurante", "poi") + Vector3(7, 0, 4), Color("cdbb92"), Color("97563f"))
-	var pier: Vector3 = _region.get_feature_center("Pier", "poi")
-	_box(Vector3(4.5, 0.2, 17), pier + Vector3(0, -0.1, 0), Color("85684b"), true)
-	for offset in [-7.0, 0.0, 7.0]:
-		for side in [-1.8, 1.8]:
-			_box(Vector3(0.3, 1.5, 0.3), pier + Vector3(side, -0.75, offset), WOOD)
-	var bridge: Vector3 = _region.get_feature_center("Ponte", "poi")
-	_box(Vector3(11, 0.35, 6), bridge + Vector3(0, 0.22, 0), Color("987b57"), true)
-	for side in [-2.8, 2.8]:
-		_box(Vector3(11, 0.18, 0.15), bridge + Vector3(0, 0.95, side), WOOD)
-	var lookout: Vector3 = _region.get_feature_center("Mirante", "poi")
-	_box(Vector3(6, 0.24, 6), lookout + Vector3(0, 0.65, 0), Color("9c7a52"), true)
-	for x in [-2.8, 2.8]:
-		for z in [-2.8, 2.8]:
-			_box(Vector3(0.22, 1.45, 0.22), lookout + Vector3(x, 0.73, z), WOOD)
-	var cemetery: Vector3 = _region.get_feature_center("Cemitério", "poi")
-	for index in range(12):
-		var grave := cemetery + Vector3((index % 4) * 2.3 - 3.45, 0, floorf(index / 4.0) * 3.0 - 3.0)
-		_box(Vector3(0.72, 0.15, 1.45), grave + Vector3(0, 0.08, 0), Color("a9a9a0"))
-		_box(Vector3(0.12, 0.9, 0.12), grave + Vector3(0, 0.6, -0.55), WOOD)
-		_box(Vector3(0.48, 0.12, 0.12), grave + Vector3(0, 0.72, -0.55), WOOD)
-	var stones: Vector3 = _region.get_feature_center("Pedras", "poi")
-	for index in range(13):
-		var rock := SphereMesh.new()
-		rock.radius = 0.8 + (index % 3) * 0.4
-		rock.height = 0.8 + (index % 4) * 0.3
-		rock.radial_segments = 7
-		rock.rings = 4
-		_mesh(rock, stones + Vector3((index % 5) * 2.8 - 5.6, 0.35, floorf(index / 5.0) * 2.9 - 2.9), Color("929c92"))
-
-
 func _fence(origin: Vector3, count: int, spacing: float) -> void:
 	for i in range(count):
 		_box(Vector3(0.15, 1.12, 0.15), origin + Vector3(i * spacing, 0.56, 0), WOOD, true)
@@ -539,14 +591,15 @@ func _fence(origin: Vector3, count: int, spacing: float) -> void:
 		_box(Vector3(width, 0.12, 0.12), origin + Vector3(width * 0.5, height, 0), Color("987650"), true)
 
 
-func _box(size: Vector3, position: Vector3, color: Color, solid: bool = false, material_override: Material = null) -> void:
+func _box(size: Vector3, position: Vector3, color: Color, solid: bool = false, material_override: Material = null) -> MeshInstance3D:
 	var box := BoxMesh.new()
 	box.size = size
-	_mesh(box, position, color, material_override)
+	var instance := _mesh(box, position, color, material_override)
 	if solid:
 		var shape := BoxShape3D.new()
 		shape.size = size
 		_body(shape, position)
+	return instance
 
 
 func _mesh(mesh: Mesh, position: Vector3, color: Color, material_override: Material = null) -> MeshInstance3D:
