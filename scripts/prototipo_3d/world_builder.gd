@@ -10,6 +10,25 @@ const MAP_CATALOG := "res://data/mapas/regioes.json"
 const TRIPO_HOUSE_SCENE := preload("res://assets/prototipo_3d/casas/casa_carro_quebrado_tripo.glb")
 const TRIPO_HOUSE_WIDTH := 5.2
 const PAU_BRASIL_SCENE := preload("res://assets/prototipo_3d/arvores/pau_brasil_tripo.glb")
+## Modelos do Tripo Studio (26/09/2026), reduzidos por tools/modelos/reduzir_glb.py.
+## Cada árvore é usada em poucas instâncias; a mata e a orla continuam procedurais.
+const TRIPO_ARVORES := {
+	"mangueira": preload("res://assets/prototipo_3d/arvores/mangueira_tripo.glb"),
+	"jaqueira": preload("res://assets/prototipo_3d/arvores/jaqueira_tripo.glb"),
+	"cajueiro": preload("res://assets/prototipo_3d/arvores/cajueiro_tripo.glb"),
+	"coqueiro": preload("res://assets/prototipo_3d/arvores/coqueiro_tripo.glb"),
+}
+## Altura visual (unidades) e raio do tronco para colisão de cada modelo do Tripo.
+const TRIPO_ARVORES_MEDIDAS := {
+	"mangueira": {"altura": 7.2, "tronco": 0.55},
+	"jaqueira": {"altura": 8.4, "tronco": 0.4},
+	"cajueiro": {"altura": 5.4, "tronco": 0.42},
+	"coqueiro": {"altura": 9.5, "tronco": 0.24},
+}
+const CAPELA_SCENE := preload("res://assets/prototipo_3d/construcoes/capela_tripo.glb")
+const CAPELA_WIDTH := 9.0
+const POCO_SCENE := preload("res://assets/prototipo_3d/construcoes/poco_tripo.glb")
+const POCO_HEIGHT := 3.1
 const CASA_TAIPA_CAL_TEXTURE := preload("res://assets/prototipo_3d/materiais/cal_taipa_envelhecida_v1.png")
 const TELHA_COLONIAL_TEXTURE := preload("res://assets/prototipo_3d/materiais/telha_colonial_envelhecida_v1.png")
 var _materials: Dictionary = {}
@@ -267,6 +286,11 @@ func _build_trees() -> void:
 	var church: Vector3 = _region.get_feature_center("Igreja", "poi")
 	_arvore("ipe_roxo", church + Vector3(-8.5, 0, 9.0), 1.0, 0.0)
 	_arvore("ipe_amarelo", church + Vector3(8.5, 0, 9.5), 1.0, 1.1)
+	var pier: Vector3 = _region.get_feature_center("Pier", "poi")
+	var pier_shore: Vector3 = _region.get_feature_center("Praça", "poi")
+	var toward_praca := (pier_shore - pier).normalized()
+	for step in [Vector3(14.0, 0, 5.0), Vector3(20.0, 0, -4.0)]:
+		_arvore("coqueiro", pier + toward_praca * step.x + Vector3(0, 0, step.z), 1.0, step.z)
 
 
 func _pau_brasil(origin: Vector3) -> void:
@@ -290,7 +314,29 @@ func _pau_brasil(origin: Vector3) -> void:
 	_body(trunk_shape, origin + Vector3(0, 1.2, 0))
 
 
+## Instancia um GLB do Tripo com a base no chão em `origin`, normalizado pela altura visual.
+func _modelo_tripo(scene: PackedScene, node_name: String, origin: Vector3, altura: float, yaw: float = 0.0) -> Node3D:
+	var node := scene.instantiate() as Node3D
+	node.name = node_name
+	add_child(node)
+	var bounds := _node_bounds(node)
+	var factor := altura / maxf(bounds.size.y, 0.001)
+	node.scale = Vector3.ONE * factor
+	node.rotation.y = yaw
+	var center := Vector3(bounds.get_center().x, bounds.position.y, bounds.get_center().z) * factor
+	node.position = origin - center.rotated(Vector3.UP, yaw)
+	return node
+
+
 func _arvore(especie: String, origin: Vector3, size: float = 1.0, yaw: float = 0.0) -> void:
+	if TRIPO_ARVORES.has(especie):
+		var medidas: Dictionary = TRIPO_ARVORES_MEDIDAS[especie]
+		var node := _modelo_tripo(TRIPO_ARVORES[especie], especie.capitalize() + "Tripo", origin, float(medidas.altura) * size, yaw)
+		var trunk_shape := CylinderShape3D.new()
+		trunk_shape.radius = float(medidas.tronco) * size
+		trunk_shape.height = 2.6 * size
+		_body(trunk_shape, origin + Vector3(0, 1.3 * size, 0))
+		return
 	var built: Dictionary = FloraReconcavo.especie(especie, size)
 	var instance := MeshInstance3D.new()
 	instance.name = especie.capitalize()
@@ -313,7 +359,11 @@ func _peca(node: Node3D, origin: Vector3, yaw: float = 0.0) -> void:
 func _build_pecas() -> void:
 	# Peças soltas do 2D (gerador_mundo.gd ADORNOS): poço e bancos na praça, cruzeiro na
 	# igreja, varal, lenha e pote na casa de taipa, carroça na fazenda.
-	_peca(FloraReconcavo.poco(), Vector3(4.2, 0, 5.4), 0.6)
+	_modelo_tripo(POCO_SCENE, "PocoTripo", Vector3(4.2, 0, 5.4), POCO_HEIGHT, 0.6)
+	var poco_shape := CylinderShape3D.new()
+	poco_shape.radius = 1.05
+	poco_shape.height = 1.2
+	_body(poco_shape, Vector3(4.2, 0.6, 5.4), "PocoColisao")
 	_peca(FloraReconcavo.banco_praca(), _u(Vector3(-4.6, 0, -0.1)))
 	_peca(FloraReconcavo.banco_praca(), Vector3(3.2, 0, -7.0), PI)
 	var taipa := _u(Vector3(-52, 0, -27))
@@ -321,7 +371,7 @@ func _build_pecas() -> void:
 	_peca(FloraReconcavo.pilha_lenha(), taipa + Vector3(3.6, 0, -0.4), 0.0)
 	_peca(FloraReconcavo.pote_agua(), taipa + Vector3(2.4, 0, 2.9))
 	var church: Vector3 = _region.get_feature_center("Igreja", "poi")
-	_peca(FloraReconcavo.cruzeiro(), church + Vector3(0, 0, 11.5))
+	_peca(FloraReconcavo.cruzeiro(), church + Vector3(0, 0, 9.0))
 	var farm: Vector3 = _region.get_feature_center("Fazenda", "area")
 	_peca(FloraReconcavo.carroca(), farm + Vector3(8.5, 0, -5.5), -0.6)
 	var pier: Vector3 = _region.get_feature_center("Pier", "poi")
@@ -341,14 +391,18 @@ func _build_details() -> void:
 
 func _build_landmark_details() -> void:
 	var church: Vector3 = _region.get_feature_center("Igreja", "poi")
-	_box(Vector3(8, 0.25, 13), church + Vector3(0, 0.125, 0), Color("958d79"), true)
-	_box(Vector3(7.4, 5.2, 12), church + Vector3(0, 2.7, 0), Color("eee5cf"), true)
-	var roof := PrismMesh.new()
-	roof.size = Vector3(8.8, 2.6, 13.3)
-	_mesh(roof, church + Vector3(0, 6.4, 0), Color("a55b3c"))
-	_box(Vector3(2.3, 8.2, 2.3), church + Vector3(0, 4.2, 6.0), Color("e5dcc8"), true)
-	_box(Vector3(0.22, 2.0, 0.22), church + Vector3(0, 9.2, 6.0), WOOD)
-	_box(Vector3(1.4, 0.2, 0.22), church + Vector3(0, 9.45, 6.0), WOOD)
+	# Capela colonial gerada no Tripo; a frente (porta) olha para +Z, onde fica o cruzeiro.
+	var capela := CAPELA_SCENE.instantiate() as Node3D
+	capela.name = "CapelaTripo"
+	add_child(capela)
+	var capela_bounds := _node_bounds(capela)
+	var capela_scale := CAPELA_WIDTH / maxf(capela_bounds.size.x, 0.001)
+	capela.scale = Vector3.ONE * capela_scale
+	capela.position = church - Vector3(capela_bounds.get_center().x, capela_bounds.position.y, capela_bounds.get_center().z) * capela_scale
+	var capela_shape := BoxShape3D.new()
+	capela_shape.size = capela_bounds.size * capela_scale
+	_body(capela_shape, church + Vector3(0, capela_shape.size.y * 0.5, 0), "CapelaColisao")
+	_box(Vector3(capela_shape.size.x + 2.0, 0.18, capela_shape.size.z + 2.0), church + Vector3(0, 0.09, 0), Color("958d79"), true)
 	_house(_region.get_feature_center("Bar", "poi") + Vector3(8, 0, 3), Color("c6a16d"), Color("8b523b"))
 	_house(_region.get_feature_center("Restaurante", "poi") + Vector3(7, 0, 4), Color("cdbb92"), Color("97563f"))
 	var pier: Vector3 = _region.get_feature_center("Pier", "poi")

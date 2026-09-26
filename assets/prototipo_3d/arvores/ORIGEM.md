@@ -35,3 +35,25 @@ Constraints: change only background pixels and edge cleanup; preserve fine leaf 
 ```
 
 A cena instancia esse GLB uma vez, no lugar da árvore procedural em `(-12, 0, 3)`, normaliza sua altura visual para 5,6 m e usa uma colisão cilíndrica simples para o tronco.
+
+## Árvores do Recôncavo geradas em 26/09/2026
+
+Quatro espécies foram geradas por texto no Tripo Studio (modelo H3.1, Máx.
+qualidade, textura 2K, GLB), a partir de prompts que descrevem a espécie
+botânica como adereço estilizado de jogo, sem chão e sem texto. A conta exibia o
+plano Max; os direitos comerciais seguem a mesma condição do pau-brasil.
+
+| Arquivo | Espécie | Tarefa Tripo | Original | Reduzido |
+| --- | --- | --- | --- | --- |
+| `mangueira_tripo.glb` | Mangueira (*Mangifera indica*) | `ffa9a27a-ecc8-4d01-87ec-cdb90401b75e` | 1.929.086 tri | 153.263 tri |
+| `jaqueira_tripo.glb` | Jaqueira (*Artocarpus heterophyllus*) | `89a0cd4a-ec5b-4628-bda2-99283599c3de` | 1.971.524 tri | 152.666 tri |
+| `cajueiro_tripo.glb` | Cajueiro (*Anacardium occidentale*) | `6a771473-e893-43ba-bc3a-a0bc25175085` | 1.930.146 tri | 145.452 tri |
+| `coqueiro_tripo.glb` | Coqueiro (*Cocos nucifera*) | `c08918f6-9cb0-4dcd-a82f-a431911d71eb` | 1.905.930 tri | 108.448 tri |
+
+Os GLBs originais (~60 MB cada) ficam em `.assets-raw/tripo/arvores/`, fora do
+Git. A redução usa `prototipo_3d/tools/modelos/reduzir_glb.py` (agrupamento de
+vértices em grade, preservando UVs e as texturas embutidas). `world_builder.gd`
+instancia esses modelos nas árvores nomeadas perto dos pontos de interesse
+(`_arvore`), normalizando a altura visual em `TRIPO_ARVORES_MEDIDAS`; a mata
+fechada e os coqueiros da orla continuam procedurais (`flora_reconcavo.gd`),
+porque centenas de instâncias desses modelos pesariam demais.
