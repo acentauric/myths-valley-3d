@@ -1,7 +1,11 @@
-[gd_scene load_steps=3 format=3]
-[ext_resource type="Script" path="res://scripts/prototipo_3d/abertura.gd" id="1"]
-[ext_resource type="Script" path="res://scripts/prototipo_3d/world_builder.gd" id="2"]
-[node name="Abertura" type="Node3D"]
+[gd_scene format=3 uid="uid://plqwqvji6uru"]
+
+[ext_resource type="Script" uid="uid://c0kit17fl4k4y" path="res://scripts/prototipo_3d/abertura.gd" id="1"]
+[ext_resource type="Script" uid="uid://wua31le85pnd" path="res://scripts/prototipo_3d/world_builder.gd" id="2"]
+
+[node name="Abertura" type="Node3D" unique_id=37316560]
 script = ExtResource("1")
-[node name="Cenario" type="Node3D" parent="."]
+
+[node name="Cenario" type="Node3D" parent="." unique_id=1867278679]
+transform = Transform3D(0.40384007, -0.59440434, 0.69541156, 0.89061683, 0.42917866, -0.15035832, -0.20908196, 0.68006563, 0.7027058, 0, 0, 0)
 script = ExtResource("2")

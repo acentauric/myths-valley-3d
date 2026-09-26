@@ -1,32 +1,38 @@
-; Protótipo 3D independente dos autoloads e saves da versão 2D.
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
+
 config_version=5
 
 [application]
+
 config/name="Myths' Valley — Protótipo 3D"
 run/main_scene="res://scenes/prototipo_3d/abertura.tscn"
-config/features=PackedStringArray("4.7", "Forward Plus")
 config/use_custom_user_dir=true
 config/custom_user_dir_name="MythsValleyPrototype3D"
+config/features=PackedStringArray("4.7", "Forward Plus")
 
 [autoload]
+
 Audio="*res://scripts/autoload/audio.gd"
 Estilo="*res://scripts/autoload/estilo.gd"
 Dia="*res://scripts/autoload/dia.gd"
 
 [display]
+
 window/size/viewport_width=1280
 window/size/viewport_height=720
 window/size/window_width_override=1280
 window/size/window_height_override=720
+window/stretch/mode="canvas_items"
 window/size/min_width=960
 window/size/min_height=540
-window/stretch/mode="canvas_items"
 
 [rendering]
-renderer/rendering_method="forward_plus"
-renderer/rendering_method.mobile="gl_compatibility"
-textures/default_filters/use_nearest_mipmap_filter=false
-anti_aliasing/quality/msaa_3d=1
 
-[physics]
-common/physics_ticks_per_second=60
+renderer/rendering_method.mobile="gl_compatibility"
+anti_aliasing/quality/msaa_3d=1
