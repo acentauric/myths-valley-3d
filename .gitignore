@@ -32,3 +32,7 @@ data_*/
 mono_crash.*.json
 tools/temp/
 scratch/
+
+# Python
+__pycache__/
+*.pyc
