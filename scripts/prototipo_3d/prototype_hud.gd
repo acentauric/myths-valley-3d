@@ -19,6 +19,7 @@ var _root: Control
 var _model_label: Label
 var _region_label: Label
 var _telemetry_label: Label
+var _render_label: Label
 var _notice_label: Label
 var _notice_panel: Panel
 var _objective_label: Label
@@ -49,7 +50,7 @@ func _ready() -> void:
 	status.offset_left = -303
 	status.offset_right = -28
 	status.offset_top = 25
-	status.offset_bottom = 111
+	status.offset_bottom = 131
 	_telemetry_label = _label("", 13, GOLD)
 	status.add_child(_telemetry_label)
 	_telemetry_label.position = Vector2(16, 12)
@@ -59,6 +60,11 @@ func _ready() -> void:
 	status.add_child(_model_label)
 	_model_label.position = Vector2(16, 37)
 	_model_label.size = Vector2(243, 41)
+	# Medição de desenvolvimento: triângulos e chamadas de desenho do quadro, memória de vídeo.
+	_render_label = _label("", 11, MUTED)
+	status.add_child(_render_label)
+	_render_label.position = Vector2(16, 82)
+	_render_label.size = Vector2(243, 20)
 	var back_to_menu := Button.new()
 	back_to_menu.text = "HOME"
 	back_to_menu.tooltip_text = "Ir para o menu inicial. Pressione Esc para liberar o cursor."
@@ -68,8 +74,8 @@ func _ready() -> void:
 	back_to_menu.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
 	back_to_menu.offset_left = -303
 	back_to_menu.offset_right = -28
-	back_to_menu.offset_top = 123
-	back_to_menu.offset_bottom = 166
+	back_to_menu.offset_top = 143
+	back_to_menu.offset_bottom = 186
 	back_to_menu.pressed.connect(func(): menu_requested.emit())
 
 	var controls := _panel(Color(0.055, 0.085, 0.075, 0.88))
@@ -178,6 +184,19 @@ func _update_telemetry() -> void:
 	if is_instance_valid(_telemetry_label):
 		var suffix := "  ·  " + _telemetry if not _telemetry.is_empty() else ""
 		_telemetry_label.text = "%d FPS%s" % [Engine.get_frames_per_second(), suffix]
+	if is_instance_valid(_render_label):
+		var triangles := Performance.get_monitor(Performance.RENDER_TOTAL_PRIMITIVES_IN_FRAME)
+		var draws := Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME)
+		var vram := Performance.get_monitor(Performance.RENDER_VIDEO_MEM_USED) / 1048576.0
+		_render_label.text = "%s tri · %d draws · %d MB VRAM" % [_compact(triangles), int(draws), int(vram)]
+
+
+func _compact(value: float) -> String:
+	if value >= 1000000.0:
+		return "%.2f M" % (value / 1000000.0)
+	if value >= 1000.0:
+		return "%d mil" % int(value / 1000.0)
+	return str(int(value))
 
 
 func _label(value: String, font_size: int, color: Color) -> Label:

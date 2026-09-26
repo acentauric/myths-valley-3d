@@ -25,6 +25,9 @@ const TRIPO_ARVORES_MEDIDAS := {
 	"cajueiro": {"altura": 5.4, "tronco": 0.42},
 	"coqueiro": {"altura": 9.5, "tronco": 0.24},
 }
+## Bancada de comparação (desenvolvimento): três mangueiras lado a lado perto da Praça.
+const COMPARAR_MANGUEIRAS := true
+const MANGUEIRA_SMART_SCENE := preload("res://assets/prototipo_3d/arvores/mangueira_tripo_smart.glb")
 const CAPELA_SCENE := preload("res://assets/prototipo_3d/construcoes/capela_tripo.glb")
 const CAPELA_WIDTH := 9.0
 const POCO_SCENE := preload("res://assets/prototipo_3d/construcoes/poco_tripo.glb")
@@ -91,6 +94,8 @@ func _ready() -> void:
 		_build_details()
 		_build_landmark_details()
 		_build_pecas()
+		if COMPARAR_MANGUEIRAS:
+			_bancada_mangueiras(Vector3(-2, 0, -30))
 
 
 func _active_region_data() -> Dictionary:
@@ -326,6 +331,97 @@ func _modelo_tripo(scene: PackedScene, node_name: String, origin: Vector3, altur
 	var center := Vector3(bounds.get_center().x, bounds.position.y, bounds.get_center().z) * factor
 	node.position = origin - center.rotated(Vector3.UP, yaw)
 	return node
+
+
+## Três versões da mesma árvore, com placa de triângulos e tamanho: procedural,
+## HD reduzido pelo nosso script e Malha Smart (retopologia do próprio Tripo).
+func _bancada_mangueiras(origin: Vector3) -> void:
+	var spacing := 10.0
+	var procedural: Dictionary = FloraReconcavo.especie("mangueira", 1.0)
+	var entries: Array = []
+	var proc := MeshInstance3D.new()
+	proc.name = "ComparaProcedural"
+	proc.mesh = procedural.mesh
+	proc.position = origin + Vector3(-spacing, 0, 0)
+	add_child(proc)
+	entries.append(["Procedural", proc, origin + Vector3(-spacing, 0, 0)])
+	entries.append(["Tripo HD + redutor", _modelo_tripo(TRIPO_ARVORES["mangueira"], "ComparaReduzida", origin, 7.2), origin])
+	entries.append(["Tripo Malha Smart", _modelo_tripo(MANGUEIRA_SMART_SCENE, "ComparaSmart", origin + Vector3(spacing, 0, 0), 7.2), origin + Vector3(spacing, 0, 0)])
+	for entry in entries:
+		var node: Node3D = entry[1]
+		var triangles := _contar_triangulos(node)
+		var label := Label3D.new()
+		label.text = "%s\n%s triângulos" % [entry[0], _milhar(triangles)]
+		label.font_size = 64
+		label.outline_size = 12
+		label.pixel_size = 0.006
+		label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+		label.position = (entry[2] as Vector3) + Vector3(0, 9.2, 0)
+		add_child(label)
+		print("COMPARACAO %s: %d triângulos" % [entry[0], triangles])
+	# Tecla C alterna uma câmera fixa enquadrando a bancada.
+	_camera_comparacao = Camera3D.new()
+	_camera_comparacao.name = "CameraComparacao"
+	_camera_comparacao.fov = 55.0
+	add_child(_camera_comparacao)
+	_camera_comparacao.position = origin + Vector3(0, 4.2, 21)
+	_camera_comparacao.look_at(origin + Vector3(0, 4.4, 0), Vector3.UP)
+
+
+var _camera_comparacao: Camera3D
+var _camera_capela: Camera3D
+var _camera_anterior: Camera3D
+var _vitrine := 0
+
+
+## Tecla C percorre: jogador → bancada das mangueiras → capela → jogador.
+func _unhandled_key_input(event: InputEvent) -> void:
+	if _camera_comparacao == null or not (event is InputEventKey) or not event.pressed or event.echo:
+		return
+	if (event as InputEventKey).keycode != KEY_C:
+		return
+	if _vitrine == 0:
+		_camera_anterior = get_viewport().get_camera_3d()
+	_vitrine = (_vitrine + 1) % 3
+	match _vitrine:
+		1: _camera_comparacao.make_current()
+		2:
+			if _camera_capela == null:
+				var church: Vector3 = _region.get_feature_center("Igreja", "poi")
+				_camera_capela = Camera3D.new()
+				_camera_capela.fov = 50.0
+				add_child(_camera_capela)
+				_camera_capela.position = church + Vector3(-5.5, 2.4, 11.5)
+				_camera_capela.look_at(church + Vector3(0, 3.0, 2.0), Vector3.UP)
+			_camera_capela.make_current()
+		0:
+			if is_instance_valid(_camera_anterior):
+				_camera_anterior.make_current()
+
+
+func _contar_triangulos(node: Node) -> int:
+	var total := 0
+	var instances: Array = node.find_children("*", "MeshInstance3D", true, false)
+	if node is MeshInstance3D:
+		instances.append(node)
+	for child in instances:
+		var mesh: Mesh = (child as MeshInstance3D).mesh
+		if mesh == null:
+			continue
+		for surface in range(mesh.get_surface_count()):
+			var arrays := mesh.surface_get_arrays(surface)
+			var indices: PackedInt32Array = arrays[Mesh.ARRAY_INDEX]
+			total += indices.size() / 3 if indices.size() > 0 else (arrays[Mesh.ARRAY_VERTEX] as PackedVector3Array).size() / 3
+	return total
+
+
+func _milhar(value: int) -> String:
+	var text := str(value)
+	var result := ""
+	while text.length() > 3:
+		result = "." + text.substr(text.length() - 3) + result
+		text = text.substr(0, text.length() - 3)
+	return text + result
 
 
 func _arvore(especie: String, origin: Vector3, size: float = 1.0, yaw: float = 0.0) -> void:

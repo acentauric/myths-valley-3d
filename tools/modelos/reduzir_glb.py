@@ -107,22 +107,30 @@ def cluster_primitive(gltf: dict, binary: bytes, writer: Writer, primitive: dict
     span = (positions.max(axis=0) - low).max()
     size = cell_size if cell_size else span / cells
     keys = np.floor((positions - low) / size).astype(np.int64)
-    # Vértices com UV muito distinta na mesma célula continuam separados (costuras da textura).
+    # 1) A posição é decidida só pela célula espacial: vértices de ilhas de UV diferentes
+    #    no mesmo lugar ganham exatamente a mesma posição, e a costura não abre (sem trincas).
+    _, spatial_ids = np.unique(keys, axis=0, return_inverse=True)
+    spatial_ids = spatial_ids.reshape(-1)
+    spatial_count = int(spatial_ids.max()) + 1
+    counts = np.bincount(spatial_ids, minlength=spatial_count).astype(np.float64)
+    spatial_positions = np.zeros((spatial_count, 3))
+    np.add.at(spatial_positions, spatial_ids, positions)
+    spatial_positions /= counts[:, None]
+    # 2) A identidade do vértice separa UVs distintas dentro da célula (grade fina de 1/256,
+    #    ~8 px numa textura 2K), para a textura não "escorrer" para fora da ilha.
     if uvs is not None:
-        uv_keys = np.floor(uvs * 24.0).astype(np.int64)
-        combined = np.concatenate([keys, uv_keys], axis=1)
+        uv_keys = np.floor(uvs * 256.0).astype(np.int64)
+        combined = np.concatenate([spatial_ids[:, None], uv_keys], axis=1)
     else:
-        combined = keys
+        combined = spatial_ids[:, None]
     _, first_index, cluster_ids = np.unique(combined, axis=0, return_index=True, return_inverse=True)
     cluster_ids = cluster_ids.reshape(-1)
     cluster_count = int(cluster_ids.max()) + 1
-    new_positions = np.zeros((cluster_count, 3))
-    np.add.at(new_positions, cluster_ids, positions)
-    counts = np.bincount(cluster_ids, minlength=cluster_count).astype(np.float64)
-    new_positions /= counts[:, None]
-    tris = cluster_ids[indices].reshape(-1, 3)
-    valid = (tris[:, 0] != tris[:, 1]) & (tris[:, 1] != tris[:, 2]) & (tris[:, 0] != tris[:, 2])
-    tris = tris[valid]
+    cluster_spatial = spatial_ids[first_index]
+    # Triângulos que colapsam no espaço somem; os demais são deduplicados.
+    spatial_tris = spatial_ids[indices].reshape(-1, 3)
+    valid = (spatial_tris[:, 0] != spatial_tris[:, 1]) & (spatial_tris[:, 1] != spatial_tris[:, 2]) & (spatial_tris[:, 0] != spatial_tris[:, 2])
+    tris = cluster_ids[indices].reshape(-1, 3)[valid]
     sorted_tris = np.sort(tris, axis=1)
     _, unique_rows = np.unique(sorted_tris, axis=0, return_index=True)
     tris = tris[np.sort(unique_rows)]
@@ -130,17 +138,21 @@ def cluster_primitive(gltf: dict, binary: bytes, writer: Writer, primitive: dict
     remap = -np.ones(cluster_count, dtype=np.int64)
     remap[used] = np.arange(used.size)
     tris = remap[tris]
-    new_positions = new_positions[used]
+    new_positions = spatial_positions[cluster_spatial[used]]
     attributes = {"POSITION": writer.add(new_positions.astype(np.float32), 34962, "VEC3", 5126, minmax=True)}
     if normals is not None:
-        new_normals = np.zeros((cluster_count, 3))
-        np.add.at(new_normals, cluster_ids, normals)
-        new_normals = new_normals[used]
+        spatial_normals = np.zeros((spatial_count, 3))
+        np.add.at(spatial_normals, spatial_ids, normals)
+        new_normals = spatial_normals[cluster_spatial[used]]
         lengths = np.linalg.norm(new_normals, axis=1, keepdims=True)
         lengths[lengths == 0] = 1.0
         attributes["NORMAL"] = writer.add((new_normals / lengths).astype(np.float32), 34962, "VEC3", 5126)
     if uvs is not None:
-        attributes["TEXCOORD_0"] = writer.add(uvs[first_index][used].astype(np.float32), 34962, "VEC2", 5126)
+        uv_sum = np.zeros((cluster_count, 2))
+        np.add.at(uv_sum, cluster_ids, uvs)
+        uv_count = np.bincount(cluster_ids, minlength=cluster_count).astype(np.float64)
+        mean_uvs = uv_sum / uv_count[:, None]
+        attributes["TEXCOORD_0"] = writer.add(mean_uvs[used].astype(np.float32), 34962, "VEC2", 5126)
     index_dtype = np.uint16 if used.size < 65535 else np.uint32
     component = 5123 if index_dtype is np.uint16 else 5125
     indices_accessor = writer.add(tris.reshape(-1).astype(index_dtype), 34963, "SCALAR", component)

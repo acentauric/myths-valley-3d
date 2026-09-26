@@ -57,3 +57,17 @@ instancia esses modelos nas árvores nomeadas perto dos pontos de interesse
 (`_arvore`), normalizando a altura visual em `TRIPO_ARVORES_MEDIDAS`; a mata
 fechada e os coqueiros da orla continuam procedurais (`flora_reconcavo.gd`),
 porque centenas de instâncias desses modelos pesariam demais.
+
+## Mangueira em Malha Smart (retopologia do Tripo)
+
+`mangueira_tripo_smart.glb` é a mesma mangueira (`ffa9a27a-…`) passada pela
+Retopologia do Tripo Studio em 26/09/2026: topologia Quad, Malha Smart P1.0,
+alvo de 10.000 polígonos, 40 créditos. Resultado: 11.384 quads (20.453
+triângulos), texturas 2K rebakeadas pelo Tripo, 12,7 MB. Comparação no jogo
+(tecla C, bancada ao sul da Praça): procedural 560 tri, HD + `reduzir_glb.py`
+144.564 tri, Malha Smart 20.453 tri — a Malha Smart ficou visualmente mais limpa
+que a redução por agrupamento de vértices.
+
+A primeira versão de `reduzir_glb.py` abria costuras de UV (trincas brancas na
+capela). A correção faz a posição depender só da célula espacial e usa UV média
+numa grade de 1/256; todos os modelos foram reprocessados.
