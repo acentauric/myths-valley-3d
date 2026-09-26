@@ -134,17 +134,20 @@ func _unhandled_input(event: InputEvent) -> void:
 	if not map_open:
 		return
 	if event is InputEventMouseButton and event.pressed:
+		var bounds_zoom: Rect2 = $Cenario.get_map_bounds()
+		var zoom_max := maxf(bounds_zoom.size.x, bounds_zoom.size.y) * 2.0
 		if event.button_index == MOUSE_BUTTON_WHEEL_UP:
-			camera.size = maxf(120.0, camera.size * 0.78)
+			camera.size = maxf(30.0, camera.size * 0.78)
 		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
-			camera.size = minf(3800.0, camera.size * 1.28)
+			camera.size = minf(zoom_max, camera.size * 1.28)
 	if event is InputEventMouseMotion and (event.button_mask & (MOUSE_BUTTON_MASK_MIDDLE | MOUSE_BUTTON_MASK_RIGHT)):
 		var meters_per_pixel := camera.size / maxf(1.0, get_viewport().get_visible_rect().size.y)
 		map_target.x -= event.relative.x * meters_per_pixel
 		map_target.z -= event.relative.y * meters_per_pixel
 		var bounds: Rect2 = $Cenario.get_map_bounds()
-		map_target.x = clampf(map_target.x, bounds.position.x - 300.0, bounds.end.x + 300.0)
-		map_target.z = clampf(map_target.z, bounds.position.y - 300.0, bounds.end.y + 300.0)
+		var margin := maxf(bounds.size.x, bounds.size.y) * 0.16
+		map_target.x = clampf(map_target.x, bounds.position.x - margin, bounds.end.x + margin)
+		map_target.z = clampf(map_target.z, bounds.position.y - margin, bounds.end.y + margin)
 
 func _clear() -> void:
 	history_open = false
@@ -268,15 +271,16 @@ func _open_map() -> void:
 	panel.offset_top = 32
 	panel.offset_bottom = 262
 	_label("Mapa do vale", 24)
-	_label("%s · 1 unidade = 1 m" % $Cenario.get_region_title(), 16)
+	_label("%s · 1 unidade = %s m" % [$Cenario.get_region_title(), _formatar_escala($Cenario.get_meters_per_unit())], 16)
 	_label("N ↑ · roda: zoom · botão direito: mover", 14)
 	_button("VOLTAR", _home).grab_focus()
 	var bounds: Rect2 = $Cenario.get_map_bounds()
 	var center := bounds.get_center()
+	var margin := maxf(bounds.size.x, bounds.size.y) * 0.16
 	map_target = Vector3(center.x, 0, center.y)
 	camera.projection = Camera3D.PROJECTION_ORTHOGONAL
 	var aspect := get_viewport().get_visible_rect().size.aspect()
-	camera.size = maxf(bounds.size.y + 300.0, (bounds.size.x + 300.0) / maxf(aspect, 0.5))
+	camera.size = maxf(bounds.size.y + margin, (bounds.size.x + margin) / maxf(aspect, 0.5))
 	camera.position = map_target + Vector3(0, 3000, 0)
 	camera_target = map_target
 	camera.look_at(map_target, Vector3(0, 0, -1))
@@ -320,7 +324,7 @@ func _add_map_marker(label: String, position: Vector3) -> void:
 
 func _focus_map_marker(position: Vector3) -> void:
 	map_target = position
-	camera.size = minf(camera.size, 420.0)
+	camera.size = minf(camera.size, 420.0 / $Cenario.get_meters_per_unit())
 
 
 func _position_map_markers() -> void:
@@ -456,3 +460,9 @@ func _start_game() -> void:
 	set_process(false)
 	Audio.parar_narracao()
 	get_tree().change_scene_to_file("res://scenes/prototipo_3d/vale.tscn")
+
+
+func _formatar_escala(meters_per_unit: float) -> String:
+	if is_equal_approx(meters_per_unit, roundf(meters_per_unit)):
+		return str(int(roundf(meters_per_unit)))
+	return String.num(meters_per_unit, 2)

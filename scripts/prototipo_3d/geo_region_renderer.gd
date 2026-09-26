@@ -1,6 +1,8 @@
 extends Node3D
 ## Renders one geographic region from metric KML data and a separately curated scenario.
-## Coordinates are local meters: X points east and Z points south. One Godot unit is one meter.
+## Coordinates are local meters: X points east and Z points south.
+## The region catalog defines how many meters one Godot unit represents (`scale_m_per_unit`);
+## positions are divided by that factor while walkable widths keep a playable minimum.
 
 const LAND_COLOR := Color("9bbf7c")
 const FOREST_COLOR := Color("719968")
@@ -33,6 +35,20 @@ var _open_areas: Array[PackedVector2Array] = []
 var _tree_trunks: Array[Dictionary] = []
 var _tree_collision_pool: Array[Dictionary] = []
 var _tree_collision_elapsed := 0.0
+var _meters_per_unit := 1.0
+
+
+func set_meters_per_unit(value: float) -> void:
+	_meters_per_unit = maxf(value, 0.01)
+
+
+func get_meters_per_unit() -> float:
+	return _meters_per_unit
+
+
+## Converts a real-world width in meters to Godot units, never below a playable minimum.
+func _units(meters: float, minimum: float) -> float:
+	return maxf(meters / _meters_per_unit, minimum)
 
 
 func build_region(kml_json_path: String, scenario_json_path: String) -> void:
@@ -47,11 +63,11 @@ func build_region(kml_json_path: String, scenario_json_path: String) -> void:
 	var bounds_data: Dictionary = scenario.get("bounds_m", geographic.get("bounds_m", {}))
 	_background_kind = String(scenario.get("background_kind", "land"))
 	_bounds = Rect2(
-		Vector2(float(bounds_data.get("min_x", 0.0)), float(bounds_data.get("min_z", 0.0))),
+		Vector2(float(bounds_data.get("min_x", 0.0)), float(bounds_data.get("min_z", 0.0))) / _meters_per_unit,
 		Vector2(
 			float(bounds_data.get("max_x", 0.0)) - float(bounds_data.get("min_x", 0.0)),
 			float(bounds_data.get("max_z", 0.0)) - float(bounds_data.get("min_z", 0.0))
-		)
+		) / _meters_per_unit
 	)
 	_land = _to_points(scenario.get("land_polygon_m", []))
 	_forest = _to_points(scenario.get("forest_polygon_m", []))
@@ -89,7 +105,7 @@ func build_region(kml_json_path: String, scenario_json_path: String) -> void:
 					_roads.append({"name": String(feature.get("name", "")), "points": points, "width": _road_width(feature)})
 			"river":
 				if points.size() >= 2:
-					_rivers.append({"name": String(feature.get("name", "")), "points": points, "width": 9.0})
+					_rivers.append({"name": String(feature.get("name", "")), "points": points, "width": _units(9.0, 4.0)})
 	_build_background()
 	_add_polygon("Terra", _land, 0.0, LAND_COLOR, true)
 	_add_polygon("Cobertura florestal", _forest, 0.012, FOREST_COLOR)
@@ -102,12 +118,12 @@ func build_region(kml_json_path: String, scenario_json_path: String) -> void:
 				"Fazenda": color = Color("86aa67")
 				"Praça": color = Color("d9c39a")
 			_add_polygon(String(feature.get("name", "Área")), _to_points(feature.get("coordinates_m", [])), 0.027, color)
-	_add_ribbon("Orla de areia", _coast, 17.0, 0.038, BEACH_COLOR)
+	_add_ribbon("Orla de areia", _coast, _units(17.0, 6.0), 0.038, BEACH_COLOR)
 	for river in _rivers:
 		_add_ribbon("Rio", river.points, river.width, 0.046, RIVER_COLOR)
 	for road in _roads:
 		var color := MAIN_ROAD_COLOR if road.name == "Rua Principal" else ROAD_COLOR
-		_add_ribbon("Borda " + road.name, road.points, road.width + 2.4, 0.052, ROAD_EDGE_COLOR)
+		_add_ribbon("Borda " + road.name, road.points, road.width + 1.2, 0.052, ROAD_EDGE_COLOR)
 		_add_ribbon(road.name, road.points, road.width, 0.058, color, true)
 	_build_shore_access()
 	_build_forest(scenario.get("vegetation", {}))
@@ -156,7 +172,7 @@ func get_feature_center(feature_name: String, kind: String = "") -> Vector3:
 
 func surface_at(world_position: Vector3) -> String:
 	var point := Vector2(world_position.x, world_position.z)
-	if _distance_to_line(point, _coast) < 13.0:
+	if _distance_to_line(point, _coast) < _units(13.0, 4.5):
 		return "areia"
 	for road in _roads:
 		if _distance_to_line(point, road.points) < road.width * 0.5 + 1.0:
@@ -202,7 +218,7 @@ func _to_points(coordinates: Array) -> PackedVector2Array:
 	var result := PackedVector2Array()
 	for coordinate in coordinates:
 		if coordinate is Array and coordinate.size() >= 2:
-			var point := Vector2(float(coordinate[0]), float(coordinate[1]))
+			var point := Vector2(float(coordinate[0]), float(coordinate[1])) / _meters_per_unit
 			if result.is_empty() or result[-1].distance_squared_to(point) > 0.0001:
 				result.append(point)
 	if result.size() > 2 and result[0].distance_squared_to(result[-1]) < 0.0001:
@@ -277,10 +293,10 @@ func _add_up_triangle(surface: SurfaceTool, a: Vector3, b: Vector3, c: Vector3) 
 func _road_width(feature: Dictionary) -> float:
 	var name := String(feature.get("name", ""))
 	if name == "Rua Principal":
-		return 11.0
+		return _units(11.0, 4.6)
 	if name == "Rua do mirante":
-		return 4.2
-	return 5.0
+		return _units(4.2, 2.6)
+	return _units(5.0, 3.2)
 
 
 func _build_shore_access() -> void:
@@ -290,8 +306,8 @@ func _build_shore_access() -> void:
 			continue
 		var shore := _nearest_land_edge(destination)
 		var inland := (shore - destination).normalized()
-		var route := PackedVector2Array([shore + inland * 6.0, destination])
-		_add_ribbon("Acesso " + String(landmark.name), route, 4.5, 0.058, SHORE_ACCESS_COLOR, true)
+		var route := PackedVector2Array([shore + inland * _units(6.0, 3.0), destination])
+		_add_ribbon("Acesso " + String(landmark.name), route, _units(4.5, 3.0), 0.058, SHORE_ACCESS_COLOR, true)
 
 
 func _nearest_land_edge(point: Vector2) -> Vector2:
@@ -379,10 +395,12 @@ func _build_forest(configuration: Dictionary) -> void:
 		return
 	var rng := RandomNumberGenerator.new()
 	rng.seed = int(configuration.get("seed", 1887))
-	var clearing := float(configuration.get("clearing_m", 8.0))
+	var clearing := _units(float(configuration.get("clearing_m", 8.0)), 2.5)
 	var positions: Array[Vector2] = []
 	var occupied := {}
-	var cell_size := 12.0
+	var cell_size := _units(12.0, 3.6)
+	var coast_clearing := _units(18.0, 5.0)
+	var interest_clearing := _units(16.0, 6.0)
 	var attempts := 0
 	while positions.size() < target and attempts < target * 35:
 		attempts += 1
@@ -400,9 +418,9 @@ func _build_forest(configuration: Dictionary) -> void:
 			continue
 		if _inside_open_area(point):
 			continue
-		if _distance_to_line(point, _coast) < 18.0:
+		if _distance_to_line(point, _coast) < coast_clearing:
 			continue
-		if _near_route(point, clearing) or _near_interest(point, 16.0):
+		if _near_route(point, clearing) or _near_interest(point, interest_clearing):
 			continue
 		var cell := Vector2i(floori(point.x / cell_size), floori(point.y / cell_size))
 		var crowded := false

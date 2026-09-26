@@ -1,5 +1,6 @@
 extends Node3D
-## Região geográfica em metros, com detalhes artesanais junto aos pontos de interesse.
+## Região geográfica com detalhes artesanais junto aos pontos de interesse.
+## O catálogo define quantos metros reais cabem em uma unidade do Godot (`scale_m_per_unit`).
 
 const PATH := Color("c5ad7a")
 const WOOD := Color("735139")
@@ -16,6 +17,16 @@ var landmarks: Array[Dictionary] = []
 var areas: Array[Dictionary] = []
 var region_title := "Vale"
 var _region = null
+var _meters_per_unit := 1.0
+
+
+func get_meters_per_unit() -> float:
+	return _meters_per_unit
+
+
+## Converte um deslocamento medido em metros reais para unidades da cena.
+func _u(meters: Vector3) -> Vector3:
+	return meters / _meters_per_unit
 
 
 func get_spawn_position() -> Vector3:
@@ -44,15 +55,17 @@ func _ready() -> void:
 	if region_data.is_empty():
 		return
 	region_title = String(region_data.get("title", region_data.get("id", "Vale")))
+	_meters_per_unit = maxf(float(region_data.get("scale_m_per_unit", 1.0)), 0.01)
 	_region = GeoRegionRenderer.new()
 	_region.name = String(region_data.get("id", "Regiao"))
 	add_child(_region)
+	_region.set_meters_per_unit(_meters_per_unit)
 	_region.build_region(String(region_data["geometry"]), String(region_data["scenario"]))
 	landmarks = _region.landmarks
 	areas = _region.areas
 	if region_data["id"] == "bom_jesus_dos_pobres":
-		_casa_de_taipa_referencia(Vector3(-52, 0, -27))
-		_tripo_house(Vector3(40, 0, -35))
+		_casa_de_taipa_referencia(_u(Vector3(-52, 0, -27)))
+		_tripo_house(_u(Vector3(40, 0, -35)))
 		_house(Vector3(32, 0, 72), Color("dfb980"), Color("ae6950"))
 		_build_farm()
 		_build_trees()
@@ -68,8 +81,9 @@ func _active_region_data() -> Dictionary:
 	for entry_value in data.get("regions", []):
 		var entry: Dictionary = entry_value
 		if entry.get("id", "") == data.get("active_region", ""):
-			if not is_equal_approx(float(entry.get("scale_m_per_unit", 0.0)), 1.0):
-				push_error("A escala da região precisa ser de 1 metro por unidade.")
+			var scale := float(entry.get("scale_m_per_unit", 1.0))
+			if scale <= 0.0:
+				push_error("A escala da região (scale_m_per_unit) precisa ser positiva.")
 				return {}
 			return entry
 	push_error("A região ativa não foi encontrada no catálogo.")
@@ -219,12 +233,13 @@ func _build_farm() -> void:
 
 
 func _build_trees() -> void:
+	# Posições anotadas em metros reais ao redor da Praça; a cena converte para unidades.
 	var positions: Array[Vector3] = [Vector3(-75, 0, -70), Vector3(-78, 0, -35), Vector3(-82, 0, 5), Vector3(-85, 0, 47), Vector3(-44, 0, 93), Vector3(55, 0, 99), Vector3(72, 0, 77), Vector3(85, 0, 30), Vector3(85, 0, -60), Vector3(44, 0, -86), Vector3(-46, 0, -95)]
 	for i in range(positions.size()):
 		if i == 2:
-			_pau_brasil(positions[i])
+			_pau_brasil(_u(positions[i]))
 		else:
-			_tree(positions[i], 0.82 + (i % 4) * 0.13)
+			_tree(_u(positions[i]), 0.82 + (i % 4) * 0.13)
 
 
 func _pau_brasil(origin: Vector3) -> void:
@@ -270,18 +285,19 @@ func _tree(origin: Vector3, size: float) -> void:
 
 func _build_details() -> void:
 	for i in range(28):
-		var x: float = -25.0 + float(i % 7) * 8.0
-		var z: float = -21.0 + floorf(float(i) / 7.0) * 14.0
-		if absf(x) < 3.0:
+		var x: float = (-25.0 + float(i % 7) * 8.0) / _meters_per_unit
+		var z: float = (-21.0 + floorf(float(i) / 7.0) * 14.0) / _meters_per_unit
+		if absf(x) < 3.0 / _meters_per_unit:
 			continue
 		for j in range(3):
 			_box(Vector3(0.05, 0.28, 0.05), Vector3(x + j * 0.21, 0.14, z + (j % 2) * 0.25), LEAVES)
 			_box(Vector3(0.16, 0.10, 0.16), Vector3(x + j * 0.21, 0.30, z + (j % 2) * 0.25), Color("e4c782") if i % 2 == 0 else Color("ce9d99"))
 	# Um banco mantém a escala humana na praça geográfica.
-	_box(Vector3(2.3, 0.14, 0.65), Vector3(-4.6, 0.62, -0.1), WOOD, true)
-	_box(Vector3(2.3, 0.52, 0.12), Vector3(-4.6, 1.04, -0.42), WOOD)
-	for x in [-5.45, -3.75]:
-		_box(Vector3(0.16, 0.6, 0.5), Vector3(x, 0.3, -0.1), Color("544b40"))
+	var bench := _u(Vector3(-4.6, 0, -0.1))
+	_box(Vector3(2.3, 0.14, 0.65), bench + Vector3(0, 0.62, 0), WOOD, true)
+	_box(Vector3(2.3, 0.52, 0.12), bench + Vector3(0, 1.04, -0.32), WOOD)
+	for x in [-0.85, 0.85]:
+		_box(Vector3(0.16, 0.6, 0.5), bench + Vector3(x, 0.3, 0), Color("544b40"))
 
 
 func _build_landmark_details() -> void:
