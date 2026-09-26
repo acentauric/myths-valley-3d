@@ -200,6 +200,15 @@ static func malha(chave: String, size: float = 1.0) -> Dictionary:
 		factor = float(spec["altura"]) * size / maxf(bounds.size.y, 0.001)
 	else:
 		factor = float(spec["largura"]) * size / maxf(maxf(bounds.size.x, bounds.size.z), 0.001)
+	var base := Transform3D(Basis().scaled(Vector3.ONE * factor), -Vector3(bounds.get_center().x, bounds.position.y, bounds.get_center().z) * factor)
+	if instances.size() == 1:
+		# Uma malha só (caso dos GLBs do Tripo): usa a malha importada, que traz os LODs
+		# gerados pelo importador — fundir com SurfaceTool os perderia.
+		var unica := instances[0] as MeshInstance3D
+		var resultado := {"mesh": unica.mesh, "base": base * _relativa(node, unica), "altura": bounds.size.y * factor, "tronco": float(spec.get("tronco", 0.3)) * size}
+		_malhas[cache_key] = resultado
+		node.free()
+		return resultado
 	# Funde todas as MeshInstance3D numa ArrayMesh única, já com a transformação relativa.
 	var merged := ArrayMesh.new()
 	for instance in instances:
@@ -213,7 +222,6 @@ static func malha(chave: String, size: float = 1.0) -> Dictionary:
 			if material != null:
 				tool.set_material(material)
 			tool.commit(merged)
-	var base := Transform3D(Basis().scaled(Vector3.ONE * factor), -Vector3(bounds.get_center().x, bounds.position.y, bounds.get_center().z) * factor)
 	var result := {"mesh": merged, "base": base, "altura": bounds.size.y * factor, "tronco": float(spec.get("tronco", 0.3)) * size}
 	_malhas[cache_key] = result
 	node.free()

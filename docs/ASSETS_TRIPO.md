@@ -124,9 +124,15 @@ Os nove personagens do lote foram gerados em pose T, prontos para rig. No Studio
 Clipes pedidos para os moradores: `idle`, `walk`, `run`, `greet_01`, `agree`,
 `look_around`, `wave_goodbye_02` (o viajante leva também `chop`, `afraid`, `fold_arms`,
 `swim`). **Pedro** já tem rig e os sete clipes (projeto `c8a8039c-…`); falta exportar pela
-interface: a chamada `operation/export` com `with_animation:true` feita pelo script
-respondeu erro 1000/1004 (a interface manda `animations` com os ids das operações de
-retarget; investigar antes de automatizar).
+interface. **Pedro está pronto** (26/09): na tela Animar, clicar em cada predefinição
+(ocioso, caminhar, correr, cumprimentar_01, concordar, olhar_ao_redor, dar_tchau_02)
+e depois Exportar → Número de Animações → Selecionar tudo → Exportar; GLB com 65
+ossos e 8 clipes em `personagens/pedro_tripo.glb` (textura 1K). A chamada direta
+`operation/export` com `with_animation:true` pelo script respondeu erro 1000/1004.
+
+Os clipes chegam com sufixo (`walk.001`); o Godot os importa como `walk_001`,
+`greet_01_002`. `authored_animator.gd` tira o sufixo de três dígitos, então não é
+preciso renomear nada.
 
 No jogo nada precisa mudar quando o GLB animado chegar: `npc.gd` usa
 `authored_animator.gd` sempre que o modelo tem `AnimationPlayer`, e o jogador só troca

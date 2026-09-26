@@ -41,8 +41,12 @@ atualize esse arquivo e este documento juntos.
 - Catálogo ganhou `girar`, `afundar` e `piso` (peixe e tábua deitados; píer e ponte
   com as estacas na água e tabuado caminhável). Ferramentas novas em `tools/tripo/`:
   `sincronizar_downloads.py`, `medir_glb.py` e `registrar_origem.py`.
-- Pedro recebeu rig (Mixamo) e sete animações no Studio; a exportação animada e a dos
-  demais moradores ficam para o próximo passo (ver ASSETS_TRIPO.md).
+- Pedro animado: rig Mixamo e clipes idle, walk, run, greet_01, agree, look_around e
+  wave_goodbye_02 do Tripo; `authored_animator.gd` reconhece os nomes com sufixo
+  (`walk_001`). Os demais moradores seguem em pose T até receberem rig.
+- Mata pesada resolvida: blocos de 40 unidades com descarte fora da câmera, LOD da
+  malha importada e mata só com as espécies leves — de ~10,5 M para ~2,4–3,6 M
+  triângulos no quadro, 60 FPS.
 
 ## Em desenvolvimento — 26/09/2026
 

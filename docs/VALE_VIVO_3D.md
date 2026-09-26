@@ -90,11 +90,16 @@ O jogador chega de barco: começa no píer, com o Pedro ao lado.
 | Procedural (antes da compressão) | 60 | ~0,65 M | ~1,06 GB |
 | Tripo, texturas sem compressão | 60 | ~10,5 M | 2,49 GB |
 | Tripo, texturas VRAM Compressed | 60 | ~10,5 M | 0,74 GB |
+| Tripo, mata em blocos com LOD | 60 | ~2,4–3,6 M | 0,74 GB |
 
-A maior parte dos triângulos do estilo Tripo vem da mata (`MultiMesh` com as árvores
-`mata_a`, `mata_b`, `embauba`, `dende`) e dos coqueiros da orla. Se o quadro pesar em
-máquinas mais fracas, o próximo passo é LOD: malha de 300–500 polígonos para a mata
-distante (retopologia com alvo menor) e `visibility_range` nas instâncias.
+A mata pesava por três motivos, corrigidos em `geo_region_renderer.gd` e
+`catalogo_assets.gd`: (1) o dendê de 15 mil triângulos estava sorteado na mata — a
+mata do estilo Tripo agora usa só `mata_a`, `mata_b` e `embauba` (~2,5 mil cada);
+(2) cada espécie era uma `MultiMesh` do mapa inteiro, que nunca sai do quadro — agora
+a mata e a orla são divididas em blocos de `BLOCO_MATA` (40 unidades), descartados fora
+da câmera; (3) o catálogo fundia a malha com `SurfaceTool` e perdia os LODs gerados
+pelo importador — para GLBs de uma malha só, usa a malha importada, e cada bloco
+escolhe o LOD pela distância.
 
 ## Onde mexer
 

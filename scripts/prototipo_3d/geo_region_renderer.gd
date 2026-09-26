@@ -42,7 +42,11 @@ var _tree_collision_elapsed := 0.0
 var _meters_per_unit := 1.0
 var _estilo_tripo := false
 ## Espécies da mata no estilo Tripo (chaves do CatalogoAssets) e no procedural (FloraReconcavo).
-const ESPECIES_MATA_TRIPO := ["mata_alta", "mata_larga", "mata_alta", "embauba", "dendezeiro"]
+## Só modelos leves (~2,5 mil triângulos): o dendê (15 mil) fica para as árvores nomeadas.
+const ESPECIES_MATA_TRIPO := ["mata_alta", "mata_larga", "mata_alta", "embauba", "mata_larga"]
+## Lado do bloco (unidades) em que a mata e a orla são divididas: cada bloco é uma
+## MultiMesh própria, descartada fora da câmera e com LOD escolhido pela distância.
+const BLOCO_MATA := 40.0
 
 
 func set_estilo_tripo(value: bool) -> void:
@@ -610,22 +614,40 @@ func _build_forest(configuration: Dictionary) -> void:
 		var group: Array = by_species[species]
 		var built: Dictionary = _malha_da_especie(species, rng)
 		var base: Transform3D = built.base
-		var multimesh := MultiMesh.new()
-		multimesh.transform_format = MultiMesh.TRANSFORM_3D
-		multimesh.mesh = built.mesh
-		multimesh.instance_count = group.size()
+		var transforms: Array[Transform3D] = []
 		for i in range(group.size()):
 			var point: Vector2 = group[i]
 			var scale := rng.randf_range(0.8, 1.25)
 			var yaw := rng.randf_range(0.0, TAU)
 			_tree_trunks.append({"point": point, "height": minf(float(built.altura) * scale, 4.0), "radius": float(built.tronco) * scale})
-			multimesh.set_instance_transform(i, Transform3D(Basis.from_euler(Vector3(0, yaw, 0)).scaled(Vector3.ONE * scale), Vector3(point.x, 0.0, point.y)) * base)
+			transforms.append(Transform3D(Basis.from_euler(Vector3(0, yaw, 0)).scaled(Vector3.ONE * scale), Vector3(point.x, 0.0, point.y)) * base)
+		_multimesh_em_blocos("Mata: " + species, built.mesh, transforms)
+	_build_coast_palms(rng)
+
+
+## Divide instâncias em blocos de BLOCO_MATA: cada bloco vira uma MultiMeshInstance3D
+## com AABB pequena, então o Godot descarta os blocos fora da câmera e escolhe o LOD
+## da malha pela distância de cada bloco (uma MultiMesh do mapa inteiro nunca some).
+func _multimesh_em_blocos(nome: String, mesh: Mesh, transforms: Array[Transform3D]) -> void:
+	var blocos: Dictionary = {}
+	for t in transforms:
+		var chave := Vector2i(floori(t.origin.x / BLOCO_MATA), floori(t.origin.z / BLOCO_MATA))
+		if not blocos.has(chave):
+			blocos[chave] = []
+		blocos[chave].append(t)
+	for chave in blocos.keys():
+		var lista: Array = blocos[chave]
+		var multimesh := MultiMesh.new()
+		multimesh.transform_format = MultiMesh.TRANSFORM_3D
+		multimesh.mesh = mesh
+		multimesh.instance_count = lista.size()
+		for i in range(lista.size()):
+			multimesh.set_instance_transform(i, lista[i])
 		var visual := MultiMeshInstance3D.new()
-		visual.name = "Mata: " + species
+		visual.name = "%s %d,%d" % [nome, chave.x, chave.y]
 		visual.multimesh = multimesh
 		visual.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		add_child(visual)
-	_build_coast_palms(rng)
 
 
 ## Coqueiros ao longo da orla, do lado da terra, inclinados para o mar.
@@ -670,17 +692,7 @@ func _build_coast_palms(rng: RandomNumberGenerator) -> void:
 		travelled += length
 	if transforms.is_empty():
 		return
-	var multimesh := MultiMesh.new()
-	multimesh.transform_format = MultiMesh.TRANSFORM_3D
-	multimesh.mesh = built.mesh
-	multimesh.instance_count = transforms.size()
-	for i in range(transforms.size()):
-		multimesh.set_instance_transform(i, transforms[i])
-	var visual := MultiMeshInstance3D.new()
-	visual.name = "Coqueiros da orla"
-	visual.multimesh = multimesh
-	visual.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	add_child(visual)
+	_multimesh_em_blocos("Coqueiros da orla", built.mesh, transforms)
 
 
 func _process(delta: float) -> void:

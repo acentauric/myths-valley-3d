@@ -377,5 +377,5 @@
       "prompt": "Dona Candinha, elderly Afro-Brazilian street vendor woman selling sugarcane juice, white headscarf, mustard-yellow blouse, long cream skirt, barefoot, standing in a relaxed A-pose, full body. Stylized hand-painted 3D game character, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated character, no ground plane, no background, no text."
     }
   },
-  "estado": "26/09/2026: todas as tarefas retopologizadas (Malha Smart, alvo da categoria) e exportadas pelo lote_studio.js; GLBs em prototipo_3d/assets/prototipo_3d/<pasta>/<chave>_tripo.glb. Pedro: rig 7bc265b0 (Mixamo) e retargets 1b5b29f8 (idle, walk, run, greet_01, agree) e 57f476ba (look_around, wave_goodbye_02) prontos; falta exportar com animações pela interface."
+  "estado": "26/09/2026: todas as tarefas retopologizadas (Malha Smart, alvo da categoria) e exportadas pelo lote_studio.js; GLBs em prototipo_3d/assets/prototipo_3d/<pasta>/<chave>_tripo.glb. Pedro: rig 7bc265b0 (Mixamo) e retargets 1b5b29f8 (idle, walk, run, greet_01, agree) e 57f476ba (look_around, wave_goodbye_02) prontos; exportado pela interface com 8 clipes (textura 1K) em 26/09."
 }
