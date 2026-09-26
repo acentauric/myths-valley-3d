@@ -3,13 +3,33 @@
 Este histórico acompanha apenas a experiência executada em `prototipo_3d/` na
 branch `prototype/myths-valley-3d`. O projeto 2D foi a base da derivação, mas
 suas fases, versões e novidades não são entradas deste registro. Os marcos
-abaixo seguem o que mudou no 3D. A identificação atual é **v0.1.0-dev · Build #3**,
+abaixo seguem o que mudou no 3D. A identificação atual é **v0.1.0-dev · Build #4**,
 exclusiva desta derivação e ainda sem distribuição publicada.
 
 O texto clicável de versão e build no rodapé da abertura mostra resumos destes
 marcos. Os textos curtos e a identificação exibidos no jogo ficam em
 `prototipo_3d/data/historico_3d.json`; ao registrar um novo marco ou build,
 atualize esse arquivo e este documento juntos.
+
+## Em desenvolvimento — 26/09/2026
+
+- A região passou a **1 unidade = 4 m** (`scale_m_per_unit` no catálogo, agora
+  funcional): posições do KML e do cenário são divididas pelo fator, e larguras
+  de ruas, rios e orla têm mínimos jogáveis. Fazenda e Praça ficaram a ~220 m
+  de caminhada em vez de ~890 m (`d7613cd`).
+- Ruas ganharam textura de terra batida com sulcos de carro de boi, aplicada ao
+  longo do percurso; a Praça, chão de terra pisoteada com seixos. As duas
+  texturas são procedurais e regeráveis por script (`c9457a0`).
+- `flora_reconcavo.gd` traz espécies procedurais com silhueta própria
+  (mangueira, jaqueira, cajueiro, dendezeiro, coqueiro, bananeira, ipê amarelo e
+  roxo, embaúba, mata alta) e as peças soltas do 2D (poço, cruzeiro, carroça,
+  varal, pilha de lenha, pote, cerca, banco). A mata usa uma MultiMesh por
+  espécie; coqueiros inclinados acompanham a orla (`ea42286`).
+- Mangueira, jaqueira, cajueiro, coqueiro, capela colonial e poço de pedra foram
+  gerados no Tripo Studio e reduzidos por `tools/modelos/reduzir_glb.py`,
+  substituindo os procedurais perto dos pontos de interesse (`42eedd8`).
+- `JOGAR_3D.cmd` passou a existir só em `prototipo_3d/`; o histórico e o mapa de
+  planejamento foram movidos para `docs/` e `tools/mapas/` (`23bff84`).
 
 ## Em desenvolvimento — 25/09/2026
 

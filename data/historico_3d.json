@@ -1,7 +1,20 @@
 {
   "versao_atual": "0.1.0-dev",
-  "build_numero": 3,
+  "build_numero": 4,
   "entradas": [
+    {
+      "data": "26/09/2026",
+      "estado": "EM DESENVOLVIMENTO",
+      "titulo": "Vale compacto e flora do Recôncavo",
+      "mudancas": [
+        "O vale passou a usar quatro metros por unidade.",
+        "Ruas e praça ganharam chão de terra batida.",
+        "Mangueira, jaqueira, cajueiro e coqueiro chegaram do Tripo.",
+        "A capela e o poço ganharam modelos próprios.",
+        "A mata e a orla ganharam espécies do Recôncavo.",
+        "Poço, cruzeiro, carroça e varal chegaram do 2D."
+      ]
+    },
     {
       "data": "25/09/2026",
       "estado": "EM DESENVOLVIMENTO",

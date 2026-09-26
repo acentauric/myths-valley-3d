@@ -3,11 +3,15 @@
 ## Direção
 
 O desenho feito no Google Earth pelo autor é a referência geográfica da primeira
-região explorável do 3D. A implementação atual usa escala horizontal **1:1:
-1 unidade do Godot representa 1 metro**. Ruas, rios e áreas desenhadas no KML
-orientam o terreno e o mapa visto de cima; construções, vegetação e encontros
-podem receber tratamento artístico sem deslocar os pontos de referência por
-conveniência da antiga maquete.
+região explorável do 3D. Os dados continuam **em metros reais**; o catálogo
+define quantos metros cabem em uma unidade do Godot (`scale_m_per_unit`). Para a
+demo, Bom Jesus dos Pobres usa **1 unidade = 4 m** (escala 1/4): a geografia
+relativa do KML é preservada, mas o vale fica caminhável — Fazenda e Praça a
+~220 m em vez de ~890 m. Larguras de ruas, rios e orla e os afastamentos da
+mata têm mínimos em unidades para continuarem jogáveis em qualquer fator.
+Ruas, rios e áreas desenhadas no KML orientam o terreno e o mapa visto de cima;
+construções, vegetação e encontros podem receber tratamento artístico sem
+deslocar os pontos de referência por conveniência da antiga maquete.
 
 A intenção de longo prazo é mapear o Brasil por regiões e pontos de interesse.
 Isso não significa criar uma única cena ou carregar todo o país de uma vez.
@@ -62,7 +66,7 @@ acrescenta edifícios e detalhes locais perto dos POIs da primeira região.
 O botão **MAPA** da abertura usa o mesmo mundo 3D com câmera ortográfica superior.
 Abre mostrando a região; a roda ajusta o zoom, o botão direito arrasta a vista e
 os marcadores clicáveis centralizam os pontos. **VOLTAR** retorna ao menu.
-O terreno está **plano**: a escala 1:1 vale para X/Z, sem reconstrução da
+O terreno está **plano**: a escala do catálogo vale para X/Z, sem reconstrução da
 altimetria. Rios e mar são representações de superfície, não simulação hídrica.
 Esta cena ainda não tem todas as construções, ruas urbanas ou biomas do país.
 
@@ -80,7 +84,7 @@ primeira região é o ponto Praça:
 | Latitude da origem | `-12.81231369544162` |
 | X no Godot | aumenta para leste |
 | Z no Godot | aumenta para sul |
-| Escala horizontal | `1 unidade = 1 metro` |
+| Escala horizontal | `1 unidade = 4 metros` (demo; `scale_m_per_unit` em `regioes.json`) |
 
 Para esta região pequena, o importador usa uma projeção local: calcula os metros
 por grau de longitude e latitude na origem e aplica esses fatores a cada ponto.
@@ -153,7 +157,7 @@ construídas na entrada. Para avançar até uma escala nacional, será necessár
    regiões. Adapte a ferramenta ou desenhe e registre essas máscaras em uma
    fonte própria da nova região.
 4. Adicione a entrada em `regioes.json` com `id`, `title`, `source_kml`,
-   `geometry`, `scenario` e `scale_m_per_unit: 1.0`. Defina `active_region` com
+   `geometry`, `scenario` e `scale_m_per_unit` (4.0 na demo; 1.0 para escala real). Defina `active_region` com
    esse ID para abrir a região no protótipo. A seleção é de desenvolvimento,
    ainda sem viagem contínua entre regiões.
 5. Acrescente os detalhes próprios da região separadamente do renderizador
@@ -188,8 +192,10 @@ decisões visuais reversíveis à medida que o mapa cresce.
 
 ## Caminhos e colisão no protótipo
 
-As oito ruas do KML são faixas vetoriais na escala 1:1. A Rua Principal tem 11 m
-de largura, a Rua do mirante tem 4,2 m e as demais têm 5 m. Uma borda terrosa
+As oito ruas do KML são faixas vetoriais em metros reais convertidos pela escala:
+a Rua Principal tem 11 m, a Rua do mirante 4,2 m e as demais 5 m, com mínimos
+jogáveis de 4,6 / 2,6 / 3,2 unidades. As faixas recebem a textura de terra batida
+com UV ao longo do percurso; a Praça recebe o chão de terra projetado pelo mundo. Uma borda terrosa
 ajuda a distinguir as vias da Praça e da vegetação na vista superior. As faixas
 têm colisão própria para que continuem caminháveis mesmo onde cruzam água.
 
