@@ -14,6 +14,8 @@ const MAIN_ROAD_COLOR := Color("e5c994")
 const ROAD_EDGE_COLOR := Color("8e795b")
 const SHORE_ACCESS_COLOR := Color("a47d50")
 const RIVER_COLOR := Color("76b5b6")
+const TERRA_BATIDA_TEXTURE := preload("res://assets/prototipo_3d/materiais/terra_batida_v1.png")
+const CHAO_PRACA_TEXTURE := preload("res://assets/prototipo_3d/materiais/chao_praca_v1.png")
 const TREE_COLLISION_RADIUS := 28.0
 const TREE_COLLISION_POOL_SIZE := 24
 const TREE_COLLISION_INTERVAL := 0.25
@@ -117,14 +119,17 @@ func build_region(kml_json_path: String, scenario_json_path: String) -> void:
 				"Mata": color = Color("648a5c")
 				"Fazenda": color = Color("86aa67")
 				"Praça": color = Color("d9c39a")
-			_add_polygon(String(feature.get("name", "Área")), _to_points(feature.get("coordinates_m", [])), 0.027, color)
+			var area_material: Material = null
+			if String(feature.get("name", "")) == "Praça":
+				area_material = _textured_material(CHAO_PRACA_TEXTURE, Color("f2e6c8"), 6.0)
+			_add_polygon(String(feature.get("name", "Área")), _to_points(feature.get("coordinates_m", [])), 0.027, color, false, area_material)
 	_add_ribbon("Orla de areia", _coast, _units(17.0, 6.0), 0.038, BEACH_COLOR)
 	for river in _rivers:
 		_add_ribbon("Rio", river.points, river.width, 0.046, RIVER_COLOR)
 	for road in _roads:
-		var color := MAIN_ROAD_COLOR if road.name == "Rua Principal" else ROAD_COLOR
+		var tint := Color("fff3dc") if road.name == "Rua Principal" else Color("e3d2b4")
 		_add_ribbon("Borda " + road.name, road.points, road.width + 1.2, 0.052, ROAD_EDGE_COLOR)
-		_add_ribbon(road.name, road.points, road.width, 0.058, color, true)
+		_add_ribbon(road.name, road.points, road.width, 0.058, ROAD_COLOR, true, _textured_material(TERRA_BATIDA_TEXTURE, tint))
 	_build_shore_access()
 	_build_forest(scenario.get("vegetation", {}))
 
@@ -234,6 +239,21 @@ func _material(color: Color, roughness: float = 1.0) -> StandardMaterial3D:
 	return material
 
 
+## Material com textura repetida; `world_tile_units` > 0 projeta a textura pelo mundo (X/Z) a cada N unidades.
+func _textured_material(texture: Texture2D, tint: Color, world_tile_units: float = 0.0) -> StandardMaterial3D:
+	var material := StandardMaterial3D.new()
+	material.albedo_texture = texture
+	material.albedo_color = tint
+	material.roughness = 0.94
+	material.cull_mode = BaseMaterial3D.CULL_DISABLED
+	material.texture_repeat = true
+	material.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC
+	if world_tile_units > 0.0:
+		# _add_up_triangle grava UV = posição / 10; reescala para o tamanho de ladrilho pedido.
+		material.uv1_scale = Vector3.ONE * (10.0 / world_tile_units)
+	return material
+
+
 func _build_background() -> void:
 	var mesh := BoxMesh.new()
 	# O fundo ultrapassa a borda da região para a vista aérea não revelar um retângulo vazio.
@@ -248,7 +268,7 @@ func _build_background() -> void:
 	add_child(visual)
 
 
-func _add_polygon(label: String, points: PackedVector2Array, y: float, color: Color, with_collision: bool = false) -> void:
+func _add_polygon(label: String, points: PackedVector2Array, y: float, color: Color, with_collision: bool = false, material_override: Material = null) -> void:
 	if points.size() < 3:
 		return
 	var indices := Geometry2D.triangulate_polygon(points)
@@ -257,7 +277,7 @@ func _add_polygon(label: String, points: PackedVector2Array, y: float, color: Co
 		return
 	var surface := SurfaceTool.new()
 	surface.begin(Mesh.PRIMITIVE_TRIANGLES)
-	surface.set_material(_material(color))
+	surface.set_material(material_override if material_override != null else _material(color))
 	for i in range(0, indices.size(), 3):
 		var a := Vector3(points[indices[i]].x, y, points[indices[i]].y)
 		var b := Vector3(points[indices[i + 1]].x, y, points[indices[i + 1]].y)
@@ -288,6 +308,21 @@ func _add_up_triangle(surface: SurfaceTool, a: Vector3, b: Vector3, c: Vector3) 
 		surface.set_normal(Vector3.UP)
 		surface.set_uv(Vector2(vertex.x, vertex.z) / 10.0)
 		surface.add_vertex(vertex)
+
+
+## Triângulo com UVs explícitos (u atravessa a faixa, v acompanha o percurso).
+func _add_up_triangle_uv(surface: SurfaceTool, a: Vector3, b: Vector3, c: Vector3, uv_a: Vector2, uv_b: Vector2, uv_c: Vector2) -> void:
+	if (b - a).cross(c - a).y < 0.0:
+		var swapped := b
+		b = c
+		c = swapped
+		var swapped_uv := uv_b
+		uv_b = uv_c
+		uv_c = swapped_uv
+	for i in range(3):
+		surface.set_normal(Vector3.UP)
+		surface.set_uv([uv_a, uv_b, uv_c][i])
+		surface.add_vertex([a, b, c][i])
 
 
 func _road_width(feature: Dictionary) -> float:
@@ -328,12 +363,17 @@ func _nearest_land_edge(point: Vector2) -> Vector2:
 	return closest
 
 
-func _add_ribbon(label: String, points: PackedVector2Array, width: float, y: float, color: Color, with_collision: bool = false) -> void:
+func _add_ribbon(label: String, points: PackedVector2Array, width: float, y: float, color: Color, with_collision: bool = false, material_override: Material = null) -> void:
 	if points.size() < 2:
 		return
 	var left := PackedVector2Array()
 	var right := PackedVector2Array()
+	var along := PackedFloat32Array()
+	var travelled := 0.0
 	for i in range(points.size()):
+		if i > 0:
+			travelled += points[i].distance_to(points[i - 1])
+		along.append(travelled / maxf(width, 0.01))
 		var previous := (points[i] - points[maxi(i - 1, 0)]).normalized()
 		var following := (points[mini(i + 1, points.size() - 1)] - points[i]).normalized()
 		if previous == Vector2.ZERO:
@@ -351,14 +391,22 @@ func _add_ribbon(label: String, points: PackedVector2Array, width: float, y: flo
 		right.append(points[i] - offset)
 	var surface := SurfaceTool.new()
 	surface.begin(Mesh.PRIMITIVE_TRIANGLES)
-	surface.set_material(_material(color))
+	surface.set_material(material_override if material_override != null else _material(color))
 	for i in range(points.size() - 1):
 		var a := Vector3(left[i].x, y, left[i].y)
 		var b := Vector3(right[i].x, y, right[i].y)
 		var c := Vector3(left[i + 1].x, y, left[i + 1].y)
 		var d := Vector3(right[i + 1].x, y, right[i + 1].y)
-		_add_up_triangle(surface, a, b, c)
-		_add_up_triangle(surface, c, b, d)
+		if material_override != null:
+			var uv_a := Vector2(0.0, along[i])
+			var uv_b := Vector2(1.0, along[i])
+			var uv_c := Vector2(0.0, along[i + 1])
+			var uv_d := Vector2(1.0, along[i + 1])
+			_add_up_triangle_uv(surface, a, b, c, uv_a, uv_b, uv_c)
+			_add_up_triangle_uv(surface, c, b, d, uv_c, uv_b, uv_d)
+		else:
+			_add_up_triangle(surface, a, b, c)
+			_add_up_triangle(surface, c, b, d)
 	var visual := MeshInstance3D.new()
 	visual.name = label
 	visual.mesh = surface.commit()

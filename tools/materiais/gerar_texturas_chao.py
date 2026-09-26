@@ -1,0 +1,132 @@
+"""Gera texturas tileáveis de chão para o protótipo 3D (terra batida e chão de praça).
+
+As imagens são procedurais e determinísticas (semente fixa), pensadas para 1887 no
+Recôncavo: estrada de terra batida com sulcos de carro de boi e chão de praça de
+terra com seixos. Rodar a partir da raiz do repositório:
+
+    python prototipo_3d/tools/materiais/gerar_texturas_chao.py
+
+Saída: prototipo_3d/assets/prototipo_3d/materiais/*.png (1024×1024, sem emenda).
+"""
+
+from __future__ import annotations
+
+from pathlib import Path
+
+import numpy as np
+from PIL import Image
+
+PROJECT = Path(__file__).resolve().parents[2]
+OUTPUT = PROJECT / "assets/prototipo_3d/materiais"
+SIZE = 1024
+SEED = 1887
+
+
+def _value_noise(rng: np.random.Generator, size: int, cells: int) -> np.ndarray:
+    """Ruído de valor periódico (tileável) interpolado com smoothstep."""
+    grid = rng.random((cells, cells))
+    grid = np.concatenate([grid, grid[:1]], axis=0)
+    grid = np.concatenate([grid, grid[:, :1]], axis=1)
+    coords = np.linspace(0.0, cells, size, endpoint=False)
+    x0 = np.floor(coords).astype(int)
+    fx = coords - x0
+    fx = fx * fx * (3.0 - 2.0 * fx)
+    a = grid[x0[:, None], x0[None, :]]
+    b = grid[x0[:, None], (x0 + 1)[None, :]]
+    c = grid[(x0 + 1)[:, None], x0[None, :]]
+    d = grid[(x0 + 1)[:, None], (x0 + 1)[None, :]]
+    top = a + (b - a) * fx[None, :]
+    bottom = c + (d - c) * fx[None, :]
+    return top + (bottom - top) * fx[:, None]
+
+
+def _fbm(rng: np.random.Generator, size: int, base_cells: int, octaves: int, gain: float = 0.5) -> np.ndarray:
+    total = np.zeros((size, size))
+    amplitude = 1.0
+    cells = base_cells
+    for _ in range(octaves):
+        total += _value_noise(rng, size, cells) * amplitude
+        amplitude *= gain
+        cells *= 2
+    total -= total.min()
+    return total / max(total.max(), 1e-6)
+
+
+def _mix(a: np.ndarray, b: np.ndarray, t: np.ndarray) -> np.ndarray:
+    return a * (1.0 - t[..., None]) + b * t[..., None]
+
+
+def _pebbles(rng: np.random.Generator, size: int, count: int, radius_range: tuple[float, float]) -> np.ndarray:
+    """Máscara suave de seixos, carimbada localmente com índices em módulo (mantém a emenda)."""
+    mask = np.zeros((size, size))
+    for _ in range(count):
+        cx, cy = rng.random(2) * size
+        r = rng.uniform(*radius_range)
+        span = int(np.ceil(r)) + 1
+        ys = (np.arange(int(cy) - span, int(cy) + span + 1)) % size
+        xs = (np.arange(int(cx) - span, int(cx) + span + 1)) % size
+        dy = (np.arange(int(cy) - span, int(cy) + span + 1) - cy)[:, None] * 1.3
+        dx = (np.arange(int(cx) - span, int(cx) + span + 1) - cx)[None, :]
+        stamp = np.clip(1.0 - np.sqrt(dx * dx + dy * dy) / r, 0.0, 1.0) ** 0.6
+        sub = mask[np.ix_(ys, xs)]
+        mask[np.ix_(ys, xs)] = np.maximum(sub, stamp)
+    return mask
+
+
+def terra_batida() -> Image.Image:
+    rng = np.random.default_rng(SEED)
+    base = _fbm(rng, SIZE, 4, 5)
+    fine = _fbm(rng, SIZE, 32, 3, 0.6)
+    ochre = np.array([0.72, 0.60, 0.42])
+    dark = np.array([0.52, 0.41, 0.28])
+    pale = np.array([0.82, 0.72, 0.53])
+    color = _mix(dark, ochre, base)
+    color = _mix(color, pale, np.clip(fine * 0.55, 0.0, 1.0))
+    # Sulcos de roda de carro de boi ao longo do eixo V (a rua corre no eixo vertical da textura).
+    u = np.linspace(0.0, 1.0, SIZE, endpoint=False)[None, :]
+    wobble = (_fbm(rng, SIZE, 2, 2) - 0.5) * 0.03
+    ruts = np.zeros((SIZE, SIZE))
+    for center in (0.30, 0.70):
+        ruts += np.exp(-((u + wobble - center) ** 2) / (2 * 0.028**2))
+    ruts = np.clip(ruts, 0.0, 1.0)
+    color = _mix(color, dark * 0.92, ruts * 0.55)
+    # Faixa central mais clara e pisoteada.
+    crown = np.exp(-((u - 0.5) ** 2) / (2 * 0.09**2)) * np.ones((SIZE, 1))
+    color = _mix(color, pale, crown * 0.22)
+    pebbles = _pebbles(rng, SIZE, 260, (2.5, 6.5))
+    pebble_color = np.array([0.66, 0.62, 0.55])
+    color = _mix(color, pebble_color, pebbles * 0.8)
+    grain = (rng.random((SIZE, SIZE)) - 0.5) * 0.05
+    color = np.clip(color + grain[..., None], 0.0, 1.0)
+    return Image.fromarray((color * 255).astype(np.uint8), "RGB")
+
+
+def chao_praca() -> Image.Image:
+    rng = np.random.default_rng(SEED + 1)
+    base = _fbm(rng, SIZE, 6, 5)
+    fine = _fbm(rng, SIZE, 48, 2, 0.6)
+    sand = np.array([0.84, 0.76, 0.58])
+    earth = np.array([0.70, 0.60, 0.44])
+    dust = np.array([0.90, 0.84, 0.68])
+    color = _mix(earth, sand, base)
+    color = _mix(color, dust, np.clip(fine * 0.5, 0.0, 1.0))
+    # Manchas de grama rala pisoteada.
+    tufts = _fbm(rng, SIZE, 10, 3)
+    grass = np.array([0.56, 0.66, 0.40])
+    color = _mix(color, grass, np.clip((tufts - 0.62) * 2.2, 0.0, 1.0) * 0.5)
+    pebbles = _pebbles(rng, SIZE, 420, (2.0, 5.0))
+    color = _mix(color, np.array([0.70, 0.67, 0.60]), pebbles * 0.75)
+    grain = (rng.random((SIZE, SIZE)) - 0.5) * 0.04
+    color = np.clip(color + grain[..., None], 0.0, 1.0)
+    return Image.fromarray((color * 255).astype(np.uint8), "RGB")
+
+
+def main() -> None:
+    OUTPUT.mkdir(parents=True, exist_ok=True)
+    terra_batida().save(OUTPUT / "terra_batida_v1.png", optimize=True)
+    chao_praca().save(OUTPUT / "chao_praca_v1.png", optimize=True)
+    print("Texturas gravadas em", OUTPUT)
+
+
+if __name__ == "__main__":
+    main()
