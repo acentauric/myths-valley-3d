@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "active_region": "bom_jesus_dos_pobres",
+  "regions": [
+    {
+      "id": "bom_jesus_dos_pobres",
+      "title": "Bom Jesus dos Pobres",
+      "source_kml": "res://data/mapas/bom_jesus_dos_pobres_fonte.kml",
+      "geometry": "res://data/mapas/bom_jesus_dos_pobres.json",
+      "scenario": "res://data/mapas/bom_jesus_dos_pobres_cenario.json",
+      "scale_m_per_unit": 1.0
+    }
+  ]
+}

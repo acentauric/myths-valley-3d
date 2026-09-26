@@ -3,6 +3,7 @@ extends CanvasLayer
 
 signal reset_requested
 signal quit_requested
+signal menu_requested
 
 const INK := Color("e8e4d7")
 const MUTED := Color("aebaae")
@@ -16,6 +17,7 @@ var _captured := false
 var _refresh_time := 0.0
 var _root: Control
 var _model_label: Label
+var _region_label: Label
 var _telemetry_label: Label
 var _notice_label: Label
 var _notice_panel: Panel
@@ -35,8 +37,8 @@ func _ready() -> void:
 	_place(heading, Vector2(18, 18), Vector2(500, 132))
 	var title := _label("MYTHS’ VALLEY", 28, INK)
 	_place(title, Vector2(33, 25), Vector2(435, 39))
-	var subtitle := _label("PRIMEIROS PASSOS · 3D", 12, GOLD)
-	_place(subtitle, Vector2(35, 67), Vector2(435, 23))
+	_region_label = _label("REGIÃO INICIAL", 12, GOLD)
+	_place(_region_label, Vector2(35, 67), Vector2(435, 23))
 	_objective_label = _label(_objective, 15, MUTED)
 	_objective_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_place(_objective_label, Vector2(35, 101), Vector2(466, 42))
@@ -57,6 +59,18 @@ func _ready() -> void:
 	status.add_child(_model_label)
 	_model_label.position = Vector2(16, 37)
 	_model_label.size = Vector2(243, 41)
+	var back_to_menu := Button.new()
+	back_to_menu.text = "HOME"
+	back_to_menu.tooltip_text = "Ir para o menu inicial. Pressione Esc para liberar o cursor."
+	back_to_menu.add_theme_font_size_override("font_size", 16)
+	back_to_menu.mouse_filter = Control.MOUSE_FILTER_STOP
+	_root.add_child(back_to_menu)
+	back_to_menu.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
+	back_to_menu.offset_left = -303
+	back_to_menu.offset_right = -28
+	back_to_menu.offset_top = 123
+	back_to_menu.offset_bottom = 166
+	back_to_menu.pressed.connect(func(): menu_requested.emit())
 
 	var controls := _panel(Color(0.055, 0.085, 0.075, 0.88))
 	_root.add_child(controls)
@@ -73,7 +87,7 @@ func _ready() -> void:
 	primary.offset_top = 10
 	primary.offset_bottom = 33
 	primary.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	var secondary := _label("F observar  ·  1–8 testar animações  ·  Rodinha zoom  ·  M abertura", 12, MUTED)
+	var secondary := _label("F observar  ·  1–8 testar animações  ·  Rodinha zoom  ·  M HOME", 12, MUTED)
 	controls.add_child(secondary)
 	secondary.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
 	secondary.offset_top = -29
@@ -129,6 +143,11 @@ func set_model_status(value: String) -> void:
 	_model_status = value
 	if is_instance_valid(_model_label):
 		_model_label.text = value
+
+
+func set_region_title(value: String) -> void:
+	if is_instance_valid(_region_label):
+		_region_label.text = value.to_upper()
 
 
 func set_telemetry(value: String) -> void:

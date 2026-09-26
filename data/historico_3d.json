@@ -1,0 +1,52 @@
+{
+  "versao_atual": "0.1.0-dev",
+  "build_numero": 3,
+  "entradas": [
+    {
+      "data": "25/09/2026",
+      "estado": "EM DESENVOLVIMENTO",
+      "titulo": "Mapa do vale em escala real",
+      "mudancas": [
+        "Ruas caminháveis e rios seguem o mapa desenhado.",
+        "A costa e a mata ganharam novas formas.",
+        "O vale usa um metro por unidade.",
+        "O mapa aéreo ganhou zoom e marcadores.",
+        "Passarelas levam aos pontos sobre a água."
+      ]
+    },
+    {
+      "data": "25/09/2026",
+      "estado": "EM DESENVOLVIMENTO",
+      "titulo": "Menu e navegação",
+      "mudancas": [
+        "O menu confirma a saída.",
+        "O som ganhou controle rápido.",
+        "HOME retorna ao menu.",
+        "A abertura ganhou novos textos.",
+        "O 3D ganhou histórico próprio.",
+        "O menu ganhou um sobrevoo do vale.",
+        "O menu passou a incluir um mapa superior."
+      ]
+    },
+    {
+      "data": "24/09/2026",
+      "estado": "MARCO DO PROTÓTIPO",
+      "titulo": "Abertura e cenário",
+      "mudancas": [
+        "A travessia ganhou abertura 3D.",
+        "O menu ganhou música e narração.",
+        "Casa e árvores ampliaram o vale."
+      ]
+    },
+    {
+      "data": "23/09/2026",
+      "estado": "MARCO DO PROTÓTIPO",
+      "titulo": "Primeiros passos",
+      "mudancas": [
+        "O vale 3D abriu para exploração.",
+        "O personagem ganhou animações.",
+        "Praça, horta e costa ganharam forma."
+      ]
+    }
+  ]
+}

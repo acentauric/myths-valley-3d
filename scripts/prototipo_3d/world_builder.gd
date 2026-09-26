@@ -1,38 +1,79 @@
 extends Node3D
-## A hand-placed coastal hamlet for validating the character in a playable space.
+## Região geográfica em metros, com detalhes artesanais junto aos pontos de interesse.
 
-const GRASS := Color("789b63")
 const PATH := Color("c5ad7a")
 const WOOD := Color("735139")
 const LEAVES := Color("487557")
+const GeoRegionRenderer = preload("res://scripts/prototipo_3d/geo_region_renderer.gd")
+const MAP_CATALOG := "res://data/mapas/regioes.json"
 const TRIPO_HOUSE_SCENE := preload("res://assets/prototipo_3d/casas/casa_carro_quebrado_tripo.glb")
 const TRIPO_HOUSE_WIDTH := 5.2
 const PAU_BRASIL_SCENE := preload("res://assets/prototipo_3d/arvores/pau_brasil_tripo.glb")
 const CASA_TAIPA_CAL_TEXTURE := preload("res://assets/prototipo_3d/materiais/cal_taipa_envelhecida_v1.png")
 const TELHA_COLONIAL_TEXTURE := preload("res://assets/prototipo_3d/materiais/telha_colonial_envelhecida_v1.png")
 var _materials: Dictionary = {}
-var landmarks: Array[Dictionary] = [
-	{"name": "Praça da vila", "position": Vector3(0, 0, -3)},
-	{"name": "Horta", "position": Vector3(10, 0, 7)},
-	{"name": "Costa", "position": Vector3(-19, 0, 5)},
-]
+var landmarks: Array[Dictionary] = []
+var areas: Array[Dictionary] = []
+var region_title := "Vale"
+var _region = null
 
 
 func get_spawn_position() -> Vector3:
-	return Vector3(0, 0.05, 6)
+	return _region.get_spawn_position() if _region else Vector3(0, 0.05, 0)
+
+
+func get_map_bounds() -> Rect2:
+	return _region.get_map_bounds() if _region else Rect2(-1200, -1300, 1800, 1950)
+
+
+func surface_at(world_position: Vector3) -> String:
+	return _region.surface_at(world_position) if _region else "grama"
+
+
+func get_feature_center(feature_name: String, kind: String = "") -> Vector3:
+	return _region.get_feature_center(feature_name, kind) if _region else Vector3.ZERO
+
+
+func get_region_title() -> String:
+	return region_title
 
 
 func _ready() -> void:
 	_build_lighting()
-	_build_ground()
-	_build_paths()
-	_casa_de_taipa_referencia(Vector3(-10, 0, -6))
-	_tripo_house(Vector3(10, 0, -8))
-	_house(Vector3(1, 0, -16), Color("dfb980"), Color("ae6950"))
-	_build_farm()
-	_build_trees()
-	_build_details()
-	_build_boundary()
+	var region_data := _active_region_data()
+	if region_data.is_empty():
+		return
+	region_title = String(region_data.get("title", region_data.get("id", "Vale")))
+	_region = GeoRegionRenderer.new()
+	_region.name = String(region_data.get("id", "Regiao"))
+	add_child(_region)
+	_region.build_region(String(region_data["geometry"]), String(region_data["scenario"]))
+	landmarks = _region.landmarks
+	areas = _region.areas
+	if region_data["id"] == "bom_jesus_dos_pobres":
+		_casa_de_taipa_referencia(Vector3(-52, 0, -27))
+		_tripo_house(Vector3(40, 0, -35))
+		_house(Vector3(32, 0, 72), Color("dfb980"), Color("ae6950"))
+		_build_farm()
+		_build_trees()
+		_build_details()
+		_build_landmark_details()
+
+
+func _active_region_data() -> Dictionary:
+	var data: Variant = JSON.parse_string(FileAccess.get_file_as_string(MAP_CATALOG))
+	if typeof(data) != TYPE_DICTIONARY:
+		push_error("Catálogo de regiões inválido: " + MAP_CATALOG)
+		return {}
+	for entry_value in data.get("regions", []):
+		var entry: Dictionary = entry_value
+		if entry.get("id", "") == data.get("active_region", ""):
+			if not is_equal_approx(float(entry.get("scale_m_per_unit", 0.0)), 1.0):
+				push_error("A escala da região precisa ser de 1 metro por unidade.")
+				return {}
+			return entry
+	push_error("A região ativa não foi encontrada no catálogo.")
+	return {}
 
 
 func _build_lighting() -> void:
@@ -51,9 +92,7 @@ func _build_lighting() -> void:
 	environment.ambient_light_color = Color("cad9d5")
 	environment.ambient_light_energy = 0.65
 	environment.tonemap_mode = Environment.TONE_MAPPER_FILMIC
-	environment.fog_enabled = true
-	environment.fog_light_color = Color("c4d3c4")
-	environment.fog_density = 0.002
+	environment.fog_enabled = false
 	var world_environment := WorldEnvironment.new()
 	world_environment.environment = environment
 	add_child(world_environment)
@@ -63,37 +102,8 @@ func _build_lighting() -> void:
 	sun.light_color = Color("fff0d0")
 	sun.light_energy = 1.05
 	sun.shadow_enabled = true
-	sun.directional_shadow_max_distance = 70.0
+	sun.directional_shadow_max_distance = 180.0
 	add_child(sun)
-
-
-func _build_ground() -> void:
-	_box(Vector3(46, 1, 44), Vector3(0, -0.5, 0), GRASS, true)
-	_box(Vector3(5, 0.035, 44), Vector3(-20.5, 0.018, 0), Color("d9c596"))
-	_box(Vector3(75, 0.2, 130), Vector3(-60.5, -0.34, -10), Color("669ba3"))
-	for i in range(7):
-		_box(Vector3(0.10, 0.012, 6.0), Vector3(-23.8 - i * 1.7, -0.225, -16 + i * 5), Color("bbd5ce"))
-	for position: Vector3 in [Vector3(-10, -4, -42), Vector3(15, -5, -48), Vector3(36, -5, -36)]:
-		var hill := SphereMesh.new()
-		hill.radius = 17.0
-		hill.height = 21.0
-		hill.radial_segments = 12
-		hill.rings = 6
-		_mesh(hill, position, Color("658571"))
-
-
-func _build_paths() -> void:
-	# Broad center lane and short branches leave the full starting view unobstructed.
-	_box(Vector3(3.4, 0.035, 30), Vector3(0, 0.024, -2), PATH)
-	_box(Vector3(21, 0.035, 2.6), Vector3(0, 0.026, -3), PATH)
-	_box(Vector3(10, 0.035, 2.2), Vector3(5, 0.026, 7), PATH)
-	_box(Vector3(19, 0.035, 2.2), Vector3(-9, 0.025, 11), PATH)
-	var plaza := CylinderMesh.new()
-	plaza.top_radius = 4.0
-	plaza.bottom_radius = 4.0
-	plaza.height = 0.045
-	plaza.radial_segments = 20
-	_mesh(plaza, Vector3(0, 0.03, -3), PATH)
 
 
 func _house(origin: Vector3, wall: Color, roof_color: Color) -> void:
@@ -192,23 +202,24 @@ func _casa_de_taipa_referencia(origin: Vector3) -> void:
 	_box(Vector3(0.58, 0.18, 0.025), origin + Vector3(-0.23, 2.76, 2.115), cal_suja)
 
 func _build_farm() -> void:
+	var origin: Vector3 = _region.get_feature_center("Fazenda", "area")
 	for row in range(3):
-		_box(Vector3(5.6, 0.1, 0.88), Vector3(10.5, 0.055, 4.8 + row * 1.35), Color("826346"))
+		_box(Vector3(5.6, 0.1, 0.88), origin + Vector3(0, 0.055, row * 1.35), Color("826346"))
 		for column in range(7):
 			var crop := CylinderMesh.new()
 			crop.top_radius = 0.02
 			crop.bottom_radius = 0.24
 			crop.height = 0.54 + row * 0.09
 			crop.radial_segments = 5
-			_mesh(crop, Vector3(8.2 + column * 0.75, 0.35, 4.8 + row * 1.35), Color("8fa85e"))
-	_fence(Vector3(7, 0, 9), 5, 1.65)
-	_fence(Vector3(7, 0, 3), 5, 1.65)
-	_box(Vector3(0.85, 1.0, 0.85), Vector3(15.2, 0.5, 7), WOOD, true)
-	_box(Vector3(0.95, 0.11, 0.95), Vector3(15.2, 1.0, 7), Color("b1966c"))
+			_mesh(crop, origin + Vector3(-2.3 + column * 0.75, 0.35, row * 1.35), Color("8fa85e"))
+	_fence(origin + Vector3(-4, 0, 6), 6, 1.65)
+	_fence(origin + Vector3(-4, 0, -3), 6, 1.65)
+	_box(Vector3(0.85, 1.0, 0.85), origin + Vector3(5.2, 0.5, 2), WOOD, true)
+	_box(Vector3(0.95, 0.11, 0.95), origin + Vector3(5.2, 1.0, 2), Color("b1966c"))
 
 
 func _build_trees() -> void:
-	var positions: Array[Vector3] = [Vector3(-15, 0, -11), Vector3(-16, 0, -4), Vector3(-12, 0, 3), Vector3(-17, 0, 7), Vector3(-9, 0, 15), Vector3(9, 0, 15), Vector3(17, 0, 12), Vector3(18, 0, 2), Vector3(17, 0, -12), Vector3(10, 0, -18), Vector3(-7, 0, -18)]
+	var positions: Array[Vector3] = [Vector3(-75, 0, -70), Vector3(-78, 0, -35), Vector3(-82, 0, 5), Vector3(-85, 0, 47), Vector3(-44, 0, 93), Vector3(55, 0, 99), Vector3(72, 0, 77), Vector3(85, 0, 30), Vector3(85, 0, -60), Vector3(44, 0, -86), Vector3(-46, 0, -95)]
 	for i in range(positions.size()):
 		if i == 2:
 			_pau_brasil(positions[i])
@@ -258,28 +269,61 @@ func _tree(origin: Vector3, size: float) -> void:
 
 
 func _build_details() -> void:
-	_fence(Vector3(-15, 0, 16), 5, 1.8)
-	_fence(Vector3(5, 0, 18), 7, 1.8)
-	for i in range(9):
-		var rock := SphereMesh.new()
-		rock.radius = 0.4 + (i % 3) * 0.15
-		rock.height = 0.55 + (i % 2) * 0.28
-		rock.radial_segments = 6
-		rock.rings = 3
-		_mesh(rock, Vector3(-19 + (i % 3) * 0.45, 0.2, -17 + i * 4), Color("a4a99a"))
 	for i in range(28):
-		var x: float = -15.0 + float(i % 7) * 5.0
-		var z: float = -19.0 + floorf(float(i) / 7.0) * 11.0
+		var x: float = -25.0 + float(i % 7) * 8.0
+		var z: float = -21.0 + floorf(float(i) / 7.0) * 14.0
 		if absf(x) < 3.0:
 			continue
 		for j in range(3):
 			_box(Vector3(0.05, 0.28, 0.05), Vector3(x + j * 0.21, 0.14, z + (j % 2) * 0.25), LEAVES)
 			_box(Vector3(0.16, 0.10, 0.16), Vector3(x + j * 0.21, 0.30, z + (j % 2) * 0.25), Color("e4c782") if i % 2 == 0 else Color("ce9d99"))
-	# A bench near the square gives the village a readable human scale.
+	# Um banco mantém a escala humana na praça geográfica.
 	_box(Vector3(2.3, 0.14, 0.65), Vector3(-4.6, 0.62, -0.1), WOOD, true)
 	_box(Vector3(2.3, 0.52, 0.12), Vector3(-4.6, 1.04, -0.42), WOOD)
 	for x in [-5.45, -3.75]:
 		_box(Vector3(0.16, 0.6, 0.5), Vector3(x, 0.3, -0.1), Color("544b40"))
+
+
+func _build_landmark_details() -> void:
+	var church: Vector3 = _region.get_feature_center("Igreja", "poi")
+	_box(Vector3(8, 0.25, 13), church + Vector3(0, 0.125, 0), Color("958d79"), true)
+	_box(Vector3(7.4, 5.2, 12), church + Vector3(0, 2.7, 0), Color("eee5cf"), true)
+	var roof := PrismMesh.new()
+	roof.size = Vector3(8.8, 2.6, 13.3)
+	_mesh(roof, church + Vector3(0, 6.4, 0), Color("a55b3c"))
+	_box(Vector3(2.3, 8.2, 2.3), church + Vector3(0, 4.2, 6.0), Color("e5dcc8"), true)
+	_box(Vector3(0.22, 2.0, 0.22), church + Vector3(0, 9.2, 6.0), WOOD)
+	_box(Vector3(1.4, 0.2, 0.22), church + Vector3(0, 9.45, 6.0), WOOD)
+	_house(_region.get_feature_center("Bar", "poi") + Vector3(8, 0, 3), Color("c6a16d"), Color("8b523b"))
+	_house(_region.get_feature_center("Restaurante", "poi") + Vector3(7, 0, 4), Color("cdbb92"), Color("97563f"))
+	var pier: Vector3 = _region.get_feature_center("Pier", "poi")
+	_box(Vector3(4.5, 0.2, 17), pier + Vector3(0, -0.1, 0), Color("85684b"), true)
+	for offset in [-7.0, 0.0, 7.0]:
+		for side in [-1.8, 1.8]:
+			_box(Vector3(0.3, 1.5, 0.3), pier + Vector3(side, -0.75, offset), WOOD)
+	var bridge: Vector3 = _region.get_feature_center("Ponte", "poi")
+	_box(Vector3(11, 0.35, 6), bridge + Vector3(0, 0.22, 0), Color("987b57"), true)
+	for side in [-2.8, 2.8]:
+		_box(Vector3(11, 0.18, 0.15), bridge + Vector3(0, 0.95, side), WOOD)
+	var lookout: Vector3 = _region.get_feature_center("Mirante", "poi")
+	_box(Vector3(6, 0.24, 6), lookout + Vector3(0, 0.65, 0), Color("9c7a52"), true)
+	for x in [-2.8, 2.8]:
+		for z in [-2.8, 2.8]:
+			_box(Vector3(0.22, 1.45, 0.22), lookout + Vector3(x, 0.73, z), WOOD)
+	var cemetery: Vector3 = _region.get_feature_center("Cemitério", "poi")
+	for index in range(12):
+		var grave := cemetery + Vector3((index % 4) * 2.3 - 3.45, 0, floorf(index / 4.0) * 3.0 - 3.0)
+		_box(Vector3(0.72, 0.15, 1.45), grave + Vector3(0, 0.08, 0), Color("a9a9a0"))
+		_box(Vector3(0.12, 0.9, 0.12), grave + Vector3(0, 0.6, -0.55), WOOD)
+		_box(Vector3(0.48, 0.12, 0.12), grave + Vector3(0, 0.72, -0.55), WOOD)
+	var stones: Vector3 = _region.get_feature_center("Pedras", "poi")
+	for index in range(13):
+		var rock := SphereMesh.new()
+		rock.radius = 0.8 + (index % 3) * 0.4
+		rock.height = 0.8 + (index % 4) * 0.3
+		rock.radial_segments = 7
+		rock.rings = 4
+		_mesh(rock, stones + Vector3((index % 5) * 2.8 - 5.6, 0.35, floorf(index / 5.0) * 2.9 - 2.9), Color("929c92"))
 
 
 func _fence(origin: Vector3, count: int, spacing: float) -> void:
@@ -288,17 +332,6 @@ func _fence(origin: Vector3, count: int, spacing: float) -> void:
 	var width: float = (count - 1) * spacing
 	for height in [0.4, 0.87]:
 		_box(Vector3(width, 0.12, 0.12), origin + Vector3(width * 0.5, height, 0), Color("987650"), true)
-
-
-func _build_boundary() -> void:
-	for position: Vector3 in [Vector3(-22.7, 2, 0), Vector3(22.7, 2, 0)]:
-		var side := BoxShape3D.new()
-		side.size = Vector3(0.4, 5, 44)
-		_body(side, position)
-	for position: Vector3 in [Vector3(0, 2, -21.7), Vector3(0, 2, 21.7)]:
-		var edge := BoxShape3D.new()
-		edge.size = Vector3(46, 5, 0.4)
-		_body(edge, position)
 
 
 func _box(size: Vector3, position: Vector3, color: Color, solid: bool = false, material_override: Material = null) -> void:

@@ -27,6 +27,7 @@ var _pitch: float = -0.19
 var _distance: float = 5.0
 
 func _ready() -> void:
+	add_to_group("map_player")
 	spawn_position = position
 	floor_snap_length = 0.35
 	floor_max_angle = deg_to_rad(46)
@@ -72,7 +73,7 @@ func _ready() -> void:
 	camera = Camera3D.new()
 	camera.fov = 58.0
 	camera.near = 0.08
-	camera.far = 220.0
+	camera.far = 2800.0
 	spring.add_child(camera)
 	camera.current = true
 	_apply_camera()
