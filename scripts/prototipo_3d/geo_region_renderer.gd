@@ -483,49 +483,86 @@ func _build_forest(configuration: Dictionary) -> void:
 		positions.append(point)
 	if positions.is_empty():
 		return
-	var trunk := CylinderMesh.new()
-	trunk.top_radius = 0.18
-	trunk.bottom_radius = 0.27
-	trunk.height = 1.0
-	trunk.radial_segments = 6
-	trunk.material = _material(Color("70553b"))
-	var canopy := SphereMesh.new()
-	canopy.radius = 1.0
-	canopy.height = 2.0
-	canopy.radial_segments = 7
-	canopy.rings = 4
-	canopy.material = _material(Color("4e7954"))
-	var trunks := MultiMesh.new()
-	trunks.transform_format = MultiMesh.TRANSFORM_3D
-	trunks.mesh = trunk
-	trunks.instance_count = positions.size()
-	var canopies := MultiMesh.new()
-	canopies.transform_format = MultiMesh.TRANSFORM_3D
-	canopies.mesh = canopy
-	canopies.instance_count = positions.size()
+	# Mata fechada e alta do Recôncavo: espécies procedurais com silhuetas distintas,
+	# uma MultiMesh por espécie. Modelos do Tripo entram trocando `FloraReconcavo.especie`.
+	var by_species: Dictionary = {}
 	for i in range(positions.size()):
-		var height := rng.randf_range(5.0, 10.5)
-		var radius := rng.randf_range(1.9, 3.9)
-		var point := positions[i]
-		_tree_trunks.append({"point": point, "height": height * 0.64})
-		trunks.set_instance_transform(i, Transform3D(
-			Basis().scaled(Vector3(1.0, height * 0.64, 1.0)),
-			Vector3(point.x, height * 0.32, point.y)
-		))
-		canopies.set_instance_transform(i, Transform3D(
-			Basis().scaled(Vector3(radius, height * 0.32, radius)),
-			Vector3(point.x, height * 0.73, point.y)
-		))
-	var trunk_visual := MultiMeshInstance3D.new()
-	trunk_visual.name = "Troncos da mata"
-	trunk_visual.multimesh = trunks
-	trunk_visual.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	add_child(trunk_visual)
-	var canopy_visual := MultiMeshInstance3D.new()
-	canopy_visual.name = "Copas da mata"
-	canopy_visual.multimesh = canopies
-	canopy_visual.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	add_child(canopy_visual)
+		var species: String = FloraReconcavo.ESPECIES_MATA[rng.randi_range(0, FloraReconcavo.ESPECIES_MATA.size() - 1)]
+		if not by_species.has(species):
+			by_species[species] = []
+		by_species[species].append(positions[i])
+	for species in by_species.keys():
+		var group: Array = by_species[species]
+		var built: Dictionary = FloraReconcavo.especie(species, 1.0, rng)
+		var multimesh := MultiMesh.new()
+		multimesh.transform_format = MultiMesh.TRANSFORM_3D
+		multimesh.mesh = built.mesh
+		multimesh.instance_count = group.size()
+		for i in range(group.size()):
+			var point: Vector2 = group[i]
+			var scale := rng.randf_range(0.8, 1.25)
+			var yaw := rng.randf_range(0.0, TAU)
+			_tree_trunks.append({"point": point, "height": float(built.trunk_height) * scale, "radius": float(built.trunk_radius) * scale})
+			multimesh.set_instance_transform(i, Transform3D(Basis.from_euler(Vector3(0, yaw, 0)).scaled(Vector3.ONE * scale), Vector3(point.x, 0.0, point.y)))
+		var visual := MultiMeshInstance3D.new()
+		visual.name = "Mata: " + species
+		visual.multimesh = multimesh
+		visual.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		add_child(visual)
+	_build_coast_palms(rng)
+
+
+## Coqueiros ao longo da orla, do lado da terra, inclinados para o mar.
+func _build_coast_palms(rng: RandomNumberGenerator) -> void:
+	if _coast.size() < 2 or _land.size() < 3:
+		return
+	var spacing := _units(34.0, 9.0)
+	var offset_min := _units(6.0, 2.0)
+	var offset_max := _units(14.0, 5.0)
+	var built: Dictionary = FloraReconcavo.especie("coqueiro", 1.0, rng)
+	var transforms: Array[Transform3D] = []
+	var travelled := 0.0
+	var next_at := spacing * 0.5
+	for i in range(_coast.size() - 1):
+		var a := _coast[i]
+		var b := _coast[i + 1]
+		var segment := b - a
+		var length := segment.length()
+		if length < 0.001:
+			continue
+		var direction := segment / length
+		while next_at <= travelled + length:
+			var t := (next_at - travelled) / length
+			var base := a + segment * t
+			var normal := Vector2(-direction.y, direction.x)
+			var offset := rng.randf_range(offset_min, offset_max)
+			var candidate := base + normal * offset
+			if not Geometry2D.is_point_in_polygon(candidate, _land):
+				normal = -normal
+				candidate = base + normal * offset
+			if Geometry2D.is_point_in_polygon(candidate, _land) and not _near_route(candidate, _units(6.0, 2.0)) and not _near_interest(candidate, _units(10.0, 4.0)) and not (_village.size() >= 3 and Geometry2D.is_point_in_polygon(candidate, _village)):
+				# O modelo inclina no eixo Z local (-X vai para o topo); gira para o topo apontar ao mar.
+				var seaward := -normal
+				# Rotação em Y que leva o -X local (para onde o topo pende) até `seaward` no plano XZ.
+				var yaw := atan2(seaward.y, -seaward.x)
+				var scale := rng.randf_range(0.75, 1.15)
+				transforms.append(Transform3D(Basis.from_euler(Vector3(0, yaw, 0)).scaled(Vector3.ONE * scale), Vector3(candidate.x, 0.0, candidate.y)))
+				_tree_trunks.append({"point": candidate, "height": float(built.trunk_height) * scale, "radius": float(built.trunk_radius) * scale})
+			next_at += spacing * rng.randf_range(0.7, 1.4)
+		travelled += length
+	if transforms.is_empty():
+		return
+	var multimesh := MultiMesh.new()
+	multimesh.transform_format = MultiMesh.TRANSFORM_3D
+	multimesh.mesh = built.mesh
+	multimesh.instance_count = transforms.size()
+	for i in range(transforms.size()):
+		multimesh.set_instance_transform(i, transforms[i])
+	var visual := MultiMeshInstance3D.new()
+	visual.name = "Coqueiros da orla"
+	visual.multimesh = multimesh
+	visual.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	add_child(visual)
 
 
 func _process(delta: float) -> void:
@@ -550,7 +587,7 @@ func _refresh_tree_collisions() -> void:
 	for trunk in _tree_trunks:
 		var distance_squared: float = player_point.distance_squared_to(trunk.point)
 		if distance_squared <= TREE_COLLISION_RADIUS * TREE_COLLISION_RADIUS:
-			nearby.append({"point": trunk.point, "height": trunk.height, "distance_squared": distance_squared})
+			nearby.append({"point": trunk.point, "height": trunk.height, "radius": trunk.get("radius", 0.36), "distance_squared": distance_squared})
 	nearby.sort_custom(Callable(self, "_collision_nearer"))
 	for i in range(_tree_collision_pool.size()):
 		var slot := _tree_collision_pool[i]
@@ -564,6 +601,7 @@ func _refresh_tree_collisions() -> void:
 		var body: StaticBody3D = slot.body
 		var shape: CylinderShape3D = slot.shape
 		shape.height = tree.height
+		shape.radius = float(tree.get("radius", 0.36))
 		body.position = Vector3(tree.point.x, tree.height * 0.5, tree.point.y)
 		if not slot.active:
 			collider.set_deferred("disabled", false)

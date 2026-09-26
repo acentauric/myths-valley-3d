@@ -71,6 +71,7 @@ func _ready() -> void:
 		_build_trees()
 		_build_details()
 		_build_landmark_details()
+		_build_pecas()
 
 
 func _active_region_data() -> Dictionary:
@@ -233,13 +234,39 @@ func _build_farm() -> void:
 
 
 func _build_trees() -> void:
-	# Posições anotadas em metros reais ao redor da Praça; a cena converte para unidades.
-	var positions: Array[Vector3] = [Vector3(-75, 0, -70), Vector3(-78, 0, -35), Vector3(-82, 0, 5), Vector3(-85, 0, 47), Vector3(-44, 0, 93), Vector3(55, 0, 99), Vector3(72, 0, 77), Vector3(85, 0, 30), Vector3(85, 0, -60), Vector3(44, 0, -86), Vector3(-46, 0, -95)]
-	for i in range(positions.size()):
-		if i == 2:
-			_pau_brasil(_u(positions[i]))
-		else:
-			_tree(_u(positions[i]), 0.82 + (i % 4) * 0.13)
+	# Posições anotadas em metros reais ao redor da Praça (a cena converte para unidades).
+	# Espécies de docs/AMBIENTACAO.md §4; o pau-brasil continua sendo o modelo do Tripo.
+	_pau_brasil(_u(Vector3(-82, 0, 5)))
+	var plan: Array = [
+		["mangueira", Vector3(-75, 0, -70), 1.0, 0.4],
+		["cajueiro", Vector3(-78, 0, -35), 1.0, 1.9],
+		["ipe_amarelo", Vector3(-85, 0, 47), 1.0, 0.0],
+		["jaqueira", Vector3(-44, 0, 93), 1.0, 2.6],
+		["mangueira", Vector3(55, 0, 99), 1.1, 3.1],
+		["ipe_roxo", Vector3(72, 0, 77), 0.95, 1.2],
+		["cajueiro", Vector3(85, 0, 30), 1.05, 4.0],
+		["jaqueira", Vector3(85, 0, -60), 0.9, 0.7],
+		["embauba", Vector3(44, 0, -86), 1.0, 0.0],
+		["dendezeiro", Vector3(-46, 0, -95), 1.0, 2.2],
+		["mangueira", Vector3(-34, 0, 38), 0.9, 5.2],
+		["mangueira", Vector3(22, 0, -44), 0.85, 1.6],
+	]
+	for entry in plan:
+		_arvore(String(entry[0]), _u(entry[1]), float(entry[2]), float(entry[3]))
+	# Bananal atrás da casa de taipa, dendezeiros junto ao bar, cajueiros e mangueira na fazenda.
+	var taipa := _u(Vector3(-52, 0, -27))
+	for offset in [Vector3(-3.2, 0, -4.6), Vector3(-1.6, 0, -5.9), Vector3(0.4, 0, -4.9), Vector3(-4.6, 0, -3.0)]:
+		_arvore("bananeira", taipa + offset, 0.9, offset.x * 1.3)
+	var bar: Vector3 = _region.get_feature_center("Bar", "poi")
+	for offset in [Vector3(-6.0, 0, 5.5), Vector3(-9.5, 0, 2.0)]:
+		_arvore("dendezeiro", bar + offset, 0.95, offset.z)
+	var farm: Vector3 = _region.get_feature_center("Fazenda", "area")
+	_arvore("mangueira", farm + Vector3(-9.5, 0, -6.5), 1.15, 0.9)
+	_arvore("cajueiro", farm + Vector3(9.0, 0, -8.0), 1.0, 2.4)
+	_arvore("cajueiro", farm + Vector3(11.0, 0, 8.5), 0.9, 0.3)
+	var church: Vector3 = _region.get_feature_center("Igreja", "poi")
+	_arvore("ipe_roxo", church + Vector3(-8.5, 0, 9.0), 1.0, 0.0)
+	_arvore("ipe_amarelo", church + Vector3(8.5, 0, 9.5), 1.0, 1.1)
 
 
 func _pau_brasil(origin: Vector3) -> void:
@@ -263,24 +290,42 @@ func _pau_brasil(origin: Vector3) -> void:
 	_body(trunk_shape, origin + Vector3(0, 1.2, 0))
 
 
-func _tree(origin: Vector3, size: float) -> void:
-	var trunk := CylinderMesh.new()
-	trunk.top_radius = 0.17 * size
-	trunk.bottom_radius = 0.31 * size
-	trunk.height = 2.7 * size
-	trunk.radial_segments = 7
-	_mesh(trunk, origin + Vector3(0, 1.35 * size, 0), WOOD)
-	var trunk_shape := CylinderShape3D.new()
-	trunk_shape.radius = 0.35 * size
-	trunk_shape.height = 2.7 * size
-	_body(trunk_shape, origin + Vector3(0, 1.35 * size, 0))
-	for layer in range(2):
-		var foliage := SphereMesh.new()
-		foliage.radius = (1.75 - layer * 0.36) * size
-		foliage.height = (3.0 - layer * 0.55) * size
-		foliage.radial_segments = 9
-		foliage.rings = 5
-		_mesh(foliage, origin + Vector3(layer * 0.36, (3.15 + layer * 1.15) * size, 0), LEAVES.lightened(layer * 0.08))
+func _arvore(especie: String, origin: Vector3, size: float = 1.0, yaw: float = 0.0) -> void:
+	var built: Dictionary = FloraReconcavo.especie(especie, size)
+	var instance := MeshInstance3D.new()
+	instance.name = especie.capitalize()
+	instance.mesh = built.mesh
+	instance.position = origin
+	instance.rotation.y = yaw
+	add_child(instance)
+	var shape := CylinderShape3D.new()
+	shape.radius = float(built.trunk_radius) + 0.08
+	shape.height = float(built.trunk_height)
+	_body(shape, origin + Vector3(0, float(built.trunk_height) * 0.5, 0))
+
+
+func _peca(node: Node3D, origin: Vector3, yaw: float = 0.0) -> void:
+	node.position = origin
+	node.rotation.y = yaw
+	add_child(node)
+
+
+func _build_pecas() -> void:
+	# Peças soltas do 2D (gerador_mundo.gd ADORNOS): poço e bancos na praça, cruzeiro na
+	# igreja, varal, lenha e pote na casa de taipa, carroça na fazenda.
+	_peca(FloraReconcavo.poco(), Vector3(4.2, 0, 5.4), 0.6)
+	_peca(FloraReconcavo.banco_praca(), _u(Vector3(-4.6, 0, -0.1)))
+	_peca(FloraReconcavo.banco_praca(), Vector3(3.2, 0, -7.0), PI)
+	var taipa := _u(Vector3(-52, 0, -27))
+	_peca(FloraReconcavo.varal(), taipa + Vector3(-4.9, 0, 1.4), 0.35)
+	_peca(FloraReconcavo.pilha_lenha(), taipa + Vector3(3.6, 0, -0.4), 0.0)
+	_peca(FloraReconcavo.pote_agua(), taipa + Vector3(2.4, 0, 2.9))
+	var church: Vector3 = _region.get_feature_center("Igreja", "poi")
+	_peca(FloraReconcavo.cruzeiro(), church + Vector3(0, 0, 11.5))
+	var farm: Vector3 = _region.get_feature_center("Fazenda", "area")
+	_peca(FloraReconcavo.carroca(), farm + Vector3(8.5, 0, -5.5), -0.6)
+	var pier: Vector3 = _region.get_feature_center("Pier", "poi")
+	_peca(FloraReconcavo.pote_agua(), pier + Vector3(1.4, 0.1, -6.5))
 
 
 func _build_details() -> void:
@@ -292,12 +337,6 @@ func _build_details() -> void:
 		for j in range(3):
 			_box(Vector3(0.05, 0.28, 0.05), Vector3(x + j * 0.21, 0.14, z + (j % 2) * 0.25), LEAVES)
 			_box(Vector3(0.16, 0.10, 0.16), Vector3(x + j * 0.21, 0.30, z + (j % 2) * 0.25), Color("e4c782") if i % 2 == 0 else Color("ce9d99"))
-	# Um banco mantém a escala humana na praça geográfica.
-	var bench := _u(Vector3(-4.6, 0, -0.1))
-	_box(Vector3(2.3, 0.14, 0.65), bench + Vector3(0, 0.62, 0), WOOD, true)
-	_box(Vector3(2.3, 0.52, 0.12), bench + Vector3(0, 1.04, -0.32), WOOD)
-	for x in [-0.85, 0.85]:
-		_box(Vector3(0.16, 0.6, 0.5), bench + Vector3(x, 0.3, 0), Color("544b40"))
 
 
 func _build_landmark_details() -> void:
