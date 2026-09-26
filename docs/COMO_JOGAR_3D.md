@@ -10,7 +10,7 @@ No Godot Project Manager, outra opção é importar **`prototipo_3d/project.godo
 | --- | --- |
 | Início / câmera destravada | Mouse capturado; mover o mouse gira a câmera sem clicar |
 | Tab | Alternar entre câmera destravada e travada |
-| Botão TRAVAR CÂMERA (Esc) / DESTRAVAR CÂMERA (Tab) | Mostrar a ação disponível e seu atalho; Tab também alterna os modos |
+| Botões redondos do canto direito | Som, relógio (pausar/retomar o dia), HOME, câmera (travar/destravar; Tab e Esc também), velocidade do tempo (clique alterna) e estilo visual — a dica do estilo mostra FPS, triângulos e memória de vídeo |
 | Arrastar com botão esquerdo e câmera travada | Girar a câmera com o cursor visível; um clique sem arrastar ainda interage com as casas |
 | Clique direito com cursor livre | Caminhar até o chão, casa ou NPC apontado |
 | Duplo clique direito com cursor livre | Correr até o chão, casa ou NPC apontado |

@@ -20,6 +20,8 @@ var velocidade: int = 2
 var hora_inicial: float = 9.0
 ## Congela a passagem do tempo (o menu controla o próprio relógio).
 var pausado := false
+## Se o botão de relógio do HUD pode pausar o dia dentro do jogo (AJUSTAR).
+var pausa_no_jogo := true
 var _periodo := ""
 
 
@@ -29,6 +31,7 @@ func _ready() -> void:
 	if preferencias.load(ARQUIVO) == OK:
 		velocidade = clampi(int(preferencias.get_value("dia", "velocidade", 2)), 0, VELOCIDADES.size() - 1)
 		hora_inicial = fmod(float(preferencias.get_value("dia", "hora_inicial", 9.0)), 24.0)
+		pausa_no_jogo = bool(preferencias.get_value("dia", "pausa_no_jogo", true))
 		hora = hora_inicial
 	_atualizar_periodo()
 
@@ -55,6 +58,14 @@ func definir_velocidade(indice: int) -> void:
 	var preferencias := ConfigFile.new()
 	preferencias.load(ARQUIVO)
 	preferencias.set_value("dia", "velocidade", velocidade)
+	preferencias.save(ARQUIVO)
+
+
+func definir_pausa_no_jogo(permitir: bool) -> void:
+	pausa_no_jogo = permitir
+	var preferencias := ConfigFile.new()
+	preferencias.load(ARQUIVO)
+	preferencias.set_value("dia", "pausa_no_jogo", pausa_no_jogo)
 	preferencias.save(ARQUIVO)
 
 

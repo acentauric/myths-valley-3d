@@ -5,7 +5,9 @@
     {
       "data": "26/09/2026",
       "estado": "EM DESENVOLVIMENTO",
+      "estado_en": "IN DEVELOPMENT",
       "titulo": "Dia e noite, moradores e dois estilos",
+      "titulo_en": "Day and night, villagers and two styles",
       "mudancas": [
         "Escolha entre o vale do Tripo e o vale procedural.",
         "O sol nasce, se põe e os lampiões de 1887 acendem.",
@@ -13,12 +15,22 @@
         "Sete moradores com voz cumprimentam quem chega.",
         "Pedro acompanha o jogador e narra as missões.",
         "Sessenta e seis peças novas chegaram do Tripo."
+      ],
+      "mudancas_en": [
+        "Choose between the Tripo valley and the procedural valley.",
+        "The sun rises and sets, and the 1887 street lamps light up.",
+        "The woods sing by day and by night; the sea and the stream sound nearby.",
+        "Seven villagers with voices greet whoever arrives.",
+        "Pedro walks with the player and narrates the missions.",
+        "Sixty-six new pieces arrived from Tripo."
       ]
     },
     {
       "data": "26/09/2026",
       "estado": "EM DESENVOLVIMENTO",
+      "estado_en": "IN DEVELOPMENT",
       "titulo": "Vale compacto e flora do Recôncavo",
+      "titulo_en": "Compact valley and Recôncavo flora",
       "mudancas": [
         "O vale passou a usar quatro metros por unidade.",
         "Ruas e praça ganharam chão de terra batida.",
@@ -26,24 +38,43 @@
         "A capela e o poço ganharam modelos próprios.",
         "A mata e a orla ganharam espécies do Recôncavo.",
         "Poço, cruzeiro, carroça e varal chegaram do 2D."
+      ],
+      "mudancas_en": [
+        "The valley now uses four meters per unit.",
+        "Streets and square got packed-earth ground.",
+        "Mango, jackfruit, cashew and coconut trees arrived from Tripo.",
+        "The chapel and the well got their own models.",
+        "The woods and the shore got Recôncavo species.",
+        "Well, wayside cross, cart and clothesline arrived from the 2D."
       ]
     },
     {
       "data": "25/09/2026",
       "estado": "EM DESENVOLVIMENTO",
+      "estado_en": "IN DEVELOPMENT",
       "titulo": "Mapa do vale em escala real",
+      "titulo_en": "Valley map at real scale",
       "mudancas": [
         "Ruas caminháveis e rios seguem o mapa desenhado.",
         "A costa e a mata ganharam novas formas.",
         "O vale usa um metro por unidade.",
         "O mapa aéreo ganhou zoom e marcadores.",
         "Passarelas levam aos pontos sobre a água."
+      ],
+      "mudancas_en": [
+        "Walkable streets and rivers follow the drawn map.",
+        "The coast and the woods got new shapes.",
+        "The valley uses one meter per unit.",
+        "The aerial map got zoom and markers.",
+        "Boardwalks lead to the points over the water."
       ]
     },
     {
       "data": "25/09/2026",
       "estado": "EM DESENVOLVIMENTO",
+      "estado_en": "IN DEVELOPMENT",
       "titulo": "Menu e navegação",
+      "titulo_en": "Menu and navigation",
       "mudancas": [
         "O menu confirma a saída.",
         "O som ganhou controle rápido.",
@@ -52,26 +83,49 @@
         "O 3D ganhou histórico próprio.",
         "O menu ganhou um sobrevoo do vale.",
         "O menu passou a incluir um mapa superior."
+      ],
+      "mudancas_en": [
+        "The menu confirms before quitting.",
+        "Sound got a quick toggle.",
+        "HOME returns to the menu.",
+        "The opening got new texts.",
+        "The 3D got its own changelog.",
+        "The menu got a flyover of the valley.",
+        "The menu now includes a top-down map."
       ]
     },
     {
       "data": "24/09/2026",
       "estado": "MARCO DO PROTÓTIPO",
+      "estado_en": "PROTOTYPE MILESTONE",
       "titulo": "Abertura e cenário",
+      "titulo_en": "Opening and scenery",
       "mudancas": [
         "A travessia ganhou abertura 3D.",
         "O menu ganhou música e narração.",
         "Casa e árvores ampliaram o vale."
+      ],
+      "mudancas_en": [
+        "The crossing got a 3D opening.",
+        "The menu got music and narration.",
+        "House and trees expanded the valley."
       ]
     },
     {
       "data": "23/09/2026",
       "estado": "MARCO DO PROTÓTIPO",
+      "estado_en": "PROTOTYPE MILESTONE",
       "titulo": "Primeiros passos",
+      "titulo_en": "First steps",
       "mudancas": [
         "O vale 3D abriu para exploração.",
         "O personagem ganhou animações.",
         "Praça, horta e costa ganharam forma."
+      ],
+      "mudancas_en": [
+        "The 3D valley opened for exploration.",
+        "The character got animations.",
+        "Square, garden and coast took shape."
       ]
     }
   ]

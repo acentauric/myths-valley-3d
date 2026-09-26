@@ -18,7 +18,7 @@ const FOGUEIRA := PASTA + "fogueira.mp3"
 const MATA_PAUSA := Vector2(60.0, 150.0)
 const MATA_DURACAO := Vector2(6.0, 12.0)
 const MATA_RAMPA := 2.5
-const MATA_AJUSTE_DB := -5.0
+const MATA_AJUSTE_DB := -12.0
 
 var _dia: AudioStreamPlayer
 var _noite: AudioStreamPlayer

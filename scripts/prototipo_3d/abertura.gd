@@ -2,6 +2,8 @@ extends Node3D
 ## Interface 3D; contrato de áudio e narrativa idênticos aos da versão 2D.
 const AudioToggleIcon = preload("res://scripts/prototipo_3d/audio_toggle_icon.gd")
 const ClockIcon = preload("res://scripts/prototipo_3d/clock_icon.gd")
+const IdiomaMenu = preload("res://scripts/prototipo_3d/idioma_menu.gd")
+const BotaoCanto = preload("res://scripts/prototipo_3d/botao_canto.gd")
 const VISUAL_PREFERENCES := "user://preferencias_visuais.cfg"
 const FLYOVER_SECONDS := 36.0
 const HISTORY_SIZE := Vector2(640, 600)
@@ -28,6 +30,7 @@ var line_bar: ProgressBar
 var line_total := 1.0
 var chapter: Label
 var lines: Array = []
+var dialog_data: Dictionary = {}
 var history_entries: Array = []
 var version_text := ""
 var history_index := 0
@@ -41,6 +44,7 @@ var flyover_active := true
 var clock_running := true
 
 func _ready() -> void:
+	IdiomaMenu.aplicar_menu()
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	# O menu sempre abre no começo do dia; o dia corre na velocidade de Passagem do tempo.
 	Dia.pausado = false
@@ -54,7 +58,7 @@ func _ready() -> void:
 	_load_visual_preference()
 	var data = JSON.parse_string(FileAccess.get_file_as_string("res://data/dialogos/pedro.json"))
 	if data is Dictionary:
-		lines = data.get("travessia", [])
+		dialog_data = data
 	var history_data = JSON.parse_string(FileAccess.get_file_as_string("res://data/historico_3d.json"))
 	if history_data is Dictionary:
 		history_entries = history_data.get("entradas", [])
@@ -269,63 +273,12 @@ func _button_styles(theme: Theme, type_name: String, states: Dictionary) -> void
 		theme.set_stylebox(state, type_name, box)
 
 
-## Botões redondos do canto superior direito (som, relógio), empilhados a partir de
-## `top`. Cada um tem uma dica própria à esquerda, na identidade do painel (o tooltip
-## nativo destoa). Devolve [botão, rótulo da dica].
+## Botões redondos do canto superior direito (som, relógio): ver botao_canto.gd.
+## Devolve [botão, rótulo da dica].
 func _corner_button(layer: CanvasLayer, top: float, icon: Control) -> Array:
-	var corner := PanelContainer.new()
-	corner.anchor_left = 1.0
-	corner.anchor_right = 1.0
-	corner.offset_left = -88.0
-	corner.offset_right = -36.0
-	corner.offset_top = top
-	corner.offset_bottom = top + 52.0
-	var corner_style := StyleBoxFlat.new()
-	corner_style.bg_color = Color(0.055, 0.09, 0.075, 0.94)
-	corner_style.border_color = Color("b49a60")
-	corner_style.set_border_width_all(1)
-	corner_style.set_corner_radius_all(12)
-	corner_style.content_margin_left = 6
-	corner_style.content_margin_right = 6
-	corner_style.content_margin_top = 6
-	corner_style.content_margin_bottom = 6
-	corner.add_theme_stylebox_override("panel", corner_style)
-	layer.add_child(corner)
-	var hint := PanelContainer.new()
-	hint.anchor_left = 1.0
-	hint.anchor_right = 1.0
-	hint.grow_horizontal = Control.GROW_DIRECTION_BEGIN
-	hint.offset_left = -98.0
-	hint.offset_right = -98.0
-	hint.offset_top = top + 8.0
-	hint.offset_bottom = top + 44.0
-	hint.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	hint.visible = false
-	var hint_style := corner_style.duplicate() as StyleBoxFlat
-	hint_style.set_corner_radius_all(8)
-	hint_style.content_margin_left = 14
-	hint_style.content_margin_right = 14
-	hint_style.content_margin_top = 4
-	hint_style.content_margin_bottom = 4
-	hint.add_theme_stylebox_override("panel", hint_style)
-	var hint_label := Label.new()
-	hint_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	hint_label.add_theme_font_size_override("font_size", 15)
-	hint_label.add_theme_color_override("font_color", Color("ece6d6"))
-	hint.add_child(hint_label)
-	layer.add_child(hint)
-	var button := Button.new()
-	button.flat = true
-	button.toggle_mode = true
-	button.custom_minimum_size = Vector2(40, 40)
-	button.mouse_entered.connect(func(): hint.visible = true)
-	button.mouse_exited.connect(func(): hint.visible = false)
-	icon.position = Vector2(8, 8)
-	icon.size = Vector2(24, 24)
-	icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	button.add_child(icon)
-	corner.add_child(button)
-	return [button, hint_label]
+	var parts := BotaoCanto.criar(layer, top, icon)
+	(parts[0] as Button).toggle_mode = true
+	return parts
 
 
 func _create_quick_mute(layer: CanvasLayer) -> void:
@@ -335,11 +288,11 @@ func _create_quick_mute(layer: CanvasLayer) -> void:
 	var quick_mute: Button = parts[0]
 	var hint_label: Label = parts[1]
 	quick_mute.button_pressed = Audio.som_ativo
-	hint_label.text = "Desativar som" if Audio.som_ativo else "Ativar som"
+	hint_label.text = "Desativar" if Audio.som_ativo else "Ativar"
 	quick_mute.toggled.connect(func(active: bool):
 		Audio.definir_som_ativo(active)
 		audio_icon.set_active(active)
-		hint_label.text = "Desativar som" if active else "Ativar som")
+		hint_label.text = "Desativar" if active else "Ativar")
 
 
 ## Relógio do menu: os ponteiros acompanham a hora do vale, que corre desde o começo
@@ -354,7 +307,7 @@ func _create_clock(layer: CanvasLayer) -> void:
 	clock_icon.size = Vector2(28, 28)
 	clock_button.button_pressed = clock_running
 	var refresh := func() -> void:
-		hint_label.text = "%s · %s" % [Dia.texto_hora(), "Pausar o dia" if clock_running else "Retomar o dia"]
+		hint_label.text = "%s · %s" % [Dia.texto_hora(), tr("Pausar") if clock_running else tr("Retomar")]
 	refresh.call()
 	Dia.hora_mudou.connect(func(_hora: float) -> void: refresh.call())
 	clock_button.toggled.connect(func(active: bool) -> void:
@@ -427,7 +380,7 @@ func _open_map() -> void:
 	panel.offset_top = 32
 	panel.offset_bottom = 262
 	_label("Mapa do vale", 24)
-	_label("%s · 1 unidade = %s m" % [$Cenario.get_region_title(), _formatar_escala($Cenario.get_meters_per_unit())], 16)
+	_label("%s · %s" % [$Cenario.get_region_title(), tr("1 unidade = %s m") % _formatar_escala($Cenario.get_meters_per_unit())], 16)
 	_label("N ↑ · roda: zoom · botão direito: mover", 14)
 	_button("VOLTAR", _home).grab_focus()
 	var frame: Rect2 = $Cenario.get_map_frame()
@@ -467,22 +420,23 @@ func _create_map_markers() -> void:
 		var name: String = landmark["name"]
 		name_totals[name] = int(name_totals.get(name, 0)) + 1
 	for landmark: Dictionary in $Cenario.landmarks:
-		var marker_name: String = landmark["name"]
+		var base_name: String = landmark["name"]
+		var marker_name := tr(base_name)
 		var landmark_position: Vector3 = landmark["position"]
-		if int(name_totals[marker_name]) > 1:
-			name_seen[marker_name] = int(name_seen.get(marker_name, 0)) + 1
-			marker_name = "%s %d" % [marker_name, name_seen[marker_name]]
+		if int(name_totals[base_name]) > 1:
+			name_seen[base_name] = int(name_seen.get(base_name, 0)) + 1
+			marker_name = "%s %d" % [marker_name, name_seen[base_name]]
 		_add_map_marker(marker_name, landmark_position)
 	for area: Dictionary in $Cenario.areas:
 		if area["name"] != "Praça":
-			_add_map_marker(area["name"], area["position"])
+			_add_map_marker(tr(area["name"]), area["position"])
 	_position_map_markers()
 
 
 func _add_map_marker(label: String, position: Vector3) -> void:
 	var marker := Button.new()
 	marker.text = "● " + label
-	marker.tooltip_text = "Centralizar em %s" % label
+	marker.tooltip_text = tr("Centralizar em %s") % label
 	marker.custom_minimum_size = Vector2(0, 26)
 	marker.add_theme_font_size_override("font_size", 13)
 	marker.pressed.connect(_focus_map_marker.bind(position))
@@ -523,8 +477,8 @@ func _render_history() -> void:
 	history_open = true
 	var entry: Dictionary = history_entries[history_index]
 	_label("Histórico", 30)
-	_label("%s · %s" % [entry.get("data", ""), entry.get("estado", "")], 16)
-	_label(str(entry.get("titulo", "")), 22)
+	_label("%s · %s" % [entry.get("data", ""), IdiomaMenu.campo(entry, "estado")], 16)
+	_label(str(IdiomaMenu.campo(entry, "titulo")), 22)
 	var scroll := ScrollContainer.new()
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
@@ -533,7 +487,7 @@ func _render_history() -> void:
 	changes.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	changes.add_theme_constant_override("separation", 10)
 	scroll.add_child(changes)
-	for change in entry.get("mudancas", []):
+	for change in IdiomaMenu.campo(entry, "mudancas", []):
 		var change_label := Label.new()
 		change_label.text = "• " + str(change)
 		change_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -623,15 +577,18 @@ func _options_column(columns: HBoxContainer) -> VBoxContainer:
 
 
 func _options_geral(left: VBoxContainer, right: VBoxContainer) -> void:
-	ui_parent = left
+	ui_parent = right
 	_label("Volume", 20)
 	_slider("Música", Audio.volume_musica, Audio.definir_volume_musica)
 	_slider("Narração", Audio.volume_narracao, Audio.definir_volume_narracao)
 	_slider("Falas dos personagens", Audio.volume_vozes, Audio.definir_volume_vozes)
 	_slider("Efeitos e passos", Audio.volume_efeitos, Audio.definir_volume_efeitos)
 	_slider("Ambiente", Audio.volume_ambiente, Audio.definir_volume_ambiente)
-	ui_parent = right
+	ui_parent = left
 	_label("Menu", 20)
+	_choice("Idioma", IdiomaMenu.ROTULOS, IdiomaMenu.indice(), func(i: int) -> void:
+		IdiomaMenu.definir(i)
+		_options(0))
 	_choice("Cenário do menu", ["Parado", "Sobrevoo"], 1 if flyover_active else 0, _set_flyover)
 	_choice("Trilha do menu", ["Introdução", "Menu I", "Menu II", "Recôncavo"], Audio.musica_menu_opcao - 1, func(i): Audio.definir_musica_menu(i + 1))
 	_choice("Som dos botões", ["Original", "Madeira"], Audio.efeitos_menu_opcao - 1, func(i):
@@ -669,6 +626,7 @@ func _options_mundo(left: VBoxContainer, right: VBoxContainer) -> void:
 		if absf(float(HORAS_INICIAIS[indice]) - Dia.hora_inicial) < 0.75:
 			hora_indice = indice
 	_choice("Hora inicial", ROTULOS_HORAS, hora_indice, func(i: int) -> void: Dia.definir_hora_inicial(float(HORAS_INICIAIS[i])))
+	_choice("Pausar o relógio no jogo", ["Permitido", "Bloqueado"], 0 if Dia.pausa_no_jogo else 1, func(i: int) -> void: Dia.definir_pausa_no_jogo(i == 0))
 	_label("O menu abre sempre no começo do dia e o relógio do canto mostra o dia correndo nesta velocidade.", 14)
 
 
@@ -681,7 +639,7 @@ func _set_estilo(option: int) -> void:
 	get_tree().reload_current_scene()
 
 func _slider(title: String, value: float, callback: Callable) -> void:
-	var label := _label("%s · %d%%" % [title, roundi(value * 100)], 16)
+	var label := _label("%s · %d%%" % [tr(title), roundi(value * 100)], 16)
 	var slider := HSlider.new()
 	slider.min_value = 0
 	slider.max_value = 1
@@ -690,7 +648,7 @@ func _slider(title: String, value: float, callback: Callable) -> void:
 	slider.custom_minimum_size.y = 22
 	slider.value_changed.connect(func(v):
 		callback.call(v)
-		label.text = "%s · %d%%" % [title, roundi(v * 100)])
+		label.text = "%s · %d%%" % [tr(title), roundi(v * 100)])
 	ui_parent.add_child(slider)
 
 func _choice(title: String, entries: Array, selected: int, callback: Callable) -> void:
@@ -744,6 +702,7 @@ func _intro() -> void:
 	_button("CONTINUAR", _next_line)
 	_button("PULAR", _start_game)
 	Audio.narrar_abertura()
+	lines = IdiomaMenu.campo(dialog_data, "travessia", [])
 	line_index = -1
 	_next_line()
 
@@ -765,6 +724,7 @@ func _start_game() -> void:
 	set_process(false)
 	Dia.pausado = false
 	Dia.definir_hora(Dia.hora_inicial)
+	IdiomaMenu.restaurar_jogo()
 	Audio.parar_narracao()
 	get_tree().change_scene_to_file("res://scenes/prototipo_3d/vale.tscn")
 

@@ -136,8 +136,7 @@ func _process(_delta: float) -> void:
 
 
 func _atualizar_relogio() -> void:
-	var velocidade: String = Dia.ROTULOS_VELOCIDADE[Dia.velocidade]
-	hud.set_clock("%s · %s · tempo %s · %s" % [Dia.texto_hora(), PERIODOS.get(Dia.periodo(), ""), velocidade.to_lower(), Estilo.rotulo()])
+	hud.set_clock("%s\n%s" % [Dia.texto_hora(), PERIODOS.get(Dia.periodo(), "")])
 
 
 func _on_periodo_mudou(periodo: String) -> void:
