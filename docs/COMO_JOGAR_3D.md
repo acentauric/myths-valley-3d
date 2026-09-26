@@ -1,6 +1,6 @@
 # Jogar e aprender com o protótipo 3D
 
-Abra `JOGAR_3D.cmd` na raiz de `myths-valley-3D`. O atalho importa os recursos e abre o jogo usando o Godot instalado em `C:\Tools\Godot`.
+Abra `prototipo_3d/JOGAR_3D.cmd`. O atalho importa os recursos e abre o jogo usando o Godot instalado em `C:\Tools\Godot`.
 
 No Godot Project Manager, outra opção é importar **`prototipo_3d/project.godot`** e executar `scenes/prototipo_3d/vale.tscn`. O `project.godot` da raiz continua sendo a base 2D.
 
@@ -118,9 +118,9 @@ O teste confirma modelo, textura, 65 ossos, nomes dos 11 clipes, locomoção, oi
 
 ```text
 myths-valley-3D/
-├── JOGAR_3D.cmd
 ├── docs/COMO_JOGAR_3D.md
 └── prototipo_3d/
+    ├── JOGAR_3D.cmd
     ├── project.godot
     ├── assets/prototipo_3d/
     │   ├── casas/                        # Casa otimizada e registro de origem

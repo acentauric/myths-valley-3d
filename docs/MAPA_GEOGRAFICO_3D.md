@@ -28,7 +28,7 @@ do jogo 2D continuam com sua escala e implementação próprias.
 | Geometria normalizada | [`prototipo_3d/data/mapas/bom_jesus_dos_pobres.json`](../prototipo_3d/data/mapas/bom_jesus_dos_pobres.json) | Resultado determinístico de [`importar_kml.py`](../prototipo_3d/tools/mapas/importar_kml.py); coordenadas locais, classes de feição e metadados para o jogo. Não editar à mão. |
 | Cenário interpretado | [`prototipo_3d/data/mapas/bom_jesus_dos_pobres_cenario.json`](../prototipo_3d/data/mapas/bom_jesus_dos_pobres_cenario.json) | Costa, faixa urbana e mata ampla inferidas das capturas e convertidas dos traçados do HTML por [`importar_mascaras_html.py`](../prototipo_3d/tools/mapas/importar_mascaras_html.py). Revisável sem alterar o KML. |
 | Catálogo | [`prototipo_3d/data/mapas/regioes.json`](../prototipo_3d/data/mapas/regioes.json) | Identifica as regiões, aponta para seus arquivos e escolhe `active_region` para a execução atual. |
-| Prévia de planejamento | [`MAPA_PONTOS_INTERESSE.html`](../MAPA_PONTOS_INTERESSE.html) | Visão 2D para discutir os pontos antes da composição final no 3D. |
+| Prévia de planejamento | [`MAPA_PONTOS_INTERESSE.html`](../prototipo_3d/tools/mapas/MAPA_PONTOS_INTERESSE.html) | Visão 2D para discutir os pontos antes da composição final no 3D. |
 
 O KML veio do projeto **“Projeto de mapa sem título”** e foi recebido em
 25/09/2026.

@@ -15,7 +15,7 @@ from pathlib import Path
 from importar_kml import PROJECT
 
 
-HTML = PROJECT.parent / "MAPA_PONTOS_INTERESSE.html"
+HTML = Path(__file__).resolve().parent / "MAPA_PONTOS_INTERESSE.html"
 REGION = PROJECT / "data/mapas/bom_jesus_dos_pobres.json"
 OUTPUT = PROJECT / "data/mapas/bom_jesus_dos_pobres_cenario.json"
 TOKEN = re.compile(r"[A-Za-z]|[-+]?(?:\d*\.\d+|\d+\.?)(?:[eE][-+]?\d+)?")

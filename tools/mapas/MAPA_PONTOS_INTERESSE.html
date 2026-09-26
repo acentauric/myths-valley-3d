@@ -1,0 +1,453 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Myths’ Valley — mapa desenhado do vale</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #172922;
+      --muted: #5d7068;
+      --line: #d7e0d5;
+      --paper: #f7f7ef;
+      --panel: #fffef9;
+      --deep: #163b32;
+      --gold: #d6a966;
+      --place: #bd684b;
+      --nature: #328b80;
+      --reference: #7773a5;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; height: 100%; font-family: Inter, "Segoe UI", Arial, sans-serif; color: var(--ink); background: var(--paper); }
+    button, input, select, textarea { font: inherit; }
+    button { cursor: pointer; }
+    .app { min-height: 100vh; display: grid; grid-template-columns: minmax(310px, 370px) minmax(0, 1fr); }
+    .sidebar { z-index: 2; display: flex; flex-direction: column; height: 100vh; padding: 25px 21px 16px; background: var(--panel); border-right: 1px solid var(--line); overflow: auto; box-shadow: 10px 0 30px #1f3b2d12; }
+    .eyebrow { margin: 0 0 9px; color: #8b633d; font-size: 11px; font-weight: 800; letter-spacing: .18em; text-transform: uppercase; }
+    h1 { font-family: Georgia, "Times New Roman", serif; font-size: clamp(27px, 2.1vw, 34px); line-height: 1.09; letter-spacing: -.025em; margin: 0; }
+    .intro { color: var(--muted); font-size: 13px; line-height: 1.55; margin: 11px 0 17px; }
+    .notice { padding: 10px 12px; border-left: 3px solid var(--gold); background: #f6f0e3; color: #614f39; font-size: 12px; line-height: 1.45; border-radius: 0 8px 8px 0; }
+    .actions { display: flex; flex-wrap: wrap; gap: 7px; margin: 17px 0 11px; }
+    .action { border: 1px solid var(--line); background: white; color: var(--deep); border-radius: 9px; padding: 9px 11px; font-size: 12px; font-weight: 700; }
+    .action:hover, .action:focus-visible { border-color: #6b9c85; background: #edf5ea; }
+    .action.primary { background: var(--deep); color: white; border-color: var(--deep); }
+    .action.primary:hover, .action.primary:focus-visible { background: #285446; }
+    .action.active { background: #d9ebdf; border-color: #5f9e7f; }
+    .search { width: 100%; border: 1px solid var(--line); background: #fafbf7; border-radius: 9px; padding: 10px 11px; outline-color: #5f9e7f; }
+    .list-heading { display: flex; justify-content: space-between; gap: 10px; align-items: center; margin: 18px 0 8px; font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .09em; font-weight: 800; }
+    .list { display: grid; gap: 5px; overflow: auto; min-height: 120px; max-height: 35vh; padding-right: 3px; }
+    .item { display: grid; grid-template-columns: 9px 1fr auto; align-items: center; gap: 10px; width: 100%; text-align: left; border: 1px solid transparent; border-radius: 9px; background: transparent; padding: 9px 7px; color: var(--ink); }
+    .item:hover { background: #f0f4ea; }
+    .item.selected { background: #e9f1e7; border-color: #b6d1bd; }
+    .item .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--place); }
+    .item[data-kind="paisagem"] .dot { background: var(--nature); }
+    .item[data-kind="referencia"] .dot { background: var(--reference); }
+    .item .item-name { font-size: 13px; font-weight: 700; line-height: 1.25; }
+    .item .item-role { font-size: 10px; color: var(--muted); max-width: 78px; text-align: right; }
+    .empty-list { color: var(--muted); padding: 12px 4px; font-size: 12px; }
+    .editor { margin-top: 17px; padding-top: 15px; border-top: 1px solid var(--line); }
+    .editor h2 { font-family: Georgia, "Times New Roman", serif; font-size: 21px; margin: 0 0 13px; }
+    .field { display: grid; gap: 5px; margin-bottom: 10px; }
+    .field label { color: var(--muted); font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .07em; }
+    .field input, .field select, .field textarea { width: 100%; border: 1px solid var(--line); background: white; border-radius: 8px; padding: 9px; color: var(--ink); outline-color: #5f9e7f; }
+    .field textarea { resize: vertical; min-height: 72px; line-height: 1.4; }
+    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+    .edit-foot { display: flex; justify-content: space-between; align-items: center; margin-top: 2px; }
+    .coords { color: var(--muted); font-size: 11px; }
+    .delete { border: 0; background: transparent; color: #a04c43; padding: 5px 0; font-size: 12px; font-weight: 700; }
+    .sidebar-footer { margin-top: auto; padding-top: 18px; color: var(--muted); font-size: 11px; line-height: 1.5; }
+    .map-stage { position: relative; min-width: 0; min-height: 100vh; background: #b8dbe3; overflow: hidden; }
+    .map { display: block; width: 100%; height: 100vh; touch-action: none; cursor: grab; }
+    .map.dragging { cursor: grabbing; }
+    .map.adding { cursor: crosshair; }
+    .map-title { position: absolute; top: 23px; left: 24px; pointer-events: none; background: #fffef9ed; border: 1px solid #d8e3d5; box-shadow: 0 8px 22px #26433219; padding: 11px 15px; border-radius: 12px; }
+    .map-title strong { display: block; font-family: Georgia, "Times New Roman", serif; font-size: 20px; }
+    .map-title span { color: var(--muted); font-size: 11px; }
+    .map-tools { position: absolute; top: 23px; right: 23px; display: flex; flex-direction: column; gap: 7px; }
+    .map-tools button { width: 40px; height: 40px; background: #fffef9; border: 1px solid #d5dfd4; color: var(--deep); border-radius: 9px; box-shadow: 0 5px 16px #23443722; font-size: 21px; font-weight: 700; }
+    .map-tools button:last-child { font-size: 15px; }
+    .map-tools button:hover, .map-tools button:focus-visible { background: #e6f2e9; }
+    .legend { position: absolute; bottom: 20px; left: 24px; display: flex; flex-wrap: wrap; gap: 11px 15px; align-items: center; max-width: calc(100% - 48px); border-radius: 10px; padding: 10px 13px; background: #fffef9ed; border: 1px solid #d8e3d5; box-shadow: 0 5px 20px #26433216; font-size: 11px; color: #385248; }
+    .legend i { display: inline-block; width: 9px; height: 9px; border-radius: 50%; vertical-align: middle; margin-right: 4px; background: var(--place); }
+    .legend .nature { background: var(--nature); }
+    .legend .reference { background: var(--reference); }
+    .map-help { position: absolute; bottom: 74px; right: 23px; max-width: 300px; text-align: right; color: #25443d; background: #fffef9d9; padding: 8px 10px; border-radius: 8px; font-size: 11px; }
+    .terrain-label { fill: #3f6951; font: 800 16px "Segoe UI", Arial, sans-serif; letter-spacing: .13em; opacity: .8; paint-order: stroke; stroke: #d5e8c7; stroke-width: 4px; }
+    .water-label { fill: #4c94a1; font: italic 27px Georgia, serif; letter-spacing: .035em; opacity: .84; }
+    .road-label { fill: #34457c; font: 700 12px "Segoe UI", Arial, sans-serif; paint-order: stroke; stroke: #f8f2dc; stroke-width: 4px; }
+    .road-case { fill: none; stroke: #394e91; stroke-linecap: round; stroke-linejoin: round; }
+    .road-fill { fill: none; stroke: #f8edce; stroke-linecap: round; stroke-linejoin: round; }
+    .river-bank { fill: none; stroke: #cae4c9; stroke-width: 16; stroke-linecap: round; stroke-linejoin: round; }
+    .river-water { fill: none; stroke: #5daeb9; stroke-width: 9; stroke-linecap: round; stroke-linejoin: round; }
+    .area-outline { stroke: #678c65; stroke-width: 3; stroke-linejoin: round; }
+    .area-label { fill: #3f604b; font: 800 12px "Segoe UI", Arial, sans-serif; letter-spacing: .1em; paint-order: stroke; stroke: #f6f4e6; stroke-width: 4px; }
+    .kml-area-fazenda { fill: #dbc987; stroke: #a89256; stroke-width: 3; }
+    .kml-area-praca { fill: #a1c98e; stroke: #688b63; stroke-width: 3; }
+    .kml-area-mata { fill: #78a37d; stroke: #4c7e63; stroke-width: 3; }
+    .legend .swatch { display: inline-block; width: 15px; height: 9px; margin-right: 5px; border-radius: 2px; vertical-align: middle; }
+    .legend .swatch.forest { background: #86ad83; }
+    .legend .swatch.farm { background: #d9c680; }
+    .legend .swatch.village { background: #e9d9b9; }
+    .legend .swatch.river { background: #5daeb9; }
+    .legend .swatch.road { background: #394e91; }
+    .poi { cursor: grab; }
+    .poi .halo { fill: #fffef8; stroke: #ffffff; stroke-width: 4; }
+    .poi .core { fill: var(--place); stroke: #fff; stroke-width: 2; }
+    .poi[data-kind="paisagem"] .core { fill: var(--nature); }
+    .poi[data-kind="referencia"] .core { fill: var(--reference); }
+    .poi.selected .halo { fill: #fff0c9; stroke: #e3bb74; stroke-width: 3; }
+    .poi-label { fill: #1f332e; font: 700 15px "Segoe UI", Arial, sans-serif; paint-order: stroke; stroke: #fffef5; stroke-width: 4px; stroke-linejoin: round; pointer-events: none; }
+    .poi.secondary .poi-label { display: none; }
+    .poi.secondary:hover .poi-label, .poi.secondary.selected .poi-label { display: block; }
+    .poi:focus-visible .halo { stroke: #154b3e; stroke-width: 5; }
+    @media (max-width: 800px) {
+      .app { grid-template-columns: 1fr; }
+      .sidebar { height: auto; max-height: 48vh; border-right: 0; border-bottom: 1px solid var(--line); padding: 17px; }
+      .list { max-height: 18vh; }
+      .map-stage { min-height: 52vh; }
+      .map { height: 52vh; }
+      .map-title { top: 12px; left: 12px; }
+      .map-tools { top: 12px; right: 12px; }
+      .legend { left: 12px; bottom: 10px; }
+      .map-help { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <aside class="sidebar">
+      <p class="eyebrow">Myths’ Valley · estudo do terreno</p>
+      <h1>O vale desenhado<br>visto de cima</h1>
+      <p class="intro">Seu mapa do Google Earth, agora com as ruas, os rios, as áreas e os pontos de interesse no mesmo desenho. Selecione um marco para orientar sua adaptação ao jogo.</p>
+      <div class="notice">O KML forneceu 8 ruas, 2 rios, 3 áreas e 11 pontos. A costa e a mata extensa foram interpretadas das capturas. Este desenho orienta o jogo, mas não estabelece como era a região em 1887.</div>
+      <div class="actions">
+        <button class="action primary" id="addPoint" type="button">+ Adicionar ponto</button>
+        <button class="action" id="exportJson" type="button">Exportar pontos</button>
+        <button class="action" id="importJson" type="button">Importar pontos</button>
+        <button class="action" id="resetData" type="button">Repor marcadores</button>
+      </div>
+      <input class="search" id="search" type="search" placeholder="Buscar ponto" aria-label="Buscar ponto">
+      <div class="list-heading"><span>Locais e áreas</span><span id="pointCount"></span></div>
+      <div class="list" id="poiList" aria-label="Lista de pontos de interesse"></div>
+      <section class="editor" id="editor" hidden>
+        <h2>Orientações do local</h2>
+        <div class="field"><label for="pointName">Nome</label><input id="pointName" maxlength="90"></div>
+        <div class="field-row">
+          <div class="field"><label for="pointKind">Tipo</label><select id="pointKind"><option value="marco">Marco local</option><option value="paisagem">Paisagem</option><option value="referencia">Referência atual</option></select></div>
+          <div class="field"><label for="pointRole">No jogo</label><select id="pointRole"><option value="a decidir">A decidir</option><option value="usar">Usar</option><option value="adaptar">Adaptar</option><option value="referência">Só referência</option><option value="descartar">Descartar</option></select></div>
+        </div>
+        <div class="field"><label for="pointNotes">O que deve existir aqui?</label><textarea id="pointNotes" placeholder="Ex.: casa de taipa, caminho para a praia, encontro com personagem..."></textarea></div>
+        <div class="edit-foot"><span class="coords" id="pointCoords"></span><button class="delete" id="deletePoint" type="button">Excluir marcador</button></div>
+      </section>
+      <p class="sidebar-footer">As edições dos marcadores ficam salvas neste navegador. Use <strong>Exportar pontos</strong> para guardar ou compartilhar suas orientações.</p>
+    </aside>
+    <section class="map-stage" aria-label="Mapa esquemático editável conforme o KML desenhado no Google Earth">
+      <div class="map-title"><strong>O vale e a costa</strong><span>norte ↗ · vista girada para acompanhar seu desenho</span></div>
+      <div class="map-tools" aria-label="Controles de aproximação"><button id="zoomIn" type="button" title="Aproximar">+</button><button id="zoomOut" type="button" title="Afastar">−</button><button id="zoomReset" type="button" title="Ver tudo">⌖</button></div>
+      <svg class="map" id="map" viewBox="0 0 1400 1200" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Vista de cima do vale, com mata ao norte, vila junto a costa, vias e rios do KML">
+        <defs>
+          <pattern id="waterPattern" width="95" height="75" patternUnits="userSpaceOnUse"><path d="M10 24q17 -7 35 0M50 58q18 -7 35 0" stroke="#e1f4ed" stroke-width="2" opacity=".5" fill="none"/></pattern>
+          <pattern id="forestPattern" width="65" height="65" patternUnits="userSpaceOnUse"><circle cx="14" cy="13" r="17" fill="#78a779" opacity=".22"/><circle cx="48" cy="45" r="20" fill="#7ba076" opacity=".18"/><circle cx="49" cy="8" r="7" fill="#467e67" opacity=".12"/></pattern>
+          <pattern id="housesPattern" width="48" height="48" patternUnits="userSpaceOnUse" patternTransform="rotate(-13)"><rect x="8" y="7" width="13" height="8" rx="1" fill="#ba8d71" opacity=".35"/><rect x="27" y="29" width="11" height="8" rx="1" fill="#c89a78" opacity=".32"/></pattern>
+          <path id="landShape" d="M-20 962 C15 985 65 1032 113 1044 C162 1057 203 1045 264 1057 C333 1074 382 1074 446 1088 C510 1098 576 1104 640 1107 C682 1116 717 1098 748 1062 C766 1040 776 1037 788 1044 C823 1044 858 1031 901 1022 C954 1002 1005 1016 1050 1000 C1112 983 1160 952 1204 921 C1248 894 1279 872 1297 839 C1326 799 1365 775 1420 746 L1420 -20 H-20 Z"/>
+          <path id="coastline" d="M-20 962 C15 985 65 1032 113 1044 C162 1057 203 1045 264 1057 C333 1074 382 1074 446 1088 C510 1098 576 1104 640 1107 C682 1116 717 1098 748 1062 C766 1040 776 1037 788 1044 C823 1044 858 1031 901 1022 C954 1002 1005 1016 1050 1000 C1112 983 1160 952 1204 921 C1248 894 1279 872 1297 839 C1326 799 1365 775 1420 746"/>
+          <path id="northForest" d="M-20 -20 H1420 V663 C1369 657 1310 641 1249 678 C1203 713 1158 733 1104 731 C1043 718 1019 650 957 635 C895 622 857 667 814 713 C773 746 737 720 692 703 C639 671 598 699 554 719 C488 739 448 677 382 667 C315 660 266 712 212 727 C145 743 71 701 -20 710 Z"/>
+          <path id="villageShape" d="M-20 673 C72 627 145 639 207 666 C283 620 340 654 394 702 C466 685 518 701 573 737 C638 710 693 737 738 769 C793 727 843 730 900 768 C959 724 1022 736 1080 764 C1134 765 1189 811 1223 868 C1171 925 1099 981 1021 1006 C926 1005 867 1042 775 1081 C672 1112 560 1090 463 1078 C351 1064 263 1040 182 1007 C103 981 47 951 -20 926 Z"/>
+          <clipPath id="landClip"><use href="#landShape"/></clipPath>
+          <!-- KML: 8 ruas, 2 rios e 3 poligonos, preservados como caminhos SVG. -->
+          <!-- Projecao: E=(lon+38.79088960724624)*108535; S=(-12.80046679346458-lat)*111320;
+               X=70+(.62932039*E-.77714596*S+1083.073629)*.61493;
+               Y=79+(.77714596*E+.62932039*S-352.070896)*.61493.
+               A rotacao de 51 graus acompanha a captura do Earth; norte aponta para cima/direita. -->
+          <g id="kml-areas">
+            <!-- 08 Fazenda (Polygon, 4 vertices) -->
+            <path id="kml-area-fazenda" class="kml-area-fazenda" data-kml-index="8" d="M 1132.3,805.4 L 1100.5,687.3 L 1049.3,686.9 L 1061.8,814.5 Z" />
+            <!-- 21 Praça (Polygon, 3 vertices) -->
+            <path id="kml-area-praca" class="kml-area-praca" data-kml-index="21" d="M 538.8,953.0 L 544.0,976.5 L 618.9,944.8 Z" />
+            <!-- 24 Mata (Polygon, 13 vertices) -->
+            <path id="kml-area-mata" class="kml-area-mata" data-kml-index="24" d="M 297.6,963.3 L 224.9,907.9 L 194.1,904.5 L 176.0,885.7 L 127.3,885.6 L 87.2,880.9 L 70.0,947.3 L 78.8,975.3 L 123.0,986.3 L 147.6,1015.3 L 193.4,1027.7 L 233.4,1022.7 L 318.9,1015.0 Z" />
+          </g>
+          <g id="kml-tracados">
+            <!-- 06 Rio (LineString, 41 vertices) -->
+            <path id="kml-rio-leste" class="kml-rio" data-kml-index="6" d="M 1267.4,878.9 L 1291.4,866.0 L 1306.4,853.9 L 1325.9,833.7 L 1330.0,812.8 L 1317.8,790.6 L 1293.9,784.7 L 1283.7,781.3 L 1270.5,780.4 L 1261.9,778.0 L 1253.4,769.6 L 1250.5,758.1 L 1255.2,741.5 L 1259.3,726.8 L 1266.0,714.6 L 1275.6,697.8 L 1283.1,685.6 L 1289.5,671.6 L 1290.2,649.8 L 1282.1,628.6 L 1272.9,614.7 L 1254.1,595.2 L 1227.9,577.0 L 1189.7,559.1 L 1163.7,546.9 L 1138.0,530.0 L 1123.3,516.9 L 1116.0,501.0 L 1112.7,487.2 L 1112.0,468.0 L 1111.0,452.6 L 1113.0,441.4 L 1117.8,426.7 L 1126.9,406.5 L 1120.4,390.0 L 1101.6,382.9 L 1090.5,371.2 L 1086.3,358.2 L 1087.0,337.2 L 1091.9,319.1 L 1102.1,314.6" />
+            <!-- 10 Rio (LineString, 36 vertices) -->
+            <path id="kml-rio-central" class="kml-rio" data-kml-index="10" d="M 783.5,1037.5 L 777.6,1027.7 L 761.1,1024.5 L 737.3,1018.5 L 719.5,1014.0 L 701.2,1006.6 L 694.5,1001.7 L 685.5,987.5 L 674.7,974.2 L 667.1,959.0 L 654.9,945.6 L 648.7,936.7 L 638.2,923.1 L 623.5,913.1 L 610.7,909.6 L 606.8,899.3 L 606.3,887.3 L 612.3,878.3 L 627.4,865.3 L 641.0,851.9 L 650.9,841.3 L 659.3,834.1 L 672.5,832.9 L 681.5,826.9 L 687.0,809.7 L 686.9,800.7 L 686.5,779.1 L 690.3,768.5 L 693.5,756.2 L 696.6,746.5 L 690.9,725.7 L 685.5,714.8 L 694.9,697.7 L 703.2,687.0 L 716.6,680.0 L 723.0,671.8" />
+            <!-- 15 Rua Principal (LineString, 35 vertices) -->
+            <path id="kml-rua-principal" class="kml-rua" data-kml-index="15" d="M 1306.7,745.2 L 1291.0,755.4 L 1274.4,763.7 L 1249.4,777.0 L 1222.1,784.2 L 1183.1,793.5 L 1151.8,802.6 L 1053.2,819.8 L 1016.2,824.3 L 970.8,836.6 L 925.3,851.2 L 902.0,869.3 L 852.2,894.2 L 832.7,909.1 L 799.0,916.6 L 773.1,918.4 L 739.7,909.1 L 711.5,901.4 L 664.4,917.6 L 624.4,939.4 L 556.5,948.0 L 521.9,951.7 L 477.0,954.6 L 432.7,958.2 L 430.8,943.7 L 424.1,910.7 L 416.6,896.4 L 393.7,889.9 L 367.4,880.4 L 350.4,865.9 L 340.8,817.9 L 308.6,573.2 L 289.4,527.9 L 258.2,478.7 L 234.4,455.5" />
+            <!-- 16 Rua Secundária (LineString, 4 vertices) -->
+            <path id="kml-rua-secundaria" class="kml-rua" data-kml-index="16" d="M 984.1,832.1 L 997.2,873.7 L 999.1,909.3 L 1008.8,957.9" />
+            <!-- 17 Rua Secundária2 (LineString, 13 vertices) -->
+            <path id="kml-rua-secundaria-2" class="kml-rua" data-kml-index="17" d="M 984.8,833.1 L 986.7,820.7 L 982.7,804.9 L 975.5,794.2 L 966.3,790.6 L 957.0,774.0 L 952.6,749.5 L 946.8,731.4 L 945.7,721.1 L 940.8,699.2 L 927.9,671.2 L 920.7,657.6 L 922.5,622.5" />
+            <!-- 18 Rua do Cemitério (LineString, 9 vertices) -->
+            <path id="kml-rua-cemiterio" class="kml-rua" data-kml-index="18" d="M 812.7,913.2 L 813.4,900.2 L 816.7,888.4 L 824.7,877.1 L 830.7,863.0 L 836.5,848.8 L 841.3,837.3 L 846.0,823.8 L 847.8,814.9" />
+            <!-- 19 Rua da Igreja (LineString, 15 vertices) -->
+            <path id="kml-rua-igreja" class="kml-rua" data-kml-index="19" d="M 839.3,903.9 L 844.8,919.8 L 854.2,944.9 L 862.7,964.6 L 867.6,978.7 L 869.3,987.1 L 852.9,991.8 L 828.7,995.7 L 819.9,995.4 L 803.0,985.4 L 776.3,968.9 L 759.5,961.0 L 747.4,951.4 L 750.9,937.9 L 764.3,917.1" />
+            <!-- 20 Rua do mirante (LineString, 27 vertices) -->
+            <path id="kml-rua-mirante" class="kml-rua" data-kml-index="20" d="M 537.3,948.7 L 538.8,928.3 L 555.0,911.7 L 565.2,899.5 L 578.2,870.8 L 601.7,839.6 L 618.4,816.1 L 633.5,777.4 L 635.1,750.2 L 625.6,719.9 L 591.4,706.6 L 570.6,682.9 L 537.3,664.6 L 521.3,631.6 L 487.9,557.7 L 462.2,507.2 L 459.9,447.7 L 466.9,425.0 L 442.7,380.3 L 443.2,350.9 L 476.4,327.4 L 503.8,308.6 L 488.4,248.5 L 478.0,177.9 L 500.5,140.2 L 513.9,121.6 L 478.3,92.5" />
+            <!-- 22 Rua da Praça (LineString, 3 vertices) -->
+            <path id="kml-rua-praca" class="kml-rua" data-kml-index="22" d="M 562.1,972.1 L 568.2,995.8 L 570.1,1022.2" />
+            <!-- 23 Rua das Pedras (LineString, 7 vertices) -->
+            <path id="kml-rua-pedras" class="kml-rua" data-kml-index="23" d="M 541.0,974.4 L 500.2,986.5 L 452.5,997.5 L 395.4,1001.3 L 353.6,1006.5 L 337.1,1006.9 L 324.8,1013.7" />
+          </g>
+        </defs>
+        <g id="world">
+          <rect width="1400" height="1200" fill="#9ed6df"/>
+          <rect width="1400" height="1200" fill="url(#waterPattern)"/>
+          <use href="#landShape" fill="#dfe9d5"/>
+          <g clip-path="url(#landClip)">
+            <!-- A mata extensa e a mancha urbana sao estimadas pela imagem, pois nao constam do KML. -->
+            <use href="#northForest" fill="#accda7"/>
+            <use href="#northForest" fill="url(#forestPattern)"/>
+            <path d="M-20 654 C101 611 173 658 212 727 C267 703 298 673 346 677 C280 798 179 816 -20 767 Z" fill="#9dbf98" opacity=".7"/>
+            <path d="M729 630 C839 581 931 610 1005 672 C1063 650 1130 658 1195 713 C1173 751 1134 762 1098 759 C999 691 900 683 820 748 Z" fill="#91b991" opacity=".76"/>
+            <path d="M188 446 C262 432 317 474 334 555 C350 623 316 686 267 708 C218 686 193 615 188 446 Z" fill="#e8dfc8" opacity=".72"/>
+            <path d="M188 446 C262 432 317 474 334 555 C350 623 316 686 267 708 C218 686 193 615 188 446 Z" fill="url(#housesPattern)" opacity=".7"/>
+            <use href="#villageShape" fill="#eee7d3"/>
+            <use href="#villageShape" fill="url(#housesPattern)"/>
+            <path d="M298 746 C350 709 402 713 439 760 C431 824 386 850 332 829 C300 801 281 778 298 746 Z" fill="#b9d2a4" opacity=".94"/>
+            <path d="M661 760 C701 733 740 748 761 790 C746 833 709 853 678 831 C645 807 636 785 661 760 Z" fill="#b9d2a4" opacity=".9"/>
+            <path d="M1138 796 C1199 759 1263 779 1300 827 C1282 872 1244 907 1192 928 C1162 894 1135 848 1138 796 Z" fill="#b5cfa4" opacity=".78"/>
+            <!-- Estas tres areas seguem os vertices desenhados no KML. -->
+            <use href="#kml-area-mata"/>
+            <use href="#kml-area-fazenda"/>
+            <use href="#kml-area-praca"/>
+            <g fill="#b5b9a4" stroke="#929d8c" stroke-width="2" opacity=".94">
+              <ellipse cx="91" cy="1021" rx="19" ry="10" transform="rotate(-16 91 1021)"/>
+              <ellipse cx="151" cy="1033" rx="14" ry="9"/>
+              <ellipse cx="206" cy="1023" rx="11" ry="7"/>
+              <ellipse cx="298" cy="1030" rx="15" ry="8"/>
+            </g>
+          </g>
+          <use href="#coastline" fill="none" stroke="#edd6a6" stroke-width="31" stroke-linecap="round"/>
+          <use href="#coastline" fill="none" stroke="#f6e8bf" stroke-width="13" stroke-linecap="round"/>
+          <!-- Os dois cursos d'agua sao linhas do KML, exibidas em azul. -->
+          <g class="river-bank"><use href="#kml-rio-leste"/><use href="#kml-rio-central"/></g>
+          <g class="river-water"><use href="#kml-rio-leste"/><use href="#kml-rio-central"/></g>
+          <!-- Todas as ruas seguem os vertices KML; a via principal recebe hierarquia visual. -->
+          <g class="road-case" stroke-width="10">
+            <use href="#kml-rua-secundaria"/><use href="#kml-rua-secundaria-2"/><use href="#kml-rua-cemiterio"/>
+            <use href="#kml-rua-igreja"/><use href="#kml-rua-mirante"/><use href="#kml-rua-praca"/><use href="#kml-rua-pedras"/>
+          </g>
+          <g class="road-fill" stroke-width="6">
+            <use href="#kml-rua-secundaria"/><use href="#kml-rua-secundaria-2"/><use href="#kml-rua-cemiterio"/>
+            <use href="#kml-rua-igreja"/><use href="#kml-rua-mirante"/><use href="#kml-rua-praca"/><use href="#kml-rua-pedras"/>
+          </g>
+          <use href="#kml-rua-principal" class="road-case" stroke-width="16"/>
+          <use href="#kml-rua-principal" class="road-fill" stroke-width="10"/>
+          <text class="terrain-label" x="760" y="384">MATA DO INTERIOR</text>
+          <text class="terrain-label" x="378" y="834" style="font-size:13px;letter-spacing:.08em">VILA E CAMINHOS</text>
+          <text class="water-label" x="942" y="1153">Ba&#237;a de Todos-os-Santos</text>
+          <g id="poiLayer"></g>
+        </g>
+      </svg>
+      <div class="legend"><span><b class="swatch forest"></b>Mata (KML + imagem)</span><span><b class="swatch farm"></b>Fazenda</span><span><b class="swatch village"></b>Vila</span><span><b class="swatch river"></b>Rios do KML</span><span><b class="swatch road"></b>Ruas do KML</span><span><i></i>Marcos editáveis</span></div>
+      <div class="map-help" id="mapHelp">Roda do mouse aproxima · arraste o fundo para mover</div>
+    </section>
+  </main>
+  <input type="file" id="fileInput" accept="application/json,.json" hidden>
+  <script>
+    (() => {
+      "use strict";
+      const WORLD = { width: 1400, height: 1200 };
+      const STORAGE = "myths-valley-3d-mapa-pontos-v2";
+      const seed = [
+        { id: "mirante", name: "Mirante", short: "Mirante", x: 469, y: 79, lon: -38.790889607, lat: -12.805492361, kind: "paisagem", role: "a decidir", notes: "Ponto alto ligado à vila pela Rua do Mirante. Definir a vista, a trilha e a vegetação ao redor." },
+        { id: "ponte", name: "Ponte", short: "Ponte", x: 1261, y: 772, lon: -38.775355186, lat: -12.802871206, kind: "marco", role: "a decidir", notes: "Travessia no lado leste, próxima ao rio e à via principal. Definir a forma adequada ao mundo do jogo." },
+        { id: "rio_leste", name: "Rio da ponte", short: "Rio leste", x: 1261, y: 899, lon: -38.773882953, lat: -12.804032006, kind: "paisagem", role: "a decidir", notes: "Ponto marcado perto da foz leste. O curso segue a linha Rio desenhada no KML." },
+        { id: "fazenda", name: "Fazenda", short: "Fazenda", x: 1090, y: 751, kind: "paisagem", role: "a decidir", notes: "Área delimitada por um polígono no KML. Definir cercas, lavoura, construções e acesso." },
+        { id: "cemiterio", name: "Cemitério", short: "Cemitério", x: 847, y: 797, lon: -38.778964551, lat: -12.807800299, kind: "marco", role: "a decidir", notes: "Ponto indicado no KML, ligado à Rua do Cemitério. Definir limites e representação no jogo." },
+        { id: "bar", name: "Bar", short: "Bar", x: 950, y: 961, lon: -38.776086551, lat: -12.808135925, kind: "referencia", role: "a decidir", notes: "Referência marcada no KML junto à vila. Decidir se haverá um ponto de encontro equivalente." },
+        { id: "igreja", name: "Igreja", short: "Igreja", x: 833, y: 1001, lon: -38.776714867, lat: -12.809826329, kind: "marco", role: "a decidir", notes: "Marco próximo à costa, conectado à Rua da Igreja. Definir aparência, tamanho e função no jogo." },
+        { id: "rio_central", name: "Rio central", short: "Rio central", x: 782, y: 1031, lon: -38.776851585, lat: -12.810686400, kind: "paisagem", role: "a decidir", notes: "Ponto marcado perto do segundo curso de água desenhado no KML." },
+        { id: "praca", name: "Praça", short: "Praça", x: 578, y: 956, lon: -38.779649550, lat: -12.812313695, kind: "marco", role: "a decidir", notes: "O KML marca tanto o ponto quanto o contorno da Praça. Definir seu papel na travessia." },
+        { id: "restaurante", name: "Restaurante", short: "Restaurante", x: 554, y: 1030, lon: -38.779018003, lat: -12.813268707, kind: "referencia", role: "a decidir", notes: "Referência do desenho próxima à Praça e à costa. Adaptar ou descartar conforme a ambientação." },
+        { id: "pier", name: "Píer", short: "Píer", x: 718, y: 1121, lon: -38.776419271, lat: -12.812235731, kind: "marco", role: "a decidir", notes: "Ponto avançado sobre a baía. Definir se haverá estrutura de atracação e como se ligará à vila." },
+        { id: "mata", name: "Mata das Pedras", short: "Mata", x: 191, y: 950, kind: "paisagem", role: "a decidir", notes: "Polígono de mata delimitado no KML, perto das Pedras. A floresta maior ao norte foi estimada pelas capturas." },
+        { id: "pedras", name: "Pedras", short: "Pedras", x: 136, y: 1036, lon: -38.782886307, lat: -12.818056796, kind: "paisagem", role: "a decidir", notes: "Ponto rochoso junto à costa sudoeste, ao lado da Mata desenhada no KML." }
+      ];
+      const $ = id => document.getElementById(id);
+      const map = $("map");
+      const layer = $("poiLayer");
+      const list = $("poiList");
+      const fields = { name: $("pointName"), kind: $("pointKind"), role: $("pointRole"), notes: $("pointNotes") };
+      let points = loadPoints();
+      let selectedId = "praca";
+      let addMode = false;
+      let gesture = null;
+      let view = { x: 0, y: 0, w: WORLD.width, h: WORLD.height };
+
+      function loadPoints() {
+        try {
+          const saved = JSON.parse(localStorage.getItem(STORAGE));
+          if (Array.isArray(saved) && saved.every(validPoint)) return saved;
+        } catch (_) { /* o arquivo continua utilizável sem armazenamento local */ }
+        return JSON.parse(JSON.stringify(seed));
+      }
+      function validPoint(p) {
+        return p && typeof p.id === "string" && typeof p.name === "string" && Number.isFinite(Number(p.x)) && Number.isFinite(Number(p.y));
+      }
+      function persist() {
+        try { localStorage.setItem(STORAGE, JSON.stringify(points)); } catch (_) { /* exportação manual continua disponível */ }
+      }
+      function current() { return points.find(p => p.id === selectedId); }
+      function roleLabel(role) { return ({ "a decidir": "A decidir", usar: "Usar", adaptar: "Adaptar", "referência": "Só referência", descartar: "Descartar" })[role] || "A decidir"; }
+      function svgElement(tag, attrs = {}) {
+        const el = document.createElementNS("http://www.w3.org/2000/svg", tag);
+        for (const [key, value] of Object.entries(attrs)) el.setAttribute(key, value);
+        return el;
+      }
+      function filteredPoints() {
+        const query = $("search").value.trim().toLocaleLowerCase("pt-BR");
+        return points.filter(p => !query || `${p.name} ${p.notes || ""}`.toLocaleLowerCase("pt-BR").includes(query));
+      }
+      function renderList() {
+        list.replaceChildren();
+        const visible = filteredPoints();
+        $("pointCount").textContent = `${visible.length} / ${points.length}`;
+        if (!visible.length) {
+          const empty = document.createElement("p"); empty.className = "empty-list"; empty.textContent = "Nenhum ponto encontrado."; list.append(empty);
+          return;
+        }
+        for (const p of visible) {
+          const row = document.createElement("button");
+          row.type = "button"; row.className = `item${p.id === selectedId ? " selected" : ""}`; row.dataset.kind = p.kind;
+          const dot = document.createElement("span"); dot.className = "dot";
+          const name = document.createElement("span"); name.className = "item-name"; name.textContent = p.name;
+          const role = document.createElement("span"); role.className = "item-role"; role.textContent = roleLabel(p.role);
+          row.append(dot, name, role);
+          row.addEventListener("click", () => selectPoint(p.id, true));
+          list.append(row);
+        }
+      }
+      function renderMap() {
+        layer.replaceChildren();
+        for (const p of points) {
+          const marker = svgElement("g", { class: `poi${p.id === selectedId ? " selected" : ""}${p.kind === "referencia" ? " secondary" : ""}`, "data-kind": p.kind, transform: `translate(${Number(p.x)},${Number(p.y)})`, tabindex: "0", role: "button", "aria-label": p.name });
+          marker.append(svgElement("circle", { class: "halo", r: "13" }), svgElement("circle", { class: "core", r: "8" }));
+          const label = svgElement("text", { class: "poi-label", x: "17", y: "5" });
+          label.textContent = p.short || p.name; marker.append(label);
+          marker.addEventListener("pointerdown", e => {
+            e.stopPropagation(); selectPoint(p.id, false);
+            gesture = { type: "point", id: p.id, moved: false };
+            map.setPointerCapture(e.pointerId);
+          });
+          marker.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); selectPoint(p.id, true); } });
+          layer.append(marker);
+        }
+      }
+      function renderEditor() {
+        const p = current();
+        $("editor").hidden = !p;
+        if (!p) return;
+        fields.name.value = p.name;
+        fields.kind.value = p.kind;
+        fields.role.value = p.role;
+        fields.notes.value = p.notes || "";
+        const origin = Number.isFinite(p.lon) && Number.isFinite(p.lat) ? "ponto do KML" : "área do KML";
+        $("pointCoords").textContent = `${origin} · posição no desenho: ${Math.round(p.x)}, ${Math.round(p.y)}`;
+      }
+      function render() { renderList(); renderMap(); renderEditor(); }
+      function selectPoint(id, focus) {
+        selectedId = id; render();
+        if (focus) centerOn(current());
+      }
+      function centerOn(p) {
+        if (!p) return;
+        view.x = p.x - view.w / 2; view.y = p.y - view.h / 2; applyView();
+      }
+      function applyView() { map.setAttribute("viewBox", `${view.x} ${view.y} ${view.w} ${view.h}`); }
+      function toMap(clientX, clientY) {
+        const point = map.createSVGPoint(); point.x = clientX; point.y = clientY;
+        return point.matrixTransform(map.getScreenCTM().inverse());
+      }
+      function zoom(factor, clientX, clientY) {
+        const center = toMap(clientX ?? map.getBoundingClientRect().left + map.clientWidth / 2, clientY ?? map.getBoundingClientRect().top + map.clientHeight / 2);
+        const width = Math.min(WORLD.width, Math.max(300, view.w * factor));
+        const ratio = width / view.w;
+        view.x = center.x - (center.x - view.x) * ratio;
+        view.y = center.y - (center.y - view.y) * ratio;
+        view.w = width; view.h = WORLD.height * width / WORLD.width; applyView();
+      }
+      function setAddMode(enabled) {
+        addMode = enabled; $("addPoint").classList.toggle("active", enabled); $("addPoint").textContent = enabled ? "Clique no mapa…" : "+ Adicionar ponto";
+        map.classList.toggle("adding", enabled);
+        $("mapHelp").textContent = enabled ? "Clique na posição do novo ponto" : "Roda do mouse aproxima · arraste o fundo para mover";
+      }
+      function addAt(x, y) {
+        const id = `novo-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+        points.push({ id, name: "Novo ponto", short: "Novo ponto", x: Math.round(Math.max(0, Math.min(WORLD.width, x))), y: Math.round(Math.max(0, Math.min(WORLD.height, y))), kind: "marco", role: "a decidir", notes: "" });
+        persist(); setAddMode(false); selectPoint(id, false); fields.name.focus(); fields.name.select();
+      }
+      map.addEventListener("pointerdown", e => {
+        if (addMode) { const at = toMap(e.clientX, e.clientY); addAt(at.x, at.y); return; }
+        gesture = { type: "pan", view: { ...view }, inverse: map.getScreenCTM().inverse(), x: e.clientX, y: e.clientY };
+        map.classList.add("dragging"); map.setPointerCapture(e.pointerId);
+      });
+      map.addEventListener("pointermove", e => {
+        if (!gesture) return;
+        if (gesture.type === "point") {
+          const p = points.find(item => item.id === gesture.id);
+          if (!p) return;
+          const at = toMap(e.clientX, e.clientY);
+          p.x = Math.round(Math.max(0, Math.min(WORLD.width, at.x)));
+          p.y = Math.round(Math.max(0, Math.min(WORLD.height, at.y)));
+          gesture.moved = true;
+          const marker = [...layer.children].find(node => node.getAttribute("aria-label") === p.name && node.classList.contains("selected"));
+          if (marker) marker.setAttribute("transform", `translate(${p.x},${p.y})`);
+          $("pointCoords").textContent = `posição ajustada no desenho: ${p.x}, ${p.y}`;
+        } else {
+          const start = map.createSVGPoint(); start.x = gesture.x; start.y = gesture.y;
+          const now = map.createSVGPoint(); now.x = e.clientX; now.y = e.clientY;
+          const a = start.matrixTransform(gesture.inverse), b = now.matrixTransform(gesture.inverse);
+          view.x = gesture.view.x - (b.x - a.x); view.y = gesture.view.y - (b.y - a.y); applyView();
+        }
+      });
+      function endGesture(e) {
+        if (gesture?.type === "point" && gesture.moved) { persist(); renderMap(); }
+        gesture = null; map.classList.remove("dragging");
+        if (e && map.hasPointerCapture(e.pointerId)) map.releasePointerCapture(e.pointerId);
+      }
+      map.addEventListener("pointerup", endGesture);
+      map.addEventListener("pointercancel", endGesture);
+      map.addEventListener("wheel", e => { e.preventDefault(); zoom(e.deltaY > 0 ? 1.13 : .87, e.clientX, e.clientY); }, { passive: false });
+      $("zoomIn").addEventListener("click", () => zoom(.78));
+      $("zoomOut").addEventListener("click", () => zoom(1.28));
+      $("zoomReset").addEventListener("click", () => { view = { x: 0, y: 0, w: WORLD.width, h: WORLD.height }; applyView(); });
+      $("addPoint").addEventListener("click", () => setAddMode(!addMode));
+      $("search").addEventListener("input", renderList);
+      fields.name.addEventListener("input", () => { const p = current(); if (!p) return; p.name = fields.name.value; p.short = fields.name.value; persist(); renderList(); renderMap(); });
+      fields.kind.addEventListener("change", () => { const p = current(); if (!p) return; p.kind = fields.kind.value; persist(); renderList(); renderMap(); });
+      fields.role.addEventListener("change", () => { const p = current(); if (!p) return; p.role = fields.role.value; persist(); renderList(); });
+      fields.notes.addEventListener("input", () => { const p = current(); if (!p) return; p.notes = fields.notes.value; persist(); });
+      $("deletePoint").addEventListener("click", () => {
+        const p = current(); if (!p || !confirm(`Excluir o marcador "${p.name}" deste mapa?`)) return;
+        points = points.filter(item => item.id !== p.id); selectedId = points[0]?.id || null; persist(); render();
+      });
+      $("resetData").addEventListener("click", () => {
+        if (!confirm("Repor os pontos à posição inicial? Suas edições locais serão substituídas.")) return;
+        points = JSON.parse(JSON.stringify(seed)); selectedId = "praca"; persist(); render();
+        view = { x: 0, y: 0, w: WORLD.width, h: WORLD.height }; applyView();
+      });
+      $("exportJson").addEventListener("click", () => {
+        const payload = { formato: "myths-valley-mapa-kml-v2", origem: "Projeto de mapa sem título.kml", observacao: "Este JSON guarda apenas os marcadores e suas orientações. Os traçados do KML e as áreas interpretadas ficam incorporados no HTML. Sem confirmação histórica para 1887.", dimensoes: WORLD, pontos: points };
+        const url = URL.createObjectURL(new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" }));
+        const link = document.createElement("a"); link.href = url; link.download = "myths-valley-marcadores-do-mapa.json"; link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
+      });
+      $("importJson").addEventListener("click", () => $("fileInput").click());
+      $("fileInput").addEventListener("change", async e => {
+        const file = e.target.files?.[0]; if (!file) return;
+        try {
+          const imported = JSON.parse(await file.text());
+          if (imported.formato !== "myths-valley-mapa-kml-v2") throw new Error("Este JSON pertence a outro desenho do mapa. Exporte a versão atual antes de importar alterações.");
+          if (!Array.isArray(imported.pontos) || !imported.pontos.every(validPoint)) throw new Error("Formato de pontos inválido");
+          points = imported.pontos.map(p => ({ ...p, x: Math.max(0, Math.min(WORLD.width, Number(p.x))), y: Math.max(0, Math.min(WORLD.height, Number(p.y))), kind: ["marco", "paisagem", "referencia"].includes(p.kind) ? p.kind : "marco", role: p.role || "a decidir", notes: String(p.notes || "") }));
+          selectedId = points[0]?.id || null; persist(); render();
+        } catch (error) { alert(`Não foi possível importar: ${error.message}`); }
+        e.target.value = "";
+      });
+      render();
+    })();
+  </script>
+</body>
+</html>
