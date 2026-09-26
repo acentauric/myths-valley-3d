@@ -2,7 +2,7 @@
   "schema_version": 1,
   "region_id": "bom_jesus_dos_pobres",
   "source_file": "bom_jesus_dos_pobres_fonte.kml",
-  "source_sha256": "e5f4c284d4f02cc2e9a99c49abec78cc40d11ff577c28318c40b663325d1cd0b",
+  "source_sha256": "c6f1ef3e93b1b4c269f2ce3e4f4f254856b7e6fa410bda0e958dfc3245decf30",
   "projection": {
     "type": "local_equirectangular",
     "origin_name": "Praça",
@@ -15,10 +15,10 @@
     "godot_unit": "meter"
   },
   "bounds_m": {
-    "min_x": -1220.284,
-    "max_x": 626.054,
-    "min_z": -1310.61,
-    "max_z": 646.666
+    "min_x": -1346.859,
+    "max_x": 1493.104,
+    "min_z": -1367.473,
+    "max_z": 665.615
   },
   "features": [
     {
@@ -2085,6 +2085,71 @@
         [
           -38.78140299015531,
           -12.81579817774121
+        ]
+      ]
+    },
+    {
+      "id": "kml_0456299a734214b90a64",
+      "name": "Casa da estrada",
+      "kind": "poi",
+      "geometry": "point",
+      "source_index": 25,
+      "source_placemark_id": "0456299A734214B90A64",
+      "coordinates_m": [
+        [
+          43.842,
+          111.738
+        ]
+      ],
+      "coordinates_wgs84": [
+        [
+          -38.77924572134972,
+          -12.81332371995556
+        ]
+      ],
+      "source_altitude_m": 3.735
+    },
+    {
+      "id": "kml_0e87d9cac042152336b6",
+      "name": "Mapa",
+      "kind": "map_frame",
+      "geometry": "polygon",
+      "source_index": 26,
+      "source_placemark_id": "0E87D9CAC042152336B6",
+      "coordinates_m": [
+        [
+          -1336.39,
+          665.615
+        ],
+        [
+          1493.104,
+          664.304
+        ],
+        [
+          1462.683,
+          -1357.848
+        ],
+        [
+          -1346.859,
+          -1367.473
+        ]
+      ],
+      "coordinates_wgs84": [
+        [
+          -38.79195906119075,
+          -12.81833034467777
+        ],
+        [
+          -38.76589654240236,
+          -12.81831849118034
+        ],
+        [
+          -38.76617675190144,
+          -12.80003979961953
+        ],
+        [
+          -38.79205548480711,
+          -12.79995279384484
         ]
       ]
     }

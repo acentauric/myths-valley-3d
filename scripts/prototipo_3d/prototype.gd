@@ -71,8 +71,9 @@ func _ponto_de_chegada() -> Vector3:
 	if world.ancoras.has("Pier") and world.ancoras.has("Praça"):
 		var pier: Vector3 = world.ancoras["Pier"]
 		var praca: Vector3 = world.ancoras["Praça"]
-		var direcao: Vector3 = (praca - pier).normalized()
-		spawn = pier + direcao * 7.5 + Vector3(0, 0.07, 0)
+		var direcao: Vector3 = praca - pier
+		direcao.y = 0.0
+		spawn = world.ground_position(pier + direcao.normalized() * 7.5, 0.07)
 	return spawn
 
 
@@ -96,17 +97,17 @@ func _montar_moradores(spawn: Vector3) -> void:
 		return
 	for entry in data.get("moradores", []):
 		var morador := MoradorNPC.new()
-		morador.configurar(entry, world.ancoras, player)
+		morador.configurar(entry, world.ancoras, player, world)
 		add_child(morador)
 		morador.saudou.connect(_on_saudacao)
 		moradores.append(morador)
 	var guia: Dictionary = data.get("guia", {})
 	if not guia.is_empty():
 		pedro = GuiaPedro.new()
-		pedro.configurar(guia, world.ancoras, player)
+		pedro.configurar(guia, world.ancoras, player, world)
 		add_child(pedro)
 		var lado: Vector3 = Vector3(-1.6, 0, 1.4)
-		pedro.global_position = spawn + lado
+		pedro.global_position = world.ground_position(spawn + lado, 0.05)
 		pedro.saudou.connect(_on_saudacao)
 		pedro.missao_mudou.connect(_on_missao_mudou)
 		pedro.narrou.connect(func(texto: String) -> void: hud.set_notice("Pedro: " + texto))

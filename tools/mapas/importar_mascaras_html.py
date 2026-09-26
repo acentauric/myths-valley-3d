@@ -149,24 +149,48 @@ def round_points(points: list[tuple[float, float]]) -> list[list[float]]:
 def convert(html_file: Path, region_file: Path, output: Path, margin: float) -> None:
     html = html_file.read_text(encoding="utf-8")
     region = json.loads(region_file.read_text(encoding="utf-8"))
-    base_bounds = region["bounds_m"]
+    # O polígono Mapa enquadra a câmera, sem ampliar a área jogável a leste.
+    physical_points = [point for feature in region["features"] if feature["kind"] != "map_frame"
+                       for point in feature["coordinates_m"]]
+    base_bounds = {
+        "min_x": min(point[0] for point in physical_points),
+        "max_x": max(point[0] for point in physical_points),
+        "min_z": min(point[1] for point in physical_points),
+        "max_z": max(point[1] for point in physical_points),
+    } if physical_points else region["bounds_m"]
     bounds = {key: round(value + (-margin if key.startswith("min") else margin), 2) for key, value in base_bounds.items()}
     projection = region["projection"]
     curves = {}
     for name in ("landShape", "coastline", "northForest", "villageShape"):
         curves[name] = [svg_to_meters(point, projection) for point in sample_path(extract_path(html, name))]
+    land = curves["landShape"]
+    frame = next((feature for feature in region["features"] if feature["kind"] == "map_frame"), None)
+    if frame is not None:
+        # A costa segue como borda leste. Os cantos ocidentais do KML fecham
+        # o continente e retiram o mar que aparecia atrás da mata.
+        frame_points = frame["coordinates_m"]
+        west_x = min(point[0] for point in frame_points)
+        north_z = min(point[1] for point in frame_points)
+        south_z = max(point[1] for point in frame_points)
+        coast = curves["coastline"]
+        if coast[0][1] < coast[-1][1]:
+            coast = list(reversed(coast))
+        land = coast + [(west_x, north_z), (west_x, south_z)]
     result = {
         "schema_version": 1,
         "region_id": region["region_id"],
-        "provenance": "Contornos interpretados das capturas no MAPA_PONTOS_INTERESSE.html; não constam do KML.",
+        "provenance": "Costa e cobertura interpretadas do MAPA_PONTOS_INTERESSE.html; limite oeste do terreno segue o quadro Mapa do KML.",
         "units": "meters",
         "background_kind": "sea",
         "bounds_m": bounds,
-        "land_polygon_m": round_points(clip_polygon(curves["landShape"], bounds)),
+        "land_polygon_m": round_points(clip_polygon(land, bounds)),
         "coastline_m": round_points(curves["coastline"]),
-        "forest_polygon_m": round_points(clip_polygon(curves["northForest"], bounds)),
+        # O continente ampliado a oeste também é mata. A camada de mata
+        # cobre toda a terra; vila, fazenda, praça, estradas e costa são
+        # desenhadas por cima, enquanto o amostrador exclui essas clareiras.
+        "forest_polygon_m": round_points(clip_polygon(land, bounds)),
         "village_polygon_m": round_points(clip_polygon(curves["villageShape"], bounds)),
-        "vegetation": {"seed": 1887, "tree_count": 1800, "clearing_m": 8.0},
+        "vegetation": {"seed": 1887, "tree_count": 5000, "clearing_m": 8.0},
     }
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")

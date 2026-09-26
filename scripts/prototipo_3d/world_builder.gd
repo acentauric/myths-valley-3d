@@ -52,12 +52,45 @@ func _u(meters: Vector3) -> Vector3:
 	return meters / _meters_per_unit
 
 
+func ground_height_at(position: Vector3) -> float:
+	return _region.ground_height_at(position) if _region else 0.0
+
+
+func ground_position(position: Vector3, offset_y: float = 0.0) -> Vector3:
+	return _region.ground_position(position, offset_y) if _region else position + Vector3(0, offset_y, 0)
+
+
+func _footprint_range(position: Vector3, radius: float) -> Vector2:
+	var center_height := ground_height_at(position)
+	var lowest := center_height
+	var highest := center_height
+	for index in range(16):
+		var angle := TAU * float(index) / 16.0
+		var edge := position + Vector3(cos(angle) * radius, 0, sin(angle) * radius)
+		var height := ground_height_at(edge)
+		lowest = minf(lowest, height)
+		highest = maxf(highest, height)
+	return Vector2(lowest, highest)
+
+
+func _footprint_height(position: Vector3, radius: float) -> float:
+	return _footprint_range(position, radius).y
+
+
 func get_spawn_position() -> Vector3:
 	return _region.get_spawn_position() if _region else Vector3(0, 0.05, 0)
 
 
 func get_map_bounds() -> Rect2:
 	return _region.get_map_bounds() if _region else Rect2(-1200, -1300, 1800, 1950)
+
+
+func get_map_frame() -> Rect2:
+	return _region.get_map_frame() if _region else get_map_bounds()
+
+
+func has_map_frame() -> bool:
+	return _region != null and _region.has_map_frame()
 
 
 func surface_at(world_position: Vector3) -> String:
@@ -137,7 +170,7 @@ func get_house_destination(collider: Object, from_position: Vector3 = Vector3.ZE
 	var best_distance := INF
 	for offset in candidates:
 		var candidate := house.to_global(offset)
-		candidate.y = house.global_position.y
+		candidate.y = ground_height_at(candidate) + 0.08
 		if not is_walkable_point(candidate):
 			continue
 		var distance := candidate.distance_squared_to(from_position)
@@ -303,8 +336,14 @@ func _construcao(chave: String, origin: Vector3, yaw: float, procedural: Callabl
 		placed_origin = _reserve_house_site(origin, footprint_radius, nome)
 		if not placed_origin.is_finite():
 			return null
+		var relief := placed_origin.y - _footprint_range(placed_origin, footprint_radius).x
+		if relief > 0.16:
+			var foundation_width := float(spec.get("largura", 6.5)) * size + 0.4
+			_box(Vector3(foundation_width, relief + 0.12, foundation_width * 0.85), placed_origin + Vector3(0, -relief * 0.5, 0), Color("958d79"), true).rotation.y = yaw
 		if not nome.is_empty():
 			ancoras[nome] = placed_origin
+	else:
+		placed_origin = ground_position(origin, maxf(origin.y - ground_height_at(origin), 0.0))
 	if estilo_tripo():
 		var node := CatalogoAssets.instanciar(chave, self, placed_origin, size, yaw)
 		if node != null:
@@ -332,6 +371,7 @@ func _reserve_house_site(preferred: Vector3, radius: float, name: String) -> Vec
 	if not placed.is_finite():
 		push_error("Não há terreno livre para a casa: " + name)
 		return Vector3.INF
+	placed.y = _footprint_height(placed, radius) + 0.02
 	_house_sites.append({"position": placed, "radius": radius})
 	return placed
 
@@ -352,6 +392,10 @@ func _find_clear_site(preferred: Vector3, radius: float, rings: int, check_manua
 func _site_is_clear(position: Vector3, radius: float, check_manual_trees: bool = true) -> bool:
 	if not _region.is_build_site_clear(position, radius):
 		return false
+	if check_manual_trees:
+		var footprint_heights := _footprint_range(position, radius)
+		if footprint_heights.y - footprint_heights.x > 0.8:
+			return false
 	var center := Vector2(position.x, position.z)
 	for site in _house_sites:
 		var other: Vector3 = site["position"]
@@ -428,6 +472,7 @@ func _update_house_label(house: Area3D) -> void:
 
 ## Adereço: GLB do Tripo ou peça procedural de FloraReconcavo.
 func _adereco(chave: String, origin: Vector3, yaw: float = 0.0, size: float = 1.0) -> Node3D:
+	origin.y = maxf(origin.y, ground_height_at(origin))
 	if estilo_tripo():
 		var node := CatalogoAssets.instanciar(chave, self, origin, size, yaw)
 		if node != null:
@@ -466,6 +511,7 @@ func _arvore(especie: String, origin: Vector3, size: float = 1.0, yaw: float = 0
 	if not placed_origin.is_finite():
 		push_warning("Não há terreno livre para a árvore: " + especie)
 		return
+	placed_origin = ground_position(placed_origin)
 	_manual_tree_sites.append({"position": placed_origin, "radius": tree_radius})
 	if estilo_tripo():
 		var node := CatalogoAssets.instanciar(especie, self, placed_origin, size, yaw)
@@ -490,18 +536,18 @@ func _build_farm() -> void:
 	ancoras["Roçado"] = origin
 	if _adereco("mandioca_canteiro", origin, 0.2) == null:
 		for row in range(3):
-			_box(Vector3(5.6, 0.1, 0.88), origin + Vector3(0, 0.055, row * 1.35), Color("826346"))
+			_box(Vector3(5.6, 0.1, 0.88), ground_position(origin + Vector3(0, 0, row * 1.35), 0.055), Color("826346"))
 			for column in range(7):
 				var crop := CylinderMesh.new()
 				crop.top_radius = 0.02
 				crop.bottom_radius = 0.24
 				crop.height = 0.54 + row * 0.09
 				crop.radial_segments = 5
-				_mesh(crop, origin + Vector3(-2.3 + column * 0.75, 0.35, row * 1.35), Color("8fa85e"))
-	_adereco("cerca", origin + Vector3(-4, 0, 6), 0.0, 2.0)
-	_adereco("cerca", origin + Vector3(-4, 0, -3), 0.0, 2.0)
-	_box(Vector3(0.85, 1.0, 0.85), origin + Vector3(5.2, 0.5, 2), WOOD, true)
-	_box(Vector3(0.95, 0.11, 0.95), origin + Vector3(5.2, 1.0, 2), Color("b1966c"))
+				_mesh(crop, ground_position(origin + Vector3(-2.3 + column * 0.75, 0, row * 1.35), 0.35), Color("8fa85e"))
+	_adereco("cerca", ground_position(origin + Vector3(-4, 0, 6)), 0.0, 2.0)
+	_adereco("cerca", ground_position(origin + Vector3(-4, 0, -3)), 0.0, 2.0)
+	_box(Vector3(0.85, 1.0, 0.85), ground_position(origin + Vector3(5.2, 0, 2), 0.5), WOOD, true)
+	_box(Vector3(0.95, 0.11, 0.95), ground_position(origin + Vector3(5.2, 0, 2), 1.0), Color("b1966c"))
 
 
 func _build_trees() -> void:
@@ -524,7 +570,7 @@ func _build_trees() -> void:
 	]
 	for entry in plan:
 		_arvore(String(entry[0]), _u(entry[1]), float(entry[2]), float(entry[3]))
-	var taipa := _u(Vector3(-52, 0, -27))
+	var taipa: Vector3 = ancoras.get("Casa de taipa", _u(Vector3(-52, 0, -27)))
 	for offset in [Vector3(-3.2, 0, -4.6), Vector3(-1.6, 0, -5.9), Vector3(0.4, 0, -4.9), Vector3(-4.6, 0, -3.0)]:
 		_arvore("bananeira", taipa + offset, 0.9, offset.x * 1.3)
 	var bar: Vector3 = _region.get_feature_center("Bar", "poi")
@@ -553,12 +599,14 @@ func _build_details() -> void:
 		if _adereco("moita", Vector3(x, 0, z), float(i) * 0.7, 0.55 + float(i % 3) * 0.12) != null:
 			continue
 		for j in range(3):
-			_box(Vector3(0.05, 0.28, 0.05), Vector3(x + j * 0.21, 0.14, z + (j % 2) * 0.25), LEAVES)
-			_box(Vector3(0.16, 0.10, 0.16), Vector3(x + j * 0.21, 0.30, z + (j % 2) * 0.25), Color("e4c782") if i % 2 == 0 else Color("ce9d99"))
+			var flower := Vector3(x + j * 0.21, 0, z + (j % 2) * 0.25)
+			_box(Vector3(0.05, 0.28, 0.05), ground_position(flower, 0.14), LEAVES)
+			_box(Vector3(0.16, 0.10, 0.16), ground_position(flower, 0.30), Color("e4c782") if i % 2 == 0 else Color("ce9d99"))
 
 
 func _build_landmark_details() -> void:
 	var church: Vector3 = _region.get_feature_center("Igreja", "poi")
+	church.y = _footprint_height(church, 7.0) + 0.02
 	ancoras["Igreja"] = church
 	_construcao("capela", church, 0.0, func(): _igreja_procedural(church))
 	var bar: Vector3 = _region.get_feature_center("Bar", "poi") + Vector3(8, 0, 3)
@@ -578,12 +626,14 @@ func _build_landmark_details() -> void:
 			for side in [-1.8, 1.8]:
 				_box(Vector3(0.3, 1.5, 0.3), pier + Vector3(side, -0.75, offset), WOOD))
 	var bridge: Vector3 = _region.get_feature_center("Ponte", "poi")
+	bridge.y = _footprint_height(bridge, 5.5) + 0.1
 	ancoras["Ponte"] = bridge
 	_construcao("ponte", bridge, 0.0, func():
 		_box(Vector3(11, 0.35, 6), bridge + Vector3(0, 0.22, 0), Color("987b57"), true)
 		for side in [-2.8, 2.8]:
 			_box(Vector3(11, 0.18, 0.15), bridge + Vector3(0, 0.95, side), WOOD))
 	var lookout: Vector3 = _region.get_feature_center("Mirante", "poi")
+	lookout.y = _footprint_height(lookout, 4.3) + 0.02
 	ancoras["Mirante"] = lookout
 	_construcao("mirante", lookout, 0.0, func():
 		_box(Vector3(6, 0.24, 6), lookout + Vector3(0, 0.65, 0), Color("9c7a52"), true)
@@ -593,7 +643,7 @@ func _build_landmark_details() -> void:
 	var cemetery: Vector3 = _region.get_feature_center("Cemitério", "poi")
 	ancoras["Cemitério"] = cemetery
 	for index in range(12):
-		var grave := cemetery + Vector3((index % 4) * 2.3 - 3.45, 0, floorf(index / 4.0) * 3.0 - 3.0)
+		var grave := ground_position(cemetery + Vector3((index % 4) * 2.3 - 3.45, 0, floorf(index / 4.0) * 3.0 - 3.0))
 		if _adereco("tumulo", grave, 0.0, 0.9 + float(index % 3) * 0.08) == null:
 			_box(Vector3(0.72, 0.15, 1.45), grave + Vector3(0, 0.08, 0), Color("a9a9a0"))
 			_box(Vector3(0.12, 0.9, 0.12), grave + Vector3(0, 0.6, -0.55), WOOD)
@@ -607,7 +657,7 @@ func _build_landmark_details() -> void:
 			rock.height = 0.8 + (index % 4) * 0.3
 			rock.radial_segments = 7
 			rock.rings = 4
-			_mesh(rock, stones + Vector3((index % 5) * 2.8 - 5.6, 0.35, floorf(index / 5.0) * 2.9 - 2.9), Color("929c92"))
+			_mesh(rock, ground_position(stones + Vector3((index % 5) * 2.8 - 5.6, 0, floorf(index / 5.0) * 2.9 - 2.9), 0.35), Color("929c92"))
 
 
 func _igreja_procedural(church: Vector3) -> void:
@@ -624,20 +674,20 @@ func _igreja_procedural(church: Vector3) -> void:
 func _build_pecas() -> void:
 	# Peças soltas do 2D (gerador_mundo.gd ADORNOS): poço e bancos na praça, cruzeiro na
 	# igreja, varal, lenha e pote na casa de taipa, carroça na fazenda.
-	ancoras["Poço"] = Vector3(4.2, 0, 5.4)
-	_adereco("poco", Vector3(4.2, 0, 5.4), 0.6)
+	ancoras["Poço"] = ground_position(Vector3(4.2, 0, 5.4))
+	_adereco("poco", ancoras["Poço"], 0.6)
 	_adereco("banco", _u(Vector3(-4.6, 0, -0.1)))
 	_adereco("banco", Vector3(3.2, 0, -7.0), PI)
-	var taipa := _u(Vector3(-52, 0, -27))
-	_adereco("varal", taipa + Vector3(-4.9, 0, 1.4), 0.35)
-	_adereco("lenha", taipa + Vector3(3.6, 0, -0.4), 0.0)
-	_adereco("pote", taipa + Vector3(2.4, 0, 2.9))
+	var taipa: Vector3 = ancoras.get("Casa de taipa", _u(Vector3(-52, 0, -27)))
+	_adereco("varal", ground_position(taipa + Vector3(-4.9, 0, 1.4)), 0.35)
+	_adereco("lenha", ground_position(taipa + Vector3(3.6, 0, -0.4)), 0.0)
+	_adereco("pote", ground_position(taipa + Vector3(2.4, 0, 2.9)))
 	var church: Vector3 = _region.get_feature_center("Igreja", "poi")
-	_adereco("cruzeiro", church + Vector3(0, 0, 9.0))
+	_adereco("cruzeiro", ground_position(church + Vector3(0, 0, 9.0)))
 	var farm: Vector3 = _region.get_feature_center("Fazenda", "area")
-	_adereco("carroca", farm + Vector3(8.5, 0, -5.5), -0.6)
+	_adereco("carroca", ground_position(farm + Vector3(8.5, 0, -5.5)), -0.6)
 	var pier: Vector3 = _region.get_feature_center("Pier", "poi")
-	_adereco("pote", pier + Vector3(1.4, 0.1, -6.5))
+	_adereco("pote", ground_position(pier + Vector3(1.4, 0, -6.5), 0.1))
 	# Itens de mão espalhados como cenário (só no estilo Tripo, quando existirem).
 	if estilo_tripo():
 		var itens := [
@@ -652,7 +702,9 @@ func _build_pecas() -> void:
 			["cacho_banana", _region.get_feature_center("Restaurante", "poi") + Vector3(5.0, 0.0, 7.6), 0.0],
 		]
 		for item in itens:
-			CatalogoAssets.instanciar(String(item[0]), self, item[1], 1.0, float(item[2]))
+			var item_position: Vector3 = item[1]
+			item_position.y = maxf(item_position.y, ground_height_at(item_position))
+			CatalogoAssets.instanciar(String(item[0]), self, item_position, 1.0, float(item[2]))
 
 
 ## Luzes de 1887: lampiões a óleo nas esquinas da Praça, candeeiros nas portas, fogueira
@@ -661,22 +713,24 @@ func _build_luzes_epoca() -> void:
 	_luzes = LuzesEpoca.new()
 	_luzes.name = "LuzesDeEpoca"
 	add_child(_luzes)
-	var praca := Vector3.ZERO
-	var taipa := _u(Vector3(-52, 0, -27))
-	var church: Vector3 = _region.get_feature_center("Igreja", "poi")
+	var praca := ground_position(Vector3.ZERO)
+	var taipa: Vector3 = ancoras.get("Casa de taipa", _u(Vector3(-52, 0, -27)))
+	var church: Vector3 = ancoras.get("Igreja", _region.get_feature_center("Igreja", "poi"))
 	var bar: Vector3 = ancoras.get("Bar", Vector3.ZERO)
 	var restaurante: Vector3 = ancoras.get("Restaurante", Vector3.ZERO)
 	var farm: Vector3 = _region.get_feature_center("Fazenda", "area")
 	var pier: Vector3 = _region.get_feature_center("Pier", "poi")
 	for corner in [Vector3(-9.0, 0, 8.5), Vector3(7.5, 0, -12.0), Vector3(8.0, 0, 9.5)]:
-		_luzes.lampiao(praca + corner, _adereco("lampiao_poste", praca + corner, 0.0))
-	_luzes.lampiao(church + Vector3(-6.0, 0, 8.0), _adereco("lampiao_poste", church + Vector3(-6.0, 0, 8.0)))
+		var post_position := ground_position(praca + corner)
+		_luzes.lampiao(post_position, _adereco("lampiao_poste", post_position, 0.0))
+	var church_post := ground_position(church + Vector3(-6.0, 0, 8.0))
+	_luzes.lampiao(church_post, _adereco("lampiao_poste", church_post))
 	_luzes.candeeiro(taipa + Vector3(0.92, 2.55, 2.4), _adereco("candeeiro", taipa + Vector3(0.92, 2.45, 2.35)))
 	_luzes.candeeiro(bar + Vector3(0.0, 2.6, 3.2), _adereco("candeeiro", bar + Vector3(0.0, 2.5, 3.15)))
 	_luzes.candeeiro(restaurante + Vector3(0.0, 2.6, 3.2), _adereco("candeeiro", restaurante + Vector3(0.0, 2.5, 3.15)))
 	_luzes.candeeiro(pier + Vector3(0.0, 1.9, -7.0), _adereco("candeeiro", pier + Vector3(0.3, 1.8, -7.0)))
-	ancoras["Fogueira"] = farm + Vector3(7.0, 0, 4.5)
-	_luzes.fogueira(farm + Vector3(7.0, 0, 4.5), _adereco("fogueira", farm + Vector3(7.0, 0, 4.5)))
+	ancoras["Fogueira"] = ground_position(farm + Vector3(7.0, 0, 4.5))
+	_luzes.fogueira(ancoras["Fogueira"], _adereco("fogueira", ancoras["Fogueira"]))
 	_luzes.janela(taipa + Vector3(-1.35, 1.9, 2.2))
 	_luzes.janela(church + Vector3(0, 3.6, 4.6))
 	_luzes.aplicar_hora(Dia.hora)

@@ -72,10 +72,12 @@ def convert(source: Path, output: Path, region_id: str, origin_name: str) -> Non
         if geometry == "polygon" and len(coordinates) > 1 and coordinates[0][:2] == coordinates[-1][:2]:
             coordinates.pop()
         kind = "area" if geometry == "polygon" else "river" if geometry == "line" and name.casefold() == "rio" else "road" if geometry == "line" else "poi"
+        if geometry == "polygon" and name.casefold().strip() == "mapa":
+            kind = "map_frame"
         for data in placemark.findall(".//kml:ExtendedData/kml:Data", NS):
             if data.get("name", "").casefold() == "kind":
                 declared = (data.findtext("kml:value", default="", namespaces=NS) or "").strip().casefold()
-                allowed = {"point": {"poi"}, "line": {"road", "river"}, "polygon": {"area"}}
+                allowed = {"point": {"poi"}, "line": {"road", "river"}, "polygon": {"area", "map_frame"}}
                 if declared not in allowed[geometry]:
                     raise ValueError(f"Tipo KML inválido para {name}: {declared}")
                 kind = declared

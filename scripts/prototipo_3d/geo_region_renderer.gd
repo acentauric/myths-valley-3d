@@ -19,12 +19,15 @@ const CHAO_PRACA_TEXTURE := preload("res://assets/prototipo_3d/materiais/chao_pr
 const TREE_COLLISION_RADIUS := 28.0
 const TREE_COLLISION_POOL_SIZE := 24
 const TREE_COLLISION_INTERVAL := 0.25
+const TERRAIN_CELL_SIZE := 4.0
+const SURFACE_SEGMENT_SIZE := 3.0
 
 var landmarks: Array[Dictionary] = []
 var areas: Array[Dictionary] = []
 var _features: Array[Dictionary] = []
 var _projection: Dictionary = {}
 var _bounds := Rect2()
+var _map_frame := Rect2()
 var _background_kind := "land"
 var _land := PackedVector2Array()
 var _forest := PackedVector2Array()
@@ -35,6 +38,7 @@ var _roads: Array[Dictionary] = []
 var _rivers: Array[Dictionary] = []
 var _shore_access_routes: Array[Dictionary] = []
 var _point_positions: Array[Vector2] = []
+var _elevation_samples: Array[Dictionary] = []
 var _open_areas: Array[PackedVector2Array] = []
 var _tree_trunks: Array[Dictionary] = []
 var _tree_collision_pool: Array[Dictionary] = []
@@ -103,17 +107,28 @@ func build_region(kml_json_path: String, scenario_json_path: String) -> void:
 	if _bounds.size.x <= 0.0 or _bounds.size.y <= 0.0 or _land.size() < 3:
 		push_error("A região não contém limites e polígono de terra válidos.")
 		return
+	# Apenas Point/POI no KML possui altitude medida. Zeros de linhas e polígonos
+	# significam ausência de medição e não entram na interpolação.
+	for feature_value in geographic.get("features", []):
+		var elevation_feature: Dictionary = feature_value
+		if elevation_feature.get("kind", "") != "poi" or not elevation_feature.has("source_altitude_m"):
+			continue
+		var elevation_points := _to_points(elevation_feature.get("coordinates_m", []))
+		if not elevation_points.is_empty():
+			_elevation_samples.append({"point": elevation_points[0], "height": float(elevation_feature["source_altitude_m"]) / _meters_per_unit})
 	for feature_value in geographic.get("features", []):
 		var feature: Dictionary = feature_value
 		_features.append(feature)
 		var points := _to_points(feature.get("coordinates_m", []))
+		if feature.get("kind", "") == "map_frame" and points.size() >= 3:
+			_map_frame = _points_bounds(points)
 		if feature.get("kind", "") == "area":
 			var center := Vector2.ZERO
 			for point in points:
 				center += point
 			if not points.is_empty():
 				center /= float(points.size())
-				areas.append({"id": String(feature.get("id", "")), "name": String(feature.get("name", "")), "position": Vector3(center.x, 0.05, center.y)})
+				areas.append({"id": String(feature.get("id", "")), "name": String(feature.get("name", "")), "position": ground_position(Vector3(center.x, 0.05, center.y), 0.05)})
 			match String(feature.get("name", "")):
 				"Mata": _kml_forest = points
 				"Fazenda", "Praça": _open_areas.append(points)
@@ -125,7 +140,7 @@ func build_region(kml_json_path: String, scenario_json_path: String) -> void:
 					landmarks.append({
 						"id": String(feature.get("id", "")),
 						"name": String(feature.get("name", "")),
-						"position": Vector3(point.x, 0.05, point.y),
+						"position": ground_position(Vector3(point.x, 0.05, point.y), 0.05),
 					})
 			"road":
 				if points.size() >= 2:
@@ -164,6 +179,36 @@ func get_map_bounds() -> Rect2:
 	return _bounds
 
 
+func get_map_frame() -> Rect2:
+	return _map_frame if _map_frame.has_area() else _bounds
+
+
+func has_map_frame() -> bool:
+	return _map_frame.has_area()
+
+
+## Altitude KML em metros convertida pela mesma escala X/Z da região.
+## Interpolação IDW dos pontos medidos; o KML não fornece um DEM contínuo.
+func ground_height_at(position: Vector3) -> float:
+	if _elevation_samples.is_empty():
+		return 0.0
+	var point := Vector2(position.x, position.z)
+	var weighted_height := 0.0
+	var total_weight := 0.0
+	for sample in _elevation_samples:
+		var distance_squared: float = point.distance_squared_to(sample.point)
+		if distance_squared < 0.000001:
+			return float(sample.height)
+		var weight: float = 1.0 / distance_squared
+		weighted_height += float(sample.height) * weight
+		total_weight += weight
+	return weighted_height / total_weight
+
+
+func ground_position(position: Vector3, offset_y: float = 0.0) -> Vector3:
+	return Vector3(position.x, ground_height_at(position) + offset_y, position.z)
+
+
 func get_spawn_position() -> Vector3:
 	for landmark in landmarks:
 		if landmark.get("name", "") == "Praça" and _is_on_land(landmark["position"]):
@@ -175,9 +220,9 @@ func get_spawn_position() -> Vector3:
 		var indices := Geometry2D.triangulate_polygon(_land)
 		if indices.size() >= 3:
 			var inside := (_land[indices[0]] + _land[indices[1]] + _land[indices[2]]) / 3.0
-			return Vector3(inside.x, 0.12, inside.y)
+			return ground_position(Vector3(inside.x, 0.0, inside.y), 0.12)
 	var center := _bounds.get_center()
-	return Vector3(center.x, 0.12, center.y)
+	return ground_position(Vector3(center.x, 0.0, center.y), 0.12)
 
 
 func is_walkable_point(position: Vector3) -> bool:
@@ -237,7 +282,7 @@ func get_feature_center(feature_name: String, kind: String = "") -> Vector3:
 		for point in points:
 			center += point
 		center /= float(points.size())
-		return Vector3(center.x, 0.0, center.y)
+		return ground_position(Vector3(center.x, 0.0, center.y))
 	return Vector3.ZERO
 
 
@@ -248,7 +293,7 @@ func wgs84_to_world(latitude: float, longitude: float) -> Vector3:
 		return Vector3.INF
 	var x := (longitude - float(_projection["origin_lon"])) * float(_projection["meters_per_degree_lon"])
 	var z := (float(_projection["origin_lat"]) - latitude) * float(_projection["meters_per_degree_lat"])
-	return Vector3(x / _meters_per_unit, 0.0, z / _meters_per_unit)
+	return ground_position(Vector3(x / _meters_per_unit, 0.0, z / _meters_per_unit))
 
 
 ## Afasta um ponto do eixo da rua, mantendo-o no mesmo lado em que já estava.
@@ -279,7 +324,7 @@ func position_beside_road(reference: Vector3, road_name: String, distance_from_c
 	if (source - nearest).dot(side) < 0.0:
 		side = -side
 	var placed := nearest + side * distance_from_center
-	return Vector3(placed.x, reference.y, placed.y)
+	return ground_position(Vector3(placed.x, 0.0, placed.y))
 
 
 func surface_at(world_position: Vector3) -> String:
@@ -316,10 +361,12 @@ func _clear_region() -> void:
 	_rivers.clear()
 	_shore_access_routes.clear()
 	_point_positions.clear()
+	_elevation_samples.clear()
 	_open_areas.clear()
 	_tree_trunks.clear()
 	_tree_collision_pool.clear()
 	_tree_collision_elapsed = 0.0
+	_map_frame = Rect2()
 	_background_kind = "land"
 	_land.clear()
 	_forest.clear()
@@ -387,18 +434,33 @@ func _build_background() -> void:
 func _add_polygon(label: String, points: PackedVector2Array, y: float, color: Color, with_collision: bool = false, material_override: Material = null) -> void:
 	if points.size() < 3:
 		return
-	var indices := Geometry2D.triangulate_polygon(points)
-	if indices.is_empty():
-		push_warning("Não foi possível triangular o polígono: " + label)
-		return
 	var surface := SurfaceTool.new()
 	surface.begin(Mesh.PRIMITIVE_TRIANGLES)
 	surface.set_material(material_override if material_override != null else _material(color))
-	for i in range(0, indices.size(), 3):
-		var a := Vector3(points[indices[i]].x, y, points[indices[i]].y)
-		var b := Vector3(points[indices[i + 1]].x, y, points[indices[i + 1]].y)
-		var c := Vector3(points[indices[i + 2]].x, y, points[indices[i + 2]].y)
-		_add_up_triangle(surface, a, b, c)
+	if with_collision and label == "Terra":
+		# Recorte em células: a colisão acompanha o mesmo relevo visível.
+		var limits := _points_bounds(points)
+		var min_x := floori(limits.position.x / TERRAIN_CELL_SIZE)
+		var max_x := ceili(limits.end.x / TERRAIN_CELL_SIZE)
+		var min_z := floori(limits.position.y / TERRAIN_CELL_SIZE)
+		var max_z := ceili(limits.end.y / TERRAIN_CELL_SIZE)
+		for z in range(min_z, max_z):
+			for x in range(min_x, max_x):
+				var corner := Vector2(float(x), float(z)) * TERRAIN_CELL_SIZE
+				var square := PackedVector2Array([corner, corner + Vector2(TERRAIN_CELL_SIZE, 0), corner + Vector2(TERRAIN_CELL_SIZE, TERRAIN_CELL_SIZE), corner + Vector2(0, TERRAIN_CELL_SIZE)])
+				var all_inside := true
+				for vertex in square:
+					if not Geometry2D.is_point_in_polygon(vertex, points):
+						all_inside = false
+						break
+				if all_inside:
+					_add_draped_triangle(surface, square[0], square[1], square[2], y)
+					_add_draped_triangle(surface, square[0], square[2], square[3], y)
+				else:
+					for clipped in Geometry2D.intersect_polygons(points, square):
+						_add_draped_polygon(surface, clipped, y)
+	else:
+		_add_draped_polygon(surface, points, y)
 	var mesh := surface.commit()
 	var visual := MeshInstance3D.new()
 	visual.name = label
@@ -415,13 +477,42 @@ func _add_polygon(label: String, points: PackedVector2Array, y: float, color: Co
 		add_child(body)
 
 
+func _add_draped_polygon(surface: SurfaceTool, points: PackedVector2Array, offset_y: float) -> void:
+	var indices := Geometry2D.triangulate_polygon(points)
+	for i in range(0, indices.size(), 3):
+		_add_draped_triangle(surface, points[indices[i]], points[indices[i + 1]], points[indices[i + 2]], offset_y)
+
+
+func _add_draped_triangle(surface: SurfaceTool, a: Vector2, b: Vector2, c: Vector2, offset_y: float, depth: int = 0) -> void:
+	# Divide a maior aresta até que a superfície siga a curvatura interpolada.
+	var ab := a.distance_squared_to(b)
+	var bc := b.distance_squared_to(c)
+	var ca := c.distance_squared_to(a)
+	if depth < 18 and maxf(ab, maxf(bc, ca)) > TERRAIN_CELL_SIZE * TERRAIN_CELL_SIZE * 2.0:
+		if ab >= bc and ab >= ca:
+			var middle := (a + b) * 0.5
+			_add_draped_triangle(surface, a, middle, c, offset_y, depth + 1)
+			_add_draped_triangle(surface, middle, b, c, offset_y, depth + 1)
+		elif bc >= ca:
+			var middle := (b + c) * 0.5
+			_add_draped_triangle(surface, a, b, middle, offset_y, depth + 1)
+			_add_draped_triangle(surface, a, middle, c, offset_y, depth + 1)
+		else:
+			var middle := (c + a) * 0.5
+			_add_draped_triangle(surface, a, b, middle, offset_y, depth + 1)
+			_add_draped_triangle(surface, middle, b, c, offset_y, depth + 1)
+		return
+	_add_up_triangle(surface, Vector3(a.x, ground_height_at(Vector3(a.x, 0, a.y)) + offset_y, a.y), Vector3(b.x, ground_height_at(Vector3(b.x, 0, b.y)) + offset_y, b.y), Vector3(c.x, ground_height_at(Vector3(c.x, 0, c.y)) + offset_y, c.y))
+
+
 func _add_up_triangle(surface: SurfaceTool, a: Vector3, b: Vector3, c: Vector3) -> void:
 	if (b - a).cross(c - a).y < 0.0:
 		var swapped := b
 		b = c
 		c = swapped
+	var normal := (b - a).cross(c - a).normalized()
 	for vertex in [a, b, c]:
-		surface.set_normal(Vector3.UP)
+		surface.set_normal(normal)
 		surface.set_uv(Vector2(vertex.x, vertex.z) / 10.0)
 		surface.add_vertex(vertex)
 
@@ -435,8 +526,9 @@ func _add_up_triangle_uv(surface: SurfaceTool, a: Vector3, b: Vector3, c: Vector
 		var swapped_uv := uv_b
 		uv_b = uv_c
 		uv_c = swapped_uv
+	var normal := (b - a).cross(c - a).normalized()
 	for i in range(3):
-		surface.set_normal(Vector3.UP)
+		surface.set_normal(normal)
 		surface.set_uv([uv_a, uv_b, uv_c][i])
 		surface.add_vertex([a, b, c][i])
 
@@ -484,16 +576,21 @@ func _nearest_land_edge(point: Vector2) -> Vector2:
 func _add_ribbon(label: String, points: PackedVector2Array, width: float, y: float, color: Color, with_collision: bool = false, material_override: Material = null) -> void:
 	if points.size() < 2:
 		return
+	var sampled := PackedVector2Array([points[0]])
+	for i in range(points.size() - 1):
+		var divisions := maxi(1, ceili(points[i].distance_to(points[i + 1]) / SURFACE_SEGMENT_SIZE))
+		for step in range(1, divisions + 1):
+			sampled.append(points[i].lerp(points[i + 1], float(step) / float(divisions)))
 	var left := PackedVector2Array()
 	var right := PackedVector2Array()
 	var along := PackedFloat32Array()
 	var travelled := 0.0
-	for i in range(points.size()):
+	for i in range(sampled.size()):
 		if i > 0:
-			travelled += points[i].distance_to(points[i - 1])
+			travelled += sampled[i].distance_to(sampled[i - 1])
 		along.append(travelled / maxf(width, 0.01))
-		var previous := (points[i] - points[maxi(i - 1, 0)]).normalized()
-		var following := (points[mini(i + 1, points.size() - 1)] - points[i]).normalized()
+		var previous := (sampled[i] - sampled[maxi(i - 1, 0)]).normalized()
+		var following := (sampled[mini(i + 1, sampled.size() - 1)] - sampled[i]).normalized()
 		if previous == Vector2.ZERO:
 			previous = following
 		if following == Vector2.ZERO:
@@ -505,16 +602,16 @@ func _add_ribbon(label: String, points: PackedVector2Array, width: float, y: flo
 			miter = after
 		var denominator := maxf(absf(miter.dot(after)), 0.45)
 		var offset := miter * minf(width * 0.5 / denominator, width)
-		left.append(points[i] + offset)
-		right.append(points[i] - offset)
+		left.append(sampled[i] + offset)
+		right.append(sampled[i] - offset)
 	var surface := SurfaceTool.new()
 	surface.begin(Mesh.PRIMITIVE_TRIANGLES)
 	surface.set_material(material_override if material_override != null else _material(color))
-	for i in range(points.size() - 1):
-		var a := Vector3(left[i].x, y, left[i].y)
-		var b := Vector3(right[i].x, y, right[i].y)
-		var c := Vector3(left[i + 1].x, y, left[i + 1].y)
-		var d := Vector3(right[i + 1].x, y, right[i + 1].y)
+	for i in range(sampled.size() - 1):
+		var a := ground_position(Vector3(left[i].x, 0, left[i].y), y)
+		var b := ground_position(Vector3(right[i].x, 0, right[i].y), y)
+		var c := ground_position(Vector3(left[i + 1].x, 0, left[i + 1].y), y)
+		var d := ground_position(Vector3(right[i + 1].x, 0, right[i + 1].y), y)
 		if material_override != null:
 			var uv_a := Vector2(0.0, along[i])
 			var uv_b := Vector2(1.0, along[i])
@@ -619,8 +716,9 @@ func _build_forest(configuration: Dictionary) -> void:
 			var point: Vector2 = group[i]
 			var scale := rng.randf_range(0.8, 1.25)
 			var yaw := rng.randf_range(0.0, TAU)
-			_tree_trunks.append({"point": point, "height": minf(float(built.altura) * scale, 4.0), "radius": float(built.tronco) * scale})
-			transforms.append(Transform3D(Basis.from_euler(Vector3(0, yaw, 0)).scaled(Vector3.ONE * scale), Vector3(point.x, 0.0, point.y)) * base)
+			var ground := ground_height_at(Vector3(point.x, 0, point.y))
+			_tree_trunks.append({"point": point, "ground": ground, "height": minf(float(built.altura) * scale, 4.0), "radius": float(built.tronco) * scale})
+			transforms.append(Transform3D(Basis.from_euler(Vector3(0, yaw, 0)).scaled(Vector3.ONE * scale), Vector3(point.x, ground, point.y)) * base)
 		_multimesh_em_blocos("Mata: " + species, built.mesh, transforms)
 	_build_coast_palms(rng)
 
@@ -686,8 +784,9 @@ func _build_coast_palms(rng: RandomNumberGenerator) -> void:
 				var yaw := atan2(seaward.y, -seaward.x)
 				var scale := rng.randf_range(0.75, 1.15)
 				var lean := Transform3D.IDENTITY if modelo_base == Transform3D.IDENTITY else Transform3D(Basis.from_euler(Vector3(0, 0, 0.14)), Vector3.ZERO)
-				transforms.append(Transform3D(Basis.from_euler(Vector3(0, yaw, 0)).scaled(Vector3.ONE * scale), Vector3(candidate.x, 0.0, candidate.y)) * lean * modelo_base)
-				_tree_trunks.append({"point": candidate, "height": minf(float(built.altura) * scale, 4.0), "radius": float(built.tronco) * scale})
+				var ground := ground_height_at(Vector3(candidate.x, 0, candidate.y))
+				transforms.append(Transform3D(Basis.from_euler(Vector3(0, yaw, 0)).scaled(Vector3.ONE * scale), Vector3(candidate.x, ground, candidate.y)) * lean * modelo_base)
+				_tree_trunks.append({"point": candidate, "ground": ground, "height": minf(float(built.altura) * scale, 4.0), "radius": float(built.tronco) * scale})
 			next_at += spacing * rng.randf_range(0.7, 1.4)
 		travelled += length
 	if transforms.is_empty():
@@ -717,7 +816,7 @@ func _refresh_tree_collisions() -> void:
 	for trunk in _tree_trunks:
 		var distance_squared: float = player_point.distance_squared_to(trunk.point)
 		if distance_squared <= TREE_COLLISION_RADIUS * TREE_COLLISION_RADIUS:
-			nearby.append({"point": trunk.point, "height": trunk.height, "radius": trunk.get("radius", 0.36), "distance_squared": distance_squared})
+			nearby.append({"point": trunk.point, "ground": trunk.ground, "height": trunk.height, "radius": trunk.get("radius", 0.36), "distance_squared": distance_squared})
 	nearby.sort_custom(Callable(self, "_collision_nearer"))
 	for i in range(_tree_collision_pool.size()):
 		var slot := _tree_collision_pool[i]
@@ -732,7 +831,7 @@ func _refresh_tree_collisions() -> void:
 		var shape: CylinderShape3D = slot.shape
 		shape.height = tree.height
 		shape.radius = float(tree.get("radius", 0.36))
-		body.position = Vector3(tree.point.x, tree.height * 0.5, tree.point.y)
+		body.position = Vector3(tree.point.x, tree.ground + tree.height * 0.5, tree.point.y)
 		if not slot.active:
 			collider.set_deferred("disabled", false)
 			slot.active = true

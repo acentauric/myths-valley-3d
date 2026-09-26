@@ -14,6 +14,7 @@ static var _reabrir_ajustes := false
 var camera := Camera3D.new()
 var camera_target := Vector3(0, 1.5, 0)
 var map_target := Vector3.ZERO
+var map_full_size := 0.0
 var map_marker_root: Control
 var map_markers: Array[Dictionary] = []
 var panel: PanelContainer
@@ -159,24 +160,34 @@ func _unhandled_input(event: InputEvent) -> void:
 	if not map_open:
 		return
 	if event is InputEventMouseButton and event.pressed:
-		var bounds_zoom: Rect2 = $Cenario.get_map_bounds()
-		var zoom_max := maxf(bounds_zoom.size.x, bounds_zoom.size.y) * 2.0
 		if event.button_index == MOUSE_BUTTON_WHEEL_UP:
 			camera.size = maxf(30.0, camera.size * 0.78)
 		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
-			camera.size = minf(zoom_max, camera.size * 1.28)
+			camera.size = minf(map_full_size, camera.size * 1.28)
+		_limit_map_target()
 	if event is InputEventMouseMotion and (event.button_mask & (MOUSE_BUTTON_MASK_MIDDLE | MOUSE_BUTTON_MASK_RIGHT)):
 		var meters_per_pixel := camera.size / maxf(1.0, get_viewport().get_visible_rect().size.y)
 		map_target.x -= event.relative.x * meters_per_pixel
 		map_target.z -= event.relative.y * meters_per_pixel
-		var bounds: Rect2 = $Cenario.get_map_bounds()
-		var margin := maxf(bounds.size.x, bounds.size.y) * 0.16
-		map_target.x = clampf(map_target.x, bounds.position.x - margin, bounds.end.x + margin)
-		map_target.z = clampf(map_target.z, bounds.position.y - margin, bounds.end.y + margin)
+		_limit_map_target()
+
+
+func _limit_map_target() -> void:
+	var frame: Rect2 = $Cenario.get_map_frame()
+	var aspect := get_viewport().get_visible_rect().size.aspect()
+	var half_width := camera.size * aspect * 0.5
+	var half_height := camera.size * 0.5
+	var min_x := frame.position.x + half_width
+	var max_x := frame.end.x - half_width
+	var min_z := frame.position.y + half_height
+	var max_z := frame.end.y - half_height
+	map_target.x = clampf(map_target.x, min_x, max_x) if min_x <= max_x else frame.get_center().x
+	map_target.z = clampf(map_target.z, min_z, max_z) if min_z <= max_z else frame.get_center().y
 
 func _clear() -> void:
 	history_open = false
 	map_open = false
+	camera.environment = null
 	if map_marker_root:
 		map_marker_root.queue_free()
 		map_marker_root = null
@@ -419,13 +430,25 @@ func _open_map() -> void:
 	_label("%s · 1 unidade = %s m" % [$Cenario.get_region_title(), _formatar_escala($Cenario.get_meters_per_unit())], 16)
 	_label("N ↑ · roda: zoom · botão direito: mover", 14)
 	_button("VOLTAR", _home).grab_focus()
-	var bounds: Rect2 = $Cenario.get_map_bounds()
-	var center := bounds.get_center()
-	var margin := maxf(bounds.size.x, bounds.size.y) * 0.16
+	var frame: Rect2 = $Cenario.get_map_frame()
+	var center := frame.get_center()
 	map_target = Vector3(center.x, 0, center.y)
 	camera.projection = Camera3D.PROJECTION_ORTHOGONAL
+	# A câmera fica a 3000 unidades do chão. O nevoeiro do cenário apaga
+	# quase toda a imagem nessa distância; só esta vista precisa vê-lo sem névoa.
+	var scene_environment: Environment = get_world_3d().environment
+	if scene_environment != null:
+		camera.environment = scene_environment.duplicate() as Environment
+		camera.environment.fog_enabled = false
 	var aspect := get_viewport().get_visible_rect().size.aspect()
-	camera.size = maxf(bounds.size.y + margin, (bounds.size.x + margin) / maxf(aspect, 0.5))
+	# Usa o maior recorte 16:9 dentro do quadro do KML; a roda não afasta além dele.
+	var size_by_width := frame.size.x / maxf(aspect, 0.5)
+	if $Cenario.has_map_frame():
+		map_full_size = minf(frame.size.y, size_by_width)
+	else:
+		map_full_size = maxf(frame.size.y, size_by_width)
+	map_full_size = maxf(30.0, map_full_size)
+	camera.size = map_full_size
 	camera.position = map_target + Vector3(0, 3000, 0)
 	camera_target = map_target
 	camera.look_at(map_target, Vector3(0, 0, -1))
@@ -470,14 +493,17 @@ func _add_map_marker(label: String, position: Vector3) -> void:
 func _focus_map_marker(position: Vector3) -> void:
 	map_target = position
 	camera.size = minf(camera.size, 420.0 / $Cenario.get_meters_per_unit())
+	_limit_map_target()
 
 
 func _position_map_markers() -> void:
+	var viewport_size := get_viewport().get_visible_rect().size
 	for entry: Dictionary in map_markers:
 		var marker: Button = entry["control"]
 		var projected := camera.unproject_position(entry["position"])
-		marker.position = projected + Vector2(5, -13)
-		marker.visible = projected.x > 0 and projected.y > 0 and projected.x < get_viewport().get_visible_rect().size.x and projected.y < get_viewport().get_visible_rect().size.y
+		var marker_size := marker.get_combined_minimum_size()
+		marker.position = (projected + Vector2(5, -13)).clamp(Vector2.ZERO, (viewport_size - marker_size).max(Vector2.ZERO))
+		marker.visible = projected.x > 0 and projected.y > 0 and projected.x < viewport_size.x and projected.y < viewport_size.y
 
 func _open_history() -> void:
 	if history_entries.is_empty():

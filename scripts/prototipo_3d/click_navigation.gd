@@ -40,7 +40,7 @@ func find_path(start: Vector3, destination: Vector3) -> PackedVector3Array:
 			result.append(_cell_center(ids[i]))
 	result.append(_cell_center(last))
 	if last == _cell_at(destination):
-		result.append(Vector3(destination.x, 0.08, destination.z))
+		result.append(_world.ground_position(destination, 0.08))
 	return result
 
 
@@ -56,7 +56,8 @@ func _build_grid() -> void:
 	for z in range(_size.y):
 		for x in range(_size.x):
 			var cell := Vector2i(x, z)
-			var open: bool = _world.is_walkable_point(_cell_center(cell))
+			var flat_center := Vector3(_origin.x + (x + 0.5) * CELL_SIZE, 0.0, _origin.y + (z + 0.5) * CELL_SIZE)
+			var open: bool = _world.is_walkable_point(flat_center)
 			_terrain_walkable[_index(cell)] = 1 if open else 0
 			if not open:
 				_grid.set_point_solid(cell)
@@ -86,7 +87,7 @@ func _mark_obstacles_in(parent: Node) -> void:
 			var center := collider.global_position
 			if collider.shape is BoxShape3D:
 				var half := (collider.shape as BoxShape3D).size * 0.5
-				if half.y < 0.25 or center.y - half.y > 1.7:
+				if half.y < 0.25 or center.y - half.y > _world.ground_height_at(center) + 1.7:
 					continue
 				var basis := collider.global_transform.basis
 				var extent_x := absf(basis.x.x) * half.x + absf(basis.y.x) * half.y + absf(basis.z.x) * half.z
@@ -94,7 +95,7 @@ func _mark_obstacles_in(parent: Node) -> void:
 				_mark_rectangle(center, extent_x, extent_z)
 			elif collider.shape is CylinderShape3D:
 				var cylinder := collider.shape as CylinderShape3D
-				if center.y - cylinder.height * 0.5 > 1.7:
+				if center.y - cylinder.height * 0.5 > _world.ground_height_at(center) + 1.7:
 					continue
 				_mark_rectangle(center, cylinder.radius, cylinder.radius)
 
@@ -138,7 +139,7 @@ func _cell_at(point: Vector3) -> Vector2i:
 
 
 func _cell_center(cell: Vector2i) -> Vector3:
-	return Vector3(_origin.x + (cell.x + 0.5) * CELL_SIZE, 0.08, _origin.y + (cell.y + 0.5) * CELL_SIZE)
+	return _world.ground_position(Vector3(_origin.x + (cell.x + 0.5) * CELL_SIZE, 0.0, _origin.y + (cell.y + 0.5) * CELL_SIZE), 0.08)
 
 
 func _inside(cell: Vector2i) -> bool:

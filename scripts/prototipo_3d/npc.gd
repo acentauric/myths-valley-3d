@@ -16,6 +16,7 @@ const INTERVALO_SAUDACAO_MS := 45000
 var dados: Dictionary = {}
 var ancoras: Dictionary = {}
 var jogador: Node3D
+var terreno: Node3D
 var visual: Node3D
 var modelo: Node3D
 var animador: Node = null
@@ -32,10 +33,11 @@ var _bob := 0.0
 var _velocidade_atual := 0.0
 
 
-func configurar(d: Dictionary, anc: Dictionary, alvo_jogador: Node3D) -> void:
+func configurar(d: Dictionary, anc: Dictionary, alvo_jogador: Node3D, mundo: Node3D = null) -> void:
 	dados = d
 	ancoras = anc
 	jogador = alvo_jogador
+	terreno = mundo
 	altura = float(d.get("altura", 1.7))
 	name = "Morador" + String(d.get("id", "morador")).capitalize()
 
@@ -225,4 +227,6 @@ func _posicao_do_posto(periodo: String) -> Vector3:
 	if posto.size() > 1 and posto[1] is Array and (posto[1] as Array).size() >= 3:
 		var offset: Array = posto[1]
 		base += Vector3(float(offset[0]), float(offset[1]), float(offset[2]))
+		if terreno != null:
+			base = terreno.ground_position(base, float(offset[1]))
 	return base

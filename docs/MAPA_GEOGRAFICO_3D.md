@@ -34,12 +34,13 @@ do jogo 2D continuam com sua escala e implementação próprias.
 | Catálogo | [`prototipo_3d/data/mapas/regioes.json`](../prototipo_3d/data/mapas/regioes.json) | Identifica as regiões, aponta para seus arquivos e escolhe `active_region` para a execução atual. |
 | Prévia de planejamento | [`MAPA_PONTOS_INTERESSE.html`](../prototipo_3d/tools/mapas/MAPA_PONTOS_INTERESSE.html) | Visão 2D para discutir os pontos antes da composição final no 3D. |
 
-O KML veio do projeto **“Projeto de mapa sem título”** e foi recebido em
-25/09/2026.
+O KML veio do projeto **Myths' Valley**; a revisão atual foi recebida em
+26/09/2026.
 A cópia do repositório preserva os mesmos bytes do arquivo recebido, com SHA-256
-`e5f4c284d4f02cc2e9a99c49abec78cc40d11ff577c28318c40b663325d1cd0b`.
-Ele contém **24 feições**: 11 pontos, 8 ruas, 2 linhas de rio e 3 polígonos
-(Fazenda, Praça e uma área chamada Mata). Os nomes e traçados representam as
+`c6f1ef3e93b1b4c269f2ce3e4f4f254856b7e6fa410bda0e958dfc3245decf30`.
+Ele contém **26 feições**: 12 pontos, 8 ruas, 2 linhas de rio, 3 polígonos de
+área (Fazenda, Praça e Mata) e o polígono Mapa, usado para enquadrar a câmera.
+Os nomes e traçados representam as
 anotações do autor; não equivalem, por si só, a cadastro oficial de vias,
 hidrografia, uso do solo ou edificações. Nenhuma imagem de satélite faz parte
 desse KML ou precisa ser embutida no jogo.
@@ -56,7 +57,7 @@ sozinho, toda a cobertura vegetal do mapa.
 [`geo_region_renderer.gd`](../prototipo_3d/scripts/prototipo_3d/geo_region_renderer.gd)
 consome o JSON geográfico e o JSON de cenário da região ativa. Ele constrói
 superfícies vetoriais para terra, mar, mata, vila e polígonos do KML; faixas para
-costa, rios e ruas; e posições para os 11 POIs. A terra tem colisão. A vegetação
+costa, rios e ruas; e posições para os 12 POIs. A terra tem colisão. A vegetação
 é distribuída com semente fixa nas zonas de mata por duas instâncias `MultiMesh`
  (troncos e copas), mantendo afastamento de vias, rios, praia, áreas abertas e
  marcadores. Um grupo pequeno de colisores acompanha o jogador nos troncos
@@ -64,17 +65,22 @@ costa, rios e ruas; e posições para os 11 POIs. A terra tem colisão. A vegeta
 acrescenta edifícios e detalhes locais perto dos POIs da primeira região.
 
 O botão **MAPA** da abertura usa o mesmo mundo 3D com câmera ortográfica superior.
-Abre mostrando a região; a roda ajusta o zoom, o botão direito arrasta a vista e
+Abre no recorte 16:9 do polígono Mapa; a roda aproxima e não afasta além desse
+quadro, o botão direito arrasta a vista e
 os marcadores clicáveis centralizam os pontos. **VOLTAR** retorna ao menu.
-O terreno está **plano**: a escala do catálogo vale para X/Z, sem reconstrução da
-altimetria. Rios e mar são representações de superfície, não simulação hídrica.
+As pontas norte e sul ficam fora do recorte inicial e podem ser vistas com o arrasto.
+O terreno usa a altitude dos 12 pontos do KML. A malha de terra e sua colisão,
+as vias, a vegetação, as construções e os destinos de navegação acompanham o
+relevo interpolado. A escala do catálogo vale também para Y: em Bom Jesus dos
+Pobres, 4 m de altitude correspondem a 1 unidade do Godot. Rios e mar são
+representações de superfície, não simulação hídrica.
 Esta cena ainda não tem todas as construções, ruas urbanas ou biomas do país.
 
 ## Escala e coordenadas
 
 O KML guarda longitude e latitude em graus no sistema WGS84, na ordem
 `longitude,latitude,altitude`. A extensão das feições recebidas é aproximadamente
-**1,85 km de oeste a leste por 1,96 km de sul a norte**. Isso mede o envelope
+**2,84 km de oeste a leste por 2,03 km de sul a norte**. Isso mede o envelope
 dos desenhos, não a superfície exata de terra jogável. A referência local da
 primeira região é o ponto Praça:
 
@@ -96,9 +102,13 @@ x = metros_por_grau_longitude × (longitude − longitude_origem)
 z = metros_por_grau_latitude × (latitude_origem − latitude)
 ```
 
-Altura (`Y`) é uma escolha separada: o KML não contém relevo medido suficiente
-para reconstruir altimetria, maré ou profundidade. Registrar qualquer relevo
-criado artisticamente na camada de cenário. **Não usar a mesma aproximação ou
+Altura (`Y`) vem do campo `source_altitude_m` dos 12 pontos do KML. As linhas de
+rua e rio e os polígonos têm altitude zero sem medição útil; seus zeros não são
+amostras do solo. Entre os pontos, o jogo interpola a altitude por média ponderada
+pelo inverso do quadrado da distância. Isso cria um relevo aproximado, não uma
+medição contínua: o KML não contém dados suficientes para reconstruir encostas,
+maré ou profundidade com precisão. Ao atualizar o KML, regenere o JSON derivado
+para que as novas altitudes sejam usadas. **Não usar a mesma aproximação ou
 uma única origem em ponto flutuante para o Brasil inteiro.** Cada região terá
 uma âncora WGS84 própria; conexões entre regiões trabalham com coordenadas
 geográficas de precisão adequada, e apenas o trecho carregado vira coordenada

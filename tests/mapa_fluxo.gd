@@ -130,7 +130,7 @@ func _run() -> void:
 		var destination: Vector3 = landmark.position
 		var hit := _floor_hit(game, destination, player)
 		_assert(not hit.is_empty(), "terreno no ponto %s" % landmark.name)
-	_assert(world.landmarks.size() == 11, "pontos de interesse")
+	_assert(world.landmarks.size() == 12, "pontos de interesse")
 	var offshore_visits := 0
 	for landmark in world.landmarks:
 		var destination: Vector3 = landmark.position
