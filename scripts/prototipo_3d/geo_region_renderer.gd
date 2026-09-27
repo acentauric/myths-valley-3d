@@ -11,11 +11,12 @@ const SEA_COLOR := Color("5e9fa9")
 const BEACH_COLOR := Color("e6d2a1")
 const ROAD_COLOR := Color("cfb78b")
 const MAIN_ROAD_COLOR := Color("e5c994")
-const ROAD_EDGE_COLOR := Color("8e795b")
+const ROAD_EDGE_COLOR := Color("b39a6c")
 const SHORE_ACCESS_COLOR := Color("a47d50")
 const RIVER_COLOR := Color("76b5b6")
-const TERRA_BATIDA_TEXTURE := preload("res://assets/prototipo_3d/materiais/terra_batida_v1.png")
+const ESTRADA_OCRE_TEXTURE := preload("res://assets/prototipo_3d/materiais/estrada_terra_ocre_v1.png")
 const CHAO_PRACA_TEXTURE := preload("res://assets/prototipo_3d/materiais/chao_praca_v1.png")
+const GRAMA_TERRA_MATA_TEXTURE := preload("res://assets/prototipo_3d/materiais/grama_terra_mata_v1.png")
 const TREE_COLLISION_RADIUS := 28.0
 const TREE_COLLISION_POOL_SIZE := 24
 const TREE_COLLISION_INTERVAL := 0.25
@@ -150,9 +151,14 @@ func build_region(kml_json_path: String, scenario_json_path: String) -> void:
 				if points.size() >= 2:
 					_rivers.append({"name": String(feature.get("name", "")), "points": points, "width": _units(9.0, 4.0)})
 	_build_background()
-	_add_polygon("Terra", _land, 0.0, LAND_COLOR, true)
-	_add_polygon("Cobertura florestal", _forest, 0.012, FOREST_COLOR)
-	_add_polygon("Área ocupada", _village, 0.018, VILLAGE_COLOR)
+	var mata_material := _terrain_texture_material(GRAMA_TERRA_MATA_TEXTURE, 8.0)
+	_add_polygon("Terra", _land, 0.0, LAND_COLOR, true, mata_material)
+	# Quando a mata acompanha todo o continente, evita criar uma segunda malha
+	# sobre a terra. As duas malhas tinham triangulações diferentes e podiam
+	# deixar a textura parecer recortada após a interpolação das elevações.
+	if _forest.size() >= 3 and _forest != _land:
+		_add_polygon("Cobertura florestal", _forest, 0.012, FOREST_COLOR, false, mata_material)
+	_add_polygon("Área ocupada", _village, 0.018, VILLAGE_COLOR, false, mata_material)
 	for feature in _features:
 		if feature.get("kind", "") == "area":
 			var color := LAND_COLOR
@@ -160,7 +166,7 @@ func build_region(kml_json_path: String, scenario_json_path: String) -> void:
 				"Mata": color = Color("648a5c")
 				"Fazenda": color = Color("86aa67")
 				"Praça": color = Color("d9c39a")
-			var area_material: Material = null
+			var area_material: Material = mata_material
 			if String(feature.get("name", "")) == "Praça":
 				area_material = _textured_material(CHAO_PRACA_TEXTURE, Color("f2e6c8"), 6.0)
 			_add_polygon(String(feature.get("name", "Área")), _to_points(feature.get("coordinates_m", [])), 0.027, color, false, area_material)
@@ -168,9 +174,10 @@ func build_region(kml_json_path: String, scenario_json_path: String) -> void:
 	for river in _rivers:
 		_add_ribbon("Rio", river.points, river.width, 0.046, RIVER_COLOR)
 	for road in _roads:
-		var tint := Color("fff3dc") if road.name == "Rua Principal" else Color("e3d2b4")
-		_add_ribbon("Borda " + road.name, road.points, road.width + 1.2, 0.052, ROAD_EDGE_COLOR)
-		_add_ribbon(road.name, road.points, road.width, 0.058, ROAD_COLOR, true, _textured_material(TERRA_BATIDA_TEXTURE, tint))
+		var road_path := _soften_road_corners(road.points, road.width)
+		var tint := Color("fff8e8") if road.name == "Rua Principal" else Color("f7e7c6")
+		_add_ribbon("Borda " + road.name, road_path, road.width + 0.55, 0.052, ROAD_EDGE_COLOR)
+		_add_ribbon(road.name, road_path, road.width, 0.058, ROAD_COLOR, true, _textured_material(ESTRADA_OCRE_TEXTURE, tint))
 	_build_shore_access()
 	_build_forest(scenario.get("vegetation", {}))
 
@@ -417,6 +424,35 @@ func _textured_material(texture: Texture2D, tint: Color, world_tile_units: float
 	return material
 
 
+## Projeta o chão usando coordenadas do mundo, sem depender dos UVs da malha.
+## Assim cada fragmento acompanha o relevo e a textura não se perde nas subdivisões.
+func _terrain_texture_material(texture: Texture2D, tile_units: float) -> ShaderMaterial:
+	var shader := Shader.new()
+	shader.code = """
+shader_type spatial;
+render_mode cull_disabled;
+
+uniform sampler2D terrain_texture : source_color, repeat_enable, filter_linear_mipmap_anisotropic;
+uniform float tile_size = 8.0;
+varying vec2 world_xz;
+
+void vertex() {
+	vec3 world_vertex = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
+	world_xz = world_vertex.xz;
+}
+
+void fragment() {
+	ALBEDO = texture(terrain_texture, world_xz / tile_size).rgb;
+	ROUGHNESS = 0.94;
+}
+"""
+	var material := ShaderMaterial.new()
+	material.shader = shader
+	material.set_shader_parameter("terrain_texture", texture)
+	material.set_shader_parameter("tile_size", maxf(tile_units, 0.1))
+	return material
+
+
 func _build_background() -> void:
 	var mesh := BoxMesh.new()
 	# O fundo ultrapassa a borda da região para a vista aérea não revelar um retângulo vazio.
@@ -437,30 +473,9 @@ func _add_polygon(label: String, points: PackedVector2Array, y: float, color: Co
 	var surface := SurfaceTool.new()
 	surface.begin(Mesh.PRIMITIVE_TRIANGLES)
 	surface.set_material(material_override if material_override != null else _material(color))
-	if with_collision and label == "Terra":
-		# Recorte em células: a colisão acompanha o mesmo relevo visível.
-		var limits := _points_bounds(points)
-		var min_x := floori(limits.position.x / TERRAIN_CELL_SIZE)
-		var max_x := ceili(limits.end.x / TERRAIN_CELL_SIZE)
-		var min_z := floori(limits.position.y / TERRAIN_CELL_SIZE)
-		var max_z := ceili(limits.end.y / TERRAIN_CELL_SIZE)
-		for z in range(min_z, max_z):
-			for x in range(min_x, max_x):
-				var corner := Vector2(float(x), float(z)) * TERRAIN_CELL_SIZE
-				var square := PackedVector2Array([corner, corner + Vector2(TERRAIN_CELL_SIZE, 0), corner + Vector2(TERRAIN_CELL_SIZE, TERRAIN_CELL_SIZE), corner + Vector2(0, TERRAIN_CELL_SIZE)])
-				var all_inside := true
-				for vertex in square:
-					if not Geometry2D.is_point_in_polygon(vertex, points):
-						all_inside = false
-						break
-				if all_inside:
-					_add_draped_triangle(surface, square[0], square[1], square[2], y)
-					_add_draped_triangle(surface, square[0], square[2], square[3], y)
-				else:
-					for clipped in Geometry2D.intersect_polygons(points, square):
-						_add_draped_polygon(surface, clipped, y)
-	else:
-		_add_draped_polygon(surface, points, y)
+	# Triangulate the full polygon, then subdivide triangles to follow terrain height.
+	# Cell-by-cell clipping had fragmented the visual ground on uneven areas.
+	_add_draped_polygon(surface, points, y)
 	var mesh := surface.commit()
 	var visual := MeshInstance3D.new()
 	visual.name = label
@@ -571,6 +586,33 @@ func _nearest_land_edge(point: Vector2) -> Vector2:
 			best_distance = distance
 			closest = candidate
 	return closest
+
+
+func _soften_road_corners(points: PackedVector2Array, width: float) -> PackedVector2Array:
+	if points.size() < 3:
+		return points
+	var softened := PackedVector2Array([points[0]])
+	for i in range(1, points.size() - 1):
+		var corner := points[i]
+		var incoming := corner - points[i - 1]
+		var outgoing := points[i + 1] - corner
+		var cut := minf(width * 0.45, minf(incoming.length(), outgoing.length()) * 0.25)
+		if cut <= 0.05 or incoming.length_squared() < 0.0001 or outgoing.length_squared() < 0.0001:
+			softened.append(corner)
+			continue
+		var before := corner - incoming.normalized() * cut
+		var after := corner + outgoing.normalized() * cut
+		if softened[-1].distance_squared_to(before) > 0.0001:
+			softened.append(before)
+		for step in range(1, 5):
+			var t := float(step) / 4.0
+			var inverse := 1.0 - t
+			var rounded := before * inverse * inverse + corner * 2.0 * inverse * t + after * t * t
+			if softened[-1].distance_squared_to(rounded) > 0.0001:
+				softened.append(rounded)
+	if softened[-1].distance_squared_to(points[-1]) > 0.0001:
+		softened.append(points[-1])
+	return softened
 
 
 func _add_ribbon(label: String, points: PackedVector2Array, width: float, y: float, color: Color, with_collision: bool = false, material_override: Material = null) -> void:
