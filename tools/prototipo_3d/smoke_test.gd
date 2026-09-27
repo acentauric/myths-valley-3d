@@ -160,14 +160,30 @@ func _travel(run: bool) -> float:
 	await _frames(3)
 	var origin := player.global_position
 	Input.action_press("mv_forward")
+	# Shift liga/desliga o modo corrida a cada toque (não é segurar).
 	if run:
-		Input.action_press("mv_run")
+		await _tap_shift()
 	await _frames(45)
 	if run:
 		await _screenshot("running.png")
 	Input.action_release("mv_forward")
-	Input.action_release("mv_run")
-	return Vector2(player.global_position.x - origin.x, player.global_position.z - origin.z).length()
+	var distance := Vector2(player.global_position.x - origin.x, player.global_position.z - origin.z).length()
+	if run:
+		await _tap_shift()
+	return distance
+
+
+## Toque em Shift pelo caminho real da entrada; espera o evento chegar ao jogador
+## (parse_input_event só entrega no quadro seguinte).
+func _tap_shift() -> void:
+	for pressed in [true, false]:
+		var key := InputEventKey.new()
+		key.physical_keycode = KEY_SHIFT
+		key.keycode = KEY_SHIFT
+		key.pressed = pressed
+		Input.parse_input_event(key)
+	await process_frame
+	await process_frame
 
 
 func _frames(count: int) -> void:

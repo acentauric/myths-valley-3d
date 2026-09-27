@@ -137,7 +137,7 @@ func _ready() -> void:
 	controls.offset_right = -24
 	controls.offset_top = -91
 	controls.offset_bottom = -23
-	var primary := _label(TeclasMovimento.rotulo() + " mover  ·  Shift correr  ·  Direito: andar  ·  Duplo direito: correr  ·  Esquerdo na casa: dados", 14, INK)
+	var primary := _label(TeclasMovimento.rotulo() + " mover  ·  Shift: corrida (parar desliga)  ·  Direito: andar  ·  Duplo direito: correr  ·  Esquerdo na casa: dados", 14, INK)
 	controls.add_child(primary)
 	primary.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
 	primary.offset_left = 18
@@ -263,8 +263,8 @@ func set_camera_locked(value: bool) -> void:
 
 func _update_control_mode() -> void:
 	if is_instance_valid(_control_mode_label):
-		var mode := "Câmera destravada: mova o mouse" if _captured else "Câmera travada: clique e arraste para girar"
-		var gestures := "1–8 gestos · Espaço pular baixo" if Estilo.tripo() else "1–8 gestos"
+		var mode := "Câmera destravada: mova o mouse" if _captured else "Câmera travada: arraste o cenário"
+		var gestures := "1–8 gestos · Espaço: pular"
 		_control_mode_label.text = "%s  ·  Tab alterna os modos  ·  Esc trava a câmera  ·  F observar  ·  %s  ·  T avança hora  ·  Rodinha zoom  ·  R reinicia  ·  M HOME" % [mode, gestures]
 
 

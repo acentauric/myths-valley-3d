@@ -109,12 +109,13 @@ func _run() -> void:
 	print("MAPA_WALK mode=", Input.mouse_mode, " start=", start_position, " end=", player.global_position, " floor=", player.is_on_floor())
 	_assert(player.global_position.distance_to(start_position) > 3.0, "caminhada")
 	_assert(player.is_on_floor() and _above_ground(world, player), "caminhada sem queda")
-	Input.action_press("mv_run")
+	# Shift liga o modo corrida com um toque; outro toque desliga.
+	await _tap_shift()
 	Input.action_press("mv_right")
 	var run_start: Vector3 = player.global_position
 	await _physics_frames(90)
 	Input.action_release("mv_right")
-	Input.action_release("mv_run")
+	await _tap_shift()
 	_assert(player.global_position.distance_to(run_start) > 5.0, "corrida")
 	_assert(player.is_on_floor() and _above_ground(world, player), "corrida sem queda")
 	player.set_captured(false)
@@ -235,6 +236,18 @@ func _frames(count: int) -> void:
 func _physics_frames(count: int) -> void:
 	for frame in range(count):
 		await physics_frame
+
+
+## Toque em Shift pelo caminho real da entrada; espera o evento chegar ao jogador
+## (parse_input_event só entrega no quadro seguinte).
+func _tap_shift() -> void:
+	for pressed in [true, false]:
+		var key := InputEventKey.new()
+		key.physical_keycode = KEY_SHIFT
+		key.keycode = KEY_SHIFT
+		key.pressed = pressed
+		Input.parse_input_event(key)
+	await _frames(2)
 
 
 func _capture(label: String) -> void:
