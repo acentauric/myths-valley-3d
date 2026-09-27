@@ -677,7 +677,9 @@ func _build_forest(configuration: Dictionary) -> void:
 			continue
 		if not Geometry2D.is_point_in_polygon(point, _land):
 			continue
-		if _village.size() >= 3 and Geometry2D.is_point_in_polygon(point, _village):
+		# A área "Mata" desenhada no mapa vale mais que o contorno da vila: lá dentro
+		# também é mata fechada.
+		if not in_kml_forest and _village.size() >= 3 and Geometry2D.is_point_in_polygon(point, _village):
 			continue
 		if _inside_open_area(point):
 			continue

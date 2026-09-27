@@ -26,6 +26,10 @@ signal house_interaction_cleared
 var _materials: Dictionary = {}
 var landmarks: Array[Dictionary] = []
 var areas: Array[Dictionary] = []
+## Chão de cada túmulo do cemitério, na ordem de data/lapides_3d.json.
+var lapides: Array[Vector3] = []
+## Tamanho da laje de cada túmulo (x, altura, z), para a colisão e para saber quem subiu.
+var lapides_pegada: Array[Vector3] = []
 var region_title := "Vale"
 var _region = null
 var _meters_per_unit := 1.0
@@ -532,6 +536,19 @@ func _adereco(chave: String, origin: Vector3, yaw: float = 0.0, size: float = 1.
 	return peca
 
 
+## Caixa sólida na laje do túmulo: não se atravessa andando, mas dá para subir pulando.
+func _colisao_tumulo(chao: Vector3, pegada: Vector3) -> void:
+	var body := StaticBody3D.new()
+	body.name = "TumuloColisao"
+	var shape := BoxShape3D.new()
+	shape.size = pegada
+	var collision := CollisionShape3D.new()
+	collision.shape = shape
+	body.add_child(collision)
+	body.position = chao + Vector3(0, pegada.y * 0.5, 0)
+	add_child(body)
+
+
 ## Árvore com nome: GLB do Tripo (colisão no tronco) ou espécie procedural.
 func _arvore(especie: String, origin: Vector3, size: float = 1.0, yaw: float = 0.0) -> void:
 	var tree_radius := maxf(2.0, size * 2.4)
@@ -674,10 +691,19 @@ func _build_landmark_details() -> void:
 	ancoras["Cemitério"] = cemetery
 	for index in range(12):
 		var grave := ground_position(cemetery + Vector3((index % 4) * 2.3 - 3.45, 0, floorf(index / 4.0) * 3.0 - 3.0))
-		if _adereco("tumulo", grave, 0.0, 0.9 + float(index % 3) * 0.08) == null:
+		lapides.append(grave)
+		var tumulo := _adereco("tumulo", grave, 0.0, 0.9 + float(index % 3) * 0.08)
+		# Pegada da laje (sem a cruz): a do modelo do Tripo ou a do túmulo procedural.
+		var pegada := Vector3(0.72, 0.15, 1.45)
+		if tumulo == null:
 			_box(Vector3(0.72, 0.15, 1.45), grave + Vector3(0, 0.08, 0), Color("a9a9a0"))
 			_box(Vector3(0.12, 0.9, 0.12), grave + Vector3(0, 0.6, -0.55), WOOD)
 			_box(Vector3(0.48, 0.12, 0.12), grave + Vector3(0, 0.72, -0.55), WOOD)
+		elif tumulo.has_meta("limites"):
+			var limites: AABB = tumulo.get_meta("limites")
+			pegada = Vector3(limites.size.x, limites.size.y * 0.62, limites.size.z)
+		_colisao_tumulo(grave, pegada)
+		lapides_pegada.append(pegada)
 	var stones: Vector3 = _region.get_feature_center("Pedras", "poi")
 	ancoras["Pedras"] = stones
 	if _adereco("pedras", stones, 0.4, 1.4) == null:

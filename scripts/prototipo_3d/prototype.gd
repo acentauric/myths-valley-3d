@@ -4,6 +4,11 @@ extends Node3D
 ## autoloads Estilo e Dia, ajustados no menu (AJUSTAR).
 
 const NPCS := "res://data/npcs_3d.json"
+const TeclasMovimento = preload("res://scripts/prototipo_3d/teclas_movimento.gd")
+const TelaCarregamento = preload("res://scripts/prototipo_3d/tela_carregamento.gd")
+const MapaJogo = preload("res://scripts/prototipo_3d/mapa_jogo.gd")
+const Lapides = preload("res://scripts/prototipo_3d/lapides.gd")
+const MENU_SCENE := "res://scenes/prototipo_3d/abertura.tscn"
 ## Raio de terra firme em volta do ponto de chegada.
 const RAIO_CHEGADA := 6.0
 const PERIODOS := {"madrugada": "Madrugada", "manha": "Manhã", "tarde": "Tarde", "entardecer": "Entardecer", "noite": "Noite"}
@@ -16,13 +21,15 @@ var pedro: GuiaPedro
 var moradores: Array[MoradorNPC] = []
 var _visited: Dictionary = {}
 var _step_time := 0.0
+var _saindo := false
+var mapa	# mapa_jogo.gd
+var lapides	# lapides.gd
+var _relogio_pausado_antes := false
 
 
 func _enter_tree() -> void:
-	_bind("mv_forward", [KEY_W, KEY_UP])
-	_bind("mv_back", [KEY_S, KEY_DOWN])
-	_bind("mv_left", [KEY_A, KEY_LEFT])
-	_bind("mv_right", [KEY_D, KEY_RIGHT])
+	# Movimento: WASD, setas ou os dois, conforme AJUSTAR → Geral.
+	TeclasMovimento.aplicar()
 	_bind("mv_run", [KEY_SHIFT])
 	_bind("mv_release", [KEY_ESCAPE])
 	_bind("mv_cursor", [KEY_TAB])
@@ -49,7 +56,23 @@ func _ready() -> void:
 	world.house_interacted.connect(func(properties: Dictionary): hud.show_house_info(world.format_house_properties(properties)))
 	world.house_interaction_cleared.connect(hud.clear_house_info)
 	hud.house_info_close_requested.connect(world.clear_house_interaction)
+	hud.menu_prompt_requested.connect(_ask_return_to_menu)
 	hud.menu_requested.connect(_return_to_menu)
+	hud.menu_cancelled.connect(_on_menu_cancelled)
+	mapa = MapaJogo.new()
+	mapa.name = "Mapa"
+	add_child(mapa)
+	hud.map_requested.connect(_toggle_map)
+	hud.settings_requested.connect(_open_settings)
+	hud.settings_closed.connect(_on_menu_cancelled)
+	hud.style_changed.connect(func() -> void:
+		# Novo estilo visual: reconstrói o vale inteiro.
+		get_tree().paused = false
+		get_tree().reload_current_scene())
+	lapides = Lapides.new()
+	lapides.name = "Lapides"
+	add_child(lapides)
+	lapides.configurar(world, player, hud)
 	player.set_camera_locked(false)
 	hud.set_region_title(world.get_region_title())
 	if Estilo.procedural():
@@ -63,6 +86,9 @@ func _ready() -> void:
 	hud.set_notice("Bom Jesus dos Pobres, 1887 · 1 unidade = %s m" % _formatar(world.get_meters_per_unit()))
 	_montar_som()
 	_montar_moradores(spawn)
+	for morador in moradores:
+		if String(morador.dados.get("id", "")) == "damiao":
+			lapides.coveiro = morador
 	Dia.periodo_mudou.connect(_on_periodo_mudou)
 	_atualizar_relogio()
 	print("PROTOTYPE_READY: estilo=%s hora=%s moradores=%d user_dir=%s" % [Estilo.modo, Dia.texto_hora(), moradores.size(), OS.get_user_data_dir()])
@@ -202,16 +228,73 @@ func _bind(action: StringName, keys: Array, replace_existing := false) -> void:
 
 func _unhandled_key_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo:
-		if event.physical_keycode == KEY_M:
-			_return_to_menu()
+		if mapa.aberto and event.physical_keycode == KEY_ESCAPE:
+			_toggle_map()
+		elif event.physical_keycode == KEY_M:
+			_ask_return_to_menu()
 		elif event.physical_keycode == KEY_T:
 			Dia.avancar(1.0)
 			hud.set_notice("Relógio adiantado: %s (%s)" % [Dia.texto_hora(), PERIODOS.get(Dia.periodo(), "")])
 
 
-func _return_to_menu() -> void:
+## Botão de mapa (ou Esc com ele aberto): vista de cima do vale. O jogador fica parado
+## e o mundo continua (moradores, relógio).
+func _toggle_map() -> void:
+	var abrir: bool = not mapa.aberto
+	player.set_physics_process(not abrir)
+	player.set_process_input(not abrir)
+	player.set_process_unhandled_input(not abrir)
+	hud.set_map_open(abrir)
+	if abrir:
+		player.set_captured(false)
+		mapa.abrir(world, player, hud.map_layer())
+	else:
+		mapa.fechar()
+
+
+## Engrenagem do canto: ajustes com o vale e o relógio pausados (fechar retoma).
+func _open_settings() -> void:
+	if hud.settings_open() or hud.menu_confirm_open() or _saindo:
+		return
+	if mapa.aberto:
+		_toggle_map()
+	_pause_valley()
+	hud.open_settings()
+
+
+func _pause_valley() -> void:
 	player.set_captured(false)
-	get_tree().change_scene_to_file("res://scenes/prototipo_3d/abertura.tscn")
+	_relogio_pausado_antes = Dia.pausado
+	Dia.pausado = true
+	get_tree().paused = true
+
+
+## HOME ou M: pausa o vale (e o relógio) e pergunta antes de sair.
+func _ask_return_to_menu() -> void:
+	if hud.menu_confirm_open() or hud.settings_open() or _saindo:
+		return
+	if mapa.aberto:
+		_toggle_map()
+	_pause_valley()
+	hud.open_menu_confirm()
+
+
+func _on_menu_cancelled() -> void:
+	get_tree().paused = false
+	Dia.pausado = _relogio_pausado_antes
+
+
+## Volta ao menu com a tela de carregamento (o menu monta o vale de novo ao abrir).
+func _return_to_menu() -> void:
+	if _saindo:
+		return
+	_saindo = true
+	get_tree().paused = false
+	player.set_captured(false)
+	player.set_physics_process(false)
+	player.set_process_unhandled_input(false)
+	var barra: ProgressBar = hud.show_loading()
+	TelaCarregamento.trocar_cena(get_tree(), MENU_SCENE, barra)
 
 
 func _on_animation_requested(label: String) -> void:

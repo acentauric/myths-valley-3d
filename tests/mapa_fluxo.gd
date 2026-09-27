@@ -53,16 +53,21 @@ func _run() -> void:
 
 	opening._options()
 	await _frames(2)
-	# Aba Geral: cinco volumes à direita; idioma, tempo, hora inicial e pausa à esquerda.
+	# Aba Geral: cinco volumes à direita; idioma, tempo, hora inicial, pausa e teclas à esquerda.
 	_assert(_count_controls(opening.content, "HSlider") == 5, "ajustes de volume")
-	_assert(_count_controls(opening.content, "OptionButton") == 4, "seletores de jogo e tempo")
+	_assert(_count_controls(opening.content, "OptionButton") == 5, "seletores de jogo, tempo e teclas")
 	await _capture("ajustes")
 	opening._home()
 	opening._credits()
 	await _frames(2)
-	_assert(opening.content.get_child_count() >= 6, "tela CONHECER")
+	_assert(opening.content.get_child_count() >= 6, "tela SOBRE")
 	await _capture("conhecer")
-	opening._home()
+	# Clique fora do modal fecha e volta ao menu inicial.
+	var outside := InputEventMouseButton.new()
+	outside.button_index = MOUSE_BUTTON_LEFT
+	outside.pressed = true
+	opening._unhandled_input(outside)
+	_assert(not opening.modal_open and _has_button(opening.content, "JOGAR"), "clique fora fecha SOBRE")
 	opening._open_history()
 	await _frames(2)
 	_assert(opening.history_open, "histórico de versão")
@@ -157,10 +162,22 @@ func _run() -> void:
 	player.reset_position()
 	await _physics_frames(20)
 	_assert(player.is_on_floor(), "reinício de posição")
-	game._return_to_menu()
+	# HOME no jogo: confirma com o vale pausado, cancelar retoma, confirmar carrega o menu.
+	var hud = game.get_node("HUD")
+	game._ask_return_to_menu()
+	await _frames(2)
+	_assert(hud.menu_confirm_open() and paused, "confirmação de HOME no jogo")
+	hud._close_menu_confirm(false)
+	_assert(not hud.menu_confirm_open() and not paused, "cancelar volta ao passeio")
+	game._ask_return_to_menu()
+	hud._close_menu_confirm(true)
+	for i in range(600):
+		if current_scene != null and current_scene.name == "Abertura":
+			break
+		await process_frame
 	await _frames(3)
-	_assert(current_scene.name == "Abertura", "HOME a partir do jogo")
-	print("MAPA_FLUXO_OK: HOME, MAPA, AJUSTAR, CONHECER, histórico, SAIR, JOGAR, caminhada, corrida, ruas e HOME")
+	_assert(current_scene.name == "Abertura" and not paused, "HOME a partir do jogo")
+	print("MAPA_FLUXO_OK: HOME, MAPA, AJUSTAR, SOBRE, histórico, SAIR, JOGAR, caminhada, corrida, ruas e HOME")
 	quit()
 
 

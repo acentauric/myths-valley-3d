@@ -7,8 +7,9 @@ func set_active(value: bool) -> void:
 	active = value
 	queue_redraw()
 
+## Ligado fica dourado (padrão de "ativo" dos botões do canto); mudo fica claro com ×.
 func _draw() -> void:
-	var ink := Color(0.93, 0.96, 0.92)
+	var ink := Color("e2c47f") if active else Color(0.93, 0.96, 0.92)
 	var speaker := PackedVector2Array([
 		Vector2(2, 9), Vector2(6, 9), Vector2(12, 5),
 		Vector2(12, 19), Vector2(6, 15), Vector2(2, 15), Vector2(2, 9)

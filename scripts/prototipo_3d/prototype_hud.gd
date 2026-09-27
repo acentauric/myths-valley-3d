@@ -8,10 +8,40 @@ const BotaoCanto = preload("res://scripts/prototipo_3d/botao_canto.gd")
 const AudioToggleIcon = preload("res://scripts/prototipo_3d/audio_toggle_icon.gd")
 const ClockIcon = preload("res://scripts/prototipo_3d/clock_icon.gd")
 const HudIcon = preload("res://scripts/prototipo_3d/hud_icon.gd")
+const TemaMenu = preload("res://scripts/prototipo_3d/tema_menu.gd")
+const TelaCarregamento = preload("res://scripts/prototipo_3d/tela_carregamento.gd")
+const PainelAjustes = preload("res://scripts/prototipo_3d/painel_ajustes.gd")
+
+
+## Camada dos modais do jogo (ajustes): roda com o vale pausado e trata Esc.
+class Sobreposicao:
+	extends Control
+	var ao_esc: Callable
+
+	func _init() -> void:
+		process_mode = Node.PROCESS_MODE_ALWAYS
+		set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+
+	func _unhandled_key_input(event: InputEvent) -> void:
+		if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_ESCAPE:
+			ao_esc.call()
+			get_viewport().set_input_as_handled()
+const TeclasMovimento = preload("res://scripts/prototipo_3d/teclas_movimento.gd")
 
 signal reset_requested
 signal quit_requested
+## HOME (botão ou M): pede a confirmação. Confirmada, `menu_requested`; cancelada,
+## `menu_cancelled`.
+signal menu_prompt_requested
 signal menu_requested
+signal menu_cancelled
+## Botão de mapa do canto: abre ou fecha o mapa do vale.
+signal map_requested
+## Engrenagem do canto: pede os ajustes; `settings_closed` quando o modal fecha.
+signal settings_requested
+signal settings_closed
+## Estilo visual trocado nos ajustes: o vale precisa ser reconstruído.
+signal style_changed
 signal camera_lock_requested(locked: bool)
 signal house_info_close_requested
 
@@ -44,7 +74,16 @@ var _camera_lock_button: Button
 var _clock_hint: Label
 var _house_info_panel: Panel
 var _house_info_label: Label
+var _house_info_heading: Label
 var _clock_label: Label
+var _menu_confirm: Control
+var _map_icon	# hud_icon.gd
+var _settings_icon	# hud_icon.gd
+var _settings: Control
+var _ajustes	# painel_ajustes.gd
+## Painéis escondidos enquanto o mapa está aberto (a coluna do canto continua).
+var _hidden_for_map: Array[Control] = []
+var _corner_nodes: Array[Node] = []
 
 
 func _ready() -> void:
@@ -73,11 +112,12 @@ func _ready() -> void:
 	_house_info_panel.position = Vector2(18, 162)
 	_house_info_panel.size = Vector2(HEADING_WIDTH, 155)
 	_house_info_panel.visible = false
-	var house_heading := _label("INFORMAÇÕES DA CASA", 13, GOLD)
-	_house_info_panel.add_child(house_heading)
-	house_heading.position = Vector2(16, 10)
-	house_heading.size = Vector2(270, 24)
+	_house_info_heading = _label("INFORMAÇÕES DA CASA", 13, GOLD)
+	_house_info_panel.add_child(_house_info_heading)
+	_house_info_heading.position = Vector2(16, 10)
+	_house_info_heading.size = Vector2(270, 24)
 	_house_info_label = _label("", 15, INK)
+	_house_info_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_house_info_panel.add_child(_house_info_label)
 	_house_info_label.position = Vector2(16, 39)
 	_house_info_label.size = Vector2(HEADING_WIDTH - 32, 108)
@@ -97,7 +137,7 @@ func _ready() -> void:
 	controls.offset_right = -24
 	controls.offset_top = -91
 	controls.offset_bottom = -23
-	var primary := _label("WASD mover  ·  Shift correr  ·  Direito: andar  ·  Duplo direito: correr  ·  Esquerdo na casa: dados", 14, INK)
+	var primary := _label(TeclasMovimento.rotulo() + " mover  ·  Shift correr  ·  Direito: andar  ·  Duplo direito: correr  ·  Esquerdo na casa: dados", 14, INK)
 	controls.add_child(primary)
 	primary.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
 	primary.offset_left = 18
@@ -180,8 +220,14 @@ func set_notice(value: String) -> void:
 		_notice_panel.offset_right = half
 
 
-func show_house_info(value: String) -> void:
+## Painel de informações à esquerda, abaixo do título: casas e lápides do cemitério.
+## A altura acompanha o texto.
+func show_house_info(value: String, heading: String = "INFORMAÇÕES DA CASA") -> void:
+	_house_info_heading.text = heading
 	_house_info_label.text = value
+	var text_height := maxi(1, _house_info_label.get_line_count()) * _house_info_label.get_line_height()
+	_house_info_label.size.y = text_height
+	_house_info_panel.size.y = maxf(155.0, 39.0 + text_height + 28.0)
 	_house_info_panel.visible = true
 
 
@@ -256,10 +302,22 @@ func _fit_heading() -> void:
 		_house_info_panel.position.y = height + 12.0
 
 
-## Coluna de botões redondos: som e relógio na mesma posição do menu, depois HOME,
+## Coluna de botões redondos: HOME, som e relógio na mesma posição do menu, depois
 ## câmera, velocidade do tempo e estilo visual (dica com as medições de desempenho).
 func _create_corner_buttons() -> void:
+	var first_child := _root.get_child_count()
 	var top := 32.0
+	var home: Array = BotaoCanto.criar(_root, top, HudIcon.new().configurar("casa"))
+	(home[1] as Label).text = "HOME · voltar ao menu (M)"
+	_corner_setup(home[0], func() -> void: menu_prompt_requested.emit())
+
+	top += BotaoCanto.ESPACO
+	_settings_icon = HudIcon.new().configurar("ajustes")
+	var settings: Array = BotaoCanto.criar(_root, top, _settings_icon)
+	(settings[1] as Label).text = "Ajustes"
+	_corner_setup(settings[0], func() -> void: settings_requested.emit())
+
+	top += BotaoCanto.ESPACO
 	var audio_icon := AudioToggleIcon.new()
 	audio_icon.set_active(Audio.som_ativo)
 	var audio: Array = BotaoCanto.criar(_root, top, audio_icon)
@@ -279,17 +337,21 @@ func _create_corner_buttons() -> void:
 	_clock_hint = clock[1]
 	_corner_setup(clock[0], func() -> void:
 		if not Dia.pausa_no_jogo:
+			Audio.efeito("ui_trava")
 			return
+		Audio.efeito("ui_confirmar")
 		Dia.pausado = not Dia.pausado
 		clock_icon.set_running(not Dia.pausado)
-		_update_clock_hint())
+		_update_clock_hint(), false)
 	(clock[0] as Button).mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND if Dia.pausa_no_jogo else Control.CURSOR_ARROW
 	Dia.hora_mudou.connect(_update_clock_hint.unbind(1))
 
 	top += BotaoCanto.ESPACO
-	var home: Array = BotaoCanto.criar(_root, top, HudIcon.new().configurar("casa"))
-	(home[1] as Label).text = "HOME · voltar ao menu (M)"
-	_corner_setup(home[0], func() -> void: menu_requested.emit())
+	_map_icon = HudIcon.new().configurar("mapa")
+	var map: Array = BotaoCanto.criar(_root, top, _map_icon)
+	(map[1] as Label).text = "Mapa do Vale"
+	_corner_setup(map[0], func() -> void: map_requested.emit())
+
 
 	top += BotaoCanto.ESPACO
 	_camera_icon = HudIcon.new().configurar("camera")
@@ -298,7 +360,9 @@ func _create_corner_buttons() -> void:
 	_camera_hint = camera[1]
 	_camera_lock_button.toggle_mode = true
 	_camera_lock_button.focus_mode = Control.FOCUS_NONE
-	_camera_lock_button.toggled.connect(func(locked: bool): camera_lock_requested.emit(locked))
+	_camera_lock_button.toggled.connect(func(locked: bool):
+		Audio.efeito("ui_confirmar")
+		camera_lock_requested.emit(locked))
 
 	top += BotaoCanto.ESPACO
 	_speed_icon = HudIcon.new().configurar("velocidade")
@@ -316,12 +380,185 @@ func _create_corner_buttons() -> void:
 	_style_hint.add_theme_font_size_override("font_size", 13)
 	(style[0] as Button).focus_mode = Control.FOCUS_NONE
 	set_camera_locked(_camera_locked)
+	for index in range(first_child, _root.get_child_count()):
+		_corner_nodes.append(_root.get_child(index))
+
+
+## Com o mapa aberto só ficam a coluna do canto (mapa dourado) e os marcadores; título,
+## relógio, avisos e controles somem e voltam como estavam.
+func set_map_open(open: bool) -> void:
+	_map_icon.definir(open)
+	if open:
+		_hidden_for_map.clear()
+		for child in _root.get_children():
+			if child is Control and child.visible and child != _menu_confirm and not _corner_nodes.has(child):
+				_hidden_for_map.append(child)
+				child.visible = false
+	else:
+		for child in _hidden_for_map:
+			if is_instance_valid(child):
+				child.visible = true
+		_hidden_for_map.clear()
+
+
+## Nó de UI em que o mapa põe os marcadores (atrás da coluna do canto).
+func map_layer() -> Control:
+	return _root
+
+
+func settings_open() -> bool:
+	return is_instance_valid(_settings)
+
+
+## Ajustes dentro do jogo (painel_ajustes.gd sem as opções só do menu), num modal
+## centrado sobre o vale pausado. Esc fecha a ajuda aberta ou o modal; clique fora fecha.
+func open_settings() -> void:
+	if settings_open():
+		return
+	var tema := TemaMenu.criar()
+	var overlay := Sobreposicao.new()
+	overlay.theme = tema
+	_settings = overlay
+	_root.add_child(overlay)
+	var shade := ColorRect.new()
+	shade.color = Color(0, 0, 0, 0.45)
+	shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	shade.gui_input.connect(func(event: InputEvent) -> void:
+		if event is InputEventMouseButton and event.pressed:
+			close_settings())
+	overlay.add_child(shade)
+	var box := PanelContainer.new()
+	box.add_theme_stylebox_override("panel", TemaMenu.estilo_painel())
+	box.custom_minimum_size = PainelAjustes.TAMANHO
+	box.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
+	box.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	box.grow_vertical = Control.GROW_DIRECTION_BOTH
+	overlay.add_child(box)
+	var content := VBoxContainer.new()
+	box.add_child(content)
+	_ajustes = PainelAjustes.new(true)
+	_ajustes.tema = tema
+	_ajustes.fechar_pedido.connect(close_settings)
+	_ajustes.estilo_mudou.connect(func() -> void: style_changed.emit())
+	overlay.ao_esc = func() -> void:
+		if _ajustes.ajuda_aberta():
+			_ajustes.fechar_ajuda()
+		else:
+			close_settings()
+	_ajustes.construir(content, overlay, 0)
+	_settings_icon.definir(true)
+
+
+func close_settings() -> void:
+	if not settings_open():
+		return
+	_ajustes.fechar_ajuda()
+	_settings.queue_free()
+	_settings = null
+	_settings_icon.definir(false)
+	settings_closed.emit()
+
+
+func menu_confirm_open() -> bool:
+	return is_instance_valid(_menu_confirm)
+
+
+## Confirmação de saída para o menu, no mesmo visual dos modais do menu. Roda com o
+## jogo pausado (PROCESS_MODE_ALWAYS); Esc ou clique fora cancelam.
+func open_menu_confirm() -> void:
+	if menu_confirm_open():
+		return
+	_menu_confirm = Control.new()
+	_menu_confirm.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_menu_confirm.theme = TemaMenu.criar()
+	_menu_confirm.process_mode = Node.PROCESS_MODE_ALWAYS
+	_root.add_child(_menu_confirm)
+	var shade := ColorRect.new()
+	shade.color = Color(0, 0, 0, 0.55)
+	shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	shade.gui_input.connect(func(event: InputEvent) -> void:
+		if event is InputEventMouseButton and event.pressed:
+			_close_menu_confirm(false))
+	_menu_confirm.add_child(shade)
+	var box := PanelContainer.new()
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0.055, 0.09, 0.075, 0.96)
+	style.border_color = Color("b49a60")
+	style.set_border_width_all(1)
+	style.set_corner_radius_all(14)
+	style.content_margin_left = 28
+	style.content_margin_right = 28
+	style.content_margin_top = 22
+	style.content_margin_bottom = 22
+	box.add_theme_stylebox_override("panel", style)
+	box.custom_minimum_size = Vector2(440, 0)
+	box.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
+	box.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	box.grow_vertical = Control.GROW_DIRECTION_BOTH
+	_menu_confirm.add_child(box)
+	var column := VBoxContainer.new()
+	column.add_theme_constant_override("separation", 14)
+	box.add_child(column)
+	var title := Label.new()
+	title.text = "Voltar ao menu?"
+	title.add_theme_font_size_override("font_size", 28)
+	column.add_child(title)
+	var text := Label.new()
+	text.text = "O passeio termina aqui. Ao entrar de novo, o dia recomeça."
+	text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	text.add_theme_font_size_override("font_size", 16)
+	text.add_theme_color_override("font_color", Color("c9b98f"))
+	column.add_child(text)
+	var buttons := HBoxContainer.new()
+	buttons.add_theme_constant_override("separation", 12)
+	column.add_child(buttons)
+	var cancel := Button.new()
+	cancel.text = "CONTINUAR"
+	cancel.custom_minimum_size.y = 44
+	cancel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var escape := InputEventKey.new()
+	escape.keycode = KEY_ESCAPE
+	cancel.shortcut = Shortcut.new()
+	cancel.shortcut.events = [escape]
+	cancel.pressed.connect(_close_menu_confirm.bind(false))
+	buttons.add_child(cancel)
+	var leave := Button.new()
+	leave.text = "IR AO MENU"
+	leave.custom_minimum_size.y = 44
+	leave.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	leave.theme_type_variation = &"BotaoNegativo"
+	leave.pressed.connect(_close_menu_confirm.bind(true))
+	buttons.add_child(leave)
+	for button: Button in [cancel, leave]:
+		button.mouse_entered.connect(func(): Audio.efeito("ui_hover"))
+	cancel.grab_focus()
+
+
+func _close_menu_confirm(leave: bool) -> void:
+	if not menu_confirm_open():
+		return
+	Audio.efeito("ui_confirmar" if leave else "ui_voltar")
+	_menu_confirm.queue_free()
+	_menu_confirm = null
+	if leave:
+		menu_requested.emit()
+	else:
+		menu_cancelled.emit()
+
+
+## Tela de carregamento da volta ao menu, por cima de todo o HUD.
+func show_loading() -> ProgressBar:
+	return TelaCarregamento.mostrar(_root, TemaMenu.criar(), "Voltando ao menu…")
 
 
 ## Botões do HUD não roubam o foco do teclado (WASD, Espaço, Tab seguem com o jogador).
-func _corner_setup(button: Button, action: Callable) -> void:
+## Tocam o mesmo clique dos botões do menu (o relógio bloqueado troca pelo som de trava).
+func _corner_setup(button: Button, action: Callable, click := true) -> void:
 	button.focus_mode = Control.FOCUS_NONE
-	button.pressed.connect(action)
+	button.pressed.connect(func() -> void:
+		if click:
+			Audio.efeito("ui_confirmar")
+		action.call())
 
 
 func _compact(value: float) -> String:

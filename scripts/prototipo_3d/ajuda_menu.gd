@@ -103,6 +103,11 @@ const TEXTOS := {
 		"Whether the clock button in the game corner can pause and resume the day.\n\nAllowed: clicking the clock freezes time until you click again.\nLocked: the day always runs; the clock only shows the time.",
 		"Si el botón de reloj en la esquina del juego puede pausar y reanudar el día.\n\nPermitido: al hacer clic en el reloj el tiempo se congela hasta que vuelvas a hacer clic.\nBloqueado: el día siempre avanza; el reloj solo muestra la hora.",
 	],
+	"Teclas de movimento": [
+		"Quais teclas andam com o personagem no vale.\n\nWASD: só W, A, S e D.\nSetas: só as setas do teclado.\nWASD e setas: as duas funcionam.\n\nO rodapé de controles no jogo mostra as teclas escolhidas. Shift continua correndo e o clique com o botão direito continua levando até o ponto.",
+		"Which keys move the character in the valley.\n\nWASD: only W, A, S and D.\nArrows: only the arrow keys.\nWASD and arrows: both work.\n\nThe controls bar in game shows the chosen keys. Shift still runs and right-clicking still walks to a point.",
+		"Qué teclas mueven al personaje en el valle.\n\nWASD: solo W, A, S y D.\nFlechas: solo las flechas del teclado.\nWASD y flechas: funcionan las dos.\n\nLa barra de controles del juego muestra las teclas elegidas. Shift sigue corriendo y el clic derecho sigue llevando hasta el punto.",
+	],
 }
 
 

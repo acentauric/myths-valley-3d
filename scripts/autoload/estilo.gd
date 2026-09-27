@@ -18,6 +18,15 @@ func _ready() -> void:
 	if preferencias.load(ARQUIVO) == OK:
 		var salvo := String(preferencias.get_value("estilo", "modo", TRIPO))
 		modo = salvo if salvo in [TRIPO, PROCEDURAL] else TRIPO
+	get_tree().node_added.connect(_cursor_de_clique)
+
+
+## Todo botão, seletor e volume do jogo mostra a mãozinha ao passar o mouse, sem cada
+## tela precisar lembrar disso. Quem já escolheu outro cursor (ex.: relógio bloqueado)
+## mantém o seu.
+func _cursor_de_clique(no: Node) -> void:
+	if (no is BaseButton or no is Slider) and (no as Control).mouse_default_cursor_shape == Control.CURSOR_ARROW:
+		(no as Control).mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 
 
 func tripo() -> bool:

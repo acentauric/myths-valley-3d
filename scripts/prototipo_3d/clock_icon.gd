@@ -1,6 +1,7 @@
 extends Control
 ## Ícone vetorial de relógio: os ponteiros mostram a hora do vale (autoload Dia).
-## Com o dia correndo, o mostrador ganha um anel dourado; pausado, fica claro.
+## Com o dia correndo o relógio inteiro fica dourado (anel, marcas e ponteiros), como os
+## outros botões ativos do canto; pausado, fica claro.
 
 var running := false
 
@@ -16,10 +17,10 @@ func set_running(value: bool) -> void:
 	queue_redraw()
 
 func _draw() -> void:
-	var ink := Color(0.93, 0.96, 0.92)
+	var ink := Color("e2c47f") if running else Color(0.93, 0.96, 0.92)
 	var center := size * 0.5
 	var raio := minf(size.x, size.y) * 0.5 - 1.0
-	draw_arc(center, raio, 0, TAU, 40, Color("e2c47f") if running else ink, 2.0, true)
+	draw_arc(center, raio, 0, TAU, 40, ink, 2.0, true)
 	# Marcas de 12, 3, 6 e 9 para o mostrador ler como relógio em qualquer hora.
 	for quarto in range(4):
 		var direcao := Vector2(sin(quarto * PI * 0.5), -cos(quarto * PI * 0.5))

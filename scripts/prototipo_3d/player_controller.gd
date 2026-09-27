@@ -8,6 +8,7 @@ signal animation_requested(label: String)
 signal navigation_status(message: String)
 
 const ClickNavigation = preload("res://scripts/prototipo_3d/click_navigation.gd")
+const TeclasMovimento = preload("res://scripts/prototipo_3d/teclas_movimento.gd")
 const HOUSE_INTERACTION_LAYER := 1 << 12
 const ARRIVAL_DISTANCE := 0.7
 const CAMERA_DRAG_THRESHOLD := 6.0
@@ -59,6 +60,11 @@ var _camera_drag_start := Vector2.ZERO
 var _jump_buffer_remaining := 0.0
 var _grounded_grace_remaining := 0.0
 var _jumping := false
+## Último ponto em terra firme onde o jogador pisou: quem cai no mar (fora da passarela
+## ou do píer) volta para cá, e não para o ponto de chegada.
+var _last_land := Vector3.INF
+var _knockback_remaining := 0.0
+var _land_check := 0.0
 
 func _ready() -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
@@ -209,8 +215,13 @@ func _physics_process(delta: float) -> void:
 	if input_vector.length_squared() <= 0.001 and not _walk_path.is_empty():
 		direction = _next_walk_direction()
 	var speed: float = run_speed if Input.is_action_pressed("mv_run") or (_walk_run and not _walk_path.is_empty()) else walk_speed
-	velocity.x = move_toward(velocity.x, direction.x * speed, 18.0 * delta)
-	velocity.z = move_toward(velocity.z, direction.z * speed, 18.0 * delta)
+	if _knockback_remaining > 0.0:
+		# Empurrão (ex.: o coveiro): o impulso manda até o fim, sem controle do jogador.
+		_knockback_remaining -= delta
+		direction = Vector3.ZERO
+	else:
+		velocity.x = move_toward(velocity.x, direction.x * speed, 18.0 * delta)
+		velocity.z = move_toward(velocity.z, direction.z * speed, 18.0 * delta)
 	if _jump_buffer_remaining > 0.0 and _grounded_grace_remaining > 0.0 and not _jumping:
 		velocity.y = JUMP_VELOCITY
 		_jumping = true
@@ -242,8 +253,14 @@ func _physics_process(delta: float) -> void:
 		visual.rotation.y = lerp_angle(visual.rotation.y, atan2(direction.x, direction.z), 1.0 - exp(-12.0 * delta))
 	if animator:
 		animator.update_motion(Vector2(velocity.x, velocity.z).length(), delta)
-	if global_position.y < -6.0:
-		reset_position()
+	_land_check -= delta
+	if _land_check <= 0.0 and is_on_floor() and _click_world != null:
+		_land_check = 0.25
+		if _click_world.is_on_land(global_position):
+			_last_land = global_position
+	# Mar e rio não têm chão: 2,5 m abaixo da última terra firme já é queda na água.
+	if global_position.y < -6.0 or (_last_land.is_finite() and global_position.y < _last_land.y - 2.5 and not is_on_floor()):
+		_back_to_land()
 
 
 func _input(event: InputEvent) -> void:
@@ -337,10 +354,37 @@ func _rotate_camera(relative: Vector2) -> void:
 	_pitch = clampf(_pitch - relative.y * mouse_sensitivity, -0.95, 0.35)
 	_apply_camera()
 
+## Derruba o jogador: impulso horizontal `impulso` (m/s) mais um pequeno salto, sem
+## controle por `segundos`. Usa a mesma queda do pulo, então aterrissa com a animação.
+func empurrar(impulso: Vector3, segundos: float = 0.45) -> void:
+	_cancel_walk()
+	velocity.x = impulso.x
+	velocity.z = impulso.z
+	velocity.y = 3.2
+	_jumping = true
+	_knockback_remaining = segundos
+	if impulso.length_squared() > 0.01:
+		visual.rotation.y = atan2(-impulso.x, -impulso.z)
+
+
+func _back_to_land() -> void:
+	if not _last_land.is_finite():
+		reset_position()
+		return
+	_cancel_walk()
+	global_position = _last_land + Vector3(0, 0.1, 0)
+	velocity = Vector3.ZERO
+	_jumping = false
+	if animator and animator.has_method("finish_jump"):
+		animator.finish_jump(0.0)
+	navigation_status.emit("De volta à terra firme.")
+
+
 func reset_position() -> void:
 	_cancel_walk()
 	global_position = spawn_position
 	velocity = Vector3.ZERO
+	_last_land = Vector3.INF
 	_jump_buffer_remaining = 0.0
 	_grounded_grace_remaining = 0.0
 	_jumping = false
@@ -408,7 +452,7 @@ func _request_walk_at_cursor(mouse: Vector2, run_to_destination: bool = false) -
 	_walk_destination = destination
 	_stuck_time = 0.0
 	_replan_attempts = 0
-	navigation_status.emit("%s até o ponto selecionado. WASD cancela o trajeto." % ("Correndo" if run_to_destination else "Caminhando"))
+	navigation_status.emit("%s até o ponto selecionado. %s cancela o trajeto." % ["Correndo" if run_to_destination else "Caminhando", TeclasMovimento.rotulo()])
 
 
 func _approach_npc(npc: Node3D) -> Vector3:

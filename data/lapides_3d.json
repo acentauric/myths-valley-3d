@@ -1,0 +1,65 @@
+{
+  "_nota": "Uma lápide por túmulo do cemitério, na ordem em que o world_builder os posiciona (4 por fileira, 3 fileiras). Personagens fictícios de Bom Jesus dos Pobres. História em no máximo 3 linhas do painel (~115 caracteres).",
+  "lapides": [
+    {
+      "nome": "Maria das Dores Conceição",
+      "datas": "1801 – 1869",
+      "historia": "Parteira por quarenta anos. Pôs no mundo metade do arraial e nunca cobrou de quem não tinha."
+    },
+    {
+      "nome": "Joaquim Pescador",
+      "datas": "1822 – 1858",
+      "historia": "Saiu de canoa num nordeste forte e o mar não devolveu. Aqui está a rede dele."
+    },
+    {
+      "nome": "Ana Rosa do Espírito Santo",
+      "datas": "1830 – 1884",
+      "historia": "Rezadeira. Curava quebranto com arruda; ainda hoje deixam folha verde na pedra."
+    },
+    {
+      "nome": "Benedito Firmino",
+      "datas": "1815 – 1872",
+      "historia": "Mestre de saveiro. Levava farinha a Salvador e trazia de volta as notícias do mundo."
+    },
+    {
+      "nome": "Luzia, menina",
+      "datas": "1861 – 1866",
+      "historia": "Levada pela febre do ano da seca. O jasmim que a mãe plantou ainda floresce em setembro."
+    },
+    {
+      "nome": "Padre Inácio Moura",
+      "datas": "1790 – 1856",
+      "historia": "Primeiro padre da capela. Pediu para ser enterrado de frente para o mar, não para o altar."
+    },
+    {
+      "nome": "Felícia da Purificação",
+      "datas": "1812 – 1880",
+      "historia": "Comprou a liberdade vendendo cocada na feira. Com o que sobrou, comprou a da irmã."
+    },
+    {
+      "nome": "Manoel Carpina",
+      "datas": "1826 – 1879",
+      "historia": "Fez as portas da capela e quase todas estas cruzes. A dele, o filho fez torta, de homenagem."
+    },
+    {
+      "nome": "Custódia e Custódio",
+      "datas": "1840 – 1882",
+      "historia": "Gêmeos que partiram no mesmo dia. No arraial, ninguém lembra de um sem falar do outro."
+    },
+    {
+      "nome": "Sebastião Violeiro",
+      "datas": "1833 – 1877",
+      "historia": "Tocava viola no samba de roda até clarear. Com vento da mata, há quem ouça o ponteado."
+    },
+    {
+      "nome": "Dona Zefa do Roçado",
+      "datas": "1818 – 1885",
+      "historia": "Plantou o primeiro mandiocal do vale. A casa de farinha ainda usa o forno dela."
+    },
+    {
+      "nome": "Desconhecido",
+      "datas": "? – 1874",
+      "historia": "Chegou numa jangada sem vela, já sem vida. Ganhou flores e cruz como filho da terra."
+    }
+  ]
+}

@@ -43,6 +43,14 @@ func _run() -> void:
 	event.pressed = true
 	current_scene._unhandled_key_input(event)
 	await process_frame
+	# M pede confirmação (vale pausado); confirmar carrega o menu.
+	var hud = current_scene.get_node("HUD")
+	assert(hud.menu_confirm_open() and paused)
+	hud._close_menu_confirm(true)
+	for i in range(600):
+		if current_scene != null and current_scene.name == "Abertura":
+			break
+		await process_frame
 	await process_frame
 	assert(current_scene.name == "Abertura")
 	current_scene._start_game()

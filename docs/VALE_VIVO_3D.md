@@ -77,7 +77,17 @@ uma vez a cada 45 s: balão com a primeira linha da apresentação de
 `assets/audio/vozes/<id>_saudacao.mp3` (ElevenLabs, vozes pt-BR: Weverton para
 Pedro, Borges para Benedito, Katiuscia para Zefa, Matheus para Cosme, Matheus
 Santos para Tonho, Ana Alice para Filó, Ana Dias para Candinha, Matheus Clear
-para Damião). O texto pesado fica no balão e no HUD; o áudio é só a saudação.
+para Damião). O texto pesado fica no balão e no HUD; o áudio é a saudação e, no
+Damião, as três broncas do cemitério (`damiao_bronca_1..3.mp3`).
+
+## Cemitério
+
+Cada túmulo tem colisão na laje e uma lápide com história curta
+(`data/lapides_3d.json`, até 3 linhas). `lapides.gd` mostra a tecla **E** sobre o
+túmulo mais próximo e abre a história no painel da esquerda. Quem sobe numa laje
+ouve o Damião, cada vez mais bravo (voz ElevenLabs "Matheus Clear", estabilidade
+0,5 → 0,35 → 0,2); na terceira ele derruba o jogador para o corredor entre as
+fileiras. Só reclama se estiver no cemitério (30 u); 90 s sem subir, ele esquece.
 
 **Pedro** (`guia_pedro.gd`) não tem posto: acompanha o jogador (anda a 3 u/s,
 corre se ficar para trás) e conduz as missões de chegada, narradas em voz

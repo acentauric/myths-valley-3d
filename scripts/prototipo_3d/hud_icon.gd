@@ -1,6 +1,6 @@
 extends Control
 ## Ícones vetoriais dos botões de canto do HUD, no mesmo traço do som e do relógio:
-## "casa" (HOME), "fechar" (×), "externo" (link que sai do jogo), "camera" (anel dourado quando travada), "velocidade" (setas conforme
+## "casa" (HOME), "ajustes" (engrenagem), "mapa", "ajuda" (?), "fechar" (×), "externo" (link que sai do jogo), "camera" (anel dourado quando travada), "velocidade" (setas conforme
 ## a Passagem do tempo, 0–3) e "estilo" (cubo para Tripo, chaves para Procedural).
 
 var tipo := "casa"
@@ -26,13 +26,36 @@ func _draw() -> void:
 			draw_polyline(PackedVector2Array([Vector2(11, 5), Vector2(5, 5), Vector2(5, 19), Vector2(19, 19), Vector2(19, 13)]), ouro_link, 1.8, true)
 			draw_line(Vector2(11, 13), Vector2(20, 4), ouro_link, 1.8, true)
 			draw_polyline(PackedVector2Array([Vector2(14, 4), Vector2(20, 4), Vector2(20, 10)]), ouro_link, 1.8, true)
+		"ajustes":
+			# Engrenagem: aro, oito dentes e furo; dourada com os ajustes abertos.
+			var cor_ajustes := ouro if ativo else tinta
+			var centro := Vector2(12, 12)
+			draw_arc(centro, 5.6, 0, TAU, 28, cor_ajustes, 1.8, true)
+			draw_arc(centro, 2.2, 0, TAU, 16, cor_ajustes, 1.6, true)
+			for dente in range(8):
+				var direcao := Vector2.from_angle(dente * TAU / 8.0)
+				draw_line(centro + direcao * 6.2, centro + direcao * 9.2, cor_ajustes, 2.6, true)
+		"mapa":
+			# Mapa dobrado em três faixas; dourado com o mapa aberto.
+			var cor_mapa := ouro if ativo else tinta
+			draw_polyline(PackedVector2Array([Vector2(3, 6), Vector2(9, 4), Vector2(15, 6), Vector2(21, 4), Vector2(21, 18), Vector2(15, 20), Vector2(9, 18), Vector2(3, 20), Vector2(3, 6)]), cor_mapa, 1.7, true)
+			draw_line(Vector2(9, 4), Vector2(9, 18), cor_mapa, 1.4, true)
+			draw_line(Vector2(15, 6), Vector2(15, 20), cor_mapa, 1.4, true)
+		"ajuda":
+			# Interrogação: gancho, haste e ponto; dourada com o painel de ajuda aberto.
+			var cor_ajuda := ouro if ativo else tinta
+			draw_arc(Vector2(12, 9), 4.5, PI, TAU + PI * 0.25, 16, cor_ajuda, 2.0, true)
+			draw_polyline(PackedVector2Array([Vector2(15.2, 12.2), Vector2(12, 14.5), Vector2(12, 16)]), cor_ajuda, 2.0, true)
+			draw_circle(Vector2(12, 19.6), 1.3, cor_ajuda)
 		"fechar":
 			draw_line(Vector2(6, 6), Vector2(18, 18), tinta, 2.0, true)
 			draw_line(Vector2(18, 6), Vector2(6, 18), tinta, 2.0, true)
 		"casa":
-			draw_polyline(PackedVector2Array([Vector2(3, 12), Vector2(12, 4), Vector2(21, 12)]), tinta, 1.8, true)
-			draw_polyline(PackedVector2Array([Vector2(6, 10), Vector2(6, 20), Vector2(18, 20), Vector2(18, 10)]), tinta, 1.8, true)
-			draw_polyline(PackedVector2Array([Vector2(10, 20), Vector2(10, 15), Vector2(14, 15), Vector2(14, 20)]), tinta, 1.6, true)
+			# Dourada quando já se está na Home (como o relógio andando).
+			var cor_casa := ouro if ativo else tinta
+			draw_polyline(PackedVector2Array([Vector2(3, 12), Vector2(12, 4), Vector2(21, 12)]), cor_casa, 1.8, true)
+			draw_polyline(PackedVector2Array([Vector2(6, 10), Vector2(6, 20), Vector2(18, 20), Vector2(18, 10)]), cor_casa, 1.8, true)
+			draw_polyline(PackedVector2Array([Vector2(10, 20), Vector2(10, 15), Vector2(14, 15), Vector2(14, 20)]), cor_casa, 1.6, true)
 		"camera":
 			var cor := ouro if ativo else tinta
 			draw_rect(Rect2(3, 8, 18, 12), cor, false, 1.8, true)

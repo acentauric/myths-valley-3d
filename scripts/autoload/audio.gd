@@ -24,6 +24,11 @@ const VARIACAO_DO_PASSO := 0.12
 ## Camadas do ambiente com volume próprio, aplicado sobre o volume geral de Ambiente.
 const CAMADAS_AMBIENTE := ["aves", "mar", "riacho", "fogueira", "mata"]
 const ROTULOS_CAMADAS := {"aves": "Aves", "mar": "Mar", "riacho": "Riacho", "fogueira": "Fogueira", "mata": "Insetos e grilos"}
+## Volumes de fábrica (AJUSTAR → Restaurar padrões): canais gerais e camadas do ambiente.
+const PADROES := {
+	"musica": 0.8, "narracao": 1.0, "vozes": 1.0, "efeitos": 0.8, "ambiente": 0.4,
+	"aves": 1.0, "mar": 1.0, "riacho": 1.0, "fogueira": 1.0, "mata": 1.0,
+}
 
 ## Emitido quando um volume muda: os tocadores 3D do vale (NPCs, ambiente) reaplicam o seu.
 signal volumes_alterados
@@ -34,10 +39,13 @@ var efeitos_menu_opcao: int = 2
 var ambiente_menu_opcao: int = 3
 var volume_musica: float = 0.8
 var volume_efeitos: float = 0.8
-var volume_ambiente: float = 0.45
+var volume_ambiente: float = 0.4
 var volume_vozes: float = 1.0
 var volume_narracao: float = 1.0
 var volume_camadas: Dictionary = {"aves": 1.0, "mar": 1.0, "riacho": 1.0, "fogueira": 1.0, "mata": 1.0}
+## Canais silenciados pelo alto-falante ao lado de cada volume (chaves de PADROES): o
+## volume escolhido fica guardado e volta ao reativar.
+var mudos: Dictionary = {}
 var _musica: AudioStreamPlayer
 var _narracao: AudioStreamPlayer
 var _efeitos: AudioStreamPlayer
@@ -58,7 +66,7 @@ var _ganho_musica: float = 1.0:
 	set(valor):
 		_ganho_musica = valor
 		if is_instance_valid(_musica):
-			_musica.volume_db = _volume_db(VOLUME_MUSICA, volume_musica * _ganho_musica)
+			_musica.volume_db = _volume_db(VOLUME_MUSICA, _ef("musica", volume_musica) * _ganho_musica)
 
 
 func _ready() -> void:
@@ -151,6 +159,35 @@ func definir_volume_camada(camada: String, valor: float) -> void:
 	if not volume_camadas.has(camada):
 		return
 	volume_camadas[camada] = _normalizar_volume(valor)
+	_aplicar_volumes()
+	_salvar_preferencias()
+
+
+func canal_mudo(canal: String) -> bool:
+	return bool(mudos.get(canal, false))
+
+
+func definir_mudo(canal: String, mudo: bool) -> void:
+	if not PADROES.has(canal):
+		return
+	if mudo:
+		mudos[canal] = true
+	else:
+		mudos.erase(canal)
+	_aplicar_volumes()
+	_salvar_preferencias()
+
+
+## Volumes de fábrica em todos os canais e camadas, sem nenhum silenciado.
+func restaurar_padroes() -> void:
+	volume_musica = PADROES["musica"]
+	volume_narracao = PADROES["narracao"]
+	volume_vozes = PADROES["vozes"]
+	volume_efeitos = PADROES["efeitos"]
+	volume_ambiente = PADROES["ambiente"]
+	for camada in CAMADAS_AMBIENTE:
+		volume_camadas[camada] = PADROES[camada]
+	mudos.clear()
 	_aplicar_volumes()
 	_salvar_preferencias()
 
@@ -299,20 +336,20 @@ func _sincronizar_camada(tocador: AudioStreamPlayer, caminho: String, ativo: boo
 
 ## Volume-base (em dB) das fontes posicionais que seguem os controles de AJUSTAR.
 func volume_ambiente_db() -> float:
-	return _volume_db(VOLUME_AMBIENTE, volume_ambiente)
+	return _volume_db(VOLUME_AMBIENTE, _ef("ambiente", volume_ambiente))
 
 
 ## Volume-base (em dB) de uma camada do ambiente: geral de Ambiente × volume da camada.
 func volume_camada_db(camada: String) -> float:
-	return _volume_db(VOLUME_AMBIENTE, volume_ambiente * float(volume_camadas.get(camada, 1.0)))
+	return _volume_db(VOLUME_AMBIENTE, _ef("ambiente", volume_ambiente) * _ef(camada, float(volume_camadas.get(camada, 1.0))))
 
 
 func volume_efeitos_db() -> float:
-	return _volume_db(VOLUME_EFEITO, volume_efeitos)
+	return _volume_db(VOLUME_EFEITO, _ef("efeitos", volume_efeitos))
 
 
 func volume_vozes_db() -> float:
-	return _volume_db(VOLUME_VOZ, volume_vozes)
+	return _volume_db(VOLUME_VOZ, _ef("vozes", volume_vozes))
 
 
 ## Carrega um áudio já configurado para repetir (loops de ambiente do vale).
@@ -325,10 +362,10 @@ func carregar_loop(caminho: String) -> AudioStream:
 
 func _aplicar_volumes() -> void:
 	_ganho_musica = _ganho_musica
-	_efeitos.volume_db = _volume_db(VOLUME_EFEITO, volume_efeitos)
-	_interface.volume_db = _volume_db(VOLUME_EFEITO, volume_efeitos)
-	_passos.volume_db = _volume_db(VOLUME_PASSO, volume_efeitos)
-	_narracao.volume_db = _volume_db(VOLUME_NARRACAO, volume_narracao)
+	_efeitos.volume_db = _volume_db(VOLUME_EFEITO, _ef("efeitos", volume_efeitos))
+	_interface.volume_db = _volume_db(VOLUME_EFEITO, _ef("efeitos", volume_efeitos))
+	_passos.volume_db = _volume_db(VOLUME_PASSO, _ef("efeitos", volume_efeitos))
+	_narracao.volume_db = _volume_db(VOLUME_NARRACAO, _ef("narracao", volume_narracao))
 	if _opcao_previa >= 0:
 		_aplicar_ambiente(_opcao_previa)
 	elif _ambiente_menu_ativo:
@@ -352,13 +389,16 @@ func _carregar_preferencias() -> void:
 	musica_menu_opcao = clampi(int(configuracao.get_value("audio", "musica_menu", musica_menu_opcao)), 1, 4)
 	efeitos_menu_opcao = clampi(int(configuracao.get_value("audio", "efeitos_menu", 2)), 1, 2)
 	ambiente_menu_opcao = clampi(int(configuracao.get_value("audio", "ambiente_menu", 3)), 0, 3)
-	volume_musica = _normalizar_volume(float(configuracao.get_value("audio", "volume_musica", 0.8)))
-	volume_efeitos = _normalizar_volume(float(configuracao.get_value("audio", "volume_efeitos", 0.8)))
-	volume_ambiente = _normalizar_volume(float(configuracao.get_value("audio", "volume_ambiente", 0.45)))
-	volume_vozes = _normalizar_volume(float(configuracao.get_value("audio", "volume_vozes", 1.0)))
-	volume_narracao = _normalizar_volume(float(configuracao.get_value("audio", "volume_narracao", 1.0)))
+	volume_musica = _normalizar_volume(float(configuracao.get_value("audio", "volume_musica", PADROES["musica"])))
+	volume_efeitos = _normalizar_volume(float(configuracao.get_value("audio", "volume_efeitos", PADROES["efeitos"])))
+	volume_ambiente = _normalizar_volume(float(configuracao.get_value("audio", "volume_ambiente", PADROES["ambiente"])))
+	volume_vozes = _normalizar_volume(float(configuracao.get_value("audio", "volume_vozes", PADROES["vozes"])))
+	volume_narracao = _normalizar_volume(float(configuracao.get_value("audio", "volume_narracao", PADROES["narracao"])))
 	for camada in CAMADAS_AMBIENTE:
-		volume_camadas[camada] = _normalizar_volume(float(configuracao.get_value("audio", "volume_" + camada, 1.0)))
+		volume_camadas[camada] = _normalizar_volume(float(configuracao.get_value("audio", "volume_" + camada, PADROES[camada])))
+	for canal: String in PADROES:
+		if bool(configuracao.get_value("audio", "mudo_" + canal, false)):
+			mudos[canal] = true
 
 
 func _salvar_preferencias() -> void:
@@ -374,8 +414,15 @@ func _salvar_preferencias() -> void:
 	configuracao.set_value("audio", "volume_narracao", volume_narracao)
 	for camada in CAMADAS_AMBIENTE:
 		configuracao.set_value("audio", "volume_" + camada, volume_camadas[camada])
+	for canal: String in PADROES:
+		configuracao.set_value("audio", "mudo_" + canal, canal_mudo(canal))
 	if configuracao.save(ARQUIVO_PREFERENCIAS) != OK:
 		push_warning("Não foi possível salvar as preferências de áudio.")
+
+
+## Volume que realmente toca: zero se o canal estiver silenciado.
+func _ef(canal: String, valor: float) -> float:
+	return 0.0 if canal_mudo(canal) else valor
 
 
 func _normalizar_volume(valor: float) -> float:
