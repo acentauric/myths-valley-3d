@@ -21,6 +21,9 @@ PROJECT = Path(__file__).resolve().parents[2]
 DEFAULT_SOURCE = PROJECT / "data/mapas/bom_jesus_dos_pobres_fonte.kml"
 DEFAULT_OUTPUT = PROJECT / "data/mapas/bom_jesus_dos_pobres.json"
 NS = {"kml": "http://www.opengis.net/kml/2.2"}
+# O quadro "Mapa" é o recorte do mundo jogável, sempre 16:9 (o desenhado à mão no
+# Google Earth fica perto disso, nunca exato).
+FRAME_ASPECT = 16.0 / 9.0
 
 
 def meters_per_degree(latitude: float) -> tuple[float, float]:
@@ -124,6 +127,10 @@ def convert(source: Path, output: Path, region_id: str, origin_name: str) -> Non
         }
         if geometry == "point":
             feature["source_altitude_m"] = round(coordinates[0][2], 3)
+        if kind == "map_frame":
+            normalize_frame(feature, origin_lon, origin_lat, east_factor, north_factor)
+            xs.extend(point[0] for point in feature["coordinates_m"])
+            zs.extend(point[1] for point in feature["coordinates_m"])
         features.append(feature)
 
     result = {
@@ -151,8 +158,37 @@ def convert(source: Path, output: Path, region_id: str, origin_name: str) -> Non
         "features": features,
     }
     output.parent.mkdir(parents=True, exist_ok=True)
-    output.write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    output.write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
     print(f"{len(features)} feições -> {output} ({round(max(xs)-min(xs))} × {round(max(zs)-min(zs))} m)")
+
+
+def normalize_frame(feature: dict, origin_lon: float, origin_lat: float, east_factor: float, north_factor: float) -> None:
+    """Troca o quadro desenhado pelo retângulo 16:9 alinhado aos eixos que o contém.
+
+    A dimensão curta cresce, centrada; nada do desenho original fica de fora. As
+    coordenadas desenhadas ficam em source_coordinates_m.
+    """
+    points = feature["coordinates_m"]
+    min_x = min(p[0] for p in points)
+    max_x = max(p[0] for p in points)
+    min_z = min(p[1] for p in points)
+    max_z = max(p[1] for p in points)
+    width, height = max_x - min_x, max_z - min_z
+    center_x, center_z = (min_x + max_x) / 2, (min_z + max_z) / 2
+    if width / height < FRAME_ASPECT:
+        width = height * FRAME_ASPECT
+    else:
+        height = width / FRAME_ASPECT
+    corners = [
+        (center_x - width / 2, center_z + height / 2),
+        (center_x + width / 2, center_z + height / 2),
+        (center_x + width / 2, center_z - height / 2),
+        (center_x - width / 2, center_z - height / 2),
+    ]
+    feature["source_coordinates_m"] = points
+    feature["coordinates_m"] = [[round(x, 3), round(z, 3)] for x, z in corners]
+    feature["coordinates_wgs84"] = [[origin_lon + x / east_factor, origin_lat - z / north_factor] for x, z in corners]
+    feature["aspect"] = "16:9"
 
 
 def main() -> None:

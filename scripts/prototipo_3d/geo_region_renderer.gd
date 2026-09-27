@@ -17,6 +17,10 @@ const RIVER_COLOR := Color("76b5b6")
 const ESTRADA_OCRE_TEXTURE := preload("res://assets/prototipo_3d/materiais/estrada_terra_ocre_v1.png")
 const CHAO_PRACA_TEXTURE := preload("res://assets/prototipo_3d/materiais/chao_praca_v1.png")
 const GRAMA_TERRA_MATA_TEXTURE := preload("res://assets/prototipo_3d/materiais/grama_terra_mata_v1.png")
+const Mar = preload("res://scripts/prototipo_3d/mar.gd")
+## Tinta da textura de grama/terra: com o sol batendo no chão (não mais só a luz
+## ambiente), a textura crua fica ocre; puxa de volta para o verde do Recôncavo.
+const TINTA_GRAMA := Color(0.74, 0.86, 0.6)
 const TREE_COLLISION_RADIUS := 28.0
 const TREE_COLLISION_POOL_SIZE := 24
 const TREE_COLLISION_INTERVAL := 0.25
@@ -30,6 +34,8 @@ var _projection: Dictionary = {}
 var _bounds := Rect2()
 var _map_frame := Rect2()
 var _background_kind := "land"
+## Bloco "bathymetry" do cenário: com ele, o mar ganha fundo real e água transparente.
+var _bathymetry: Dictionary = {}
 var _land := PackedVector2Array()
 var _forest := PackedVector2Array()
 var _kml_forest := PackedVector2Array()
@@ -40,6 +46,12 @@ var _rivers: Array[Dictionary] = []
 var _shore_access_routes: Array[Dictionary] = []
 var _point_positions: Array[Vector2] = []
 var _elevation_samples: Array[Dictionary] = []
+## Altura já calculada de cada vértice das malhas do terreno: vizinhos da subdivisão
+## repetem os mesmos pontos, e ground_height_at percorre todas as amostras a cada vez.
+var _alturas_vertices: Dictionary = {}
+## Retângulo que envolve a linha da costa: ponto mais longe que a margem pedida não
+## precisa medir a distância segmento a segmento.
+var _costa_limites := Rect2()
 var _open_areas: Array[PackedVector2Array] = []
 var _tree_trunks: Array[Dictionary] = []
 var _tree_collision_pool: Array[Dictionary] = []
@@ -94,6 +106,7 @@ func build_region(kml_json_path: String, scenario_json_path: String) -> void:
 	_projection = geographic.get("projection", {})
 	var bounds_data: Dictionary = scenario.get("bounds_m", geographic.get("bounds_m", {}))
 	_background_kind = String(scenario.get("background_kind", "land"))
+	_bathymetry = scenario.get("bathymetry", {})
 	_bounds = Rect2(
 		Vector2(float(bounds_data.get("min_x", 0.0)), float(bounds_data.get("min_z", 0.0))) / _meters_per_unit,
 		Vector2(
@@ -105,6 +118,7 @@ func build_region(kml_json_path: String, scenario_json_path: String) -> void:
 	_forest = _to_points(scenario.get("forest_polygon_m", []))
 	_village = _to_points(scenario.get("village_polygon_m", []))
 	_coast = _to_points(scenario.get("coastline_m", []))
+	_costa_limites = _points_bounds(_coast) if _coast.size() >= 2 else Rect2()
 	if _bounds.size.x <= 0.0 or _bounds.size.y <= 0.0 or _land.size() < 3:
 		push_error("A região não contém limites e polígono de terra válidos.")
 		return
@@ -159,7 +173,10 @@ func build_region(kml_json_path: String, scenario_json_path: String) -> void:
 	# deixar a textura parecer recortada após a interpolação das elevações.
 	if _forest.size() >= 3 and _forest != _land:
 		_add_polygon("Cobertura florestal", _forest, 0.012, FOREST_COLOR, false, mata_material)
-	_add_polygon("Área ocupada", _village, 0.018, VILLAGE_COLOR, false, mata_material)
+	# Vila e áreas do KML só existem em terra: sem o recorte, a vila avançava sobre
+	# o mar ao lado do píer como um gramado.
+	for parte in _on_land(_village):
+		_add_polygon("Área ocupada", parte, 0.018, VILLAGE_COLOR, false, mata_material)
 	for feature in _features:
 		if feature.get("kind", "") == "area":
 			var color := LAND_COLOR
@@ -170,7 +187,8 @@ func build_region(kml_json_path: String, scenario_json_path: String) -> void:
 			var area_material: Material = mata_material
 			if String(feature.get("name", "")) == "Praça":
 				area_material = _textured_material(CHAO_PRACA_TEXTURE, Color("f2e6c8"), 6.0)
-			_add_polygon(String(feature.get("name", "Área")), _to_points(feature.get("coordinates_m", [])), 0.027, color, false, area_material)
+			for parte in _on_land(_to_points(feature.get("coordinates_m", []))):
+				_add_polygon(String(feature.get("name", "Área")), parte, 0.027, color, false, area_material)
 	# Mantém a areia acima das sobreposições da Mata (offset 0.027). Sem essa
 	# margem, a textura de grama cobre trechos da praia apesar de a faixa e sua
 	# colisão já existirem na mesma linha costeira.
@@ -188,6 +206,24 @@ func build_region(kml_json_path: String, scenario_json_path: String) -> void:
 		_add_ribbon(road.name, road_path, road_width, 0.058, ROAD_COLOR, true, _textured_material(ESTRADA_OCRE_TEXTURE, tint))
 	_build_shore_access()
 	_build_forest(scenario.get("vegetation", {}))
+
+
+## Altura da superfície do mar com fundo real (dá para entrar andando); -INF sem ele.
+func water_level() -> float:
+	return SEA_SURFACE_Y if _background_kind == "sea" and not _bathymetry.is_empty() else -INF
+
+
+## Partes do polígono que ficam dentro da terra (sem mar de fundo, o polígono inteiro).
+func _on_land(points: PackedVector2Array) -> Array[PackedVector2Array]:
+	var partes: Array[PackedVector2Array] = []
+	if points.size() < 3:
+		return partes
+	if _background_kind != "sea" or _land.size() < 3:
+		partes.append(points)
+		return partes
+	for parte in Geometry2D.intersect_polygons(points, _land):
+		partes.append(parte)
+	return partes
 
 
 func get_map_bounds() -> Rect2:
@@ -227,8 +263,10 @@ func ground_height_at(position: Vector3) -> float:
 		return SEA_SURFACE_Y
 	# POIs espalhados nao formam um DEM costeiro confiavel. Aproxima a terra
 	# gradualmente do nivel da agua para evitar degraus e lacunas na praia.
-	var coast_distance := _distance_to_line(point, _coast)
 	var shore_width := _units(80.0, 18.0)
+	if not _costa_limites.grow(shore_width).has_point(point):
+		return sampled_height
+	var coast_distance := _distance_to_line(point, _coast)
 	var inland_weight := smoothstep(0.0, shore_width, coast_distance)
 	return lerpf(SEA_SURFACE_Y, sampled_height, inland_weight)
 
@@ -390,6 +428,7 @@ func _clear_region() -> void:
 	_shore_access_routes.clear()
 	_point_positions.clear()
 	_elevation_samples.clear()
+	_alturas_vertices.clear()
 	_open_areas.clear()
 	_tree_trunks.clear()
 	_tree_collision_pool.clear()
@@ -455,6 +494,7 @@ render_mode cull_disabled;
 
 uniform sampler2D terrain_texture : source_color, repeat_enable, filter_linear_mipmap_anisotropic;
 uniform float tile_size = 8.0;
+uniform vec3 tint : source_color = vec3(1.0);
 varying vec2 world_xz;
 
 void vertex() {
@@ -463,7 +503,7 @@ void vertex() {
 }
 
 void fragment() {
-	ALBEDO = texture(terrain_texture, world_xz / tile_size).rgb;
+	ALBEDO = texture(terrain_texture, world_xz / tile_size).rgb * tint;
 	ROUGHNESS = 0.94;
 }
 """
@@ -471,6 +511,7 @@ void fragment() {
 	material.shader = shader
 	material.set_shader_parameter("terrain_texture", texture)
 	material.set_shader_parameter("tile_size", maxf(tile_units, 0.1))
+	material.set_shader_parameter("tint", TINTA_GRAMA)
 	return material
 
 
@@ -488,6 +529,7 @@ uniform sampler2D road_texture : source_color, repeat_enable, filter_linear_mipm
 uniform float forest_tile_size = 12.0;
 uniform float road_fraction = 0.65;
 uniform vec4 road_tint : source_color = vec4(1.0);
+uniform vec3 forest_tint : source_color = vec3(1.0);
 varying vec2 shoulder_uv;
 varying vec2 world_xz;
 
@@ -518,7 +560,7 @@ void fragment() {
 		: (1.0 - shoulder_uv.x) / shoulder_span;
 	float road_u = (shoulder_uv.x - shoulder_span) / max(road_fraction, 0.001);
 	float road_v = shoulder_uv.y / max(road_fraction, 0.001);
-	vec3 forest = texture(forest_texture, world_xz / forest_tile_size).rgb;
+	vec3 forest = texture(forest_texture, world_xz / forest_tile_size).rgb * forest_tint;
 	vec3 road = texture(road_texture, vec2(road_u, road_v)).rgb * road_tint.rgb;
 	float organic_offset = (value_noise(world_xz * 0.28) - 0.5) * 0.28;
 	float blend_start = 0.39 + organic_offset;
@@ -531,6 +573,7 @@ void fragment() {
 	material.shader = shader
 	material.set_shader_parameter("forest_texture", GRAMA_TERRA_MATA_TEXTURE)
 	material.set_shader_parameter("forest_tile_size", 12.0)
+	material.set_shader_parameter("forest_tint", TINTA_GRAMA)
 	material.set_shader_parameter("road_texture", ESTRADA_OCRE_TEXTURE)
 	material.set_shader_parameter("road_fraction", clampf(road_ratio, 0.1, 0.9))
 	material.set_shader_parameter("road_tint", road_tint)
@@ -538,8 +581,11 @@ void fragment() {
 
 
 func _build_background() -> void:
-	var mesh := BoxMesh.new()
 	# O fundo ultrapassa a borda da região para a vista aérea não revelar um retângulo vazio.
+	if _background_kind == "sea" and not _bathymetry.is_empty():
+		Mar.montar(self, _bathymetry, SEA_SURFACE_Y, _meters_per_unit, _bounds.grow(4000.0), get_map_frame())
+		return
+	var mesh := BoxMesh.new()
 	mesh.size = Vector3(_bounds.size.x + 8000.0, 0.3, _bounds.size.y + 8000.0)
 	mesh.material = _material(SEA_COLOR, 0.36) if _background_kind == "sea" else _material(LAND_COLOR)
 	var center := _bounds.get_center()
@@ -601,7 +647,15 @@ func _add_draped_triangle(surface: SurfaceTool, a: Vector2, b: Vector2, c: Vecto
 			_add_draped_triangle(surface, a, b, middle, offset_y, depth + 1)
 			_add_draped_triangle(surface, middle, b, c, offset_y, depth + 1)
 		return
-	_add_up_triangle(surface, Vector3(a.x, ground_height_at(Vector3(a.x, 0, a.y)) + offset_y, a.y), Vector3(b.x, ground_height_at(Vector3(b.x, 0, b.y)) + offset_y, b.y), Vector3(c.x, ground_height_at(Vector3(c.x, 0, c.y)) + offset_y, c.y))
+	_add_up_triangle(surface, Vector3(a.x, _altura_vertice(a) + offset_y, a.y), Vector3(b.x, _altura_vertice(b) + offset_y, b.y), Vector3(c.x, _altura_vertice(c) + offset_y, c.y))
+
+
+func _altura_vertice(ponto: Vector2) -> float:
+	var altura: Variant = _alturas_vertices.get(ponto)
+	if altura == null:
+		altura = ground_height_at(Vector3(ponto.x, 0, ponto.y))
+		_alturas_vertices[ponto] = altura
+	return altura
 
 
 func _add_up_triangle(surface: SurfaceTool, a: Vector3, b: Vector3, c: Vector3) -> void:
@@ -610,7 +664,10 @@ func _add_up_triangle(surface: SurfaceTool, a: Vector3, b: Vector3, c: Vector3) 
 		b = c
 		c = swapped
 	var normal := (b - a).cross(c - a).normalized()
-	for vertex in [a, b, c]:
+	# a, c, b: horário visto de cima, a face da frente no Godot. Na ordem a, b, c o
+	# material sem descarte de faces via o verso, invertia a normal e o chão só
+	# recebia sol e lua por baixo.
+	for vertex in [a, c, b]:
 		surface.set_normal(normal)
 		surface.set_uv(Vector2(vertex.x, vertex.z) / 10.0)
 		surface.add_vertex(vertex)
@@ -626,10 +683,11 @@ func _add_up_triangle_uv(surface: SurfaceTool, a: Vector3, b: Vector3, c: Vector
 		uv_b = uv_c
 		uv_c = swapped_uv
 	var normal := (b - a).cross(c - a).normalized()
+	# a, c, b: face da frente para cima (ver _add_up_triangle).
 	for i in range(3):
 		surface.set_normal(normal)
-		surface.set_uv([uv_a, uv_b, uv_c][i])
-		surface.add_vertex([a, b, c][i])
+		surface.set_uv([uv_a, uv_c, uv_b][i])
+		surface.add_vertex([a, c, b][i])
 
 
 func _road_width(feature: Dictionary) -> float:
@@ -809,7 +867,7 @@ func _build_forest(configuration: Dictionary) -> void:
 			continue
 		if _inside_open_area(point):
 			continue
-		if _distance_to_line(point, _coast) < coast_clearing:
+		if _costa_limites.grow(coast_clearing).has_point(point) and _distance_to_line(point, _coast) < coast_clearing:
 			continue
 		if _near_route(point, clearing) or _near_interest(point, interest_clearing):
 			continue

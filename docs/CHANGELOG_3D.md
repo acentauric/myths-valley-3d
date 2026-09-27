@@ -11,6 +11,35 @@ marcos. Os textos curtos e a identificação exibidos no jogo ficam em
 `prototipo_3d/data/historico_3d.json`; ao registrar um novo marco ou build,
 atualize esse arquivo e este documento juntos.
 
+## Em desenvolvimento — 27/09/2026
+
+- **Mar de verdade, na maré cheia.** O mar deixou de ser uma caixa azul chapada:
+  fundo moldado pela carta náutica DHN 1108 (intermarés, plataforma rasa, talude e o
+  canal do Paraguaçu) e água transparente cuja cor sai da profundidade real — areia
+  esverdeada na beira, jade no raso, verde-petróleo no canal, como na foto aérea de
+  Bom Jesus. Capim marinho, cáusticas, ondulação leve e espuma fina na beira
+  (`mar.gd`, `assets/prototipo_3d/mar/`, `tools/mapas/gerar_batimetria.py`).
+- **Tela de carregamento na abertura** (`inicio.tscn`): o jogo mostra a própria tela
+  em ~60 ms, no lugar da tela do Godot; o splash do Godot virou fundo escuro.
+- **Montagem do vale ~3× mais rápida** (~24 s → ~8 s): a altura de cada vértice do
+  terreno é calculada uma vez e reaproveitada pelos triângulos vizinhos, e pontos
+  longe da costa pulam a medida até ela.
+- **O mundo é o quadro Mapa, em 16:9, no continente.** O importador do KML ajusta o
+  quadro desenhado ao 16:9 exato (3.614 × 2.033 m, a largura cresce, centrada); terreno,
+  costa, mata e limites terminam nele. Fora do quadro, a terra da carta náutica segue
+  como relevo distante — Bom Jesus não é ilha. Paredes invisíveis na borda.
+- **Entrar no mar andando.** O fundo tem colisão: o jogador afunda aos poucos, anda mais
+  devagar e para com a água no peito ("Daqui pra frente não dá pé") — na planície
+  rasa dá para andar ~600 m mar adentro (`tests/agua_rasa.gd`).
+- **Chão iluminado pelo sol.** Os triângulos do terreno estavam de costas para cima:
+  terra, praia e ruas só recebiam luz ambiente. Com a correção, a grama ganhou uma
+  tinta verde para compensar o tom ocre da textura sob o sol.
+- A vila e as áreas do KML são recortadas pela costa (a vila avançava sobre o mar ao
+  lado do píer como um gramado).
+- **Canoas de pescador** fundeadas no raso diante da vila (`canoas.gd`), canoa do
+  Tripo no estilo Tripo e casco procedural no outro, balançando de leve.
+- Preset de exportação Windows (`export_presets.cfg`).
+
 ## Build #5 — 26/09/2026 (tarde)
 
 - **Dois estilos visuais, nunca misturados.** AJUSTAR → Cenário e tempo escolhe

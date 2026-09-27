@@ -19,6 +19,10 @@ const JUMP_GRAVITY_DOWN := 25.0 * JUMP_SPEED_MULTIPLIER * JUMP_SPEED_MULTIPLIER
 const JUMP_BUFFER_TIME := 0.16
 const JUMP_COYOTE_TIME := 0.16
 const RUN_STOP_SPEED := 0.15
+## Água: o jogador entra andando no raso, mais devagar conforme ela sobe; com a água no
+## peito (fração da altura), não avança mais para o fundo.
+const AGUA_NO_PEITO := 0.7
+const VELOCIDADE_NA_AGUA := 0.45
 
 @export var model_scene: PackedScene
 @export var character_height: float = 1.78
@@ -66,6 +70,9 @@ var _jumping := false
 ## ou do píer) volta para cá, e não para o ponto de chegada.
 var _last_land := Vector3.INF
 var _knockback_remaining := 0.0
+## Último ponto em que a água não passava do peito: quem tenta ir mais fundo volta para cá.
+var _ultimo_raso := Vector3.INF
+var _avisou_fundo := false
 var _land_check := 0.0
 var _run_toggled := false
 var _ran_since_toggle := false
@@ -221,6 +228,9 @@ func _physics_process(delta: float) -> void:
 	if _run_toggled and direction.length_squared() > 0.01:
 		_ran_since_toggle = true
 	var speed: float = run_speed if is_running() else walk_speed
+	var profundidade := _profundidade()
+	if profundidade > 0.0:
+		speed *= lerpf(1.0, VELOCIDADE_NA_AGUA, clampf(profundidade / (character_height * AGUA_NO_PEITO), 0.0, 1.0))
 	if _knockback_remaining > 0.0:
 		# Empurrão (ex.: o coveiro): o impulso manda até o fim, sem controle do jogador.
 		_knockback_remaining -= delta
@@ -246,6 +256,7 @@ func _physics_process(delta: float) -> void:
 		velocity.y = -0.1
 	var distance_before := _distance_to_next_waypoint()
 	move_and_slide()
+	_limitar_profundidade()
 	if _run_toggled and _ran_since_toggle and direction.length_squared() <= 0.01 and Vector2(velocity.x, velocity.z).length_squared() <= RUN_STOP_SPEED * RUN_STOP_SPEED:
 		_run_toggled = false
 		_ran_since_toggle = false
@@ -379,6 +390,32 @@ func empurrar(impulso: Vector3, segundos: float = 0.45) -> void:
 	_knockback_remaining = segundos
 	if impulso.length_squared() > 0.01:
 		visual.rotation.y = atan2(-impulso.x, -impulso.z)
+
+
+## Quanto de água há acima dos pés (0 fora d'água ou sem mar com fundo).
+func _profundidade() -> float:
+	if _click_world == null or not _click_world.has_method("water_level"):
+		return 0.0
+	return maxf(_click_world.water_level() - global_position.y, 0.0)
+
+
+func _limitar_profundidade() -> void:
+	var profundidade := _profundidade()
+	if profundidade <= character_height * AGUA_NO_PEITO:
+		if is_on_floor():
+			_ultimo_raso = global_position
+		if profundidade <= 0.0:
+			_avisou_fundo = false
+		return
+	if not _ultimo_raso.is_finite():
+		return
+	_cancel_walk()
+	global_position = _ultimo_raso
+	velocity.x = 0.0
+	velocity.z = 0.0
+	if not _avisou_fundo:
+		_avisou_fundo = true
+		navigation_status.emit("Daqui pra frente não dá pé.")
 
 
 func _back_to_land() -> void:

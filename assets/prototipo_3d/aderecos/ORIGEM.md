@@ -33,3 +33,17 @@ antigos continuam no histórico do Git.
 Uso comercial: plano Max no momento da geração (ver `assets/CREDITOS.md`).
 
 <!-- lote-2026-09-26:fim -->
+
+## Canoa de pescador (27/09/2026)
+
+Texto → 3D (Modelo HD, H3.1, 55 créditos) + Retopologia Malha Smart (quads, alvo 2.000,
+40 créditos), exportada em GLB com textura 1K pelo script `tools/tripo/lote_studio.js`
+na aba logada do Studio. Original em `.assets-raw/tripo/aderecos/canoa_tripo.glb`.
+
+| Arquivo | O que é (prompt) | Projeto Tripo | Triângulos | Textura | MB |
+| --- | --- | --- | ---: | --- | ---: |
+| `canoa_tripo.glb` | Traditional Brazilian fishing canoe from the Reconcavo Baiano (canoa de pescador), long narrow carved wooden hull with pointed ends, weathered planks painted blue and white with a red stripe along the rim, two simple wooden thwart seats, a wooden paddle and a folded fishing net lying inside, empty boat, stylized hand-painted 3D game asset, 19th century Bahia, isolated object, no ground plane, no water, no text | `1823f0c6-b08c-4ff5-bac6-7d7294cf1992` | 3.864 | 1K | 2.6 |
+
+Usada por `scripts/prototipo_3d/canoas.gd`: sete canoas fundeadas no raso diante da vila
+(lâmina de 0,8 a 2,6 m), comprimento de 5,6 unidades, afundadas 0,32 para a quilha e o
+leme ficarem na água. No estilo procedural, o mesmo script monta um casco próprio.

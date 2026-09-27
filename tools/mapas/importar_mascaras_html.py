@@ -18,6 +18,9 @@ from importar_kml import PROJECT
 HTML = Path(__file__).resolve().parent / "MAPA_PONTOS_INTERESSE.html"
 REGION = PROJECT / "data/mapas/bom_jesus_dos_pobres.json"
 OUTPUT = PROJECT / "data/mapas/bom_jesus_dos_pobres_cenario.json"
+# Densidade da mata do cenário original (5.000 árvores em 3,38 km² de terra),
+# mantida quando a área de terra muda.
+ARVORES_POR_KM2 = 1479.0
 TOKEN = re.compile(r"[A-Za-z]|[-+]?(?:\d*\.\d+|\d+\.?)(?:[eE][-+]?\d+)?")
 
 # Transformação visual do HTML (51 graus) preservada para a conversão inversa.
@@ -142,6 +145,18 @@ def clip_polygon(points: list[tuple[float, float]], bounds: dict) -> list[tuple[
     return clipped
 
 
+def extend_to(points: list[tuple[float, float]], z_target: float) -> list[tuple[float, float]]:
+    """Prolonga a linha pelo fim, na direção do último trecho, até z_target."""
+    (x0, z0), (x1, z1) = points[-8], points[-1]
+    if (z_target - z1) * (z1 - z0) <= 0:
+        return points
+    return points + [(x1 + (x1 - x0) * (z_target - z1) / (z1 - z0), z_target)]
+
+
+def polygon_area(points: list[tuple[float, float]]) -> float:
+    return abs(sum(points[i][0] * points[i - 1][1] - points[i - 1][0] * points[i][1] for i in range(len(points)))) / 2
+
+
 def round_points(points: list[tuple[float, float]]) -> list[list[float]]:
     return [[round(x, 2), round(z, 2)] for x, z in points]
 
@@ -159,23 +174,34 @@ def convert(html_file: Path, region_file: Path, output: Path, margin: float) -> 
         "max_z": max(point[1] for point in physical_points),
     } if physical_points else region["bounds_m"]
     bounds = {key: round(value + (-margin if key.startswith("min") else margin), 2) for key, value in base_bounds.items()}
+    frame = next((feature for feature in region["features"] if feature["kind"] == "map_frame"), None)
+    if frame is not None:
+        # O quadro Mapa (16:9) é o mundo inteiro: terreno, mar e limites terminam nele.
+        frame_points = frame["coordinates_m"]
+        bounds = {
+            "min_x": round(min(point[0] for point in frame_points), 2),
+            "max_x": round(max(point[0] for point in frame_points), 2),
+            "min_z": round(min(point[1] for point in frame_points), 2),
+            "max_z": round(max(point[1] for point in frame_points), 2),
+        }
     projection = region["projection"]
     curves = {}
     for name in ("landShape", "coastline", "northForest", "villageShape"):
         curves[name] = [svg_to_meters(point, projection) for point in sample_path(extract_path(html, name))]
     land = curves["landShape"]
-    frame = next((feature for feature in region["features"] if feature["kind"] == "map_frame"), None)
+    coastline = curves["coastline"]
     if frame is not None:
-        # A costa segue como borda leste. Os cantos ocidentais do KML fecham
-        # o continente e retiram o mar que aparecia atrás da mata.
-        frame_points = frame["coordinates_m"]
-        west_x = min(point[0] for point in frame_points)
-        north_z = min(point[1] for point in frame_points)
-        south_z = max(point[1] for point in frame_points)
-        coast = curves["coastline"]
-        if coast[0][1] < coast[-1][1]:
-            coast = list(reversed(coast))
-        land = coast + [(west_x, north_z), (west_x, south_z)]
+        # Bom Jesus fica no continente: a costa é a borda leste da terra e os cantos
+        # ocidentais do quadro fecham o resto. A costa desenhada para antes das bordas
+        # norte e sul; ela segue na direção do último trecho até sair do quadro
+        # (a carta náutica mostra a costa continuando para o norte).
+        coast = coastline if coastline[0][1] > coastline[-1][1] else list(reversed(coastline))
+        coast = list(reversed(extend_to(list(reversed(coast)), bounds["max_z"] + 1.0)))
+        coast = extend_to(coast, bounds["min_z"] - 1.0)
+        coastline = coast
+        west_x = bounds["min_x"] - 1.0
+        land = coast + [(west_x, bounds["min_z"] - 1.0), (west_x, bounds["max_z"] + 1.0)]
+    land_polygon = clip_polygon(land, bounds)
     result = {
         "schema_version": 1,
         "region_id": region["region_id"],
@@ -183,17 +209,17 @@ def convert(html_file: Path, region_file: Path, output: Path, margin: float) -> 
         "units": "meters",
         "background_kind": "sea",
         "bounds_m": bounds,
-        "land_polygon_m": round_points(clip_polygon(land, bounds)),
-        "coastline_m": round_points(curves["coastline"]),
+        "land_polygon_m": round_points(land_polygon),
+        "coastline_m": round_points(coastline),
         # O continente ampliado a oeste também é mata. A camada de mata
         # cobre toda a terra; vila, fazenda, praça, estradas e costa são
         # desenhadas por cima, enquanto o amostrador exclui essas clareiras.
-        "forest_polygon_m": round_points(clip_polygon(land, bounds)),
+        "forest_polygon_m": round_points(land_polygon),
         "village_polygon_m": round_points(clip_polygon(curves["villageShape"], bounds)),
-        "vegetation": {"seed": 1887, "tree_count": 5000, "clearing_m": 8.0},
+        "vegetation": {"seed": 1887, "tree_count": round(polygon_area(land_polygon) / 1e6 * ARVORES_POR_KM2), "clearing_m": 8.0},
     }
     output.parent.mkdir(parents=True, exist_ok=True)
-    output.write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    output.write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
     print(f"Máscaras curadas -> {output} ({len(result['land_polygon_m'])} vértices de terreno)")
 
 

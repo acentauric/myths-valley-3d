@@ -54,6 +54,7 @@ const PECAS := {
 	"fogueira": {"tripo": "aderecos/fogueira_tripo.glb", "largura": 1.6},
 	"mandioca_canteiro": {"tripo": "aderecos/mandioca_canteiro_tripo.glb", "largura": 3.5},
 	"pedras": {"tripo": "aderecos/pedras_tripo.glb", "largura": 3.0, "caixa": true},
+	"canoa": {"tripo": "aderecos/canoa_tripo.glb", "largura": 5.6},
 	# Personagens
 	"pedro": {"tripo": "personagens/pedro_tripo.glb", "altura": 1.75},
 	"benedito": {"tripo": "personagens/benedito_tripo.glb", "altura": 1.68},

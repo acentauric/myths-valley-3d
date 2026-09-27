@@ -10,6 +10,7 @@ const WOOD := Color("735139")
 const LEAVES := Color("487557")
 const GeoRegionRenderer = preload("res://scripts/prototipo_3d/geo_region_renderer.gd")
 const LuzesEpoca = preload("res://scripts/prototipo_3d/luzes_epoca.gd")
+const Canoas = preload("res://scripts/prototipo_3d/canoas.gd")
 const MAP_CATALOG := "res://data/mapas/regioes.json"
 const CASA_TAIPA_CAL_TEXTURE := preload("res://assets/prototipo_3d/materiais/cal_taipa_envelhecida_v1.png")
 const TELHA_COLONIAL_TEXTURE := preload("res://assets/prototipo_3d/materiais/telha_colonial_envelhecida_v1.png")
@@ -106,6 +107,10 @@ func is_walkable_point(world_position: Vector3) -> bool:
 
 
 ## Terra firme do mapa (fora do mar, passarelas e píer).
+func water_level() -> float:
+	return _region.water_level() if _region else -INF
+
+
 func is_on_land(world_position: Vector3) -> bool:
 	return _region != null and _region._is_on_land(world_position)
 
@@ -353,6 +358,7 @@ func _construir_vila() -> void:
 	_build_details()
 	_build_landmark_details()
 	_build_pecas()
+	_build_canoas()
 	_build_luzes_epoca()
 	if COMPARAR_MANGUEIRAS:
 		_bancada_mangueiras(Vector3(-2, 0, -30))
@@ -744,6 +750,16 @@ func _igreja_procedural(church: Vector3) -> void:
 	_box(Vector3(2.3, 8.2, 2.3), church + Vector3(0, 4.2, 6.0), Color("e5dcc8"), true)
 	_box(Vector3(0.22, 2.0, 0.22), church + Vector3(0, 9.2, 6.0), WOOD)
 	_box(Vector3(1.4, 0.2, 0.22), church + Vector3(0, 9.45, 6.0), WOOD)
+
+
+## Canoas fundeadas no raso diante da vila (canoas.gd), só com o mar de fundo real.
+func _build_canoas() -> void:
+	if not is_finite(water_level()) or not ancoras.has("PierPiso"):
+		return
+	var canoas := Canoas.new()
+	canoas.name = "Canoas"
+	add_child(canoas)
+	canoas.montar(_region._coast, ancoras["PierPiso"], ancoras["PierDirecao"], water_level(), estilo_tripo())
 
 
 func _build_pecas() -> void:
