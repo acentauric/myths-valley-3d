@@ -1,6 +1,6 @@
 extends Control
 ## Ícones vetoriais dos botões de canto do HUD, no mesmo traço do som e do relógio:
-## "casa" (HOME), "camera" (anel dourado quando travada), "velocidade" (setas conforme
+## "casa" (HOME), "fechar" (×), "externo" (link que sai do jogo), "camera" (anel dourado quando travada), "velocidade" (setas conforme
 ## a Passagem do tempo, 0–3) e "estilo" (cubo para Tripo, chaves para Procedural).
 
 var tipo := "casa"
@@ -20,6 +20,15 @@ func _draw() -> void:
 	var tinta := Color(0.93, 0.96, 0.92)
 	var ouro := Color("e2c47f")
 	match tipo:
+		"externo":
+			# Link externo: caixa aberta no canto e seta saindo para fora.
+			var ouro_link := ouro if not ativo else Color("f5e3b3")
+			draw_polyline(PackedVector2Array([Vector2(11, 5), Vector2(5, 5), Vector2(5, 19), Vector2(19, 19), Vector2(19, 13)]), ouro_link, 1.8, true)
+			draw_line(Vector2(11, 13), Vector2(20, 4), ouro_link, 1.8, true)
+			draw_polyline(PackedVector2Array([Vector2(14, 4), Vector2(20, 4), Vector2(20, 10)]), ouro_link, 1.8, true)
+		"fechar":
+			draw_line(Vector2(6, 6), Vector2(18, 18), tinta, 2.0, true)
+			draw_line(Vector2(18, 6), Vector2(6, 18), tinta, 2.0, true)
 		"casa":
 			draw_polyline(PackedVector2Array([Vector2(3, 12), Vector2(12, 4), Vector2(21, 12)]), tinta, 1.8, true)
 			draw_polyline(PackedVector2Array([Vector2(6, 10), Vector2(6, 20), Vector2(18, 20), Vector2(18, 10)]), tinta, 1.8, true)

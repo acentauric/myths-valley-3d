@@ -4,11 +4,23 @@ const AudioToggleIcon = preload("res://scripts/prototipo_3d/audio_toggle_icon.gd
 const ClockIcon = preload("res://scripts/prototipo_3d/clock_icon.gd")
 const IdiomaMenu = preload("res://scripts/prototipo_3d/idioma_menu.gd")
 const BotaoCanto = preload("res://scripts/prototipo_3d/botao_canto.gd")
+const AjudaMenu = preload("res://scripts/prototipo_3d/ajuda_menu.gd")
+const HudIcon = preload("res://scripts/prototipo_3d/hud_icon.gd")
 const VISUAL_PREFERENCES := "user://preferencias_visuais.cfg"
 const FLYOVER_SECONDS := 36.0
 const HISTORY_SIZE := Vector2(640, 600)
-const OPTIONS_SIZE := Vector2(860, 600)
-const OPTIONS_TABS := ["Geral", "Sons do vale", "Cenário e tempo"]
+## Altura de cada campo de AJUSTAR e do controle dentro dele (seleção ou volume).
+const FIELD_HEIGHT := 66.0
+## Altura comum do cabeçalho dos modais (título + botão do canto).
+const MODAL_HEADER_HEIGHT := 44.0
+## Equipe exibida em CONHECER.
+const COLLABORATORS := ["Ramon Santos", "Renato Leal", "Matheus Ché", "Pedro Almeida"]
+const FIELD_CONTROL_HEIGHT := 36.0
+## Fonte do menu (AJUSTAR → Cenário): padrão do Godot ou as duas fontes do 2D.
+const MENU_FONTS := ["", "res://assets/fonts/Almendra-Bold.ttf", "res://assets/fonts/miva.ttf"]
+const MENU_FONT_LABELS := ["Padrão", "Almendra", "Miva"]
+const OPTIONS_SIZE := Vector2(860, 620)
+const OPTIONS_TABS := ["Geral", "Sons do vale", "Cenário"]
 const HORAS_INICIAIS := [4.5, 7.0, 12.0, 15.0, 17.5, 20.5]
 const ROTULOS_HORAS := ["Madrugada (4h30)", "Manhã (7h)", "Meio-dia", "Tarde (15h)", "Entardecer (17h30)", "Noite (20h30)"]
 ## Trocar o estilo visual reconstrói a cena do menu; ao voltar, reabre a página de ajustes.
@@ -23,6 +35,8 @@ var panel: PanelContainer
 var content: VBoxContainer
 ## Onde _label/_button/_slider/_choice inserem controles; volta a `content` a cada _clear().
 var ui_parent: Container
+## Modal de ajuda aberto pelo botão "?" de um campo de AJUSTAR (null quando fechado).
+var help_modal: Control
 var version_link: Button
 var caption: Label
 ## Quanto falta do trecho da travessia na tela (1 → 0), para o jogador saber quando passa.
@@ -35,13 +49,17 @@ var history_entries: Array = []
 var version_text := ""
 var history_index := 0
 var history_open := false
+## Setas de página do histórico, para as teclas ← → animarem o botão correspondente.
+var history_buttons: Array[Button] = []
 var map_open := false
 var line_index := -1
 var elapsed := 0.0
 var line_time := 0.0
 var starting := false
 var flyover_active := true
+var menu_font_option := 0
 var clock_running := true
+var clock_hint: Label
 
 func _ready() -> void:
 	IdiomaMenu.aplicar_menu()
@@ -138,6 +156,18 @@ func _load_visual_preference() -> void:
 	var preferences := ConfigFile.new()
 	if preferences.load(VISUAL_PREFERENCES) == OK:
 		flyover_active = bool(preferences.get_value("menu", "sobrevoo", true))
+		menu_font_option = clampi(int(preferences.get_value("menu", "fonte", 0)), 0, MENU_FONTS.size() - 1)
+
+func _set_menu_font(option: int) -> void:
+	menu_font_option = option
+	var preferences := ConfigFile.new()
+	preferences.load(VISUAL_PREFERENCES)
+	preferences.set_value("menu", "fonte", option)
+	if preferences.save(VISUAL_PREFERENCES) != OK:
+		push_warning("Não foi possível salvar a fonte do menu.")
+	panel.theme = _menu_theme()
+	_options(2)
+
 
 func _set_flyover(option: int) -> void:
 	flyover_active = option == 1
@@ -149,13 +179,15 @@ func _set_flyover(option: int) -> void:
 
 func _unhandled_key_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo:
-		if line_index >= 0:
+		if help_modal and event.keycode == KEY_ESCAPE:
+			_close_help()
+		elif line_index >= 0:
 			if event.keycode == KEY_ESCAPE:
 				_start_game()
 			elif event.keycode in [KEY_ENTER, KEY_SPACE, KEY_E]:
 				_next_line()
 		elif history_open and event.keycode in [KEY_LEFT, KEY_RIGHT]:
-			_change_history(1 if event.keycode == KEY_RIGHT else -1)
+			_press_history_arrow(1 if event.keycode == KEY_RIGHT else 0)
 		elif event.keycode == KEY_ESCAPE:
 			_home()
 
@@ -189,6 +221,7 @@ func _limit_map_target() -> void:
 	map_target.z = clampf(map_target.z, min_z, max_z) if min_z <= max_z else frame.get_center().y
 
 func _clear() -> void:
+	_close_help()
 	history_open = false
 	map_open = false
 	camera.environment = null
@@ -226,6 +259,8 @@ func _place_modal(modal_size: Vector2) -> void:
 ## BotaoNegativo (SAIR) usa o terracota das telhas do vale para marcar ação destrutiva.
 func _menu_theme() -> Theme:
 	var theme := Theme.new()
+	if menu_font_option > 0:
+		theme.default_font = load(MENU_FONTS[menu_font_option]) as Font
 	_button_styles(theme, "Button", {
 		"normal": [Color(0.17, 0.22, 0.19), Color(0.71, 0.60, 0.38, 0.85), 2],
 		"hover": [Color(0.24, 0.30, 0.25), Color("e2c47f"), 2],
@@ -249,6 +284,30 @@ func _menu_theme() -> Theme:
 		"disabled": [Color(0.14, 0.10, 0.09, 0.7), Color(0.80, 0.45, 0.33, 0.25), 2],
 		"focus": [Color(0, 0, 0, 0), Color("f4c2ad"), 3],
 	})
+	# Botão de ícone dos cabeçalhos (casa, ×): borda fina, foco discreto.
+	theme.set_type_variation("BotaoIcone", "Button")
+	_button_styles(theme, "BotaoIcone", {
+		"normal": [Color(0.17, 0.22, 0.19), Color(0.71, 0.60, 0.38, 0.6), 1],
+		"hover": [Color(0.24, 0.30, 0.25), Color("e2c47f"), 1],
+		"pressed": [Color(0.33, 0.28, 0.16), Color("e2c47f"), 1],
+		"hover_pressed": [Color(0.38, 0.32, 0.18), Color("e2c47f"), 1],
+		"focus": [Color(0, 0, 0, 0), Color(0.89, 0.77, 0.50, 0.9), 1],
+	})
+	theme.set_type_variation("BotaoAjuda", "Button")
+	_button_styles(theme, "BotaoAjuda", {
+		"normal": [Color(0.17, 0.22, 0.19), Color(0.71, 0.60, 0.38, 0.85), 1],
+		"hover": [Color(0.33, 0.28, 0.16), Color("e2c47f"), 1],
+		"pressed": [Color(0.38, 0.32, 0.18), Color("e2c47f"), 1],
+		"focus": [Color(0, 0, 0, 0), Color("f5e3b3"), 2],
+	})
+	for state in ["normal", "hover", "pressed", "focus"]:
+		var round_box := theme.get_stylebox(state, "BotaoAjuda") as StyleBoxFlat
+		round_box.set_corner_radius_all(12)
+		round_box.content_margin_left = 0
+		round_box.content_margin_right = 0
+		round_box.content_margin_top = 0
+		round_box.content_margin_bottom = 0
+	theme.set_color("font_color", "BotaoAjuda", Color("e2c47f"))
 	theme.set_color("font_color", "BotaoNegativo", Color("f2d3c6"))
 	theme.set_color("font_hover_color", "BotaoNegativo", Color.WHITE)
 	theme.set_color("font_focus_color", "BotaoNegativo", Color.WHITE)
@@ -306,15 +365,19 @@ func _create_clock(layer: CanvasLayer) -> void:
 	clock_icon.position = Vector2(6, 6)
 	clock_icon.size = Vector2(28, 28)
 	clock_button.button_pressed = clock_running
-	var refresh := func() -> void:
-		hint_label.text = "%s · %s" % [Dia.texto_hora(), tr("Pausar") if clock_running else tr("Retomar")]
-	refresh.call()
-	Dia.hora_mudou.connect(func(_hora: float) -> void: refresh.call())
+	clock_hint = hint_label
+	_refresh_clock_hint()
+	# Método (não lambda): o Godot desconecta sozinho quando a cena do menu é liberada.
+	Dia.hora_mudou.connect(_refresh_clock_hint)
 	clock_button.toggled.connect(func(active: bool) -> void:
 		clock_running = active
 		Dia.pausado = not active
 		clock_icon.set_running(active)
-		refresh.call())
+		_refresh_clock_hint())
+
+
+func _refresh_clock_hint(_hora: float = 0.0) -> void:
+	clock_hint.text = "%s · %s" % [Dia.texto_hora(), tr("Pausar") if clock_running else tr("Retomar")]
 
 func _create_version_link() -> void:
 	var spacer := Control.new()
@@ -465,6 +528,24 @@ func _open_history() -> void:
 	history_index = 0
 	_render_history()
 
+## Tecla ← / →: o botão da seta aparece pressionado por um instante (como no clique)
+## e só então a página muda.
+func _press_history_arrow(index: int) -> void:
+	if index >= history_buttons.size():
+		return
+	var button := history_buttons[index]
+	if not is_instance_valid(button) or button.disabled or button.has_meta("pressionando"):
+		return
+	button.set_meta("pressionando", true)
+	button.add_theme_stylebox_override("normal", button.get_theme_stylebox("pressed"))
+	button.add_theme_stylebox_override("hover", button.get_theme_stylebox("pressed"))
+	button.add_theme_color_override("font_color", button.get_theme_color("font_pressed_color"))
+	Audio.efeito("ui_hover")
+	await get_tree().create_timer(0.12).timeout
+	if is_instance_valid(button) and history_open:
+		_change_history(1 if index == 1 else -1)
+
+
 func _change_history(step: int) -> void:
 	history_index = clampi(history_index + step, 0, history_entries.size() - 1)
 	_render_history()
@@ -476,7 +557,8 @@ func _render_history() -> void:
 	_place_modal(HISTORY_SIZE)
 	history_open = true
 	var entry: Dictionary = history_entries[history_index]
-	_label("Histórico", 30)
+	# Sem foco em botão: as teclas ← → ficam livres para trocar de página.
+	_modal_header("Histórico", _home, "O que mudou no vale a cada versão.")
 	_label("%s · %s" % [entry.get("data", ""), IdiomaMenu.campo(entry, "estado")], 16)
 	_label(str(IdiomaMenu.campo(entry, "titulo")), 22)
 	var scroll := ScrollContainer.new()
@@ -504,6 +586,7 @@ func _render_history() -> void:
 	previous.disabled = history_index == 0
 	previous.pressed.connect(func(): _change_history(-1))
 	navigation.add_child(previous)
+	history_buttons = [previous]
 	var position := Label.new()
 	position.text = "%d / %d" % [history_index + 1, history_entries.size()]
 	position.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -517,7 +600,7 @@ func _render_history() -> void:
 	next.disabled = history_index == history_entries.size() - 1
 	next.pressed.connect(func(): _change_history(1))
 	navigation.add_child(next)
-	_button("VOLTAR", _home)
+	history_buttons.append(next)
 
 func _confirm_exit() -> void:
 	_clear()
@@ -532,7 +615,7 @@ func _options(tab: int = 0) -> void:
 	_clear()
 	_place_modal(OPTIONS_SIZE)
 	content.add_theme_constant_override("separation", 10)
-	_label("Ajustes", 30)
+	_modal_header("Ajustes", _home, "Idioma, tempo, sons e aparência do vale.")
 	var tabs := HBoxContainer.new()
 	tabs.add_theme_constant_override("separation", 8)
 	content.add_child(tabs)
@@ -564,62 +647,25 @@ func _options(tab: int = 0) -> void:
 		2: _options_mundo(left, right)
 		_: _options_geral(left, right)
 	ui_parent = content
-	_button("VOLTAR", _home)
 	active_tab.grab_focus()
 
 
 func _options_column(columns: HBoxContainer) -> VBoxContainer:
 	var column := VBoxContainer.new()
 	column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	column.add_theme_constant_override("separation", 6)
+	column.add_theme_constant_override("separation", 8)
 	columns.add_child(column)
 	return column
 
 
+## Geral: à esquerda o que vale para todo o jogo (idioma e relógio do vale), à direita
+## os volumes principais.
 func _options_geral(left: VBoxContainer, right: VBoxContainer) -> void:
-	ui_parent = right
-	_label("Volume", 20)
-	_slider("Música", Audio.volume_musica, Audio.definir_volume_musica)
-	_slider("Narração", Audio.volume_narracao, Audio.definir_volume_narracao)
-	_slider("Falas dos personagens", Audio.volume_vozes, Audio.definir_volume_vozes)
-	_slider("Efeitos e passos", Audio.volume_efeitos, Audio.definir_volume_efeitos)
-	_slider("Ambiente", Audio.volume_ambiente, Audio.definir_volume_ambiente)
 	ui_parent = left
-	_label("Menu", 20)
+	_section("Jogo")
 	_choice("Idioma", IdiomaMenu.ROTULOS, IdiomaMenu.indice(), func(i: int) -> void:
 		IdiomaMenu.definir(i)
 		_options(0))
-	_choice("Cenário do menu", ["Parado", "Sobrevoo"], 1 if flyover_active else 0, _set_flyover)
-	_choice("Trilha do menu", ["Introdução", "Menu I", "Menu II", "Recôncavo"], Audio.musica_menu_opcao - 1, func(i): Audio.definir_musica_menu(i + 1))
-	_choice("Som dos botões", ["Original", "Madeira"], Audio.efeitos_menu_opcao - 1, func(i):
-		Audio.definir_efeitos_menu(i + 1)
-		Audio.testar_efeito_menu())
-
-
-## Camadas do ambiente: cada som do vale com volume próprio, sobre o volume geral de Ambiente.
-func _options_sons(left: VBoxContainer, right: VBoxContainer) -> void:
-	var camadas: Array = Audio.CAMADAS_AMBIENTE
-	ui_parent = left
-	_label("Sons do vale", 20)
-	for indice in range(camadas.size()):
-		if indice == 3:
-			ui_parent = right
-			_label(" ", 20)
-		var camada: String = camadas[indice]
-		_slider(String(Audio.ROTULOS_CAMADAS[camada]), float(Audio.volume_camadas[camada]), func(v: float) -> void: Audio.definir_volume_camada(camada, v))
-	_choice("Paisagem sonora do menu", ["Silêncio", "Mar", "Aves", "Mar e aves"], Audio.ambiente_menu_opcao, Audio.definir_ambiente_menu)
-	_label("Cada som tem volume próprio, aplicado sobre o volume geral de Ambiente (aba Geral).", 14)
-
-
-## Mundo: estilo visual (linha mestra Tripo ou tudo procedural), passagem do tempo
-## e hora em que o vale começa.
-func _options_mundo(left: VBoxContainer, right: VBoxContainer) -> void:
-	ui_parent = left
-	_label("Cenário", 20)
-	_choice("Estilo visual", ["Tripo (modelos gerados)", "Procedural (por código)"], 0 if Estilo.tripo() else 1, _set_estilo)
-	_label("O vale inteiro é construído num só estilo — modelos do Tripo Studio ou tudo por código, até o personagem.", 14)
-	ui_parent = right
-	_label("Tempo", 20)
 	_choice("Passagem do tempo", Dia.ROTULOS_VELOCIDADE, Dia.velocidade, Dia.definir_velocidade)
 	var hora_indice := 1
 	for indice in range(HORAS_INICIAIS.size()):
@@ -627,7 +673,40 @@ func _options_mundo(left: VBoxContainer, right: VBoxContainer) -> void:
 			hora_indice = indice
 	_choice("Hora inicial", ROTULOS_HORAS, hora_indice, func(i: int) -> void: Dia.definir_hora_inicial(float(HORAS_INICIAIS[i])))
 	_choice("Pausar o relógio no jogo", ["Permitido", "Bloqueado"], 0 if Dia.pausa_no_jogo else 1, func(i: int) -> void: Dia.definir_pausa_no_jogo(i == 0))
-	_label("O menu abre sempre no começo do dia e o relógio do canto mostra o dia correndo nesta velocidade.", 14)
+	ui_parent = right
+	_section("Volume")
+	_slider("Música", Audio.volume_musica, Audio.definir_volume_musica)
+	_slider("Narração", Audio.volume_narracao, Audio.definir_volume_narracao)
+	_slider("Falas dos personagens", Audio.volume_vozes, Audio.definir_volume_vozes)
+	_slider("Efeitos e passos", Audio.volume_efeitos, Audio.definir_volume_efeitos)
+	_slider("Ambiente", Audio.volume_ambiente, Audio.definir_volume_ambiente)
+
+
+## Sons: à esquerda as escolhas sonoras do menu, à direita o volume de cada camada do
+## ambiente (aplicado sobre o volume geral de Ambiente).
+func _options_sons(left: VBoxContainer, right: VBoxContainer) -> void:
+	ui_parent = left
+	_section("Menu")
+	_choice("Trilha do menu", ["Introdução", "Menu I", "Menu II", "Recôncavo"], Audio.musica_menu_opcao - 1, func(i): Audio.definir_musica_menu(i + 1))
+	_choice("Som dos botões", ["Original", "Madeira"], Audio.efeitos_menu_opcao - 1, func(i):
+		Audio.definir_efeitos_menu(i + 1)
+		Audio.testar_efeito_menu())
+	_choice("Paisagem sonora do menu", ["Silêncio", "Mar", "Aves", "Mar e aves"], Audio.ambiente_menu_opcao, Audio.definir_ambiente_menu)
+	ui_parent = right
+	_section("Sons do vale")
+	for camada: String in Audio.CAMADAS_AMBIENTE:
+		_slider(String(Audio.ROTULOS_CAMADAS[camada]), float(Audio.volume_camadas[camada]), func(v: float) -> void: Audio.definir_volume_camada(camada, v))
+
+
+## Cenário: estilo visual do vale (Tripo ou procedural) e o fundo do menu.
+func _options_mundo(left: VBoxContainer, right: VBoxContainer) -> void:
+	ui_parent = left
+	_section("Vale")
+	_choice("Estilo visual", ["Tripo (modelos gerados)", "Procedural (por código)"], 0 if Estilo.tripo() else 1, _set_estilo)
+	ui_parent = right
+	_section("Menu")
+	_choice("Cenário do menu", ["Parado", "Sobrevoo"], 1 if flyover_active else 0, _set_flyover)
+	_choice("Fonte do menu", MENU_FONT_LABELS, menu_font_option, _set_menu_font)
 
 
 func _set_estilo(option: int) -> void:
@@ -639,46 +718,212 @@ func _set_estilo(option: int) -> void:
 	get_tree().reload_current_scene()
 
 func _slider(title: String, value: float, callback: Callable) -> void:
-	var label := _label("%s · %d%%" % [tr(title), roundi(value * 100)], 16)
+	var previous := _begin_field()
+	var label := _field_label(title, "%s · %d%%" % [tr(title), roundi(value * 100)])
 	var slider := HSlider.new()
 	slider.min_value = 0
 	slider.max_value = 1
 	slider.step = 0.01
 	slider.value = value
-	slider.custom_minimum_size.y = 22
+	# Mesma altura do OptionButton: a trilha fica centrada e as linhas das colunas batem.
+	slider.custom_minimum_size.y = FIELD_CONTROL_HEIGHT
 	slider.value_changed.connect(func(v):
 		callback.call(v)
 		label.text = "%s · %d%%" % [tr(title), roundi(v * 100)])
 	ui_parent.add_child(slider)
+	ui_parent = previous
 
 func _choice(title: String, entries: Array, selected: int, callback: Callable) -> void:
-	_label(title, 16)
+	var previous := _begin_field()
+	_field_label(title, title)
 	var option := OptionButton.new()
+	option.custom_minimum_size.y = FIELD_CONTROL_HEIGHT
 	for entry in entries:
 		option.add_item(entry)
 	option.select(selected)
 	option.item_selected.connect(callback)
 	ui_parent.add_child(option)
+	ui_parent = previous
+
+
+## Campo de AJUSTAR (rótulo + controle) num bloco de altura fixa: seleções e volumes
+## ocupam a mesma altura, então os rótulos das duas colunas ficam na mesma linha.
+func _begin_field() -> Container:
+	var previous := ui_parent
+	var field := VBoxContainer.new()
+	field.add_theme_constant_override("separation", 4)
+	field.custom_minimum_size.y = FIELD_HEIGHT
+	previous.add_child(field)
+	ui_parent = field
+	return previous
+
+
+## Título de seção de uma coluna de AJUSTAR, com respiro antes dos campos.
+func _section(title: String) -> void:
+	var label := _label(title, 20)
+	label.add_theme_color_override("font_color", Color("e2c47f"))
+	var gap := Control.new()
+	gap.custom_minimum_size.y = 6
+	ui_parent.add_child(gap)
+
+## Rótulo de um campo de AJUSTAR com o botão "?" à esquerda, que abre a ajuda do campo.
+func _field_label(title: String, text: String) -> Label:
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 8)
+	ui_parent.add_child(row)
+	if AjudaMenu.tem(title):
+		var help := Button.new()
+		help.text = "?"
+		help.theme_type_variation = &"BotaoAjuda"
+		help.custom_minimum_size = Vector2(24, 24)
+		help.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		help.add_theme_font_size_override("font_size", 13)
+		help.tooltip_text = ""
+		help.pressed.connect(func() -> void:
+			Audio.efeito("ui_confirmar")
+			_open_help(title))
+		row.add_child(help)
+	var previous := ui_parent
+	ui_parent = row
+	var label := _label(text, 16)
+	label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	ui_parent = previous
+	return label
+
+
+## Modal de ajuda sobre o painel: escurece o fundo, mostra título e texto do campo;
+## fecha com FECHAR, Esc ou clique fora.
+func _open_help(title: String) -> void:
+	_close_help()
+	var layer := panel.get_parent()
+	help_modal = Control.new()
+	help_modal.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	help_modal.theme = panel.theme
+	layer.add_child(help_modal)
+	var shade := ColorRect.new()
+	shade.color = Color(0, 0, 0, 0.55)
+	shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	shade.gui_input.connect(func(event: InputEvent) -> void:
+		if event is InputEventMouseButton and event.pressed:
+			_close_help())
+	help_modal.add_child(shade)
+	var box := PanelContainer.new()
+	box.add_theme_stylebox_override("panel", panel.get_theme_stylebox("panel"))
+	box.custom_minimum_size = Vector2(520, 0)
+	box.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
+	box.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	box.grow_vertical = Control.GROW_DIRECTION_BOTH
+	help_modal.add_child(box)
+	var column := VBoxContainer.new()
+	column.add_theme_constant_override("separation", 14)
+	box.add_child(column)
+	var previous := ui_parent
+	ui_parent = column
+	var close := _modal_header(title, func() -> void:
+		Audio.efeito("ui_voltar")
+		_close_help(), "Como funciona este ajuste.", "fechar")
+	ui_parent = previous
+	var body := Label.new()
+	body.text = AjudaMenu.texto(title, IdiomaMenu.indice())
+	body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	body.custom_minimum_size.x = 464
+	body.add_theme_font_size_override("font_size", 17)
+	column.add_child(body)
+	close.grab_focus()
+
+
+## Cabeçalho padrão dos modais: título e subtítulo descritivo à esquerda, botão com ícone no canto direito
+## (casa volta ao menu inicial; × fecha a janela) e um divisor dourado antes do corpo.
+## Devolve o botão do canto, para receber o foco.
+func _modal_header(title: String, action: Callable, subtitle: String = "", icon: String = "casa") -> Button:
+	var row := HBoxContainer.new()
+	row.custom_minimum_size.y = MODAL_HEADER_HEIGHT
+	ui_parent.add_child(row)
+	var titles := VBoxContainer.new()
+	titles.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	titles.alignment = BoxContainer.ALIGNMENT_CENTER
+	titles.add_theme_constant_override("separation", 0)
+	row.add_child(titles)
+	var heading := Label.new()
+	heading.text = title
+	heading.add_theme_font_size_override("font_size", 28)
+	titles.add_child(heading)
+	if not subtitle.is_empty():
+		var description := Label.new()
+		description.text = subtitle
+		description.add_theme_font_size_override("font_size", 14)
+		description.add_theme_color_override("font_color", Color("c9b98f"))
+		titles.add_child(description)
+	var button := Button.new()
+	button.custom_minimum_size = Vector2(MODAL_HEADER_HEIGHT, MODAL_HEADER_HEIGHT)
+	button.theme_type_variation = &"BotaoIcone"
+	button.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	var glyph = HudIcon.new().configurar(icon)
+	glyph.position = Vector2(10, 10)
+	glyph.size = Vector2(24, 24)
+	glyph.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	button.add_child(glyph)
+	button.mouse_entered.connect(func(): Audio.efeito("ui_hover"))
+	button.pressed.connect(func() -> void:
+		Audio.efeito("ui_confirmar")
+		action.call())
+	row.add_child(button)
+	var divider := ColorRect.new()
+	divider.color = Color(0.71, 0.60, 0.38, 0.55)
+	divider.custom_minimum_size.y = 1
+	ui_parent.add_child(divider)
+	return button
+
+
+func _close_help() -> void:
+	if help_modal:
+		help_modal.queue_free()
+		help_modal = null
+
 
 func _credits() -> void:
 	_clear()
 	_place_modal(HISTORY_SIZE)
-	_label("Por trás do vale", 30)
+	var home := _modal_header("Por trás do vale", _home, "Quem faz o vale e de onde ele vem.")
 	_label("O vale nasceu do encontro entre paisagens, memórias e histórias brasileiras. Entre casas, caminhos e mata, cada lugar convida a uma descoberta.", 20)
 	_label("Música, narração e efeitos acompanham a travessia e dão voz aos lugares e personagens. Esta é uma primeira visita a esse mundo. Obrigado por caminhar conosco enquanto a jornada cresce.", 20)
 	_label("Myths’ Valley é uma criação da equipe da Alpha Centauri, um spin-off do projeto Batalha de Mitos. Você pode saber mais acessando:", 20)
+	# Ícone de link externo antes do endereço: avisa que o clique abre o navegador.
+	var open_site := func() -> void: OS.shell_open("https://www.batalhademitos.com.br")
+	var link_row := HBoxContainer.new()
+	link_row.add_theme_constant_override("separation", 8)
+	content.add_child(link_row)
+	var external := Button.new()
+	external.flat = true
+	external.focus_mode = Control.FOCUS_NONE
+	external.custom_minimum_size = Vector2(28, 28)
+	external.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	external.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	var external_icon = HudIcon.new().configurar("externo")
+	external_icon.position = Vector2(2, 2)
+	external_icon.size = Vector2(24, 24)
+	external_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	external.add_child(external_icon)
+	external.pressed.connect(open_site)
+	link_row.add_child(external)
 	var site := LinkButton.new()
 	site.text = "batalhademitos.com.br"
-	site.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	site.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	site.add_theme_font_size_override("font_size", 20)
 	site.add_theme_color_override("font_color", Color("e2c47f"))
 	site.add_theme_color_override("font_hover_color", Color("f5e3b3"))
-	site.pressed.connect(func(): OS.shell_open("https://www.batalhademitos.com.br"))
-	content.add_child(site)
-	var spacer := Control.new()
-	spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	content.add_child(spacer)
-	_button("VOLTAR", _home).grab_focus()
+	site.pressed.connect(open_site)
+	link_row.add_child(site)
+	for hoverable: Control in [external, site]:
+		hoverable.mouse_entered.connect(func() -> void: external_icon.definir(true))
+		hoverable.mouse_exited.connect(func() -> void: external_icon.definir(false))
+	var team_gap := Control.new()
+	team_gap.custom_minimum_size.y = 6
+	content.add_child(team_gap)
+	var team_title := _label("Colaboradores", 16)
+	team_title.add_theme_color_override("font_color", Color("e2c47f"))
+	_label(" · ".join(COLLABORATORS), 18)
+	home.grab_focus()
 
 func _intro() -> void:
 	_clear()

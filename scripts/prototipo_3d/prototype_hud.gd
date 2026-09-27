@@ -69,11 +69,9 @@ func _ready() -> void:
 
 	_house_info_panel = _panel(Color(0.055, 0.085, 0.075, 0.92))
 	_root.add_child(_house_info_panel)
-	_house_info_panel.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
-	_house_info_panel.offset_left = -448
-	_house_info_panel.offset_right = -108
-	_house_info_panel.offset_top = 32
-	_house_info_panel.offset_bottom = 187
+	# Abaixo do bloco do canto superior esquerdo; _fit_heading acompanha a altura dele.
+	_house_info_panel.position = Vector2(18, 162)
+	_house_info_panel.size = Vector2(HEADING_WIDTH, 155)
 	_house_info_panel.visible = false
 	var house_heading := _label("INFORMAÇÕES DA CASA", 13, GOLD)
 	_house_info_panel.add_child(house_heading)
@@ -82,11 +80,11 @@ func _ready() -> void:
 	_house_info_label = _label("", 15, INK)
 	_house_info_panel.add_child(_house_info_label)
 	_house_info_label.position = Vector2(16, 39)
-	_house_info_label.size = Vector2(309, 108)
+	_house_info_label.size = Vector2(HEADING_WIDTH - 32, 108)
 	var close_house_info := Button.new()
 	close_house_info.text = "×"
 	close_house_info.tooltip_text = "Fechar informações da casa"
-	close_house_info.position = Vector2(299, 7)
+	close_house_info.position = Vector2(HEADING_WIDTH - 41, 7)
 	close_house_info.size = Vector2(32, 28)
 	close_house_info.mouse_filter = Control.MOUSE_FILTER_STOP
 	_house_info_panel.add_child(close_house_info)
@@ -253,6 +251,8 @@ func _fit_heading() -> void:
 	var height := 101.0 + lines * _objective_label.get_line_height() + 14.0
 	_objective_label.size.y = lines * _objective_label.get_line_height()
 	_heading.size.y = height - 18.0
+	if is_instance_valid(_house_info_panel):
+		_house_info_panel.position.y = height + 12.0
 
 
 ## Coluna de botões redondos: som e relógio na mesma posição do menu, depois HOME,
@@ -283,7 +283,7 @@ func _create_corner_buttons() -> void:
 		clock_icon.set_running(not Dia.pausado)
 		_update_clock_hint())
 	(clock[0] as Button).mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND if Dia.pausa_no_jogo else Control.CURSOR_ARROW
-	Dia.hora_mudou.connect(func(_hora: float) -> void: _update_clock_hint())
+	Dia.hora_mudou.connect(_update_clock_hint.unbind(1))
 
 	top += BotaoCanto.ESPACO
 	var home: Array = BotaoCanto.criar(_root, top, HudIcon.new().configurar("casa"))
