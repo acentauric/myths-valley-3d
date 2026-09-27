@@ -51,7 +51,9 @@ func _run() -> void:
 	var bounds: AABB = player.get("model_bounds")
 	_check(absf(bounds.size.y * model.scale.y - 1.78) < 0.03, "altura normalizada em 1,78 m")
 	_check(absf(model.position.y + bounds.position.y * model.scale.y) < 0.03, "pés alinhados à origem visual")
-	_check(player.is_on_floor() and absf(player.global_position.y) < 0.12, "personagem apoiado no chão")
+	# O terreno tem relevo desde o mapa geográfico: o chão é o do terreno, não y = 0.
+	var ground: Vector3 = game.world.call("ground_position", player.global_position)
+	_check(player.is_on_floor() and absf(player.global_position.y - ground.y) < 0.12, "personagem apoiado no chão")
 
 	var directions := {"mv_forward": Vector3.FORWARD, "mv_back": Vector3.BACK, "mv_left": Vector3.LEFT, "mv_right": Vector3.RIGHT}
 	for action: String in directions:
@@ -83,14 +85,25 @@ func _run() -> void:
 	animator.call("update_motion", 1.0, 0.0)
 	_check(player.call("get_current_animation") == &"walk", "movimento interrompe gesto e retoma locomoção")
 
+	# Casa real do mapa: começa ao sul dela e anda para o norte (mv_forward = -Z com a
+	# câmera em yaw 0); a colisão deve parar o jogador antes do centro da casa.
 	player.call("reset_position")
-	player.global_position = Vector3(10, 0.05, -1)
+	var houses: Array[Node] = get_nodes_in_group("interactive_house")
+	var house: Area3D = houses[0] if not houses.is_empty() else null
+	var house_origin: Vector3 = house.global_position if house else Vector3.ZERO
+	var house_bounds: Vector3 = house.get_meta("house_bounds", Vector3(6, 3, 6)) if house else Vector3(6, 3, 6)
+	var approach := maxf(house_bounds.x, house_bounds.z) * 0.5 + 4.0
+	var start: Vector3 = game.world.call("ground_position", house_origin + Vector3(0, 0, approach), 0.05)
+	player.global_position = start
 	player.velocity = Vector3.ZERO
+	player.set("_yaw", 0.0)
+	player.call("_apply_camera")
 	Input.action_press("mv_forward")
 	await _frames(160)
 	Input.action_release("mv_forward")
-	_check(player.global_position.z > -5.65 and player.global_position.z < -4.0, "colisão impede atravessar casa")
-	player.global_position = Vector3(10, 0.05, -4.2)
+	var stopped := player.global_position
+	_check(house != null and stopped.z > house_origin.z and stopped.z < start.z - 1.0, "colisão impede atravessar casa")
+	player.global_position = stopped
 	player.velocity = Vector3.ZERO
 	player.set("_yaw", PI)
 	player.call("_apply_camera")
@@ -122,8 +135,8 @@ func _run() -> void:
 		print("LANDMARK: ", landmark["name"], " player=", player.global_position,
 			" distance=", player.global_position.distance_to(landmark["position"]),
 			" visited=", visited.keys())
-		_check(visited.has(landmark["name"]), "destino reconhecido: " + str(landmark["name"]))
-	_check(game.get("_visited").size() == 3, "três destinos do passeio reconhecidos")
+		_check(visited.has(landmark["id"]), "destino reconhecido: " + str(landmark["name"]))
+	_check(game.get("_visited").size() == game.world.landmarks.size(), "todos os destinos do passeio reconhecidos")
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	print("SMOKE_RESULT: ", "FAIL" if failed else "PASS")
 	quit(1 if failed else 0)

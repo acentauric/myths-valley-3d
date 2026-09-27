@@ -77,6 +77,7 @@ func _ready() -> void:
 	var data = JSON.parse_string(FileAccess.get_file_as_string("res://data/dialogos/pedro.json"))
 	if data is Dictionary:
 		dialog_data = data
+		lines = IdiomaMenu.campo(dialog_data, "travessia", [])
 	var history_data = JSON.parse_string(FileAccess.get_file_as_string("res://data/historico_3d.json"))
 	if history_data is Dictionary:
 		history_entries = history_data.get("entradas", [])

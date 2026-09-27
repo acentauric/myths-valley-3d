@@ -27,7 +27,8 @@ func _run() -> void:
 		elif properties.get("name") == "Restaurante":
 			restaurant = house
 	assert(offshore != null and restaurant != null)
-	assert(not world.get_house_destination(offshore, player.global_position).is_finite())
+	# Desde a revisão de 26/09/2026 do KML, a Casa da estrada fica em terra firme: tem destino a pé.
+	assert(world.get_house_destination(offshore, player.global_position).is_finite())
 	world.set_hovered_house(restaurant)
 	var label: Label3D = restaurant.get_meta("house_label")
 	assert(label.visible and label.text.contains("Clique para ver propriedades"))

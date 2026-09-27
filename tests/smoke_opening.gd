@@ -20,7 +20,8 @@ func _run() -> void:
 				count += 1
 	opening._options()
 	await process_frame
-	assert(opening.content.get_child_count() > 10)
+	# Ajustes agora têm cabeçalho, abas e colunas: conta os controles dentro delas.
+	assert(opening.content.find_children("*", "OptionButton", true, false).size() + opening.content.find_children("*", "HSlider", true, false).size() >= 9)
 	await _capture("opcoes")
 	opening._credits()
 	await process_frame

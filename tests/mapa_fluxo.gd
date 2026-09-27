@@ -13,9 +13,12 @@ func _run() -> void:
 	_assert(opening.version_link != null and opening.version_link.visible, "versão clicável")
 	var audio = root.get_node("Audio")
 	var mute: Button
+	# Botão de som do canto: o que tem o ícone de alto-falante (AudioToggleIcon).
 	for button in opening.find_children("*", "Button", true, false):
-		if button.tooltip_text in ["Ativar som", "Desativar som"]:
-			mute = button
+		for child in button.get_children():
+			if child.get_script() == opening.AudioToggleIcon:
+				mute = button
+		if mute != null:
 			break
 	_assert(mute != null, "ícone de áudio")
 	var sound_initial: bool = audio.som_ativo
@@ -50,8 +53,9 @@ func _run() -> void:
 
 	opening._options()
 	await _frames(2)
-	_assert(_count_controls(opening.content, "HSlider") == 3, "ajustes de volume")
-	_assert(_count_controls(opening.content, "OptionButton") == 4, "seletores de áudio e cenário")
+	# Aba Geral: cinco volumes à direita; idioma, tempo, hora inicial e pausa à esquerda.
+	_assert(_count_controls(opening.content, "HSlider") == 5, "ajustes de volume")
+	_assert(_count_controls(opening.content, "OptionButton") == 4, "seletores de jogo e tempo")
 	await _capture("ajustes")
 	opening._home()
 	opening._credits()
@@ -84,7 +88,8 @@ func _run() -> void:
 	var world: Node3D = game.get_node("Cenario")
 	var region: Node3D = world.get_node("bom_jesus_dos_pobres")
 	await _physics_frames(30)
-	_assert(player.is_on_floor() and absf(player.global_position.y) < 0.2, "personagem apoiado no terreno")
+	var ground: Vector3 = world.call("ground_position", player.global_position)
+	_assert(player.is_on_floor() and absf(player.global_position.y - ground.y) < 0.2, "personagem apoiado no terreno")
 	await _capture("jogo")
 	var start_position: Vector3 = player.global_position
 	player.set_captured(true)
@@ -93,7 +98,7 @@ func _run() -> void:
 	Input.action_release("mv_forward")
 	print("MAPA_WALK mode=", Input.mouse_mode, " start=", start_position, " end=", player.global_position, " floor=", player.is_on_floor())
 	_assert(player.global_position.distance_to(start_position) > 3.0, "caminhada")
-	_assert(player.is_on_floor() and player.global_position.y > -0.2, "caminhada sem queda")
+	_assert(player.is_on_floor() and _above_ground(world, player), "caminhada sem queda")
 	Input.action_press("mv_run")
 	Input.action_press("mv_right")
 	var run_start: Vector3 = player.global_position
@@ -101,7 +106,7 @@ func _run() -> void:
 	Input.action_release("mv_right")
 	Input.action_release("mv_run")
 	_assert(player.global_position.distance_to(run_start) > 5.0, "corrida")
-	_assert(player.is_on_floor() and player.global_position.y > -0.2, "corrida sem queda")
+	_assert(player.is_on_floor() and _above_ground(world, player), "corrida sem queda")
 	player.set_captured(false)
 	player.reset_position()
 	await _physics_frames(12)
@@ -154,6 +159,12 @@ func _run() -> void:
 	quit()
 
 
+## O terreno tem relevo: "sem queda" é estar sobre o chão do terreno, não acima de y = 0.
+func _above_ground(world: Node3D, player: CharacterBody3D) -> bool:
+	var ground: Vector3 = world.call("ground_position", player.global_position)
+	return player.global_position.y > ground.y - 0.2
+
+
 func _floor_hit(game: Node3D, point: Vector3, player: CharacterBody3D) -> Dictionary:
 	var ray := PhysicsRayQueryParameters3D.create(point + Vector3.UP * 30.0, point + Vector3.DOWN * 30.0)
 	ray.exclude = [player.get_rid()]
@@ -177,11 +188,7 @@ func _closest_point_on_road(points: PackedVector2Array, point: Vector2) -> Vecto
 
 
 func _count_controls(node: Node, type_name: String) -> int:
-	var count := 0
-	for child in node.get_children():
-		if child.is_class(type_name):
-			count += 1
-	return count
+	return node.find_children("*", type_name, true, false).size()
 
 
 func _has_button(node: Node, label: String) -> bool:
