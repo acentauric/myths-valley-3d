@@ -34,6 +34,7 @@ var _ultima_saudacao_ms := -1
 var _balao_tempo := 0.0
 var _bob := 0.0
 var _velocidade_atual := 0.0
+var _proxima_fala := 0
 
 
 func configurar(d: Dictionary, anc: Dictionary, alvo_jogador: Node3D, mundo: Node3D = null) -> void:
@@ -86,6 +87,8 @@ func _ready() -> void:
 	var saudacao := String(dados.get("saudacao", ""))
 	if saudacao != "" and ResourceLoader.exists(PASTA_VOZES + saudacao + ".mp3"):
 		voz.stream = load(PASTA_VOZES + saudacao + ".mp3")
+	# Começa numa fala qualquer das (até) três, para dois encontros não abrirem igual.
+	_proxima_fala = randi() % maxi(1, (dados.get("falas", []) as Array).size())
 	_aplicar_volume()
 	if Audio.has_signal("volumes_alterados"):
 		Audio.volumes_alterados.connect(_aplicar_volume)
@@ -187,11 +190,19 @@ func _atualizar_interacao(delta: float) -> void:
 		saudar()
 
 
-## Cumprimenta o jogador: balão com a fala e voz do ElevenLabs por proximidade.
+## Cumprimenta o jogador: balão com a fala e voz do ElevenLabs por proximidade. Quem
+## tem "falas" (até três) alterna entre elas a cada encontro; sem elas, usa "fala".
 func saudar() -> void:
 	_ultima_saudacao_ms = Time.get_ticks_msec()
 	var texto := String(dados.get("fala", ""))
-	mostrar_balao(texto, 7.0)
+	var falas: Array = dados.get("falas", [])
+	if not falas.is_empty():
+		var fala: Dictionary = falas[_proxima_fala % falas.size()]
+		_proxima_fala += 1
+		texto = String(fala.get("texto", ""))
+		var caminho := PASTA_VOZES + String(fala.get("audio", "")) + ".mp3"
+		voz.stream = load(caminho) if ResourceLoader.exists(caminho) else null
+	mostrar_balao(texto, maxf(5.0, voz.stream.get_length() + 1.5) if voz.stream != null else 7.0)
 	if voz.stream != null:
 		voz.stop()
 		voz.play()

@@ -14,8 +14,6 @@
       "id": "benedito",
       "nome": "Seu Benedito",
       "altura": 1.68,
-      "saudacao": "benedito_saudacao",
-      "fala": "Benedito. Benedito de Assis, mas aqui todo mundo diz só Seu Benedito.",
       "gesto_saudacao": 1,
       "postos": {
         "manha": [
@@ -59,14 +57,33 @@
           ]
         ]
       },
-      "gesto_tripo": 2
+      "gesto_tripo": 2,
+      "voz": {
+        "id": "zoe2cQFqDDW4DteHDEWI",
+        "nome": "Manoel Lopes",
+        "modelo": "eleven_v3"
+      },
+      "falas": [
+        {
+          "texto": "Ah, o moço da capital. Pode me chamar de Benedito, que aqui todo mundo chama assim.",
+          "audio": "benedito_fala_1"
+        },
+        {
+          "texto": "Quarenta e duas safras nessa chapada, meu filho. A terra cansa, e a gente também.",
+          "audio": "benedito_fala_2",
+          "tts": "[sighs] Quarenta e duas safras nessa chapada, meu filho. A terra cansa, e a gente também."
+        },
+        {
+          "texto": "Meu avô cortava pau do outro lado do rio. Um dia parou de ir. Nunca disse por quê.",
+          "audio": "benedito_fala_3",
+          "tts": "Meu avô cortava pau do outro lado do rio. [pause] Um dia parou de ir. Nunca disse por quê."
+        }
+      ]
     },
     {
       "id": "zefa",
       "nome": "Dona Zefa",
       "altura": 1.58,
-      "saudacao": "zefa_saudacao",
-      "fala": "Chegou o da capital. Tá todo mundo sabendo, não se assuste. Zefa. Eu benzo quebranto e faço chá pra quem tem febre.",
       "gesto_saudacao": 0,
       "postos": {
         "manha": [
@@ -110,14 +127,32 @@
           ]
         ]
       },
-      "gesto_tripo": 0
+      "gesto_tripo": 0,
+      "voz": {
+        "id": "FrCDCQwye0euHmliGxP9",
+        "nome": "Edna",
+        "modelo": "eleven_v3"
+      },
+      "falas": [
+        {
+          "texto": "Chegou o da capital, né? O arraial todo já sabe. Se a febre pegar, é só vir aqui.",
+          "audio": "zefa_fala_1",
+          "tts": "[warmly] Chegou o da capital, né? O arraial todo já sabe. Se a febre pegar, é só vir aqui."
+        },
+        {
+          "texto": "Esse chão era da minha mãe. Vender, eu não vendo. Mas prosa, eu dou.",
+          "audio": "zefa_fala_2"
+        },
+        {
+          "texto": "Arruda, alecrim e um pouco de fé. O resto, meu filho, quem cura é Deus.",
+          "audio": "zefa_fala_3"
+        }
+      ]
     },
     {
       "id": "cosme",
       "nome": "Cosme",
       "altura": 1.5,
-      "saudacao": "cosme_saudacao",
-      "fala": "Cosme. Neto da Dona Zefa. O que ela não aguenta mais fazer, eu faço. Se precisar de braço, me chama.",
       "gesto_saudacao": 0,
       "postos": {
         "manha": [
@@ -161,14 +196,32 @@
           ]
         ]
       },
-      "gesto_tripo": 0
+      "gesto_tripo": 0,
+      "voz": {
+        "id": "NQmLEqxcRTkWYIYZSYod",
+        "nome": "Matheus (Energetic)",
+        "modelo": "eleven_v3"
+      },
+      "falas": [
+        {
+          "texto": "Opa! Sou neto da Dona Zefa. Precisando de braço, é só chamar.",
+          "audio": "cosme_fala_1"
+        },
+        {
+          "texto": "Vó diz que Salvador engole a gente. Eu digo que ainda vou ver com meus olhos.",
+          "audio": "cosme_fala_2",
+          "tts": "[laughs] Vó diz que Salvador engole a gente. Eu digo que ainda vou ver com meus olhos."
+        },
+        {
+          "texto": "Pego na enxada desde menino. Mão calejada não mente, não.",
+          "audio": "cosme_fala_3"
+        }
+      ]
     },
     {
       "id": "tonho",
       "nome": "Tonho",
       "altura": 1.72,
-      "saudacao": "tonho_saudacao",
-      "fala": "Opa. Tonho. Eu puxo rede aqui no pontal desde os onze. Passa aqui de tarde, que a gente conversa com a rede no colo.",
       "gesto_saudacao": 5,
       "postos": {
         "manha": [
@@ -212,14 +265,32 @@
           ]
         ]
       },
-      "gesto_tripo": 1
+      "gesto_tripo": 1,
+      "voz": {
+        "id": "xWdpADtEio43ew1zGxUQ",
+        "nome": "Matheus Santos",
+        "modelo": "eleven_v3"
+      },
+      "falas": [
+        {
+          "texto": "Opa, tudo certo? Passa aqui de tarde, que a gente conversa com a rede no colo.",
+          "audio": "tonho_fala_1"
+        },
+        {
+          "texto": "Tô devendo no armazém, todo mundo sabe. Mas mãe ficou boa, e isso não tem preço.",
+          "audio": "tonho_fala_2"
+        },
+        {
+          "texto": "Vi uma luz parada no mato, de madrugada. Na altura do peito. Vaga-lume não era.",
+          "audio": "tonho_fala_3",
+          "tts": "[whispers] Vi uma luz parada no mato, de madrugada. Na altura do peito. Vaga-lume não era."
+        }
+      ]
     },
     {
       "id": "filo",
       "nome": "Dona Filó",
       "altura": 1.6,
-      "saudacao": "filo_saudacao",
-      "fala": "Chega mais, meu filho. Filó. Mãe do Tonho. Sento aqui na porta porque daqui eu vejo a estrada.",
       "gesto_saudacao": 0,
       "postos": {
         "manha": [
@@ -263,14 +334,33 @@
           ]
         ]
       },
-      "gesto_tripo": 0
+      "gesto_tripo": 0,
+      "voz": {
+        "id": "fs3nd19KF2GO2hLTzkBm",
+        "nome": "Lucinda",
+        "modelo": "eleven_v3"
+      },
+      "falas": [
+        {
+          "texto": "Chega mais, meu filho. Daqui da porta eu vejo quem vem e quem vai pela estrada.",
+          "audio": "filo_fala_1",
+          "tts": "[warmly] Chega mais, meu filho. Daqui da porta eu vejo quem vem e quem vai pela estrada."
+        },
+        {
+          "texto": "O Tonho acha que a dívida valeu a pena. Eu acho que não. A gente briga por isso toda semana.",
+          "audio": "filo_fala_2",
+          "tts": "[sighs] O Tonho acha que a dívida valeu a pena. Eu acho que não. A gente briga por isso toda semana."
+        },
+        {
+          "texto": "Na minha idade a gente não corre mais atrás de nada. Espera, que a estrada traz.",
+          "audio": "filo_fala_3"
+        }
+      ]
     },
     {
       "id": "candinha",
       "nome": "Dona Candinha",
       "altura": 1.62,
-      "saudacao": "candinha_saudacao",
-      "fala": "Candinha. Vendo garapa nessa praça desde antes de o senhor nascer. É aqui que se sabe das coisas.",
       "gesto_saudacao": 5,
       "postos": {
         "manha": [
@@ -314,14 +404,32 @@
           ]
         ]
       },
-      "gesto_tripo": 0
+      "gesto_tripo": 0,
+      "voz": {
+        "id": "CS2gH5fPqUCmkVNpHsy4",
+        "nome": "Raquel",
+        "modelo": "eleven_v3"
+      },
+      "falas": [
+        {
+          "texto": "Garapa geladinha, moço? Vendo nessa praça desde antes de o senhor nascer.",
+          "audio": "candinha_fala_1"
+        },
+        {
+          "texto": "Quer saber das coisas do arraial? Senta aqui, que tudo passa por esta praça.",
+          "audio": "candinha_fala_2"
+        },
+        {
+          "texto": "Dizem que chegou convite da fazenda do outro lado do rio. Sem assinatura... sei não.",
+          "audio": "candinha_fala_3",
+          "tts": "[whispers] Dizem que chegou convite da fazenda do outro lado do rio. Sem assinatura... sei não."
+        }
+      ]
     },
     {
       "id": "damiao",
       "nome": "Damião",
       "altura": 1.74,
-      "saudacao": "damiao_saudacao",
-      "fala": "Bom dia. Damião. Sou o zelador daqui. Quem sobe aqui, sobe por alguém. Fique o tempo que quiser.",
       "gesto_saudacao": 6,
       "postos": {
         "manha": [
@@ -365,7 +473,26 @@
           ]
         ]
       },
-      "gesto_tripo": 2
+      "gesto_tripo": 2,
+      "voz": {
+        "id": "oArP4WehPe3qjqvCwHNo",
+        "nome": "Matheus (Clear)",
+        "modelo": "eleven_v3"
+      },
+      "falas": [
+        {
+          "texto": "Sou o zelador daqui. Quem sobe o morro, sobe por alguém. Fique à vontade.",
+          "audio": "damiao_fala_1"
+        },
+        {
+          "texto": "O intendente me deu um papel com meu nome e mais nada. Nem foice, nem enxada.",
+          "audio": "damiao_fala_2"
+        },
+        {
+          "texto": "Mato de cemitério só sai na foice. E quem limpa não leva nada pra casa.",
+          "audio": "damiao_fala_3"
+        }
+      ]
     }
   ]
 }

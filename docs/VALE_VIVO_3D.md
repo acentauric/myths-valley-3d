@@ -72,13 +72,19 @@ um uma âncora do cenário (`world_builder.ancoras`: Praça, Igreja, Bar,
 Restaurante, Pier, Cemitério, Roçado, Poço, Casa de taipa, Casa de Carro
 Quebrado, Casa da estrada…) mais um deslocamento. `npc.gd` (`MoradorNPC`)
 caminha entre os postos, olha para quem chega e, a 3,4 unidades, cumprimenta
-uma vez a cada 45 s: balão com a primeira linha da apresentação de
-`data/dialogos/aldeoes.json` e a **voz** correspondente em
-`assets/audio/vozes/<id>_saudacao.mp3` (ElevenLabs, vozes pt-BR: Weverton para
-Pedro, Borges para Benedito, Katiuscia para Zefa, Matheus para Cosme, Matheus
-Santos para Tonho, Ana Alice para Filó, Ana Dias para Candinha, Matheus Clear
-para Damião). O texto pesado fica no balão e no HUD; o áudio é a saudação e, no
-Damião, as três broncas do cemitério (`damiao_bronca_1..3.mp3`).
+uma vez a cada 45 s. Cada morador tem até **três falas** (`falas` em
+`npcs_3d.json`) e alterna entre elas a cada encontro, começando numa ao acaso;
+o balão mostra o `texto` e a voz lê o `tts` (o mesmo texto com marcações de
+interpretação do `eleven_v3`, como `[sighs]` e `[whispers]`). Os áudios ficam em
+`assets/audio/vozes/<id>_fala_<n>.mp3` e saem de
+`tools/elevenlabs/gerar-falas-moradores.ps1`. Uma voz por pessoa: Manoel Lopes
+(Benedito), Edna (Zefa), Matheus Energetic (Cosme), Matheus Santos (Tonho),
+Lucinda (Filó), Raquel (Candinha) e Matheus Clear (Damião, também nas três
+broncas do cemitério, `damiao_bronca_1..3.mp3`); o Pedro segue com Weverton.
+
+O balão (`balao_fala.gd`) escolhe a cada quadro entre cinco lugares em volta da
+cabeça de quem fala e fica no que menos cobre quem fala, o jogador e os painéis
+do HUD, com a ponta sempre para a cabeça.
 
 ## Cemitério
 

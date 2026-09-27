@@ -70,6 +70,8 @@ var _notice_panel: Panel
 var _objective_label: Label
 var _heading: Panel
 var _control_mode_label: Label
+var _controls_panel: Panel
+var _help_icon	# hud_icon.gd
 var _camera_lock_button: Button
 var _clock_hint: Label
 var _house_info_panel: Panel
@@ -130,43 +132,44 @@ func _ready() -> void:
 	_house_info_panel.add_child(close_house_info)
 	close_house_info.pressed.connect(func(): house_info_close_requested.emit())
 
-	var controls := _panel(Color(0.055, 0.085, 0.075, 0.88))
-	_root.add_child(controls)
-	controls.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
-	controls.offset_left = 24
-	controls.offset_right = -24
-	controls.offset_top = -91
-	controls.offset_bottom = -23
-	var primary := _label(TeclasMovimento.rotulo() + " mover  ·  Shift: corrida (parar desliga)  ·  Direito: andar  ·  Duplo direito: correr  ·  Esquerdo na casa: dados", 14, INK)
-	controls.add_child(primary)
-	primary.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
-	primary.offset_left = 18
-	primary.offset_right = -18
-	primary.offset_top = 10
-	primary.offset_bottom = 33
-	primary.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_control_mode_label = _label("", 12, MUTED)
-	controls.add_child(_control_mode_label)
-	_control_mode_label.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
-	_control_mode_label.offset_top = -29
-	_control_mode_label.offset_bottom = -7
-	_control_mode_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	# Controles: painel à esquerda, embaixo, como o das casas; começa oculto e abre
+	# pelo "?" da coluna do canto.
+	_controls_panel = _panel(Color(0.055, 0.085, 0.075, 0.92))
+	_root.add_child(_controls_panel)
+	_controls_panel.visible = false
+	var controls_heading := _label("CONTROLES", 13, GOLD)
+	_controls_panel.add_child(controls_heading)
+	controls_heading.position = Vector2(16, 10)
+	controls_heading.size = Vector2(270, 24)
+	_control_mode_label = _label("", 14, INK)
+	_control_mode_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_controls_panel.add_child(_control_mode_label)
+	_control_mode_label.position = Vector2(16, 38)
+	_control_mode_label.size = Vector2(HEADING_WIDTH - 32, 0)
+	var close_controls := Button.new()
+	close_controls.text = "×"
+	close_controls.tooltip_text = "Fechar controles"
+	close_controls.position = Vector2(HEADING_WIDTH - 41, 7)
+	close_controls.size = Vector2(32, 28)
+	close_controls.focus_mode = Control.FOCUS_NONE
+	_controls_panel.add_child(close_controls)
+	close_controls.pressed.connect(func(): set_controls_open(false))
 
 	_notice_panel = _panel(Color(0.055, 0.085, 0.075, 0.82))
 	_root.add_child(_notice_panel)
 	_notice_panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER_BOTTOM)
 	_notice_panel.offset_left = -285
 	_notice_panel.offset_right = 285
-	_notice_panel.offset_top = -136
-	_notice_panel.offset_bottom = -103
+	_notice_panel.offset_top = -64
+	_notice_panel.offset_bottom = -31
 	_notice_panel.visible = not _notice.is_empty()
 	_notice_label = _label(_notice, 14, GOLD)
 	_root.add_child(_notice_label)
 	_notice_label.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
 	_notice_label.offset_left = 30
 	_notice_label.offset_right = -30
-	_notice_label.offset_top = -132
-	_notice_label.offset_bottom = -103
+	_notice_label.offset_top = -60
+	_notice_label.offset_bottom = -31
 	_notice_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 
 	# Relógio do vale: só a hora e o período do dia.
@@ -225,7 +228,7 @@ func set_notice(value: String) -> void:
 func show_house_info(value: String, heading: String = "INFORMAÇÕES DA CASA") -> void:
 	_house_info_heading.text = heading
 	_house_info_label.text = value
-	var text_height := maxi(1, _house_info_label.get_line_count()) * _house_info_label.get_line_height()
+	var text_height := _text_height(_house_info_label)
 	_house_info_label.size.y = text_height
 	_house_info_panel.size.y = maxf(155.0, 39.0 + text_height + 28.0)
 	_house_info_panel.visible = true
@@ -261,11 +264,47 @@ func set_camera_locked(value: bool) -> void:
 	_update_control_mode()
 
 
+## Texto do painel de controles, um comando por linha; a linha da câmera muda com o modo.
 func _update_control_mode() -> void:
-	if is_instance_valid(_control_mode_label):
-		var mode := "Câmera destravada: mova o mouse" if _captured else "Câmera travada: arraste o cenário"
-		var gestures := "1–8 gestos · Espaço: pular"
-		_control_mode_label.text = "%s  ·  Tab alterna os modos  ·  Esc trava a câmera  ·  F observar  ·  %s  ·  T avança hora  ·  Rodinha zoom  ·  R reinicia  ·  M HOME" % [mode, gestures]
+	if not is_instance_valid(_control_mode_label):
+		return
+	var mode := "Câmera solta: mova o mouse para olhar" if _captured else "Câmera travada: arraste o cenário"
+	_control_mode_label.text = "\n".join([
+		"%s: mover" % TeclasMovimento.rotulo(),
+		"Shift: corrida (parar desliga)",
+		"Espaço: pular  ·  1–8: gestos",
+		"Botão direito: andar até o ponto (duplo: correr)",
+		"Botão esquerdo na casa: dados",
+		"E: ler lápide  ·  F: observar",
+		mode,
+		"Tab: alterna a câmera  ·  Esc: trava",
+		"Rodinha: zoom  ·  T: avança a hora",
+		"R: reinicia  ·  M: Home",
+	])
+	var text_height := _text_height(_control_mode_label)
+	_control_mode_label.size.y = text_height
+	var height := 38.0 + text_height + 16.0
+	var screen := get_viewport().get_visible_rect().size if is_inside_tree() else Vector2(1280, 720)
+	_controls_panel.size = Vector2(HEADING_WIDTH, height)
+	_controls_panel.position = Vector2(18, screen.y - height - 18.0)
+
+
+## Altura do texto de um rótulo com quebra de linha, contando o espaço entre linhas.
+func _text_height(label: Label) -> float:
+	var lines := maxi(1, label.get_line_count())
+	return lines * label.get_line_height() + (lines - 1) * label.get_theme_constant("line_spacing")
+
+
+func controls_open() -> bool:
+	return is_instance_valid(_controls_panel) and _controls_panel.visible
+
+
+## "?" do canto: mostra ou esconde o painel de controles (o "?" fica dourado aberto).
+func set_controls_open(open: bool) -> void:
+	_controls_panel.visible = open
+	_help_icon.definir(open)
+	if open:
+		_update_control_mode()
 
 
 func _update_telemetry() -> void:
@@ -379,6 +418,12 @@ func _create_corner_buttons() -> void:
 	_style_hint = style[1]
 	_style_hint.add_theme_font_size_override("font_size", 13)
 	(style[0] as Button).focus_mode = Control.FOCUS_NONE
+
+	top += BotaoCanto.ESPACO
+	_help_icon = HudIcon.new().configurar("ajuda")
+	var help: Array = BotaoCanto.criar(_root, top, _help_icon)
+	(help[1] as Label).text = "Controles"
+	_corner_setup(help[0], func() -> void: set_controls_open(not controls_open()))
 	set_camera_locked(_camera_locked)
 	for index in range(first_child, _root.get_child_count()):
 		_corner_nodes.append(_root.get_child(index))
