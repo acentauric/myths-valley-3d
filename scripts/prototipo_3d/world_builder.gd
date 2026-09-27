@@ -382,7 +382,19 @@ func _construcao(chave: String, origin: Vector3, yaw: float, procedural: Callabl
 			CatalogoAssets.colisao(chave, node, self, placed_origin, size, yaw)
 			var piso := float(CatalogoAssets.PECAS[chave].get("piso", 0.0))
 			var limites: AABB = node.get_meta("limites")
-			_box(Vector3(limites.size.x + 1.6, 0.16, limites.size.z + 1.6), placed_origin + Vector3(0, piso + 0.08, 0), Color("958d79"), true, null, yaw)
+			var piso_size := Vector3(limites.size.x + 1.6, 0.16, limites.size.z + 1.6)
+			var piso_position := placed_origin + Vector3(0, piso + 0.08, 0)
+			if chave == "pier":
+				# Reaproveita a pegada do piso antigo: tabuado visivel e colisao ficam iguais.
+				var pier_floor := BoxShape3D.new()
+				pier_floor.size = piso_size
+				_body(pier_floor, piso_position, "PierPisoColisao", yaw)
+				var pier_deck_top := piso_position.y + piso_size.y * 0.5
+				ancoras["PierPiso"] = Vector3(placed_origin.x, pier_deck_top, placed_origin.z)
+				ancoras["PierDirecao"] = Vector3(sin(yaw), 0.0, cos(yaw))
+				_pier_deck(piso_size, piso_position, yaw)
+			else:
+				_box(piso_size, piso_position, Color("958d79"), true, null, yaw)
 			if is_house:
 				_register_house(nome if not nome.is_empty() else chave.capitalize(), chave, placed_origin, yaw, limites.size, "Tripo")
 			return node
@@ -665,7 +677,14 @@ func _build_landmark_details() -> void:
 	var pier_dir: Vector3 = (pier - _region.get_feature_center("Praça", "poi")).normalized()
 	# O modelo do Tripo é centrado; empurra-o mar adentro para começar na areia.
 	var pier_origin: Vector3 = pier + pier_dir * 4.0 if estilo_tripo() else pier
-	_construcao("pier", pier_origin, atan2(pier_dir.x, pier_dir.z), func():
+	var pier_base := ground_position(pier_origin, maxf(pier_origin.y - ground_height_at(pier_origin), 0.0))
+	var pier_floor_top := pier_base.y
+	if estilo_tripo():
+		pier_floor_top += float(CatalogoAssets.PECAS["pier"].get("piso", 0.0)) + 0.16
+	ancoras["PierPiso"] = Vector3(pier_base.x, pier_floor_top, pier_base.z)
+	var pier_yaw := atan2(pier_dir.x, pier_dir.z) if estilo_tripo() else 0.0
+	ancoras["PierDirecao"] = Vector3(sin(pier_yaw), 0.0, cos(pier_yaw))
+	_construcao("pier", pier_origin, pier_yaw, func():
 		_box(Vector3(4.5, 0.2, 17), pier + Vector3(0, -0.1, 0), Color("85684b"), true)
 		for offset in [-7.0, 0.0, 7.0]:
 			for side in [-1.8, 1.8]:
@@ -925,6 +944,17 @@ func _fence(origin: Vector3, count: int, spacing: float) -> void:
 	var width: float = (count - 1) * spacing
 	for height in [0.4, 0.87]:
 		_box(Vector3(width, 0.12, 0.12), origin + Vector3(width * 0.5, height, 0), Color("987650"), true)
+
+
+func _pier_deck(size: Vector3, collision_center: Vector3, yaw: float) -> void:
+	var plank_count := maxi(1, ceili(size.z / 0.38))
+	var plank_stride := size.z / float(plank_count)
+	var plank_colors: Array[Color] = [Color("947047"), Color("88643f"), Color("9b754e"), Color("81603e")]
+	for index in range(plank_count):
+		var local_z := -size.z * 0.5 + (float(index) + 0.5) * plank_stride
+		var local_offset := Vector3(0.0, size.y * 0.5 - 0.045, local_z).rotated(Vector3.UP, yaw)
+		var plank_length := maxf(plank_stride - 0.018, 0.06)
+		_box(Vector3(size.x, 0.09, plank_length), collision_center + local_offset, plank_colors[index % plank_colors.size()], false, null, yaw)
 
 
 func _box(size: Vector3, position: Vector3, color: Color, solid: bool = false, material_override: Material = null, yaw: float = 0.0) -> MeshInstance3D:

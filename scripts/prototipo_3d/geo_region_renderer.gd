@@ -8,10 +8,10 @@ const LAND_COLOR := Color("9bbf7c")
 const FOREST_COLOR := Color("719968")
 const VILLAGE_COLOR := Color("bbcb98")
 const SEA_COLOR := Color("5e9fa9")
+const SEA_SURFACE_Y := -0.12
 const BEACH_COLOR := Color("e6d2a1")
 const ROAD_COLOR := Color("cfb78b")
 const MAIN_ROAD_COLOR := Color("e5c994")
-const ROAD_EDGE_COLOR := Color("b39a6c")
 const SHORE_ACCESS_COLOR := Color("a47d50")
 const RIVER_COLOR := Color("76b5b6")
 const ESTRADA_OCRE_TEXTURE := preload("res://assets/prototipo_3d/materiais/estrada_terra_ocre_v1.png")
@@ -151,7 +151,8 @@ func build_region(kml_json_path: String, scenario_json_path: String) -> void:
 				if points.size() >= 2:
 					_rivers.append({"name": String(feature.get("name", "")), "points": points, "width": _units(9.0, 4.0)})
 	_build_background()
-	var mata_material := _terrain_texture_material(GRAMA_TERRA_MATA_TEXTURE, 8.0)
+	# Ladrilho maior deixa folhas e tufos mais legiveis no terreno ao redor da via.
+	var mata_material := _terrain_texture_material(GRAMA_TERRA_MATA_TEXTURE, 12.0)
 	_add_polygon("Terra", _land, 0.0, LAND_COLOR, true, mata_material)
 	# Quando a mata acompanha todo o continente, evita criar uma segunda malha
 	# sobre a terra. As duas malhas tinham triangulações diferentes e podiam
@@ -170,14 +171,21 @@ func build_region(kml_json_path: String, scenario_json_path: String) -> void:
 			if String(feature.get("name", "")) == "Praça":
 				area_material = _textured_material(CHAO_PRACA_TEXTURE, Color("f2e6c8"), 6.0)
 			_add_polygon(String(feature.get("name", "Área")), _to_points(feature.get("coordinates_m", [])), 0.027, color, false, area_material)
-	_add_ribbon("Orla de areia", _coast, _units(17.0, 6.0), 0.038, BEACH_COLOR)
+	# Mantém a areia acima das sobreposições da Mata (offset 0.027). Sem essa
+	# margem, a textura de grama cobre trechos da praia apesar de a faixa e sua
+	# colisão já existirem na mesma linha costeira.
+	_add_ribbon("Orla de areia", _coast, _units(22.0, 8.0), 0.05, BEACH_COLOR, true)
 	for river in _rivers:
 		_add_ribbon("Rio", river.points, river.width, 0.046, RIVER_COLOR)
 	for road in _roads:
-		var road_path := _soften_road_corners(road.points, road.width)
+		var road_width: float = float(road.width)
+		var road_path := _soften_road_corners(road.points, road_width)
 		var tint := Color("fff8e8") if road.name == "Rua Principal" else Color("f7e7c6")
-		_add_ribbon("Borda " + road.name, road_path, road.width + 0.55, 0.052, ROAD_EDGE_COLOR)
-		_add_ribbon(road.name, road_path, road.width, 0.058, ROAD_COLOR, true, _textured_material(ESTRADA_OCRE_TEXTURE, tint))
+		var shoulder_width := _units(4.0, 1.15)
+		var transition_width: float = road_width + shoulder_width * 2.0
+		var transition_material := _road_shoulder_material(road_width / transition_width, tint)
+		_add_ribbon("Transição " + road.name, road_path, transition_width, 0.052, ROAD_COLOR, false, transition_material)
+		_add_ribbon(road.name, road_path, road_width, 0.058, ROAD_COLOR, true, _textured_material(ESTRADA_OCRE_TEXTURE, tint))
 	_build_shore_access()
 	_build_forest(scenario.get("vegetation", {}))
 
@@ -197,19 +205,32 @@ func has_map_frame() -> bool:
 ## Altitude KML em metros convertida pela mesma escala X/Z da região.
 ## Interpolação IDW dos pontos medidos; o KML não fornece um DEM contínuo.
 func ground_height_at(position: Vector3) -> float:
-	if _elevation_samples.is_empty():
-		return 0.0
 	var point := Vector2(position.x, position.z)
 	var weighted_height := 0.0
 	var total_weight := 0.0
+	var sampled_height := 0.0
+	var has_exact_sample := false
 	for sample in _elevation_samples:
 		var distance_squared: float = point.distance_squared_to(sample.point)
 		if distance_squared < 0.000001:
-			return float(sample.height)
+			sampled_height = float(sample.height)
+			has_exact_sample = true
+			break
 		var weight: float = 1.0 / distance_squared
 		weighted_height += float(sample.height) * weight
 		total_weight += weight
-	return weighted_height / total_weight
+	if not has_exact_sample and total_weight > 0.0:
+		sampled_height = weighted_height / total_weight
+	if _background_kind != "sea" or _coast.size() < 2:
+		return sampled_height
+	if _land.size() < 3 or not Geometry2D.is_point_in_polygon(point, _land):
+		return SEA_SURFACE_Y
+	# POIs espalhados nao formam um DEM costeiro confiavel. Aproxima a terra
+	# gradualmente do nivel da agua para evitar degraus e lacunas na praia.
+	var coast_distance := _distance_to_line(point, _coast)
+	var shore_width := _units(80.0, 18.0)
+	var inland_weight := smoothstep(0.0, shore_width, coast_distance)
+	return lerpf(SEA_SURFACE_Y, sampled_height, inland_weight)
 
 
 func ground_position(position: Vector3, offset_y: float = 0.0) -> Vector3:
@@ -453,6 +474,69 @@ void fragment() {
 	return material
 
 
+## Mistura os materiais reais de estrada e mata ao longo do acostamento.
+## As bordas externas usam a mesma projeção do terreno; as internas coincidem
+## com o UV da estrada para nao criar uma linha de cor entre as malhas.
+func _road_shoulder_material(road_ratio: float, road_tint: Color) -> ShaderMaterial:
+	var shader := Shader.new()
+	shader.code = """
+shader_type spatial;
+render_mode cull_disabled;
+
+uniform sampler2D forest_texture : source_color, repeat_enable, filter_linear_mipmap_anisotropic;
+uniform sampler2D road_texture : source_color, repeat_enable, filter_linear_mipmap_anisotropic;
+uniform float forest_tile_size = 12.0;
+uniform float road_fraction = 0.65;
+uniform vec4 road_tint : source_color = vec4(1.0);
+varying vec2 shoulder_uv;
+varying vec2 world_xz;
+
+void vertex() {
+	shoulder_uv = UV;
+	world_xz = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xz;
+}
+
+float hash21(vec2 point) {
+	return fract(sin(dot(point, vec2(127.1, 311.7))) * 43758.5453);
+}
+
+float value_noise(vec2 point) {
+	vec2 cell = floor(point);
+	vec2 fraction = fract(point);
+	fraction = fraction * fraction * (3.0 - 2.0 * fraction);
+	float a = hash21(cell);
+	float b = hash21(cell + vec2(1.0, 0.0));
+	float c = hash21(cell + vec2(0.0, 1.0));
+	float d = hash21(cell + vec2(1.0, 1.0));
+	return mix(mix(a, b, fraction.x), mix(c, d, fraction.x), fraction.y);
+}
+
+void fragment() {
+	float shoulder_span = max((1.0 - road_fraction) * 0.5, 0.001);
+	float local_u = shoulder_uv.x < 0.5
+		? shoulder_uv.x / shoulder_span
+		: (1.0 - shoulder_uv.x) / shoulder_span;
+	float road_u = (shoulder_uv.x - shoulder_span) / max(road_fraction, 0.001);
+	float road_v = shoulder_uv.y / max(road_fraction, 0.001);
+	vec3 forest = texture(forest_texture, world_xz / forest_tile_size).rgb;
+	vec3 road = texture(road_texture, vec2(road_u, road_v)).rgb * road_tint.rgb;
+	float organic_offset = (value_noise(world_xz * 0.28) - 0.5) * 0.28;
+	float blend_start = 0.39 + organic_offset;
+	float blend = smoothstep(blend_start, blend_start + 0.36, clamp(local_u, 0.0, 1.0));
+	ALBEDO = mix(forest, road, blend);
+	ROUGHNESS = 0.94;
+}
+"""
+	var material := ShaderMaterial.new()
+	material.shader = shader
+	material.set_shader_parameter("forest_texture", GRAMA_TERRA_MATA_TEXTURE)
+	material.set_shader_parameter("forest_tile_size", 12.0)
+	material.set_shader_parameter("road_texture", ESTRADA_OCRE_TEXTURE)
+	material.set_shader_parameter("road_fraction", clampf(road_ratio, 0.1, 0.9))
+	material.set_shader_parameter("road_tint", road_tint)
+	return material
+
+
 func _build_background() -> void:
 	var mesh := BoxMesh.new()
 	# O fundo ultrapassa a borda da região para a vista aérea não revelar um retângulo vazio.
@@ -463,7 +547,7 @@ func _build_background() -> void:
 	visual.name = "Mar" if _background_kind == "sea" else "Terreno distante"
 	visual.mesh = mesh
 	visual.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	visual.position = Vector3(center.x, -0.27, center.y)
+	visual.position = Vector3(center.x, SEA_SURFACE_Y - mesh.size.y * 0.5, center.y)
 	add_child(visual)
 
 

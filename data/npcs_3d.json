@@ -225,19 +225,19 @@
       "gesto_saudacao": 5,
       "postos": {
         "manha": [
-          "Pier",
+          "PierPiso",
           [
-            -4.5,
+            -1.8,
             0,
-            3.6
+            3.0
           ]
         ],
         "tarde": [
-          "Pier",
+          "PierPiso",
           [
-            -3.2,
+            -1.8,
             0,
-            -4.2
+            -3.4
           ]
         ],
         "entardecer": [

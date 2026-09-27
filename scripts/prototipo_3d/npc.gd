@@ -235,10 +235,18 @@ func _posicao_do_posto(periodo: String) -> Vector3:
 	if periodo == "" or not postos.has(periodo):
 		return global_position
 	var posto: Array = postos[periodo]
-	var base: Vector3 = ancoras.get(String(posto[0]), Vector3.ZERO)
+	var ancora_nome := String(posto[0])
+	var base: Vector3 = ancoras.get(ancora_nome, Vector3.ZERO)
 	if posto.size() > 1 and posto[1] is Array and (posto[1] as Array).size() >= 3:
 		var offset: Array = posto[1]
-		base += Vector3(float(offset[0]), float(offset[1]), float(offset[2]))
+		var deslocamento := Vector3(float(offset[0]), float(offset[1]), float(offset[2]))
+		if ancora_nome == "PierPiso":
+			var direcao: Vector3 = ancoras.get("PierDirecao", Vector3.FORWARD)
+			var yaw := atan2(direcao.x, direcao.z)
+			deslocamento = deslocamento.rotated(Vector3.UP, yaw)
+		base += deslocamento
+		if ancora_nome == "PierPiso":
+			return base
 		if terreno != null:
 			base = terreno.ground_position(base, float(offset[1]))
 	return base

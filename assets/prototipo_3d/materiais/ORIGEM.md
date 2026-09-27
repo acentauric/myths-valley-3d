@@ -32,5 +32,9 @@ repetíveis de grama verde, terra ocre, folhas secas e pequenas pedras para as
 `estrada_terra_ocre_v1.png` foi gerada pela ferramenta integrada de imagem, usando
 como referencia as texturas de mata e terra batida do projeto. A base ocre dourada
 combina com as manchas claras de solo da mata; marcas organicas, pedras pequenas e
-vegetacao esparsa preservam a leitura de estrada. A malha curva os vertices da via
-e usa um contorno estreito em tom de terra para evitar cantos duros.
+vegetacao esparsa preservam a leitura de estrada. As curvas da via sao suavizadas.
+A faixa lateral mistura por shader as texturas atuais da mata e da estrada. A grama
+usa a mesma projecao do terreno, enquanto o UV da terra acompanha o da estrada;
+assim, as bordas coincidem com os materiais vizinhos. Uma variacao organica no
+limite da mistura evita uma linha reta entre os dois terrenos. O piso de mata usa
+ladrilhos maiores para ampliar visualmente as folhas e os tufos.
