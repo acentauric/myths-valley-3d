@@ -106,6 +106,29 @@ func is_on_land(world_position: Vector3) -> bool:
 	return _region != null and _region._is_on_land(world_position)
 
 
+## Rotação (yaw) que alinha o eixo X local — o comprimento da ponte, no modelo e no
+## procedural — com a rua mais próxima do ponto, para a ponte seguir a rua sobre o rio.
+func _road_yaw_at(point: Vector3) -> float:
+	if _region == null:
+		return 0.0
+	var target := Vector2(point.x, point.z)
+	var best := INF
+	var direction := Vector2.RIGHT
+	for road in _region.get("_roads"):
+		var points: PackedVector2Array = road.points
+		for i in range(points.size() - 1):
+			var segment := points[i + 1] - points[i]
+			if segment.length_squared() < 0.000001:
+				continue
+			var closest := Geometry2D.get_closest_point_to_segment(target, points[i], points[i + 1])
+			var distance := closest.distance_squared_to(target)
+			if distance < best:
+				best = distance
+				direction = segment.normalized()
+	# Girar yaw leva o X local para (cos yaw, -sen yaw) no plano XZ.
+	return atan2(-direction.y, direction.x)
+
+
 ## O raycast deve usar HOUSE_INTERACTION_LAYER e collide_with_areas = true.
 func get_house_properties(collider: Object) -> Dictionary:
 	var house := _house_from_collider(collider)
@@ -633,10 +656,12 @@ func _build_landmark_details() -> void:
 	var bridge: Vector3 = _region.get_feature_center("Ponte", "poi")
 	bridge.y = _footprint_height(bridge, 5.5) + 0.1
 	ancoras["Ponte"] = bridge
-	_construcao("ponte", bridge, 0.0, func():
-		_box(Vector3(11, 0.35, 6), bridge + Vector3(0, 0.22, 0), Color("987b57"), true)
+	var bridge_yaw := _road_yaw_at(bridge)
+	_construcao("ponte", bridge, bridge_yaw, func():
+		_box(Vector3(11, 0.35, 6), bridge + Vector3(0, 0.22, 0), Color("987b57"), true, null, bridge_yaw)
 		for side in [-2.8, 2.8]:
-			_box(Vector3(11, 0.18, 0.15), bridge + Vector3(0, 0.95, side), WOOD))
+			var rail_offset := Vector3(0, 0.95, side).rotated(Vector3.UP, bridge_yaw)
+			_box(Vector3(11, 0.18, 0.15), bridge + rail_offset, WOOD, true, null, bridge_yaw))
 	var lookout: Vector3 = _region.get_feature_center("Mirante", "poi")
 	lookout.y = _footprint_height(lookout, 4.3) + 0.02
 	ancoras["Mirante"] = lookout
