@@ -16,6 +16,7 @@ const GESTURES := [
 	{"clip": "fold_arms", "label": "Cruzar os braços"},
 	{"clip": "chop", "label": "Golpear"},
 	{"clip": "swim", "label": "Nadar"},
+	{"clip": "jump_down", "label": "Pular baixo"},
 ]
 
 var animation_player: AnimationPlayer
@@ -25,6 +26,7 @@ var _current_motion := ""
 ## primeiro clipe de cada nome vence.
 var _clips: Dictionary = {}
 var _gesture_active := false
+var _jump_active := false
 
 
 func configure(model_root: Node) -> bool:
@@ -49,6 +51,8 @@ func configure(model_root: Node) -> bool:
 func update_motion(speed: float, _delta: float) -> void:
 	if animation_player == null:
 		return
+	if _jump_active:
+		return
 	if _gesture_active:
 		if speed < 0.2:
 			return
@@ -70,11 +74,21 @@ func play_gesture(index: int) -> String:
 	if clip.is_empty():
 		return ""
 	_gesture_active = true
+	_jump_active = index == 8
 	_current_motion = ""
-	animation_player.speed_scale = 1.0
+	animation_player.speed_scale = 3.8 if _jump_active else 1.0
 	animation_player.play(clip, 0.18)
 	var label: String = entry["label"]
 	return label
+
+
+func finish_jump(speed: float) -> void:
+	if not _jump_active:
+		return
+	_jump_active = false
+	_gesture_active = false
+	_current_motion = ""
+	update_motion(speed, 0.0)
 
 
 func get_animation_names() -> PackedStringArray:
@@ -101,7 +115,7 @@ func _play_motion(role: String, speed_scale: float) -> void:
 
 
 func _on_animation_finished(_animation_name: StringName) -> void:
-	if not _gesture_active:
+	if not _gesture_active or _jump_active:
 		return
 	_gesture_active = false
 	_play_motion("idle", 1.0)

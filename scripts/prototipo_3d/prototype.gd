@@ -29,6 +29,7 @@ func _enter_tree() -> void:
 	_bind("mv_time", [KEY_T])
 	for index in range(8):
 		_bind("mv_animation_%d" % (index + 1), [KEY_1 + index])
+	_bind("mv_animation_9", [KEY_SPACE], true)
 
 
 func _ready() -> void:
@@ -162,10 +163,13 @@ func _on_missao_mudou(texto: String, _alvo: Vector3, indice: int, total: int) ->
 		hud.set_objective("%s  (%d/%d)" % [texto, indice, total])
 
 
-func _bind(action: StringName, keys: Array) -> void:
+func _bind(action: StringName, keys: Array, replace_existing := false) -> void:
 	if InputMap.has_action(action):
-		return
-	InputMap.add_action(action)
+		if not replace_existing:
+			return
+		InputMap.action_erase_events(action)
+	else:
+		InputMap.add_action(action)
 	for key: int in keys:
 		var event := InputEventKey.new()
 		event.physical_keycode = key

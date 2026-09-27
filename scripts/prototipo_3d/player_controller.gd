@@ -11,6 +11,9 @@ const ClickNavigation = preload("res://scripts/prototipo_3d/click_navigation.gd"
 const HOUSE_INTERACTION_LAYER := 1 << 12
 const ARRIVAL_DISTANCE := 0.7
 const CAMERA_DRAG_THRESHOLD := 6.0
+const JUMP_VELOCITY := 6.7
+const JUMP_GRAVITY_UP := 15.0
+const JUMP_GRAVITY_DOWN := 25.0
 
 @export var model_scene: PackedScene
 @export var character_height: float = 1.78
@@ -51,6 +54,8 @@ var _camera_drag_pressed := false
 var _camera_drag_moved := false
 var _camera_drag_double_click := false
 var _camera_drag_start := Vector2.ZERO
+var _jump_requested := false
+var _jumping := false
 
 func _ready() -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
@@ -197,12 +202,26 @@ func _physics_process(delta: float) -> void:
 	var speed: float = run_speed if Input.is_action_pressed("mv_run") or (_walk_run and not _walk_path.is_empty()) else walk_speed
 	velocity.x = move_toward(velocity.x, direction.x * speed, 18.0 * delta)
 	velocity.z = move_toward(velocity.z, direction.z * speed, 18.0 * delta)
-	if not is_on_floor():
+	if _jump_requested and is_on_floor():
+		velocity.y = JUMP_VELOCITY
+		_jumping = true
+		if animator and animator.has_method("play_gesture"):
+			var label: String = animator.play_gesture(8)
+			if not label.is_empty():
+				animation_requested.emit(label)
+	_jump_requested = false
+	if _jumping:
+		velocity.y -= (JUMP_GRAVITY_UP if velocity.y > 0.0 else JUMP_GRAVITY_DOWN) * delta
+	elif not is_on_floor():
 		velocity.y -= 20.0 * delta
 	else:
 		velocity.y = -0.1
 	var distance_before := _distance_to_next_waypoint()
 	move_and_slide()
+	if _jumping and is_on_floor():
+		_jumping = false
+		if animator and animator.has_method("finish_jump"):
+			animator.finish_jump(Vector2(velocity.x, velocity.z).length())
 	if not _walk_path.is_empty() and direction.length_squared() > 0.01:
 		var progress := distance_before - _distance_to_next_waypoint()
 		_stuck_time = 0.0 if progress > 0.003 else _stuck_time + delta
@@ -267,12 +286,15 @@ func _unhandled_input(event: InputEvent) -> void:
 		_pitch = -0.08 if inspecting else -0.19
 		_distance = 3.1 if inspecting else 5.0
 		_apply_camera()
-	for index in range(8):
-		if event.is_action_pressed("mv_animation_%d" % (index + 1)) and animator and animator.has_method("play_gesture"):
-			var label: String = animator.play_gesture(index)
-			if not label.is_empty():
-				animation_requested.emit(label)
-			break
+	if event.is_action_pressed("mv_animation_9"):
+		_jump_requested = true
+	if not _jumping:
+		for index in range(8):
+			if event.is_action_pressed("mv_animation_%d" % (index + 1)) and animator and animator.has_method("play_gesture"):
+				var label: String = animator.play_gesture(index)
+				if not label.is_empty():
+					animation_requested.emit(label)
+				break
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_APPLICATION_FOCUS_OUT:
@@ -310,6 +332,10 @@ func reset_position() -> void:
 	_cancel_walk()
 	global_position = spawn_position
 	velocity = Vector3.ZERO
+	_jump_requested = false
+	_jumping = false
+	if animator and animator.has_method("finish_jump"):
+		animator.finish_jump(0.0)
 	visual.rotation.y = 0.0
 	_yaw = 0.0
 	_pitch = -0.19

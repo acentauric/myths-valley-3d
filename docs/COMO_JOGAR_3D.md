@@ -30,6 +30,7 @@ No Godot Project Manager, outra opção é importar **`prototipo_3d/project.godo
 | 6 | Cruzar os braços (`fold_arms`) |
 | 7 | Golpear (`chop`) |
 | 8 | Nadar (`swim`) |
+| Barra de espaço | Pular a partir do chão; subida e descida usam gravidades diferentes |
 | Esc | Travar a câmera e liberar o cursor |
 | R | Voltar ao ponto inicial |
 | T | Adiantar o relógio do vale em uma hora (ver dia e noite) |
@@ -42,9 +43,9 @@ Parado, o personagem reproduz `idle`. Um gesto termina naturalmente e volta para
 
 ## O que este teste entrega
 
-- GLB do Tripo com malha, materiais, esqueleto de 65 ossos e 11 animações incorporadas.
+- GLB do Tripo com malha, materiais, esqueleto de 65 ossos e 12 animações incorporadas.
 - Locomoção automática com os clipes `idle`, `walk` e `run`.
-- Oito animações extras acionáveis dentro do jogo pelas teclas 1–8.
+- Oito gestos acionáveis pelas teclas 1–8 e `pular_baixo` pela barra de espaço no estilo Tripo.
 - Escala ajustada para 1,78 m, colisor de cápsula, aceleração, gravidade e rotação.
 - Câmera em terceira pessoa com `SpringArm3D`, zoom e reação a obstáculos.
 - Vila de teste com casas, caminhos, horta, árvores, praia, iluminação e colisões.
@@ -53,7 +54,7 @@ Parado, o personagem reproduz `idle`. Um gesto termina naturalmente e volta para
 
 As casas usam seus pontos geográficos como referência, mas a posição final é procurada em terra com espaço para a construção inteira, fora de todas as ruas e árvores. Árvores manuais que coincidiriam com uma casa são reposicionadas. A Casa da estrada também segue essa regra; sua coordenada KML continua sendo a referência inicial.
 
-As animações foram exportadas **no lugar**: os clipes mexem o esqueleto, enquanto o `CharacterBody3D` controla o deslocamento e as colisões. Isso evita que a animação e o código tentem mover o personagem ao mesmo tempo.
+As animações foram exportadas **no lugar**: os clipes mexem o esqueleto, enquanto o `CharacterBody3D` controla o deslocamento e as colisões. No salto, o deslocamento vertical do quadril no clipe foi neutralizado para começar no chão. O controlador aplica impulso vertical, gravidade de 15 unidades/s² na subida e 25 unidades/s² na descida.
 
 O material continua sendo duplicado apenas na instância e renderizado dos dois lados. Essa correção evita o desaparecimento de partes do torso sem alterar o arquivo 3D original.
 
@@ -67,7 +68,7 @@ O fluxo é pequeno de propósito:
 2. O Godot transforma o GLB em uma cena com `Skeleton3D`, malha e `AnimationPlayer`.
 3. `player_controller.gd` instancia o modelo, normaliza a altura e envia a velocidade atual ao animador.
 4. `authored_animator.gd` escolhe `idle`, `walk` ou `run` e mistura as transições em 0,18 segundo.
-5. As teclas 1–8 pedem clipes de gesto; qualquer movimento devolve o controle à locomoção.
+5. As teclas 1–8 pedem clipes de gesto; a barra de espaço inicia o salto e, no estilo Tripo, reproduz `pular_baixo` (`jump_down` no GLB). O salto continua até aterrissar, mesmo com movimento horizontal; os outros gestos são interrompidos pelo movimento.
 
 Abra a cena importada pelo painel **FileSystem** do Godot e selecione `AnimationPlayer` para visualizar a lista e reproduzir os clipes no editor. O protótipo usa `AnimationPlayer` diretamente; um `AnimationTree` só será necessário quando houver combinações mais complexas, como ataque durante corrida ou camadas independentes para tronco e pernas.
 
@@ -85,9 +86,9 @@ Para repetir o resultado apresentado:
 6. Use um nome estável, como `medieval_character_animated.glb`, e no Godot escolha **Reimport** se tiver substituído o arquivo.
 7. Confirme no `AnimationPlayer` se os nomes esperados aparecem antes de alterar o código.
 
-O arquivo atual contém estes 11 clipes: `afraid`, `agree`, `chop`, `fold_arms`, `greet_01`, `idle`, `look_around`, `run`, `swim`, `walk` e `wave_goodbye_02`.
+O arquivo atual contém estes 12 clipes: `afraid`, `agree`, `chop`, `fold_arms`, `greet_01`, `idle`, `jump_down`, `look_around`, `run`, `swim`, `walk` e `wave_goodbye_02`.
 
-Para trocar quais gestos cada número chama, edite somente a constante `GESTURES` em `prototipo_3d/scripts/prototipo_3d/authored_animator.gd`. Para nomes diferentes de parado/andar/correr, ajuste `MOTION_CLIPS` no mesmo arquivo. Assim o controlador de física e a câmera não precisam mudar.
+Para trocar quais gestos as teclas 1–8 e a barra de espaço chamam, edite somente a constante `GESTURES` em `prototipo_3d/scripts/prototipo_3d/authored_animator.gd`. Para nomes diferentes de parado/andar/correr, ajuste `MOTION_CLIPS` no mesmo arquivo. Assim o controlador de física e a câmera não precisam mudar.
 
 ## Casa gerada no Tripo
 
@@ -126,7 +127,7 @@ Com o Godot 4.7.2 instalado no caminho usado pelo projeto:
   --script 'res://tools/prototipo_3d/smoke_test.gd'
 ```
 
-O teste confirma modelo, textura, 65 ossos, nomes dos 11 clipes, locomoção, oito gestos, escala, chão, colisões, câmera, reinício e os três destinos. Ele precisa do renderer normal para testar entrada de mouse e produzir capturas; o modo `--headless` não representa esse trecho corretamente.
+O teste confirma modelo, textura, 65 ossos, nomes dos 12 clipes, locomoção, nove gestos no estilo Tripo, escala, chão, colisões, câmera, reinício e os três destinos. Ele precisa do renderer normal para testar entrada de mouse e produzir capturas; o modo `--headless` não representa esse trecho corretamente.
 
 ## Estrutura relevante
 

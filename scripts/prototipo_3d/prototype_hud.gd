@@ -218,7 +218,8 @@ func set_camera_locked(value: bool) -> void:
 func _update_control_mode() -> void:
 	if is_instance_valid(_control_mode_label):
 		var mode := "Câmera destravada: mova o mouse" if _captured else "Câmera travada: clique e arraste para girar"
-		_control_mode_label.text = "%s  ·  Tab alterna os modos  ·  Esc trava a câmera  ·  F observar  ·  1–8 gestos  ·  T avança hora  ·  Rodinha zoom  ·  R reinicia  ·  M HOME" % mode
+		var gestures := "1–8 gestos · Espaço pular baixo" if Estilo.tripo() else "1–8 gestos"
+		_control_mode_label.text = "%s  ·  Tab alterna os modos  ·  Esc trava a câmera  ·  F observar  ·  %s  ·  T avança hora  ·  Rodinha zoom  ·  R reinicia  ·  M HOME" % [mode, gestures]
 
 
 func _update_telemetry() -> void:

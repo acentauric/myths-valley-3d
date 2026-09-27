@@ -31,10 +31,10 @@ func _run() -> void:
 	var model: Node3D = player.get("model")
 	var skeletons := model.find_children("*", "Skeleton3D", true, false)
 	_check(skeletons.size() == 1 and skeletons[0].get_bone_count() == 65, "esqueleto com 65 ossos")
-	var expected_animations := ["afraid", "agree", "chop", "fold_arms", "greet_01", "idle", "look_around", "run", "swim", "walk", "wave_goodbye_02"]
+	var expected_animations := ["afraid", "agree", "chop", "fold_arms", "greet_01", "idle", "jump_down", "look_around", "run", "swim", "walk", "wave_goodbye_02"]
 	var animation_names: Array = Array(player.call("get_animation_names"))
 	animation_names.sort()
-	_check(animation_names == expected_animations, "11 clipes de animação disponíveis")
+	_check(animation_names == expected_animations, "12 clipes de animação disponíveis")
 	_check(player.call("get_current_animation") == &"idle", "idle inicia automaticamente")
 	var meshes := model.find_children("*", "MeshInstance3D", true, false)
 	var textured := false
@@ -70,7 +70,7 @@ func _run() -> void:
 	var animator: Node = player.get("animator")
 	var animation_player: AnimationPlayer = animator.get("animation_player")
 	var skeleton: Skeleton3D = skeletons[0]
-	var gesture_clips := ["greet_01", "wave_goodbye_02", "agree", "look_around", "afraid", "fold_arms", "chop", "swim"]
+	var gesture_clips := ["greet_01", "wave_goodbye_02", "agree", "look_around", "afraid", "fold_arms", "chop", "swim", "jump_down"]
 	for index in range(gesture_clips.size()):
 		_trigger_animation(index + 1)
 		animation_player.advance(0.0)
