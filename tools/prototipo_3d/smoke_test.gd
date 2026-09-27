@@ -74,11 +74,15 @@ func _run() -> void:
 	var skeleton: Skeleton3D = skeletons[0]
 	var gesture_clips := ["greet_01", "wave_goodbye_02", "agree", "look_around", "afraid", "fold_arms", "chop", "swim", "jump_down"]
 	for index in range(gesture_clips.size()):
-		_trigger_animation(index + 1)
 		if gesture_clips[index] == "jump_down":
-			# O pulo (tecla 9) só começa no próximo quadro de física, com o personagem no chão.
+			# O pulo é lido no _physics_process (Input.is_action_just_pressed, com
+			# buffer): pressiona a ação de verdade e espera o quadro de física.
+			Input.action_press("mv_animation_9")
 			await physics_frame
 			await physics_frame
+			Input.action_release("mv_animation_9")
+		else:
+			_trigger_animation(index + 1)
 		animation_player.advance(0.0)
 		_check(player.call("get_current_animation") == StringName(gesture_clips[index]), "gesto %d reproduz %s" % [index + 1, gesture_clips[index]])
 		_check(_pose_changes(skeleton, animation_player, animation_player.current_animation_length * 0.5), "gesto %d altera a pose" % (index + 1))
