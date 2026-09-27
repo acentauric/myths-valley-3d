@@ -11,11 +11,13 @@ const ClickNavigation = preload("res://scripts/prototipo_3d/click_navigation.gd"
 const HOUSE_INTERACTION_LAYER := 1 << 12
 const ARRIVAL_DISTANCE := 0.7
 const CAMERA_DRAG_THRESHOLD := 6.0
-const JUMP_VELOCITY := 6.7
-const JUMP_GRAVITY_UP := 15.0
-const JUMP_GRAVITY_DOWN := 25.0
+const JUMP_SPEED_MULTIPLIER := 1.5
+const JUMP_VELOCITY := 6.7 * JUMP_SPEED_MULTIPLIER
+const JUMP_GRAVITY_UP := 15.0 * JUMP_SPEED_MULTIPLIER * JUMP_SPEED_MULTIPLIER
+const JUMP_GRAVITY_DOWN := 25.0 * JUMP_SPEED_MULTIPLIER * JUMP_SPEED_MULTIPLIER
 const JUMP_BUFFER_TIME := 0.16
 const JUMP_COYOTE_TIME := 0.16
+const RUN_STOP_SPEED := 0.15
 
 @export var model_scene: PackedScene
 @export var character_height: float = 1.78
@@ -59,6 +61,8 @@ var _camera_drag_start := Vector2.ZERO
 var _jump_buffer_remaining := 0.0
 var _grounded_grace_remaining := 0.0
 var _jumping := false
+var _run_toggled := false
+var _ran_since_toggle := false
 
 func _ready() -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
@@ -208,7 +212,9 @@ func _physics_process(delta: float) -> void:
 	var direction: Vector3 = Basis(Vector3.UP, _yaw) * Vector3(input_vector.x, 0, input_vector.y)
 	if input_vector.length_squared() <= 0.001 and not _walk_path.is_empty():
 		direction = _next_walk_direction()
-	var speed: float = run_speed if Input.is_action_pressed("mv_run") or (_walk_run and not _walk_path.is_empty()) else walk_speed
+	if _run_toggled and direction.length_squared() > 0.01:
+		_ran_since_toggle = true
+	var speed: float = run_speed if is_running() else walk_speed
 	velocity.x = move_toward(velocity.x, direction.x * speed, 18.0 * delta)
 	velocity.z = move_toward(velocity.z, direction.z * speed, 18.0 * delta)
 	if _jump_buffer_remaining > 0.0 and _grounded_grace_remaining > 0.0 and not _jumping:
@@ -229,6 +235,10 @@ func _physics_process(delta: float) -> void:
 		velocity.y = -0.1
 	var distance_before := _distance_to_next_waypoint()
 	move_and_slide()
+	if _run_toggled and _ran_since_toggle and direction.length_squared() <= 0.01 and Vector2(velocity.x, velocity.z).length_squared() <= RUN_STOP_SPEED * RUN_STOP_SPEED:
+		_run_toggled = false
+		_ran_since_toggle = false
+		navigation_status.emit("Modo corrida desativado ao parar")
 	if _jumping and is_on_floor():
 		_jumping = false
 		if animator and animator.has_method("finish_jump"):
@@ -247,11 +257,15 @@ func _physics_process(delta: float) -> void:
 
 
 func _input(event: InputEvent) -> void:
+	if event is InputEventKey and event.is_action_pressed("mv_run") and not event.echo:
+		_run_toggled = not _run_toggled
+		_ran_since_toggle = false
+		navigation_status.emit("Modo corrida %s" % ("ativado" if _run_toggled else "desativado"))
 	if event is InputEventMouseMotion and _camera_locked and _camera_drag_pressed and Input.mouse_mode == Input.MOUSE_MODE_VISIBLE:
 		if not _camera_drag_moved and event.position.distance_to(_camera_drag_start) >= CAMERA_DRAG_THRESHOLD:
 			_camera_drag_moved = true
 		if _camera_drag_moved:
-			_rotate_camera(event.relative)
+			_rotate_camera(-event.relative)
 			get_viewport().set_input_as_handled()
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and not event.pressed and _camera_drag_pressed:
 		if not _camera_drag_moved:
@@ -341,6 +355,8 @@ func reset_position() -> void:
 	_cancel_walk()
 	global_position = spawn_position
 	velocity = Vector3.ZERO
+	_run_toggled = false
+	_ran_since_toggle = false
 	_jump_buffer_remaining = 0.0
 	_grounded_grace_remaining = 0.0
 	_jumping = false
@@ -477,6 +493,10 @@ func get_current_animation() -> StringName:
 	if animator and animator.has_method("get_current_animation"):
 		return animator.get_current_animation()
 	return &"procedural"
+
+
+func is_running() -> bool:
+	return _run_toggled or (_walk_run and not _walk_path.is_empty())
 
 
 func _apply_camera() -> void:

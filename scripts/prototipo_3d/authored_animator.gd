@@ -76,7 +76,7 @@ func play_gesture(index: int) -> String:
 	_gesture_active = true
 	_jump_active = index == 8
 	_current_motion = ""
-	animation_player.speed_scale = 3.8 if _jump_active else 1.0
+	animation_player.speed_scale = 4.8 if _jump_active else 1.0
 	animation_player.play(clip, 0.18)
 	var label: String = entry["label"]
 	return label

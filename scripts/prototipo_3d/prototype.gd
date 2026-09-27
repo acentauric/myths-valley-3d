@@ -142,7 +142,7 @@ func _process(_delta: float) -> void:
 	_step_time -= _delta
 	if player.is_on_floor() and Vector2(player.velocity.x, player.velocity.z).length() > 0.3:
 		if _step_time <= 0:
-			var running := Input.is_action_pressed("mv_run")
+			var running: bool = player.is_running()
 			var terrain: String = world.surface_at(player.global_position)
 			if terrain == "agua":
 				terrain = "areia"
