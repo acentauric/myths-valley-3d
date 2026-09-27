@@ -90,9 +90,28 @@ func _criar(tripo: bool) -> Node3D:
 		# vem com o comprimento em Z; o giro o deita no eixo X, como o casco procedural.
 		var modelo := CatalogoAssets.instanciar("canoa", raiz, Vector3(0, -CALADO_TRIPO, 0), 1.0, PI * 0.5)
 		if modelo != null:
+			# Caixa pelo tamanho real do modelo (medido deitado no eixo X pelo giro):
+			# do fundo até a borda, sem a proa alta.
+			var limites: AABB = modelo.get_meta("limites")
+			raiz.add_child(_colisao(Vector3(limites.size.z * 0.9, limites.size.y * 0.4, limites.size.x * 0.85), -CALADO_TRIPO))
 			return raiz
 	raiz.add_child(_casco_procedural())
+	raiz.add_child(_colisao(Vector3(COMPRIMENTO * 0.92, PONTAL + CALADO, BOCA), -CALADO))
 	return raiz
+
+
+## Caixa do casco (da quilha à borda), que acompanha o balanço: ninguém atravessa a
+## canoa, e dá para subir nela pela borda.
+static func _colisao(tamanho: Vector3, fundo: float) -> AnimatableBody3D:
+	var corpo := AnimatableBody3D.new()
+	corpo.name = "Colisão da canoa"
+	var forma := BoxShape3D.new()
+	forma.size = tamanho
+	var colisao := CollisionShape3D.new()
+	colisao.shape = forma
+	colisao.position.y = fundo + tamanho.y * 0.5
+	corpo.add_child(colisao)
+	return corpo
 
 
 ## Casco de canoa de tábuas: seções em meia elipse ao longo do comprimento, mais

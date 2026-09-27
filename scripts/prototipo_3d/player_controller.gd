@@ -9,6 +9,7 @@ signal navigation_status(message: String)
 
 const ClickNavigation = preload("res://scripts/prototipo_3d/click_navigation.gd")
 const TeclasMovimento = preload("res://scripts/prototipo_3d/teclas_movimento.gd")
+const Mar = preload("res://scripts/prototipo_3d/mar.gd")
 const HOUSE_INTERACTION_LAYER := 1 << 12
 const ARRIVAL_DISTANCE := 0.7
 const CAMERA_DRAG_THRESHOLD := 6.0
@@ -19,10 +20,25 @@ const JUMP_GRAVITY_DOWN := 25.0 * JUMP_SPEED_MULTIPLIER * JUMP_SPEED_MULTIPLIER
 const JUMP_BUFFER_TIME := 0.16
 const JUMP_COYOTE_TIME := 0.16
 const RUN_STOP_SPEED := 0.15
-## Água: o jogador entra andando no raso, mais devagar conforme ela sobe; com a água no
-## peito (fração da altura), não avança mais para o fundo.
-const AGUA_NO_PEITO := 0.7
+## Água: o jogador entra andando no raso, mais devagar conforme ela sobe; onde o fundo
+## passa do peito (fração da altura) ele nada, com os ombros e a cabeça de fora. Entra
+## no nado e volta a andar em profundidades diferentes, para não ficar alternando.
+const NADA_A_PARTIR := 0.72
+const ANDA_ATE := 0.66
 const VELOCIDADE_NA_AGUA := 0.45
+const VELOCIDADE_NADO := 1.5
+## Quanto do corpo fica abaixo da superfície nadando (fração da altura): entre ANDA_ATE
+## e NADA_A_PARTIR, então os pés só roçam o fundo perto da hora de voltar a andar.
+const SUBMERSO_NADANDO := 0.68
+## Degrau que o jogador sobe sem pular (borda da areia, meio-fio, píer).
+const DEGRAU := 0.32
+## Altura do pivô da câmera (acima dos pés); nadando ele sobe para a cabeça, acima da
+## superfície que barra a câmera.
+const PIVO_CAMERA := 1.18
+const PIVO_CAMERA_NADANDO := 1.66
+## O clipe "swim" deita o corpo na altura da raiz (os pés): nadando, o modelo sobe esta
+## fração da altura para as costas ficarem na linha d'água.
+const MODELO_ACIMA_NADANDO := 0.44
 
 @export var model_scene: PackedScene
 @export var character_height: float = 1.78
@@ -70,9 +86,7 @@ var _jumping := false
 ## ou do píer) volta para cá, e não para o ponto de chegada.
 var _last_land := Vector3.INF
 var _knockback_remaining := 0.0
-## Último ponto em que a água não passava do peito: quem tenta ir mais fundo volta para cá.
-var _ultimo_raso := Vector3.INF
-var _avisou_fundo := false
+var _nadando := false
 var _land_check := 0.0
 var _run_toggled := false
 var _ran_since_toggle := false
@@ -124,7 +138,7 @@ func _ready() -> void:
 	else:
 		push_error("A cena do personagem não foi configurada.")
 	camera_pivot = Node3D.new()
-	camera_pivot.position.y = 1.18
+	camera_pivot.position.y = PIVO_CAMERA
 	add_child(camera_pivot)
 	spring = SpringArm3D.new()
 	spring.spring_length = _distance
@@ -132,6 +146,8 @@ func _ready() -> void:
 	var camera_shape := SphereShape3D.new()
 	camera_shape.radius = 0.18
 	spring.shape = camera_shape
+	# A câmera não mergulha: o braço também bate na superfície da água (camada própria).
+	spring.collision_mask |= Mar.CAMADA_CAMERA_AGUA
 	spring.add_excluded_object(get_rid())
 	camera_pivot.add_child(spring)
 	camera = Camera3D.new()
@@ -228,9 +244,12 @@ func _physics_process(delta: float) -> void:
 	if _run_toggled and direction.length_squared() > 0.01:
 		_ran_since_toggle = true
 	var speed: float = run_speed if is_running() else walk_speed
+	_atualizar_nado()
 	var profundidade := _profundidade()
-	if profundidade > 0.0:
-		speed *= lerpf(1.0, VELOCIDADE_NA_AGUA, clampf(profundidade / (character_height * AGUA_NO_PEITO), 0.0, 1.0))
+	if _nadando:
+		speed = VELOCIDADE_NADO * (1.35 if is_running() else 1.0)
+	elif profundidade > 0.0:
+		speed *= lerpf(1.0, VELOCIDADE_NA_AGUA, clampf(profundidade / (character_height * NADA_A_PARTIR), 0.0, 1.0))
 	if _knockback_remaining > 0.0:
 		# Empurrão (ex.: o coveiro): o impulso manda até o fim, sem controle do jogador.
 		_knockback_remaining -= delta
@@ -238,7 +257,7 @@ func _physics_process(delta: float) -> void:
 	else:
 		velocity.x = move_toward(velocity.x, direction.x * speed, 18.0 * delta)
 		velocity.z = move_toward(velocity.z, direction.z * speed, 18.0 * delta)
-	if _jump_buffer_remaining > 0.0 and _grounded_grace_remaining > 0.0 and not _jumping:
+	if _jump_buffer_remaining > 0.0 and _grounded_grace_remaining > 0.0 and not _jumping and not _nadando:
 		velocity.y = JUMP_VELOCITY
 		_jumping = true
 		_jump_buffer_remaining = 0.0
@@ -248,7 +267,14 @@ func _physics_process(delta: float) -> void:
 			if not label.is_empty():
 				animation_requested.emit(label)
 	_jump_buffer_remaining = maxf(0.0, _jump_buffer_remaining - delta)
-	if _jumping:
+	if _nadando:
+		# Boia: puxa o corpo para a altura de nado, sem gravidade.
+		var altura_nado: float = _click_world.water_level() - character_height * SUBMERSO_NADANDO
+		velocity.y = clampf((altura_nado - global_position.y) * 5.0, -3.0, 3.0)
+		# Roçando o fundo, não empurra contra ele (o fundo virava parede e prendia).
+		if is_on_floor():
+			velocity.y = maxf(velocity.y, 0.0)
+	elif _jumping:
 		velocity.y -= (JUMP_GRAVITY_UP if velocity.y > 0.0 else JUMP_GRAVITY_DOWN) * delta
 	elif not is_on_floor():
 		velocity.y -= 20.0 * delta
@@ -256,7 +282,7 @@ func _physics_process(delta: float) -> void:
 		velocity.y = -0.1
 	var distance_before := _distance_to_next_waypoint()
 	move_and_slide()
-	_limitar_profundidade()
+	_subir_degrau(direction)
 	if _run_toggled and _ran_since_toggle and direction.length_squared() <= 0.01 and Vector2(velocity.x, velocity.z).length_squared() <= RUN_STOP_SPEED * RUN_STOP_SPEED:
 		_run_toggled = false
 		_ran_since_toggle = false
@@ -280,7 +306,7 @@ func _physics_process(delta: float) -> void:
 		if _click_world.is_on_land(global_position):
 			_last_land = global_position
 	# Mar e rio não têm chão: 2,5 m abaixo da última terra firme já é queda na água.
-	if global_position.y < -6.0 or (_last_land.is_finite() and global_position.y < _last_land.y - 2.5 and not is_on_floor()):
+	if not _nadando and (global_position.y < -6.0 or (_last_land.is_finite() and global_position.y < _last_land.y - 2.5 and not is_on_floor())):
 		_back_to_land()
 
 
@@ -399,23 +425,44 @@ func _profundidade() -> float:
 	return maxf(_click_world.water_level() - global_position.y, 0.0)
 
 
-func _limitar_profundidade() -> void:
-	var profundidade := _profundidade()
-	if profundidade <= character_height * AGUA_NO_PEITO:
-		if is_on_floor():
-			_ultimo_raso = global_position
-		if profundidade <= 0.0:
-			_avisou_fundo = false
+## Lâmina d'água sobre o fundo no ponto do jogador (0 em terra), para decidir o nado.
+func _fundo_da_agua() -> float:
+	if _click_world == null or not _click_world.has_method("water_depth_at"):
+		return 0.0
+	return _click_world.water_depth_at(global_position)
+
+
+func _atualizar_nado() -> void:
+	var fundo := _fundo_da_agua()
+	var nadar := fundo > character_height * (ANDA_ATE if _nadando else NADA_A_PARTIR)
+	if nadar == _nadando:
 		return
-	if not _ultimo_raso.is_finite():
+	_nadando = nadar
+	if _nadando:
+		_cancel_walk()
+		_jumping = false
+		navigation_status.emit("Nadando: aqui a água já não dá pé.")
+	if animator and animator.has_method("set_swimming"):
+		animator.set_swimming(_nadando)
+	var ajuste := create_tween().set_parallel()
+	ajuste.tween_property(camera_pivot, "position:y", PIVO_CAMERA_NADANDO if _nadando else PIVO_CAMERA, 0.35)
+	ajuste.tween_property(visual, "position:y", character_height * MODELO_ACIMA_NADANDO if _nadando else 0.0, 0.35)
+
+
+func is_swimming() -> bool:
+	return _nadando
+
+
+## Bordas baixas (a areia da praia saindo da água, meio-fio, rampa do píer) viram
+## parede para o CharacterBody3D: se o que barra o passo cabe em DEGRAU, sobe nele.
+func _subir_degrau(direcao: Vector3) -> void:
+	if _nadando or not is_on_wall() or direcao.length_squared() < 0.01 or get_wall_normal().y > 0.3:
 		return
-	_cancel_walk()
-	global_position = _ultimo_raso
-	velocity.x = 0.0
-	velocity.z = 0.0
-	if not _avisou_fundo:
-		_avisou_fundo = true
-		navigation_status.emit("Daqui pra frente não dá pé.")
+	var passo := Vector3(direcao.x, 0.0, direcao.z).normalized() * 0.2
+	var em_cima := global_transform.translated(Vector3.UP * DEGRAU)
+	if test_move(global_transform, Vector3.UP * DEGRAU) or test_move(em_cima, passo):
+		return
+	global_position += Vector3.UP * DEGRAU + passo
 
 
 func _back_to_land() -> void:

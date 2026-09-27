@@ -11,6 +11,8 @@ const LEAVES := Color("487557")
 const GeoRegionRenderer = preload("res://scripts/prototipo_3d/geo_region_renderer.gd")
 const LuzesEpoca = preload("res://scripts/prototipo_3d/luzes_epoca.gd")
 const Canoas = preload("res://scripts/prototipo_3d/canoas.gd")
+const Cardume = preload("res://scripts/prototipo_3d/cardume.gd")
+const Mar = preload("res://scripts/prototipo_3d/mar.gd")
 const MAP_CATALOG := "res://data/mapas/regioes.json"
 const CASA_TAIPA_CAL_TEXTURE := preload("res://assets/prototipo_3d/materiais/cal_taipa_envelhecida_v1.png")
 const TELHA_COLONIAL_TEXTURE := preload("res://assets/prototipo_3d/materiais/telha_colonial_envelhecida_v1.png")
@@ -109,6 +111,14 @@ func is_walkable_point(world_position: Vector3) -> bool:
 ## Terra firme do mapa (fora do mar, passarelas e píer).
 func water_level() -> float:
 	return _region.water_level() if _region else -INF
+
+
+## Lâmina d'água (unidades) sobre o fundo do mar no ponto; 0 em terra ou sem mar real.
+func water_depth_at(world_position: Vector3) -> float:
+	if not is_finite(water_level()):
+		return 0.0
+	var lamina := Mar.lamina_em(Vector2(world_position.x, world_position.z))
+	return maxf(lamina, 0.0) / _meters_per_unit if not is_nan(lamina) else 0.0
 
 
 func is_on_land(world_position: Vector3) -> bool:
@@ -760,6 +770,24 @@ func _build_canoas() -> void:
 	canoas.name = "Canoas"
 	add_child(canoas)
 	canoas.montar(_region._coast, ancoras["PierPiso"], ancoras["PierDirecao"], water_level(), estilo_tripo())
+	_build_cardume()
+
+
+## Cardume ao lado do píer (cardume.gd), onde a água tem de 1 a 3 m.
+func _build_cardume() -> void:
+	var pier: Vector3 = ancoras["PierPiso"]
+	var mar_adentro: Vector3 = ancoras["PierDirecao"]
+	var lado := Vector3(-mar_adentro.z, 0.0, mar_adentro.x)
+	for afastamento in [5.0, -5.0, 8.0, -8.0]:
+		for adiante in [4.0, 8.0, 12.0]:
+			var centro: Vector3 = pier + lado * afastamento + mar_adentro * adiante
+			var fundo := water_depth_at(centro)
+			if fundo >= 0.25 and fundo <= 0.75:
+				var cardume := Cardume.new()
+				cardume.name = "Cardume"
+				add_child(cardume)
+				cardume.montar(Vector3(centro.x, water_level(), centro.z), water_level(), fundo, estilo_tripo())
+				return
 
 
 func _build_pecas() -> void:

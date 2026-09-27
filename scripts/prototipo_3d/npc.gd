@@ -20,6 +20,22 @@ const RAIO_CONVERSA := 14.0
 ## Folga entre o fim de uma fala e o começo da seguinte, em segundos.
 const PAUSA_ENTRE_FALAS := 0.6
 
+## Água: como o jogador (player_controller.gd), nada onde o fundo passa do peito.
+const NADA_A_PARTIR := 0.72
+const ANDA_ATE := 0.66
+const SUBMERSO_NADANDO := 0.68
+const VELOCIDADE_NADO := 1.4
+## O clipe "swim" deita o corpo na altura dos pés: nadando, o modelo sobe esta fração.
+const MODELO_ACIMA_NADANDO := 0.44
+## Bloqueio: andando sem sair do lugar por TEMPO_PRESO, contorna o obstáculo seguindo
+## a parede, sempre para o mesmo lado, por TEMPO_DESVIO × tentativas; depois de
+## DESVIOS_MAXIMOS sem se afastar LIVRE_APOS do ponto onde travou, desiste um pouco.
+const TEMPO_PRESO := 0.6
+const TEMPO_DESVIO := 1.2
+const DESVIOS_MAXIMOS := 4
+const LIVRE_APOS := 4.0
+const PAUSA_DESISTIU := 4.0
+
 ## Até quando (ms) cada morador que está falando segura a palavra.
 static var _falando: Dictionary = {}
 
@@ -45,6 +61,14 @@ var _velocidade_atual := 0.0
 var _proxima_fala := 0
 var _destino_avulso := Vector3.INF
 var _velocidade_avulsa := VELOCIDADE
+var _nadando := false
+var _preso := 0.0
+var _desvio := Vector3.ZERO
+var _desvio_tempo := 0.0
+var _desvios := 0
+var _parado := 0.0
+var _lado_desvio := 0.0
+var _ponto_bloqueio := Vector3.INF
 
 
 ## Anda até `ponto` (em vez do posto do período), na `velocidade` dada, até liberar().
@@ -167,19 +191,101 @@ func _physics_process(delta: float) -> void:
 
 ## Movimento com gravidade e colisão; vira o corpo para a direção do passo.
 func _mover(direcao: Vector3, velocidade: float, delta: float) -> void:
+	direcao = _contornar_bloqueio(direcao, delta)
+	_atualizar_nado()
+	if _nadando:
+		velocidade = minf(velocidade, VELOCIDADE_NADO)
 	velocity.x = move_toward(velocity.x, direcao.x * velocidade, 12.0 * delta)
 	velocity.z = move_toward(velocity.z, direcao.z * velocidade, 12.0 * delta)
-	if not is_on_floor():
+	if _nadando:
+		var altura_nado: float = terreno.water_level() - altura * SUBMERSO_NADANDO
+		velocity.y = clampf((altura_nado - global_position.y) * 5.0, -3.0, 3.0)
+		if is_on_floor():
+			velocity.y = maxf(velocity.y, 0.0)
+	elif not is_on_floor():
 		velocity.y -= 20.0 * delta
 	else:
 		velocity.y = -0.1
 	move_and_slide()
+	_medir_bloqueio(direcao, velocidade, delta)
 	if direcao.length_squared() > 0.01:
 		visual.rotation.y = lerp_angle(visual.rotation.y, atan2(direcao.x, direcao.z), 1.0 - exp(-9.0 * delta))
 	_velocidade_atual = Vector2(velocity.x, velocity.z).length()
 	if global_position.y < -6.0:
 		global_position = _alvo + Vector3(0, 0.5, 0)
 		velocity = Vector3.ZERO
+
+
+func _atualizar_nado() -> void:
+	if terreno == null or not terreno.has_method("water_depth_at"):
+		return
+	var nadar: bool = terreno.water_depth_at(global_position) > altura * (ANDA_ATE if _nadando else NADA_A_PARTIR)
+	if nadar == _nadando:
+		return
+	_nadando = nadar
+	if animador != null and animador.has_method("set_swimming"):
+		animador.set_swimming(_nadando)
+	# Sem clipe de nado, o modelo segue de pé, com a água no peito.
+	var deita: bool = _nadando and animador != null and animador.has_method("can_swim") and animador.can_swim()
+	create_tween().tween_property(visual, "position:y", altura * MODELO_ACIMA_NADANDO if deita else 0.0, 0.35)
+
+
+## Direção de fato seguida neste quadro: a pedida, o desvio em curso, ou nenhuma
+## enquanto o morador está parado depois de desistir.
+func _contornar_bloqueio(direcao: Vector3, delta: float) -> Vector3:
+	if _parado > 0.0:
+		_parado -= delta
+		return Vector3.ZERO
+	if direcao.length_squared() < 0.01:
+		_preso = 0.0
+		_desvios = 0
+		return direcao
+	if _desvio_tempo > 0.0:
+		_desvio_tempo -= delta
+		return _desvio
+	return direcao
+
+
+## Andando sem sair do lugar (parede, casa, cerca, borda): contorna seguindo a parede;
+## depois de várias tentativas sem sair dali, desiste por um tempo e olha em volta.
+func _medir_bloqueio(direcao: Vector3, velocidade: float, delta: float) -> void:
+	if direcao.length_squared() < 0.01:
+		return
+	var andou := Vector2(get_real_velocity().x, get_real_velocity().z).length()
+	if andou > velocidade * 0.3:
+		_preso = maxf(_preso - delta, 0.0)
+		if _ponto_bloqueio.is_finite() and _desvio_tempo <= 0.0 and global_position.distance_to(_ponto_bloqueio) > LIVRE_APOS:
+			_desvios = 0
+			_lado_desvio = 0.0
+			_ponto_bloqueio = Vector3.INF
+		return
+	_preso += delta
+	if _preso < TEMPO_PRESO:
+		return
+	_preso = 0.0
+	if not _ponto_bloqueio.is_finite():
+		_ponto_bloqueio = global_position
+	_desvios += 1
+	if _desvios > DESVIOS_MAXIMOS:
+		_desvios = 0
+		_desvio_tempo = 0.0
+		_lado_desvio = 0.0
+		_ponto_bloqueio = Vector3.INF
+		_parado = PAUSA_DESISTIU
+		if animador != null and animador.has_method("play_gesture"):
+			animador.play_gesture(3)
+		return
+	var normal := get_wall_normal() if is_on_wall() else -direcao
+	normal.y = 0.0
+	normal = normal.normalized() if normal.length_squared() > 0.0001 else -direcao
+	var tangente := normal.cross(Vector3.UP).normalized()
+	if _lado_desvio == 0.0:
+		# Primeiro bloqueio: o lado que mais se aproxima do rumo e está livre.
+		_lado_desvio = 1.0 if tangente.dot(direcao) >= 0.0 else -1.0
+		if test_move(global_transform, tangente * _lado_desvio * 0.6):
+			_lado_desvio = -_lado_desvio
+	_desvio = (tangente * _lado_desvio + normal * 0.25).normalized()
+	_desvio_tempo = TEMPO_DESVIO * _desvios
 
 
 func _olhar_para(ponto: Vector3, delta: float) -> void:

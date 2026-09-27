@@ -28,9 +28,20 @@ atualize esse arquivo e este documento juntos.
   quadro desenhado ao 16:9 exato (3.614 × 2.033 m, a largura cresce, centrada); terreno,
   costa, mata e limites terminam nele. Fora do quadro, a terra da carta náutica segue
   como relevo distante — Bom Jesus não é ilha. Paredes invisíveis na borda.
-- **Entrar no mar andando.** O fundo tem colisão: o jogador afunda aos poucos, anda mais
-  devagar e para com a água no peito ("Daqui pra frente não dá pé") — na planície
-  rasa dá para andar ~600 m mar adentro (`tests/agua_rasa.gd`).
+- **Entrar no mar andando e nadar.** O fundo tem colisão: o jogador afunda aos poucos,
+  anda mais devagar e, onde a água passa do peito, nada (clipe `swim`, corpo na linha
+  d'água); volta andando para a areia sem pular — a praia desce em rampa para dentro
+  d'água e o jogador sobe degraus baixos sozinho. O Pedro nada junto (clipe novo do
+  Tripo). Na planície rasa dá para andar ~600 m mar adentro (`tests/agua_rasa.gd`).
+- A câmera não mergulha: a superfície da água barra o braço da câmera (camada física
+  só dela).
+- **Praia com areia de verdade** (`areia_praia.gdshader`: grãos, marcas de vento, areia
+  úmida na beira), **marolas** de espuma correndo para a areia, **foz do rio**
+  atravessando a praia e se desfazendo no mar, e um **cardume** ao lado do píer que
+  foge de quem chega perto (`cardume.gd`).
+- **Moradores contornam obstáculos**: andando sem sair do lugar, seguem a parede para
+  um lado; depois de várias tentativas, param, olham em volta e tentam de novo.
+- Canoas com colisão (caixa do tamanho do casco, acompanhando o balanço).
 - **Chão iluminado pelo sol.** Os triângulos do terreno estavam de costas para cima:
   terra, praia e ruas só recebiam luz ambiente. Com a correção, a grama ganhou uma
   tinta verde para compensar o tom ocre da textura sob o sol.

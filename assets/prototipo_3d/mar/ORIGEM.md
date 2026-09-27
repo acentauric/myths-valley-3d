@@ -40,7 +40,14 @@ O arquivo guarda a elevação acima da preamar em float16, normalizada entre -35
   raso, verde-petróleo no canal. Ondulação leve, reflexo do céu e espuma fina só onde
   a lâmina é mínima.
 
-Os dois são montados por `scripts/prototipo_3d/mar.gd`, chamado pelo
+- `areia_praia.gdshader`: faixa de areia centrada na costa, em rampa para dentro d'água
+  (sem degrau entre o fundo e a areia): grãos, marcas de vento e areia úmida na beira.
+- `foz_rio.gdshader`: o rio prolongado através da praia, com a água transparente no fim
+  para se misturar ao mar.
+- Na água, as marolas são faixas de espuma cuja fase cresce com a profundidade
+  vertical e anda com o tempo: as cristas correm para a areia.
+
+Os dois primeiros são montados por `scripts/prototipo_3d/mar.gd`, chamado pelo
 `geo_region_renderer.gd` quando o cenário tem o bloco `bathymetry`. O `mar.gd` também
 cria o chão do mar (o jogador entra andando e para com a água no peito, ver
 `player_controller.gd`) e as paredes invisíveis na borda do quadro.

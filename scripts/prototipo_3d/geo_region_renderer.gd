@@ -18,6 +18,8 @@ const ESTRADA_OCRE_TEXTURE := preload("res://assets/prototipo_3d/materiais/estra
 const CHAO_PRACA_TEXTURE := preload("res://assets/prototipo_3d/materiais/chao_praca_v1.png")
 const GRAMA_TERRA_MATA_TEXTURE := preload("res://assets/prototipo_3d/materiais/grama_terra_mata_v1.png")
 const Mar = preload("res://scripts/prototipo_3d/mar.gd")
+const AREIA_PRAIA := preload("res://assets/prototipo_3d/mar/areia_praia.gdshader")
+const FOZ_RIO := preload("res://assets/prototipo_3d/mar/foz_rio.gdshader")
 ## Tinta da textura de grama/terra: com o sol batendo no chão (não mais só a luz
 ## ambiente), a textura crua fica ocre; puxa de volta para o verde do Recôncavo.
 const TINTA_GRAMA := Color(0.74, 0.86, 0.6)
@@ -192,9 +194,10 @@ func build_region(kml_json_path: String, scenario_json_path: String) -> void:
 	# Mantém a areia acima das sobreposições da Mata (offset 0.027). Sem essa
 	# margem, a textura de grama cobre trechos da praia apesar de a faixa e sua
 	# colisão já existirem na mesma linha costeira.
-	_add_ribbon("Orla de areia", _coast, _units(22.0, 8.0), 0.05, BEACH_COLOR, true)
+	_add_beach()
 	for river in _rivers:
 		_add_ribbon("Rio", river.points, river.width, 0.046, RIVER_COLOR)
+	_add_river_mouths()
 	for road in _roads:
 		var road_width: float = float(road.width)
 		var road_path := _soften_road_corners(road.points, road_width)
@@ -757,7 +760,9 @@ func _soften_road_corners(points: PackedVector2Array, width: float) -> PackedVec
 	return softened
 
 
-func _add_ribbon(label: String, points: PackedVector2Array, width: float, y: float, color: Color, with_collision: bool = false, material_override: Material = null) -> void:
+## Faixa ao longo de `points`, `y` acima do chão; `y_right` (se dado) é a altura do lado
+## direito, para faixas em rampa como a praia entrando na água.
+func _add_ribbon(label: String, points: PackedVector2Array, width: float, y: float, color: Color, with_collision: bool = false, material_override: Material = null, y_right: float = NAN) -> void:
 	if points.size() < 2:
 		return
 	var sampled := PackedVector2Array([points[0]])
@@ -793,9 +798,10 @@ func _add_ribbon(label: String, points: PackedVector2Array, width: float, y: flo
 	surface.set_material(material_override if material_override != null else _material(color))
 	for i in range(sampled.size() - 1):
 		var a := ground_position(Vector3(left[i].x, 0, left[i].y), y)
-		var b := ground_position(Vector3(right[i].x, 0, right[i].y), y)
+		var y_direita := y if is_nan(y_right) else y_right
+		var b := ground_position(Vector3(right[i].x, 0, right[i].y), y_direita)
 		var c := ground_position(Vector3(left[i + 1].x, 0, left[i + 1].y), y)
-		var d := ground_position(Vector3(right[i + 1].x, 0, right[i + 1].y), y)
+		var d := ground_position(Vector3(right[i + 1].x, 0, right[i + 1].y), y_direita)
 		if material_override != null:
 			var uv_a := Vector2(0.0, along[i])
 			var uv_b := Vector2(1.0, along[i])
@@ -819,6 +825,57 @@ func _add_ribbon(label: String, points: PackedVector2Array, width: float, y: flo
 		collision.shape = shape
 		body.add_child(collision)
 		add_child(body)
+
+
+## Praia: faixa de areia centrada na costa que desce em rampa para dentro d'água (o lado
+## do mar fica abaixo da superfície), sem degrau entre o fundo do mar e a areia.
+func _add_beach() -> void:
+	if _coast.size() < 2:
+		return
+	var width := _units(22.0, 8.0)
+	var coast := _coast
+	# _add_ribbon põe a esquerda em +normal: a terra precisa ficar à esquerda.
+	var direction := (coast[1] - coast[0]).normalized()
+	var left_side := coast[0] + Vector2(-direction.y, direction.x) * width * 0.5
+	if not Geometry2D.is_point_in_polygon(left_side, _land):
+		coast = coast.duplicate()
+		coast.reverse()
+	var material := ShaderMaterial.new()
+	material.shader = AREIA_PRAIA
+	_add_ribbon("Orla de areia", coast, width, 0.05, BEACH_COLOR, true, material, -0.06)
+
+
+## Rios que terminam perto da costa seguem até o mar: a foz atravessa a areia e a água
+## do rio se desfaz na do mar.
+func _add_river_mouths() -> void:
+	if _background_kind != "sea" or _land.size() < 3:
+		return
+	for river in _rivers:
+		var points: PackedVector2Array = river.points
+		for from_end in [true, false]:
+			var tip: Vector2 = points[points.size() - 1] if from_end else points[0]
+			var before: Vector2 = points[points.size() - 2] if from_end else points[1]
+			if _distance_to_line(tip, _coast) > _units(60.0, 15.0) or not Geometry2D.is_point_in_polygon(tip, _land):
+				continue
+			var direction := (tip - before).normalized()
+			var mouth := PackedVector2Array([tip - direction * float(river.width)])
+			var point := tip
+			for step in 200:
+				point += direction
+				mouth.append(point)
+				if not Geometry2D.is_point_in_polygon(point, _land):
+					break
+			var tail := _units(24.0, 6.0)
+			mouth.append(point + direction * tail)
+			var length := 0.0
+			for i in range(mouth.size() - 1):
+				length += mouth[i].distance_to(mouth[i + 1])
+			var material := ShaderMaterial.new()
+			material.shader = FOZ_RIO
+			material.set_shader_parameter("cor_rio", RIVER_COLOR)
+			material.set_shader_parameter("comprimento", length / float(river.width))
+			material.set_shader_parameter("inicio_sumir", 1.0 - tail / length * 1.4)
+			_add_ribbon("Foz do rio", mouth, float(river.width), 0.07, RIVER_COLOR, false, material)
 
 
 func _distance_to_line(point: Vector2, line: PackedVector2Array) -> float:

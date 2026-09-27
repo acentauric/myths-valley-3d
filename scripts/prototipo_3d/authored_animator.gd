@@ -5,6 +5,7 @@ const MOTION_CLIPS := {
 	"idle": "idle",
 	"walk": "walk",
 	"run": "run",
+	"swim": "swim",
 }
 
 const GESTURES := [
@@ -27,6 +28,8 @@ var _current_motion := ""
 var _clips: Dictionary = {}
 var _gesture_active := false
 var _jump_active := false
+## Na água funda o movimento vira nado (clipe "swim" em laço, se o modelo tiver).
+var _swimming := false
 
 
 func configure(model_root: Node) -> bool:
@@ -54,11 +57,14 @@ func update_motion(speed: float, _delta: float) -> void:
 	if _jump_active:
 		return
 	if _gesture_active:
-		if speed < 0.2:
+		if speed < 0.2 and not _swimming:
 			return
 		_gesture_active = false
 
-	if speed > 4.25:
+	if _swimming and _clips.has("swim"):
+		# Parado, bate as pernas devagar para se manter na superfície.
+		_play_motion("swim", clampf(0.45 + speed / 2.0, 0.45, 1.3))
+	elif speed > 4.25:
 		_play_motion("run", clampf(speed / 5.8, 0.85, 1.25))
 	elif speed > 0.2:
 		_play_motion("walk", clampf(speed / 3.2, 0.7, 1.35))
@@ -80,6 +86,17 @@ func play_gesture(index: int) -> String:
 	animation_player.play(clip, 0.18)
 	var label: String = entry["label"]
 	return label
+
+
+func set_swimming(swimming: bool) -> void:
+	if _swimming == swimming:
+		return
+	_swimming = swimming
+	_current_motion = ""
+
+
+func can_swim() -> bool:
+	return _clips.has("swim")
 
 
 func finish_jump(speed: float) -> void:

@@ -10,8 +10,11 @@ const LEITO := preload("res://assets/prototipo_3d/mar/leito_mar.gdshader")
 const CELULAS_POR_VERTICE := 2
 ## Fundo além da grade: plano grosso que repete a borda da batimetria até o horizonte.
 const SUBDIVISOES_DISTANTE := 96
-## Altura das paredes invisíveis na borda do quadro.
-const ALTURA_PAREDE := 400.0
+## Camada física só da câmera: a superfície da água barra o braço da câmera (ela não
+## mergulha) e não é vista pelo jogador, pelos moradores nem pelos cliques.
+const CAMADA_CAMERA_AGUA := 1 << 13
+## Folga entre a água e o ponto mais baixo que a câmera alcança.
+const FOLGA_CAMERA := 0.2
 
 static var _ruidos: Dictionary = {}
 ## Batimetria da última montagem, para consultar a lâmina d'água num ponto.
@@ -63,6 +66,7 @@ static func montar(pai: Node3D, dados: Dictionary, nivel: float, metros_por_unid
 
 	_colisao_do_fundo(pai, imagem, dados, grade, quadro, nivel, metros_por_unidade)
 	_paredes(pai, quadro)
+	_superficie_da_camera(pai, nivel)
 
 
 ## Lâmina d'água (m) no ponto XZ em unidades, pela célula mais próxima; negativa em
@@ -112,6 +116,18 @@ static func _colisao_do_fundo(pai: Node3D, imagem: Image, dados: Dictionary, gra
 	# Amostra i fica no centro da célula i da grade; a forma é centrada no nó.
 	var centro := grade.position + (Vector2(inicio) + Vector2(recorte.get_size() - Vector2i.ONE) * 0.5 + Vector2(0.5, 0.5)) * celula
 	corpo.position = Vector3(centro.x, nivel, centro.y)
+
+
+static func _superficie_da_camera(pai: Node3D, nivel: float) -> void:
+	var corpo := StaticBody3D.new()
+	corpo.name = "Superfície para a câmera"
+	corpo.collision_layer = CAMADA_CAMERA_AGUA
+	corpo.collision_mask = 0
+	var colisao := CollisionShape3D.new()
+	colisao.shape = WorldBoundaryShape3D.new()
+	corpo.add_child(colisao)
+	pai.add_child(corpo)
+	corpo.position = Vector3(0.0, nivel + FOLGA_CAMERA, 0.0)
 
 
 ## Paredes invisíveis nas quatro bordas do quadro: o mundo jogável é o retângulo 16:9.

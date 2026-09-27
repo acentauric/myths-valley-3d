@@ -22,6 +22,9 @@ uniform vec3 tinta_rasa : source_color = vec3(0.95, 1.0, 0.8);
 uniform float ondulacao = 0.22;
 uniform float refracao = 0.018;
 uniform float espuma = 0.55;
+// Marolas: faixas de espuma que correm para a areia no último palmo d'água.
+uniform float marolas = 0.8;
+uniform float ritmo_marolas = 1.3;
 
 varying vec2 superficie_m;
 
@@ -66,6 +69,14 @@ void fragment() {
 	// Espuma fina e quebrada só onde a lâmina é mínima (a baía é calma).
 	float ruido_espuma = texture(ruido, p / 3.0 + TIME * vec2(0.02, -0.015)).r;
 	float beira = (1.0 - smoothstep(0.0, 0.28, esp_m)) * smoothstep(0.45, 0.75, ruido_espuma) * espuma;
+	// Profundidade na vertical: a espessura ao longo do olhar corrigida pelo ângulo, para
+	// as marolas não mudarem com a inclinação da câmera. A fase cresce com a
+	// profundidade e anda com o tempo: as cristas correm do fundo para a areia.
+	vec3 olhar = (INV_VIEW_MATRIX * vec4(VIEW, 0.0)).xyz;
+	float prof_v = esp_m * clamp(abs(olhar.y), 0.08, 1.0);
+	float fase = prof_v * 7.5 - TIME * ritmo_marolas + texture(ruido, p / 30.0).r * 6.0;
+	float crista = smoothstep(0.84, 1.0, sin(fase)) * (1.0 - smoothstep(0.2, 0.9, prof_v)) * smoothstep(0.0, 0.04, prof_v);
+	beira = max(beira, crista * marolas * smoothstep(0.3, 0.65, ruido_espuma + 0.15));
 
 	EMISSION = fundo * tinta_rasa * passa * (1.0 - beira);
 	ALBEDO = mix(cor_funda * (1.0 - passa), vec3(0.95), beira);

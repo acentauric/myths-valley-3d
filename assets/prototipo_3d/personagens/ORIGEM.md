@@ -46,3 +46,10 @@ wave_goodbye_02), exportados em GLB com animação no lugar e textura **1K** (3,
 4,7 MB). Feito pela aba logada do Studio com a extensão do Playwright, usando
 `__mv.animar()` de `prototipo_3d/tools/tripo/lote_studio.js`; originais em
 `.assets-raw/tripo/personagens/<id>_tripo_animado.glb`. Só o viajante segue sem rig.
+
+## Pedro nada (27/09/2026)
+
+Mesmo projeto do Pedro (`c8a8039c-…`): retarget da predefinição `preset:biped:swim`
+(sem custo) e nova exportação com os oito clipes (idle, walk, run, greet_01, agree,
+look_around, wave_goodbye_02, swim), textura 1K, 4,5 MB, por `__mv.animar()` de
+`tools/tripo/lote_studio.js`. Original em `.assets-raw/tripo/personagens/pedro_tripo_nado.glb`.
