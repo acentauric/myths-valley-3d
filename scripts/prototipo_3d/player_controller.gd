@@ -14,6 +14,8 @@ const CAMERA_DRAG_THRESHOLD := 6.0
 const JUMP_VELOCITY := 6.7
 const JUMP_GRAVITY_UP := 15.0
 const JUMP_GRAVITY_DOWN := 25.0
+const JUMP_BUFFER_TIME := 0.16
+const JUMP_COYOTE_TIME := 0.16
 
 @export var model_scene: PackedScene
 @export var character_height: float = 1.78
@@ -54,7 +56,8 @@ var _camera_drag_pressed := false
 var _camera_drag_moved := false
 var _camera_drag_double_click := false
 var _camera_drag_start := Vector2.ZERO
-var _jump_requested := false
+var _jump_buffer_remaining := 0.0
+var _grounded_grace_remaining := 0.0
 var _jumping := false
 
 func _ready() -> void:
@@ -176,6 +179,12 @@ func _update_house_hover() -> void:
 
 func _physics_process(delta: float) -> void:
 	_update_house_hover()
+	if Input.is_action_just_pressed("mv_animation_9"):
+		_jump_buffer_remaining = JUMP_BUFFER_TIME
+	if is_on_floor():
+		_grounded_grace_remaining = JUMP_COYOTE_TIME
+	else:
+		_grounded_grace_remaining = maxf(0.0, _grounded_grace_remaining - delta)
 	if _pending_house_click.is_finite():
 		var pointed_house := _pointed_house(_pending_house_click)
 		_pending_house_click = Vector2.INF
@@ -202,14 +211,16 @@ func _physics_process(delta: float) -> void:
 	var speed: float = run_speed if Input.is_action_pressed("mv_run") or (_walk_run and not _walk_path.is_empty()) else walk_speed
 	velocity.x = move_toward(velocity.x, direction.x * speed, 18.0 * delta)
 	velocity.z = move_toward(velocity.z, direction.z * speed, 18.0 * delta)
-	if _jump_requested and is_on_floor():
+	if _jump_buffer_remaining > 0.0 and _grounded_grace_remaining > 0.0 and not _jumping:
 		velocity.y = JUMP_VELOCITY
 		_jumping = true
+		_jump_buffer_remaining = 0.0
+		_grounded_grace_remaining = 0.0
 		if animator and animator.has_method("play_gesture"):
 			var label: String = animator.play_gesture(8)
 			if not label.is_empty():
 				animation_requested.emit(label)
-	_jump_requested = false
+	_jump_buffer_remaining = maxf(0.0, _jump_buffer_remaining - delta)
 	if _jumping:
 		velocity.y -= (JUMP_GRAVITY_UP if velocity.y > 0.0 else JUMP_GRAVITY_DOWN) * delta
 	elif not is_on_floor():
@@ -286,8 +297,6 @@ func _unhandled_input(event: InputEvent) -> void:
 		_pitch = -0.08 if inspecting else -0.19
 		_distance = 3.1 if inspecting else 5.0
 		_apply_camera()
-	if event.is_action_pressed("mv_animation_9"):
-		_jump_requested = true
 	if not _jumping:
 		for index in range(8):
 			if event.is_action_pressed("mv_animation_%d" % (index + 1)) and animator and animator.has_method("play_gesture"):
@@ -332,7 +341,8 @@ func reset_position() -> void:
 	_cancel_walk()
 	global_position = spawn_position
 	velocity = Vector3.ZERO
-	_jump_requested = false
+	_jump_buffer_remaining = 0.0
+	_grounded_grace_remaining = 0.0
 	_jumping = false
 	if animator and animator.has_method("finish_jump"):
 		animator.finish_jump(0.0)
