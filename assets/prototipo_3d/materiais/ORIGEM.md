@@ -19,3 +19,18 @@ forma determinística por `prototipo_3d/tools/materiais/gerar_texturas_chao.py`
 longo do eixo V, aplicados nas faixas de rua com UV que acompanha o percurso; o
 chão de praça é terra pisoteada com seixos e grama rala, projetado pelo mundo.
 Regerar com `python prototipo_3d/tools/materiais/gerar_texturas_chao.py`.
+
+## Chão de mata
+
+`grama_terra_mata_v1.png` (1254×1254) foi gerada pela ferramenta integrada de
+imagem, usando `terra_batida_v1.png` como referência de estilo. Combina manchas
+repetíveis de grama verde, terra ocre, folhas secas e pequenas pedras para as
+áreas de terreno e mata fora das vias; não usa fonte externa.
+
+## Estrada de terra ocre
+
+`estrada_terra_ocre_v1.png` foi gerada pela ferramenta integrada de imagem, usando
+como referencia as texturas de mata e terra batida do projeto. A base ocre dourada
+combina com as manchas claras de solo da mata; marcas organicas, pedras pequenas e
+vegetacao esparsa preservam a leitura de estrada. A malha curva os vertices da via
+e usa um contorno estreito em tom de terra para evitar cantos duros.
