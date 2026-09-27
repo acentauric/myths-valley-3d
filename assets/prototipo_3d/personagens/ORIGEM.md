@@ -35,5 +35,14 @@ Uso comercial: plano Max no momento da geração (ver `assets/CREDITOS.md`).
 `pedro_tripo.glb` foi substituído pela exportação animada do mesmo projeto
 (`c8a8039c-…`): Auto Rig humanoide com esqueleto Mixamo (65 ossos, 20 créditos) e oito
 clipes de predefinições do Studio (idle ×2, walk, run, greet_01, agree, look_around,
-wave_goodbye_02), animação no lugar, textura **1K**, 4,4 MB. Os demais personagens
-continuam sem rig.
+wave_goodbye_02), animação no lugar, textura **1K**, 4,4 MB.
+
+## Moradores animados (27/09/2026)
+
+Benedito, Zefa, Cosme, Tonho, Filó, Candinha e Damião receberam o mesmo tratamento
+do Pedro, nos mesmos projetos da tabela acima: Auto Rig Mixamo (20 créditos cada) e
+sete clipes de predefinição (idle, walk, run, greet_01, agree, look_around,
+wave_goodbye_02), exportados em GLB com animação no lugar e textura **1K** (3,9 a
+4,7 MB). Feito pela aba logada do Studio com a extensão do Playwright, usando
+`__mv.animar()` de `prototipo_3d/tools/tripo/lote_studio.js`; originais em
+`.assets-raw/tripo/personagens/<id>_tripo_animado.glb`. Só o viajante segue sem rig.

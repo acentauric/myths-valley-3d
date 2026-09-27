@@ -14,6 +14,14 @@ const VELOCIDADE := 1.35
 const RAIO_SAUDACAO := 3.4
 const RAIO_BALAO := 6.0
 const INTERVALO_SAUDACAO_MS := 45000
+## Duas falas não se atropelam: quem está a menos disto de alguém que ainda fala espera
+## a vez (a fila é quem chegou primeiro a pedir a palavra).
+const RAIO_CONVERSA := 14.0
+## Folga entre o fim de uma fala e o começo da seguinte, em segundos.
+const PAUSA_ENTRE_FALAS := 0.6
+
+## Até quando (ms) cada morador que está falando segura a palavra.
+static var _falando: Dictionary = {}
 
 var dados: Dictionary = {}
 var ancoras: Dictionary = {}
@@ -35,6 +43,19 @@ var _balao_tempo := 0.0
 var _bob := 0.0
 var _velocidade_atual := 0.0
 var _proxima_fala := 0
+var _destino_avulso := Vector3.INF
+var _velocidade_avulsa := VELOCIDADE
+
+
+## Anda até `ponto` (em vez do posto do período), na `velocidade` dada, até liberar().
+func ir_ate(ponto: Vector3, velocidade: float = 2.6) -> void:
+	_destino_avulso = ponto
+	_velocidade_avulsa = velocidade
+
+
+## Volta ao posto do período.
+func liberar() -> void:
+	_destino_avulso = Vector3.INF
 
 
 func configurar(d: Dictionary, anc: Dictionary, alvo_jogador: Node3D, mundo: Node3D = null) -> void:
@@ -129,13 +150,15 @@ func _physics_process(delta: float) -> void:
 	if posto != _posto:
 		_posto = posto
 		_alvo = _posicao_do_posto(posto)
-	var deslocamento := _alvo - global_position
+	# Destino avulso (ir_ate) vale mais que o posto até ser liberado.
+	var destino := _destino_avulso if _destino_avulso.is_finite() else _alvo
+	var deslocamento := destino - global_position
 	deslocamento.y = 0.0
 	var distancia := deslocamento.length()
 	var direcao := Vector3.ZERO
-	if distancia > 0.6:
+	if distancia > (0.2 if _destino_avulso.is_finite() else 0.6):
 		direcao = deslocamento / distancia
-	_mover(direcao, VELOCIDADE, delta)
+	_mover(direcao, _velocidade_avulsa if _destino_avulso.is_finite() else VELOCIDADE, delta)
 	if direcao == Vector3.ZERO and jogador != null and jogador.global_position.distance_to(global_position) < RAIO_BALAO:
 		_olhar_para(jogador.global_position, delta)
 	_atualizar_animacao(delta)
@@ -186,8 +209,28 @@ func _atualizar_interacao(delta: float) -> void:
 	if jogador == null:
 		return
 	var distancia := jogador.global_position.distance_to(global_position)
-	if distancia < RAIO_SAUDACAO and (_ultima_saudacao_ms < 0 or Time.get_ticks_msec() - _ultima_saudacao_ms > intervalo_saudacao_ms):
+	if distancia < RAIO_SAUDACAO and (_ultima_saudacao_ms < 0 or Time.get_ticks_msec() - _ultima_saudacao_ms > intervalo_saudacao_ms) and pode_falar():
 		saudar()
+
+
+## Ninguém por perto está no meio de uma fala (Pedro incluído).
+func pode_falar() -> bool:
+	var agora := Time.get_ticks_msec()
+	for outro in _falando.keys():
+		if not is_instance_valid(outro) or int(_falando[outro]) <= agora:
+			_falando.erase(outro)
+		elif outro != self and (outro as Node3D).global_position.distance_to(global_position) < RAIO_CONVERSA:
+			return false
+	return true
+
+
+## Marca que este morador segura a palavra por `segundos` (mais a folga).
+func _tomar_palavra(segundos: float) -> void:
+	_falando[self] = Time.get_ticks_msec() + int((segundos + PAUSA_ENTRE_FALAS) * 1000.0)
+
+
+func _exit_tree() -> void:
+	_falando.erase(self)
 
 
 ## Cumprimenta o jogador: balão com a fala e voz do ElevenLabs por proximidade. Quem
@@ -203,6 +246,7 @@ func saudar() -> void:
 		var caminho := PASTA_VOZES + String(fala.get("audio", "")) + ".mp3"
 		voz.stream = load(caminho) if ResourceLoader.exists(caminho) else null
 	mostrar_balao(texto, maxf(5.0, voz.stream.get_length() + 1.5) if voz.stream != null else 7.0)
+	_tomar_palavra(voz.stream.get_length() if voz.stream != null else 4.0)
 	if voz.stream != null:
 		voz.stop()
 		voz.play()

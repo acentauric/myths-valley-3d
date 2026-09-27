@@ -26,9 +26,13 @@ const FOLGA_BRONCA := 1.5
 const PERDAO := 90.0
 ## Até onde o coveiro enxerga o cemitério (fora do posto dele, ninguém reclama).
 const ALCANCE_COVEIRO := 30.0
-## Empurrão da terceira bronca: velocidade horizontal (m/s) e atraso depois da fala.
+## Empurrão da terceira bronca: velocidade horizontal (m/s) e tempo máximo que o coveiro
+## leva andando até o túmulo antes de desistir.
 const EMPURRAO := 4.5
-const ATRASO_EMPURRAO := 0.9
+const TEMPO_MAX_IDA := 15.0
+## Meia distância entre colunas de túmulos (2,3 u no world_builder): o vão por onde o
+## coveiro passa entre as fileiras.
+const VAO_COLUNAS := 1.15
 
 ## Morador que reclama (Damião, o zelador do cemitério); definido depois dos moradores.
 var coveiro: Node3D
@@ -36,6 +40,8 @@ var broncas_dadas := 0
 var _espera_bronca := 0.0
 var _sem_subir := 0.0
 var _voz_bronca: AudioStreamPlayer3D
+var _indo_empurrar := false
+var _tempo_indo := 0.0
 var _world: Node3D
 var _jogador: Node3D
 var _hud
@@ -63,7 +69,9 @@ func _process(delta: float) -> void:
 	_sem_subir = 0.0 if em_cima else _sem_subir + delta
 	if _sem_subir > PERDAO:
 		broncas_dadas = 0
-	if em_cima and _espera_bronca <= 0.0 and _coveiro_por_perto():
+	if _indo_empurrar:
+		_aproximar_para_empurrar(delta)
+	elif em_cima and _espera_bronca <= 0.0 and _coveiro_por_perto():
 		_dar_bronca()
 	var camera := get_viewport().get_camera_3d()
 	# Só na câmera do jogador (o mapa usa outra).
@@ -135,8 +143,9 @@ func _dar_bronca() -> void:
 	if coveiro.get("animador") != null and coveiro.animador.has_method("play_gesture"):
 		coveiro.animador.play_gesture(int(coveiro.dados.get("gesto_saudacao", 0)))
 	if nivel == BRONCAS.size() - 1:
-		await get_tree().create_timer(ATRASO_EMPURRAO).timeout
-		_derrubar()
+		# Terceira bronca: ele vem até o túmulo enquanto fala e só empurra ao chegar.
+		_indo_empurrar = true
+		_tempo_indo = 0.0
 
 
 ## Voz da bronca saindo do coveiro, no volume das falas dos personagens. Devolve a
@@ -158,21 +167,57 @@ func _falar(caminho: String) -> float:
 	return fluxo.get_length()
 
 
-## Empurra o jogador para fora da laje pelo lado estreito (eixo Z): as fileiras de
-## túmulos têm 3 unidades entre si, então ele cai no corredor e não em outra laje.
-func _derrubar() -> void:
-	var indice := _em_cima_de_tumulo()
-	if indice < 0:
-		return
-	var chao: Vector3 = _world.lapides[indice]
+## Lado (eixo Z, ±1) para onde o jogador cai: o do corredor mais perto dele. As
+## fileiras de túmulos têm 3 unidades entre si, então ele cai no corredor, não em
+## outra laje.
+func _lado_da_queda(chao: Vector3) -> float:
 	var lado := signf(_jogador.global_position.z - chao.z)
 	if lado == 0.0:
 		lado = signf(_jogador.global_position.z - coveiro.global_position.z)
-	if lado == 0.0:
-		lado = 1.0
-	if _jogador.has_method("empurrar"):
-		_jogador.empurrar(Vector3(0, 0, lado * EMPURRAO))
-		_hud.set_notice("%s te derrubou da laje." % String(coveiro.dados.get("nome", "O coveiro")))
+	return lado if lado != 0.0 else 1.0
+
+
+## Terceira bronca em andamento: o coveiro anda até o lado oposto da queda, rente à
+## laje, e empurra quando está ao alcance do braço. Se o jogador descer antes (ou ele
+## não chegar em TEMPO_MAX_IDA), desiste e volta ao posto.
+func _aproximar_para_empurrar(delta: float) -> void:
+	_tempo_indo += delta
+	var indice := _em_cima_de_tumulo()
+	if indice < 0 and _jogador is CharacterBody3D and (_jogador as CharacterBody3D).is_on_floor():
+		_parar_de_ir()
+		return
+	if indice < 0:
+		return
+	var chao: Vector3 = _world.lapides[indice]
+	var pegada: Vector3 = _world.lapides_pegada[indice]
+	var lado := _lado_da_queda(chao)
+	var posto := Vector3(_jogador.global_position.x, chao.y, chao.z - lado * (pegada.z * 0.5 + 0.3))
+	# Rota sem atravessar outras lajes: fora do corredor do túmulo, desce pelo vão entre
+	# as colunas (meio caminho até a coluna vizinha) até a altura do corredor; dentro
+	# dele, vai reto até o lado da laje.
+	if absf(coveiro.global_position.z - posto.z) > 0.5:
+		var vao := signf(coveiro.global_position.x - chao.x)
+		var passagem := Vector3(chao.x + (vao if vao != 0.0 else 1.0) * VAO_COLUNAS, chao.y, posto.z)
+		if absf(coveiro.global_position.x - passagem.x) > 0.3:
+			passagem.z = coveiro.global_position.z
+		coveiro.ir_ate(passagem)
+	else:
+		coveiro.ir_ate(posto)
+	var alcance := Vector2(coveiro.global_position.x - posto.x, coveiro.global_position.z - posto.z).length()
+	if alcance < 0.35:
+		_parar_de_ir()
+		if coveiro.get("animador") != null and coveiro.animador.has_method("play_gesture"):
+			coveiro.animador.play_gesture(int(coveiro.dados.get("gesto_saudacao", 0)))
+		if _jogador.has_method("empurrar"):
+			_jogador.empurrar(Vector3(0, 0, lado * EMPURRAO))
+			_hud.set_notice("%s te derrubou da laje." % String(coveiro.dados.get("nome", "O coveiro")))
+	elif _tempo_indo > TEMPO_MAX_IDA:
+		_parar_de_ir()
+
+
+func _parar_de_ir() -> void:
+	_indo_empurrar = false
+	coveiro.liberar()
 
 
 func _mais_proxima() -> int:

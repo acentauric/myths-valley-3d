@@ -15,13 +15,13 @@ const POR := 18.0
 const INICIO_DO_DIA := 6.5
 
 var hora: float = 9.0
-var velocidade: int = 2
+var velocidade: int = 3
 ## Hora em que o jogo começa (AJUSTAR → Cenário e tempo).
-var hora_inicial: float = 9.0
+var hora_inicial: float = 7.0
 ## Congela a passagem do tempo (o menu controla o próprio relógio).
 var pausado := false
 ## Se o botão de relógio do HUD pode pausar o dia dentro do jogo (AJUSTAR).
-var pausa_no_jogo := true
+var pausa_no_jogo := false
 var _periodo := ""
 
 
@@ -29,9 +29,9 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	var preferencias := ConfigFile.new()
 	if preferencias.load(ARQUIVO) == OK:
-		velocidade = clampi(int(preferencias.get_value("dia", "velocidade", 2)), 0, VELOCIDADES.size() - 1)
-		hora_inicial = fmod(float(preferencias.get_value("dia", "hora_inicial", 9.0)), 24.0)
-		pausa_no_jogo = bool(preferencias.get_value("dia", "pausa_no_jogo", true))
+		velocidade = clampi(int(preferencias.get_value("dia", "velocidade", 3)), 0, VELOCIDADES.size() - 1)
+		hora_inicial = fmod(float(preferencias.get_value("dia", "hora_inicial", 7.0)), 24.0)
+		pausa_no_jogo = bool(preferencias.get_value("dia", "pausa_no_jogo", false))
 		hora = hora_inicial
 	_atualizar_periodo()
 

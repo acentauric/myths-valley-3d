@@ -23,6 +23,7 @@ var missao := -1
 var _iniciado := false
 var _espera := 0.0
 var _anoiteceu_hoje := false
+var _despedida_feita := false
 
 
 func _ready() -> void:
@@ -59,18 +60,24 @@ func saudar() -> void:
 
 
 func _atualizar_missao(delta: float) -> void:
+	if missao >= MISSOES.size() and not _despedida_feita and pode_falar():
+		_despedida_feita = true
+		narrar("", "É isso: o arraial inteiro. Agora o resto é com você.")
 	if not _iniciado or missao < 0 or missao >= MISSOES.size():
 		return
 	if _espera > 0.0:
 		_espera -= delta
 		if _espera <= 0.0:
-			_anunciar()
+			# Alguém perto ainda fala: o Pedro espera terminar para anunciar.
+			if pode_falar():
+				_anunciar()
+			else:
+				_espera = 0.25
 		return
 	var alvo := _posicao_da_missao(missao)
 	if jogador.global_position.distance_to(alvo) < float(MISSOES[missao]["raio"]):
 		missao += 1
 		if missao >= MISSOES.size():
-			narrar("", "É isso: o arraial inteiro. Agora o resto é com você.")
 			missao_mudou.emit("Você conheceu o arraial. Explore o vale como quiser — Pedro fica por perto.", Vector3.ZERO, MISSOES.size(), MISSOES.size())
 		else:
 			_espera = 1.4
@@ -86,10 +93,13 @@ func _anunciar() -> void:
 func narrar(nome_audio: String, texto: String) -> void:
 	mostrar_balao(texto, 8.0)
 	var caminho := PASTA_VOZES + nome_audio + ".mp3"
+	var duracao := 4.0
 	if nome_audio != "" and ResourceLoader.exists(caminho):
 		voz.stop()
 		voz.stream = load(caminho)
 		voz.play()
+		duracao = voz.stream.get_length()
+	_tomar_palavra(duracao)
 	if animador != null and animador.has_method("play_gesture"):
 		# Autoral: 2 = concordar; procedural: 2 = apontar.
 		animador.play_gesture(2)
@@ -98,7 +108,7 @@ func narrar(nome_audio: String, texto: String) -> void:
 
 func _verificar_anoitecer() -> void:
 	var periodo := Dia.periodo()
-	if periodo == "entardecer" and not _anoiteceu_hoje and _espera <= 0.0:
+	if periodo == "entardecer" and not _anoiteceu_hoje and _espera <= 0.0 and pode_falar():
 		_anoiteceu_hoje = true
 		narrar("pedro_anoitecer", "Daqui a pouco escurece. Quando terminar, volte pra cama. Apagar no chão não descansa igual.")
 	elif periodo == "manha":

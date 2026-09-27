@@ -1,6 +1,6 @@
 extends Control
 ## Ícones vetoriais dos botões de canto do HUD, no mesmo traço do som e do relógio:
-## "casa" (HOME), "ajustes" (engrenagem), "mapa", "ajuda" (?), "fechar" (×), "externo" (link que sai do jogo), "camera" (anel dourado quando travada), "velocidade" (setas conforme
+## "casa" (HOME), "ajustes" (engrenagem), "restaurar" (seta circular), "mapa", "ajuda" (?), "fechar" (×), "externo" (link que sai do jogo), "camera" (anel dourado quando travada), "velocidade" (setas conforme
 ## a Passagem do tempo, 0–3) e "estilo" (cubo para Tripo, chaves para Procedural).
 
 var tipo := "casa"
@@ -26,6 +26,12 @@ func _draw() -> void:
 			draw_polyline(PackedVector2Array([Vector2(11, 5), Vector2(5, 5), Vector2(5, 19), Vector2(19, 19), Vector2(19, 13)]), ouro_link, 1.8, true)
 			draw_line(Vector2(11, 13), Vector2(20, 4), ouro_link, 1.8, true)
 			draw_polyline(PackedVector2Array([Vector2(14, 4), Vector2(20, 4), Vector2(20, 10)]), ouro_link, 1.8, true)
+		"restaurar":
+			# Seta circular (desfazer/voltar ao padrão); apagada quando já está no padrão.
+			var cor_restaurar := tinta if ativo else Color(tinta, 0.35)
+			draw_arc(Vector2(12, 12.5), 6.5, deg_to_rad(-200.0), deg_to_rad(90.0), 24, cor_restaurar, 1.8, true)
+			var ponta := Vector2(12, 12.5) + Vector2.from_angle(deg_to_rad(-200.0)) * 6.5
+			draw_polyline(PackedVector2Array([ponta + Vector2(-1.5, -4.5), ponta, ponta + Vector2(4.5, -1.0)]), cor_restaurar, 1.8, true)
 		"ajustes":
 			# Engrenagem: aro, oito dentes e furo; dourada com os ajustes abertos.
 			var cor_ajustes := ouro if ativo else tinta

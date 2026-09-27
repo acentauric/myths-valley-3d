@@ -26,12 +26,24 @@ const ALTURA_CAMPO := 66.0
 const ALTURA_CONTROLE := 36.0
 ## Altura comum do cabeçalho dos modais (título + botão do canto).
 const ALTURA_CABECALHO := 44.0
+## Distância (fração da barra) em que o volume encaixa na marca do padrão.
+const IMA := 0.035
 const HORAS_INICIAIS := [4.5, 7.0, 12.0, 15.0, 17.5, 20.5]
 const ROTULOS_HORAS := ["Madrugada (4h30)", "Manhã (7h)", "Meio-dia", "Tarde (15h)", "Entardecer (17h30)", "Noite (20h30)"]
 const PREFERENCIAS_VISUAIS := "user://preferencias_visuais.cfg"
 ## Fonte do menu (Cenário): padrão do Godot ou as duas fontes do 2D.
 const FONTES_MENU := ["", "res://assets/fonts/Almendra-Bold.ttf", "res://assets/fonts/miva.ttf"]
 const ROTULOS_FONTES := ["Padrão", "Almendra", "Miva"]
+
+## Opção de fábrica de cada seleção (índice na lista), para o botão de voltar ao padrão.
+## Idioma, estilo e fonte voltam à primeira opção (Português, Tripo, Padrão).
+const PADRAO_VELOCIDADE := 3
+const PADRAO_HORA := 1
+const PADRAO_PAUSA := 1
+const PADRAO_TRILHA := 0
+const PADRAO_BOTOES := 1
+const PADRAO_PAISAGEM := 3
+const PADRAO_CENARIO := 1
 
 ## true no jogo: só os ajustes que valem dentro do vale.
 var no_jogo := false
@@ -90,6 +102,8 @@ func construir(content: VBoxContainer, camada: Node, nova_aba: int = 0) -> void:
 		1: _aba_sons(esquerda, direita)
 		2: _aba_cenario(esquerda, direita)
 		_: _aba_geral(esquerda, direita)
+	if aba != 2:
+		_restaurar_volumes()
 	ativa.grab_focus()
 
 
@@ -124,15 +138,15 @@ func _aba_geral(esquerda: VBoxContainer, direita: VBoxContainer) -> void:
 	if not no_jogo:
 		_escolha("Idioma", IdiomaMenu.ROTULOS, IdiomaMenu.indice(), func(i: int) -> void:
 			IdiomaMenu.definir(i)
-			_reconstruir(0))
-	_escolha("Passagem do tempo", Dia.ROTULOS_VELOCIDADE, Dia.velocidade, Dia.definir_velocidade)
+			_reconstruir(0), 0)
+	_escolha("Passagem do tempo", Dia.ROTULOS_VELOCIDADE, Dia.velocidade, Dia.definir_velocidade, PADRAO_VELOCIDADE)
 	var hora_indice := 1
 	for indice in range(HORAS_INICIAIS.size()):
 		if absf(float(HORAS_INICIAIS[indice]) - Dia.hora_inicial) < 0.75:
 			hora_indice = indice
-	_escolha("Hora inicial", ROTULOS_HORAS, hora_indice, func(i: int) -> void: Dia.definir_hora_inicial(float(HORAS_INICIAIS[i])))
-	_escolha("Pausar o relógio no jogo", ["Permitido", "Bloqueado"], 0 if Dia.pausa_no_jogo else 1, func(i: int) -> void: Dia.definir_pausa_no_jogo(i == 0))
-	_escolha("Teclas de movimento", TeclasMovimento.ROTULOS, TeclasMovimento.modo(), TeclasMovimento.definir)
+	_escolha("Hora inicial", ROTULOS_HORAS, hora_indice, func(i: int) -> void: Dia.definir_hora_inicial(float(HORAS_INICIAIS[i])), PADRAO_HORA)
+	_escolha("Pausar o relógio no jogo", ["Permitido", "Bloqueado"], 0 if Dia.pausa_no_jogo else 1, func(i: int) -> void: Dia.definir_pausa_no_jogo(i == 0), PADRAO_PAUSA)
+	_escolha("Teclas de movimento", TeclasMovimento.ROTULOS, TeclasMovimento.modo(), TeclasMovimento.definir, TeclasMovimento.PADRAO)
 	_pai = direita
 	_secao("Volume")
 	_volume("Música", Audio.volume_musica, Audio.definir_volume_musica, "musica")
@@ -140,7 +154,6 @@ func _aba_geral(esquerda: VBoxContainer, direita: VBoxContainer) -> void:
 	_volume("Falas dos personagens", Audio.volume_vozes, Audio.definir_volume_vozes, "vozes")
 	_volume("Efeitos e passos", Audio.volume_efeitos, Audio.definir_volume_efeitos, "efeitos")
 	_volume("Ambiente", Audio.volume_ambiente, Audio.definir_volume_ambiente, "ambiente")
-	_restaurar_volumes()
 
 
 ## Sons: à esquerda as escolhas sonoras do menu (no jogo, só o som dos botões), à direita
@@ -149,17 +162,16 @@ func _aba_sons(esquerda: VBoxContainer, direita: VBoxContainer) -> void:
 	_pai = esquerda
 	_secao("Botões" if no_jogo else "Menu")
 	if not no_jogo:
-		_escolha("Trilha do menu", ["Introdução", "Menu I", "Menu II", "Recôncavo"], Audio.musica_menu_opcao - 1, func(i): Audio.definir_musica_menu(i + 1))
+		_escolha("Trilha do menu", ["Introdução", "Menu I", "Menu II", "Recôncavo"], Audio.musica_menu_opcao - 1, func(i): Audio.definir_musica_menu(i + 1), PADRAO_TRILHA)
 	_escolha("Som dos botões", ["Original", "Madeira"], Audio.efeitos_menu_opcao - 1, func(i):
 		Audio.definir_efeitos_menu(i + 1)
-		Audio.testar_efeito_menu())
+		Audio.testar_efeito_menu(), PADRAO_BOTOES)
 	if not no_jogo:
-		_escolha("Paisagem sonora do menu", ["Silêncio", "Mar", "Aves", "Mar e aves"], Audio.ambiente_menu_opcao, Audio.definir_ambiente_menu)
+		_escolha("Paisagem sonora do menu", ["Silêncio", "Mar", "Aves", "Mar e aves"], Audio.ambiente_menu_opcao, Audio.definir_ambiente_menu, PADRAO_PAISAGEM)
 	_pai = direita
 	_secao("Sons do vale")
 	for camada: String in Audio.CAMADAS_AMBIENTE:
 		_volume(String(Audio.ROTULOS_CAMADAS[camada]), float(Audio.volume_camadas[camada]), func(v: float) -> void: Audio.definir_volume_camada(camada, v), camada)
-	_restaurar_volumes()
 
 
 ## Cenário: estilo visual do vale (Tripo ou procedural) e, no menu, o fundo e a fonte.
@@ -170,7 +182,7 @@ func _aba_cenario(esquerda: VBoxContainer, direita: VBoxContainer) -> void:
 		var novo: String = Estilo.TRIPO if i == 0 else Estilo.PROCEDURAL
 		if novo != Estilo.modo:
 			Estilo.definir(novo)
-			estilo_mudou.emit())
+			estilo_mudou.emit(), 0)
 	if no_jogo:
 		return
 	_pai = direita
@@ -181,11 +193,11 @@ func _aba_cenario(esquerda: VBoxContainer, direita: VBoxContainer) -> void:
 	var fonte := clampi(int(preferencias.get_value("menu", "fonte", 0)), 0, FONTES_MENU.size() - 1)
 	_escolha("Cenário do menu", ["Parado", "Sobrevoo"], 1 if sobrevoo else 0, func(i: int) -> void:
 		_salvar_preferencia("sobrevoo", i == 1)
-		cenario_menu_mudou.emit(i == 1))
+		cenario_menu_mudou.emit(i == 1), PADRAO_CENARIO)
 	_escolha("Fonte do menu", ROTULOS_FONTES, fonte, func(i: int) -> void:
 		_salvar_preferencia("fonte", i)
 		fonte_menu_mudou.emit(i)
-		_reconstruir(2))
+		_reconstruir(2), 0)
 
 
 func _salvar_preferencia(chave: String, valor: Variant) -> void:
@@ -196,9 +208,12 @@ func _salvar_preferencia(chave: String, valor: Variant) -> void:
 		push_warning("Não foi possível salvar a preferência do menu: %s" % chave)
 
 
-## Volume: alto-falante que silencia só este canal (como o botão de som do canto) e a
-## barra. Silenciado, a barra esmaece e guarda o valor para quando voltar.
+## Volume: alto-falante que silencia só este canal (como o botão de som do canto), a
+## barra e o botão de voltar ao padrão. Silenciado, a barra esmaece e guarda o valor
+## para quando voltar. Uma bolinha dourada na trilha marca o padrão, e a barra "gruda"
+## nela ao passar perto (ímã).
 func _volume(titulo: String, valor: float, ao_mudar: Callable, canal: String) -> void:
+	var padrao := float(Audio.PADROES.get(canal, 1.0))
 	var anterior := _abrir_campo()
 	var rotulo := _rotulo_do_campo(titulo, "")
 	var linha := HBoxContainer.new()
@@ -224,6 +239,22 @@ func _volume(titulo: String, valor: float, ao_mudar: Callable, canal: String) ->
 	barra.custom_minimum_size.y = ALTURA_CONTROLE
 	barra.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	linha.add_child(barra)
+	# Marca do padrão: bolinha dourada desenhada sobre a trilha, atrás do puxador.
+	var marca := Control.new()
+	marca.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	marca.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	barra.add_child(marca)
+	marca.draw.connect(func() -> void:
+		# Com o puxador em cima da marca, ela some (o próprio puxador está no padrão).
+		if absf(barra.value - padrao) < 0.03:
+			return
+		var puxador := barra.get_theme_icon("grabber").get_size()
+		var x := puxador.x * 0.5 + padrao * (barra.size.x - puxador.x)
+		var y := barra.size.y * 0.5
+		marca.draw_circle(Vector2(x, y), 5.0, Color("1b2420"))
+		marca.draw_circle(Vector2(x, y), 3.6, Color("e2c47f")))
+	barra.resized.connect(marca.queue_redraw)
+	var restaurar := _botao_padrao(linha)
 	var atualizar := func() -> void:
 		var silenciado := Audio.canal_mudo(canal)
 		icone.set_active(not silenciado)
@@ -231,45 +262,119 @@ func _volume(titulo: String, valor: float, ao_mudar: Callable, canal: String) ->
 		mudo.tooltip_text = tr("Ativar") if silenciado else tr("Silenciar")
 		barra.modulate.a = 0.45 if silenciado else 1.0
 		rotulo.text = "%s · %s" % [tr(titulo), tr("mudo") if silenciado else "%d%%" % roundi(barra.value * 100)]
+		_marcar_padrao(restaurar, is_equal_approx(barra.value, padrao) and not silenciado, "%d%%" % roundi(padrao * 100))
+		marca.queue_redraw()
 	atualizar.call()
 	mudo.toggled.connect(func(silenciado: bool) -> void:
 		Audio.definir_mudo(canal, silenciado)
 		Audio.efeito("ui_confirmar")
 		atualizar.call())
 	barra.value_changed.connect(func(v: float) -> void:
+		# Ímã: perto da marca do padrão, a barra encaixa nela com um clique de madeira.
+		if absf(v - padrao) < IMA and not is_equal_approx(v, padrao):
+			barra.set_value_no_signal(padrao)
+			v = padrao
+			Audio.efeito("ui_hover")
 		ao_mudar.call(v)
+		atualizar.call())
+	restaurar.pressed.connect(func() -> void:
+		Audio.efeito("ui_confirmar")
+		if Audio.canal_mudo(canal):
+			Audio.definir_mudo(canal, false)
+		barra.value = padrao
 		atualizar.call())
 	_pai = anterior
 
 
-## Botão ao pé da coluna de volumes: todos os volumes e camadas voltam ao padrão.
+## Pé do modal, centralizado: "Restaurar estes" volta ao padrão só os volumes da aba
+## aberta; "Restaurar todos", os das duas abas. Nos dois, nada fica silenciado.
 func _restaurar_volumes() -> void:
-	var respiro := Control.new()
-	respiro.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	_pai.add_child(respiro)
+	var linha := HBoxContainer.new()
+	linha.alignment = BoxContainer.ALIGNMENT_CENTER
+	linha.add_theme_constant_override("separation", 12)
+	_content.add_child(linha)
+	var desta_aba: Array = Audio.CAMADAS_AMBIENTE if aba == 1 else Audio.CANAIS_GERAIS
+	_botao_restaurar(linha, "Restaurar estes", desta_aba,
+		"Sons do vale voltam ao padrão." if aba == 1 else "Música, narração, falas, efeitos e ambiente voltam ao padrão.")
+	_botao_restaurar(linha, "Restaurar todos", [], "Todos os volumes, das duas abas, voltam ao padrão.")
+
+
+## Botão curto com o alto-falante à esquerda, para ligar o gesto aos volumes.
+func _botao_restaurar(pai: Container, texto: String, canais: Array, dica: String) -> void:
 	var botao := Button.new()
-	botao.text = "RESTAURAR VOLUMES PADRÃO"
-	botao.custom_minimum_size.y = ALTURA_CONTROLE
-	botao.tooltip_text = tr("Música 80%, narração e falas 100%, efeitos 80%, ambiente 40%; nada silenciado.")
+	botao.text = texto
+	botao.tooltip_text = tr(dica)
+	botao.custom_minimum_size = Vector2(200, ALTURA_CONTROLE)
+	# Espaço à esquerda para o ícone em todos os estados do botão.
+	for estado in ["normal", "hover", "pressed", "hover_pressed", "focus"]:
+		var caixa := (botao.get_theme_stylebox(estado) if tema == null else tema.get_stylebox(estado, "Button")).duplicate() as StyleBoxFlat
+		if caixa:
+			caixa.content_margin_left = 40
+			botao.add_theme_stylebox_override(estado, caixa)
+	var icone := AudioToggleIcon.new()
+	icone.position = Vector2(12, 6)
+	icone.size = Vector2(24, 24)
+	icone.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	botao.add_child(icone)
 	botao.mouse_entered.connect(func(): Audio.efeito("ui_hover"))
 	botao.pressed.connect(func() -> void:
 		Audio.efeito("ui_confirmar")
-		Audio.restaurar_padroes()
+		Audio.restaurar_padroes(canais)
 		_reconstruir(aba))
-	_pai.add_child(botao)
+	pai.add_child(botao)
 
 
-func _escolha(titulo: String, opcoes: Array, selecionada: int, ao_escolher: Callable) -> void:
+## Seleção com o botão de voltar ao padrão (`padrao`, índice da opção de fábrica) no
+## fim da linha, apagado quando já está no padrão.
+func _escolha(titulo: String, opcoes: Array, selecionada: int, ao_escolher: Callable, padrao: int = -1) -> void:
 	var anterior := _abrir_campo()
 	_rotulo_do_campo(titulo, titulo)
+	var linha := HBoxContainer.new()
+	linha.add_theme_constant_override("separation", 10)
+	_pai.add_child(linha)
 	var seletor := OptionButton.new()
 	seletor.custom_minimum_size.y = ALTURA_CONTROLE
+	seletor.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	for opcao in opcoes:
 		seletor.add_item(opcao)
 	seletor.select(selecionada)
+	linha.add_child(seletor)
+	if padrao >= 0:
+		var voltar := _botao_padrao(linha)
+		var atualizar := func() -> void:
+			_marcar_padrao(voltar, seletor.selected == padrao, tr(String(opcoes[padrao])))
+		atualizar.call()
+		seletor.item_selected.connect(func(_i: int) -> void: atualizar.call())
+		voltar.pressed.connect(func() -> void:
+			Audio.efeito("ui_confirmar")
+			seletor.select(padrao)
+			atualizar.call()
+			ao_escolher.call(padrao))
 	seletor.item_selected.connect(ao_escolher)
-	_pai.add_child(seletor)
 	_pai = anterior
+
+
+## Botão quadrado com a seta circular, no fim de uma linha de ajuste.
+func _botao_padrao(linha: Container) -> Button:
+	var botao := Button.new()
+	botao.theme_type_variation = &"BotaoIcone"
+	botao.custom_minimum_size = Vector2(ALTURA_CONTROLE, ALTURA_CONTROLE)
+	botao.focus_mode = Control.FOCUS_NONE
+	var icone = HudIcon.new().configurar("restaurar")
+	icone.name = "Icone"
+	icone.position = Vector2(6, 6)
+	icone.size = Vector2(24, 24)
+	icone.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	botao.add_child(icone)
+	linha.add_child(botao)
+	return botao
+
+
+## Apaga o botão de padrão quando a linha já está no padrão; senão a dica diz qual é.
+func _marcar_padrao(botao: Button, no_padrao: bool, valor_padrao: String) -> void:
+	botao.disabled = no_padrao
+	botao.get_node("Icone").definir(not no_padrao)
+	botao.tooltip_text = "" if no_padrao else tr("Voltar ao padrão (%s)") % valor_padrao
 
 
 ## Campo (rótulo + controle) num bloco de altura fixa: seleções e volumes ocupam a mesma

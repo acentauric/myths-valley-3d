@@ -7,6 +7,8 @@ const ARQUIVO := "user://controles.cfg"
 const WASD := 0
 const SETAS := 1
 const AMBOS := 2
+## Modo de fábrica (AJUSTAR → restaurar padrão).
+const PADRAO := WASD
 const ROTULOS := ["WASD", "Setas", "WASD e setas"]
 const ACOES := {
 	"mv_forward": [KEY_W, KEY_UP],
@@ -19,8 +21,8 @@ const ACOES := {
 static func modo() -> int:
 	var preferencias := ConfigFile.new()
 	if preferencias.load(ARQUIVO) != OK:
-		return AMBOS
-	return clampi(int(preferencias.get_value("movimento", "teclas", AMBOS)), WASD, AMBOS)
+		return PADRAO
+	return clampi(int(preferencias.get_value("movimento", "teclas", PADRAO)), WASD, AMBOS)
 
 
 static func definir(novo: int) -> void:

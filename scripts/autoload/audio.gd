@@ -27,14 +27,16 @@ const ROTULOS_CAMADAS := {"aves": "Aves", "mar": "Mar", "riacho": "Riacho", "fog
 ## Volumes de fábrica (AJUSTAR → Restaurar padrões): canais gerais e camadas do ambiente.
 const PADROES := {
 	"musica": 0.8, "narracao": 1.0, "vozes": 1.0, "efeitos": 0.8, "ambiente": 0.4,
-	"aves": 1.0, "mar": 1.0, "riacho": 1.0, "fogueira": 1.0, "mata": 1.0,
+	"aves": 0.95, "mar": 0.9, "riacho": 1.0, "fogueira": 1.0, "mata": 0.7,
 }
+## Canais da aba Geral (as camadas do ambiente ficam em CAMADAS_AMBIENTE).
+const CANAIS_GERAIS := ["musica", "narracao", "vozes", "efeitos", "ambiente"]
 
 ## Emitido quando um volume muda: os tocadores 3D do vale (NPCs, ambiente) reaplicam o seu.
 signal volumes_alterados
 
 var som_ativo: bool = true
-var musica_menu_opcao: int = 4
+var musica_menu_opcao: int = 1
 var efeitos_menu_opcao: int = 2
 var ambiente_menu_opcao: int = 3
 var volume_musica: float = 0.8
@@ -42,7 +44,7 @@ var volume_efeitos: float = 0.8
 var volume_ambiente: float = 0.4
 var volume_vozes: float = 1.0
 var volume_narracao: float = 1.0
-var volume_camadas: Dictionary = {"aves": 1.0, "mar": 1.0, "riacho": 1.0, "fogueira": 1.0, "mata": 1.0}
+var volume_camadas: Dictionary = {"aves": 0.95, "mar": 0.9, "riacho": 1.0, "fogueira": 1.0, "mata": 0.7}
 ## Canais silenciados pelo alto-falante ao lado de cada volume (chaves de PADROES): o
 ## volume escolhido fica guardado e volta ao reativar.
 var mudos: Dictionary = {}
@@ -178,16 +180,20 @@ func definir_mudo(canal: String, mudo: bool) -> void:
 	_salvar_preferencias()
 
 
-## Volumes de fábrica em todos os canais e camadas, sem nenhum silenciado.
-func restaurar_padroes() -> void:
-	volume_musica = PADROES["musica"]
-	volume_narracao = PADROES["narracao"]
-	volume_vozes = PADROES["vozes"]
-	volume_efeitos = PADROES["efeitos"]
-	volume_ambiente = PADROES["ambiente"]
-	for camada in CAMADAS_AMBIENTE:
-		volume_camadas[camada] = PADROES[camada]
-	mudos.clear()
+## Volumes de fábrica (e sem mudo) nos `canais` pedidos — chaves de PADROES; vazio
+## restaura todos os canais e camadas.
+func restaurar_padroes(canais: Array = []) -> void:
+	var alvo: Array = canais if not canais.is_empty() else PADROES.keys()
+	for canal: String in alvo:
+		var padrao: float = PADROES[canal]
+		match canal:
+			"musica": volume_musica = padrao
+			"narracao": volume_narracao = padrao
+			"vozes": volume_vozes = padrao
+			"efeitos": volume_efeitos = padrao
+			"ambiente": volume_ambiente = padrao
+			_: volume_camadas[canal] = padrao
+		mudos.erase(canal)
 	_aplicar_volumes()
 	_salvar_preferencias()
 

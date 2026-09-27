@@ -98,9 +98,12 @@
     if (j.code !== 0) throw new Error('gerar ' + JSON.stringify(j).slice(0, 200));
     return j.data;
   };
-  // Rig humanoide (Mixamo, 20 créditos) e animações prontas do Studio (até 5 por chamada).
-  // A exportação com animações ainda é feita pela interface (Exportar → Número de
-  // Animações → Selecionar tudo): a chamada direta respondeu erro 1000/1004 em 26/09.
+  // Rig humanoide (Mixamo, 20 créditos) e animações prontas do Studio.
+  // Aprendido em 27/09/2026 (moradores): retarget_model aceita uma lista, mas só aplica a
+  // PRIMEIRA animação dela — chame uma vez por animação, uma de cada vez por projeto
+  // (em paralelo no mesmo projeto dá 12003 "Failed to acquire lock"). A exportação com
+  // clipes funciona pela API passando em `animations` os IDs das operações de retarget
+  // (detail.operator.retarget[].id); com nomes de preset responde 1004. Ver mv.animar().
   mv.PRESETS_NPC = ['preset:biped:idle', 'preset:biped:walk', 'preset:biped:run', 'preset:biped:greet_01', 'preset:biped:agree', 'preset:biped:look_around', 'preset:biped:wave_goodbye_02'];
   mv.rig = async (pid) => {
     const c = await mv.api('operation/pre_rig_check', { model_version: 'v3.0-20260909', project_id: pid });
@@ -113,6 +116,23 @@
     const j = await mv.api('operation/retarget_model', { animations, model_version: 'default', project_id: pid, rig_type: 'biped' });
     if (j.code !== 0) throw new Error('retarget ' + JSON.stringify(j).slice(0, 160));
     return j.data.operation_id;
+  };
+  // Rig (se faltar) + cada preset que faltar + exportação GLB com todos os clipes.
+  // Devolve a URL assinada do GLB. Ex.: await __mv.animar('<projeto>', 'damiao_tripo')
+  mv.animar = async (pid, nome, presets = mv.PRESETS_NPC) => {
+    const det = async () => (await mv.api('project/detail/v3/' + pid + '?locale=pt-BR', undefined, 'GET')).data;
+    let d = await det();
+    if (!d.is_rigged) { await mv.waitOp(await mv.rig(pid), 'rig', 900000); d = await det(); }
+    for (const n of presets) {
+      if (((d.operator && d.operator.retarget) || []).some((r) => r.name === n && r.status === 'success')) continue;
+      await mv.waitOp(await mv.retarget(pid, [n]), 'retarget ' + n, 900000);
+      d = await det();
+    }
+    const ids = d.operator.retarget.filter((r) => r.status === 'success').map((r) => r.id);
+    const j = await mv.api('operation/export', { animate_in_place: true, animations: ids, bake_animation_frame: 0, enable_bake_animation: false, export_orientation: '-y', export_vertex_colors: false, fbx_preset: 'blender', format: 'gltf', model_version: 'default', name: nome, pack_uv: false, project_id: pid, texture_packaging: 'zip', texture_size: 1024, with_animation: true });
+    if (j.code !== 0) throw new Error('export ' + JSON.stringify(j).slice(0, 200));
+    await mv.waitOp(j.data.operation_id, 'export', 600000);
+    return (await mv.api('operation/download_with_name', { file_name: nome, operator_id: j.data.operation_id })).data.model_url;
   };
   mv.resumo = () => Object.fromEntries(Object.entries(mv.state).map(([k, v]) => [k, (v.downloaded ? 'OK' : v.exportDone ? 'exp-ok' : v.exportId ? 'exportando' : v.remeshDone ? 'remesh-ok' : v.remeshId ? 'remesh...' : '-') + (v.error ? ' ERR:' + v.error.slice(0, 80) : '')]));
   console.log('__mv pronto: __mv.lote(PLANO, 6) / __mv.resumo()');
