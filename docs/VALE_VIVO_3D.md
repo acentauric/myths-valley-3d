@@ -118,3 +118,7 @@ escolhe o LOD pela distância.
 | catálogo de GLBs do Tripo | `catalogo_assets.gd::PECAS` |
 | gesto que cada morador faz ao cumprimentar | `npcs_3d.json` (`gesto_saudacao` no procedural, `gesto_tripo` com rig) |
 | trazer peças novas do Tripo | `docs/ASSETS_TRIPO.md` → "Do download ao jogo" |
+
+## Balões de fala
+
+As falas dos moradores e do Pedro aparecem em balões de interface (`balao_fala.gd`): fundo claro, nome de quem fala e ponta apontando para a cabeça do personagem. O balão tem tamanho fixo na tela, então continua legível à distância; some quando o personagem sai da câmera ou passa de 45 m, e encosta nas bordas sem cobrir o relógio, o objetivo nem o rodapé de controles.

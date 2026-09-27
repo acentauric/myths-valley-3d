@@ -5,6 +5,8 @@ extends CharacterBody3D
 ## visita — texto no balão e voz por proximidade (AudioStreamPlayer3D). O corpo é o
 ## humanoide procedural ou o modelo do Tripo, conforme o estilo escolhido em AJUSTAR.
 
+const BalaoFala = preload("res://scripts/prototipo_3d/balao_fala.gd")
+
 signal saudou(morador: MoradorNPC, texto: String)
 
 const PASTA_VOZES := "res://assets/audio/vozes/"
@@ -21,7 +23,8 @@ var visual: Node3D
 var modelo: Node3D
 var animador: Node = null
 var nome_label: Label3D
-var balao: Label3D
+## Balão de fala em tela (balao_fala.gd), numa camada de interface própria.
+var balao: Control
 var voz: AudioStreamPlayer3D
 var altura := 1.7
 var intervalo_saudacao_ms := INTERVALO_SAUDACAO_MS
@@ -66,17 +69,12 @@ func _ready() -> void:
 	nome_label.modulate = Color("e8e4d7")
 	nome_label.position = Vector3(0, altura + 0.32, 0)
 	add_child(nome_label)
-	balao = Label3D.new()
-	balao.font_size = 30
-	balao.outline_size = 8
-	balao.pixel_size = 0.0034
-	balao.width = 640.0
-	balao.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	balao.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-	balao.modulate = Color("f2dc9a")
-	balao.position = Vector3(0, altura + 0.72, 0)
-	balao.visible = false
-	add_child(balao)
+	var camada_balao := CanvasLayer.new()
+	camada_balao.layer = 10
+	add_child(camada_balao)
+	balao = BalaoFala.new()
+	camada_balao.add_child(balao)
+	balao.configurar(self, altura + 0.45, String(dados.get("nome", "Morador")))
 	voz = AudioStreamPlayer3D.new()
 	voz.name = "Voz"
 	voz.max_distance = 30.0
@@ -179,7 +177,9 @@ func _atualizar_animacao(delta: float) -> void:
 func _atualizar_interacao(delta: float) -> void:
 	if _balao_tempo > 0.0:
 		_balao_tempo -= delta
-		balao.visible = _balao_tempo > 0.0
+		if _balao_tempo <= 0.0:
+			balao.esconder()
+			nome_label.visible = true
 	if jogador == null:
 		return
 	var distancia := jogador.global_position.distance_to(global_position)
@@ -202,9 +202,10 @@ func saudar() -> void:
 
 
 func mostrar_balao(texto: String, segundos: float) -> void:
-	balao.text = texto
 	_balao_tempo = segundos
-	balao.visible = texto != ""
+	balao.mostrar(texto)
+	# O balão já traz o nome; o rótulo 3D volta quando a fala termina.
+	nome_label.visible = texto == ""
 
 
 ## Nome do posto para o período: "manha", "tarde", "entardecer", "noite" ou "madrugada".
