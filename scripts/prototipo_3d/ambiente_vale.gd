@@ -35,7 +35,11 @@ func _ready() -> void:
 	_aves = _tocador(AVES)
 	Dia.hora_mudou.connect(_aplicar)
 	if Audio.has_signal("volumes_alterados"):
-		Audio.volumes_alterados.connect(func() -> void: _aplicar(Dia.hora))
+		Audio.volumes_alterados.connect(_aplicar_volumes)
+	_aplicar(Dia.hora)
+
+
+func _aplicar_volumes() -> void:
 	_aplicar(Dia.hora)
 
 

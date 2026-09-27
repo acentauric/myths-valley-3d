@@ -5,7 +5,11 @@ extends Control
 var running := false
 
 func _ready() -> void:
-	Dia.hora_mudou.connect(func(_hora: float) -> void: queue_redraw())
+	Dia.hora_mudou.connect(_on_hora_mudou)
+
+
+func _on_hora_mudou(_hora: float) -> void:
+	queue_redraw()
 
 func set_running(value: bool) -> void:
 	running = value
