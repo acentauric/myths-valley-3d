@@ -228,9 +228,9 @@ func parar_narracao() -> void:
 
 
 func efeito(nome: String) -> void:
-	var aliases := {"ui_confirmar": "menu_confirma", "ui_hover": "menu_mover", "ui_voltar": "menu_voltar"}
+	var aliases := {"ui_confirmar": "menu_confirma", "ui_hover": "menu_mover", "ui_voltar": "menu_voltar", "ui_trava": "menu_trava"}
 	var nome_base: String = aliases.get(nome, nome)
-	var menu := nome_base in ["menu_mover", "menu_confirma", "menu_voltar"]
+	var menu := nome_base in ["menu_mover", "menu_confirma", "menu_voltar", "menu_trava"]
 	if nome_base == "menu_mover":
 		var agora := Time.get_ticks_msec()
 		if agora - _ultimo_movimento_ms < 65:

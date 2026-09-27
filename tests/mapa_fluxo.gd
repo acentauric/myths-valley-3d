@@ -81,6 +81,11 @@ func _run() -> void:
 	_assert(opening.line_index == 0 and not opening.caption.text.is_empty(), "tela JOGAR")
 	await _capture("travessia")
 	opening._start_game()
+	# A entrada no vale carrega em segundo plano (tela de carregamento).
+	for i in range(600):
+		if current_scene != null and current_scene.name == "Vale3D":
+			break
+		await process_frame
 	await _frames(3)
 	var game = current_scene
 	_assert(game != null and game.name == "Vale3D", "entrada no jogo")

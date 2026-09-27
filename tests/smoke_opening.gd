@@ -32,8 +32,7 @@ func _run() -> void:
 		opening._next_line()
 	assert(opening.line_index == 8)
 	opening._next_line()
-	await process_frame
-	await process_frame
+	await _wait_game()
 	assert(current_scene.name == "Vale3D")
 	var player = current_scene.get_node("Jogador")
 	for i in range(10):
@@ -47,8 +46,7 @@ func _run() -> void:
 	await process_frame
 	assert(current_scene.name == "Abertura")
 	current_scene._start_game()
-	await process_frame
-	await process_frame
+	await _wait_game()
 	assert(current_scene.name == "Vale3D")
 	print("SMOKE_OK: %d audios; menu, opcoes, creditos, 9 falas, jogo, retorno e pulo" % count)
 	current_scene.queue_free()
@@ -61,6 +59,15 @@ func _run() -> void:
 			child.stop()
 	await create_timer(0.2).timeout
 	quit()
+
+## A entrada no vale carrega em segundo plano (tela de carregamento).
+func _wait_game() -> void:
+	for i in range(600):
+		if current_scene != null and current_scene.name == "Vale3D":
+			break
+		await process_frame
+	await process_frame
+
 
 func _capture(label: String) -> void:
 	if not "--capture" in OS.get_cmdline_user_args():

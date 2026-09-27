@@ -125,6 +125,7 @@ const EN := {
 	"A chegada": "The arrival",
 	"CONTINUAR": "CONTINUE",
 	"PULAR": "SKIP",
+	"Carregando o vale…": "Loading the valley…",
 }
 
 const ES := {
@@ -234,6 +235,7 @@ const ES := {
 	"A chegada": "La llegada",
 	"CONTINUAR": "CONTINUAR",
 	"PULAR": "SALTAR",
+	"Carregando o vale…": "Cargando el valle…",
 }
 
 ## Uma tradução fica registrada só enquanto o menu está no idioma dela: registrada,

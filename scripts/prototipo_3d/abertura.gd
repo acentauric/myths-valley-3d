@@ -9,11 +9,19 @@ const HudIcon = preload("res://scripts/prototipo_3d/hud_icon.gd")
 const VISUAL_PREFERENCES := "user://preferencias_visuais.cfg"
 const FLYOVER_SECONDS := 36.0
 const HISTORY_SIZE := Vector2(640, 600)
+const GAME_SCENE := "res://scenes/prototipo_3d/vale.tscn"
 ## Altura de cada campo de AJUSTAR e do controle dentro dele (seleção ou volume).
 const FIELD_HEIGHT := 66.0
 ## Altura comum do cabeçalho dos modais (título + botão do canto).
 const MODAL_HEADER_HEIGHT := 44.0
 ## Equipe exibida em CONHECER.
+const CREDITS_HIGHLIGHTS := [
+	"paisagens, memórias e histórias brasileiras", "Brazilian landscapes, memories and stories", "paisajes, memorias e historias brasileñas",
+	"uma descoberta", "a discovery", "un descubrimiento",
+	"Música, narração e efeitos", "Music, narration and sound effects", "La música, la narración y los efectos",
+	"primeira visita", "first visit", "primera visita",
+	"Alpha Centauri", "Batalha de Mitos",
+]
 const COLLABORATORS := ["Ramon Santos", "Renato Leal", "Matheus Ché", "Pedro Almeida"]
 const FIELD_CONTROL_HEIGHT := 36.0
 ## Fonte do menu (AJUSTAR → Cenário): padrão do Godot ou as duas fontes do 2D.
@@ -535,7 +543,11 @@ func _press_history_arrow(index: int) -> void:
 	if index >= history_buttons.size():
 		return
 	var button := history_buttons[index]
-	if not is_instance_valid(button) or button.disabled or button.has_meta("pressionando"):
+	if not is_instance_valid(button) or button.has_meta("pressionando"):
+		return
+	if button.disabled:
+		# Já na primeira/última página: som de trava, sem mudar de página.
+		Audio.efeito("ui_trava")
 		return
 	button.set_meta("pressionando", true)
 	button.add_theme_stylebox_override("normal", button.get_theme_stylebox("pressed"))
@@ -602,6 +614,11 @@ func _render_history() -> void:
 	next.pressed.connect(func(): _change_history(1))
 	navigation.add_child(next)
 	history_buttons.append(next)
+	# Clique numa seta desativada (primeira/última página) toca o som de trava.
+	for arrow in history_buttons:
+		arrow.gui_input.connect(func(event: InputEvent) -> void:
+			if arrow.disabled and event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+				Audio.efeito("ui_trava"))
 
 func _confirm_exit() -> void:
 	_clear()
@@ -886,9 +903,9 @@ func _credits() -> void:
 	_clear()
 	_place_modal(HISTORY_SIZE)
 	var home := _modal_header("Por trás do vale", _home, "Quem faz o vale e de onde ele vem.")
-	_label("O vale nasceu do encontro entre paisagens, memórias e histórias brasileiras. Entre casas, caminhos e mata, cada lugar convida a uma descoberta.", 20)
-	_label("Música, narração e efeitos acompanham a travessia e dão voz aos lugares e personagens. Esta é uma primeira visita a esse mundo. Obrigado por caminhar conosco enquanto a jornada cresce.", 20)
-	_label("Myths’ Valley é uma criação da equipe da Alpha Centauri, um spin-off do projeto Batalha de Mitos. Você pode saber mais acessando:", 20)
+	_highlighted("O vale nasceu do encontro entre paisagens, memórias e histórias brasileiras. Entre casas, caminhos e mata, cada lugar convida a uma descoberta.")
+	_highlighted("Música, narração e efeitos acompanham a travessia e dão voz aos lugares e personagens. Esta é uma primeira visita a esse mundo. Obrigado por caminhar conosco enquanto a jornada cresce.")
+	_highlighted("Myths’ Valley é uma criação da equipe da Alpha Centauri, um spin-off do projeto Batalha de Mitos. Você pode saber mais acessando:")
 	# Ícone de link externo antes do endereço: avisa que o clique abre o navegador.
 	var open_site := func() -> void: OS.shell_open("https://www.batalhademitos.com.br")
 	var link_row := HBoxContainer.new()
@@ -925,6 +942,24 @@ func _credits() -> void:
 	team_title.add_theme_color_override("font_color", Color("e2c47f"))
 	_label(" · ".join(COLLABORATORS), 18)
 	home.grab_focus()
+
+## Parágrafo com os termos de CREDITS_HIGHLIGHTS em dourado, para a leitura correr
+## pelos pontos principais. O texto é traduzido antes; os termos cobrem os três idiomas.
+func _highlighted(text: String) -> void:
+	var rich := RichTextLabel.new()
+	rich.bbcode_enabled = true
+	rich.fit_content = true
+	rich.scroll_active = false
+	rich.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	rich.custom_minimum_size.x = 375
+	rich.add_theme_font_size_override("normal_font_size", 20)
+	rich.add_theme_color_override("default_color", Color.WHITE)
+	var translated := tr(text).replace("[", "[lb]")
+	for term: String in CREDITS_HIGHLIGHTS:
+		translated = translated.replace(term, "[color=#e2c47f]%s[/color]" % term)
+	rich.text = translated
+	content.add_child(rich)
+
 
 func _intro() -> void:
 	_clear()
@@ -968,11 +1003,86 @@ func _start_game() -> void:
 		return
 	starting = true
 	set_process(false)
+	Audio.parar_narracao()
+	# A tela de carregamento é montada ainda no idioma do menu; os textos já vêm
+	# traduzidos e não mudam quando o locale volta ao português do jogo.
+	var loading := _show_loading()
 	Dia.pausado = false
 	Dia.definir_hora(Dia.hora_inicial)
 	IdiomaMenu.restaurar_jogo()
-	Audio.parar_narracao()
-	get_tree().change_scene_to_file("res://scenes/prototipo_3d/vale.tscn")
+	ResourceLoader.load_threaded_request(GAME_SCENE)
+	var progress: Array = []
+	while true:
+		var status := ResourceLoader.load_threaded_get_status(GAME_SCENE, progress)
+		if status != ResourceLoader.THREAD_LOAD_IN_PROGRESS:
+			break
+		# Recursos lidos ocupam até 85%; o restante é a montagem do vale.
+		loading.value = maxf(loading.value, float(progress[0]) * 0.85)
+		await get_tree().process_frame
+	loading.value = 0.9
+	await get_tree().process_frame
+	var packed := ResourceLoader.load_threaded_get(GAME_SCENE) as PackedScene
+	if packed == null:
+		get_tree().change_scene_to_file(GAME_SCENE)
+		return
+	get_tree().change_scene_to_packed(packed)
+
+
+## Tela de carregamento sobre o menu: fundo escuro, título, frase e barra dourada.
+## Devolve a barra, que o carregamento atualiza. Some com a troca de cena.
+func _show_loading() -> ProgressBar:
+	_close_help()
+	var screen := Control.new()
+	screen.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	screen.theme = panel.theme
+	screen.mouse_filter = Control.MOUSE_FILTER_STOP
+	panel.get_parent().add_child(screen)
+	var shade := ColorRect.new()
+	shade.color = Color(0.04, 0.07, 0.06, 0.96)
+	shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	screen.add_child(shade)
+	var column := VBoxContainer.new()
+	column.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
+	column.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	column.grow_vertical = Control.GROW_DIRECTION_BOTH
+	column.custom_minimum_size = Vector2(460, 0)
+	column.add_theme_constant_override("separation", 14)
+	screen.add_child(column)
+	var title := Label.new()
+	title.text = "Myths’ Valley"
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title.add_theme_font_size_override("font_size", 40)
+	column.add_child(title)
+	var message := Label.new()
+	message.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
+	message.text = tr("Carregando o vale…")
+	message.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	message.add_theme_font_size_override("font_size", 18)
+	message.add_theme_color_override("font_color", Color("c9b98f"))
+	column.add_child(message)
+	var bar := ProgressBar.new()
+	bar.show_percentage = false
+	bar.max_value = 1.0
+	bar.step = 0.0
+	bar.custom_minimum_size.y = 8
+	var back := StyleBoxFlat.new()
+	back.bg_color = Color(1, 1, 1, 0.12)
+	back.set_corner_radius_all(4)
+	var fill := StyleBoxFlat.new()
+	fill.bg_color = Color("e2c47f")
+	fill.set_corner_radius_all(4)
+	bar.add_theme_stylebox_override("background", back)
+	bar.add_theme_stylebox_override("fill", fill)
+	column.add_child(bar)
+	var place := Label.new()
+	place.text = "Bom Jesus dos Pobres · 1887"
+	place.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	place.add_theme_font_size_override("font_size", 14)
+	place.add_theme_color_override("font_color", Color(0.72, 0.73, 0.66))
+	column.add_child(place)
+	screen.modulate.a = 0.0
+	create_tween().tween_property(screen, "modulate:a", 1.0, 0.2)
+	return bar
 
 
 func _formatar_escala(meters_per_unit: float) -> String:
