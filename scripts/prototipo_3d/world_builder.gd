@@ -101,6 +101,11 @@ func is_walkable_point(world_position: Vector3) -> bool:
 	return _region != null and _region.is_walkable_point(world_position)
 
 
+## Terra firme do mapa (fora do mar, passarelas e píer).
+func is_on_land(world_position: Vector3) -> bool:
+	return _region != null and _region._is_on_land(world_position)
+
+
 ## O raycast deve usar HOUSE_INTERACTION_LAYER e collide_with_areas = true.
 func get_house_properties(collider: Object) -> Dictionary:
 	var house := _house_from_collider(collider)

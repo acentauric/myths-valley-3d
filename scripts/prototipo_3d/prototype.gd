@@ -1,9 +1,11 @@
 extends Node3D
 ## Cena do vale: cenário, jogador, HUD, som do lugar, moradores e o Pedro guia.
 ## Estilo visual (Tripo/Procedural), hora do dia e velocidade do tempo vêm dos
-## autoloads Estilo e Dia, ajustados no menu (AJUSTAR → Cenário e tempo).
+## autoloads Estilo e Dia, ajustados no menu (AJUSTAR).
 
 const NPCS := "res://data/npcs_3d.json"
+## Raio de terra firme em volta do ponto de chegada.
+const RAIO_CHEGADA := 6.0
 const PERIODOS := {"madrugada": "Madrugada", "manha": "Manhã", "tarde": "Tarde", "entardecer": "Entardecer", "noite": "Noite"}
 
 @onready var player = $Jogador
@@ -75,7 +77,29 @@ func _ponto_de_chegada() -> Vector3:
 		var direcao: Vector3 = praca - pier
 		direcao.y = 0.0
 		spawn = world.ground_position(pier + direcao.normalized() * 7.5, 0.07)
+		# Desde o relevo do mapa geográfico, 7,5 m do píer ainda caem na passarela sobre
+		# a água: avança rumo à praça até um ponto com terra firme em volta, para o
+		# primeiro passo não sair da passarela e cair no mar.
+		var distancia := direcao.length()
+		var passo := 7.5
+		while passo < distancia:
+			var candidato: Vector3 = pier + direcao.normalized() * passo
+			if _terra_em_volta(candidato, RAIO_CHEGADA):
+				spawn = world.ground_position(candidato, 0.07)
+				break
+			passo += 1.0
 	return spawn
+
+
+## Centro e oito pontos num raio em terra firme.
+func _terra_em_volta(centro: Vector3, raio: float) -> bool:
+	if not world.is_on_land(centro):
+		return false
+	for indice in range(8):
+		var borda := centro + Vector3.FORWARD.rotated(Vector3.UP, TAU * indice / 8.0) * raio
+		if not world.is_on_land(borda):
+			return false
+	return true
 
 
 func _montar_som() -> void:
