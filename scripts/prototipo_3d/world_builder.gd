@@ -55,6 +55,8 @@ var _selected_house: Area3D
 var _house_sites: Array[Dictionary] = []
 ## Lote (posição e giro) de cada construção nomeada, decidido por _loteamento().
 var _lotes: Dictionary = {}
+## Árvores plantadas uma a uma (_arvore): espécie, posição e raio do tronco.
+var _arvores_nomeadas: Array[Dictionary] = []
 var _terreiro: Material
 var _manual_tree_sites: Array[Dictionary] = []
 
@@ -118,6 +120,17 @@ func is_walkable_point(world_position: Vector3) -> bool:
 
 
 ## Terra firme do mapa (fora do mar, passarelas e píer).
+## Todas as árvores do vale (plantadas e da mata/orla): espécie, posição no chão e raio
+## aproximado do tronco.
+func arvores() -> Array[Dictionary]:
+	var lista: Array[Dictionary] = _arvores_nomeadas.duplicate()
+	if _region:
+		for tronco: Dictionary in _region._tree_trunks:
+			var ponto: Vector2 = tronco["point"]
+			lista.append({"especie": String(tronco.get("especie", "")), "pos": Vector3(ponto.x, float(tronco["ground"]), ponto.y), "raio": float(tronco["radius"])})
+	return lista
+
+
 func water_level() -> float:
 	return _region.water_level() if _region else -INF
 
@@ -391,6 +404,7 @@ func _construir_vila() -> void:
 	_build_pecas()
 	_build_canoas()
 	_build_luzes_epoca()
+	_build_bases_das_arvores()
 	if COMPARAR_MANGUEIRAS:
 		_bancada_mangueiras(Vector3(-2, 0, -30))
 
@@ -721,8 +735,9 @@ func _arvore(especie: String, origin: Vector3, size: float = 1.0, yaw: float = 0
 		return
 	placed_origin = ground_position(placed_origin)
 	_manual_tree_sites.append({"position": placed_origin, "radius": tree_radius})
+	_arvores_nomeadas.append({"especie": especie, "pos": placed_origin, "raio": size * 0.5})
 	if estilo_tripo():
-		var node := CatalogoAssets.instanciar(especie, self, placed_origin, size, yaw)
+		var node := CatalogoAssets.instanciar(especie, self, placed_origin - Vector3(0.0, _region.ARVORE_AFUNDADA, 0.0), size, yaw)
 		if node != null:
 			CatalogoAssets.colisao(especie, node, self, placed_origin, size, yaw)
 			return
@@ -888,6 +903,32 @@ func _igreja_procedural(church: Vector3) -> void:
 	_box(Vector3(2.3, 8.2, 2.3), church + Vector3(0, 4.2, 6.0), Color("e5dcc8"), true)
 	_box(Vector3(0.22, 2.0, 0.22), church + Vector3(0, 9.2, 6.0), WOOD)
 	_box(Vector3(1.4, 0.2, 0.22), church + Vector3(0, 9.45, 6.0), WOOD)
+
+
+## Pé de cada árvore (plantadas, mata e coqueiros): decalque de terra escura, folhas
+## caídas e raízes (base_arvore_v1.png) deitado no chão, maior quanto mais grosso o
+## tronco, em blocos de MultiMesh como a mata. Sem ele o tronco parece pousado na grama.
+const BASE_ARVORE := preload("res://assets/prototipo_3d/materiais/base_arvore_v1.png")
+
+
+func _build_bases_das_arvores() -> void:
+	var placa := PlaneMesh.new()
+	placa.size = Vector2.ONE
+	var material := StandardMaterial3D.new()
+	material.albedo_texture = BASE_ARVORE
+	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA_SCISSOR
+	material.alpha_scissor_threshold = 0.35
+	material.roughness = 1.0
+	placa.material = material
+	var transforms: Array[Transform3D] = []
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 1887
+	for arvore: Dictionary in arvores():
+		var tamanho := clampf(float(arvore["raio"]) * 9.0, 1.8, 5.0)
+		var pos: Vector3 = arvore["pos"]
+		var giro := Basis(Vector3.UP, rng.randf() * TAU).scaled(Vector3(tamanho, 1.0, tamanho))
+		transforms.append(Transform3D(giro, pos + Vector3(0.0, 0.035, 0.0)))
+	_region._multimesh_em_blocos("Pé das árvores", placa, transforms)
 
 
 ## Canoas fundeadas no raso diante da vila (canoas.gd), só com o mar de fundo real.

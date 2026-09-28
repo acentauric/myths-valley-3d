@@ -20,10 +20,13 @@ const GRAMA_TERRA_MATA_TEXTURE := preload("res://assets/prototipo_3d/materiais/g
 const Mar = preload("res://scripts/prototipo_3d/mar.gd")
 const AREIA_PRAIA := preload("res://assets/prototipo_3d/mar/areia_praia.gdshader")
 const FOZ_RIO := preload("res://assets/prototipo_3d/mar/foz_rio.gdshader")
+const AREIA_TEXTURE := preload("res://assets/prototipo_3d/materiais/areia_praia_v1.png")
 ## Tinta da textura de grama/terra: com o sol batendo no chão (não mais só a luz
 ## ambiente), a textura crua fica ocre; puxa de volta para o verde do Recôncavo.
 const TINTA_GRAMA := Color(0.74, 0.86, 0.6)
 const TREE_COLLISION_RADIUS := 28.0
+## Quanto as árvores entram no chão (unidades), para não parecerem pousadas.
+const ARVORE_AFUNDADA := 0.06
 const TREE_COLLISION_POOL_SIZE := 24
 const TREE_COLLISION_INTERVAL := 0.25
 const TERRAIN_CELL_SIZE := 4.0
@@ -55,6 +58,8 @@ var _alturas_vertices: Dictionary = {}
 ## precisa medir a distância segmento a segmento.
 var _costa_limites := Rect2()
 var _open_areas: Array[PackedVector2Array] = []
+## Cruzamentos das ruas (ponta de uma rua emendada em outra): ponto e largura da rua.
+var _road_junctions: Array[Dictionary] = []
 var _tree_trunks: Array[Dictionary] = []
 var _tree_collision_pool: Array[Dictionary] = []
 var _tree_collision_elapsed := 0.0
@@ -199,15 +204,22 @@ func build_region(kml_json_path: String, scenario_json_path: String) -> void:
 	for river in _rivers:
 		_add_ribbon("Rio", river.points, river.width, 0.046, RIVER_COLOR)
 	_add_river_mouths()
+	# A rua mais larga fica por cima nas sobreposições (as ramificações entram por baixo
+	# dela), e cada cruzamento ganha um remendo de terra batida que cobre a emenda.
+	var widest := 0.0
+	for road in _roads:
+		widest = maxf(widest, float(road.width))
 	for road in _roads:
 		var road_width: float = float(road.width)
+		var road_y := 0.064 if road_width >= widest else 0.058
 		var road_path := _soften_road_corners(road.points, road_width)
 		var tint := Color("fff8e8") if road.name == "Rua Principal" else Color("f7e7c6")
 		var shoulder_width := _units(4.0, 1.15)
 		var transition_width: float = road_width + shoulder_width * 2.0
 		var transition_material := _road_shoulder_material(road_width / transition_width, tint)
 		_add_ribbon("Transição " + road.name, road_path, transition_width, 0.052, ROAD_COLOR, false, transition_material)
-		_add_ribbon(road.name, road_path, road_width, 0.058, ROAD_COLOR, true, _textured_material(ESTRADA_OCRE_TEXTURE, tint))
+		_add_ribbon(road.name, road_path, road_width, road_y, ROAD_COLOR, true, _textured_material(ESTRADA_OCRE_TEXTURE, tint))
+	_build_road_junctions()
 	_build_shore_access()
 	_build_forest(scenario.get("vegetation", {}))
 
@@ -434,6 +446,7 @@ func _clear_region() -> void:
 	_elevation_samples.clear()
 	_alturas_vertices.clear()
 	_open_areas.clear()
+	_road_junctions.clear()
 	_tree_trunks.clear()
 	_tree_collision_pool.clear()
 	_tree_collision_elapsed = 0.0
@@ -762,9 +775,63 @@ func _curve_roads() -> void:
 					if distance < best_distance:
 						best_distance = distance
 						best = candidate
+			if best != tip:
+				_road_junctions.append({"point": best, "width": float(road.width)})
 			points[tip_index] = best
 		road.points = points
 		road.bounds = _points_bounds(points).grow(float(road.width) * 0.5)
+
+
+## Remendo de terra batida em cada cruzamento: um disco drapeado no chão, acima das
+## duas ruas, com a textura da estrada projetada pelo mundo e a borda irregular.
+func _build_road_junctions() -> void:
+	var shader := Shader.new()
+	shader.code = """
+shader_type spatial;
+render_mode cull_back;
+
+uniform sampler2D road_texture : source_color, repeat_enable, filter_linear_mipmap_anisotropic;
+uniform vec4 tint : source_color = vec4(1.0);
+uniform vec2 center;
+uniform float radius = 3.0;
+varying vec2 world_xz;
+
+float hash21(vec2 p) {
+	return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
+}
+
+float value_noise(vec2 p) {
+	vec2 c = floor(p);
+	vec2 f = fract(p);
+	f = f * f * (3.0 - 2.0 * f);
+	return mix(mix(hash21(c), hash21(c + vec2(1.0, 0.0)), f.x), mix(hash21(c + vec2(0.0, 1.0)), hash21(c + vec2(1.0, 1.0)), f.x), f.y);
+}
+
+void vertex() {
+	world_xz = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xz;
+}
+
+void fragment() {
+	ALBEDO = texture(road_texture, world_xz / 6.0).rgb * tint.rgb;
+	ROUGHNESS = 0.95;
+	float edge = distance(world_xz, center) / radius + (value_noise(world_xz * 0.9) - 0.5) * 0.35;
+	ALPHA = 1.0 - step(1.0, edge);
+	ALPHA_SCISSOR_THRESHOLD = 0.5;
+}
+"""
+	for junction in _road_junctions:
+		var center: Vector2 = junction.point
+		var radius: float = float(junction.width) * 0.8
+		var circle := PackedVector2Array()
+		for i in 16:
+			circle.append(center + Vector2.RIGHT.rotated(TAU * i / 16.0) * radius * 1.2)
+		var material := ShaderMaterial.new()
+		material.shader = shader
+		material.set_shader_parameter("road_texture", ESTRADA_OCRE_TEXTURE)
+		material.set_shader_parameter("tint", Color("f7e7c6"))
+		material.set_shader_parameter("center", center)
+		material.set_shader_parameter("radius", radius)
+		_add_polygon("Cruzamento", circle, 0.07, ROAD_COLOR, false, material)
 
 
 func _chaikin(points: PackedVector2Array) -> PackedVector2Array:
@@ -898,7 +965,8 @@ func _add_beach() -> void:
 		coast.reverse()
 	var material := ShaderMaterial.new()
 	material.shader = AREIA_PRAIA
-	_add_ribbon("Orla de areia", coast, width, 0.05, BEACH_COLOR, true, material, -0.06)
+	material.set_shader_parameter("textura_areia", AREIA_TEXTURE)
+	_add_ribbon("Orla de areia", coast, width, 0.075, BEACH_COLOR, true, material, -0.06)
 
 
 ## Rios que terminam perto da costa seguem até o mar: a foz atravessa a areia e a água
@@ -931,7 +999,7 @@ func _add_river_mouths() -> void:
 			material.set_shader_parameter("cor_rio", RIVER_COLOR)
 			material.set_shader_parameter("comprimento", length / float(river.width))
 			material.set_shader_parameter("inicio_sumir", 1.0 - tail / length * 1.4)
-			_add_ribbon("Foz do rio", mouth, float(river.width), 0.07, RIVER_COLOR, false, material)
+			_add_ribbon("Foz do rio", mouth, float(river.width), 0.085, RIVER_COLOR, false, material)
 
 
 func _distance_to_line(point: Vector2, line: PackedVector2Array) -> float:
@@ -1016,8 +1084,9 @@ func _build_forest(configuration: Dictionary) -> void:
 			var scale := rng.randf_range(0.8, 1.25)
 			var yaw := rng.randf_range(0.0, TAU)
 			var ground := ground_height_at(Vector3(point.x, 0, point.y))
-			_tree_trunks.append({"point": point, "ground": ground, "height": minf(float(built.altura) * scale, 4.0), "radius": float(built.tronco) * scale})
-			transforms.append(Transform3D(Basis.from_euler(Vector3(0, yaw, 0)).scaled(Vector3.ONE * scale), Vector3(point.x, ground, point.y)) * base)
+			_tree_trunks.append({"point": point, "ground": ground, "height": minf(float(built.altura) * scale, 4.0), "radius": float(built.tronco) * scale, "especie": species})
+			# Afundada um palmo: o pé entra no chão em vez de pousar sobre ele.
+			transforms.append(Transform3D(Basis.from_euler(Vector3(0, yaw, 0)).scaled(Vector3.ONE * scale), Vector3(point.x, ground - ARVORE_AFUNDADA, point.y)) * base)
 		_multimesh_em_blocos("Mata: " + species, built.mesh, transforms)
 	_build_coast_palms(rng)
 
@@ -1084,8 +1153,8 @@ func _build_coast_palms(rng: RandomNumberGenerator) -> void:
 				var scale := rng.randf_range(0.75, 1.15)
 				var lean := Transform3D.IDENTITY if modelo_base == Transform3D.IDENTITY else Transform3D(Basis.from_euler(Vector3(0, 0, 0.14)), Vector3.ZERO)
 				var ground := ground_height_at(Vector3(candidate.x, 0, candidate.y))
-				transforms.append(Transform3D(Basis.from_euler(Vector3(0, yaw, 0)).scaled(Vector3.ONE * scale), Vector3(candidate.x, ground, candidate.y)) * lean * modelo_base)
-				_tree_trunks.append({"point": candidate, "ground": ground, "height": minf(float(built.altura) * scale, 4.0), "radius": float(built.tronco) * scale})
+				transforms.append(Transform3D(Basis.from_euler(Vector3(0, yaw, 0)).scaled(Vector3.ONE * scale), Vector3(candidate.x, ground - ARVORE_AFUNDADA, candidate.y)) * lean * modelo_base)
+				_tree_trunks.append({"point": candidate, "ground": ground, "height": minf(float(built.altura) * scale, 4.0), "radius": float(built.tronco) * scale, "especie": "coqueiro"})
 			next_at += spacing * rng.randf_range(0.7, 1.4)
 		travelled += length
 	if transforms.is_empty():

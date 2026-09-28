@@ -63,6 +63,24 @@ atualize esse arquivo e este documento juntos.
 - Nado mais rápido com Shift; **C** também alterna a câmera travada (além de Tab).
 - **Três saudações do Pedro**, sorteadas a cada partida, com voz nova (Weverton); a
   antiga dizia "o sol ainda tá alto" mesmo com o jogo começando às 7h.
+- **Ondas de verdade na beira**: dois trens de marolas de ritmos diferentes, com a
+  crista chegando a cada trecho da praia em momento e força diferentes (séries), e a
+  espuma se quebrando em pedaços.
+- **Areia com textura** (`areia_praia_v1.png`: grão, ondinhas de vento, conchinhas),
+  areia úmida em transição larga e irregular até a água, e a borda do lado da terra
+  desfeita em manchas sobre a grama; a areia passa por cima das ruas que chegam à
+  praia.
+- **Cruzamentos**: a rua mais larga fica por cima (sem tremulação entre ruas
+  sobrepostas) e cada emenda ganha um remendo de terra batida de borda irregular.
+- **Pé das árvores**: decalque de terra, folhas e raízes sob cada árvore
+  (`base_arvore_v1.png`) e árvores afundadas um palmo no chão.
+- **Fichas das árvores** (tecla E, `data/arvores_3d.json`, `arvores_info.gd`): uma por
+  espécie em cada quadra de 16 unidades; E abre, passa a página e fecha. Nas lápides,
+  E de novo fecha.
+- **Plaquinhas de nome** dos moradores no estilo do HUD, com opção em AJUSTAR →
+  Cenário → Nomes dos personagens.
+- Pedro não "anda no lugar" mais: a animação dos moradores segue a velocidade real,
+  depois das colisões.
 - **Chão iluminado pelo sol.** Os triângulos do terreno estavam de costas para cima:
   terra, praia e ruas só recebiam luz ambiente. Com a correção, a grama ganhou uma
   tinta verde para compensar o tom ocre da textura sob o sol.

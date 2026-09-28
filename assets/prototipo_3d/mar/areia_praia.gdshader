@@ -1,10 +1,18 @@
 shader_type spatial;
 // Faixa de areia da praia (geo_region_renderer._add_beach): UV.x vai de 0 (lado da
-// terra) a 1 (lado do mar, já dentro d'água). Areia seca clara com grãos e marcas de
-// vento; perto da água, areia úmida mais escura e brilhante.
+// terra) a 1 (lado do mar, já dentro d'água). Textura de areia projetada pelo mundo
+// (areia_praia_v1.png: grão, ondinhas de vento, conchinhas). A areia úmida escurece aos
+// poucos, com borda irregular, até sumir sob a água; do lado da terra, a areia se
+// desfaz em manchas sobre a grama e a terra batida em vez de terminar numa linha.
 
-uniform vec3 areia_seca : source_color = vec3(0.85, 0.79, 0.64);
-uniform vec3 areia_molhada : source_color = vec3(0.66, 0.59, 0.45);
+render_mode cull_back;
+
+uniform sampler2D textura_areia : source_color, filter_linear_mipmap_anisotropic, repeat_enable;
+uniform float ladrilho = 5.0;
+uniform vec3 tom : source_color = vec3(0.92, 0.88, 0.8);
+uniform vec3 umida : source_color = vec3(0.62, 0.55, 0.42);
+// Fração da faixa (a partir da terra) em que a areia se desfaz sobre o chão.
+uniform float franja = 0.2;
 varying vec2 mundo;
 
 float hash21(vec2 p) {
@@ -23,15 +31,17 @@ void vertex() {
 }
 
 void fragment() {
-	float borda = ruido(mundo * 0.35) * 0.18;
-	float umida = smoothstep(0.5 + borda, 0.78 + borda, UV.x);
-	vec3 cor = mix(areia_seca, areia_molhada, umida);
-	// Manchas largas, marcas de vento e grãos.
-	cor *= 0.93 + 0.1 * ruido(mundo * 0.08);
-	float marcas = sin(dot(mundo, vec2(0.83, 0.55)) * 5.5 + ruido(mundo * 0.6) * 4.0);
-	cor *= 1.0 - 0.035 * smoothstep(0.6, 1.0, marcas) * (1.0 - umida);
-	cor *= 0.94 + 0.1 * hash21(floor(mundo * 22.0));
+	vec3 areia = texture(textura_areia, mundo / ladrilho).rgb * tom;
+	// Umidade: começa no meio da faixa com borda recortada e escurece de vez perto da
+	// água; manchas mais secas e mais molhadas quebram a linha.
+	float recorte = ruido(mundo * 0.22) * 0.22 + ruido(mundo * 1.3) * 0.08;
+	float molhada = smoothstep(0.38 + recorte, 0.9 + recorte * 0.5, UV.x);
+	vec3 cor = mix(areia, areia * umida * 1.25, molhada);
 	ALBEDO = cor;
-	ROUGHNESS = mix(0.95, 0.45, umida);
-	SPECULAR = mix(0.3, 0.55, umida);
+	ROUGHNESS = mix(0.95, 0.4, molhada);
+	SPECULAR = mix(0.3, 0.6, molhada);
+	// Lado da terra: a areia vira manchas que se misturam à grama/terra por baixo.
+	float mancha = ruido(mundo * 0.5) * 0.6 + ruido(mundo * 2.1) * 0.4;
+	ALPHA = step(1.0 - clamp(UV.x / franja, 0.0, 1.0), mancha);
+	ALPHA_SCISSOR_THRESHOLD = 0.5;
 }

@@ -225,7 +225,13 @@ func set_notice(value: String) -> void:
 
 ## Painel de informações à esquerda, abaixo do título: casas e lápides do cemitério.
 ## A altura acompanha o texto.
+## Quem abriu o painel (lápides, árvores); a casa clicada abre sem dono. Cada módulo
+## confere o dono para saber se a ficha dele ainda está aberta.
+var painel_dono: Object = null
+
+
 func show_house_info(value: String, heading: String = "INFORMAÇÕES DA CASA") -> void:
+	painel_dono = null
 	_house_info_heading.text = heading
 	_house_info_label.text = value
 	var text_height := _text_height(_house_info_label)
@@ -235,6 +241,7 @@ func show_house_info(value: String, heading: String = "INFORMAÇÕES DA CASA") -
 
 
 func clear_house_info() -> void:
+	painel_dono = null
 	_house_info_panel.visible = false
 
 

@@ -4,15 +4,12 @@ extends Node
 ## curta de quem está ali. Afastar-se fecha o painel. Histórias: data/lapides_3d.json.
 ## Quem sobe numa laje ouve bronca do coveiro (Damião), no balão dele e no aviso.
 
+const DicaTecla = preload("res://scripts/prototipo_3d/dica_tecla.gd")
 const DADOS := "res://data/lapides_3d.json"
 ## Distância (no chão) para a tecla E aparecer e para o painel fechar sozinho.
 const ALCANCE := 2.2
 const ALCANCE_FECHAR := 4.0
 const ALTURA_DICA := 1.5
-const FUNDO := Color(0.055, 0.085, 0.075, 0.92)
-const OURO := Color("b49a60")
-const PAPEL := Color("f3ead3")
-const TINTA := Color("2b2a22")
 ## Broncas do coveiro, cada vez mais bravas, com a voz dele (ElevenLabs, a mesma do
 ## Damião). Na terceira ele derruba o jogador da laje.
 const BRONCAS := [
@@ -58,7 +55,7 @@ func configurar(world: Node3D, jogador: Node3D, hud) -> void:
 	var dados = JSON.parse_string(FileAccess.get_file_as_string(DADOS))
 	if dados is Dictionary:
 		_historias = dados.get("lapides", [])
-	_criar_dica(hud.map_layer())
+	_dica = DicaTecla.criar(hud.map_layer(), "E", "Ler lápide")
 
 
 func _process(delta: float) -> void:
@@ -77,23 +74,27 @@ func _process(delta: float) -> void:
 	# Só na câmera do jogador (o mapa usa outra).
 	var em_jogo: bool = camera != null and camera == _jogador.get("camera")
 	_perto = _mais_proxima() if em_jogo else -1
+	# Outra ficha (árvore, casa) tomou o painel: esta já não está aberta.
+	if _aberta >= 0 and _hud.get("painel_dono") != self:
+		_aberta = -1
 	if _aberta >= 0 and _distancia(_aberta) > ALCANCE_FECHAR:
 		_aberta = -1
 		_hud.clear_house_info()
 	if _perto < 0 or _perto == _aberta:
 		_dica.visible = false
 		return
-	var topo: Vector3 = _world.lapides[_perto] + Vector3(0, ALTURA_DICA, 0)
-	if camera.is_position_behind(topo):
-		_dica.visible = false
-		return
-	_dica.visible = true
-	_dica.reset_size()
-	_dica.position = camera.unproject_position(topo) - Vector2(_dica.size.x * 0.5, _dica.size.y)
+	DicaTecla.mostrar_em(_dica, camera, _world.lapides[_perto] + Vector3(0, ALTURA_DICA, 0))
 
 
+## E perto de um túmulo abre a lápide; com ela aberta, E fecha.
 func _unhandled_key_input(event: InputEvent) -> void:
-	if event is InputEventKey and event.pressed and not event.echo and event.physical_keycode == KEY_E and _perto >= 0:
+	if not (event is InputEventKey and event.pressed and not event.echo and event.physical_keycode == KEY_E):
+		return
+	if _aberta >= 0:
+		_aberta = -1
+		_hud.clear_house_info()
+		get_viewport().set_input_as_handled()
+	elif _perto >= 0:
 		ler(_perto)
 		get_viewport().set_input_as_handled()
 
@@ -104,7 +105,8 @@ func ler(indice: int) -> void:
 		return
 	var lapide: Dictionary = _historias[indice]
 	Audio.efeito("ui_confirmar")
-	_hud.show_house_info("%s · %s\n%s" % [lapide.get("nome", ""), lapide.get("datas", ""), lapide.get("historia", "")], "LÁPIDE")
+	_hud.show_house_info("%s · %s\n%s" % [lapide.get("nome", ""), lapide.get("datas", ""), lapide.get("historia", "") + "\n\nE: fechar"], "LÁPIDE")
+	_hud.set("painel_dono", self)
 	_aberta = indice
 
 
@@ -234,45 +236,3 @@ func _mais_proxima() -> int:
 func _distancia(indice: int) -> float:
 	var lapide: Vector3 = _world.lapides[indice]
 	return Vector2(lapide.x, lapide.z).distance_to(Vector2(_jogador.global_position.x, _jogador.global_position.z))
-
-
-## Dica flutuante: tecla E em papel claro e "Ler lápide" ao lado, no fundo escuro do HUD.
-func _criar_dica(pai: Control) -> void:
-	_dica = PanelContainer.new()
-	_dica.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_dica.visible = false
-	var estilo := StyleBoxFlat.new()
-	estilo.bg_color = FUNDO
-	estilo.border_color = OURO
-	estilo.set_border_width_all(1)
-	estilo.set_corner_radius_all(8)
-	estilo.content_margin_left = 6
-	estilo.content_margin_right = 10
-	estilo.content_margin_top = 5
-	estilo.content_margin_bottom = 5
-	_dica.add_theme_stylebox_override("panel", estilo)
-	pai.add_child(_dica)
-	var linha := HBoxContainer.new()
-	linha.add_theme_constant_override("separation", 8)
-	linha.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_dica.add_child(linha)
-	var tecla := PanelContainer.new()
-	var estilo_tecla := StyleBoxFlat.new()
-	estilo_tecla.bg_color = PAPEL
-	estilo_tecla.set_corner_radius_all(4)
-	estilo_tecla.content_margin_left = 7
-	estilo_tecla.content_margin_right = 7
-	estilo_tecla.content_margin_top = 1
-	estilo_tecla.content_margin_bottom = 1
-	tecla.add_theme_stylebox_override("panel", estilo_tecla)
-	linha.add_child(tecla)
-	var letra := Label.new()
-	letra.text = "E"
-	letra.add_theme_font_size_override("font_size", 15)
-	letra.add_theme_color_override("font_color", TINTA)
-	tecla.add_child(letra)
-	var texto := Label.new()
-	texto.text = "Ler lápide"
-	texto.add_theme_font_size_override("font_size", 14)
-	texto.add_theme_color_override("font_color", Color("e8e4d7"))
-	linha.add_child(texto)

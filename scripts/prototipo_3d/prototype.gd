@@ -8,6 +8,8 @@ const TeclasMovimento = preload("res://scripts/prototipo_3d/teclas_movimento.gd"
 const TelaCarregamento = preload("res://scripts/prototipo_3d/tela_carregamento.gd")
 const MapaJogo = preload("res://scripts/prototipo_3d/mapa_jogo.gd")
 const Lapides = preload("res://scripts/prototipo_3d/lapides.gd")
+const ArvoresInfo = preload("res://scripts/prototipo_3d/arvores_info.gd")
+const PlacasNomes = preload("res://scripts/prototipo_3d/placas_nomes.gd")
 const MENU_SCENE := "res://scenes/prototipo_3d/abertura.tscn"
 ## Raio de terra firme em volta do ponto de chegada.
 const RAIO_CHEGADA := 6.0
@@ -73,6 +75,10 @@ func _ready() -> void:
 	lapides.name = "Lapides"
 	add_child(lapides)
 	lapides.configurar(world, player, hud)
+	var arvores := ArvoresInfo.new()
+	arvores.name = "ArvoresInfo"
+	add_child(arvores)
+	arvores.configurar(world, player, hud)
 	player.set_camera_locked(false)
 	hud.set_region_title(world.get_region_title())
 	if Estilo.procedural():
@@ -162,6 +168,10 @@ func _montar_moradores(spawn: Vector3) -> void:
 		pedro.saudou.connect(_on_saudacao)
 		pedro.missao_mudou.connect(_on_missao_mudou)
 		pedro.narrou.connect(func(texto: String) -> void: hud.set_notice("Pedro: " + texto))
+	var placas := PlacasNomes.new()
+	placas.name = "PlacasNomes"
+	add_child(placas)
+	placas.configurar(player, hud.map_layer())
 
 
 func _process(_delta: float) -> void:

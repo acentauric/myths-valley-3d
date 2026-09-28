@@ -217,7 +217,9 @@ func _mover(direcao: Vector3, velocidade: float, delta: float) -> void:
 	_medir_bloqueio(direcao, velocidade, delta)
 	if direcao.length_squared() > 0.01:
 		visual.rotation.y = lerp_angle(visual.rotation.y, atan2(direcao.x, direcao.z), 1.0 - exp(-9.0 * delta))
-	_velocidade_atual = Vector2(velocity.x, velocity.z).length()
+	# O que o corpo andou de fato (depois das colisões), não o que ele pediu: barrado pelo
+	# jogador, pelo píer ou por uma parede, o clipe é de parado, não de andar no lugar.
+	_velocidade_atual = Vector2(get_real_velocity().x, get_real_velocity().z).length()
 	if global_position.y < -6.0:
 		global_position = _alvo + Vector3(0, 0.5, 0)
 		velocity = Vector3.ZERO

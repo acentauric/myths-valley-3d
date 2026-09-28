@@ -1,0 +1,101 @@
+{
+  "observacao": "Fichas das árvores do vale (tecla E perto delas). Chave = espécie do catálogo/mata. Cada ficha tem páginas curtas: E abre, E passa a página, E na última fecha. Contexto: Recôncavo Baiano, 1887.",
+  "arvores": {
+    "mangueira": {
+      "nome": "Mangueira",
+      "cientifico": "Mangifera indica",
+      "paginas": [
+        "Veio da Índia com os portugueses e se deu tão bem no Recôncavo que parece nativa. Copa fechada, escura, sombra fresca o ano inteiro.",
+        "Entre outubro e janeiro o chão fica coberto de manga-rosa e espada. Debaixo dela se descasca mandioca, se conversa e se espera o calor passar."
+      ]
+    },
+    "jaqueira": {
+      "nome": "Jaqueira",
+      "cientifico": "Artocarpus heterophyllus",
+      "paginas": [
+        "Outra que veio da Ásia e tomou conta. A jaca nasce grudada no tronco e pode passar de dez quilos.",
+        "Mole ou dura, a jaca mata a fome de muita casa pobre; o caroço cozido vira farinha. Ninguém dorme debaixo de jaqueira carregada."
+      ]
+    },
+    "cajueiro": {
+      "nome": "Cajueiro",
+      "cientifico": "Anacardium occidentale",
+      "paginas": [
+        "Árvore da terra, torta e espalhada, que gosta de areia e sol. O caju é o pedúnculo; a castanha é o fruto de verdade.",
+        "Do caju se faz doce e mocororó; a castanha assada na brasa estala e solta um óleo que queima a mão de quem é afobado."
+      ]
+    },
+    "coqueiro": {
+      "nome": "Coqueiro",
+      "cientifico": "Cocos nucifera",
+      "paginas": [
+        "Toda a costa da baía é franjada de coqueiro, inclinado para o mar como quem procura a água.",
+        "Água de coco para a sede, leite de coco para a moqueca, palha para cobrir casa e fazer esteira, casca para acender fogo. Nada se perde."
+      ]
+    },
+    "pau_brasil": {
+      "nome": "Pau-brasil",
+      "cientifico": "Paubrasilia echinata",
+      "paginas": [
+        "Madeira vermelha de dentro, casca com espinhos. Deu nome ao país e quase sumiu da mata de tanto ser cortada.",
+        "Em 1887 já é raro achar um de pé. A tinta que tirava dele foi trocada pela de anilina, mas a madeira ainda vira arco de rabeca."
+      ]
+    },
+    "dendezeiro": {
+      "nome": "Dendezeiro",
+      "cientifico": "Elaeis guineensis",
+      "paginas": [
+        "Palmeira que veio da costa da África junto com o povo escravizado. Os cachos de coquinho vermelho nascem no meio da copa.",
+        "Do dendê se tira o azeite do acarajé, do vatapá e da moqueca. Para muita gente é também comida de santo."
+      ]
+    },
+    "bananeira": {
+      "nome": "Bananeira",
+      "cientifico": "Musa × paradisiaca",
+      "paginas": [
+        "Não é árvore: é uma erva gigante. O tronco é feito de folhas enroladas; depois de dar o cacho, o pé morre e brota outro do lado.",
+        "Banana-da-terra frita, cozida no feijão, assada na brasa. A folha embrulha peixe e abará, e serve de prato na roça."
+      ]
+    },
+    "ipe_amarelo": {
+      "nome": "Ipê-amarelo",
+      "cientifico": "Handroanthus albus",
+      "paginas": [
+        "Passa meses discreto e, no fim da seca, perde as folhas e fica todo coberto de flor amarela.",
+        "Madeira dura que não apodrece: vira esteio de casa, mourão de cerca e cabo de ferramenta. Dizem que florada forte avisa chuva perto."
+      ]
+    },
+    "ipe_roxo": {
+      "nome": "Ipê-roxo",
+      "cientifico": "Handroanthus impetiginosus",
+      "paginas": [
+        "Primo do amarelo, floresce antes dele, em rosa-arroxeado. Pés velhos de ipê-roxo marcam adro de capela e beira de estrada.",
+        "A casca vira chá de raizeiro para ferida e inflamação. A madeira, pesada, afunda na água."
+      ]
+    },
+    "embauba": {
+      "nome": "Embaúba",
+      "cientifico": "Cecropia pachystachya",
+      "paginas": [
+        "Tronco oco, folhas grandes em forma de mão, prateadas por baixo. É das primeiras a crescer onde a mata foi derrubada.",
+        "Bicho-preguiça gosta dela, e o tronco oco é casa de formiga que morde quem encosta. Sinal de mata se refazendo."
+      ]
+    },
+    "mata_alta": {
+      "nome": "Sapucaia",
+      "cientifico": "Lecythis pisonis",
+      "paginas": [
+        "Gigante da Mata Atlântica. Na primavera a copa inteira fica rosa de folha nova; o fruto é uma cumbuca de madeira com tampa.",
+        "A castanha é boa, mas quem a colhe primeiro é o macaco: enfia a mão na cumbuca, fecha o punho e não consegue tirar. Daí o ditado \"macaco velho não mete a mão em cumbuca\"."
+      ]
+    },
+    "mata_larga": {
+      "nome": "Gameleira",
+      "cientifico": "Ficus gomelleira",
+      "paginas": [
+        "Figueira de copa larga e raízes que descem dos galhos e abraçam o que encontram. Uma só faz sombra de praça.",
+        "Para o povo de santo, a gameleira é morada de Iroko, e não se corta. Os mais velhos passam longe dela à noite — e não explicam o porquê."
+      ]
+    }
+  }
+}

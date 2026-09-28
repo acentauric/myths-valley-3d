@@ -183,6 +183,7 @@ func _aba_cenario(esquerda: VBoxContainer, direita: VBoxContainer) -> void:
 		if novo != Estilo.modo:
 			Estilo.definir(novo)
 			estilo_mudou.emit(), 0)
+	_escolha("Nomes dos personagens", ["Mostrar", "Ocultar"], 0 if Estilo.mostrar_nomes else 1, func(i: int) -> void: Estilo.definir_nomes(i == 0), 0)
 	if no_jogo:
 		return
 	_pai = direita

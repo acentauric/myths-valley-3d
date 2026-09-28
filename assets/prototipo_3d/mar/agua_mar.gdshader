@@ -22,9 +22,12 @@ uniform vec3 tinta_rasa : source_color = vec3(0.95, 1.0, 0.8);
 uniform float ondulacao = 0.22;
 uniform float refracao = 0.018;
 uniform float espuma = 0.55;
-// Marolas: faixas de espuma que correm para a areia no último palmo d'água.
-uniform float marolas = 0.8;
+// Marolas: cristas de espuma que correm para a areia na água rasa, em dois trens de
+// ondas de ritmo diferente, chegando a cada trecho da praia num momento e com força
+// diferentes (séries que crescem e somem).
+uniform float marolas = 0.85;
 uniform float ritmo_marolas = 1.3;
+uniform float faixa_marolas_m = 1.4;
 
 varying vec2 superficie_m;
 
@@ -74,9 +77,19 @@ void fragment() {
 	// profundidade e anda com o tempo: as cristas correm do fundo para a areia.
 	vec3 olhar = (INV_VIEW_MATRIX * vec4(VIEW, 0.0)).xyz;
 	float prof_v = esp_m * clamp(abs(olhar.y), 0.08, 1.0);
-	float fase = prof_v * 7.5 - TIME * ritmo_marolas + texture(ruido, p / 30.0).r * 6.0;
-	float crista = smoothstep(0.84, 1.0, sin(fase)) * (1.0 - smoothstep(0.2, 0.9, prof_v)) * smoothstep(0.0, 0.04, prof_v);
-	beira = max(beira, crista * marolas * smoothstep(0.3, 0.65, ruido_espuma + 0.15));
+	float perto_da_praia = (1.0 - smoothstep(0.15, faixa_marolas_m, prof_v)) * smoothstep(0.0, 0.04, prof_v);
+	// Atraso de cada trecho da praia: ruído lento ao longo da costa (a crista não é uma
+	// linha única) e outro que muda devagar com o tempo.
+	float atraso_a = texture(ruido, p / 55.0).r * 9.0 + texture(ruido, p / 140.0 + TIME * 0.004).r * 6.0;
+	float atraso_b = texture(ruido, p / 37.0 + 0.5).r * 11.0;
+	float onda_a = smoothstep(0.86, 1.0, sin(prof_v * 7.5 - TIME * ritmo_marolas + atraso_a));
+	float onda_b = smoothstep(0.9, 1.0, sin(prof_v * 4.8 - TIME * ritmo_marolas * 0.63 + atraso_b + 2.1));
+	// Séries: a força das ondas cresce e some por trechos, com o tempo.
+	float serie = smoothstep(0.3, 0.7, texture(ruido, p / 90.0 + vec2(TIME * 0.011, -TIME * 0.007)).r);
+	float crista = max(onda_a * (0.45 + 0.55 * serie), onda_b * serie) * perto_da_praia;
+	// A espuma da crista se quebra em pedaços, mais inteira quanto mais rasa a água.
+	float quebra = smoothstep(0.25, 0.6, ruido_espuma + 0.25 * (1.0 - prof_v / faixa_marolas_m));
+	beira = max(beira, crista * marolas * quebra);
 
 	EMISSION = fundo * tinta_rasa * passa * (1.0 - beira);
 	ALBEDO = mix(cor_funda * (1.0 - passa), vec3(0.95), beira);

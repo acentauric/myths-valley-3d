@@ -4,12 +4,15 @@ extends Node
 ## A escolha fica em AJUSTAR e vale para o cenário inteiro; trocar reconstrói o vale.
 
 signal estilo_alterado(novo: String)
+## Plaquinhas com o nome dos personagens (AJUSTAR → Cenário).
+signal nomes_alterados(mostrar: bool)
 
 const ARQUIVO := "user://preferencias_visuais.cfg"
 const TRIPO := "tripo"
 const PROCEDURAL := "procedural"
 
 var modo: String = TRIPO
+var mostrar_nomes := true
 
 
 func _ready() -> void:
@@ -18,6 +21,7 @@ func _ready() -> void:
 	if preferencias.load(ARQUIVO) == OK:
 		var salvo := String(preferencias.get_value("estilo", "modo", TRIPO))
 		modo = salvo if salvo in [TRIPO, PROCEDURAL] else TRIPO
+		mostrar_nomes = bool(preferencias.get_value("interface", "nomes", true))
 	get_tree().node_added.connect(_cursor_de_clique)
 
 
@@ -47,6 +51,18 @@ func definir(novo: String) -> void:
 	if preferencias.save(ARQUIVO) != OK:
 		push_warning("Não foi possível salvar o estilo visual.")
 	estilo_alterado.emit(modo)
+
+
+func definir_nomes(mostrar: bool) -> void:
+	if mostrar == mostrar_nomes:
+		return
+	mostrar_nomes = mostrar
+	var preferencias := ConfigFile.new()
+	preferencias.load(ARQUIVO)
+	preferencias.set_value("interface", "nomes", mostrar)
+	if preferencias.save(ARQUIVO) != OK:
+		push_warning("Não foi possível salvar a preferência dos nomes.")
+	nomes_alterados.emit(mostrar)
 
 
 func rotulo() -> String:

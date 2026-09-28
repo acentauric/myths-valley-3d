@@ -1,4 +1,5 @@
-"""Gera texturas tileáveis de chão para o protótipo 3D (terra batida e chão de praça).
+"""Gera texturas de chão para o protótipo 3D: terra batida, chão de praça, areia de praia
+(tileáveis) e a base das árvores (decalque único, com transparência).
 
 As imagens são procedurais e determinísticas (semente fixa), pensadas para 1887 no
 Recôncavo: estrada de terra batida com sulcos de carro de boi e chão de praça de
@@ -121,10 +122,69 @@ def chao_praca() -> Image.Image:
     return Image.fromarray((color * 255).astype(np.uint8), "RGB")
 
 
+def areia_praia() -> Image.Image:
+    """Areia clara de praia da baía: tom variando em manchas, ondinhas de vento
+    (periódicas, então a textura continua sem emenda), grãos escuros e conchinhas."""
+    rng = np.random.default_rng(SEED + 2)
+    base = _fbm(rng, SIZE, 5, 5)
+    fine = _fbm(rng, SIZE, 64, 2, 0.6)
+    clara = np.array([0.93, 0.88, 0.76])
+    escura = np.array([0.82, 0.74, 0.58])
+    color = _mix(escura, clara, base * 0.8 + 0.2)
+    # Ondinhas de vento: senoide diagonal com número inteiro de ciclos (sem emenda),
+    # torcida por um ruído lento.
+    y, x = np.mgrid[0:SIZE, 0:SIZE] / SIZE
+    torcao = _fbm(rng, SIZE, 4, 3)
+    ondas = np.sin(2 * np.pi * (14 * x + 9 * y) + torcao * 9.0)
+    color *= (1.0 - 0.022 * np.clip(ondas, 0.0, 1.0) * (0.4 + base))[..., None]
+    color = _mix(color, clara * 1.02, np.clip(fine - 0.55, 0.0, 1.0) * 0.8)
+    # Grãos escuros (mineral) e conchinhas claras.
+    graos = rng.random((SIZE, SIZE)) > 0.985
+    color[graos] *= 0.72
+    conchas = _pebbles(rng, SIZE, 260, (1.2, 2.6))
+    color = _mix(color, np.array([0.97, 0.95, 0.9]), conchas * 0.8)
+    grain = (rng.random((SIZE, SIZE)) - 0.5) * 0.05
+    color = np.clip(color + grain[..., None], 0.0, 1.0)
+    return Image.fromarray((color * 255).astype(np.uint8), "RGB")
+
+
+def base_arvore(size: int = 512) -> Image.Image:
+    """Decalque do pé das árvores: terra escura revolvida, folhas secas caídas e raízes
+    saindo do centro, sumindo nas bordas (alfa radial com borda irregular)."""
+    rng = np.random.default_rng(SEED + 3)
+    y, x = (np.mgrid[0:size, 0:size] + 0.5) / size * 2.0 - 1.0
+    raio = np.sqrt(x * x + y * y)
+    angulo = np.arctan2(y, x)
+    ruido = _fbm(rng, size, 8, 4)
+    terra = np.array([0.30, 0.23, 0.15])
+    folha = np.array([0.52, 0.40, 0.22])
+    color = _mix(terra, folha, np.clip((ruido - 0.45) * 2.0, 0.0, 1.0))
+    # Folhas caídas: pintas mais claras e mais escuras.
+    folhas = _fbm(rng, size, 40, 2)
+    color = _mix(color, np.array([0.62, 0.50, 0.28]), np.clip((folhas - 0.62) * 4.0, 0.0, 1.0) * 0.7)
+    color = _mix(color, np.array([0.20, 0.16, 0.10]), np.clip((0.38 - folhas) * 4.0, 0.0, 1.0) * 0.6)
+    # Raízes: sete sulcos radiais, grossos no centro e afinando.
+    raizes = np.zeros((size, size))
+    for i in range(7):
+        direcao = rng.uniform(0, 2 * np.pi)
+        largura = rng.uniform(0.10, 0.16)
+        alcance = rng.uniform(0.55, 0.85)
+        diferenca = np.angle(np.exp(1j * (angulo - direcao - 0.25 * np.sin(raio * 9.0 + i))))
+        sulco = np.clip(1.0 - np.abs(diferenca) / (largura * (1.1 - raio)), 0.0, 1.0)
+        raizes = np.maximum(raizes, sulco * np.clip(1.0 - raio / alcance, 0.0, 1.0))
+    color = _mix(color, np.array([0.40, 0.28, 0.17]), np.clip(raizes * 1.6, 0.0, 1.0))
+    alfa = np.clip((1.0 - raio) * 2.2 - (ruido - 0.5) * 0.9, 0.0, 1.0)
+    alfa = np.maximum(alfa, np.clip(raizes * 1.4, 0.0, 1.0) * (raio < 0.9))
+    rgba = np.dstack([np.clip(color, 0, 1), alfa])
+    return Image.fromarray((rgba * 255).astype(np.uint8), "RGBA")
+
+
 def main() -> None:
     OUTPUT.mkdir(parents=True, exist_ok=True)
     terra_batida().save(OUTPUT / "terra_batida_v1.png", optimize=True)
     chao_praca().save(OUTPUT / "chao_praca_v1.png", optimize=True)
+    areia_praia().save(OUTPUT / "areia_praia_v1.png", optimize=True)
+    base_arvore().save(OUTPUT / "base_arvore_v1.png", optimize=True)
     print("Texturas gravadas em", OUTPUT)
 
 
