@@ -6,6 +6,7 @@ extends CharacterBody3D
 ## humanoide procedural ou o modelo do Tripo, conforme o estilo escolhido em AJUSTAR.
 
 const BalaoFala = preload("res://scripts/prototipo_3d/balao_fala.gd")
+const EspumaAgua = preload("res://scripts/prototipo_3d/espuma_agua.gd")
 
 signal saudou(morador: MoradorNPC, texto: String)
 
@@ -87,6 +88,11 @@ func configurar(d: Dictionary, anc: Dictionary, alvo_jogador: Node3D, mundo: Nod
 	ancoras = anc
 	jogador = alvo_jogador
 	terreno = mundo
+	if mundo != null:
+		var espuma := EspumaAgua.new()
+		espuma.name = "Espuma"
+		espuma.mundo = mundo
+		add_child(espuma)
 	altura = float(d.get("altura", 1.7))
 	name = "Morador" + String(d.get("id", "morador")).capitalize()
 
@@ -207,6 +213,7 @@ func _mover(direcao: Vector3, velocidade: float, delta: float) -> void:
 	else:
 		velocity.y = -0.1
 	move_and_slide()
+	_subir_degrau(direcao)
 	_medir_bloqueio(direcao, velocidade, delta)
 	if direcao.length_squared() > 0.01:
 		visual.rotation.y = lerp_angle(visual.rotation.y, atan2(direcao.x, direcao.z), 1.0 - exp(-9.0 * delta))
@@ -214,6 +221,21 @@ func _mover(direcao: Vector3, velocidade: float, delta: float) -> void:
 	if global_position.y < -6.0:
 		global_position = _alvo + Vector3(0, 0.5, 0)
 		velocity = Vector3.ZERO
+
+
+## Bordas baixas (terreiro das casas, meio-fio, praia saindo da água) viram parede para o
+## CharacterBody3D: se o que barra o passo cabe em DEGRAU, sobe nele.
+const DEGRAU := 0.4
+
+
+func _subir_degrau(direcao: Vector3) -> void:
+	if _nadando or not is_on_wall() or direcao.length_squared() < 0.01 or get_wall_normal().y > 0.3:
+		return
+	var passo := Vector3(direcao.x, 0.0, direcao.z).normalized() * 0.2
+	var em_cima := global_transform.translated(Vector3.UP * DEGRAU)
+	if test_move(global_transform, Vector3.UP * DEGRAU) or test_move(em_cima, passo):
+		return
+	global_position += Vector3.UP * DEGRAU + passo
 
 
 func _atualizar_nado() -> void:
@@ -394,6 +416,10 @@ func _posicao_do_posto(periodo: String) -> Vector3:
 			var direcao: Vector3 = ancoras.get("PierDirecao", Vector3.FORWARD)
 			var yaw := atan2(direcao.x, direcao.z)
 			deslocamento = deslocamento.rotated(Vector3.UP, yaw)
+		elif ancoras.has(ancora_nome + "Frente"):
+			# Deslocamentos das casas estão no referencial delas (porta no +Z).
+			var frente: Vector3 = ancoras[ancora_nome + "Frente"]
+			deslocamento = deslocamento.rotated(Vector3.UP, atan2(frente.x, frente.z))
 		base += deslocamento
 		if ancora_nome == "PierPiso":
 			return base

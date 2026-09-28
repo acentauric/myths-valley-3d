@@ -166,6 +166,7 @@ func build_region(kml_json_path: String, scenario_json_path: String) -> void:
 			"river":
 				if points.size() >= 2:
 					_rivers.append({"name": String(feature.get("name", "")), "points": points, "width": _units(9.0, 4.0)})
+	_curve_roads()
 	_build_background()
 	# Ladrilho maior deixa folhas e tufos mais legiveis no terreno ao redor da via.
 	var mata_material := _terrain_texture_material(GRAMA_TERRA_MATA_TEXTURE, 12.0)
@@ -731,6 +732,61 @@ func _nearest_land_edge(point: Vector2) -> Vector2:
 			best_distance = distance
 			closest = candidate
 	return closest
+
+
+## O KML traz as ruas como linhas quebradas, com cantos vivos. Chaikin (corta cada canto
+## a 1/4 e 3/4 do trecho, ROAD_CURVE_PASSES vezes, com o corte limitado a
+## ROAD_CURVE_MAX_CUT) as deixa em curvas de estrada de terra, mantendo as pontas. Depois
+## a ponta de cada rua é reemendada na rua vizinha que ela tocava.
+const ROAD_CURVE_PASSES := 3
+const ROAD_CURVE_MAX_CUT := 25.0
+const ROAD_JOIN_DISTANCE := 15.0
+
+
+func _curve_roads() -> void:
+	for road in _roads:
+		road.points = _chaikin(road.points)
+	for road in _roads:
+		var points: PackedVector2Array = road.points
+		for tip_index in [0, points.size() - 1]:
+			var tip := points[tip_index]
+			var best := tip
+			var best_distance := ROAD_JOIN_DISTANCE
+			for other in _roads:
+				if other == road:
+					continue
+				var other_points: PackedVector2Array = other.points
+				for i in other_points.size() - 1:
+					var candidate := Geometry2D.get_closest_point_to_segment(tip, other_points[i], other_points[i + 1])
+					var distance := candidate.distance_to(tip)
+					if distance < best_distance:
+						best_distance = distance
+						best = candidate
+			points[tip_index] = best
+		road.points = points
+		road.bounds = _points_bounds(points).grow(float(road.width) * 0.5)
+
+
+func _chaikin(points: PackedVector2Array) -> PackedVector2Array:
+	var current := points
+	for pass_index in ROAD_CURVE_PASSES:
+		if current.size() < 3:
+			return current
+		var next := PackedVector2Array([current[0]])
+		for i in current.size() - 1:
+			var a := current[i]
+			var b := current[i + 1]
+			var length := a.distance_to(b)
+			if length < 0.001:
+				continue
+			var cut := minf(0.25, ROAD_CURVE_MAX_CUT / length)
+			if i > 0:
+				next.append(a.lerp(b, cut))
+			if i < current.size() - 2:
+				next.append(b.lerp(a, cut))
+		next.append(current[current.size() - 1])
+		current = next
+	return current
 
 
 func _soften_road_corners(points: PackedVector2Array, width: float) -> PackedVector2Array:

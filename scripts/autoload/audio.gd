@@ -293,11 +293,15 @@ func efeito(nome: String) -> void:
 	tocador.play()
 
 
+## Passo no chão dado (grama, terra, areia, madeira, agua, agua_funda). Correndo, usa a
+## corrida daquele chão; sem ela, o passo do chão e, por fim, a corrida genérica.
 func passo(terreno: String, correndo: bool = false) -> void:
-	var nome := "corrida" if correndo else "passo_" + terreno
-	var fluxo := _carregar(PASTA_EFEITOS + nome + ".mp3")
-	if fluxo == null and correndo:
-		fluxo = _carregar(PASTA_EFEITOS + "passo_" + terreno + ".mp3")
+	var nomes := ["corrida_" + terreno, "passo_" + terreno, "corrida"] if correndo else ["passo_" + terreno]
+	var fluxo: AudioStream = null
+	for nome: String in nomes:
+		fluxo = _carregar(PASTA_EFEITOS + nome + ".mp3")
+		if fluxo != null:
+			break
 	if fluxo == null:
 		return
 	_passos.stream = fluxo

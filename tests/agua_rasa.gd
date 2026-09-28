@@ -26,6 +26,8 @@ func _run() -> void:
 	player.velocity = Vector3.ZERO
 	player.set("_yaw", atan2(-direcao.x, -direcao.z))
 	await _physics_frames(10)
+	# Correndo: a planície rasa tem ~170 unidades até a água funda.
+	player.set("_run_toggled", true)
 	Input.action_press("mv_forward")
 	var velocidades: Array[float] = []
 	var quadros_nadando := 0

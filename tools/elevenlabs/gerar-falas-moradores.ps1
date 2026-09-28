@@ -1,6 +1,6 @@
 # Gera as falas dos moradores do 3D (ElevenLabs, modelo eleven_v3).
 #
-# Lê prototipo_3d/data/npcs_3d.json: cada morador tem "voz" (id da voz no
+# Lê prototipo_3d/data/npcs_3d.json: o guia e cada morador têm "voz" (id da voz no
 # ElevenLabs) e até 3 "falas" ({texto, tts?, audio}). "tts" é o que a voz lê, com
 # marcações de interpretação do v3 entre colchetes ([sighs], [whispers]...); sem
 # ele, lê o "texto" do balão. Normaliza cada arquivo em -18 LUFS, como as outras
@@ -21,7 +21,9 @@ $pasta = "$raiz\prototipo_3d\assets\audio\vozes"
 $bruto = Join-Path $env:TEMP "mv_falas_brutas"
 New-Item -ItemType Directory -Force $bruto | Out-Null
 
-foreach ($m in $dados.moradores) {
+# O guia (Pedro) entra junto: as saudações dele também sorteiam entre três falas.
+$pessoas = @($dados.guia) + @($dados.moradores)
+foreach ($m in $pessoas) {
     if ($Morador -and $m.id -ne $Morador) { continue }
     if (-not $m.voz -or -not $m.falas) { continue }
     foreach ($f in $m.falas) {

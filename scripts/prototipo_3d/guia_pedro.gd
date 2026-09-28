@@ -16,8 +16,8 @@ const MISSOES := [
 ]
 const SEGUIR_MAX := 4.6
 const CORRER_ALEM := 9.5
-const ANDAR := 3.0
-const CORRER := 5.7
+const ANDAR := 2.1
+const CORRER := 5.2
 
 var missao := -1
 var _iniciado := false

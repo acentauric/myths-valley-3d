@@ -260,7 +260,7 @@ func set_camera_locked(value: bool) -> void:
 	if is_instance_valid(_camera_lock_button):
 		_camera_lock_button.set_pressed_no_signal(value)
 		_camera_icon.definir(value)
-		_camera_hint.text = "Câmera travada · Tab destrava" if value else "Câmera livre · Esc trava"
+		_camera_hint.text = "Câmera travada · C ou Tab destrava" if value else "Câmera livre · C ou Esc trava"
 	_update_control_mode()
 
 
@@ -277,7 +277,7 @@ func _update_control_mode() -> void:
 		"Botão esquerdo na casa: dados",
 		"E: ler lápide  ·  F: observar",
 		mode,
-		"Tab: alterna a câmera  ·  Esc: trava",
+		"Tab ou C: alterna a câmera  ·  Esc: trava",
 		"Rodinha: zoom  ·  T: avança a hora",
 		"R: reinicia  ·  M: Home",
 	])

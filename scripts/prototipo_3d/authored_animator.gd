@@ -30,6 +30,10 @@ var _gesture_active := false
 var _jump_active := false
 ## Na água funda o movimento vira nado (clipe "swim" em laço, se o modelo tiver).
 var _swimming := false
+## Velocidade de chão (unidades/s, escala 1) de cada clipe de passo, medida pelo pé de
+## apoio (ver _medir_passada): a reprodução acompanha o deslocamento e o pé não desliza.
+var _passada: Dictionary = {}
+var _medido := false
 
 
 func configure(model_root: Node) -> bool:
@@ -61,13 +65,17 @@ func update_motion(speed: float, _delta: float) -> void:
 			return
 		_gesture_active = false
 
+	if not _medido:
+		_medido = true
+		for role in ["walk", "run"]:
+			_passada[role] = _medir_passada(role)
 	if _swimming and _clips.has("swim"):
 		# Parado, bate as pernas devagar para se manter na superfície.
-		_play_motion("swim", clampf(0.45 + speed / 2.0, 0.45, 1.3))
-	elif speed > 4.25:
-		_play_motion("run", clampf(speed / 5.8, 0.85, 1.25))
+		_play_motion("swim", clampf(0.45 + speed / 2.4, 0.45, 1.6))
+	elif speed > _limite_da_corrida():
+		_play_motion("run", _escala_da_passada("run", speed, 2.7))
 	elif speed > 0.2:
-		_play_motion("walk", clampf(speed / 3.2, 0.7, 1.35))
+		_play_motion("walk", _escala_da_passada("walk", speed, 0.9))
 	else:
 		_play_motion("idle", 1.0)
 
@@ -86,6 +94,106 @@ func play_gesture(index: int) -> String:
 	animation_player.play(clip, 0.18)
 	var label: String = entry["label"]
 	return label
+
+
+## Tempo entre dois passos (ou braçadas) do clipe em curso, na velocidade atual; 0 parado.
+func step_interval() -> float:
+	if animation_player == null or _current_motion in ["", "idle"]:
+		return 0.0
+	var clip: String = _clips.get(MOTION_CLIPS.get(_current_motion, ""), "")
+	if clip.is_empty():
+		return 0.0
+	return animation_player.get_animation(clip).length * 0.5 / maxf(animation_player.speed_scale, 0.1)
+
+
+## Acima desta velocidade o passo vira corrida: o andar acelerado além de ESCALA_MAXIMA
+## vezes a passada natural pareceria afobado.
+const ESCALA_MAXIMA := 2.5
+
+
+func _limite_da_corrida() -> float:
+	var natural: float = _passada.get("walk", 0.0)
+	return (natural if natural > 0.05 else 0.9) * ESCALA_MAXIMA
+
+
+func _escala_da_passada(role: String, speed: float, velocidade_padrao: float) -> float:
+	var natural: float = _passada.get(role, 0.0)
+	if natural <= 0.05:
+		natural = velocidade_padrao
+	return clampf(speed / natural, 0.5, ESCALA_MAXIMA)
+
+
+## Velocidade de chão do clipe: com a animação no lugar, o pé de apoio corre para trás
+## na velocidade em que o corpo deveria andar. Amostra o ciclo, acha o eixo do passo
+## (a maior variação horizontal dos pés), separa as amostras em que cada pé está no
+## ponto mais baixo e tira a velocidade média dele nelas. 0 se não der para medir.
+func _medir_passada(role: String) -> float:
+	var clip: String = _clips.get(MOTION_CLIPS.get(role, ""), "")
+	var esqueletos := animation_player.get_parent().find_children("*", "Skeleton3D", true, false) if animation_player.get_parent() else []
+	if clip.is_empty() or esqueletos.is_empty() or not animation_player.is_inside_tree():
+		return 0.0
+	var esqueleto := esqueletos[0] as Skeleton3D
+	var pes: Array[int] = []
+	for i in esqueleto.get_bone_count():
+		var nome := esqueleto.get_bone_name(i).to_lower()
+		if nome.ends_with("foot") and not "toe" in nome:
+			pes.append(i)
+	if pes.size() < 2:
+		return 0.0
+	var animacao := animation_player.get_animation(clip)
+	var amostras := 48
+	var passo_tempo := animacao.length / amostras
+	var caminhos: Array = []
+	for pe in pes:
+		caminhos.append(PackedVector3Array())
+	var anterior := animation_player.current_animation
+	var escala_antes := animation_player.speed_scale
+	animation_player.play(clip)
+	for k in amostras + 1:
+		animation_player.seek(k * passo_tempo, true)
+		for j in pes.size():
+			var local := esqueleto.get_bone_global_pose(pes[j]).origin
+			caminhos[j].append(esqueleto.global_transform.basis * local)
+	# Eixo do passo: a direção horizontal em que os pés mais variam.
+	var sxx := 0.0
+	var szz := 0.0
+	var sxz := 0.0
+	for caminho: PackedVector3Array in caminhos:
+		var media := Vector3.ZERO
+		for p in caminho:
+			media += p
+		media /= caminho.size()
+		for p in caminho:
+			sxx += (p.x - media.x) * (p.x - media.x)
+			szz += (p.z - media.z) * (p.z - media.z)
+			sxz += (p.x - media.x) * (p.z - media.z)
+	var angulo := 0.5 * atan2(2.0 * sxz, sxx - szz)
+	var eixo := Vector3(cos(angulo), 0.0, sin(angulo))
+	var velocidades: Array[float] = []
+	for caminho: PackedVector3Array in caminhos:
+		var baixo := INF
+		var alto := -INF
+		for p in caminho:
+			baixo = minf(baixo, p.y)
+			alto = maxf(alto, p.y)
+		var soma := 0.0
+		var n := 0
+		for k in range(1, caminho.size() - 1):
+			if caminho[k].y < baixo + (alto - baixo) * 0.15:
+				soma += absf((caminho[k + 1] - caminho[k - 1]).dot(eixo)) / (2.0 * passo_tempo)
+				n += 1
+		if n > 0:
+			velocidades.append(soma / n)
+	animation_player.speed_scale = escala_antes
+	if anterior != &"":
+		animation_player.play(anterior)
+	_current_motion = ""
+	if velocidades.is_empty():
+		return 0.0
+	var total := 0.0
+	for v in velocidades:
+		total += v
+	return total / velocidades.size()
 
 
 func set_swimming(swimming: bool) -> void:

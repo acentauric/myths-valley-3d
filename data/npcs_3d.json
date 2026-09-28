@@ -4,10 +4,30 @@
     "id": "pedro",
     "nome": "Pedro",
     "altura": 1.75,
-    "saudacao": "pedro_saudacao",
-    "fala": "Opa! É você, né? O da capital. Chegou na hora boa: o sol ainda tá alto.",
     "gesto_saudacao": 0,
-    "gesto_tripo": 0
+    "gesto_tripo": 0,
+    "voz": {
+      "id": "YbP0Eq5RE5uOoCEl7F3T",
+      "nome": "Weverton - Youthful, Energetic and Clear",
+      "modelo": "eleven_v3"
+    },
+    "falas": [
+      {
+        "texto": "Opa! É você o moço da capital, né? O sobrinho do finado. Me chamo Pedro, pescador aqui do arraial.",
+        "tts": "[cheerfully] Opa! É você o moço da capital, né? O sobrinho do finado. [warmly] Me chamo Pedro, pescador aqui do arraial.",
+        "audio": "pedro_saudacao_1"
+      },
+      {
+        "texto": "Eita, gente nova no píer! Só pode ser quem veio pela casa de taipa. Sou Pedro. Aqui todo mundo se conhece, e agora vão querer te conhecer.",
+        "tts": "[surprised] Eita, gente nova no píer! Só pode ser quem veio pela casa de taipa. Sou Pedro. [laughs] Aqui todo mundo se conhece, e agora vão querer te conhecer.",
+        "audio": "pedro_saudacao_2"
+      },
+      {
+        "texto": "Chegou, homem! O mestre do saveiro jurou que trazia você hoje. Pedro, pescador, às suas ordens. A baía foi boa com você?",
+        "tts": "[excited] Chegou, homem! O mestre do saveiro jurou que trazia você hoje. Pedro, pescador, às suas ordens. [curious] A baía foi boa com você?",
+        "audio": "pedro_saudacao_3"
+      }
+    ]
   },
   "moradores": [
     {

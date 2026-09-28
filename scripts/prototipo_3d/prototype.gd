@@ -32,7 +32,7 @@ func _enter_tree() -> void:
 	TeclasMovimento.aplicar()
 	_bind("mv_run", [KEY_SHIFT])
 	_bind("mv_release", [KEY_ESCAPE])
-	_bind("mv_cursor", [KEY_TAB])
+	_bind("mv_cursor", [KEY_TAB, KEY_C], true)
 	_bind("mv_reset", [KEY_R])
 	_bind("mv_inspect", [KEY_F])
 	_bind("mv_time", [KEY_T])
@@ -165,15 +165,17 @@ func _montar_moradores(spawn: Vector3) -> void:
 
 
 func _process(_delta: float) -> void:
+	# Passos no ritmo do clipe do jogador (o intervalo sai da animação), com o som do
+	# chão sob os pés; nadando, uma braçada por meio ciclo do nado.
 	_step_time -= _delta
-	if player.is_on_floor() and Vector2(player.velocity.x, player.velocity.z).length() > 0.3:
+	var andando: bool = Vector2(player.velocity.x, player.velocity.z).length() > 0.3
+	if andando and (player.is_on_floor() or player.is_swimming()):
 		if _step_time <= 0:
-			var running: bool = player.is_running()
-			var terrain: String = world.surface_at(player.global_position)
-			if terrain == "agua":
-				terrain = "areia"
-			Audio.passo(terrain, running)
-			_step_time = 0.32 if running else 0.48
+			if player.is_swimming():
+				Audio.passo("nado")
+			else:
+				Audio.passo(player.chao_dos_pes(), player.is_running())
+			_step_time = player.step_interval()
 	else:
 		_step_time = 0
 	for landmark: Dictionary in world.landmarks:

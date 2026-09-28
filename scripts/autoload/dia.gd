@@ -9,7 +9,8 @@ const ARQUIVO := "user://preferencias_visuais.cfg"
 ## Segundos reais por hora do jogo em cada velocidade (Parada, Lenta, Normal, Rápida).
 const VELOCIDADES := [0.0, 120.0, 45.0, 10.0]
 const ROTULOS_VELOCIDADE := ["Parada", "Lenta", "Normal", "Rápida"]
-const NASCER := 5.5
+## Nascer e pôr do sol em Bom Jesus no fim de setembro (latitude -12,8°, hora solar).
+const NASCER := 5.95
 const POR := 18.0
 ## Hora em que o menu abre: o começo do dia.
 const INICIO_DO_DIA := 6.5
@@ -101,15 +102,44 @@ func luz_do_dia() -> float:
 	return clampf(minf(alvorada, crepusculo), 0.0, 1.0)
 
 
-## Elevação do sol em graus (negativa à noite) e azimute girando de leste para oeste.
+## Posição do sol de verdade para Bom Jesus dos Pobres: latitude do KML (a Praça, que
+## world_builder informa em definir_latitude) e declinação do dia DIA_DO_ANO. A hora do
+## jogo é a hora solar média do lugar — em 1887 não havia fuso, cada vila tinha a sua —,
+## então o sol culmina ao meio-dia. No hemisfério sul, fora do verão, ele passa ao norte.
+const DIA_DO_ANO := 270
+var latitude := -12.8123
+
+
+func definir_latitude(graus: float) -> void:
+	latitude = graus
+
+
+func _declinacao() -> float:
+	return deg_to_rad(-23.44) * cos(TAU / 365.0 * (DIA_DO_ANO + 10))
+
+
+## Elevação do sol em graus acima do horizonte (negativa à noite).
 func elevacao_solar() -> float:
-	var fracao := (hora - NASCER) / (POR - NASCER)
-	return sin(clampf(fracao, 0.0, 1.0) * PI) * 68.0 - (0.0 if fracao >= 0.0 and fracao <= 1.0 else 18.0)
+	var fi := deg_to_rad(latitude)
+	var delta := _declinacao()
+	var angulo_horario := deg_to_rad(15.0 * (hora - 12.0))
+	return rad_to_deg(asin(sin(fi) * sin(delta) + cos(fi) * cos(delta) * cos(angulo_horario)))
 
 
+## Azimute do sol em graus a partir do norte, no sentido do leste (90 = leste).
 func azimute_solar() -> float:
-	var fracao := clampf((hora - NASCER) / (POR - NASCER), 0.0, 1.0)
-	return lerpf(-100.0, 100.0, fracao)
+	var fi := deg_to_rad(latitude)
+	var delta := _declinacao()
+	var angulo_horario := deg_to_rad(15.0 * (hora - 12.0))
+	return fposmod(rad_to_deg(atan2(-cos(delta) * sin(angulo_horario), sin(delta) * cos(fi) - cos(delta) * sin(fi) * cos(angulo_horario))), 360.0)
+
+
+## Direção em que a luz do sol viaja no mundo (x leste, z sul, y para cima).
+func direcao_da_luz_solar() -> Vector3:
+	var elevacao := deg_to_rad(elevacao_solar())
+	var azimute := deg_to_rad(azimute_solar())
+	var para_o_sol := Vector3(sin(azimute) * cos(elevacao), sin(elevacao), -cos(azimute) * cos(elevacao))
+	return -para_o_sol.normalized()
 
 
 func texto_hora() -> String:

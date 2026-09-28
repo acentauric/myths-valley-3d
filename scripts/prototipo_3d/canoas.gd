@@ -100,18 +100,39 @@ func _criar(tripo: bool) -> Node3D:
 	return raiz
 
 
-## Caixa do casco (da quilha à borda), que acompanha o balanço: ninguém atravessa a
-## canoa, e dá para subir nela pela borda.
+## Casco oco (comprimento, altura, boca), que acompanha o balanço: fundo interno, dois
+## costados e as duas pontas. Ninguém atravessa a canoa, e quem pula a borda fica
+## dentro dela, no fundo, e não em cima.
+const ESPESSURA_CASCO := 0.12
+## Altura do fundo interno, em fração da altura do casco a partir da quilha.
+const FUNDO_INTERNO := 0.35
+
+
 static func _colisao(tamanho: Vector3, fundo: float) -> AnimatableBody3D:
 	var corpo := AnimatableBody3D.new()
 	corpo.name = "Colisão da canoa"
+	var piso := fundo + tamanho.y * FUNDO_INTERNO
+	var topo := fundo + tamanho.y
+	var parede := topo - piso
+	var e := ESPESSURA_CASCO
+	# Fundo interno (e o casco abaixo dele, maciço).
+	_peca(corpo, Vector3(tamanho.x, piso - fundo, tamanho.z), Vector3(0.0, (fundo + piso) * 0.5, 0.0))
+	# Costados, ao longo do comprimento.
+	for lado in [-1.0, 1.0]:
+		_peca(corpo, Vector3(tamanho.x, parede, e), Vector3(0.0, piso + parede * 0.5, lado * (tamanho.z - e) * 0.5))
+	# Proa e popa, fechando as pontas.
+	for lado in [-1.0, 1.0]:
+		_peca(corpo, Vector3(e, parede, tamanho.z), Vector3(lado * (tamanho.x - e) * 0.5, piso + parede * 0.5, 0.0))
+	return corpo
+
+
+static func _peca(corpo: Node3D, tamanho: Vector3, centro: Vector3) -> void:
 	var forma := BoxShape3D.new()
 	forma.size = tamanho
 	var colisao := CollisionShape3D.new()
 	colisao.shape = forma
-	colisao.position.y = fundo + tamanho.y * 0.5
+	colisao.position = centro
 	corpo.add_child(colisao)
-	return corpo
 
 
 ## Casco de canoa de tábuas: seções em meia elipse ao longo do comprimento, mais

@@ -10,6 +10,7 @@ signal navigation_status(message: String)
 const ClickNavigation = preload("res://scripts/prototipo_3d/click_navigation.gd")
 const TeclasMovimento = preload("res://scripts/prototipo_3d/teclas_movimento.gd")
 const Mar = preload("res://scripts/prototipo_3d/mar.gd")
+const EspumaAgua = preload("res://scripts/prototipo_3d/espuma_agua.gd")
 const HOUSE_INTERACTION_LAYER := 1 << 12
 const ARRIVAL_DISTANCE := 0.7
 const CAMERA_DRAG_THRESHOLD := 6.0
@@ -31,7 +32,7 @@ const VELOCIDADE_NADO := 1.5
 ## e NADA_A_PARTIR, então os pés só roçam o fundo perto da hora de voltar a andar.
 const SUBMERSO_NADANDO := 0.68
 ## Degrau que o jogador sobe sem pular (borda da areia, meio-fio, píer).
-const DEGRAU := 0.32
+const DEGRAU := 0.4
 ## Altura do pivô da câmera (acima dos pés); nadando ele sobe para a cabeça, acima da
 ## superfície que barra a câmera.
 const PIVO_CAMERA := 1.18
@@ -42,8 +43,10 @@ const MODELO_ACIMA_NADANDO := 0.44
 
 @export var model_scene: PackedScene
 @export var character_height: float = 1.78
-@export var walk_speed: float = 3.2
-@export var run_speed: float = 5.8
+## Velocidades casadas com a passada dos clipes (authored_animator mede): mais rápido que
+## isso o pé desliza no chão.
+@export var walk_speed: float = 2.1
+@export var run_speed: float = 5.2
 @export var mouse_sensitivity: float = 0.0025
 @export var model_yaw_offset: float = 0.0
 @export var double_sided_materials: bool = true
@@ -187,6 +190,10 @@ func _measure_model(node: Node) -> void:
 func configure_click_world(world: Node3D) -> void:
 	_click_world = world
 	_navigator.configure(world)
+	var espuma := EspumaAgua.new()
+	espuma.name = "Espuma"
+	espuma.mundo = world
+	add_child(espuma)
 
 
 func _update_house_hover() -> void:
@@ -247,7 +254,7 @@ func _physics_process(delta: float) -> void:
 	_atualizar_nado()
 	var profundidade := _profundidade()
 	if _nadando:
-		speed = VELOCIDADE_NADO * (1.35 if is_running() else 1.0)
+		speed = VELOCIDADE_NADO * (2.0 if is_running() else 1.0)
 	elif profundidade > 0.0:
 		speed *= lerpf(1.0, VELOCIDADE_NA_AGUA, clampf(profundidade / (character_height * NADA_A_PARTIR), 0.0, 1.0))
 	if _knockback_remaining > 0.0:
@@ -451,6 +458,36 @@ func _atualizar_nado() -> void:
 
 func is_swimming() -> bool:
 	return _nadando
+
+
+## Chão sob os pés para o som do passo: madeira no píer, na ponte e na canoa; água rasa
+## ou funda conforme a lâmina; senão o que o cenário diz (grama, terra, areia).
+func chao_dos_pes() -> String:
+	var profundidade := _profundidade()
+	if profundidade > 0.35:
+		return "agua_funda"
+	if profundidade > 0.03:
+		return "agua"
+	for i in get_slide_collision_count():
+		var colisao := get_slide_collision(i)
+		var corpo := colisao.get_collider() as Node
+		if colisao.get_normal().y > 0.6 and corpo != null:
+			var nome := String(corpo.name).to_lower()
+			if "pier" in nome or "ponte" in nome or "canoa" in nome:
+				return "madeira"
+	var chao: String = _click_world.surface_at(global_position) if _click_world != null else "grama"
+	return "areia" if chao == "agua" else chao
+
+
+## Intervalo entre passos (ou braçadas) no ritmo do clipe em curso; sem clipe, um
+## valor fixo por passo e corrida.
+func step_interval() -> float:
+	var intervalo := 0.0
+	if animator and animator.has_method("step_interval"):
+		intervalo = animator.step_interval()
+	if intervalo <= 0.05:
+		intervalo = 0.32 if is_running() else 0.48
+	return intervalo
 
 
 ## Bordas baixas (a areia da praia saindo da água, meio-fio, rampa do píer) viram

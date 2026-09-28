@@ -41,7 +41,28 @@ atualize esse arquivo e este documento juntos.
   foge de quem chega perto (`cardume.gd`).
 - **Moradores contornam obstáculos**: andando sem sair do lugar, seguem a parede para
   um lado; depois de várias tentativas, param, olham em volta e tentam de novo.
-- Canoas com colisão (caixa do tamanho do casco, acompanhando o balanço).
+- Canoas com colisão em casco oco: quem pula a borda fica dentro da canoa.
+- **Sol no lugar certo.** O sol usava uma curva genérica e nascia a oeste; agora é a
+  posição astronômica para a latitude do KML (-12,8°) no fim de setembro, em hora
+  solar: nasce a leste perto das 6h, culmina ao norte quase a pino e se põe a oeste.
+- **Casas voltadas para a rua**, como em Bom Jesus: um loteamento põe cada casa (e a
+  capela) ao lado da rua mais próxima, porta para a rua, em terreno quase plano;
+  árvores, adereços, luzes e os postos dos moradores giram junto. A laje cinza sob as
+  casas virou um terreiro de chão batido rente ao chão, e moradores sobem degraus
+  baixos — não ficam mais presos na borda.
+- **Ruas em curva**: as linhas do KML passam por Chaikin (cantos cortados três vezes,
+  até ~100 m) e os cruzamentos são reemendados.
+- **Passada casada com a velocidade**: o animador mede a velocidade de chão de cada
+  clipe pelo pé de apoio e ajusta a reprodução — fim do deslize, no jogador e nos
+  moradores. Andar ficou em 2,1 u/s e correr em 5,2 (o clipe de andar não acompanha
+  mais rápido que isso sem ficar afobado).
+- **Som dos passos** no ritmo da animação e pelo chão sob os pés: corrida própria para
+  grama, terra, areia, madeira (píer, ponte, canoa) e água; água rasa e funda; braçada
+  no nado (ElevenLabs, `tools/elevenlabs/gerar-efeitos-3d.ps1`).
+- **Espuma** na superfície em volta de quem anda ou nada no mar (`espuma_agua.gd`).
+- Nado mais rápido com Shift; **C** também alterna a câmera travada (além de Tab).
+- **Três saudações do Pedro**, sorteadas a cada partida, com voz nova (Weverton); a
+  antiga dizia "o sol ainda tá alto" mesmo com o jogo começando às 7h.
 - **Chão iluminado pelo sol.** Os triângulos do terreno estavam de costas para cima:
   terra, praia e ruas só recebiam luz ambiente. Com a correção, a grama ganhou uma
   tinta verde para compensar o tom ocre da textura sob o sol.

@@ -22,6 +22,12 @@ const COMPARAR_MANGUEIRAS := false
 const HOUSE_INTERACTION_LAYER := 1 << 12
 const SITE_SEARCH_STEP := 1.5
 const SITE_SEARCH_DIRECTIONS := 24
+## Loteamento das casas ao longo das ruas: frente (a porta, +Z do modelo) para a rua,
+## centro afastado do eixo o bastante para não invadir a rua, terreno quase plano.
+const RECUO_DA_RUA := 1.6
+const DESNIVEL_MAXIMO_CASA := 0.35
+const PASSO_NA_RUA := 2.5
+const ALCANCE_NA_RUA := 60.0
 
 signal house_interacted(properties: Dictionary)
 signal house_interaction_cleared
@@ -47,6 +53,9 @@ var _house_targets: Array[Area3D] = []
 var _hovered_house: Area3D
 var _selected_house: Area3D
 var _house_sites: Array[Dictionary] = []
+## Lote (posição e giro) de cada construção nomeada, decidido por _loteamento().
+var _lotes: Dictionary = {}
+var _terreiro: Material
 var _manual_tree_sites: Array[Dictionary] = []
 
 
@@ -252,6 +261,10 @@ func _ready() -> void:
 	_region.set_meters_per_unit(_meters_per_unit)
 	_region.set_estilo_tripo(estilo_tripo())
 	_region.build_region(String(region_data["geometry"]), String(region_data["scenario"]))
+	# O sol segue a latitude do lugar (a origem do KML).
+	if _region._projection.has("origin_lat"):
+		Dia.definir_latitude(float(_region._projection["origin_lat"]))
+		_aplicar_hora(Dia.hora)
 	landmarks = _region.landmarks
 	areas = _region.areas
 	for landmark in landmarks:
@@ -324,13 +337,19 @@ func _build_lighting() -> void:
 func _aplicar_hora(hora: float) -> void:
 	var luz := Dia.luz_do_dia()
 	var elevacao := Dia.elevacao_solar()
-	var azimute := Dia.azimute_solar()
 	var horizonte := 1.0 - smoothstep(6.0, 22.0, absf(elevacao))
-	_sun.rotation_degrees = Vector3(-maxf(elevacao, 2.0), azimute, 0.0)
+	# Sol na posição real do lugar (Dia.direcao_da_luz_solar): nasce a leste, culmina ao
+	# norte e se põe a oeste. Perto do horizonte a luz fica em ~2° para não varar o chão.
+	var luz_solar := Dia.direcao_da_luz_solar()
+	if luz_solar.y > -0.035:
+		luz_solar = Vector3(luz_solar.x, 0.0, luz_solar.z).normalized() * cos(0.035) + Vector3(0.0, -0.035, 0.0)
+	_sun.basis = Basis.looking_at(luz_solar, Vector3.UP if absf(luz_solar.y) < 0.99 else Vector3.FORWARD)
 	_sun.light_energy = lerpf(0.0, 1.15, luz)
 	_sun.light_color = Color("fff0d0").lerp(Color("ff9d5c"), horizonte * 0.85)
 	_sun.visible = luz > 0.02
-	_moon.rotation_degrees = Vector3(-52.0, -azimute + 180.0, 0.0)
+	# Lua alta, do lado oposto ao sol.
+	var horizontal := Vector3(-luz_solar.x, 0.0, -luz_solar.z).normalized()
+	_moon.basis = Basis.looking_at(horizontal * cos(deg_to_rad(52.0)) + Vector3(0.0, -sin(deg_to_rad(52.0)), 0.0), Vector3.UP)
 	_moon.light_energy = lerpf(0.26, 0.0, luz)
 	_moon.visible = luz < 0.98
 	var noite := 1.0 - luz
@@ -356,6 +375,8 @@ func _construir_vila() -> void:
 	var taipa := _u(Vector3(-52, 0, -27))
 	ancoras["Casa de taipa"] = taipa
 	ancoras["Casa de Carro Quebrado"] = _u(Vector3(40, 0, -35))
+	ancoras["Casa da estrada"] = _region.position_beside_road(_region.wgs84_to_world(-12.812855555555556, -38.780297222222224), "Rua Principal", 10.0)
+	_loteamento()
 	# Casas da praça
 	_construcao("casa_taipa", taipa, 0.0, func(at: Vector3): _casa_de_taipa_referencia(at), 1.0, "Casa de taipa")
 	_construcao("casa_carro_quebrado", ancoras["Casa de Carro Quebrado"], 0.0, func(at: Vector3): _house(at, Color("e8dcc4"), Color("a8442f")), 1.0, "Casa de Carro Quebrado")
@@ -380,16 +401,22 @@ func _construcao(chave: String, origin: Vector3, yaw: float, procedural: Callabl
 	var placed_origin := origin
 	if is_house:
 		var spec: Dictionary = CatalogoAssets.PECAS.get(chave, {})
-		var footprint_radius := maxf(5.5, float(spec.get("largura", 6.5)) * size * 0.75 + 1.0)
-		placed_origin = _reserve_house_site(origin, footprint_radius, nome)
+		var footprint_radius := _raio_do_lote(chave, size)
+		if _lotes.has(nome):
+			placed_origin = _lotes[nome]["pos"]
+			yaw = _lotes[nome]["yaw"]
+		else:
+			placed_origin = _reserve_house_site(origin, footprint_radius, nome)
 		if not placed_origin.is_finite():
 			return null
 		var relief := placed_origin.y - _footprint_range(placed_origin, footprint_radius).x
 		if relief > 0.16:
 			var foundation_width := float(spec.get("largura", 6.5)) * size + 0.4
-			_box(Vector3(foundation_width, relief + 0.12, foundation_width * 0.85), placed_origin + Vector3(0, -relief * 0.5, 0), Color("958d79"), true).rotation.y = yaw
+			_box(Vector3(foundation_width, relief + 0.12, foundation_width * 0.85), placed_origin + Vector3(0, -relief * 0.5, 0), Color("958d79"), true, _terreiro_material()).rotation.y = yaw
 		if not nome.is_empty():
 			ancoras[nome] = placed_origin
+			# O construtor procedural não gira a casa: a porta segue no +Z.
+			ancoras[nome + "Frente"] = Vector3(sin(yaw), 0.0, cos(yaw)) if estilo_tripo() else Vector3.BACK
 	else:
 		placed_origin = ground_position(origin, maxf(origin.y - ground_height_at(origin), 0.0))
 	if estilo_tripo():
@@ -410,7 +437,10 @@ func _construcao(chave: String, origin: Vector3, yaw: float, procedural: Callabl
 				ancoras["PierDirecao"] = Vector3(sin(yaw), 0.0, cos(yaw))
 				_pier_deck(piso_size, piso_position, yaw)
 			else:
-				_box(piso_size, piso_position, Color("958d79"), true, null, yaw)
+				# Terreiro de chão batido rente ao chão (4 cm acima da soleira) e afundado por
+				# baixo, sem degrau que barre os moradores nem laje cinza.
+				var terreiro := Vector3(piso_size.x, 0.5, piso_size.z)
+				_box(terreiro, placed_origin + Vector3(0, piso + 0.04 - terreiro.y * 0.5, 0), Color("958d79"), true, _terreiro_material(), yaw)
 			if is_house:
 				_register_house(nome if not nome.is_empty() else chave.capitalize(), chave, placed_origin, yaw, limites.size, "Tripo")
 			return node
@@ -424,6 +454,111 @@ func _construcao(chave: String, origin: Vector3, yaw: float, procedural: Callabl
 
 func _is_house_key(chave: String) -> bool:
 	return chave.begins_with("casa_") or chave == "venda"
+
+
+func _raio_do_lote(chave: String, size: float = 1.0) -> float:
+	var spec: Dictionary = CatalogoAssets.PECAS.get(chave, {})
+	return maxf(5.5, float(spec.get("largura", 6.5)) * size * 0.75 + 1.0)
+
+
+## Ponto em volta de uma construção com o deslocamento no referencial dela (porta no +Z):
+## gira junto quando a casa se alinha à rua.
+func _na_casa(ancora: String, deslocamento: Vector3) -> Vector3:
+	var base: Vector3 = ancoras.get(ancora, Vector3.ZERO)
+	var frente: Vector3 = ancoras.get(ancora + "Frente", Vector3.BACK)
+	return base + deslocamento.rotated(Vector3.UP, atan2(frente.x, frente.z))
+
+
+## Decide o lote de cada construção antes de erguer a vila, para árvores, adereços,
+## luzes e postos dos moradores já usarem a posição e a frente finais.
+func _loteamento() -> void:
+	var pedidos := [
+		["Casa de taipa", "casa_taipa", ancoras["Casa de taipa"]],
+		["Casa de Carro Quebrado", "casa_carro_quebrado", ancoras["Casa de Carro Quebrado"]],
+		["Casa da estrada", "casa_taipa", ancoras["Casa da estrada"]],
+		["Venda do Bar", "venda", _region.get_feature_center("Bar", "poi") + Vector3(8, 0, 3)],
+		["Restaurante", "casa_pasto", _region.get_feature_center("Restaurante", "poi") + Vector3(7, 0, 4)],
+		["Igreja", "capela", _region.get_feature_center("Igreja", "poi")],
+	]
+	for pedido in pedidos:
+		var nome: String = pedido[0]
+		var capela: bool = pedido[1] == "capela"
+		var raio := 7.5 if capela else _raio_do_lote(pedido[1])
+		# A capela do Tripo tem base de pedra própria: aceita mais desnível que as casas.
+		var lote := _lote_na_rua(pedido[2], raio, 0.7 if capela else DESNIVEL_MAXIMO_CASA)
+		if lote.is_empty():
+			var sitio := _reserve_house_site(pedido[2], raio, nome)
+			if not sitio.is_finite():
+				continue
+			lote = {"pos": sitio, "yaw": 0.0}
+		_lotes[nome] = lote
+		ancoras[nome] = lote["pos"]
+		var yaw: float = lote["yaw"] if estilo_tripo() else 0.0
+		ancoras[nome + "Frente"] = Vector3(sin(yaw), 0.0, cos(yaw))
+	if ancoras.has("Venda do Bar"):
+		ancoras["Bar"] = ancoras["Venda do Bar"]
+		ancoras["BarFrente"] = ancoras["Venda do BarFrente"]
+
+
+## Lote ao lado da rua mais próxima de `preferido`, do mesmo lado dela: desliza ao longo
+## da rua, a partir do ponto mais próximo, até achar terreno livre e quase plano. A
+## frente (+Z) fica voltada para a rua. Vazio se não houver rua perto ou lote livre.
+func _lote_na_rua(preferido: Vector3, raio: float, desnivel_maximo: float = DESNIVEL_MAXIMO_CASA) -> Dictionary:
+	var ponto := Vector2(preferido.x, preferido.z)
+	var melhor_rua: Dictionary = {}
+	var menor := INF
+	var s0 := 0.0
+	for road in _region._roads:
+		var pts: PackedVector2Array = road.points
+		var percorrido := 0.0
+		for i in pts.size() - 1:
+			var q := Geometry2D.get_closest_point_to_segment(ponto, pts[i], pts[i + 1])
+			var d := q.distance_to(ponto)
+			if d < menor:
+				menor = d
+				melhor_rua = road
+				s0 = percorrido + pts[i].distance_to(q)
+			percorrido += pts[i].distance_to(pts[i + 1])
+	if melhor_rua.is_empty() or menor > 80.0:
+		return {}
+	var pontos: PackedVector2Array = melhor_rua.points
+	var afastamento: float = float(melhor_rua.width) * 0.5 + raio + RECUO_DA_RUA
+	var base := _na_linha(pontos, s0)
+	var lado := signf((ponto - base[0]).cross(base[1])) if menor > 0.01 else 1.0
+	if lado == 0.0:
+		lado = 1.0
+	for k in range(int(ALCANCE_NA_RUA / PASSO_NA_RUA) + 1):
+		for sinal in ([1.0] if k == 0 else [1.0, -1.0]):
+			var alvo := _na_linha(pontos, s0 + sinal * k * PASSO_NA_RUA)
+			var tangente: Vector2 = alvo[1]
+			var normal := Vector2(tangente.y, -tangente.x) * lado
+			var centro2: Vector2 = alvo[0] + normal * afastamento
+			var centro := Vector3(centro2.x, 0.0, centro2.y)
+			if _site_is_clear(centro, raio, true, desnivel_maximo):
+				centro.y = _footprint_height(centro, raio) + 0.02
+				_house_sites.append({"position": centro, "radius": raio})
+				var para_rua := -Vector3(normal.x, 0.0, normal.y)
+				return {"pos": centro, "yaw": atan2(para_rua.x, para_rua.z)}
+	return {}
+
+
+## Ponto e tangente da linha a `s` unidades do começo (preso às pontas).
+func _na_linha(pontos: PackedVector2Array, s: float) -> Array:
+	var restante := maxf(s, 0.0)
+	for i in pontos.size() - 1:
+		var trecho := pontos[i].distance_to(pontos[i + 1])
+		var tangente := (pontos[i + 1] - pontos[i]).normalized()
+		if restante <= trecho or i == pontos.size() - 2:
+			return [pontos[i] + tangente * minf(restante, trecho), tangente]
+		restante -= trecho
+	return [pontos[0], Vector2.RIGHT]
+
+
+## Chão batido com seixos (o mesmo da Praça) para terreiros e alicerces das casas.
+func _terreiro_material() -> Material:
+	if _terreiro == null:
+		_terreiro = _region._textured_material(_region.CHAO_PRACA_TEXTURE, Color("b8a27e"), 6.0)
+	return _terreiro
 
 
 func _reserve_house_site(preferred: Vector3, radius: float, name: String) -> Vector3:
@@ -449,12 +584,12 @@ func _find_clear_site(preferred: Vector3, radius: float, rings: int, check_manua
 	return Vector3.INF
 
 
-func _site_is_clear(position: Vector3, radius: float, check_manual_trees: bool = true) -> bool:
+func _site_is_clear(position: Vector3, radius: float, check_manual_trees: bool = true, max_relief: float = 0.8) -> bool:
 	if not _region.is_build_site_clear(position, radius):
 		return false
 	if check_manual_trees:
 		var footprint_heights := _footprint_range(position, radius)
-		if footprint_heights.y - footprint_heights.x > 0.8:
+		if footprint_heights.y - footprint_heights.x > max_relief:
 			return false
 	var center := Vector2(position.x, position.z)
 	for site in _house_sites:
@@ -645,17 +780,15 @@ func _build_trees() -> void:
 		_arvore(String(entry[0]), _u(entry[1]), float(entry[2]), float(entry[3]))
 	var taipa: Vector3 = ancoras.get("Casa de taipa", _u(Vector3(-52, 0, -27)))
 	for offset in [Vector3(-3.2, 0, -4.6), Vector3(-1.6, 0, -5.9), Vector3(0.4, 0, -4.9), Vector3(-4.6, 0, -3.0)]:
-		_arvore("bananeira", taipa + offset, 0.9, offset.x * 1.3)
-	var bar: Vector3 = _region.get_feature_center("Bar", "poi")
+		_arvore("bananeira", _na_casa("Casa de taipa", offset), 0.9, offset.x * 1.3)
 	for offset in [Vector3(-6.0, 0, 5.5), Vector3(-9.5, 0, 2.0)]:
-		_arvore("dendezeiro", bar + offset, 0.95, offset.z)
+		_arvore("dendezeiro", _na_casa("Bar", offset + Vector3(-8, 0, -3)), 0.95, offset.z)
 	var farm: Vector3 = _region.get_feature_center("Fazenda", "area")
 	_arvore("mangueira", farm + Vector3(-9.5, 0, -6.5), 1.15, 0.9)
 	_arvore("cajueiro", farm + Vector3(9.0, 0, -8.0), 1.0, 2.4)
 	_arvore("cajueiro", farm + Vector3(11.0, 0, 8.5), 0.9, 0.3)
-	var church: Vector3 = _region.get_feature_center("Igreja", "poi")
-	_arvore("ipe_roxo", church + Vector3(-8.5, 0, 9.0), 1.0, 0.0)
-	_arvore("ipe_amarelo", church + Vector3(8.5, 0, 9.5), 1.0, 1.1)
+	_arvore("ipe_roxo", _na_casa("Igreja", Vector3(-8.5, 0, 9.0)), 1.0, 0.0)
+	_arvore("ipe_amarelo", _na_casa("Igreja", Vector3(8.5, 0, 9.5)), 1.0, 1.1)
 	var pier: Vector3 = _region.get_feature_center("Pier", "poi")
 	var toward_praca: Vector3 = (_region.get_feature_center("Praça", "poi") - pier).normalized()
 	for step in [Vector3(14.0, 0, 5.0), Vector3(20.0, 0, -4.0)]:
@@ -678,16 +811,11 @@ func _build_details() -> void:
 
 
 func _build_landmark_details() -> void:
-	var church: Vector3 = _region.get_feature_center("Igreja", "poi")
-	church.y = _footprint_height(church, 7.0) + 0.02
-	ancoras["Igreja"] = church
-	_construcao("capela", church, 0.0, func(): _igreja_procedural(church))
-	var bar: Vector3 = _region.get_feature_center("Bar", "poi") + Vector3(8, 0, 3)
-	ancoras["Bar"] = bar
-	_construcao("venda", bar, 0.0, func(at: Vector3): _house(at, Color("c6a16d"), Color("8b523b")), 1.0, "Venda do Bar")
-	var restaurante: Vector3 = _region.get_feature_center("Restaurante", "poi") + Vector3(7, 0, 4)
-	ancoras["Restaurante"] = restaurante
-	_construcao("casa_pasto", restaurante, 0.0, func(at: Vector3): _house(at, Color("cdbb92"), Color("97563f")), 1.0, "Restaurante")
+	var church: Vector3 = ancoras["Igreja"]
+	var church_yaw: float = _lotes.get("Igreja", {}).get("yaw", 0.0)
+	_construcao("capela", church, church_yaw, func(): _igreja_procedural(church))
+	_construcao("venda", ancoras["Venda do Bar"], 0.0, func(at: Vector3): _house(at, Color("c6a16d"), Color("8b523b")), 1.0, "Venda do Bar")
+	_construcao("casa_pasto", ancoras["Restaurante"], 0.0, func(at: Vector3): _house(at, Color("cdbb92"), Color("97563f")), 1.0, "Restaurante")
 	var pier: Vector3 = _region.get_feature_center("Pier", "poi")
 	ancoras["Pier"] = pier
 	var pier_dir: Vector3 = (pier - _region.get_feature_center("Praça", "poi")).normalized()
@@ -798,11 +926,11 @@ func _build_pecas() -> void:
 	_adereco("banco", _u(Vector3(-4.6, 0, -0.1)))
 	_adereco("banco", Vector3(3.2, 0, -7.0), PI)
 	var taipa: Vector3 = ancoras.get("Casa de taipa", _u(Vector3(-52, 0, -27)))
-	_adereco("varal", ground_position(taipa + Vector3(-4.9, 0, 1.4)), 0.35)
-	_adereco("lenha", ground_position(taipa + Vector3(3.6, 0, -0.4)), 0.0)
-	_adereco("pote", ground_position(taipa + Vector3(2.4, 0, 2.9)))
-	var church: Vector3 = _region.get_feature_center("Igreja", "poi")
-	_adereco("cruzeiro", ground_position(church + Vector3(0, 0, 9.0)))
+	var giro_taipa := atan2(ancoras.get("Casa de taipaFrente", Vector3.BACK).x, ancoras.get("Casa de taipaFrente", Vector3.BACK).z)
+	_adereco("varal", ground_position(_na_casa("Casa de taipa", Vector3(-4.9, 0, 1.4))), 0.35 + giro_taipa)
+	_adereco("lenha", ground_position(_na_casa("Casa de taipa", Vector3(3.6, 0, -0.4))), giro_taipa)
+	_adereco("pote", ground_position(_na_casa("Casa de taipa", Vector3(2.4, 0, 2.9))))
+	_adereco("cruzeiro", ground_position(_na_casa("Igreja", Vector3(0, 0, 9.0))))
 	var farm: Vector3 = _region.get_feature_center("Fazenda", "area")
 	_adereco("carroca", ground_position(farm + Vector3(8.5, 0, -5.5)), -0.6)
 	var pier: Vector3 = _region.get_feature_center("Pier", "poi")
@@ -810,15 +938,15 @@ func _build_pecas() -> void:
 	# Itens de mão espalhados como cenário (só no estilo Tripo, quando existirem).
 	if estilo_tripo():
 		var itens := [
-			["machado", taipa + Vector3(3.9, 0.55, 0.6), 0.9],
-			["cesto", taipa + Vector3(1.6, 0, 3.4), 0.2],
-			["moringa", taipa + Vector3(-1.0, 0, 3.1), 0.0],
+			["machado", _na_casa("Casa de taipa", Vector3(3.9, 0.55, 0.6)), 0.9],
+			["cesto", _na_casa("Casa de taipa", Vector3(1.6, 0, 3.4)), 0.2],
+			["moringa", _na_casa("Casa de taipa", Vector3(-1.0, 0, 3.1)), 0.0],
 			["enxada", farm + Vector3(5.6, 0.0, 1.2), 1.2],
 			["balde", ancoras["Poço"] + Vector3(1.3, 0, 0.4), 0.0],
 			["peixe", pier + Vector3(-1.2, 0.05, -4.0), 1.0],
 			["vara_pescar", pier + Vector3(1.6, 0.05, -2.0), 0.3],
-			["farinha", _region.get_feature_center("Bar", "poi") + Vector3(6.0, 0, 6.5), 0.0],
-			["cacho_banana", _region.get_feature_center("Restaurante", "poi") + Vector3(5.0, 0.0, 7.6), 0.0],
+			["farinha", _na_casa("Bar", Vector3(-2.0, 0, 3.5)), 0.0],
+			["cacho_banana", _na_casa("Restaurante", Vector3(-2.0, 0.0, 3.6)), 0.0],
 		]
 		for item in itens:
 			var item_position: Vector3 = item[1]
@@ -834,24 +962,21 @@ func _build_luzes_epoca() -> void:
 	add_child(_luzes)
 	var praca := ground_position(Vector3.ZERO)
 	var taipa: Vector3 = ancoras.get("Casa de taipa", _u(Vector3(-52, 0, -27)))
-	var church: Vector3 = ancoras.get("Igreja", _region.get_feature_center("Igreja", "poi"))
-	var bar: Vector3 = ancoras.get("Bar", Vector3.ZERO)
-	var restaurante: Vector3 = ancoras.get("Restaurante", Vector3.ZERO)
 	var farm: Vector3 = _region.get_feature_center("Fazenda", "area")
 	var pier: Vector3 = _region.get_feature_center("Pier", "poi")
 	for corner in [Vector3(-9.0, 0, 8.5), Vector3(7.5, 0, -12.0), Vector3(8.0, 0, 9.5)]:
 		var post_position := ground_position(praca + corner)
 		_luzes.lampiao(post_position, _adereco("lampiao_poste", post_position, 0.0))
-	var church_post := ground_position(church + Vector3(-6.0, 0, 8.0))
+	var church_post := ground_position(_na_casa("Igreja", Vector3(-6.0, 0, 8.0)))
 	_luzes.lampiao(church_post, _adereco("lampiao_poste", church_post))
-	_luzes.candeeiro(taipa + Vector3(0.92, 2.55, 2.4), _adereco("candeeiro", taipa + Vector3(0.92, 2.45, 2.35)))
-	_luzes.candeeiro(bar + Vector3(0.0, 2.6, 3.2), _adereco("candeeiro", bar + Vector3(0.0, 2.5, 3.15)))
-	_luzes.candeeiro(restaurante + Vector3(0.0, 2.6, 3.2), _adereco("candeeiro", restaurante + Vector3(0.0, 2.5, 3.15)))
+	_luzes.candeeiro(_na_casa("Casa de taipa", Vector3(0.92, 2.55, 2.4)), _adereco("candeeiro", _na_casa("Casa de taipa", Vector3(0.92, 2.45, 2.35))))
+	_luzes.candeeiro(_na_casa("Bar", Vector3(0.0, 2.6, 3.2)), _adereco("candeeiro", _na_casa("Bar", Vector3(0.0, 2.5, 3.15))))
+	_luzes.candeeiro(_na_casa("Restaurante", Vector3(0.0, 2.6, 3.2)), _adereco("candeeiro", _na_casa("Restaurante", Vector3(0.0, 2.5, 3.15))))
 	_luzes.candeeiro(pier + Vector3(0.0, 1.9, -7.0), _adereco("candeeiro", pier + Vector3(0.3, 1.8, -7.0)))
 	ancoras["Fogueira"] = ground_position(farm + Vector3(7.0, 0, 4.5))
 	_luzes.fogueira(ancoras["Fogueira"], _adereco("fogueira", ancoras["Fogueira"]))
-	_luzes.janela(taipa + Vector3(-1.35, 1.9, 2.2))
-	_luzes.janela(church + Vector3(0, 3.6, 4.6))
+	_luzes.janela(_na_casa("Casa de taipa", Vector3(-1.35, 1.9, 2.2)))
+	_luzes.janela(_na_casa("Igreja", Vector3(0, 3.6, 4.6)))
 	_luzes.aplicar_hora(Dia.hora)
 
 
