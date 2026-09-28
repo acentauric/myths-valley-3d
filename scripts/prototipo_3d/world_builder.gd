@@ -551,10 +551,14 @@ func _construcao(chave: String, origin: Vector3, yaw: float, procedural: Callabl
 				ancoras["PierDirecao"] = Vector3(sin(yaw), 0.0, cos(yaw))
 				_pier_deck(piso_size, piso_position, yaw)
 			else:
-				# Terreiro de chão batido rente ao chão (4 cm acima da soleira) e afundado por
-				# baixo, sem degrau que barre os moradores nem laje cinza.
-				var terreiro := Vector3(piso_size.x, 0.5, piso_size.z)
-				_box(terreiro, placed_origin + Vector3(0, piso + 0.04 - terreiro.y * 0.5, 0), Color("958d79"), true, _terreiro_material(), yaw)
+				# Terreiro de chão batido drapeado no próprio terreno (acompanha o declive):
+				# uma caixa plana ficava flutuando do lado baixo do lote.
+				var meio := Vector2(piso_size.x, piso_size.z) * 0.5
+				var cantos := PackedVector2Array()
+				for canto in [Vector2(-1, -1), Vector2(1, -1), Vector2(1, 1), Vector2(-1, 1)]:
+					var local: Vector2 = (canto * meio).rotated(-yaw)
+					cantos.append(Vector2(placed_origin.x, placed_origin.z) + local)
+				_region._add_polygon("Terreiro", cantos, 0.03, Color("958d79"), false, _terreiro_material())
 			if is_house:
 				_register_house(nome if not nome.is_empty() else chave.capitalize(), chave, placed_origin, yaw, limites.size, "Tripo")
 			return node
@@ -594,7 +598,7 @@ func _loteamento() -> void:
 		["Venda do Bar", "venda", _region.get_feature_center("Bar", "poi") + Vector3(8, 0, 3)],
 		["Restaurante", "casa_pasto", _region.get_feature_center("Restaurante", "poi") + Vector3(7, 0, 4)],
 		["Igreja", "igreja", _region.get_feature_center("Igreja", "poi")],
-		["Capela velha", "capela", _region.get_feature_center("Mirante", "poi")],
+		["Capela velha", "capela", _region.get_feature_center("Rua do mirante", "road")],
 	]
 	pedidos.append_array(_pedidos_casas_do_arraial())
 	for pedido in pedidos:
@@ -606,6 +610,12 @@ func _loteamento() -> void:
 			# A igreja fica exatamente no marco do KML (o lugar dela na vila real),
 			# só girando a frente para a rua; os templos têm base própria de pedra.
 			lote = _lote_fixo_virado_para_rua(pedido[2], raio)
+		elif nome == "Capela velha":
+			# No alto da rua do mirante o morro é inclinado: aceita desnível maior (a
+			# base de pedra do modelo cobre); sem lote livre, crava ao lado da rua.
+			lote = _lote_na_rua(pedido[2], raio, 1.6)
+			if lote.is_empty():
+				lote = _lote_capela_velha(raio)
 		else:
 			lote = _lote_na_rua(pedido[2], raio, 0.7 if templo else DESNIVEL_MAXIMO_CASA)
 		if lote.is_empty():
@@ -641,6 +651,23 @@ func _lote_fixo_virado_para_rua(ponto: Vector3, raio: float) -> Dictionary:
 	var para_rua := Vector3(mais_perto.x - centro.x, 0.0, mais_perto.y - centro.y)
 	var yaw := atan2(para_rua.x, para_rua.z) if para_rua.length_squared() > 0.01 else 0.0
 	return {"pos": pos, "yaw": yaw}
+
+
+## Ponto fixo a 45% da rua do mirante, afastado do eixo, frente para a rua.
+func _lote_capela_velha(raio: float) -> Dictionary:
+	for road in _region._roads:
+		if String(road.name) != "Rua do mirante":
+			continue
+		var pontos: PackedVector2Array = road.points
+		var comprimento := 0.0
+		for i in pontos.size() - 1:
+			comprimento += pontos[i].distance_to(pontos[i + 1])
+		var alvo := _na_linha(pontos, comprimento * 0.45)
+		var tangente: Vector2 = alvo[1]
+		var normal := Vector2(tangente.y, -tangente.x)
+		var centro: Vector2 = alvo[0] + normal * (float(road.width) * 0.5 + raio + RECUO_DA_RUA)
+		return _lote_fixo_virado_para_rua(Vector3(centro.x, 0.0, centro.y), raio)
+	return {}
 
 
 ## Mais casas do arraial ao longo das ruas maiores: lotes espalhados, dois por rua,
@@ -1116,12 +1143,29 @@ func _build_pedras() -> void:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 1108
 	if CatalogoAssets.tem_tripo("pedras_praia"):
+		# O marco do KML fica no mato; as pedras reais estão na areia, junto da água:
+		# desce até o ponto da costa mais próximo e recua um pouco para a areia.
+		var costa: PackedVector2Array = _region._coast
+		var m2 := Vector2(marco.x, marco.z)
+		var na_costa := m2
+		var menor := INF
+		for i in costa.size() - 1:
+			var q := Geometry2D.get_closest_point_to_segment(m2, costa[i], costa[i + 1])
+			if q.distance_to(m2) < menor:
+				menor = q.distance_to(m2)
+				na_costa = q
+		var para_terra := (m2 - na_costa).normalized() if menor > 0.01 else Vector2.ZERO
+		var na_areia := na_costa + para_terra * 3.0
+		marco = Vector3(na_areia.x, 0.0, na_areia.y)
 		var chao := ground_position(marco)
 		var pedra := CatalogoAssets.instanciar("pedras_praia", self, chao, 1.0, rng.randf_range(0.0, TAU))
 		if pedra != null:
 			CatalogoAssets.colisao("pedras_praia", pedra, self, chao)
+		# Pedras menores espalhadas ao longo da praia, dos dois lados da maior.
+		var ao_longo := Vector2(-para_terra.y, para_terra.x)
 		for k in 2:
-			var vizinho := ground_position(marco + Vector3(rng.randf_range(-9.0, 9.0), 0, rng.randf_range(-9.0, 9.0)))
+			var passo := ao_longo * (rng.randf_range(5.0, 9.0) * (1.0 if k == 0 else -1.0)) + para_terra * rng.randf_range(-1.0, 2.0)
+			var vizinho := ground_position(marco + Vector3(passo.x, 0, passo.y))
 			CatalogoAssets.instanciar("pedras_praia", self, vizinho, rng.randf_range(0.45, 0.65), rng.randf_range(0.0, TAU))
 	if not CatalogoAssets.tem_tripo("pedra_mare"):
 		return

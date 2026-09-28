@@ -57,7 +57,7 @@ const PECAS := {
 	"fogueira": {"tripo": "aderecos/fogueira_tripo.glb", "largura": 1.6},
 	"mandioca_canteiro": {"tripo": "aderecos/mandioca_canteiro_tripo.glb", "largura": 3.5},
 	"pedras": {"tripo": "aderecos/pedras_tripo.glb", "largura": 3.0, "caixa": true},
-	"pedras_praia": {"tripo": "aderecos/pedras_praia_tripo.glb", "largura": 5.5, "caixa": true},
+	"pedras_praia": {"tripo": "aderecos/pedras_praia_tripo.glb", "largura": 9.0, "caixa": true},
 	"pedra_mare": {"tripo": "aderecos/pedra_mare_tripo.glb", "largura": 3.2},
 	"bote": {"tripo": "aderecos/bote_tripo.glb", "largura": 6.0},
 	"canoa_amarela": {"tripo": "aderecos/canoa_amarela_tripo.glb", "largura": 4.6},

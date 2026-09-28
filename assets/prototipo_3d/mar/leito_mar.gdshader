@@ -30,7 +30,7 @@ uniform vec3 cor_capim : source_color = vec3(0.24, 0.31, 0.18);
 uniform vec3 cor_pasto : source_color = vec3(0.42, 0.47, 0.25);
 uniform vec3 cor_mata : source_color = vec3(0.16, 0.25, 0.12);
 // Poças da baixa-mar: espelhos azul-claros do céu nas baixadas da lama.
-uniform vec3 cor_poca : source_color = vec3(0.55, 0.68, 0.72);
+uniform vec3 cor_poca : source_color = vec3(0.34, 0.44, 0.48);
 uniform float causticas = 0.35;
 
 varying float lamina_m;
@@ -98,10 +98,15 @@ void fragment() {
 	// lama molhada escura com brilho úmido e poças espelhadas nas manchas mais baixas.
 	float exposto = (1.0 - smoothstep(0.0, 0.15, d)) * smoothstep(0.02, 0.25, lamina_m);
 	if (exposto > 0.001) {
-		vec3 lama_umida = mix(cor_lama, cor_areia, 0.25) * vec3(0.52, 0.5, 0.46) * (0.85 + 0.3 * fino);
-		// Poças onde o ruído médio fica abaixo do limiar (baixadas da lama).
-		float poca = 1.0 - smoothstep(0.34, 0.44, medio + (fino - 0.5) * 0.1);
-		cor = mix(cor, mix(lama_umida, cor_poca, poca * 0.85), exposto);
+		vec3 lama_umida = mix(cor_lama, cor_areia, 0.35) * vec3(0.62, 0.58, 0.5) * (0.88 + 0.24 * fino);
+		// Poças (como na foto da canoa amarela): poucas, grandes e escuras espelhando o
+		// céu, juntas da água que recuou — onde o fundo mal acabou de secar (d perto de
+		// 0) e numa baixada das manchas grandes. Longe da linha d'água, lama só úmida.
+		float perto_agua = 1.0 - smoothstep(0.05, 0.9, -d);
+		float baixada = smoothstep(0.6, 0.7, 1.0 - grande + (medio - 0.5) * 0.18);
+		float poca = clamp(baixada * (0.15 + 0.85 * perto_agua), 0.0, 1.0);
+		poca = smoothstep(0.35, 0.6, poca);
+		cor = mix(cor, mix(lama_umida, cor_poca, poca * 0.9), exposto);
 		aspereza = mix(aspereza, mix(0.35, 0.06, poca), exposto);
 		especular = mix(especular, mix(0.45, 0.7, poca), exposto);
 	}
