@@ -987,6 +987,12 @@ func _build_trees() -> void:
 	await _pausar()
 	_arvore("cajueiro", farm + Vector3(11.0, 0, 8.5), 0.9, 0.3)
 	await _pausar()
+	# Pitangueira no quintal (atrás de cada casa), como nos quintais baianos.
+	if estilo_tripo() and CatalogoAssets.tem_tripo("pitangueira"):
+		for nome_lote in _lotes:
+			if String(nome_lote).begins_with("Casa"):
+				_arvore("pitangueira", _na_casa(String(nome_lote), Vector3(3.5, 0, -6.5)), 1.0, float(String(nome_lote).length()))
+				await _pausar()
 	_arvore("ipe_roxo", _na_casa("Igreja", Vector3(-8.5, 0, 9.0)), 1.0, 0.0)
 	await _pausar()
 	_arvore("ipe_amarelo", _na_casa("Igreja", Vector3(8.5, 0, 9.5)), 1.0, 1.1)

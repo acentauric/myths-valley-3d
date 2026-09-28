@@ -96,6 +96,54 @@
         "Figueira de copa larga e raízes que descem dos galhos e abraçam o que encontram. Uma só faz sombra de praça.",
         "Para o povo de santo, a gameleira é morada de Iroko, e não se corta. Os mais velhos passam longe dela à noite — e não explicam o porquê."
       ]
+    },
+    "mangue": {
+      "nome": "Mangue-vermelho",
+      "cientifico": "Rhizophora mangle",
+      "paginas": [
+        "Fica com o pé na lama salgada, apoiado em raízes que descem do tronco como pernas de aranha. Onde o rio encontra a baía, é ele quem manda.",
+        "No mangue se tira caranguejo, siri, ostra e sururu; a casca vermelha curte couro e tinge rede de pesca. Maré cheia, ninguém anda lá dentro."
+      ]
+    },
+    "piacava": {
+      "nome": "Piaçava",
+      "cientifico": "Attalea funifera",
+      "paginas": [
+        "Palmeira da restinga baiana, com o tronco vestido de fibra comprida e escura.",
+        "Da fibra se faz vassoura, corda de navio e cobertura de rancho; o coco duro vira botão e combustível. Em 1887 a piaçava sai da Bahia em fardos para o mundo."
+      ]
+    },
+    "ingazeiro": {
+      "nome": "Ingazeiro",
+      "cientifico": "Inga sp.",
+      "paginas": [
+        "Árvore de beira de rio: a copa larga faz sombra na água e segura a margem com as raízes.",
+        "A vagem guarda uma polpa branca, doce e algodoada em volta das sementes — merenda de menino e de macaco. Onde tem ingá, tem peixe embaixo."
+      ]
+    },
+    "clusia": {
+      "nome": "Abaneiro",
+      "cientifico": "Clusia sp.",
+      "paginas": [
+        "Arbusto de restinga de folhas grossas como couro, que aguentam sol, sal e vento da praia.",
+        "Solta um látex amarelo de cheiro forte que o povo usa para colar e calafetar. As flores cor-de-rosa abrem de manhã cedo e fecham com o sol quente."
+      ]
+    },
+    "pitangueira": {
+      "nome": "Pitangueira",
+      "cientifico": "Eugenia uniflora",
+      "paginas": [
+        "Não falta em quintal da Bahia: arbusto de folha miúda e perfumada, que avermelha quando nasce.",
+        "A pitanga madura vai do laranja ao quase preto; faz refresco, doce e licor. A folha no chão da casa espanta mosquito e perfuma o terreiro."
+      ]
+    },
+    "jenipapeiro": {
+      "nome": "Jenipapeiro",
+      "cientifico": "Genipa americana",
+      "paginas": [
+        "Árvore alta de tronco liso e reto, que perde as folhas por um tempo e floresce em branco e amarelo.",
+        "O fruto verde tinge a pele de azul-escuro por dias — pintura dos povos indígenas. Maduro, vira o licor de jenipapo das festas de São João do Recôncavo."
+      ]
     }
   }
 }

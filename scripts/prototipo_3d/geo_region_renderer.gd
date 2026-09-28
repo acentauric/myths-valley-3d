@@ -1139,8 +1139,9 @@ func _build_forest(configuration: Dictionary) -> void:
 	var by_species: Dictionary = {}
 	var lista: Array = ESPECIES_MATA_TRIPO.duplicate() if _estilo_tripo else FloraReconcavo.ESPECIES_MATA
 	# As espécies locais novas entram na mistura assim que o GLB do Tripo existe.
-	if _estilo_tripo and CatalogoAssets.tem_tripo("aroeira"):
-		lista.append("aroeira")
+	for local in ["aroeira", "jenipapeiro", "piacava"]:
+		if _estilo_tripo and CatalogoAssets.tem_tripo(local):
+			lista.append(local)
 	for i in range(positions.size()):
 		var species: String = lista[rng.randi_range(0, lista.size() - 1)]
 		if not by_species.has(species):
@@ -1162,7 +1163,111 @@ func _build_forest(configuration: Dictionary) -> void:
 			# Afundada um palmo: o pé entra no chão em vez de pousar sobre ele.
 			transforms.append(Transform3D(Basis.from_euler(Vector3(0, yaw, 0)).scaled(Vector3.ONE * scale), Vector3(point.x, ground - ARVORE_AFUNDADA, point.y)) * base)
 		_multimesh_em_blocos("Mata: " + species, built.mesh, transforms)
+	await _marcar(0.98, "Plantando a mata", false)
+	_build_sub_bosque(positions, rng)
+	_build_margens_do_rio(rng)
 	_build_coast_palms(rng)
+
+
+## Sub-bosque da Mata Atlântica (helicônias, bromélias, samambaias) espalhado entre as
+## árvores da mata: um tufo a cada poucas árvores, deslocado para o vão entre elas.
+## Sem colisão (é de passar por dentro) e só no estilo Tripo.
+func _build_sub_bosque(arvores_mata: Array[Vector2], rng: RandomNumberGenerator) -> void:
+	if not _estilo_tripo or not CatalogoAssets.tem_tripo("sub_bosque"):
+		return
+	var tufo: Dictionary = _malha_da_especie("sub_bosque", rng)
+	var transforms: Array[Transform3D] = []
+	for i in range(0, arvores_mata.size(), 3):
+		var ponto: Vector2 = arvores_mata[i] + Vector2.RIGHT.rotated(rng.randf() * TAU) * rng.randf_range(2.0, 4.5)
+		if not Geometry2D.is_point_in_polygon(ponto, _land) or _near_route(ponto, _units(4.0, 1.5)):
+			continue
+		var chao := ground_height_at(Vector3(ponto.x, 0, ponto.y))
+		var escala := rng.randf_range(0.7, 1.3)
+		transforms.append(Transform3D(Basis.from_euler(Vector3(0, rng.randf() * TAU, 0)).scaled(Vector3.ONE * escala), Vector3(ponto.x, chao - 0.03, ponto.y)) * (tufo.base as Transform3D))
+	if not transforms.is_empty():
+		_multimesh_em_blocos("Sub-bosque", tufo.mesh, transforms)
+
+
+## Margens do rio: manguezal (mangue-vermelho) perto da foz e da água salgada, como no
+## estuário real de Saubara, e ingazeiros de beira-rio mais para dentro.
+func _build_margens_do_rio(rng: RandomNumberGenerator) -> void:
+	if not _estilo_tripo:
+		return
+	var tem_mangue := CatalogoAssets.tem_tripo("mangue")
+	var tem_inga := CatalogoAssets.tem_tripo("ingazeiro")
+	if not tem_mangue and not tem_inga:
+		return
+	var mangue: Dictionary = _malha_da_especie("mangue", rng) if tem_mangue else {}
+	var inga: Dictionary = _malha_da_especie("ingazeiro", rng) if tem_inga else {}
+	var do_mangue: Array[Transform3D] = []
+	var do_inga: Array[Transform3D] = []
+	var perto_do_mar := _units(70.0, 18.0)
+	for river in _rivers:
+		var pontos: PackedVector2Array = river.points
+		var largura: float = float(river.width)
+		var percorrido := 0.0
+		var proximo := 0.0
+		for i in pontos.size() - 1:
+			var a := pontos[i]
+			var b := pontos[i + 1]
+			var trecho := a.distance_to(b)
+			if trecho < 0.01:
+				continue
+			var direcao := (b - a) / trecho
+			var normal := Vector2(-direcao.y, direcao.x)
+			while proximo <= percorrido + trecho:
+				var base := a + direcao * (proximo - percorrido)
+				var no_mangue := tem_mangue and _distance_to_line(base, _coast) < perto_do_mar
+				for lado in [-1.0, 1.0]:
+					var ponto: Vector2 = base + normal * float(lado) * (largura * 0.5 + rng.randf_range(0.8, 2.5))
+					if not Geometry2D.is_point_in_polygon(ponto, _land) or _near_route(ponto, _units(5.0, 2.0)):
+						continue
+					var chao := ground_height_at(Vector3(ponto.x, 0, ponto.y))
+					var escala := rng.randf_range(0.8, 1.2)
+					var giro := Basis.from_euler(Vector3(0, rng.randf() * TAU, 0)).scaled(Vector3.ONE * escala)
+					if no_mangue:
+						do_mangue.append(Transform3D(giro, Vector3(ponto.x, chao - ARVORE_AFUNDADA, ponto.y)) * (mangue.base as Transform3D))
+						_tree_trunks.append({"point": ponto, "ground": chao, "height": minf(float(mangue.altura) * escala, 4.0), "radius": float(mangue.tronco) * escala, "especie": "mangue"})
+					elif tem_inga and rng.randf() < 0.55:
+						do_inga.append(Transform3D(giro, Vector3(ponto.x, chao - ARVORE_AFUNDADA, ponto.y)) * (inga.base as Transform3D))
+						_tree_trunks.append({"point": ponto, "ground": chao, "height": minf(float(inga.altura) * escala, 4.0), "radius": float(inga.tronco) * escala, "especie": "ingazeiro"})
+				# Mangue fechado perto do mar, ingazeiros esparsos rio acima.
+				proximo += rng.randf_range(3.5, 6.0) if no_mangue else rng.randf_range(12.0, 22.0)
+			percorrido += trecho
+	# Estuário: o manguezal se espalha pela beira da costa dos dois lados de cada foz
+	# (até ESTUARIO unidades), rente à água, como na foz real.
+	if tem_mangue:
+		var estuario := _units(160.0, 30.0)
+		for river in _rivers:
+			var pontos: PackedVector2Array = river.points
+			for ponta in [pontos[0], pontos[pontos.size() - 1]]:
+				if _distance_to_line(ponta, _coast) > perto_do_mar:
+					continue
+				for i in _coast.size() - 1:
+					var a := _coast[i]
+					var b := _coast[i + 1]
+					var trecho := a.distance_to(b)
+					if trecho < 0.01 or Geometry2D.get_closest_point_to_segment(ponta, a, b).distance_to(ponta) > estuario:
+						continue
+					var passos := int(trecho / 4.0)
+					for k in passos:
+						var base := a.lerp(b, (float(k) + rng.randf()) / float(maxi(passos, 1)))
+						if base.distance_to(ponta) > estuario:
+							continue
+						var normal := Vector2(-(b - a).y, (b - a).x).normalized()
+						var ponto: Vector2 = base + normal * rng.randf_range(1.5, 6.0)
+						if not Geometry2D.is_point_in_polygon(ponto, _land):
+							ponto = base - normal * rng.randf_range(1.5, 6.0)
+						if not Geometry2D.is_point_in_polygon(ponto, _land) or _near_route(ponto, _units(5.0, 2.0)):
+							continue
+						var chao := ground_height_at(Vector3(ponto.x, 0, ponto.y))
+						var escala := rng.randf_range(0.75, 1.2)
+						do_mangue.append(Transform3D(Basis.from_euler(Vector3(0, rng.randf() * TAU, 0)).scaled(Vector3.ONE * escala), Vector3(ponto.x, chao - ARVORE_AFUNDADA, ponto.y)) * (mangue.base as Transform3D))
+						_tree_trunks.append({"point": ponto, "ground": chao, "height": minf(float(mangue.altura) * escala, 4.0), "radius": float(mangue.tronco) * escala, "especie": "mangue"})
+	if not do_mangue.is_empty():
+		_multimesh_em_blocos("Manguezal", mangue.mesh, do_mangue)
+	if not do_inga.is_empty():
+		_multimesh_em_blocos("Ingazeiros do rio", inga.mesh, do_inga)
 
 
 ## Divide instâncias em blocos de BLOCO_MATA: cada bloco vira uma MultiMeshInstance3D
@@ -1201,10 +1306,19 @@ func _build_coast_palms(rng: RandomNumberGenerator) -> void:
 	var modelo_base: Transform3D = built.base
 	# Castanholas (amendoeiras-da-praia) se misturam aos coqueiros da orla, como na
 	# vila real; só quando o GLB existe.
-	var tem_castanhola := _estilo_tripo and CatalogoAssets.tem_tripo("castanhola")
-	var castanhola: Dictionary = _malha_da_especie("castanhola", rng) if tem_castanhola else {}
+	# Restinga da orla: além das castanholas, clúsias baixas e piaçavas (Arecaceae
+	# e Clusiaceae dominam as restingas da Bahia). Só entram as que têm GLB.
+	var restinga: Array[String] = []
+	for local in ["castanhola", "castanhola", "clusia", "piacava"]:
+		if _estilo_tripo and CatalogoAssets.tem_tripo(local):
+			restinga.append(local)
+	var malhas_restinga: Dictionary = {}
+	var transforms_restinga: Dictionary = {}
+	for local in restinga:
+		if not malhas_restinga.has(local):
+			malhas_restinga[local] = _malha_da_especie(local, rng)
+			transforms_restinga[local] = [] as Array[Transform3D]
 	var transforms: Array[Transform3D] = []
-	var transforms_castanhola: Array[Transform3D] = []
 	var travelled := 0.0
 	var next_at := spacing * 0.5
 	for i in range(_coast.size() - 1):
@@ -1232,17 +1346,21 @@ func _build_coast_palms(rng: RandomNumberGenerator) -> void:
 				var scale := rng.randf_range(0.75, 1.15)
 				var lean := Transform3D.IDENTITY if modelo_base == Transform3D.IDENTITY else Transform3D(Basis.from_euler(Vector3(0, 0, 0.14)), Vector3.ZERO)
 				var ground := ground_height_at(Vector3(candidate.x, 0, candidate.y))
-				if tem_castanhola and rng.randi_range(0, 2) == 0:
+				if not restinga.is_empty() and rng.randi_range(0, 4) <= 1:
+					var local: String = restinga[rng.randi_range(0, restinga.size() - 1)]
+					var malha_local: Dictionary = malhas_restinga[local]
 					var giro_livre := rng.randf_range(0.0, TAU)
-					transforms_castanhola.append(Transform3D(Basis.from_euler(Vector3(0, giro_livre, 0)).scaled(Vector3.ONE * scale), Vector3(candidate.x, ground - ARVORE_AFUNDADA, candidate.y)) * (castanhola.base as Transform3D))
-					_tree_trunks.append({"point": candidate, "ground": ground, "height": minf(float(castanhola.altura) * scale, 4.0), "radius": float(castanhola.tronco) * scale, "especie": "castanhola"})
+					(transforms_restinga[local] as Array[Transform3D]).append(Transform3D(Basis.from_euler(Vector3(0, giro_livre, 0)).scaled(Vector3.ONE * scale), Vector3(candidate.x, ground - ARVORE_AFUNDADA, candidate.y)) * (malha_local.base as Transform3D))
+					_tree_trunks.append({"point": candidate, "ground": ground, "height": minf(float(malha_local.altura) * scale, 4.0), "radius": float(malha_local.tronco) * scale, "especie": local})
 				else:
 					transforms.append(Transform3D(Basis.from_euler(Vector3(0, yaw, 0)).scaled(Vector3.ONE * scale), Vector3(candidate.x, ground - ARVORE_AFUNDADA, candidate.y)) * lean * modelo_base)
 					_tree_trunks.append({"point": candidate, "ground": ground, "height": minf(float(built.altura) * scale, 4.0), "radius": float(built.tronco) * scale, "especie": "coqueiro"})
 			next_at += spacing * rng.randf_range(0.7, 1.4)
 		travelled += length
-	if not transforms_castanhola.is_empty():
-		_multimesh_em_blocos("Castanholas da orla", castanhola.mesh, transforms_castanhola)
+	for local in transforms_restinga:
+		var lista_local: Array[Transform3D] = transforms_restinga[local]
+		if not lista_local.is_empty():
+			_multimesh_em_blocos("Restinga da orla: " + local, (malhas_restinga[local] as Dictionary).mesh, lista_local)
 	if transforms.is_empty():
 		return
 	_multimesh_em_blocos("Coqueiros da orla", built.mesh, transforms)

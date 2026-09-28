@@ -168,6 +168,8 @@ func _montar_moradores(spawn: Vector3) -> void:
 	if typeof(data) != TYPE_DICTIONARY:
 		push_warning("Moradores 3D: arquivo inválido " + NPCS)
 		return
+	# Ajustes do painel PERSONAGENS (nome, altura, voz, falas, postos) por cima.
+	data = AjustesConteudo.npcs(data)
 	for entry in data.get("moradores", []):
 		var morador := MoradorNPC.new()
 		morador.configurar(entry, world.ancoras, player, world)
@@ -291,6 +293,9 @@ func _bind(action: StringName, keys: Array, replace_existing := false) -> void:
 
 
 func _unhandled_key_input(event: InputEvent) -> void:
+	# Durante a montagem do vale (tela de carregamento) mapa e HUD ainda não existem.
+	if mapa == null:
+		return
 	if event is InputEventKey and event.pressed and not event.echo:
 		if mapa.aberto and event.physical_keycode == KEY_ESCAPE:
 			_toggle_map()

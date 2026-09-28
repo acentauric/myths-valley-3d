@@ -171,7 +171,10 @@ func _encerrar_ataque() -> void:
 	_proximo_ataque = Time.get_ticks_msec() / 1000.0 + COOLDOWN_ATAQUE
 
 
-## Primeiro ponto bem fundo varrendo do píer mar adentro, abrindo em leque.
+## Primeiro ponto bem fundo varrendo do píer mar adentro, abrindo em leque. A planície
+## rasa da baía passa de 150 unidades (600 m) na frente da vila: a busca vai até
+## ALCANCE_BUSCA, senão ele nunca encontrava água funda e ficava desligado.
+const ALCANCE_BUSCA := 360
 func _procurar_pesqueiro() -> bool:
 	var ancoras_var = _world.get("ancoras")
 	var ancoras: Dictionary = ancoras_var if ancoras_var is Dictionary else {}
@@ -181,7 +184,7 @@ func _procurar_pesqueiro() -> bool:
 	if mar.length_squared() < 0.001:
 		mar = Vector3.FORWARD
 	mar = mar.normalized()
-	for raio in range(6, 80, 3):
+	for raio in range(6, ALCANCE_BUSCA, 4):
 		for graus in [0.0, 20.0, -20.0, 40.0, -40.0, 60.0, -60.0]:
 			var direcao := mar.rotated(Vector3.UP, deg_to_rad(graus))
 			var ponto := pier + direcao * float(raio)

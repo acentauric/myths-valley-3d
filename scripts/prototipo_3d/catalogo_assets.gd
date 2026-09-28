@@ -31,6 +31,14 @@ const PECAS := {
 	"moita": {"tripo": "arvores/moita_tripo.glb", "altura": 1.1},
 	"castanhola": {"tripo": "arvores/castanhola_tripo.glb", "altura": 6.0, "tronco": 0.45},
 	"aroeira": {"tripo": "arvores/aroeira_tripo.glb", "altura": 4.5, "tronco": 0.4},
+	# Mata local (28/09): manguezal, restinga e beira de rio de Saubara.
+	"mangue": {"tripo": "arvores/mangue_tripo.glb", "altura": 5.0, "tronco": 0.6},
+	"piacava": {"tripo": "arvores/piacava_tripo.glb", "altura": 5.5, "tronco": 0.45},
+	"ingazeiro": {"tripo": "arvores/ingazeiro_tripo.glb", "altura": 7.5, "tronco": 0.4},
+	"clusia": {"tripo": "arvores/clusia_tripo.glb", "altura": 3.2, "tronco": 0.35},
+	"pitangueira": {"tripo": "arvores/pitangueira_tripo.glb", "altura": 3.0, "tronco": 0.25},
+	"jenipapeiro": {"tripo": "arvores/jenipapeiro_tripo.glb", "altura": 8.5, "tronco": 0.4},
+	"sub_bosque": {"tripo": "arvores/sub_bosque_tripo.glb", "altura": 1.3},
 	"capim": {"tripo": "arvores/capim_tripo.glb", "altura": 0.9},
 	# Construções
 	"capela": {"tripo": "construcoes/capela_tripo.glb", "largura": 9.0, "caixa": true},
@@ -103,6 +111,11 @@ static var _malhas: Dictionary = {}
 static var faltando: Array[String] = []
 
 
+## Esquece as malhas medidas (uma medida foi ajustada no painel PERSONAGENS).
+static func limpar_cache() -> void:
+	_malhas.clear()
+
+
 static func caminho(chave: String) -> String:
 	if not PECAS.has(chave):
 		return ""
@@ -135,7 +148,8 @@ static func instanciar(chave: String, parent: Node, origin: Vector3, size: float
 	var scene := cena(chave)
 	if scene == null:
 		return null
-	var spec: Dictionary = PECAS[chave]
+	# Medidas com os ajustes do painel PERSONAGENS por cima (ajustes_conteudo.gd).
+	var spec: Dictionary = AjustesConteudo.peca(chave)
 	var node := scene.instantiate() as Node3D
 	if spec.has("girar"):
 		# Envolve o modelo num nó girado para que a medida seja tirada já deitado/virado.
@@ -164,7 +178,8 @@ static func instanciar(chave: String, parent: Node, origin: Vector3, size: float
 static func colisao(chave: String, node: Node3D, parent: Node, origin: Vector3, size: float = 1.0, yaw: float = 0.0) -> void:
 	if node == null:
 		return
-	var spec: Dictionary = PECAS[chave]
+	# Medidas com os ajustes do painel PERSONAGENS por cima (ajustes_conteudo.gd).
+	var spec: Dictionary = AjustesConteudo.peca(chave)
 	var bounds: AABB = node.get_meta("limites", AABB())
 	var body := StaticBody3D.new()
 	body.name = chave.capitalize() + "Colisao"
@@ -202,7 +217,8 @@ static func malha(chave: String, size: float = 1.0) -> Dictionary:
 		node.free()
 		return {}
 	var bounds := limites(node)
-	var spec: Dictionary = PECAS[chave]
+	# Medidas com os ajustes do painel PERSONAGENS por cima (ajustes_conteudo.gd).
+	var spec: Dictionary = AjustesConteudo.peca(chave)
 	var factor := 1.0
 	if spec.has("altura"):
 		factor = float(spec["altura"]) * size / maxf(bounds.size.y, 0.001)

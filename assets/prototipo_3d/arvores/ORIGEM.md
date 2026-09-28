@@ -120,3 +120,21 @@ orla, castanholas da praia).
 | `coqueiro_tripo.glb` (novo, substitui o de 26/09) | coqueiro alto de tronco claro curvado, coroa cheia | `66ccf27f-1570-4e02-b950-cc920e2fb6a4` | 14.716 | 2K |
 | `castanhola_tripo.glb` | amendoeira-da-praia (Terminalia catappa), copa em andares | `b00df13a-aef5-452b-93ba-ee7517e577df` | 16.284 | 2K |
 | `aroeira_tripo.glb` | árvore retorcida de restinga | `32fa7182-0ffd-45c8-8e2a-5d5f742ee048` | 13.225 | 1K |
+
+
+## Mata local de Saubara (28/09/2026, tarde)
+
+Espécies escolhidas pela vegetação real de Saubara e da Baía de Todos os Santos:
+manguezal (mangue-vermelho predomina nos estuários), restinga (palmeiras e clúsias) e
+mata atlântica de beira de rio. Texto → 3D (Modelo HD, H3.1) + Malha Smart pela aba do
+Studio; originais em `.assets-raw/tripo/arvores/`.
+
+| Arquivo | O que é | Projeto Tripo | Triângulos | Textura | Onde entra |
+| --- | --- | --- | ---: | --- | --- |
+| `mangue_tripo.glb` | mangue-vermelho (Rhizophora mangle) com raízes-escora | `1140d4db-f69d-46d4-8c6a-7c7f9acf6dbb` | 18.079 | 2K | margens do rio perto da foz e beira da costa no estuário |
+| `piacava_tripo.glb` | piaçava (Attalea funifera), tronco de fibra | `8f94ce1b-ab2f-40b7-8f9e-362a09750325` | 15.792 | 2K | mata e restinga da orla |
+| `ingazeiro_tripo.glb` | ingazeiro de beira-rio | `9f3ae65b-34cb-4a2e-99a7-bae5adaac76d` | 16.886 | 2K | margens do rio, para o interior |
+| `clusia_tripo.glb` | abaneiro (Clusia) de restinga | `4bfd6095-357e-453a-b14d-ce8a30fa806b` | 10.954 | 1K | restinga da orla |
+| `pitangueira_tripo.glb` | pitangueira (Eugenia uniflora) | `a03fecaf-3fcf-45b1-b7a4-85b3e96304f4` | 9.688 | 1K | quintal de cada casa |
+| `jenipapeiro_tripo.glb` | jenipapeiro (Genipa americana) | `c3bf89a8-9918-4bb1-b913-f564ed16e21d` | 12.065 | 1K | mata |
+| `sub_bosque_tripo.glb` | tufo de helicônias, bromélias e samambaias | `8cce15b0-b94d-46bf-a8dd-f4c902692265` | 7.442 | 1K | sob a mata, um a cada três árvores |

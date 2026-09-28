@@ -45,6 +45,19 @@ atualize esse arquivo e este documento juntos.
   plaquinhas de nome, pegadas por terreno que somem com o tempo.
 - **Falas sem atropelo**: broncas do coveiro entram na fila de vozes, raio de conversa
   maior, missões com raios revisados e âncoras dinâmicas.
+- **Mata local de Saubara** (Tripo, 7 espécies): manguezal de mangue-vermelho na foz
+  e na beira do estuário, ingazeiros nas margens do rio, piaçavas e jenipapeiros na
+  mata, clúsias e piaçavas na restinga da orla, pitangueira no quintal de cada casa e
+  sub-bosque de helicônias e bromélias sob as árvores; fichas (tecla E) para todas.
+- **Painel PERSONAGENS editável**: EDITAR em cada morador (nome, altura, volume da
+  voz, texto das falas e o posto de cada período — lugar e deslocamento) e em cada
+  peça (medida, afundar, tronco). Ajustes em camadas (`ajustes_conteudo.gd`): salvos
+  na hora em `user://`, "Restaurar o padrão" por item e, rodando pelo editor, "GRAVAR
+  NO PROJETO" (npcs_3d.json e data/pecas_ajustes.json).
+- **Tubarão consertado**: procurava água funda só até 80 u do píer e nunca achava
+  (a planície rasa passa de 150 u); agora patrulha a água funda de verdade, persegue,
+  ataca e devolve o jogador à terra (`tests/tubarao.gd`).
+- Teclas apertadas durante o carregamento não quebram mais a cena do vale.
 - Câmera abre recuada (novo máximo mais distante); base das árvores com decalque
   próprio para areia; nenhuma árvore dentro do rio; texto do carregamento legível
   (mín. 1,1 s por etapa).

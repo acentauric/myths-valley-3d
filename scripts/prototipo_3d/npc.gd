@@ -151,7 +151,8 @@ func _ready() -> void:
 
 
 func _aplicar_volume() -> void:
-	voz.volume_db = Audio.volume_vozes_db()
+	# Volume próprio do morador (painel PERSONAGENS) por cima do canal de vozes.
+	voz.volume_db = Audio.volume_vozes_db() + float(dados.get("volume_voz_db", 0.0))
 
 
 func _montar_modelo() -> void:
@@ -160,8 +161,9 @@ func _montar_modelo() -> void:
 	animador = null
 	if Estilo.tripo():
 		var tamanho := 1.0
-		if CatalogoAssets.PECAS.has(id) and CatalogoAssets.PECAS[id].has("altura"):
-			tamanho = altura / float(CatalogoAssets.PECAS[id]["altura"])
+		var spec_modelo: Dictionary = AjustesConteudo.peca(id)
+		if spec_modelo.has("altura"):
+			tamanho = altura / float(spec_modelo["altura"])
 		modelo = CatalogoAssets.instanciar(id, visual, Vector3.ZERO, tamanho, float(dados.get("yaw_modelo", 0.0)))
 		if modelo != null and not modelo.find_children("*", "AnimationPlayer", true, false).is_empty():
 			# GLB com rig e clipes do Tripo (idle/walk/run + gestos): usa o animador autoral.
