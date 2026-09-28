@@ -14,6 +14,16 @@ const AVES := PASTA + "aves_reconcavo.ogg"
 const MAR := PASTA + "mare_mansa.ogg"
 const RIACHO := PASTA + "riacho.mp3"
 const FOGUEIRA := PASTA + "fogueira.mp3"
+const EFEITOS := "res://assets/audio/efeitos/"
+## Cantos do bem-te-vi (de dia) e sussurros da mata fechada, tocados em pontos
+## aleatórios ao redor do jogador para o vale parecer habitado.
+const BEM_TE_VI := [EFEITOS + "bem_te_vi_1.mp3", EFEITOS + "bem_te_vi_2.mp3"]
+const SUSSURROS := [PASTA + "mata_sussurro_1.mp3", PASTA + "mata_sussurro_2.mp3"]
+## Pausas (segundos) entre um canto e outro e entre sussurros na mata.
+const BEM_TE_VI_PAUSA := Vector2(18.0, 50.0)
+const SUSSURRO_PAUSA := Vector2(12.0, 35.0)
+## Checar o polígono da mata a cada quadro seria desperdício: meio segundo basta.
+const MATA_CHECAGEM := 0.5
 ## Episódios da mata (segundos): pausa em silêncio, duração audível e rampa de volume.
 const MATA_PAUSA := Vector2(60.0, 150.0)
 const MATA_DURACAO := Vector2(6.0, 12.0)
@@ -27,6 +37,12 @@ var _fontes: Array[Dictionary] = []
 var _mata_fator := 0.0
 var _mata_alvo := 0.0
 var _mata_espera := randf_range(20.0, 45.0)
+var _bem_te_vi_espera := randf_range(BEM_TE_VI_PAUSA.x, BEM_TE_VI_PAUSA.y)
+var _sussurro_espera := 0.0
+var _mata_relogio := 0.0
+var _na_mata := false
+var _jogador: Node3D
+var _mundo: Node
 
 
 func _ready() -> void:
@@ -52,6 +68,14 @@ func _process(delta: float) -> void:
 	if not is_equal_approx(_mata_fator, _mata_alvo):
 		_mata_fator = move_toward(_mata_fator, _mata_alvo, delta / MATA_RAMPA)
 		_aplicar(Dia.hora)
+	_processar_bem_te_vi(delta)
+	_processar_mata_fechada(delta)
+
+
+func _exit_tree() -> void:
+	# Saindo do vale com o jogador dentro da mata, a trilha de tensão não pode ficar presa.
+	if _na_mata:
+		Audio.tocar_musica_mata(false)
 
 
 ## Fonte posicional em loop na `camada` indicada (Audio.CAMADAS_AMBIENTE), que define o
@@ -103,3 +127,87 @@ func _mistura(base_db: float, fator: float) -> float:
 	if fator <= 0.01:
 		return -80.0
 	return maxf(-80.0, base_db + linear_to_db(fator))
+
+
+## Bem-te-vi de manhã e à tarde: um canto curto vindo de um ponto aleatório ao
+## redor do jogador, no volume da camada "aves".
+func _processar_bem_te_vi(delta: float) -> void:
+	if Dia.periodo() not in ["manha", "tarde"]:
+		return
+	_bem_te_vi_espera -= delta
+	if _bem_te_vi_espera > 0.0:
+		return
+	_bem_te_vi_espera = randf_range(BEM_TE_VI_PAUSA.x, BEM_TE_VI_PAUSA.y)
+	var jogador := _jogador_atual()
+	if jogador == null:
+		return
+	var caminho: String = BEM_TE_VI[randi() % BEM_TE_VI.size()]
+	_tocar_pontual(caminho, _posicao_ao_redor(jogador.global_position, 15.0, 30.0), 45.0, "aves", -4.0)
+
+
+## Mata fechada: ao entrar, a música cruza para a trilha de tensão e sussurros
+## esparsos surgem perto do jogador; ao sair, tudo volta ao normal.
+func _processar_mata_fechada(delta: float) -> void:
+	_mata_relogio -= delta
+	var jogador := _jogador_atual()
+	if jogador == null:
+		return
+	if _mata_relogio <= 0.0:
+		_mata_relogio = MATA_CHECAGEM
+		var mundo := _mundo_atual()
+		if mundo == null or not mundo.has_method("na_mata_fechada"):
+			return
+		var dentro: bool = mundo.na_mata_fechada(jogador.global_position)
+		if dentro != _na_mata:
+			_na_mata = dentro
+			Audio.tocar_musica_mata(dentro)
+			if dentro:
+				# O primeiro sussurro vem logo, para marcar a mudança de clima.
+				_sussurro_espera = randf_range(4.0, 10.0)
+	if not _na_mata:
+		return
+	_sussurro_espera -= delta
+	if _sussurro_espera > 0.0:
+		return
+	_sussurro_espera = randf_range(SUSSURRO_PAUSA.x, SUSSURRO_PAUSA.y)
+	var caminho: String = SUSSURROS[randi() % SUSSURROS.size()]
+	_tocar_pontual(caminho, _posicao_ao_redor(jogador.global_position, 6.0, 14.0), 30.0, "mata", 2.0)
+
+
+## Som pontual 3D: tocador descartável na posição dada, com o volume da camada
+## (o mesmo controle de AJUSTAR das fontes em loop) e removido ao terminar.
+func _tocar_pontual(caminho: String, posicao: Vector3, alcance: float, camada: String, ajuste_db: float = 0.0) -> void:
+	if not ResourceLoader.exists(caminho):
+		return
+	var fluxo := load(caminho) as AudioStream
+	if fluxo == null:
+		return
+	var tocador := AudioStreamPlayer3D.new()
+	tocador.stream = fluxo
+	tocador.position = posicao
+	tocador.max_distance = alcance
+	tocador.unit_size = alcance * 0.18
+	tocador.attenuation_model = AudioStreamPlayer3D.ATTENUATION_INVERSE_DISTANCE
+	tocador.volume_db = _mistura(Audio.volume_camada_db(camada) + ajuste_db, 1.0)
+	add_child(tocador)
+	tocador.finished.connect(tocador.queue_free)
+	tocador.play()
+
+
+## Ponto aleatório num anel ao redor do centro, um pouco acima do chão (galhos).
+func _posicao_ao_redor(centro: Vector3, minimo: float, maximo: float) -> Vector3:
+	var angulo := randf() * TAU
+	var raio := randf_range(minimo, maximo)
+	return centro + Vector3(cos(angulo) * raio, randf_range(1.5, 4.0), sin(angulo) * raio)
+
+
+func _jogador_atual() -> Node3D:
+	if not is_instance_valid(_jogador):
+		_jogador = get_tree().get_first_node_in_group("map_player") as Node3D
+	return _jogador
+
+
+func _mundo_atual() -> Node:
+	if not is_instance_valid(_mundo):
+		_mundo = get_tree().get_first_node_in_group("mundo")
+	return _mundo

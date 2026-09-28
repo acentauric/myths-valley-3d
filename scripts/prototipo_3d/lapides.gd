@@ -5,6 +5,7 @@ extends Node
 ## Quem sobe numa laje ouve bronca do coveiro (Damião), no balão dele e no aviso.
 
 const DicaTecla = preload("res://scripts/prototipo_3d/dica_tecla.gd")
+const Atalhos = preload("res://scripts/prototipo_3d/atalhos.gd")
 const DADOS := "res://data/lapides_3d.json"
 ## Distância (no chão) para a tecla E aparecer e para o painel fechar sozinho.
 const ALCANCE := 2.2
@@ -55,7 +56,7 @@ func configurar(world: Node3D, jogador: Node3D, hud) -> void:
 	var dados = JSON.parse_string(FileAccess.get_file_as_string(DADOS))
 	if dados is Dictionary:
 		_historias = dados.get("lapides", [])
-	_dica = DicaTecla.criar(hud.map_layer(), "E", "Ler lápide")
+	_dica = DicaTecla.criar(hud.map_layer(), Atalhos.letra("interagir"), "Ler lápide")
 
 
 func _process(delta: float) -> void:
@@ -68,7 +69,7 @@ func _process(delta: float) -> void:
 		broncas_dadas = 0
 	if _indo_empurrar:
 		_aproximar_para_empurrar(delta)
-	elif em_cima and _espera_bronca <= 0.0 and _coveiro_por_perto():
+	elif em_cima and _espera_bronca <= 0.0 and _coveiro_por_perto() and coveiro.pode_falar():
 		_dar_bronca()
 	var camera := get_viewport().get_camera_3d()
 	# Só na câmera do jogador (o mapa usa outra).
@@ -88,7 +89,7 @@ func _process(delta: float) -> void:
 
 ## E perto de um túmulo abre a lápide; com ela aberta, E fecha.
 func _unhandled_key_input(event: InputEvent) -> void:
-	if not (event is InputEventKey and event.pressed and not event.echo and event.physical_keycode == KEY_E):
+	if not (event is InputEventKey and event.pressed and not event.echo and event.physical_keycode == Atalhos.tecla("interagir")):
 		return
 	if _aberta >= 0:
 		_aberta = -1
@@ -141,6 +142,8 @@ func _dar_bronca() -> void:
 	coveiro.mostrar_balao(texto, 5.0)
 	_hud.set_notice("%s: %s" % [nome, texto])
 	var duracao := _falar(String(BRONCAS[nivel][1]))
+	# A bronca entra na fila de falas: ninguém narra por cima do coveiro.
+	coveiro._tomar_palavra(duracao)
 	_espera_bronca = duracao + FOLGA_BRONCA
 	if coveiro.get("animador") != null and coveiro.animador.has_method("play_gesture"):
 		coveiro.animador.play_gesture(int(coveiro.dados.get("gesto_saudacao", 0)))

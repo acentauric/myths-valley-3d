@@ -44,8 +44,18 @@ func _run() -> void:
 	event.pressed = true
 	current_scene._unhandled_key_input(event)
 	await process_frame
-	# M pede confirmação (vale pausado); confirmar carrega o menu.
+	# M abre e fecha o MAPA do jogo (o HOME saiu do M).
+	assert(current_scene.mapa != null and current_scene.mapa.aberto)
+	var fecha := InputEventKey.new()
+	fecha.physical_keycode = KEY_M
+	fecha.pressed = true
+	current_scene._unhandled_key_input(fecha)
+	await process_frame
+	assert(not current_scene.mapa.aberto)
+	# HOME pela confirmação do HUD; confirmar carrega o menu.
 	var hud = current_scene.get_node("HUD")
+	current_scene._ask_return_to_menu()
+	await process_frame
 	assert(hud.menu_confirm_open() and paused)
 	hud._close_menu_confirm(true)
 	for i in range(600):

@@ -1,186 +1,219 @@
 {
-  "versao_atual": "0.1.0-dev",
-  "build_numero": 5,
-  "entradas": [
-    {
-      "data": "26/09/2026",
-      "estado": "EM DESENVOLVIMENTO",
-      "estado_en": "IN DEVELOPMENT",
-      "estado_es": "EN DESARROLLO",
-      "titulo": "Dia e noite, moradores e dois estilos",
-      "titulo_en": "Day and night, villagers and two styles",
-      "titulo_es": "Día y noche, aldeanos y dos estilos",
-      "mudancas": [
-        "Escolha entre o vale do Tripo e o *vale procedural*.",
-        "O sol nasce, se põe e os *lampiões de 1887* acendem.",
-        "A *mata canta* de dia e de noite; o mar e o riacho soam perto.",
-        "*Sete moradores* com voz cumprimentam quem chega.",
-        "Pedro acompanha o jogador e *narra as missões*.",
-        "Sessenta e seis *peças novas* chegaram do Tripo."
-      ],
-      "mudancas_en": [
-        "Choose between the Tripo valley and the *procedural valley*.",
-        "The sun rises and sets, and the *1887 street lamps* light up.",
-        "The *woods sing* by day and by night; the sea and the stream sound nearby.",
-        "*Seven villagers* with voices greet whoever arrives.",
-        "Pedro walks with the player and *narrates the missions*.",
-        "Sixty-six *new pieces* arrived from Tripo."
-      ],
-      "mudancas_es": [
-        "Elige entre el valle de Tripo y el *valle procedural*.",
-        "El sol sale y se pone, y se encienden los *faroles de 1887*.",
-        "El *bosque canta* de día y de noche; el mar y el arroyo suenan cerca.",
-        "*Siete aldeanos* con voz saludan a quien llega.",
-        "Pedro acompaña al jugador y *narra las misiones*.",
-        "Llegaron sesenta y seis *piezas nuevas* de Tripo."
-      ]
-    },
-    {
-      "data": "26/09/2026",
-      "estado": "EM DESENVOLVIMENTO",
-      "estado_en": "IN DEVELOPMENT",
-      "estado_es": "EN DESARROLLO",
-      "titulo": "Vale compacto e flora do Recôncavo",
-      "titulo_en": "Compact valley and Recôncavo flora",
-      "titulo_es": "Valle compacto y flora del Recôncavo",
-      "mudancas": [
-        "O vale passou a usar *quatro metros* por unidade.",
-        "Ruas e praça ganharam chão de *terra batida*.",
-        "Mangueira, jaqueira, *cajueiro* e coqueiro chegaram do Tripo.",
-        "A capela e o poço ganharam *modelos próprios*.",
-        "A mata e a orla ganharam *espécies do Recôncavo*.",
-        "Poço, cruzeiro, carroça e varal *chegaram do 2D*."
-      ],
-      "mudancas_en": [
-        "The valley now uses *four meters* per unit.",
-        "Streets and square got *packed-earth* ground.",
-        "Mango, jackfruit, *cashew* and coconut trees arrived from Tripo.",
-        "The chapel and the well got their *own models*.",
-        "The woods and the shore got *Recôncavo species*.",
-        "Well, wayside cross, cart and clothesline *arrived from the 2D*."
-      ],
-      "mudancas_es": [
-        "El valle pasó a usar *cuatro metros* por unidad.",
-        "Calles y plaza ganaron suelo de *tierra apisonada*.",
-        "Mango, jaca, *anacardo* y cocotero llegaron de Tripo.",
-        "La capilla y el pozo ganaron *modelos propios*.",
-        "El bosque y la costa ganaron *especies del Recôncavo*.",
-        "Pozo, cruz, carreta y tendedero *llegaron del 2D*."
-      ]
-    },
-    {
-      "data": "25/09/2026",
-      "estado": "EM DESENVOLVIMENTO",
-      "estado_en": "IN DEVELOPMENT",
-      "estado_es": "EN DESARROLLO",
-      "titulo": "Mapa do vale em escala real",
-      "titulo_en": "Valley map at real scale",
-      "titulo_es": "Mapa del valle a escala real",
-      "mudancas": [
-        "*Ruas caminháveis* e rios seguem o mapa desenhado.",
-        "A costa e a mata ganharam *novas formas*.",
-        "O vale usa *um metro* por unidade.",
-        "O mapa aéreo ganhou *zoom* e marcadores.",
-        "*Passarelas* levam aos pontos sobre a água."
-      ],
-      "mudancas_en": [
-        "*Walkable streets* and rivers follow the drawn map.",
-        "The coast and the woods got *new shapes*.",
-        "The valley uses *one meter* per unit.",
-        "The aerial map got *zoom* and markers.",
-        "*Boardwalks* lead to the points over the water."
-      ],
-      "mudancas_es": [
-        "*Calles transitables* y ríos siguen el mapa dibujado.",
-        "La costa y el bosque ganaron *nuevas formas*.",
-        "El valle usa *un metro* por unidad.",
-        "El mapa aéreo ganó *zoom* y marcadores.",
-        "*Pasarelas* llevan a los puntos sobre el agua."
-      ]
-    },
-    {
-      "data": "25/09/2026",
-      "estado": "EM DESENVOLVIMENTO",
-      "estado_en": "IN DEVELOPMENT",
-      "estado_es": "EN DESARROLLO",
-      "titulo": "Menu e navegação",
-      "titulo_en": "Menu and navigation",
-      "titulo_es": "Menú y navegación",
-      "mudancas": [
-        "O menu *confirma a saída*.",
-        "O som ganhou *controle rápido*.",
-        "*HOME* retorna ao menu.",
-        "A abertura ganhou *novos textos*.",
-        "O 3D ganhou *histórico próprio*.",
-        "O menu ganhou um *sobrevoo* do vale.",
-        "O menu passou a incluir um *mapa superior*."
-      ],
-      "mudancas_en": [
-        "The menu *confirms before quitting*.",
-        "Sound got a *quick toggle*.",
-        "*HOME* returns to the menu.",
-        "The opening got *new texts*.",
-        "The 3D got its *own changelog*.",
-        "The menu got a *flyover* of the valley.",
-        "The menu now includes a *top-down map*."
-      ],
-      "mudancas_es": [
-        "El menú *confirma antes de salir*.",
-        "El sonido ganó un *control rápido*.",
-        "*HOME* vuelve al menú.",
-        "La apertura ganó *textos nuevos*.",
-        "El 3D ganó su *propio historial*.",
-        "El menú ganó un *sobrevuelo* del valle.",
-        "El menú pasó a incluir un *mapa superior*."
-      ]
-    },
-    {
-      "data": "24/09/2026",
-      "estado": "MARCO DO PROTÓTIPO",
-      "estado_en": "PROTOTYPE MILESTONE",
-      "estado_es": "HITO DEL PROTOTIPO",
-      "titulo": "Abertura e cenário",
-      "titulo_en": "Opening and scenery",
-      "titulo_es": "Apertura y escenario",
-      "mudancas": [
-        "A travessia ganhou *abertura 3D*.",
-        "O menu ganhou *música e narração*.",
-        "*Casa e árvores* ampliaram o vale."
-      ],
-      "mudancas_en": [
-        "The crossing got a *3D opening*.",
-        "The menu got *music and narration*.",
-        "*House and trees* expanded the valley."
-      ],
-      "mudancas_es": [
-        "La travesía ganó una *apertura 3D*.",
-        "El menú ganó *música y narración*.",
-        "*Casa y árboles* ampliaron el valle."
-      ]
-    },
-    {
-      "data": "23/09/2026",
-      "estado": "MARCO DO PROTÓTIPO",
-      "estado_en": "PROTOTYPE MILESTONE",
-      "estado_es": "HITO DEL PROTOTIPO",
-      "titulo": "Primeiros passos",
-      "titulo_en": "First steps",
-      "titulo_es": "Primeros pasos",
-      "mudancas": [
-        "O vale 3D abriu para *exploração*.",
-        "O personagem ganhou *animações*.",
-        "*Praça, horta e costa* ganharam forma."
-      ],
-      "mudancas_en": [
-        "The 3D valley opened for *exploration*.",
-        "The character got *animations*.",
-        "*Square, garden and coast* took shape."
-      ],
-      "mudancas_es": [
-        "El valle 3D se abrió a la *exploración*.",
-        "El personaje ganó *animaciones*.",
-        "*Plaza, huerta y costa* tomaron forma."
-      ]
-    }
-  ]
+ "versao_atual": "0.1.0-dev",
+ "build_numero": 6,
+ "entradas": [
+  {
+   "data": "28/09/2026",
+   "estado": "EM DESENVOLVIMENTO",
+   "estado_en": "IN DEVELOPMENT",
+   "estado_es": "EN DESARROLLO",
+   "titulo": "O mar de verdade e o arraial inteiro",
+   "titulo_en": "The real sea and the whole village",
+   "titulo_es": "El mar de verdad y todo el pueblo",
+   "mudancas": [
+    "O *mar da carta náutica*: fundo real, água clara, espuma fina e ondas em séries.",
+    "A *maré* enche e vaza (em AJUSTAR), expondo lama, poças e as pedras do recife.",
+    "Dá para *nadar* — e um *tubarão* ronda a parte funda.",
+    "A *igreja de Bom Jesus*, as pedras, as castanholas e os barcos vieram das fotos do lugar.",
+    "*Música por período*, bem-te-vi de dia e a mata fechada ficou de arrepiar.",
+    "Minimapa, seta de missão, pegadas, fichas de árvore e o painel *PERSONAGENS*."
+   ],
+   "mudancas_en": [
+    "The *nautical-chart sea*: real seabed, clear water, thin foam and wave sets.",
+    "The *tide* rises and falls (in ADJUST), exposing mud, tide pools and the reef rocks.",
+    "You can *swim* — and a *shark* prowls the deep water.",
+    "The *Bom Jesus church*, the rocks, the beach almonds and the boats came from photos of the place.",
+    "*Music per time of day*, kiskadees in the morning and the deep woods got chilling.",
+    "Minimap, mission marker, footprints, tree cards and the *CHARACTERS* panel."
+   ],
+   "mudancas_es": [
+    "El *mar de la carta náutica*: fondo real, agua clara, espuma fina y series de olas.",
+    "La *marea* sube y baja (en AJUSTAR), exponiendo barro, charcos y las rocas del arrecife.",
+    "Se puede *nadar* — y un *tiburón* ronda la parte honda.",
+    "La *iglesia de Bom Jesus*, las rocas, los almendros y los barcos salieron de fotos del lugar.",
+    "*Música por período*, el bienteveo de día y el bosque cerrado da escalofríos.",
+    "Minimapa, flecha de misión, huellas, fichas de árboles y el panel *PERSONAJES*."
+   ]
+  },
+  {
+   "data": "26/09/2026",
+   "estado": "EM DESENVOLVIMENTO",
+   "estado_en": "IN DEVELOPMENT",
+   "estado_es": "EN DESARROLLO",
+   "titulo": "Dia e noite, moradores e dois estilos",
+   "titulo_en": "Day and night, villagers and two styles",
+   "titulo_es": "Día y noche, aldeanos y dos estilos",
+   "mudancas": [
+    "Escolha entre o vale do Tripo e o *vale procedural*.",
+    "O sol nasce, se põe e os *lampiões de 1887* acendem.",
+    "A *mata canta* de dia e de noite; o mar e o riacho soam perto.",
+    "*Sete moradores* com voz cumprimentam quem chega.",
+    "Pedro acompanha o jogador e *narra as missões*.",
+    "Sessenta e seis *peças novas* chegaram do Tripo."
+   ],
+   "mudancas_en": [
+    "Choose between the Tripo valley and the *procedural valley*.",
+    "The sun rises and sets, and the *1887 street lamps* light up.",
+    "The *woods sing* by day and by night; the sea and the stream sound nearby.",
+    "*Seven villagers* with voices greet whoever arrives.",
+    "Pedro walks with the player and *narrates the missions*.",
+    "Sixty-six *new pieces* arrived from Tripo."
+   ],
+   "mudancas_es": [
+    "Elige entre el valle de Tripo y el *valle procedural*.",
+    "El sol sale y se pone, y se encienden los *faroles de 1887*.",
+    "El *bosque canta* de día y de noche; el mar y el arroyo suenan cerca.",
+    "*Siete aldeanos* con voz saludan a quien llega.",
+    "Pedro acompaña al jugador y *narra las misiones*.",
+    "Llegaron sesenta y seis *piezas nuevas* de Tripo."
+   ]
+  },
+  {
+   "data": "26/09/2026",
+   "estado": "EM DESENVOLVIMENTO",
+   "estado_en": "IN DEVELOPMENT",
+   "estado_es": "EN DESARROLLO",
+   "titulo": "Vale compacto e flora do Recôncavo",
+   "titulo_en": "Compact valley and Recôncavo flora",
+   "titulo_es": "Valle compacto y flora del Recôncavo",
+   "mudancas": [
+    "O vale passou a usar *quatro metros* por unidade.",
+    "Ruas e praça ganharam chão de *terra batida*.",
+    "Mangueira, jaqueira, *cajueiro* e coqueiro chegaram do Tripo.",
+    "A capela e o poço ganharam *modelos próprios*.",
+    "A mata e a orla ganharam *espécies do Recôncavo*.",
+    "Poço, cruzeiro, carroça e varal *chegaram do 2D*."
+   ],
+   "mudancas_en": [
+    "The valley now uses *four meters* per unit.",
+    "Streets and square got *packed-earth* ground.",
+    "Mango, jackfruit, *cashew* and coconut trees arrived from Tripo.",
+    "The chapel and the well got their *own models*.",
+    "The woods and the shore got *Recôncavo species*.",
+    "Well, wayside cross, cart and clothesline *arrived from the 2D*."
+   ],
+   "mudancas_es": [
+    "El valle pasó a usar *cuatro metros* por unidad.",
+    "Calles y plaza ganaron suelo de *tierra apisonada*.",
+    "Mango, jaca, *anacardo* y cocotero llegaron de Tripo.",
+    "La capilla y el pozo ganaron *modelos propios*.",
+    "El bosque y la costa ganaron *especies del Recôncavo*.",
+    "Pozo, cruz, carreta y tendedero *llegaron del 2D*."
+   ]
+  },
+  {
+   "data": "25/09/2026",
+   "estado": "EM DESENVOLVIMENTO",
+   "estado_en": "IN DEVELOPMENT",
+   "estado_es": "EN DESARROLLO",
+   "titulo": "Mapa do vale em escala real",
+   "titulo_en": "Valley map at real scale",
+   "titulo_es": "Mapa del valle a escala real",
+   "mudancas": [
+    "*Ruas caminháveis* e rios seguem o mapa desenhado.",
+    "A costa e a mata ganharam *novas formas*.",
+    "O vale usa *um metro* por unidade.",
+    "O mapa aéreo ganhou *zoom* e marcadores.",
+    "*Passarelas* levam aos pontos sobre a água."
+   ],
+   "mudancas_en": [
+    "*Walkable streets* and rivers follow the drawn map.",
+    "The coast and the woods got *new shapes*.",
+    "The valley uses *one meter* per unit.",
+    "The aerial map got *zoom* and markers.",
+    "*Boardwalks* lead to the points over the water."
+   ],
+   "mudancas_es": [
+    "*Calles transitables* y ríos siguen el mapa dibujado.",
+    "La costa y el bosque ganaron *nuevas formas*.",
+    "El valle usa *un metro* por unidad.",
+    "El mapa aéreo ganó *zoom* y marcadores.",
+    "*Pasarelas* llevan a los puntos sobre el agua."
+   ]
+  },
+  {
+   "data": "25/09/2026",
+   "estado": "EM DESENVOLVIMENTO",
+   "estado_en": "IN DEVELOPMENT",
+   "estado_es": "EN DESARROLLO",
+   "titulo": "Menu e navegação",
+   "titulo_en": "Menu and navigation",
+   "titulo_es": "Menú y navegación",
+   "mudancas": [
+    "O menu *confirma a saída*.",
+    "O som ganhou *controle rápido*.",
+    "*HOME* retorna ao menu.",
+    "A abertura ganhou *novos textos*.",
+    "O 3D ganhou *histórico próprio*.",
+    "O menu ganhou um *sobrevoo* do vale.",
+    "O menu passou a incluir um *mapa superior*."
+   ],
+   "mudancas_en": [
+    "The menu *confirms before quitting*.",
+    "Sound got a *quick toggle*.",
+    "*HOME* returns to the menu.",
+    "The opening got *new texts*.",
+    "The 3D got its *own changelog*.",
+    "The menu got a *flyover* of the valley.",
+    "The menu now includes a *top-down map*."
+   ],
+   "mudancas_es": [
+    "El menú *confirma antes de salir*.",
+    "El sonido ganó un *control rápido*.",
+    "*HOME* vuelve al menú.",
+    "La apertura ganó *textos nuevos*.",
+    "El 3D ganó su *propio historial*.",
+    "El menú ganó un *sobrevuelo* del valle.",
+    "El menú pasó a incluir un *mapa superior*."
+   ]
+  },
+  {
+   "data": "24/09/2026",
+   "estado": "MARCO DO PROTÓTIPO",
+   "estado_en": "PROTOTYPE MILESTONE",
+   "estado_es": "HITO DEL PROTOTIPO",
+   "titulo": "Abertura e cenário",
+   "titulo_en": "Opening and scenery",
+   "titulo_es": "Apertura y escenario",
+   "mudancas": [
+    "A travessia ganhou *abertura 3D*.",
+    "O menu ganhou *música e narração*.",
+    "*Casa e árvores* ampliaram o vale."
+   ],
+   "mudancas_en": [
+    "The crossing got a *3D opening*.",
+    "The menu got *music and narration*.",
+    "*House and trees* expanded the valley."
+   ],
+   "mudancas_es": [
+    "La travesía ganó una *apertura 3D*.",
+    "El menú ganó *música y narración*.",
+    "*Casa y árboles* ampliaron el valle."
+   ]
+  },
+  {
+   "data": "23/09/2026",
+   "estado": "MARCO DO PROTÓTIPO",
+   "estado_en": "PROTOTYPE MILESTONE",
+   "estado_es": "HITO DEL PROTOTIPO",
+   "titulo": "Primeiros passos",
+   "titulo_en": "First steps",
+   "titulo_es": "Primeros pasos",
+   "mudancas": [
+    "O vale 3D abriu para *exploração*.",
+    "O personagem ganhou *animações*.",
+    "*Praça, horta e costa* ganharam forma."
+   ],
+   "mudancas_en": [
+    "The 3D valley opened for *exploration*.",
+    "The character got *animations*.",
+    "*Square, garden and coast* took shape."
+   ],
+   "mudancas_es": [
+    "El valle 3D se abrió a la *exploración*.",
+    "El personaje ganó *animaciones*.",
+    "*Plaza, huerta y costa* tomaron forma."
+   ]
+  }
+ ]
 }

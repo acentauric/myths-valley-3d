@@ -27,6 +27,7 @@ class Sobreposicao:
 			ao_esc.call()
 			get_viewport().set_input_as_handled()
 const TeclasMovimento = preload("res://scripts/prototipo_3d/teclas_movimento.gd")
+const Atalhos = preload("res://scripts/prototipo_3d/atalhos.gd")
 
 signal reset_requested
 signal quit_requested
@@ -267,7 +268,7 @@ func set_camera_locked(value: bool) -> void:
 	if is_instance_valid(_camera_lock_button):
 		_camera_lock_button.set_pressed_no_signal(value)
 		_camera_icon.definir(value)
-		_camera_hint.text = "Câmera travada · C ou Tab destrava" if value else "Câmera livre · C ou Esc trava"
+		_camera_hint.text = ("Câmera travada · %s ou Tab destrava" % Atalhos.letra("camera")) if value else ("Câmera livre · %s ou Esc trava" % Atalhos.letra("camera"))
 	_update_control_mode()
 
 
@@ -282,11 +283,11 @@ func _update_control_mode() -> void:
 		"Espaço: pular  ·  1–8: gestos",
 		"Botão direito: andar até o ponto (duplo: correr)",
 		"Botão esquerdo na casa: dados",
-		"E: ler lápide  ·  F: observar",
+		"%s: ler / interagir  ·  %s: observar" % [Atalhos.letra("interagir"), Atalhos.letra("observar")],
 		mode,
-		"Tab ou C: alterna a câmera  ·  Esc: trava",
-		"Rodinha: zoom  ·  T: avança a hora",
-		"R: reinicia  ·  M: Home",
+		"Tab ou %s: alterna a câmera  ·  Esc: trava" % Atalhos.letra("camera"),
+		"Rodinha: zoom  ·  %s: avança a hora" % Atalhos.letra("hora"),
+		"%s: reinicia  ·  %s: mapa · minimapa em AJUSTAR" % [Atalhos.letra("reiniciar"), Atalhos.letra("mapa")],
 	])
 	var text_height := _text_height(_control_mode_label)
 	_control_mode_label.size.y = text_height
@@ -354,7 +355,7 @@ func _create_corner_buttons() -> void:
 	var first_child := _root.get_child_count()
 	var top := 32.0
 	var home: Array = BotaoCanto.criar(_root, top, HudIcon.new().configurar("casa"))
-	(home[1] as Label).text = "HOME · voltar ao menu (M)"
+	(home[1] as Label).text = "HOME · voltar ao menu"
 	_corner_setup(home[0], func() -> void: menu_prompt_requested.emit())
 
 	top += BotaoCanto.ESPACO

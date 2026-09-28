@@ -62,7 +62,12 @@ static func montar(pai: Node3D, dados: Dictionary, nivel: float, metros_por_unid
 	agua.set_shader_parameter("ondas_b", _ruido("ondas_b", 0.05, true))
 	agua.set_shader_parameter("ruido", _ruido("espuma", 0.08))
 	agua.set_shader_parameter("metros_por_unidade", metros_por_unidade)
-	_plano(pai, "Mar", extensao, nivel, 0, 0, agua)
+	var mar := _plano(pai, "Mar", extensao, nivel, 0, 0, agua)
+	# A superfície sobe e desce com a maré; os materiais recebem os uniforms dela.
+	_acompanha_mare(mar, nivel)
+	Mare.registrar_material(leito)
+	Mare.registrar_material(distante)
+	Mare.registrar_material(agua)
 
 	_colisao_do_fundo(pai, imagem, dados, grade, quadro, nivel, metros_por_unidade)
 	_paredes(pai, quadro)
@@ -128,6 +133,15 @@ static func _superficie_da_camera(pai: Node3D, nivel: float) -> void:
 	corpo.add_child(colisao)
 	pai.add_child(corpo)
 	corpo.position = Vector3(0.0, nivel + FOLGA_CAMERA, 0.0)
+	# A barreira da câmera acompanha o nível da maré, senão o braço mergulharia
+	# na baixa-mar (ou bateria no ar na volta da enchente).
+	_acompanha_mare(corpo, nivel + FOLGA_CAMERA)
+
+
+## Nó cuja altura segue a maré: o autoload Mare o move a cada quadro (base + offset).
+static func _acompanha_mare(no: Node3D, base_y: float) -> void:
+	no.set_meta("mare_base_y", base_y)
+	no.add_to_group("mare_superficie")
 
 
 ## Paredes invisíveis nas quatro bordas do quadro: o mundo jogável é o retângulo 16:9.
@@ -145,7 +159,7 @@ static func _paredes(pai: Node3D, quadro: Rect2) -> void:
 		corpo.add_child(colisao)
 
 
-static func _plano(pai: Node3D, nome: String, area: Rect2, altura: float, colunas: int, linhas: int, material: Material) -> void:
+static func _plano(pai: Node3D, nome: String, area: Rect2, altura: float, colunas: int, linhas: int, material: Material) -> MeshInstance3D:
 	var malha := PlaneMesh.new()
 	malha.size = area.size
 	malha.subdivide_width = maxi(colunas - 1, 0)
@@ -160,6 +174,12 @@ static func _plano(pai: Node3D, nome: String, area: Rect2, altura: float, coluna
 	pai.add_child(visual)
 	var centro := area.get_center()
 	visual.position = Vector3(centro.x, altura, centro.y)
+	return visual
+
+
+## Ruído compartilhado para outros materiais de água (o rio usa as mesmas ondas).
+static func textura_ruido(chave: String, frequencia: float, normal: bool = false) -> NoiseTexture2D:
+	return _ruido(chave, frequencia, normal)
 
 
 ## Ruído sem emenda, gerado uma vez por partida (NoiseTexture2D gera em thread).

@@ -106,3 +106,17 @@ antigos continuam no histórico do Git.
 Uso comercial: plano Max no momento da geração (ver `assets/CREDITOS.md`).
 
 <!-- lote-2026-09-26:fim -->
+
+
+## Lote do lugar (28/09/2026)
+
+Texto → 3D (Modelo HD, H3.1) + Malha Smart, exportados pela aba logada do Studio
+(`tools/tripo/lote_studio.js`, `__mv.gerar`); originais em `.assets-raw/tripo/arvores/`.
+Referências: fotos reais de Bom Jesus dos Pobres enviadas pelo autor (coqueiros da
+orla, castanholas da praia).
+
+| Arquivo | O que é | Projeto Tripo | Triângulos | Textura |
+| --- | --- | --- | ---: | --- |
+| `coqueiro_tripo.glb` (novo, substitui o de 26/09) | coqueiro alto de tronco claro curvado, coroa cheia | `66ccf27f-1570-4e02-b950-cc920e2fb6a4` | 14.716 | 2K |
+| `castanhola_tripo.glb` | amendoeira-da-praia (Terminalia catappa), copa em andares | `b00df13a-aef5-452b-93ba-ee7517e577df` | 16.284 | 2K |
+| `aroeira_tripo.glb` | árvore retorcida de restinga | `32fa7182-0ffd-45c8-8e2a-5d5f742ee048` | 13.225 | 1K |

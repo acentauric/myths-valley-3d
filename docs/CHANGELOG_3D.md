@@ -11,6 +11,44 @@ marcos. Os textos curtos e a identificação exibidos no jogo ficam em
 `prototipo_3d/data/historico_3d.json`; ao registrar um novo marco ou build,
 atualize esse arquivo e este documento juntos.
 
+## Build #6 — 28/09/2026
+
+- **Franjas refeitas** (o bloco mais pedido): espuma da linha d'água em filete fino e
+  quebrado, marolas suaves que morrem antes da areia, água e leito sem receber sombra
+  dura, franja terra→areia esfarelada em duas escalas (sem ilhas recortadas) e a rampa
+  submersa casando de cor com o leito. Continente distante sem faixas de cor.
+- **Rio de água doce**: shader próprio (âmbar escuro de mata, correnteza lenta,
+  margens desvanecendo) e a foz recolorida para ser a continuação dele.
+- **Maré parametrizada** (AJUSTAR → Cenário): sem maré, ciclo do lugar (semidiurno),
+  ciclo lento ou rápida para demonstração; amplitude 2,4 m. Na enchente a água escurece
+  (turbidez); na baixa-mar o fundo exposto vira lama com poças espelhadas, as canoas
+  encalham de lado, o cardume se recolhe e os passos viram lama/poça (sons novos).
+- **Tubarão** na parte funda: persegue quem nada longe demais; ataque com efeito de
+  tela e volta à terra firme. Pedro e os moradores nunca são alvo.
+- **Peixes corrigidos**: fim do rodopio (rumo suavizado, fuga com direção estável) e
+  da disparada (velocidade limitada).
+- **Modelos do lugar (Tripo, das fotos reais)**: igreja de Bom Jesus no marco certo do
+  KML (a capela genérica virou "Capela velha", bem afastada na rua do mirante),
+  coqueiro novo, castanholas na orla, aroeira na mata, pedras da praia no marco
+  "Pedras", lajes de recife que a maré baixa expõe, bote de toldo e canoa amarela
+  sem letreiro na frota (7 barcos, encalham na baixa-mar).
+- **Vila maior**: praça ampliada no formato triangular do largo real, sem a horta no
+  miolo (canteiros foram para a borda); mais 8 casas ao longo das ruas; a casa
+  herdada do jogador agora fica junto do roçado.
+- **Sons e músicas**: música por período (manhã/tarde/noite, com crossfade), música
+  tensa e sussurros na mata fechada, bem-te-vi de dia, passos de água novos (opção
+  "Passos na água" com botão Ouvir em AJUSTAR), lama, poça e ataque do tubarão
+  (ElevenLabs).
+- **Interface**: minimapa no canto (opção em AJUSTAR), tecla M abre o MAPA, atalhos
+  de teclado remapeáveis (E/F/T/R/M/C) em AJUSTAR → Geral, seta e marcador do alvo da
+  missão, painel PERSONAGENS no menu (moradores com falas ouvíveis + todos os assets),
+  plaquinhas de nome, pegadas por terreno que somem com o tempo.
+- **Falas sem atropelo**: broncas do coveiro entram na fila de vozes, raio de conversa
+  maior, missões com raios revisados e âncoras dinâmicas.
+- Câmera abre recuada (novo máximo mais distante); base das árvores com decalque
+  próprio para areia; nenhuma árvore dentro do rio; texto do carregamento legível
+  (mín. 1,1 s por etapa).
+
 ## Em desenvolvimento — 27/09/2026
 
 - **Mar de verdade, na maré cheia.** O mar deixou de ser uma caixa azul chapada:

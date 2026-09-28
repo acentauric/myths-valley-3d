@@ -4,11 +4,21 @@ extends Node3D
 ## estilo Tripo; no procedural, um corpo simples de tainha.
 
 const QUANTIDADE := 14
+## Lâmina da batimetria para sumir na baixa-mar (a maré vem do autoload Mare).
+const Mar = preload("res://scripts/prototipo_3d/mar.gd")
 ## Raio da roda em torno do centro e velocidades (unidades por segundo).
 const RAIO := 4.5
 const VELOCIDADE := 0.9
-const VELOCIDADE_FUGA := 3.2
+## Também é o teto da velocidade final: nenhum peixe dispara além disso.
+const VELOCIDADE_FUGA := 2.2
 const DISTANCIA_FUGA := 3.0
+## Força máxima do puxão de volta ao centro: longe demais não vira estilingue.
+const VOLTA_MAXIMA := 1.2
+## Perigo quase em cima: a direção de fuga fica travada por um tempo para não saltar.
+const PERTO_DEMAIS := 0.5
+const TRAVA_FUGA := 0.8
+## Só atualiza o rumo acima desta velocidade (u/s), senão o peixe roda no lugar.
+const RUMO_MINIMO := 0.1
 ## Tamanho do peixe (maior dimensão, unidades) e quanto ele nada abaixo da superfície.
 const TAMANHO := 0.38
 const MEIA_AGUA := 0.45
@@ -16,6 +26,10 @@ const MEIA_AGUA := 0.45
 var _peixes: Array[Node3D] = []
 var _velocidades: Array[Vector3] = []
 var _fases: Array[float] = []
+## Rumo suavizado de cada peixe e a direção/prazo da fuga travada.
+var _rumos: Array[float] = []
+var _fuga_direcoes: Array[Vector3] = []
+var _fuga_travas: Array[float] = []
 var _centro := Vector3.ZERO
 var _nivel := 0.0
 var _fundo := 0.5
@@ -24,7 +38,8 @@ var _fundo := 0.5
 ## `centro` no nível da água; `fundo` é a lâmina d'água ali, em unidades.
 func montar(centro: Vector3, nivel: float, fundo: float, tripo: bool) -> void:
 	_centro = centro
-	_nivel = nivel
+	# `nivel` chega com a maré do momento; a base é a preamar (a maré volta em _altura).
+	_nivel = nivel - Mare.nivel_offset()
 	_fundo = fundo
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 1887
@@ -35,17 +50,29 @@ func montar(centro: Vector3, nivel: float, fundo: float, tripo: bool) -> void:
 		peixe.position.y = _altura(rng.randf())
 		add_child(peixe)
 		_peixes.append(peixe)
-		_velocidades.append(Vector3(-sin(angulo), 0.0, cos(angulo)) * VELOCIDADE)
+		var vel := Vector3(-sin(angulo), 0.0, cos(angulo)) * VELOCIDADE
+		_velocidades.append(vel)
 		_fases.append(rng.randf() * TAU)
+		_rumos.append(atan2(-vel.x, -vel.z))
+		_fuga_direcoes.append(Vector3.ZERO)
+		_fuga_travas.append(0.0)
+		peixe.rotation.y = _rumos[i]
 
 
 func _altura(t: float) -> float:
-	return _nivel - clampf(_fundo * lerpf(0.3, 0.7, t), 0.08, MEIA_AGUA)
+	return _nivel + Mare.nivel_offset() - clampf(_fundo * lerpf(0.3, 0.7, t), 0.08, MEIA_AGUA)
 
 
 func _physics_process(delta: float) -> void:
 	if _peixes.is_empty():
 		return
+	# Baixa-mar: com menos de 0,3 u de lâmina no centro, o cardume some no fundo.
+	var lamina_pre := Mar.lamina_em(Vector2(_centro.x, _centro.z))
+	var lamina := (_fundo if is_nan(lamina_pre) else lamina_pre / Mare.METROS_POR_UNIDADE) + Mare.nivel_offset()
+	if lamina < 0.3:
+		visible = false
+		return
+	visible = true
 	var perigos: Array[Vector3] = []
 	for grupo in ["map_player", "moradores"]:
 		for no in get_tree().get_nodes_in_group(grupo):
@@ -56,26 +83,53 @@ func _physics_process(delta: float) -> void:
 		var peixe := _peixes[i]
 		var pos := peixe.global_position
 		var rel := Vector3(pos.x - _centro.x, 0.0, pos.z - _centro.z)
+		var dist := rel.length()
 		# Roda em volta do centro, puxada de volta quando se afasta, com um vaivém próprio.
 		var roda := Vector3(-rel.z, 0.0, rel.x).normalized() * VELOCIDADE
-		var volta := -rel * maxf(rel.length() - RAIO, 0.0) * 0.6
+		var volta := Vector3.ZERO
+		if dist > RAIO:
+			# Puxão limitado: antes crescia com a distância e lançava o peixe em disparada.
+			volta = (-rel / dist) * minf((dist - RAIO) * 0.6, VOLTA_MAXIMA)
 		var vaivem := Vector3(sin(t * 0.7 + _fases[i]), 0.0, cos(t * 0.9 + _fases[i] * 1.3)) * 0.35
 		var desejada := roda + volta + vaivem
-		var fugindo := false
+		# Perigo mais próximo dentro do alcance de fuga (o mais perto manda na direção).
+		var mais_perto := INF
+		var afasta := Vector3.ZERO
 		for perigo in perigos:
 			var longe := Vector3(pos.x - perigo.x, 0.0, pos.z - perigo.z)
-			if longe.length() < DISTANCIA_FUGA:
-				desejada = longe.normalized() * VELOCIDADE_FUGA
-				fugindo = true
+			var d := longe.length()
+			if d < DISTANCIA_FUGA and d < mais_perto:
+				mais_perto = d
+				afasta = longe
+		var fugindo := mais_perto < DISTANCIA_FUGA
+		if fugindo:
+			var direcao := _fuga_direcoes[i]
+			if t >= _fuga_travas[i]:
+				# Recalcula fora da trava; com o perigo quase em cima, guarda a direção
+				# por um tempo em vez de inverter a cada quadro (o rumo saltava).
+				if afasta.length_squared() > 0.000001:
+					direcao = afasta / mais_perto
+				elif direcao == Vector3.ZERO:
+					direcao = Vector3(cos(_fases[i]), 0.0, sin(_fases[i]))
+				_fuga_direcoes[i] = direcao
+				if mais_perto < PERTO_DEMAIS:
+					_fuga_travas[i] = t + TRAVA_FUGA
+			if direcao == Vector3.ZERO:
+				direcao = Vector3(cos(_fases[i]), 0.0, sin(_fases[i]))
+			desejada = direcao * VELOCIDADE_FUGA
 		_velocidades[i] = _velocidades[i].lerp(desejada, 1.0 - exp(-(6.0 if fugindo else 1.5) * delta))
+		# Teto absoluto: fuga somada a qualquer outra força nunca passa disso.
+		_velocidades[i] = _velocidades[i].limit_length(VELOCIDADE_FUGA)
 		pos += _velocidades[i] * delta
 		pos.y = lerpf(pos.y, _altura(0.5 + 0.5 * sin(t * 0.4 + _fases[i])), 1.0 - exp(-2.0 * delta))
 		peixe.global_position = pos
 		var rumo := Vector2(_velocidades[i].x, _velocidades[i].z)
-		if rumo.length_squared() > 0.0004:
-			# Rabeia: a cabeça balança em torno do rumo, mais rápido quando foge.
-			var balanco := sin(t * (18.0 if fugindo else 9.0) + _fases[i]) * 0.18
-			peixe.rotation.y = atan2(-rumo.x, -rumo.y) + balanco
+		if rumo.length_squared() > RUMO_MINIMO * RUMO_MINIMO:
+			# Rumo suavizado com lerp_angle: sem os saltos do atan2, o peixe não gira no lugar.
+			_rumos[i] = lerp_angle(_rumos[i], atan2(-rumo.x, -rumo.y), 1.0 - exp(-(8.0 if fugindo else 4.0) * delta))
+		# Rabeia: a cabeça balança em torno do rumo, mais rápido quando foge.
+		var balanco := sin(t * (14.0 if fugindo else 9.0) + _fases[i]) * 0.15
+		peixe.rotation.y = _rumos[i] + balanco
 
 
 func _criar(tripo: bool) -> Node3D:

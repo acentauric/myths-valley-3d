@@ -47,3 +47,17 @@ na aba logada do Studio. Original em `.assets-raw/tripo/aderecos/canoa_tripo.glb
 Usada por `scripts/prototipo_3d/canoas.gd`: sete canoas fundeadas no raso diante da vila
 (lâmina de 0,8 a 2,6 m), comprimento de 5,6 unidades, afundadas 0,32 para a quilha e o
 leme ficarem na água. No estilo procedural, o mesmo script monta um casco próprio.
+
+
+## Pedras e barcos do lugar (28/09/2026)
+
+Mesmo fluxo do lote anterior (texto → 3D + Malha Smart via `__mv.gerar`); originais em
+`.assets-raw/tripo/aderecos/`. Referências: fotos reais das pedras da praia de Bom
+Jesus e dos barcos de passeio/pesca (cascos lisos, sem letreiro).
+
+| Arquivo | O que é | Projeto Tripo | Triângulos | Textura |
+| --- | --- | --- | ---: | --- |
+| `pedras_praia_tripo.glb` | afloramento de arenito claro em camadas, com mato em cima | `1a536058-4b7a-4e42-92b2-48cd59a107d2` | 5.924 | 1K |
+| `pedra_mare_tripo.glb` | laje escura de recife com algas, exposta na maré baixa | `6865c7a6-7776-4663-86a3-e6129bac00b0` | 4.865 | 1K |
+| `bote_tripo.glb` | bote de pesca branco e azul com toldo de lona, sem letreiro | `726765df-3516-434a-8ea2-625c0a313c42` | 5.892 | 1K |
+| `canoa_amarela_tripo.glb` | canoa amarela de casco vermelho por dentro, desgastada | `91fc17de-dacb-4338-b6c9-1603113d4e41` | 3.673 | 1K |

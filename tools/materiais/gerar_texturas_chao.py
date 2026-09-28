@@ -148,21 +148,27 @@ def areia_praia() -> Image.Image:
     return Image.fromarray((color * 255).astype(np.uint8), "RGB")
 
 
-def base_arvore(size: int = 512) -> Image.Image:
-    """Decalque do pé das árvores: terra escura revolvida, folhas secas caídas e raízes
-    saindo do centro, sumindo nas bordas (alfa radial com borda irregular)."""
-    rng = np.random.default_rng(SEED + 3)
+def base_arvore(size: int = 512, paleta: dict | None = None, semente: int = 3) -> Image.Image:
+    """Decalque do pé das árvores: chão revolvido, folhas caídas e raízes saindo do
+    centro, sumindo nas bordas (alfa radial com borda irregular). A paleta muda com o
+    chão: terra e folhas na grama, areia revolvida na praia."""
+    cores = paleta or {
+        "chao": (0.30, 0.23, 0.15), "detalhe": (0.52, 0.40, 0.22),
+        "claro": (0.62, 0.50, 0.28), "escuro": (0.20, 0.16, 0.10),
+        "raiz": (0.40, 0.28, 0.17),
+    }
+    rng = np.random.default_rng(SEED + semente)
     y, x = (np.mgrid[0:size, 0:size] + 0.5) / size * 2.0 - 1.0
     raio = np.sqrt(x * x + y * y)
     angulo = np.arctan2(y, x)
     ruido = _fbm(rng, size, 8, 4)
-    terra = np.array([0.30, 0.23, 0.15])
-    folha = np.array([0.52, 0.40, 0.22])
+    terra = np.array(cores["chao"])
+    folha = np.array(cores["detalhe"])
     color = _mix(terra, folha, np.clip((ruido - 0.45) * 2.0, 0.0, 1.0))
     # Folhas caídas: pintas mais claras e mais escuras.
     folhas = _fbm(rng, size, 40, 2)
-    color = _mix(color, np.array([0.62, 0.50, 0.28]), np.clip((folhas - 0.62) * 4.0, 0.0, 1.0) * 0.7)
-    color = _mix(color, np.array([0.20, 0.16, 0.10]), np.clip((0.38 - folhas) * 4.0, 0.0, 1.0) * 0.6)
+    color = _mix(color, np.array(cores["claro"]), np.clip((folhas - 0.62) * 4.0, 0.0, 1.0) * 0.7)
+    color = _mix(color, np.array(cores["escuro"]), np.clip((0.38 - folhas) * 4.0, 0.0, 1.0) * 0.6)
     # Raízes: sete sulcos radiais, grossos no centro e afinando.
     raizes = np.zeros((size, size))
     for i in range(7):
@@ -172,7 +178,7 @@ def base_arvore(size: int = 512) -> Image.Image:
         diferenca = np.angle(np.exp(1j * (angulo - direcao - 0.25 * np.sin(raio * 9.0 + i))))
         sulco = np.clip(1.0 - np.abs(diferenca) / (largura * (1.1 - raio)), 0.0, 1.0)
         raizes = np.maximum(raizes, sulco * np.clip(1.0 - raio / alcance, 0.0, 1.0))
-    color = _mix(color, np.array([0.40, 0.28, 0.17]), np.clip(raizes * 1.6, 0.0, 1.0))
+    color = _mix(color, np.array(cores["raiz"]), np.clip(raizes * 1.6, 0.0, 1.0))
     alfa = np.clip((1.0 - raio) * 2.2 - (ruido - 0.5) * 0.9, 0.0, 1.0)
     alfa = np.maximum(alfa, np.clip(raizes * 1.4, 0.0, 1.0) * (raio < 0.9))
     rgba = np.dstack([np.clip(color, 0, 1), alfa])
@@ -185,6 +191,11 @@ def main() -> None:
     chao_praca().save(OUTPUT / "chao_praca_v1.png", optimize=True)
     areia_praia().save(OUTPUT / "areia_praia_v1.png", optimize=True)
     base_arvore().save(OUTPUT / "base_arvore_v1.png", optimize=True)
+    base_arvore(paleta={
+        "chao": (0.74, 0.66, 0.50), "detalhe": (0.82, 0.75, 0.58),
+        "claro": (0.88, 0.82, 0.66), "escuro": (0.60, 0.52, 0.38),
+        "raiz": (0.66, 0.55, 0.38),
+    }, semente=4).save(OUTPUT / "base_arvore_areia_v1.png", optimize=True)
     print("Texturas gravadas em", OUTPUT)
 
 

@@ -23,6 +23,7 @@ config/features=PackedStringArray("4.7", "Forward Plus")
 Audio="*res://scripts/autoload/audio.gd"
 Estilo="*res://scripts/autoload/estilo.gd"
 Dia="*res://scripts/autoload/dia.gd"
+Mare="*res://scripts/autoload/mare.gd"
 
 [display]
 

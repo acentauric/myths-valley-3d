@@ -10,6 +10,7 @@ const AjudaMenu = preload("res://scripts/prototipo_3d/ajuda_menu.gd")
 const HudIcon = preload("res://scripts/prototipo_3d/hud_icon.gd")
 const TemaMenu = preload("res://scripts/prototipo_3d/tema_menu.gd")
 const TeclasMovimento = preload("res://scripts/prototipo_3d/teclas_movimento.gd")
+const Atalhos = preload("res://scripts/prototipo_3d/atalhos.gd")
 
 ## × do cabeçalho (o anfitrião fecha o modal).
 signal fechar_pedido
@@ -92,10 +93,17 @@ func construir(content: VBoxContainer, camada: Node, nova_aba: int = 0) -> void:
 			Audio.efeito("ui_confirmar")
 			_reconstruir(indice))
 		abas.add_child(botao)
+	# Abas mais altas que o modal (Geral com os atalhos) rolam em vez de estourar a tela.
+	var rolagem := ScrollContainer.new()
+	rolagem.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	rolagem.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	rolagem.follow_focus = true
+	content.add_child(rolagem)
 	var colunas := HBoxContainer.new()
 	colunas.add_theme_constant_override("separation", 32)
+	colunas.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	colunas.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	content.add_child(colunas)
+	rolagem.add_child(colunas)
 	var esquerda := _coluna(colunas)
 	var direita := _coluna(colunas)
 	match aba:
@@ -147,6 +155,16 @@ func _aba_geral(esquerda: VBoxContainer, direita: VBoxContainer) -> void:
 	_escolha("Hora inicial", ROTULOS_HORAS, hora_indice, func(i: int) -> void: Dia.definir_hora_inicial(float(HORAS_INICIAIS[i])), PADRAO_HORA)
 	_escolha("Pausar o relógio no jogo", ["Permitido", "Bloqueado"], 0 if Dia.pausa_no_jogo else 1, func(i: int) -> void: Dia.definir_pausa_no_jogo(i == 0), PADRAO_PAUSA)
 	_escolha("Teclas de movimento", TeclasMovimento.ROTULOS, TeclasMovimento.modo(), TeclasMovimento.definir, TeclasMovimento.PADRAO)
+	_secao("Atalhos")
+	var letras: Array = []
+	for codigo in range(KEY_A, KEY_Z + 1):
+		letras.append(OS.get_keycode_string(codigo))
+	for acao: String in Atalhos.DEFINICOES:
+		_escolha(Atalhos.rotulo(acao), letras, Atalhos.tecla(acao) - KEY_A, func(i: int) -> void:
+			Atalhos.definir(acao, KEY_A + i)
+			Atalhos.aplicar()
+			# Reconstrói a aba: numa troca (swap) a linha da outra ação também muda.
+			_reconstruir(0), int(Atalhos.DEFINICOES[acao]["padrao"]) - KEY_A)
 	_pai = direita
 	_secao("Volume")
 	_volume("Música", Audio.volume_musica, Audio.definir_volume_musica, "musica")
@@ -166,6 +184,28 @@ func _aba_sons(esquerda: VBoxContainer, direita: VBoxContainer) -> void:
 	_escolha("Som dos botões", ["Original", "Madeira"], Audio.efeitos_menu_opcao - 1, func(i):
 		Audio.definir_efeitos_menu(i + 1)
 		Audio.testar_efeito_menu(), PADRAO_BOTOES)
+	# Passos na água: sons originais ou os novos (_v2), com prévia ao lado.
+	var anterior_agua := _abrir_campo()
+	_rotulo_do_campo("Passos na água", "Passos na água")
+	var linha_agua := HBoxContainer.new()
+	linha_agua.add_theme_constant_override("separation", 10)
+	_pai.add_child(linha_agua)
+	var seletor_agua := OptionButton.new()
+	seletor_agua.custom_minimum_size.y = ALTURA_CONTROLE
+	seletor_agua.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	for opcao in ["Original", "Novos"]:
+		seletor_agua.add_item(opcao)
+	seletor_agua.select(Audio.sons_agua_opcao - 1)
+	seletor_agua.item_selected.connect(func(i: int) -> void: Audio.definir_sons_agua(i + 1))
+	linha_agua.add_child(seletor_agua)
+	var ouvir := Button.new()
+	ouvir.text = "Ouvir"
+	ouvir.custom_minimum_size = Vector2(84, ALTURA_CONTROLE)
+	ouvir.mouse_entered.connect(func(): Audio.efeito("ui_hover"))
+	ouvir.pressed.connect(func() -> void:
+		Audio.previa_efeito("passo_agua_v2" if Audio.sons_agua_opcao == 2 else "passo_agua"))
+	linha_agua.add_child(ouvir)
+	_pai = anterior_agua
 	if not no_jogo:
 		_escolha("Paisagem sonora do menu", ["Silêncio", "Mar", "Aves", "Mar e aves"], Audio.ambiente_menu_opcao, Audio.definir_ambiente_menu, PADRAO_PAISAGEM)
 	_pai = direita
@@ -184,6 +224,17 @@ func _aba_cenario(esquerda: VBoxContainer, direita: VBoxContainer) -> void:
 			Estilo.definir(novo)
 			estilo_mudou.emit(), 0)
 	_escolha("Nomes dos personagens", ["Mostrar", "Ocultar"], 0 if Estilo.mostrar_nomes else 1, func(i: int) -> void: Estilo.definir_nomes(i == 0), 0)
+	var visuais := ConfigFile.new()
+	visuais.load(PREFERENCIAS_VISUAIS)
+	var minimapa_ativo := bool(visuais.get_value("interface", "minimapa", true))
+	_escolha("Minimapa", ["Mostrar", "Ocultar"], 0 if minimapa_ativo else 1, func(i: int) -> void:
+		# Só grava: o minimapa relê esta preferência sozinho, a cada segundo no vale.
+		var preferencias := ConfigFile.new()
+		preferencias.load(PREFERENCIAS_VISUAIS)
+		preferencias.set_value("interface", "minimapa", i == 0)
+		if preferencias.save(PREFERENCIAS_VISUAIS) != OK:
+			push_warning("Não foi possível salvar a preferência do minimapa."), 0)
+	_escolha("Maré", ["Sem maré", "Ciclo do lugar", "Ciclo lento", "Rápida (ver acontecer)"], Mare.modo, Mare.definir_modo, 0)
 	if no_jogo:
 		return
 	_pai = direita

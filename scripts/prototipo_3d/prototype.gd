@@ -11,6 +11,9 @@ const MapaJogo = preload("res://scripts/prototipo_3d/mapa_jogo.gd")
 const Lapides = preload("res://scripts/prototipo_3d/lapides.gd")
 const ArvoresInfo = preload("res://scripts/prototipo_3d/arvores_info.gd")
 const PlacasNomes = preload("res://scripts/prototipo_3d/placas_nomes.gd")
+const Tubarao = preload("res://scripts/prototipo_3d/tubarao.gd")
+const Atalhos = preload("res://scripts/prototipo_3d/atalhos.gd")
+const Minimapa = preload("res://scripts/prototipo_3d/minimapa.gd")
 const MENU_SCENE := "res://scenes/prototipo_3d/abertura.tscn"
 ## Raio de terra firme em volta do ponto de chegada.
 const RAIO_CHEGADA := 6.0
@@ -24,6 +27,7 @@ var pedro: GuiaPedro
 var moradores: Array[MoradorNPC] = []
 var _visited: Dictionary = {}
 var _step_time := 0.0
+var pegadas_no	# pegadas.gd — pool de marcas dos passos no chão
 var _saindo := false
 var mapa	# mapa_jogo.gd
 var lapides	# lapides.gd
@@ -35,10 +39,12 @@ func _enter_tree() -> void:
 	TeclasMovimento.aplicar()
 	_bind("mv_run", [KEY_SHIFT])
 	_bind("mv_release", [KEY_ESCAPE])
-	_bind("mv_cursor", [KEY_TAB, KEY_C], true)
-	_bind("mv_reset", [KEY_R])
-	_bind("mv_inspect", [KEY_F])
-	_bind("mv_time", [KEY_T])
+	# Atalhos remapeáveis (AJUSTAR → Geral → Atalhos); o Tab da câmera é fixo.
+	_bind("mv_cursor", [KEY_TAB, Atalhos.tecla("camera")], true)
+	_bind("mv_reset", [Atalhos.tecla("reiniciar")])
+	_bind("mv_inspect", [Atalhos.tecla("observar")])
+	_bind("mv_time", [Atalhos.tecla("hora")])
+	_bind("mv_mapa", [Atalhos.tecla("mapa")])
 	for index in range(8):
 		_bind("mv_animation_%d" % (index + 1), [KEY_1 + index])
 	_bind("mv_animation_9", [KEY_SPACE], true)
@@ -182,6 +188,38 @@ func _montar_moradores(spawn: Vector3) -> void:
 	placas.name = "PlacasNomes"
 	add_child(placas)
 	placas.configurar(player, hud.map_layer())
+	# Seta da missão: cone e anel no mundo + chevron na borda da tela seguem o alvo.
+	var seta := SetaMissao.new()
+	seta.name = "SetaMissao"
+	add_child(seta)
+	seta.configurar(hud.map_layer())
+	if pedro != null:
+		pedro.missao_mudou.connect(func(texto: String, destino: Vector3, indice: int, total: int) -> void:
+			if indice >= total:
+				seta.limpar()
+			else:
+				seta.definir_alvo(destino, texto))
+	# Tubarão da parte funda: persegue só o jogador nadando no fundo; o susto vai ao HUD.
+	var tubarao := Tubarao.new()
+	tubarao.name = "Tubarao"
+	add_child(tubarao)
+	tubarao.configurar(world, player, func(texto: String) -> void: hud.set_notice(texto))
+	# Pegadas do jogador no chão, por terreno, sumindo com o tempo.
+	pegadas_no = preload("res://scripts/prototipo_3d/pegadas.gd").new()
+	pegadas_no.name = "Pegadas"
+	add_child(pegadas_no)
+
+	# Minimapa do canto inferior esquerdo, com o alvo da missão do Pedro.
+	var minimapa := Minimapa.new()
+	minimapa.name = "Minimapa"
+	hud.map_layer().add_child(minimapa)
+	minimapa.configurar(player, pedro, hud)
+	if pedro != null:
+		pedro.missao_mudou.connect(func(_texto: String, alvo: Vector3, indice: int, total: int) -> void:
+			if indice >= total or alvo == Vector3.ZERO:
+				minimapa.limpar_alvo()
+			else:
+				minimapa.definir_alvo(alvo))
 
 
 func _process(_delta: float) -> void:
@@ -194,7 +232,11 @@ func _process(_delta: float) -> void:
 			if player.is_swimming():
 				Audio.passo("nado")
 			else:
-				Audio.passo(player.chao_dos_pes(), player.is_running())
+				var chao: String = player.chao_dos_pes()
+				Audio.passo(chao, player.is_running())
+				# A pegada usa o mesmo chão do som, no mesmo passo.
+				if pegadas_no != null:
+					pegadas_no.marcar(player.global_position, player.visual.rotation.y, chao, player.is_running())
 			_step_time = player.step_interval()
 	else:
 		_step_time = 0
@@ -252,9 +294,10 @@ func _unhandled_key_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo:
 		if mapa.aberto and event.physical_keycode == KEY_ESCAPE:
 			_toggle_map()
-		elif event.physical_keycode == KEY_M:
-			_ask_return_to_menu()
-		elif event.physical_keycode == KEY_T:
+		elif event.is_action_pressed("mv_mapa"):
+			# M (remapeável) abre o mapa do vale; o HOME fica no botão da coluna do canto.
+			_toggle_map()
+		elif event.is_action_pressed("mv_time"):
 			Dia.avancar(1.0)
 			hud.set_notice("Relógio adiantado: %s (%s)" % [Dia.texto_hora(), PERIODOS.get(Dia.periodo(), "")])
 

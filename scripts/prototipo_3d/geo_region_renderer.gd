@@ -20,6 +20,7 @@ const GRAMA_TERRA_MATA_TEXTURE := preload("res://assets/prototipo_3d/materiais/g
 const Mar = preload("res://scripts/prototipo_3d/mar.gd")
 const AREIA_PRAIA := preload("res://assets/prototipo_3d/mar/areia_praia.gdshader")
 const FOZ_RIO := preload("res://assets/prototipo_3d/mar/foz_rio.gdshader")
+const AGUA_RIO := preload("res://assets/prototipo_3d/mar/agua_rio.gdshader")
 const AREIA_TEXTURE := preload("res://assets/prototipo_3d/materiais/areia_praia_v1.png")
 ## Tinta da textura de grama/terra: com o sol batendo no chão (não mais só a luz
 ## ambiente), a textura crua fica ocre; puxa de volta para o verde do Recôncavo.
@@ -35,6 +36,8 @@ const ARVORE_AFUNDADA := 0.06
 const TREE_COLLISION_POOL_SIZE := 24
 const TREE_COLLISION_INTERVAL := 0.25
 const TERRAIN_CELL_SIZE := 4.0
+## A praça real de Bom Jesus é um largo triangular maior que o desenho do KML.
+const PRACA_AMPLIACAO := 1.5
 const SURFACE_SEGMENT_SIZE := 3.0
 
 var landmarks: Array[Dictionary] = []
@@ -159,7 +162,8 @@ func build_region(kml_json_path: String, scenario_json_path: String) -> void:
 				areas.append({"id": String(feature.get("id", "")), "name": String(feature.get("name", "")), "position": ground_position(Vector3(center.x, 0.05, center.y), 0.05)})
 			match String(feature.get("name", "")):
 				"Mata": _kml_forest = points
-				"Fazenda", "Praça": _open_areas.append(points)
+				"Fazenda": _open_areas.append(points)
+				"Praça": _open_areas.append(_ampliar_poligono(points, PRACA_AMPLIACAO))
 		match String(feature.get("kind", "")):
 			"poi":
 				if not points.is_empty():
@@ -202,9 +206,11 @@ func build_region(kml_json_path: String, scenario_json_path: String) -> void:
 				"Fazenda": color = Color("86aa67")
 				"Praça": color = Color("d9c39a")
 			var area_material: Material = mata_material
+			var pontos_area := _to_points(feature.get("coordinates_m", []))
 			if String(feature.get("name", "")) == "Praça":
 				area_material = _textured_material(CHAO_PRACA_TEXTURE, Color("f2e6c8"), 6.0)
-			for parte in _on_land(_to_points(feature.get("coordinates_m", []))):
+				pontos_area = _ampliar_poligono(pontos_area, PRACA_AMPLIACAO)
+			for parte in _on_land(pontos_area):
 				_add_polygon(String(feature.get("name", "Área")), parte, 0.027, color, false, area_material)
 	# Mantém a areia acima das sobreposições da Mata (offset 0.027). Sem essa
 	# margem, a textura de grama cobre trechos da praia apesar de a faixa e sua
@@ -212,7 +218,12 @@ func build_region(kml_json_path: String, scenario_json_path: String) -> void:
 	await _marcar(0.42, "Estendendo a praia e os rios")
 	_add_beach()
 	for river in _rivers:
-		_add_ribbon("Rio", river.points, river.width, 0.046, RIVER_COLOR)
+		# Água doce de mata: escura, âmbar, correnteza lenta (agua_rio.gdshader).
+		var material_rio := ShaderMaterial.new()
+		material_rio.shader = AGUA_RIO
+		material_rio.set_shader_parameter("ondas_a", Mar.textura_ruido("ondas_a", 0.035, true))
+		material_rio.set_shader_parameter("ondas_b", Mar.textura_ruido("ondas_b", 0.05, true))
+		_add_ribbon("Rio", river.points, river.width, 0.046, RIVER_COLOR, false, material_rio)
 	_add_river_mouths()
 	# A rua mais larga fica por cima nas sobreposições (as ramificações entram por baixo
 	# dela), e cada cruzamento ganha um remendo de terra batida que cobre a emenda.
@@ -363,6 +374,11 @@ func is_build_site_clear(position: Vector3, radius: float) -> bool:
 		var clearance: float = float(road.width) * 0.5 + radius + 1.5
 		if road.bounds.grow(clearance).has_point(center) and _distance_to_line(center, road.points) < clearance:
 			return false
+	# Rio não é terreno de árvore nem de casa: nada plantado dentro da calha.
+	for river in _rivers:
+		var folga_rio: float = float(river.width) * 0.5 + radius + 1.0
+		if _distance_to_line(center, river.points) < folga_rio:
+			return false
 	for access in _shore_access_routes:
 		var clearance: float = float(access.width) * 0.5 + radius + 1.5
 		if access.bounds.grow(clearance).has_point(center) and _distance_to_line(center, access.points) < clearance:
@@ -377,6 +393,20 @@ func is_build_site_clear(position: Vector3, radius: float) -> bool:
 
 func _is_on_land(position: Vector3) -> bool:
 	return _land.size() >= 3 and Geometry2D.is_point_in_polygon(Vector2(position.x, position.z), _land)
+
+
+## Escala o polígono a partir do centróide (praça ampliada mantendo o formato).
+func _ampliar_poligono(points: PackedVector2Array, fator: float) -> PackedVector2Array:
+	if points.size() < 3:
+		return points
+	var centro := Vector2.ZERO
+	for point in points:
+		centro += point
+	centro /= float(points.size())
+	var ampliado := PackedVector2Array()
+	for point in points:
+		ampliado.append(centro + (point - centro) * fator)
+	return ampliado
 
 
 func get_feature_center(feature_name: String, kind: String = "") -> Vector3:
@@ -790,6 +820,9 @@ const ROAD_JOIN_DISTANCE := 15.0
 func _curve_roads() -> void:
 	for road in _roads:
 		road.points = _chaikin(road.points)
+	# O rio do KML também vem em segmentos retos com quinas: as mesmas curvas.
+	for river in _rivers:
+		river.points = _chaikin(river.points)
 	for road in _roads:
 		var points: PackedVector2Array = road.points
 		for tip_index in [0, points.size() - 1]:
@@ -997,6 +1030,8 @@ func _add_beach() -> void:
 	var material := ShaderMaterial.new()
 	material.shader = AREIA_PRAIA
 	material.set_shader_parameter("textura_areia", AREIA_TEXTURE)
+	# A faixa úmida acompanha a maré: o material recebe "mare_offset_m" do Mare.
+	Mare.registrar_material(material)
 	_add_ribbon("Orla de areia", coast, width, 0.075, BEACH_COLOR, true, material, -0.06)
 
 
@@ -1027,7 +1062,8 @@ func _add_river_mouths() -> void:
 				length += mouth[i].distance_to(mouth[i + 1])
 			var material := ShaderMaterial.new()
 			material.shader = FOZ_RIO
-			material.set_shader_parameter("cor_rio", RIVER_COLOR)
+			# Mesma água doce escura do rio: a foz é a continuação dele pela praia.
+			material.set_shader_parameter("cor_rio", Color(0.16, 0.13, 0.07))
 			material.set_shader_parameter("comprimento", length / float(river.width))
 			material.set_shader_parameter("inicio_sumir", 1.0 - tail / length * 1.4)
 			_add_ribbon("Foz do rio", mouth, float(river.width), 0.085, RIVER_COLOR, false, material)
@@ -1101,7 +1137,10 @@ func _build_forest(configuration: Dictionary) -> void:
 	# Mata fechada e alta do Recôncavo: espécies procedurais com silhuetas distintas,
 	# uma MultiMesh por espécie. Modelos do Tripo entram trocando `FloraReconcavo.especie`.
 	var by_species: Dictionary = {}
-	var lista: Array = ESPECIES_MATA_TRIPO if _estilo_tripo else FloraReconcavo.ESPECIES_MATA
+	var lista: Array = ESPECIES_MATA_TRIPO.duplicate() if _estilo_tripo else FloraReconcavo.ESPECIES_MATA
+	# As espécies locais novas entram na mistura assim que o GLB do Tripo existe.
+	if _estilo_tripo and CatalogoAssets.tem_tripo("aroeira"):
+		lista.append("aroeira")
 	for i in range(positions.size()):
 		var species: String = lista[rng.randi_range(0, lista.size() - 1)]
 		if not by_species.has(species):
@@ -1160,7 +1199,12 @@ func _build_coast_palms(rng: RandomNumberGenerator) -> void:
 	var offset_max := _units(14.0, 5.0)
 	var built: Dictionary = _malha_da_especie("coqueiro", rng)
 	var modelo_base: Transform3D = built.base
+	# Castanholas (amendoeiras-da-praia) se misturam aos coqueiros da orla, como na
+	# vila real; só quando o GLB existe.
+	var tem_castanhola := _estilo_tripo and CatalogoAssets.tem_tripo("castanhola")
+	var castanhola: Dictionary = _malha_da_especie("castanhola", rng) if tem_castanhola else {}
 	var transforms: Array[Transform3D] = []
+	var transforms_castanhola: Array[Transform3D] = []
 	var travelled := 0.0
 	var next_at := spacing * 0.5
 	for i in range(_coast.size() - 1):
@@ -1188,10 +1232,17 @@ func _build_coast_palms(rng: RandomNumberGenerator) -> void:
 				var scale := rng.randf_range(0.75, 1.15)
 				var lean := Transform3D.IDENTITY if modelo_base == Transform3D.IDENTITY else Transform3D(Basis.from_euler(Vector3(0, 0, 0.14)), Vector3.ZERO)
 				var ground := ground_height_at(Vector3(candidate.x, 0, candidate.y))
-				transforms.append(Transform3D(Basis.from_euler(Vector3(0, yaw, 0)).scaled(Vector3.ONE * scale), Vector3(candidate.x, ground - ARVORE_AFUNDADA, candidate.y)) * lean * modelo_base)
-				_tree_trunks.append({"point": candidate, "ground": ground, "height": minf(float(built.altura) * scale, 4.0), "radius": float(built.tronco) * scale, "especie": "coqueiro"})
+				if tem_castanhola and rng.randi_range(0, 2) == 0:
+					var giro_livre := rng.randf_range(0.0, TAU)
+					transforms_castanhola.append(Transform3D(Basis.from_euler(Vector3(0, giro_livre, 0)).scaled(Vector3.ONE * scale), Vector3(candidate.x, ground - ARVORE_AFUNDADA, candidate.y)) * (castanhola.base as Transform3D))
+					_tree_trunks.append({"point": candidate, "ground": ground, "height": minf(float(castanhola.altura) * scale, 4.0), "radius": float(castanhola.tronco) * scale, "especie": "castanhola"})
+				else:
+					transforms.append(Transform3D(Basis.from_euler(Vector3(0, yaw, 0)).scaled(Vector3.ONE * scale), Vector3(candidate.x, ground - ARVORE_AFUNDADA, candidate.y)) * lean * modelo_base)
+					_tree_trunks.append({"point": candidate, "ground": ground, "height": minf(float(built.altura) * scale, 4.0), "radius": float(built.tronco) * scale, "especie": "coqueiro"})
 			next_at += spacing * rng.randf_range(0.7, 1.4)
 		travelled += length
+	if not transforms_castanhola.is_empty():
+		_multimesh_em_blocos("Castanholas da orla", castanhola.mesh, transforms_castanhola)
 	if transforms.is_empty():
 		return
 	_multimesh_em_blocos("Coqueiros da orla", built.mesh, transforms)

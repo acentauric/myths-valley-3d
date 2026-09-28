@@ -63,7 +63,8 @@ var spawn_position := Vector3(0, 0.05, 6)
 var inspecting := false
 var _yaw: float = 0.0
 var _pitch: float = -0.19
-var _distance: float = 5.0
+## A câmera abre já recuada (o antigo máximo) e pode afastar um pouco além.
+var _distance: float = 8.0
 var _click_world: Node3D
 var _navigator = ClickNavigation.new()
 var _walk_path := PackedVector3Array()
@@ -362,7 +363,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		elif event.button_index == MOUSE_BUTTON_WHEEL_UP:
 			_distance = maxf(1.6, _distance - 0.35)
 		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
-			_distance = minf(8.0, _distance + 0.35)
+			_distance = minf(12.0, _distance + 0.35)
 		_apply_camera()
 	if event.is_action_pressed("mv_reset"):
 		reset_position()
@@ -370,7 +371,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		inspecting = not inspecting
 		_yaw = visual.rotation.y if inspecting else visual.rotation.y + PI
 		_pitch = -0.08 if inspecting else -0.19
-		_distance = 3.1 if inspecting else 5.0
+		_distance = 3.1 if inspecting else 8.0
 		_apply_camera()
 	if not _jumping:
 		for index in range(8):
@@ -467,7 +468,12 @@ func chao_dos_pes() -> String:
 	if profundidade > 0.35:
 		return "agua_funda"
 	if profundidade > 0.03:
-		return "agua"
+		# Restinho da baixa-mar: até ~25 cm de lâmina soa como poça, não como mar.
+		var lamina := _fundo_da_agua()
+		return "poca" if lamina > 0.01 and lamina <= 0.06 else "agua"
+	# Fundo do mar exposto pela baixa-mar: lama, mesmo onde o cenário diz areia.
+	if _click_world != null and _click_world.has_method("fundo_exposto") and _click_world.fundo_exposto(global_position):
+		return "lama"
 	for i in get_slide_collision_count():
 		var colisao := get_slide_collision(i)
 		var corpo := colisao.get_collider() as Node
@@ -530,7 +536,7 @@ func reset_position() -> void:
 	visual.rotation.y = 0.0
 	_yaw = 0.0
 	_pitch = -0.19
-	_distance = 5.0
+	_distance = 8.0
 	inspecting = false
 	_apply_camera()
 

@@ -29,9 +29,12 @@ const PECAS := {
 	"mata_alta": {"tripo": "arvores/mata_a_tripo.glb", "altura": 11.0, "tronco": 0.45},
 	"mata_larga": {"tripo": "arvores/mata_b_tripo.glb", "altura": 9.0, "tronco": 0.5},
 	"moita": {"tripo": "arvores/moita_tripo.glb", "altura": 1.1},
+	"castanhola": {"tripo": "arvores/castanhola_tripo.glb", "altura": 6.0, "tronco": 0.45},
+	"aroeira": {"tripo": "arvores/aroeira_tripo.glb", "altura": 4.5, "tronco": 0.4},
 	"capim": {"tripo": "arvores/capim_tripo.glb", "altura": 0.9},
 	# Construções
 	"capela": {"tripo": "construcoes/capela_tripo.glb", "largura": 9.0, "caixa": true},
+	"igreja": {"tripo": "construcoes/igreja_tripo.glb", "largura": 10.0, "caixa": true},
 	"casa_taipa": {"tripo": "construcoes/casa_taipa_tripo.glb", "largura": 6.5, "caixa": true},
 	"casa_carro_quebrado": {"tripo": "casas/casa_carro_quebrado_tripo.glb", "largura": 5.2, "caixa": true},
 	"venda": {"tripo": "construcoes/venda_tripo.glb", "largura": 8.0, "caixa": true},
@@ -54,6 +57,10 @@ const PECAS := {
 	"fogueira": {"tripo": "aderecos/fogueira_tripo.glb", "largura": 1.6},
 	"mandioca_canteiro": {"tripo": "aderecos/mandioca_canteiro_tripo.glb", "largura": 3.5},
 	"pedras": {"tripo": "aderecos/pedras_tripo.glb", "largura": 3.0, "caixa": true},
+	"pedras_praia": {"tripo": "aderecos/pedras_praia_tripo.glb", "largura": 5.5, "caixa": true},
+	"pedra_mare": {"tripo": "aderecos/pedra_mare_tripo.glb", "largura": 3.2},
+	"bote": {"tripo": "aderecos/bote_tripo.glb", "largura": 6.0},
+	"canoa_amarela": {"tripo": "aderecos/canoa_amarela_tripo.glb", "largura": 4.6},
 	"canoa": {"tripo": "aderecos/canoa_tripo.glb", "largura": 5.6},
 	# Personagens
 	"pedro": {"tripo": "personagens/pedro_tripo.glb", "altura": 1.75},

@@ -137,20 +137,53 @@ func arvores() -> Array[Dictionary]:
 	return lista
 
 
+## Nível atual da superfície do mar: a preamar da região mais o deslocamento da maré.
 func water_level() -> float:
-	return _region.water_level() if _region else -INF
+	if _region == null:
+		return -INF
+	var preamar: float = _region.water_level()
+	return (preamar + Mare.nivel_offset()) if is_finite(preamar) else -INF
 
 
-## Lâmina d'água (unidades) sobre o fundo do mar no ponto; 0 em terra ou sem mar real.
+## Lâmina d'água (unidades) sobre o fundo do mar no ponto, já com a maré; 0 em terra,
+## no fundo exposto pela baixa-mar ou sem mar real.
 func water_depth_at(world_position: Vector3) -> float:
 	if not is_finite(water_level()):
 		return 0.0
 	var lamina := Mar.lamina_em(Vector2(world_position.x, world_position.z))
-	return maxf(lamina, 0.0) / _meters_per_unit if not is_nan(lamina) else 0.0
+	if is_nan(lamina):
+		return 0.0
+	return maxf(lamina / _meters_per_unit + Mare.nivel_offset(), 0.0)
+
+
+## Fundo do mar que a baixa-mar deixou de fora: tinha água na preamar, agora não tem.
+func fundo_exposto(world_position: Vector3) -> bool:
+	if _region == null or not is_finite(_region.water_level()):
+		return false
+	var lamina := Mar.lamina_em(Vector2(world_position.x, world_position.z))
+	if is_nan(lamina) or lamina <= 0.0:
+		return false
+	return lamina / _meters_per_unit + Mare.nivel_offset() <= 0.0
 
 
 func is_on_land(world_position: Vector3) -> bool:
 	return _region != null and _region._is_on_land(world_position)
+
+
+## Mata fechada: dentro do polígono da mata (o do KML quando existe, senão o
+## cênico) e a mais de 25 unidades da Praça, para o clima de tensão não pegar
+## a beirada da vila.
+func na_mata_fechada(world_position: Vector3) -> bool:
+	if _region == null:
+		return false
+	var poligono: PackedVector2Array = _region._kml_forest if _region._kml_forest.size() >= 3 else _region._forest
+	if poligono.size() < 3:
+		return false
+	var ponto := Vector2(world_position.x, world_position.z)
+	if not Geometry2D.is_point_in_polygon(ponto, poligono):
+		return false
+	var praca: Vector3 = ancoras.get("Praça", _region.get_feature_center("Praça", "poi"))
+	return Vector2(praca.x, praca.z).distance_to(ponto) > 25.0
 
 
 ## Rotação (yaw) que alinha o eixo X local — o comprimento da ponte, no modelo e no
@@ -446,6 +479,16 @@ func _construir_vila() -> void:
 	var casa_estrada_referencia: Vector3 = _region.wgs84_to_world(-12.812855555555556, -38.780297222222224)
 	ancoras["Casa da estrada"] = _region.position_beside_road(casa_estrada_referencia, "Rua Principal", 10.0)
 	_construcao("casa_taipa", ancoras["Casa da estrada"], 0.0, func(at: Vector3): _house(at, Color("dfb980"), Color("ae6950")), 1.0, "Casa da estrada")
+	# As demais casas do arraial, nos lotes reservados pelo loteamento.
+	var paletas := [[Color("e4d7bd"), Color("a85a40")], [Color("d9c49a"), Color("8f5a44")], [Color("efe3c8"), Color("9c4f38")], [Color("cbb98f"), Color("7d5b46")]]
+	var casa_indice := 0
+	for nome_lote in _lotes:
+		if not String(nome_lote).begins_with("Casa do arraial"):
+			continue
+		casa_indice += 1
+		var paleta: Array = paletas[casa_indice % paletas.size()]
+		_construcao(String(_lotes[nome_lote]["chave"]), _lotes[nome_lote]["pos"], 0.0, func(at: Vector3): _house(at, paleta[0], paleta[1]), 1.0, String(nome_lote))
+		await _pausar()
 	await _etapa(0.84, "Cercando o roçado")
 	_build_farm()
 	await _etapa(0.86, "Plantando as árvores da vila")
@@ -455,6 +498,8 @@ func _construir_vila() -> void:
 	_build_landmark_details()
 	await _etapa(0.93, "Espalhando os objetos")
 	_build_pecas()
+	await _etapa(0.94, "Assentando as pedras")
+	_build_pedras()
 	await _etapa(0.95, "Fundeando as canoas")
 	_build_canoas()
 	await _etapa(0.97, "Acendendo os lampiões")
@@ -541,25 +586,34 @@ func _na_casa(ancora: String, deslocamento: Vector3) -> Vector3:
 ## Decide o lote de cada construção antes de erguer a vila, para árvores, adereços,
 ## luzes e postos dos moradores já usarem a posição e a frente finais.
 func _loteamento() -> void:
+	# A casa herdada fica junto do roçado (a carta falava em casa de taipa e roçado).
 	var pedidos := [
-		["Casa de taipa", "casa_taipa", ancoras["Casa de taipa"]],
+		["Casa de taipa", "casa_taipa", _region.get_feature_center("Fazenda", "area")],
 		["Casa de Carro Quebrado", "casa_carro_quebrado", ancoras["Casa de Carro Quebrado"]],
 		["Casa da estrada", "casa_taipa", ancoras["Casa da estrada"]],
 		["Venda do Bar", "venda", _region.get_feature_center("Bar", "poi") + Vector3(8, 0, 3)],
 		["Restaurante", "casa_pasto", _region.get_feature_center("Restaurante", "poi") + Vector3(7, 0, 4)],
-		["Igreja", "capela", _region.get_feature_center("Igreja", "poi")],
+		["Igreja", "igreja", _region.get_feature_center("Igreja", "poi")],
+		["Capela velha", "capela", _region.get_feature_center("Mirante", "poi")],
 	]
+	pedidos.append_array(_pedidos_casas_do_arraial())
 	for pedido in pedidos:
 		var nome: String = pedido[0]
-		var capela: bool = pedido[1] == "capela"
-		var raio := 7.5 if capela else _raio_do_lote(pedido[1])
-		# A capela do Tripo tem base de pedra própria: aceita mais desnível que as casas.
-		var lote := _lote_na_rua(pedido[2], raio, 0.7 if capela else DESNIVEL_MAXIMO_CASA)
+		var templo: bool = pedido[1] in ["capela", "igreja"]
+		var raio := 7.5 if templo else _raio_do_lote(pedido[1])
+		var lote := {}
+		if nome == "Igreja":
+			# A igreja fica exatamente no marco do KML (o lugar dela na vila real),
+			# só girando a frente para a rua; os templos têm base própria de pedra.
+			lote = _lote_fixo_virado_para_rua(pedido[2], raio)
+		else:
+			lote = _lote_na_rua(pedido[2], raio, 0.7 if templo else DESNIVEL_MAXIMO_CASA)
 		if lote.is_empty():
 			var sitio := _reserve_house_site(pedido[2], raio, nome)
 			if not sitio.is_finite():
 				continue
 			lote = {"pos": sitio, "yaw": 0.0}
+		lote["chave"] = pedido[1]
 		_lotes[nome] = lote
 		ancoras[nome] = lote["pos"]
 		var yaw: float = lote["yaw"] if estilo_tripo() else 0.0
@@ -567,6 +621,48 @@ func _loteamento() -> void:
 	if ancoras.has("Venda do Bar"):
 		ancoras["Bar"] = ancoras["Venda do Bar"]
 		ancoras["BarFrente"] = ancoras["Venda do BarFrente"]
+
+
+## Lote cravado em `ponto` (sem deslizar), com a frente girada para a rua mais próxima.
+func _lote_fixo_virado_para_rua(ponto: Vector3, raio: float) -> Dictionary:
+	var centro := Vector2(ponto.x, ponto.z)
+	var mais_perto := centro + Vector2.RIGHT
+	var menor := INF
+	for road in _region._roads:
+		var pontos: PackedVector2Array = road.points
+		for i in pontos.size() - 1:
+			var q := Geometry2D.get_closest_point_to_segment(centro, pontos[i], pontos[i + 1])
+			if q.distance_to(centro) < menor:
+				menor = q.distance_to(centro)
+				mais_perto = q
+	var pos := ponto
+	pos.y = _footprint_height(pos, raio) + 0.02
+	_house_sites.append({"position": pos, "radius": raio})
+	var para_rua := Vector3(mais_perto.x - centro.x, 0.0, mais_perto.y - centro.y)
+	var yaw := atan2(para_rua.x, para_rua.z) if para_rua.length_squared() > 0.01 else 0.0
+	return {"pos": pos, "yaw": yaw}
+
+
+## Mais casas do arraial ao longo das ruas maiores: lotes espalhados, dois por rua,
+## para a vila não se resumir a meia dúzia de marcos.
+func _pedidos_casas_do_arraial() -> Array:
+	var pedidos: Array = []
+	var indice := 0
+	for road in _region._roads:
+		if String(road.name) == "Rua do mirante" or pedidos.size() >= 8:
+			continue
+		var pontos: PackedVector2Array = road.points
+		var comprimento := 0.0
+		for i in pontos.size() - 1:
+			comprimento += pontos[i].distance_to(pontos[i + 1])
+		if comprimento < 45.0:
+			continue
+		for fracao in [0.32, 0.64]:
+			var alvo := _na_linha(pontos, comprimento * fracao)
+			indice += 1
+			var chave := "casa_taipa" if indice % 2 == 0 else "casa_carro_quebrado"
+			pedidos.append(["Casa do arraial %d" % indice, chave, Vector3(alvo[0].x, 0.0, alvo[0].y)])
+	return pedidos
 
 
 ## Lote ao lado da rua mais próxima de `preferido`, do mesmo lado dela: desliza ao longo
@@ -876,17 +972,18 @@ func _build_trees() -> void:
 
 
 func _build_details() -> void:
-	# Canteiros de flores da praça: moitas do Tripo ou caixinhas coloridas.
-	for i in range(28):
-		var x: float = (-25.0 + float(i % 7) * 8.0) / _meters_per_unit
-		var z: float = (-21.0 + floorf(float(i) / 7.0) * 14.0) / _meters_per_unit
-		if absf(x) < 3.0 / _meters_per_unit:
+	# Canteiros de flores na BORDA da praça (o miolo do largo fica aberto, como no
+	# lugar real): um anel de moitas, pulando as bocas de rua.
+	for i in range(16):
+		var angulo := TAU * float(i) / 16.0
+		var ponto := Vector3(cos(angulo) * 16.5, 0, sin(angulo) * 12.5)
+		if _region.surface_at(ponto) == "terra":
 			continue
 		await _pausar()
-		if _adereco("moita", Vector3(x, 0, z), float(i) * 0.7, 0.55 + float(i % 3) * 0.12) != null:
+		if _adereco("moita", ponto, float(i) * 0.7, 0.55 + float(i % 3) * 0.12) != null:
 			continue
 		for j in range(3):
-			var flower := Vector3(x + j * 0.21, 0, z + (j % 2) * 0.25)
+			var flower := Vector3(ponto.x + j * 0.21, 0, ponto.z + (j % 2) * 0.25)
 			_box(Vector3(0.05, 0.28, 0.05), ground_position(flower, 0.14), LEAVES)
 			_box(Vector3(0.16, 0.10, 0.16), ground_position(flower, 0.30), Color("e4c782") if i % 2 == 0 else Color("ce9d99"))
 
@@ -894,7 +991,11 @@ func _build_details() -> void:
 func _build_landmark_details() -> void:
 	var church: Vector3 = ancoras["Igreja"]
 	var church_yaw: float = _lotes.get("Igreja", {}).get("yaw", 0.0)
-	_construcao("capela", church, church_yaw, func(): _igreja_procedural(church))
+	_construcao("igreja", church, church_yaw, func(): _igreja_procedural(church))
+	# A capela antiga do vale segue de pé, bem afastada, no alto da rua do mirante.
+	if _lotes.has("Capela velha"):
+		var velha: Vector3 = _lotes["Capela velha"]["pos"]
+		_construcao("capela", velha, float(_lotes["Capela velha"]["yaw"]), func(): _igreja_procedural(velha), 1.0, "Capela velha")
 	_construcao("venda", ancoras["Venda do Bar"], 0.0, func(at: Vector3): _house(at, Color("c6a16d"), Color("8b523b")), 1.0, "Venda do Bar")
 	_construcao("casa_pasto", ancoras["Restaurante"], 0.0, func(at: Vector3): _house(at, Color("cdbb92"), Color("97563f")), 1.0, "Restaurante")
 	var pier: Vector3 = _region.get_feature_center("Pier", "poi")
@@ -975,26 +1076,68 @@ func _igreja_procedural(church: Vector3) -> void:
 ## caídas e raízes (base_arvore_v1.png) deitado no chão, maior quanto mais grosso o
 ## tronco, em blocos de MultiMesh como a mata. Sem ele o tronco parece pousado na grama.
 const BASE_ARVORE := preload("res://assets/prototipo_3d/materiais/base_arvore_v1.png")
+const BASE_ARVORE_AREIA := preload("res://assets/prototipo_3d/materiais/base_arvore_areia_v1.png")
 
 
 func _build_bases_das_arvores() -> void:
-	var placa := PlaneMesh.new()
-	placa.size = Vector2.ONE
-	var material := StandardMaterial3D.new()
-	material.albedo_texture = BASE_ARVORE
-	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA_SCISSOR
-	material.alpha_scissor_threshold = 0.35
-	material.roughness = 1.0
-	placa.material = material
-	var transforms: Array[Transform3D] = []
+	# Um decalque por tipo de chão: terra e folhas na grama, areia revolvida na praia
+	# (a base escura sobre a areia clara destoava).
+	var por_chao := {"grama": [BASE_ARVORE, [] as Array[Transform3D]], "areia": [BASE_ARVORE_AREIA, [] as Array[Transform3D]]}
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 1887
 	for arvore: Dictionary in arvores():
 		var tamanho := clampf(float(arvore["raio"]) * 9.0, 1.8, 5.0)
 		var pos: Vector3 = arvore["pos"]
+		var chao := "areia" if _region.surface_at(pos) == "areia" else "grama"
 		var giro := Basis(Vector3.UP, rng.randf() * TAU).scaled(Vector3(tamanho, 1.0, tamanho))
-		transforms.append(Transform3D(giro, pos + Vector3(0.0, 0.035, 0.0)))
-	_region._multimesh_em_blocos("Pé das árvores", placa, transforms)
+		(por_chao[chao][1] as Array[Transform3D]).append(Transform3D(giro, pos + Vector3(0.0, 0.035, 0.0)))
+	for chao in por_chao:
+		var transforms: Array[Transform3D] = por_chao[chao][1]
+		if transforms.is_empty():
+			continue
+		var placa := PlaneMesh.new()
+		placa.size = Vector2.ONE
+		var material := StandardMaterial3D.new()
+		material.albedo_texture = por_chao[chao][0]
+		material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA_SCISSOR
+		material.alpha_scissor_threshold = 0.35
+		material.roughness = 1.0
+		placa.material = material
+		_region._multimesh_em_blocos("Pé das árvores (%s)" % chao, placa, transforms)
+
+
+## As pedras do lugar: o afloramento claro em camadas no marco "Pedras" da costa e as
+## lajes escuras de recife no raso em frente, que a maré baixa expõe. Só no estilo
+## Tripo (GLBs pedras_praia/pedra_mare); sem eles, nada muda.
+func _build_pedras() -> void:
+	var marco: Vector3 = _region.get_feature_center("Pedras", "poi")
+	if marco == Vector3.ZERO or not estilo_tripo():
+		return
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 1108
+	if CatalogoAssets.tem_tripo("pedras_praia"):
+		var chao := ground_position(marco)
+		var pedra := CatalogoAssets.instanciar("pedras_praia", self, chao, 1.0, rng.randf_range(0.0, TAU))
+		if pedra != null:
+			CatalogoAssets.colisao("pedras_praia", pedra, self, chao)
+		for k in 2:
+			var vizinho := ground_position(marco + Vector3(rng.randf_range(-9.0, 9.0), 0, rng.randf_range(-9.0, 9.0)))
+			CatalogoAssets.instanciar("pedras_praia", self, vizinho, rng.randf_range(0.45, 0.65), rng.randf_range(0.0, TAU))
+	if not CatalogoAssets.tem_tripo("pedra_mare"):
+		return
+	# Lajes no raso: procura pontos com pouca lâmina d'água mar adentro do marco.
+	var para_o_mar := (marco - ground_position(Vector3.ZERO)).normalized()
+	var postas := 0
+	for tentativa in 60:
+		if postas >= 4:
+			break
+		var ponto := marco + para_o_mar * rng.randf_range(6.0, 30.0) + Vector3(rng.randf_range(-14.0, 14.0), 0, rng.randf_range(-14.0, 14.0))
+		var lamina := water_depth_at(ponto)
+		if lamina < 0.06 or lamina > 0.5 or _region._is_on_land(ponto):
+			continue
+		var pos := Vector3(ponto.x, water_level() - lamina - 0.05, ponto.z)
+		CatalogoAssets.instanciar("pedra_mare", self, pos, rng.randf_range(0.7, 1.2), rng.randf_range(0.0, TAU))
+		postas += 1
 
 
 ## Canoas fundeadas no raso diante da vila (canoas.gd), só com o mar de fundo real.

@@ -5,6 +5,7 @@ extends Node
 ## em cada quadra, só uma árvore de cada espécie tem ficha — nunca várias dicas iguais.
 
 const DicaTecla = preload("res://scripts/prototipo_3d/dica_tecla.gd")
+const Atalhos = preload("res://scripts/prototipo_3d/atalhos.gd")
 const DADOS := "res://data/arvores_3d.json"
 const QUADRA := 16.0
 ## Distância (no chão) para a dica aparecer e para a ficha fechar sozinha.
@@ -47,7 +48,7 @@ func configurar(world: Node3D, jogador: Node3D, hud) -> void:
 			_por_quadra[quadra] = []
 		_por_quadra[quadra].append(_pontos.size())
 		_pontos.append({"especie": especie, "pos": pos})
-	_dica = DicaTecla.criar(hud.map_layer(), "E", "Sobre a árvore")
+	_dica = DicaTecla.criar(hud.map_layer(), Atalhos.letra("interagir"), "Sobre a árvore")
 
 
 func _process(_delta: float) -> void:
@@ -69,7 +70,7 @@ func _process(_delta: float) -> void:
 
 
 func _unhandled_key_input(event: InputEvent) -> void:
-	if not (event is InputEventKey and event.pressed and not event.echo and event.physical_keycode == KEY_E):
+	if not (event is InputEventKey and event.pressed and not event.echo and event.physical_keycode == Atalhos.tecla("interagir")):
 		return
 	if _aberta >= 0:
 		var paginas: Array = _fichas[_pontos[_aberta]["especie"]].get("paginas", [])

@@ -69,6 +69,7 @@ static func mostrar(pai: Node, tema: Theme, mensagem: String) -> ProgressBar:
 ## acontece ao longo de vários quadros. A tela passa para uma camada própria na raiz
 ## antes da troca, sobrevive a ela, mostra cada etapa e some quando o vale fica pronto.
 const FATIA_ARQUIVOS := 0.25
+const TEMPO_LEITURA_MS := 1100
 
 
 static func trocar_cena(arvore: SceneTree, cena: String, barra: ProgressBar) -> void:
@@ -94,6 +95,8 @@ static func trocar_cena(arvore: SceneTree, cena: String, barra: ProgressBar) -> 
 		arvore.change_scene_to_packed(packed)
 	await arvore.process_frame
 	await arvore.process_frame
+	# A etapa escrita troca no máximo a cada TEMPO_LEITURA_MS, sempre para a mais
+	# recente: dá para ler cada texto sem atrasar a montagem (etapas-relâmpago pulam).
 	var mundo := arvore.get_first_node_in_group("mundo")
 	# Sem VSync durante a montagem: cada quadro cedido à tela custa só o desenho dela,
 	# não a espera pelo monitor (eram segundos somados no carregamento).
@@ -102,13 +105,18 @@ static func trocar_cena(arvore: SceneTree, cena: String, barra: ProgressBar) -> 
 	if mundo != null and not mundo.construido:
 		var alvo := [FATIA_ARQUIVOS]
 		var mensagem: Label = barra.get_meta("mensagem", null)
+		var pendente := [""]
+		var ultima_troca := [0]
 		mundo.progresso.connect(func(fracao: float, etapa: String) -> void:
 			alvo[0] = FATIA_ARQUIVOS + (1.0 - FATIA_ARQUIVOS) * fracao
-			if mensagem != null and is_instance_valid(mensagem):
-				mensagem.text = mensagem.tr(etapa) + "…")
+			pendente[0] = etapa)
 		# A barra desliza até o alvo em vez de pular: a montagem cede um quadro por vez.
 		while is_instance_valid(mundo) and not mundo.construido:
 			barra.value = lerpf(barra.value, alvo[0], 0.15)
+			if mensagem != null and is_instance_valid(mensagem) and pendente[0] != "" 					and Time.get_ticks_msec() - ultima_troca[0] >= TEMPO_LEITURA_MS:
+				mensagem.text = mensagem.tr(pendente[0]) + "…"
+				pendente[0] = ""
+				ultima_troca[0] = Time.get_ticks_msec()
 			await arvore.process_frame
 	DisplayServer.window_set_vsync_mode(vsync)
 	barra.value = 1.0

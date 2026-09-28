@@ -16,8 +16,9 @@ const RAIO_SAUDACAO := 3.4
 const RAIO_BALAO := 6.0
 const INTERVALO_SAUDACAO_MS := 45000
 ## Duas falas não se atropelam: quem está a menos disto de alguém que ainda fala espera
-## a vez (a fila é quem chegou primeiro a pedir a palavra).
-const RAIO_CONVERSA := 14.0
+## a vez (a fila é quem chegou primeiro a pedir a palavra). Perto do alcance audível
+## da voz (max_distance = 30) para ninguém ouvir duas vozes ao mesmo tempo.
+const RAIO_CONVERSA := 18.0
 ## Folga entre o fim de uma fala e o começo da seguinte, em segundos.
 const PAUSA_ENTRE_FALAS := 0.6
 
@@ -352,6 +353,18 @@ func pode_falar() -> bool:
 		elif outro != self and (outro as Node3D).global_position.distance_to(global_position) < RAIO_CONVERSA:
 			return false
 	return true
+
+
+## Alguém (fora este) ainda fala ao alcance de `ponto`: o Pedro usa com a posição do
+## jogador para não narrar por cima de uma fala que o jogador está ouvindo.
+func fala_perto_de(ponto: Vector3) -> bool:
+	var agora := Time.get_ticks_msec()
+	for outro in _falando.keys():
+		if not is_instance_valid(outro) or int(_falando[outro]) <= agora:
+			_falando.erase(outro)
+		elif outro != self and (outro as Node3D).global_position.distance_to(ponto) < RAIO_CONVERSA:
+			return true
+	return false
 
 
 ## Marca que este morador segura a palavra por `segundos` (mais a folga).

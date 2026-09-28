@@ -7,12 +7,14 @@ extends MoradorNPC
 signal missao_mudou(texto: String, alvo: Vector3, indice: int, total: int)
 signal narrou(texto: String)
 
+## Raios de chegada em unidades (1 u = 4 m), padronizados em 6–9: perto o bastante
+## para ver o lugar de fato, sem exigir encostar no ponto exato.
 const MISSOES := [
-	{"id": "praca", "ancora": "Praça", "raio": 14.0, "audio": "pedro_praca", "texto": "Vem comigo. Que tal a gente ir até a praça? É ali que a vila começa."},
-	{"id": "capela", "ancora": "Igreja", "raio": 12.0, "audio": "pedro_capela", "texto": "Agora a capela. Todo mundo do arraial passa por lá, cedo ou tarde."},
-	{"id": "casa_pasto", "ancora": "Restaurante", "raio": 11.0, "audio": "pedro_casa_pasto", "texto": "Tá com fome? A casa de pasto é logo ali. Depois eu te mostro o roçado de mandioca."},
-	{"id": "rocado", "ancora": "Roçado", "raio": 13.0, "audio": "", "texto": "Esse é o roçado. Mandioca: o pão desta terra."},
-	{"id": "pier", "ancora": "Pier", "raio": 11.0, "audio": "pedro_pier", "texto": "Olha o sol. Bora pro píer antes de escurecer, que a maré conta história."},
+	{"id": "praca", "ancora": "Praça", "raio": 9.0, "audio": "pedro_praca", "texto": "Vem comigo. Que tal a gente ir até a praça? É ali que a vila começa."},
+	{"id": "capela", "ancora": "Igreja", "raio": 8.0, "audio": "pedro_capela", "texto": "Agora a capela. Todo mundo do arraial passa por lá, cedo ou tarde."},
+	{"id": "casa_pasto", "ancora": "Restaurante", "raio": 7.0, "audio": "pedro_casa_pasto", "texto": "Tá com fome? A casa de pasto é logo ali. Depois eu te mostro o roçado de mandioca."},
+	{"id": "rocado", "ancora": "Roçado", "raio": 9.0, "audio": "", "texto": "Esse é o roçado. Mandioca: o pão desta terra."},
+	{"id": "pier", "ancora": "Pier", "raio": 7.0, "audio": "pedro_pier", "texto": "Olha o sol. Bora pro píer antes de escurecer, que a maré conta história."},
 ]
 const SEGUIR_MAX := 4.6
 const CORRER_ALEM := 9.5
@@ -60,27 +62,41 @@ func saudar() -> void:
 
 
 func _atualizar_missao(delta: float) -> void:
-	if missao >= MISSOES.size() and not _despedida_feita and pode_falar():
+	if missao >= MISSOES.size() and not _despedida_feita and _palavra_livre():
 		_despedida_feita = true
 		narrar("", "É isso: o arraial inteiro. Agora o resto é com você.")
 	if not _iniciado or missao < 0 or missao >= MISSOES.size():
 		return
+	# Âncora que não existe neste cenário: pula a missão em vez de apontar a origem.
+	if not ancoras.has(String(MISSOES[missao]["ancora"])):
+		_avancar_missao()
+		return
 	if _espera > 0.0:
 		_espera -= delta
 		if _espera <= 0.0:
-			# Alguém perto ainda fala: o Pedro espera terminar para anunciar.
-			if pode_falar():
+			# Alguém ainda fala perto do Pedro ou do jogador: espera terminar.
+			if _palavra_livre():
 				_anunciar()
 			else:
 				_espera = 0.25
 		return
 	var alvo := _posicao_da_missao(missao)
 	if jogador.global_position.distance_to(alvo) < float(MISSOES[missao]["raio"]):
-		missao += 1
-		if missao >= MISSOES.size():
-			missao_mudou.emit("Você conheceu o arraial. Explore o vale como quiser — Pedro fica por perto.", Vector3.ZERO, MISSOES.size(), MISSOES.size())
-		else:
-			_espera = 1.4
+		_avancar_missao()
+
+
+## Próxima missão; depois da última, emite com indice == total para a seta sumir.
+func _avancar_missao() -> void:
+	missao += 1
+	if missao >= MISSOES.size():
+		missao_mudou.emit("Você conheceu o arraial. Explore o vale como quiser — Pedro fica por perto.", Vector3.ZERO, MISSOES.size(), MISSOES.size())
+	else:
+		_espera = 1.4
+
+
+## Pedro só narra quando nem ele nem o jogador estão ao alcance de outra fala.
+func _palavra_livre() -> bool:
+	return pode_falar() and not fala_perto_de(jogador.global_position)
 
 
 func _anunciar() -> void:
@@ -108,7 +124,7 @@ func narrar(nome_audio: String, texto: String) -> void:
 
 func _verificar_anoitecer() -> void:
 	var periodo := Dia.periodo()
-	if periodo == "entardecer" and not _anoiteceu_hoje and _espera <= 0.0 and pode_falar():
+	if periodo == "entardecer" and not _anoiteceu_hoje and _espera <= 0.0 and _palavra_livre():
 		_anoiteceu_hoje = true
 		narrar("pedro_anoitecer", "Daqui a pouco escurece. Quando terminar, volte pra cama. Apagar no chão não descansa igual.")
 	elif periodo == "manha":

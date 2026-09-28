@@ -5,8 +5,11 @@ shader_type spatial;
 // vermelho, depois o azul (água esverdeada de baía rasa), e o resto vira a cor da
 // água funda. Assim o degradê areia → jade → turquesa → azul da foto sai da
 // profundidade da carta, não de uma faixa pintada.
+// A espuma da beira é só um filete fino e quebrado no primeiro dedo d'água, como
+// numa baía sem arrebentação. shadows_disabled: as sombras duras dos coqueiros
+// caíam dobradas sobre a água e o fundo ao mesmo tempo.
 
-render_mode blend_mix, depth_draw_opaque, cull_back, specular_schlick_ggx;
+render_mode blend_mix, depth_draw_opaque, cull_back, specular_schlick_ggx, shadows_disabled;
 
 uniform sampler2D tela : hint_screen_texture, filter_linear_mipmap, repeat_disable;
 uniform sampler2D profundidade : hint_depth_texture, filter_nearest, repeat_disable;
@@ -19,13 +22,15 @@ uniform float metros_por_unidade = 4.0;
 uniform vec3 absorcao = vec3(0.5, 0.15, 0.32);
 uniform vec3 cor_funda : source_color = vec3(0.09, 0.33, 0.38);
 uniform vec3 tinta_rasa : source_color = vec3(0.95, 1.0, 0.8);
+// 0..1 vindo do autoload Mare: a enchente revolve o fundo e a água escurece.
+uniform float turbidez : hint_range(0.0, 1.0) = 0.0;
 uniform float ondulacao = 0.22;
 uniform float refracao = 0.018;
 uniform float espuma = 0.55;
 // Marolas: cristas de espuma que correm para a areia na água rasa, em dois trens de
 // ondas de ritmo diferente, chegando a cada trecho da praia num momento e com força
-// diferentes (séries que crescem e somem).
-uniform float marolas = 0.85;
+// diferentes (séries que crescem e somem). Espaçadas e suaves: baía calma.
+uniform float marolas = 0.6;
 uniform float ritmo_marolas = 1.3;
 uniform float faixa_marolas_m = 1.4;
 
@@ -68,31 +73,37 @@ void fragment() {
 	}
 
 	vec3 fundo = textureLod(tela, uv, 0.0).rgb;
-	vec3 passa = exp(-absorcao * esp_m);
-	// Espuma fina e quebrada só onde a lâmina é mínima (a baía é calma).
-	float ruido_espuma = texture(ruido, p / 3.0 + TIME * vec2(0.02, -0.015)).r;
-	float beira = (1.0 - smoothstep(0.0, 0.28, esp_m)) * smoothstep(0.45, 0.75, ruido_espuma) * espuma;
+	// Turbidez da enchente: mais absorção (vê-se menos fundo) e verde mais fechado.
+	vec3 passa = exp(-absorcao * (1.0 + turbidez * 1.7) * esp_m);
+	vec3 funda = mix(cor_funda, cor_funda * vec3(0.52, 0.62, 0.5), turbidez);
 	// Profundidade na vertical: a espessura ao longo do olhar corrigida pelo ângulo, para
-	// as marolas não mudarem com a inclinação da câmera. A fase cresce com a
-	// profundidade e anda com o tempo: as cristas correm do fundo para a areia.
+	// espuma e marolas não mudarem com a inclinação da câmera.
 	vec3 olhar = (INV_VIEW_MATRIX * vec4(VIEW, 0.0)).xyz;
 	float prof_v = esp_m * clamp(abs(olhar.y), 0.08, 1.0);
-	float perto_da_praia = (1.0 - smoothstep(0.15, faixa_marolas_m, prof_v)) * smoothstep(0.0, 0.04, prof_v);
+	// Filete da linha d'água: só onde a lâmina tem ~0–10 cm, quebrado em flocos por um
+	// ruído fino de alta frequência — nada de banda branca contínua.
+	float ruido_espuma = texture(ruido, p / 3.0 + TIME * vec2(0.02, -0.015)).r;
+	float ruido_fino = texture(ruido, p / 0.9 - TIME * vec2(0.017, 0.023)).r;
+	float filete = (1.0 - smoothstep(0.02, 0.1, prof_v)) * smoothstep(0.0, 0.015, prof_v);
+	float flocos = smoothstep(0.58, 0.78, ruido_espuma * 0.45 + ruido_fino * 0.55);
+	float beira = filete * flocos * espuma;
+	// Marolas morrem antes da linha d'água (o filete assume lá) e são mais espaçadas.
+	float perto_da_praia = (1.0 - smoothstep(0.3, faixa_marolas_m, prof_v)) * smoothstep(0.06, 0.25, prof_v);
 	// Atraso de cada trecho da praia: ruído lento ao longo da costa (a crista não é uma
 	// linha única) e outro que muda devagar com o tempo.
 	float atraso_a = texture(ruido, p / 55.0).r * 9.0 + texture(ruido, p / 140.0 + TIME * 0.004).r * 6.0;
 	float atraso_b = texture(ruido, p / 37.0 + 0.5).r * 11.0;
-	float onda_a = smoothstep(0.86, 1.0, sin(prof_v * 7.5 - TIME * ritmo_marolas + atraso_a));
-	float onda_b = smoothstep(0.9, 1.0, sin(prof_v * 4.8 - TIME * ritmo_marolas * 0.63 + atraso_b + 2.1));
+	float onda_a = smoothstep(0.9, 1.0, sin(prof_v * 4.6 - TIME * ritmo_marolas + atraso_a));
+	float onda_b = smoothstep(0.93, 1.0, sin(prof_v * 2.9 - TIME * ritmo_marolas * 0.63 + atraso_b + 2.1));
 	// Séries: a força das ondas cresce e some por trechos, com o tempo.
-	float serie = smoothstep(0.3, 0.7, texture(ruido, p / 90.0 + vec2(TIME * 0.011, -TIME * 0.007)).r);
-	float crista = max(onda_a * (0.45 + 0.55 * serie), onda_b * serie) * perto_da_praia;
-	// A espuma da crista se quebra em pedaços, mais inteira quanto mais rasa a água.
-	float quebra = smoothstep(0.25, 0.6, ruido_espuma + 0.25 * (1.0 - prof_v / faixa_marolas_m));
+	float serie = smoothstep(0.35, 0.75, texture(ruido, p / 90.0 + vec2(TIME * 0.011, -TIME * 0.007)).r);
+	float crista = max(onda_a * (0.35 + 0.65 * serie), onda_b * serie) * perto_da_praia;
+	// A espuma da crista se quebra em pedaços em vez de correr inteira.
+	float quebra = smoothstep(0.45, 0.75, ruido_espuma * 0.6 + ruido_fino * 0.4);
 	beira = max(beira, crista * marolas * quebra);
 
 	EMISSION = fundo * tinta_rasa * passa * (1.0 - beira);
-	ALBEDO = mix(cor_funda * (1.0 - passa), vec3(0.95), beira);
+	ALBEDO = mix(funda * (1.0 - passa), vec3(0.93), beira);
 	ROUGHNESS = mix(0.05, 0.6, beira);
 	SPECULAR = 0.5;
 	METALLIC = 0.0;

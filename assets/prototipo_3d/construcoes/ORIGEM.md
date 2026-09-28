@@ -42,3 +42,14 @@ antigos continuam no histórico do Git.
 Uso comercial: plano Max no momento da geração (ver `assets/CREDITOS.md`).
 
 <!-- lote-2026-09-26:fim -->
+
+
+## Igreja de Bom Jesus (28/09/2026)
+
+`igreja_tripo.glb`: a capela do Senhor Bom Jesus dos Pobres, gerada por texto → 3D
+(Modelo HD, H3.1) descrevendo a fachada real (frontão ondulado com cruz e pináculos,
+porta azul em arco com moldura creme, óculo, torre sineira à esquerda com telhado
+piramidal), projeto `bb67178f-f47b-4eb9-bc4b-f6b0a643d55d`, Malha Smart, 13.332
+triângulos, textura 2K. Fica no marco "Igreja" do KML; a capela genérica anterior
+(`capela_tripo.glb`) virou a "Capela velha", bem afastada, na rua do mirante.
+Original em `.assets-raw/tripo/construcoes/igreja_tripo.glb`.

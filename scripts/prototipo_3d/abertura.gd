@@ -7,6 +7,7 @@ const BotaoCanto = preload("res://scripts/prototipo_3d/botao_canto.gd")
 const HudIcon = preload("res://scripts/prototipo_3d/hud_icon.gd")
 const TemaMenu = preload("res://scripts/prototipo_3d/tema_menu.gd")
 const PainelAjustes = preload("res://scripts/prototipo_3d/painel_ajustes.gd")
+const PainelPersonagens = preload("res://scripts/prototipo_3d/painel_personagens.gd")
 const TelaCarregamento = preload("res://scripts/prototipo_3d/tela_carregamento.gd")
 const VISUAL_PREFERENCES := "user://preferencias_visuais.cfg"
 const FLYOVER_SECONDS := 36.0
@@ -56,6 +57,8 @@ var map_icon	# hud_icon.gd
 var ajustes_icon	# hud_icon.gd
 var ajustes	# painel_ajustes.gd
 var options_open := false
+## Painel PERSONAGENS aberto sobre a camada do menu (liberado em _clear).
+var painel_personagens: Control
 ## Botões HOME e "?" que o MAPA acrescenta à coluna do canto (removidos ao sair).
 var map_corner_nodes: Array[Control] = []
 ## Deslize/zoom gradual até um ponto de interesse (lista do painel ou marcador).
@@ -260,6 +263,10 @@ func _clear() -> void:
 		node.queue_free()
 	map_corner_nodes.clear()
 	_stop_map_tween()
+	# O painel PERSONAGENS vive na camada (não em content): liberado aqui.
+	if is_instance_valid(painel_personagens):
+		painel_personagens.queue_free()
+	painel_personagens = null
 	panel.visible = true
 	map_markers.clear()
 	_place_panel(false)
@@ -443,6 +450,7 @@ func _home() -> void:
 	_label("Um vale cheio de histórias.", 21)
 	_button("JOGAR", _intro).grab_focus()
 	_button("EXPLORAR", _start_game)
+	_button("PERSONAGENS", _abrir_personagens)
 	_button("SOBRE", _credits)
 	_button("SAIR", _confirm_exit).theme_type_variation = &"BotaoNegativo"
 	if not history_entries.is_empty():
@@ -712,6 +720,19 @@ func _options(tab: int = 0) -> void:
 	ajustes_icon.definir(true)
 	ajustes.tema = panel.theme
 	ajustes.construir(content, panel.get_parent(), tab)
+
+
+## PERSONAGENS: painel próprio (painel_personagens.gd) sobre a camada do menu, no
+## padrão dos modais: Esc, ×, FECHAR ou clique fora voltam à Home (_clear o libera).
+func _abrir_personagens() -> void:
+	_clear()
+	modal_open = true
+	panel.visible = false
+	var painel := PainelPersonagens.new()
+	painel.fechado.connect(_home)
+	panel.get_parent().add_child(painel)
+	painel.abrir(panel.theme)
+	painel_personagens = painel
 
 
 ## Cabeçalho padrão dos modais (painel_ajustes.gd): título, subtítulo, × e divisor.

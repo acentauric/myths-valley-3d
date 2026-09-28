@@ -21,14 +21,22 @@ const PONTAL := 0.42
 const CALADO := 0.12
 ## O GLB tem quilha e leme abaixo do casco: afunda mais para a água chegar ao costado.
 const CALADO_TRIPO := 0.32
+## A frota do arraial mistura os três cascos do Tripo (a canoa azul e branca, a canoa
+## amarela e o bote de toldo), como na praia real; a sequência evita dois botes juntos.
+const FROTA := ["canoa", "canoa_amarela", "canoa", "bote", "canoa_amarela", "canoa", "bote"]
+var _proximo_da_frota := 0
 
 var _canoas: Array[Node3D] = []
 var _bases: Array[Vector3] = []
 var _fases: Array[float] = []
+## Superfície do mar NA PREAMAR: a maré do momento entra em _process via Mare.
+var _nivel_preamar := 0.0
 
 
 ## `costa` em unidades (XZ), `pier` e `mar_adentro` do píer, `nivel` a superfície da água.
 func montar(costa: PackedVector2Array, pier: Vector3, mar_adentro: Vector3, nivel: float, tripo: bool) -> void:
+	# `nivel` chega já com a maré do momento; a base de tudo aqui é a preamar.
+	_nivel_preamar = nivel - Mare.nivel_offset()
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 1652
 	var candidatos: Array[int] = []
@@ -75,28 +83,49 @@ func montar(costa: PackedVector2Array, pier: Vector3, mar_adentro: Vector3, nive
 
 func _process(_delta: float) -> void:
 	var t := Time.get_ticks_msec() / 1000.0
+	var nivel := _nivel_preamar + Mare.nivel_offset()
 	for i in _canoas.size():
+		var canoa := _canoas[i]
 		var fase := _fases[i]
-		_canoas[i].position.y = _bases[i].y + sin(t * 0.9 + fase) * 0.025
-		_canoas[i].rotation.z = sin(t * 0.7 + fase * 1.3) * 0.035
-		_canoas[i].rotation.x = sin(t * 0.5 + fase * 0.7) * 0.015
+		# Lâmina d'água do momento no ponto, em unidades (a batimetria fala em
+		# metros na preamar); fora da grade, considera água de sobra.
+		var lamina_pre := Mar.lamina_em(Vector2(_bases[i].x, _bases[i].z))
+		var lamina := (LAMINA_MAX_M if is_nan(lamina_pre) else lamina_pre) / Mare.METROS_POR_UNIDADE + Mare.nivel_offset()
+		var calado := float(canoa.get_meta("calado", CALADO))
+		# 0 = flutuando solta; 1 = encalhada de vez (a lâmina não cobre o calado).
+		var encalhe := clampf(1.0 - lamina / maxf(calado, 0.01), 0.0, 1.0)
+		var flutuando_y := nivel + sin(t * 0.9 + fase) * 0.025
+		# Encalhada: o fundo do casco assenta no leito (leito = nível - lâmina).
+		var encalhada_y := nivel - lamina + calado
+		canoa.position.y = lerpf(flutuando_y, encalhada_y, encalhe)
+		# No seco a canoa tomba de leve para um lado fixo, sem balanço.
+		var tombo := 0.25 if fase > PI else -0.25
+		canoa.rotation.z = lerpf(sin(t * 0.7 + fase * 1.3) * 0.035, tombo, encalhe)
+		canoa.rotation.x = sin(t * 0.5 + fase * 0.7) * 0.015 * (1.0 - encalhe)
 
 
 func _criar(tripo: bool) -> Node3D:
 	var raiz := Node3D.new()
 	raiz.name = "Canoa"
-	if tripo and CatalogoAssets.tem_tripo("canoa"):
-		# instanciar() põe a base na origem: afunda o casco até a linha d'água. O GLB
-		# vem com o comprimento em Z; o giro o deita no eixo X, como o casco procedural.
-		var modelo := CatalogoAssets.instanciar("canoa", raiz, Vector3(0, -CALADO_TRIPO, 0), 1.0, PI * 0.5)
+	var chave: String = FROTA[_proximo_da_frota % FROTA.size()]
+	_proximo_da_frota += 1
+	if not CatalogoAssets.tem_tripo(chave):
+		chave = "canoa"
+	if tripo and CatalogoAssets.tem_tripo(chave):
+		# instanciar() põe a base na origem: afunda o casco até a linha d'água. Os GLBs
+		# vêm com o comprimento em Z; o giro os deita no eixo X, como o casco procedural.
+		var modelo := CatalogoAssets.instanciar(chave, raiz, Vector3(0, -CALADO_TRIPO, 0), 1.0, PI * 0.5)
 		if modelo != null:
 			# Caixa pelo tamanho real do modelo (medido deitado no eixo X pelo giro):
 			# do fundo até a borda, sem a proa alta.
 			var limites: AABB = modelo.get_meta("limites")
 			raiz.add_child(_colisao(Vector3(limites.size.z * 0.9, limites.size.y * 0.4, limites.size.x * 0.85), -CALADO_TRIPO))
+			# O calado decide quando a maré baixa encalha a canoa (unidades).
+			raiz.set_meta("calado", CALADO_TRIPO)
 			return raiz
 	raiz.add_child(_casco_procedural())
 	raiz.add_child(_colisao(Vector3(COMPRIMENTO * 0.92, PONTAL + CALADO, BOCA), -CALADO))
+	raiz.set_meta("calado", CALADO)
 	return raiz
 
 

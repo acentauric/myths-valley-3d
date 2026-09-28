@@ -10,6 +10,16 @@ const MUSICA_MENU_3 := "res://assets/audio/musica/tema_menu_2.mp3"
 const MUSICA_MENU_4 := "res://assets/audio/musica/tema_reconcavo.ogg"
 const MUSICA_MENU := MUSICA_MENU_4
 const MUSICA_ROCADO := "res://assets/audio/musica/tema_rocado.mp3"
+## Trilha do jogo por período do dia (entardecer segue a tarde; madrugada, a noite).
+const MUSICAS_PERIODO := {
+	"manha": "res://assets/audio/musica/musica_manha.mp3",
+	"tarde": "res://assets/audio/musica/musica_tarde.mp3",
+	"entardecer": "res://assets/audio/musica/musica_tarde.mp3",
+	"noite": "res://assets/audio/musica/musica_noite.mp3",
+	"madrugada": "res://assets/audio/musica/musica_noite.mp3",
+}
+## Trilha de tensão da mata fechada, por cima do período.
+const MUSICA_MATA := "res://assets/audio/musica/musica_mata.mp3"
 const NARRACAO_ABERTURA := "res://assets/audio/narracao/boas_vindas.mp3"
 const AMBIENTE_MAR := "res://assets/audio/ambiente/mare_mansa.ogg"
 const AMBIENTE_AVES := "res://assets/audio/ambiente/aves_reconcavo.ogg"
@@ -64,6 +74,11 @@ var _caminho_musica: String = ""
 var _ambiente_menu_ativo: bool = false
 var _opcao_previa: int = -1
 var _ultimo_movimento_ms: int = -1000
+## Trilha do jogo no ar (segue o período do dia) e tensão da mata por cima dela.
+var _musica_do_jogo := false
+var _mata_ativa := false
+## Passos na água: 1 = sons originais, 2 = variantes novas (_v2).
+var sons_agua_opcao: int = 1
 var _ganho_musica: float = 1.0:
 	set(valor):
 		_ganho_musica = valor
@@ -199,11 +214,17 @@ func restaurar_padroes(canais: Array = []) -> void:
 
 
 func tocar_musica(caminho: String = MUSICA_ROCADO, forcar_troca: bool = false) -> void:
+	# A trilha do jogo acompanha o período do dia; as demais desligam a mata.
+	_musica_do_jogo = caminho == MUSICA_ROCADO
+	if _musica_do_jogo:
+		parar_ambiente_menu()
+		_conectar_dia()
+		caminho = MUSICA_MATA if _mata_ativa and ResourceLoader.exists(MUSICA_MATA) else _musica_do_periodo()
+	else:
+		_mata_ativa = false
 	var fluxo := _carregar(caminho)
 	if fluxo == null:
 		return
-	if caminho == MUSICA_ROCADO:
-		parar_ambiente_menu()
 	# Reentrar no menu ou mudar opções visuais não reinicia a composição.
 	if not forcar_troca and caminho == _caminho_musica and (_musica.playing or (_transicao_musica and _transicao_musica.is_running())):
 		return
@@ -228,6 +249,63 @@ func parar_musica() -> void:
 		_transicao_musica.kill()
 	_musica.stop()
 	_caminho_musica = ""
+	_musica_do_jogo = false
+	_mata_ativa = false
+
+
+## Música de tensão da mata fechada: cruza para ela ao entrar e volta ao sair.
+func tocar_musica_mata(ligar: bool) -> void:
+	if ligar == _mata_ativa:
+		return
+	_mata_ativa = ligar
+	if not _musica_do_jogo:
+		return
+	var alvo := MUSICA_MATA if ligar and ResourceLoader.exists(MUSICA_MATA) else _musica_do_periodo()
+	_cruzar_musica(alvo, 2.5)
+
+
+## Trilha do período atual; sem o arquivo novo, vale a trilha original do roçado.
+func _musica_do_periodo() -> String:
+	var caminho: String = MUSICAS_PERIODO.get(Dia.periodo(), MUSICA_ROCADO)
+	return caminho if ResourceLoader.exists(caminho) else MUSICA_ROCADO
+
+
+## Liga o relógio uma única vez, só quando a trilha do jogo começa: este
+## autoload carrega antes do Dia, então não dá para conectar no _ready.
+func _conectar_dia() -> void:
+	if not Dia.hora_mudou.is_connected(_ao_mudar_hora):
+		Dia.hora_mudou.connect(_ao_mudar_hora)
+
+
+## O relógio emite a cada quadro: só reage quando o período realmente muda.
+func _ao_mudar_hora(_hora: float) -> void:
+	if not _musica_do_jogo or _mata_ativa:
+		return
+	var alvo := _musica_do_periodo()
+	if alvo != _caminho_musica:
+		_cruzar_musica(alvo, 2.5)
+
+
+## Troca de trilha com fusão: abaixa a atual, troca o fluxo e sobe a nova.
+func _cruzar_musica(caminho: String, segundos: float) -> void:
+	if caminho == _caminho_musica:
+		return
+	var fluxo := _carregar(caminho)
+	if fluxo == null:
+		return
+	_configurar_loop(fluxo)
+	if _transicao_musica and _transicao_musica.is_valid():
+		_transicao_musica.kill()
+	_caminho_musica = caminho
+	_transicao_musica = create_tween()
+	if _musica.playing:
+		_transicao_musica.tween_property(self, "_ganho_musica", 0.0, segundos * 0.5)
+	else:
+		_ganho_musica = 0.0
+	_transicao_musica.tween_callback(func() -> void:
+		_musica.stream = fluxo
+		_musica.play())
+	_transicao_musica.tween_property(self, "_ganho_musica", 1.0, segundos * 0.5)
 
 
 func iniciar_ambiente_menu() -> void:
@@ -293,12 +371,17 @@ func efeito(nome: String) -> void:
 	tocador.play()
 
 
-## Passo no chão dado (grama, terra, areia, madeira, agua, agua_funda). Correndo, usa a
-## corrida daquele chão; sem ela, o passo do chão e, por fim, a corrida genérica.
+## Passo no chão dado (grama, terra, areia, madeira, agua, agua_funda, lama, poca).
+## Correndo, usa a corrida daquele chão; sem ela, o passo do chão e, por fim, a
+## corrida genérica. Com os sons novos escolhidos, a variante _v2 tem preferência.
 func passo(terreno: String, correndo: bool = false) -> void:
 	var nomes := ["corrida_" + terreno, "passo_" + terreno, "corrida"] if correndo else ["passo_" + terreno]
 	var fluxo: AudioStream = null
 	for nome: String in nomes:
+		if sons_agua_opcao == 2 and ResourceLoader.exists(PASTA_EFEITOS + nome + "_v2.mp3"):
+			fluxo = _carregar(PASTA_EFEITOS + nome + "_v2.mp3")
+			if fluxo != null:
+				break
 		fluxo = _carregar(PASTA_EFEITOS + nome + ".mp3")
 		if fluxo != null:
 			break
@@ -306,6 +389,22 @@ func passo(terreno: String, correndo: bool = false) -> void:
 		return
 	_passos.stream = fluxo
 	_passos.pitch_scale = 1.0 + _rng.randf_range(-VARIACAO_DO_PASSO, VARIACAO_DO_PASSO)
+	_passos.play()
+
+
+## Preferência dos passos na água: 1 = sons originais, 2 = variantes novas (_v2).
+func definir_sons_agua(opcao: int) -> void:
+	sons_agua_opcao = clampi(opcao, 1, 2)
+	_salvar_preferencias()
+
+
+## Toca um efeito uma única vez no tocador de passos (botão Ouvir de AJUSTAR).
+func previa_efeito(nome: String) -> void:
+	var fluxo := _carregar(PASTA_EFEITOS + nome + ".mp3")
+	if fluxo == null:
+		return
+	_passos.stream = fluxo
+	_passos.pitch_scale = 1.0
 	_passos.play()
 
 
@@ -399,6 +498,7 @@ func _carregar_preferencias() -> void:
 	musica_menu_opcao = clampi(int(configuracao.get_value("audio", "musica_menu", musica_menu_opcao)), 1, 4)
 	efeitos_menu_opcao = clampi(int(configuracao.get_value("audio", "efeitos_menu", 2)), 1, 2)
 	ambiente_menu_opcao = clampi(int(configuracao.get_value("audio", "ambiente_menu", 3)), 0, 3)
+	sons_agua_opcao = clampi(int(configuracao.get_value("audio", "sons_agua", 1)), 1, 2)
 	volume_musica = _normalizar_volume(float(configuracao.get_value("audio", "volume_musica", PADROES["musica"])))
 	volume_efeitos = _normalizar_volume(float(configuracao.get_value("audio", "volume_efeitos", PADROES["efeitos"])))
 	volume_ambiente = _normalizar_volume(float(configuracao.get_value("audio", "volume_ambiente", PADROES["ambiente"])))
@@ -417,6 +517,7 @@ func _salvar_preferencias() -> void:
 	configuracao.set_value("audio", "musica_menu", musica_menu_opcao)
 	configuracao.set_value("audio", "efeitos_menu", efeitos_menu_opcao)
 	configuracao.set_value("audio", "ambiente_menu", ambiente_menu_opcao)
+	configuracao.set_value("audio", "sons_agua", sons_agua_opcao)
 	configuracao.set_value("audio", "volume_musica", volume_musica)
 	configuracao.set_value("audio", "volume_efeitos", volume_efeitos)
 	configuracao.set_value("audio", "volume_ambiente", volume_ambiente)
