@@ -14,7 +14,7 @@ static func mostrar(pai: Node, tema: Theme, mensagem: String) -> ProgressBar:
 	screen.mouse_filter = Control.MOUSE_FILTER_STOP
 	pai.add_child(screen)
 	var shade := ColorRect.new()
-	shade.color = Color(0.04, 0.07, 0.06, 0.96)
+	shade.color = Color(0.04, 0.07, 0.06, 1.0)
 	shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	screen.add_child(shade)
 	var column := VBoxContainer.new()
@@ -58,7 +58,9 @@ static func mostrar(pai: Node, tema: Theme, mensagem: String) -> ProgressBar:
 	place.add_theme_color_override("font_color", Color(0.72, 0.73, 0.66))
 	column.add_child(place)
 	screen.modulate.a = 0.0
-	screen.create_tween().tween_property(screen, "modulate:a", 1.0, 0.2)
+	var entrada := screen.create_tween()
+	entrada.tween_property(screen, "modulate:a", 1.0, 0.2)
+	screen.set_meta("entrada", entrada)
 	bar.set_meta("tela", screen)
 	bar.set_meta("mensagem", message)
 	return bar
@@ -88,6 +90,12 @@ static func trocar_cena(arvore: SceneTree, cena: String, barra: ProgressBar) -> 
 	camada.layer = 100
 	arvore.root.add_child(camada)
 	if tela != null:
+		# A montagem do vale trava os quadros: a tela entra nela já opaca, nunca no meio
+		# do fade, senão o cenário aparece por trás durante todo o carregamento.
+		var entrada: Tween = tela.get_meta("entrada", null)
+		if entrada != null and entrada.is_valid():
+			entrada.kill()
+		tela.modulate.a = 1.0
 		tela.reparent(camada, false)
 	if packed == null:
 		arvore.change_scene_to_file(cena)

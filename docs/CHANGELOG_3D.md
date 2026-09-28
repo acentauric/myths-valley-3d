@@ -58,6 +58,8 @@ atualize esse arquivo e este documento juntos.
   (a planície rasa passa de 150 u); agora patrulha a água funda de verdade, persegue,
   ataca e devolve o jogador à terra (`tests/tubarao.gd`).
 - Teclas apertadas durante o carregamento não quebram mais a cena do vale.
+- Tela de carregamento opaca de verdade: o menu e o vale não aparecem mais por trás
+  (o fundo era 96% opaco e a tela podia entrar na montagem no meio do fade).
 - Câmera abre recuada (novo máximo mais distante); base das árvores com decalque
   próprio para areia; nenhuma árvore dentro do rio; texto do carregamento legível
   (mín. 1,1 s por etapa).
