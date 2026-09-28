@@ -11,6 +11,7 @@ func _initialize() -> void:
 func _run() -> void:
 	_assert(change_scene_to_file("res://scenes/prototipo_3d/vale.tscn") == OK, "vale carrega")
 	await _frames(6)
+	await _mundo_pronto()
 	var vale = current_scene
 	var world = vale.world
 	var player: CharacterBody3D = vale.player
@@ -84,3 +85,14 @@ func _frames(count: int) -> void:
 func _physics_frames(count: int) -> void:
 	for frame in range(count):
 		await physics_frame
+
+
+## O vale se monta ao longo de vários quadros (world_builder): espera ficar pronto.
+func _mundo_pronto() -> void:
+	for i in range(3000):
+		var mundo := get_first_node_in_group("mundo")
+		if mundo != null and mundo.construido:
+			break
+		await process_frame
+	await process_frame
+	await process_frame

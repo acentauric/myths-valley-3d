@@ -81,6 +81,11 @@ atualize esse arquivo e este documento juntos.
   Cenário → Nomes dos personagens.
 - Pedro não "anda no lugar" mais: a animação dos moradores segue a velocidade real,
   depois das colisões.
+- **Carregamento sem congelar**: o vale é montado ao longo de vários quadros
+  (terreno, ruas, mata e vila cedem um quadro a cada ~80 ms) e a tela de carregamento
+  sobrevive à troca de cena, mostrando cada etapa ("Moldando o terreno…", "Plantando a
+  mata…") com a barra deslizando até o fim. O vale fica escondido e o VSync desligado
+  enquanto monta; o maior congelamento caiu de ~4,5 s para ~0,7 s.
 - **Chão iluminado pelo sol.** Os triângulos do terreno estavam de costas para cima:
   terra, praia e ruas só recebiam luz ambiente. Com a correção, a grama ganhou uma
   tinta verde para compensar o tom ocre da textura sob o sol.

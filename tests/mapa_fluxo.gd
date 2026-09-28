@@ -8,6 +8,7 @@ func _initialize() -> void:
 func _run() -> void:
 	_assert(change_scene_to_file("res://scenes/prototipo_3d/abertura.tscn") == OK, "abertura carrega")
 	await _frames(4)
+	await _mundo_pronto()
 	var opening = current_scene
 	_assert(opening != null and opening.name == "Abertura", "HOME")
 	_assert(opening.version_link != null and opening.version_link.visible, "versão clicável")
@@ -91,6 +92,7 @@ func _run() -> void:
 		if current_scene != null and current_scene.name == "Vale3D":
 			break
 		await process_frame
+	await _mundo_pronto()
 	await _frames(3)
 	var game = current_scene
 	_assert(game != null and game.name == "Vale3D", "entrada no jogo")
@@ -176,6 +178,7 @@ func _run() -> void:
 		if current_scene != null and current_scene.name == "Abertura":
 			break
 		await process_frame
+	await _mundo_pronto()
 	await _frames(3)
 	_assert(current_scene.name == "Abertura" and not paused, "HOME a partir do jogo")
 	print("MAPA_FLUXO_OK: HOME, MAPA, AJUSTAR, SOBRE, histórico, SAIR, JOGAR, caminhada, corrida, ruas e HOME")
@@ -256,3 +259,14 @@ func _capture(label: String) -> void:
 	await _frames(5)
 	await RenderingServer.frame_post_draw
 	root.get_texture().get_image().save_png("res://tests/fluxo_%s.png" % label)
+
+
+## O vale se monta ao longo de vários quadros (world_builder): espera ficar pronto.
+func _mundo_pronto() -> void:
+	for i in range(3000):
+		var mundo := get_first_node_in_group("mundo")
+		if mundo != null and mundo.construido:
+			break
+		await process_frame
+	await process_frame
+	await process_frame

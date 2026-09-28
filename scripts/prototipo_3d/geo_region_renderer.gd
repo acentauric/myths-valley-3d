@@ -24,6 +24,11 @@ const AREIA_TEXTURE := preload("res://assets/prototipo_3d/materiais/areia_praia_
 ## Tinta da textura de grama/terra: com o sol batendo no chão (não mais só a luz
 ## ambiente), a textura crua fica ocre; puxa de volta para o verde do Recôncavo.
 const TINTA_GRAMA := Color(0.74, 0.86, 0.6)
+## Montagem aos poucos: nos laços pesados (terreno, mata) a região devolve o controle
+## para o Godot desenhar um quadro a cada ORCAMENTO_QUADRO_US, e avisa o progresso
+## (0 a 1) e a etapa — a tela de carregamento anda em vez de congelar.
+signal etapa(fracao: float, texto: String)
+const ORCAMENTO_QUADRO_US := 80000
 const TREE_COLLISION_RADIUS := 28.0
 ## Quanto as árvores entram no chão (unidades), para não parecerem pousadas.
 const ARVORE_AFUNDADA := 0.06
@@ -54,6 +59,7 @@ var _elevation_samples: Array[Dictionary] = []
 ## Altura já calculada de cada vértice das malhas do terreno: vizinhos da subdivisão
 ## repetem os mesmos pontos, e ground_height_at percorre todas as amostras a cada vez.
 var _alturas_vertices: Dictionary = {}
+var _inicio_do_quadro_us := 0
 ## Retângulo que envolve a linha da costa: ponto mais longe que a margem pedida não
 ## precisa medir a distância segmento a segmento.
 var _costa_limites := Rect2()
@@ -172,10 +178,13 @@ func build_region(kml_json_path: String, scenario_json_path: String) -> void:
 				if points.size() >= 2:
 					_rivers.append({"name": String(feature.get("name", "")), "points": points, "width": _units(9.0, 4.0)})
 	_curve_roads()
+	await _marcar(0.02, "Enchendo a baía")
 	_build_background()
 	# Ladrilho maior deixa folhas e tufos mais legiveis no terreno ao redor da via.
 	var mata_material := _terrain_texture_material(GRAMA_TERRA_MATA_TEXTURE, 12.0)
-	_add_polygon("Terra", _land, 0.0, LAND_COLOR, true, mata_material)
+	await _marcar(0.05, "Moldando o terreno")
+	await _add_polygon("Terra", _land, 0.0, LAND_COLOR, true, mata_material, true)
+	await _marcar(0.38, "Moldando o terreno")
 	# Quando a mata acompanha todo o continente, evita criar uma segunda malha
 	# sobre a terra. As duas malhas tinham triangulações diferentes e podiam
 	# deixar a textura parecer recortada após a interpolação das elevações.
@@ -200,16 +209,20 @@ func build_region(kml_json_path: String, scenario_json_path: String) -> void:
 	# Mantém a areia acima das sobreposições da Mata (offset 0.027). Sem essa
 	# margem, a textura de grama cobre trechos da praia apesar de a faixa e sua
 	# colisão já existirem na mesma linha costeira.
+	await _marcar(0.42, "Estendendo a praia e os rios")
 	_add_beach()
 	for river in _rivers:
 		_add_ribbon("Rio", river.points, river.width, 0.046, RIVER_COLOR)
 	_add_river_mouths()
 	# A rua mais larga fica por cima nas sobreposições (as ramificações entram por baixo
 	# dela), e cada cruzamento ganha um remendo de terra batida que cobre a emenda.
+	await _marcar(0.46, "Abrindo as ruas")
 	var widest := 0.0
 	for road in _roads:
 		widest = maxf(widest, float(road.width))
-	for road in _roads:
+	for road_index in _roads.size():
+		var road: Dictionary = _roads[road_index]
+		await _marcar(0.46 + 0.03 * float(road_index) / float(_roads.size()), "Abrindo as ruas", false)
 		var road_width: float = float(road.width)
 		var road_y := 0.064 if road_width >= widest else 0.058
 		var road_path := _soften_road_corners(road.points, road_width)
@@ -220,8 +233,11 @@ func build_region(kml_json_path: String, scenario_json_path: String) -> void:
 		_add_ribbon("Transição " + road.name, road_path, transition_width, 0.052, ROAD_COLOR, false, transition_material)
 		_add_ribbon(road.name, road_path, road_width, road_y, ROAD_COLOR, true, _textured_material(ESTRADA_OCRE_TEXTURE, tint))
 	_build_road_junctions()
+	await _marcar(0.49, "Abrindo as ruas", false)
 	_build_shore_access()
-	_build_forest(scenario.get("vegetation", {}))
+	await _marcar(0.5, "Plantando a mata")
+	await _build_forest(scenario.get("vegetation", {}))
+	await _marcar(1.0, "Plantando a mata")
 
 
 ## Altura da superfície do mar com fundo real (dá para entrar andando); -INF sem ele.
@@ -240,6 +256,18 @@ func _on_land(points: PackedVector2Array) -> Array[PackedVector2Array]:
 	for parte in Geometry2D.intersect_polygons(points, _land):
 		partes.append(parte)
 	return partes
+
+
+## Avisa a etapa e, passado o orçamento do quadro (ou sempre, com `forcar`), cede um
+## quadro para a tela de carregamento andar. Fora da árvore de cena, não espera.
+func _marcar(fracao: float, texto: String, forcar: bool = true) -> void:
+	etapa.emit(fracao, texto)
+	if not is_inside_tree():
+		return
+	if not forcar and Time.get_ticks_usec() - _inicio_do_quadro_us < ORCAMENTO_QUADRO_US:
+		return
+	await get_tree().process_frame
+	_inicio_do_quadro_us = Time.get_ticks_usec()
 
 
 func get_map_bounds() -> Rect2:
@@ -614,7 +642,7 @@ func _build_background() -> void:
 	add_child(visual)
 
 
-func _add_polygon(label: String, points: PackedVector2Array, y: float, color: Color, with_collision: bool = false, material_override: Material = null) -> void:
+func _add_polygon(label: String, points: PackedVector2Array, y: float, color: Color, with_collision: bool = false, material_override: Material = null, pausavel: bool = false) -> void:
 	if points.size() < 3:
 		return
 	var surface := SurfaceTool.new()
@@ -622,7 +650,7 @@ func _add_polygon(label: String, points: PackedVector2Array, y: float, color: Co
 	surface.set_material(material_override if material_override != null else _material(color))
 	# Triangulate the full polygon, then subdivide triangles to follow terrain height.
 	# Cell-by-cell clipping had fragmented the visual ground on uneven areas.
-	_add_draped_polygon(surface, points, y)
+	await _add_draped_polygon(surface, points, y, pausavel)
 	var mesh := surface.commit()
 	var visual := MeshInstance3D.new()
 	visual.name = label
@@ -639,10 +667,13 @@ func _add_polygon(label: String, points: PackedVector2Array, y: float, color: Co
 		add_child(body)
 
 
-func _add_draped_polygon(surface: SurfaceTool, points: PackedVector2Array, offset_y: float) -> void:
+func _add_draped_polygon(surface: SurfaceTool, points: PackedVector2Array, offset_y: float, pausavel: bool = false) -> void:
 	var indices := Geometry2D.triangulate_polygon(points)
 	for i in range(0, indices.size(), 3):
 		_add_draped_triangle(surface, points[indices[i]], points[indices[i + 1]], points[indices[i + 2]], offset_y)
+		if pausavel:
+			# O terreno é a parte mais demorada: progresso de 0,05 a 0,38.
+			await _marcar(0.05 + 0.33 * float(i) / float(indices.size()), "Moldando o terreno", false)
 
 
 func _add_draped_triangle(surface: SurfaceTool, a: Vector2, b: Vector2, c: Vector2, offset_y: float, depth: int = 0) -> void:
@@ -1032,6 +1063,8 @@ func _build_forest(configuration: Dictionary) -> void:
 	var attempts := 0
 	while positions.size() < target and attempts < target * 35:
 		attempts += 1
+		if attempts % 200 == 0:
+			await _marcar(0.5 + 0.2 * float(positions.size()) / float(target), "Plantando a mata", false)
 		var point := Vector2(
 			rng.randf_range(_bounds.position.x, _bounds.end.x),
 			rng.randf_range(_bounds.position.y, _bounds.end.y)
@@ -1080,6 +1113,8 @@ func _build_forest(configuration: Dictionary) -> void:
 		var base: Transform3D = built.base
 		var transforms: Array[Transform3D] = []
 		for i in range(group.size()):
+			if i % 150 == 0:
+				await _marcar(0.7 + 0.28 * float(i) / float(maxi(group.size(), 1)), "Plantando a mata", false)
 			var point: Vector2 = group[i]
 			var scale := rng.randf_range(0.8, 1.25)
 			var yaw := rng.randf_range(0.0, TAU)

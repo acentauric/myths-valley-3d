@@ -7,6 +7,7 @@ func _run() -> void:
 	assert(change_scene_to_file("res://scenes/prototipo_3d/abertura.tscn") == OK)
 	await process_frame
 	await process_frame
+	await _mundo_pronto()
 	var opening = current_scene
 	await _capture("abertura")
 	assert(opening.lines.size() == 9)
@@ -52,6 +53,7 @@ func _run() -> void:
 			break
 		await process_frame
 	await process_frame
+	await _mundo_pronto()
 	assert(current_scene.name == "Abertura")
 	current_scene._start_game()
 	await _wait_game()
@@ -75,6 +77,7 @@ func _wait_game() -> void:
 			break
 		await process_frame
 	await process_frame
+	await _mundo_pronto()
 
 
 func _capture(label: String) -> void:
@@ -86,3 +89,14 @@ func _capture(label: String) -> void:
 	var path := "user://teste_%s.png" % label
 	root.get_texture().get_image().save_png(path)
 	print("CAPTURE: ", ProjectSettings.globalize_path(path))
+
+
+## O vale se monta ao longo de vários quadros (world_builder): espera ficar pronto.
+func _mundo_pronto() -> void:
+	for i in range(3000):
+		var mundo := get_first_node_in_group("mundo")
+		if mundo != null and mundo.construido:
+			break
+		await process_frame
+	await process_frame
+	await process_frame

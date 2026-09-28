@@ -55,6 +55,12 @@ var _selected_house: Area3D
 var _house_sites: Array[Dictionary] = []
 ## Lote (posição e giro) de cada construção nomeada, decidido por _loteamento().
 var _lotes: Dictionary = {}
+## Montagem aos poucos: o vale é erguido ao longo de vários quadros, com o progresso
+## (0 a 1) e a etapa avisados à tela de carregamento (tela_carregamento.gd), e
+## `pronto` no fim. Quem depende do mundo espera `construido`/`pronto`.
+signal progresso(fracao: float, etapa: String)
+signal pronto
+var construido := false
 ## Árvores plantadas uma a uma (_arvore): espécie, posição e raio do tronco.
 var _arvores_nomeadas: Array[Dictionary] = []
 var _terreiro: Material
@@ -261,10 +267,22 @@ func estilo_tripo() -> bool:
 	return Estilo.tripo()
 
 
+func _enter_tree() -> void:
+	add_to_group("mundo")
+
+
 func _ready() -> void:
+	_montar()
+
+
+func _montar() -> void:
+	# Escondido enquanto monta: os quadros cedidos à tela de carregamento não gastam
+	# tempo desenhando o vale pela metade atrás dela.
+	visible = false
 	_build_lighting()
 	var region_data := _active_region_data()
 	if region_data.is_empty():
+		_concluir()
 		return
 	region_title = String(region_data.get("title", region_data.get("id", "Vale")))
 	_meters_per_unit = maxf(float(region_data.get("scale_m_per_unit", 1.0)), 0.01)
@@ -273,7 +291,9 @@ func _ready() -> void:
 	add_child(_region)
 	_region.set_meters_per_unit(_meters_per_unit)
 	_region.set_estilo_tripo(estilo_tripo())
-	_region.build_region(String(region_data["geometry"]), String(region_data["scenario"]))
+	# A região vale 0 a 75% do progresso; a vila, o resto.
+	_region.etapa.connect(func(fracao: float, texto: String) -> void: progresso.emit(fracao * 0.75, texto))
+	await _region.build_region(String(region_data["geometry"]), String(region_data["scenario"]))
 	# O sol segue a latitude do lugar (a origem do KML).
 	if _region._projection.has("origin_lat"):
 		Dia.definir_latitude(float(_region._projection["origin_lat"]))
@@ -288,10 +308,37 @@ func _ready() -> void:
 			contador += 1
 		ancoras[nome] = landmark["position"]
 	if region_data["id"] == "bom_jesus_dos_pobres":
-		_construir_vila()
+		await _construir_vila()
 	var faltando := CatalogoAssets.relatorio_faltando()
 	if estilo_tripo() and not faltando.is_empty():
 		print("CATALOGO: ", faltando)
+	_concluir()
+
+
+func _concluir() -> void:
+	visible = true
+	construido = true
+	progresso.emit(1.0, "Pronto")
+	pronto.emit()
+
+
+## Cede um quadro à tela de carregamento se o quadro atual já passou do orçamento.
+const ORCAMENTO_QUADRO_US := 80000
+var _inicio_do_quadro_us := 0
+
+
+func _pausar() -> void:
+	if not is_inside_tree() or Time.get_ticks_usec() - _inicio_do_quadro_us < ORCAMENTO_QUADRO_US:
+		return
+	await get_tree().process_frame
+	_inicio_do_quadro_us = Time.get_ticks_usec()
+
+
+## Etapa da vila: avisa o progresso e cede um quadro à tela de carregamento.
+func _etapa(fracao: float, texto: String) -> void:
+	progresso.emit(fracao, texto)
+	if is_inside_tree():
+		await get_tree().process_frame
 
 
 func _active_region_data() -> Dictionary:
@@ -389,7 +436,9 @@ func _construir_vila() -> void:
 	ancoras["Casa de taipa"] = taipa
 	ancoras["Casa de Carro Quebrado"] = _u(Vector3(40, 0, -35))
 	ancoras["Casa da estrada"] = _region.position_beside_road(_region.wgs84_to_world(-12.812855555555556, -38.780297222222224), "Rua Principal", 10.0)
+	await _etapa(0.76, "Medindo os lotes")
 	_loteamento()
+	await _etapa(0.8, "Erguendo as casas")
 	# Casas da praça
 	_construcao("casa_taipa", taipa, 0.0, func(at: Vector3): _casa_de_taipa_referencia(at), 1.0, "Casa de taipa")
 	_construcao("casa_carro_quebrado", ancoras["Casa de Carro Quebrado"], 0.0, func(at: Vector3): _house(at, Color("e8dcc4"), Color("a8442f")), 1.0, "Casa de Carro Quebrado")
@@ -397,12 +446,18 @@ func _construir_vila() -> void:
 	var casa_estrada_referencia: Vector3 = _region.wgs84_to_world(-12.812855555555556, -38.780297222222224)
 	ancoras["Casa da estrada"] = _region.position_beside_road(casa_estrada_referencia, "Rua Principal", 10.0)
 	_construcao("casa_taipa", ancoras["Casa da estrada"], 0.0, func(at: Vector3): _house(at, Color("dfb980"), Color("ae6950")), 1.0, "Casa da estrada")
+	await _etapa(0.84, "Cercando o roçado")
 	_build_farm()
-	_build_trees()
-	_build_details()
+	await _etapa(0.86, "Plantando as árvores da vila")
+	await _build_trees()
+	await _build_details()
+	await _etapa(0.89, "Erguendo a capela, a venda e o píer")
 	_build_landmark_details()
+	await _etapa(0.93, "Espalhando os objetos")
 	_build_pecas()
+	await _etapa(0.95, "Fundeando as canoas")
 	_build_canoas()
+	await _etapa(0.97, "Acendendo os lampiões")
 	_build_luzes_epoca()
 	_build_bases_das_arvores()
 	if COMPARAR_MANGUEIRAS:
@@ -777,6 +832,7 @@ func _build_trees() -> void:
 	# Posições anotadas em metros reais ao redor da Praça (a cena converte para unidades).
 	# Espécies de docs/AMBIENTACAO.md §4.
 	_arvore("pau_brasil", _u(Vector3(-82, 0, 5)))
+	await _pausar()
 	var plan: Array = [
 		["mangueira", Vector3(-75, 0, -70), 1.0, 0.4],
 		["cajueiro", Vector3(-78, 0, -35), 1.0, 1.9],
@@ -793,21 +849,30 @@ func _build_trees() -> void:
 	]
 	for entry in plan:
 		_arvore(String(entry[0]), _u(entry[1]), float(entry[2]), float(entry[3]))
+		await _pausar()
 	var taipa: Vector3 = ancoras.get("Casa de taipa", _u(Vector3(-52, 0, -27)))
 	for offset in [Vector3(-3.2, 0, -4.6), Vector3(-1.6, 0, -5.9), Vector3(0.4, 0, -4.9), Vector3(-4.6, 0, -3.0)]:
 		_arvore("bananeira", _na_casa("Casa de taipa", offset), 0.9, offset.x * 1.3)
+		await _pausar()
 	for offset in [Vector3(-6.0, 0, 5.5), Vector3(-9.5, 0, 2.0)]:
 		_arvore("dendezeiro", _na_casa("Bar", offset + Vector3(-8, 0, -3)), 0.95, offset.z)
+		await _pausar()
 	var farm: Vector3 = _region.get_feature_center("Fazenda", "area")
 	_arvore("mangueira", farm + Vector3(-9.5, 0, -6.5), 1.15, 0.9)
+	await _pausar()
 	_arvore("cajueiro", farm + Vector3(9.0, 0, -8.0), 1.0, 2.4)
+	await _pausar()
 	_arvore("cajueiro", farm + Vector3(11.0, 0, 8.5), 0.9, 0.3)
+	await _pausar()
 	_arvore("ipe_roxo", _na_casa("Igreja", Vector3(-8.5, 0, 9.0)), 1.0, 0.0)
+	await _pausar()
 	_arvore("ipe_amarelo", _na_casa("Igreja", Vector3(8.5, 0, 9.5)), 1.0, 1.1)
+	await _pausar()
 	var pier: Vector3 = _region.get_feature_center("Pier", "poi")
 	var toward_praca: Vector3 = (_region.get_feature_center("Praça", "poi") - pier).normalized()
 	for step in [Vector3(14.0, 0, 5.0), Vector3(20.0, 0, -4.0)]:
 		_arvore("coqueiro", pier + toward_praca * step.x + Vector3(0, 0, step.z), 1.0, step.z)
+		await _pausar()
 
 
 func _build_details() -> void:
@@ -817,6 +882,7 @@ func _build_details() -> void:
 		var z: float = (-21.0 + floorf(float(i) / 7.0) * 14.0) / _meters_per_unit
 		if absf(x) < 3.0 / _meters_per_unit:
 			continue
+		await _pausar()
 		if _adereco("moita", Vector3(x, 0, z), float(i) * 0.7, 0.55 + float(i % 3) * 0.12) != null:
 			continue
 		for j in range(3):

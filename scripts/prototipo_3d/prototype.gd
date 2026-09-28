@@ -6,6 +6,7 @@ extends Node3D
 const NPCS := "res://data/npcs_3d.json"
 const TeclasMovimento = preload("res://scripts/prototipo_3d/teclas_movimento.gd")
 const TelaCarregamento = preload("res://scripts/prototipo_3d/tela_carregamento.gd")
+const TemaMenu = preload("res://scripts/prototipo_3d/tema_menu.gd")
 const MapaJogo = preload("res://scripts/prototipo_3d/mapa_jogo.gd")
 const Lapides = preload("res://scripts/prototipo_3d/lapides.gd")
 const ArvoresInfo = preload("res://scripts/prototipo_3d/arvores_info.gd")
@@ -46,6 +47,14 @@ func _enter_tree() -> void:
 func _ready() -> void:
 	Audio.parar_narracao()
 	Audio.tocar_musica()
+	# O vale se monta ao longo de vários quadros (world_builder), com a tela de
+	# carregamento por cima; o resto da cena depende dele. Até lá o jogador não cai.
+	if not world.construido:
+		set_process(false)
+		player.set_physics_process(false)
+		await world.pronto
+		set_process(true)
+		player.set_physics_process(true)
 	var spawn: Vector3 = _ponto_de_chegada()
 	player.spawn_position = spawn
 	player.global_position = spawn
@@ -68,9 +77,10 @@ func _ready() -> void:
 	hud.settings_requested.connect(_open_settings)
 	hud.settings_closed.connect(_on_menu_cancelled)
 	hud.style_changed.connect(func() -> void:
-		# Novo estilo visual: reconstrói o vale inteiro.
+		# Novo estilo visual: reconstrói o vale inteiro, com a tela de carregamento.
 		get_tree().paused = false
-		get_tree().reload_current_scene())
+		var barra := TelaCarregamento.mostrar(hud.map_layer(), TemaMenu.criar(), tr("Trocando o estilo do vale…"))
+		TelaCarregamento.trocar_cena(get_tree(), scene_file_path, barra))
 	lapides = Lapides.new()
 	lapides.name = "Lapides"
 	add_child(lapides)

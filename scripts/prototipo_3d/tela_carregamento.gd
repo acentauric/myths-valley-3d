@@ -59,11 +59,18 @@ static func mostrar(pai: Node, tema: Theme, mensagem: String) -> ProgressBar:
 	column.add_child(place)
 	screen.modulate.a = 0.0
 	screen.create_tween().tween_property(screen, "modulate:a", 1.0, 0.2)
+	bar.set_meta("tela", screen)
+	bar.set_meta("mensagem", message)
 	return bar
 
 
-## Carrega `cena` em segundo plano e troca para ela. Os recursos lidos ocupam até 85% da
-## barra; o restante é a montagem da cena nova.
+## Carrega `cena` em segundo plano e troca para ela. Os arquivos ocupam o primeiro
+## quarto da barra; o resto é a montagem do vale (world_builder, grupo "mundo"), que
+## acontece ao longo de vários quadros. A tela passa para uma camada própria na raiz
+## antes da troca, sobrevive a ela, mostra cada etapa e some quando o vale fica pronto.
+const FATIA_ARQUIVOS := 0.25
+
+
 static func trocar_cena(arvore: SceneTree, cena: String, barra: ProgressBar) -> void:
 	ResourceLoader.load_threaded_request(cena)
 	var progress: Array = []
@@ -71,12 +78,42 @@ static func trocar_cena(arvore: SceneTree, cena: String, barra: ProgressBar) -> 
 		var status := ResourceLoader.load_threaded_get_status(cena, progress)
 		if status != ResourceLoader.THREAD_LOAD_IN_PROGRESS:
 			break
-		barra.value = maxf(barra.value, float(progress[0]) * 0.85)
+		barra.value = maxf(barra.value, float(progress[0]) * FATIA_ARQUIVOS)
 		await arvore.process_frame
-	barra.value = 0.9
-	await arvore.process_frame
+	barra.value = FATIA_ARQUIVOS
 	var packed := ResourceLoader.load_threaded_get(cena) as PackedScene
+	var tela: Control = barra.get_meta("tela", null)
+	var camada := CanvasLayer.new()
+	camada.layer = 100
+	arvore.root.add_child(camada)
+	if tela != null:
+		tela.reparent(camada, false)
 	if packed == null:
 		arvore.change_scene_to_file(cena)
-		return
-	arvore.change_scene_to_packed(packed)
+	else:
+		arvore.change_scene_to_packed(packed)
+	await arvore.process_frame
+	await arvore.process_frame
+	var mundo := arvore.get_first_node_in_group("mundo")
+	# Sem VSync durante a montagem: cada quadro cedido à tela custa só o desenho dela,
+	# não a espera pelo monitor (eram segundos somados no carregamento).
+	var vsync := DisplayServer.window_get_vsync_mode()
+	DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_DISABLED)
+	if mundo != null and not mundo.construido:
+		var alvo := [FATIA_ARQUIVOS]
+		var mensagem: Label = barra.get_meta("mensagem", null)
+		mundo.progresso.connect(func(fracao: float, etapa: String) -> void:
+			alvo[0] = FATIA_ARQUIVOS + (1.0 - FATIA_ARQUIVOS) * fracao
+			if mensagem != null and is_instance_valid(mensagem):
+				mensagem.text = mensagem.tr(etapa) + "…")
+		# A barra desliza até o alvo em vez de pular: a montagem cede um quadro por vez.
+		while is_instance_valid(mundo) and not mundo.construido:
+			barra.value = lerpf(barra.value, alvo[0], 0.15)
+			await arvore.process_frame
+	DisplayServer.window_set_vsync_mode(vsync)
+	barra.value = 1.0
+	if tela != null:
+		var sumir := tela.create_tween()
+		sumir.tween_property(tela, "modulate:a", 0.0, 0.35)
+		await sumir.finished
+	camada.queue_free()

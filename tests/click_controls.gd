@@ -10,6 +10,7 @@ func _run() -> void:
 	assert(change_scene_to_file("res://scenes/prototipo_3d/vale.tscn") == OK)
 	for frame in range(4):
 		await process_frame
+	await _mundo_pronto()
 	for frame in range(4):
 		await physics_frame
 	var game := current_scene
@@ -94,3 +95,14 @@ func _run() -> void:
 	assert(not label.visible)
 	print("CLICK_CONTROLS_OK houses=", houses.size(), " route_points=", path.size(), " route_ms=", route_ms, " destination=", target)
 	quit()
+
+
+## O vale se monta ao longo de vários quadros (world_builder): espera ficar pronto.
+func _mundo_pronto() -> void:
+	for i in range(3000):
+		var mundo := get_first_node_in_group("mundo")
+		if mundo != null and mundo.construido:
+			break
+		await process_frame
+	await process_frame
+	await process_frame
