@@ -61,6 +61,8 @@ func _ready() -> void:
 		await world.pronto
 		set_process(true)
 		player.set_physics_process(true)
+	# Vindo do menu, o relógio esperou a montagem na hora_inicial (abertura._start_game).
+	Dia.congelado_na_carga = false
 	var spawn: Vector3 = _ponto_de_chegada()
 	player.spawn_position = spawn
 	player.global_position = spawn
@@ -85,6 +87,9 @@ func _ready() -> void:
 	hud.style_changed.connect(func() -> void:
 		# Novo estilo visual: reconstrói o vale inteiro, com a tela de carregamento.
 		get_tree().paused = false
+		# Os ajustes tinham parado o relógio; ele volta como estava antes de abri-los.
+		Dia.pausado = _relogio_pausado_antes
+		_saindo = true
 		var barra := TelaCarregamento.mostrar(hud.map_layer(), TemaMenu.criar(), tr("Trocando o estilo do vale…"))
 		TelaCarregamento.trocar_cena(get_tree(), scene_file_path, barra))
 	lapides = Lapides.new()
@@ -293,8 +298,9 @@ func _bind(action: StringName, keys: Array, replace_existing := false) -> void:
 
 
 func _unhandled_key_input(event: InputEvent) -> void:
-	# Durante a montagem do vale (tela de carregamento) mapa e HUD ainda não existem.
-	if mapa == null:
+	# Durante a montagem do vale (tela de carregamento) mapa e HUD ainda não existem; na
+	# saída, abrir o mapa esconderia a tela de carregamento, que é filha do HUD.
+	if mapa == null or _saindo:
 		return
 	if event is InputEventKey and event.pressed and not event.echo:
 		if mapa.aberto and event.physical_keycode == KEY_ESCAPE:

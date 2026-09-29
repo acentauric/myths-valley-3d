@@ -23,6 +23,10 @@ var hora_inicial: float = 7.0
 var pausado := false
 ## Se o botão de relógio do HUD pode pausar o dia dentro do jogo (AJUSTAR).
 var pausa_no_jogo := false
+## Segura o relógio enquanto o vale do jogo se monta: o jogador chega exatamente na
+## hora_inicial, a mesma que escolheu a capa (dia ou noite) da tela de carregamento.
+## Separado de `pausado`, que é a escolha do jogador e aparece no HUD.
+var congelado_na_carga := false
 var _periodo := ""
 
 
@@ -39,7 +43,7 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	var segundos_por_hora: float = VELOCIDADES[velocidade]
-	if pausado or segundos_por_hora <= 0.0:
+	if pausado or congelado_na_carga or segundos_por_hora <= 0.0:
 		return
 	definir_hora(hora + delta / segundos_por_hora)
 
@@ -92,7 +96,14 @@ func periodo() -> String:
 
 
 func eh_noite() -> bool:
-	return hora < NASCER or hora >= POR + 0.3
+	return eh_noite_em(hora)
+
+
+## A mesma regra de eh_noite() para uma hora qualquer (0–24), como a hora em que o jogo
+## vai começar.
+func eh_noite_em(outra_hora: float) -> bool:
+	var h := fposmod(outra_hora, 24.0)
+	return h < NASCER or h >= POR + 0.3
 
 
 ## 0 no fundo da noite, 1 ao meio-dia; transição suave no nascer e no pôr.

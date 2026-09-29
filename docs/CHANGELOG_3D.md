@@ -60,6 +60,20 @@ atualize esse arquivo e este documento juntos.
 - Teclas apertadas durante o carregamento não quebram mais a cena do vale.
 - Tela de carregamento opaca de verdade: o menu e o vale não aparecem mais por trás
   (o fundo era 96% opaco e a tela podia entrar na montagem no meio do fade).
+- **Identidade "Crônica do Recôncavo" na tela de carregamento**: capa pintada do vale
+  cobrindo a tela com câmera lenta, logotipo em talha dourada, nota do almanaque, etapa
+  com porcentagem, rosa dos ventos girando e um fio de ouro como barra (fontes Cinzel e
+  Cormorant Garamond). A capa segue a hora: **de dia** o entardecer com a igreja e o
+  saveiro, com poeira na luz; **de noite** o viajante com o lampião na boca da mata, com
+  vaga-lumes, a lanterna tremendo, olhos na mata e os ditos do vale no lugar do
+  almanaque. A entrada no jogo usa a hora em que ele começa; a volta ao menu e a troca de
+  estilo, a hora corrente; o boot, a hora do menu. O logotipo ficou como peça própria em
+  `assets/prototipo_3d/identidade/` para outros usos.
+- O relógio espera a montagem do vale ao entrar no jogo: o jogador chega exatamente na
+  hora inicial, a mesma que escolheu a capa (antes, em velocidade Rápida, dava para ver
+  a capa de dia às 17h30 e chegar já de noite).
+- Trocar o estilo visual dentro do jogo não deixa mais o relógio parado para sempre, e
+  apertar M enquanto o jogo volta ao menu não esconde mais a tela de carregamento.
 - Câmera abre recuada (novo máximo mais distante); base das árvores com decalque
   próprio para areia; nenhuma árvore dentro do rio; texto do carregamento legível
   (mín. 1,1 s por etapa).

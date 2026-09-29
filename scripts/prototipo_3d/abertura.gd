@@ -78,6 +78,7 @@ func _ready() -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	# O menu sempre abre no começo do dia; o dia corre na velocidade de Passagem do tempo.
 	Dia.pausado = false
+	Dia.congelado_na_carga = false
 	Dia.definir_hora(Dia.INICIO_DO_DIA)
 	add_child(camera)
 	camera.current = true
@@ -854,14 +855,17 @@ func _start_game() -> void:
 	var loading := _show_loading()
 	Dia.pausado = false
 	Dia.definir_hora(Dia.hora_inicial)
+	# prototype.gd solta o relógio quando o vale fica pronto.
+	Dia.congelado_na_carga = true
 	IdiomaMenu.restaurar_jogo()
 	TelaCarregamento.trocar_cena(get_tree(), GAME_SCENE, loading)
 
 
-## Tela de carregamento sobre o menu (tela_carregamento.gd). Devolve a barra.
+## Tela de carregamento sobre o menu (tela_carregamento.gd). Devolve a barra. A capa (dia
+## ou noite) segue a hora em que o jogo vai começar, não a do cenário do menu.
 func _show_loading() -> ProgressBar:
 	_close_help()
-	return TelaCarregamento.mostrar(panel.get_parent(), panel.theme, tr("Carregando o vale…"))
+	return TelaCarregamento.mostrar(panel.get_parent(), panel.theme, tr("Carregando o vale…"), Dia.hora_inicial)
 
 
 func _formatar_escala(meters_per_unit: float) -> String:

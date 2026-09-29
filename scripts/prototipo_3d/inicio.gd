@@ -13,7 +13,8 @@ func _ready() -> void:
 	IdiomaMenu.aplicar_menu()
 	var camada := CanvasLayer.new()
 	add_child(camada)
-	var barra := TelaCarregamento.mostrar(camada, TemaMenu.criar(), tr("Carregando o vale…"))
+	# O menu abre no começo do dia: a capa é a de dia.
+	var barra := TelaCarregamento.mostrar(camada, TemaMenu.criar(), tr("Carregando o vale…"), Dia.INICIO_DO_DIA)
 	# Espera o fade da tela (0,2 s) terminar: a montagem do vale trava os quadros.
 	await get_tree().create_timer(0.25).timeout
 	TelaCarregamento.trocar_cena(get_tree(), ABERTURA, barra)
