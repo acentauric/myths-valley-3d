@@ -189,7 +189,8 @@ não por importância: cada um só precisa dos anteriores.
 | ~~1a~~ **FEITA** | ~~`Progressao`, `Energia`~~ | 229 | O fôlego, e o cansaço que encurta o passo para 62% — a mesma regra, lida dos mesmos arquivos |
 | 1b | `Vida` | 199 | A vida que a onça tira, e a queda que leva para casa. Ficou para depois: ela chama `Talentos`, `Luta`, `Equipamento`, `Cozinha`, `Telas` e `Dialogo`, e nenhum deles atravessou ainda |
 | ~~2~~ **FEITA** | ~~`Inventario`, `Equipamento`, `Catalogo`~~ | 817 | Os 30 espaços, os 10 de mão, o que o corpo veste, e o catálogo com 51 itens. Custou um refactor no 2D: a tecla da mão saiu do `Inventario` e foi para o `Controles` — doze linhas de entrada prendiam 174 de regra |
-| 3 | `Talentos`, `Fe`, `Ritos` | 1.303 | A teia de ofício e as três árvores de fé, com XP separado e o preço de migrar |
+| ~~2.9~~ **FEITA** | ~~`Relogio`, `Efeitos`~~ | 255 | O calendário — dia, estação, ano — e o efeito que vence em dias. Veio da Fase 5, que era pré-requisito desta fase e não o penúltimo degrau |
+| 3 | `Talentos`, `Fe`, `Ritos`, **`Afinidade`**, **`Jogo`** | 1.853 | A teia de ofício, as três árvores de fé com XP separado e o preço de migrar, e os moradores deixando de ser cenário. **Os quatro primeiros se citam em círculo: vão juntos ou não vão**, e a `Afinidade` puxa o `Jogo`, que tem uma linha 2D a mover |
 | 4 | `Receitas`, `Cozinha`, `Oficina`, `Pesca` | 891 | Receita que se aprende; a bancada que serra tábua e torce corda; e a água do lugar decidindo o peixe — o 3D já tem mar, rio e cardume, e não tem o que pescar neles |
 | 5 | `Cartas`, `Colecao` | 411 | Pactos com mitos, apoios, rituais; cordéis, bichos e sinais |
 | 6 | `Afinidade`, `Povoado` | 606 | Os sete moradores deixam de ser cenário e passam a ter gosto, desgosto e reação |
@@ -404,7 +405,7 @@ escrita, e o portão cobra os dois.
 
 ---
 
-## Fase 5 — O relógio, o único lugar em que os dois se sobrepõem
+## ~~Fase 5 — O relógio, o único lugar em que os dois se sobrepõem~~ — FEITA (setembro de 2026)
 
 É o único assunto que os dois projetos resolvem ao mesmo tempo, e por isso o
 único que precisa de decisão — em todo o resto, um tem e o outro não.
@@ -446,6 +447,36 @@ os mesmos nomes — é o que faz eles atravessarem sem adaptação.
 O que isso custa: a nota do `Dia` que diz ser "independente dos saves do 2D"
 deixa de valer, porque dia, estação e ano precisam entrar no save. É uma linha
 de comentário e um campo em `O_QUE_GUARDAR`.
+
+### O que saiu, e por que custou menos do que esta fase previa
+
+**Zero linhas mudadas no `Relogio`.** A porta já existia: o `pausado`. Com ele
+ligado, o `_process` de lá não anda e quem manda na hora é quem está de fora.
+O `Dia` liga o `pausado` e escreve `minutos` a cada vez que a hora dele muda —
+seis linhas em `dia.gd`, num método chamado de dentro do `definir_hora` que já
+existia.
+
+| O que ficou onde | |
+|---|---|
+| **Hora** | `Dia`, como sempre. Céu, luzes de 1887, som e tela de carregamento não sabem que algo mudou |
+| **Dia, estação, ano, dia absoluto** | `Relogio`, que é onde sempre foram contados |
+| **A virada do dia** | `Relogio.dormir()`, e **ninguém a chama ainda** — o vale não tem cama. Quando tiver, é uma linha |
+
+`tests/calendario.gd` cobra as duas metades: que os dois concordem na hora, e
+que o calendário **não ande sozinho**. A segunda pergunta só funciona com o
+`Dia` parado — a primeira versão do teste media com ele andando, viu o
+calendário andar junto e acusou o jogo de contar duas vezes. Com o `Dia`
+parado, qualquer movimento no calendário só pode ter vindo do `_process` dele,
+que é o defeito procurado.
+
+E o `Efeitos` entrou junto, porque só dependia de `Relogio` e `Progressao`. O
+portão já cobra o que o calendário veio destravar: um efeito de dois dias vence
+depois de duas noites, e não antes.
+
+**O que esta fase revelou sobre a ordem do plano:** a fé depende do calendário.
+`Talentos`, `Fe`, `Ritos` e `Afinidade` precisam dele para contar espera, zerar
+o que se gasta uma vez por dia e achar a festa na estação certa. A Fase 5 não
+era a penúltima — era pré-requisito da 2ᵃ.
 
 ---
 

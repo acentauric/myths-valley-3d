@@ -50,8 +50,39 @@ func _process(delta: float) -> void:
 
 func definir_hora(nova: float) -> void:
 	hora = fposmod(nova, 24.0)
+	_espelhar_no_calendario()
 	hora_mudou.emit(hora)
 	_atualizar_periodo()
+
+
+## O CALENDÁRIO DO JOGO 2D ANDA JUNTO COM A HORA DAQUI.
+##
+## O `Relogio` é arquivo do 2D, compartilhado (ver `scripts/compartilhado/`), e
+## lá ele é o dono do tempo. Aqui ele é **calendário**: quem manda na hora
+## continua sendo este autoload, porque é ele que o céu, as luzes de 1887, o
+## som do ambiente e a tela de carregamento consultam — trocar esse dono seria
+## mexer em cinco sistemas que funcionam para não ganhar nada.
+##
+## O que o vale não tinha e o calendário traz é o que vem DEPOIS da hora: o
+## contador de dia, a estação e o ano. É disso que dependem a planta que
+## cresce, a obra que fica pronta, o efeito que vence e o talento que se gasta
+## uma vez por dia — todos escutam o virar do dia, nenhum escuta a hora.
+##
+## A porta para isso já existia no próprio `Relogio`, e não foi preciso mudar
+## uma linha dele: com `pausado` ligado, o `_process` de lá não anda e quem
+## manda na hora é quem está de fora. Daqui se escreve `minutos`, que é como
+## ele guarda a hora — e é por isso que `hora()` responde igual nos dois.
+##
+## O DIA NÃO VIRA SOZINHO, e é de propósito. No 2D o contador só avança quando
+## o jogador dorme ou desmaia, para a noite acontecer dentro do dia corrente.
+## O vale ainda não tem cama; quando tiver, ela chama `Relogio.dormir()` e o
+## resto segue por conta.
+func _espelhar_no_calendario() -> void:
+	var calendario := get_node_or_null("/root/Relogio")
+	if calendario == null:
+		return
+	calendario.pausado = true
+	calendario.minutos = hora * 60.0
 
 
 func avancar(horas: float) -> void:

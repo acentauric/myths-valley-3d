@@ -24,6 +24,13 @@ signal narrou(texto: String)
 ##      deste projeto. Texto em constante de GDScript não tem como ganhar
 ##      `_en` e `_es`; em JSON, tem — e é a mesma forma que o
 ##      `historico_3d.json` já usa.
+## `IdiomaMenu` NÃO É CLASSE GLOBAL — não tem `class_name`. A abertura o
+## carrega com `preload`, e aqui tem de ser igual. A primeira versão desta
+## fatia escreveu `IdiomaMenu.sufixo()` direto, e o erro de compilação não
+## derrubou o jogo: no Godot ele deixa o nó sem script, e o estrago apareceu
+## no último teste da bateria, longe de onde foi feito.
+const IdiomaMenu = preload("res://scripts/prototipo_3d/idioma_menu.gd")
+
 const ARQUIVO_MISSOES := "res://data/missoes_guia.json"
 
 ## Preenchido no `_ready` a partir do arquivo. Fica `[]` se o arquivo sumir, e
@@ -52,9 +59,12 @@ func _ready() -> void:
 ## Lê os passos do arquivo, já no idioma escolhido.
 ##
 ## A tradução é resolvida AQUI, uma vez, e não a cada fala: quem lê `texto`
-## daqui para frente lê a língua do jogador sem saber que existem outras. O
-## sufixo é o do `IdiomaMenu` — "", "_en", "_es" —, a mesma conta que o
-## histórico da abertura já faz.
+## daqui para frente lê a língua do jogador sem saber que existem outras.
+##
+## Quem escolhe é o `IdiomaMenu.campo`, que já existia e já era usado pela
+## abertura para o histórico e a travessia. A primeira versão disto tinha um
+## `_no_idioma` próprio fazendo a mesma conta — foi apagado. Duas contas de
+## idioma no mesmo jogo é como uma tela passa a falar espanhol e a outra não.
 func _ler_missoes() -> void:
 	MISSOES = []
 	_arremate = {}
@@ -68,24 +78,13 @@ func _ler_missoes() -> void:
 		push_warning("GuiaPedro: %s não é um objeto JSON." % ARQUIVO_MISSOES)
 		return
 
-	var sufixo := IdiomaMenu.sufixo()
 	for bruto in dado.get("passos", []):
 		var passo: Dictionary = bruto.duplicate()
-		passo["texto"] = _no_idioma(passo, "texto", sufixo)
+		passo["texto"] = str(IdiomaMenu.campo(passo, "texto"))
 		MISSOES.append(passo)
 	_arremate = dado.get("arremate", {}).duplicate()
-	_arremate["texto"] = _no_idioma(_arremate, "texto", sufixo)
+	_arremate["texto"] = str(IdiomaMenu.campo(_arremate, "texto"))
 
-
-## O campo no idioma de agora, caindo no português quando a tradução falta.
-##
-## Cair no português é melhor do que devolver vazio: um balão sem texto parece
-## defeito do jogo, e um balão em português num jogo em espanhol parece o que
-## é — tradução faltando. O portão `tests/idiomas.gd` existe para que essa
-## queda não aconteça calada.
-func _no_idioma(de: Dictionary, campo: String, sufixo: String) -> String:
-	var traduzido := str(de.get(campo + sufixo, ""))
-	return traduzido if traduzido != "" else str(de.get(campo, ""))
 
 
 func _physics_process(delta: float) -> void:
