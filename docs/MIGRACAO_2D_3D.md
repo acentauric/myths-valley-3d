@@ -1,0 +1,619 @@
+# Migração 2D → 3D: o que já existe e como aproveitar
+
+> Escrito em 29 de setembro de 2026, depois de medir os dois projetos arquivo a
+> arquivo. Três decisões do autor ordenam este documento:
+>
+> - **o 3D vira o jogo completo**, e o 2D passa a ser a referência de regras;
+> - **a migração é a prioridade**, e a jam de 5/10 entra com o que estiver de pé;
+> - **o que o 3D já tem fica.** Ver a regra abaixo, que manda em todas as fases.
+>
+> Este documento é para trabalhar em cima. Quando uma fase sair, ela é riscada
+> aqui, como no [PLANO.md](PLANO.md).
+
+## A regra que manda em tudo: o 3D não é reescrito
+
+Migrar aqui quer dizer **acrescentar**, e nunca refazer o que já está de pé. O
+protótipo 3D tem seis builds de trabalho em cima de assets do Tripo, terreno
+geográfico real, dois estilos visuais, dia e noite com as luzes de 1887,
+moradores com posto por período e voz, e uma abertura própria. Nada disso é
+matéria-prima para ser substituída — é a base que recebe.
+
+Em três frases:
+
+1. **Asset 3D nunca é trocado por arte 2D.** Sprite não substitui GLB, tilemap
+   não substitui terreno, e o `CatalogoAssets` continua sendo a única fonte de
+   cada peça. A arte do 2D só entra **na interface**, onde o 3D não tem
+   equivalente e precisa de um: ícone de item na mochila, folha de cordel, face
+   de carta, ícone de nó da teia. No mundo, nenhuma.
+   **E o que só existe em 2D vira modelo 3D** — 44 peças, da cama ao casarão da
+   fazenda, com o sprite servindo de imagem de referência para o Tripo. É a
+   Fase 7, que corre em paralelo com todas as outras desde o primeiro dia,
+   porque modelo tem prazo de forno e sistema não espera modelo.
+2. **Mecânica que já funciona no 3D continua dona do assunto dela.** O relógio
+   do vale é o `Dia`; quem anda com o jogador e narra é o `GuiaPedro`; o HUD é
+   o `prototype_hud`; o balão de fala é o do 3D; o mapa é o `mapa_jogo`. O que
+   vem do 2D entra **por baixo** — como calendário, como lista de missões, como
+   painel a mais —, sem trocar a peça que já existe.
+3. **Só nasce do zero o que o 3D não tem.** Inventário, fôlego, vida, teias, fé,
+   cartas, coleção, receitas, obras, venda, afinidade e salvamento não existem
+   lá. Esses vêm inteiros do 2D, com regra e portão, porque escrever de novo o
+   que já tem 46 portões cobrindo seria o retrabalho mais caro possível.
+
+**O teste de cada fatia:** se ela apaga, reescreve ou aposenta código ou asset
+que hoje roda no `prototipo_3d/`, ela está errada e precisa ser recortada de
+outro jeito. A única exceção prevista está na Fase 3, e é uma constante de
+cinco linhas que vira dado — descrita lá, com o que se preserva.
+
+## O que a medição mostrou, e por que ela muda o plano
+
+A pergunta era "quanto do 2D dá para aproveitar". A resposta medida é **quase
+tudo**, e por um motivo que não foi sorte: o 2D guarda regra em autoload e
+desenho em cena, e nunca misturou os dois.
+
+**Dos 30 autoloads de lógica, 25 não citam um único tipo 2D.** Fôlego, vida,
+progressão, as duas teias, as três fés, inventário, cartas, coleção, receitas,
+cozinha, oficina, obras, venda, afinidade, povoado, luta, ritos, equipamento,
+jornada, relógio, áudio, efeitos, controles, telas e versão: nenhum `Vector2`,
+nenhum `Node2D`, nenhum `TileMap`. São 5.320 linhas de regra
+que rodam igual num jogo 3D.
+
+Dos cinco restantes, três são falso positivo — `Jogo` usa `Vector2i` para o
+tamanho mínimo da janela, `Pesca` usa `Vector2` como **par de números** (espera
+mínima e máxima), e `Salvamento` só menciona o tipo em comentário. Sobram
+**dois acoplamentos espaciais de verdade**, e é toda a dívida da migração:
+
+| Onde | O quê | O tamanho |
+|---|---|---|
+| `Missoes.apontar(id, alvo: Vector2)` | o alvo da bússola | uma assinatura |
+| `Terrenos` | `Vector2i` de célula, e recebe um `GeradorMundo` | duas funções |
+
+**Dos 17 scripts de interface, 16 são `CanvasLayer` ou `Control`** — que
+desenham por cima de um jogo 3D sem saber que ele é 3D. Painel, mochila, teia
+de talentos, diálogo, coleção, arraial, vagas, folheto, amanhecer, HUD e menu
+inicial somam cerca de 7.600 linhas que atravessam sem reescrita. A exceção é
+`mira.gd`, que é `Node2D` e não tem sentido em 3D, e `mapa.gd`, que desenha a
+região a partir do tilemap e precisa de outra fonte.
+
+**E os dois mundos já falam a mesma língua de lugar.** O 2D tem 37 acessores
+`ponto_*` no `Mundo` — `ponto_do_vau()`, `ponto_da_oficina()`,
+`ponto_do_pier()` — e o 3D tem âncoras nomeadas em `world_builder.ancoras`:
+Praça, Igreja, Pier, Roçado, Cemitério. Ninguém planejou essa simetria, e é ela
+que torna a migração um trabalho de costura em vez de reescrita.
+
+---
+
+## Fase 0 — Trazer os 43 commits que faltam *(antes de qualquer outra coisa)*
+
+A branch `prototype/myths-valley-3d` carrega uma cópia do jogo 2D na raiz, e
+essa cópia parou em **23/09/2026**. Desde então a `main` andou 43 commits: as
+nove fatias do playtest (P1 a P9), a fatia 6.1 inteira, e a revisão de 29/09.
+Migrar a partir da raiz de hoje seria migrar um jogo que não existe mais.
+
+**O custo disto é quase zero, e isso foi medido:** a branch 3D nunca tocou em
+`scripts/`, `data/` nem `scenes/` do 2D. Os 587 arquivos que ela mudou estão em
+`prototipo_3d/`, mais ferramentas e documentos. A interseção entre o que os
+dois lados mexeram são **dois arquivos**: `README.md` e `AGENTS.md`.
+
+```sh
+git checkout prototype/myths-valley-3d
+git merge origin/main     # 1181 arquivos entram; resolver README.md e AGENTS.md à mão
+```
+
+Os dois `AGENTS.md` não competem: o do 2D fala de portões, commits e chaves; o
+do 3D fala de Tripo, pipeline de assets e do vale vivo. O resultado é a união
+dos dois, com uma linha dizendo qual seção vale para qual projeto.
+
+**Risco para a demo: nenhum.** Nada disso entra em `prototipo_3d/`, que é um
+projeto Godot separado, com `project.godot` próprio e `user://` próprio.
+
+---
+
+## Fase 1 — A costura: `Lugares`
+
+É a única peça de arquitetura nova que a migração pede, e tudo depende dela.
+
+O contrato é um nó que traduz **nome de lugar** em posição, e cada projeto
+implementa o dele:
+
+```gdscript
+# Contrato (o mesmo nos dois projetos)
+func ponto(nome: String) -> Variant   # Vector2 no 2D, Vector3 no 3D
+func existe(nome: String) -> bool
+func perto_de(nome: String, quem, raio: float) -> bool
+```
+
+No 2D, `Lugares` embrulha os 37 acessores `ponto_*` que já existem. No 3D, lê
+`world_builder.ancoras`. `Missoes.apontar(id, "vau")` passa a receber **nome**,
+e quem resolve o nome é o mundo em que o jogo está rodando.
+
+Isto resolve, de uma vez, o único acoplamento real do sistema de missões. E
+resolve a bússola: `bussola.gd` já é `Control` e já recebe um ponto pronto —
+em 3D ele passa a vir de `unproject_position` da câmera, que é a mesma conta
+que o 3D já faz para as placas de nome.
+
+**Onde a lógica compartilhada mora.** Recomendo `compartilhado/` na raiz do
+repositório, referenciado pelos dois `project.godot` — e **não** cópia. Cópia
+de 5.300 linhas de regra vira duas versões divergentes em três semanas, e o
+2D é a referência de regras justamente porque ele tem 46 portões cobrindo
+essas regras. Regra copiada é regra sem portão.
+
+---
+
+## Fase 2 — Os sistemas que não sabem o que é um lugar
+
+Estes atravessam **sem adaptação nenhuma**. A ordem abaixo é por dependência,
+não por importância: cada um só precisa dos anteriores.
+
+| Ordem | Sistema | Linhas | O que o 3D ganha |
+|---|---|---|---|
+| 1 | `Progressao`, `Energia`, `Vida` | 428 | O fôlego que dá peso ao trabalho, a vida que a onça tira, e a queda que leva para casa |
+| 2 | `Inventario`, `Equipamento`, `Catalogo` | 817 | Os 30 espaços, os 10 de mão, o que o corpo veste |
+| 3 | `Talentos`, `Fe`, `Ritos` | 1.303 | A teia de ofício e as três árvores de fé, com XP separado e o preço de migrar |
+| 4 | `Receitas`, `Cozinha`, `Oficina`, `Pesca` | 891 | Receita que se aprende; a bancada que serra tábua e torce corda; e a água do lugar decidindo o peixe — o 3D já tem mar, rio e cardume, e não tem o que pescar neles |
+| 5 | `Cartas`, `Colecao` | 411 | Pactos com mitos, apoios, rituais; cordéis, bichos e sinais |
+| 6 | `Afinidade`, `Povoado` | 606 | Os sete moradores deixam de ser cenário e passam a ter gosto, desgosto e reação |
+| 7 | `Luta` | 158 | Golpe, bote anunciado, ginga, meia-lua, rasteira |
+| 8 | `Obras`, `Venda` | 475 | Casa que melhora em três eixos; preço que muda com a estação |
+
+A fatia 6 é a que mais rende por linha escrita. O 3D já tem os sete moradores
+com posto por período, três falas cada e voz do ElevenLabs — `npcs_3d.json` já
+declara que as falas vêm de `data/dialogos/aldeoes.json`, que é arquivo do 2D.
+Ligar `Afinidade` transforma um cumprimento a cada 45 segundos numa relação.
+
+O que cada sistema precisa do 3D é **um gatilho**, não uma adaptação: quem
+chama `Energia.gastar` quando o machado bate, quem chama `Afinidade.presentear`
+quando o item muda de mão. Os gatilhos são do 3D e são poucos por sistema.
+
+---
+
+## Fase 2.5 — A geografia da campanha *(bloqueia a Fase 3)*
+
+Esta é a fase que faltava neste plano, e ela é maior que a lista de modelos.
+
+**O vale 3D não tem onde a campanha acontece.** O `world_builder` registra
+quinze âncoras — Bar, Casa da estrada, Casa de Carro Quebrado, Casa de taipa,
+Cemitério, Fogueira, Igreja, Mirante, Pedras, Píer, Ponte, Poço, Restaurante,
+Roçado, Venda —, e a região vai de −1.734 a 1.880 m em X por 2.033 m em Z. É a
+vila, e a vila está ótima. Mas metade dos 63 passos do 2D aponta para lugares
+que não estão nela:
+
+| Falta no vale 3D | O que acontece lá, no 2D |
+|---|---|
+| **a chapada de expansão** | onde o arraial do jogador é levantado — a segunda missão do tutorial |
+| **os terrenos da Dona Zefa e do Seu Benedito** | a terra que se compra, as cercas, as porteiras, a cabra, a série das ervas |
+| **o rio grande e o vau** | a ponte caída, doze tábuas e quatro cordas: a primeira obra do jogo |
+| **a lagoa** | "terra com água", e mais um lugar de pescar |
+| **a mata funda e a serra ao norte** | onde as criaturas nascem, de onde vem madeira de lei, as três picadas |
+| **a fazenda e as ruínas do palacete** | os capítulos 6 e 7 inteiros |
+| **a oficina, o canteiro, o curral, a horta** | a cadeia de produção |
+
+Apontar uma missão para uma âncora que não existe é o modo mais silencioso de
+a campanha inteira não funcionar — e é por isso que esta fase vem **antes** da
+Fase 3, e não depois.
+
+**O caminho já está construído, e não é refazer o mapa.** O
+`regioes.json` nasceu com `"regions"` no plural e `active_region`, e
+[MAPA_GEOGRAFICO_3D.md](MAPA_GEOGRAFICO_3D.md) documenta como acrescentar
+região a partir de KML. O que esta fase faz é usar isso:
+
+1. **estender a região atual para o interior e para o norte**, que é onde o 2D
+   põe o roçado, os vizinhos e a serra — o KML é desenhado pelo autor, então é
+   trabalho de desenho, não de engenharia;
+2. **acrescentar as âncoras que faltam**, uma por lugar da tabela acima;
+3. **a fazenda pode ser uma segunda região**, e provavelmente deve: ela fica do
+   outro lado do rio, é visitada uma vez, e o `regioes.json` já prevê a troca.
+
+**O que esta fase não faz:** mexer na vila. A geografia que existe é fonte
+real, medida em KML, e não se altera para caber no desenho do 2D. Onde os dois
+discordam, **manda o vale 3D** — e é o passo da missão que se ajusta, porque o
+lugar é o que o jogador vê e o passo é texto.
+
+---
+
+## Fase 3 — Missões e enredo
+
+Depois da Fase 1, o sistema de missões atravessa inteiro: `Missoes` (576
+linhas), `Jornada` (104) e os dados.
+
+O 3D tem hoje **cinco missões numa constante** dentro de `guia_pedro.gd`.
+O 2D tem 63 passos com título, objetivo, alvo, lista de itens, recompensa e
+arremate, separados entre ENREDO e DIA A DIA, com foco que não troca sozinho e
+checklist viva — e um portão (`testar_missoes`) que cobra que cada passo diga o
+que fazer.
+
+**O conteúdo migra verbatim**, porque já é JSON e já é agnóstico:
+
+| Arquivo | Tamanho | O que é |
+|---|---|---|
+| `data/dialogos/arraial.json` | 43 KB | As missões do arraial |
+| `data/dialogos/pedro.json` | 34 KB | O tutorial inteiro, 27 passos com objetivo |
+| `data/dialogos/aldeoes.json` | 26 KB | Os moradores *(o 3D já usa a primeira linha)* |
+| `data/enredo/enredo.json` | 6,5 KB | Os capítulos 6 e 7, estruturados |
+| `data/dialogos/fazenda.json` | 3,8 KB | A fatia 6.1 |
+| `data/construcoes/obras.json` | 14 KB | As 22 obras de casa |
+| `data/colecionaveis/*.json` | 13 KB | Cordéis, bichos e sinais |
+
+São 146 KB de conteúdo escrito e revisado, com portão em cima. O trabalho aqui
+não é migrar o texto: é **mapear os alvos para âncoras do 3D**, e é por isso
+que esta fase vem depois da Fase 1. Um passo que aponta para `ponto_do_vau()`
+precisa que o vau exista no vale 3D, ou de uma âncora que faça as vezes dele.
+
+**O que acontece com o `GuiaPedro`, em detalhe** — é a única peça 3D que esta
+migração mexe por dentro, e mexe no mínimo:
+
+| Fica como está | Muda |
+|---|---|
+| seguir o jogador com `SEGUIR_MAX`/`CORRER_ALEM`, andar e correr | a constante `MISSOES`, de cinco linhas, deixa de ser a fonte |
+| narrar com a voz do ElevenLabs quando está perto | o texto e o alvo passam a vir de `Missoes` |
+| o aviso de que vai escurecer, e a despedida | — |
+| os sinais `missao_mudou` e `narrou`, que o HUD já escuta | — |
+| tudo que ele herda de `MoradorNPC` | — |
+
+As cinco missões de hoje — praça, capela, casa de pasto, roçado, píer — **não
+se perdem**: viram os cinco primeiros passos do arquivo de dados, com o mesmo
+texto, o mesmo áudio e o mesmo raio de chegada. Quem chama `Missoes.adicionar`
+com elas é o próprio `GuiaPedro`, no `_ready`, até o tutorial do 2D estar
+mapeado. A tela não muda de comportamento, e o jogador não percebe a troca —
+o que muda é que a lista passa a caber 63 passos em vez de cinco.
+
+---
+
+## Fase 4 — Salvar
+
+O 3D não salva nada hoje. O 2D tem três vagas, escrita atômica com releitura,
+migração de formato em escada e limpeza de conteúdo que sumiu — 810 linhas com
+dois portões (`testar_salvamento`, `testar_slots`) e uma página de documentação
+([SALVAMENTO.md](SALVAMENTO.md)).
+
+O formato é variante do Godot (`var_to_str`), e não JSON, porque o estado do 2D
+é indexado por `Vector2i`. **Em 3D isso não piora: melhora** — a variante
+guarda `Vector3` com a mesma naturalidade.
+
+A regra que faz esse sistema não apodrecer vale igual no 3D e deve vir junto:
+campo público novo entra em `O_QUE_GUARDAR` ou em `FORA_DO_SAVE` com a razão
+escrita, e o portão cobra os dois.
+
+---
+
+## Fase 5 — O relógio, o único lugar em que os dois se sobrepõem
+
+É o único assunto que os dois projetos resolvem ao mesmo tempo, e por isso o
+único que precisa de decisão — em todo o resto, um tem e o outro não.
+
+| | `Relogio` (2D) | `Dia` (3D) |
+|---|---|---|
+| hora | inteira, 6h às 2h | contínua, 0–24 |
+| dia | conta, e só avança ao dormir ou desmaiar | não existe |
+| estação e ano | quatro de 28 dias | não existem |
+| velocidade | fixa | escolhida no AJUSTAR (4 velocidades) |
+| sol, céu, névoa, lua | por estação, no tilemap | por elevação, no `world_builder` |
+
+O `Dia` diz de si que é "independente dos saves do 2D", e hoje é verdade.
+
+**A recomendação é: o `Dia` continua sendo o relógio do vale, e ganha
+calendário.** Ele é quem o `world_builder`, as `luzes_epoca`, o
+`ambiente_vale`, a tela de carregamento e o HUD já consultam — trocar o dono da
+hora significaria mexer em cinco sistemas que funcionam, para ganhar nada.
+
+O que falta nele não é a hora, é **o que vem depois dela**: contador de dia,
+estação, ano, e o dia que só avança quando o jogador dorme. Essas quatro coisas
+são a espinha do jogo longo — a planta que cresce, a obra que termina, a fé que
+congela e o morador que muda de posto escutam o virar do dia, não a hora.
+
+Então o recorte é aditivo:
+
+| Continua no `Dia`, sem tocar | Entra vindo do `Relogio` |
+|---|---|
+| hora contínua 0–24, `hora_mudou`, `periodo_mudou` | `dia`, `estacao`, `ano` e os sinais deles |
+| as quatro velocidades do AJUSTAR e a hora inicial | a regra de que o dia **termina**: dormir ou desmaiar avança o contador |
+| `NASCER`, `POR`, `pausado`, `congelado_na_carga` | a virada de estação a cada 28 dias |
+| a curva de sol, o céu, a névoa, a lua, os lampiões | — |
+
+Na prática, o `Relogio` do 2D entra como **calendário** e não como relógio: ele
+para de contar hora sozinho e passa a receber do `Dia` o aviso de que o dia
+virou. Os sistemas migrados continuam escutando os sinais que já escutavam, com
+os mesmos nomes — é o que faz eles atravessarem sem adaptação.
+
+O que isso custa: a nota do `Dia` que diz ser "independente dos saves do 2D"
+deixa de valer, porque dia, estação e ano precisam entrar no save. É uma linha
+de comentário e um campo em `O_QUE_GUARDAR`.
+
+---
+
+## Fase 6 — A interface
+
+É a fase mais barata em relação ao que entrega, e a que mais precisa da regra
+do topo: **a interface do 3D não é substituída, é acrescida.** Toda tela do 2D
+que entra é uma tela que o 3D não tem.
+
+**Onde o 3D já resolve, fica o do 3D:**
+
+| O que | Por quê |
+|---|---|
+| a **abertura** (`abertura.gd`, 874 linhas) | tem identidade própria, vídeo, música e a tela de carregamento "Crônica do Recôncavo". O `menu_inicial` do 2D **não entra**; o que entra por baixo dele são as três vagas de salvamento |
+| o **HUD** (`prototype_hud.gd`) | a coluna de botões redondos, o relógio, o estilo. Ele **ganha** widgets — fôlego, vida, missão em foco —, não é trocado pelo `hud.gd` do 2D |
+| o **balão de fala 3D** | escolhe entre cinco posições em volta da cabeça para não cobrir ninguém; é melhor que caixa de rodapé para conversa de passagem. Fica para o cumprimento; a caixa do 2D entra só na **fala longa com escolha de Sim e Não**, que o 3D não tem |
+| o **mapa** (`mapa_jogo.gd`, `minimapa.gd`) | vista aérea do cenário real, com zoom e marcadores. O `mapa.gd` do 2D **não migra**; dele se aproveitam as ideias que faltam: divisa de terreno por cor e nome do dono |
+| a **mira** | o 3D resolve com raycast da câmera. `mira.gd` é mira de tile à frente e não migra |
+| os **painéis de AJUSTAR e PERSONAGENS** | são do 3D e não têm par no 2D |
+
+**O que entra inteiro, porque o 3D não tem:** `dialogo` (a fala longa com
+escolha), `mochila`, `painel` com as oito abas, `talentos_tela`, `colecao_tela`,
+`arraial_tela`, `slots_tela`, `folheto`, `amanhecer`. São `CanvasLayer` e
+desenham por cima do 3D sem saber que ele é 3D.
+
+**O que entra adaptado:** a `bussola`, cujo alvo passa a ser projetado na tela
+com `unproject_position` — a mesma conta que o 3D já faz para as placas de nome.
+
+**Sobre os ícones.** A mochila, a teia e a coleção mostram arte de item, de nó
+e de cordel, e essa arte é 2D em qualquer jogo. Usar os PNG que já existem não
+é trazer o visual do 2D para dentro do 3D: é aproveitar ícone de interface, que
+é exatamente onde a arte do 2D tem lugar. Nenhum deles aparece no mundo.
+
+---
+
+## Fase 7 — Os modelos que só existem em 2D nascem em 3D
+
+Esta fase **corre em paralelo com todas as outras, desde o primeiro dia**, e
+não depois delas. Modelo tem prazo de forno: geração no Tripo, retopologia,
+exportação, conferência de escala e colisão, linha no `ORIGEM.md`. Deixar para
+quando o sistema estiver pronto é garantir sistema pronto sem nada para mostrar.
+
+**O catálogo do 3D já tem 83 peças** — as 23 espécies de flora, nove
+construções, os nove personagens (os sete moradores, o Pedro e o viajante), 23
+itens de mão e os adereços da vila. O que falta é o que o 2D criou depois, ou
+o que o 2D tem e o vale 3D ainda não precisou.
+
+**A arte 2D é a referência, não o produto.** Cada sprite do 2D vira a imagem de
+entrada do Tripo, que é como a casa de Carro Quebrado nasceu. Isso preserva a
+direção de arte que já foi decidida e aprovada, e é o jeito de aproveitar o
+desenho 2D sem pôr desenho 2D dentro do vale.
+
+### O que falta modelar, por prioridade
+
+**1. Os interiores — o buraco maior, e o que trava mais sistema.** O 3D não tem
+cômodo nenhum. Sem interior não há dormir, não há lareira, não há baú, e as
+obras (22 delas) não têm o que mudar. São **10 móveis**, todos com arte 2D
+pronta para servir de referência:
+
+> `cama` · `mesa` · `banco_tosco` · `bau` · `barril` · `cantareira` ·
+> `fogao_barro` · `jirau` · `oratorio` · `rede`
+
+**2. As construções do roçado e do trabalho** — são as que o tutorial e a
+cadeia de produção citam passo a passo:
+
+> `casa_rocado` (e `casa_n1`, `casa_n2`, `casa_n3`, que são ela nos três níveis
+> de obra) · `casa_pedro` · `oficina` · `canteiro` · `forno_barro` ·
+> `casa_farinha` · `engenho` · `galinheiro` · `terreiro`
+
+**3. Os bichos** — cinco, e sem eles não há luta nem criação:
+
+> `onca` · `caititu` · `jararaca` · `bode` · `galinha`
+
+O catálogo do 3D não tem **nenhum animal terrestre** hoje. Estes precisam de
+rig e de clipes (`idle`, `walk`, e o bote para os três da mata), o que os
+coloca na trilha `rig-check,rig,retarget` e faz deles os mais caros do lote.
+
+**4. A vila que falta** — o 3D tem capela, igreja, venda, casa de pasto, píer,
+ponte, mirante, poço, cruzeiro e túmulo. Faltam:
+
+> `bar` · `cabana_pesca` · `capela_estrada` · `casario_vila_a` ·
+> `casario_vila_b` · `cemiterio` (o portão e o muro; o túmulo já existe)
+
+**5. A fazenda e as ruínas — o cenário dos capítulos 6 e 7.** Sem eles não há
+onde a história acontecer, e a 6.1 já chega lá:
+
+> `casarao_fazenda` · `portao_fazenda` · `guarita` · `ruina_fachada` ·
+> `ruina_muro` · `ruina_palacete` · `mirante_caido`
+
+**6. As comidas e a carta** — itens de mão pequenos, 1K de textura, os mais
+baratos do lote:
+
+> `beiju` · `cocada` · `garapa` · `mungunza` · `peixe_assado` · `pirao` ·
+> `carta`
+
+**Total: 44 modelos.** Mais os dois itens da fatia 7.3 (`lanca_safira` e
+`escudo`) quando ela for escrita — não existem nem em 2D ainda.
+
+### Dois que NÃO viram modelo
+
+- **`casa_rocado_corte`** é a casa em corte, para o 2D mostrar o interior de
+  cima. Em 3D o jogador entra: o corte não existe como problema.
+- **`portao_fazenda_aberto`** é o segundo sprite do portão. Em 3D é o mesmo
+  modelo com as folhas giradas — uma animação, não uma peça.
+
+São um bom lembrete de que nem todo asset 2D tem contrapartida: alguns existem
+só para resolver limitação de perspectiva que o 3D não tem.
+
+### Como cada um entra
+
+Vale o pipeline que já está decidido em [ASSETS_TRIPO.md](ASSETS_TRIPO.md) e
+no [AGENTS.md](../AGENTS.md), sem exceção:
+
+1. imagem de referência limpa, em perspectiva 3/4, a partir do sprite 2D;
+2. Modelo HD → Remesh/Retopologia (Malha Smart, Quad) → exportar GLB;
+3. textura **1K** para adereço, móvel e item; **2K** só para construção de
+   destaque, e para os bichos;
+4. uma linha em `PECAS` do `CatalogoAssets` com caminho, medida e colisão —
+   nunca instanciar GLB fora do catálogo;
+5. o construtor procedural equivalente, porque **os dois estilos não podem
+   divergir**: peça que só existe em Tripo deixa o estilo procedural com buraco;
+6. linha em `ORIGEM.md` e em [CREDITOS.md](../assets/CREDITOS.md);
+7. testar nos dois estilos antes de commitar.
+
+**Cada lote é aprovado antes de rodar.** Geração consome crédito, e o custo
+mostrado pela interface vai na conversa antes do clique — é a regra do
+`AGENTS.md`, e 44 modelos com rig não é um número que se gasta sem combinar.
+
+### Enquanto o modelo não existe
+
+O catálogo já resolve isso e a migração se apoia nisso: peça não exportada
+imprime `CATALOGO: Peças Tripo ainda não exportadas: …` e fica ausente, com o
+morador caindo no humanoide procedural. A regra para esta fase é a mesma
+—**nenhum sistema espera modelo**. A lareira pode cozinhar antes de a lareira
+existir; a luta pode acontecer contra um caititu de caixa cinza. O modelo
+entra depois, numa linha do catálogo, sem tocar no sistema.
+
+---
+
+## As quatro que atravessam todas as fases
+
+Não são fases porque não têm começo e fim: cada fatia das outras encosta nelas.
+Estavam faltando neste plano, e é onde um esquecimento sai caro depois.
+
+### O idioma, e é a mais cara das quatro
+
+O 3D fala **três**: `pt_BR`, `en`, `es`. O menu traduz pelo `TranslationServer`
+com a frase em português como chave, e o que vem de dado usa campos `_en` e
+`_es` no próprio JSON. Hoje isso funciona porque **ao entrar no vale o locale
+volta ao português** — o jogo em si nunca precisou traduzir nada.
+
+A migração acaba com essa folga: entram 146 KB de fala, missão e enredo, todos
+em português, e todos dentro do vale. São três saídas, e a escolha precisa ser
+feita **antes** da Fase 3, não depois:
+
+1. **O jogo fica em pt-BR e só o menu traduz**, como hoje. Custo zero, e é
+   coerente com um jogo sobre o Recôncavo de 1887.
+2. **Tudo traduz.** Cada passo, fala e objetivo ganha `_en` e `_es`: o
+   conteúdo triplica, e cada texto novo passa a nascer três vezes.
+3. **Só o que o jogador não pode perder traduz** — objetivo de missão, nome de
+   item, rótulo de tela — e a prosa fica em português.
+
+A terceira é a que eu recomendaria, mas é decisão do autor. Seja qual for, ela
+tem de estar escrita antes de o primeiro passo de missão entrar, porque
+retroceder sobre 63 passos é o tipo de trabalho que ninguém faz duas vezes.
+
+### O som
+
+O 2D tem 36 arquivos e um `Audio` que sabe **passo por terreno** — grama,
+terra, areia, madeira, água —, porta, machado, picareta e queda de árvore. O
+3D tem o `Audio` dele, com camadas de ambiente por proximidade, música por
+período e 58 áudios, e é bem mais sofisticado no ambiente.
+
+Os dois não competem: **fica o `Audio` do 3D**, e o que migra é a *tabela* de
+efeito por ação do 2D — som de machado, de enxada, de porta, de passo por
+terreno. Cada sistema da Fase 2 que ganha uma ação ganha junto a linha de som
+dela, e o `Efeitos` do 2D (135 linhas, partícula e sacudida de tela) entra
+como fonte das reações que o 3D ainda não tem.
+
+### As estações, que hoje não existem em 3D
+
+A Fase 5 dá calendário ao `Dia`, e no instante em que a estação passa a existir
+alguém tem de responder por ela. No 2D é a mata que é repintada. No 3D as
+candidatas são a `flora_reconcavo`, a cor da luz do `world_builder` e os loops
+do `ambiente_vale`.
+
+**Não é obrigatório na primeira volta** — o calendário funciona sem ninguém
+pintar nada, e a planta cresce igual. Mas quatro estações de 28 dias que não
+mudam a cara do vale é uma promessa que o jogador percebe que não foi cumprida,
+e isso é dívida a partir do dia em que o calendário entra.
+
+### Controles, telas e versão
+
+Três autoloads pequenos do 2D em que **o 3D já tem resposta própria**, e por
+isso não migram:
+
+| Do 2D | Por que não migra |
+|---|---|
+| `Controles` (86 linhas) | o 3D tem `teclas_movimento` e `atalhos`, e o esquema de 3ª pessoa não é o de cima. O que migra é a **ideia**: mapeamento em código, não no Input Map, para ficar legível no Git |
+| `Telas` (107) | o 3D já orquestra os modais dele pelo `prototype_hud` |
+| `Versao` (55) | o 3D tem `historico_3d.json` e o `CHANGELOG_3D.md`, com numeração própria e declarada |
+
+As teclas das telas novas — I, J, K, L, P — precisam entrar no esquema do 3D
+sem colidir com o que já existe: **T** adianta a hora e **M** é o HOME. Vale
+conferir a tabela inteira antes da primeira tela, não depois da terceira.
+
+---
+
+## O que NÃO migra, e é bom que não migre
+
+- **`GeradorMundo`** (3.250 linhas) e **`Mundo`** (6.265). São o mundo 2D. O 3D
+  tem `world_builder` e `geo_region_renderer`, que fazem o mesmo trabalho a
+  partir de dados geográficos reais, e fazem melhor.
+- **`Construcoes`, `Plantacao`, `Terrenos`** na forma atual: todos raciocinam em
+  célula de tilemap. A **regra** migra; a indexação por célula precisa virar
+  posição ou lote no 3D. Estes três são o único trabalho de **reescrita** da
+  migração inteira — em todo o resto, ou se copia ou se compartilha.
+
+  A `Plantacao` merece nome próprio, porque é o laço central do jogo e não um
+  detalhe de indexação: arar → plantar → regar → crescer por dia → colher, no
+  alvo à frente, com planta não regada não crescendo naquele dia, mandioca de
+  ciclo curto e três fruteiras perenes com carência em dias regados. **Tudo
+  isso é regra e atravessa**; o que não atravessa é o `Vector2i` que diz *qual
+  leira*. Em 3D isso vira um lote com posição e raio, e o "tile à frente" vira
+  o raycast que o 3D já usa para interagir. O roçado já existe como âncora no
+  vale — é onde essa fase começa.
+- **32 dos 46 portões**, que sobem o mundo 2D para medir. Os outros **14 são de
+  lógica pura** e atravessam quase de graça: `testar_afinidade`, `_amanhecer`,
+  `_divida`, `_escolha`, `_folheto`, `_fracoes`, `_missoes`, `_povo`,
+  `_receitas`, `_slots`, `_teia`, `_intro`, `_menu`, `_menu_interacao`.
+
+Os 32 restantes não se perdem: viram a especificação do que os portões 3D
+precisam medir. Um portão que hoje confere que nenhum posto de morador cai
+dentro de parede continua sendo a pergunta certa em 3D — muda a conta, não a
+pergunta. E o 3D já tem sete testes próprios em `prototipo_3d/tests/`
+(`smoke_opening`, `agua_rasa`, `click_controls`, `mapa_fluxo`,
+`painel_personagens`, `tela_carregamento`, `tubarao`): eles continuam, e os
+portões que chegarem entram ao lado deles, não no lugar deles.
+
+**E nada de arte 2D no mundo 3D.** Os tilesets, os sprites de construção, os
+bonecos de 48px e os quadros de cena do 2D ficam no 2D. O que o vale 3D mostra
+sai do `CatalogoAssets` e dos construtores procedurais, hoje e depois da
+migração.
+
+---
+
+## O corte da jam (4 de outubro)
+
+Cinco dias, com o 3D em desenvolvimento ativo. O que **dá** para ter de pé sem
+arriscar a demo:
+
+| Entra | Por quê |
+|---|---|
+| **Fase 0, o merge** | Risco zero para `prototipo_3d/`, e sem ele todo o resto migra de uma base velha. Meio dia |
+| **Fase 1, `Lugares`** | É a costura; nada depende dela para funcionar hoje, e tudo depende dela depois. Um dia |
+| **Fase 3 parcial: missões + bússola, nas âncoras que já existem** | É o que mais muda a cara da demo: cinco passos numa constante viram lista com objetivo, checklist e seta. **Só com os lugares que o vale já tem** — a Fase 2.5 não cabe em cinco dias, e sem ela nenhum passo do 2D que aponte para o vau, a chapada ou a fazenda tem para onde apontar. Dois dias |
+| **Fase 2, itens 1 e 2** | Fôlego e inventário fazem o passeio virar jogo. Um dia, e só se os anteriores fecharem antes |
+| **Fase 7, o primeiro lote** | Em paralelo, e não ocupa os mesmos dias: enquanto o modelo assa, o código anda. O lote da jam são os **itens de mão que a mochila vai mostrar** — as seis comidas e a carta, 1K, sem rig, os mais baratos e rápidos do inventário inteiro |
+
+O que **não** entra, e a razão é a mesma para os quatro: teias, fé, cartas e
+save mexem em tela nova e em estado persistente, e tela nova a quatro dias de
+uma submissão é como se perde uma submissão. Eles são a semana seguinte.
+
+Dos modelos, também não entram os **bichos** nem os **interiores**: os
+primeiros pedem rig e clipes, os segundos pedem cômodo, que é sistema e não
+peça. São o primeiro lote grande depois da submissão.
+
+E **a Fase 2.5 não entra**, que é a mais pesada das que faltam: estender a
+região é desenho de KML e importação, e a campanha do 2D só passa a ter para
+onde apontar depois dela. A demo da jam usa a vila que existe, com os passos
+que cabem nela.
+
+**Uma decisão precisa sair antes do dia 4, mesmo sem código:** a do **idioma**.
+Se o jogo inteiro for traduzir, o primeiro passo de missão já tem de nascer com
+`_en` e `_es` — descobrir isso com 63 passos escritos é refazer os 63.
+
+**A regra do corte:** nada entra na demo sem portão. A jam não é desculpa para
+suspender a prática que fez o 2D chegar até aqui — e os 14 portões de lógica
+pura atravessam junto com os sistemas, então o custo é baixo.
+
+---
+
+## Regras que valem para a migração inteira
+
+1. **O 3D não é reescrito.** Se a fatia apaga, refaz ou aposenta o que já roda
+   no `prototipo_3d/`, ela está errada — ver a regra do topo. Migração que
+   gera retrabalho não é migração, é troca.
+2. **Uma fase por commit**, com portão e falsificação, como no 2D.
+3. **Regra migrada é regra compartilhada, nunca copiada.** Se copiar for
+   inevitável numa fase, a fase declara aqui por que, e quando volta.
+4. **O 2D continua abrindo e rodando.** Ele é a referência de regras; referência
+   que quebrou não é referência.
+5. **Toda fatia roda os dois lados antes do commit:** a suíte do 2D
+   (`tools\comum\testar.ps1`) e os testes do 3D (`prototipo_3d/tests/`). O que
+   prova que nada foi trocado sem querer é o segundo.
+6. **Conteúdo não se reescreve na migração.** As 146 KB de fala e enredo foram
+   escritas e revisadas uma vez. Migrar é ligar, não redigir.
+7. **Antes de escrever texto novo, conferir se o texto já existe e não está
+   chegando** — a lição que a rodada do playtest deixou no 2D, e que vale em
+   dobro aqui, onde o conteúdo chega antes do sistema que o mostra.
