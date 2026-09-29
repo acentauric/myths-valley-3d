@@ -188,7 +188,7 @@ não por importância: cada um só precisa dos anteriores.
 |---|---|---|---|
 | ~~1a~~ **FEITA** | ~~`Progressao`, `Energia`~~ | 229 | O fôlego, e o cansaço que encurta o passo para 62% — a mesma regra, lida dos mesmos arquivos |
 | 1b | `Vida` | 199 | A vida que a onça tira, e a queda que leva para casa. Ficou para depois: ela chama `Talentos`, `Luta`, `Equipamento`, `Cozinha`, `Telas` e `Dialogo`, e nenhum deles atravessou ainda |
-| 2 | `Inventario`, `Equipamento`, `Catalogo` | 817 | Os 30 espaços, os 10 de mão, o que o corpo veste |
+| ~~2~~ **FEITA** | ~~`Inventario`, `Equipamento`, `Catalogo`~~ | 817 | Os 30 espaços, os 10 de mão, o que o corpo veste, e o catálogo com 51 itens. Custou um refactor no 2D: a tecla da mão saiu do `Inventario` e foi para o `Controles` — doze linhas de entrada prendiam 174 de regra |
 | 3 | `Talentos`, `Fe`, `Ritos` | 1.303 | A teia de ofício e as três árvores de fé, com XP separado e o preço de migrar |
 | 4 | `Receitas`, `Cozinha`, `Oficina`, `Pesca` | 891 | Receita que se aprende; a bancada que serra tábua e torce corda; e a água do lugar decidindo o peixe — o 3D já tem mar, rio e cardume, e não tem o que pescar neles |
 | 5 | `Cartas`, `Colecao` | 411 | Pactos com mitos, apoios, rituais; cordéis, bichos e sinais |
@@ -226,6 +226,36 @@ Então é **cópia conferida**, em `prototipo_3d/scripts/compartilhado/`:
 Isso responde à objeção do próprio plano — regra copiada é regra sem portão —
 dando-lhe o portão. O critério para um autoload entrar na lista: não citar
 tipo 2D **e** não depender de outro autoload que ainda não atravessou.
+
+### A entrada é o que prende a regra, e ela se separa
+
+A medição da abertura contou `Vector2` e `Node2D`, e por isso subestimou o
+trabalho: o que prende um autoload ao 2D quase nunca é o tipo, é o
+`_unhandled_input`. O `Inventario` não citava um tipo 2D sequer, e mesmo assim
+não atravessava — doze linhas dependiam das ações `espaco_N`, que só existem
+neste projeto, e do `Telas`, que o protótipo não tem.
+
+A separação é limpa e vale como regra para as próximas fatias:
+
+| Fica no 2D | Atravessa |
+|---|---|
+| qual tecla aciona | o que a ação faz |
+| que telas bloqueiam a tecla | quantos espaços há, o que cabe, o que é estar de mão livre |
+
+No caso da mão, o destino certo foi o `Controles`, que é onde a tecla já vira
+ação neste jogo. O `Missoes` tem exatamente o mesmo nó — a tecla Tab que troca
+a missão em foco — e vai sair pelo mesmo caminho.
+
+**O que o catálogo ensinou:** ele parecia depender de `Colecao`, `Cozinha`,
+`Oficina` e `Pesca`, e cita os quatro **só em comentário**. Medir dependência
+por `grep` do nome superestima tanto quanto contar tipo subestima; os dois
+erros se cancelaram por acaso, e nenhum dos dois é medida.
+
+**Os ícones ficaram para trás, de propósito.** `Catalogo.icone()` procura em
+`assets/sprites/itens/`, que é pasta do 2D, e já devolve `null` com aviso
+quando não acha — do mesmo jeito que o `CatalogoAssets` trata peça Tripo não
+exportada. As artes de 32px chegam com a mochila, na Fase 6, que é quando
+alguém vai olhar para elas.
 
 O que cada sistema precisa do 3D é **um gatilho**, não uma adaptação: quem
 chama `Energia.gastar` quando o machado bate, quem chama `Afinidade.presentear`
