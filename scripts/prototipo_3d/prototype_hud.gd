@@ -187,8 +187,71 @@ func _ready() -> void:
 	_clock_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_clock_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 
+	_criar_barra_de_vida()
+
 	_update_control_mode()
 	_update_telemetry()
+
+
+## A VIDA, logo abaixo do relógio, com as cores do 2D (`scripts/ui/hud.gd`):
+## vermelha sempre, porque é sangue e não fôlego; verde-musgo enquanto a
+## peçonha corre, que é o aviso de que ela está descendo sozinha.
+##
+## É widget ACRESCENTADO, como a migração manda: o HUD continua sendo este, e
+## não o do 2D. O número vem do `Vida` compartilhado — por `get_node_or_null`,
+## porque quem monta o HUD sozinho, sem o projeto inteiro, não pode estourar
+## aqui. O fôlego (#3) entra embaixo dela, na mesma medida.
+const COR_VIDA := Color(0.78, 0.28, 0.26)
+const COR_VIDA_ENVENENADA := Color(0.45, 0.62, 0.22)
+var barra_vida: ProgressBar
+var _vida_texto: Label
+var _vida_preenchimento: StyleBoxFlat
+
+
+func _criar_barra_de_vida() -> void:
+	barra_vida = ProgressBar.new()
+	barra_vida.name = "Vida"
+	barra_vida.show_percentage = false
+	# Transparente ao mouse, como os rótulos do HUD: o clique no chão atrás dela
+	# é caminhada (clique direito) e não pode morrer numa barra de 16 px.
+	barra_vida.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var fundo := StyleBoxFlat.new()
+	fundo.bg_color = Color(0.055, 0.085, 0.075, 0.82)
+	fundo.set_corner_radius_all(6)
+	fundo.set_border_width_all(1)
+	fundo.border_color = Color(0.58, 0.64, 0.48, 0.2)
+	barra_vida.add_theme_stylebox_override("background", fundo)
+	_vida_preenchimento = StyleBoxFlat.new()
+	_vida_preenchimento.bg_color = COR_VIDA
+	_vida_preenchimento.set_corner_radius_all(6)
+	barra_vida.add_theme_stylebox_override("fill", _vida_preenchimento)
+	_root.add_child(barra_vida)
+	barra_vida.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP)
+	barra_vida.offset_left = -70
+	barra_vida.offset_right = 70
+	barra_vida.offset_top = 78
+	barra_vida.offset_bottom = 94
+	_vida_texto = _label("", 11, INK)
+	barra_vida.add_child(_vida_texto)
+	_vida_texto.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_vida_texto.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_vida_texto.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	var vida := get_node_or_null("/root/Vida")
+	if vida == null:
+		barra_vida.visible = false
+		return
+	vida.mudou.connect(_atualizar_vida)
+	_atualizar_vida()
+
+
+func _atualizar_vida() -> void:
+	var vida := get_node_or_null("/root/Vida")
+	if vida == null or barra_vida == null:
+		return
+	barra_vida.max_value = vida.maximo()
+	barra_vida.value = vida.atual
+	_vida_texto.text = "%d" % roundi(vida.atual)
+	_vida_preenchimento.bg_color = COR_VIDA_ENVENENADA if vida.envenenado_agora() else COR_VIDA
 
 
 func _process(delta: float) -> void:

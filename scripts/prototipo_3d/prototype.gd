@@ -12,6 +12,7 @@ const Lapides = preload("res://scripts/prototipo_3d/lapides.gd")
 const ArvoresInfo = preload("res://scripts/prototipo_3d/arvores_info.gd")
 const PlacasNomes = preload("res://scripts/prototipo_3d/placas_nomes.gd")
 const Tubarao = preload("res://scripts/prototipo_3d/tubarao.gd")
+const Queda = preload("res://scripts/prototipo_3d/queda.gd")
 const Atalhos = preload("res://scripts/prototipo_3d/atalhos.gd")
 const Minimapa = preload("res://scripts/prototipo_3d/minimapa.gd")
 const MENU_SCENE := "res://scenes/prototipo_3d/abertura.tscn"
@@ -211,6 +212,11 @@ func _montar_moradores(spawn: Vector3) -> void:
 	tubarao.name = "Tubarao"
 	add_child(tubarao)
 	tubarao.configurar(world, player, func(texto: String) -> void: hud.set_notice(texto))
+	# Vida no chão é noite no chão: quem cai acorda na porta de casa (queda.gd).
+	var queda := Queda.new()
+	queda.name = "Queda"
+	add_child(queda)
+	queda.configurar(world, player, hud)
 	# Pegadas do jogador no chão, por terreno, sumindo com o tempo.
 	pegadas_no = preload("res://scripts/prototipo_3d/pegadas.gd").new()
 	pegadas_no.name = "Pegadas"

@@ -21,6 +21,9 @@ extends SceneTree
 ##   4. NADA GASTA FÔLEGO AINDA, e isso é de propósito. No 2D quem cobra é a
 ##      enxada, o machado e a picareta, e o vale não tem trabalho. O dia em que
 ##      tiver, esta pergunta é a que vai avisar que ela precisa mudar.
+##      A única exceção é a QUEDA (`queda.gd`, #10): cair é a mesma noite do
+##      desmaio, e ela chama `Energia.desmaiar()` como o `_apagar` do 2D. Isso
+##      devolve fôlego, não gasta — e só ela pode.
 
 var falhas := 0
 
@@ -83,14 +86,25 @@ func _run() -> void:
 	# — e é para reprovar mesmo. O recado é: apague esta parte, e escreva em
 	# lugar dela o portão do que passou a gastar.
 	var gasta := false
+	var desmaia_fora_da_queda := false
+	# Chamada é linha de CÓDIGO: comentário que cita a função (e a queda.gd cita)
+	# não pode contar como chamada, nem para acusar nem para absolver.
+	var desmaia := RegEx.create_from_string("(?m)^[ \\t]+[^#\\n]*Energia\\.desmaiar\\(")
 	for arquivo in _scripts_do_prototipo():
 		var texto := FileAccess.get_file_as_string(arquivo)
-		if texto.contains("Energia.gastar(") or texto.contains("Energia.dormir(") \
-				or texto.contains("Energia.desmaiar("):
+		if texto.contains("Energia.gastar(") or texto.contains("Energia.dormir("):
 			gasta = true
 			print("  (gasta fôlego: %s)" % arquivo)
+		if desmaia.search(texto) != null and not arquivo.ends_with("/queda.gd"):
+			desmaia_fora_da_queda = true
+			print("  (desmaia fora da queda: %s)" % arquivo)
 	_conferir(not gasta,
 		"alguma coisa no vale passou a gastar fôlego: troque esta pergunta pelo portão do que gasta")
+	_conferir(not desmaia_fora_da_queda,
+		"Energia.desmaiar() fora do queda.gd: o vale ganhou outra noite no chão, e ela precisa do portão dela")
+	var queda := FileAccess.get_file_as_string("res://scripts/prototipo_3d/queda.gd")
+	_conferir(desmaia.search(queda) != null,
+		"a queda não chama Energia.desmaiar(): cair deixou de ser a mesma noite do desmaio do 2D")
 
 	_fechar()
 

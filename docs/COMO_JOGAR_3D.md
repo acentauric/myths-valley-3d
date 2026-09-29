@@ -58,7 +58,7 @@ As animações foram exportadas **no lugar**: os clipes mexem o esqueleto, enqua
 
 O material continua sendo duplicado apenas na instância e renderizado dos dois lados. Essa correção evita o desaparecimento de partes do torso sem alterar o arquivo 3D original.
 
-A regra de fôlego, mochila, missões, fé, receitas, luta, obras, venda, pesca, cartas e salvamento já roda no vale, vinda do 2D, mas o jogador ainda não a vê: faltam as telas e os gatilhos. O passeio também não grava progresso — as vagas de save ainda não estão ligadas; o diretório de usuário `MythsValleyPrototype3D` já separa esses saves da versão 2D. Plantação, terrenos e a conversa por IA ainda não existem no 3D. O que falta, e em que ordem, está nas [issues com rótulo `3d`](https://github.com/acentauric/myths-valley/issues?q=is%3Aissue+is%3Aopen+label%3A3d) e no [plano de migração](MIGRACAO_2D_3D.md).
+A **vida** já aparece: a barra logo abaixo do relógio, vermelha (verde-musgo com peçonha). Quem cai acorda na porta da Casa de taipa às 6h do dia seguinte, inteiro — ainda não há nada no vale que tire vida, isso chega com a luta. A regra de fôlego, mochila, missões, fé, receitas, luta, obras, venda, pesca, cartas e salvamento também já roda no vale, vinda do 2D, mas o jogador ainda não a vê: faltam as telas e os gatilhos. O passeio também não grava progresso — as vagas de save ainda não estão ligadas; o diretório de usuário `MythsValleyPrototype3D` já separa esses saves da versão 2D. Plantação, terrenos e a conversa por IA ainda não existem no 3D. O que falta, e em que ordem, está nas [issues com rótulo `3d`](https://github.com/acentauric/myths-valley/issues?q=is%3Aissue+is%3Aopen+label%3A3d) e no [plano de migração](MIGRACAO_2D_3D.md).
 
 ## Como a animação funciona
 

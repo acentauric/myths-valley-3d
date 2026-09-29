@@ -11,6 +11,16 @@ marcos. Os textos curtos e a identificação exibidos no jogo ficam em
 `prototipo_3d/data/historico_3d.json`; ao registrar um novo marco ou build,
 atualize esse arquivo e este documento juntos.
 
+## Em desenvolvimento — 29/09/2026
+
+- **Vida no vale** (#10). Barra de vida no HUD, logo abaixo do relógio, com as cores
+  do 2D: vermelha, e verde-musgo enquanto a peçonha corre. **Cair é noite no chão**,
+  como no 2D: a tela escurece, o jogador acorda na porta da Casa de taipa às 6h do
+  dia seguinte, com a vida cheia e o fôlego do desmaio, e o aviso conta o que houve
+  (`queda.gd`, `data/queda.json`). A regra é o `Vida` compartilhado, sem uma linha
+  mudada; o que o vale acrescentou é o gatilho, a barra e o portão `tests/vida.gd`.
+  Nada no vale tira vida ainda — isso chega com a luta (#14).
+
 ## Build #6 — 28/09/2026
 
 - **Franjas refeitas** (o bloco mais pedido): espuma da linha d'água em filete fino e

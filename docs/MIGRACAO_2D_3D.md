@@ -34,7 +34,7 @@ crédito do Tripo e exigem o custo aprovado **antes** de gerar.
 
 | Fase deste plano | Issues |
 |---|---|
-| Fase 2 — sistemas | #10 Vida · #11 receitas, cozinha, oficina e pesca · #12 cartas e coleção · #13 Povoado · #14 luta · #15 obras e venda |
+| Fase 2 — sistemas | ~~#10 Vida~~ (feita) · #11 receitas, cozinha, oficina e pesca · #12 cartas e coleção · #13 Povoado · #14 luta · #15 obras e venda |
 | Fase 2.5 — geografia | #22 chapada e vizinhos · #23 rio, vau e lagoa · #24 mata e serra · #25 fazenda e ruínas |
 | Fase 3 — missões e enredo | **#1** (jam) · #31 capítulos 6 e 7 |
 | Fase 4 — salvar | #7 |
@@ -235,7 +235,7 @@ não por importância: cada um só precisa dos anteriores.
 | Ordem | Sistema | Linhas | O que o 3D ganha |
 |---|---|---|---|
 | ~~1a~~ **FEITA** | ~~`Progressao`, `Energia`~~ | 229 | O fôlego, e o cansaço que encurta o passo para 62% — a mesma regra, lida dos mesmos arquivos |
-| 1b | `Vida` | 199 | A vida que a onça tira, e a queda que leva para casa. Ficou para depois: ela chama `Talentos`, `Luta`, `Equipamento`, `Cozinha`, `Telas` e `Dialogo`, e nenhum deles atravessou ainda |
+| ~~1b~~ **FEITA** | ~~`Vida`~~ | 217 | A vida que a onça tira, e a queda que leva para casa. A regra veio no fechamento desta fase; **a barra no HUD e a queda que leva à porta da Casa de taipa** vieram com a #10 (`queda.gd`, `tests/vida.gd`). Quem tira vida no vale ainda não existe — é a #14 |
 | ~~2~~ **FEITA** | ~~`Inventario`, `Equipamento`, `Catalogo`~~ | 817 | Os 30 espaços, os 10 de mão, o que o corpo veste, e o catálogo com 51 itens. Custou um refactor no 2D: a tecla da mão saiu do `Inventario` e foi para o `Controles` — doze linhas de entrada prendiam 174 de regra |
 | ~~2.9~~ **FEITA** | ~~`Relogio`, `Efeitos`~~ | 255 | O calendário — dia, estação, ano — e o efeito que vence em dias. Veio da Fase 5, que era pré-requisito desta fase e não o penúltimo degrau |
 | ~~3~~ **FEITA** | ~~`Talentos`, `Fe`, `Ritos`, `Afinidade`, `Jogo`~~ | 1.861 | 37 nós de teia, as três fés com XP separado, e os sete moradores com gosto e desgosto. Os quatro primeiros se citam em círculo e foram juntos; o `Jogo` veio inteiro, com a linha da janela mínima movida para o menu 2D. O `aldeoes.json` veio junto, porque sem ele a afinidade não sabe de quem é cada gosto |
