@@ -1,0 +1,159 @@
+extends Node
+## LUGARES: traduz NOME DE LUGAR em posição — o lado 3D da costura.
+##
+## Mesmo contrato do `Lugares` do jogo 2D (`scripts/autoload/lugares.gd` na
+## raiz), com uma diferença só: lá `ponto()` devolve `Vector2`, aqui devolve
+## `Vector3`. Quem chama não vê a diferença, e é isso que deixa a campanha
+## escrita para o 2D rodar aqui sem reescrita.
+##
+## Ver docs/MIGRACAO_2D_3D.md, Fase 1.
+##
+##
+## O NOME É O CONTRATO; A ÂNCORA É A IMPLEMENTAÇÃO
+##
+## O `world_builder` já nomeia os lugares do vale — "Praça", "Igreja", "Pier",
+## "Roçado" — em `ancoras`, com acento e maiúscula, porque são nomes de lugar
+## de verdade, escritos para gente ler. O contrato usa a forma sem acento e em
+## minúscula, porque ele é chave de dado: entra em JSON de missão, em save, em
+## arquivo de fala.
+##
+## `DE_PARA` é a ponte entre as duas formas. Ela é a peça que um dia vai
+## crescer: hoje cobre o que o vale tem, e a Fase 2.5 acrescenta uma linha por
+## lugar novo — a chapada, o vau, a lagoa, a fazenda.
+##
+##
+## O QUE ACONTECE COM NOME QUE O VALE AINDA NÃO TEM
+##
+## Devolve `NENHUM`, e nada quebra. É de propósito, e é a mesma escolha do
+## `CatalogoAssets` para peça não exportada: o sistema roda com o lugar
+## ausente, a bússola some, e o dia em que a região crescer o nome passa a
+## resolver sem ninguém tocar em missão nenhuma.
+##
+## Enquanto a Fase 2.5 não chega, é assim que metade da campanha do 2D
+## convive com um vale que só tem a vila.
+
+const NENHUM := Vector3.INF
+
+## NOME DO CONTRATO → nome da âncora no `world_builder`.
+const DE_PARA := {
+	"praca": "Praça",
+	"igreja": "Igreja",
+	"capela": "Igreja",
+	"venda": "Venda do Bar",
+	"bar": "Bar",
+	"casa_de_pasto": "Restaurante",
+	"pier": "Pier",
+	"ponte_da_vila": "Ponte",
+	"poco": "Poço",
+	"mirante": "Mirante",
+	"cemiterio": "Cemitério",
+	"rocado": "Roçado",
+	"casa_de_taipa": "Casa de taipa",
+	"casa_da_estrada": "Casa da estrada",
+	"casa_carro_quebrado": "Casa de Carro Quebrado",
+	"fogueira": "Fogueira",
+	"pedras": "Pedras",
+}
+
+## Os nomes que a campanha do 2D usa e o vale ainda NÃO tem, com o que falta
+## para cada um. Não é lista de pendência solta: o portão a lê para cobrar que
+## ninguém aqui esteja escrito errado, e a Fase 2.5 esvazia esta lista movendo
+## linha por linha para `DE_PARA`.
+const FALTAM_NO_VALE := {
+	"vau": "o rio grande e a passagem de pau — Fase 2.5",
+	"ponte_do_vau": "a ponte reconstruída sobre o vau, que é a primeira obra do jogo — Fase 2.5",
+	"expansao": "a chapada de expansão — Fase 2.5",
+	"lapa": "a lapa e a rampa do morro — Fase 2.5",
+	"lagoa": "a lagoa a leste do Seu Benedito — Fase 2.5",
+	"oficina": "a oficina de materiais — Fase 7, e a âncora com ela",
+	"canteiro": "o canteiro de obras — Fase 7",
+	"curral": "o curral — Fase 7",
+	"horta": "a horta do roçado — cabe dentro do Roçado, a decidir",
+	"casa_do_pedro": "a casa do Pedro — Fase 7",
+	"portao_da_fazenda": "a fazenda, do outro lado do rio — Fase 2.5",
+	"patio_da_fazenda": "o pátio onde a recepção da 6.1 acontece, dentro da fazenda — Fase 2.5",
+	"cabra_do_alto": "o morro do Seu Benedito — Fase 2.5",
+}
+
+var _mundo: Node3D = null
+
+
+## O vale se apresenta ao subir. Quem chama é o `world_builder`, quando as
+## âncoras já estão todas postas — antes disso o dicionário está pela metade e
+## um nome resolveria para o lugar errado em vez de não resolver.
+func registrar(mundo: Node3D) -> void:
+	_mundo = mundo
+
+
+func esquecer(mundo: Node3D = null) -> void:
+	if mundo == null or mundo == _mundo:
+		_mundo = null
+
+
+func tem_mundo() -> bool:
+	return is_instance_valid(_mundo)
+
+
+## O contrato conhece o nome? Conhece tanto o que resolve quanto o que ainda
+## falta — nome que falta é nome certo num vale incompleto, e não erro de quem
+## escreveu a missão.
+func existe(nome: String) -> bool:
+	var chave := _chave(nome)
+	return DE_PARA.has(chave) or FALTAM_NO_VALE.has(chave)
+
+
+## O nome resolve HOJE?
+func resolve(nome: String) -> bool:
+	return ponto(nome) != NENHUM
+
+
+func nomes() -> Array:
+	return DE_PARA.keys()
+
+
+## NOME → POSIÇÃO no vale.
+func ponto(nome: String, _detalhe: String = "") -> Vector3:
+	if not is_instance_valid(_mundo):
+		return NENHUM
+	var chave := _chave(nome)
+	if not DE_PARA.has(chave):
+		# Silêncio para o que se sabe que falta; aviso só para o que ninguém
+		# declarou. Avisar sobre os treze conhecidos encheria o console a cada
+		# missão e ensinaria a ignorar o aviso — que é como um aviso de
+		# verdade se perde.
+		if not FALTAM_NO_VALE.has(chave):
+			push_warning("Lugares: nome desconhecido '%s'." % nome)
+		return NENHUM
+
+	var ancora: String = DE_PARA[chave]
+	if not _mundo.ancoras.has(ancora):
+		return NENHUM
+	return _mundo.ancoras[ancora]
+
+
+func pontos(lista: Array) -> Array:
+	var saida := []
+	for nome in lista:
+		var p := ponto(str(nome))
+		if p != NENHUM:
+			saida.append(p)
+	return saida
+
+
+## Perto o bastante? O 3D mede em unidades de 4 m, e quem pergunta é a missão:
+## "chegou no píer?". No 2D a mesma pergunta é feita em pixels — por isso ela
+## mora aqui, e não no código de missão.
+func perto_de(nome: String, quem: Node3D, raio: float) -> bool:
+	if not is_instance_valid(quem):
+		return false
+	var p := ponto(nome)
+	if p == NENHUM:
+		return false
+	var d := quem.global_position - p
+	d.y = 0.0
+	return d.length() <= raio
+
+
+func _chave(nome: String) -> String:
+	var corte := nome.find(":")
+	return nome if corte < 0 else nome.substr(0, corte)

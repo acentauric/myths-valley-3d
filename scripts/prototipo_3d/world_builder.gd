@@ -427,6 +427,13 @@ func _montar() -> void:
 func _concluir() -> void:
 	visible = true
 	construido = true
+	# O VALE SE APRESENTA AO `Lugares` AQUI, e não no `_ready`: as âncoras são
+	# postas ao longo da construção inteira, e quem se registrasse no começo
+	# responderia com meio dicionário. Nome resolvendo para o lugar errado é
+	# pior que nome não resolvendo — este some a seta, aquele manda o jogador
+	# para o outro lado da vila. Ver docs/MIGRACAO_2D_3D.md, Fase 1.
+	Lugares.registrar(self)
+	tree_exiting.connect(func() -> void: Lugares.esquecer(self))
 	progresso.emit(1.0, "Pronto")
 	pronto.emit()
 

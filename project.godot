@@ -22,6 +22,7 @@ boot_splash/show_image=false
 
 Audio="*res://scripts/autoload/audio.gd"
 Estilo="*res://scripts/autoload/estilo.gd"
+Lugares="*res://scripts/autoload/lugares.gd"
 Dia="*res://scripts/autoload/dia.gd"
 Mare="*res://scripts/autoload/mare.gd"
 

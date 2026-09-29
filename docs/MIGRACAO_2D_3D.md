@@ -37,7 +37,7 @@ Em três frases:
 3. **Só nasce do zero o que o 3D não tem.** Inventário, fôlego, vida, teias, fé,
    cartas, coleção, receitas, obras, venda, afinidade e salvamento não existem
    lá. Esses vêm inteiros do 2D, com regra e portão, porque escrever de novo o
-   que já tem 46 portões cobrindo seria o retrabalho mais caro possível.
+   que já tem 47 portões cobrindo seria o retrabalho mais caro possível.
 
 **O teste de cada fatia:** se ela apaga, reescreve ou aposenta código ou asset
 que hoje roda no `prototipo_3d/`, ela está errada e precisa ser recortada de
@@ -108,7 +108,7 @@ projeto Godot separado, com `project.godot` próprio e `user://` próprio.
 
 ---
 
-## Fase 1 — A costura: `Lugares`
+## ~~Fase 1 — A costura: `Lugares`~~ — FEITA (setembro de 2026)
 
 É a única peça de arquitetura nova que a migração pede, e tudo depende dela.
 
@@ -134,8 +134,42 @@ que o 3D já faz para as placas de nome.
 **Onde a lógica compartilhada mora.** Recomendo `compartilhado/` na raiz do
 repositório, referenciado pelos dois `project.godot` — e **não** cópia. Cópia
 de 5.300 linhas de regra vira duas versões divergentes em três semanas, e o
-2D é a referência de regras justamente porque ele tem 46 portões cobrindo
+2D é a referência de regras justamente porque ele tem 47 portões cobrindo
 essas regras. Regra copiada é regra sem portão.
+
+### O que saiu
+
+| O que entrou | Onde |
+|---|---|
+| O contrato no 2D: 35 nomes, cada um embrulhando um acessor `ponto_*` do `Mundo`, com `NENHUM` para o que não resolve | `scripts/autoload/lugares.gd` |
+| O contrato no 3D: 17 nomes resolvendo em âncora do `world_builder`, e **13 declarados como ainda ausentes**, cada um com a razão escrita | `prototipo_3d/scripts/autoload/lugares.gd` |
+| `Missoes.apontar` e `apontar_varios` passam a aceitar **nome ou posição**, resolvendo na hora de apontar | `scripts/autoload/missoes.gd` |
+| 54 chamadas de campanha trocaram `_mundo.ponto_do_x()` por `"x"` — tutorial, arraial e fazenda | `scripts/mundo/` |
+| Dois portões novos, um de cada lado | `tools/gdscript/testar_lugares.gd`, `prototipo_3d/tests/lugares.gd` |
+
+**O nome resolve AGORA, e não na hora de desenhar.** Metade dos lugares é
+móvel — o bicho mais perto, a erva mais perto, o aldeão que anda. Reresolver
+a cada quadro faria o losango perseguir um alvo que muda, que é outra missão
+e não esta. O nome é o que atravessa mundos; o ponto é o que aquela missão
+passou a ter como destino.
+
+**A posição continua aceita, e não é dívida.** Sobraram vinte chamadas que
+passam `Vector2`, e elas estão certas: são alvo calculado (a célula que o
+jogador acabou de arar) ou ponto que serve para duas coisas ao mesmo tempo —
+apontar a bússola e medir distância. Lugar sem nome não ganha nada em virar
+texto.
+
+> **O que a fatia ensinou, e vale para as próximas.** Trocar coordenada por
+> texto troca erro de compilação por erro calado: `ponto_do_vaU()` não compila,
+> `"vaU"` compila e some a bússola. É por isso que o portão do 2D varre o
+> **fonte** atrás de todo nome escrito à mão e cobra cada um contra o
+> contrato — 29 nomes hoje. Sem essa pergunta, a costura teria trocado um
+> acoplamento por uma classe de defeito pior.
+>
+> E dois portões antigos reprovaram, com razão: `testar_coveiro` e
+> `testar_oficios` conferem o **texto** da linha que aponta o losango, e a
+> linha mudou. A expectativa deles foi atualizada para a forma nova — o que
+> eles medem continua sendo o mesmo.
 
 ---
 
@@ -543,10 +577,11 @@ conferir a tabela inteira antes da primeira tela, não depois da terceira.
   leira*. Em 3D isso vira um lote com posição e raio, e o "tile à frente" vira
   o raycast que o 3D já usa para interagir. O roçado já existe como âncora no
   vale — é onde essa fase começa.
-- **32 dos 46 portões**, que sobem o mundo 2D para medir. Os outros **14 são de
+- **32 dos 47 portões**, que sobem o mundo 2D para medir. Os outros **15 são de
   lógica pura** e atravessam quase de graça: `testar_afinidade`, `_amanhecer`,
   `_divida`, `_escolha`, `_folheto`, `_fracoes`, `_missoes`, `_povo`,
-  `_receitas`, `_slots`, `_teia`, `_intro`, `_menu`, `_menu_interacao`.
+  `_receitas`, `_slots`, `_talentos`, `_teia`, `_intro`, `_menu` e
+  `_menu_interacao`.
 
 Os 32 restantes não se perdem: viram a especificação do que os portões 3D
 precisam medir. Um portão que hoje confere que nenhum posto de morador cai
