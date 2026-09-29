@@ -190,7 +190,7 @@ não por importância: cada um só precisa dos anteriores.
 | 1b | `Vida` | 199 | A vida que a onça tira, e a queda que leva para casa. Ficou para depois: ela chama `Talentos`, `Luta`, `Equipamento`, `Cozinha`, `Telas` e `Dialogo`, e nenhum deles atravessou ainda |
 | ~~2~~ **FEITA** | ~~`Inventario`, `Equipamento`, `Catalogo`~~ | 817 | Os 30 espaços, os 10 de mão, o que o corpo veste, e o catálogo com 51 itens. Custou um refactor no 2D: a tecla da mão saiu do `Inventario` e foi para o `Controles` — doze linhas de entrada prendiam 174 de regra |
 | ~~2.9~~ **FEITA** | ~~`Relogio`, `Efeitos`~~ | 255 | O calendário — dia, estação, ano — e o efeito que vence em dias. Veio da Fase 5, que era pré-requisito desta fase e não o penúltimo degrau |
-| 3 | `Talentos`, `Fe`, `Ritos`, **`Afinidade`**, **`Jogo`** | 1.853 | A teia de ofício, as três árvores de fé com XP separado e o preço de migrar, e os moradores deixando de ser cenário. **Os quatro primeiros se citam em círculo: vão juntos ou não vão**, e a `Afinidade` puxa o `Jogo`, que tem uma linha 2D a mover |
+| ~~3~~ **FEITA** | ~~`Talentos`, `Fe`, `Ritos`, `Afinidade`, `Jogo`~~ | 1.861 | 37 nós de teia, as três fés com XP separado, e os sete moradores com gosto e desgosto. Os quatro primeiros se citam em círculo e foram juntos; o `Jogo` veio inteiro, com a linha da janela mínima movida para o menu 2D. O `aldeoes.json` veio junto, porque sem ele a afinidade não sabe de quem é cada gosto |
 | 4 | `Receitas`, `Cozinha`, `Oficina`, `Pesca` | 891 | Receita que se aprende; a bancada que serra tábua e torce corda; e a água do lugar decidindo o peixe — o 3D já tem mar, rio e cardume, e não tem o que pescar neles |
 | 5 | `Cartas`, `Colecao` | 411 | Pactos com mitos, apoios, rituais; cordéis, bichos e sinais |
 | 6 | `Afinidade`, `Povoado` | 606 | Os sete moradores deixam de ser cenário e passam a ter gosto, desgosto e reação |
@@ -663,7 +663,18 @@ dado pelo mesmo motivo.
 
 **O que falta traduzir, declarado hoje:** as 21 falas dos moradores em
 `npcs_3d.json` (com o agravante do `tts`, que leva marcação de interpretação e
-pede a voz de cada idioma), as fichas de árvore e os epitáfios do cemitério.
+pede a voz de cada idioma), as fichas de árvore, os epitáfios do cemitério, e
+os dois arquivos grandes que vieram do 2D — `pedro.json` (32 KB, o tutorial
+inteiro) e `aldeoes.json` (26 KB, os sete moradores).
+
+> **A tradução é do Ramon** (decisão do autor, setembro de 2026). São 58 KB de
+> prosa em registro regional — "Bora pro píer", "casa de pasto", "o pão desta
+> terra" —, e isso não é trabalho de tradutor automático nem de quem não tem
+> ouvido para o tom. O que a migração entrega é a **estrutura**: o campo nasce
+> com `_en` e `_es` previstos, o `IdiomaMenu.campo` já escolhe, o portão já
+> cobra, e a lista `FALTAM_TRADUCAO` diz exatamente o que falta e por quê.
+> Traduzido um arquivo, ele sai da lista e entra em `TRADUZIDOS` — e a partir
+> daí o portão não deixa mais regredir.
 
 ### O som
 

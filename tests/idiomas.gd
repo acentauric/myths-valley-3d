@@ -43,6 +43,10 @@ const FALTAM_TRADUCAO := {
 		"as fichas de árvore do painel; nome popular e nome científico, e o popular muda de região antes de mudar de língua",
 	"res://data/lapides_3d.json":
 		"os epitáfios do cemitério; são de 1887 e a forma importa mais que a letra",
+	"res://data/dialogos/aldeoes.json":
+		"os sete moradores vindos do 2D: apresentação, reação ao presente e fala por grau. É o que a Afinidade lê para saber de quem é cada gosto. TRADUÇÃO COM O RAMON — registro regional, 26 KB",
+	"res://data/dialogos/pedro.json":
+		"o tutorial inteiro do 2D, 27 passos com objetivo e arremate. TRADUÇÃO COM O RAMON — 32 KB, e é o maior bloco de prosa do projeto",
 }
 
 const SUFIXOS := ["_en", "_es"]

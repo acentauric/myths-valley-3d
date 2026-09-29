@@ -1,4 +1,4 @@
-; Engine configuration file.
+﻿; Engine configuration file.
 ; It's best edited using the editor UI and not directly,
 ; since the parameters that go here are not all obvious.
 ;
@@ -10,7 +10,7 @@ config_version=5
 
 [application]
 
-config/name="Myths' Valley — Protótipo 3D"
+config/name="Myths' Valley â€” ProtÃ³tipo 3D"
 run/main_scene="res://scenes/prototipo_3d/inicio.tscn"
 config/use_custom_user_dir=true
 config/custom_user_dir_name="MythsValleyPrototype3D"
@@ -28,6 +28,11 @@ Inventario="*res://scripts/compartilhado/inventario.gd"
 Equipamento="*res://scripts/compartilhado/equipamento.gd"
 Relogio="*res://scripts/compartilhado/relogio.gd"
 Efeitos="*res://scripts/compartilhado/efeitos.gd"
+Jogo="*res://scripts/compartilhado/jogo.gd"
+Talentos="*res://scripts/compartilhado/talentos.gd"
+Ritos="*res://scripts/compartilhado/ritos.gd"
+Fe="*res://scripts/compartilhado/fe.gd"
+Afinidade="*res://scripts/compartilhado/afinidade.gd"
 Lugares="*res://scripts/autoload/lugares.gd"
 Dia="*res://scripts/autoload/dia.gd"
 Mare="*res://scripts/autoload/mare.gd"

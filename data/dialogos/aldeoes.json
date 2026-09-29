@@ -1,0 +1,583 @@
+{
+  "observacao": "Moradores do arraial. Cada um é dono de um terreno (ver scripts/autoload/terrenos.gd) e o que ele diz muda com o estado do jogo. A ordem dos assuntos é a ordem de prioridade: o primeiro cuja condição bate é o que sai. Texto de rascunho.",
+
+  "benedito": {
+    "nome": "Seu Benedito",
+    "fe": "catolica",
+    "gosta": ["farinha", "pirao", "mandioca"],
+    "desgosta": ["cana"],
+    "gostou": [
+      "Farinha da sua? Deixa eu ver a granulação... Ó. Isso aqui tá bom.",
+      "Meu pai dizia que farinha boa é a que range no dente e não empapa. Essa range."
+    ],
+    "nao_gostou": [
+      "Cana.",
+      "Meu filho, você não sabe, e eu não vou fazer cara feia. Mas cana aqui não é planta: é o engenho, e o engenho comeu doze famílias desta beira.",
+      "Guarde essa. Me traga outra coisa qualquer dia."
+    ],
+    "agradeceu": ["Obrigado. Eu ponho na cozinha."],
+    "ja_ganhou": ["Você já me deu uma coisa hoje, rapaz. Eu não sou pote sem fundo."],
+    "assuntos": [
+      {
+        "id": "apresentacao",
+        "quando": "terra_dele",
+        "fala": [
+          "Benedito. Benedito de Assis, mas aqui todo mundo diz só Seu Benedito.",
+          "Esse chão daqui até a beira é meu desde antes de você nascer. Meu pai abriu no machado, e eu plantei nele quarenta e duas safras.",
+          "Agora eu conto: quarenta e duas. Antes eu nem contava."
+        ]
+      },
+      {
+        "id": "venda",
+        "quando": "terra_dele",
+        "fala": [
+          "Meus dois foram pra Salvador. Um trabalha em armazém, o outro eu não sei bem o que faz e não pergunto.",
+          "Nenhum dos dois volta pra enxada. Disseram na cara, e eu não guardo mágoa: enxada não é destino de ninguém, é escolha.",
+          "Então eu vendo. Dois mil e seiscentos réis, e eu não choro no preço — mas também não abaixo.",
+          "Duas coisas, antes de você sonhar. A primeira: minha divisa não encosta na sua. Entre nós tem a terra da Zefa, e é com ela que você tem que resolver primeiro.",
+          "A segunda: eu vendo a terra, não a casa. Eu morro aqui neste terreno, e quem comprar me herda junto. Se isso te incomoda, a gente nem conversa.",
+          "Olha a beira antes de decidir. A água corre ali o ano todo. Terra com água aceita quase tudo."
+        ]
+      },
+      {
+        "id": "ponte",
+        "quando": "ponte_caida",
+        "repete": true,
+        "fala": [
+          "A cheia levou a ponte em fevereiro. Eu vi da varanda: primeiro foi o meio, depois o resto foi atrás.",
+          "O povo falou em consertar por um mês. Depois parou de falar.",
+          "Aqui é assim, meu filho. A gente espera cair, e depois espera alguém."
+        ]
+      },
+      {
+        "id": "convite",
+        "quando": "tem_convite",
+        "fala": [
+          "Vi você com aquele papel na mão. O convite da fazenda, né?",
+          "Escuta o velho: aquela terra do outro lado nunca deu nada pra ninguém. Não é por falta de chuva.",
+          "Meu avô cortava pau lá quando era rapaz. Parou de ir, e nunca disse por quê — e meu avô era homem de dizer as coisas.",
+          "Vá se quiser. Mas vá de dia, e volte antes de escurecer."
+        ]
+      },
+      {
+        "id": "vendida",
+        "quando": "terra_minha",
+        "fala": [
+          "Pronto. O papel tá no seu nome e eu continuo na minha casa, como a gente combinou.",
+          "Agora me diga o que você quer que eu faça. Abre o painel aí e escolhe — eu faço o que der pra fazer.",
+          "E o que não der eu digo na cara: capina o dia inteiro eu não pego mais, {jogador}. Passei dos setenta.",
+          "Farinha eu faço sentado. Cesto eu tranço. Bicho de quintal eu cuido melhor que gente moça. Isso eu faço bem."
+        ]
+      },
+      {
+        "id": "trabalhando",
+        "quando": "terra_minha",
+        "repete": true,
+        "fala": [
+          "Aquele canto perto da água alaga em maio. Planta ali o que gosta de pé molhado, e tudo bem.",
+          "Se quiser saber de alguma coisa dessa terra, pergunta. Eu sei tudo dela, menos como largar."
+        ]
+      },
+      {
+        "id": "afinidade_filhos",
+        "quando": "afinidade_2",
+        "fala": [
+          "Você aparece direto aqui, hein. Eu reparei.",
+          "O mais velho escreveu no ano passado. Uma carta de meia folha, com a letra apertada pra caber. Contou do emprego e não perguntou de mim.",
+          "Eu li umas trinta vezes. Não pela notícia — pela letra. É a letra dele, entende? A mesma que eu ensinei nesta mesa."
+        ]
+      },
+      {
+        "id": "afinidade_medo",
+        "quando": "afinidade_3",
+        "fala": [
+          "Vou te dizer uma coisa que eu não digo pra ninguém daqui, porque daqui todo mundo já sabe e ninguém fala.",
+          "Não é a terra que me dá medo de largar. É o dia.",
+          "Quarenta e dois anos eu acordo às cinco porque tem o que fazer. Se eu vender, no dia seguinte eu acordo às cinco e não tem.",
+          "Você é moço. Guarda isso pra quando fizer sentido."
+        ]
+      }
+    ],
+    "reserva": [
+      "O dia tá de trabalho. Vá tocando, que eu fico aqui no meu canto.",
+      "Na minha idade a gente já não tem pressa nenhuma."
+    ]
+  },
+
+  "zefa": {
+    "nome": "Dona Zefa",
+    "fe": "candomble",
+    "gosta": ["cocada", "garapa", "beiju"],
+    "desgosta": ["cana"],
+    "gostou": [
+      "Ah, isso eu aceito. Sente aí um minuto.",
+      "Doce é a única coisa que eu ainda faço questão. O resto da vida eu já aceitei como vem."
+    ],
+    "nao_gostou": [
+      "Cana não, meu filho. Cana eu não recebo.",
+      "Sabe o que é a metade do que bate nesta porta de madrugada? É cana. Homem cortado, mulher com o braço torto, menino com febre porque o pai gastou o remédio no armazém.",
+      "Eu passo a vida costurando o que a cana desmancha. Guarda essa."
+    ],
+    "agradeceu": ["Deus lhe pague. Ponho ali no canto."],
+    "ja_ganhou": ["Hoje já, meu filho. Amanhã eu ainda estou aqui, se Deus quiser."],
+    "assuntos": [
+      {
+        "id": "apresentacao",
+        "quando": "terra_dele",
+        "fala": [
+          "Chegou o da capital. Tá todo mundo sabendo, não se assuste.",
+          "Zefa. Eu benzo quebranto, faço chá pra quem tem febre e aparo menino que resolve nascer de madrugada.",
+          "E cuido desse pedaço de chão aqui, que era da minha mãe."
+        ]
+      },
+      {
+        "id": "favor",
+        "quando": "terra_dele",
+        "fala": [
+          "Vender eu não vendo. Chão de mãe não se vende, se passa.",
+          "Mas eu tô velha pra subir na serra, e tem coisa que só nasce lá em cima.",
+          "Me traga o que eu preciso pro remédio, e a gente conversa sobre você cuidar desse pedaço.",
+          "Não é presente. É troca — e troca é como as coisas funcionam aqui.",
+          "E olhe: meu chão é o primeiro depois da sua cerca. Quem quiser chegar na chapada do Benedito passa por aqui, e por mim."
+        ]
+      },
+      {
+        "id": "rio",
+        "quando": "ponte_caida",
+        "repete": true,
+        "fala": [
+          "Aquela ponte caiu porque ninguém pediu licença pro rio quando levantaram ela.",
+          "Pode rir. Meu pai riu, e foi ele que a cheia pegou em setenta e sete.",
+          "Se você for mexer naquela água, molhe a mão e diga em voz alta o que veio fazer. Não custa nada."
+        ]
+      },
+      {
+        "id": "convite",
+        "quando": "tem_convite",
+        "fala": [
+          "Esse papel aí eu já vi. Vieram pregar um igual no mural há duas semanas, e a chuva levou.",
+          "Convite bonito. Letra de gente estudada, papel de gente rica, e nenhum nome embaixo.",
+          "Quem convida o arraial inteiro e não assina não quer visita, meu filho. Quer gente.",
+          "Se for, leve sal no bolso. Não me pergunte por quê — leve."
+        ]
+      },
+      {
+        "id": "passada",
+        "quando": "terra_minha",
+        "fala": [
+          "Tá feito. A terra é sua e eu continuo na casa da minha mãe, que é onde eu vou morrer.",
+          "Diga o que você quer que saia daqui e eu ponho pra sair. Menos enxada — isso eu já paguei minha parte.",
+          "Mas o Cosme, meu neto, mora aqui comigo e tem vinte e dois anos. Esse aguenta sol.",
+          "Fale com ele também. Cada um faz o que o corpo dá."
+        ]
+      },
+      {
+        "id": "minha",
+        "quando": "terra_minha",
+        "repete": true,
+        "fala": [
+          "Cuide bem, que eu tô de olho. E o chão também.",
+          "Quando precisar de chá pra dor nas costas, bata na porta. Quem trabalha assim vai precisar."
+        ]
+      },
+      {
+        "id": "afinidade_mao",
+        "quando": "afinidade_2",
+        "fala": [
+          "Me dá a mão. A direita.",
+          "Hum. Calo de cabo aqui, aqui e aqui. Um mês atrás essa mão era de gente de cidade.",
+          "Não é elogio, é constatação. Mas é uma boa constatação."
+        ]
+      },
+      {
+        "id": "afinidade_tres",
+        "quando": "afinidade_3",
+        "fala": [
+          "Você já andou os três marcos, já escolheu o seu. Então eu posso falar direito.",
+          "Eu vou na missa de manhã e eu vou no terreiro de noite, e não tem contradição nenhuma nisso. Quem inventou que tem foi gente que veio de fora dizer o que a gente é.",
+          "Mas por dentro cada um sabe de qual é. Eu sei da minha. E agora você sabe da sua.",
+          "Isso é tudo que eu queria te ensinar, meu filho. O resto é chá."
+        ]
+      }
+    ],
+    "reserva": [
+      "Tô com as mãos na massa, fala rápido.",
+      "Depois você passa aqui com calma, que eu conto o resto."
+    ]
+  },
+
+  "cosme": {
+    "nome": "Cosme",
+    "fe": "candomble",
+    "gosta": ["pirao", "peixe_assado", "mungunza"],
+    "desgosta": ["banana"],
+    "gostou": [
+      "Opa! Isso é comida de quem trabalhou.",
+      "Vó faz, mas faz pouco — ela come que nem passarinho e acha que todo mundo come igual."
+    ],
+    "nao_gostou": [
+      "...Banana.",
+      "Não, tá bom. Eu como. É que banana é o que a gente dá pra menino que tá atrapalhando, sabe?",
+      "Deixa pra lá. Foi mal."
+    ],
+    "agradeceu": ["Valeu mesmo. Eu levo."],
+    "ja_ganhou": ["Já me deu hoje, meu rei. Guarda aí."],
+    "assuntos": [
+      {
+        "id": "apresentacao",
+        "quando": "sempre",
+        "fala": [
+          "Cosme. Neto da Dona Zefa — moro com ela desde os sete, quando minha mãe morreu.",
+          "Ela me criou, me ensinou a ler no almanaque e me botou pra capinar aos nove. As três coisas na mesma semana.",
+          "O que ela não aguenta mais fazer, eu faço. É esse o arranjo, e não tem nada de triste nisso."
+        ]
+      },
+      {
+        "id": "trabalho",
+        "quando": "terra_minha",
+        "fala": [
+          "Vó me contou que o chão passou pro seu nome. Ela tava tranquila, o que já é muita coisa.",
+          "Então me manda. Roçado, machado, o que for de sol e lombo — eu tenho vinte e dois anos e dois braços.",
+          "Só peço uma coisa: o que for pesado, chama a mim. Não chama ela. Ela vai dizer que faz, e vai fazer, e depois passa três dias sem levantar."
+        ]
+      },
+      {
+        "id": "roca",
+        "quando": "terra_minha",
+        "repete": true,
+        "fala": [
+          "A cana dessa leira aí já tá de corte. Passa o facão que ela rebrota.",
+          "Terra daqui é boa. O que faltava era braço, e agora tem."
+        ]
+      },
+      {
+        "id": "ponte",
+        "quando": "ponte_caida",
+        "repete": true,
+        "fala": [
+          "Eu ia atravessar aquela ponte todo sábado pra ver uma moça do outro lado.",
+          "Desde que caiu, não vi mais. Ela deve achar que eu desisti.",
+          "Se você levantar aquilo de novo, eu te devo mais que um favor."
+        ]
+      },
+      {
+        "id": "convite",
+        "quando": "tem_convite",
+        "fala": [
+          "Vó viu esse convite e mandou eu não ir. Disse na frente de todo mundo, sem baixar a voz.",
+          "Eu respondo o seguinte: se você for, eu vou junto. Ela que brigue com nós dois depois."
+        ]
+      },
+      {
+        "id": "afinidade_almanaque",
+        "quando": "afinidade_2",
+        "fala": [
+          "Ô, deixa eu te perguntar uma coisa. Você lê bem? Lê de verdade, tipo livro?",
+          "Eu leio no almanaque, mas é devagar e eu passo o dedo. Vó me ensinou o que ela sabia, que não era muito.",
+          "Se um dia você pegar um cordel desses e ler em voz alta, eu escuto. Não precisa ser hoje."
+        ]
+      },
+      {
+        "id": "afinidade_ir",
+        "quando": "afinidade_3",
+        "fala": [
+          "Eu penso em ir embora. Pronto, falei.",
+          "Não é por causa dela, entenda bem. É que eu tenho vinte e dois anos e a única coisa que já me aconteceu foi nascer aqui.",
+          "Mas ela não tem mais ninguém. Então eu fico, e tá tudo bem eu ficar — só que eu queria que fosse escolha, sabe? E não ser a única coisa possível.",
+          "Não repete isso pra ela. Eu falei porque você é de confiança."
+        ]
+      }
+    ],
+    "reserva": [
+      "Tô no meio de um serviço, fala andando comigo.",
+      "Se precisar de braço pra alguma coisa, me chama. Braço eu tenho."
+    ]
+  },
+
+  "tonho": {
+    "nome": "Tonho",
+    "fe": "caboclo",
+    "gosta": ["farinha", "corda", "tabua"],
+    "desgosta": ["peixe"],
+    "gostou": [
+      "Rapaz... isso me ajuda de verdade. Sério.",
+      "Não vou dizer que resolve, porque não resolve. Mas ajuda."
+    ],
+    "nao_gostou": [
+      "Peixe.",
+      "Você tá me dando peixe.",
+      "Não é maldade sua, eu sei. Mas eu puxo rede desde os onze anos, e a única coisa que eu ainda tenho de meu é saber pegar o meu.",
+      "Fica com ele."
+    ],
+    "agradeceu": ["Opa, obrigado. Vai pra casa."],
+    "ja_ganhou": ["Hoje já, rapaz. Não precisa ficar me dando coisa toda hora."],
+    "assuntos": [
+      {
+        "id": "apresentacao",
+        "quando": "sempre",
+        "fala": [
+          "Opa. Tonho. Eu puxo rede aqui no pontal desde os onze.",
+          "Aquele pedaço de chão do outro lado da estrada é meu, mas eu não planto nada nele há dois anos.",
+          "Não é preguiça, não. É que eu devo dinheiro ao homem do armazém, e o que eu tiro do mar vai tudo pra lá."
+        ]
+      },
+      {
+        "id": "divida",
+        "quando": "terra_dele",
+        "fala": [
+          "A dívida não é jogo nem cachaça, se é isso que você tá pensando. É remédio.",
+          "Minha mãe adoeceu no inverno passado. A Dona Zefa fez o que sabia, e o que ela não tinha veio do armazém, fiado, e caro.",
+          "Mãe levantou. A conta ficou. Eu acho que valeu, e faria de novo.",
+          "Se você quer aquele chão, eu não cobro por ele. Paga o que eu devo no armazém e a terra é sua, com papel e tudo, na frente do padre.",
+          "Não é esmola. É que terra parada me lembra todo dia do que eu não consegui fazer."
+        ]
+      },
+      {
+        "id": "rio",
+        "quando": "ponte_caida",
+        "repete": true,
+        "fala": [
+          "Atravessar de canoa? Eu já atravessei, sim. Não atravesso mais.",
+          "Uma noite de março eu passei ali com a rede cheia. A água tava lisa, lisa que nem prato.",
+          "Do lado de lá tinha luz no mato. Não era fogueira, não era lamparina. Era luz parada, na altura do meu peito.",
+          "Eu voltei remando de costas, pra não tirar o olho. Perdi a rede e não voltei pra buscar."
+        ]
+      },
+      {
+        "id": "convite",
+        "quando": "tem_convite",
+        "fala": [
+          "Você leu o convite. Então já sabe mais do que eu, que não leio quase nada.",
+          "Mas eu sei de água, e eu te digo: o rio muda de cheiro perto daquela fazenda.",
+          "Meu pai dizia que onde o cheiro da água muda, alguma coisa mudou primeiro."
+        ]
+      },
+      {
+        "id": "depois",
+        "quando": "ponte_de_pe",
+        "repete": true,
+        "fala": [
+          "Vocês levantaram aquela ponte mesmo. Eu vi de longe, pensei que era conversa.",
+          "Agora eu passo a pé e não preciso de canoa nenhuma. Nem de olhar pro lado."
+        ]
+      },
+      {
+        "id": "afinidade_conta",
+        "quando": "afinidade_2",
+        "fala": [
+          "Você quer saber quanto é? Mil e novecentos.",
+          "Eu sei de cabeça. Acordo sabendo. Já tentei não saber e não consigo.",
+          "Não tô pedindo nada, viu. É que ninguém nunca perguntou o número, só perguntam se tá difícil."
+        ]
+      },
+      {
+        "id": "afinidade_pai",
+        "quando": "afinidade_3",
+        "fala": [
+          "Meu pai me ensinou a ler maré aos nove anos. Aos onze ele desceu sozinho num dia que eu disse que tava feio.",
+          "Eu disse. Eu era menino e eu disse, e ele riu e foi.",
+          "Então quando minha mãe senta ali na porta olhando a curva da estrada, eu sei exatamente o que ela tá vendo. E eu subo mais cedo por isso.",
+          "É por isso que a dívida não me mata. Pagar a dívida é fácil perto do resto."
+        ]
+      }
+    ],
+    "reserva": [
+      "A maré tá virando, preciso ver a rede.",
+      "Passa aqui de tarde, que a gente conversa com a rede no colo."
+    ]
+  },
+
+  "filo": {
+    "nome": "Dona Filó",
+    "fe": "catolica",
+    "gosta": ["cocada", "mungunza", "garapa"],
+    "desgosta": ["peixe"],
+    "gostou": [
+      "Ai, meu filho. Isso aqui eu não como desde a festa de São João.",
+      "Senta aqui um pouquinho, que eu como e você me conta as novidades."
+    ],
+    "nao_gostou": [
+      "Peixe não, meu filho.",
+      "Eu não como peixe desde o dia em que o pai do Tonho desceu pra maré e não subiu.",
+      "Não é birra. É que eu olho e vejo ele."
+    ],
+    "agradeceu": ["Que Deus lhe dê em dobro. Obrigada."],
+    "ja_ganhou": ["Já me deu hoje, meu filho. Guarda pra você."],
+    "assuntos": [
+      {
+        "id": "apresentacao",
+        "quando": "sempre",
+        "fala": [
+          "Chega mais, meu filho. Filó. Mãe do Tonho.",
+          "Sento aqui na porta porque daqui eu vejo a estrada. É por ela que ele sobe da praia quando termina a maré.",
+          "O pai dele um dia desceu e não subiu. Desde então eu não durmo antes de ver o menino nessa curva."
+        ]
+      },
+      {
+        "id": "divida",
+        "quando": "terra_dele",
+        "fala": [
+          "Ele te contou da dívida? Contou que é remédio, e não contou de quem.",
+          "Foi meu. Eu passei dois meses na cama no inverno passado e ele vendeu o que não tinha pra me botar de pé.",
+          "Eu digo a ele que não valia. Ele diz que valia. A gente briga por isso toda semana e nenhum dos dois cede."
+        ]
+      },
+      {
+        "id": "trabalho",
+        "quando": "terra_minha",
+        "fala": [
+          "Então agora o chão é seu e a gente continua aqui. Tá bom assim.",
+          "Eu não presto pra roçado, meu filho, olhe pra mim. Mas mão de farinha eu tenho, e tenho a melhor do arraial.",
+          "Me bote na casa de farinha e você vai ver o que é goma boa."
+        ]
+      },
+      {
+        "id": "rio",
+        "quando": "ponte_caida",
+        "repete": true,
+        "fala": [
+          "Meu marido dizia que o rio cobra passagem de quem atravessa com pressa.",
+          "A ponte caiu numa noite de cheia, sem ninguém em cima. Eu acho que foi aviso, e foi um aviso barato."
+        ]
+      },
+      {
+        "id": "convite",
+        "quando": "tem_convite",
+        "fala": [
+          "Meu filho me leu esse convite duas vezes e nas duas eu não gostei.",
+          "Festa que convida todo mundo e não diz o nome de quem convida não é festa. É rede armada.",
+          "Eu sou velha e já vi rede armada. Você é moço, vai assim mesmo. Só não vá sozinho."
+        ]
+      },
+      {
+        "id": "afinidade_cadeira",
+        "quando": "afinidade_2",
+        "fala": [
+          "Eu já reparei que você passa aqui e diminui o passo, mesmo quando não fala nada.",
+          "Faz isso mesmo, meu filho. Velho gosta de ser visto. É a coisa que mais falta.",
+          "Meu neto passa correndo, e ele é bom menino. Mas passa correndo."
+        ]
+      },
+      {
+        "id": "afinidade_nome",
+        "quando": "afinidade_3",
+        "fala": [
+          "O nome dele era Firmino. Ninguém mais fala esse nome nesta casa.",
+          "O Tonho não fala porque acha que me machuca, e eu não falo porque acho que machuca ele. Aí ficam dezesseis anos sem ninguém dizer Firmino.",
+          "Então eu digo pra você, que não tem nada a ver com isso: Firmino. Pronto.",
+          "Agora eu já disse hoje, e por hoje tá bom."
+        ]
+      }
+    ],
+    "reserva": [
+      "Senta aqui um pouco, que ficar de pé cansa.",
+      "Se vir o Tonho na praia, diga que a comida tá pronta."
+    ]
+  },
+
+  "candinha": {
+    "nome": "Dona Candinha",
+    "fe": "catolica",
+    "gosta": ["peixe_assado", "pirao", "manga"],
+    "desgosta": ["cana"],
+    "gostou": [
+      "Óia só. Isso aqui é comida de sentar, e eu como de pé o dia inteiro.",
+      "Vou guardar pro fim da tarde, quando a praça esvazia."
+    ],
+    "nao_gostou": [
+      "Cana? Meu filho, cana é o que eu compro. E compro do engenho, que é quem tem.",
+      "Me trazer cana é me trazer trabalho. Traga coisa pronta, que aí eu paro pra comer."
+    ],
+    "agradeceu": ["Deus lhe pague. Passe aqui amanhã que a primeira é por minha conta."],
+    "ja_ganhou": ["Hoje já ganhei do senhor. Guarde pra você, que a estrada é longa."],
+    "assuntos": [
+      {
+        "id": "apresentacao",
+        "quando": "sempre",
+        "fala": [
+          "Candinha. Vendo garapa nessa praça desde antes de o senhor nascer, imagino eu.",
+          "É aqui que se sabe das coisas. Quem vai pra roça passa de manhã, quem volta passa de tarde, e os dois param pra beber.",
+          "O sobrinho do finado. Já sabia. O padre leu a carta na missa e o arraial inteiro comentou na saída."
+        ]
+      },
+      {
+        "id": "praca",
+        "quando": "afinidade_2",
+        "fala": [
+          "O senhor repara no movimento daqui? Eu reparo. É o meu ofício, junto com a moenda.",
+          "Dona Zefa desce quando alguém adoece, e só. Seu Benedito não desce mais — as pernas.",
+          "O Tonho passa cedo com a rede e volta tarde sem olhar pra ninguém. Esse eu não entendo, e não é por falta de tentar."
+        ]
+      },
+      {
+        "id": "engenho",
+        "quando": "afinidade_3",
+        "fala": [
+          "O senhor já viu o engenho, lá na beira? Aquilo comeu doze famílias, e o Seu Benedito conta uma por uma se o senhor deixar.",
+          "Pois é de lá que vem a minha cana. Eu compro barato porque eles vendem barato, e eles vendem barato pelo motivo que o senhor imagina.",
+          "Eu sei o que estou moendo, e sei o que estou vendendo. Quem diz que não sabe é que mente.",
+          "Mas eu tenho sessenta e dois anos e não sei fazer outra coisa. Então eu moo, vendo, e não durmo bem."
+        ]
+      }
+    ],
+    "reserva": [
+      "A primeira do dia é a mais doce. A cana ainda tá fria.",
+      "Se procura alguém, espere aqui. Todo mundo passa por essa praça."
+    ]
+  },
+
+  "damiao": {
+    "nome": "Damião",
+    "fe": "catolica",
+    "gosta": ["tabua", "corda", "pedra"],
+    "desgosta": ["garapa"],
+    "gostou": [
+      "Isso serve. Isso serve muito.",
+      "Obrigado. E não é por educação, não: é obrigado mesmo."
+    ],
+    "nao_gostou": [
+      "Garapa.",
+      "Não leve a mal, moço. É que garapa guardada azeda e vira outra coisa, e eu já bebi o bastante por dois homens.",
+      "Parei no ano em que aceitei este cargo. Quem trabalha entre cova de gente não sobe aqui com a cabeça quente.",
+      "Guarde, e beba o senhor mesmo. Eu agradeço do mesmo jeito."
+    ],
+    "agradeceu": ["Fique com Deus. E pise devagar na subida, que a ladeira solta pedra."],
+    "ja_ganhou": ["Hoje o senhor já me deu. Guarde para amanhã, que amanhã tem mais o que fazer."],
+    "assuntos": [
+      {
+        "id": "apresentacao",
+        "quando": "sempre",
+        "fala": [
+          "Bom dia. Damião. Sou o zelador daqui.",
+          "O senhor deve estar se perguntando zelador de quê, porque olhando assim não parece que alguém zela.",
+          "O intendente me chamou na semana da Páscoa e disse: Damião, o cemitério está uma vergonha, toma conta. E escreveu meu nome num papel.",
+          "Não me deu foice, não me deu enxada, não me deu um tostão. Deu o papel."
+        ]
+      },
+      {
+        "id": "a_santa_casa",
+        "quando": "afinidade_2",
+        "fala": [
+          "O chão aqui não é do intendente nem meu. É da Santa Casa de Misericórdia, que é quem enterra pobre neste país.",
+          "Eles mandam um homem de Salvador de dois em dois anos, ele olha, escreve uma coisa num caderno e vai embora.",
+          "A última vez que vieram foi antes da cheia. Escreveram e foram."
+        ]
+      },
+      {
+        "id": "quem_esta_aqui",
+        "quando": "afinidade_3",
+        "fala": [
+          "O senhor quer saber quem está aqui? Eu sei quase todos, e os que eu não sei eu pergunto às velhas.",
+          "Aquela fileira do fundo é de gente que veio do engenho. Doze de uma vez, no verão de setenta e quatro.",
+          "Minha mulher está na terceira cova depois da cruz grande. Foi por ela que eu aceitei o papel do intendente, se o senhor quer saber a verdade.",
+          "Mato em cima dela eu não aguentava mais ver."
+        ]
+      }
+    ],
+    "reserva": [
+      "Quem sobe aqui, sobe por alguém. Fique o tempo que quiser.",
+      "O capim cresce mais depressa que homem nenhum corta. Eu sei disso há dois anos.",
+      "Se achar uma cruz caída, não levante. Me chame, que tem jeito certo."
+    ]
+  }
+}
