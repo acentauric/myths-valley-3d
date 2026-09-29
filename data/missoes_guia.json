@@ -1,0 +1,55 @@
+{
+  "observacao": "As missões de chegada que o Pedro conduz. Saíram de uma constante dentro de guia_pedro.gd e viraram dado — é o formato que o sistema de missões do 2D vai ler quando atravessar (ver docs/MIGRACAO_2D_3D.md, Fase 3). O campo 'lugar' é NOME DE CONTRATO do autoload Lugares, e não nome de âncora do world_builder: é o que faz o mesmo passo servir nos dois jogos. 'raio' é em unidades (1 u = 4 m). 'audio' é o arquivo em assets/audio/vozes/, sem extensão; vazio quer dizer que o Pedro fala só no balão. Todo texto que o jogador lê existe nos três idiomas (pt-BR, en, es), que é a regra deste projeto.",
+  "passos": [
+    {
+      "id": "praca",
+      "lugar": "praca",
+      "raio": 9.0,
+      "audio": "pedro_praca",
+      "texto": "Vem comigo. Que tal a gente ir até a praça? É ali que a vila começa.",
+      "texto_en": "Come with me. How about we head to the square? That's where the village begins.",
+      "texto_es": "Ven conmigo. ¿Y si vamos hasta la plaza? Ahí es donde empieza el pueblo."
+    },
+    {
+      "id": "capela",
+      "lugar": "capela",
+      "raio": 8.0,
+      "audio": "pedro_capela",
+      "texto": "Agora a capela. Todo mundo do arraial passa por lá, cedo ou tarde.",
+      "texto_en": "Now the chapel. Everyone in the village passes through there, sooner or later.",
+      "texto_es": "Ahora la capilla. Todo el mundo del pueblo pasa por ahí, tarde o temprano."
+    },
+    {
+      "id": "casa_pasto",
+      "lugar": "casa_de_pasto",
+      "raio": 7.0,
+      "audio": "pedro_casa_pasto",
+      "texto": "Tá com fome? A casa de pasto é logo ali. Depois eu te mostro o roçado de mandioca.",
+      "texto_en": "Hungry? The eating house is right over there. Afterwards I'll show you the cassava field.",
+      "texto_es": "¿Tienes hambre? La casa de comidas está ahí mismo. Después te enseño el sembrado de mandioca."
+    },
+    {
+      "id": "rocado",
+      "lugar": "rocado",
+      "raio": 9.0,
+      "audio": "",
+      "texto": "Esse é o roçado. Mandioca: o pão desta terra.",
+      "texto_en": "This is the field. Cassava: the bread of this land.",
+      "texto_es": "Este es el sembrado. Mandioca: el pan de esta tierra."
+    },
+    {
+      "id": "pier",
+      "lugar": "pier",
+      "raio": 7.0,
+      "audio": "pedro_pier",
+      "texto": "Olha o sol. Bora pro píer antes de escurecer, que a maré conta história.",
+      "texto_en": "Look at the sun. Let's get to the pier before dark — the tide has stories to tell.",
+      "texto_es": "Mira el sol. Vamos al muelle antes de que oscurezca, que la marea cuenta historias."
+    }
+  ],
+  "arremate": {
+    "texto": "Você conheceu o arraial. Explore o vale como quiser — Pedro fica por perto.",
+    "texto_en": "You've seen the village. Explore the valley as you please — Pedro stays close by.",
+    "texto_es": "Ya conociste el pueblo. Explora el valle a tu gusto — Pedro se queda cerca."
+  }
+}

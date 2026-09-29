@@ -227,6 +227,38 @@ Isso responde à objeção do próprio plano — regra copiada é regra sem port
 dando-lhe o portão. O critério para um autoload entrar na lista: não citar
 tipo 2D **e** não depender de outro autoload que ainda não atravessou.
 
+### O mapa de dependência, medido
+
+A ordem da tabela acima foi escrita de cabeça. Medindo arquivo a arquivo, ela
+está quase certa e erra num ponto que importa: **a fé depende do calendário**,
+e o calendário é a Fase 5. Quem quiser as teias antes do relógio vai descobrir
+isso no meio.
+
+| Autoload | Depende de verdade de | Estado |
+|---|---|---|
+| `Progressao`, `Energia` | nada | ✅ atravessaram |
+| `Inventario`, `Equipamento`, `Catalogo` | entre si | ✅ atravessaram |
+| `Relogio` | **nada** — 120 linhas, zero referências | a vez dele |
+| `Efeitos` | `Progressao`, `Relogio` | destrava com o relógio |
+| `Talentos` | `Progressao`, `Energia`, `Fe`, `Relogio` | preso no nó da fé |
+| `Fe` | `Progressao`, `Energia`, `Talentos`, `Ritos`, `Relogio` | idem |
+| `Ritos` | `Fe`, `Talentos`, `Efeitos`, `Afinidade`, `Relogio` | idem |
+| `Afinidade` | `Fe`, `Ritos`, `Inventario`, `Jogo`, `Relogio` | idem |
+| `Missoes` | `Inventario`, `Fe` | espera o nó |
+
+**`Talentos`, `Fe`, `Ritos` e `Afinidade` formam um nó**: os quatro se citam em
+círculo, e por isso vão juntos ou não vão. São 1.566 linhas numa fatia só, mais
+o `Jogo` que a `Afinidade` puxa.
+
+**E `Jogo` tem uma linha 2D**, uma só: ele força o tamanho mínimo da janela em
+640×360, que encolheria a do vale. É o mesmo caso da tecla da mão —
+apresentação disfarçada de regra — e sai pelo mesmo caminho.
+
+Duas medições que corrigem a abertura deste documento: `Vida` parecia atravessar
+com `Progressao` e `Energia` e não atravessa (chama seis sistemas), e `Relogio`
+parecia o mais emaranhado de todos, por ser o conflito da Fase 5, e é o mais
+solto que existe — zero dependências.
+
 ### A entrada é o que prende a regra, e ela se separa
 
 A medição da abertura contou `Vector2` e `Node2D`, e por isso subestimou o
@@ -569,16 +601,38 @@ A migração acaba com essa folga: entram 146 KB de fala, missão e enredo, todo
 em português, e todos dentro do vale. São três saídas, e a escolha precisa ser
 feita **antes** da Fase 3, não depois:
 
-1. **O jogo fica em pt-BR e só o menu traduz**, como hoje. Custo zero, e é
-   coerente com um jogo sobre o Recôncavo de 1887.
-2. **Tudo traduz.** Cada passo, fala e objetivo ganha `_en` e `_es`: o
-   conteúdo triplica, e cada texto novo passa a nascer três vezes.
-3. **Só o que o jogador não pode perder traduz** — objetivo de missão, nome de
-   item, rótulo de tela — e a prosa fica em português.
+> **DECIDIDO pelo autor (setembro de 2026): TUDO TRADUZ.** O jogo fala as três
+> línguas pré-definidas — pt-BR, inglês e espanhol —, e não só o menu. Não há
+> texto de jogador em uma língua só.
 
-A terceira é a que eu recomendaria, mas é decisão do autor. Seja qual for, ela
-tem de estar escrita antes de o primeiro passo de missão entrar, porque
-retroceder sobre 63 passos é o tipo de trabalho que ninguém faz duas vezes.
+O que isso custa, escrito para ninguém se surpreender depois: **o conteúdo
+triplica**, e cada texto novo passa a nascer três vezes. Os 63 passos de missão
+do 2D, as 27 falas do tutorial, os objetivos, os nomes de item e os arremates —
+todos precisam de `_en` e `_es` antes de atravessar.
+
+O que isso ganha, e é o motivo de a decisão ser essa: o vale deixa de ter um
+teto de público que nenhuma quantidade de trabalho depois desfaz barato.
+
+**A regra é exigível, e não uma boa intenção.** `tests/idiomas.gd` varre os
+arquivos declarados e reprova quando falta `_en` ou `_es` — e também quando a
+tradução é **cópia do português**, que é o jeito mais comum de uma tradução
+faltar sem parecer que falta. O que ainda não foi traduzido mora numa lista
+`FALTAM_TRADUCAO`, com a razão escrita de cada um, no mesmo formato do
+`FALTAM_NO_VALE` do `Lugares`: dívida registrada, não dívida esquecida.
+
+**A forma é a que o projeto já usava:** `campo`, `campo_en`, `campo_es` no
+mesmo objeto, e `IdiomaMenu.sufixo()` escolhe. Foi assim que o
+`historico_3d.json` sempre fez; a decisão estendeu isso a tudo em vez de
+inventar um sistema.
+
+**Texto em constante de GDScript não tem como ser traduzido** — e é por isso
+que a primeira consequência prática da decisão foi tirar as missões do Pedro
+de dentro do código e pô-las num JSON. Toda fatia daqui para frente nasce em
+dado pelo mesmo motivo.
+
+**O que falta traduzir, declarado hoje:** as 21 falas dos moradores em
+`npcs_3d.json` (com o agravante do `tts`, que leva marcação de interpretação e
+pede a voz de cada idioma), as fichas de árvore e os epitáfios do cemitério.
 
 ### O som
 

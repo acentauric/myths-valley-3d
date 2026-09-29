@@ -9,13 +9,28 @@ signal narrou(texto: String)
 
 ## Raios de chegada em unidades (1 u = 4 m), padronizados em 6–9: perto o bastante
 ## para ver o lugar de fato, sem exigir encostar no ponto exato.
-const MISSOES := [
-	{"id": "praca", "ancora": "Praça", "raio": 9.0, "audio": "pedro_praca", "texto": "Vem comigo. Que tal a gente ir até a praça? É ali que a vila começa."},
-	{"id": "capela", "ancora": "Igreja", "raio": 8.0, "audio": "pedro_capela", "texto": "Agora a capela. Todo mundo do arraial passa por lá, cedo ou tarde."},
-	{"id": "casa_pasto", "ancora": "Restaurante", "raio": 7.0, "audio": "pedro_casa_pasto", "texto": "Tá com fome? A casa de pasto é logo ali. Depois eu te mostro o roçado de mandioca."},
-	{"id": "rocado", "ancora": "Roçado", "raio": 9.0, "audio": "", "texto": "Esse é o roçado. Mandioca: o pão desta terra."},
-	{"id": "pier", "ancora": "Pier", "raio": 7.0, "audio": "pedro_pier", "texto": "Olha o sol. Bora pro píer antes de escurecer, que a maré conta história."},
-]
+## AS MISSÕES SÃO DADO, e não uma constante aqui dentro.
+##
+## Eram cinco linhas neste arquivo. Viraram `data/missoes_guia.json` por duas
+## razões, e nenhuma delas é arrumação:
+##
+##   1. O CAMPO É `lugar`, E NÃO `ancora`. O nome vem do contrato do autoload
+##      `Lugares` — "praca", "capela", "pier" — e não do nome da âncora do
+##      `world_builder`. É o mesmo nome que o jogo 2D usa, e é o que faz um
+##      passo de missão servir nos dois jogos sem ser reescrito. Quando o
+##      sistema de missões do 2D atravessar (Fase 3 do plano), ele lê deste
+##      arquivo sem que nada aqui mude.
+##   2. TEXTO QUE O JOGADOR LÊ TEM DE EXISTIR NOS TRÊS IDIOMAS, que é a regra
+##      deste projeto. Texto em constante de GDScript não tem como ganhar
+##      `_en` e `_es`; em JSON, tem — e é a mesma forma que o
+##      `historico_3d.json` já usa.
+const ARQUIVO_MISSOES := "res://data/missoes_guia.json"
+
+## Preenchido no `_ready` a partir do arquivo. Fica `[]` se o arquivo sumir, e
+## aí o Pedro simplesmente não conduz nada — o vale continua jogável, que é o
+## mesmo trato do `CatalogoAssets` com peça não exportada.
+var MISSOES: Array = []
+var _arremate: Dictionary = {}
 const SEGUIR_MAX := 4.6
 const CORRER_ALEM := 9.5
 const ANDAR := 2.1
@@ -31,6 +46,46 @@ var _despedida_feita := false
 func _ready() -> void:
 	super()
 	intervalo_saudacao_ms = 1 << 30
+	_ler_missoes()
+
+
+## Lê os passos do arquivo, já no idioma escolhido.
+##
+## A tradução é resolvida AQUI, uma vez, e não a cada fala: quem lê `texto`
+## daqui para frente lê a língua do jogador sem saber que existem outras. O
+## sufixo é o do `IdiomaMenu` — "", "_en", "_es" —, a mesma conta que o
+## histórico da abertura já faz.
+func _ler_missoes() -> void:
+	MISSOES = []
+	_arremate = {}
+	var arquivo := FileAccess.open(ARQUIVO_MISSOES, FileAccess.READ)
+	if arquivo == null:
+		push_warning("GuiaPedro: não achei %s; o Pedro não vai conduzir nada." % ARQUIVO_MISSOES)
+		return
+	var dado = JSON.parse_string(arquivo.get_as_text())
+	arquivo.close()
+	if typeof(dado) != TYPE_DICTIONARY:
+		push_warning("GuiaPedro: %s não é um objeto JSON." % ARQUIVO_MISSOES)
+		return
+
+	var sufixo := IdiomaMenu.sufixo()
+	for bruto in dado.get("passos", []):
+		var passo: Dictionary = bruto.duplicate()
+		passo["texto"] = _no_idioma(passo, "texto", sufixo)
+		MISSOES.append(passo)
+	_arremate = dado.get("arremate", {}).duplicate()
+	_arremate["texto"] = _no_idioma(_arremate, "texto", sufixo)
+
+
+## O campo no idioma de agora, caindo no português quando a tradução falta.
+##
+## Cair no português é melhor do que devolver vazio: um balão sem texto parece
+## defeito do jogo, e um balão em português num jogo em espanhol parece o que
+## é — tradução faltando. O portão `tests/idiomas.gd` existe para que essa
+## queda não aconteça calada.
+func _no_idioma(de: Dictionary, campo: String, sufixo: String) -> String:
+	var traduzido := str(de.get(campo + sufixo, ""))
+	return traduzido if traduzido != "" else str(de.get(campo, ""))
 
 
 func _physics_process(delta: float) -> void:
@@ -68,7 +123,10 @@ func _atualizar_missao(delta: float) -> void:
 	if not _iniciado or missao < 0 or missao >= MISSOES.size():
 		return
 	# Âncora que não existe neste cenário: pula a missão em vez de apontar a origem.
-	if not ancoras.has(String(MISSOES[missao]["ancora"])):
+	# Lugar que este cenário ainda não tem: pula o passo em vez de apontar a
+	# origem. É o mesmo trato do `Lugares` com os treze nomes que a Fase 2.5
+	# vai trazer — nome que não resolve some, e nada quebra.
+	if not Lugares.resolve(str(MISSOES[missao].get("lugar", ""))):
 		_avancar_missao()
 		return
 	if _espera > 0.0:
@@ -89,7 +147,7 @@ func _atualizar_missao(delta: float) -> void:
 func _avancar_missao() -> void:
 	missao += 1
 	if missao >= MISSOES.size():
-		missao_mudou.emit("Você conheceu o arraial. Explore o vale como quiser — Pedro fica por perto.", Vector3.ZERO, MISSOES.size(), MISSOES.size())
+		missao_mudou.emit(str(_arremate.get("texto", "")), Vector3.ZERO, MISSOES.size(), MISSOES.size())
 	else:
 		_espera = 1.4
 
@@ -131,8 +189,14 @@ func _verificar_anoitecer() -> void:
 		_anoiteceu_hoje = false
 
 
+## ONDE O PASSO ACONTECE, resolvido pelo NOME e não pela âncora.
+##
+## O `Lugares` traduz "praca" no ponto do vale, e traduziria o mesmo "praca"
+## num `Vector2` do jogo 2D. É a costura da Fase 1, e é ela que faz a campanha
+## escrita lá servir aqui.
 func _posicao_da_missao(indice: int) -> Vector3:
-	return ancoras.get(String(MISSOES[indice]["ancora"]), Vector3.ZERO)
+	var p: Vector3 = Lugares.ponto(str(MISSOES[indice].get("lugar", "")))
+	return Vector3.ZERO if p == Lugares.NENHUM else p
 
 
 func texto_da_missao() -> String:
