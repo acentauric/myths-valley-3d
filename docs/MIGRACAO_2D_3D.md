@@ -10,6 +10,50 @@
 > Este documento é para trabalhar em cima. Quando uma fase sair, ela é riscada
 > aqui, como no [PLANO.md](PLANO.md).
 
+## O board: onde a próxima tarefa é escolhida
+
+Este plano virou **32 issues** no GitHub
+([acentauric/myths-valley/issues](https://github.com/acentauric/myths-valley/issues)),
+todas com o rótulo `3d`, divididas em dois marcos:
+
+| Marco | Issues | O que é |
+|---|---|---|
+| [**Jam 04/10**](https://github.com/acentauric/myths-valley/milestone/1) | #1 a #6 | O corte da jam: missões nas âncoras que existem, mochila, fôlego no HUD, teclas das telas novas, o primeiro lote Tripo e a tradução |
+| [**Pós-jam**](https://github.com/acentauric/myths-valley/milestone/2) | #7 a #32 | Todo o resto da migração, na ordem das fases abaixo |
+
+**A issue é a unidade de trabalho, e este documento é o porquê dela.** Cada
+issue cita a seção daqui de onde saiu e traz os critérios de aceite. Tarefa
+nova começa pelo marco da jam enquanto ele tiver issue aberta; o Pós-jam não
+tem ordem própria além da de dependência que cada fase declara. Quando uma
+fatia fecha uma issue, a fase correspondente é riscada aqui **no mesmo
+commit** — board e plano que discordam são dois planos.
+
+Os rótulos de área separam quem pode pegar o quê: `sistemas`, `interface`,
+`conteudo`, `mapa`, `modelos-3d` e `qualidade`. As issues `modelos-3d` gastam
+crédito do Tripo e exigem o custo aprovado **antes** de gerar.
+
+| Fase deste plano | Issues |
+|---|---|
+| Fase 2 — sistemas | #10 Vida · #11 receitas, cozinha, oficina e pesca · #12 cartas e coleção · #13 Povoado · #14 luta · #15 obras e venda |
+| Fase 2.5 — geografia | #22 chapada e vizinhos · #23 rio, vau e lagoa · #24 mata e serra · #25 fazenda e ruínas |
+| Fase 3 — missões e enredo | **#1** (jam) · #31 capítulos 6 e 7 |
+| Fase 4 — salvar | #7 |
+| Fase 6 — interface | **#2** mochila · **#3** fôlego · **#4** teclas (jam) · #19 painel · #20 teia, coleção, arraial · #21 fala com escolha |
+| Fase 7 — modelos | **#5** comidas e carta (jam) · #26 interiores · #27 roçado e trabalho · #28 bichos · #29 vila · #30 fazenda e ruínas |
+| O idioma | **#6** (jam) |
+| O som · as estações | #16 · #17 |
+| O que não migra (reescrita) | #8 plantação · #9 construções e terrenos |
+| Portões | #18 |
+| Fora deste plano | #32 conversa por IA — vem do [DECISOES_PROTOTIPO_3D.md](DECISOES_PROTOTIPO_3D.md), prioridade a confirmar |
+
+> **O board foi aberto antes do fechamento da Fase 2** (29/09, 16h; o commit
+> `3095afb` é das 17h45), e o contexto de seis issues ficou para trás:
+> #7, #10, #11, #12, #14 e #15 dizem que o sistema "não existe" ou "não
+> atravessou", e a **regra** delas já roda no vale. O que falta nelas é o
+> gatilho do 3D, a tela e o portão — os critérios de aceite continuam valendo
+> e continuam abertos. Ao pegar uma delas, comece pelo que já está em
+> `prototipo_3d/scripts/compartilhado/` e não por uma cópia nova do 2D.
+
 ## A regra que manda em tudo: o 3D não é reescrito
 
 Migrar aqui quer dizer **acrescentar**, e nunca refazer o que já está de pé. O
@@ -82,7 +126,11 @@ que torna a migração um trabalho de costura em vez de reescrita.
 
 ---
 
-## Fase 0 — Trazer os 43 commits que faltam *(antes de qualquer outra coisa)*
+## ~~Fase 0 — Trazer os 43 commits que faltam~~ — FEITA (setembro de 2026)
+
+> Em 29/09 a branch não tem nenhum commit da `main` por trazer
+> (`git rev-list --count HEAD..origin/main` dá zero). O texto abaixo fica como
+> registro de por que isso vinha antes de tudo.
 
 A branch `prototype/myths-valley-3d` carrega uma cópia do jogo 2D na raiz, e
 essa cópia parou em **23/09/2026**. Desde então a `main` andou 43 commits: as
@@ -429,9 +477,16 @@ o que muda é que a lista passa a caber 63 passos em vez de cinco.
 
 ---
 
-## Fase 4 — Salvar
+## Fase 4 — Salvar — **a regra atravessou, a vaga ainda não** ([#7](https://github.com/acentauric/myths-valley/issues/7))
 
-O 3D não salva nada hoje. O 2D tem três vagas, escrita atômica com releitura,
+> **O `Salvamento` roda no vale desde o fechamento da Fase 2** (`3095afb`),
+> sem uma linha de adaptação, com `Versao` próprio lendo do
+> `historico_3d.json`. O que ainda não existe é o que faz o jogador salvar:
+> as três vagas por baixo da abertura, o estado do 3D (posição em `Vector3`,
+> hora do `Dia`) em `O_QUE_GUARDAR`, e os portões `testar_salvamento` e
+> `testar_slots` rodando do lado de cá. É isso que a #7 cobra.
+
+Antes da Fase 2, o 3D não salvava nada. O 2D tem três vagas, escrita atômica com releitura,
 migração de formato em escada e limpeza de conteúdo que sumiu — 810 linhas com
 dois portões (`testar_salvamento`, `testar_slots`) e uma página de documentação
 ([SALVAMENTO.md](SALVAMENTO.md)).
@@ -800,6 +855,13 @@ migração.
 
 ## O corte da jam (4 de outubro)
 
+> **No board, o corte é o marco [Jam 04/10](https://github.com/acentauric/myths-valley/milestone/1)**:
+> #1 missões nas âncoras que existem, #2 mochila, #3 fôlego no HUD, #4 teclas
+> das telas novas, #5 comidas e carta no Tripo, #6 tradução. As fases 0 e 1 da
+> tabela abaixo já saíram, e os itens 1 e 2 da Fase 2 também — a regra deles
+> roda no vale, e o que resta deles na jam é tela (#2, #3). A #4 vem **antes**
+> da #2: a tabela de teclas se confere antes da primeira tela, não depois.
+
 Cinco dias, com o 3D em desenvolvimento ativo. O que **dá** para ter de pé sem
 arriscar a demo:
 
@@ -811,8 +873,10 @@ arriscar a demo:
 | **Fase 2, itens 1 e 2** | Fôlego e inventário fazem o passeio virar jogo. Um dia, e só se os anteriores fecharem antes |
 | **Fase 7, o primeiro lote** | Em paralelo, e não ocupa os mesmos dias: enquanto o modelo assa, o código anda. O lote da jam são os **itens de mão que a mochila vai mostrar** — as seis comidas e a carta, 1K, sem rig, os mais baratos e rápidos do inventário inteiro |
 
-O que **não** entra, e a razão é a mesma para os quatro: teias, fé, cartas e
-save mexem em tela nova e em estado persistente, e tela nova a quatro dias de
+O que **não** entra são as telas de teias, fé e cartas, e o save ligado às
+vagas (#7, #19, #20) — a regra dos quatro já atravessou, e o que ficou de fora
+é o que o jogador toca. A razão é a mesma para os quatro: mexem em tela nova e
+em estado persistente, e tela nova a quatro dias de
 uma submissão é como se perde uma submissão. Eles são a semana seguinte.
 
 Dos modelos, também não entram os **bichos** nem os **interiores**: os
