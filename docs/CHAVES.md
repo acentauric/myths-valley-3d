@@ -7,7 +7,16 @@ está no `.gitignore` e nunca é versionado.
 # .env
 PIXELLAB_API_KEY=...
 ELEVENLABS_API_KEY=...
+OPENAI_API_KEY=...
+LTX_API_KEY=...
 ```
+
+| Chave | Quem usa |
+|---|---|
+| `PIXELLAB_API_KEY` | `tools/pixellab/` — sprites, tiles e cenas |
+| `ELEVENLABS_API_KEY` | `tools/elevenlabs/` — fala, efeitos e música |
+| `OPENAI_API_KEY` | Reservada; nenhum script a lê ainda. Quem for usá-la passa por `Get-Chave` como as outras |
+| `LTX_API_KEY` | `tools/ltx/gerar_video_menu.py` — o vídeo do menu. Esse script lê o `.env` por conta própria (é Python), mas o formato é o mesmo |
 
 Formato: `NOME=valor`, uma por linha, sem aspas. Linhas começando com `#` são
 comentário.

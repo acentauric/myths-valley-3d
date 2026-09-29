@@ -78,23 +78,30 @@ O que a vila real tem, o mapa tem, no mesmo arranjo:
 
 | Na vila real | No mapa |
 |--------------|---------|
-| Mar ao sul, serra de mata ao norte | Faixa de mar e praia no sul; serra fechada no norte, leste e oeste. **Não é ilha.** |
+| Mar ao sul, serra de mata ao norte | Faixa de mar e praia no sul; serra fechada no leste, no oeste e no FUNDO, lá em cima. **Não é ilha.** A serra que se vê da vila é a CRISTA, e atrás dela há mata em que se entra (ver abaixo) |
+| A serra acima da vila é mata, não parede: a foto é verde da vila para cima | A MATA, uma faixa de 48 fileiras atrás da crista, em fileiras NEGATIVAS (`TOPO`): o mapa cresceu para o norte sem andar a origem, e nenhuma coordenada da vila mudou. Tem a grota da nascente (taquaral e samambaia, sem bicho) e a mata virgem (madeira de lei e caititu) |
+| A estrada do mirante não acaba nele: vira trilha de terra, serra acima; e da casa sai uma estrada comprida para o nordeste, mata adentro | As três PICADAS que furam a crista, cada uma saindo de uma rua: a do mirante (x≈48), a da nascente (x=98, pelo monjolo e pela cachoeira) e a da lenha (x≈126, entre o cemitério e o roçado). Lá em cima, a picada da serra as liga de oeste a leste até a pinguela do rio grande |
+| Ir à fazenda a pé, pela mata: "outros até mesmo foram andando pelas trilhas por meio da mata atlântica bem densa (...) nas passagens quase virgens" (capítulo 6) | O CAMINHO DA FAZENDA: da pinguela (`PINGUELA`, onde o rio aperta), pela mata de lá, descendo a crista a leste da cerca até o portão. Na crista ele é PASSAGEM QUASE VIRGEM (`PASSAGEM_QUASE_VIRGEM_Y`): pau de lei atravessado, que só cai com machado de lei — é o que impede a pinguela de ser atalho para o dendê antes da ponte |
+| A serra da onça | O PENEDO DA ONÇA (`ALTOS_DA_MATA`), morro de pedra na mata de lá, com a TOCA no alto e a rampa ao sul |
 | Estrada da praia atravessando a vila | Estrada em `ESTRADA_Y`, de ponta a ponta |
 | Ruas em QUADRA, não uma fita: uma rua por dentro passando em frente da casa e do cemitério, travessas descendo até a beira | A rua de cima em `RUA_DE_CIMA_Y` (fileiras 76–77, da estrada do mirante à casa de farinha), a `PONTE_DE_CIMA` sobre o riacho, e as travessas da igreja (x=102) e da casa de farinha (x=125) — com o caminho do roçado (x=115) no meio, são as três ruas da foto a leste da igreja |
 | Praça um pouco para dentro | `PRACA`, com cruzeiro, mural, poço, ficus e bancos |
-| Riacho que desce da serra ao mar | `RIACHO_TOPO` → `RIACHO_FOZ`, com ponte de prancha na estrada e outra na rua de cima |
-| Igreja na beira, a leste do riacho | `capela` em `CASARIO` |
+| Riacho que desce do norte, pelo meio da vila, até o mar | Nasce na `NASCENTE`, um poço raso lá na mata; atravessa a crista, cai na cachoeira e desce de `RIACHO_TOPO` a `RIACHO_FOZ`, com ponte de prancha na estrada e outra na rua de cima |
+| Igreja na BEIRA, a leste do riacho e do píer — na areia, do lado do mar | `capela` em `CASARIO`, em (93,100). Esteve dezessete fileiras terra adentro até setembro de 2026, e de lá não se via água da porta dela |
+| Cemitério ao norte da estrada, **entre a igreja e a casa** | `outeiro_do_cemiterio` em `ALTOS`, a leste do riacho. Foi para cá quando o mapa cresceu 34 células para leste: a foto o quer perto da casa, e o jogador já tinha pedido distância do roçado — com o mapa maior cabem os dois |
+| O miolo denso de casas a OESTE da praça | `casa_oeste_a/b/c`, no vão entre a gameleira e a casa dos avós |
 | Bar a leste da igreja; restaurante de beira-mar a oeste da praça, do lado do mar | `bar` e `casa_de_pasto` — em 1887, casa de pasto: prato do dia por réis, pedido no fogão (`Mundo._comer_na_casa_de_pasto`) |
 | Píer mar adentro | `PIER` |
 | Cemitério subindo a encosta | `cemiterio` |
 | Mirante no alto, por estrada que serpenteia | `mirante`, com a estrada em `_tracar_estradas` |
 | A casa (do jogador), para dentro, a nordeste da igreja | `ROCADO` |
-| Rio grande fechando o leste | `RIO_X`, com a única ponte na estrada — e a fazenda do outro lado |
+| Rio grande fechando o leste, vindo do nordeste | `RIO_X`, com a única ponte na estrada — e a fazenda do outro lado. Vem do fundo do mapa, e lá em cima, na mata, só se passa pela pinguela |
 | Lagoa onde o rio abre antes de seguir para o mar | `LAGOA_CENTRO`, colada na divisa leste do Seu Benedito. É ela que dá sentido à fala dele: "terra com água aceita quase tudo" |
 
-O desnível é, por enquanto, **faixa**: serra (barra), encosta (mata rala e
-pedra, mais barranco e cachoeira) e baixada. Não há altura de verdade no motor;
-há o que se vê e o que barra.
+O desnível é, por enquanto, **faixa**: o fundo (barra e fecha o mapa), a mata
+(onde se entra), a crista (barra, e só as picadas a furam), a encosta (mata
+rala e pedra, mais barranco e cachoeira) e a baixada. Não há altura de verdade
+no motor; há o que se vê e o que barra.
 
 O Recôncavo é a terra que **abraça a Baía de Todos os Santos**. Três faixas, e
 o mapa do jogo usa as três:
@@ -103,7 +110,7 @@ o mapa do jogo usa as três:
 |-------|---------|---------|
 | Beira de rio / maré | Mangue, barro, canoa, peixe e marisco | O rio que corta o mapa de norte a sul, o vau e a cabana de pesca; na maré, o píer, o **trapiche** e o **tanque de lavar** na margem do riacho |
 | Meia encosta | Roçado de mandioca, casa de taipa, mata de galho fino | O roçado do jogador (com o **galinheiro** no quintal), o vilarejo (com o **forno de barro** no terreiro) e a trilha |
-| Tabuleiro alto / interior | Mata densa, pastagem rala, ruína de fazenda e engenho abandonado | A fazenda isolada do capítulo 6, a nordeste; a **capela de estrada** marca a passagem para lá |
+| Tabuleiro alto / interior | Mata densa, pastagem rala, ruína de fazenda e engenho abandonado | A fazenda isolada do capítulo 6, a nordeste; a **capela de estrada** marca a passagem para lá. E a **mata** atrás da crista, subindo pelas picadas |
 
 O relevo é de **colina baixa e molhada**, não de sertão. Verde o ano todo, com
 duas estações que importam mais que as quatro do calendário: **chuva**
@@ -210,7 +217,15 @@ Doméstica: bode e cabra soltos no terreiro (o capítulo 6 diz que andavam pelo
 meio das pessoas), galinha, boi de carro, cavalo de charrete, cachorro magro.
 
 Do lugar: saíra e sanhaço, bem-te-vi, garça na beira do rio, siri e caranguejo
-no mangue, lagartixa, sagui. E a **coruja rasga-mortalha** (*Tyto furcata*) —
+no mangue, lagartixa, sagui.
+
+Da mata, e de morder: o **caititu**, em bando, na mata do dendê, na pedreira e
+na mata virgem; a **onça pintada**, uma só, no penedo da mata de lá do rio; e a
+**jararaca**, nos dois brejos, de tocaia no mato alto. Onça faz toca em lapa de
+morro de pedra, e não em buraco no chão — é por isso que a dela fica em cima de
+um penedo. A jararaca é a cobra que mais mordia gente no Recôncavo, e a peçonha
+dela é o que fica depois: o remédio de benzedeira era chá de folha, e a banha
+da própria cobra vendia como remédio de junta. E a **coruja rasga-mortalha** (*Tyto furcata*) —
 que não é bicho: é a Matinta Pereira do capítulo 7, e só aparece quando a
 história manda.
 

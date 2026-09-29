@@ -21,10 +21,34 @@ Todos os pratos são do Recôncavo e saem do que o jogador planta, pesca ou cort
 | Prato | Leva | Devolve | Custa de fôlego |
 |-------|------|---------|-----------------|
 | Torrar farinha | 2 mandioca, 1 lenha | 2 farinha (ingrediente) | 6 |
-| Garapa de cana | 2 cana | +12 de fôlego | 2 |
-| Peixe na brasa | 1 peixe, 1 lenha | +28 | 4 |
-| Pirão de peixe | 2 farinha, 1 peixe, 1 lenha | +40, e o dia 10% mais barato | 8 |
+| Beiju na chapa | 1 farinha, 1 lenha | 2 beijus, +24 de fôlego cada | 3 |
+| Garapa de cana | 2 cana | +22 de fôlego | 2 |
+| Peixe na brasa | 1 peixe, 1 lenha | +42 | 4 |
+| Caça na brasa | 1 carne de caça, 1 lenha | +52 | 7 |
+| Pirão de peixe | 2 farinha, 1 peixe, 1 lenha | +62, e o dia 10% mais barato | 8 |
 | Mungunzá | 3 milho, 1 cana, 1 lenha | +45, e o dia 30% mais barato | 10 |
+| Chá de folha | 2 ervas da serra, 1 lenha | **+12 de vida**, corta a peçonha de cobra, e +2 de fôlego | 3 |
+
+(A tabela estava com os números da primeira versão da cozinha — o peixe na
+brasa aparecia com +28 e devolve 42. Os daqui são os do `catalogo.gd`.)
+
+**TODA COMIDA DA PANELA RENDE MAIS DO QUE CUSTA**, e o `testar_comidas` cobra.
+É a pergunta que o Graveyard Keeper ensinou a fazer — "quanto isto rende por
+fôlego gasto?" — e ela pegou a caça na brasa, que a fase 6-A pôs para fechar
+o dia de mata devolvendo 7 de fôlego e custando 7 para cozinhar. Hoje devolve
+52. O chá é a exceção declarada: ele não é fôlego, é remédio.
+
+**COMIDA É FÔLEGO; O REMÉDIO É O CHÁ.** A vida volta inteira dormindo, e um
+pedaço com o chá de folha — mais nada a devolve. É a regra do Graveyard
+Keeper, e com o conserto da reclamação mais ouvida dele: lá, quem queimava a
+comida na masmorra achando que se curava não tinha como saber. Aqui a mochila
+escreve "+12 de vida" no chá e só "de fôlego" no resto. Ver docs/PLANO.md, "A
+luta, segunda rodada".
+
+E o chá tem o segundo serviço, que é o que ele fazia de verdade no Recôncavo de
+1887: **corta a peçonha** da jararaca (ver "A jararaca no brejo", no plano).
+Com peçonha no corpo ele nunca avisa de desperdício, esteja a vida onde
+estiver — é para isso que ele existe.
 
 A farinha leva **duas** mandiocas porque é exatamente o que um pé dá: a primeira
 farinha da partida sai da primeira colheita, sem plantar de novo.

@@ -8,15 +8,15 @@ conduz o tutorial.
 
 ## Quem existe
 
-| Quem | Onde fica | Casa | Terra em que vive | Como se ganha |
-|------|-----------|------|-------------------|----------------|
-| **Pedro** | acompanha o jogador | na praia, perto do píer | — | — |
-| **Seu Benedito** | no terreiro da casa dele | na chapada | `terreno_benedito` | compra, 2.600 réis — **depois da Zefa** |
-| **Dona Zefa** | de manhã no terreiro, de tarde no poço | no chão que era da mãe | `terreno_zefa` | a série das ervas **ou** compra |
-| **Cosme** | no quintal, com a enxada — e em Salvador depois da série da avó | a mesma da avó | `terreno_zefa` | — (vem com a terra dela) |
-| **Tonho** | no pontal, onde puxa a rede | cabana na terra dele | `terreno_tonho` | só favor: pagar a dívida |
-| **Dona Filó** | na porta de casa, de olho na estrada | a mesma do filho | `terreno_tonho` | — (vem com a terra dele) |
-| **Damião** | no cemitério, de manhã num canto e de tarde no outro | — (mora do cargo) | — | a missão do cemitério |
+| Quem | Onde fica | Casa | Terra em que vive | Como se ganha | Fé |
+|------|-----------|------|-------------------|----------------|----|
+| **Pedro** | acompanha o jogador | na praia, perto do píer | — | — | — |
+| **Seu Benedito** | no terreiro da casa dele | na chapada | `terreno_benedito` | compra, 2.600 réis — **depois da Zefa** | católica |
+| **Dona Zefa** | de manhã no terreiro, de tarde no poço | no chão que era da mãe | `terreno_zefa` | a série das ervas **ou** compra | candomblé |
+| **Cosme** | no quintal, com a enxada — e em Salvador depois da série da avó | a mesma da avó | `terreno_zefa` | — (vem com a terra dela) | candomblé |
+| **Tonho** | no pontal, onde puxa a rede | cabana na terra dele | `terreno_tonho` | só favor: pagar a dívida | caboclo |
+| **Dona Filó** | na porta de casa, de olho na estrada | a mesma do filho | `terreno_tonho` | — (vem com a terra dele) | católica |
+| **Damião** | no cemitério, de manhã num canto e de tarde no outro | — (mora do cargo) | — | a missão do cemitério | católica |
 
 ## Ninguém fala de longe
 
@@ -200,6 +200,32 @@ somam, e nenhuma explica nada:
 É o capítulo 6 ([docs/enredo/capitulo-06.md](enredo/capitulo-06.md)) visto de
 baixo, pelo povo que fica. O jogador junta os três e decide sozinho o que
 pensar — e é para isso que os três existem.
+
+## Quem ensina a lutar
+
+Dois, e cada um ensina o que é dele:
+
+- **O Pedro ensina o ferro.** A lição abre quando o jogador conhece o bicho —
+  um caititu vem atrás dele, ou ele passa da crista — e espera a caça acabar:
+  ele não entra na mata atrás de quem está sendo perseguido. Bater o facão,
+  derrubar um caititu, acertar três golpes fortes. O que ele passa adiante é a
+  cicatriz do pai dele: **o bicho avisa antes de morder**. Paga em comida, como
+  pagou o tutorial inteiro, e fecha avisando da onça.
+- **O Cosme ensina a roda**, e só a quem é do terreiro (ver docs/FE.md). A
+  ginga, a meia-lua e a rasteira. A avó dele chama aquilo de coisa de
+  desocupado, e disse o mesmo do tio que o ensinou; ele pede que não se fale
+  disso na vila. Depois que ele vai para Salvador, a lição que está correndo
+  continua (treino é do jogador), mas a fala espera ele estar em casa: ninguém
+  ensina a meia-lua por carta. Paga com o que a avó faz.
+
+Código em `Arraial._frente_das_armas` e `_frente_da_capoeira`.
+
+**E quem paga as metas do caderno** (ver docs/PLANO.md, "o prêmio da parede"):
+o **Pedro**, aos dez caititus, com o gibão de couro do pai — a coisa que o pai
+guardava para quando ele tivesse idade de entrar na mata sozinho, e que ficou
+guardada porque ele ficou com a roça. E a **Dona Zefa**, às duas onças, com um
+patuá: ela costura, a reza é dela, e o couro de onça quem leva é o jogador.
+Código em `Arraial._frente_das_metas`; a conta mora no caderno.
 
 ## Arte
 

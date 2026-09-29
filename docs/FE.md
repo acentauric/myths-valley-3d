@@ -161,19 +161,110 @@ pronto.
 
 ---
 
-## 7. O que falta
+## 7. A fé com consequência (fase 5, primeira parte)
 
-- **Ícones dos nós de fé.** As três árvores somam 27 nós e só dois têm ícone
+Duas coisas saíram da planilha em setembro de 2026.
+
+### A missão própria de cada fé
+
+Uma por fé, na vocação dela, dada pelo próprio marco no dia em que se entra
+(ou se volta). É a voz do mundo, sem nome: ninguém mora nos marcos.
+
+| Fé | Missão | O que pede | Por quê |
+|---|---|---|---|
+| Católica | **A romaria** | Passar nos quatro marcos da igreja | Convívio: é a fé que "anda com o arraial inteiro", e andar é o que ela pede |
+| Candomblé | **A mesa da folha** | 3 ervas da serra, 2 peixes e 2 farinhas, entregues no terreiro | Trabalho: o que a terra dá, o que a água dá e o que a mão fez |
+| Caboclo | **Pagar o monte** | 6 ostras, postas na gameleira | Corpo e antigo: o sambaqui **é** concha, e pagá-lo é continuar o monte |
+
+São as únicas missões marcadas com `fe` no `Missoes`, e por isso as únicas que
+**congelam** de verdade: migrar no meio da romaria para o caboclo deixa a
+romaria parada na lista, chegar no cruzeiro não risca nada, e voltar à
+católica risca de novo. A cumprida não reabre — o `Missoes.cumpridas` guarda o
+id e vai para o salvamento, porque a romaria não deixa nada no mundo além de
+ter sido andada. Código em `Arraial._frente_das_fes`.
+
+As duas oferendas são o primeiro **item deixado num marco**, que a lista de
+faltas abaixo pedia. O rito em si continua de graça.
+
+### O preço social de migrar
+
+Cada morador é de uma fé, escrita no `aldeoes.json` ao lado do gosto — fé é
+caracterização, não tabela. Quatro são da igreja (Seu Benedito, Dona Filó,
+Dona Candinha, Damião), dois do terreiro (Dona Zefa, Cosme) e um do mato
+(Tonho). Migrar desconta **15** de afinidade com quem é da fé deixada e devolve
+**5** a quem é da fé de chegada: deixar custa mais do que chegar rende, senão
+migrar em roda seria lucro. O jogo diz quem vai ficar sabendo **antes** do sim,
+na mesma conversa em que diz o preço em pontos. Código em `Afinidade._ao_migrar`.
+
+### A festa de calendário
+
+Um dia por ano por fé, e é onde a fé encontra os moradores de uma vez. As datas
+são as do Recôncavo, postas na estação do jogo:
+
+| Fé | Festa | Quando | Por quê |
+|---|---|---|---|
+| Católica | Bom Jesus dos Navegantes | 1º do verão | O padroeiro do arraial; a procissão dele é de saveiro, como o forasteiro chegou |
+| Candomblé | Cosme e Damião | 27 da primavera | O caruru das crianças. Dois moradores têm esses nomes, e não é acaso |
+| Caboclo | Dois de Julho | 2 do inverno | A independência da Bahia, celebrada com o caboclo nos carros: a romaria de quem é do mato |
+
+É o **calendário** que manda, não a fé ativa: a festa acontece quer o jogador
+seja dela ou não. No dia, três coisas:
+
+1. o cartão do amanhecer avisa (`Mundo._lembretes_do_dia`);
+2. à tarde, quem é da fé vai para o marco maior dela em vez da tarde de sempre
+   (`Mundo._posto_de`), depois do trabalho, porque dia comprado não tem festa;
+3. o rito no marco dela sai **fora do prazo** (`Ritos.pode_celebrar`), rende
+   40 de fé por cima dos 30 do rito, e rende 6 de afinidade com cada um da fé
+   que está ali — gente junta.
+
+Com isso a fase 5 fecha. Código em `Fe.FESTAS`, `Ritos.celebrar` e
+`Mundo._posto_de`; portões em `testar_fe` e `testar_moradores`.
+
+### A roda do Cosme: a capoeira é do candomblé
+
+"Golpes de luta como capoeira — essa missão deve ser vinculada às missões do
+candomblé." A série vem **depois da mesa da folha**, que é a missão própria da
+fé: quem ainda não sentou na roda não é chamado para jogar nela. Quem ensina é o
+**Cosme**, que é do terreiro, e a roda é no fim da tarde, atrás do barracão —
+em 1887 a polícia chama aquilo de crime, e é por isso que ela mora ali e não na
+praça.
+
+| Lição | O que ensina | O que pede |
+|---|---|---|
+| **A ginga** | a esquiva, na tecla V | 3 botes esquivados |
+| **A meia-lua** | o E de mão vazia, que varre a frente e o lado | 4 que acertem |
+| **A rasteira** | segurar o E de mão vazia: o bicho vai ao chão tonto | 2 bichos tontos |
+
+As três são **missões de fé**, como a mesa: congelam na migração, e a conta
+para de andar (`Missoes.contar` não conta em missão congelada). O que **não**
+congela é o que já se aprendeu — capoeira é do corpo de quem jogou, e migrar
+não desaprende a ginga. O que para é a lição que falta e a teia por cima.
+
+**A raiz Capoeira** entrou na teia do candomblé, e é a quinta dela: ginga de
+roda (a ginga gasta metade), meia-lua de compasso (a capoeira bate meia vez
+mais) e rasteira de mestre (a rasteira tonteia o dobro). Os três nós valem só
+para quem aprendeu: ginga não se compra com ponto.
+
+Código em `Luta`, `Arraial._frente_da_capoeira`; portão em `testar_luta`. Ver
+docs/PLANO.md, "A luta ensinada".
+
+## 8. O que falta
+
+- **Ícones dos nós de fé.** As três árvores somam 30 nós e só dois têm ícone
   (`promessa` e `devocao` herdaram os da antiga raiz Fé dos talentos de ofício).
-  Os outros caem na sigla de duas letras — que é o mesmo que já acontece com
-  dez nós do ofício, então não é regressão, mas está na fila.
+  Os outros caem na sigla de duas letras. **A teia de ofício já não tem esse
+  buraco** — os nós dela ganharam ícone na fatia P8 do playtest —, então a fé é
+  hoje a única árvore que abre com sigla, e está na fila.
 - **Habilidade ATIVA de fé.** Nenhuma das três tem uma ainda; a árvore de
   ofício tem uma (`segundo_folego`, tecla R) e o formato já está pronto aqui —
   `Fe.ativos()` existe e devolve lista vazia.
 - **Rito próprio de cada fé.** Hoje os três compartilham a mesma cena (o
   personagem para, a tela escurece, volta). A bênção já é diferente por fé; o
   gesto ainda não.
-- **Oferenda com item.** O candomblé e o caboclo pedem "deixar o que trouxe", e
-  hoje não se deixa nada. Dar custo em item ao rito das duas é o passo seguinte
-  óbvio, e é o que as diferenciaria da reza, que é de graça.
+- **Oferenda com item no rito.** A mesa da folha e o pagar o monte (§7) são as
+  primeiras coisas deixadas num marco, mas são missão, uma vez. O rito das duas
+  continua de graça, e dar custo em item a ele é o que o diferenciaria da reza.
 - **O padre e a mãe de santo.** Os marcos respondem; ninguém mora neles.
+- **A luta de cada fé.** A capoeira é a do candomblé. A católica e a do
+  caboclo ainda não têm a sua, e é aí que a luta com poder pode entrar quando
+  o místico entrar — ver docs/PLANO.md.
