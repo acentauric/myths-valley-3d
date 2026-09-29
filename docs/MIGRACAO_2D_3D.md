@@ -340,7 +340,32 @@ lugar é o que o jogador vê e o passo é texto.
 
 ---
 
-## Fase 3 — Missões e enredo
+## Fase 3 — Missões e enredo — **o sistema FEITO, o conteúdo esperando**
+
+> **O sistema atravessou** (setembro de 2026). `Missoes` e `Jornada` rodam no
+> vale, e o `tests/missoes.gd` prova a costura de ponta a ponta: a missão abre,
+> `apontar(id, "praca")` produz um `Vector3` de Bom Jesus, a checklist conta as
+> tábuas da mochila compartilhada, e o foco gira pela regra — a tecla Tab ficou
+> no `Controles` do 2D, como a tecla da mão.
+>
+> **O conteúdo não atravessou, e por duas razões que não são código.** A
+> primeira é a tradução, que é do Ramon: `pedro.json` são 32 KB e
+> `aldeoes.json` 26 KB, e cada passo precisa nascer com `_en` e `_es`. A
+> segunda é a Fase 2.5: metade dos 63 passos aponta para o vau, a chapada, a
+> lagoa e a fazenda, que o vale ainda não tem.
+>
+> A segunda é menos grave do que parecia, e o portão mede isso: **missão que
+> aponta para lugar ausente ABRE mesmo assim**, sem bússola. Missão que não
+> abre trava a campanha; missão sem seta só obriga a procurar. Então o
+> conteúdo pode chegar antes da geografia, e não depois.
+>
+> **Um achado que vale para o resto da migração:** o `_resolver` declarava
+> `var p: Vector2 = Lugares.ponto(alvo)`. A costura devolve `Vector2` de um
+> lado e `Vector3` do outro — declarar o tipo faria ela servir só de um lado,
+> que é exatamente o que ela existe para evitar. **Anotação de tipo é
+> acoplamento tão real quanto chamada de função, e não aparece em busca
+> nenhuma por nome.**
+
 
 Depois da Fase 1, o sistema de missões atravessa inteiro: `Missoes` (576
 linhas), `Jornada` (104) e os dados.
