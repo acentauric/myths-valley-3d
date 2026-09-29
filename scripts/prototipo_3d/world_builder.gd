@@ -101,6 +101,82 @@ func _footprint_height(position: Vector3, radius: float) -> float:
 	return _footprint_range(position, radius).y
 
 
+## Mede o terreno sob toda a base retangular da casa, já com o giro do modelo.
+## O círculo do lote serve para achar espaço livre, mas alcança pontos fora da
+## construção e pode deixar a casa suspensa quando o terreno sobe ali.
+func _house_ground_range(position: Vector3, footprint: Vector2, yaw: float) -> Vector2:
+	var lowest := INF
+	var highest := -INF
+	for ix in range(5):
+		for iz in range(5):
+			var local := Vector2((float(ix) / 4.0 - 0.5) * footprint.x, (float(iz) / 4.0 - 0.5) * footprint.y).rotated(-yaw)
+			var sample := ground_height_at(Vector3(position.x + local.x, 0.0, position.z + local.y))
+			lowest = minf(lowest, sample)
+			highest = maxf(highest, sample)
+	return Vector2(lowest, highest)
+
+
+## Apoia a casa no ponto mais alto sob sua base e estende o alicerce até o
+## ponto mais baixo. A pequena sobreposição esconde a junta entre modelo e base.
+func _support_house(position: Vector3, footprint: Vector2, yaw: float, chave: String = "") -> Vector3:
+	var church := chave == "igreja"
+	var base_margin := 0.36 if church else 0.16
+	var heights := _house_ground_range(position, footprint + Vector2.ONE * base_margin, yaw)
+	var placed := Vector3(position.x, heights.y + 0.02, position.z)
+	var top := placed.y + (0.12 if church else 0.04)
+	var bottom := heights.x - (0.24 if church else 0.06)
+	var foundation_size := Vector3(footprint.x + base_margin, top - bottom, footprint.y + base_margin)
+	_box(foundation_size, Vector3(position.x, (top + bottom) * 0.5, position.z), Color("9c927e") if church else Color("958d79"), true, null if church else _terreiro_material(), yaw)
+	if church:
+		# Uma borda de pedra cobre a junta com o modelo e marca o nivel de entrada.
+		_box(Vector3(foundation_size.x + 0.12, 0.12, foundation_size.z + 0.12), Vector3(position.x, top - 0.06, position.z), Color("b7aa90"), true, null, yaw)
+		_church_stairs(placed, footprint, yaw, top)
+	return placed
+
+
+func _church_stairs(origin: Vector3, footprint: Vector2, yaw: float, base_top: float) -> void:
+	# A torre e a porta do GLB da igreja ficam no lado -Z do modelo.
+	var front_edge := -footprint.y * 0.5 - 0.18
+	var landing_depth := 0.78
+	var tread_depth := 0.48
+	var stair_width := minf(2.8, footprint.x * 0.48)
+	var step_count := 1
+	for _attempt in range(8):
+		var outer_z := front_edge - landing_depth - float(step_count) * tread_depth
+		var outer_world := origin + Vector3(0, 0, outer_z).rotated(Vector3.UP, yaw)
+		var rise := maxf(base_top - ground_height_at(outer_world) - 0.08, 0.0)
+		step_count = maxi(step_count, ceili(rise / 0.23))
+	var last_z := front_edge - landing_depth - float(step_count) * tread_depth
+	var last_world := origin + Vector3(0, 0, last_z).rotated(Vector3.UP, yaw)
+	var step_height := maxf(maxf(base_top - ground_height_at(last_world) - 0.08, 0.0) / float(step_count), 0.14)
+	# O patamar se sobrepoe um pouco ao alicerce para nao abrir uma fenda.
+	_church_step(origin, yaw, front_edge - landing_depth * 0.5 + 0.04, stair_width + 0.22, landing_depth + 0.08, base_top)
+	for index in range(step_count):
+		var local_z := front_edge - landing_depth - (float(index) + 0.5) * tread_depth
+		_church_step(origin, yaw, local_z, stair_width, tread_depth + 0.06, base_top - float(index + 1) * step_height)
+
+
+func _church_step(origin: Vector3, yaw: float, local_z: float, width: float, depth: float, top: float) -> void:
+	var center := origin + Vector3(0, 0, local_z).rotated(Vector3.UP, yaw)
+	var terrain := _house_ground_range(center, Vector2(width, depth), yaw)
+	var bottom := minf(terrain.x - 0.12, top - 0.16)
+	_box(Vector3(width, top - bottom, depth), Vector3(center.x, (top + bottom) * 0.5, center.z), Color("b7aa90"), true, null, yaw)
+
+
+func _remember_house_position(name: String, position: Vector3, yaw: float, tripo: bool) -> void:
+	if name.is_empty():
+		return
+	ancoras[name] = position
+	ancoras[name + "Frente"] = Vector3(sin(yaw), 0.0, cos(yaw)) if tripo else Vector3.BACK
+	if name == "Venda do Bar":
+		ancoras["Bar"] = position
+		ancoras["BarFrente"] = ancoras[name + "Frente"]
+	if _lotes.has(name):
+		var lot: Dictionary = _lotes[name]
+		lot["pos"] = position
+		_lotes[name] = lot
+
+
 func get_spawn_position() -> Vector3:
 	return _region.get_spawn_position() if _region else Vector3(0, 0.05, 0)
 
@@ -514,7 +590,6 @@ func _construcao(chave: String, origin: Vector3, yaw: float, procedural: Callabl
 	var is_house := _is_house_key(chave)
 	var placed_origin := origin
 	if is_house:
-		var spec: Dictionary = CatalogoAssets.PECAS.get(chave, {})
 		var footprint_radius := _raio_do_lote(chave, size)
 		if _lotes.has(nome):
 			placed_origin = _lotes[nome]["pos"]
@@ -523,22 +598,22 @@ func _construcao(chave: String, origin: Vector3, yaw: float, procedural: Callabl
 			placed_origin = _reserve_house_site(origin, footprint_radius, nome)
 		if not placed_origin.is_finite():
 			return null
-		var relief := placed_origin.y - _footprint_range(placed_origin, footprint_radius).x
-		if relief > 0.16:
-			var foundation_width := float(spec.get("largura", 6.5)) * size + 0.4
-			_box(Vector3(foundation_width, relief + 0.12, foundation_width * 0.85), placed_origin + Vector3(0, -relief * 0.5, 0), Color("958d79"), true, _terreiro_material()).rotation.y = yaw
-		if not nome.is_empty():
-			ancoras[nome] = placed_origin
-			# O construtor procedural não gira a casa: a porta segue no +Z.
-			ancoras[nome + "Frente"] = Vector3(sin(yaw), 0.0, cos(yaw)) if estilo_tripo() else Vector3.BACK
 	else:
 		placed_origin = ground_position(origin, maxf(origin.y - ground_height_at(origin), 0.0))
 	if estilo_tripo():
 		var node := CatalogoAssets.instanciar(chave, self, placed_origin, size, yaw)
 		if node != null:
+			var limites: AABB = node.get_meta("limites")
+			if is_house or chave == "igreja":
+				var original_y := placed_origin.y
+				placed_origin = _support_house(placed_origin, Vector2(limites.size.x, limites.size.z), yaw, chave)
+				node.position.y += placed_origin.y - original_y
+				if is_house:
+					_remember_house_position(nome, placed_origin, yaw, true)
+				else:
+					_remember_house_position("Igreja", placed_origin, yaw, true)
 			CatalogoAssets.colisao(chave, node, self, placed_origin, size, yaw)
 			var piso := float(CatalogoAssets.PECAS[chave].get("piso", 0.0))
-			var limites: AABB = node.get_meta("limites")
 			var piso_size := Vector3(limites.size.x + 1.6, 0.16, limites.size.z + 1.6)
 			var piso_position := placed_origin + Vector3(0, piso + 0.08, 0)
 			if chave == "pier":
@@ -563,8 +638,11 @@ func _construcao(chave: String, origin: Vector3, yaw: float, procedural: Callabl
 				_register_house(nome if not nome.is_empty() else chave.capitalize(), chave, placed_origin, yaw, limites.size, "Tripo")
 			return node
 	if is_house:
+		# Os construtores procedurais usam a porta no +Z, sem o giro do lote.
+		placed_origin = _support_house(placed_origin, Vector2(5.65, 4.85), 0.0)
+		_remember_house_position(nome, placed_origin, 0.0, false)
 		procedural.call(placed_origin)
-		_register_house(nome if not nome.is_empty() else chave.capitalize(), chave, placed_origin, yaw, Vector3(5.9, 5.4, 5.1), "Procedural")
+		_register_house(nome if not nome.is_empty() else chave.capitalize(), chave, placed_origin, 0.0, Vector3(5.9, 5.4, 5.1), "Procedural")
 	else:
 		procedural.call()
 	return null

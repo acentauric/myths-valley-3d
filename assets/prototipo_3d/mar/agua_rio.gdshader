@@ -17,9 +17,13 @@ uniform vec3 cor_fundo : source_color = vec3(0.13, 0.13, 0.07);
 // Céu refletido na lâmina (visto de cima é o que faz parecer água, não lama).
 uniform vec3 cor_ceu : source_color = vec3(0.62, 0.7, 0.68);
 // Velocidade da correnteza em larguras do rio por segundo.
-uniform float correnteza = 0.06;
+uniform float correnteza = 0.12;
 uniform float ondulacao = 0.14;
 uniform float transparencia : hint_range(0.0, 1.0) = 0.72;
+uniform float comprimento = 1.0;
+uniform float transicao_foz_larguras = 1.0;
+uniform bool suavizar_inicio = false;
+uniform bool suavizar_fim = false;
 
 void fragment() {
 	// UV.y está em larguras do rio: escala parecida nos dois eixos, sem esticar.
@@ -28,7 +32,7 @@ void fragment() {
 	NORMAL_MAP = normalize(a + b - 1.0) * 0.5 + 0.5;
 	NORMAL_MAP_DEPTH = ondulacao;
 	// Talvegue: mais escuro e mais opaco no meio, âmbar raso nas margens.
-	float meio = smoothstep(0.0, 0.4, UV.x) * smoothstep(1.0, 0.6, UV.x);
+	float meio = smoothstep(0.0, 0.4, UV.x) * (1.0 - smoothstep(0.6, 1.0, UV.x));
 	vec3 agua = mix(cor_margem, cor_fundo, meio);
 	// Reflexo do céu por Fresnel: olhando de raspão o rio espelha o céu; de cima,
 	// um brilho leve — sem isso a faixa lia como lama seca, não como água.
@@ -37,6 +41,13 @@ void fragment() {
 	ROUGHNESS = 0.06;
 	SPECULAR = 0.6;
 	// Margens desvanecem na grama; o miolo é forte, mas nunca um breu opaco.
-	float margem = smoothstep(0.0, 0.22, UV.x) * smoothstep(1.0, 0.78, UV.x);
-	ALPHA = margem * mix(0.45, transparencia, meio);
+	float margem = smoothstep(0.0, 0.12, UV.x) * (1.0 - smoothstep(0.88, 1.0, UV.x));
+	float transicao_foz = 1.0;
+	if (suavizar_inicio) {
+		transicao_foz *= smoothstep(0.0, transicao_foz_larguras, UV.y);
+	}
+	if (suavizar_fim) {
+		transicao_foz *= 1.0 - smoothstep(max(comprimento - transicao_foz_larguras, 0.0), comprimento, UV.y);
+	}
+	ALPHA = transicao_foz * margem * mix(0.45, transparencia, meio);
 }
