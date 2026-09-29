@@ -13,6 +13,8 @@ const ArvoresInfo = preload("res://scripts/prototipo_3d/arvores_info.gd")
 const PlacasNomes = preload("res://scripts/prototipo_3d/placas_nomes.gd")
 const Tubarao = preload("res://scripts/prototipo_3d/tubarao.gd")
 const Atalhos = preload("res://scripts/prototipo_3d/atalhos.gd")
+const CameraMouse = preload("res://scripts/prototipo_3d/camera_mouse.gd")
+const Recursos3D = preload("res://scripts/prototipo_3d/recursos_3d.gd")
 const Minimapa = preload("res://scripts/prototipo_3d/minimapa.gd")
 const MENU_SCENE := "res://scenes/prototipo_3d/abertura.tscn"
 ## Raio de terra firme em volta do ponto de chegada.
@@ -30,6 +32,7 @@ var _step_time := 0.0
 var pegadas_no	# pegadas.gd — pool de marcas dos passos no chão
 var _saindo := false
 var mapa	# mapa_jogo.gd
+var _recursos  # recursos_3d.gd — os alvos de trabalho (troncos, lajedos)
 var lapides	# lapides.gd
 var _relogio_pausado_antes := false
 
@@ -45,8 +48,18 @@ func _enter_tree() -> void:
 	_bind("mv_inspect", [Atalhos.tecla("observar")])
 	_bind("mv_time", [Atalhos.tecla("hora")])
 	_bind("mv_mapa", [Atalhos.tecla("mapa")])
+	# OS NÚMEROS PASSARAM A SER A BARRA DE MÃO, e os gestos foram para Alt.
+	#
+	# 1 a 0 põem item na mão, como no jogo 2D — é a barra que o jogador procura
+	# quando ganha um machado, e ela não pode estar ocupada por animação de
+	# demonstração. Os gestos não se perderam: ficaram em Alt+1 a Alt+8, no
+	# mesmo número de sempre, para quem os conhece continuar achando.
 	for index in range(8):
-		_bind("mv_animation_%d" % (index + 1), [KEY_1 + index])
+		_bind_alt("mv_animation_%d" % (index + 1), KEY_1 + index)
+	for index in range(10):
+		# O zero é o DÉCIMO espaço, como em Minecraft e como no 2D: é onde a
+		# mão vai sozinha depois de anos de outro jogo.
+		_bind("mv_mao_%d" % (index + 1), [KEY_1 + index if index < 9 else KEY_0])
 	_bind("mv_animation_9", [KEY_SPACE], true)
 
 
@@ -100,7 +113,20 @@ func _ready() -> void:
 	arvores.name = "ArvoresInfo"
 	add_child(arvores)
 	arvores.configurar(world, player, hud)
-	player.set_camera_locked(false)
+	# ONDE BATER: os troncos e lajedos que respondem à ferramenta. Vem depois
+	# das árvores porque usa o mesmo alcance e a mesma dica, e quem estiver
+	# perto dos dois tem de ver a dica do que dá para fazer, não a da ficha.
+	var recursos := Recursos3D.new()
+	recursos.name = "Recursos3D"
+	add_child(recursos)
+	recursos.configurar(world, player, hud)
+	recursos.recusado.connect(func(motivo: String) -> void: hud.set_notice(motivo))
+	recursos.derrubado.connect(_ao_derrubar)
+	_recursos = recursos
+	# O VALE ABRE NO MODO DE CÂMERA ESCOLHIDO (AJUSTAR → Geral → Câmera do
+	# mouse). Era sempre livre, e quem preferia arrastar tinha de apertar a
+	# tecla da câmera toda vez que entrava.
+	player.set_camera_locked(CameraMouse.travada())
 	hud.set_region_title(world.get_region_title())
 	if Estilo.procedural():
 		hud.set_model_status("Estilo procedural: personagem, casas e árvores por código")
@@ -303,8 +329,21 @@ func _unhandled_key_input(event: InputEvent) -> void:
 	if mapa == null or _saindo:
 		return
 	if event is InputEventKey and event.pressed and not event.echo:
-		if mapa.aberto and event.physical_keycode == KEY_ESCAPE:
-			_toggle_map()
+		if event.physical_keycode == KEY_ESCAPE:
+			# ESC É O MENU, que é o que todo jogo do gênero faz — Palworld,
+			# Stardew, Witcher 3, Cyberpunk, todos. Antes ele SOLTAVA O MOUSE,
+			# e era a causa da queixa de "tenho que clicar e arrastar para
+			# girar a câmera": quem apertava Esc procurando o menu saía da
+			# câmera livre sem saber, e ficava preso no modo de arrastar.
+			#
+			# A ordem é a da convenção: primeiro ESC FECHA O QUE ESTÁ ABERTO,
+			# e só com tudo fechado ele abre o menu. Modal do HUD nem chega
+			# aqui — a camada dele consome o Esc antes, que é o primeiro
+			# degrau da mesma escada.
+			if mapa.aberto:
+				_toggle_map()
+			else:
+				_ask_return_to_menu()
 		elif event.is_action_pressed("mv_mapa"):
 			# M (remapeável) abre o mapa do vale; o HOME fica no botão da coluna do canto.
 			_toggle_map()
@@ -381,3 +420,26 @@ func _formatar(meters_per_unit: float) -> String:
 	if is_equal_approx(meters_per_unit, roundf(meters_per_unit)):
 		return str(int(roundf(meters_per_unit)))
 	return String.num(meters_per_unit, 2)
+
+
+## Um tronco ou lajedo caiu: conta no HUD e avisa quem estiver contando.
+##
+## O aviso diz O QUE ENTROU NA MOCHILA, e não "derrubou": o jogador acabou de
+## gastar fôlego e precisa ver o que ganhou com isso. É a mesma escolha do 2D,
+## onde a checklist mostra "Tábuas 3/5" em vez de "faltam 2".
+func _ao_derrubar(_id: String, rende: String, quantidade: int) -> void:
+	var item: Dictionary = Catalogo.ITENS.get(rende, {})
+	hud.set_notice("%s ×%d" % [str(item.get("nome", rende)), quantidade])
+
+
+## Como `_bind`, mas com o Alt segurado — é o que move os gestos para fora dos
+## números, que agora são a barra de mão.
+func _bind_alt(action: StringName, key: int) -> void:
+	if InputMap.has_action(action):
+		InputMap.action_erase_events(action)
+	else:
+		InputMap.add_action(action)
+	var event := InputEventKey.new()
+	event.physical_keycode = key
+	event.alt_pressed = true
+	InputMap.action_add_event(action, event)

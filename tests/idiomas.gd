@@ -26,6 +26,9 @@ extends SceneTree
 ##      dívida registrada, não dívida esquecida.
 
 var falhas := 0
+## Entradas que declararam a tradução como pendente. Contadas e relatadas: o
+## portão não reprova por elas, mas também não deixa que sumam da vista.
+var _pendentes := 0
 
 ## ARQUIVO → campos que o jogador lê. Só o que está aqui é cobrado; o que
 ## falta traduzir mora em `FALTAM_TRADUCAO`, embaixo.
@@ -93,8 +96,8 @@ func _run() -> void:
 
 	print("")
 	if falhas == 0:
-		print("IDIOMAS_OK: %d campo(s) nos três idiomas em %d arquivo(s); %d arquivo(s) com tradução declarada como pendente"
-			% [conferidos, TRADUZIDOS.size(), FALTAM_TRADUCAO.size()])
+		print("IDIOMAS_OK: %d campo(s) nos três idiomas em %d arquivo(s); %d entrada(s) e %d arquivo(s) com tradução declarada como pendente"
+			% [conferidos, TRADUZIDOS.size(), _pendentes, FALTAM_TRADUCAO.size()])
 	else:
 		print("idiomas: %d falha(s)" % falhas)
 	quit(1 if falhas > 0 else 0)
@@ -111,6 +114,18 @@ func _varrer(no, campos: Array, onde: String) -> int:
 		return achados
 	if typeof(no) != TYPE_DICTIONARY:
 		return 0
+
+	# PENDÊNCIA DECLARADA POR ENTRADA.
+	#
+	# Decisão do autor (setembro de 2026): conteúdo novo nasce em português, e
+	# as outras duas línguas ficam registradas como pendentes até o Ramon
+	# traduzir. A declaração é por ENTRADA e não por arquivo, para que um
+	# arquivo meio traduzido continue defendido no que já tem — se a pendência
+	# fosse do arquivo inteiro, a primeira entrada nova desprotegeria as
+	# outras cinco.
+	if str(no.get("traducao", "")) == "pendente":
+		_pendentes += 1
+		return achados
 
 	for campo in campos:
 		if not no.has(campo):

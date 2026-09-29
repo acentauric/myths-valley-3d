@@ -6,8 +6,19 @@ signal hora_mudou(hora: float)
 signal periodo_mudou(periodo: String)
 
 const ARQUIVO := "user://preferencias_visuais.cfg"
-## Segundos reais por hora do jogo em cada velocidade (Parada, Lenta, Normal, Rápida).
-const VELOCIDADES := [0.0, 120.0, 45.0, 10.0]
+## Segundos reais por hora do jogo em cada velocidade (Parada, Lenta, Normal,
+## Rápida).
+##
+## A ESCALA MUDOU, e o padrão com ela. O vale abria em "Rápida" — dez segundos
+## por hora, ou um dia inteiro em QUATRO MINUTOS. Dava para atravessar a vila e
+## anoitecer no caminho, e o relógio do HUD virava um cronômetro correndo.
+##
+## A referência para o novo "Normal" é o jogo 2D, que roda dois minutos de jogo
+## por segundo real — trinta segundos por hora, ou doze minutos de dia. É o
+## ritmo que o irmão mais velho deste projeto já provou: tempo de atravessar o
+## mapa sem correria. "Lenta" é o triplo disso, para quem quer passear; e
+## "Rápida" continua existindo em dez, que é onde ela serve, que é teste.
+const VELOCIDADES := [0.0, 90.0, 30.0, 10.0]
 const ROTULOS_VELOCIDADE := ["Parada", "Lenta", "Normal", "Rápida"]
 ## Nascer e pôr do sol em Bom Jesus no fim de setembro (latitude -12,8°, hora solar).
 const NASCER := 5.95
@@ -16,7 +27,8 @@ const POR := 18.0
 const INICIO_DO_DIA := 6.5
 
 var hora: float = 9.0
-var velocidade: int = 3
+## Começa em "Normal" (2), e não em "Rápida": ver `VELOCIDADES`.
+var velocidade: int = 2
 ## Hora em que o jogo começa (AJUSTAR → Cenário e tempo).
 var hora_inicial: float = 7.0
 ## Congela a passagem do tempo (o menu controla o próprio relógio).
@@ -34,7 +46,7 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	var preferencias := ConfigFile.new()
 	if preferencias.load(ARQUIVO) == OK:
-		velocidade = clampi(int(preferencias.get_value("dia", "velocidade", 3)), 0, VELOCIDADES.size() - 1)
+		velocidade = clampi(int(preferencias.get_value("dia", "velocidade", 2)), 0, VELOCIDADES.size() - 1)
 		hora_inicial = fmod(float(preferencias.get_value("dia", "hora_inicial", 7.0)), 24.0)
 		pausa_no_jogo = bool(preferencias.get_value("dia", "pausa_no_jogo", false))
 		hora = hora_inicial

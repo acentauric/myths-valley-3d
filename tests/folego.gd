@@ -77,20 +77,33 @@ func _run() -> void:
 	_conferir(fonte.contains("speed *= Energia.passo()"),
 		"o controle do jogador não multiplica a velocidade pelo passo do Energia: o cansaço não chega ao corpo")
 
-	# --- 4. NADA GASTA AINDA, DE PROPÓSITO ------------------------------------
+	# --- 4. AGORA ALGUMA COISA GASTA, E ISSO É O CERTO ------------------------
 	#
-	# Se um dia alguém ligar uma ação ao fôlego no vale, esta pergunta reprova
-	# — e é para reprovar mesmo. O recado é: apague esta parte, e escreva em
-	# lugar dela o portão do que passou a gastar.
-	var gasta := false
+	# A versão anterior desta pergunta cobrava o CONTRÁRIO: que nada no vale
+	# gastasse fôlego, porque não havia trabalho aqui. Ela dizia, no próprio
+	# comentário, que reprovaria no dia em que alguém ligasse uma ação — e
+	# reprovou, quando os troncos e os lajedos chegaram.
+	#
+	# O recado que ela deixou era "troque esta pergunta pelo portão do que
+	# gasta", e é o que está feito: quem mede o golpe agora é
+	# `tests/ferramentas.gd`, que bate de verdade e confere que o fôlego caiu.
+	#
+	# O que sobra aqui é a outra metade, e ela continua valendo: o fôlego só
+	# pode ser gasto por quem o jogo declara. Uma chamada a `Energia.gastar`
+	# que apareça fora dos recursos é ação nova sem portão, e é isso que esta
+	# pergunta passa a pegar.
+	var quem_gasta: Array[String] = []
 	for arquivo in _scripts_do_prototipo():
 		var texto := FileAccess.get_file_as_string(arquivo)
 		if texto.contains("Energia.gastar(") or texto.contains("Energia.dormir(") \
 				or texto.contains("Energia.desmaiar("):
-			gasta = true
-			print("  (gasta fôlego: %s)" % arquivo)
-	_conferir(not gasta,
-		"alguma coisa no vale passou a gastar fôlego: troque esta pergunta pelo portão do que gasta")
+			quem_gasta.append(arquivo.get_file())
+	_conferir(quem_gasta.has("recursos_3d.gd"),
+		"o trabalho parou de gastar fôlego: bater tem de custar, e é o que faz a ferramenta valer")
+	for arquivo in quem_gasta:
+		_conferir(arquivo == "recursos_3d.gd",
+			"'%s' passou a gastar fôlego e não tem portão: escreva o dele, como o ferramentas.gd fez"
+				% arquivo)
 
 	_fechar()
 
@@ -98,7 +111,7 @@ func _run() -> void:
 func _fechar() -> void:
 	print("")
 	if falhas == 0:
-		print("FOLEGO_OK: Progressao e Energia subiram com os números do 2D, o cansaço encurta o passo para 62% e o corpo lê isso; nada gasta fôlego ainda, porque o vale não tem trabalho")
+		print("FOLEGO_OK: Progressao e Energia subiram com os números do 2D, o cansaço encurta o passo para 62%, o corpo lê isso, e só o trabalho gasta fôlego — quem mede o golpe é o tests/ferramentas.gd")
 	else:
 		print("folego: %d falha(s)" % falhas)
 	quit(1 if falhas > 0 else 0)

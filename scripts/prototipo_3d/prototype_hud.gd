@@ -28,6 +28,7 @@ class Sobreposicao:
 			get_viewport().set_input_as_handled()
 const TeclasMovimento = preload("res://scripts/prototipo_3d/teclas_movimento.gd")
 const Atalhos = preload("res://scripts/prototipo_3d/atalhos.gd")
+const BarraDeMao = preload("res://scripts/prototipo_3d/barra_de_mao.gd")
 
 signal reset_requested
 signal quit_requested
@@ -96,6 +97,13 @@ func _ready() -> void:
 	_root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_root.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(_root)
+
+	# A BARRA DE MÃO, embaixo e no meio. Entra logo depois da raiz para ficar
+	# POR BAIXO dos painéis e das dicas: ela é informação constante, e o que
+	# aparece por cima dela é o que o jogador abriu.
+	var barra := BarraDeMao.new()
+	barra.name = "BarraDeMao"
+	_root.add_child(barra)
 
 	_heading = _panel(Color(0.055, 0.085, 0.075, 0.82))
 	_place(_heading, Vector2(18, 18), Vector2(HEADING_WIDTH, 132))
@@ -280,12 +288,12 @@ func _update_control_mode() -> void:
 	_control_mode_label.text = "\n".join([
 		"%s: mover" % TeclasMovimento.rotulo(),
 		"Shift: corrida (parar desliga)",
-		"Espaço: pular  ·  1–8: gestos",
+		"Espaço: pular  ·  1 a 0: item na mão  ·  Alt+1 a 8: gestos",
 		"Botão direito: andar até o ponto (duplo: correr)",
 		"Botão esquerdo na casa: dados",
 		"%s: ler / interagir  ·  %s: observar" % [Atalhos.letra("interagir"), Atalhos.letra("observar")],
 		mode,
-		"Tab ou %s: alterna a câmera  ·  Esc: trava" % Atalhos.letra("camera"),
+		"Tab ou %s: alterna a câmera  ·  Esc: menu" % Atalhos.letra("camera"),
 		"Rodinha: zoom  ·  %s: avança a hora" % Atalhos.letra("hora"),
 		"%s: reinicia  ·  %s: mapa · minimapa em AJUSTAR" % [Atalhos.letra("reiniciar"), Atalhos.letra("mapa")],
 	])

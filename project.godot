@@ -8,9 +8,11 @@
 
 config_version=5
 
+"Ã¯Â»Â¿config_version"=5
+
 [application]
 
-config/name="Myths' Valley â€” ProtÃ³tipo 3D"
+config/name="Myths' Valley Ã¢â‚¬â€ ProtÃƒÂ³tipo 3D"
 run/main_scene="res://scenes/prototipo_3d/inicio.tscn"
 config/use_custom_user_dir=true
 config/custom_user_dir_name="MythsValleyPrototype3D"
@@ -47,6 +49,7 @@ Oficina="*res://scripts/compartilhado/oficina.gd"
 Cartas="*res://scripts/compartilhado/cartas.gd"
 Colecao="*res://scripts/compartilhado/colecao.gd"
 Salvamento="*res://scripts/compartilhado/salvamento.gd"
+Mochila="*res://scripts/ui/mochila.gd"
 Lugares="*res://scripts/autoload/lugares.gd"
 Dia="*res://scripts/autoload/dia.gd"
 Mare="*res://scripts/autoload/mare.gd"

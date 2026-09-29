@@ -11,6 +11,7 @@ const HudIcon = preload("res://scripts/prototipo_3d/hud_icon.gd")
 const TemaMenu = preload("res://scripts/prototipo_3d/tema_menu.gd")
 const TeclasMovimento = preload("res://scripts/prototipo_3d/teclas_movimento.gd")
 const Atalhos = preload("res://scripts/prototipo_3d/atalhos.gd")
+const CameraMouse = preload("res://scripts/prototipo_3d/camera_mouse.gd")
 
 ## × do cabeçalho (o anfitrião fecha o modal).
 signal fechar_pedido
@@ -38,7 +39,7 @@ const ROTULOS_FONTES := ["Padrão", "Almendra", "Miva"]
 
 ## Opção de fábrica de cada seleção (índice na lista), para o botão de voltar ao padrão.
 ## Idioma, estilo e fonte voltam à primeira opção (Português, Tripo, Padrão).
-const PADRAO_VELOCIDADE := 3
+const PADRAO_VELOCIDADE := 2
 const PADRAO_HORA := 1
 const PADRAO_PAUSA := 1
 const PADRAO_TRILHA := 0
@@ -155,6 +156,9 @@ func _aba_geral(esquerda: VBoxContainer, direita: VBoxContainer) -> void:
 	_escolha("Hora inicial", ROTULOS_HORAS, hora_indice, func(i: int) -> void: Dia.definir_hora_inicial(float(HORAS_INICIAIS[i])), PADRAO_HORA)
 	_escolha("Pausar o relógio no jogo", ["Permitido", "Bloqueado"], 0 if Dia.pausa_no_jogo else 1, func(i: int) -> void: Dia.definir_pausa_no_jogo(i == 0), PADRAO_PAUSA)
 	_escolha("Teclas de movimento", TeclasMovimento.ROTULOS, TeclasMovimento.modo(), TeclasMovimento.definir, TeclasMovimento.PADRAO)
+	# A CÂMERA DO MOUSE. Só muda o modo com que o jogo ABRE; a tecla da câmera
+	# continua alternando na hora, como sempre fez.
+	_escolha("Câmera do mouse", CameraMouse.ROTULOS, CameraMouse.modo(), CameraMouse.definir, CameraMouse.PADRAO)
 	_secao("Atalhos")
 	var letras: Array = []
 	for codigo in range(KEY_A, KEY_Z + 1):

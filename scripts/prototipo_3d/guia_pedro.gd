@@ -137,9 +137,35 @@ func _atualizar_missao(delta: float) -> void:
 			else:
 				_espera = 0.25
 		return
+	# O PASSO COM META NÃO FECHA AO CHEGAR: fecha quando o trabalho é feito.
+	#
+	# Os cinco primeiros passos são de conhecer o arraial, e chegar É o passo.
+	# Os das ferramentas são outra coisa: o Pedro entrega o machado e pede
+	# lenha, e ir até onde ele está não corta tronco nenhum. Ver `meta` em
+	# `data/missoes_guia.json`.
+	if _falta_a_meta(MISSOES[missao]):
+		return
 	var alvo := _posicao_da_missao(missao)
 	if jogador.global_position.distance_to(alvo) < float(MISSOES[missao]["raio"]):
 		_avancar_missao()
+
+
+## A meta do passo ainda não foi cumprida?
+##
+## Hoje há um tipo só — "juntar", que conta item na mochila. É o que as quatro
+## missões de ferramenta precisam, e acrescentar um tipo novo é acrescentar um
+## `match` aqui, não reescrever o guia.
+##
+## Passo sem `meta` nunca falta: ele fecha por chegada, como sempre fez.
+func _falta_a_meta(passo: Dictionary) -> bool:
+	var meta: Dictionary = passo.get("meta", {})
+	if meta.is_empty():
+		return false
+	match str(meta.get("tipo", "")):
+		"juntar":
+			return Inventario.quantidade(str(meta.get("item", ""))) < int(meta.get("quantos", 1))
+		_:
+			return false
 
 
 ## Próxima missão; depois da última, emite com indice == total para a seta sumir.
@@ -158,8 +184,30 @@ func _palavra_livre() -> bool:
 
 func _anunciar() -> void:
 	var m: Dictionary = MISSOES[missao]
+	_entregar(m)
 	narrar(String(m["audio"]), String(m["texto"]))
 	missao_mudou.emit("Pedro: " + String(m["texto"]), _posicao_da_missao(missao), missao + 1, MISSOES.size())
+
+
+## O PEDRO ENTREGA A FERRAMENTA AO ANUNCIAR, e não depois.
+##
+## É a regra 1 do tutorial do 2D — o NPC anuncia antes de cobrar — levada a
+## sério: quem ouve "toma o machado e vai cortar" precisa ter o machado na
+## mesma frase. Pedir primeiro e entregar depois é o que faz o jogador rodar
+## o mapa procurando uma ferramenta que ninguém deu.
+##
+## Entrega uma vez só: `adicionar` é chamado no anúncio, e o anúncio de cada
+## passo acontece uma vez. Retomar o passo não duplica porque o passo não se
+## reanuncia.
+func _entregar(passo: Dictionary) -> void:
+	var entrega: Dictionary = passo.get("entrega", {})
+	if entrega.is_empty():
+		return
+	var item := str(entrega.get("item", ""))
+	var quantos := int(entrega.get("quantidade", 1))
+	if item == "" or Inventario.tem(item):
+		return
+	Inventario.adicionar(item, quantos)
 
 
 ## Fala uma narração: balão e, quando existe, o áudio (por proximidade, como a saudação).

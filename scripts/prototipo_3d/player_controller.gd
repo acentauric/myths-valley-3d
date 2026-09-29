@@ -79,6 +79,9 @@ var _walk_run := false
 var _pending_interact_click := Vector2.INF
 var _pending_house_click := Vector2.INF
 var _camera_locked := false
+## Soltamos o cursor porque a janela perdeu o foco? Se sim, ele volta a ser
+## capturado quando o foco voltar — sem trocar o MODO escolhido pelo jogador.
+var _solto_pelo_foco := false
 var _camera_drag_pressed := false
 var _camera_drag_moved := false
 var _camera_drag_double_click := false
@@ -350,10 +353,14 @@ func _input(event: InputEvent) -> void:
 		_camera_drag_double_click = false
 		get_viewport().set_input_as_handled()
 	if event is InputEventKey and event.pressed and not event.echo:
-		if event.is_action_pressed("mv_release"):
-			set_camera_locked(true)
-			get_viewport().set_input_as_handled()
-		elif event.is_action_pressed("mv_cursor"):
+		# O ESC NÃO SOLTA MAIS O MOUSE: ele abre o menu, como em todo jogo do
+		# gênero. Quem quer soltar o cursor usa a tecla da câmera (Tab, ou a
+		# letra escolhida em AJUSTAR → Atalhos), que é o que ela sempre fez.
+		#
+		# A troca conserta a queixa de "tenho que clicar e arrastar": quem
+		# apertava Esc procurando o menu caía no modo de arrastar sem saber por
+		# quê, e não tinha como adivinhar que voltava no Tab.
+		if event.is_action_pressed("mv_cursor"):
 			set_camera_locked(not _camera_locked)
 			get_viewport().set_input_as_handled()
 
@@ -391,11 +398,29 @@ func _unhandled_input(event: InputEvent) -> void:
 					animation_requested.emit(label)
 				break
 
+## PERDER O FOCO SOLTA O MOUSE, MAS NÃO TROCA O MODO.
+##
+## Era aqui o defeito de "a câmera fica soltando sem motivo e sem eu apertar
+## C". Ao perder o foco — alt-tab, um clique fora da janela, o Windows
+## roubando a atenção por um instante — isto chamava `set_camera_locked(true)`,
+## que é a MUDANÇA DE MODO. O jogador voltava para a janela no modo de
+## arrastar, sem ter pedido, e sem ter como saber que voltava no Tab.
+##
+## Soltar o cursor ao perder o foco continua certo: mouse capturado numa janela
+## que não está na frente é mouse preso num jogo que o jogador não está vendo.
+## O que mudou é que agora ele VOLTA — o modo de antes é lembrado e reposto
+## quando a janela recebe o foco de novo.
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_APPLICATION_FOCUS_OUT:
 		_camera_drag_pressed = false
 		_camera_drag_moved = false
-		set_camera_locked(true)
+		if not _camera_locked:
+			_solto_pelo_foco = true
+			Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	elif what == NOTIFICATION_APPLICATION_FOCUS_IN and _solto_pelo_foco:
+		_solto_pelo_foco = false
+		if not _camera_locked:
+			Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 
 
 func _exit_tree() -> void:

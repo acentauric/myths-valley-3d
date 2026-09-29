@@ -1,0 +1,65 @@
+{
+  "observacao": "ONDE BATER: os alvos de trabalho do vale. Cada um é uma peça do CatalogoAssets posta no mundo, com colisão, que responde à tecla de interagir quando o jogador tem a ferramenta certa na mochila. 'lugar' é NOME DE CONTRATO do autoload Lugares — o mesmo que o jogo 2D usa —, e 'desvio' é em unidades (1 u = 4 m) a partir dele. 'golpes' é quantas batidas até render, e cada batida custa fôlego pela conta do Energia. TRADUÇÃO: os nomes estão só em português neste primeiro momento; inglês e espanhol estão declarados como pendentes em tests/idiomas.gd, e são do Ramon.",
+  "recursos": [
+    {
+      "id": "lenha_rocado_a",
+      "nome": "Tronco caído",
+      "peca": "lenha",
+      "lugar": "rocado",
+      "desvio": [5.0, -4.0],
+      "tamanho": 1.4,
+      "ferramenta": "machado",
+      "golpes": 3,
+      "rende": "lenha",
+      "quantidade": 2
+    },
+    {
+      "id": "lenha_rocado_b",
+      "nome": "Tronco caído",
+      "peca": "lenha",
+      "lugar": "rocado",
+      "desvio": [-6.0, -2.0],
+      "tamanho": 1.4,
+      "ferramenta": "machado",
+      "golpes": 3,
+      "rende": "lenha",
+      "quantidade": 2
+    },
+    {
+      "id": "lenha_casa_taipa",
+      "nome": "Tronco caído",
+      "peca": "lenha",
+      "lugar": "casa_de_taipa",
+      "desvio": [4.0, 5.0],
+      "tamanho": 1.4,
+      "ferramenta": "machado",
+      "golpes": 3,
+      "rende": "lenha",
+      "quantidade": 2
+    },
+    {
+      "id": "pedra_rocado",
+      "nome": "Lajedo",
+      "peca": "pedras",
+      "lugar": "rocado",
+      "desvio": [8.0, 3.0],
+      "tamanho": 2.2,
+      "ferramenta": "picareta",
+      "golpes": 4,
+      "rende": "pedra",
+      "quantidade": 3
+    },
+    {
+      "id": "pedra_poco",
+      "nome": "Lajedo",
+      "peca": "pedras",
+      "lugar": "poco",
+      "desvio": [-5.0, 4.0],
+      "tamanho": 2.2,
+      "ferramenta": "picareta",
+      "golpes": 4,
+      "rende": "pedra",
+      "quantidade": 3
+    }
+  ]
+}

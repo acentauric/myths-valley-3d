@@ -45,6 +45,46 @@
       "texto": "Olha o sol. Bora pro píer antes de escurecer, que a maré conta história.",
       "texto_en": "Look at the sun. Let's get to the pier before dark — the tide has stories to tell.",
       "texto_es": "Mira el sol. Vamos al muelle antes de que oscurezca, que la marea cuenta historias."
+    },
+
+    {
+      "id": "machado",
+      "traducao": "pendente",
+      "lugar": "casa_de_taipa",
+      "raio": 7.0,
+      "audio": "",
+      "texto": "Toma o machado que era do teu tio. Tem tronco caído aqui do lado: encosta nele e aperta E.",
+      "entrega": { "item": "machado", "quantidade": 1 },
+      "meta": { "tipo": "juntar", "item": "lenha", "quantos": 2 }
+    },
+    {
+      "id": "lenha",
+      "traducao": "pendente",
+      "lugar": "rocado",
+      "raio": 9.0,
+      "audio": "",
+      "texto": "Mais dois feixes e dá pra acender o fogo. Os troncos do roçado dão conta.",
+      "meta": { "tipo": "juntar", "item": "lenha", "quantos": 4 }
+    },
+    {
+      "id": "picareta",
+      "traducao": "pendente",
+      "lugar": "poco",
+      "raio": 7.0,
+      "audio": "",
+      "texto": "A picareta é pra pedra. Tem lajedo ali perto do poço — bate nele, que pedra sempre falta.",
+      "entrega": { "item": "picareta", "quantidade": 1 },
+      "meta": { "tipo": "juntar", "item": "pedra", "quantos": 3 }
+    },
+    {
+      "id": "enxada",
+      "traducao": "pendente",
+      "lugar": "rocado",
+      "raio": 9.0,
+      "audio": "",
+      "texto": "E a enxada, que é a mais importante de todas. Terra revirada é terra que aceita semente.",
+      "entrega": { "item": "enxada", "quantidade": 1 },
+      "meta": {}
     }
   ],
   "arremate": {

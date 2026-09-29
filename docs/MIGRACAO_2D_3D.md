@@ -543,6 +543,38 @@ escolha), `mochila`, `painel` com as oito abas, `talentos_tela`, `colecao_tela`,
 `arraial_tela`, `slots_tela`, `folheto`, `amanhecer`. São `CanvasLayer` e
 desenham por cima do 3D sem saber que ele é 3D.
 
+### A medição das nove, e o que ela achou
+
+**As nove têm ZERO nós 2D.** Medidas uma a uma, nenhuma cita `Node2D`,
+`Sprite2D`, `TileMap` ou coisa que não exista numa árvore 3D. O que as prende
+é outra coisa, e é pouca:
+
+| Tela | Linhas | O que a prende |
+|---|---|---|
+| `amanhecer` | 163 | nada — só o `Relogio`, que atravessou |
+| `slots_tela` | 351 | nada — `Salvamento`, `Jogo`, `Relogio`, `Audio`, todos do outro lado |
+| `colecao_tela` | 323 | nada |
+| `folheto` | 333 | nada |
+| `painel` | 1.221 | nada |
+| `arraial_tela` | 362 | os retratos em `assets/sprites/gerados` |
+| `talentos_tela` | 1.495 | os 39 ícones em `assets/sprites/talentos` |
+| `dialogo` | 388 | o `Telas`, que é o roteador de telas DESTE jogo |
+| `mochila` | 846 | o `Tela`, que é o escurecimento e o passeio de câmera |
+
+As duas últimas são o mesmo caso da tecla: `Telas` lista as telas do 2D e
+`Tela` é a cortina dele. Saem pelo mesmo caminho quando for a vez delas.
+
+**E a cena não atravessa — só o script.** A `.tscn` de cada tela é um
+`CanvasLayer` vazio com o script em cima, e ela aponta para ele por caminho
+absoluto, que do outro lado é outro. Não faz falta: um autoload apontado
+direto para um script que estende `CanvasLayer` dá exatamente a mesma coisa.
+Foi o que a primeira tentativa desta fatia descobriu tentando copiar as duas.
+
+**As fontes já estavam lá.** `Almendra-Bold.ttf` e `miva.ttf` existem em
+`prototipo_3d/assets/fonts/` com o mesmo nome — a abertura do vale já as usa.
+Coincidência boa, e não planejada: as duas telas que atravessaram primeiro
+não precisaram de um asset sequer.
+
 **O que entra adaptado:** a `bussola`, cujo alvo passa a ser projetado na tela
 com `unproject_position` — a mesma conta que o 3D já faz para as placas de nome.
 
