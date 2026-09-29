@@ -191,11 +191,27 @@ não por importância: cada um só precisa dos anteriores.
 | ~~2~~ **FEITA** | ~~`Inventario`, `Equipamento`, `Catalogo`~~ | 817 | Os 30 espaços, os 10 de mão, o que o corpo veste, e o catálogo com 51 itens. Custou um refactor no 2D: a tecla da mão saiu do `Inventario` e foi para o `Controles` — doze linhas de entrada prendiam 174 de regra |
 | ~~2.9~~ **FEITA** | ~~`Relogio`, `Efeitos`~~ | 255 | O calendário — dia, estação, ano — e o efeito que vence em dias. Veio da Fase 5, que era pré-requisito desta fase e não o penúltimo degrau |
 | ~~3~~ **FEITA** | ~~`Talentos`, `Fe`, `Ritos`, `Afinidade`, `Jogo`~~ | 1.861 | 37 nós de teia, as três fés com XP separado, e os sete moradores com gosto e desgosto. Os quatro primeiros se citam em círculo e foram juntos; o `Jogo` veio inteiro, com a linha da janela mínima movida para o menu 2D. O `aldeoes.json` veio junto, porque sem ele a afinidade não sabe de quem é cada gosto |
-| 4 | `Receitas`, `Cozinha`, `Oficina`, `Pesca` | 891 | Receita que se aprende; a bancada que serra tábua e torce corda; e a água do lugar decidindo o peixe — o 3D já tem mar, rio e cardume, e não tem o que pescar neles |
-| 5 | `Cartas`, `Colecao` | 411 | Pactos com mitos, apoios, rituais; cordéis, bichos e sinais |
-| 6 | `Afinidade`, `Povoado` | 606 | Os sete moradores deixam de ser cenário e passam a ter gosto, desgosto e reação |
-| 7 | `Luta` | 158 | Golpe, bote anunciado, ginga, meia-lua, rasteira |
-| 8 | `Obras`, `Venda` | 475 | Casa que melhora em três eixos; preço que muda com a estação |
+| ~~4 a 8~~ **FEITAS** | ~~`Receitas`, `Cozinha`, `Oficina`, `Pesca`, `Cartas`, `Colecao`, `Luta`, `Obras`, `Venda`~~ + `Vida` e **`Salvamento`** | 2.944 | A receita que se aprende, a bancada, a água que decide o peixe, os pactos, a coleção, o golpe e a ginga, a casa que melhora, o preço por estação — e o SAVE de três vagas, que o vale não tinha |
+| — | `Terrenos`, `Povoado` | 719 | **NÃO atravessam.** Dependem do `GeradorMundo`: as divisas são `Rect2i` em coordenada de tile. É a parte de reescrita que o plano sempre apontou |
+
+> **A Fase 2 fechou** (setembro de 2026). São **25 arquivos compartilhados** e
+> 24 autoloads do 2D rodando no vale, conferidos byte a byte. O que ficou de
+> fora — `Terrenos` e `Povoado` — não é migração pendente: é reescrita, e o
+> plano sempre disse isso.
+>
+> **A ordem prevista aqui errou três vezes**, e as três só apareceram medindo:
+> a Fase 5 (o relógio) era pré-requisito desta e não a penúltima; a fé
+> dependia do calendário; e o `Salvamento`, que parecia o mais emaranhado,
+> atravessou sem uma linha de adaptação porque usa `get_node_or_null` em toda
+> parte e degrada sozinho onde um sistema não existe.
+>
+> **E uma dependência escapou da minha própria medição:** o `Salvamento` usa
+> `Versao` para carimbar o save, e o meu regex não listava esse nome. O erro
+> apareceu como `Parse Error` no primeiro teste. O conserto ficou melhor que a
+> migração teria ficado: em vez de importar o `Versao` do 2D — que carimbaria
+> os saves do vale com a versão de outro jogo —, o protótipo ganhou o dele,
+> lendo do `historico_3d.json`, que já é onde a versão desta derivação é
+> declarada.
 
 A fatia 6 é a que mais rende por linha escrita. O 3D já tem os sete moradores
 com posto por período, três falas cada e voz do ElevenLabs — `npcs_3d.json` já
