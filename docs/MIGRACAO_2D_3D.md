@@ -137,6 +137,12 @@ de 5.300 linhas de regra vira duas versões divergentes em três semanas, e o
 2D é a referência de regras justamente porque ele tem 47 portões cobrindo
 essas regras. Regra copiada é regra sem portão.
 
+> **A Fase 2 descobriu que isso não dá**, e por limitação da engine: `res://` é
+> a raiz de cada projeto. O que ficou no lugar foi cópia CONFERIDA byte a byte
+> por portão — o parágrafo "Onde a regra compartilhada mora, resolvido na
+> prática", na Fase 2, conta como e por quê. A objeção continua de pé e é ela
+> que o portão responde.
+
 ### O que saiu
 
 | O que entrou | Onde |
@@ -180,7 +186,8 @@ não por importância: cada um só precisa dos anteriores.
 
 | Ordem | Sistema | Linhas | O que o 3D ganha |
 |---|---|---|---|
-| 1 | `Progressao`, `Energia`, `Vida` | 428 | O fôlego que dá peso ao trabalho, a vida que a onça tira, e a queda que leva para casa |
+| ~~1a~~ **FEITA** | ~~`Progressao`, `Energia`~~ | 229 | O fôlego, e o cansaço que encurta o passo para 62% — a mesma regra, lida dos mesmos arquivos |
+| 1b | `Vida` | 199 | A vida que a onça tira, e a queda que leva para casa. Ficou para depois: ela chama `Talentos`, `Luta`, `Equipamento`, `Cozinha`, `Telas` e `Dialogo`, e nenhum deles atravessou ainda |
 | 2 | `Inventario`, `Equipamento`, `Catalogo` | 817 | Os 30 espaços, os 10 de mão, o que o corpo veste |
 | 3 | `Talentos`, `Fe`, `Ritos` | 1.303 | A teia de ofício e as três árvores de fé, com XP separado e o preço de migrar |
 | 4 | `Receitas`, `Cozinha`, `Oficina`, `Pesca` | 891 | Receita que se aprende; a bancada que serra tábua e torce corda; e a água do lugar decidindo o peixe — o 3D já tem mar, rio e cardume, e não tem o que pescar neles |
@@ -193,6 +200,32 @@ A fatia 6 é a que mais rende por linha escrita. O 3D já tem os sete moradores
 com posto por período, três falas cada e voz do ElevenLabs — `npcs_3d.json` já
 declara que as falas vêm de `data/dialogos/aldeoes.json`, que é arquivo do 2D.
 Ligar `Afinidade` transforma um cumprimento a cada 45 segundos numa relação.
+
+### Onde a regra compartilhada mora, resolvido na prática
+
+A recomendação da Fase 1 era `compartilhado/` na raiz, lido pelos dois
+`project.godot`. **Não dá**, e a razão é da engine: `res://` é a raiz de cada
+projeto, e a raiz do protótipo é `prototipo_3d/`. Link simbólico resolveria e
+traz dois problemas piores no Windows — o Git pede `core.symlinks` e modo de
+desenvolvedor, e quem clonar sem isso ganha um arquivo de texto com um caminho
+dentro em vez do código.
+
+Então é **cópia conferida**, em `prototipo_3d/scripts/compartilhado/`:
+
+- o **dono da regra é o 2D**, sempre; o protótipo tem um espelho;
+- `tools\comum\sincronizar-compartilhado.ps1` move o espelho, e com `-Conferir`
+  só reclama;
+- `testar_compartilhado` compara **byte a byte** e reprova com o nome do
+  arquivo que divergiu — foi falsificado, e pega;
+- o portão cobra também que o compartilhado **não passe a citar tipo 2D**, que
+  é o critério para estar na lista, e que a lista dele e a do sincronizador
+  sejam a mesma;
+- na `main` não há `prototipo_3d/`, e ali ele passa **dizendo** que não há o
+  que conferir.
+
+Isso responde à objeção do próprio plano — regra copiada é regra sem portão —
+dando-lhe o portão. O critério para um autoload entrar na lista: não citar
+tipo 2D **e** não depender de outro autoload que ainda não atravessou.
 
 O que cada sistema precisa do 3D é **um gatilho**, não uma adaptação: quem
 chama `Energia.gastar` quando o machado bate, quem chama `Afinidade.presentear`

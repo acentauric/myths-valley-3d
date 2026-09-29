@@ -258,6 +258,16 @@ func _physics_process(delta: float) -> void:
 		speed = VELOCIDADE_NADO * (2.0 if is_running() else 1.0)
 	elif profundidade > 0.0:
 		speed *= lerpf(1.0, VELOCIDADE_NA_AGUA, clampf(profundidade / (character_height * NADA_A_PARTIR), 0.0, 1.0))
+	# O CANSAÇO PESA NO CORPO, exatamente como no jogo 2D: abaixo de um quinto
+	# do fôlego o passo cai para 62% e a corrida deixa de responder. A regra é
+	# do `Energia`, que os dois projetos compartilham — aqui só se lê o número,
+	# e é por isso que ela não precisou ser reescrita.
+	#
+	# NADA GASTA FÔLEGO NO VALE AINDA, porque não há trabalho aqui: no 2D quem
+	# cobra é a enxada, o machado e a picareta. Então isto é regra ligada e
+	# dormente, e é o estado certo — inventar um custo de corrida seria
+	# escrever mecânica nova em nome de migrar uma antiga.
+	speed *= Energia.passo()
 	if _knockback_remaining > 0.0:
 		# Empurrão (ex.: o coveiro): o impulso manda até o fim, sem controle do jogador.
 		_knockback_remaining -= delta
