@@ -20,6 +20,11 @@ atualize esse arquivo e este documento juntos.
   (`queda.gd`, `data/queda.json`). A regra é o `Vida` compartilhado, sem uma linha
   mudada; o que o vale acrescentou é o gatilho, a barra e o portão `tests/vida.gd`.
   Nada no vale tira vida ainda — isso chega com a luta (#14).
+- **Fôlego no HUD** (#3). Barra de fôlego logo abaixo da vida, na mesma medida e com
+  as cores do 2D: verde, e vermelha quando o corpo está no fim — e aí o número vem
+  com "cansado", porque o passo já caía para 62% e a corrida parava sem aviso. O
+  número e o limiar são do `Energia` compartilhado; o `tests/folego.gd` confere a
+  barra.
 - **Luta no vale** (#14). Um **caititu** em caixa cinza mora na mata fechada, longe da
   porta de casa e do píer, com os números do 2D na escala do passo do jogador: fareja e
   desiste em dois raios, **anuncia o bote** (acende em âmbar, abaixa e marca no chão o
