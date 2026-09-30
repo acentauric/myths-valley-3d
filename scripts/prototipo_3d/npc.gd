@@ -270,7 +270,53 @@ func _contornar_bloqueio(direcao: Vector3, delta: float) -> Vector3:
 	if _desvio_tempo > 0.0:
 		_desvio_tempo -= delta
 		return _desvio
+	return _por_terra(direcao)
+
+
+## GENTE DO ARRAIAL NÃO ENTRA NO MAR PARA ENCURTAR CAMINHO.
+##
+## Era a queixa do Pedro "tentando vir pelo mar": ele andava em LINHA RETA até
+## o jogador, e com o jogador no píer a reta passa por cima d'água. O corpo
+## sabia nadar, então ele nadava — e ficava batendo na estrutura do píer, que
+## é o que se via de fora.
+##
+## O conserto não é malha de navegação: o vale é construído em tempo de
+## execução e assar navmesh a cada partida custaria mais do que o problema
+## vale. É preferência local. Antes de andar, o NPC olha para onde o passo vai
+## cair; se cai em água funda, ele tenta ângulos cada vez mais abertos até
+## achar chão. Na beira do píer isso o faz seguir a costa até a cabeceira, que
+## é o que uma pessoa faria.
+##
+## O que esta escolha NÃO resolve, e é honesto dizer: enseada em forma de U
+## pode fazê-lo hesitar na boca dela, porque decisão local não vê o mapa
+## inteiro. Se isso aparecer, aí sim é hora de navegação de verdade.
+##
+## Quem já está na água não é desviado: NADANDO, o caminho mais curto para
+## terra é em frente, e empurrá-lo para os lados o faria circular no mar.
+func _por_terra(direcao: Vector3) -> Vector3:
+	if _nadando or terreno == null or not terreno.has_method("water_depth_at"):
+		return direcao
+	if not _fundo(global_position + direcao * PASSO_A_FRENTE):
+		return direcao
+	# Tenta abrir o ângulo para os dois lados, alternando, até achar chão.
+	for grau in [35, -35, 70, -70, 105, -105, 140, -140]:
+		var tentativa := direcao.rotated(Vector3.UP, deg_to_rad(float(grau)))
+		if not _fundo(global_position + tentativa * PASSO_A_FRENTE):
+			return tentativa
+	# Cercado de água por todos os lados: segue em frente e nada, que é o que
+	# sobra — e é o caso de quem está numa ponta de areia.
 	return direcao
+
+
+## O passo cairia em água funda demais para andar?
+func _fundo(ponto: Vector3) -> bool:
+	return terreno.water_depth_at(ponto) > altura * NADA_A_PARTIR
+
+
+## O quanto à frente o NPC olha antes de pisar. Um corpo e meio: perto o
+## bastante para a decisão ser sobre o próximo passo, longe o bastante para
+## ele não meter o pé na água antes de perceber.
+const PASSO_A_FRENTE := 1.6
 
 
 ## Andando sem sair do lugar (parede, casa, cerca, borda): contorna seguindo a parede;
