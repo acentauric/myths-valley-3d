@@ -30,6 +30,7 @@ const ITENS := {
 	"machado": {
 		"nome": "Machado",
 		"tipo": "ferramenta",
+		"encaixe": "maos",
 		"icone": "machado",
 		"empilhavel": false,
 		"dano": 3.0,

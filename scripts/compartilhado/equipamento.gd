@@ -36,12 +36,15 @@ func encaixe_de(id: String) -> String:
 
 
 func e_equipamento(id: String) -> bool:
-	return Catalogo.tipo(id) == "equipamento" and encaixe_de(id) != ""
+	var encaixe := encaixe_de(id)
+	if encaixe == "":
+		return false
+	return Catalogo.tipo(id) == "equipamento" or (Catalogo.tipo(id) == "ferramenta" and encaixe == "maos")
 
 
 ## Veste o item que está no espaço dado da mochila. O que estava no encaixe
 ## volta para a mochila, no lugar que o novo deixou.
-func equipar_do_espaco(indice: int) -> bool:
+func equipar_do_espaco(indice: int, encaixe_destino: String = "") -> bool:
 	if Inventario.vazio(indice):
 		return false
 	var id := str(Inventario.espacos[indice].get("id", ""))
@@ -49,6 +52,8 @@ func equipar_do_espaco(indice: int) -> bool:
 		return false
 
 	var encaixe := encaixe_de(id)
+	if encaixe_destino != "" and encaixe_destino != encaixe:
+		return false
 	var antigo := no_encaixe(encaixe)
 
 	Inventario.espacos[indice] = {}

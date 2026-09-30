@@ -104,7 +104,6 @@ var _run_toggled := false
 var _ran_since_toggle := false
 var _vigor := VIGOR_MAXIMO
 var _tempo_descanso_vigor := 0.0
-var _machado_teste_na_mao := false
 var _machado_ancora: Node3D
 var _machado_pivo: Node3D
 var _machado_ancora_posicao_base := Vector3.ZERO
@@ -185,12 +184,7 @@ func _process(delta: float) -> void:
 
 
 func machado_na_mao() -> bool:
-	return _machado_teste_na_mao or Inventario.na_mao() == "machado"
-
-
-func alternar_machado_de_teste() -> void:
-	_machado_teste_na_mao = not _machado_teste_na_mao
-	_atualizar_machado_na_mao()
+	return Equipamento.no_encaixe("maos") == "machado"
 
 
 func travar_acao_de_golpe(duracao: float, aguardar_animacao: bool) -> void:
