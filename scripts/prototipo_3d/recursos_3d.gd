@@ -115,9 +115,25 @@ func _erguer() -> void:
 		for i in range(antes, _world.get_child_count()):
 			corpos.append(_world.get_child(i))
 
+		# A MEIA-PEGADA: o quanto este alvo empurra o jogador para longe do
+		# próprio centro. É o que o alcance do golpe soma, para "encoste e
+		# aperte E" valer em peça de qualquer tamanho. Ver `_mais_perto`.
+		var meia := 0.0
+		for corpo in corpos:
+			for forma_no in (corpo as Node).get_children():
+				if not (forma_no is CollisionShape3D):
+					continue
+				var forma = (forma_no as CollisionShape3D).shape
+				if forma is BoxShape3D:
+					var caixa := (forma as BoxShape3D).size
+					meia = maxf(meia, maxf(caixa.x, caixa.z) * 0.5)
+				elif forma is CylinderShape3D:
+					meia = maxf(meia, (forma as CylinderShape3D).radius)
+
 		var peca := str(ficha.get("peca", ""))
 		_postos[peca] = int(_postos.get(peca, 0)) + 1
-		_alvos[id] = {"no": no, "pos": pos, "ficha": ficha, "golpes_dados": 0, "corpos": corpos}
+		_alvos[id] = {"no": no, "pos": pos, "ficha": ficha, "golpes_dados": 0,
+			"corpos": corpos, "meia_pegada": meia}
 
 
 func _process(_delta: float) -> void:
@@ -140,15 +156,32 @@ func _process(_delta: float) -> void:
 
 
 ## O alvo ao alcance, ou "" — o mais perto quando há mais de um.
+## O ALVO AO ALCANCE DO BRAÇO, medido da SUPERFÍCIE dele e não do centro.
+##
+## Era aqui o defeito da missão da picareta, e ele durou três rodadas porque
+## cada conserto olhou uma parte diferente: que o alvo existe, que o golpe
+## funciona, que a meta fecha pela meta. Nada disso era o problema.
+##
+## O problema era ARITMÉTICA. O lajedo é a peça `pedras` em tamanho 2,2, e a
+## caixa de colisão dela fica com 6,6 de lado — 3,30 do centro até a face. O
+## alcance era 3,20 do CENTRO. O corpo do jogador esbarra na face e para a
+## 3,30; o golpe exigia chegar a 3,20. Folga negativa de dez centímetros, e
+## nenhuma quantidade de insistência resolvia: o lajedo era fisicamente
+## inalcançável.
+##
+## Medir do centro só funciona enquanto os alvos são pequenos. Agora o alcance
+## é somado à meia-pegada de cada um, que é o quanto ele empurra o jogador para
+## longe do próprio centro — e aí "encoste e aperte E" volta a ser verdade para
+## qualquer tamanho de peça.
 func _mais_perto() -> String:
 	var melhor := ""
-	var menor := ALCANCE
+	var menor := INF
 	for id in _alvos:
 		var d: Vector3 = _alvos[id]["pos"] - _jogador.global_position
 		d.y = 0.0
-		var dist := d.length()
-		if dist < menor:
-			menor = dist
+		var sobra: float = d.length() - float(_alvos[id].get("meia_pegada", 0.0))
+		if sobra < ALCANCE and sobra < menor:
+			menor = sobra
 			melhor = id
 	return melhor
 

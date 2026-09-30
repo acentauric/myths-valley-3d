@@ -576,27 +576,19 @@ func _voltar() -> void:
 	_encher()
 
 
+## AS TECLAS DA NAVEGAÇÃO, e só elas.
+##
+## A tecla que ABRE e o Esc que FECHA saíram daqui: quem cuida deles é o
+## `telas_do_vale.gd`, porque abrir uma tela tem de fechar a outra, e uma tela
+## que só conhece a própria tecla não tem como saber disso. Foi assim que este
+## almanaque abriu ATRÁS do painel de missões e devolveu a câmera solta ao
+## fechar.
+##
+## Fechado, este nó não escuta nada.
 func _unhandled_key_input(event: InputEvent) -> void:
-	if not (event is InputEventKey and event.pressed and not event.echo):
-		return
-
-	# Com a tela fechada, só a tecla dela interessa — e o Esc não, senão o
-	# almanaque engoliria o Esc que abre o menu.
 	if not _aberto:
-		if event.is_action_pressed("mv_almanaque"):
-			alternar()
-			get_viewport().set_input_as_handled()
 		return
-
-	# A TECLA DA TELA E O ESC VÊM PRIMEIRO, antes das teclas de andar.
-	#
-	# Se o jogador remapear o almanaque para W — a tabela de atalhos impede que
-	# duas AÇÕES DELA dividam uma letra, mas o WASD daqui não está nela —, o
-	# `match` lá embaixo pegaria o W como "subir" e a tela nunca fecharia.
-	# Fechar antes de andar não tem esse risco.
-	if event.is_action_pressed("mv_almanaque") or event.physical_keycode == KEY_ESCAPE:
-		fechar()
-		get_viewport().set_input_as_handled()
+	if not (event is InputEventKey and event.pressed and not event.echo):
 		return
 
 	match event.physical_keycode:

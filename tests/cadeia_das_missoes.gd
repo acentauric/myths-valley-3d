@@ -63,6 +63,7 @@ func _run() -> void:
 	var recursos := jogo.get_node_or_null("Recursos3D")
 	var jogador = jogo.get("player")
 	var inv := root.get_node("/root/Inventario")
+	var missoes := root.get_node("/root/Missoes")
 	var energia := root.get_node("/root/Energia")
 	_conferir(pedro != null and recursos != null and jogador != null,
 		"não achei o Pedro, os recursos ou o jogador")
@@ -111,6 +112,23 @@ func _run() -> void:
 			var ferramenta := str(entrega.get("item", ""))
 			_conferir(inv.tem(ferramenta),
 				"o passo '%s' cobra trabalho e não entregou %s" % [id, ferramenta])
+
+		# O PASSO ESTÁ NO CADERNO DE MISSÕES, que é o que o painel J mostra.
+		#
+		# Esta pergunta nasceu de "as missões estão bugadas e não aparecem no
+		# menu de missão". A aba de missões lê `Missoes.ativas`, e as cadeias do
+		# vale guardavam estado próprio sem nunca escrever lá: o jogador tinha a
+		# missão no alto da tela e um caderno em branco no painel.
+		#
+		# Medir a lista do autoload, e não o sinal do HUD, é o ponto: o sinal
+		# funcionava: era o caderno que estava vazio.
+		var no_caderno := "%s_%s" % ["pedro", id]
+		_conferir(missoes.tem(no_caderno),
+			"o passo '%s' anunciou e não entrou no caderno: o painel J mostra a aba vazia" % id)
+		if not meta.is_empty() and missoes.tem(no_caderno):
+			var ativa: Dictionary = missoes.ativas[missoes.indice(no_caderno)]
+			_conferir(not (ativa.get("lista", []) as Array).is_empty(),
+				"o passo '%s' pede trabalho e entrou no caderno sem checklist: o jogador não vê quanto falta" % id)
 
 		if meta.is_empty():
 			# Passo de visita: chega e fecha.
@@ -161,7 +179,7 @@ func _run() -> void:
 func _fechar() -> void:
 	print("")
 	if falhas == 0:
-		print("CADEIA_OK: os passos de visita fecham ao chegar, os de trabalho entregam a ferramenta e fecham ao cumprir a meta — onde quer que o jogador esteja")
+		print("CADEIA_OK: os passos de visita fecham ao chegar, os de trabalho entregam a ferramenta e fecham ao cumprir a meta onde quer que o jogador esteja, e cada passo entra no caderno de missões com a checklist dele")
 	else:
 		print("cadeia: %d falha(s)" % falhas)
 	quit(1 if falhas > 0 else 0)

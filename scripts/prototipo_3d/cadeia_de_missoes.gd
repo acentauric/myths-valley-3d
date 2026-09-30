@@ -77,6 +77,13 @@ var achar_morador: Callable = Callable()
 ## trouxe" e a missão pediria o pirão de novo.
 var _levados: Dictionary = {}
 
+## O NOME DESTA CADEIA no caderno de missões, para dois donos não colidirem num
+## passo de mesmo nome. Vem do campo `dono` do arquivo.
+var chave := ""
+## A cadeia é de ENREDO? Missão de enredo vai na frente na lista do painel, como
+## a fila do arraial no jogo 2D. O tutorial do Pedro é; um favor de vizinho não.
+var principal := false
+
 
 var passos: Array = []
 var arremate: Dictionary = {}
@@ -113,6 +120,8 @@ func carregar(caminho: String) -> bool:
 		var passo: Dictionary = bruto.duplicate()
 		passo["texto"] = str(IdiomaMenu.campo(passo, "texto"))
 		passos.append(passo)
+	chave = str(dado.get("dono", ""))
+	principal = bool(dado.get("principal", false))
 	arremate = dado.get("arremate", {}).duplicate()
 	arremate["texto"] = str(IdiomaMenu.campo(arremate, "texto"))
 	return not passos.is_empty()
@@ -192,6 +201,7 @@ func correr(delta: float, palavra_livre: bool) -> void:
 		# Meta que ACONTECE, e não só se mede: a entrega precisa de alguém para
 		# tentar antes de a pergunta ser feita.
 		_tentar_entregar(passo)
+		_acertar_o_caderno(passo)
 		if not falta_a_meta(passo):
 			avancar()
 		return
@@ -206,9 +216,71 @@ func anunciar() -> void:
 	if passo.is_empty():
 		return
 	entregar(passo)
+	_registrar_no_caderno(passo)
 	_falar(str(passo.get("audio", "")), str(passo.get("texto", "")))
 	missao_mudou.emit(_com_o_nome(str(passo.get("texto", ""))),
 		posicao_do_passo(missao), missao + 1, passos.size())
+
+
+## O PASSO ENTRA NO CADERNO DE MISSÕES, que é o `Missoes` compartilhado com o 2D.
+##
+## Sem isto a aba de missões do painel J ficava VAZIA: ela lê `Missoes.ativas`,
+## e nada no vale escrevia lá. As cadeias guardavam estado próprio e só falavam
+## com o HUD pelo sinal — o jogador tinha a missão em curso no alto da tela e um
+## caderno em branco quando abria o painel. "As missões estão bugadas e não
+## aparecem no menu de missão", nas palavras de quem jogou.
+##
+## É a costura da Fase 3 do plano, e ela não custou reescrever nada: o `Missoes`
+## do 2D já sabia tudo que era preciso. A meta do passo vira UMA LINHA de
+## checklist, na forma que aquele autoload já usa:
+##
+##   juntar    item de mochila, com alvo — o `texto_do_item` conta sozinho, e
+##             `conferir` risca e DESRISCA, porque saldo desce (o jogador pode
+##             gastar a lenha no caminho)
+##   derrubar  contagem que não é de mochila: `meta` e `contar`, com o texto
+##             refeito por `retextar` — é exatamente o caso que aquele comentário
+##             lá cita, o mato do cemitério
+##   levar     acontecimento: risca quando a entrega acontece e não desrisca
+func _registrar_no_caderno(passo: Dictionary) -> void:
+	var id := _id_no_caderno(passo)
+	if id == "":
+		return
+	var meta: Dictionary = passo.get("meta", {})
+	var lista: Array = []
+	match str(meta.get("tipo", "")):
+		"juntar":
+			var item := str(meta.get("item", ""))
+			lista.append({"id": item, "texto": _nome_do_item(item),
+				"item": item, "alvo": int(meta.get("quantos", 1))})
+		"derrubar":
+			lista.append({"id": str(meta.get("alvo", "")), "texto": "",
+				"meta": int(meta.get("quantos", 1))})
+		"levar":
+			var item := str(meta.get("item", ""))
+			lista.append({"id": item, "texto": "Levar %s a %s"
+				% [_nome_do_item(item), _nome_de(str(meta.get("a_quem", "")))]})
+	Missoes.adicionar(id, str(passo.get("texto", "")), false, lista, "", principal)
+	var alvo := posicao_do_passo(missao)
+	if alvo != Vector3.ZERO:
+		Missoes.apontar(id, alvo)
+
+
+## O id do passo no caderno, com o dono na frente para duas cadeias não colidirem
+## num passo de mesmo nome.
+func _id_no_caderno(passo: Dictionary) -> String:
+	var id := str(passo.get("id", ""))
+	return "" if id == "" else "%s_%s" % [chave, id] if chave != "" else id
+
+
+func _nome_do_item(item: String) -> String:
+	return str((Catalogo.ITENS.get(item, {}) as Dictionary).get("nome", item))
+
+
+func _nome_de(quem: String) -> String:
+	var no := _morador(quem)
+	if no == null or not ("dados" in no):
+		return quem
+	return str((no.dados as Dictionary).get("nome", quem))
 
 
 func _falar(audio: String, texto: String) -> void:
@@ -269,11 +341,64 @@ func falta_a_meta(passo: Dictionary) -> bool:
 
 ## Próximo passo; depois do último, emite com indice == total para a seta sumir.
 func avancar() -> void:
+	# O passo que fecha SAI DO CADERNO, como no 2D: `concluir` o tira das
+	# ativas e o põe nas cumpridas, e é isso que faz a aba de missões mostrar o
+	# que está em curso e não o histórico inteiro.
+	var fechando := passo_atual()
+	if not fechando.is_empty():
+		Missoes.concluir(_id_no_caderno(fechando))
 	missao += 1
 	if missao >= passos.size():
 		missao_mudou.emit(str(arremate.get("texto", "")), Vector3.ZERO, passos.size(), passos.size())
 	else:
 		espera = 1.4
+
+
+## A CHECKLIST DO PASSO, ACERTADA A CADA PULSO.
+##
+## Chamada do `correr`, todo quadro, com a verdade do momento — é o contrato que
+## o `Missoes` do 2D pede: "quem lida com saldo chama isto, todo quadro".
+##
+## Por que todo quadro e não só quando muda: saldo DESCE. O jogador junta as
+## duas achas, a linha risca, e ele gasta uma lenha em outra coisa no caminho.
+## Se o risco só fosse escrito na subida, a checklist mentiria — e no 2D essa
+## mentira já custou uma obra que não saía sem nada na tela explicando por quê.
+func _acertar_o_caderno(passo: Dictionary) -> void:
+	var id := _id_no_caderno(passo)
+	if id == "" or not Missoes.tem(id):
+		return
+	var meta: Dictionary = passo.get("meta", {})
+	match str(meta.get("tipo", "")):
+		"juntar":
+			var item := str(meta.get("item", ""))
+			Missoes.conferir(id, item,
+				Inventario.quantidade(item) >= int(meta.get("quantos", 1)))
+		"derrubar":
+			var peca := str(meta.get("alvo", ""))
+			var quantos := int(meta.get("quantos", 1))
+			var caidos := 0
+			if recursos != null and recursos.has_method("derrubados"):
+				caidos = mini(quantos, int(recursos.derrubados(peca)))
+			# `contar` sobe de um em um e não desce, que é o certo aqui: pé
+			# cortado não volta a crescer no meio da missão.
+			var no_caderno := _contado(id, peca)
+			if caidos > no_caderno:
+				Missoes.contar(id, peca, caidos - no_caderno)
+			Missoes.retextar(id, peca, "Cortar o capim das covas  %d/%d" % [caidos, quantos])
+		"levar":
+			Missoes.conferir(id, str(meta.get("item", "")),
+				bool(_levados.get(str(passo.get("id", "")), false)))
+
+
+## Quanto a checklist já contou desta linha.
+func _contado(id: String, item: String) -> int:
+	for missao_ativa in Missoes.ativas:
+		if str(missao_ativa.get("id", "")) != id:
+			continue
+		for linha in missao_ativa.get("lista", []):
+			if str(linha.get("id", "")) == item:
+				return int(linha.get("conta", 0))
+	return 0
 
 
 ## ONDE O MARCADOR APONTA.

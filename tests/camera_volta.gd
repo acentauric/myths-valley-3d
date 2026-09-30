@@ -67,26 +67,26 @@ func _run() -> void:
 		},
 		{
 			"nome": "mochila",
-			"abrir": func(): hud.barra_de_mao()._abrir_ou_fechar_a_mochila(),
-			"fechar": func(): hud.barra_de_mao()._abrir_ou_fechar_a_mochila(),
+			"abrir": func(): jogo.telas.abrir("mochila"),
+			"fechar": func(): jogo.telas.fechar_tudo(),
 			"pausa": true,
 		},
 		{
 			"nome": "almanaque",
-			"abrir": func(): hud.almanaque().abrir(),
-			"fechar": func(): hud.almanaque().fechar(),
+			"abrir": func(): jogo.telas.abrir("almanaque"),
+			"fechar": func(): jogo.telas.fechar_tudo(),
 			"pausa": true,
 		},
 		{
 			"nome": "coleção (L)",
-			"abrir": func(): jogo.abrir_a_colecao(),
-			"fechar": func(): jogo.colecao.fechar(),
+			"abrir": func(): jogo.telas.abrir("colecao"),
+			"fechar": func(): jogo.telas.fechar_tudo(),
 			"pausa": true,
 		},
 		{
 			"nome": "painel (J)",
-			"abrir": func(): jogo.abrir_o_painel(),
-			"fechar": func(): jogo.painel.fechar(),
+			"abrir": func(): jogo.telas.abrir("painel"),
+			"fechar": func(): jogo.telas.fechar_tudo(),
 			"pausa": true,
 		},
 		{
@@ -146,6 +146,49 @@ func _run() -> void:
 			print("  %-20s modo '%s': %s" % [tela["nome"], modo,
 				"ok" if depois == antes else "DEVOLVEU DIFERENTE"])
 
+	# --- UMA TELA DE CADA VEZ, E A CÂMERA INTEIRA DEPOIS DE TROCAR -----------
+	#
+	# "Quando tava no Menu de missão, apertei o Menu do Almanaque e ele abriu
+	# ATRÁS do da missão" — e, logo depois, "quando sai do almanaque, a tela
+	# tava destravada". As duas queixas são a mesma coisa.
+	#
+	# Enquanto cada tela cuidava da própria tecla, abrir a segunda não fechava a
+	# primeira, e as duas escreviam na MESMA gaveta do modo de câmera: a
+	# primeira guardava "travada", a segunda guardava o que achava — já solta —,
+	# e fechar devolvia solta. Não adiantava consertar a devolução: o defeito
+	# era o empilhamento.
+	#
+	# Aqui se abre uma, se abre OUTRA por cima, e se cobra que a primeira tenha
+	# fechado e que a câmera volte como estava no começo de tudo.
+	print("")
+	var com_tecla := ["mochila", "almanaque", "colecao", "painel"]
+	for modo_travado in [false, true]:
+		for primeira in com_tecla:
+			for segunda in com_tecla:
+				if primeira == segunda:
+					continue
+				jogo.telas.fechar_tudo()
+				player.set_camera_locked(modo_travado)
+				await _frames(2)
+				jogo.telas.abrir(primeira)
+				await _frames(2)
+				if jogo.telas.aberta() != primeira:
+					continue          # tela que se recusa a abrir agora (mapa aberto etc.)
+				jogo.telas.abrir(segunda)
+				await _frames(2)
+				var agora: String = jogo.telas.aberta()
+				_conferir(agora == segunda,
+					"com '%s' aberta, pedir '%s' deixou '%s' na tela"
+						% [primeira, segunda, agora if agora != "" else "nada"])
+				jogo.telas.fechar_tudo()
+				await _frames(2)
+				_conferir(jogo.telas.aberta() == "",
+					"fechar tudo deixou '%s' aberta" % jogo.telas.aberta())
+				_conferir(player.camera_travada() == modo_travado,
+					"abrir '%s', trocar para '%s' e fechar devolveu a câmera em '%s'"
+						% [primeira, segunda, "arrastar" if player.camera_travada() else "livre"])
+				_conferir(not paused, "depois de fechar tudo o vale continuou parado")
+
 	# --- E PERDER O FOCO NÃO TROCA O MODO ------------------------------------
 	#
 	# O primeiro dos quatro defeitos. Soltar o cursor ao perder o foco é certo —
@@ -168,7 +211,7 @@ func _run() -> void:
 func _fechar() -> void:
 	print("")
 	if falhas == 0:
-		print("CAMERA_OK: mapa, mochila, almanaque, coleção, painel e menu abrem com o cursor livre, param o vale atrás delas (menos o mapa, que é vista ao vivo) e devolvem o modo que acharam, nos dois modos; e perder o foco não troca nada")
+		print("CAMERA_OK: as seis telas abrem com o cursor livre, param o vale atrás delas (menos o mapa, que é vista ao vivo) e devolvem o modo que acharam nos dois modos; abrir uma fecha a outra, e trocar de tela não perde a câmera; e perder o foco não troca nada")
 	else:
 		print("câmera: %d falha(s)" % falhas)
 	quit(1 if falhas > 0 else 0)

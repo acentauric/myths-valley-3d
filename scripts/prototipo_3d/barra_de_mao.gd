@@ -194,13 +194,13 @@ func _unhandled_key_input(event: InputEvent) -> void:
 	if not (event is InputEventKey and event.pressed and not event.echo):
 		return
 
-	# O I ABRE E FECHA A MOCHILA, e o Esc fecha quando ela está aberta — a
-	# ordem do gênero: Esc desfaz o que está na frente antes de abrir o menu.
-	var esc_com_mochila: bool = Mochila.aberta and event.physical_keycode == KEY_ESCAPE
-	if event.is_action_pressed("mv_mochila") or esc_com_mochila:
-		_abrir_ou_fechar_a_mochila()
-		get_viewport().set_input_as_handled()
-		return
+	# O I E O ESC SAÍRAM DAQUI. Quem abre e fecha a mochila agora é o
+	# `telas_do_vale.gd`, porque abrir uma tela tem de fechar a outra — e uma
+	# tela que só conhece a própria tecla não pode saber disso. Ver o cabeçalho
+	# de lá: foi assim que o almanaque abriu ATRÁS do painel e devolveu a câmera
+	# solta.
+	#
+	# O que ficou aqui é o que é da barra: as dez teclas da mão.
 	if Mochila.aberta:
 		return
 

@@ -23,6 +23,7 @@ const CameraMouse = preload("res://scripts/prototipo_3d/camera_mouse.gd")
 const Recursos3D = preload("res://scripts/prototipo_3d/recursos_3d.gd")
 const Minimapa = preload("res://scripts/prototipo_3d/minimapa.gd")
 const CadeiaDeMissoes = preload("res://scripts/prototipo_3d/cadeia_de_missoes.gd")
+const TelasDoVale = preload("res://scripts/prototipo_3d/telas_do_vale.gd")
 const MENU_SCENE := "res://scenes/prototipo_3d/abertura.tscn"
 ## Raio de terra firme em volta do ponto de chegada.
 const RAIO_CHEGADA := 6.0
@@ -65,6 +66,10 @@ var _camera_travada_antes := false
 var _relogio_pausado_antes := false
 var painel	# painel_vale.gd — tecla J
 var colecao	# colecao_vale.gd — tecla L
+## Dono único das telas: só uma fica aberta. Ver telas_do_vale.gd.
+var telas
+## A aba pedida no último `abrir_o_painel`, entregue à abertura crua.
+var _aba_pedida := 0
 
 
 func _enter_tree() -> void:
@@ -171,24 +176,45 @@ func _ready() -> void:
 	recursos.recusado.connect(func(motivo: String) -> void: hud.set_notice(motivo))
 	recursos.derrubado.connect(_ao_derrubar)
 	_recursos = recursos
-	# A MOCHILA PAUSA O VALE. Quem avisa é a barra, porque é ela que tem a
-	# tecla — ver `BarraDeMao._abrir_ou_fechar_a_mochila`.
-	if hud.barra_de_mao() != null:
-		hud.barra_de_mao().mochila_mudou.connect(func(aberta: bool) -> void:
-			if aberta:
-				_pause_valley()
-			else:
-				_retomar_o_vale())
-	# E O ALMANAQUE TAMBÉM. Ele era a única tela que não parava nada atrás dela:
-	# o jogador lia a lista das plantas e o vale seguia andando por baixo. Mesma
-	# ligação da mochila, pela mesma razão de ela existir — quem guarda o modo
-	# de câmera é esta casa, e só ela.
+	# AS TELAS DO VALE, num dono só.
+	#
+	# Cada uma cuidava da própria tecla, em cinco arquivos, e nenhuma sabia das
+	# outras: apertar a do almanaque com o painel aberto abria o almanaque ATRÁS
+	# dele, e fechá-lo devolvia a câmera solta — porque a gaveta do modo de
+	# câmera é uma só e as duas telas escreveram nela. Ver `telas_do_vale.gd`.
+	#
+	# Agora só uma fica aberta, e a pausa e a câmera acontecem AQUI, num lugar,
+	# quando o dono avisa que a tela mudou.
+	telas = TelasDoVale.new()
+	telas.name = "TelasDoVale"
+	add_child(telas)
+	telas.registrar("mochila",
+		func(e: InputEvent) -> bool: return e.is_action_pressed("mv_mochila"),
+		func() -> bool: return Mochila.aberta,
+		func() -> void: Mochila.abrir(),
+		func() -> void: Mochila.fechar())
 	if hud.almanaque() != null:
-		hud.almanaque().mudou.connect(func(aberto: bool) -> void:
-			if aberto:
-				_pause_valley()
-			else:
-				_retomar_o_vale())
+		var alm: Control = hud.almanaque()
+		telas.registrar("almanaque",
+			func(e: InputEvent) -> bool: return e.physical_keycode == Atalhos.tecla("almanaque"),
+			func() -> bool: return alm.aberto(),
+			func() -> void: alm.abrir(),
+			func() -> void: alm.fechar())
+	telas.registrar("painel",
+		func(e: InputEvent) -> bool: return e.physical_keycode == Atalhos.tecla("painel"),
+		func() -> bool: return painel != null and painel.aberto,
+		_abrir_painel_cru,
+		func() -> void: if painel != null: painel.fechar())
+	telas.registrar("colecao",
+		func(e: InputEvent) -> bool: return e.physical_keycode == Atalhos.tecla("colecao"),
+		func() -> bool: return colecao != null and colecao.aberta,
+		_abrir_colecao_crua,
+		func() -> void: if colecao != null: colecao.fechar())
+	telas.tela_mudou.connect(func(_nome: String, aberta: bool) -> void:
+		if aberta:
+			_pause_valley()
+		else:
+			_retomar_o_vale())
 	# O VALE ABRE NO MODO DE CÂMERA ESCOLHIDO (AJUSTAR → Geral → Câmera do
 	# mouse). Era sempre livre, e quem preferia arrastar tinha de apertar a
 	# tecla da câmera toda vez que entrava.
@@ -409,11 +435,15 @@ func _on_saudacao(morador: MoradorNPC, texto: String) -> void:
 	hud.set_notice("%s: %s" % [String(morador.dados.get("nome", "Morador")), texto])
 
 
+## A MISSÃO EM CURSO, e QUANTO FALTA em linha separada.
+##
+## Antes a conta vinha grudada no texto — "Fale com o Damião  (3/9)" —, e ela
+## voltava a aparecer a cada reanúncio no meio de uma frase que o jogador já
+## estava lendo. Agora a frase é só a frase, e a conta mora ao lado do nome da
+## região, onde ela não disputa a leitura.
 func _on_missao_mudou(texto: String, _alvo: Vector3, indice: int, total: int) -> void:
-	if indice >= total:
-		hud.set_objective(texto)
-	else:
-		hud.set_objective("%s  (%d/%d)" % [texto, indice, total])
+	hud.set_objective(texto)
+	hud.set_mission_step(indice, total)
 
 
 func _bind(action: StringName, keys: Array, replace_existing := false) -> void:
@@ -438,14 +468,10 @@ func _unhandled_key_input(event: InputEvent) -> void:
 	if _lendo():
 		return
 	if event is InputEventKey and event.pressed and not event.echo:
-		if event.physical_keycode == Atalhos.tecla("painel") and not mapa.aberto:
-			abrir_o_painel()
-			get_viewport().set_input_as_handled()
-			return
-		if event.physical_keycode == Atalhos.tecla("colecao") and not mapa.aberto:
-			abrir_a_colecao()
-			get_viewport().set_input_as_handled()
-			return
+		# O J E O L SAÍRAM DAQUI, junto com o Esc que fechava tela. Quem cuida
+		# de abrir e fechar tela é o `telas_do_vale.gd`, num lugar só, porque
+		# abrir uma tem de FECHAR A OUTRA — e cinco arquivos cada um cuidando da
+		# própria tecla não têm como saber disso.
 		if event.physical_keycode == KEY_ESCAPE:
 			# ESC É O MENU, que é o que todo jogo do gênero faz — Palworld,
 			# Stardew, Witcher 3, Cyberpunk, todos. Antes ele SOLTAVA O MOUSE,
@@ -729,60 +755,60 @@ func _notification(what: int) -> void:
 # --- o painel -----------------------------------------------------------------
 
 ## Abre o painel com as abas do lugar onde o jogador está (bancadas_vale.gd).
+## Abre o painel com as abas do lugar onde o jogador está (bancadas_vale.gd).
+##
+## PEDE AO DONO DAS TELAS, e não abre por fora dele: é o dono que fecha a tela
+## que estiver aberta, pausa o vale e guarda a câmera. Quem abrir direto pula
+## tudo isso — e foi por aí que o almanaque apareceu atrás do painel.
 func abrir_o_painel(aba: int = 0) -> void:
-	if painel == null or _lendo() or mapa.aberto or _saindo:
-		return
-	BancadasVale.aplicar(painel, world, player.global_position)
-	painel.abrir(aba)
+	_aba_pedida = aba
+	if telas != null:
+		telas.abrir("painel")
 
 
 func abrir_a_colecao() -> void:
+	if telas != null:
+		telas.abrir("colecao")
+
+
+## A abertura CRUA das duas, que é o que o dono das telas chama. Ninguém mais
+## deve chamá-las: elas não pausam nada e não mexem na câmera.
+func _abrir_painel_cru() -> void:
+	if painel == null or _lendo() or mapa.aberto or _saindo:
+		return
+	BancadasVale.aplicar(painel, world, player.global_position)
+	painel.abrir(_aba_pedida)
+	_aba_pedida = 0
+
+
+func _abrir_colecao_crua() -> void:
 	if colecao == null or _lendo() or mapa.aberto or _saindo:
 		return
 	colecao.abrir()
 
 
-## COM UMA TELA ABERTA (painel, coleção) O JOGADOR PARA, O VALE PARA ATRÁS
-## DELA, E A CÂMERA VOLTA COMO ESTAVA AO FECHAR.
+## COM UMA TELA ABERTA, O JOGADOR PARA — e SÓ isso.
 ##
-## Duas coisas foram acrescentadas aqui, e as duas já tinham nome nesta casa.
+## Este par já fez mais: guardava o modo de câmera, soltava o cursor e pausava
+## a árvore. Fazia certo, e mesmo assim era errado, porque o `telas_do_vale.gd`
+## passou a fazer o mesmo para TODAS as telas. Dois lugares guardando a mesma
+## gaveta (`_camera_travada_antes`) é um deles escrevendo por cima do outro: o
+## painel guardava "travada", o dono guardava logo depois o que achava — que já
+## era "solta", porque o painel tinha acabado de soltar —, e fechar devolvia
+## solta. O portão da câmera pegou, e a mensagem foi exatamente essa.
 ##
-## A CÂMERA. Abrir solta o cursor — tela com o mouse preso é tela que não se
-## clica — e nada devolvia o modo depois. É a QUARTA vez do mesmo defeito:
-## perder o foco, o Esc, o mapa, agora o painel. E as quatro vezes a queixa
-## foi a mesma, palavra por palavra: "a câmera tava destravada, como se
-## tivesse apertado C". Guarda antes de soltar, devolve ao fechar — e
-## `tests/camera_volta.gd` mede o painel e a coleção junto com as outras.
-##
-## Que estas duas funções sejam de TODAS as telas, e não uma por tela, é o
-## conserto de fundo: enquanto cada tela tinha o seu par, a próxima nascia
-## esquecendo metade. A quarta vez aconteceu assim, num arquivo que o portão
-## ainda não conhecia.
-##
-## E A ÁRVORE PARA, que é a regra pedida para toda tela: "quando se abre
-## qualquer menu, o jogo atrás deve ser pausado". Sem isso os moradores andam,
-## os bichos caçam e o dia dos outros corre enquanto o jogador lê. As telas
-## rodam em `PROCESS_MODE_ALWAYS`, então continuam vivas com o vale parado e
-## ainda se fecham.
-##
-## O RELÓGIO NÃO ENTRA AQUI, de propósito: painel e coleção já o pausam e o
-## devolvem por conta deles, com memória própria. Guardar o mesmo número dos
-## dois lados é ter duas memórias dele, e uma vai estar velha.
+## Câmera, cursor, relógio e pausa da árvore são do dono das telas. Aqui ficou
+## o que é do corpo do jogador: ele para de andar e de ouvir tecla.
 func _parar_o_jogador() -> void:
-	_camera_travada_antes = player.camera_travada()
-	player.set_captured(false)
 	player.set_physics_process(false)
 	player.set_process_input(false)
 	player.set_process_unhandled_input(false)
-	get_tree().paused = true
 
 
 func _soltar_o_jogador() -> void:
-	get_tree().paused = false
 	player.set_physics_process(true)
 	player.set_process_input(true)
 	player.set_process_unhandled_input(true)
-	player.set_camera_locked(_camera_travada_antes)
 
 
 func _ao_pedido_do_painel(acao: String) -> void:

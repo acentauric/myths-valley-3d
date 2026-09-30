@@ -68,6 +68,8 @@ var _camera_locked := false
 var _refresh_time := 0.0
 var _root: Control
 var _region_label: Label
+## "3 de 9" da missão em curso, à direita do nome da região.
+var _mission_step: Label
 var _style_hint: Label
 var _speed_hint: Label
 var _speed_icon	# hud_icon.gd
@@ -104,15 +106,26 @@ func _ready() -> void:
 	_root.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(_root)
 
+	# O BLOCO DA MISSÃO, e não o letreiro do jogo.
+	#
+	# Aqui ficava "MYTHS' VALLEY" em 28 px, ocupando o terço de cima de um
+	# painel de 360×132 — o nome do jogo escrito na tela de quem já está
+	# jogando. Saiu, e o que sobrou é o que o jogador precisa ler: onde ele
+	# está, o que ele tem de fazer, e quanto falta.
+	#
+	# A missão ganhou o espaço e o corpo: 17 px em vez de 15, com a linha do
+	# passo à direita do rótulo. O painel encolheu junto — cabeçalho menor é
+	# mais vale à vista.
 	_heading = _panel(Color(0.055, 0.085, 0.075, 0.82))
-	_place(_heading, Vector2(18, 18), Vector2(HEADING_WIDTH, 132))
-	var title := _label("MYTHS’ VALLEY", 28, INK)
-	_place(title, Vector2(33, 25), Vector2(435, 39))
+	_place(_heading, Vector2(18, 18), Vector2(HEADING_WIDTH, 96))
 	_region_label = _label("REGIÃO INICIAL", 12, GOLD)
-	_place(_region_label, Vector2(35, 67), Vector2(435, 23))
-	_objective_label = _label(_objective, 15, MUTED)
+	_place(_region_label, Vector2(33, 26), Vector2(HEADING_WIDTH - 130, 20))
+	_mission_step = _label("", 12, GOLD)
+	_mission_step.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	_place(_mission_step, Vector2(HEADING_WIDTH - 108, 26), Vector2(92, 20))
+	_objective_label = _label(_objective, 17, INK)
 	_objective_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_place(_objective_label, Vector2(35, 101), Vector2(HEADING_WIDTH - 34, 42))
+	_place(_objective_label, Vector2(33, 52), Vector2(HEADING_WIDTH - 50, 42))
 
 	_create_corner_buttons()
 
@@ -499,11 +512,12 @@ func _fit_heading() -> void:
 	if not is_instance_valid(_heading):
 		return
 	var lines := maxi(1, _objective_label.get_line_count())
-	var height := 101.0 + lines * _objective_label.get_line_height() + 14.0
+	# 52 é onde a missão começa (ver `_montar`); 18 de respiro embaixo.
+	var altura := 52.0 + lines * _objective_label.get_line_height() + 18.0
 	_objective_label.size.y = lines * _objective_label.get_line_height()
-	_heading.size.y = height - 18.0
+	_heading.size.y = altura
 	if is_instance_valid(_house_info_panel):
-		_house_info_panel.position.y = height + 12.0
+		_house_info_panel.position.y = 18.0 + altura + 12.0
 
 
 ## Coluna de botões redondos: HOME, som e relógio na mesma posição do menu, depois
@@ -810,3 +824,15 @@ func barra_de_mao() -> Control:
 ## abre, como faz com a mochila.
 func almanaque() -> Control:
 	return _almanaque
+
+
+## QUANTO FALTA DA MISSÃO, ao lado do nome da região.
+##
+## Vinha colado no texto do objetivo — "Corte o capim  (3/9)" —, e a conta
+## reaparecia no meio da frase a cada reanúncio. Separada, ela é um número que
+## se olha de relance sem reler a missão. Com a cadeia terminada (indice >=
+## total) some, em vez de mostrar "9/9" para sempre.
+func set_mission_step(indice: int, total: int) -> void:
+	if not is_instance_valid(_mission_step):
+		return
+	_mission_step.text = "" if total <= 0 or indice >= total else "%d de %d" % [indice, total]
