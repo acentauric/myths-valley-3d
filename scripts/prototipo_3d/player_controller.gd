@@ -709,3 +709,9 @@ func _apply_camera() -> void:
 	camera_pivot.rotation.y = _yaw
 	spring.rotation.x = _pitch
 	spring.spring_length = _distance
+
+
+## A câmera está no modo de arrastar? Quem pergunta é quem vai pausar o jogo e
+## precisa devolver o modo depois — ver `Prototype._pause_valley`.
+func camera_travada() -> bool:
+	return _camera_locked

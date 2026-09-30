@@ -91,9 +91,25 @@ func _erguer() -> void:
 			float(ficha.get("tamanho", 1.0)))
 		if no == null:
 			continue
+
+		# A COLISÃO É UM NÓ SEPARADO, e é preciso guardá-la.
+		#
+		# `CatalogoAssets.colisao` não põe a forma dentro da peça: ela cria um
+		# `StaticBody3D` irmão, filho do mundo. Faz sentido para cenário, que
+		# nunca sai — mas alvo de trabalho SAI, e a primeira versão disto
+		# liberava só o visual. O tronco desaparecia e continuava barrando o
+		# caminho: colisão invisível no meio do roçado, que foi a queixa.
+		#
+		# Quais filhos do mundo nasceram desta chamada só se sabe olhando antes
+		# e depois — então é o que se faz.
+		var antes := _world.get_child_count()
 		CatalogoAssets.colisao(str(ficha.get("peca", "")), no, _world, pos,
 			float(ficha.get("tamanho", 1.0)))
-		_alvos[id] = {"no": no, "pos": pos, "ficha": ficha, "golpes_dados": 0}
+		var corpos: Array[Node] = []
+		for i in range(antes, _world.get_child_count()):
+			corpos.append(_world.get_child(i))
+
+		_alvos[id] = {"no": no, "pos": pos, "ficha": ficha, "golpes_dados": 0, "corpos": corpos}
 
 
 func _process(_delta: float) -> void:
@@ -163,6 +179,7 @@ func bater() -> bool:
 		recusado.emit("Sem fôlego para bater.")
 		return false
 
+	_golpear_com_o_corpo()
 	alvo["golpes_dados"] = int(alvo["golpes_dados"]) + 1
 	var faltam := int(ficha.get("golpes", 3)) - int(alvo["golpes_dados"])
 	if faltam > 0:
@@ -176,6 +193,11 @@ func bater() -> bool:
 	var no: Node3D = alvo["no"]
 	if is_instance_valid(no):
 		no.queue_free()
+	# E A COLISÃO COM ELE. Ver o comentário em `_erguer`: ela é nó irmão, e
+	# esquecê-la deixa o caminho barrado por um tronco que não existe mais.
+	for corpo in alvo.get("corpos", []):
+		if is_instance_valid(corpo):
+			corpo.queue_free()
 	var id := _perto
 	_alvos.erase(id)
 	_perto = ""
@@ -222,3 +244,44 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		return
 	bater()
 	get_viewport().set_input_as_handled()
+
+
+## O CORPO GOLPEIA, e o clipe já existia.
+##
+## O personagem tem nove gestos no GLB, e o de índice 6 é `chop` — "Golpear".
+## Ele estava ali desde o começo, acessível só por tecla de demonstração, e
+## nenhum trabalho o usava: bater era um número caindo sem ninguém se mexer.
+##
+## Em terceira pessoa o personagem já olha para onde a câmera olha, e quem bate
+## está de frente para o que bate — então não há para onde virá-lo. O que
+## faltava era só o gesto.
+const GESTO_GOLPEAR := 6
+
+
+func _golpear_com_o_corpo() -> void:
+	if not is_instance_valid(_jogador):
+		return
+	var animador = _jogador.animator
+	if animador != null and animador.has_method("play_gesture"):
+		animador.play_gesture(GESTO_GOLPEAR)
+
+
+## ONDE ESTÁ O ALVO MAIS PERTO QUE RENDE ISTO, ou `Lugares.NENHUM`.
+##
+## É o que o guia pergunta para pôr o marcador da missão no lugar certo. Antes
+## ele marcava a ÂNCORA do passo — a casa, o roçado — e mandava o jogador a um
+## lugar onde não havia o que bater. "Marca a casa quando devia marcar os
+## troncos", nas palavras de quem jogou.
+func mais_perto_que_rende(item: String, de: Vector3) -> Vector3:
+	var melhor: Vector3 = Lugares.NENHUM
+	var menor := INF
+	for id in _alvos:
+		var ficha: Dictionary = _alvos[id]["ficha"]
+		if str(ficha.get("rende", "")) != item:
+			continue
+		var d: Vector3 = _alvos[id]["pos"] - de
+		d.y = 0.0
+		if d.length() < menor:
+			menor = d.length()
+			melhor = _alvos[id]["pos"]
+	return melhor

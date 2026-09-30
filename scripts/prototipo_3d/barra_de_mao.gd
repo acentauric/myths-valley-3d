@@ -35,8 +35,20 @@ var _rotulo_do_item: Label
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
-	set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
-	custom_minimum_size.y = ALTURA + 34.0
+	# Continua ouvindo com o jogo pausado: é ela que fecha a mochila.
+	process_mode = Node.PROCESS_MODE_ALWAYS
+	# A BARRA OCUPA A TELA INTEIRA e põe a fila onde quer, em vez de tentar ser
+	# uma faixa no rodapé.
+	#
+	# A primeira versão usava `PRESET_BOTTOM_WIDE` neste nó e depois mexia em
+	# `position` da fila antes de mexer nas âncoras — e a barra não aparecia.
+	# Dois enganos somados: o preset num nó recém-criado calcula os offsets a
+	# partir de um tamanho que ainda é zero, e escrever `position` ANTES das
+	# âncoras é escrever num valor que a âncora recalcula em seguida.
+	#
+	# Âncora primeiro, offset depois. É a ordem que o Godot espera, e não há
+	# atalho para ela.
+	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_montar()
 	Inventario.mudou.connect(_repintar)
 	_repintar()
@@ -47,14 +59,20 @@ func _montar() -> void:
 	var largura_total := total * LARGURA + (total - 1) * VAO
 
 	var fila := HBoxContainer.new()
+	fila.name = "Fila"
 	fila.add_theme_constant_override("separation", int(VAO))
 	fila.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(fila)
-	fila.position = Vector2(-largura_total * 0.5, -ALTURA - MARGEM_DE_BAIXO)
+	# Presa ao meio de baixo: âncoras nos dois lados no centro e no rodapé, e
+	# os offsets medindo a partir dali.
 	fila.anchor_left = 0.5
 	fila.anchor_right = 0.5
 	fila.anchor_top = 1.0
 	fila.anchor_bottom = 1.0
+	fila.offset_left = -largura_total * 0.5
+	fila.offset_right = largura_total * 0.5
+	fila.offset_top = -ALTURA - MARGEM_DE_BAIXO
+	fila.offset_bottom = -MARGEM_DE_BAIXO
 
 	for i in total:
 		var espaco := Panel.new()
@@ -101,14 +119,20 @@ func _montar() -> void:
 	# O NOME DO QUE ESTÁ NA MÃO, acima da barra. É o que responde "o que eu
 	# estou segurando?" sem o jogador ter de decorar ícone.
 	_rotulo_do_item = Label.new()
+	_rotulo_do_item.name = "NaMao"
 	_rotulo_do_item.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_rotulo_do_item.add_theme_font_size_override("font_size", 14)
 	_rotulo_do_item.add_theme_color_override("font_color", BORDA_NA_MAO)
 	_rotulo_do_item.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_rotulo_do_item.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
+	add_child(_rotulo_do_item)
+	_rotulo_do_item.anchor_left = 0.0
+	_rotulo_do_item.anchor_right = 1.0
+	_rotulo_do_item.anchor_top = 1.0
+	_rotulo_do_item.anchor_bottom = 1.0
+	_rotulo_do_item.offset_left = 0.0
+	_rotulo_do_item.offset_right = 0.0
 	_rotulo_do_item.offset_top = -ALTURA - MARGEM_DE_BAIXO - 24.0
 	_rotulo_do_item.offset_bottom = -ALTURA - MARGEM_DE_BAIXO - 4.0
-	add_child(_rotulo_do_item)
 
 
 func _repintar() -> void:
@@ -169,6 +193,17 @@ func _moldura(na_mao: bool) -> StyleBoxFlat:
 func _unhandled_key_input(event: InputEvent) -> void:
 	if not (event is InputEventKey and event.pressed and not event.echo):
 		return
+
+	# O I ABRE E FECHA A MOCHILA, e o Esc fecha quando ela está aberta — a
+	# ordem do gênero: Esc desfaz o que está na frente antes de abrir o menu.
+	var esc_com_mochila: bool = Mochila.aberta and event.physical_keycode == KEY_ESCAPE
+	if event.is_action_pressed("mv_mochila") or esc_com_mochila:
+		_abrir_ou_fechar_a_mochila()
+		get_viewport().set_input_as_handled()
+		return
+	if Mochila.aberta:
+		return
+
 	# Alt segurado é gesto do personagem, não barra de mão.
 	if event.alt_pressed:
 		return
@@ -177,3 +212,33 @@ func _unhandled_key_input(event: InputEvent) -> void:
 			Inventario.alternar(i)
 			get_viewport().set_input_as_handled()
 			return
+
+
+## A MOCHILA ABRE E FECHA DAQUI, e não do `Prototype`.
+##
+## A razão é a pausa. Abrir a mochila pausa o vale com `get_tree().paused`, e
+## nó pausável não recebe mais tecla — o `Prototype` inclusive. Se o `I`
+## morasse lá, ele abriria a mochila e nunca mais a fecharia.
+##
+## Esta barra roda em `PROCESS_MODE_ALWAYS` justamente para continuar ouvindo
+## com o jogo parado, e é o lugar coerente: ela já é a mão do jogador na tela.
+signal mochila_mudou(aberta: bool)
+
+
+func _abrir_ou_fechar_a_mochila() -> void:
+	if Mochila.aberta:
+		Mochila.fechar()
+	else:
+		Mochila.abrir()
+	mochila_mudou.emit(Mochila.aberta)
+
+
+## QUANTO DO RODAPÉ A BARRA OCUPA, do fundo da tela para cima.
+##
+## Existe para quem desenha por perto não ter de adivinhar. O aviso de
+## interação ficava a 31–64 px do rodapé, dentro desta faixa, e a barra — que
+## entra depois no HUD — o cobria. Um número mágico no outro arquivo
+## consertaria hoje e quebraria na próxima vez que a barra mudasse de altura.
+static func altura_ocupada() -> float:
+	# A fila, a margem de baixo e o rótulo do que está na mão, com folga.
+	return MARGEM_DE_BAIXO + ALTURA + 24.0 + 8.0

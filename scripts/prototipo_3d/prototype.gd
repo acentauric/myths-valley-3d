@@ -34,6 +34,8 @@ var _saindo := false
 var mapa	# mapa_jogo.gd
 var _recursos  # recursos_3d.gd — os alvos de trabalho (troncos, lajedos)
 var lapides	# lapides.gd
+## Modo de câmera de antes da pausa, para o retorno devolver o que havia.
+var _camera_travada_antes := false
 var _relogio_pausado_antes := false
 
 
@@ -48,6 +50,11 @@ func _enter_tree() -> void:
 	_bind("mv_inspect", [Atalhos.tecla("observar")])
 	_bind("mv_time", [Atalhos.tecla("hora")])
 	_bind("mv_mapa", [Atalhos.tecla("mapa")])
+	# A MOCHILA no I, como no jogo 2D e como no gênero (Palworld, Stardew,
+	# Cyberpunk usam I ou Tab). O Tab aqui já é a câmera, então fica o I.
+	_bind("mv_mochila", [KEY_I])
+	# O ALMANAQUE no L, a mesma tecla da coleção no jogo 2D.
+	_bind("mv_almanaque", [KEY_L])
 	# OS NÚMEROS PASSARAM A SER A BARRA DE MÃO, e os gestos foram para Alt.
 	#
 	# 1 a 0 põem item na mão, como no jogo 2D — é a barra que o jogador procura
@@ -123,6 +130,14 @@ func _ready() -> void:
 	recursos.recusado.connect(func(motivo: String) -> void: hud.set_notice(motivo))
 	recursos.derrubado.connect(_ao_derrubar)
 	_recursos = recursos
+	# A MOCHILA PAUSA O VALE. Quem avisa é a barra, porque é ela que tem a
+	# tecla — ver `BarraDeMao._abrir_ou_fechar_a_mochila`.
+	if hud.barra_de_mao() != null:
+		hud.barra_de_mao().mochila_mudou.connect(func(aberta: bool) -> void:
+			if aberta:
+				_pause_valley()
+			else:
+				_retomar_o_vale())
 	# O VALE ABRE NO MODO DE CÂMERA ESCOLHIDO (AJUSTAR → Geral → Câmera do
 	# mouse). Era sempre livre, e quem preferia arrastar tinha de apertar a
 	# tecla da câmera toda vez que entrava.
@@ -216,6 +231,8 @@ func _montar_moradores(spawn: Vector3) -> void:
 		pedro.global_position = world.ground_position(spawn + lado, 0.05)
 		pedro.saudou.connect(_on_saudacao)
 		pedro.missao_mudou.connect(_on_missao_mudou)
+		# OS ALVOS DE TRABALHO, para o marcador apontar o tronco e não a casa.
+		pedro.recursos = _recursos
 		pedro.narrou.connect(func(texto: String) -> void: hud.set_notice("Pedro: " + texto))
 	var placas := PlacasNomes.new()
 	placas.name = "PlacasNomes"
@@ -361,10 +378,18 @@ func _toggle_map() -> void:
 	player.set_process_unhandled_input(not abrir)
 	hud.set_map_open(abrir)
 	if abrir:
+		# LEMBRA O MODO ANTES DE SOLTAR O CURSOR, e devolve ao fechar.
+		#
+		# Era a queixa "voltei do mapa e a câmera estava destravada, como se eu
+		# tivesse apertado C". O mapa solta o cursor porque mapa sem cursor não
+		# se navega — e não devolvia nada depois. É o mesmo defeito que o menu
+		# tinha, no lugar de que ninguém desconfia.
+		_camera_travada_antes = player.camera_travada()
 		player.set_captured(false)
 		mapa.abrir(world, player, hud.map_layer())
 	else:
 		mapa.fechar()
+		player.set_camera_locked(_camera_travada_antes)
 
 
 ## Engrenagem do canto: ajustes com o vale e o relógio pausados (fechar retoma).
@@ -378,10 +403,24 @@ func _open_settings() -> void:
 
 
 func _pause_valley() -> void:
+	# LEMBRA O MODO DE CÂMERA ANTES DE SOLTAR O CURSOR.
+	#
+	# Era aqui o defeito de "depois do Esc o jogo volta com a câmera solta sem
+	# eu apertar C": pausar solta o cursor, porque menu com o mouse preso é
+	# menu que não se clica — mas nada devolvia o modo depois. Quem jogava no
+	# modo livre voltava do menu no modo de arrastar, sem ter pedido.
+	_camera_travada_antes = player.camera_travada()
 	player.set_captured(false)
 	_relogio_pausado_antes = Dia.pausado
 	Dia.pausado = true
 	get_tree().paused = true
+
+
+## Desfaz o `_pause_valley`, INCLUSIVE a câmera.
+func _retomar_o_vale() -> void:
+	get_tree().paused = false
+	Dia.pausado = _relogio_pausado_antes
+	player.set_camera_locked(_camera_travada_antes)
 
 
 ## HOME ou M: pausa o vale (e o relógio) e pergunta antes de sair.
@@ -395,8 +434,7 @@ func _ask_return_to_menu() -> void:
 
 
 func _on_menu_cancelled() -> void:
-	get_tree().paused = false
-	Dia.pausado = _relogio_pausado_antes
+	_retomar_o_vale()
 
 
 ## Volta ao menu com a tela de carregamento (o menu monta o vale de novo ao abrir).

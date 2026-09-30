@@ -38,6 +38,9 @@ const ARQUIVO_MISSOES := "res://data/missoes_guia.json"
 ## mesmo trato do `CatalogoAssets` com peça não exportada.
 var MISSOES: Array = []
 var _arremate: Dictionary = {}
+## Os alvos de trabalho do vale, para o marcador apontar o tronco em vez da
+## casa. Ligado pelo `Prototype`; sem ele o marcador cai na âncora do passo.
+var recursos: Node = null
 const SEGUIR_MAX := 4.6
 const CORRER_ALEM := 9.5
 const ANDAR := 2.1
@@ -143,10 +146,24 @@ func _atualizar_missao(delta: float) -> void:
 	# Os das ferramentas são outra coisa: o Pedro entrega o machado e pede
 	# lenha, e ir até onde ele está não corta tronco nenhum. Ver `meta` em
 	# `data/missoes_guia.json`.
-	if _falta_a_meta(MISSOES[missao]):
+	# PASSO COM META FECHA PELA META, E NÃO PELA CHEGADA.
+	#
+	# Era o defeito da missão da picareta. O passo pedia três pedras E exigia
+	# estar perto do alvo — mas o alvo é o lajedo, e o lajedo SOME quando cai.
+	# O jogador quebrava a pedra, juntava as três, e não acontecia nada: o
+	# marcador voltava para a âncora e ele teria de caminhar de volta até uma
+	# casa para o passo fechar.
+	#
+	# O objetivo de um passo desses é o trabalho, não o lugar. Cumpriu, fechou
+	# — onde quer que ele esteja.
+	var passo: Dictionary = MISSOES[missao]
+	if not (passo.get("meta", {}) as Dictionary).is_empty():
+		if not _falta_a_meta(passo):
+			_avancar_missao()
 		return
+
 	var alvo := _posicao_da_missao(missao)
-	if jogador.global_position.distance_to(alvo) < float(MISSOES[missao]["raio"]):
+	if jogador.global_position.distance_to(alvo) < float(passo["raio"]):
 		_avancar_missao()
 
 
@@ -242,8 +259,28 @@ func _verificar_anoitecer() -> void:
 ## num `Vector2` do jogo 2D. É a costura da Fase 1, e é ela que faz a campanha
 ## escrita lá servir aqui.
 func _posicao_da_missao(indice: int) -> Vector3:
-	var p: Vector3 = Lugares.ponto(str(MISSOES[indice].get("lugar", "")))
-	return Vector3.ZERO if p == Lugares.NENHUM else p
+	var passo: Dictionary = MISSOES[indice]
+	var ancora: Vector3 = Lugares.ponto(str(passo.get("lugar", "")))
+
+	# O MARCADOR APONTA O QUE O JOGADOR TEM DE FAZER, não onde a conversa
+	# aconteceu.
+	#
+	# Passo com meta de juntar material manda bater em tronco ou lajedo, e o
+	# tronco não fica no meio da âncora — fica alguns passos dela. Marcar a
+	# âncora punha a seta na porta da casa e deixava o jogador rodando em volta
+	# dela procurando o que quebrar. Era a queixa "marca a casa quando devia
+	# marcar os troncos".
+	#
+	# Sem alvo daquele material no vale, cai na âncora: seta na região certa é
+	# melhor que seta nenhuma.
+	var meta: Dictionary = passo.get("meta", {})
+	if recursos != null and str(meta.get("tipo", "")) == "juntar":
+		var de: Vector3 = jogador.global_position if jogador != null else ancora
+		var alvo: Vector3 = recursos.mais_perto_que_rende(str(meta.get("item", "")), de)
+		if alvo != Lugares.NENHUM:
+			return alvo
+
+	return Vector3.ZERO if ancora == Lugares.NENHUM else ancora
 
 
 func texto_da_missao() -> String:

@@ -6,6 +6,7 @@ extends Node
 
 const DicaTecla = preload("res://scripts/prototipo_3d/dica_tecla.gd")
 const Atalhos = preload("res://scripts/prototipo_3d/atalhos.gd")
+const Almanaque = preload("res://scripts/prototipo_3d/almanaque.gd")
 const DADOS := "res://data/arvores_3d.json"
 const QUADRA := 16.0
 ## Distância (no chão) para a dica aparecer e para a ficha fechar sozinha.
@@ -65,6 +66,12 @@ func _process(_delta: float) -> void:
 	if _perto < 0 or _perto == _aberta:
 		_dica.visible = false
 		return
+	# A DICA SÓ APARECE PARA QUEM AINDA NÃO SE CONHECE. Prometer "E · Mangueira"
+	# numa mangueira que o jogador já leu é prometer uma coisa que o E não vai
+	# mais fazer — e dica que mente é pior que dica nenhuma.
+	if Almanaque.conhece(String(_pontos[_perto]["especie"])):
+		_dica.visible = false
+		return
 	var ficha: Dictionary = _fichas[_pontos[_perto]["especie"]]
 	DicaTecla.mostrar_em(_dica, camera, _pontos[_perto]["pos"] + Vector3(0, ALTURA_DICA, 0), String(ficha.get("nome", "Árvore")))
 
@@ -80,6 +87,17 @@ func _unhandled_key_input(event: InputEvent) -> void:
 			_fechar()
 		get_viewport().set_input_as_handled()
 	elif _perto >= 0:
+		# O ENCONTRO ACONTECE UMA VEZ SÓ.
+		#
+		# A ficha abre na PRIMEIRA vez que o jogador chega perto de cada
+		# espécie, e a espécie entra no almanaque. Da segunda em diante o E não
+		# é mais daqui: ele volta a ser o que deve ser — coletar e interagir —
+		# e a tecla passa adiante sem ser consumida.
+		#
+		# Antes ele abria a ficha toda vez, e por isso fazia duas coisas
+		# diferentes conforme onde o jogador estivesse. Ver `Almanaque`.
+		if not Almanaque.registrar(String(_pontos[_perto]["especie"])):
+			return
 		_mostrar(_perto, 0)
 		get_viewport().set_input_as_handled()
 

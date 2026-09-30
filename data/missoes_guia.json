@@ -2,13 +2,31 @@
   "observacao": "As missões de chegada que o Pedro conduz. Saíram de uma constante dentro de guia_pedro.gd e viraram dado — é o formato que o sistema de missões do 2D vai ler quando atravessar (ver docs/MIGRACAO_2D_3D.md, Fase 3). O campo 'lugar' é NOME DE CONTRATO do autoload Lugares, e não nome de âncora do world_builder: é o que faz o mesmo passo servir nos dois jogos. 'raio' é em unidades (1 u = 4 m). 'audio' é o arquivo em assets/audio/vozes/, sem extensão; vazio quer dizer que o Pedro fala só no balão. Todo texto que o jogador lê existe nos três idiomas (pt-BR, en, es), que é a regra deste projeto.",
   "passos": [
     {
+      "id": "pier",
+      "lugar": "pier",
+      "raio": 7.0,
+      "audio": "pedro_pier",
+      "texto": "Você chegou por aqui mesmo, pelo píer. Olha a maré: ela conta história.",
+      "texto_en": "This is where you arrived — the pier. Look at the tide: it tells stories.",
+      "texto_es": "Llegaste justo por aquí, por el muelle. Mira la marea: cuenta historias."
+    },
+    {
       "id": "praca",
       "lugar": "praca",
       "raio": 9.0,
       "audio": "pedro_praca",
-      "texto": "Vem comigo. Que tal a gente ir até a praça? É ali que a vila começa.",
-      "texto_en": "Come with me. How about we head to the square? That's where the village begins.",
-      "texto_es": "Ven conmigo. ¿Y si vamos hasta la plaza? Ahí es donde empieza el pueblo."
+      "texto": "Agora vem comigo até a praça. É ali que a vila começa.",
+      "texto_en": "Now come with me to the square. That is where the village begins.",
+      "texto_es": "Ahora ven conmigo hasta la plaza. Ahí es donde empieza el pueblo."
+    },
+    {
+      "id": "casa_pasto",
+      "lugar": "casa_de_pasto",
+      "raio": 7.0,
+      "audio": "pedro_casa_pasto",
+      "texto": "Tá com fome? A casa de pasto é logo ali, do lado da praça.",
+      "texto_en": "Hungry? The eating house is right there, next to the square.",
+      "texto_es": "¿Tienes hambre? La casa de comidas está ahí mismo, al lado de la plaza."
     },
     {
       "id": "capela",
@@ -20,31 +38,13 @@
       "texto_es": "Ahora la capilla. Todo el mundo del pueblo pasa por ahí, tarde o temprano."
     },
     {
-      "id": "casa_pasto",
-      "lugar": "casa_de_pasto",
-      "raio": 7.0,
-      "audio": "pedro_casa_pasto",
-      "texto": "Tá com fome? A casa de pasto é logo ali. Depois eu te mostro o roçado de mandioca.",
-      "texto_en": "Hungry? The eating house is right over there. Afterwards I'll show you the cassava field.",
-      "texto_es": "¿Tienes hambre? La casa de comidas está ahí mismo. Después te enseño el sembrado de mandioca."
-    },
-    {
       "id": "rocado",
       "lugar": "rocado",
       "raio": 9.0,
       "audio": "",
-      "texto": "Esse é o roçado. Mandioca: o pão desta terra.",
-      "texto_en": "This is the field. Cassava: the bread of this land.",
-      "texto_es": "Este es el sembrado. Mandioca: el pan de esta tierra."
-    },
-    {
-      "id": "pier",
-      "lugar": "pier",
-      "raio": 7.0,
-      "audio": "pedro_pier",
-      "texto": "Olha o sol. Bora pro píer antes de escurecer, que a maré conta história.",
-      "texto_en": "Look at the sun. Let's get to the pier before dark — the tide has stories to tell.",
-      "texto_es": "Mira el sol. Vamos al muelle antes de que oscurezca, que la marea cuenta historias."
+      "texto": "Agora a caminhada boa: o roçado, morro acima. Mandioca é o pão desta terra.",
+      "texto_en": "Now the good walk: the field, up the hill. Cassava is the bread of this land.",
+      "texto_es": "Ahora la buena caminata: el sembrado, cuesta arriba. La mandioca es el pan de esta tierra."
     },
 
     {
@@ -69,10 +69,10 @@
     {
       "id": "picareta",
       "traducao": "pendente",
-      "lugar": "poco",
+      "lugar": "rocado",
       "raio": 7.0,
       "audio": "",
-      "texto": "A picareta é pra pedra. Tem lajedo ali perto do poço — bate nele, que pedra sempre falta.",
+      "texto": "A picareta é pra pedra. Tem lajedo aqui no roçado mesmo — bate nele, que pedra sempre falta.",
       "entrega": { "item": "picareta", "quantidade": 1 },
       "meta": { "tipo": "juntar", "item": "pedra", "quantos": 3 }
     },

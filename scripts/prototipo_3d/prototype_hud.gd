@@ -29,6 +29,11 @@ class Sobreposicao:
 const TeclasMovimento = preload("res://scripts/prototipo_3d/teclas_movimento.gd")
 const Atalhos = preload("res://scripts/prototipo_3d/atalhos.gd")
 const BarraDeMao = preload("res://scripts/prototipo_3d/barra_de_mao.gd")
+const Almanaque = preload("res://scripts/prototipo_3d/almanaque.gd")
+
+## A barra de mão, para quem precisar escutar a mochila abrindo.
+var _barra: Control
+var _almanaque: Control
 
 signal reset_requested
 signal quit_requested
@@ -98,13 +103,6 @@ func _ready() -> void:
 	_root.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(_root)
 
-	# A BARRA DE MÃO, embaixo e no meio. Entra logo depois da raiz para ficar
-	# POR BAIXO dos painéis e das dicas: ela é informação constante, e o que
-	# aparece por cima dela é o que o jogador abriu.
-	var barra := BarraDeMao.new()
-	barra.name = "BarraDeMao"
-	_root.add_child(barra)
-
 	_heading = _panel(Color(0.055, 0.085, 0.075, 0.82))
 	_place(_heading, Vector2(18, 18), Vector2(HEADING_WIDTH, 132))
 	var title := _label("MYTHS’ VALLEY", 28, INK)
@@ -165,20 +163,26 @@ func _ready() -> void:
 	close_controls.pressed.connect(func(): set_controls_open(false))
 
 	_notice_panel = _panel(Color(0.055, 0.085, 0.075, 0.82))
+	_notice_panel.name = "Aviso"
 	_root.add_child(_notice_panel)
 	_notice_panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER_BOTTOM)
 	_notice_panel.offset_left = -285
 	_notice_panel.offset_right = 285
-	_notice_panel.offset_top = -64
-	_notice_panel.offset_bottom = -31
+	# ACIMA DA BARRA DE MÃO, e a medida vem dela. O aviso ficava a 31–64 px do
+	# rodapé, que é exatamente onde a barra desenha — e a barra entra depois no
+	# HUD, então o cobria. Ver `BarraDeMao.altura_ocupada`.
+	var acima := BarraDeMao.altura_ocupada()
+	_notice_panel.offset_top = -acima - 33.0
+	_notice_panel.offset_bottom = -acima
 	_notice_panel.visible = not _notice.is_empty()
 	_notice_label = _label(_notice, 14, GOLD)
 	_root.add_child(_notice_label)
 	_notice_label.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
 	_notice_label.offset_left = 30
 	_notice_label.offset_right = -30
-	_notice_label.offset_top = -60
-	_notice_label.offset_bottom = -31
+	# Junto com o painel dele, acima da barra.
+	_notice_label.offset_top = -acima - 29.0
+	_notice_label.offset_bottom = -acima - 4.0
 	_notice_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 
 	# Relógio do vale: só a hora e o período do dia.
@@ -194,6 +198,27 @@ func _ready() -> void:
 	_clock_label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_clock_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_clock_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+
+	# A BARRA DE MÃO ENTRA POR ÚLTIMO, e é o conserto de "não dá pra ver".
+	#
+	# A primeira versão a punha logo depois da raiz, de propósito, para ficar
+	# POR BAIXO dos painéis — raciocínio que soa certo e está errado: o painel
+	# do jogador ocupa o rodapé, e a barra desapareceu atrás dele.
+	#
+	# Barra de mão não é informação de fundo: é o que o jogador olha para saber
+	# o que está segurando, e tem de estar na frente de tudo que não seja uma
+	# tela cheia aberta. Filho mais novo desenha por cima — então ela é o
+	# último a entrar.
+	var barra := BarraDeMao.new()
+	barra.name = "BarraDeMao"
+	_root.add_child(barra)
+	_barra = barra
+
+	# O ALMANAQUE por cima de tudo: é tela cheia, e tela cheia cobre.
+	var almanaque := Almanaque.new()
+	almanaque.name = "Almanaque"
+	_root.add_child(almanaque)
+	_almanaque = almanaque
 
 	_update_control_mode()
 	_update_telemetry()
@@ -289,6 +314,7 @@ func _update_control_mode() -> void:
 		"%s: mover" % TeclasMovimento.rotulo(),
 		"Shift: corrida (parar desliga)",
 		"Espaço: pular  ·  1 a 0: item na mão  ·  Alt+1 a 8: gestos",
+		"I: mochila  ·  L: almanaque das plantas",
 		"Botão direito: andar até o ponto (duplo: correr)",
 		"Botão esquerdo na casa: dados",
 		"%s: ler / interagir  ·  %s: observar" % [Atalhos.letra("interagir"), Atalhos.letra("observar")],
@@ -655,3 +681,15 @@ func _panel(color: Color) -> Panel:
 	style.border_color = Color(0.58, 0.64, 0.48, 0.2)
 	panel.add_theme_stylebox_override("panel", style)
 	return panel
+
+
+## A barra de mão do rodapé. O `Prototype` a usa para saber quando a mochila
+## abre e fechar o vale por trás dela.
+func barra_de_mao() -> Control:
+	return _barra
+
+
+## O almanaque das plantas. O `Prototype` o usa para pausar o vale quando ele
+## abre, como faz com a mochila.
+func almanaque() -> Control:
+	return _almanaque
