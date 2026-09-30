@@ -5,10 +5,9 @@ extends SceneTree
 ##
 ## A regra é o `Colecao` compartilhado. Este portão pergunta o que é do vale:
 ##
-##   1. OS DADOS SÃO OS DO 2D. `data/colecionaveis/` é cópia — o `Colecao` lê
-##      `res://`, que aqui é a pasta do protótipo — e cópia é regra sem portão
-##      se ninguém a confere (ver MIGRACAO_2D_3D.md). Byte a byte, contra o
-##      original na raiz do repositório: o dono do cordel é o 2D.
+##   (Os dados de `data/colecionaveis/` são cópia do 2D, conferida byte a byte
+##   em `tests/dados_do_2d.gd`.)
+##
 ##   2. O L É DA COLEÇÃO, e abrir para o jogador e o relógio como o painel.
 ##      Com ela aberta, o J não abre o painel por cima.
 ##   3. AS TRÊS COLEÇÕES, com a VAGA EM BRANCO de quem falta achar, e o Tab
@@ -16,8 +15,6 @@ extends SceneTree
 ##   4. O QUE SE ACHA APARECE: o cordel com título e preço, o sinal sem nome
 ##      até o encontro, e o bicho derrubado na luta com a conta de quantos
 ##      caíram — que é o que a luta (#14) não conseguia abrir sem os dados.
-
-const ARQUIVOS := ["cordeis.json", "sinais.json", "bichos.json"]
 
 var falhas := 0
 var colecao_regra
@@ -44,16 +41,6 @@ func _run() -> void:
 	jogo = root.get_node("/root/Jogo")
 	dia = root.get_node("/root/Dia")
 	vida = root.get_node("/root/Vida")
-
-	# --- 1. OS DADOS SÃO OS DO 2D ----------------------------------------------
-	var raiz_do_2d := ProjectSettings.globalize_path("res://").path_join("../data/colecionaveis")
-	for nome in ARQUIVOS:
-		var copia := FileAccess.get_file_as_bytes("res://data/colecionaveis/" + nome)
-		var original := FileAccess.get_file_as_bytes(raiz_do_2d.path_join(nome))
-		_conferir(not copia.is_empty(), "o vale não tem data/colecionaveis/%s" % nome)
-		_conferir(not original.is_empty(), "não achei o original do 2D: %s" % raiz_do_2d.path_join(nome))
-		_conferir(copia == original,
-			"data/colecionaveis/%s divergiu do 2D: o dono é o 2D, copie de lá de novo" % nome)
 
 	# --- 2. O L É DO CADERNO, E O CADERNO VIROU O ALMANAQUE --------------------
 	#
@@ -160,7 +147,7 @@ func _evento(codigo: int) -> InputEventKey:
 func _fechar() -> void:
 	print("")
 	if falhas == 0:
-		print("COLECAO_OK: os dados são os do 2D byte a byte; o L é do caderno e esta tela ficou sem tecla; ela abre para o jogador e o relógio, sem painel por cima; três coleções com a vaga em branco e o Tab girando; o cordel achado mostra título e preço, o sinal não tem nome antes do encontro, e o bicho derrubado abre a página com a conta")
+		print("COLECAO_OK: o L é do caderno e esta tela ficou sem tecla; ela abre para o jogador e o relógio, sem painel por cima; três coleções com a vaga em branco e o Tab girando; o cordel achado mostra título e preço, o sinal não tem nome antes do encontro, e o bicho derrubado abre a página com a conta")
 	else:
 		print("colecao: %d falha(s)" % falhas)
 	quit(1 if falhas > 0 else 0)

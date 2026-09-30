@@ -18,6 +18,7 @@ const IdiomaMenu = preload("res://scripts/prototipo_3d/idioma_menu.gd")
 const PainelVale = preload("res://scripts/prototipo_3d/painel_vale.gd")
 const BancadasVale = preload("res://scripts/prototipo_3d/bancadas_vale.gd")
 const ColecaoVale = preload("res://scripts/prototipo_3d/colecao_vale.gd")
+const AchadosVale = preload("res://scripts/prototipo_3d/achados_vale.gd")
 const Atalhos = preload("res://scripts/prototipo_3d/atalhos.gd")
 const CameraMouse = preload("res://scripts/prototipo_3d/camera_mouse.gd")
 const Recursos3D = preload("res://scripts/prototipo_3d/recursos_3d.gd")
@@ -78,6 +79,7 @@ var teia
 var placas
 ## A aba pedida no último `abrir_o_painel`, entregue à abertura crua.
 var _aba_pedida := 0
+var achados	# achados_vale.gd — cordéis, sinais e cartas no chão
 
 
 func _enter_tree() -> void:
@@ -352,6 +354,8 @@ func _ready() -> void:
 	# `estado_para_salvar`.
 	Salvamento.registrar_mundo(self)
 	_retomar_a_partida()
+	# Depois da partida salva: o que ela diz que já foi achado não volta ao chão.
+	achados.espalhar()
 	_comecar_no_lugar_pedido()
 	_atualizar_relogio()
 	print("PROTOTYPE_READY: estilo=%s hora=%s moradores=%d user_dir=%s" % [Estilo.modo, Dia.texto_hora(), moradores.size(), OS.get_user_data_dir()])
@@ -456,12 +460,19 @@ func _montar_moradores(spawn: Vector3) -> void:
 	queda.name = "Queda"
 	add_child(queda)
 	queda.configurar(world, player, hud)
+	# Cordéis, sinais e cartas no chão (achados_vale.gd). Entra ANTES da luta,
+	# que assim recebe o E primeiro quando há bicho perto; é configurado depois
+	# dela, porque a Caipora fica longe do ninho do caititu.
+	achados = AchadosVale.new()
+	achados.name = "Achados"
+	add_child(achados)
 	# A luta e o caititu da mata (luta_vale.gd). Entra depois das lápides e das
 	# árvores: com bicho perto, o E é dela antes de ser delas.
 	var luta := LutaVale.new()
 	luta.name = "Luta"
 	add_child(luta)
 	luta.configurar(world, player, hud)
+	achados.configurar(world, player, hud, luta)
 	# O painel da tecla J (painel_vale.gd), por cima do HUD.
 	painel = PainelVale.new()
 	painel.name = "Painel"

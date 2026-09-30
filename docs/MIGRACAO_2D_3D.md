@@ -34,7 +34,7 @@ crédito do Tripo e exigem o custo aprovado **antes** de gerar.
 
 | Fase deste plano | Issues |
 |---|---|
-| Fase 2 — sistemas | ~~#10 Vida~~ (feita) · #11 receitas, cozinha, oficina e pesca · #12 cartas e coleção · #13 Povoado · ~~#14 luta~~ (feita) · #15 obras e venda |
+| Fase 2 — sistemas | ~~#10 Vida~~ (feita) · #11 receitas, cozinha, oficina e pesca · ~~#12 cartas e coleção~~ (feita) · #13 Povoado · ~~#14 luta~~ (feita) · #15 obras e venda |
 | Fase 2.5 — geografia | #22 chapada e vizinhos · #23 rio, vau e lagoa · #24 mata e serra · #25 fazenda e ruínas |
 | Fase 3 — missões e enredo | **#1** (jam) · #31 capítulos 6 e 7 |
 | Fase 4 — salvar | ~~#7~~ (feita) |
@@ -625,6 +625,16 @@ era a penúltima — era pré-requisito da 2ᵃ.
 > aqui é a pasta do protótipo, então o arquivo tem de estar dentro dela. O dono
 > continua sendo o 2D, e `tests/colecao.gd` compara as três cópias byte a byte
 > com o original na raiz — mudou lá sem copiar, reprova aqui.
+>
+> **Os achados e as cartas saíram** ([#12](https://github.com/acentauric/myths-valley/issues/12)),
+> em `achados_vale.gd`, com a ordem das coisas do `Mundo` do 2D: o cordel está no
+> lugar do arraial que o `onde` dele descreve (seis dos dez; os outros quatro
+> esperam a lagoa, o vau, a ruína e o engenho, declarados), o sinal da Caipora está
+> na mata fechada, e a carta ESPERA o sinal. O pacto se firma no lugar do mito com
+> o segundo E — a pergunta de Sim e Não é da #21 — e o painel continua firmando e
+> desfazendo. As cartas dos moradores chegam pela amizade (#13). A conferência das
+> cópias de dado virou um portão só, `tests/dados_do_2d.gd`, com a lista do que o
+> protótipo copiou.
 
 É a fase mais barata em relação ao que entrega, e a que mais precisa da regra
 do topo: **a interface do 3D não é substituída, é acrescida.** Toda tela do 2D

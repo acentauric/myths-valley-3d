@@ -52,6 +52,11 @@ atualize esse arquivo e este documento juntos.
   falta achar; o bicho derrubado na luta abre a página dele com a conta de quantos
   caíram. Os dados de coleção do 2D vieram para o protótipo, conferidos byte a byte com o
   original (`colecao_vale.gd`, `data/colecionaveis/`, `tests/colecao.gd`).
+- **Cordéis, sinais e cartas no vale** (#12). Seis cordéis no lugar do arraial que cada
+  um descreve; o sinal da Caipora na mata fechada, e as cartas dela só depois do sinal;
+  o pacto firmado com o segundo E no lugar do mito (ou no painel), com o ganho no corpo
+  e a cobrança de todo dia. Os dados das cartas vieram do 2D, conferidos com os de
+  coleção num portão só (`achados_vale.gd`, `tests/cartas.gd`, `tests/dados_do_2d.gd`).
 
 ## Build #6 — 28/09/2026
 
