@@ -30,6 +30,13 @@ atualize esse arquivo e este documento juntos.
   deixa a caça na mochila, devolve fôlego, conta abate, e a mata o repõe em três dias
   (`criatura_vale.gd`, `luta_vale.gd`, `data/luta.json`, `tests/luta.gd`). Onça e jararaca
   já estão na tabela, sem ninho até a serra e o brejo (#24).
+- **Salvar e carregar** (#7). **JOGAR** pergunta em qual das três vagas jogar; vaga
+  ocupada continua de onde parou, e recomeçar pede o segundo clique. Partida nova volta
+  ao estado de fábrica (os sistemas não herdam a partida anterior). O vale guarda onde o
+  jogador estava, a hora, o passo do Pedro, os lugares visitados e o bicho que caiu; salva
+  ao cair, ao voltar ao menu, ao trocar o estilo e ao fechar a janela. **EXPLORAR** não
+  salva. Para depurar, `JOGAR_3D.cmd -Lugar igreja` começa num lugar do vale
+  (`partida.gd`, `tests/salvamento.gd`).
 
 ## Build #6 — 28/09/2026
 

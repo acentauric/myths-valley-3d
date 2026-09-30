@@ -159,6 +159,21 @@ func _ao_comecar_o_dia(_dia: int, _estacao: int, _ano: int) -> void:
 			nascer(str(morte["especie"]), morte["ninho"])
 
 
+## A partida salva diz quem caiu e ainda não voltou (#7). Quem está nessa
+## lista não pode estar de pé no vale recém-montado: o caititu que o jogador
+## derrubou ontem não reaparece só porque o jogo foi fechado e aberto.
+func restaurar_mortes(lista: Array) -> void:
+	mortes = []
+	for morte in lista:
+		if morte is Dictionary:
+			mortes.append(morte.duplicate(true))
+	for morte in mortes:
+		for c in _vivas():
+			if c.especie == str(morte.get("especie", "")) 					and Criatura._plano(c._ninho - morte.get("ninho", Vector3.INF)).length() < 1.0:
+				criaturas.erase(c)
+				c.queue_free()
+
+
 func _vivas() -> Array:
 	return criaturas.filter(func(c): return is_instance_valid(c) and not c.morto())
 

@@ -1,0 +1,4 @@
+{
+	"_sobre": "O que o jogador lê quando a partida salva volta (#7). 'de_volta' segue o 'De volta ao roçado.' do Mundo._retomar do 2D, com o lugar do vale. A tradução en/es é do Ramon; ver FALTAM_TRADUCAO em tests/idiomas.gd.",
+	"de_volta": {"texto": "De volta ao vale."}
+}

@@ -50,6 +50,7 @@ Salvamento="*res://scripts/compartilhado/salvamento.gd"
 Lugares="*res://scripts/autoload/lugares.gd"
 Dia="*res://scripts/autoload/dia.gd"
 Mare="*res://scripts/autoload/mare.gd"
+Partida="*res://scripts/autoload/partida.gd"
 
 [display]
 

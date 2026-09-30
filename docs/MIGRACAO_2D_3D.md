@@ -37,7 +37,7 @@ crédito do Tripo e exigem o custo aprovado **antes** de gerar.
 | Fase 2 — sistemas | ~~#10 Vida~~ (feita) · #11 receitas, cozinha, oficina e pesca · #12 cartas e coleção · #13 Povoado · ~~#14 luta~~ (feita) · #15 obras e venda |
 | Fase 2.5 — geografia | #22 chapada e vizinhos · #23 rio, vau e lagoa · #24 mata e serra · #25 fazenda e ruínas |
 | Fase 3 — missões e enredo | **#1** (jam) · #31 capítulos 6 e 7 |
-| Fase 4 — salvar | #7 |
+| Fase 4 — salvar | ~~#7~~ (feita) |
 | Fase 6 — interface | **#2** mochila · **#3** fôlego · **#4** teclas (jam) · #19 painel · #20 teia, coleção, arraial · #21 fala com escolha |
 | Fase 7 — modelos | **#5** comidas e carta (jam) · #26 interiores · #27 roçado e trabalho · #28 bichos · #29 vila · #30 fazenda e ruínas |
 | O idioma | **#6** (jam) |
@@ -477,14 +477,29 @@ o que muda é que a lista passa a caber 63 passos em vez de cinco.
 
 ---
 
-## Fase 4 — Salvar — **a regra atravessou, a vaga ainda não** ([#7](https://github.com/acentauric/myths-valley/issues/7))
+## ~~Fase 4 — Salvar~~ — FEITA (setembro de 2026, [#7](https://github.com/acentauric/myths-valley/issues/7))
 
 > **O `Salvamento` roda no vale desde o fechamento da Fase 2** (`3095afb`),
 > sem uma linha de adaptação, com `Versao` próprio lendo do
-> `historico_3d.json`. O que ainda não existe é o que faz o jogador salvar:
-> as três vagas por baixo da abertura, o estado do 3D (posição em `Vector3`,
-> hora do `Dia`) em `O_QUE_GUARDAR`, e os portões `testar_salvamento` e
-> `testar_slots` rodando do lado de cá. É isso que a #7 cobra.
+> `historico_3d.json`. A #7 ligou o que faz o jogador salvar, sem tocar nele:
+>
+> | O que entrou | Onde |
+> |---|---|
+> | As três vagas por baixo da abertura: JOGAR pergunta "qual vaga?"; recomeçar uma ocupada pede o segundo clique | `abertura.gd` |
+> | O RETRATO DE FÁBRICA: partida nova não herda a anterior, porque os sistemas são autoloads e sobrevivem à troca de cena | `scripts/autoload/partida.gd` |
+> | O estado que só o vale sabe — jogador, giro, **a hora do `Dia`**, o passo do Pedro, os lugares visitados, o bicho que caiu | `prototype.gd`, `estado_para_salvar` |
+> | Salva ao cair (o dormir do vale), ao voltar ao menu, ao trocar o estilo e ao fechar a janela | `queda.gd`, `prototype.gd` |
+> | O portão: fábrica, sem vaga não salva, ida e volta, queda salva, e todo campo público dos autoloads do 3D guardado ou declarado fora | `tests/salvamento.gd` |
+>
+> **Salvar ao voltar ao menu e ao fechar é desvio do 2D**, que salva só ao
+> dormir e no painel. O vale não tem cama, e o painel J é a #19: sem esses
+> dois, quem joga o vale nunca salvaria. Quando a cama e o painel chegarem,
+> vale revisitar.
+>
+> **A hora é do `Dia`, e isso pede cuidado ao carregar.** O save guarda
+> `Relogio.minutos`, mas no vale o `Relogio` só espelha o `Dia`: sem devolver
+> a hora ao `Dia`, ele a sobrescreve no quadro seguinte. O estado do vale
+> leva a hora, e o portão confere.
 
 Antes da Fase 2, o 3D não salvava nada. O 2D tem três vagas, escrita atômica com releitura,
 migração de formato em escada e limpeza de conteúdo que sumiu — 810 linhas com
