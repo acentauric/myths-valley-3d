@@ -1581,7 +1581,17 @@ func _build_coast_palms(rng: RandomNumberGenerator) -> void:
 					_tree_trunks.append({"point": candidate, "ground": ground, "height": minf(float(malha_local.altura) * scale, 4.0), "radius": float(malha_local.tronco) * scale, "especie": local})
 				else:
 					transforms.append(Transform3D(Basis.from_euler(Vector3(0, yaw, 0)).scaled(Vector3.ONE * scale), Vector3(candidate.x, ground - ARVORE_AFUNDADA, candidate.y)) * lean * modelo_base)
-					_tree_trunks.append({"point": candidate, "ground": ground, "height": minf(float(built.altura) * scale, 4.0), "radius": float(built.tronco) * scale, "especie": "coqueiro"})
+					# A INCLINAÇÃO VAI NO TRONCO, para o colisor acompanhar.
+					#
+					# O coqueiro da orla é plantado pendendo para o mar (`lean`, 0,14
+					# rad ≈ 8°), e o colisor do conjunto era um cilindro VERTICAL na
+					# base. A quatro unidades de altura isso põe o tronco desenhado a
+					# meia unidade do eixo que barra — o jogador encosta na parte alta
+					# e passa, porque ali não há corpo nenhum.
+					#
+					# Guardar a base inteira, e não o ângulo, é o que faz o colisor
+					# seguir qualquer inclinação que alguém use depois.
+					_tree_trunks.append({"point": candidate, "ground": ground, "height": minf(float(built.altura) * scale, 4.0), "radius": float(built.tronco) * scale, "especie": "coqueiro", "inclinacao": Basis.from_euler(Vector3(0, yaw, 0)) * Basis.from_euler(Vector3(0, 0, 0.14))})
 			next_at += spacing * rng.randf_range(0.7, 1.4)
 		travelled += length
 	for local in transforms_restinga:
@@ -1615,7 +1625,7 @@ func _refresh_tree_collisions() -> void:
 	for trunk in _tree_trunks:
 		var distance_squared: float = player_point.distance_squared_to(trunk.point)
 		if distance_squared <= TREE_COLLISION_RADIUS * TREE_COLLISION_RADIUS:
-			nearby.append({"point": trunk.point, "ground": trunk.ground, "height": trunk.height, "radius": trunk.get("radius", 0.36), "distance_squared": distance_squared})
+			nearby.append({"point": trunk.point, "ground": trunk.ground, "height": trunk.height, "radius": trunk.get("radius", 0.36), "inclinacao": trunk.get("inclinacao", Basis.IDENTITY), "distance_squared": distance_squared})
 	nearby.sort_custom(Callable(self, "_collision_nearer"))
 	for i in range(_tree_collision_pool.size()):
 		var slot := _tree_collision_pool[i]
@@ -1630,7 +1640,18 @@ func _refresh_tree_collisions() -> void:
 		var shape: CylinderShape3D = slot.shape
 		shape.height = tree.height
 		shape.radius = float(tree.get("radius", 0.36))
-		body.position = Vector3(tree.point.x, tree.ground + tree.height * 0.5, tree.point.y)
+		# O COLISOR ACOMPANHA A INCLINAÇÃO DO TRONCO.
+		#
+		# Era um cilindro vertical em cima da base, e o coqueiro da orla pende
+		# para o mar: a quatro unidades de altura o tronco desenhado ficava a
+		# meia unidade do eixo que barra, e encostar na parte alta era atravessar.
+		# Árvore reta tem `Basis.IDENTITY` e nada muda para ela.
+		#
+		# O centro sobe PELO EIXO DO TRONCO, e não pela vertical do mundo — é o
+		# que mantém o cilindro colado na madeira em vez de cortá-la na diagonal.
+		var tombo: Basis = tree.get("inclinacao", Basis.IDENTITY)
+		body.basis = tombo
+		body.position = Vector3(tree.point.x, tree.ground, tree.point.y) + tombo * Vector3(0.0, tree.height * 0.5, 0.0)
 		if not slot.active:
 			collider.set_deferred("disabled", false)
 			slot.active = true

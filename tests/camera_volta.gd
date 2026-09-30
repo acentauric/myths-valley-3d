@@ -23,7 +23,13 @@ extends SceneTree
 ## e o mapa é a exceção declarada — nele o jogador para e o mundo continua, de
 ## propósito, porque é vista do vale ao vivo e não menu.
 
+const CameraMouse = preload("res://scripts/prototipo_3d/camera_mouse.gd")
+
 var falhas := 0
+## O jogador do vale, para o `_por_a_camera_em` alcançar.
+var player = null
+## A preferência de câmera do jogador, devolvida no fim: este portão escreve nela.
+var _pref_guardada := -1
 
 
 func _initialize() -> void:
@@ -45,7 +51,8 @@ func _run() -> void:
 	await _frames(3)
 
 	var jogo := current_scene
-	var player = jogo.get("player")
+	player = jogo.get("player")
+	_pref_guardada = CameraMouse.modo()
 	var hud = jogo.get("hud")
 	_conferir(player != null and hud != null, "não achei o jogador ou o HUD")
 	if player == null or hud == null:
@@ -112,7 +119,7 @@ func _run() -> void:
 	for travada_no_inicio in [false, true]:
 		var modo := "arrastar" if travada_no_inicio else "livre"
 		for tela: Dictionary in telas:
-			player.set_camera_locked(travada_no_inicio)
+			_por_a_camera_em(travada_no_inicio)
 			await _frames(2)
 			var antes: bool = player.camera_travada()
 			_conferir(antes == travada_no_inicio,
@@ -168,7 +175,7 @@ func _run() -> void:
 				if primeira == segunda:
 					continue
 				jogo.telas.fechar_tudo()
-				player.set_camera_locked(modo_travado)
+				_por_a_camera_em(modo_travado)
 				await _frames(2)
 				jogo.telas.abrir(primeira)
 				await _frames(2)
@@ -234,7 +241,7 @@ func _run() -> void:
 	# mouse preso numa janela que não está na frente é mouse preso num jogo que
 	# o jogador não está vendo — mas o MODO tem de sobreviver.
 	for travada_no_inicio in [false, true]:
-		player.set_camera_locked(travada_no_inicio)
+		_por_a_camera_em(travada_no_inicio)
 		await _frames(2)
 		player.notification(Node.NOTIFICATION_APPLICATION_FOCUS_OUT)
 		await _frames(2)
@@ -246,8 +253,28 @@ func _run() -> void:
 
 	_fechar()
 
+## PÕE A CÂMERA NO MODO PEDIDO, pela PREFERÊNCIA.
+##
+## Este portão punha o modo direto no jogador (`player.set_camera_locked`), e
+## isso deixou de medir a coisa certa quando a gaveta do modo acabou: fechar uma
+## tela agora devolve a câmera ao que a PREFERÊNCIA diz, que é o que o AJUSTAR
+## escreve e o que o vale lê ao abrir. Pôr no jogador e esperar o valor de volta
+## era esperar que uma gaveta existisse.
+##
+## Mexer na preferência é mexer em `user://controles.cfg`, que é arquivo do
+## jogador — por isso o `_guardar_a_preferencia` no começo e o `_devolver` no fim.
+func _por_a_camera_em(travada: bool) -> void:
+	CameraMouse.definir(CameraMouse.ARRASTAR if travada else CameraMouse.LIVRE)
+	player.set_camera_locked(CameraMouse.travada())
+
+
 
 func _fechar() -> void:
+	# DEVOLVE A PREFERÊNCIA DO JOGADOR. Este portão escreve em
+	# `user://controles.cfg` para montar os dois modos, e deixar a escolha dele
+	# trocada seria o teste mexendo no jogo de quem o roda.
+	if _pref_guardada >= 0:
+		CameraMouse.definir(_pref_guardada)
 	print("")
 	if falhas == 0:
 		print("CAMERA_OK: as seis telas abrem com o cursor livre, param o vale atrás delas (menos o mapa, que é vista ao vivo) e devolvem o modo que acharam nos dois modos; abrir uma fecha a outra, e trocar de tela não perde a câmera; e perder o foco não troca nada")

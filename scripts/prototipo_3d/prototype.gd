@@ -26,6 +26,7 @@ const CadeiaDeMissoes = preload("res://scripts/prototipo_3d/cadeia_de_missoes.gd
 const TelasDoVale = preload("res://scripts/prototipo_3d/telas_do_vale.gd")
 const MenuPausa = preload("res://scripts/prototipo_3d/menu_pausa.gd")
 const TeiaTalentos = preload("res://scripts/prototipo_3d/teia_talentos.gd")
+const TeiaSocial = preload("res://scripts/prototipo_3d/teia_social.gd")
 const MENU_SCENE := "res://scenes/prototipo_3d/abertura.tscn"
 ## Raio de terra firme em volta do ponto de chegada.
 const RAIO_CHEGADA := 6.0
@@ -64,7 +65,6 @@ var lapides	# lapides.gd
 ## `guia_pedro.gd` e é salva pelo nome antigo (`pedro.missao`), que o save do
 ## vale já guardava antes de existir a segunda cadeia.
 var _cadeias: Dictionary = {}
-var _camera_travada_antes := false
 var _relogio_pausado_antes := false
 var painel	# painel_vale.gd — tecla J
 var colecao	# colecao_vale.gd — sem tecla: virou seção do almanaque
@@ -74,6 +74,8 @@ var telas
 var menu_pausa
 ## A teia de talentos, na tecla K (teia_talentos.gd).
 var teia
+## A teia social do arraial, na tecla P (teia_social.gd).
+var social
 ## As plaquinhas de nome dos moradores; somem com tela aberta (placas_nomes.gd).
 var placas
 ## A aba pedida no último `abrir_o_painel`, entregue à abertura crua.
@@ -272,14 +274,14 @@ func _ready() -> void:
 			"icone": "velocidade",
 			"fazer": func() -> void:
 				Dia.definir_velocidade((Dia.velocidade + 1) % Dia.VELOCIDADES.size())},
-		{"rotulo": func() -> String: return "Câmera do mouse: %s" % ("arrastar" if _camera_travada_antes else "livre"),
+		{"rotulo": func() -> String: return "Câmera do mouse: %s" % ("arrastar" if CameraMouse.travada() else "livre"),
 			"icone": "camera",
 			"fazer": func() -> void:
-				# Troca a gaveta, e não a câmera de agora: com o menu aberto o
-				# cursor está solto de propósito, e é a gaveta que o fechamento
-				# devolve. Mexer na câmera aqui seria desfeito um quadro depois.
-				_camera_travada_antes = not _camera_travada_antes
-				CameraMouse.definir(CameraMouse.ARRASTAR if _camera_travada_antes else CameraMouse.LIVRE)},
+				# Troca A PREFERÊNCIA, e não a câmera de agora: com o menu aberto
+				# o cursor está solto de propósito, e é a preferência que o
+				# fechamento vai ler. Mexer na câmera aqui seria desfeito um
+				# quadro depois. Ver `_camera_da_preferencia`.
+				CameraMouse.definir(CameraMouse.LIVRE if CameraMouse.travada() else CameraMouse.ARRASTAR)},
 		# AS DUAS SAÍDAS, embaixo e em destaque. Sair do vale não é do mesmo tipo
 		# que trocar o volume, e a separação e a cor dizem isso antes de o texto
 		# ser lido.
@@ -299,6 +301,20 @@ func _ready() -> void:
 	teia = TeiaTalentos.new()
 	teia.name = "TeiaTalentos"
 	add_child(teia)
+	# A TEIA SOCIAL, na tecla P — a mesma do jogo 2D ("aperte P e veja quem é
+	# quem no arraial", do tutorial de lá).
+	#
+	# O `Afinidade` também já estava no vale: os sete moradores, os cinco graus,
+	# o gosto de cada um lido do `aldeoes.json`, e o preço social de migrar de
+	# fé. Faltava a tela — sem ela a afinidade subia sem ninguém ver.
+	social = TeiaSocial.new()
+	social.name = "TeiaSocial"
+	add_child(social)
+	telas.registrar("arraial",
+		func(e: InputEvent) -> bool: return e.physical_keycode == Atalhos.tecla("arraial"),
+		func() -> bool: return social.aberta,
+		func() -> void: social.abrir(),
+		func() -> void: social.fechar())
 	telas.registrar("talentos",
 		func(e: InputEvent) -> bool: return e.physical_keycode == Atalhos.tecla("talentos"),
 		func() -> bool: return teia.aberta,
@@ -621,12 +637,11 @@ func _toggle_map() -> void:
 		# tivesse apertado C". O mapa solta o cursor porque mapa sem cursor não
 		# se navega — e não devolvia nada depois. É o mesmo defeito que o menu
 		# tinha, no lugar de que ninguém desconfia.
-		_camera_travada_antes = player.camera_travada()
 		player.set_captured(false)
 		mapa.abrir(world, player, hud.map_layer())
 	else:
 		mapa.fechar()
-		player.set_camera_locked(_camera_travada_antes)
+		_camera_da_preferencia()
 
 
 ## Engrenagem do canto: ajustes com o vale e o relógio pausados (fechar retoma).
@@ -639,6 +654,31 @@ func _open_settings() -> void:
 	hud.open_settings()
 
 
+
+## O MODO DA CÂMERA VEM DA PREFERÊNCIA, e não de uma gaveta por tela.
+##
+## Este defeito voltou QUATRO VEZES — perder o foco, o Esc, o mapa, o painel —, e
+## na quinta ele voltou saindo do inventário. Cada conserto anterior foi do CASO:
+## guardo o modo aqui, devolvo ali. E a cada tela nova o quinto caso nascia.
+##
+## A causa de fundo é que havia uma GAVETA (`_camera_travada_antes`): um lugar
+## onde o modo era copiado ao abrir e lido ao fechar. Gaveta pode ficar velha,
+## pode ser escrita por duas telas, pode não ser lida por uma. Enquanto existir
+## gaveta, existe a sexta vez.
+##
+## Então não há mais gaveta. O modo de câmera é PREFERÊNCIA DO JOGADOR, guardada
+## em `user://controles.cfg` pelo `CameraMouse` — a mesma coisa que o AJUSTAR
+## escreve e que o vale lê ao abrir. Fechar qualquer tela devolve a câmera ao que
+## a preferência diz, e é só isso. Não há o que esquecer de guardar, porque nada
+## é guardado: pergunta-se a quem sabe.
+##
+## O que isso muda na prática: quem apertar Tab no meio do jogo para trocar de
+## modo troca a PREFERÊNCIA, e é o que ele esperava — a escolha vale da próxima
+## tela em diante e do próximo dia também. Antes o Tab mexia numa cópia que a
+## tela seguinte sobrescrevia.
+func _camera_da_preferencia() -> void:
+	player.set_camera_locked(CameraMouse.travada())
+
 func _pause_valley() -> void:
 	# LEMBRA O MODO DE CÂMERA ANTES DE SOLTAR O CURSOR.
 	#
@@ -646,7 +686,6 @@ func _pause_valley() -> void:
 	# eu apertar C": pausar solta o cursor, porque menu com o mouse preso é
 	# menu que não se clica — mas nada devolvia o modo depois. Quem jogava no
 	# modo livre voltava do menu no modo de arrastar, sem ter pedido.
-	_camera_travada_antes = player.camera_travada()
 	player.set_captured(false)
 	_relogio_pausado_antes = Dia.pausado
 	Dia.pausado = true
@@ -657,7 +696,7 @@ func _pause_valley() -> void:
 func _retomar_o_vale() -> void:
 	get_tree().paused = false
 	Dia.pausado = _relogio_pausado_antes
-	player.set_camera_locked(_camera_travada_antes)
+	_camera_da_preferencia()
 
 
 ## HOME ou M: pausa o vale (e o relógio) e pergunta antes de sair.
@@ -780,6 +819,11 @@ func estado_para_salvar() -> Dictionary:
 	estado["cadeias"] = cadeias
 	if _recursos != null:
 		estado["caidos"] = _recursos.caidos()
+	# O CADERNO DO VALE entra no save: missão em curso é estado de partida, e
+	# recarregar sem a lista seria o jogador voltando sem saber o que estava
+	# fazendo. É mecanismo do 3D, então quem o guarda é o vale — o `Salvamento`
+	# cuida sozinho dos autoloads que ele conhece, e este é novo.
+	estado["caderno"] = CadernoDoVale.estado()
 	if pedro != null:
 		estado["pedro"] = {"missao": pedro.missao, "iniciado": pedro.get("_iniciado"),
 			"despedida": pedro.get("_despedida_feita")}
@@ -821,6 +865,8 @@ func restaurar_do_save(estado: Dictionary) -> void:
 	# inteiro primeiro (`_erguer`), e só então o save diz o que já tinha caído.
 	if _recursos != null:
 		_recursos.esquecer(estado.get("caidos", []))
+	if estado.has("caderno"):
+		CadernoDoVale.restaurar(estado["caderno"])
 	var guia: Dictionary = estado.get("pedro", {})
 	if pedro != null and not guia.is_empty():
 		pedro.set("_iniciado", bool(guia.get("iniciado", false)))
@@ -899,11 +945,9 @@ func _abrir_colecao_crua() -> void:
 ##
 ## Este par já fez mais: guardava o modo de câmera, soltava o cursor e pausava
 ## a árvore. Fazia certo, e mesmo assim era errado, porque o `telas_do_vale.gd`
-## passou a fazer o mesmo para TODAS as telas. Dois lugares guardando a mesma
-## gaveta (`_camera_travada_antes`) é um deles escrevendo por cima do outro: o
-## painel guardava "travada", o dono guardava logo depois o que achava — que já
-## era "solta", porque o painel tinha acabado de soltar —, e fechar devolvia
-## solta. O portão da câmera pegou, e a mensagem foi exatamente essa.
+## passou a fazer o mesmo para TODAS as telas. E a gaveta que guardava o modo
+## acabou: ele vem da PREFERÊNCIA do jogador agora, porque a gaveta era a causa
+## de fundo de o defeito ter voltado cinco vezes. Ver `_camera_da_preferencia`.
 ##
 ## Câmera, cursor, relógio e pausa da árvore são do dono das telas. Aqui ficou
 ## o que é do corpo do jogador: ele para de andar e de ouvir tecla.

@@ -119,7 +119,7 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	_montar()
 	visible = false
-	Missoes.mudou.connect(_redesenhar)
+	CadernoDoVale.mudou.connect(_redesenhar)
 	Progressao.mudou.connect(_redesenhar)
 	Inventario.mudou.connect(_redesenhar)
 
@@ -214,7 +214,7 @@ func aba() -> int:
 
 func _lista_atual() -> Array:
 	match _aba:
-		Aba.MISSOES: return Missoes.ativas
+		Aba.MISSOES: return CadernoDoVale.por_importancia()
 		Aba.CARTAS: return Cartas.minhas()
 		Aba.OBRAS: return Obras.disponiveis(obra_em_foco)
 		Aba.OFICINA: return Oficina.receitas()
@@ -265,9 +265,9 @@ func _ajustar(sentido: int) -> void:
 func _confirmar() -> void:
 	match _aba:
 		Aba.MISSOES:
-			if _cursor >= Missoes.ativas.size():
+			if _cursor >= CadernoDoVale.ativas.size():
 				return
-			Missoes.fixar(Missoes.ativas[_cursor]["id"])
+			CadernoDoVale.fixar(str((CadernoDoVale.por_importancia()[_cursor] as Dictionary)["id"]))
 		Aba.CARTAS:
 			var minhas := Cartas.minhas()
 			if _cursor >= minhas.size():
@@ -523,7 +523,7 @@ func _montar_abas() -> void:
 func _conta_da_aba(qual: int) -> String:
 	match qual:
 		Aba.MISSOES:
-			return str(Missoes.ativas.size()) if not Missoes.ativas.is_empty() else ""
+			return str(CadernoDoVale.ativas.size()) if not CadernoDoVale.ativas.is_empty() else ""
 		Aba.CARTAS:
 			return str(Cartas.sabidas.size()) if not Cartas.sabidas.is_empty() else ""
 		_:
@@ -742,41 +742,48 @@ func _desenhar_oficina() -> void:
 	_rodape.text = "[W/S] escolher · [E] fabricar · [Tab] outra aba · [Esc] fechar"
 
 
+## A ABA DE MISSÕES LÊ O CADERNO DO VALE, e não o `Missoes` do 2D.
+##
+## Ela lia o compartilhado, com a checklist de itens daquele autoload. Mudou por
+## pedido do autor, e a razão é de projeto: o 3D tem de ter o mecanismo dele,
+## sem depender do checklist de lá, porque missão nova aqui pode ter padrão,
+## formato e ordem diferentes. Ver `caderno_do_vale.gd`.
+##
+## O que se perde na troca é a CHECKLIST — e é de propósito. Uma missão do vale
+## tem UMA LINHA de andamento, escrita por quem conduz ("Juntar lenha: 1 de 2",
+## "Levar pirão de peixe a Tonho"). Quem conduz decide a frase; esta tela não
+## tenta entender de que tipo é a meta, e por isso meta nova não pede linha nova
+## aqui.
 func _desenhar_missoes() -> void:
 	_titulo.text = "Missões abertas"
-	if Missoes.ativas.is_empty():
+	var abertas: Array = CadernoDoVale.por_importancia()
+	if abertas.is_empty():
 		_adicionar_linha("Nada em aberto por enquanto.", COR_APAGADA)
-		_dica.text = ""
+		_dica.text = "Fale com quem mora no vale: quem tem o que pedir, pede."
 		_rodape.text = "[Esc] fechar"
 		return
 	# Dois grupos, com cabeçalho: enredo e dia a dia se leem diferente (ver o 2D).
 	var grupo := ""
-	for i in Missoes.ativas.size():
-		var missao: Dictionary = Missoes.ativas[i]
+	for i in abertas.size():
+		var missao: Dictionary = abertas[i]
 		var qual := "ENREDO" if bool(missao.get("principal", false)) else "DO DIA A DIA"
 		if qual != grupo:
 			grupo = qual
 			_adicionar_linha(qual, COR_APAGADA, true)
 		var marca := "◆" if bool(missao.get("principal", false)) else "◇"
-		var tipo := "  (corre sozinha)" if missao.get("passiva", false) else ""
-		var cor := COR_CURSOR if i == _cursor else (COR_FIXADA if i == Missoes.em_foco else COR_TEXTO)
-		var andamento: Vector2i = Missoes.andamento(str(missao["id"]))
-		if andamento.y > 0:
-			tipo = "  (%d de %d)" % [andamento.x, andamento.y]
-		if Missoes.congelada(str(missao["id"])):
-			cor = COR_APAGADA
-		_adicionar_linha("%s  %s%s" % [marca, Missoes.titulo_de(missao), tipo], cor)
-		# A checklist entra como TEXTO, e não como linha escolhível: no 2D ela
-		# era botão, e cada item empurrava o índice das missões de baixo — o
-		# clique na terceira missão caía num item da checklist da primeira.
-		if i == _cursor and missao.has("lista"):
-			for entrada in missao["lista"]:
-				_adicionar_linha("      %s %s" % [
-					"✓" if entrada["feito"] else "·", Missoes.texto_do_item(entrada)],
-					COR_FIXADA if entrada["feito"] else COR_APAGADA, true)
-	var escolhida: Dictionary = Missoes.ativas[_cursor] if _cursor < Missoes.ativas.size() else {}
-	var objetivo := _objetivo_de(str(escolhida.get("id", "")))
-	_dica.text = objetivo if objetivo != "" else \
+		var conta := ""
+		if int(missao.get("total", 0)) > 0:
+			conta = "  (%d de %d)" % [int(missao["feito"]), int(missao["total"])]
+		var cor := COR_CURSOR if i == _cursor else (COR_FIXADA if i == CadernoDoVale.em_foco else COR_TEXTO)
+		_adicionar_linha("%s  %s%s" % [marca, str(missao.get("titulo", "")), conta], cor)
+		# A LINHA DE ANDAMENTO entra como texto, e só na missão sob o cursor: na
+		# lista inteira ela viraria parede de letra.
+		if i == _cursor and str(missao.get("linha", "")) != "":
+			_adicionar_linha("      %s" % str(missao["linha"]),
+				COR_FIXADA if int(missao.get("feito", 0)) >= int(missao.get("total", 1)) else COR_APAGADA,
+				true)
+	var escolhida: Dictionary = abertas[_cursor] if _cursor < abertas.size() else {}
+	_dica.text = str(escolhida.get("titulo", "")) if not escolhida.is_empty() else \
 		"Verde é a missão em foco: a que a seta aponta. ◆ é enredo, ◇ é do dia a dia."
 	_rodape.text = "[W/S] escolher · [E] fixar · [Esc] fechar"
 

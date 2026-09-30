@@ -126,13 +126,81 @@ func _run() -> void:
 			"o aviso de interação (%s) cruza a barra de mão (%s): um cobre o outro"
 				% [str(aviso.get_global_rect()), str(fila.get_global_rect())])
 
+	# --- 7. O QUE ESTÁ NA MÃO SE COME, pela tecla e pelo clique ---------------
+	#
+	# "Apertando E ou clicando com o mouse em itens consumíveis na mão ativa do
+	# jogador, deve ser consumido. Só consegui consumir clicando dentro do
+	# inventário."
+	#
+	# A regra de comer é do `Cozinha.comer`, compartilhado com o 2D. O que se
+	# mede aqui é a MÃO chegar até ela.
+	var energia := root.get_node("/root/Energia")
+	var cozinha := root.get_node("/root/Cozinha")
+	Inv.adicionar("pirao", 2)
+	var espaco_do_pirao := -1
+	for i in Inv.ESPACOS_MAO:
+		if str((Inv.espacos[i] as Dictionary).get("id", "")) == "pirao":
+			espaco_do_pirao = i
+	_conferir(espaco_do_pirao >= 0, "o pirão não entrou num espaço de mão")
+	if espaco_do_pirao >= 0:
+		Inv.selecionar(espaco_do_pirao)
+		await _frames(2)
+		_conferir(Inv.na_mao() == "pirao", "não consegui pôr o pirão na mão")
+		# Abre espaço no fôlego para o pirão ter o que repor: cheio, comer não
+		# mudaria número nenhum e a pergunta não valeria nada.
+		energia.repor(-30.0)
+		var antes_folego: float = energia.atual
+		var antes_conta: int = Inv.quantidade("pirao")
+		_conferir(barra._comer_da_mao(), "a mão recusou comer o pirão, que é comida")
+		await _frames(2)
+		_conferir(Inv.quantidade("pirao") == antes_conta - 1,
+			"comer não gastou o pirão: tinha %d, ficou %d" % [antes_conta, Inv.quantidade("pirao")])
+		_conferir(energia.atual > antes_folego,
+			"comer o pirão não repôs fôlego: era %.0f e ficou %.0f" % [antes_folego, energia.atual])
+
+		# FERRAMENTA NÃO SE COME. É a outra metade: a mão não pode engolir o
+		# machado porque o jogador apertou E perto de nada.
+		Inv.adicionar("machado", 1)
+		for i in Inv.ESPACOS_MAO:
+			if str((Inv.espacos[i] as Dictionary).get("id", "")) == "machado":
+				Inv.selecionar(i)
+		await _frames(2)
+		_conferir(not barra._comer_da_mao(), "a mão comeu o machado")
+		_conferir(Inv.tem("machado"), "o machado desapareceu da mochila")
+
+	# --- 8. O E DA MÃO É O ÚLTIMO DA FILA ------------------------------------
+	#
+	# Perto de um tronco o E golpeia; perto de uma árvore lê a ficha. Comer é o
+	# que sobra, e sobra por ORDEM DE ÁRVORE: a barra mora dentro do HUD, que
+	# entra no vale antes dos nós do mundo, e o Godot entrega o evento de baixo
+	# para cima. Ordem de árvore é coisa que muda quando alguém acrescenta um nó,
+	# então aqui se mede a precedência de verdade.
+	var recursos := current_scene.get_node_or_null("Recursos3D")
+	var jogador = current_scene.get("player")
+	if recursos != null and jogador != null and not recursos._alvos.is_empty():
+		Inv.adicionar("pirao", 3)
+		Inv.adicionar("machado", 1)
+		var onde: Vector3 = recursos.mais_perto_que_rende("lenha", jogador.global_position)
+		if onde != Vector3.ZERO:
+			jogador.global_position = onde
+			await _frames(4)
+			for i in Inv.ESPACOS_MAO:
+				if str((Inv.espacos[i] as Dictionary).get("id", "")) == "pirao":
+					Inv.selecionar(i)
+			await _frames(2)
+			var pirao_antes: int = Inv.quantidade("pirao")
+			_tecla_de_interagir()
+			await _frames(3)
+			_conferir(Inv.quantidade("pirao") == pirao_antes,
+				"com um tronco ao alcance, o E comeu o pirão em vez de golpear: a fila do E inverteu")
+
 	_fechar()
 
 
 func _fechar() -> void:
 	print("")
 	if falhas == 0:
-		print("BARRA_OK: a barra existe, tem tamanho, está no rodapé dentro da tela, tem os dez espaços, e o que entra na mochila aparece nela")
+		print("BARRA_OK: a barra existe, tem tamanho, está no rodapé dentro da tela, tem os dez espaços, o que entra na mochila aparece nela, o que está na mão se come pela tecla e não se come quando é ferramenta, e com um tronco ao alcance o E golpeia em vez de comer")
 	else:
 		print("barra: %d falha(s)" % falhas)
 	quit(1 if falhas > 0 else 0)
@@ -151,3 +219,12 @@ func _mundo_pronto() -> void:
 		await process_frame
 	await process_frame
 	await process_frame
+
+
+## Manda a tecla de interagir pelo caminho do jogo, para a fila do E valer.
+func _tecla_de_interagir() -> void:
+	var Atalhos = load("res://scripts/prototipo_3d/atalhos.gd")
+	var evento := InputEventKey.new()
+	evento.physical_keycode = Atalhos.tecla("interagir")
+	evento.pressed = true
+	Input.parse_input_event(evento)

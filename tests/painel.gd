@@ -31,6 +31,8 @@ var dia
 var vida
 var jogo
 var missoes
+## O caderno de missões do vale, que é o que a aba de missões lê agora.
+var caderno
 var venda
 
 
@@ -53,6 +55,7 @@ func _run() -> void:
 	vida = root.get_node("/root/Vida")
 	jogo = root.get_node("/root/Jogo")
 	missoes = root.get_node("/root/Missoes")
+	caderno = root.get_node("/root/CadernoDoVale")
 	venda = root.get_node("/root/Venda")
 	_devolver_reserva_esquecida()
 	_guardar_os_saves_de_verdade()
@@ -159,8 +162,16 @@ func _run() -> void:
 		player.global_position = chegada
 
 	# --- 3. AS TECLAS DO VALE --------------------------------------------------
-	missoes.adicionar("teste_do_painel", "Um passo de teste", false, [], "", true)
-	missoes.adicionar("outro_do_painel", "Outro passo", false, [], "", false)
+	# AS MISSÕES VÊM DO CADERNO DO VALE, e não do `Missoes` do 2D.
+	#
+	# Mudou por pedido do autor: o 3D tem mecanismo próprio de missão, sem
+	# depender do checklist compartilhado, porque missão nova aqui pode ter
+	# padrão, formato e ordem diferentes. Ver `caderno_do_vale.gd`.
+	#
+	# A primeira ("de enredo") vem antes da segunda na lista, que é a ordem que o
+	# caderno promete — e é por isso que o cursor 1 cai na segunda.
+	caderno.abrir_missao("teste_do_painel", "Um passo de teste", "pedro", true)
+	caderno.abrir_missao("outro_do_painel", "Outro passo", "damiao", false)
 	await _frames(2)
 	var tem_titulo := false
 	for linha in painel._escolhiveis:
@@ -171,7 +182,11 @@ func _run() -> void:
 	_conferir(painel.aba() == painel.Aba.MISSOES, "Tab saiu de Missões sem ter outra aba")
 	painel.escolher(1)
 	_tecla(painel, KEY_E)
-	_conferir(missoes.em_foco == missoes.indice("outro_do_painel"), "o E não fixou a missão escolhida")
+	# Compara pelo ID em foco, e não por índice: `em_foco` é posição na lista JÁ
+	# ordenada (enredo primeiro), e comparar índices de duas listas diferentes é
+	# comparar coisas que só coincidem por sorte.
+	_conferir(str(caderno.atual().get("id", "")) == "outro_do_painel",
+		"o E não fixou a missão escolhida: em foco está '%s'" % str(caderno.atual().get("id", "")))
 	_tecla(painel, KEY_J)
 	await _frames(2)
 	_conferir(not painel.aberto, "o J não fechou o painel")

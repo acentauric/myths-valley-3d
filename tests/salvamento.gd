@@ -31,7 +31,15 @@ extends SceneTree
 const RESERVA := "user://reserva_do_teste_de_salvamento"
 
 ## O que do 3D entra no save pela mão do vale (`estado_para_salvar`).
-const DO_MUNDO := {"Dia": ["hora"]}
+const DO_MUNDO := {
+	"Dia": ["hora"],
+	# O CADERNO DO VALE não é guardado campo a campo: o `estado()` dele devolve
+	# os três de uma vez e o `restaurar()` os põe de volta, porque `ativas` é
+	# lista de dicionários e o alvo de cada missão é um Vector3 — coisa que o
+	# save escreve como array de três números e tem de voltar como Vector3.
+	# Guardar campo a campo aqui seria refazer essa conversão do lado errado.
+	"CadernoDoVale": ["ativas", "cumpridas", "em_foco"],
+}
 
 ## O que do 3D fica FORA do save, campo a campo, com a razão.
 const FORA_DO_SAVE := {

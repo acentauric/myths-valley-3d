@@ -31,6 +31,10 @@ const DEFINICOES := {
 	# a árvore de habilidades".
 	"almanaque": {"rotulo": "Almanaque", "padrao": KEY_L},
 	"talentos": {"rotulo": "Árvore de habilidades", "padrao": KEY_K},
+	# A teia social do arraial: quem mora aqui e o quanto cada um gosta de você.
+	# P como no 2D, que o tutorial de lá ensina com estas palavras: "aperte P e
+	# veja quem é quem no arraial".
+	"arraial": {"rotulo": "O arraial", "padrao": KEY_P},
 }
 ## Ação do InputMap que `aplicar()` re-registra para cada atalho.
 const ACOES_INPUT := {
