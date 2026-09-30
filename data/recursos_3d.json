@@ -38,6 +38,55 @@
       "quantidade": 2
     },
     {
+      "observacao": "OS PÉS DE CAPIM DO CEMITÉRIO, que são a missão do Damião (data/missoes_coveiro.json). Quatro pés em volta das covas, e é o primeiro alvo do vale que NÃO RENDE NADA: no jogo 2D cortar o mato não põe item na mochila, o mato some — que é o que limpar quer dizer. Por isso 'rende' é vazio e a meta da missão conta pé derrubado, e não item guardado. Dois golpes cada, que capim não é tronco.",
+      "id": "capim_cemiterio_a",
+      "nome": "Capim alto",
+      "peca": "capim",
+      "lugar": "cemiterio",
+      "desvio": [4.0, 3.0],
+      "tamanho": 1.3,
+      "ferramenta": "foice",
+      "golpes": 2,
+      "rende": "",
+      "quantidade": 0
+    },
+    {
+      "id": "capim_cemiterio_b",
+      "nome": "Capim alto",
+      "peca": "capim",
+      "lugar": "cemiterio",
+      "desvio": [-3.0, 4.0],
+      "tamanho": 1.3,
+      "ferramenta": "foice",
+      "golpes": 2,
+      "rende": "",
+      "quantidade": 0
+    },
+    {
+      "id": "capim_cemiterio_c",
+      "nome": "Capim alto",
+      "peca": "capim",
+      "lugar": "cemiterio",
+      "desvio": [5.0, -4.0],
+      "tamanho": 1.3,
+      "ferramenta": "foice",
+      "golpes": 2,
+      "rende": "",
+      "quantidade": 0
+    },
+    {
+      "id": "capim_cemiterio_d",
+      "nome": "Capim alto",
+      "peca": "capim",
+      "lugar": "cemiterio",
+      "desvio": [-4.0, -3.0],
+      "tamanho": 1.3,
+      "ferramenta": "foice",
+      "golpes": 2,
+      "rende": "",
+      "quantidade": 0
+    },
+    {
       "id": "pedra_rocado",
       "nome": "Lajedo",
       "peca": "pedras",

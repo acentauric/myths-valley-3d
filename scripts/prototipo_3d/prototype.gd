@@ -22,6 +22,7 @@ const Atalhos = preload("res://scripts/prototipo_3d/atalhos.gd")
 const CameraMouse = preload("res://scripts/prototipo_3d/camera_mouse.gd")
 const Recursos3D = preload("res://scripts/prototipo_3d/recursos_3d.gd")
 const Minimapa = preload("res://scripts/prototipo_3d/minimapa.gd")
+const CadeiaDeMissoes = preload("res://scripts/prototipo_3d/cadeia_de_missoes.gd")
 const MENU_SCENE := "res://scenes/prototipo_3d/abertura.tscn"
 ## Raio de terra firme em volta do ponto de chegada.
 const RAIO_CHEGADA := 6.0
@@ -31,6 +32,20 @@ const PERIODOS := {"madrugada": "Madrugada", "manha": "Manhã", "tarde": "Tarde"
 @onready var hud = $HUD
 @onready var world = $Cenario
 var ambiente: AmbienteVale
+## A MISSÃO EM CURSO DO VALE MUDOU, venha ela de quem vier.
+##
+## O Pedro era o único que dava missão, então o HUD, a seta e o minimapa
+## escutavam o `pedro.missao_mudou` — três closures presas a um morador. Com o
+## Damião dando a segunda cadeia, isso viraria seis, e a terceira cadeia nove.
+##
+## Agora é um relé: cada cadeia despeja aqui, e os três consumidores escutam
+## este sinal. Cadeia nova é uma linha, e não três.
+##
+## Quando duas cadeias estão abertas, vale a ÚLTIMA que anunciou — que é a que
+## o jogador acabou de ouvir, e é a resposta certa para "o que eu estou
+## fazendo agora".
+signal missao_do_vale_mudou(texto: String, alvo: Vector3, indice: int, total: int)
+
 var pedro: GuiaPedro
 var moradores: Array[MoradorNPC] = []
 var _visited: Dictionary = {}
@@ -41,6 +56,11 @@ var mapa	# mapa_jogo.gd
 var _recursos  # recursos_3d.gd — os alvos de trabalho (troncos, lajedos)
 var lapides	# lapides.gd
 ## Modo de câmera de antes da pausa, para o retorno devolver o que havia.
+## As filas de missão penduradas em moradores, por id do morador — para o save
+## e para quem precise achá-las. A do Pedro NÃO está aqui: ela mora dentro do
+## `guia_pedro.gd` e é salva pelo nome antigo (`pedro.missao`), que o save do
+## vale já guardava antes de existir a segunda cadeia.
+var _cadeias: Dictionary = {}
 var _camera_travada_antes := false
 var _relogio_pausado_antes := false
 var painel	# painel_vale.gd — tecla J
@@ -188,6 +208,7 @@ func _ready() -> void:
 	for morador in moradores:
 		if String(morador.dados.get("id", "")) == "damiao":
 			lapides.coveiro = morador
+			_pendurar_cadeia(morador, "res://data/missoes_coveiro.json", 4.0)
 	Dia.periodo_mudou.connect(_on_periodo_mudou)
 	# A PARTIDA SALVA entra depois de o vale estar montado — moradores, Pedro,
 	# luta —, porque o estado do mundo aponta para eles. Ver Partida e
@@ -259,6 +280,8 @@ func _montar_moradores(spawn: Vector3) -> void:
 		add_child(morador)
 		morador.saudou.connect(_on_saudacao)
 		moradores.append(morador)
+	# O objetivo do HUD é o primeiro freguês do relé.
+	missao_do_vale_mudou.connect(_on_missao_mudou)
 	var guia: Dictionary = data.get("guia", {})
 	if not guia.is_empty():
 		pedro = GuiaPedro.new()
@@ -267,7 +290,8 @@ func _montar_moradores(spawn: Vector3) -> void:
 		var lado: Vector3 = Vector3(-1.6, 0, 1.4)
 		pedro.global_position = world.ground_position(spawn + lado, 0.05)
 		pedro.saudou.connect(_on_saudacao)
-		pedro.missao_mudou.connect(_on_missao_mudou)
+		pedro.missao_mudou.connect(func(t: String, a: Vector3, i: int, n: int) -> void:
+			missao_do_vale_mudou.emit(t, a, i, n))
 		# OS ALVOS DE TRABALHO, para o marcador apontar o tronco e não a casa.
 		pedro.recursos = _recursos
 		pedro.narrou.connect(func(texto: String) -> void: hud.set_notice("Pedro: " + texto))
@@ -280,12 +304,11 @@ func _montar_moradores(spawn: Vector3) -> void:
 	seta.name = "SetaMissao"
 	add_child(seta)
 	seta.configurar(hud.map_layer())
-	if pedro != null:
-		pedro.missao_mudou.connect(func(texto: String, destino: Vector3, indice: int, total: int) -> void:
-			if indice >= total:
-				seta.limpar()
-			else:
-				seta.definir_alvo(destino, texto))
+	missao_do_vale_mudou.connect(func(texto: String, destino: Vector3, indice: int, total: int) -> void:
+		if indice >= total:
+			seta.limpar()
+		else:
+			seta.definir_alvo(destino, texto))
 	# Tubarão da parte funda: persegue só o jogador nadando no fundo; o susto vai ao HUD.
 	var tubarao := Tubarao.new()
 	tubarao.name = "Tubarao"
@@ -328,12 +351,11 @@ func _montar_moradores(spawn: Vector3) -> void:
 	minimapa.name = "Minimapa"
 	hud.map_layer().add_child(minimapa)
 	minimapa.configurar(player, pedro, hud)
-	if pedro != null:
-		pedro.missao_mudou.connect(func(_texto: String, alvo: Vector3, indice: int, total: int) -> void:
-			if indice >= total or alvo == Vector3.ZERO:
-				minimapa.limpar_alvo()
-			else:
-				minimapa.definir_alvo(alvo))
+	missao_do_vale_mudou.connect(func(_texto: String, alvo: Vector3, indice: int, total: int) -> void:
+		if indice >= total or alvo == Vector3.ZERO:
+			minimapa.limpar_alvo()
+		else:
+			minimapa.definir_alvo(alvo))
 
 
 func _process(_delta: float) -> void:
@@ -598,6 +620,25 @@ func estado_para_salvar() -> Dictionary:
 		"hora": Dia.hora,
 		"visitados": _visited.keys(),
 	}
+	# AS FILAS DOS OUTROS MORADORES, e os alvos que já caíram.
+	#
+	# A do Pedro já ia (`pedro`, logo abaixo), porque ele era o único que dava
+	# missão. Com o Damião dando a segunda, missão não salva é missão que o
+	# jogador faz duas vezes — ou, no caso do capim, que ele termina e volta a
+	# dever ao recarregar.
+	#
+	# Os alvos caídos vão junto pelo mesmo motivo: a meta de "derrubar" conta
+	# pé DERRUBADO, e pé que renasceu com o vale não conta. Sem esta lista, o
+	# jogador corta os quatro, salva, volta, e o capim está de pé outra vez com
+	# o passo ainda aberto.
+	var cadeias := {}
+	for id in _cadeias:
+		var c = _cadeias[id]
+		cadeias[id] = {"missao": c.missao, "iniciado": c.iniciado,
+			"despedida": c.despedida_feita}
+	estado["cadeias"] = cadeias
+	if _recursos != null:
+		estado["caidos"] = _recursos.caidos()
 	if pedro != null:
 		estado["pedro"] = {"missao": pedro.missao, "iniciado": pedro.get("_iniciado"),
 			"despedida": pedro.get("_despedida_feita")}
@@ -619,6 +660,23 @@ func restaurar_do_save(estado: Dictionary) -> void:
 	_visited.clear()
 	for chave in estado.get("visitados", []):
 		_visited[str(chave)] = true
+	# As filas dos outros moradores voltam com um respiro antes do anúncio, como
+	# a do Pedro: quem recarrega ouve de novo o passo em que parou, em vez de
+	# ficar olhando um objetivo que ninguém explicou.
+	var cadeias: Dictionary = estado.get("cadeias", {})
+	for id in cadeias:
+		if not _cadeias.has(id):
+			continue
+		var c = _cadeias[id]
+		var guardado: Dictionary = cadeias[id]
+		c.iniciado = bool(guardado.get("iniciado", false))
+		c.despedida_feita = bool(guardado.get("despedida", false))
+		c.missao = int(guardado.get("missao", -1))
+		c.espera = 1.4
+	# OS ALVOS CAÍDOS SOMEM DE NOVO, e é aqui e não antes: o vale se monta
+	# inteiro primeiro (`_erguer`), e só então o save diz o que já tinha caído.
+	if _recursos != null:
+		_recursos.esquecer(estado.get("caidos", []))
 	var guia: Dictionary = estado.get("pedro", {})
 	if pedro != null and not guia.is_empty():
 		pedro.set("_iniciado", bool(guia.get("iniciado", false)))
@@ -740,3 +798,34 @@ func _exit_tree() -> void:
 	# (o Godot compara o objeto liberado igual a null, e o Salvamento pergunta
 	# `_mundo != null`), mas é essa a comparação de que ele deixa de depender.
 	Salvamento.registrar_mundo(null)
+
+
+## PENDURA UMA FILA DE MISSÕES NUM MORADOR QUALQUER.
+##
+## É o que faz o vale ter mais de um dono de missão. Até aqui só o Pedro dava
+## — a fila morava dentro do `guia_pedro.gd` —, e o jogo 2D não é assim: lá a
+## Dona Zefa manda um recado, o Damião pede um cabo de foice, o Tonho cobra
+## uma dívida. Agora é uma linha por morador.
+##
+## A cadeia se move sozinha (`cadeia_de_missoes.gd`), abre quando o jogador
+## chega a `perto` unidades do morador, e despeja no relé — de onde o HUD, a
+## seta e o minimapa já escutam.
+##
+## Os alvos de trabalho vão junto: sem eles o marcador aponta a âncora do
+## lugar em vez do pé de capim, que foi a queixa "marca a casa quando devia
+## marcar os troncos".
+func _pendurar_cadeia(morador: MoradorNPC, arquivo: String, perto: float) -> Node:
+	var cadeia := CadeiaDeMissoes.new()
+	cadeia.name = "CadeiaDeMissoes"
+	cadeia.dono = morador
+	cadeia.jogador = player
+	cadeia.recursos = _recursos
+	cadeia.comeca_perto_de = perto
+	if not cadeia.carregar(arquivo):
+		cadeia.free()
+		return null
+	cadeia.missao_mudou.connect(func(t: String, a: Vector3, i: int, n: int) -> void:
+		missao_do_vale_mudou.emit(t, a, i, n))
+	morador.add_child(cadeia)
+	_cadeias[str(morador.dados.get("id", ""))] = cadeia
+	return cadeia

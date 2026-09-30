@@ -454,6 +454,32 @@ func mostrar_balao(texto: String, segundos: float) -> void:
 	nome_label.visible = texto == ""
 
 
+## NARRA UMA FALA: balão, voz do ElevenLabs quando o arquivo existe, e a palavra
+## tomada pelo tempo que ela durar.
+##
+## Nasceu dentro do `guia_pedro.gd`, porque o Pedro era o único morador que
+## falava fora da saudação. Subiu para cá quando o Damião ganhou fila de
+## missões: cadeia de missões pendurada num morador chama `narrar` nele, e
+## morador sem `narrar` conduziria a missão em silêncio — o passo avançaria e o
+## jogador não saberia por quê.
+##
+## A duração vem do próprio áudio quando há áudio, e são quatro segundos quando
+## não há. É ela que o `_tomar_palavra` usa para ninguém falar por cima.
+func narrar(nome_audio: String, texto: String) -> void:
+	mostrar_balao(texto, 8.0)
+	var caminho := PASTA_VOZES + nome_audio + ".mp3"
+	var duracao := 4.0
+	if nome_audio != "" and ResourceLoader.exists(caminho):
+		voz.stop()
+		voz.stream = load(caminho)
+		voz.play()
+		duracao = voz.stream.get_length()
+	_tomar_palavra(duracao)
+	if animador != null and animador.has_method("play_gesture"):
+		# Autoral: 2 = concordar; procedural: 2 = apontar.
+		animador.play_gesture(2)
+
+
 ## Nome do posto para o período: "manha", "tarde", "entardecer", "noite" ou "madrugada".
 func _posto_para(periodo: String) -> String:
 	var postos: Dictionary = dados.get("postos", {})
