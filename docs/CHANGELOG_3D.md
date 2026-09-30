@@ -13,6 +13,12 @@ atualize esse arquivo e este documento juntos.
 
 ## Em desenvolvimento — 30/09/2026
 
+- **Obras no vale** (#15, com efeito e sem arte). A aba de obras do painel aparece perto
+  da casa, do armazém, do mirante, do poço e do píer; o plano vem antes do material, e a
+  obra feita paga o ganho no corpo e fica no save. A casa ainda não muda por fora nem
+  por dentro (#26, #27). De passagem: o `Receitas` subia antes do `Obras` e nenhum plano
+  de obra "de começo" nascia sabido; e o `executar` compartilhado não paga o ganho da
+  obra, que o vale paga até o 2D consertar (`bancadas_vale.gd`, `tests/obras.gd`).
 - **A tela de coleção avulsa saiu.** O almanaque (L) mostra cordéis, sinais e bichos
   com as mesmas fichas, e a tela própria da coleção tinha ficado sem tecla, mostrando um
   pedaço do que ele mostra (`colecao_vale.gd` e `tests/colecao.gd` apagados).

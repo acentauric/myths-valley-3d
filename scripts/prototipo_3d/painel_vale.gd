@@ -291,8 +291,15 @@ func _confirmar() -> void:
 			var lista := Obras.disponiveis(obra_em_foco)
 			if _cursor >= lista.size():
 				return
-			if not Obras.executar(obra_em_foco, str(lista[_cursor])):
+			var obra := str(lista[_cursor])
+			if not Obras.executar(obra_em_foco, obra):
 				return
+			pagar_o_que_a_obra_da(obra)
+			# "Obra pronta", como no 2D (`Mundo._ao_concluir_obra`). Onde olhar
+			# para ver a obra ainda não se diz: a casa do vale não muda por fora
+			# nem por dentro até os modelos e o cômodo chegarem (#26, #27).
+			_aviso = "Obra pronta: %s. %s" % [Obras.dados(obra).get("nome", obra), Obras.dados(obra).get("resumo", "")]
+			_cursor = 0
 		Aba.OFICINA:
 			var receitas := Oficina.receitas()
 			if _cursor >= receitas.size():
@@ -809,12 +816,27 @@ func _arquivos_de_falas() -> Array:
 	return _arquivos
 
 
+## O GANHO NO CORPO DA OBRA QUE O JOGADOR FEZ.
+##
+## O `Obras.executar` compartilhado consome o material, dá XP e emite
+## `concluida`, mas NÃO paga os `ATRIBUTOS` — só o `conceder` (a obra que um
+## morador dá de presente) paga. O próprio painel promete "Dá: +10 de fôlego
+## máximo" na linha da obra, e sem isto a promessa não se cumpria, aqui e no 2D
+## (o `testar_obras` de lá confere o `conceder` e não o `executar`).
+##
+## O conserto certo é no `executar`, que é do 2D, e não foi tocado. Até lá o
+## vale paga aqui, e `tests/obras.gd` cobra que o ganho entre UMA vez: quando o
+## 2D consertar, o portão reprova por ganho em dobro, e esta função sai.
+func pagar_o_que_a_obra_da(obra: String) -> void:
+	Obras._pagar_o_atributo(obra)
+
+
 func _desenhar_obras() -> void:
 	_titulo.text = "Obras — %s" % Jogo.nome_da_construcao(obra_em_foco)
 	var lista := Obras.disponiveis(obra_em_foco)
 	if lista.is_empty():
 		_adicionar_linha("Nada a fazer aqui por enquanto.", COR_APAGADA)
-		_dica.text = "Obra pede material. Junte tábua, lenha e pedra e volte." \
+		_dica.text = _aviso if _aviso != "" else "Obra pede material. Junte tábua, lenha e pedra e volte." \
 			+ _quantas_faltam(Obras.todas_de(obra_em_foco))
 		_rodape.text = "[Tab] outra aba · [Esc] fechar"
 		return
@@ -833,7 +855,7 @@ func _desenhar_obras() -> void:
 	var dado := Obras.dados(escolhida)
 	var impede := Obras.impedimento(obra_em_foco, escolhida)
 	var abatido := "" if Obras.desconto() <= 0.0 else "   (canteiro abate %d%%)" % int(Obras.desconto() * 100.0)
-	_dica.text = str(dado.get("resumo", "")) + _ganho_da_obra(escolhida) + "\n" + (
+	_dica.text = _aviso if _aviso != "" else str(dado.get("resumo", "")) + _ganho_da_obra(escolhida) + "\n" + (
 		impede if impede != "" else "Custa: " + _precos(Obras.custo(escolhida)) + abatido
 		) + _quantas_faltam(Obras.todas_de(obra_em_foco))
 	_rodape.text = "[W/S] escolher · [E] tocar a obra · [Tab] outra aba · [Esc] fechar"

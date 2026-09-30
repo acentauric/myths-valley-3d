@@ -19,6 +19,7 @@ const COPIAS := [
 	"data/colecionaveis/sinais.json",
 	"data/colecionaveis/bichos.json",
 	"data/cartas/cartas.json",
+	"data/construcoes/obras.json",
 ]
 
 var falhas := 0
