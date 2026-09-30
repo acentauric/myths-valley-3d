@@ -18,9 +18,14 @@ extends SceneTree
 ##   3. O CORPO SENTE. O `player_controller` multiplica a velocidade pelo
 ##      `Energia.passo()` — lido do fonte, porque medir velocidade de um corpo
 ##      que anda por física dá um teste que falha por pouco em máquina lenta.
-##   4. NADA GASTA FÔLEGO AINDA, e isso é de propósito. No 2D quem cobra é a
-##      enxada, o machado e a picareta, e o vale não tem trabalho. O dia em que
-##      tiver, esta pergunta é a que vai avisar que ela precisa mudar.
+##   4. SÓ A LUTA GASTA FÔLEGO, e só a queda desmaia. No 2D quem cobra é a
+##      enxada, o machado, a picareta e a luta; o vale ainda não tem trabalho,
+##      e a luta chegou com a #14 — o golpe e a ginga cobram "bater" como lá, e
+##      o `tests/luta.gd` confere quanto. A QUEDA (`queda.gd`, #10) chama
+##      `Energia.desmaiar()` como o `_apagar` do 2D, que devolve fôlego. Quem
+##      mais passar a gastar ou a desmaiar reprova aqui, e o recado é o mesmo
+##      de antes: escreva o portão do que passou a gastar, e ponha o arquivo na
+##      lista.
 
 var falhas := 0
 
@@ -77,33 +82,60 @@ func _run() -> void:
 	_conferir(fonte.contains("speed *= Energia.passo()"),
 		"o controle do jogador não multiplica a velocidade pelo passo do Energia: o cansaço não chega ao corpo")
 
-	# --- 4. AGORA ALGUMA COISA GASTA, E ISSO É O CERTO ------------------------
+	# --- 4. QUEM PODE GASTAR FÔLEGO, E SÓ ELES -------------------------------
 	#
-	# A versão anterior desta pergunta cobrava o CONTRÁRIO: que nada no vale
-	# gastasse fôlego, porque não havia trabalho aqui. Ela dizia, no próprio
-	# comentário, que reprovaria no dia em que alguém ligasse uma ação — e
-	# reprovou, quando os troncos e os lajedos chegaram.
+	# As duas metades desta pergunta nasceram separadas e se encontraram nesta
+	# junção. Uma vinha das FERRAMENTAS: bater num tronco custa, e é o que faz
+	# a ferramenta valer. A outra vinha da LUTA: o golpe e a ginga do 2D cobram
+	# "bater". As duas estão certas, e o que muda é que a lista de quem pode
+	# gastar tem dois nomes em vez de um.
 	#
-	# O recado que ela deixou era "troque esta pergunta pelo portão do que
-	# gasta", e é o que está feito: quem mede o golpe agora é
-	# `tests/ferramentas.gd`, que bate de verdade e confere que o fôlego caiu.
+	# Cada lado, sozinho, reprovava o outro — e reprovava com razão, porque
+	# cada um tinha sido escrito quando só existia o seu. O que a pergunta
+	# guarda continua igual: chamada a `Energia.gastar` fora desta lista é
+	# ação nova sem portão. Quem acrescentar uma terceira escreve o portão
+	# dela e põe o arquivo aqui.
 	#
-	# O que sobra aqui é a outra metade, e ela continua valendo: o fôlego só
-	# pode ser gasto por quem o jogo declara. Uma chamada a `Energia.gastar`
-	# que apareça fora dos recursos é ação nova sem portão, e é isso que esta
-	# pergunta passa a pegar.
-	var quem_gasta: Array[String] = []
+	# `Energia.desmaiar` é da queda, e de mais ninguém: é a mesma noite no
+	# chão do desmaio do 2D.
+	#
+	# Chamada é linha de CÓDIGO: comentário que cita a função (e o `queda.gd`
+	# cita) não pode contar como chamada, nem para acusar nem para absolver.
+	var podem_gastar := ["/recursos_3d.gd", "/luta_vale.gd"]
+	var gasta_sem_portao: Array[String] = []
+	var desmaia_fora_da_queda := false
+	var desmaia := RegEx.create_from_string("(?m)^[ \\t]+[^#\\n]*Energia\\.desmaiar\\(")
+	var gasta := RegEx.create_from_string("(?m)^[ \\t]+[^#\\n]*Energia\\.(gastar|dormir)\\(")
 	for arquivo in _scripts_do_prototipo():
 		var texto := FileAccess.get_file_as_string(arquivo)
-		if texto.contains("Energia.gastar(") or texto.contains("Energia.dormir(") \
-				or texto.contains("Energia.desmaiar("):
-			quem_gasta.append(arquivo.get_file())
-	_conferir(quem_gasta.has("recursos_3d.gd"),
-		"o trabalho parou de gastar fôlego: bater tem de custar, e é o que faz a ferramenta valer")
-	for arquivo in quem_gasta:
-		_conferir(arquivo == "recursos_3d.gd",
-			"'%s' passou a gastar fôlego e não tem portão: escreva o dele, como o ferramentas.gd fez"
+		if gasta.search(texto) != null:
+			var permitido := false
+			for fim in podem_gastar:
+				if arquivo.ends_with(fim):
+					permitido = true
+			if not permitido:
+				gasta_sem_portao.append(arquivo.get_file())
+		if desmaia.search(texto) != null and not arquivo.ends_with("/queda.gd"):
+			desmaia_fora_da_queda = true
+	for arquivo in gasta_sem_portao:
+		_conferir(false,
+			"'%s' passou a gastar fôlego e não tem portão: escreva o dele, como o ferramentas.gd e o luta.gd fizeram"
 				% arquivo)
+
+	# E o outro lado da mesma pergunta: os dois que PODEM gastar têm de
+	# continuar gastando. Trabalho de graça e luta de graça são defeitos tão
+	# grandes quanto gasto sem portão, e calados.
+	var recursos := FileAccess.get_file_as_string("res://scripts/prototipo_3d/recursos_3d.gd")
+	_conferir(gasta.search(recursos) != null,
+		"o trabalho parou de gastar fôlego: bater tem de custar, e é o que faz a ferramenta valer")
+	var luta := FileAccess.get_file_as_string("res://scripts/prototipo_3d/luta_vale.gd")
+	_conferir(gasta.search(luta) != null,
+		"a luta não gasta fôlego: o golpe e a ginga do 2D cobram 'bater'")
+	_conferir(not desmaia_fora_da_queda,
+		"Energia.desmaiar() fora do queda.gd: o vale ganhou outra noite no chão, e ela precisa do portão dela")
+	var queda := FileAccess.get_file_as_string("res://scripts/prototipo_3d/queda.gd")
+	_conferir(desmaia.search(queda) != null,
+		"a queda não chama Energia.desmaiar(): cair deixou de ser a mesma noite do desmaio do 2D")
 
 	_fechar()
 
@@ -111,7 +143,7 @@ func _run() -> void:
 func _fechar() -> void:
 	print("")
 	if falhas == 0:
-		print("FOLEGO_OK: Progressao e Energia subiram com os números do 2D, o cansaço encurta o passo para 62%, o corpo lê isso, e só o trabalho gasta fôlego — quem mede o golpe é o tests/ferramentas.gd")
+		print("FOLEGO_OK: Progressao e Energia subiram com os números do 2D, o cansaço encurta o passo para 62% e o corpo lê isso; quem gasta fôlego é o trabalho e a luta, e só a queda desmaia")
 	else:
 		print("folego: %d falha(s)" % falhas)
 	quit(1 if falhas > 0 else 0)

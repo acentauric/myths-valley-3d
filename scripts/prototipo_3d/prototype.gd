@@ -12,6 +12,8 @@ const Lapides = preload("res://scripts/prototipo_3d/lapides.gd")
 const ArvoresInfo = preload("res://scripts/prototipo_3d/arvores_info.gd")
 const PlacasNomes = preload("res://scripts/prototipo_3d/placas_nomes.gd")
 const Tubarao = preload("res://scripts/prototipo_3d/tubarao.gd")
+const Queda = preload("res://scripts/prototipo_3d/queda.gd")
+const LutaVale = preload("res://scripts/prototipo_3d/luta_vale.gd")
 const Atalhos = preload("res://scripts/prototipo_3d/atalhos.gd")
 const CameraMouse = preload("res://scripts/prototipo_3d/camera_mouse.gd")
 const Recursos3D = preload("res://scripts/prototipo_3d/recursos_3d.gd")
@@ -43,7 +45,11 @@ func _enter_tree() -> void:
 	# Movimento: WASD, setas ou os dois, conforme AJUSTAR → Geral.
 	TeclasMovimento.aplicar()
 	_bind("mv_run", [KEY_SHIFT])
-	_bind("mv_release", [KEY_ESCAPE])
+	# O `mv_release` no Esc SAIU daqui. Ele soltava o mouse, e era a causa da
+	# queixa de "tenho que clicar e arrastar": quem apertava Esc procurando o
+	# menu caía no modo de arrastar sem saber por quê. O Esc agora é o menu, e
+	# a ação ficou sem uso nenhum — ação órfã com tecla é convite para alguém
+	# religá-la sem saber por que ela foi desligada.
 	# Atalhos remapeáveis (AJUSTAR → Geral → Atalhos); o Tab da câmera é fixo.
 	_bind("mv_cursor", [KEY_TAB, Atalhos.tecla("camera")], true)
 	_bind("mv_reset", [Atalhos.tecla("reiniciar")])
@@ -254,6 +260,17 @@ func _montar_moradores(spawn: Vector3) -> void:
 	tubarao.name = "Tubarao"
 	add_child(tubarao)
 	tubarao.configurar(world, player, func(texto: String) -> void: hud.set_notice(texto))
+	# Vida no chão é noite no chão: quem cai acorda na porta de casa (queda.gd).
+	var queda := Queda.new()
+	queda.name = "Queda"
+	add_child(queda)
+	queda.configurar(world, player, hud)
+	# A luta e o caititu da mata (luta_vale.gd). Entra depois das lápides e das
+	# árvores: com bicho perto, o E é dela antes de ser delas.
+	var luta := LutaVale.new()
+	luta.name = "Luta"
+	add_child(luta)
+	luta.configurar(world, player, hud)
 	# Pegadas do jogador no chão, por terreno, sumindo com o tempo.
 	pegadas_no = preload("res://scripts/prototipo_3d/pegadas.gd").new()
 	pegadas_no.name = "Pegadas"

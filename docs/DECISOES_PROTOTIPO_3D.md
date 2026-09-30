@@ -16,6 +16,16 @@
 | Meta de submissão usada no planejamento | 05/10/2026; confirmar prazo, horário, fuso e requisitos no formulário oficial |
 | Estado | Registro de decisões de trabalho e validações pendentes; não comprova implementação |
 
+> **Atualização de 29/09/2026 — o recorte vigente está no board.** Depois deste
+> documento, o autor decidiu que o 3D vira o jogo completo e que a migração do
+> 2D é a prioridade ([MIGRACAO_2D_3D.md](MIGRACAO_2D_3D.md)). O plano virou
+> issues no GitHub, e o marco **Jam 04/10** (#1–#6) é o que entra na demo.
+> Três itens deste documento ficaram **fora** desse marco e estão no
+> **Pós-jam**: a conversa por LLM com memória (§7 e §10, hoje a #32, "prioridade
+> a confirmar"), o plantio (§9, 27/09, hoje a #8) e o save ligado (§10, hoje a
+> #7). Se algum deles precisar voltar para a jam, a decisão é do Ramon, e
+> o marco da issue muda junto — este documento não passa por cima do board.
+
 Este documento se aplica ao **protótipo 3D da jam**. Não substitui o GDD completo nem autoriza remover funcionalidades da versão 2D. As escolhas expressas por Ramon são requisitos; os números reduzidos de conteúdo e a ordem de implementação são o recorte técnico proposto para cumprir o prazo.
 
 ### Registro do primeiro teste local — 23/09/2026
