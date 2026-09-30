@@ -57,6 +57,26 @@ var jogador: Node3D = null
 ## marcador cai na âncora, e a meta "derrubar" nunca se cumpre — o que é
 ## verdade, porque sem alvo não há o que derrubar.
 var recursos: Node = null
+## ACHAR UM MORADOR PELO ID, respondido de fora.
+##
+## A cadeia precisa disto para a meta "levar": entregar o pirão ao Tonho pede
+## saber onde o Tonho está. Mas a cadeia não conhece a cena — e não deve: quem
+## sabe a lista dos moradores é o `Prototype`, e pedir a ele por dentro
+## amarraria esta peça àquela cena.
+##
+## É a terceira vez que este mesmo remendo aparece nesta migração, depois do
+## `Vida.esta_lendo` e do `Mochila.alguem_fala`: pergunta sobre o ambiente,
+## respondida por um `Callable` que quem monta liga. Sem ele, a meta "levar"
+## nunca se cumpre — e isso é honesto, porque sem saber quem é o destinatário
+## não há entrega.
+var achar_morador: Callable = Callable()
+
+## Passos cuja entrega já foi feita, por id. A meta "levar" não se mede olhando
+## o mundo: ela ACONTECE num instante — o jogador chega com o item e ele muda de
+## mão. Sem esta memória, a mochila vazia depois da entrega pareceria "ainda não
+## trouxe" e a missão pediria o pirão de novo.
+var _levados: Dictionary = {}
+
 
 var passos: Array = []
 var arremate: Dictionary = {}
@@ -136,7 +156,17 @@ func correr(delta: float, palavra_livre: bool) -> void:
 	if acabou() and not despedida_feita and palavra_livre \
 			and not str(arremate.get("texto", "")).is_empty():
 		despedida_feita = true
-		_falar("", str(arremate["texto"]))
+		# ARREMATE QUE NÃO SE FALA. Por padrão o dono da cadeia diz a última
+		# frase, que é o certo quando ele está por perto — o Pedro termina o
+		# tutorial do lado do jogador.
+		#
+		# A missão do pirão termina no PÍER, e a Dona Filó está na Casa da
+		# estrada: a fala dela sairia num balão do outro lado do vale, que o
+		# jogador não vê. Ali o fim de verdade é a resposta do Tonho, que a
+		# própria meta narra na boca dele, e o arremate é só a nota que fica no
+		# objetivo. `narra: false` no dado diz isso.
+		if bool(arremate.get("narra", true)):
+			_falar("", str(arremate["texto"]))
 	if not iniciado or missao < 0 or missao >= passos.size():
 		return
 
@@ -159,10 +189,12 @@ func correr(delta: float, palavra_livre: bool) -> void:
 
 	var passo: Dictionary = passos[missao]
 	if not (passo.get("meta", {}) as Dictionary).is_empty():
+		# Meta que ACONTECE, e não só se mede: a entrega precisa de alguém para
+		# tentar antes de a pergunta ser feita.
+		_tentar_entregar(passo)
 		if not falta_a_meta(passo):
 			avancar()
 		return
-
 	var alvo := posicao_do_passo(missao)
 	if jogador != null and jogador.global_position.distance_to(alvo) < float(passo.get("raio", 8.0)):
 		avancar()
@@ -223,6 +255,10 @@ func falta_a_meta(passo: Dictionary) -> bool:
 	match str(meta.get("tipo", "")):
 		"juntar":
 			return Inventario.quantidade(str(meta.get("item", ""))) < int(meta.get("quantos", 1))
+		"levar":
+			# Entrega é ACONTECIMENTO, e não estado do mundo: quem responde é a
+			# memória do que já foi entregue. Ver `_tentar_entregar`.
+			return not bool(_levados.get(str(passo.get("id", "")), false))
 		"derrubar":
 			if recursos == null or not recursos.has_method("derrubados"):
 				return true
@@ -257,6 +293,10 @@ func posicao_do_passo(indice: int) -> Vector3:
 			"juntar":
 				if recursos.has_method("mais_perto_que_rende"):
 					perto = recursos.mais_perto_que_rende(str(meta.get("item", "")), de)
+			"levar":
+				var quem := _morador(str(meta.get("a_quem", "")))
+				if quem != null:
+					perto = quem.global_position
 			"derrubar":
 				if recursos.has_method("mais_perto_da_peca"):
 					perto = recursos.mais_perto_da_peca(str(meta.get("alvo", "")), de)
@@ -303,3 +343,52 @@ func _palavra_livre() -> bool:
 	if dono.has_method("fala_perto_de") and dono.fala_perto_de(jogador.global_position):
 		return false
 	return true
+
+
+## O MORADOR DE ID `quem`, ou null. Pergunta respondida de fora — ver
+## `achar_morador`.
+func _morador(quem: String) -> Node3D:
+	if quem == "" or not achar_morador.is_valid():
+		return null
+	var achado = achar_morador.call(quem)
+	return achado as Node3D
+
+
+## A ENTREGA: chegou perto de quem ia receber, com a coisa na mão.
+##
+## É a meta "levar", e ela é diferente das outras duas. "Juntar" e "derrubar"
+## são ESTADOS — dá para perguntar ao mundo quantas pedras há na mochila e
+## quantos pés caíram, a qualquer momento, e a resposta é a mesma. Entrega é um
+## INSTANTE: o item muda de mão e a mochila fica vazia. Perguntar depois "o
+## jogador tem o pirão?" responderia "não", que é indistinguível de "nunca
+## pegou" — e a missão pediria o pirão outra vez.
+##
+## Daí a memória em `_levados`. O acontecimento é registrado quando acontece.
+##
+## QUEM FALA NO FIM É QUEM RECEBE, e não quem pediu. A Dona Filó manda o pirão
+## da Casa da estrada; o Tonho responde no píer, que é onde o jogador está. Pôr
+## a resposta na boca dela seria o jogador ouvir o agradecimento do outro lado
+## do vale, num balão que ele não vê.
+func _tentar_entregar(passo: Dictionary) -> void:
+	var meta: Dictionary = passo.get("meta", {})
+	if str(meta.get("tipo", "")) != "levar":
+		return
+	var id := str(passo.get("id", ""))
+	if bool(_levados.get(id, false)):
+		return
+	var item := str(meta.get("item", ""))
+	if item == "" or not Inventario.tem(item):
+		return
+	var quem := _morador(str(meta.get("a_quem", "")))
+	if quem == null or jogador == null:
+		return
+	var no_chao := quem.global_position - jogador.global_position
+	no_chao.y = 0.0
+	if no_chao.length() > float(meta.get("raio", 3.0)):
+		return
+
+	Inventario.consumir(item, 1)
+	_levados[id] = true
+	var resposta := str(meta.get("resposta", ""))
+	if resposta != "" and quem.has_method("narrar"):
+		quem.narrar("", resposta)

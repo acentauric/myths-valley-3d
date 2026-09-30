@@ -206,9 +206,12 @@ func _ready() -> void:
 	_montar_som()
 	_montar_moradores(spawn)
 	for morador in moradores:
-		if String(morador.dados.get("id", "")) == "damiao":
+		var quem := String(morador.dados.get("id", ""))
+		if quem == "damiao":
 			lapides.coveiro = morador
 			_pendurar_cadeia(morador, "res://data/missoes_coveiro.json", 4.0)
+		elif quem == "filo":
+			_pendurar_cadeia(morador, "res://data/missoes_filo.json", 4.0)
 	Dia.periodo_mudou.connect(_on_periodo_mudou)
 	# A PARTIDA SALVA entra depois de o vale estar montado — moradores, Pedro,
 	# luta —, porque o estado do mundo aponta para eles. Ver Partida e
@@ -634,8 +637,12 @@ func estado_para_salvar() -> Dictionary:
 	var cadeias := {}
 	for id in _cadeias:
 		var c = _cadeias[id]
+		# `levados` vai junto porque entrega é ACONTECIMENTO, não estado: depois
+		# dela a mochila está vazia, e mochila vazia é indistinguível de "nunca
+		# pegou". Sem esta memória, recarregar reabriria o passo pedindo um pirão
+		# que já foi entregue e não existe mais.
 		cadeias[id] = {"missao": c.missao, "iniciado": c.iniciado,
-			"despedida": c.despedida_feita}
+			"despedida": c.despedida_feita, "levados": c._levados.keys()}
 	estado["cadeias"] = cadeias
 	if _recursos != null:
 		estado["caidos"] = _recursos.caidos()
@@ -672,6 +679,9 @@ func restaurar_do_save(estado: Dictionary) -> void:
 		c.iniciado = bool(guardado.get("iniciado", false))
 		c.despedida_feita = bool(guardado.get("despedida", false))
 		c.missao = int(guardado.get("missao", -1))
+		c._levados.clear()
+		for passo in guardado.get("levados", []):
+			c._levados[str(passo)] = true
 		c.espera = 1.4
 	# OS ALVOS CAÍDOS SOMEM DE NOVO, e é aqui e não antes: o vale se monta
 	# inteiro primeiro (`_erguer`), e só então o save diz o que já tinha caído.
@@ -821,6 +831,15 @@ func _pendurar_cadeia(morador: MoradorNPC, arquivo: String, perto: float) -> Nod
 	cadeia.jogador = player
 	cadeia.recursos = _recursos
 	cadeia.comeca_perto_de = perto
+	# QUEM É O MORADOR DE TAL ID, respondido por esta casa, que é a que tem a
+	# lista. A meta "levar" precisa disso para achar quem recebe.
+	cadeia.achar_morador = func(quem: String) -> Node3D:
+		for outro in moradores:
+			if String(outro.dados.get("id", "")) == quem:
+				return outro
+		if pedro != null and quem == "pedro":
+			return pedro
+		return null
 	if not cadeia.carregar(arquivo):
 		cadeia.free()
 		return null
