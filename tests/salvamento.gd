@@ -30,8 +30,11 @@ extends SceneTree
 
 const RESERVA := "user://reserva_do_teste_de_salvamento"
 
-## O que do 3D entra no save pela mão do vale (`estado_para_salvar`).
-const DO_MUNDO := {"Dia": ["hora"]}
+## O que do 3D entra no save pela mão do vale (`estado_para_salvar`), com a
+## MESMA chave lá. `horas_decorridas` é a conta que não volta a zero à
+## meia-noite, e é por ela que o coqueiro cortado sabe quando voltar (ver
+## arvores_info.gd): sem ela no save, o prazo guardado apontaria para longe.
+const DO_MUNDO := {"Dia": ["hora", "horas_decorridas"]}
 
 ## O que do 3D fica FORA do save, campo a campo, com a razão.
 const FORA_DO_SAVE := {
@@ -150,6 +153,12 @@ func _run() -> void:
 	if caititu != null:
 		caititu.ferir(9999.0)
 	await _frames(2)
+	# O que DO_MUNDO diz que o vale guarda, o vale guarda de fato, com a mesma
+	# chave: declaração que ninguém confere é declaração que mente.
+	var do_vale: Dictionary = vale.estado_para_salvar()
+	for nome in DO_MUNDO:
+		for campo in DO_MUNDO[nome]:
+			_conferir(do_vale.has(campo), "DO_MUNDO diz que o vale guarda %s.%s, e o estado_para_salvar não tem '%s'" % [nome, campo, campo])
 	_conferir(partida.salvar(), "a vaga 1 não salvou")
 	_conferir(salvamento.existe_partida(1), "salvou e não há arquivo na vaga 1")
 	_conferir(int(salvamento.resumo(1).get("dia", 0)) == dia_salvo,
