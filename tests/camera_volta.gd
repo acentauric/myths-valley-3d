@@ -189,6 +189,45 @@ func _run() -> void:
 						% [primeira, segunda, "arrastar" if player.camera_travada() else "livre"])
 				_conferir(not paused, "depois de fechar tudo o vale continuou parado")
 
+	# --- A PLAQUINHA DE NOME NÃO FICA POR CIMA DA TELA -----------------------
+	#
+	# "Quando abro os MENUs, o nome do Pedro tá sobrescrevendo os MENUs."
+	#
+	# As plaquinhas moram no mesmo Control do HUD que o almanaque e a barra de
+	# mão, e entram DEPOIS deles — filho mais novo desenha por cima.
+	#
+	# MEDE O AVISO, E NÃO O PIXEL, e isso é escolha com razão. A primeira versão
+	# contava plaquinhas visíveis com a tela aberta e PASSAVA COM O CONSERTO
+	# ARRANCADO: em headless nenhuma fica visível, porque o morador que fala
+	# esconde o próprio rótulo (`npc.gd.mostrar_balao`) e os que não falam andam
+	# de volta ao posto no meio da conta. Tentei construir a cena — morador
+	# calado, posto na frente da câmera, rótulo aceso — e não se sustenta com o
+	# vale andando.
+	#
+	# Verificação que não pode falhar é pior que verificação nenhuma. O que pode
+	# quebrar, e o que quebrou, é o AVISO: o dono das telas chamar
+	# `placas.permitir(false)` ao abrir e `true` ao fechar. É isso que se mede —
+	# e arrancar a ligação reprova aqui.
+	print("")
+	jogo.telas.fechar_tudo()
+	await _frames(2)
+	_conferir(jogo.placas != null, "o vale não montou as plaquinhas de nome")
+	if jogo.placas != null:
+		_conferir(jogo.placas._permitido,
+			"com o vale livre as plaquinhas já estavam proibidas")
+		for qual in ["mochila", "almanaque", "colecao", "painel", "menu_pausa"]:
+			jogo.telas.abrir(qual)
+			await _frames(3)
+			if jogo.telas.aberta() != qual:
+				continue
+			_conferir(not jogo.placas._permitido,
+				"'%s' abriu e as plaquinhas de nome continuaram permitidas: elas desenham por cima" % qual)
+			jogo.telas.fechar_tudo()
+			await _frames(3)
+			_conferir(jogo.placas._permitido,
+				"depois de fechar '%s' as plaquinhas não voltaram a ser permitidas" % qual)
+		print("  plaquinhas: proibidas nas cinco telas e liberadas ao fechar")
+
 	# --- E PERDER O FOCO NÃO TROCA O MODO ------------------------------------
 	#
 	# O primeiro dos quatro defeitos. Soltar o cursor ao perder o foco é certo —

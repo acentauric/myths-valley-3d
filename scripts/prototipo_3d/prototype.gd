@@ -71,6 +71,8 @@ var colecao	# colecao_vale.gd — sem tecla: virou seção do almanaque
 var telas
 ## O menu do Esc, com o que era a coluna de ícones. Ver menu_pausa.gd.
 var menu_pausa
+## As plaquinhas de nome dos moradores; somem com tela aberta (placas_nomes.gd).
+var placas
 ## A aba pedida no último `abrir_o_painel`, entregue à abertura crua.
 var _aba_pedida := 0
 
@@ -231,14 +233,30 @@ func _ready() -> void:
 	menu_pausa.name = "MenuPausa"
 	add_child(menu_pausa)
 	menu_pausa.definir([
-		{"rotulo": "Voltar ao vale", "fazer": func() -> void: pass, "fecha": true},
-		{"rotulo": "Mapa do vale", "fecha": true, "fazer": func() -> void: _toggle_map()},
-		{"rotulo": "Ajustes", "fecha": true, "fazer": func() -> void: _open_settings()},
-		{"rotulo": "Controles", "fecha": true,
+		{"rotulo": "Voltar ao vale", "icone": "fechar", "fecha": true,
+			"fazer": func() -> void: pass},
+		{"rotulo": "Mapa do vale", "icone": "mapa", "fecha": true,
+			"fazer": func() -> void: _toggle_map()},
+		{"rotulo": "Ajustes", "icone": "ajustes", "fecha": true,
+			"fazer": func() -> void: _open_settings()},
+		{"rotulo": "Controles", "icone": "ajuda", "fecha": true,
 			"fazer": func() -> void: hud.set_controls_open(not hud.controls_open())},
+		# SALVAR COMO NO 2D: devolve recado, porque dá certo e a tela fica igual,
+		# e ação sem retorno é a que se aperta três vezes. As três respostas são
+		# as do painel do J, que já as trouxe de lá — sem vaga não salva, salvou
+		# na vaga tal, ou não salvou e a de antes continua onde estava.
+		{"rotulo": "Salvar jogo", "icone": "restaurar",
+			"fazer": func() -> String:
+				if not Partida.tem_vaga():
+					return "Este passeio não tem vaga, e por isso não salva. Para guardar, escolha uma vaga em JOGAR."
+				if Partida.salvar():
+					return "Partida guardada na vaga %d." % Salvamento.slot_atual
+				return "Não consegui salvar. A partida que estava na vaga continua lá."},
 		{"rotulo": func() -> String: return "Som: %s" % ("ligado" if Audio.som_ativo else "desligado"),
+			"icone": "som",
 			"fazer": func() -> void: Audio.definir_som_ativo(not Audio.som_ativo)},
 		{"rotulo": func() -> String: return "Relógio: %s" % ("andando" if not Dia.pausado else "parado"),
+			"icone": "relogio",
 			"fazer": func() -> void:
 				if not Dia.pausa_no_jogo:
 					Audio.efeito("ui_trava")
@@ -248,18 +266,23 @@ func _ready() -> void:
 				# achou: é ele que o dono das telas vai devolver ao fechar.
 				_relogio_pausado_antes = not _relogio_pausado_antes},
 		{"rotulo": func() -> String: return "Velocidade do tempo: %s" % Dia.ROTULOS_VELOCIDADE[Dia.velocidade],
+			"icone": "velocidade",
 			"fazer": func() -> void:
 				Dia.definir_velocidade((Dia.velocidade + 1) % Dia.VELOCIDADES.size())},
 		{"rotulo": func() -> String: return "Câmera do mouse: %s" % ("arrastar" if _camera_travada_antes else "livre"),
+			"icone": "camera",
 			"fazer": func() -> void:
 				# Troca a gaveta, e não a câmera de agora: com o menu aberto o
 				# cursor está solto de propósito, e é a gaveta que o fechamento
 				# devolve. Mexer na câmera aqui seria desfeito um quadro depois.
 				_camera_travada_antes = not _camera_travada_antes
 				CameraMouse.definir(CameraMouse.ARRASTAR if _camera_travada_antes else CameraMouse.LIVRE)},
-		{"rotulo": "Voltar ao menu inicial", "fecha": true,
+		# AS DUAS SAÍDAS, embaixo e em destaque. Sair do vale não é do mesmo tipo
+		# que trocar o volume, e a separação e a cor dizem isso antes de o texto
+		# ser lido.
+		{"rotulo": "Voltar ao menu inicial", "icone": "casa", "fecha": true, "saida": true,
 			"fazer": func() -> void: _ask_return_to_menu()},
-		{"rotulo": "Sair do jogo", "fecha": true,
+		{"rotulo": "Sair do jogo", "icone": "externo", "fecha": true, "saida": true,
 			"fazer": func() -> void:
 				Partida.salvar()
 				get_tree().quit()},
@@ -276,7 +299,13 @@ func _ready() -> void:
 		if aberta:
 			_pause_valley()
 		else:
-			_retomar_o_vale())
+			_retomar_o_vale()
+		# As plaquinhas de nome dos moradores somem com a tela aberta: elas
+		# moram no mesmo Control do HUD que o almanaque e a barra, e entram
+		# depois — "o nome do Pedro tá sobrescrevendo os MENUs". Ver
+		# `placas_nomes.gd`.
+		if placas != null:
+			placas.permitir(not aberta))
 	# O VALE ABRE NO MODO DE CÂMERA ESCOLHIDO (AJUSTAR → Geral → Câmera do
 	# mouse). Era sempre livre, e quem preferia arrastar tinha de apertar a
 	# tecla da câmera toda vez que entrava.
@@ -386,7 +415,7 @@ func _montar_moradores(spawn: Vector3) -> void:
 		# OS ALVOS DE TRABALHO, para o marcador apontar o tronco e não a casa.
 		pedro.recursos = _recursos
 		pedro.narrou.connect(func(texto: String) -> void: hud.set_notice("Pedro: " + texto))
-	var placas := PlacasNomes.new()
+	placas = PlacasNomes.new()
 	placas.name = "PlacasNomes"
 	add_child(placas)
 	placas.configurar(player, hud.map_layer())

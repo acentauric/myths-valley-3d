@@ -116,6 +116,71 @@ func _run() -> void:
 		await _frames(2)
 		_conferir(audio.som_ativo == antes, "não consegui devolver o som ao estado de antes")
 
+	# --- 4b. CADA LINHA TEM ÍCONE ---------------------------------------------
+	#
+	# "Não precisa descartar os ícones que você tinha colocado, eles são
+	# ilustrativos e facilitam a identificação das coisas."
+	#
+	# O que estava errado na coluna do canto não era o desenho: era o desenho
+	# SOZINHO, sem rótulo e sem estado. Juntos, cada um faz o que sabe — o ícone
+	# acha a linha de relance, o texto diz o que ela faz e em que pé está.
+	var sem_icone: Array[String] = []
+	for filho in lista.get_children():
+		if not (filho is Button):
+			continue
+		var tem := false
+		for neto in filho.get_children():
+			if neto is Control:
+				tem = true
+		if not tem:
+			sem_icone.append((filho as Button).text)
+	_conferir(sem_icone.is_empty(),
+		"linha(s) do menu sem ícone: %s" % str(sem_icone))
+
+	# --- 4c. SALVAR DEVOLVE RECADO, COMO NO 2D --------------------------------
+	#
+	# Salvar dá certo e a tela fica igual. Ação sem retorno é a que se aperta
+	# três vezes — é o que o painel do J já faz, vindo do 2D. O recado sai no
+	# rodapé, no lugar da linha das teclas.
+	var i_salvar := _linha_com(lista, "Salvar")
+	_conferir(i_salvar >= 0, "o menu do Esc não tem a linha de salvar")
+	if i_salvar >= 0:
+		menu._cursor = i_salvar
+		menu._fazer()
+		await _frames(2)
+		var recado: String = (_achar(menu, "Rodape") as Label).text
+		_conferir(not recado.to_lower().contains("andar"),
+			"salvar não devolveu recado: o rodapé continuou com as teclas ('%s')" % recado)
+		_conferir(recado.to_lower().contains("vaga") or recado.to_lower().contains("salvar"),
+			"o recado de salvar não fala de vaga nem de salvar: '%s'" % recado)
+
+	# --- 4d. AS DUAS SAÍDAS FICAM EMBAIXO, EM DESTAQUE ------------------------
+	#
+	# "O botão de voltar ao MENU INICIAL e SAIR DO JOGO também pode voltar a ser
+	# como era, tendo um destaque no MENU ESC." Sair do vale não é do mesmo tipo
+	# que trocar o volume: elas são as duas últimas, separadas por um filete, e
+	# de outra cor.
+	var botoes: Array[Button] = []
+	for filho in lista.get_children():
+		if filho is Button:
+			botoes.append(filho as Button)
+	_conferir(botoes.size() >= 2, "o menu tem menos de duas linhas")
+	if botoes.size() >= 2:
+		_conferir(botoes[botoes.size() - 2].text.contains("menu inicial"),
+			"a penúltima linha não é 'Voltar ao menu inicial': '%s'" % botoes[botoes.size() - 2].text)
+		_conferir(botoes[botoes.size() - 1].text.contains("Sair"),
+			"a última linha não é 'Sair do jogo': '%s'" % botoes[botoes.size() - 1].text)
+		var cor_saida: Color = botoes[botoes.size() - 1].get_theme_color("font_color")
+		var cor_comum: Color = botoes[0].get_theme_color("font_color")
+		_conferir(cor_saida != cor_comum,
+			"as linhas de saída estão da mesma cor das outras: sem destaque nenhum")
+	var filetes := 0
+	for filho in lista.get_children():
+		if not (filho is Button) and not (filho is Label):
+			filetes += 1
+	_conferir(filetes > 0,
+		"não há separação entre as linhas de ajuste e as de saída: elas viram a mesma lista")
+
 	# --- 5. A COLUNA DE ÍCONES SUMIU DO HUD ----------------------------------
 	#
 	# Se ela continuasse lá, a mudança teria sido só acrescentar um menu — e o
@@ -169,7 +234,7 @@ func _achar(raiz: Node, nome: String) -> Node:
 func _fechar() -> void:
 	print("")
 	if falhas == 0:
-		print("MENU_PAUSA_OK: o Esc abre o menu com o vale parado, as dez linhas que eram a coluna de ícones estão lá com o estado escrito, apertar uma troca o estado e o rótulo junto, a coluna do canto saiu do HUD, e o menu cabe na janela")
+		print("MENU_PAUSA_OK: o Esc abre o menu com o vale parado; as linhas que eram a coluna de ícones estão lá com ícone E estado escrito, apertar uma troca as duas coisas junto, salvar devolve recado como no 2D, as duas saídas ficam embaixo em destaque, a coluna do canto saiu do HUD, e o menu cabe na janela")
 	else:
 		print("menu do Esc: %d falha(s)" % falhas)
 	quit(1 if falhas > 0 else 0)

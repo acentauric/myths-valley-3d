@@ -36,6 +36,28 @@ signal fechou
 const Identidade = preload("res://scripts/prototipo_3d/identidade.gd")
 const Atalhos = preload("res://scripts/prototipo_3d/atalhos.gd")
 
+## OS ÍCONES VOLTARAM, e é o autor que pediu: "não precisa descartar os ícones
+## que você tinha colocado, eles são ilustrativos e facilitam a identificação
+## das coisas."
+##
+## O que estava errado na coluna do canto não era o desenho — era o desenho
+## SOZINHO: ícone sem rótulo não diz o que faz nem em que estado está. Juntos,
+## cada um faz o que sabe: o ícone acha a linha de relance, o texto responde o
+## que ela faz e o estado dela.
+const HudIcon = preload("res://scripts/prototipo_3d/hud_icon.gd")
+const AudioToggleIcon = preload("res://scripts/prototipo_3d/audio_toggle_icon.gd")
+const ClockIcon = preload("res://scripts/prototipo_3d/clock_icon.gd")
+
+## Tamanho do ícone na linha e o vão até o texto.
+const LADO_DO_ICONE := 26.0
+const VAO_DO_ICONE := 12.0
+
+## Cor das duas linhas de saída. Elas ficam embaixo, depois de um filete, e em
+## terracota: "o botão de voltar ao MENU INICIAL e SAIR DO JOGO também pode
+## voltar a ser como era, tendo um destaque no MENU ESC". Sair do vale não é do
+## mesmo tipo que trocar o volume, e a cor diz isso antes de o texto ser lido.
+const COR_SAIDA := Identidade.TERRACOTA
+
 const COR_FUNDO := Color(0.055, 0.082, 0.070, 0.985)
 const COR_TEXTO := Identidade.TEXTO
 const COR_APAGADA := Color(0.55, 0.58, 0.52)
@@ -55,6 +77,9 @@ var aberto := false
 var _caixa: PanelContainer
 var _lista: VBoxContainer
 var _rodape: Label
+## Recado da última ação, quando ela não muda nada na tela (salvar). Some na
+## próxima mexida — ver `_fazer`.
+var _aviso := ""
 
 
 func _ready() -> void:
@@ -138,8 +163,18 @@ func _redesenhar() -> void:
 	for filho in _lista.get_children():
 		filho.queue_free()
 	_linhas.clear()
+	var saida_aberta := false
 	for i in _itens.size():
 		var item: Dictionary = _itens[i]
+		# AS LINHAS DE SAÍDA FICAM EMBAIXO, depois de um filete. Sair do vale não
+		# é do mesmo tipo que trocar o volume, e a separação diz isso antes de a
+		# cor e o texto serem lidos.
+		if bool(item.get("saida", false)) and not saida_aberta:
+			saida_aberta = true
+			var respiro := Control.new()
+			respiro.custom_minimum_size = Vector2(0, 10)
+			_lista.add_child(respiro)
+			_lista.add_child(Identidade.divisor())
 		var botao := Button.new()
 		botao.focus_mode = Control.FOCUS_NONE
 		botao.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
@@ -148,8 +183,19 @@ func _redesenhar() -> void:
 		botao.text = _rotulo_de(item)
 		botao.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_TEXTO, 500))
 		botao.add_theme_font_size_override("font_size", 19)
-		botao.add_theme_color_override("font_color", COR_TEXTO)
+		botao.add_theme_color_override("font_color",
+			COR_SAIDA if bool(item.get("saida", false)) else COR_TEXTO)
 		botao.add_theme_color_override("font_hover_color", Identidade.CREME)
+		# O ícone entra DENTRO do botão, à esquerda, e o texto recua para caber.
+		# Ele não intercepta o mouse: o clique é do botão inteiro, e ícone que
+		# engole clique é linha que só funciona na metade direita.
+		var icone := _icone_de(item)
+		if icone != null:
+			icone.custom_minimum_size = Vector2(LADO_DO_ICONE, LADO_DO_ICONE)
+			icone.size = Vector2(LADO_DO_ICONE, LADO_DO_ICONE)
+			icone.position = Vector2(14.0, (ALTURA_DA_LINHA - LADO_DO_ICONE) * 0.5)
+			icone.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			botao.add_child(icone)
 		var indice := i
 		botao.pressed.connect(func() -> void:
 			_cursor = indice
@@ -158,7 +204,29 @@ func _redesenhar() -> void:
 		_linhas.append(botao)
 	_cursor = clampi(_cursor, 0, maxi(0, _linhas.size() - 1))
 	_pintar()
-	_rodape.text = "↑↓ ou W/S: andar    ·    E ou Enter: escolher    ·    Esc: voltar ao vale"
+	_rodape.text = _aviso if _aviso != "" \
+		else "↑↓ ou W/S: andar    ·    E ou Enter: escolher    ·    Esc: voltar ao vale"
+	_rodape.add_theme_color_override("font_color",
+		Identidade.CREME if _aviso != "" else COR_APAGADA)
+
+
+## O ícone da linha, ou null. O tipo vem do dado; os dois que mostram estado —
+## som e relógio — têm classe própria e recebem o estado ao nascer.
+func _icone_de(item: Dictionary) -> Control:
+	var tipo := str(item.get("icone", ""))
+	match tipo:
+		"":
+			return null
+		"som":
+			var som := AudioToggleIcon.new()
+			som.set_active(Audio.som_ativo)
+			return som
+		"relogio":
+			var relogio := ClockIcon.new()
+			relogio.set_running(not Dia.pausado)
+			return relogio
+		_:
+			return HudIcon.new().configurar(tipo)
 
 
 func _rotulo_de(item: Dictionary) -> String:
@@ -187,6 +255,7 @@ func _pintar() -> void:
 func abrir() -> void:
 	if aberto:
 		return
+	_aviso = ""
 	aberto = true
 	visible = true
 	_redesenhar()
@@ -221,13 +290,21 @@ func _andar(passo: int) -> void:
 ## estado. Sem redesenhar, apertar "Som: ligado" desligaria o som e a linha
 ## continuaria dizendo "ligado" — o menu mentindo sobre o que ele mesmo acabou
 ## de fazer.
+##
+## AÇÃO QUE NÃO MUDA NADA NA TELA DEVOLVE RECADO. Salvar é o caso: dá certo e a
+## tela fica igual, e ação sem retorno é a que se aperta três vezes (é o que o
+## painel do J já faz, vindo do 2D). Quem devolve texto tem o texto mostrado no
+## rodapé, no lugar da linha das teclas, até a mexida seguinte.
 func _fazer() -> void:
 	if _cursor < 0 or _cursor >= _itens.size():
 		return
 	var item: Dictionary = _itens[_cursor]
+	_aviso = ""
 	var acao = item.get("fazer", null)
 	if acao is Callable:
-		acao.call()
+		var resposta = acao.call()
+		if typeof(resposta) == TYPE_STRING:
+			_aviso = str(resposta)
 	if bool(item.get("fecha", false)):
 		fechar()
 		return
