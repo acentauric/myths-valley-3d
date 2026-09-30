@@ -77,9 +77,9 @@ os marcadores clicáveis centralizam os pontos. **VOLTAR** retorna ao menu.
 As pontas norte e sul ficam fora do recorte inicial e podem ser vistas com o arrasto.
 O terreno usa a altitude dos 12 pontos do KML. A malha de terra e sua colisão,
 as vias, a vegetação, as construções e os destinos de navegação acompanham o
-relevo interpolado. A escala do catálogo vale também para Y: em Bom Jesus dos
-Pobres, 4 m de altitude correspondem a 1 unidade do Godot. Rios e mar são
-representações de superfície, não simulação hídrica.
+relevo interpolado. Bom Jesus dos Pobres mantém a escala horizontal em 1:4 e usa
+`vertical_exaggeration = 2.0`: 4 m reais de altitude correspondem a 2 unidades do
+Godot. Rios e mar são representações de superfície, não simulação hídrica.
 Esta cena ainda não tem todas as construções, ruas urbanas ou biomas do país.
 
 ## Escala e coordenadas
@@ -97,6 +97,7 @@ primeira região é o ponto Praça:
 | X no Godot | aumenta para leste |
 | Z no Godot | aumenta para sul |
 | Escala horizontal | `1 unidade = 4 metros` (demo; `scale_m_per_unit` em `regioes.json`) |
+| Escala vertical | exageração `2.0×` (`1 unidade = 2 metros` de altitude) |
 
 Para esta região pequena, o importador usa uma projeção local: calcula os metros
 por grau de longitude e latitude na origem e aplica esses fatores a cada ponto.

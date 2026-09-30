@@ -126,3 +126,30 @@ deve ler a composição salva, não substituir o trabalho do editor.
 O critério de sucesso não é apenas o jogo continuar igual. O autor deve conseguir
 abrir o Godot, localizar um objeto pelo nome, movê-lo visualmente, salvar e ver a
 mudança no jogo sem editar coordenadas em GDScript e sem depender da IA.
+
+## Primeira prévia persistida do terreno
+
+A primeira fatia dessa migração está em teste na issue #33. Somente a malha de
+terra da região ativa é persistida em
+`prototipo_3d/scenes/prototipo_3d/terreno_editavel.tscn`. Um host `@tool` leve
+mostra essa cena no editor dentro de `abertura.tscn` e `vale.tscn`; em execução,
+o arquivo pesado não é carregado e o `WorldBuilder` continua gerando o vale real.
+
+Para atualizar a prévia depois de mudar KML, geometria, cenário ou escala:
+
+```powershell
+cd prototipo_3d
+& 'C:\Tools\Godot\Godot_v4.7.2-stable_win64_console.exe' `
+  --headless --path . --script res://tools/mapas/gerar_terreno_editavel.gd
+```
+
+A escala horizontal continua em 1:4, mas o catálogo da região aplica
+`vertical_exaggeration = 2.0` ao relevo. O jogo e esta prévia usam o mesmo valor,
+mantendo malha, colisão e posicionamento dos elementos de cenário coerentes.
+
+O arquivo pode ser aberto e inspecionado como cena no Godot. Nesta primeira
+tentativa ele é uma `ArrayMesh` persistida, não um terreno esculpível por pincel:
+é possível editar cena, transformação e material, mas mover vértices visualmente
+exigirá uma ferramenta de autoria própria ou um terrain editor. Rodar o gerador
+novamente substitui a malha persistida; portanto, até existir a separação entre
+base importada e ajustes autorais, não guardar edição manual de vértices nela.

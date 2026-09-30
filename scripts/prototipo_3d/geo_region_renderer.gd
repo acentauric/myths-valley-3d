@@ -1,8 +1,9 @@
 extends Node3D
 ## Renders one geographic region from metric KML data and a separately curated scenario.
 ## Coordinates are local meters: X points east and Z points south.
-## The region catalog defines how many meters one Godot unit represents (`scale_m_per_unit`);
-## positions are divided by that factor while walkable widths keep a playable minimum.
+## The region catalog defines how many meters one Godot unit represents (`scale_m_per_unit`)
+## and may exaggerate altitude independently (`vertical_exaggeration`). Horizontal positions
+## are divided by the scale while walkable widths keep a playable minimum.
 
 const LAND_COLOR := Color("9bbf7c")
 const FOREST_COLOR := Color("719968")
@@ -75,7 +76,12 @@ var _tree_trunks: Array[Dictionary] = []
 var _tree_collision_pool: Array[Dictionary] = []
 var _tree_collision_elapsed := 0.0
 var _meters_per_unit := 1.0
+var _vertical_exaggeration := 1.0
 var _estilo_tripo := false
+## O gerador de prévia usa exatamente a mesma leitura geográfica e a mesma malha
+## drapeada do jogo, mas para depois da terra. Assim o editor não mantém uma
+## segunda interpretação do KML só para conseguir mostrar o chão.
+var terrain_only := false
 ## Espécies da mata no estilo Tripo (chaves do CatalogoAssets) e no procedural (FloraReconcavo).
 ## Só modelos leves (~2,5 mil triângulos): o dendê (15 mil) fica para as árvores nomeadas.
 const ESPECIES_MATA_TRIPO := ["mata_alta", "mata_larga", "mata_alta", "embauba", "mata_larga"]
@@ -105,6 +111,14 @@ func set_meters_per_unit(value: float) -> void:
 
 func get_meters_per_unit() -> float:
 	return _meters_per_unit
+
+
+func set_vertical_exaggeration(value: float) -> void:
+	_vertical_exaggeration = maxf(value, 0.01)
+
+
+func get_vertical_exaggeration() -> float:
+	return _vertical_exaggeration
 
 
 ## Converts a real-world width in meters to Godot units, never below a playable minimum.
@@ -148,7 +162,7 @@ func build_region(kml_json_path: String, scenario_json_path: String) -> void:
 			continue
 		var elevation_points := _to_points(elevation_feature.get("coordinates_m", []))
 		if not elevation_points.is_empty():
-			_elevation_samples.append({"point": elevation_points[0], "height": float(elevation_feature["source_altitude_m"]) / _meters_per_unit})
+			_elevation_samples.append({"point": elevation_points[0], "height": float(elevation_feature["source_altitude_m"]) / _meters_per_unit * _vertical_exaggeration})
 	for feature_value in geographic.get("features", []):
 		var feature: Dictionary = feature_value
 		_features.append(feature)
@@ -184,13 +198,17 @@ func build_region(kml_json_path: String, scenario_json_path: String) -> void:
 				if points.size() >= 2:
 					_rivers.append({"name": String(feature.get("name", "")), "points": points, "width": _units(9.0, 4.0)})
 	_curve_roads()
-	await _marcar(0.02, "Enchendo a baía")
-	_build_background()
+	if not terrain_only:
+		await _marcar(0.02, "Enchendo a baía")
+		_build_background()
 	# Ladrilho maior deixa folhas e tufos mais legiveis no terreno ao redor da via.
 	var mata_material := _terrain_texture_material(GRAMA_TERRA_MATA_TEXTURE, 12.0)
 	await _marcar(0.05, "Moldando o terreno")
 	await _add_polygon("Terra", _land, 0.0, LAND_COLOR, true, mata_material, true)
 	await _marcar(0.38, "Moldando o terreno")
+	if terrain_only:
+		await _marcar(1.0, "Terreno pronto")
+		return
 	# Quando a mata acompanha todo o continente, evita criar uma segunda malha
 	# sobre a terra. As duas malhas tinham triangulações diferentes e podiam
 	# deixar a textura parecer recortada após a interpolação das elevações.
@@ -713,6 +731,7 @@ func _add_polygon(label: String, points: PackedVector2Array, y: float, color: Co
 		var body := StaticBody3D.new()
 		body.name = "Colisão da terra"
 		var collision := CollisionShape3D.new()
+		collision.name = "Forma"
 		var shape := mesh.create_trimesh_shape()
 		shape.backface_collision = true
 		collision.shape = shape

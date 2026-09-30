@@ -3,7 +3,8 @@ extends Node3D
 ## interesse. Cada peça existe em dois estilos escolhidos em AJUSTAR (autoload Estilo):
 ## "tripo" usa os GLBs do catálogo (CatalogoAssets); "procedural" usa FloraReconcavo e os
 ## construtores deste script. Terreno, ruas, rios e mar são iguais nos dois.
-## O catálogo de regiões define quantos metros reais cabem em uma unidade (`scale_m_per_unit`).
+## O catálogo de regiões separa a escala horizontal (`scale_m_per_unit`) da
+## exageração artística do relevo (`vertical_exaggeration`).
 
 const PATH := Color("c5ad7a")
 const WOOD := Color("735139")
@@ -42,6 +43,7 @@ var lapides_pegada: Array[Vector3] = []
 var region_title := "Vale"
 var _region = null
 var _meters_per_unit := 1.0
+var _vertical_exaggeration := 1.0
 var _sun: DirectionalLight3D
 var _moon: DirectionalLight3D
 var _environment: Environment
@@ -381,6 +383,11 @@ func _enter_tree() -> void:
 
 
 func _ready() -> void:
+	# A cena persistida deixa o relevo visível no editor. Em execução ela sai antes
+	# da montagem para a região real continuar sendo a única fonte de colisão e arte.
+	var terreno_editor := get_node_or_null("TerrenoEditor")
+	if terreno_editor != null:
+		terreno_editor.queue_free()
 	_montar()
 
 
@@ -395,10 +402,12 @@ func _montar() -> void:
 		return
 	region_title = String(region_data.get("title", region_data.get("id", "Vale")))
 	_meters_per_unit = maxf(float(region_data.get("scale_m_per_unit", 1.0)), 0.01)
+	_vertical_exaggeration = maxf(float(region_data.get("vertical_exaggeration", 1.0)), 0.01)
 	_region = GeoRegionRenderer.new()
 	_region.name = String(region_data.get("id", "Regiao"))
 	add_child(_region)
 	_region.set_meters_per_unit(_meters_per_unit)
+	_region.set_vertical_exaggeration(_vertical_exaggeration)
 	_region.set_estilo_tripo(estilo_tripo())
 	# A região vale 0 a 75% do progresso; a vila, o resto.
 	_region.etapa.connect(func(fracao: float, texto: String) -> void: progresso.emit(fracao * 0.75, texto))
@@ -468,6 +477,10 @@ func _active_region_data() -> Dictionary:
 			var scale := float(entry.get("scale_m_per_unit", 1.0))
 			if scale <= 0.0:
 				push_error("A escala da região (scale_m_per_unit) precisa ser positiva.")
+				return {}
+			var vertical_exaggeration := float(entry.get("vertical_exaggeration", 1.0))
+			if vertical_exaggeration <= 0.0:
+				push_error("A exageração vertical da região (vertical_exaggeration) precisa ser positiva.")
 				return {}
 			return entry
 	push_error("A região ativa não foi encontrada no catálogo.")
