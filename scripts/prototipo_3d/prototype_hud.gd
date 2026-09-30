@@ -200,6 +200,7 @@ func _ready() -> void:
 	_clock_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 
 	_criar_barra_de_vida()
+	_criar_barra_de_folego()
 
 	# A BARRA DE MÃO ENTRA POR ÚLTIMO, e é o conserto de "não dá pra ver".
 	#
@@ -285,6 +286,62 @@ func _atualizar_vida() -> void:
 	barra_vida.value = vida.atual
 	_vida_texto.text = "%d" % roundi(vida.atual)
 	_vida_preenchimento.bg_color = COR_VIDA_ENVENENADA if vida.envenenado_agora() else COR_VIDA
+
+
+## O FÔLEGO (#3), logo abaixo da vida e na mesma medida, com as cores do 2D
+## (`scripts/ui/hud.gd`): verde enquanto há fôlego, vermelho quando o corpo
+## está no fim. O número vem do `Energia` compartilhado, e o limiar é o dele
+## (`Energia.cansado()`), não um número daqui.
+##
+## Cansado, o texto diz "cansado" além de mudar a cor. O cansaço já pesa no
+## corpo — o passo cai para 62% e a corrida não responde —, e sem aviso quem
+## joga pensa que o jogo travou (ver `Energia.cansou`).
+const COR_FOLEGO := Color(0.55, 0.78, 0.45)
+const COR_FOLEGO_BAIXO := Color(0.9, 0.42, 0.34)
+var barra_folego: ProgressBar
+var _folego_texto: Label
+var _folego_preenchimento: StyleBoxFlat
+
+
+func _criar_barra_de_folego() -> void:
+	barra_folego = ProgressBar.new()
+	barra_folego.name = "Folego"
+	barra_folego.show_percentage = false
+	# Transparente ao mouse, como a da vida.
+	barra_folego.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	barra_folego.add_theme_stylebox_override("background", barra_vida.get_theme_stylebox("background"))
+	_folego_preenchimento = StyleBoxFlat.new()
+	_folego_preenchimento.bg_color = COR_FOLEGO
+	_folego_preenchimento.set_corner_radius_all(6)
+	barra_folego.add_theme_stylebox_override("fill", _folego_preenchimento)
+	_root.add_child(barra_folego)
+	barra_folego.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP)
+	barra_folego.offset_left = -70
+	barra_folego.offset_right = 70
+	barra_folego.offset_top = 98
+	barra_folego.offset_bottom = 114
+	_folego_texto = _label("", 11, INK)
+	barra_folego.add_child(_folego_texto)
+	_folego_texto.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_folego_texto.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_folego_texto.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	var energia := get_node_or_null("/root/Energia")
+	if energia == null:
+		barra_folego.visible = false
+		return
+	energia.mudou.connect(_atualizar_folego)
+	_atualizar_folego()
+
+
+func _atualizar_folego() -> void:
+	var energia := get_node_or_null("/root/Energia")
+	if energia == null or barra_folego == null:
+		return
+	barra_folego.max_value = energia.maximo()
+	barra_folego.value = energia.atual
+	var cansado: bool = energia.cansado()
+	_folego_texto.text = ("%d · cansado" if cansado else "%d") % roundi(energia.atual)
+	_folego_preenchimento.bg_color = COR_FOLEGO_BAIXO if cansado else COR_FOLEGO
 
 
 func _process(delta: float) -> void:
