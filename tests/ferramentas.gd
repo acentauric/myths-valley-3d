@@ -162,7 +162,8 @@ func _run() -> void:
 
 	var metas_que_o_vale_sabe := ["juntar", "derrubar", "levar", "falar"]
 	var passos_com_meta := 0
-	for nome in ["missoes_guia", "missoes_coveiro", "missoes_filo", "missoes_zefa"]:
+	for nome in ["missoes_guia", "missoes_coveiro", "missoes_filo", "missoes_zefa",
+			"missoes_tonho", "missoes_candinha"]:
 		var texto := FileAccess.get_file_as_string("res://data/%s.json" % nome)
 		_conferir(texto != "", "não consegui ler %s.json" % nome)
 		var dado = JSON.parse_string(texto)
@@ -219,12 +220,17 @@ func _run() -> void:
 						var carga := str(meta.get("item", ""))
 						_conferir(Catalogo.ITENS.has(carga),
 							"o passo '%s' manda levar '%s', fora do catálogo" % [qual_passo, carga])
-						_conferir(entregues.has(carga),
-							"o passo '%s' manda levar %s e ninguém deu o %s"
-								% [qual_passo, carga, carga])
-	print("  passos com meta nas quatro cadeias: %d" % passos_com_meta)
-	_conferir(passos_com_meta >= 8,
-		"só achei %d passo(s) com meta nas quatro cadeias" % passos_com_meta)
+						# ENTREGADO OU COLHÍVEL. A Dona Candinha não dá a cana:
+						# ela pede a do roçado do jogador, e o passo antes dá a
+						# foice. Exigir que alguém entregue a carga reprovaria a
+						# missão que funciona — e deixar de perguntar deixaria
+						# passar a que manda levar o que não existe.
+						_conferir(entregues.has(carga) or ferramenta_de_rende.has(carga),
+							"o passo '%s' manda levar %s, que ninguém deu e nenhum alvo do vale rende"
+								% [qual_passo, carga])
+	print("  passos com meta nas seis cadeias: %d" % passos_com_meta)
+	_conferir(passos_com_meta >= 11,
+		"só achei %d passo(s) com meta nas seis cadeias" % passos_com_meta)
 
 	_fechar()
 
@@ -232,7 +238,7 @@ func _run() -> void:
 func _fechar() -> void:
 	print("")
 	if falhas == 0:
-		print("FERRAMENTAS_OK: os alvos estão no vale, sem a ferramenta à mão o jogo recusa DIZENDO qual falta, com ela encaixada o golpe gasta fôlego, o alvo cai na conta certa e o material entra na mochila; e nas quatro cadeias de missão toda meta é de um tipo que o vale sabe cumprir, todo material pedido sai de um alvo posto com a ferramenta entregue antes, e todo morador procurado mora aqui")
+		print("FERRAMENTAS_OK: os alvos estão no vale, sem a ferramenta à mão o jogo recusa DIZENDO qual falta, com ela encaixada o golpe gasta fôlego, o alvo cai na conta certa e o material entra na mochila; e nas seis cadeias de missão toda meta é de um tipo que o vale sabe cumprir, todo material pedido sai de um alvo posto com a ferramenta entregue antes, e todo morador procurado mora aqui")
 	else:
 		print("ferramentas: %d falha(s)" % falhas)
 	quit(1 if falhas > 0 else 0)

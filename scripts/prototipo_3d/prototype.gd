@@ -364,6 +364,10 @@ func _ready() -> void:
 			_pendurar_cadeia(morador, "res://data/missoes_filo.json", 4.0)
 		elif quem == "zefa":
 			_pendurar_cadeia(morador, "res://data/missoes_zefa.json", 4.0)
+		elif quem == "tonho":
+			_pendurar_cadeia(morador, "res://data/missoes_tonho.json", 4.0)
+		elif quem == "candinha":
+			_pendurar_cadeia(morador, "res://data/missoes_candinha.json", 4.0)
 	Dia.periodo_mudou.connect(_on_periodo_mudou)
 	# A PARTIDA SALVA entra depois de o vale estar montado — moradores, Pedro,
 	# luta —, porque o estado do mundo aponta para eles. Ver Partida e

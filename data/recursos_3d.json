@@ -2,6 +2,54 @@
   "observacao": "ONDE BATER: os alvos de trabalho do vale. Cada um é uma peça do CatalogoAssets posta no mundo, com colisão, que responde à tecla de interagir quando o jogador tem a ferramenta certa na mochila. 'lugar' é NOME DE CONTRATO do autoload Lugares — o mesmo que o jogo 2D usa —, e 'desvio' é em unidades (1 u = 4 m) a partir dele. 'golpes' é quantas batidas até render, e cada batida custa fôlego pela conta do Energia. TRADUÇÃO: os nomes estão só em português neste primeiro momento; inglês e espanhol estão declarados como pendentes em tests/idiomas.gd, e são do Ramon.",
   "recursos": [
     {
+      "id": "cana_rocado_a",
+      "nome": "Pé de cana",
+      "peca": "cana",
+      "lugar": "rocado",
+      "desvio": [2.0, 6.0],
+      "tamanho": 1.0,
+      "ferramenta": "foice",
+      "golpes": 2,
+      "rende": "cana",
+      "quantidade": 2
+    },
+    {
+      "id": "cana_rocado_b",
+      "nome": "Pé de cana",
+      "peca": "cana",
+      "lugar": "rocado",
+      "desvio": [4.0, 7.5],
+      "tamanho": 1.0,
+      "ferramenta": "foice",
+      "golpes": 2,
+      "rende": "cana",
+      "quantidade": 2
+    },
+    {
+      "id": "cana_rocado_c",
+      "nome": "Pé de cana",
+      "peca": "cana",
+      "lugar": "rocado",
+      "desvio": [-1.0, 7.0],
+      "tamanho": 1.0,
+      "ferramenta": "foice",
+      "golpes": 2,
+      "rende": "cana",
+      "quantidade": 2
+    },
+    {
+      "id": "cana_rocado_d",
+      "nome": "Pé de cana",
+      "peca": "cana",
+      "lugar": "rocado",
+      "desvio": [6.0, 6.0],
+      "tamanho": 1.0,
+      "ferramenta": "foice",
+      "golpes": 2,
+      "rende": "cana",
+      "quantidade": 2
+    },
+    {
       "id": "lenha_rocado_a",
       "nome": "Tronco caído",
       "peca": "lenha",

@@ -402,9 +402,18 @@ func _acertar_o_caderno(passo: Dictionary) -> void:
 				"Cortar: %d de %d" % [caidos, quantos_pes])
 		"levar":
 			var levou: bool = bool(_levados.get(str(passo.get("id", "")), false))
-			CadernoDoVale.andar(id, 1 if levou else 0, 1,
-				"Levar %s a %s" % [_nome_do_item(str(meta.get("item", ""))),
-					_nome_de(str(meta.get("a_quem", "")))])
+			var carga := str(meta.get("item", ""))
+			var pedidas := maxi(int(meta.get("quantos", 1)), 1)
+			var linha := "Levar %s a %s" % [_nome_do_item(carga),
+				_nome_de(str(meta.get("a_quem", "")))]
+			# QUANTAS AINDA FALTAM, quando é mais de uma: sem isto o jogador sobe
+			# até a praça para descobrir que trouxe cinco. A conta fica na frase
+			# e não na barra, porque ter as seis não é tê-las entregado.
+			if pedidas > 1:
+				linha = "Levar %d %s a %s (tem %d)" % [pedidas, _nome_do_item(carga),
+					_nome_de(str(meta.get("a_quem", ""))),
+					mini(pedidas, Inventario.quantidade(carga))]
+			CadernoDoVale.andar(id, 1 if levou else 0, 1, linha)
 		"falar":
 			var falou: bool = bool(_levados.get(str(passo.get("id", "")), false))
 			CadernoDoVale.andar(id, 1 if falou else 0, 1,
@@ -522,7 +531,12 @@ func _tentar_encontro(passo: Dictionary) -> void:
 	if bool(_levados.get(id, false)):
 		return
 	var item := str(meta.get("item", ""))
-	if tipo == "levar" and (item == "" or not Inventario.tem(item)):
+	# A ENTREGA TEM CONTA. A Dona Candinha pede SEIS canas, e enquanto a meta
+	# levava um só, chegar ao lado dela com uma cana fechava a missão das seis:
+	# o balão saía, o passo fechava, e a conta não acontecia. `quantos` sem
+	# número é um, que é o pirão da Dona Filó e tudo que veio antes.
+	var quantos := maxi(int(meta.get("quantos", 1)), 1)
+	if tipo == "levar" and (item == "" or Inventario.quantidade(item) < quantos):
 		return
 	var quem := _morador(str(meta.get("a_quem", "")))
 	if quem == null or jogador == null:
@@ -533,7 +547,7 @@ func _tentar_encontro(passo: Dictionary) -> void:
 		return
 
 	if tipo == "levar":
-		Inventario.consumir(item, 1)
+		Inventario.consumir(item, quantos)
 	_levados[id] = true
 	var resposta := str(meta.get("resposta", ""))
 	if resposta != "" and quem.has_method("narrar"):

@@ -1,0 +1,38 @@
+{
+  "observacao": "A GARAPA DA PRAÇA, trazida do jogo 2D (data/dialogos/arraial.json, passos candinha_cana / candinha_cana_fim). A Dona Candinha mói cana na praça e quer seis da do jogador, do roçado dele, para não comprar do engenho do outro lado da vila. É a primeira cadeia do vale que junta TRABALHO e ENTREGA: corta-se com a foice no roçado e leva-se à mão dela, ao contrário do pirão da Filó (que vem pronto) e da conversa da Zefa (que não pede nada). Por ela nasceu a conta na meta 'levar': até aqui a entrega levava UM item, e o 2D pede seis. A RECOMPENSA DO 2D FICOU FORA: lá a garapa rende 3 garapas e a informação da praça, e a CadeiaDeMissoes ainda não tem campo de recompensa — o número está em arraial.json, em 'recompensas'. TRADUÇÃO: só em português neste primeiro momento; inglês e espanhol são do Ramon.",
+  "dono": "candinha",
+  "principal": false,
+  "abre_em": "praca",
+  "traducao": "pendente",
+  "passos": [
+    {
+      "id": "candinha_cana",
+      "lugar": "praca",
+      "raio": 7.0,
+      "audio": "",
+      "texto": "Ô meu filho, chega aqui. Você planta cana naquele seu pedaço, não planta? Eu vi o verde de longe. Meu fornecedor é o engenho do outro lado da vila, e o homem de lá anda cobrando o que a cana não vale. Corte seis canas da sua — toma a foice, que de mão não se corta cana. Não precisa ser hoje.",
+      "entrega": { "item": "foice", "quantidade": 1 },
+      "meta": { "tipo": "juntar", "item": "cana", "quantos": 6 }
+    },
+    {
+      "id": "candinha_garapa",
+      "lugar": "praca",
+      "raio": 7.0,
+      "audio": "",
+      "texto": "Seis. Traga aqui no meio da praça que eu moo na hora, e o que sair é seu e meu, meio a meio.",
+      "meta": {
+        "tipo": "levar",
+        "item": "cana",
+        "quantos": 6,
+        "a_quem": "candinha",
+        "raio": 3.4,
+        "resposta": "Olha o caldo. Tá vendo a cor? Cana de terra boa dá essa cor. O engenho vende garapa de cana velha, que fica parada no carro de boi três dias — a sua veio do pé pra minha mão. De agora em diante você bebe de graça aqui. E quando quiser saber quem chegou, quem saiu e quem tá devendo, é só perguntar."
+      }
+    }
+  ],
+  "arremate": {
+    "texto": "A Dona Candinha mói a sua cana na praça, e o que ela sabe da praça agora você também sabe.",
+    "narra": false,
+    "traducao": "pendente"
+  }
+}
