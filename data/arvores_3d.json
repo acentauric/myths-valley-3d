@@ -1,7 +1,16 @@
 {
   "observacao": "Fichas das árvores do vale (tecla E perto delas). Chave = espécie do catálogo/mata. Cada ficha tem páginas curtas: E abre, E passa a página, E na última fecha. Contexto: Recôncavo Baiano, 1887.",
+  "observacao_grupos": "OS GRUPOS SÃO A CADEIA DE ÍNDICES DO ALMANAQUE: a tela abre numa lista de grupos e desce daí para a espécie, em vez de despejar dezoito nomes numa coluna só. A ordem aqui é a ordem em que eles aparecem. Cada árvore diz a que grupo pertence pelo campo 'grupo'; árvore sem grupo cai em 'outras', que existe para que acrescentar espécie nova nunca a faça desaparecer da tela.",
+  "grupos": {
+    "frutiferas": { "nome": "Frutíferas do quintal", "resumo": "O que se come e o que dá sombra em volta de casa." },
+    "mata": { "nome": "Mata de dentro", "resumo": "O que fica onde o machado ainda não chegou." },
+    "beira": { "nome": "Beira d'água", "resumo": "A franja da baía, o mangue e a areia." },
+    "oficio": { "nome": "De lavoura e ofício", "resumo": "O que vira azeite, vassoura e corda de navio." },
+    "outras": { "nome": "Outras", "resumo": "As que ainda não foram arrumadas em grupo." }
+  },
   "arvores": {
     "mangueira": {
+      "grupo": "frutiferas",
       "nome": "Mangueira",
       "cientifico": "Mangifera indica",
       "paginas": [
@@ -10,6 +19,7 @@
       ]
     },
     "jaqueira": {
+      "grupo": "frutiferas",
       "nome": "Jaqueira",
       "cientifico": "Artocarpus heterophyllus",
       "paginas": [
@@ -18,6 +28,7 @@
       ]
     },
     "cajueiro": {
+      "grupo": "frutiferas",
       "nome": "Cajueiro",
       "cientifico": "Anacardium occidentale",
       "paginas": [
@@ -26,6 +37,7 @@
       ]
     },
     "coqueiro": {
+      "grupo": "beira",
       "nome": "Coqueiro",
       "cientifico": "Cocos nucifera",
       "paginas": [
@@ -34,6 +46,7 @@
       ]
     },
     "pau_brasil": {
+      "grupo": "mata",
       "nome": "Pau-brasil",
       "cientifico": "Paubrasilia echinata",
       "paginas": [
@@ -42,6 +55,7 @@
       ]
     },
     "dendezeiro": {
+      "grupo": "oficio",
       "nome": "Dendezeiro",
       "cientifico": "Elaeis guineensis",
       "paginas": [
@@ -50,6 +64,7 @@
       ]
     },
     "bananeira": {
+      "grupo": "frutiferas",
       "nome": "Bananeira",
       "cientifico": "Musa × paradisiaca",
       "paginas": [
@@ -58,6 +73,7 @@
       ]
     },
     "ipe_amarelo": {
+      "grupo": "mata",
       "nome": "Ipê-amarelo",
       "cientifico": "Handroanthus albus",
       "paginas": [
@@ -66,6 +82,7 @@
       ]
     },
     "ipe_roxo": {
+      "grupo": "mata",
       "nome": "Ipê-roxo",
       "cientifico": "Handroanthus impetiginosus",
       "paginas": [
@@ -74,6 +91,7 @@
       ]
     },
     "embauba": {
+      "grupo": "mata",
       "nome": "Embaúba",
       "cientifico": "Cecropia pachystachya",
       "paginas": [
@@ -82,6 +100,7 @@
       ]
     },
     "mata_alta": {
+      "grupo": "mata",
       "nome": "Sapucaia",
       "cientifico": "Lecythis pisonis",
       "paginas": [
@@ -90,6 +109,7 @@
       ]
     },
     "mata_larga": {
+      "grupo": "mata",
       "nome": "Gameleira",
       "cientifico": "Ficus gomelleira",
       "paginas": [
@@ -98,6 +118,7 @@
       ]
     },
     "mangue": {
+      "grupo": "beira",
       "nome": "Mangue-vermelho",
       "cientifico": "Rhizophora mangle",
       "paginas": [
@@ -106,6 +127,7 @@
       ]
     },
     "piacava": {
+      "grupo": "oficio",
       "nome": "Piaçava",
       "cientifico": "Attalea funifera",
       "paginas": [
@@ -114,6 +136,7 @@
       ]
     },
     "ingazeiro": {
+      "grupo": "mata",
       "nome": "Ingazeiro",
       "cientifico": "Inga sp.",
       "paginas": [
@@ -122,6 +145,7 @@
       ]
     },
     "clusia": {
+      "grupo": "beira",
       "nome": "Abaneiro",
       "cientifico": "Clusia sp.",
       "paginas": [
@@ -130,6 +154,7 @@
       ]
     },
     "pitangueira": {
+      "grupo": "frutiferas",
       "nome": "Pitangueira",
       "cientifico": "Eugenia uniflora",
       "paginas": [
@@ -138,6 +163,7 @@
       ]
     },
     "jenipapeiro": {
+      "grupo": "frutiferas",
       "nome": "Jenipapeiro",
       "cientifico": "Genipa americana",
       "paginas": [
