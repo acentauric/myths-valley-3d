@@ -38,7 +38,7 @@ crédito do Tripo e exigem o custo aprovado **antes** de gerar.
 | Fase 2.5 — geografia | #22 chapada e vizinhos · #23 rio, vau e lagoa · #24 mata e serra · #25 fazenda e ruínas |
 | Fase 3 — missões e enredo | **#1** (jam) · #31 capítulos 6 e 7 |
 | Fase 4 — salvar | ~~#7~~ (feita) |
-| Fase 6 — interface | **#2** mochila · **#3** fôlego · **#4** teclas (jam) · #19 painel · #20 teia, coleção, arraial · #21 fala com escolha |
+| Fase 6 — interface | **#2** mochila · **#3** fôlego · **#4** teclas (jam) · ~~#19 painel~~ (feita) · #20 teia, coleção, arraial · #21 fala com escolha |
 | Fase 7 — modelos | **#5** comidas e carta (jam) · #26 interiores · #27 roçado e trabalho · #28 bichos · #29 vila · #30 fazenda e ruínas |
 | O idioma | **#6** (jam) |
 | O som · as estações | #16 · #17 |
@@ -592,6 +592,27 @@ era a penúltima — era pré-requisito da 2ᵃ.
 ---
 
 ## Fase 6 — A interface
+
+> **O painel J saiu** ([#19](https://github.com/acentauric/myths-valley/issues/19)),
+> em `painel_vale.gd`, e é a primeira tela do 2D a atravessar. Ela entrou como
+> **cópia adaptada, declarada** (regra 3 do fim deste documento): o painel do 2D
+> conversa com `Telas`, `SlotsTela`, `Terrenos`, `Povoado` e `Dialogo`, que o vale
+> não tem, e compartilhá-lo byte a byte pediria mexer no 2D para tirar essas
+> conversas dele. A regra de cada aba continua nos autoloads compartilhados; o que
+> se copiou é desenho e teclado. **Volta a ser um arquivo só** quando o 2D separar
+> o painel do `Telas` e do `SlotsTela` pela mesma porta que o `Vida` usou para a
+> peçonha (`esta_lendo`): perguntar a quem foi apresentado, em vez de chamar pelo
+> nome.
+>
+> O que mudou do 2D: a medida e a cara do HUD 3D; as teclas do vale (J, Tab,
+> W/S, A/D, E, Esc); o relógio que para é o `Dia`; a aba de Trabalho fica de fora
+> até o `Terrenos` e o `Povoado` (#9, #13); a aba Jogo não pergunta vaga (#7) e
+> abre pelo botão JOGO do canto, porque no vale o Esc é da câmera. As abas de lugar
+> aparecem pela distância até a âncora (`bancadas_vale.gd`): a Venda já tem balcão;
+> oficina, canteiro, casa e cozinha estão em `FALTAM`, com a razão, até o lugar
+> existir. De passagem, dois defeitos do painel 2D não vieram junto: a checklist
+> entrava como linha escolhível e deslocava o índice das missões de baixo, e os
+> campos de teste comparavam o índice com o cursor sem descontar as ações.
 
 É a fase mais barata em relação ao que entrega, e a que mais precisa da regra
 do topo: **a interface do 3D não é substituída, é acrescida.** Toda tela do 2D

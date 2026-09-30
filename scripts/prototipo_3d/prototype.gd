@@ -15,6 +15,8 @@ const Tubarao = preload("res://scripts/prototipo_3d/tubarao.gd")
 const Queda = preload("res://scripts/prototipo_3d/queda.gd")
 const LutaVale = preload("res://scripts/prototipo_3d/luta_vale.gd")
 const IdiomaMenu = preload("res://scripts/prototipo_3d/idioma_menu.gd")
+const PainelVale = preload("res://scripts/prototipo_3d/painel_vale.gd")
+const BancadasVale = preload("res://scripts/prototipo_3d/bancadas_vale.gd")
 const Atalhos = preload("res://scripts/prototipo_3d/atalhos.gd")
 const Minimapa = preload("res://scripts/prototipo_3d/minimapa.gd")
 const MENU_SCENE := "res://scenes/prototipo_3d/abertura.tscn"
@@ -35,6 +37,7 @@ var _saindo := false
 var mapa	# mapa_jogo.gd
 var lapides	# lapides.gd
 var _relogio_pausado_antes := false
+var painel	# painel_vale.gd — tecla J
 
 
 func _enter_tree() -> void:
@@ -234,6 +237,16 @@ func _montar_moradores(spawn: Vector3) -> void:
 	luta.name = "Luta"
 	add_child(luta)
 	luta.configurar(world, player, hud)
+	# O painel da tecla J (painel_vale.gd), por cima do HUD.
+	painel = PainelVale.new()
+	painel.name = "Painel"
+	add_child(painel)
+	painel.abriu.connect(_ao_abrir_o_painel)
+	painel.fechou.connect(_ao_fechar_o_painel)
+	painel.pediu.connect(_ao_pedido_do_painel)
+	# Quem está lendo não perde vida: a peçonha espera o painel fechar (ver
+	# Vida.esta_lendo). Por método, que deixa de valer quando o vale sai.
+	Vida.esta_lendo = Callable(self, "_lendo")
 	# Pegadas do jogador no chão, por terreno, sumindo com o tempo.
 	pegadas_no = preload("res://scripts/prototipo_3d/pegadas.gd").new()
 	pegadas_no.name = "Pegadas"
@@ -325,7 +338,14 @@ func _unhandled_key_input(event: InputEvent) -> void:
 	# saída, abrir o mapa esconderia a tela de carregamento, que é filha do HUD.
 	if mapa == null or _saindo:
 		return
+	# Painel aberto: as teclas são dele (painel_vale.gd), inclusive o J que fecha.
+	if painel != null and painel.aberto:
+		return
 	if event is InputEventKey and event.pressed and not event.echo:
+		if event.physical_keycode == Atalhos.tecla("painel") and not mapa.aberto:
+			abrir_o_painel()
+			get_viewport().set_input_as_handled()
+			return
 		if mapa.aberto and event.physical_keycode == KEY_ESCAPE:
 			_toggle_map()
 		elif event.is_action_pressed("mv_mapa"):
@@ -505,7 +525,49 @@ func _notification(what: int) -> void:
 		Partida.salvar()
 
 
+# --- o painel -----------------------------------------------------------------
+
+## Abre o painel com as abas do lugar onde o jogador está (bancadas_vale.gd).
+func abrir_o_painel(aba: int = 0) -> void:
+	if painel == null or painel.aberto or mapa.aberto or _saindo:
+		return
+	BancadasVale.aplicar(painel, world, player.global_position)
+	painel.abrir(aba)
+
+
+## Com o painel aberto o jogador para, como com o mapa: a tecla é do painel,
+## e o cursor fica livre para o mouse.
+func _ao_abrir_o_painel() -> void:
+	player.set_captured(false)
+	player.set_physics_process(false)
+	player.set_process_input(false)
+	player.set_process_unhandled_input(false)
+
+
+func _ao_fechar_o_painel() -> void:
+	player.set_physics_process(true)
+	player.set_process_input(true)
+	player.set_process_unhandled_input(true)
+
+
+func _ao_pedido_do_painel(acao: String) -> void:
+	match acao:
+		"menu":
+			_return_to_menu()
+		"sair":
+			Partida.salvar()
+			get_tree().quit()
+		"destravar":
+			player._back_to_land()
+
+
+func _lendo() -> bool:
+	return painel != null and painel.aberto
+
+
 func _exit_tree() -> void:
+	if Vida.esta_lendo == Callable(self, "_lendo"):
+		Vida.esta_lendo = Callable()
 	# O save não fica segurando um vale que saiu da árvore. Hoje não quebraria
 	# (o Godot compara o objeto liberado igual a null, e o Salvamento pergunta
 	# `_mundo != null`), mas é essa a comparação de que ele deixa de depender.
