@@ -1,0 +1,51 @@
+{
+  "observacao": "O CADERNO DOS BICHOS: uma página por espécie, aberta na primeira vez que o jogador derruba uma. É o quadro de metas da Guilda dos Aventureiros do Stardew Valley no tamanho deste jogo: a contagem de quantos de cada um já caíram, e o que se aprendeu brigando. A FICHA só diz o que o jogador PODE ter visto — o aviso do bote, quantas pancadas, o que deixa, quantos dias a mata leva para repor — e os números dela têm de bater com Criatura.ESPECIES (o testar_luta confere os dias). A META é a outra metade da parede da Guilda: quantos, quem paga e o que pede — a frente das metas em Arraial lê daqui, e a página mostra a promessa e a conta. Texto de rascunho, a revisar com o Ramon.",
+
+  "bichos": {
+    "caititu": {
+      "titulo": "Caititu",
+      "onde": "na mata do dendê e no pé da pedreira",
+      "ficha": [
+        "Porco-do-mato de coleira clara. Anda de bando pequeno e não tem medo de gente: tem pressa.",
+        "Avisa antes de morder. Para, baixa a cabeça, e o corpo clareia; quem sai da frente nessa hora sai inteiro.",
+        "Três pancadas de facão derrubam um. Deixa a carne, que vai na brasa.",
+        "Quando cai, a mata leva 3 dias para pôr outro no lugar."
+      ],
+      "meta": {
+        "conta": 10,
+        "missao": "meta_caititu",
+        "quem": "Pedro",
+        "promessa": "O Pedro guarda uma coisa do pai dele para quem derrubar dez.",
+        "premio": "Dez caíram, e o gibão do pai do Pedro é seu."
+      }
+    },
+    "onca": {
+      "titulo": "Onça",
+      "onde": "no penedo, depois da pinguela",
+      "ficha": [
+        "A dona do penedo. Pintada de roseta, e não de listra, e maior do que parece de longe.",
+        "Avisa uma vez só e salta de longe: o bote dela alcança quem achou que já estava fora.",
+        "Anda mais que o passo de gente e menos que a carreira. Quem corre escapa; quem anda, não.",
+        "O couro vale no balcão o que quatro caças valem. Quando cai, o penedo fica vazio por 5 dias."
+      ],
+      "meta": {
+        "conta": 2,
+        "missao": "meta_onca",
+        "quem": "Dona Zefa",
+        "pede": {"couro_de_onca": 1},
+        "promessa": "Dizem no arraial que a Dona Zefa costura patuá para quem derruba duas.",
+        "premio": "Duas caíram, e o patuá da Dona Zefa está no seu pescoço."
+      }
+    },
+    "jararaca": {
+      "titulo": "Jararaca",
+      "onde": "nos brejos: o do leste, na beira do mar, e o da lagoa",
+      "ficha": [
+        "Cobra de brejo, parda, de malha escura no lombo. Fica enrolada no mato alto e não persegue ninguém: espera.",
+        "O bote é curto e sai rápido; o corpo clareia antes. A mordida em si é pouca.",
+        "O que mata é o que fica: a peçonha vai tirando vida depois, devagar, e a barra escurece de verde. O chá de folha corta.",
+        "Duas facadas derrubam uma. Deixa a banha, que é remédio de benzedeira. Quando cai, o brejo leva 4 dias para ter outra."
+      ]
+    }
+  }
+}

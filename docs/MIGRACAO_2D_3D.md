@@ -38,7 +38,7 @@ crédito do Tripo e exigem o custo aprovado **antes** de gerar.
 | Fase 2.5 — geografia | #22 chapada e vizinhos · #23 rio, vau e lagoa · #24 mata e serra · #25 fazenda e ruínas |
 | Fase 3 — missões e enredo | **#1** (jam) · #31 capítulos 6 e 7 |
 | Fase 4 — salvar | ~~#7~~ (feita) |
-| Fase 6 — interface | **#2** mochila · **#3** fôlego · **#4** teclas (jam) · ~~#19 painel~~ (feita) · #20 teia, coleção, arraial · #21 fala com escolha |
+| Fase 6 — interface | **#2** mochila · **#3** fôlego · **#4** teclas (jam) · ~~#19 painel~~ (feita) · #20 teia, ~~coleção~~ (feita), arraial · #21 fala com escolha |
 | Fase 7 — modelos | **#5** comidas e carta (jam) · #26 interiores · #27 roçado e trabalho · #28 bichos · #29 vila · #30 fazenda e ruínas |
 | O idioma | **#6** (jam) |
 | O som · as estações | #16 · #17 |
@@ -613,6 +613,18 @@ era a penúltima — era pré-requisito da 2ᵃ.
 > existir. De passagem, dois defeitos do painel 2D não vieram junto: a checklist
 > entrava como linha escolhível e deslocava o índice das missões de baixo, e os
 > campos de teste comparavam o índice com o cursor sem descontar as ações.
+>
+> **A coleção L saiu** (parte da [#20](https://github.com/acentauric/myths-valley/issues/20)), em
+> `colecao_vale.gd`, pelo mesmo caminho do painel: cópia adaptada da
+> `colecao_tela.gd`. O cordel ainda não se lê no papel — o `Folheto` é da #21 — e a
+> ficha mostra a primeira linha do verso, como já mostrava no 2D. A teia (K) e o
+> arraial (P) continuam na #20.
+>
+> **Os dados de coleção vieram junto**, e são a primeira cópia de DADO do 2D:
+> `data/colecionaveis/` (cordéis, sinais, bichos). O `Colecao` lê `res://`, que
+> aqui é a pasta do protótipo, então o arquivo tem de estar dentro dela. O dono
+> continua sendo o 2D, e `tests/colecao.gd` compara as três cópias byte a byte
+> com o original na raiz — mudou lá sem copiar, reprova aqui.
 
 É a fase mais barata em relação ao que entrega, e a que mais precisa da regra
 do topo: **a interface do 3D não é substituída, é acrescida.** Toda tela do 2D

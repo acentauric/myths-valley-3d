@@ -1,0 +1,167 @@
+{
+  "observacao": "Folhetos de cordel espalhados pelo mapa. REGRA DESTE ARQUIVO, e ela não é de gosto: TODO verso aqui é escrito para este jogo, e NENHUM folheto é atribuído a uma pessoa real. Dois motivos. (1) DIREITO AUTORAL: cordel famoso tem autor, e autor do século XX ainda tem obra protegida no Brasil (vida mais setenta anos). 'O Pavão Misterioso', de José Camelo de Melo Resende, morto em 1964, só entra em domínio público em 2035; 'A Chegada de Lampião no Inferno' tem autoria disputada e data de morte incerta, e não dá para provar que está livre. Os dois estavam aqui e saíram. (2) ATRIBUIÇÃO FALSA: pôr o nome de uma pessoa real embaixo de versos que ela não escreveu é problema mesmo quando a obra dela já é de domínio público — era o caso dos dois folhetos que estavam creditados a Leandro Gomes de Barros, morto em 1918. O MOTIVO da história (cachorro fiel na cova, trapaceiro que vence pela lábia, santo de pau oco) é patrimônio comum e não pertence a ninguém; o VERSO é nosso. E há um bônus histórico: em 1887 o cordel impresso mal começou, e folheto de verso que circulava no Recôncavo era manuscrito, sem tipografia e sem assinatura — que é exatamente o que este arquivo passou a ser. O campo `autor` descreve o PAPEL, não uma pessoa. Texto de rascunho, a revisar com o Ramon.",
+
+  "cordeis": {
+    "peso_falso": {
+      "titulo": "O Peso Falso",
+      "autor": "folheto sem assinatura",
+      "motivo": "invencao propria",
+      "onde": "no balcão do armazém, embaixo da balança",
+      "valor": 60,
+      "versos": [
+        "Um vendeiro tinha um peso",
+        "de chumbo por dentro oco,",
+        "pesava meia arroba",
+        "e cobrava arroba e troco.",
+        "Morreu, e a balança dele",
+        "pende sozinha, de pouco."
+      ],
+      "nota": "Alguém pregou este no balcão do armazém, bem embaixo da balança. O vendeiro não tirou — e também não riu."
+    },
+    "cachorro_do_enterro": {
+      "titulo": "O Cachorro que Foi ao Enterro",
+      "autor": "letra de mão, sem nome",
+      "motivo": "historia velha do cordel, verso deste folheto",
+      "onde": "na capela, embaixo de um banco",
+      "valor": 70,
+      "versos": [
+        "O cachorro foi no enterro",
+        "atrás do caixão do dono,",
+        "deitou em cima da cova",
+        "e ali perdeu o sono.",
+        "Deram carne, deram água —",
+        "e ele só queria o dono."
+      ],
+      "nota": "Cachorro fiel na cova do dono é história que corre o Nordeste inteiro, contada de cem jeitos. Este folheto é o jeito daqui."
+    },
+    "vendeu_a_chuva": {
+      "titulo": "O Homem que Vendeu a Chuva",
+      "autor": "folheto sem assinatura",
+      "motivo": "trapaceiro de feira, figura comum do cordel",
+      "onde": "no bar da praia, esquecido numa mesa",
+      "valor": 55,
+      "versos": [
+        "Chegou um homem na feira",
+        "vendendo chuva engarrafada.",
+        "O coronel comprou três",
+        "e pagou com uma boiada.",
+        "Choveu de tarde, por acaso,",
+        "e do homem, nunca mais nada."
+      ],
+      "nota": "O malandro do cordel nunca vence na força: vence porque fala melhor. E some antes de alguém conferir."
+    },
+    "missa_dos_afogados": {
+      "titulo": "A Missa dos Afogados",
+      "autor": "papel de embrulho, sem tipografia",
+      "motivo": "invencao propria",
+      "onde": "no cemitério, num nicho vazio",
+      "valor": 80,
+      "versos": [
+        "Na noite de vento leste",
+        "a capela torna a alumiar.",
+        "Quem espia pela fresta",
+        "vê os bancos a lotar",
+        "de gente com roupa molhada:",
+        "são os que ficaram no mar."
+      ],
+      "nota": "Numa vila de pescador, todo cemitério tem cova vazia. Este folheto é sobre elas — e quem o largou no nicho sabia disso."
+    },
+
+    "moca_da_agua": {
+      "titulo": "A Moça que Morava na Água",
+      "autor": "folheto sem assinatura",
+      "motivo": "invencao propria",
+      "onde": "na beira da lagoa, preso numa pedra",
+      "valor": 45,
+      "versos": [
+        "Na curva funda do rio",
+        "onde a água não faz barulho",
+        "mora uma moça de cabelo",
+        "comprido feito um capulho.",
+        "Quem chama, ela responde.",
+        "Quem responde, vai no bulho."
+      ],
+      "nota": "Sem nome de autor e sem tipografia. Papel de embrulho, letra de mão."
+    },
+    "cabra_da_fazenda": {
+      "titulo": "O Cabra que Foi à Fazenda",
+      "autor": "folheto sem assinatura",
+      "motivo": "invencao propria",
+      "onde": "no vau do rio grande, debaixo da ponte caída",
+      "valor": 90,
+      "versos": [
+        "Foi convidado pra festa",
+        "num sábado de luar,",
+        "entrou pelo portão de ferro",
+        "e não tornou a voltar.",
+        "Dizem que dança até hoje",
+        "e ninguém pode acordar."
+      ],
+      "nota": "Este dá arrepio. Fala de uma fazenda isolada, de um convite e de gente que entrou e não saiu — e o jogador tem um convite igual no bolso."
+    },
+    "porfia_do_caboclo": {
+      "titulo": "Peleja do Caboclo com o Vento Sul",
+      "autor": "folheto sem assinatura",
+      "motivo": "peleja e forma do cordel, nao obra de ninguem",
+      "onde": "no mirante, em cima da serra",
+      "valor": 50,
+      "versos": [
+        "O caboclo desafiou",
+        "o vento sul na peleja:",
+        "— Tu derruba meu chapéu,",
+        "mas não derruba a igreja.",
+        "O vento riu e soprou",
+        "e a igreja tá lá, que veja."
+      ],
+      "nota": "Peleja é o duelo cantado do cordel: dois se desafiam em verso até um não ter resposta. A forma é de todo mundo; os versos são deste folheto."
+    },
+    "santo_do_pau_oco": {
+      "titulo": "O Santo do Pau Oco",
+      "autor": "folheto sem assinatura",
+      "motivo": "objeto historico, verso deste folheto",
+      "onde": "na ruína do palacete, entre as pedras",
+      "valor": 75,
+      "versos": [
+        "Levaram o santo na barca",
+        "com ouro dentro da barriga.",
+        "O santo chegou vazio",
+        "e ninguém fez intriga.",
+        "Quem rezou não ficou rico,",
+        "quem roubou não teve briga."
+      ],
+      "nota": "Santo do pau oco existiu mesmo: imagem escavada por dentro para contrabandear ouro sem pagar o quinto do rei."
+    },
+    "boi_do_reconcavo": {
+      "titulo": "O Boi que Falou no Engenho",
+      "autor": "folheto sem assinatura",
+      "motivo": "invencao propria",
+      "onde": "no engenho, pendurado num caibro",
+      "valor": 45,
+      "versos": [
+        "No engenho do Coronel",
+        "um boi de carro falou.",
+        "Disse só: — Tenho cansaço. —",
+        "e o carro não mais andou.",
+        "O Coronel vendeu o boi",
+        "e o boi nunca mais voltou."
+      ],
+      "nota": "Boi que fala é figura velha do folclore. No Recôncavo dos engenhos, o que ele diz costuma ser sobre trabalho."
+    },
+    "moleque_do_pier": {
+      "titulo": "O Moleque que Pescou a Lua",
+      "autor": "folheto sem assinatura",
+      "motivo": "invencao propria",
+      "onde": "na ponta do píer, dentro de uma lata",
+      "valor": 40,
+      "versos": [
+        "O moleque jogou a linha",
+        "na maré de lua cheia,",
+        "fisgou a lua pelo meio",
+        "e arrastou pela areia.",
+        "A mãe mandou soltar logo:",
+        "— Sem lua, a noite é feia."
+      ],
+      "nota": "Cordel de rir, desses que se lê em voz alta no fim da tarde."
+    }
+  }
+}

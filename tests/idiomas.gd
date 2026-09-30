@@ -50,6 +50,12 @@ const FALTAM_TRADUCAO := {
 		"os sete moradores vindos do 2D: apresentação, reação ao presente e fala por grau. É o que a Afinidade lê para saber de quem é cada gosto. TRADUÇÃO COM O RAMON — registro regional, 26 KB",
 	"res://data/dialogos/pedro.json":
 		"o tutorial inteiro do 2D, 27 passos com objetivo e arremate. TRADUÇÃO COM O RAMON — 32 KB, e é o maior bloco de prosa do projeto",
+	"res://data/colecionaveis/cordeis.json":
+		"os dez cordéis do 2D, com título, autor e versos. É poesia de feira em redondilha, e traduzir é recompor a rima. TRADUÇÃO COM O RAMON",
+	"res://data/colecionaveis/sinais.json":
+		"os sinais dos mitos do 2D: o que o jogador viu e, depois do encontro, de quem era. TRADUÇÃO COM O RAMON",
+	"res://data/colecionaveis/bichos.json":
+		"as páginas dos bichos do 2D: a ficha de quem brigou com eles, a morada e a meta. TRADUÇÃO COM O RAMON",
 	"res://data/luta.json":
 		"o aviso de quando o bicho cai, o de cansaço e as palavras que sobem na pancada ('escapou', 'tonto', 'veneno'), do Mundo do 2D. Palavra curta que em espanhol é igual ao português (veneno) reprovaria como cópia: é com o Ramon, que decide a forma. TRADUÇÃO COM O RAMON",
 	"res://data/partida.json":

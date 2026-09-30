@@ -78,6 +78,12 @@ func _run() -> void:
 			"pausa": true,
 		},
 		{
+			"nome": "coleção (L)",
+			"abrir": func(): jogo.abrir_a_colecao(),
+			"fechar": func(): jogo.colecao.fechar(),
+			"pausa": true,
+		},
+		{
 			"nome": "painel (J)",
 			"abrir": func(): jogo.abrir_o_painel(),
 			"fechar": func(): jogo.painel.fechar(),
@@ -162,7 +168,7 @@ func _run() -> void:
 func _fechar() -> void:
 	print("")
 	if falhas == 0:
-		print("CAMERA_OK: mapa, mochila, almanaque, painel e menu abrem com o cursor livre, param o vale atrás delas (menos o mapa, que é vista ao vivo) e devolvem o modo que acharam, nos dois modos; e perder o foco não troca nada")
+		print("CAMERA_OK: mapa, mochila, almanaque, coleção, painel e menu abrem com o cursor livre, param o vale atrás delas (menos o mapa, que é vista ao vivo) e devolvem o modo que acharam, nos dois modos; e perder o foco não troca nada")
 	else:
 		print("câmera: %d falha(s)" % falhas)
 	quit(1 if falhas > 0 else 0)

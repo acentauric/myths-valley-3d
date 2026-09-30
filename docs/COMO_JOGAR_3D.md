@@ -41,6 +41,7 @@ No Godot Project Manager, outra opção é importar **`prototipo_3d/project.godo
 | R | Voltar ao ponto inicial |
 | T | Adiantar o relógio do vale em uma hora (ver dia e noite) |
 | J | Painel: missões, cartas, venda (no balcão da Venda do Bar) e, pelo botão JOGO, salvar, voltar ao menu e sair. Dentro dele, Tab troca de aba, W/S escolhem, E confirma, Esc ou J fecham; o relógio para enquanto ele está aberto |
+| L | Coleção: cordéis, sinais e bichos, com a vaga em branco de quem falta achar. Tab troca de coleção, W/S escolhem, L ou Esc fecham |
 | M | Voltar ao menu (HOME) |
 | Alt+F4 / fechar janela | Sair |
 
