@@ -25,6 +25,7 @@ const Minimapa = preload("res://scripts/prototipo_3d/minimapa.gd")
 const CadeiaDeMissoes = preload("res://scripts/prototipo_3d/cadeia_de_missoes.gd")
 const TelasDoVale = preload("res://scripts/prototipo_3d/telas_do_vale.gd")
 const MenuPausa = preload("res://scripts/prototipo_3d/menu_pausa.gd")
+const TeiaTalentos = preload("res://scripts/prototipo_3d/teia_talentos.gd")
 const MENU_SCENE := "res://scenes/prototipo_3d/abertura.tscn"
 ## Raio de terra firme em volta do ponto de chegada.
 const RAIO_CHEGADA := 6.0
@@ -71,6 +72,8 @@ var colecao	# colecao_vale.gd — sem tecla: virou seção do almanaque
 var telas
 ## O menu do Esc, com o que era a coluna de ícones. Ver menu_pausa.gd.
 var menu_pausa
+## A teia de talentos, na tecla K (teia_talentos.gd).
+var teia
 ## As plaquinhas de nome dos moradores; somem com tela aberta (placas_nomes.gd).
 var placas
 ## A aba pedida no último `abrir_o_painel`, entregue à abertura crua.
@@ -287,6 +290,20 @@ func _ready() -> void:
 				Partida.salvar()
 				get_tree().quit()},
 	] as Array[Dictionary])
+	# A TEIA DE TALENTOS, na tecla K — a mesma do jogo 2D.
+	#
+	# O sistema já estava no vale: `Talentos` é autoload compartilhado desde a
+	# Fase 2, com os 37 nós, o custo, as exigências e a soma dos bônus. O que
+	# faltava era poder olhar — sem tela, o jogador subia de nível e o ponto
+	# ficava num número que ninguém via.
+	teia = TeiaTalentos.new()
+	teia.name = "TeiaTalentos"
+	add_child(teia)
+	telas.registrar("talentos",
+		func(e: InputEvent) -> bool: return e.physical_keycode == Atalhos.tecla("talentos"),
+		func() -> bool: return teia.aberta,
+		func() -> void: teia.abrir(),
+		func() -> void: teia.fechar())
 	telas.registrar("menu_pausa",
 		# O Esc já é cuidado pelo dono das telas: com tela aberta ele fecha, e
 		# sem nada aberto cai na escada do `_unhandled_key_input` daqui, que é
