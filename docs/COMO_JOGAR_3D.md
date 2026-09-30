@@ -2,6 +2,10 @@
 
 Abra `prototipo_3d/JOGAR_3D.cmd`. O atalho importa os recursos e abre o jogo usando o Godot instalado em `C:\Tools\Godot`.
 
+**JOGAR** pergunta em qual das **três vagas** jogar: vaga vazia começa ali, pela travessia; vaga ocupada continua de onde parou. Recomeçar uma vaga ocupada pede um segundo clique, e o botão diz de quem é a partida que vai ser apagada. **EXPLORAR** é o passeio livre: não usa vaga, não salva e não apaga nada. A partida salva ao cair (a noite no chão), ao voltar ao menu e ao fechar a janela.
+
+Para depurar, `JOGAR_3D.cmd -Lugar igreja` começa o jogador direto num lugar do vale (`praca`, `igreja`, `cemiterio`, `mirante`, `pier`, `rocado`...), sem refazer o caminho; pelo Godot, é `-- --lugar=igreja` depois dos argumentos do projeto.
+
 No Godot Project Manager, outra opção é importar **`prototipo_3d/project.godot`** e executar `scenes/prototipo_3d/vale.tscn`. O `project.godot` da raiz continua sendo a base 2D.
 
 ## Controles
@@ -60,7 +64,7 @@ As animações foram exportadas **no lugar**: os clipes mexem o esqueleto, enqua
 
 O material continua sendo duplicado apenas na instância e renderizado dos dois lados. Essa correção evita o desaparecimento de partes do torso sem alterar o arquivo 3D original.
 
-Um **caititu** mora na mata fechada, longe da vila (por enquanto uma caixa cinza, até o modelo com rig chegar): fareja quem chega perto, **anuncia o bote** — acende em âmbar, abaixa e marca no chão até onde a mordida alcança — e só então morde. Derrubado, deixa a carne de caça na mochila e volta em três dias. Para lutar de facão é preciso tê-lo na mão, o que por enquanto só a mochila (#2) vai permitir. A **vida** já aparece: a barra logo abaixo do relógio, vermelha (verde-musgo com peçonha). Quem cai acorda na porta da Casa de taipa às 6h do dia seguinte, inteiro — ainda não há nada no vale que tire vida, isso chega com a luta. A regra de fôlego, mochila, missões, fé, receitas, luta, obras, venda, pesca, cartas e salvamento também já roda no vale, vinda do 2D, mas o jogador ainda não a vê: faltam as telas e os gatilhos. O passeio também não grava progresso — as vagas de save ainda não estão ligadas; o diretório de usuário `MythsValleyPrototype3D` já separa esses saves da versão 2D. Plantação, terrenos e a conversa por IA ainda não existem no 3D. O que falta, e em que ordem, está nas [issues com rótulo `3d`](https://github.com/acentauric/myths-valley/issues?q=is%3Aissue+is%3Aopen+label%3A3d) e no [plano de migração](MIGRACAO_2D_3D.md).
+Um **caititu** mora na mata fechada, longe da vila (por enquanto uma caixa cinza, até o modelo com rig chegar): fareja quem chega perto, **anuncia o bote** — acende em âmbar, abaixa e marca no chão até onde a mordida alcança — e só então morde. Derrubado, deixa a carne de caça na mochila e volta em três dias. Para lutar de facão é preciso tê-lo na mão, o que por enquanto só a mochila (#2) vai permitir. A **vida** já aparece: a barra logo abaixo do relógio, vermelha (verde-musgo com peçonha). Quem cai acorda na porta da Casa de taipa às 6h do dia seguinte, inteiro — ainda não há nada no vale que tire vida, isso chega com a luta. A regra de fôlego, mochila, missões, fé, receitas, luta, obras, venda, pesca, cartas e salvamento também já roda no vale, vinda do 2D, mas o jogador ainda não a vê: faltam as telas e os gatilhos. Os saves ficam no diretório de usuário `MythsValleyPrototype3D`, separados dos da versão 2D. Plantação, terrenos e a conversa por IA ainda não existem no 3D. O que falta, e em que ordem, está nas [issues com rótulo `3d`](https://github.com/acentauric/myths-valley/issues?q=is%3Aissue+is%3Aopen+label%3A3d) e no [plano de migração](MIGRACAO_2D_3D.md).
 
 ## Como a animação funciona
 

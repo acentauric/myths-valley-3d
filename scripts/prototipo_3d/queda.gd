@@ -101,6 +101,9 @@ func _ao_cair() -> void:
 	Vida.dormir()
 	Relogio.dormir()
 	Dia.definir_hora(float(Relogio.HORA_DE_ACORDAR))
+	# SALVA NA VIRADA, como o 2D salva ao dormir: depois do dia novo, para a
+	# partida guardada ser a da manhã e não a da noite. Sem vaga, não salva.
+	Partida.salvar()
 
 	var clareia := create_tween()
 	clareia.tween_property(_preto, "modulate:a", 0.0, CLAREAR)

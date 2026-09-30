@@ -1,6 +1,9 @@
 param(
     [string]$Godot = 'C:\Tools\Godot\Godot_v4.7.2-stable_win64.exe',
-    [switch]$Compatibility
+    [switch]$Compatibility,
+    # Depuração: começa o jogador direto num lugar do vale (praca, igreja,
+    # cemiterio, mirante...), sem refazer o caminho. Ver prototype.gd.
+    [string]$Lugar = ''
 )
 $ErrorActionPreference = 'Stop'
 $projectRoot = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
@@ -12,5 +15,6 @@ $importProcess = Start-Process -FilePath $Godot -ArgumentList $importArgs -Worki
 if ($importProcess.ExitCode -ne 0) { throw 'A importacao de recursos falhou. Consulte a saida do Godot.' }
 $gameArgs = @('--path', ('"' + $projectRoot + '"'))
 if ($Compatibility) { $gameArgs += @('--rendering-method', 'gl_compatibility') }
+if ($Lugar) { $gameArgs += @('--', ('--lugar=' + $Lugar)) }
 $game = Start-Process -FilePath $Godot -ArgumentList $gameArgs -WorkingDirectory $projectRoot -WindowStyle Normal -PassThru
 Write-Output ('Myths Valley 3D iniciado. PID: ' + $game.Id)

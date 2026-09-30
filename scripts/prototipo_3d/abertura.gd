@@ -449,8 +449,8 @@ func _home() -> void:
 	_clear()
 	_label("Myths’ Valley", 46)
 	_label("Um vale cheio de histórias.", 21)
-	_button("JOGAR", _intro).grab_focus()
-	_button("EXPLORAR", _start_game)
+	_button("JOGAR", _vagas).grab_focus()
+	_button("EXPLORAR", _explorar)
 	_button("PERSONAGENS", _abrir_personagens)
 	_button("SOBRE", _credits)
 	_button("SAIR", _confirm_exit).theme_type_variation = &"BotaoNegativo"
@@ -737,6 +737,70 @@ func _abrir_personagens() -> void:
 
 
 ## Cabeçalho padrão dos modais (painel_ajustes.gd): título, subtítulo, × e divisor.
+## AS TRÊS VAGAS (#7), por baixo da abertura. O `menu_inicial` do 2D não
+## entra; entra a pergunta dele — "qual vaga?" — com a cara deste menu. Vaga
+## vazia começa ali, com a travessia; vaga ocupada continua de onde parou, sem
+## ela. Recomeçar uma vaga ocupada pede um SEGUNDO clique, e o botão passa a
+## dizer o que se perde: é a única coisa desta tela que não se desfaz (ver
+## `scripts/ui/slots_tela.gd` no 2D, "vaga ocupada nunca é sobrescrita num
+## toque"). Ainda há a rede do `Salvamento`, que guarda a partida anterior numa
+## cópia antes de escrever.
+var _confirmando_vaga := 0
+
+func _vagas() -> void:
+	_clear()
+	_confirmando_vaga = 0
+	_label("Vagas", 30)
+	_label("Três partidas, cada uma inteira. Escolha onde jogar.", 18)
+	var primeiro: Button = null
+	for slot in range(1, Salvamento.QUANTOS_SLOTS + 1):
+		var resumo := Salvamento.resumo(slot)
+		var botao: Button
+		if bool(resumo.get("existe", false)):
+			var nome := str(resumo.get("nome", ""))
+			botao = _button(tr("VAGA %d · %s · DIA %d") % [slot, nome, int(resumo.get("dia", 1))],
+				func(): _abrir_vaga(slot, false))
+			# O lambda guarda o valor da variável na hora em que nasce: o botão
+			# de recomeçar chega a ele por esta lista, preenchida logo abaixo.
+			var este := []
+			var recomecar := _button(tr("RECOMEÇAR A VAGA %d") % slot,
+				func(): _recomecar_vaga(slot, nome, este[0]))
+			este.append(recomecar)
+			recomecar.name = "Recomecar%d" % slot
+			recomecar.theme_type_variation = &"BotaoNegativo"
+		else:
+			botao = _button(tr("VAGA %d · VAZIA · COMEÇAR AQUI") % slot, func(): _abrir_vaga(slot, true))
+		botao.name = "Vaga%d" % slot
+		if primeiro == null:
+			primeiro = botao
+	_button("VOLTAR", _home)
+	primeiro.grab_focus()
+
+
+func _recomecar_vaga(slot: int, nome: String, botao: Button) -> void:
+	if _confirmando_vaga != slot:
+		_confirmando_vaga = slot
+		botao.text = tr("APAGA A PARTIDA DE %s · CLIQUE DE NOVO") % nome
+		return
+	_abrir_vaga(slot, true)
+
+
+## Vaga nova: a partida começa do zero ali, pela travessia. Vaga ocupada: o
+## vale abre e carrega o que ela guarda (ver `prototype._retomar_a_partida`).
+func _abrir_vaga(slot: int, nova: bool) -> void:
+	Partida.comecar(slot, nova)
+	if nova:
+		_intro()
+	else:
+		_start_game()
+
+
+## EXPLORAR é o passeio livre: sem vaga, não grava nada e não apaga nada.
+func _explorar() -> void:
+	Partida.comecar(0)
+	_start_game()
+
+
 func _modal_header(title: String, action: Callable, subtitle: String = "", icon: String = "fechar") -> Button:
 	return PainelAjustes.cabecalho(ui_parent, title, action, subtitle, icon)
 

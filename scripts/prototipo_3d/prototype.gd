@@ -14,6 +14,7 @@ const PlacasNomes = preload("res://scripts/prototipo_3d/placas_nomes.gd")
 const Tubarao = preload("res://scripts/prototipo_3d/tubarao.gd")
 const Queda = preload("res://scripts/prototipo_3d/queda.gd")
 const LutaVale = preload("res://scripts/prototipo_3d/luta_vale.gd")
+const IdiomaMenu = preload("res://scripts/prototipo_3d/idioma_menu.gd")
 const Atalhos = preload("res://scripts/prototipo_3d/atalhos.gd")
 const CameraMouse = preload("res://scripts/prototipo_3d/camera_mouse.gd")
 const Recursos3D = preload("res://scripts/prototipo_3d/recursos_3d.gd")
@@ -116,6 +117,9 @@ func _ready() -> void:
 		# Os ajustes tinham parado o relógio; ele volta como estava antes de abri-los.
 		Dia.pausado = _relogio_pausado_antes
 		_saindo = true
+		# Trocar o estilo RECARREGA o vale, e o vale recarregado lê a vaga:
+		# sem salvar aqui, o jogador voltaria ao último save.
+		Partida.salvar()
 		var barra := TelaCarregamento.mostrar(hud.map_layer(), TemaMenu.criar(), tr("Trocando o estilo do vale…"))
 		TelaCarregamento.trocar_cena(get_tree(), scene_file_path, barra))
 	lapides = Lapides.new()
@@ -164,6 +168,12 @@ func _ready() -> void:
 		if String(morador.dados.get("id", "")) == "damiao":
 			lapides.coveiro = morador
 	Dia.periodo_mudou.connect(_on_periodo_mudou)
+	# A PARTIDA SALVA entra depois de o vale estar montado — moradores, Pedro,
+	# luta —, porque o estado do mundo aponta para eles. Ver Partida e
+	# `estado_para_salvar`.
+	Salvamento.registrar_mundo(self)
+	_retomar_a_partida()
+	_comecar_no_lugar_pedido()
 	_atualizar_relogio()
 	print("PROTOTYPE_READY: estilo=%s hora=%s moradores=%d user_dir=%s" % [Estilo.modo, Dia.texto_hora(), moradores.size(), OS.get_user_data_dir()])
 
@@ -459,6 +469,7 @@ func _return_to_menu() -> void:
 	if _saindo:
 		return
 	_saindo = true
+	Partida.salvar()
 	get_tree().paused = false
 	player.set_captured(false)
 	player.set_physics_process(false)
@@ -498,3 +509,106 @@ func _bind_alt(action: StringName, key: int) -> void:
 	event.physical_keycode = key
 	event.alt_pressed = true
 	InputMap.action_add_event(action, event)
+# --- a partida ----------------------------------------------------------------
+
+## A vaga em curso tem partida? Então ela volta: sistemas, jogador, hora,
+## Pedro, o que o vale lembra. Sem vaga (EXPLORAR) ou vaga nova, o vale começa
+## do píer, como sempre.
+func _retomar_a_partida() -> void:
+	if not Partida.tem_vaga() or not Salvamento.existe_partida():
+		return
+	var guardado := Salvamento.ler()
+	if guardado.is_empty():
+		# Há arquivo e ele não abriu: partida de uma versão mais nova. O arquivo
+		# não é tocado; o jogador fica sabendo, em vez de achar a vila do zero.
+		if not Salvamento.ultimo_relato.is_empty():
+			hud.set_notice(" ".join(Salvamento.ultimo_relato))
+		return
+	if Salvamento.carregar(guardado):
+		hud.set_notice(_texto_da_partida("de_volta"))
+		if not Salvamento.ultimo_relato.is_empty():
+			hud.set_notice(" ".join(Salvamento.ultimo_relato))
+
+
+func _texto_da_partida(chave: String) -> String:
+	var dado = JSON.parse_string(FileAccess.get_file_as_string("res://data/partida.json"))
+	var entrada: Dictionary = dado.get(chave, {}) if dado is Dictionary else {}
+	return str(IdiomaMenu.campo(entrada, "texto", chave))
+
+
+## O QUE O VALE ENTREGA AO SAVE. Os sistemas (mochila, vida, calendário...)
+## são autoloads e o `Salvamento` os guarda sozinho; isto é o que só a cena
+## sabe. A hora vai aqui, e não só em `Relogio.minutos`: no vale quem manda na
+## hora é o `Dia`, e o `Relogio` só a espelha (ver dia.gd).
+func estado_para_salvar() -> Dictionary:
+	var estado := {
+		"jogador": [player.global_position.x, player.global_position.y, player.global_position.z],
+		"giro": player.visual.rotation.y,
+		"hora": Dia.hora,
+		"visitados": _visited.keys(),
+	}
+	if pedro != null:
+		estado["pedro"] = {"missao": pedro.missao, "iniciado": pedro.get("_iniciado"),
+			"despedida": pedro.get("_despedida_feita")}
+	var luta := get_node_or_null("Luta")
+	if luta != null:
+		estado["mortes"] = luta.mortes.duplicate(true)
+	return estado
+
+
+func restaurar_do_save(estado: Dictionary) -> void:
+	var onde: Array = estado.get("jogador", [])
+	if onde.size() == 3:
+		var ponto := Vector3(float(onde[0]), float(onde[1]), float(onde[2]))
+		player.global_position = world.ground_position(ponto, 0.07) if world.is_on_land(ponto) else ponto
+		player.velocity = Vector3.ZERO
+		player.visual.rotation.y = float(estado.get("giro", player.visual.rotation.y))
+	if estado.has("hora"):
+		Dia.definir_hora(float(estado["hora"]))
+	_visited.clear()
+	for chave in estado.get("visitados", []):
+		_visited[str(chave)] = true
+	var guia: Dictionary = estado.get("pedro", {})
+	if pedro != null and not guia.is_empty():
+		pedro.set("_iniciado", bool(guia.get("iniciado", false)))
+		pedro.set("_despedida_feita", bool(guia.get("despedida", false)))
+		pedro.missao = int(guia.get("missao", -1))
+		# Ele reanuncia o passo em que parou, logo depois de chegar perto.
+		pedro.set("_espera", 1.4)
+		pedro.global_position = world.ground_position(player.global_position + Vector3(-1.6, 0, 1.4), 0.05)
+	var luta := get_node_or_null("Luta")
+	if luta != null:
+		luta.restaurar_mortes(estado.get("mortes", []))
+
+
+## DEPURAÇÃO: `-- --lugar=<nome>` começa o jogador direto num lugar do
+## `Lugares` (praca, igreja, cemiterio, mirante...), sem refazer o caminho.
+## Vem depois da partida salva: pedir um lugar é pedir para ir lá agora.
+func _comecar_no_lugar_pedido() -> void:
+	for arg in OS.get_cmdline_user_args():
+		if not arg.begins_with("--lugar="):
+			continue
+		var nome := arg.substr("--lugar=".length())
+		if not Lugares.resolve(nome):
+			push_warning("--lugar=%s: o vale não tem esse lugar. Há: %s" % [nome, ", ".join(Lugares.nomes())])
+			return
+		player.global_position = world.ground_position(Lugares.ponto(nome), 0.07)
+		player.velocity = Vector3.ZERO
+		if pedro != null:
+			pedro.global_position = world.ground_position(player.global_position + Vector3(-1.6, 0, 1.4), 0.05)
+		print("DEPURACAO: começando em %s" % nome)
+		return
+
+
+func _notification(what: int) -> void:
+	# Fechar a janela salva, como voltar ao menu: o vale não tem cama, e sem
+	# isto quem fecha o jogo perde o dia.
+	if what == NOTIFICATION_WM_CLOSE_REQUEST:
+		Partida.salvar()
+
+
+func _exit_tree() -> void:
+	# O save não fica segurando um vale que saiu da árvore. Hoje não quebraria
+	# (o Godot compara o objeto liberado igual a null, e o Salvamento pergunta
+	# `_mundo != null`), mas é essa a comparação de que ele deixa de depender.
+	Salvamento.registrar_mundo(null)
