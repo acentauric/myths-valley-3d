@@ -948,6 +948,8 @@ func _desenhar_ajustes() -> void:
 		Atalhos.letra("interagir"), Atalhos.letra("gingar")], COR_APAGADA, true)
 	_adicionar_linha("  [%s] observar  ·  [%s] reinicia  ·  [Tab] câmera  ·  roda do mouse: zoom" % [
 		Atalhos.letra("observar"), Atalhos.letra("reiniciar")], COR_APAGADA, true)
+	_adicionar_linha("  [%s] mochila  ·  [%s] almanaque  ·  [%s] árvore de habilidades  ·  [%s] o arraial" % [
+		Atalhos.letra("mochila"), Atalhos.letra("almanaque"), Atalhos.letra("talentos"), Atalhos.letra("arraial")], COR_APAGADA, true)
 
 	_adicionar_linha("", COR_TEXTO, true)
 	_adicionar_linha("AJUSTES DE TESTE — mexem no balanço da partida", COR_APAGADA, true)
