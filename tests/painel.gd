@@ -107,6 +107,43 @@ func _run() -> void:
 	# compra, venda e salvar — continuam passando com ela parada. Foi medido,
 	# não suposto.
 	_conferir(paused, "o painel não pausou o vale atrás dele")
+	# --- A FORMA: ÍNDICE À ESQUERDA, PÁGINA À DIREITA ------------------------
+	#
+	# O painel passou a ter a cara do almanaque — "tente deixar o menu de missão
+	# similar ao do Almanaque". As abas saíram de uma linha horizontal
+	# ("[ Missões ]  Cartas  Venda", que aperta com seis) e viraram coluna, com
+	# marca de aberta e conta em cada linha.
+	#
+	# Estas duas perguntas vêm da lição da barra de mão, que passou por quinze
+	# portões verdes estando invisível: regra certa não é a mesma coisa que o
+	# jogador ver.
+	var abas := painel.find_children("Abas", "", true, false)
+	_conferir(not abas.is_empty(), "o painel não tem a coluna das abas: a forma nova não montou")
+	if not abas.is_empty():
+		var coluna := abas[0] as VBoxContainer
+		_conferir(coluna.get_child_count() >= 1,
+			"a coluna das abas está vazia: nem a aba de missões apareceu")
+		var so_missoes: bool = painel.abas_validas().size() == 1
+		if coluna.get_child_count() > 0:
+			var primeira := coluna.get_child(0) as Button
+			_conferir(primeira != null and primeira.text.contains("Missões"),
+				"a primeira aba da coluna não é Missões: '%s'"
+					% (primeira.text if primeira != null else "—"))
+			_conferir(primeira != null and primeira.text.contains("▾"),
+				"a aba aberta não se marca como aberta: '%s'"
+					% (primeira.text if primeira != null else "—"))
+		_conferir(so_missoes or coluna.get_child_count() > 1,
+			"há mais de uma aba válida e a coluna mostra só %d" % coluna.get_child_count())
+
+	var caixa := painel.find_children("Caixa", "", true, false)
+	_conferir(not caixa.is_empty(), "não achei a caixa do painel")
+	if not caixa.is_empty():
+		var quadro := (caixa[0] as Control).get_global_rect()
+		var janela: Vector2 = (caixa[0] as Control).get_viewport_rect().size
+		_conferir(quadro.position.x >= -1.0 and quadro.position.y >= -1.0
+				and quadro.end.x <= janela.x + 1.0 and quadro.end.y <= janela.y + 1.0,
+			"o painel cresceu para fora da janela: %s numa tela de %s" % [str(quadro), str(janela)])
+
 	_conferir(vida.esta_lendo.is_valid() and vida.esta_lendo.call(), "a peçonha não sabe que o jogador está lendo")
 	_conferir(painel.abas_validas() == [painel.Aba.MISSOES], "longe de tudo, as abas são %s" % str(painel.abas_validas()))
 	# O bicho não caça quem está lendo: o jogador parado pelo painel é jogador
@@ -207,7 +244,7 @@ func _fechar() -> void:
 	_devolver_os_saves_de_verdade()
 	print("")
 	if falhas == 0:
-		print("PAINEL_OK: o J é do painel; abrir para o jogador, o relógio e o vale inteiro, por cima do HUD; Tab, E e J funcionam dentro; a venda aparece no balcão e compra e vende pelo preço; a aba do jogo é sozinha, salva a vaga e pede o segundo E para sair")
+		print("PAINEL_OK: o J é do painel; abrir para o jogador, o relógio e o vale inteiro, por cima do HUD e dentro da janela, com as abas em coluna como no almanaque; Tab, E e J funcionam dentro; a venda aparece no balcão e compra e vende pelo preço; a aba do jogo é sozinha, salva a vaga e pede o segundo E para sair")
 	else:
 		print("painel: %d falha(s)" % falhas)
 	quit(1 if falhas > 0 else 0)

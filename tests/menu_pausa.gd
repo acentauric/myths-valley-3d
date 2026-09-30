@@ -1,0 +1,190 @@
+extends SceneTree
+## Confere O MENU DO ESC — que recebeu a coluna de ícones do canto esquerdo.
+##
+##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/menu_pausa.gd
+##
+## "Os ícones na esquerda do HUD podem ser todos dentro do menu ESC." Eram nove
+## botões redondos empilhados na borda, por cima do vale, o tempo todo, e sem
+## rótulo: o do som era um desenho diferente ligado e desligado, e só passando o
+## mouse se descobria qual era qual.
+##
+## Seis perguntas:
+##
+##   1. O ESC ABRE O MENU com o vale sem nada aberto. Antes ele abria a caixa de
+##      "voltar ao menu?", que virou uma linha daqui.
+##   2. AS LINHAS QUE ERAM ÍCONE ESTÃO TODAS LÁ. Não é por contagem: cada uma é
+##      procurada pelo nome, porque perder uma função no meio da mudança de casa
+##      é o jeito silencioso de esta fatia dar errado.
+##   3. A LINHA DIZ O ESTADO, e não só o nome. É a razão de a coluna ter saído:
+##      "Som: ligado" responde o que o botão faz E em que pé está.
+##   4. APERTAR UMA LINHA MUDA O ESTADO E O RÓTULO JUNTO. Menu que faz e não se
+##      redesenha é menu mentindo sobre o que ele mesmo acabou de fazer.
+##   5. A COLUNA DE ÍCONES SUMIU DE VERDADE do HUD — senão a mudança seria só
+##      acrescentar um menu, e as duas coisas ficariam na tela.
+##   6. O MENU CABE NA JANELA, que é a pergunta da barra de mão.
+
+var falhas := 0
+
+
+func _initialize() -> void:
+	_run.call_deferred()
+
+
+func _conferir(ok: bool, rotulo: String) -> void:
+	if not ok:
+		push_error("MENU_PAUSA_FALHOU: " + rotulo)
+		print("FALHA: ", rotulo)
+		falhas += 1
+
+
+func _run() -> void:
+	_conferir(change_scene_to_file("res://scenes/prototipo_3d/vale.tscn") == OK,
+		"a cena do vale carrega")
+	await _frames(4)
+	await _mundo_pronto()
+	await _frames(3)
+
+	var jogo := current_scene
+	var menu = jogo.get("menu_pausa")
+	_conferir(menu != null, "o vale não montou o menu do Esc")
+	if menu == null:
+		_fechar()
+		return
+
+	# --- 1. O ESC ABRE O MENU ------------------------------------------------
+	_conferir(not menu.aberto, "o menu do Esc já abriu sozinho")
+	jogo.telas.abrir("menu_pausa")
+	await _frames(3)
+	_conferir(menu.aberto, "pedir o menu do Esc não abriu nada")
+	_conferir(paused, "o menu do Esc abriu com o vale andando atrás dele")
+
+	var lista := _achar(menu, "Linhas") as VBoxContainer
+	_conferir(lista != null, "o menu não tem a lista de linhas")
+	if lista == null:
+		_fechar()
+		return
+
+	# --- 2 e 3. AS NOVE FUNÇÕES, COM O ESTADO ESCRITO ------------------------
+	var textos: Array[String] = []
+	for filho in lista.get_children():
+		if filho is Button:
+			textos.append((filho as Button).text)
+	var tudo := " | ".join(textos)
+	print("")
+	for linha in textos:
+		print("  ", linha)
+	print("")
+
+	# Cada ícone da coluna antiga, pelo que ele fazia.
+	var esperados := {
+		"voltar ao vale": "o botão de voltar ao jogo",
+		"mapa": "o ícone do mapa",
+		"ajustes": "o ícone de ajustes",
+		"controles": "o ícone de ajuda (controles)",
+		"som:": "o ícone do som, com o estado",
+		"relógio:": "o ícone do relógio, com o estado",
+		"velocidade do tempo:": "o ícone da velocidade do tempo, com o estado",
+		"câmera do mouse:": "o ícone da câmera, com o estado",
+		"voltar ao menu inicial": "o ícone HOME",
+		"sair do jogo": "a saída do jogo",
+	}
+	for chave in esperados:
+		_conferir(tudo.to_lower().contains(str(chave)),
+			"o menu do Esc não tem %s (procurei por '%s')" % [str(esperados[chave]), str(chave)])
+
+	# --- 4. APERTAR MUDA O ESTADO E O RÓTULO JUNTO ---------------------------
+	#
+	# O som é o caso mais limpo: alterna, e o rótulo tem de acompanhar no mesmo
+	# quadro. Se o texto não mudar, o menu está mentindo sobre o que fez.
+	var audio := root.get_node("/root/Audio")
+	var antes: bool = audio.som_ativo
+	var i_som := _linha_com(lista, "Som:")
+	_conferir(i_som >= 0, "não achei a linha do som")
+	if i_som >= 0:
+		var texto_antes: String = (lista.get_child(i_som) as Button).text
+		menu._cursor = i_som
+		menu._fazer()
+		await _frames(2)
+		_conferir(audio.som_ativo != antes, "apertar a linha do som não trocou o som")
+		var depois_lista := _achar(menu, "Linhas") as VBoxContainer
+		var texto_depois: String = (depois_lista.get_child(i_som) as Button).text
+		_conferir(texto_depois != texto_antes,
+			"o som trocou e o rótulo ficou igual ('%s'): o menu mente sobre o que fez" % texto_depois)
+		# Devolve como estava, que é educação de portão.
+		menu._cursor = i_som
+		menu._fazer()
+		await _frames(2)
+		_conferir(audio.som_ativo == antes, "não consegui devolver o som ao estado de antes")
+
+	# --- 5. A COLUNA DE ÍCONES SUMIU DO HUD ----------------------------------
+	#
+	# Se ela continuasse lá, a mudança teria sido só acrescentar um menu — e o
+	# jogador ficaria com as duas coisas na tela, que é o contrário do pedido.
+	var hud = jogo.get("hud")
+	_conferir(hud != null, "não achei o HUD")
+	if hud != null:
+		var redondos := 0
+		for no in (hud as Node).find_children("*", "Button", true, false):
+			var botao := no as Button
+			# Os botões da coluna eram redondos e pequenos, sem texto.
+			if botao.text.strip_edges() == "" and botao.size.x <= 48.0 and botao.size.y <= 48.0:
+				redondos += 1
+		_conferir(redondos == 0,
+			"o HUD ainda tem %d botão(ões) redondo(s) sem rótulo: a coluna do canto não saiu" % redondos)
+
+	# --- 6. CABE NA JANELA ---------------------------------------------------
+	var caixa := _achar(menu, "Caixa") as Control
+	_conferir(caixa != null, "não achei a caixa do menu")
+	if caixa != null:
+		var quadro := caixa.get_global_rect()
+		var janela: Vector2 = caixa.get_viewport_rect().size
+		_conferir(quadro.size.x > 300.0 and quadro.size.y > 300.0,
+			"a caixa do menu tem %s: pequena demais para dez linhas" % str(quadro.size))
+		_conferir(quadro.position.x >= -1.0 and quadro.position.y >= -1.0
+				and quadro.end.x <= janela.x + 1.0 and quadro.end.y <= janela.y + 1.0,
+			"o menu está fora da janela: %s numa tela de %s" % [str(quadro), str(janela)])
+
+	jogo.telas.fechar_tudo()
+	await _frames(2)
+	_conferir(not menu.aberto, "fechar tudo deixou o menu do Esc aberto")
+	_conferir(not paused, "fechar o menu do Esc deixou o vale parado")
+
+	_fechar()
+
+
+func _linha_com(lista: VBoxContainer, pedaco: String) -> int:
+	for i in lista.get_child_count():
+		var filho := lista.get_child(i)
+		if filho is Button and (filho as Button).text.contains(pedaco):
+			return i
+	return -1
+
+
+func _achar(raiz: Node, nome: String) -> Node:
+	for no in raiz.find_children(nome, "", true, false):
+		return no
+	return null
+
+
+func _fechar() -> void:
+	print("")
+	if falhas == 0:
+		print("MENU_PAUSA_OK: o Esc abre o menu com o vale parado, as dez linhas que eram a coluna de ícones estão lá com o estado escrito, apertar uma troca o estado e o rótulo junto, a coluna do canto saiu do HUD, e o menu cabe na janela")
+	else:
+		print("menu do Esc: %d falha(s)" % falhas)
+	quit(1 if falhas > 0 else 0)
+
+
+func _frames(count: int) -> void:
+	for frame in range(count):
+		await process_frame
+
+
+func _mundo_pronto() -> void:
+	for i in range(3000):
+		var mundo := get_first_node_in_group("mundo")
+		if mundo != null and mundo.construido:
+			break
+		await process_frame
+	await process_frame
+	await process_frame

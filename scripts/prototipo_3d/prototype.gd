@@ -24,6 +24,7 @@ const Recursos3D = preload("res://scripts/prototipo_3d/recursos_3d.gd")
 const Minimapa = preload("res://scripts/prototipo_3d/minimapa.gd")
 const CadeiaDeMissoes = preload("res://scripts/prototipo_3d/cadeia_de_missoes.gd")
 const TelasDoVale = preload("res://scripts/prototipo_3d/telas_do_vale.gd")
+const MenuPausa = preload("res://scripts/prototipo_3d/menu_pausa.gd")
 const MENU_SCENE := "res://scenes/prototipo_3d/abertura.tscn"
 ## Raio de terra firme em volta do ponto de chegada.
 const RAIO_CHEGADA := 6.0
@@ -68,6 +69,8 @@ var painel	# painel_vale.gd — tecla J
 var colecao	# colecao_vale.gd — sem tecla: virou seção do almanaque
 ## Dono único das telas: só uma fica aberta. Ver telas_do_vale.gd.
 var telas
+## O menu do Esc, com o que era a coluna de ícones. Ver menu_pausa.gd.
+var menu_pausa
 ## A aba pedida no último `abrir_o_painel`, entregue à abertura crua.
 var _aba_pedida := 0
 
@@ -213,6 +216,62 @@ func _ready() -> void:
 		func() -> bool: return colecao != null and colecao.aberta,
 		_abrir_colecao_crua,
 		func() -> void: if colecao != null: colecao.fechar())
+	# O MENU DO ESC, com o que estava na coluna de ícones do canto esquerdo.
+	#
+	# "Os ícones na esquerda do HUD podem ser todos dentro do menu ESC." Eram
+	# nove botões redondos empilhados na borda, por cima do vale, o tempo todo —
+	# e sem rótulo: o do som era um desenho diferente ligado e desligado, e só
+	# passando o mouse se descobria qual era qual. Em linha, com o estado
+	# escrito, "Som: ligado" responde as duas perguntas de uma vez.
+	#
+	# As linhas são declaradas AQUI e não lá dentro, porque quem sabe pausar o
+	# relógio e trocar o estilo é esta casa. O menu só desenha, lê o rótulo e
+	# chama. Mesma costura do `telas_do_vale.gd`.
+	menu_pausa = MenuPausa.new()
+	menu_pausa.name = "MenuPausa"
+	add_child(menu_pausa)
+	menu_pausa.definir([
+		{"rotulo": "Voltar ao vale", "fazer": func() -> void: pass, "fecha": true},
+		{"rotulo": "Mapa do vale", "fecha": true, "fazer": func() -> void: _toggle_map()},
+		{"rotulo": "Ajustes", "fecha": true, "fazer": func() -> void: _open_settings()},
+		{"rotulo": "Controles", "fecha": true,
+			"fazer": func() -> void: hud.set_controls_open(not hud.controls_open())},
+		{"rotulo": func() -> String: return "Som: %s" % ("ligado" if Audio.som_ativo else "desligado"),
+			"fazer": func() -> void: Audio.definir_som_ativo(not Audio.som_ativo)},
+		{"rotulo": func() -> String: return "Relógio: %s" % ("andando" if not Dia.pausado else "parado"),
+			"fazer": func() -> void:
+				if not Dia.pausa_no_jogo:
+					Audio.efeito("ui_trava")
+					return
+				Audio.efeito("ui_confirmar")
+				# O relógio fica como o jogador deixou, e não como o menu o
+				# achou: é ele que o dono das telas vai devolver ao fechar.
+				_relogio_pausado_antes = not _relogio_pausado_antes},
+		{"rotulo": func() -> String: return "Velocidade do tempo: %s" % Dia.ROTULOS_VELOCIDADE[Dia.velocidade],
+			"fazer": func() -> void:
+				Dia.definir_velocidade((Dia.velocidade + 1) % Dia.VELOCIDADES.size())},
+		{"rotulo": func() -> String: return "Câmera do mouse: %s" % ("arrastar" if _camera_travada_antes else "livre"),
+			"fazer": func() -> void:
+				# Troca a gaveta, e não a câmera de agora: com o menu aberto o
+				# cursor está solto de propósito, e é a gaveta que o fechamento
+				# devolve. Mexer na câmera aqui seria desfeito um quadro depois.
+				_camera_travada_antes = not _camera_travada_antes
+				CameraMouse.definir(CameraMouse.ARRASTAR if _camera_travada_antes else CameraMouse.LIVRE)},
+		{"rotulo": "Voltar ao menu inicial", "fecha": true,
+			"fazer": func() -> void: _ask_return_to_menu()},
+		{"rotulo": "Sair do jogo", "fecha": true,
+			"fazer": func() -> void:
+				Partida.salvar()
+				get_tree().quit()},
+	] as Array[Dictionary])
+	telas.registrar("menu_pausa",
+		# O Esc já é cuidado pelo dono das telas: com tela aberta ele fecha, e
+		# sem nada aberto cai na escada do `_unhandled_key_input` daqui, que é
+		# quem pede este menu. Então esta linha não reclama tecla nenhuma.
+		func(_e: InputEvent) -> bool: return false,
+		func() -> bool: return menu_pausa.aberto,
+		func() -> void: menu_pausa.abrir(),
+		func() -> void: menu_pausa.fechar())
 	telas.tela_mudou.connect(func(_nome: String, aberta: bool) -> void:
 		if aberta:
 			_pause_valley()
@@ -477,22 +536,22 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		# própria tecla não têm como saber disso.
 		if event.physical_keycode == KEY_ESCAPE:
 			# ESC É O MENU, que é o que todo jogo do gênero faz — Palworld,
-			# Stardew, Witcher 3, Cyberpunk, todos. Antes ele SOLTAVA O MOUSE,
-			# e era a causa da queixa de "tenho que clicar e arrastar para
-			# girar a câmera": quem apertava Esc procurando o menu saía da
-			# câmera livre sem saber, e ficava preso no modo de arrastar.
+			# Stardew, Witcher 3, Cyberpunk, todos.
 			#
-			# A ordem é a da convenção: primeiro ESC FECHA O QUE ESTÁ ABERTO,
-			# e só com tudo fechado ele abre o menu. É uma escada, e os
-			# degraus de cima não moram aqui: modal do HUD some antes, na
-			# camada dele, que consome o Esc; painel e coleção abertos saem lá
-			# em cima desta função, porque com eles na frente as teclas são
-			# deles. O que chega até aqui é o mapa, e depois dele o vale sem
+			# A ordem é a da convenção: primeiro ESC FECHA O QUE ESTÁ ABERTO, e
+			# só com tudo fechado ele abre o menu. É uma escada, e o degrau de
+			# cima não mora aqui: tela aberta é fechada pelo dono das telas
+			# (`telas_do_vale.gd`), que consome o Esc antes de ele chegar nesta
+			# função. O que chega até aqui é o mapa, e depois dele o vale sem
 			# nada aberto.
+			#
+			# E o menu agora é o `menu_pausa`, com as nove linhas que eram a
+			# coluna de ícones do canto — e não mais a caixa de "voltar ao
+			# menu?", que virou UMA das linhas dele.
 			if mapa.aberto:
 				_toggle_map()
-			else:
-				_ask_return_to_menu()
+			elif telas != null:
+				telas.abrir("menu_pausa")
 		elif event.is_action_pressed("mv_mapa"):
 			# M (remapeável) abre o mapa do vale; o HOME fica no botão da coluna do canto.
 			_toggle_map()

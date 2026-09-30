@@ -33,6 +33,7 @@ signal fechou
 signal pediu(acao: String)
 
 const Atalhos = preload("res://scripts/prototipo_3d/atalhos.gd")
+const Identidade = preload("res://scripts/prototipo_3d/identidade.gd")
 
 const COR_TITULO := Color("d6ba78")
 const COR_TEXTO := Color("e8e4d7")
@@ -45,7 +46,9 @@ const COR_BORDA := Color(0.84, 0.73, 0.47, 0.8)
 enum Aba { MISSOES, CARTAS, OBRAS, OFICINA, COZINHA, VENDA, TRABALHO, AJUSTES }
 const NOME_DA_ABA := ["Missões", "Cartas", "Obras", "Oficina", "Cozinha", "Venda", "Trabalho", "Jogo"]
 
-const TAMANHO := Vector2(760, 470)
+const TAMANHO := Vector2(900, 520)
+## Largura da coluna das abas, à esquerda. A mesma proporção do almanaque.
+const LARGURA_DAS_ABAS := 230.0
 const ALTURA_DA_LINHA := 28.0
 const LETRA_TITULO := 22
 const LETRA_ABAS := 15
@@ -97,7 +100,8 @@ var _dia_pausado_antes := false
 var _aviso := ""
 
 var _titulo: Label
-var _abas: Label
+## A coluna das abas, à esquerda, como as seções do almanaque.
+var _abas_coluna: VBoxContainer
 var _rolagem: ScrollContainer
 var _lista: VBoxContainer
 ## Só as linhas ESCOLHÍVEIS, na ordem do cursor (ver o 2D).
@@ -383,7 +387,7 @@ func fazer_a_acao(acao: Dictionary) -> bool:
 
 func _montar() -> void:
 	var fundo := ColorRect.new()
-	fundo.color = Color(0.02, 0.03, 0.03, 0.62)
+	fundo.color = Color(0.02, 0.03, 0.03, 0.72)
 	fundo.set_anchors_preset(Control.PRESET_FULL_RECT)
 	fundo.mouse_filter = Control.MOUSE_FILTER_STOP
 	add_child(fundo)
@@ -400,31 +404,59 @@ func _montar() -> void:
 	caixa.offset_top = -TAMANHO.y * 0.5
 	caixa.offset_bottom = TAMANHO.y * 0.5
 	add_child(caixa)
+	# A MOLDURA DE TALHA do resto do vale, como no almanaque. Painel com borda
+	# própria é painel que envelhece sozinho quando a identidade muda.
+	Identidade.emoldurar(caixa)
 
 	var coluna := VBoxContainer.new()
-	coluna.add_theme_constant_override("separation", 8)
+	coluna.add_theme_constant_override("separation", 10)
 	caixa.add_child(coluna)
 
+	# O CAMINHO no alto, como no almanaque: "Painel › Missões". É o fio que diz
+	# onde se está sem gastar uma linha de abas horizontais.
 	var topo := HBoxContainer.new()
 	coluna.add_child(topo)
-	_titulo = _rotulo("", LETRA_TITULO, COR_TITULO)
+	_titulo = Label.new()
+	_titulo.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_TITULO, 500, 2))
+	_titulo.add_theme_font_size_override("font_size", 19)
+	_titulo.add_theme_color_override("font_color", Identidade.OURO)
 	_titulo.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	Identidade.sombra_texto(_titulo)
 	topo.add_child(_titulo)
-	# A PORTA DA ABA DO JOGO: um botão, fora do giro das setas (ver o cabeçalho).
 	_botao_jogo = _botao_pequeno("JOGO", func(): _ir_para_o_jogo())
 	_botao_jogo.tooltip_text = "Salvar, voltar ao menu, sair e os ajustes de teste"
 	topo.add_child(_botao_jogo)
 	topo.add_child(_botao_pequeno("×", fechar))
+	coluna.add_child(Identidade.divisor())
 
-	var fila := HBoxContainer.new()
-	fila.add_theme_constant_override("separation", 6)
-	coluna.add_child(fila)
-	fila.add_child(_botao_pequeno("◀", func(): _proxima_aba(-1)))
-	_abas = _rotulo("", LETRA_ABAS, COR_APAGADA)
-	_abas.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_abas.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	fila.add_child(_abas)
-	fila.add_child(_botao_pequeno("▶", func(): _proxima_aba(1)))
+	var lado_a_lado := HBoxContainer.new()
+	lado_a_lado.add_theme_constant_override("separation", 22)
+	lado_a_lado.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	coluna.add_child(lado_a_lado)
+
+	# À ESQUERDA AS ABAS, EM COLUNA, como as seções do almanaque.
+	#
+	# Eram uma linha horizontal de "[ Missões ]  Cartas  Venda", que é legível
+	# com duas abas e fica apertada com seis — e que não deixa lugar para dizer
+	# quantas missões há em cada uma. Em coluna, cada aba tem a sua linha, a sua
+	# marca de aberta (▾) e a sua conta.
+	_abas_coluna = VBoxContainer.new()
+	_abas_coluna.name = "Abas"
+	_abas_coluna.add_theme_constant_override("separation", 2)
+	_abas_coluna.custom_minimum_size = Vector2(LARGURA_DAS_ABAS, 0)
+	lado_a_lado.add_child(_abas_coluna)
+
+	var fio := VSeparator.new()
+	lado_a_lado.add_child(fio)
+
+	# À DIREITA A PÁGINA: a lista da aba, e embaixo dela a dica do que está no
+	# cursor. É a mesma divisão do almanaque — índice de um lado, página do
+	# outro — e é por isso que as duas telas passam a se parecer.
+	var pagina := VBoxContainer.new()
+	pagina.add_theme_constant_override("separation", 8)
+	pagina.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	pagina.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	lado_a_lado.add_child(pagina)
 
 	# A lista rola, com barra visível: barra é a informação de que a lista
 	# continua (ver o 2D).
@@ -436,20 +468,91 @@ func _montar() -> void:
 	_rolagem.get_v_scroll_bar().add_theme_stylebox_override("grabber", _estilo_do_puxador(false))
 	_rolagem.get_v_scroll_bar().add_theme_stylebox_override("grabber_highlight", _estilo_do_puxador(true))
 	_rolagem.get_v_scroll_bar().add_theme_stylebox_override("grabber_pressed", _estilo_do_puxador(true))
-	coluna.add_child(_rolagem)
+	pagina.add_child(_rolagem)
 
 	_lista = VBoxContainer.new()
 	_lista.add_theme_constant_override("separation", 3)
 	_lista.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_rolagem.add_child(_lista)
 
-	_dica = _rotulo("", LETRA_DICA, COR_APAGADA)
+	_dica = Label.new()
+	_dica.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_TEXTO, 400))
+	_dica.add_theme_font_size_override("font_size", 18)
+	_dica.add_theme_color_override("font_color", COR_TEXTO)
+	_dica.add_theme_constant_override("line_spacing", 3)
 	_dica.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_dica.custom_minimum_size = Vector2(0, 44)
-	coluna.add_child(_dica)
+	_dica.custom_minimum_size = Vector2(0, 52)
+	pagina.add_child(_dica)
 
-	_rodape = _rotulo("", LETRA_DICA - 1, COR_APAGADA)
+	_rodape = _rotulo("", LETRA_DICA, COR_APAGADA)
+	_rodape.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	coluna.add_child(_rodape)
+
+
+## A COLUNA DAS ABAS, refeita a cada redesenho.
+##
+## Refazer em vez de remendar, pela mesma razão do almanaque: a lista de abas
+## válidas muda com o lugar onde o jogador está (a Venda só existe no balcão),
+## e tela que se remenda guarda estado em dois lugares.
+func _montar_abas() -> void:
+	for filho in _abas_coluna.get_children():
+		filho.queue_free()
+	for qual in abas_validas():
+		var aberta: bool = qual == _aba
+		var linha := Button.new()
+		linha.focus_mode = Control.FOCUS_NONE
+		linha.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+		linha.custom_minimum_size = Vector2(0, ALTURA_DA_LINHA + 4.0)
+		linha.alignment = HORIZONTAL_ALIGNMENT_LEFT
+		linha.text = ("▾ " if aberta else "▸ ") + str(NOME_DA_ABA[qual])
+		var conta := _conta_da_aba(qual)
+		if conta != "":
+			linha.text += "    " + conta
+		linha.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_TITULO, 600))
+		linha.add_theme_font_size_override("font_size", 16)
+		linha.add_theme_color_override("font_color", Identidade.OURO if aberta else COR_APAGADA)
+		linha.add_theme_color_override("font_hover_color", Identidade.CREME)
+		for estado in ["normal", "hover", "pressed"]:
+			linha.add_theme_stylebox_override(estado, _estilo_da_aba(aberta, estado != "normal"))
+		linha.pressed.connect(func() -> void: _ir_para_aba(qual))
+		_abas_coluna.add_child(linha)
+
+
+## "3" ao lado do nome da aba: quantas coisas há nela agora. Sem conta, vazio —
+## aba de ação (Jogo) não conta nada.
+func _conta_da_aba(qual: int) -> String:
+	match qual:
+		Aba.MISSOES:
+			return str(Missoes.ativas.size()) if not Missoes.ativas.is_empty() else ""
+		Aba.CARTAS:
+			return str(Cartas.sabidas.size()) if not Cartas.sabidas.is_empty() else ""
+		_:
+			return ""
+
+
+func _ir_para_aba(qual: int) -> void:
+	if _aba == qual:
+		return
+	_aba = qual
+	_cursor = 0
+	_confirmando = -1
+	_aviso = ""
+	_redesenhar()
+
+
+func _estilo_da_aba(aberta: bool, realce: bool) -> StyleBoxFlat:
+	var estilo := StyleBoxFlat.new()
+	if aberta:
+		estilo.bg_color = Color(0.19, 0.21, 0.15, 0.96)
+		estilo.border_color = Color(Identidade.OURO.r, Identidade.OURO.g, Identidade.OURO.b, 0.75)
+		estilo.border_width_left = 2
+	elif realce:
+		estilo.bg_color = Color(0.13, 0.16, 0.12, 0.9)
+	else:
+		estilo.bg_color = Color(0.0, 0.0, 0.0, 0.0)
+	estilo.content_margin_left = 10
+	estilo.content_margin_right = 10
+	return estilo
 
 
 func _ir_para_o_jogo() -> void:
@@ -487,10 +590,8 @@ func _redesenhar() -> void:
 	_linhas.clear()
 	_escolhiveis.clear()
 
-	var cabecalho: Array = []
-	for qual in abas_validas():
-		cabecalho.append("[ %s ]" % NOME_DA_ABA[qual] if qual == _aba else " %s " % NOME_DA_ABA[qual])
-	_abas.text = "  ".join(cabecalho)
+	_montar_abas()
+	_titulo.text = "Painel  ›  %s" % str(NOME_DA_ABA[_aba])
 	_botao_jogo.text = "‹ VOLTAR" if _aba == Aba.AJUSTES else "JOGO"
 
 	match _aba:

@@ -127,7 +127,17 @@ func _ready() -> void:
 	_objective_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_place(_objective_label, Vector2(33, 52), Vector2(HEADING_WIDTH - 50, 42))
 
-	_create_corner_buttons()
+	# A COLUNA DE ÍCONES DO CANTO SAIU.
+	#
+	# Eram nove botões redondos empilhados na borda esquerda, por cima do vale,
+	# o tempo todo: HOME, ajustes, som, relógio, mapa, câmera, velocidade,
+	# estilo e controles. "Os ícones na esquerda do HUD podem ser todos dentro do
+	# menu ESC" — e estão, em linhas com o estado escrito (`menu_pausa.gd`).
+	#
+	# `_create_corner_buttons` continua aqui, sem ser chamada, porque ela é a
+	# receita dos ícones e do que cada um fazia: apagar agora seria perder o
+	# registro de nove comportamentos no mesmo commit em que eles mudam de casa.
+	# Sai no commit seguinte, com o `set_map_open` que fala dela.
 
 	_house_info_panel = _panel(Color(0.055, 0.085, 0.075, 0.92))
 	_root.add_child(_house_info_panel)
@@ -434,8 +444,10 @@ func set_camera_locked(value: bool) -> void:
 	_camera_locked = value
 	if is_instance_valid(_camera_lock_button):
 		_camera_lock_button.set_pressed_no_signal(value)
-		_camera_icon.definir(value)
-		_camera_hint.text = ("Câmera travada · %s ou Tab destrava" % Atalhos.letra("camera")) if value else ("Câmera livre · %s ou Esc trava" % Atalhos.letra("camera"))
+		if is_instance_valid(_camera_icon):
+			_camera_icon.definir(value)
+		if is_instance_valid(_camera_hint):
+			_camera_hint.text = ("Câmera travada · %s ou Tab destrava" % Atalhos.letra("camera")) if value else ("Câmera livre · %s ou Esc trava" % Atalhos.letra("camera"))
 	_update_control_mode()
 
 
@@ -480,7 +492,8 @@ func controls_open() -> bool:
 ## "?" do canto: mostra ou esconde o painel de controles (o "?" fica dourado aberto).
 func set_controls_open(open: bool) -> void:
 	_controls_panel.visible = open
-	_help_icon.definir(open)
+	if is_instance_valid(_help_icon):
+		_help_icon.definir(open)
 	if open:
 		_update_control_mode()
 
@@ -493,8 +506,17 @@ func _update_telemetry() -> void:
 	var vram := Performance.get_monitor(Performance.RENDER_VIDEO_MEM_USED) / 1048576.0
 	var suffix := "  ·  " + _telemetry if not _telemetry.is_empty() else ""
 	_style_hint.text = "%d FPS%s\n%s\n%s tri · %d draws · %d MB VRAM" % [Engine.get_frames_per_second(), suffix, _model_status, _compact(triangles), int(draws), int(vram)]
-	_speed_icon.definir(false, Dia.velocidade)
-	_speed_hint.text = "Tempo: %s · clique para mudar" % String(Dia.ROTULOS_VELOCIDADE[Dia.velocidade])
+	# OS ÍCONES DO CANTO PODEM NÃO EXISTIR.
+	#
+	# A coluna deles saiu para dentro do menu do Esc, e `_create_corner_buttons`
+	# deixou de ser chamada — então `_speed_icon` e companhia ficam nulos. As
+	# medições continuam sendo feitas (o `_style_hint` acima é a dica de
+	# desempenho, que tem dono próprio); o que se guarda aqui é só não falar com
+	# quem não nasceu.
+	if is_instance_valid(_speed_icon):
+		_speed_icon.definir(false, Dia.velocidade)
+	if is_instance_valid(_speed_hint):
+		_speed_hint.text = "Tempo: %s · clique para mudar" % String(Dia.ROTULOS_VELOCIDADE[Dia.velocidade])
 	_update_clock_hint()
 
 
@@ -609,10 +631,13 @@ func _create_corner_buttons() -> void:
 		_corner_nodes.append(_root.get_child(index))
 
 
-## Com o mapa aberto só ficam a coluna do canto (mapa dourado) e os marcadores; título,
-## relógio, avisos e controles somem e voltam como estavam.
+## Com o mapa aberto somem título, relógio, avisos e controles, e voltam como
+## estavam. Antes ficava também a coluna de ícones do canto, com o do mapa em
+## dourado — ela saiu para dentro do menu do Esc, e o mapa hoje se fecha pelo
+## Esc ou pela mesma linha do menu que o abriu.
 func set_map_open(open: bool) -> void:
-	_map_icon.definir(open)
+	if is_instance_valid(_map_icon):
+		_map_icon.definir(open)
 	if open:
 		_hidden_for_map.clear()
 		for child in _root.get_children():
