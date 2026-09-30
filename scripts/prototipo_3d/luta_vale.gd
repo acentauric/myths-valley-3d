@@ -201,7 +201,7 @@ func _process(_delta: float) -> void:
 ## O E apertou com bicho perto: o corpo se vira para ele e começa a contar o
 ## segurar. Devolve false quando não há luta — e aí o E segue para o resto.
 func armar_a_luta() -> bool:
-	var mao := Inventario.na_mao()
+	var mao := _item_em_uso()
 	if Luta.golpe_da_mao(mao, false) == "":
 		return false
 	var bicho = _criatura_perto(ALCANCE_DE_LUTA * u_por_px)
@@ -221,10 +221,15 @@ func _conferir_o_golpe_segurado() -> void:
 	if ainda and segurou < Luta.SEGURAR:
 		return
 	_golpe_segurado_desde = -1.0
-	var mao := Inventario.na_mao()
+	var mao := _item_em_uso()
 	var golpe := Luta.golpe_da_mao(mao, ainda)
 	if golpe != "":
 		bater(golpe, mao)
+
+
+func _item_em_uso() -> String:
+	var equipado := Equipamento.no_encaixe("maos")
+	return equipado if equipado != "" else Inventario.na_mao()
 
 
 ## Um golpe inteiro: o fôlego, o corpo, e a pancada no tempo do braço.

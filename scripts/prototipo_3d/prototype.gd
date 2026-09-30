@@ -81,6 +81,7 @@ var social
 var placas
 ## A aba pedida no último `abrir_o_painel`, entregue à abertura crua.
 var _aba_pedida := 0
+var _machado_inicial_entregue := false
 var achados	# achados_vale.gd — cordéis, sinais e cartas no chão
 var pesca	# pesca_vale.gd — a vara na mão e o E na beira da água
 
@@ -367,6 +368,8 @@ func _ready() -> void:
 	# `estado_para_salvar`.
 	Salvamento.registrar_mundo(self)
 	_retomar_a_partida()
+	Inventario.mover_ferramentas_para_reserva()
+	_entregar_machado_inicial()
 	# Depois da partida salva: o que ela diz que já foi achado não volta ao chão.
 	achados.espalhar()
 	_comecar_no_lugar_pedido()
@@ -612,10 +615,6 @@ func _unhandled_key_input(event: InputEvent) -> void:
 	if _lendo():
 		return
 	if event is InputEventKey and event.pressed and not event.echo:
-		if event.physical_keycode == KEY_Q and not mapa.aberto:
-			player.alternar_machado_de_teste()
-			get_viewport().set_input_as_handled()
-			return
 		# O J E O L SAÍRAM DAQUI, junto com o Esc que fechava tela. Quem cuida
 		# de abrir e fechar tela é o `telas_do_vale.gd`, num lugar só, porque
 		# abrir uma tem de FECHAR A OUTRA — e cinco arquivos cada um cuidando da
@@ -803,6 +802,20 @@ func _retomar_a_partida() -> void:
 			hud.set_notice(" ".join(Salvamento.ultimo_relato))
 
 
+## One starter axe per game; the saved marker also migrates older saves.
+func _entregar_machado_inicial() -> void:
+	if _machado_inicial_entregue:
+		return
+	if Inventario.tem("machado") or Equipamento.no_encaixe("maos") == "machado":
+		_machado_inicial_entregue = true
+		return
+	if Inventario.adicionar("machado"):
+		_machado_inicial_entregue = true
+		hud.set_notice("Machado recebido. Equipe-o no encaixe Mãos da mochila.")
+	else:
+		hud.set_notice("Mochila cheia. Libere um espaco para receber o machado.")
+
+
 func _texto_da_partida(chave: String) -> String:
 	var dado = JSON.parse_string(FileAccess.get_file_as_string("res://data/partida.json"))
 	var entrada: Dictionary = dado.get(chave, {}) if dado is Dictionary else {}
@@ -819,6 +832,7 @@ func estado_para_salvar() -> Dictionary:
 		"giro": player.visual.rotation.y,
 		"hora": Dia.hora,
 		"horas_decorridas": Dia.horas_decorridas,
+		"machado_inicial_entregue": _machado_inicial_entregue,
 		"visitados": _visited.keys(),
 	}
 	# AS FILAS DOS OUTROS MORADORES, e os alvos que já caíram.
@@ -868,6 +882,7 @@ func restaurar_do_save(estado: Dictionary) -> void:
 		player.velocity = Vector3.ZERO
 		player.visual.rotation.y = float(estado.get("giro", player.visual.rotation.y))
 	Dia.horas_decorridas = maxf(0.0, float(estado.get("horas_decorridas", 0.0)))
+	_machado_inicial_entregue = bool(estado.get("machado_inicial_entregue", false))
 	if estado.has("hora"):
 		Dia.definir_hora(float(estado["hora"]))
 	_visited.clear()

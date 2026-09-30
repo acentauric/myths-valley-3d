@@ -189,7 +189,7 @@ func _mais_perto() -> String:
 ## O que a dica diz depois do nome: a ferramenta que falta, ou o que vai render.
 func _o_que_falta(ficha: Dictionary) -> String:
 	var ferramenta := str(ficha.get("ferramenta", ""))
-	if not Inventario.tem(ferramenta):
+	if not _tem_ferramenta(ferramenta):
 		return "precisa de %s" % _nome_do_item(ferramenta)
 	if not Energia.aguenta("bater"):
 		return "sem fôlego"
@@ -199,6 +199,13 @@ func _o_que_falta(ficha: Dictionary) -> String:
 func _nome_do_item(id: String) -> String:
 	var item: Dictionary = Catalogo.ITENS.get(id, {})
 	return str(item.get("nome", id))
+
+
+func _tem_ferramenta(id: String) -> bool:
+	var encaixe := str(Catalogo.dados(id).get("encaixe", ""))
+	if Catalogo.tipo(id) == "ferramenta" and encaixe != "":
+		return Equipamento.no_encaixe(encaixe) == id
+	return Inventario.tem(id)
 
 
 ## O GOLPE.
@@ -213,7 +220,7 @@ func bater() -> bool:
 	var ficha: Dictionary = alvo["ficha"]
 	var ferramenta := str(ficha.get("ferramenta", ""))
 
-	if not Inventario.tem(ferramenta):
+	if not _tem_ferramenta(ferramenta):
 		recusado.emit("Precisa de %s." % _nome_do_item(ferramenta))
 		return false
 	if not Energia.gastar("bater"):
