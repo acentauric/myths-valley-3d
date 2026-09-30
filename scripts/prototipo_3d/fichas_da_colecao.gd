@@ -1,14 +1,16 @@
 extends RefCounted
 ## A PÁGINA DE UMA PEÇA DE COLEÇÃO — cordel, sinal ou bicho.
 ##
-## Este texto morava dentro do `colecao_vale.gd`, que é a tela da tecla própria
+## Este texto morava dentro do `colecao_vale.gd`, que era a tela da tecla própria
 ## da coleção. Quando os cordéis e os colecionáveis foram para dentro do
 ## almanaque — "leve os cordéis para dentro do almanaque também" —, as mesmas
 ## páginas passaram a ser pedidas de dois lugares.
 ##
 ## Copiar seria ter duas versões da mesma página, e elas divergem: uma ganha o
 ## conserto e a outra não. Então o texto saiu das duas telas e virou isto, que
-## nenhuma das duas possui.
+## nenhuma das duas possuía. A tela avulsa foi apagada depois (o almanaque
+## mostra tudo o que ela mostrava), e o texto ficou aqui: é a página, e não a
+## tela, e continua sem dono.
 ##
 ## O que cada página diz, e por quê, é do jogo 2D e não foi reescrito:
 ##

@@ -17,7 +17,6 @@ const LutaVale = preload("res://scripts/prototipo_3d/luta_vale.gd")
 const IdiomaMenu = preload("res://scripts/prototipo_3d/idioma_menu.gd")
 const PainelVale = preload("res://scripts/prototipo_3d/painel_vale.gd")
 const BancadasVale = preload("res://scripts/prototipo_3d/bancadas_vale.gd")
-const ColecaoVale = preload("res://scripts/prototipo_3d/colecao_vale.gd")
 const AchadosVale = preload("res://scripts/prototipo_3d/achados_vale.gd")
 const Atalhos = preload("res://scripts/prototipo_3d/atalhos.gd")
 const CameraMouse = preload("res://scripts/prototipo_3d/camera_mouse.gd")
@@ -68,7 +67,6 @@ var _cadeias: Dictionary = {}
 var _camera_travada_antes := false
 var _relogio_pausado_antes := false
 var painel	# painel_vale.gd — tecla J
-var colecao	# colecao_vale.gd — sem tecla: virou seção do almanaque
 ## Dono único das telas: só uma fica aberta. Ver telas_do_vale.gd.
 var telas
 ## O menu do Esc, com o que era a coluna de ícones. Ver menu_pausa.gd.
@@ -215,14 +213,6 @@ func _ready() -> void:
 		func() -> bool: return painel != null and painel.aberto,
 		_abrir_painel_cru,
 		func() -> void: if painel != null: painel.fechar())
-	telas.registrar("colecao",
-		# A COLEÇÃO NÃO TEM MAIS TECLA: ela virou seção do almanaque, que ficou com
-		# o L. A tela dela continua de pé e continua registrada aqui — o portão da
-		# câmera a abre por este dono —, mas nenhuma tecla a chama.
-		func(_e: InputEvent) -> bool: return false,
-		func() -> bool: return colecao != null and colecao.aberta,
-		_abrir_colecao_crua,
-		func() -> void: if colecao != null: colecao.fechar())
 	# O MENU DO ESC, com o que estava na coluna de ícones do canto esquerdo.
 	#
 	# "Os ícones na esquerda do HUD podem ser todos dentro do menu ESC." Eram
@@ -480,12 +470,6 @@ func _montar_moradores(spawn: Vector3) -> void:
 	painel.abriu.connect(_parar_o_jogador)
 	painel.fechou.connect(_soltar_o_jogador)
 	painel.pediu.connect(_ao_pedido_do_painel)
-	# A coleção da tecla L (colecao_vale.gd), no mesmo andar do painel.
-	colecao = ColecaoVale.new()
-	colecao.name = "Colecao"
-	add_child(colecao)
-	colecao.abriu.connect(_parar_o_jogador)
-	colecao.fechou.connect(_soltar_o_jogador)
 	# Quem está lendo não perde vida: a peçonha espera o painel fechar (ver
 	# Vida.esta_lendo). Por método, que deixa de valer quando o vale sai.
 	Vida.esta_lendo = Callable(self, "_lendo")
@@ -898,12 +882,7 @@ func abrir_o_painel(aba: int = 0) -> void:
 		telas.abrir("painel")
 
 
-func abrir_a_colecao() -> void:
-	if telas != null:
-		telas.abrir("colecao")
-
-
-## A abertura CRUA das duas, que é o que o dono das telas chama. Ninguém mais
+## A abertura CRUA do painel, que é o que o dono das telas chama. Ninguém mais
 ## deve chamá-las: elas não pausam nada e não mexem na câmera.
 func _abrir_painel_cru() -> void:
 	if painel == null or _lendo() or mapa.aberto or _saindo:
@@ -911,12 +890,6 @@ func _abrir_painel_cru() -> void:
 	BancadasVale.aplicar(painel, world, player.global_position)
 	painel.abrir(_aba_pedida)
 	_aba_pedida = 0
-
-
-func _abrir_colecao_crua() -> void:
-	if colecao == null or _lendo() or mapa.aberto or _saindo:
-		return
-	colecao.abrir()
 
 
 ## COM UMA TELA ABERTA, O JOGADOR PARA — e SÓ isso.
@@ -956,7 +929,7 @@ func _ao_pedido_do_painel(acao: String) -> void:
 
 ## Alguma tela de leitura aberta? É o que a peçonha pergunta (Vida.esta_lendo).
 func _lendo() -> bool:
-	return (painel != null and painel.aberto) or (colecao != null and colecao.aberta)
+	return painel != null and painel.aberto
 
 
 func _exit_tree() -> void:

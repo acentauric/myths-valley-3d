@@ -78,12 +78,6 @@ func _run() -> void:
 			"pausa": true,
 		},
 		{
-			"nome": "coleção (L)",
-			"abrir": func(): jogo.telas.abrir("colecao"),
-			"fechar": func(): jogo.telas.fechar_tudo(),
-			"pausa": true,
-		},
-		{
 			"nome": "painel (J)",
 			"abrir": func(): jogo.telas.abrir("painel"),
 			"fechar": func(): jogo.telas.fechar_tudo(),
@@ -161,7 +155,7 @@ func _run() -> void:
 	# Aqui se abre uma, se abre OUTRA por cima, e se cobra que a primeira tenha
 	# fechado e que a câmera volte como estava no começo de tudo.
 	print("")
-	var com_tecla := ["mochila", "almanaque", "colecao", "painel"]
+	var com_tecla := ["mochila", "almanaque", "painel"]
 	for modo_travado in [false, true]:
 		for primeira in com_tecla:
 			for segunda in com_tecla:
@@ -215,7 +209,7 @@ func _run() -> void:
 	if jogo.placas != null:
 		_conferir(jogo.placas._permitido,
 			"com o vale livre as plaquinhas já estavam proibidas")
-		for qual in ["mochila", "almanaque", "colecao", "painel", "menu_pausa"]:
+		for qual in ["mochila", "almanaque", "painel", "menu_pausa"]:
 			jogo.telas.abrir(qual)
 			await _frames(3)
 			if jogo.telas.aberta() != qual:
@@ -250,7 +244,7 @@ func _run() -> void:
 func _fechar() -> void:
 	print("")
 	if falhas == 0:
-		print("CAMERA_OK: as seis telas abrem com o cursor livre, param o vale atrás delas (menos o mapa, que é vista ao vivo) e devolvem o modo que acharam nos dois modos; abrir uma fecha a outra, e trocar de tela não perde a câmera; e perder o foco não troca nada")
+		print("CAMERA_OK: as cinco telas abrem com o cursor livre, param o vale atrás delas (menos o mapa, que é vista ao vivo) e devolvem o modo que acharam nos dois modos; abrir uma fecha a outra, e trocar de tela não perde a câmera; e perder o foco não troca nada")
 	else:
 		print("câmera: %d falha(s)" % falhas)
 	quit(1 if falhas > 0 else 0)

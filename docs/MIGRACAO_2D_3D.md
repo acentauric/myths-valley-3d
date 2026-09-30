@@ -614,16 +614,18 @@ era a penúltima — era pré-requisito da 2ᵃ.
 > entrava como linha escolhível e deslocava o índice das missões de baixo, e os
 > campos de teste comparavam o índice com o cursor sem descontar as ações.
 >
-> **A coleção L saiu** (parte da [#20](https://github.com/acentauric/myths-valley/issues/20)), em
-> `colecao_vale.gd`, pelo mesmo caminho do painel: cópia adaptada da
-> `colecao_tela.gd`. O cordel ainda não se lê no papel — o `Folheto` é da #21 — e a
-> ficha mostra a primeira linha do verso, como já mostrava no 2D. A teia (K) e o
-> arraial (P) continuam na #20.
+> **A coleção saiu, e mora no almanaque** (parte da [#20](https://github.com/acentauric/myths-valley/issues/20)).
+> Primeiro veio como tela própria no L, cópia adaptada da `colecao_tela.gd`; depois,
+> a pedido de quem joga, os cordéis, sinais e bichos viraram seções do almanaque,
+> que ficou com o L, e as fichas foram para `fichas_da_colecao.gd`, que nenhuma tela
+> possui. A tela avulsa, sem tecla e mostrando um pedaço do que o almanaque mostra,
+> foi apagada. O cordel ainda não se lê no papel — o `Folheto` é da #21 — e a ficha
+> mostra a primeira linha do verso, como no 2D. O arraial (P) continua na #20.
 >
 > **Os dados de coleção vieram junto**, e são a primeira cópia de DADO do 2D:
 > `data/colecionaveis/` (cordéis, sinais, bichos). O `Colecao` lê `res://`, que
 > aqui é a pasta do protótipo, então o arquivo tem de estar dentro dela. O dono
-> continua sendo o 2D, e `tests/colecao.gd` compara as três cópias byte a byte
+> continua sendo o 2D, e `tests/dados_do_2d.gd` compara as cópias byte a byte
 > com o original na raiz — mudou lá sem copiar, reprova aqui.
 >
 > **Os achados e as cartas saíram** ([#12](https://github.com/acentauric/myths-valley/issues/12)),

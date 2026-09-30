@@ -11,6 +11,12 @@ marcos. Os textos curtos e a identificação exibidos no jogo ficam em
 `prototipo_3d/data/historico_3d.json`; ao registrar um novo marco ou build,
 atualize esse arquivo e este documento juntos.
 
+## Em desenvolvimento — 30/09/2026
+
+- **A tela de coleção avulsa saiu.** O almanaque (L) mostra cordéis, sinais e bichos
+  com as mesmas fichas, e a tela própria da coleção tinha ficado sem tecla, mostrando um
+  pedaço do que ele mostra (`colecao_vale.gd` e `tests/colecao.gd` apagados).
+
 ## Em desenvolvimento — 29/09/2026
 
 - **Vida no vale** (#10). Barra de vida no HUD, logo abaixo do relógio, com as cores
