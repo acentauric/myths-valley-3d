@@ -102,15 +102,16 @@ func _enter_tree() -> void:
 	_bind("mv_time", [Atalhos.tecla("hora")])
 	_bind("mv_mapa", [Atalhos.tecla("mapa")])
 	# A MOCHILA no I, como no jogo 2D e como no gênero (Palworld, Stardew,
-	# Cyberpunk usam I ou Tab). O Tab aqui já é a câmera, então fica o I.
-	_bind("mv_mochila", [KEY_I])
+	# Cyberpunk usam I ou Tab). O Tab aqui já é a câmera, então fica o I — de
+	# fábrica, pela tabela de atalhos, remapeável como as outras telas (#4).
+	_bind("mv_mochila", [Atalhos.tecla("mochila")])
 	# O ALMANAQUE DAS PLANTAS pela tabela de atalhos, e não numa letra fixa.
 	#
 	# Ele morava no `KEY_L` escrito aqui, porque L é a coleção do 2D. Aí a
 	# coleção de verdade chegou ao vale, TAMBÉM no L, e as duas telas ficaram
 	# na mesma tecla — coisa que a tabela existe para impedir e não podia, com
 	# o almanaque passando por fora dela. Agora ele está lá dentro, de fábrica
-	# no K, e remapeável como os outros.
+	# no L, e remapeável como os outros.
 	_bind("mv_almanaque", [Atalhos.tecla("almanaque")])
 	# OS NÚMEROS PASSARAM A SER A BARRA DE MÃO, e os gestos foram para Alt.
 	#

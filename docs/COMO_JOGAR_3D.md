@@ -10,42 +10,47 @@ No Godot Project Manager, outra opção é importar **`prototipo_3d/project.godo
 
 ## Controles
 
+As letras marcadas com * são **remapeáveis** em AJUSTAR → Geral → Atalhos; o HUD e o painel mostram sempre a letra escolhida. W, A, S e D não entram na troca, porque andam e escolhem dentro das telas. A tecla de fábrica vem entre parênteses.
+
+**Andar e olhar**
+
 | Tecla | Ação |
 | --- | --- |
-| Início / câmera destravada | Mouse capturado; mover o mouse gira a câmera sem clicar |
-| Tab | Alternar entre câmera destravada e travada |
-| Botões redondos do canto direito | Som, relógio (pausar/retomar o dia), HOME, câmera (travar/destravar; Tab e Esc também), velocidade do tempo (clique alterna) e estilo visual — a dica do estilo mostra FPS, triângulos e memória de vídeo |
-| Arrastar com botão esquerdo e câmera travada | Mover o cenário junto com o cursor para girar a câmera; um clique sem arrastar ainda interage com as casas |
-| Clique direito com cursor livre | Caminhar até o chão, casa ou NPC apontado |
-| Duplo clique direito com cursor livre | Correr até o chão, casa ou NPC apontado |
-| Mouse sobre uma casa | Mostrar nome e dica de interação |
-| Clique esquerdo em uma casa | Abrir as mesmas propriedades no balão e no painel da interface, mesmo à distância |
-| Clique esquerdo fora das casas | Fechar o balão e o painel de propriedades |
-| WASD / setas | Mover em relação à câmera e cancelar a caminhada automática; reproduz `walk` |
-| Shift (um toque) | Ativar ou desativar corrida; ela continua em qualquer direção e desliga automaticamente quando o personagem para; solte Shift e use W + Espaço para pular correndo |
-| Mouse com câmera destravada | Girar a câmera sem pressionar botão |
+| WASD / setas | Mover em relação à câmera e cancelar a caminhada automática (AJUSTAR → Geral escolhe WASD, setas ou os dois) |
+| Shift (um toque) | Ativar ou desativar a corrida; ela desliga sozinha quando o personagem para, e gasta vigor |
+| Espaço | Pular a partir do chão |
+| Mouse | Com a câmera solta, girar a câmera sem clicar; com a câmera travada, arrastar o cenário. O modo com que o jogo abre fica em AJUSTAR → Câmera do mouse |
+| Tab ou Câmera* (C) | Alternar entre câmera solta e travada |
 | Rodinha | Aproximar ou afastar a câmera |
-| F | Observar o personagem pela frente; pressione novamente para voltar |
-| 1 | Saudação (`greet_01`) |
-| 2 | Dar tchau (`wave_goodbye_02`) |
-| 3 | Concordar (`agree`) |
-| 4 | Olhar ao redor (`look_around`) |
-| 5 | Com medo (`afraid`) |
-| 6 | Cruzar os braços (`fold_arms`) |
-| 7 | Golpear (`chop`) |
-| 8 | Nadar (`swim`) |
-| Barra de espaço | Pular a partir do chão; subida e descida usam gravidades diferentes |
-| Esc | Travar a câmera e liberar o cursor |
-| E perto de um bicho | Golpe com a arma na mão (ou a meia-lua, de mão vazia, para quem aprendeu); **segurar** dá o golpe forte (ou a rasteira) |
-| V | Ginga: sair do bote do bicho, para quem aprendeu a capoeira (remapeável em AJUSTAR) |
-| R | Voltar ao ponto inicial |
-| T | Adiantar o relógio do vale em uma hora (ver dia e noite) |
-| J | Painel: missões, cartas, venda (no balcão da Venda do Bar) e, pelo botão JOGO, salvar, voltar ao menu e sair. Dentro dele, Tab troca de aba, W/S escolhem, E confirma, Esc ou J fecham; o relógio para enquanto ele está aberto |
-| L | Almanaque: o caderno do que já se viu — plantas, cordéis, sinais e bichos. Nas três coleções, a vaga em branco mostra quantos faltam achar |
-| M | Voltar ao menu (HOME) |
-| Alt+F4 / fechar janela | Sair |
+| Observar* (F) | Olhar o personagem pela frente; de novo, volta |
+| Clique direito | Caminhar até o chão, casa ou morador apontado; duplo clique corre |
+| Clique esquerdo na casa | Abrir os dados da casa no balão e no painel, mesmo à distância; fora das casas, fecha |
+| Mapa* (M) | O vale visto de cima: o jogador para, o mundo continua. M ou Esc fecham; o minimapa liga em AJUSTAR |
 
-No estilo **Procedural** (AJUSTAR → Cenário e tempo) as teclas 1–8 acionam os gestos do humanoide por código (acenar, concordar, apontar, coçar a cabeça, alongar, chamar, reverência, olhar em volta). O jogador começa no píer, com o Pedro ao lado: fale com ele e siga as missões do HUD. Os moradores cumprimentam quando você chega perto. Detalhes em [VALE_VIVO_3D.md](VALE_VIVO_3D.md).
+**Agir**
+
+| Tecla | Ação |
+| --- | --- |
+| Ler / interagir* (E) | Falar, ler, pegar, pescar, tocar obra. Perto de um bicho, golpe com a arma na mão (ou a meia-lua, de mão vazia, para quem aprendeu); **segurar** dá o golpe forte (ou a rasteira) |
+| Gingar* (V) | Sair do bote do bicho, para quem aprendeu a capoeira |
+| 1 a 9 e 0 | Pôr na mão o item daquele espaço da barra de mão (o 0 é o décimo) |
+| Alt+1 a Alt+8 | Gestos: saudação, tchau, concordar, olhar ao redor, medo, braços cruzados, golpe, nado |
+| Avançar a hora* (T) | Adiantar o relógio do vale em uma hora |
+| Reiniciar* (R) | Voltar ao ponto inicial |
+
+**Telas** — só uma fica aberta por vez, e abrir outra fecha a que estava; enquanto uma tela está aberta, o vale para atrás dela. A mesma tecla ou o Esc fecham.
+
+| Tecla | Tela |
+| --- | --- |
+| Mochila* (I) | Os 30 espaços (os 10 primeiros são a barra de mão) e o que o corpo veste |
+| Painel* (J) | Missões, cartas e, perto do lugar certo, venda, fogão, bancada e obras; pelo botão JOGO, salvar, voltar ao menu e sair. Dentro dele, Tab troca de aba, W/S escolhem, E confirma |
+| Árvore de habilidades* (K) | A teia de talentos, onde se gasta o ponto que o vale dá |
+| Almanaque* (L) | O caderno do que já se viu: plantas, cordéis, sinais e bichos. A vaga em branco mostra quantos faltam achar |
+| O arraial* (P) | Quem mora no vale e o quanto cada um gosta de você |
+| Esc | O menu do jogo: voltar ao vale, mapa, ajustes, controles, salvar, som, relógio, velocidade do tempo, câmera do mouse, voltar ao menu inicial e sair |
+| Alt+F4 / fechar janela | Sair (a partida salva antes) |
+
+No estilo **Procedural** (AJUSTAR → Cenário e tempo) as teclas Alt+1 a Alt+8 acionam os gestos do humanoide por código (acenar, concordar, apontar, coçar a cabeça, alongar, chamar, reverência, olhar em volta). O jogador começa no píer, com o Pedro ao lado: fale com ele e siga as missões do HUD. Os moradores cumprimentam quando você chega perto. Detalhes em [VALE_VIVO_3D.md](VALE_VIVO_3D.md).
 
 Parado, o personagem reproduz `idle`. Um gesto termina naturalmente e volta para `idle`; começar a andar interrompe o gesto. Explore a praça, a horta e a costa: o indicador acompanha os três pontos visitados.
 
@@ -53,7 +58,7 @@ Parado, o personagem reproduz `idle`. Um gesto termina naturalmente e volta para
 
 - GLB do Tripo com malha, materiais, esqueleto de 65 ossos e 12 animações incorporadas.
 - Locomoção automática com os clipes `idle`, `walk` e `run`.
-- Oito gestos acionáveis pelas teclas 1–8 e `pular_baixo` pela barra de espaço no estilo Tripo.
+- Oito gestos acionáveis por Alt+1 a Alt+8 e `pular_baixo` pela barra de espaço no estilo Tripo.
 - Escala ajustada para 1,78 m, colisor de cápsula, aceleração, gravidade e rotação.
 - Câmera em terceira pessoa com `SpringArm3D`, zoom e reação a obstáculos.
 - Vila de teste com casas, caminhos, horta, árvores, praia, iluminação e colisões.

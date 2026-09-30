@@ -162,15 +162,17 @@ func _aba_geral(esquerda: VBoxContainer, direita: VBoxContainer) -> void:
 	# continua alternando na hora, como sempre fez.
 	_escolha("Câmera do mouse", CameraMouse.ROTULOS, CameraMouse.modo(), CameraMouse.definir, CameraMouse.PADRAO)
 	_secao("Atalhos")
+	# Só as letras livres: W/A/S/D andam e navegam as telas (`Atalhos.RESERVADAS`).
+	var codigos: Array = Atalhos.letras_livres()
 	var letras: Array = []
-	for codigo in range(KEY_A, KEY_Z + 1):
+	for codigo in codigos:
 		letras.append(OS.get_keycode_string(codigo))
 	for acao: String in Atalhos.DEFINICOES:
-		_escolha(Atalhos.rotulo(acao), letras, Atalhos.tecla(acao) - KEY_A, func(i: int) -> void:
-			Atalhos.definir(acao, KEY_A + i)
+		_escolha(Atalhos.rotulo(acao), letras, codigos.find(Atalhos.tecla(acao)), func(i: int) -> void:
+			Atalhos.definir(acao, int(codigos[i]))
 			Atalhos.aplicar()
 			# Reconstrói a aba: numa troca (swap) a linha da outra ação também muda.
-			_reconstruir(0), int(Atalhos.DEFINICOES[acao]["padrao"]) - KEY_A)
+			_reconstruir(0), codigos.find(int(Atalhos.DEFINICOES[acao]["padrao"])))
 	_pai = direita
 	_secao("Volume")
 	_volume("Música", Audio.volume_musica, Audio.definir_volume_musica, "musica")

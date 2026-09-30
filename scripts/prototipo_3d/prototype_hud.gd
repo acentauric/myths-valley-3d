@@ -503,7 +503,7 @@ func _update_control_mode() -> void:
 		"%s: mover" % TeclasMovimento.rotulo(),
 		"Shift: corrida (parar desliga)",
 		"Espaço: pular  ·  1 a 0: item na mão  ·  Alt+1 a 8: gestos",
-		"I: mochila  ·  L: almanaque das plantas",
+		"%s: mochila  ·  %s: árvore de habilidades  ·  %s: o arraial" % [Atalhos.letra("mochila"), Atalhos.letra("talentos"), Atalhos.letra("arraial")],
 		"Botão direito: andar até o ponto (duplo: correr)",
 		"Botão esquerdo na casa: dados",
 		"%s: ler / interagir  ·  %s: observar" % [Atalhos.letra("interagir"), Atalhos.letra("observar")],
