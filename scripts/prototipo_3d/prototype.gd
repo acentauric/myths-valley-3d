@@ -13,6 +13,7 @@ const ArvoresInfo = preload("res://scripts/prototipo_3d/arvores_info.gd")
 const PlacasNomes = preload("res://scripts/prototipo_3d/placas_nomes.gd")
 const Tubarao = preload("res://scripts/prototipo_3d/tubarao.gd")
 const Queda = preload("res://scripts/prototipo_3d/queda.gd")
+const LutaVale = preload("res://scripts/prototipo_3d/luta_vale.gd")
 const Atalhos = preload("res://scripts/prototipo_3d/atalhos.gd")
 const Minimapa = preload("res://scripts/prototipo_3d/minimapa.gd")
 const MENU_SCENE := "res://scenes/prototipo_3d/abertura.tscn"
@@ -217,6 +218,12 @@ func _montar_moradores(spawn: Vector3) -> void:
 	queda.name = "Queda"
 	add_child(queda)
 	queda.configurar(world, player, hud)
+	# A luta e o caititu da mata (luta_vale.gd). Entra depois das lápides e das
+	# árvores: com bicho perto, o E é dela antes de ser delas.
+	var luta := LutaVale.new()
+	luta.name = "Luta"
+	add_child(luta)
+	luta.configurar(world, player, hud)
 	# Pegadas do jogador no chão, por terreno, sumindo com o tempo.
 	pegadas_no = preload("res://scripts/prototipo_3d/pegadas.gd").new()
 	pegadas_no.name = "Pegadas"

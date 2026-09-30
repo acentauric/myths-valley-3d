@@ -32,6 +32,8 @@ No Godot Project Manager, outra opção é importar **`prototipo_3d/project.godo
 | 8 | Nadar (`swim`) |
 | Barra de espaço | Pular a partir do chão; subida e descida usam gravidades diferentes |
 | Esc | Travar a câmera e liberar o cursor |
+| E perto de um bicho | Golpe com a arma na mão (ou a meia-lua, de mão vazia, para quem aprendeu); **segurar** dá o golpe forte (ou a rasteira) |
+| V | Ginga: sair do bote do bicho, para quem aprendeu a capoeira (remapeável em AJUSTAR) |
 | R | Voltar ao ponto inicial |
 | T | Adiantar o relógio do vale em uma hora (ver dia e noite) |
 | M | Voltar ao menu (HOME) |
@@ -58,7 +60,7 @@ As animações foram exportadas **no lugar**: os clipes mexem o esqueleto, enqua
 
 O material continua sendo duplicado apenas na instância e renderizado dos dois lados. Essa correção evita o desaparecimento de partes do torso sem alterar o arquivo 3D original.
 
-A **vida** já aparece: a barra logo abaixo do relógio, vermelha (verde-musgo com peçonha). Quem cai acorda na porta da Casa de taipa às 6h do dia seguinte, inteiro — ainda não há nada no vale que tire vida, isso chega com a luta. A regra de fôlego, mochila, missões, fé, receitas, luta, obras, venda, pesca, cartas e salvamento também já roda no vale, vinda do 2D, mas o jogador ainda não a vê: faltam as telas e os gatilhos. O passeio também não grava progresso — as vagas de save ainda não estão ligadas; o diretório de usuário `MythsValleyPrototype3D` já separa esses saves da versão 2D. Plantação, terrenos e a conversa por IA ainda não existem no 3D. O que falta, e em que ordem, está nas [issues com rótulo `3d`](https://github.com/acentauric/myths-valley/issues?q=is%3Aissue+is%3Aopen+label%3A3d) e no [plano de migração](MIGRACAO_2D_3D.md).
+Um **caititu** mora na mata fechada, longe da vila (por enquanto uma caixa cinza, até o modelo com rig chegar): fareja quem chega perto, **anuncia o bote** — acende em âmbar, abaixa e marca no chão até onde a mordida alcança — e só então morde. Derrubado, deixa a carne de caça na mochila e volta em três dias. Para lutar de facão é preciso tê-lo na mão, o que por enquanto só a mochila (#2) vai permitir. A **vida** já aparece: a barra logo abaixo do relógio, vermelha (verde-musgo com peçonha). Quem cai acorda na porta da Casa de taipa às 6h do dia seguinte, inteiro — ainda não há nada no vale que tire vida, isso chega com a luta. A regra de fôlego, mochila, missões, fé, receitas, luta, obras, venda, pesca, cartas e salvamento também já roda no vale, vinda do 2D, mas o jogador ainda não a vê: faltam as telas e os gatilhos. O passeio também não grava progresso — as vagas de save ainda não estão ligadas; o diretório de usuário `MythsValleyPrototype3D` já separa esses saves da versão 2D. Plantação, terrenos e a conversa por IA ainda não existem no 3D. O que falta, e em que ordem, está nas [issues com rótulo `3d`](https://github.com/acentauric/myths-valley/issues?q=is%3Aissue+is%3Aopen+label%3A3d) e no [plano de migração](MIGRACAO_2D_3D.md).
 
 ## Como a animação funciona
 

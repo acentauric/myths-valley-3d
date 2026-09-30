@@ -34,7 +34,7 @@ crédito do Tripo e exigem o custo aprovado **antes** de gerar.
 
 | Fase deste plano | Issues |
 |---|---|
-| Fase 2 — sistemas | ~~#10 Vida~~ (feita) · #11 receitas, cozinha, oficina e pesca · #12 cartas e coleção · #13 Povoado · #14 luta · #15 obras e venda |
+| Fase 2 — sistemas | ~~#10 Vida~~ (feita) · #11 receitas, cozinha, oficina e pesca · #12 cartas e coleção · #13 Povoado · ~~#14 luta~~ (feita) · #15 obras e venda |
 | Fase 2.5 — geografia | #22 chapada e vizinhos · #23 rio, vau e lagoa · #24 mata e serra · #25 fazenda e ruínas |
 | Fase 3 — missões e enredo | **#1** (jam) · #31 capítulos 6 e 7 |
 | Fase 4 — salvar | #7 |

@@ -18,12 +18,14 @@ extends SceneTree
 ##   3. O CORPO SENTE. O `player_controller` multiplica a velocidade pelo
 ##      `Energia.passo()` — lido do fonte, porque medir velocidade de um corpo
 ##      que anda por física dá um teste que falha por pouco em máquina lenta.
-##   4. NADA GASTA FÔLEGO AINDA, e isso é de propósito. No 2D quem cobra é a
-##      enxada, o machado e a picareta, e o vale não tem trabalho. O dia em que
-##      tiver, esta pergunta é a que vai avisar que ela precisa mudar.
-##      A única exceção é a QUEDA (`queda.gd`, #10): cair é a mesma noite do
-##      desmaio, e ela chama `Energia.desmaiar()` como o `_apagar` do 2D. Isso
-##      devolve fôlego, não gasta — e só ela pode.
+##   4. SÓ A LUTA GASTA FÔLEGO, e só a queda desmaia. No 2D quem cobra é a
+##      enxada, o machado, a picareta e a luta; o vale ainda não tem trabalho,
+##      e a luta chegou com a #14 — o golpe e a ginga cobram "bater" como lá, e
+##      o `tests/luta.gd` confere quanto. A QUEDA (`queda.gd`, #10) chama
+##      `Energia.desmaiar()` como o `_apagar` do 2D, que devolve fôlego. Quem
+##      mais passar a gastar ou a desmaiar reprova aqui, e o recado é o mesmo
+##      de antes: escreva o portão do que passou a gastar, e ponha o arquivo na
+##      lista.
 
 var falhas := 0
 
@@ -80,26 +82,27 @@ func _run() -> void:
 	_conferir(fonte.contains("speed *= Energia.passo()"),
 		"o controle do jogador não multiplica a velocidade pelo passo do Energia: o cansaço não chega ao corpo")
 
-	# --- 4. NADA GASTA AINDA, DE PROPÓSITO ------------------------------------
+	# --- 4. SÓ A LUTA GASTA, SÓ A QUEDA DESMAIA ------------------------------
 	#
-	# Se um dia alguém ligar uma ação ao fôlego no vale, esta pergunta reprova
-	# — e é para reprovar mesmo. O recado é: apague esta parte, e escreva em
-	# lugar dela o portão do que passou a gastar.
-	var gasta := false
-	var desmaia_fora_da_queda := false
 	# Chamada é linha de CÓDIGO: comentário que cita a função (e a queda.gd cita)
 	# não pode contar como chamada, nem para acusar nem para absolver.
+	var gasta_fora_da_luta := false
+	var desmaia_fora_da_queda := false
 	var desmaia := RegEx.create_from_string("(?m)^[ \\t]+[^#\\n]*Energia\\.desmaiar\\(")
+	var gasta := RegEx.create_from_string("(?m)^[ \\t]+[^#\\n]*Energia\\.(gastar|dormir)\\(")
 	for arquivo in _scripts_do_prototipo():
 		var texto := FileAccess.get_file_as_string(arquivo)
-		if texto.contains("Energia.gastar(") or texto.contains("Energia.dormir("):
-			gasta = true
-			print("  (gasta fôlego: %s)" % arquivo)
+		if gasta.search(texto) != null and not arquivo.ends_with("/luta_vale.gd"):
+			gasta_fora_da_luta = true
+			print("  (gasta fôlego fora da luta: %s)" % arquivo)
 		if desmaia.search(texto) != null and not arquivo.ends_with("/queda.gd"):
 			desmaia_fora_da_queda = true
 			print("  (desmaia fora da queda: %s)" % arquivo)
-	_conferir(not gasta,
-		"alguma coisa no vale passou a gastar fôlego: troque esta pergunta pelo portão do que gasta")
+	_conferir(not gasta_fora_da_luta,
+		"alguma coisa além da luta passou a gastar fôlego: escreva o portão do que gasta e ponha o arquivo aqui")
+	var luta := FileAccess.get_file_as_string("res://scripts/prototipo_3d/luta_vale.gd")
+	_conferir(gasta.search(luta) != null,
+		"a luta não gasta fôlego: o golpe e a ginga do 2D cobram 'bater'")
 	_conferir(not desmaia_fora_da_queda,
 		"Energia.desmaiar() fora do queda.gd: o vale ganhou outra noite no chão, e ela precisa do portão dela")
 	var queda := FileAccess.get_file_as_string("res://scripts/prototipo_3d/queda.gd")
@@ -112,7 +115,7 @@ func _run() -> void:
 func _fechar() -> void:
 	print("")
 	if falhas == 0:
-		print("FOLEGO_OK: Progressao e Energia subiram com os números do 2D, o cansaço encurta o passo para 62% e o corpo lê isso; nada gasta fôlego ainda, porque o vale não tem trabalho")
+		print("FOLEGO_OK: Progressao e Energia subiram com os números do 2D, o cansaço encurta o passo para 62% e o corpo lê isso; só a luta gasta fôlego e só a queda desmaia")
 	else:
 		print("folego: %d falha(s)" % falhas)
 	quit(1 if falhas > 0 else 0)

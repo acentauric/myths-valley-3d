@@ -1,0 +1,10 @@
+{
+	"_sobre": "O que o jogador lê na luta do vale (#14). 'caiu', 'cansado' e as palavras que sobem sobre quem apanhou são as do jogo 2D (Mundo._acertar, _avisar_cansaco, _mostrar_pancada), verbatim. 'levou' é do vale: aqui o que o bicho deixa vai direto para a mochila, porque o vale ainda não tem coleta no chão. A tradução en/es é do Ramon; ver FALTAM_TRADUCAO em tests/idiomas.gd.",
+	"caiu": {"texto": "%s caiu."},
+	"levou": {"texto": "%s caiu. Na mochila: %s."},
+	"cansado": {"texto": "O braço não sobe mais. Por hoje chega."},
+	"escapou": {"texto": "escapou"},
+	"tonto": {"texto": "tonto"},
+	"veneno": {"texto": "veneno"},
+	"cortou": {"texto": "cortou"}
+}

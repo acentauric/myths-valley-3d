@@ -20,6 +20,16 @@ atualize esse arquivo e este documento juntos.
   (`queda.gd`, `data/queda.json`). A regra é o `Vida` compartilhado, sem uma linha
   mudada; o que o vale acrescentou é o gatilho, a barra e o portão `tests/vida.gd`.
   Nada no vale tira vida ainda — isso chega com a luta (#14).
+- **Luta no vale** (#14). Um **caititu** em caixa cinza mora na mata fechada, longe da
+  porta de casa e do píer, com os números do 2D na escala do passo do jogador: fareja e
+  desiste em dois raios, **anuncia o bote** (acende em âmbar, abaixa e marca no chão o
+  alcance da mordida) e morde 0,41 s depois do aviso. **E perto do bicho** é golpe
+  (segurar: golpe forte ou rasteira, para quem aprendeu), no tempo do braço — o clipe
+  `chop` no estilo Tripo, o corpo jogado para a frente no procedural —; **V** é a ginga,
+  remapeável em AJUSTAR. Números da pancada sobem sobre quem apanhou. Derrubado, o bicho
+  deixa a caça na mochila, devolve fôlego, conta abate, e a mata o repõe em três dias
+  (`criatura_vale.gd`, `luta_vale.gd`, `data/luta.json`, `tests/luta.gd`). Onça e jararaca
+  já estão na tabela, sem ninho até a serra e o brejo (#24).
 
 ## Build #6 — 28/09/2026
 
