@@ -1,0 +1,48 @@
+{
+  "observacao": "A CONVERSA DA DONA ZEFA, trazida do jogo 2D (data/dialogos/arraial.json, passos zefa_cosme / zefa_conversa / zefa_despedida). É a cadeia mais falada do vale e a que menos pede do mundo: não junta nada, não derruba nada — só manda o jogador de uma pessoa a outra, e é assim que a história do Cosme se conta. Usa a meta 'falar', que é a de 'levar' sem o item. O texto é o de lá, encurtado no que cabe num balão; a prosa inteira está no arraial.json e volta quando o vale tiver caixa de diálogo (#21). TRADUÇÃO: só em português neste primeiro momento; inglês e espanhol são do Ramon.",
+  "dono": "zefa",
+  "principal": true,
+  "abre_em": "casa_de_taipa",
+  "traducao": "pendente",
+  "passos": [
+    {
+      "id": "zefa_cosme",
+      "lugar": "casa_de_taipa",
+      "raio": 7.0,
+      "audio": "",
+      "texto": "Fala com o meu neto antes de mais nada. Ele tem uma coisa pra te contar e tá enrolando faz uma semana.",
+      "meta": {
+        "tipo": "falar",
+        "a_quem": "cosme",
+        "raio": 3.4,
+        "resposta": "Ela te mandou falar comigo, né. Eu sabia. Tem um primo meu em Salvador que arrumou lugar pra mim numa casa de secos e molhados. Eu tenho vinte e dois anos e nunca vi rua calçada. Mas ela me criou desde os sete, e aquele chão ali não se planta sozinho. Então eu disse que não — faz uma semana que eu disse que não, e faz uma semana que eu não durmo. Não conta pra ela."
+      }
+    },
+    {
+      "id": "zefa_conversa",
+      "lugar": "casa_de_taipa",
+      "raio": 7.0,
+      "audio": "",
+      "texto": "Agora volte aqui. A conversa que eu te prometi é esta, e é melhor sentado.",
+      "meta": {
+        "tipo": "falar",
+        "a_quem": "zefa",
+        "raio": 3.4,
+        "resposta": "Senta. Eu sei do emprego — sei desde o dia que a carta chegou, porque quem lê carta pra ele nesta casa sou eu. Ele acha que tá me escondendo; deixa ele achar mais um pouco. Eu não vou segurar o menino. Minha mãe segurou o meu irmão e ele morreu aqui mesmo, com sessenta e dois anos, achando que a vida ia começar depois. Amanhã tem saveiro pra Salvador. Me encontre no píer."
+      }
+    },
+    {
+      "id": "zefa_saveiro",
+      "lugar": "pier",
+      "raio": 8.0,
+      "audio": "",
+      "texto": "Amanhã tem saveiro pra Salvador. Me encontre no píer — e não se atrase, que saveiro não espera ninguém.",
+      "meta": {}
+    }
+  ],
+  "arremate": {
+    "texto": "O Cosme foi no saveiro das seis, e foi leve. Era só isso que ela queria.",
+    "narra": false,
+    "traducao": "pendente"
+  }
+}

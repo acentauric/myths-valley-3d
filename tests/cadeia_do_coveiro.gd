@@ -148,8 +148,13 @@ func _run() -> void:
 		var entrega: Dictionary = passo.get("entrega", {})
 		if not entrega.is_empty():
 			var ferramenta := str(entrega.get("item", ""))
-			_conferir(inv.tem(ferramenta),
-				"o passo '%s' cobra trabalho e não entregou %s" % [id, ferramenta])
+			# À MÃO, e não na mochila. O vale passou a cobrar a ferramenta
+			# ENCAIXADA (`Recursos3D._tem_ferramenta`), e é o encaixe que a
+			# entrega do passo preenche; perguntar pela mochila reprovaria
+			# justamente a entrega que funciona. Pergunta-se à regra do jogo
+			# para a medida não poder divergir dela.
+			_conferir(recursos._tem_ferramenta(ferramenta),
+				"o passo '%s' cobra trabalho e não deixou %s à mão" % [id, ferramenta])
 
 		match str(meta.get("tipo", "")):
 			"juntar":
@@ -176,8 +181,16 @@ func _run() -> void:
 		"a cadeia do coveiro parou no passo %d de %d" % [cadeia.missao + 1, total])
 
 	# --- 5. CORTAR CAPIM NÃO ENCHEU A MOCHILA --------------------------------
-	_conferir(inv.quantidade("") == 0,
-		"cortar capim pôs %d item(ns) de id vazio na mochila" % inv.quantidade(""))
+	# NENHUM ESPAÇO COM ID VAZIO. Contado à mão, e não por `quantidade("")`: a
+	# conta de "" agora é sempre zero por conserto — um espaço livre é `{}` e
+	# casava com "" —, e a pergunta antiga passaria a não poder falhar.
+	var sem_nome := 0
+	for espaco in inv.espacos:
+		var caixa: Dictionary = espaco
+		if not caixa.is_empty() and str(caixa.get("id", "")) == "":
+			sem_nome += 1
+	_conferir(sem_nome == 0,
+		"cortar capim pôs %d espaço(s) de id vazio na mochila" % sem_nome)
 	_conferir(inv.quantidade("capim") == 0,
 		"o capim virou item de mochila, e no 2D o mato cortado some")
 

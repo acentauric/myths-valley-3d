@@ -200,7 +200,7 @@ func correr(delta: float, palavra_livre: bool) -> void:
 	if not (passo.get("meta", {}) as Dictionary).is_empty():
 		# Meta que ACONTECE, e não só se mede: a entrega precisa de alguém para
 		# tentar antes de a pergunta ser feita.
-		_tentar_entregar(passo)
+		_tentar_encontro(passo)
 		_acertar_o_caderno(passo)
 		if not falta_a_meta(passo):
 			avancar()
@@ -280,12 +280,21 @@ func _com_o_nome(texto: String) -> String:
 	return texto if nome.is_empty() else "%s: %s" % [nome, texto]
 
 
-## O MORADOR ENTREGA A FERRAMENTA AO ANUNCIAR, e não depois.
+## O MORADOR ENTREGA A FERRAMENTA AO ANUNCIAR, E JÁ NA MÃO.
 ##
 ## É a regra 1 do tutorial do 2D — o NPC anuncia antes de cobrar — levada a
 ## sério: quem ouve "toma o machado e vai cortar" precisa ter o machado na
 ## mesma frase. Pedir primeiro e entregar depois é o que faz o jogador rodar o
 ## mapa procurando uma ferramenta que ninguém deu.
+##
+## E "na mão" passou a querer dizer ENCAIXADA. O vale mudou a regra do trabalho:
+## bater agora exige a ferramenta no encaixe, e não só na mochila
+## (`Recursos3D._tem_ferramenta`) — que é o certo, e é o do 2D. Mas a promessa
+## da fala não mudou: entregar na mochila e deixar o jogador descobrir sozinho
+## que falta equipar é a mesma ferramenta que ninguém deu, com um passo a mais.
+##
+## Então quem entrega, encaixa. Se o encaixe estiver ocupado, o que estava lá
+## volta para a mochila — quem cuida disso é o `Equipamento`, e não esta linha.
 ##
 ## Entrega uma vez só: o anúncio de cada passo acontece uma vez, e retomar o
 ## passo não reanuncia.
@@ -294,10 +303,32 @@ func entregar(passo: Dictionary) -> void:
 	if entrega.is_empty():
 		return
 	var item := str(entrega.get("item", ""))
-	var quantos := int(entrega.get("quantidade", 1))
-	if item == "" or Inventario.tem(item):
+	if item == "":
 		return
-	Inventario.adicionar(item, quantos)
+	# JÁ TEM NÃO É JÁ RECEBEU. O vale entrega um machado de saída e manda
+	# equipar; se o passo desistisse por achar o item na mochila, o "toma o
+	# machado e vai cortar" não daria nada e o trabalho ficaria impossível para
+	# quem ainda não descobriu o encaixe. Não ganha outro — ganha na mão.
+	if not Inventario.tem(item) and not _na_mao(item):
+		if not Inventario.adicionar(item, int(entrega.get("quantidade", 1))):
+			return
+	_por_na_mao(item)
+
+
+## O item está encaixado agora?
+func _na_mao(item: String) -> bool:
+	var encaixe := Equipamento.encaixe_de(item)
+	return encaixe != "" and Equipamento.no_encaixe(encaixe) == item
+
+
+## Encaixa o que está na mochila. Quem não é de encaixe fica onde está.
+func _por_na_mao(item: String) -> void:
+	if not Equipamento.e_equipamento(item) or _na_mao(item):
+		return
+	for i in Inventario.espacos.size():
+		if str((Inventario.espacos[i] as Dictionary).get("id", "")) == item:
+			Equipamento.equipar_do_espaco(i)
+			return
 
 
 ## A meta do passo ainda não foi cumprida? Passo sem meta nunca falta.
@@ -308,9 +339,10 @@ func falta_a_meta(passo: Dictionary) -> bool:
 	match str(meta.get("tipo", "")):
 		"juntar":
 			return Inventario.quantidade(str(meta.get("item", ""))) < int(meta.get("quantos", 1))
-		"levar":
-			# Entrega é ACONTECIMENTO, e não estado do mundo: quem responde é a
-			# memória do que já foi entregue. Ver `_tentar_entregar`.
+		"levar", "falar":
+			# Encontro é ACONTECIMENTO, e não estado do mundo: depois dele não
+			# sobra nada no mundo que diga que aconteceu. Quem responde é a
+			# memória. Ver `_tentar_encontro`.
 			return not bool(_levados.get(str(passo.get("id", "")), false))
 		"derrubar":
 			if recursos == null or not recursos.has_method("derrubados"):
@@ -373,6 +405,10 @@ func _acertar_o_caderno(passo: Dictionary) -> void:
 			CadernoDoVale.andar(id, 1 if levou else 0, 1,
 				"Levar %s a %s" % [_nome_do_item(str(meta.get("item", ""))),
 					_nome_de(str(meta.get("a_quem", "")))])
+		"falar":
+			var falou: bool = bool(_levados.get(str(passo.get("id", "")), false))
+			CadernoDoVale.andar(id, 1 if falou else 0, 1,
+				"Falar com %s" % _nome_de(str(meta.get("a_quem", ""))))
 		_:
 			# Passo de visita: sem conta, e a frase do passo já é o que fazer.
 			CadernoDoVale.andar(id, 0, 0, "")
@@ -399,7 +435,7 @@ func posicao_do_passo(indice: int) -> Vector3:
 			"juntar":
 				if recursos.has_method("mais_perto_que_rende"):
 					perto = recursos.mais_perto_que_rende(str(meta.get("item", "")), de)
-			"levar":
+			"levar", "falar":
 				var quem := _morador(str(meta.get("a_quem", "")))
 				if quem != null:
 					perto = quem.global_position
@@ -460,30 +496,33 @@ func _morador(quem: String) -> Node3D:
 	return achado as Node3D
 
 
-## A ENTREGA: chegou perto de quem ia receber, com a coisa na mão.
+## O ENCONTRO: chegar perto de quem espera — com a coisa na mão, ou de mãos vazias.
 ##
-## É a meta "levar", e ela é diferente das outras duas. "Juntar" e "derrubar"
-## são ESTADOS — dá para perguntar ao mundo quantas pedras há na mochila e
-## quantos pés caíram, a qualquer momento, e a resposta é a mesma. Entrega é um
-## INSTANTE: o item muda de mão e a mochila fica vazia. Perguntar depois "o
-## jogador tem o pirão?" responderia "não", que é indistinguível de "nunca
-## pegou" — e a missão pediria o pirão outra vez.
+## São duas metas com o mesmo corpo. "Levar" pede o item junto; "falar" só pede
+## que o jogador chegue. Escrevê-las separadas seria ter a mesma travessia
+## escrita duas vezes, e a segunda ficaria para trás no dia em que a primeira
+## ganhasse um conserto.
 ##
-## Daí a memória em `_levados`. O acontecimento é registrado quando acontece.
+## E as duas são ACONTECIMENTO, não estado — é o que as separa de "juntar" e
+## "derrubar". Dá para perguntar ao mundo quantas pedras há na mochila a
+## qualquer momento; não dá para perguntar "o jogador já falou com o Cosme?",
+## porque depois da conversa não sobra nada no mundo que diga isso. Daí a
+## memória em `_levados`, que vale para as duas.
 ##
 ## QUEM FALA NO FIM É QUEM RECEBE, e não quem pediu. A Dona Filó manda o pirão
 ## da Casa da estrada; o Tonho responde no píer, que é onde o jogador está. Pôr
 ## a resposta na boca dela seria o jogador ouvir o agradecimento do outro lado
 ## do vale, num balão que ele não vê.
-func _tentar_entregar(passo: Dictionary) -> void:
+func _tentar_encontro(passo: Dictionary) -> void:
 	var meta: Dictionary = passo.get("meta", {})
-	if str(meta.get("tipo", "")) != "levar":
+	var tipo := str(meta.get("tipo", ""))
+	if tipo != "levar" and tipo != "falar":
 		return
 	var id := str(passo.get("id", ""))
 	if bool(_levados.get(id, false)):
 		return
 	var item := str(meta.get("item", ""))
-	if item == "" or not Inventario.tem(item):
+	if tipo == "levar" and (item == "" or not Inventario.tem(item)):
 		return
 	var quem := _morador(str(meta.get("a_quem", "")))
 	if quem == null or jogador == null:
@@ -493,7 +532,8 @@ func _tentar_entregar(passo: Dictionary) -> void:
 	if no_chao.length() > float(meta.get("raio", 3.0)):
 		return
 
-	Inventario.consumir(item, 1)
+	if tipo == "levar":
+		Inventario.consumir(item, 1)
 	_levados[id] = true
 	var resposta := str(meta.get("resposta", ""))
 	if resposta != "" and quem.has_method("narrar"):

@@ -52,6 +52,17 @@ $semBom = New-Object System.Text.UTF8Encoding($false)
 # não é portão, e deixá-lo na bateria ensina a ignorar a bateria.
 $REGUAS = @("ordem_da_visita")
 
+# QUEM PRECISA DE MAIS TEMPO, E POR QUE. O teto geral e de 420 s e serve a
+# quase tudo. O `agua_rasa` nao: ele atravessa o bracinho de mar a pe, e o
+# vigor novo (correr custa folego) deixou a travessia mais lenta, entao o
+# orcamento dele subiu para 14000 + 16000 quadros de fisica -- perto de 500 s
+# de relogio. Cortar o orcamento faria o portao dizer "nao da pe" quando o que
+# falta e distancia; cortar o teto faz o portao TRAVAR sem medir nada. O que
+# custa caro e o tempo, e e o que se da.
+$TETO_DO_PORTAO = @{
+	"agua_rasa" = 700
+}
+
 $quais = @()
 if ($Teste -ne "") {
 	$quais = @($Teste -replace "\.gd$", "")
@@ -123,10 +134,11 @@ try {
 
 		$null = $processo.Handle
 
-		if (-not $processo.WaitForExit($TetoSegundos * 1000)) {
+		$teto = if ($TETO_DO_PORTAO.ContainsKey($nome)) { $TETO_DO_PORTAO[$nome] } else { $TetoSegundos }
+		if (-not $processo.WaitForExit($teto * 1000)) {
 			& taskkill /F /T /PID $processo.Id 2>&1 | Out-Null
 			$processo.WaitForExit(5000) | Out-Null
-			Write-Host ("TRAVOU   {0,-24} passou de {1}s sem terminar" -f $nome, $TetoSegundos)
+			Write-Host ("TRAVOU   {0,-24} passou de {1}s sem terminar" -f $nome, $teto)
 			$reprovados++
 			continue
 		}

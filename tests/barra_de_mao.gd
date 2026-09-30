@@ -87,11 +87,35 @@ func _run() -> void:
 		"a fila não está no rodapé: y=%s tela=%s" % [str(canto.y), str(tela.y)])
 
 	# --- 5. O QUE ENTRA APARECE ----------------------------------------------
-	Inv.adicionar("machado", 1)
-	Inv.selecionar(0)
+	#
+	# COM A PICARETA, e não com o machado. O machado virou item de encaixe, e o
+	# `Inventario._somente_reserva` o proíbe nos dez espaços da mão: exigir que
+	# ele apareça aqui seria exigir o que o vale decidiu não fazer. A picareta é
+	# ferramenta sem encaixe, mora na mão, e mede a mesma coisa.
+	Inv.adicionar("picareta", 1)
+	var espaco := -1
+	for i in Inv.ESPACOS_MAO:
+		if str((Inv.espacos[i] as Dictionary).get("id", "")) == "picareta":
+			espaco = i
+			break
+	_conferir(espaco >= 0, "a picareta não entrou em espaço nenhum da mão")
+	Inv.selecionar(maxi(espaco, 0))
 	await _frames(2)
 
-	var primeiro := fila.get_child(0) as Panel
+	# E O MACHADO NÃO TOMA ESPAÇO DA MÃO — a regra nova, e a que faz da barra a
+	# fila do que se usa depressa. Sem medir isto, um dia ela volta a comer um
+	# dos dez calada e o jogador perde um espaço de comida para uma ferramenta
+	# que nem se usa dali.
+	Inv.adicionar("machado", 1)
+	var machado_na_mao := false
+	for i in Inv.ESPACOS_MAO:
+		if str((Inv.espacos[i] as Dictionary).get("id", "")) == "machado":
+			machado_na_mao = true
+	_conferir(not machado_na_mao,
+		"o machado ocupou um dos dez espaços da mão: ferramenta de encaixe é da reserva")
+	_conferir(Inv.tem("machado"), "o machado não entrou em lugar nenhum da mochila")
+
+	var primeiro := fila.get_child(maxi(espaco, 0)) as Panel
 	var conteudo := primeiro.get_node_or_null("Conteudo") as Label
 	var icone := primeiro.get_node_or_null("Icone") as TextureRect
 	_conferir(conteudo != null and icone != null, "o espaço não tem rótulo nem ícone")
@@ -99,13 +123,13 @@ func _run() -> void:
 		# Com ícone ou sem, alguma coisa tem de aparecer: a arte de 32px é do 2D
 		# e ainda não veio para cá, e aí a inicial do item faz as vezes dela.
 		_conferir(icone.texture != null or conteudo.text != "",
-			"o machado entrou na mochila e o espaço ficou vazio na tela")
+			"a picareta entrou na mochila e o espaço ficou vazio na tela")
 
 	var na_mao := barra.get_node_or_null("NaMao") as Label
 	_conferir(na_mao != null, "não há rótulo do que está na mão")
 	if na_mao != null:
-		_conferir(na_mao.text.to_lower().contains("machado"),
-			"a mão diz '%s' com o machado selecionado" % na_mao.text)
+		_conferir(na_mao.text.to_lower().contains("picareta"),
+			"a mão diz '%s' com a picareta selecionada" % na_mao.text)
 
 	# --- 6. O AVISO NÃO FICA ATRÁS DELA --------------------------------------
 	#
@@ -158,15 +182,26 @@ func _run() -> void:
 		_conferir(energia.atual > antes_folego,
 			"comer o pirão não repôs fôlego: era %.0f e ficou %.0f" % [antes_folego, energia.atual])
 
-		# FERRAMENTA NÃO SE COME. É a outra metade: a mão não pode engolir o
-		# machado porque o jogador apertou E perto de nada.
-		Inv.adicionar("machado", 1)
+		# FERRAMENTA NÃO SE COME. É a outra metade: a mão não pode engolir a
+		# ferramenta porque o jogador apertou E perto de nada.
+		#
+		# COM A PICARETA. O machado não serve para perguntar isto: ele não cabe
+		# mais num espaço da mão (`_somente_reserva`), e a seleção cairia no
+		# pirão do trecho de cima — a mão comeria o pirão, o portão diria que
+		# comeu o machado, e a medida seria de outra coisa.
+		Inv.adicionar("picareta", 1)
+		var achou_picareta := false
 		for i in Inv.ESPACOS_MAO:
-			if str((Inv.espacos[i] as Dictionary).get("id", "")) == "machado":
+			if str((Inv.espacos[i] as Dictionary).get("id", "")) == "picareta":
 				Inv.selecionar(i)
+				achou_picareta = true
+				break
+		_conferir(achou_picareta, "a picareta não entrou num espaço da mão")
 		await _frames(2)
-		_conferir(not barra._comer_da_mao(), "a mão comeu o machado")
-		_conferir(Inv.tem("machado"), "o machado desapareceu da mochila")
+		_conferir(Inv.na_mao() == "picareta",
+			"a mão está com '%s' e não com a picareta: a pergunta abaixo mediria outro item" % Inv.na_mao())
+		_conferir(not barra._comer_da_mao(), "a mão comeu a picareta")
+		_conferir(Inv.tem("picareta"), "a picareta desapareceu da mochila")
 
 	# --- 8. O E DA MÃO É O ÚLTIMO DA FILA ------------------------------------
 	#

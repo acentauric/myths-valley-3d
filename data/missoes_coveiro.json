@@ -17,7 +17,8 @@
       "lugar": "cemiterio",
       "raio": 8.0,
       "audio": "",
-      "texto": "Eu tenho a lâmina da foice do meu sogro, enferrujada mas inteira. O que eu não tenho é cabo. Me traga duas achas de madeira boa — cabo de foice racha se for de pau mole, e racha sempre na hora errada.",
+      "texto": "Eu tenho a lâmina da foice do meu sogro, enferrujada mas inteira. O que eu não tenho é cabo. Me traga duas achas de madeira boa — cabo de foice racha se for de pau mole, e racha sempre na hora errada. Põe o machado na mão, que de mão vazia não sai acha.",
+      "entrega": { "item": "machado", "quantidade": 1 },
       "meta": { "tipo": "juntar", "item": "lenha", "quantos": 2 }
     },
     {

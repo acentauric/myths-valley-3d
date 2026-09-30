@@ -176,11 +176,19 @@ func ocupados() -> int:
 	return total
 
 
+## Quantos deste item a mochila tem, somando as pilhas.
+##
+## ID VAZIO É ZERO, e não "todos os espaços vazios". Um espaço livre é `{}`, e
+## `get("id", "")` devolve "" nele — perguntar a conta de "" casava com cada
+## espaço livre e morria no `qtd` que ele não tem. Quem chegava aqui era o
+## trabalho: alvo cuja ficha não nomeia ferramenta pergunta por "".
 func quantidade(id: String) -> int:
+	if id == "":
+		return 0
 	var total := 0
 	for espaco in espacos:
 		if espaco.get("id", "") == id:
-			total += espaco["qtd"]
+			total += int(espaco.get("qtd", 0))
 	return total
 
 
