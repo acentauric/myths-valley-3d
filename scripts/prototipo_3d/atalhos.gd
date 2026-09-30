@@ -3,7 +3,8 @@ extends RefCounted
 ## A–Z, salva em user://controles.cfg (seção "atalhos", o mesmo arquivo das teclas de
 ## movimento). `aplicar()` re-registra as ações do InputMap; se a letra escolhida já
 ## pertence a outra ação, `definir()` troca as duas entre si (swap), então nunca há
-## duas ações na mesma letra. "interagir", "gingar", "painel" e "colecao" não têm ação no InputMap:
+## duas ações na mesma letra. "interagir", "gingar", "painel", "almanaque" e
+## "arraial" não têm ação própria no InputMap:
 ## lápides, árvores, a luta e o vale comparam o evento com `tecla(...)`.
 
 const ARQUIVO := "user://controles.cfg"

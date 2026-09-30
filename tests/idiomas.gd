@@ -56,6 +56,12 @@ const FALTAM_TRADUCAO := {
 		"os sinais dos mitos do 2D: o que o jogador viu e, depois do encontro, de quem era. TRADUÇÃO COM O RAMON",
 	"res://data/colecionaveis/bichos.json":
 		"as páginas dos bichos do 2D: a ficha de quem brigou com eles, a morada e a meta. TRADUÇÃO COM O RAMON",
+	"res://data/construcoes/obras.json":
+		"as obras do 2D: nome, resumo e compartimento de cada uma, da varanda ao trapiche. TRADUÇÃO COM O RAMON",
+	"res://data/cartas/cartas.json":
+		"as cartas do 2D: nome, resumo, a prosa do encontro e o aviso da cobrança do pacto. TRADUÇÃO COM O RAMON",
+	"res://data/achados.json":
+		"o que se lê ao achar cordel, sinal e carta, do Mundo do 2D, mais a fala do segundo E do pacto. TRADUÇÃO COM O RAMON",
 	"res://data/luta.json":
 		"o aviso de quando o bicho cai, o de cansaço e as palavras que sobem na pancada ('escapou', 'tonto', 'veneno'), do Mundo do 2D. Palavra curta que em espanhol é igual ao português (veneno) reprovaria como cópia: é com o Ramon, que decide a forma. TRADUÇÃO COM O RAMON",
 	"res://data/partida.json":

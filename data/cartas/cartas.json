@@ -1,0 +1,116 @@
+{
+  "observacao": "Cartas: pactos com mitos, apoios de gente e rituais de roçado. Ver scripts/autoload/cartas.gd. As três naturezas não são a mesma coisa com nomes diferentes: pacto dá ganho permanente e COBRA todo dia; apoio vale uma vez por dia e não cobra nada; ritual é consumível preparado no oratório com o que se planta. Nenhuma se compra no armazém — pacto se firma no lugar do mito, apoio vem de morador de quem você é próximo, ritual se prepara em casa.",
+
+  "cartas": {
+    "caipora": {
+      "natureza": "pacto",
+      "nome": "Pacto da Caipora",
+      "resumo": "A mata deixa você levar mais. Toda madrugada ela cobra o pedágio dela — fumo não temos, então é comida.",
+      "prosa": [
+        "Ela não se mostra. O que se vê é a mata parar de fazer barulho, e depois voltar a fazer.",
+        "A Caipora não trabalha para ninguém e não gosta de quem leva mais do que precisa. Mas ela deixa passar quem paga.",
+        "O pedágio é todo dia. Se um dia faltar, a mata não te castiga — só fecha, e você passa o dia sem a ajuda dela."
+      ],
+      "ganho": { "eficiencia": -0.12 },
+      "cobra": { "farinha": 1 },
+      "onde": "mata_do_dende",
+      "aviso_da_cobranca": "A Caipora cobrou o pedágio: uma farinha.",
+      "aviso_da_falta": "Faltou farinha para a Caipora. Hoje a mata fecha para você."
+    },
+
+    "iara": {
+      "natureza": "pacto",
+      "nome": "Pacto da Iara",
+      "resumo": "A água entrega o que tem. Ela cobra em coisa doce, todo dia, e não aceita peixe — peixe é dela.",
+      "prosa": [
+        "Você se debruçou na beira e o que olhou de volta não era o seu rosto.",
+        "Ela não pediu nada em voz alta. Ficou olhando até você entender o que ela queria, que é o jeito dela de fazer as coisas.",
+        "Quem tem pacto com a Iara pega peixe onde ninguém pega. E quem esquece de pagar descobre, no dia seguinte, que a água virou espelho de novo."
+      ],
+      "ganho": { "recuperacao_ao_dormir": 8.0 },
+      "cobra": { "garapa": 1 },
+      "onde": "lagoa",
+      "aviso_da_cobranca": "A Iara levou a garapa. A água fica mansa hoje.",
+      "aviso_da_falta": "Faltou doce para a Iara. Hoje ela não olha para você."
+    },
+
+    "reza_da_zefa": {
+      "natureza": "apoio",
+      "nome": "Reza forte da Dona Zefa",
+      "resumo": "Uma vez por dia: o corpo aguenta o resto da tarde.",
+      "prosa": [
+        "Ela benzeu você com um ramo e disse as palavras baixinho, virada para o canto.",
+        "Depois disse, em voz normal: 'decore. Não é pra você me chamar toda vez que cansar.'"
+      ],
+      "efeito_campo": "eficiencia",
+      "efeito_valor": -0.25,
+      "efeito_dias": 1,
+      "ao_usar": "Você diz as palavras baixinho, virado para o canto. O braço afrouxa.",
+      "de_quem": "zefa",
+      "grau": 3
+    },
+
+    "braco_do_cosme": {
+      "natureza": "apoio",
+      "nome": "Braço do Cosme",
+      "resumo": "Uma vez por dia: ele aparece e ajuda no que for de lombo.",
+      "prosa": [
+        "'Ó, quando for coisa pesada, você grita. Eu escuto daqui.'",
+        "'Não é favor, não. É que eu tenho vinte e dois anos e dois braços, e os dois estão parados metade do dia.'"
+      ],
+      "efeito_campo": "energia_maxima",
+      "efeito_valor": 30.0,
+      "efeito_dias": 1,
+      "ao_usar": "Você grita da porteira. Em dois minutos ele desce a estrada.",
+      "de_quem": "cosme",
+      "grau": 3
+    },
+
+    "chamado_de_chuva": {
+      "natureza": "ritual",
+      "nome": "Chamado de chuva",
+      "resumo": "Molha o roçado inteiro, agora. O que estava seco amanhece crescido.",
+      "prosa": [
+        "Milho torrado na brasa, um pedaço de cana partido ao meio e a água jogada para cima, contra o vento.",
+        "Não é mágica de fazer chover no céu. É de fazer chover no seu chão."
+      ],
+      "custo": { "milho": 3, "cana": 2, "lenha": 2 },
+      "faz": "regar_tudo",
+      "ao_usar": "Você joga a água contra o vento. Ela cai onde não devia cair, e cai em tudo.",
+      "de_quem": "benedito",
+      "grau": 3
+    },
+
+    "resguardo_da_roca": {
+      "natureza": "ritual",
+      "nome": "Resguardo da roça",
+      "resumo": "Por três dias, toda colheita rende mais uma.",
+      "prosa": [
+        "Farinha peneirada no contorno do canteiro, sem pisar dentro, andando de costas.",
+        "Serve contra o que come de noite e contra o olho de quem passa e inveja. Sua avó fazia, e o roçado dela nunca deu praga."
+      ],
+      "custo": { "farinha": 4, "mandioca": 2 },
+      "faz": "efeito",
+      "efeito_campo": "colheita_a_mais",
+      "efeito_valor": 1.0,
+      "efeito_dias": 3,
+      "ao_usar": "Você anda de costas peneirando farinha no contorno. Não pisa dentro.",
+      "de_quem": "filo",
+      "grau": 2
+    },
+
+    "olho_da_mata": {
+      "natureza": "ritual",
+      "nome": "Olho da mata",
+      "resumo": "Aponta o que a mata tem por perto: madeira de lei e pedra boa.",
+      "prosa": [
+        "Fumaça de folha verde, os olhos fechados, e depois abrir devagar sem olhar para nada em particular.",
+        "O que a mata esconde ela esconde de quem procura. Quem não procura, acha."
+      ],
+      "custo": { "lenha": 3, "banana": 2 },
+      "faz": "mostrar_recursos",
+      "ao_usar": "Você abre os olhos devagar, sem procurar nada. E aí você vê.",
+      "onde": "mata_do_dende"
+    }
+  }
+}

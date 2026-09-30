@@ -115,6 +115,12 @@ func lapide_aberta() -> int:
 	return _aberta
 
 
+func fechar_painel() -> void:
+	_aberta = -1
+	if _hud.get("painel_dono") == self:
+		_hud.clear_house_info()
+
+
 ## Túmulo em cuja laje o jogador está apoiado (acima dela e dentro da pegada), ou -1.
 func _em_cima_de_tumulo() -> int:
 	if not (_jogador is CharacterBody3D and (_jogador as CharacterBody3D).is_on_floor()):

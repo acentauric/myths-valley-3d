@@ -17,7 +17,7 @@ const LutaVale = preload("res://scripts/prototipo_3d/luta_vale.gd")
 const IdiomaMenu = preload("res://scripts/prototipo_3d/idioma_menu.gd")
 const PainelVale = preload("res://scripts/prototipo_3d/painel_vale.gd")
 const BancadasVale = preload("res://scripts/prototipo_3d/bancadas_vale.gd")
-const ColecaoVale = preload("res://scripts/prototipo_3d/colecao_vale.gd")
+const AchadosVale = preload("res://scripts/prototipo_3d/achados_vale.gd")
 const Atalhos = preload("res://scripts/prototipo_3d/atalhos.gd")
 const CameraMouse = preload("res://scripts/prototipo_3d/camera_mouse.gd")
 const Recursos3D = preload("res://scripts/prototipo_3d/recursos_3d.gd")
@@ -59,6 +59,7 @@ var _saindo := false
 var mapa	# mapa_jogo.gd
 var _recursos  # recursos_3d.gd — os alvos de trabalho (troncos, lajedos)
 var lapides	# lapides.gd
+var _arvores_info	# arvores_info.gd — saúde e regeneração dos coqueiros
 ## Modo de câmera de antes da pausa, para o retorno devolver o que havia.
 ## As filas de missão penduradas em moradores, por id do morador — para o save
 ## e para quem precise achá-las. A do Pedro NÃO está aqui: ela mora dentro do
@@ -67,7 +68,6 @@ var lapides	# lapides.gd
 var _cadeias: Dictionary = {}
 var _relogio_pausado_antes := false
 var painel	# painel_vale.gd — tecla J
-var colecao	# colecao_vale.gd — sem tecla: virou seção do almanaque
 ## Dono único das telas: só uma fica aberta. Ver telas_do_vale.gd.
 var telas
 ## O menu do Esc, com o que era a coluna de ícones. Ver menu_pausa.gd.
@@ -80,6 +80,7 @@ var social
 var placas
 ## A aba pedida no último `abrir_o_painel`, entregue à abertura crua.
 var _aba_pedida := 0
+var achados	# achados_vale.gd — cordéis, sinais e cartas no chão
 
 
 func _enter_tree() -> void:
@@ -147,7 +148,7 @@ func _ready() -> void:
 	hud.camera_lock_requested.connect(player.set_camera_locked)
 	world.house_interacted.connect(func(properties: Dictionary): hud.show_house_info(world.format_house_properties(properties)))
 	world.house_interaction_cleared.connect(hud.clear_house_info)
-	hud.house_info_close_requested.connect(world.clear_house_interaction)
+	hud.house_info_close_requested.connect(_fechar_info_aberta)
 	hud.menu_prompt_requested.connect(_ask_return_to_menu)
 	hud.menu_requested.connect(_return_to_menu)
 	hud.menu_cancelled.connect(_on_menu_cancelled)
@@ -176,6 +177,7 @@ func _ready() -> void:
 	arvores.name = "ArvoresInfo"
 	add_child(arvores)
 	arvores.configurar(world, player, hud)
+	_arvores_info = arvores
 	# ONDE BATER: os troncos e lajedos que respondem à ferramenta. Vem depois
 	# das árvores porque usa o mesmo alcance e a mesma dica, e quem estiver
 	# perto dos dois tem de ver a dica do que dá para fazer, não a da ficha.
@@ -215,14 +217,6 @@ func _ready() -> void:
 		func() -> bool: return painel != null and painel.aberto,
 		_abrir_painel_cru,
 		func() -> void: if painel != null: painel.fechar())
-	telas.registrar("colecao",
-		# A COLEÇÃO NÃO TEM MAIS TECLA: ela virou seção do almanaque, que ficou com
-		# o L. A tela dela continua de pé e continua registrada aqui — o portão da
-		# câmera a abre por este dono —, mas nenhuma tecla a chama.
-		func(_e: InputEvent) -> bool: return false,
-		func() -> bool: return colecao != null and colecao.aberta,
-		_abrir_colecao_crua,
-		func() -> void: if colecao != null: colecao.fechar())
 	# O MENU DO ESC, com o que estava na coluna de ícones do canto esquerdo.
 	#
 	# "Os ícones na esquerda do HUD podem ser todos dentro do menu ESC." Eram
@@ -368,6 +362,8 @@ func _ready() -> void:
 	# `estado_para_salvar`.
 	Salvamento.registrar_mundo(self)
 	_retomar_a_partida()
+	# Depois da partida salva: o que ela diz que já foi achado não volta ao chão.
+	achados.espalhar()
 	_comecar_no_lugar_pedido()
 	_atualizar_relogio()
 	print("PROTOTYPE_READY: estilo=%s hora=%s moradores=%d user_dir=%s" % [Estilo.modo, Dia.texto_hora(), moradores.size(), OS.get_user_data_dir()])
@@ -472,12 +468,19 @@ func _montar_moradores(spawn: Vector3) -> void:
 	queda.name = "Queda"
 	add_child(queda)
 	queda.configurar(world, player, hud)
+	# Cordéis, sinais e cartas no chão (achados_vale.gd). Entra ANTES da luta,
+	# que assim recebe o E primeiro quando há bicho perto; é configurado depois
+	# dela, porque a Caipora fica longe do ninho do caititu.
+	achados = AchadosVale.new()
+	achados.name = "Achados"
+	add_child(achados)
 	# A luta e o caititu da mata (luta_vale.gd). Entra depois das lápides e das
 	# árvores: com bicho perto, o E é dela antes de ser delas.
 	var luta := LutaVale.new()
 	luta.name = "Luta"
 	add_child(luta)
 	luta.configurar(world, player, hud)
+	achados.configurar(world, player, hud, luta)
 	# O painel da tecla J (painel_vale.gd), por cima do HUD.
 	painel = PainelVale.new()
 	painel.name = "Painel"
@@ -485,12 +488,6 @@ func _montar_moradores(spawn: Vector3) -> void:
 	painel.abriu.connect(_parar_o_jogador)
 	painel.fechou.connect(_soltar_o_jogador)
 	painel.pediu.connect(_ao_pedido_do_painel)
-	# A coleção da tecla L (colecao_vale.gd), no mesmo andar do painel.
-	colecao = ColecaoVale.new()
-	colecao.name = "Colecao"
-	add_child(colecao)
-	colecao.abriu.connect(_parar_o_jogador)
-	colecao.fechou.connect(_soltar_o_jogador)
 	# Quem está lendo não perde vida: a peçonha espera o painel fechar (ver
 	# Vida.esta_lendo). Por método, que deixa de valer quando o vale sai.
 	Vida.esta_lendo = Callable(self, "_lendo")
@@ -509,6 +506,15 @@ func _montar_moradores(spawn: Vector3) -> void:
 			minimapa.limpar_alvo()
 		else:
 			minimapa.definir_alvo(alvo))
+
+
+func _fechar_info_aberta() -> void:
+	var dono: Object = hud.get("painel_dono")
+	if dono != null and is_instance_valid(dono) and dono.has_method("fechar_painel"):
+		dono.call("fechar_painel")
+		return
+	world.clear_house_interaction()
+	hud.clear_house_info()
 
 
 func _process(_delta: float) -> void:
@@ -592,6 +598,10 @@ func _unhandled_key_input(event: InputEvent) -> void:
 	if _lendo():
 		return
 	if event is InputEventKey and event.pressed and not event.echo:
+		if event.physical_keycode == KEY_Q and not mapa.aberto:
+			player.alternar_machado_de_teste()
+			get_viewport().set_input_as_handled()
+			return
 		# O J E O L SAÍRAM DAQUI, junto com o Esc que fechava tela. Quem cuida
 		# de abrir e fechar tela é o `telas_do_vale.gd`, num lugar só, porque
 		# abrir uma tem de FECHAR A OUTRA — e cinco arquivos cada um cuidando da
@@ -824,6 +834,8 @@ func estado_para_salvar() -> Dictionary:
 	# fazendo. É mecanismo do 3D, então quem o guarda é o vale — o `Salvamento`
 	# cuida sozinho dos autoloads que ele conhece, e este é novo.
 	estado["caderno"] = CadernoDoVale.estado()
+	if _arvores_info != null:
+		estado["coqueiros_cortados"] = _arvores_info.estado_para_salvar()
 	if pedro != null:
 		estado["pedro"] = {"missao": pedro.missao, "iniciado": pedro.get("_iniciado"),
 			"despedida": pedro.get("_despedida_feita")}
@@ -867,6 +879,8 @@ func restaurar_do_save(estado: Dictionary) -> void:
 		_recursos.esquecer(estado.get("caidos", []))
 	if estado.has("caderno"):
 		CadernoDoVale.restaurar(estado["caderno"])
+	if _arvores_info != null:
+		_arvores_info.restaurar_do_save(estado.get("coqueiros_cortados", []))
 	var guia: Dictionary = estado.get("pedro", {})
 	if pedro != null and not guia.is_empty():
 		pedro.set("_iniciado", bool(guia.get("iniciado", false)))
@@ -920,12 +934,7 @@ func abrir_o_painel(aba: int = 0) -> void:
 		telas.abrir("painel")
 
 
-func abrir_a_colecao() -> void:
-	if telas != null:
-		telas.abrir("colecao")
-
-
-## A abertura CRUA das duas, que é o que o dono das telas chama. Ninguém mais
+## A abertura CRUA do painel, que é o que o dono das telas chama. Ninguém mais
 ## deve chamá-las: elas não pausam nada e não mexem na câmera.
 func _abrir_painel_cru() -> void:
 	if painel == null or _lendo() or mapa.aberto or _saindo:
@@ -933,12 +942,6 @@ func _abrir_painel_cru() -> void:
 	BancadasVale.aplicar(painel, world, player.global_position)
 	painel.abrir(_aba_pedida)
 	_aba_pedida = 0
-
-
-func _abrir_colecao_crua() -> void:
-	if colecao == null or _lendo() or mapa.aberto or _saindo:
-		return
-	colecao.abrir()
 
 
 ## COM UMA TELA ABERTA, O JOGADOR PARA — e SÓ isso.
@@ -976,7 +979,7 @@ func _ao_pedido_do_painel(acao: String) -> void:
 
 ## Alguma tela de leitura aberta? É o que a peçonha pergunta (Vida.esta_lendo).
 func _lendo() -> bool:
-	return (painel != null and painel.aberto) or (colecao != null and colecao.aberta)
+	return painel != null and painel.aberto
 
 
 func _exit_tree() -> void:

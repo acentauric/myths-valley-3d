@@ -13,6 +13,7 @@ const LuzesEpoca = preload("res://scripts/prototipo_3d/luzes_epoca.gd")
 const Canoas = preload("res://scripts/prototipo_3d/canoas.gd")
 const Cardume = preload("res://scripts/prototipo_3d/cardume.gd")
 const Mar = preload("res://scripts/prototipo_3d/mar.gd")
+const CoqueiroCortado = preload("res://scripts/prototipo_3d/coqueiro_cortado.gd")
 const MAP_CATALOG := "res://data/mapas/regioes.json"
 const CASA_TAIPA_CAL_TEXTURE := preload("res://assets/prototipo_3d/materiais/cal_taipa_envelhecida_v1.png")
 const TELHA_COLONIAL_TEXTURE := preload("res://assets/prototipo_3d/materiais/telha_colonial_envelhecida_v1.png")
@@ -211,6 +212,79 @@ func arvores() -> Array[Dictionary]:
 			var ponto: Vector2 = tronco["point"]
 			lista.append({"especie": String(tronco.get("especie", "")), "pos": Vector3(ponto.x, float(tronco["ground"]), ponto.y), "raio": float(tronco["radius"])})
 	return lista
+
+
+func cortar_coqueiro(posicao: Vector3) -> bool:
+	var ponto := Vector2(posicao.x, posicao.z)
+	for indice in range(_arvores_nomeadas.size()):
+		var arvore: Dictionary = _arvores_nomeadas[indice]
+		if arvore.get("especie", "") != "coqueiro" or arvore.get("cortado", false):
+			continue
+		var pe: Vector3 = arvore["pos"]
+		if Vector2(pe.x, pe.z).distance_squared_to(ponto) > 0.01:
+			continue
+		var original := arvore.get("visual") as Node3D
+		if original == null:
+			return false
+		var partes: Array[Dictionary] = []
+		if original is MeshInstance3D:
+			var malha_raiz := original as MeshInstance3D
+			partes.append(_parte_do_coqueiro(malha_raiz))
+		for filho in original.find_children("*", "MeshInstance3D", true, false):
+			var malha := filho as MeshInstance3D
+			partes.append(_parte_do_coqueiro(malha))
+		var toco: Node3D = CoqueiroCortado.criar(partes, pe, float(arvore["raio"]))
+		if toco == null:
+			return false
+		add_child(toco)
+		toco.global_position = pe
+		original.visible = false
+		var corpo := arvore.get("colisao") as StaticBody3D
+		if corpo != null:
+			var colisao := corpo.get_child(0) as CollisionShape3D
+			if colisao != null:
+				colisao.set_deferred("disabled", true)
+		arvore["toco"] = toco
+		arvore["cortado"] = true
+		_arvores_nomeadas[indice] = arvore
+		return true
+	return _region.cortar_coqueiro(posicao) if _region != null else false
+
+
+func restaurar_coqueiro(posicao: Vector3) -> bool:
+	var ponto := Vector2(posicao.x, posicao.z)
+	for indice in range(_arvores_nomeadas.size()):
+		var arvore: Dictionary = _arvores_nomeadas[indice]
+		if arvore.get("especie", "") != "coqueiro" or not arvore.get("cortado", false):
+			continue
+		var pe: Vector3 = arvore["pos"]
+		if Vector2(pe.x, pe.z).distance_squared_to(ponto) > 0.01:
+			continue
+		var original := arvore.get("visual") as Node3D
+		if original == null:
+			return false
+		original.visible = true
+		var toco := arvore.get("toco") as Node3D
+		if is_instance_valid(toco):
+			toco.queue_free()
+		var corpo := arvore.get("colisao") as StaticBody3D
+		if corpo != null:
+			var colisao := corpo.get_child(0) as CollisionShape3D
+			if colisao != null:
+				colisao.set_deferred("disabled", false)
+		arvore["cortado"] = false
+		arvore.erase("toco")
+		_arvores_nomeadas[indice] = arvore
+		return true
+	return _region.restaurar_coqueiro(posicao) if _region != null else false
+
+
+func _parte_do_coqueiro(instancia: MeshInstance3D) -> Dictionary:
+	var materiais: Array[Material] = []
+	if instancia.mesh != null:
+		for superficie in range(instancia.mesh.get_surface_count()):
+			materiais.append(instancia.get_active_material(superficie))
+	return {"mesh": instancia.mesh, "transform": instancia.global_transform, "materiais": materiais}
 
 
 ## Nível atual da superfície do mar: a preamar da região mais o deslocamento da maré.
@@ -998,11 +1072,17 @@ func _arvore(especie: String, origin: Vector3, size: float = 1.0, yaw: float = 0
 		return
 	placed_origin = ground_position(placed_origin)
 	_manual_tree_sites.append({"position": placed_origin, "radius": tree_radius})
+	var registro := _arvores_nomeadas.size()
 	_arvores_nomeadas.append({"especie": especie, "pos": placed_origin, "raio": size * 0.5})
 	if estilo_tripo():
 		var node := CatalogoAssets.instanciar(especie, self, placed_origin - Vector3(0.0, _region.ARVORE_AFUNDADA, 0.0), size, yaw)
 		if node != null:
 			CatalogoAssets.colisao(especie, node, self, placed_origin, size, yaw)
+			_arvores_nomeadas[registro]["visual"] = node
+			var corpo := get_child(get_child_count() - 1) as StaticBody3D
+			_arvores_nomeadas[registro]["colisao"] = corpo
+			if especie == "coqueiro":
+				_alinhar_colisao_coqueiro(node, corpo)
 			return
 	var built: Dictionary = FloraReconcavo.especie(especie, size)
 	var instance := MeshInstance3D.new()
@@ -1015,6 +1095,38 @@ func _arvore(especie: String, origin: Vector3, size: float = 1.0, yaw: float = 0
 	shape.radius = float(built.trunk_radius) + 0.08
 	shape.height = float(built.trunk_height)
 	_body(shape, placed_origin + Vector3(0, float(built.trunk_height) * 0.5, 0))
+	_arvores_nomeadas[registro]["visual"] = instance
+	var corpo := get_child(get_child_count() - 1) as StaticBody3D
+	_arvores_nomeadas[registro]["colisao"] = corpo
+	if especie == "coqueiro":
+		_alinhar_colisao_coqueiro(instance, corpo)
+
+
+func _alinhar_colisao_coqueiro(visual: Node3D, corpo: StaticBody3D) -> void:
+	if corpo == null:
+		return
+	var malhas: Array[MeshInstance3D] = []
+	if visual is MeshInstance3D:
+		malhas.append(visual as MeshInstance3D)
+	for filho in visual.find_children("*", "MeshInstance3D", true, false):
+		malhas.append(filho as MeshInstance3D)
+	for malha in malhas:
+		var referencias: Dictionary = CoqueiroCortado.referencias_tronco(malha.mesh)
+		if referencias.is_empty():
+			continue
+		var base: Vector3 = malha.global_transform * (referencias["base"] as Vector3)
+		var alto: Vector3 = malha.global_transform * (referencias["alto"] as Vector3)
+		var eixo := (alto - base).normalized()
+		if eixo.length_squared() < 0.5:
+			eixo = Vector3.UP
+		var colisao := corpo.get_child(0) as CollisionShape3D
+		if colisao == null or not (colisao.shape is CylinderShape3D):
+			return
+		var cilindro := colisao.shape as CylinderShape3D
+		var escala := malha.global_transform.basis.get_scale()
+		cilindro.radius = maxf(cilindro.radius, float(referencias["raio_base"]) * maxf(escala.x, escala.z) * 0.9)
+		corpo.global_transform = Transform3D(Basis(Quaternion(Vector3.UP, eixo)), base + eixo * cilindro.height * 0.5)
+		return
 
 
 func _build_farm() -> void:

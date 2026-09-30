@@ -153,25 +153,34 @@ func _run() -> void:
 			print("  %-12s (sem vaga no conjunto: há mais de %d troncos mais perto)" % [especie, regiao.TREE_COLLISION_POOL_SIZE])
 			continue
 
-		# A INCLINAÇÃO TEM DE ESTAR NO TRONCO, senão esta medida é vazia.
+		# O EIXO QUE O DESENHO USA, tirado do próprio tronco.
 		#
-		# O desvio compara o eixo do corpo com o eixo da madeira, e o eixo da
-		# madeira sai de `tronco.inclinacao`. Se esse campo sumisse, os dois lados
-		# viriam de `IDENTITY` e o desvio daria zero POR CONSTRUÇÃO — verificação
-		# que não pode falhar, que é o pior tipo.
+		# A primeira versão disto guardava uma `inclinacao` que eu tinha
+		# acrescentado ao tronco, e comparava o corpo com ela. O outro lado da
+		# mesa resolveu o mesmo problema melhor, e a versão dele ficou: em vez de
+		# um ângulo, o tronco traz a BASE e o ALTO de verdade, tirados do GLB
+		# (`base_tronco`, `alto_tronco`), e o colisor se orienta por eles. Isso
+		# vale para qualquer malha, inclusive as que não são retas por dentro.
 		#
-		# Então a palmeira da orla, que é a que pende, tem de trazer inclinação de
-		# verdade. As outras são retas e trazem identidade: é o esperado delas.
-		var tombo_do_visual: Basis = tronco.get("inclinacao", Basis.IDENTITY)
-		var pende := not tombo_do_visual.is_equal_approx(Basis.IDENTITY)
+		# A medida aqui não mudou de ideia — só de fonte: onde está a madeira,
+		# onde está o corpo, e o quanto os dois se afastam subindo o tronco.
+		var base_da_madeira: Vector3 = tronco.get("base_tronco",
+			Vector3(ponto.x, float(tronco["ground"]), ponto.y))
+		var alto_da_madeira: Vector3 = tronco.get("alto_tronco",
+			Vector3(ponto.x, float(tronco["ground"]) + 1.0, ponto.y))
+		var eixo_da_madeira := (alto_da_madeira - base_da_madeira).normalized()
+		if eixo_da_madeira.length_squared() < 0.5:
+			eixo_da_madeira = Vector3.UP
+		# A palmeira da orla PENDE, e é ela que dá sentido a esta medida: se o
+		# eixo dela viesse vertical, os dois lados seriam iguais por construção e
+		# a pergunta não poderia falhar — que é o pior tipo de pergunta.
 		if especie == "coqueiro":
-			_conferir(pende,
-				"o coqueiro da orla não traz inclinação no tronco: a medida do eixo ficaria vazia")
+			_conferir(absf(eixo_da_madeira.dot(Vector3.UP)) < 0.999,
+				"o coqueiro da orla veio com eixo vertical: a medida do eixo ficaria vazia")
 		var pior_desvio := 0.0
 		for fracao in ALTURAS:
 			var altura: float = forma.height * float(fracao)
-			# Onde a madeira está nessa altura, e onde o eixo do corpo está.
-			var na_madeira: Vector3 = base_local + tombo_do_visual * Vector3(0.0, altura, 0.0)
+			var na_madeira: Vector3 = base_da_madeira + eixo_da_madeira * altura
 			var no_corpo: Vector3 = corpo.position + corpo.basis * Vector3(0.0, altura - forma.height * 0.5, 0.0)
 			var desvio := Vector2(na_madeira.x - no_corpo.x, na_madeira.z - no_corpo.z).length()
 			pior_desvio = maxf(pior_desvio, desvio)

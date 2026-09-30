@@ -34,7 +34,7 @@ crédito do Tripo e exigem o custo aprovado **antes** de gerar.
 
 | Fase deste plano | Issues |
 |---|---|
-| Fase 2 — sistemas | ~~#10 Vida~~ (feita) · #11 receitas, cozinha, oficina e pesca · #12 cartas e coleção · #13 Povoado · ~~#14 luta~~ (feita) · #15 obras e venda |
+| Fase 2 — sistemas | ~~#10 Vida~~ (feita) · #11 receitas, cozinha, oficina e pesca · ~~#12 cartas e coleção~~ (feita) · #13 Povoado · ~~#14 luta~~ (feita) · #15 obras e venda (a venda e as obras com efeito saíram; a casa que muda espera #26 e #27) |
 | Fase 2.5 — geografia | #22 chapada e vizinhos · #23 rio, vau e lagoa · #24 mata e serra · #25 fazenda e ruínas |
 | Fase 3 — missões e enredo | **#1** (jam) · #31 capítulos 6 e 7 |
 | Fase 4 — salvar | ~~#7~~ (feita) |
@@ -614,17 +614,49 @@ era a penúltima — era pré-requisito da 2ᵃ.
 > entrava como linha escolhível e deslocava o índice das missões de baixo, e os
 > campos de teste comparavam o índice com o cursor sem descontar as ações.
 >
-> **A coleção L saiu** (parte da [#20](https://github.com/acentauric/myths-valley/issues/20)), em
-> `colecao_vale.gd`, pelo mesmo caminho do painel: cópia adaptada da
-> `colecao_tela.gd`. O cordel ainda não se lê no papel — o `Folheto` é da #21 — e a
-> ficha mostra a primeira linha do verso, como já mostrava no 2D. A teia (K) e o
-> arraial (P) continuam na #20.
+> **A coleção saiu, e mora no almanaque** (parte da [#20](https://github.com/acentauric/myths-valley/issues/20)).
+> Primeiro veio como tela própria no L, cópia adaptada da `colecao_tela.gd`; depois,
+> a pedido de quem joga, os cordéis, sinais e bichos viraram seções do almanaque,
+> que ficou com o L, e as fichas foram para `fichas_da_colecao.gd`, que nenhuma tela
+> possui. A tela avulsa, sem tecla e mostrando um pedaço do que o almanaque mostra,
+> foi apagada. O cordel ainda não se lê no papel — o `Folheto` é da #21 — e a ficha
+> mostra a primeira linha do verso, como no 2D. O arraial (P) continua na #20.
 >
 > **Os dados de coleção vieram junto**, e são a primeira cópia de DADO do 2D:
 > `data/colecionaveis/` (cordéis, sinais, bichos). O `Colecao` lê `res://`, que
 > aqui é a pasta do protótipo, então o arquivo tem de estar dentro dela. O dono
-> continua sendo o 2D, e `tests/colecao.gd` compara as três cópias byte a byte
+> continua sendo o 2D, e `tests/dados_do_2d.gd` compara as cópias byte a byte
 > com o original na raiz — mudou lá sem copiar, reprova aqui.
+>
+> **Os achados e as cartas saíram** ([#12](https://github.com/acentauric/myths-valley/issues/12)),
+> em `achados_vale.gd`, com a ordem das coisas do `Mundo` do 2D: o cordel está no
+> lugar do arraial que o `onde` dele descreve (seis dos dez; os outros quatro
+> esperam a lagoa, o vau, a ruína e o engenho, declarados), o sinal da Caipora está
+> na mata fechada, e a carta ESPERA o sinal. O pacto se firma no lugar do mito com
+> o segundo E — a pergunta de Sim e Não é da #21 — e o painel continua firmando e
+> desfazendo. As cartas dos moradores chegam pela amizade (#13). A conferência das
+> cópias de dado virou um portão só, `tests/dados_do_2d.gd`, com a lista do que o
+> protótipo copiou.
+>
+> **As obras saíram com efeito, e a casa ainda não muda** ([#15](https://github.com/acentauric/myths-valley/issues/15)).
+> O `obras.json` veio do 2D, e a aba de obras aparece perto de cada construção
+> que o vale já tem (`BancadasVale.OBRAS`): a casa, o armazém, o mirante, o poço e o
+> píer. O plano vem antes do material, como no 2D. A obra feita paga o ganho no
+> corpo e fica no save; a casa não muda por fora nem por dentro até os modelos
+> (#27) e o cômodo (#26) — decisão do usuário: efeito agora, arte depois.
+>
+> Dois defeitos apareceram no caminho, e nenhum é do vale:
+>
+> - **O `Obras.executar` do 2D não paga o ganho.** Só o `conceder` (obra dada por
+>   morador) chama `_pagar_o_atributo`; a obra que o jogador faz consome o
+>   material e não entrega o "+10 de fôlego máximo" que o painel promete. O
+>   `testar_obras` de lá confere o `conceder` e não o `executar`. O conserto é no
+>   2D; até lá o painel do vale paga (`pagar_o_que_a_obra_da`), e `tests/obras.gd`
+>   cobra que pague UMA vez — quando o 2D consertar, ele reprova por dobro.
+> - **A ordem dos autoloads do vale estava trocada.** No 2D o `Receitas` sobe
+>   depois de `Obras`, `Cozinha` e `Oficina`; no vale subia antes, e o `conferir()`
+>   dele encontrava o catálogo de obras vazio — nenhum plano de obra "de começo"
+>   nascia sabido. A ordem agora é a do 2D.
 
 É a fase mais barata em relação ao que entrega, e a que mais precisa da regra
 do topo: **a interface do 3D não é substituída, é acrescida.** Toda tela do 2D

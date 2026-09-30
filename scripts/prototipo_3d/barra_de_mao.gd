@@ -167,7 +167,7 @@ func _repintar() -> void:
 		# Com ícone, o texto é só a quantidade; sem ícone, a inicial faz as
 		# vezes dele — é o que o 2D faz com nó de talento sem arte.
 		if textura != null:
-			conteudo.text = "" if quantos <= 1 else str(quantos)
+			conteudo.text = str(quantos) if quantos > 1 or id == "madeira_de_coqueiro" else ""
 			conteudo.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
 		else:
 			conteudo.text = nome.substr(0, 2) if quantos <= 1 else "%s %d" % [nome.substr(0, 2), quantos]

@@ -1,0 +1,327 @@
+{
+  "observacao": "Catálogo de obras. NÃO é uma escada: 'exige' monta o grafo e 'exclui' fecha caminhos. Eixos: casca (corpo da construção), planta (o que existe dentro) e mobilia (o que está nos cômodos). Preço em itens do Catalogo. Texto de rascunho, a revisar com o Ramon.",
+
+  "observacao_abre": "'abre' diz por onde o PLANO da obra se aprende, e é outra coisa que 'exige': exige é espaço (a cantareira não cabe antes da varanda), abre é conhecimento (a serra de fita não se inventa olhando a bancada). As portas são quatro — 'comeco' (nasce sabida), 'missao' (o passo ensina, na hora em que ABRE), 'morador'+'grau' (a convivência ensina) e 'compra' (réis no balcão) — e vale a primeira que acontecer. Ver scripts/autoload/receitas.gd. Cinco nascem sabidas: a varanda, o quarto, o salão, a estante e a bancada de ofício, que são o chão de onde as outras partem. Os cinco mutirões do arraial seguem uma regra própria: ENSINA QUEM VIVE DO QUE A PEÇA SERVE — o poço e a cacimba são do Seu Benedito, o forno é da Dona Filó, o monjolo é da Dona Candinha, a carroça é do Cosme, que é quem viaja nela, e o trapiche é do Tonho. É o que dá função ao Cosme, que volta um dia por estação.",
+
+  "familias": {
+    "casa": "casa",
+    "casa_avos": "casa",
+    "casa_vizinha": "casa",
+    "armazem": "venda",
+    "bar": "venda",
+    "cabana_pesca": "oficio",
+    "engenho": "oficio",
+    "casa_farinha": "oficio",
+    "mirante": "mirante"
+  },
+
+  "obras": {
+    "casca_varanda": {
+      "eixo": "casca",
+      "compartimento": "Casco",
+      "ordem": 1,
+      "vira": "casa_n2",
+      "alvos": ["casa"],
+      "nome": "Levantar a varanda",
+      "resumo": "Abre a frente da casa com telheiro sobre esteios de madeira. Muda a fachada E o cômodo: de 11x8 passa a 15x10, e é nesse chão novo que a cozinha e o tapete cabem.",
+      "abre": { "comeco": true },
+      "custo": { "tabua": 12, "lenha": 20, "pedra": 8 }
+    },
+    "casca_sobrado": {
+      "eixo": "casca",
+      "compartimento": "Casco",
+      "ordem": 2,
+      "vira": "casa_n3",
+      "alvos": ["casa"],
+      "exige": ["casca_varanda"],
+      "nome": "Subir o sobrado",
+      "resumo": "Segundo pavimento, sacada de ferro e azulejo na fachada. O cômodo vai a 17x12 e a casa vira a mais vistosa do lugar — com tudo que isso atrai.",
+      "abre": { "morador": "benedito", "grau": 3, "compra": 400 },
+      "custo": { "tabua": 40, "pedra": 30, "farinha": 20 }
+    },
+
+    "planta_quarto": {
+      "eixo": "planta",
+      "ordem": 1,
+      "alvos": ["casa"],
+      "exclui": ["planta_salao"],
+      "nome": "Levantar parede e fazer quarto",
+      "resumo": "Divide o cômodo e fecha um quarto. Ganha lugar de guardar; perde o salão corrido.",
+      "abre": { "comeco": true },
+      "custo": { "tabua": 10, "pedra": 4 }
+    },
+    "planta_salao": {
+      "eixo": "planta",
+      "ordem": 1,
+      "alvos": ["casa"],
+      "exclui": ["planta_quarto"],
+      "nome": "Abrir o salão",
+      "resumo": "Deixa o cômodo inteiro aberto, de parede a parede. Cabe muita gente — e é onde a festa acontece.",
+      "abre": { "comeco": true },
+      "custo": { "tabua": 6, "lenha": 10 }
+    },
+    "planta_oficina": {
+      "eixo": "planta",
+      "ordem": 2,
+      "alvos": ["casa"],
+      "exige": ["planta_quarto", "casca_varanda"],
+      "exclui": ["planta_venda"],
+      "nome": "Montar a oficina",
+      "resumo": "Estante de ferramenta no cômodo dos fundos. O que se conserta em casa passa a ter lugar.",
+      "abre": { "missao": "canteiro_obra", "compra": 300 },
+      "custo": { "tabua": 16, "pedra": 10, "lenha": 24 }
+    },
+    "planta_venda": {
+      "eixo": "planta",
+      "ordem": 2,
+      "alvos": ["casa"],
+      "exige": ["planta_salao", "casca_varanda"],
+      "exclui": ["planta_oficina"],
+      "nome": "Abrir uma venda na sala",
+      "resumo": "Balcão virado para a estrada. Quem passa compra sem entrar.",
+      "abre": { "missao": "tonho_divida", "compra": 300 },
+      "custo": { "tabua": 18, "farinha": 12 }
+    },
+    "planta_assoalho": {
+      "eixo": "planta",
+      "ordem": 3,
+      "alvos": ["casa", "venda", "oficio"],
+      "nome": "Assoalhar o chão",
+      "resumo": "Tábua corrida no lugar do chão de terra batida. Menos poeira, menos bicho.",
+      "abre": { "missao": "tabuas", "compra": 200 },
+      "custo": { "tabua": 24 }
+    },
+
+    "mobilia_rede": {
+      "eixo": "mobilia",
+      "compartimento": "Dormida",
+      "ordem": 1,
+      "vira": "rede",
+      "alvos": ["casa"],
+      "nome": "Armar rede no lugar da cama",
+      "resumo": "Rede de algodão em argola de parede, no mesmo canto da cama. Dorme-se igual, e o chão embaixo fica livre.",
+      "abre": { "morador": "tonho", "grau": 1, "compra": 150 },
+      "custo": { "corda": 4, "tabua": 2 }
+    },
+    "mobilia_altar": {
+      "eixo": "mobilia",
+      "compartimento": "Fé",
+      "ordem": 2,
+      "vira": "altar",
+      "alvos": ["casa"],
+      "nome": "Armar o oratório",
+      "resumo": "Nicho de parede com vela e imagem, na cabeceira. Quem faz pacto costuma querer um.",
+      "abre": { "missao": "fe_escolher" },
+      "custo": { "tabua": 6, "pedra": 4, "lampiao": 1 }
+    },
+    "mobilia_guardado": {
+      "eixo": "mobilia",
+      "compartimento": "Guardado",
+      "ordem": 3,
+      "alvos": ["casa"],
+      "nome": "Estante de parede",
+      "resumo": "Prateleira de tábua na parede do fundo da sala. Louça em cima, ferramenta embaixo.",
+      "abre": { "comeco": true },
+      "custo": { "tabua": 10, "lenha": 6 }
+    },
+    "mobilia_mesa_grande": {
+      "eixo": "mobilia",
+      "compartimento": "Convívio",
+      "ordem": 4,
+      "vira": "mesa_grande",
+      "alvos": ["casa"],
+      "nome": "Mesa grande e banco",
+      "resumo": "Mesa de oito lugares no meio da sala, com banco corrido. Serve para comer em gente e para abrir mapa.",
+      "abre": { "morador": "filo", "grau": 2, "compra": 220 },
+      "custo": { "tabua": 14, "lenha": 8 }
+    },
+    "mobilia_cozinha": {
+      "eixo": "mobilia",
+      "compartimento": "Cozinha",
+      "ordem": 5,
+      "alvos": ["casa"],
+      "exige": ["casca_varanda"],
+      "nome": "Montar o canto da cozinha",
+      "resumo": "Bacia de barro e barril d'água no chão que a varanda abriu. Sem a varanda não há onde pôr.",
+      "abre": { "morador": "filo", "grau": 1, "compra": 180 },
+      "custo": { "tabua": 8, "pedra": 12 }
+    },
+    "mobilia_tapete": {
+      "eixo": "mobilia",
+      "compartimento": "Convívio",
+      "ordem": 6,
+      "alvos": ["casa"],
+      "exige": ["casca_varanda", "planta_assoalho"],
+      "nome": "Estender o tapete",
+      "resumo": "Esteira de palha trançada sobre o assoalho. Não serve para nada, e é a primeira coisa que visita repara.",
+      "abre": { "morador": "candinha", "grau": 2, "compra": 260 },
+      "custo": { "corda": 8, "cana": 10 }
+    },
+
+    "venda_telheiro": {
+      "eixo": "casca",
+      "ordem": 1,
+      "alvos": ["venda"],
+      "nome": "Telheiro sobre o balcão",
+      "resumo": "Cobre a fila de fora da venda. O armazém passa a atender na chuva.",
+      "abre": { "missao": "tonho_divida", "compra": 200 },
+      "custo": { "tabua": 14, "lenha": 12 }
+    },
+    "oficio_bancada": {
+      "eixo": "planta",
+      "ordem": 1,
+      "alvos": ["oficio"],
+      "nome": "Bancada de trabalho",
+      "resumo": "Melhora a construção de ofício do NPC. Costuma vir pedida por ele.",
+      "abre": { "comeco": true },
+      "custo": { "tabua": 12, "pedra": 6 }
+    },
+
+    "oficina_serra": {
+      "eixo": "planta",
+      "ordem": 1,
+      "alvos": ["oficina"],
+      "nome": "Armar a serra de fita",
+      "resumo": "Lâmina longa sobre roda de madeira. A mesma lenha rende uma tábua a mais por serrada.",
+      "abre": { "missao": "canteiro_obra", "compra": 320 },
+      "custo": { "tabua": 10, "pedra": 8, "corda": 4 },
+      "rende_mais": { "tabua": 1 }
+    },
+    "oficina_tear": {
+      "eixo": "planta",
+      "ordem": 2,
+      "alvos": ["oficina"],
+      "exige": ["oficina_serra"],
+      "nome": "Montar o tear de piaçava",
+      "resumo": "Torce três fios de uma vez. Cada torcida sai com uma corda a mais.",
+      "abre": { "morador": "candinha", "grau": 3, "compra": 340 },
+      "custo": { "tabua": 14, "corda": 6 },
+      "rende_mais": { "corda": 1 }
+    },
+    "oficina_galpao": {
+      "eixo": "casca",
+      "ordem": 1,
+      "vira": "oficina",
+      "alvos": ["oficina"],
+      "nome": "Levantar o galpão sobre a bancada",
+      "resumo": "Esteio, telha vã e parede nos fundos, no lugar do céu aberto. A ferramenta passa a ficar pendurada, e cada peça custa um de fôlego a menos.",
+      "abre": { "morador": "benedito", "grau": 3, "compra": 360 },
+      "custo": { "tabua": 24, "pedra": 20, "lenha": 30 },
+      "alivio": 1.0
+    },
+
+
+    "mirante_levantar": {
+      "eixo": "casca",
+      "compartimento": "Casco",
+      "ordem": 1,
+      "vira": "mirante",
+      "alvos": ["mirante"],
+      "nome": "Levantar o mirante",
+      "resumo": "Esteio novo no lugar do podre, tabuado corrido e guarda-corpo de pau roliço. Do alto se enxerga a baía inteira — e é a segunda coisa que muda neste arraial em vinte anos.",
+      "abre": { "missao": "mirante_material" },
+      "custo": { "tabua": 20, "pedra": 12, "corda": 6 }
+    },
+
+    "canteiro_prancheta": {
+      "eixo": "planta",
+      "ordem": 1,
+      "alvos": ["canteiro"],
+      "nome": "Prancheta, régua e prumo",
+      "resumo": "Risca a obra antes de levantar. Toda obra do mapa passa a custar 10% menos material.",
+      "abre": { "missao": "canteiro_material" },
+      "custo": { "tabua": 8, "lenha": 12 },
+      "desconto": 0.1
+    },
+    "canteiro_galpao": {
+      "eixo": "casca",
+      "ordem": 1,
+      "vira": "canteiro",
+      "alvos": ["canteiro"],
+      "exige": ["canteiro_prancheta"],
+      "nome": "Cobrir o canteiro e armar o guincho",
+      "resumo": "Telheiro sobre a mesa, com cabrestante e roldana pendurados. Planta não molha e viga pesada sobe inteira: mais 15% de desconto em toda obra.",
+      "abre": { "missao": "mirante_obra", "compra": 300 },
+      "custo": { "tabua": 20, "corda": 10, "pedra": 12 },
+      "desconto": 0.15
+    },
+    "canteiro_deposito": {
+      "eixo": "planta",
+      "ordem": 2,
+      "alvos": ["canteiro"],
+      "exige": ["canteiro_prancheta"],
+      "nome": "Depósito coberto de material",
+      "resumo": "Tábua guardada não empena e pedra não racha. Mais 5% de desconto em toda obra.",
+      "abre": { "morador": "damiao", "grau": 2, "compra": 280 },
+      "custo": { "tabua": 20, "pedra": 10 },
+      "desconto": 0.05
+    },
+
+    "canteiro_cacimba": {
+      "eixo": "planta",
+      "ordem": 3,
+      "alvos": ["canteiro"],
+      "exige": ["canteiro_prancheta"],
+      "nome": "Abrir cacimba e rego",
+      "resumo": "Um poço raso e valas rasgadas até o canteiro. De madrugada a água corre sozinha e molha oito leitos, os mais perto daqui.",
+      "abre": { "morador": "benedito", "grau": 2, "compra": 280 },
+      "custo": { "pedra": 24, "tabua": 8 }
+    },
+    "canteiro_acude": {
+      "eixo": "planta",
+      "ordem": 4,
+      "alvos": ["canteiro"],
+      "exige": ["canteiro_cacimba"],
+      "nome": "Represar o açude",
+      "resumo": "Parede de pedra segurando a água da chuva. O rego passa a dar conta de vinte leitos, e a estiagem deixa de mandar na roça.",
+      "abre": { "morador": "benedito", "grau": 3, "compra": 420 },
+      "custo": { "pedra": 60, "tabua": 24, "corda": 8 }
+    },
+
+    "arraial_poco": {
+      "eixo": "planta",
+      "ordem": 1,
+      "alvos": ["poco"],
+      "nome": "Roldana e cacimba no poço",
+      "resumo": "Corda nova na roldana e um bebedouro de pedra ao pé. Quem tira água para a roça e para o bicho para de perder meia manhã no balde. Rende mais em quem você pôs no roçado e na criação.",
+      "abre": { "morador": "benedito", "grau": 2, "compra": 240 },
+      "custo": { "pedra": 18, "corda": 6, "tabua": 4 }
+    },
+    "arraial_forno": {
+      "eixo": "planta",
+      "ordem": 1,
+      "alvos": ["forno_barro"],
+      "nome": "Rebocar o forno do arraial",
+      "resumo": "Abóbada remendada e boca refeita. O forno para de comer lenha e de torrar torto, e a casa de farinha passa a dar conta de fornada dobrada.",
+      "abre": { "morador": "filo", "grau": 2, "compra": 240 },
+      "custo": { "pedra": 22, "lenha": 20, "tabua": 4 }
+    },
+    "arraial_monjolo": {
+      "eixo": "planta",
+      "ordem": 1,
+      "alvos": ["monjolo"],
+      "nome": "Endireitar o monjolo",
+      "resumo": "Eixo novo e cocho calçado, e a água do riacho volta a pilar sozinha. Pilar de noite é serviço que ninguém faz de dia — sobra braço para a roça e para a farinha.",
+      "abre": { "morador": "candinha", "grau": 2, "compra": 240 },
+      "custo": { "tabua": 16, "corda": 8, "pedra": 6 }
+    },
+    "arraial_carroca": {
+      "eixo": "planta",
+      "ordem": 1,
+      "alvos": ["carroca"],
+      "nome": "Recuperar a carroça",
+      "resumo": "Roda refeita, eixo escorado, estrado novo. O que descia a ladeira em três viagens desce numa. Rende mais em quem tira lenha e em quem trança corda e cesto.",
+      "abre": { "morador": "cosme", "grau": 1, "compra": 240 },
+      "custo": { "tabua": 20, "corda": 10, "pedra": 4 }
+    },
+    "arraial_trapiche": {
+      "eixo": "planta",
+      "ordem": 2,
+      "alvos": ["trapiche"],
+      "nome": "Calçar o trapiche",
+      "resumo": "Estacas novas e prancha firme até a água funda. O saveiro encosta em vez de esperar a maré, e tudo que o arraial faz passa a ter para quem ser vendido. Rende mais em TODO ofício — pouco em cada um, e em todos.",
+      "abre": { "morador": "tonho", "grau": 2, "compra": 280 },
+      "custo": { "tabua": 40, "corda": 18, "pedra": 24 }
+    }
+  }
+}

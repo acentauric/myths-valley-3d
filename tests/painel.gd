@@ -205,7 +205,12 @@ func _run() -> void:
 	vale.abrir_o_painel()
 	await _frames(2)
 	_conferir(painel.abas_validas().has(painel.Aba.VENDA), "no balcão da venda, a aba de venda não apareceu: %s" % str(painel.abas_validas()))
-	_tecla(painel, KEY_TAB)
+	# No balcão há DUAS abas de lugar — as obras do armazém e a venda —, e o Tab
+	# anda por elas; chega à venda em no máximo tantos toques quantas abas há.
+	for i in painel.abas_validas().size():
+		if painel.aba() == painel.Aba.VENDA:
+			break
+		_tecla(painel, KEY_TAB)
 	_conferir(painel.aba() == painel.Aba.VENDA, "Tab não levou à aba de venda")
 	var mercadorias: Array = venda.mercadorias()
 	_conferir(not mercadorias.is_empty(), "a venda não tem mercadoria")

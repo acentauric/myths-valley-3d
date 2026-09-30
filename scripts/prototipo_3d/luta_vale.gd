@@ -322,12 +322,20 @@ func _criatura_perto(raio: float):
 ## O BRAÇO. No estilo Tripo, o clipe `chop` do personagem (o gesto 7); no
 ## procedural o gesto 7 é uma reverência, e o golpe vira o corpo jogado para
 ## a frente — o fallback que a #14 aceita até haver clipe dos dois estilos.
-func _animar_o_golpe() -> void:
+func _animar_o_golpe(repeticoes: int = 2) -> bool:
 	var animador = _player.animator
-	if not Estilo.procedural() and animador != null and animador.has_method("play_gesture"):
-		if animador.play_gesture(6) != "":
-			return
+	if animador != null and animador.has_method("play_chop"):
+		if animador.play_chop(repeticoes) != "":
+			return true
 	_empurrar_o_corpo(frente_do_jogador() * 0.22, 0.08, 0.14)
+	return false
+
+
+## Reaproveita o mesmo golpe visual para interações com objetos do vale.
+func animar_golpe(repeticoes: int = 2) -> bool:
+	var animacao_completa := _animar_o_golpe(repeticoes)
+	Audio.efeito("machado")
+	return animacao_completa
 
 
 func _empurrar_o_corpo(deslocamento: Vector3, ida: float, volta: float) -> void:

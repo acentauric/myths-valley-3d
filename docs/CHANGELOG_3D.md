@@ -11,6 +11,18 @@ marcos. Os textos curtos e a identificação exibidos no jogo ficam em
 `prototipo_3d/data/historico_3d.json`; ao registrar um novo marco ou build,
 atualize esse arquivo e este documento juntos.
 
+## Em desenvolvimento — 30/09/2026
+
+- **Obras no vale** (#15, com efeito e sem arte). A aba de obras do painel aparece perto
+  da casa, do armazém, do mirante, do poço e do píer; o plano vem antes do material, e a
+  obra feita paga o ganho no corpo e fica no save. A casa ainda não muda por fora nem
+  por dentro (#26, #27). De passagem: o `Receitas` subia antes do `Obras` e nenhum plano
+  de obra "de começo" nascia sabido; e o `executar` compartilhado não paga o ganho da
+  obra, que o vale paga até o 2D consertar (`bancadas_vale.gd`, `tests/obras.gd`).
+- **A tela de coleção avulsa saiu.** O almanaque (L) mostra cordéis, sinais e bichos
+  com as mesmas fichas, e a tela própria da coleção tinha ficado sem tecla, mostrando um
+  pedaço do que ele mostra (`colecao_vale.gd` e `tests/colecao.gd` apagados).
+
 ## Em desenvolvimento — 29/09/2026
 
 - **Vida no vale** (#10). Barra de vida no HUD, logo abaixo do relógio, com as cores
@@ -52,6 +64,11 @@ atualize esse arquivo e este documento juntos.
   falta achar; o bicho derrubado na luta abre a página dele com a conta de quantos
   caíram. Os dados de coleção do 2D vieram para o protótipo, conferidos byte a byte com o
   original (`colecao_vale.gd`, `data/colecionaveis/`, `tests/colecao.gd`).
+- **Cordéis, sinais e cartas no vale** (#12). Seis cordéis no lugar do arraial que cada
+  um descreve; o sinal da Caipora na mata fechada, e as cartas dela só depois do sinal;
+  o pacto firmado com o segundo E no lugar do mito (ou no painel), com o ganho no corpo
+  e a cobrança de todo dia. Os dados das cartas vieram do 2D, conferidos com os de
+  coleção num portão só (`achados_vale.gd`, `tests/cartas.gd`, `tests/dados_do_2d.gd`).
 
 ## Build #6 — 28/09/2026
 

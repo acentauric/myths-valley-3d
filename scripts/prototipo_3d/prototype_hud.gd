@@ -96,6 +96,7 @@ var _ajustes	# painel_ajustes.gd
 ## Painéis escondidos enquanto o mapa está aberto (a coluna do canto continua).
 var _hidden_for_map: Array[Control] = []
 var _corner_nodes: Array[Node] = []
+var mapa_aberto := false
 
 
 func _ready() -> void:
@@ -156,7 +157,7 @@ func _ready() -> void:
 	_house_info_label.size = Vector2(HEADING_WIDTH - 32, 108)
 	var close_house_info := Button.new()
 	close_house_info.text = "×"
-	close_house_info.tooltip_text = "Fechar informações da casa"
+	close_house_info.tooltip_text = "Fechar informações"
 	close_house_info.position = Vector2(HEADING_WIDTH - 41, 7)
 	close_house_info.size = Vector2(32, 28)
 	close_house_info.mouse_filter = Control.MOUSE_FILTER_STOP
@@ -225,6 +226,7 @@ func _ready() -> void:
 
 	_criar_barra_de_vida()
 	_criar_barra_de_folego()
+	_criar_barra_de_stamina()
 
 	# A BARRA DE MÃO ENTRA POR ÚLTIMO, e é o conserto de "não dá pra ver".
 	#
@@ -258,12 +260,15 @@ func _ready() -> void:
 ## É widget ACRESCENTADO, como a migração manda: o HUD continua sendo este, e
 ## não o do 2D. O número vem do `Vida` compartilhado — por `get_node_or_null`,
 ## porque quem monta o HUD sozinho, sem o projeto inteiro, não pode estourar
-## aqui. O fôlego (#3) entra embaixo dela, na mesma medida.
+## aqui. A barra verde do corte dos coqueiros fica embaixo, na mesma medida.
 const COR_VIDA := Color(0.78, 0.28, 0.26)
 const COR_VIDA_ENVENENADA := Color(0.45, 0.62, 0.22)
 var barra_vida: ProgressBar
 var _vida_texto: Label
 var _vida_preenchimento: StyleBoxFlat
+var barra_stamina: ProgressBar
+var _stamina_texto: Label
+var _stamina_rotulo := ""
 
 
 func _criar_barra_de_vida() -> void:
@@ -368,6 +373,44 @@ func _atualizar_folego() -> void:
 	_folego_preenchimento.bg_color = COR_FOLEGO_BAIXO if cansado else COR_FOLEGO
 
 
+func _criar_barra_de_stamina() -> void:
+	barra_stamina = ProgressBar.new()
+	barra_stamina.name = "Stamina"
+	barra_stamina.max_value = 100.0
+	barra_stamina.value = 100.0
+	barra_stamina.show_percentage = false
+	barra_stamina.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var fundo := StyleBoxFlat.new()
+	fundo.bg_color = Color(0.055, 0.085, 0.075, 0.82)
+	fundo.set_corner_radius_all(6)
+	fundo.set_border_width_all(1)
+	fundo.border_color = Color(0.58, 0.64, 0.48, 0.2)
+	barra_stamina.add_theme_stylebox_override("background", fundo)
+	var preenchimento := StyleBoxFlat.new()
+	preenchimento.bg_color = Color("56ad67")
+	preenchimento.set_corner_radius_all(6)
+	barra_stamina.add_theme_stylebox_override("fill", preenchimento)
+	_root.add_child(barra_stamina)
+	barra_stamina.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP)
+	barra_stamina.offset_left = -70
+	barra_stamina.offset_right = 70
+	barra_stamina.offset_top = 118
+	barra_stamina.offset_bottom = 134
+	_stamina_texto = _label("100%", 11, INK)
+	barra_stamina.add_child(_stamina_texto)
+	_stamina_texto.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_stamina_texto.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_stamina_texto.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+
+
+func definir_stamina(valor: float, rotulo: String) -> void:
+	if barra_stamina == null:
+		return
+	_stamina_rotulo = rotulo
+	barra_stamina.value = clampf(valor, 0.0, 100.0)
+	_stamina_texto.text = "%s %d%%" % [_stamina_rotulo, roundi(barra_stamina.value)]
+
+
 func _process(delta: float) -> void:
 	_refresh_time += delta
 	if _refresh_time >= 0.35:
@@ -465,7 +508,7 @@ func _update_control_mode() -> void:
 		"Botão esquerdo na casa: dados",
 		"%s: ler / interagir  ·  %s: observar" % [Atalhos.letra("interagir"), Atalhos.letra("observar")],
 		"%s perto do bicho: golpe (segurar: forte)  ·  %s: ginga" % [Atalhos.letra("interagir"), Atalhos.letra("gingar")],
-		"%s: painel (missões, cartas, venda, jogo)  ·  %s: coleção" % [Atalhos.letra("painel"), Atalhos.letra("colecao")],
+		"%s: painel (missões, cartas, venda, jogo)  ·  %s: almanaque (plantas, cordéis, sinais, bichos)" % [Atalhos.letra("painel"), Atalhos.letra("almanaque")],
 		mode,
 		"Tab ou %s: alterna a câmera  ·  Esc: menu" % Atalhos.letra("camera"),
 		"Rodinha: zoom  ·  %s: avança a hora" % Atalhos.letra("hora"),
@@ -636,11 +679,15 @@ func _create_corner_buttons() -> void:
 ## dourado — ela saiu para dentro do menu do Esc, e o mapa hoje se fecha pelo
 ## Esc ou pela mesma linha do menu que o abriu.
 func set_map_open(open: bool) -> void:
+	mapa_aberto = open
 	if is_instance_valid(_map_icon):
 		_map_icon.definir(open)
 	if open:
 		_hidden_for_map.clear()
 		for child in _root.get_children():
+			if child is Control and child.name == "VidaDoCoqueiro":
+				child.visible = false
+				continue
 			if child is Control and child.visible and child != _menu_confirm and not _corner_nodes.has(child):
 				_hidden_for_map.append(child)
 				child.visible = false

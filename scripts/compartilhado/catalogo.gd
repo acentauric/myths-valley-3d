@@ -152,6 +152,12 @@ const ITENS := {
 		"icone": "lenha",
 		"empilhavel": true,
 	},
+	"madeira_de_coqueiro": {
+		"nome": "Madeira de coqueiro",
+		"tipo": "recurso",
+		"icone": "madeira_de_coqueiro",
+		"empilhavel": true,
+	},
 	"pedra": {
 		"nome": "Pedra",
 		"tipo": "recurso",
