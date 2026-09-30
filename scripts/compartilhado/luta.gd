@@ -17,7 +17,7 @@ extends Node
 ##               (segurar o E de mão vazia, que derruba o bicho tonto).
 ##   PODER       ainda não. Entra quando o jogador entrar no místico, e não
 ##               antes: luta com poder antes de haver quem a explique é poder
-##               sem história. Ver docs/PLANO.md.
+##               sem história. Ver docs/projeto/PLANO.md.
 ##
 ## O QUE SE APRENDE FICA. Migrar de fé congela as missões do candomblé e os nós
 ## da teia dele (ver Fe), mas não desaprende a ginga: capoeira é do corpo de

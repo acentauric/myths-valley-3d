@@ -1,6 +1,6 @@
 # Itens gerados no Tripo Studio
 
-Gerados no Tripo Studio em 26/09/2026 conforme `docs/ASSETS_TRIPO.md` (Modelo HD, retopologia Malha Smart, textura 1K, GLB).
+Gerados no Tripo Studio em 26/09/2026 conforme `docs/arte/ASSETS_TRIPO.md` (Modelo HD, retopologia Malha Smart, textura 1K, GLB).
 
 | Arquivo | O que é | Tarefa Tripo | Destino |
 | --- | --- | --- | --- |

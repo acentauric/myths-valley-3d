@@ -1,4 +1,4 @@
-﻿# Leitor das chaves de API.
+# Leitor das chaves de API.
 #
 # Ordem: variável de ambiente primeiro, depois o arquivo .env da raiz do projeto
 # (que está no .gitignore). A chave nunca é passada por argumento de linha de
@@ -31,5 +31,5 @@ function Get-Chave {
         }
     }
 
-    throw "Chave '$Nome' não encontrada. Veja docs/CHAVES.md."
+    throw "Chave '$Nome' não encontrada. Veja docs/ferramentas/CHAVES.md."
 }

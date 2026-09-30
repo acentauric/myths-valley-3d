@@ -1,6 +1,6 @@
 # Áudio
 
-O autoload [audio.gd](../scripts/autoload/audio.gd) reúne música, narração, efeitos e ambiente. A direção narrativa, o catálogo novo e a proveniência estão em [ESTRATEGIA_SONORA.md](ESTRATEGIA_SONORA.md). A chave ElevenLabs permanece no ambiente ou `.env`, nunca no jogo exportado; ver [CHAVES.md](CHAVES.md).
+O autoload [audio.gd](../../scripts/autoload/audio.gd) reúne música, narração, efeitos e ambiente. A direção narrativa, o catálogo novo e a proveniência estão em [ESTRATEGIA_SONORA.md](ESTRATEGIA_SONORA.md). A chave ElevenLabs permanece no ambiente ou `.env`, nunca no jogo exportado; ver [CHAVES.md](../ferramentas/CHAVES.md).
 
 ## Catálogo
 

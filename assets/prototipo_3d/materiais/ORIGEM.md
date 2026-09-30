@@ -9,7 +9,7 @@ geradas para o protótipo com a ferramenta integrada de geração de imagem.
   textura repetível para as paredes externas.
 
 Os dois materiais foram criados a partir das diretrizes de
-`docs/AMBIENTACAO.md` e da casa de referência fornecida para a fachada.
+`docs/mundo/AMBIENTACAO.md` e da casa de referência fornecida para a fachada.
 
 ## Chão de ruas e praça (procedural)
 

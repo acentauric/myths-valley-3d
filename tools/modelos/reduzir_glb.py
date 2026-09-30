@@ -1,5 +1,5 @@
 """DESCONTINUADO (26/09/2026): use a Retopologia (Malha Smart) do próprio Tripo Studio.
-Ver docs/ASSETS_TRIPO.md. Mantido só como registro.
+Ver docs/arte/ASSETS_TRIPO.md. Mantido só como registro.
 
 Reduz a malha de um GLB do Tripo por agrupamento de vértices, preservando UVs e texturas.
 

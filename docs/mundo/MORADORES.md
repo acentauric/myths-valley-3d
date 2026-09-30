@@ -2,8 +2,8 @@
 
 Quem mora em Bom Jesus dos Pobres, o que cada um quer, e como o jogo faz eles
 falarem. O texto das falas mora em
-[`data/dialogos/aldeoes.json`](../data/dialogos/aldeoes.json); o Pedro tem
-arquivo só dele, [`pedro.json`](../data/dialogos/pedro.json), porque é ele que
+[`data/dialogos/aldeoes.json`](../../data/dialogos/aldeoes.json); o Pedro tem
+arquivo só dele, [`pedro.json`](../../data/dialogos/pedro.json), porque é ele que
 conduz o tutorial.
 
 ## Quem existe
@@ -197,7 +197,7 @@ somam, e nenhuma explica nada:
 - a **Zefa** repara que o convite não tem assinatura, e manda levar sal;
 - o **Tonho** viu luz parada no mato, na altura do peito, de madrugada.
 
-É o capítulo 6 ([docs/enredo/capitulo-06.md](enredo/capitulo-06.md)) visto de
+É o capítulo 6 ([docs/enredo/capitulo-06.md](../enredo/capitulo-06.md)) visto de
 baixo, pelo povo que fica. O jogador junta os três e decide sozinho o que
 pensar — e é para isso que os três existem.
 
@@ -211,7 +211,7 @@ Dois, e cada um ensina o que é dele:
   derrubar um caititu, acertar três golpes fortes. O que ele passa adiante é a
   cicatriz do pai dele: **o bicho avisa antes de morder**. Paga em comida, como
   pagou o tutorial inteiro, e fecha avisando da onça.
-- **O Cosme ensina a roda**, e só a quem é do terreiro (ver docs/FE.md). A
+- **O Cosme ensina a roda**, e só a quem é do terreiro (ver docs/mundo/FE.md). A
   ginga, a meia-lua e a rasteira. A avó dele chama aquilo de coisa de
   desocupado, e disse o mesmo do tio que o ensinou; ele pede que não se fale
   disso na vila. Depois que ele vai para Salvador, a lição que está correndo
@@ -220,7 +220,7 @@ Dois, e cada um ensina o que é dele:
 
 Código em `Arraial._frente_das_armas` e `_frente_da_capoeira`.
 
-**E quem paga as metas do caderno** (ver docs/PLANO.md, "o prêmio da parede"):
+**E quem paga as metas do caderno** (ver docs/projeto/PLANO.md, "o prêmio da parede"):
 o **Pedro**, aos dez caititus, com o gibão de couro do pai — a coisa que o pai
 guardava para quando ele tivesse idade de entrar na mata sozinho, e que ficou
 guardada porque ele ficou com a roça. E a **Dona Zefa**, às duas onças, com um
@@ -253,7 +253,7 @@ separa pessoa parada de poste, e custa zero.
 
 Se o modo template voltar a ser exposto, a folha ganha as linhas de caminhada e
 o script passa a usar `frame_coords` como o
-[`pedro.gd`](../scripts/npcs/pedro.gd).
+[`pedro.gd`](../../scripts/npcs/pedro.gd).
 
 ## O que ainda não existe
 

@@ -288,7 +288,7 @@ Regras práticas:
    32×48 encaixa no chão e transborda para cima.
 4. Arquivo que já existe é pulado. **Nada é apagado**: as peças antigas ficam
    em `assets/sprites/gerados/` como catálogo, para reaproveitar em vez de
-   gerar de novo. Ver [assets/CREDITOS.md](../assets/CREDITOS.md).
+   gerar de novo. Ver [assets/CREDITOS.md](../../assets/CREDITOS.md).
 5. **Não use negação no prompt.** Pedir "sem arcos, sem colunas" fez a ruína do
    palacete voltar um rabisco sem forma. Descreva o que é, não o que não é: a
    versão que funcionou pedia "paredes quebradas em alturas diferentes, buracos
@@ -302,7 +302,7 @@ Regras práticas:
 
 ## 9. Fontes
  
-- Capítulos 6 e 7 do universo de Batalha de Mitos ([docs/enredo/](enredo/)) —
+- Capítulos 6 e 7 do universo de Batalha de Mitos ([docs/enredo/](../enredo/)) —
   a fonte primária da narrativa.
 - Referências visuais do capítulo 73 em www.batalhademitos.com.br.
 - Arquitetura e paisagem do Recôncavo: Cachoeira, São Félix, Santo Amaro,

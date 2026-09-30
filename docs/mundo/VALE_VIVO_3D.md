@@ -3,6 +3,11 @@
 Estado de 26/09/2026. Tudo aqui é da cena `scenes/prototipo_3d/vale.tscn` e do
 menu `abertura.tscn`; o 2D não muda.
 
+Este documento descreve o estado implementado. A direção aprovada para transformar
+o cenário gerado em uma composição visualmente editável, usar o KML como referência
+e retirar futuramente o procedural está em
+[COMPOSICAO_AUTORAL_3D.md](COMPOSICAO_AUTORAL_3D.md).
+
 ## Dois estilos visuais, nunca misturados
 
 **AJUSTAR → Cenário e tempo → Estilo visual** escolhe como o vale inteiro é
@@ -133,7 +138,7 @@ escolhe o LOD pela distância.
 | paletas do humanoide procedural | `personagem_procedural.gd::PALETAS` |
 | catálogo de GLBs do Tripo | `catalogo_assets.gd::PECAS` |
 | gesto que cada morador faz ao cumprimentar | `npcs_3d.json` (`gesto_saudacao` no procedural, `gesto_tripo` com rig) |
-| trazer peças novas do Tripo | `docs/ASSETS_TRIPO.md` → "Do download ao jogo" |
+| trazer peças novas do Tripo | `docs/arte/ASSETS_TRIPO.md` → "Do download ao jogo" |
 
 ## Balões de fala
 

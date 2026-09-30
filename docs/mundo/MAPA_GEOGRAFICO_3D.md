@@ -21,18 +21,24 @@ O primeiro trecho fornece o formato de dados e a referência de escala.
 
 Esta orientação substitui, **para o mapa geográfico do 3D**, a escolha de uma
 região compacta para a demonstração registrada em
-[DECISOES_PROTOTIPO_3D.md](DECISOES_PROTOTIPO_3D.md). A documentação e o mapa
+[DECISOES_PROTOTIPO_3D.md](../projeto/DECISOES_PROTOTIPO_3D.md). A documentação e o mapa
 do jogo 2D continuam com sua escala e implementação próprias.
+
+O KML não é a fonte permanente da composição visual. Depois de importada a base,
+casas, árvores, postes e demais elementos autorais devem poder ser ajustados e
+salvos visualmente no Godot sem voltar para o KML. A separação entre a camada
+geográfica regenerável e a composição autoral, inclusive a regra de reimportação
+sem perda, está em [COMPOSICAO_AUTORAL_3D.md](COMPOSICAO_AUTORAL_3D.md).
 
 ## Fonte preservada e camadas derivadas
 
 | Camada | Arquivo | Papel |
 |---|---|---|
-| Desenho original | [`prototipo_3d/data/mapas/bom_jesus_dos_pobres_fonte.kml`](../prototipo_3d/data/mapas/bom_jesus_dos_pobres_fonte.kml) | Exportação do Google Earth fornecida pelo autor; preservar como fonte editável e auditável. |
-| Geometria normalizada | [`prototipo_3d/data/mapas/bom_jesus_dos_pobres.json`](../prototipo_3d/data/mapas/bom_jesus_dos_pobres.json) | Resultado determinístico de [`importar_kml.py`](../prototipo_3d/tools/mapas/importar_kml.py); coordenadas locais, classes de feição e metadados para o jogo. Não editar à mão. |
-| Cenário interpretado | [`prototipo_3d/data/mapas/bom_jesus_dos_pobres_cenario.json`](../prototipo_3d/data/mapas/bom_jesus_dos_pobres_cenario.json) | Costa, faixa urbana e mata ampla inferidas das capturas e convertidas dos traçados do HTML por [`importar_mascaras_html.py`](../prototipo_3d/tools/mapas/importar_mascaras_html.py). Revisável sem alterar o KML. |
-| Catálogo | [`prototipo_3d/data/mapas/regioes.json`](../prototipo_3d/data/mapas/regioes.json) | Identifica as regiões, aponta para seus arquivos e escolhe `active_region` para a execução atual. |
-| Prévia de planejamento | [`MAPA_PONTOS_INTERESSE.html`](../prototipo_3d/tools/mapas/MAPA_PONTOS_INTERESSE.html) | Visão 2D para discutir os pontos antes da composição final no 3D. |
+| Desenho original | [`prototipo_3d/data/mapas/bom_jesus_dos_pobres_fonte.kml`](../../prototipo_3d/data/mapas/bom_jesus_dos_pobres_fonte.kml) | Exportação do Google Earth fornecida pelo autor; preservar como fonte editável e auditável. |
+| Geometria normalizada | [`prototipo_3d/data/mapas/bom_jesus_dos_pobres.json`](../../prototipo_3d/data/mapas/bom_jesus_dos_pobres.json) | Resultado determinístico de [`importar_kml.py`](../../prototipo_3d/tools/mapas/importar_kml.py); coordenadas locais, classes de feição e metadados para o jogo. Não editar à mão. |
+| Cenário interpretado | [`prototipo_3d/data/mapas/bom_jesus_dos_pobres_cenario.json`](../../prototipo_3d/data/mapas/bom_jesus_dos_pobres_cenario.json) | Costa, faixa urbana e mata ampla inferidas das capturas e convertidas dos traçados do HTML por [`importar_mascaras_html.py`](../../prototipo_3d/tools/mapas/importar_mascaras_html.py). Revisável sem alterar o KML. |
+| Catálogo | [`prototipo_3d/data/mapas/regioes.json`](../../prototipo_3d/data/mapas/regioes.json) | Identifica as regiões, aponta para seus arquivos e escolhe `active_region` para a execução atual. |
+| Prévia de planejamento | [`MAPA_PONTOS_INTERESSE.html`](../../prototipo_3d/tools/mapas/MAPA_PONTOS_INTERESSE.html) | Visão 2D para discutir os pontos antes da composição final no 3D. |
 
 O KML veio do projeto **Myths' Valley**; a revisão atual foi recebida em
 26/09/2026.
@@ -54,14 +60,14 @@ sozinho, toda a cobertura vegetal do mapa.
 
 ## O que o jogo desenha agora
 
-[`geo_region_renderer.gd`](../prototipo_3d/scripts/prototipo_3d/geo_region_renderer.gd)
+[`geo_region_renderer.gd`](../../prototipo_3d/scripts/prototipo_3d/geo_region_renderer.gd)
 consome o JSON geográfico e o JSON de cenário da região ativa. Ele constrói
 superfícies vetoriais para terra, mar, mata, vila e polígonos do KML; faixas para
 costa, rios e ruas; e posições para os 12 POIs. A terra tem colisão. A vegetação
 é distribuída com semente fixa nas zonas de mata por duas instâncias `MultiMesh`
  (troncos e copas), mantendo afastamento de vias, rios, praia, áreas abertas e
  marcadores. Um grupo pequeno de colisores acompanha o jogador nos troncos
- próximos; a água não tem colisão. [`world_builder.gd`](../prototipo_3d/scripts/prototipo_3d/world_builder.gd)
+ próximos; a água não tem colisão. [`world_builder.gd`](../../prototipo_3d/scripts/prototipo_3d/world_builder.gd)
 acrescenta edifícios e detalhes locais perto dos POIs da primeira região.
 
 O botão **MAPA** da abertura usa o mesmo mundo 3D com câmera ortográfica superior.

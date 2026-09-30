@@ -13,7 +13,7 @@ extends Node
 ## Quem mexe nestes valores é a TEIA DE TALENTOS (tecla K); a aba Jogo do
 ## painel os mostra. Os nós somam aqui de uma vez, ao destravar — o efeito não
 ## é reaplicado ao carregar a partida, porque já está dentro do número salvo
-## (ver docs/SALVAMENTO.md).
+## (ver docs/sistemas/SALVAMENTO.md).
 ##
 ## É um dos dois autoloads que o protótipo 3D usa COMPARTILHADOS, junto com o
 ## `Energia`: nenhum dos dois sabe o que é um tile, e por isso atravessam sem
@@ -54,7 +54,7 @@ var nivel_de_ferramenta: Dictionary = {
 }
 
 ## Multiplicador de custo por escola de poder. Pacto com mito e arma grande
-## entram aqui quando existirem (ver docs/VILA_E_EXPEDICOES.md).
+## entram aqui quando existirem (ver docs/mundo/VILA_E_EXPEDICOES.md).
 var peso_do_poder: Dictionary = {
 	"ritual": 2.0,
 	"pacto": 3.0,

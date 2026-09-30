@@ -1,6 +1,6 @@
 extends Node
 ## Mixagem e preferências locais independentes de partidas e salvamentos.
-## Fontes, prompts e direção: docs/ESTRATEGIA_SONORA.md.
+## Fontes, prompts e direção: docs/sistemas/ESTRATEGIA_SONORA.md.
 
 const ARQUIVO_PREFERENCIAS := "user://audio.cfg"
 const PASTA_EFEITOS := "res://assets/audio/efeitos/"

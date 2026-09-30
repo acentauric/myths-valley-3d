@@ -45,7 +45,7 @@ No Godot Project Manager, outra opção é importar **`prototipo_3d/project.godo
 | M | Voltar ao menu (HOME) |
 | Alt+F4 / fechar janela | Sair |
 
-No estilo **Procedural** (AJUSTAR → Cenário e tempo) as teclas 1–8 acionam os gestos do humanoide por código (acenar, concordar, apontar, coçar a cabeça, alongar, chamar, reverência, olhar em volta). O jogador começa no píer, com o Pedro ao lado: fale com ele e siga as missões do HUD. Os moradores cumprimentam quando você chega perto. Detalhes em [VALE_VIVO_3D.md](VALE_VIVO_3D.md).
+No estilo **Procedural** (AJUSTAR → Cenário e tempo) as teclas 1–8 acionam os gestos do humanoide por código (acenar, concordar, apontar, coçar a cabeça, alongar, chamar, reverência, olhar em volta). O jogador começa no píer, com o Pedro ao lado: fale com ele e siga as missões do HUD. Os moradores cumprimentam quando você chega perto. Detalhes em [VALE_VIVO_3D.md](../mundo/VALE_VIVO_3D.md).
 
 Parado, o personagem reproduz `idle`. Um gesto termina naturalmente e volta para `idle`; começar a andar interrompe o gesto. Explore a praça, a horta e a costa: o indicador acompanha os três pontos visitados.
 
@@ -66,7 +66,7 @@ As animações foram exportadas **no lugar**: os clipes mexem o esqueleto, enqua
 
 O material continua sendo duplicado apenas na instância e renderizado dos dois lados. Essa correção evita o desaparecimento de partes do torso sem alterar o arquivo 3D original.
 
-Um **caititu** mora na mata fechada, longe da vila (por enquanto uma caixa cinza, até o modelo com rig chegar): fareja quem chega perto, **anuncia o bote** — acende em âmbar, abaixa e marca no chão até onde a mordida alcança — e só então morde. Derrubado, deixa a carne de caça na mochila e volta em três dias. Para lutar de facão é preciso tê-lo na mão, o que por enquanto só a mochila (#2) vai permitir. A **vida** já aparece: a barra logo abaixo do relógio, vermelha (verde-musgo com peçonha). Embaixo dela, o **fôlego**: verde, e vermelho com "cansado" quando o corpo está no fim — o passo encurta e não dá para correr até comer ou dormir. Quem cai acorda na porta da Casa de taipa às 6h do dia seguinte, inteiro — ainda não há nada no vale que tire vida, isso chega com a luta. A regra de mochila, missões, fé, receitas, luta, obras, venda, pesca, cartas e salvamento também já roda no vale, vinda do 2D, mas o jogador ainda não a vê: faltam as telas e os gatilhos. Os saves ficam no diretório de usuário `MythsValleyPrototype3D`, separados dos da versão 2D. Plantação, terrenos e a conversa por IA ainda não existem no 3D. O que falta, e em que ordem, está nas [issues com rótulo `3d`](https://github.com/acentauric/myths-valley/issues?q=is%3Aissue+is%3Aopen+label%3A3d) e no [plano de migração](MIGRACAO_2D_3D.md).
+Um **caititu** mora na mata fechada, longe da vila (por enquanto uma caixa cinza, até o modelo com rig chegar): fareja quem chega perto, **anuncia o bote** — acende em âmbar, abaixa e marca no chão até onde a mordida alcança — e só então morde. Derrubado, deixa a carne de caça na mochila e volta em três dias. Para lutar de facão é preciso tê-lo na mão, o que por enquanto só a mochila (#2) vai permitir. A **vida** já aparece: a barra logo abaixo do relógio, vermelha (verde-musgo com peçonha). Embaixo dela, o **fôlego**: verde, e vermelho com "cansado" quando o corpo está no fim — o passo encurta e não dá para correr até comer ou dormir. Quem cai acorda na porta da Casa de taipa às 6h do dia seguinte, inteiro — ainda não há nada no vale que tire vida, isso chega com a luta. A regra de mochila, missões, fé, receitas, luta, obras, venda, pesca, cartas e salvamento também já roda no vale, vinda do 2D, mas o jogador ainda não a vê: faltam as telas e os gatilhos. Os saves ficam no diretório de usuário `MythsValleyPrototype3D`, separados dos da versão 2D. Plantação, terrenos e a conversa por IA ainda não existem no 3D. O que falta, e em que ordem, está nas [issues com rótulo `3d`](https://github.com/acentauric/myths-valley/issues?q=is%3Aissue+is%3Aopen+label%3A3d) e no [plano de migração](../projeto/MIGRACAO_2D_3D.md).
 
 ## Como a animação funciona
 
@@ -141,7 +141,7 @@ O teste confirma modelo, textura, 65 ossos, nomes dos 12 clipes, locomoção, no
 
 ```text
 myths-valley-3D/
-├── docs/COMO_JOGAR_3D.md
+├── docs/experiencia/COMO_JOGAR_3D.md
 └── prototipo_3d/
     ├── JOGAR_3D.cmd
     ├── project.godot

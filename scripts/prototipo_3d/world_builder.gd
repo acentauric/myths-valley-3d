@@ -431,7 +431,7 @@ func _concluir() -> void:
 	# postas ao longo da construção inteira, e quem se registrasse no começo
 	# responderia com meio dicionário. Nome resolvendo para o lugar errado é
 	# pior que nome não resolvendo — este some a seta, aquele manda o jogador
-	# para o outro lado da vila. Ver docs/MIGRACAO_2D_3D.md, Fase 1.
+	# para o outro lado da vila. Ver docs/projeto/MIGRACAO_2D_3D.md, Fase 1.
 	Lugares.registrar(self)
 	tree_exiting.connect(func() -> void: Lugares.esquecer(self))
 	progresso.emit(1.0, "Pronto")
@@ -1038,7 +1038,7 @@ func _build_farm() -> void:
 
 func _build_trees() -> void:
 	# Posições anotadas em metros reais ao redor da Praça (a cena converte para unidades).
-	# Espécies de docs/AMBIENTACAO.md §4.
+	# Espécies de docs/mundo/AMBIENTACAO.md §4.
 	_arvore("pau_brasil", _u(Vector3(-82, 0, 5)))
 	await _pausar()
 	var plan: Array = [

@@ -6,7 +6,7 @@ extends Node
 ## `Vector3`. Quem chama não vê a diferença, e é isso que deixa a campanha
 ## escrita para o 2D rodar aqui sem reescrita.
 ##
-## Ver docs/MIGRACAO_2D_3D.md, Fase 1.
+## Ver docs/projeto/MIGRACAO_2D_3D.md, Fase 1.
 ##
 ##
 ## O NOME É O CONTRATO; A ÂNCORA É A IMPLEMENTAÇÃO

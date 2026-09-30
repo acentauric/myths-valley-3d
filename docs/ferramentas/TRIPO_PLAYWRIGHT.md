@@ -41,4 +41,4 @@ sempre manuais. O saldo do Studio não deve ser confundido com o saldo da API
 consultado pelo Tripo CLI/MCP.
 
 Mais detalhes operacionais estão em
-[`tools/tripo-studio/README.md`](../tools/tripo-studio/README.md).
+[`tools/tripo-studio/README.md`](../../tools/tripo-studio/README.md).

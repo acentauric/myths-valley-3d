@@ -43,6 +43,6 @@ conta o quê.
 
 - **`main` sempre abre e roda.** Trabalho novo em `feature/<nome>`.
 - **Cada fatia é um commit, com portão e falsificação** (regra 4 do
-  [PLANO.md](../../docs/PLANO.md)). Commit que muda comportamento sem mexer em
+  [PLANO.md](../../docs/projeto/PLANO.md)). Commit que muda comportamento sem mexer em
   portão nenhum é commit que ninguém vai conseguir defender depois.
 - Rode `.\tools\comum\testar.ps1` antes de commitar.

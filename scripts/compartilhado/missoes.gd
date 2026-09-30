@@ -465,7 +465,7 @@ func andamento(id: String) -> Vector2i:
 ## `alvo` é **nome de lugar** (`"vau"`, `"aldeao:zefa"`) ou a posição pronta.
 ## O nome é o caminho preferido: missão que guarda coordenada guarda o mundo em
 ## que nasceu, e é o que impediria esta campanha de rodar em 3D. Ver
-## `Lugares` e docs/MIGRACAO_2D_3D.md (branch prototype/myths-valley-3d), Fase 1.
+## `Lugares` e docs/projeto/MIGRACAO_2D_3D.md (branch prototype/myths-valley-3d), Fase 1.
 ##
 ## A posição continua aceita, e não é dívida: há alvos que não são lugar com
 ## nome — a célula que o jogador acabou de arar, o ponto que o arraial calculou

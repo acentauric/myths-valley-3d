@@ -42,7 +42,7 @@ o dia de mata devolvendo 7 de fôlego e custando 7 para cozinhar. Hoje devolve
 pedaço com o chá de folha — mais nada a devolve. É a regra do Graveyard
 Keeper, e com o conserto da reclamação mais ouvida dele: lá, quem queimava a
 comida na masmorra achando que se curava não tinha como saber. Aqui a mochila
-escreve "+12 de vida" no chá e só "de fôlego" no resto. Ver docs/PLANO.md, "A
+escreve "+12 de vida" no chá e só "de fôlego" no resto. Ver docs/projeto/PLANO.md, "A
 luta, segunda rodada".
 
 E o chá tem o segundo serviço, que é o que ele fazia de verdade no Recôncavo de

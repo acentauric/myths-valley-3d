@@ -5,7 +5,7 @@ extends Node3D
 ## píer, o riacho nos pontos do rio, a fogueira do terreiro quando está acesa.
 ## Os insetos e grilos da mata são estridentes: surgem só em episódios curtos,
 ## com longas pausas entre eles, em vez de um loop contínuo.
-## Os loops de 24 s vieram do ElevenLabs Sound Effects (docs/ESTRATEGIA_SONORA.md).
+## Os loops de 24 s vieram do ElevenLabs Sound Effects (docs/sistemas/ESTRATEGIA_SONORA.md).
 
 const PASTA := "res://assets/audio/ambiente/"
 const MATA_DIA := PASTA + "mata_dia.mp3"

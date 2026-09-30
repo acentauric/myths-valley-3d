@@ -387,7 +387,7 @@ Fase 3, e não depois.
 
 **O caminho já está construído, e não é refazer o mapa.** O
 `regioes.json` nasceu com `"regions"` no plural e `active_region`, e
-[MAPA_GEOGRAFICO_3D.md](MAPA_GEOGRAFICO_3D.md) documenta como acrescentar
+[MAPA_GEOGRAFICO_3D.md](../mundo/MAPA_GEOGRAFICO_3D.md) documenta como acrescentar
 região a partir de KML. O que esta fase faz é usar isso:
 
 1. **estender a região atual para o interior e para o norte**, que é onde o 2D
@@ -504,7 +504,7 @@ o que muda é que a lista passa a caber 63 passos em vez de cinco.
 Antes da Fase 2, o 3D não salvava nada. O 2D tem três vagas, escrita atômica com releitura,
 migração de formato em escada e limpeza de conteúdo que sumiu — 810 linhas com
 dois portões (`testar_salvamento`, `testar_slots`) e uma página de documentação
-([SALVAMENTO.md](SALVAMENTO.md)).
+([SALVAMENTO.md](../sistemas/SALVAMENTO.md)).
 
 O formato é variante do Godot (`var_to_str`), e não JSON, porque o estado do 2D
 é indexado por `Vector2i`. **Em 3D isso não piora: melhora** — a variante
@@ -763,8 +763,8 @@ só para resolver limitação de perspectiva que o 3D não tem.
 
 ### Como cada um entra
 
-Vale o pipeline que já está decidido em [ASSETS_TRIPO.md](ASSETS_TRIPO.md) e
-no [AGENTS.md](../AGENTS.md), sem exceção:
+Vale o pipeline que já está decidido em [ASSETS_TRIPO.md](../arte/ASSETS_TRIPO.md) e
+no [AGENTS.md](../../AGENTS.md), sem exceção:
 
 1. imagem de referência limpa, em perspectiva 3/4, a partir do sprite 2D;
 2. Modelo HD → Remesh/Retopologia (Malha Smart, Quad) → exportar GLB;
@@ -774,7 +774,7 @@ no [AGENTS.md](../AGENTS.md), sem exceção:
    nunca instanciar GLB fora do catálogo;
 5. o construtor procedural equivalente, porque **os dois estilos não podem
    divergir**: peça que só existe em Tripo deixa o estilo procedural com buraco;
-6. linha em `ORIGEM.md` e em [CREDITOS.md](../assets/CREDITOS.md);
+6. linha em `ORIGEM.md` e em [CREDITOS.md](../../assets/CREDITOS.md);
 7. testar nos dois estilos antes de commitar.
 
 **Cada lote é aprovado antes de rodar.** Geração consome crédito, e o custo

@@ -83,7 +83,7 @@ Vale desenhar contra isso desde já. Cinco apostas:
 ## O que já está de pé
 
 Nada dos sistemas acima está implementado, mas **a fundação de construir já
-está**: [scripts/mundo/construcoes.gd](../scripts/mundo/construcoes.gd) guarda
+está**: [scripts/mundo/construcoes.gd](../../scripts/mundo/construcoes.gd) guarda
 cada peça como sprite com colisão própria, **fora** do TileMapLayer, e expõe
 `mover(id, celula)`. Foi feito assim de propósito — tile pintado não se move sem
 repintar a vizinhança, e a vila vai precisar arrastar construção. A casa do

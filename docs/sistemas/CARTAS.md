@@ -1,6 +1,6 @@
 # Cartas: pactos, apoios e rituais
 
-A mecânica que o [GDD](GDD.md) chama de central. Implementada em
+A mecânica que o [GDD](../projeto/GDD.md) chama de central. Implementada em
 `scripts/autoload/cartas.gd`; o conteúdo vive em `data/cartas/cartas.json`.
 
 ## As três naturezas
@@ -20,7 +20,7 @@ se usa de um jeito e custa de um jeito — e é essa diferença que as faz valer
 O universo do Batalha de Mitos já trata mito como quem **troca e cobra** — a
 Matinta Pereira do capítulo 7 é exatamente isso, e a Caipora "não trabalha para
 ninguém; ela vigia caminhos e cobra pedágio" (ver
-[VILA_E_EXPEDICOES.md](VILA_E_EXPEDICOES.md)).
+[VILA_E_EXPEDICOES.md](../mundo/VILA_E_EXPEDICOES.md)).
 
 Então o pacto dá um ganho permanente **e tira alguma coisa toda madrugada**. É a
 cobrança que faz dele uma decisão: sem ela seria um bônus que não há razão para

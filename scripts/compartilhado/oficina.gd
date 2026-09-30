@@ -5,7 +5,7 @@ extends Node
 ## entre derrubar mata e levantar coisa: sem ele a lenha só serve para vender.
 ##
 ## Receita é dado, não código — igual às obras. Quando a oficina for melhorada
-## (docs/CONSTRUCAO.md), receitas novas entram aqui com `exige`.
+## (docs/mundo/CONSTRUCAO.md), receitas novas entram aqui com `exige`.
 ##
 ## E cada uma declara a sua chave `abre`, que diz por onde se aprende. Ver
 ## `Receitas`.

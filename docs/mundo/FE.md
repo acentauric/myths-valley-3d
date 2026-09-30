@@ -3,11 +3,11 @@
 Três fés, uma por vez, cada uma com a sua árvore e a sua conta de experiência.
 Trocar não apaga nada; levar o que se juntou é que custa caro.
 
-Código: [`scripts/autoload/fe.gd`](../scripts/autoload/fe.gd) (as fés, as árvores
-e a migração) e [`scripts/autoload/ritos.gd`](../scripts/autoload/ritos.gd) (o
+Código: [`scripts/autoload/fe.gd`](../../scripts/autoload/fe.gd) (as fés, as árvores
+e a migração) e [`scripts/autoload/ritos.gd`](../../scripts/autoload/ritos.gd) (o
 rito num marco). A missão que apresenta as três está em
-[`scripts/mundo/arraial.gd`](../scripts/mundo/arraial.gd), com o texto em
-[`data/dialogos/arraial.json`](../data/dialogos/arraial.json).
+[`scripts/mundo/arraial.gd`](../../scripts/mundo/arraial.gd), com o texto em
+[`data/dialogos/arraial.json`](../../data/dialogos/arraial.json).
 
 ---
 
@@ -119,7 +119,7 @@ frente de uma coisa em que não crê.
 entre as duas. Elas não ganharam telas separadas de propósito: o desenho é o
 mesmo, a navegação é a mesma, e duas cópias do arquivo seriam duas cópias para
 manter em dia — que é exatamente o erro que a regra da vista já custou uma vez
-neste projeto (ver [PERSPECTIVA.md](PERSPECTIVA.md) §2).
+neste projeto (ver [PERSPECTIVA.md](../arte/PERSPECTIVA.md) §2).
 
 ---
 
@@ -141,7 +141,7 @@ ter visto as três não é escolha, é sorteio.
 
 ## 6. O portão e o retrato
 
-[`tools/gdscript/testar_fe.gd`](../tools/gdscript/testar_fe.gd) tranca seis
+[`tools/gdscript/testar_fe.gd`](../../tools/gdscript/testar_fe.gd) tranca seis
 regras e duas conferências de consistência. Ele existe porque a fé é o primeiro
 sistema do jogo em que **errar é silencioso**: talento de ofício errado se vê
 na tela; fé errada só aparece quando o jogador volta à fé antiga, semanas
@@ -153,7 +153,7 @@ engano que alguém cometeria de boa-fé, "somando tudo"): duas regras reprovaram
 na hora.
 
 E há o retrato, que o número não dá:
-[`tools/gdscript/retratar_teias.gd`](../tools/gdscript/retratar_teias.gd) abre o
+[`tools/gdscript/retratar_teias.gd`](../../tools/gdscript/retratar_teias.gd) abre o
 jogo, apaga tudo que não é a teia e salva as quatro em `scratch/teias/` — a de
 ofício e a de cada fé. Árvore mal formada não dá erro nenhum: uma raiz com um nó
 só, um anel que não cabe, um `exige` apontando para fora. Aparece torto, e
@@ -246,7 +246,7 @@ mais) e rasteira de mestre (a rasteira tonteia o dobro). Os três nós valem só
 para quem aprendeu: ginga não se compra com ponto.
 
 Código em `Luta`, `Arraial._frente_da_capoeira`; portão em `testar_luta`. Ver
-docs/PLANO.md, "A luta ensinada".
+docs/projeto/PLANO.md, "A luta ensinada".
 
 ## 8. O que falta
 
@@ -267,4 +267,4 @@ docs/PLANO.md, "A luta ensinada".
 - **O padre e a mãe de santo.** Os marcos respondem; ninguém mora neles.
 - **A luta de cada fé.** A capoeira é a do candomblé. A católica e a do
   caboclo ainda não têm a sua, e é aí que a luta com poder pode entrar quando
-  o místico entrar — ver docs/PLANO.md.
+  o místico entrar — ver docs/projeto/PLANO.md.

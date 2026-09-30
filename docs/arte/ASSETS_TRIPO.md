@@ -55,7 +55,7 @@ O gargalo é a curadoria humana, não o crédito.
 
 Retopologia e exportação de dezenas de peças não se faz clicando. O Studio é
 uma aplicação Nuxt que conversa com `api.tripo3d.ai/v2/studio/…` e o script
-[`prototipo_3d/tools/tripo/lote_studio.js`](../prototipo_3d/tools/tripo/lote_studio.js)
+[`prototipo_3d/tools/tripo/lote_studio.js`](../../prototipo_3d/tools/tripo/lote_studio.js)
 repete, na mesma sessão logada e com os mesmos cabeçalhos que a página envia,
 exatamente as chamadas da interface:
 
@@ -175,7 +175,7 @@ Regras:
 
 O risco real não é peso, é **colagem**: três estilos diferentes na mesma
 praça. Para evitar: gerar a referência de imagem sempre com a mesma bíblia de
-estilo (docs/AMBIENTACAO.md, paleta caiada/telha/barro/verde-mata), pedir
+estilo (docs/mundo/AMBIENTACAO.md, paleta caiada/telha/barro/verde-mata), pedir
 "stylized game prop, clean silhouette, soft even lighting" e revisar cada peça
 ao lado das vizinhas no jogo antes de promover.
 

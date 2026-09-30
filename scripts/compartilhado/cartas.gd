@@ -14,7 +14,7 @@ extends Node
 ##              coisa todo dia — e é a cobrança que faz dele uma decisão em vez
 ##              de um bônus. Um de cada vez: quem serve a dois não serve a
 ##              nenhum, e é assim que o universo do Batalha de Mitos trata isso
-##              (ver docs/VILA_E_EXPEDICOES.md: "a Caipora não trabalha para
+##              (ver docs/mundo/VILA_E_EXPEDICOES.md: "a Caipora não trabalha para
 ##              ninguém; ela vigia caminhos e cobra pedágio").
 ##
 ##   APOIO      é uma carta de gente, não de mito. Vale UMA VEZ POR DIA, na

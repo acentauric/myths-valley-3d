@@ -9,7 +9,7 @@
 | Versão deste documento | 1.5 |
 | Responsável pelo produto | Ramon Santos |
 | Repositório | `acentauric/myths-valley` |
-| Caminho deste documento | `docs/DECISOES_PROTOTIPO_3D.md` |
+| Caminho deste documento | `docs/projeto/DECISOES_PROTOTIPO_3D.md` |
 | Branch proposta | `prototype/myths-valley-3d` |
 | Janela de produção planejada | 26–27/09 e 03–04/10/2026 |
 | Meta interna de conclusão | 04/10/2026, com build e materiais de apresentação prontos |
@@ -30,7 +30,7 @@ Este documento se aplica ao **protótipo 3D da jam**. Não substitui o GDD compl
 
 ### Registro do primeiro teste local — 23/09/2026
 
-Foi criado um projeto Godot independente em `prototipo_3d/project.godot`, dentro da branch `prototype/myths-valley-3d`. A configuração da raiz permanece como referência executável da base 2D. O atalho `JOGAR_3D.cmd` abre a cena 3D; instruções em [COMO_JOGAR_3D.md](COMO_JOGAR_3D.md).
+Foi criado um projeto Godot independente em `prototipo_3d/project.godot`, dentro da branch `prototype/myths-valley-3d`. A configuração da raiz permanece como referência executável da base 2D. O atalho `JOGAR_3D.cmd` abre a cena 3D; instruções em [COMO_JOGAR_3D.md](../experiencia/COMO_JOGAR_3D.md).
 
 Este teste usa o personagem fornecido em `medieval+character+3d+model.zip`: FBX texturizado, 65 ossos e nenhum clipe de animação. O controlador usa altura de 1,78 m, movimento, corrida, colisão e câmera em terceira pessoa. Um animador procedural fornece movimento provisório dos ossos. Isso ainda não valida o pipeline completo de clipes Mixamo ou a exportação Windows distribuível.
 
@@ -44,11 +44,11 @@ Impacto no plano: a estrutura `assets/`, `scenes/`, `scripts/` e `tools/` deste 
 
 O segundo arquivo fornecido, `medieval+character+3d+model.glb`, reúne o personagem, o mesmo esqueleto de 65 ossos e 11 clipes exportados no Tripo. O protótipo passou a usar esse GLB. `idle`, `walk` e `run` são escolhidos automaticamente pela velocidade; oito gestos podem ser acionados pelas teclas 1–8 e são interrompidos quando o personagem volta a andar.
 
-O arquivo foi validado com animações no lugar, deixando deslocamento e colisões sob responsabilidade do `CharacterBody3D`. O teste integrado agora confere os nomes dos clipes e a troca entre gestos e locomoção, além das validações anteriores. O passo a passo de uso, reexportação e mapeamento está em [COMO_JOGAR_3D.md](COMO_JOGAR_3D.md).
+O arquivo foi validado com animações no lugar, deixando deslocamento e colisões sob responsabilidade do `CharacterBody3D`. O teste integrado agora confere os nomes dos clipes e a troca entre gestos e locomoção, além das validações anteriores. O passo a passo de uso, reexportação e mapeamento está em [COMO_JOGAR_3D.md](../experiencia/COMO_JOGAR_3D.md).
 
 ### Integração do Tripo com Codex — 23/09/2026
 
-O projeto passou a declarar um servidor MCP `tripo` em `.codex/config.toml`, executado pelo Tripo CLI oficial. Isso permite solicitar ao Codex modelos baseados em texto ou imagem, acompanhar tarefas e gerar personagens com rig e animações preset. A instalação local e o fluxo de promoção de assets estão descritos em [TRIPO_MCP.md](TRIPO_MCP.md).
+O projeto passou a declarar um servidor MCP `tripo` em `.codex/config.toml`, executado pelo Tripo CLI oficial. Isso permite solicitar ao Codex modelos baseados em texto ou imagem, acompanhar tarefas e gerar personagens com rig e animações preset. A instalação local e o fluxo de promoção de assets estão descritos em [TRIPO_MCP.md](../ferramentas/TRIPO_MCP.md).
 
 Credenciais permanecem no perfil local do Tripo em `%USERPROFILE%\.tripo`; nenhuma chave deve entrar no repositório. Saídas experimentais ficam em `.assets-raw/tripo/` e só são promovidas a `prototipo_3d/assets/` depois de revisão de qualidade, licença e adequação ao Godot. As operações de geração e animação consomem créditos da conta do integrante que as executar.
 
@@ -246,7 +246,7 @@ scenes/prototipo_3d/       # Mundo, personagem, NPCs e interações
 scripts/prototipo_3d/      # Comportamentos específicos de 3D
 data/prototipo_3d/         # Dados exclusivos da demo, quando necessários
 services/npc-gateway/      # Serviço de diálogo; não exportar como recurso do jogo
-docs/DECISOES_PROTOTIPO_3D.md
+docs/projeto/DECISOES_PROTOTIPO_3D.md
 ```
 
 O save deve usar um caminho próprio, por exemplo `user://prototipo_3d/save_v1.json`, com versão de formato explícita. **Branch e worktree não isolam automaticamente o diretório de save do aplicativo.** Evitar que as duas versões leiam ou sobrescrevam o mesmo arquivo.
@@ -361,10 +361,10 @@ git -C ../myths-valley-3d tag -a baseline-2d-pre-3d-20260923 -m "Base 2D anterio
 git -C ../myths-valley-3d push origin baseline-2d-pre-3d-20260923
 ```
 
-Copiar este arquivo para `../myths-valley-3d/docs/DECISOES_PROTOTIPO_3D.md`. Depois:
+Copiar este arquivo para `../myths-valley-3d/docs/projeto/DECISOES_PROTOTIPO_3D.md`. Depois:
 
 ```bash
-git -C ../myths-valley-3d add docs/DECISOES_PROTOTIPO_3D.md
+git -C ../myths-valley-3d add docs/projeto/DECISOES_PROTOTIPO_3D.md
 git -C ../myths-valley-3d commit -m "docs: registrar decisoes do prototipo 3D"
 git -C ../myths-valley-3d push
 ```

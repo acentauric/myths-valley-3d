@@ -1,6 +1,6 @@
 class_name FloraReconcavo
 extends RefCounted
-## Flora procedural do Recôncavo (docs/AMBIENTACAO.md, §4) e peças soltas do arraial.
+## Flora procedural do Recôncavo (docs/mundo/AMBIENTACAO.md, §4) e peças soltas do arraial.
 ## Cada espécie vira um ArrayMesh de poucas superfícies, com uma silhueta própria,
 ## pronto para MeshInstance3D ou MultiMesh. Modelos do Tripo podem substituir uma
 ## espécie por vez sem mudar quem chama: basta trocar o retorno de `especie()`.

@@ -7,8 +7,8 @@ vontade do jogador, outras como pedido de NPC dentro de uma missão.
 **A regra que manda em tudo: não é uma escada.** As obras formam um grafo, com
 pré-requisito e com exclusão. Duas partidas não terminam com a mesma casa.
 
-Catálogo: [data/construcoes/obras.json](../data/construcoes/obras.json).
-Sistema: [scripts/autoload/obras.gd](../scripts/autoload/obras.gd).
+Catálogo: [data/construcoes/obras.json](../../data/construcoes/obras.json).
+Sistema: [scripts/autoload/obras.gd](../../scripts/autoload/obras.gd).
 
 ## Os três eixos
 

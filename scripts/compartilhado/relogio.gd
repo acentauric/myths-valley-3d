@@ -28,7 +28,7 @@ extends Node
 ## os dias, as estações e os anos continuam saindo daqui, que é o lugar onde
 ## eles são contados desde sempre.
 ##
-## Ver docs/MIGRACAO_2D_3D.md (branch prototype/myths-valley-3d), Fase 5.
+## Ver docs/projeto/MIGRACAO_2D_3D.md (branch prototype/myths-valley-3d), Fase 5.
 
 signal hora_mudou(hora: int)
 signal dia_comecou(dia: int, estacao: int, ano: int)

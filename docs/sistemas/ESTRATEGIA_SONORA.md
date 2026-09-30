@@ -6,7 +6,7 @@ Revisão: 23 de setembro de 2026. Escopo implementado: menu, opções e travessi
 
 A entrada apresenta Bom Jesus dos Pobres, entre a Mata Atlântica e a Baía de Todos os Santos, em 1887. O jogador chega como viajante do manuscrito e é acolhido por Pedro Nolasco. A primeira impressão sonora deve ser de lugar habitado, proximidade e curiosidade. O mistério existe ao fundo; a entrada não antecipa o terror da fazenda.
 
-As referências internas são [Ambientação](AMBIENTACAO.md), [a chegada do viajante](enredo/README.md) e os [capítulos 6](enredo/capitulo-06.md) e [7](enredo/capitulo-07.md). Esta é uma direção artística para o jogo, não uma reconstrução documental de repertório musical ou de espécies locais.
+As referências internas são [Ambientação](../mundo/AMBIENTACAO.md), [a chegada do viajante](../enredo/README.md) e os [capítulos 6](../enredo/capitulo-06.md) e [7](../enredo/capitulo-07.md). Esta é uma direção artística para o jogo, não uma reconstrução documental de repertório musical ou de espécies locais.
 
 O calor da viola e da madeira acompanha a tinta escura, o verde de maré, o ouro envelhecido e o pergaminho da interface. A flauta oferece o detalhe luminoso da paisagem; uma harmonia levemente suspensa sugere o manuscrito e a mata. Evitar fanfarra medieval, coro épico, impacto de trailer e sintetizador moderno ajuda a manter a escala humana do arraial.
 
@@ -35,7 +35,7 @@ Seis gerações originais pela API ElevenLabs; nenhum arquivo legado foi substit
 
 Os MP3 originais e os prompts completos estão em `assets/audio/fontes/introducao_2026/`. Os JSON de cada fonte registram modelo, duração solicitada, instrução, destino e opção de loop. `manifesto.json` registra os hashes SHA-256 e as durações dos masters. A pasta de fontes tem `.gdignore`: preserva a proveniência sem embutir duplicatas no jogo.
 
-O roteiro de geração e preparação é [gerar-introducao.ps1](../tools/elevenlabs/gerar-introducao.ps1). Ele pula fontes já existentes. `-PrepararNovamente` refaz somente os masters locais a partir dessas fontes; não consome outra geração. Nenhuma chave aparece nos prompts, metadados ou comandos: o cliente usa o leitor seguro já existente em `tools/comum/chaves.ps1`.
+O roteiro de geração e preparação é [gerar-introducao.ps1](../../tools/elevenlabs/gerar-introducao.ps1). Ele pula fontes já existentes. `-PrepararNovamente` refaz somente os masters locais a partir dessas fontes; não consome outra geração. Nenhuma chave aparece nos prompts, metadados ou comandos: o cliente usa o leitor seguro já existente em `tools/comum/chaves.ps1`.
 
 Referência de parâmetros: [composição musical](https://elevenlabs.io/docs/api-reference/music/compose) e [efeitos sonoros](https://elevenlabs.io/docs/api-reference/text-to-sound-effects/convert), documentação oficial ElevenLabs consultada nesta revisão.
 
@@ -80,4 +80,4 @@ Assobios de Matinta e o horror da fazenda não viram decoração da entrada. A e
 
 ## Verificação
 
-[testar-audio.gd](../tools/elevenlabs/testar-audio.gd) valida assets, duração, persistência, legado, mute, limites de volume, trocas rápidas, continuidade, prévia e ausência de players duplicados. O teste recusa gravar fora de um `APPDATA` isolado dentro de `res://scratch/`. Também são conferidos duração e picos decodificados dos arquivos. Uma aprovação auditiva em caixas e fones continua sendo a etapa editorial para futuras revisões da composição e da mistura.
+[testar-audio.gd](../../tools/elevenlabs/testar-audio.gd) valida assets, duração, persistência, legado, mute, limites de volume, trocas rápidas, continuidade, prévia e ausência de players duplicados. O teste recusa gravar fora de um `APPDATA` isolado dentro de `res://scratch/`. Também são conferidos duração e picos decodificados dos arquivos. Uma aprovação auditiva em caixas e fones continua sendo a etapa editorial para futuras revisões da composição e da mistura.
