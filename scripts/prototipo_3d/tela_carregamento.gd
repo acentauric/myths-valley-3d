@@ -6,17 +6,18 @@ extends RefCounted
 ## `trocar_cena` carrega a cena em segundo plano, avança a barra e troca de cena; a tela
 ## some quando o vale fica pronto.
 
-const OURO := Color("e8c46a")
-const CREME := Color("f6ead0")
-const COBALTO := Color("1d3f8f")
-const IDENTIDADE := "res://assets/prototipo_3d/identidade/"
-const LOGO := IDENTIDADE + "logo_myths_valley.png"
-const ROSA := IDENTIDADE + "rosa_dos_ventos.png"
-const CAPA_DIA := IDENTIDADE + "capa_dia.webp"
-const CAPA_NOITE := IDENTIDADE + "capa_noite.webp"
-const FONTE_TITULO := "res://assets/fonts/Cinzel-Variavel.ttf"
-const FONTE_TEXTO := "res://assets/fonts/CormorantGaramond-Variavel.ttf"
-const FONTE_ITALICO := "res://assets/fonts/CormorantGaramond-Italico-Variavel.ttf"
+const Identidade = preload("res://scripts/prototipo_3d/identidade.gd")
+
+const OURO := Identidade.OURO
+const CREME := Identidade.CREME
+const COBALTO := Identidade.COBALTO
+const LOGO := Identidade.LOGO
+const ROSA := Identidade.ROSA
+const CAPA_DIA := Identidade.PASTA + "capa_dia.webp"
+const CAPA_NOITE := Identidade.PASTA + "capa_noite.webp"
+const FONTE_TITULO := Identidade.FONTE_TITULO
+const FONTE_TEXTO := Identidade.FONTE_TEXTO
+const FONTE_ITALICO := Identidade.FONTE_ITALICO
 
 ## A capa da noite entra espelhada: a lua sai de trás do logotipo e a igreja de trás do
 ## almanaque (e a torre fica à esquerda, como na igreja do jogo).
@@ -35,24 +36,10 @@ const LARGURA_NOTA := 470.0
 const LARGURA_NOTA_NOITE := 380.0
 const TEMPO_NOTA := 7.0
 
-## De dia, o almanaque traz fatos que o próprio jogo conta (fichas das árvores e a carta
-## náutica); de noite, o que se diz no vale (travessia, Pedro e as fichas).
-const NOTAS_DIA := [
-	"O mar do vale segue a carta náutica 1108 da Marinha, com a água da preamar de sizígia.",
-	"Toda a costa da baía é franjada de coqueiro, inclinado para o mar como quem procura a água.",
-	"Em 1887 a piaçava sai da Bahia em fardos para o mundo: vira vassoura, corda de navio e cobertura de rancho.",
-	"Onde o rio encontra a baía, quem manda é o mangue-vermelho, de pé na lama salgada.",
-	"O dendezeiro veio da costa da África; do dendê sai o azeite do acarajé, do vatapá e da moqueca.",
-	"Em 1887 já é raro achar um pau-brasil de pé na mata.",
-	"O jenipapo verde tinge a pele de azul-escuro por dias; maduro, vira o licor das festas de São João.",
-]
-const NOTAS_NOITE := [
-	"Disse também, sem tirar a mão do leme, que ali a gente aprende a não andar na mata depois que escurece.",
-	"Minha avó diz que o que troca com a gente à noite, cobra de dia. — Pedro",
-	"Para o povo de santo, a gameleira é morada de Iroko, e não se corta. Os mais velhos passam longe dela à noite.",
-	"Maré cheia, ninguém anda no mangue.",
-	"Ninguém dorme debaixo de jaqueira carregada.",
-]
+## De dia, o almanaque traz fatos que o próprio jogo conta; de noite, o que se diz no
+## vale. As listas moram na identidade, compartilhadas com a home (abertura.gd).
+const NOTAS_DIA := Identidade.NOTAS_DIA
+const NOTAS_NOITE := Identidade.NOTAS_NOITE
 
 
 ## Monta a tela sobre `pai` (CanvasLayer ou Control de tela cheia) e devolve a barra.
@@ -450,82 +437,30 @@ static func _avancar(bar: ProgressBar, ponta: Control, pct: Label) -> void:
 	pct.text = "%d%%" % floori(float(bar.value) * 100.0 + 0.001)
 
 
-## Losango de azulejo (cobalto com filete de ouro) antes do título do almanaque.
+# As peças visuais compartilhadas (losango, filete, fonte, sombra, brilho, aditivo)
+# moram na identidade; os nomes locais ficam para as chamadas desta tela.
 static func _losango() -> Control:
-	var suporte := Control.new()
-	suporte.custom_minimum_size = Vector2(12, 12)
-	suporte.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	suporte.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var peca := Panel.new()
-	var estilo := StyleBoxFlat.new()
-	estilo.bg_color = COBALTO
-	estilo.set_border_width_all(1)
-	estilo.border_color = Color("e2c170")
-	peca.add_theme_stylebox_override("panel", estilo)
-	peca.position = Vector2(2, 2)
-	peca.size = Vector2(8, 8)
-	peca.pivot_offset = Vector2(4, 4)
-	peca.rotation_degrees = 45.0
-	peca.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	suporte.add_child(peca)
-	return suporte
+	return Identidade.losango()
 
 
-## Filete de ouro que some na ponta de fora (à esquerda ou à direita do nome do lugar).
 static func _filete(para_direita: bool) -> TextureRect:
-	var cores := Gradient.new()
-	var ouro := Color(0.91, 0.77, 0.42, 0.85)
-	cores.colors = PackedColorArray([ouro, Color(ouro, 0.0)] if para_direita else [Color(ouro, 0.0), ouro])
-	var textura := GradientTexture2D.new()
-	textura.gradient = cores
-	textura.width = 64
-	textura.height = 1
-	var filete := TextureRect.new()
-	filete.texture = textura
-	filete.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	filete.stretch_mode = TextureRect.STRETCH_SCALE
-	filete.custom_minimum_size = Vector2(16, 1)
-	filete.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	filete.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	filete.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	return filete
+	return Identidade.filete(para_direita)
 
 
 static func _fonte(caminho: String, peso: int, espaco_letras: int = 0) -> FontVariation:
-	var fonte := FontVariation.new()
-	fonte.base_font = load(caminho) as Font
-	# O eixo tem de vir pela tag numérica: a chave de texto "wght" é ignorada.
-	fonte.variation_opentype = {TextServerManager.get_primary_interface().name_to_tag("wght"): peso}
-	fonte.spacing_glyph = espaco_letras
-	return fonte
+	return Identidade.fonte(caminho, peso, espaco_letras)
 
 
 static func _sombra_texto(rotulo: Label) -> void:
-	rotulo.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.7))
-	rotulo.add_theme_constant_override("shadow_offset_x", 0)
-	rotulo.add_theme_constant_override("shadow_offset_y", 1)
-	rotulo.add_theme_constant_override("shadow_outline_size", 6)
+	Identidade.sombra_texto(rotulo)
 
 
-## Brilho redondo que some para as bordas (luz, olhos, partículas, ponta da barra).
 static func _brilho(cor: Color, lado: int) -> GradientTexture2D:
-	var cores := Gradient.new()
-	cores.offsets = PackedFloat32Array([0.0, 0.3, 1.0])
-	cores.colors = PackedColorArray([cor, Color(cor, cor.a * 0.35), Color(cor, 0.0)])
-	var textura := GradientTexture2D.new()
-	textura.gradient = cores
-	textura.fill = GradientTexture2D.FILL_RADIAL
-	textura.fill_from = Vector2(0.5, 0.5)
-	textura.fill_to = Vector2(1.0, 0.5)
-	textura.width = lado
-	textura.height = lado
-	return textura
+	return Identidade.brilho(cor, lado)
 
 
 static func _aditivo() -> CanvasItemMaterial:
-	var material := CanvasItemMaterial.new()
-	material.blend_mode = CanvasItemMaterial.BLEND_MODE_ADD
-	return material
+	return Identidade.aditivo()
 
 
 static func _cobrir(item: Control) -> void:
