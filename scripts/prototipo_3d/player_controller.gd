@@ -6,6 +6,7 @@ signal capture_changed(captured: bool)
 signal camera_lock_changed(locked: bool)
 signal animation_requested(label: String)
 signal navigation_status(message: String)
+signal vigor_mudou(valor: float)
 
 const ClickNavigation = preload("res://scripts/prototipo_3d/click_navigation.gd")
 const TeclasMovimento = preload("res://scripts/prototipo_3d/teclas_movimento.gd")
@@ -21,6 +22,10 @@ const JUMP_GRAVITY_DOWN := 25.0 * JUMP_SPEED_MULTIPLIER * JUMP_SPEED_MULTIPLIER
 const JUMP_BUFFER_TIME := 0.16
 const JUMP_COYOTE_TIME := 0.16
 const RUN_STOP_SPEED := 0.15
+const VIGOR_MAXIMO := 100.0
+const CUSTO_CORRIDA_POR_SEGUNDO := 10.0
+const VIGOR_RECUPERACAO := 50.0
+const VIGOR_RECUPERACAO_INTERVALO := 2.0
 ## Água: o jogador entra andando no raso, mais devagar conforme ela sobe; onde o fundo
 ## passa do peito (fração da altura) ele nada, com os ombros e a cabeça de fora. Entra
 ## no nado e volta a andar em profundidades diferentes, para não ficar alternando.
@@ -97,6 +102,8 @@ var _nadando := false
 var _land_check := 0.0
 var _run_toggled := false
 var _ran_since_toggle := false
+var _vigor := VIGOR_MAXIMO
+var _tempo_descanso_vigor := 0.0
 var _machado_teste_na_mao := false
 var _machado_ancora: Node3D
 var _machado_pivo: Node3D
@@ -399,6 +406,7 @@ func _physics_process(delta: float) -> void:
 	var direction: Vector3 = Basis(Vector3.UP, _yaw) * Vector3(input_vector.x, 0, input_vector.y)
 	if input_vector.length_squared() <= 0.001 and not _walk_path.is_empty():
 		direction = _next_walk_direction()
+	var corrida_ativa := is_running() and direction.length_squared() > 0.01 and _acao_golpe_restante <= 0.0
 	if _run_toggled and direction.length_squared() > 0.01:
 		_ran_since_toggle = true
 	var speed: float = run_speed if is_running() else walk_speed
@@ -451,6 +459,7 @@ func _physics_process(delta: float) -> void:
 	var distance_before := _distance_to_next_waypoint()
 	move_and_slide()
 	_subir_degrau(direction)
+	_atualizar_vigor(delta, corrida_ativa)
 	if _run_toggled and _ran_since_toggle and direction.length_squared() <= 0.01 and Vector2(velocity.x, velocity.z).length_squared() <= RUN_STOP_SPEED * RUN_STOP_SPEED:
 		_run_toggled = false
 		_ran_since_toggle = false
@@ -480,7 +489,7 @@ func _physics_process(delta: float) -> void:
 
 func _input(event: InputEvent) -> void:
 	if event is InputEventKey and event.is_action_pressed("mv_run") and not event.echo:
-		_run_toggled = not _run_toggled
+		_run_toggled = not _run_toggled and _vigor > 0.0
 		_ran_since_toggle = false
 		navigation_status.emit("Modo corrida %s" % ("ativado" if _run_toggled else "desativado"))
 	if event is InputEventMouseMotion and _camera_locked and _camera_drag_pressed and Input.mouse_mode == Input.MOUSE_MODE_VISIBLE:
@@ -874,7 +883,51 @@ func get_current_animation() -> StringName:
 
 
 func is_running() -> bool:
-	return _run_toggled or (_walk_run and not _walk_path.is_empty())
+	return _vigor > 0.0 and (_run_toggled or (_walk_run and not _walk_path.is_empty()))
+
+
+func vigor_atual() -> float:
+	return _vigor
+
+
+func gastar_vigor(quantidade: float) -> bool:
+	if quantidade <= 0.0:
+		return true
+	if _vigor + 0.001 < quantidade:
+		return false
+	_definir_vigor(_vigor - quantidade)
+	_tempo_descanso_vigor = 0.0
+	return true
+
+
+func _atualizar_vigor(delta: float, corrida_ativa: bool) -> void:
+	if corrida_ativa:
+		_tempo_descanso_vigor = 0.0
+		_definir_vigor(_vigor - CUSTO_CORRIDA_POR_SEGUNDO * delta)
+		if _vigor <= 0.0:
+			_run_toggled = false
+			_walk_run = false
+			_ran_since_toggle = false
+		return
+	if _vigor >= VIGOR_MAXIMO:
+		_tempo_descanso_vigor = 0.0
+		return
+	var gesticulando := animator != null and animator.has_method("gesture_ativa") and bool(animator.call("gesture_ativa"))
+	if _acao_golpe_restante > 0.0 or gesticulando or not is_on_floor() or Vector2(velocity.x, velocity.z).length_squared() > 0.04:
+		_tempo_descanso_vigor = 0.0
+		return
+	_tempo_descanso_vigor += delta
+	if _tempo_descanso_vigor >= VIGOR_RECUPERACAO_INTERVALO:
+		_tempo_descanso_vigor -= VIGOR_RECUPERACAO_INTERVALO
+		_definir_vigor(_vigor + VIGOR_RECUPERACAO)
+
+
+func _definir_vigor(valor: float) -> void:
+	var novo := clampf(valor, 0.0, VIGOR_MAXIMO)
+	if is_equal_approx(novo, _vigor):
+		return
+	_vigor = novo
+	vigor_mudou.emit(_vigor)
 
 
 func _apply_camera() -> void:

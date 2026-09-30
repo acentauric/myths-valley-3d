@@ -18,7 +18,6 @@ const DISTANCIA_PARA_GOLPEAR := 2.45
 const DISTANCIA_DE_APROXIMACAO := 1.45
 const GOLPES_PARA_CORTAR := 3
 const CUSTO_DO_GOLPE := 50.0
-const RECUPERACAO_A_CADA := 2.0
 
 var _fichas: Dictionary = {}
 var _acoes: Dictionary = {}
@@ -36,7 +35,6 @@ var _coqueiro_pendente := -1
 var _coqueiro_em_golpe := -1
 var _golpes_restantes_na_acao := 0
 var _stamina := 100.0
-var _descanso_tempo := 0.0
 var _destino_do_coqueiro := Vector3.INF
 var _aproximando_do_coqueiro := false
 var _animador: Node
@@ -88,16 +86,19 @@ func configurar(world: Node3D, jogador: Node3D, hud) -> void:
 		coqueiro["ficha"] = ficha_proxima
 	_dica = DicaTecla.criar(hud.map_layer(), Atalhos.letra("interagir"), "Sobre a árvore")
 	_criar_balao_vida(hud.map_layer())
+	_stamina = float(_jogador.call("vigor_atual"))
+	_jogador.connect("vigor_mudou", Callable(self, "_ao_vigor_mudar"))
+	if not Relogio.dia_comecou.is_connected(_ao_comecar_dia):
+		Relogio.dia_comecou.connect(_ao_comecar_dia)
 	_atualizar_stamina_hud()
 	_animador = _jogador.get("animator") as Node
 	if _animador != null and _animador.has_signal("golpe_concluido"):
 		_animador.connect("golpe_concluido", Callable(self, "_ao_golpe_concluido"))
 
 
-func _process(delta: float) -> void:
+func _process(_delta: float) -> void:
 	if _world == null:
 		return
-	_recuperar_stamina(delta)
 	var camera := get_viewport().get_camera_3d()
 	var em_jogo: bool = camera != null and camera == _jogador.get("camera")
 	# Outra ficha (lápide, casa) tomou o painel: esta já não está aberta.
@@ -155,8 +156,11 @@ func _unhandled_key_input(event: InputEvent) -> void:
 			_iniciar_golpe_no_coqueiro(_coqueiro_perto)
 		else:
 			var ficha: int = int(_coqueiros[_coqueiro_perto].get("ficha", -1))
-			if ficha < 0 or not Almanaque.registrar("coqueiro"):
+			if ficha < 0:
 				return
+			# Registrar pode retornar false quando a espécie já foi descoberta,
+			# mas isso não deve impedir que o jogador abra a descrição novamente.
+			Almanaque.registrar("coqueiro")
 			_mostrar(ficha, 0)
 		get_viewport().set_input_as_handled()
 	elif _perto >= 0:
@@ -316,20 +320,21 @@ func _ao_golpe_concluido() -> void:
 		return
 	var indice := _coqueiro_em_golpe
 	var coqueiro: Dictionary = _coqueiros[indice]
-	_stamina = maxf(0.0, _stamina - CUSTO_DO_GOLPE)
-	_descanso_tempo = 0.0
-	_atualizar_stamina_hud()
+	if not bool(_jogador.call("gastar_vigor", CUSTO_DO_GOLPE)):
+		_parar_golpe(false)
+		return
+	_stamina = float(_jogador.call("vigor_atual"))
 	coqueiro["golpes"] = int(coqueiro["golpes"]) + 1
 	_golpes_restantes_na_acao -= 1
+	Audio.efeito("machado")
 	if coqueiro["golpes"] >= GOLPES_PARA_CORTAR:
 		if bool(_world.call("cortar_coqueiro", coqueiro["pos"])):
 			coqueiro["cortado"] = true
+			coqueiro["dia_corte"] = Relogio.dia_absoluto()
+			if not Inventario.adicionar("madeira_de_coqueiro"):
+				_hud.set_notice(str(IdiomaMenu.campo(_acoes.get("coqueiro", {}), "inventario_cheio")))
 			Audio.efeito("arvore_cai")
-			var coqueiro_pos: Vector3 = coqueiro["pos"]
-			for ficha: Dictionary in _pontos:
-				var ficha_pos: Vector3 = ficha["pos"]
-				if ficha["especie"] == "coqueiro" and Vector2(ficha_pos.x, ficha_pos.z).distance_squared_to(Vector2(coqueiro_pos.x, coqueiro_pos.z)) < 0.01:
-					ficha["cortado"] = true
+			_definir_ficha_cortada(coqueiro["pos"], true)
 		else:
 			coqueiro["golpes"] = GOLPES_PARA_CORTAR - 1
 	_coqueiros[indice] = coqueiro
@@ -337,20 +342,72 @@ func _ao_golpe_concluido() -> void:
 		_parar_golpe(false)
 
 
-func _recuperar_stamina(delta: float) -> void:
-	if _stamina >= 100.0:
-		_descanso_tempo = 0.0
-		return
-	var velocidade: Vector3 = _jogador.get("velocity")
-	var animando := _animador != null and _animador.has_method("gesture_ativa") and bool(_animador.call("gesture_ativa"))
-	if _coqueiro_pendente >= 0 or _coqueiro_em_golpe >= 0 or animando or not bool(_jogador.call("is_on_floor")) or Vector2(velocidade.x, velocidade.z).length_squared() > 0.04:
-		_descanso_tempo = 0.0
-		return
-	_descanso_tempo += delta
-	if _descanso_tempo >= RECUPERACAO_A_CADA:
-		_descanso_tempo -= RECUPERACAO_A_CADA
-		_stamina = minf(100.0, _stamina + CUSTO_DO_GOLPE)
-		_atualizar_stamina_hud()
+func estado_para_salvar() -> Array[Dictionary]:
+	var cortados: Array[Dictionary] = []
+	for coqueiro: Dictionary in _coqueiros:
+		if not bool(coqueiro.get("cortado", false)):
+			continue
+		var pos: Vector3 = coqueiro["pos"]
+		cortados.append({"pos": [pos.x, pos.y, pos.z], "dia_corte": int(coqueiro.get("dia_corte", Relogio.dia_absoluto()))})
+	return cortados
+
+
+func restaurar_do_save(cortados: Array) -> void:
+	for registro in cortados:
+		if not registro is Dictionary:
+			continue
+		var coordenadas: Array = registro.get("pos", [])
+		if coordenadas.size() != 3:
+			continue
+		var pos := Vector3(float(coordenadas[0]), float(coordenadas[1]), float(coordenadas[2]))
+		var dia_corte := int(registro.get("dia_corte", Relogio.dia_absoluto()))
+		# Um save antigo pode ter ficado aberto além da duração da árvore.
+		if Relogio.dia_absoluto() > dia_corte:
+			continue
+		var indice := _indice_coqueiro(pos)
+		if indice < 0 or not bool(_world.call("cortar_coqueiro", pos)):
+			continue
+		var coqueiro: Dictionary = _coqueiros[indice]
+		coqueiro["golpes"] = GOLPES_PARA_CORTAR
+		coqueiro["cortado"] = true
+		coqueiro["dia_corte"] = dia_corte
+		_coqueiros[indice] = coqueiro
+		_definir_ficha_cortada(pos, true)
+
+
+func _ao_comecar_dia(_dia: int, _estacao: int, _ano: int) -> void:
+	var hoje := Relogio.dia_absoluto()
+	for indice in _coqueiros.size():
+		var coqueiro: Dictionary = _coqueiros[indice]
+		if not bool(coqueiro.get("cortado", false)) or hoje <= int(coqueiro.get("dia_corte", hoje)):
+			continue
+		if not bool(_world.call("restaurar_coqueiro", coqueiro["pos"])):
+			continue
+		coqueiro["golpes"] = 0
+		coqueiro["cortado"] = false
+		coqueiro.erase("dia_corte")
+		_coqueiros[indice] = coqueiro
+		_definir_ficha_cortada(coqueiro["pos"], false)
+
+
+func _indice_coqueiro(pos: Vector3) -> int:
+	for indice in _coqueiros.size():
+		var candidata: Vector3 = _coqueiros[indice]["pos"]
+		if Vector2(candidata.x, candidata.z).distance_squared_to(Vector2(pos.x, pos.z)) < 0.01:
+			return indice
+	return -1
+
+
+func _definir_ficha_cortada(pos: Vector3, cortado: bool) -> void:
+	for ficha: Dictionary in _pontos:
+		var ficha_pos: Vector3 = ficha["pos"]
+		if ficha["especie"] == "coqueiro" and Vector2(ficha_pos.x, ficha_pos.z).distance_squared_to(Vector2(pos.x, pos.z)) < 0.01:
+			ficha["cortado"] = cortado
+
+
+func _ao_vigor_mudar(valor: float) -> void:
+	_stamina = valor
+	_atualizar_stamina_hud()
 
 
 func _atualizar_stamina_hud() -> void:

@@ -58,6 +58,7 @@ var _saindo := false
 var mapa	# mapa_jogo.gd
 var _recursos  # recursos_3d.gd — os alvos de trabalho (troncos, lajedos)
 var lapides	# lapides.gd
+var _arvores_info	# arvores_info.gd — saúde e regeneração dos coqueiros
 ## Modo de câmera de antes da pausa, para o retorno devolver o que havia.
 ## As filas de missão penduradas em moradores, por id do morador — para o save
 ## e para quem precise achá-las. A do Pedro NÃO está aqui: ela mora dentro do
@@ -174,6 +175,7 @@ func _ready() -> void:
 	arvores.name = "ArvoresInfo"
 	add_child(arvores)
 	arvores.configurar(world, player, hud)
+	_arvores_info = arvores
 	# ONDE BATER: os troncos e lajedos que respondem à ferramenta. Vem depois
 	# das árvores porque usa o mesmo alcance e a mesma dica, e quem estiver
 	# perto dos dois tem de ver a dica do que dá para fazer, não a da ficha.
@@ -788,6 +790,8 @@ func estado_para_salvar() -> Dictionary:
 	estado["cadeias"] = cadeias
 	if _recursos != null:
 		estado["caidos"] = _recursos.caidos()
+	if _arvores_info != null:
+		estado["coqueiros_cortados"] = _arvores_info.estado_para_salvar()
 	if pedro != null:
 		estado["pedro"] = {"missao": pedro.missao, "iniciado": pedro.get("_iniciado"),
 			"despedida": pedro.get("_despedida_feita")}
@@ -829,6 +833,8 @@ func restaurar_do_save(estado: Dictionary) -> void:
 	# inteiro primeiro (`_erguer`), e só então o save diz o que já tinha caído.
 	if _recursos != null:
 		_recursos.esquecer(estado.get("caidos", []))
+	if _arvores_info != null:
+		_arvores_info.restaurar_do_save(estado.get("coqueiros_cortados", []))
 	var guia: Dictionary = estado.get("pedro", {})
 	if pedro != null and not guia.is_empty():
 		pedro.set("_iniciado", bool(guia.get("iniciado", false)))

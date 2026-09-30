@@ -765,7 +765,7 @@ func _atualizar() -> void:
 			continue
 		icone.texture = Catalogo.icone(id)
 		icone.modulate.a = 0.45 if i == _pego else 1.0
-		quantidade.text = str(quantos) if quantos > 1 else ""
+		quantidade.text = str(quantos) if quantos > 1 or id == "madeira_de_coqueiro" else ""
 
 	_titulo.text = "Mochila %d/%d        %d réis" % [
 		Inventario.ocupados(), Inventario.ESPACOS, Jogo.dinheiro]

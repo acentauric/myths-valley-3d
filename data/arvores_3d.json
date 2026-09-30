@@ -24,7 +24,10 @@
       "sem_stamina_es": "Espera a que se recupere la resistencia.",
       "sem_caminho": "Não encontrei um caminho até o coqueiro.",
       "sem_caminho_en": "I couldn't find a path to the coconut tree.",
-      "sem_caminho_es": "No encontré un camino hasta el cocotero."
+      "sem_caminho_es": "No encontré un camino hasta el cocotero.",
+      "inventario_cheio": "O coqueiro foi cortado, mas o inventário está cheio.",
+      "inventario_cheio_en": "The coconut tree was cut, but your inventory is full.",
+      "inventario_cheio_es": "El cocotero fue cortado, pero el inventario está lleno."
     }
   },
   "arvores": {

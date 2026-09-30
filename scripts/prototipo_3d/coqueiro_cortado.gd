@@ -4,6 +4,46 @@ extends RefCounted
 const ALTURA_DO_TOCO := 0.85
 
 
+## O centro da caixa completa cai no meio da copa dos coqueiros inclinados.
+## Amostrar apenas o começo e o meio baixo da malha localiza o tronco real.
+static func referencias_tronco(malha: Mesh) -> Dictionary:
+	if malha == null:
+		return {}
+	var limites: AABB = malha.get_aabb()
+	var altura := maxf(limites.size.y, 0.001)
+	var base_min := Vector2(INF, INF)
+	var base_max := Vector2(-INF, -INF)
+	var alto_min := Vector2(INF, INF)
+	var alto_max := Vector2(-INF, -INF)
+	for superficie in range(malha.get_surface_count()):
+		var dados := malha.surface_get_arrays(superficie)
+		if not (dados[Mesh.ARRAY_VERTEX] is PackedVector3Array):
+			continue
+		var vertices: PackedVector3Array = dados[Mesh.ARRAY_VERTEX]
+		for vertice in vertices:
+			var fracao := (vertice.y - limites.position.y) / altura
+			var plano := Vector2(vertice.x, vertice.z)
+			if fracao <= 0.08:
+				base_min.x = minf(base_min.x, plano.x)
+				base_min.y = minf(base_min.y, plano.y)
+				base_max.x = maxf(base_max.x, plano.x)
+				base_max.y = maxf(base_max.y, plano.y)
+			elif fracao >= 0.22 and fracao <= 0.38:
+				alto_min.x = minf(alto_min.x, plano.x)
+				alto_min.y = minf(alto_min.y, plano.y)
+				alto_max.x = maxf(alto_max.x, plano.x)
+				alto_max.y = maxf(alto_max.y, plano.y)
+	if not is_finite(base_min.x):
+		return {}
+	var centro_base := (base_min + base_max) * 0.5
+	var centro_alto := (alto_min + alto_max) * 0.5 if is_finite(alto_min.x) else centro_base
+	return {
+		"base": Vector3(centro_base.x, limites.position.y, centro_base.y),
+		"alto": Vector3(centro_alto.x, limites.position.y + altura * 0.3, centro_alto.y),
+		"raio_base": maxf(base_max.x - base_min.x, base_max.y - base_min.y) * 0.5,
+	}
+
+
 static func criar(partes: Array[Dictionary], pe: Vector3, raio_tronco: float) -> Node3D:
 	var modelo := Node3D.new()
 	modelo.name = "CoqueiroCortado"
@@ -73,6 +113,16 @@ static func criar(partes: Array[Dictionary], pe: Vector3, raio_tronco: float) ->
 	tronco.mesh = malha_cortada
 	modelo.add_child(tronco)
 	_adicionar_corte(modelo, bordas, raio_tronco)
+	# O toco alarga na base e pode ficar deslocado pelo tronco inclinado.
+	# A malha recortada fornece uma colisao que acompanha essa silhueta.
+	var corpo := StaticBody3D.new()
+	corpo.name = "ColisaoDoToco"
+	corpo.collision_layer = 1
+	corpo.collision_mask = 1
+	var colisao := CollisionShape3D.new()
+	colisao.shape = malha_cortada.create_convex_shape()
+	corpo.add_child(colisao)
+	modelo.add_child(corpo)
 	return modelo
 
 

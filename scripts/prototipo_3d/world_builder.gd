@@ -242,13 +242,41 @@ func cortar_coqueiro(posicao: Vector3) -> bool:
 		var corpo := arvore.get("colisao") as StaticBody3D
 		if corpo != null:
 			var colisao := corpo.get_child(0) as CollisionShape3D
-			if colisao != null and colisao.shape is CylinderShape3D:
-				(colisao.shape as CylinderShape3D).height = CoqueiroCortado.ALTURA_DO_TOCO
-				corpo.global_position = pe + Vector3(0, CoqueiroCortado.ALTURA_DO_TOCO * 0.5, 0)
+			if colisao != null:
+				colisao.set_deferred("disabled", true)
+		arvore["toco"] = toco
 		arvore["cortado"] = true
 		_arvores_nomeadas[indice] = arvore
 		return true
 	return _region.cortar_coqueiro(posicao) if _region != null else false
+
+
+func restaurar_coqueiro(posicao: Vector3) -> bool:
+	var ponto := Vector2(posicao.x, posicao.z)
+	for indice in range(_arvores_nomeadas.size()):
+		var arvore: Dictionary = _arvores_nomeadas[indice]
+		if arvore.get("especie", "") != "coqueiro" or not arvore.get("cortado", false):
+			continue
+		var pe: Vector3 = arvore["pos"]
+		if Vector2(pe.x, pe.z).distance_squared_to(ponto) > 0.01:
+			continue
+		var original := arvore.get("visual") as Node3D
+		if original == null:
+			return false
+		original.visible = true
+		var toco := arvore.get("toco") as Node3D
+		if is_instance_valid(toco):
+			toco.queue_free()
+		var corpo := arvore.get("colisao") as StaticBody3D
+		if corpo != null:
+			var colisao := corpo.get_child(0) as CollisionShape3D
+			if colisao != null:
+				colisao.set_deferred("disabled", false)
+		arvore["cortado"] = false
+		arvore.erase("toco")
+		_arvores_nomeadas[indice] = arvore
+		return true
+	return _region.restaurar_coqueiro(posicao) if _region != null else false
 
 
 func _parte_do_coqueiro(instancia: MeshInstance3D) -> Dictionary:
@@ -1051,7 +1079,10 @@ func _arvore(especie: String, origin: Vector3, size: float = 1.0, yaw: float = 0
 		if node != null:
 			CatalogoAssets.colisao(especie, node, self, placed_origin, size, yaw)
 			_arvores_nomeadas[registro]["visual"] = node
-			_arvores_nomeadas[registro]["colisao"] = get_child(get_child_count() - 1) as StaticBody3D
+			var corpo := get_child(get_child_count() - 1) as StaticBody3D
+			_arvores_nomeadas[registro]["colisao"] = corpo
+			if especie == "coqueiro":
+				_alinhar_colisao_coqueiro(node, corpo)
 			return
 	var built: Dictionary = FloraReconcavo.especie(especie, size)
 	var instance := MeshInstance3D.new()
@@ -1065,7 +1096,37 @@ func _arvore(especie: String, origin: Vector3, size: float = 1.0, yaw: float = 0
 	shape.height = float(built.trunk_height)
 	_body(shape, placed_origin + Vector3(0, float(built.trunk_height) * 0.5, 0))
 	_arvores_nomeadas[registro]["visual"] = instance
-	_arvores_nomeadas[registro]["colisao"] = get_child(get_child_count() - 1) as StaticBody3D
+	var corpo := get_child(get_child_count() - 1) as StaticBody3D
+	_arvores_nomeadas[registro]["colisao"] = corpo
+	if especie == "coqueiro":
+		_alinhar_colisao_coqueiro(instance, corpo)
+
+
+func _alinhar_colisao_coqueiro(visual: Node3D, corpo: StaticBody3D) -> void:
+	if corpo == null:
+		return
+	var malhas: Array[MeshInstance3D] = []
+	if visual is MeshInstance3D:
+		malhas.append(visual as MeshInstance3D)
+	for filho in visual.find_children("*", "MeshInstance3D", true, false):
+		malhas.append(filho as MeshInstance3D)
+	for malha in malhas:
+		var referencias: Dictionary = CoqueiroCortado.referencias_tronco(malha.mesh)
+		if referencias.is_empty():
+			continue
+		var base: Vector3 = malha.global_transform * (referencias["base"] as Vector3)
+		var alto: Vector3 = malha.global_transform * (referencias["alto"] as Vector3)
+		var eixo := (alto - base).normalized()
+		if eixo.length_squared() < 0.5:
+			eixo = Vector3.UP
+		var colisao := corpo.get_child(0) as CollisionShape3D
+		if colisao == null or not (colisao.shape is CylinderShape3D):
+			return
+		var cilindro := colisao.shape as CylinderShape3D
+		var escala := malha.global_transform.basis.get_scale()
+		cilindro.radius = maxf(cilindro.radius, float(referencias["raio_base"]) * maxf(escala.x, escala.z) * 0.9)
+		corpo.global_transform = Transform3D(Basis(Quaternion(Vector3.UP, eixo)), base + eixo * cilindro.height * 0.5)
+		return
 
 
 func _build_farm() -> void:
