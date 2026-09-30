@@ -88,6 +88,18 @@ const ESPECIES_MATA_TRIPO := ["mata_alta", "mata_larga", "mata_alta", "embauba",
 ## Lado do bloco (unidades) em que a mata e a orla são divididas: cada bloco é uma
 ## MultiMesh própria, descartada fora da câmera e com LOD escolhido pela distância.
 const BLOCO_MATA := 40.0
+## O GLB já traz LOD de malha quando o importador consegue simplificá-lo. O segundo
+## nível aqui é a ocultação gradual do bloco inteiro: plantas baixas desaparecem
+## antes das copas, que ainda compõem a paisagem vista à distância.
+const LOD_SUB_BOSQUE := 85.0
+const LOD_RESTINGA := 200.0
+const LOD_ARVORE_RIO := 230.0
+const LOD_COQUEIRO := 250.0
+const LOD_MATA := 280.0
+const LOD_MARGEM := 20.0
+const LOD_BIAS := 0.65
+var _blocos_vegetacao_lod: Array[Dictionary] = []
+var _camera_de_mapa := false
 
 
 func set_estilo_tripo(value: bool) -> void:
@@ -549,6 +561,8 @@ func _clear_region() -> void:
 	_tree_trunks.clear()
 	_tree_collision_pool.clear()
 	_tree_collision_elapsed = 0.0
+	_blocos_vegetacao_lod.clear()
+	_camera_de_mapa = false
 	_map_frame = Rect2()
 	_background_kind = "land"
 	_land.clear()
@@ -1408,7 +1422,7 @@ func _build_forest(configuration: Dictionary) -> void:
 			_tree_trunks.append({"point": point, "ground": ground, "height": minf(float(built.altura) * scale, 4.0), "radius": float(built.tronco) * scale, "especie": species})
 			# Afundada um palmo: o pé entra no chão em vez de pousar sobre ele.
 			transforms.append(Transform3D(Basis.from_euler(Vector3(0, yaw, 0)).scaled(Vector3.ONE * scale), Vector3(point.x, ground - ARVORE_AFUNDADA, point.y)) * base)
-		_multimesh_em_blocos("Mata: " + species, built.mesh, transforms)
+		_multimesh_em_blocos("Mata: " + species, built.mesh, transforms, LOD_MATA)
 	await _marcar(0.98, "Plantando a mata", false)
 	_build_sub_bosque(positions, rng)
 	_build_margens_do_rio(rng)
@@ -1431,7 +1445,7 @@ func _build_sub_bosque(arvores_mata: Array[Vector2], rng: RandomNumberGenerator)
 		var escala := rng.randf_range(0.7, 1.3)
 		transforms.append(Transform3D(Basis.from_euler(Vector3(0, rng.randf() * TAU, 0)).scaled(Vector3.ONE * escala), Vector3(ponto.x, chao - 0.03, ponto.y)) * (tufo.base as Transform3D))
 	if not transforms.is_empty():
-		_multimesh_em_blocos("Sub-bosque", tufo.mesh, transforms)
+		_multimesh_em_blocos("Sub-bosque", tufo.mesh, transforms, LOD_SUB_BOSQUE)
 
 
 ## Margens do rio: manguezal (mangue-vermelho) perto da foz e da água salgada, como no
@@ -1511,15 +1525,15 @@ func _build_margens_do_rio(rng: RandomNumberGenerator) -> void:
 						do_mangue.append(Transform3D(Basis.from_euler(Vector3(0, rng.randf() * TAU, 0)).scaled(Vector3.ONE * escala), Vector3(ponto.x, chao - ARVORE_AFUNDADA, ponto.y)) * (mangue.base as Transform3D))
 						_tree_trunks.append({"point": ponto, "ground": chao, "height": minf(float(mangue.altura) * escala, 4.0), "radius": float(mangue.tronco) * escala, "especie": "mangue"})
 	if not do_mangue.is_empty():
-		_multimesh_em_blocos("Manguezal", mangue.mesh, do_mangue)
+		_multimesh_em_blocos("Manguezal", mangue.mesh, do_mangue, LOD_ARVORE_RIO)
 	if not do_inga.is_empty():
-		_multimesh_em_blocos("Ingazeiros do rio", inga.mesh, do_inga)
+		_multimesh_em_blocos("Ingazeiros do rio", inga.mesh, do_inga, LOD_ARVORE_RIO)
 
 
 ## Divide instâncias em blocos de BLOCO_MATA: cada bloco vira uma MultiMeshInstance3D
-## com AABB pequena, então o Godot descarta os blocos fora da câmera e escolhe o LOD
-## da malha pela distância de cada bloco (uma MultiMesh do mapa inteiro nunca some).
-func _multimesh_em_blocos(nome: String, mesh: Mesh, transforms: Array[Transform3D]) -> void:
+## com AABB pequena, então o Godot descarta blocos fora da câmera, escolhe o LOD
+## importado e oculta o bloco quando ele não contribui mais para a paisagem.
+func _multimesh_em_blocos(nome: String, mesh: Mesh, transforms: Array[Transform3D], distancia_lod: float = 0.0) -> void:
 	var blocos: Dictionary = {}
 	for t in transforms:
 		var chave := Vector2i(floori(t.origin.x / BLOCO_MATA), floori(t.origin.z / BLOCO_MATA))
@@ -1538,7 +1552,13 @@ func _multimesh_em_blocos(nome: String, mesh: Mesh, transforms: Array[Transform3
 		visual.name = "%s %d,%d" % [nome, chave.x, chave.y]
 		visual.multimesh = multimesh
 		visual.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		if distancia_lod > 0.0:
+			visual.lod_bias = LOD_BIAS
+			visual.visibility_range_end = distancia_lod
+			visual.visibility_range_end_margin = LOD_MARGEM
 		add_child(visual)
+		if distancia_lod > 0.0:
+			_blocos_vegetacao_lod.append({"visual": visual, "distancia": distancia_lod})
 
 
 ## Coqueiros ao longo da orla, do lado da terra, inclinados para o mar.
@@ -1606,13 +1626,14 @@ func _build_coast_palms(rng: RandomNumberGenerator) -> void:
 	for local in transforms_restinga:
 		var lista_local: Array[Transform3D] = transforms_restinga[local]
 		if not lista_local.is_empty():
-			_multimesh_em_blocos("Restinga da orla: " + local, (malhas_restinga[local] as Dictionary).mesh, lista_local)
+			_multimesh_em_blocos("Restinga da orla: " + local, (malhas_restinga[local] as Dictionary).mesh, lista_local, LOD_RESTINGA)
 	if transforms.is_empty():
 		return
-	_multimesh_em_blocos("Coqueiros da orla", built.mesh, transforms)
+	_multimesh_em_blocos("Coqueiros da orla", built.mesh, transforms, LOD_COQUEIRO)
 
 
 func _process(delta: float) -> void:
+	_atualizar_lod_da_camera()
 	if _tree_trunks.is_empty():
 		return
 	_tree_collision_elapsed += delta
@@ -1620,6 +1641,22 @@ func _process(delta: float) -> void:
 		return
 	_tree_collision_elapsed = 0.0
 	_refresh_tree_collisions()
+
+
+## Os mapas da abertura e do jogo usam câmeras ortográficas a 3000 unidades.
+## Sem esta exceção, o corte da câmera de passeio apagaria todas as árvores neles.
+## O minimapa usa outro viewport e continua com o LOD de passeio.
+func _atualizar_lod_da_camera() -> void:
+	if _blocos_vegetacao_lod.is_empty():
+		return
+	var camera := get_viewport().get_camera_3d()
+	var mapa := camera != null and camera.projection == Camera3D.PROJECTION_ORTHOGONAL
+	if mapa == _camera_de_mapa:
+		return
+	_camera_de_mapa = mapa
+	for bloco in _blocos_vegetacao_lod:
+		var visual := bloco.visual as MultiMeshInstance3D
+		visual.visibility_range_end = 0.0 if mapa else float(bloco.distancia)
 
 
 func _refresh_tree_collisions() -> void:

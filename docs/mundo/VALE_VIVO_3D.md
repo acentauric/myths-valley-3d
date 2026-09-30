@@ -118,13 +118,52 @@ O jogador chega de barco: começa no píer, com o Pedro ao lado.
 | Tripo, mata em blocos com LOD | 60 | ~2,4–3,6 M | 0,74 GB |
 
 A mata pesava por três motivos, corrigidos em `geo_region_renderer.gd` e
-`catalogo_assets.gd`: (1) o dendê de 15 mil triângulos estava sorteado na mata — a
-mata do estilo Tripo agora usa só `mata_a`, `mata_b` e `embauba` (~2,5 mil cada);
+`catalogo_assets.gd`: (1) o dendê de 15 mil triângulos estava sorteado na mata — na
+versão daquela medição, a mata do estilo Tripo usava só `mata_a`, `mata_b` e
+`embauba` (~2,5 mil cada); espécies locais mais pesadas entraram depois;
 (2) cada espécie era uma `MultiMesh` do mapa inteiro, que nunca sai do quadro — agora
 a mata e a orla são divididas em blocos de `BLOCO_MATA` (40 unidades), descartados fora
 da câmera; (3) o catálogo fundia a malha com `SurfaceTool` e perdia os LODs gerados
 pelo importador — para GLBs de uma malha só, usa a malha importada, e cada bloco
 escolhe o LOD pela distância.
+
+### Experimento de LOD da vegetação (#34)
+
+No passeio, cada bloco de vegetação usa mais cedo o LOD automático da malha
+importada (quando o GLB o possui) e agora também tem distância máxima de
+visibilidade. O sub-bosque baixo some primeiro (85 unidades); restinga, árvores
+do rio, coqueiros e copas da mata continuam visíveis até 200, 230, 250 e 280 unidades,
+respectivamente, com margem anti-oscilação de 20 unidades. Os decalques no pé das
+árvores e as árvores nomeadas não entram nesse corte. A colisão local dos
+troncos continua independente do visual. Os GLBs `mata_a`, `mata_b` e
+`aroeira` não receberam malha simplificada do importador nesta versão: neles,
+só o corte por distância atua.
+
+O mapa grande da abertura e o mapa dentro do jogo usam câmera ortográfica a
+3000 unidades do chão. Neles o limite é suspenso; ao voltar ao passeio, ele é
+restaurado. A câmera ortográfica do minimapa fica a 100 unidades para manter
+copas e restinga visíveis; o sub-bosque baixo não aparece nessa vista. As
+distâncias são constantes em `geo_region_renderer.gd`, para serem ajustadas
+após testar a aparência dentro do jogo.
+
+Medição A/B em 30/09/2026 na **mesma carga** do vale Tripo (GTX 1660 Ti,
+Godot 4.7.2, 1024×576, VSync desligado, 9h fixas, minimapa desligado, câmera
+fixa em cada vista, quatro tomadas de 120 quadros na ordem sem/com/com/sem):
+
+| Vista | Sem este LOD | Com este LOD | Triângulos por quadro (antes → depois) |
+|---|---:|---:|---:|
+| Perto da mata | 19,6 FPS | 21,6 FPS | 11,11 M → 7,59 M |
+| Sobre a mata | 28,8 FPS | 32,8 FPS | 9,48 M → 6,97 M |
+| Mata à distância | 12,6 FPS | 20,3 FPS | 17,33 M → 5,65 M |
+
+Esses números não substituem um teste visual jogando: o FPS oscilou bastante
+entre tomadas, mesmo na mesma vista, e varia conforme a máquina e outros
+processos abertos. A queda de triângulos é a evidência mais estável. A versão
+com desvanecimento dos blocos foi descartada porque, embora reduzisse
+triângulos, piorou o FPS de perto; a margem atual evita a oscilação sem esse custo.
+Para repetir a comparação A/B na mesma carga do mundo, rode o Godot com janela
+gráfica e `--path prototipo_3d --script res://tools/prototipo_3d/medir_lod.gd`
+(sem `--headless`).
 
 ## Onde mexer
 

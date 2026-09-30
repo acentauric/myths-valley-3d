@@ -12,6 +12,11 @@ func _run() -> void:
 	var opening = current_scene
 	_assert(opening != null and opening.name == "Abertura", "HOME")
 	_assert(opening.version_link != null and opening.version_link.visible, "versão clicável")
+	var opening_region: Node3D = opening.get_node("Cenario/bom_jesus_dos_pobres")
+	var opening_trees := _first_lod_block(opening_region)
+	_assert(opening_trees != null, "bloco real de vegetação no HOME")
+	var opening_range := opening_trees.visibility_range_end
+	_assert(opening_range > 0.0, "LOD da vegetação ativo no HOME")
 	var audio = root.get_node("Audio")
 	var mute: Button
 	# Botão de som do canto: o que tem o ícone de alto-falante (AudioToggleIcon).
@@ -34,6 +39,7 @@ func _run() -> void:
 	_assert(opening.map_open, "tela MAPA")
 	_assert(opening.map_markers.size() >= 11, "pontos de interesse no mapa")
 	_assert(opening.camera.projection == Camera3D.PROJECTION_ORTHOGONAL, "câmera superior")
+	_assert(opening_trees.visibility_range_end == 0.0, "vegetação visível no MAPA do menu")
 	await _capture("mapa")
 	var initial_zoom: float = opening.camera.size
 	var wheel := InputEventMouseButton.new()
@@ -50,7 +56,9 @@ func _run() -> void:
 	opening._focus_map_marker(opening.map_markers[0].position)
 	_assert(opening.camera.size <= 420.0, "foco em ponto de interesse")
 	opening._home()
+	await _frames(3)
 	_assert(not opening.map_open, "retorno do MAPA")
+	_assert(opening_trees.visibility_range_end == opening_range, "LOD restaurado no HOME")
 
 	opening._options()
 	await _frames(2)
@@ -100,6 +108,16 @@ func _run() -> void:
 	var player: CharacterBody3D = game.get_node("Jogador")
 	var world: Node3D = game.get_node("Cenario")
 	var region: Node3D = world.get_node("bom_jesus_dos_pobres")
+	var game_trees := _first_lod_block(region)
+	_assert(game_trees != null, "bloco real de vegetação no jogo")
+	var game_range := game_trees.visibility_range_end
+	_assert(game_range > 0.0, "LOD da vegetação ativo no passeio")
+	game._toggle_map()
+	await _frames(3)
+	_assert(game.mapa.aberto and game_trees.visibility_range_end == 0.0, "vegetação visível no MAPA do jogo")
+	game._toggle_map()
+	await _frames(3)
+	_assert(not game.mapa.aberto and game_trees.visibility_range_end == game_range, "LOD restaurado no passeio")
 	await _physics_frames(30)
 	var ground: Vector3 = world.call("ground_position", player.global_position)
 	_assert(player.is_on_floor() and absf(player.global_position.y - ground.y) < 0.2, "personagem apoiado no terreno")
@@ -223,6 +241,15 @@ func _has_button(node: Node, label: String) -> bool:
 		if child is Button and child.text == label:
 			return true
 	return false
+
+
+func _first_lod_block(region: Node3D) -> MultiMeshInstance3D:
+	var blocks: Array = region.get("_blocos_vegetacao_lod")
+	for block in blocks:
+		var visual := block.get("visual") as MultiMeshInstance3D
+		if is_instance_valid(visual) and visual.multimesh != null and visual.multimesh.instance_count > 0:
+			return visual
+	return null
 
 
 func _assert(condition: bool, label: String) -> void:
