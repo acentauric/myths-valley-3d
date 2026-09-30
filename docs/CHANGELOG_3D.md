@@ -114,6 +114,24 @@ atualize esse arquivo e este documento juntos.
 - O relógio espera a montagem do vale ao entrar no jogo: o jogador chega exatamente na
   hora inicial, a mesma que escolheu a capa (antes, em velocidade Rápida, dava para ver
   a capa de dia às 17h30 e chegar já de noite).
+- **A identidade vira o padrão do sistema (home "Retábulo")**: o menu inteiro passa
+  para a "Crônica do Recôncavo". O painel da home e todos os modais (AJUSTAR, SOBRE,
+  Histórico, PERSONAGENS, mapa) ganham a moldura de talha dourada com fio de azulejo
+  (NinePatch novo, gerado da identidade); o título vira o logotipo pintado, com halo,
+  a linha "Bom Jesus dos Pobres · 1887" entre filetes, o lema e o divisor de azulejo;
+  os botões viram placas em Cinzel com canto chanfrado, e as rosas dos ventos giram
+  nas pontas do item em foco (o mouse em cima já traz o foco: um marcador só).
+- **O vale ganha a luz de pintura da tela de carregamento**: véus no topo, na base e
+  atrás do retábulo (mais fortes contra o céu claro, seguindo a hora), vinheta, poeira
+  dourada de dia e vaga-lumes à noite, e o almanaque no canto — fatos de dia, "dizem
+  no vale" à noite, trocando a cada 10 s. Um fio de ouro discreto vive na base.
+- **A travessia do JOGAR virou cinema**: faixas pretas, capítulo entre losangos,
+  legenda em Cormorant centrada na base sobre o vale e o fio de ouro medindo cada
+  fala. CONTINUAR e PULAR em versalete, sem caixa.
+- **Fontes do sistema**: a opção "Fonte do menu" ganha a "Crônica" (Cormorant no corpo,
+  Cinzel nas ações) como padrão; Padrão, Almendra e Miva continuam. Os botões do canto
+  (menu e HUD), as dicas, os cabeçalhos dos modais e a confirmação de "Voltar ao menu?"
+  do jogo seguem a mesma identidade. Peças compartilhadas em `identidade.gd`.
 - Trocar o estilo visual dentro do jogo não deixa mais o relógio parado para sempre, e
   apertar M enquanto o jogo volta ao menu não esconde mais a tela de carregamento.
 - Câmera abre recuada (novo máximo mais distante); base das árvores com decalque

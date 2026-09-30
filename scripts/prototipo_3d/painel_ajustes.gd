@@ -12,6 +12,7 @@ const TemaMenu = preload("res://scripts/prototipo_3d/tema_menu.gd")
 const TeclasMovimento = preload("res://scripts/prototipo_3d/teclas_movimento.gd")
 const Atalhos = preload("res://scripts/prototipo_3d/atalhos.gd")
 const CameraMouse = preload("res://scripts/prototipo_3d/camera_mouse.gd")
+const Identidade = preload("res://scripts/prototipo_3d/identidade.gd")
 
 ## × do cabeçalho (o anfitrião fecha o modal).
 signal fechar_pedido
@@ -33,12 +34,13 @@ const IMA := 0.035
 const HORAS_INICIAIS := [4.5, 7.0, 12.0, 15.0, 17.5, 20.5]
 const ROTULOS_HORAS := ["Madrugada (4h30)", "Manhã (7h)", "Meio-dia", "Tarde (15h)", "Entardecer (17h30)", "Noite (20h30)"]
 const PREFERENCIAS_VISUAIS := "user://preferencias_visuais.cfg"
-## Fonte do menu (Cenário): padrão do Godot ou as duas fontes do 2D.
-const FONTES_MENU := ["", "res://assets/fonts/Almendra-Bold.ttf", "res://assets/fonts/miva.ttf"]
-const ROTULOS_FONTES := ["Padrão", "Almendra", "Miva"]
+## Fonte do menu (Cenário): a Crônica da identidade ("" = Cormorant e Cinzel), a fonte
+## do Godot ("padrao") ou as duas fontes do 2D. Ver tema_menu.gd.
+const FONTES_MENU := ["", "padrao", "res://assets/fonts/Almendra-Bold.ttf", "res://assets/fonts/miva.ttf"]
+const ROTULOS_FONTES := ["Crônica", "Padrão", "Almendra", "Miva"]
 
 ## Opção de fábrica de cada seleção (índice na lista), para o botão de voltar ao padrão.
-## Idioma, estilo e fonte voltam à primeira opção (Português, Tripo, Padrão).
+## Idioma, estilo e fonte voltam à primeira opção (Português, Tripo, Crônica).
 const PADRAO_VELOCIDADE := 2
 const PADRAO_HORA := 1
 const PADRAO_PAUSA := 1
@@ -246,14 +248,24 @@ func _aba_cenario(esquerda: VBoxContainer, direita: VBoxContainer) -> void:
 	var preferencias := ConfigFile.new()
 	preferencias.load(PREFERENCIAS_VISUAIS)
 	var sobrevoo := bool(preferencias.get_value("menu", "sobrevoo", true))
-	var fonte := clampi(int(preferencias.get_value("menu", "fonte", 0)), 0, FONTES_MENU.size() - 1)
+	var fonte := ler_fonte_menu(preferencias)
 	_escolha("Cenário do menu", ["Parado", "Sobrevoo"], 1 if sobrevoo else 0, func(i: int) -> void:
 		_salvar_preferencia("sobrevoo", i == 1)
 		cenario_menu_mudou.emit(i == 1), PADRAO_CENARIO)
 	_escolha("Fonte do menu", ROTULOS_FONTES, fonte, func(i: int) -> void:
-		_salvar_preferencia("fonte", i)
+		_salvar_preferencia("fonte_menu", i)
 		fonte_menu_mudou.emit(i)
 		_reconstruir(2), 0)
+
+
+## Preferência de fonte do menu, com migração: a chave antiga "fonte" era de antes da
+## Crônica entrar como primeira opção, então cada índice antigo anda uma casa.
+static func ler_fonte_menu(preferencias: ConfigFile) -> int:
+	if preferencias.has_section_key("menu", "fonte_menu"):
+		return clampi(int(preferencias.get_value("menu", "fonte_menu", 0)), 0, FONTES_MENU.size() - 1)
+	if preferencias.has_section_key("menu", "fonte"):
+		return clampi(int(preferencias.get_value("menu", "fonte", 0)) + 1, 0, FONTES_MENU.size() - 1)
+	return 0
 
 
 func _salvar_preferencia(chave: String, valor: Variant) -> void:
@@ -535,12 +547,16 @@ static func cabecalho(pai: Container, titulo: String, acao: Callable, subtitulo:
 	linha.add_child(titulos)
 	var titulo_rotulo := Label.new()
 	titulo_rotulo.text = titulo
-	titulo_rotulo.add_theme_font_size_override("font_size", 28)
+	titulo_rotulo.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	titulo_rotulo.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_TITULO, 600, 2))
+	titulo_rotulo.add_theme_font_size_override("font_size", 22)
+	titulo_rotulo.add_theme_color_override("font_color", Identidade.CREME)
 	titulos.add_child(titulo_rotulo)
 	if not subtitulo.is_empty():
 		var descricao := Label.new()
 		descricao.text = subtitulo
-		descricao.add_theme_font_size_override("font_size", 14)
+		descricao.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_ITALICO, 500))
+		descricao.add_theme_font_size_override("font_size", 17)
 		descricao.add_theme_color_override("font_color", Color("c9b98f"))
 		titulos.add_child(descricao)
 	var botao := Button.new()
@@ -558,8 +574,5 @@ static func cabecalho(pai: Container, titulo: String, acao: Callable, subtitulo:
 		Audio.efeito("ui_voltar")
 		acao.call())
 	linha.add_child(botao)
-	var divisor := ColorRect.new()
-	divisor.color = Color(0.71, 0.60, 0.38, 0.55)
-	divisor.custom_minimum_size.y = 1
-	pai.add_child(divisor)
+	pai.add_child(Identidade.divisor())
 	return botao

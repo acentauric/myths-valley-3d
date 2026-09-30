@@ -9,6 +9,7 @@ const TemaMenu = preload("res://scripts/prototipo_3d/tema_menu.gd")
 const PainelAjustes = preload("res://scripts/prototipo_3d/painel_ajustes.gd")
 const PainelPersonagens = preload("res://scripts/prototipo_3d/painel_personagens.gd")
 const TelaCarregamento = preload("res://scripts/prototipo_3d/tela_carregamento.gd")
+const Identidade = preload("res://scripts/prototipo_3d/identidade.gd")
 const VISUAL_PREFERENCES := "user://preferencias_visuais.cfg"
 const FLYOVER_SECONDS := 36.0
 const HISTORY_SIZE := Vector2(640, 600)
@@ -72,6 +73,27 @@ var flyover_active := true
 var menu_font_option := 0
 var clock_running := true
 var clock_hint: Label
+## Decoração da identidade sobre o vale (véus, partículas, almanaque, faixas de cinema
+## e o fio de ouro) e a moldura de talha do retábulo. Ver _montar_decoracao().
+var decoracao: Control
+var veu_vertical: TextureRect
+var veu_esquerdo: TextureRect
+var poeira: CPUParticles2D
+var vaga_lumes: CPUParticles2D
+var sombra_almanaque: TextureRect
+var bloco_almanaque: VBoxContainer
+var rotulo_almanaque: Label
+var nota_almanaque: Label
+var veu_modal: ColorRect
+var faixa_cima: ColorRect
+var faixa_baixo: ColorRect
+var fio_base: ProgressBar
+var moldura_nodes: Array[Control] = []
+var _indice_nota := 0
+var _era_noite := false
+var _tween_entrada: Tween
+var _tween_veu_modal: Tween
+var _tween_nota: Tween
 
 func _ready() -> void:
 	IdiomaMenu.aplicar_menu()
@@ -108,21 +130,15 @@ func _ready() -> void:
 		panel.theme = _menu_theme()
 		ajustes.tema = panel.theme)
 	ajustes.cenario_menu_mudou.connect(func(sobrevoo: bool) -> void: flyover_active = sobrevoo)
+	_montar_decoracao(layer)
 	panel = PanelContainer.new()
 	panel.position = Vector2(36, 32)
 	panel.custom_minimum_size = Vector2(440, 640)
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.055, 0.09, 0.075, 0.94)
-	style.border_color = Color("b49a60")
-	style.set_border_width_all(1)
-	style.set_corner_radius_all(14)
-	style.content_margin_left = 28
-	style.content_margin_right = 28
-	style.content_margin_top = 22
-	style.content_margin_bottom = 22
-	panel.add_theme_stylebox_override("panel", style)
+	# O fundo e a borda vêm da moldura de talha; o stylebox só guarda as margens.
+	panel.add_theme_stylebox_override("panel", _estilo_vazio())
 	panel.theme = _menu_theme()
 	layer.add_child(panel)
+	moldura_nodes = Identidade.emoldurar(panel)
 	content = VBoxContainer.new()
 	content.add_theme_constant_override("separation", 12)
 	panel.add_child(content)
@@ -133,10 +149,19 @@ func _ready() -> void:
 	_create_map_button(layer)
 	Audio.tocar_musica(Audio.obter_caminho_musica_menu())
 	Audio.iniciar_ambiente_menu()
+	_era_noite = Dia.eh_noite()
+	# Método (não lambda): o Godot desconecta sozinho quando o menu é liberado.
+	Dia.hora_mudou.connect(_ao_mudar_hora)
+	_ao_mudar_hora(Dia.hora)
 	_home()
 	if _reabrir_ajustes:
 		_reabrir_ajustes = false
 		_options(2)
+	# A entrada anima véus, retábulo e placas quando o vale termina de montar (a tela
+	# de carregamento some logo depois). Na recarga da troca de estilo, sem animação.
+	if not $Cenario.construido and not options_open:
+		_preparar_entrada()
+		$Cenario.pronto.connect(_entrada, CONNECT_ONE_SHOT)
 	print("OPENING_READY: audio compartilhado e abertura 3D · estilo=%s" % Estilo.modo)
 
 func _process(delta: float) -> void:
@@ -184,7 +209,239 @@ func _load_visual_preference() -> void:
 	var preferences := ConfigFile.new()
 	if preferences.load(VISUAL_PREFERENCES) == OK:
 		flyover_active = bool(preferences.get_value("menu", "sobrevoo", true))
-		menu_font_option = clampi(int(preferences.get_value("menu", "fonte", 0)), 0, MENU_FONTS.size() - 1)
+		menu_font_option = PainelAjustes.ler_fonte_menu(preferences)
+
+
+## O fundo do painel é a moldura de talha; o stylebox só guarda as margens de sempre.
+func _estilo_vazio() -> StyleBoxEmpty:
+	var vazio := StyleBoxEmpty.new()
+	vazio.content_margin_left = 28
+	vazio.content_margin_right = 28
+	vazio.content_margin_top = 22
+	vazio.content_margin_bottom = 22
+	return vazio
+
+
+## A camada de "luz de pintura" da identidade, entre o vale 3D e o retábulo: véus que
+## seguem a luz do dia, vinheta, poeira dourada (dia) ou vaga-lumes (noite), o almanaque
+## no canto de baixo, o fio de ouro na base, as faixas de cinema da travessia e o véu
+## dos modais. Tudo com o mouse desligado: decoração nunca pega clique.
+func _montar_decoracao(layer: CanvasLayer) -> void:
+	decoracao = Control.new()
+	decoracao.name = "Decoracao"
+	decoracao.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	decoracao.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	layer.add_child(decoracao)
+	veu_vertical = Identidade.veu(Color(0.04, 0.035, 0.023), {0.0: 0.5, 0.12: 0.2, 0.24: 0.0, 0.72: 0.0, 0.88: 0.4, 1.0: 0.62})
+	veu_vertical.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	decoracao.add_child(veu_vertical)
+	veu_esquerdo = Identidade.veu(Color(0.04, 0.031, 0.023), {0.0: 0.55, 0.68: 0.3, 1.0: 0.0}, true)
+	veu_esquerdo.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	veu_esquerdo.anchor_right = 0.594
+	decoracao.add_child(veu_esquerdo)
+	var vinheta := Identidade.vinheta(Vector2(0.62, 0.5), 0.36)
+	vinheta.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	decoracao.add_child(vinheta)
+	poeira = Identidade.particulas(false)
+	vaga_lumes = Identidade.particulas(true)
+	decoracao.add_child(poeira)
+	decoracao.add_child(vaga_lumes)
+	poeira.emitting = not _era_noite
+	vaga_lumes.emitting = _era_noite
+	decoracao.resized.connect(_posicionar_particulas)
+	_posicionar_particulas()
+	# Sombra difusa atrás do almanaque: o texto fica legível sobre o mar claro.
+	sombra_almanaque = TextureRect.new()
+	sombra_almanaque.texture = Identidade.brilho(Color(0.02, 0.02, 0.04, 0.5), 128)
+	sombra_almanaque.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	sombra_almanaque.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	sombra_almanaque.set_anchors_preset(Control.PRESET_BOTTOM_RIGHT)
+	sombra_almanaque.offset_left = -540.0
+	sombra_almanaque.offset_right = 0.0
+	sombra_almanaque.offset_top = -200.0
+	sombra_almanaque.offset_bottom = 0.0
+	decoracao.add_child(sombra_almanaque)
+	bloco_almanaque = VBoxContainer.new()
+	bloco_almanaque.alignment = BoxContainer.ALIGNMENT_END
+	bloco_almanaque.add_theme_constant_override("separation", 9)
+	bloco_almanaque.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	bloco_almanaque.set_anchors_preset(Control.PRESET_BOTTOM_RIGHT)
+	bloco_almanaque.offset_left = -480.0
+	bloco_almanaque.offset_right = -56.0
+	bloco_almanaque.offset_top = -148.0
+	bloco_almanaque.offset_bottom = -44.0
+	decoracao.add_child(bloco_almanaque)
+	var linha_rotulo := HBoxContainer.new()
+	linha_rotulo.alignment = BoxContainer.ALIGNMENT_END
+	linha_rotulo.add_theme_constant_override("separation", 10)
+	linha_rotulo.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	bloco_almanaque.add_child(linha_rotulo)
+	linha_rotulo.add_child(Identidade.losango())
+	rotulo_almanaque = Identidade.rotulo("Do almanaque")
+	rotulo_almanaque.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
+	linha_rotulo.add_child(rotulo_almanaque)
+	nota_almanaque = Label.new()
+	nota_almanaque.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
+	nota_almanaque.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	nota_almanaque.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	nota_almanaque.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	nota_almanaque.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_ITALICO, 500))
+	nota_almanaque.add_theme_font_size_override("font_size", 21)
+	nota_almanaque.add_theme_color_override("font_color", Identidade.TEXTO)
+	nota_almanaque.add_theme_constant_override("line_spacing", 0)
+	Identidade.sombra_texto(nota_almanaque)
+	bloco_almanaque.add_child(nota_almanaque)
+	_indice_nota = Time.get_ticks_msec() % Identidade.NOTAS_DIA.size()
+	_atualizar_almanaque(true)
+	var relogio_nota := Timer.new()
+	relogio_nota.wait_time = 10.0
+	relogio_nota.autostart = true
+	relogio_nota.timeout.connect(_proxima_nota)
+	decoracao.add_child(relogio_nota)
+	# Faixas de cinema da travessia e o fio de ouro da base (o mesmo da carga).
+	faixa_cima = ColorRect.new()
+	faixa_cima.color = Color(0.02, 0.016, 0.012)
+	faixa_cima.set_anchors_preset(Control.PRESET_TOP_WIDE)
+	faixa_cima.offset_bottom = 30.0
+	faixa_cima.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	faixa_cima.visible = false
+	decoracao.add_child(faixa_cima)
+	faixa_baixo = ColorRect.new()
+	faixa_baixo.color = Color(0.02, 0.016, 0.012)
+	faixa_baixo.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
+	faixa_baixo.offset_top = -30.0
+	faixa_baixo.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	faixa_baixo.visible = false
+	decoracao.add_child(faixa_baixo)
+	fio_base = Identidade.fio(decoracao)
+	fio_base.value = 1.0
+	fio_base.modulate.a = 0.45
+	veu_modal = ColorRect.new()
+	veu_modal.color = Color(0.02, 0.016, 0.012)
+	veu_modal.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	veu_modal.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	veu_modal.modulate.a = 0.0
+	decoracao.add_child(veu_modal)
+
+
+## As partículas moram na faixa baixa do vale, à direita do retábulo.
+func _posicionar_particulas() -> void:
+	var tela := decoracao.size
+	poeira.position = tela * Vector2(0.69, 0.54)
+	poeira.emission_rect_extents = tela * Vector2(0.235, 0.24)
+	vaga_lumes.position = tela * Vector2(0.69, 0.76)
+	vaga_lumes.emission_rect_extents = tela * Vector2(0.235, 0.15)
+
+
+## A cada hora do vale: os véus pesam conforme a luz (mais fortes contra o céu claro do
+## meio-dia) e a virada dia/noite troca as partículas e o caderno do almanaque — pela
+## mesma regra (eh_noite) que escolhe a capa da tela de carregamento.
+func _ao_mudar_hora(_hora: float) -> void:
+	var luz := Dia.luz_do_dia()
+	veu_vertical.modulate.a = lerpf(0.55, 1.0, luz)
+	veu_esquerdo.modulate.a = lerpf(0.55, 1.0, luz)
+	if Dia.eh_noite() != _era_noite:
+		_era_noite = Dia.eh_noite()
+		poeira.emitting = not _era_noite
+		vaga_lumes.emitting = _era_noite
+		_atualizar_almanaque()
+
+
+func _notas_atuais() -> Array:
+	return Identidade.NOTAS_NOITE if _era_noite else Identidade.NOTAS_DIA
+
+
+## Troca o caderno (Do almanaque ↔ Dizem no vale) e mostra a nota da vez. Os textos
+## ficam em português nas listas e são traduzidos na hora, para acompanhar o idioma.
+func _atualizar_almanaque(imediato := false) -> void:
+	rotulo_almanaque.text = tr("Dizem no vale") if _era_noite else tr("Do almanaque")
+	var notas := _notas_atuais()
+	_indice_nota = _indice_nota % notas.size()
+	if imediato:
+		nota_almanaque.text = tr(notas[_indice_nota])
+		return
+	_trocar_nota(tr(notas[_indice_nota]))
+
+
+func _proxima_nota() -> void:
+	var notas := _notas_atuais()
+	_indice_nota = (_indice_nota + 1) % notas.size()
+	_trocar_nota(tr(notas[_indice_nota]))
+
+
+func _trocar_nota(texto: String) -> void:
+	if _tween_nota:
+		_tween_nota.kill()
+	_tween_nota = nota_almanaque.create_tween()
+	_tween_nota.tween_property(nota_almanaque, "modulate:a", 0.0, 0.35)
+	_tween_nota.tween_callback(func() -> void: nota_almanaque.text = texto)
+	_tween_nota.tween_property(nota_almanaque, "modulate:a", 1.0, 0.6)
+
+
+## Modo da decoração: "home" (tudo aceso), "modal" (véu escuro sobre o vale), "mapa"
+## (decoração desligada) e "travessia" (faixas de cinema, sem almanaque nem véu lateral;
+## o fio de ouro vira o tempo da fala).
+func _decoracao_modo(modo: String) -> void:
+	if decoracao == null:
+		return
+	var travessia := modo == "travessia"
+	decoracao.visible = modo != "mapa"
+	veu_esquerdo.visible = not travessia
+	sombra_almanaque.visible = not travessia
+	bloco_almanaque.visible = not travessia
+	faixa_cima.visible = travessia
+	faixa_baixo.visible = travessia
+	fio_base.modulate.a = 1.0 if travessia else 0.45
+	if not travessia:
+		fio_base.value = 1.0
+	var alvo := 0.42 if modo == "modal" else 0.0
+	if _tween_veu_modal:
+		_tween_veu_modal.kill()
+	_tween_veu_modal = veu_modal.create_tween()
+	_tween_veu_modal.tween_property(veu_modal, "modulate:a", alvo, 0.2)
+
+
+func _preparar_entrada() -> void:
+	decoracao.modulate.a = 0.0
+	panel.modulate.a = 0.0
+	for peca in moldura_nodes:
+		peca.modulate.a = 0.0
+
+
+## Véus e retábulo surgem, e as placas entram em escada. Roda uma vez, disparada por
+## Cenario.pronto; se o jogador já navegou (teclado sob a carga), só assenta os finais.
+func _entrada() -> void:
+	if options_open or modal_open or map_open or line_index >= 0 or _tween_entrada != null:
+		_aplicar_entrada_final()
+		return
+	_tween_entrada = create_tween().set_parallel()
+	_tween_entrada.tween_property(decoracao, "modulate:a", 1.0, 0.8)
+	_tween_entrada.tween_property(panel, "modulate:a", 1.0, 0.45).set_delay(0.1)
+	for peca in moldura_nodes:
+		_tween_entrada.tween_property(peca, "modulate:a", 1.0, 0.45).set_delay(0.1)
+	var atraso := 0.35
+	for filho in content.get_children():
+		if filho is Control:
+			filho.modulate.a = 0.0
+			_tween_entrada.tween_property(filho, "modulate:a", 1.0, 0.25).set_delay(atraso)
+			atraso += 0.06
+	_tween_entrada.set_parallel(false)
+	_tween_entrada.tween_callback(func() -> void: _tween_entrada = null)
+
+
+func _aplicar_entrada_final() -> void:
+	decoracao.modulate.a = 1.0
+	panel.modulate.a = 1.0
+	for peca in moldura_nodes:
+		peca.modulate.a = 1.0
+
+
+func _notification(what: int) -> void:
+	# Troca de idioma com o menu aberto: almanaque e dica do relógio se refazem.
+	if what == NOTIFICATION_TRANSLATION_CHANGED and nota_almanaque != null:
+		_atualizar_almanaque(true)
+		if clock_hint != null:
+			_refresh_clock_hint()
 
 
 func _unhandled_key_input(event: InputEvent) -> void:
@@ -247,6 +504,11 @@ func _clamped_map_target(target: Vector3, view_size: float) -> Vector3:
 
 func _clear() -> void:
 	_close_help()
+	if _tween_entrada:
+		_tween_entrada.kill()
+		_tween_entrada = null
+		_aplicar_entrada_final()
+	_decoracao_modo("home")
 	history_open = false
 	map_open = false
 	modal_open = false
@@ -278,6 +540,7 @@ func _clear() -> void:
 		child.queue_free()
 
 func _place_panel(centered: bool) -> void:
+	panel.set_meta("sem_moldura", false)
 	panel.custom_minimum_size = Vector2(440, 640)
 	panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER if centered else Control.PRESET_TOP_LEFT)
 	panel.offset_left = -220 if centered else 36
@@ -288,6 +551,7 @@ func _place_panel(centered: bool) -> void:
 ## Modal centrado de tamanho fixo (histórico, ajustes): não muda entre páginas.
 func _place_modal(modal_size: Vector2) -> void:
 	_place_panel(true)
+	_decoracao_modo("modal")
 	modal_open = true
 	panel.custom_minimum_size = modal_size
 	panel.offset_left = -modal_size.x * 0.5
@@ -408,16 +672,37 @@ func _create_version_link() -> void:
 	var spacer := Control.new()
 	spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	content.add_child(spacer)
+	var filete := Identidade.filete_centrado()
+	filete.custom_minimum_size = Vector2(264, 1)
+	filete.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	content.add_child(filete)
 	version_link = Button.new()
 	version_link.text = version_text
 	version_link.tooltip_text = "Ver o histórico"
 	version_link.flat = true
-	version_link.add_theme_font_size_override("font_size", 13)
-	version_link.add_theme_color_override("font_color", Color(0.72, 0.73, 0.66))
-	version_link.add_theme_color_override("font_hover_color", Color.WHITE)
+	version_link.add_theme_font_override("font", Identidade.fonte_numeros(600))
+	version_link.add_theme_font_size_override("font_size", 18)
+	version_link.add_theme_color_override("font_color", Color("c9b98f"))
+	version_link.add_theme_color_override("font_hover_color", Identidade.CREME)
+	version_link.add_theme_color_override("font_focus_color", Identidade.CREME)
 	version_link.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-	version_link.custom_minimum_size.y = 24
+	version_link.custom_minimum_size.y = 26
 	content.add_child(version_link)
+	# O sublinhado de ouro só aparece com o mouse ou o foco (Button não tem nativo).
+	var sublinhado := ColorRect.new()
+	sublinhado.color = Color(Identidade.OURO, 0.8)
+	sublinhado.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
+	sublinhado.offset_left = 8.0
+	sublinhado.offset_right = -8.0
+	sublinhado.offset_top = -3.0
+	sublinhado.offset_bottom = -2.0
+	sublinhado.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	sublinhado.visible = false
+	version_link.add_child(sublinhado)
+	for sinal in [version_link.mouse_entered, version_link.focus_entered]:
+		sinal.connect(func() -> void: sublinhado.visible = true)
+	for sinal in [version_link.mouse_exited, version_link.focus_exited]:
+		sinal.connect(func() -> void: sublinhado.visible = version_link.has_focus())
 	version_link.pressed.connect(_open_history)
 
 func _label(text: String, size: int = 18) -> Label:
@@ -447,19 +732,114 @@ func _home() -> void:
 	camera.fov = 55
 	Audio.parar_narracao()
 	_clear()
-	_label("Myths’ Valley", 46)
-	_label("Um vale cheio de histórias.", 21)
-	_button("JOGAR", _vagas).grab_focus()
-	_button("EXPLORAR", _explorar)
-	_button("PERSONAGENS", _abrir_personagens)
-	_button("SOBRE", _credits)
-	_button("SAIR", _confirm_exit).theme_type_variation = &"BotaoNegativo"
+	_marca()
+	_placa("JOGAR", _vagas).grab_focus()
+	_placa("EXPLORAR", _explorar)
+	_placa("PERSONAGENS", _abrir_personagens)
+	_placa("SOBRE", _credits)
+	_placa("SAIR", _confirm_exit, true)
 	if not history_entries.is_empty():
 		_create_version_link()
 	_set_home_corner(true)
 
+
+## O alto do retábulo: o logotipo em talha com um halo que respira, a linha do lugar e
+## do ano entre filetes, o lema e o divisor de azulejo.
+func _marca() -> void:
+	var logo := TextureRect.new()
+	logo.texture = load(Identidade.LOGO) as Texture2D
+	logo.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+	logo.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	logo.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	logo.custom_minimum_size = Vector2(340, 98)
+	logo.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	logo.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	content.add_child(logo)
+	var halo := TextureRect.new()
+	halo.texture = Identidade.brilho(Color(Identidade.OURO, 1.0), 128)
+	halo.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	halo.material = Identidade.aditivo()
+	halo.show_behind_parent = true
+	halo.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	halo.set_anchors_preset(Control.PRESET_FULL_RECT)
+	halo.offset_left = -30.0
+	halo.offset_right = 30.0
+	halo.offset_top = -22.0
+	halo.offset_bottom = 22.0
+	halo.modulate.a = 0.14
+	logo.add_child(halo)
+	var respira := halo.create_tween().set_loops().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	respira.tween_property(halo, "modulate:a", 0.2, 2.5)
+	respira.tween_property(halo, "modulate:a", 0.1, 2.5)
+	var lugar := HBoxContainer.new()
+	lugar.add_theme_constant_override("separation", 10)
+	lugar.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	content.add_child(lugar)
+	lugar.add_child(Identidade.filete(false))
+	var nome := Identidade.rotulo("Bom Jesus dos Pobres · 1887", 14, Identidade.CREME)
+	nome.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
+	lugar.add_child(nome)
+	lugar.add_child(Identidade.filete(true))
+	var lema := Label.new()
+	lema.text = "Um vale cheio de histórias."
+	lema.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	lema.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	lema.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_ITALICO, 500))
+	lema.add_theme_font_size_override("font_size", 24)
+	lema.add_theme_color_override("font_color", Color(Identidade.TEXTO, 0.9))
+	content.add_child(lema)
+	content.add_child(Identidade.divisor())
+
+
+## Placa de ação do retábulo: Cinzel sobre laca chanfrada, com as rosas dos ventos
+## girando no item em foco. Com `puxa_foco`, o mouse em cima já traz o foco — hover e
+## foco viram um estado só, com um único marcador na tela (só na home; na confirmação
+## de sair, passar o mouse por SAIR não pode roubar o Enter de CANCELAR).
+func _placa(texto: String, acao: Callable, negativa := false, puxa_foco := true) -> Button:
+	var placa := Button.new()
+	placa.text = texto
+	placa.theme_type_variation = &"BotaoCronicaNegativo" if negativa else &"BotaoCronica"
+	placa.custom_minimum_size.y = 46
+	content.add_child(placa)
+	for lado in [false, true]:
+		var suporte := Control.new()
+		suporte.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		if lado:
+			suporte.set_anchors_preset(Control.PRESET_TOP_RIGHT)
+			suporte.offset_left = -42.0
+			suporte.offset_right = -16.0
+		else:
+			suporte.offset_left = 16.0
+			suporte.offset_right = 42.0
+		suporte.offset_top = 10.0
+		suporte.offset_bottom = 36.0
+		suporte.visible = false
+		placa.add_child(suporte)
+		var rosa := TextureRect.new()
+		rosa.texture = load(Identidade.ROSA) as Texture2D
+		rosa.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+		rosa.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		rosa.size = Vector2(26, 26)
+		rosa.pivot_offset = Vector2(13, 13)
+		rosa.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		suporte.add_child(rosa)
+		var giro := rosa.create_tween().set_loops()
+		giro.tween_property(rosa, "rotation", TAU * (-1.0 if lado else 1.0), 26.0).from(0.0)
+		placa.focus_entered.connect(func() -> void: suporte.visible = true)
+		placa.focus_exited.connect(func() -> void: suporte.visible = false)
+	placa.focus_entered.connect(func() -> void: Audio.efeito("ui_hover"))
+	if puxa_foco:
+		placa.mouse_entered.connect(placa.grab_focus)
+	else:
+		placa.mouse_entered.connect(func() -> void: Audio.efeito("ui_hover"))
+	placa.pressed.connect(func() -> void:
+		Audio.efeito("ui_confirmar")
+		acao.call())
+	return placa
+
 func _open_map() -> void:
 	_clear()
+	_decoracao_modo("mapa")
 	map_open = true
 	panel.custom_minimum_size = Vector2(440, 0)
 	panel.set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT)
@@ -681,6 +1061,9 @@ func _render_history() -> void:
 	var previous := Button.new()
 	previous.text = "‹"
 	previous.tooltip_text = "Página anterior"
+	# As setas ‹ › não existem na Cinzel: as duas ficam na fonte do corpo.
+	previous.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_TEXTO, 600))
+	previous.add_theme_font_size_override("font_size", 24)
 	previous.custom_minimum_size = Vector2(72, 40)
 	previous.disabled = history_index == 0
 	previous.pressed.connect(func(): _change_history(-1))
@@ -695,6 +1078,8 @@ func _render_history() -> void:
 	var next := Button.new()
 	next.text = "›"
 	next.tooltip_text = "Próxima página"
+	next.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_TEXTO, 600))
+	next.add_theme_font_size_override("font_size", 24)
 	next.custom_minimum_size = Vector2(72, 40)
 	next.disabled = history_index == history_entries.size() - 1
 	next.pressed.connect(func(): _change_history(1))
@@ -708,10 +1093,27 @@ func _render_history() -> void:
 
 func _confirm_exit() -> void:
 	_clear()
-	_label("Sair do jogo?", 30)
-	_label("Deseja encerrar Myths’ Valley?", 18)
-	_button("CANCELAR", _home).grab_focus()
-	_button("SAIR", func(): get_tree().quit()).theme_type_variation = &"BotaoNegativo"
+	_marca()
+	var pergunta := Label.new()
+	pergunta.text = "Sair do jogo?"
+	pergunta.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	pergunta.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_TITULO, 600, 3))
+	pergunta.add_theme_font_size_override("font_size", 26)
+	pergunta.add_theme_color_override("font_color", Identidade.CREME)
+	content.add_child(pergunta)
+	var frase := Label.new()
+	frase.text = "Deseja encerrar Myths’ Valley?"
+	frase.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	frase.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	frase.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_ITALICO, 500))
+	frase.add_theme_font_size_override("font_size", 22)
+	frase.add_theme_color_override("font_color", Identidade.TEXTO)
+	content.add_child(frase)
+	var folga := Control.new()
+	folga.custom_minimum_size.y = 12
+	content.add_child(folga)
+	_placa("CANCELAR", _home, false, false).grab_focus()
+	_placa("SAIR", func() -> void: get_tree().quit(), true, false)
 
 ## AJUSTAR (painel_ajustes.gd) no modal central. `tab`: Geral, Sons do vale ou Cenário.
 func _options(tab: int = 0) -> void:
@@ -727,6 +1129,7 @@ func _options(tab: int = 0) -> void:
 ## padrão dos modais: Esc, ×, FECHAR ou clique fora voltam à Home (_clear o libera).
 func _abrir_personagens() -> void:
 	_clear()
+	_decoracao_modo("modal")
 	modal_open = true
 	panel.visible = false
 	var painel := PainelPersonagens.new()
@@ -871,31 +1274,64 @@ func _highlighted(text: String) -> void:
 	content.add_child(rich)
 
 
+## A travessia vira cinema: faixas pretas, capítulo entre losangos, legenda centrada na
+## base sobre o vale e o fio de ouro medindo cada fala (o mesmo fio da carga).
 func _intro() -> void:
 	_clear()
-	chapter = _label("A travessia", 30)
-	caption = _label("", 25)
-	caption.custom_minimum_size.y = 300
-	line_bar = ProgressBar.new()
-	line_bar.show_percentage = false
-	line_bar.max_value = 1.0
-	line_bar.step = 0.0
-	line_bar.custom_minimum_size.y = 6
-	var bar_back := StyleBoxFlat.new()
-	bar_back.bg_color = Color(1, 1, 1, 0.12)
-	bar_back.set_corner_radius_all(3)
-	var bar_fill := StyleBoxFlat.new()
-	bar_fill.bg_color = Color("e2c47f")
-	bar_fill.set_corner_radius_all(3)
-	line_bar.add_theme_stylebox_override("background", bar_back)
-	line_bar.add_theme_stylebox_override("fill", bar_fill)
-	content.add_child(line_bar)
-	_button("CONTINUAR", _next_line)
-	_button("PULAR", _start_game)
+	_place_legenda()
+	_decoracao_modo("travessia")
+	var linha := HBoxContainer.new()
+	linha.add_theme_constant_override("separation", 12)
+	linha.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	content.add_child(linha)
+	linha.add_child(Identidade.filete(false))
+	linha.add_child(Identidade.losango())
+	chapter = Identidade.rotulo("A travessia", 14, Identidade.OURO)
+	linha.add_child(chapter)
+	linha.add_child(Identidade.losango())
+	linha.add_child(Identidade.filete(true))
+	caption = Label.new()
+	caption.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	caption.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	caption.custom_minimum_size.y = 108
+	caption.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_ITALICO, 500))
+	caption.add_theme_font_size_override("font_size", 28)
+	caption.add_theme_color_override("font_color", Identidade.TEXTO)
+	caption.add_theme_constant_override("line_spacing", -2)
+	Identidade.sombra_texto(caption)
+	content.add_child(caption)
+	var acoes := HBoxContainer.new()
+	acoes.alignment = BoxContainer.ALIGNMENT_END
+	acoes.add_theme_constant_override("separation", 24)
+	content.add_child(acoes)
+	for par in [["CONTINUAR", _next_line], ["PULAR", _start_game]]:
+		var botao := Button.new()
+		botao.text = par[0]
+		botao.theme_type_variation = &"BotaoLegenda"
+		# Sem foco, como sempre: Enter, Espaço e E avançam; Esc pula (_unhandled_key_input).
+		botao.focus_mode = Control.FOCUS_NONE
+		botao.mouse_entered.connect(func() -> void: Audio.efeito("ui_hover"))
+		botao.pressed.connect(func() -> void:
+			Audio.efeito("ui_confirmar")
+			(par[1] as Callable).call())
+		acoes.add_child(botao)
+	line_bar = fio_base
+	line_bar.value = 1.0
 	Audio.narrar_abertura()
 	lines = IdiomaMenu.campo(dialog_data, "travessia", [])
 	line_index = -1
 	_next_line()
+
+
+## Painel sem moldura, centrado na base da tela, para a legenda da travessia.
+func _place_legenda() -> void:
+	panel.set_meta("sem_moldura", true)
+	panel.custom_minimum_size = Vector2(900, 0)
+	panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER_BOTTOM)
+	panel.offset_left = -450.0
+	panel.offset_right = 450.0
+	panel.offset_top = -218.0
+	panel.offset_bottom = -30.0
 
 func _next_line() -> void:
 	line_index += 1

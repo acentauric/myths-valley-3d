@@ -9,6 +9,7 @@ extends Control
 
 const TemaMenu = preload("res://scripts/prototipo_3d/tema_menu.gd")
 const PainelAjustes = preload("res://scripts/prototipo_3d/painel_ajustes.gd")
+const Identidade = preload("res://scripts/prototipo_3d/identidade.gd")
 
 ## Pedido de fechar (×, FECHAR): o anfitrião volta à Home e libera o painel.
 signal fechado
@@ -50,12 +51,20 @@ func abrir(tema: Theme) -> void:
 	_voz = AudioStreamPlayer.new()
 	add_child(_voz)
 	var caixa := PanelContainer.new()
-	caixa.add_theme_stylebox_override("panel", TemaMenu.estilo_painel())
+	# O fundo vem da moldura de talha, como nos outros modais; o stylebox só guarda as
+	# margens (28/22, as mesmas do estilo_painel).
+	var vazio := StyleBoxEmpty.new()
+	vazio.content_margin_left = 28
+	vazio.content_margin_right = 28
+	vazio.content_margin_top = 22
+	vazio.content_margin_bottom = 22
+	caixa.add_theme_stylebox_override("panel", vazio)
 	caixa.custom_minimum_size = TAMANHO
 	caixa.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
 	caixa.grow_horizontal = Control.GROW_DIRECTION_BOTH
 	caixa.grow_vertical = Control.GROW_DIRECTION_BOTH
 	add_child(caixa)
+	Identidade.emoldurar(caixa)
 	var coluna := VBoxContainer.new()
 	coluna.add_theme_constant_override("separation", 10)
 	caixa.add_child(coluna)

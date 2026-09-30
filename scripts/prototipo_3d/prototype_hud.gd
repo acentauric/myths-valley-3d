@@ -10,6 +10,7 @@ const ClockIcon = preload("res://scripts/prototipo_3d/clock_icon.gd")
 const HudIcon = preload("res://scripts/prototipo_3d/hud_icon.gd")
 const TemaMenu = preload("res://scripts/prototipo_3d/tema_menu.gd")
 const TelaCarregamento = preload("res://scripts/prototipo_3d/tela_carregamento.gd")
+const Identidade = preload("res://scripts/prototipo_3d/identidade.gd")
 const PainelAjustes = preload("res://scripts/prototipo_3d/painel_ajustes.gd")
 
 
@@ -580,7 +581,8 @@ func _create_corner_buttons() -> void:
 	style_icon.definir(Estilo.tripo())
 	var style: Array = BotaoCanto.criar(_root, top, style_icon)
 	_style_hint = style[1]
-	_style_hint.add_theme_font_size_override("font_size", 13)
+	# Em Cormorant (a fonte das dicas da identidade), 13 px seriam ilegíveis.
+	_style_hint.add_theme_font_size_override("font_size", 16)
 	(style[0] as Button).focus_mode = Control.FOCUS_NONE
 
 	top += BotaoCanto.ESPACO
@@ -690,16 +692,7 @@ func open_menu_confirm() -> void:
 			_close_menu_confirm(false))
 	_menu_confirm.add_child(shade)
 	var box := PanelContainer.new()
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.055, 0.09, 0.075, 0.96)
-	style.border_color = Color("b49a60")
-	style.set_border_width_all(1)
-	style.set_corner_radius_all(14)
-	style.content_margin_left = 28
-	style.content_margin_right = 28
-	style.content_margin_top = 22
-	style.content_margin_bottom = 22
-	box.add_theme_stylebox_override("panel", style)
+	box.add_theme_stylebox_override("panel", TemaMenu.estilo_painel())
 	box.custom_minimum_size = Vector2(440, 0)
 	box.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
 	box.grow_horizontal = Control.GROW_DIRECTION_BOTH
@@ -710,7 +703,9 @@ func open_menu_confirm() -> void:
 	box.add_child(column)
 	var title := Label.new()
 	title.text = "Voltar ao menu?"
-	title.add_theme_font_size_override("font_size", 28)
+	title.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_TITULO, 600, 2))
+	title.add_theme_font_size_override("font_size", 24)
+	title.add_theme_color_override("font_color", Identidade.CREME)
 	column.add_child(title)
 	var text := Label.new()
 	text.text = "O passeio termina aqui. Ao entrar de novo, o dia recomeça."
