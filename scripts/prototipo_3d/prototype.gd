@@ -133,6 +133,9 @@ func _ready() -> void:
 		await world.pronto
 		set_process(true)
 		player.set_physics_process(true)
+	# O menu também move o relógio visual. A partida começa sua própria contagem;
+	# quando houver save, `restaurar_do_save` devolve a contagem guardada.
+	Dia.horas_decorridas = 0.0
 	# Vindo do menu, o relógio esperou a montagem na hora_inicial (abertura._start_game).
 	Dia.congelado_na_carga = false
 	var spawn: Vector3 = _ponto_de_chegada()
@@ -765,6 +768,7 @@ func estado_para_salvar() -> Dictionary:
 		"jogador": [player.global_position.x, player.global_position.y, player.global_position.z],
 		"giro": player.visual.rotation.y,
 		"hora": Dia.hora,
+		"horas_decorridas": Dia.horas_decorridas,
 		"visitados": _visited.keys(),
 	}
 	# AS FILAS DOS OUTROS MORADORES, e os alvos que já caíram.
@@ -808,6 +812,7 @@ func restaurar_do_save(estado: Dictionary) -> void:
 		player.global_position = world.ground_position(ponto, 0.07) if world.is_on_land(ponto) else ponto
 		player.velocity = Vector3.ZERO
 		player.visual.rotation.y = float(estado.get("giro", player.visual.rotation.y))
+	Dia.horas_decorridas = maxf(0.0, float(estado.get("horas_decorridas", 0.0)))
 	if estado.has("hora"):
 		Dia.definir_hora(float(estado["hora"]))
 	_visited.clear()

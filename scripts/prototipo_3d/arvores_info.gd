@@ -18,6 +18,7 @@ const DISTANCIA_PARA_GOLPEAR := 2.45
 const DISTANCIA_DE_APROXIMACAO := 1.45
 const GOLPES_PARA_CORTAR := 3
 const CUSTO_DO_GOLPE := 50.0
+const HORAS_PARA_REGENERAR := 24.0
 
 var _fichas: Dictionary = {}
 var _acoes: Dictionary = {}
@@ -35,6 +36,7 @@ var _coqueiro_pendente := -1
 var _coqueiro_em_golpe := -1
 var _golpes_restantes_na_acao := 0
 var _stamina := 100.0
+var _proxima_regeneracao := INF
 var _destino_do_coqueiro := Vector3.INF
 var _aproximando_do_coqueiro := false
 var _animador: Node
@@ -88,8 +90,8 @@ func configurar(world: Node3D, jogador: Node3D, hud) -> void:
 	_criar_balao_vida(hud.map_layer())
 	_stamina = float(_jogador.call("vigor_atual"))
 	_jogador.connect("vigor_mudou", Callable(self, "_ao_vigor_mudar"))
-	if not Relogio.dia_comecou.is_connected(_ao_comecar_dia):
-		Relogio.dia_comecou.connect(_ao_comecar_dia)
+	if not Dia.hora_mudou.is_connected(_ao_hora_mudar):
+		Dia.hora_mudou.connect(_ao_hora_mudar)
 	_atualizar_stamina_hud()
 	_animador = _jogador.get("animator") as Node
 	if _animador != null and _animador.has_signal("golpe_concluido"):
@@ -330,7 +332,8 @@ func _ao_golpe_concluido() -> void:
 	if coqueiro["golpes"] >= GOLPES_PARA_CORTAR:
 		if bool(_world.call("cortar_coqueiro", coqueiro["pos"])):
 			coqueiro["cortado"] = true
-			coqueiro["dia_corte"] = Relogio.dia_absoluto()
+			coqueiro["regenera_em_horas"] = Dia.horas_decorridas + HORAS_PARA_REGENERAR
+			_proxima_regeneracao = minf(_proxima_regeneracao, float(coqueiro["regenera_em_horas"]))
 			if not Inventario.adicionar("madeira_de_coqueiro"):
 				_hud.set_notice(str(IdiomaMenu.campo(_acoes.get("coqueiro", {}), "inventario_cheio")))
 			Audio.efeito("arvore_cai")
@@ -348,7 +351,7 @@ func estado_para_salvar() -> Array[Dictionary]:
 		if not bool(coqueiro.get("cortado", false)):
 			continue
 		var pos: Vector3 = coqueiro["pos"]
-		cortados.append({"pos": [pos.x, pos.y, pos.z], "dia_corte": int(coqueiro.get("dia_corte", Relogio.dia_absoluto()))})
+		cortados.append({"pos": [pos.x, pos.y, pos.z], "regenera_em_horas": float(coqueiro.get("regenera_em_horas", Dia.horas_decorridas + HORAS_PARA_REGENERAR))})
 	return cortados
 
 
@@ -360,9 +363,12 @@ func restaurar_do_save(cortados: Array) -> void:
 		if coordenadas.size() != 3:
 			continue
 		var pos := Vector3(float(coordenadas[0]), float(coordenadas[1]), float(coordenadas[2]))
-		var dia_corte := int(registro.get("dia_corte", Relogio.dia_absoluto()))
-		# Um save antigo pode ter ficado aberto além da duração da árvore.
-		if Relogio.dia_absoluto() > dia_corte:
+		# Saves anteriores guardavam só o dia do calendário 2D, que não avança
+		# ao anoitecer no vale 3D. Sem a hora do corte, contam 24h a partir da carga.
+		if not registro.has("regenera_em_horas") and Relogio.dia_absoluto() > int(registro.get("dia_corte", Relogio.dia_absoluto())):
+			continue
+		var regenera_em_horas := float(registro.get("regenera_em_horas", Dia.horas_decorridas + HORAS_PARA_REGENERAR))
+		if Dia.horas_decorridas + 0.0001 >= regenera_em_horas:
 			continue
 		var indice := _indice_coqueiro(pos)
 		if indice < 0 or not bool(_world.call("cortar_coqueiro", pos)):
@@ -370,22 +376,33 @@ func restaurar_do_save(cortados: Array) -> void:
 		var coqueiro: Dictionary = _coqueiros[indice]
 		coqueiro["golpes"] = GOLPES_PARA_CORTAR
 		coqueiro["cortado"] = true
-		coqueiro["dia_corte"] = dia_corte
+		coqueiro["regenera_em_horas"] = regenera_em_horas
 		_coqueiros[indice] = coqueiro
+		_proxima_regeneracao = minf(_proxima_regeneracao, regenera_em_horas)
 		_definir_ficha_cortada(pos, true)
 
 
-func _ao_comecar_dia(_dia: int, _estacao: int, _ano: int) -> void:
-	var hoje := Relogio.dia_absoluto()
+func _ao_hora_mudar(_hora: float) -> void:
+	if Dia.horas_decorridas + 0.0001 >= _proxima_regeneracao:
+		_regenerar_coqueiros()
+
+
+func _regenerar_coqueiros() -> void:
+	_proxima_regeneracao = INF
 	for indice in _coqueiros.size():
 		var coqueiro: Dictionary = _coqueiros[indice]
-		if not bool(coqueiro.get("cortado", false)) or hoje <= int(coqueiro.get("dia_corte", hoje)):
+		if not bool(coqueiro.get("cortado", false)):
+			continue
+		var prazo := float(coqueiro.get("regenera_em_horas", Dia.horas_decorridas + HORAS_PARA_REGENERAR))
+		if Dia.horas_decorridas + 0.0001 < prazo:
+			_proxima_regeneracao = minf(_proxima_regeneracao, prazo)
 			continue
 		if not bool(_world.call("restaurar_coqueiro", coqueiro["pos"])):
+			_proxima_regeneracao = minf(_proxima_regeneracao, Dia.horas_decorridas + 1.0 / 60.0)
 			continue
 		coqueiro["golpes"] = 0
 		coqueiro["cortado"] = false
-		coqueiro.erase("dia_corte")
+		coqueiro.erase("regenera_em_horas")
 		_coqueiros[indice] = coqueiro
 		_definir_ficha_cortada(coqueiro["pos"], false)
 

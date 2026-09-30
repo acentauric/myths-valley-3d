@@ -27,6 +27,9 @@ const POR := 18.0
 const INICIO_DO_DIA := 6.5
 
 var hora: float = 9.0
+## Horas efetivamente transcorridas no relógio do jogo, inclusive após a meia-noite.
+## `hora` sozinha volta a zero e não serve para esperas de 24 horas.
+var horas_decorridas: float = 0.0
 ## Começa em "Normal" (2), e não em "Rápida": ver `VELOCIDADES`.
 var velocidade: int = 2
 ## Hora em que o jogo começa (AJUSTAR → Cenário e tempo).
@@ -57,7 +60,7 @@ func _process(delta: float) -> void:
 	var segundos_por_hora: float = VELOCIDADES[velocidade]
 	if pausado or congelado_na_carga or segundos_por_hora <= 0.0:
 		return
-	definir_hora(hora + delta / segundos_por_hora)
+	avancar(delta / segundos_por_hora)
 
 
 func definir_hora(nova: float) -> void:
@@ -98,6 +101,8 @@ func _espelhar_no_calendario() -> void:
 
 
 func avancar(horas: float) -> void:
+	if horas > 0.0:
+		horas_decorridas += horas
 	definir_hora(hora + horas)
 
 
