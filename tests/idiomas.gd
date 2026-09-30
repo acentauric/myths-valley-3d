@@ -60,6 +60,8 @@ const FALTAM_TRADUCAO := {
 		"as obras do 2D: nome, resumo e compartimento de cada uma, da varanda ao trapiche. TRADUÇÃO COM O RAMON",
 	"res://data/cartas/cartas.json":
 		"as cartas do 2D: nome, resumo, a prosa do encontro e o aviso da cobrança do pacto. TRADUÇÃO COM O RAMON",
+	"res://data/pesca.json":
+		"o que se lê pescando, do Mundo._pescar do 2D, mais a fisgada escrita no aviso. TRADUÇÃO COM O RAMON",
 	"res://data/achados.json":
 		"o que se lê ao achar cordel, sinal e carta, do Mundo do 2D, mais a fala do segundo E do pacto. TRADUÇÃO COM O RAMON",
 	"res://data/luta.json":

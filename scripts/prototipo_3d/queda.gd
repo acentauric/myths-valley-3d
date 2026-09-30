@@ -99,8 +99,11 @@ func _ao_cair() -> void:
 	_levar_para_casa()
 	Energia.desmaiar()
 	Vida.dormir()
+	var horas_ate_amanha := fposmod(float(Relogio.HORA_DE_ACORDAR) - Dia.hora, 24.0)
+	if horas_ate_amanha < 0.001:
+		horas_ate_amanha = 24.0
 	Relogio.dormir()
-	Dia.definir_hora(float(Relogio.HORA_DE_ACORDAR))
+	Dia.avancar(horas_ate_amanha)
 	# SALVA NA VIRADA, como o 2D salva ao dormir: depois do dia novo, para a
 	# partida guardada ser a da manhã e não a da noite. Sem vaga, não salva.
 	Partida.salvar()

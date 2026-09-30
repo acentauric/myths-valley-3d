@@ -18,6 +18,7 @@ const IdiomaMenu = preload("res://scripts/prototipo_3d/idioma_menu.gd")
 const PainelVale = preload("res://scripts/prototipo_3d/painel_vale.gd")
 const BancadasVale = preload("res://scripts/prototipo_3d/bancadas_vale.gd")
 const AchadosVale = preload("res://scripts/prototipo_3d/achados_vale.gd")
+const PescaVale = preload("res://scripts/prototipo_3d/pesca_vale.gd")
 const Atalhos = preload("res://scripts/prototipo_3d/atalhos.gd")
 const CameraMouse = preload("res://scripts/prototipo_3d/camera_mouse.gd")
 const Recursos3D = preload("res://scripts/prototipo_3d/recursos_3d.gd")
@@ -81,6 +82,7 @@ var placas
 ## A aba pedida no último `abrir_o_painel`, entregue à abertura crua.
 var _aba_pedida := 0
 var achados	# achados_vale.gd — cordéis, sinais e cartas no chão
+var pesca	# pesca_vale.gd — a vara na mão e o E na beira da água
 
 
 func _enter_tree() -> void:
@@ -135,6 +137,9 @@ func _ready() -> void:
 		await world.pronto
 		set_process(true)
 		player.set_physics_process(true)
+	# O menu também move o relógio visual. A partida começa sua própria contagem;
+	# quando houver save, `restaurar_do_save` devolve a contagem guardada.
+	Dia.horas_decorridas = 0.0
 	# Vindo do menu, o relógio esperou a montagem na hora_inicial (abertura._start_game).
 	Dia.congelado_na_carga = false
 	var spawn: Vector3 = _ponto_de_chegada()
@@ -468,6 +473,15 @@ func _montar_moradores(spawn: Vector3) -> void:
 	queda.name = "Queda"
 	add_child(queda)
 	queda.configurar(world, player, hud)
+	# A pesca (pesca_vale.gd). Entra ANTES dos achados: com a vara na mão, o E
+	# ainda pega o cordel do píer. Ferrar o peixe escuta em `_input`, e esse
+	# vem antes de tudo — a janela é de três quartos de segundo.
+	pesca = PescaVale.new()
+	pesca.name = "Pesca"
+	add_child(pesca)
+	pesca.configurar(world, player, hud)
+	# As bancadas sem modelo ainda (a oficina): caixa cinza no lugar delas.
+	BancadasVale.montar_as_provisorias(world, self)
 	# Cordéis, sinais e cartas no chão (achados_vale.gd). Entra ANTES da luta,
 	# que assim recebe o E primeiro quando há bicho perto; é configurado depois
 	# dela, porque a Caipora fica longe do ninho do caititu.
@@ -804,6 +818,7 @@ func estado_para_salvar() -> Dictionary:
 		"jogador": [player.global_position.x, player.global_position.y, player.global_position.z],
 		"giro": player.visual.rotation.y,
 		"hora": Dia.hora,
+		"horas_decorridas": Dia.horas_decorridas,
 		"visitados": _visited.keys(),
 	}
 	# AS FILAS DOS OUTROS MORADORES, e os alvos que já caíram.
@@ -852,6 +867,7 @@ func restaurar_do_save(estado: Dictionary) -> void:
 		player.global_position = world.ground_position(ponto, 0.07) if world.is_on_land(ponto) else ponto
 		player.velocity = Vector3.ZERO
 		player.visual.rotation.y = float(estado.get("giro", player.visual.rotation.y))
+	Dia.horas_decorridas = maxf(0.0, float(estado.get("horas_decorridas", 0.0)))
 	if estado.has("hora"):
 		Dia.definir_hora(float(estado["hora"]))
 	_visited.clear()

@@ -34,7 +34,7 @@ crédito do Tripo e exigem o custo aprovado **antes** de gerar.
 
 | Fase deste plano | Issues |
 |---|---|
-| Fase 2 — sistemas | ~~#10 Vida~~ (feita) · #11 receitas, cozinha, oficina e pesca · ~~#12 cartas e coleção~~ (feita) · #13 Povoado · ~~#14 luta~~ (feita) · #15 obras e venda (a venda e as obras com efeito saíram; a casa que muda espera #26 e #27) |
+| Fase 2 — sistemas | ~~#10 Vida~~ (feita) · ~~#11 receitas, cozinha, oficina e pesca~~ (feita) · ~~#12 cartas e coleção~~ (feita) · #13 Povoado · ~~#14 luta~~ (feita) · #15 obras e venda (a venda e as obras com efeito saíram; a casa que muda espera #26 e #27) |
 | Fase 2.5 — geografia | #22 chapada e vizinhos · #23 rio, vau e lagoa · #24 mata e serra · #25 fazenda e ruínas |
 | Fase 3 — missões e enredo | **#1** (jam) · #31 capítulos 6 e 7 |
 | Fase 4 — salvar | ~~#7~~ (feita) |
@@ -657,6 +657,17 @@ era a penúltima — era pré-requisito da 2ᵃ.
 >   depois de `Obras`, `Cozinha` e `Oficina`; no vale subia antes, e o `conferir()`
 >   dele encontrava o catálogo de obras vazio — nenhum plano de obra "de começo"
 >   nascia sabido. A ordem agora é a do 2D.
+>
+> **Pesca, cozinha e oficina saíram** ([#11](https://github.com/acentauric/myths-valley/issues/11)).
+> A pesca (`pesca_vale.gd`) é o `Mundo._pescar` do 2D no vale: a vara na mão, a
+> água à frente e o E; a água é doce na calha de um rio do mapa geográfico e mar
+> no resto, e é ela que decide o tanque do `Pesca` — traíra só no rio, robalo só no
+> mar. A fisgada afunda a bóia e acende o "!", e ferrar escuta a tecla antes de
+> todo mundo. A COZINHA é o fogo do terreiro da Casa de taipa, que faz as vezes do
+> fogão até haver cômodo (#26); a OFICINA é uma bancada provisória em caixa cinza
+> na beira do roçado, até o modelo dela (#27). Os sons são os da tabela do 2D —
+> água no lance, o "regar" na fisgada, "pegar" no peixe —, e a tabela própria é a
+> #16.
 
 É a fase mais barata em relação ao que entrega, e a que mais precisa da regra
 do topo: **a interface do 3D não é substituída, é acrescida.** Toda tela do 2D

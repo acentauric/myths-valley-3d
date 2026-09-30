@@ -19,6 +19,12 @@ const FOLGA := 3.0
 ## `raio` fixo onde não há peça que diga a largura (o mirante, o poço, o píer).
 const BANCADAS := {
 	"venda": {"ancora": "Venda do Bar", "peca": "venda"},
+	# O FOGO DO TERREIRO faz as vezes do fogão de barro (#11). No 2D o fogão
+	# fica dentro da casa, e o vale não tem cômodo (#26); a fogueira é do
+	# terreiro da própria Casa de taipa, e cozinhar nela é o que a issue pede
+	# — o sistema funcionando antes de a lareira ter modelo. Quando houver
+	# cômodo, a cozinha vai para dentro e esta linha muda de âncora.
+	"cozinha": {"ancora": "Fogueira", "raio": 3.5},
 }
 
 ## ONDE SE TOCA OBRA (#15): id da construção, como o `obras.json` e o
@@ -32,6 +38,11 @@ const BANCADAS := {
 ## no save. Decisão do usuário: obra com efeito, sem esperar a arte.
 const OBRAS := {
 	"casa": {"ancora": "Casa de taipa", "peca": "casa_taipa"},
+	# A OFICINA É PROVISÓRIA (#11): a construção dela é do Tripo (#27), e até
+	# ela chegar a bancada é uma caixa cinza na beira do roçado — onde a
+	# oficina fica no 2D. Serra tábua e torce corda, e a aba de obras dela vale
+	# para melhorar a própria oficina, como lá.
+	"oficina": {"ancora": "Roçado", "raio": 3.0, "provisoria": true},
 	"armazem": {"ancora": "Venda do Bar", "peca": "venda"},
 	"mirante": {"ancora": "Mirante", "raio": 8.0},
 	"poco": {"ancora": "Poço", "raio": 4.0},
@@ -39,9 +50,7 @@ const OBRAS := {
 }
 
 const FALTAM := {
-	"oficina": "a oficina é construção do roçado que o vale ainda não tem (#27); sem ela não há aba de oficina nem obra dela",
 	"canteiro": "o canteiro, onde se decidem as obras e que abate o material delas, também é do roçado (#27)",
-	"cozinha": "o fogão de barro fica dentro da casa, e o vale ainda não tem cômodo (#26)",
 	"oficio": "a casa de farinha, o engenho e a cabana de pesca são do roçado e do rio (#27)",
 	"forno_barro": "o forno do arraial ainda não foi posto no vale (#27)",
 	"monjolo": "o monjolo fica na beira do rio grande, que o vale ainda não tem (#23)",
@@ -91,5 +100,35 @@ static func obra_perto(world, ponto: Vector3) -> String:
 ## Liga no painel as abas do lugar onde o jogador está.
 static func aplicar(painel, world, ponto: Vector3) -> void:
 	painel.na_venda = perto(world, ponto, "venda")
-	painel.na_cozinha = false
+	painel.na_cozinha = perto(world, ponto, "cozinha")
 	painel.obra_em_foco = obra_perto(world, ponto)
+
+
+## Onde fica a bancada provisória, no chão.
+static func ponto_da_provisoria(world, qual: String) -> Vector3:
+	var bancada := _bancada(qual)
+	var onde: Vector3 = world.ancoras.get(str(bancada.get("ancora", "")), Vector3.INF)
+	return world.ground_position(onde, 0.0) if onde.is_finite() else Vector3.INF
+
+
+## AS BANCADAS PROVISÓRIAS NO CHÃO: uma caixa cinza onde a construção ainda não
+## tem modelo, para o jogador achar onde ela fica — o trato da criatura (#14):
+## a mecânica não espera o modelo, e o modelo entra depois sem tocar nela.
+## Sem colisão: é marca, não parede, e não pode fechar caminho no roçado.
+static func montar_as_provisorias(world, pai: Node) -> void:
+	for qual in OBRAS:
+		if not bool(OBRAS[qual].get("provisoria", false)):
+			continue
+		var ponto := ponto_da_provisoria(world, str(qual))
+		if not ponto.is_finite():
+			continue
+		var bancada := MeshInstance3D.new()
+		bancada.name = "Bancada_%s" % qual
+		var caixa := BoxMesh.new()
+		caixa.size = Vector3(1.4, 0.85, 0.7)
+		bancada.mesh = caixa
+		var tinta := StandardMaterial3D.new()
+		tinta.albedo_color = Color(0.52, 0.53, 0.52)
+		bancada.material_override = tinta
+		pai.add_child(bancada)
+		bancada.global_position = ponto + Vector3(0.0, 0.425, 0.0)

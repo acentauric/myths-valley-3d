@@ -30,9 +30,12 @@ extends SceneTree
 
 const RESERVA := "user://reserva_do_teste_de_salvamento"
 
-## O que do 3D entra no save pela mão do vale (`estado_para_salvar`).
+## O que do 3D entra no save pela mão do vale (`estado_para_salvar`), com a
+## MESMA chave lá. `horas_decorridas` é a conta que não volta a zero à
+## meia-noite, e é por ela que o coqueiro cortado sabe quando voltar (ver
+## arvores_info.gd): sem ela no save, o prazo guardado apontaria para longe.
 const DO_MUNDO := {
-	"Dia": ["hora"],
+	"Dia": ["hora", "horas_decorridas"],
 	# O CADERNO DO VALE não é guardado campo a campo: o `estado()` dele devolve
 	# os três de uma vez e o `restaurar()` os põe de volta, porque `ativas` é
 	# lista de dicionários e o alvo de cada missão é um Vector3 — coisa que o
@@ -158,6 +161,29 @@ func _run() -> void:
 	if caititu != null:
 		caititu.ferir(9999.0)
 	await _frames(2)
+	# O que DO_MUNDO diz que o vale guarda, o vale guarda de fato, com a mesma
+	# chave: declaração que ninguém confere é declaração que mente.
+	#
+	# A CHAVE PODE ESTAR UM NÍVEL ABAIXO, e o caderno de missões é o caso. Ele
+	# não entra campo a campo no estado do vale: `CadernoDoVale.estado()` devolve
+	# os três de uma vez sob a chave "caderno", porque `ativas` é lista de
+	# dicionários e o alvo de cada missão é um Vector3 — coisa que o save escreve
+	# como três números e que só ele sabe remontar. Espalhar os três no topo
+	# poria a conversão do lado errado.
+	#
+	# Então a procura desce um nível: o campo vale se está no estado do vale OU
+	# dentro de um dicionário dele. Mais fundo que isso não se procura — aninhar
+	# sem limite seria a declaração deixando de significar alguma coisa.
+	var do_vale: Dictionary = vale.estado_para_salvar()
+	for nome in DO_MUNDO:
+		for campo in DO_MUNDO[nome]:
+			var achou: bool = do_vale.has(campo)
+			if not achou:
+				for chave in do_vale:
+					var dentro = do_vale[chave]
+					if dentro is Dictionary and (dentro as Dictionary).has(campo):
+						achou = true
+			_conferir(achou, "DO_MUNDO diz que o vale guarda %s.%s, e o estado_para_salvar não tem '%s' nem em grupo nenhum dele" % [nome, campo, campo])
 	_conferir(partida.salvar(), "a vaga 1 não salvou")
 	_conferir(salvamento.existe_partida(1), "salvou e não há arquivo na vaga 1")
 	_conferir(int(salvamento.resumo(1).get("dia", 0)) == dia_salvo,
