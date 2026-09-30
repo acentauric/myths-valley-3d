@@ -145,7 +145,7 @@ func _ready() -> void:
 	hud.camera_lock_requested.connect(player.set_camera_locked)
 	world.house_interacted.connect(func(properties: Dictionary): hud.show_house_info(world.format_house_properties(properties)))
 	world.house_interaction_cleared.connect(hud.clear_house_info)
-	hud.house_info_close_requested.connect(world.clear_house_interaction)
+	hud.house_info_close_requested.connect(_fechar_info_aberta)
 	hud.menu_prompt_requested.connect(_ask_return_to_menu)
 	hud.menu_requested.connect(_return_to_menu)
 	hud.menu_cancelled.connect(_on_menu_cancelled)
@@ -495,6 +495,15 @@ func _montar_moradores(spawn: Vector3) -> void:
 			minimapa.definir_alvo(alvo))
 
 
+func _fechar_info_aberta() -> void:
+	var dono: Object = hud.get("painel_dono")
+	if dono != null and is_instance_valid(dono) and dono.has_method("fechar_painel"):
+		dono.call("fechar_painel")
+		return
+	world.clear_house_interaction()
+	hud.clear_house_info()
+
+
 func _process(_delta: float) -> void:
 	# Passos no ritmo do clipe do jogador (o intervalo sai da animação), com o som do
 	# chão sob os pés; nadando, uma braçada por meio ciclo do nado.
@@ -576,6 +585,10 @@ func _unhandled_key_input(event: InputEvent) -> void:
 	if _lendo():
 		return
 	if event is InputEventKey and event.pressed and not event.echo:
+		if event.physical_keycode == KEY_Q and not mapa.aberto:
+			player.alternar_machado_de_teste()
+			get_viewport().set_input_as_handled()
+			return
 		# O J E O L SAÍRAM DAQUI, junto com o Esc que fechava tela. Quem cuida
 		# de abrir e fechar tela é o `telas_do_vale.gd`, num lugar só, porque
 		# abrir uma tem de FECHAR A OUTRA — e cinco arquivos cada um cuidando da

@@ -97,6 +97,13 @@ var _nadando := false
 var _land_check := 0.0
 var _run_toggled := false
 var _ran_since_toggle := false
+var _machado_teste_na_mao := false
+var _machado_ancora: Node3D
+var _machado_pivo: Node3D
+var _machado_ancora_posicao_base := Vector3.ZERO
+var _machado_angulo_lateral := 0.0
+var _acao_golpe_restante := 0.0
+var _acao_golpe_espera_animacao := false
 
 func _ready() -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
@@ -165,6 +172,139 @@ func _ready() -> void:
 	camera.current = true
 	_apply_camera()
 
+func _process(delta: float) -> void:
+	_atualizar_machado_na_mao()
+	_atualizar_pose_machado(delta)
+
+
+func machado_na_mao() -> bool:
+	return _machado_teste_na_mao or Inventario.na_mao() == "machado"
+
+
+func alternar_machado_de_teste() -> void:
+	_machado_teste_na_mao = not _machado_teste_na_mao
+	_atualizar_machado_na_mao()
+
+
+func travar_acao_de_golpe(duracao: float, aguardar_animacao: bool) -> void:
+	_cancel_walk()
+	velocity.x = 0.0
+	velocity.z = 0.0
+	_acao_golpe_espera_animacao = aguardar_animacao
+	_acao_golpe_restante = maxf(duracao, 0.0) if aguardar_animacao else minf(maxf(duracao, 0.0), 0.55)
+	_jump_buffer_remaining = 0.0
+
+
+func liberar_acao_de_golpe() -> void:
+	_acao_golpe_restante = 0.0
+	_acao_golpe_espera_animacao = false
+
+
+func _atualizar_machado_na_mao() -> void:
+	var deve_mostrar := machado_na_mao()
+	if deve_mostrar == (_machado_ancora != null):
+		return
+	if not deve_mostrar:
+		_machado_ancora.queue_free()
+		_machado_ancora = null
+		_machado_pivo = null
+		_machado_angulo_lateral = 0.0
+		return
+	_machado_ancora = _criar_ancora_da_mao()
+	if _machado_ancora == null:
+		return
+	_machado_ancora_posicao_base = _machado_ancora.position
+	if Estilo.procedural():
+		_criar_machado_procedural(_machado_ancora)
+	else:
+		var machado := CatalogoAssets.instanciar("machado", _machado_ancora, Vector3.ZERO, 0.46)
+		if machado != null:
+			machado.rotation = Vector3(deg_to_rad(1.0), deg_to_rad(2.0), deg_to_rad(92.0))
+			machado.basis = machado.basis * Basis(Vector3.UP, PI)
+			# A pegada fica logo acima da ponta real do cabo no GLB.
+			var pegada_cabo := Vector3(0.34, 0.12, 0.0)
+			machado.position -= machado.transform * pegada_cabo
+			machado.position += Vector3(0.0, 0.06, 0.0)
+			machado.position += _machado_ancora.global_basis.inverse() * (visual.global_basis.x * 0.08)
+			# Gira em torno da pegada para a ponta do cabo permanecer na mão direita.
+			_machado_pivo = Node3D.new()
+			_machado_pivo.name = "PivoDaPegada"
+			_machado_ancora.add_child(_machado_pivo)
+			_machado_pivo.position = machado.transform * pegada_cabo
+			machado.reparent(_machado_pivo, true)
+
+
+func _atualizar_pose_machado(delta: float) -> void:
+	if _machado_ancora == null:
+		return
+	var parado := Vector2(velocity.x, velocity.z).length_squared() < 0.04
+	var em_golpe := _acao_golpe_restante > 0.0
+	if animator != null and animator.has_method("gesture_ativa") and animator.gesture_ativa():
+		em_golpe = true
+	var em_idle := parado and not _jumping and not _nadando and not em_golpe
+	var afastamento := -0.01 if em_idle else 0.0
+	_machado_ancora.position = _machado_ancora_posicao_base + _machado_ancora.global_basis.inverse() * (visual.global_basis.x * afastamento)
+	if _machado_pivo != null:
+		var angulo_alvo := 0.0 if em_golpe or _nadando else deg_to_rad(-30.0)
+		_machado_angulo_lateral = move_toward(_machado_angulo_lateral, angulo_alvo, 4.0 * delta)
+		var eixo_vertical_local := (_machado_ancora.global_basis.inverse() * visual.global_basis.y).normalized()
+		_machado_pivo.basis = Basis(eixo_vertical_local, _machado_angulo_lateral)
+
+
+func _criar_ancora_da_mao() -> Node3D:
+	if model is PersonagemProcedural:
+		var cotovelo := model.find_child("CotoveloD", true, false) as Node3D
+		if cotovelo == null:
+			return null
+		var ancora := Node3D.new()
+		ancora.name = "MachadoNaMao"
+		ancora.position = Vector3(0.0, -character_height * 0.16, 0.0)
+		cotovelo.add_child(ancora)
+		return ancora
+	for encontrado in model.find_children("*", "Skeleton3D", true, false):
+		var esqueleto := encontrado as Skeleton3D
+		for indice in esqueleto.get_bone_count():
+			var nome := String(esqueleto.get_bone_name(indice)).to_lower()
+			if not nome.ends_with("righthand"):
+				continue
+			var anexo := BoneAttachment3D.new()
+			anexo.name = "MachadoNaMao"
+			anexo.bone_name = esqueleto.get_bone_name(indice)
+			esqueleto.add_child(anexo)
+			var ancora := Node3D.new()
+			anexo.add_child(ancora)
+			return ancora
+	var ancora := Node3D.new()
+	ancora.name = "MachadoNaMao"
+	ancora.position = Vector3(0.34, 0.9, 0.08)
+	visual.add_child(ancora)
+	return ancora
+
+
+func _criar_machado_procedural(pai: Node3D) -> void:
+	var cabo := MeshInstance3D.new()
+	var malha_cabo := CylinderMesh.new()
+	malha_cabo.top_radius = 0.018
+	malha_cabo.bottom_radius = 0.024
+	malha_cabo.height = 0.52
+	cabo.mesh = malha_cabo
+	cabo.position.y = -0.19
+	var madeira := StandardMaterial3D.new()
+	madeira.albedo_color = Color("70492d")
+	cabo.material_override = madeira
+	pai.add_child(cabo)
+	var lamina := MeshInstance3D.new()
+	var malha_lamina := BoxMesh.new()
+	malha_lamina.size = Vector3(0.23, 0.15, 0.055)
+	lamina.mesh = malha_lamina
+	lamina.position = Vector3(0.07, -0.4, 0.0)
+	var ferro := StandardMaterial3D.new()
+	ferro.albedo_color = Color("777a78")
+	ferro.metallic = 0.55
+	lamina.material_override = ferro
+	pai.add_child(lamina)
+
+
 func _tem_animacoes(scene: PackedScene) -> bool:
 	var probe := scene.instantiate()
 	var animado := not probe.find_children("*", "AnimationPlayer", true, false).is_empty()
@@ -223,7 +363,11 @@ func _update_house_hover() -> void:
 
 func _physics_process(delta: float) -> void:
 	_update_house_hover()
-	if Input.is_action_just_pressed("mv_animation_9"):
+	if _acao_golpe_restante > 0.0:
+		_acao_golpe_restante = maxf(0.0, _acao_golpe_restante - delta)
+		if _acao_golpe_espera_animacao and animator != null and animator.has_method("gesture_ativa") and not animator.gesture_ativa():
+			_acao_golpe_restante = 0.0
+	if Input.is_action_just_pressed("mv_animation_9") and _acao_golpe_restante <= 0.0:
 		_jump_buffer_remaining = JUMP_BUFFER_TIME
 	if is_on_floor():
 		_grounded_grace_remaining = JUMP_COYOTE_TIME
@@ -247,6 +391,9 @@ func _physics_process(delta: float) -> void:
 		_pending_walk_click = Vector2.INF
 		_pending_walk_run = false
 	var input_vector := Input.get_vector("mv_left", "mv_right", "mv_forward", "mv_back")
+	if _acao_golpe_restante > 0.0:
+		input_vector = Vector2.ZERO
+		_cancel_walk()
 	if input_vector.length_squared() > 0.001:
 		_cancel_walk()
 	var direction: Vector3 = Basis(Vector3.UP, _yaw) * Vector3(input_vector.x, 0, input_vector.y)
@@ -278,7 +425,7 @@ func _physics_process(delta: float) -> void:
 	else:
 		velocity.x = move_toward(velocity.x, direction.x * speed, 18.0 * delta)
 		velocity.z = move_toward(velocity.z, direction.z * speed, 18.0 * delta)
-	if _jump_buffer_remaining > 0.0 and _grounded_grace_remaining > 0.0 and not _jumping and not _nadando:
+	if _jump_buffer_remaining > 0.0 and _grounded_grace_remaining > 0.0 and not _jumping and not _nadando and _acao_golpe_restante <= 0.0:
 		velocity.y = JUMP_VELOCITY
 		_jumping = true
 		_jump_buffer_remaining = 0.0
@@ -390,6 +537,8 @@ func _unhandled_input(event: InputEvent) -> void:
 		_pitch = -0.08 if inspecting else -0.19
 		_distance = 3.1 if inspecting else 8.0
 		_apply_camera()
+	if _acao_golpe_restante > 0.0:
+		return
 	if not _jumping:
 		for index in range(8):
 			if event.is_action_pressed("mv_animation_%d" % (index + 1)) and animator and animator.has_method("play_gesture"):
@@ -631,6 +780,29 @@ func _request_walk_at_cursor(mouse: Vector2, run_to_destination: bool = false) -
 	_stuck_time = 0.0
 	_replan_attempts = 0
 	navigation_status.emit("%s até o ponto selecionado. %s cancela o trajeto." % ["Correndo" if run_to_destination else "Caminhando", TeclasMovimento.rotulo()])
+
+
+## Inicia o mesmo caminho usado pelo clique, para interações que precisam de
+## uma aproximação antes de acontecer (como parar diante de um tronco).
+func caminhar_ate(destino: Vector3) -> bool:
+	if _click_world == null or not _click_world.is_walkable_point(destino):
+		return false
+	_cancel_walk()
+	var caminho: PackedVector3Array = _navigator.find_path(global_position, destino)
+	if caminho.is_empty():
+		return false
+	_walk_path = caminho
+	_walk_run = false
+	_walk_index = 0
+	_walk_destination = destino
+	_stuck_time = 0.0
+	_replan_attempts = 0
+	navigation_status.emit("Caminhando até o ponto selecionado. %s cancela o trajeto." % TeclasMovimento.rotulo())
+	return true
+
+
+func caminhando_para(destino: Vector3) -> bool:
+	return _walk_destination.is_finite() and _walk_destination.distance_squared_to(destino) < 0.01
 
 
 func _approach_npc(npc: Node3D) -> Vector3:

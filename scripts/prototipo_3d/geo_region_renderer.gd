@@ -18,6 +18,7 @@ const ESTRADA_OCRE_TEXTURE := preload("res://assets/prototipo_3d/materiais/estra
 const CHAO_PRACA_TEXTURE := preload("res://assets/prototipo_3d/materiais/chao_praca_v1.png")
 const GRAMA_TERRA_MATA_TEXTURE := preload("res://assets/prototipo_3d/materiais/grama_terra_mata_v1.png")
 const Mar = preload("res://scripts/prototipo_3d/mar.gd")
+const CoqueiroCortado = preload("res://scripts/prototipo_3d/coqueiro_cortado.gd")
 const AREIA_PRAIA := preload("res://assets/prototipo_3d/mar/areia_praia.gdshader")
 const FOZ_RIO := preload("res://assets/prototipo_3d/mar/foz_rio.gdshader")
 const AGUA_RIO := preload("res://assets/prototipo_3d/mar/agua_rio.gdshader")
@@ -1500,13 +1501,14 @@ func _build_margens_do_rio(rng: RandomNumberGenerator) -> void:
 ## Divide instâncias em blocos de BLOCO_MATA: cada bloco vira uma MultiMeshInstance3D
 ## com AABB pequena, então o Godot descarta os blocos fora da câmera e escolhe o LOD
 ## da malha pela distância de cada bloco (uma MultiMesh do mapa inteiro nunca some).
-func _multimesh_em_blocos(nome: String, mesh: Mesh, transforms: Array[Transform3D]) -> void:
+func _multimesh_em_blocos(nome: String, mesh: Mesh, transforms: Array[Transform3D], registros: Array[int] = []) -> void:
 	var blocos: Dictionary = {}
-	for t in transforms:
+	for indice in range(transforms.size()):
+		var t: Transform3D = transforms[indice]
 		var chave := Vector2i(floori(t.origin.x / BLOCO_MATA), floori(t.origin.z / BLOCO_MATA))
 		if not blocos.has(chave):
 			blocos[chave] = []
-		blocos[chave].append(t)
+		blocos[chave].append(indice)
 	for chave in blocos.keys():
 		var lista: Array = blocos[chave]
 		var multimesh := MultiMesh.new()
@@ -1514,12 +1516,20 @@ func _multimesh_em_blocos(nome: String, mesh: Mesh, transforms: Array[Transform3
 		multimesh.mesh = mesh
 		multimesh.instance_count = lista.size()
 		for i in range(lista.size()):
-			multimesh.set_instance_transform(i, lista[i])
+			multimesh.set_instance_transform(i, transforms[int(lista[i])])
 		var visual := MultiMeshInstance3D.new()
 		visual.name = "%s %d,%d" % [nome, chave.x, chave.y]
 		visual.multimesh = multimesh
 		visual.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		add_child(visual)
+		for i in range(lista.size()):
+			var indice: int = lista[i]
+			if indice >= registros.size():
+				continue
+			var tronco: Dictionary = _tree_trunks[registros[indice]]
+			tronco["visual"] = visual
+			tronco["instancia"] = i
+			_tree_trunks[registros[indice]] = tronco
 
 
 ## Coqueiros ao longo da orla, do lado da terra, inclinados para o mar.
@@ -1546,6 +1556,7 @@ func _build_coast_palms(rng: RandomNumberGenerator) -> void:
 			malhas_restinga[local] = _malha_da_especie(local, rng)
 			transforms_restinga[local] = [] as Array[Transform3D]
 	var transforms: Array[Transform3D] = []
+	var registros_coqueiros: Array[int] = []
 	var travelled := 0.0
 	var next_at := spacing * 0.5
 	for i in range(_coast.size() - 1):
@@ -1582,6 +1593,7 @@ func _build_coast_palms(rng: RandomNumberGenerator) -> void:
 				else:
 					transforms.append(Transform3D(Basis.from_euler(Vector3(0, yaw, 0)).scaled(Vector3.ONE * scale), Vector3(candidate.x, ground - ARVORE_AFUNDADA, candidate.y)) * lean * modelo_base)
 					_tree_trunks.append({"point": candidate, "ground": ground, "height": minf(float(built.altura) * scale, 4.0), "radius": float(built.tronco) * scale, "especie": "coqueiro"})
+					registros_coqueiros.append(_tree_trunks.size() - 1)
 			next_at += spacing * rng.randf_range(0.7, 1.4)
 		travelled += length
 	for local in transforms_restinga:
@@ -1590,7 +1602,38 @@ func _build_coast_palms(rng: RandomNumberGenerator) -> void:
 			_multimesh_em_blocos("Restinga da orla: " + local, (malhas_restinga[local] as Dictionary).mesh, lista_local)
 	if transforms.is_empty():
 		return
-	_multimesh_em_blocos("Coqueiros da orla", built.mesh, transforms)
+	_multimesh_em_blocos("Coqueiros da orla", built.mesh, transforms, registros_coqueiros)
+
+
+func cortar_coqueiro(posicao: Vector3) -> bool:
+	var ponto := Vector2(posicao.x, posicao.z)
+	for indice in range(_tree_trunks.size()):
+		var tronco: Dictionary = _tree_trunks[indice]
+		if tronco.get("especie", "") != "coqueiro" or tronco.get("cortado", false):
+			continue
+		if (tronco["point"] as Vector2).distance_squared_to(ponto) > 0.01:
+			continue
+		var visual := tronco.get("visual") as MultiMeshInstance3D
+		if visual == null:
+			return false
+		var instancia: int = tronco.get("instancia", -1)
+		if instancia < 0:
+			return false
+		var multimesh := visual.multimesh
+		var transformacao := multimesh.get_instance_transform(instancia)
+		var pe := to_global(Vector3(ponto.x, float(tronco["ground"]), ponto.y))
+		var partes: Array[Dictionary] = [{"mesh": multimesh.mesh, "transform": visual.global_transform * transformacao}]
+		var toco: Node3D = CoqueiroCortado.criar(partes, pe, float(tronco["radius"]))
+		if toco == null:
+			return false
+		add_child(toco)
+		toco.global_position = pe
+		multimesh.set_instance_transform(instancia, Transform3D(Basis().scaled(Vector3.ONE * 0.00001), transformacao.origin))
+		tronco["height"] = CoqueiroCortado.ALTURA_DO_TOCO
+		tronco["cortado"] = true
+		_tree_trunks[indice] = tronco
+		return true
+	return false
 
 
 func _process(delta: float) -> void:

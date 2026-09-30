@@ -8,6 +8,25 @@
     "oficio": { "nome": "De lavoura e ofício", "resumo": "O que vira azeite, vassoura e corda de navio." },
     "outras": { "nome": "Outras", "resumo": "As que ainda não foram arrumadas em grupo." }
   },
+  "acoes": {
+    "coqueiro": {
+      "golpear": "Golpear coqueiro",
+      "golpear_en": "Chop coconut tree",
+      "golpear_es": "Golpear cocotero",
+      "cortado": "Coqueiro cortado",
+      "cortado_en": "Cut coconut tree",
+      "cortado_es": "Cocotero cortado",
+      "stamina": "Vigor",
+      "stamina_en": "Stamina",
+      "stamina_es": "Resistencia",
+      "sem_stamina": "Aguarde recuperar o vigor.",
+      "sem_stamina_en": "Wait for your stamina to recover.",
+      "sem_stamina_es": "Espera a que se recupere la resistencia.",
+      "sem_caminho": "Não encontrei um caminho até o coqueiro.",
+      "sem_caminho_en": "I couldn't find a path to the coconut tree.",
+      "sem_caminho_es": "No encontré un camino hasta el cocotero."
+    }
+  },
   "arvores": {
     "mangueira": {
       "grupo": "frutiferas",
@@ -39,6 +58,8 @@
     "coqueiro": {
       "grupo": "beira",
       "nome": "Coqueiro",
+      "nome_en": "Coconut tree",
+      "nome_es": "Cocotero",
       "cientifico": "Cocos nucifera",
       "paginas": [
         "Toda a costa da baía é franjada de coqueiro, inclinado para o mar como quem procura a água.",
