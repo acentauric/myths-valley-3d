@@ -15,6 +15,8 @@ const Tubarao = preload("res://scripts/prototipo_3d/tubarao.gd")
 const Queda = preload("res://scripts/prototipo_3d/queda.gd")
 const LutaVale = preload("res://scripts/prototipo_3d/luta_vale.gd")
 const IdiomaMenu = preload("res://scripts/prototipo_3d/idioma_menu.gd")
+const PainelVale = preload("res://scripts/prototipo_3d/painel_vale.gd")
+const BancadasVale = preload("res://scripts/prototipo_3d/bancadas_vale.gd")
 const Atalhos = preload("res://scripts/prototipo_3d/atalhos.gd")
 const CameraMouse = preload("res://scripts/prototipo_3d/camera_mouse.gd")
 const Recursos3D = preload("res://scripts/prototipo_3d/recursos_3d.gd")
@@ -40,6 +42,7 @@ var lapides	# lapides.gd
 ## Modo de câmera de antes da pausa, para o retorno devolver o que havia.
 var _camera_travada_antes := false
 var _relogio_pausado_antes := false
+var painel	# painel_vale.gd — tecla J
 
 
 func _enter_tree() -> void:
@@ -145,6 +148,16 @@ func _ready() -> void:
 	if hud.barra_de_mao() != null:
 		hud.barra_de_mao().mochila_mudou.connect(func(aberta: bool) -> void:
 			if aberta:
+				_pause_valley()
+			else:
+				_retomar_o_vale())
+	# E O ALMANAQUE TAMBÉM. Ele era a única tela que não parava nada atrás dela:
+	# o jogador lia a lista das plantas e o vale seguia andando por baixo. Mesma
+	# ligação da mochila, pela mesma razão de ela existir — quem guarda o modo
+	# de câmera é esta casa, e só ela.
+	if hud.almanaque() != null:
+		hud.almanaque().mudou.connect(func(aberto: bool) -> void:
+			if aberto:
 				_pause_valley()
 			else:
 				_retomar_o_vale())
@@ -281,6 +294,16 @@ func _montar_moradores(spawn: Vector3) -> void:
 	luta.name = "Luta"
 	add_child(luta)
 	luta.configurar(world, player, hud)
+	# O painel da tecla J (painel_vale.gd), por cima do HUD.
+	painel = PainelVale.new()
+	painel.name = "Painel"
+	add_child(painel)
+	painel.abriu.connect(_ao_abrir_o_painel)
+	painel.fechou.connect(_ao_fechar_o_painel)
+	painel.pediu.connect(_ao_pedido_do_painel)
+	# Quem está lendo não perde vida: a peçonha espera o painel fechar (ver
+	# Vida.esta_lendo). Por método, que deixa de valer quando o vale sai.
+	Vida.esta_lendo = Callable(self, "_lendo")
 	# Pegadas do jogador no chão, por terreno, sumindo com o tempo.
 	pegadas_no = preload("res://scripts/prototipo_3d/pegadas.gd").new()
 	pegadas_no.name = "Pegadas"
@@ -372,7 +395,14 @@ func _unhandled_key_input(event: InputEvent) -> void:
 	# saída, abrir o mapa esconderia a tela de carregamento, que é filha do HUD.
 	if mapa == null or _saindo:
 		return
+	# Painel aberto: as teclas são dele (painel_vale.gd), inclusive o J que fecha.
+	if painel != null and painel.aberto:
+		return
 	if event is InputEventKey and event.pressed and not event.echo:
+		if event.physical_keycode == Atalhos.tecla("painel") and not mapa.aberto:
+			abrir_o_painel()
+			get_viewport().set_input_as_handled()
+			return
 		if event.physical_keycode == KEY_ESCAPE:
 			# ESC É O MENU, que é o que todo jogo do gênero faz — Palworld,
 			# Stardew, Witcher 3, Cyberpunk, todos. Antes ele SOLTAVA O MOUSE,
@@ -381,9 +411,11 @@ func _unhandled_key_input(event: InputEvent) -> void:
 			# câmera livre sem saber, e ficava preso no modo de arrastar.
 			#
 			# A ordem é a da convenção: primeiro ESC FECHA O QUE ESTÁ ABERTO,
-			# e só com tudo fechado ele abre o menu. Modal do HUD nem chega
-			# aqui — a camada dele consome o Esc antes, que é o primeiro
-			# degrau da mesma escada.
+			# e só com tudo fechado ele abre o menu. É uma escada, e os
+			# degraus de cima não moram aqui: modal do HUD some antes, na
+			# camada dele, que consome o Esc; painel aberto sai lá em cima
+			# desta função, porque com ele na frente as teclas são dele. O que
+			# chega até aqui é o mapa, e depois dele o vale sem nada aberto.
 			if mapa.aberto:
 				_toggle_map()
 			else:
@@ -607,7 +639,73 @@ func _notification(what: int) -> void:
 		Partida.salvar()
 
 
+# --- o painel -----------------------------------------------------------------
+
+## Abre o painel com as abas do lugar onde o jogador está (bancadas_vale.gd).
+func abrir_o_painel(aba: int = 0) -> void:
+	if painel == null or painel.aberto or mapa.aberto or _saindo:
+		return
+	BancadasVale.aplicar(painel, world, player.global_position)
+	painel.abrir(aba)
+
+
+## Com o painel aberto o jogador para, o VALE PARA ATRÁS DELE, e a câmera volta
+## como estava.
+##
+## Duas coisas faltavam aqui, e as duas já tinham nome nesta casa.
+##
+## A CÂMERA. Abrir solta o cursor — painel com o mouse preso é painel que não se
+## clica — e nada devolvia o modo depois. É a QUARTA tela em que este mesmo
+## defeito aparece: perder o foco, o Esc, o mapa, agora o painel. E as quatro
+## vezes a queixa foi a mesma, palavra por palavra: "a câmera tava destravada,
+## como se tivesse apertado C". Guarda antes de soltar, devolve ao fechar — e
+## `tests/camera_volta.gd` passa a medir o painel também, que é o que impede a
+## quinta.
+##
+## E A ÁRVORE PARA, que é a regra pedida para toda tela: "quando se abre
+## qualquer menu, o jogo atrás deve ser pausado". Sem isso os moradores andam,
+## os bichos caçam e o dia dos outros corre enquanto o jogador lê a lista de
+## missões. O painel roda em `PROCESS_MODE_ALWAYS`, então continua vivo com o
+## vale parado e ainda se fecha.
+##
+## O RELÓGIO NÃO ENTRA AQUI, de propósito: o painel já o pausa e o devolve por
+## conta dele, com memória própria (`_dia_pausado_antes`). Guardar o mesmo
+## número dos dois lados é ter duas memórias dele, e uma vai estar velha.
+func _ao_abrir_o_painel() -> void:
+	_camera_travada_antes = player.camera_travada()
+	player.set_captured(false)
+	player.set_physics_process(false)
+	player.set_process_input(false)
+	player.set_process_unhandled_input(false)
+	get_tree().paused = true
+
+
+func _ao_fechar_o_painel() -> void:
+	get_tree().paused = false
+	player.set_physics_process(true)
+	player.set_process_input(true)
+	player.set_process_unhandled_input(true)
+	player.set_camera_locked(_camera_travada_antes)
+
+
+func _ao_pedido_do_painel(acao: String) -> void:
+	match acao:
+		"menu":
+			_return_to_menu()
+		"sair":
+			Partida.salvar()
+			get_tree().quit()
+		"destravar":
+			player._back_to_land()
+
+
+func _lendo() -> bool:
+	return painel != null and painel.aberto
+
+
 func _exit_tree() -> void:
+	if Vida.esta_lendo == Callable(self, "_lendo"):
+		Vida.esta_lendo = Callable()
 	# O save não fica segurando um vale que saiu da árvore. Hoje não quebraria
 	# (o Godot compara o objeto liberado igual a null, e o Salvamento pergunta
 	# `_mundo != null`), mas é essa a comparação de que ele deixa de depender.

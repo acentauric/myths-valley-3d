@@ -37,6 +37,12 @@ atualize esse arquivo e este documento juntos.
   ao cair, ao voltar ao menu, ao trocar o estilo e ao fechar a janela. **EXPLORAR** não
   salva. Para depurar, `JOGAR_3D.cmd -Lugar igreja` começa num lugar do vale
   (`partida.gd`, `tests/salvamento.gd`).
+- **Painel J** (#19). Missões, cartas e, no balcão da Venda do Bar, a venda — comprar
+  e vender com o preço que muda com a estação; o botão JOGO abre salvar, voltar ao menu
+  (com segunda confirmação) e sair. Tab troca de aba, W/S escolhem, E confirma, Esc ou J
+  fecham. Com o painel aberto o relógio e o jogador param, a peçonha espera e o bicho
+  não caça. Oficina, obras e cozinha aparecem quando o vale tiver o lugar delas
+  (`painel_vale.gd`, `bancadas_vale.gd`, `tests/painel.gd`).
 
 ## Build #6 — 28/09/2026
 

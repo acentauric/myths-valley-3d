@@ -159,6 +159,20 @@ func _montar() -> void:
 	coluna.add_child(rodape)
 
 
+## ABRIU OU FECHOU, para quem pausa o vale.
+##
+## O almanaque era a única tela do vale que não parava nada atrás dela: o
+## jogador abria a lista das plantas e os moradores continuavam andando, os
+## bichos caçando e o dia correndo. A regra pedida é para toda tela — "quando
+## se abre qualquer menu, o jogo atrás deve ser pausado".
+##
+## Quem pausa não é esta tela, é o `Prototype`: ele é o dono do modo de câmera
+## guardado (`_camera_travada_antes`), e duas casas guardando o mesmo número é
+## uma delas com o número velho. Mesma costura da mochila, que avisa pela
+## `BarraDeMao.mochila_mudou`.
+signal mudou(aberto: bool)
+
+
 func aberto() -> bool:
 	return _aberto
 
@@ -171,14 +185,20 @@ func alternar() -> void:
 
 
 func abrir() -> void:
+	if _aberto:
+		return
 	_encher()
 	visible = true
 	_aberto = true
+	mudou.emit(true)
 
 
 func fechar() -> void:
+	if not _aberto:
+		return
 	visible = false
 	_aberto = false
+	mudou.emit(false)
 
 
 ## A PÁGINA DE CADA ESPÉCIE CONHECIDA, na ordem em que foram encontradas.

@@ -3,8 +3,8 @@ extends RefCounted
 ## A–Z, salva em user://controles.cfg (seção "atalhos", o mesmo arquivo das teclas de
 ## movimento). `aplicar()` re-registra as ações do InputMap; se a letra escolhida já
 ## pertence a outra ação, `definir()` troca as duas entre si (swap), então nunca há
-## duas ações na mesma letra. "interagir" e "gingar" não têm ação no InputMap: lápides,
-## árvores e a luta comparam o evento com `tecla("interagir")` e `tecla("gingar")`.
+## duas ações na mesma letra. "interagir", "gingar" e "painel" não têm ação no InputMap:
+## lápides, árvores, a luta e o vale comparam o evento com `tecla(...)`.
 
 const ARQUIVO := "user://controles.cfg"
 ## Rótulo (para o AJUSTAR) e letra de fábrica de cada ação.
@@ -17,6 +17,8 @@ const DEFINICOES := {
 	"camera": {"rotulo": "Alternar a câmera", "padrao": KEY_C},
 	# A ginga da capoeira (#14), para quem aprendeu com o Cosme; V como no 2D.
 	"gingar": {"rotulo": "Gingar (esquiva)", "padrao": KEY_V},
+	# O painel de missões, cartas, venda e jogo (#19); J como no 2D.
+	"painel": {"rotulo": "Painel", "padrao": KEY_J},
 }
 ## Ação do InputMap que `aplicar()` re-registra para cada atalho.
 const ACOES_INPUT := {

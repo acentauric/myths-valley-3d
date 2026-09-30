@@ -40,6 +40,7 @@ No Godot Project Manager, outra opção é importar **`prototipo_3d/project.godo
 | V | Ginga: sair do bote do bicho, para quem aprendeu a capoeira (remapeável em AJUSTAR) |
 | R | Voltar ao ponto inicial |
 | T | Adiantar o relógio do vale em uma hora (ver dia e noite) |
+| J | Painel: missões, cartas, venda (no balcão da Venda do Bar) e, pelo botão JOGO, salvar, voltar ao menu e sair. Dentro dele, Tab troca de aba, W/S escolhem, E confirma, Esc ou J fecham; o relógio para enquanto ele está aberto |
 | M | Voltar ao menu (HOME) |
 | Alt+F4 / fechar janela | Sair |
 
