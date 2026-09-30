@@ -1,0 +1,37 @@
+{
+  "observacao": "SINAIS: o que as entidades deixam para trás, e o caderno onde o jogador anota. Não é a mesma coisa que cordel, e a diferença é a razão de existir um menu separado — cordel é história que alguém CONTOU, sinal é coisa que o jogador VIU. REGRA DESTE ARQUIVO: nenhum `titulo` nomeia a entidade. O nome mora em `revelado`, e a tela só mostra `revelado` depois que o jogador tiver a carta daquele mito na mão. Antes disso o caderno registra o fenômeno e nada mais — porque foi isso que aconteceu com ele, e porque saber o nome antes de encontrar estraga o encontro. Texto de rascunho, a revisar com o Ramon.",
+
+  "sinais": {
+    "o_que_olhou_de_volta": {
+      "titulo": "O que olhou de volta",
+      "onde": "na beira do rio, onde a água empoça e fica parada",
+      "quando": "de tarde, com o sol baixo",
+      "sinal": [
+        "Você se debruçou para beber e o rosto que boiou não era o seu.",
+        "Era de mulher, e estava rindo — não de você, mas de alguma coisa que ela sabia e você não.",
+        "Durou o tempo de piscar. Depois a água voltou a ser água, e no barranco ficou isto: um fio de cabelo preto, comprido demais para ser de gente do arraial, enrolado numa pedra como quem amarra recado."
+      ],
+      "de_quem": "iara",
+      "revelado": [
+        "O fio era dela. Iara, moça d'água, a que mora onde o rio para.",
+        "Ela olhou primeiro. Elas sempre olham primeiro — é assim que escolhem."
+      ]
+    },
+
+    "a_mata_que_parou": {
+      "titulo": "A mata que parou",
+      "onde": "na mata fechada além do rio grande",
+      "quando": "no meio do dia, sem vento",
+      "sinal": [
+        "O barulho acabou. Não foi diminuindo: acabou, de uma vez, como quem fecha uma porta.",
+        "Nenhum bicho, nenhuma folha, nenhum inseto. Você contou até dez e o mato voltou a falar, todo junto, como se nada.",
+        "No chão, no meio da clareira, uma pegada só. De pé humano, de criança, e virada para trás."
+      ],
+      "de_quem": "caipora",
+      "revelado": [
+        "A pegada virada para trás é a assinatura da Caipora, que anda de costas para quem a segue.",
+        "Ela não estava escondida. Ela estava olhando você contar até dez."
+      ]
+    }
+  }
+}

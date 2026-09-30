@@ -43,6 +43,10 @@ atualize esse arquivo e este documento juntos.
   fecham. Com o painel aberto o relógio e o jogador param, a peçonha espera e o bicho
   não caça. Oficina, obras e cozinha aparecem quando o vale tiver o lugar delas
   (`painel_vale.gd`, `bancadas_vale.gd`, `tests/painel.gd`).
+- **Coleção L** (parte da #20). Cordéis, sinais e bichos, com a vaga em branco de quem
+  falta achar; o bicho derrubado na luta abre a página dele com a conta de quantos
+  caíram. Os dados de coleção do 2D vieram para o protótipo, conferidos byte a byte com o
+  original (`colecao_vale.gd`, `data/colecionaveis/`, `tests/colecao.gd`).
 
 ## Build #6 — 28/09/2026
 

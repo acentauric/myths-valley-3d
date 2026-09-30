@@ -348,7 +348,7 @@ func _update_control_mode() -> void:
 		"Botão esquerdo na casa: dados",
 		"%s: ler / interagir  ·  %s: observar" % [Atalhos.letra("interagir"), Atalhos.letra("observar")],
 		"%s perto do bicho: golpe (segurar: forte)  ·  %s: ginga" % [Atalhos.letra("interagir"), Atalhos.letra("gingar")],
-		"%s: painel (missões, cartas, venda, jogo)" % Atalhos.letra("painel"),
+		"%s: painel (missões, cartas, venda, jogo)  ·  %s: coleção" % [Atalhos.letra("painel"), Atalhos.letra("colecao")],
 		mode,
 		"Tab ou %s: alterna a câmera  ·  Esc: trava" % Atalhos.letra("camera"),
 		"Rodinha: zoom  ·  %s: avança a hora" % Atalhos.letra("hora"),

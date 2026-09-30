@@ -17,6 +17,7 @@ const LutaVale = preload("res://scripts/prototipo_3d/luta_vale.gd")
 const IdiomaMenu = preload("res://scripts/prototipo_3d/idioma_menu.gd")
 const PainelVale = preload("res://scripts/prototipo_3d/painel_vale.gd")
 const BancadasVale = preload("res://scripts/prototipo_3d/bancadas_vale.gd")
+const ColecaoVale = preload("res://scripts/prototipo_3d/colecao_vale.gd")
 const Atalhos = preload("res://scripts/prototipo_3d/atalhos.gd")
 const Minimapa = preload("res://scripts/prototipo_3d/minimapa.gd")
 const MENU_SCENE := "res://scenes/prototipo_3d/abertura.tscn"
@@ -38,6 +39,7 @@ var mapa	# mapa_jogo.gd
 var lapides	# lapides.gd
 var _relogio_pausado_antes := false
 var painel	# painel_vale.gd — tecla J
+var colecao	# colecao_vale.gd — tecla L
 
 
 func _enter_tree() -> void:
@@ -241,9 +243,15 @@ func _montar_moradores(spawn: Vector3) -> void:
 	painel = PainelVale.new()
 	painel.name = "Painel"
 	add_child(painel)
-	painel.abriu.connect(_ao_abrir_o_painel)
-	painel.fechou.connect(_ao_fechar_o_painel)
+	painel.abriu.connect(_parar_o_jogador)
+	painel.fechou.connect(_soltar_o_jogador)
 	painel.pediu.connect(_ao_pedido_do_painel)
+	# A coleção da tecla L (colecao_vale.gd), no mesmo andar do painel.
+	colecao = ColecaoVale.new()
+	colecao.name = "Colecao"
+	add_child(colecao)
+	colecao.abriu.connect(_parar_o_jogador)
+	colecao.fechou.connect(_soltar_o_jogador)
 	# Quem está lendo não perde vida: a peçonha espera o painel fechar (ver
 	# Vida.esta_lendo). Por método, que deixa de valer quando o vale sai.
 	Vida.esta_lendo = Callable(self, "_lendo")
@@ -338,12 +346,16 @@ func _unhandled_key_input(event: InputEvent) -> void:
 	# saída, abrir o mapa esconderia a tela de carregamento, que é filha do HUD.
 	if mapa == null or _saindo:
 		return
-	# Painel aberto: as teclas são dele (painel_vale.gd), inclusive o J que fecha.
-	if painel != null and painel.aberto:
+	# Tela aberta: as teclas são dela, inclusive a que fecha (J, L).
+	if _lendo():
 		return
 	if event is InputEventKey and event.pressed and not event.echo:
 		if event.physical_keycode == Atalhos.tecla("painel") and not mapa.aberto:
 			abrir_o_painel()
+			get_viewport().set_input_as_handled()
+			return
+		if event.physical_keycode == Atalhos.tecla("colecao") and not mapa.aberto:
+			abrir_a_colecao()
 			get_viewport().set_input_as_handled()
 			return
 		if mapa.aberto and event.physical_keycode == KEY_ESCAPE:
@@ -529,22 +541,28 @@ func _notification(what: int) -> void:
 
 ## Abre o painel com as abas do lugar onde o jogador está (bancadas_vale.gd).
 func abrir_o_painel(aba: int = 0) -> void:
-	if painel == null or painel.aberto or mapa.aberto or _saindo:
+	if painel == null or _lendo() or mapa.aberto or _saindo:
 		return
 	BancadasVale.aplicar(painel, world, player.global_position)
 	painel.abrir(aba)
 
 
-## Com o painel aberto o jogador para, como com o mapa: a tecla é do painel,
-## e o cursor fica livre para o mouse.
-func _ao_abrir_o_painel() -> void:
+func abrir_a_colecao() -> void:
+	if colecao == null or _lendo() or mapa.aberto or _saindo:
+		return
+	colecao.abrir()
+
+
+## Com uma tela aberta (painel, coleção) o jogador para, como com o mapa: a
+## tecla é da tela, e o cursor fica livre para o mouse.
+func _parar_o_jogador() -> void:
 	player.set_captured(false)
 	player.set_physics_process(false)
 	player.set_process_input(false)
 	player.set_process_unhandled_input(false)
 
 
-func _ao_fechar_o_painel() -> void:
+func _soltar_o_jogador() -> void:
 	player.set_physics_process(true)
 	player.set_process_input(true)
 	player.set_process_unhandled_input(true)
@@ -561,8 +579,9 @@ func _ao_pedido_do_painel(acao: String) -> void:
 			player._back_to_land()
 
 
+## Alguma tela de leitura aberta? É o que a peçonha pergunta (Vida.esta_lendo).
 func _lendo() -> bool:
-	return painel != null and painel.aberto
+	return (painel != null and painel.aberto) or (colecao != null and colecao.aberta)
 
 
 func _exit_tree() -> void:
