@@ -18,6 +18,7 @@ const IdiomaMenu = preload("res://scripts/prototipo_3d/idioma_menu.gd")
 const PainelVale = preload("res://scripts/prototipo_3d/painel_vale.gd")
 const BancadasVale = preload("res://scripts/prototipo_3d/bancadas_vale.gd")
 const AchadosVale = preload("res://scripts/prototipo_3d/achados_vale.gd")
+const PescaVale = preload("res://scripts/prototipo_3d/pesca_vale.gd")
 const Atalhos = preload("res://scripts/prototipo_3d/atalhos.gd")
 const CameraMouse = preload("res://scripts/prototipo_3d/camera_mouse.gd")
 const Recursos3D = preload("res://scripts/prototipo_3d/recursos_3d.gd")
@@ -79,6 +80,7 @@ var placas
 ## A aba pedida no último `abrir_o_painel`, entregue à abertura crua.
 var _aba_pedida := 0
 var achados	# achados_vale.gd — cordéis, sinais e cartas no chão
+var pesca	# pesca_vale.gd — a vara na mão e o E na beira da água
 
 
 func _enter_tree() -> void:
@@ -455,6 +457,15 @@ func _montar_moradores(spawn: Vector3) -> void:
 	queda.name = "Queda"
 	add_child(queda)
 	queda.configurar(world, player, hud)
+	# A pesca (pesca_vale.gd). Entra ANTES dos achados: com a vara na mão, o E
+	# ainda pega o cordel do píer. Ferrar o peixe escuta em `_input`, e esse
+	# vem antes de tudo — a janela é de três quartos de segundo.
+	pesca = PescaVale.new()
+	pesca.name = "Pesca"
+	add_child(pesca)
+	pesca.configurar(world, player, hud)
+	# As bancadas sem modelo ainda (a oficina): caixa cinza no lugar delas.
+	BancadasVale.montar_as_provisorias(world, self)
 	# Cordéis, sinais e cartas no chão (achados_vale.gd). Entra ANTES da luta,
 	# que assim recebe o E primeiro quando há bicho perto; é configurado depois
 	# dela, porque a Caipora fica longe do ninho do caititu.

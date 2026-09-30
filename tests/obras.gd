@@ -106,8 +106,13 @@ func _run() -> void:
 		inventario.adicionar(str(item), int(custo[item]))
 	var teto_antes: float = progressao.energia_maxima
 	var ganho := float(obras.ATRIBUTOS["casca_varanda"]["energia_maxima"])
-	while painel.aba() != painel.Aba.OBRAS:
+	# Laço LIMITADO: se a aba não existe, girar para sempre trava o portão
+	# em vez de reprová-lo.
+	for _volta in painel.abas_validas().size():
+		if painel.aba() == painel.Aba.OBRAS:
+			break
 		painel._proxima_aba(1)
+	_conferir(painel.aba() == painel.Aba.OBRAS, "não cheguei à aba obras: %s" % str(painel.abas_validas()))
 	painel.escolher(obras.disponiveis("casa").find("casca_varanda"))
 	painel._confirmar()
 	_conferir(obras.ja_feita("casa", "casca_varanda"), "o E na aba de obras não fez a varanda")

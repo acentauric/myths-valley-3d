@@ -1,0 +1,11 @@
+{
+	"_sobre": "O que o jogador lê pescando no vale (#11). Os textos são os do Mundo._pescar do 2D, verbatim; 'fisgou' é do vale, que não tem o '!' desenhado sobre a bóia do 2D e escreve no aviso. A tradução en/es é do Ramon; ver FALTAM_TRADUCAO em tests/idiomas.gd.",
+	"sem_folego": {"texto": "O braço não sobe mais para lançar."},
+	"na_agua": {"texto": "Linha na água. Espere ferrar..."},
+	"no_cardume": {"texto": "Linha no cardume. Espere ferrar..."},
+	"fisgou": {"texto": "Fisgou! E, agora!"},
+	"vazia": {"texto": "A linha voltou vazia."},
+	"levou_a_isca": {"texto": "Levou a isca e foi embora."},
+	"ferrou": {"texto": "Ferrou! %d %s."},
+	"dica_lancar": {"texto": "Lançar a linha"}
+}

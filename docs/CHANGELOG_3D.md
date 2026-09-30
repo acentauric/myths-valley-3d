@@ -13,6 +13,11 @@ atualize esse arquivo e este documento juntos.
 
 ## Em desenvolvimento — 30/09/2026
 
+- **Pesca, cozinha e oficina** (#11). Com a vara na mão e a água à frente, E lança; a
+  bóia afunda e acende o "!" na fisgada, e o E ferra. A água decide o peixe: traíra no
+  rio, robalo no mar. O fogo do terreiro da Casa de taipa cozinha os pratos sabidos, e a
+  bancada provisória da oficina, na beira do roçado, serra tábua e torce corda
+  (`pesca_vale.gd`, `bancadas_vale.gd`, `tests/oficio.gd`).
 - **Obras no vale** (#15, com efeito e sem arte). A aba de obras do painel aparece perto
   da casa, do armazém, do mirante, do poço e do píer; o plano vem antes do material, e a
   obra feita paga o ganho no corpo e fica no save. A casa ainda não muda por fora nem
