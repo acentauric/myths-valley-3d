@@ -250,7 +250,7 @@ func _run() -> void:
 								"o passo '%s' manda levar %s, que ninguém deu, nenhum alvo do vale rende e a bancada não faz"
 									% [qual_passo, qual_carga])
 	print("  passos com meta nas seis cadeias: %d" % passos_com_meta)
-	_conferir(passos_com_meta >= 12,
+	_conferir(passos_com_meta >= 13,
 		"só achei %d passo(s) com meta nas seis cadeias" % passos_com_meta)
 
 	_fechar()

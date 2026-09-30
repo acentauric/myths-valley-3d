@@ -1,10 +1,26 @@
 {
-  "observacao": "A CONVERSA DA DONA ZEFA, trazida do jogo 2D (data/dialogos/arraial.json, passos zefa_cosme / zefa_conversa / zefa_despedida). É a cadeia mais falada do vale e a que menos pede do mundo: não junta nada, não derruba nada — só manda o jogador de uma pessoa a outra, e é assim que a história do Cosme se conta. Usa a meta 'falar', que é a de 'levar' sem o item. O texto é o de lá, encurtado no que cabe num balão; a prosa inteira está no arraial.json e volta quando o vale tiver caixa de diálogo (#21). TRADUÇÃO: só em português neste primeiro momento; inglês e espanhol são do Ramon.",
+  "observacao": "A CONVERSA DA DONA ZEFA, trazida do jogo 2D (data/dialogos/arraial.json, passos zefa_ervas / zefa_cosme / zefa_conversa / zefa_terra). É a cadeia mais falada do vale, e a ORDEM É A DE LÁ: as ervas vêm antes do Cosme porque a última linha do zefa_ervas_fim é ela mandando falar com o neto. O passo do saveiro é o zefa_terra de lá, o 'Encontre os dois no píer'. O primeiro passo manda à serra, os dois do meio vão de uma pessoa a outra, e é assim que a história do Cosme se conta. Usa a meta 'falar', que é a de 'levar' sem o item. O texto é o de lá, encurtado no que cabe num balão; a prosa inteira está no arraial.json e volta quando o vale tiver caixa de diálogo (#21). TRADUÇÃO: só em português neste primeiro momento; inglês e espanhol são do Ramon.",
   "dono": "zefa",
   "principal": true,
   "abre_em": "casa_de_taipa",
   "traducao": "pendente",
   "passos": [
+    {
+      "id": "zefa_ervas",
+      "lugar": "mirante",
+      "raio": 9.0,
+      "audio": "",
+      "texto": "Você lembra do que eu te falei, do chão e da troca? Pois é hoje que eu peço. Alecrim-do-campo, arruda brava, folha de mamona — não nasce aqui embaixo: precisa de ar seco e de sol de manhã, e isso só tem lá em cima, na serra. Sobe pela picada do mirante e procura onde a mata abre, que é na clareira que o sol bate. Na grota da nascente não adianta, que lá é sombra e água, e não se mete no fundo, que lá é do caititu. Cinco maços, e não arranque pela raiz: corte no meio do pé, que o que se arranca não volta e eu vou precisar no ano que vem também. Toma a foice, e vá com calma que eu não vou a lugar nenhum.",
+      "entrega": { "item": "foice", "quantidade": 1 },
+      "meta": {
+        "tipo": "levar",
+        "item": "erva_da_serra",
+        "quantos": 5,
+        "a_quem": "zefa",
+        "raio": 3.4,
+        "resposta": "Deixa aqui na mesa. Olha o cheiro — sentiu? Isso é alecrim que pegou sol de manhã. Vinte anos eu subia aquela serra de madrugada e descia antes do sol firmar; agora eu chego na metade da picada e o joelho manda eu voltar. Pronto: agora eu tenho remédio pro inverno inteiro. E a gente tem a conversa que eu te prometi — mas hoje não, hoje eu quero pilar isso enquanto está verde. Fala com o meu neto antes: ele tem uma coisa pra te contar e tá enrolando faz uma semana."
+      }
+    },
     {
       "id": "zefa_cosme",
       "lugar": "casa_de_taipa",
