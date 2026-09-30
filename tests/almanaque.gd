@@ -100,10 +100,10 @@ func _run() -> void:
 	tela.abrir()
 	await _frames(3)
 	var raiz := _textos_de(cadeia)
-	_conferir(raiz.size() == 4,
-		"a raiz da cadeia mostra %d linha(s) e as seções são quatro: %s" % [raiz.size(), str(raiz)])
+	_conferir(raiz.size() == 5,
+		"a raiz da cadeia mostra %d linha(s) e as seções são cinco: %s" % [raiz.size(), str(raiz)])
 	var tudo_raiz := " | ".join(raiz)
-	for esperado in ["Plantas", "Cordéis", "Sinais", "Bichos"]:
+	for esperado in ["Plantas", "Cordéis", "Sinais", "Bichos", "Receitas"]:
 		_conferir(tudo_raiz.contains(esperado),
 			"a seção '%s' não está na raiz da cadeia: %s" % [esperado, tudo_raiz])
 
@@ -213,6 +213,64 @@ func _run() -> void:
 		_conferir(caminho.text.to_lower().contains(secao.substr(0, 5)),
 			"o caminho não desceu até '%s': '%s'" % [secao, caminho.text])
 
+	# --- 8b. AS RECEITAS DE COZINHA ESTÃO DENTRO --------------------------------
+	#
+	# "Aproveite para inserir no Almanaque as Receitas de Cozinhar."
+	#
+	# A regra de quem sabe o quê é do `Receitas` compartilhado com o 2D, e as
+	# receitas em si são do `Cozinha`. O que se mede aqui é a seção: a lista
+	# mostra as vagas, a receita sabida abre a ficha com o que leva e o que
+	# rende, e a NÃO sabida diz COMO SE APRENDE — que é a informação útil de uma
+	# vaga em branco, e não o segredo dela.
+	var receitas := root.get_node("/root/Receitas")
+	var cozinha := root.get_node("/root/Cozinha")
+	var ids_receita: Array = cozinha.RECEITAS.keys()
+	_conferir(not ids_receita.is_empty(), "o vale não tem receita nenhuma de panela")
+	if not ids_receita.is_empty():
+		ids_receita.sort()
+		tela._escolher_secao("receitas")
+		await _frames(3)
+		var na_lista := _textos_de(cadeia)
+		_conferir(na_lista.size() >= ids_receita.size(),
+			"a seção das receitas mostra %d linha(s) e há %d receitas de panela"
+				% [na_lista.size(), ids_receita.size()])
+
+		# Uma que NÃO se sabe: a ficha ensina o caminho, e não a receita.
+		var nao_sabida := ""
+		for bruto in ids_receita:
+			if not receitas.sabe(str(bruto)):
+				nao_sabida = str(bruto)
+				break
+		if nao_sabida != "":
+			tela._escolher_item(nao_sabida)
+			await _frames(3)
+			var fechada := _texto_de(pagina).to_lower()
+			_conferir(fechada.contains("ainda não sabe"),
+				"a receita não sabida não diz que não se sabe: '%s'" % fechada)
+			var resumo := str(cozinha.RECEITAS[nao_sabida].get("resumo", "")).to_lower()
+			if resumo.length() > 12:
+				_conferir(not fechada.contains(resumo.substr(0, 20)),
+					"a receita não sabida já entregou o que ela faz: o almanaque virou livro de receitas")
+
+		# Uma que se sabe: a ficha traz o que leva e o que rende.
+		var sabida := ""
+		for bruto in ids_receita:
+			if receitas.sabe(str(bruto)):
+				sabida = str(bruto)
+				break
+		if sabida == "":
+			receitas.aprender(str(ids_receita[0]), "portao")
+			await _frames(2)
+			sabida = str(ids_receita[0])
+		tela._encher()
+		tela._escolher_item(sabida)
+		await _frames(3)
+		var aberta_r := _texto_de(pagina).to_lower()
+		_conferir(aberta_r.contains("leva:") or aberta_r.contains("rende"),
+			"a receita sabida não diz o que leva nem o que rende: '%s'" % aberta_r)
+		_conferir(caminho.text.contains("Receitas"),
+			"o caminho não desceu até as receitas: '%s'" % caminho.text)
+
 	# --- 9. O TECLADO, E A TELA DENTRO DA JANELA -----------------------------
 	tela._escolher_secao(Alm.PLANTAS)
 	tela._escolher_grupo("frutiferas")
@@ -319,7 +377,7 @@ func _fechar() -> void:
 	_devolver_o_arquivo_do_jogador()
 	print("")
 	if falhas == 0:
-		print("ALMANAQUE_OK: a raiz tem as quatro seções, as plantas descem por grupo com a conta e sem grupo vazio, os cordéis, sinais e bichos estão dentro com a vaga em branco e a ficha do 2D, o caminho escreve onde se está, o teclado anda e volta elo por elo, o painel cabe na janela, e reabrir devolve a página aberta")
+		print("ALMANAQUE_OK: a raiz tem as cinco seções; as plantas descem por grupo com a conta e sem grupo vazio; cordéis, sinais e bichos estão dentro com a vaga em branco e a ficha do 2D; as receitas de panela mostram o que levam quando sabidas e COMO SE APRENDEM quando não; o caminho escreve onde se está, o teclado anda e volta elo por elo, o painel cabe na janela, e reabrir devolve a página aberta")
 	else:
 		print("almanaque: %d falha(s)" % falhas)
 	quit(1 if falhas > 0 else 0)

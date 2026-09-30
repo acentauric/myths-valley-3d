@@ -87,19 +87,24 @@ var _pagina: VBoxContainer
 var _rodape: Label
 var _aberto := false
 
-## AS SEÇÕES DO ALMANAQUE, na ordem em que aparecem.
+## AS SEÇÕES DO ALMANAQUE, e de onde cada uma tira o que mostra.
 ##
-## O almanaque nasceu só das plantas. Os cordéis, os sinais e os bichos tinham
-## tela própria, na tecla ao lado — e eram a mesma coisa que ele: o caderno do
-## que o jogador já viu. Duas telas com a mesma função, em duas teclas
-## vizinhas, é o jogador tendo de lembrar qual guarda o quê.
+## O almanaque nasceu só das plantas, ganhou as três coleções e agora as
+## receitas. A cada uma que chegava, três funções desta tela ganhavam um `if` a
+## mais — a lista, a conta e a página —, e a quarta ia ganhar outro. Isso é o
+## arquivo crescendo por dentro sem crescer em ideia.
 ##
-## Juntá-los liberou a outra tecla, que é o que o autor pediu para a árvore de
-## habilidades.
+## Então a seção passou a DIZER DE ONDE VEM o que ela mostra, em vez de a tela
+## adivinhar. Cada uma traz `fonte`, com três perguntas:
 ##
-## As três coleções vêm do `Colecao` compartilhado com o 2D: os dados, a
-## contagem e a regra de quando uma peça se revela são de lá, e nada disso foi
-## reescrito. O que é daqui é a cadeia de índices em volta.
+##     ids()        quais peças existem, na ordem em que se leem
+##     conhece(id)  o jogador já tem essa?
+##     nome(id)     como ela se chama (ou a vaga em branco)
+##     pagina(id)   o texto da ficha dela
+##
+## As PLANTAS não usam `fonte`: elas têm um elo a mais na cadeia — o grupo —,
+## porque dezoito espécies numa lista são um rolo. Seção nova que precise de dois
+## níveis vai precisar de código; as que cabem numa lista, não.
 const PLANTAS := "plantas"
 const SECOES := [
 	{"chave": PLANTAS, "nome": "Plantas do vale",
@@ -110,6 +115,8 @@ const SECOES := [
 		"resumo": "O que fica para trás quando alguma coisa passa. Você viu, anotou, e não sabe o nome."},
 	{"chave": "bichos", "nome": "Bichos",
 		"resumo": "Quem mora na mata e no mar. Bicho se conhece brigando com ele."},
+	{"chave": "receitas", "nome": "Receitas de cozinha",
+		"resumo": "O que a panela do vale sabe fazer. Cada uma se aprende de um jeito: vendo, comprando, cumprindo um favor ou abrindo um passo."},
 ]
 
 ## Seção aberta na cadeia, "" quando ela mostra só as seções.
@@ -407,7 +414,7 @@ func _texto_do_caminho() -> String:
 func _nome_do_escolhido() -> String:
 	if _secao == PLANTAS:
 		return str((_fichas.get(_escolhido, {}) as Dictionary).get("nome", _escolhido))
-	return FichasDaColecao.nome_na_lista(_secao, _escolhido)
+	return str((_fonte(_secao)["nome"] as Callable).call(_escolhido))
 
 
 ## A coluna da esquerda: as seções, e dentro da seção aberta o que ela guarda.
@@ -457,18 +464,22 @@ func _montar_plantas() -> void:
 			_linhas.append({"tipo": "item", "chave": especie, "no": filha})
 
 
-## As peças de uma coleção, COM AS VAGAS EM BRANCO.
+## As peças de uma seção, COM AS VAGAS EM BRANCO.
 ##
 ## Aqui a regra é a oposta da das plantas, e as duas estão certas. Planta não
 ## conhecida não aparece: o almanaque é sobre o que se viu, e lista com buraco
-## numerado viraria caça ao item. Peça de coleção aparece como "— — —", porque é
-## COLEÇÃO: é o buraco na estante que faz procurar, e é assim no 2D.
+## numerado viraria caça ao item. Peça de coleção e receita aparecem como
+## "— — —", porque são COLEÇÃO: é o buraco na estante que faz procurar, e é
+## assim no 2D.
+##
+## Quem sabe quais peças existem é a FONTE da seção, e não esta função. Ver
+## `_fonte`.
 func _montar_pecas(secao: String) -> void:
-	for bruto in Colecao.ordem(secao):
+	var fonte := _fonte(secao)
+	for bruto in (fonte["ids"] as Callable).call():
 		var id := str(bruto)
-		var linha := _linha_da_cadeia(FichasDaColecao.nome_na_lista(secao, id),
-			"", 1, id == _escolhido)
-		if not Colecao.tem(secao, id):
+		var linha := _linha_da_cadeia((fonte["nome"] as Callable).call(id), "", 1, id == _escolhido)
+		if not bool((fonte["conhece"] as Callable).call(id)):
 			linha.add_theme_color_override("font_color", APAGADO)
 		linha.pressed.connect(_escolher_item.bind(id))
 		_cadeia.add_child(linha)
@@ -489,12 +500,13 @@ func _resumo_da_secao(secao: String) -> String:
 	return ""
 
 
-## "4 de 18" da seção. Para as plantas vem daqui; para as coleções, do `Colecao`
-## compartilhado, que é quem sabe quantas peças existem e quantas foram achadas.
+## "4 de 18" da seção. As plantas contam aqui; o resto pergunta à fonte.
 func _conta_da_secao(secao: String) -> String:
 	if secao == PLANTAS:
 		return "%d de %d" % [conhecidas().size(), total()]
-	return "%d de %d" % [Colecao.quantos(secao), Colecao.total(secao)]
+	var fonte := _fonte(secao)
+	return "%d de %d" % [int((fonte["sabidas"] as Callable).call()),
+		int((fonte["quantas"] as Callable).call())]
 
 
 ## A página da direita: a peça escolhida; sem peça, o resumo da seção; sem
@@ -504,9 +516,10 @@ func _montar_pagina() -> void:
 		_pagina_da_planta()
 		return
 	if _secao != "" and _secao != PLANTAS and _escolhido != "":
-		_titulo_da_pagina(FichasDaColecao.nome_na_lista(_secao, _escolhido))
+		var fonte := _fonte(_secao)
+		_titulo_da_pagina(str((fonte["nome"] as Callable).call(_escolhido)))
 		_pagina.add_child(_filete())
-		_pagina.add_child(_corpo(FichasDaColecao.pagina(_secao, _escolhido)))
+		_pagina.add_child(_corpo(str((fonte["pagina"] as Callable).call(_escolhido))))
 		return
 	if _secao == PLANTAS and _grupo != "":
 		var ficha: Dictionary = _grupos.get(_grupo, {})
@@ -729,3 +742,94 @@ func _unhandled_key_input(event: InputEvent) -> void:
 			else:
 				return
 	get_viewport().set_input_as_handled()
+
+
+## DE ONDE UMA SEÇÃO TIRA O QUE MOSTRA.
+##
+## Quatro perguntas, e a tela não sabe responder nenhuma: quais peças existem,
+## se o jogador já tem cada uma, como ela se chama e o que a ficha dela diz.
+##
+## As três coleções vêm do `Colecao` compartilhado com o 2D; as receitas, do
+## `Receitas` e do `Cozinha`, também compartilhados. Nenhuma dessas regras foi
+## reescrita aqui — o que é daqui é a cadeia de índices em volta delas.
+func _fonte(secao: String) -> Dictionary:
+	if secao == "receitas":
+		return {
+			"ids": func() -> Array: return _receitas_do_vale(),
+			"conhece": func(id: String) -> bool: return Receitas.sabe(id),
+			"nome": func(id: String) -> String:
+				return str(Cozinha.RECEITAS.get(id, {}).get("nome", id)) if Receitas.sabe(id) else "— — —",
+			"quantas": func() -> int: return _receitas_do_vale().size(),
+			"sabidas": func() -> int:
+				var conta := 0
+				for id in _receitas_do_vale():
+					if Receitas.sabe(str(id)):
+						conta += 1
+				return conta,
+			"pagina": func(id: String) -> String: return _pagina_da_receita(id),
+		}
+	return {
+		"ids": func() -> Array: return Colecao.ordem(secao),
+		"conhece": func(id: String) -> bool: return Colecao.tem(secao, id),
+		"nome": func(id: String) -> String: return FichasDaColecao.nome_na_lista(secao, id),
+		"quantas": func() -> int: return Colecao.total(secao),
+		"sabidas": func() -> int: return Colecao.quantos(secao),
+		"pagina": func(id: String) -> String: return FichasDaColecao.pagina(secao, id),
+	}
+
+
+## AS RECEITAS DE PANELA, e só elas.
+##
+## O `Receitas.tudo()` junta panela, oficina e obra — é o que as bancadas usam.
+## Aqui a seção é "receitas de cozinha", e pôr o banco de carpinteiro dentro dela
+## seria o almanaque dizendo uma coisa e mostrando outra. Quando a oficina e as
+## obras quiserem seção, elas ganham a sua.
+func _receitas_do_vale() -> Array:
+	var lista: Array = Cozinha.RECEITAS.keys()
+	lista.sort()
+	return lista
+
+
+## A FICHA DE UMA RECEITA: o que ela faz, o que custa e o que rende.
+##
+## Receita não sabida não mostra nada disso — mostra COMO SE APRENDE, que é a
+## informação útil de uma vaga em branco. As portas são as do `Receitas`:
+## "comeco", "missao", "morador", "grau", "achado", "compra".
+func _pagina_da_receita(id: String) -> String:
+	var dado: Dictionary = Cozinha.RECEITAS.get(id, {})
+	if dado.is_empty():
+		return "Esta receita não existe mais."
+	if not Receitas.sabe(id):
+		return "Você ainda não sabe fazer isto.\n\n%s" % _como_se_aprende(id)
+	var texto := "%s\n\n" % str(dado.get("resumo", ""))
+	var custo: Dictionary = dado.get("custo", {})
+	if not custo.is_empty():
+		var partes: Array[String] = []
+		for item in custo:
+			partes.append("%s ×%d" % [Catalogo.nome(str(item)), int(custo[item])])
+		texto += "Leva: %s.\n" % ", ".join(partes)
+	texto += "Rende %d.\n" % int(dado.get("rende", 1))
+	if float(dado.get("folego", 0.0)) > 0.0:
+		texto += "Alimenta %d de fôlego." % int(dado["folego"])
+	return texto
+
+
+func _como_se_aprende(id: String) -> String:
+	var portas: Dictionary = Receitas.portas_de(id)
+	if portas.is_empty():
+		return "Ninguém no vale ensina esta ainda."
+	for porta in portas:
+		match str(porta):
+			"comeco":
+				return "Esta você já devia saber — é das de começo."
+			"compra":
+				return "Vende-se no balcão, por %d réis." % int(portas[porta])
+			"morador":
+				return "Alguém do arraial ensina esta."
+			"grau":
+				return "Alguém do arraial ensina esta, quando houver confiança."
+			"achado":
+				return "Está escrita em alguma coisa que se acha por aí."
+			"missao":
+				return "Aprende-se fazendo: um passo do vale ensina esta."
+	return "Há como aprender esta, e ainda não se sabe qual é o caminho."
