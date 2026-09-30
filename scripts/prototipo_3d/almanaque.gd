@@ -56,6 +56,7 @@ extends Control
 
 const Identidade = preload("res://scripts/prototipo_3d/identidade.gd")
 const Atalhos = preload("res://scripts/prototipo_3d/atalhos.gd")
+const FichasDaColecao = preload("res://scripts/prototipo_3d/fichas_da_colecao.gd")
 
 const DADOS := "res://data/arvores_3d.json"
 const ARQUIVO := "user://almanaque.cfg"
@@ -86,13 +87,40 @@ var _pagina: VBoxContainer
 var _rodape: Label
 var _aberto := false
 
-## Grupo aberto na cadeia, "" quando ela mostra só os grupos.
+## AS SEÇÕES DO ALMANAQUE, na ordem em que aparecem.
+##
+## O almanaque nasceu só das plantas. Os cordéis, os sinais e os bichos tinham
+## tela própria, na tecla ao lado — e eram a mesma coisa que ele: o caderno do
+## que o jogador já viu. Duas telas com a mesma função, em duas teclas
+## vizinhas, é o jogador tendo de lembrar qual guarda o quê.
+##
+## Juntá-los liberou a outra tecla, que é o que o autor pediu para a árvore de
+## habilidades.
+##
+## As três coleções vêm do `Colecao` compartilhado com o 2D: os dados, a
+## contagem e a regra de quando uma peça se revela são de lá, e nada disso foi
+## reescrito. O que é daqui é a cadeia de índices em volta.
+const PLANTAS := "plantas"
+const SECOES := [
+	{"chave": PLANTAS, "nome": "Plantas do vale",
+		"resumo": "O que cresce aqui, e para que serve. Cada espécie entra na primeira vez que você chega perto e olha."},
+	{"chave": "cordeis", "nome": "Cordéis",
+		"resumo": "Folhetos de verso, achados pelo caminho. Leia com calma: há mais neles do que rima."},
+	{"chave": "sinais", "nome": "Sinais",
+		"resumo": "O que fica para trás quando alguma coisa passa. Você viu, anotou, e não sabe o nome."},
+	{"chave": "bichos", "nome": "Bichos",
+		"resumo": "Quem mora na mata e no mar. Bicho se conhece brigando com ele."},
+]
+
+## Seção aberta na cadeia, "" quando ela mostra só as seções.
+var _secao := PLANTAS
+## Grupo de plantas aberto, "" quando nenhum. Só vale na seção das plantas.
 var _grupo := ""
-## Espécie aberta na página, "" quando nenhuma.
-var _especie := ""
+## A peça aberta na página: espécie nas plantas, id da peça nas coleções.
+var _escolhido := ""
 ## Onde está o cursor do teclado, na ordem em que as linhas aparecem.
 var _cursor := 0
-## As linhas de agora, na ordem da tela: {"tipo": "grupo"|"especie", "chave"}.
+## As linhas de agora, na ordem da tela: {"tipo": "secao"|"grupo"|"item", "chave"}.
 var _linhas: Array = []
 
 
@@ -320,10 +348,10 @@ func abrir() -> void:
 	if _aberto:
 		return
 	# ABRE ONDE O JOGADOR PAROU, e não sempre na raiz: quem fecha o almanaque no
-	# meio de uma ficha e reabre quer aquela ficha. Se a espécie não é mais
-	# conhecida — não acontece hoje, mas custa uma linha —, cai na raiz.
-	if _especie != "" and not conhece(_especie):
-		_especie = ""
+	# meio de uma página e reabre quer aquela página. Se a peça deixou de valer
+	# — planta que não está mais na lista —, cai no elo de cima.
+	if _secao == PLANTAS and _escolhido != "" and not conhece(_escolhido):
+		_escolhido = ""
 		_grupo = ""
 	_encher()
 	visible = true
@@ -344,6 +372,11 @@ func fechar() -> void:
 ## Redesenhar tudo a cada mexida em vez de remendar a linha que mudou: são
 ## dezenas de nós, não milhares, e tela que se remenda é tela que guarda estado
 ## em dois lugares — o dado e o que está desenhado — e os dois divergem.
+## A CADEIA E A PÁGINA, redesenhadas do zero.
+##
+## Redesenhar tudo a cada mexida em vez de remendar a linha que mudou: são
+## dezenas de nós, não milhares, e tela que se remenda é tela que guarda estado
+## em dois lugares — o dado e o que está desenhado — e os dois divergem.
 func _encher() -> void:
 	_linhas = []
 	for filho in _cadeia.get_children():
@@ -352,13 +385,6 @@ func _encher() -> void:
 		filho.queue_free()
 
 	_caminho.text = _texto_do_caminho()
-
-	if conhecidas().is_empty():
-		var vazio := _corpo("Nada ainda. Chegue perto de uma planta e aperte E: a primeira vez que você olha uma espécie, ela entra aqui.")
-		_pagina.add_child(vazio)
-		_rodape.text = "%s ou Esc: fechar" % OS.get_keycode_string(Atalhos.tecla("almanaque"))
-		return
-
 	_montar_cadeia()
 	_montar_pagina()
 	_cursor = clampi(_cursor, 0, maxi(0, _linhas.size() - 1))
@@ -369,39 +395,180 @@ func _encher() -> void:
 
 func _texto_do_caminho() -> String:
 	var partes: Array[String] = ["Almanaque"]
-	if _grupo != "":
+	if _secao != "":
+		partes.append(_nome_da_secao(_secao))
+	if _secao == PLANTAS and _grupo != "":
 		partes.append(str((_grupos.get(_grupo, {}) as Dictionary).get("nome", _grupo)))
-	if _especie != "":
-		partes.append(str((_fichas.get(_especie, {}) as Dictionary).get("nome", _especie)))
-	var conta := "  ·  %d de %d" % [conhecidas().size(), total()]
-	return "  ›  ".join(partes) + conta
+	if _escolhido != "":
+		partes.append(_nome_do_escolhido())
+	return "  ›  ".join(partes) + "  ·  " + _conta_da_secao(_secao if _secao != "" else PLANTAS)
 
 
-## A coluna da esquerda: os grupos, e as espécies do grupo aberto logo abaixo
-## dele. A cadeia se ABRE NO LUGAR — entrar num grupo não troca de tela, e é o
-## que deixa o caminho de volta visível sem botão de voltar.
+func _nome_do_escolhido() -> String:
+	if _secao == PLANTAS:
+		return str((_fichas.get(_escolhido, {}) as Dictionary).get("nome", _escolhido))
+	return FichasDaColecao.nome_na_lista(_secao, _escolhido)
+
+
+## A coluna da esquerda: as seções, e dentro da seção aberta o que ela guarda.
+##
+## A cadeia se ABRE NO LUGAR — entrar numa seção não troca de tela, e é o que
+## deixa o caminho de volta visível sem botão de voltar. Nas plantas há um elo a
+## mais, o grupo, porque dezoito espécies numa lista são um rolo; nas coleções
+## não, porque cada uma tem dez peças e a lista cabe.
 func _montar_cadeia() -> void:
+	for dados in SECOES:
+		var secao := str(dados["chave"])
+		if secao == PLANTAS and conhecidas().is_empty() and _secao != PLANTAS:
+			# Seção vazia continua aparecendo: diferente das peças, ela não é
+			# spoiler — o jogador precisa saber que existe um lugar para plantas.
+			pass
+		var aberta: bool = secao == _secao
+		var linha := _linha_da_cadeia(str(dados["nome"]), _conta_da_secao(secao), 0, aberta)
+		linha.pressed.connect(_escolher_secao.bind(secao))
+		_cadeia.add_child(linha)
+		_linhas.append({"tipo": "secao", "chave": secao, "no": linha})
+		if not aberta:
+			continue
+		if secao == PLANTAS:
+			_montar_plantas()
+		else:
+			_montar_pecas(secao)
+
+
+func _montar_plantas() -> void:
 	for chave in grupos_com_algo():
 		var grupo := str(chave)
 		var ficha: Dictionary = _grupos.get(grupo, {})
 		var quantas := conhecidas_do_grupo(grupo).size()
-		var linha := _linha_da_cadeia(
-			str(ficha.get("nome", grupo)),
-			"%d de %d" % [quantas, total_do_grupo(grupo)],
-			0, grupo == _grupo)
+		var linha := _linha_da_cadeia(str(ficha.get("nome", grupo)),
+			"%d de %d" % [quantas, total_do_grupo(grupo)], 1, grupo == _grupo)
 		linha.pressed.connect(_escolher_grupo.bind(grupo))
 		_cadeia.add_child(linha)
 		_linhas.append({"tipo": "grupo", "chave": grupo, "no": linha})
-
 		if grupo != _grupo:
 			continue
 		for bruto in conhecidas_do_grupo(grupo):
 			var especie := str(bruto)
 			var nome := str((_fichas.get(especie, {}) as Dictionary).get("nome", especie))
-			var filha := _linha_da_cadeia(nome, "", 1, especie == _especie)
-			filha.pressed.connect(_escolher_especie.bind(especie))
+			var filha := _linha_da_cadeia(nome, "", 2, especie == _escolhido)
+			filha.pressed.connect(_escolher_item.bind(especie))
 			_cadeia.add_child(filha)
-			_linhas.append({"tipo": "especie", "chave": especie, "no": filha})
+			_linhas.append({"tipo": "item", "chave": especie, "no": filha})
+
+
+## As peças de uma coleção, COM AS VAGAS EM BRANCO.
+##
+## Aqui a regra é a oposta da das plantas, e as duas estão certas. Planta não
+## conhecida não aparece: o almanaque é sobre o que se viu, e lista com buraco
+## numerado viraria caça ao item. Peça de coleção aparece como "— — —", porque é
+## COLEÇÃO: é o buraco na estante que faz procurar, e é assim no 2D.
+func _montar_pecas(secao: String) -> void:
+	for bruto in Colecao.ordem(secao):
+		var id := str(bruto)
+		var linha := _linha_da_cadeia(FichasDaColecao.nome_na_lista(secao, id),
+			"", 1, id == _escolhido)
+		if not Colecao.tem(secao, id):
+			linha.add_theme_color_override("font_color", APAGADO)
+		linha.pressed.connect(_escolher_item.bind(id))
+		_cadeia.add_child(linha)
+		_linhas.append({"tipo": "item", "chave": id, "no": linha})
+
+
+func _nome_da_secao(secao: String) -> String:
+	for dados in SECOES:
+		if str(dados["chave"]) == secao:
+			return str(dados["nome"])
+	return secao
+
+
+func _resumo_da_secao(secao: String) -> String:
+	for dados in SECOES:
+		if str(dados["chave"]) == secao:
+			return str(dados["resumo"])
+	return ""
+
+
+## "4 de 18" da seção. Para as plantas vem daqui; para as coleções, do `Colecao`
+## compartilhado, que é quem sabe quantas peças existem e quantas foram achadas.
+func _conta_da_secao(secao: String) -> String:
+	if secao == PLANTAS:
+		return "%d de %d" % [conhecidas().size(), total()]
+	return "%d de %d" % [Colecao.quantos(secao), Colecao.total(secao)]
+
+
+## A página da direita: a peça escolhida; sem peça, o resumo da seção; sem
+## seção, o convite.
+func _montar_pagina() -> void:
+	if _secao == PLANTAS and _escolhido != "":
+		_pagina_da_planta()
+		return
+	if _secao != "" and _secao != PLANTAS and _escolhido != "":
+		_titulo_da_pagina(FichasDaColecao.nome_na_lista(_secao, _escolhido))
+		_pagina.add_child(_filete())
+		_pagina.add_child(_corpo(FichasDaColecao.pagina(_secao, _escolhido)))
+		return
+	if _secao == PLANTAS and _grupo != "":
+		var ficha: Dictionary = _grupos.get(_grupo, {})
+		_titulo_da_pagina(str(ficha.get("nome", _grupo)))
+		_pagina.add_child(_filete())
+		_pagina.add_child(_corpo(str(ficha.get("resumo", ""))))
+		_pagina.add_child(_corpo("%s espécies deste grupo você já viu de perto."
+			% ("%d de %d" % [conhecidas_do_grupo(_grupo).size(), total_do_grupo(_grupo)])))
+		return
+	if _secao != "":
+		_titulo_da_pagina(_nome_da_secao(_secao))
+		_pagina.add_child(_filete())
+		_pagina.add_child(_corpo(_resumo_da_secao(_secao)))
+		if _secao == PLANTAS and conhecidas().is_empty():
+			_pagina.add_child(_corpo("Nada ainda. Chegue perto de uma planta e aperte E: a primeira vez que você olha uma espécie, ela entra aqui."))
+		return
+	_pagina.add_child(_corpo("Abra uma seção à esquerda. As plantas entram na primeira vez que você chega perto delas; os cordéis, os sinais e os bichos, quando você os encontra pelo vale."))
+
+
+func _pagina_da_planta() -> void:
+	var ficha: Dictionary = _fichas.get(_escolhido, {})
+	_titulo_da_pagina(str(ficha.get("nome", _escolhido)))
+	var cientifico := str(ficha.get("cientifico", ""))
+	if cientifico != "":
+		var latim := Label.new()
+		latim.text = cientifico
+		latim.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_ITALICO, 400))
+		latim.add_theme_font_size_override("font_size", 18)
+		latim.add_theme_color_override("font_color", APAGADO)
+		_pagina.add_child(latim)
+	_pagina.add_child(_filete())
+	for pagina in ficha.get("paginas", []):
+		_pagina.add_child(_corpo(str(pagina)))
+
+
+func _titulo_da_pagina(texto: String) -> void:
+	var nome := Label.new()
+	nome.text = texto
+	nome.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_TITULO, 600, 1))
+	nome.add_theme_font_size_override("font_size", 28)
+	nome.add_theme_color_override("font_color", Identidade.CREME)
+	nome.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	Identidade.sombra_texto(nome)
+	_pagina.add_child(nome)
+
+
+func _filete() -> TextureRect:
+	var linha := Identidade.filete_centrado(1.0)
+	linha.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	return linha
+
+
+func _corpo(texto: String) -> Label:
+	var rotulo := Label.new()
+	rotulo.text = texto
+	rotulo.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_TEXTO, 400))
+	rotulo.add_theme_font_size_override("font_size", 19)
+	rotulo.add_theme_color_override("font_color", PAPEL)
+	rotulo.add_theme_constant_override("line_spacing", 4)
+	rotulo.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	rotulo.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	return rotulo
 
 
 func _linha_da_cadeia(texto: String, conta: String, nivel: int, escolhida: bool) -> Button:
@@ -410,10 +577,12 @@ func _linha_da_cadeia(texto: String, conta: String, nivel: int, escolhida: bool)
 	botao.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	botao.custom_minimum_size = Vector2(0, ALTURA_DA_LINHA)
 	botao.alignment = HORIZONTAL_ALIGNMENT_LEFT
-	# O nível vira recuo: grupo na margem, espécie um passo dentro. É o que faz
-	# a cadeia parecer cadeia sem precisar de desenho.
-	botao.text = ("      " if nivel > 0 else "") + ("▸ " if nivel == 0 and not escolhida else "") \
-		+ ("▾ " if nivel == 0 and escolhida else "") + texto
+	# O nível vira recuo: seção na margem, e um passo por elo. É o que faz a
+	# cadeia parecer cadeia sem precisar de desenho.
+	var marca := ""
+	if nivel < 2:
+		marca = "▾ " if escolhida else "▸ "
+	botao.text = "    ".repeat(nivel) + marca + texto
 	if conta != "":
 		botao.text += "    " + conta
 	var fonte := Identidade.FONTE_TITULO if nivel == 0 else Identidade.FONTE_TEXTO
@@ -441,87 +610,29 @@ func _estilo_da_linha(escolhida: bool, realce: bool) -> StyleBoxFlat:
 	return estilo
 
 
-## A página da direita: a ficha da espécie escolhida; sem espécie, o resumo do
-## grupo; sem grupo, o convite a abrir um.
-func _montar_pagina() -> void:
-	if _especie != "":
-		var ficha: Dictionary = _fichas.get(_especie, {})
-		var nome := Label.new()
-		nome.text = str(ficha.get("nome", _especie))
-		nome.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_TITULO, 600, 1))
-		nome.add_theme_font_size_override("font_size", 30)
-		nome.add_theme_color_override("font_color", Identidade.CREME)
-		Identidade.sombra_texto(nome)
-		_pagina.add_child(nome)
-
-		var cientifico := str(ficha.get("cientifico", ""))
-		if cientifico != "":
-			var latim := Label.new()
-			latim.text = cientifico
-			latim.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_ITALICO, 400))
-			latim.add_theme_font_size_override("font_size", 18)
-			latim.add_theme_color_override("font_color", APAGADO)
-			_pagina.add_child(latim)
-
-		_pagina.add_child(_filete())
-		for pagina in ficha.get("paginas", []):
-			_pagina.add_child(_corpo(str(pagina)))
-		return
-
-	if _grupo != "":
-		var ficha: Dictionary = _grupos.get(_grupo, {})
-		var titulo := Label.new()
-		titulo.text = str(ficha.get("nome", _grupo))
-		titulo.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_TITULO, 600, 1))
-		titulo.add_theme_font_size_override("font_size", 26)
-		titulo.add_theme_color_override("font_color", Identidade.CREME)
-		_pagina.add_child(titulo)
-		_pagina.add_child(_filete())
-		_pagina.add_child(_corpo(str(ficha.get("resumo", ""))))
-		_pagina.add_child(_corpo("%d de %d espécies deste grupo você já viu de perto."
-			% [conhecidas_do_grupo(_grupo).size(), total_do_grupo(_grupo)]))
-		return
-
-	_pagina.add_child(_corpo("Abra um grupo à esquerda. Cada planta entra aqui na primeira vez que você chega perto dela e aperta E."))
-
-
-
-## O filete de ouro da identidade, esticado na largura da página. Sem o esticão
-## ele sai com os 16 px do mínimo dele, e um filete de 16 px no meio de uma
-## página de 600 parece sujeira e não ornamento.
-func _filete() -> TextureRect:
-	var linha := Identidade.filete_centrado(1.0)
-	linha.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	return linha
-
-func _corpo(texto: String) -> Label:
-	var rotulo := Label.new()
-	rotulo.text = texto
-	rotulo.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_TEXTO, 400))
-	rotulo.add_theme_font_size_override("font_size", 19)
-	rotulo.add_theme_color_override("font_color", PAPEL)
-	rotulo.add_theme_constant_override("line_spacing", 4)
-	rotulo.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	rotulo.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	return rotulo
-
-
 # --- andar na cadeia ---------------------------------------------------------
 
-func _escolher_grupo(grupo: String) -> void:
-	# Apertar o grupo aberto FECHA ele, como toda árvore de índice faz.
-	if _grupo == grupo:
-		_grupo = ""
-		_especie = ""
+func _escolher_secao(secao: String) -> void:
+	# Apertar a seção aberta FECHA ela, como toda árvore de índice faz.
+	if _secao == secao:
+		_secao = ""
 	else:
-		_grupo = grupo
-		_especie = ""
+		_secao = secao
+	_grupo = ""
+	_escolhido = ""
 	_encher()
 
 
-func _escolher_especie(especie: String) -> void:
-	_especie = especie
-	_grupo = grupo_de(especie)
+func _escolher_grupo(grupo: String) -> void:
+	_grupo = "" if _grupo == grupo else grupo
+	_escolhido = ""
+	_encher()
+
+
+func _escolher_item(item: String) -> void:
+	_escolhido = item
+	if _secao == PLANTAS:
+		_grupo = grupo_de(item)
 	_encher()
 
 
@@ -534,8 +645,15 @@ func _pintar_cursor() -> void:
 		var botao := linha["no"] as Button
 		if not is_instance_valid(botao):
 			continue
-		var escolhida: bool = (linha["tipo"] == "grupo" and str(linha["chave"]) == _grupo and _especie == "") \
-			or (linha["tipo"] == "especie" and str(linha["chave"]) == _especie)
+		var chave := str(linha["chave"])
+		var escolhida := false
+		match str(linha["tipo"]):
+			"secao":
+				escolhida = chave == _secao and _grupo == "" and _escolhido == ""
+			"grupo":
+				escolhida = chave == _grupo and _escolhido == ""
+			"item":
+				escolhida = chave == _escolhido
 		var estilo := _estilo_da_linha(escolhida, i == _cursor)
 		if i == _cursor and not escolhida:
 			estilo.border_color = Color(OURO.r, OURO.g, OURO.b, 0.45)
@@ -555,22 +673,27 @@ func _abrir_no_cursor() -> void:
 		return
 	var linha: Dictionary = _linhas[_cursor]
 	var guardado := _cursor
-	if str(linha["tipo"]) == "grupo":
-		_escolher_grupo(str(linha["chave"]))
-	else:
-		_escolher_especie(str(linha["chave"]))
-	# Depois de abrir um grupo, a lista cresceu: o cursor fica onde estava, que
-	# é a linha do próprio grupo, e não salta para o começo.
+	match str(linha["tipo"]):
+		"secao":
+			_escolher_secao(str(linha["chave"]))
+		"grupo":
+			_escolher_grupo(str(linha["chave"]))
+		_:
+			_escolher_item(str(linha["chave"]))
+	# Depois de abrir um elo, a lista cresceu: o cursor fica onde estava, que é
+	# a linha do próprio elo, e não salta para o começo.
 	_cursor = clampi(guardado, 0, maxi(0, _linhas.size() - 1))
 	_pintar_cursor()
 
 
-## Um passo atrás na cadeia: da ficha para o grupo, do grupo para a raiz.
+## Um passo atrás na cadeia: da página para o elo de cima, até a raiz.
 func _voltar() -> void:
-	if _especie != "":
-		_especie = ""
+	if _escolhido != "":
+		_escolhido = ""
 	elif _grupo != "":
 		_grupo = ""
+	elif _secao != "":
+		_secao = ""
 	else:
 		return
 	_encher()

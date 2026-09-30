@@ -19,25 +19,18 @@ const DEFINICOES := {
 	"gingar": {"rotulo": "Gingar (esquiva)", "padrao": KEY_V},
 	# O painel de missões, cartas, venda e jogo (#19); J como no 2D.
 	"painel": {"rotulo": "Painel", "padrao": KEY_J},
-	# A coleção de cordéis, sinais e bichos (#20); L como no 2D.
-	"colecao": {"rotulo": "Coleção", "padrao": KEY_L},
-	# O ALMANAQUE DAS PLANTAS, que estava no L À REVELIA DESTA TABELA.
+	# O ALMANAQUE NO L, que é a tecla da coleção no jogo 2D.
 	#
-	# Ele foi escrito antes de a coleção chegar, e tomou o L emprestado
-	# justamente porque o L é a coleção do 2D. Quando a coleção de verdade
-	# desembarcou no vale, as duas telas ficaram na mesma letra — e a tabela,
-	# que existe para que isso não aconteça, não tinha como saber: o almanaque
-	# amarrava o `mv_almanaque` ao `KEY_L` na mão, sem passar por aqui.
+	# Ele nasceu no L emprestado, foi para o K quando a coleção chegou, e volta
+	# ao L agora que ELE É A COLEÇÃO: plantas, cordéis, sinais e bichos no mesmo
+	# caderno. Duas telas com a mesma função em teclas vizinhas era o jogador
+	# tendo de decorar qual guardava o quê.
 	#
-	# Passa a passar. O K é o vizinho livre do L, e o `definir()` troca as
-	# duas quando alguém quiser outra coisa.
-	#
-	# O LUGAR CERTO DELE, a prazo, é ser a QUARTA COLEÇÃO — cordéis, sinais,
-	# bichos e plantas, numa tela só. É o que o cabeçalho do `almanaque.gd` já
-	# previa ("quando as plantas quiserem almanaque, a lista muda de casa").
-	# Fazer isso agora seria mexer na tela que acabou de chegar, no meio de uma
-	# junção; fica anotado no plano.
-	"almanaque": {"rotulo": "Almanaque das plantas", "padrao": KEY_K},
+	# E o K, que sobrou, é a tecla da TEIA DE TALENTOS no 2D — que é exatamente
+	# o que o autor pediu para ele: "precisamos do botão disponível para acessar
+	# a árvore de habilidades".
+	"almanaque": {"rotulo": "Almanaque", "padrao": KEY_L},
+	"talentos": {"rotulo": "Árvore de habilidades", "padrao": KEY_K},
 }
 ## Ação do InputMap que `aplicar()` re-registra para cada atalho.
 const ACOES_INPUT := {
@@ -57,6 +50,15 @@ static var _cache: Dictionary = {}
 static func tecla(acao: String) -> int:
 	if _cache.has(acao):
 		return int(_cache[acao])
+	# NOME QUE A TABELA NÃO CONHECE devolve 0, e não derruba.
+	#
+	# `DEFINICOES[acao]` cru estourava com nome desconhecido, e isso amarrava a
+	# tabela a quem a consulta: retirar um atalho — como o da coleção, que virou
+	# uma seção do almanaque — quebraria toda tela que ainda perguntasse por
+	# ele. Zero não é tecla nenhuma: evento de teclado nunca traz 0, então a
+	# comparação simplesmente nunca casa.
+	if not DEFINICOES.has(acao):
+		return 0
 	var padrao := int(DEFINICOES[acao]["padrao"])
 	var valor := padrao
 	var preferencias := ConfigFile.new()

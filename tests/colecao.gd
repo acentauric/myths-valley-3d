@@ -55,9 +55,30 @@ func _run() -> void:
 		_conferir(copia == original,
 			"data/colecionaveis/%s divergiu do 2D: o dono é o 2D, copie de lá de novo" % nome)
 
-	# --- 2. O L É DA COLEÇÃO ---------------------------------------------------
+	# --- 2. O L É DO CADERNO, E O CADERNO VIROU O ALMANAQUE --------------------
+	#
+	# ESTA LINHA DIZIA `Atalhos.tecla("colecao") == KEY_L`, e era verdade quando
+	# foi escrita. O autor pediu depois: "no próprio almanaque, já considere os
+	# cordéis e outros colecionáveis" e "leve os cordéis para dentro do almanaque
+	# também" — e, junto, a tecla livre para a árvore de habilidades.
+	#
+	# Então os cordéis, os sinais e os bichos passaram a ser SEÇÕES do almanaque,
+	# com as mesmas fichas (extraídas para `fichas_da_colecao.gd`, que nenhuma
+	# das duas telas possui). O almanaque assumiu o L, que é a tecla da coleção
+	# no jogo 2D — porque ele é a coleção agora —, e o K ficou para os talentos,
+	# que é a tecla deles lá.
+	#
+	# ESTA TELA FICOU SEM TECLA, e o que ela mostra é um subconjunto do que o
+	# almanaque mostra. Ela continua de pé e este portão continua medindo o que
+	# ela faz; o que ele parou de afirmar é que o jogador chega nela pelo L, que
+	# é o que deixou de ser verdade. Apagar a tela é decisão de quem a escreveu,
+	# e está aberta — ver `tests/almanaque.gd`, que cobre as mesmas coleções pelo
+	# caminho que o jogador usa hoje.
 	var Atalhos = load("res://scripts/prototipo_3d/atalhos.gd")
-	_conferir(Atalhos.tecla("colecao") == KEY_L, "a coleção não está no L")
+	_conferir(Atalhos.tecla("almanaque") == KEY_L,
+		"o caderno (almanaque, com as coleções dentro) não está no L")
+	_conferir(Atalhos.tecla("colecao") == 0,
+		"a tela avulsa da coleção voltou a ter tecla: agora há duas portas para a mesma estante")
 	_conferir(change_scene_to_file("res://scenes/prototipo_3d/vale.tscn") == OK, "o vale não carregou")
 	await _frames(6)
 	await _mundo_pronto()
@@ -139,7 +160,7 @@ func _evento(codigo: int) -> InputEventKey:
 func _fechar() -> void:
 	print("")
 	if falhas == 0:
-		print("COLECAO_OK: os dados são os do 2D byte a byte; o L abre para o jogador e o relógio, sem painel por cima; três coleções com a vaga em branco e o Tab girando; o cordel achado mostra título e preço, o sinal não tem nome antes do encontro, e o bicho derrubado abre a página com a conta")
+		print("COLECAO_OK: os dados são os do 2D byte a byte; o L é do caderno e esta tela ficou sem tecla; ela abre para o jogador e o relógio, sem painel por cima; três coleções com a vaga em branco e o Tab girando; o cordel achado mostra título e preço, o sinal não tem nome antes do encontro, e o bicho derrubado abre a página com a conta")
 	else:
 		print("colecao: %d falha(s)" % falhas)
 	quit(1 if falhas > 0 else 0)

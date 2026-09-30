@@ -24,6 +24,7 @@ signal abriu
 signal fechou
 
 const Atalhos = preload("res://scripts/prototipo_3d/atalhos.gd")
+const FichasDaColecao = preload("res://scripts/prototipo_3d/fichas_da_colecao.gd")
 
 const COR_TITULO := Color("d6ba78")
 const COR_TEXTO := Color("e8e4d7")
@@ -248,7 +249,7 @@ func _redesenhar() -> void:
 		var id := str(ids[i])
 		var achado := Colecao.tem(_colecao, id)
 		# Vaga em branco: o jogador vê QUANTOS faltam sem saber quais são.
-		var nome := str(Colecao.dados(_colecao, id).get("titulo", id)) if achado else "— — —"
+		var nome := FichasDaColecao.nome_na_lista(_colecao, id)
 		var cor := COR_CURSOR if i == _cursor else (COR_TEXTO if achado else COR_APAGADA)
 		var botao := Button.new()
 		botao.text = "%s  %s" % ["✓" if achado else "·", nome]
@@ -273,57 +274,11 @@ func _redesenhar() -> void:
 
 
 ## A FICHA da peça: o que é, de quem é, onde estava e quanto vale (ver o 2D).
+## A FICHA da peça. O TEXTO SAIU DAQUI.
+##
+## Ele foi para `fichas_da_colecao.gd` quando os cordéis e os colecionáveis
+## passaram a aparecer também no almanaque: a mesma página pedida de duas telas,
+## escrita em dois lugares, é uma delas ficando velha. Nenhuma das duas telas é
+## dona dela agora.
 func ficha(id: String) -> String:
-	if Colecao.tipo(_colecao) == "sinal":
-		return _ficha_de_sinal(id)
-	if Colecao.tipo(_colecao) == "bicho":
-		return _ficha_de_bicho(id)
-	if id == "" or not Colecao.tem(_colecao, id):
-		return "Esta vaga está vazia.\n\nHá folhetos embaixo de banco de capela, dentro de lata no píer, presos em pedra na beira do rio. Quem anda olhando acha."
-	var dado := Colecao.dados(_colecao, id)
-	var texto := "%s\n%s\n\n" % [dado.get("titulo", id), dado.get("autor", "")]
-	var versos: Array = dado.get("versos", [])
-	if not versos.is_empty():
-		texto += "   %s…\n\n" % Jogo.texto(str(versos[0]))
-	texto += "Achado %s.\nVale %d réis." % [str(dado.get("onde", "por aí")), int(dado.get("valor", 0))]
-	return texto
-
-
-## A página de um bicho: o que se aprendeu brigando com ele, onde mora e quantos
-## já caíram — a parede da Guilda do Stardew (ver o 2D).
-func _ficha_de_bicho(id: String) -> String:
-	if id == "" or not Colecao.tem(_colecao, id):
-		return "Esta vaga está vazia.\n\nBicho se conhece brigando com ele. Há mais na mata do que nesta página."
-	var dado := Colecao.dados(_colecao, id)
-	var texto := "%s\n\n" % str(dado.get("titulo", id))
-	for linha in (dado.get("ficha", []) as Array):
-		texto += "%s\n" % Jogo.texto(str(linha))
-	texto += "\nMora %s.\nJá caíram: %d.\n" % [str(dado.get("onde", "na mata")), Luta.abatidos(id)]
-	var meta: Dictionary = dado.get("meta", {})
-	if not meta.is_empty():
-		if Missoes.cumprida(str(meta.get("missao", ""))):
-			texto += "\n%s\n" % Jogo.texto(str(meta.get("premio", "")))
-		else:
-			texto += "\n%s (%d de %d)\n" % [Jogo.texto(str(meta.get("promessa", ""))),
-				mini(Luta.abatidos(id), int(meta.get("conta", 1))), int(meta.get("conta", 1))]
-	return texto
-
-
-## A ficha de um sinal, que NÃO TEM NOME até o encontro acontecer (ver
-## `Colecao.nomeia` e o 2D): pôr o nome antes seria o jogo respondendo o
-## enigma na mesma tela em que o propõe.
-func _ficha_de_sinal(id: String) -> String:
-	if id == "" or not Colecao.tem(_colecao, id):
-		return "Esta vaga está vazia.\n\nSinal não se procura: se topa. Água parada, mata que cala de repente, bicho que some do caminho. Quando acontecer, olhe o chão antes de ir embora."
-	var dado := Colecao.dados(_colecao, id)
-	var texto := "%s\n\n" % str(dado.get("titulo", id))
-	for linha in (dado.get("sinal", []) as Array):
-		texto += "%s\n" % Jogo.texto(str(linha))
-	texto += "\nVisto %s, %s.\n" % [str(dado.get("onde", "por aí")), str(dado.get("quando", "num dia qualquer"))]
-	if Colecao.nomeia(_colecao, id):
-		texto += "\n"
-		for linha in (dado.get("revelado", []) as Array):
-			texto += "%s\n" % Jogo.texto(str(linha))
-	else:
-		texto += "\nVocê não sabe de quem era. Ainda."
-	return texto
+	return FichasDaColecao.pagina(_colecao, id)

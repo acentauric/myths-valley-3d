@@ -15,7 +15,7 @@ extends SceneTree
 ##   1. AS QUATRO PEÇAS ESTÃO NA ÁRVORE: o caminho, a cadeia, a página e o
 ##      rodapé das teclas.
 ##   2. SEM NADA CONHECIDO ELA NÃO QUEBRA, e diz o que fazer.
-##   3. A CADEIA MOSTRA GRUPO, E NÃO DEZOITO NOMES. Grupo sem espécie conhecida
+##   3. A RAIZ MOSTRA AS QUATRO SEÇÕES, e as plantas descem por grupo. Grupo sem espécie conhecida
 ##      não aparece — cabeçalho de gaveta vazia é a caça ao item que a silhueta
 ##      seria.
 ##   4. A CONTA DE CADA GRUPO ESTÁ NA LINHA ("2 de 6"): é o que responde "falta
@@ -88,44 +88,55 @@ func _run() -> void:
 		_fechar()
 		return
 
-	# --- 2. SEM NADA CONHECIDO ------------------------------------------------
+	# --- 2. AS QUATRO SEÇÕES ESTÃO NA CADEIA ---------------------------------
+	#
+	# "No próprio almanaque, já considere os cordéis e outros colecionáveis." A
+	# raiz da cadeia passou a ser a SEÇÃO — plantas, cordéis, sinais, bichos —, e
+	# é ela que faz o caderno ser um só em vez de duas telas em teclas vizinhas.
 	Alm._conhecidas.clear()
+	tela._secao = ""
 	tela._grupo = ""
-	tela._especie = ""
+	tela._escolhido = ""
 	tela.abrir()
 	await _frames(3)
-	_conferir(_texto_de(pagina).to_lower().contains("aperte e"),
-		"com o almanaque vazio a página não diz como encher: diz '%s'" % _texto_de(pagina))
-	_conferir(cadeia.get_child_count() == 0,
-		"com o almanaque vazio a cadeia tem %d linha(s)" % cadeia.get_child_count())
-	tela.fechar()
-	await _frames(2)
+	var raiz := _textos_de(cadeia)
+	_conferir(raiz.size() == 4,
+		"a raiz da cadeia mostra %d linha(s) e as seções são quatro: %s" % [raiz.size(), str(raiz)])
+	var tudo_raiz := " | ".join(raiz)
+	for esperado in ["Plantas", "Cordéis", "Sinais", "Bichos"]:
+		_conferir(tudo_raiz.contains(esperado),
+			"a seção '%s' não está na raiz da cadeia: %s" % [esperado, tudo_raiz])
 
-	# --- 3 e 4. A CADEIA MOSTRA GRUPO, COM A CONTA ---------------------------
+	# --- 3. SEM NADA CONHECIDO A TELA NÃO QUEBRA ------------------------------
+	tela._escolher_secao(Alm.PLANTAS)
+	await _frames(3)
+	_conferir(_texto_de(pagina).to_lower().contains("aperte e"),
+		"com o almanaque vazio a página das plantas não diz como encher: diz '%s'" % _texto_de(pagina))
+
+	# --- 4. OS GRUPOS DE PLANTA, COM A CONTA ---------------------------------
 	#
 	# Duas frutíferas e uma da mata: três grupos existem no dado, e só dois
-	# podem aparecer.
+	# podem aparecer. Grupo sem espécie conhecida não aparece — cabeçalho de
+	# gaveta vazia é a caça ao item que a silhueta seria.
 	Alm._conhecidas.clear()
 	for especie in ["mangueira", "jaqueira", "pau_brasil"]:
 		_conferir(Alm._fichas.has(especie), "o dado não tem a espécie '%s'" % especie)
 		Alm._conhecidas.append(especie)
+	tela._secao = Alm.PLANTAS
 	tela._grupo = ""
-	tela._especie = ""
-	tela.abrir()
-	await _frames(3)
+	tela._escolhido = ""
+	tela._encher()
+	await _frames(2)
 
-	var linhas := _textos_de(cadeia)
-	_conferir(linhas.size() == 2,
-		"a cadeia mostra %d linha(s) e devia mostrar dois grupos: %s" % [linhas.size(), str(linhas)])
-	var tudo := " | ".join(linhas)
-	_conferir(tudo.contains("Frutíferas"), "o grupo das frutíferas não está na cadeia: %s" % tudo)
-	_conferir(tudo.contains("Mata"), "o grupo da mata não está na cadeia: %s" % tudo)
-	_conferir(not tudo.contains("Beira"),
-		"um grupo SEM espécie conhecida apareceu na cadeia: %s" % tudo)
-	_conferir(not tudo.contains("Mangueira"),
-		"a cadeia despejou a espécie com o grupo fechado: %s" % tudo)
-	_conferir(tudo.contains("2 de 6"),
-		"a conta das frutíferas não está na linha (esperava '2 de 6'): %s" % tudo)
+	var linhas := " | ".join(_textos_de(cadeia))
+	_conferir(linhas.contains("Frutíferas"), "o grupo das frutíferas não está na cadeia: %s" % linhas)
+	_conferir(linhas.contains("Mata"), "o grupo da mata não está na cadeia: %s" % linhas)
+	_conferir(not linhas.contains("Beira"),
+		"um grupo SEM espécie conhecida apareceu na cadeia: %s" % linhas)
+	_conferir(not linhas.contains("Mangueira"),
+		"a cadeia despejou a espécie com o grupo fechado: %s" % linhas)
+	_conferir(linhas.contains("2 de 6"),
+		"a conta das frutíferas não está na linha (esperava '2 de 6'): %s" % linhas)
 
 	# --- 5. ABRIR O GRUPO ABRE AS ESPÉCIES DELE ------------------------------
 	tela._escolher_grupo("frutiferas")
@@ -137,11 +148,9 @@ func _run() -> void:
 		"abrir um grupo mostrou espécie de outro: %s" % abertas)
 	_conferir(caminho.text.contains("Almanaque") and caminho.text.contains("Frutíferas"),
 		"o caminho não diz onde se está: '%s'" % caminho.text)
-	_conferir(caminho.text.contains("3 de %d" % Alm.total()),
-		"o caminho não traz a conta geral: '%s'" % caminho.text)
 
-	# --- 6. A PÁGINA DA ESPÉCIE ----------------------------------------------
-	tela._escolher_especie("mangueira")
+	# --- 6. A PÁGINA DA PLANTA -----------------------------------------------
+	tela._escolher_item("mangueira")
 	await _frames(3)
 	var texto := _texto_de(pagina)
 	_conferir(texto.contains("Mangueira"), "a página não traz o nome da espécie: '%s'" % texto)
@@ -152,18 +161,77 @@ func _run() -> void:
 	_conferir(caminho.text.contains("Mangueira"),
 		"o caminho não desceu até a espécie: '%s'" % caminho.text)
 
-	# --- 7. O TECLADO, E A TELA DENTRO DA JANELA -----------------------------
+	# --- 7. OS CORDÉIS ESTÃO DENTRO, COM VAGA EM BRANCO E COM FICHA ----------
+	#
+	# "Leve os cordéis para dentro do almanaque também."
+	#
+	# Aqui a regra é a OPOSTA da das plantas, e as duas estão certas: planta não
+	# conhecida não aparece, porque o almanaque é sobre o que se viu; peça de
+	# coleção aparece como "— — —", porque é o buraco na estante que faz
+	# procurar. É assim no 2D, e é o que separa coleção de inventário.
+	var colecao := root.get_node("/root/Colecao")
+	var ids: Array = colecao.ordem("cordeis")
+	_conferir(not ids.is_empty(), "o vale não tem cordel nenhum no catálogo")
+	if ids.is_empty():
+		_fechar()
+		return
+
+	tela._escolher_secao("cordeis")
+	await _frames(3)
+	var na_estante := _textos_de(cadeia)
+	var so_cordeis := 0
+	for linha in na_estante:
+		if linha.contains("— — —"):
+			so_cordeis += 1
+	_conferir(so_cordeis > 0,
+		"a seção dos cordéis não mostra vaga em branco: %s" % str(na_estante))
+	_conferir(caminho.text.contains("Cordéis"),
+		"o caminho não desceu até os cordéis: '%s'" % caminho.text)
+	_conferir(caminho.text.contains("de %d" % colecao.total("cordeis")),
+		"o caminho não traz a conta dos cordéis: '%s'" % caminho.text)
+
+	# Acha um cordel e confere que a página dele é a do 2D, com título e preço.
+	var primeiro := str(ids[0])
+	colecao.achar("cordeis", primeiro)
+	await _frames(2)
+	tela._escolher_item(primeiro)
+	await _frames(3)
+	var folha := _texto_de(pagina)
+	var dados_do_cordel: Dictionary = colecao.dados("cordeis", primeiro)
+	_conferir(folha.contains(str(dados_do_cordel.get("titulo", ""))),
+		"a página do cordel achado não traz o título dele: '%s'" % folha)
+	_conferir(folha.contains("réis"),
+		"a página do cordel não traz o quanto ele vale, como no 2D: '%s'" % folha)
+
+	# --- 8. E OS SINAIS E OS BICHOS TAMBÉM ------------------------------------
+	for secao in ["sinais", "bichos"]:
+		tela._escolher_secao(secao)
+		await _frames(3)
+		_conferir(not _textos_de(cadeia).is_empty(),
+			"a seção '%s' abriu vazia: o Colecao tem %d peça(s)"
+				% [secao, colecao.total(secao)])
+		_conferir(caminho.text.to_lower().contains(secao.substr(0, 5)),
+			"o caminho não desceu até '%s': '%s'" % [secao, caminho.text])
+
+	# --- 9. O TECLADO, E A TELA DENTRO DA JANELA -----------------------------
+	tela._escolher_secao(Alm.PLANTAS)
+	tela._escolher_grupo("frutiferas")
+	tela._escolher_item("mangueira")
+	await _frames(2)
 	var onde: int = tela._cursor
 	tela._andar(1)
 	_conferir(tela._cursor != onde, "a seta para baixo não andou na cadeia")
 	tela._voltar()
 	await _frames(2)
-	_conferir(tela._especie == "" and tela._grupo == "frutiferas",
-		"voltar da ficha devia parar no grupo, e parou em grupo='%s' especie='%s'"
-			% [tela._grupo, tela._especie])
+	_conferir(tela._escolhido == "" and tela._grupo == "frutiferas",
+		"voltar da ficha devia parar no grupo, e parou em grupo='%s' peça='%s'"
+			% [tela._grupo, tela._escolhido])
 	tela._voltar()
 	await _frames(2)
-	_conferir(tela._grupo == "", "voltar do grupo devia chegar à raiz, e ficou em '%s'" % tela._grupo)
+	_conferir(tela._grupo == "", "voltar do grupo devia chegar à seção, e ficou em '%s'" % tela._grupo)
+	tela._voltar()
+	await _frames(2)
+	_conferir(tela._secao == "", "voltar da seção devia chegar à raiz, e ficou em '%s'" % tela._secao)
 
 	_conferir(rodape.text.to_lower().contains("fechar"),
 		"o rodapé não diz como fechar: '%s'" % rodape.text)
@@ -181,15 +249,16 @@ func _run() -> void:
 				and caixa.end.x <= janela.x + 1.0 and caixa.end.y <= janela.y + 1.0,
 			"o painel está fora da janela: %s numa tela de %s" % [str(caixa), str(janela)])
 
-	# --- 8. REABRIR VOLTA ONDE O JOGADOR PAROU -------------------------------
-	tela._escolher_especie("jaqueira")
+	# --- 10. REABRIR VOLTA ONDE O JOGADOR PAROU ------------------------------
+	tela._escolher_secao(Alm.PLANTAS)
+	tela._escolher_item("jaqueira")
 	await _frames(2)
 	tela.fechar()
 	await _frames(2)
 	tela.abrir()
 	await _frames(3)
-	_conferir(tela._especie == "jaqueira",
-		"reabrir o almanaque perdeu a ficha aberta: ficou em '%s'" % tela._especie)
+	_conferir(tela._escolhido == "jaqueira",
+		"reabrir o almanaque perdeu a página aberta: ficou em '%s'" % tela._escolhido)
 	tela.fechar()
 
 	_fechar()
@@ -250,7 +319,7 @@ func _fechar() -> void:
 	_devolver_o_arquivo_do_jogador()
 	print("")
 	if falhas == 0:
-		print("ALMANAQUE_OK: o índice mostra grupo com a conta e não dezoito nomes, grupo vazio não aparece, abrir um grupo abre as espécies dele no lugar, o caminho escreve onde se está, a página traz a ficha inteira, o teclado anda e volta, o painel cabe na janela, e reabrir devolve a ficha aberta")
+		print("ALMANAQUE_OK: a raiz tem as quatro seções, as plantas descem por grupo com a conta e sem grupo vazio, os cordéis, sinais e bichos estão dentro com a vaga em branco e a ficha do 2D, o caminho escreve onde se está, o teclado anda e volta elo por elo, o painel cabe na janela, e reabrir devolve a página aberta")
 	else:
 		print("almanaque: %d falha(s)" % falhas)
 	quit(1 if falhas > 0 else 0)

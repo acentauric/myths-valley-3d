@@ -65,7 +65,7 @@ var _cadeias: Dictionary = {}
 var _camera_travada_antes := false
 var _relogio_pausado_antes := false
 var painel	# painel_vale.gd — tecla J
-var colecao	# colecao_vale.gd — tecla L
+var colecao	# colecao_vale.gd — sem tecla: virou seção do almanaque
 ## Dono único das telas: só uma fica aberta. Ver telas_do_vale.gd.
 var telas
 ## A aba pedida no último `abrir_o_painel`, entregue à abertura crua.
@@ -206,7 +206,10 @@ func _ready() -> void:
 		_abrir_painel_cru,
 		func() -> void: if painel != null: painel.fechar())
 	telas.registrar("colecao",
-		func(e: InputEvent) -> bool: return e.physical_keycode == Atalhos.tecla("colecao"),
+		# A COLEÇÃO NÃO TEM MAIS TECLA: ela virou seção do almanaque, que ficou com
+		# o L. A tela dela continua de pé e continua registrada aqui — o portão da
+		# câmera a abre por este dono —, mas nenhuma tecla a chama.
+		func(_e: InputEvent) -> bool: return false,
 		func() -> bool: return colecao != null and colecao.aberta,
 		_abrir_colecao_crua,
 		func() -> void: if colecao != null: colecao.fechar())
