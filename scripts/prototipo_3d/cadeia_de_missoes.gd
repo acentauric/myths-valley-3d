@@ -402,18 +402,21 @@ func _acertar_o_caderno(passo: Dictionary) -> void:
 				"Cortar: %d de %d" % [caidos, quantos_pes])
 		"levar":
 			var levou: bool = bool(_levados.get(str(passo.get("id", "")), false))
-			var carga := str(meta.get("item", ""))
-			var pedidas := maxi(int(meta.get("quantos", 1)), 1)
-			var linha := "Levar %s a %s" % [_nome_do_item(carga),
-				_nome_de(str(meta.get("a_quem", "")))]
-			# QUANTAS AINDA FALTAM, quando é mais de uma: sem isto o jogador sobe
-			# até a praça para descobrir que trouxe cinco. A conta fica na frase
-			# e não na barra, porque ter as seis não é tê-las entregado.
-			if pedidas > 1:
-				linha = "Levar %d %s a %s (tem %d)" % [pedidas, _nome_do_item(carga),
-					_nome_de(str(meta.get("a_quem", ""))),
-					mini(pedidas, Inventario.quantidade(carga))]
-			CadernoDoVale.andar(id, 1 if levou else 0, 1, linha)
+			# QUANTAS AINDA FALTAM DE CADA UMA: sem isto o jogador sobe até a
+			# praça para descobrir que trouxe cinco, ou atravessa o vale com as
+			# cordas e sem as tábuas. A conta fica na frase e não na barra,
+			# porque ter o material não é tê-lo entregado.
+			var cobrada := _carga_da_meta(meta)
+			var partes: Array[String] = []
+			for qual in cobrada:
+				var pedidas := int(cobrada[qual])
+				if pedidas > 1:
+					partes.append("%d %s (tem %d)" % [pedidas, _nome_do_item(str(qual)),
+						mini(pedidas, Inventario.quantidade(str(qual)))])
+				else:
+					partes.append(_nome_do_item(str(qual)))
+			CadernoDoVale.andar(id, 1 if levou else 0, 1,
+				"Levar %s a %s" % [", ".join(partes), _nome_de(str(meta.get("a_quem", "")))])
 		"falar":
 			var falou: bool = bool(_levados.get(str(passo.get("id", "")), false))
 			CadernoDoVale.andar(id, 1 if falou else 0, 1,
@@ -522,6 +525,23 @@ func _morador(quem: String) -> Node3D:
 ## da Casa da estrada; o Tonho responde no píer, que é onde o jogador está. Pôr
 ## a resposta na boca dela seria o jogador ouvir o agradecimento do outro lado
 ## do vale, num balão que ele não vê.
+## O QUE A ENTREGA COBRA, como {id: quantos}.
+##
+## Duas escritas para a mesma coisa, e é de propósito: `item` com `quantos` é a
+## entrega de uma coisa só — o pirão da Dona Filó, as seis canas da Candinha —, e
+## `itens` é a de várias, que é a rede do Tonho ("cinco cordas e três tábuas").
+## Sem número é um, que é como estava antes de qualquer conta existir.
+static func _carga_da_meta(meta: Dictionary) -> Dictionary:
+	var varios: Dictionary = meta.get("itens", {})
+	if not varios.is_empty():
+		var conta := {}
+		for qual in varios:
+			conta[str(qual)] = maxi(int(varios[qual]), 1)
+		return conta
+	var um := str(meta.get("item", ""))
+	return {} if um == "" else {um: maxi(int(meta.get("quantos", 1)), 1)}
+
+
 func _tentar_encontro(passo: Dictionary) -> void:
 	var meta: Dictionary = passo.get("meta", {})
 	var tipo := str(meta.get("tipo", ""))
@@ -530,14 +550,18 @@ func _tentar_encontro(passo: Dictionary) -> void:
 	var id := str(passo.get("id", ""))
 	if bool(_levados.get(id, false)):
 		return
-	var item := str(meta.get("item", ""))
-	# A ENTREGA TEM CONTA. A Dona Candinha pede SEIS canas, e enquanto a meta
-	# levava um só, chegar ao lado dela com uma cana fechava a missão das seis:
-	# o balão saía, o passo fechava, e a conta não acontecia. `quantos` sem
-	# número é um, que é o pirão da Dona Filó e tudo que veio antes.
-	var quantos := maxi(int(meta.get("quantos", 1)), 1)
-	if tipo == "levar" and (item == "" or Inventario.quantidade(item) < quantos):
-		return
+	# A ENTREGA TEM CONTA, E PODE TER MAIS DE UM ITEM. A Dona Candinha pede SEIS
+	# canas, e enquanto a meta levava um só, chegar ao lado dela com uma cana
+	# fechava a missão das seis: o balão saía, o passo fechava, e a conta não
+	# acontecia. O Tonho pede cinco cordas E três tábuas na mesma frase, e partir
+	# isso em dois passos seria partir o que ele diz de uma vez.
+	var carga := _carga_da_meta(meta)
+	if tipo == "levar":
+		if carga.is_empty():
+			return
+		for qual in carga:
+			if Inventario.quantidade(str(qual)) < int(carga[qual]):
+				return
 	var quem := _morador(str(meta.get("a_quem", "")))
 	if quem == null or jogador == null:
 		return
@@ -547,7 +571,8 @@ func _tentar_encontro(passo: Dictionary) -> void:
 		return
 
 	if tipo == "levar":
-		Inventario.consumir(item, quantos)
+		for qual in carga:
+			Inventario.consumir(str(qual), int(carga[qual]))
 	_levados[id] = true
 	var resposta := str(meta.get("resposta", ""))
 	if resposta != "" and quem.has_method("narrar"):

@@ -24,6 +24,16 @@ extends SceneTree
 var falhas := 0
 
 
+## O RECEITUÁRIO DA BANCADA, lido do script do autoload e não pelo nome dele.
+##
+## `Oficina` é autoload, não `class_name`: escrever `Oficina.RECEITAS` aqui faz o
+## Godot tentar compilar o oficina.gd como dependência DESTE script, antes de os
+## autoloads existirem, e ele morre em "Identifier not found: Receitas" — que é o
+## autoload que o oficina.gd consulta. Pegar o script do nó já compilado, como o
+## portão dos achados faz com o AchadosVale, não tem esse problema.
+var _receitas: Dictionary = {}
+
+
 func _initialize() -> void:
 	_run.call_deferred()
 
@@ -45,6 +55,9 @@ func _run() -> void:
 	var inv := root.get_node_or_null("/root/Inventario")
 	var energia := root.get_node_or_null("/root/Energia")
 	var equipamento := root.get_node_or_null("/root/Equipamento")
+	var oficina := root.get_node_or_null("/root/Oficina")
+	if oficina != null:
+		_receitas = oficina.get_script().RECEITAS
 	_conferir(recursos != null, "o nó Recursos3D não foi criado")
 	_conferir(inv != null and energia != null, "o inventário ou o fôlego não subiram")
 	if recursos == null or inv == null or energia == null:
@@ -195,9 +208,11 @@ func _run() -> void:
 					var pedido := str(meta.get("item", ""))
 					_conferir(Catalogo.ITENS.has(pedido),
 						"o passo '%s' pede '%s', que não está no catálogo" % [qual_passo, pedido])
-					_conferir(ferramenta_de_rende.has(pedido),
-						"o passo '%s' pede '%s' e nenhum alvo posto no vale rende isso"
+					_conferir(_da_no_vale(pedido, ferramenta_de_rende),
+						"o passo '%s' pede '%s', que nenhum alvo posto no vale rende e a bancada não faz"
 							% [qual_passo, pedido])
+					# A FERRAMENTA SÓ SE COBRA DE QUEM CAI DE ALVO: o que sai da
+					# bancada sai de material, e o material já foi perguntado.
 					var precisa := str(ferramenta_de_rende.get(pedido, ""))
 					_conferir(precisa == "" or entregues.has(precisa),
 						"o passo '%s' pede %s, que só sai de %s, e ninguém entregou a %s até aqui"
@@ -217,22 +232,65 @@ func _run() -> void:
 						"o passo '%s' manda procurar '%s', que não mora no vale: a missão trava"
 							% [qual_passo, quem])
 					if tipo == "levar":
-						var carga := str(meta.get("item", ""))
-						_conferir(Catalogo.ITENS.has(carga),
-							"o passo '%s' manda levar '%s', fora do catálogo" % [qual_passo, carga])
-						# ENTREGADO OU COLHÍVEL. A Dona Candinha não dá a cana:
-						# ela pede a do roçado do jogador, e o passo antes dá a
-						# foice. Exigir que alguém entregue a carga reprovaria a
-						# missão que funciona — e deixar de perguntar deixaria
-						# passar a que manda levar o que não existe.
-						_conferir(entregues.has(carga) or ferramenta_de_rende.has(carga),
-							"o passo '%s' manda levar %s, que ninguém deu e nenhum alvo do vale rende"
-								% [qual_passo, carga])
+						var cobrada := _carga_do_passo(meta)
+						_conferir(not cobrada.is_empty(),
+							"o passo '%s' manda levar e não diz o quê" % qual_passo)
+						for carga in cobrada:
+							var qual_carga := str(carga)
+							_conferir(Catalogo.ITENS.has(qual_carga),
+								"o passo '%s' manda levar '%s', fora do catálogo" % [qual_passo, qual_carga])
+							# ENTREGADO OU QUE O VALE DÊ A QUEM TRABALHA. A Dona
+							# Candinha não dá a cana: pede a do roçado do jogador.
+							# O Tonho não dá corda nem tábua: elas saem da bancada,
+							# de lenha que cai de árvore. Exigir que alguém entregue
+							# a carga reprovaria as duas missões que funcionam, e
+							# não perguntar deixaria passar a que manda levar o que
+							# não existe.
+							_conferir(entregues.has(qual_carga) or _da_no_vale(qual_carga, ferramenta_de_rende),
+								"o passo '%s' manda levar %s, que ninguém deu, nenhum alvo do vale rende e a bancada não faz"
+									% [qual_passo, qual_carga])
 	print("  passos com meta nas seis cadeias: %d" % passos_com_meta)
-	_conferir(passos_com_meta >= 11,
+	_conferir(passos_com_meta >= 12,
 		"só achei %d passo(s) com meta nas seis cadeias" % passos_com_meta)
 
 	_fechar()
+
+
+## O que a entrega cobra, na mesma leitura da `CadeiaDeMissoes`: `item` com
+## `quantos` para uma coisa só, `itens` para várias.
+func _carga_do_passo(meta: Dictionary) -> Dictionary:
+	var varios: Dictionary = meta.get("itens", {})
+	if not varios.is_empty():
+		return varios
+	var um := str(meta.get("item", ""))
+	return {} if um == "" else {um: int(meta.get("quantos", 1))}
+
+
+## O VALE DÁ ESTE ITEM A QUEM TRABALHA? Ou cai de um alvo posto, ou sai da
+## bancada de algo que cai de um alvo posto.
+##
+## É a pergunta que faltava. A rede do Tonho pede cinco cordas e três tábuas, e
+## nenhuma das duas cai de nada: vêm de lenha, na oficina. Olhar só os alvos
+## diria que a missão é impossível quando ela é a coisa mais comum do vale.
+##
+## A RECEITA TEM DE NASCER SABIDA. Missão que cobra material de receita trancada
+## é um beco: o jogador junta a lenha e não tem o que fazer com ela. Tábua e
+## corda nascem sabidas justamente por isto, e o comentário do `Oficina.RECEITAS`
+## diz que é por causa desta rede.
+func _da_no_vale(item: String, de_alvo: Dictionary, fundo: int = 4) -> bool:
+	if de_alvo.has(item):
+		return true
+	if fundo <= 0:
+		return false
+	var receita: Dictionary = _receitas.get(item, {})
+	if receita.is_empty():
+		return false
+	if not bool((receita.get("abre", {}) as Dictionary).get("comeco", false)):
+		return false
+	for custo in (receita.get("custo", {}) as Dictionary):
+		if not _da_no_vale(str(custo), de_alvo, fundo - 1):
+			return false
+	return true
 
 
 func _fechar() -> void:

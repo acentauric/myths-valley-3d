@@ -1,10 +1,32 @@
 {
-  "observacao": "A CONTA E A TERRA DO TONHO, trazida do jogo 2D (data/dialogos/arraial.json, passos tonho_divida / tonho_divida_fim / tonho_terra / tonho_terra_fim). É a única cadeia do vale que ATRAVESSA o arraial: começa no píer, manda ao armazém e volta ao píer — as duas outras conversadas (zefa, filo) ficam entre duas pessoas. No 2D a dívida se paga no baú do livro de fiado ou pela rede do Tonho ao longo de semanas; o vale ainda não tem o livro nem a rede (#21), então o passo do meio é A IDA ao armazém, que é a instrução literal do objetivo de lá ('Entre no armazém'), e o Tonho conta o que achou na volta. AS RECOMPENSAS DO 2D FICARAM FORA: lá a dívida paga rende 2 peixes assados e a terra rende 2 pirões e 2 cocadas, e a CadeiaDeMissoes ainda não tem campo de recompensa — quando tiver, os números estão em arraial.json, em 'recompensas'. 'abre_em' é nota de leitura: quem decide onde a fila abre é o _pendurar_cadeia do Prototype. TRADUÇÃO: só em português neste primeiro momento; inglês e espanhol são do Ramon.",
+  "observacao": "A REDE, A CONTA E A TERRA DO TONHO, trazida do jogo 2D (data/dialogos/arraial.json, passos pescador_ver / pescador_rede / tonho_divida / tonho_terra e os respectivos _fim). É A HISTÓRIA INTEIRA DE UM MORADOR, na ordem de lá, e a ordem é o sentido: a rede é o que paga o armazém ('Com rede eu tiro em uma manhã o que a linha me dá em cinco. Isso paga o armazém antes do inverno'), e a dívida paga é o que solta a terra ('Eu só não queria entregar terra devendo'). Importar a dívida sem a rede, como esta cadeia começou, era ficar com o fim sem o começo. É também a única cadeia do vale que ATRAVESSA o arraial: o píer, a oficina do roçado, o armazém, e o píer de novo. NO 2D A DÍVIDA SE PAGA no baú do livro de fiado ou pela rede ao longo de semanas; o vale não tem o livro nem a espera de semanas (#21), então o passo do armazém é A IDA, que é a instrução literal do objetivo de lá ('Entre no armazém'). CORDA E TÁBUA NASCEM SABIDAS na oficina, e o comentário do Oficina.RECEITAS já dizia que era por causa desta rede. O PASSO DA REDE APONTA O ROÇADO, e não a oficina: oficina está na lista FALTAM_NO_VALE do Lugares (a âncora é da Fase 7), e passo cujo lugar não resolve o correr PULA EM SILÊNCIO — apontá-la teria apagado o meio da cadeia sem ninguém saber. A bancada é provisória na beira do roçado, como diz o BancadasVale. AS RECOMPENSAS DO 2D FICARAM FORA: lá a dívida paga rende 2 peixes assados e a terra rende 2 pirões e 2 cocadas, e a CadeiaDeMissoes ainda não tem campo de recompensa — os números estão em arraial.json, em 'recompensas'. 'abre_em' é nota de leitura: quem decide onde a fila abre é o _pendurar_cadeia do Prototype. TRADUÇÃO: só em português neste primeiro momento; inglês e espanhol são do Ramon.",
   "dono": "tonho",
   "principal": true,
   "abre_em": "pier",
   "traducao": "pendente",
   "passos": [
+    {
+      "id": "pescador_ver",
+      "lugar": "pier",
+      "raio": 11.0,
+      "audio": "",
+      "texto": "Senta aí. Olha a água e não fala nada por um minuto. Viu? Ali na curva ela corre mais escura — é fundo, e peixe grande dorme no fundo de dia. Quando a maré está enchendo o peixe entra com ela; quando está vazando, ele encosta na pedra e espera. Meu pai me ensinou a ler maré aos nove: é a única herança que não deu pra penhorar.",
+      "meta": {}
+    },
+    {
+      "id": "pescador_rede",
+      "lugar": "rocado",
+      "raio": 9.0,
+      "audio": "",
+      "texto": "Agora eu vou te pedir uma coisa, e não é peixe — peixe eu pego. Minha rede ficou do outro lado do rio numa noite de março, e desde então eu pesco de linha, um por um: dá pra comer, não dá pra pagar o armazém. Rede não se compra aqui, se faz. Você tem a bancada na beira do roçado: torce cinco cordas lá e traz. Traz três tábuas também, que a bancada onde eu amarrava apodreceu.",
+      "meta": {
+        "tipo": "levar",
+        "itens": { "corda": 5, "tabua": 3 },
+        "a_quem": "tonho",
+        "raio": 3.4,
+        "resposta": "Pronto. Deixa aí no chão mesmo. Olha — eu ia dizer obrigado e ficar quieto, que é o meu jeito, mas você merece a conta certa: com rede eu tiro em uma manhã o que a linha me dá em cinco, e isso paga o armazém antes do inverno. Agora vai, que eu tenho malha pra amarrar e o joelho não espera."
+      }
+    },
     {
       "id": "tonho_divida",
       "lugar": "pier",
@@ -31,12 +53,12 @@
         "tipo": "falar",
         "a_quem": "tonho",
         "raio": 3.4,
-        "resposta": "Senta aqui um minuto. Aquele chão do outro lado da estrada é seu. Eu falo com o padre no domingo e a gente assina na frente dele, que é como se faz aqui. Não é gratidão, e eu não quero que você entenda como gratidão: é que eu disse o preço e o preço era esse. Minha mãe ainda senta na porta olhando a curva da estrada — mas agora, quando ela pergunta como estão as contas, eu respondo sem mudar de assunto. Planta o que você quiser lá. Eu cuido, se você mandar, e dessa vez eu cuido de terra que não me deve nada."
+        "resposta": "Senta aqui um minuto. Aquele chão do outro lado da estrada é seu. Eu falo com o padre no domingo e a gente assina na frente dele, que é como se faz aqui. Não é gratidão, e eu não quero que você entenda como gratidão: é que eu disse o preço e o preço era esse. Eu só não queria entregar terra devendo. Minha mãe ainda senta na porta olhando a curva da estrada — mas agora, quando ela pergunta como estão as contas, eu respondo sem mudar de assunto. Planta o que você quiser lá. Eu cuido, se você mandar, e dessa vez eu cuido de terra que não me deve nada."
       }
     }
   ],
   "arremate": {
-    "texto": "A terra do outro lado da estrada é sua, e o livro do armazém é papel velho.",
+    "texto": "A rede do Tonho está no mar, o livro do armazém é papel velho, e a terra do outro lado da estrada é sua.",
     "narra": false,
     "traducao": "pendente"
   }
