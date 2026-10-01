@@ -23,7 +23,13 @@ extends SceneTree
 ## e o mapa é a exceção declarada — nele o jogador para e o mundo continua, de
 ## propósito, porque é vista do vale ao vivo e não menu.
 
+const CameraMouse = preload("res://scripts/prototipo_3d/camera_mouse.gd")
+
 var falhas := 0
+## O jogador do vale, para o `_por_a_camera_em` alcançar.
+var player = null
+## A preferência de câmera do jogador, devolvida no fim: este portão escreve nela.
+var _pref_guardada := -1
 
 
 func _initialize() -> void:
@@ -45,7 +51,8 @@ func _run() -> void:
 	await _frames(3)
 
 	var jogo := current_scene
-	var player = jogo.get("player")
+	player = jogo.get("player")
+	_pref_guardada = CameraMouse.modo()
 	var hud = jogo.get("hud")
 	_conferir(player != null and hud != null, "não achei o jogador ou o HUD")
 	if player == null or hud == null:
@@ -67,26 +74,35 @@ func _run() -> void:
 		},
 		{
 			"nome": "mochila",
-			"abrir": func(): hud.barra_de_mao()._abrir_ou_fechar_a_mochila(),
-			"fechar": func(): hud.barra_de_mao()._abrir_ou_fechar_a_mochila(),
+			"abrir": func(): jogo.telas.abrir("mochila"),
+			"fechar": func(): jogo.telas.fechar_tudo(),
 			"pausa": true,
 		},
 		{
 			"nome": "almanaque",
-			"abrir": func(): hud.almanaque().abrir(),
-			"fechar": func(): hud.almanaque().fechar(),
-			"pausa": true,
-		},
-		{
-			"nome": "coleção (L)",
-			"abrir": func(): jogo.abrir_a_colecao(),
-			"fechar": func(): jogo.colecao.fechar(),
+			"abrir": func(): jogo.telas.abrir("almanaque"),
+			"fechar": func(): jogo.telas.fechar_tudo(),
 			"pausa": true,
 		},
 		{
 			"nome": "painel (J)",
-			"abrir": func(): jogo.abrir_o_painel(),
-			"fechar": func(): jogo.painel.fechar(),
+			"abrir": func(): jogo.telas.abrir("painel"),
+			"fechar": func(): jogo.telas.fechar_tudo(),
+			"pausa": true,
+		},
+		{
+			# A FALA LONGA (#21) não é tela — é o mundo que fala —, mas para o
+			# vale e devolve a câmera do mesmo jeito.
+			"nome": "fala longa",
+			"abrir": func(): root.get_node("/root/Dialogo").falar("", ["A câmera volta como estava?"]),
+			"fechar": func(): root.get_node("/root/Dialogo")._fechar(),
+			"pausa": true,
+		},
+		{
+			# O FOLHETO (#21) é tela que o mundo abre: o cordel achado.
+			"nome": "folheto",
+			"abrir": func(): jogo.ler_o_folheto("peso_falso"),
+			"fechar": func(): jogo.telas.fechar_tudo(),
 			"pausa": true,
 		},
 		{
@@ -112,7 +128,7 @@ func _run() -> void:
 	for travada_no_inicio in [false, true]:
 		var modo := "arrastar" if travada_no_inicio else "livre"
 		for tela: Dictionary in telas:
-			player.set_camera_locked(travada_no_inicio)
+			_por_a_camera_em(travada_no_inicio)
 			await _frames(2)
 			var antes: bool = player.camera_travada()
 			_conferir(antes == travada_no_inicio,
@@ -146,13 +162,95 @@ func _run() -> void:
 			print("  %-20s modo '%s': %s" % [tela["nome"], modo,
 				"ok" if depois == antes else "DEVOLVEU DIFERENTE"])
 
+	# --- UMA TELA DE CADA VEZ, E A CÂMERA INTEIRA DEPOIS DE TROCAR -----------
+	#
+	# "Quando tava no Menu de missão, apertei o Menu do Almanaque e ele abriu
+	# ATRÁS do da missão" — e, logo depois, "quando sai do almanaque, a tela
+	# tava destravada". As duas queixas são a mesma coisa.
+	#
+	# Enquanto cada tela cuidava da própria tecla, abrir a segunda não fechava a
+	# primeira, e as duas escreviam na MESMA gaveta do modo de câmera: a
+	# primeira guardava "travada", a segunda guardava o que achava — já solta —,
+	# e fechar devolvia solta. Não adiantava consertar a devolução: o defeito
+	# era o empilhamento.
+	#
+	# Aqui se abre uma, se abre OUTRA por cima, e se cobra que a primeira tenha
+	# fechado e que a câmera volte como estava no começo de tudo.
+	print("")
+	var com_tecla := ["mochila", "almanaque", "painel"]
+	for modo_travado in [false, true]:
+		for primeira in com_tecla:
+			for segunda in com_tecla:
+				if primeira == segunda:
+					continue
+				jogo.telas.fechar_tudo()
+				_por_a_camera_em(modo_travado)
+				await _frames(2)
+				jogo.telas.abrir(primeira)
+				await _frames(2)
+				if jogo.telas.aberta() != primeira:
+					continue          # tela que se recusa a abrir agora (mapa aberto etc.)
+				jogo.telas.abrir(segunda)
+				await _frames(2)
+				var agora: String = jogo.telas.aberta()
+				_conferir(agora == segunda,
+					"com '%s' aberta, pedir '%s' deixou '%s' na tela"
+						% [primeira, segunda, agora if agora != "" else "nada"])
+				jogo.telas.fechar_tudo()
+				await _frames(2)
+				_conferir(jogo.telas.aberta() == "",
+					"fechar tudo deixou '%s' aberta" % jogo.telas.aberta())
+				_conferir(player.camera_travada() == modo_travado,
+					"abrir '%s', trocar para '%s' e fechar devolveu a câmera em '%s'"
+						% [primeira, segunda, "arrastar" if player.camera_travada() else "livre"])
+				_conferir(not paused, "depois de fechar tudo o vale continuou parado")
+
+	# --- A PLAQUINHA DE NOME NÃO FICA POR CIMA DA TELA -----------------------
+	#
+	# "Quando abro os MENUs, o nome do Pedro tá sobrescrevendo os MENUs."
+	#
+	# As plaquinhas moram no mesmo Control do HUD que o almanaque e a barra de
+	# mão, e entram DEPOIS deles — filho mais novo desenha por cima.
+	#
+	# MEDE O AVISO, E NÃO O PIXEL, e isso é escolha com razão. A primeira versão
+	# contava plaquinhas visíveis com a tela aberta e PASSAVA COM O CONSERTO
+	# ARRANCADO: em headless nenhuma fica visível, porque o morador que fala
+	# esconde o próprio rótulo (`npc.gd.mostrar_balao`) e os que não falam andam
+	# de volta ao posto no meio da conta. Tentei construir a cena — morador
+	# calado, posto na frente da câmera, rótulo aceso — e não se sustenta com o
+	# vale andando.
+	#
+	# Verificação que não pode falhar é pior que verificação nenhuma. O que pode
+	# quebrar, e o que quebrou, é o AVISO: o dono das telas chamar
+	# `placas.permitir(false)` ao abrir e `true` ao fechar. É isso que se mede —
+	# e arrancar a ligação reprova aqui.
+	print("")
+	jogo.telas.fechar_tudo()
+	await _frames(2)
+	_conferir(jogo.placas != null, "o vale não montou as plaquinhas de nome")
+	if jogo.placas != null:
+		_conferir(jogo.placas._permitido,
+			"com o vale livre as plaquinhas já estavam proibidas")
+		for qual in ["mochila", "almanaque", "painel", "menu_pausa"]:
+			jogo.telas.abrir(qual)
+			await _frames(3)
+			if jogo.telas.aberta() != qual:
+				continue
+			_conferir(not jogo.placas._permitido,
+				"'%s' abriu e as plaquinhas de nome continuaram permitidas: elas desenham por cima" % qual)
+			jogo.telas.fechar_tudo()
+			await _frames(3)
+			_conferir(jogo.placas._permitido,
+				"depois de fechar '%s' as plaquinhas não voltaram a ser permitidas" % qual)
+		print("  plaquinhas: proibidas nas cinco telas e liberadas ao fechar")
+
 	# --- E PERDER O FOCO NÃO TROCA O MODO ------------------------------------
 	#
 	# O primeiro dos quatro defeitos. Soltar o cursor ao perder o foco é certo —
 	# mouse preso numa janela que não está na frente é mouse preso num jogo que
 	# o jogador não está vendo — mas o MODO tem de sobreviver.
 	for travada_no_inicio in [false, true]:
-		player.set_camera_locked(travada_no_inicio)
+		_por_a_camera_em(travada_no_inicio)
 		await _frames(2)
 		player.notification(Node.NOTIFICATION_APPLICATION_FOCUS_OUT)
 		await _frames(2)
@@ -164,11 +262,31 @@ func _run() -> void:
 
 	_fechar()
 
+## PÕE A CÂMERA NO MODO PEDIDO, pela PREFERÊNCIA.
+##
+## Este portão punha o modo direto no jogador (`player.set_camera_locked`), e
+## isso deixou de medir a coisa certa quando a gaveta do modo acabou: fechar uma
+## tela agora devolve a câmera ao que a PREFERÊNCIA diz, que é o que o AJUSTAR
+## escreve e o que o vale lê ao abrir. Pôr no jogador e esperar o valor de volta
+## era esperar que uma gaveta existisse.
+##
+## Mexer na preferência é mexer em `user://controles.cfg`, que é arquivo do
+## jogador — por isso o `_guardar_a_preferencia` no começo e o `_devolver` no fim.
+func _por_a_camera_em(travada: bool) -> void:
+	CameraMouse.definir(CameraMouse.ARRASTAR if travada else CameraMouse.LIVRE)
+	player.set_camera_locked(CameraMouse.travada())
+
+
 
 func _fechar() -> void:
+	# DEVOLVE A PREFERÊNCIA DO JOGADOR. Este portão escreve em
+	# `user://controles.cfg` para montar os dois modos, e deixar a escolha dele
+	# trocada seria o teste mexendo no jogo de quem o roda.
+	if _pref_guardada >= 0:
+		CameraMouse.definir(_pref_guardada)
 	print("")
 	if falhas == 0:
-		print("CAMERA_OK: mapa, mochila, almanaque, coleção, painel e menu abrem com o cursor livre, param o vale atrás delas (menos o mapa, que é vista ao vivo) e devolvem o modo que acharam, nos dois modos; e perder o foco não troca nada")
+		print("CAMERA_OK: as cinco telas abrem com o cursor livre, param o vale atrás delas (menos o mapa, que é vista ao vivo) e devolvem o modo que acharam nos dois modos; abrir uma fecha a outra, e trocar de tela não perde a câmera; e perder o foco não troca nada")
 	else:
 		print("câmera: %d falha(s)" % falhas)
 	quit(1 if falhas > 0 else 0)

@@ -1,8 +1,11 @@
 {
   "observacao": "As missões de chegada que o Pedro conduz. Saíram de uma constante dentro de guia_pedro.gd e viraram dado — é o formato que o sistema de missões do 2D vai ler quando atravessar (ver docs/projeto/MIGRACAO_2D_3D.md, Fase 3). O campo 'lugar' é NOME DE CONTRATO do autoload Lugares, e não nome de âncora do world_builder: é o que faz o mesmo passo servir nos dois jogos. 'raio' é em unidades (1 u = 4 m). 'audio' é o arquivo em assets/audio/vozes/, sem extensão; vazio quer dizer que o Pedro fala só no balão. Todo texto que o jogador lê existe nos três idiomas (pt-BR, en, es), que é a regra deste projeto.",
+  "dono": "pedro",
+  "principal": true,
   "passos": [
     {
       "id": "pier",
+      "titulo": "A chegada pelo píer",
       "lugar": "pier",
       "raio": 7.0,
       "audio": "pedro_pier",
@@ -12,6 +15,7 @@
     },
     {
       "id": "praca",
+      "titulo": "A praça do arraial",
       "lugar": "praca",
       "raio": 9.0,
       "audio": "pedro_praca",
@@ -21,6 +25,7 @@
     },
     {
       "id": "casa_pasto",
+      "titulo": "A casa de pasto",
       "lugar": "casa_de_pasto",
       "raio": 7.0,
       "audio": "pedro_casa_pasto",
@@ -30,6 +35,7 @@
     },
     {
       "id": "capela",
+      "titulo": "A capela do arraial",
       "lugar": "capela",
       "raio": 8.0,
       "audio": "pedro_capela",
@@ -39,6 +45,7 @@
     },
     {
       "id": "rocado",
+      "titulo": "O roçado, morro acima",
       "lugar": "rocado",
       "raio": 9.0,
       "audio": "",
@@ -49,6 +56,7 @@
 
     {
       "id": "machado",
+      "titulo": "O machado do teu tio",
       "traducao": "pendente",
       "lugar": "casa_de_taipa",
       "raio": 7.0,
@@ -59,6 +67,7 @@
     },
     {
       "id": "lenha",
+      "titulo": "Mais dois feixes de lenha",
       "traducao": "pendente",
       "lugar": "rocado",
       "raio": 9.0,
@@ -68,6 +77,7 @@
     },
     {
       "id": "picareta",
+      "titulo": "A picareta e o lajedo",
       "traducao": "pendente",
       "lugar": "rocado",
       "raio": 7.0,
@@ -78,6 +88,7 @@
     },
     {
       "id": "enxada",
+      "titulo": "A enxada do finado",
       "traducao": "pendente",
       "lugar": "rocado",
       "raio": 9.0,

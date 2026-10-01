@@ -45,6 +45,12 @@ var _dica: PanelContainer
 ## id → {"no", "pos", "ficha", "golpes_dados"}
 var _alvos: Dictionary = {}
 var _perto := ""
+## Quantos alvos de cada peça foram POSTOS no mundo, para a conta de quantos
+## já caíram: alvo derrubado some de `_alvos`, e sem este número não haveria
+## de onde subtrair. Ver `derrubados`.
+var _postos: Dictionary = {}
+## Os ids dos alvos que já caíram nesta partida, para o save. Ver `caidos`.
+var _caidos: Array[String] = []
 
 
 func configurar(world: Node3D, jogador: Node3D, hud) -> void:
@@ -109,7 +115,25 @@ func _erguer() -> void:
 		for i in range(antes, _world.get_child_count()):
 			corpos.append(_world.get_child(i))
 
-		_alvos[id] = {"no": no, "pos": pos, "ficha": ficha, "golpes_dados": 0, "corpos": corpos}
+		# A MEIA-PEGADA: o quanto este alvo empurra o jogador para longe do
+		# próprio centro. É o que o alcance do golpe soma, para "encoste e
+		# aperte E" valer em peça de qualquer tamanho. Ver `_mais_perto`.
+		var meia := 0.0
+		for corpo in corpos:
+			for forma_no in (corpo as Node).get_children():
+				if not (forma_no is CollisionShape3D):
+					continue
+				var forma = (forma_no as CollisionShape3D).shape
+				if forma is BoxShape3D:
+					var caixa := (forma as BoxShape3D).size
+					meia = maxf(meia, maxf(caixa.x, caixa.z) * 0.5)
+				elif forma is CylinderShape3D:
+					meia = maxf(meia, (forma as CylinderShape3D).radius)
+
+		var peca := str(ficha.get("peca", ""))
+		_postos[peca] = int(_postos.get(peca, 0)) + 1
+		_alvos[id] = {"no": no, "pos": pos, "ficha": ficha, "golpes_dados": 0,
+			"corpos": corpos, "meia_pegada": meia}
 
 
 func _process(_delta: float) -> void:
@@ -132,15 +156,32 @@ func _process(_delta: float) -> void:
 
 
 ## O alvo ao alcance, ou "" — o mais perto quando há mais de um.
+## O ALVO AO ALCANCE DO BRAÇO, medido da SUPERFÍCIE dele e não do centro.
+##
+## Era aqui o defeito da missão da picareta, e ele durou três rodadas porque
+## cada conserto olhou uma parte diferente: que o alvo existe, que o golpe
+## funciona, que a meta fecha pela meta. Nada disso era o problema.
+##
+## O problema era ARITMÉTICA. O lajedo é a peça `pedras` em tamanho 2,2, e a
+## caixa de colisão dela fica com 6,6 de lado — 3,30 do centro até a face. O
+## alcance era 3,20 do CENTRO. O corpo do jogador esbarra na face e para a
+## 3,30; o golpe exigia chegar a 3,20. Folga negativa de dez centímetros, e
+## nenhuma quantidade de insistência resolvia: o lajedo era fisicamente
+## inalcançável.
+##
+## Medir do centro só funciona enquanto os alvos são pequenos. Agora o alcance
+## é somado à meia-pegada de cada um, que é o quanto ele empurra o jogador para
+## longe do próprio centro — e aí "encoste e aperte E" volta a ser verdade para
+## qualquer tamanho de peça.
 func _mais_perto() -> String:
 	var melhor := ""
-	var menor := ALCANCE
+	var menor := INF
 	for id in _alvos:
 		var d: Vector3 = _alvos[id]["pos"] - _jogador.global_position
 		d.y = 0.0
-		var dist := d.length()
-		if dist < menor:
-			menor = dist
+		var sobra: float = d.length() - float(_alvos[id].get("meia_pegada", 0.0))
+		if sobra < ALCANCE and sobra < menor:
+			menor = sobra
 			melhor = id
 	return melhor
 
@@ -148,7 +189,7 @@ func _mais_perto() -> String:
 ## O que a dica diz depois do nome: a ferramenta que falta, ou o que vai render.
 func _o_que_falta(ficha: Dictionary) -> String:
 	var ferramenta := str(ficha.get("ferramenta", ""))
-	if not Inventario.tem(ferramenta):
+	if not _tem_ferramenta(ferramenta):
 		return "precisa de %s" % _nome_do_item(ferramenta)
 	if not Energia.aguenta("bater"):
 		return "sem fôlego"
@@ -158,6 +199,13 @@ func _o_que_falta(ficha: Dictionary) -> String:
 func _nome_do_item(id: String) -> String:
 	var item: Dictionary = Catalogo.ITENS.get(id, {})
 	return str(item.get("nome", id))
+
+
+func _tem_ferramenta(id: String) -> bool:
+	var encaixe := str(Catalogo.dados(id).get("encaixe", ""))
+	if Catalogo.tipo(id) == "ferramenta" and encaixe != "":
+		return Equipamento.no_encaixe(encaixe) == id
+	return Inventario.tem(id)
 
 
 ## O GOLPE.
@@ -172,7 +220,7 @@ func bater() -> bool:
 	var ficha: Dictionary = alvo["ficha"]
 	var ferramenta := str(ficha.get("ferramenta", ""))
 
-	if not Inventario.tem(ferramenta):
+	if not _tem_ferramenta(ferramenta):
 		recusado.emit("Precisa de %s." % _nome_do_item(ferramenta))
 		return false
 	if not Energia.gastar("bater"):
@@ -189,7 +237,12 @@ func bater() -> bool:
 	# Caiu: some do mundo e vira material na mochila.
 	var rende := str(ficha.get("rende", ""))
 	var quantos := int(ficha.get("quantidade", 1))
-	Inventario.adicionar(rende, quantos)
+	# ALVO QUE NÃO RENDE NADA É ALVO QUE SÓ SE LIMPA, e o capim do cemitério é
+	# o primeiro. No 2D, cortar o mato não põe nada na mochila: o mato some, e
+	# é isso que limpar quer dizer. Sem esta guarda, `adicionar("")` empilharia
+	# um item de id vazio na mochila do jogador a cada pé cortado.
+	if rende != "":
+		Inventario.adicionar(rende, quantos)
 	var no: Node3D = alvo["no"]
 	if is_instance_valid(no):
 		no.queue_free()
@@ -200,6 +253,8 @@ func bater() -> bool:
 			corpo.queue_free()
 	var id := _perto
 	_alvos.erase(id)
+	if not _caidos.has(id):
+		_caidos.append(id)
 	_perto = ""
 	_dica.visible = false
 	derrubado.emit(id, rende, quantos)
@@ -241,6 +296,11 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		return
 	if not (event is InputEventKey and event.pressed and not event.echo
 			and event.physical_keycode == Atalhos.tecla("interagir")):
+		return
+	# COM O CORPO PARADO, O E NÃO VALE PARA O MUNDO, como nos achados, na pesca
+	# e na luta. No escuro da queda o jogador já está na porta de casa, e o E
+	# batia no tronco ao lado dela sem corpo nenhum de pé para bater.
+	if not _jogador.is_physics_processing():
 		return
 	bater()
 	get_viewport().set_input_as_handled()
@@ -285,3 +345,81 @@ func mais_perto_que_rende(item: String, de: Vector3) -> Vector3:
 			menor = d.length()
 			melhor = _alvos[id]["pos"]
 	return melhor
+
+
+## QUANTOS ALVOS DESTA PEÇA JÁ CAÍRAM.
+##
+## A missão do cemitério pede "corte quatro pés de capim", e capim cortado não
+## vai para a mochila — então contar pela mochila não serve. Conta-se pela
+## diferença: quantos foram POSTOS no mundo menos quantos ainda estão de pé.
+##
+## Pela PEÇA, e não pelo que rende, porque o que o passo pede é o pé cortado e
+## não o material: dois alvos de peças diferentes podem render a mesma coisa.
+func derrubados(peca: String) -> int:
+	return int(_postos.get(peca, 0)) - _de_pe(peca)
+
+
+## Quantos alvos desta peça ainda estão de pé.
+func _de_pe(peca: String) -> int:
+	var conta := 0
+	for id in _alvos:
+		if str((_alvos[id]["ficha"] as Dictionary).get("peca", "")) == peca:
+			conta += 1
+	return conta
+
+
+## ONDE ESTÁ O ALVO MAIS PERTO DESTA PEÇA, ou `Lugares.NENHUM`.
+##
+## É o `mais_perto_que_rende` para os que não rendem nada. O losango do
+## cemitério mostra o pé de capim mais perto, e quando ele parar de mostrar,
+## acabou — que é literalmente o que o Damião diz no jogo 2D.
+func mais_perto_da_peca(peca: String, de: Vector3) -> Vector3:
+	var melhor: Vector3 = Lugares.NENHUM
+	var menor := INF
+	for id in _alvos:
+		if str((_alvos[id]["ficha"] as Dictionary).get("peca", "")) != peca:
+			continue
+		var d: Vector3 = _alvos[id]["pos"] - de
+		d.y = 0.0
+		if d.length() < menor:
+			menor = d.length()
+			melhor = _alvos[id]["pos"]
+	return melhor
+
+
+## OS ALVOS QUE JÁ CAÍRAM, por id, para o save.
+##
+## Sem isto, recarregar a partida faz o vale renascer inteiro: os troncos
+## voltam de pé e o capim que o jogador passou a manhã cortando está lá outra
+## vez. Para a lenha e a pedra chega a ser bem-vindo — material já está na
+## mochila e o vale se refaz —, mas para o capim é a missão do cemitério
+## desandando: a meta dela conta pé DERRUBADO, e pé que renasceu não conta.
+func caidos() -> Array:
+	return _caidos.duplicate()
+
+
+## ESQUECE ALVOS QUE JÁ TINHAM CAÍDO NA PARTIDA SALVA.
+##
+## Chamado depois do `_erguer`, porque o vale se monta antes de o save entrar
+## (ver `Prototype.restaurar_do_save`). Tira o visual, tira a colisão irmã — a
+## mesma que ficava barrando o caminho quando só o visual era liberado — e
+## conta o pé como caído, para a meta da missão continuar valendo.
+func esquecer(ids: Array) -> void:
+	for bruto in ids:
+		var id := str(bruto)
+		if not _alvos.has(id):
+			continue
+		var alvo: Dictionary = _alvos[id]
+		var no: Node3D = alvo["no"]
+		if is_instance_valid(no):
+			no.queue_free()
+		for corpo in alvo.get("corpos", []):
+			if is_instance_valid(corpo):
+				corpo.queue_free()
+		_alvos.erase(id)
+		if not _caidos.has(id):
+			_caidos.append(id)
+	if _perto != "" and not _alvos.has(_perto):
+		_perto = ""
+		if _dica != null:
+			_dica.visible = false

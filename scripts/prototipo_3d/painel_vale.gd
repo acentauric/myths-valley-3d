@@ -33,6 +33,7 @@ signal fechou
 signal pediu(acao: String)
 
 const Atalhos = preload("res://scripts/prototipo_3d/atalhos.gd")
+const Identidade = preload("res://scripts/prototipo_3d/identidade.gd")
 
 const COR_TITULO := Color("d6ba78")
 const COR_TEXTO := Color("e8e4d7")
@@ -45,7 +46,9 @@ const COR_BORDA := Color(0.84, 0.73, 0.47, 0.8)
 enum Aba { MISSOES, CARTAS, OBRAS, OFICINA, COZINHA, VENDA, TRABALHO, AJUSTES }
 const NOME_DA_ABA := ["Missões", "Cartas", "Obras", "Oficina", "Cozinha", "Venda", "Trabalho", "Jogo"]
 
-const TAMANHO := Vector2(760, 470)
+const TAMANHO := Vector2(900, 520)
+## Largura da coluna das abas, à esquerda. A mesma proporção do almanaque.
+const LARGURA_DAS_ABAS := 230.0
 const ALTURA_DA_LINHA := 28.0
 const LETRA_TITULO := 22
 const LETRA_ABAS := 15
@@ -97,7 +100,8 @@ var _dia_pausado_antes := false
 var _aviso := ""
 
 var _titulo: Label
-var _abas: Label
+## A coluna das abas, à esquerda, como as seções do almanaque.
+var _abas_coluna: VBoxContainer
 var _rolagem: ScrollContainer
 var _lista: VBoxContainer
 ## Só as linhas ESCOLHÍVEIS, na ordem do cursor (ver o 2D).
@@ -115,7 +119,7 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	_montar()
 	visible = false
-	Missoes.mudou.connect(_redesenhar)
+	CadernoDoVale.mudou.connect(_redesenhar)
 	Progressao.mudou.connect(_redesenhar)
 	Inventario.mudou.connect(_redesenhar)
 
@@ -210,7 +214,7 @@ func aba() -> int:
 
 func _lista_atual() -> Array:
 	match _aba:
-		Aba.MISSOES: return Missoes.ativas
+		Aba.MISSOES: return CadernoDoVale.por_importancia()
 		Aba.CARTAS: return Cartas.minhas()
 		Aba.OBRAS: return Obras.disponiveis(obra_em_foco)
 		Aba.OFICINA: return Oficina.receitas()
@@ -261,9 +265,9 @@ func _ajustar(sentido: int) -> void:
 func _confirmar() -> void:
 	match _aba:
 		Aba.MISSOES:
-			if _cursor >= Missoes.ativas.size():
+			if _cursor >= CadernoDoVale.ativas.size():
 				return
-			Missoes.fixar(Missoes.ativas[_cursor]["id"])
+			CadernoDoVale.fixar(str((CadernoDoVale.por_importancia()[_cursor] as Dictionary)["id"]))
 		Aba.CARTAS:
 			var minhas := Cartas.minhas()
 			if _cursor >= minhas.size():
@@ -287,8 +291,15 @@ func _confirmar() -> void:
 			var lista := Obras.disponiveis(obra_em_foco)
 			if _cursor >= lista.size():
 				return
-			if not Obras.executar(obra_em_foco, str(lista[_cursor])):
+			var obra := str(lista[_cursor])
+			if not Obras.executar(obra_em_foco, obra):
 				return
+			pagar_o_que_a_obra_da(obra)
+			# "Obra pronta", como no 2D (`Mundo._ao_concluir_obra`). Onde olhar
+			# para ver a obra ainda não se diz: a casa do vale não muda por fora
+			# nem por dentro até os modelos e o cômodo chegarem (#26, #27).
+			_aviso = "Obra pronta: %s. %s" % [Obras.dados(obra).get("nome", obra), Obras.dados(obra).get("resumo", "")]
+			_cursor = 0
 		Aba.OFICINA:
 			var receitas := Oficina.receitas()
 			if _cursor >= receitas.size():
@@ -383,7 +394,7 @@ func fazer_a_acao(acao: Dictionary) -> bool:
 
 func _montar() -> void:
 	var fundo := ColorRect.new()
-	fundo.color = Color(0.02, 0.03, 0.03, 0.62)
+	fundo.color = Color(0.02, 0.03, 0.03, 0.72)
 	fundo.set_anchors_preset(Control.PRESET_FULL_RECT)
 	fundo.mouse_filter = Control.MOUSE_FILTER_STOP
 	add_child(fundo)
@@ -400,31 +411,59 @@ func _montar() -> void:
 	caixa.offset_top = -TAMANHO.y * 0.5
 	caixa.offset_bottom = TAMANHO.y * 0.5
 	add_child(caixa)
+	# A MOLDURA DE TALHA do resto do vale, como no almanaque. Painel com borda
+	# própria é painel que envelhece sozinho quando a identidade muda.
+	Identidade.emoldurar(caixa)
 
 	var coluna := VBoxContainer.new()
-	coluna.add_theme_constant_override("separation", 8)
+	coluna.add_theme_constant_override("separation", 10)
 	caixa.add_child(coluna)
 
+	# O CAMINHO no alto, como no almanaque: "Painel › Missões". É o fio que diz
+	# onde se está sem gastar uma linha de abas horizontais.
 	var topo := HBoxContainer.new()
 	coluna.add_child(topo)
-	_titulo = _rotulo("", LETRA_TITULO, COR_TITULO)
+	_titulo = Label.new()
+	_titulo.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_TITULO, 500, 2))
+	_titulo.add_theme_font_size_override("font_size", 19)
+	_titulo.add_theme_color_override("font_color", Identidade.OURO)
 	_titulo.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	Identidade.sombra_texto(_titulo)
 	topo.add_child(_titulo)
-	# A PORTA DA ABA DO JOGO: um botão, fora do giro das setas (ver o cabeçalho).
 	_botao_jogo = _botao_pequeno("JOGO", func(): _ir_para_o_jogo())
 	_botao_jogo.tooltip_text = "Salvar, voltar ao menu, sair e os ajustes de teste"
 	topo.add_child(_botao_jogo)
 	topo.add_child(_botao_pequeno("×", fechar))
+	coluna.add_child(Identidade.divisor())
 
-	var fila := HBoxContainer.new()
-	fila.add_theme_constant_override("separation", 6)
-	coluna.add_child(fila)
-	fila.add_child(_botao_pequeno("◀", func(): _proxima_aba(-1)))
-	_abas = _rotulo("", LETRA_ABAS, COR_APAGADA)
-	_abas.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_abas.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	fila.add_child(_abas)
-	fila.add_child(_botao_pequeno("▶", func(): _proxima_aba(1)))
+	var lado_a_lado := HBoxContainer.new()
+	lado_a_lado.add_theme_constant_override("separation", 22)
+	lado_a_lado.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	coluna.add_child(lado_a_lado)
+
+	# À ESQUERDA AS ABAS, EM COLUNA, como as seções do almanaque.
+	#
+	# Eram uma linha horizontal de "[ Missões ]  Cartas  Venda", que é legível
+	# com duas abas e fica apertada com seis — e que não deixa lugar para dizer
+	# quantas missões há em cada uma. Em coluna, cada aba tem a sua linha, a sua
+	# marca de aberta (▾) e a sua conta.
+	_abas_coluna = VBoxContainer.new()
+	_abas_coluna.name = "Abas"
+	_abas_coluna.add_theme_constant_override("separation", 2)
+	_abas_coluna.custom_minimum_size = Vector2(LARGURA_DAS_ABAS, 0)
+	lado_a_lado.add_child(_abas_coluna)
+
+	var fio := VSeparator.new()
+	lado_a_lado.add_child(fio)
+
+	# À DIREITA A PÁGINA: a lista da aba, e embaixo dela a dica do que está no
+	# cursor. É a mesma divisão do almanaque — índice de um lado, página do
+	# outro — e é por isso que as duas telas passam a se parecer.
+	var pagina := VBoxContainer.new()
+	pagina.add_theme_constant_override("separation", 8)
+	pagina.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	pagina.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	lado_a_lado.add_child(pagina)
 
 	# A lista rola, com barra visível: barra é a informação de que a lista
 	# continua (ver o 2D).
@@ -436,20 +475,91 @@ func _montar() -> void:
 	_rolagem.get_v_scroll_bar().add_theme_stylebox_override("grabber", _estilo_do_puxador(false))
 	_rolagem.get_v_scroll_bar().add_theme_stylebox_override("grabber_highlight", _estilo_do_puxador(true))
 	_rolagem.get_v_scroll_bar().add_theme_stylebox_override("grabber_pressed", _estilo_do_puxador(true))
-	coluna.add_child(_rolagem)
+	pagina.add_child(_rolagem)
 
 	_lista = VBoxContainer.new()
 	_lista.add_theme_constant_override("separation", 3)
 	_lista.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_rolagem.add_child(_lista)
 
-	_dica = _rotulo("", LETRA_DICA, COR_APAGADA)
+	_dica = Label.new()
+	_dica.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_TEXTO, 400))
+	_dica.add_theme_font_size_override("font_size", 18)
+	_dica.add_theme_color_override("font_color", COR_TEXTO)
+	_dica.add_theme_constant_override("line_spacing", 3)
 	_dica.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_dica.custom_minimum_size = Vector2(0, 44)
-	coluna.add_child(_dica)
+	_dica.custom_minimum_size = Vector2(0, 52)
+	pagina.add_child(_dica)
 
-	_rodape = _rotulo("", LETRA_DICA - 1, COR_APAGADA)
+	_rodape = _rotulo("", LETRA_DICA, COR_APAGADA)
+	_rodape.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	coluna.add_child(_rodape)
+
+
+## A COLUNA DAS ABAS, refeita a cada redesenho.
+##
+## Refazer em vez de remendar, pela mesma razão do almanaque: a lista de abas
+## válidas muda com o lugar onde o jogador está (a Venda só existe no balcão),
+## e tela que se remenda guarda estado em dois lugares.
+func _montar_abas() -> void:
+	for filho in _abas_coluna.get_children():
+		filho.queue_free()
+	for qual in abas_validas():
+		var aberta: bool = qual == _aba
+		var linha := Button.new()
+		linha.focus_mode = Control.FOCUS_NONE
+		linha.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+		linha.custom_minimum_size = Vector2(0, ALTURA_DA_LINHA + 4.0)
+		linha.alignment = HORIZONTAL_ALIGNMENT_LEFT
+		linha.text = ("▾ " if aberta else "▸ ") + str(NOME_DA_ABA[qual])
+		var conta := _conta_da_aba(qual)
+		if conta != "":
+			linha.text += "    " + conta
+		linha.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_TITULO, 600))
+		linha.add_theme_font_size_override("font_size", 16)
+		linha.add_theme_color_override("font_color", Identidade.OURO if aberta else COR_APAGADA)
+		linha.add_theme_color_override("font_hover_color", Identidade.CREME)
+		for estado in ["normal", "hover", "pressed"]:
+			linha.add_theme_stylebox_override(estado, _estilo_da_aba(aberta, estado != "normal"))
+		linha.pressed.connect(func() -> void: _ir_para_aba(qual))
+		_abas_coluna.add_child(linha)
+
+
+## "3" ao lado do nome da aba: quantas coisas há nela agora. Sem conta, vazio —
+## aba de ação (Jogo) não conta nada.
+func _conta_da_aba(qual: int) -> String:
+	match qual:
+		Aba.MISSOES:
+			return str(CadernoDoVale.ativas.size()) if not CadernoDoVale.ativas.is_empty() else ""
+		Aba.CARTAS:
+			return str(Cartas.sabidas.size()) if not Cartas.sabidas.is_empty() else ""
+		_:
+			return ""
+
+
+func _ir_para_aba(qual: int) -> void:
+	if _aba == qual:
+		return
+	_aba = qual
+	_cursor = 0
+	_confirmando = -1
+	_aviso = ""
+	_redesenhar()
+
+
+func _estilo_da_aba(aberta: bool, realce: bool) -> StyleBoxFlat:
+	var estilo := StyleBoxFlat.new()
+	if aberta:
+		estilo.bg_color = Color(0.19, 0.21, 0.15, 0.96)
+		estilo.border_color = Color(Identidade.OURO.r, Identidade.OURO.g, Identidade.OURO.b, 0.75)
+		estilo.border_width_left = 2
+	elif realce:
+		estilo.bg_color = Color(0.13, 0.16, 0.12, 0.9)
+	else:
+		estilo.bg_color = Color(0.0, 0.0, 0.0, 0.0)
+	estilo.content_margin_left = 10
+	estilo.content_margin_right = 10
+	return estilo
 
 
 func _ir_para_o_jogo() -> void:
@@ -487,10 +597,8 @@ func _redesenhar() -> void:
 	_linhas.clear()
 	_escolhiveis.clear()
 
-	var cabecalho: Array = []
-	for qual in abas_validas():
-		cabecalho.append("[ %s ]" % NOME_DA_ABA[qual] if qual == _aba else " %s " % NOME_DA_ABA[qual])
-	_abas.text = "  ".join(cabecalho)
+	_montar_abas()
+	_titulo.text = "Painel  ›  %s" % str(NOME_DA_ABA[_aba])
 	_botao_jogo.text = "‹ VOLTAR" if _aba == Aba.AJUSTES else "JOGO"
 
 	match _aba:
@@ -641,41 +749,48 @@ func _desenhar_oficina() -> void:
 	_rodape.text = "[W/S] escolher · [E] fabricar · [Tab] outra aba · [Esc] fechar"
 
 
+## A ABA DE MISSÕES LÊ O CADERNO DO VALE, e não o `Missoes` do 2D.
+##
+## Ela lia o compartilhado, com a checklist de itens daquele autoload. Mudou por
+## pedido do autor, e a razão é de projeto: o 3D tem de ter o mecanismo dele,
+## sem depender do checklist de lá, porque missão nova aqui pode ter padrão,
+## formato e ordem diferentes. Ver `caderno_do_vale.gd`.
+##
+## O que se perde na troca é a CHECKLIST — e é de propósito. Uma missão do vale
+## tem UMA LINHA de andamento, escrita por quem conduz ("Juntar lenha: 1 de 2",
+## "Levar pirão de peixe a Tonho"). Quem conduz decide a frase; esta tela não
+## tenta entender de que tipo é a meta, e por isso meta nova não pede linha nova
+## aqui.
 func _desenhar_missoes() -> void:
 	_titulo.text = "Missões abertas"
-	if Missoes.ativas.is_empty():
+	var abertas: Array = CadernoDoVale.por_importancia()
+	if abertas.is_empty():
 		_adicionar_linha("Nada em aberto por enquanto.", COR_APAGADA)
-		_dica.text = ""
+		_dica.text = "Fale com quem mora no vale: quem tem o que pedir, pede."
 		_rodape.text = "[Esc] fechar"
 		return
 	# Dois grupos, com cabeçalho: enredo e dia a dia se leem diferente (ver o 2D).
 	var grupo := ""
-	for i in Missoes.ativas.size():
-		var missao: Dictionary = Missoes.ativas[i]
+	for i in abertas.size():
+		var missao: Dictionary = abertas[i]
 		var qual := "ENREDO" if bool(missao.get("principal", false)) else "DO DIA A DIA"
 		if qual != grupo:
 			grupo = qual
 			_adicionar_linha(qual, COR_APAGADA, true)
 		var marca := "◆" if bool(missao.get("principal", false)) else "◇"
-		var tipo := "  (corre sozinha)" if missao.get("passiva", false) else ""
-		var cor := COR_CURSOR if i == _cursor else (COR_FIXADA if i == Missoes.em_foco else COR_TEXTO)
-		var andamento: Vector2i = Missoes.andamento(str(missao["id"]))
-		if andamento.y > 0:
-			tipo = "  (%d de %d)" % [andamento.x, andamento.y]
-		if Missoes.congelada(str(missao["id"])):
-			cor = COR_APAGADA
-		_adicionar_linha("%s  %s%s" % [marca, Missoes.titulo_de(missao), tipo], cor)
-		# A checklist entra como TEXTO, e não como linha escolhível: no 2D ela
-		# era botão, e cada item empurrava o índice das missões de baixo — o
-		# clique na terceira missão caía num item da checklist da primeira.
-		if i == _cursor and missao.has("lista"):
-			for entrada in missao["lista"]:
-				_adicionar_linha("      %s %s" % [
-					"✓" if entrada["feito"] else "·", Missoes.texto_do_item(entrada)],
-					COR_FIXADA if entrada["feito"] else COR_APAGADA, true)
-	var escolhida: Dictionary = Missoes.ativas[_cursor] if _cursor < Missoes.ativas.size() else {}
-	var objetivo := _objetivo_de(str(escolhida.get("id", "")))
-	_dica.text = objetivo if objetivo != "" else \
+		var conta := ""
+		if int(missao.get("total", 0)) > 0:
+			conta = "  (%d de %d)" % [int(missao["feito"]), int(missao["total"])]
+		var cor := COR_CURSOR if i == _cursor else (COR_FIXADA if i == CadernoDoVale.em_foco else COR_TEXTO)
+		_adicionar_linha("%s  %s%s" % [marca, str(missao.get("titulo", "")), conta], cor)
+		# A LINHA DE ANDAMENTO entra como texto, e só na missão sob o cursor: na
+		# lista inteira ela viraria parede de letra.
+		if i == _cursor and str(missao.get("linha", "")) != "":
+			_adicionar_linha("      %s" % str(missao["linha"]),
+				COR_FIXADA if int(missao.get("feito", 0)) >= int(missao.get("total", 1)) else COR_APAGADA,
+				true)
+	var escolhida: Dictionary = abertas[_cursor] if _cursor < abertas.size() else {}
+	_dica.text = str(escolhida.get("titulo", "")) if not escolhida.is_empty() else \
 		"Verde é a missão em foco: a que a seta aponta. ◆ é enredo, ◇ é do dia a dia."
 	_rodape.text = "[W/S] escolher · [E] fixar · [Esc] fechar"
 
@@ -708,12 +823,27 @@ func _arquivos_de_falas() -> Array:
 	return _arquivos
 
 
+## O GANHO NO CORPO DA OBRA QUE O JOGADOR FEZ.
+##
+## O `Obras.executar` compartilhado consome o material, dá XP e emite
+## `concluida`, mas NÃO paga os `ATRIBUTOS` — só o `conceder` (a obra que um
+## morador dá de presente) paga. O próprio painel promete "Dá: +10 de fôlego
+## máximo" na linha da obra, e sem isto a promessa não se cumpria, aqui e no 2D
+## (o `testar_obras` de lá confere o `conceder` e não o `executar`).
+##
+## O conserto certo é no `executar`, que é do 2D, e não foi tocado. Até lá o
+## vale paga aqui, e `tests/obras.gd` cobra que o ganho entre UMA vez: quando o
+## 2D consertar, o portão reprova por ganho em dobro, e esta função sai.
+func pagar_o_que_a_obra_da(obra: String) -> void:
+	Obras._pagar_o_atributo(obra)
+
+
 func _desenhar_obras() -> void:
 	_titulo.text = "Obras — %s" % Jogo.nome_da_construcao(obra_em_foco)
 	var lista := Obras.disponiveis(obra_em_foco)
 	if lista.is_empty():
 		_adicionar_linha("Nada a fazer aqui por enquanto.", COR_APAGADA)
-		_dica.text = "Obra pede material. Junte tábua, lenha e pedra e volte." \
+		_dica.text = _aviso if _aviso != "" else "Obra pede material. Junte tábua, lenha e pedra e volte." \
 			+ _quantas_faltam(Obras.todas_de(obra_em_foco))
 		_rodape.text = "[Tab] outra aba · [Esc] fechar"
 		return
@@ -732,7 +862,7 @@ func _desenhar_obras() -> void:
 	var dado := Obras.dados(escolhida)
 	var impede := Obras.impedimento(obra_em_foco, escolhida)
 	var abatido := "" if Obras.desconto() <= 0.0 else "   (canteiro abate %d%%)" % int(Obras.desconto() * 100.0)
-	_dica.text = str(dado.get("resumo", "")) + _ganho_da_obra(escolhida) + "\n" + (
+	_dica.text = _aviso if _aviso != "" else str(dado.get("resumo", "")) + _ganho_da_obra(escolhida) + "\n" + (
 		impede if impede != "" else "Custa: " + _precos(Obras.custo(escolhida)) + abatido
 		) + _quantas_faltam(Obras.todas_de(obra_em_foco))
 	_rodape.text = "[W/S] escolher · [E] tocar a obra · [Tab] outra aba · [Esc] fechar"
@@ -816,8 +946,10 @@ func _desenhar_ajustes() -> void:
 		Atalhos.letra("painel"), Atalhos.letra("mapa"), Atalhos.letra("hora")], COR_APAGADA, true)
 	_adicionar_linha("  [%s] ler / interagir, e golpe perto do bicho  ·  [%s] ginga" % [
 		Atalhos.letra("interagir"), Atalhos.letra("gingar")], COR_APAGADA, true)
-	_adicionar_linha("  [%s] observar  ·  [%s] reinicia  ·  [Tab] câmera  ·  roda do mouse: zoom" % [
+	_adicionar_linha("  [%s] observar  ·  [%s] reinicia  ·  [Tab] câmera  ·  roda: item da mão  ·  Ctrl+roda ou [+/-]: zoom" % [
 		Atalhos.letra("observar"), Atalhos.letra("reiniciar")], COR_APAGADA, true)
+	_adicionar_linha("  [%s] mochila  ·  [%s] almanaque  ·  [%s] árvore de habilidades  ·  [%s] o arraial" % [
+		Atalhos.letra("mochila"), Atalhos.letra("almanaque"), Atalhos.letra("talentos"), Atalhos.letra("arraial")], COR_APAGADA, true)
 
 	_adicionar_linha("", COR_TEXTO, true)
 	_adicionar_linha("AJUSTES DE TESTE — mexem no balanço da partida", COR_APAGADA, true)
@@ -860,6 +992,12 @@ func _adicionar_linha(texto: String, cor: Color, cabecalho: bool = false) -> voi
 	botao.focus_mode = Control.FOCUS_NONE
 	botao.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	botao.custom_minimum_size = Vector2(0, ALTURA_DA_LINHA)
+	# O BOTÃO NÃO EMPURRA A CAIXA. Texto comprido faz o Button pedir largura, e
+	# a caixa de 900 cresce com ele até sair da janela — foi assim que a lista de
+	# missões explodiu, com o parágrafo da fala no lugar do título. Cortar no fim
+	# é o conserto de quem desenha; o título curto é o de quem escreve a missão
+	# (`CadeiaDeMissoes._titulo_do_passo`). Os dois, porque um protege do outro.
+	botao.clip_text = true
 	botao.add_theme_font_size_override("font_size", LETRA_LINHA)
 	botao.add_theme_color_override("font_color", cor)
 	botao.add_theme_color_override("font_hover_color", COR_CURSOR)

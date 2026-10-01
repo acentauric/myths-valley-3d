@@ -1,5 +1,6 @@
 class_name PersonagemProcedural
 extends Node3D
+signal golpe_concluido
 ## Humanoide estilizado construído por código (estilo "procedural"): serve ao jogador e
 ## aos moradores. Cada membro é um pivô com uma malha simples, animado por senos — sem
 ## esqueleto, sem GLB. Interface igual à dos animadores do modelo Tripo:
@@ -8,6 +9,8 @@ extends Node3D
 
 const GESTOS := ["acenar", "concordar", "apontar", "coçar a cabeça", "alongar", "chamar", "reverência", "olhar em volta"]
 const DURACAO_GESTO := 2.6
+const DURACAO_GOLPE := 1.1
+const VELOCIDADE_GOLPE := 1.875
 
 ## Paletas de 1887 no Recôncavo: algodão cru, anil, couro e palha.
 const PALETAS := {
@@ -33,6 +36,8 @@ var _run_blend := 0.0
 var _velocidade := 0.0
 var _gesto := -1
 var _gesto_tempo := 0.0
+var _golpe_tempo := -1.0
+var _golpes_restantes := 0
 var _perna := 0.0
 var _tronco := 0.0
 var _construido := false
@@ -162,6 +167,18 @@ func update_motion(speed: float, delta: float) -> void:
 	quadril.rotation.x = _run_blend * 0.16 + _blend * 0.04
 	quadril.rotation.z = -stride * 0.04
 	quadril.rotation.y = -stride * 0.06
+	if _golpe_tempo >= 0.0:
+		_golpe_tempo += delta * VELOCIDADE_GOLPE
+		_aplicar_golpe()
+		if _golpe_tempo >= DURACAO_GOLPE:
+			golpe_concluido.emit()
+			if _golpes_restantes > 1:
+				_golpes_restantes -= 1
+				_golpe_tempo = 0.0
+			else:
+				_golpes_restantes = 0
+				_golpe_tempo = -1.0
+		return
 	_pivos["CoxaE"].rotation.x = stride * leg_angle
 	_pivos["CoxaD"].rotation.x = -stride * leg_angle
 	_pivos["JoelhoE"].rotation.x = knee_angle * maxf(0.0, sin(_phase - 1.2)) * _blend
@@ -238,9 +255,41 @@ func _aplicar_gesto(_delta: float) -> void:
 func play_gesture(index: int) -> String:
 	if index < 0 or index >= GESTOS.size():
 		return ""
+	_golpe_tempo = -1.0
+	_golpes_restantes = 0
 	_gesto = index
 	_gesto_tempo = 0.0
 	return GESTOS[index]
+
+
+func play_chop(repeticoes: int = 2) -> String:
+	_gesto = -1
+	_golpes_restantes = maxi(repeticoes, 1)
+	_golpe_tempo = 0.0
+	return "Golpear"
+
+
+func gesture_ativa() -> bool:
+	return _golpe_tempo >= 0.0 or _gesto >= 0
+
+
+func chop_ativo() -> bool:
+	return _golpe_tempo >= 0.0
+
+
+func stop_chop() -> void:
+	_golpes_restantes = 0
+	_golpe_tempo = -1.0
+
+
+func _aplicar_golpe() -> void:
+	var preparar := smoothstep(0.0, 0.42, _golpe_tempo) * (1.0 - smoothstep(0.42, 0.68, _golpe_tempo))
+	var impacto := smoothstep(0.42, 0.68, _golpe_tempo) * (1.0 - smoothstep(0.88, DURACAO_GOLPE, _golpe_tempo))
+	_pivos["OmbroD"].rotation = Vector3(-1.7 * preparar + 0.95 * impacto, 0.0, -0.22)
+	_pivos["CotoveloD"].rotation.x = -0.9 * preparar - 0.35 * impacto
+	_pivos["OmbroE"].rotation = Vector3(0.0, 0.0, -0.16)
+	_pivos["CotoveloE"].rotation.x = -0.35
+	_pivos["Quadril"].rotation.x = -0.12 * impacto
 
 
 func get_animation_names() -> PackedStringArray:
@@ -248,6 +297,8 @@ func get_animation_names() -> PackedStringArray:
 
 
 func get_current_animation() -> StringName:
+	if _golpe_tempo >= 0.0:
+		return &"golpear"
 	if _gesto >= 0:
 		return StringName(GESTOS[_gesto])
 	if _velocidade > 3.4:

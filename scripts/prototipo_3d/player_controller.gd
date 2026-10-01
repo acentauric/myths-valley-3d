@@ -6,6 +6,7 @@ signal capture_changed(captured: bool)
 signal camera_lock_changed(locked: bool)
 signal animation_requested(label: String)
 signal navigation_status(message: String)
+signal vigor_mudou(valor: float)
 
 const ClickNavigation = preload("res://scripts/prototipo_3d/click_navigation.gd")
 const TeclasMovimento = preload("res://scripts/prototipo_3d/teclas_movimento.gd")
@@ -21,6 +22,11 @@ const JUMP_GRAVITY_DOWN := 25.0 * JUMP_SPEED_MULTIPLIER * JUMP_SPEED_MULTIPLIER
 const JUMP_BUFFER_TIME := 0.16
 const JUMP_COYOTE_TIME := 0.16
 const RUN_STOP_SPEED := 0.15
+const VIGOR_MAXIMO := 100.0
+const VIGOR_MINIMO_PARA_CORRER := 0.5
+const CUSTO_CORRIDA_POR_SEGUNDO := 5.0
+const VIGOR_RECUPERACAO_ANDANDO := 2.5
+const VIGOR_RECUPERACAO_PARADO := 20.0
 ## Água: o jogador entra andando no raso, mais devagar conforme ela sobe; onde o fundo
 ## passa do peito (fração da altura) ele nada, com os ombros e a cabeça de fora. Entra
 ## no nado e volta a andar em profundidades diferentes, para não ficar alternando.
@@ -97,6 +103,13 @@ var _nadando := false
 var _land_check := 0.0
 var _run_toggled := false
 var _ran_since_toggle := false
+var _vigor := VIGOR_MAXIMO
+var _machado_ancora: Node3D
+var _machado_pivo: Node3D
+var _machado_ancora_posicao_base := Vector3.ZERO
+var _machado_angulo_lateral := 0.0
+var _acao_golpe_restante := 0.0
+var _acao_golpe_espera_animacao := false
 
 func _ready() -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
@@ -165,6 +178,134 @@ func _ready() -> void:
 	camera.current = true
 	_apply_camera()
 
+func _process(delta: float) -> void:
+	_atualizar_machado_na_mao()
+	_atualizar_pose_machado(delta)
+
+
+func machado_na_mao() -> bool:
+	return Equipamento.no_encaixe("maos") == "machado"
+
+
+func travar_acao_de_golpe(duracao: float, aguardar_animacao: bool) -> void:
+	_cancel_walk()
+	velocity.x = 0.0
+	velocity.z = 0.0
+	_acao_golpe_espera_animacao = aguardar_animacao
+	_acao_golpe_restante = maxf(duracao, 0.0) if aguardar_animacao else minf(maxf(duracao, 0.0), 0.55)
+	_jump_buffer_remaining = 0.0
+
+
+func liberar_acao_de_golpe() -> void:
+	_acao_golpe_restante = 0.0
+	_acao_golpe_espera_animacao = false
+
+
+func _atualizar_machado_na_mao() -> void:
+	var deve_mostrar := machado_na_mao()
+	if deve_mostrar == (_machado_ancora != null):
+		return
+	if not deve_mostrar:
+		_machado_ancora.queue_free()
+		_machado_ancora = null
+		_machado_pivo = null
+		_machado_angulo_lateral = 0.0
+		return
+	_machado_ancora = _criar_ancora_da_mao()
+	if _machado_ancora == null:
+		return
+	_machado_ancora_posicao_base = _machado_ancora.position
+	if Estilo.procedural():
+		_criar_machado_procedural(_machado_ancora)
+	else:
+		var machado := CatalogoAssets.instanciar("machado", _machado_ancora, Vector3.ZERO, 0.46)
+		if machado != null:
+			machado.rotation = Vector3(deg_to_rad(1.0), deg_to_rad(2.0), deg_to_rad(92.0))
+			machado.basis = machado.basis * Basis(Vector3.UP, PI)
+			# A pegada fica logo acima da ponta real do cabo no GLB.
+			var pegada_cabo := Vector3(0.34, 0.12, 0.0)
+			machado.position -= machado.transform * pegada_cabo
+			machado.position += Vector3(0.0, 0.06, 0.0)
+			machado.position += _machado_ancora.global_basis.inverse() * (visual.global_basis.x * 0.08)
+			# Gira em torno da pegada para a ponta do cabo permanecer na mão direita.
+			_machado_pivo = Node3D.new()
+			_machado_pivo.name = "PivoDaPegada"
+			_machado_ancora.add_child(_machado_pivo)
+			_machado_pivo.position = machado.transform * pegada_cabo
+			machado.reparent(_machado_pivo, true)
+
+
+func _atualizar_pose_machado(delta: float) -> void:
+	if _machado_ancora == null:
+		return
+	var parado := Vector2(velocity.x, velocity.z).length_squared() < 0.04
+	var em_golpe := _acao_golpe_restante > 0.0
+	if animator != null and animator.has_method("gesture_ativa") and animator.gesture_ativa():
+		em_golpe = true
+	var em_idle := parado and not _jumping and not _nadando and not em_golpe
+	var afastamento := -0.01 if em_idle else 0.0
+	_machado_ancora.position = _machado_ancora_posicao_base + _machado_ancora.global_basis.inverse() * (visual.global_basis.x * afastamento)
+	if _machado_pivo != null:
+		var angulo_alvo := 0.0 if em_golpe or _nadando else deg_to_rad(-30.0)
+		_machado_angulo_lateral = move_toward(_machado_angulo_lateral, angulo_alvo, 4.0 * delta)
+		var eixo_vertical_local := (_machado_ancora.global_basis.inverse() * visual.global_basis.y).normalized()
+		_machado_pivo.basis = Basis(eixo_vertical_local, _machado_angulo_lateral)
+
+
+func _criar_ancora_da_mao() -> Node3D:
+	if model is PersonagemProcedural:
+		var cotovelo := model.find_child("CotoveloD", true, false) as Node3D
+		if cotovelo == null:
+			return null
+		var ancora := Node3D.new()
+		ancora.name = "MachadoNaMao"
+		ancora.position = Vector3(0.0, -character_height * 0.16, 0.0)
+		cotovelo.add_child(ancora)
+		return ancora
+	for encontrado in model.find_children("*", "Skeleton3D", true, false):
+		var esqueleto := encontrado as Skeleton3D
+		for indice in esqueleto.get_bone_count():
+			var nome := String(esqueleto.get_bone_name(indice)).to_lower()
+			if not nome.ends_with("righthand"):
+				continue
+			var anexo := BoneAttachment3D.new()
+			anexo.name = "MachadoNaMao"
+			anexo.bone_name = esqueleto.get_bone_name(indice)
+			esqueleto.add_child(anexo)
+			var ancora := Node3D.new()
+			anexo.add_child(ancora)
+			return ancora
+	var ancora := Node3D.new()
+	ancora.name = "MachadoNaMao"
+	ancora.position = Vector3(0.34, 0.9, 0.08)
+	visual.add_child(ancora)
+	return ancora
+
+
+func _criar_machado_procedural(pai: Node3D) -> void:
+	var cabo := MeshInstance3D.new()
+	var malha_cabo := CylinderMesh.new()
+	malha_cabo.top_radius = 0.018
+	malha_cabo.bottom_radius = 0.024
+	malha_cabo.height = 0.52
+	cabo.mesh = malha_cabo
+	cabo.position.y = -0.19
+	var madeira := StandardMaterial3D.new()
+	madeira.albedo_color = Color("70492d")
+	cabo.material_override = madeira
+	pai.add_child(cabo)
+	var lamina := MeshInstance3D.new()
+	var malha_lamina := BoxMesh.new()
+	malha_lamina.size = Vector3(0.23, 0.15, 0.055)
+	lamina.mesh = malha_lamina
+	lamina.position = Vector3(0.07, -0.4, 0.0)
+	var ferro := StandardMaterial3D.new()
+	ferro.albedo_color = Color("777a78")
+	ferro.metallic = 0.55
+	lamina.material_override = ferro
+	pai.add_child(lamina)
+
+
 func _tem_animacoes(scene: PackedScene) -> bool:
 	var probe := scene.instantiate()
 	var animado := not probe.find_children("*", "AnimationPlayer", true, false).is_empty()
@@ -223,7 +364,11 @@ func _update_house_hover() -> void:
 
 func _physics_process(delta: float) -> void:
 	_update_house_hover()
-	if Input.is_action_just_pressed("mv_animation_9"):
+	if _acao_golpe_restante > 0.0:
+		_acao_golpe_restante = maxf(0.0, _acao_golpe_restante - delta)
+		if _acao_golpe_espera_animacao and animator != null and animator.has_method("gesture_ativa") and not animator.gesture_ativa():
+			_acao_golpe_restante = 0.0
+	if Input.is_action_just_pressed("mv_animation_9") and _acao_golpe_restante <= 0.0:
 		_jump_buffer_remaining = JUMP_BUFFER_TIME
 	if is_on_floor():
 		_grounded_grace_remaining = JUMP_COYOTE_TIME
@@ -247,11 +392,15 @@ func _physics_process(delta: float) -> void:
 		_pending_walk_click = Vector2.INF
 		_pending_walk_run = false
 	var input_vector := Input.get_vector("mv_left", "mv_right", "mv_forward", "mv_back")
+	if _acao_golpe_restante > 0.0:
+		input_vector = Vector2.ZERO
+		_cancel_walk()
 	if input_vector.length_squared() > 0.001:
 		_cancel_walk()
 	var direction: Vector3 = Basis(Vector3.UP, _yaw) * Vector3(input_vector.x, 0, input_vector.y)
 	if input_vector.length_squared() <= 0.001 and not _walk_path.is_empty():
 		direction = _next_walk_direction()
+	var corrida_ativa := is_running() and direction.length_squared() > 0.01 and _acao_golpe_restante <= 0.0
 	if _run_toggled and direction.length_squared() > 0.01:
 		_ran_since_toggle = true
 	var speed: float = run_speed if is_running() else walk_speed
@@ -278,7 +427,7 @@ func _physics_process(delta: float) -> void:
 	else:
 		velocity.x = move_toward(velocity.x, direction.x * speed, 18.0 * delta)
 		velocity.z = move_toward(velocity.z, direction.z * speed, 18.0 * delta)
-	if _jump_buffer_remaining > 0.0 and _grounded_grace_remaining > 0.0 and not _jumping and not _nadando:
+	if _jump_buffer_remaining > 0.0 and _grounded_grace_remaining > 0.0 and not _jumping and not _nadando and _acao_golpe_restante <= 0.0:
 		velocity.y = JUMP_VELOCITY
 		_jumping = true
 		_jump_buffer_remaining = 0.0
@@ -304,6 +453,7 @@ func _physics_process(delta: float) -> void:
 	var distance_before := _distance_to_next_waypoint()
 	move_and_slide()
 	_subir_degrau(direction)
+	_atualizar_vigor(delta, corrida_ativa)
 	if _run_toggled and _ran_since_toggle and direction.length_squared() <= 0.01 and Vector2(velocity.x, velocity.z).length_squared() <= RUN_STOP_SPEED * RUN_STOP_SPEED:
 		_run_toggled = false
 		_ran_since_toggle = false
@@ -333,7 +483,7 @@ func _physics_process(delta: float) -> void:
 
 func _input(event: InputEvent) -> void:
 	if event is InputEventKey and event.is_action_pressed("mv_run") and not event.echo:
-		_run_toggled = not _run_toggled
+		_run_toggled = not _run_toggled and _vigor >= VIGOR_MINIMO_PARA_CORRER
 		_ran_since_toggle = false
 		navigation_status.emit("Modo corrida %s" % ("ativado" if _run_toggled else "desativado"))
 	if event is InputEventMouseMotion and _camera_locked and _camera_drag_pressed and Input.mouse_mode == Input.MOUSE_MODE_VISIBLE:
@@ -377,10 +527,24 @@ func _unhandled_input(event: InputEvent) -> void:
 		elif Input.mouse_mode == Input.MOUSE_MODE_VISIBLE and event.button_index == MOUSE_BUTTON_RIGHT:
 			_pending_walk_click = event.position
 			_pending_walk_run = event.double_click
-		elif event.button_index == MOUSE_BUTTON_WHEEL_UP:
-			_distance = maxf(1.6, _distance - 0.35)
-		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
-			_distance = minf(12.0, _distance + 0.35)
+		elif event.button_index == MOUSE_BUTTON_WHEEL_UP or event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
+			# A RODA TROCA O ITEM DA MÃO, como no 2D (#2): é o gesto que se faz o
+			# tempo todo no meio do trabalho. O zoom ficou no Ctrl+roda e no
+			# mais e menos (`mv_zoom_in`/`mv_zoom_out`). Para baixo é o espaço
+			# seguinte, como lá. Com mapa ou tela aberta este nó não ouve nada,
+			# então a roda de lá continua sendo de lá.
+			var para_cima: bool = event.button_index == MOUSE_BUTTON_WHEEL_UP
+			if event.ctrl_pressed:
+				_aproximar_a_camera(para_cima)
+			else:
+				Inventario.selecionar(Inventario.anterior_da_mao() if para_cima else Inventario.proximo_da_mao())
+				get_viewport().set_input_as_handled()
+		_apply_camera()
+	if event.is_action_pressed("mv_zoom_in", true):
+		_aproximar_a_camera(true)
+		_apply_camera()
+	elif event.is_action_pressed("mv_zoom_out", true):
+		_aproximar_a_camera(false)
 		_apply_camera()
 	if event.is_action_pressed("mv_reset"):
 		reset_position()
@@ -390,6 +554,8 @@ func _unhandled_input(event: InputEvent) -> void:
 		_pitch = -0.08 if inspecting else -0.19
 		_distance = 3.1 if inspecting else 8.0
 		_apply_camera()
+	if _acao_golpe_restante > 0.0:
+		return
 	if not _jumping:
 		for index in range(8):
 			if event.is_action_pressed("mv_animation_%d" % (index + 1)) and animator and animator.has_method("play_gesture"):
@@ -397,6 +563,11 @@ func _unhandled_input(event: InputEvent) -> void:
 				if not label.is_empty():
 					animation_requested.emit(label)
 				break
+
+## Um passo de zoom: perto é para cima na roda, e o mais no teclado.
+func _aproximar_a_camera(perto: bool) -> void:
+	_distance = maxf(1.6, _distance - 0.35) if perto else minf(12.0, _distance + 0.35)
+
 
 ## PERDER O FOCO SOLTA O MOUSE, MAS NÃO TROCA O MODO.
 ##
@@ -625,12 +796,35 @@ func _request_walk_at_cursor(mouse: Vector2, run_to_destination: bool = false) -
 		navigation_status.emit("Não encontrei um caminho até esse ponto.")
 		return
 	_walk_path = path
-	_walk_run = run_to_destination
+	_walk_run = run_to_destination and _vigor >= VIGOR_MINIMO_PARA_CORRER
 	_walk_index = 0
 	_walk_destination = destination
 	_stuck_time = 0.0
 	_replan_attempts = 0
 	navigation_status.emit("%s até o ponto selecionado. %s cancela o trajeto." % ["Correndo" if run_to_destination else "Caminhando", TeclasMovimento.rotulo()])
+
+
+## Inicia o mesmo caminho usado pelo clique, para interações que precisam de
+## uma aproximação antes de acontecer (como parar diante de um tronco).
+func caminhar_ate(destino: Vector3) -> bool:
+	if _click_world == null or not _click_world.is_walkable_point(destino):
+		return false
+	_cancel_walk()
+	var caminho: PackedVector3Array = _navigator.find_path(global_position, destino)
+	if caminho.is_empty():
+		return false
+	_walk_path = caminho
+	_walk_run = false
+	_walk_index = 0
+	_walk_destination = destino
+	_stuck_time = 0.0
+	_replan_attempts = 0
+	navigation_status.emit("Caminhando até o ponto selecionado. %s cancela o trajeto." % TeclasMovimento.rotulo())
+	return true
+
+
+func caminhando_para(destino: Vector3) -> bool:
+	return _walk_destination.is_finite() and _walk_destination.distance_squared_to(destino) < 0.01
 
 
 func _approach_npc(npc: Node3D) -> Vector3:
@@ -702,7 +896,50 @@ func get_current_animation() -> StringName:
 
 
 func is_running() -> bool:
-	return _run_toggled or (_walk_run and not _walk_path.is_empty())
+	return _vigor >= VIGOR_MINIMO_PARA_CORRER and (_run_toggled or (_walk_run and not _walk_path.is_empty()))
+
+
+func vigor_atual() -> float:
+	return _vigor
+
+
+func gastar_vigor(quantidade: float) -> bool:
+	if quantidade <= 0.0:
+		return true
+	if _vigor + 0.001 < quantidade:
+		return false
+	_definir_vigor(_vigor - quantidade)
+	return true
+
+
+func _atualizar_vigor(delta: float, corrida_ativa: bool) -> void:
+	if corrida_ativa:
+		_definir_vigor(_vigor - CUSTO_CORRIDA_POR_SEGUNDO * delta)
+		if _vigor <= 0.0:
+			_run_toggled = false
+			_walk_run = false
+			_ran_since_toggle = false
+		return
+	if _vigor >= VIGOR_MAXIMO:
+		return
+	var gesticulando := animator != null and animator.has_method("gesture_ativa") and bool(animator.call("gesture_ativa"))
+	if _acao_golpe_restante > 0.0 or gesticulando or not is_on_floor():
+		return
+	var andando := Vector2(velocity.x, velocity.z).length_squared() > 0.04
+	var taxa := VIGOR_RECUPERACAO_ANDANDO if andando else VIGOR_RECUPERACAO_PARADO
+	_definir_vigor(_vigor + taxa * delta)
+
+
+func _definir_vigor(valor: float) -> void:
+	var novo := clampf(valor, 0.0, VIGOR_MAXIMO)
+	if novo < VIGOR_MINIMO_PARA_CORRER:
+		_run_toggled = false
+		_walk_run = false
+		_ran_since_toggle = false
+	if is_equal_approx(novo, _vigor):
+		return
+	_vigor = novo
+	vigor_mudou.emit(_vigor)
 
 
 func _apply_camera() -> void:

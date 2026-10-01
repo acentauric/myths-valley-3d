@@ -68,6 +68,8 @@ var _camera_locked := false
 var _refresh_time := 0.0
 var _root: Control
 var _region_label: Label
+## "3 de 9" da missão em curso, à direita do nome da região.
+var _mission_step: Label
 var _style_hint: Label
 var _speed_hint: Label
 var _speed_icon	# hud_icon.gd
@@ -94,6 +96,7 @@ var _ajustes	# painel_ajustes.gd
 ## Painéis escondidos enquanto o mapa está aberto (a coluna do canto continua).
 var _hidden_for_map: Array[Control] = []
 var _corner_nodes: Array[Node] = []
+var mapa_aberto := false
 
 
 func _ready() -> void:
@@ -104,17 +107,38 @@ func _ready() -> void:
 	_root.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(_root)
 
+	# O BLOCO DA MISSÃO, e não o letreiro do jogo.
+	#
+	# Aqui ficava "MYTHS' VALLEY" em 28 px, ocupando o terço de cima de um
+	# painel de 360×132 — o nome do jogo escrito na tela de quem já está
+	# jogando. Saiu, e o que sobrou é o que o jogador precisa ler: onde ele
+	# está, o que ele tem de fazer, e quanto falta.
+	#
+	# A missão ganhou o espaço e o corpo: 17 px em vez de 15, com a linha do
+	# passo à direita do rótulo. O painel encolheu junto — cabeçalho menor é
+	# mais vale à vista.
 	_heading = _panel(Color(0.055, 0.085, 0.075, 0.82))
-	_place(_heading, Vector2(18, 18), Vector2(HEADING_WIDTH, 132))
-	var title := _label("MYTHS’ VALLEY", 28, INK)
-	_place(title, Vector2(33, 25), Vector2(435, 39))
+	_place(_heading, Vector2(18, 18), Vector2(HEADING_WIDTH, 96))
 	_region_label = _label("REGIÃO INICIAL", 12, GOLD)
-	_place(_region_label, Vector2(35, 67), Vector2(435, 23))
-	_objective_label = _label(_objective, 15, MUTED)
+	_place(_region_label, Vector2(33, 26), Vector2(HEADING_WIDTH - 130, 20))
+	_mission_step = _label("", 12, GOLD)
+	_mission_step.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	_place(_mission_step, Vector2(HEADING_WIDTH - 108, 26), Vector2(92, 20))
+	_objective_label = _label(_objective, 17, INK)
 	_objective_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_place(_objective_label, Vector2(35, 101), Vector2(HEADING_WIDTH - 34, 42))
+	_place(_objective_label, Vector2(33, 52), Vector2(HEADING_WIDTH - 50, 42))
 
-	_create_corner_buttons()
+	# A COLUNA DE ÍCONES DO CANTO SAIU.
+	#
+	# Eram nove botões redondos empilhados na borda esquerda, por cima do vale,
+	# o tempo todo: HOME, ajustes, som, relógio, mapa, câmera, velocidade,
+	# estilo e controles. "Os ícones na esquerda do HUD podem ser todos dentro do
+	# menu ESC" — e estão, em linhas com o estado escrito (`menu_pausa.gd`).
+	#
+	# `_create_corner_buttons` continua aqui, sem ser chamada, porque ela é a
+	# receita dos ícones e do que cada um fazia: apagar agora seria perder o
+	# registro de nove comportamentos no mesmo commit em que eles mudam de casa.
+	# Sai no commit seguinte, com o `set_map_open` que fala dela.
 
 	_house_info_panel = _panel(Color(0.055, 0.085, 0.075, 0.92))
 	_root.add_child(_house_info_panel)
@@ -133,7 +157,7 @@ func _ready() -> void:
 	_house_info_label.size = Vector2(HEADING_WIDTH - 32, 108)
 	var close_house_info := Button.new()
 	close_house_info.text = "×"
-	close_house_info.tooltip_text = "Fechar informações da casa"
+	close_house_info.tooltip_text = "Fechar informações"
 	close_house_info.position = Vector2(HEADING_WIDTH - 41, 7)
 	close_house_info.size = Vector2(32, 28)
 	close_house_info.mouse_filter = Control.MOUSE_FILTER_STOP
@@ -202,6 +226,7 @@ func _ready() -> void:
 
 	_criar_barra_de_vida()
 	_criar_barra_de_folego()
+	_criar_barra_de_stamina()
 
 	# A BARRA DE MÃO ENTRA POR ÚLTIMO, e é o conserto de "não dá pra ver".
 	#
@@ -235,12 +260,15 @@ func _ready() -> void:
 ## É widget ACRESCENTADO, como a migração manda: o HUD continua sendo este, e
 ## não o do 2D. O número vem do `Vida` compartilhado — por `get_node_or_null`,
 ## porque quem monta o HUD sozinho, sem o projeto inteiro, não pode estourar
-## aqui. O fôlego (#3) entra embaixo dela, na mesma medida.
+## aqui. A barra verde do corte dos coqueiros fica embaixo, na mesma medida.
 const COR_VIDA := Color(0.78, 0.28, 0.26)
 const COR_VIDA_ENVENENADA := Color(0.45, 0.62, 0.22)
 var barra_vida: ProgressBar
 var _vida_texto: Label
 var _vida_preenchimento: StyleBoxFlat
+var barra_stamina: ProgressBar
+var _stamina_texto: Label
+var _stamina_rotulo := ""
 
 
 func _criar_barra_de_vida() -> void:
@@ -345,6 +373,44 @@ func _atualizar_folego() -> void:
 	_folego_preenchimento.bg_color = COR_FOLEGO_BAIXO if cansado else COR_FOLEGO
 
 
+func _criar_barra_de_stamina() -> void:
+	barra_stamina = ProgressBar.new()
+	barra_stamina.name = "Stamina"
+	barra_stamina.max_value = 100.0
+	barra_stamina.value = 100.0
+	barra_stamina.show_percentage = false
+	barra_stamina.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var fundo := StyleBoxFlat.new()
+	fundo.bg_color = Color(0.055, 0.085, 0.075, 0.82)
+	fundo.set_corner_radius_all(6)
+	fundo.set_border_width_all(1)
+	fundo.border_color = Color(0.58, 0.64, 0.48, 0.2)
+	barra_stamina.add_theme_stylebox_override("background", fundo)
+	var preenchimento := StyleBoxFlat.new()
+	preenchimento.bg_color = Color("56ad67")
+	preenchimento.set_corner_radius_all(6)
+	barra_stamina.add_theme_stylebox_override("fill", preenchimento)
+	_root.add_child(barra_stamina)
+	barra_stamina.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP)
+	barra_stamina.offset_left = -70
+	barra_stamina.offset_right = 70
+	barra_stamina.offset_top = 118
+	barra_stamina.offset_bottom = 134
+	_stamina_texto = _label("100%", 11, INK)
+	barra_stamina.add_child(_stamina_texto)
+	_stamina_texto.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_stamina_texto.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_stamina_texto.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+
+
+func definir_stamina(valor: float, rotulo: String) -> void:
+	if barra_stamina == null:
+		return
+	_stamina_rotulo = rotulo
+	barra_stamina.value = clampf(valor, 0.0, 100.0)
+	_stamina_texto.text = "%s %d%%" % [_stamina_rotulo, roundi(barra_stamina.value)]
+
+
 func _process(delta: float) -> void:
 	_refresh_time += delta
 	if _refresh_time >= 0.35:
@@ -421,8 +487,10 @@ func set_camera_locked(value: bool) -> void:
 	_camera_locked = value
 	if is_instance_valid(_camera_lock_button):
 		_camera_lock_button.set_pressed_no_signal(value)
-		_camera_icon.definir(value)
-		_camera_hint.text = ("Câmera travada · %s ou Tab destrava" % Atalhos.letra("camera")) if value else ("Câmera livre · %s ou Esc trava" % Atalhos.letra("camera"))
+		if is_instance_valid(_camera_icon):
+			_camera_icon.definir(value)
+		if is_instance_valid(_camera_hint):
+			_camera_hint.text = ("Câmera travada · %s ou Tab destrava" % Atalhos.letra("camera")) if value else ("Câmera livre · %s ou Esc trava" % Atalhos.letra("camera"))
 	_update_control_mode()
 
 
@@ -435,15 +503,15 @@ func _update_control_mode() -> void:
 		"%s: mover" % TeclasMovimento.rotulo(),
 		"Shift: corrida (parar desliga)",
 		"Espaço: pular  ·  1 a 0: item na mão  ·  Alt+1 a 8: gestos",
-		"I: mochila  ·  L: almanaque das plantas",
+		"%s: mochila  ·  %s: árvore de habilidades  ·  %s: o arraial" % [Atalhos.letra("mochila"), Atalhos.letra("talentos"), Atalhos.letra("arraial")],
 		"Botão direito: andar até o ponto (duplo: correr)",
 		"Botão esquerdo na casa: dados",
 		"%s: ler / interagir  ·  %s: observar" % [Atalhos.letra("interagir"), Atalhos.letra("observar")],
 		"%s perto do bicho: golpe (segurar: forte)  ·  %s: ginga" % [Atalhos.letra("interagir"), Atalhos.letra("gingar")],
-		"%s: painel (missões, cartas, venda, jogo)  ·  %s: coleção" % [Atalhos.letra("painel"), Atalhos.letra("colecao")],
+		"%s: painel (missões, cartas, venda, jogo)  ·  %s: almanaque (plantas, cordéis, sinais, bichos)" % [Atalhos.letra("painel"), Atalhos.letra("almanaque")],
 		mode,
 		"Tab ou %s: alterna a câmera  ·  Esc: menu" % Atalhos.letra("camera"),
-		"Rodinha: zoom  ·  %s: avança a hora" % Atalhos.letra("hora"),
+		"Rodinha: item da mão  ·  Ctrl+rodinha ou +/-: zoom  ·  %s: avança a hora" % Atalhos.letra("hora"),
 		"%s: reinicia  ·  %s: mapa · minimapa em AJUSTAR" % [Atalhos.letra("reiniciar"), Atalhos.letra("mapa")],
 	])
 	var text_height := _text_height(_control_mode_label)
@@ -467,7 +535,8 @@ func controls_open() -> bool:
 ## "?" do canto: mostra ou esconde o painel de controles (o "?" fica dourado aberto).
 func set_controls_open(open: bool) -> void:
 	_controls_panel.visible = open
-	_help_icon.definir(open)
+	if is_instance_valid(_help_icon):
+		_help_icon.definir(open)
 	if open:
 		_update_control_mode()
 
@@ -480,8 +549,17 @@ func _update_telemetry() -> void:
 	var vram := Performance.get_monitor(Performance.RENDER_VIDEO_MEM_USED) / 1048576.0
 	var suffix := "  ·  " + _telemetry if not _telemetry.is_empty() else ""
 	_style_hint.text = "%d FPS%s\n%s\n%s tri · %d draws · %d MB VRAM" % [Engine.get_frames_per_second(), suffix, _model_status, _compact(triangles), int(draws), int(vram)]
-	_speed_icon.definir(false, Dia.velocidade)
-	_speed_hint.text = "Tempo: %s · clique para mudar" % String(Dia.ROTULOS_VELOCIDADE[Dia.velocidade])
+	# OS ÍCONES DO CANTO PODEM NÃO EXISTIR.
+	#
+	# A coluna deles saiu para dentro do menu do Esc, e `_create_corner_buttons`
+	# deixou de ser chamada — então `_speed_icon` e companhia ficam nulos. As
+	# medições continuam sendo feitas (o `_style_hint` acima é a dica de
+	# desempenho, que tem dono próprio); o que se guarda aqui é só não falar com
+	# quem não nasceu.
+	if is_instance_valid(_speed_icon):
+		_speed_icon.definir(false, Dia.velocidade)
+	if is_instance_valid(_speed_hint):
+		_speed_hint.text = "Tempo: %s · clique para mudar" % String(Dia.ROTULOS_VELOCIDADE[Dia.velocidade])
 	_update_clock_hint()
 
 
@@ -499,11 +577,12 @@ func _fit_heading() -> void:
 	if not is_instance_valid(_heading):
 		return
 	var lines := maxi(1, _objective_label.get_line_count())
-	var height := 101.0 + lines * _objective_label.get_line_height() + 14.0
+	# 52 é onde a missão começa (ver `_montar`); 18 de respiro embaixo.
+	var altura := 52.0 + lines * _objective_label.get_line_height() + 18.0
 	_objective_label.size.y = lines * _objective_label.get_line_height()
-	_heading.size.y = height - 18.0
+	_heading.size.y = altura
 	if is_instance_valid(_house_info_panel):
-		_house_info_panel.position.y = height + 12.0
+		_house_info_panel.position.y = 18.0 + altura + 12.0
 
 
 ## Coluna de botões redondos: HOME, som e relógio na mesma posição do menu, depois
@@ -595,13 +674,20 @@ func _create_corner_buttons() -> void:
 		_corner_nodes.append(_root.get_child(index))
 
 
-## Com o mapa aberto só ficam a coluna do canto (mapa dourado) e os marcadores; título,
-## relógio, avisos e controles somem e voltam como estavam.
+## Com o mapa aberto somem título, relógio, avisos e controles, e voltam como
+## estavam. Antes ficava também a coluna de ícones do canto, com o do mapa em
+## dourado — ela saiu para dentro do menu do Esc, e o mapa hoje se fecha pelo
+## Esc ou pela mesma linha do menu que o abriu.
 func set_map_open(open: bool) -> void:
-	_map_icon.definir(open)
+	mapa_aberto = open
+	if is_instance_valid(_map_icon):
+		_map_icon.definir(open)
 	if open:
 		_hidden_for_map.clear()
 		for child in _root.get_children():
+			if child is Control and child.name == "VidaDoCoqueiro":
+				child.visible = false
+				continue
 			if child is Control and child.visible and child != _menu_confirm and not _corner_nodes.has(child):
 				_hidden_for_map.append(child)
 				child.visible = false
@@ -810,3 +896,15 @@ func barra_de_mao() -> Control:
 ## abre, como faz com a mochila.
 func almanaque() -> Control:
 	return _almanaque
+
+
+## QUANTO FALTA DA MISSÃO, ao lado do nome da região.
+##
+## Vinha colado no texto do objetivo — "Corte o capim  (3/9)" —, e a conta
+## reaparecia no meio da frase a cada reanúncio. Separada, ela é um número que
+## se olha de relance sem reler a missão. Com a cadeia terminada (indice >=
+## total) some, em vez de mostrar "9/9" para sempre.
+func set_mission_step(indice: int, total: int) -> void:
+	if not is_instance_valid(_mission_step):
+		return
+	_mission_step.text = "" if total <= 0 or indice >= total else "%d de %d" % [indice, total]

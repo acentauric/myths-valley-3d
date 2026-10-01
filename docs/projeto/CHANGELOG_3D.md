@@ -11,6 +11,121 @@ marcos. Os textos curtos e a identificação exibidos no jogo ficam em
 `prototipo_3d/data/historico_3d.json`; ao registrar um novo marco ou build,
 atualize esse arquivo e este documento juntos.
 
+## Em desenvolvimento — 30/09 e 01/10/2026
+
+- **O E não age com o corpo parado nem atrás de tela.** No escuro da queda, o E batia no
+  tronco ou no coqueiro ao lado da porta, lia lápide e comia o que estava na mão. Atrás de
+  tela aberta, a barra de mão ainda ouvia: o número trocava a mão por baixo do painel J,
+  do almanaque, da teia, do arraial e do menu, e com o arraial (P) aberto o E comia.
+  Recursos, árvores, lápides e a mão perguntam agora pelo corpo, como achados, pesca e
+  luta já faziam, e a barra não ouve com o vale parado (`tests/barra_de_mao.gd`).
+- **Seis cadeias de missão, e o vale com mecanismo próprio** (#7). O 3D deixou de ler o
+  checklist do `Missoes` do 2D: quem guarda missão aberta agora é o `CadernoDoVale`, por
+  decisão do autor — missão nova aqui pode ter padrão, formato e ordem diferentes, e o 2D
+  é referência, não dono. A fila virou peça reusável (`CadeiaDeMissoes`), pendurada em
+  cada morador, lendo `data/missoes_<dono>.json`. Atravessaram, com portão cada: o
+  coveiro (3 passos), a Dona Filó (2), a Dona Zefa (4 — as ervas da serra vêm antes do
+  Cosme, que é a ordem do 2D), o Tonho (5 — a rede paga o armazém e a dívida paga solta a
+  terra, também a ordem de lá) e a Dona Candinha (2). O vale ganhou pé de cana no roçado
+  e moita de erva no mirante para as metas caberem nele.
+- **Metas novas, cada uma de uma missão que não caberia nas anteriores.** `falar`
+  (encontro sem carga: "fale com o Cosme"), e `levar` com CONTA — por item. As seis canas
+  da Candinha e as cinco cordas mais três tábuas do Tonho não fechavam: a entrega levava
+  um só, e chegar com uma cana fechava a missão das seis. O objetivo no caderno diz
+  quantas faltam de cada.
+- **O portão das ferramentas cobra que TODA missão seja cumprível**, varrendo os seis
+  arquivos: meta de tipo que a cadeia sabe fazer, material que sai de alvo posto ou da
+  bancada com receita nascida sabida, e morador procurado que mora aqui. Ele nasceu de um
+  defeito que a versão estreita deixou passar — o `coveiro_cabo` pedia duas achas de
+  lenha e não entregava machado.
+- **O machado virou item de encaixe** (merge de `c9fa5ed`) e isso quebrou a promessa das
+  missões: bater passou a exigir a ferramenta ENCAIXADA, e "toma o machado e vai cortar"
+  entregava na mochila. Quem entrega agora encaixa — inclusive o que o jogador já
+  carrega, porque o vale dá um machado de saída e o passo desistia por achá-lo lá.
+- **`Inventario.quantidade("")` matava.** Espaço livre é `{}`, e `get("id", "")` devolve
+  "" nele: a conta de "" casava com cada espaço vazio e morria no `qtd` que ele não tem.
+  Quem chegava lá era o trabalho — alvo cuja ficha não nomeia ferramenta pergunta por "".
+  Consertado idêntico nas duas cópias, para a bifurcação dos compartilhados não crescer.
+- **Carregar uma partida não refaz a fala.** O restauro punha `espera` de volta, e espera
+  que vence FALA: quem salvasse no primeiro passo do Pedro ouvia a abertura do jogo de
+  novo, como se a partida tivesse recomeçado. Agora há `CadeiaDeMissoes.retomar` — o
+  caderno e o marcador voltam, a fala não. O `tests/salvamento.gd` escuta o Pedro por
+  2,6 s depois de continuar a vaga, e cobra a outra metade: que o objetivo voltou mesmo
+  assim, senão calá-lo passaria deixando o jogador sem rumo.
+- **A lista de missões parou de explodir na tela.** O caderno usava o `texto` do passo
+  como título, e `texto` é a FALA — um parágrafo; `Button` pede a largura do que carrega,
+  e a caixa de 900 ia a **1828 px numa tela de 1280**. Os 25 passos ganharam `titulo`
+  curto (o do 2D, onde havia), as linhas do painel cortam no fim, e há corte de reserva
+  para missão que nasça sem o campo. O portão do painel media a aba quase vazia; agora
+  planta um título maior que qualquer fala do vale.
+- **Os ícones do menu do Esc saíram de cima do texto.** O ícone ocupa de 14 a 40 dentro do
+  botão e a margem do texto era 14 em todas as linhas — o comentário do desenho já dizia
+  que o texto recuava, faltava recuar.
+- **A árvore de talentos ganhou os ícones do 2D** (39 PNG), por decisão do autor enquanto
+  não houver arte própria; `res://` aqui é a pasta do protótipo e não enxerga a do 2D.
+  Talento travado fica apagado como o nome dele.
+- **A teia social ganhou o que faltava do 2D**: o retrato de cada morador, que é o mesmo
+  boneco do mapa recortado no primeiro quadro da folha; a barra do grau com aro, que
+  antes tinha 4 px e passava batida; e os presentes EM DESENHO — os mesmos ícones da
+  mochila, que é onde o jogador vai procurá-los, com o nome escrito embaixo. O gosto
+  continua escondido até "Gente boa", que é a régua de lá.
+- **O minimapa virou bússola redonda e aponta a missão em foco** (máscara de shader na
+  vista, aro fechando o círculo, 176 quadrado). O losango do alvo existia, mas seguia o
+  último passo ANUNCIADO: com várias cadeias abertas apontava para quem tinha acabado de
+  falar, e não para o que o jogador fixou no painel. Agora lê o `CadernoDoVale.atual()`.
+  A máscara mudou uma conta: alvo fora da vista era preso no retângulo, e num canto cai
+  no pedaço que o shader apaga — o limite virou redondo. **O minimapa nunca tinha
+  portão**, e é por isso que o alvo errado durou; tem agora, com sete perguntas.
+- **O teto de tempo da bateria virou por portão.** O `agua_rasa` atravessa o braço de mar
+  a pé, e o vigor novo deixou a travessia mais lenta: o orçamento dele é de 14000 + 16000
+  quadros de física, perto de 500 s de relógio, e ele TRAVAVA no teto geral de 420 s sem
+  medir nada. Cortar o orçamento faria o portão dizer "não dá pé" quando o que falta é
+  distância.
+
+### Antes, no mesmo ciclo
+
+- **Fala longa com Sim e Não** (#21, a caixa e o pacto). O que precisa ser lido antes de
+  seguir abre numa caixa no rodapé, a do 2D, e o vale para atrás dela como atrás de tela.
+  E ou Esc passam a linha; na pergunta, A é Sim, D é Não, E confirma, e o E sem escolha
+  não responde. A primeira pergunta é a do pacto: pegar a carta abre a prosa dela, o
+  preço e o "Firmar?", no lugar do segundo E provisório. O balão continua para o
+  cumprimento de passagem (`dialogo_vale.gd`, `data/dialogo.json`, `tests/escolha.gd`).
+  De passagem: as telas do 2D soltavam o calendário ao fechar, e com o relógio pausado ele
+  andava sozinho; pausar e retomar o vale agora o prendem.
+- **O cordel no papel** (#21, o folheto). Achar um cordel abre o folheto do 2D, inteiro,
+  por cima do vale; E, Esc ou um clique o guardam, e a tecla de outra tela troca para ela.
+  No almanaque, escolher de novo o cordel aberto o relê no papel, e guardar volta ao
+  almanaque onde ele estava (`scripts/ui/folheto.gd`, idêntico ao do 2D; `tests/folheto.gd`).
+- **O amanhecer** (#21, fecha a issue). Quem cai vê no escuro o cartão do dia novo, o do
+  2D: dia, estação, fôlego e o que está marcado — o dia da fazenda ou a festa da fé —, e
+  o E pula a espera. Ao clarear, a fala de quem caiu vem na caixa de fala, e não mais no
+  aviso do HUD (`scripts/ui/amanhecer.gd`, idêntico ao do 2D; `tests/amanhecer.gd`). De
+  passagem: com o vale andando atrás do cartão, o Esc abria o menu e o E que pula a
+  espera batia na árvore ao lado da porta; agora o cartão para o vale, como no 2D. E o E
+  que guarda o papel comia o que estava na mão — no Godot 4 a barra ouve a tecla antes
+  dessas telas.
+- **Mochila no vale** (#2). A tela do 2D abre no I por cima do HUD e no tamanho da
+  janela, com o teclado de dentro dela funcionando: setas ou WASD escolhem, F veste ou
+  come, E arruma. A roda do mouse troca o item da mão, como no 2D; o zoom foi para
+  Ctrl+roda e +/- (`tests/mochila.gd`).
+- **Teclas das telas** (#4). A mochila entrou na tabela de atalhos e no AJUSTAR, como J,
+  K, L e P; W/A/S/D, que andam, saíram da troca. A ajuda do HUD e o painel J leem a
+  tabela, e o `COMO_JOGAR_3D.md` voltou a dizer as teclas de hoje (`tests/atalhos.gd`).
+- **Pesca, cozinha e oficina** (#11). Com a vara na mão e a água à frente, E lança; a
+  bóia afunda e acende o "!" na fisgada, e o E ferra. A água decide o peixe: traíra no
+  rio, robalo no mar. O fogo do terreiro da Casa de taipa cozinha os pratos sabidos, e a
+  bancada provisória da oficina, na beira do roçado, serra tábua e torce corda
+  (`pesca_vale.gd`, `bancadas_vale.gd`, `tests/oficio.gd`).
+- **Obras no vale** (#15, com efeito e sem arte). A aba de obras do painel aparece perto
+  da casa, do armazém, do mirante, do poço e do píer; o plano vem antes do material, e a
+  obra feita paga o ganho no corpo e fica no save. A casa ainda não muda por fora nem
+  por dentro (#26, #27). De passagem: o `Receitas` subia antes do `Obras` e nenhum plano
+  de obra "de começo" nascia sabido; e o `executar` compartilhado não paga o ganho da
+  obra, que o vale paga até o 2D consertar (`bancadas_vale.gd`, `tests/obras.gd`).
+- **A tela de coleção avulsa saiu.** O almanaque (L) mostra cordéis, sinais e bichos
+  com as mesmas fichas, e a tela própria da coleção tinha ficado sem tecla, mostrando um
+  pedaço do que ele mostra (`colecao_vale.gd` e `tests/colecao.gd` apagados).
+
 ## Em desenvolvimento — 29/09/2026
 
 - **Vida no vale** (#10). Barra de vida no HUD, logo abaixo do relógio, com as cores
@@ -52,6 +167,11 @@ atualize esse arquivo e este documento juntos.
   falta achar; o bicho derrubado na luta abre a página dele com a conta de quantos
   caíram. Os dados de coleção do 2D vieram para o protótipo, conferidos byte a byte com o
   original (`colecao_vale.gd`, `data/colecionaveis/`, `tests/colecao.gd`).
+- **Cordéis, sinais e cartas no vale** (#12). Seis cordéis no lugar do arraial que cada
+  um descreve; o sinal da Caipora na mata fechada, e as cartas dela só depois do sinal;
+  o pacto firmado com o segundo E no lugar do mito (ou no painel), com o ganho no corpo
+  e a cobrança de todo dia. Os dados das cartas vieram do 2D, conferidos com os de
+  coleção num portão só (`achados_vale.gd`, `tests/cartas.gd`, `tests/dados_do_2d.gd`).
 
 ## Build #6 — 28/09/2026
 

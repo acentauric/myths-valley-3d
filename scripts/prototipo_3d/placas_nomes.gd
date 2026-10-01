@@ -12,6 +12,8 @@ const NOME := Color("e2c47f")
 
 var _jogador: Node3D
 var _placas: Dictionary = {}
+## Falso enquanto alguma tela está aberta. Ver `permitir`.
+var _permitido := true
 
 
 func configurar(jogador: Node3D, camada: Control) -> void:
@@ -34,7 +36,7 @@ func _process(_delta: float) -> void:
 			_placas.erase(morador)
 			continue
 		var topo := morador.global_position + Vector3(0, float(morador.get("altura")) + ACIMA_DA_CABECA, 0)
-		var mostrar: bool = em_jogo and Estilo.mostrar_nomes and morador.nome_label.visible \
+		var mostrar: bool = _permitido and em_jogo and Estilo.mostrar_nomes and morador.nome_label.visible \
 			and morador.global_position.distance_to(_jogador.global_position) < DISTANCIA_MAXIMA \
 			and not camera.is_position_behind(topo)
 		placa.visible = mostrar
@@ -64,3 +66,30 @@ func _criar(camada: Control, nome: String) -> PanelContainer:
 	placa.add_child(rotulo)
 	camada.add_child(placa)
 	return placa
+
+
+## PLAQUINHA DE NOME É COISA DO MUNDO, e some com qualquer tela aberta.
+##
+## "Quando abro os MENUs, o nome do Pedro tá sobrescrevendo os MENUs."
+##
+## A razão é ordem de irmãos. As plaquinhas moram no mesmo Control do HUD que o
+## almanaque e a barra de mão, e entram DEPOIS deles — filho mais novo desenha
+## por cima. Dava para consertar mexendo na ordem, ou pondo o almanaque numa
+## camada própria, e as duas coisas consertariam este caso e deixariam o
+## seguinte de pé: qualquer tela nova que nasça dentro do HUD volta a ser
+## coberta.
+##
+## O conserto de fundo é de SENTIDO, não de camada: nome flutuando acima da
+## cabeça de um morador é anotação sobre o vale, e com uma tela aberta não há
+## vale à vista. Então elas somem — de todas as telas, de uma vez.
+##
+## Some NA HORA, e não no próximo `_process`: as telas pausam a árvore, e nó
+## pausável não recebe mais `_process`. Esperar o quadro seguinte seria esperar
+## para sempre.
+func permitir(mostrar: bool) -> void:
+	_permitido = mostrar
+	if not mostrar:
+		for morador in _placas.keys():
+			var placa: PanelContainer = _placas[morador]
+			if is_instance_valid(placa):
+				placa.visible = false

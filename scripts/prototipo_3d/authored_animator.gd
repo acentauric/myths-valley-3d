@@ -20,6 +20,9 @@ const GESTURES := [
 	{"clip": "jump_down", "label": "Pular baixo"},
 ]
 
+signal golpe_concluido
+signal golpe_impacto
+
 var animation_player: AnimationPlayer
 var _current_motion := ""
 ## Nome-base → nome real do clipe. O Tripo exporta clipes com sufixo ("walk.001") e o
@@ -28,6 +31,8 @@ var _current_motion := ""
 var _clips: Dictionary = {}
 var _gesture_active := false
 var _jump_active := false
+var _chop_repetitions_left := 0
+var _chop_impacto_emitido := false
 ## Na água funda o movimento vira nado (clipe "swim" em laço, se o modelo tiver).
 var _swimming := false
 ## Velocidade de chão (unidades/s, escala 1) de cada clipe de passo, medida pelo pé de
@@ -53,6 +58,18 @@ func configure(model_root: Node) -> bool:
 			animation_player.get_animation(_clips[clip]).loop_mode = Animation.LOOP_LINEAR
 	_play_motion("idle", 1.0)
 	return true
+
+
+func _process(_delta: float) -> void:
+	if not chop_ativo() or _chop_impacto_emitido:
+		return
+	var clip := String(_clips.get("chop", ""))
+	if clip.is_empty():
+		return
+	var duracao := animation_player.get_animation(clip).length
+	if duracao > 0.0 and animation_player.current_animation_position >= duracao * 0.5:
+		_chop_impacto_emitido = true
+		golpe_impacto.emit()
 
 
 func update_motion(speed: float, _delta: float) -> void:
@@ -88,12 +105,45 @@ func play_gesture(index: int) -> String:
 	if clip.is_empty():
 		return ""
 	_gesture_active = true
+	_chop_repetitions_left = 0
 	_jump_active = index == 8
 	_current_motion = ""
 	animation_player.speed_scale = 4.8 if _jump_active else 1.0
 	animation_player.play(clip, 0.18)
 	var label: String = entry["label"]
 	return label
+
+
+func play_chop(repeticoes: int = 2) -> String:
+	if animation_player == null:
+		return ""
+	var clip: String = _clips.get("chop", "")
+	if clip.is_empty():
+		return ""
+	_gesture_active = true
+	_chop_repetitions_left = maxi(repeticoes, 1)
+	_chop_impacto_emitido = false
+	_jump_active = false
+	_current_motion = ""
+	animation_player.speed_scale = 1.875
+	animation_player.play(clip, 0.18)
+	return "Golpear"
+
+
+func gesture_ativa() -> bool:
+	return _gesture_active
+
+
+func chop_ativo() -> bool:
+	return _gesture_active and _chop_repetitions_left > 0 and animation_player != null and animation_player.current_animation == StringName(_clips.get("chop", ""))
+
+
+func stop_chop() -> void:
+	if _chop_repetitions_left <= 0:
+		return
+	_chop_repetitions_left = 0
+	_gesture_active = false
+	_play_motion("idle", 1.0)
 
 
 ## Tempo entre dois passos (ou braçadas) do clipe em curso, na velocidade atual; 0 parado.
@@ -239,9 +289,17 @@ func _play_motion(role: String, speed_scale: float) -> void:
 	animation_player.play(clip, 0.18)
 
 
-func _on_animation_finished(_animation_name: StringName) -> void:
+func _on_animation_finished(animation_name: StringName) -> void:
 	if not _gesture_active or _jump_active:
 		return
+	if _chop_repetitions_left > 0 and String(animation_name) == String(_clips.get("chop", "")):
+		golpe_concluido.emit()
+	if _chop_repetitions_left > 1 and String(animation_name) == String(_clips.get("chop", "")):
+		_chop_repetitions_left -= 1
+		_chop_impacto_emitido = false
+		animation_player.play(String(animation_name), 0.08)
+		return
+	_chop_repetitions_left = 0
 	_gesture_active = false
 	_play_motion("idle", 1.0)
 

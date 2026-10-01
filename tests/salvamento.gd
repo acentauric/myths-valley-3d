@@ -30,8 +30,19 @@ extends SceneTree
 
 const RESERVA := "user://reserva_do_teste_de_salvamento"
 
-## O que do 3D entra no save pela mão do vale (`estado_para_salvar`).
-const DO_MUNDO := {"Dia": ["hora"]}
+## O que do 3D entra no save pela mão do vale (`estado_para_salvar`), com a
+## MESMA chave lá. `horas_decorridas` é a conta que não volta a zero à
+## meia-noite, e é por ela que o coqueiro cortado sabe quando voltar (ver
+## arvores_info.gd): sem ela no save, o prazo guardado apontaria para longe.
+const DO_MUNDO := {
+	"Dia": ["hora", "horas_decorridas"],
+	# O CADERNO DO VALE não é guardado campo a campo: o `estado()` dele devolve
+	# os três de uma vez e o `restaurar()` os põe de volta, porque `ativas` é
+	# lista de dicionários e o alvo de cada missão é um Vector3 — coisa que o
+	# save escreve como array de três números e tem de voltar como Vector3.
+	# Guardar campo a campo aqui seria refazer essa conversão do lado errado.
+	"CadernoDoVale": ["ativas", "cumpridas", "em_foco"],
+}
 
 ## O que do 3D fica FORA do save, campo a campo, com a razão.
 const FORA_DO_SAVE := {
@@ -61,6 +72,9 @@ const FORA_DO_SAVE := {
 ## Autoloads do 3D que não guardam partida nenhuma, com a razão.
 const SEM_PARTIDA := {
 	"Audio": "volumes e opções de som do AJUSTAR, com arquivo de configuração próprio",
+	"Amanhecer": "o cartão do dia que começa (#21): fica segundos na tela, no escuro da queda, e o que ele mostra — dia, estação, fôlego — é do `Relogio` e do `Energia`, que são salvos",
+	"Folheto": "o cordel aberto no papel (#21): tela aberta e o id que ela mostra; o que se achou mora no `Colecao`, que é salvo",
+	"Dialogo": "a caixa de fala longa (#21): o que ela tem é tela aberta e quem está falando agora. Ninguém salva no meio de uma fala — o vale está parado atrás dela —, e carregar não reabre conversa",
 	"Estilo": "o estilo visual escolhido no AJUSTAR, com arquivo de configuração próprio",
 	"Mare": "o modo da maré escolhido no AJUSTAR",
 	"Versao": "a versão do jogo, lida do historico_3d.json",
@@ -150,6 +164,29 @@ func _run() -> void:
 	if caititu != null:
 		caititu.ferir(9999.0)
 	await _frames(2)
+	# O que DO_MUNDO diz que o vale guarda, o vale guarda de fato, com a mesma
+	# chave: declaração que ninguém confere é declaração que mente.
+	#
+	# A CHAVE PODE ESTAR UM NÍVEL ABAIXO, e o caderno de missões é o caso. Ele
+	# não entra campo a campo no estado do vale: `CadernoDoVale.estado()` devolve
+	# os três de uma vez sob a chave "caderno", porque `ativas` é lista de
+	# dicionários e o alvo de cada missão é um Vector3 — coisa que o save escreve
+	# como três números e que só ele sabe remontar. Espalhar os três no topo
+	# poria a conversão do lado errado.
+	#
+	# Então a procura desce um nível: o campo vale se está no estado do vale OU
+	# dentro de um dicionário dele. Mais fundo que isso não se procura — aninhar
+	# sem limite seria a declaração deixando de significar alguma coisa.
+	var do_vale: Dictionary = vale.estado_para_salvar()
+	for nome in DO_MUNDO:
+		for campo in DO_MUNDO[nome]:
+			var achou: bool = do_vale.has(campo)
+			if not achou:
+				for chave in do_vale:
+					var dentro = do_vale[chave]
+					if dentro is Dictionary and (dentro as Dictionary).has(campo):
+						achou = true
+			_conferir(achou, "DO_MUNDO diz que o vale guarda %s.%s, e o estado_para_salvar não tem '%s' nem em grupo nenhum dele" % [nome, campo, campo])
 	_conferir(partida.salvar(), "a vaga 1 não salvou")
 	_conferir(salvamento.existe_partida(1), "salvou e não há arquivo na vaga 1")
 	_conferir(int(salvamento.resumo(1).get("dia", 0)) == dia_salvo,
@@ -164,6 +201,14 @@ func _run() -> void:
 		return
 	player = vale.player
 	luta = vale.get_node_or_null("Luta")
+
+	# CONTINUAR NÃO REFAZ A FALA. O Pedro reanunciava o passo ao voltar, e quem
+	# tivesse salvado no primeiro ouvia a abertura do jogo de novo — a partida
+	# parecia ter recomeçado. O que volta é o OBJETIVO: o caderno e o marcador.
+	# Escutado desde já, antes dos quadros que o reanúncio levava para sair.
+	var falou_ao_voltar: Array[String] = []
+	if vale.pedro != null and vale.pedro.has_signal("narrou"):
+		vale.pedro.narrou.connect(func(texto: String) -> void: falou_ao_voltar.append(texto))
 	await _frames(4)
 	var longe: float = Vector2(player.global_position.x - igreja.x, player.global_position.z - igreja.z).length()
 	_conferir(longe < 0.6, "o jogador voltou a %.1f u de onde estava" % longe)
@@ -176,6 +221,20 @@ func _run() -> void:
 	_conferir(regra.sabe("ginga"), "a ginga aprendida não voltou")
 	if vale.pedro != null:
 		_conferir(vale.pedro.missao == 2, "o Pedro voltou no passo %d, e estava no 2" % vale.pedro.missao)
+		# O ANÚNCIO VENCIA EM 1,4 s DE RELÓGIO, então a espera é de relógio e
+		# com folga: contar quadros mediria outra coisa.
+		var ate := Time.get_ticks_msec() + 2600
+		while Time.get_ticks_msec() < ate:
+			await process_frame
+		_conferir(falou_ao_voltar.is_empty(),
+			"ao continuar a partida o Pedro falou %d vez(es) — a primeira: '%s'"
+				% [falou_ao_voltar.size(), falou_ao_voltar[0] if not falou_ao_voltar.is_empty() else ""])
+		# E O OBJETIVO VOLTOU MESMO ASSIM: sem a fala, é o caderno que diz ao
+		# jogador o que ele estava fazendo. Sem esta metade, calar o Pedro
+		# passaria no portão deixando o jogador sem rumo nenhum.
+		var caderno_do_vale = root.get_node_or_null("/root/CadernoDoVale")
+		_conferir(caderno_do_vale != null and not caderno_do_vale.ativas.is_empty(),
+			"continuar calou o Pedro e não deixou missão nenhuma aberta no caderno")
 	if luta != null:
 		await _frames(2)
 		_conferir(luta.criaturas.is_empty(), "o caititu derrubado reapareceu ao reabrir")
@@ -186,9 +245,9 @@ func _run() -> void:
 	var acordou := [false]
 	queda.acordou.connect(func(): acordou[0] = true)
 	vida.ferir(9999.0)
-	for i in range(600):
-		if acordou[0]:
-			break
+	# Teto pelo relógio de parede: o cartão do amanhecer (#21) é tempo de tela.
+	var ate := Time.get_ticks_msec() + 15000
+	while not acordou[0] and Time.get_ticks_msec() < ate:
 		await process_frame
 	_conferir(int(salvamento.resumo(1).get("dia", 0)) == dia_salvo + 1,
 		"depois da queda a vaga diz dia %s, e o dia novo é %d" % [str(salvamento.resumo(1).get("dia")), dia_salvo + 1])

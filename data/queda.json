@@ -1,8 +1,9 @@
 {
-	"_sobre": "O que o jogador lê ao acordar em casa depois de cair (vida no chão). As três falas são as do jogo 2D (Mundo._ao_cair), verbatim: migrar é ligar, não redigir. A tradução en/es é do Ramon; ver FALTAM_TRADUCAO em tests/idiomas.gd.",
+	"_sobre": "O que o jogador lê ao acordar em casa depois de cair (vida no chão). As três falas são as do jogo 2D (Mundo._ao_cair), verbatim: migrar é ligar, não redigir; saem na caixa de fala longa (#21). 'lembrete_da_fazenda' é o lembrete do cartão do amanhecer no dia da fazenda, verbatim do Mundo._lembretes_do_dia do 2D. A tradução en/es é do Ramon; ver FALTAM_TRADUCAO em tests/idiomas.gd.",
 	"fala": [
 		{"texto": "Você caiu, e não se lembra de ter chegado em casa."},
 		{"texto": "Alguém te achou no mato e te trouxe. Ninguém disse quem."},
 		{"texto": "O corpo está inteiro. O que faltou foi juízo."}
-	]
+	],
+	"lembrete_da_fazenda": {"texto": "É hoje o dia da fazenda do outro lado do rio. O arraial todo foi convidado."}
 }

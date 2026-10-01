@@ -34,16 +34,16 @@ crédito do Tripo e exigem o custo aprovado **antes** de gerar.
 
 | Fase deste plano | Issues |
 |---|---|
-| Fase 2 — sistemas | ~~#10 Vida~~ (feita) · #11 receitas, cozinha, oficina e pesca · #12 cartas e coleção · #13 Povoado · ~~#14 luta~~ (feita) · #15 obras e venda |
+| Fase 2 — sistemas | ~~#10 Vida~~ (feita) · ~~#11 receitas, cozinha, oficina e pesca~~ (feita) · ~~#12 cartas e coleção~~ (feita) · #13 Povoado · ~~#14 luta~~ (feita) · #15 obras e venda (a venda e as obras com efeito saíram; a casa que muda espera #26 e #27) |
 | Fase 2.5 — geografia | #22 chapada e vizinhos · #23 rio, vau e lagoa · #24 mata e serra · #25 fazenda e ruínas |
 | Fase 3 — missões e enredo | **#1** (jam) · #31 capítulos 6 e 7 |
 | Fase 4 — salvar | ~~#7~~ (feita) |
-| Fase 6 — interface | **#2** mochila · ~~#3 fôlego~~ (feita) · **#4** teclas (jam) · ~~#19 painel~~ (feita) · #20 teia, ~~coleção~~ (feita), arraial · #21 fala com escolha |
+| Fase 6 — interface | ~~#2 mochila~~ (feita) · ~~#3 fôlego~~ (feita) · ~~#4 teclas~~ (feita) · ~~#19 painel~~ (feita) · #20 teia, ~~coleção~~ (feita), arraial · ~~#21 fala com escolha, folheto e amanhecer~~ (feita) |
 | Fase 7 — modelos | **#5** comidas e carta (jam) · #26 interiores · #27 roçado e trabalho · #28 bichos · #29 vila · #30 fazenda e ruínas |
 | O idioma | **#6** (jam) |
 | O som · as estações | #16 · #17 |
 | O que não migra (reescrita) | #8 plantação · #9 construções e terrenos |
-| Portões | #18 |
+| Portões | #18 (`_escolha`, `_folheto` e `_amanhecer` atravessaram com a #21) |
 | Fora deste plano | #32 conversa por IA — vem do [DECISOES_PROTOTIPO_3D.md](DECISOES_PROTOTIPO_3D.md), prioridade a confirmar |
 
 > **O board foi aberto antes do fechamento da Fase 2** (29/09, 16h; o commit
@@ -292,6 +292,43 @@ Isso responde à objeção do próprio plano — regra copiada é regra sem port
 dando-lhe o portão. O critério para um autoload entrar na lista: não citar
 tipo 2D **e** não depender de outro autoload que ainda não atravessou.
 
+#### A DÍVIDA ABERTA: quatro arquivos bifurcaram (01/10/2026)
+
+**Não rode o `sincronizar-compartilhado.ps1` sem decidir isto primeiro.** Ele
+copia 2D → 3D, e hoje isso APAGARIA trabalho que só existe no 3D.
+
+O commit `c9fa5ed` fez do machado um item de encaixe de mão, e a regra nasceu no
+protótipo, não no 2D. Com ela vieram a reserva da mochila (ferramenta de encaixe
+não ocupa espaço de mão), o arrasto para o encaixe e o `e_equipamento` que aceita
+ferramenta. Quatro espelhos divergiram do dono:
+
+| arquivo | linhas de diferença |
+| --- | --- |
+| `catalogo.gd` | 1 (`"encaixe": "maos"` no machado) |
+| `inventario.gd` | 32 (reserva, `mover_ferramentas_para_reserva`) |
+| `equipamento.gd` | 9 (`e_equipamento` aceita ferramenta de mão) |
+| `mochila.gd` | 3 (arrasto para o encaixe) |
+
+O `testar_compartilhado` do 2D **reprova os quatro**, e a mensagem dele manda
+rodar o sincronizador — conselho certo pela regra antiga e destrutivo agora.
+Medido em 01/10/2026: `compartilhado: 4 falha(s)`.
+
+São duas saídas, e a escolha é do autor:
+
+1. **Promover a regra ao 2D.** O 2D tem `scripts/autoload/equipamento.gd` próprio
+   e lê `encaixe`, então o machado passaria a ser item de encaixe lá também — é
+   mudança de comportamento no jogo que já roda, não só de arquivo.
+2. **Declarar os quatro bifurcados** e tirá-los da lista do sincronizador e do
+   portão, assumindo que a mochila do vale é outra. Perde-se o portão que impede
+   as duas versões de andarem sozinhas, e é justamente o que ele existe para
+   impedir.
+
+Enquanto não se decide, o conserto de defeito que vale para os dois lados entra
+nos dois à mão, para a bifurcação não crescer. Foi o que se fez com
+`Inventario.quantidade("")`, que matava em qualquer espaço vazio: o mesmo
+conserto, idêntico, nas duas cópias — a diferença continuou em 32 linhas.
+
+
 ### O mapa de dependência, medido
 
 A ordem da tabela acima foi escrita de cabeça. Medindo arquivo a arquivo, ela
@@ -429,6 +466,59 @@ lugar é o que o jogador vê e o passo é texto.
 > que é exatamente o que ela existe para evitar. **Anotação de tipo é
 > acoplamento tão real quanto chamada de função, e não aparece em busca
 > nenhuma por nome.**
+
+> **ONDE ISTO ESTÁ EM 01/10/2026.** O trecho acima descreve o vale de setembro,
+> quando a missão era uma constante dentro do `guia_pedro.gd` e lia o `Missoes`
+> do 2D. Mudou duas vezes desde então.
+>
+> **O 3D tem mecanismo próprio de missão**, por decisão do autor: o
+> `CadernoDoVale` (autoload novo), e não o checklist do `Missoes`. A razão é de
+> projeto, e está escrita no `caderno_do_vale.gd` — missão nova aqui pode ter
+> padrão, formato e ordem diferentes do 2D, e o 2D é referência, não dono. O que
+> se perdeu de propósito foi a CHECKLIST: missão do vale tem UMA linha de
+> andamento, escrita por quem conduz ("Juntar lenha: 1 de 2").
+>
+> **A fila virou peça reusável**: `CadeiaDeMissoes` (`scripts/prototipo_3d/`),
+> pendurada em cada morador pelo `_pendurar_cadeia` do `Prototype`, lendo um
+> `data/missoes_<dono>.json`. Quatro tipos de meta, e cada um nasceu de uma
+> missão do 2D que não caberia nos anteriores:
+>
+> | meta | o que mede | de onde veio |
+> | --- | --- | --- |
+> | `juntar` | item na mochila | a lenha do tutorial |
+> | `derrubar` | pé cortado no mundo | o capim do Damião |
+> | `levar` | encontro COM carga, com conta por item | o pirão da Filó; as seis canas da Candinha; as cinco cordas e três tábuas do Tonho |
+> | `falar` | encontro sem carga | "fale com o Cosme" |
+>
+> **Seis cadeias atravessaram**, com portão próprio cada: `missoes_guia` (o
+> passeio do Pedro), `missoes_coveiro` (3 passos), `missoes_filo` (2),
+> `missoes_zefa` (4), `missoes_tonho` (5) e `missoes_candinha` (2). O
+> `tests/ferramentas.gd` varre os seis arquivos e cobra que **toda missão seja
+> cumprível**: meta de tipo que a cadeia sabe fazer, material que sai de alvo
+> posto ou da bancada com receita nascida sabida, e morador procurado que mora
+> aqui. Missão nova entra nessa conta sozinha.
+>
+> **O que falta, e por quê:**
+>
+> - **A cadeia da fé** (7 passos, `fe_zefa` a `fe_escolher`) pede o `terreiro` e
+>   a `gameleira` como lugares, e os dois estão no `FALTAM_NO_VALE` do `Lugares`.
+>   Esta espera a Fase 2.5 de verdade — não é mecanismo, é geografia.
+> - **Recompensa**: a `CadeiaDeMissoes` não tem campo para ela. O 2D paga 2
+>   peixes assados pela dívida do Tonho, 2 pirões e 2 cocadas pela terra, 3
+>   garapas pela cana; os números estão anotados em cada `missoes_*.json` e em
+>   `arraial.json` (`recompensas`), esperando o campo.
+> - **Tradução**: cada `missoes_*.json` declara `"traducao": "pendente"`. É do
+>   Ramon, como `pedro.json` e `aldeoes.json`.
+> - **O resto do `arraial.json`** é sistema que o vale já tem: obras
+>   (`canteiro_*`, `mirante_*`), luta (`armas_*`, `capoeira_*`, `meta_*`) e a
+>   caderneta do arraial, que virou a teia do P.
+>
+> **Uma armadilha para quem escrever a próxima cadeia:** passo cujo `lugar` não
+> resolve o `correr` PULA EM SILÊNCIO — de propósito, para o vale a meio não
+> travar numa das âncoras que faltam. A consequência é que um erro de digitação
+> não quebra nada: só apaga o meio da missão, e ninguém fica sabendo. Aconteceu
+> ao escrever a rede do Tonho, que apontava "oficina" (ausente); o
+> `tests/cadeia_do_tonho.gd` pergunta ao `Lugares` antes de jogar por isso.
 
 
 Depois da Fase 1, o sistema de missões atravessa inteiro: `Missoes` (576
@@ -614,17 +704,118 @@ era a penúltima — era pré-requisito da 2ᵃ.
 > entrava como linha escolhível e deslocava o índice das missões de baixo, e os
 > campos de teste comparavam o índice com o cursor sem descontar as ações.
 >
-> **A coleção L saiu** (parte da [#20](https://github.com/acentauric/myths-valley/issues/20)), em
-> `colecao_vale.gd`, pelo mesmo caminho do painel: cópia adaptada da
-> `colecao_tela.gd`. O cordel ainda não se lê no papel — o `Folheto` é da #21 — e a
-> ficha mostra a primeira linha do verso, como já mostrava no 2D. A teia (K) e o
-> arraial (P) continuam na #20.
+> **A coleção saiu, e mora no almanaque** (parte da [#20](https://github.com/acentauric/myths-valley/issues/20)).
+> Primeiro veio como tela própria no L, cópia adaptada da `colecao_tela.gd`; depois,
+> a pedido de quem joga, os cordéis, sinais e bichos viraram seções do almanaque,
+> que ficou com o L, e as fichas foram para `fichas_da_colecao.gd`, que nenhuma tela
+> possui. A tela avulsa, sem tecla e mostrando um pedaço do que o almanaque mostra,
+> foi apagada. A ficha mostra a primeira linha do verso, como no 2D, e o cordel
+> inteiro se lê no papel desde a #21 (o `Folheto`, ver abaixo). O arraial (P)
+> continua na #20.
 >
 > **Os dados de coleção vieram junto**, e são a primeira cópia de DADO do 2D:
 > `data/colecionaveis/` (cordéis, sinais, bichos). O `Colecao` lê `res://`, que
 > aqui é a pasta do protótipo, então o arquivo tem de estar dentro dela. O dono
-> continua sendo o 2D, e `tests/colecao.gd` compara as três cópias byte a byte
+> continua sendo o 2D, e `tests/dados_do_2d.gd` compara as cópias byte a byte
 > com o original na raiz — mudou lá sem copiar, reprova aqui.
+>
+> **Os achados e as cartas saíram** ([#12](https://github.com/acentauric/myths-valley/issues/12)),
+> em `achados_vale.gd`, com a ordem das coisas do `Mundo` do 2D: o cordel está no
+> lugar do arraial que o `onde` dele descreve (seis dos dez; os outros quatro
+> esperam a lagoa, o vau, a ruína e o engenho, declarados), o sinal da Caipora está
+> na mata fechada, e a carta ESPERA o sinal. O pacto se firma no lugar do mito com
+> o segundo E — a pergunta de Sim e Não é da #21 — e o painel continua firmando e
+> desfazendo. As cartas dos moradores chegam pela amizade (#13). A conferência das
+> cópias de dado virou um portão só, `tests/dados_do_2d.gd`, com a lista do que o
+> protótipo copiou.
+>
+> **As obras saíram com efeito, e a casa ainda não muda** ([#15](https://github.com/acentauric/myths-valley/issues/15)).
+> O `obras.json` veio do 2D, e a aba de obras aparece perto de cada construção
+> que o vale já tem (`BancadasVale.OBRAS`): a casa, o armazém, o mirante, o poço e o
+> píer. O plano vem antes do material, como no 2D. A obra feita paga o ganho no
+> corpo e fica no save; a casa não muda por fora nem por dentro até os modelos
+> (#27) e o cômodo (#26) — decisão do usuário: efeito agora, arte depois.
+>
+> Dois defeitos apareceram no caminho, e nenhum é do vale:
+>
+> - **O `Obras.executar` do 2D não paga o ganho.** Só o `conceder` (obra dada por
+>   morador) chama `_pagar_o_atributo`; a obra que o jogador faz consome o
+>   material e não entrega o "+10 de fôlego máximo" que o painel promete. O
+>   `testar_obras` de lá confere o `conceder` e não o `executar`. O conserto é no
+>   2D; até lá o painel do vale paga (`pagar_o_que_a_obra_da`), e `tests/obras.gd`
+>   cobra que pague UMA vez — quando o 2D consertar, ele reprova por dobro.
+> - **A ordem dos autoloads do vale estava trocada.** No 2D o `Receitas` sobe
+>   depois de `Obras`, `Cozinha` e `Oficina`; no vale subia antes, e o `conferir()`
+>   dele encontrava o catálogo de obras vazio — nenhum plano de obra "de começo"
+>   nascia sabido. A ordem agora é a do 2D.
+>
+> **Pesca, cozinha e oficina saíram** ([#11](https://github.com/acentauric/myths-valley/issues/11)).
+> A pesca (`pesca_vale.gd`) é o `Mundo._pescar` do 2D no vale: a vara na mão, a
+> água à frente e o E; a água é doce na calha de um rio do mapa geográfico e mar
+> no resto, e é ela que decide o tanque do `Pesca` — traíra só no rio, robalo só no
+> mar. A fisgada afunda a bóia e acende o "!", e ferrar escuta a tecla antes de
+> todo mundo. A COZINHA é o fogo do terreiro da Casa de taipa, que faz as vezes do
+> fogão até haver cômodo (#26); a OFICINA é uma bancada provisória em caixa cinza
+> na beira do roçado, até o modelo dela (#27). Os sons são os da tabela do 2D —
+> água no lance, o "regar" na fisgada, "pegar" no peixe —, e a tabela própria é a
+> #16.
+>
+> **A mochila abre no vale** ([#2](https://github.com/acentauric/myths-valley/issues/2)),
+> e é a segunda tela do 2D a atravessar — a primeira pela cópia compartilhada
+> do `sincronizar-compartilhado.ps1`, e não adaptada. O vale acerta o que é dele: a camada (por cima do HUD) e a
+> escala da tela de 640×360 para a janela, as ações de teclado que ela escuta
+> (`equipar`, `interagir`, `cancelar`, `mover_*`), e a roda do mouse, que passou
+> a trocar o item da mão como no 2D, com o zoom no Ctrl+roda e no +/-. A tecla
+> dela entrou na tabela de atalhos com as outras quatro telas, e W/A/S/D ficaram
+> fora da troca ([#4](https://github.com/acentauric/myths-valley/issues/4)).
+>
+> **A fala longa com Sim e Não saiu** ([#21](https://github.com/acentauric/myths-valley/issues/21)),
+> em `dialogo_vale.gd`, o autoload `Dialogo`. Entrou como **cópia adaptada,
+> declarada**, como o painel: o `dialogo.gd` do 2D chama `Telas.fechar_todas()`,
+> liga o `Relogio.pausado` — que aqui é calendário preso, e soltá-lo no fim da
+> fala o deixaria andando com o `Dia` parado — e carrega o `TemaIntro` do menu
+> para o modo de digitar nome. Veio igual: a API (`falar`, `perguntar`, `ativo`,
+> `ocupado`, `abriu`, `terminou`), a fila, as duas travas (o E que não responde
+> sem escolha feita e a carência do martelo) e o desenho de 640×360, que o vale
+> escala. Ficou de fora o `pedir_texto`. Quem fecha a tela aberta e para o vale
+> e o `Dia` é o vale, ouvindo `abriu` e `terminou`; com a caixa aberta, o dono
+> das telas não abre nem fecha tela e a barra de mão não ouve o E. **Volta a
+> ser um arquivo só** quando o 2D trocar a chamada ao `Telas` e a pausa do
+> `Relogio` por quem ouve os dois sinais — a porta que a mochila já usa
+> (`alguem_fala`, `abrir_documento`). A primeira pergunta do vale é a do pacto:
+> a carta abre a prosa na caixa, depois o preço e o "Firmar?", e o segundo E
+> provisório da #12 saiu. O `testar_escolha` do 2D atravessou junto, como
+> `tests/escolha.gd` (#18). De passagem: as telas do 2D soltam o `Relogio` ao
+> fechar, e com o `Dia` parado ninguém o prendia de novo; pausar e retomar o
+> vale agora o prendem.
+>
+> **O folheto saiu** (#21), e esse atravessou inteiro: `scripts/ui/folheto.gd` é
+> o do 2D, e `tests/folheto.gd` o confere byte a byte com o original, junto com
+> as perguntas do `testar_folheto` de lá (os dez cordéis cabem no papel). O vale
+> só acerta a camada e a escala, e o põe no dono das telas como tela que o MUNDO
+> abre — nenhuma tecla é dele: o cordel achado abre o papel, como no
+> `Mundo._pegar_cordel`, e o almanaque relê o cordel aberto quando ele é
+> escolhido de novo. Sendo tela, o Esc o guarda e a tecla de outra tela troca
+> para ela, que é o "[L] coleção" do rodapé dele. No 2D a coleção fica aberta
+> embaixo do papel; aqui só uma tela fica aberta, então o almanaque fecha e,
+> guardado o papel, reabre onde estava. O dono das telas ganhou o aviso de tela
+> que fechou sozinha (`fechou_por_conta`), porque o papel se guarda com o E
+> dentro dele, sem passar por lá.
+>
+> **O amanhecer saiu** (#21), inteiro também: `scripts/ui/amanhecer.gd` é o do
+> 2D, conferido byte a byte por `tests/amanhecer.gd`. Entra onde o vale vira o
+> dia, que é a queda: o cartão aparece no escuro, acima da tela preta (como no 2D
+> fica acima do véu), com o dia novo já virado e os lembretes do 2D — o dia da
+> fazenda ou a festa da fé —, e só depois a tela clareia. A fala de quem caiu
+> saiu do aviso do HUD para a caixa de fala, como no `Mundo._apagar`. Ao montar
+> isso apareceu uma armadilha do Godot 4 que vale para toda tela do 2D: o
+> `_unhandled_key_input` vem ANTES do `_unhandled_input`. O cartão e o papel
+> ouvem no segundo; o vale (o Esc do menu) e a barra de mão (o E que come)
+> ouvem no primeiro. Por isso o cartão para o vale enquanto está na tela (com o
+> vale andando, o E que pula a espera batia na árvore ao lado da porta), e a
+> barra não come com a fala, o papel ou o cartão abertos. O vale também cala a
+> fala aberta ao sair da árvore, porque o `Dialogo` é autoload e ficaria
+> esperando um E.
 
 É a fase mais barata em relação ao que entrega, e a que mais precisa da regra
 do topo: **a interface do 3D não é substituída, é acrescida.** Toda tela do 2D

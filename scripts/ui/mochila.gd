@@ -261,7 +261,8 @@ func _mouse(evento: InputEvent) -> void:
 			if _arrastando_de < Inventario.ESPACOS and onde < Inventario.ESPACOS:
 				Inventario.trocar(_arrastando_de, onde)
 			elif _arrastando_de < Inventario.ESPACOS:
-				Equipamento.equipar_do_espaco(_arrastando_de)
+				var encaixe_destino := str(Equipamento.ENCAIXES[onde - Inventario.ESPACOS])
+				Equipamento.equipar_do_espaco(_arrastando_de, encaixe_destino)
 			elif _arrastando_de < _primeiro_do_bau():
 				Equipamento.desequipar(str(Equipamento.ENCAIXES[_arrastando_de - Inventario.ESPACOS]))
 			Audio.efeito("menu_confirma")
@@ -765,7 +766,7 @@ func _atualizar() -> void:
 			continue
 		icone.texture = Catalogo.icone(id)
 		icone.modulate.a = 0.45 if i == _pego else 1.0
-		quantidade.text = str(quantos) if quantos > 1 else ""
+		quantidade.text = str(quantos) if quantos > 1 or id == "madeira_de_coqueiro" else ""
 
 	_titulo.text = "Mochila %d/%d        %d réis" % [
 		Inventario.ocupados(), Inventario.ESPACOS, Jogo.dinheiro]

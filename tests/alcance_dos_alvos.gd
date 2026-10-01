@@ -28,6 +28,9 @@ const ALCANCE := 3.2
 ## Quantos pontos em volta do alvo precisam estar livres para dizer que se
 ## chega a pé. Oito direções; exigir todas seria exigir alvo no meio do campo.
 const LIVRES_MINIMO := 3
+## Raio do corpo do jogador, medido no `vale.tscn`. É o quanto a colisão o
+## mantém afastado da face de qualquer coisa.
+const RAIO_DO_CORPO := 0.28
 
 
 func _initialize() -> void:
@@ -49,6 +52,7 @@ func _run() -> void:
 	await _frames(3)
 
 	var recursos := current_scene.get_node_or_null("Recursos3D")
+	var jogador = current_scene.get("player")
 	var mundo := get_first_node_in_group("mundo")
 	var lugares := root.get_node("/root/Lugares")
 	_conferir(recursos != null and mundo != null, "não achei os recursos ou o mundo")
@@ -131,6 +135,38 @@ func _run() -> void:
 			"o passo '%s' pede %s e o alvo mais perto está a %.1f u do lugar dele: caminhada sem motivo"
 				% [str(passo.get("id", "?")), item, menor])
 
+	# --- 5. ENCOSTADO NA PEÇA, O ALVO RESPONDE -------------------------------
+	#
+	# ESTA PERGUNTA FALTAVA, e a falta dela deixou a missão da picareta quebrada
+	# por três rodadas com este portão verde.
+	#
+	# As quatro de cima olham o CHÃO em volta do alvo: se é terra, se está
+	# livre, se a missão aponta para perto. Todas passavam. Nenhuma perguntava
+	# o que o jogador faz de fato — encostar na coisa e apertar E.
+	#
+	# O lajedo é a peça `pedras` em tamanho 2,2: a caixa de colisão tem 3,30 do
+	# centro até a face. O alcance era 3,20, medido do CENTRO. O corpo para na
+	# face, a 3,30, e o golpe pedia 3,20: dez centímetros de folga NEGATIVA.
+	# Chão livre não adianta quando o que barra é o próprio alvo.
+	#
+	# Aqui o jogador é posto onde a colisão o deixaria — encostado na face, mais
+	# o corpo dele — e se pergunta ao `Recursos3D` qual alvo está ao alcance. Se
+	# não for este, ele é inalcançável, seja qual for a aritmética por dentro.
+	print("")
+	for id in recursos._alvos.keys():
+		var alvo: Dictionary = recursos._alvos[id]
+		var meia: float = float(alvo.get("meia_pegada", 0.0))
+		var centro: Vector3 = alvo["pos"]
+		var encostado := centro + Vector3(meia + RAIO_DO_CORPO, 0.0, 0.0)
+		jogador.global_position = encostado
+		await _frames(2)
+		var respondeu: String = recursos._mais_perto()
+		print("  braço    %-18s meia-pegada=%.2f  encostado a %.2f  responde=%s"
+			% [str(id), meia, meia + RAIO_DO_CORPO, respondeu if respondeu != "" else "NINGUÉM"])
+		_conferir(respondeu == str(id),
+			"encostado no '%s' o jogo oferece '%s': a peça tem %.2f de pegada e o alcance é %.2f — o corpo para na face antes de o golpe valer"
+				% [str(id), respondeu if respondeu != "" else "nada", meia, float(recursos.ALCANCE)])
+
 	_fechar()
 
 
@@ -163,7 +199,7 @@ func _plano(a: Vector3, b: Vector3) -> float:
 func _fechar() -> void:
 	print("")
 	if falhas == 0:
-		print("ALCANCE_OK: todo alvo posto está em terra firme, com chão livre em volta, e toda missão que pede material tem alvo perto do lugar dela")
+		print("ALCANCE_OK: todo alvo posto está em terra firme, com chão livre em volta, o braço alcança além da pegada dele, e toda missão que pede material tem alvo perto do lugar dela")
 	else:
 		print("alcance: %d falha(s)" % falhas)
 	quit(1 if falhas > 0 else 0)

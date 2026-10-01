@@ -3,10 +3,19 @@ extends RefCounted
 ## A–Z, salva em user://controles.cfg (seção "atalhos", o mesmo arquivo das teclas de
 ## movimento). `aplicar()` re-registra as ações do InputMap; se a letra escolhida já
 ## pertence a outra ação, `definir()` troca as duas entre si (swap), então nunca há
-## duas ações na mesma letra. "interagir", "gingar", "painel" e "colecao" não têm ação no InputMap:
+## duas ações na mesma letra. "interagir", "gingar", "painel", "talentos" e
+## "arraial" não têm ação própria no InputMap:
 ## lápides, árvores, a luta e o vale comparam o evento com `tecla(...)`.
 
 const ARQUIVO := "user://controles.cfg"
+## AS LETRAS QUE NENHUM ATALHO PODE TOMAR (#4).
+##
+## W, A, S e D andam (`teclas_movimento.gd`), e dentro das telas — almanaque,
+## teia, arraial, menu, painel — são as mesmas quatro que escolhem. A tabela só
+## impedia colisão entre os PRÓPRIOS atalhos: o AJUSTAR oferecia o A–Z inteiro,
+## e pôr o mapa no W fazia o primeiro passo à frente abrir o mapa. Ficam de fora
+## mesmo no modo "Setas", porque as telas continuam navegando por elas.
+const RESERVADAS := [KEY_W, KEY_A, KEY_S, KEY_D]
 ## Rótulo (para o AJUSTAR) e letra de fábrica de cada ação.
 const DEFINICOES := {
 	"interagir": {"rotulo": "Ler / interagir", "padrao": KEY_E},
@@ -19,28 +28,31 @@ const DEFINICOES := {
 	"gingar": {"rotulo": "Gingar (esquiva)", "padrao": KEY_V},
 	# O painel de missões, cartas, venda e jogo (#19); J como no 2D.
 	"painel": {"rotulo": "Painel", "padrao": KEY_J},
-	# A coleção de cordéis, sinais e bichos (#20); L como no 2D.
-	"colecao": {"rotulo": "Coleção", "padrao": KEY_L},
-	# O ALMANAQUE DAS PLANTAS, que estava no L À REVELIA DESTA TABELA.
+	# O ALMANAQUE NO L, que é a tecla da coleção no jogo 2D.
 	#
-	# Ele foi escrito antes de a coleção chegar, e tomou o L emprestado
-	# justamente porque o L é a coleção do 2D. Quando a coleção de verdade
-	# desembarcou no vale, as duas telas ficaram na mesma letra — e a tabela,
-	# que existe para que isso não aconteça, não tinha como saber: o almanaque
-	# amarrava o `mv_almanaque` ao `KEY_L` na mão, sem passar por aqui.
+	# Ele nasceu no L emprestado, foi para o K quando a coleção chegou, e volta
+	# ao L agora que ELE É A COLEÇÃO: plantas, cordéis, sinais e bichos no mesmo
+	# caderno. Duas telas com a mesma função em teclas vizinhas era o jogador
+	# tendo de decorar qual guardava o quê.
 	#
-	# Passa a passar. O K é o vizinho livre do L, e o `definir()` troca as
-	# duas quando alguém quiser outra coisa.
-	#
-	# O LUGAR CERTO DELE, a prazo, é ser a QUARTA COLEÇÃO — cordéis, sinais,
-	# bichos e plantas, numa tela só. É o que o cabeçalho do `almanaque.gd` já
-	# previa ("quando as plantas quiserem almanaque, a lista muda de casa").
-	# Fazer isso agora seria mexer na tela que acabou de chegar, no meio de uma
-	# junção; fica anotado no plano.
-	"almanaque": {"rotulo": "Almanaque das plantas", "padrao": KEY_K},
+	# E o K, que sobrou, é a tecla da TEIA DE TALENTOS no 2D — que é exatamente
+	# o que o autor pediu para ele: "precisamos do botão disponível para acessar
+	# a árvore de habilidades".
+	"almanaque": {"rotulo": "Almanaque", "padrao": KEY_L},
+	"talentos": {"rotulo": "Árvore de habilidades", "padrao": KEY_K},
+	# A teia social do arraial: quem mora aqui e o quanto cada um gosta de você.
+	# P como no 2D, que o tutorial de lá ensina com estas palavras: "aperte P e
+	# veja quem é quem no arraial".
+	"arraial": {"rotulo": "O arraial", "padrao": KEY_P},
+	# A MOCHILA ENTRA NA TABELA (#4). Era a única tela do vale numa letra
+	# escrita à mão no `prototype.gd`: não aparecia no AJUSTAR, e a troca de
+	# letras não a enxergava — dava para pôr o mapa no I e ter as duas na mesma
+	# tecla. I como no 2D.
+	"mochila": {"rotulo": "Mochila", "padrao": KEY_I},
 }
 ## Ação do InputMap que `aplicar()` re-registra para cada atalho.
 const ACOES_INPUT := {
+	"mochila": "mv_mochila",
 	"observar": "mv_inspect",
 	"hora": "mv_time",
 	"reiniciar": "mv_reset",
@@ -57,15 +69,35 @@ static var _cache: Dictionary = {}
 static func tecla(acao: String) -> int:
 	if _cache.has(acao):
 		return int(_cache[acao])
+	# NOME QUE A TABELA NÃO CONHECE devolve 0, e não derruba.
+	#
+	# `DEFINICOES[acao]` cru estourava com nome desconhecido, e isso amarrava a
+	# tabela a quem a consulta: retirar um atalho — como o da coleção, que virou
+	# uma seção do almanaque — quebraria toda tela que ainda perguntasse por
+	# ele. Zero não é tecla nenhuma: evento de teclado nunca traz 0, então a
+	# comparação simplesmente nunca casa.
+	if not DEFINICOES.has(acao):
+		return 0
 	var padrao := int(DEFINICOES[acao]["padrao"])
 	var valor := padrao
 	var preferencias := ConfigFile.new()
 	if preferencias.load(ARQUIVO) == OK:
 		var guardada := int(preferencias.get_value("atalhos", acao, padrao))
-		if guardada >= KEY_A and guardada <= KEY_Z:
+		# Letra reservada no arquivo — gravada antes de haver a reserva — volta
+		# ao padrão, como qualquer outro valor estranho.
+		if guardada >= KEY_A and guardada <= KEY_Z and not RESERVADAS.has(guardada):
 			valor = guardada
 	_cache[acao] = valor
 	return valor
+
+
+## As letras que o AJUSTAR oferece: o A–Z sem as reservadas, em ordem.
+static func letras_livres() -> Array:
+	var livres: Array = []
+	for codigo in range(KEY_A, KEY_Z + 1):
+		if not RESERVADAS.has(codigo):
+			livres.append(codigo)
+	return livres
 
 
 ## Letra da ação para a interface ("E", "F"…).
@@ -79,8 +111,11 @@ static func rotulo(acao: String) -> String:
 
 
 ## Grava a letra da ação; se outra ação já usava a letra, herda a antiga desta (swap).
-static func definir(acao: String, keycode: int) -> void:
+## Letra reservada (W/A/S/D) é recusada e não grava nada.
+static func definir(acao: String, keycode: int) -> bool:
 	keycode = clampi(keycode, KEY_A, KEY_Z)
+	if RESERVADAS.has(keycode) or not DEFINICOES.has(acao):
+		return false
 	var anterior := tecla(acao)
 	var preferencias := ConfigFile.new()
 	preferencias.load(ARQUIVO)
@@ -91,6 +126,7 @@ static func definir(acao: String, keycode: int) -> void:
 	if preferencias.save(ARQUIVO) != OK:
 		push_warning("Não foi possível salvar os atalhos de teclado.")
 	_cache.clear()
+	return true
 
 
 ## Refaz as ações do InputMap com as letras atuais (mv_cursor mantém o Tab fixo).

@@ -19,6 +19,7 @@ const ESTRADA_OCRE_TEXTURE := preload("res://assets/prototipo_3d/materiais/estra
 const CHAO_PRACA_TEXTURE := preload("res://assets/prototipo_3d/materiais/chao_praca_v1.png")
 const GRAMA_TERRA_MATA_TEXTURE := preload("res://assets/prototipo_3d/materiais/grama_terra_mata_v1.png")
 const Mar = preload("res://scripts/prototipo_3d/mar.gd")
+const CoqueiroCortado = preload("res://scripts/prototipo_3d/coqueiro_cortado.gd")
 const AREIA_PRAIA := preload("res://assets/prototipo_3d/mar/areia_praia.gdshader")
 const FOZ_RIO := preload("res://assets/prototipo_3d/mar/foz_rio.gdshader")
 const AGUA_RIO := preload("res://assets/prototipo_3d/mar/agua_rio.gdshader")
@@ -35,7 +36,7 @@ const ORCAMENTO_QUADRO_US := 80000
 const TREE_COLLISION_RADIUS := 28.0
 ## Quanto as árvores entram no chão (unidades), para não parecerem pousadas.
 const ARVORE_AFUNDADA := 0.06
-const TREE_COLLISION_POOL_SIZE := 24
+const TREE_COLLISION_POOL_SIZE := 48
 const TREE_COLLISION_INTERVAL := 0.25
 const TERRAIN_CELL_SIZE := 4.0
 ## A praça real de Bom Jesus é um largo triangular maior que o desenho do KML.
@@ -467,6 +468,14 @@ func get_feature_center(feature_name: String, kind: String = "") -> Vector3:
 	return Vector3.ZERO
 
 
+## Caminho gerado entre a costa e um marco no mar, usado para alinhar o modelo do píer.
+func shore_access_route(landmark_name: String) -> PackedVector2Array:
+	for access in _shore_access_routes:
+		if String(access.get("name", "")) == landmark_name:
+			return access["points"]
+	return PackedVector2Array()
+
+
 ## Usa a projeção gerada do KML local para converter latitude/longitude em unidades Godot.
 func wgs84_to_world(latitude: float, longitude: float) -> Vector3:
 	if _projection.is_empty():
@@ -863,8 +872,11 @@ func _build_shore_access() -> void:
 		var inland := (shore - destination).normalized()
 		var route := PackedVector2Array([shore + inland * _units(6.0, 3.0), destination])
 		var width := _units(4.5, 3.0)
-		_shore_access_routes.append({"points": route, "width": width, "bounds": _points_bounds(route).grow(width * 0.5)})
-		_add_ribbon("Acesso " + String(landmark.name), route, width, 0.058, SHORE_ACCESS_COLOR, true)
+		_shore_access_routes.append({"name": String(landmark.name), "points": route, "width": width, "bounds": _points_bounds(route).grow(width * 0.5)})
+		# Pontos do rio podem ficar fora da costa no KML, mas isso nÃ£o representa
+		# um acesso construÃ­do. NÃ£o desenha a faixa ocre (nem sua colisÃ£o) no mar.
+		if String(landmark.name) != "Pier" and String(landmark.name) != "Rio":
+			_add_ribbon("Acesso " + String(landmark.name), route, width, 0.058, SHORE_ACCESS_COLOR, true)
 
 
 func _nearest_land_edge(point: Vector2) -> Vector2:
@@ -1405,9 +1417,16 @@ func _build_forest(configuration: Dictionary) -> void:
 			var scale := rng.randf_range(0.8, 1.25)
 			var yaw := rng.randf_range(0.0, TAU)
 			var ground := ground_height_at(Vector3(point.x, 0, point.y))
-			_tree_trunks.append({"point": point, "ground": ground, "height": minf(float(built.altura) * scale, 4.0), "radius": float(built.tronco) * scale, "especie": species})
+			var transformacao := Transform3D(Basis.from_euler(Vector3(0, yaw, 0)).scaled(Vector3.ONE * scale), Vector3(point.x, ground - ARVORE_AFUNDADA, point.y)) * base
+			# `base` centraliza a malha do GLB e desloca a origem local. O ponto
+			# de plantio continua sendo `point`; usar transformacao.origin aqui
+			# desloca o colisor para fora do tronco visual.
+			var tronco: Dictionary = {"point": point, "ground": ground, "height": minf(float(built.altura) * scale, 4.0), "radius": float(built.tronco) * scale, "especie": species}
+			if species == "coqueiro":
+				tronco["transformacao"] = transformacao
+			_tree_trunks.append(tronco)
 			# Afundada um palmo: o pé entra no chão em vez de pousar sobre ele.
-			transforms.append(Transform3D(Basis.from_euler(Vector3(0, yaw, 0)).scaled(Vector3.ONE * scale), Vector3(point.x, ground - ARVORE_AFUNDADA, point.y)) * base)
+			transforms.append(transformacao)
 		_multimesh_em_blocos("Mata: " + species, built.mesh, transforms)
 	await _marcar(0.98, "Plantando a mata", false)
 	_build_sub_bosque(positions, rng)
@@ -1519,13 +1538,14 @@ func _build_margens_do_rio(rng: RandomNumberGenerator) -> void:
 ## Divide instâncias em blocos de BLOCO_MATA: cada bloco vira uma MultiMeshInstance3D
 ## com AABB pequena, então o Godot descarta os blocos fora da câmera e escolhe o LOD
 ## da malha pela distância de cada bloco (uma MultiMesh do mapa inteiro nunca some).
-func _multimesh_em_blocos(nome: String, mesh: Mesh, transforms: Array[Transform3D]) -> void:
+func _multimesh_em_blocos(nome: String, mesh: Mesh, transforms: Array[Transform3D], registros: Array[int] = []) -> void:
 	var blocos: Dictionary = {}
-	for t in transforms:
+	for indice in range(transforms.size()):
+		var t: Transform3D = transforms[indice]
 		var chave := Vector2i(floori(t.origin.x / BLOCO_MATA), floori(t.origin.z / BLOCO_MATA))
 		if not blocos.has(chave):
 			blocos[chave] = []
-		blocos[chave].append(t)
+		blocos[chave].append(indice)
 	for chave in blocos.keys():
 		var lista: Array = blocos[chave]
 		var multimesh := MultiMesh.new()
@@ -1533,12 +1553,20 @@ func _multimesh_em_blocos(nome: String, mesh: Mesh, transforms: Array[Transform3
 		multimesh.mesh = mesh
 		multimesh.instance_count = lista.size()
 		for i in range(lista.size()):
-			multimesh.set_instance_transform(i, lista[i])
+			multimesh.set_instance_transform(i, transforms[int(lista[i])])
 		var visual := MultiMeshInstance3D.new()
 		visual.name = "%s %d,%d" % [nome, chave.x, chave.y]
 		visual.multimesh = multimesh
 		visual.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		add_child(visual)
+		for i in range(lista.size()):
+			var indice: int = lista[i]
+			if indice >= registros.size():
+				continue
+			var tronco: Dictionary = _tree_trunks[registros[indice]]
+			tronco["visual"] = visual
+			tronco["instancia"] = i
+			_tree_trunks[registros[indice]] = tronco
 
 
 ## Coqueiros ao longo da orla, do lado da terra, inclinados para o mar.
@@ -1550,6 +1578,7 @@ func _build_coast_palms(rng: RandomNumberGenerator) -> void:
 	var offset_max := _units(14.0, 5.0)
 	var built: Dictionary = _malha_da_especie("coqueiro", rng)
 	var modelo_base: Transform3D = built.base
+	var referencias_tronco: Dictionary = CoqueiroCortado.referencias_tronco(built.mesh)
 	# Castanholas (amendoeiras-da-praia) se misturam aos coqueiros da orla, como na
 	# vila real; só quando o GLB existe.
 	# Restinga da orla: além das castanholas, clúsias baixas e piaçavas (Arecaceae
@@ -1565,6 +1594,7 @@ func _build_coast_palms(rng: RandomNumberGenerator) -> void:
 			malhas_restinga[local] = _malha_da_especie(local, rng)
 			transforms_restinga[local] = [] as Array[Transform3D]
 	var transforms: Array[Transform3D] = []
+	var registros_coqueiros: Array[int] = []
 	var travelled := 0.0
 	var next_at := spacing * 0.5
 	for i in range(_coast.size() - 1):
@@ -1599,8 +1629,17 @@ func _build_coast_palms(rng: RandomNumberGenerator) -> void:
 					(transforms_restinga[local] as Array[Transform3D]).append(Transform3D(Basis.from_euler(Vector3(0, giro_livre, 0)).scaled(Vector3.ONE * scale), Vector3(candidate.x, ground - ARVORE_AFUNDADA, candidate.y)) * (malha_local.base as Transform3D))
 					_tree_trunks.append({"point": candidate, "ground": ground, "height": minf(float(malha_local.altura) * scale, 4.0), "radius": float(malha_local.tronco) * scale, "especie": local})
 				else:
-					transforms.append(Transform3D(Basis.from_euler(Vector3(0, yaw, 0)).scaled(Vector3.ONE * scale), Vector3(candidate.x, ground - ARVORE_AFUNDADA, candidate.y)) * lean * modelo_base)
-					_tree_trunks.append({"point": candidate, "ground": ground, "height": minf(float(built.altura) * scale, 4.0), "radius": float(built.tronco) * scale, "especie": "coqueiro"})
+					var transformacao := Transform3D(Basis.from_euler(Vector3(0, yaw, 0)).scaled(Vector3.ONE * scale), Vector3(candidate.x, ground - ARVORE_AFUNDADA, candidate.y)) * lean * modelo_base
+					transforms.append(transformacao)
+					# O ponto de plantio serve à interação; a colisão segue a base
+					# visível do tronco, deslocada pelo coqueiro inclinado do GLB.
+					var tronco: Dictionary = {"point": candidate, "ground": ground, "height": minf(float(built.altura) * scale, 4.0), "radius": float(built.tronco) * scale, "especie": "coqueiro", "transformacao": transformacao}
+					if not referencias_tronco.is_empty():
+						tronco["base_tronco"] = transformacao * (referencias_tronco["base"] as Vector3)
+						tronco["alto_tronco"] = transformacao * (referencias_tronco["alto"] as Vector3)
+						tronco["raio_base"] = float(referencias_tronco["raio_base"]) * transformacao.basis.get_scale().x
+					_tree_trunks.append(tronco)
+					registros_coqueiros.append(_tree_trunks.size() - 1)
 			next_at += spacing * rng.randf_range(0.7, 1.4)
 		travelled += length
 	for local in transforms_restinga:
@@ -1609,7 +1648,71 @@ func _build_coast_palms(rng: RandomNumberGenerator) -> void:
 			_multimesh_em_blocos("Restinga da orla: " + local, (malhas_restinga[local] as Dictionary).mesh, lista_local)
 	if transforms.is_empty():
 		return
-	_multimesh_em_blocos("Coqueiros da orla", built.mesh, transforms)
+	_multimesh_em_blocos("Coqueiros da orla", built.mesh, transforms, registros_coqueiros)
+
+
+func cortar_coqueiro(posicao: Vector3) -> bool:
+	var ponto := Vector2(posicao.x, posicao.z)
+	for indice in range(_tree_trunks.size()):
+		var tronco: Dictionary = _tree_trunks[indice]
+		if tronco.get("especie", "") != "coqueiro" or tronco.get("cortado", false):
+			continue
+		if (tronco["point"] as Vector2).distance_squared_to(ponto) > 0.01:
+			continue
+		var visual := tronco.get("visual") as MultiMeshInstance3D
+		if visual == null:
+			return false
+		var instancia: int = tronco.get("instancia", -1)
+		if instancia < 0:
+			return false
+		var multimesh := visual.multimesh
+		var transformacao: Transform3D = tronco["transformacao"]
+		var pe := to_global(Vector3(ponto.x, float(tronco["ground"]), ponto.y))
+		var partes: Array[Dictionary] = [{"mesh": multimesh.mesh, "transform": visual.global_transform * transformacao}]
+		var toco: Node3D = CoqueiroCortado.criar(partes, pe, float(tronco["radius"]))
+		if toco == null:
+			return false
+		add_child(toco)
+		toco.global_position = pe
+		multimesh.set_instance_transform(instancia, Transform3D(Basis().scaled(Vector3.ONE * 0.00001), transformacao.origin))
+		tronco["transformacao_original"] = transformacao
+		tronco["transformacao"] = transformacao
+		tronco["altura_original"] = tronco["height"]
+		tronco["toco"] = toco
+		tronco["height"] = CoqueiroCortado.ALTURA_DO_TOCO
+		tronco["cortado"] = true
+		_tree_trunks[indice] = tronco
+		call_deferred("_refresh_tree_collisions")
+		return true
+	return false
+
+
+func restaurar_coqueiro(posicao: Vector3) -> bool:
+	var ponto := Vector2(posicao.x, posicao.z)
+	for indice in range(_tree_trunks.size()):
+		var tronco: Dictionary = _tree_trunks[indice]
+		if tronco.get("especie", "") != "coqueiro" or not tronco.get("cortado", false):
+			continue
+		if (tronco["point"] as Vector2).distance_squared_to(ponto) > 0.01:
+			continue
+		var visual := tronco.get("visual") as MultiMeshInstance3D
+		var instancia := int(tronco.get("instancia", -1))
+		if visual == null or instancia < 0 or not tronco.has("transformacao_original"):
+			return false
+		visual.multimesh.set_instance_transform(instancia, tronco["transformacao_original"])
+		var toco := tronco.get("toco") as Node3D
+		if is_instance_valid(toco):
+			toco.queue_free()
+		tronco["height"] = float(tronco.get("altura_original", tronco["height"]))
+		tronco["cortado"] = false
+		tronco["transformacao"] = tronco["transformacao_original"]
+		tronco.erase("transformacao_original")
+		tronco.erase("altura_original")
+		tronco.erase("toco")
+		_tree_trunks[indice] = tronco
+		call_deferred("_refresh_tree_collisions")
+		return true
+	return false
 
 
 func _process(delta: float) -> void:
@@ -1632,9 +1735,11 @@ func _refresh_tree_collisions() -> void:
 	var player_point := Vector2(player_local.x, player_local.z)
 	var nearby: Array[Dictionary] = []
 	for trunk in _tree_trunks:
+		if bool(trunk.get("cortado", false)):
+			continue
 		var distance_squared: float = player_point.distance_squared_to(trunk.point)
 		if distance_squared <= TREE_COLLISION_RADIUS * TREE_COLLISION_RADIUS:
-			nearby.append({"point": trunk.point, "ground": trunk.ground, "height": trunk.height, "radius": trunk.get("radius", 0.36), "distance_squared": distance_squared})
+			nearby.append({"point": trunk.point, "ground": trunk.ground, "height": trunk.height, "radius": trunk.get("radius", 0.36), "especie": trunk.get("especie", ""), "base_tronco": trunk.get("base_tronco", Vector3(trunk.point.x, float(trunk.ground), trunk.point.y)), "alto_tronco": trunk.get("alto_tronco", Vector3(trunk.point.x, float(trunk.ground) + 1.0, trunk.point.y)), "raio_base": trunk.get("raio_base", 0.0), "distance_squared": distance_squared})
 	nearby.sort_custom(Callable(self, "_collision_nearer"))
 	for i in range(_tree_collision_pool.size()):
 		var slot := _tree_collision_pool[i]
@@ -1648,14 +1753,27 @@ func _refresh_tree_collisions() -> void:
 		var body: StaticBody3D = slot.body
 		var shape: CylinderShape3D = slot.shape
 		shape.height = tree.height
-		shape.radius = float(tree.get("radius", 0.36))
-		body.position = Vector3(tree.point.x, tree.ground + tree.height * 0.5, tree.point.y)
+		var raio := float(tree.get("radius", 0.36))
+		# Os coqueiros ficam muito juntos na orla; prioriza seus troncos no pool
+		# e dá uma pequena margem ao cilindro para a colisão acompanhar a malha.
+		shape.radius = maxf(raio * 1.25, float(tree.get("raio_base", 0.0)) * 0.9) if tree.get("especie", "") == "coqueiro" else raio
+		var base_tronco: Vector3 = tree["base_tronco"]
+		var alto_tronco: Vector3 = tree["alto_tronco"]
+		var eixo_tronco := (alto_tronco - base_tronco).normalized()
+		if eixo_tronco.length_squared() < 0.5:
+			eixo_tronco = Vector3.UP
+		var centro: Vector3 = base_tronco + eixo_tronco * (float(tree.height) * 0.5)
+		body.transform = Transform3D(Basis(Quaternion(Vector3.UP, eixo_tronco)), centro)
 		if not slot.active:
 			collider.set_deferred("disabled", false)
 			slot.active = true
 
 
 func _collision_nearer(a: Dictionary, b: Dictionary) -> bool:
+	var a_coqueiro: bool = a.get("especie", "") == "coqueiro"
+	var b_coqueiro: bool = b.get("especie", "") == "coqueiro"
+	if a_coqueiro != b_coqueiro:
+		return a_coqueiro
 	return float(a.distance_squared) < float(b.distance_squared)
 
 
@@ -1665,6 +1783,8 @@ func _ensure_tree_collision_pool() -> void:
 	for i in range(TREE_COLLISION_POOL_SIZE):
 		var body := StaticBody3D.new()
 		body.name = "Colisão de tronco %02d" % (i + 1)
+		body.collision_layer = 1
+		body.collision_mask = 1
 		var collider := CollisionShape3D.new()
 		var shape := CylinderShape3D.new()
 		shape.radius = 0.36

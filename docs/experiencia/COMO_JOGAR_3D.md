@@ -10,42 +10,50 @@ No Godot Project Manager, outra opção é importar **`prototipo_3d/project.godo
 
 ## Controles
 
+As letras marcadas com * são **remapeáveis** em AJUSTAR → Geral → Atalhos; o HUD e o painel mostram sempre a letra escolhida. W, A, S e D não entram na troca, porque andam e escolhem dentro das telas. A tecla de fábrica vem entre parênteses.
+
+**Andar e olhar**
+
 | Tecla | Ação |
 | --- | --- |
-| Início / câmera destravada | Mouse capturado; mover o mouse gira a câmera sem clicar |
-| Tab | Alternar entre câmera destravada e travada |
-| Botões redondos do canto direito | Som, relógio (pausar/retomar o dia), HOME, câmera (travar/destravar; Tab e Esc também), velocidade do tempo (clique alterna) e estilo visual — a dica do estilo mostra FPS, triângulos e memória de vídeo |
-| Arrastar com botão esquerdo e câmera travada | Mover o cenário junto com o cursor para girar a câmera; um clique sem arrastar ainda interage com as casas |
-| Clique direito com cursor livre | Caminhar até o chão, casa ou NPC apontado |
-| Duplo clique direito com cursor livre | Correr até o chão, casa ou NPC apontado |
-| Mouse sobre uma casa | Mostrar nome e dica de interação |
-| Clique esquerdo em uma casa | Abrir as mesmas propriedades no balão e no painel da interface, mesmo à distância |
-| Clique esquerdo fora das casas | Fechar o balão e o painel de propriedades |
-| WASD / setas | Mover em relação à câmera e cancelar a caminhada automática; reproduz `walk` |
-| Shift (um toque) | Ativar ou desativar corrida; ela continua em qualquer direção e desliga automaticamente quando o personagem para; solte Shift e use W + Espaço para pular correndo |
-| Mouse com câmera destravada | Girar a câmera sem pressionar botão |
-| Rodinha | Aproximar ou afastar a câmera |
-| F | Observar o personagem pela frente; pressione novamente para voltar |
-| 1 | Saudação (`greet_01`) |
-| 2 | Dar tchau (`wave_goodbye_02`) |
-| 3 | Concordar (`agree`) |
-| 4 | Olhar ao redor (`look_around`) |
-| 5 | Com medo (`afraid`) |
-| 6 | Cruzar os braços (`fold_arms`) |
-| 7 | Golpear (`chop`) |
-| 8 | Nadar (`swim`) |
-| Barra de espaço | Pular a partir do chão; subida e descida usam gravidades diferentes |
-| Esc | Travar a câmera e liberar o cursor |
-| E perto de um bicho | Golpe com a arma na mão (ou a meia-lua, de mão vazia, para quem aprendeu); **segurar** dá o golpe forte (ou a rasteira) |
-| V | Ginga: sair do bote do bicho, para quem aprendeu a capoeira (remapeável em AJUSTAR) |
-| R | Voltar ao ponto inicial |
-| T | Adiantar o relógio do vale em uma hora (ver dia e noite) |
-| J | Painel: missões, cartas, venda (no balcão da Venda do Bar) e, pelo botão JOGO, salvar, voltar ao menu e sair. Dentro dele, Tab troca de aba, W/S escolhem, E confirma, Esc ou J fecham; o relógio para enquanto ele está aberto |
-| L | Coleção: cordéis, sinais e bichos, com a vaga em branco de quem falta achar. Tab troca de coleção, W/S escolhem, L ou Esc fecham |
-| M | Voltar ao menu (HOME) |
-| Alt+F4 / fechar janela | Sair |
+| WASD / setas | Mover em relação à câmera e cancelar a caminhada automática (AJUSTAR → Geral escolhe WASD, setas ou os dois) |
+| Shift (um toque) | Ativar ou desativar a corrida; ela desliga sozinha quando o personagem para, e gasta vigor |
+| Espaço | Pular a partir do chão |
+| Mouse | Com a câmera solta, girar a câmera sem clicar; com a câmera travada, arrastar o cenário. O modo com que o jogo abre fica em AJUSTAR → Câmera do mouse |
+| Tab ou Câmera* (C) | Alternar entre câmera solta e travada |
+| Ctrl+rodinha, + e - | Aproximar ou afastar a câmera |
+| Observar* (F) | Olhar o personagem pela frente; de novo, volta |
+| Clique direito | Caminhar até o chão, casa ou morador apontado; duplo clique corre |
+| Clique esquerdo na casa | Abrir os dados da casa no balão e no painel, mesmo à distância; fora das casas, fecha |
+| Mapa* (M) | O vale visto de cima: o jogador para, o mundo continua. M ou Esc fecham; o minimapa liga em AJUSTAR |
 
-No estilo **Procedural** (AJUSTAR → Cenário e tempo) as teclas 1–8 acionam os gestos do humanoide por código (acenar, concordar, apontar, coçar a cabeça, alongar, chamar, reverência, olhar em volta). O jogador começa no píer, com o Pedro ao lado: fale com ele e siga as missões do HUD. Os moradores cumprimentam quando você chega perto. Detalhes em [VALE_VIVO_3D.md](../mundo/VALE_VIVO_3D.md).
+**Agir**
+
+| Tecla | Ação |
+| --- | --- |
+| Ler / interagir* (E) | Falar, ler, pegar, pescar, tocar obra. Perto de um bicho, golpe com a arma na mão (ou a meia-lua, de mão vazia, para quem aprendeu); **segurar** dá o golpe forte (ou a rasteira) |
+| Gingar* (V) | Sair do bote do bicho, para quem aprendeu a capoeira |
+| 1 a 9 e 0 | Pôr na mão o item daquele espaço da barra de mão (o 0 é o décimo) |
+| Rodinha | Passar a mão para o espaço seguinte (para baixo) ou o anterior (para cima), como no 2D |
+| Alt+1 a Alt+8 | Gestos: saudação, tchau, concordar, olhar ao redor, medo, braços cruzados, golpe, nado |
+| Avançar a hora* (T) | Adiantar o relógio do vale em uma hora |
+| Reiniciar* (R) | Voltar ao ponto inicial |
+
+**Telas** — só uma fica aberta por vez, e abrir outra fecha a que estava; enquanto uma tela está aberta, o vale para atrás dela. A mesma tecla ou o Esc fecham.
+
+| Tecla | Tela |
+| --- | --- |
+| Mochila* (I) | Os 30 espaços (os 10 primeiros são a barra de mão) à esquerda, o que o corpo veste à direita. As setas ou WASD escolhem, F veste ou come o que está sob o cursor, E pega e solta para arrumar; com o mouse, arrastar arruma e o segundo clique veste ou come |
+| Painel* (J) | Missões, cartas e, perto do lugar certo, venda, fogão, bancada e obras; pelo botão JOGO, salvar, voltar ao menu e sair. Dentro dele, Tab troca de aba, W/S escolhem, E confirma |
+| Árvore de habilidades* (K) | A teia de talentos, onde se gasta o ponto que o vale dá |
+| Almanaque* (L) | O caderno do que já se viu: plantas, cordéis, sinais e bichos. A vaga em branco mostra quantos faltam achar |
+| O arraial* (P) | Quem mora no vale e o quanto cada um gosta de você |
+| Esc | O menu do jogo: voltar ao vale, mapa, ajustes, controles, salvar, som, relógio, velocidade do tempo, câmera do mouse, voltar ao menu inicial e sair |
+| Alt+F4 / fechar janela | Sair (a partida salva antes) |
+
+**Fala longa** — o que precisa ser lido antes de seguir (a conversa de um pacto) abre numa caixa no rodapé, e o vale para enquanto ela está aberta. E ou Esc passam a linha. Numa pergunta, A escolhe Sim, D escolhe Não e E confirma; sem escolher, o E não responde, e Esc é sempre Não. O cumprimento de passagem dos moradores continua no balão sobre a cabeça.
+
+No estilo **Procedural** (AJUSTAR → Cenário e tempo) as teclas Alt+1 a Alt+8 acionam os gestos do humanoide por código (acenar, concordar, apontar, coçar a cabeça, alongar, chamar, reverência, olhar em volta). O jogador começa no píer, com o Pedro ao lado: fale com ele e siga as missões do HUD. Os moradores cumprimentam quando você chega perto. Detalhes em [VALE_VIVO_3D.md](../mundo/VALE_VIVO_3D.md).
 
 Parado, o personagem reproduz `idle`. Um gesto termina naturalmente e volta para `idle`; começar a andar interrompe o gesto. Explore a praça, a horta e a costa: o indicador acompanha os três pontos visitados.
 
@@ -53,7 +61,7 @@ Parado, o personagem reproduz `idle`. Um gesto termina naturalmente e volta para
 
 - GLB do Tripo com malha, materiais, esqueleto de 65 ossos e 12 animações incorporadas.
 - Locomoção automática com os clipes `idle`, `walk` e `run`.
-- Oito gestos acionáveis pelas teclas 1–8 e `pular_baixo` pela barra de espaço no estilo Tripo.
+- Oito gestos acionáveis por Alt+1 a Alt+8 e `pular_baixo` pela barra de espaço no estilo Tripo.
 - Escala ajustada para 1,78 m, colisor de cápsula, aceleração, gravidade e rotação.
 - Câmera em terceira pessoa com `SpringArm3D`, zoom e reação a obstáculos.
 - Vila de teste com casas, caminhos, horta, árvores, praia, iluminação e colisões.
@@ -66,7 +74,7 @@ As animações foram exportadas **no lugar**: os clipes mexem o esqueleto, enqua
 
 O material continua sendo duplicado apenas na instância e renderizado dos dois lados. Essa correção evita o desaparecimento de partes do torso sem alterar o arquivo 3D original.
 
-Um **caititu** mora na mata fechada, longe da vila (por enquanto uma caixa cinza, até o modelo com rig chegar): fareja quem chega perto, **anuncia o bote** — acende em âmbar, abaixa e marca no chão até onde a mordida alcança — e só então morde. Derrubado, deixa a carne de caça na mochila e volta em três dias. Para lutar de facão é preciso tê-lo na mão, o que por enquanto só a mochila (#2) vai permitir. A **vida** já aparece: a barra logo abaixo do relógio, vermelha (verde-musgo com peçonha). Embaixo dela, o **fôlego**: verde, e vermelho com "cansado" quando o corpo está no fim — o passo encurta e não dá para correr até comer ou dormir. Quem cai acorda na porta da Casa de taipa às 6h do dia seguinte, inteiro — ainda não há nada no vale que tire vida, isso chega com a luta. A regra de mochila, missões, fé, receitas, luta, obras, venda, pesca, cartas e salvamento também já roda no vale, vinda do 2D, mas o jogador ainda não a vê: faltam as telas e os gatilhos. Os saves ficam no diretório de usuário `MythsValleyPrototype3D`, separados dos da versão 2D. Plantação, terrenos e a conversa por IA ainda não existem no 3D. O que falta, e em que ordem, está nas [issues com rótulo `3d`](https://github.com/acentauric/myths-valley/issues?q=is%3Aissue+is%3Aopen+label%3A3d) e no [plano de migração](../projeto/MIGRACAO_2D_3D.md).
+Com a **vara de pescar** na mão (vende no balcão) e a água à frente — o píer, a praia, a beira do rio —, E lança a linha; quando a bóia afunda e acende o "!", E de novo, rápido, ferra o peixe. No rio sai traíra, no mar sai robalo. Andar recolhe a linha. Perto da **fogueira do terreiro**, ao lado da Casa de taipa, o painel (J) ganha a aba do fogão, e na **bancada da oficina** (a caixa cinza na beira do roçado) a lenha vira tábua e corda. Perto da Casa de taipa, do armazém (Venda do Bar), do mirante, do poço e do píer, o painel (J) ganha a aba de **obras** daquela construção: com o plano sabido e o material na mochila, E toca a obra, e o ganho dela vai para o corpo (fôlego, descanso). Os planos de começo já se sabem; outros se compram no balcão. Por enquanto a casa não muda por fora nem por dentro — os modelos novos e o cômodo ainda não chegaram. Um **caititu** mora na mata fechada, longe da vila (por enquanto uma caixa cinza, até o modelo com rig chegar): fareja quem chega perto, **anuncia o bote** — acende em âmbar, abaixa e marca no chão até onde a mordida alcança — e só então morde. Derrubado, deixa a carne de caça na mochila e volta em três dias. Para lutar de facão, escolha-o na barra de mão (1–0 ou a rodinha) ou vista-o no encaixe Mãos da mochila (I). Pelo arraial há **cordéis** esquecidos — no balcão da venda, na capela velha, no bar, no cemitério, no mirante, na ponta do píer: chegue perto e aperte E para guardá-los no almanaque (L). O cordel achado abre no papel, para ler inteiro; E, Esc ou um clique o guardam. No almanaque, escolher de novo o cordel aberto o relê no papel. Na mata fechada, longe da vila, a Caipora deixa um **sinal**; depois de vê-lo aparecem ali as cartas dela. Pegar a carta de pacto abre a conversa dela na caixa de fala — o que ela dá, o que cobra — e a pergunta **Firmar?**: Sim firma ali mesmo, Não deixa a carta com você (o pacto também se firma e se desfaz no painel, aba Cartas). A **vida** já aparece: a barra logo abaixo do relógio, vermelha (verde-musgo com peçonha). Embaixo dela, o **fôlego**: verde, e vermelho com "cansado" quando o corpo está no fim — o passo encurta e não dá para correr até comer ou dormir. Quem cai acorda na porta da Casa de taipa às 6h do dia seguinte, inteiro: no escuro, o cartão do amanhecer diz o dia, a estação, o fôlego e o que está marcado (E pula a espera), e ao clarear alguém conta o que houve, na caixa de fala. A regra de mochila, missões, fé, receitas, luta, obras, venda, pesca, cartas e salvamento também já roda no vale, vinda do 2D, mas o jogador ainda não a vê: faltam as telas e os gatilhos. Os saves ficam no diretório de usuário `MythsValleyPrototype3D`, separados dos da versão 2D. Plantação, terrenos e a conversa por IA ainda não existem no 3D. O que falta, e em que ordem, está nas [issues com rótulo `3d`](https://github.com/acentauric/myths-valley/issues?q=is%3Aissue+is%3Aopen+label%3A3d) e no [plano de migração](../projeto/MIGRACAO_2D_3D.md).
 
 ## Como a animação funciona
 

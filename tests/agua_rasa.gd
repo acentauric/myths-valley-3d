@@ -28,12 +28,24 @@ func _run() -> void:
 	player.set("_yaw", atan2(-direcao.x, -direcao.z))
 	await _physics_frames(10)
 	# Correndo: a planície rasa tem ~170 unidades até a água funda.
+	#
+	# O TETO DE QUADROS SUBIU, e a razão é o VIGOR. Correr passou a gastar vigor
+	# (`CUSTO_CORRIDA_POR_SEGUNDO`, 10 por segundo, de 100): depois de dez
+	# segundos o `_run_toggled` cai sozinho e o jogador segue a pé. Com 6000
+	# quadros ele cobria 155,4 das ~170 unidades e parava na areia molhada, e o
+	# portão dizia "nada onde não dá pé" — quando o que faltava era distância,
+	# não nado.
+	#
+	# Não se refaz o `_run_toggled` a cada volta de propósito: isso seria o
+	# portão fingindo um vigor infinito que o jogador não tem, e a travessia
+	# deixaria de medir o que ela mede. O que se dá é TEMPO, que é o que o
+	# jogador também tem.
 	player.set("_run_toggled", true)
 	Input.action_press("mv_forward")
 	var velocidades: Array[float] = []
 	var quadros_nadando := 0
 	var cabeca_fora := true
-	for frame in range(6000):
+	for frame in range(14000):
 		await physics_frame
 		if frame % 120 == 60 and not player.is_swimming():
 			velocidades.append(Vector2(player.velocity.x, player.velocity.z).length())
@@ -55,7 +67,8 @@ func _run() -> void:
 	player.set("_yaw", atan2(direcao.x, direcao.z))
 	Input.action_press("mv_forward")
 	var em_terra := false
-	for frame in range(7200):
+	# Mesma razão do teto de cima: a volta é a pé, e a pé leva mais tempo.
+	for frame in range(16000):
 		await physics_frame
 		if frame % 600 == 0:
 			print("VOLTA %d pos %s vel %s nadando %s chao %s parede %s fundo %.2f" % [frame, player.global_position, player.velocity, player.is_swimming(), player.is_on_floor(), player.is_on_wall(), world.water_depth_at(player.global_position)])

@@ -31,6 +31,8 @@ var dia
 var vida
 var jogo
 var missoes
+## O caderno de missões do vale, que é o que a aba de missões lê agora.
+var caderno
 var venda
 
 
@@ -53,6 +55,7 @@ func _run() -> void:
 	vida = root.get_node("/root/Vida")
 	jogo = root.get_node("/root/Jogo")
 	missoes = root.get_node("/root/Missoes")
+	caderno = root.get_node("/root/CadernoDoVale")
 	venda = root.get_node("/root/Venda")
 	_devolver_reserva_esquecida()
 	_guardar_os_saves_de_verdade()
@@ -107,6 +110,43 @@ func _run() -> void:
 	# compra, venda e salvar — continuam passando com ela parada. Foi medido,
 	# não suposto.
 	_conferir(paused, "o painel não pausou o vale atrás dele")
+	# --- A FORMA: ÍNDICE À ESQUERDA, PÁGINA À DIREITA ------------------------
+	#
+	# O painel passou a ter a cara do almanaque — "tente deixar o menu de missão
+	# similar ao do Almanaque". As abas saíram de uma linha horizontal
+	# ("[ Missões ]  Cartas  Venda", que aperta com seis) e viraram coluna, com
+	# marca de aberta e conta em cada linha.
+	#
+	# Estas duas perguntas vêm da lição da barra de mão, que passou por quinze
+	# portões verdes estando invisível: regra certa não é a mesma coisa que o
+	# jogador ver.
+	var abas := painel.find_children("Abas", "", true, false)
+	_conferir(not abas.is_empty(), "o painel não tem a coluna das abas: a forma nova não montou")
+	if not abas.is_empty():
+		var coluna := abas[0] as VBoxContainer
+		_conferir(coluna.get_child_count() >= 1,
+			"a coluna das abas está vazia: nem a aba de missões apareceu")
+		var so_missoes: bool = painel.abas_validas().size() == 1
+		if coluna.get_child_count() > 0:
+			var primeira := coluna.get_child(0) as Button
+			_conferir(primeira != null and primeira.text.contains("Missões"),
+				"a primeira aba da coluna não é Missões: '%s'"
+					% (primeira.text if primeira != null else "—"))
+			_conferir(primeira != null and primeira.text.contains("▾"),
+				"a aba aberta não se marca como aberta: '%s'"
+					% (primeira.text if primeira != null else "—"))
+		_conferir(so_missoes or coluna.get_child_count() > 1,
+			"há mais de uma aba válida e a coluna mostra só %d" % coluna.get_child_count())
+
+	var caixa := painel.find_children("Caixa", "", true, false)
+	_conferir(not caixa.is_empty(), "não achei a caixa do painel")
+	if not caixa.is_empty():
+		var quadro := (caixa[0] as Control).get_global_rect()
+		var janela: Vector2 = (caixa[0] as Control).get_viewport_rect().size
+		_conferir(quadro.position.x >= -1.0 and quadro.position.y >= -1.0
+				and quadro.end.x <= janela.x + 1.0 and quadro.end.y <= janela.y + 1.0,
+			"o painel cresceu para fora da janela: %s numa tela de %s" % [str(quadro), str(janela)])
+
 	_conferir(vida.esta_lendo.is_valid() and vida.esta_lendo.call(), "a peçonha não sabe que o jogador está lendo")
 	_conferir(painel.abas_validas() == [painel.Aba.MISSOES], "longe de tudo, as abas são %s" % str(painel.abas_validas()))
 	# O bicho não caça quem está lendo: o jogador parado pelo painel é jogador
@@ -122,19 +162,74 @@ func _run() -> void:
 		player.global_position = chegada
 
 	# --- 3. AS TECLAS DO VALE --------------------------------------------------
-	missoes.adicionar("teste_do_painel", "Um passo de teste", false, [], "", true)
-	missoes.adicionar("outro_do_painel", "Outro passo", false, [], "", false)
+	# AS MISSÕES VÊM DO CADERNO DO VALE, e não do `Missoes` do 2D.
+	#
+	# Mudou por pedido do autor: o 3D tem mecanismo próprio de missão, sem
+	# depender do checklist compartilhado, porque missão nova aqui pode ter
+	# padrão, formato e ordem diferentes. Ver `caderno_do_vale.gd`.
+	#
+	# A primeira ("de enredo") vem antes da segunda na lista, que é a ordem que o
+	# caderno promete — e é por isso que o cursor 1 cai na segunda.
+	caderno.abrir_missao("teste_do_painel", "Um passo de teste", "pedro", true)
+	caderno.abrir_missao("outro_do_painel", "Outro passo", "damiao", false)
 	await _frames(2)
 	var tem_titulo := false
 	for linha in painel._escolhiveis:
 		if linha is Button and linha.text.contains("Um passo de teste"):
 			tem_titulo = true
 	_conferir(tem_titulo, "a aba de missões não mostra a missão aberta")
+
+	# A LISTA NÃO EXPLODE COM MISSÃO DE TÍTULO COMPRIDO.
+	#
+	# A medida de tamanho lá de cima roda com a aba quase vazia, e por isso não
+	# via o defeito: a lista de missões empurrava a caixa para fora da janela
+	# porque o título da missão era a FALA inteira do passo — um parágrafo num
+	# Button, e Button pede a largura do texto que carrega. Aqui entra um título
+	# maior que qualquer fala do vale, de propósito, e a caixa tem de aguentar.
+	var parede := "Um título absurdamente comprido que ninguém deveria escrever numa missão, posto aqui justamente para o painel ter de aguentar o pior caso e não a média do que existe hoje nos arquivos"
+	caderno.abrir_missao("comprida_do_painel", parede, "pedro", false)
+	await _frames(2)
+	var caixa_cheia := painel.find_children("Caixa", "", true, false)
+	if not caixa_cheia.is_empty():
+		var quadro_cheio := (caixa_cheia[0] as Control).get_global_rect()
+		var tela: Vector2 = (caixa_cheia[0] as Control).get_viewport_rect().size
+		_conferir(quadro_cheio.position.x >= -1.0 and quadro_cheio.end.x <= tela.x + 1.0
+				and quadro_cheio.position.y >= -1.0 and quadro_cheio.end.y <= tela.y + 1.0,
+			"com uma missão de título comprido o painel foi para %s numa tela de %s"
+				% [str(quadro_cheio), str(tela)])
+	caderno.concluir("comprida_do_painel")
+	await _frames(2)
+
+	# E O TÍTULO QUE A CADEIA REGISTRA É CURTO NA ORIGEM. O corte do Button
+	# salva a tela; o nome curto é o que faz a lista SE LER. Medido no dado de
+	# todas as cadeias, que é onde a missão nova vai nascer.
+	var cadeia_script = load("res://scripts/prototipo_3d/cadeia_de_missoes.gd")
+	for nome in ["missoes_guia", "missoes_coveiro", "missoes_filo", "missoes_zefa",
+			"missoes_tonho", "missoes_candinha"]:
+		var dado = JSON.parse_string(FileAccess.get_file_as_string("res://data/%s.json" % nome))
+		if not (dado is Dictionary):
+			continue
+		for passo: Dictionary in (dado as Dictionary).get("passos", []):
+			var curto: String = cadeia_script._titulo_do_passo(passo)
+			_conferir(curto.length() <= cadeia_script.LETRAS_DO_TITULO,
+				"o passo '%s/%s' entra no caderno com %d letras de título: a lista vira parede de letra"
+					% [nome, str(passo.get("id", "?")), curto.length()])
+			# E O TÍTULO É ESCRITO, não cortado. O corte existe para que missão
+			# nova sem o campo não exploda a tela de ninguém, mas reticência no
+			# meio de uma frase não é nome de missão: quem lê a lista fica com
+			# meia fala. Toda cadeia que já está no vale tem de trazer o seu.
+			_conferir(str(passo.get("titulo", "")).strip_edges() != "",
+				"o passo '%s/%s' não tem 'titulo': o caderno vai mostrar a fala cortada"
+					% [nome, str(passo.get("id", "?"))])
 	_tecla(painel, KEY_TAB)
 	_conferir(painel.aba() == painel.Aba.MISSOES, "Tab saiu de Missões sem ter outra aba")
 	painel.escolher(1)
 	_tecla(painel, KEY_E)
-	_conferir(missoes.em_foco == missoes.indice("outro_do_painel"), "o E não fixou a missão escolhida")
+	# Compara pelo ID em foco, e não por índice: `em_foco` é posição na lista JÁ
+	# ordenada (enredo primeiro), e comparar índices de duas listas diferentes é
+	# comparar coisas que só coincidem por sorte.
+	_conferir(str(caderno.atual().get("id", "")) == "outro_do_painel",
+		"o E não fixou a missão escolhida: em foco está '%s'" % str(caderno.atual().get("id", "")))
 	_tecla(painel, KEY_J)
 	await _frames(2)
 	_conferir(not painel.aberto, "o J não fechou o painel")
@@ -153,7 +248,12 @@ func _run() -> void:
 	vale.abrir_o_painel()
 	await _frames(2)
 	_conferir(painel.abas_validas().has(painel.Aba.VENDA), "no balcão da venda, a aba de venda não apareceu: %s" % str(painel.abas_validas()))
-	_tecla(painel, KEY_TAB)
+	# No balcão há DUAS abas de lugar — as obras do armazém e a venda —, e o Tab
+	# anda por elas; chega à venda em no máximo tantos toques quantas abas há.
+	for i in painel.abas_validas().size():
+		if painel.aba() == painel.Aba.VENDA:
+			break
+		_tecla(painel, KEY_TAB)
 	_conferir(painel.aba() == painel.Aba.VENDA, "Tab não levou à aba de venda")
 	var mercadorias: Array = venda.mercadorias()
 	_conferir(not mercadorias.is_empty(), "a venda não tem mercadoria")
@@ -207,7 +307,7 @@ func _fechar() -> void:
 	_devolver_os_saves_de_verdade()
 	print("")
 	if falhas == 0:
-		print("PAINEL_OK: o J é do painel; abrir para o jogador, o relógio e o vale inteiro, por cima do HUD; Tab, E e J funcionam dentro; a venda aparece no balcão e compra e vende pelo preço; a aba do jogo é sozinha, salva a vaga e pede o segundo E para sair")
+		print("PAINEL_OK: o J é do painel; abrir para o jogador, o relógio e o vale inteiro, por cima do HUD e dentro da janela, com as abas em coluna como no almanaque; Tab, E e J funcionam dentro; a venda aparece no balcão e compra e vende pelo preço; a aba do jogo é sozinha, salva a vaga e pede o segundo E para sair")
 	else:
 		print("painel: %d falha(s)" % falhas)
 	quit(1 if falhas > 0 else 0)

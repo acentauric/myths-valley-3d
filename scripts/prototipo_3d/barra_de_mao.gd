@@ -13,10 +13,12 @@ extends Control
 ## que veio de lá foi a REGRA, que é a parte que importa: quantos espaços, qual
 ## é o da mão, o que é estar de mão livre.
 ##
-## O ícone do item é o PNG de 32px do 2D, quando ele existe — `Catalogo.icone`
-## já procura e devolve `null` sem reclamar. Enquanto as artes não vierem para
-## cá (Fase 6 do plano de migração), cada espaço mostra a inicial do item, que
-## é o que o próprio 2D faz com nó de talento sem ícone.
+## O ícone do item é o PNG de 32px do 2D (`assets/sprites/itens/`, iguais byte a
+## byte aos de lá) — `Catalogo.icone` procura e devolve `null` sem reclamar.
+## Item sem PNG mostra a inicial, que é o que o próprio 2D faz com nó de
+## talento sem ícone.
+
+const Atalhos = preload("res://scripts/prototipo_3d/atalhos.gd")
 
 const LARGURA := 52.0
 const ALTURA := 52.0
@@ -77,7 +79,11 @@ func _montar() -> void:
 	for i in total:
 		var espaco := Panel.new()
 		espaco.custom_minimum_size = Vector2(LARGURA, ALTURA)
-		espaco.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		# O ESPAÇO ACEITA CLIQUE. Antes a barra inteira era `IGNORE` — desenho e
+		# nada mais —, e a única forma de comer era abrir a mochila. Agora clicar
+		# num espaço o põe na mão, e clicar no que JÁ está na mão come, se der.
+		espaco.mouse_filter = Control.MOUSE_FILTER_STOP
+		espaco.gui_input.connect(_ao_clicar_no_espaco.bind(i))
 		fila.add_child(espaco)
 		_espacos.append(espaco)
 
@@ -161,7 +167,7 @@ func _repintar() -> void:
 		# Com ícone, o texto é só a quantidade; sem ícone, a inicial faz as
 		# vezes dele — é o que o 2D faz com nó de talento sem arte.
 		if textura != null:
-			conteudo.text = "" if quantos <= 1 else str(quantos)
+			conteudo.text = str(quantos) if quantos > 1 or id == "madeira_de_coqueiro" else ""
 			conteudo.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
 		else:
 			conteudo.text = nome.substr(0, 2) if quantos <= 1 else "%s %d" % [nome.substr(0, 2), quantos]
@@ -194,14 +200,23 @@ func _unhandled_key_input(event: InputEvent) -> void:
 	if not (event is InputEventKey and event.pressed and not event.echo):
 		return
 
-	# O I ABRE E FECHA A MOCHILA, e o Esc fecha quando ela está aberta — a
-	# ordem do gênero: Esc desfaz o que está na frente antes de abrir o menu.
-	var esc_com_mochila: bool = Mochila.aberta and event.physical_keycode == KEY_ESCAPE
-	if event.is_action_pressed("mv_mochila") or esc_com_mochila:
-		_abrir_ou_fechar_a_mochila()
-		get_viewport().set_input_as_handled()
-		return
-	if Mochila.aberta:
+	# O I E O ESC SAÍRAM DAQUI. Quem abre e fecha a mochila agora é o
+	# `telas_do_vale.gd`, porque abrir uma tela tem de fechar a outra — e uma
+	# tela que só conhece a própria tecla não pode saber disso. Ver o cabeçalho
+	# de lá: foi assim que o almanaque abriu ATRÁS do painel e devolveu a câmera
+	# solta.
+	#
+	# O que ficou aqui é o que é da barra: as dez teclas da mão.
+	#
+	# COM O VALE PARADO, A TECLA É DE QUEM O PAROU. Toda tela para o vale — a
+	# mochila, o painel, o almanaque, o menu, o papel do cordel —, e a fala e o
+	# cartão do amanhecer também (#21). Esta barra ouve com o vale parado, e
+	# ouve ANTES das telas que escutam no `_unhandled_input` (no Godot 4 o
+	# `_unhandled_key_input` vem antes): o número trocava a mão por baixo de
+	# qualquer tela, e o E comia o que estava na mão com o arraial, o papel ou
+	# o cartão abertos. A fala conta também um quadro depois de fechar
+	# (`ocupado`), quando o vale já voltou a andar.
+	if get_tree().paused or Mochila.aberta or Dialogo.ocupado():
 		return
 
 	# Alt segurado é gesto do personagem, não barra de mão.
@@ -212,6 +227,19 @@ func _unhandled_key_input(event: InputEvent) -> void:
 			Inventario.alternar(i)
 			get_viewport().set_input_as_handled()
 			return
+
+	# O E COME O QUE ESTÁ NA MÃO, e é o último da fila do E. Ver `_comer_da_mao`.
+	if event.physical_keycode == Atalhos.tecla("interagir") and _corpo_de_pe() and _comer_da_mao():
+		get_viewport().set_input_as_handled()
+
+
+## O CORPO DO JOGADOR ESTÁ DE PÉ? No escuro da queda (e no susto do tubarão) ele
+## está parado, e o E que o mundo não pega — achados, pesca, luta, recursos,
+## árvores e lápides perguntam pelo corpo — caía aqui e comia: desacordado não
+## come. Sem jogador na árvore (um portão sem o vale), vale de pé.
+func _corpo_de_pe() -> bool:
+	var jogador := get_tree().get_first_node_in_group("map_player")
+	return jogador == null or jogador.is_physics_processing()
 
 
 ## A MOCHILA ABRE E FECHA DAQUI, e não do `Prototype`.
@@ -242,3 +270,52 @@ func _abrir_ou_fechar_a_mochila() -> void:
 static func altura_ocupada() -> float:
 	# A fila, a margem de baixo e o rótulo do que está na mão, com folga.
 	return MARGEM_DE_BAIXO + ALTURA + 24.0 + 8.0
+
+
+## COMER O QUE ESTÁ NA MÃO, pela tecla de interagir.
+##
+## "Apertando E ou clicando com o mouse em itens consumíveis na mão ativa do
+## jogador, deve ser consumido. Só consegui consumir clicando dentro do
+## inventário."
+##
+## A regra de comer é do `Cozinha.comer`, compartilhado com o 2D: ele repõe
+## fôlego, cura vida quando o item cura, corta peçonha quando corta, concede o
+## efeito de dias e soma os talentos da panela. Nada disso está reescrito aqui —
+## esta barra só pergunta "o que está na mão dá para comer?" e manda comer.
+##
+##
+## POR QUE O E DAQUI É O ÚLTIMO DA FILA
+##
+## O E é disputado: perto de uma árvore ele abre a ficha, perto de um tronco ele
+## golpeia, perto de uma lápide ele lê. Comer é o que sobra — e sobra de fato,
+## porque esta barra mora DENTRO do HUD, que entra no vale antes dos nós do mundo
+## (`Recursos3D`, `ArvoresInfo`, `Lapides`). O Godot entrega `_unhandled_input`
+## de baixo para cima na árvore, então quem entrou depois responde primeiro: eles
+## consomem a tecla quando têm o que fazer, e ela só chega aqui quando não têm.
+##
+## Isso é ordem de árvore, que é coisa que muda quando alguém acrescenta um nó —
+## e é por isso que `tests/barra_de_mao.gd` mede a precedência de verdade: com um
+## alvo de trabalho ao alcance, o E tem de golpear e NÃO comer.
+func _comer_da_mao() -> bool:
+	var id := Inventario.na_mao()
+	if not Cozinha.e_comida(id):
+		return false
+	return Cozinha.comer(id)
+
+
+## Clique num espaço da barra: põe na mão, e no que já está na mão, come.
+##
+## Duas coisas na mesma tecla, e a ordem é a que o jogador espera: o primeiro
+## clique escolhe, o segundo usa. Quando o que está na mão não é comida, o
+## segundo clique faz o que o número da tecla faz — solta o item e deixa a mão
+## livre, que é o estado de colher (regra do `Inventario`, do 2D).
+func _ao_clicar_no_espaco(evento: InputEvent, qual: int) -> void:
+	if not (evento is InputEventMouseButton and evento.pressed
+			and (evento as InputEventMouseButton).button_index == MOUSE_BUTTON_LEFT):
+		return
+	if Inventario.selecionado == qual:
+		if not _comer_da_mao():
+			Inventario.alternar(qual)
+	else:
+		Inventario.selecionar(qual)
+	accept_event()

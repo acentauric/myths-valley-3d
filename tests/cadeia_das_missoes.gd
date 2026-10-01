@@ -63,6 +63,7 @@ func _run() -> void:
 	var recursos := jogo.get_node_or_null("Recursos3D")
 	var jogador = jogo.get("player")
 	var inv := root.get_node("/root/Inventario")
+	var caderno := root.get_node("/root/CadernoDoVale")
 	var energia := root.get_node("/root/Energia")
 	_conferir(pedro != null and recursos != null and jogador != null,
 		"não achei o Pedro, os recursos ou o jogador")
@@ -109,8 +110,33 @@ func _run() -> void:
 		var entrega: Dictionary = passo.get("entrega", {})
 		if not entrega.is_empty():
 			var ferramenta := str(entrega.get("item", ""))
-			_conferir(inv.tem(ferramenta),
-				"o passo '%s' cobra trabalho e não entregou %s" % [id, ferramenta])
+			# À MÃO, e não na mochila. O vale passou a cobrar a ferramenta
+			# ENCAIXADA (`Recursos3D._tem_ferramenta`), e é o encaixe que a
+			# entrega do passo preenche; perguntar pela mochila reprovaria
+			# justamente a entrega que funciona. Pergunta-se à regra do jogo
+			# para a medida não poder divergir dela.
+			_conferir(recursos._tem_ferramenta(ferramenta),
+				"o passo '%s' cobra trabalho e não deixou %s à mão" % [id, ferramenta])
+
+		# O PASSO ESTÁ NO CADERNO DO VALE, que é o que o painel J mostra.
+		#
+		# Esta pergunta nasceu de "as missões estão bugadas e não aparecem no
+		# menu de missão", e mudou de alvo depois: o caderno é do 3D agora
+		# (`caderno_do_vale.gd`), e não o `Missoes` compartilhado com o 2D. O
+		# pedido foi explícito — o vale tem de ter mecanismo próprio, sem
+		# depender do checklist de lá.
+		#
+		# Medir a lista do caderno, e não o sinal do HUD, continua sendo o ponto:
+		# o sinal funcionava; era o caderno que estava vazio.
+		var no_caderno := "%s_%s" % ["pedro", id]
+		_conferir(caderno.tem(no_caderno),
+			"o passo '%s' anunciou e não entrou no caderno do vale: o painel J mostra a aba vazia" % id)
+		if not meta.is_empty() and caderno.tem(no_caderno):
+			var conta: Vector2i = caderno.andamento(no_caderno)
+			_conferir(conta.y > 0,
+				"o passo '%s' pede trabalho e entrou no caderno sem conta: o jogador não vê quanto falta" % id)
+			_conferir(str(caderno.de(no_caderno).get("linha", "")) != "",
+				"o passo '%s' pede trabalho e não escreveu a linha de andamento" % id)
 
 		if meta.is_empty():
 			# Passo de visita: chega e fecha.
@@ -161,7 +187,7 @@ func _run() -> void:
 func _fechar() -> void:
 	print("")
 	if falhas == 0:
-		print("CADEIA_OK: os passos de visita fecham ao chegar, os de trabalho entregam a ferramenta e fecham ao cumprir a meta — onde quer que o jogador esteja")
+		print("CADEIA_OK: os passos de visita fecham ao chegar, os de trabalho entregam a ferramenta e fecham ao cumprir a meta onde quer que o jogador esteja, e cada passo entra no caderno DO VALE com a conta e a linha de andamento dele")
 	else:
 		print("cadeia: %d falha(s)" % falhas)
 	quit(1 if falhas > 0 else 0)

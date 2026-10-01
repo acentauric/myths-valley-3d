@@ -1,0 +1,38 @@
+{
+  "observacao": "O PIRÃO DA DONA FILÓ, trazido do jogo 2D (data/dialogos/arraial.json, passo filo_almoco). É a primeira missão do vale que se cumpre LEVANDO uma coisa a alguém, e não juntando nem derrubando — daí a meta 'levar'. A resposta é do Tonho, e não da Dona Filó: quem fala no fim é quem recebe, senão o jogador ouve o agradecimento do outro lado do vale. 'lugar' é nome de contrato do autoload Lugares. TRADUÇÃO: só em português neste primeiro momento; inglês e espanhol estão declarados como pendentes e são do Ramon.",
+  "dono": "filo",
+  "abre_em": "casa_da_estrada",
+  "traducao": "pendente",
+  "passos": [
+    {
+      "id": "filo_pedido",
+      "titulo": "O pirão da Dona Filó",
+      "lugar": "casa_da_estrada",
+      "raio": 6.0,
+      "audio": "",
+      "texto": "Meu filho, você que anda pra tudo quanto é canto. Me faz um favor? Fiz pirão de manhã e o Tonho saiu antes, como sempre. Ele desce pro pontal com o dia escuro e só volta quando a maré vira.",
+      "meta": {}
+    },
+    {
+      "id": "filo_pirao",
+      "titulo": "Levar o pirão ao Tonho",
+      "lugar": "pier",
+      "raio": 6.0,
+      "audio": "",
+      "texto": "Eu já não desço aquela ladeira — minhas pernas param na terceira pedra. Leve pra ele. Eu fico olhando a estrada daqui, como sempre, e hoje pelo menos vou saber que ele comeu.",
+      "entrega": { "item": "pirao", "quantidade": 1 },
+      "meta": {
+        "tipo": "levar",
+        "item": "pirao",
+        "a_quem": "tonho",
+        "raio": 3.2,
+        "resposta": "Ela mandou? Ela mandou. Toda manhã ela faz e toda manhã eu saio antes; a gente briga por isso desde que meu pai não voltou. Ela acha que se eu comer direito o mar não me leva, e eu não digo que não é assim. Diga a ela que eu comi — não invente que estava bom, ela sabe que estava. Diga só que eu comi."
+      }
+    }
+  ],
+  "arremate": {
+    "texto": "O Tonho comeu, e pediu que se diga só isso à mãe.",
+    "narra": false,
+    "traducao": "pendente"
+  }
+}

@@ -30,6 +30,7 @@ const ITENS := {
 	"machado": {
 		"nome": "Machado",
 		"tipo": "ferramenta",
+		"encaixe": "maos",
 		"icone": "machado",
 		"empilhavel": false,
 		"dano": 3.0,
@@ -150,6 +151,12 @@ const ITENS := {
 		"nome": "Lenha",
 		"tipo": "recurso",
 		"icone": "lenha",
+		"empilhavel": true,
+	},
+	"madeira_de_coqueiro": {
+		"nome": "Madeira de coqueiro",
+		"tipo": "recurso",
+		"icone": "madeira_de_coqueiro",
 		"empilhavel": true,
 	},
 	"pedra": {

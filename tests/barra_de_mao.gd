@@ -87,11 +87,35 @@ func _run() -> void:
 		"a fila não está no rodapé: y=%s tela=%s" % [str(canto.y), str(tela.y)])
 
 	# --- 5. O QUE ENTRA APARECE ----------------------------------------------
-	Inv.adicionar("machado", 1)
-	Inv.selecionar(0)
+	#
+	# COM A PICARETA, e não com o machado. O machado virou item de encaixe, e o
+	# `Inventario._somente_reserva` o proíbe nos dez espaços da mão: exigir que
+	# ele apareça aqui seria exigir o que o vale decidiu não fazer. A picareta é
+	# ferramenta sem encaixe, mora na mão, e mede a mesma coisa.
+	Inv.adicionar("picareta", 1)
+	var espaco := -1
+	for i in Inv.ESPACOS_MAO:
+		if str((Inv.espacos[i] as Dictionary).get("id", "")) == "picareta":
+			espaco = i
+			break
+	_conferir(espaco >= 0, "a picareta não entrou em espaço nenhum da mão")
+	Inv.selecionar(maxi(espaco, 0))
 	await _frames(2)
 
-	var primeiro := fila.get_child(0) as Panel
+	# E O MACHADO NÃO TOMA ESPAÇO DA MÃO — a regra nova, e a que faz da barra a
+	# fila do que se usa depressa. Sem medir isto, um dia ela volta a comer um
+	# dos dez calada e o jogador perde um espaço de comida para uma ferramenta
+	# que nem se usa dali.
+	Inv.adicionar("machado", 1)
+	var machado_na_mao := false
+	for i in Inv.ESPACOS_MAO:
+		if str((Inv.espacos[i] as Dictionary).get("id", "")) == "machado":
+			machado_na_mao = true
+	_conferir(not machado_na_mao,
+		"o machado ocupou um dos dez espaços da mão: ferramenta de encaixe é da reserva")
+	_conferir(Inv.tem("machado"), "o machado não entrou em lugar nenhum da mochila")
+
+	var primeiro := fila.get_child(maxi(espaco, 0)) as Panel
 	var conteudo := primeiro.get_node_or_null("Conteudo") as Label
 	var icone := primeiro.get_node_or_null("Icone") as TextureRect
 	_conferir(conteudo != null and icone != null, "o espaço não tem rótulo nem ícone")
@@ -99,13 +123,13 @@ func _run() -> void:
 		# Com ícone ou sem, alguma coisa tem de aparecer: a arte de 32px é do 2D
 		# e ainda não veio para cá, e aí a inicial do item faz as vezes dela.
 		_conferir(icone.texture != null or conteudo.text != "",
-			"o machado entrou na mochila e o espaço ficou vazio na tela")
+			"a picareta entrou na mochila e o espaço ficou vazio na tela")
 
 	var na_mao := barra.get_node_or_null("NaMao") as Label
 	_conferir(na_mao != null, "não há rótulo do que está na mão")
 	if na_mao != null:
-		_conferir(na_mao.text.to_lower().contains("machado"),
-			"a mão diz '%s' com o machado selecionado" % na_mao.text)
+		_conferir(na_mao.text.to_lower().contains("picareta"),
+			"a mão diz '%s' com a picareta selecionada" % na_mao.text)
 
 	# --- 6. O AVISO NÃO FICA ATRÁS DELA --------------------------------------
 	#
@@ -126,13 +150,191 @@ func _run() -> void:
 			"o aviso de interação (%s) cruza a barra de mão (%s): um cobre o outro"
 				% [str(aviso.get_global_rect()), str(fila.get_global_rect())])
 
+	# --- 7. O QUE ESTÁ NA MÃO SE COME, pela tecla e pelo clique ---------------
+	#
+	# "Apertando E ou clicando com o mouse em itens consumíveis na mão ativa do
+	# jogador, deve ser consumido. Só consegui consumir clicando dentro do
+	# inventário."
+	#
+	# A regra de comer é do `Cozinha.comer`, compartilhado com o 2D. O que se
+	# mede aqui é a MÃO chegar até ela.
+	var energia := root.get_node("/root/Energia")
+	var cozinha := root.get_node("/root/Cozinha")
+	Inv.adicionar("pirao", 2)
+	var espaco_do_pirao := -1
+	for i in Inv.ESPACOS_MAO:
+		if str((Inv.espacos[i] as Dictionary).get("id", "")) == "pirao":
+			espaco_do_pirao = i
+	_conferir(espaco_do_pirao >= 0, "o pirão não entrou num espaço de mão")
+	if espaco_do_pirao >= 0:
+		Inv.selecionar(espaco_do_pirao)
+		await _frames(2)
+		_conferir(Inv.na_mao() == "pirao", "não consegui pôr o pirão na mão")
+		# Abre espaço no fôlego para o pirão ter o que repor: cheio, comer não
+		# mudaria número nenhum e a pergunta não valeria nada.
+		energia.repor(-30.0)
+		var antes_folego: float = energia.atual
+		var antes_conta: int = Inv.quantidade("pirao")
+		_conferir(barra._comer_da_mao(), "a mão recusou comer o pirão, que é comida")
+		await _frames(2)
+		_conferir(Inv.quantidade("pirao") == antes_conta - 1,
+			"comer não gastou o pirão: tinha %d, ficou %d" % [antes_conta, Inv.quantidade("pirao")])
+		_conferir(energia.atual > antes_folego,
+			"comer o pirão não repôs fôlego: era %.0f e ficou %.0f" % [antes_folego, energia.atual])
+
+		# FERRAMENTA NÃO SE COME. É a outra metade: a mão não pode engolir a
+		# ferramenta porque o jogador apertou E perto de nada.
+		#
+		# COM A PICARETA. O machado não serve para perguntar isto: ele não cabe
+		# mais num espaço da mão (`_somente_reserva`), e a seleção cairia no
+		# pirão do trecho de cima — a mão comeria o pirão, o portão diria que
+		# comeu o machado, e a medida seria de outra coisa.
+		Inv.adicionar("picareta", 1)
+		var achou_picareta := false
+		for i in Inv.ESPACOS_MAO:
+			if str((Inv.espacos[i] as Dictionary).get("id", "")) == "picareta":
+				Inv.selecionar(i)
+				achou_picareta = true
+				break
+		_conferir(achou_picareta, "a picareta não entrou num espaço da mão")
+		await _frames(2)
+		_conferir(Inv.na_mao() == "picareta",
+			"a mão está com '%s' e não com a picareta: a pergunta abaixo mediria outro item" % Inv.na_mao())
+		_conferir(not barra._comer_da_mao(), "a mão comeu a picareta")
+		_conferir(Inv.tem("picareta"), "a picareta desapareceu da mochila")
+
+	# --- 8. O E DA MÃO É O ÚLTIMO DA FILA ------------------------------------
+	#
+	# Perto de um tronco o E golpeia; perto de uma árvore lê a ficha. Comer é o
+	# que sobra, e sobra por ORDEM DE ÁRVORE: a barra mora dentro do HUD, que
+	# entra no vale antes dos nós do mundo, e o Godot entrega o evento de baixo
+	# para cima. Ordem de árvore é coisa que muda quando alguém acrescenta um nó,
+	# então aqui se mede a precedência de verdade.
+	var recursos := current_scene.get_node_or_null("Recursos3D")
+	var jogador = current_scene.get("player")
+	if recursos != null and jogador != null and not recursos._alvos.is_empty():
+		Inv.adicionar("pirao", 3)
+		Inv.adicionar("machado", 1)
+		var onde: Vector3 = recursos.mais_perto_que_rende("lenha", jogador.global_position)
+		if onde != Vector3.ZERO:
+			jogador.global_position = onde
+			await _frames(4)
+			for i in Inv.ESPACOS_MAO:
+				if str((Inv.espacos[i] as Dictionary).get("id", "")) == "pirao":
+					Inv.selecionar(i)
+			await _frames(2)
+			var pirao_antes: int = Inv.quantidade("pirao")
+			_tecla_de_interagir()
+			await _frames(3)
+			_conferir(Inv.quantidade("pirao") == pirao_antes,
+				"com um tronco ao alcance, o E comeu o pirão em vez de golpear: a fila do E inverteu")
+
+	# --- 9. COM O CORPO PARADO, O E NÃO VALE PARA O MUNDO NEM PARA A MÃO -----
+	#
+	# No escuro da queda o jogador já está na porta de casa, de corpo parado, e
+	# o E batia no tronco ao lado dela: achados, pesca e luta perguntavam pelo
+	# corpo; recursos, árvores e lápides não. E o E que ninguém pegava caía na
+	# mão, que comia — desacordado não come.
+	if recursos != null and jogador != null:
+		var onde9: Vector3 = recursos.mais_perto_que_rende("lenha", jogador.global_position)
+		if onde9 != Vector3.ZERO:
+			jogador.global_position = onde9
+			await _frames(4)
+			var alvo9: String = recursos._perto
+			_conferir(alvo9 != "", "não achei um tronco ao alcance para a pergunta do corpo parado")
+			if alvo9 != "":
+				_por_o_pirao_na_mao()
+				energia.repor(-30.0)
+				var golpes9 := int(recursos._alvos[alvo9]["golpes_dados"])
+				var pirao9: int = Inv.quantidade("pirao")
+				# "BATER FOI TENTADO" é golpe dado OU recusa dita ("Precisa de
+				# machado", "Sem fôlego"): a ferramenta certa não é o que se
+				# pergunta aqui, e sem ela o golpe não sairia nem sem a guarda.
+				var recusas := [0]
+				var contar_recusa := func(_texto: String) -> void: recusas[0] += 1
+				recursos.recusado.connect(contar_recusa)
+				jogador.set_physics_process(false)
+				_tecla_de_interagir()
+				await _frames(3)
+				recursos.recusado.disconnect(contar_recusa)
+				_conferir(recursos._alvos.has(alvo9) and int(recursos._alvos[alvo9]["golpes_dados"]) == golpes9 and recusas[0] == 0,
+					"com o corpo parado (o escuro da queda), o E tentou bater no tronco")
+				_conferir(Inv.quantidade("pirao") == pirao9, "com o corpo parado, o E comeu o pirão da mão")
+				jogador.set_physics_process(true)
+				await _frames(2)
+	# AS ÁRVORES E AS LÁPIDES, pelo mesmo E e com o corpo parado. Chamadas
+	# direto, com o alvo posto à mão: o `_process` delas recalcula o que está
+	# perto a cada quadro, e o que se pergunta aqui é só a guarda do corpo.
+	var e_de_interagir := InputEventKey.new()
+	e_de_interagir.physical_keycode = load("res://scripts/prototipo_3d/atalhos.gd").tecla("interagir")
+	e_de_interagir.pressed = true
+	var arvores = current_scene.get_node_or_null("ArvoresInfo")
+	var AlmanaqueScript = load("res://scripts/prototipo_3d/almanaque.gd")
+	if arvores != null and jogador != null:
+		var nova := -1
+		for k in arvores._pontos.size():
+			if not AlmanaqueScript.conhece(String(arvores._pontos[k]["especie"])):
+				nova = k
+				break
+		if nova >= 0:
+			jogador.set_physics_process(false)
+			arvores._aberta = -1
+			arvores._coqueiro_em_golpe = -1
+			arvores._coqueiro_perto = -1
+			arvores._perto = nova
+			arvores._unhandled_key_input(e_de_interagir)
+			_conferir(arvores._aberta == -1, "com o corpo parado, o E abriu a ficha da árvore")
+			jogador.set_physics_process(true)
+	var lapides = current_scene.get_node_or_null("Lapides")
+	var hud = current_scene.get("hud")
+	if lapides != null and jogador != null and hud != null and not lapides._historias.is_empty():
+		jogador.set_physics_process(false)
+		lapides._aberta = -1
+		lapides._perto = 0
+		hud.set("painel_dono", null)
+		lapides._unhandled_key_input(e_de_interagir)
+		_conferir(lapides.lapide_aberta() == -1, "com o corpo parado, o E leu a lápide")
+		jogador.set_physics_process(true)
+		await _frames(2)
+
+	# --- 10. COM TELA ABERTA, AS TECLAS DA MÃO SÃO DELA ----------------------
+	#
+	# A barra ouve com o vale parado, e ouve ANTES das telas que escutam no
+	# `_unhandled_input` (no Godot 4 o `_unhandled_key_input` vem antes): o
+	# número trocava a mão por baixo de qualquer uma das cinco, e com o arraial
+	# aberto o E comia (nas outras, um controle delas pega o E antes). As cinco
+	# ficam na pergunta, porque o que pega o E antes é coisa de cada tela e
+	# muda. O número vem antes do E, porque o E pode fechar a tela.
+	var telas = current_scene.get("telas")
+	if telas != null:
+		_por_o_pirao_na_mao()
+		var mao: int = Inv.selecionado
+		var outro_numero: int = KEY_1 + ((mao + 1) % 9)
+		for nome in ["painel", "almanaque", "arraial", "talentos", "menu_pausa"]:
+			telas.abrir(nome)
+			await _frames(3)
+			_conferir(telas.aberta() == nome, "não consegui abrir '%s' para a pergunta das teclas da mão" % nome)
+			if telas.aberta() != nome:
+				continue
+			await _tecla(outro_numero)
+			_conferir(Inv.selecionado == mao, "com '%s' aberto, o número trocou a mão" % nome)
+			# O pirão volta à mão, para a pergunta do E não depender da de cima.
+			_por_o_pirao_na_mao()
+			energia.repor(-30.0)
+			var pirao10: int = Inv.quantidade("pirao")
+			_tecla_de_interagir()
+			await _frames(3)
+			_conferir(Inv.quantidade("pirao") == pirao10, "com '%s' aberto, o E comeu o pirão da mão" % nome)
+			telas.fechar_tudo()
+			await _frames(3)
+
 	_fechar()
 
 
 func _fechar() -> void:
 	print("")
 	if falhas == 0:
-		print("BARRA_OK: a barra existe, tem tamanho, está no rodapé dentro da tela, tem os dez espaços, e o que entra na mochila aparece nela")
+		print("BARRA_OK: a barra existe, tem tamanho, está no rodapé dentro da tela, tem os dez espaços, o que entra na mochila aparece nela, o que está na mão se come pela tecla e não se come quando é ferramenta, com um tronco ao alcance o E golpeia em vez de comer, com o corpo parado o E não bate nem come, e com tela aberta as teclas da mão são dela")
 	else:
 		print("barra: %d falha(s)" % falhas)
 	quit(1 if falhas > 0 else 0)
@@ -151,3 +353,31 @@ func _mundo_pronto() -> void:
 		await process_frame
 	await process_frame
 	await process_frame
+
+
+func _por_o_pirao_na_mao() -> void:
+	if Inv.quantidade("pirao") < 2:
+		Inv.adicionar("pirao", 2)
+	for i in Inv.ESPACOS_MAO:
+		if str((Inv.espacos[i] as Dictionary).get("id", "")) == "pirao":
+			Inv.selecionar(i)
+			return
+
+
+func _tecla(codigo: int) -> void:
+	for apertada in [true, false]:
+		var evento := InputEventKey.new()
+		evento.physical_keycode = codigo
+		evento.keycode = codigo
+		evento.pressed = apertada
+		Input.parse_input_event(evento)
+		await _frames(2)
+
+
+## Manda a tecla de interagir pelo caminho do jogo, para a fila do E valer.
+func _tecla_de_interagir() -> void:
+	var Atalhos = load("res://scripts/prototipo_3d/atalhos.gd")
+	var evento := InputEventKey.new()
+	evento.physical_keycode = Atalhos.tecla("interagir")
+	evento.pressed = true
+	Input.parse_input_event(evento)
