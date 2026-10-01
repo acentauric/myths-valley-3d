@@ -11,6 +11,15 @@ marcos. Os textos curtos e a identificação exibidos no jogo ficam em
 `prototipo_3d/data/historico_3d.json`; ao registrar um novo marco ou build,
 atualize esse arquivo e este documento juntos.
 
+## Em desenvolvimento — 01/10/2026
+
+- **O E não age com o corpo parado nem atrás de tela.** No escuro da queda, o E batia no
+  tronco ou no coqueiro ao lado da porta, lia lápide e comia o que estava na mão. Atrás de
+  tela aberta, a barra de mão ainda ouvia: o número trocava a mão por baixo do painel J,
+  do almanaque, da teia, do arraial e do menu, e com o arraial (P) aberto o E comia.
+  Recursos, árvores, lápides e a mão perguntam agora pelo corpo, como achados, pesca e
+  luta já faziam, e a barra não ouve com o vale parado (`tests/barra_de_mao.gd`).
+
 ## Em desenvolvimento — 30/09/2026
 
 - **Fala longa com Sim e Não** (#21, a caixa e o pacto). O que precisa ser lido antes de

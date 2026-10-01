@@ -140,6 +140,11 @@ func _process(_delta: float) -> void:
 func _unhandled_key_input(event: InputEvent) -> void:
 	if not (event is InputEventKey and event.pressed and not event.echo and event.physical_keycode == Atalhos.tecla("interagir")):
 		return
+	# COM O CORPO PARADO, O E NÃO VALE PARA O MUNDO, como nos achados, na pesca
+	# e na luta: no escuro da queda, o golpe no coqueiro da porta saía sem
+	# ninguém de pé para dar.
+	if not _jogador.is_physics_processing():
+		return
 	if _aberta >= 0:
 		var paginas: Array = _fichas[_pontos[_aberta]["especie"]].get("paginas", [])
 		if _pagina < paginas.size() - 1:

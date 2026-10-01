@@ -297,6 +297,11 @@ func _unhandled_key_input(event: InputEvent) -> void:
 	if not (event is InputEventKey and event.pressed and not event.echo
 			and event.physical_keycode == Atalhos.tecla("interagir")):
 		return
+	# COM O CORPO PARADO, O E NÃO VALE PARA O MUNDO, como nos achados, na pesca
+	# e na luta. No escuro da queda o jogador já está na porta de casa, e o E
+	# batia no tronco ao lado dela sem corpo nenhum de pé para bater.
+	if not _jogador.is_physics_processing():
+		return
 	bater()
 	get_viewport().set_input_as_handled()
 

@@ -229,13 +229,112 @@ func _run() -> void:
 			_conferir(Inv.quantidade("pirao") == pirao_antes,
 				"com um tronco ao alcance, o E comeu o pirão em vez de golpear: a fila do E inverteu")
 
+	# --- 9. COM O CORPO PARADO, O E NÃO VALE PARA O MUNDO NEM PARA A MÃO -----
+	#
+	# No escuro da queda o jogador já está na porta de casa, de corpo parado, e
+	# o E batia no tronco ao lado dela: achados, pesca e luta perguntavam pelo
+	# corpo; recursos, árvores e lápides não. E o E que ninguém pegava caía na
+	# mão, que comia — desacordado não come.
+	if recursos != null and jogador != null:
+		var onde9: Vector3 = recursos.mais_perto_que_rende("lenha", jogador.global_position)
+		if onde9 != Vector3.ZERO:
+			jogador.global_position = onde9
+			await _frames(4)
+			var alvo9: String = recursos._perto
+			_conferir(alvo9 != "", "não achei um tronco ao alcance para a pergunta do corpo parado")
+			if alvo9 != "":
+				_por_o_pirao_na_mao()
+				energia.repor(-30.0)
+				var golpes9 := int(recursos._alvos[alvo9]["golpes_dados"])
+				var pirao9: int = Inv.quantidade("pirao")
+				# "BATER FOI TENTADO" é golpe dado OU recusa dita ("Precisa de
+				# machado", "Sem fôlego"): a ferramenta certa não é o que se
+				# pergunta aqui, e sem ela o golpe não sairia nem sem a guarda.
+				var recusas := [0]
+				var contar_recusa := func(_texto: String) -> void: recusas[0] += 1
+				recursos.recusado.connect(contar_recusa)
+				jogador.set_physics_process(false)
+				_tecla_de_interagir()
+				await _frames(3)
+				recursos.recusado.disconnect(contar_recusa)
+				_conferir(recursos._alvos.has(alvo9) and int(recursos._alvos[alvo9]["golpes_dados"]) == golpes9 and recusas[0] == 0,
+					"com o corpo parado (o escuro da queda), o E tentou bater no tronco")
+				_conferir(Inv.quantidade("pirao") == pirao9, "com o corpo parado, o E comeu o pirão da mão")
+				jogador.set_physics_process(true)
+				await _frames(2)
+	# AS ÁRVORES E AS LÁPIDES, pelo mesmo E e com o corpo parado. Chamadas
+	# direto, com o alvo posto à mão: o `_process` delas recalcula o que está
+	# perto a cada quadro, e o que se pergunta aqui é só a guarda do corpo.
+	var e_de_interagir := InputEventKey.new()
+	e_de_interagir.physical_keycode = load("res://scripts/prototipo_3d/atalhos.gd").tecla("interagir")
+	e_de_interagir.pressed = true
+	var arvores = current_scene.get_node_or_null("ArvoresInfo")
+	var AlmanaqueScript = load("res://scripts/prototipo_3d/almanaque.gd")
+	if arvores != null and jogador != null:
+		var nova := -1
+		for k in arvores._pontos.size():
+			if not AlmanaqueScript.conhece(String(arvores._pontos[k]["especie"])):
+				nova = k
+				break
+		if nova >= 0:
+			jogador.set_physics_process(false)
+			arvores._aberta = -1
+			arvores._coqueiro_em_golpe = -1
+			arvores._coqueiro_perto = -1
+			arvores._perto = nova
+			arvores._unhandled_key_input(e_de_interagir)
+			_conferir(arvores._aberta == -1, "com o corpo parado, o E abriu a ficha da árvore")
+			jogador.set_physics_process(true)
+	var lapides = current_scene.get_node_or_null("Lapides")
+	var hud = current_scene.get("hud")
+	if lapides != null and jogador != null and hud != null and not lapides._historias.is_empty():
+		jogador.set_physics_process(false)
+		lapides._aberta = -1
+		lapides._perto = 0
+		hud.set("painel_dono", null)
+		lapides._unhandled_key_input(e_de_interagir)
+		_conferir(lapides.lapide_aberta() == -1, "com o corpo parado, o E leu a lápide")
+		jogador.set_physics_process(true)
+		await _frames(2)
+
+	# --- 10. COM TELA ABERTA, AS TECLAS DA MÃO SÃO DELA ----------------------
+	#
+	# A barra ouve com o vale parado, e ouve ANTES das telas que escutam no
+	# `_unhandled_input` (no Godot 4 o `_unhandled_key_input` vem antes): o
+	# número trocava a mão por baixo de qualquer uma das cinco, e com o arraial
+	# aberto o E comia (nas outras, um controle delas pega o E antes). As cinco
+	# ficam na pergunta, porque o que pega o E antes é coisa de cada tela e
+	# muda. O número vem antes do E, porque o E pode fechar a tela.
+	var telas = current_scene.get("telas")
+	if telas != null:
+		_por_o_pirao_na_mao()
+		var mao: int = Inv.selecionado
+		var outro_numero: int = KEY_1 + ((mao + 1) % 9)
+		for nome in ["painel", "almanaque", "arraial", "talentos", "menu_pausa"]:
+			telas.abrir(nome)
+			await _frames(3)
+			_conferir(telas.aberta() == nome, "não consegui abrir '%s' para a pergunta das teclas da mão" % nome)
+			if telas.aberta() != nome:
+				continue
+			await _tecla(outro_numero)
+			_conferir(Inv.selecionado == mao, "com '%s' aberto, o número trocou a mão" % nome)
+			# O pirão volta à mão, para a pergunta do E não depender da de cima.
+			_por_o_pirao_na_mao()
+			energia.repor(-30.0)
+			var pirao10: int = Inv.quantidade("pirao")
+			_tecla_de_interagir()
+			await _frames(3)
+			_conferir(Inv.quantidade("pirao") == pirao10, "com '%s' aberto, o E comeu o pirão da mão" % nome)
+			telas.fechar_tudo()
+			await _frames(3)
+
 	_fechar()
 
 
 func _fechar() -> void:
 	print("")
 	if falhas == 0:
-		print("BARRA_OK: a barra existe, tem tamanho, está no rodapé dentro da tela, tem os dez espaços, o que entra na mochila aparece nela, o que está na mão se come pela tecla e não se come quando é ferramenta, e com um tronco ao alcance o E golpeia em vez de comer")
+		print("BARRA_OK: a barra existe, tem tamanho, está no rodapé dentro da tela, tem os dez espaços, o que entra na mochila aparece nela, o que está na mão se come pela tecla e não se come quando é ferramenta, com um tronco ao alcance o E golpeia em vez de comer, com o corpo parado o E não bate nem come, e com tela aberta as teclas da mão são dela")
 	else:
 		print("barra: %d falha(s)" % falhas)
 	quit(1 if falhas > 0 else 0)
@@ -254,6 +353,25 @@ func _mundo_pronto() -> void:
 		await process_frame
 	await process_frame
 	await process_frame
+
+
+func _por_o_pirao_na_mao() -> void:
+	if Inv.quantidade("pirao") < 2:
+		Inv.adicionar("pirao", 2)
+	for i in Inv.ESPACOS_MAO:
+		if str((Inv.espacos[i] as Dictionary).get("id", "")) == "pirao":
+			Inv.selecionar(i)
+			return
+
+
+func _tecla(codigo: int) -> void:
+	for apertada in [true, false]:
+		var evento := InputEventKey.new()
+		evento.physical_keycode = codigo
+		evento.keycode = codigo
+		evento.pressed = apertada
+		Input.parse_input_event(evento)
+		await _frames(2)
 
 
 ## Manda a tecla de interagir pelo caminho do jogo, para a fila do E valer.

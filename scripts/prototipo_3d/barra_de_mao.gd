@@ -208,12 +208,15 @@ func _unhandled_key_input(event: InputEvent) -> void:
 	#
 	# O que ficou aqui é o que é da barra: as dez teclas da mão.
 	#
-	# COM A FALA, O PAPEL OU O CARTÃO DO AMANHECER NA TELA, A TECLA É DELES
-	# (#21). Esta barra ouve com o vale parado, e ouve ANTES deles — no Godot 4
-	# o `_unhandled_key_input` vem antes do `_unhandled_input`, onde o papel e o
-	# cartão ouvem: o E que passa a linha, guarda o papel ou pula o cartão
-	# comeria o que está na mão.
-	if Mochila.aberta or Dialogo.ocupado() or Folheto.aberto or Amanhecer.aberto:
+	# COM O VALE PARADO, A TECLA É DE QUEM O PAROU. Toda tela para o vale — a
+	# mochila, o painel, o almanaque, o menu, o papel do cordel —, e a fala e o
+	# cartão do amanhecer também (#21). Esta barra ouve com o vale parado, e
+	# ouve ANTES das telas que escutam no `_unhandled_input` (no Godot 4 o
+	# `_unhandled_key_input` vem antes): o número trocava a mão por baixo de
+	# qualquer tela, e o E comia o que estava na mão com o arraial, o papel ou
+	# o cartão abertos. A fala conta também um quadro depois de fechar
+	# (`ocupado`), quando o vale já voltou a andar.
+	if get_tree().paused or Mochila.aberta or Dialogo.ocupado():
 		return
 
 	# Alt segurado é gesto do personagem, não barra de mão.
@@ -226,8 +229,17 @@ func _unhandled_key_input(event: InputEvent) -> void:
 			return
 
 	# O E COME O QUE ESTÁ NA MÃO, e é o último da fila do E. Ver `_comer_da_mao`.
-	if event.physical_keycode == Atalhos.tecla("interagir") and _comer_da_mao():
+	if event.physical_keycode == Atalhos.tecla("interagir") and _corpo_de_pe() and _comer_da_mao():
 		get_viewport().set_input_as_handled()
+
+
+## O CORPO DO JOGADOR ESTÁ DE PÉ? No escuro da queda (e no susto do tubarão) ele
+## está parado, e o E que o mundo não pega — achados, pesca, luta, recursos,
+## árvores e lápides perguntam pelo corpo — caía aqui e comia: desacordado não
+## come. Sem jogador na árvore (um portão sem o vale), vale de pé.
+func _corpo_de_pe() -> bool:
+	var jogador := get_tree().get_first_node_in_group("map_player")
+	return jogador == null or jogador.is_physics_processing()
 
 
 ## A MOCHILA ABRE E FECHA DAQUI, e não do `Prototype`.
