@@ -182,3 +182,17 @@ gráfica e `--path . --script res://tools/prototipo_3d/medir_lod.gd`
 ## Balões de fala
 
 As falas dos moradores e do Pedro aparecem em balões de interface (`balao_fala.gd`): fundo claro, nome de quem fala e ponta apontando para a cabeça do personagem. O balão tem tamanho fixo na tela, então continua legível à distância; some quando o personagem sai da câmera ou passa de 45 m, e encosta nas bordas sem cobrir o relógio, o objetivo nem o rodapé de controles.
+
+### Sobrevoo da abertura (#34)
+
+O fundo do menu voa do píer até a praça, com a câmera olhando para a frente
+na direção do movimento. O percurso curvo retorna por outro lado, num ciclo
+contínuo de 72 segundos. A altura acompanha o relevo a 16 metros do chão;
+o olhar adiante tem inclinação leve para revelar as casas e as copas, em vez
+de enquadrar só o piso. As âncoras reais definem o trajeto e o voo começa
+quando o vale termina de montar. O modo Parado usa a vista inicial do píer.
+A abertura deixa de sobrepor poeira dourada e vaga-lumes ao cenário.
+
+O eixo visual do sobrevoo coloca o olhar adiante a 75% da largura da janela,
+no terço direito livre do retábulo. O ajuste acompanha a proporção da janela;
+o mapa e a travessia conservam seus próprios enquadramentos.

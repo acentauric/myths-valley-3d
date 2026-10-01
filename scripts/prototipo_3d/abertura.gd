@@ -11,7 +11,12 @@ const PainelPersonagens = preload("res://scripts/prototipo_3d/painel_personagens
 const TelaCarregamento = preload("res://scripts/prototipo_3d/tela_carregamento.gd")
 const Identidade = preload("res://scripts/prototipo_3d/identidade.gd")
 const VISUAL_PREFERENCES := "user://preferencias_visuais.cfg"
-const FLYOVER_SECONDS := 36.0
+const FLYOVER_SECONDS := 72.0
+## Metros reais: a escala do mapa muda as unidades, mas nao a proximidade do voo.
+const ALTURA_SOBREVOO := 16.0
+const OLHAR_ADIANTE := 56.0
+const LATERAL_SOBREVOO := 40.0
+const ENQUADRAMENTO_SOBREVOO := 0.75
 const HISTORY_SIZE := Vector2(640, 600)
 const GAME_SCENE := "res://scenes/prototipo_3d/vale.tscn"
 ## Equipe exibida em SOBRE.
@@ -28,6 +33,8 @@ static var _reabrir_ajustes := false
 var camera := Camera3D.new()
 var camera_target := Vector3(0, 1.5, 0)
 var map_target := Vector3.ZERO
+var _camera_antes_do_mapa := Transform3D.IDENTITY
+var _alvo_antes_do_mapa := Vector3.ZERO
 var map_full_size := 0.0
 var map_marker_root: Control
 var map_markers: Array[Dictionary] = []
@@ -78,8 +85,6 @@ var clock_hint: Label
 var decoracao: Control
 var veu_vertical: TextureRect
 var veu_esquerdo: TextureRect
-var poeira: CPUParticles2D
-var vaga_lumes: CPUParticles2D
 var sombra_almanaque: TextureRect
 var bloco_almanaque: VBoxContainer
 var rotulo_almanaque: Label
@@ -159,21 +164,27 @@ func _ready() -> void:
 		_options(2)
 	# A entrada anima véus, retábulo e placas quando o vale termina de montar (a tela
 	# de carregamento some logo depois). Na recarga da troca de estilo, sem animação.
+	if $Cenario.construido:
+		_start_flyover()
+	else:
+		$Cenario.pronto.connect(_start_flyover, CONNECT_ONE_SHOT)
 	if not $Cenario.construido and not options_open:
 		_preparar_entrada()
 		$Cenario.pronto.connect(_entrada, CONNECT_ONE_SHOT)
 	print("OPENING_READY: audio compartilhado e abertura 3D · estilo=%s" % Estilo.modo)
 
 func _process(delta: float) -> void:
-	elapsed += delta
+	if not $Cenario.construido:
+		return
 	if map_open:
 		camera.position = map_target + Vector3(0, 3000, 0)
 		camera_target = map_target
 		camera.look_at(map_target, Vector3(0, 0, -1))
 		_position_map_markers()
 		return
-	var target := Vector3(0, 1.5, 0)
-	var eye := Vector3(105, 70, 115)
+	elapsed += delta
+	var target := _flyover_target(0.0)
+	var eye := _flyover_eye(0.0)
 	if line_index >= 0:
 		var phase := mini(line_index / 3, 2)
 		eye = [Vector3(-110, 65, 55), Vector3(-76, 35, 43), Vector3(75, 48, 75)][phase]
@@ -187,23 +198,70 @@ func _process(delta: float) -> void:
 		camera_target = target
 	else:
 		if flyover_active:
-			var progress := (1.0 - cos(elapsed * TAU / FLYOVER_SECONDS)) * 0.5
+			var progress := fposmod(elapsed / FLYOVER_SECONDS, 1.0)
 			eye = _flyover_eye(progress)
-			target = Vector3(10, 1.5, 10).lerp(Vector3(-20, 1.5, -10), progress)
+			target = _flyover_target(progress)
 		var blend := clampf(delta * 1.4, 0.0, 1.0)
 		camera.position = camera.position.lerp(eye, blend)
 		camera_target = camera_target.lerp(target, blend)
 	camera.look_at(camera_target)
+	if line_index < 0:
+		_frame_flyover()
+
+## A volta curva permite seguir olhando na direcao do movimento, sem dar marcha
+## a re com o olhar preso na praca. O outro lado da curva revela as casas na volta.
+func _flyover_route(progress: float) -> Vector3:
+	var pier: Vector3 = $Cenario.ancoras.get("Pier", Vector3.ZERO)
+	var praca: Vector3 = $Cenario.ancoras.get("Praça", pier)
+	var direction := praca - pier
+	direction.y = 0.0
+	var lateral := direction.normalized().cross(Vector3.UP) if direction.length_squared() > 0.001 else Vector3.RIGHT
+	var angle := progress * TAU
+	var route := (pier + praca) * 0.5 - (praca - pier) * cos(angle) * 0.5
+	return route + lateral * sin(angle) * LATERAL_SOBREVOO / $Cenario.get_meters_per_unit()
+
+
+func _flyover_direction(progress: float) -> Vector3:
+	var direction := _flyover_route(progress + 0.001) - _flyover_route(progress - 0.001)
+	direction.y = 0.0
+	return direction.normalized() if direction.length_squared() > 0.000001 else Vector3.FORWARD
+
 
 func _flyover_eye(progress: float) -> Vector3:
-	var start := Vector3(105, 70, 115)
-	var control_a := Vector3(60, 95, 135)
-	var control_b := Vector3(-70, 95, 100)
-	var end := Vector3(-110, 65, 55)
-	var first := start.lerp(control_a, progress)
-	var second := control_a.lerp(control_b, progress)
-	var third := control_b.lerp(end, progress)
-	return first.lerp(second, progress).lerp(second.lerp(third, progress), progress)
+	var eye := _flyover_route(progress)
+	# A altura segue o terreno; o enquadramento fica na altura das copas e telhados.
+	eye.y = $Cenario.ground_height_at(eye) + ALTURA_SOBREVOO / $Cenario.get_meters_per_unit()
+	return eye
+
+
+func _flyover_target(progress: float) -> Vector3:
+	var scale_m: float = $Cenario.get_meters_per_unit()
+	var eye := _flyover_eye(progress)
+	var target := eye + _flyover_direction(progress) * OLHAR_ADIANTE / scale_m
+	# Uma inclinacao leve mostra fachadas e arvores, em vez de mirar o chao da praca.
+	target.y = maxf(eye.y - 5.0 / scale_m, $Cenario.ground_height_at(target) + 4.0 / scale_m)
+	return target
+
+
+func _start_flyover() -> void:
+	elapsed = 0.0
+	camera.position = _flyover_eye(0.0)
+	camera_target = _flyover_target(0.0)
+	_frame_flyover()
+
+
+## O retabulo cobre a esquerda. Corrige o eixo optico para que o olhar adiante
+## apareca no terco direito, ajustando o angulo a largura real da janela.
+func _frame_flyover() -> void:
+	camera.look_at(camera_target)
+	var tela := camera.get_viewport().get_visible_rect().size
+	var aspecto := tela.x / maxf(tela.y, 1.0)
+	var meia_largura := tan(deg_to_rad(camera.fov) * 0.5)
+	if camera.keep_aspect == Camera3D.KEEP_HEIGHT:
+		meia_largura *= aspecto
+	var angulo := atan((ENQUADRAMENTO_SOBREVOO * 2.0 - 1.0) * meia_largura)
+	camera.rotate_object_local(Vector3.UP, angulo)
+
 
 func _load_visual_preference() -> void:
 	var preferences := ConfigFile.new()
@@ -223,7 +281,7 @@ func _estilo_vazio() -> StyleBoxEmpty:
 
 
 ## A camada de "luz de pintura" da identidade, entre o vale 3D e o retábulo: véus que
-## seguem a luz do dia, vinheta, poeira dourada (dia) ou vaga-lumes (noite), o almanaque
+## seguem a luz do dia, vinheta, o almanaque
 ## no canto de baixo, o fio de ouro na base, as faixas de cinema da travessia e o véu
 ## dos modais. Tudo com o mouse desligado: decoração nunca pega clique.
 func _montar_decoracao(layer: CanvasLayer) -> void:
@@ -242,14 +300,6 @@ func _montar_decoracao(layer: CanvasLayer) -> void:
 	var vinheta := Identidade.vinheta(Vector2(0.62, 0.5), 0.36)
 	vinheta.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	decoracao.add_child(vinheta)
-	poeira = Identidade.particulas(false)
-	vaga_lumes = Identidade.particulas(true)
-	decoracao.add_child(poeira)
-	decoracao.add_child(vaga_lumes)
-	poeira.emitting = not _era_noite
-	vaga_lumes.emitting = _era_noite
-	decoracao.resized.connect(_posicionar_particulas)
-	_posicionar_particulas()
 	# Sombra difusa atrás do almanaque: o texto fica legível sobre o mar claro.
 	sombra_almanaque = TextureRect.new()
 	sombra_almanaque.texture = Identidade.brilho(Color(0.02, 0.02, 0.04, 0.5), 128)
@@ -324,17 +374,8 @@ func _montar_decoracao(layer: CanvasLayer) -> void:
 	decoracao.add_child(veu_modal)
 
 
-## As partículas moram na faixa baixa do vale, à direita do retábulo.
-func _posicionar_particulas() -> void:
-	var tela := decoracao.size
-	poeira.position = tela * Vector2(0.69, 0.54)
-	poeira.emission_rect_extents = tela * Vector2(0.235, 0.24)
-	vaga_lumes.position = tela * Vector2(0.69, 0.76)
-	vaga_lumes.emission_rect_extents = tela * Vector2(0.235, 0.15)
-
-
 ## A cada hora do vale: os véus pesam conforme a luz (mais fortes contra o céu claro do
-## meio-dia) e a virada dia/noite troca as partículas e o caderno do almanaque — pela
+## meio-dia) e a virada dia/noite troca o caderno do almanaque — pela
 ## mesma regra (eh_noite) que escolhe a capa da tela de carregamento.
 func _ao_mudar_hora(_hora: float) -> void:
 	var luz := Dia.luz_do_dia()
@@ -342,8 +383,6 @@ func _ao_mudar_hora(_hora: float) -> void:
 	veu_esquerdo.modulate.a = lerpf(0.55, 1.0, luz)
 	if Dia.eh_noite() != _era_noite:
 		_era_noite = Dia.eh_noite()
-		poeira.emitting = not _era_noite
-		vaga_lumes.emitting = _era_noite
 		_atualizar_almanaque()
 
 
@@ -503,6 +542,7 @@ func _clamped_map_target(target: Vector3, view_size: float) -> Vector3:
 	return target
 
 func _clear() -> void:
+	var saindo_do_mapa := map_open
 	_close_help()
 	if _tween_entrada:
 		_tween_entrada.kill()
@@ -526,6 +566,8 @@ func _clear() -> void:
 		node.queue_free()
 	map_corner_nodes.clear()
 	_stop_map_tween()
+	if saindo_do_mapa:
+		_restore_flyover_view()
 	# O painel PERSONAGENS vive na camada (não em content): liberado aqui.
 	if is_instance_valid(painel_personagens):
 		painel_personagens.queue_free()
@@ -837,7 +879,22 @@ func _placa(texto: String, acao: Callable, negativa := false, puxa_foco := true)
 		acao.call())
 	return placa
 
+## O mapa usa a mesma camera a 3000 unidades. Guarda o quadro do voo para
+## voltar direto a ele, sem interpolar a descida dessa altura ate a vila.
+func _save_flyover_view() -> void:
+	_camera_antes_do_mapa = camera.transform
+	_alvo_antes_do_mapa = camera_target
+
+
+func _restore_flyover_view() -> void:
+	camera.projection = Camera3D.PROJECTION_PERSPECTIVE
+	camera.transform = _camera_antes_do_mapa
+	camera_target = _alvo_antes_do_mapa
+
+
 func _open_map() -> void:
+	if not map_open:
+		_save_flyover_view()
 	_clear()
 	_decoracao_modo("mapa")
 	map_open = true

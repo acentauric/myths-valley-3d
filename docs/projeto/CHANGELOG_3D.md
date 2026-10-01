@@ -26,6 +26,8 @@ atualize esse arquivo e este documento juntos.
 
 ## Em desenvolvimento — 30/09 e 01/10/2026
 
+- **O sobrevoo do menu olha adiante, do píer à praça** (#34). A câmera acompanha o relevo a 16 metros do chão, na altura das copas e telhados, e segue a direção do movimento com inclinação leve. O percurso curvo retorna por outro lado da vila, sem recuar com o olhar preso no piso. O ciclo contínuo dura 72 segundos e usa as âncoras reais (`tests/sobrevoo_menu.gd`). Ao abrir o mapa, o voo pausa; ao fechar, a câmera retoma o quadro anterior diretamente, sem descer da altura do mapa. A poeira dourada e os vaga-lumes sobrepostos ao menu saem. O foco do voo fica no terço direito, livre do painel, com ajuste para a proporção da janela.
+
 - **O E não age com o corpo parado nem atrás de tela.** No escuro da queda, o E batia no
   tronco ou no coqueiro ao lado da porta, lia lápide e comia o que estava na mão. Atrás de
   tela aberta, a barra de mão ainda ouvia: o número trocava a mão por baixo do painel J,
