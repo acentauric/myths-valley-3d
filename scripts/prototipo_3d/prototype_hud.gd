@@ -1,8 +1,8 @@
 extends CanvasLayer
 ## Interface leve para o primeiro teste do personagem em 3D. No canto direito, a mesma
 ## coluna de botões redondos do menu (som e relógio na mesma posição), seguida de HOME,
-## câmera, velocidade do tempo e estilo visual; as informações técnicas ficam na dica
-## do estilo. No alto, ao centro, só a hora e o período do dia.
+## câmera, velocidade do tempo e estilo visual. O botão de dados abre as medições acima
+## do minimapa; no alto, ao centro, ficam só a hora e o período do dia.
 
 const BotaoCanto = preload("res://scripts/prototipo_3d/botao_canto.gd")
 const AudioToggleIcon = preload("res://scripts/prototipo_3d/audio_toggle_icon.gd")
@@ -12,6 +12,7 @@ const TemaMenu = preload("res://scripts/prototipo_3d/tema_menu.gd")
 const TelaCarregamento = preload("res://scripts/prototipo_3d/tela_carregamento.gd")
 const Identidade = preload("res://scripts/prototipo_3d/identidade.gd")
 const PainelAjustes = preload("res://scripts/prototipo_3d/painel_ajustes.gd")
+const Minimapa = preload("res://scripts/prototipo_3d/minimapa.gd")
 
 
 ## Camada dos modais do jogo (ajustes): roda com o vale pausado e trata Esc.
@@ -68,7 +69,11 @@ var _camera_locked := false
 var _refresh_time := 0.0
 var _root: Control
 var _region_label: Label
-var _style_hint: Label
+var _performance_panel: Panel
+var _performance_label: Label
+var _performance_button: Button
+var _performance_open := false
+var _map_open := false
 var _speed_hint: Label
 var _speed_icon	# hud_icon.gd
 var _camera_icon	# hud_icon.gd
@@ -115,6 +120,7 @@ func _ready() -> void:
 	_place(_objective_label, Vector2(35, 101), Vector2(HEADING_WIDTH - 34, 42))
 
 	_create_corner_buttons()
+	_create_performance_panel()
 
 	_house_info_panel = _panel(Color(0.055, 0.085, 0.075, 0.92))
 	_root.add_child(_house_info_panel)
@@ -468,18 +474,19 @@ func controls_open() -> bool:
 func set_controls_open(open: bool) -> void:
 	_controls_panel.visible = open
 	_help_icon.definir(open)
+	_sync_performance_panel()
 	if open:
 		_update_control_mode()
 
 
 func _update_telemetry() -> void:
-	if not is_instance_valid(_style_hint):
+	if not is_instance_valid(_performance_label):
 		return
 	var triangles := Performance.get_monitor(Performance.RENDER_TOTAL_PRIMITIVES_IN_FRAME)
 	var draws := Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME)
 	var vram := Performance.get_monitor(Performance.RENDER_VIDEO_MEM_USED) / 1048576.0
 	var suffix := "  ·  " + _telemetry if not _telemetry.is_empty() else ""
-	_style_hint.text = "%d FPS%s\n%s\n%s tri · %d draws · %d MB VRAM" % [Engine.get_frames_per_second(), suffix, _model_status, _compact(triangles), int(draws), int(vram)]
+	_performance_label.text = "%d FPS%s\n%s\n%s tri · %d draws · %d MB VRAM" % [Engine.get_frames_per_second(), suffix, _model_status, _compact(triangles), int(draws), int(vram)]
 	_speed_icon.definir(false, Dia.velocidade)
 	_speed_hint.text = "Tempo: %s · clique para mudar" % String(Dia.ROTULOS_VELOCIDADE[Dia.velocidade])
 	_update_clock_hint()
@@ -507,7 +514,7 @@ func _fit_heading() -> void:
 
 
 ## Coluna de botões redondos: HOME, som e relógio na mesma posição do menu, depois
-## câmera, velocidade do tempo e estilo visual (dica com as medições de desempenho).
+## câmera, velocidade do tempo e dados de desempenho.
 func _create_corner_buttons() -> void:
 	var first_child := _root.get_child_count()
 	var top := 32.0
@@ -580,10 +587,11 @@ func _create_corner_buttons() -> void:
 	var style_icon = HudIcon.new().configurar("estilo")
 	style_icon.definir(Estilo.tripo())
 	var style: Array = BotaoCanto.criar(_root, top, style_icon)
-	_style_hint = style[1]
-	# Em Cormorant (a fonte das dicas da identidade), 13 px seriam ilegíveis.
-	_style_hint.add_theme_font_size_override("font_size", 16)
-	(style[0] as Button).focus_mode = Control.FOCUS_NONE
+	(style[1] as Label).text = "FPS"
+	_performance_button = style[0]
+	_corner_setup(_performance_button, func() -> void:
+		_performance_open = not _performance_open
+		_sync_performance_panel())
 
 	top += BotaoCanto.ESPACO
 	_help_icon = HudIcon.new().configurar("ajuda")
@@ -595,9 +603,37 @@ func _create_corner_buttons() -> void:
 		_corner_nodes.append(_root.get_child(index))
 
 
+## A largura menor troca a dica horizontal por um painel de leitura persistente.
+## A posição acompanha a moldura do minimapa, sem depender da resolução da janela.
+func _create_performance_panel() -> void:
+	_performance_panel = _panel(Color(0.055, 0.085, 0.075, 0.92))
+	_performance_panel.name = "DadosDeDesempenho"
+	_root.add_child(_performance_panel)
+	_performance_panel.set_anchors_preset(Control.PRESET_BOTTOM_LEFT)
+	_performance_panel.offset_left = Minimapa.MARGEM
+	_performance_panel.offset_right = Minimapa.MARGEM + 290.0
+	_performance_panel.offset_bottom = -Minimapa.MARGEM - Minimapa.ALTURA - 8.0
+	_performance_panel.offset_top = _performance_panel.offset_bottom - 108.0
+	_performance_panel.visible = false
+	_performance_label = _label("", 13, INK)
+	_performance_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_performance_panel.add_child(_performance_label)
+	_performance_label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_performance_label.offset_left = 10.0
+	_performance_label.offset_right = -10.0
+	_performance_label.offset_top = 7.0
+	_performance_label.offset_bottom = -7.0
+
+
+func _sync_performance_panel() -> void:
+	if is_instance_valid(_performance_panel):
+		_performance_panel.visible = _performance_open and not controls_open() and not _map_open
+
+
 ## Com o mapa aberto só ficam a coluna do canto (mapa dourado) e os marcadores; título,
 ## relógio, avisos e controles somem e voltam como estavam.
 func set_map_open(open: bool) -> void:
+	_map_open = open
 	_map_icon.definir(open)
 	if open:
 		_hidden_for_map.clear()
@@ -610,6 +646,7 @@ func set_map_open(open: bool) -> void:
 			if is_instance_valid(child):
 				child.visible = true
 		_hidden_for_map.clear()
+	_sync_performance_panel()
 
 
 ## Nó de UI em que o mapa põe os marcadores (atrás da coluna do canto).
