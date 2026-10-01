@@ -70,6 +70,9 @@ var _cadeias: Dictionary = {}
 var _relogio_pausado_antes := false
 ## Foi a fala longa que parou o vale? Ver `_ao_abrir_a_fala`.
 var _fala_parou_o_vale := false
+## O cordel que o folheto vai abrir, e a tela a que ele volta. Ver `ler_o_folheto`.
+var _folheto_a_ler := ""
+var _voltar_do_folheto := ""
 var painel	# painel_vale.gd — tecla J
 ## Dono único das telas: só uma fica aberta. Ver telas_do_vale.gd.
 var telas
@@ -242,6 +245,16 @@ func _ready() -> void:
 	Dialogo.abriu.connect(_ao_abrir_a_fala)
 	Dialogo.terminou.connect(_ao_calar_a_fala)
 	telas.ocupado = func() -> bool: return Dialogo.ocupado()
+	# O FOLHETO (#21) é tela, mas quem o abre é o mundo: o cordel achado, ou o
+	# almanaque pedindo para reler. Nenhuma tecla é dele (`minha` diz que não);
+	# sendo tela, o Esc o guarda, e a tecla de outra tela troca para ela — é o
+	# "[L] coleção" que o rodapé dele escreve. Ver `ler_o_folheto`.
+	telas.registrar("folheto",
+		func(_e: InputEvent) -> bool: return false,
+		func() -> bool: return Folheto.aberto,
+		func() -> void: Folheto.abrir(_folheto_a_ler),
+		func() -> void: Folheto.fechar())
+	Folheto.fechou.connect(_ao_guardar_o_folheto)
 	if hud.almanaque() != null:
 		var alm: Control = hud.almanaque()
 		telas.registrar("almanaque",
@@ -249,6 +262,7 @@ func _ready() -> void:
 			func() -> bool: return alm.aberto(),
 			func() -> void: alm.abrir(),
 			func() -> void: alm.fechar())
+		alm.ler_no_papel.connect(func(id: String) -> void: ler_o_folheto(id, "almanaque"))
 	telas.registrar("painel",
 		func(e: InputEvent) -> bool: return e.physical_keycode == Atalhos.tecla("painel"),
 		func() -> bool: return painel != null and painel.aberto,
@@ -535,6 +549,7 @@ func _montar_moradores(spawn: Vector3) -> void:
 	add_child(luta)
 	luta.configurar(world, player, hud)
 	achados.configurar(world, player, hud, luta)
+	achados.achou.connect(_ao_achar)
 	# O painel da tecla J (painel_vale.gd), por cima do HUD.
 	painel = PainelVale.new()
 	painel.name = "Painel"
@@ -803,6 +818,43 @@ func _retomar_se_a_fala_acabou() -> void:
 	_retomar_o_vale()
 
 
+## O CORDEL NO PAPEL (#21): o `Folheto` do 2D, inteiro, por cima do vale.
+##
+## Achar cordel sem poder ler seria só um item a mais — é a razão que o 2D
+## escreve no `ler` de lá —, então o achado abre o papel na hora, como no
+## `Mundo._pegar_cordel`. `voltar_para` é a tela de onde o jogador veio reler
+## (o almanaque): guardado o papel, ela reabre onde ele estava, que é o que a
+## coleção do 2D faz por ficar aberta embaixo. Aqui só uma tela fica aberta.
+func ler_o_folheto(id: String, voltar_para := "") -> void:
+	if Folheto.aberto or Dialogo.ocupado():
+		return
+	_folheto_a_ler = id
+	_voltar_do_folheto = voltar_para
+	if mapa != null and mapa.aberto:
+		_toggle_map()
+	telas.abrir("folheto")
+
+
+func _ao_achar(tipo: String, id: String) -> void:
+	if tipo == "cordel":
+		ler_o_folheto(id)
+
+
+## O papel se guardou com o E ou o clique, por conta dele: o dono das telas
+## precisa saber, para o vale voltar a andar. E quem veio do almanaque volta a
+## ele — a não ser que tenha trocado de tela pela tecla, que já abriu outra.
+func _ao_guardar_o_folheto() -> void:
+	telas.fechou_por_conta("folheto")
+	_voltar_depois_do_folheto.call_deferred()
+
+
+func _voltar_depois_do_folheto() -> void:
+	var voltar := _voltar_do_folheto
+	_voltar_do_folheto = ""
+	if voltar != "" and telas.aberta() == "":
+		telas.abrir(voltar)
+
+
 ## HOME ou M: pausa o vale (e o relógio) e pergunta antes de sair.
 func _ask_return_to_menu() -> void:
 	if hud.menu_confirm_open() or hud.settings_open() or _saindo:
@@ -885,6 +937,7 @@ func _ajustar_as_telas_do_2d() -> void:
 	# A fala longa (#21) fica na camada das telas: por cima do HUD, e nenhuma
 	# tela fica aberta com ela (ver `_ao_abrir_a_fala`).
 	_no_quadro_do_2d(Dialogo, CAMADA_DAS_TELAS)
+	_no_quadro_do_2d(Folheto, CAMADA_DAS_TELAS)
 
 
 ## UMA TELA DESENHADA NO QUADRO DE 640×360 DO 2D, inteira na janela.

@@ -149,6 +149,11 @@ func _run() -> void:
 		if oferece:
 			achados.interagir()
 			await _frames(3)
+			# O cordel achado abre no papel (#21): guardado, o próximo se pega.
+			var folheto := root.get_node("/root/Folheto")
+			_conferir(folheto.aberto, "peguei o cordel '%s' e ele não abriu no papel" % id)
+			folheto.fechar()
+			await _frames(2)
 			_conferir(colecao.tem("cordeis", id),
 				"peguei o cordel '%s' e ele não entrou na coleção" % id)
 			_conferir(inventario.quantidade(id) == 0,

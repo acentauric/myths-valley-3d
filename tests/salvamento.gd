@@ -72,6 +72,7 @@ const FORA_DO_SAVE := {
 ## Autoloads do 3D que não guardam partida nenhuma, com a razão.
 const SEM_PARTIDA := {
 	"Audio": "volumes e opções de som do AJUSTAR, com arquivo de configuração próprio",
+	"Folheto": "o cordel aberto no papel (#21): tela aberta e o id que ela mostra; o que se achou mora no `Colecao`, que é salvo",
 	"Dialogo": "a caixa de fala longa (#21): o que ela tem é tela aberta e quem está falando agora. Ninguém salva no meio de uma fala — o vale está parado atrás dela —, e carregar não reabre conversa",
 	"Estilo": "o estilo visual escolhido no AJUSTAR, com arquivo de configuração próprio",
 	"Mare": "o modo da maré escolhido no AJUSTAR",

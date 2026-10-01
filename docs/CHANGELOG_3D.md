@@ -21,6 +21,10 @@ atualize esse arquivo e este documento juntos.
   cumprimento de passagem (`dialogo_vale.gd`, `data/dialogo.json`, `tests/escolha.gd`).
   De passagem: as telas do 2D soltavam o calendário ao fechar, e com o relógio pausado ele
   andava sozinho; pausar e retomar o vale agora o prendem.
+- **O cordel no papel** (#21, o folheto). Achar um cordel abre o folheto do 2D, inteiro,
+  por cima do vale; E, Esc ou um clique o guardam, e a tecla de outra tela troca para ela.
+  No almanaque, escolher de novo o cordel aberto o relê no papel, e guardar volta ao
+  almanaque onde ele estava (`scripts/ui/folheto.gd`, idêntico ao do 2D; `tests/folheto.gd`).
 - **Mochila no vale** (#2). A tela do 2D abre no I por cima do HUD e no tamanho da
   janela, com o teclado de dentro dela funcionando: setas ou WASD escolhem, F veste ou
   come, E arruma. A roda do mouse troca o item da mão, como no 2D; o zoom foi para

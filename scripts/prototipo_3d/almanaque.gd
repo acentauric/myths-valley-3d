@@ -57,6 +57,9 @@ extends Control
 const Identidade = preload("res://scripts/prototipo_3d/identidade.gd")
 const Atalhos = preload("res://scripts/prototipo_3d/atalhos.gd")
 const FichasDaColecao = preload("res://scripts/prototipo_3d/fichas_da_colecao.gd")
+const IdiomaMenu = preload("res://scripts/prototipo_3d/idioma_menu.gd")
+## De onde vem a dica de reler o cordel no papel: é o que se lê sobre cordel.
+const TEXTOS_DOS_ACHADOS := "res://data/achados.json"
 
 const DADOS := "res://data/arvores_3d.json"
 const ARQUIVO := "user://almanaque.cfg"
@@ -338,6 +341,12 @@ func _montar() -> void:
 ## uma delas com o número velho. Mesma costura da mochila, que avisa pela
 ## `BarraDeMao.mochila_mudou`.
 signal mudou(aberto: bool)
+## Pedido para reler um cordel no papel (#21). Quem abre o `Folheto` é o vale,
+## que é o dono das telas: este almanaque fecha e, guardado o papel, reabre
+## onde estava.
+signal ler_no_papel(id: String)
+
+var _dica_do_papel := ""
 
 
 func aberto() -> bool:
@@ -398,6 +407,16 @@ func _encher() -> void:
 	_pintar_cursor()
 	_rodape.text = "↑↓ ou W/S: andar    ·    E ou Enter: abrir    ·    ←: voltar    ·    %s ou Esc: fechar" \
 		% OS.get_keycode_string(Atalhos.tecla("almanaque"))
+	if _secao == "cordeis" and _escolhido != "" and Colecao.tem("cordeis", _escolhido):
+		_rodape.text += "    ·    " + _dica_de_reler()
+
+
+func _dica_de_reler() -> String:
+	if _dica_do_papel == "":
+		var lido = JSON.parse_string(FileAccess.get_file_as_string(TEXTOS_DOS_ACHADOS))
+		var dado = lido.get("ler_no_papel", {}) if lido is Dictionary else {}
+		_dica_do_papel = str(IdiomaMenu.campo(dado if dado is Dictionary else {}, "texto", ""))
+	return _dica_do_papel
 
 
 func _texto_do_caminho() -> String:
@@ -643,6 +662,12 @@ func _escolher_grupo(grupo: String) -> void:
 
 
 func _escolher_item(item: String) -> void:
+	# O CORDEL JÁ ABERTO, ESCOLHIDO DE NOVO, SE LÊ NO PAPEL (#21): o segundo E,
+	# ou o segundo clique, como o da barra de mão. A ficha mostra a primeira
+	# estrofe; o papel é o folheto inteiro, como a coleção do 2D abre.
+	if item == _escolhido and _secao == "cordeis" and Colecao.tem("cordeis", item):
+		ler_no_papel.emit(item)
+		return
 	_escolhido = item
 	if _secao == PLANTAS:
 		_grupo = grupo_de(item)

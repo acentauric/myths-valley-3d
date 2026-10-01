@@ -38,7 +38,7 @@ crédito do Tripo e exigem o custo aprovado **antes** de gerar.
 | Fase 2.5 — geografia | #22 chapada e vizinhos · #23 rio, vau e lagoa · #24 mata e serra · #25 fazenda e ruínas |
 | Fase 3 — missões e enredo | **#1** (jam) · #31 capítulos 6 e 7 |
 | Fase 4 — salvar | ~~#7~~ (feita) |
-| Fase 6 — interface | ~~#2 mochila~~ (feita) · ~~#3 fôlego~~ (feita) · ~~#4 teclas~~ (feita) · ~~#19 painel~~ (feita) · #20 teia, ~~coleção~~ (feita), arraial · #21 fala com escolha (a caixa e o pacto saíram; folheto e amanhecer seguem) |
+| Fase 6 — interface | ~~#2 mochila~~ (feita) · ~~#3 fôlego~~ (feita) · ~~#4 teclas~~ (feita) · ~~#19 painel~~ (feita) · #20 teia, ~~coleção~~ (feita), arraial · #21 fala com escolha (a caixa, o pacto e o folheto saíram; o amanhecer segue) |
 | Fase 7 — modelos | **#5** comidas e carta (jam) · #26 interiores · #27 roçado e trabalho · #28 bichos · #29 vila · #30 fazenda e ruínas |
 | O idioma | **#6** (jam) |
 | O som · as estações | #16 · #17 |
@@ -619,8 +619,9 @@ era a penúltima — era pré-requisito da 2ᵃ.
 > a pedido de quem joga, os cordéis, sinais e bichos viraram seções do almanaque,
 > que ficou com o L, e as fichas foram para `fichas_da_colecao.gd`, que nenhuma tela
 > possui. A tela avulsa, sem tecla e mostrando um pedaço do que o almanaque mostra,
-> foi apagada. O cordel ainda não se lê no papel — o `Folheto` é da #21 — e a ficha
-> mostra a primeira linha do verso, como no 2D. O arraial (P) continua na #20.
+> foi apagada. A ficha mostra a primeira linha do verso, como no 2D, e o cordel
+> inteiro se lê no papel desde a #21 (o `Folheto`, ver abaixo). O arraial (P)
+> continua na #20.
 >
 > **Os dados de coleção vieram junto**, e são a primeira cópia de DADO do 2D:
 > `data/colecionaveis/` (cordéis, sinais, bichos). O `Colecao` lê `res://`, que
@@ -697,6 +698,19 @@ era a penúltima — era pré-requisito da 2ᵃ.
 > `tests/escolha.gd` (#18). De passagem: as telas do 2D soltam o `Relogio` ao
 > fechar, e com o `Dia` parado ninguém o prendia de novo; pausar e retomar o
 > vale agora o prendem.
+>
+> **O folheto saiu** (#21), e esse atravessou inteiro: `scripts/ui/folheto.gd` é
+> o do 2D, e `tests/folheto.gd` o confere byte a byte com o original, junto com
+> as perguntas do `testar_folheto` de lá (os dez cordéis cabem no papel). O vale
+> só acerta a camada e a escala, e o põe no dono das telas como tela que o MUNDO
+> abre — nenhuma tecla é dele: o cordel achado abre o papel, como no
+> `Mundo._pegar_cordel`, e o almanaque relê o cordel aberto quando ele é
+> escolhido de novo. Sendo tela, o Esc o guarda e a tecla de outra tela troca
+> para ela, que é o "[L] coleção" do rodapé dele. No 2D a coleção fica aberta
+> embaixo do papel; aqui só uma tela fica aberta, então o almanaque fecha e,
+> guardado o papel, reabre onde estava. O dono das telas ganhou o aviso de tela
+> que fechou sozinha (`fechou_por_conta`), porque o papel se guarda com o E
+> dentro dele, sem passar por lá.
 
 É a fase mais barata em relação ao que entrega, e a que mais precisa da regra
 do topo: **a interface do 3D não é substituída, é acrescida.** Toda tela do 2D
