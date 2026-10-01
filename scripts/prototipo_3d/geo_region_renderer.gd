@@ -450,6 +450,14 @@ func get_feature_center(feature_name: String, kind: String = "") -> Vector3:
 	return Vector3.ZERO
 
 
+## Caminho gerado entre a costa e um marco no mar, usado para alinhar o modelo do píer.
+func shore_access_route(landmark_name: String) -> PackedVector2Array:
+	for access in _shore_access_routes:
+		if String(access.get("name", "")) == landmark_name:
+			return access["points"]
+	return PackedVector2Array()
+
+
 ## Usa a projeção gerada do KML local para converter latitude/longitude em unidades Godot.
 func wgs84_to_world(latitude: float, longitude: float) -> Vector3:
 	if _projection.is_empty():
@@ -845,8 +853,11 @@ func _build_shore_access() -> void:
 		var inland := (shore - destination).normalized()
 		var route := PackedVector2Array([shore + inland * _units(6.0, 3.0), destination])
 		var width := _units(4.5, 3.0)
-		_shore_access_routes.append({"points": route, "width": width, "bounds": _points_bounds(route).grow(width * 0.5)})
-		_add_ribbon("Acesso " + String(landmark.name), route, width, 0.058, SHORE_ACCESS_COLOR, true)
+		_shore_access_routes.append({"name": String(landmark.name), "points": route, "width": width, "bounds": _points_bounds(route).grow(width * 0.5)})
+		# Pontos do rio podem ficar fora da costa no KML, mas isso nÃ£o representa
+		# um acesso construÃ­do. NÃ£o desenha a faixa ocre (nem sua colisÃ£o) no mar.
+		if String(landmark.name) != "Pier" and String(landmark.name) != "Rio":
+			_add_ribbon("Acesso " + String(landmark.name), route, width, 0.058, SHORE_ACCESS_COLOR, true)
 
 
 func _nearest_land_edge(point: Vector2) -> Vector2:

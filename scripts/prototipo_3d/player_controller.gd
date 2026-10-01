@@ -23,9 +23,9 @@ const JUMP_BUFFER_TIME := 0.16
 const JUMP_COYOTE_TIME := 0.16
 const RUN_STOP_SPEED := 0.15
 const VIGOR_MAXIMO := 100.0
-const CUSTO_CORRIDA_POR_SEGUNDO := 10.0
-const VIGOR_RECUPERACAO := 50.0
-const VIGOR_RECUPERACAO_INTERVALO := 2.0
+const CUSTO_CORRIDA_POR_SEGUNDO := 5.0
+const VIGOR_RECUPERACAO_ANDANDO := 10.0
+const VIGOR_RECUPERACAO_PARADO := 20.0
 ## Água: o jogador entra andando no raso, mais devagar conforme ela sobe; onde o fundo
 ## passa do peito (fração da altura) ele nada, com os ombros e a cabeça de fora. Entra
 ## no nado e volta a andar em profundidades diferentes, para não ficar alternando.
@@ -103,7 +103,6 @@ var _land_check := 0.0
 var _run_toggled := false
 var _ran_since_toggle := false
 var _vigor := VIGOR_MAXIMO
-var _tempo_descanso_vigor := 0.0
 var _machado_ancora: Node3D
 var _machado_pivo: Node3D
 var _machado_ancora_posicao_base := Vector3.ZERO
@@ -909,13 +908,11 @@ func gastar_vigor(quantidade: float) -> bool:
 	if _vigor + 0.001 < quantidade:
 		return false
 	_definir_vigor(_vigor - quantidade)
-	_tempo_descanso_vigor = 0.0
 	return true
 
 
 func _atualizar_vigor(delta: float, corrida_ativa: bool) -> void:
 	if corrida_ativa:
-		_tempo_descanso_vigor = 0.0
 		_definir_vigor(_vigor - CUSTO_CORRIDA_POR_SEGUNDO * delta)
 		if _vigor <= 0.0:
 			_run_toggled = false
@@ -923,16 +920,13 @@ func _atualizar_vigor(delta: float, corrida_ativa: bool) -> void:
 			_ran_since_toggle = false
 		return
 	if _vigor >= VIGOR_MAXIMO:
-		_tempo_descanso_vigor = 0.0
 		return
 	var gesticulando := animator != null and animator.has_method("gesture_ativa") and bool(animator.call("gesture_ativa"))
-	if _acao_golpe_restante > 0.0 or gesticulando or not is_on_floor() or Vector2(velocity.x, velocity.z).length_squared() > 0.04:
-		_tempo_descanso_vigor = 0.0
+	if _acao_golpe_restante > 0.0 or gesticulando or not is_on_floor():
 		return
-	_tempo_descanso_vigor += delta
-	if _tempo_descanso_vigor >= VIGOR_RECUPERACAO_INTERVALO:
-		_tempo_descanso_vigor -= VIGOR_RECUPERACAO_INTERVALO
-		_definir_vigor(_vigor + VIGOR_RECUPERACAO)
+	var andando := Vector2(velocity.x, velocity.z).length_squared() > 0.04
+	var taxa := VIGOR_RECUPERACAO_ANDANDO if andando else VIGOR_RECUPERACAO_PARADO
+	_definir_vigor(_vigor + taxa * delta)
 
 
 func _definir_vigor(valor: float) -> void:
