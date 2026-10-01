@@ -68,6 +68,11 @@ var _arvores_info	# arvores_info.gd — saúde e regeneração dos coqueiros
 ## vale já guardava antes de existir a segunda cadeia.
 var _cadeias: Dictionary = {}
 var _relogio_pausado_antes := false
+## Foi a fala longa que parou o vale? Ver `_ao_abrir_a_fala`.
+var _fala_parou_o_vale := false
+## O cordel que o folheto vai abrir, e a tela a que ele volta. Ver `ler_o_folheto`.
+var _folheto_a_ler := ""
+var _voltar_do_folheto := ""
 var painel	# painel_vale.gd — tecla J
 ## Dono único das telas: só uma fica aberta. Ver telas_do_vale.gd.
 var telas
@@ -104,7 +109,28 @@ func _enter_tree() -> void:
 	# A MOCHILA no I, como no jogo 2D e como no gênero (Palworld, Stardew,
 	# Cyberpunk usam I ou Tab). O Tab aqui já é a câmera, então fica o I — de
 	# fábrica, pela tabela de atalhos, remapeável como as outras telas (#4).
-	_bind("mv_mochila", [Atalhos.tecla("mochila")])
+	_bind("mv_mochila", [Atalhos.tecla("mochila")], true)
+	# O TECLADO DE DENTRO DA MOCHILA (#2). Ela é tela do 2D e escuta as ações
+	# do `Controles` de lá — `equipar`, `interagir`, `cancelar`, `mover_*` —,
+	# que o vale não tinha: F, E e as setas não faziam nada dentro dela, e
+	# cada tecla imprimia erro de ação inexistente. Só o mouse funcionava.
+	#
+	# E e F FIXOS, e não pela tabela de atalhos: o rodapé da mochila escreve
+	# "[E] arrumar · [F] vestir ou comer", e o arquivo é compartilhado — não se
+	# muda daqui. Com ela aberta o vale está parado, então o E e o F de fora
+	# não disputam a tecla. As setas e o WASD, como nas outras telas.
+	_bind("equipar", [KEY_F], true)
+	_bind("interagir", [KEY_E, KEY_SPACE, KEY_ENTER, KEY_KP_ENTER], true)
+	_bind("cancelar", [KEY_ESCAPE], true)
+	_bind("mover_cima", [KEY_W, KEY_UP], true)
+	_bind("mover_baixo", [KEY_S, KEY_DOWN], true)
+	_bind("mover_esquerda", [KEY_A, KEY_LEFT], true)
+	_bind("mover_direita", [KEY_D, KEY_RIGHT], true)
+	# O ZOOM SAIU DA RODA, que agora troca o item da mão como no 2D (#2). Fica
+	# no mais e no menos — as duas fileiras, e o igual junto do mais, porque
+	# em ABNT2 e US o mais mora no shift do igual — e no Ctrl+roda.
+	_bind("mv_zoom_in", [KEY_EQUAL, KEY_PLUS, KEY_KP_ADD], true)
+	_bind("mv_zoom_out", [KEY_MINUS, KEY_KP_SUBTRACT], true)
 	# O ALMANAQUE DAS PLANTAS pela tabela de atalhos, e não numa letra fixa.
 	#
 	# Ele morava no `KEY_L` escrito aqui, porque L é a coleção do 2D. Aí a
@@ -212,6 +238,23 @@ func _ready() -> void:
 		func() -> bool: return Mochila.aberta,
 		func() -> void: Mochila.abrir(),
 		func() -> void: Mochila.fechar())
+	_ajustar_as_telas_do_2d()
+	get_viewport().size_changed.connect(_ajustar_as_telas_do_2d)
+	# A FALA LONGA (#21) para o vale como uma tela, sem ser tela: ninguém a
+	# abre por tecla, é o mundo que fala. Ver `_ao_abrir_a_fala`.
+	Dialogo.abriu.connect(_ao_abrir_a_fala)
+	Dialogo.terminou.connect(_ao_calar_a_fala)
+	telas.ocupado = func() -> bool: return Dialogo.ocupado() or Amanhecer.aberto
+	# O FOLHETO (#21) é tela, mas quem o abre é o mundo: o cordel achado, ou o
+	# almanaque pedindo para reler. Nenhuma tecla é dele (`minha` diz que não);
+	# sendo tela, o Esc o guarda, e a tecla de outra tela troca para ela — é o
+	# "[L] coleção" que o rodapé dele escreve. Ver `ler_o_folheto`.
+	telas.registrar("folheto",
+		func(_e: InputEvent) -> bool: return false,
+		func() -> bool: return Folheto.aberto,
+		func() -> void: Folheto.abrir(_folheto_a_ler),
+		func() -> void: Folheto.fechar())
+	Folheto.fechou.connect(_ao_guardar_o_folheto)
 	if hud.almanaque() != null:
 		var alm: Control = hud.almanaque()
 		telas.registrar("almanaque",
@@ -219,6 +262,7 @@ func _ready() -> void:
 			func() -> bool: return alm.aberto(),
 			func() -> void: alm.abrir(),
 			func() -> void: alm.fechar())
+		alm.ler_no_papel.connect(func(id: String) -> void: ler_o_folheto(id, "almanaque"))
 	telas.registrar("painel",
 		func(e: InputEvent) -> bool: return e.physical_keycode == Atalhos.tecla("painel"),
 		func() -> bool: return painel != null and painel.aberto,
@@ -505,6 +549,7 @@ func _montar_moradores(spawn: Vector3) -> void:
 	add_child(luta)
 	luta.configurar(world, player, hud)
 	achados.configurar(world, player, hud, luta)
+	achados.achou.connect(_ao_achar)
 	# O painel da tecla J (painel_vale.gd), por cima do HUD.
 	painel = PainelVale.new()
 	painel.name = "Painel"
@@ -720,6 +765,7 @@ func _pause_valley() -> void:
 	_relogio_pausado_antes = Dia.pausado
 	Dia.pausado = true
 	get_tree().paused = true
+	_prender_o_calendario()
 
 
 ## Desfaz o `_pause_valley`, INCLUSIVE a câmera.
@@ -727,6 +773,86 @@ func _retomar_o_vale() -> void:
 	get_tree().paused = false
 	Dia.pausado = _relogio_pausado_antes
 	_camera_da_preferencia()
+	_prender_o_calendario()
+
+
+## O `Relogio` AQUI É CALENDÁRIO, e fica preso (ver `dia.gd`). As telas que
+## vêm do 2D o soltam ao fechar, porque lá ele é o dono da hora: a mochila
+## escreve `Relogio.pausado = false`. Com o `Dia` andando, o quadro seguinte o
+## prende de novo; com o `Dia` parado — o relógio pausado pelo jogador, ou a
+## mochila fechada para a fala abrir (#21) —, ninguém prenderia, e o calendário
+## andaria sozinho, que é o defeito que `tests/calendario.gd` procura.
+func _prender_o_calendario() -> void:
+	Relogio.pausado = true
+
+
+## A FALA LONGA ABRIU (#21): o vale para atrás dela como para atrás de tela.
+##
+## É o que o `Dialogo` do 2D fazia sozinho — fechar o que estiver aberto e
+## parar o relógio — trazido para cá, onde quem para o tempo é o `Dia` e quem
+## fecha tela é o dono das telas. Fechar vem primeiro: a fala que sai com menu
+## aberto ficaria atrás dele (é a razão que o 2D escreve no `_abrir` de lá).
+## O mapa também fecha, mesmo não sendo tela: a caixa no rodapé ficaria por
+## cima da vista aérea, com o mundo andando.
+func _ao_abrir_a_fala(_quem: String) -> void:
+	if _fala_parou_o_vale:
+		return
+	telas.fechar_tudo()
+	if mapa != null and mapa.aberto:
+		_toggle_map()
+	_pause_valley()
+	_fala_parou_o_vale = true
+
+
+## E CALOU. Falas encadeadas abrem na linha seguinte do mesmo `await`, então o
+## vale espera o fim do quadro antes de voltar a andar: se outra fala já abriu,
+## ele continua parado, sem soltar e prender o cursor entre uma e outra.
+func _ao_calar_a_fala() -> void:
+	_retomar_se_a_fala_acabou.call_deferred()
+
+
+func _retomar_se_a_fala_acabou() -> void:
+	if not _fala_parou_o_vale or Dialogo.ativo:
+		return
+	_fala_parou_o_vale = false
+	_retomar_o_vale()
+
+
+## O CORDEL NO PAPEL (#21): o `Folheto` do 2D, inteiro, por cima do vale.
+##
+## Achar cordel sem poder ler seria só um item a mais — é a razão que o 2D
+## escreve no `ler` de lá —, então o achado abre o papel na hora, como no
+## `Mundo._pegar_cordel`. `voltar_para` é a tela de onde o jogador veio reler
+## (o almanaque): guardado o papel, ela reabre onde ele estava, que é o que a
+## coleção do 2D faz por ficar aberta embaixo. Aqui só uma tela fica aberta.
+func ler_o_folheto(id: String, voltar_para := "") -> void:
+	if Folheto.aberto or Dialogo.ocupado():
+		return
+	_folheto_a_ler = id
+	_voltar_do_folheto = voltar_para
+	if mapa != null and mapa.aberto:
+		_toggle_map()
+	telas.abrir("folheto")
+
+
+func _ao_achar(tipo: String, id: String) -> void:
+	if tipo == "cordel":
+		ler_o_folheto(id)
+
+
+## O papel se guardou com o E ou o clique, por conta dele: o dono das telas
+## precisa saber, para o vale voltar a andar. E quem veio do almanaque volta a
+## ele — a não ser que tenha trocado de tela pela tecla, que já abriu outra.
+func _ao_guardar_o_folheto() -> void:
+	telas.fechou_por_conta("folheto")
+	_voltar_depois_do_folheto.call_deferred()
+
+
+func _voltar_depois_do_folheto() -> void:
+	var voltar := _voltar_do_folheto
+	_voltar_do_folheto = ""
+	if voltar != "" and telas.aberta() == "":
+		telas.abrir(voltar)
 
 
 ## HOME ou M: pausa o vale (e o relógio) e pergunta antes de sair.
@@ -775,6 +901,60 @@ func _formatar(meters_per_unit: float) -> String:
 func _ao_derrubar(_id: String, rende: String, quantidade: int) -> void:
 	var item: Dictionary = Catalogo.ITENS.get(rende, {})
 	hud.set_notice("%s ×%d" % [str(item.get("nome", rende)), quantidade])
+
+
+## A MOCHILA NA CAMADA E NO TAMANHO DO VALE (#2).
+##
+## Ela é tela do 2D, desenhada para os 640×360 de lá (`mochila.gd`, espaço de
+## 28 px). No vale de 1280×720 abria com metade do tamanho, na camada 15 — por
+## baixo do HUD, que é a 20, desenhava por cima dela e ficava com os cliques.
+## O arquivo é compartilhado e não se mexe nele daqui: o vale acerta a CAMADA
+## dela. Escala em volta do centro da tela, porque os filhos dela se ancoram
+## na tela inteira e o painel fica no meio. O mouse continua certo: a camada
+## leva o clique de volta à coordenada dela.
+##
+## A 90% do encaixe, e não a 100%: o painel dela mede 647 px, já passa dos
+## 640 de lá, e em 2× saía 7 px de cada lado da janela. A 1,8× cada espaço
+## fica com 50 px, ao lado dos 52 da barra de mão.
+## O quadro em que as telas do 2D são desenhadas: a janela inteira de lá.
+const QUADRO_DO_2D := Vector2(640, 360)
+const MOCHILA_FOLGA := 0.9
+## A camada das telas do vale (a do painel J); só uma abre por vez.
+const CAMADA_DAS_TELAS := 25
+## O cartão do amanhecer (#21), acima da tela preta da queda (30, `queda.gd`):
+## ele é lido NO escuro, antes de clarear — como o do 2D fica acima do véu.
+const CAMADA_DO_AMANHECER := 31
+
+
+func _ajustar_a_mochila() -> void:
+	var tela := get_viewport().get_visible_rect().size
+	var escala := minf(tela.x / QUADRO_DO_2D.x, tela.y / QUADRO_DO_2D.y) * MOCHILA_FOLGA
+	Mochila.layer = CAMADA_DAS_TELAS
+	Mochila.transform = Transform2D(0.0, Vector2(escala, escala), 0.0, tela * 0.5 * (1.0 - escala))
+
+
+## AS TELAS QUE VIERAM DO 2D, na camada e no tamanho do vale. Chamado de novo
+## quando a janela muda de tamanho.
+func _ajustar_as_telas_do_2d() -> void:
+	_ajustar_a_mochila()
+	# A fala longa (#21) fica na camada das telas: por cima do HUD, e nenhuma
+	# tela fica aberta com ela (ver `_ao_abrir_a_fala`).
+	_no_quadro_do_2d(Dialogo, CAMADA_DAS_TELAS)
+	_no_quadro_do_2d(Folheto, CAMADA_DAS_TELAS)
+	_no_quadro_do_2d(Amanhecer, CAMADA_DO_AMANHECER)
+
+
+## UMA TELA DESENHADA NO QUADRO DE 640×360 DO 2D, inteira na janela.
+##
+## Diferente da mochila: estas desenham a partir do canto do quadro (a caixa
+## de fala ancora no rodapé DELE, e não no da janela), então a escala parte do
+## canto, e a sobra da janela que não é 16:9 fica dividida dos dois lados.
+func _no_quadro_do_2d(camada: CanvasLayer, numero: int) -> void:
+	var tela := get_viewport().get_visible_rect().size
+	var escala := minf(tela.x / QUADRO_DO_2D.x, tela.y / QUADRO_DO_2D.y)
+	camada.layer = numero
+	camada.transform = Transform2D(0.0, Vector2(escala, escala), 0.0,
+		(tela - QUADRO_DO_2D * escala) * 0.5)
 
 
 ## Como `_bind`, mas com o Alt segurado — é o que move os gestos para fora dos
@@ -1027,6 +1207,19 @@ func _lendo() -> bool:
 func _exit_tree() -> void:
 	if Vida.esta_lendo == Callable(self, "_lendo"):
 		Vida.esta_lendo = Callable()
+	# UMA FALA ABERTA NÃO SOBREVIVE AO VALE (#21). O `Dialogo` é autoload e fica;
+	# quem sai no meio dela — a volta ao menu, um portão que troca de cena — não
+	# deixa a árvore parada nem a caixa esperando um E que ninguém vai dar. Os
+	# sinais saem antes, para o calar não chamar de volta um vale de saída.
+	if Dialogo.abriu.is_connected(_ao_abrir_a_fala):
+		Dialogo.abriu.disconnect(_ao_abrir_a_fala)
+	if Dialogo.terminou.is_connected(_ao_calar_a_fala):
+		Dialogo.terminou.disconnect(_ao_calar_a_fala)
+	Dialogo.calar()
+	if _fala_parou_o_vale:
+		_fala_parou_o_vale = false
+		get_tree().paused = false
+		Dia.pausado = _relogio_pausado_antes
 	# O save não fica segurando um vale que saiu da árvore. Hoje não quebraria
 	# (o Godot compara o objeto liberado igual a null, e o Salvamento pergunta
 	# `_mundo != null`), mas é essa a comparação de que ele deixa de depender.

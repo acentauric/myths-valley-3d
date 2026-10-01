@@ -72,6 +72,9 @@ const FORA_DO_SAVE := {
 ## Autoloads do 3D que não guardam partida nenhuma, com a razão.
 const SEM_PARTIDA := {
 	"Audio": "volumes e opções de som do AJUSTAR, com arquivo de configuração próprio",
+	"Amanhecer": "o cartão do dia que começa (#21): fica segundos na tela, no escuro da queda, e o que ele mostra — dia, estação, fôlego — é do `Relogio` e do `Energia`, que são salvos",
+	"Folheto": "o cordel aberto no papel (#21): tela aberta e o id que ela mostra; o que se achou mora no `Colecao`, que é salvo",
+	"Dialogo": "a caixa de fala longa (#21): o que ela tem é tela aberta e quem está falando agora. Ninguém salva no meio de uma fala — o vale está parado atrás dela —, e carregar não reabre conversa",
 	"Estilo": "o estilo visual escolhido no AJUSTAR, com arquivo de configuração próprio",
 	"Mare": "o modo da maré escolhido no AJUSTAR",
 	"Versao": "a versão do jogo, lida do historico_3d.json",
@@ -242,9 +245,9 @@ func _run() -> void:
 	var acordou := [false]
 	queda.acordou.connect(func(): acordou[0] = true)
 	vida.ferir(9999.0)
-	for i in range(600):
-		if acordou[0]:
-			break
+	# Teto pelo relógio de parede: o cartão do amanhecer (#21) é tempo de tela.
+	var ate := Time.get_ticks_msec() + 15000
+	while not acordou[0] and Time.get_ticks_msec() < ate:
 		await process_frame
 	_conferir(int(salvamento.resumo(1).get("dia", 0)) == dia_salvo + 1,
 		"depois da queda a vaga diz dia %s, e o dia novo é %d" % [str(salvamento.resumo(1).get("dia")), dia_salvo + 1])

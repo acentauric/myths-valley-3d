@@ -1,0 +1,9 @@
+{
+	"_sobre": "O rodapé da caixa de fala longa do vale (#21, scripts/prototipo_3d/dialogo_vale.gd). As palavras são as do scripts/ui/dialogo.gd do 2D, verbatim: migrar é ligar, não redigir. Os colchetes e os espaços de '[ Sim ]' são desenho e ficam no código. A tradução en/es é do Ramon; ver FALTAM_TRADUCAO em tests/idiomas.gd.",
+	"continuar": {"texto": "[E] continuar"},
+	"seguir": {"texto": "[E] seguir"},
+	"escolha": {"texto": "[A] Sim     [D] Não        escolha para responder"},
+	"sim": {"texto": "Sim"},
+	"nao": {"texto": "Não"},
+	"confirmar": {"texto": "[A/D] trocar · [E] confirmar"}
+}

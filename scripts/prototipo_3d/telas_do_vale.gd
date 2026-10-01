@@ -46,6 +46,20 @@ signal tela_mudou(nome: String, aberta: bool)
 ## Cada tela: nome, "esta tecla é minha?", "estou aberta?", abrir e fechar.
 var _telas: Array[Dictionary] = []
 
+## QUEM SEGURA O JOGADOR SEM SER TELA: a fala longa e o cartão do amanhecer
+## (#21). O vale preenche.
+##
+## Enquanto um deles estiver aberto, nenhuma tecla abre nem fecha tela: o I não
+## abre a mochila por cima da conversa, o J não interrompe o Pedro no meio da
+## frase, e nenhuma tela para o vale no meio da queda, com o cartão na tela.
+## E o Esc segue adiante sem fechar nada, porque é dela — na pergunta, Esc é
+## "Não", e quem responde é a caixa. Ela lê o teclado pelo `Input`, então a
+## tecla não precisa ser consumida aqui para chegar lá.
+var ocupado: Callable
+
+## Este nó está fechando uma tela agora? Ver `fechou_por_conta`.
+var _fechando := false
+
 
 func _init() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -74,20 +88,41 @@ func fechar_tudo() -> String:
 	for tela in _telas:
 		if bool((tela["aberta"] as Callable).call()):
 			qual = str(tela["nome"])
-			(tela["fechar"] as Callable).call()
+			_fechar(tela)
 			tela_mudou.emit(qual, false)
 	return qual
+
+
+## UMA TELA QUE FECHOU SOZINHA, sem passar por aqui.
+##
+## O folheto (#21) se guarda com o E ou o clique dentro dele, como no 2D, e só
+## ele sabe disso: sem este aviso o vale ficaria parado atrás de papel nenhum.
+## Quando é ESTE nó que fecha a tela, ela avisa igual, e o aviso é ignorado —
+## o `tela_mudou` já saiu daqui, e sair duas vezes devolveria a câmera duas.
+func fechou_por_conta(nome: String) -> void:
+	if _fechando:
+		return
+	tela_mudou.emit(nome, false)
+
+
+func _fechar(tela: Dictionary) -> void:
+	_fechando = true
+	(tela["fechar"] as Callable).call()
+	_fechando = false
 
 
 ## Abre uma tela pelo nome, fechando antes a que estiver aberta.
 ##
 ## Apertar a tecla da tela JÁ ABERTA fecha, que é o que toda tela de menu faz.
+## Com a fala aberta, não abre nada — nem pela tecla, nem pelo botão do HUD.
 func abrir(nome: String) -> void:
+	if _segurado():
+		return
 	for tela in _telas:
 		if str(tela["nome"]) != nome:
 			continue
 		if bool((tela["aberta"] as Callable).call()):
-			(tela["fechar"] as Callable).call()
+			_fechar(tela)
 			tela_mudou.emit(nome, false)
 			return
 		fechar_tudo()
@@ -99,8 +134,14 @@ func abrir(nome: String) -> void:
 		return
 
 
+func _segurado() -> bool:
+	return ocupado.is_valid() and bool(ocupado.call())
+
+
 func _input(event: InputEvent) -> void:
 	if not (event is InputEventKey and event.pressed and not event.echo):
+		return
+	if _segurado():
 		return
 
 	# O ESC FECHA A TELA ABERTA, e só isso. Sem tela aberta ele NÃO é consumido:

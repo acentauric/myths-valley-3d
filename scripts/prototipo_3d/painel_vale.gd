@@ -946,7 +946,7 @@ func _desenhar_ajustes() -> void:
 		Atalhos.letra("painel"), Atalhos.letra("mapa"), Atalhos.letra("hora")], COR_APAGADA, true)
 	_adicionar_linha("  [%s] ler / interagir, e golpe perto do bicho  ·  [%s] ginga" % [
 		Atalhos.letra("interagir"), Atalhos.letra("gingar")], COR_APAGADA, true)
-	_adicionar_linha("  [%s] observar  ·  [%s] reinicia  ·  [Tab] câmera  ·  roda do mouse: zoom" % [
+	_adicionar_linha("  [%s] observar  ·  [%s] reinicia  ·  [Tab] câmera  ·  roda: item da mão  ·  Ctrl+roda ou [+/-]: zoom" % [
 		Atalhos.letra("observar"), Atalhos.letra("reiniciar")], COR_APAGADA, true)
 	_adicionar_linha("  [%s] mochila  ·  [%s] almanaque  ·  [%s] árvore de habilidades  ·  [%s] o arraial" % [
 		Atalhos.letra("mochila"), Atalhos.letra("almanaque"), Atalhos.letra("talentos"), Atalhos.letra("arraial")], COR_APAGADA, true)

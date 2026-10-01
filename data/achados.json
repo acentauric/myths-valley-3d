@@ -1,5 +1,5 @@
 {
-	"_sobre": "O que o jogador lê ao achar cordel, sinal e carta no vale (#12). 'tem_alguma_coisa', 'anotado', 'aprendeu_ritual', 'da', 'cobra', 'um_de_cada_vez', 'sem_pacto', 'outro_dia' e 'firmado' são as falas do Mundo do 2D, verbatim. 'cordel' e 'firmar_aqui' são do vale: o cordel não abre no papel até o Folheto (#21), e o pacto se firma com o segundo E no lugar até a pergunta de Sim e Não (#21). As dicas são o rótulo da tecla. A tradução en/es é do Ramon; ver FALTAM_TRADUCAO em tests/idiomas.gd.",
+	"_sobre": "O que o jogador lê ao achar cordel, sinal e carta no vale (#12). 'tem_alguma_coisa', 'anotado', 'aprendeu_ritual', 'da', 'cobra', 'um_de_cada_vez', 'sem_pacto', 'outro_dia', 'firmar' e 'firmado' são as falas do Mundo do 2D, verbatim; a conversa do pacto e a pergunta 'firmar' vão na caixa de fala longa (#21). 'cordel' é do vale: o aviso que fica no HUD depois que o papel se guarda — o cordel achado abre no Folheto (#21). 'ler_no_papel' é a dica do almanaque para reler o cordel aberto no papel. As dicas são o rótulo da tecla. A tradução en/es é do Ramon; ver FALTAM_TRADUCAO em tests/idiomas.gd.",
 	"tem_alguma_coisa": {"texto": "Tem alguma coisa aqui."},
 	"anotado": {"texto": "Anotado no caderno de sinais. [L]"},
 	"cordel": {"texto": "Achou o cordel \"%s\". Vale %d réis. [L]"},
@@ -8,11 +8,11 @@
 	"cobra": {"texto": "O que ela cobra, todo dia que amanhecer: %s."},
 	"um_de_cada_vez": {"texto": "Um pacto de cada vez. Firmar este desfaz o que você tiver."},
 	"sem_pacto": {"texto": "Você não tem pacto nenhum firmado."},
-	"firmar_aqui": {"texto": "Aperte E de novo, aqui, para firmar o %s. Andar para longe é dizer que não."},
+	"firmar": {"texto": "Firmar o %s?"},
 	"outro_dia": {"texto": "Fica para outro dia. A carta é sua, e ela espera."},
 	"firmado": {"texto": "Pacto firmado: %s."},
 	"dica_cordel": {"texto": "Pegar o cordel"},
 	"dica_sinal": {"texto": "Olhar"},
 	"dica_carta": {"texto": "Pegar a carta"},
-	"dica_pacto": {"texto": "Firmar o pacto"}
+	"ler_no_papel": {"texto": "E de novo: ler no papel"}
 }

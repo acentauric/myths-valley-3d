@@ -16,9 +16,10 @@ extends SceneTree
 ##   3. A CARTA ESPERA O SINAL: antes de o jogador ver o sinal da Caipora, a
 ##      carta dela não está no chão. A mata do dendê é mata fechada, longe de
 ##      casa, da chegada e do caititu; a lagoa da Iara está declarada.
-##   4. O PACTO NO LUGAR DO MITO: pegar a carta diz o preço, e o segundo E ali
-##      firma — com o ganho do pacto no corpo. Quem se afasta disse que não, e
-##      a carta fica.
+##   4. O PACTO NO LUGAR DO MITO, na conversa do 2D (#21): pegar a carta abre a
+##      prosa dela na caixa de fala, depois o preço, depois a pergunta
+##      "Firmar?". Sim firma — com o ganho do pacto no corpo —; Não deixa a
+##      carta e diz que fica para outro dia. A carta de ritual não pergunta.
 ##   5. O PAINEL FIRMA E DESFAZ: a aba Cartas aparece com a primeira carta, e o
 ##      E nela firma e desfaz o pacto.
 
@@ -88,6 +89,11 @@ func _run() -> void:
 		_conferir(colecao.tem("cordeis", "peso_falso"), "o cordel pego não entrou na coleção")
 		_conferir(jogo.dinheiro == reis + int(colecao.dados("cordeis", "peso_falso").get("valor", 0)), "o cordel não pagou o troco")
 		_conferir(_no_chao(achados, "cordel", "peso_falso") == null, "o cordel pego continuou no chão")
+		# O cordel achado abre no papel (#21); guardar devolve o vale.
+		await _frames(2)
+		_conferir(root.get_node("/root/Folheto").aberto, "o cordel pego não abriu no papel")
+		vale.telas.fechar_tudo()
+		await _frames(2)
 		achados.espalhar()
 		_conferir(_no_chao(achados, "cordel", "peso_falso") == null, "espalhar de novo devolveu o cordel já achado")
 
@@ -114,28 +120,47 @@ func _run() -> void:
 	_conferir(_no_chao(achados, "carta", "olho_da_mata") != null, "depois do sinal, o olho da mata não apareceu")
 
 	# --- 4. O PACTO NO LUGAR DO MITO -------------------------------------------
+	var dialogo = root.get_node("/root/Dialogo")
 	var ritual = _no_chao(achados, "carta", "olho_da_mata")
 	_levar(player, world, ritual["ponto"])
 	await _frames(2)
 	achados.interagir()
+	await _frames(2)
 	_conferir(cartas.tem("olho_da_mata"), "o ritual pego não foi aprendido")
+	_conferir(dialogo.ativo, "a prosa do ritual não abriu na caixa de fala")
+	await _passar_as_falas(dialogo)
+	_conferir(not dialogo.ativo, "a carta de ritual terminou numa pergunta: ritual não se firma")
 	var carta = _no_chao(achados, "carta", "caipora")
 	_levar(player, world, carta["ponto"])
 	await _frames(2)
 	var esforco: float = progressao.eficiencia
 	achados.interagir()
+	await _frames(2)
 	_conferir(cartas.tem("caipora"), "a carta da Caipora pega não foi aprendida")
-	_conferir(cartas.pacto == "", "pegar a carta já firmou o pacto, sem o segundo E")
-	_conferir(not achados.oferta.is_empty(), "pegar a carta de pacto não ofereceu o pacto")
-	achados.interagir()
-	_conferir(cartas.pacto == "caipora", "o segundo E no lugar não firmou o pacto")
+	_conferir(cartas.pacto == "", "pegar a carta já firmou o pacto, sem perguntar")
+	_conferir(paused, "a conversa do pacto abriu com o vale andando atrás dela")
+	await _passar_as_falas(dialogo)
+	_conferir(dialogo.ativo and dialogo._modo == dialogo.Modo.PERGUNTA,
+		"a conversa do pacto não chegou à pergunta 'Firmar?'")
+	_conferir(str(dialogo._texto.text).contains(str(cartas.nome("caipora")).to_lower()),
+		"a pergunta não diz qual pacto se firma: '%s'" % dialogo._texto.text)
+	await _tecla(KEY_A)
+	await _tecla(KEY_E)
+	await _frames(3)
+	_conferir(cartas.pacto == "caipora", "responder Sim não firmou o pacto")
+	_conferir(not paused, "o vale ficou parado depois da conversa do pacto")
 	_conferir(progressao.eficiencia < esforco, "o pacto firmado não mexeu no esforço (%s → %s)" % [str(esforco), str(progressao.eficiencia)])
 	cartas.desfazer()
-	# Quem se afasta disse que não.
-	achados.oferta = {"id": "caipora", "ponto": carta["ponto"]}
-	_levar(player, world, carta["ponto"] + Vector3(achados.DESISTE + 2.0, 0.0, 0.0))
-	await _frames(3)
-	_conferir(achados.oferta.is_empty(), "afastar-se não desfez a oferta do pacto")
+	# NÃO deixa a carta com o jogador, e diz que fica para outro dia.
+	achados._oferecer_pacto("caipora")
+	await _frames(2)
+	await _passar_as_falas(dialogo)
+	await _tecla(KEY_D)
+	await _tecla(KEY_E)
+	await _frames(2)
+	_conferir(dialogo.ativo and dialogo._modo == dialogo.Modo.FALA,
+		"dizer Não fechou a conversa sem dizer que fica para outro dia")
+	await _passar_as_falas(dialogo)
 	_conferir(cartas.pacto == "" and cartas.tem("caipora"), "recusar o pacto levou a carta junto")
 
 	# --- 5. O PAINEL FIRMA E DESFAZ --------------------------------------------
@@ -167,6 +192,33 @@ func _levar(player, world, onde: Vector3) -> void:
 	player.velocity = Vector3.ZERO
 
 
+## Passa as falas da caixa com o E, como o jogador passa: espera a carência de
+## cada linha. Para quando a caixa fecha ou chega a uma pergunta.
+func _passar_as_falas(dialogo) -> void:
+	for i in 40:
+		await _frames(1)
+		if not dialogo.ativo or dialogo._modo == dialogo.Modo.PERGUNTA:
+			return
+		var ate := Time.get_ticks_msec() + int((dialogo.CARENCIA_DE_ABERTURA + 0.05) * 1000.0)
+		while Time.get_ticks_msec() < ate:
+			await process_frame
+		await _tecla(KEY_E)
+
+
+## Aperta e solta uma tecla pelo `Input`, que é por onde a caixa de fala lê.
+func _tecla(codigo: int) -> void:
+	var aperta := InputEventKey.new()
+	aperta.physical_keycode = codigo
+	aperta.pressed = true
+	Input.parse_input_event(aperta)
+	await _frames(2)
+	var solta := InputEventKey.new()
+	solta.physical_keycode = codigo
+	solta.pressed = false
+	Input.parse_input_event(solta)
+	await _frames(2)
+
+
 func _plano(v: Vector3) -> float:
 	return Vector2(v.x, v.z).length()
 
@@ -174,7 +226,7 @@ func _plano(v: Vector3) -> float:
 func _fechar() -> void:
 	print("")
 	if falhas == 0:
-		print("CARTAS_OK: os dez cordéis têm lugar ou razão, e os do vale estão no chão perto do lugar; pegar guarda, paga e não volta; a carta da Caipora espera o sinal na mata; o segundo E firma o pacto no lugar, afastar-se recusa sem perder a carta, e o painel firma e desfaz")
+		print("CARTAS_OK: os dez cordéis têm lugar ou razão, e os do vale estão no chão perto do lugar; pegar guarda, paga e não volta; a carta da Caipora espera o sinal na mata; a carta abre a conversa do pacto na caixa de fala, o Sim firma no lugar, o Não recusa sem perder a carta, e o painel firma e desfaz")
 	else:
 		print("cartas: %d falha(s)" % falhas)
 	quit(1 if falhas > 0 else 0)

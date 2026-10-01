@@ -17,8 +17,10 @@ extends Node
 ##   escreve a hora de acordar, e escrever a hora é o que prende o calendário
 ##   de novo. Na ordem inversa, o calendário andaria sozinho até o próximo
 ##   quadro, que é o defeito que `tests/calendario.gd` procura.
-## - A FALA VAI NO AVISO DO HUD, uma de cada vez: a caixa de fala longa do 2D
-##   ainda não chegou (#21), e o balão 3D é para cumprimento de passagem.
+## - O CARTÃO DO AMANHECER E A FALA vieram com a #21, na ordem do 2D
+##   (`Mundo._apagar`): o cartão do dia novo é lido no escuro, antes de
+##   clarear, e a fala de quem caiu sai na caixa de fala longa depois — o balão
+##   3D é para cumprimento de passagem.
 ##
 ## O que NÃO muda: a mesma trava de uma noite só (`_virando_a_noite`), o
 ## `Energia.desmaiar()` e o `Vida.dormir()` — cair é a mesma virada do desmaio
@@ -31,8 +33,6 @@ const IdiomaMenu = preload("res://scripts/prototipo_3d/idioma_menu.gd")
 const DIANTE_DA_PORTA := 2.4
 const ESCURECER := 0.9
 const CLAREAR := 1.2
-## Quanto cada fala fica no aviso antes da próxima.
-const POR_FALA := 3.2
 
 signal acordou
 
@@ -107,6 +107,16 @@ func _ao_cair() -> void:
 	# SALVA NA VIRADA, como o 2D salva ao dormir: depois do dia novo, para a
 	# partida guardada ser a da manhã e não a da noite. Sem vaga, não salva.
 	Partida.salvar()
+	# O CARTÃO DO AMANHECER, no escuro: o dia já virou, e ele diz qual é, a
+	# estação e o que está marcado. Só depois a tela clareia.
+	#
+	# E O CARTÃO PARA O VALE. O E que pula a espera não pode valer para o
+	# mundo — bater na árvore ao lado da porta, ler a lápide, abrir o mapa —, e
+	# no Godot 4 quem ouve no `_unhandled_key_input` ouve ANTES do cartão. Com a
+	# árvore parada só ouvem os nós que não param, e esses perguntam por ele.
+	get_tree().paused = true
+	await Amanhecer.mostrar(_lembretes_do_dia())
+	get_tree().paused = false
 
 	var clareia := create_tween()
 	clareia.tween_property(_preto, "modulate:a", 0.0, CLAREAR)
@@ -116,7 +126,8 @@ func _ao_cair() -> void:
 	_player.set_process_unhandled_input(true)
 	_virando_a_noite = false
 	acordou.emit()
-	await _contar_o_que_houve()
+	# Alguém diz o que houve, porque quem caiu no mato não sabe.
+	await Dialogo.falar("", _falas())
 
 
 func _levar_para_casa() -> void:
@@ -133,20 +144,28 @@ func _levar_para_casa() -> void:
 		_player._last_land = destino
 
 
-func _contar_o_que_houve() -> void:
-	for fala in _falas():
-		if not is_inside_tree():
-			return
-		_hud.set_notice(fala)
-		await get_tree().create_timer(POR_FALA).timeout
+## O QUE ESTÁ MARCADO PARA O DIA QUE COMEÇA, o mesmo do 2D
+## (`Mundo._lembretes_do_dia`): o dia da fazenda do outro lado do rio, ou a
+## festa da fé; sem nenhum dos dois, o cartão diz que não há nada.
+func _lembretes_do_dia() -> Array:
+	if Jornada.hoje():
+		return [str(IdiomaMenu.campo(_dado().get("lembrete_da_fazenda", {}), "texto"))]
+	var festa := Fe.festa_de_hoje()
+	if festa == "":
+		return []
+	return [str(Fe.festa(festa).get("aviso", ""))]
 
 
 func _falas() -> Array:
+	var falas := []
+	for entrada in _dado().get("fala", []):
+		falas.append(str(IdiomaMenu.campo(entrada, "texto")))
+	return falas
+
+
+func _dado() -> Dictionary:
 	var dado = JSON.parse_string(FileAccess.get_file_as_string(FALAS))
 	if typeof(dado) != TYPE_DICTIONARY:
 		push_warning("Queda: arquivo de falas inválido " + FALAS)
-		return []
-	var falas := []
-	for entrada in dado.get("fala", []):
-		falas.append(str(IdiomaMenu.campo(entrada, "texto")))
-	return falas
+		return {}
+	return dado

@@ -91,6 +91,21 @@ func _run() -> void:
 			"pausa": true,
 		},
 		{
+			# A FALA LONGA (#21) não é tela — é o mundo que fala —, mas para o
+			# vale e devolve a câmera do mesmo jeito.
+			"nome": "fala longa",
+			"abrir": func(): root.get_node("/root/Dialogo").falar("", ["A câmera volta como estava?"]),
+			"fechar": func(): root.get_node("/root/Dialogo")._fechar(),
+			"pausa": true,
+		},
+		{
+			# O FOLHETO (#21) é tela que o mundo abre: o cordel achado.
+			"nome": "folheto",
+			"abrir": func(): jogo.ler_o_folheto("peso_falso"),
+			"fechar": func(): jogo.telas.fechar_tudo(),
+			"pausa": true,
+		},
+		{
 			"nome": "menu (confirmação)",
 			"abrir": func(): jogo._ask_return_to_menu(),
 			# FECHA PELO HUD, e não chamando o `_on_menu_cancelled` direto.

@@ -38,12 +38,12 @@ crédito do Tripo e exigem o custo aprovado **antes** de gerar.
 | Fase 2.5 — geografia | #22 chapada e vizinhos · #23 rio, vau e lagoa · #24 mata e serra · #25 fazenda e ruínas |
 | Fase 3 — missões e enredo | **#1** (jam) · #31 capítulos 6 e 7 |
 | Fase 4 — salvar | ~~#7~~ (feita) |
-| Fase 6 — interface | **#2** mochila · ~~#3 fôlego~~ (feita) · **#4** teclas (jam) · ~~#19 painel~~ (feita) · #20 teia, ~~coleção~~ (feita), arraial · #21 fala com escolha |
+| Fase 6 — interface | ~~#2 mochila~~ (feita) · ~~#3 fôlego~~ (feita) · ~~#4 teclas~~ (feita) · ~~#19 painel~~ (feita) · #20 teia, ~~coleção~~ (feita), arraial · ~~#21 fala com escolha, folheto e amanhecer~~ (feita) |
 | Fase 7 — modelos | **#5** comidas e carta (jam) · #26 interiores · #27 roçado e trabalho · #28 bichos · #29 vila · #30 fazenda e ruínas |
 | O idioma | **#6** (jam) |
 | O som · as estações | #16 · #17 |
 | O que não migra (reescrita) | #8 plantação · #9 construções e terrenos |
-| Portões | #18 |
+| Portões | #18 (`_escolha`, `_folheto` e `_amanhecer` atravessaram com a #21) |
 | Fora deste plano | #32 conversa por IA — vem do [DECISOES_PROTOTIPO_3D.md](DECISOES_PROTOTIPO_3D.md), prioridade a confirmar |
 
 > **O board foi aberto antes do fechamento da Fase 2** (29/09, 16h; o commit
@@ -619,8 +619,9 @@ era a penúltima — era pré-requisito da 2ᵃ.
 > a pedido de quem joga, os cordéis, sinais e bichos viraram seções do almanaque,
 > que ficou com o L, e as fichas foram para `fichas_da_colecao.gd`, que nenhuma tela
 > possui. A tela avulsa, sem tecla e mostrando um pedaço do que o almanaque mostra,
-> foi apagada. O cordel ainda não se lê no papel — o `Folheto` é da #21 — e a ficha
-> mostra a primeira linha do verso, como no 2D. O arraial (P) continua na #20.
+> foi apagada. A ficha mostra a primeira linha do verso, como no 2D, e o cordel
+> inteiro se lê no papel desde a #21 (o `Folheto`, ver abaixo). O arraial (P)
+> continua na #20.
 >
 > **Os dados de coleção vieram junto**, e são a primeira cópia de DADO do 2D:
 > `data/colecionaveis/` (cordéis, sinais, bichos). O `Colecao` lê `res://`, que
@@ -668,6 +669,63 @@ era a penúltima — era pré-requisito da 2ᵃ.
 > na beira do roçado, até o modelo dela (#27). Os sons são os da tabela do 2D —
 > água no lance, o "regar" na fisgada, "pegar" no peixe —, e a tabela própria é a
 > #16.
+>
+> **A mochila abre no vale** ([#2](https://github.com/acentauric/myths-valley/issues/2)),
+> e é a segunda tela do 2D a atravessar — a primeira pela cópia compartilhada
+> do `sincronizar-compartilhado.ps1`, e não adaptada. O vale acerta o que é dele: a camada (por cima do HUD) e a
+> escala da tela de 640×360 para a janela, as ações de teclado que ela escuta
+> (`equipar`, `interagir`, `cancelar`, `mover_*`), e a roda do mouse, que passou
+> a trocar o item da mão como no 2D, com o zoom no Ctrl+roda e no +/-. A tecla
+> dela entrou na tabela de atalhos com as outras quatro telas, e W/A/S/D ficaram
+> fora da troca ([#4](https://github.com/acentauric/myths-valley/issues/4)).
+>
+> **A fala longa com Sim e Não saiu** ([#21](https://github.com/acentauric/myths-valley/issues/21)),
+> em `dialogo_vale.gd`, o autoload `Dialogo`. Entrou como **cópia adaptada,
+> declarada**, como o painel: o `dialogo.gd` do 2D chama `Telas.fechar_todas()`,
+> liga o `Relogio.pausado` — que aqui é calendário preso, e soltá-lo no fim da
+> fala o deixaria andando com o `Dia` parado — e carrega o `TemaIntro` do menu
+> para o modo de digitar nome. Veio igual: a API (`falar`, `perguntar`, `ativo`,
+> `ocupado`, `abriu`, `terminou`), a fila, as duas travas (o E que não responde
+> sem escolha feita e a carência do martelo) e o desenho de 640×360, que o vale
+> escala. Ficou de fora o `pedir_texto`. Quem fecha a tela aberta e para o vale
+> e o `Dia` é o vale, ouvindo `abriu` e `terminou`; com a caixa aberta, o dono
+> das telas não abre nem fecha tela e a barra de mão não ouve o E. **Volta a
+> ser um arquivo só** quando o 2D trocar a chamada ao `Telas` e a pausa do
+> `Relogio` por quem ouve os dois sinais — a porta que a mochila já usa
+> (`alguem_fala`, `abrir_documento`). A primeira pergunta do vale é a do pacto:
+> a carta abre a prosa na caixa, depois o preço e o "Firmar?", e o segundo E
+> provisório da #12 saiu. O `testar_escolha` do 2D atravessou junto, como
+> `tests/escolha.gd` (#18). De passagem: as telas do 2D soltam o `Relogio` ao
+> fechar, e com o `Dia` parado ninguém o prendia de novo; pausar e retomar o
+> vale agora o prendem.
+>
+> **O folheto saiu** (#21), e esse atravessou inteiro: `scripts/ui/folheto.gd` é
+> o do 2D, e `tests/folheto.gd` o confere byte a byte com o original, junto com
+> as perguntas do `testar_folheto` de lá (os dez cordéis cabem no papel). O vale
+> só acerta a camada e a escala, e o põe no dono das telas como tela que o MUNDO
+> abre — nenhuma tecla é dele: o cordel achado abre o papel, como no
+> `Mundo._pegar_cordel`, e o almanaque relê o cordel aberto quando ele é
+> escolhido de novo. Sendo tela, o Esc o guarda e a tecla de outra tela troca
+> para ela, que é o "[L] coleção" do rodapé dele. No 2D a coleção fica aberta
+> embaixo do papel; aqui só uma tela fica aberta, então o almanaque fecha e,
+> guardado o papel, reabre onde estava. O dono das telas ganhou o aviso de tela
+> que fechou sozinha (`fechou_por_conta`), porque o papel se guarda com o E
+> dentro dele, sem passar por lá.
+>
+> **O amanhecer saiu** (#21), inteiro também: `scripts/ui/amanhecer.gd` é o do
+> 2D, conferido byte a byte por `tests/amanhecer.gd`. Entra onde o vale vira o
+> dia, que é a queda: o cartão aparece no escuro, acima da tela preta (como no 2D
+> fica acima do véu), com o dia novo já virado e os lembretes do 2D — o dia da
+> fazenda ou a festa da fé —, e só depois a tela clareia. A fala de quem caiu
+> saiu do aviso do HUD para a caixa de fala, como no `Mundo._apagar`. Ao montar
+> isso apareceu uma armadilha do Godot 4 que vale para toda tela do 2D: o
+> `_unhandled_key_input` vem ANTES do `_unhandled_input`. O cartão e o papel
+> ouvem no segundo; o vale (o Esc do menu) e a barra de mão (o E que come)
+> ouvem no primeiro. Por isso o cartão para o vale enquanto está na tela (com o
+> vale andando, o E que pula a espera batia na árvore ao lado da porta), e a
+> barra não come com a fala, o papel ou o cartão abertos. O vale também cala a
+> fala aberta ao sair da árvore, porque o `Dialogo` é autoload e ficaria
+> esperando um E.
 
 É a fase mais barata em relação ao que entrega, e a que mais precisa da regra
 do topo: **a interface do 3D não é substituída, é acrescida.** Toda tela do 2D

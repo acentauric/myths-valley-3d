@@ -527,10 +527,24 @@ func _unhandled_input(event: InputEvent) -> void:
 		elif Input.mouse_mode == Input.MOUSE_MODE_VISIBLE and event.button_index == MOUSE_BUTTON_RIGHT:
 			_pending_walk_click = event.position
 			_pending_walk_run = event.double_click
-		elif event.button_index == MOUSE_BUTTON_WHEEL_UP:
-			_distance = maxf(1.6, _distance - 0.35)
-		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
-			_distance = minf(12.0, _distance + 0.35)
+		elif event.button_index == MOUSE_BUTTON_WHEEL_UP or event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
+			# A RODA TROCA O ITEM DA MÃO, como no 2D (#2): é o gesto que se faz o
+			# tempo todo no meio do trabalho. O zoom ficou no Ctrl+roda e no
+			# mais e menos (`mv_zoom_in`/`mv_zoom_out`). Para baixo é o espaço
+			# seguinte, como lá. Com mapa ou tela aberta este nó não ouve nada,
+			# então a roda de lá continua sendo de lá.
+			var para_cima: bool = event.button_index == MOUSE_BUTTON_WHEEL_UP
+			if event.ctrl_pressed:
+				_aproximar_a_camera(para_cima)
+			else:
+				Inventario.selecionar(Inventario.anterior_da_mao() if para_cima else Inventario.proximo_da_mao())
+				get_viewport().set_input_as_handled()
+		_apply_camera()
+	if event.is_action_pressed("mv_zoom_in", true):
+		_aproximar_a_camera(true)
+		_apply_camera()
+	elif event.is_action_pressed("mv_zoom_out", true):
+		_aproximar_a_camera(false)
 		_apply_camera()
 	if event.is_action_pressed("mv_reset"):
 		reset_position()
@@ -549,6 +563,11 @@ func _unhandled_input(event: InputEvent) -> void:
 				if not label.is_empty():
 					animation_requested.emit(label)
 				break
+
+## Um passo de zoom: perto é para cima na roda, e o mais no teclado.
+func _aproximar_a_camera(perto: bool) -> void:
+	_distance = maxf(1.6, _distance - 0.35) if perto else minf(12.0, _distance + 0.35)
+
 
 ## PERDER O FOCO SOLTA O MOUSE, MAS NÃO TROCA O MODO.
 ##
