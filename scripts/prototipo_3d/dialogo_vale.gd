@@ -146,6 +146,16 @@ func perguntar(nome: String, pergunta: String) -> bool:
 	return _escolheu and _escolha
 
 
+## Fecha a caixa sem resposta — a pergunta vale Não — e cala também quem
+## esperava a vez. É para quem sai do vale no meio da conversa (a volta ao menu,
+## um portão que troca de cena): ninguém vai dar o E que ela espera. Não há
+## isto no 2D, onde a caixa e o mundo vivem e morrem juntos.
+func calar() -> void:
+	while ativo:
+		_escolha = false
+		_fechar()
+
+
 func _abrir(nome: String, modo: int) -> void:
 	ativo = true
 	_modo = modo

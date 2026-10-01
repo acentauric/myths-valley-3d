@@ -208,9 +208,12 @@ func _unhandled_key_input(event: InputEvent) -> void:
 	#
 	# O que ficou aqui é o que é da barra: as dez teclas da mão.
 	#
-	# COM A FALA ABERTA A TECLA É DELA (#21). Esta barra ouve com o vale
-	# parado, e o E que passa a linha comeria o que está na mão.
-	if Mochila.aberta or Dialogo.ocupado():
+	# COM A FALA, O PAPEL OU O CARTÃO DO AMANHECER NA TELA, A TECLA É DELES
+	# (#21). Esta barra ouve com o vale parado, e ouve ANTES deles — no Godot 4
+	# o `_unhandled_key_input` vem antes do `_unhandled_input`, onde o papel e o
+	# cartão ouvem: o E que passa a linha, guarda o papel ou pula o cartão
+	# comeria o que está na mão.
+	if Mochila.aberta or Dialogo.ocupado() or Folheto.aberto or Amanhecer.aberto:
 		return
 
 	# Alt segurado é gesto do personagem, não barra de mão.

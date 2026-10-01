@@ -244,7 +244,7 @@ func _ready() -> void:
 	# abre por tecla, é o mundo que fala. Ver `_ao_abrir_a_fala`.
 	Dialogo.abriu.connect(_ao_abrir_a_fala)
 	Dialogo.terminou.connect(_ao_calar_a_fala)
-	telas.ocupado = func() -> bool: return Dialogo.ocupado()
+	telas.ocupado = func() -> bool: return Dialogo.ocupado() or Amanhecer.aberto
 	# O FOLHETO (#21) é tela, mas quem o abre é o mundo: o cordel achado, ou o
 	# almanaque pedindo para reler. Nenhuma tecla é dele (`minha` diz que não);
 	# sendo tela, o Esc o guarda, e a tecla de outra tela troca para ela — é o
@@ -921,6 +921,9 @@ const QUADRO_DO_2D := Vector2(640, 360)
 const MOCHILA_FOLGA := 0.9
 ## A camada das telas do vale (a do painel J); só uma abre por vez.
 const CAMADA_DAS_TELAS := 25
+## O cartão do amanhecer (#21), acima da tela preta da queda (30, `queda.gd`):
+## ele é lido NO escuro, antes de clarear — como o do 2D fica acima do véu.
+const CAMADA_DO_AMANHECER := 31
 
 
 func _ajustar_a_mochila() -> void:
@@ -938,6 +941,7 @@ func _ajustar_as_telas_do_2d() -> void:
 	# tela fica aberta com ela (ver `_ao_abrir_a_fala`).
 	_no_quadro_do_2d(Dialogo, CAMADA_DAS_TELAS)
 	_no_quadro_do_2d(Folheto, CAMADA_DAS_TELAS)
+	_no_quadro_do_2d(Amanhecer, CAMADA_DO_AMANHECER)
 
 
 ## UMA TELA DESENHADA NO QUADRO DE 640×360 DO 2D, inteira na janela.
@@ -1199,6 +1203,19 @@ func _lendo() -> bool:
 func _exit_tree() -> void:
 	if Vida.esta_lendo == Callable(self, "_lendo"):
 		Vida.esta_lendo = Callable()
+	# UMA FALA ABERTA NÃO SOBREVIVE AO VALE (#21). O `Dialogo` é autoload e fica;
+	# quem sai no meio dela — a volta ao menu, um portão que troca de cena — não
+	# deixa a árvore parada nem a caixa esperando um E que ninguém vai dar. Os
+	# sinais saem antes, para o calar não chamar de volta um vale de saída.
+	if Dialogo.abriu.is_connected(_ao_abrir_a_fala):
+		Dialogo.abriu.disconnect(_ao_abrir_a_fala)
+	if Dialogo.terminou.is_connected(_ao_calar_a_fala):
+		Dialogo.terminou.disconnect(_ao_calar_a_fala)
+	Dialogo.calar()
+	if _fala_parou_o_vale:
+		_fala_parou_o_vale = false
+		get_tree().paused = false
+		Dia.pausado = _relogio_pausado_antes
 	# O save não fica segurando um vale que saiu da árvore. Hoje não quebraria
 	# (o Godot compara o objeto liberado igual a null, e o Salvamento pergunta
 	# `_mundo != null`), mas é essa a comparação de que ele deixa de depender.

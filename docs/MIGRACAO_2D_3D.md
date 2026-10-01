@@ -38,12 +38,12 @@ crédito do Tripo e exigem o custo aprovado **antes** de gerar.
 | Fase 2.5 — geografia | #22 chapada e vizinhos · #23 rio, vau e lagoa · #24 mata e serra · #25 fazenda e ruínas |
 | Fase 3 — missões e enredo | **#1** (jam) · #31 capítulos 6 e 7 |
 | Fase 4 — salvar | ~~#7~~ (feita) |
-| Fase 6 — interface | ~~#2 mochila~~ (feita) · ~~#3 fôlego~~ (feita) · ~~#4 teclas~~ (feita) · ~~#19 painel~~ (feita) · #20 teia, ~~coleção~~ (feita), arraial · #21 fala com escolha (a caixa, o pacto e o folheto saíram; o amanhecer segue) |
+| Fase 6 — interface | ~~#2 mochila~~ (feita) · ~~#3 fôlego~~ (feita) · ~~#4 teclas~~ (feita) · ~~#19 painel~~ (feita) · #20 teia, ~~coleção~~ (feita), arraial · ~~#21 fala com escolha, folheto e amanhecer~~ (feita) |
 | Fase 7 — modelos | **#5** comidas e carta (jam) · #26 interiores · #27 roçado e trabalho · #28 bichos · #29 vila · #30 fazenda e ruínas |
 | O idioma | **#6** (jam) |
 | O som · as estações | #16 · #17 |
 | O que não migra (reescrita) | #8 plantação · #9 construções e terrenos |
-| Portões | #18 |
+| Portões | #18 (`_escolha`, `_folheto` e `_amanhecer` atravessaram com a #21) |
 | Fora deste plano | #32 conversa por IA — vem do [DECISOES_PROTOTIPO_3D.md](DECISOES_PROTOTIPO_3D.md), prioridade a confirmar |
 
 > **O board foi aberto antes do fechamento da Fase 2** (29/09, 16h; o commit
@@ -711,6 +711,21 @@ era a penúltima — era pré-requisito da 2ᵃ.
 > guardado o papel, reabre onde estava. O dono das telas ganhou o aviso de tela
 > que fechou sozinha (`fechou_por_conta`), porque o papel se guarda com o E
 > dentro dele, sem passar por lá.
+>
+> **O amanhecer saiu** (#21), inteiro também: `scripts/ui/amanhecer.gd` é o do
+> 2D, conferido byte a byte por `tests/amanhecer.gd`. Entra onde o vale vira o
+> dia, que é a queda: o cartão aparece no escuro, acima da tela preta (como no 2D
+> fica acima do véu), com o dia novo já virado e os lembretes do 2D — o dia da
+> fazenda ou a festa da fé —, e só depois a tela clareia. A fala de quem caiu
+> saiu do aviso do HUD para a caixa de fala, como no `Mundo._apagar`. Ao montar
+> isso apareceu uma armadilha do Godot 4 que vale para toda tela do 2D: o
+> `_unhandled_key_input` vem ANTES do `_unhandled_input`. O cartão e o papel
+> ouvem no segundo; o vale (o Esc do menu) e a barra de mão (o E que come)
+> ouvem no primeiro. Por isso o cartão para o vale enquanto está na tela (com o
+> vale andando, o E que pula a espera batia na árvore ao lado da porta), e a
+> barra não come com a fala, o papel ou o cartão abertos. O vale também cala a
+> fala aberta ao sair da árvore, porque o `Dialogo` é autoload e ficaria
+> esperando um E.
 
 É a fase mais barata em relação ao que entrega, e a que mais precisa da regra
 do topo: **a interface do 3D não é substituída, é acrescida.** Toda tela do 2D

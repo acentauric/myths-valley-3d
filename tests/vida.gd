@@ -101,9 +101,10 @@ func _run() -> void:
 	# --- 5. na mesma noite, o aviso de novo ---
 	await _frames(3)
 	vida.caiu.emit()
-	for i in range(600):
-		if acordou[0]:
-			break
+	# Teto pelo relógio de parede: escurecer, o cartão do amanhecer (#21) e
+	# clarear são tempo de tela, e quadro sem janela passa mais rápido que isso.
+	var ate := Time.get_ticks_msec() + 15000
+	while not acordou[0] and Time.get_ticks_msec() < ate:
 		await process_frame
 	_conferir(acordou[0], "a queda não terminou: o jogador ficou no escuro")
 	_conferir(player.global_position.distance_to(casa) < 1.5,

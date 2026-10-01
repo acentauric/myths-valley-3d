@@ -82,6 +82,12 @@ func _run() -> void:
 			cordel = achado
 	_conferir(cordel != null, "o cordel '%s' não está no chão para ser achado" % CORDEL)
 	if cordel != null:
+		# Uma banana na mão, e fome: o E que guarda o papel não pode comê-la.
+		var inventario = root.get_node("/root/Inventario")
+		inventario.adicionar("banana", 2)
+		inventario.selecionar(_espaco_de(inventario, "banana"))
+		root.get_node("/root/Energia").atual = 5.0
+		var bananas: int = inventario.quantidade("banana")
 		vale.player.global_position = cordel["ponto"] + Vector3(0.6, 0.0, 0.0)
 		await _frames(3)
 		_conferir(achados.interagir(), "perto do cordel, o E não pegou nada")
@@ -92,6 +98,7 @@ func _run() -> void:
 		await _tecla(KEY_E)
 		await _frames(3)
 		_conferir(not folheto.aberto, "o E não guardou o papel")
+		_conferir(inventario.quantidade("banana") == bananas, "o E que guardou o papel comeu a banana da mão")
 		_conferir(not paused, "o papel guardado deixou o vale parado")
 		_conferir(not dia.pausado, "o papel guardado deixou o relógio parado")
 		_conferir(relogio.pausado, "o papel guardado soltou o calendário: ele anda sozinho, fora do Dia")
@@ -171,6 +178,13 @@ func _run() -> void:
 		await _frames(3)
 
 	_fechar()
+
+
+func _espaco_de(inventario, id: String) -> int:
+	for i in inventario.ESPACOS_MAO:
+		if str(inventario.espacos[i].get("id", "")) == id:
+			return i
+	return 0
 
 
 func _tecla(codigo: int) -> void:

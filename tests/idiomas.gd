@@ -71,7 +71,7 @@ const FALTAM_TRADUCAO := {
 	"res://data/dialogo.json":
 		"o rodapé da caixa de fala longa (#21): continuar, seguir e as portas do Sim e do Não, verbatim do dialogo.gd do 2D. Os colchetes ficam no código, mas a letra da tecla está no texto ('[A] Sim'), e o A e o D são posição no teclado, não inicial de palavra: decidir isso em cada língua é com o Ramon. TRADUÇÃO COM O RAMON",
 	"res://data/queda.json":
-		"as três falas de quem cai e acorda em casa, verbatim do Mundo._ao_cair do 2D. Curtas, mas no registro da roça ('o que faltou foi juízo'). TRADUÇÃO COM O RAMON",
+		"as três falas de quem cai e acorda em casa, verbatim do Mundo._ao_cair do 2D, e o lembrete do dia da fazenda no cartão do amanhecer. Curtas, mas no registro da roça ('o que faltou foi juízo'). TRADUÇÃO COM O RAMON",
 }
 
 const SUFIXOS := ["_en", "_es"]

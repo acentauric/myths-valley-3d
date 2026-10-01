@@ -25,6 +25,14 @@ atualize esse arquivo e este documento juntos.
   por cima do vale; E, Esc ou um clique o guardam, e a tecla de outra tela troca para ela.
   No almanaque, escolher de novo o cordel aberto o relê no papel, e guardar volta ao
   almanaque onde ele estava (`scripts/ui/folheto.gd`, idêntico ao do 2D; `tests/folheto.gd`).
+- **O amanhecer** (#21, fecha a issue). Quem cai vê no escuro o cartão do dia novo, o do
+  2D: dia, estação, fôlego e o que está marcado — o dia da fazenda ou a festa da fé —, e
+  o E pula a espera. Ao clarear, a fala de quem caiu vem na caixa de fala, e não mais no
+  aviso do HUD (`scripts/ui/amanhecer.gd`, idêntico ao do 2D; `tests/amanhecer.gd`). De
+  passagem: com o vale andando atrás do cartão, o Esc abria o menu e o E que pula a
+  espera batia na árvore ao lado da porta; agora o cartão para o vale, como no 2D. E o E
+  que guarda o papel comia o que estava na mão — no Godot 4 a barra ouve a tecla antes
+  dessas telas.
 - **Mochila no vale** (#2). A tela do 2D abre no I por cima do HUD e no tamanho da
   janela, com o teclado de dentro dela funcionando: setas ou WASD escolhem, F veste ou
   come, E arruma. A roda do mouse troca o item da mão, como no 2D; o zoom foi para

@@ -23,6 +23,8 @@ extends SceneTree
 ##      carência de abertura, nem a seguinte antes do respiro entre linhas.
 ##   7. O BALÃO CONTINUA para a fala de passagem: mostrar o balão de um
 ##      morador não abre a caixa nem para o vale.
+##   8. SAIR DO VALE NO MEIO DA FALA a cala, e a árvore não fica parada: o
+##      `Dialogo` é autoload e sobreviveria ao vale esperando um E.
 
 var falhas := 0
 var dialogo
@@ -199,6 +201,20 @@ func _run() -> void:
 		_conferir(not dialogo.ativo, "a fala de passagem abriu a caixa de fala longa")
 		_conferir(not paused, "a fala de passagem parou o vale")
 
+	# --- 8. SAIR DO VALE NO MEIO DA FALA ---------------------------------------
+	dialogo.falar("", ["Uma fala que fica pela metade.", "E outra."])
+	dialogo.falar("", ["Uma na fila."])
+	await _frames(3)
+	_conferir(dialogo.ativo and paused, "não consegui abrir a fala antes de sair do vale")
+	var vazio := PackedScene.new()
+	var no := Node.new()
+	vazio.pack(no)
+	no.free()
+	change_scene_to_packed(vazio)
+	await _frames(4)
+	_conferir(not dialogo.ativo, "o vale saiu e a fala continuou aberta, esperando um E")
+	_conferir(not paused, "o vale saiu no meio da fala e deixou a árvore parada")
+
 	_fechar()
 
 
@@ -231,7 +247,7 @@ func _fechar() -> void:
 		dialogo._fechar()
 	print("")
 	if falhas == 0:
-		print("ESCOLHA_OK: a caixa de fala fica por cima do HUD, inteira na janela e no tamanho do vale, para o vale e o relógio como uma tela e fecha a que estava aberta sem soltar o calendário, segura o teclado (I, Esc, E da mão, números, andar), enfileira as falas sem soltar o vale entre elas, a pergunta nasce sem lado e responde Sim, Não e Esc, a trava do martelo segura o E, e o balão continua para a fala de passagem")
+		print("ESCOLHA_OK: a caixa de fala fica por cima do HUD, inteira na janela e no tamanho do vale, para o vale e o relógio como uma tela e fecha a que estava aberta sem soltar o calendário, segura o teclado (I, Esc, E da mão, números, andar), enfileira as falas sem soltar o vale entre elas, a pergunta nasce sem lado e responde Sim, Não e Esc, a trava do martelo segura o E, o balão continua para a fala de passagem, e sair do vale no meio da fala a cala sem deixar a árvore parada")
 	else:
 		print("escolha: %d falha(s)" % falhas)
 	quit(1 if falhas > 0 else 0)

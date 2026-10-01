@@ -46,10 +46,12 @@ signal tela_mudou(nome: String, aberta: bool)
 ## Cada tela: nome, "esta tecla é minha?", "estou aberta?", abrir e fechar.
 var _telas: Array[Dictionary] = []
 
-## QUEM SEGURA O JOGADOR SEM SER TELA: a fala longa (#21). O vale preenche.
+## QUEM SEGURA O JOGADOR SEM SER TELA: a fala longa e o cartão do amanhecer
+## (#21). O vale preenche.
 ##
-## Enquanto ela estiver aberta, nenhuma tecla abre nem fecha tela: o I não abre
-## a mochila por cima da conversa e o J não interrompe o Pedro no meio da frase.
+## Enquanto um deles estiver aberto, nenhuma tecla abre nem fecha tela: o I não
+## abre a mochila por cima da conversa, o J não interrompe o Pedro no meio da
+## frase, e nenhuma tela para o vale no meio da queda, com o cartão na tela.
 ## E o Esc segue adiante sem fechar nada, porque é dela — na pergunta, Esc é
 ## "Não", e quem responde é a caixa. Ela lê o teclado pelo `Input`, então a
 ## tecla não precisa ser consumida aqui para chegar lá.
