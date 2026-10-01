@@ -292,6 +292,43 @@ Isso responde à objeção do próprio plano — regra copiada é regra sem port
 dando-lhe o portão. O critério para um autoload entrar na lista: não citar
 tipo 2D **e** não depender de outro autoload que ainda não atravessou.
 
+#### A DÍVIDA ABERTA: quatro arquivos bifurcaram (01/10/2026)
+
+**Não rode o `sincronizar-compartilhado.ps1` sem decidir isto primeiro.** Ele
+copia 2D → 3D, e hoje isso APAGARIA trabalho que só existe no 3D.
+
+O commit `c9fa5ed` fez do machado um item de encaixe de mão, e a regra nasceu no
+protótipo, não no 2D. Com ela vieram a reserva da mochila (ferramenta de encaixe
+não ocupa espaço de mão), o arrasto para o encaixe e o `e_equipamento` que aceita
+ferramenta. Quatro espelhos divergiram do dono:
+
+| arquivo | linhas de diferença |
+| --- | --- |
+| `catalogo.gd` | 1 (`"encaixe": "maos"` no machado) |
+| `inventario.gd` | 32 (reserva, `mover_ferramentas_para_reserva`) |
+| `equipamento.gd` | 9 (`e_equipamento` aceita ferramenta de mão) |
+| `mochila.gd` | 3 (arrasto para o encaixe) |
+
+O `testar_compartilhado` do 2D **reprova os quatro**, e a mensagem dele manda
+rodar o sincronizador — conselho certo pela regra antiga e destrutivo agora.
+Medido em 01/10/2026: `compartilhado: 4 falha(s)`.
+
+São duas saídas, e a escolha é do autor:
+
+1. **Promover a regra ao 2D.** O 2D tem `scripts/autoload/equipamento.gd` próprio
+   e lê `encaixe`, então o machado passaria a ser item de encaixe lá também — é
+   mudança de comportamento no jogo que já roda, não só de arquivo.
+2. **Declarar os quatro bifurcados** e tirá-los da lista do sincronizador e do
+   portão, assumindo que a mochila do vale é outra. Perde-se o portão que impede
+   as duas versões de andarem sozinhas, e é justamente o que ele existe para
+   impedir.
+
+Enquanto não se decide, o conserto de defeito que vale para os dois lados entra
+nos dois à mão, para a bifurcação não crescer. Foi o que se fez com
+`Inventario.quantidade("")`, que matava em qualquer espaço vazio: o mesmo
+conserto, idêntico, nas duas cópias — a diferença continuou em 32 linhas.
+
+
 ### O mapa de dependência, medido
 
 A ordem da tabela acima foi escrita de cabeça. Medindo arquivo a arquivo, ela
@@ -429,6 +466,59 @@ lugar é o que o jogador vê e o passo é texto.
 > que é exatamente o que ela existe para evitar. **Anotação de tipo é
 > acoplamento tão real quanto chamada de função, e não aparece em busca
 > nenhuma por nome.**
+
+> **ONDE ISTO ESTÁ EM 01/10/2026.** O trecho acima descreve o vale de setembro,
+> quando a missão era uma constante dentro do `guia_pedro.gd` e lia o `Missoes`
+> do 2D. Mudou duas vezes desde então.
+>
+> **O 3D tem mecanismo próprio de missão**, por decisão do autor: o
+> `CadernoDoVale` (autoload novo), e não o checklist do `Missoes`. A razão é de
+> projeto, e está escrita no `caderno_do_vale.gd` — missão nova aqui pode ter
+> padrão, formato e ordem diferentes do 2D, e o 2D é referência, não dono. O que
+> se perdeu de propósito foi a CHECKLIST: missão do vale tem UMA linha de
+> andamento, escrita por quem conduz ("Juntar lenha: 1 de 2").
+>
+> **A fila virou peça reusável**: `CadeiaDeMissoes` (`scripts/prototipo_3d/`),
+> pendurada em cada morador pelo `_pendurar_cadeia` do `Prototype`, lendo um
+> `data/missoes_<dono>.json`. Quatro tipos de meta, e cada um nasceu de uma
+> missão do 2D que não caberia nos anteriores:
+>
+> | meta | o que mede | de onde veio |
+> | --- | --- | --- |
+> | `juntar` | item na mochila | a lenha do tutorial |
+> | `derrubar` | pé cortado no mundo | o capim do Damião |
+> | `levar` | encontro COM carga, com conta por item | o pirão da Filó; as seis canas da Candinha; as cinco cordas e três tábuas do Tonho |
+> | `falar` | encontro sem carga | "fale com o Cosme" |
+>
+> **Seis cadeias atravessaram**, com portão próprio cada: `missoes_guia` (o
+> passeio do Pedro), `missoes_coveiro` (3 passos), `missoes_filo` (2),
+> `missoes_zefa` (4), `missoes_tonho` (5) e `missoes_candinha` (2). O
+> `tests/ferramentas.gd` varre os seis arquivos e cobra que **toda missão seja
+> cumprível**: meta de tipo que a cadeia sabe fazer, material que sai de alvo
+> posto ou da bancada com receita nascida sabida, e morador procurado que mora
+> aqui. Missão nova entra nessa conta sozinha.
+>
+> **O que falta, e por quê:**
+>
+> - **A cadeia da fé** (7 passos, `fe_zefa` a `fe_escolher`) pede o `terreiro` e
+>   a `gameleira` como lugares, e os dois estão no `FALTAM_NO_VALE` do `Lugares`.
+>   Esta espera a Fase 2.5 de verdade — não é mecanismo, é geografia.
+> - **Recompensa**: a `CadeiaDeMissoes` não tem campo para ela. O 2D paga 2
+>   peixes assados pela dívida do Tonho, 2 pirões e 2 cocadas pela terra, 3
+>   garapas pela cana; os números estão anotados em cada `missoes_*.json` e em
+>   `arraial.json` (`recompensas`), esperando o campo.
+> - **Tradução**: cada `missoes_*.json` declara `"traducao": "pendente"`. É do
+>   Ramon, como `pedro.json` e `aldeoes.json`.
+> - **O resto do `arraial.json`** é sistema que o vale já tem: obras
+>   (`canteiro_*`, `mirante_*`), luta (`armas_*`, `capoeira_*`, `meta_*`) e a
+>   caderneta do arraial, que virou a teia do P.
+>
+> **Uma armadilha para quem escrever a próxima cadeia:** passo cujo `lugar` não
+> resolve o `correr` PULA EM SILÊNCIO — de propósito, para o vale a meio não
+> travar numa das âncoras que faltam. A consequência é que um erro de digitação
+> não quebra nada: só apaga o meio da missão, e ninguém fica sabendo. Aconteceu
+> ao escrever a rede do Tonho, que apontava "oficina" (ausente); o
+> `tests/cadeia_do_tonho.gd` pergunta ao `Lugares` antes de jogar por isso.
 
 
 Depois da Fase 1, o sistema de missões atravessa inteiro: `Missoes` (576
