@@ -698,14 +698,9 @@ func _construcao(chave: String, origin: Vector3, yaw: float, procedural: Callabl
 			var piso_size := Vector3(limites.size.x + 1.6, 0.16, limites.size.z + 1.6)
 			var piso_position := placed_origin + Vector3(0, piso + 0.08, 0)
 			if chave == "pier":
-				# Reaproveita a pegada do piso antigo: tabuado visivel e colisao ficam iguais.
-				var pier_floor := BoxShape3D.new()
-				pier_floor.size = piso_size
-				_body(pier_floor, piso_position, "PierPisoColisao", yaw)
+				# O modelo Tripo tem o próprio tabuado e recebe colisão pela malha.
 				var pier_deck_top := piso_position.y + piso_size.y * 0.5
 				ancoras["PierPiso"] = Vector3(placed_origin.x, pier_deck_top, placed_origin.z)
-				ancoras["PierDirecao"] = Vector3(sin(yaw), 0.0, cos(yaw))
-				_pier_deck(piso_size, piso_position, yaw)
 			else:
 				# Terreiro de chão batido drapeado no próprio terreno (acompanha o declive):
 				# uma caixa plana ficava flutuando do lado baixo do lote.
@@ -1229,17 +1224,33 @@ func _build_landmark_details() -> void:
 	_construcao("venda", ancoras["Venda do Bar"], 0.0, func(at: Vector3): _house(at, Color("c6a16d"), Color("8b523b")), 1.0, "Venda do Bar")
 	_construcao("casa_pasto", ancoras["Restaurante"], 0.0, func(at: Vector3): _house(at, Color("cdbb92"), Color("97563f")), 1.0, "Restaurante")
 	var pier: Vector3 = _region.get_feature_center("Pier", "poi")
-	ancoras["Pier"] = pier
-	var pier_dir: Vector3 = (pier - _region.get_feature_center("Praça", "poi")).normalized()
-	# O modelo do Tripo é centrado; empurra-o mar adentro para começar na areia.
-	var pier_origin: Vector3 = pier + pier_dir * 4.0 if estilo_tripo() else pier
+	var pier_origin := pier
+	var pier_yaw := 0.0
+	var pier_direction := Vector3.FORWARD
+	if estilo_tripo():
+		var acesso_pier: PackedVector2Array = _region.shore_access_route("Pier")
+		if acesso_pier.size() >= 2:
+			# Alinha o modelo ao acesso e leva a maior parte dele para dentro d'água.
+			var eixo := (acesso_pier[acesso_pier.size() - 1] - acesso_pier[0]).normalized()
+			var centro := (acesso_pier[0] + acesso_pier[acesso_pier.size() - 1]) * 0.5 + eixo * 5.0
+			pier_origin = Vector3(centro.x, pier.y, centro.y)
+			pier_direction = Vector3(eixo.x, 0.0, eixo.y)
+			pier_yaw = atan2(eixo.x, eixo.y)
+		else:
+			pier_direction = (pier - _region.get_feature_center("Praça", "poi")).normalized()
+			pier_origin = pier + pier_direction * 9.0
+			pier_yaw = atan2(pier_direction.x, pier_direction.z)
+		pier_yaw += PI
+	else:
+		pier_direction = Vector3(sin(pier_yaw), 0.0, cos(pier_yaw))
+	ancoras["Pier"] = pier_origin
 	var pier_base := ground_position(pier_origin, maxf(pier_origin.y - ground_height_at(pier_origin), 0.0))
 	var pier_floor_top := pier_base.y
 	if estilo_tripo():
 		pier_floor_top += float(CatalogoAssets.PECAS["pier"].get("piso", 0.0)) + 0.16
 	ancoras["PierPiso"] = Vector3(pier_base.x, pier_floor_top, pier_base.z)
-	var pier_yaw := atan2(pier_dir.x, pier_dir.z) if estilo_tripo() else 0.0
-	ancoras["PierDirecao"] = Vector3(sin(pier_yaw), 0.0, cos(pier_yaw))
+	ancoras["PierDirecao"] = pier_direction
+	ancoras["PierLado"] = Vector3(cos(pier_yaw), 0.0, -sin(pier_yaw))
 	_construcao("pier", pier_origin, pier_yaw, func():
 		_box(Vector3(4.5, 0.2, 17), pier + Vector3(0, -0.1, 0), Color("85684b"), true)
 		for offset in [-7.0, 0.0, 7.0]:
@@ -1430,8 +1441,9 @@ func _build_pecas() -> void:
 	_adereco("cruzeiro", ground_position(_na_casa("Igreja", Vector3(0, 0, 9.0))))
 	var farm: Vector3 = _region.get_feature_center("Fazenda", "area")
 	_adereco("carroca", ground_position(farm + Vector3(8.5, 0, -5.5)), -0.6)
-	var pier: Vector3 = _region.get_feature_center("Pier", "poi")
-	_adereco("pote", ground_position(pier + Vector3(1.4, 0, -6.5), 0.1))
+	var pier_direction: Vector3 = ancoras.get("PierDirecao", Vector3.FORWARD)
+	var pier_yaw := atan2(pier_direction.x, pier_direction.z)
+	_adereco("pote", _posicao_no_pier(-1.8, -3.0))
 	# Itens de mão espalhados como cenário (só no estilo Tripo, quando existirem).
 	if estilo_tripo():
 		var itens := [
@@ -1440,8 +1452,8 @@ func _build_pecas() -> void:
 			["moringa", _na_casa("Casa de taipa", Vector3(-1.0, 0, 3.1)), 0.0],
 			["enxada", farm + Vector3(5.6, 0.0, 1.2), 1.2],
 			["balde", ancoras["Poço"] + Vector3(1.3, 0, 0.4), 0.0],
-			["peixe", pier + Vector3(-1.2, 0.05, -4.0), 1.0],
-			["vara_pescar", pier + Vector3(1.6, 0.05, -2.0), 0.3],
+			["peixe", _posicao_no_pier(1.2, 2.0), 1.0],
+			["vara_pescar", _posicao_no_pier(0.0, 0.0), pier_yaw + 0.3],
 			["farinha", _na_casa("Bar", Vector3(-2.0, 0, 3.5)), 0.0],
 			["cacho_banana", _na_casa("Restaurante", Vector3(-2.0, 0.0, 3.6)), 0.0],
 		]
@@ -1449,6 +1461,13 @@ func _build_pecas() -> void:
 			var item_position: Vector3 = item[1]
 			item_position.y = maxf(item_position.y, ground_height_at(item_position))
 			CatalogoAssets.instanciar(String(item[0]), self, item_position, 1.0, float(item[2]))
+
+
+func _posicao_no_pier(lateral: float, longitudinal: float) -> Vector3:
+	var piso: Vector3 = ancoras.get("PierPiso", ancoras.get("Pier", Vector3.ZERO))
+	var direcao: Vector3 = ancoras.get("PierDirecao", Vector3.FORWARD)
+	var lado: Vector3 = ancoras.get("PierLado", Vector3(direcao.z, 0.0, -direcao.x))
+	return piso + lado * lateral + direcao * longitudinal
 
 
 ## Luzes de 1887: lampiões a óleo nas esquinas da Praça, candeeiros nas portas, fogueira
@@ -1460,7 +1479,6 @@ func _build_luzes_epoca() -> void:
 	var praca := ground_position(Vector3.ZERO)
 	var taipa: Vector3 = ancoras.get("Casa de taipa", _u(Vector3(-52, 0, -27)))
 	var farm: Vector3 = _region.get_feature_center("Fazenda", "area")
-	var pier: Vector3 = _region.get_feature_center("Pier", "poi")
 	for corner in [Vector3(-9.0, 0, 8.5), Vector3(7.5, 0, -12.0), Vector3(8.0, 0, 9.5)]:
 		var post_position := ground_position(praca + corner)
 		_luzes.lampiao(post_position, _adereco("lampiao_poste", post_position, 0.0))
@@ -1469,7 +1487,10 @@ func _build_luzes_epoca() -> void:
 	_luzes.candeeiro(_na_casa("Casa de taipa", Vector3(0.92, 2.55, 2.4)), _adereco("candeeiro", _na_casa("Casa de taipa", Vector3(0.92, 2.45, 2.35))))
 	_luzes.candeeiro(_na_casa("Bar", Vector3(0.0, 2.6, 3.2)), _adereco("candeeiro", _na_casa("Bar", Vector3(0.0, 2.5, 3.15))))
 	_luzes.candeeiro(_na_casa("Restaurante", Vector3(0.0, 2.6, 3.2)), _adereco("candeeiro", _na_casa("Restaurante", Vector3(0.0, 2.5, 3.15))))
-	_luzes.candeeiro(pier + Vector3(0.0, 1.9, -7.0), _adereco("candeeiro", pier + Vector3(0.3, 1.8, -7.0)))
+	var luz_no_pier := _posicao_no_pier(0.0, 2.0)
+	luz_no_pier.y += 1.6
+	var modelo_luz_no_pier := _posicao_no_pier(0.3, 2.0) + Vector3.UP * 1.5
+	_luzes.candeeiro(luz_no_pier, _adereco("candeeiro", modelo_luz_no_pier))
 	ancoras["Fogueira"] = ground_position(farm + Vector3(7.0, 0, 4.5))
 	_luzes.fogueira(ancoras["Fogueira"], _adereco("fogueira", ancoras["Fogueira"]))
 	_luzes.janela(_na_casa("Casa de taipa", Vector3(-1.35, 1.9, 2.2)))
@@ -1610,17 +1631,6 @@ func _fence(origin: Vector3, count: int, spacing: float) -> void:
 	var width: float = (count - 1) * spacing
 	for height in [0.4, 0.87]:
 		_box(Vector3(width, 0.12, 0.12), origin + Vector3(width * 0.5, height, 0), Color("987650"), true)
-
-
-func _pier_deck(size: Vector3, collision_center: Vector3, yaw: float) -> void:
-	var plank_count := maxi(1, ceili(size.z / 0.38))
-	var plank_stride := size.z / float(plank_count)
-	var plank_colors: Array[Color] = [Color("947047"), Color("88643f"), Color("9b754e"), Color("81603e")]
-	for index in range(plank_count):
-		var local_z := -size.z * 0.5 + (float(index) + 0.5) * plank_stride
-		var local_offset := Vector3(0.0, size.y * 0.5 - 0.045, local_z).rotated(Vector3.UP, yaw)
-		var plank_length := maxf(plank_stride - 0.018, 0.06)
-		_box(Vector3(size.x, 0.09, plank_length), collision_center + local_offset, plank_colors[index % plank_colors.size()], false, null, yaw)
 
 
 func _box(size: Vector3, position: Vector3, color: Color, solid: bool = false, material_override: Material = null, yaw: float = 0.0) -> MeshInstance3D:

@@ -96,6 +96,8 @@ func configurar(world: Node3D, jogador: Node3D, hud) -> void:
 	_animador = _jogador.get("animator") as Node
 	if _animador != null and _animador.has_signal("golpe_concluido"):
 		_animador.connect("golpe_concluido", Callable(self, "_ao_golpe_concluido"))
+	if _animador != null and _animador.has_signal("golpe_impacto"):
+		_animador.connect("golpe_impacto", Callable(self, "_ao_impacto_do_golpe"))
 
 
 func _process(_delta: float) -> void:
@@ -328,7 +330,6 @@ func _ao_golpe_concluido() -> void:
 	_stamina = float(_jogador.call("vigor_atual"))
 	coqueiro["golpes"] = int(coqueiro["golpes"]) + 1
 	_golpes_restantes_na_acao -= 1
-	Audio.efeito("machado")
 	if coqueiro["golpes"] >= GOLPES_PARA_CORTAR:
 		if bool(_world.call("cortar_coqueiro", coqueiro["pos"])):
 			coqueiro["cortado"] = true
@@ -343,6 +344,11 @@ func _ao_golpe_concluido() -> void:
 	_coqueiros[indice] = coqueiro
 	if _golpes_restantes_na_acao <= 0 or _stamina < CUSTO_DO_GOLPE or coqueiro["cortado"]:
 		_parar_golpe(false)
+
+
+func _ao_impacto_do_golpe() -> void:
+	if _coqueiro_em_golpe >= 0:
+		Audio.efeito("machado")
 
 
 func estado_para_salvar() -> Array[Dictionary]:
