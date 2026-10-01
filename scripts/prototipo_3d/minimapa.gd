@@ -21,8 +21,10 @@ const MARGEM_DO_ARO := 9.0
 const BORDA := 3.0
 ## Lado vertical da vista, em unidades do mundo (~55 u = 220 m).
 const VISTA := 55.0
-## Altura da câmera sobre o jogador; far cobre a descida até o fundo do vale.
-const ALTURA_CAMERA := 200.0
+## A câmera ortográfica preserva o enquadramento nesta altura. A 200 u, a
+## restinga atingia o corte de LOD antes mesmo de aparecer no minimapa.
+## 100 u ainda ficam acima do relevo do vale e mantêm as copas na vista pequena.
+const ALTURA_CAMERA := 100.0
 const PREFERENCIAS := "user://preferencias_visuais.cfg"
 const FUNDO := Color(0.055, 0.085, 0.075, 0.9)
 const OURO := Color("b49a60")
