@@ -7,6 +7,7 @@
   "passos": [
     {
       "id": "zefa_ervas",
+      "titulo": "O que só nasce lá em cima",
       "lugar": "mirante",
       "raio": 9.0,
       "audio": "",
@@ -23,6 +24,7 @@
     },
     {
       "id": "zefa_cosme",
+      "titulo": "O que o Cosme não contou",
       "lugar": "casa_de_taipa",
       "raio": 7.0,
       "audio": "",
@@ -36,6 +38,7 @@
     },
     {
       "id": "zefa_conversa",
+      "titulo": "A conversa que ela prometeu",
       "lugar": "casa_de_taipa",
       "raio": 7.0,
       "audio": "",
@@ -49,6 +52,7 @@
     },
     {
       "id": "zefa_saveiro",
+      "titulo": "O saveiro das seis",
       "lugar": "pier",
       "raio": 8.0,
       "audio": "",

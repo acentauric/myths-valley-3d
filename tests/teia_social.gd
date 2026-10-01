@@ -144,6 +144,47 @@ func _run() -> void:
 			"de 'Gente boa' para cima a tela não mostra o gosto ('%s'): '%s'" % [alguma, aberta_agora])
 		print("  gosto: escondido de desconhecido, aberto de Gente boa para cima")
 
+		# 4b. E O GOSTO VEM EM DESENHO, não só em nome.
+		#
+		# "Faltou o ícone dos presentes que aquela pessoa gostaria de receber."
+		# A tela abre justamente para decidir o que levar a quem, e nome solto
+		# obriga a traduzir de cabeça até o desenho da mochila. Os ícones são os
+		# mesmos de lá, e é por isso que servem.
+		var mimos := 0
+		for quadro in pagina.find_children("Mimo_*", "TextureRect", true, false):
+			if (quadro as TextureRect).texture != null:
+				mimos += 1
+		_conferir(mimos > 0,
+			"de 'Gente boa' para cima a página não mostra ícone de presente nenhum")
+		print("  presentes em desenho na página: %d" % mimos)
+
+	# --- 4c. CADA MORADOR TEM RETRATO NA LISTA -------------------------------
+	#
+	# "Faltou o ícone com a foto do NPC." O retrato é o mesmo boneco que anda no
+	# mapa, como no `arraial_tela.gd` do 2D, recortado no primeiro quadro da
+	# folha. Sem recorte apareceriam os dezesseis quadros espremidos, então o
+	# portão confere também que o pedaço mostrado é MENOR que a folha inteira.
+	for bruto in afinidade.MORADORES:
+		var quem := str(bruto)
+		var achou := coluna.find_children("Retrato_" + quem, "TextureRect", true, false)
+		_conferir(not achou.is_empty(),
+			"o morador '%s' está na lista sem retrato: falta copiar assets/sprites/%s_sheet.png"
+				% [quem, quem])
+		if achou.is_empty():
+			continue
+		var cara := achou[0] as TextureRect
+		_conferir(cara.texture != null, "o retrato de '%s' está vazio" % quem)
+		if cara.texture is AtlasTexture:
+			var recorte := cara.texture as AtlasTexture
+			_conferir(recorte.region.size.x < recorte.atlas.get_width(),
+				"o retrato de '%s' mostra a folha inteira em vez de um quadro" % quem)
+		# E o nome não começa por cima do boneco.
+		var estilo := (cara.get_parent() as Button).get_theme_stylebox("normal")
+		var comeca: float = estilo.content_margin_left if estilo != null else 0.0
+		_conferir(comeca >= cara.position.x + cara.size.x,
+			"o nome de '%s' começa em %.0f e o retrato vai até %.0f: texto por cima do boneco"
+				% [quem, comeca, cara.position.x + cara.size.x])
+
 	# --- 5. O QUE FAZER HOJE, DITO COMO TAREFA -------------------------------
 	var hoje := _texto_de(pagina).to_lower()
 	_conferir(hoje.contains("conversar hoje") or hoje.contains("conversaram hoje"),
@@ -207,7 +248,7 @@ func _fechar() -> void:
 	_devolver()
 	print("")
 	if falhas == 0:
-		print("SOCIAL_OK: a teia está no P, os sete moradores aparecem com nome, grau e barra que acompanha o número, o gosto fica escondido de quem é desconhecido e aparece de Gente boa para cima, o que há para fazer hoje é dito como tarefa, e a tela cabe na janela")
+		print("SOCIAL_OK: a teia está no P, os sete moradores aparecem com nome, grau, barra que acompanha o número e RETRATO recortado do boneco do mapa, com o nome fora de cima dele; o gosto fica escondido de quem é desconhecido e de Gente boa para cima aparece em DESENHO de presente; o que há para fazer hoje é dito como tarefa, e a tela cabe na janela")
 	else:
 		print("teia social: %d falha(s)" % falhas)
 	quit(1 if falhas > 0 else 0)

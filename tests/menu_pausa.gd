@@ -137,6 +137,36 @@ func _run() -> void:
 	_conferir(sem_icone.is_empty(),
 		"linha(s) do menu sem ícone: %s" % str(sem_icone))
 
+	# --- 4b. O ÍCONE NÃO FICA POR CIMA DO TEXTO -------------------------------
+	#
+	# "Os ícones do MENU ESC estão por cima do texto." O ícone mora DENTRO do
+	# botão, e quem decide onde o texto começa é a margem esquerda do estilo da
+	# linha: ela valia 14 em todas, e o ícone ocupa de 14 a 40 — o nome da opção
+	# nascia debaixo do desenho.
+	#
+	# A medida é a distância entre o fim do ícone e o começo do texto, lida do
+	# ESTILO que o botão está usando, e não da constante: é o estilo que a tela
+	# obedece, e foi uma constante que não chegava nele que causou o defeito.
+	var encostados: Array[String] = []
+	for filho in lista.get_children():
+		if not (filho is Button):
+			continue
+		var botao := filho as Button
+		var fim_do_icone := 0.0
+		for neto in botao.get_children():
+			if neto is Control:
+				fim_do_icone = maxf(fim_do_icone,
+					(neto as Control).position.x + (neto as Control).size.x)
+		if fim_do_icone <= 0.0:
+			continue
+		var estilo := botao.get_theme_stylebox("normal")
+		var comeca_o_texto: float = estilo.content_margin_left if estilo != null else 0.0
+		if comeca_o_texto < fim_do_icone:
+			encostados.append("%s (ícone até %.0f, texto em %.0f)"
+				% [botao.text, fim_do_icone, comeca_o_texto])
+	_conferir(encostados.is_empty(),
+		"linha(s) com o texto debaixo do ícone: %s" % str(encostados))
+
 	# --- 4c. SALVAR DEVOLVE RECADO, COMO NO 2D --------------------------------
 	#
 	# Salvar dá certo e a tela fica igual. Ação sem retorno é a que se aperta

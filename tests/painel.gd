@@ -178,6 +178,49 @@ func _run() -> void:
 		if linha is Button and linha.text.contains("Um passo de teste"):
 			tem_titulo = true
 	_conferir(tem_titulo, "a aba de missões não mostra a missão aberta")
+
+	# A LISTA NÃO EXPLODE COM MISSÃO DE TÍTULO COMPRIDO.
+	#
+	# A medida de tamanho lá de cima roda com a aba quase vazia, e por isso não
+	# via o defeito: a lista de missões empurrava a caixa para fora da janela
+	# porque o título da missão era a FALA inteira do passo — um parágrafo num
+	# Button, e Button pede a largura do texto que carrega. Aqui entra um título
+	# maior que qualquer fala do vale, de propósito, e a caixa tem de aguentar.
+	var parede := "Um título absurdamente comprido que ninguém deveria escrever numa missão, posto aqui justamente para o painel ter de aguentar o pior caso e não a média do que existe hoje nos arquivos"
+	caderno.abrir_missao("comprida_do_painel", parede, "pedro", false)
+	await _frames(2)
+	var caixa_cheia := painel.find_children("Caixa", "", true, false)
+	if not caixa_cheia.is_empty():
+		var quadro_cheio := (caixa_cheia[0] as Control).get_global_rect()
+		var tela: Vector2 = (caixa_cheia[0] as Control).get_viewport_rect().size
+		_conferir(quadro_cheio.position.x >= -1.0 and quadro_cheio.end.x <= tela.x + 1.0
+				and quadro_cheio.position.y >= -1.0 and quadro_cheio.end.y <= tela.y + 1.0,
+			"com uma missão de título comprido o painel foi para %s numa tela de %s"
+				% [str(quadro_cheio), str(tela)])
+	caderno.concluir("comprida_do_painel")
+	await _frames(2)
+
+	# E O TÍTULO QUE A CADEIA REGISTRA É CURTO NA ORIGEM. O corte do Button
+	# salva a tela; o nome curto é o que faz a lista SE LER. Medido no dado de
+	# todas as cadeias, que é onde a missão nova vai nascer.
+	var cadeia_script = load("res://scripts/prototipo_3d/cadeia_de_missoes.gd")
+	for nome in ["missoes_guia", "missoes_coveiro", "missoes_filo", "missoes_zefa",
+			"missoes_tonho", "missoes_candinha"]:
+		var dado = JSON.parse_string(FileAccess.get_file_as_string("res://data/%s.json" % nome))
+		if not (dado is Dictionary):
+			continue
+		for passo: Dictionary in (dado as Dictionary).get("passos", []):
+			var curto: String = cadeia_script._titulo_do_passo(passo)
+			_conferir(curto.length() <= cadeia_script.LETRAS_DO_TITULO,
+				"o passo '%s/%s' entra no caderno com %d letras de título: a lista vira parede de letra"
+					% [nome, str(passo.get("id", "?")), curto.length()])
+			# E O TÍTULO É ESCRITO, não cortado. O corte existe para que missão
+			# nova sem o campo não exploda a tela de ninguém, mas reticência no
+			# meio de uma frase não é nome de missão: quem lê a lista fica com
+			# meia fala. Toda cadeia que já está no vale tem de trazer o seu.
+			_conferir(str(passo.get("titulo", "")).strip_edges() != "",
+				"o passo '%s/%s' não tem 'titulo': o caderno vai mostrar a fala cortada"
+					% [nome, str(passo.get("id", "?"))])
 	_tecla(painel, KEY_TAB)
 	_conferir(painel.aba() == painel.Aba.MISSOES, "Tab saiu de Missões sem ter outra aba")
 	painel.escolher(1)

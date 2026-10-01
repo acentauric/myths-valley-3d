@@ -992,6 +992,12 @@ func _adicionar_linha(texto: String, cor: Color, cabecalho: bool = false) -> voi
 	botao.focus_mode = Control.FOCUS_NONE
 	botao.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	botao.custom_minimum_size = Vector2(0, ALTURA_DA_LINHA)
+	# O BOTÃO NÃO EMPURRA A CAIXA. Texto comprido faz o Button pedir largura, e
+	# a caixa de 900 cresce com ele até sair da janela — foi assim que a lista de
+	# missões explodiu, com o parágrafo da fala no lugar do título. Cortar no fim
+	# é o conserto de quem desenha; o título curto é o de quem escreve a missão
+	# (`CadeiaDeMissoes._titulo_do_passo`). Os dois, porque um protege do outro.
+	botao.clip_text = true
 	botao.add_theme_font_size_override("font_size", LETRA_LINHA)
 	botao.add_theme_color_override("font_color", cor)
 	botao.add_theme_color_override("font_hover_color", COR_CURSOR)

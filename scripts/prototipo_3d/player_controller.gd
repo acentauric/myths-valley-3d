@@ -23,8 +23,9 @@ const JUMP_BUFFER_TIME := 0.16
 const JUMP_COYOTE_TIME := 0.16
 const RUN_STOP_SPEED := 0.15
 const VIGOR_MAXIMO := 100.0
+const VIGOR_MINIMO_PARA_CORRER := 0.5
 const CUSTO_CORRIDA_POR_SEGUNDO := 5.0
-const VIGOR_RECUPERACAO_ANDANDO := 10.0
+const VIGOR_RECUPERACAO_ANDANDO := 2.5
 const VIGOR_RECUPERACAO_PARADO := 20.0
 ## Água: o jogador entra andando no raso, mais devagar conforme ela sobe; onde o fundo
 ## passa do peito (fração da altura) ele nada, com os ombros e a cabeça de fora. Entra
@@ -482,7 +483,7 @@ func _physics_process(delta: float) -> void:
 
 func _input(event: InputEvent) -> void:
 	if event is InputEventKey and event.is_action_pressed("mv_run") and not event.echo:
-		_run_toggled = not _run_toggled and _vigor > 0.0
+		_run_toggled = not _run_toggled and _vigor >= VIGOR_MINIMO_PARA_CORRER
 		_ran_since_toggle = false
 		navigation_status.emit("Modo corrida %s" % ("ativado" if _run_toggled else "desativado"))
 	if event is InputEventMouseMotion and _camera_locked and _camera_drag_pressed and Input.mouse_mode == Input.MOUSE_MODE_VISIBLE:
@@ -795,7 +796,7 @@ func _request_walk_at_cursor(mouse: Vector2, run_to_destination: bool = false) -
 		navigation_status.emit("Não encontrei um caminho até esse ponto.")
 		return
 	_walk_path = path
-	_walk_run = run_to_destination
+	_walk_run = run_to_destination and _vigor >= VIGOR_MINIMO_PARA_CORRER
 	_walk_index = 0
 	_walk_destination = destination
 	_stuck_time = 0.0
@@ -895,7 +896,7 @@ func get_current_animation() -> StringName:
 
 
 func is_running() -> bool:
-	return _vigor > 0.0 and (_run_toggled or (_walk_run and not _walk_path.is_empty()))
+	return _vigor >= VIGOR_MINIMO_PARA_CORRER and (_run_toggled or (_walk_run and not _walk_path.is_empty()))
 
 
 func vigor_atual() -> float:
@@ -931,6 +932,10 @@ func _atualizar_vigor(delta: float, corrida_ativa: bool) -> void:
 
 func _definir_vigor(valor: float) -> void:
 	var novo := clampf(valor, 0.0, VIGOR_MAXIMO)
+	if novo < VIGOR_MINIMO_PARA_CORRER:
+		_run_toggled = false
+		_walk_run = false
+		_ran_since_toggle = false
 	if is_equal_approx(novo, _vigor):
 		return
 	_vigor = novo

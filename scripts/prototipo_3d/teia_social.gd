@@ -50,6 +50,23 @@ const COR_RUIM := Identidade.TERRACOTA
 const TAMANHO := Vector2(900, 560)
 const LARGURA_DA_COLUNA := 280.0
 const ALTURA_DA_LINHA := 46.0
+## O RETRATO DE CADA UM, como no 2D: o mesmo boneco que anda no mapa, de frente
+## e parado. A folha tem quatro colunas e quatro linhas, e o quadro de frente
+## parado é o primeiro — é a conta do `arraial_tela.gd` de lá. Os arquivos vieram
+## do 2D enquanto não houver arte própria do 3D; quem não tiver fica com a
+## moldura vazia e o nome, que é melhor do que a tela não abrir.
+const PASTA_DOS_RETRATOS := "res://assets/sprites/moradores/"
+const LADO_DO_RETRATO := 34.0
+const RECUO_DO_RETRATO := 8.0
+const QUADROS_DA_FOLHA := 4
+## Onde o nome começa quando há retrato, para não sair por cima dele.
+const MARGEM_SIMPLES := 14
+const MARGEM_COM_RETRATO := int(RECUO_DO_RETRATO + LADO_DO_RETRATO + 10.0)
+## A barra do grau tinha 4 px e passava batida. A do 2D é um medidor que se lê
+## de relance; esta engrossa e ganha moldura.
+const ALTURA_DA_BARRA := 8.0
+## O lado do ícone de presente na página.
+const LADO_DO_MIMO := 30.0
 ## Grau a partir do qual o gosto do morador aparece. Dois é "Gente boa" — a
 ## mesma régua do 2D, e a razão está no cabeçalho.
 const GRAU_DO_GOSTO := 2
@@ -211,10 +228,15 @@ func _montar_coluna() -> void:
 			Identidade.CREME if escolhido else COR_TEXTO)
 		linha.add_theme_color_override("font_hover_color", Identidade.CREME)
 		for estado in ["normal", "hover", "pressed"]:
-			linha.add_theme_stylebox_override(estado, _estilo_da_linha(escolhido, estado != "normal"))
+			linha.add_theme_stylebox_override(estado,
+				_estilo_da_linha(escolhido, estado != "normal",
+					ResourceLoader.exists(PASTA_DOS_RETRATOS + id + ".png")))
 		linha.pressed.connect(func() -> void:
 			_quem = id
 			_encher())
+		var cara := _retrato_de(id)
+		if cara != null:
+			linha.add_child(cara)
 		_coluna.add_child(linha)
 
 		# A BARRINHA DO GRAU, na linha e não só na página: a pergunta que se faz
@@ -223,19 +245,26 @@ func _montar_coluna() -> void:
 		var barra := ProgressBar.new()
 		barra.name = "Barra_" + id
 		barra.show_percentage = false
-		barra.custom_minimum_size = Vector2(0, 4)
+		barra.custom_minimum_size = Vector2(0, ALTURA_DA_BARRA)
 		barra.max_value = float(Afinidade.MAXIMO)
 		barra.value = float(Afinidade.de(id))
 		var fundo := StyleBoxFlat.new()
 		fundo.bg_color = Color(0.13, 0.16, 0.12, 0.9)
+		fundo.border_color = Color(0.32, 0.35, 0.30, 0.9)
+		fundo.set_border_width_all(1)
+		fundo.set_corner_radius_all(2)
 		var cheio := StyleBoxFlat.new()
 		cheio.bg_color = Identidade.OURO
+		cheio.set_corner_radius_all(2)
 		barra.add_theme_stylebox_override("background", fundo)
 		barra.add_theme_stylebox_override("fill", cheio)
 		_coluna.add_child(barra)
 
 
-func _estilo_da_linha(escolhida: bool, realce: bool) -> StyleBoxFlat:
+## O estilo da linha. `com_retrato` recua o nome para ele não sair por cima do
+## boneco — o retrato mora DENTRO do botão, e a margem é quem decide onde o
+## texto começa.
+func _estilo_da_linha(escolhida: bool, realce: bool, com_retrato: bool = false) -> StyleBoxFlat:
 	var estilo := StyleBoxFlat.new()
 	if escolhida:
 		estilo.bg_color = Color(0.19, 0.21, 0.15, 0.96)
@@ -245,8 +274,8 @@ func _estilo_da_linha(escolhida: bool, realce: bool) -> StyleBoxFlat:
 		estilo.bg_color = Color(0.13, 0.16, 0.12, 0.9)
 	else:
 		estilo.bg_color = Color(0.0, 0.0, 0.0, 0.0)
-	estilo.content_margin_left = 10
-	estilo.content_margin_right = 10
+	estilo.content_margin_left = MARGEM_COM_RETRATO if com_retrato else MARGEM_SIMPLES
+	estilo.content_margin_right = MARGEM_SIMPLES
 	estilo.content_margin_top = 4
 	estilo.content_margin_bottom = 4
 	return estilo
@@ -301,16 +330,30 @@ func _montar_pagina() -> void:
 	_pagina.add_child(respiro)
 	if Afinidade.grau(_quem) >= GRAU_DO_GOSTO:
 		var dele: Dictionary = Jogo.dados(Afinidade.ARQUIVO_DOS_MORADORES).get(_quem, {})
-		var bons := _nomes_dos_itens(dele.get("gosta", []))
-		if bons != "":
-			var linha := _corpo("Gosta de ganhar: %s." % bons)
-			linha.add_theme_color_override("font_color", COR_BOM)
-			_pagina.add_child(linha)
-		var ruins := _nomes_dos_itens(dele.get("desgosta", []))
-		if ruins != "":
-			var linha_ruim := _corpo("Não aceita: %s." % ruins)
-			linha_ruim.add_theme_color_override("font_color", COR_RUIM)
-			_pagina.add_child(linha_ruim)
+		# EM DESENHO, E NÃO SÓ EM NOME. O 2D escreve a lista; aqui ela vira
+		# fileira de ícones, com o nome no tooltip e o nome escrito abaixo para
+		# quem lê devagar. São os mesmos desenhos da mochila, então o que o
+		# jogador vê aqui é o que ele vai procurar lá.
+		var bons: Array = dele.get("gosta", [])
+		if not bons.is_empty():
+			var titulo_bom := _corpo("Gosta de ganhar:")
+			titulo_bom.add_theme_color_override("font_color", COR_BOM)
+			_pagina.add_child(titulo_bom)
+			_pagina.add_child(_fileira_de_mimos(bons, COR_BOM))
+			var nomes_bons := _corpo(_nomes_dos_itens(bons) + ".")
+			nomes_bons.add_theme_color_override("font_color", COR_BOM)
+			nomes_bons.add_theme_font_size_override("font_size", 15)
+			_pagina.add_child(nomes_bons)
+		var ruins: Array = dele.get("desgosta", [])
+		if not ruins.is_empty():
+			var titulo_ruim := _corpo("Não aceita:")
+			titulo_ruim.add_theme_color_override("font_color", COR_RUIM)
+			_pagina.add_child(titulo_ruim)
+			_pagina.add_child(_fileira_de_mimos(ruins, COR_RUIM))
+			var nomes_ruins := _corpo(_nomes_dos_itens(ruins) + ".")
+			nomes_ruins.add_theme_color_override("font_color", COR_RUIM)
+			nomes_ruins.add_theme_font_size_override("font_size", 15)
+			_pagina.add_child(nomes_ruins)
 	else:
 		_pagina.add_child(_corpo("Converse e apareça mais para saber do que ele gosta."))
 
@@ -322,6 +365,71 @@ func _montar_pagina() -> void:
 		var fe_dele := str(Afinidade.fe_de(_quem))
 		if fe_dele != "":
 			_pagina.add_child(_corpo("É de %s." % Fe.nome(fe_dele)))
+
+
+## O retrato do morador, ou null quando não há folha para ele.
+##
+## A folha é uma grade de quadros; o de frente parado é o primeiro, e é o que o
+## 2D usa nesta mesma lista. Recorta-se com AtlasTexture em vez de desenhar a
+## folha inteira — sem o recorte apareceriam os dezesseis quadros espremidos.
+func _retrato_de(id: String) -> TextureRect:
+	var caminho := PASTA_DOS_RETRATOS + id + ".png"
+	if not ResourceLoader.exists(caminho):
+		return null
+	var folha: Texture2D = load(caminho)
+	if folha == null:
+		return null
+	var quadro := AtlasTexture.new()
+	quadro.atlas = folha
+	quadro.region = Rect2(Vector2.ZERO,
+		Vector2(folha.get_width() / float(QUADROS_DA_FOLHA),
+			folha.get_height() / float(QUADROS_DA_FOLHA)))
+	var moldura := TextureRect.new()
+	moldura.name = "Retrato_" + id
+	moldura.texture = quadro
+	moldura.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	moldura.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	moldura.custom_minimum_size = Vector2(LADO_DO_RETRATO, LADO_DO_RETRATO)
+	moldura.size = Vector2(LADO_DO_RETRATO, LADO_DO_RETRATO)
+	moldura.position = Vector2(RECUO_DO_RETRATO, (ALTURA_DA_LINHA - LADO_DO_RETRATO) * 0.5)
+	# O clique é da linha inteira: retrato que engole clique é meia linha morta.
+	moldura.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	return moldura
+
+
+## A FILEIRA DE ÍCONES DOS PRESENTES, que é o que faltava desta tela.
+##
+## O 2D escreve os nomes; aqui eles viram desenho, com o nome no `tooltip`. A
+## razão é a mesma que vale para o menu do Esc: ícone se acha de relance, e o
+## jogador abre esta tela justamente para decidir o que levar a quem. Os
+## desenhos são os mesmos da mochila (`assets/sprites/itens`), então o que ele
+## vê aqui é o que ele vai procurar lá.
+##
+## Item sem desenho entra como nome, para a fileira nunca ficar com buraco mudo.
+func _fileira_de_mimos(itens: Array, cor: Color) -> Control:
+	var fila := HBoxContainer.new()
+	fila.add_theme_constant_override("separation", 6)
+	for bruto in itens:
+		var item := str(bruto)
+		var caminho := "res://assets/sprites/itens/%s.png" % item
+		var nome := str(Catalogo.nome(item))
+		if not ResourceLoader.exists(caminho):
+			var escrito := Label.new()
+			escrito.text = nome
+			escrito.add_theme_font_size_override("font_size", 15)
+			escrito.add_theme_color_override("font_color", cor)
+			fila.add_child(escrito)
+			continue
+		var quadro := TextureRect.new()
+		quadro.name = "Mimo_" + item
+		quadro.texture = load(caminho)
+		quadro.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		quadro.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		quadro.custom_minimum_size = Vector2(LADO_DO_MIMO, LADO_DO_MIMO)
+		quadro.tooltip_text = nome
+		quadro.modulate = cor
+		fila.add_child(quadro)
+	return fila
 
 
 func _nomes_dos_itens(itens: Array) -> String:

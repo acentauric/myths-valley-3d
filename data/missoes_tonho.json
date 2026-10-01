@@ -7,6 +7,7 @@
   "passos": [
     {
       "id": "pescador_ver",
+      "titulo": "A maré, lida do pontal",
       "lugar": "pier",
       "raio": 11.0,
       "audio": "",
@@ -15,6 +16,7 @@
     },
     {
       "id": "pescador_rede",
+      "titulo": "A rede do Tonho",
       "lugar": "rocado",
       "raio": 9.0,
       "audio": "",
@@ -29,6 +31,7 @@
     },
     {
       "id": "tonho_divida",
+      "titulo": "A conta do Tonho",
       "lugar": "pier",
       "raio": 11.0,
       "audio": "",
@@ -37,6 +40,7 @@
     },
     {
       "id": "tonho_livro",
+      "titulo": "O livro de fiado",
       "lugar": "venda",
       "raio": 8.0,
       "audio": "",
@@ -45,6 +49,7 @@
     },
     {
       "id": "tonho_terra",
+      "titulo": "A terra do Tonho",
       "lugar": "venda",
       "raio": 8.0,
       "audio": "",

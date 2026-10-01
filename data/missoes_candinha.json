@@ -7,6 +7,7 @@
   "passos": [
     {
       "id": "candinha_cana",
+      "titulo": "A garapa da praça",
       "lugar": "praca",
       "raio": 7.0,
       "audio": "",
@@ -16,6 +17,7 @@
     },
     {
       "id": "candinha_garapa",
+      "titulo": "As seis canas da Candinha",
       "lugar": "praca",
       "raio": 7.0,
       "audio": "",

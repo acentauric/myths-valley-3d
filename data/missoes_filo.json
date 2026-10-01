@@ -6,6 +6,7 @@
   "passos": [
     {
       "id": "filo_pedido",
+      "titulo": "O pirão da Dona Filó",
       "lugar": "casa_da_estrada",
       "raio": 6.0,
       "audio": "",
@@ -14,6 +15,7 @@
     },
     {
       "id": "filo_pirao",
+      "titulo": "Levar o pirão ao Tonho",
       "lugar": "pier",
       "raio": 6.0,
       "audio": "",

@@ -1090,7 +1090,9 @@ func restaurar_do_save(estado: Dictionary) -> void:
 		c._levados.clear()
 		for passo in guardado.get("levados", []):
 			c._levados[str(passo)] = true
-		c.espera = 1.4
+		# SEM REANUNCIAR: ver `CadeiaDeMissoes.retomar`. O marcador e o caderno
+		# voltam; a fala não, que ela já aconteceu.
+		c.retomar()
 	# OS ALVOS CAÍDOS SOMEM DE NOVO, e é aqui e não antes: o vale se monta
 	# inteiro primeiro (`_erguer`), e só então o save diz o que já tinha caído.
 	if _recursos != null:
@@ -1104,8 +1106,10 @@ func restaurar_do_save(estado: Dictionary) -> void:
 		pedro.set("_iniciado", bool(guia.get("iniciado", false)))
 		pedro.set("_despedida_feita", bool(guia.get("despedida", false)))
 		pedro.missao = int(guia.get("missao", -1))
-		# Ele reanuncia o passo em que parou, logo depois de chegar perto.
-		pedro.set("_espera", 1.4)
+		# Ele NÃO reanuncia o passo: quem salvou no primeiro passo ouvia a
+		# abertura do jogo de novo ao voltar, como se a partida recomeçasse. O
+		# que volta é o objetivo — caderno e marcador. Ver `CadeiaDeMissoes.retomar`.
+		pedro.retomar()
 		pedro.global_position = world.ground_position(player.global_position + Vector3(-1.6, 0, 1.4), 0.05)
 	var luta := get_node_or_null("Luta")
 	if luta != null:
