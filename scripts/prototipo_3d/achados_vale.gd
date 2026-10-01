@@ -9,11 +9,10 @@ extends Node
 ## - O SINAL está onde o mito anda, e a CARTA ESPERA O SINAL: ela não está no
 ##   chão desde o primeiro dia; aparece onde o sinal estava, depois que o
 ##   jogador o viu, porque é ali que a coisa está.
-## - A CARTA DE PACTO se firma NO LUGAR DO MITO. No 2D, pegá-la abre a
-##   pergunta "Firmar?", que é a caixa de Sim e Não da #21. Até ela chegar, o
-##   vale diz o que o pacto dá e o que cobra, e o SEGUNDO E, ali mesmo, firma;
-##   andar para longe é dizer que não — e a carta fica, e o painel (J) ainda
-##   firma depois, como no 2D.
+## - A CARTA DE PACTO se firma NO LUGAR DO MITO, na conversa do 2D
+##   (`Mundo._oferecer_pacto`): a prosa da carta, o que o pacto dá e o que
+##   cobra, e a pergunta "Firmar?" na caixa de Sim e Não (#21). Dizer que não
+##   deixa a carta com o jogador, e o painel (J) ainda firma depois, como no 2D.
 ##
 ## O QUE O VALE AINDA NÃO TEM está declarado, com a razão: quatro cordéis e o
 ## lugar da Iara esperam a lagoa, o vau, a ruína e o engenho. As cartas que
@@ -29,8 +28,6 @@ const TEXTOS := "res://data/achados.json"
 
 ## Quão perto, no chão, para a tecla aparecer e o E valer.
 const ALCANCE := 1.8
-## Longe assim do lugar do pacto, a oferta vira "fica para outro dia".
-const DESISTE := 6.0
 const ALTURA_DICA := 0.9
 ## Quanto cada fala fica no aviso antes da próxima.
 const POR_FALA := 3.6
@@ -81,8 +78,6 @@ var _dica: PanelContainer
 var no_chao: Array = []
 ## Onde fica cada lugar de mito no vale, resolvido uma vez.
 var lugares: Dictionary = {}
-## O pacto oferecido e ainda não respondido: {id, ponto}, ou vazio.
-var oferta: Dictionary = {}
 var _avisou_perto: Dictionary = {}
 var _fala := 0
 
@@ -263,7 +258,6 @@ func _process(_delta: float) -> void:
 		return
 	var camera := get_viewport().get_camera_3d()
 	var em_jogo: bool = camera != null and camera == _player.get("camera") and _player.is_physics_processing()
-	_conferir_a_oferta()
 	var perto = mais_perto()
 	if not em_jogo or perto == null:
 		_dica.visible = false
@@ -273,23 +267,17 @@ func _process(_delta: float) -> void:
 		"cordel": rotulo = _texto("dica_cordel")
 		"sinal": rotulo = _texto("dica_sinal")
 		"carta": rotulo = _texto("dica_carta")
-		"pacto": rotulo = _texto("dica_pacto")
 	DicaTecla.mostrar_em(_dica, camera, perto["ponto"] + Vector3(0.0, ALTURA_DICA, 0.0), rotulo)
 	if perto["tipo"] == "sinal" and not _avisou_perto.has(perto["id"]):
 		_avisou_perto[perto["id"]] = true
 		_avisar(_texto("tem_alguma_coisa"))
 
 
-## O achado (ou o pacto oferecido) ao alcance do jogador, ou null.
+## O achado ao alcance do jogador, ou null.
 func mais_perto():
 	var aqui: Vector3 = _player.global_position
 	var melhor = null
 	var melhor_d := ALCANCE
-	if not oferta.is_empty():
-		var d := _plano(oferta["ponto"] - aqui)
-		if d <= melhor_d:
-			melhor = {"tipo": "pacto", "id": oferta["id"], "ponto": oferta["ponto"]}
-			melhor_d = d
 	for achado in no_chao:
 		var d := _plano(achado["ponto"] - aqui)
 		if d <= melhor_d:
@@ -307,15 +295,13 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 
 
-## O E: pega o que está ao alcance, ou firma o pacto oferecido. Devolve false
-## quando não havia nada — e o E segue para lápide e árvore.
+## O E: pega o que está ao alcance. Devolve false quando não havia nada — e o
+## E segue para lápide e árvore.
 func interagir() -> bool:
 	var perto = mais_perto()
 	if perto == null:
 		return false
 	match str(perto["tipo"]):
-		"pacto":
-			_firmar(str(perto["id"]))
 		"cordel":
 			_pegar_cordel(perto)
 		"sinal":
@@ -362,17 +348,28 @@ func _pegar_carta(achado: Dictionary) -> void:
 		return
 	_tirar(achado)
 	Audio.efeito("pegar")
-	var falas: Array = Jogo.falas(Cartas.dados(id).get("prosa", []))
-	if Cartas.natureza(id) == "pacto":
-		falas.append_array(_termos_do_pacto(id))
-		oferta = {"id": id, "ponto": achado["ponto"]}
-	else:
-		falas.append(_texto("aprendeu_ritual") % Cartas.nome(id))
-	_contar(falas)
 	achou.emit("carta", id)
+	# A PROSA DA CARTA NA CAIXA DE FALA, como no 2D (`Mundo._pegar_a_carta`):
+	# é o encontro com o mito, e não aviso de passagem.
+	_fala += 1
+	await Dialogo.falar("", Jogo.falas(Cartas.dados(id).get("prosa", [])))
+	if Cartas.natureza(id) == "pacto":
+		await _oferecer_pacto(id)
+	else:
+		_avisar(_texto("aprendeu_ritual") % Cartas.nome(id))
 
 
-## O preço ANTES do sim, como a conversa do pacto do 2D.
+## A CONVERSA DO PACTO, a do 2D (`Mundo._oferecer_pacto`): o preço ANTES do
+## sim, e a pergunta separada, para o jogador saber o que firma.
+func _oferecer_pacto(id: String) -> void:
+	await Dialogo.falar("", _termos_do_pacto(id))
+	var sim: bool = await Dialogo.perguntar("", _texto("firmar") % Cartas.nome(id).to_lower())
+	if not sim:
+		await Dialogo.falar("", [_texto("outro_dia")])
+		return
+	_firmar(id)
+
+
 func _termos_do_pacto(id: String) -> Array:
 	var dado := Cartas.dados(id)
 	var conta: Array = []
@@ -382,12 +379,10 @@ func _termos_do_pacto(id: String) -> Array:
 		_texto("da") % str(dado.get("resumo", "")),
 		_texto("cobra") % ", ".join(conta),
 		_texto("um_de_cada_vez") if Cartas.pacto != "" else _texto("sem_pacto"),
-		_texto("firmar_aqui") % Cartas.nome(id).to_lower(),
 	]
 
 
 func _firmar(id: String) -> void:
-	oferta = {}
 	var recusa := Cartas.firmar(id)
 	if recusa != "":
 		_avisar(recusa)
@@ -395,15 +390,6 @@ func _firmar(id: String) -> void:
 	Audio.efeito("menu_confirma")
 	_avisar(_texto("firmado") % Cartas.nome(id))
 	achou.emit("pacto", id)
-
-
-## Quem se afasta do lugar do pacto respondeu que não.
-func _conferir_a_oferta() -> void:
-	if oferta.is_empty():
-		return
-	if _plano(oferta["ponto"] - _player.global_position) > DESISTE:
-		oferta = {}
-		_avisar(_texto("outro_dia"))
 
 
 # --- o que se lê --------------------------------------------------------------

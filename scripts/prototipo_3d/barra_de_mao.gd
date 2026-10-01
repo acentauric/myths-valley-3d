@@ -207,7 +207,10 @@ func _unhandled_key_input(event: InputEvent) -> void:
 	# solta.
 	#
 	# O que ficou aqui é o que é da barra: as dez teclas da mão.
-	if Mochila.aberta:
+	#
+	# COM A FALA ABERTA A TECLA É DELA (#21). Esta barra ouve com o vale
+	# parado, e o E que passa a linha comeria o que está na mão.
+	if Mochila.aberta or Dialogo.ocupado():
 		return
 
 	# Alt segurado é gesto do personagem, não barra de mão.

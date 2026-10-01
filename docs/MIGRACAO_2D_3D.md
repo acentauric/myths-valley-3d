@@ -38,7 +38,7 @@ crédito do Tripo e exigem o custo aprovado **antes** de gerar.
 | Fase 2.5 — geografia | #22 chapada e vizinhos · #23 rio, vau e lagoa · #24 mata e serra · #25 fazenda e ruínas |
 | Fase 3 — missões e enredo | **#1** (jam) · #31 capítulos 6 e 7 |
 | Fase 4 — salvar | ~~#7~~ (feita) |
-| Fase 6 — interface | **#2** mochila · ~~#3 fôlego~~ (feita) · **#4** teclas (jam) · ~~#19 painel~~ (feita) · #20 teia, ~~coleção~~ (feita), arraial · #21 fala com escolha |
+| Fase 6 — interface | ~~#2 mochila~~ (feita) · ~~#3 fôlego~~ (feita) · ~~#4 teclas~~ (feita) · ~~#19 painel~~ (feita) · #20 teia, ~~coleção~~ (feita), arraial · #21 fala com escolha (a caixa e o pacto saíram; folheto e amanhecer seguem) |
 | Fase 7 — modelos | **#5** comidas e carta (jam) · #26 interiores · #27 roçado e trabalho · #28 bichos · #29 vila · #30 fazenda e ruínas |
 | O idioma | **#6** (jam) |
 | O som · as estações | #16 · #17 |
@@ -668,6 +668,35 @@ era a penúltima — era pré-requisito da 2ᵃ.
 > na beira do roçado, até o modelo dela (#27). Os sons são os da tabela do 2D —
 > água no lance, o "regar" na fisgada, "pegar" no peixe —, e a tabela própria é a
 > #16.
+>
+> **A mochila abre no vale** ([#2](https://github.com/acentauric/myths-valley/issues/2)),
+> e é a segunda tela do 2D a atravessar — a primeira pela cópia compartilhada
+> do `sincronizar-compartilhado.ps1`, e não adaptada. O vale acerta o que é dele: a camada (por cima do HUD) e a
+> escala da tela de 640×360 para a janela, as ações de teclado que ela escuta
+> (`equipar`, `interagir`, `cancelar`, `mover_*`), e a roda do mouse, que passou
+> a trocar o item da mão como no 2D, com o zoom no Ctrl+roda e no +/-. A tecla
+> dela entrou na tabela de atalhos com as outras quatro telas, e W/A/S/D ficaram
+> fora da troca ([#4](https://github.com/acentauric/myths-valley/issues/4)).
+>
+> **A fala longa com Sim e Não saiu** ([#21](https://github.com/acentauric/myths-valley/issues/21)),
+> em `dialogo_vale.gd`, o autoload `Dialogo`. Entrou como **cópia adaptada,
+> declarada**, como o painel: o `dialogo.gd` do 2D chama `Telas.fechar_todas()`,
+> liga o `Relogio.pausado` — que aqui é calendário preso, e soltá-lo no fim da
+> fala o deixaria andando com o `Dia` parado — e carrega o `TemaIntro` do menu
+> para o modo de digitar nome. Veio igual: a API (`falar`, `perguntar`, `ativo`,
+> `ocupado`, `abriu`, `terminou`), a fila, as duas travas (o E que não responde
+> sem escolha feita e a carência do martelo) e o desenho de 640×360, que o vale
+> escala. Ficou de fora o `pedir_texto`. Quem fecha a tela aberta e para o vale
+> e o `Dia` é o vale, ouvindo `abriu` e `terminou`; com a caixa aberta, o dono
+> das telas não abre nem fecha tela e a barra de mão não ouve o E. **Volta a
+> ser um arquivo só** quando o 2D trocar a chamada ao `Telas` e a pausa do
+> `Relogio` por quem ouve os dois sinais — a porta que a mochila já usa
+> (`alguem_fala`, `abrir_documento`). A primeira pergunta do vale é a do pacto:
+> a carta abre a prosa na caixa, depois o preço e o "Firmar?", e o segundo E
+> provisório da #12 saiu. O `testar_escolha` do 2D atravessou junto, como
+> `tests/escolha.gd` (#18). De passagem: as telas do 2D soltam o `Relogio` ao
+> fechar, e com o `Dia` parado ninguém o prendia de novo; pausar e retomar o
+> vale agora o prendem.
 
 É a fase mais barata em relação ao que entrega, e a que mais precisa da regra
 do topo: **a interface do 3D não é substituída, é acrescida.** Toda tela do 2D

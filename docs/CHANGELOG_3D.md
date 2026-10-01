@@ -13,6 +13,21 @@ atualize esse arquivo e este documento juntos.
 
 ## Em desenvolvimento — 30/09/2026
 
+- **Fala longa com Sim e Não** (#21, a caixa e o pacto). O que precisa ser lido antes de
+  seguir abre numa caixa no rodapé, a do 2D, e o vale para atrás dela como atrás de tela.
+  E ou Esc passam a linha; na pergunta, A é Sim, D é Não, E confirma, e o E sem escolha
+  não responde. A primeira pergunta é a do pacto: pegar a carta abre a prosa dela, o
+  preço e o "Firmar?", no lugar do segundo E provisório. O balão continua para o
+  cumprimento de passagem (`dialogo_vale.gd`, `data/dialogo.json`, `tests/escolha.gd`).
+  De passagem: as telas do 2D soltavam o calendário ao fechar, e com o relógio pausado ele
+  andava sozinho; pausar e retomar o vale agora o prendem.
+- **Mochila no vale** (#2). A tela do 2D abre no I por cima do HUD e no tamanho da
+  janela, com o teclado de dentro dela funcionando: setas ou WASD escolhem, F veste ou
+  come, E arruma. A roda do mouse troca o item da mão, como no 2D; o zoom foi para
+  Ctrl+roda e +/- (`tests/mochila.gd`).
+- **Teclas das telas** (#4). A mochila entrou na tabela de atalhos e no AJUSTAR, como J,
+  K, L e P; W/A/S/D, que andam, saíram da troca. A ajuda do HUD e o painel J leem a
+  tabela, e o `COMO_JOGAR_3D.md` voltou a dizer as teclas de hoje (`tests/atalhos.gd`).
 - **Pesca, cozinha e oficina** (#11). Com a vara na mão e a água à frente, E lança; a
   bóia afunda e acende o "!" na fisgada, e o E ferra. A água decide o peixe: traíra no
   rio, robalo no mar. O fogo do terreiro da Casa de taipa cozinha os pratos sabidos, e a

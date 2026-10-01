@@ -63,11 +63,13 @@ const FALTAM_TRADUCAO := {
 	"res://data/pesca.json":
 		"o que se lê pescando, do Mundo._pescar do 2D, mais a fisgada escrita no aviso. TRADUÇÃO COM O RAMON",
 	"res://data/achados.json":
-		"o que se lê ao achar cordel, sinal e carta, do Mundo do 2D, mais a fala do segundo E do pacto. TRADUÇÃO COM O RAMON",
+		"o que se lê ao achar cordel, sinal e carta, do Mundo do 2D, com a conversa e a pergunta do pacto. TRADUÇÃO COM O RAMON",
 	"res://data/luta.json":
 		"o aviso de quando o bicho cai, o de cansaço e as palavras que sobem na pancada ('escapou', 'tonto', 'veneno'), do Mundo do 2D. Palavra curta que em espanhol é igual ao português (veneno) reprovaria como cópia: é com o Ramon, que decide a forma. TRADUÇÃO COM O RAMON",
 	"res://data/partida.json":
 		"o aviso de quando a partida salva volta, que segue o do Mundo._retomar do 2D. TRADUÇÃO COM O RAMON",
+	"res://data/dialogo.json":
+		"o rodapé da caixa de fala longa (#21): continuar, seguir e as portas do Sim e do Não, verbatim do dialogo.gd do 2D. Os colchetes ficam no código, mas a letra da tecla está no texto ('[A] Sim'), e o A e o D são posição no teclado, não inicial de palavra: decidir isso em cada língua é com o Ramon. TRADUÇÃO COM O RAMON",
 	"res://data/queda.json":
 		"as três falas de quem cai e acorda em casa, verbatim do Mundo._ao_cair do 2D. Curtas, mas no registro da roça ('o que faltou foi juízo'). TRADUÇÃO COM O RAMON",
 }

@@ -68,6 +68,8 @@ var _arvores_info	# arvores_info.gd — saúde e regeneração dos coqueiros
 ## vale já guardava antes de existir a segunda cadeia.
 var _cadeias: Dictionary = {}
 var _relogio_pausado_antes := false
+## Foi a fala longa que parou o vale? Ver `_ao_abrir_a_fala`.
+var _fala_parou_o_vale := false
 var painel	# painel_vale.gd — tecla J
 ## Dono único das telas: só uma fica aberta. Ver telas_do_vale.gd.
 var telas
@@ -233,8 +235,13 @@ func _ready() -> void:
 		func() -> bool: return Mochila.aberta,
 		func() -> void: Mochila.abrir(),
 		func() -> void: Mochila.fechar())
-	_ajustar_a_mochila()
-	get_viewport().size_changed.connect(_ajustar_a_mochila)
+	_ajustar_as_telas_do_2d()
+	get_viewport().size_changed.connect(_ajustar_as_telas_do_2d)
+	# A FALA LONGA (#21) para o vale como uma tela, sem ser tela: ninguém a
+	# abre por tecla, é o mundo que fala. Ver `_ao_abrir_a_fala`.
+	Dialogo.abriu.connect(_ao_abrir_a_fala)
+	Dialogo.terminou.connect(_ao_calar_a_fala)
+	telas.ocupado = func() -> bool: return Dialogo.ocupado()
 	if hud.almanaque() != null:
 		var alm: Control = hud.almanaque()
 		telas.registrar("almanaque",
@@ -743,6 +750,7 @@ func _pause_valley() -> void:
 	_relogio_pausado_antes = Dia.pausado
 	Dia.pausado = true
 	get_tree().paused = true
+	_prender_o_calendario()
 
 
 ## Desfaz o `_pause_valley`, INCLUSIVE a câmera.
@@ -750,6 +758,49 @@ func _retomar_o_vale() -> void:
 	get_tree().paused = false
 	Dia.pausado = _relogio_pausado_antes
 	_camera_da_preferencia()
+	_prender_o_calendario()
+
+
+## O `Relogio` AQUI É CALENDÁRIO, e fica preso (ver `dia.gd`). As telas que
+## vêm do 2D o soltam ao fechar, porque lá ele é o dono da hora: a mochila
+## escreve `Relogio.pausado = false`. Com o `Dia` andando, o quadro seguinte o
+## prende de novo; com o `Dia` parado — o relógio pausado pelo jogador, ou a
+## mochila fechada para a fala abrir (#21) —, ninguém prenderia, e o calendário
+## andaria sozinho, que é o defeito que `tests/calendario.gd` procura.
+func _prender_o_calendario() -> void:
+	Relogio.pausado = true
+
+
+## A FALA LONGA ABRIU (#21): o vale para atrás dela como para atrás de tela.
+##
+## É o que o `Dialogo` do 2D fazia sozinho — fechar o que estiver aberto e
+## parar o relógio — trazido para cá, onde quem para o tempo é o `Dia` e quem
+## fecha tela é o dono das telas. Fechar vem primeiro: a fala que sai com menu
+## aberto ficaria atrás dele (é a razão que o 2D escreve no `_abrir` de lá).
+## O mapa também fecha, mesmo não sendo tela: a caixa no rodapé ficaria por
+## cima da vista aérea, com o mundo andando.
+func _ao_abrir_a_fala(_quem: String) -> void:
+	if _fala_parou_o_vale:
+		return
+	telas.fechar_tudo()
+	if mapa != null and mapa.aberto:
+		_toggle_map()
+	_pause_valley()
+	_fala_parou_o_vale = true
+
+
+## E CALOU. Falas encadeadas abrem na linha seguinte do mesmo `await`, então o
+## vale espera o fim do quadro antes de voltar a andar: se outra fala já abriu,
+## ele continua parado, sem soltar e prender o cursor entre uma e outra.
+func _ao_calar_a_fala() -> void:
+	_retomar_se_a_fala_acabou.call_deferred()
+
+
+func _retomar_se_a_fala_acabou() -> void:
+	if not _fala_parou_o_vale or Dialogo.ativo:
+		return
+	_fala_parou_o_vale = false
+	_retomar_o_vale()
 
 
 ## HOME ou M: pausa o vale (e o relógio) e pergunta antes de sair.
@@ -813,7 +864,8 @@ func _ao_derrubar(_id: String, rende: String, quantidade: int) -> void:
 ## A 90% do encaixe, e não a 100%: o painel dela mede 647 px, já passa dos
 ## 640 de lá, e em 2× saía 7 px de cada lado da janela. A 1,8× cada espaço
 ## fica com 50 px, ao lado dos 52 da barra de mão.
-const MOCHILA_DESENHADA_PARA := Vector2(640, 360)
+## O quadro em que as telas do 2D são desenhadas: a janela inteira de lá.
+const QUADRO_DO_2D := Vector2(640, 360)
 const MOCHILA_FOLGA := 0.9
 ## A camada das telas do vale (a do painel J); só uma abre por vez.
 const CAMADA_DAS_TELAS := 25
@@ -821,9 +873,31 @@ const CAMADA_DAS_TELAS := 25
 
 func _ajustar_a_mochila() -> void:
 	var tela := get_viewport().get_visible_rect().size
-	var escala := minf(tela.x / MOCHILA_DESENHADA_PARA.x, tela.y / MOCHILA_DESENHADA_PARA.y) * MOCHILA_FOLGA
+	var escala := minf(tela.x / QUADRO_DO_2D.x, tela.y / QUADRO_DO_2D.y) * MOCHILA_FOLGA
 	Mochila.layer = CAMADA_DAS_TELAS
 	Mochila.transform = Transform2D(0.0, Vector2(escala, escala), 0.0, tela * 0.5 * (1.0 - escala))
+
+
+## AS TELAS QUE VIERAM DO 2D, na camada e no tamanho do vale. Chamado de novo
+## quando a janela muda de tamanho.
+func _ajustar_as_telas_do_2d() -> void:
+	_ajustar_a_mochila()
+	# A fala longa (#21) fica na camada das telas: por cima do HUD, e nenhuma
+	# tela fica aberta com ela (ver `_ao_abrir_a_fala`).
+	_no_quadro_do_2d(Dialogo, CAMADA_DAS_TELAS)
+
+
+## UMA TELA DESENHADA NO QUADRO DE 640×360 DO 2D, inteira na janela.
+##
+## Diferente da mochila: estas desenham a partir do canto do quadro (a caixa
+## de fala ancora no rodapé DELE, e não no da janela), então a escala parte do
+## canto, e a sobra da janela que não é 16:9 fica dividida dos dois lados.
+func _no_quadro_do_2d(camada: CanvasLayer, numero: int) -> void:
+	var tela := get_viewport().get_visible_rect().size
+	var escala := minf(tela.x / QUADRO_DO_2D.x, tela.y / QUADRO_DO_2D.y)
+	camada.layer = numero
+	camada.transform = Transform2D(0.0, Vector2(escala, escala), 0.0,
+		(tela - QUADRO_DO_2D * escala) * 0.5)
 
 
 ## Como `_bind`, mas com o Alt segurado — é o que move os gestos para fora dos
