@@ -1,10 +1,10 @@
-# Gera as falas dos moradores do 3D (ElevenLabs, modelo eleven_v3).
+﻿# Gera as falas dos moradores do 3D (ElevenLabs, modelo eleven_v3).
 #
-# Lê prototipo_3d/data/npcs_3d.json: o guia e cada morador têm "voz" (id da voz no
+# Lê data/npcs_3d.json: o guia e cada morador têm "voz" (id da voz no
 # ElevenLabs) e até 3 "falas" ({texto, tts?, audio}). "tts" é o que a voz lê, com
 # marcações de interpretação do v3 entre colchetes ([sighs], [whispers]...); sem
 # ele, lê o "texto" do balão. Normaliza cada arquivo em -18 LUFS, como as outras
-# vozes, em prototipo_3d/assets/audio/vozes/<audio>.mp3.
+# vozes, em assets/audio/vozes/<audio>.mp3.
 #
 # Uso:  .\tools\elevenlabs\gerar-falas-moradores.ps1 [-Morador tonho] [-Forcar]
 
@@ -16,8 +16,8 @@ param(
 . "$PSScriptRoot\elevenlabs.ps1"
 
 $raiz = Resolve-Path "$PSScriptRoot\..\.."
-$dados = Get-Content "$raiz\prototipo_3d\data\npcs_3d.json" -Raw -Encoding UTF8 | ConvertFrom-Json
-$pasta = "$raiz\prototipo_3d\assets\audio\vozes"
+$dados = Get-Content "$raiz\data\npcs_3d.json" -Raw -Encoding UTF8 | ConvertFrom-Json
+$pasta = "$raiz\assets\audio\vozes"
 $bruto = Join-Path $env:TEMP "mv_falas_brutas"
 New-Item -ItemType Directory -Force $bruto | Out-Null
 

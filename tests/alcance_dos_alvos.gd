@@ -158,7 +158,10 @@ func _run() -> void:
 		var meia: float = float(alvo.get("meia_pegada", 0.0))
 		var centro: Vector3 = alvo["pos"]
 		var encostado := centro + Vector3(meia + RAIO_DO_CORPO, 0.0, 0.0)
-		jogador.global_position = encostado
+		# Uma teleportaçao para terreno mais baixo nao e uma queda na agua.
+		# Reinicia a referencia de terra firme antes de medir o alcance.
+		jogador.spawn_position = encostado
+		jogador.reset_position()
 		await _frames(2)
 		var respondeu: String = recursos._mais_perto()
 		print("  braço    %-18s meia-pegada=%.2f  encostado a %.2f  responde=%s"

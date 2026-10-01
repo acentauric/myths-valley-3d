@@ -4,9 +4,9 @@ normalização em catalogo_assets.gd (altura ou largura) e conferir orientação
 Uso: python medir_glb.py [pasta_assets]"""
 import json, os, re, struct, sys
 
-RAIZ = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
-CAT = os.path.join(RAIZ, "prototipo_3d", "scripts", "prototipo_3d", "catalogo_assets.gd")
-ASSETS = os.path.join(RAIZ, "prototipo_3d", "assets", "prototipo_3d")
+RAIZ = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+CAT = os.path.join(RAIZ, "scripts", "prototipo_3d", "catalogo_assets.gd")
+ASSETS = os.path.join(RAIZ, "assets", "prototipo_3d")
 
 
 def gltf_json(caminho):

@@ -43,16 +43,14 @@ func _ready() -> void:
 		espacos[i] = {}
 
 
-## A TECLA DA MÃO MORA NO `Controles`, e não aqui.
+## A TECLA DA MÃO MORA NA BARRA, e não aqui.
 ##
 ## Este arquivo é regra: quantos espaços há, o que cabe em cada um, o que é
 ## estar de mão livre. A tecla que aciona a regra é outra coisa — depende do
-## teclado, das telas que o projeto tem e de quem está na frente. O protótipo
-## 3D usa ESTE arquivo (ver `tools/comum/sincronizar-compartilhado.ps1`) e não
-## tem `Telas`, nem as ações `espaco_N`; enquanto o `_unhandled_input` morava
-## aqui, ele não podia atravessar.
+## teclado, das telas que o projeto tem e de quem está na frente. Este
+## sistema pertence ao vale; a interface escuta as teclas e chama a regra.
 ##
-## Ver `Controles._unhandled_input`, que chama `alternar` e `selecionar`.
+## Ver `barra_de_mao.gd`, que chama `alternar` e `selecionar`.
 
 
 func proximo_da_mao() -> int:

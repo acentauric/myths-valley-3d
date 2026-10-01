@@ -168,19 +168,23 @@ func _run() -> void:
 		var hit := _floor_hit(game, destination, player)
 		_assert(not hit.is_empty(), "terreno no ponto %s" % landmark.name)
 	_assert(world.landmarks.size() == 12, "pontos de interesse")
+	var spawn_original: Vector3 = player.spawn_position
 	var offshore_visits := 0
 	for landmark in world.landmarks:
 		var destination: Vector3 = landmark.position
 		if region._is_on_land(destination):
 			continue
-		player.global_position = destination + Vector3.UP * 0.35
-		player.velocity = Vector3.ZERO
+		# Teleportar do morro até a água não é uma queda: a referência de
+		# terra firme do trajeto anterior deve ser descartada.
+		player.spawn_position = destination + Vector3.UP * 0.35
+		player.reset_position()
 		await _physics_frames(35)
 		_assert(player.is_on_floor(), "acesso caminhável a %s" % landmark.name)
 		_assert(game._visited.has(landmark.id), "exploração de %s" % landmark.name)
 		offshore_visits += 1
 		await _capture("acesso_%d" % offshore_visits)
 	_assert(offshore_visits == 2, "dois acessos sobre a água")
+	player.spawn_position = spawn_original
 	player.reset_position()
 	await _physics_frames(20)
 	_assert(player.is_on_floor(), "reinício de posição")

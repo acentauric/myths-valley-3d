@@ -42,7 +42,7 @@ const OBRAS := {
 	# ela chegar a bancada é uma caixa cinza na beira do roçado — onde a
 	# oficina fica no 2D. Serra tábua e torce corda, e a aba de obras dela vale
 	# para melhorar a própria oficina, como lá.
-	"oficina": {"ancora": "Roçado", "raio": 3.0, "provisoria": true},
+	"oficina": {"ancora": "Oficina", "raio": 3.0, "provisoria": true},
 	"armazem": {"ancora": "Venda do Bar", "peca": "venda"},
 	"mirante": {"ancora": "Mirante", "raio": 8.0},
 	"poco": {"ancora": "Poço", "raio": 4.0},

@@ -141,7 +141,8 @@ func _run() -> void:
 		if meta.is_empty():
 			# Passo de visita: chega e fecha.
 			var alvo: Vector3 = pedro._posicao_da_missao(indice)
-			jogador.global_position = alvo
+			jogador.spawn_position = alvo
+			jogador.reset_position()
 		else:
 			# Passo de trabalho: bate no alvo até render o que falta.
 			var item := str(meta.get("item", ""))
@@ -155,7 +156,8 @@ func _run() -> void:
 				var onde: Vector3 = recursos.mais_perto_que_rende(item, jogador.global_position)
 				if onde == Lugares.NENHUM:
 					break
-				jogador.global_position = onde
+				jogador.spawn_position = onde
+				jogador.reset_position()
 				await _frames(2)
 				energia.encher()
 				if not recursos.bater():

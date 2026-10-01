@@ -3,16 +3,16 @@
 Junta o arquivo do lote (tarefas e categorias), os prompts baixados do Studio
 (`tripo_prompts_*.json`, opcional; ficam gravados no próprio lote) e a medida de cada
 GLB (triângulos e tamanho), e escreve uma seção entre marcadores em
-`prototipo_3d/assets/prototipo_3d/<pasta>/ORIGEM.md`. Rodar de novo só reescreve a seção.
+`assets/prototipo_3d/<pasta>/ORIGEM.md`. Rodar de novo só reescreve a seção.
 
 Uso: python registrar_origem.py lote_2026-09-26.json [tripo_prompts.json]
 """
 import json, os, re, struct, sys
 
 AQUI = os.path.dirname(os.path.abspath(__file__))
-RAIZ = os.path.abspath(os.path.join(AQUI, "..", "..", ".."))
-ASSETS = os.path.join(RAIZ, "prototipo_3d", "assets", "prototipo_3d")
-CAT = os.path.join(RAIZ, "prototipo_3d", "scripts", "prototipo_3d", "catalogo_assets.gd")
+RAIZ = os.path.abspath(os.path.join(AQUI, "..", ".."))
+ASSETS = os.path.join(RAIZ, "assets", "prototipo_3d")
+CAT = os.path.join(RAIZ, "scripts", "prototipo_3d", "catalogo_assets.gd")
 
 TITULOS = {
     "arvores": "Árvores e vegetação geradas no Tripo",
@@ -80,10 +80,10 @@ def main():
                  "Geradas por texto no Tripo Studio (Modelo HD H3.1, textura 8K desligada, 55",
                  "créditos) e passadas pela Retopologia (Quad, Malha Smart, 40 créditos) com o",
                  "alvo de polígonos da categoria; exportadas em GLB com a textura da tabela.",
-                 "Retopologia e exportação em lote por `prototipo_3d/tools/tripo/lote_studio.js`;",
+                 "Retopologia e exportação em lote por `tools/tripo/lote_studio.js`;",
                  "cópia para o projeto por `sincronizar_downloads.py` (originais em",
                  "`.assets-raw/tripo/`, fora do Git). Tarefas, categorias e prompts completos em",
-                 "`prototipo_3d/tools/tripo/lote_2026-09-26.json`. Estas versões substituem as",
+                 "`tools/tripo/lote_2026-09-26.json`. Estas versões substituem as",
                  "reduzidas por `reduzir_glb.py` e os HD anteriores descritos acima; os arquivos",
                  "antigos continuam no histórico do Git.", "",
                  "| Arquivo | O que é (prompt) | Tarefa Tripo | Triângulos | Textura | MB |",

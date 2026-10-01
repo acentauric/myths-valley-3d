@@ -1,12 +1,12 @@
 # Jogar e aprender com o protótipo 3D
 
-Abra `prototipo_3d/JOGAR_3D.cmd`. O atalho importa os recursos e abre o jogo usando o Godot instalado em `C:\Tools\Godot`.
+Abra `JOGAR_3D.cmd`. O atalho importa os recursos e abre o jogo usando o Godot instalado em `C:\Tools\Godot`.
 
 **JOGAR** pergunta em qual das **três vagas** jogar: vaga vazia começa ali, pela travessia; vaga ocupada continua de onde parou. Recomeçar uma vaga ocupada pede um segundo clique, e o botão diz de quem é a partida que vai ser apagada. **EXPLORAR** é o passeio livre: não usa vaga, não salva e não apaga nada. A partida salva ao cair (a noite no chão), ao voltar ao menu e ao fechar a janela.
 
 Para depurar, `JOGAR_3D.cmd -Lugar igreja` começa o jogador direto num lugar do vale (`praca`, `igreja`, `cemiterio`, `mirante`, `pier`, `rocado`...), sem refazer o caminho; pelo Godot, é `-- --lugar=igreja` depois dos argumentos do projeto.
 
-No Godot Project Manager, outra opção é importar **`prototipo_3d/project.godot`** e executar `scenes/prototipo_3d/vale.tscn`. O `project.godot` da raiz continua sendo a base 2D.
+No Godot Project Manager, outra opção é importar **`project.godot`** e executar `scenes/prototipo_3d/vale.tscn`. O `project.godot` da raiz continua sendo a base 2D.
 
 ## Controles
 
@@ -74,7 +74,7 @@ As animações foram exportadas **no lugar**: os clipes mexem o esqueleto, enqua
 
 O material continua sendo duplicado apenas na instância e renderizado dos dois lados. Essa correção evita o desaparecimento de partes do torso sem alterar o arquivo 3D original.
 
-Com a **vara de pescar** na mão (vende no balcão) e a água à frente — o píer, a praia, a beira do rio —, E lança a linha; quando a bóia afunda e acende o "!", E de novo, rápido, ferra o peixe. No rio sai traíra, no mar sai robalo. Andar recolhe a linha. Perto da **fogueira do terreiro**, ao lado da Casa de taipa, o painel (J) ganha a aba do fogão, e na **bancada da oficina** (a caixa cinza na beira do roçado) a lenha vira tábua e corda. Perto da Casa de taipa, do armazém (Venda do Bar), do mirante, do poço e do píer, o painel (J) ganha a aba de **obras** daquela construção: com o plano sabido e o material na mochila, E toca a obra, e o ganho dela vai para o corpo (fôlego, descanso). Os planos de começo já se sabem; outros se compram no balcão. Por enquanto a casa não muda por fora nem por dentro — os modelos novos e o cômodo ainda não chegaram. Um **caititu** mora na mata fechada, longe da vila (por enquanto uma caixa cinza, até o modelo com rig chegar): fareja quem chega perto, **anuncia o bote** — acende em âmbar, abaixa e marca no chão até onde a mordida alcança — e só então morde. Derrubado, deixa a carne de caça na mochila e volta em três dias. Para lutar de facão, escolha-o na barra de mão (1–0 ou a rodinha) ou vista-o no encaixe Mãos da mochila (I). Pelo arraial há **cordéis** esquecidos — no balcão da venda, na capela velha, no bar, no cemitério, no mirante, na ponta do píer: chegue perto e aperte E para guardá-los no almanaque (L). O cordel achado abre no papel, para ler inteiro; E, Esc ou um clique o guardam. No almanaque, escolher de novo o cordel aberto o relê no papel. Na mata fechada, longe da vila, a Caipora deixa um **sinal**; depois de vê-lo aparecem ali as cartas dela. Pegar a carta de pacto abre a conversa dela na caixa de fala — o que ela dá, o que cobra — e a pergunta **Firmar?**: Sim firma ali mesmo, Não deixa a carta com você (o pacto também se firma e se desfaz no painel, aba Cartas). A **vida** já aparece: a barra logo abaixo do relógio, vermelha (verde-musgo com peçonha). Embaixo dela, o **fôlego**: verde, e vermelho com "cansado" quando o corpo está no fim — o passo encurta e não dá para correr até comer ou dormir. Quem cai acorda na porta da Casa de taipa às 6h do dia seguinte, inteiro: no escuro, o cartão do amanhecer diz o dia, a estação, o fôlego e o que está marcado (E pula a espera), e ao clarear alguém conta o que houve, na caixa de fala. A regra de mochila, missões, fé, receitas, luta, obras, venda, pesca, cartas e salvamento também já roda no vale, vinda do 2D, mas o jogador ainda não a vê: faltam as telas e os gatilhos. Os saves ficam no diretório de usuário `MythsValleyPrototype3D`, separados dos da versão 2D. Plantação, terrenos e a conversa por IA ainda não existem no 3D. O que falta, e em que ordem, está nas [issues com rótulo `3d`](https://github.com/acentauric/myths-valley/issues?q=is%3Aissue+is%3Aopen+label%3A3d) e no [plano de migração](../projeto/MIGRACAO_2D_3D.md).
+Com a **vara de pescar** na mão (vende no balcão) e a água à frente — o píer, a praia, a beira do rio —, E lança a linha; quando a bóia afunda e acende o "!", E de novo, rápido, ferra o peixe. No rio sai traíra, no mar sai robalo. Andar recolhe a linha. Perto da **fogueira do terreiro**, ao lado da Casa de taipa, o painel (J) ganha a aba do fogão, e na **bancada da oficina** (a caixa cinza na beira do roçado) a lenha vira tábua e corda. Perto da Casa de taipa, do armazém (Venda do Bar), do mirante, do poço e do píer, o painel (J) ganha a aba de **obras** daquela construção: com o plano sabido e o material na mochila, E toca a obra, e o ganho dela vai para o corpo (fôlego, descanso). Os planos de começo já se sabem; outros se compram no balcão. Por enquanto a casa não muda por fora nem por dentro — os modelos novos e o cômodo ainda não chegaram. Um **caititu** mora na mata fechada, longe da vila (por enquanto uma caixa cinza, até o modelo com rig chegar): fareja quem chega perto, **anuncia o bote** — acende em âmbar, abaixa e marca no chão até onde a mordida alcança — e só então morde. Derrubado, deixa a carne de caça na mochila e volta em três dias. Para lutar de facão, escolha-o na barra de mão (1–0 ou a rodinha) ou vista-o no encaixe Mãos da mochila (I). Pelo arraial há **cordéis** esquecidos — no balcão da venda, na capela velha, no bar, no cemitério, no mirante, na ponta do píer: chegue perto e aperte E para guardá-los no almanaque (L). O cordel achado abre no papel, para ler inteiro; E, Esc ou um clique o guardam. No almanaque, escolher de novo o cordel aberto o relê no papel. Na mata fechada, longe da vila, a Caipora deixa um **sinal**; depois de vê-lo aparecem ali as cartas dela. Pegar a carta de pacto abre a conversa dela na caixa de fala — o que ela dá, o que cobra — e a pergunta **Firmar?**: Sim firma ali mesmo, Não deixa a carta com você (o pacto também se firma e se desfaz no painel, aba Cartas). A **vida** já aparece: a barra logo abaixo do relógio, vermelha (verde-musgo com peçonha). Embaixo dela, o **fôlego**: verde, e vermelho com "cansado" quando o corpo está no fim — o passo encurta e não dá para correr até comer ou dormir. Quem cai acorda na porta da Casa de taipa às 6h do dia seguinte, inteiro: no escuro, o cartão do amanhecer diz o dia, a estação, o fôlego e o que está marcado (E pula a espera), e ao clarear alguém conta o que houve, na caixa de fala. A regra de mochila, missões, fé, receitas, luta, obras, venda, pesca, cartas e salvamento também já roda no vale, vinda do 2D, mas o jogador ainda não a vê: faltam as telas e os gatilhos. Os saves ficam no diretório de usuário `MythsValleyPrototype3D`, separados dos da versão 2D. Plantação, terrenos e a conversa por IA ainda não existem no 3D. O que falta, e em que ordem, está nas [issues com rótulo `3d`](https://github.com/acentauric/myths-valley-3d/issues?q=is%3Aissue+is%3Aopen+label%3A3d) e no [plano de migração](../projeto/MIGRACAO_2D_3D.md).
 
 ## Como a animação funciona
 
@@ -98,13 +98,13 @@ Para repetir o resultado apresentado:
 2. Exporte no formato **GLB**.
 3. Mantenha **Exportar Esqueleto** ativado.
 4. Mantenha **Animação no Lugar** ativada para os clipes de locomoção.
-5. Copie o resultado para `prototipo_3d/assets/prototipo_3d/personagem/`.
+5. Copie o resultado para `assets/prototipo_3d/personagem/`.
 6. Use um nome estável, como `medieval_character_animated.glb`, e no Godot escolha **Reimport** se tiver substituído o arquivo.
 7. Confirme no `AnimationPlayer` se os nomes esperados aparecem antes de alterar o código.
 
 O arquivo atual contém estes 12 clipes: `afraid`, `agree`, `chop`, `fold_arms`, `greet_01`, `idle`, `jump_down`, `look_around`, `run`, `swim`, `walk` e `wave_goodbye_02`.
 
-Para trocar quais gestos as teclas 1–8 e a barra de espaço chamam, edite somente a constante `GESTURES` em `prototipo_3d/scripts/prototipo_3d/authored_animator.gd`. Para nomes diferentes de parado/andar/correr, ajuste `MOTION_CLIPS` no mesmo arquivo. Assim o controlador de física e a câmera não precisam mudar.
+Para trocar quais gestos as teclas 1–8 e a barra de espaço chamam, edite somente a constante `GESTURES` em `scripts/prototipo_3d/authored_animator.gd`. Para nomes diferentes de parado/andar/correr, ajuste `MOTION_CLIPS` no mesmo arquivo. Assim o controlador de física e a câmera não precisam mudar.
 
 ## Casa gerada no Tripo
 
@@ -127,8 +127,8 @@ antes de promover o novo asset. Origem e tarefa do Tripo estão registradas em
 
 ## Substituir o personagem
 
-1. Coloque o novo GLB e suas texturas em `prototipo_3d/assets/prototipo_3d/personagem/`.
-2. Em `prototipo_3d/scenes/prototipo_3d/personagem.tscn`, altere **Model Scene** do nó `Jogador`.
+1. Coloque o novo GLB e suas texturas em `assets/prototipo_3d/personagem/`.
+2. Em `scenes/prototipo_3d/personagem.tscn`, altere **Model Scene** do nó `Jogador`.
 3. O controlador ajusta escala, centralização e altura. Se a frente estiver invertida, ajuste **Model Yaw Offset**; `PI` corresponde a 180°.
 4. Confira o esqueleto e os clipes no importador. Outro rig pode exigir retargeting; um GLB que já reúne o modelo e suas animações, como o atual, não precisa desse passo.
 5. Execute o teste integrado antes de enviar a mudança.
@@ -139,7 +139,7 @@ Com o Godot 4.7.2 instalado no caminho usado pelo projeto:
 
 ```powershell
 & 'C:\Tools\Godot\Godot_v4.7.2-stable_win64_console.exe' `
-  --path 'C:\VIRTUALENVS\myths-valley\myths-valley-3D\prototipo_3d' `
+  --path 'C:\VIRTUALENVS\myths-valley\myths-valley-3D' `
   --script 'res://tools/prototipo_3d/smoke_test.gd'
 ```
 
@@ -148,17 +148,16 @@ O teste confirma modelo, textura, 65 ossos, nomes dos 12 clipes, locomoção, no
 ## Estrutura relevante
 
 ```text
-myths-valley-3D/
-├── docs/experiencia/COMO_JOGAR_3D.md
-└── prototipo_3d/
-    ├── JOGAR_3D.cmd
-    ├── project.godot
-    ├── assets/prototipo_3d/
-    │   ├── casas/                        # Casa otimizada e registro de origem
-    │   └── personagem/                   # GLB animado e origem
-    ├── scenes/prototipo_3d/              # Vale e personagem reutilizável
-    ├── scripts/prototipo_3d/             # Controle, animação, cenário e HUD
-    └── tools/prototipo_3d/               # Inicialização e teste integrado
+myths-valley-3d/
+├── project.godot
+├── JOGAR_3D.cmd
+├── assets/
+├── scenes/
+├── scripts/
+├── data/
+├── tests/
+├── tools/
+└── docs/
 ```
 
 Godot validado: `4.7.2.stable.official.ed1daf0bf`, renderer Forward+. Se a GPU não suportar esse perfil, execute `JOGAR_3D.cmd -Compatibility`.

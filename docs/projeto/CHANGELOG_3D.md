@@ -1,14 +1,27 @@
 # Histórico de mudanças — Myths' Valley 3D
 
-Este histórico acompanha apenas a experiência executada em `prototipo_3d/` na
-branch `prototype/myths-valley-3d`. O projeto 2D foi a base da derivação, mas
+## Em desenvolvimento — 01/10/2026
+
+- A oficina provisória ganha âncora na beira do roçado: depois do loteamento,
+  a casa ocupava o mesmo centro e escondia a oficina no painel. Os portões
+  de obras e ofício reproduziram o defeito e conferem a fabricação (#11).
+- O vale passa a abrir na raiz de um repositório próprio, com histórico
+  exclusivo da linha 3D, sistemas locais e testes sem checkout do 2D.
+- Abertura e controles contam falhas e saem com código; a medição de alcance
+  reinicia a referência de terra firme ao teleportar o jogador.
+- Modelos e áudio WAV passam a usar Git LFS. O FBX antigo fica apenas no
+  histórico; caches, sincronizadores e ferramentas descontinuadas saem.
+
+
+Este histórico acompanha apenas o jogo 3D, hoje na raiz deste repositório.
+A linha anterior usava a branch `prototype/myths-valley-3d`. O projeto 2D foi a base da derivação, mas
 suas fases, versões e novidades não são entradas deste registro. Os marcos
 abaixo seguem o que mudou no 3D. A identificação atual é **v0.1.0-dev · Build #5**,
 exclusiva desta derivação e ainda sem distribuição publicada.
 
 O texto clicável de versão e build no rodapé da abertura mostra resumos destes
 marcos. Os textos curtos e a identificação exibidos no jogo ficam em
-`prototipo_3d/data/historico_3d.json`; ao registrar um novo marco ou build,
+`data/historico_3d.json`; ao registrar um novo marco ou build,
 atualize esse arquivo e este documento juntos.
 
 ## Em desenvolvimento — 30/09 e 01/10/2026
@@ -38,7 +51,7 @@ atualize esse arquivo e este documento juntos.
   bancada com receita nascida sabida, e morador procurado que mora aqui. Ele nasceu de um
   defeito que a versão estreita deixou passar — o `coveiro_cabo` pedia duas achas de
   lenha e não entregava machado.
-- **O machado virou item de encaixe** (merge de `c9fa5ed`) e isso quebrou a promessa das
+- **O machado virou item de encaixe** (merge de `4812cad`) e isso quebrou a promessa das
   missões: bater passou a exigir a ferramenta ENCAIXADA, e "toma o machado e vai cortar"
   entregava na mochila. Quem entrega agora encaixa — inclusive o que o jogador já
   carrega, porque o vale dá um machado de saída e o passo desistia por achá-lo lá.
@@ -385,20 +398,20 @@ atualize esse arquivo e este documento juntos.
 - A região passou a **1 unidade = 4 m** (`scale_m_per_unit` no catálogo, agora
   funcional): posições do KML e do cenário são divididas pelo fator, e larguras
   de ruas, rios e orla têm mínimos jogáveis. Fazenda e Praça ficaram a ~220 m
-  de caminhada em vez de ~890 m (`d7613cd`).
+  de caminhada em vez de ~890 m (`f8ce2c4`).
 - Ruas ganharam textura de terra batida com sulcos de carro de boi, aplicada ao
   longo do percurso; a Praça, chão de terra pisoteada com seixos. As duas
-  texturas são procedurais e regeráveis por script (`c9457a0`).
+  texturas são procedurais e regeráveis por script (`d468f07`).
 - `flora_reconcavo.gd` traz espécies procedurais com silhueta própria
   (mangueira, jaqueira, cajueiro, dendezeiro, coqueiro, bananeira, ipê amarelo e
   roxo, embaúba, mata alta) e as peças soltas do 2D (poço, cruzeiro, carroça,
   varal, pilha de lenha, pote, cerca, banco). A mata usa uma MultiMesh por
-  espécie; coqueiros inclinados acompanham a orla (`ea42286`).
+  espécie; coqueiros inclinados acompanham a orla (`5ec25e5`).
 - Mangueira, jaqueira, cajueiro, coqueiro, capela colonial e poço de pedra foram
   gerados no Tripo Studio e reduzidos por `tools/modelos/reduzir_glb.py`,
-  substituindo os procedurais perto dos pontos de interesse (`42eedd8`).
-- `JOGAR_3D.cmd` passou a existir só em `prototipo_3d/`; o histórico e o mapa de
-  planejamento foram movidos para `docs/` e `tools/mapas/` (`23bff84`).
+  substituindo os procedurais perto dos pontos de interesse (`15341fe`).
+- `JOGAR_3D.cmd` passou a existir só em `raiz do projeto 3D`; o histórico e o mapa de
+  planejamento foram movidos para `docs/` e `tools/mapas/` (`e8a1ca7`).
 
 ## Em desenvolvimento — 25/09/2026
 
@@ -433,17 +446,17 @@ publicada:
 
 - A travessia ganhou uma abertura sobre o cenário 3D, com narração, música,
   paisagem sonora e preferências de áudio separadas das partidas 2D
-  (`0fcecdc`).
+  (`a97a1a6`).
 - A casa de Carro Quebrado entrou no cenário com escala e colisão ajustadas
-  (`be97f26`).
+  (`0bedefa`).
 - O pau-brasil e a referência para novos modelos ampliaram a paisagem
-  (`6bd07ed`).
+  (`ac3b431`).
 
 ## 23/09/2026 — Primeiro passeio jogável
 
 - O projeto 3D independente ganhou vila explorável, personagem, câmera em
-  terceira pessoa, colisões e HUD (`243697e`).
+  terceira pessoa, colisões e HUD (`46f044c`).
 - O personagem passou a usar animações de repouso, caminhada, corrida e gestos
-  acionáveis no jogo (`1e77309`).
+  acionáveis no jogo (`65ed61d`).
 - As primeiras decisões de escopo e a base técnica foram registradas em
-  documentos específicos do protótipo (`1b4080a`, `ee20191`).
+  documentos específicos do protótipo (`55598da`, `9c10474`).

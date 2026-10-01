@@ -221,6 +221,10 @@ func _run() -> void:
 		var redondos := 0
 		for no in (hud as Node).find_children("*", "Button", true, false):
 			var botao := no as Button
+			# O FPS ganhou depois um painel proprio, com portao em
+			# hud_desempenho.gd; ele nao pertence a antiga coluna de menus.
+			if botao == hud._performance_button:
+				continue
 			# Os botões da coluna eram redondos e pequenos, sem texto.
 			if botao.text.strip_edges() == "" and botao.size.x <= 48.0 and botao.size.y <= 48.0:
 				redondos += 1

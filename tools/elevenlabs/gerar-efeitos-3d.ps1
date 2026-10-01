@@ -12,7 +12,7 @@ $ErrorActionPreference = "Stop"
 . "$PSScriptRoot\elevenlabs.ps1"
 
 $raiz = Resolve-Path "$PSScriptRoot\..\.."
-$pasta = "$raiz\prototipo_3d\assets\audio\efeitos"
+$pasta = "$raiz\assets\audio\efeitos"
 $bruto = Join-Path $env:TEMP "mv_efeitos_3d"
 New-Item -ItemType Directory -Force $bruto | Out-Null
 

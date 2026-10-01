@@ -1140,6 +1140,9 @@ func _alinhar_colisao_coqueiro(visual: Node3D, corpo: StaticBody3D) -> void:
 func _build_farm() -> void:
 	var origin: Vector3 = _region.get_feature_center("Fazenda", "area")
 	ancoras["Roçado"] = origin
+	# A casa passou a ocupar o centro do roçado. A oficina precisa de ponto
+	# próprio na beira, senão a distância empatada sempre escolhe a casa.
+	ancoras["Oficina"] = ground_position(origin + Vector3(-8.0, 0.0, -4.0))
 	if _adereco("mandioca_canteiro", origin, 0.2) == null:
 		for row in range(3):
 			_box(Vector3(5.6, 0.1, 0.88), ground_position(origin + Vector3(0, 0, row * 1.35), 0.055), Color("826346"))

@@ -253,7 +253,7 @@ separa pessoa parada de poste, e custa zero.
 
 Se o modo template voltar a ser exposto, a folha ganha as linhas de caminhada e
 o script passa a usar `frame_coords` como o
-[`pedro.gd`](../../scripts/npcs/pedro.gd).
+[`pedro.gd`](../../scripts/prototipo_3d/guia_pedro.gd).
 
 ## O que ainda não existe
 

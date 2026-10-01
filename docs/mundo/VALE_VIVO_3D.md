@@ -162,7 +162,7 @@ processos abertos. A queda de triângulos é a evidência mais estável. A vers�
 com desvanecimento dos blocos foi descartada porque, embora reduzisse
 triângulos, piorou o FPS de perto; a margem atual evita a oscilação sem esse custo.
 Para repetir a comparação A/B na mesma carga do mundo, rode o Godot com janela
-gráfica e `--path prototipo_3d --script res://tools/prototipo_3d/medir_lod.gd`
+gráfica e `--path . --script res://tools/prototipo_3d/medir_lod.gd`
 (sem `--headless`).
 
 ## Onde mexer

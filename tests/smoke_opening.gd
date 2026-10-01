@@ -1,62 +1,77 @@
 extends SceneTree
-## Run: Godot --headless --path prototipo_3d --script res://tests/smoke_opening.gd
+## Run: Godot --headless --path . --script res://tests/smoke_opening.gd
+
+var falhas := 0
+
+func _conferir(ok: bool, rotulo: String) -> void:
+	if not ok:
+		falhas += 1
+		push_error("SMOKE_OPENING_FALHOU: " + rotulo)
+		print("FALHA: ", rotulo)
+
 func _initialize() -> void:
 	_run.call_deferred()
 
 func _run() -> void:
-	assert(change_scene_to_file("res://scenes/prototipo_3d/abertura.tscn") == OK)
+	_conferir(change_scene_to_file("res://scenes/prototipo_3d/abertura.tscn") == OK, "Condição do teste: change_scene_to_file(\"res://scenes/prototipo_3d/abertura.tscn\") == OK")
+	if falhas > 0:
+		quit(1)
+		return
 	await process_frame
 	await process_frame
 	await _mundo_pronto()
 	var opening = current_scene
 	await _capture("abertura")
-	assert(opening.lines.size() == 9)
-	assert(root.get_node_or_null("Audio") != null)
+	_conferir(opening.lines.size() == 9, "Condição do teste: opening.lines.size() == 9")
+	_conferir(root.get_node_or_null("Audio") != null, "Condição do teste: root.get_node_or_null(\"Audio\") != null")
 	var count := 0
 	for folder in ["musica", "efeitos", "ambiente", "narracao"]:
 		for file in DirAccess.get_files_at("res://assets/audio/" + folder):
 			if file.get_extension() in ["mp3", "ogg", "wav"]:
 				var stream = load("res://assets/audio/" + folder + "/" + file)
-				assert(stream is AudioStream and stream.get_length() > 0)
+				_conferir(stream is AudioStream and stream.get_length() > 0, "Condição do teste: stream is AudioStream and stream.get_length() > 0")
 				count += 1
 	opening._options()
 	await process_frame
 	# Ajustes agora têm cabeçalho, abas e colunas: conta os controles dentro delas.
-	assert(opening.content.find_children("*", "OptionButton", true, false).size() + opening.content.find_children("*", "HSlider", true, false).size() >= 9)
+	_conferir(opening.content.find_children("*", "OptionButton", true, false).size() + opening.content.find_children("*", "HSlider", true, false).size() >= 9, "Condição do teste: opening.content.find_children(\"*\", \"OptionButton\", true, false).size() + opening.content.find_children(\"*\", \"HSlider\", true, false).size() >= 9")
 	await _capture("opcoes")
 	opening._credits()
 	await process_frame
 	opening._home()
 	opening._intro()
-	assert(opening.line_index == 0)
+	_conferir(opening.line_index == 0, "Condição do teste: opening.line_index == 0")
 	for i in range(8):
 		opening._next_line()
-	assert(opening.line_index == 8)
+	_conferir(opening.line_index == 8, "Condição do teste: opening.line_index == 8")
 	opening._next_line()
 	await _wait_game()
-	assert(current_scene.name == "Vale3D")
+	_conferir(current_scene != null and current_scene.name == "Vale3D", "o vale abriu depois da apresentação")
+	if current_scene == null or current_scene.name != "Vale3D":
+		quit(1)
+		return
 	var player = current_scene.get_node("Jogador")
 	for i in range(10):
 		await physics_frame
-	assert(player.is_on_floor())
+	_conferir(player.is_on_floor(), "Condição do teste: player.is_on_floor()")
 	var event := InputEventKey.new()
 	event.physical_keycode = KEY_M
 	event.pressed = true
 	current_scene._unhandled_key_input(event)
 	await process_frame
 	# M abre e fecha o MAPA do jogo (o HOME saiu do M).
-	assert(current_scene.mapa != null and current_scene.mapa.aberto)
+	_conferir(current_scene.mapa != null and current_scene.mapa.aberto, "Condição do teste: current_scene.mapa != null and current_scene.mapa.aberto")
 	var fecha := InputEventKey.new()
 	fecha.physical_keycode = KEY_M
 	fecha.pressed = true
 	current_scene._unhandled_key_input(fecha)
 	await process_frame
-	assert(not current_scene.mapa.aberto)
+	_conferir(not current_scene.mapa.aberto, "Condição do teste: not current_scene.mapa.aberto")
 	# HOME pela confirmação do HUD; confirmar carrega o menu.
 	var hud = current_scene.get_node("HUD")
 	current_scene._ask_return_to_menu()
 	await process_frame
-	assert(hud.menu_confirm_open() and paused)
+	_conferir(hud.menu_confirm_open() and paused, "Condição do teste: hud.menu_confirm_open() and paused")
 	hud._close_menu_confirm(true)
 	for i in range(600):
 		if current_scene != null and current_scene.name == "Abertura":
@@ -64,10 +79,13 @@ func _run() -> void:
 		await process_frame
 	await process_frame
 	await _mundo_pronto()
-	assert(current_scene.name == "Abertura")
+	_conferir(current_scene != null and current_scene.name == "Abertura", "a abertura voltou depois do menu")
+	if current_scene == null or current_scene.name != "Abertura":
+		quit(1)
+		return
 	current_scene._start_game()
 	await _wait_game()
-	assert(current_scene.name == "Vale3D")
+	_conferir(current_scene.name == "Vale3D", "Condição do teste: current_scene.name == \"Vale3D\"")
 	print("SMOKE_OK: %d audios; menu, opcoes, creditos, 9 falas, jogo, retorno e pulo" % count)
 	current_scene.queue_free()
 	await process_frame
@@ -78,7 +96,7 @@ func _run() -> void:
 		if child is AudioStreamPlayer:
 			child.stop()
 	await create_timer(0.2).timeout
-	quit()
+	quit(1 if falhas > 0 else 0)
 
 ## A entrada no vale carrega em segundo plano (tela de carregamento).
 func _wait_game() -> void:

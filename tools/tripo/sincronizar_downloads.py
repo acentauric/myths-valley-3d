@@ -2,16 +2,16 @@
 
 Para cada chave do catálogo (`catalogo_assets.gd`), procura `<chave>_tripo.glb` (ou a
 cópia mais recente `<chave>_tripo (n).glb`) em Downloads, guarda o original em
-`.assets-raw/tripo/<pasta>/` e copia para `prototipo_3d/assets/prototipo_3d/<caminho do
+`.assets-raw/tripo/<pasta>/` e copia para `assets/prototipo_3d/<caminho do
 catálogo>`. Não sobrescreve um GLB do projeto mais novo que o download.
 
 Uso: python sincronizar_downloads.py [pasta_downloads]
 """
 import os, re, shutil, sys, glob, hashlib
 
-RAIZ = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
-CATALOGO = os.path.join(RAIZ, "prototipo_3d", "scripts", "prototipo_3d", "catalogo_assets.gd")
-ASSETS = os.path.join(RAIZ, "prototipo_3d", "assets", "prototipo_3d")
+RAIZ = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+CATALOGO = os.path.join(RAIZ, "scripts", "prototipo_3d", "catalogo_assets.gd")
+ASSETS = os.path.join(RAIZ, "assets", "prototipo_3d")
 RAW = os.path.join(RAIZ, ".assets-raw", "tripo")
 
 

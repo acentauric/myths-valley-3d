@@ -34,11 +34,11 @@ sem perda, está em [COMPOSICAO_AUTORAL_3D.md](COMPOSICAO_AUTORAL_3D.md).
 
 | Camada | Arquivo | Papel |
 |---|---|---|
-| Desenho original | [`prototipo_3d/data/mapas/bom_jesus_dos_pobres_fonte.kml`](../../prototipo_3d/data/mapas/bom_jesus_dos_pobres_fonte.kml) | Exportação do Google Earth fornecida pelo autor; preservar como fonte editável e auditável. |
-| Geometria normalizada | [`prototipo_3d/data/mapas/bom_jesus_dos_pobres.json`](../../prototipo_3d/data/mapas/bom_jesus_dos_pobres.json) | Resultado determinístico de [`importar_kml.py`](../../prototipo_3d/tools/mapas/importar_kml.py); coordenadas locais, classes de feição e metadados para o jogo. Não editar à mão. |
-| Cenário interpretado | [`prototipo_3d/data/mapas/bom_jesus_dos_pobres_cenario.json`](../../prototipo_3d/data/mapas/bom_jesus_dos_pobres_cenario.json) | Costa, faixa urbana e mata ampla inferidas das capturas e convertidas dos traçados do HTML por [`importar_mascaras_html.py`](../../prototipo_3d/tools/mapas/importar_mascaras_html.py). Revisável sem alterar o KML. |
-| Catálogo | [`prototipo_3d/data/mapas/regioes.json`](../../prototipo_3d/data/mapas/regioes.json) | Identifica as regiões, aponta para seus arquivos e escolhe `active_region` para a execução atual. |
-| Prévia de planejamento | [`MAPA_PONTOS_INTERESSE.html`](../../prototipo_3d/tools/mapas/MAPA_PONTOS_INTERESSE.html) | Visão 2D para discutir os pontos antes da composição final no 3D. |
+| Desenho original | [`data/mapas/bom_jesus_dos_pobres_fonte.kml`](../../data/mapas/bom_jesus_dos_pobres_fonte.kml) | Exportação do Google Earth fornecida pelo autor; preservar como fonte editável e auditável. |
+| Geometria normalizada | [`data/mapas/bom_jesus_dos_pobres.json`](../../data/mapas/bom_jesus_dos_pobres.json) | Resultado determinístico de [`importar_kml.py`](../../tools/mapas/importar_kml.py); coordenadas locais, classes de feição e metadados para o jogo. Não editar à mão. |
+| Cenário interpretado | [`data/mapas/bom_jesus_dos_pobres_cenario.json`](../../data/mapas/bom_jesus_dos_pobres_cenario.json) | Costa, faixa urbana e mata ampla inferidas das capturas e convertidas dos traçados do HTML por [`importar_mascaras_html.py`](../../tools/mapas/importar_mascaras_html.py). Revisável sem alterar o KML. |
+| Catálogo | [`data/mapas/regioes.json`](../../data/mapas/regioes.json) | Identifica as regiões, aponta para seus arquivos e escolhe `active_region` para a execução atual. |
+| Prévia de planejamento | [`MAPA_PONTOS_INTERESSE.html`](../../tools/mapas/MAPA_PONTOS_INTERESSE.html) | Visão 2D para discutir os pontos antes da composição final no 3D. |
 
 O KML veio do projeto **Myths' Valley**; a revisão atual foi recebida em
 26/09/2026.
@@ -60,14 +60,14 @@ sozinho, toda a cobertura vegetal do mapa.
 
 ## O que o jogo desenha agora
 
-[`geo_region_renderer.gd`](../../prototipo_3d/scripts/prototipo_3d/geo_region_renderer.gd)
+[`geo_region_renderer.gd`](../../scripts/prototipo_3d/geo_region_renderer.gd)
 consome o JSON geográfico e o JSON de cenário da região ativa. Ele constrói
 superfícies vetoriais para terra, mar, mata, vila e polígonos do KML; faixas para
 costa, rios e ruas; e posições para os 12 POIs. A terra tem colisão. A vegetação
 é distribuída com semente fixa nas zonas de mata por duas instâncias `MultiMesh`
  (troncos e copas), mantendo afastamento de vias, rios, praia, áreas abertas e
  marcadores. Um grupo pequeno de colisores acompanha o jogador nos troncos
- próximos; a água não tem colisão. [`world_builder.gd`](../../prototipo_3d/scripts/prototipo_3d/world_builder.gd)
+ próximos; a água não tem colisão. [`world_builder.gd`](../../scripts/prototipo_3d/world_builder.gd)
 acrescenta edifícios e detalhes locais perto dos POIs da primeira região.
 
 O botão **MAPA** da abertura usa o mesmo mundo 3D com câmera ortográfica superior.
@@ -162,7 +162,7 @@ construídas na entrada. Para avançar até uma escala nacional, será necessár
 ### Adicionar uma região ao catálogo
 
 1. Dê à região um ID único e estável, por exemplo `br_ba_nome_da_regiao`.
-   Guarde o KML original em `prototipo_3d/data/mapas/` com origem e data.
+   Guarde o KML original em `data/mapas/` com origem e data.
 2. Gere o JSON métrico com `importar_kml.py`, informando `--source`, `--output`,
    `--region-id` e `--origin-name`. A origem precisa ser o nome de um ponto
    presente no KML. O script atual aceita ponto, linha e polígono.
@@ -190,12 +190,12 @@ construídas na entrada. Para avançar até uma escala nacional, será necessár
 2. Substitua a fonte versionada somente pelo novo desenho escolhido. A revisão
    anterior continuará recuperável no histórico do Git. Registre a origem e a
    data da revisão.
-3. Execute `python prototipo_3d/tools/mapas/importar_kml.py` a partir da raiz do
+3. Execute `python tools/mapas/importar_kml.py` a partir da raiz do
    repositório para regenerar `bom_jesus_dos_pobres.json`. Não altere o JSON
    derivado manualmente; corrija a fonte ou o importador quando o traçado vier
    errado.
 4. Se alterar as máscaras desenhadas no HTML, execute depois
-   `python prototipo_3d/tools/mapas/importar_mascaras_html.py` para regenerar
+   `python tools/mapas/importar_mascaras_html.py` para regenerar
    `bom_jesus_dos_pobres_cenario.json`. Confira costa, mata e vila no jogo:
    esse script usa a transformação específica da prévia e converte
    **interpretações visuais**, não feições adicionais do KML. Se só o KML mudou,
@@ -229,7 +229,7 @@ não um traçado fornecido pelo Google Earth. O Pier fica no mesmo nível do
 percurso para permitir a passagem do personagem. Ao rever a linha de costa ou
 o KML, conferir novamente esses acessos.
 
-O teste `prototipo_3d/tests/mapa_fluxo.gd` percorre HOME, MAPA, AJUSTAR,
+O teste `tests/mapa_fluxo.gd` percorre HOME, MAPA, AJUSTAR,
 CONHECER, histórico, confirmação de SAIR, introdução, jogo e retorno ao HOME.
 Ele também verifica caminhada, corrida, deslocamento da Praça até a Rua
 Principal, colisão em todos os vértices das oito ruas e exploração dos dois
@@ -237,5 +237,5 @@ POIs sobre a água. Execute com Godot em modo gráfico, pois a captura de mouse
 necessária ao movimento não funciona em `--headless`:
 
 ```text
-Godot --path prototipo_3d --script res://tests/mapa_fluxo.gd
+Godot --path . --script res://tests/mapa_fluxo.gd
 ```

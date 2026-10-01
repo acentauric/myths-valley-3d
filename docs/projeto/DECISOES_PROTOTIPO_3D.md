@@ -1,5 +1,7 @@
 # Myths' Valley — Decisões do protótipo 3D
 
+> Decisão vigente em 01/10/2026: o 3D tem repositório próprio, projeto na raiz e sistemas locais. Os registros datados abaixo documentam a evolução do jogo.
+
 > **Objetivo:** entregar uma demonstração jogável para Windows em dois finais de semana, usando Godot, modelos produzidos no Tripo e animações humanas do Mixamo.
 > **Princípio:** concluir uma experiência pequena de ponta a ponta antes de ampliar o número de sistemas, personagens ou cenários.
 
@@ -8,9 +10,9 @@
 | Data | 23/09/2026 |
 | Versão deste documento | 1.5 |
 | Responsável pelo produto | Ramon Santos |
-| Repositório | `acentauric/myths-valley` |
+| Repositório | `acentauric/myths-valley-3d` |
 | Caminho deste documento | `docs/projeto/DECISOES_PROTOTIPO_3D.md` |
-| Branch proposta | `prototype/myths-valley-3d` |
+| Branch de integração | `main` |
 | Janela de produção planejada | 26–27/09 e 03–04/10/2026 |
 | Meta interna de conclusão | 04/10/2026, com build e materiais de apresentação prontos |
 | Meta de submissão usada no planejamento | 05/10/2026; confirmar prazo, horário, fuso e requisitos no formulário oficial |
@@ -30,7 +32,7 @@ Este documento se aplica ao **protótipo 3D da jam**. Não substitui o GDD compl
 
 ### Registro do primeiro teste local — 23/09/2026
 
-Foi criado um projeto Godot independente em `prototipo_3d/project.godot`, dentro da branch `prototype/myths-valley-3d`. A configuração da raiz permanece como referência executável da base 2D. O atalho `JOGAR_3D.cmd` abre a cena 3D; instruções em [COMO_JOGAR_3D.md](../experiencia/COMO_JOGAR_3D.md).
+Foi criado um projeto Godot independente em `project.godot`, dentro da branch `prototype/myths-valley-3d`. O projeto hoje ocupa a raiz de seu repositório próprio. O atalho `JOGAR_3D.cmd` abre a cena 3D; instruções em [COMO_JOGAR_3D.md](../experiencia/COMO_JOGAR_3D.md).
 
 Este teste usa o personagem fornecido em `medieval+character+3d+model.zip`: FBX texturizado, 65 ossos e nenhum clipe de animação. O controlador usa altura de 1,78 m, movimento, corrida, colisão e câmera em terceira pessoa. Um animador procedural fornece movimento provisório dos ossos. Isso ainda não valida o pipeline completo de clipes Mixamo ou a exportação Windows distribuível.
 
@@ -38,7 +40,7 @@ Engine executada: `4.7.2.stable.official.ed1daf0bf`; Forward+ iniciado na NVIDIA
 
 Foi corrigida a visibilidade de partes do torso habilitando as duas faces do material na instância. O defeito foi reproduzido na pose original e deixou de aparecer no comparativo com faces duplas. O FBX original permanece intacto. Testes locais cobrem importação, textura, escala, movimento, corrida, chão, colisão, câmera, reinício e reconhecimento dos três locais do passeio.
 
-Impacto no plano: a estrutura `assets/`, `scenes/`, `scripts/` e `tools/` deste primeiro teste está sob `prototipo_3d/`. A organização evita inicializar os autoloads legados durante a validação do personagem. A integração de regras 2D será avaliada sistema a sistema. A licença de redistribuição do modelo deve ser confirmada antes de publicar seus arquivos.
+Impacto no plano: a estrutura `assets/`, `scenes/`, `scripts/` e `tools/` deste primeiro teste está sob `raiz do projeto 3D`. A organização evita inicializar os autoloads legados durante a validação do personagem. A integração de regras 2D será avaliada sistema a sistema. A licença de redistribuição do modelo deve ser confirmada antes de publicar seus arquivos.
 
 ### Registro da integração de animações — 23/09/2026
 
@@ -48,9 +50,9 @@ O arquivo foi validado com animações no lugar, deixando deslocamento e colisõ
 
 ### Integração do Tripo com Codex — 23/09/2026
 
-O projeto passou a declarar um servidor MCP `tripo` em `.codex/config.toml`, executado pelo Tripo CLI oficial. Isso permite solicitar ao Codex modelos baseados em texto ou imagem, acompanhar tarefas e gerar personagens com rig e animações preset. A instalação local e o fluxo de promoção de assets estão descritos em [TRIPO_MCP.md](../ferramentas/TRIPO_MCP.md).
+Na configuração inicial, o projeto declarou um servidor MCP `tripo`, executado pelo Tripo CLI oficial. A configuração hoje é local e não versionada. Isso permite solicitar ao Codex modelos baseados em texto ou imagem, acompanhar tarefas e gerar personagens com rig e animações preset. A instalação local e o fluxo de promoção de assets estão descritos em [TRIPO_MCP.md](../ferramentas/TRIPO_MCP.md).
 
-Credenciais permanecem no perfil local do Tripo em `%USERPROFILE%\.tripo`; nenhuma chave deve entrar no repositório. Saídas experimentais ficam em `.assets-raw/tripo/` e só são promovidas a `prototipo_3d/assets/` depois de revisão de qualidade, licença e adequação ao Godot. As operações de geração e animação consomem créditos da conta do integrante que as executar.
+Credenciais permanecem no perfil local do Tripo em `%USERPROFILE%\.tripo`; nenhuma chave deve entrar no repositório. Saídas experimentais ficam em `.assets-raw/tripo/` e só são promovidas a `assets/` depois de revisão de qualidade, licença e adequação ao Godot. As operações de geração e animação consomem créditos da conta do integrante que as executar.
 
 ### Primeira casa gerada e integrada — 24/09/2026
 
@@ -66,7 +68,7 @@ geometria de 1.915.732 para 273.548 triângulos. O protótipo substitui pela cas
 importada a construção procedural à direita da praça, mantendo escala automática,
 apoio no terreno e colisão simples. O original pesado permanece em
 `.assets-raw/tripo/casas/`, fora do Git; origem e condições de uso estão em
-`prototipo_3d/assets/prototipo_3d/casas/ORIGEM.md`.
+`assets/prototipo_3d/casas/ORIGEM.md`.
 
 ## 1. Objetivo e critérios de prioridade
 
@@ -307,79 +309,25 @@ Em caso de timeout, indisponibilidade ou falta de internet, apresentar diálogos
 
 Avisar que a conversa livre usa um serviço online. Evitar solicitar dados pessoais reais; não registrar conversas completas em logs de produção por padrão. Manter uma opção para reiniciar a memória da demo.
 
-## 8. Git: branch, não fork, para esta etapa
+## 8. Git: repositório independente
 
-### 8.1. Decisão
+Em 01/10/2026, o autor decidiu separar o 3D do 2D. O histórico deste
+repositório conserva apenas os commits exclusivos da linha 3D e os caminhos
+necessários a ela. Os hashes mudam com o recorte e a migração dos binários
+para Git LFS; autoria, datas e desenvolvimento são preservados.
 
-Manter o protótipo no mesmo repositório, em **`prototype/myths-valley-3d`**, preservando a linha 2D em `main`. Branches isolam linhas de desenvolvimento dentro de um repositório; forks são repositórios separados, ligados a um original. [G1] [G2]
+O projeto Godot está na raiz de `acentauric/myths-valley-3d`, na branch
+`main`. Cada checkout tem seu próprio `.git`; não há worktree compartilhada
+com o jogo 2D. Trabalho novo usa `feature/<nome>` e PR para `main`.
 
-```text
-acentauric/myths-valley
-├── main                         # Linha 2D preservada
-└── prototype/myths-valley-3d     # Integração da demo 3D
-```
+Modelos GLB, FBX históricos e áudio WAV usam Git LFS. Instale-o antes de
+clonar e baixe os conteúdos com `git lfs pull`. Caches, builds, credenciais,
+experimentos e resultados rejeitados ficam fora do Git. Preserve os UIDs e
+as configurações de importação dos recursos aprovados.
 
-Essa decisão evita criar agora outro espaço de issues e colaboração apenas para experimentar o 3D. **Não há obrigação de fazer merge da demo inteira de volta na main.**
-
-Após a jam, decidir entre integrar o resultado, encerrar o experimento ou separar o 3D em um produto/repositório próprio. Não manter duas linhas de produto divergentes indefinidamente sem revisar essa estratégia.
-
-Um fork pode fazer sentido para colaboração externa sem acesso de escrita ou para uma derivação com manutenção independente. Não é necessário apenas para obter outra pasta no computador. [G2] [G3]
-
-### 8.2. Worktree recomendado
-
-Usar uma segunda pasta local para trabalhar no 3D sem alternar a pasta aberta no editor do 2D. `git worktree` permite manter branches diferentes em diretórios de trabalho separados, compartilhando o mesmo repositório Git. [G3]
-
-```text
-pasta-de-projetos/
-├── myths-valley/                 # Editor/IDE da versão 2D
-└── myths-valley-3d/              # Editor/IDE da branch do protótipo
-```
-
-Worktree complementa a branch; não a substitui. Apontar o editor e a sessão de desenvolvimento assistido por IA para a pasta correta antes de fazer alterações.
-
-### 8.3. Procedimento sugerido
-
-**Não executado por este documento.** Os comandos abaixo supõem um clone existente, remoto chamado `origin`, branch remota `main` e permissão de escrita.
-
-Antes de começar, verificar `git status --short` e `git remote -v`. Fazer commit e publicar na `main` quaisquer alterações 2D que devam compor a base. O comando abaixo parte da **main remota publicada**, não de arquivos locais não commitados ou de commits locais ainda não enviados.
-
-Na pasta do clone existente, executar cada comando somente após o anterior concluir sem erro:
-
-```bash
-git fetch origin
-git worktree add -b prototype/myths-valley-3d ../myths-valley-3d origin/main
-git -C ../myths-valley-3d branch --show-current
-git -C ../myths-valley-3d push -u origin prototype/myths-valley-3d
-```
-
-Se a branch ou a pasta já existir, inspecionar antes de continuar. Não usar opções de força para sobrescrever trabalho.
-
-Antes do primeiro commit 3D, registrar a base com uma tag anotada, depois de conferir que o `HEAD` ainda corresponde à base desejada:
-
-```bash
-git -C ../myths-valley-3d tag -a baseline-2d-pre-3d-20260923 -m "Base 2D anterior ao prototipo 3D"
-git -C ../myths-valley-3d push origin baseline-2d-pre-3d-20260923
-```
-
-Copiar este arquivo para `../myths-valley-3d/docs/projeto/DECISOES_PROTOTIPO_3D.md`. Depois:
-
-```bash
-git -C ../myths-valley-3d add docs/projeto/DECISOES_PROTOTIPO_3D.md
-git -C ../myths-valley-3d commit -m "docs: registrar decisoes do prototipo 3D"
-git -C ../myths-valley-3d push
-```
-
-Sem necessidade de manter os dois projetos abertos ao mesmo tempo, também é possível trabalhar somente com uma branch na pasta atual. Fechar o editor antes de alternar a branch reduz o risco operacional de editar a versão errada.
-
-### 8.4. Trabalho em equipe e assets binários
-
-Usar branches pequenas por tarefa, derivadas da branch 3D, e PRs com destino a **`prototype/myths-valley-3d`**, não automaticamente a `main`. Definir um responsável pela integração e evitar edição simultânea da mesma cena por várias pessoas.
-
-Não versionar caches `.godot/`, builds, credenciais ou arquivos temporários. Manter fontes necessárias, cenas, scripts e configurações de importação apropriadas à versão da engine. [G4]
-
-Avaliar/configurar Git LFS antes de adicionar muitos modelos e texturas binários. LFS armazena ponteiros no Git e os conteúdos em armazenamento separado; todos precisam conseguir obter os arquivos reais. Conferir configuração e quotas da conta antes de adotá-lo. [G5]
-
-Guardar rascunhos, gerações rejeitadas e renders pesados fora do conjunto de assets aprovados. Não enviar arquivos brutos ao repositório público sem verificar suas condições de distribuição.
+O [README](../../README.md) e o [plano](PLANO.md) são as instruções vigentes.
+O [registro histórico](HISTORICO_DESENVOLVIMENTO_3D.md) documenta as fases
+anteriores e não exige sincronização com outro projeto.
 
 ## 9. Plano dos dois finais de semana
 

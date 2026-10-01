@@ -3,11 +3,9 @@ extends SceneTree
 ##
 ##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/folheto.gd
 ##
-## O `Folheto` é o do 2D, idêntico (`scripts/ui/folheto.gd`), como a mochila.
-## A pergunta 4 é a do `tools/gdscript/testar_folheto.gd` de lá, que atravessa
-## com ele (#18); as outras são do vale.
+## O portão mede o papel na tela, a coleta e as teclas usando somente
+## os recursos deste projeto.
 ##
-##   1. É O MESMO ARQUIVO DO 2D, byte a byte: mudou lá sem copiar, reprova aqui.
 ##   2. O PAPEL NA TELA: por cima do HUD, no tamanho do vale, inteiro na janela.
 ##   3. ACHAR ABRE O PAPEL e para o vale; o E o guarda e o vale volta a andar,
 ##      com o calendário preso. O Esc guarda também, e a tecla de outra tela
@@ -48,13 +46,6 @@ func _run() -> void:
 		_fechar()
 		return
 
-	# --- 1. É O MESMO ARQUIVO DO 2D --------------------------------------------
-	var raiz_do_2d := ProjectSettings.globalize_path("res://").path_join("..")
-	var copia := FileAccess.get_file_as_bytes("res://scripts/ui/folheto.gd")
-	var original := FileAccess.get_file_as_bytes(raiz_do_2d.path_join("scripts/ui/folheto.gd"))
-	_conferir(not original.is_empty(), "não achei o folheto.gd do 2D para comparar")
-	_conferir(copia == original,
-		"o folheto.gd do vale não é o do 2D: a tela é compartilhada, e a mudança vai lá e se copia")
 
 	_conferir(change_scene_to_file("res://scenes/prototipo_3d/vale.tscn") == OK, "o vale não carregou")
 	await _frames(6)
@@ -202,7 +193,7 @@ func _fechar() -> void:
 		folheto.fechar()
 	print("")
 	if falhas == 0:
-		print("FOLHETO_OK: o folheto é o do 2D byte a byte, fica por cima do HUD no tamanho do vale, o cordel achado abre no papel e para o vale, E e Esc guardam sem soltar o calendário, a tecla de outra tela troca para ela, os dez cordéis cabem no papel, e o almanaque relê o cordel aberto e volta onde estava")
+		print("FOLHETO_OK: fica por cima do HUD no tamanho do vale, o cordel achado abre no papel e para o vale, E e Esc guardam sem soltar o calendário, a tecla de outra tela troca para ela, os dez cordéis cabem no papel, e o almanaque relê o cordel aberto e volta onde estava")
 	else:
 		print("folheto: %d falha(s)" % falhas)
 	quit(1 if falhas > 0 else 0)

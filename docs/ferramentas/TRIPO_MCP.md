@@ -1,6 +1,6 @@
 # Tripo no Codex e no VS Code
 
-O projeto contém uma configuração MCP em `.codex/config.toml`. Ela inicia o servidor local `tripo mcp`, permitindo que o Codex gere modelos a partir de texto ou imagem, consulte tarefas e saldo e execute cadeias de processamento.
+Configure o servidor MCP local `tripo mcp` na sua instalação do Codex. A configuração da máquina não é versionada neste projeto. O servidor permite gerar modelos a partir de texto ou imagem, consultar tarefas e saldo e executar cadeias de processamento.
 
 As credenciais ficam no perfil local `%USERPROFILE%\.tripo`. Nenhuma chave deve ser colocada no Git ou no `.env`.
 
@@ -19,7 +19,7 @@ codex mcp list
 
 Abra a pasta `myths-valley-3D` como projeto confiável no Codex/VS Code. Depois da primeira instalação ou de uma alteração na configuração MCP, feche e abra uma nova sessão do Codex. A lista de ferramentas deverá incluir `tripo`.
 
-O arquivo `.codex/config.toml` é compartilhado pela extensão do Codex e pelo Codex CLI. Cada integrante instala o CLI e faz seu próprio login; a credencial não é compartilhada pelo repositório.
+Cada integrante instala o CLI, configura seu servidor MCP e faz seu próprio login; a configuração e a credencial não são compartilhadas pelo repositório.
 
 ## Fluxo recomendado
 
@@ -27,7 +27,7 @@ O arquivo `.codex/config.toml` é compartilhado pela extensão do Codex e pelo C
 2. Peça ao Codex para usar o MCP `tripo`, indicando o caminho absoluto da imagem e o destino em `.assets-raw/tripo/gerados/`.
 3. Para objetos, use o cenário `game-pc` ou `game-mobile`, conforme o orçamento de geometria.
 4. Para personagens, use o cenário `anim`. Ele faz geração, verificação de rig, rig automático e retargeting dos presets `idle` e `walk`.
-5. Examine o GLB/FBX no Godot. Só depois copie o resultado escolhido para `prototipo_3d/assets/` e registre origem, hash e licença.
+5. Examine o GLB/FBX no Godot. Só depois copie o resultado escolhido para `assets/` e registre origem, hash e licença.
 
 Exemplo de pedido usando uma imagem:
 

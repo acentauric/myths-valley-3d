@@ -1,15 +1,12 @@
 # RODAR OS PORTÕES DO VALE 3D, com teto de tempo e sem matar nada que não seja meu.
 #
-#   .\prototipo_3d\tools\prototipo_3d\testar.ps1                 # a bateria inteira
-#   .\prototipo_3d\tools\prototipo_3d\testar.ps1 -Teste cadeia_das_missoes
+#   .\tools\prototipo_3d\testar.ps1                 # a bateria inteira
+#   .\tools\prototipo_3d\testar.ps1 -Teste cadeia_das_missoes
 #
 #
 # POR QUE ESTE ARQUIVO EXISTE
 #
-# O `tools\comum\testar.ps1` roda os portões do jogo 2D: ele varre
-# `tools\gdscript\testar_*.gd` e chama o Godot na RAIZ do repositório. Os do
-# vale são outro projeto — moram em `prototipo_3d\tests\`, sem o prefixo
-# `testar_`, e pedem `--path prototipo_3d`. Chamar um pelo outro não funciona.
+# Os portões deste projeto moram em tests/ e usam a raiz atual.
 #
 # Enquanto não havia este script, a bateria do vale era rodada teste a teste,
 # à mão. É justamente onde a regra mais cara deste trabalho se perde:
@@ -21,8 +18,7 @@
 # no meio do trabalho, mais de uma vez, levando junto cena não salva. Aqui se
 # mata só por PID, e só PID que este script levantou.
 #
-# O resto é o mesmo do runner do 2D, pelas mesmas razões — que estão
-# comentadas lá e não vou repetir: teto de tempo em vez de processo pendurado,
+# O runner usa teto de tempo em vez de processo pendurado,
 # `$processo.Handle` tocado antes de o processo morrer, stdout e stderr em
 # arquivos separados, e `-clike` para "FALHA:" não casar com "Falhas: 0".
 
@@ -43,6 +39,22 @@ Push-Location $raiz
 $saida = Join-Path $env:TEMP ("testar3d-" + [guid]::NewGuid().ToString("N"))
 New-Item -ItemType Directory -Path $saida | Out-Null
 $semBom = New-Object System.Text.UTF8Encoding($false)
+
+function Ler-Log([string]$arquivo) {
+	if (-not (Test-Path -LiteralPath $arquivo)) { return "" }
+	$fluxo = [IO.File]::Open($arquivo, [IO.FileMode]::Open, [IO.FileAccess]::Read, [IO.FileShare]::ReadWrite)
+	$leitor = New-Object IO.StreamReader($fluxo, $semBom)
+	try { return $leitor.ReadToEnd() } finally { $leitor.Dispose() }
+}
+
+function Encerrar-Teste($processo) {
+	if ($processo.HasExited) { return }
+	try { & taskkill /F /T /PID $processo.Id 2>&1 | Out-Null } catch {
+		# quit(1) pode encerrar entre a leitura do erro e o taskkill.
+		if (-not $processo.HasExited) { throw }
+	}
+	$processo.WaitForExit(5000) | Out-Null
+}
 
 # OS QUE NÃO SÃO PORTÃO.
 #
@@ -121,13 +133,42 @@ if ($faltando.Count -gt 0) {
 	exit 1
 }
 
+# O Godot pode terminar uma importacao com 0 mesmo recebendo ponteiros LFS.
+# Confira os binarios antes de abrir a engine, para um clone sem assets
+# reprovar com uma instrucao util em vez de dezenas de recursos quebrados.
+$ponteiros = @()
+foreach ($arquivo in @(git ls-files -- assets | Where-Object { $_ -match '\.(glb|fbx|wav)$' })) {
+	$caminho = Join-Path $raiz $arquivo
+	if (-not (Test-Path -LiteralPath $caminho)) { continue }
+	$fluxo = [IO.File]::OpenRead($caminho)
+	try {
+		$cabeca = New-Object byte[] 7
+		$lidos = $fluxo.Read($cabeca, 0, $cabeca.Length)
+		if ($lidos -eq 7 -and [Text.Encoding]::ASCII.GetString($cabeca) -eq 'version') {
+			$ponteiros += $arquivo
+		}
+	} finally { $fluxo.Dispose() }
+}
+if ($ponteiros.Count -gt 0) {
+	Write-Host "LFS PENDENTE: execute git lfs pull antes da bateria."
+	foreach ($arquivo in $ponteiros) { Write-Host ("         " + $arquivo) }
+	Remove-Item -LiteralPath $saida
+	Pop-Location
+	exit 1
+}
+
 $reprovados = 0
+$appDataAnterior = $env:APPDATA
 try {
 	foreach ($nome in $quais) {
+		# Cada teste recebe saves e preferencias descartaveis.
+		$perfil = Join-Path $saida ("perfil-" + $nome)
+		[IO.Directory]::CreateDirectory($perfil) | Out-Null
+		$env:APPDATA = $perfil
 		$log = Join-Path $saida "$nome.txt"
 		$erros = "$log.err"
 
-		$processo = Start-Process -FilePath $Godot -PassThru -NoNewWindow `
+		$processo = Start-Process -FilePath $Godot -PassThru -WindowStyle Hidden `
 			-WorkingDirectory $raiz `
 			-ArgumentList @("--headless", "--path", ".", "--script", "res://tests/$nome.gd") `
 			-RedirectStandardOutput $log -RedirectStandardError $erros
@@ -135,25 +176,37 @@ try {
 		$null = $processo.Handle
 
 		$teto = if ($TETO_DO_PORTAO.ContainsKey($nome)) { $TETO_DO_PORTAO[$nome] } else { $TetoSegundos }
-		if (-not $processo.WaitForExit($teto * 1000)) {
-			& taskkill /F /T /PID $processo.Id 2>&1 | Out-Null
-			$processo.WaitForExit(5000) | Out-Null
+		$tempo = [Diagnostics.Stopwatch]::StartNew()
+		$travou = $false
+		while (-not $processo.WaitForExit(500)) {
+			if ((Ler-Log $erros) -match "Parse Error|Compile Error|SCRIPT ERROR|Failed loading resource") {
+				Encerrar-Teste $processo
+				break
+			}
+			if ($tempo.Elapsed.TotalSeconds -ge $teto) {
+				$travou = $true
+				break
+			}
+		}
+		if ($travou) {
+			Encerrar-Teste $processo
 			Write-Host ("TRAVOU   {0,-24} passou de {1}s sem terminar" -f $nome, $teto)
 			$reprovados++
 			continue
 		}
 
-		$dito = if (Test-Path $log) { [IO.File]::ReadAllText($log, $semBom) } else { "" }
-		$reclamado = if (Test-Path $erros) { [IO.File]::ReadAllText($erros, $semBom) } else { "" }
+		$processo.WaitForExit()
+		$dito = Ler-Log $log
+		$reclamado = Ler-Log $erros
 		$texto = $dito + $reclamado
 		$linhas = $dito -split "`n"
 
 		$falhas = @($linhas | Where-Object { $_ -clike "FALHA:*" })
-		if ($texto -match "Parse Error|Compile Error") {
+		if ($texto -match "Parse Error|Compile Error|SCRIPT ERROR|Failed loading resource") {
 			Write-Host ("NAO ABRE {0,-24} o script não compilou" -f $nome)
-			Write-Host ("         " + ((($texto -split "`n") | Where-Object { $_ -match "Parse Error|Compile Error" } | Select-Object -First 2) -join "`n         "))
+			Write-Host ("         " + ((($texto -split "`n") | Where-Object { $_ -match "Parse Error|Compile Error|SCRIPT ERROR|Failed loading resource" } | Select-Object -First 2) -join "`n         "))
 			$reprovados++
-		} elseif ($processo.ExitCode -ne 0) {
+		} elseif ($processo.ExitCode -ne 0 -or $falhas.Count -gt 0) {
 			Write-Host ("FALHOU   {0,-24} saiu com {1}" -f $nome, $processo.ExitCode)
 			foreach ($f in $falhas) { Write-Host ("         " + $f.Trim()) }
 			$reprovados++
@@ -179,7 +232,13 @@ try {
 		}
 	}
 } finally {
-	Remove-Item $saida -Recurse -Force
+	$env:APPDATA = $appDataAnterior
+	$temporarios = [IO.Path]::GetFullPath($env:TEMP).TrimEnd("\") + "\"
+	$alvo = [IO.Path]::GetFullPath($saida)
+	if (-not $alvo.StartsWith($temporarios, [StringComparison]::OrdinalIgnoreCase)) {
+		throw "A pasta de testes saiu do diretorio temporario."
+	}
+	Remove-Item -LiteralPath $alvo -Recurse -Force
 	Pop-Location
 }
 

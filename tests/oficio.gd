@@ -113,7 +113,8 @@ func _run() -> void:
 	# --- 3. A COZINHA NO FOGO DO TERREIRO ----------------------------------------
 	var Bancadas = load("res://scripts/prototipo_3d/bancadas_vale.gd")
 	var fogo: Vector3 = world.ancoras["Fogueira"]
-	player.global_position = world.ground_position(fogo + Vector3(1.5, 0.0, 0.0), 0.07)
+	player.spawn_position = world.ground_position(fogo + Vector3(1.5, 0.0, 0.0), 0.07)
+	player.reset_position()
 	await _frames(2)
 	vale.abrir_o_painel()
 	await _frames(2)
@@ -142,7 +143,8 @@ func _run() -> void:
 	var marca = vale.get_node_or_null("Bancada_oficina")
 	_conferir(marca != null, "a bancada provisória da oficina não está no chão")
 	var bancada: Vector3 = Bancadas.ponto_da_provisoria(world, "oficina")
-	player.global_position = bancada + Vector3(1.2, 0.07, 0.0)
+	player.spawn_position = bancada + Vector3(1.2, 0.07, 0.0)
+	player.reset_position()
 	await _frames(2)
 	vale.abrir_o_painel()
 	await _frames(2)
@@ -169,8 +171,8 @@ func _run() -> void:
 
 
 func _ficar_de_frente(player, world, onde: Vector3, rumo: Vector3) -> void:
-	player.global_position = onde + Vector3(0.0, 0.1, 0.0)
-	player.velocity = Vector3.ZERO
+	player.spawn_position = onde + Vector3(0.0, 0.1, 0.0)
+	player.reset_position()
 	player.visual.rotation.y = atan2(rumo.x, rumo.z)
 
 

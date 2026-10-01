@@ -1,38 +1,25 @@
-# Godot 4+
+# Godot e arquivos de maquina
 .godot/
 *.translation
-
-# Packs baixados para avaliação (só o que entra no jogo vai para assets/)
 .assets-raw/
-
-# Chaves de API — nunca versionar
-chaves/*
-!chaves/LEIA-ME.md
 .env
+.env.*
+!.env.example
 .agents/mcp_config.json
-
-
-# Exportações
+.codex/
+.vscode/
+.idea/
+Thumbs.db
+.DS_Store
+__pycache__/
+*.pyc
+node_modules/
+tools/tripo-studio/output/
+tools/temp/
+scratch/
 build/
 export/
 *.exe
 *.pck
 *.apk
 *.aab
-
-# Editor / SO
-.vscode/
-.idea/
-Thumbs.db
-.DS_Store
-
-# Mono / C# (caso use no futuro)
-.mono/
-data_*/
-mono_crash.*.json
-tools/temp/
-scratch/
-
-# Python
-__pycache__/
-*.pyc

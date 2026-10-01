@@ -99,7 +99,8 @@ func _run() -> void:
 	var perto_do_capim: Vector3 = recursos.mais_perto_da_peca("capim", jogador.global_position)
 	_conferir(perto_do_capim != Lugares.NENHUM, "não achei pé de capim nenhum no vale")
 	if perto_do_capim != Lugares.NENHUM:
-		jogador.global_position = perto_do_capim
+		jogador.spawn_position = perto_do_capim
+		jogador.reset_position()
 		await _frames(3)
 		energia.encher()
 		# Com o machado na mão e sem foice, o corte TEM DE SER RECUSADO. É o que
@@ -115,7 +116,8 @@ func _run() -> void:
 			"a recusa não disse que falta a foice: disse %s" % str(recusas))
 
 	# --- 3. A CADEIA ABRE SOZINHA AO CHEGAR PERTO DO DAMIÃO ------------------
-	jogador.global_position = damiao.global_position + Vector3(1.4, 0.0, 1.0)
+	jogador.spawn_position = damiao.global_position + Vector3(1.4, 0.0, 1.0)
+	jogador.reset_position()
 	await _frames(3)
 	var abriu := await _ate(func() -> bool: return bool(cadeia.iniciado), SEGUNDOS_PARA_ANUNCIAR)
 	_conferir(abriu,
@@ -165,7 +167,8 @@ func _run() -> void:
 					str(meta.get("alvo", "")), int(meta.get("quantos", 1)), id)
 			_:
 				# Passo de visita: chegar ao cemitério, que é onde o jogador já está.
-				jogador.global_position = cadeia.posicao_do_passo(indice)
+				jogador.spawn_position = cadeia.posicao_do_passo(indice)
+				jogador.reset_position()
 
 		var fechou := await _ate(func() -> bool: return cadeia.missao != indice,
 			SEGUNDOS_POR_PASSO)
@@ -238,7 +241,8 @@ func _juntar(recursos, inv, energia, jogador, item: String, quantos: int, id: St
 		var onde: Vector3 = recursos.mais_perto_que_rende(item, jogador.global_position)
 		if onde == Lugares.NENHUM:
 			break
-		jogador.global_position = onde
+		jogador.spawn_position = onde
+		jogador.reset_position()
 		await _frames(2)
 		energia.encher()
 		if not recursos.bater():
@@ -255,7 +259,8 @@ func _derrubar(recursos, energia, jogador, peca: String, quantos: int, id: Strin
 		var onde: Vector3 = recursos.mais_perto_da_peca(peca, jogador.global_position)
 		if onde == Lugares.NENHUM:
 			break
-		jogador.global_position = onde
+		jogador.spawn_position = onde
+		jogador.reset_position()
 		await _frames(2)
 		energia.encher()
 		if not recursos.bater():

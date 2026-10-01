@@ -24,7 +24,7 @@ O Godot extrai três imagens incorporadas ao lado do GLB durante a importação.
 
 ## Base anterior
 
-O ZIP original continua preservado fora do repositório em `C:\Users\ramor\Downloads\JOGO\medieval+character+3d+model.zip`. Dele veio o FBX `tripo_convert_033097b1-adc1-4d96-a77c-9a57917b5d03.fbx`, também mantido no histórico desta branch. O FBX tem o mesmo rig e texturas, mas não possui clipes. `provisional_animator.gd` permanece somente como fallback para modelos sem animação.
+O ZIP original continua preservado fora do repositório em `C:\Users\ramor\Downloads\JOGO\medieval+character+3d+model.zip`. Dele veio o FBX `tripo_convert_033097b1-adc1-4d96-a77c-9a57917b5d03.fbx`, preservado apenas nas versões históricas que o usavam. O FBX tem o mesmo rig e texturas, mas não possui clipes. `provisional_animator.gd` permanece somente como fallback para modelos sem animação.
 
 ## Uso e licença
 

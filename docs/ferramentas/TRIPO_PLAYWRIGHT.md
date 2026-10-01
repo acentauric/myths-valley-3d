@@ -23,8 +23,8 @@ Antes de conectar o MCP, instale a extensão oficial
 e faça login no Tripo Studio normalmente. A extensão solicita aprovação e permite
 escolher qual aba será compartilhada com o Codex.
 
-Depois da instalação, reinicie o VS Code/Codex para carregar o servidor `playwright`
-de `.codex/config.toml`.
+Configure o servidor MCP `playwright` na sua instalação do Codex e reinicie a
+sessão para carregá-lo. Configuração e tokens ficam locais, fora do Git.
 
 ## Fluxo de trabalho recomendado
 
@@ -34,7 +34,7 @@ de `.codex/config.toml`.
 4. O integrante confirma a geração que consumirá créditos.
 5. O Codex acompanha o processamento e baixa o resultado.
 6. O resultado escolhido vai para `.assets-raw/tripo/` para inspeção.
-7. Somente arquivos aprovados são promovidos para `prototipo_3d/assets/`.
+7. Somente arquivos aprovados são promovidos para `assets/`.
 
 Pagamentos, CAPTCHA, verificação por e-mail e autenticação de dois fatores são
 sempre manuais. O saldo do Studio não deve ser confundido com o saldo da API

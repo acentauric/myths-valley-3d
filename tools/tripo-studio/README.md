@@ -24,8 +24,8 @@ aprove a conexão e escolha a aba que poderá ser controlada.
 
 ## Uso pelo Codex
 
-O servidor `playwright` está declarado em `.codex/config.toml`. Reinicie o Codex ou
-o VS Code depois da instalação para ele carregar a configuração local. Então peça,
+Configure o servidor MCP `playwright` localmente e reinicie o Codex ou
+o VS Code para carregá-lo. Configuração e tokens não são versionados. Então peça,
 por exemplo:
 
 > Abra o Tripo Studio, use a imagem X como referência e prepare a geração. Antes de

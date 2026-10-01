@@ -3,7 +3,7 @@
 ## Batimetria
 
 `data/mapas/bom_jesus_dos_pobres_batimetria.bin` (550×500 células de 10 m, float16) é gerado por
-`prototipo_3d/tools/mapas/gerar_batimetria.py` a partir da **carta náutica DHN 1108**
+`tools/mapas/gerar_batimetria.py` a partir da **carta náutica DHN 1108**
 — *Baía de Todos os Santos, Porto de São Roque e proximidades*, 1:15.000, WGS84,
 profundidades em metros referidas ao nível de redução (MLLS). A carta raster (GeoTIFF
 e KAP, baixados do Centro de Hidrografia da Marinha) fica em

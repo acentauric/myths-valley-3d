@@ -4,8 +4,8 @@ extends SceneTree
 ##
 ##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/obras.gd
 ##
-## A regra é o `Obras` compartilhado, e o catálogo é o `obras.json` do 2D
-## (conferido em `tests/dados_do_2d.gd`). Este portão pergunta o que é do vale:
+## A regra é o autoload `Obras`, e o catálogo é o `obras.json` local
+## (conferido em `tests/dados.gd`). Este portão pergunta o que é do vale:
 ##
 ##   1. NENHUMA OBRA SEM LUGAR NEM RAZÃO: toda construção que o catálogo cita
 ##      tem lugar no vale (`BancadasVale.OBRAS`) ou está declarada como
@@ -84,7 +84,8 @@ func _run() -> void:
 		"longe de tudo ainda há obra em foco")
 
 	var porta: Vector3 = vale.get_node("Queda").ponto_de_casa()
-	player.global_position = porta
+	player.spawn_position = porta
+	player.reset_position()
 	await _frames(2)
 	vale.abrir_o_painel()
 	await _frames(2)
@@ -133,7 +134,8 @@ func _run() -> void:
 
 	# No balcão da Venda do Bar: a obra do armazém junto com a venda.
 	var balcao: Vector3 = world.ancoras["Venda do Bar"] + world.ancoras.get("Venda do BarFrente", Vector3.BACK) * (Bancadas.raio("venda") - 1.0)
-	player.global_position = world.ground_position(balcao, 0.07)
+	player.spawn_position = world.ground_position(balcao, 0.07)
+	player.reset_position()
 	await _frames(2)
 	vale.abrir_o_painel()
 	await _frames(2)

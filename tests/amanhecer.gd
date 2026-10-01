@@ -4,13 +4,9 @@ extends SceneTree
 ##
 ##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/amanhecer.gd
 ##
-## O `Amanhecer` é o do 2D, idêntico (`scripts/ui/amanhecer.gd`), como a mochila
-## e o folheto. A pergunta 2 é a do `tools/gdscript/testar_amanhecer.gd` de lá,
-## que atravessa com ele (#18); a terceira de lá — fala nenhuma atrás de menu —
-## já é do `tests/escolha.gd`, e o contador da checklist é do 2D, que o vale não
-## mostra. As outras são do vale.
+## A tela pertence ao vale. O portão mede apresentação, queda e lembretes
+## usando apenas os recursos deste projeto.
 ##
-##   1. É O MESMO ARQUIVO DO 2D, byte a byte.
 ##   2. O CARTÃO CABE NA TELA em qualquer data, com e sem lembrete, e sai
 ##      sozinho, sem ninguém apertar nada.
 ##   3. O CARTÃO NO VALE: acima da tela preta da queda, no tamanho do vale.
@@ -49,14 +45,6 @@ func _run() -> void:
 	if amanhecer == null:
 		_fechar()
 		return
-
-	# --- 1. É O MESMO ARQUIVO DO 2D --------------------------------------------
-	var raiz_do_2d := ProjectSettings.globalize_path("res://").path_join("..")
-	var copia := FileAccess.get_file_as_bytes("res://scripts/ui/amanhecer.gd")
-	var original := FileAccess.get_file_as_bytes(raiz_do_2d.path_join("scripts/ui/amanhecer.gd"))
-	_conferir(not original.is_empty(), "não achei o amanhecer.gd do 2D para comparar")
-	_conferir(copia == original,
-		"o amanhecer.gd do vale não é o do 2D: a tela é compartilhada, e a mudança vai lá e se copia")
 
 	_conferir(change_scene_to_file("res://scenes/prototipo_3d/vale.tscn") == OK, "o vale não carregou")
 	await _frames(6)
@@ -215,7 +203,7 @@ func _fechar() -> void:
 		dialogo.calar()
 	print("")
 	if falhas == 0:
-		print("AMANHECER_OK: o amanhecer é o do 2D byte a byte, o cartão cabe na tela em qualquer data e sai sozinho, fica acima da tela preta da queda no tamanho do vale, a queda o mostra no escuro com o dia já virado e o vale parado, sem tecla que abra tela, mapa ou menu ou que coma, a fala de quem acorda vem na caixa de fala e o E a passa, e os lembretes são o dia da fazenda e a festa da fé")
+		print("AMANHECER_OK: o cartão cabe na tela em qualquer data e sai sozinho, fica acima da tela preta da queda no tamanho do vale, a queda o mostra no escuro com o dia já virado e o vale parado, sem tecla que abra tela, mapa ou menu ou que coma, a fala de quem acorda vem na caixa de fala e o E a passa, e os lembretes são o dia da fazenda e a festa da fé")
 	else:
 		print("amanhecer: %d falha(s)" % falhas)
 	quit(1 if falhas > 0 else 0)

@@ -5,9 +5,9 @@ As imagens são procedurais e determinísticas (semente fixa), pensadas para 188
 Recôncavo: estrada de terra batida com sulcos de carro de boi e chão de praça de
 terra com seixos. Rodar a partir da raiz do repositório:
 
-    python prototipo_3d/tools/materiais/gerar_texturas_chao.py
+    python tools/materiais/gerar_texturas_chao.py
 
-Saída: prototipo_3d/assets/prototipo_3d/materiais/*.png (1024×1024, sem emenda).
+Saída: assets/prototipo_3d/materiais/*.png (1024×1024, sem emenda).
 """
 
 from __future__ import annotations

@@ -41,7 +41,7 @@ e nenhum asset novo deve passar por ele.
    nova; não é preciso refazer UV nem textura.
 4. **Exportar GLB** com a resolução de textura da tabela. O arquivo cai em
    `Downloads`; copie para `.assets-raw/tripo/<categoria>/` (fora do Git) e o
-   GLB final para `prototipo_3d/assets/prototipo_3d/<categoria>/`.
+   GLB final para `assets/prototipo_3d/<categoria>/`.
 5. **Registrar** em `ORIGEM.md` da pasta (tarefa Tripo, contagem de faces,
    resolução) e em `assets/CREDITOS.md`. Conferir escala, colisão e nome no
    jogo antes de commitar.
@@ -55,7 +55,7 @@ O gargalo é a curadoria humana, não o crédito.
 
 Retopologia e exportação de dezenas de peças não se faz clicando. O Studio é
 uma aplicação Nuxt que conversa com `api.tripo3d.ai/v2/studio/…` e o script
-[`prototipo_3d/tools/tripo/lote_studio.js`](../../prototipo_3d/tools/tripo/lote_studio.js)
+[`tools/tripo/lote_studio.js`](../../tools/tripo/lote_studio.js)
 repete, na mesma sessão logada e com os mesmos cabeçalhos que a página envia,
 exatamente as chamadas da interface:
 
@@ -79,9 +79,9 @@ não imprime nem guarda token: reaproveita os cabeçalhos da própria página.
 Depois do lote (ou de uma exportação avulsa), na raiz do repositório:
 
 ```powershell
-python prototipo_3d/tools/tripo/sincronizar_downloads.py        # Downloads → assets/prototipo_3d/<pasta>/
-python prototipo_3d/tools/tripo/medir_glb.py                     # caixa, triângulos e imagens de cada GLB
-python prototipo_3d/tools/tripo/registrar_origem.py lote_2026-09-26.json Downloads/tripo_prompts_*.json
+python tools/tripo/sincronizar_downloads.py        # Downloads → assets/prototipo_3d/<pasta>/
+python tools/tripo/medir_glb.py                     # caixa, triângulos e imagens de cada GLB
+python tools/tripo/registrar_origem.py lote_2026-09-26.json Downloads/tripo_prompts_*.json
 ```
 
 1. `sincronizar_downloads.py` procura `<chave>_tripo.glb` (e as cópias `(1)`, `(2)`…)

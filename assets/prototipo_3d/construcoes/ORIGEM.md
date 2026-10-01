@@ -1,7 +1,7 @@
 # Construções e peças geradas no Tripo
 
 Geradas por texto no Tripo Studio em 26/09/2026 (modelo H3.1, Máx. qualidade,
-textura 2K, GLB) e reduzidas por `prototipo_3d/tools/modelos/reduzir_glb.py`.
+textura 2K, GLB) e reduzidas por `tools/modelos/reduzir_glb.py`.
 Originais (~60 MB) em `.assets-raw/tripo/construcoes/`, fora do Git.
 
 | Arquivo | O que é | Tarefa Tripo | Original | Reduzido |
@@ -21,10 +21,10 @@ regiões). Conferir os direitos de uso do plano Tripo antes de publicar.
 Geradas por texto no Tripo Studio (Modelo HD H3.1, textura 8K desligada, 55
 créditos) e passadas pela Retopologia (Quad, Malha Smart, 40 créditos) com o
 alvo de polígonos da categoria; exportadas em GLB com a textura da tabela.
-Retopologia e exportação em lote por `prototipo_3d/tools/tripo/lote_studio.js`;
+Retopologia e exportação em lote por `tools/tripo/lote_studio.js`;
 cópia para o projeto por `sincronizar_downloads.py` (originais em
 `.assets-raw/tripo/`, fora do Git). Tarefas, categorias e prompts completos em
-`prototipo_3d/tools/tripo/lote_2026-09-26.json`. Estas versões substituem as
+`tools/tripo/lote_2026-09-26.json`. Estas versões substituem as
 reduzidas por `reduzir_glb.py` e os HD anteriores descritos acima; os arquivos
 antigos continuam no histórico do Git.
 

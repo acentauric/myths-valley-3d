@@ -131,7 +131,7 @@ mudança no jogo sem editar coordenadas em GDScript e sem depender da IA.
 
 A primeira fatia dessa migração está em teste na issue #33. Somente a malha de
 terra da região ativa é persistida em
-`prototipo_3d/scenes/prototipo_3d/terreno_editavel.tscn`. Um host `@tool` leve
+`scenes/prototipo_3d/terreno_editavel.tscn`. Um host `@tool` leve
 mostra essa cena no editor dentro de `abertura.tscn` e `vale.tscn`; em execução,
 o arquivo pesado não é carregado e o `WorldBuilder` continua gerando o vale real.
 
