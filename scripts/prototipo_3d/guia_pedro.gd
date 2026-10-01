@@ -106,6 +106,13 @@ func _physics_process(delta: float) -> void:
 	_verificar_anoitecer()
 
 
+## Retomar uma partida salva é da cadeia; esta é a janela para ela, como as
+## propriedades acima. Ver `CadeiaDeMissoes.retomar`: repõe objetivo e marcador
+## sem refazer a fala.
+func retomar() -> void:
+	_cadeia.retomar()
+
+
 func saudar() -> void:
 	super()
 	_cadeia.comecar(6.5)

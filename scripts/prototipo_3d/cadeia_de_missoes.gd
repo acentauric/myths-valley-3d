@@ -210,6 +210,29 @@ func correr(delta: float, palavra_livre: bool) -> void:
 		avancar()
 
 
+## RETOMA UMA PARTIDA SALVA SEM FALAR DE NOVO.
+##
+## Carregar reapontava o marcador pondo `espera` de volta, e `espera` que vence
+## chama `anunciar` — que FALA. Quem salvasse no primeiro passo do Pedro ouvia a
+## abertura do jogo inteira ao voltar, como se a partida tivesse recomeçado; e
+## mesmo no meio da campanha, voltar e ser recebido pela fala do passo é o vale
+## se repetindo.
+##
+## O que o jogador precisa ao voltar é o OBJETIVO, não a fala: onde ir e o que
+## falta. Isso é o caderno e o marcador, e os dois se põem aqui sem balão. A fala
+## já aconteceu uma vez, e uma vez é o que ela vale.
+func retomar() -> void:
+	# ZERO, E NÃO UM NÚMERO PEQUENO: o `correr` só anuncia quando `espera` VENCE,
+	# então espera que nasce zerada nunca chega ao anúncio.
+	espera = 0.0
+	if missao < 0 or missao >= passos.size():
+		return
+	var passo: Dictionary = passos[missao]
+	_registrar_no_caderno(passo)
+	missao_mudou.emit(_com_o_nome(str(passo.get("texto", ""))),
+		posicao_do_passo(missao), missao + 1, passos.size())
+
+
 ## Anuncia o passo em curso: entrega o que ele promete e fala.
 func anunciar() -> void:
 	var passo := passo_atual()
@@ -220,6 +243,28 @@ func anunciar() -> void:
 	_falar(str(passo.get("audio", "")), str(passo.get("texto", "")))
 	missao_mudou.emit(_com_o_nome(str(passo.get("texto", ""))),
 		posicao_do_passo(missao), missao + 1, passos.size())
+
+
+## O NOME CURTO DO PASSO, que é o que entra no caderno e na lista do painel.
+##
+## O `texto` é a FALA — um parágrafo, às vezes dois. Ele servia de título por
+## falta de outro, e a lista de missões virava parede de letra: um botão com um
+## parágrafo dentro empurra a caixa do painel para fora da janela. O jogo 2D
+## sempre teve as duas coisas separadas (`titulo` e `fala` no arraial.json), e
+## agora os arquivos daqui também têm.
+##
+## SEM `titulo`, CORTA. Missão escrita amanhã sem o campo não pode explodir a
+## tela de quem a abrir: vale uma reticência, não vale um parágrafo.
+const LETRAS_DO_TITULO := 52
+
+static func _titulo_do_passo(passo: Dictionary) -> String:
+	var nome := str(passo.get("titulo", "")).strip_edges()
+	if nome != "":
+		return nome
+	var fala := str(passo.get("texto", "")).strip_edges()
+	if fala.length() <= LETRAS_DO_TITULO:
+		return fala
+	return fala.substr(0, LETRAS_DO_TITULO - 1).strip_edges() + "…"
 
 
 ## O PASSO ENTRA NO CADERNO DO VALE, que é mecanismo do 3D.
@@ -240,7 +285,7 @@ func _registrar_no_caderno(passo: Dictionary) -> void:
 	var id := _id_no_caderno(passo)
 	if id == "":
 		return
-	CadernoDoVale.abrir_missao(id, str(passo.get("texto", "")), chave, principal)
+	CadernoDoVale.abrir_missao(id, _titulo_do_passo(passo), chave, principal)
 	var alvo := posicao_do_passo(missao)
 	if alvo != Vector3.ZERO:
 		CadernoDoVale.apontar(id, alvo)

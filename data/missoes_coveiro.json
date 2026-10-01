@@ -6,6 +6,7 @@
   "passos": [
     {
       "id": "coveiro_ver",
+      "titulo": "O zelador do cemitério",
       "lugar": "cemiterio",
       "raio": 8.0,
       "audio": "",
@@ -14,6 +15,7 @@
     },
     {
       "id": "coveiro_cabo",
+      "titulo": "Encabar a foice do Damião",
       "lugar": "cemiterio",
       "raio": 8.0,
       "audio": "",
@@ -23,6 +25,7 @@
     },
     {
       "id": "coveiro_limpar",
+      "titulo": "Limpar o cemitério",
       "lugar": "cemiterio",
       "raio": 8.0,
       "audio": "",

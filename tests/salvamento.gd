@@ -198,6 +198,14 @@ func _run() -> void:
 		return
 	player = vale.player
 	luta = vale.get_node_or_null("Luta")
+
+	# CONTINUAR NÃO REFAZ A FALA. O Pedro reanunciava o passo ao voltar, e quem
+	# tivesse salvado no primeiro ouvia a abertura do jogo de novo — a partida
+	# parecia ter recomeçado. O que volta é o OBJETIVO: o caderno e o marcador.
+	# Escutado desde já, antes dos quadros que o reanúncio levava para sair.
+	var falou_ao_voltar: Array[String] = []
+	if vale.pedro != null and vale.pedro.has_signal("narrou"):
+		vale.pedro.narrou.connect(func(texto: String) -> void: falou_ao_voltar.append(texto))
 	await _frames(4)
 	var longe: float = Vector2(player.global_position.x - igreja.x, player.global_position.z - igreja.z).length()
 	_conferir(longe < 0.6, "o jogador voltou a %.1f u de onde estava" % longe)
@@ -210,6 +218,20 @@ func _run() -> void:
 	_conferir(regra.sabe("ginga"), "a ginga aprendida não voltou")
 	if vale.pedro != null:
 		_conferir(vale.pedro.missao == 2, "o Pedro voltou no passo %d, e estava no 2" % vale.pedro.missao)
+		# O ANÚNCIO VENCIA EM 1,4 s DE RELÓGIO, então a espera é de relógio e
+		# com folga: contar quadros mediria outra coisa.
+		var ate := Time.get_ticks_msec() + 2600
+		while Time.get_ticks_msec() < ate:
+			await process_frame
+		_conferir(falou_ao_voltar.is_empty(),
+			"ao continuar a partida o Pedro falou %d vez(es) — a primeira: '%s'"
+				% [falou_ao_voltar.size(), falou_ao_voltar[0] if not falou_ao_voltar.is_empty() else ""])
+		# E O OBJETIVO VOLTOU MESMO ASSIM: sem a fala, é o caderno que diz ao
+		# jogador o que ele estava fazendo. Sem esta metade, calar o Pedro
+		# passaria no portão deixando o jogador sem rumo nenhum.
+		var caderno_do_vale = root.get_node_or_null("/root/CadernoDoVale")
+		_conferir(caderno_do_vale != null and not caderno_do_vale.ativas.is_empty(),
+			"continuar calou o Pedro e não deixou missão nenhuma aberta no caderno")
 	if luta != null:
 		await _frames(2)
 		_conferir(luta.criaturas.is_empty(), "o caititu derrubado reapareceu ao reabrir")

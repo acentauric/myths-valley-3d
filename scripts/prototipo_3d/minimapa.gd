@@ -7,9 +7,16 @@ extends Control
 ## tempos; com outra câmera ativa (mapa grande) ou o painel CONTROLES aberto no mesmo
 ## canto, ele se recolhe sozinho.
 
-const LARGURA := 210.0
-const ALTURA := 150.0
+## REDONDO COMO BÚSSOLA, por pedido do autor: a vista era um retângulo de
+## 210x150 com cantos arredondados, e em jogo de mapa grande a bússola redonda
+## diz melhor "isto é direção" do que "isto é um pedaço do mapa". Quadrado
+## porque círculo em moldura retangular corta mais de um lado que do outro.
+const LADO := 176.0
+const LARGURA := LADO
+const ALTURA := LADO
 const MARGEM := 14.0
+## Quanto o marcador para antes do aro, para o losango não ser cortado ao meio.
+const MARGEM_DO_ARO := 9.0
 ## Respiro entre a borda dourada da moldura e a vista do mundo.
 const BORDA := 3.0
 ## Lado vertical da vista, em unidades do mundo (~55 u = 220 m).
@@ -22,6 +29,19 @@ const OURO := Color("b49a60")
 const DOURADO := Color("d6ba78")
 const CLARO := Color("f5e3b3")
 const AMBAR := Color("e2a93b")
+
+## O recorte redondo da vista, aplicado ao SubViewportContainer.
+##
+## `COLOR.a` em vez de `discard`: a transparência deixa o fundo da moldura
+## aparecer na quina, e o `smoothstep` tira o serrado do contorno. O raio é 0.5
+## em UV — o container é quadrado, então 0.5 é a borda.
+const MASCARA_REDONDA := """
+shader_type canvas_item;
+void fragment() {
+	float r = length(UV - vec2(0.5));
+	COLOR.a *= 1.0 - smoothstep(0.47, 0.5, r);
+}
+"""
 
 var _jogador: Node3D
 var _pedro: Node3D
@@ -49,7 +69,9 @@ func _ready() -> void:
 	estilo.bg_color = FUNDO
 	estilo.border_color = OURO
 	estilo.set_border_width_all(1)
-	estilo.set_corner_radius_all(8)
+	# O raio é metade do lado: num painel quadrado isso é um círculo, e assim a
+	# moldura dourada vira o aro da bússola sem precisar de arte.
+	estilo.set_corner_radius_all(int(LADO * 0.5))
 	moldura.add_theme_stylebox_override("panel", estilo)
 	add_child(moldura)
 	moldura.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -59,6 +81,14 @@ func _ready() -> void:
 	add_child(quadro)
 	quadro.position = Vector2(BORDA, BORDA)
 	quadro.size = Vector2(LARGURA - BORDA * 2.0, ALTURA - BORDA * 2.0)
+	# A MÁSCARA REDONDA. O aro é desenho de moldura e não corta nada: quem corta
+	# a vista do mundo é este shader, que apaga o que cai fora do círculo. A
+	# borda é suavizada em poucos pixels para o recorte não ficar serrado.
+	var recorte := ShaderMaterial.new()
+	var redondo := Shader.new()
+	redondo.code = MASCARA_REDONDA
+	recorte.shader = redondo
+	quadro.material = recorte
 	_viewport = SubViewport.new()
 	# Sem mundo próprio: o SubViewport enxerga o mesmo World3D do vale.
 	_viewport.own_world_3d = false
@@ -113,6 +143,7 @@ func _process(delta: float) -> void:
 	if not visible:
 		return
 	_seguir()
+	_alvo_do_caderno()
 	_sobre.queue_redraw()
 
 
@@ -126,6 +157,30 @@ func aplicar_visibilidade() -> void:
 ## Suspensão externa (mapa grande aberto, cenas de transição).
 func set_suspenso(valor: bool) -> void:
 	_suspenso = valor
+
+
+## O ALVO VEM DO CADERNO, e não de quem falou por último.
+##
+## Antes o losango seguia o último passo ANUNCIADO: com várias cadeias abertas,
+## ele apontava para quem tinha acabado de falar, e não para o que o jogador
+## escolheu fazer. O painel de missões já promete a escolha — "[E] fixar" —, e
+## quem guarda essa escolha é o `CadernoDoVale.atual()`, com o alvo de cada
+## missão. É o que a maioria dos RPG faz: a bússola segue a missão em foco.
+##
+## `definir_alvo` continua existindo para quem quiser apontar algo que não é
+## missão; o caderno só manda quando há missão em foco com lugar.
+func _alvo_do_caderno() -> void:
+	var caderno := get_node_or_null("/root/CadernoDoVale")
+	if caderno == null:
+		return
+	var missao: Dictionary = caderno.atual()
+	if missao.is_empty():
+		_tem_alvo = false
+		return
+	var onde: Vector3 = missao.get("alvo", Vector3.ZERO)
+	_tem_alvo = onde != Vector3.ZERO
+	if _tem_alvo:
+		_alvo = onde
 
 
 ## Alvo da missão do Pedro: losango âmbar no quadro.
@@ -170,8 +225,16 @@ func _desenhar() -> void:
 	_sobre.draw_colored_polygon(pontos, DOURADO)
 
 
-## Ponto do mundo no quadro, centrado no jogador; fora da vista, encosta na borda
-## (o marcador ainda dá a direção).
+## Ponto do mundo no quadro, centrado no jogador. Fora da vista, ENCOSTA NO ARO —
+## o marcador ainda dá a direção, que é o serviço da bússola.
+##
+## O limite é redondo, e não o retângulo de antes: com a máscara circular, ponto
+## preso num canto cai justamente no pedaço que o shader apaga, e o jogador
+## perderia o marcador exatamente quando mais precisa dele — longe do alvo.
 func _no_quadro(pos: Vector3, centro: Vector2, escala: float) -> Vector2:
-	var ponto := centro + Vector2(pos.x - _jogador.global_position.x, pos.z - _jogador.global_position.z) * escala
-	return ponto.clamp(Vector2(7, 7), _sobre.size - Vector2(7, 7))
+	var fora := Vector2(pos.x - _jogador.global_position.x,
+		pos.z - _jogador.global_position.z) * escala
+	var aro: float = minf(_sobre.size.x, _sobre.size.y) * 0.5 - MARGEM_DO_ARO
+	if fora.length() > aro:
+		fora = fora.normalized() * aro
+	return centro + fora

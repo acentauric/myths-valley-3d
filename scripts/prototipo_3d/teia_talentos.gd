@@ -58,6 +58,16 @@ const ALTURA_DA_LINHA := 30.0
 ## Medidas do desenho da árvore, em pixels.
 const NO_LARGURA := 168.0
 const NO_ALTURA := 54.0
+## O ÍCONE DO TALENTO vem do jogo 2D (`assets/sprites/talentos`), copiado para
+## cá enquanto não houver arte própria do 3D: é decisão do autor, e é melhor um
+## desenho feito para o talento certo do que caixa de texto sozinha. Quem não
+## tiver arquivo fica só com o nome, e a teia não quebra por isso.
+const PASTA_DOS_ICONES := "res://assets/sprites/talentos/"
+const LADO_DO_ICONE := 32.0
+const RECUO_DO_ICONE := 9.0
+## Onde o texto começa quando há ícone, para o nome não sair por cima dele.
+const MARGEM_SIMPLES := 8
+const MARGEM_COM_ICONE := int(RECUO_DO_ICONE + LADO_DO_ICONE + 6.0)
 const VAO_COLUNA := 56.0
 const VAO_LINHA := 18.0
 
@@ -316,6 +326,30 @@ func _degrau_de(no: String, nos_da_raiz: Array, profundidade: int = 0) -> int:
 	return maior + 1
 
 
+## O desenho do talento, ou null quando não há arquivo para ele.
+func _icone_do_talento(no: String) -> TextureRect:
+	var caminho := PASTA_DOS_ICONES + no + ".png"
+	if not ResourceLoader.exists(caminho):
+		return null
+	var arte := load(caminho)
+	if arte == null:
+		return null
+	var quadro := TextureRect.new()
+	quadro.texture = arte
+	quadro.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	quadro.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	quadro.custom_minimum_size = Vector2(LADO_DO_ICONE, LADO_DO_ICONE)
+	quadro.size = Vector2(LADO_DO_ICONE, LADO_DO_ICONE)
+	quadro.position = Vector2(RECUO_DO_ICONE, (NO_ALTURA - LADO_DO_ICONE) * 0.5)
+	# O clique é do nó inteiro: ícone que engole clique é meia caixinha morta.
+	quadro.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	# TALENTO TRAVADO FICA APAGADO, como o nome dele: o desenho tem de contar a
+	# mesma coisa que a cor da letra, senão a teia diz duas coisas ao mesmo tempo.
+	if not Talentos.tem(no):
+		quadro.modulate = Color(1, 1, 1, 0.85 if Talentos.pode(no) else 0.45)
+	return quadro
+
+
 func _caixinha_do_no(no: String) -> Button:
 	var dado: Dictionary = Talentos.dados(no)
 	var botao := Button.new()
@@ -340,6 +374,9 @@ func _caixinha_do_no(no: String) -> Button:
 	botao.add_theme_color_override("font_hover_color", Identidade.CREME)
 	for estado in ["normal", "hover", "pressed"]:
 		botao.add_theme_stylebox_override(estado, _estilo_do_no(no, estado != "normal"))
+	var arte := _icone_do_talento(no)
+	if arte != null:
+		botao.add_child(arte)
 	botao.pressed.connect(func() -> void:
 		_no = no
 		_montar_ficha()
@@ -355,8 +392,8 @@ func _estilo_do_no(no: String, realce: bool) -> StyleBoxFlat:
 	estilo.border_color = Identidade.OURO if dono else (COR_PRONTO if pronto else Color(0.3, 0.33, 0.29, 0.9))
 	estilo.set_border_width_all(2 if dono or pronto else 1)
 	estilo.set_corner_radius_all(4)
-	estilo.content_margin_left = 8
-	estilo.content_margin_right = 8
+	estilo.content_margin_left = MARGEM_COM_ICONE if ResourceLoader.exists(PASTA_DOS_ICONES + no + ".png") else MARGEM_SIMPLES
+	estilo.content_margin_right = MARGEM_SIMPLES
 	return estilo
 
 

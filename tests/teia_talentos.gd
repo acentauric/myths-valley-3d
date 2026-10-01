@@ -107,6 +107,32 @@ func _run() -> void:
 				"o nó '%s' da raiz '%s' existe no Talentos e não aparece na tela: ponto que não se gasta"
 					% [str(no), raiz])
 
+		# 3b. E TODO NÓ TRAZ O DESENHO DO 2D, com o nome fora de cima dele.
+		#
+		# Enquanto não há arte própria do 3D, a teia usa os ícones do jogo 2D
+		# (decisão do autor). Eles moram em `assets/sprites/talentos`, copiados
+		# para o projeto do vale porque `res://` aqui é a pasta do protótipo e
+		# não enxerga a do 2D. Um ícone que não foi copiado some calado: o nó
+		# continua lá, só fica uma caixa de texto sem desenho.
+		for no in nos:
+			if not caixas.has(str(no)):
+				continue
+			var caixa: Button = caixas[str(no)]
+			var desenho: TextureRect = null
+			for neto in caixa.get_children():
+				if neto is TextureRect:
+					desenho = neto as TextureRect
+			_conferir(desenho != null and desenho.texture != null,
+				"o nó '%s' está sem o ícone do 2D: falta copiar assets/sprites/talentos/%s.png"
+					% [str(no), str(no)])
+			if desenho == null:
+				continue
+			var estilo := caixa.get_theme_stylebox("normal")
+			var comeca_o_texto: float = estilo.content_margin_left if estilo != null else 0.0
+			_conferir(comeca_o_texto >= desenho.position.x + desenho.size.x,
+				"no nó '%s' o nome começa em %.0f e o ícone vai até %.0f: texto por cima do desenho"
+					% [str(no), comeca_o_texto, desenho.position.x + desenho.size.x])
+
 		# 4. QUEM EXIGE FICA À DIREITA, E HÁ FIO.
 		var fios := 0
 		for filho in arvore.get_children():

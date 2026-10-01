@@ -50,6 +50,13 @@ const ClockIcon = preload("res://scripts/prototipo_3d/clock_icon.gd")
 
 ## Tamanho do ícone na linha e o vão até o texto.
 const LADO_DO_ICONE := 26.0
+## Onde o ícone começa dentro do botão, e onde o texto tem de começar quando há
+## um. O ícone ocupa de 14 a 40; a margem do texto era 14 em TODAS as linhas, e
+## por isso o nome da opção saía por baixo dele. O comentário do desenho já
+## dizia que o texto recuava — faltava recuar.
+const RECUO_DO_ICONE := 14.0
+const MARGEM_SIMPLES := 14
+const MARGEM_COM_ICONE := int(RECUO_DO_ICONE + LADO_DO_ICONE + 10.0)
 const VAO_DO_ICONE := 12.0
 
 ## Cor das duas linhas de saída. Elas ficam embaixo, depois de um filete, e em
@@ -71,6 +78,10 @@ const ALTURA_DA_LINHA := 40.0
 ## apertados, e linha que não mostra o estado novo é linha que mente.
 var _itens: Array[Dictionary] = []
 var _linhas: Array[Button] = []
+## Quais linhas têm ícone, na ordem de `_linhas`. É o que decide o recuo do
+## texto em `_pintar`; perguntar ao botão por filhos confundiria o ícone com
+## qualquer outro nó que um dia entre ali.
+var _tem_icone: Array[bool] = []
 var _cursor := 0
 var aberto := false
 
@@ -163,6 +174,7 @@ func _redesenhar() -> void:
 	for filho in _lista.get_children():
 		filho.queue_free()
 	_linhas.clear()
+	_tem_icone.clear()
 	var saida_aberta := false
 	for i in _itens.size():
 		var item: Dictionary = _itens[i]
@@ -193,9 +205,10 @@ func _redesenhar() -> void:
 		if icone != null:
 			icone.custom_minimum_size = Vector2(LADO_DO_ICONE, LADO_DO_ICONE)
 			icone.size = Vector2(LADO_DO_ICONE, LADO_DO_ICONE)
-			icone.position = Vector2(14.0, (ALTURA_DA_LINHA - LADO_DO_ICONE) * 0.5)
+			icone.position = Vector2(RECUO_DO_ICONE, (ALTURA_DA_LINHA - LADO_DO_ICONE) * 0.5)
 			icone.mouse_filter = Control.MOUSE_FILTER_IGNORE
 			botao.add_child(icone)
+		_tem_icone.append(icone != null)
 		var indice := i
 		botao.pressed.connect(func() -> void:
 			_cursor = indice
@@ -236,18 +249,19 @@ func _rotulo_de(item: Dictionary) -> String:
 
 func _pintar() -> void:
 	for i in _linhas.size():
+		var esquerda := MARGEM_COM_ICONE if i < _tem_icone.size() and _tem_icone[i] else MARGEM_SIMPLES
 		var estilo := StyleBoxFlat.new()
 		estilo.bg_color = Color(0.19, 0.21, 0.15, 0.96) if i == _cursor else Color(0, 0, 0, 0)
 		if i == _cursor:
 			estilo.border_color = Color(Identidade.OURO.r, Identidade.OURO.g, Identidade.OURO.b, 0.75)
 			estilo.border_width_left = 2
-		estilo.content_margin_left = 14
-		estilo.content_margin_right = 14
+		estilo.content_margin_left = esquerda
+		estilo.content_margin_right = MARGEM_SIMPLES
 		_linhas[i].add_theme_stylebox_override("normal", estilo)
 		var realce := StyleBoxFlat.new()
 		realce.bg_color = Color(0.13, 0.16, 0.12, 0.9)
-		realce.content_margin_left = 14
-		realce.content_margin_right = 14
+		realce.content_margin_left = esquerda
+		realce.content_margin_right = MARGEM_SIMPLES
 		for estado in ["hover", "pressed"]:
 			_linhas[i].add_theme_stylebox_override(estado, estilo if i == _cursor else realce)
 
