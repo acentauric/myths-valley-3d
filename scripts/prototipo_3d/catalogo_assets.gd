@@ -178,9 +178,8 @@ static func instanciar(chave: String, parent: Node, origin: Vector3, size: float
 static func colisao(chave: String, node: Node3D, parent: Node, origin: Vector3, size: float = 1.0, yaw: float = 0.0) -> void:
 	if node == null:
 		return
-	if chave == "ponte":
-		# O tablado e arqueado: a malha fornece uma superficie caminhavel que
-		# acompanha as rampas nas pontas e tambem bloqueia os guarda-corpos.
+	if chave in ["ponte", "pier"]:
+		# A superfície caminhável acompanha a malha importada da ponte e do píer.
 		for child in node.find_children("*", "MeshInstance3D", true, false):
 			(child as MeshInstance3D).create_trimesh_collision()
 		return

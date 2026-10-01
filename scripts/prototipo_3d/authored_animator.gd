@@ -21,6 +21,7 @@ const GESTURES := [
 ]
 
 signal golpe_concluido
+signal golpe_impacto
 
 var animation_player: AnimationPlayer
 var _current_motion := ""
@@ -31,6 +32,7 @@ var _clips: Dictionary = {}
 var _gesture_active := false
 var _jump_active := false
 var _chop_repetitions_left := 0
+var _chop_impacto_emitido := false
 ## Na água funda o movimento vira nado (clipe "swim" em laço, se o modelo tiver).
 var _swimming := false
 ## Velocidade de chão (unidades/s, escala 1) de cada clipe de passo, medida pelo pé de
@@ -56,6 +58,18 @@ func configure(model_root: Node) -> bool:
 			animation_player.get_animation(_clips[clip]).loop_mode = Animation.LOOP_LINEAR
 	_play_motion("idle", 1.0)
 	return true
+
+
+func _process(_delta: float) -> void:
+	if not chop_ativo() or _chop_impacto_emitido:
+		return
+	var clip := String(_clips.get("chop", ""))
+	if clip.is_empty():
+		return
+	var duracao := animation_player.get_animation(clip).length
+	if duracao > 0.0 and animation_player.current_animation_position >= duracao * 0.5:
+		_chop_impacto_emitido = true
+		golpe_impacto.emit()
 
 
 func update_motion(speed: float, _delta: float) -> void:
@@ -108,6 +122,7 @@ func play_chop(repeticoes: int = 2) -> String:
 		return ""
 	_gesture_active = true
 	_chop_repetitions_left = maxi(repeticoes, 1)
+	_chop_impacto_emitido = false
 	_jump_active = false
 	_current_motion = ""
 	animation_player.speed_scale = 1.875
@@ -281,6 +296,7 @@ func _on_animation_finished(animation_name: StringName) -> void:
 		golpe_concluido.emit()
 	if _chop_repetitions_left > 1 and String(animation_name) == String(_clips.get("chop", "")):
 		_chop_repetitions_left -= 1
+		_chop_impacto_emitido = false
 		animation_player.play(String(animation_name), 0.08)
 		return
 	_chop_repetitions_left = 0
