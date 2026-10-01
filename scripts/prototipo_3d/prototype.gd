@@ -104,7 +104,28 @@ func _enter_tree() -> void:
 	# A MOCHILA no I, como no jogo 2D e como no gênero (Palworld, Stardew,
 	# Cyberpunk usam I ou Tab). O Tab aqui já é a câmera, então fica o I — de
 	# fábrica, pela tabela de atalhos, remapeável como as outras telas (#4).
-	_bind("mv_mochila", [Atalhos.tecla("mochila")])
+	_bind("mv_mochila", [Atalhos.tecla("mochila")], true)
+	# O TECLADO DE DENTRO DA MOCHILA (#2). Ela é tela do 2D e escuta as ações
+	# do `Controles` de lá — `equipar`, `interagir`, `cancelar`, `mover_*` —,
+	# que o vale não tinha: F, E e as setas não faziam nada dentro dela, e
+	# cada tecla imprimia erro de ação inexistente. Só o mouse funcionava.
+	#
+	# E e F FIXOS, e não pela tabela de atalhos: o rodapé da mochila escreve
+	# "[E] arrumar · [F] vestir ou comer", e o arquivo é compartilhado — não se
+	# muda daqui. Com ela aberta o vale está parado, então o E e o F de fora
+	# não disputam a tecla. As setas e o WASD, como nas outras telas.
+	_bind("equipar", [KEY_F], true)
+	_bind("interagir", [KEY_E, KEY_SPACE, KEY_ENTER, KEY_KP_ENTER], true)
+	_bind("cancelar", [KEY_ESCAPE], true)
+	_bind("mover_cima", [KEY_W, KEY_UP], true)
+	_bind("mover_baixo", [KEY_S, KEY_DOWN], true)
+	_bind("mover_esquerda", [KEY_A, KEY_LEFT], true)
+	_bind("mover_direita", [KEY_D, KEY_RIGHT], true)
+	# O ZOOM SAIU DA RODA, que agora troca o item da mão como no 2D (#2). Fica
+	# no mais e no menos — as duas fileiras, e o igual junto do mais, porque
+	# em ABNT2 e US o mais mora no shift do igual — e no Ctrl+roda.
+	_bind("mv_zoom_in", [KEY_EQUAL, KEY_PLUS, KEY_KP_ADD], true)
+	_bind("mv_zoom_out", [KEY_MINUS, KEY_KP_SUBTRACT], true)
 	# O ALMANAQUE DAS PLANTAS pela tabela de atalhos, e não numa letra fixa.
 	#
 	# Ele morava no `KEY_L` escrito aqui, porque L é a coleção do 2D. Aí a
@@ -212,6 +233,8 @@ func _ready() -> void:
 		func() -> bool: return Mochila.aberta,
 		func() -> void: Mochila.abrir(),
 		func() -> void: Mochila.fechar())
+	_ajustar_a_mochila()
+	get_viewport().size_changed.connect(_ajustar_a_mochila)
 	if hud.almanaque() != null:
 		var alm: Control = hud.almanaque()
 		telas.registrar("almanaque",
@@ -775,6 +798,32 @@ func _formatar(meters_per_unit: float) -> String:
 func _ao_derrubar(_id: String, rende: String, quantidade: int) -> void:
 	var item: Dictionary = Catalogo.ITENS.get(rende, {})
 	hud.set_notice("%s ×%d" % [str(item.get("nome", rende)), quantidade])
+
+
+## A MOCHILA NA CAMADA E NO TAMANHO DO VALE (#2).
+##
+## Ela é tela do 2D, desenhada para os 640×360 de lá (`mochila.gd`, espaço de
+## 28 px). No vale de 1280×720 abria com metade do tamanho, na camada 15 — por
+## baixo do HUD, que é a 20, desenhava por cima dela e ficava com os cliques.
+## O arquivo é compartilhado e não se mexe nele daqui: o vale acerta a CAMADA
+## dela. Escala em volta do centro da tela, porque os filhos dela se ancoram
+## na tela inteira e o painel fica no meio. O mouse continua certo: a camada
+## leva o clique de volta à coordenada dela.
+##
+## A 90% do encaixe, e não a 100%: o painel dela mede 647 px, já passa dos
+## 640 de lá, e em 2× saía 7 px de cada lado da janela. A 1,8× cada espaço
+## fica com 50 px, ao lado dos 52 da barra de mão.
+const MOCHILA_DESENHADA_PARA := Vector2(640, 360)
+const MOCHILA_FOLGA := 0.9
+## A camada das telas do vale (a do painel J); só uma abre por vez.
+const CAMADA_DAS_TELAS := 25
+
+
+func _ajustar_a_mochila() -> void:
+	var tela := get_viewport().get_visible_rect().size
+	var escala := minf(tela.x / MOCHILA_DESENHADA_PARA.x, tela.y / MOCHILA_DESENHADA_PARA.y) * MOCHILA_FOLGA
+	Mochila.layer = CAMADA_DAS_TELAS
+	Mochila.transform = Transform2D(0.0, Vector2(escala, escala), 0.0, tela * 0.5 * (1.0 - escala))
 
 
 ## Como `_bind`, mas com o Alt segurado — é o que move os gestos para fora dos

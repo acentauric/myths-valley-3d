@@ -42,6 +42,11 @@ const LETRA_FIXA_PERMITIDA := {
 	"abertura.gd": {
 		KEY_E: "a abertura roda antes do vale e aceita Enter, Espaço e E para seguir; é tecla de 'continuar', não o atalho de interagir",
 	},
+	# A MOCHILA é tela do 2D, e o rodapé dela escreve as letras (#2).
+	"prototype.gd": {
+		KEY_E: "o 'interagir' de dentro da mochila, que escreve [E] arrumar no rodapé; com ela aberta o vale está parado e o E de fora não disputa a tecla",
+		KEY_F: "o 'equipar' de dentro da mochila, que escreve [F] vestir ou comer no rodapé; com ela aberta o vale está parado e o F de observar não disputa a tecla",
+	},
 }
 
 var falhas := 0

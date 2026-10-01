@@ -511,7 +511,7 @@ func _update_control_mode() -> void:
 		"%s: painel (missões, cartas, venda, jogo)  ·  %s: almanaque (plantas, cordéis, sinais, bichos)" % [Atalhos.letra("painel"), Atalhos.letra("almanaque")],
 		mode,
 		"Tab ou %s: alterna a câmera  ·  Esc: menu" % Atalhos.letra("camera"),
-		"Rodinha: zoom  ·  %s: avança a hora" % Atalhos.letra("hora"),
+		"Rodinha: item da mão  ·  Ctrl+rodinha ou +/-: zoom  ·  %s: avança a hora" % Atalhos.letra("hora"),
 		"%s: reinicia  ·  %s: mapa · minimapa em AJUSTAR" % [Atalhos.letra("reiniciar"), Atalhos.letra("mapa")],
 	])
 	var text_height := _text_height(_control_mode_label)

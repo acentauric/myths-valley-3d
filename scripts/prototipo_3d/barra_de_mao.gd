@@ -13,10 +13,10 @@ extends Control
 ## que veio de lá foi a REGRA, que é a parte que importa: quantos espaços, qual
 ## é o da mão, o que é estar de mão livre.
 ##
-## O ícone do item é o PNG de 32px do 2D, quando ele existe — `Catalogo.icone`
-## já procura e devolve `null` sem reclamar. Enquanto as artes não vierem para
-## cá (Fase 6 do plano de migração), cada espaço mostra a inicial do item, que
-## é o que o próprio 2D faz com nó de talento sem ícone.
+## O ícone do item é o PNG de 32px do 2D (`assets/sprites/itens/`, iguais byte a
+## byte aos de lá) — `Catalogo.icone` procura e devolve `null` sem reclamar.
+## Item sem PNG mostra a inicial, que é o que o próprio 2D faz com nó de
+## talento sem ícone.
 
 const Atalhos = preload("res://scripts/prototipo_3d/atalhos.gd")
 
