@@ -24,6 +24,23 @@ marcos. Os textos curtos e a identificação exibidos no jogo ficam em
 `data/historico_3d.json`; ao registrar um novo marco ou build,
 atualize esse arquivo e este documento juntos.
 
+## Em desenvolvimento — 02/10/2026
+
+- **O sobrevoo do menu contorna árvores e casas pelos lados, sem subir** (#34). A elipse
+  do píer à praça atravessava copas e telhados em 30% do ciclo. O trajeto agora é
+  planejado offline contra os triângulos reais dos dois estilos
+  (`tools/prototipo_3d/sobrevoo/`), gravado em `data/sobrevoo_menu.json` e voado a
+  14,6–17,4 m do chão, com folga de 5 m e guinada e aceleração no nível do voo antigo.
+  A câmera para de arrastar atrás do trajeto (o atraso cortava as curvas por dentro).
+  Portões: `tests/sobrevoo_livre.gd` e `tests/sobrevoo_livre_procedural.gd`.
+- **O vale monta em ~5 s em vez de ~29 s**, no menu e no jogo. O sorteio da mata, as
+  ruas, a praia, os lotes e os troncos mediam cada ponto contra todos os segmentos de
+  rua, rio e costa e contra todos os troncos; com grades de células a resposta é a
+  mesma, bit a bit (montagem inteira comparada), e o carregamento até o menu caiu de
+  ~34 s para ~7 s (headless).
+- **A tela de carregamento fica sem as bolinhas e sem som.** As partículas saem das
+  quatro telas, e a música e o ambiente do menu só começam quando o menu aparece.
+
 ## Em desenvolvimento — 30/09 e 01/10/2026
 
 - **O sobrevoo do menu olha adiante, do píer à praça** (#34). A câmera acompanha o relevo a 16 metros do chão, na altura das copas e telhados, e segue a direção do movimento com inclinação leve. O percurso curvo retorna por outro lado da vila, sem recuar com o olhar preso no piso. O ciclo contínuo dura 72 segundos e usa as âncoras reais (`tests/sobrevoo_menu.gd`). Ao abrir o mapa, o voo pausa; ao fechar, a câmera retoma o quadro anterior diretamente, sem descer da altura do mapa. A poeira dourada e os vaga-lumes sobrepostos ao menu saem. O foco do voo fica no terço direito, livre do painel, com ajuste para a proporção da janela.

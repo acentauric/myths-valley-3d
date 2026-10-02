@@ -17,6 +17,17 @@ const ALTURA_SOBREVOO := 16.0
 const OLHAR_ADIANTE := 56.0
 const LATERAL_SOBREVOO := 40.0
 const ENQUADRAMENTO_SOBREVOO := 0.75
+## Trajeto planejado offline (tools/prototipo_3d/sobrevoo/planejar.py) que contorna
+## árvores e casas PELOS LADOS, sempre a ~16 m do chão: a elipse abaixo atravessava
+## copas e telhados em 30% do ciclo. Os portões tests/sobrevoo_livre*.gd conferem o
+## trajeto contra o vale de hoje; sem ele (âncoras mudaram), volta a elipse.
+const TRAJETO_SOBREVOO := "res://data/sobrevoo_menu.json"
+## Âncora gravada no trajeto x âncora do vale montado (u): passou disso, é outro vale.
+const TOLERANCIA_ANCORA_U := 0.05
+## Ao trocar de modo (travessia → voo, parado ↔ voo), a câmera chega ao trajeto em
+## curva suave neste tempo. Em regime ela fica EXATAMENTE no trajeto: o atraso do
+## lerp antigo (7 m em média) cortava as curvas por dentro, em cima das árvores.
+const CHEGADA_SEGUNDOS := 2.0
 const HISTORY_SIZE := Vector2(640, 600)
 const GAME_SCENE := "res://scenes/prototipo_3d/vale.tscn"
 ## Equipe exibida em SOBRE.
@@ -99,6 +110,17 @@ var _era_noite := false
 var _tween_entrada: Tween
 var _tween_veu_modal: Tween
 var _tween_nota: Tween
+## Amostras do trajeto planejado (uma a cada 0,1 s do ciclo); vazias = elipse antiga.
+var _trajeto_olho := PackedVector3Array()
+var _trajeto_alvo := PackedVector3Array()
+## Chegada suave ao trajeto depois de uma troca de modo (0 → 1).
+var _chegada := 1.0
+var _chegada_olho := Vector3.ZERO
+var _chegada_alvo := Vector3.ZERO
+var _modo_camera := ""
+## Falso enquanto a tela de carregamento cobre o menu: o foco que o _home() põe no
+## JOGAR não toca o "tique" de passar por cima debaixo dela.
+var _som_liberado := false
 
 func _ready() -> void:
 	IdiomaMenu.aplicar_menu()
@@ -152,8 +174,12 @@ func _ready() -> void:
 	_create_quick_mute(layer)
 	_create_clock(layer)
 	_create_map_button(layer)
-	Audio.tocar_musica(Audio.obter_caminho_musica_menu())
-	Audio.iniciar_ambiente_menu()
+	# O som do menu só começa quando o menu aparece: tocava debaixo da tela de
+	# carregamento, desde os 25% da barra, e era a tela que parecia ter som.
+	if $Cenario.construido:
+		_iniciar_som_do_menu()
+	else:
+		$Cenario.pronto.connect(_iniciar_som_do_menu, CONNECT_ONE_SHOT)
 	_era_noite = Dia.eh_noite()
 	# Método (não lambda): o Godot desconecta sozinho quando o menu é liberado.
 	Dia.hora_mudou.connect(_ao_mudar_hora)
@@ -185,6 +211,12 @@ func _process(delta: float) -> void:
 	elapsed += delta
 	var target := _flyover_target(0.0)
 	var eye := _flyover_eye(0.0)
+	var modo := "travessia" if line_index >= 0 else ("voo" if flyover_active else "parado")
+	if modo != _modo_camera and _modo_camera != "":
+		_chegada = 0.0
+		_chegada_olho = camera.position
+		_chegada_alvo = camera_target
+	_modo_camera = modo
 	if line_index >= 0:
 		var phase := mini(line_index / 3, 2)
 		eye = [Vector3(-110, 65, 55), Vector3(-76, 35, 43), Vector3(75, 48, 75)][phase]
@@ -201,9 +233,10 @@ func _process(delta: float) -> void:
 			var progress := fposmod(elapsed / FLYOVER_SECONDS, 1.0)
 			eye = _flyover_eye(progress)
 			target = _flyover_target(progress)
-		var blend := clampf(delta * 1.4, 0.0, 1.0)
-		camera.position = camera.position.lerp(eye, blend)
-		camera_target = camera_target.lerp(target, blend)
+		_chegada = minf(1.0, _chegada + delta / CHEGADA_SEGUNDOS)
+		var peso := smoothstep(0.0, 1.0, _chegada)
+		camera.position = _chegada_olho.lerp(eye, peso)
+		camera_target = _chegada_alvo.lerp(target, peso)
 	camera.look_at(camera_target)
 	if line_index < 0:
 		_frame_flyover()
@@ -228,6 +261,8 @@ func _flyover_direction(progress: float) -> Vector3:
 
 
 func _flyover_eye(progress: float) -> Vector3:
+	if not _trajeto_olho.is_empty():
+		return _catmull_rom(_trajeto_olho, progress)
 	var eye := _flyover_route(progress)
 	# A altura segue o terreno; o enquadramento fica na altura das copas e telhados.
 	eye.y = $Cenario.ground_height_at(eye) + ALTURA_SOBREVOO / $Cenario.get_meters_per_unit()
@@ -235,6 +270,8 @@ func _flyover_eye(progress: float) -> Vector3:
 
 
 func _flyover_target(progress: float) -> Vector3:
+	if not _trajeto_alvo.is_empty():
+		return _catmull_rom(_trajeto_alvo, progress)
 	var scale_m: float = $Cenario.get_meters_per_unit()
 	var eye := _flyover_eye(progress)
 	var target := eye + _flyover_direction(progress) * OLHAR_ADIANTE / scale_m
@@ -244,10 +281,76 @@ func _flyover_target(progress: float) -> Vector3:
 
 
 func _start_flyover() -> void:
+	_carregar_trajeto()
 	elapsed = 0.0
+	_chegada = 1.0
 	camera.position = _flyover_eye(0.0)
 	camera_target = _flyover_target(0.0)
 	_frame_flyover()
+
+
+## O "tique" de madeira quando o foco chega a um botão; calado sob a tela de carregamento.
+func _tique_de_foco() -> void:
+	if _som_liberado:
+		Audio.efeito("ui_hover")
+
+
+func _iniciar_som_do_menu() -> void:
+	_som_liberado = true
+	Audio.tocar_musica(Audio.obter_caminho_musica_menu())
+	Audio.iniciar_ambiente_menu()
+
+
+## Lê o trajeto planejado e confere se ele é deste vale (escala e âncoras de algum dos
+## dois estilos). Se não for, deixa as amostras vazias e o voo cai na elipse antiga.
+func _carregar_trajeto() -> void:
+	_trajeto_olho = PackedVector3Array()
+	_trajeto_alvo = PackedVector3Array()
+	var dados: Variant = JSON.parse_string(FileAccess.get_file_as_string(TRAJETO_SOBREVOO))
+	if not dados is Dictionary or int(dados.get("versao", 0)) != 1:
+		push_warning("Sobrevoo: %s ilegível; o voo volta à elipse antiga." % TRAJETO_SOBREVOO)
+		return
+	if not is_equal_approx(float(dados.get("metros_por_unidade", 0.0)), $Cenario.get_meters_per_unit()) or not _ancoras_do_trajeto_conferem(dados):
+		push_warning("Sobrevoo: o trajeto gravado é de outro vale (escala ou âncoras mudaram). Replaneje com tools/prototipo_3d/sobrevoo/planejar.py; até lá, o voo volta à elipse antiga.")
+		return
+	var olho := PackedVector3Array()
+	var alvo := PackedVector3Array()
+	for p in dados.get("olho", []):
+		olho.append(Vector3(float(p[0]), float(p[1]), float(p[2])))
+	for p in dados.get("alvo", []):
+		alvo.append(Vector3(float(p[0]), float(p[1]), float(p[2])))
+	if olho.size() < 4 or olho.size() != alvo.size() or olho.size() != int(dados.get("amostras", 0)):
+		push_warning("Sobrevoo: amostras inconsistentes em %s; o voo volta à elipse antiga." % TRAJETO_SOBREVOO)
+		return
+	_trajeto_olho = olho
+	_trajeto_alvo = alvo
+
+
+func _ancoras_do_trajeto_conferem(dados: Dictionary) -> bool:
+	var pier: Vector3 = $Cenario.ancoras.get("Pier", Vector3.INF)
+	var praca: Vector3 = $Cenario.ancoras.get("Praça", Vector3.INF)
+	var por_estilo: Dictionary = dados.get("ancoras_por_estilo", {})
+	for estilo in por_estilo:
+		var anc: Dictionary = por_estilo[estilo]
+		var p: Array = anc.get("pier", [])
+		var q: Array = anc.get("praca", [])
+		if p.size() == 3 and q.size() == 3 \
+				and pier.distance_to(Vector3(float(p[0]), float(p[1]), float(p[2]))) <= TOLERANCIA_ANCORA_U \
+				and praca.distance_to(Vector3(float(q[0]), float(q[1]), float(q[2]))) <= TOLERANCIA_ANCORA_U:
+			return true
+	return false
+
+
+## Catmull-Rom uniforme periódica: a amostra i vale no progresso i/N e a N-ésima volta à
+## 0, então o ciclo fecha sem emenda. É a mesma conta do planejador e do avaliador
+## (tools/prototipo_3d/sobrevoo/geometria.gd).
+func _catmull_rom(amostras: PackedVector3Array, progress: float) -> Vector3:
+	var n := amostras.size()
+	var u := fposmod(progress, 1.0) * n
+	var i := floori(u)
+	var t := u - i
+	i = posmod(i, n)
+	return amostras[i].cubic_interpolate(amostras[(i + 1) % n], amostras[(i - 1 + n) % n], amostras[(i + 2) % n], t)
 
 
 ## O retabulo cobre a esquerda. Corrige o eixo optico para que o olhar adiante
@@ -761,7 +864,7 @@ func _button(text: String, callback: Callable) -> Button:
 	button.text = text
 	button.custom_minimum_size.y = 44
 	button.mouse_entered.connect(func(): Audio.efeito("ui_hover"))
-	button.focus_entered.connect(func(): Audio.efeito("ui_hover"))
+	button.focus_entered.connect(_tique_de_foco)
 	button.pressed.connect(func():
 		Audio.efeito("ui_confirmar")
 		callback.call())
@@ -869,7 +972,7 @@ func _placa(texto: String, acao: Callable, negativa := false, puxa_foco := true)
 		giro.tween_property(rosa, "rotation", TAU * (-1.0 if lado else 1.0), 26.0).from(0.0)
 		placa.focus_entered.connect(func() -> void: suporte.visible = true)
 		placa.focus_exited.connect(func() -> void: suporte.visible = false)
-	placa.focus_entered.connect(func() -> void: Audio.efeito("ui_hover"))
+	placa.focus_entered.connect(_tique_de_foco)
 	if puxa_foco:
 		placa.mouse_entered.connect(placa.grab_focus)
 	else:

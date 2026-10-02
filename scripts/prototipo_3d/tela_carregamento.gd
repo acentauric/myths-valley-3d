@@ -60,7 +60,6 @@ static func mostrar(pai: Node, tema: Theme, mensagem: String, hora: float = -1.0
 	_cobrir(fundo)
 	screen.add_child(fundo)
 	_capa(screen, noite)
-	_particulas(screen, noite)
 	_veus(screen)
 	_marca(screen)
 	_almanaque(screen, noite)
@@ -138,59 +137,6 @@ static func _olhos(capa: Control, ponto: Vector2) -> void:
 	espreita.tween_property(par, "modulate:a", 0.95, 0.08)
 	espreita.tween_interval(1.8)
 	espreita.tween_property(par, "modulate:a", 0.0, 0.9)
-
-
-## Poeira dourada na luz do entardecer (dia) ou vaga-lumes na mata (noite).
-static func _particulas(tela: Control, noite: bool) -> void:
-	var nuvem := CPUParticles2D.new()
-	nuvem.texture = _brilho(Color.WHITE, 32)
-	nuvem.material = _aditivo()
-	nuvem.emission_shape = CPUParticles2D.EMISSION_SHAPE_RECTANGLE
-	var rampa := Gradient.new()
-	var centro: Vector2
-	var extensao: Vector2
-	if noite:
-		nuvem.amount = 34
-		nuvem.lifetime = 5.0
-		nuvem.direction = Vector2.UP
-		nuvem.spread = 180.0
-		nuvem.gravity = Vector2.ZERO
-		nuvem.initial_velocity_min = 2.0
-		nuvem.initial_velocity_max = 9.0
-		nuvem.tangential_accel_min = -12.0
-		nuvem.tangential_accel_max = 12.0
-		nuvem.scale_amount_min = 0.12
-		nuvem.scale_amount_max = 0.28
-		nuvem.color = Color(0.86, 1.0, 0.55)
-		rampa.offsets = PackedFloat32Array([0.0, 0.15, 0.35, 0.55, 0.75, 1.0])
-		rampa.colors = PackedColorArray([Color(1, 1, 1, 0), Color.WHITE, Color(1, 1, 1, 0.15), Color.WHITE, Color(1, 1, 1, 0.2), Color(1, 1, 1, 0)])
-		# A mata fica do lado esquerdo da capa espelhada.
-		centro = _na_capa(Vector2(0.66, 0.64), ESPELHAR_NOITE)
-		extensao = Vector2(0.32, 0.26)
-	else:
-		nuvem.amount = 70
-		nuvem.lifetime = 9.0
-		nuvem.direction = Vector2(1.0, -0.35)
-		nuvem.spread = 30.0
-		nuvem.gravity = Vector2(0, -2)
-		nuvem.initial_velocity_min = 4.0
-		nuvem.initial_velocity_max = 14.0
-		nuvem.scale_amount_min = 0.12
-		nuvem.scale_amount_max = 0.45
-		nuvem.color = Color(1.0, 0.88, 0.62)
-		rampa.offsets = PackedFloat32Array([0.0, 0.2, 0.8, 1.0])
-		rampa.colors = PackedColorArray([Color(1, 1, 1, 0), Color(1, 1, 1, 0.8), Color(1, 1, 1, 0.6), Color(1, 1, 1, 0)])
-		# O sol baixo está à esquerda: a poeira brilha na metade clara da capa.
-		centro = Vector2(0.38, 0.52)
-		extensao = Vector2(0.36, 0.32)
-	nuvem.color_ramp = rampa
-	nuvem.preprocess = nuvem.lifetime
-	tela.add_child(nuvem)
-	var ajustar := func() -> void:
-		nuvem.position = tela.size * centro
-		nuvem.emission_rect_extents = tela.size * extensao
-	tela.resized.connect(ajustar)
-	ajustar.call()
 
 
 ## Faixas escuras no alto (logotipo) e na base (textos), mais uma vinheta leve.

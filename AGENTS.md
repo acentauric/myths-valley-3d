@@ -97,6 +97,10 @@ luz, som ou moradores do 3D.
   missões do Pedro em `guia_pedro.gd`; vozes pt-BR do ElevenLabs em
   `assets/audio/vozes/` (o texto longo fica no balão; a voz é só a
   saudação ou a narração curta).
+- **Sobrevoo do menu:** é um trajeto gravado (`data/sobrevoo_menu.json`) que contorna
+  árvores e casas pelos lados, sem subir. Mexeu em árvore ou casa perto dele e
+  `sobrevoo_livre`/`sobrevoo_livre_procedural` reprovaram: replaneje pelo
+  `tools/prototipo_3d/sobrevoo/README.md` em vez de afrouxar o portão.
 - **Para depurar num lugar do vale sem refazer o caminho**: `JOGAR_3D.cmd -Lugar igreja`
   (ou `-- --lugar=igreja` no Godot); os nomes são os do `Lugares`. Os testes põem o
   jogador no ponto direto, e não precisam disso.

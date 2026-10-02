@@ -193,6 +193,33 @@ de enquadrar só o piso. As âncoras reais definem o trajeto e o voo começa
 quando o vale termina de montar. O modo Parado usa a vista inicial do píer.
 A abertura deixa de sobrepor poeira dourada e vaga-lumes ao cenário.
 
+**O voo nunca atravessa nada, e contorna pelos lados.** A elipse do píer à praça
+cortava copas e telhados em 30% do ciclo: a 16 m o olho entra no coqueiro e no
+manguezal da orla, no cajueiro, no poço e na casa ao lado da praça. Subir por cima
+não serve (é a altura das copas que se quer mostrar, e a mata perde o LOD), então o
+traçado é que desvia, sempre a 14,6–17,4 m do chão:
+
+- O trajeto é **planejado offline** e gravado em `data/sobrevoo_menu.json` (720
+  amostras, uma a cada 0,1 s); o menu só interpola (Catmull-Rom periódica) e não
+  gasta nada no carregamento. Em regime a câmera fica exatamente no trajeto; nas
+  trocas de modo (travessia → voo, Parado ↔ Sobrevoo) ela chega a ele em 2 s.
+- O laço sai do píer, passa pelos vãos da fileira de coqueiros da orla (ida ao norte,
+  volta ao sul), contorna a praça a ~35 m (mais perto, só atravessando a mangueira
+  dela) e chega à praça por volta dos 31 s: a volta contorna mais árvores e leva
+  mais tempo que a ida.
+- Folga mínima de 5 m da **geometria real** (triângulos, não AABB: a caixa do coqueiro
+  do Tripo tem 49 m de largura, e a 16 m ele ocupa só o tronco e as pontas das
+  folhas), nos dois estilos: 6,25 m no Tripo e 5,74 m no procedural.
+- Conforto no nível do voo que já existia: guinada até 21,6 graus/s (p95 17,4, contra
+  19,4 na elipse), aceleração lateral até 1,42 m/s², subida e descida até 1,31 m/s.
+  A velocidade desacelera nas curvas (3,4 a 13,7 m/s).
+- Se as âncoras ou a escala mudarem, o menu avisa e volta à elipse antiga.
+
+Os portões `tests/sobrevoo_livre.gd` (Tripo) e `tests/sobrevoo_livre_procedural.gd`
+montam o vale, rasterizam os triângulos em volta do voo e conferem o trajeto gravado
+quadro a quadro. **Plantou uma árvore ou mudou uma casa de lugar e eles reprovaram:
+replaneje** — o caminho está em `tools/prototipo_3d/sobrevoo/README.md`.
+
 O eixo visual do sobrevoo coloca o olhar adiante a 75% da largura da janela,
 no terço direito livre do retábulo. O ajuste acompanha a proporção da janela;
 o mapa e a travessia conservam seus próprios enquadramentos.
