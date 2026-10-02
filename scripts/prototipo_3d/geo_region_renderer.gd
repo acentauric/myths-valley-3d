@@ -74,6 +74,30 @@ var _open_areas: Array[PackedVector2Array] = []
 ## Cruzamentos das ruas (ponta de uma rua emendada em outra): ponto e largura da rua.
 var _road_junctions: Array[Dictionary] = []
 var _tree_trunks: Array[Dictionary] = []
+## ÍNDICES ESPACIAIS DA MONTAGEM. O vale media cada ponto contra TODOS os ~1.340
+## segmentos de rua e rio (sorteio da mata), os 141 da costa (cada altura na faixa da
+## praia) e os ~6.300 troncos (cada lugar de casa ou árvore): 29 s de montagem, duas
+## vezes (menu e jogo). Com grades de células só se mede o que pode estar perto, e a
+## resposta é a mesma, bit a bit (montagem comparada inteira: troncos, lotes, árvores,
+## vértices de todas as malhas, MultiMesh e colisões). Cada grade se refaz se a lista
+## dela mudar de tamanho.
+const CELULA_ROTAS := 16.0
+## Maior folga que o jogo pede a _near_route (mata 2,5; sub-bosque 1,5): cada segmento
+## entra na grade com esta margem; pedido maior mede tudo, como antes.
+const FOLGA_MAXIMA_ROTAS := 8.0
+const CELULA_COSTA := 16.0
+const CELULA_TRONCOS := 8.0
+var _grade_rotas := {}
+var _rotas_a := PackedVector2Array()
+var _rotas_b := PackedVector2Array()
+var _rotas_meia := PackedFloat64Array()
+var _grade_rotas_chave := Vector2i(-1, -1)
+var _grade_costa := {}
+var _grade_costa_n := -1
+var _grade_costa_margem := -1.0
+var _grade_troncos := {}
+var _grade_troncos_n := -1
+var _maior_raio_tronco := 2.0
 var _tree_collision_pool: Array[Dictionary] = []
 var _tree_collision_elapsed := 0.0
 var _meters_per_unit := 1.0
@@ -375,7 +399,7 @@ func ground_height_at(position: Vector3) -> float:
 	var shore_width := _units(80.0, 18.0)
 	if not _costa_limites.grow(shore_width).has_point(point):
 		return sampled_height
-	var coast_distance := _distance_to_line(point, _coast)
+	var coast_distance := _distancia_costa(point, shore_width)
 	var inland_weight := smoothstep(0.0, shore_width, coast_distance)
 	return lerpf(SEA_SURFACE_Y, sampled_height, inland_weight)
 
@@ -431,17 +455,27 @@ func is_build_site_clear(position: Vector3, radius: float) -> bool:
 	# Rio não é terreno de árvore nem de casa: nada plantado dentro da calha.
 	for river in _rivers:
 		var folga_rio: float = float(river.width) * 0.5 + radius + 1.0
-		if _distance_to_line(center, river.points) < folga_rio:
+		# A caixa do rio já vem crescida de meia largura + 1 u (ou mais): crescida do
+		# raio, contém todo ponto a menos de folga_rio da calha.
+		if (river.bounds as Rect2).grow(radius).has_point(center) and _distance_to_line(center, river.points) < folga_rio:
 			return false
 	for access in _shore_access_routes:
 		var clearance: float = float(access.width) * 0.5 + radius + 1.5
 		if access.bounds.grow(clearance).has_point(center) and _distance_to_line(center, access.points) < clearance:
 			return false
-	for trunk in _tree_trunks:
-		var tree_center: Vector2 = trunk.point
-		var separation: float = radius + maxf(float(trunk.radius), 2.0) + 1.0
-		if center.distance_squared_to(tree_center) < separation * separation:
-			return false
+	_garantir_grade_troncos()
+	var alcance := radius + _maior_raio_tronco + 1.0
+	for cx in range(floori((center.x - alcance) / CELULA_TRONCOS), floori((center.x + alcance) / CELULA_TRONCOS) + 1):
+		for cy in range(floori((center.y - alcance) / CELULA_TRONCOS), floori((center.y + alcance) / CELULA_TRONCOS) + 1):
+			var lista: Variant = _grade_troncos.get(Vector2i(cx, cy))
+			if lista == null:
+				continue
+			for i: int in lista:
+				var trunk: Dictionary = _tree_trunks[i]
+				var tree_center: Vector2 = trunk.point
+				var separation: float = radius + maxf(float(trunk.radius), 2.0) + 1.0
+				if center.distance_squared_to(tree_center) < separation * separation:
+					return false
 	return true
 
 
@@ -531,10 +565,13 @@ func position_beside_road(reference: Vector3, road_name: String, distance_from_c
 
 func surface_at(world_position: Vector3) -> String:
 	var point := Vector2(world_position.x, world_position.z)
-	if _distance_to_line(point, _coast) < _units(13.0, 4.5):
+	var areia := _units(13.0, 4.5)
+	# As caixas antes da distância: a da costa crescida da faixa de areia, e a da rua,
+	# que já tem meia largura, de mais 1 u. Ponto fora delas não está a essa distância.
+	if _costa_limites.grow(areia).has_point(point) and _distance_to_line(point, _coast) < areia:
 		return "areia"
 	for road in _roads:
-		if _distance_to_line(point, road.points) < road.width * 0.5 + 1.0:
+		if road.bounds.grow(1.0).has_point(point) and _distance_to_line(point, road.points) < road.width * 0.5 + 1.0:
 			return "terra"
 	if not _land.is_empty() and not Geometry2D.is_point_in_polygon(point, _land):
 		return "agua" if _background_kind == "sea" else "grama"
@@ -1175,24 +1212,26 @@ func _add_ribbon(label: String, points: PackedVector2Array, width: float, y: flo
 	else:
 		for passo in range(maxi(cross_steps, 1) + 1):
 			cross_positions.append(float(passo) / float(maxi(cross_steps, 1)))
+	# Cada vértice da faixa medido UMA vez: a célula vizinha repete os mesmos pontos, e
+	# ground_position (IDW + distância à costa) era pedido quatro vezes por vértice.
+	var colunas := cross_positions.size()
+	var grade := PackedVector3Array()
+	grade.resize(sampled.size() * colunas)
+	for i in range(sampled.size()):
+		for j in range(colunas):
+			var t_j := cross_positions[j]
+			var ponta := left[i].lerp(right[i], t_j)
+			var base := lerpf(y, y_right, t_j) if not is_nan(y_right) else y
+			var altura := _road_height_under_rivers(ponta, base) if lower_under_rivers else base
+			grade[i * colunas + j] = ground_position(Vector3(ponta.x, 0, ponta.y), altura)
 	for i in range(sampled.size() - 1):
-		for lateral_index in range(cross_positions.size() - 1):
+		for lateral_index in range(colunas - 1):
 			var t_a := cross_positions[lateral_index]
 			var t_b := cross_positions[lateral_index + 1]
-			var ponta_a := left[i].lerp(right[i], t_a)
-			var ponta_b := left[i].lerp(right[i], t_b)
-			var ponta_c := left[i + 1].lerp(right[i + 1], t_a)
-			var ponta_d := left[i + 1].lerp(right[i + 1], t_b)
-			var base_a := lerpf(y, y_right, t_a) if not is_nan(y_right) else y
-			var base_b := lerpf(y, y_right, t_b) if not is_nan(y_right) else y
-			var altura_a := _road_height_under_rivers(ponta_a, base_a) if lower_under_rivers else base_a
-			var altura_b := _road_height_under_rivers(ponta_b, base_b) if lower_under_rivers else base_b
-			var altura_c := _road_height_under_rivers(ponta_c, base_a) if lower_under_rivers else base_a
-			var altura_d := _road_height_under_rivers(ponta_d, base_b) if lower_under_rivers else base_b
-			var a := ground_position(Vector3(ponta_a.x, 0, ponta_a.y), altura_a)
-			var b := ground_position(Vector3(ponta_b.x, 0, ponta_b.y), altura_b)
-			var c := ground_position(Vector3(ponta_c.x, 0, ponta_c.y), altura_c)
-			var d := ground_position(Vector3(ponta_d.x, 0, ponta_d.y), altura_d)
+			var a := grade[i * colunas + lateral_index]
+			var b := grade[i * colunas + lateral_index + 1]
+			var c := grade[(i + 1) * colunas + lateral_index]
+			var d := grade[(i + 1) * colunas + lateral_index + 1]
 			if material_override != null:
 				var uv_a := Vector2(t_a, along[i])
 				var uv_b := Vector2(t_b, along[i])
@@ -1841,13 +1880,100 @@ func _disable_tree_collisions() -> void:
 
 
 func _near_route(point: Vector2, clearing: float) -> bool:
-	for road in _roads:
-		if _distance_to_line(point, road.points) < clearing + road.width * 0.5:
-			return true
-	for river in _rivers:
-		if _distance_to_line(point, river.points) < clearing + river.width * 0.5:
+	if clearing > FOLGA_MAXIMA_ROTAS:
+		for road in _roads:
+			if _distance_to_line(point, road.points) < clearing + road.width * 0.5:
+				return true
+		for river in _rivers:
+			if _distance_to_line(point, river.points) < clearing + river.width * 0.5:
+				return true
+		return false
+	_garantir_grade_rotas()
+	var lista: Variant = _grade_rotas.get(Vector2i(floori(point.x / CELULA_ROTAS), floori(point.y / CELULA_ROTAS)))
+	if lista == null:
+		return false
+	for id: int in lista:
+		var inicio := _rotas_a[id]
+		var segment := _rotas_b[id] - inicio
+		if segment.length_squared() < 0.000001:
+			continue
+		var t := clampf((point - inicio).dot(segment) / segment.length_squared(), 0.0, 1.0)
+		if point.distance_to(inicio + segment * t) < clearing + _rotas_meia[id]:
 			return true
 	return false
+
+
+## Cada segmento de rua e de rio entra nas células que a caixa dele, crescida de meia
+## largura + FOLGA_MAXIMA_ROTAS, toca: ponto a menos dessa distância cai numa delas.
+func _garantir_grade_rotas() -> void:
+	var chave := Vector2i(_roads.size(), _rivers.size())
+	if chave == _grade_rotas_chave:
+		return
+	_grade_rotas = {}
+	_rotas_a = PackedVector2Array()
+	_rotas_b = PackedVector2Array()
+	_rotas_meia = PackedFloat64Array()
+	for linhas in [_roads, _rivers]:
+		for linha in linhas:
+			var pontos: PackedVector2Array = linha.points
+			var meia := float(linha.width) * 0.5
+			for i in range(pontos.size() - 1):
+				var id := _rotas_a.size()
+				_rotas_a.append(pontos[i])
+				_rotas_b.append(pontos[i + 1])
+				_rotas_meia.append(meia)
+				var caixa := Rect2(pontos[i], Vector2.ZERO).expand(pontos[i + 1]).grow(meia + FOLGA_MAXIMA_ROTAS)
+				for cx in range(floori(caixa.position.x / CELULA_ROTAS), floori(caixa.end.x / CELULA_ROTAS) + 1):
+					for cy in range(floori(caixa.position.y / CELULA_ROTAS), floori(caixa.end.y / CELULA_ROTAS) + 1):
+						var celula := Vector2i(cx, cy)
+						if not _grade_rotas.has(celula):
+							_grade_rotas[celula] = []
+						_grade_rotas[celula].append(id)
+	_grade_rotas_chave = chave
+
+
+## Distância à costa medida só nos segmentos da célula do ponto. Cada segmento entra nas
+## células da sua caixa crescida de margem; ponto mais longe que isso de toda a costa
+## recebe INF, e quem chama só usa a distância até a margem (o smoothstep satura em 1).
+func _distancia_costa(point: Vector2, margem: float) -> float:
+	if _grade_costa_n != _coast.size() or _grade_costa_margem != margem:
+		_grade_costa = {}
+		for i in range(_coast.size() - 1):
+			var caixa := Rect2(_coast[i], Vector2.ZERO).expand(_coast[i + 1]).grow(margem)
+			for cx in range(floori(caixa.position.x / CELULA_COSTA), floori(caixa.end.x / CELULA_COSTA) + 1):
+				for cy in range(floori(caixa.position.y / CELULA_COSTA), floori(caixa.end.y / CELULA_COSTA) + 1):
+					var celula := Vector2i(cx, cy)
+					if not _grade_costa.has(celula):
+						_grade_costa[celula] = []
+					_grade_costa[celula].append(i)
+		_grade_costa_n = _coast.size()
+		_grade_costa_margem = margem
+	var lista: Variant = _grade_costa.get(Vector2i(floori(point.x / CELULA_COSTA), floori(point.y / CELULA_COSTA)))
+	if lista == null:
+		return INF
+	var closest := INF
+	for i: int in lista:
+		var segment := _coast[i + 1] - _coast[i]
+		if segment.length_squared() < 0.000001:
+			continue
+		var t := clampf((point - _coast[i]).dot(segment) / segment.length_squared(), 0.0, 1.0)
+		closest = minf(closest, point.distance_to(_coast[i] + segment * t))
+	return closest
+
+
+func _garantir_grade_troncos() -> void:
+	if _grade_troncos_n == _tree_trunks.size():
+		return
+	_grade_troncos = {}
+	_maior_raio_tronco = 2.0
+	for i in range(_tree_trunks.size()):
+		var ponto: Vector2 = _tree_trunks[i].point
+		var celula := Vector2i(floori(ponto.x / CELULA_TRONCOS), floori(ponto.y / CELULA_TRONCOS))
+		if not _grade_troncos.has(celula):
+			_grade_troncos[celula] = []
+		_grade_troncos[celula].append(i)
+		_maior_raio_tronco = maxf(_maior_raio_tronco, float(_tree_trunks[i].radius))
+	_grade_troncos_n = _tree_trunks.size()
 
 
 func _near_interest(point: Vector2, radius: float) -> bool:
