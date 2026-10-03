@@ -23,8 +23,27 @@ extends "res://scripts/prototipo_3d/comodo.gd"
 ## e os outros ficam de fora. O pote, a moringa, o cesto e o candeeiro já
 ## estavam no catálogo e entram desde já.
 
+## QUEM MORA AQUI. "Cada um tem casa com interior, e o interior diz quem mora
+## nela antes de o dono abrir a boca" (docs/mundo/MORADORES.md): a mesma casa
+## de taipa por fora, e por dentro a de cada um — para as casas não serem
+## iguais.
+##
+##   herdada     a casa do finado, que é do jogador: a cama que vira o dia e o
+##               baú que se usa
+##   pescador    a do Pedro: a rede de dormir no lugar da cama, a rede de pesca
+##               e os remos, pouco móvel — pescador passa o dia no mar —, e a
+##               barra azul de casa de beira de praia
+##   rezadeira   a da Dona Zefa, que mora com o neto: a cama dela e a rede do
+##               Cosme, o oratório com a luz acesa, as ervas secando, o
+##               pilão, a gamela e o barril — "é onde o remédio se faz" —, e os
+##               cestos que ela trança
+var perfil := "herdada"
+
 ## O BARRO das partes baixas, onde a cal descasca.
 const BARRO := Color("9a6e4c")
+## A barra de cada perfil, e a cal de cima.
+const BARRAS := {"herdada": Color("9a6e4c"), "pescador": Color("4f7896"), "rezadeira": Color("8a5a3c")}
+const CAIS := {"herdada": Color("ece2cc"), "pescador": Color("f1ede3"), "rezadeira": Color("e9d8ad")}
 const TELHA := Color("8f4a33")
 
 ## Os móveis da casa, com a medida de cada um no lugar dele: a caixa provisória
@@ -81,7 +100,11 @@ func giro_de_acordar() -> float:
 # --- a casca da casa ---------------------------------------------------------------
 
 func _parede() -> Material:
-	return _cal(Color("ece2cc"))
+	return _cal(CAIS.get(perfil, CAIS["herdada"]))
+
+
+func _cor_da_barra() -> Color:
+	return BARRAS.get(perfil, BARRO)
 
 
 func _piso() -> Material:
@@ -95,15 +118,15 @@ func _forro() -> Material:
 ## A barra de barro, meio metro de chão para cima, dos lados e no fundo.
 func _barra_da_parede(lado: float) -> void:
 	_caixa(Vector3(0.03, 0.45, comprimento), Vector3(lado * (largura * 0.5 - 0.015), 0.225, -comprimento * 0.5),
-		_cal(BARRO), false, "Barro")
+		_cal(_cor_da_barra()), false, "Barro")
 
 
 func _barra_do_fundo() -> void:
-	_caixa(Vector3(largura, 0.45, 0.03), Vector3(0, 0.225, -comprimento + 0.015), _cal(BARRO), false, "Barro")
+	_caixa(Vector3(largura, 0.45, 0.03), Vector3(0, 0.225, -comprimento + 0.015), _cal(_cor_da_barra()), false, "Barro")
 
 
 func _barra_da_fachada(largura_do_trecho: float, meio_x: float) -> void:
-	_caixa(Vector3(largura_do_trecho, 0.45, 0.03), Vector3(meio_x, 0.225, -0.015), _cal(BARRO), false, "Barro")
+	_caixa(Vector3(largura_do_trecho, 0.45, 0.03), Vector3(meio_x, 0.225, -0.015), _cal(_cor_da_barra()), false, "Barro")
 
 
 ## Os caibros da telha-vã, da fachada ao fundo, por baixo das telhas.
@@ -123,6 +146,16 @@ func _montar_janela() -> void:
 # --- os móveis ------------------------------------------------------------------
 
 func _montar_moveis() -> void:
+	match perfil:
+		"pescador":
+			_moveis_do_pescador()
+		"rezadeira":
+			_moveis_da_rezadeira()
+		_:
+			_moveis_da_herdada()
+
+
+func _moveis_da_herdada() -> void:
 	# A CAMA, de comprido na parede do fundo, com a cabeceira na parede da
 	# esquerda; o BAÚ ao lado dela, no fundo. Os dois têm colisão: são o que se
 	# usa, e o corpo não atravessa.
@@ -166,6 +199,63 @@ func _montar_moveis() -> void:
 	_colisao_da_peca(_peca("cesto", _cama + Vector3(CAMA.x * 0.5 - 0.2, 0.0, CAMA.z * 0.5 + 0.25), 0.3, 0.35), "Cesto")
 
 
+## A CASA DO PEDRO, pescador: a REDE de dormir de lado a lado no fundo, que
+## pescador dorme de rede; o baú pequeno ao pé dela; na parede da direita, a
+## rede de pesca pendurada e os remos no canto, perto da porta, que é por onde
+## eles saem de madrugada; a água na entrada; o fogão no canto do fundo, e o
+## banco com o barril fazendo de mesa, com o candeeiro em cima.
+func _moveis_do_pescador() -> void:
+	var rede := Vector3(0.0, 0.0, -comprimento + 0.55)
+	_movel("rede", rede, 0.0, Vector3(minf(2.4, largura - 0.4), 1.0, 0.8), false)
+	_cama = rede
+	_bau = Vector3(-largura * 0.5 + BAU.x * 0.5 + 0.1, 0.0, -comprimento + 1.45)
+	_movel("bau", _bau, PI * 0.5, Vector3(0.75, 0.45, 0.42), false)
+	_movel("rede_de_pesca", Vector3(largura * 0.5 - 0.2, 1.0, -comprimento * 0.55), -PI * 0.5, Vector3(1.2, 1.4, 0.4), false)
+	_movel("remos", Vector3(largura * 0.5 - 0.3, 0.0, -0.75), -PI * 0.5, Vector3(0.5, 2.0, 0.4), false)
+	var agua := Vector3(-largura * 0.5 + 0.35, 0.0, -0.5)
+	_colisao_da_peca(_peca("pote", agua, 0.0, 0.6), "Pote")
+	var barril := Vector3(-largura * 0.5 + 0.45, 0.0, -comprimento * 0.5)
+	var o_barril := _movel("barril", barril, 0.0, Vector3(0.55, 0.8, 0.55), false)
+	_movel("banco_tosco", barril + Vector3(0.75, 0.0, 0.0), PI * 0.5, Vector3(1.0, 0.45, 0.32), false)
+	# O candeeiro EM CIMA do barril, na altura medida dele: o barril do Tripo tem
+	# 0,72, e não os 0,8 de onde ele é pedido.
+	var topo := caixa_no_comodo(o_barril).end.y if o_barril != null else 0.8
+	_peca("candeeiro", barril + Vector3(0.0, topo, 0.0), 0.0, 0.45)
+	_vela("Lamparina", barril + Vector3(0.0, topo + 0.45, 0.05), maxf(largura, comprimento) * 0.9, 1.0)
+	_movel("fogao_barro", Vector3(largura * 0.5 - 0.55, 0.0, -comprimento + 0.45), 0.0, Vector3(1.0, 0.8, 0.7), false)
+	_colisao_da_peca(_peca("cesto", Vector3(largura * 0.5 - 0.4, 0.0, -comprimento * 0.3), 0.6, 0.4), "Cesto")
+
+
+## A CASA DA DONA ZEFA, rezadeira, que mora com o neto: a CAMA dela no fundo,
+## com a cabeceira na parede da esquerda, e a REDE do Cosme atravessada perto
+## da porta; o ORATÓRIO na parede do fundo, à direita da cama, com a luz
+## quente acesa; as ERVAS secando na parede da direita, por cima do PILÃO e
+## da GAMELA — e o barril ao lado, "que é onde o remédio se faz"; a mesa
+## debaixo da janela; os cestos que ela trança empilhados no canto.
+func _moveis_da_rezadeira() -> void:
+	_cama = Vector3(-largura * 0.5 + CAMA.x * 0.5 + 0.05, 0.0, -comprimento + CAMA.z * 0.5 + 0.05)
+	_movel("cama", _cama, 0.0, CAMA, false)
+	var oratorio := Vector3(minf(_cama.x + CAMA.x * 0.5 + 0.6, largura * 0.5 - 0.6), 1.3, -comprimento + 0.18)
+	_movel("oratorio", oratorio, 0.0, Vector3(0.45, 0.6, 0.3), false)
+	# A luz quente do oratório, que a reza da casa não deixa apagar.
+	_vela("LuzDoOratorio", oratorio + Vector3(0.0, -0.2, 0.3), 2.6, 0.5)
+	_movel("rede", Vector3(0.0, 0.0, -0.9), 0.0, Vector3(minf(2.2, largura - 0.6), 1.0, 0.7), false)
+	var remedio := Vector3(largura * 0.5 - 0.45, 0.0, -comprimento * 0.55)
+	_movel("barril", remedio + Vector3(0.0, 0.0, 0.85), 0.0, Vector3(0.55, 0.8, 0.55), false)
+	_movel("gamela", remedio, -PI * 0.5, Vector3(0.7, 0.25, 0.5), false)
+	_movel("pilao", remedio + Vector3(0.0, 0.0, -0.8), 0.0, Vector3(0.4, 1.0, 0.4), false)
+	_movel("ervas_secando", Vector3(largura * 0.5 - 0.15, 1.75, -comprimento * 0.55), -PI * 0.5, Vector3(1.4, 0.7, 0.3), false)
+	var mesa := Vector3(-largura * 0.5 + MESA.x * 0.5 + 0.15, 0.0, -MESA.z * 0.5 - 0.1)
+	var tem_mesa := _movel("mesa", mesa, 0.0, MESA, false) != null
+	var lamparina := mesa + Vector3(0.25, MESA.y, 0.0) if tem_mesa else oratorio + Vector3(0.0, -0.35, 0.2)
+	_peca("candeeiro", lamparina, 0.0, 0.45)
+	_vela("Lamparina", lamparina + Vector3(0, 0.45, 0.05), maxf(largura, comprimento) * 0.8, 0.9)
+	_movel("fogao_barro", Vector3(largura * 0.5 - 0.55, 0.0, -comprimento + 0.45), 0.0, Vector3(1.0, 0.8, 0.7), false)
+	_movel("cantareira", Vector3(largura * 0.5 - 0.35, 0.0, -0.45), 0.0, Vector3(0.6, 0.9, 0.45), false)
+	for i in 3:
+		_colisao_da_peca(_peca("cesto", Vector3(-largura * 0.5 + 0.35 + 0.42 * float(i % 2), 0.0, -comprimento * 0.5 + 0.4 * float(i)), 0.4 * float(i), 0.35 + 0.05 * float(i)), "Cesto")
+
+
 ## Um MÓVEL da casa: o modelo do catálogo, na largura pedida, ou — para os que
 ## se usam (`de_uso`) — a caixa provisória cinza, até ele chegar. Todo móvel
 ## posto tem a colisão na medida dele (`_colisao_da_peca`). Devolve o nó posto,
@@ -174,6 +264,8 @@ func _movel(chave: String, onde: Vector3, giro: float, medida: Vector3, de_uso: 
 	var peca: Node3D = null
 	if Estilo.tripo() and CatalogoAssets.tem_tripo(chave):
 		peca = CatalogoAssets.instanciar(chave, self, onde, 1.0, giro)
+		if peca != null:
+			peca.set_meta("chave", chave)
 		if peca != null and peca.has_meta("limites"):
 			# O catálogo normaliza pela medida dele; aqui o móvel cabe no lugar.
 			var caixa: AABB = peca.get_meta("limites")

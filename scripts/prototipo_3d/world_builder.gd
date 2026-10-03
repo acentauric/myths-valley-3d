@@ -749,6 +749,7 @@ func _construir_vila() -> void:
 		var paleta: Array = paletas[casa_indice % paletas.size()]
 		_construcao(String(_lotes[nome_lote]["chave"]), _lotes[nome_lote]["pos"], 0.0, func(at: Vector3): _house(at, paleta[0], paleta[1]), 1.0, String(nome_lote))
 		await _pausar()
+	_escolher_as_casas_dos_moradores()
 	await _etapa(0.84, "Cercando o roçado")
 	_build_farm()
 	await _etapa(0.86, "Plantando as árvores da vila")
@@ -768,6 +769,43 @@ func _construir_vila() -> void:
 	_build_bases_das_arvores()
 	if COMPARAR_MANGUEIRAS:
 		_bancada_mangueiras(Vector3(-2, 0, -30))
+
+
+## AS CASAS DO PEDRO E DA DONA ZEFA, entre as casas de taipa do arraial: a do
+## Pedro é a mais perto do píer — ele mora "na praia, perto do píer" —, e a da
+## Zefa, a mais perto da casa herdada, que fica sendo a vizinha dela e do neto.
+## Escolhidas aqui, e não por nome de lote, para continuar certo quando o
+## loteamento mudar. As duas abrem por dentro (`Interiores`, cada uma com o
+## perfil de quem mora), e o morador dorme nela. Ficam também como âncoras
+## ("Casa do Pedro", "Casa da Zefa"), que é o que o `Lugares` e os postos leem.
+var casas_dos_moradores: Dictionary = {}
+
+
+func _escolher_as_casas_dos_moradores() -> void:
+	var livres: Array[String] = []
+	for nome_lote in _lotes:
+		if String(nome_lote).begins_with("Casa do arraial") and str(_lotes[nome_lote].get("chave", "")) == "casa_taipa" and ancoras.has(nome_lote):
+			livres.append(String(nome_lote))
+	# O píer ainda não está posto quando as casas sobem: vale o ponto dele no
+	# mapa da região, que existe desde o começo.
+	var onde_fica := {"pier": _region.get_feature_center("Pier", "poi"), "Casa de taipa": ancoras.get("Casa de taipa", Vector3.INF)}
+	for pedido in [["pedro", "pier", "Casa do Pedro"], ["zefa", "Casa de taipa", "Casa da Zefa"]]:
+		var perto_de: Vector3 = onde_fica.get(str(pedido[1]), Vector3.INF)
+		if not perto_de.is_finite():
+			continue
+		var melhor := ""
+		var menor := INF
+		for lote in livres:
+			var distancia: float = (ancoras[lote] as Vector3).distance_to(perto_de)
+			if distancia < menor:
+				menor = distancia
+				melhor = lote
+		if melhor == "":
+			continue
+		livres.erase(melhor)
+		casas_dos_moradores[str(pedido[0])] = melhor
+		ancoras[str(pedido[2])] = ancoras[melhor]
+		ancoras[str(pedido[2]) + "Frente"] = ancoras.get(melhor + "Frente", Vector3.BACK)
 
 
 ## Construção: GLB do Tripo com colisão em caixa; senão o construtor procedural.

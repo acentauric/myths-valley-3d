@@ -26,6 +26,22 @@ atualize esse arquivo e este documento juntos.
 
 ## Em desenvolvimento — 03/10/2026
 
+- **A casa do Pedro e a da Dona Zefa abrem por dentro, e as casas não são iguais.**
+  "Produza o ambiente interno da casa de Pedro e Dona Zefa. Lembre de fazer algumas
+  variações para todas as casas não serem iguais." O vale escolhe as duas entre as casas
+  de taipa do arraial (`WorldBuilder.casas_dos_moradores`): a do Pedro é a mais perto do
+  píer — ele mora "na praia, perto do píer" —, e a da Zefa, a vizinha da casa herdada.
+  Cada cômodo tem o perfil de quem mora (`InteriorCasa.perfil`, o "o interior diz quem
+  mora nela" do MORADORES.md): o Pedro, pescador, dorme de rede, tem o baú pequeno, o
+  barril com o candeeiro em cima, o fogão e a barra azul de casa de beira de praia; a
+  Zefa, que mora com o neto, tem a cama dela, a rede do Cosme, o oratório com a luz
+  acesa, o barril, a mesa, a cantareira, os cestos que trança e a cal amarelada. A rede
+  de pesca e os remos do Pedro, e as ervas secando, o pilão e a gamela da Zefa, entram
+  sozinhos quando o lote do Tripo chegar ao catálogo. De noite o Pedro, a Zefa e o Cosme
+  ficam na porta de casa (o Pedro ficava na venda, e a Zefa e o neto na porta da casa do
+  jogador); o `Lugares` resolve `casa_do_pedro`, que era da Fase 7, e `casa_da_zefa`.
+  Portão novo `tests/casas_dos_moradores.gd`, falsificado com todo cômodo no perfil da
+  herdada.
 - **Todo móvel dos cômodos é sólido na medida dele.** "Revise a área de colisão de todos
   os móveis." Na casa herdada só a cama e o baú tinham corpo, e com a medida escrita à
   mão — a cama do Tripo tem 1,30 de fundo, e a caixa, 0,95 —; a mesa, o banco, a

@@ -394,6 +394,8 @@ func _peca(chave: String, onde: Vector3, giro: float, tamanho: float) -> Node3D:
 	if Estilo.tripo():
 		var modelo := CatalogoAssets.instanciar(chave, self, onde, tamanho, giro)
 		if modelo != null:
+			# A chave do catálogo fica marcada: o nome o Godot troca entre irmãos.
+			modelo.set_meta("chave", chave)
 			return modelo
 	var peca := _procedural(chave)
 	if peca == null:

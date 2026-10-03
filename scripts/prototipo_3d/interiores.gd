@@ -63,6 +63,13 @@ const CONSTRUCOES := {
 		"meio_lote": Vector2(4.5, 8.0), "porta_x": 0.0, "largura_da_porta": 1.2, "altura_da_porta": 2.7, "sonda": 8.0},
 	"casa": {"ancora": "Casa de taipa", "nome": "Sua casa", "colisao": "Casa TaipaColisao",
 		"meio_lote": Vector2(3.4, 3.2), "porta_x": 0.92, "largura_da_porta": 1.05, "altura_da_porta": 2.15, "sonda": 1.6},
+	# AS CASAS DO PEDRO E DA DONA ZEFA: a mesma casa de taipa por fora, e por
+	# dentro a de quem mora (`InteriorCasa.perfil`). O lote é o que o vale
+	# escolheu para cada um (`WorldBuilder.casas_dos_moradores`).
+	"casa_pedro": {"morador": "pedro", "nome": "Casa do Pedro", "perfil": "pescador",
+		"meio_lote": Vector2(3.4, 3.2), "porta_x": 0.92, "largura_da_porta": 1.05, "altura_da_porta": 2.15, "sonda": 1.6},
+	"casa_zefa": {"morador": "zefa", "nome": "Casa da Dona Zefa", "perfil": "rezadeira",
+		"meio_lote": Vector2(3.4, 3.2), "porta_x": 0.92, "largura_da_porta": 1.05, "altura_da_porta": 2.15, "sonda": 1.6},
 }
 
 ## A camada de física das colisões provisórias da medida (só elas moram nela).
@@ -159,7 +166,12 @@ func _process(_delta: float) -> void:
 
 func _abrir(qual: String) -> void:
 	var dado: Dictionary = CONSTRUCOES[qual]
-	var ancora := str(dado["ancora"])
+	var ancora := str(dado.get("ancora", ""))
+	if dado.has("morador"):
+		var casas = _mundo.get("casas_dos_moradores") if _mundo != null else null
+		ancora = str(casas.get(str(dado["morador"]), "")) if casas is Dictionary else ""
+	if ancora == "":
+		return
 	if _mundo == null or not ("ancoras" in _mundo) or not _mundo.ancoras.has(ancora):
 		return
 	var base: Vector3 = _mundo.ancoras[ancora]
@@ -188,8 +200,9 @@ func _abrir(qual: String) -> void:
 	match qual:
 		"igreja":
 			sala = InteriorIgreja.new()
-		"casa":
+		"casa", "casa_pedro", "casa_zefa":
 			sala = InteriorCasa.new()
+			sala.perfil = str(dado.get("perfil", "herdada"))
 	if sala == null:
 		return
 	# A parede do cômodo fica FOLGA para dentro da casca; a da frente, rente

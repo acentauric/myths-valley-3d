@@ -298,6 +298,8 @@ const EN := {
 	"Dormir": "Sleep",
 	"Baú": "Chest",
 	"Sua casa": "Your house",
+	"Casa do Pedro": "Pedro's house",
+	"Casa da Dona Zefa": "Dona Zefa's house",
 	# O folheto de cordel: a assinatura, o preço e as teclas do pé do papel.
 	"por %s": "by %s",
 	"%d réis na feira": "%d réis at the fair",
@@ -632,6 +634,8 @@ const ES := {
 	"Dormir": "Dormir",
 	"Baú": "Baúl",
 	"Sua casa": "Tu casa",
+	"Casa do Pedro": "Casa de Pedro",
+	"Casa da Dona Zefa": "Casa de Doña Zefa",
 	"por %s": "por %s",
 	"%d réis na feira": "%d reales en la feria",
 	"[%s] guardar  ·  [%s] coleção": "[%s] guardar  ·  [%s] colección",

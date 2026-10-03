@@ -6,8 +6,8 @@
     "altura": 1.75,
     "gesto_saudacao": 0,
     "gesto_tripo": 0,
-    "observacao_postos": "DEPOIS DO TUTORIAL o Pedro para de seguir o jogador e volta à vida de pescador (guia_pedro.terminou_o_tutorial): de manhã e de tarde no píer, ao lado do Tonho; ao entardecer na praça; de noite na venda. Só âncoras que o vale sempre tem — âncora que falta vira a origem do mundo.",
-    "postos": {"manha": ["PierPiso", [1.4, 0, 2.6]], "tarde": ["PierPiso", [-1.2, 0, 3.4]], "entardecer": ["Praça", [2.6, 0, 6.0]], "noite": ["Venda do Bar", [-1.8, 0, 4.4]], "madrugada": ["Venda do Bar", [-1.8, 0, 4.4]]},
+    "observacao_postos": "DEPOIS DO TUTORIAL o Pedro para de seguir o jogador e volta à vida de pescador (guia_pedro.terminou_o_tutorial): de manhã e de tarde no píer, ao lado do Tonho; ao entardecer na praça; de noite na porta de casa ('Casa do Pedro', a casa de taipa do arraial mais perto do píer, que o vale escolhe em WorldBuilder.casas_dos_moradores). A Dona Zefa e o Cosme ficam na casa deles ('Casa da Zefa', a vizinha da casa herdada), e não mais na porta da casa do jogador. Só âncoras que o vale sempre tem — âncora que falta vira a origem do mundo.",
+    "postos": {"manha": ["PierPiso", [1.4, 0, 2.6]], "tarde": ["PierPiso", [-1.2, 0, 3.4]], "entardecer": ["Praça", [2.6, 0, 6.0]], "noite": ["Casa do Pedro", [0.9, 0, 3.0]], "madrugada": ["Casa do Pedro", [0.9, 0, 3.0]]},
     "voz": {
       "id": "YbP0Eq5RE5uOoCEl7F3T",
       "nome": "Weverton - Youthful, Energetic and Clear",
@@ -109,7 +109,7 @@
       "gesto_saudacao": 0,
       "postos": {
         "manha": [
-          "Casa de taipa",
+          "Casa da Zefa",
           [
             -4.2,
             0,
@@ -125,7 +125,7 @@
           ]
         ],
         "entardecer": [
-          "Casa de taipa",
+          "Casa da Zefa",
           [
             -2.0,
             0,
@@ -133,7 +133,7 @@
           ]
         ],
         "noite": [
-          "Casa de taipa",
+          "Casa da Zefa",
           [
             -1.2,
             0,
@@ -141,7 +141,7 @@
           ]
         ],
         "madrugada": [
-          "Casa de taipa",
+          "Casa da Zefa",
           [
             -1.2,
             0,
@@ -202,7 +202,7 @@
           ]
         ],
         "noite": [
-          "Casa de taipa",
+          "Casa da Zefa",
           [
             2.6,
             0,
@@ -210,7 +210,7 @@
           ]
         ],
         "madrugada": [
-          "Casa de taipa",
+          "Casa da Zefa",
           [
             2.6,
             0,
