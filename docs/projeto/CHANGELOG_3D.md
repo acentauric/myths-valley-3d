@@ -26,6 +26,19 @@ atualize esse arquivo e este documento juntos.
 
 ## Em desenvolvimento — 03/10/2026
 
+- **Os moradores andam pelo caminho de verdade: a malha de navegação.** Eles iam em
+  linha reta até o posto, com um desvio local quando batiam — "decisão local não vê o
+  mapa inteiro" —, e com a festa de cada fé o caminho ficou longo. Agora o vale assa uma
+  malha de navegação da área por onde os moradores andam, ao montar, numa linha de
+  execução à parte (uns 50 ms para ler o vale e 1,7 s para assar, 7.000 polígonos), e
+  o morador segue o caminho dela: contorna casa, cerca, cômodo e tronco da mata, e entra
+  na igreja pela porta. Entram o chão, o que tem colisão — com os cômodos, a porta e as
+  rampas — e os troncos da mata como obstáculo, tirados da lista da mata (a colisão
+  deles só acompanha o jogador). Saem o fundo do mar, que tem colisão para o corpo
+  andar no raso, e os telhados e tampos que a malha punha como ilhas sem saída. Até a
+  malha ficar pronta, anda-se reto, como antes; e o caminho da festa, longe dos olhos
+  do jogador, continua se encurtando (`tests/navegacao.gd`, falsificado: sem os
+  troncos, sem os cômodos e com o morador ignorando a malha).
 - **A fazenda da casa: a lavoura na frente dela, com a regra do roçado do 2D** (#8).
   O roçado tinha a casa no meio e nenhum lugar de plantar. Agora há uma lavoura de
   quatro fileiras de seis leitos no chão aberto na frente da casa, depois da cana e da

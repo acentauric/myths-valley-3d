@@ -5,7 +5,7 @@ raiz. O jogo 2D segue sua própria linha em `acentauric/myths-valley`.
 
 ## O que já roda
 
-Exploração do vale, moradores, missões em
+Exploração do vale, moradores (que andam pela malha de navegação), missões em
 âncoras com recompensa (#48) e diário de missões acompanhadas, calendário (com
 o registro das mudanças no relógio), energia, vida, inventário, equipamento,
 talentos, cartas, coleção, obras, pesca, cozinha, oficina, a lavoura da casa

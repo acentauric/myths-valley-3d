@@ -36,6 +36,7 @@ const Retratos3D = preload("res://scripts/prototipo_3d/retratos_3d.gd")
 const Interiores = preload("res://scripts/prototipo_3d/interiores.gd")
 const CasaDoJogador = preload("res://scripts/prototipo_3d/casa_do_jogador.gd")
 const LavouraVale = preload("res://scripts/prototipo_3d/lavoura_vale.gd")
+const NavegacaoVale = preload("res://scripts/prototipo_3d/navegacao_vale.gd")
 const MENU_SCENE := "res://scenes/prototipo_3d/abertura.tscn"
 ## Raio de terra firme em volta do ponto de chegada.
 const RAIO_CHEGADA := 6.0
@@ -112,6 +113,8 @@ var casa: Node
 var noite: Node
 ## A lavoura da casa, a fazenda do jogador (`lavoura_vale.gd`, #8).
 var lavoura: Node3D
+## A malha de navegação dos moradores (`navegacao_vale.gd`).
+var navegacao: Node3D
 ## As plaquinhas de nome dos moradores; somem com tela aberta (placas_nomes.gd).
 var placas
 ## A aba pedida no último `abrir_o_painel`, entregue à abertura crua.
@@ -208,6 +211,13 @@ func _ready() -> void:
 	set_process(false)
 	await interiores.configurar(world, player)
 	set_process(true)
+	# A MALHA DE NAVEGAÇÃO dos moradores, assada depois dos cômodos — a porta e
+	# as rampas deles entram nela —, numa linha de execução à parte. Até ficar
+	# pronta, eles andam reto, como antes.
+	navegacao = NavegacaoVale.new()
+	navegacao.name = "Navegacao"
+	add_child(navegacao)
+	navegacao.configurar(world, self)
 	# O menu também move o relógio visual. A partida começa sua própria contagem;
 	# quando houver save, `restaurar_do_save` devolve a contagem guardada.
 	Dia.horas_decorridas = 0.0

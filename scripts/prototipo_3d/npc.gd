@@ -84,6 +84,18 @@ var _lado_desvio := 0.0
 var _ponto_bloqueio := Vector3.INF
 ## A caminho da festa, ou voltando dela: o caminho que pode se encurtar.
 var _caminho_da_festa := false
+## O CAMINHO PELA MALHA (`navegacao_vale.gd`): os pontos até o destino, o da
+## vez, para onde ele foi feito e quando refazer. Sem malha, anda-se reto.
+var _caminho: PackedVector3Array = PackedVector3Array()
+var _ponto_da_vez := 0
+var _caminho_ate := Vector3.INF
+var _refazer_em := 0.0
+## De quanto em quanto tempo o caminho se refaz (o jogador, outro morador e a
+## porta aberta mudam o que está no meio), e de que distância o ponto da vez
+## conta como alcançado: perto, para o corpo não cortar a quina rumo ao ponto
+## seguinte e raspar nela.
+const REFAZER_CAMINHO := 4.0
+const PONTO_ALCANCADO := 0.35
 
 
 ## Anda até `ponto` (em vez do posto do período), na `velocidade` dada, até liberar().
@@ -206,7 +218,11 @@ func _physics_process(delta: float) -> void:
 	var distancia := deslocamento.length()
 	var direcao := Vector3.ZERO
 	if distancia > (0.2 if _destino_avulso.is_finite() else 0.6):
-		direcao = deslocamento / distancia
+		# Pela malha, quando há: o rumo é o ponto da vez do caminho, e não o
+		# destino em linha reta.
+		var rumo := _ponto_do_caminho(destino, delta) - global_position
+		rumo.y = 0.0
+		direcao = rumo.normalized() if rumo.length() > 0.05 else deslocamento / distancia
 	_mover(direcao, _velocidade_avulsa if _destino_avulso.is_finite() else VELOCIDADE, delta)
 	if direcao == Vector3.ZERO and jogador != null and jogador.global_position.distance_to(global_position) < RAIO_BALAO:
 		_olhar_para(jogador.global_position, delta)
@@ -296,16 +312,17 @@ func _contornar_bloqueio(direcao: Vector3, delta: float) -> Vector3:
 ## sabia nadar, então ele nadava — e ficava batendo na estrutura do píer, que
 ## é o que se via de fora.
 ##
-## O conserto não é malha de navegação: o vale é construído em tempo de
-## execução e assar navmesh a cada partida custaria mais do que o problema
-## vale. É preferência local. Antes de andar, o NPC olha para onde o passo vai
-## cair; se cai em água funda, ele tenta ângulos cada vez mais abertos até
-## achar chão. Na beira do píer isso o faz seguir a costa até a cabeceira, que
-## é o que uma pessoa faria.
+## O conserto foi preferência local. Antes de andar, o NPC olha para onde o
+## passo vai cair; se cai em água funda, ele tenta ângulos cada vez mais
+## abertos até achar chão. Na beira do píer isso o faz seguir a costa até a
+## cabeceira, que é o que uma pessoa faria.
 ##
-## O que esta escolha NÃO resolve, e é honesto dizer: enseada em forma de U
-## pode fazê-lo hesitar na boca dela, porque decisão local não vê o mapa
-## inteiro. Se isso aparecer, aí sim é hora de navegação de verdade.
+## O que ela NÃO resolvia — enseada em forma de U podia fazê-lo hesitar na
+## boca dela, porque decisão local não vê o mapa inteiro — a malha de
+## navegação resolve (`navegacao_vale.gd`): com ela pronta, o rumo é o ponto
+## da vez do caminho, que fica em terra. Este olhar continua por baixo, para
+## os primeiros segundos, antes de a malha ficar pronta, e para o corpo
+## empurrado para fora do caminho.
 ##
 ## Quem já está na água não é desviado: NADANDO, o caminho mais curto para
 ## terra é em frente, e empurrá-lo para os lados o faria circular no mar.
@@ -544,13 +561,12 @@ func _chao_de_verdade(ponto: Vector3) -> Vector3:
 	return achou.get("position", ponto)
 
 
-## O CAMINHO DA FESTA É LONGO. O terreiro e a gameleira ficam longe da vila, e
-## o morador anda em linha reta, sem mapa: a pé, o Tonho levaria a tarde quase
-## inteira do píer até a gameleira, e no caminho há mata e casa que podem
-## prendê-lo. Então, LONGE DOS OLHOS DO JOGADOR, ele chega pelo caminho de
-## sempre — é posto no lugar dele, como na carga do jogo. Visto, anda o que se
-## vê; e não aparece do nada no lugar para onde o jogador está olhando. A volta,
-## à meia-noite, é igual.
+## O CAMINHO DA FESTA É LONGO. O terreiro e a gameleira ficam longe da vila:
+## pela malha de navegação (`navegacao_vale.gd`) o Tonho chega à gameleira
+## andando, mas leva a tarde quase inteira desde o píer. Então, LONGE DOS OLHOS
+## DO JOGADOR, ele chega pelo caminho de sempre — é posto no lugar dele, como na
+## carga do jogo. Visto, anda o que se vê; e não aparece do nada no lugar para
+## onde o jogador está olhando. A volta, à meia-noite, é igual.
 func _encurtar_o_caminho() -> void:
 	if _destino_avulso.is_finite():
 		return
@@ -575,6 +591,27 @@ func _a_vista(ponto: Vector3) -> bool:
 		return false
 	var camera := get_viewport().get_camera_3d()
 	return camera == null or camera.is_position_in_frustum(ponto + Vector3.UP * altura * 0.5)
+
+
+## O PONTO DA VEZ no caminho pela malha até `destino`: refeito quando o destino
+## muda, a cada `REFAZER_CAMINHO` segundos, e quando o corpo empaca. Sem malha
+## — ela assa enquanto o vale começa —, ou sem caminho, é o próprio destino.
+func _ponto_do_caminho(destino: Vector3, delta: float) -> Vector3:
+	var navegacao := get_tree().get_first_node_in_group("navegacao")
+	if navegacao == null or not navegacao.esta_pronta():
+		return destino
+	_refazer_em -= delta
+	if _caminho_ate.distance_to(destino) > 0.3 or _refazer_em <= 0.0 or _preso > TEMPO_PRESO * 0.9:
+		_caminho = navegacao.caminho(global_position, destino)
+		_ponto_da_vez = 1 if _caminho.size() > 1 else 0
+		_caminho_ate = destino
+		_refazer_em = REFAZER_CAMINHO
+	if _caminho.is_empty():
+		return destino
+	while _ponto_da_vez < _caminho.size() - 1 \
+			and Vector2(_caminho[_ponto_da_vez].x - global_position.x, _caminho[_ponto_da_vez].z - global_position.z).length() < PONTO_ALCANCADO:
+		_ponto_da_vez += 1
+	return destino if _ponto_da_vez >= _caminho.size() - 1 else _caminho[_ponto_da_vez]
 
 
 ## Nome do posto para o período: "manha", "tarde", "entardecer", "noite" ou "madrugada".
