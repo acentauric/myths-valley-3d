@@ -130,7 +130,7 @@ func _run() -> void:
 		_conferir(not fechada.contains(alguma),
 			"com o morador desconhecido a tela já entregou o gosto dele ('%s'): o arraial virou lista de compras"
 				% alguma)
-		_conferir(fechada.contains("para saber do que ele gosta"),
+		_conferir(fechada.contains("para saber do que gosta"),
 			"a tela não diz o que fazer para descobrir o gosto: '%s'" % fechada)
 
 		# GENTE BOA: mostra.
@@ -184,6 +184,54 @@ func _run() -> void:
 		_conferir(comeca >= cara.position.x + cara.size.x,
 			"o nome de '%s' começa em %.0f e o retrato vai até %.0f: texto por cima do boneco"
 				% [quem, comeca, cara.position.x + cara.size.x])
+
+	# --- 4d. A TELA É DESENHADA, E O TEXTO É APOIO ---------------------------
+	#
+	# "Na tela de relacionamento com as pessoas da aldeia está faltando os
+	# elementos gráficos (...) O texto é para apoio e não a única forma de
+	# consulta da informação. Precisamos ser visuais."
+	afinidade.pontos[primeiro] = 35
+	social._quem = primeiro
+	social._encher()
+	await _frames(2)
+	var coracoes := _achar(pagina, "Coracoes")
+	_conferir(coracoes != null and coracoes.get_child_count() == afinidade.GRAUS.size() - 1,
+		"a página não tem a fileira de corações do grau, um por degrau")
+	if coracoes != null:
+		var cheios := 0
+		for coracao in coracoes.get_children():
+			if bool(coracao.get("aceso")):
+				cheios += 1
+		_conferir(cheios == afinidade.grau(primeiro),
+			"com o grau %d a página acende %d coração(ões)" % [afinidade.grau(primeiro), cheios])
+	var barra_do_grau := _achar(pagina, "BarraDoGrau") as ProgressBar
+	_conferir(barra_do_grau != null, "a página não tem a barra até o próximo grau")
+	if barra_do_grau != null:
+		_conferir(barra_do_grau.value > barra_do_grau.min_value and barra_do_grau.value < barra_do_grau.max_value,
+			"a barra do grau não está no meio do degrau com 35 pontos: %s de %s a %s"
+				% [str(barra_do_grau.value), str(barra_do_grau.min_value), str(barra_do_grau.max_value)])
+	var selos := _achar(pagina, "Hoje")
+	_conferir(selos != null and selos.get_child_count() == 2, "a página não tem os dois selos de hoje")
+	var fichas := pagina.find_children("Ficha_*", "", true, false)
+	_conferir(fichas.size() >= gosta.size(),
+		"de 'Gente boa' para cima há %d ficha(s) de presente e o morador gosta de %d" % [fichas.size(), gosta.size()])
+	var regua := _achar(pagina, "QuantoRende")
+	_conferir(regua != null and regua.get_child_count() == 5, "a página não tem a régua de quanto rende cada gesto")
+	for bruto in afinidade.MORADORES:
+		var sinais := coluna.find_children("Sinais", "", true, false)
+		_conferir(sinais.size() == afinidade.MORADORES.size(),
+			"a coluna tem %d bloco(s) de sinais (corações e gestos de hoje) para %d moradores"
+				% [sinais.size(), afinidade.MORADORES.size()])
+		break
+	# E O QUE AINDA NÃO SE SABE TAMBÉM SE VÊ: vagas com cadeado, sem o nome.
+	afinidade.pontos[primeiro] = 0
+	social._encher()
+	await _frames(2)
+	var fechadas := pagina.find_children("FichaFechada", "", true, false)
+	_conferir(fechadas.size() > 0, "com o morador desconhecido não há vaga fechada de presente: o que há a descobrir sumiu")
+	_conferir(pagina.find_children("Ficha_*", "", true, false).is_empty(),
+		"com o morador desconhecido a grade já mostra o presente aberto")
+	print("  página desenhada: corações, barra do grau, selos de hoje, fichas de presente e régua de rendimento")
 
 	# --- 5. O QUE FAZER HOJE, DITO COMO TAREFA -------------------------------
 	var hoje := _texto_de(pagina).to_lower()
