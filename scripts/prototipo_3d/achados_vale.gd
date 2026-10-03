@@ -372,12 +372,12 @@ func _folheto_pendurado(id: String) -> Node3D:
 	capa.albedo_texture = CapaDeCordel.textura(id)
 	capa.roughness = 1.0
 	capa.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC
-	# Um tanto de luz própria, como o papel no chão tinha: na sombra da venda o
-	# folheto ainda se acha.
+	# Um pouco de luz própria, como o papel no chão tinha: na sombra da venda o
+	# folheto ainda se acha. Pouco — mais que isso desbota a xilogravura.
 	capa.emission_enabled = true
 	capa.emission_texture = capa.albedo_texture
 	capa.emission = Color.WHITE
-	capa.emission_energy_multiplier = 0.22
+	capa.emission_energy_multiplier = 0.1
 	var verso := StandardMaterial3D.new()
 	verso.albedo_color = CapaDeCordel.PAPEL
 	verso.roughness = 1.0

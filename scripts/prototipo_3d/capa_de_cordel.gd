@@ -3,7 +3,8 @@ extends RefCounted
 ##
 ## A desenhada é uma imagem por folheto, gerada sob pedido pelo
 ## `tools/openai/gerar-capas-cordeis.ps1` (geração paga) e posta em
-## `assets/prototipo_3d/cordeis/<id>.png` depois de conferida. Enquanto ela não
+## `assets/prototipo_3d/cordeis/<id>.jpg` depois de conferida
+## (`tools/openai/promover_capas.gd`). Enquanto ela não
 ## vem, a capa é o BLOCO DE SEMPRE: a gravura única que as tipografias de
 ## folheto usavam para dezenas de histórias — o cabra de chapéu de couro servia
 ## ao cangaceiro, ao valente da peleja e ao herói que foi à fazenda, sem
@@ -43,10 +44,13 @@ static var _bloco: Texture2D
 
 ## A capa desenhada deste cordel, ou null enquanto ela não vier.
 static func desenhada(id: String) -> Texture2D:
-	var caminho := PASTA + id + ".png"
-	if id == "" or not ResourceLoader.exists(caminho):
+	if id == "":
 		return null
-	return load(caminho) as Texture2D
+	for extensao in [".jpg", ".png"]:
+		var caminho: String = PASTA + id + extensao
+		if ResourceLoader.exists(caminho):
+			return load(caminho) as Texture2D
+	return null
 
 
 ## A capa a mostrar: a desenhada, ou o bloco de sempre.

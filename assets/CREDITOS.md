@@ -69,6 +69,12 @@ publicar.
 | `assets/prototipo_3d/moveis/{cama,mesa,banco_tosco,bau,barril,cantareira,fogao_barro,jirau,oratorio,rede}_tripo.glb` | a mobília da casa herdada, Tripo Studio (texto → 3D + Malha Smart) | `moveis/ORIGEM.md` e `tools/tripo/lote_2026-10-03.json` |
 | `assets/prototipo_3d/aderecos/{mastro_pano,fitas_gameleira}_tripo.glb` | os mastros com pano branco do terreiro e as fitas da gameleira, Tripo Studio | `aderecos/ORIGEM.md` e `tools/tripo/lote_2026-10-03.json` |
 
+### Capas dos cordéis (03/10/2026)
+
+| Arquivos | O que são | Registro |
+| --- | --- | --- |
+| `assets/prototipo_3d/cordeis/*.jpg` | as dez capas em xilogravura dos cordéis, OpenAI `gpt-image-2` | `cordeis/ORIGEM.md` e `tools/openai/capas_cordeis.json` |
+
 ### Identidade visual do protótipo 3D (28/09/2026)
 
 | Arquivos | O que são | Registro |

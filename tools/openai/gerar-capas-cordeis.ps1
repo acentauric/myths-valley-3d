@@ -9,8 +9,9 @@
 # por argumento nem impressa.
 #
 # As imagens caem em .assets-raw/cordeis/<id>.png (fora do Git). Depois de
-# conferidas, copie as aprovadas para assets/prototipo_3d/cordeis/<id>.png: o
-# folheto e o barbante do vale passam a usa-las sozinhos.
+# conferidas, o tools/openai/promover_capas.gd as leva para
+# assets/prototipo_3d/cordeis/<id>.jpg (768x1152): o folheto e o barbante do
+# vale passam a usa-las sozinhos.
 
 param(
     [switch] $Estimar,

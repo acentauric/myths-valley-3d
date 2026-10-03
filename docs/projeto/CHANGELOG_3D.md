@@ -26,6 +26,14 @@ atualize esse arquivo e este documento juntos.
 
 ## Em desenvolvimento — 03/10/2026
 
+- **As capas dos cordéis: uma xilogravura para cada folheto.** As dez capas foram
+  geradas no OpenAI `gpt-image-2` (qualidade média, US$ 0,41 as dez, com o custo
+  mostrado antes) pelo `tools/openai/gerar-capas-cordeis.ps1`, cada uma com a cena do
+  verso dela e nenhuma letra na imagem — o título quem imprime é o jogo. Conferidas uma
+  a uma e promovidas pelo `tools/openai/promover_capas.gd` para JPG de 768x1152
+  (`assets/prototipo_3d/cordeis/`, sem perda e com mipmaps); o folheto aberto e o
+  pendurado no barbante passam a mostrar a capa de cada um, no lugar do bloco de
+  sempre. A luz própria do folheto pendurado baixou, que desbotava a gravura.
 - **A casa herdada mobiliada, e o terreiro e a gameleira completos: o lote do Tripo
   de 03/10/2026** (#26, #52). Doze peças geradas no Tripo Studio (Modelo HD H3.1 com a
   textura 8K desligada, 55 créditos; Retopologia Malha Smart, 40; GLB com textura 1K —
