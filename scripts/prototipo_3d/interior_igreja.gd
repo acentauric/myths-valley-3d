@@ -227,11 +227,14 @@ func _montar_moveis() -> void:
 	while fila >= ultima:
 		for lado in [-1.0, 1.0]:
 			var onde := Vector3(lado * (corredor * 0.5 + comprimento_do_banco * 0.5 + 0.05), 0.0, fila)
-			_peca("banco", onde, PI, escala)
-			_caixa(Vector3(comprimento_do_banco, 0.85, 0.6), onde + Vector3(0, 0.42, 0), null, true, "BancoColisao")
+			# A colisão na medida do banco posto (`_colisao_da_peca`), e não
+			# de comprimento fixo; sem modelo, a caixa de sempre.
+			var banco := _peca("banco", onde, PI, escala)
+			if _colisao_da_peca(banco, "Banco") == null:
+				_caixa(Vector3(comprimento_do_banco, 0.85, 0.6), onde + Vector3(0, 0.42, 0), null, true, "BancoColisao")
 		fila -= 1.3
 	# A pia de água benta, à direita de quem entra.
-	_peca("pote", Vector3(largura * 0.5 - 0.35, 0.0, -0.55), 0.0, 0.55)
+	_colisao_da_peca(_peca("pote", Vector3(largura * 0.5 - 0.35, 0.0, -0.55), 0.0, 0.55), "Pote")
 	# Os ex-votos na parede da esquerda: quadrinhos de quem foi atendido.
 	var cores := [Color("d9c39a"), Color("b9d0c4"), Color("e2b8a6"), Color("c7c1df"), Color("e8d79f"), Color("bfcfae")]
 	for i in cores.size():

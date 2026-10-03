@@ -145,7 +145,7 @@ func _montar_moveis() -> void:
 	# chegar, o pote no chão.
 	var agua := Vector3(largura * 0.5 - 0.35, 0.0, -0.45)
 	if _movel("cantareira", agua, 0.0, Vector3(0.6, 0.9, 0.45), false) == null:
-		_peca("pote", agua, 0.0, 0.6)
+		_colisao_da_peca(_peca("pote", agua, 0.0, 0.6), "Pote")
 	_peca("moringa", (mesa + Vector3(-0.25, MESA.y, 0.05)) if tem_mesa else (agua + Vector3(-0.3, 0.0, -0.45)), 0.4, 0.3)
 	# O canto do FOGÃO, no fundo à direita; o jirau na parede de cima dele, e o
 	# barril ao lado.
@@ -163,12 +163,13 @@ func _montar_moveis() -> void:
 	# O ORATÓRIO na parede da esquerda, entre a mesa e a cama.
 	_movel("oratorio", Vector3(-largura * 0.5 + 0.18, 1.25, -comprimento * 0.5), PI * 0.5, Vector3(0.45, 0.6, 0.3), false)
 	# O CESTO no chão, ao pé da cama.
-	_peca("cesto", _cama + Vector3(CAMA.x * 0.5 - 0.2, 0.0, CAMA.z * 0.5 + 0.25), 0.3, 0.35)
+	_colisao_da_peca(_peca("cesto", _cama + Vector3(CAMA.x * 0.5 - 0.2, 0.0, CAMA.z * 0.5 + 0.25), 0.3, 0.35), "Cesto")
 
 
 ## Um MÓVEL da casa: o modelo do catálogo, na largura pedida, ou — para os que
-## se usam (`de_uso`) — a caixa provisória cinza, até ele chegar. Os de uso
-## têm colisão nos dois casos. Devolve o nó posto, ou null.
+## se usam (`de_uso`) — a caixa provisória cinza, até ele chegar. Todo móvel
+## posto tem a colisão na medida dele (`_colisao_da_peca`). Devolve o nó posto,
+## ou null.
 func _movel(chave: String, onde: Vector3, giro: float, medida: Vector3, de_uso: bool) -> Node3D:
 	var peca: Node3D = null
 	if Estilo.tripo() and CatalogoAssets.tem_tripo(chave):
@@ -182,9 +183,7 @@ func _movel(chave: String, onde: Vector3, giro: float, medida: Vector3, de_uso: 
 	if peca == null and de_uso:
 		peca = _caixa(medida, onde + Vector3(0, medida.y * 0.5, 0), _cor(CINZA_PROVISORIO), false, chave.capitalize() + "Provisorio")
 		peca.rotation.y = giro
-	if de_uso:
-		var corpo := _caixa(medida, onde + Vector3(0, medida.y * 0.5, 0), null, true, chave.capitalize() + "Colisao")
-		corpo.rotation.y = giro
+	_colisao_da_peca(peca, chave.capitalize())
 	return peca
 
 

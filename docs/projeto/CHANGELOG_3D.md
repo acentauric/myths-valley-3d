@@ -26,6 +26,17 @@ atualize esse arquivo e este documento juntos.
 
 ## Em desenvolvimento — 03/10/2026
 
+- **Todo móvel dos cômodos é sólido na medida dele.** "Revise a área de colisão de todos
+  os móveis." Na casa herdada só a cama e o baú tinham corpo, e com a medida escrita à
+  mão — a cama do Tripo tem 1,30 de fundo, e a caixa, 0,95 —; a mesa, o banco, a
+  cantareira, o fogão, o barril, o jirau e o oratório não tinham corpo nenhum, e o
+  jogador passava por dentro deles. Na igreja, o banco tinha uma caixa de comprimento
+  fixo e a pia de água benta, nenhuma. Agora todo móvel posto num cômodo tem a caixa das
+  próprias malhas, no referencial do cômodo (`Comodo._colisao_da_peca`), e o pote e o
+  cesto do chão também. Portão novo `tests/moveis.gd`: toda peça do catálogo no chão dos
+  cômodos leva raios dos quatro lados, e cada um bate antes de entrar na caixa desenhada;
+  com a regra antiga ele reprova na mesa, no banco, na cantareira, no fogão, no pote e na
+  cama.
 - **A canoa é sólida na medida do desenho.** "Pulei neles e atravessei a parede." A
   colisão das canoas eram caixas finas medidas como fração da caixa do modelo: o costado
   de colisão acabava meio metro abaixo da borda que se vê (a altura era 40% do modelo

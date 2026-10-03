@@ -88,6 +88,8 @@ var _teto: Array[Node] = []
 ## Os corpos do cômodo (paredes, móveis): a câmera de cima não bate neles, e
 ## fica por cima da parede em vez de encolher até a cabeça do jogador.
 var _corpos: Array[RID] = []
+## Os móveis com colisão: {"nome", "peca", "corpo"} (ver `_colisao_da_peca`).
+var _moveis: Array[Dictionary] = []
 
 
 ## As medidas que couberam na casca (ver `Interiores._abrir`), em metros e no
@@ -571,6 +573,50 @@ func _caixa(tamanho: Vector3, onde: Vector3, material: Material, solida: bool, n
 		raiz.add_child(corpo)
 		_corpos.append(corpo.get_rid())
 	return raiz
+
+
+## A COLISÃO DE UM MÓVEL NA MEDIDA DELE: a caixa das malhas da peça, no
+## referencial do cômodo — e não uma medida escrita à parte.
+##
+## "Revise a área de colisão de todos os móveis." Na casa, só a cama e o baú
+## tinham corpo, e com a medida escrita à mão: o modelo do Tripo é posto na
+## largura pedida, e na outra direção ele tem a medida dele, que a caixa não
+## acompanhava. A mesa, o fogão, o barril, a cantareira, o jirau e o oratório
+## não tinham corpo nenhum, e o jogador passava por dentro deles. Na igreja, o
+## banco tinha uma caixa de comprimento fixo. Agora todo móvel tem a caixa
+## dele, medida nele.
+func _colisao_da_peca(peca: Node3D, nome: String) -> Node3D:
+	if peca == null:
+		return null
+	var caixa := caixa_no_comodo(peca)
+	if caixa.size.x < 0.02 or caixa.size.z < 0.02:
+		return null
+	var corpo := _caixa(caixa.size, caixa.get_center(), null, true, nome + "Colisao")
+	_moveis.append({"nome": nome, "peca": peca, "corpo": corpo})
+	return corpo
+
+
+## A caixa das malhas de `peca` no referencial do cômodo.
+func caixa_no_comodo(peca: Node3D) -> AABB:
+	var para_o_comodo := global_transform.affine_inverse()
+	var caixa := AABB()
+	var primeira := true
+	var malhas: Array = peca.find_children("*", "MeshInstance3D", true, false)
+	if peca is MeshInstance3D:
+		malhas.append(peca)
+	for no in malhas:
+		var malha := no as MeshInstance3D
+		if malha.mesh == null:
+			continue
+		var dela: AABB = para_o_comodo * malha.global_transform * malha.get_aabb()
+		caixa = dela if primeira else caixa.merge(dela)
+		primeira = false
+	return caixa
+
+
+## Os móveis com colisão, para quem confere (o portão dos móveis).
+func moveis() -> Array[Dictionary]:
+	return _moveis
 
 
 func _cor(cor: Color) -> StandardMaterial3D:
