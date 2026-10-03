@@ -75,9 +75,9 @@
       "precisa_os_dois": "%s pede machado de aço e o talento %s.",
       "precisa_os_dois_en": "%s needs a steel axe and the talent %s.",
       "precisa_os_dois_es": "%s pide un hacha de acero y el talento %s.",
-      "crescendo": "%s · de pé de novo em %d dias",
-      "crescendo_en": "%s · standing again in %d days",
-      "crescendo_es": "%s · de pie de nuevo en %d días"
+      "crescendo": "%s · crescendo de novo",
+      "crescendo_en": "%s · growing back",
+      "crescendo_es": "%s · volviendo a crecer"
     }
   },
   "arvores": {

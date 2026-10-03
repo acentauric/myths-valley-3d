@@ -26,6 +26,19 @@ atualize esse arquivo e este documento juntos.
 
 ## Em desenvolvimento — 03/10/2026
 
+- **O baú se mexe com o mouse, a árvore cortada não diz quando volta, e a pitangueira
+  cortada deixa toco, e não mesa.** O baú da casa abria a mochila direto, sem passar pelo
+  dono das telas: o cursor seguia preso na câmera livre e o vale andava atrás da tela. Agora
+  ele abre pela mesma porta da mochila (`TelasDoVale.abrir_por`), com o vale parado e o
+  cursor solto para clicar e arrastar entre o baú e a mochila. A dica da árvore cortada
+  deixou de contar os dias ("não informe no texto o tempo que o pé de árvore estará em pé
+  novamente"): diz só que ela está crescendo de novo. E o toco: o corte nos 0,85 de sempre
+  passava pela copa da pitangueira, que tem galho e folha abaixo disso, e em cima do tronco
+  fino ficava um tampo de madeira de dois metros — uma mesa. O `CoqueiroCortado` passa a
+  medir a árvore antes, de faixa em faixa de altura em volta do eixo do tronco (o coqueiro é
+  inclinado), e corta logo abaixo de onde a copa abre; folha que desce até ali não entra no
+  toco, e o corte à mostra tem a largura do tronco medido, e não a do catálogo. Os portões
+  `casa` e `corte_das_arvores` ganharam as três perguntas, cada uma falsificada.
 - **As árvores do vale se cortam e voltam em um ano; a madeira e a pedra duras pedem
   talento e aço.** "Pode tornar as árvores cortáveis, com respawn de 1 ano no calendário
   do jogo. Para isso ela tem que progredir até ficar 'adulta'." De machado na mão, toda

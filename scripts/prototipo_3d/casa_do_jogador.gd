@@ -132,7 +132,16 @@ func usar(qual: String) -> void:
 			if sim and _noite != null:
 				await _noite.dormir_na_cama()
 		"bau":
-			Mochila.abrir_bau(bau, BAU_CABE, str(IdiomaMenu.campo(_textos.get("bau", {}), "titulo", "Baú da casa")))
+			# PELO DONO DAS TELAS, como a mochila do I: é ele que para o vale e
+			# solta o cursor do mouse para clicar e arrastar entre o baú e a
+			# mochila. Aberta direto, a tela vinha com o cursor preso na câmera.
+			var titulo := str(IdiomaMenu.campo(_textos.get("bau", {}), "titulo", "Baú da casa"))
+			var abrir_o_bau := func() -> void: Mochila.abrir_bau(bau, BAU_CABE, titulo)
+			var telas: Node = get_parent().get_node_or_null("TelasDoVale") if get_parent() != null else null
+			if telas != null and telas.has_method("abrir_por"):
+				telas.abrir_por("mochila", abrir_o_bau)
+			else:
+				abrir_o_bau.call()
 	_ocupado = false
 
 

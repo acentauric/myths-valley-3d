@@ -23,7 +23,8 @@ extends SceneTree
 ##   5. A GAMELEIRA NÃO SE CORTA, e diz por quê.
 ##   6. O ANO DE CRESCER: toco, muda, nova, crescida — a malha da própria
 ##      árvore, crescendo do pé — e só com um ano do calendário ela está
-##      adulta, inteira e com colisão, e se corta de novo.
+##      adulta, inteira e com colisão, e se corta de novo. A dica não diz
+##      quando ela volta.
 ##   7. A PARTIDA SALVA LEMBRA: cada cortada com o dia do corte, e a carga põe
 ##      cada uma no estágio de hoje (as de antes do toco, sem recortar toco).
 ##   8. A MATA TAMBÉM CRESCE: a instância da MultiMesh encolhe a nada, ganha
@@ -222,7 +223,11 @@ func _run() -> void:
 			_conferir(not is_instance_valid(nomeada.get("toco")) or not (nomeada["toco"] as Node3D).is_inside_tree() or (nomeada["toco"] as Node3D).is_queued_for_deletion(),
 				"a mangueira %s ainda tem o toco embaixo" % agora)
 		if dia == 111:
-			_conferir(arvores._texto_do_corte(branca).contains("1"), "na véspera de um ano a dica não diz que falta um dia: '%s'" % arvores._texto_do_corte(branca))
+			# A DICA NÃO DIZ QUANDO VOLTA: "não informe no texto o tempo que o pé de
+			# árvore estará em pé novamente". Nem dias, nem número nenhum.
+			var dica: String = arvores._texto_do_corte(branca)
+			_conferir(RegEx.create_from_string("[0-9]").search(dica) == null, "a dica da árvore cortada diz quando ela volta: '%s'" % dica)
+			_conferir(dica.contains("Mangueira"), "a dica da árvore cortada não diz que árvore é: '%s'" % dica)
 			await _ir_para(arvores, jogador, branca)
 			arvores._unhandled_key_input(e_de_interagir)
 			await _quadros(3)
@@ -324,6 +329,35 @@ func _run() -> void:
 		_conferir(recursos._perto == "matacao_mirante", "com a picareta de aço o matacão saiu do alcance")
 		_conferir(recursos.bater(), "o matacão não apanhou da picareta de aço")
 		_conferir(venda.mercadorias().has("machado_de_aco") and venda.mercadorias().has("picareta_de_aco"), "a venda não vende o aço")
+
+	# --- 10. O TOCO É DE TRONCO, E NÃO DE COPA --------------------------------
+	# "Quando cortei a pitangueira, ficou uma mesa no lugar dela." O corte nos
+	# 0,85 de sempre passava pela copa dela, e a madeira exposta saía do
+	# tamanho da copa: um tampo redondo de dois metros em cima do tronco fino.
+	# Uma árvore de cada espécie plantada: o corte à mostra é de tronco, e o
+	# toco não passa da altura de sempre.
+	var vistas := {}
+	for arvore: Dictionary in mundo.get("_arvores_nomeadas"):
+		var especie := str(arvore["especie"])
+		if vistas.has(especie) or bool(arvore.get("cortado", false)):
+			continue
+		vistas[especie] = true
+		var pe_dela: Vector3 = arvore["pos"]
+		if not mundo.cortar_arvore(pe_dela):
+			continue
+		var toco: Node3D = arvore.get("toco")
+		var exposta: MeshInstance3D = toco.find_child("MadeiraExposta", true, false) if toco != null else null
+		_conferir(exposta != null, "o toco da %s não tem o corte à mostra" % especie)
+		if exposta != null:
+			# A pitangueira tem tronco fino (o tampo dela tinha 1,0 de raio); a
+			# gameleira da linha do terreiro tem tronco de quase dois metros.
+			var raio_do_corte: float = (exposta.mesh as CylinderMesh).top_radius
+			var no_maximo := 0.35 if especie == "pitangueira" else 1.0
+			_conferir(raio_do_corte <= no_maximo, "o corte do toco da %s tem %.2f de raio: é tampo, e não tronco" % [especie, raio_do_corte])
+			_conferir(exposta.position.y <= 0.9, "o toco da %s ficou com %.2f de altura" % [especie, exposta.position.y])
+			print("  toco da %-12s corte de %.2f de raio a %.2f do chão" % [especie, raio_do_corte, exposta.position.y])
+		mundo.restaurar_arvore(pe_dela)
+	_conferir(vistas.has("pitangueira"), "não achei a pitangueira plantada para conferir o toco dela")
 	_fechar()
 
 

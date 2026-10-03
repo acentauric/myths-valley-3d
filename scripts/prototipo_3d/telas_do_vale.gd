@@ -115,6 +115,26 @@ func _fechar(tela: Dictionary) -> void:
 	_fechando = false
 
 
+## ABRE UMA TELA POR OUTRA PORTA: a mochila com o baú do lado, que o baú da
+## casa abre. As regras são as da tela — uma de cada vez, o vale parado e o
+## cursor do mouse solto para clicar e arrastar — e só o jeito de abrir muda.
+##
+## "No manuseio do baú deve poder usar o ponteiro do mouse igual na mochila."
+## O baú abria a mochila direto, sem passar por aqui: ninguém soltava o cursor
+## (que a câmera livre prende), e o vale seguia andando atrás da tela.
+func abrir_por(nome: String, como: Callable) -> void:
+	if _segurado():
+		return
+	for tela in _telas:
+		if str(tela["nome"]) != nome:
+			continue
+		fechar_tudo()
+		como.call()
+		if bool((tela["aberta"] as Callable).call()):
+			tela_mudou.emit(nome, true)
+		return
+
+
 ## Abre uma tela pelo nome, fechando antes a que estiver aberta.
 ##
 ## Apertar a tecla da tela JÁ ABERTA fecha, que é o que toda tela de menu faz.

@@ -219,11 +219,25 @@ func _run() -> void:
 		if str(monte.get("id", "")) == "beiju":
 			beijus += int(monte.get("qtd", 0))
 	_conferir(beijus == 2, "a partida nova achou %d beiju(s) no baú, e são dois" % beijus)
+	# Na câmera livre o cursor está preso: é dele que o baú tem de soltar.
+	jogador.set_captured(true)
 	casa.usar("bau")
 	await _frames(3)
 	_conferir(mochila.aberta and mochila.get("_bau") == casa.bau, "o E no baú não abriu a mochila com ele do lado")
-	mochila.fechar()
+	# O BAÚ É TELA COMO A MOCHILA: "no manuseio do baú deve poder usar o
+	# ponteiro do mouse igual na mochila". Aberto direto, o cursor ficava preso
+	# na câmera livre e o vale seguia andando atrás da tela.
+	var telas = current_scene.get_node_or_null("TelasDoVale")
+	_conferir(telas != null and telas.aberta() == "mochila", "o baú abriu sem passar pelo dono das telas")
+	_conferir(paused, "com o baú aberto o vale continua andando")
+	_conferir(Input.mouse_mode != Input.MOUSE_MODE_CAPTURED, "com o baú aberto o cursor do mouse continua preso na câmera")
+	# Fecha como o Esc fecha: pelo dono das telas, que devolve o vale.
+	if telas != null:
+		telas.fechar_tudo()
+	else:
+		mochila.fechar()
 	await _frames(2)
+	_conferir(not mochila.aberta and not paused, "fechar o baú não devolveu o vale")
 	var no_save: Dictionary = guardado.get("Mundo", {}).get("casa", {})
 	_conferir(not no_save.is_empty(), "o save não guarda o baú da casa")
 	casa.bau.clear()

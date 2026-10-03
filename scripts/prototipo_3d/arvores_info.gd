@@ -355,14 +355,15 @@ func _recusa(indice: int) -> String:
 
 
 ## O QUE A DICA DIZ sobre a árvore ao alcance do machado: golpear, a recusa,
-## ou — cortada — quando ela volta a estar de pé.
+## ou — cortada — que ela está crescendo de novo. SEM DIZER QUANDO VOLTA: "não
+## informe no texto o tempo que o pé de árvore estará em pé novamente". Quem
+## quer saber, olha a árvore crescer.
 func _texto_do_corte(indice: int) -> String:
 	var arvore: Dictionary = _cortaveis[indice]
 	var nome := _nome_da_especie(String(arvore["especie"]))
 	var acoes: Dictionary = _acoes.get("arvore", {})
 	if bool(arvore["cortado"]):
-		var faltam := maxi(dias_do_ano() - (Relogio.dia_absoluto() - int(arvore.get("dia_do_corte", Relogio.dia_absoluto()))), 1)
-		return str(IdiomaMenu.campo(acoes, "crescendo")) % [nome, faltam]
+		return str(IdiomaMenu.campo(acoes, "crescendo")) % nome
 	var recusa := _recusa(indice)
 	if recusa != "":
 		return recusa
