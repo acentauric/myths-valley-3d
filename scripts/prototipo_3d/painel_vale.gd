@@ -111,6 +111,9 @@ var _lista: VBoxContainer
 ## Só as linhas ESCOLHÍVEIS, na ordem do cursor (ver o 2D).
 var _escolhiveis: Array = []
 var _dica: Label
+## O estúdio dos retratos 3D (retratos_3d.gd), posto pelo vale: o diário mostra
+## o rosto de quem deu a missão, como o Witcher mostra o de quem a pediu.
+var retratos: Node = null
 ## O diário da aba de missões: a página da missão escolhida, à direita da lista.
 var _diario: ScrollContainer
 var _detalhe: VBoxContainer
@@ -126,6 +129,8 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	_montar()
 	visible = false
+	if retratos != null:
+		retratos.pronto.connect(func(_id: String, _foto: Texture2D) -> void: _redesenhar())
 	CadernoDoVale.mudou.connect(_redesenhar)
 	Progressao.mudou.connect(_redesenhar)
 	Inventario.mudou.connect(_redesenhar)
@@ -855,15 +860,41 @@ func _desenhar_o_diario(missao: Dictionary) -> void:
 	var id := str(missao.get("id", ""))
 	var acompanhada := CadernoDoVale.acompanhada(id)
 
+	# O ROSTO DE QUEM DEU A MISSÃO, ao lado do nome dela, quando o estúdio já
+	# tirou a foto (`retratos_3d.gd`). Sem foto, o nome sozinho.
+	var topo := HBoxContainer.new()
+	topo.add_theme_constant_override("separation", 14)
+	_detalhe.add_child(topo)
+	var foto: Texture2D = retratos.textura(str(missao.get("dono", ""))) if retratos != null else null
+	if foto != null:
+		var moldura := PanelContainer.new()
+		var estilo_moldura := StyleBoxFlat.new()
+		estilo_moldura.bg_color = Color(0.09, 0.12, 0.10, 0.95)
+		estilo_moldura.border_color = Color(Identidade.OURO.r, Identidade.OURO.g, Identidade.OURO.b, 0.6)
+		estilo_moldura.set_border_width_all(1)
+		estilo_moldura.set_corner_radius_all(4)
+		estilo_moldura.set_content_margin_all(3)
+		moldura.add_theme_stylebox_override("panel", estilo_moldura)
+		var rosto := TextureRect.new()
+		rosto.name = "RostoDeQuemDeu"
+		rosto.texture = foto
+		rosto.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		rosto.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		rosto.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+		rosto.custom_minimum_size = Vector2(72, 72)
+		moldura.add_child(rosto)
+		topo.add_child(moldura)
 	var nome := Label.new()
 	nome.name = "NomeDaMissao"
 	nome.text = _nome_da_missao(missao)
 	nome.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	nome.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	nome.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	nome.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_TITULO, 600, 1))
 	nome.add_theme_font_size_override("font_size", 24)
 	nome.add_theme_color_override("font_color", Identidade.CREME)
 	Identidade.sombra_texto(nome)
-	_detalhe.add_child(nome)
+	topo.add_child(nome)
 
 	var tipo := "◆ Enredo" if bool(missao.get("principal", false)) else "◇ Do dia a dia"
 	var quem := str(missao.get("quem", ""))

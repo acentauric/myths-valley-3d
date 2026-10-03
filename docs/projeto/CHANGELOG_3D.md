@@ -35,6 +35,11 @@ atualize esse arquivo e este documento juntos.
   segundo clique). O canto da tela mostra o nome da missão acompanhada em cima do
   objetivo; o passo seguinte herda o acompanhamento, e missão nova de outra pessoa só
   avisa. Cada cadeia ganhou `nome` nos três idiomas (`tests/painel.gd`, falsificado).
+- **Os retratos do arraial são fotos do modelo 3D.** Um estúdio (`retratos_3d.gd`)
+  instancia o mesmo modelo de cada morador, no estilo escolhido, põe o clipe "idle",
+  mira a cabeça de três quartos com luz de estúdio num mundo próprio e guarda a foto. A
+  teia social (lista e página) e o diário (o rosto de quem deu a missão) usam a foto; o
+  desenho 2D fica de reserva até ela sair, e sem placa de vídeo (`tests/teia_social.gd`).
 
 ## Em desenvolvimento — 02/10/2026
 

@@ -93,6 +93,11 @@ var _rodape: Label
 
 var _quem := ""
 
+## O ESTÚDIO DOS RETRATOS 3D (retratos_3d.gd), posto pelo vale. Com ele, o
+## retrato de cada morador é a foto do modelo do vale; sem ele — ou antes de a
+## foto sair, ou rodando sem placa de vídeo —, o desenho 2D da folha.
+var retratos: Node = null
+
 
 func _ready() -> void:
 	layer = 26
@@ -100,6 +105,8 @@ func _ready() -> void:
 	_montar()
 	visible = false
 	Afinidade.mudou.connect(func(_morador: String) -> void: if aberta: _encher())
+	if retratos != null:
+		retratos.pronto.connect(func(_id: String, _foto: Texture2D) -> void: if aberta: _encher())
 
 
 func _montar() -> void:
@@ -664,6 +671,21 @@ func _valor(tipo: String, cor: Color, selo: String, pontos: int, nome: String) -
 ## 2D usa nesta mesma lista. Recorta-se com AtlasTexture em vez de desenhar a
 ## folha inteira — sem o recorte apareceriam os dezesseis quadros espremidos.
 func _retrato_de(id: String, lado: float) -> TextureRect:
+	# A FOTO DO MODELO 3D, quando o estúdio já a tirou (ver `retratos_3d.gd`).
+	var foto: Texture2D = retratos.textura(id) if retratos != null else null
+	if foto != null:
+		var moldura_3d := TextureRect.new()
+		moldura_3d.name = "Retrato_" + id
+		moldura_3d.texture = foto
+		moldura_3d.set_meta("retrato_3d", true)
+		moldura_3d.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		moldura_3d.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		moldura_3d.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+		moldura_3d.custom_minimum_size = Vector2(lado, lado)
+		moldura_3d.size = Vector2(lado, lado)
+		moldura_3d.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		return moldura_3d
+	# O DESENHO 2D é a reserva, até a foto sair.
 	var caminho := PASTA_DOS_RETRATOS + id + ".png"
 	if not ResourceLoader.exists(caminho):
 		return null

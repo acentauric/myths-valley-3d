@@ -185,6 +185,37 @@ func _run() -> void:
 			"o nome de '%s' começa em %.0f e o retrato vai até %.0f: texto por cima do boneco"
 				% [quem, comeca, cara.position.x + cara.size.x])
 
+	# --- 4c2. A FOTO DO MODELO 3D TOMA O LUGAR DO DESENHO 2D ----------------
+	#
+	# "Será que é possível usar a foto do rosto já no modelo 3D ao invés do
+	# 2D?" O estúdio (`retratos_3d.gd`) tira a foto do modelo do vale; sem placa
+	# de vídeo (este portão roda headless) ele não fotografa, e o desenho 2D
+	# fica — é a reserva, medida acima. Aqui se mede o encaixe: com uma foto no
+	# estúdio, a linha e a página do morador passam a mostrá-la.
+	var estudio = current_scene.get("retratos")
+	_conferir(estudio != null and social.retratos == estudio,
+		"o vale não pôs o estúdio de retratos 3D na teia social")
+	if estudio != null:
+		_conferir(not estudio.sabe_fotografar() or DisplayServer.get_name() != "headless",
+			"o estúdio diz que fotografa sem placa de vídeo")
+		var imagem := Image.create(8, 8, false, Image.FORMAT_RGBA8)
+		imagem.fill(Color(0.8, 0.5, 0.3))
+		var foto := ImageTexture.create_from_image(imagem)
+		estudio._texturas[primeiro] = foto
+		estudio.pronto.emit(primeiro, foto)
+		social._quem = primeiro
+		social._encher()
+		await _frames(2)
+		var na_linha := coluna.find_children("Retrato_" + primeiro, "TextureRect", true, false)
+		_conferir(not na_linha.is_empty() and (na_linha[0] as TextureRect).texture == foto,
+			"com a foto 3D pronta, a linha de '%s' continua com o desenho 2D" % primeiro)
+		var na_pagina := pagina.find_children("RetratoGrande", "TextureRect", true, false)
+		_conferir(not na_pagina.is_empty() and (na_pagina[0] as TextureRect).texture == foto,
+			"com a foto 3D pronta, a página de '%s' continua com o desenho 2D" % primeiro)
+		estudio._texturas.erase(primeiro)
+		social._encher()
+		await _frames(2)
+
 	# --- 4d. A TELA É DESENHADA, E O TEXTO É APOIO ---------------------------
 	#
 	# "Na tela de relacionamento com as pessoas da aldeia está faltando os

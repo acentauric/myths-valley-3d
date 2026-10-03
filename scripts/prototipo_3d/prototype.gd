@@ -29,6 +29,7 @@ const MenuPausa = preload("res://scripts/prototipo_3d/menu_pausa.gd")
 const TelaControles = preload("res://scripts/prototipo_3d/tela_controles.gd")
 const TeiaTalentos = preload("res://scripts/prototipo_3d/teia_talentos.gd")
 const TeiaSocial = preload("res://scripts/prototipo_3d/teia_social.gd")
+const Retratos3D = preload("res://scripts/prototipo_3d/retratos_3d.gd")
 const MENU_SCENE := "res://scenes/prototipo_3d/abertura.tscn"
 ## Raio de terra firme em volta do ponto de chegada.
 const RAIO_CHEGADA := 6.0
@@ -90,6 +91,8 @@ var tela_controles
 var teia
 ## A teia social do arraial, na tecla P (teia_social.gd).
 var social
+## O estúdio dos retratos 3D dos moradores (retratos_3d.gd).
+var retratos
 ## As plaquinhas de nome dos moradores; somem com tela aberta (placas_nomes.gd).
 var placas
 ## A aba pedida no último `abrir_o_painel`, entregue à abertura crua.
@@ -389,8 +392,15 @@ func _ready() -> void:
 	# O `Afinidade` também já estava no vale: os sete moradores, os cinco graus,
 	# o gosto de cada um lido do `aldeoes.json`, e o preço social de migrar de
 	# fé. Faltava a tela — sem ela a afinidade subia sem ninguém ver.
+	# OS RETRATOS 3D DOS MORADORES, para a teia social e o diário. Ver
+	# `retratos_3d.gd`; as fotos saem quando o vale já está de pé
+	# (`_pedir_os_retratos`).
+	retratos = Retratos3D.new()
+	retratos.name = "Retratos3D"
+	add_child(retratos)
 	social = TeiaSocial.new()
 	social.name = "TeiaSocial"
+	social.retratos = retratos
 	add_child(social)
 	telas.registrar("arraial",
 		func(e: InputEvent) -> bool: return e.physical_keycode == Atalhos.tecla("arraial"),
@@ -484,6 +494,19 @@ func _ready() -> void:
 	_comecar_no_lugar_pedido()
 	_atualizar_relogio()
 	print("PROTOTYPE_READY: estilo=%s hora=%s moradores=%d user_dir=%s" % [Estilo.modo, Dia.texto_hora(), moradores.size(), OS.get_user_data_dir()])
+	_pedir_os_retratos()
+
+
+## AS FOTOS DOS MORADORES saem com o vale de pé e um respiro depois, para não
+## disputarem os primeiros quadros com a chegada. Uma por quadro, e só uma vez:
+## a teia social e o diário as pegam prontas.
+func _pedir_os_retratos() -> void:
+	await get_tree().create_timer(1.5, true).timeout
+	if not is_inside_tree() or _saindo:
+		return
+	var quem: Array = ["pedro"]
+	quem.append_array(Afinidade.MORADORES)
+	retratos.pedir(quem)
 
 
 ## O jogador chega de barco: começa no píer, de frente para a praça.
@@ -609,6 +632,7 @@ func _montar_moradores(spawn: Vector3) -> void:
 	# O painel da tecla J (painel_vale.gd), por cima do HUD.
 	painel = PainelVale.new()
 	painel.name = "Painel"
+	painel.retratos = retratos
 	add_child(painel)
 	painel.abriu.connect(_parar_o_jogador)
 	painel.fechou.connect(_soltar_o_jogador)
