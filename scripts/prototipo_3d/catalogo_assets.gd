@@ -175,14 +175,16 @@ static func instanciar(chave: String, parent: Node, origin: Vector3, size: float
 
 
 ## Colisão simples para um modelo instanciado por `instanciar`: cilindro no tronco ou caixa.
-static func colisao(chave: String, node: Node3D, parent: Node, origin: Vector3, size: float = 1.0, yaw: float = 0.0) -> void:
+## Devolve o corpo criado (null quando a peça não leva corpo próprio), para quem
+## precisa achá-lo depois — o cômodo de dentro tira a caixa inteira da casa.
+static func colisao(chave: String, node: Node3D, parent: Node, origin: Vector3, size: float = 1.0, yaw: float = 0.0) -> StaticBody3D:
 	if node == null:
-		return
+		return null
 	if chave in ["ponte", "pier"]:
 		# A superfície caminhável acompanha a malha importada da ponte e do píer.
 		for child in node.find_children("*", "MeshInstance3D", true, false):
 			(child as MeshInstance3D).create_trimesh_collision()
-		return
+		return null
 	# Medidas com os ajustes do painel PERSONAGENS por cima (ajustes_conteudo.gd).
 	var spec: Dictionary = AjustesConteudo.peca(chave)
 	var bounds: AABB = node.get_meta("limites", AABB())
@@ -202,9 +204,10 @@ static func colisao(chave: String, node: Node3D, parent: Node, origin: Vector3, 
 		body.position = origin + Vector3(0, bounds.size.y * 0.5, 0)
 		body.rotation.y = yaw
 	else:
-		return
+		return null
 	body.add_child(collision)
 	parent.add_child(body)
+	return body
 
 
 ## Malha + transformação-base para usar o modelo do Tripo em MultiMesh (mata, orla, itens).

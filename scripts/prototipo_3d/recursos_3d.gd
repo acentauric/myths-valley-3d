@@ -172,14 +172,23 @@ func _process(_delta: float) -> void:
 ## é somado à meia-pegada de cada um, que é o quanto ele empurra o jogador para
 ## longe do próprio centro — e aí "encoste e aperte E" volta a ser verdade para
 ## qualquer tamanho de peça.
+##
+## E A PAREDE SEPARA. A lenha da casa de taipa fica do lado de fora da parede
+## direita, perto o bastante para o alcance passar por ela: de dentro da casa,
+## junto do fogão, o E oferecia a lenha. Quem está dentro de um cômodo só
+## alcança o que está dentro dele, e quem está fora, o que está fora.
 func _mais_perto() -> String:
 	var melhor := ""
 	var menor := INF
+	var interiores := get_tree().get_first_node_in_group("interiores") if is_inside_tree() else null
+	var lado_do_jogador: String = interiores.contem(_jogador.global_position) if interiores != null else ""
 	for id in _alvos:
 		var d: Vector3 = _alvos[id]["pos"] - _jogador.global_position
 		d.y = 0.0
 		var sobra: float = d.length() - float(_alvos[id].get("meia_pegada", 0.0))
 		if sobra < ALCANCE and sobra < menor:
+			if interiores != null and interiores.contem(_alvos[id]["pos"]) != lado_do_jogador:
+				continue
 			menor = sobra
 			melhor = id
 	return melhor

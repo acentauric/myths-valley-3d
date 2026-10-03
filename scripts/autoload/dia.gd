@@ -4,6 +4,16 @@ extends Node
 
 signal hora_mudou(hora: float)
 signal periodo_mudou(periodo: String)
+## PASSOU DAS DUAS SEM DORMIR (#50). O dia do 2D vai das 6h às 2h
+## (`Relogio.HORA_LIMITE`, 26): quem não deitou até lá desmaia de cansaço e
+## acorda em casa (`queda.gd`). Avisa só quando o relógio ANDA por cima das
+## duas — o tempo correndo, ou a tecla de adiantar —, e não quando alguém põe a
+## hora lá de uma vez: carregar uma partida das três, ou começar o vale de
+## madrugada pela hora inicial do AJUSTAR, não é passar a noite acordado.
+signal passou_das_duas
+
+## A hora do desmaio: o `Relogio.HORA_LIMITE` do 2D, contado da meia-noite.
+const HORA_DO_DESMAIO := 2.0
 
 const ARQUIVO := "user://preferencias_visuais.cfg"
 ## Segundos reais por hora do jogo em cada velocidade (Parada, Lenta, Normal,
@@ -141,9 +151,19 @@ func _espelhar_no_calendario() -> void:
 
 
 func avancar(horas: float) -> void:
+	var antes := hora
 	if horas > 0.0:
 		horas_decorridas += horas
 	definir_hora(hora + horas)
+	if horas > 0.0 and cruza(antes, horas, HORA_DO_DESMAIO):
+		passou_das_duas.emit()
+
+
+## Andar `horas` a partir de `antes` passa por cima da hora `marca` (de
+## qualquer dia)? A próxima `marca` depois de `antes` cai antes de chegar?
+static func cruza(antes: float, horas: float, marca: float) -> bool:
+	var proxima := marca + 24.0 * ceilf((antes - marca) / 24.0 + 0.000001)
+	return proxima <= antes + horas
 
 
 ## Toda troca entra no registro do relógio, e "Parada" marca a partida — quem a

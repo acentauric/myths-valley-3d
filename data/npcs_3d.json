@@ -176,11 +176,11 @@
       "gesto_saudacao": 0,
       "postos": {
         "manha": [
-          "Roçado",
+          "Lavoura",
           [
-            2.0,
+            -1.0,
             0,
-            -1.6
+            -3.2
           ]
         ],
         "tarde": [

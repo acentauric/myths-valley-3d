@@ -2,7 +2,9 @@ extends Node3D
 ## AS CONSTRUÇÕES POR DENTRO, no lugar delas no vale.
 ##
 ## O vale não tinha cômodo nenhum (#26: "o buraco maior"). A primeira
-## construção que se abre é a igreja do Bom Jesus (`interior_igreja.gd`).
+## construção que se abriu foi a igreja do Bom Jesus (`interior_igreja.gd`); a
+## segunda, a casa herdada (`interior_casa.gd`), onde fica a cama que vira o
+## dia (#50). O que os dois cômodos têm em comum mora em `comodo.gd`.
 ##
 ##
 ## DENTRO DA PRÓPRIA CONSTRUÇÃO
@@ -41,12 +43,26 @@ extends Node3D
 signal entrou(qual: String)
 signal saiu(qual: String)
 
+const Comodo = preload("res://scripts/prototipo_3d/comodo.gd")
 const InteriorIgreja = preload("res://scripts/prototipo_3d/interior_igreja.gd")
+const InteriorCasa = preload("res://scripts/prototipo_3d/interior_casa.gd")
 
-## As construções que se abrem: a âncora do vale, o nome que o HUD escreve, e
-## o nome do corpo de colisão inteiro que o catálogo pôs nela no estilo Tripo.
+## As construções que se abrem:
+##
+##   ancora     a âncora do vale e o nome do lote (`world_builder.construcoes`)
+##   nome       o que o HUD escreve lá dentro
+##   colisao    o nome do corpo inteiro, para quando o lote não o guardou
+##   meio_lote  até onde, do meio, vai a casca (de lado, e de frente e fundo):
+##              no procedural, as malhas e os corpos do lote são os daí
+##   porta_x    onde a porta fica na fachada, do meio para a direita de quem
+##              olha a casa de frente; e o tamanho do vão da porta pintada
+##   sonda      de que altura se procura o patamar na frente da porta: abaixo
+##              do beiral, que na casa de taipa avança por cima da porta
 const CONSTRUCOES := {
-	"igreja": {"ancora": "Igreja", "nome": "Igreja do Bom Jesus", "colisao": "IgrejaColisao"},
+	"igreja": {"ancora": "Igreja", "nome": "Igreja do Bom Jesus", "colisao": "IgrejaColisao",
+		"meio_lote": Vector2(4.5, 8.0), "porta_x": 0.0, "largura_da_porta": 1.2, "altura_da_porta": 2.7, "sonda": 8.0},
+	"casa": {"ancora": "Casa de taipa", "nome": "Sua casa", "colisao": "Casa TaipaColisao",
+		"meio_lote": Vector2(3.4, 3.2), "porta_x": 0.92, "largura_da_porta": 1.05, "altura_da_porta": 2.15, "sonda": 1.6},
 }
 
 ## A camada de física das colisões provisórias da medida (só elas moram nela).
@@ -83,7 +99,7 @@ func sala_de(qual: String) -> Node3D:
 
 
 func nome_de(qual: String) -> String:
-	return str(CONSTRUCOES.get(qual, {}).get("nome", ""))
+	return tr(str(CONSTRUCOES.get(qual, {}).get("nome", "")))
 
 
 ## Em que cômodo este ponto do mundo está, ou "".
@@ -129,6 +145,10 @@ func _process(_delta: float) -> void:
 		_jogador.dentro_de = agora
 	for qual in _construcoes:
 		(_construcoes[qual]["sala"] as Node3D).camera_do_lado_de_dentro(qual == agora)
+	var sala_de_agora = sala_de(agora)
+	if _jogador.has_method("camera_de_cima"):
+		var de_cima: bool = sala_de_agora != null and bool(sala_de_agora.camera_de_cima)
+		_jogador.camera_de_cima(de_cima, sala_de_agora.corpos_do_comodo() if de_cima else ([] as Array[RID]))
 	if antes != "":
 		saiu.emit(antes)
 	if agora != "":
@@ -146,15 +166,21 @@ func _abrir(qual: String) -> void:
 	var frente := _frente(ancora)
 	var chao: float = _mundo.ground_height_at(base)
 	var centro := Vector3(base.x, chao, base.z)
-	var modelo: Node3D = _mundo.get_node_or_null(ancora.capitalize() + "Tripo")
-	var malhas := _malhas_da_casca(modelo, centro, frente)
+	var construcoes = _mundo.get("construcoes")
+	var lote: Dictionary = construcoes.get(ancora, {}) if construcoes is Dictionary else {}
+	var modelo: Node3D = lote.get("modelo") if is_instance_valid(lote.get("modelo")) else null
+	if modelo == null and qual == "igreja":
+		modelo = _mundo.get_node_or_null(ancora.capitalize() + "Tripo")
+	var malhas := _malhas_da_casca(modelo, centro, frente, dado["meio_lote"])
 	if malhas.is_empty():
 		return
-	var caixa_inteira: Node = _mundo.get_node_or_null(str(dado.get("colisao", "")))
-	var medida: Dictionary = await _medir(malhas, centro, frente, caixa_inteira)
+	var caixa_inteira: Node = lote.get("colisao") if is_instance_valid(lote.get("colisao")) else null
+	if caixa_inteira == null and modelo != null and qual == "igreja":
+		caixa_inteira = _mundo.get_node_or_null(str(dado.get("colisao", "")))
+	var medida: Dictionary = await _medir(malhas, centro, frente, caixa_inteira, dado)
 	if medida.is_empty():
 		return
-	_tirar_a_colisao_inteira(str(dado.get("colisao", "")), modelo, centro, frente, medida)
+	_tirar_a_colisao_inteira(caixa_inteira, modelo, centro, frente, medida)
 	if modelo != null:
 		_casca_so_por_fora(modelo)
 
@@ -162,26 +188,33 @@ func _abrir(qual: String) -> void:
 	match qual:
 		"igreja":
 			sala = InteriorIgreja.new()
+		"casa":
+			sala = InteriorCasa.new()
 	if sala == null:
 		return
 	# A parede do cômodo fica FOLGA para dentro da casca; a da frente, rente
-	# ao lado de dentro da porta. A origem do cômodo é o meio da soleira, por
+	# ao lado de dentro da porta. A origem do cômodo é o meio da fachada, por
 	# dentro, e o cômodo corre para trás (-Z), longe da fachada.
-	var meia_largura: float = float(medida["lado"]) - FOLGA - InteriorIgreja.PAREDE
-	var ate_a_frente: float = float(medida["frente"]) - FOLGA - InteriorIgreja.PAREDE
-	var ate_o_fundo: float = float(medida["fundo"]) - FOLGA - InteriorIgreja.PAREDE
+	var meia_largura: float = float(medida["lado"]) - FOLGA - Comodo.PAREDE
+	var ate_a_frente: float = float(medida["frente"]) - FOLGA - Comodo.PAREDE
+	var ate_o_fundo: float = float(medida["fundo"]) - FOLGA - Comodo.PAREDE
 	var chao_da_nave: float = float(medida["chao"])
 	sala.configurar({
 		"largura": meia_largura * 2.0,
 		"comprimento": ate_a_frente + ate_o_fundo,
 		"pe_direito": float(medida["teto"]) - chao_da_nave - 0.25,
-		"fundo_da_porta": float(medida["fachada"]) - (ate_a_frente + InteriorIgreja.PAREDE),
+		"fundo_da_porta": float(medida["fachada"]) - (ate_a_frente + Comodo.PAREDE),
 		"soleira": chao_da_nave - float(medida["soleira"]),
 		"degrau_de_fora": float(medida["soleira"]) - float(medida["terreno"]),
 		"borda": float(medida["borda"]) - ate_a_frente,
 		"livre": float(medida["livre"]),
+		"porta_x": float(dado["porta_x"]),
+		"largura_da_porta": float(dado["largura_da_porta"]),
+		"altura_da_porta": float(dado["altura_da_porta"]),
 	})
 	sala.name = "Interior_" + qual
+	# A casca que some para a câmera de cima: o modelo, ou as malhas do lote.
+	sala.casca = [modelo] if modelo != null else malhas
 	add_child(sala)
 	sala.global_transform = Transform3D(Basis.looking_at(-frente, Vector3.UP),
 		centro + frente * ate_a_frente + Vector3.UP * chao_da_nave)
@@ -195,8 +228,9 @@ func _frente(ancora: String) -> Vector3:
 
 
 ## As malhas que formam a casca: as do modelo do Tripo, ou, no procedural, as
-## do mundo que estão dentro do lote da construção.
-func _malhas_da_casca(modelo: Node3D, centro: Vector3, frente: Vector3) -> Array:
+## do mundo que estão dentro do lote da construção (`meio_lote`: de lado, e de
+## frente e fundo).
+func _malhas_da_casca(modelo: Node3D, centro: Vector3, frente: Vector3, meio_lote: Vector2) -> Array:
 	var lista: Array = []
 	if modelo != null:
 		for no in modelo.find_children("*", "MeshInstance3D", true, false):
@@ -207,7 +241,7 @@ func _malhas_da_casca(modelo: Node3D, centro: Vector3, frente: Vector3) -> Array
 		if not (no is MeshInstance3D):
 			continue
 		var onde: Vector3 = (no as MeshInstance3D).global_position - centro
-		if absf(onde.dot(lado)) < 4.5 and absf(onde.dot(frente)) < 8.0 and onde.y > -0.5 and onde.y < 12.0:
+		if absf(onde.dot(lado)) < meio_lote.x and absf(onde.dot(frente)) < meio_lote.y and onde.y > -0.5 and onde.y < 12.0:
 			lista.append(no)
 	return lista
 
@@ -226,7 +260,7 @@ func _malhas_da_casca(modelo: Node3D, centro: Vector3, frente: Vector3) -> Array
 ##            chegar — no Tripo, o topo da escadaria de pedra que o vale põe
 ##            na frente da igreja; no procedural, o chão. Medido contra a
 ##            colisão do mundo, sem a caixa inteira que vai sair.
-func _medir(malhas: Array, centro: Vector3, frente: Vector3, caixa_inteira: Node = null) -> Dictionary:
+func _medir(malhas: Array, centro: Vector3, frente: Vector3, caixa_inteira: Node, dado: Dictionary) -> Dictionary:
 	var corpo := StaticBody3D.new()
 	corpo.name = "MedidaDaCasca"
 	corpo.collision_layer = CAMADA_DE_MEDIR
@@ -248,6 +282,9 @@ func _medir(malhas: Array, centro: Vector3, frente: Vector3, caixa_inteira: Node
 	await get_tree().physics_frame
 	var espaco: PhysicsDirectSpaceState3D = _mundo.get_world_3d().direct_space_state
 	var lado := frente.cross(Vector3.UP).normalized()
+	# Onde fica a porta: `porta_x` é do meio para a direita de quem olha a
+	# casa de frente, que é o +X do cômodo.
+	var na_porta := Vector3.UP.cross(frente).normalized() * float(dado.get("porta_x", 0.0))
 	var medida := {}
 	var meio_1 := centro + Vector3.UP * 1.5
 	var meio_2 := centro + Vector3.UP * 2.2
@@ -257,11 +294,11 @@ func _medir(malhas: Array, centro: Vector3, frente: Vector3, caixa_inteira: Node
 	medida["fundo"] = minf(_distancia(espaco, meio_1, -frente), _distancia(espaco, meio_2, -frente))
 	var frente_por_dentro := INF
 	for x in [-0.5, 0.0, 0.5]:
-		frente_por_dentro = minf(frente_por_dentro, _distancia(espaco, meio_1 + lado * x, frente))
+		frente_por_dentro = minf(frente_por_dentro, _distancia(espaco, meio_1 + na_porta + lado * x, frente))
 	medida["frente"] = frente_por_dentro
-	# A face de fora da fachada, vinda de longe na direção do centro.
-	var de_fora := meio_1 + frente * 30.0
-	var na_fachada := _raio(espaco, de_fora, meio_1)
+	# A face de fora da fachada, na porta, vinda de longe na direção do centro.
+	var de_fora := meio_1 + na_porta + frente * 30.0
+	var na_fachada := _raio(espaco, de_fora, meio_1 + na_porta)
 	medida["fachada"] = (na_fachada - centro).dot(frente) if na_fachada.is_finite() else frente_por_dentro
 	# O beiral, junto das paredes: o menor teto de três pontos de cada lado.
 	var teto := INF
@@ -277,13 +314,13 @@ func _medir(malhas: Array, centro: Vector3, frente: Vector3, caixa_inteira: Node
 	var de_cima := centro + Vector3.UP * 3.0
 	var no_chao := _raio(espaco, de_cima, centro - Vector3.UP * 2.0)
 	var chao_de_dentro: float = (no_chao.y - centro.y) if no_chao.is_finite() else 0.0
-	var diante := centro + frente * (float(medida["fachada"]) + 0.35) + Vector3.UP * 8.0
+	var diante := centro + na_porta + frente * (float(medida["fachada"]) + 0.35) + Vector3.UP * float(dado.get("sonda", 8.0))
 	var degrau := _raio(espaco, diante, diante - Vector3.UP * 12.0)
 	var soleira: float = (degrau.y - centro.y) if degrau.is_finite() else 0.0
 	medida["chao"] = clampf(maxf(chao_de_dentro, soleira), 0.0, 2.0)
 	# O patamar de fora, contra a colisão do mundo (camada 1), um palmo além
 	# da fachada — sem a caixa inteira da construção, que sai em seguida.
-	var no_patamar := centro + frente * (float(medida["fachada"]) + 0.3) + Vector3.UP * 4.0
+	var no_patamar := centro + na_porta + frente * (float(medida["fachada"]) + 0.3) + Vector3.UP * 4.0
 	var pergunta := PhysicsRayQueryParameters3D.create(no_patamar, no_patamar - Vector3.UP * 10.0, 1)
 	if caixa_inteira is CollisionObject3D:
 		pergunta.exclude = [(caixa_inteira as CollisionObject3D).get_rid()]
@@ -299,14 +336,14 @@ func _medir(malhas: Array, centro: Vector3, frente: Vector3, caixa_inteira: Node
 	medida["terreno"] = float(medida["soleira"])
 	var passo := 0.05
 	while passo < 4.0:
-		var ponto := centro + frente * (float(medida["fachada"]) + passo)
+		var ponto := centro + na_porta + frente * (float(medida["fachada"]) + passo)
 		var altura := _altura_do_mundo(espaco, ponto, centro.y + float(medida["soleira"]), pergunta.exclude)
 		if is_finite(altura) and altura < centro.y + float(medida["soleira"]) - 0.05:
 			medida["borda"] = float(medida["fachada"]) + passo - 0.025
 			break
 		passo += 0.05
 	if float(medida["borda"]) > float(medida["fachada"]):
-		var no_pe := centro + frente * (float(medida["borda"]) + 0.9)
+		var no_pe := centro + na_porta + frente * (float(medida["borda"]) + 0.9)
 		var no_adro := _altura_do_mundo(espaco, no_pe, centro.y + float(medida["soleira"]), pergunta.exclude)
 		if is_finite(no_adro):
 			medida["terreno"] = no_adro - centro.y
@@ -314,7 +351,7 @@ func _medir(malhas: Array, centro: Vector3, frente: Vector3, caixa_inteira: Node
 	# na altura do joelho e do peito, da fachada para fora.
 	medida["livre"] = 3.0
 	for altura in [0.3, 1.0]:
-		var de: Vector3 = centro + frente * (float(medida["fachada"]) + 0.05) \
+		var de: Vector3 = centro + na_porta + frente * (float(medida["fachada"]) + 0.05) \
 			+ Vector3.UP * (float(medida["soleira"]) + altura)
 		var adiante := PhysicsRayQueryParameters3D.create(de, de + frente * 3.0, 1)
 		adiante.exclude = pergunta.exclude
@@ -351,11 +388,10 @@ func _distancia(espaco: PhysicsDirectSpaceState3D, de: Vector3, direcao: Vector3
 
 
 ## TIRA A COLISÃO INTEIRA da construção: a caixa que o catálogo pôs no Tripo,
-## ou, no procedural, os corpos das caixas da igreja dentro do lote. O cômodo
-## põe a dele no lugar.
-func _tirar_a_colisao_inteira(nome: String, modelo: Node3D, centro: Vector3, frente: Vector3, medida: Dictionary) -> void:
+## ou, no procedural, os corpos das caixas da construção dentro do lote. O
+## cômodo põe a dele no lugar.
+func _tirar_a_colisao_inteira(caixa: Node, modelo: Node3D, centro: Vector3, frente: Vector3, medida: Dictionary) -> void:
 	if modelo != null:
-		var caixa := _mundo.get_node_or_null(nome)
 		if caixa != null:
 			caixa.queue_free()
 		return
@@ -387,7 +423,7 @@ func _casca_so_por_fora(modelo: Node3D) -> void:
 
 
 ## OS CORPOS NA LUZ DE DENTRO: as luzes do cômodo só acendem a camada dele e a
-## dos corpos (ver `interior_igreja.gd`). O jogador e os moradores entram nela,
+## dos corpos (ver `comodo.gd`). O jogador e os moradores entram nela,
 ## para a vela do altar iluminar quem chega perto dela.
 func marcar_os_corpos() -> void:
 	var corpos: Array = []
@@ -397,4 +433,4 @@ func marcar_os_corpos() -> void:
 		corpos.append(morador)
 	for corpo in corpos:
 		for no in (corpo as Node).find_children("*", "GeometryInstance3D", true, false):
-			(no as GeometryInstance3D).layers |= InteriorIgreja.CAMADA_DOS_CORPOS
+			(no as GeometryInstance3D).layers |= Comodo.CAMADA_DOS_CORPOS

@@ -13,8 +13,9 @@ extends SceneTree
 ##   2. A BARRA ACOMPANHA O NÚMERO: pancada desce a barra do HUD, e a peçonha
 ##      troca a cor dela. HUD que mostra um número velho mente pior que HUD
 ##      nenhum.
-##   3. CAIR LEVA PARA CASA — a porta da Casa de taipa, em terra firme —, vira
-##      UM dia, acorda às 6h com a vida cheia e o fôlego do desmaio.
+##   3. CAIR LEVA PARA CASA — ao pé da cama, no quarto da Casa de taipa, ou
+##      na porta dela sem o cômodo —, vira UM dia, acorda às 6h com a vida
+##      cheia e o fôlego do desmaio.
 ##   4. O CALENDÁRIO FICA PRESO AO `Dia` depois da queda. O `Relogio.dormir()`
 ##      solta o `pausado` dele; se o `Dia` não o prender de novo, o calendário
 ##      anda sozinho, que é o defeito de `tests/calendario.gd`.
@@ -84,7 +85,7 @@ func _run() -> void:
 	# --- 3. CAIR LEVA PARA CASA ------------------------------------------------
 	var casa: Vector3 = queda.ponto_de_casa()
 	_conferir(casa.is_finite(), "o vale não tem a Casa de taipa: a queda não tem para onde levar")
-	_conferir(casa.is_finite() and world.is_on_land(casa), "a porta de casa não é terra firme: %s" % str(casa))
+	_conferir(casa.is_finite() and world.is_on_land(casa), "o lugar de acordar em casa não é terra firme: %s" % str(casa))
 	var longe: Vector3 = player.global_position
 	print("VIDA: jogador em %s, casa em %s (%.0f u)" % [str(longe), str(casa), longe.distance_to(casa)])
 	dia.definir_hora(15.0)
@@ -108,7 +109,7 @@ func _run() -> void:
 		await process_frame
 	_conferir(acordou[0], "a queda não terminou: o jogador ficou no escuro")
 	_conferir(player.global_position.distance_to(casa) < 1.5,
-		"quem caiu acordou a %.1f u da porta de casa" % player.global_position.distance_to(casa))
+		"quem caiu acordou a %.1f u de casa" % player.global_position.distance_to(casa))
 	_conferir(vida.atual == vida.maximo(), "acordou sem a vida cheia: %s" % str(vida.atual))
 	_conferir(is_equal_approx(energia.atual, 5.0 + progressao.recuperacao_ao_desmaiar),
 		"o fôlego não voltou como no desmaio do 2D: %s" % str(energia.atual))
@@ -136,7 +137,7 @@ func _run() -> void:
 func _fechar() -> void:
 	print("")
 	if falhas == 0:
-		print("VIDA_OK: a barra do HUD acompanha a vida e a peçonha; cair leva à porta da Casa de taipa, vira um dia só, acorda às 6h inteiro e com o fôlego do desmaio, e o calendário continua preso ao Dia")
+		print("VIDA_OK: a barra do HUD acompanha a vida e a peçonha; cair leva para casa, ao pé da cama, vira um dia só, acorda às 6h inteiro e com o fôlego do desmaio, e o calendário continua preso ao Dia")
 	else:
 		print("vida: %d falha(s)" % falhas)
 	quit(1 if falhas > 0 else 0)

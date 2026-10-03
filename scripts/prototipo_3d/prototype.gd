@@ -34,6 +34,7 @@ const TeiaTalentos = preload("res://scripts/prototipo_3d/teia_talentos.gd")
 const TeiaSocial = preload("res://scripts/prototipo_3d/teia_social.gd")
 const Retratos3D = preload("res://scripts/prototipo_3d/retratos_3d.gd")
 const Interiores = preload("res://scripts/prototipo_3d/interiores.gd")
+const CasaDoJogador = preload("res://scripts/prototipo_3d/casa_do_jogador.gd")
 const MENU_SCENE := "res://scenes/prototipo_3d/abertura.tscn"
 ## Raio de terra firme em volta do ponto de chegada.
 const RAIO_CHEGADA := 6.0
@@ -104,6 +105,10 @@ var social
 var retratos
 ## As construções por dentro (interiores.gd).
 var interiores
+## A casa herdada por dentro: a cama e o baú (`casa_do_jogador.gd`), e a noite
+## que vira por três portas (`queda.gd`).
+var casa: Node
+var noite: Node
 ## As plaquinhas de nome dos moradores; somem com tela aberta (placas_nomes.gd).
 var placas
 ## A aba pedida no último `abrir_o_painel`, entregue à abertura crua.
@@ -733,11 +738,19 @@ func _montar_moradores(spawn: Vector3) -> void:
 	tubarao.name = "Tubarao"
 	add_child(tubarao)
 	tubarao.configurar(world, player, func(texto: String) -> void: hud.set_notice(texto))
-	# Vida no chão é noite no chão: quem cai acorda na porta de casa (queda.gd).
+	# Vida no chão é noite no chão — e a cama e as duas da manhã também viram a
+	# noite pelo mesmo nó (queda.gd). Com o cômodo da casa, acorda-se ao pé da
+	# cama; sem ele, na porta.
 	var queda := Queda.new()
 	queda.name = "Queda"
 	add_child(queda)
 	queda.configurar(world, player, hud)
+	queda.interiores = interiores
+	noite = queda
+	casa = CasaDoJogador.new()
+	casa.name = "CasaDoJogador"
+	add_child(casa)
+	casa.configurar(player, hud, interiores, queda)
 	# A pesca (pesca_vale.gd). Entra ANTES dos achados: com a vara na mão, o E
 	# ainda pega o cordel do píer. Ferrar o peixe escuta em `_input`, e esse
 	# vem antes de tudo — a janela é de três quartos de segundo.
@@ -1374,6 +1387,9 @@ func estado_para_salvar() -> Dictionary:
 	var luta := get_node_or_null("Luta")
 	if luta != null:
 		estado["mortes"] = luta.mortes.duplicate(true)
+	# O BAÚ DA CASA, como no 2D (`travas.bau_da_casa`).
+	if casa != null:
+		estado["casa"] = casa.estado_para_salvar()
 	return estado
 
 
@@ -1440,6 +1456,8 @@ func restaurar_do_save(estado: Dictionary) -> void:
 	var luta := get_node_or_null("Luta")
 	if luta != null:
 		luta.restaurar_mortes(estado.get("mortes", []))
+	if casa != null and estado.has("casa"):
+		casa.restaurar(estado["casa"])
 
 
 ## DEPURAÇÃO: `-- --lugar=<nome>` começa o jogador direto num lugar do

@@ -42,6 +42,10 @@ const TRADUZIDOS := {
 	"res://data/missoes_fe_catolica.json": ["texto", "resumo", "nome", "titulo", "resposta"],
 	"res://data/missoes_fe_candomble.json": ["texto", "resumo", "nome", "titulo", "resposta"],
 	"res://data/missoes_fe_caboclo.json": ["texto", "resumo", "nome", "titulo", "resposta"],
+	# A casa herdada (#50): a pergunta da cama e as falas do desmaio das duas.
+	# O "titulo" fica de fora da cobrança, e não da tradução: "Cama" é a mesma
+	# palavra em espanhol, e a regra da cópia reprovaria o certo.
+	"res://data/casa.json": ["texto", "pergunta"],
 }
 
 ## O QUE AINDA NÃO ESTÁ NOS TRÊS, e por quê. Esvaziar esta lista é o trabalho;

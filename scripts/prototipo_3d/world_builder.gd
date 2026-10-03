@@ -69,6 +69,11 @@ var _fogo_do_terreiro: Node3D
 
 ## Lote (posição e giro) de cada construção nomeada, decidido por _loteamento().
 var _lotes: Dictionary = {}
+## O MODELO E A COLISÃO INTEIRA de cada construção com nome, no estilo Tripo:
+## nome -> {"modelo": Node3D, "colisao": StaticBody3D}. O cômodo de dentro
+## (`interiores.gd`) os acha por aqui, e não pelo nome do nó: há várias casas
+## de taipa no vale, e o Godot renomeia as repetidas.
+var construcoes: Dictionary = {}
 ## Montagem aos poucos: o vale é erguido ao longo de vários quadros, com o progresso
 ## (0 a 1) e a etapa avisados à tela de carregamento (tela_carregamento.gd), e
 ## `pronto` no fim. Quem depende do mundo espera `construido`/`pronto`.
@@ -721,7 +726,10 @@ func _construcao(chave: String, origin: Vector3, yaw: float, procedural: Callabl
 					_remember_house_position(nome, placed_origin, yaw, true)
 				else:
 					_remember_house_position("Igreja", placed_origin, yaw, true)
-			CatalogoAssets.colisao(chave, node, self, placed_origin, size, yaw)
+			var corpo := CatalogoAssets.colisao(chave, node, self, placed_origin, size, yaw)
+			var quem := nome if nome != "" else ("Igreja" if chave == "igreja" else "")
+			if quem != "":
+				construcoes[quem] = {"modelo": node, "colisao": corpo}
 			var piso := float(CatalogoAssets.PECAS[chave].get("piso", 0.0))
 			var piso_size := Vector3(limites.size.x + 1.6, 0.16, limites.size.z + 1.6)
 			var piso_position := placed_origin + Vector3(0, piso + 0.08, 0)
@@ -1152,22 +1160,35 @@ func _alinhar_colisao_coqueiro(visual: Node3D, corpo: StaticBody3D) -> void:
 		return
 
 
+## A LAVOURA DA CASA (#8), na frente dela, depois da cana e da lenha: o chão
+## aberto do roçado, onde a fazenda do jogador planta. No referencial da casa
+## (`_na_casa`), para girar com ela.
+const LAVOURA_NA_CASA := Vector3(4.0, 0.0, 11.5)
+## O canteiro velho de mandioca, a leste da lavoura. Morava no meio do roçado
+## — que a casa passou a ocupar —, e com a casa aberta por dentro ele aparecia
+## no meio da sala.
+const CANTEIRO_NA_CASA := Vector3(10.5, 0.0, 12.0)
+
+
 func _build_farm() -> void:
 	var origin: Vector3 = _region.get_feature_center("Fazenda", "area")
 	ancoras["Roçado"] = origin
 	# A casa passou a ocupar o centro do roçado. A oficina precisa de ponto
 	# próprio na beira, senão a distância empatada sempre escolhe a casa.
 	ancoras["Oficina"] = ground_position(origin + Vector3(-8.0, 0.0, -4.0))
-	if _adereco("mandioca_canteiro", origin, 0.2) == null:
+	ancoras["Lavoura"] = ground_position(_na_casa("Casa de taipa", LAVOURA_NA_CASA))
+	ancoras["LavouraFrente"] = ancoras.get("Casa de taipaFrente", Vector3.BACK)
+	var canteiro := ground_position(_na_casa("Casa de taipa", CANTEIRO_NA_CASA))
+	if _adereco("mandioca_canteiro", canteiro, 0.2) == null:
 		for row in range(3):
-			_box(Vector3(5.6, 0.1, 0.88), ground_position(origin + Vector3(0, 0, row * 1.35), 0.055), Color("826346"))
+			_box(Vector3(5.6, 0.1, 0.88), ground_position(canteiro + Vector3(0, 0, row * 1.35), 0.055), Color("826346"))
 			for column in range(7):
 				var crop := CylinderMesh.new()
 				crop.top_radius = 0.02
 				crop.bottom_radius = 0.24
 				crop.height = 0.54 + row * 0.09
 				crop.radial_segments = 5
-				_mesh(crop, ground_position(origin + Vector3(-2.3 + column * 0.75, 0, row * 1.35), 0.35), Color("8fa85e"))
+				_mesh(crop, ground_position(canteiro + Vector3(-2.3 + column * 0.75, 0, row * 1.35), 0.35), Color("8fa85e"))
 	_adereco("cerca", ground_position(origin + Vector3(-4, 0, 6)), 0.0, 2.0)
 	_adereco("cerca", ground_position(origin + Vector3(-4, 0, -3)), 0.0, 2.0)
 	_box(Vector3(0.85, 1.0, 0.85), ground_position(origin + Vector3(5.2, 0, 2), 0.5), WOOD, true)

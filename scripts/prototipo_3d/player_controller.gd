@@ -567,6 +567,48 @@ func _unhandled_input(event: InputEvent) -> void:
 ## Um passo de zoom: perto é para cima na roda, e o mais no teclado.
 func _aproximar_a_camera(perto: bool) -> void:
 	_distance = maxf(1.6, _distance - 0.35) if perto else minf(12.0, _distance + 0.35)
+	if _de_cima:
+		_distance = clampf(_distance, DE_CIMA_PERTO, DE_CIMA_LONGE)
+
+
+## A CÂMERA DE CIMA, num cômodo pequeno (a casa herdada). A câmera de passeio,
+## oito metros atrás e quase na altura dos olhos, não cabe num quarto de três
+## por quatro: o braço bate na parede, encolhe, e a câmera ia parar dentro da
+## cabeça do jogador. Lá dentro ela sobe e olha de cima — o cômodo some o teto
+## para ela (`comodo.gd`, `por_dentro`) —, e ao sair volta como estava.
+const DE_CIMA_DISTANCIA := 4.4
+const DE_CIMA_INCLINACAO := -1.2
+const DE_CIMA_PERTO := 3.2
+const DE_CIMA_LONGE := 5.6
+var _de_cima := false
+var _antes_de_cima := Vector2.ZERO
+## As paredes do cômodo que o braço da câmera atravessa enquanto ela está de
+## cima: sem isso, junto da parede, o braço batia nela e encolhia.
+var _atravessa: Array[RID] = []
+
+
+func camera_de_cima(ativa: bool, corpos_do_comodo: Array[RID] = []) -> void:
+	if ativa == _de_cima:
+		return
+	_de_cima = ativa
+	for corpo in _atravessa:
+		spring.remove_excluded_object(corpo)
+	_atravessa.clear()
+	if ativa:
+		_antes_de_cima = Vector2(_distance, _pitch)
+		_distance = DE_CIMA_DISTANCIA
+		_pitch = DE_CIMA_INCLINACAO
+		for corpo in corpos_do_comodo:
+			spring.add_excluded_object(corpo)
+			_atravessa.append(corpo)
+	else:
+		_distance = _antes_de_cima.x
+		_pitch = _antes_de_cima.y
+	_apply_camera()
+
+
+func esta_de_cima() -> bool:
+	return _de_cima
 
 
 ## PERDER O FOCO SOLTA O MOUSE, MAS NÃO TROCA O MODO.
@@ -616,7 +658,10 @@ func set_camera_locked(value: bool) -> void:
 
 func _rotate_camera(relative: Vector2) -> void:
 	_yaw -= relative.x * mouse_sensitivity
-	_pitch = clampf(_pitch - relative.y * mouse_sensitivity, -0.95, 0.35)
+	if _de_cima:
+		_pitch = clampf(_pitch - relative.y * mouse_sensitivity, -1.4, -0.85)
+	else:
+		_pitch = clampf(_pitch - relative.y * mouse_sensitivity, -0.95, 0.35)
 	_apply_camera()
 
 ## Derruba o jogador: impulso horizontal `impulso` (m/s) mais um pequeno salto, sem
@@ -751,7 +796,8 @@ func teleportar(destino: Vector3, rumo: float) -> void:
 	_jump_buffer_remaining = 0.0
 	visual.rotation.y = rumo
 	_yaw = rumo + PI
-	_pitch = -0.19
+	# Dentro da casa a câmera continua de cima (ver `camera_de_cima`).
+	_pitch = DE_CIMA_INCLINACAO if _de_cima else -0.19
 	inspecting = false
 	_apply_camera()
 

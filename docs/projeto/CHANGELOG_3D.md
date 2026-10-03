@@ -26,6 +26,25 @@ atualize esse arquivo e este documento juntos.
 
 ## Em desenvolvimento — 03/10/2026
 
+- **A casa herdada abre por dentro, e a cama vira o dia** (#50, #26). A barreira era o
+  dia que não virava: o vale não tinha cama, e o calendário só andava quando o jogador
+  caía. Agora a casa de taipa do roçado tem cômodo no lugar dela — chão de terra batida,
+  cal com a barra de barro, telha-vã, a janela da fachada —, com a cama e o baú no fundo.
+  A cama pergunta como no 2D ("Dormir até o amanhecer?"), e o sim vira um dia pelo
+  caminho da queda: escurece, mostra o cartão do amanhecer, acorda às 6h ao pé da cama,
+  descansado, e salva. Quem não deita até as duas da manhã desmaia de cansaço, como no
+  2D (a decisão da #50), e acorda ao pé da cama com as falas de lá; a queda também
+  acorda ali. O baú da casa abre a mochila com ele do lado, com os dois beijus da
+  partida nova, e vai no save. Numa casa de três por quatro a câmera de passeio não
+  cabia — o braço batia na parede e ela ia parar dentro da cabeça do jogador —; lá
+  dentro ela sobe e olha de cima, com o telhado e o forro só fazendo sombra. O que os
+  dois cômodos têm em comum saiu da igreja para `comodo.gd`. Até os móveis do Tripo
+  chegarem, a cama e o baú são caixas provisórias, como a #50 manda. De quebra: o
+  canteiro de mandioca, que morava no meio do roçado e aparecia no meio da sala, foi
+  para a beira da lavoura nova, na frente da casa; o posto da manhã do Cosme, que caía
+  dentro da casa, foi para a lavoura; e o E dos alvos de trabalho não atravessa parede
+  (`tests/casa.gd` e `casa_procedural.gd`, falsificados; `tests/calendario.gd` passa a
+  cobrir a cama).
 - **No dia da festa de cada fé, quem é dela vai ao marco à tarde** (#52). O calendário
   já sabia as três festas — o Bom Jesus dos Navegantes, Cosme e Damião e o Dois de
   Julho —, mas ninguém saía do posto de sempre. Agora, no dia da festa, da uma da tarde
