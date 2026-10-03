@@ -256,6 +256,14 @@ const EN := {
 	"Para o povo de santo, a gameleira é morada de Iroko, e não se corta. Os mais velhos passam longe dela à noite.": "For the Candomblé faithful, the gameleira fig is Iroko's home and is never cut. The elders keep away from it at night.",
 	"Maré cheia, ninguém anda no mangue.": "At high tide, nobody walks in the mangrove.",
 	"Ninguém dorme debaixo de jaqueira carregada.": "Nobody sleeps under a jackfruit tree heavy with fruit.",
+	# A atualização pelo site (abertura, embaixo da versão).
+	"Nova versão: Build %d · Atualizar": "New version: Build %d · Update",
+	"Nova versão: Build %d · Baixar no site": "New version: Build %d · Download from the site",
+	"Baixando a Build %d… %d%%": "Downloading Build %d… %d%%",
+	"Conferindo o arquivo…": "Checking the file…",
+	"Instalando a Build %d…": "Installing Build %d…",
+	"Build %d instalada · Reiniciar o jogo": "Build %d installed · Restart the game",
+	"A atualização falhou · Tentar de novo": "The update failed · Try again",
 }
 
 const ES := {
@@ -496,6 +504,14 @@ const ES := {
 	"Para o povo de santo, a gameleira é morada de Iroko, e não se corta. Os mais velhos passam longe dela à noite.": "Para el pueblo de santo, la gameleira es morada de Iroko, y no se corta. Los mayores pasan lejos de ella de noche.",
 	"Maré cheia, ninguém anda no mangue.": "Con marea alta, nadie anda por el manglar.",
 	"Ninguém dorme debaixo de jaqueira carregada.": "Nadie duerme debajo de una jaquera cargada.",
+	# A atualização pelo site (abertura, embaixo da versão).
+	"Nova versão: Build %d · Atualizar": "Nueva versión: Build %d · Actualizar",
+	"Nova versão: Build %d · Baixar no site": "Nueva versión: Build %d · Descargar del sitio",
+	"Baixando a Build %d… %d%%": "Descargando la Build %d… %d%%",
+	"Conferindo o arquivo…": "Verificando el archivo…",
+	"Instalando a Build %d…": "Instalando la Build %d…",
+	"Build %d instalada · Reiniciar o jogo": "Build %d instalada · Reiniciar el juego",
+	"A atualização falhou · Tentar de novo": "La actualización falló · Intentar de nuevo",
 }
 
 ## Uma tradução fica registrada só enquanto o menu está no idioma dela: registrada,
