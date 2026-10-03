@@ -789,8 +789,14 @@ func _desenhar_missoes() -> void:
 			_adicionar_linha("      %s" % str(missao["linha"]),
 				COR_FIXADA if int(missao.get("feito", 0)) >= int(missao.get("total", 1)) else COR_APAGADA,
 				true)
+	# O TEXTO COMPLETO DA MISSÃO MORA AQUI. O HUD mostra só o resumo ("Corte o
+	# capim com a foice (2/4)"); a fala inteira de quem pediu — o porquê, o
+	# lugar, o tom — é lida no painel, na missão sob o cursor.
 	var escolhida: Dictionary = abertas[_cursor] if _cursor < abertas.size() else {}
-	_dica.text = str(escolhida.get("titulo", "")) if not escolhida.is_empty() else \
+	var completo := str(escolhida.get("texto", ""))
+	if completo == "":
+		completo = str(escolhida.get("titulo", ""))
+	_dica.text = completo if not escolhida.is_empty() else \
 		"Verde é a missão em foco: a que a seta aponta. ◆ é enredo, ◇ é do dia a dia."
 	_rodape.text = "[W/S] escolher · [E] fixar · [Esc] fechar"
 

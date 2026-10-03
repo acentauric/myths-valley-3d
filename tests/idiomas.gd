@@ -33,7 +33,7 @@ var _pendentes := 0
 ## ARQUIVO → campos que o jogador lê. Só o que está aqui é cobrado; o que
 ## falta traduzir mora em `FALTAM_TRADUCAO`, embaixo.
 const TRADUZIDOS := {
-	"res://data/missoes_guia.json": ["texto"],
+	"res://data/missoes_guia.json": ["texto", "resumo"],
 	"res://data/historico_3d.json": ["titulo", "estado"],
 }
 

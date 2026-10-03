@@ -53,6 +53,9 @@
     {
       "id": "zefa_saveiro",
       "titulo": "O saveiro das seis",
+      "resumo": "Esteja no píer para o saveiro",
+      "resumo_en": "Be at the pier for the sailboat",
+      "resumo_es": "Estate en el muelle para el velero",
       "lugar": "pier",
       "raio": 8.0,
       "audio": "",

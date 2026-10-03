@@ -92,6 +92,8 @@ var iniciado := false
 ## Conta regressiva até o anúncio do passo. Zero quer dizer "já anunciado".
 var espera := 0.0
 var despedida_feita := false
+## O último resumo mandado ao HUD, para só reenviar quando ele muda.
+var _resumo_mostrado := ""
 
 
 ## Lê os passos do arquivo, já no idioma escolhido.
@@ -119,6 +121,7 @@ func carregar(caminho: String) -> bool:
 	for bruto in dado.get("passos", []):
 		var passo: Dictionary = bruto.duplicate()
 		passo["texto"] = str(IdiomaMenu.campo(passo, "texto"))
+		passo["resumo"] = str(IdiomaMenu.campo(passo, "resumo", ""))
 		passos.append(passo)
 	chave = str(dado.get("dono", ""))
 	principal = bool(dado.get("principal", false))
@@ -204,6 +207,10 @@ func correr(delta: float, palavra_livre: bool) -> void:
 		_acertar_o_caderno(passo)
 		if not falta_a_meta(passo):
 			avancar()
+			return
+		# A conta do HUD anda com o trabalho: "Corte lenha (1/2)" vira "(2/2)".
+		if resumo_do_passo(passo) != _resumo_mostrado:
+			_mostrar_o_resumo(passo)
 		return
 	var alvo := posicao_do_passo(missao)
 	if jogador != null and jogador.global_position.distance_to(alvo) < float(passo.get("raio", 8.0)):
@@ -229,8 +236,7 @@ func retomar() -> void:
 		return
 	var passo: Dictionary = passos[missao]
 	_registrar_no_caderno(passo)
-	missao_mudou.emit(_com_o_nome(str(passo.get("texto", ""))),
-		posicao_do_passo(missao), missao + 1, passos.size())
+	_mostrar_o_resumo(passo)
 
 
 ## Anuncia o passo em curso: entrega o que ele promete e fala.
@@ -241,8 +247,56 @@ func anunciar() -> void:
 	entregar(passo)
 	_registrar_no_caderno(passo)
 	_falar(str(passo.get("audio", "")), str(passo.get("texto", "")))
-	missao_mudou.emit(_com_o_nome(str(passo.get("texto", ""))),
-		posicao_do_passo(missao), missao + 1, passos.size())
+	_mostrar_o_resumo(passo)
+
+
+## O OBJETIVO DO HUD É O RESUMO, e não a fala.
+##
+## "A descrição da missão no HUD deve ser um resumo com atividades diretas ao
+## ponto. O texto completo deve ficar apenas no painel de missão (J)." O HUD
+## recebia a fala inteira com o nome na frente — "Damião: O senhor subiu. Pouca
+## gente sobe. Olha em volta: capim de dois anos..." —, e o canto da tela virava
+## parede de letra. A fala continua no balão e no caderno, que o J mostra.
+##
+## O que vai é o `resumo` do passo, escrito no JSON nos três idiomas; passo com
+## meta e sem resumo escrito ganha um gerado da meta ("Fale com Tonho"). Meta
+## que se conta leva a conta junto, e a conta anda: o pulso refaz o resumo e
+## só reenvia quando ele muda (ver `correr`).
+func _mostrar_o_resumo(passo: Dictionary) -> void:
+	_resumo_mostrado = resumo_do_passo(passo)
+	missao_mudou.emit(_resumo_mostrado, posicao_do_passo(missao), missao + 1, passos.size())
+
+
+func resumo_do_passo(passo: Dictionary) -> String:
+	var meta: Dictionary = passo.get("meta", {})
+	var escrito := str(passo.get("resumo", "")).strip_edges()
+	var conta := ""
+	var gerado := ""
+	match str(meta.get("tipo", "")):
+		"juntar":
+			var item := str(meta.get("item", ""))
+			var quantos := int(meta.get("quantos", 1))
+			conta = "%d/%d" % [mini(quantos, Inventario.quantidade(item)), quantos]
+			gerado = tr("Junte %s") % _nome_do_item(item).to_lower()
+		"derrubar":
+			var quantos_pes := int(meta.get("quantos", 1))
+			var caidos := 0
+			if recursos != null and recursos.has_method("derrubados"):
+				caidos = mini(quantos_pes, int(recursos.derrubados(str(meta.get("alvo", "")))))
+			conta = "%d/%d" % [caidos, quantos_pes]
+			gerado = tr("Corte %s") % _nome_do_item(str(meta.get("alvo", ""))).to_lower()
+		"levar":
+			var itens: Array[String] = []
+			for qual in _carga_da_meta(meta):
+				itens.append(_nome_do_item(str(qual)).to_lower())
+			gerado = tr("Leve %s a %s") % [", ".join(itens), _nome_de(str(meta.get("a_quem", "")))]
+		"falar":
+			gerado = tr("Fale com %s") % _nome_de(str(meta.get("a_quem", "")))
+	var frase := escrito if escrito != "" else gerado
+	if frase == "":
+		# Passo sem meta e sem resumo escrito: o título, que é curto.
+		frase = _titulo_do_passo(passo)
+	return frase if conta == "" else "%s (%s)" % [frase, conta]
 
 
 ## O NOME CURTO DO PASSO, que é o que entra no caderno e na lista do painel.
@@ -285,7 +339,8 @@ func _registrar_no_caderno(passo: Dictionary) -> void:
 	var id := _id_no_caderno(passo)
 	if id == "":
 		return
-	CadernoDoVale.abrir_missao(id, _titulo_do_passo(passo), chave, principal)
+	CadernoDoVale.abrir_missao(id, _titulo_do_passo(passo), chave, principal,
+		_com_o_nome(str(passo.get("texto", ""))))
 	var alvo := posicao_do_passo(missao)
 	if alvo != Vector3.ZERO:
 		CadernoDoVale.apontar(id, alvo)
@@ -317,12 +372,14 @@ func _falar(audio: String, texto: String) -> void:
 ## O nome de quem fala na frente da fala, que é como o HUD do vale já mostrava
 ## as missões do Pedro.
 func _com_o_nome(texto: String) -> String:
-	if dono == null:
-		return texto
-	var nome := ""
-	if "dados" in dono:
-		nome = str((dono.dados as Dictionary).get("nome", ""))
+	var nome := _nome_do_dono()
 	return texto if nome.is_empty() else "%s: %s" % [nome, texto]
+
+
+func _nome_do_dono() -> String:
+	if dono == null or not ("dados" in dono):
+		return ""
+	return str((dono.dados as Dictionary).get("nome", ""))
 
 
 ## O MORADOR ENTREGA A FERRAMENTA AO ANUNCIAR, E JÁ NA MÃO.
@@ -332,14 +389,13 @@ func _com_o_nome(texto: String) -> String:
 ## mesma frase. Pedir primeiro e entregar depois é o que faz o jogador rodar o
 ## mapa procurando uma ferramenta que ninguém deu.
 ##
-## E "na mão" passou a querer dizer ENCAIXADA. O vale mudou a regra do trabalho:
-## bater agora exige a ferramenta no encaixe, e não só na mochila
-## (`Recursos3D._tem_ferramenta`) — que é o certo, e é o do 2D. Mas a promessa
-## da fala não mudou: entregar na mochila e deixar o jogador descobrir sozinho
-## que falta equipar é a mesma ferramenta que ninguém deu, com um passo a mais.
+## E "na mão" quer dizer NA MÃO: bater exige a ferramenta escolhida na barra de
+## mão (ou vestida em "Mãos"), e não só carregada na mochila
+## (`Recursos3D._tem_ferramenta`). Entregar na mochila e deixar o jogador
+## descobrir sozinho que falta pegar é a mesma ferramenta que ninguém deu, com
+## um passo a mais.
 ##
-## Então quem entrega, encaixa. Se o encaixe estiver ocupado, o que estava lá
-## volta para a mochila — quem cuida disso é o `Equipamento`, e não esta linha.
+## Então quem entrega, acende o espaço da barra (ver `_por_na_mao`).
 ##
 ## Entrega uma vez só: o anúncio de cada passo acontece uma vez, e retomar o
 ## passo não reanuncia.
@@ -360,15 +416,26 @@ func entregar(passo: Dictionary) -> void:
 	_por_na_mao(item)
 
 
-## O item está encaixado agora?
+## O item está na mão agora — pela barra ou pelo encaixe?
 func _na_mao(item: String) -> bool:
-	var encaixe := Equipamento.encaixe_de(item)
-	return encaixe != "" and Equipamento.no_encaixe(encaixe) == item
+	return Equipamento.em_uso(item)
 
 
-## Encaixa o que está na mochila. Quem não é de encaixe fica onde está.
+## PÕE NA MÃO PELA BARRA, que é a porta que o jogador usa: o número do espaço
+## fica aceso, e é o mesmo número que ele vai apertar para guardar e pegar de
+## novo. Só quando o item não está em nenhum dos dez da barra (mochila cheia lá
+## em cima) é que ele vai para o encaixe. Quem não é de encaixe fica onde está.
 func _por_na_mao(item: String) -> void:
-	if not Equipamento.e_equipamento(item) or _na_mao(item):
+	if _na_mao(item) or not (Catalogo.tipo(item) == "ferramenta" or Equipamento.e_equipamento(item)):
+		return
+	# Toda ferramenta, e não só a de encaixe: o trabalho cobra a ferramenta NA
+	# MÃO (`Recursos3D._tem_ferramenta`), e a foice entregue para o capim tem de
+	# chegar acesa na barra como o machado.
+	for i in Inventario.ESPACOS_MAO:
+		if str((Inventario.espacos[i] as Dictionary).get("id", "")) == item:
+			Inventario.selecionar(i)
+			return
+	if not Equipamento.e_equipamento(item):
 		return
 	for i in Inventario.espacos.size():
 		if str((Inventario.espacos[i] as Dictionary).get("id", "")) == item:
@@ -407,7 +474,10 @@ func avancar() -> void:
 		CadernoDoVale.concluir(_id_no_caderno(fechando))
 	missao += 1
 	if missao >= passos.size():
-		missao_mudou.emit(str(arremate.get("texto", "")), Vector3.ZERO, passos.size(), passos.size())
+		# O FIM TAMBÉM É CURTO NO HUD: o arremate é fala (balão, ou a nota da
+		# meta), e o objetivo só diz que acabou e com quem.
+		_resumo_mostrado = tr("Concluído: missões com %s") % _nome_do_dono()
+		missao_mudou.emit(_resumo_mostrado, Vector3.ZERO, passos.size(), passos.size())
 	else:
 		espera = 1.4
 

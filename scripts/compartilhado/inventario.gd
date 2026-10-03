@@ -102,7 +102,6 @@ func adicionar(id: String, quantidade: int = 1) -> bool:
 		return false
 
 	var empilhavel: bool = Catalogo.dados(id).get("empilhavel", true)
-	var primeiro_espaco := ESPACOS_MAO if _somente_reserva(id) else 0
 
 	if empilhavel:
 		for espaco in espacos:
@@ -113,7 +112,7 @@ func adicionar(id: String, quantidade: int = 1) -> bool:
 				return true
 
 	# Enche a barra de mão primeiro: o que se pega é o que se vai usar.
-	for i in range(primeiro_espaco, ESPACOS):
+	for i in ESPACOS:
 		if espacos[i].is_empty():
 			espacos[i] = {"id": id, "qtd": quantidade}
 			mudou.emit()
@@ -127,34 +126,36 @@ func adicionar(id: String, quantidade: int = 1) -> bool:
 func trocar(a: int, b: int) -> void:
 	if a == b or a < 0 or b < 0 or a >= ESPACOS or b >= ESPACOS:
 		return
-	var ferramenta_em_a := _somente_reserva(str(espacos[a].get("id", "")))
-	var ferramenta_em_b := _somente_reserva(str(espacos[b].get("id", "")))
-	if (a < ESPACOS_MAO and ferramenta_em_b) or (b < ESPACOS_MAO and ferramenta_em_a):
-		return
 	var guardado = espacos[a]
 	espacos[a] = espacos[b]
 	espacos[b] = guardado
 	mudou.emit()
 
 
-## Hand-slot tools stay in storage slots and are used by equipping them.
-func _somente_reserva(id: String) -> bool:
-	return Catalogo.tipo(id) == "ferramenta" and str(Catalogo.dados(id).get("encaixe", "")) == "maos"
-
-
-## Move hand tools from numbered slots in older saves into storage slots.
-func mover_ferramentas_para_reserva() -> void:
+## A FERRAMENTA DE ENCAIXE MORA NA BARRA DE MÃO, como as outras.
+##
+## O machado chegou a morar só na reserva — usado encaixando-o em "Mãos" na
+## mochila —, e quem jogou apertava o número dele e nada acontecia: "o machado
+## no inventário não tá subindo para a mão, os outros itens estão normal". Ele
+## voltou a ser item de mão como a picareta e a foice; o encaixe continua
+## existindo para quem prefere vesti-lo.
+##
+## Partida salva no tempo da reserva tem o machado lá embaixo, onde o número
+## não alcança. Este passo o sobe para o primeiro espaço livre da barra; sem
+## espaço livre ele fica onde está, e o jogador o arrasta.
+func trazer_ferramentas_para_a_mao() -> void:
 	var mudou_de_lugar := false
-	for origem in ESPACOS_MAO:
-		if not _somente_reserva(str(espacos[origem].get("id", ""))):
+	for origem in range(ESPACOS_MAO, ESPACOS):
+		var id := str(espacos[origem].get("id", ""))
+		if not (Catalogo.tipo(id) == "ferramenta" and str(Catalogo.dados(id).get("encaixe", "")) == "maos"):
 			continue
 		var destino := -1
-		for indice in range(ESPACOS_MAO, ESPACOS):
+		for indice in ESPACOS_MAO:
 			if espacos[indice].is_empty():
 				destino = indice
 				break
 		if destino < 0:
-			continue
+			break
 		espacos[destino] = espacos[origem]
 		espacos[origem] = {}
 		mudou_de_lugar = true

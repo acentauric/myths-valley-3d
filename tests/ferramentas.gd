@@ -114,6 +114,37 @@ func _run() -> void:
 		_conferir(recusas[0].to_lower().contains("machado"),
 			"a recusa não disse de que ferramenta precisa: '%s'" % recusas[0])
 
+	# --- 2b. NA MOCHILA NÃO BASTA: A FERRAMENTA DO ALVO TEM DE ESTAR NA MÃO --
+	#
+	# "Na missão de introdução da foice eu consegui fazer a animação usando o
+	# machado. Cada ferramenta tem seus pontos de interação e nenhuma deve
+	# invadir a interação da outra." O alvo conferia a mochila: com a ferramenta
+	# certa guardada e OUTRA na mão, o golpe saía com a outra no braço.
+	inv.adicionar("machado", 1)
+	inv.adicionar("foice", 1)
+	for i in inv.ESPACOS_MAO:
+		if str((inv.espacos[i] as Dictionary).get("id", "")) == "foice":
+			inv.selecionar(i)
+	_conferir(inv.na_mao() == "foice", "não consegui pôr a foice na mão para a pergunta da mão errada")
+	recusas.clear()
+	_conferir(not recursos.bater(), "com a foice na mão e o machado na mochila, o tronco apanhou")
+	_conferir(recusas.size() == 1 and recusas[0].to_lower().contains("mão"),
+		"a recusa da mão errada não diz para pôr a ferramenta na mão: %s" % str(recusas))
+	# E O CASO DA QUEIXA, com ferramenta SEM encaixe: o machado já pedia a mão
+	# antes; a foice e a picareta se contentavam com a mochila. Machado na mão,
+	# foice guardada: o capim não é do machado.
+	for i in inv.ESPACOS_MAO:
+		if str((inv.espacos[i] as Dictionary).get("id", "")) == "machado":
+			inv.selecionar(i)
+	_conferir(inv.na_mao() == "machado", "não consegui pôr o machado na mão para a pergunta do capim")
+	_conferir(not recursos._tem_ferramenta("foice"),
+		"com o machado na mão e a foice na mochila, o capim aceita o golpe: uma ferramenta invade a outra")
+	inv.selecionar(inv.MAO_LIVRE)
+	while inv.tem("foice"):
+		inv.consumir("foice", 1)
+	while inv.tem("machado"):
+		inv.consumir("machado", 1)
+
 	# --- 3 e 4. COM A FERRAMENTA SE BATE, E CAI NO NÚMERO CERTO --------------
 	# NA MÃO, e não na mochila: é o que o vale cobra agora, e é o que a missão
 	# faz por quem recebe a ferramenta (`CadeiaDeMissoes.entregar`).

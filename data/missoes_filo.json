@@ -7,6 +7,9 @@
     {
       "id": "filo_pedido",
       "titulo": "O pirão da Dona Filó",
+      "resumo": "Vá até a casa da Dona Filó, na estrada",
+      "resumo_en": "Go to Dona Filó's house by the road",
+      "resumo_es": "Ve a la casa de doña Filó, junto al camino",
       "lugar": "casa_da_estrada",
       "raio": 6.0,
       "audio": "",

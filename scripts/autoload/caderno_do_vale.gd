@@ -59,12 +59,22 @@ var em_foco: int = 0
 
 
 ## Abre uma missão. Reabrir a mesma id não duplica.
+##
+## `texto` é a fala inteira de quem pediu. O HUD mostra só o resumo; a fala
+## inteira mora aqui, e é o painel do J que a mostra. Missão aberta por uma
+## partida de antes do campo ganha o texto quando o passo se reabre.
 func abrir_missao(id: String, titulo: String, dono: String = "",
-		principal: bool = false) -> void:
-	if id == "" or indice(id) >= 0:
+		principal: bool = false, texto: String = "") -> void:
+	if id == "":
+		return
+	var ja := indice(id)
+	if ja >= 0:
+		if texto != "" and str(ativas[ja].get("texto", "")) == "":
+			ativas[ja]["texto"] = texto
+			mudou.emit()
 		return
 	ativas.append({"id": id, "titulo": titulo, "dono": dono, "principal": principal,
-		"linha": "", "feito": 0, "total": 0, "alvo": Vector3.ZERO})
+		"texto": texto, "linha": "", "feito": 0, "total": 0, "alvo": Vector3.ZERO})
 	abriu.emit(id)
 	mudou.emit()
 

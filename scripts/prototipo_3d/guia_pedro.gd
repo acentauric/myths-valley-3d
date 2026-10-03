@@ -113,7 +113,22 @@ func retomar() -> void:
 	_cadeia.retomar()
 
 
+## A SAUDAÇÃO DO PEDRO É A DA CHEGADA NO PÍER, e só cabe uma vez por partida.
+##
+## "A fala do Pedro depois de dar um loading não está condizente com o momento
+## do jogo. Ele tá repetindo a frase quando o jogador chega no porto no início
+## do jogo." O "já saudei" do morador é um relógio de memória
+## (`_ultima_saudacao_ms`), que não vai no save: toda carga — continuar a vaga,
+## trocar o estilo — nascia com ele zerado, e o Pedro, posto ao lado do
+## jogador, dizia "Opa! É você o moço da capital?" no meio da partida.
+##
+## Quem sabe se a chegada já aconteceu é a cadeia, e ela vai no save
+## (`iniciado`). Com ela começada, a saudação se cala — e se dá por feita, para
+## não ser perguntada de novo a cada quadro.
 func saudar() -> void:
+	if _cadeia.iniciado:
+		_ultima_saudacao_ms = Time.get_ticks_msec()
+		return
 	super()
 	_cadeia.comecar(6.5)
 

@@ -16,13 +16,12 @@ extends Node
 ## nenhum modelo novo foi preciso.
 ##
 ##
-## A FERRAMENTA É ESCOLHIDA PELO ALVO, e isso é uma simplificação declarada.
+## O ALVO DIZ DE QUE FERRAMENTA PRECISA, E ELA TEM DE ESTAR NA MÃO.
 ##
-## No 2D o jogador põe a ferramenta na mão com as teclas 1 a 0. No vale, 1 a 8
-## já são os gestos do personagem, e roubá-las seria mexer no que funciona.
-## Então aqui a regra é: o alvo diz de que ferramenta precisa, e o golpe só
-## acontece se ela estiver NA MOCHILA. "Precisa do machado" continua sendo a
-## mecânica; "qual das dez mãos" espera a mochila chegar (Fase 6 do plano).
+## Começou como simplificação — bastava a ferramenta na mochila, enquanto a
+## barra de mão não existia. A barra chegou (teclas 1 a 0, como no 2D; os
+## gestos ficaram no Alt), e a simplificação virou defeito: com o machado na
+## mão, o capim da foice se cortava. Ver `_tem_ferramenta`.
 
 const DicaTecla = preload("res://scripts/prototipo_3d/dica_tecla.gd")
 const Atalhos = preload("res://scripts/prototipo_3d/atalhos.gd")
@@ -190,6 +189,8 @@ func _mais_perto() -> String:
 func _o_que_falta(ficha: Dictionary) -> String:
 	var ferramenta := str(ficha.get("ferramenta", ""))
 	if not _tem_ferramenta(ferramenta):
+		if Inventario.tem(ferramenta):
+			return tr("ponha na mão: %s") % _nome_do_item(ferramenta)
 		return "precisa de %s" % _nome_do_item(ferramenta)
 	if not Energia.aguenta("bater"):
 		return "sem fôlego"
@@ -201,11 +202,17 @@ func _nome_do_item(id: String) -> String:
 	return str(item.get("nome", id))
 
 
+## A FERRAMENTA DO ALVO TEM DE ESTAR NA MÃO — pelo número da barra, ou vestida
+## em "Mãos" —, e não só na mochila.
+##
+## "Na missão de introdução da foice eu consegui fazer a animação usando o
+## machado. Cada ferramenta tem seus pontos de interação e nenhuma deve invadir
+## a interação da outra." O capim pedia foice e conferia só se ela estava na
+## mochila: com o machado na mão e a foice guardada, o E cortava o capim com o
+## golpe e o machado no braço. A pesca (vara) e o coqueiro (machado) já
+## perguntavam pela mão; os alvos de trabalho passam a perguntar também.
 func _tem_ferramenta(id: String) -> bool:
-	var encaixe := str(Catalogo.dados(id).get("encaixe", ""))
-	if Catalogo.tipo(id) == "ferramenta" and encaixe != "":
-		return Equipamento.no_encaixe(encaixe) == id
-	return Inventario.tem(id)
+	return Equipamento.em_uso(id)
 
 
 ## O GOLPE.
@@ -221,7 +228,11 @@ func bater() -> bool:
 	var ferramenta := str(ficha.get("ferramenta", ""))
 
 	if not _tem_ferramenta(ferramenta):
-		recusado.emit("Precisa de %s." % _nome_do_item(ferramenta))
+		# Carregando a certa e segurando outra (ou nada): diz qual pôr na mão.
+		if Inventario.tem(ferramenta):
+			recusado.emit(tr("Ponha na mão: %s.") % _nome_do_item(ferramenta))
+		else:
+			recusado.emit("Precisa de %s." % _nome_do_item(ferramenta))
 		return false
 	if not Energia.gastar("bater"):
 		recusado.emit("Sem fôlego para bater.")

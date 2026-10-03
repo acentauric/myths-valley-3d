@@ -75,6 +75,8 @@ var _performance_panel: Panel
 var _performance_label: Label
 var _performance_button: Button
 var _performance_open := false
+## O número de FPS escrito no próprio botão (ver `_create_performance_button`).
+var _fps_label: Label
 var _speed_hint: Label
 var _speed_icon	# hud_icon.gd
 var _camera_icon	# hud_icon.gd
@@ -549,6 +551,8 @@ func set_controls_open(open: bool) -> void:
 
 
 func _update_telemetry() -> void:
+	if is_instance_valid(_fps_label):
+		_fps_label.text = str(int(Engine.get_frames_per_second()))
 	if not is_instance_valid(_performance_label):
 		return
 	var triangles := Performance.get_monitor(Performance.RENDER_TOTAL_PRIMITIVES_IN_FRAME)
@@ -573,10 +577,7 @@ func _update_telemetry() -> void:
 func _update_clock_hint() -> void:
 	if not is_instance_valid(_clock_hint):
 		return
-	if Dia.pausa_no_jogo:
-		_clock_hint.text = "%s · %s" % [Dia.texto_hora(), "Retomar" if Dia.pausado else "Pausar"]
-	else:
-		_clock_hint.text = Dia.texto_hora()
+	_clock_hint.text = Dia.texto_hora()
 
 
 ## O painel do canto esquerdo cresce só o necessário para o objetivo caber.
@@ -625,15 +626,10 @@ func _create_corner_buttons() -> void:
 	clock_icon.position = Vector2(6, 6)
 	clock_icon.size = Vector2(28, 28)
 	_clock_hint = clock[1]
-	_corner_setup(clock[0], func() -> void:
-		if not Dia.pausa_no_jogo:
-			Audio.efeito("ui_trava")
-			return
-		Audio.efeito("ui_confirmar")
-		Dia.pausado = not Dia.pausado
-		clock_icon.set_running(not Dia.pausado)
-		_update_clock_hint(), false)
-	(clock[0] as Button).mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND if Dia.pausa_no_jogo else Control.CURSOR_ARROW
+	# Só mostra a hora: parar o relógio desliga as conquistas da partida, e a
+	# única porta para isso é a linha "Relógio" do menu do Esc, que avisa antes.
+	_corner_setup(clock[0], func() -> void: Audio.efeito("ui_trava"), false)
+	(clock[0] as Button).mouse_default_cursor_shape = Control.CURSOR_ARROW
 	Dia.hora_mudou.connect(_update_clock_hint.unbind(1))
 
 	top += BotaoCanto.ESPACO
@@ -659,7 +655,7 @@ func _create_corner_buttons() -> void:
 	var speed: Array = BotaoCanto.criar(_root, top, _speed_icon)
 	_speed_hint = speed[1]
 	_corner_setup(speed[0], func() -> void:
-		Dia.definir_velocidade((Dia.velocidade + 1) % Dia.VELOCIDADES.size())
+		Dia.definir_velocidade(Dia.proxima_velocidade())
 		_update_telemetry())
 
 	top += BotaoCanto.ESPACO
@@ -684,9 +680,27 @@ func _create_corner_buttons() -> void:
 
 ## A largura menor troca a dica horizontal por um painel de leitura persistente.
 ## A posição acompanha a moldura do minimapa, sem depender da resolução da janela.
+##
+## O BOTÃO MOSTRA O FPS, e não um ícone. Ele levava o ícone de "estilo", que no
+## estilo procedural é um par de chaves — e quem jogou viu "{}" no lugar do
+## indicador: "o indicador de FPS não tá mostrando o FPS, está travado com {}".
+## Agora o número vive no botão, refeito com o resto das medições
+## (`_update_telemetry`); o clique continua abrindo o painel com o detalhe.
 func _create_performance_button() -> void:
-	var icon = HudIcon.new().configurar("estilo")
-	var dados: Array = BotaoCanto.criar(_root, 32.0, icon)
+	_fps_label = Label.new()
+	_fps_label.name = "FPS"
+	_fps_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_fps_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_fps_label.add_theme_font_override("font", Identidade.fonte_numeros(600))
+	_fps_label.add_theme_font_size_override("font_size", 15)
+	_fps_label.add_theme_color_override("font_color", Identidade.CREME)
+	_fps_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_fps_label.text = "--"
+	var dados: Array = BotaoCanto.criar(_root, 32.0, _fps_label)
+	# O canto põe ícone num quadrado de 24 no meio; o número usa o botão todo,
+	# para "144" caber sem cortar.
+	_fps_label.position = Vector2.ZERO
+	_fps_label.size = Vector2(40, 40)
 	(dados[1] as Label).text = "FPS"
 	_performance_button = dados[0]
 	_corner_setup(_performance_button, func() -> void:
@@ -789,7 +803,8 @@ func open_settings() -> void:
 		else:
 			close_settings()
 	_ajustes.construir(content, overlay, 0)
-	_settings_icon.definir(true)
+	if is_instance_valid(_settings_icon):
+		_settings_icon.definir(true)
 
 
 func close_settings() -> void:
@@ -798,7 +813,8 @@ func close_settings() -> void:
 	_ajustes.fechar_ajuda()
 	_settings.queue_free()
 	_settings = null
-	_settings_icon.definir(false)
+	if is_instance_valid(_settings_icon):
+		_settings_icon.definir(false)
 	settings_closed.emit()
 
 

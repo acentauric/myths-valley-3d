@@ -8,6 +8,9 @@
     {
       "id": "pescador_ver",
       "titulo": "A maré, lida do pontal",
+      "resumo": "Vá ao píer ler a maré com o Tonho",
+      "resumo_en": "Go to the pier to read the tide with Tonho",
+      "resumo_es": "Ve al muelle a leer la marea con Tonho",
       "lugar": "pier",
       "raio": 11.0,
       "audio": "",
@@ -32,6 +35,9 @@
     {
       "id": "tonho_divida",
       "titulo": "A conta do Tonho",
+      "resumo": "Ouça o Tonho no píer",
+      "resumo_en": "Hear Tonho out at the pier",
+      "resumo_es": "Escucha a Tonho en el muelle",
       "lugar": "pier",
       "raio": 11.0,
       "audio": "",
@@ -41,6 +47,9 @@
     {
       "id": "tonho_livro",
       "titulo": "O livro de fiado",
+      "resumo": "Vá ao armazém ver o livro de fiado",
+      "resumo_en": "Go to the store to see the credit book",
+      "resumo_es": "Ve al almacén a ver el libro de fiado",
       "lugar": "venda",
       "raio": 8.0,
       "audio": "",

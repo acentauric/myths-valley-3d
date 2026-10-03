@@ -35,6 +35,21 @@ func encaixe_de(id: String) -> String:
 	return str(Catalogo.dados(id).get("encaixe", ""))
 
 
+## O ITEM ESTÁ NA MÃO DO PERSONAGEM? Duas portas levam a ela: o número da barra
+## de mão, que é como o jogador pega o machado, e o encaixe "Mãos" da mochila,
+## que é como se veste o facão. Quem pergunta pela mão — o golpe no tronco, o
+## machado desenhado no braço, a missão que entrega a ferramenta — pergunta
+## aqui, e não a uma porta só: foi assim que o machado ficou meio dia sem subir
+## para a mão.
+func em_uso(id: String) -> bool:
+	if id == "":
+		return false
+	if Inventario.na_mao() == id:
+		return true
+	var encaixe := encaixe_de(id)
+	return encaixe != "" and no_encaixe(encaixe) == id
+
+
 func e_equipamento(id: String) -> bool:
 	var encaixe := encaixe_de(id)
 	if encaixe == "":

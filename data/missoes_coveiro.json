@@ -7,6 +7,9 @@
     {
       "id": "coveiro_ver",
       "titulo": "O zelador do cemitério",
+      "resumo": "Vá até o cemitério",
+      "resumo_en": "Go to the cemetery",
+      "resumo_es": "Ve al cementerio",
       "lugar": "cemiterio",
       "raio": 8.0,
       "audio": "",
@@ -16,6 +19,9 @@
     {
       "id": "coveiro_cabo",
       "titulo": "Encabar a foice do Damião",
+      "resumo": "Junte lenha para o cabo da foice",
+      "resumo_en": "Gather firewood for the scythe handle",
+      "resumo_es": "Junta leña para el mango de la hoz",
       "lugar": "cemiterio",
       "raio": 8.0,
       "audio": "",
@@ -26,6 +32,9 @@
     {
       "id": "coveiro_limpar",
       "titulo": "Limpar o cemitério",
+      "resumo": "Corte o capim com a foice",
+      "resumo_en": "Cut the grass with the scythe",
+      "resumo_es": "Corta la maleza con la hoz",
       "lugar": "cemiterio",
       "raio": 8.0,
       "audio": "",

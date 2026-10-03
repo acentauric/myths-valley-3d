@@ -38,6 +38,8 @@ var falhas := 0
 const SEGUNDOS_POR_PASSO := 15.0
 ## Teto real para o anúncio sair, que é onde a ferramenta é entregue.
 const SEGUNDOS_PARA_ANUNCIAR := 12.0
+## O teto do resumo de missão no HUD, com a conta "(2/4)" dentro.
+const LETRAS_DO_RESUMO := 60
 
 
 func _initialize() -> void:
@@ -137,6 +139,22 @@ func _run() -> void:
 				"o passo '%s' pede trabalho e entrou no caderno sem conta: o jogador não vê quanto falta" % id)
 			_conferir(str(caderno.de(no_caderno).get("linha", "")) != "",
 				"o passo '%s' pede trabalho e não escreveu a linha de andamento" % id)
+
+		# O HUD MOSTRA O RESUMO, E O PAINEL A FALA INTEIRA.
+		#
+		# "A descrição da missão no HUD deve ser um resumo com atividades
+		# diretas ao ponto. O texto completo deve ficar apenas no painel de
+		# missão (J)." O HUD recebia a fala com o nome na frente.
+		var objetivo := str(current_scene.hud.get("_objective"))
+		var fala := str(passo.get("texto", ""))
+		_conferir(objetivo.length() <= LETRAS_DO_RESUMO,
+			"o objetivo do HUD no passo '%s' tem %d letras, e resumo é até %d: '%s'"
+				% [id, objetivo.length(), LETRAS_DO_RESUMO, objetivo])
+		_conferir(fala.length() <= LETRAS_DO_RESUMO or not objetivo.contains(fala),
+			"o objetivo do HUD no passo '%s' é a fala inteira: '%s'" % [id, objetivo])
+		if caderno.tem(no_caderno):
+			_conferir(str(caderno.de(no_caderno).get("texto", "")).contains(fala),
+				"a fala inteira do passo '%s' não está no caderno, que é o que o painel J mostra" % id)
 
 		if meta.is_empty():
 			# Passo de visita: chega e fecha.

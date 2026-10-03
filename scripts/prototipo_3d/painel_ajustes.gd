@@ -41,9 +41,7 @@ const ROTULOS_FONTES := ["Crônica", "Padrão", "Almendra", "Miva"]
 
 ## Opção de fábrica de cada seleção (índice na lista), para o botão de voltar ao padrão.
 ## Idioma, estilo e fonte voltam à primeira opção (Português, Tripo, Crônica).
-const PADRAO_VELOCIDADE := 2
 const PADRAO_HORA := 1
-const PADRAO_PAUSA := 1
 const PADRAO_TRILHA := 0
 const PADRAO_BOTOES := 1
 const PADRAO_PAISAGEM := 3
@@ -150,13 +148,16 @@ func _aba_geral(esquerda: VBoxContainer, direita: VBoxContainer) -> void:
 		_escolha("Idioma", IdiomaMenu.ROTULOS, IdiomaMenu.indice(), func(i: int) -> void:
 			IdiomaMenu.definir(i)
 			_reconstruir(0), 0)
-	_escolha("Passagem do tempo", Dia.ROTULOS_VELOCIDADE, Dia.velocidade, Dia.definir_velocidade, PADRAO_VELOCIDADE)
+	# Sem "Parada": parar o tempo desliga as conquistas da partida, e isso só se
+	# faz pela linha "Relógio" do menu do Esc, que avisa (ver `Dia.VELOCIDADES`).
+	var primeira := Dia.PRIMEIRA_VELOCIDADE
+	_escolha("Passagem do tempo", Dia.ROTULOS_VELOCIDADE.slice(primeira), Dia.velocidade - primeira,
+		func(i: int) -> void: Dia.definir_velocidade(i + primeira), Dia.VELOCIDADE_PADRAO - primeira)
 	var hora_indice := 1
 	for indice in range(HORAS_INICIAIS.size()):
 		if absf(float(HORAS_INICIAIS[indice]) - Dia.hora_inicial) < 0.75:
 			hora_indice = indice
 	_escolha("Hora inicial", ROTULOS_HORAS, hora_indice, func(i: int) -> void: Dia.definir_hora_inicial(float(HORAS_INICIAIS[i])), PADRAO_HORA)
-	_escolha("Pausar o relógio no jogo", ["Permitido", "Bloqueado"], 0 if Dia.pausa_no_jogo else 1, func(i: int) -> void: Dia.definir_pausa_no_jogo(i == 0), PADRAO_PAUSA)
 	_escolha("Teclas de movimento", TeclasMovimento.ROTULOS, TeclasMovimento.modo(), TeclasMovimento.definir, TeclasMovimento.PADRAO)
 	# A CÂMERA DO MOUSE. Só muda o modo com que o jogo ABRE; a tecla da câmera
 	# continua alternando na hora, como sempre fez.

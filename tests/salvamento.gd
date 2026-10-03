@@ -35,7 +35,9 @@ const RESERVA := "user://reserva_do_teste_de_salvamento"
 ## meia-noite, e é por ela que o coqueiro cortado sabe quando voltar (ver
 ## arvores_info.gd): sem ela no save, o prazo guardado apontaria para longe.
 const DO_MUNDO := {
-	"Dia": ["hora", "horas_decorridas"],
+	# `relogio_alterado` é a marca de que o jogador parou o relógio e a partida
+	# deixou de contar conquista; sem ela no save, carregar apagaria o aviso.
+	"Dia": ["hora", "horas_decorridas", "relogio_alterado"],
 	# O CADERNO DO VALE não é guardado campo a campo: o `estado()` dele devolve
 	# os três de uma vez e o `restaurar()` os põe de volta, porque `ativas` é
 	# lista de dicionários e o alvo de cada missão é um Vector3 — coisa que o
@@ -50,7 +52,6 @@ const FORA_DO_SAVE := {
 		"velocidade": "preferência do AJUSTAR (a velocidade do tempo), não da partida",
 		"hora_inicial": "preferência do AJUSTAR: a hora em que uma partida NOVA começa",
 		"pausado": "estado de tela: o relógio pausado pelo botão do HUD ou pelos ajustes",
-		"pausa_no_jogo": "preferência do AJUSTAR: se o relógio pode ser pausado no jogo",
 		"congelado_na_carga": "estado da tela de carregamento, que dura segundos",
 		"latitude": "o lugar do vale no globo, para a curva do sol; não muda com a partida",
 	},
@@ -209,6 +210,16 @@ func _run() -> void:
 	var falou_ao_voltar: Array[String] = []
 	if vale.pedro != null and vale.pedro.has_signal("narrou"):
 		vale.pedro.narrou.connect(func(texto: String) -> void: falou_ao_voltar.append(texto))
+	# A SAUDAÇÃO TAMBÉM. "A fala do Pedro depois de dar um loading não está
+	# condizente com o momento do jogo": a saudação dele é a da chegada no píer,
+	# e o "já saudei" não vai no save. Ele é posto ao lado do jogador, e na
+	# primeira passada perto dizia "Opa! É você o moço da capital?" outra vez.
+	if vale.pedro != null:
+		# Ela sai nos quadros em que o vale ainda se abre, antes de dar para
+		# escutar o sinal — então pergunta-se pelo rastro dela, o balão.
+		_conferir(float(vale.pedro.get("_balao_tempo")) <= 0.0,
+			"ao continuar a partida o Pedro saudou de novo, com a fala da chegada no píer")
+		vale.pedro.saudou.connect(func(_quem, texto: String) -> void: falou_ao_voltar.append(texto))
 	await _frames(4)
 	var longe: float = Vector2(player.global_position.x - igreja.x, player.global_position.z - igreja.z).length()
 	_conferir(longe < 0.6, "o jogador voltou a %.1f u de onde estava" % longe)

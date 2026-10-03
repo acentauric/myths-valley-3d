@@ -26,6 +26,7 @@ const Minimapa = preload("res://scripts/prototipo_3d/minimapa.gd")
 const CadeiaDeMissoes = preload("res://scripts/prototipo_3d/cadeia_de_missoes.gd")
 const TelasDoVale = preload("res://scripts/prototipo_3d/telas_do_vale.gd")
 const MenuPausa = preload("res://scripts/prototipo_3d/menu_pausa.gd")
+const TelaControles = preload("res://scripts/prototipo_3d/tela_controles.gd")
 const TeiaTalentos = preload("res://scripts/prototipo_3d/teia_talentos.gd")
 const TeiaSocial = preload("res://scripts/prototipo_3d/teia_social.gd")
 const MENU_SCENE := "res://scenes/prototipo_3d/abertura.tscn"
@@ -78,6 +79,8 @@ var painel	# painel_vale.gd — tecla J
 var telas
 ## O menu do Esc, com o que era a coluna de ícones. Ver menu_pausa.gd.
 var menu_pausa
+## A tela de Controles, aberta pelo menu do Esc. Ver tela_controles.gd.
+var tela_controles
 ## A teia de talentos, na tecla K (teia_talentos.gd).
 var teia
 ## A teia social do arraial, na tecla P (teia_social.gd).
@@ -168,6 +171,8 @@ func _ready() -> void:
 	# O menu também move o relógio visual. A partida começa sua própria contagem;
 	# quando houver save, `restaurar_do_save` devolve a contagem guardada.
 	Dia.horas_decorridas = 0.0
+	# Partida nova conta conquista; a salva diz se o relógio já foi parado.
+	Dia.relogio_alterado = false
 	# Vindo do menu, o relógio esperou a montagem na hora_inicial (abertura._start_game).
 	Dia.congelado_na_carga = false
 	var spawn: Vector3 = _ponto_de_chegada()
@@ -289,8 +294,12 @@ func _ready() -> void:
 			"fazer": func() -> void: _toggle_map()},
 		{"rotulo": "Ajustes", "icone": "ajustes", "fecha": true,
 			"fazer": func() -> void: _open_settings()},
-		{"rotulo": "Controles", "icone": "ajuda", "fecha": true,
-			"fazer": func() -> void: hud.set_controls_open(not hud.controls_open())},
+		# CONTROLES É TELA, como nos outros jogos: a lista das teclas, cada uma
+		# trocável ali mesmo, e o Esc volta para este menu. Era o painelzinho do
+		# canto, aberto com o menu fechando por fora do dono das telas — e o vale
+		# ficava parado atrás de nada. Ver `tela_controles.gd`.
+		{"rotulo": "Controles", "icone": "ajuda",
+			"fazer": func() -> void: telas.abrir("controles")},
 		# SALVAR COMO NO 2D: devolve recado, porque dá certo e a tela fica igual,
 		# e ação sem retorno é a que se aperta três vezes. As três respostas são
 		# as do painel do J, que já as trouxe de lá — sem vaga não salva, salvou
@@ -305,20 +314,43 @@ func _ready() -> void:
 		{"rotulo": func() -> String: return "Som: %s" % ("ligado" if Audio.som_ativo else "desligado"),
 			"icone": "som",
 			"fazer": func() -> void: Audio.definir_som_ativo(not Audio.som_ativo)},
-		{"rotulo": func() -> String: return "Relógio: %s" % ("andando" if not Dia.pausado else "parado"),
+		# O RELÓGIO DIZ O QUE O JOGADOR ESCOLHEU, e não o que o menu fez.
+		#
+		# Com o menu aberto o `Dia` está SEMPRE parado — é o menu que o para —,
+		# e a linha lia `Dia.pausado`: dizia "parado" com o relógio andando, e
+		# apertá-la não mudava o texto. A escolha do jogador mora em
+		# `_relogio_pausado_antes`, que é o que o fechamento devolve ao `Dia`.
+		#
+		# PARAR PERGUNTA. Parar o relógio desliga as conquistas da partida dali
+		# em diante (`Dia.relogio_alterado`, que vai no save), e o menu abre uma
+		# caixa de confirmação antes; só o "sim" para. Religar não pede nada. Era também
+		# trancado por uma opção do AJUSTAR que vinha "Bloqueado" — o aviso
+		# tomou o lugar da tranca.
+		{"rotulo": func() -> String:
+				var estado := tr("parado") if _relogio_pausado_antes else tr("andando")
+				if Dia.relogio_alterado:
+					return tr("Relógio: %s · sem conquistas") % estado
+				return tr("Relógio: %s") % estado,
 			"icone": "relogio",
+			"ligado": func() -> bool: return not _relogio_pausado_antes,
+			"confirmar": func() -> Dictionary:
+				if _relogio_pausado_antes or Dia.relogio_alterado:
+					return {}
+				return {
+					"titulo": tr("Parar o relógio?"),
+					"texto": tr("Com o relógio parado, esta partida perde as conquistas daqui para frente — mesmo que você volte a ligá-lo depois."),
+					"nao": tr("DEIXAR CORRER"),
+					"sim": tr("PARAR O RELÓGIO"),
+				},
 			"fazer": func() -> void:
-				if not Dia.pausa_no_jogo:
-					Audio.efeito("ui_trava")
-					return
 				Audio.efeito("ui_confirmar")
-				# O relógio fica como o jogador deixou, e não como o menu o
-				# achou: é ele que o dono das telas vai devolver ao fechar.
-				_relogio_pausado_antes = not _relogio_pausado_antes},
+				_relogio_pausado_antes = not _relogio_pausado_antes
+				if _relogio_pausado_antes:
+					Dia.marcar_relogio_alterado()},
 		{"rotulo": func() -> String: return "Velocidade do tempo: %s" % Dia.ROTULOS_VELOCIDADE[Dia.velocidade],
 			"icone": "velocidade",
 			"fazer": func() -> void:
-				Dia.definir_velocidade((Dia.velocidade + 1) % Dia.VELOCIDADES.size())},
+				Dia.definir_velocidade(Dia.proxima_velocidade())},
 		{"rotulo": func() -> String: return "Câmera do mouse: %s" % ("arrastar" if CameraMouse.travada() else "livre"),
 			"icone": "camera",
 			"fazer": func() -> void:
@@ -373,6 +405,27 @@ func _ready() -> void:
 		func() -> bool: return menu_pausa.aberto,
 		func() -> void: menu_pausa.abrir(),
 		func() -> void: menu_pausa.fechar())
+	# O MENU QUE SE FECHA POR UMA LINHA AVISA O DONO DAS TELAS.
+	#
+	# "Voltar ao vale", "Mapa", "Ajustes" e as saídas fecham o menu por dentro,
+	# sem passar pelo `telas` — e ninguém devolvia o vale: a árvore ficava
+	# pausada e o relógio parado. "Quando abri MENU > Controles, ele travou o
+	# jogo." E pior, calado: os Ajustes abertos dali guardavam o relógio já
+	# parado pelo menu como se fosse a escolha do jogador, e o devolviam parado
+	# ao fechar. Fechado pelo próprio `telas`, o aviso é ignorado lá.
+	menu_pausa.fechou.connect(func() -> void: telas.fechou_por_conta("menu_pausa"))
+	tela_controles = TelaControles.new()
+	tela_controles.name = "TelaControles"
+	add_child(tela_controles)
+	telas.registrar("controles",
+		func(_e: InputEvent) -> bool: return false,
+		func() -> bool: return tela_controles.aberta,
+		func() -> void: tela_controles.abrir(),
+		func() -> void: tela_controles.fechar(),
+		# O Esc DAQUI volta ao menu, que é de onde se chega.
+		"menu_pausa")
+	tela_controles.voltar_pedido.connect(func() -> void: telas.abrir("menu_pausa"))
+	tela_controles.teclas_mudaram.connect(hud._update_control_mode)
 	telas.tela_mudou.connect(func(_nome: String, aberta: bool) -> void:
 		if aberta:
 			_pause_valley()
@@ -419,7 +472,7 @@ func _ready() -> void:
 	# `estado_para_salvar`.
 	Salvamento.registrar_mundo(self)
 	_retomar_a_partida()
-	Inventario.mover_ferramentas_para_reserva()
+	Inventario.trazer_ferramentas_para_a_mao()
 	_entregar_machado_inicial()
 	# Depois da partida salva: o que ela diz que já foi achado não volta ao chão.
 	achados.espalhar()
@@ -998,7 +1051,14 @@ func _entregar_machado_inicial() -> void:
 		return
 	if Inventario.adicionar("machado"):
 		_machado_inicial_entregue = true
-		hud.set_notice("Machado recebido. Equipe-o no encaixe Mãos da mochila.")
+		var espaco := -1
+		for i in Inventario.ESPACOS_MAO:
+			if str((Inventario.espacos[i] as Dictionary).get("id", "")) == "machado":
+				espaco = i
+		if espaco >= 0:
+			hud.set_notice(tr("Machado recebido. Aperte %s para pô-lo na mão.") % Inventario.rotulo_do_espaco(espaco))
+		else:
+			hud.set_notice(tr("Machado recebido. Arraste-o da mochila para a barra de mão."))
 	else:
 		hud.set_notice("Mochila cheia. Libere um espaco para receber o machado.")
 
@@ -1019,6 +1079,9 @@ func estado_para_salvar() -> Dictionary:
 		"giro": player.visual.rotation.y,
 		"hora": Dia.hora,
 		"horas_decorridas": Dia.horas_decorridas,
+		# O jogador parou o relógio nesta partida: daqui em diante ela não conta
+		# conquista (ver `Dia.relogio_alterado`).
+		"relogio_alterado": Dia.relogio_alterado,
 		"machado_inicial_entregue": _machado_inicial_entregue,
 		"visitados": _visited.keys(),
 	}
@@ -1069,6 +1132,7 @@ func restaurar_do_save(estado: Dictionary) -> void:
 		player.velocity = Vector3.ZERO
 		player.visual.rotation.y = float(estado.get("giro", player.visual.rotation.y))
 	Dia.horas_decorridas = maxf(0.0, float(estado.get("horas_decorridas", 0.0)))
+	Dia.relogio_alterado = bool(estado.get("relogio_alterado", false))
 	_machado_inicial_entregue = bool(estado.get("machado_inicial_entregue", false))
 	if estado.has("hora"):
 		Dia.definir_hora(float(estado["hora"]))

@@ -18,8 +18,20 @@ const ARQUIVO := "user://preferencias_visuais.cfg"
 ## ritmo que o irmão mais velho deste projeto já provou: tempo de atravessar o
 ## mapa sem correria. "Lenta" é o triplo disso, para quem quer passear; e
 ## "Rápida" continua existindo em dez, que é onde ela serve, que é teste.
+##
+## "PARADA" SAIU DA ESCOLHA, e o índice 0 ficou aposentado no lugar dela. Parar
+## o relógio é desligar as conquistas da partida, e isso pede aviso e marca no
+## save (ver `relogio_alterado`); uma velocidade "Parada" no AJUSTAR fazia o
+## mesmo calada. Agora só há uma porta para parar o tempo: a linha "Relógio" do
+## menu do Esc, que avisa. O índice continua existindo para o arquivo de
+## preferências de quem escolheu "Parada" antes ser lido sem susto — vira
+## "Normal" (ver `_ready`) — e para "Lenta", "Normal" e "Rápida" manterem o
+## número que já tinham.
 const VELOCIDADES := [0.0, 90.0, 30.0, 10.0]
 const ROTULOS_VELOCIDADE := ["Parada", "Lenta", "Normal", "Rápida"]
+## A primeira velocidade que se escolhe; abaixo dela é a aposentada.
+const PRIMEIRA_VELOCIDADE := 1
+const VELOCIDADE_PADRAO := 2
 ## Nascer e pôr do sol em Bom Jesus no fim de setembro (latitude -12,8°, hora solar).
 const NASCER := 5.95
 const POR := 18.0
@@ -31,13 +43,24 @@ var hora: float = 9.0
 ## `hora` sozinha volta a zero e não serve para esperas de 24 horas.
 var horas_decorridas: float = 0.0
 ## Começa em "Normal" (2), e não em "Rápida": ver `VELOCIDADES`.
-var velocidade: int = 2
+var velocidade: int = VELOCIDADE_PADRAO
 ## Hora em que o jogo começa (AJUSTAR → Cenário e tempo).
 var hora_inicial: float = 7.0
 ## Congela a passagem do tempo (o menu controla o próprio relógio).
 var pausado := false
-## Se o botão de relógio do HUD pode pausar o dia dentro do jogo (AJUSTAR).
-var pausa_no_jogo := false
+## O JOGADOR PAROU O RELÓGIO NESTA PARTIDA, e daí em diante ela não conta
+## conquista.
+##
+## "Por padrão o relógio deve estar funcionando e se o jogador tentar
+## desabilitar o relógio, deve informar que isso fará ele perder as conquistas
+## dali para frente. Para isso é importante ter algum campo no save para
+## indicar se o jogador mexeu nessa configuração."
+##
+## É da PARTIDA, e não preferência: vai no save pela mão do vale
+## (`estado_para_salvar`), zera numa partida nova e não volta a ser falso
+## religando o relógio — "dali para frente" é isso. Quem um dia der conquista
+## pergunta a `conquistas_valem`.
+var relogio_alterado := false
 ## Segura o relógio enquanto o vale do jogo se monta: o jogador chega exatamente na
 ## hora_inicial, a mesma que escolheu a capa (dia ou noite) da tela de carregamento.
 ## Separado de `pausado`, que é a escolha do jogador e aparece no HUD.
@@ -49,9 +72,10 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	var preferencias := ConfigFile.new()
 	if preferencias.load(ARQUIVO) == OK:
-		velocidade = clampi(int(preferencias.get_value("dia", "velocidade", 2)), 0, VELOCIDADES.size() - 1)
+		velocidade = int(preferencias.get_value("dia", "velocidade", VELOCIDADE_PADRAO))
+		if velocidade < PRIMEIRA_VELOCIDADE or velocidade >= VELOCIDADES.size():
+			velocidade = VELOCIDADE_PADRAO
 		hora_inicial = fmod(float(preferencias.get_value("dia", "hora_inicial", 7.0)), 24.0)
-		pausa_no_jogo = bool(preferencias.get_value("dia", "pausa_no_jogo", false))
 		hora = hora_inicial
 	_atualizar_periodo()
 
@@ -107,19 +131,28 @@ func avancar(horas: float) -> void:
 
 
 func definir_velocidade(indice: int) -> void:
-	velocidade = clampi(indice, 0, VELOCIDADES.size() - 1)
+	velocidade = clampi(indice, PRIMEIRA_VELOCIDADE, VELOCIDADES.size() - 1)
 	var preferencias := ConfigFile.new()
 	preferencias.load(ARQUIVO)
 	preferencias.set_value("dia", "velocidade", velocidade)
 	preferencias.save(ARQUIVO)
 
 
-func definir_pausa_no_jogo(permitir: bool) -> void:
-	pausa_no_jogo = permitir
-	var preferencias := ConfigFile.new()
-	preferencias.load(ARQUIVO)
-	preferencias.set_value("dia", "pausa_no_jogo", pausa_no_jogo)
-	preferencias.save(ARQUIVO)
+## A velocidade seguinte na roda Lenta → Normal → Rápida → Lenta, sem passar pela
+## aposentada.
+func proxima_velocidade() -> int:
+	var escolhas := VELOCIDADES.size() - PRIMEIRA_VELOCIDADE
+	return PRIMEIRA_VELOCIDADE + (velocidade - PRIMEIRA_VELOCIDADE + 1) % escolhas
+
+
+## Marca a partida: o jogador parou o relógio. Não há volta (ver `relogio_alterado`).
+func marcar_relogio_alterado() -> void:
+	relogio_alterado = true
+
+
+## A partida ainda conta conquista?
+func conquistas_valem() -> bool:
+	return not relogio_alterado
 
 
 func definir_hora_inicial(nova: float) -> void:

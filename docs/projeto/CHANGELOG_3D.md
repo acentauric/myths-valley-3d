@@ -40,6 +40,45 @@ atualize esse arquivo e este documento juntos.
   ~34 s para ~7 s (headless).
 - **A tela de carregamento fica sem as bolinhas e sem som.** As partículas saem das
   quatro telas, e a música e o ambiente do menu só começam quando o menu aparece.
+- **O machado volta para a barra de mão.** Ele morava só na reserva da mochila e se usava
+  encaixando em "Mãos"; o número da barra não o alcançava. Agora entra num dos dez, a
+  tecla o põe na mão e no braço, e partida salva com ele na reserva o vê subir para a
+  barra. O encaixe continua valendo (`tests/barra_de_mao.gd`).
+- **O relógio do menu do Esc diz a escolha do jogador, e parar avisa.** A linha lia o
+  relógio que o próprio menu tinha parado e dizia sempre "parado"; e vinha trancada por
+  "Pausar o relógio no jogo: Bloqueado". O relógio corre por padrão; parar abre uma
+  caixa de confirmação que avisa que a partida perde as conquistas dali em diante, e
+  a marca (`relogio_alterado`) vai no save. "Parada" sai da Passagem do tempo e a opção
+  de tranca sai do AJUSTAR: a linha do menu é a única porta para parar o tempo.
+- **Controles vira tela, e o menu do Esc não trava mais o vale.** As linhas que fechavam
+  o menu (Voltar ao vale, Mapa, Ajustes, saídas) o fechavam por fora do dono das telas, e
+  a árvore ficava pausada; fechar os Ajustes ainda estourava num ícone que saiu com a
+  coluna do canto. Controles abre uma tela com os atalhos — clica-se na tecla e
+  aperta-se a nova, com troca entre ações — e as teclas fixas; o Esc nela volta ao menu
+  (`tests/menu_pausa.gd`).
+- **O botão de FPS mostra o número.** Levava o ícone de estilo, que no procedural é
+  "{}" (`tests/hud_desempenho.gd`).
+- **O Pedro não repete a chegada no píer depois de uma carga.** O "já saudei" do
+  morador não ia no save, e continuar a vaga ou trocar o estilo o fazia dizer "Opa! É
+  você o moço da capital?" no meio da partida. Com a cadeia dele começada, a saudação
+  se cala (`tests/salvamento.gd`).
+- **Cada ferramenta só trabalha no que é dela.** Os alvos de trabalho (capim, troncos,
+  lajedos) conferiam a ferramenta na mochila: com o machado na mão e a foice guardada, o
+  capim se cortava com o machado. Agora a ferramenta do alvo tem de estar na mão — a
+  recusa diz qual pôr —, como a vara na pesca e o machado no coqueiro já pediam; e quem
+  entrega ferramenta numa missão a põe na mão (`tests/ferramentas.gd`).
+- **A tela do arraial (P) é desenhada, e o texto vira apoio.** Cada morador na lista tem
+  retrato, os corações do grau e os selos de conversa e presente de hoje; a página tem o
+  retrato grande, a fileira de corações, a barra até o próximo grau com a conta, os
+  selos de hoje, a grade de presentes (selo de gosta ou não aceita, e quantos o jogador
+  tem) e a régua de quanto rende cada gesto. O gosto continua fechado até "Gente boa",
+  mas aparece como vagas com cadeado. O retrato cortava dois bonecos empilhados — o
+  quadro da folha é quadrado, pela largura (`tests/teia_social.gd`).
+- **O objetivo do HUD é um resumo, e a fala inteira fica no painel (J).** Cada passo
+  ganhou `resumo` nos três idiomas ("Vá até a capela", "Corte o capim com a foice"); os
+  de meta sem resumo o geram da meta, e a conta anda junto ("(2/4)"). O caderno guarda a
+  fala de quem pediu, e o J a mostra na missão sob o cursor
+  (`tests/cadeia_das_missoes.gd`, `tests/idiomas.gd`).
 
 ## Em desenvolvimento — 30/09 e 01/10/2026
 

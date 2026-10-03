@@ -8,6 +8,9 @@
     {
       "id": "candinha_cana",
       "titulo": "A garapa da praça",
+      "resumo": "Junte cana",
+      "resumo_en": "Gather sugarcane",
+      "resumo_es": "Junta caña",
       "lugar": "praca",
       "raio": 7.0,
       "audio": "",

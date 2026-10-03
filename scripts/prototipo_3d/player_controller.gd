@@ -184,7 +184,7 @@ func _process(delta: float) -> void:
 
 
 func machado_na_mao() -> bool:
-	return Equipamento.no_encaixe("maos") == "machado"
+	return Equipamento.em_uso("machado")
 
 
 func travar_acao_de_golpe(duracao: float, aguardar_animacao: bool) -> void:
