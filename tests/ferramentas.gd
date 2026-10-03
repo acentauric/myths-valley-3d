@@ -199,6 +199,10 @@ func _run() -> void:
 			ferramenta_de_rende[str(ficha["rende"])] = qual
 		if str(ficha.get("peca", "")) != "":
 			ferramenta_de_peca[str(ficha["peca"])] = qual
+		# O GRUPO TAMBÉM É NOME DE PEDIDO: o mato do cemitério é embaúba e
+		# galhada, e o passo pede o grupo (`Recursos3D.derrubados`).
+		if str(ficha.get("grupo", "")) != "":
+			ferramenta_de_peca[str(ficha["grupo"])] = qual
 
 	var moram_no_vale: Array[String] = []
 	for morador in current_scene.get("moradores"):

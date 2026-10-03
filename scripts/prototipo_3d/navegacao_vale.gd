@@ -26,6 +26,11 @@ extends Node3D
 ## telhado de cada casa e no tampo de cada caixote, e o ponto mais perto de quem
 ## está junto de uma casa podia cair lá em cima, num pedaço sem saída. Fica só o
 ## pedaço ligado maior, o chão do vale.
+##
+## E SE ASSA DE NOVO QUANDO O VALE MUDA: obra que levanta parede no caminho — o
+## cercado do cemitério (`cemiterio_vale.gd`) — pede `reassar()`. A malha velha
+## vale até a nova entrar no mapa, e quem pede durante uma assada ganha outra
+## logo depois, com o que mudou nesse meio tempo.
 
 signal pronta
 
@@ -49,17 +54,23 @@ const LUGARES := ["Praça", "Igreja", "Cruzeiro", "PierPiso", "Casa de taipa", "
 	"Gameleira", "Cemitério", "Bar", "Restaurante", "Casa da estrada", "Casa de Carro Quebrado", "Poço"]
 
 var _mundo
+var _raiz: Node
 var _regiao: NavigationRegion3D
 var _pronta := false
 var _malha: NavigationMesh
 var _agua := -INF
 var _sonda := Vector3.INF
+var _assando := false
+var _de_novo := false
+## Quantas malhas já entraram no mapa: a primeira, e uma a cada `reassar`.
+var versao := 0
 
 
 ## `raiz` é de onde se lê o que tem colisão: o vale inteiro, e não só o mundo
 ## — os cômodos (paredes, porta, rampas) moram no nó dos interiores.
 func configurar(mundo, raiz: Node) -> void:
 	_mundo = mundo
+	_raiz = raiz
 	add_to_group("navegacao")
 	var area := _area()
 	if not area.has_volume():
@@ -79,10 +90,25 @@ func configurar(mundo, raiz: Node) -> void:
 	var mapa: RID = get_world_3d().navigation_map
 	NavigationServer3D.map_set_cell_size(mapa, CELULA)
 	NavigationServer3D.map_set_cell_height(mapa, ALTURA_DA_CELULA)
+	_assar()
+
+
+## O VALE MUDOU: assa de novo. Durante uma assada, fica pedida a próxima.
+func reassar() -> void:
+	if _malha == null:
+		return
+	if _assando:
+		_de_novo = true
+		return
+	_assar()
+
+
+func _assar() -> void:
+	_assando = true
 	# Ler o vale é coisa da linha principal; assar, da outra.
 	var fonte := NavigationMeshSourceGeometryData3D.new()
-	NavigationServer3D.parse_source_geometry_data(_malha, fonte, raiz)
-	_troncos_da_mata(fonte, area)
+	NavigationServer3D.parse_source_geometry_data(_malha, fonte, _raiz)
+	_troncos_da_mata(fonte, _malha.filter_baking_aabb)
 	NavigationServer3D.bake_from_source_geometry_data_async(_malha, fonte, _ao_assar)
 
 
@@ -166,20 +192,32 @@ func _ao_assar() -> void:
 	chao.set_vertices(vertices)
 	for i in _o_pedaco_maior(secos):
 		chao.add_polygon(_malha.get_polygon(i))
-	_regiao = NavigationRegion3D.new()
-	_regiao.name = "MalhaDosMoradores"
-	_regiao.navigation_mesh = chao
-	add_child(_regiao)
-	# O MAPA SÓ VÊ A REGIÃO depois de sincronizar, e isso leva alguns quadros de
-	# física (medido: seis não bastavam). Pronta é quando ele responde de fato.
 	var mapa: RID = get_world_3d().navigation_map
+	var iteracao := NavigationServer3D.map_get_iteration_id(mapa)
+	if _regiao == null:
+		_regiao = NavigationRegion3D.new()
+		_regiao.name = "MalhaDosMoradores"
+		_regiao.navigation_mesh = chao
+		add_child(_regiao)
+	else:
+		_regiao.navigation_mesh = chao
+	# O MAPA SÓ VÊ A REGIÃO depois de sincronizar, e isso leva alguns quadros de
+	# física (medido: seis não bastavam). Pronta é quando ele responde de fato —
+	# e, ao assar de novo, quando a malha que entrou é a nova.
 	for i in 600:
 		await get_tree().physics_frame
+		if NavigationServer3D.map_get_iteration_id(mapa) == iteracao:
+			continue
 		var perto := NavigationServer3D.map_get_closest_point(mapa, _sonda) if _sonda.is_finite() else Vector3.ZERO
 		if perto != Vector3.ZERO:
 			break
 	_pronta = true
+	versao += 1
+	_assando = false
 	pronta.emit()
+	if _de_novo:
+		_de_novo = false
+		_assar()
 
 
 ## O PEDAÇO LIGADO MAIOR: os polígonos que se tocam por aresta formam pedaços;

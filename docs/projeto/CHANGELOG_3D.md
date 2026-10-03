@@ -26,6 +26,27 @@ atualize esse arquivo e este documento juntos.
 
 ## Em desenvolvimento — 03/10/2026
 
+- **O cemitério do Damião: mais mato, o conserto das lajes, o cercado e a capelinha de
+  costas para o mar.** A missão do cemitério tinha quatro pés de capim e acabava no
+  corte. Agora são oito, e depois deles vem o mato que levanta laje — quatro embaúbas
+  novas entre as covas e três galhadas da trovoada, contadas juntas pelo grupo
+  `mato_do_cemiterio` (`Recursos3D` conta o que caiu por peça ou por grupo). Em
+  seguida o Damião pede quatro pedras para o calço e duas tábuas para as cruzes: três
+  lajes começam tortas, levantadas pela raiz, e endireitam na entrega. Por fim, o
+  cercado, que é obra do J (`cemiterio_cercado`: seis de lenha e duas cordas, plano
+  aprendido com o passo): pau roliço em volta das covas, com a entrada onde a rua do
+  cemitério chega e colisão em cada lance; de pé, a malha dos moradores se assa de novo
+  (`navegacao_vale.reassar`) e o Damião sai pela entrada. A lenha do mato e as pedras
+  soltas do outeiro, que se catam à mão, cobrem o conserto e o cercado — 17 de lenha e
+  6 de pedra para 16 e 4, conferidos pelas receitas da oficina, porque o vale tem
+  pouca lenha fora dali. A reza católica do cemitério saiu do meio das covas para
+  diante da capelinha: a capela do catálogo, pequena e no alicerce das casas, na beira
+  do outeiro do lado do mar e de costas para ele — quem reza olha a porta e, por cima
+  do telhado, a baía; dali o E é o da reza, sem lápide nem capim ao alcance. As lajes e
+  o cercado não têm save próprio: leem a fila do Damião e o `Obras`, para os dois lados
+  (`cemiterio_vale.gd`). Os passos novos e o arremate nascem nos três idiomas, e a
+  missão entrou no `tests/idiomas.gd` com a pendência dos três passos do 2D declarada
+  passo a passo (`tests/cadeia_do_coveiro.gd`, seis passos, falsificado de sete jeitos).
 - **Os moradores andam pelo caminho de verdade: a malha de navegação.** Eles iam em
   linha reta até o posto, com um desvio local quando batiam — "decisão local não vê o
   mapa inteiro" —, e com a festa de cada fé o caminho ficou longo. Agora o vale assa uma

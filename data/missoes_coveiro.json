@@ -1,11 +1,10 @@
 {
-  "observacao": "A MISSÃO DO CEMITÉRIO, trazida do jogo 2D (data/dialogos/arraial.json, passos coveiro_ver / coveiro_foice / coveiro_limpar). É a primeira cadeia do vale que NÃO é do Pedro: o dono dela é o Damião, o zelador que o intendente nomeou sem dar ferramenta nenhuma. O formato é o mesmo de missoes_guia.json — 'lugar' é nome de contrato do autoload Lugares, 'raio' é em unidades (1 u = 4 m) — porque quem conduz é o mesmo código. TRADUÇÃO: os textos estão só em português neste primeiro momento; inglês e espanhol estão declarados como pendentes e são do Ramon.",
+  "observacao": "A MISSÃO DO CEMITÉRIO, trazida do jogo 2D (data/dialogos/arraial.json, passos coveiro_ver / coveiro_foice / coveiro_limpar) e AUMENTADA NO VALE, a pedido de quem jogou: mais capim (oito pés), o mato que levanta laje (coveiro_mato: embaúba nova e galhada, contadas pelo grupo 'mato_do_cemiterio' de recursos_3d.json), o conserto das três lajes tortas com tábua e pedra levadas ao Damião (coveiro_reparo) e o cercado, que é obra do J (coveiro_cercado, obra 'cemiterio_cercado' de construcoes/obras.json). As lajes tortas e o cercado são do cemiterio_vale.gd. É a primeira cadeia do vale que NÃO é do Pedro: o dono dela é o Damião, o zelador que o intendente nomeou sem dar ferramenta nenhuma. O formato é o mesmo de missoes_guia.json — 'lugar' é nome de contrato do autoload Lugares, 'raio' é em unidades (1 u = 4 m) — porque quem conduz é o mesmo código. TRADUÇÃO: os três passos do 2D estão só em português, com inglês e espanhol declarados pendentes em cada um (são do Ramon); os passos novos e o arremate nascem nos três idiomas.",
   "dono": "damiao",
   "nome": "O cemitério esquecido",
   "nome_en": "The forgotten cemetery",
   "nome_es": "El cementerio olvidado",
   "abre_em": "cemiterio",
-  "traducao": "pendente",
   "passos": [
     {
       "id": "coveiro_ver",
@@ -17,7 +16,8 @@
       "raio": 8.0,
       "audio": "",
       "texto": "O senhor subiu. Pouca gente sobe. Olha em volta: capim de dois anos por cima de gente que teve nome. Eu arranco uns três pés por manhã, e o capim faz trinta na mesma manhã. Não é falta de vontade, moço. É falta de ferro.",
-      "meta": {}
+      "meta": {},
+      "traducao": "pendente"
     },
     {
       "id": "coveiro_cabo",
@@ -30,7 +30,8 @@
       "audio": "",
       "texto": "Eu tenho a lâmina da foice do meu sogro, enferrujada mas inteira. O que eu não tenho é cabo. Me traga duas achas de madeira boa — cabo de foice racha se for de pau mole, e racha sempre na hora errada. Põe o machado na mão, que de mão vazia não sai acha.",
       "entrega": { "item": "machado", "quantidade": 1 },
-      "meta": { "tipo": "juntar", "item": "lenha", "quantos": 2 }
+      "meta": { "tipo": "juntar", "item": "lenha", "quantos": 2 },
+      "traducao": "pendente"
     },
     {
       "id": "coveiro_limpar",
@@ -44,11 +45,71 @@
       "texto": "Pronto. Essa é a minha, e essa aqui é a sua — duas achas dão dois cabos, e eu não ia fazer uma só e ficar com ela. Agora desce comigo aquele capim. Corta rente: capim cortado pela metade volta em três semanas, e volta mais forte.",
       "entrega": { "item": "foice", "quantidade": 1 },
       "recompensa": { "reis": 800 },
-      "meta": { "tipo": "derrubar", "alvo": "capim", "quantos": 4 }
+      "meta": { "tipo": "derrubar", "alvo": "capim", "quantos": 8 },
+      "traducao": "pendente"
+    },
+    {
+      "id": "coveiro_mato",
+      "titulo": "O mato que levanta laje",
+      "titulo_en": "The scrub that lifts the slabs",
+      "titulo_es": "El monte que levanta las lápidas",
+      "resumo": "Derrube as embaúbas novas e a galhada caída",
+      "resumo_en": "Fell the young embaúbas and clear the fallen branches",
+      "resumo_es": "Tala las embaúbas jóvenes y quita las ramas caídas",
+      "lugar": "cemiterio",
+      "raio": 8.0,
+      "audio": "",
+      "texto": "Agora dá pra ver o resto do estrago. Capim é o de menos: olha aquelas embaúbas nascendo no meio das covas — embaúba pega em qualquer fresta, e raiz de embaúba levanta laje. E a galhada que a trovoada de janeiro jogou por cima dos mortos. Machado o senhor tem. Dizem que lenha de cemitério ninguém queima em casa; pra serviço de cemitério, serve.",
+      "texto_en": "Now you can see the rest of the damage. The grass is the least of it: look at those embaúbas sprouting between the graves — an embaúba takes hold in any crack, and an embaúba root lifts a slab. And the branches the January storm threw over the dead. You've got the axe. They say nobody burns cemetery wood at home; for cemetery work, it'll do.",
+      "texto_es": "Ahora se ve el resto del destrozo. La maleza es lo de menos: mire esas embaúbas brotando entre las tumbas — la embaúba prende en cualquier grieta, y raíz de embaúba levanta lápida. Y las ramas que la tormenta de enero tiró encima de los muertos. Hacha usted tiene. Dicen que leña de cementerio nadie la quema en casa; para trabajo de cementerio, sirve.",
+      "entrega": { "item": "machado", "quantidade": 1 },
+      "meta": { "tipo": "derrubar", "alvo": "mato_do_cemiterio", "quantos": 7 }
+    },
+    {
+      "id": "coveiro_reparo",
+      "titulo": "Calço e cruz",
+      "titulo_en": "Wedges and crosses",
+      "titulo_es": "Calzas y cruces",
+      "resumo": "Leve tábuas e pedras ao Damião",
+      "resumo_en": "Bring boards and stones to Damião",
+      "resumo_es": "Lleva tablas y piedras a Damião",
+      "lugar": "cemiterio",
+      "raio": 8.0,
+      "audio": "",
+      "texto": "Dá pra ler os nomes. Faz dois anos que não dava pra ler os nomes. Mas olha aquelas três lajes: a raiz levantou, e laje torta é cova aberta pra bicho. Preciso de quatro pedras pro calço e de duas tábuas, pras cruzes que apodreceram. Pedra solta tem aí pelo outeiro, é só catar; tábua sai da oficina, da lenha que o senhor tirou daqui.",
+      "texto_en": "You can read the names. Two years now you couldn't read the names. But look at those three slabs: the roots lifted them, and a crooked slab is an open grave for any critter. I need four stones to wedge them and two boards for the crosses that rotted. There are loose stones all over the hill, just pick them up; boards come from the workshop, out of the wood you cleared from here.",
+      "texto_es": "Se pueden leer los nombres. Hace dos años que no se podían leer los nombres. Pero mire esas tres lápidas: la raíz las levantó, y lápida torcida es tumba abierta para cualquier bicho. Necesito cuatro piedras para calzarlas y dos tablas para las cruces que se pudrieron. Piedra suelta hay por todo el cerro, es solo recogerla; la tabla sale del taller, de la leña que usted sacó de aquí.",
+      "meta": {
+        "tipo": "levar",
+        "itens": { "pedra": 4, "tabua": 2 },
+        "a_quem": "damiao",
+        "raio": 3.0,
+        "resposta": "Isso. Pedra no pé da laje, bem socada, e cruz nova onde a velha caiu. Pronto — agora nenhuma cova olha torto pra gente.",
+        "resposta_en": "That's it. Stone under the foot of the slab, tamped down tight, and a new cross where the old one fell. There — now no grave looks at us crooked.",
+        "resposta_es": "Eso. Piedra al pie de la lápida, bien apisonada, y cruz nueva donde se cayó la vieja. Listo — ahora ninguna tumba nos mira torcida."
+      }
+    },
+    {
+      "id": "coveiro_cercado",
+      "titulo": "O cercado do cemitério",
+      "titulo_en": "The cemetery fence",
+      "titulo_es": "La cerca del cementerio",
+      "resumo": "Cerque o cemitério: [J] › Obras, no cemitério",
+      "resumo_en": "Fence the cemetery: [J] › Works, at the cemetery",
+      "resumo_es": "Cerca el cementerio: [J] › Obras, en el cementerio",
+      "lugar": "cemiterio",
+      "raio": 8.0,
+      "audio": "",
+      "texto": "Falta uma coisa, e é a que segura as outras. Cabrito pasta em cima de cova, e porco fuça — porco solto já fuçou duas. Um cercado de pau roliço em volta, amarrado de corda, com a entrada do lado da rua. A obra se toca no J, na aba de obras, aqui mesmo no cemitério. Pau o senhor tem; corda sai da oficina.",
+      "texto_en": "One thing left, and it's the one that holds the rest together. Goats graze on top of the graves, and pigs root — a loose pig has rooted up two already. A fence of round poles all around, lashed with rope, with the way in on the road side. The work is done in the J menu, on the works tab, right here at the cemetery. Poles you have; rope comes from the workshop.",
+      "texto_es": "Falta una cosa, y es la que sostiene las demás. Las cabras pastan encima de las tumbas, y el cerdo hoza — un cerdo suelto ya hozó dos. Una cerca de palos redondos alrededor, atada con cuerda, con la entrada del lado de la calle. La obra se hace en la J, en la pestaña de obras, aquí mismo en el cementerio. Palos usted tiene; la cuerda sale del taller.",
+      "meta": { "tipo": "obra", "construcao": "cemiterio", "obra": "cemiterio_cercado" },
+      "recompensa": { "reis": 1000 }
     }
   ],
   "arremate": {
-    "texto": "Dá pra ler os nomes. Faz dois anos que não dava pra ler os nomes. O senhor fez num dia o que eu não ia fazer nunca. E daqui pra frente o mato é comigo — foice na mão, é comigo.",
-    "traducao": "pendente"
+    "texto": "Cercado, limpo e com as lajes no prumo. O senhor fez em dias o que eu não ia fazer nunca. A irmandade do Bom Jesus mandou esses réis, que cemitério cercado é obrigação dela, e quem fez foi o senhor. E daqui pra frente o mato é comigo — foice na mão e cercado de pé, é comigo.",
+    "texto_en": "Fenced, clean, and the slabs standing true. You did in days what I was never going to do. The Bom Jesus brotherhood sent these coins — a fenced cemetery is their duty, and you're the one who did it. And from here on the scrub is mine — scythe in hand and the fence standing, it's mine.",
+    "texto_es": "Cercado, limpio y con las lápidas a plomo. Usted hizo en días lo que yo no iba a hacer nunca. La hermandad del Bom Jesus mandó estos reales, que cementerio cercado es obligación de ella, y quien lo hizo fue usted. Y de aquí en adelante el monte es cosa mía — hoz en mano y la cerca en pie, es cosa mía."
   }
 }

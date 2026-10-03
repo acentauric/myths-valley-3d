@@ -48,6 +48,9 @@ const TRADUZIDOS := {
 	"res://data/casa.json": ["texto", "pergunta"],
 	# E a lavoura (#8): o que a tecla diz no leito e os recados do gesto.
 	"res://data/lavoura.json": ["texto"],
+	# A missão do cemitério: os três passos do 2D declaram a pendência um a um,
+	# e o mato, o conserto, o cercado e o arremate nasceram nos três idiomas.
+	"res://data/missoes_coveiro.json": ["texto", "resumo", "nome", "titulo", "resposta"],
 }
 
 ## O QUE AINDA NÃO ESTÁ NOS TRÊS, e por quê. Esvaziar esta lista é o trabalho;

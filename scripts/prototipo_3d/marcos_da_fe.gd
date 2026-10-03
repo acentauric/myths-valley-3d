@@ -9,7 +9,8 @@ extends Node
 ##   cruzeiro        a cruz diante da igreja                     católica
 ##   capela          o ALTAR da igreja do Bom Jesus, por dentro   católica
 ##   capela_estrada  a capela velha da rua do mirante            católica
-##   cemiterio       o cemitério do outeiro                      católica
+##   cemiterio       a capelinha do cemitério do outeiro, de     católica
+##                   costas para o mar
 ##   terreiro        a casa de santo na mata, antes da curva      candomblé
 ##   gameleira       a árvore do sambaqui, na ponta da praia      caboclo
 ##
@@ -50,6 +51,8 @@ const NOMES_DOS_MARCOS := {
 const ALCANCE := 2.8
 ## Perto o bastante para contar como chegada (as missões de visita).
 const CHEGADA := 6.0
+## Da porta da capelinha do cemitério até onde se reza.
+const DIANTE_DA_CAPELINHA := 1.8
 const ALTURA_DA_DICA := 1.7
 
 ## A escolha da fé já foi mostrada? Respondido de fora (a missão da Dona Zefa).
@@ -114,6 +117,16 @@ func _ponto_do_marco(marco: String) -> Vector3:
 			var frente: Vector3 = _mundo.ancoras.get("Capela velhaFrente", Vector3.BACK)
 			frente.y = 0.0
 			return _mundo.ground_position(base + frente.normalized() * 6.0, 0.05)
+		"cemiterio":
+			# DIANTE DA PORTA DA CAPELINHA, que dá as costas para o mar
+			# (`world_builder._capelinha_do_cemiterio`): reza-se de frente para
+			# ela, olhando a baía. Rezava-se no meio das covas, entre duas lajes.
+			# O passo e meio a mais deixa a lápide da cova mais perto e o capim
+			# fora do alcance da tecla: o E daqui é o da reza.
+			var porta: Vector3 = _mundo.ancoras.get("CapelinhaPorta", Vector3.INF)
+			if porta.is_finite():
+				var diante: Vector3 = _mundo.ancoras.get("CapelinhaFrente", Vector3.BACK)
+				return _mundo.ground_position(porta + diante * DIANTE_DA_CAPELINHA, 0.05)
 	return Lugares.ponto(marco)
 
 

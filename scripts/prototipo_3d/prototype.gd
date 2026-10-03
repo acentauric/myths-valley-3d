@@ -37,6 +37,7 @@ const Interiores = preload("res://scripts/prototipo_3d/interiores.gd")
 const CasaDoJogador = preload("res://scripts/prototipo_3d/casa_do_jogador.gd")
 const LavouraVale = preload("res://scripts/prototipo_3d/lavoura_vale.gd")
 const NavegacaoVale = preload("res://scripts/prototipo_3d/navegacao_vale.gd")
+const CemiterioVale = preload("res://scripts/prototipo_3d/cemiterio_vale.gd")
 const MENU_SCENE := "res://scenes/prototipo_3d/abertura.tscn"
 ## Raio de terra firme em volta do ponto de chegada.
 const RAIO_CHEGADA := 6.0
@@ -115,6 +116,9 @@ var noite: Node
 var lavoura: Node3D
 ## A malha de navegação dos moradores (`navegacao_vale.gd`).
 var navegacao: Node3D
+## O cemitério que a missão do Damião conserta: as lajes tortas e o cercado
+## (`cemiterio_vale.gd`).
+var cemiterio: Node3D
 ## As plaquinhas de nome dos moradores; somem com tela aberta (placas_nomes.gd).
 var placas
 ## A aba pedida no último `abrir_o_painel`, entregue à abertura crua.
@@ -541,6 +545,13 @@ func _ready() -> void:
 		if do_arraial != null:
 			do_arraial.depois_de = func() -> bool:
 				return pedro.missao >= pedro.MISSOES.size() and bool(pedro.get("_despedida_feita"))
+	# O CEMITÉRIO QUE A FILA DO DAMIÃO CONSERTA: as lajes que a raiz levantou
+	# endireitam com o conserto, e o cercado sobe com a obra do J. Os dois se
+	# leem da fila e do `Obras`, que já vão no save (`cemiterio_vale.gd`).
+	cemiterio = CemiterioVale.new()
+	cemiterio.name = "Cemiterio"
+	add_child(cemiterio)
+	cemiterio.configurar(world, _cadeias.get("damiao"))
 	# OS ACONTECIMENTOS QUE UM PASSO PODE ESPERAR (meta "evento"): abrir a tela
 	# do P. Todas as cadeias ouvem, mesmo as que ainda não chegaram no passo.
 	social.abriu.connect(func() -> void:
@@ -1480,6 +1491,9 @@ func restaurar_do_save(estado: Dictionary) -> void:
 		casa.restaurar(estado["casa"])
 	if lavoura != null and estado.has("lavoura"):
 		lavoura.restaurar(estado["lavoura"])
+	# As lajes e o cercado acompanham a fila e a obra que acabaram de voltar.
+	if cemiterio != null:
+		cemiterio.acertar()
 
 
 ## DEPURAÇÃO: `-- --lugar=<nome>` começa o jogador direto num lugar do

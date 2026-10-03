@@ -10,9 +10,11 @@ Exploração do vale, moradores (que andam pela malha de navegação), missões 
 o registro das mudanças no relógio), energia, vida, inventário, equipamento,
 talentos, cartas, coleção, obras, pesca, cozinha, oficina, a lavoura da casa
 (#8: arar, plantar, regar, crescer por dia regado e colher, com a regra do
-roçado do 2D), a fé (#52: os seis marcos, o rito, a troca, a
+roçado do 2D), o cemitério do Damião (o mato, o conserto das lajes e o cercado,
+que é obra), a fé (#52: os seis marcos, o rito, a troca, a
 teia da fé no K, as missões da Dona Zefa e de cada fé e a festa de cada uma,
-com os moradores no marco à tarde), os cômodos por dentro das próprias
+com os moradores no marco à tarde, e a capelinha do cemitério de costas para o
+mar), os cômodos por dentro das próprias
 construções (#26: a igreja do Bom Jesus e a casa herdada, com a cama que vira o
 dia, o baú e o desmaio das duas da #50) e três vagas de salvamento. A
 existência de um sistema não significa que todos os seus gatilhos ou telas

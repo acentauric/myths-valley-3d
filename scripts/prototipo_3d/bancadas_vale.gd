@@ -47,6 +47,9 @@ const OBRAS := {
 	"mirante": {"ancora": "Mirante", "raio": 8.0},
 	"poco": {"ancora": "Poço", "raio": 4.0},
 	"trapiche": {"ancora": "PierPiso", "raio": 6.0},
+	# O CERCADO DO CEMITÉRIO, o fim da missão do Damião: a aba vale no outeiro
+	# inteiro, de dentro do cercado que vai subir (`cemiterio_vale.gd`).
+	"cemiterio": {"ancora": "Cemitério", "raio": 12.0},
 }
 
 const FALTAM := {

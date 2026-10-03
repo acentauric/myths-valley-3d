@@ -44,9 +44,9 @@ var _dica: PanelContainer
 ## id → {"no", "pos", "ficha", "golpes_dados"}
 var _alvos: Dictionary = {}
 var _perto := ""
-## Quantos alvos de cada peça foram POSTOS no mundo, para a conta de quantos
-## já caíram: alvo derrubado some de `_alvos`, e sem este número não haveria
-## de onde subtrair. Ver `derrubados`.
+## Quantos alvos de cada peça — e de cada grupo — foram POSTOS no mundo, para a
+## conta de quantos já caíram: alvo derrubado some de `_alvos`, e sem este
+## número não haveria de onde subtrair. Ver `derrubados`.
 var _postos: Dictionary = {}
 ## Os ids dos alvos que já caíram nesta partida, para o save. Ver `caidos`.
 var _caidos: Array[String] = []
@@ -131,6 +131,9 @@ func _erguer() -> void:
 
 		var peca := str(ficha.get("peca", ""))
 		_postos[peca] = int(_postos.get(peca, 0)) + 1
+		var grupo := str(ficha.get("grupo", ""))
+		if grupo != "":
+			_postos[grupo] = int(_postos.get(grupo, 0)) + 1
 		_alvos[id] = {"no": no, "pos": pos, "ficha": ficha, "golpes_dados": 0,
 			"corpos": corpos, "meia_pegada": meia}
 
@@ -384,20 +387,29 @@ func mais_perto_que_rende(item: String, de: Vector3) -> Vector3:
 ##
 ## Pela PEÇA, e não pelo que rende, porque o que o passo pede é o pé cortado e
 ## não o material: dois alvos de peças diferentes podem render a mesma coisa.
+##
+## OU PELO GRUPO, quando o pedido junta peças diferentes: o mato do cemitério é
+## embaúba nova e galhada caída (`"grupo": "mato_do_cemiterio"` no JSON), e o
+## Damião pede o mato, não a peça. O grupo é só mais um nome que o alvo atende.
 func derrubados(peca: String) -> int:
 	return int(_postos.get(peca, 0)) - _de_pe(peca)
 
 
-## Quantos alvos desta peça ainda estão de pé.
+## Quantos alvos desta peça (ou deste grupo) ainda estão de pé.
 func _de_pe(peca: String) -> int:
 	var conta := 0
 	for id in _alvos:
-		if str((_alvos[id]["ficha"] as Dictionary).get("peca", "")) == peca:
+		if _atende(_alvos[id]["ficha"], peca):
 			conta += 1
 	return conta
 
 
-## ONDE ESTÁ O ALVO MAIS PERTO DESTA PEÇA, ou `Lugares.NENHUM`.
+## O alvo desta ficha atende pelo nome `peca` — o da peça ou o do grupo dele?
+static func _atende(ficha: Dictionary, peca: String) -> bool:
+	return str(ficha.get("peca", "")) == peca or (peca != "" and str(ficha.get("grupo", "")) == peca)
+
+
+## ONDE ESTÁ O ALVO MAIS PERTO DESTA PEÇA (ou deste grupo), ou `Lugares.NENHUM`.
 ##
 ## É o `mais_perto_que_rende` para os que não rendem nada. O losango do
 ## cemitério mostra o pé de capim mais perto, e quando ele parar de mostrar,
@@ -406,7 +418,7 @@ func mais_perto_da_peca(peca: String, de: Vector3) -> Vector3:
 	var melhor: Vector3 = Lugares.NENHUM
 	var menor := INF
 	for id in _alvos:
-		if str((_alvos[id]["ficha"] as Dictionary).get("peca", "")) != peca:
+		if not _atende(_alvos[id]["ficha"], peca):
 			continue
 		var d: Vector3 = _alvos[id]["pos"] - de
 		d.y = 0.0

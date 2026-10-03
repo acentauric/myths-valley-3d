@@ -41,6 +41,9 @@ var areas: Array[Dictionary] = []
 var lapides: Array[Vector3] = []
 ## Tamanho da laje de cada túmulo (x, altura, z), para a colisão e para saber quem subiu.
 var lapides_pegada: Array[Vector3] = []
+## O desenho de cada túmulo, na mesma ordem: as lajes que a raiz levantou se
+## entortam e se endireitam com a missão do Damião (`cemiterio_vale.gd`).
+var tumulos: Array[Node3D] = []
 var region_title := "Vale"
 var _region = null
 var _meters_per_unit := 1.0
@@ -1094,6 +1097,74 @@ func _colisao_tumulo(chao: Vector3, pegada: Vector3) -> void:
 	add_child(body)
 
 
+## A CAPELINHA DO CEMITÉRIO, onde o católico reza (`marcos_da_fe.gd`): na beira
+## do outeiro do lado do mar, DE COSTAS PARA ELE — quem reza fica de frente para
+## a porta e, por cima do telhado, vê a baía. Rezava-se no meio das covas, entre
+## duas lajes.
+##
+## O lado do mar é o do ponto da costa mais perto (`lado_do_mar`), acertado ao
+## eixo das covas, para a capelinha ficar no alinhamento delas e do cercado, que
+## passa pelo meio dela (`cemiterio_vale.gd`): a porta dentro, os fundos fora.
+## No estilo Tripo é a capela do catálogo, pequena, no alicerce das casas — o
+## outeiro cai para o mar, e sem ele os fundos ficavam no ar; no procedural, o
+## cruzeiro faz as vezes de altar, que o procedural é só comparação e não ganha
+## arte nova.
+const CAPELINHA_TAMANHO := 0.5
+## Do centro do cemitério ao meio da capelinha, para o lado do mar, e o quanto
+## ela sai da linha do meio ao longo da beira (para longe da entrada do cercado).
+const CAPELINHA_PARA_O_MAR := 9.95
+const CAPELINHA_DE_LADO := -0.6
+
+
+func _capelinha_do_cemiterio(cemetery: Vector3) -> void:
+	var mar := lado_do_mar(cemetery)
+	var frente := -mar
+	var ao_longo := Vector3(-mar.z, 0.0, mar.x)
+	var centro := cemetery + mar * CAPELINHA_PARA_O_MAR + ao_longo * CAPELINHA_DE_LADO
+	centro.y = ground_height_at(centro)
+	var yaw := atan2(frente.x, frente.z)
+	var porta := Vector3.INF
+	if estilo_tripo():
+		var capela := CatalogoAssets.instanciar("capela", self, centro, CAPELINHA_TAMANHO, yaw)
+		if capela != null:
+			var limites: AABB = capela.get_meta("limites")
+			var assentada := _support_house(centro, Vector2(limites.size.x, limites.size.z), yaw)
+			capela.position.y += assentada.y - centro.y
+			var corpo := CatalogoAssets.colisao("capela", capela, self, assentada, CAPELINHA_TAMANHO, yaw)
+			construcoes["Capelinha"] = {"modelo": capela, "colisao": corpo}
+			centro = assentada
+			porta = assentada + frente * (limites.size.z * 0.5)
+			# Lote tomado: o que se planta depois não nasce dentro dela.
+			_house_sites.append({"position": assentada, "radius": maxf(limites.size.x, limites.size.z) * 0.5})
+	if not porta.is_finite():
+		porta = centro + frente * (float(CatalogoAssets.PECAS["capela"]["largura"]) * CAPELINHA_TAMANHO * 0.5)
+		_adereco("cruzeiro", ground_position(porta + mar * 0.4), yaw, 0.55)
+	ancoras["Capelinha"] = centro
+	ancoras["CapelinhaFrente"] = frente
+	ancoras["CapelinhaPorta"] = ground_position(porta)
+
+
+## O LADO DO MAR visto de `ponto`: para o ponto da linha da costa mais perto,
+## acertado ao eixo (±X ou ±Z) mais próximo. Sem costa, +X, que é o lado da baía
+## neste mapa.
+func lado_do_mar(ponto: Vector3) -> Vector3:
+	var costa: PackedVector2Array = _region._coast if _region != null else PackedVector2Array()
+	var de := Vector2(ponto.x, ponto.z)
+	var mais_perto := Vector2.INF
+	var menor := INF
+	for i in costa.size() - 1:
+		var q := Geometry2D.get_closest_point_to_segment(de, costa[i], costa[i + 1])
+		if q.distance_to(de) < menor:
+			menor = q.distance_to(de)
+			mais_perto = q
+	if not mais_perto.is_finite():
+		return Vector3.RIGHT
+	var rumo := mais_perto - de
+	if absf(rumo.x) >= absf(rumo.y):
+		return Vector3(signf(rumo.x), 0.0, 0.0)
+	return Vector3(0.0, 0.0, signf(rumo.y))
+
+
 ## Árvore com nome: GLB do Tripo (colisão no tronco) ou espécie procedural.
 func _arvore(especie: String, origin: Vector3, size: float = 1.0, yaw: float = 0.0) -> void:
 	var tree_radius := maxf(2.0, size * 2.4)
@@ -1333,6 +1404,7 @@ func _build_landmark_details() -> void:
 		var grave := ground_position(cemetery + Vector3((index % 4) * 2.3 - 3.45, 0, floorf(index / 4.0) * 3.0 - 3.0))
 		lapides.append(grave)
 		var tumulo := _adereco("tumulo", grave, 0.0, 0.9 + float(index % 3) * 0.08)
+		tumulos.append(tumulo)
 		# Pegada da laje (sem a cruz): a do modelo do Tripo ou a do túmulo procedural.
 		var pegada := Vector3(0.72, 0.15, 1.45)
 		if tumulo == null:
@@ -1344,6 +1416,7 @@ func _build_landmark_details() -> void:
 			pegada = Vector3(limites.size.x, limites.size.y * 0.62, limites.size.z)
 		_colisao_tumulo(grave, pegada)
 		lapides_pegada.append(pegada)
+	_capelinha_do_cemiterio(cemetery)
 	var stones: Vector3 = _region.get_feature_center("Pedras", "poi")
 	ancoras["Pedras"] = stones
 	if _adereco("pedras", stones, 0.4, 1.4) == null:

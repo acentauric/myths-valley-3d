@@ -12,7 +12,8 @@
     "cabana_pesca": "oficio",
     "engenho": "oficio",
     "casa_farinha": "oficio",
-    "mirante": "mirante"
+    "mirante": "mirante",
+    "cemiterio": "cemiterio"
   },
 
   "obras": {
@@ -221,6 +222,23 @@
       "resumo": "Esteio novo no lugar do podre, tabuado corrido e guarda-corpo de pau roliço. Do alto se enxerga a baía inteira — e é a segunda coisa que muda neste arraial em vinte anos.",
       "abre": { "missao": "mirante_material" },
       "custo": { "tabua": 20, "pedra": 12, "corda": 6 }
+    },
+
+    "cemiterio_cercado": {
+      "observacao": "OBRA DO VALE, e não do 2D: o fim da missão do Damião (data/missoes_coveiro.json, coveiro_cercado), que ensina o plano ao abrir. O custo é o que o cemitério dá — a lenha da embaúba e da galhada que o próprio passo do mato derrubou, e a corda torcida dela na oficina —, e a conta fecha no tests/cadeia_do_coveiro.gd. Quem levanta é o cemiterio_vale.gd, ouvindo a obra feita. Nome e resumo já nos três idiomas, para quando a aba de obras ler o idioma (o resto do arquivo está com o Ramon).",
+      "eixo": "casca",
+      "compartimento": "Casco",
+      "ordem": 1,
+      "vira": "cercado",
+      "alvos": ["cemiterio"],
+      "nome": "Cercar o cemitério",
+      "nome_en": "Fence the cemetery",
+      "nome_es": "Cercar el cementerio",
+      "resumo": "Cercado de pau roliço amarrado de corda, com a entrada do lado da rua. Cabrito e porco ficam do lado de fora, e quem é de dentro descansa.",
+      "resumo_en": "A fence of round poles lashed with rope, with the way in on the road side. Goats and pigs stay outside, and those within get their rest.",
+      "resumo_es": "Cerca de palos redondos atada con cuerda, con la entrada del lado de la calle. Cabras y cerdos se quedan afuera, y los de adentro descansan.",
+      "abre": { "missao": "coveiro_cercado" },
+      "custo": { "lenha": 6, "corda": 2 }
     },
 
     "canteiro_prancheta": {
