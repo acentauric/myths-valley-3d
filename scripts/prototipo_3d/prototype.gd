@@ -1158,7 +1158,8 @@ func _retomar_se_a_fala_acabou() -> void:
 	_retomar_o_vale()
 
 
-## O CORDEL NO PAPEL (#21): o `Folheto` do 2D, inteiro, por cima do vale.
+## O CORDEL NO PAPEL (#21): o `Folheto`, inteiro, por cima do vale — desenhado
+## na tela do vale, em alta (ver `_na_tela_do_vale`).
 ##
 ## Achar cordel sem poder ler seria só um item a mais — é a razão que o 2D
 ## escreve no `ler` de lá —, então o achado abre o papel na hora, como no
@@ -1258,6 +1259,8 @@ func _ao_derrubar(_id: String, rende: String, quantidade: int) -> void:
 ## fica com 50 px, ao lado dos 52 da barra de mão.
 ## O quadro em que as telas do 2D são desenhadas: a janela inteira de lá.
 const QUADRO_DO_2D := Vector2(640, 360)
+## E a tela do vale, onde as telas redesenhadas em alta são medidas (o folheto).
+const TELA_DO_VALE := Vector2(1280, 720)
 const MOCHILA_FOLGA := 0.9
 ## A camada das telas do vale (a do painel J); só uma abre por vez.
 const CAMADA_DAS_TELAS := 25
@@ -1280,7 +1283,7 @@ func _ajustar_as_telas_do_2d() -> void:
 	# A fala longa (#21) fica na camada das telas: por cima do HUD, e nenhuma
 	# tela fica aberta com ela (ver `_ao_abrir_a_fala`).
 	_no_quadro_do_2d(Dialogo, CAMADA_DAS_TELAS)
-	_no_quadro_do_2d(Folheto, CAMADA_DAS_TELAS)
+	_na_tela_do_vale(Folheto, CAMADA_DAS_TELAS)
 	_no_quadro_do_2d(Amanhecer, CAMADA_DO_AMANHECER)
 
 
@@ -1295,6 +1298,18 @@ func _no_quadro_do_2d(camada: CanvasLayer, numero: int) -> void:
 	camada.layer = numero
 	camada.transform = Transform2D(0.0, Vector2(escala, escala), 0.0,
 		(tela - QUADRO_DO_2D * escala) * 0.5)
+
+
+## UMA TELA REDESENHADA NA TELA DO VALE (1280×720), inteira na janela: o
+## folheto, que veio do 2D no quadro de 640×360 e era ampliado duas vezes — a
+## letra borrava. Agora ele é medido na tela do vale, e a escala só existe se a
+## janela não for a do vale.
+func _na_tela_do_vale(camada: CanvasLayer, numero: int) -> void:
+	var tela := get_viewport().get_visible_rect().size
+	var escala := minf(tela.x / TELA_DO_VALE.x, tela.y / TELA_DO_VALE.y)
+	camada.layer = numero
+	camada.transform = Transform2D(0.0, Vector2(escala, escala), 0.0,
+		(tela - TELA_DO_VALE * escala) * 0.5)
 
 
 ## Como `_bind`, mas com o Alt segurado — é o que move os gestos para fora dos

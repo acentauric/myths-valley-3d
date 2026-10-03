@@ -6,7 +6,9 @@ extends SceneTree
 ## O portão mede o papel na tela, a coleta e as teclas usando somente
 ## os recursos deste projeto.
 ##
-##   2. O PAPEL NA TELA: por cima do HUD, no tamanho do vale, inteiro na janela.
+##   2. O PAPEL NA TELA: por cima do HUD, no tamanho do vale, inteiro na janela
+##      — e EM ALTA: desenhado na tela do vale, e não o quadro de 640x360 do 2D
+##      ampliado duas vezes, que borrava a letra.
 ##   3. ACHAR ABRE O PAPEL e para o vale; o E o guarda e o vale volta a andar,
 ##      com o calendário preso. O Esc guarda também, e a tecla de outra tela
 ##      troca para ela — é o "[L] coleção" que o rodapé dele escreve.
@@ -14,8 +16,12 @@ extends SceneTree
 ##      papel, e o título não encosta na assinatura.
 ##   5. O ALMANAQUE RELÊ: o cordel aberto, escolhido de novo, abre o papel, e
 ##      o rodapé diz isso; o papel guardado devolve o almanaque onde estava.
+##   6. CADA UM ABRE COM A CAPA DELE: a xilogravura desenhada para o folheto,
+##      se já veio (`CapaDeCordel`), ou o bloco de sempre — na proporção do
+##      folheto, 2 por 3 —, e com letra de tela do vale, não de 640x360.
 
 const CORDEL := "peso_falso"
+const CapaDeCordel = preload("res://scripts/prototipo_3d/capa_de_cordel.gd")
 
 var falhas := 0
 var folheto
@@ -62,8 +68,10 @@ func _run() -> void:
 	var na_tela: Rect2 = folheto.transform * papel
 	_conferir(Rect2(Vector2.ZERO, tela).encloses(na_tela),
 		"o papel sai da janela: %s numa tela de %s" % [str(na_tela), str(tela)])
-	_conferir(na_tela.size.x >= papel.size.x * 1.8,
-		"o papel tem %.0f px de largura: abriu no tamanho do 2D (%.0f)" % [na_tela.size.x, papel.size.x])
+	_conferir(na_tela.size.x >= tela.x * 0.6,
+		"o papel tem %.0f px de largura numa tela de %.0f: abriu pequeno" % [na_tela.size.x, tela.x])
+	_conferir(folheto.transform.get_scale().x <= 1.05,
+		"o folheto é ampliado %.2f vezes: é o quadro do 2D esticado, e a letra borra" % folheto.transform.get_scale().x)
 
 	# --- 3. ACHAR ABRE O PAPEL -------------------------------------------------
 	var achados = vale.get_node("Achados")
@@ -138,6 +146,18 @@ func _run() -> void:
 				"%s: %s saiu do papel (%s)" % [id, campo, etiqueta.get_global_rect()])
 		_conferir(folheto._titulo.get_global_rect().end.y <= folheto._autor.get_global_rect().position.y,
 			"%s: o título encostou na assinatura" % id)
+		# 6. A CAPA DELE, na proporção do folheto, e a letra da tela do vale.
+		var capa: Texture2D = folheto._capa.texture
+		_conferir(capa != null and folheto._capa.visible, "%s: o folheto abriu sem capa" % id)
+		if capa != null:
+			var proporcao := float(capa.get_width()) / float(maxi(capa.get_height(), 1))
+			_conferir(absf(proporcao - 2.0 / 3.0) < 0.05, "%s: a capa tem proporção %.2f, e o folheto é 2 por 3" % [id, proporcao])
+			var desenhada = CapaDeCordel.desenhada(str(id))
+			_conferir(capa == (desenhada if desenhada != null else CapaDeCordel.bloco()),
+				"%s: a capa mostrada não é a dele (nem a desenhada, nem o bloco de sempre)" % id)
+			_conferir(dentro.encloses(folheto._capa.get_global_rect()), "%s: a capa saiu do papel" % id)
+		_conferir(folheto._versos.get_theme_font_size("font_size") >= 22,
+			"%s: o verso está em %d px, letra de 640x360" % [id, folheto._versos.get_theme_font_size("font_size")])
 		folheto.fechar()
 		await _frames(2)
 
@@ -193,7 +213,7 @@ func _fechar() -> void:
 		folheto.fechar()
 	print("")
 	if falhas == 0:
-		print("FOLHETO_OK: fica por cima do HUD no tamanho do vale, o cordel achado abre no papel e para o vale, E e Esc guardam sem soltar o calendário, a tecla de outra tela troca para ela, os dez cordéis cabem no papel, e o almanaque relê o cordel aberto e volta onde estava")
+		print("FOLHETO_OK: fica por cima do HUD no tamanho do vale e em alta, o cordel achado abre no papel e para o vale, E e Esc guardam sem soltar o calendário, a tecla de outra tela troca para ela, os dez cordéis cabem no papel com a capa de cada um, e o almanaque relê o cordel aberto e volta onde estava")
 	else:
 		print("folheto: %d falha(s)" % falhas)
 	quit(1 if falhas > 0 else 0)

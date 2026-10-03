@@ -8,7 +8,8 @@ raiz. O jogo 2D segue sua própria linha em `acentauric/myths-valley`.
 Exploração do vale, moradores (que andam pela malha de navegação), missões em
 âncoras com recompensa (#48) e diário de missões acompanhadas, calendário (com
 o registro das mudanças no relógio), energia, vida, inventário, equipamento,
-talentos, cartas, coleção, obras, pesca, cozinha, oficina, a lavoura da casa
+talentos, cartas, coleção, obras, pesca, cozinha, oficina, os cordéis (pendurados no barbante, o folheto em
+alta com a capa de cada um), a lavoura da casa
 (#8: arar, plantar, regar, crescer por dia regado e colher, com a regra do
 roçado do 2D), o cemitério do Damião (o mato, o conserto das lajes e o cercado,
 que é obra), a fé (#52: os seis marcos, o rito, a troca, a

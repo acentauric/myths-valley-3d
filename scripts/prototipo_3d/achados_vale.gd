@@ -4,8 +4,9 @@ extends Node
 ## `_espalhar_sinais`, `_espalhar_cartas`), com a mesma ordem das coisas:
 ##
 ## - O CORDEL está num lugar do arraial — o balcão do armazém, o banco da
-##   capela, a ponta do píer. Pegar paga o troco e o guarda na coleção (L).
-##   Coisa que se guarda na memória não entra na mochila.
+##   capela, a ponta do píer —, PENDURADO NUM BARBANTE como na feira, com a
+##   capa para fora. Pegar paga o troco e o guarda na coleção (L). Coisa que
+##   se guarda na memória não entra na mochila.
 ## - O SINAL está onde o mito anda, e a CARTA ESPERA O SINAL: ela não está no
 ##   chão desde o primeiro dia; aparece onde o sinal estava, depois que o
 ##   jogador o viu, porque é ali que a coisa está.
@@ -24,6 +25,7 @@ extends Node
 const DicaTecla = preload("res://scripts/prototipo_3d/dica_tecla.gd")
 const Atalhos = preload("res://scripts/prototipo_3d/atalhos.gd")
 const IdiomaMenu = preload("res://scripts/prototipo_3d/idioma_menu.gd")
+const CapaDeCordel = preload("res://scripts/prototipo_3d/capa_de_cordel.gd")
 const TEXTOS := "res://data/achados.json"
 
 ## Quão perto, no chão, para a tecla aparecer e o E valer.
@@ -35,13 +37,19 @@ const POR_FALA := 3.6
 ## ONDE CADA CORDEL ESTÁ NO VALE: a âncora do lugar que o `onde` dele descreve,
 ## e onde em volta dela. `diante` anda pela frente da construção a partir da
 ## beira dela; `lado` anda de lado; `piso` usa a altura da âncora em vez do
-## chão (o píer fica sobre a água, e o chão ali é o fundo do mar).
+## chão (o píer fica sobre a água, e o chão ali é o fundo do mar); `desvio`
+## anda em x e z a partir da âncora que não tem frente.
 const CORDEIS := {
 	"peso_falso": {"ancora": "Venda do Bar", "diante": 1.2},          # no balcão do armazém
 	"vendeu_a_chuva": {"ancora": "Bar", "diante": -2.0, "lado": 3.2},   # no bar da praia, numa mesa
-	"cachorro_do_enterro": {"ancora": "Capela velha", "diante": 1.2},   # na capela
+	# Na capela, AO LADO DA PORTA, e não diante dela: diante dela é onde se reza
+	# (`marcos_da_fe.gd`), e o marco recebe o E primeiro — o folheto que ficava
+	# a três palmos do lugar da reza não se pegava.
+	"cachorro_do_enterro": {"ancora": "Capela velha", "diante": 1.2, "lado": -1.0},
 	"missa_dos_afogados": {"ancora": "Cemitério"},                       # no cemitério
-	"porfia_do_caboclo": {"ancora": "Mirante"},                          # no mirante, na serra
+	# No mirante, na serra — AO PÉ dele, e não no meio: o meio é a caixa de
+	# colisão do mirante, e o folheto ficava lá dentro, onde ninguém chegava.
+	"porfia_do_caboclo": {"ancora": "Mirante", "desvio": [3.2, 0.0]},
 	"moleque_do_pier": {"ancora": "PierPiso", "piso": true},            # na ponta do píer
 }
 const CORDEIS_QUE_FALTAM := {
@@ -156,6 +164,9 @@ func ponto_do_cordel(id: String) -> Vector3:
 		return Vector3.INF
 	if bool(onde.get("piso", false)):
 		return base + Vector3(0.0, 0.02, 0.0)
+	if onde.has("desvio"):
+		var desvio: Array = onde["desvio"]
+		return _terra_perto(base + Vector3(float(desvio[0]), 0.0, float(desvio[1])))
 	var frente: Vector3 = _world.ancoras.get(ancora + "Frente", Vector3.ZERO)
 	frente.y = 0.0
 	var ponto := base
@@ -236,6 +247,9 @@ const COR := {
 func _por(tipo: String, id: String, lugar: String, ponto: Vector3) -> void:
 	if not ponto.is_finite():
 		return
+	if tipo == "cordel":
+		_por_cordel(id, ponto)
+		return
 	var marca := MeshInstance3D.new()
 	marca.name = "Achado_%s_%s" % [tipo, id]
 	var folha := BoxMesh.new()
@@ -256,6 +270,7 @@ func _por(tipo: String, id: String, lugar: String, ponto: Vector3) -> void:
 func _process(_delta: float) -> void:
 	if _player == null or _dica == null:
 		return
+	_balancar_os_folhetos()
 	var camera := get_viewport().get_camera_3d()
 	var em_jogo: bool = camera != null and camera == _player.get("camera") and _player.is_physics_processing()
 	var perto = mais_perto()
@@ -267,10 +282,168 @@ func _process(_delta: float) -> void:
 		"cordel": rotulo = _texto("dica_cordel")
 		"sinal": rotulo = _texto("dica_sinal")
 		"carta": rotulo = _texto("dica_carta")
-	DicaTecla.mostrar_em(_dica, camera, perto["ponto"] + Vector3(0.0, ALTURA_DICA, 0.0), rotulo)
+	var altura := ALTURA_DICA_CORDEL if str(perto["tipo"]) == "cordel" else ALTURA_DICA
+	DicaTecla.mostrar_em(_dica, camera, perto["ponto"] + Vector3(0.0, altura, 0.0), rotulo)
 	if perto["tipo"] == "sinal" and not _avisou_perto.has(perto["id"]):
 		_avisou_perto[perto["id"]] = true
 		_avisar(_texto("tem_alguma_coisa"))
+
+
+# --- o cordel no barbante -------------------------------------------------------
+
+## O CORDEL PENDURADO NO BARBANTE, como na feira: o folheto a cavalo na corda,
+## com a capa para fora — a xilogravura desenhada para ele, ou o bloco de sempre
+## enquanto ela não vem (`CapaDeCordel`) — e o verso do papel do outro lado. O
+## papel claro no chão era o que o jogador aprendia a catar; pendurado, o
+## folheto se anuncia como na feira, e a capa diz qual é.
+##
+## OS MOURÕES E A CORDA SÃO PEÇA PROVISÓRIA, cinza como a bancada da oficina: o
+## catálogo ainda não tem a corda de cordel, e a mecânica não espera o modelo.
+## Sem colisão — é marca, não parede —, e o giro é o primeiro em que os dois
+## mourões não entram em coisa sólida: no cemitério o folheto fica entre duas
+## covas, e atravessado o mourão furava a laje.
+const BARBANTE_VAO := 0.9
+const BARBANTE_ALTURA := 1.15
+## A capa do folheto, um tanto maior que os 11 por 16 cm de verdade: do tamanho
+## real, de longe, era um ponto claro e não um folheto.
+const FOLHETO := Vector2(0.24, 0.36)
+## O quanto cada metade do folheto se abre da vertical, a cavalo na corda.
+const ABERTURA := 0.16
+const ALTURA_DICA_CORDEL := 1.62
+const COR_MOURAO := Color(0.52, 0.53, 0.52)
+const COR_CORDA := Color(0.72, 0.62, 0.44)
+
+
+func _por_cordel(id: String, ponto: Vector3) -> void:
+	var suporte := Node3D.new()
+	suporte.name = "Achado_cordel_%s" % id
+	add_child(suporte)
+	suporte.global_position = ponto
+	suporte.rotation.y = _giro_livre(ponto)
+	var cinza := StandardMaterial3D.new()
+	cinza.albedo_color = COR_MOURAO
+	for lado in [-1.0, 1.0]:
+		var mourao := MeshInstance3D.new()
+		mourao.name = "Mourao_a" if lado < 0.0 else "Mourao_b"
+		var caixa := BoxMesh.new()
+		caixa.size = Vector3(0.05, BARBANTE_ALTURA + 0.08, 0.05)
+		mourao.mesh = caixa
+		mourao.material_override = cinza
+		suporte.add_child(mourao)
+		mourao.position = Vector3(lado * BARBANTE_VAO * 0.5, (BARBANTE_ALTURA + 0.08) * 0.5, 0.0)
+	# A corda barriga um pouco no meio, onde o folheto pesa.
+	var barriga := Vector3(0.0, BARBANTE_ALTURA - 0.05, 0.0)
+	for lado in [-1.0, 1.0]:
+		var corda := _corda(Vector3(lado * BARBANTE_VAO * 0.5, BARBANTE_ALTURA, 0.0), barriga)
+		corda.name = "Barbante_a" if lado < 0.0 else "Barbante_b"
+		suporte.add_child(corda)
+	var folheto := _folheto_pendurado(id)
+	suporte.add_child(folheto)
+	folheto.position = barriga
+	no_chao.append({"tipo": "cordel", "id": id, "lugar": "", "ponto": ponto, "no": suporte,
+		"folheto": folheto, "fase": float(absi(hash(id)) % 628) / 100.0})
+
+
+## Um pedaço de barbante de `de` até `ate`, no referencial do suporte.
+func _corda(de: Vector3, ate: Vector3) -> MeshInstance3D:
+	var fio := MeshInstance3D.new()
+	var cilindro := CylinderMesh.new()
+	cilindro.top_radius = 0.007
+	cilindro.bottom_radius = 0.007
+	cilindro.height = de.distance_to(ate)
+	cilindro.radial_segments = 5
+	cilindro.rings = 1
+	fio.mesh = cilindro
+	var tinta := StandardMaterial3D.new()
+	tinta.albedo_color = COR_CORDA
+	fio.material_override = tinta
+	# O cilindro nasce de pé; deita na direção da corda.
+	fio.basis = Basis(Quaternion(Vector3.UP, (ate - de).normalized()))
+	fio.position = (de + ate) * 0.5
+	return fio
+
+
+## O folheto a cavalo no barbante: a capa de um lado, o verso do outro, abertos
+## num V estreito a partir da corda.
+func _folheto_pendurado(id: String) -> Node3D:
+	var folheto := Node3D.new()
+	folheto.name = "Folheto"
+	var capa := StandardMaterial3D.new()
+	capa.albedo_texture = CapaDeCordel.textura(id)
+	capa.roughness = 1.0
+	capa.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC
+	# Um tanto de luz própria, como o papel no chão tinha: na sombra da venda o
+	# folheto ainda se acha.
+	capa.emission_enabled = true
+	capa.emission_texture = capa.albedo_texture
+	capa.emission = Color.WHITE
+	capa.emission_energy_multiplier = 0.22
+	var verso := StandardMaterial3D.new()
+	verso.albedo_color = CapaDeCordel.PAPEL
+	verso.roughness = 1.0
+	verso.emission_enabled = true
+	verso.emission = CapaDeCordel.PAPEL
+	verso.emission_energy_multiplier = 0.18
+	for lado in [1.0, -1.0]:
+		var folha := MeshInstance3D.new()
+		folha.name = "Capa" if lado > 0.0 else "Verso"
+		var quadro := QuadMesh.new()
+		quadro.size = FOLHETO
+		folha.mesh = quadro
+		folha.material_override = capa if lado > 0.0 else verso
+		# O alto da folha na corda, e ela pendendo aberta para o seu lado.
+		var giro := Basis(Vector3.RIGHT, -ABERTURA)
+		if lado < 0.0:
+			giro = Basis(Vector3.UP, PI) * giro
+		folha.basis = giro
+		folha.position = giro * Vector3(0.0, -FOLHETO.y * 0.5, 0.0)
+		folheto.add_child(folha)
+	return folheto
+
+
+## O vento da feira: cada folheto balança no seu compasso.
+func _balancar_os_folhetos() -> void:
+	var agora := float(Time.get_ticks_msec()) / 1000.0
+	for achado in no_chao:
+		var folheto = achado.get("folheto")
+		if folheto != null and is_instance_valid(folheto):
+			(folheto as Node3D).rotation.x = sin(agora * 1.4 + float(achado.get("fase", 0.0))) * 0.07
+
+
+## O GIRO EM QUE OS DOIS MOURÕES CABEM: prova quatro e fica com o primeiro em
+## que nenhum dos dois encosta em coisa sólida.
+func _giro_livre(ponto: Vector3) -> float:
+	if not is_inside_tree():
+		return 0.0
+	var espaco := get_viewport().world_3d.direct_space_state
+	for giro in [0.0, PI * 0.5, PI * 0.25, PI * 0.75]:
+		var livre := true
+		for lado in [-1.0, 1.0]:
+			var pe: Vector3 = ponto + Vector3(lado * BARBANTE_VAO * 0.5, 0.0, 0.0).rotated(Vector3.UP, giro)
+			if mourao_encosta(espaco, pe, ponto.y):
+				livre = false
+				break
+		if livre:
+			return giro
+	return 0.0
+
+
+## O mourão em pé em `pe` atravessa alguma coisa sólida? Mede do chão dele — ou
+## do piso, no píer — até a corda. Sólido é o que não anda: o Tonho em pé na
+## ponta do píer não é parede.
+func mourao_encosta(espaco: PhysicsDirectSpaceState3D, pe: Vector3, piso: float) -> bool:
+	var base := maxf(piso, float(_world.ground_height_at(pe)))
+	var pergunta := PhysicsShapeQueryParameters3D.new()
+	var forma := CapsuleShape3D.new()
+	forma.radius = 0.05
+	forma.height = BARBANTE_ALTURA - 0.25
+	pergunta.shape = forma
+	pergunta.transform = Transform3D(Basis(), Vector3(pe.x, base + 0.2 + forma.height * 0.5, pe.z))
+	pergunta.collision_mask = 1
+	for toque in espaco.intersect_shape(pergunta, 8):
+		if toque.get("collider") is StaticBody3D:
+			return true
+	return false
 
 
 ## O achado ao alcance do jogador, ou null.

@@ -26,6 +26,24 @@ atualize esse arquivo e este documento juntos.
 
 ## Em desenvolvimento — 03/10/2026
 
+- **Os cordéis no estilo do vale: o folheto em alta, a capa de cada um e o barbante da
+  feira.** O folheto veio do 2D desenhado em 640x360 e era ampliado duas vezes no vale,
+  com a letra borrada; agora é medido na tela do vale (1280x720), nas letras da Crônica
+  do Recôncavo — o título em Cinzel em cima da capa, o verso em Cormorant, a nota em
+  Cormorant itálico —, e a capa de cada folheto é a xilogravura desenhada para ele
+  (`assets/prototipo_3d/cordeis/<id>.png`) ou, enquanto ela não vem, o bloco de sempre
+  (`capa_de_cordel.gd`). No vale o cordel deixou de ser o papel claro no chão: pende
+  num barbante entre dois mourões, como na feira, a cavalo na corda, com a capa para
+  fora e balançando no vento; os mourões e a corda são peça provisória, cinza como a
+  bancada da oficina, até o catálogo ter a corda de cordel, e o giro deles é o primeiro
+  em que não entram em coisa sólida — no cemitério ele fica entre duas covas. O do
+  mirante estava no meio da caixa de colisão do mirante, onde ninguém chegava, e foi
+  para o pé dele; o da capela velha ficava a três palmos do lugar da reza de lá, e o
+  marco, que recebe o E primeiro, não o deixava ser pego — foi para o lado da porta. As capas desenhadas são geração paga: `tools/openai/gerar-capas-cordeis.ps1`
+  mostra o plano e o custo estimado (`-Estimar`) antes de gastar, e as cenas de cada
+  folheto moram em `tools/openai/capas_cordeis.json`, sem letra na imagem — o título
+  quem imprime é o jogo (`tests/folheto.gd` e `tests/achados_no_vale.gd`, falsificados
+  de sete jeitos).
 - **O cemitério do Damião: mais mato, o conserto das lajes, o cercado e a capelinha de
   costas para o mar.** A missão do cemitério tinha quatro pés de capim e acabava no
   corte. Agora são oito, e depois deles vem o mato que levanta laje — quatro embaúbas
