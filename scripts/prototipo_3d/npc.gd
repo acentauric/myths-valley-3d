@@ -96,6 +96,12 @@ var _refazer_em := 0.0
 ## seguinte e raspar nela.
 const REFAZER_CAMINHO := 4.0
 const PONTO_ALCANCADO := 0.35
+## DAR PASSAGEM: o passo para fora do caminho e quanto tempo se fica fora dele,
+## o bastante para quem empurrou passar. Ver `dar_passagem`.
+const PASSAGEM_PASSO := 1.4
+const PASSAGEM_DURA := 2.5
+var _passagem_ate := Vector3.INF
+var _passagem_resta := 0.0
 
 
 ## Anda até `ponto` (em vez do posto do período), na `velocidade` dada, até liberar().
@@ -107,6 +113,58 @@ func ir_ate(ponto: Vector3, velocidade: float = 2.6) -> void:
 ## Volta ao posto do período.
 func liberar() -> void:
 	_destino_avulso = Vector3.INF
+
+
+## Já no posto do período, sem andar até ele: a carga de uma partida põe cada
+## um onde ele estaria.
+func ir_ao_posto_agora() -> void:
+	_posto = _posto_de_agora()
+	_alvo = _posicao_do_posto(_posto)
+	if _alvo != Vector3.ZERO:
+		global_position = _alvo + Vector3(0, 0.05, 0)
+		velocity = Vector3.ZERO
+
+
+## DAR PASSAGEM. Morador parado no caminho é parede que fala: o Pedro entrou
+## atrás do jogador na casa herdada, parou no vão da porta, e "não consigo mais
+## sair de casa". Quem anda contra um morador — o jogador, pelo
+## `player_controller._empurrar_quem_barra` — faz ele sair do caminho: DE LADO,
+## se há lado; ADIANTE, na direção do empurrão, se o lado é parede — no vão da
+## porta, adiante é para fora dela. Fica fora do caminho `PASSAGEM_DURA`
+## segundos, e então volta ao que fazia.
+func dar_passagem(empurrao: Vector3) -> void:
+	if _passagem_resta > 0.0:
+		return
+	var rumo := Vector3(empurrao.x, 0.0, empurrao.z)
+	if rumo.length() < 0.01:
+		return
+	rumo = rumo.normalized()
+	var lado := rumo.cross(Vector3.UP).normalized()
+	# Do chão um palmo acima, para o roçar do pé no chão não contar como parede.
+	var de := global_transform.translated(Vector3.UP * 0.12)
+	for saida in [lado, -lado, rumo, (rumo + lado).normalized(), (rumo - lado).normalized()]:
+		var passo: Vector3 = saida * PASSAGEM_PASSO
+		if not test_move(de, passo):
+			_passagem_ate = global_position + passo
+			_passagem_resta = PASSAGEM_DURA
+			return
+
+
+func dando_passagem() -> bool:
+	return _passagem_resta > 0.0
+
+
+## Um pulso de quem está dando passagem: anda até o lugar de fora do caminho e
+## espera lá o resto do tempo. Devolve se ainda está dando passagem.
+func _andar_dando_passagem(delta: float) -> bool:
+	if _passagem_resta <= 0.0:
+		return false
+	_passagem_resta -= delta
+	var falta := _passagem_ate - global_position
+	falta.y = 0.0
+	var direcao := falta.normalized() if falta.length() > 0.12 else Vector3.ZERO
+	_mover(direcao, VELOCIDADE * 1.3, delta)
+	return true
 
 
 func configurar(d: Dictionary, anc: Dictionary, alvo_jogador: Node3D, mundo: Node3D = null) -> void:
@@ -204,6 +262,10 @@ func _montar_modelo() -> void:
 
 
 func _physics_process(delta: float) -> void:
+	if _andar_dando_passagem(delta):
+		_atualizar_animacao(delta)
+		_atualizar_interacao(delta)
+		return
 	var posto := _posto_de_agora()
 	if posto != _posto:
 		_caminho_da_festa = posto == POSTO_DA_FESTA or _posto == POSTO_DA_FESTA

@@ -33,6 +33,12 @@ const SEGUIR_MAX := 4.6
 const CORRER_ALEM := 9.5
 const ANDAR := 2.1
 const CORRER := 5.2
+## OS CÔMODOS EM QUE ELE NÃO ENTRA: a casa herdada é de quatro por quatro, e a
+## quatro passos e meio do jogador o lugar dele era o vão da porta — o jogador
+## entrou para dormir e não saiu mais. Ali ele espera do lado de fora, de lado
+## para a porta (`Comodo.lugar_de_esperar_fora`). Na igreja, que é larga, ele
+## entra junto.
+const ESPERA_FORA := ["casa"]
 
 ## Criada no `_init`, e não no `_ready`, de propósito: o `Prototype` escreve
 ## `pedro.recursos` e o save escreve `pedro.missao`, e propriedade que cai no
@@ -83,6 +89,14 @@ func _ready() -> void:
 	add_child(_cadeia)
 
 
+## O TUTORIAL ACABOU — as nove primeiras missões e a despedida —, e o Pedro
+## para de seguir: volta à vida de pescador, nos postos dele (`npcs_3d.json`,
+## "guia"), e quem quer falar com ele vai até ele. As missões do arraial abrem
+## assim, chegando perto dele (`prototype._pendurar_cadeia`, 6 de raio).
+func terminou_o_tutorial() -> bool:
+	return _cadeia.acabou() and _cadeia.despedida_feita
+
+
 func _physics_process(delta: float) -> void:
 	if jogador == null:
 		return
@@ -90,6 +104,13 @@ func _physics_process(delta: float) -> void:
 	# estar de pé, e ela não anda sem saber de quem se aproximar.
 	if _cadeia.jogador == null:
 		_cadeia.jogador = jogador
+	if terminou_o_tutorial():
+		super(delta)
+		return
+	if _andar_dando_passagem(delta):
+		_atualizar_animacao(delta)
+		_atualizar_interacao(delta)
+		return
 	# O PEDRO ENTRA JUNTO. Com o jogador dentro da igreja e ele fora (ou o
 	# contrário), seguir em linha reta era empurrar a parede: o caminho passa
 	# pela porta, ponto a ponto (`Interiores.passagem`), e só depois volta a
@@ -99,9 +120,20 @@ func _physics_process(delta: float) -> void:
 	var basta := SEGUIR_MAX
 	var interiores := get_tree().get_first_node_in_group("interiores")
 	if interiores != null:
-		alvo = interiores.passagem(global_position, onde_esta)
-		if not alvo.is_equal_approx(onde_esta):
+		var sala_do_jogador: String = interiores.contem(onde_esta)
+		if sala_do_jogador in ESPERA_FORA:
+			# Na casa ele não entra: espera de lado para a porta, do lado de fora
+			# — e, se já estava dentro, sai pela porta primeiro.
+			var sala = interiores.sala_de(sala_do_jogador)
+			var espera: Vector3 = sala.lugar_de_esperar_fora()
+			if terreno != null:
+				espera = terreno.ground_position(espera, 0.05)
+			alvo = interiores.passagem(global_position, espera)
 			basta = 0.35
+		else:
+			alvo = interiores.passagem(global_position, onde_esta)
+			if not alvo.is_equal_approx(onde_esta):
+				basta = 0.35
 	var para_jogador := alvo - global_position
 	para_jogador.y = 0.0
 	var distancia := para_jogador.length()

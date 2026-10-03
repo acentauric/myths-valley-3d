@@ -26,6 +26,20 @@ atualize esse arquivo e este documento juntos.
 
 ## Em desenvolvimento — 03/10/2026
 
+- **Ninguém prende o jogador numa porta, e o Pedro para de seguir depois do tutorial.**
+  "Ao entrar na casa para dormir, o Pedro me seguiu e bloqueou a porta. Não consigo mais
+  sair de casa." O Pedro seguia o jogador a partida inteira e entrava junto nos cômodos;
+  na casa herdada, de quatro por quatro, o lugar dele a quatro passos e meio era o vão da
+  porta. Agora, durante o tutorial, ele não entra na casa: espera do lado de fora, de lado
+  para a porta (`Comodo.lugar_de_esperar_fora`), e se já estava dentro, sai. E quem barra
+  o caminho dá passagem: andando contra um morador, de frente, ele sai do caminho — de
+  lado, se há lado; adiante, para fora do vão, se o lado é parede — e espera dois
+  segundos e meio para o jogador passar (`MoradorNPC.dar_passagem`). Depois das nove
+  missões do tutorial e da despedida, o Pedro volta à vida de pescador, nos postos dele
+  (píer, praça, venda), e as missões do arraial abrem chegando perto dele; a despedida
+  diz isso ("o Pedro volta pro píer, que é onde você o acha"). Portão novo
+  `tests/passagem.gd`, falsificado de três jeitos — o Pedro entrando na casa, o jogador
+  sem pedir passagem (a queixa, reproduzida: preso em casa) e o Pedro seguindo para sempre.
 - **As capas dos cordéis: uma xilogravura para cada folheto.** As dez capas foram
   geradas no OpenAI `gpt-image-2` (qualidade média, US$ 0,41 as dez, com o custo
   mostrado antes) pelo `tools/openai/gerar-capas-cordeis.ps1`, cada uma com a cena do

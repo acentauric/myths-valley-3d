@@ -156,6 +156,15 @@ func soleira_de_fora() -> Vector3:
 	return to_global(Vector3(porta_x, -altura_da_soleira + 0.05, PAREDE + fundo_da_porta + afastamento_de_fora))
 
 
+## UM LUGAR DE ESPERAR DO LADO DE FORA: diante da fachada, do lado da porta que
+## tem mais parede, e fora do corredor dela — quem espera ali não fecha a
+## passagem. É onde o Pedro espera o jogador que entrou em casa.
+func lugar_de_esperar_fora() -> Vector3:
+	var lado := -1.0 if porta_x >= 0.0 else 1.0
+	var x := clampf(porta_x + lado * (largura_da_porta * 0.5 + 0.9), -largura * 0.5 - 0.6, largura * 0.5 + 0.6)
+	return to_global(Vector3(x, -altura_da_soleira + 0.05, PAREDE + fundo_da_porta + afastamento_de_fora + 0.9))
+
+
 ## NO CORREDOR DA PORTA: alinhado com o vão, entre um pouco antes da soleira de
 ## dentro e um pouco depois da de fora. Quem está aqui atravessa a porta em
 ## linha reta; quem não está vai primeiro até a soleira do seu lado.

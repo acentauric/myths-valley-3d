@@ -452,6 +452,7 @@ func _physics_process(delta: float) -> void:
 		velocity.y = -0.1
 	var distance_before := _distance_to_next_waypoint()
 	move_and_slide()
+	_empurrar_quem_barra(direction)
 	_subir_degrau(direction)
 	_atualizar_vigor(delta, corrida_ativa)
 	if _run_toggled and _ran_since_toggle and direction.length_squared() <= 0.01 and Vector2(velocity.x, velocity.z).length_squared() <= RUN_STOP_SPEED * RUN_STOP_SPEED:
@@ -749,6 +750,25 @@ func step_interval() -> float:
 	if intervalo <= 0.05:
 		intervalo = 0.32 if is_running() else 0.48
 	return intervalo
+
+
+## QUEM BARRA O CAMINHO DÁ PASSAGEM. Andando contra um morador — de frente, e
+## não roçando de lado —, ele sai do caminho (`MoradorNPC.dar_passagem`). Era a
+## queixa: o Pedro parou no vão da porta da casa herdada, e o jogador não saía
+## mais de casa. Vale para qualquer morador, em qualquer porta ou corredor.
+func _empurrar_quem_barra(direcao: Vector3) -> void:
+	if direcao.length_squared() < 0.01:
+		return
+	var rumo := Vector3(direcao.x, 0.0, direcao.z).normalized()
+	for i in get_slide_collision_count():
+		var colisao := get_slide_collision(i)
+		var corpo := colisao.get_collider()
+		if corpo == null or not corpo.has_method("dar_passagem"):
+			continue
+		var empurrao := -colisao.get_normal()
+		empurrao.y = 0.0
+		if empurrao.length_squared() > 0.0001 and empurrao.normalized().dot(rumo) > 0.3:
+			corpo.dar_passagem(empurrao)
 
 
 ## Bordas baixas (a areia da praia saindo da água, meio-fio, rampa do píer) viram

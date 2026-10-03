@@ -1,11 +1,13 @@
 {
-  "observacao": "Moradores do arraial no protótipo 3D. Cada posto é [nome de âncora de world_builder.ancoras, deslocamento em unidades]. As falas são a primeira linha da apresentação em data/dialogos/aldeoes.json; a saudação em áudio (ElevenLabs, pt-BR) fica em assets/audio/vozes/<saudacao>.mp3. Pedro é o guia (scripts/prototipo_3d/guia_pedro.gd) e não tem postos: acompanha o jogador. gesto_saudacao indexa os gestos do humanoide procedural; gesto_tripo, os clipes do GLB com rig (authored_animator.gd: 0 saudação, 1 tchau, 2 concordar, 3 olhar ao redor).",
+  "observacao": "Moradores do arraial no protótipo 3D. Cada posto é [nome de âncora de world_builder.ancoras, deslocamento em unidades]. As falas são a primeira linha da apresentação em data/dialogos/aldeoes.json; a saudação em áudio (ElevenLabs, pt-BR) fica em assets/audio/vozes/<saudacao>.mp3. Pedro é o guia (scripts/prototipo_3d/guia_pedro.gd): acompanha o jogador durante o tutorial e, depois dele, vai para os postos dele (guia.postos). gesto_saudacao indexa os gestos do humanoide procedural; gesto_tripo, os clipes do GLB com rig (authored_animator.gd: 0 saudação, 1 tchau, 2 concordar, 3 olhar ao redor).",
   "guia": {
     "id": "pedro",
     "nome": "Pedro",
     "altura": 1.75,
     "gesto_saudacao": 0,
     "gesto_tripo": 0,
+    "observacao_postos": "DEPOIS DO TUTORIAL o Pedro para de seguir o jogador e volta à vida de pescador (guia_pedro.terminou_o_tutorial): de manhã e de tarde no píer, ao lado do Tonho; ao entardecer na praça; de noite na venda. Só âncoras que o vale sempre tem — âncora que falta vira a origem do mundo.",
+    "postos": {"manha": ["PierPiso", [1.4, 0, 2.6]], "tarde": ["PierPiso", [-1.2, 0, 3.4]], "entardecer": ["Praça", [2.6, 0, 6.0]], "noite": ["Venda do Bar", [-1.8, 0, 4.4]], "madrugada": ["Venda do Bar", [-1.8, 0, 4.4]]},
     "voz": {
       "id": "YbP0Eq5RE5uOoCEl7F3T",
       "nome": "Weverton - Youthful, Energetic and Clear",

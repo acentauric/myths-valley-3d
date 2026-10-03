@@ -129,8 +129,8 @@
     }
   ],
   "arremate": {
-    "texto": "Você conheceu o arraial. Explore o vale como quiser — Pedro fica por perto.",
-    "texto_en": "You've seen the village. Explore the valley as you please — Pedro stays close by.",
-    "texto_es": "Ya conociste el pueblo. Explora el valle a tu gusto — Pedro se queda cerca."
+    "texto": "Você conheceu o arraial. Explore o vale como quiser — o Pedro volta pro píer, que é onde você o acha.",
+    "texto_en": "You've seen the village. Explore the valley as you please — Pedro goes back to the pier, where you'll find him.",
+    "texto_es": "Ya conociste el pueblo. Explora el valle a tu gusto — Pedro vuelve al muelle, donde lo encontrarás."
   }
 }

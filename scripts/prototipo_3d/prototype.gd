@@ -1498,7 +1498,11 @@ func restaurar_do_save(estado: Dictionary) -> void:
 		# abertura do jogo de novo ao voltar, como se a partida recomeçasse. O
 		# que volta é o objetivo — caderno e marcador. Ver `CadeiaDeMissoes.retomar`.
 		pedro.retomar()
-		pedro.global_position = world.ground_position(player.global_position + Vector3(-1.6, 0, 1.4), 0.05)
+		# Durante o tutorial ele volta ao lado do jogador; depois dele, no posto dele.
+		if pedro.terminou_o_tutorial():
+			pedro.ir_ao_posto_agora()
+		else:
+			pedro.global_position = world.ground_position(player.global_position + Vector3(-1.6, 0, 1.4), 0.05)
 	var luta := get_node_or_null("Luta")
 	if luta != null:
 		luta.restaurar_mortes(estado.get("mortes", []))
