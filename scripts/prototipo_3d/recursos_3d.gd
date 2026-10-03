@@ -173,6 +173,9 @@ func _process(_delta: float) -> void:
 ## longe do próprio centro — e aí "encoste e aperte E" volta a ser verdade para
 ## qualquer tamanho de peça.
 ##
+## NA LAVOURA, A TECLA É DELA: os pés de cana e a lenha da beira do roçado
+## ficam a um alcance do campo, e o E que ara o leito batia na cana.
+##
 ## E A PAREDE SEPARA. A lenha da casa de taipa fica do lado de fora da parede
 ## direita, perto o bastante para o alcance passar por ela: de dentro da casa,
 ## junto do fogão, o E oferecia a lenha. Quem está dentro de um cômodo só
@@ -180,6 +183,9 @@ func _process(_delta: float) -> void:
 func _mais_perto() -> String:
 	var melhor := ""
 	var menor := INF
+	var lavoura := get_tree().get_first_node_in_group("lavoura") if is_inside_tree() else null
+	if lavoura != null and lavoura.no_campo(_jogador.global_position):
+		return ""
 	var interiores := get_tree().get_first_node_in_group("interiores") if is_inside_tree() else null
 	var lado_do_jogador: String = interiores.contem(_jogador.global_position) if interiores != null else ""
 	for id in _alvos:

@@ -10,7 +10,10 @@ extends Node
 ##   - O BAÚ DA CASA abre a tela da mochila com ele do lado
 ##     (`Mochila.abrir_bau`), doze espaços, e a tela mexe no próprio Array: o
 ##     save guarda o que está lá sem ninguém precisar sincronizar. A partida
-##     nova o acha com dois beijus — a comida da casa do 2D (`COMIDA_DA_CASA`).
+##     nova o acha com dois beijus — a comida da casa do 2D (`COMIDA_DA_CASA`)
+##     — e com o que o finado deixou para a roça: o balde e o punhado de maniva
+##     do baú da varanda do 2D (`Mundo.ITENS_INICIAIS`). A enxada, que lá
+##     também estava, aqui vem do Pedro.
 
 const TEXTOS := "res://data/casa.json"
 const IdiomaMenu = preload("res://scripts/prototipo_3d/idioma_menu.gd")
@@ -24,6 +27,8 @@ const ALTURA_DA_DICA := 0.5
 const BAU_CABE := 12
 const COMIDA_DA_CASA := "beiju"
 const COMIDA_QUANTOS := 2
+## "Enxada, balde e um punhado de maniva. Era o que o velho tinha."
+const DO_FINADO := ["balde", "semente_mandioca"]
 
 var _jogador: Node3D
 var _hud
@@ -138,6 +143,8 @@ func _por_a_comida_da_casa() -> void:
 		return
 	_comida_posta = true
 	bau.append({"id": COMIDA_DA_CASA, "qtd": COMIDA_QUANTOS})
+	for id in DO_FINADO:
+		bau.append({"id": id, "qtd": 1})
 
 
 func estado_para_salvar() -> Dictionary:

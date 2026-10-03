@@ -35,6 +35,7 @@ const TeiaSocial = preload("res://scripts/prototipo_3d/teia_social.gd")
 const Retratos3D = preload("res://scripts/prototipo_3d/retratos_3d.gd")
 const Interiores = preload("res://scripts/prototipo_3d/interiores.gd")
 const CasaDoJogador = preload("res://scripts/prototipo_3d/casa_do_jogador.gd")
+const LavouraVale = preload("res://scripts/prototipo_3d/lavoura_vale.gd")
 const MENU_SCENE := "res://scenes/prototipo_3d/abertura.tscn"
 ## Raio de terra firme em volta do ponto de chegada.
 const RAIO_CHEGADA := 6.0
@@ -109,6 +110,8 @@ var interiores
 ## que vira por três portas (`queda.gd`).
 var casa: Node
 var noite: Node
+## A lavoura da casa, a fazenda do jogador (`lavoura_vale.gd`, #8).
+var lavoura: Node3D
 ## As plaquinhas de nome dos moradores; somem com tela aberta (placas_nomes.gd).
 var placas
 ## A aba pedida no último `abrir_o_painel`, entregue à abertura crua.
@@ -751,6 +754,10 @@ func _montar_moradores(spawn: Vector3) -> void:
 	casa.name = "CasaDoJogador"
 	add_child(casa)
 	casa.configurar(player, hud, interiores, queda)
+	lavoura = LavouraVale.new()
+	lavoura.name = "Lavoura"
+	add_child(lavoura)
+	lavoura.configurar(world, player, hud)
 	# A pesca (pesca_vale.gd). Entra ANTES dos achados: com a vara na mão, o E
 	# ainda pega o cordel do píer. Ferrar o peixe escuta em `_input`, e esse
 	# vem antes de tudo — a janela é de três quartos de segundo.
@@ -1390,6 +1397,9 @@ func estado_para_salvar() -> Dictionary:
 	# O BAÚ DA CASA, como no 2D (`travas.bau_da_casa`).
 	if casa != null:
 		estado["casa"] = casa.estado_para_salvar()
+	# A LAVOURA inteira: cada leito é escolha do jogador, e nada se recalcula.
+	if lavoura != null:
+		estado["lavoura"] = lavoura.estado_para_salvar()
 	return estado
 
 
@@ -1458,6 +1468,8 @@ func restaurar_do_save(estado: Dictionary) -> void:
 		luta.restaurar_mortes(estado.get("mortes", []))
 	if casa != null and estado.has("casa"):
 		casa.restaurar(estado["casa"])
+	if lavoura != null and estado.has("lavoura"):
+		lavoura.restaurar(estado["lavoura"])
 
 
 ## DEPURAÇÃO: `-- --lugar=<nome>` começa o jogador direto num lugar do

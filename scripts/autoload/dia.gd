@@ -140,8 +140,9 @@ func definir_hora(nova: float) -> void:
 ##
 ## O DIA NÃO VIRA SOZINHO, e é de propósito. No 2D o contador só avança quando
 ## o jogador dorme ou desmaia, para a noite acontecer dentro do dia corrente.
-## O vale ainda não tem cama; quando tiver, ela chama `Relogio.dormir()` e o
-## resto segue por conta.
+## No vale é igual: a cama da casa herdada, a queda e o desmaio das duas
+## (`passou_das_duas`) viram a noite pela `queda.gd`, que chama
+## `Relogio.dormir()` e escreve a hora de acordar.
 func _espelhar_no_calendario() -> void:
 	var calendario := get_node_or_null("/root/Relogio")
 	if calendario == null:

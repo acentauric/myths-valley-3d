@@ -1162,8 +1162,10 @@ func _alinhar_colisao_coqueiro(visual: Node3D, corpo: StaticBody3D) -> void:
 
 ## A LAVOURA DA CASA (#8), na frente dela, depois da cana e da lenha: o chão
 ## aberto do roçado, onde a fazenda do jogador planta. No referencial da casa
-## (`_na_casa`), para girar com ela.
-const LAVOURA_NA_CASA := Vector3(4.0, 0.0, 11.5)
+## (`_na_casa`), para girar com ela. LONGE DOS PÉS DE CANA: no campo a tecla é
+## da lavoura, e pé de cana dentro dele ou na beira ficaria sem tecla — dois
+## ficavam, a onze e meio da casa.
+const LAVOURA_NA_CASA := Vector3(4.0, 0.0, 14.0)
 ## O canteiro velho de mandioca, a leste da lavoura. Morava no meio do roçado
 ## — que a casa passou a ocupar —, e com a casa aberta por dentro ele aparecia
 ## no meio da sala.

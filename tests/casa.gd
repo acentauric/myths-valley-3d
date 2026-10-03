@@ -228,7 +228,11 @@ func _run() -> void:
 	_conferir(not no_save.is_empty(), "o save não guarda o baú da casa")
 	casa.bau.clear()
 	casa.restaurar(no_save)
-	_conferir(casa.bau.size() == 1 and str(casa.bau[0].get("id", "")) == "beiju", "o baú não voltou do save como estava")
+	_conferir(casa.bau == no_save.get("bau", []), "o baú não voltou do save como estava")
+	var tem := {}
+	for monte in casa.bau:
+		tem[str(monte.get("id", ""))] = true
+	_conferir(tem.has("balde") and tem.has("semente_mandioca"), "o baú da partida nova não tem o balde e a maniva do finado")
 
 	# --- 8. A PAREDE SEPARA O ALCANCE ----------------------------------------------
 	# Um alvo de teste dois palmos do lado de fora da parede da direita, e o

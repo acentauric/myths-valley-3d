@@ -28,6 +28,8 @@ extends SceneTree
 ##      lista. A CAMA (#50) entrou assim: ela vira a noite pelo mesmo
 ##      `queda.gd`, e devolve o fôlego do sono (`Energia.dormir()`) — o portão
 ##      dela é o `tests/casa.gd`.
+##      E A LAVOURA (#8): arar, plantar, regar e colher cobram como no roçado do
+##      2D, e o portão dela é o `tests/lavoura.gd`.
 ##   5. O HUD MOSTRA (#3). A barra de fôlego acompanha o número, e abaixo do
 ##      limiar muda de cor e diz "cansado" — o corpo já sentia, e quem joga
 ##      não sabia por quê.
@@ -107,8 +109,10 @@ func _run() -> void:
 	# Chamada é linha de CÓDIGO: comentário que cita a função (e o `queda.gd`
 	# cita) não pode contar como chamada, nem para acusar nem para absolver.
 	# A cama (`queda.gd`, #50) devolve o fôlego do sono; o portão dela é o
-	# `tests/casa.gd`, que confere quanto.
-	var podem_gastar := ["/recursos_3d.gd", "/luta_vale.gd", "/queda.gd"]
+	# `tests/casa.gd`, que confere quanto. A lavoura (`lavoura_vale.gd`, #8)
+	# cobra arar, plantar, regar e colher como o roçado do 2D; o portão dela é o
+	# `tests/lavoura.gd`.
+	var podem_gastar := ["/recursos_3d.gd", "/luta_vale.gd", "/queda.gd", "/lavoura_vale.gd"]
 	var gasta_sem_portao: Array[String] = []
 	var desmaia_fora_da_queda := false
 	var desmaia := RegEx.create_from_string("(?m)^[ \\t]+[^#\\n]*Energia\\.desmaiar\\(")
@@ -173,7 +177,7 @@ func _run() -> void:
 func _fechar() -> void:
 	print("")
 	if falhas == 0:
-		print("FOLEGO_OK: Progressao e Energia subiram com os números do 2D, o cansaço encurta o passo para 62% e o corpo lê isso; quem gasta fôlego é o trabalho e a luta, a cama devolve o do sono, e só a queda desmaia; o HUD mostra o fôlego e o cansaço")
+		print("FOLEGO_OK: Progressao e Energia subiram com os números do 2D, o cansaço encurta o passo para 62% e o corpo lê isso; quem gasta fôlego é o trabalho, a lavoura e a luta, a cama devolve o do sono, e só a queda desmaia; o HUD mostra o fôlego e o cansaço")
 	else:
 		print("folego: %d falha(s)" % falhas)
 	quit(1 if falhas > 0 else 0)

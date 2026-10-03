@@ -26,6 +26,20 @@ atualize esse arquivo e este documento juntos.
 
 ## Em desenvolvimento — 03/10/2026
 
+- **A fazenda da casa: a lavoura na frente dela, com a regra do roçado do 2D** (#8).
+  O roçado tinha a casa no meio e nenhum lugar de plantar. Agora há uma lavoura de
+  quatro fileiras de seis leitos no chão aberto na frente da casa, depois da cana e da
+  lenha, e o gesto é o do 2D: o que está na mão decide — a enxada ara, o balde molha, a
+  semente planta e gasta uma, a mão livre colhe o que está no ponto —, e cada gesto que
+  não cabe diz por quê ("Chão bruto. A enxada abre o leito."). A regra veio inteira
+  (`plantacao.gd`): só cresce o que foi regado, todo leito amanhece seco, a qualidade
+  da colheita vem do cuidado, a cana rebrota, as fruteiras passam a carência, e o
+  inverno para a roça. O dia que vira — a cama, a queda, o desmaio das duas — faz
+  crescer. As plantas são peças que o catálogo já tinha: o capim é o broto, o canteiro
+  de mandioca é a mandioca crescida, a cana é a cana, e as fruteiras são as árvores da
+  vila, pequenas. No campo a tecla é da lavoura: os pés de cana da beira calam. O baú da
+  casa traz o que o finado deixou para a roça no 2D — o balde e a maniva; a enxada vem
+  do Pedro. A lavoura vai no save (`tests/lavoura.gd`, falsificado de cinco jeitos).
 - **A casa herdada abre por dentro, e a cama vira o dia** (#50, #26). A barreira era o
   dia que não virava: o vale não tinha cama, e o calendário só andava quando o jogador
   caía. Agora a casa de taipa do roçado tem cômodo no lugar dela — chão de terra batida,

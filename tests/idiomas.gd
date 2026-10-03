@@ -46,6 +46,8 @@ const TRADUZIDOS := {
 	# O "titulo" fica de fora da cobrança, e não da tradução: "Cama" é a mesma
 	# palavra em espanhol, e a regra da cópia reprovaria o certo.
 	"res://data/casa.json": ["texto", "pergunta"],
+	# E a lavoura (#8): o que a tecla diz no leito e os recados do gesto.
+	"res://data/lavoura.json": ["texto"],
 }
 
 ## O QUE AINDA NÃO ESTÁ NOS TRÊS, e por quê. Esvaziar esta lista é o trabalho;

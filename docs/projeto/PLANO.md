@@ -5,10 +5,12 @@ raiz. O jogo 2D segue sua própria linha em `acentauric/myths-valley`.
 
 ## O que já roda
 
-Exploração do vale, moradores, missões em âncoras com recompensa (#48) e
-diário de missões acompanhadas, calendário (com o registro das mudanças no
-relógio), energia, vida, inventário, equipamento, talentos, cartas, coleção,
-obras, pesca, cozinha, oficina, a fé (#52: os seis marcos, o rito, a troca, a
+Exploração do vale, moradores, missões em
+âncoras com recompensa (#48) e diário de missões acompanhadas, calendário (com
+o registro das mudanças no relógio), energia, vida, inventário, equipamento,
+talentos, cartas, coleção, obras, pesca, cozinha, oficina, a lavoura da casa
+(#8: arar, plantar, regar, crescer por dia regado e colher, com a regra do
+roçado do 2D), a fé (#52: os seis marcos, o rito, a troca, a
 teia da fé no K, as missões da Dona Zefa e de cada fé e a festa de cada uma,
 com os moradores no marco à tarde), os cômodos por dentro das próprias
 construções (#26: a igreja do Bom Jesus e a casa herdada, com a cama que vira o
