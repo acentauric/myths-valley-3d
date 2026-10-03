@@ -29,7 +29,9 @@ extends SceneTree
 ##      `queda.gd`, e devolve o fôlego do sono (`Energia.dormir()`) — o portão
 ##      dela é o `tests/casa.gd`.
 ##      E A LAVOURA (#8): arar, plantar, regar e colher cobram como no roçado do
-##      2D, e o portão dela é o `tests/lavoura.gd`.
+##      2D, e o portão dela é o `tests/lavoura.gd`. E O CORTE DAS ÁRVORES: cada
+##      golpe cobra bater × dureza da madeira, e o portão dele é o
+##      `tests/corte_das_arvores.gd`.
 ##   5. O HUD MOSTRA (#3). A barra de fôlego acompanha o número, e abaixo do
 ##      limiar muda de cor e diz "cansado" — o corpo já sentia, e quem joga
 ##      não sabia por quê.
@@ -111,8 +113,10 @@ func _run() -> void:
 	# A cama (`queda.gd`, #50) devolve o fôlego do sono; o portão dela é o
 	# `tests/casa.gd`, que confere quanto. A lavoura (`lavoura_vale.gd`, #8)
 	# cobra arar, plantar, regar e colher como o roçado do 2D; o portão dela é o
-	# `tests/lavoura.gd`.
-	var podem_gastar := ["/recursos_3d.gd", "/luta_vale.gd", "/queda.gd", "/lavoura_vale.gd"]
+	# `tests/lavoura.gd`. E O CORTE DAS ÁRVORES (`arvores_info.gd`): o golpe na
+	# árvore cobra bater × dureza da madeira, como o tronco caído; o portão dele
+	# é o `tests/corte_das_arvores.gd`, que confere quanto.
+	var podem_gastar := ["/recursos_3d.gd", "/luta_vale.gd", "/queda.gd", "/lavoura_vale.gd", "/arvores_info.gd"]
 	var gasta_sem_portao: Array[String] = []
 	var desmaia_fora_da_queda := false
 	var desmaia := RegEx.create_from_string("(?m)^[ \\t]+[^#\\n]*Energia\\.desmaiar\\(")

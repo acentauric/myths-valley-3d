@@ -1,5 +1,6 @@
 extends RefCounted
-## Recorta a malha do próprio coqueiro na altura do golpe, preservando seus materiais.
+## Recorta a malha da própria árvore na altura do golpe, preservando seus materiais.
+## Nasceu para o coqueiro e recorta qualquer malha: é o toco de toda árvore cortada.
 
 const ALTURA_DO_TOCO := 0.85
 
@@ -85,6 +86,18 @@ static func criar(partes: Array[Dictionary], pe: Vector3, raio_tronco: float) ->
 				ferramenta.set_material(material)
 			var adicionados := 0
 			for inicio in range(0, quantidade - 2, 3):
+				# A COPA FICA DE FORA ANTES DE CUSTAR: triângulo com os três cantos
+				# acima do corte não entra no toco, e numa árvore da mata são
+				# quase todos. Só a altura é conferida aqui; o resto do canto
+				# (normal, UV, cor) só se monta para quem fica.
+				var acima := true
+				for canto in range(3):
+					var no_canto: int = indices[inicio + canto] if not indices.is_empty() else inicio + canto
+					if (transformacao * vertices[no_canto]).y - pe.y <= ALTURA_DO_TOCO:
+						acima = false
+						break
+				if acima:
+					continue
 				var triangulo: Array[Dictionary] = []
 				for canto in range(3):
 					var indice: int = indices[inicio + canto] if not indices.is_empty() else inicio + canto

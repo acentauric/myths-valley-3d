@@ -70,7 +70,7 @@ var _saindo := false
 var mapa	# mapa_jogo.gd
 var _recursos  # recursos_3d.gd — os alvos de trabalho (troncos, lajedos)
 var lapides	# lapides.gd
-var _arvores_info	# arvores_info.gd — saúde e regeneração dos coqueiros
+var _arvores_info	# arvores_info.gd — as fichas, o corte e o ano de crescer das árvores
 ## Modo de câmera de antes da pausa, para o retorno devolver o que havia.
 ## As filas de missão penduradas em moradores, por id do morador — para o save
 ## e para quem precise achá-las. A do Pedro NÃO está aqui: ela mora dentro do
@@ -1423,7 +1423,7 @@ func estado_para_salvar() -> Dictionary:
 	# cuida sozinho dos autoloads que ele conhece, e este é novo.
 	estado["caderno"] = CadernoDoVale.estado()
 	if _arvores_info != null:
-		estado["coqueiros_cortados"] = _arvores_info.estado_para_salvar()
+		estado["arvores_cortadas"] = _arvores_info.estado_para_salvar()
 	if pedro != null:
 		estado["pedro"] = {"missao": pedro.missao, "iniciado": pedro.get("_iniciado"),
 			"despedida": pedro.get("_despedida_feita")}
@@ -1488,7 +1488,8 @@ func restaurar_do_save(estado: Dictionary) -> void:
 	if estado.has("caderno"):
 		CadernoDoVale.restaurar(estado["caderno"])
 	if _arvores_info != null:
-		_arvores_info.restaurar_do_save(estado.get("coqueiros_cortados", []))
+		# A chave velha é a do tempo em que só o coqueiro se cortava.
+		_arvores_info.restaurar_do_save(estado.get("arvores_cortadas", estado.get("coqueiros_cortados", [])))
 	var guia: Dictionary = estado.get("pedro", {})
 	if pedro != null and not guia.is_empty():
 		pedro.set("_iniciado", bool(guia.get("iniciado", false)))

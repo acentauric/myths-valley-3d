@@ -183,8 +183,9 @@ func _process(delta: float) -> void:
 	_atualizar_pose_machado(delta)
 
 
+## Machado de ferro ou de aço: os dois são da família do machado (`Catalogo.familia`).
 func machado_na_mao() -> bool:
-	return Equipamento.em_uso("machado")
+	return Equipamento.da_familia_em_uso("machado") != ""
 
 
 func travar_acao_de_golpe(duracao: float, aguardar_animacao: bool) -> void:

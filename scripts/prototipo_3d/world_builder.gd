@@ -235,72 +235,126 @@ func arvores() -> Array[Dictionary]:
 	return lista
 
 
-func cortar_coqueiro(posicao: Vector3) -> bool:
-	var ponto := Vector2(posicao.x, posicao.z)
-	for indice in range(_arvores_nomeadas.size()):
-		var arvore: Dictionary = _arvores_nomeadas[indice]
-		if arvore.get("especie", "") != "coqueiro" or arvore.get("cortado", false):
-			continue
-		var pe: Vector3 = arvore["pos"]
-		if Vector2(pe.x, pe.z).distance_squared_to(ponto) > 0.01:
-			continue
-		var original := arvore.get("visual") as Node3D
-		if original == null:
-			return false
+## CORTA A ÁRVORE que tem o pé neste ponto — qualquer espécie, plantada à mão
+## (`_arvore`) ou da mata, da orla e da beira do rio (`_region`). O visual
+## some, a colisão sai, e no lugar fica o toco: a malha da própria árvore
+## recortada na altura do golpe (`CoqueiroCortado`, que nasceu para o coqueiro
+## e recorta qualquer malha). Devolve false se não há árvore de pé ali.
+##
+## `deixar_toco` falso é para a carga da partida, quando a árvore já passou do
+## toco: recortar a malha só para jogá-la fora no mesmo quadro é o passo caro.
+func cortar_arvore(posicao: Vector3, deixar_toco: bool = true) -> bool:
+	var indice := _indice_da_nomeada(posicao, false)
+	if indice < 0:
+		return _region.cortar_arvore(posicao, deixar_toco) if _region != null else false
+	var arvore: Dictionary = _arvores_nomeadas[indice]
+	var original := arvore.get("visual") as Node3D
+	if original == null:
+		return false
+	var pe: Vector3 = arvore["pos"]
+	if deixar_toco:
 		var partes: Array[Dictionary] = []
 		if original is MeshInstance3D:
-			var malha_raiz := original as MeshInstance3D
-			partes.append(_parte_do_coqueiro(malha_raiz))
+			partes.append(_parte_da_arvore(original as MeshInstance3D))
 		for filho in original.find_children("*", "MeshInstance3D", true, false):
-			var malha := filho as MeshInstance3D
-			partes.append(_parte_do_coqueiro(malha))
+			partes.append(_parte_da_arvore(filho as MeshInstance3D))
 		var toco: Node3D = CoqueiroCortado.criar(partes, pe, float(arvore["raio"]))
 		if toco == null:
 			return false
 		add_child(toco)
 		toco.global_position = pe
-		original.visible = false
-		var corpo := arvore.get("colisao") as StaticBody3D
-		if corpo != null:
-			var colisao := corpo.get_child(0) as CollisionShape3D
-			if colisao != null:
-				colisao.set_deferred("disabled", true)
 		arvore["toco"] = toco
-		arvore["cortado"] = true
-		_arvores_nomeadas[indice] = arvore
-		return true
-	return _region.cortar_coqueiro(posicao) if _region != null else false
+	original.visible = false
+	_colisao_da_nomeada(arvore, false)
+	arvore["transformacao_original"] = original.transform
+	arvore["cortado"] = true
+	_arvores_nomeadas[indice] = arvore
+	return true
 
 
-func restaurar_coqueiro(posicao: Vector3) -> bool:
+## A ÁRVORE CORTADA CRESCE DE NOVO. `escala` é o tamanho de agora, de 0 (só o
+## toco) até perto de 1; adulta, quem chama passa a `restaurar_arvore`.
+##
+## A muda e a árvore nova são a malha da PRÓPRIA árvore, menor, crescendo a
+## partir do pé: nenhuma peça nova, e nenhuma de outro estilo — a regra dos
+## dois estilos vale também para o que cresce. Sem colisão até ficar adulta:
+## muda não barra ninguém, e a colisão da adulta não cabe na nova.
+func crescer_arvore(posicao: Vector3, escala: float) -> bool:
+	var indice := _indice_da_nomeada(posicao, true)
+	if indice < 0:
+		return _region.crescer_arvore(posicao, escala) if _region != null else false
+	var arvore: Dictionary = _arvores_nomeadas[indice]
+	var original := arvore.get("visual") as Node3D
+	if original == null:
+		return false
+	if escala <= 0.0:
+		original.visible = false
+		return is_instance_valid(arvore.get("toco"))
+	var toco = arvore.get("toco")
+	if is_instance_valid(toco):
+		(toco as Node3D).queue_free()
+	arvore.erase("toco")
+	# CRESCE DO PÉ: a árvore inteira encolhe em volta do ponto de plantio. Nas
+	# peças de hoje a origem do nó já cai ali — `CatalogoAssets.instanciar`
+	# assenta o fundo da caixa no pé (medido em 03/10/2026, a seis centímetros,
+	# que são o afundamento) —, mas a conta não depende disso: peça girada ou de
+	# origem fora do fundo cresceria longe do toco.
+	var pe: Vector3 = original.get_parent().to_local(arvore["pos"])
+	var inteira: Transform3D = arvore.get("transformacao_original", original.transform)
+	original.transform = Transform3D(Basis().scaled(Vector3.ONE * escala), pe * (1.0 - escala)) * inteira
+	original.visible = true
+	arvore["escala"] = escala
+	_arvores_nomeadas[indice] = arvore
+	return true
+
+
+## A ÁRVORE VOLTA A SER ADULTA: o tamanho de antes do corte, a colisão de volta
+## e o toco (se ainda houver) fora.
+func restaurar_arvore(posicao: Vector3) -> bool:
+	var indice := _indice_da_nomeada(posicao, true)
+	if indice < 0:
+		return _region.restaurar_arvore(posicao) if _region != null else false
+	var arvore: Dictionary = _arvores_nomeadas[indice]
+	var original := arvore.get("visual") as Node3D
+	if original == null:
+		return false
+	original.transform = arvore.get("transformacao_original", original.transform)
+	original.visible = true
+	var toco = arvore.get("toco")
+	if is_instance_valid(toco):
+		(toco as Node3D).queue_free()
+	_colisao_da_nomeada(arvore, true)
+	arvore["cortado"] = false
+	arvore.erase("toco")
+	arvore.erase("escala")
+	arvore.erase("transformacao_original")
+	_arvores_nomeadas[indice] = arvore
+	return true
+
+
+## A árvore plantada à mão com o pé neste ponto, cortada ou de pé, ou -1.
+func _indice_da_nomeada(posicao: Vector3, cortada: bool) -> int:
 	var ponto := Vector2(posicao.x, posicao.z)
 	for indice in range(_arvores_nomeadas.size()):
 		var arvore: Dictionary = _arvores_nomeadas[indice]
-		if arvore.get("especie", "") != "coqueiro" or not arvore.get("cortado", false):
+		if bool(arvore.get("cortado", false)) != cortada:
 			continue
 		var pe: Vector3 = arvore["pos"]
-		if Vector2(pe.x, pe.z).distance_squared_to(ponto) > 0.01:
-			continue
-		var original := arvore.get("visual") as Node3D
-		if original == null:
-			return false
-		original.visible = true
-		var toco := arvore.get("toco") as Node3D
-		if is_instance_valid(toco):
-			toco.queue_free()
-		var corpo := arvore.get("colisao") as StaticBody3D
-		if corpo != null:
-			var colisao := corpo.get_child(0) as CollisionShape3D
-			if colisao != null:
-				colisao.set_deferred("disabled", false)
-		arvore["cortado"] = false
-		arvore.erase("toco")
-		_arvores_nomeadas[indice] = arvore
-		return true
-	return _region.restaurar_coqueiro(posicao) if _region != null else false
+		if Vector2(pe.x, pe.z).distance_squared_to(ponto) <= 0.01:
+			return indice
+	return -1
 
 
-func _parte_do_coqueiro(instancia: MeshInstance3D) -> Dictionary:
+func _colisao_da_nomeada(arvore: Dictionary, ligada: bool) -> void:
+	var corpo := arvore.get("colisao") as StaticBody3D
+	if corpo == null:
+		return
+	for filho in corpo.get_children():
+		if filho is CollisionShape3D:
+			(filho as CollisionShape3D).set_deferred("disabled", not ligada)
+
+
+func _parte_da_arvore(instancia: MeshInstance3D) -> Dictionary:
 	var materiais: Array[Material] = []
 	if instancia.mesh != null:
 		for superficie in range(instancia.mesh.get_surface_count()):

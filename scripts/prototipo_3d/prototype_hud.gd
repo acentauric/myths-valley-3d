@@ -277,7 +277,7 @@ func _ready() -> void:
 ## É widget ACRESCENTADO, como a migração manda: o HUD continua sendo este, e
 ## não o do 2D. O número vem do `Vida` compartilhado — por `get_node_or_null`,
 ## porque quem monta o HUD sozinho, sem o projeto inteiro, não pode estourar
-## aqui. A barra verde do corte dos coqueiros fica embaixo, na mesma medida.
+## aqui. A barra verde do corte das árvores fica embaixo, na mesma medida.
 const COR_VIDA := Color(0.78, 0.28, 0.26)
 const COR_VIDA_ENVENENADA := Color(0.45, 0.62, 0.22)
 var barra_vida: ProgressBar
@@ -763,7 +763,7 @@ func set_map_open(open: bool) -> void:
 	if open:
 		_hidden_for_map.clear()
 		for child in _root.get_children():
-			if child is Control and child.name == "VidaDoCoqueiro":
+			if child is Control and child.name == "VidaDaArvore":
 				child.visible = false
 				continue
 			if child is Control and child.visible and child != _menu_confirm and not _corner_nodes.has(child):

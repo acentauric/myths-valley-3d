@@ -39,6 +39,12 @@ const MERCADORIAS := {
 	"picareta": {"base": 650, "margem": 0.3},
 	"foice": {"base": 420, "margem": 0.3},
 	"facao": {"base": 380, "margem": 0.3},
+	# O AÇO VEM DE FORA, e mais caro que o ferro: um machado de aço custa dois e
+	# meio dos de ferro. É ele que abre a madeira de lei dura e a picareta de
+	# aço, o matacão — o que o talento sozinho não abre (ver arvores_3d.json e
+	# recursos_3d.json).
+	"machado_de_aco": {"base": 1500, "margem": 0.3},
+	"picareta_de_aco": {"base": 1600, "margem": 0.3},
 	# A CARNE DE CAÇA vale mais que o peixe comum e menos que o robalo: é
 	# trabalho de ir à mata funda, mas quem compra no arraial come peixe todo
 	# dia e caça de vez em quando.

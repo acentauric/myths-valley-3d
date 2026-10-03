@@ -42,6 +42,32 @@ const ITENS := {
 		"empilhavel": false,
 		"dano": 2.0,
 	},
+	## AS FERRAMENTAS DE AÇO são da mesma FAMÍLIA que as de ferro — servem a
+	## todo alvo que pede machado ou picareta — e têm GRAU 2: só elas abrem o
+	## alvo que pede aço (`"aco": true` na madeira, `"grau": 2` na pedra).
+	## Ferramenta melhor não barateia o golpe, ela DESTRAVA alvo mais duro (ver
+	## Energia), e por isso a de aço bate igual à de ferro, na lida e na luta: o
+	## que muda é aonde ela chega. O ícone e o modelo na mão são os da de ferro
+	## até haver arte própria, que é geração paga e espera o pedido.
+	"machado_de_aco": {
+		"nome": "Machado de aço",
+		"tipo": "ferramenta",
+		"encaixe": "maos",
+		"icone": "machado",
+		"empilhavel": false,
+		"dano": 3.0,
+		"familia": "machado",
+		"grau": 2,
+	},
+	"picareta_de_aco": {
+		"nome": "Picareta de aço",
+		"tipo": "ferramenta",
+		"icone": "picareta",
+		"empilhavel": false,
+		"dano": 2.0,
+		"familia": "picareta",
+		"grau": 2,
+	},
 	"foice": {
 		"nome": "Foice",
 		"tipo": "ferramenta",
@@ -527,6 +553,17 @@ static func dano(id: String) -> float:
 
 static func tipo(id: String) -> String:
 	return ITENS.get(id, {}).get("tipo", "")
+
+
+## DE QUE FAMÍLIA É A FERRAMENTA: o machado de aço é machado. O item sem
+## `familia` é a família dele mesmo — o machado de ferro, a foice.
+static func familia(id: String) -> String:
+	return str(dados(id).get("familia", id))
+
+
+## O GRAU DA FERRAMENTA: 1 a de ferro (e toda ferramenta sem grau), 2 a de aço.
+static func grau(id: String) -> int:
+	return int(dados(id).get("grau", 1))
 
 
 static func icone(id: String) -> Texture2D:

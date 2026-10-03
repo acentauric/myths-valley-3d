@@ -12,7 +12,9 @@ talentos, cartas, coleção, obras, pesca, cozinha, oficina, os cordéis (pendur
 alta com a capa de cada um), a lavoura da casa
 (#8: arar, plantar, regar, crescer por dia regado e colher, com a regra do
 roçado do 2D), o cemitério do Damião (o mato, o conserto das lajes e o cercado,
-que é obra), a fé (#52: os seis marcos, o rito, a troca, a
+que é obra), o corte das árvores (toda árvore do vale, que volta adulta em um
+ano do calendário, com a madeira de lei e a pedra dura presas ao talento e à
+ferramenta de aço), a fé (#52: os seis marcos, o rito, a troca, a
 teia da fé no K, as missões da Dona Zefa e de cada fé e a festa de cada uma,
 com os moradores no marco à tarde, e a capelinha do cemitério de costas para o
 mar), os cômodos por dentro das próprias

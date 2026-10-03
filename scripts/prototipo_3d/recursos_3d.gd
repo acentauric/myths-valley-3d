@@ -26,6 +26,7 @@ extends Node
 const DicaTecla = preload("res://scripts/prototipo_3d/dica_tecla.gd")
 const Atalhos = preload("res://scripts/prototipo_3d/atalhos.gd")
 const CatalogoAssets = preload("res://scripts/prototipo_3d/catalogo_assets.gd")
+const IdiomaMenu = preload("res://scripts/prototipo_3d/idioma_menu.gd")
 
 const DADOS := "res://data/recursos_3d.json"
 ## Distância no chão para a dica aparecer e para o golpe valer.
@@ -154,7 +155,7 @@ func _process(_delta: float) -> void:
 	# bater" manda o jogador apertar uma tecla que não vai fazer nada.
 	DicaTecla.mostrar_em(_dica, get_viewport().get_camera_3d(),
 		alvo["pos"] + Vector3(0.0, ALTURA_DICA, 0.0),
-		"%s · %s" % [str(ficha.get("nome", "")), _o_que_falta(ficha)])
+		"%s · %s" % [str(IdiomaMenu.campo(ficha, "nome")), _o_que_falta(ficha)])
 
 
 ## O alvo ao alcance, ou "" — o mais perto quando há mais de um.
@@ -203,18 +204,73 @@ func _mais_perto() -> String:
 	return melhor
 
 
-## O que a dica diz depois do nome: a ferramenta que falta, ou o que vai render.
+## O que a dica diz depois do nome: a ferramenta que falta, o talento ou o aço
+## que o alvo pede, ou com o que se vai bater.
 func _o_que_falta(ficha: Dictionary) -> String:
 	var ferramenta := str(ficha.get("ferramenta", ""))
 	if ferramenta == "":
-		return tr("à mão") if Energia.aguenta("bater") else "sem fôlego"
+		return tr("à mão") if Energia.aguenta("bater", _dureza(ficha)) else "sem fôlego"
 	if not _tem_ferramenta(ferramenta):
-		if Inventario.tem(ferramenta):
+		if _carrega(ferramenta):
 			return tr("ponha na mão: %s") % _nome_do_item(ferramenta)
 		return "precisa de %s" % _nome_do_item(ferramenta)
-	if not Energia.aguenta("bater"):
+	var impede := _o_que_impede(ficha, false)
+	if impede != "":
+		return impede
+	if not Energia.aguenta("bater", _dureza(ficha)):
 		return "sem fôlego"
-	return "com %s" % _nome_do_item(ferramenta)
+	return "com %s" % _nome_do_item(Equipamento.da_familia_em_uso(ferramenta))
+
+
+## A dureza do alvo para o Energia: o fôlego de cada golpe é bater x dureza.
+## Sem o campo, 1 — o lajedo e o tronco caído de sempre.
+static func _dureza(ficha: Dictionary) -> float:
+	return float(ficha.get("dureza", 1.0))
+
+
+## O QUE O ALVO PEDE ALÉM DA FERRAMENTA CERTA NA MÃO, ou "".
+##
+## Dois pedidos, e eles não se parecem — foi a queixa do 2D: "precisa
+## diferenciar uma árvore que precisa de machado melhor de uma que precisa
+## destravar a habilidade". `"nivel": 2` é o do talento (`Progressao.nivel`,
+## que só a teia sobe: Mão de pedra, Pedra de Xangô), e manda à teia;
+## `"grau": 2` é a ferramenta de aço na mão, e manda à venda. A pedra dura pede
+## o talento; o matacão pede os dois. `frase` é a recusa inteira, com ponto;
+## sem ela, o pedaço que a dica põe depois do nome.
+func _o_que_impede(ficha: Dictionary, frase: bool) -> String:
+	var ferramenta := str(ficha.get("ferramenta", ""))
+	if ferramenta == "":
+		return ""
+	var nivel := int(ficha.get("nivel", 1))
+	var grau := int(ficha.get("grau", 1))
+	var falta_talento := Progressao.nivel(ferramenta) < nivel
+	var falta_aco := Catalogo.grau(Equipamento.da_familia_em_uso(ferramenta)) < grau
+	if not falta_talento and not falta_aco:
+		return ""
+	var de_aco := _nome_do_item(_da_familia_no_grau(ferramenta, grau))
+	var talentos := " / ".join(Talentos.que_abrem(ferramenta, nivel))
+	if falta_talento and falta_aco:
+		return (tr("Pede %s e o talento %s.") if frase else tr("pede %s e o talento %s")) % [de_aco, talentos]
+	if falta_aco:
+		return (tr("Pede %s.") if frase else tr("pede %s")) % de_aco
+	return (tr("Pede o talento %s.") if frase else tr("pede o talento %s")) % talentos
+
+
+## A ferramenta desta família naquele grau — a picareta de aço, para a
+## picareta no grau 2 —, ou a própria família quando não há.
+static func _da_familia_no_grau(familia: String, grau: int) -> String:
+	for id in Catalogo.ITENS:
+		if Catalogo.familia(id) == familia and Catalogo.grau(id) == grau:
+			return str(id)
+	return familia
+
+
+## Tem na mochila alguma ferramenta desta família (a de ferro ou a de aço)?
+func _carrega(familia: String) -> bool:
+	for id in Catalogo.ITENS:
+		if Catalogo.familia(id) == familia and Inventario.tem(str(id)):
+			return true
+	return false
 
 
 func _nome_do_item(id: String) -> String:
@@ -232,8 +288,10 @@ func _nome_do_item(id: String) -> String:
 ## golpe e o machado no braço. A pesca (vara) e o coqueiro (machado) já
 ## perguntavam pela mão; os alvos de trabalho passam a perguntar também.
 func _tem_ferramenta(id: String) -> bool:
-	# SEM FERRAMENTA É À MÃO: a ostra se cata na pedra (#52).
-	return id == "" or Equipamento.em_uso(id)
+	# SEM FERRAMENTA É À MÃO: a ostra se cata na pedra (#52). E o machado de
+	# aço é machado: a ficha pede a FAMÍLIA, e o grau é conta à parte
+	# (`_o_que_impede`).
+	return id == "" or Equipamento.da_familia_em_uso(id) != ""
 
 
 ## O GOLPE.
@@ -250,14 +308,23 @@ func bater() -> bool:
 
 	if not _tem_ferramenta(ferramenta):
 		# Carregando a certa e segurando outra (ou nada): diz qual pôr na mão.
-		if Inventario.tem(ferramenta):
+		if _carrega(ferramenta):
 			recusado.emit(tr("Ponha na mão: %s.") % _nome_do_item(ferramenta))
 		else:
 			recusado.emit("Precisa de %s." % _nome_do_item(ferramenta))
 		return false
-	if not Energia.gastar("bater"):
+	# A certa na mão e o alvo duro demais para ela, ou para quem a segura.
+	var impede := _o_que_impede(ficha, true)
+	if impede != "":
+		recusado.emit(impede)
+		return false
+	var dureza := _dureza(ficha)
+	if not Energia.gastar("bater", dureza):
 		recusado.emit("Sem fôlego para bater.")
 		return false
+	# QUEM TRABALHA APRENDE, e o duro ensina mais (`Talentos.XP_POR_ACAO`): é por
+	# aqui que o golpe leva à teia que abre o alvo mais duro.
+	Talentos.ganhar("bater_duro" if dureza > 1.5 else "bater")
 
 	_golpear_com_o_corpo()
 	alvo["golpes_dados"] = int(alvo["golpes_dados"]) + 1

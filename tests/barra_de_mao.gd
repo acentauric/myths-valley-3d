@@ -287,8 +287,8 @@ func _run() -> void:
 		if nova >= 0:
 			jogador.set_physics_process(false)
 			arvores._aberta = -1
-			arvores._coqueiro_em_golpe = -1
-			arvores._coqueiro_perto = -1
+			arvores._em_golpe = -1
+			arvores._cortavel_perto = -1
 			arvores._perto = nova
 			arvores._unhandled_key_input(e_de_interagir)
 			_conferir(arvores._aberta == -1, "com o corpo parado, o E abriu a ficha da árvore")

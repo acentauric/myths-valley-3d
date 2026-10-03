@@ -50,6 +50,22 @@ func em_uso(id: String) -> bool:
 	return encaixe != "" and no_encaixe(encaixe) == id
 
 
+## QUAL FERRAMENTA DESTA FAMÍLIA ESTÁ NA MÃO, ou "". O machado de aço é
+## machado (`Catalogo.familia`): quem pergunta "tem machado na mão?" — o golpe
+## na árvore, o tronco caído, o machado desenhado no braço — aceita os dois, e
+## quem precisa do aço confere o grau do que veio (`Catalogo.grau`).
+func da_familia_em_uso(familia: String) -> String:
+	if familia == "":
+		return ""
+	var da_barra := Inventario.na_mao()
+	if da_barra != "" and Catalogo.familia(da_barra) == familia:
+		return da_barra
+	var vestido_nas_maos := no_encaixe("maos")
+	if vestido_nas_maos != "" and Catalogo.familia(vestido_nas_maos) == familia:
+		return vestido_nas_maos
+	return ""
+
+
 func e_equipamento(id: String) -> bool:
 	var encaixe := encaixe_de(id)
 	if encaixe == "":

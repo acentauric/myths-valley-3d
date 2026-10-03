@@ -26,6 +26,38 @@ atualize esse arquivo e este documento juntos.
 
 ## Em desenvolvimento — 03/10/2026
 
+- **As árvores do vale se cortam e voltam em um ano; a madeira e a pedra duras pedem
+  talento e aço.** "Pode tornar as árvores cortáveis, com respawn de 1 ano no calendário
+  do jogo. Para isso ela tem que progredir até ficar 'adulta'." De machado na mão, toda
+  árvore do vale se corta — as 42 plantadas e as 6.318 da mata, da orla e da beira do
+  rio, cada uma agora com a instância dela registrada na MultiMesh —, com a regra que
+  nasceu no coqueiro (#35): o corpo vai até o tronco, golpeia no tempo do braço, e cada
+  golpe gasta vigor. O pé cortado vira toco (a malha da própria árvore, recortada) e
+  cresce pelo calendário: muda com um quarto do ano, árvore nova com meio, crescida com
+  três quartos — a malha dela mesma, menor, crescendo do pé e sem colisão —, e só com um
+  ano (os 112 dias do `Relogio`) volta adulta, inteira, com colisão e cortável; a dica
+  do machado diz quantos dias faltam. O coqueiro, que voltava em 24 horas, passa à regra
+  do ano. A MADEIRA DIZ O QUE PEDE (`arvores_3d.json`): a branca (mangueira, cajueiro,
+  coqueiro, dendê, embaúba…) cai no machado de ferro em 3 golpes e rende 2 de lenha; a de
+  lei (jaqueira, jenipapeiro, os ipês, aroeira, mangue) pede o talento Braços de machado
+  ou Ferro de Ogum e cai em 4, com 4 de lenha; a de lei dura (pau-brasil, sapucaia) pede
+  também o machado de aço, e cai em 5, com 6. Cada golpe cobra fôlego (bater × dureza)
+  e ensina (XP de bater, ou de bater_duro na madeira dura), como o tronco caído e o 2D:
+  é por aí que o trabalho leva à teia que abre a árvore mais dura. A gameleira não se
+  corta (é a árvore de Iroko), nem a bananeira (é erva grande, não dá lenha). NA PEDRA,
+  o mesmo trato: a pedra dura, no mirante e na estrada da capela velha, pede o talento
+  Mão de pedra ou Pedra de Xangô; o matacão pede também a picareta de aço. O machado e a
+  picareta de aço entram no catálogo (da família do de ferro, grau 2) e na venda, e
+  servem a tudo que pede machado ou picareta, na lida e na luta. As duas recusas não se
+  parecem — o talento manda à teia, o aço manda à venda —, e os nomes dos talentos são
+  lidos das teias (`Talentos.que_abrem`), para a recusa nunca prometer o que não existe.
+  O corte cede a tecla ao alvo de trabalho, ao achado, ao marco, à lavoura e a quem está
+  dentro de casa. O save guarda cada árvore cortada com o dia do corte (os saves do
+  coqueiro contam o corte do dia da carga), e a carga de uma árvore que já passou do
+  toco não recorta toco. Portão novo `tests/corte_das_arvores.gd`, falsificado de cinco
+  jeitos (toda madeira branca, o ano de uma estação, a pedra sem pedido, o machado de
+  aço que não conta como machado, a mata sem instância); o `folego.gd` passa a aceitar
+  o golpe na árvore, com o portão dele.
 - **Ninguém prende o jogador numa porta, e o Pedro para de seguir depois do tutorial.**
   "Ao entrar na casa para dormir, o Pedro me seguiu e bloqueou a porta. Não consigo mais
   sair de casa." O Pedro seguia o jogador a partida inteira e entrava junto nos cômodos;

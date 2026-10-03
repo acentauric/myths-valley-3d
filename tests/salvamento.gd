@@ -32,8 +32,9 @@ const RESERVA := "user://reserva_do_teste_de_salvamento"
 
 ## O que do 3D entra no save pela mão do vale (`estado_para_salvar`), com a
 ## MESMA chave lá. `horas_decorridas` é a conta que não volta a zero à
-## meia-noite, e é por ela que o coqueiro cortado sabe quando voltar (ver
-## arvores_info.gd): sem ela no save, o prazo guardado apontaria para longe.
+## meia-noite: espera de horas conta por ela, e sem ela no save o prazo
+## guardado apontaria para longe. (O coqueiro cortado contava por ela; a árvore
+## cortada passou a contar pelo calendário, o dia do corte no Relogio.)
 const DO_MUNDO := {
 	# `relogio_alterado` é a marca de que o jogador parou o relógio e a partida
 	# deixou de contar conquista; sem ela no save, carregar apagaria o aviso.

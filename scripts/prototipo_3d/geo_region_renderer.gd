@@ -1475,6 +1475,10 @@ func _build_forest(configuration: Dictionary) -> void:
 		var built: Dictionary = _malha_da_especie(species, rng)
 		var base: Transform3D = built.base
 		var transforms: Array[Transform3D] = []
+		# TODA ÁRVORE DA MATA SE CORTA, e por isso cada uma guarda a instância
+		# dela na MultiMesh (`registros`) e a própria transformação: é o que o
+		# corte usa para sumir com ela, pôr o toco e fazê-la crescer de novo.
+		var registros: Array[int] = []
 		for i in range(group.size()):
 			if i % 150 == 0:
 				await _marcar(0.7 + 0.28 * float(i) / float(maxi(group.size(), 1)), "Plantando a mata", false)
@@ -1488,13 +1492,12 @@ func _build_forest(configuration: Dictionary) -> void:
 			# `base` centraliza a malha do GLB e desloca a origem local. O ponto
 			# de plantio continua sendo `point`; usar transformacao.origin aqui
 			# desloca o colisor para fora do tronco visual.
-			var tronco: Dictionary = {"point": point, "ground": ground, "height": minf(float(built.altura) * scale, 4.0), "radius": float(built.tronco) * scale, "especie": species}
-			if species == "coqueiro":
-				tronco["transformacao"] = transformacao
+			var tronco: Dictionary = {"point": point, "ground": ground, "height": minf(float(built.altura) * scale, 4.0), "radius": float(built.tronco) * scale, "especie": species, "transformacao": transformacao}
 			_tree_trunks.append(tronco)
+			registros.append(_tree_trunks.size() - 1)
 			# Afundada um palmo: o pé entra no chão em vez de pousar sobre ele.
 			transforms.append(transformacao)
-		_multimesh_em_blocos("Mata: " + species, built.mesh, transforms, LOD_MATA)
+		_multimesh_em_blocos("Mata: " + species, built.mesh, transforms, LOD_MATA, registros)
 	await _marcar(0.98, "Plantando a mata", false)
 	_build_sub_bosque(positions, rng)
 	_build_margens_do_rio(rng)
@@ -1536,6 +1539,9 @@ func _build_margens_do_rio(rng: RandomNumberGenerator) -> void:
 	var inga: Dictionary = _malha_da_especie("ingazeiro", rng) if tem_inga else {}
 	var do_mangue: Array[Transform3D] = []
 	var do_inga: Array[Transform3D] = []
+	# Os índices dos troncos de cada um, para o corte achar a instância.
+	var registros_mangue: Array[int] = []
+	var registros_inga: Array[int] = []
 	var perto_do_mar := _units(70.0, 18.0)
 	for river in _rivers:
 		var pontos: PackedVector2Array = river.points
@@ -1561,11 +1567,15 @@ func _build_margens_do_rio(rng: RandomNumberGenerator) -> void:
 					var escala := rng.randf_range(0.8, 1.2)
 					var giro := Basis.from_euler(Vector3(0, rng.randf() * TAU, 0)).scaled(Vector3.ONE * escala)
 					if no_mangue:
-						do_mangue.append(Transform3D(giro, Vector3(ponto.x, chao - ARVORE_AFUNDADA, ponto.y)) * (mangue.base as Transform3D))
-						_tree_trunks.append({"point": ponto, "ground": chao, "height": minf(float(mangue.altura) * escala, 4.0), "radius": float(mangue.tronco) * escala, "especie": "mangue"})
+						var no_rio := Transform3D(giro, Vector3(ponto.x, chao - ARVORE_AFUNDADA, ponto.y)) * (mangue.base as Transform3D)
+						do_mangue.append(no_rio)
+						_tree_trunks.append({"point": ponto, "ground": chao, "height": minf(float(mangue.altura) * escala, 4.0), "radius": float(mangue.tronco) * escala, "especie": "mangue", "transformacao": no_rio})
+						registros_mangue.append(_tree_trunks.size() - 1)
 					elif tem_inga and rng.randf() < 0.55:
-						do_inga.append(Transform3D(giro, Vector3(ponto.x, chao - ARVORE_AFUNDADA, ponto.y)) * (inga.base as Transform3D))
-						_tree_trunks.append({"point": ponto, "ground": chao, "height": minf(float(inga.altura) * escala, 4.0), "radius": float(inga.tronco) * escala, "especie": "ingazeiro"})
+						var na_beira := Transform3D(giro, Vector3(ponto.x, chao - ARVORE_AFUNDADA, ponto.y)) * (inga.base as Transform3D)
+						do_inga.append(na_beira)
+						_tree_trunks.append({"point": ponto, "ground": chao, "height": minf(float(inga.altura) * escala, 4.0), "radius": float(inga.tronco) * escala, "especie": "ingazeiro", "transformacao": na_beira})
+						registros_inga.append(_tree_trunks.size() - 1)
 				# Mangue fechado perto do mar, ingazeiros esparsos rio acima.
 				proximo += rng.randf_range(3.5, 6.0) if no_mangue else rng.randf_range(12.0, 22.0)
 			percorrido += trecho
@@ -1597,12 +1607,14 @@ func _build_margens_do_rio(rng: RandomNumberGenerator) -> void:
 							continue
 						var chao := ground_height_at(Vector3(ponto.x, 0, ponto.y))
 						var escala := rng.randf_range(0.75, 1.2)
-						do_mangue.append(Transform3D(Basis.from_euler(Vector3(0, rng.randf() * TAU, 0)).scaled(Vector3.ONE * escala), Vector3(ponto.x, chao - ARVORE_AFUNDADA, ponto.y)) * (mangue.base as Transform3D))
-						_tree_trunks.append({"point": ponto, "ground": chao, "height": minf(float(mangue.altura) * escala, 4.0), "radius": float(mangue.tronco) * escala, "especie": "mangue"})
+						var na_foz := Transform3D(Basis.from_euler(Vector3(0, rng.randf() * TAU, 0)).scaled(Vector3.ONE * escala), Vector3(ponto.x, chao - ARVORE_AFUNDADA, ponto.y)) * (mangue.base as Transform3D)
+						do_mangue.append(na_foz)
+						_tree_trunks.append({"point": ponto, "ground": chao, "height": minf(float(mangue.altura) * escala, 4.0), "radius": float(mangue.tronco) * escala, "especie": "mangue", "transformacao": na_foz})
+						registros_mangue.append(_tree_trunks.size() - 1)
 	if not do_mangue.is_empty():
-		_multimesh_em_blocos("Manguezal", mangue.mesh, do_mangue, LOD_ARVORE_RIO)
+		_multimesh_em_blocos("Manguezal", mangue.mesh, do_mangue, LOD_ARVORE_RIO, registros_mangue)
 	if not do_inga.is_empty():
-		_multimesh_em_blocos("Ingazeiros do rio", inga.mesh, do_inga, LOD_ARVORE_RIO)
+		_multimesh_em_blocos("Ingazeiros do rio", inga.mesh, do_inga, LOD_ARVORE_RIO, registros_inga)
 
 
 ## Divide instâncias em blocos de BLOCO_MATA: cada bloco vira uma MultiMeshInstance3D
@@ -1665,10 +1677,12 @@ func _build_coast_palms(rng: RandomNumberGenerator) -> void:
 			restinga.append(local)
 	var malhas_restinga: Dictionary = {}
 	var transforms_restinga: Dictionary = {}
+	var registros_restinga: Dictionary = {}
 	for local in restinga:
 		if not malhas_restinga.has(local):
 			malhas_restinga[local] = _malha_da_especie(local, rng)
 			transforms_restinga[local] = [] as Array[Transform3D]
+			registros_restinga[local] = [] as Array[int]
 	var transforms: Array[Transform3D] = []
 	var registros_coqueiros: Array[int] = []
 	var travelled := 0.0
@@ -1703,8 +1717,10 @@ func _build_coast_palms(rng: RandomNumberGenerator) -> void:
 					var malha_local: Dictionary = malhas_restinga[local]
 					var giro_livre := rng.randf_range(0.0, TAU)
 					if not _em_clareira(candidate):
-						(transforms_restinga[local] as Array[Transform3D]).append(Transform3D(Basis.from_euler(Vector3(0, giro_livre, 0)).scaled(Vector3.ONE * scale), Vector3(candidate.x, ground - ARVORE_AFUNDADA, candidate.y)) * (malha_local.base as Transform3D))
-						_tree_trunks.append({"point": candidate, "ground": ground, "height": minf(float(malha_local.altura) * scale, 4.0), "radius": float(malha_local.tronco) * scale, "especie": local})
+						var na_restinga := Transform3D(Basis.from_euler(Vector3(0, giro_livre, 0)).scaled(Vector3.ONE * scale), Vector3(candidate.x, ground - ARVORE_AFUNDADA, candidate.y)) * (malha_local.base as Transform3D)
+						(transforms_restinga[local] as Array[Transform3D]).append(na_restinga)
+						_tree_trunks.append({"point": candidate, "ground": ground, "height": minf(float(malha_local.altura) * scale, 4.0), "radius": float(malha_local.tronco) * scale, "especie": local, "transformacao": na_restinga})
+						(registros_restinga[local] as Array[int]).append(_tree_trunks.size() - 1)
 				elif not _em_clareira(candidate):
 					var transformacao := Transform3D(Basis.from_euler(Vector3(0, yaw, 0)).scaled(Vector3.ONE * scale), Vector3(candidate.x, ground - ARVORE_AFUNDADA, candidate.y)) * lean * modelo_base
 					transforms.append(transformacao)
@@ -1722,74 +1738,138 @@ func _build_coast_palms(rng: RandomNumberGenerator) -> void:
 	for local in transforms_restinga:
 		var lista_local: Array[Transform3D] = transforms_restinga[local]
 		if not lista_local.is_empty():
-			_multimesh_em_blocos("Restinga da orla: " + local, (malhas_restinga[local] as Dictionary).mesh, lista_local, LOD_RESTINGA)
+			_multimesh_em_blocos("Restinga da orla: " + local, (malhas_restinga[local] as Dictionary).mesh, lista_local, LOD_RESTINGA, registros_restinga[local])
 	if transforms.is_empty():
 		return
 	_multimesh_em_blocos("Coqueiros da orla", built.mesh, transforms, LOD_COQUEIRO, registros_coqueiros)
 
 
-func cortar_coqueiro(posicao: Vector3) -> bool:
-	var ponto := Vector2(posicao.x, posicao.z)
-	for indice in range(_tree_trunks.size()):
-		var tronco: Dictionary = _tree_trunks[indice]
-		if tronco.get("especie", "") != "coqueiro" or tronco.get("cortado", false):
-			continue
-		if (tronco["point"] as Vector2).distance_squared_to(ponto) > 0.01:
-			continue
-		var visual := tronco.get("visual") as MultiMeshInstance3D
-		if visual == null:
-			return false
-		var instancia: int = tronco.get("instancia", -1)
-		if instancia < 0:
-			return false
-		var multimesh := visual.multimesh
-		var transformacao: Transform3D = tronco["transformacao"]
-		var pe := to_global(Vector3(ponto.x, float(tronco["ground"]), ponto.y))
+## CORTA A ÁRVORE com o pé neste ponto — da mata, da orla ou da beira do rio,
+## de qualquer espécie. A instância dela na MultiMesh encolhe a nada e, no
+## lugar, fica o toco: a malha dela mesma recortada na altura do golpe
+## (`CoqueiroCortado`). Precisa da instância registrada (`registros` em
+## `_multimesh_em_blocos`), que toda árvore com tronco passou a ter.
+func cortar_arvore(posicao: Vector3, deixar_toco: bool = true) -> bool:
+	var indice := _indice_do_tronco(posicao, false)
+	if indice < 0:
+		return false
+	var tronco: Dictionary = _tree_trunks[indice]
+	var visual := tronco.get("visual") as MultiMeshInstance3D
+	var instancia := int(tronco.get("instancia", -1))
+	if visual == null or instancia < 0 or not tronco.has("transformacao"):
+		return false
+	var multimesh := visual.multimesh
+	var transformacao: Transform3D = tronco["transformacao"]
+	var ponto: Vector2 = tronco["point"]
+	var pe := to_global(Vector3(ponto.x, float(tronco["ground"]), ponto.y))
+	# Sem toco (`deixar_toco` falso) é a carga de uma árvore que já passou dele.
+	if deixar_toco:
 		var partes: Array[Dictionary] = [{"mesh": multimesh.mesh, "transform": visual.global_transform * transformacao}]
 		var toco: Node3D = CoqueiroCortado.criar(partes, pe, float(tronco["radius"]))
 		if toco == null:
 			return false
 		add_child(toco)
 		toco.global_position = pe
-		multimesh.set_instance_transform(instancia, Transform3D(Basis().scaled(Vector3.ONE * 0.00001), transformacao.origin))
-		tronco["transformacao_original"] = transformacao
-		tronco["transformacao"] = transformacao
-		tronco["altura_original"] = tronco["height"]
 		tronco["toco"] = toco
-		tronco["height"] = CoqueiroCortado.ALTURA_DO_TOCO
-		tronco["cortado"] = true
-		_tree_trunks[indice] = tronco
-		call_deferred("_refresh_tree_collisions")
-		return true
-	return false
+	# `transformacao` passa a ser a de AGORA — a que a instância mostra —, e a
+	# inteira fica em `transformacao_original` até a árvore voltar adulta. A
+	# MultiMesh não devolve a transformação no servidor de renderização sem
+	# tela (o dos portões); o tronco devolve.
+	_mostrar_instancia(tronco, _instancia_sumida(transformacao))
+	tronco["transformacao_original"] = transformacao
+	tronco["altura_original"] = tronco["height"]
+	tronco["height"] = CoqueiroCortado.ALTURA_DO_TOCO
+	tronco["cortado"] = true
+	_tree_trunks[indice] = tronco
+	call_deferred("_refresh_tree_collisions")
+	return true
 
 
-func restaurar_coqueiro(posicao: Vector3) -> bool:
+## A ÁRVORE CORTADA CRESCE DE NOVO: `escala` é o tamanho de agora, de 0 (só o
+## toco) até perto de 1. A muda e a árvore nova são a instância dela mesma,
+## menor, crescendo do pé. Continua `cortado` até `restaurar_arvore`: sem
+## colisão do conjunto de troncos, que é de árvore adulta.
+func crescer_arvore(posicao: Vector3, escala: float) -> bool:
+	var indice := _indice_do_tronco(posicao, true)
+	if indice < 0:
+		return false
+	var tronco: Dictionary = _tree_trunks[indice]
+	var visual := tronco.get("visual") as MultiMeshInstance3D
+	var instancia := int(tronco.get("instancia", -1))
+	if visual == null or instancia < 0 or not tronco.has("transformacao_original"):
+		return false
+	var inteira: Transform3D = tronco["transformacao_original"]
+	if escala <= 0.0:
+		_mostrar_instancia(tronco, _instancia_sumida(inteira))
+		return is_instance_valid(tronco.get("toco"))
+	var toco = tronco.get("toco")
+	if is_instance_valid(toco):
+		(toco as Node3D).queue_free()
+	tronco.erase("toco")
+	# O pé, no espaço da MultiMesh: o ponto de plantio, afundado como a árvore.
+	var ponto: Vector2 = tronco["point"]
+	var pe := visual.global_transform.affine_inverse() * to_global(Vector3(ponto.x, float(tronco["ground"]) - ARVORE_AFUNDADA, ponto.y))
+	_mostrar_instancia(tronco, Transform3D(Basis().scaled(Vector3.ONE * escala), pe * (1.0 - escala)) * inteira)
+	tronco["escala"] = escala
+	_tree_trunks[indice] = tronco
+	return true
+
+
+## A árvore volta a ser adulta: a instância inteira, a altura do tronco para a
+## colisão, e o toco (se ainda houver) fora.
+func restaurar_arvore(posicao: Vector3) -> bool:
+	var indice := _indice_do_tronco(posicao, true)
+	if indice < 0:
+		return false
+	var tronco: Dictionary = _tree_trunks[indice]
+	var visual := tronco.get("visual") as MultiMeshInstance3D
+	var instancia := int(tronco.get("instancia", -1))
+	if visual == null or instancia < 0 or not tronco.has("transformacao_original"):
+		return false
+	_mostrar_instancia(tronco, tronco["transformacao_original"])
+	var toco = tronco.get("toco")
+	if is_instance_valid(toco):
+		(toco as Node3D).queue_free()
+	tronco["height"] = float(tronco.get("altura_original", tronco["height"]))
+	tronco["cortado"] = false
+	tronco.erase("transformacao_original")
+	tronco.erase("altura_original")
+	tronco.erase("toco")
+	tronco.erase("escala")
+	_tree_trunks[indice] = tronco
+	call_deferred("_refresh_tree_collisions")
+	return true
+
+
+## O tronco com o pé neste ponto (cortado ou de pé, conforme pedido), ou -1.
+## Pela grade dos troncos: a mata tem milhares, e a carga de uma partida com
+## muitas árvores cortadas pergunta por todas.
+func _indice_do_tronco(posicao: Vector3, cortado: bool) -> int:
+	_garantir_grade_troncos()
+	# No mesmo referencial de `WorldBuilder.arvores`, que dá o ponto do tronco
+	# como posição do mundo.
 	var ponto := Vector2(posicao.x, posicao.z)
-	for indice in range(_tree_trunks.size()):
-		var tronco: Dictionary = _tree_trunks[indice]
-		if tronco.get("especie", "") != "coqueiro" or not tronco.get("cortado", false):
-			continue
-		if (tronco["point"] as Vector2).distance_squared_to(ponto) > 0.01:
-			continue
-		var visual := tronco.get("visual") as MultiMeshInstance3D
-		var instancia := int(tronco.get("instancia", -1))
-		if visual == null or instancia < 0 or not tronco.has("transformacao_original"):
-			return false
-		visual.multimesh.set_instance_transform(instancia, tronco["transformacao_original"])
-		var toco := tronco.get("toco") as Node3D
-		if is_instance_valid(toco):
-			toco.queue_free()
-		tronco["height"] = float(tronco.get("altura_original", tronco["height"]))
-		tronco["cortado"] = false
-		tronco["transformacao"] = tronco["transformacao_original"]
-		tronco.erase("transformacao_original")
-		tronco.erase("altura_original")
-		tronco.erase("toco")
-		_tree_trunks[indice] = tronco
-		call_deferred("_refresh_tree_collisions")
-		return true
-	return false
+	var celula := Vector2i(floori(ponto.x / CELULA_TRONCOS), floori(ponto.y / CELULA_TRONCOS))
+	for dx in range(-1, 2):
+		for dy in range(-1, 2):
+			for i: int in _grade_troncos.get(celula + Vector2i(dx, dy), []):
+				var tronco: Dictionary = _tree_trunks[i]
+				if bool(tronco.get("cortado", false)) != cortado:
+					continue
+				if (tronco["point"] as Vector2).distance_squared_to(ponto) <= 0.01:
+					return i
+	return -1
+
+
+## A instância do tronco na MultiMesh passa a mostrar `transformacao`, e o
+## tronco guarda qual é.
+func _mostrar_instancia(tronco: Dictionary, transformacao: Transform3D) -> void:
+	(tronco["visual"] as MultiMeshInstance3D).multimesh.set_instance_transform(int(tronco["instancia"]), transformacao)
+	tronco["transformacao"] = transformacao
+
+
+static func _instancia_sumida(transformacao: Transform3D) -> Transform3D:
+	return Transform3D(Basis().scaled(Vector3.ONE * 0.00001), transformacao.origin)
 
 
 func _process(delta: float) -> void:
