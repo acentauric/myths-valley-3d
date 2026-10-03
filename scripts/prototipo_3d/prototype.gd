@@ -5,6 +5,7 @@ extends Node3D
 
 const NPCS := "res://data/npcs_3d.json"
 const TeclasMovimento = preload("res://scripts/prototipo_3d/teclas_movimento.gd")
+const CaixaDePergunta = preload("res://scripts/prototipo_3d/caixa_de_pergunta.gd")
 const TelaCarregamento = preload("res://scripts/prototipo_3d/tela_carregamento.gd")
 const TemaMenu = preload("res://scripts/prototipo_3d/tema_menu.gd")
 const MapaJogo = preload("res://scripts/prototipo_3d/mapa_jogo.gd")
@@ -71,6 +72,8 @@ var _arvores_info	# arvores_info.gd — saúde e regeneração dos coqueiros
 ## vale já guardava antes de existir a segunda cadeia.
 var _cadeias: Dictionary = {}
 var _relogio_pausado_antes := false
+## A pergunta da tecla de adiantar a hora, enquanto está aberta.
+var _pergunta_do_relogio = null
 ## A seta da missão acompanhada (seta_missao.gd).
 var _seta
 ## O que o HUD diz quando o caderno não tem missão aberta: o convite do começo,
@@ -195,8 +198,10 @@ func _ready() -> void:
 	# O menu também move o relógio visual. A partida começa sua própria contagem;
 	# quando houver save, `restaurar_do_save` devolve a contagem guardada.
 	Dia.horas_decorridas = 0.0
-	# Partida nova conta conquista; a salva diz se o relógio já foi parado.
-	Dia.relogio_alterado = false
+	# Partida nova conta conquista, com o relógio correndo e o registro dele em
+	# branco; a salva diz o que o jogador já fez com ele.
+	Dia.zerar_a_partida()
+	_relogio_pausado_antes = false
 	# Vindo do menu, o relógio esperou a montagem na hora_inicial (abertura._start_game).
 	Dia.congelado_na_carga = false
 	var spawn: Vector3 = _ponto_de_chegada()
@@ -350,27 +355,35 @@ func _ready() -> void:
 		# caixa de confirmação antes; só o "sim" para. Religar não pede nada. Era também
 		# trancado por uma opção do AJUSTAR que vinha "Bloqueado" — o aviso
 		# tomou o lugar da tranca.
+		#
+		# E TODA MUDANÇA VAI PARA O REGISTRO DO RELÓGIO, no save
+		# (`Dia.registro_do_relogio`). Com a pausa bloqueada no AJUSTAR, a linha
+		# não para e diz por quê — e religar continua podendo.
 		{"rotulo": func() -> String:
 				var estado := tr("parado") if _relogio_pausado_antes else tr("andando")
 				if Dia.relogio_alterado:
 					return tr("Relógio: %s · sem conquistas") % estado
+				if not Dia.pausa_no_jogo and not _relogio_pausado_antes:
+					return tr("Relógio: %s · pausa bloqueada") % estado
 				return tr("Relógio: %s") % estado,
 			"icone": "relogio",
 			"ligado": func() -> bool: return not _relogio_pausado_antes,
 			"confirmar": func() -> Dictionary:
-				if _relogio_pausado_antes or Dia.relogio_alterado:
+				if _relogio_pausado_antes or not Dia.pausa_no_jogo:
 					return {}
-				return {
-					"titulo": tr("Parar o relógio?"),
-					"texto": tr("Com o relógio parado, esta partida perde as conquistas daqui para frente — mesmo que você volte a ligá-lo depois."),
-					"nao": tr("DEIXAR CORRER"),
-					"sim": tr("PARAR O RELÓGIO"),
-				},
-			"fazer": func() -> void:
+				return Dia.aviso_de_parar(),
+			"fazer": func():
+				if not _relogio_pausado_antes and not Dia.pausa_no_jogo:
+					Audio.efeito("ui_trava")
+					return tr("Pausar o relógio está bloqueado em AJUSTAR → Geral.")
 				Audio.efeito("ui_confirmar")
 				_relogio_pausado_antes = not _relogio_pausado_antes
 				if _relogio_pausado_antes:
-					Dia.marcar_relogio_alterado()},
+					Dia.marcar_relogio_alterado()
+					Dia.registrar_no_relogio("parou", "menu")
+				else:
+					Dia.registrar_no_relogio("voltou", "menu")
+				return null},
 		{"rotulo": func() -> String: return "Velocidade do tempo: %s" % Dia.ROTULOS_VELOCIDADE[Dia.velocidade],
 			"icone": "velocidade",
 			"fazer": func() -> void:
@@ -521,6 +534,7 @@ func _ready() -> void:
 	# `estado_para_salvar`.
 	Salvamento.registrar_mundo(self)
 	_retomar_a_partida()
+	_conferir_o_relogio_parado()
 	Inventario.trazer_ferramentas_para_a_mao()
 	_entregar_machado_inicial()
 	# Depois da partida salva: o que ela diz que já foi achado não volta ao chão.
@@ -866,8 +880,48 @@ func _unhandled_key_input(event: InputEvent) -> void:
 			# M (remapeável) abre o mapa do vale; o HOME fica no botão da coluna do canto.
 			_toggle_map()
 		elif event.is_action_pressed("mv_time"):
-			Dia.avancar(1.0)
-			hud.set_notice("Relógio adiantado: %s (%s)" % [Dia.texto_hora(), PERIODOS.get(Dia.periodo(), "")])
+			_adiantar_o_relogio()
+
+
+## A TECLA DE ADIANTAR A HORA também mexe no relógio: na primeira vez da
+## partida pergunta antes, com o aviso das conquistas, e para o vale enquanto
+## pergunta; depois disso, adianta e só anota no registro do relógio.
+func _adiantar_o_relogio() -> void:
+	var aviso := Dia.aviso_de_adiantar()
+	if aviso.is_empty():
+		_adiantar_uma_hora()
+		return
+	if _pergunta_do_relogio != null:
+		return
+	_pause_valley()
+	_pergunta_do_relogio = CaixaDePergunta.new()
+	_pergunta_do_relogio.perguntar(hud, aviso)
+	Audio.efeito("ui_trava")
+	_pergunta_do_relogio.respondeu.connect(func(sim: bool) -> void:
+		_pergunta_do_relogio = null
+		_retomar_o_vale()
+		if sim:
+			Dia.marcar_relogio_alterado()
+			_adiantar_uma_hora()
+		else:
+			Audio.efeito("ui_voltar"))
+
+
+func _adiantar_uma_hora() -> void:
+	Dia.avancar(1.0)
+	Dia.registrar_no_relogio("adiantou", "tecla")
+	hud.set_notice("Relógio adiantado: %s (%s)" % [Dia.texto_hora(), PERIODOS.get(Dia.periodo(), "")])
+
+
+## A PARTIDA QUE COMEÇA COM O TEMPO EM "PARADA" (escolhido no AJUSTAR, com o
+## aviso) já começa marcada, e o registro diz que foi assim desde o começo. Uma
+## vez só: partida carregada que já estava marcada não ganha outra linha.
+func _conferir_o_relogio_parado() -> void:
+	if Dia.velocidade != Dia.PARADA or Dia.relogio_alterado:
+		return
+	Dia.marcar_relogio_alterado()
+	Dia.registrar_no_relogio("comecou_parada", "ajustar")
+	hud.set_notice(tr("O tempo está em \"Parada\" no AJUSTAR: esta partida não conta conquistas."))
 
 
 ## Botão de mapa (ou Esc com ele aberto): vista de cima do vale. O jogador fica parado
@@ -1202,6 +1256,13 @@ func estado_para_salvar() -> Dictionary:
 		# O jogador parou o relógio nesta partida: daqui em diante ela não conta
 		# conquista (ver `Dia.relogio_alterado`).
 		"relogio_alterado": Dia.relogio_alterado,
+		# E O REGISTRO DO RELÓGIO: quando e como o jogador mexeu nele (ver
+		# `Dia.registro_do_relogio`). A marca diz se; o registro, quando.
+		"registro_do_relogio": Dia.registro_do_relogio.duplicate(true),
+		# O RELÓGIO PARADO PELO JOGADOR: carregar não o religa calado. Com uma
+		# tela aberta o `Dia` está parado pela tela, e a escolha do jogador é a
+		# que ela vai devolver ao fechar.
+		"pausado": _relogio_pausado_antes if get_tree().paused else Dia.pausado,
 		"machado_inicial_entregue": _machado_inicial_entregue,
 		"visitados": _visited.keys(),
 	}
@@ -1258,6 +1319,10 @@ func restaurar_do_save(estado: Dictionary) -> void:
 		player.visual.rotation.y = float(estado.get("giro", player.visual.rotation.y))
 	Dia.horas_decorridas = maxf(0.0, float(estado.get("horas_decorridas", 0.0)))
 	Dia.relogio_alterado = bool(estado.get("relogio_alterado", false))
+	var registro = estado.get("registro_do_relogio", [])
+	Dia.registro_do_relogio = (registro as Array).duplicate(true) if registro is Array else []
+	_relogio_pausado_antes = bool(estado.get("pausado", false))
+	Dia.pausado = _relogio_pausado_antes or get_tree().paused
 	_machado_inicial_entregue = bool(estado.get("machado_inicial_entregue", false))
 	if estado.has("hora"):
 		Dia.definir_hora(float(estado["hora"]))

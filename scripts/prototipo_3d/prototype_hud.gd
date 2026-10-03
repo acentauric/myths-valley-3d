@@ -12,6 +12,7 @@ const TemaMenu = preload("res://scripts/prototipo_3d/tema_menu.gd")
 const TelaCarregamento = preload("res://scripts/prototipo_3d/tela_carregamento.gd")
 const Identidade = preload("res://scripts/prototipo_3d/identidade.gd")
 const PainelAjustes = preload("res://scripts/prototipo_3d/painel_ajustes.gd")
+const CaixaDePergunta = preload("res://scripts/prototipo_3d/caixa_de_pergunta.gd")
 const Minimapa = preload("res://scripts/prototipo_3d/minimapa.gd")
 
 
@@ -97,7 +98,7 @@ var _house_info_panel: Panel
 var _house_info_label: Label
 var _house_info_heading: Label
 var _clock_label: Label
-var _menu_confirm: Control
+var _menu_confirm = null	# caixa_de_pergunta.gd
 var _map_icon	# hud_icon.gd
 var _settings_icon	# hud_icon.gd
 var _settings: Control
@@ -840,68 +841,20 @@ func menu_confirm_open() -> bool:
 	return is_instance_valid(_menu_confirm)
 
 
-## Confirmação de saída para o menu, no mesmo visual dos modais do menu. Roda com o
-## jogo pausado (PROCESS_MODE_ALWAYS); Esc ou clique fora cancelam.
+## Confirmação de saída para o menu, na caixa de pergunta do vale
+## (`caixa_de_pergunta.gd`), a mesma do relógio. Roda com o jogo pausado; Esc ou
+## clique fora cancelam.
 func open_menu_confirm() -> void:
 	if menu_confirm_open():
 		return
-	_menu_confirm = Control.new()
-	_menu_confirm.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	_menu_confirm.theme = TemaMenu.criar()
-	_menu_confirm.process_mode = Node.PROCESS_MODE_ALWAYS
-	_root.add_child(_menu_confirm)
-	var shade := ColorRect.new()
-	shade.color = Color(0, 0, 0, 0.55)
-	shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	shade.gui_input.connect(func(event: InputEvent) -> void:
-		if event is InputEventMouseButton and event.pressed:
-			_close_menu_confirm(false))
-	_menu_confirm.add_child(shade)
-	var box := PanelContainer.new()
-	box.add_theme_stylebox_override("panel", TemaMenu.estilo_painel())
-	box.custom_minimum_size = Vector2(440, 0)
-	box.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
-	box.grow_horizontal = Control.GROW_DIRECTION_BOTH
-	box.grow_vertical = Control.GROW_DIRECTION_BOTH
-	_menu_confirm.add_child(box)
-	var column := VBoxContainer.new()
-	column.add_theme_constant_override("separation", 14)
-	box.add_child(column)
-	var title := Label.new()
-	title.text = "Voltar ao menu?"
-	title.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_TITULO, 600, 2))
-	title.add_theme_font_size_override("font_size", 24)
-	title.add_theme_color_override("font_color", Identidade.CREME)
-	column.add_child(title)
-	var text := Label.new()
-	text.text = "O passeio termina aqui. Ao entrar de novo, o dia recomeça."
-	text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	text.add_theme_font_size_override("font_size", 16)
-	text.add_theme_color_override("font_color", Color("c9b98f"))
-	column.add_child(text)
-	var buttons := HBoxContainer.new()
-	buttons.add_theme_constant_override("separation", 12)
-	column.add_child(buttons)
-	var cancel := Button.new()
-	cancel.text = "CONTINUAR"
-	cancel.custom_minimum_size.y = 44
-	cancel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	var escape := InputEventKey.new()
-	escape.keycode = KEY_ESCAPE
-	cancel.shortcut = Shortcut.new()
-	cancel.shortcut.events = [escape]
-	cancel.pressed.connect(_close_menu_confirm.bind(false))
-	buttons.add_child(cancel)
-	var leave := Button.new()
-	leave.text = "IR AO MENU"
-	leave.custom_minimum_size.y = 44
-	leave.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	leave.theme_type_variation = &"BotaoNegativo"
-	leave.pressed.connect(_close_menu_confirm.bind(true))
-	buttons.add_child(leave)
-	for button: Button in [cancel, leave]:
-		button.mouse_entered.connect(func(): Audio.efeito("ui_hover"))
-	cancel.grab_focus()
+	_menu_confirm = CaixaDePergunta.new()
+	_menu_confirm.perguntar(self, {
+		"titulo": "Voltar ao menu?",
+		"texto": "O passeio termina aqui. Ao entrar de novo, o dia recomeça.",
+		"nao": "CONTINUAR",
+		"sim": "IR AO MENU",
+	})
+	_menu_confirm.respondeu.connect(_close_menu_confirm)
 
 
 func _close_menu_confirm(leave: bool) -> void:

@@ -37,7 +37,10 @@ const RESERVA := "user://reserva_do_teste_de_salvamento"
 const DO_MUNDO := {
 	# `relogio_alterado` é a marca de que o jogador parou o relógio e a partida
 	# deixou de contar conquista; sem ela no save, carregar apagaria o aviso.
-	"Dia": ["hora", "horas_decorridas", "relogio_alterado"],
+	# `registro_do_relogio` diz quando e como ele mexeu no relógio ("a
+	# alteração no backlog do save"), e `pausado` é o relógio que ELE parou:
+	# carregar não o religa calado.
+	"Dia": ["hora", "horas_decorridas", "relogio_alterado", "registro_do_relogio", "pausado"],
 	# O CADERNO DO VALE não é guardado campo a campo: o `estado()` dele devolve
 	# os três de uma vez e o `restaurar()` os põe de volta, porque `ativas` é
 	# lista de dicionários e o alvo de cada missão é um Vector3 — coisa que o
@@ -51,7 +54,7 @@ const FORA_DO_SAVE := {
 	"Dia": {
 		"velocidade": "preferência do AJUSTAR (a velocidade do tempo), não da partida",
 		"hora_inicial": "preferência do AJUSTAR: a hora em que uma partida NOVA começa",
-		"pausado": "estado de tela: o relógio pausado pelo botão do HUD ou pelos ajustes",
+		"pausa_no_jogo": "preferência do AJUSTAR (pode-se parar o relógio pelo menu do Esc?), não da partida",
 		"congelado_na_carga": "estado da tela de carregamento, que dura segundos",
 		"latitude": "o lugar do vale no globo, para a curva do sol; não muda com a partida",
 	},
@@ -157,6 +160,11 @@ func _run() -> void:
 	relogio.dormir()
 	dia.definir_hora(15.5)
 	var dia_salvo: int = relogio.dia_absoluto()
+	# O RELÓGIO QUE O JOGADOR PAROU, e o registro disso. Sem tela aberta, o
+	# `Dia` parado é a escolha dele.
+	dia.marcar_relogio_alterado()
+	dia.registrar_no_relogio("parou", "menu")
+	dia.pausado = true
 	if vale.pedro != null:
 		vale.pedro.missao = 2
 		vale.pedro.set("_iniciado", true)
@@ -227,6 +235,12 @@ func _run() -> void:
 	_conferir(absf(dia.hora - 15.5) < 0.3, "a hora voltou %s, e era 15h30: o Dia não recebeu a hora do save" % dia.texto_hora())
 	_conferir(relogio.dia_absoluto() == dia_salvo, "o dia voltou %d, e era %d" % [relogio.dia_absoluto(), dia_salvo])
 	_conferir(relogio.pausado, "depois de carregar, o calendário ficou solto do Dia")
+	_conferir(dia.relogio_alterado, "a marca do relógio parado não voltou do save")
+	_conferir(dia.registro_do_relogio.size() == 1 and str(dia.registro_do_relogio[0].get("o_que", "")) == "parou",
+		"o registro do relógio voltou %s, e era uma parada" % str(dia.registro_do_relogio))
+	_conferir(dia.pausado, "o relógio que o jogador parou voltou andando do save")
+	dia.pausado = false
+	dia.relogio_alterado = false
 	_conferir(inventario.quantidade("facao") == 1, "o facão não voltou na mochila")
 	_conferir(is_equal_approx(vida.atual, vida.maximo() - 6.0), "a vida voltou %s" % str(vida.atual))
 	_conferir(regra.sabe("ginga"), "a ginga aprendida não voltou")

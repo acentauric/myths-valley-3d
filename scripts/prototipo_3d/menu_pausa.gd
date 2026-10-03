@@ -34,6 +34,7 @@ signal abriu
 signal fechou
 
 const Identidade = preload("res://scripts/prototipo_3d/identidade.gd")
+const CaixaDePergunta = preload("res://scripts/prototipo_3d/caixa_de_pergunta.gd")
 const TemaMenu = preload("res://scripts/prototipo_3d/tema_menu.gd")
 const Atalhos = preload("res://scripts/prototipo_3d/atalhos.gd")
 
@@ -92,12 +93,10 @@ var _rodape: Label
 ## Recado da última ação, quando ela não muda nada na tela (salvar). Some na
 ## próxima mexida — ver `_fazer`.
 var _aviso := ""
-## A caixa que pergunta antes de uma linha com `confirmar`, a linha que espera a
-## resposta e os dois botões dela. Ver `_perguntar`.
-var _pergunta: Control = null
+## A caixa que pergunta antes de uma linha com `confirmar` e a linha que espera
+## a resposta. Ver `_perguntar`.
+var _pergunta = null	# caixa_de_pergunta.gd
 var _pergunta_de := -1
-var _pergunta_sim: Button
-var _pergunta_nao: Button
 
 
 func _ready() -> void:
@@ -376,69 +375,14 @@ func perguntando() -> bool:
 	return is_instance_valid(_pergunta)
 
 
-## A CAIXA DA PERGUNTA, no visual do "Voltar ao menu?" do HUD: título, texto, e
-## os dois botões — o de desistir à esquerda e com o foco, porque é o que não
-## custa nada; o de fazer em terracota. Esc ou clique fora desistem.
+## A CAIXA DA PERGUNTA (`CaixaDePergunta`), por cima do menu. As teclas, com
+## ela aberta, são dela — inclusive o Esc, que desiste.
 func _perguntar(indice: int, dados: Dictionary) -> void:
 	_pergunta_de = indice
-	_pergunta = Control.new()
-	_pergunta.name = "Pergunta"
-	_pergunta.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	_pergunta.theme = TemaMenu.criar()
-	add_child(_pergunta)
-	var sombra := ColorRect.new()
-	sombra.color = Color(0, 0, 0, 0.55)
-	sombra.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	sombra.gui_input.connect(func(evento: InputEvent) -> void:
-		if evento is InputEventMouseButton and evento.pressed:
-			_responder(false))
-	_pergunta.add_child(sombra)
-	var caixa := PanelContainer.new()
-	caixa.add_theme_stylebox_override("panel", TemaMenu.estilo_painel())
-	caixa.custom_minimum_size = Vector2(460, 0)
-	caixa.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
-	caixa.grow_horizontal = Control.GROW_DIRECTION_BOTH
-	caixa.grow_vertical = Control.GROW_DIRECTION_BOTH
-	_pergunta.add_child(caixa)
-	var coluna := VBoxContainer.new()
-	coluna.add_theme_constant_override("separation", 14)
-	caixa.add_child(coluna)
-	var titulo := Label.new()
-	titulo.text = str(dados.get("titulo", ""))
-	titulo.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_TITULO, 600, 2))
-	titulo.add_theme_font_size_override("font_size", 24)
-	titulo.add_theme_color_override("font_color", Identidade.CREME)
-	coluna.add_child(titulo)
-	var texto := Label.new()
-	texto.name = "Texto"
-	texto.text = str(dados.get("texto", ""))
-	texto.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	texto.custom_minimum_size = Vector2(412, 0)
-	texto.add_theme_font_size_override("font_size", 16)
-	texto.add_theme_color_override("font_color", Color("c9b98f"))
-	coluna.add_child(texto)
-	var botoes := HBoxContainer.new()
-	botoes.add_theme_constant_override("separation", 12)
-	coluna.add_child(botoes)
-	_pergunta_nao = Button.new()
-	_pergunta_nao.name = "Nao"
-	_pergunta_nao.text = str(dados.get("nao", "CANCELAR"))
-	_pergunta_nao.custom_minimum_size.y = 44
-	_pergunta_nao.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_pergunta_nao.pressed.connect(_responder.bind(false))
-	botoes.add_child(_pergunta_nao)
-	_pergunta_sim = Button.new()
-	_pergunta_sim.name = "Sim"
-	_pergunta_sim.text = str(dados.get("sim", "CONFIRMAR"))
-	_pergunta_sim.custom_minimum_size.y = 44
-	_pergunta_sim.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_pergunta_sim.theme_type_variation = &"BotaoNegativo"
-	_pergunta_sim.pressed.connect(_responder.bind(true))
-	botoes.add_child(_pergunta_sim)
-	for botao: Button in [_pergunta_nao, _pergunta_sim]:
-		botao.mouse_entered.connect(func(): Audio.efeito("ui_hover"))
+	_pergunta = CaixaDePergunta.new()
+	_pergunta.perguntar(self, dados)
+	_pergunta.respondeu.connect(_responder)
 	Audio.efeito("ui_trava")
-	_pergunta_nao.grab_focus()
 
 
 func _responder(sim: bool) -> void:
@@ -453,30 +397,6 @@ func _responder(sim: bool) -> void:
 	else:
 		Audio.efeito("ui_voltar")
 		_redesenhar()
-
-
-## COM A PERGUNTA ABERTA, AS TECLAS SÃO DELA, inclusive o Esc — que o dono das
-## telas também ouve no `_input` e usaria para fechar o menu inteiro. Este nó
-## entra no vale depois dele, e por isso ouve antes.
-func _input(event: InputEvent) -> void:
-	if not perguntando():
-		return
-	if not (event is InputEventKey and event.pressed and not event.echo):
-		return
-	match event.physical_keycode:
-		KEY_ESCAPE:
-			_responder(false)
-		KEY_LEFT, KEY_A:
-			_pergunta_nao.grab_focus()
-		KEY_RIGHT, KEY_D:
-			_pergunta_sim.grab_focus()
-		KEY_ENTER, KEY_KP_ENTER:
-			_responder(_pergunta_sim.has_focus())
-		_:
-			if event.physical_keycode == Atalhos.tecla("interagir"):
-				_responder(_pergunta_sim.has_focus())
-			# As outras teclas não passam para o menu nem para o vale.
-	get_viewport().set_input_as_handled()
 
 
 func _unhandled_key_input(event: InputEvent) -> void:

@@ -40,6 +40,16 @@ atualize esse arquivo e este documento juntos.
   mira a cabeça de três quartos com luz de estúdio num mundo próprio e guarda a foto. A
   teia social (lista e página) e o diário (o rosto de quem deu a missão) usam a foto; o
   desenho 2D fica de reserva até ela sair, e sem placa de vídeo (`tests/teia_social.gd`).
+- **O relógio pode ser mexido, com aviso, confirmação e registro no save.** "Parada"
+  voltou à passagem do tempo do AJUSTAR, e "Pausar o relógio no jogo" (Permitido, de
+  fábrica, ou Bloqueado) voltou a ser opção. Parar o tempo — pela linha Relógio do
+  Esc ou pelo "Parada" — e adiantar a hora (T) perguntam antes, na primeira vez da
+  partida, numa caixa que fala das conquistas; o "não" não mexe em nada. Toda mudança
+  vai para o registro do relógio, que o save guarda com o dia e a hora do jogo, junto
+  com o relógio que o jogador deixou parado (carregar não o religa). Bloqueado, a
+  linha do Esc não para e diz por quê; religar sempre se pode. Partida que começa em
+  "Parada" já começa marcada. A caixa de pergunta virou uma só para o menu, o HUD e o
+  AJUSTAR (`tests/relogio.gd`, `menu_pausa.gd` e `salvamento.gd`, falsificados).
 - **A igreja do Bom Jesus abre por dentro, o primeiro cômodo do vale** (#26). O cômodo
   mora dentro da própria igreja, no lugar dela: entra-se andando pela porta, sem
   escurecer, e o Pedro entra junto. Ao montar o vale, raios medem a casca do modelo por

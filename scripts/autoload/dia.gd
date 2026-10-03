@@ -19,19 +19,21 @@ const ARQUIVO := "user://preferencias_visuais.cfg"
 ## mapa sem correria. "Lenta" é o triplo disso, para quem quer passear; e
 ## "Rápida" continua existindo em dez, que é onde ela serve, que é teste.
 ##
-## "PARADA" SAIU DA ESCOLHA, e o índice 0 ficou aposentado no lugar dela. Parar
-## o relógio é desligar as conquistas da partida, e isso pede aviso e marca no
-## save (ver `relogio_alterado`); uma velocidade "Parada" no AJUSTAR fazia o
-## mesmo calada. Agora só há uma porta para parar o tempo: a linha "Relógio" do
-## menu do Esc, que avisa. O índice continua existindo para o arquivo de
-## preferências de quem escolheu "Parada" antes ser lido sem susto — vira
-## "Normal" (ver `_ready`) — e para "Lenta", "Normal" e "Rápida" manterem o
-## número que já tinham.
+## "PARADA" CONTINUA NA ESCOLHA DO AJUSTAR, com o aviso. "Pode manter a
+## possibilidade de alterar o relógio, desde que tenha o aviso, a confirmação e
+## a alteração no backlog do save." Parar o relógio desliga as conquistas da
+## partida: escolher "Parada" pergunta antes (`aviso_de_parar`), marca a
+## partida (`relogio_alterado`) e vai para o registro do relógio, no save. A
+## roda do menu do Esc gira só entre as que correm.
 const VELOCIDADES := [0.0, 90.0, 30.0, 10.0]
 const ROTULOS_VELOCIDADE := ["Parada", "Lenta", "Normal", "Rápida"]
-## A primeira velocidade que se escolhe; abaixo dela é a aposentada.
+const PARADA := 0
+## A primeira das que correm: a roda do menu do Esc começa nela.
 const PRIMEIRA_VELOCIDADE := 1
 const VELOCIDADE_PADRAO := 2
+## Quantas mudanças o registro do relógio guarda. A primeira fica sempre: é a
+## que diz quando a partida deixou de contar conquista.
+const LIMITE_DO_REGISTRO := 300
 ## Nascer e pôr do sol em Bom Jesus no fim de setembro (latitude -12,8°, hora solar).
 const NASCER := 5.95
 const POR := 18.0
@@ -48,6 +50,19 @@ var velocidade: int = VELOCIDADE_PADRAO
 var hora_inicial: float = 7.0
 ## Congela a passagem do tempo (o menu controla o próprio relógio).
 var pausado := false
+## Se o jogador pode pausar o relógio no meio da partida (AJUSTAR → "Pausar o
+## relógio no jogo"). Vem permitido: a pausa já pergunta antes e avisa das
+## conquistas; quem não quer nem a possibilidade, bloqueia. Bloqueado só impede
+## PARAR — religar um relógio parado sempre se pode, que foi o defeito do
+## playtest de 02/10 ("o relógio parado no MENU não tá funcionando para voltar
+## a fazer o tempo correr").
+var pausa_no_jogo := true
+## O REGISTRO DO RELÓGIO: cada mudança que o jogador fez nele nesta partida —
+## parar, religar, adiantar a hora, trocar a velocidade, começar parada —, com
+## o dia e a hora do jogo em que foi feita. Vai no save, como a marca
+## `relogio_alterado`: a marca diz SE a partida deixou de contar conquista; o
+## registro diz quando e como. Cada entrada: {dia, hora, o_que, de}.
+var registro_do_relogio: Array = []
 ## O JOGADOR PAROU O RELÓGIO NESTA PARTIDA, e daí em diante ela não conta
 ## conquista.
 ##
@@ -73,9 +88,10 @@ func _ready() -> void:
 	var preferencias := ConfigFile.new()
 	if preferencias.load(ARQUIVO) == OK:
 		velocidade = int(preferencias.get_value("dia", "velocidade", VELOCIDADE_PADRAO))
-		if velocidade < PRIMEIRA_VELOCIDADE or velocidade >= VELOCIDADES.size():
+		if velocidade < 0 or velocidade >= VELOCIDADES.size():
 			velocidade = VELOCIDADE_PADRAO
 		hora_inicial = fmod(float(preferencias.get_value("dia", "hora_inicial", 7.0)), 24.0)
+		pausa_no_jogo = bool(preferencias.get_value("dia", "pausa_no_jogo", true))
 		hora = hora_inicial
 	_atualizar_periodo()
 
@@ -130,17 +146,26 @@ func avancar(horas: float) -> void:
 	definir_hora(hora + horas)
 
 
+## Toda troca entra no registro do relógio, e "Parada" marca a partida — quem a
+## escolhe na tela já confirmou o `aviso_de_parar`.
 func definir_velocidade(indice: int) -> void:
-	velocidade = clampi(indice, PRIMEIRA_VELOCIDADE, VELOCIDADES.size() - 1)
+	var nova := clampi(indice, 0, VELOCIDADES.size() - 1)
+	if nova != velocidade:
+		registrar_no_relogio("velocidade", ROTULOS_VELOCIDADE[nova])
+	velocidade = nova
+	if velocidade == PARADA:
+		marcar_relogio_alterado()
 	var preferencias := ConfigFile.new()
 	preferencias.load(ARQUIVO)
 	preferencias.set_value("dia", "velocidade", velocidade)
 	preferencias.save(ARQUIVO)
 
 
-## A velocidade seguinte na roda Lenta → Normal → Rápida → Lenta, sem passar pela
-## aposentada.
+## A velocidade seguinte na roda Lenta → Normal → Rápida → Lenta, a do menu do
+## Esc. De "Parada", a roda religa em "Normal".
 func proxima_velocidade() -> int:
+	if velocidade < PRIMEIRA_VELOCIDADE:
+		return VELOCIDADE_PADRAO
 	var escolhas := VELOCIDADES.size() - PRIMEIRA_VELOCIDADE
 	return PRIMEIRA_VELOCIDADE + (velocidade - PRIMEIRA_VELOCIDADE + 1) % escolhas
 
@@ -153,6 +178,68 @@ func marcar_relogio_alterado() -> void:
 ## A partida ainda conta conquista?
 func conquistas_valem() -> bool:
 	return not relogio_alterado
+
+
+func definir_pausa_no_jogo(permitir: bool) -> void:
+	pausa_no_jogo = permitir
+	var preferencias := ConfigFile.new()
+	preferencias.load(ARQUIVO)
+	preferencias.set_value("dia", "pausa_no_jogo", pausa_no_jogo)
+	preferencias.save(ARQUIVO)
+
+
+## PARTIDA NOVA: a marca e o registro zeram, e o relógio corre. Quem carrega
+## uma partida salva os põe de volta depois (`restaurar_do_save` do vale).
+func zerar_a_partida() -> void:
+	relogio_alterado = false
+	registro_do_relogio = []
+	pausado = false
+
+
+## Escreve uma mudança no registro do relógio (ver `registro_do_relogio`).
+## `o_que`: "parou", "voltou", "adiantou", "velocidade" ou "comecou_parada";
+## `de`: de onde veio ("menu", "ajustar", "tecla"), ou a velocidade nova.
+func registrar_no_relogio(o_que: String, de: String = "") -> void:
+	var calendario := get_node_or_null("/root/Relogio")
+	registro_do_relogio.append({
+		"dia": calendario.dia_absoluto() if calendario != null else 0,
+		"hora": texto_hora(),
+		"o_que": o_que,
+		"de": de,
+	})
+	if registro_do_relogio.size() > LIMITE_DO_REGISTRO:
+		registro_do_relogio.remove_at(1)
+
+
+## O AVISO ANTES DE PARAR O RELÓGIO, igual em toda porta que o para (a linha
+## "Relógio" do Esc, o "Parada" do AJUSTAR): {titulo, texto, nao, sim} para a
+## caixa de pergunta, ou {} quando a partida já não conta conquista — aí não há
+## mais o que perder, e perguntar de novo só atrapalharia. `sempre` pergunta
+## mesmo assim: no menu inicial a marca é a da partida que acabou.
+func aviso_de_parar(sempre: bool = false) -> Dictionary:
+	if relogio_alterado and not sempre:
+		return {}
+	return {
+		"titulo": tr("Parar o relógio?"),
+		"texto": "%s %s" % [tr("Com o relógio parado, esta partida perde as conquistas daqui para frente — mesmo que você volte a ligá-lo depois."),
+			tr("A mudança fica no registro do relógio, no save.")],
+		"nao": tr("DEIXAR CORRER"),
+		"sim": tr("PARAR O RELÓGIO"),
+	}
+
+
+## O AVISO ANTES DE ADIANTAR A HORA (a tecla "Avançar a hora"): pular o tempo
+## também é mexer no relógio. Mesma regra do `aviso_de_parar`.
+func aviso_de_adiantar() -> Dictionary:
+	if relogio_alterado:
+		return {}
+	return {
+		"titulo": tr("Adiantar o relógio?"),
+		"texto": "%s %s" % [tr("Pular uma hora tira as conquistas desta partida daqui para frente."),
+			tr("A mudança fica no registro do relógio, no save.")],
+		"nao": tr("DEIXAR COMO ESTÁ"),
+		"sim": tr("ADIANTAR UMA HORA"),
+	}
 
 
 func definir_hora_inicial(nova: float) -> void:

@@ -283,6 +283,11 @@ func _run() -> void:
 		menu._responder(true)
 		await _frames(2)
 		_conferir(dia.relogio_alterado, "parar o relógio não marcou a partida (relogio_alterado)")
+		# "...desde que tenha o aviso, a confirmação e a alteração no backlog do
+		# save": a parada entra no registro do relógio.
+		_conferir(not dia.registro_do_relogio.is_empty()
+				and str(dia.registro_do_relogio[-1].get("o_que", "")) == "parou",
+			"parar o relógio não entrou no registro dele: %s" % str(dia.registro_do_relogio))
 		texto_relogio = (_lista_de(menu).get_child(i_relogio) as Button).text
 		_conferir(texto_relogio.contains("parado"), "o relógio parou e a linha diz '%s'" % texto_relogio)
 		# Fechar devolve o vale andando e o relógio parado, como o jogador pediu.
@@ -300,9 +305,34 @@ func _run() -> void:
 		await _frames(2)
 		_conferir(not dia.pausado, "religar o relógio pelo menu não fez o tempo voltar a correr")
 		_conferir(dia.relogio_alterado, "religar o relógio apagou a marca: 'dali para frente' não volta")
+		_conferir(str(dia.registro_do_relogio[-1].get("o_que", "")) == "voltou",
+			"religar o relógio não entrou no registro dele: %s" % str(dia.registro_do_relogio))
 		_conferir(jogo.estado_para_salvar().get("relogio_alterado", false) == true,
 			"a marca do relógio não vai para o save")
+		_conferir((jogo.estado_para_salvar().get("registro_do_relogio", []) as Array).size() == dia.registro_do_relogio.size(),
+			"o registro do relógio não vai para o save")
 		dia.relogio_alterado = false
+
+		# A TRANCA DO AJUSTAR: bloqueado, a linha não para o tempo e diz por quê.
+		# Mexe-se no campo, e não no `definir_pausa_no_jogo`, para o portão não
+		# gravar a preferência do jogador.
+		dia.pausa_no_jogo = false
+		var registro_antes: int = dia.registro_do_relogio.size()
+		jogo.telas.abrir("menu_pausa")
+		await _frames(2)
+		var com_tranca: String = (_lista_de(menu).get_child(i_relogio) as Button).text
+		_conferir(com_tranca.contains("bloqueada"), "com a pausa bloqueada, a linha do relógio diz '%s'" % com_tranca)
+		menu._cursor = i_relogio
+		menu._fazer()
+		await _frames(2)
+		_conferir(not menu.perguntando(), "com a pausa bloqueada, a linha ainda pergunta se pode parar")
+		_conferir(str(menu.get("_aviso")).contains("bloqueado"),
+			"com a pausa bloqueada, a linha não diz por que não parou: '%s'" % str(menu.get("_aviso")))
+		jogo.telas.fechar_tudo()
+		await _frames(2)
+		_conferir(not dia.pausado and not dia.relogio_alterado and dia.registro_do_relogio.size() == registro_antes,
+			"com a pausa bloqueada, a linha do relógio parou o tempo mesmo assim")
+		dia.pausa_no_jogo = true
 
 	# --- 8. LINHA QUE FECHA O MENU DEVOLVE O VALE ----------------------------
 	#

@@ -13,6 +13,7 @@ const TeclasMovimento = preload("res://scripts/prototipo_3d/teclas_movimento.gd"
 const Atalhos = preload("res://scripts/prototipo_3d/atalhos.gd")
 const CameraMouse = preload("res://scripts/prototipo_3d/camera_mouse.gd")
 const Identidade = preload("res://scripts/prototipo_3d/identidade.gd")
+const CaixaDePergunta = preload("res://scripts/prototipo_3d/caixa_de_pergunta.gd")
 
 ## × do cabeçalho (o anfitrião fecha o modal).
 signal fechar_pedido
@@ -56,6 +57,9 @@ var _content: VBoxContainer
 var _camada: Node
 var _pai: Container
 var _ajuda: Control
+## O seletor da passagem do tempo, para "não" na pergunta do "Parada" o devolver.
+var _seletor_do_tempo: OptionButton
+var _pergunta_do_tempo = null	# caixa_de_pergunta.gd
 
 
 func _init(dentro_do_jogo := false) -> void:
@@ -148,16 +152,20 @@ func _aba_geral(esquerda: VBoxContainer, direita: VBoxContainer) -> void:
 		_escolha("Idioma", IdiomaMenu.ROTULOS, IdiomaMenu.indice(), func(i: int) -> void:
 			IdiomaMenu.definir(i)
 			_reconstruir(0), 0)
-	# Sem "Parada": parar o tempo desliga as conquistas da partida, e isso só se
-	# faz pela linha "Relógio" do menu do Esc, que avisa (ver `Dia.VELOCIDADES`).
-	var primeira := Dia.PRIMEIRA_VELOCIDADE
-	_escolha("Passagem do tempo", Dia.ROTULOS_VELOCIDADE.slice(primeira), Dia.velocidade - primeira,
-		func(i: int) -> void: Dia.definir_velocidade(i + primeira), Dia.VELOCIDADE_PADRAO - primeira)
+	# "PARADA" CONTINUA NA ESCOLHA, com o aviso: parar o tempo desliga as
+	# conquistas da partida, e o jogador lê e confirma antes; "não" devolve a
+	# escolha ao que estava (ver `_ao_escolher_o_tempo`).
+	_seletor_do_tempo = _escolha("Passagem do tempo", Dia.ROTULOS_VELOCIDADE, Dia.velocidade,
+		_ao_escolher_o_tempo, Dia.VELOCIDADE_PADRAO)
 	var hora_indice := 1
 	for indice in range(HORAS_INICIAIS.size()):
 		if absf(float(HORAS_INICIAIS[indice]) - Dia.hora_inicial) < 0.75:
 			hora_indice = indice
 	_escolha("Hora inicial", ROTULOS_HORAS, hora_indice, func(i: int) -> void: Dia.definir_hora_inicial(float(HORAS_INICIAIS[i])), PADRAO_HORA)
+	# A TRANCA DA PAUSA: permitido, a linha "Relógio" do Esc para o tempo (com o
+	# aviso); bloqueado, ela não para. Religar sempre se pode.
+	_escolha("Pausar o relógio no jogo", ["Permitido", "Bloqueado"], 0 if Dia.pausa_no_jogo else 1,
+		func(i: int) -> void: Dia.definir_pausa_no_jogo(i == 0), 0)
 	_escolha("Teclas de movimento", TeclasMovimento.ROTULOS, TeclasMovimento.modo(), TeclasMovimento.definir, TeclasMovimento.PADRAO)
 	# A CÂMERA DO MOUSE. Só muda o modo com que o jogo ABRE; a tecla da câmera
 	# continua alternando na hora, como sempre fez.
@@ -397,7 +405,7 @@ func _botao_restaurar(pai: Container, texto: String, canais: Array, dica: String
 
 ## Seleção com o botão de voltar ao padrão (`padrao`, índice da opção de fábrica) no
 ## fim da linha, apagado quando já está no padrão.
-func _escolha(titulo: String, opcoes: Array, selecionada: int, ao_escolher: Callable, padrao: int = -1) -> void:
+func _escolha(titulo: String, opcoes: Array, selecionada: int, ao_escolher: Callable, padrao: int = -1) -> OptionButton:
 	var anterior := _abrir_campo()
 	_rotulo_do_campo(titulo, titulo)
 	var linha := HBoxContainer.new()
@@ -423,6 +431,31 @@ func _escolha(titulo: String, opcoes: Array, selecionada: int, ao_escolher: Call
 			ao_escolher.call(padrao))
 	seletor.item_selected.connect(ao_escolher)
 	_pai = anterior
+	return seletor
+
+
+## A PASSAGEM DO TEMPO, escolhida. "Parada" pergunta antes (`Dia.aviso_de_parar`);
+## no menu inicial pergunta sempre, porque a marca que o `Dia` guarda ali é a da
+## partida que acabou. "Não" devolve o seletor ao que estava.
+func _ao_escolher_o_tempo(indice: int) -> void:
+	if indice == Dia.velocidade:
+		return
+	var aviso: Dictionary = Dia.aviso_de_parar(not no_jogo) if indice == Dia.PARADA else {}
+	if aviso.is_empty():
+		Dia.definir_velocidade(indice)
+		return
+	_pergunta_do_tempo = CaixaDePergunta.new()
+	_pergunta_do_tempo.perguntar(_camada, aviso)
+	Audio.efeito("ui_trava")
+	_pergunta_do_tempo.respondeu.connect(func(sim: bool) -> void:
+		_pergunta_do_tempo = null
+		if sim:
+			Dia.definir_velocidade(Dia.PARADA)
+			return
+		Audio.efeito("ui_voltar")
+		if is_instance_valid(_seletor_do_tempo):
+			_seletor_do_tempo.select(Dia.velocidade)
+			_seletor_do_tempo.item_selected.emit(Dia.velocidade))
 
 
 ## Botão quadrado com a seta circular, no fim de uma linha de ajuste.
