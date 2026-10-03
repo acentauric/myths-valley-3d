@@ -40,16 +40,32 @@ atualize esse arquivo e este documento juntos.
   mira a cabeça de três quartos com luz de estúdio num mundo próprio e guarda a foto. A
   teia social (lista e página) e o diário (o rosto de quem deu a missão) usam a foto; o
   desenho 2D fica de reserva até ela sair, e sem placa de vídeo (`tests/teia_social.gd`).
+- **As missões da fé, do 2D para os marcos do vale** (#52). Com o mirante consertado, o
+  Pedro passa o recado da Dona Zefa ("mandou te chamar"); ela, quando o jogador chega,
+  fala das três fés e manda ver os três lugares — o cruzeiro, o terreiro e a gameleira.
+  Chegar perto de cada um risca a conta e o mundo conta o que se vê dali; voltando a
+  ela, ela conta como é (uma fé por vez, a antiga congela, levar o acumulado custa
+  quase tudo) e só então os marcos aceitam alguém. Escolher no marco fecha o passo,
+  paga e rende XP de fé, e a fé escolhida dá a missão própria, na voz do mundo: a
+  romaria da católica (os quatro marcos da igreja, o altar lá dentro), a mesa da folha
+  do candomblé (três ervas, dois peixes e duas canas ao terreiro — a farinha do 2D espera
+  a casa de farinha, #27) e pagar o monte do caboclo (seis ostras à gameleira). A missão de uma fé congela quando o jogador muda
+  para outra e volta a correr se ele voltar. As ostras se catam à mão nas pedras da
+  maré, perto das pedras da ponta da praia, e o mirante e o roçado ganharam três moitas e
+  dois pés de cana: alvo não renasce, e a Dona Zefa e a Candinha levavam quase tudo. Recompensas do 2D; textos nos três idiomas
+  (`tests/cadeia_da_fe.gd`, falsificado). A cadeia ganhou duas metas: `visitar`
+  (riscar lugares de uma lista) e `oferendar` (levar a um lugar, e não a uma pessoa).
 - **A fé chega ao chão do vale: os seis marcos, o rito e a teia da fé no K** (#52). As
   três fés já estavam no vale (os autoloads `Fe`, `Ritos` e `Afinidade` do 2D),
   sem lugar onde acontecer. Agora há seis marcos: o cruzeiro diante da igreja, o
   ALTAR da igreja do Bom Jesus (por dentro da nave), a capela velha da rua do
   mirante, o cemitério, e dois que o vale não tinha — o terreiro, na mata a poente da
-  rua do mirante, atrás de uma linha de árvores (casa de taipa caiada, dois mastros
-  com pano branco, potes de barro e o fogo, aceso à noite), e a gameleira do
-  sambaqui, na ponta da praia perto das pedras (a árvore maior que a mata, em cima de
-  um monte de concha, com fitas no tronco e cuias entre as raízes). Nada foi gerado: é
-  o que o catálogo tinha, e o resto por código. Perto de um marco, o E: no da sua fé,
+  rua do mirante, atrás de uma linha de árvores (casa de taipa caiada, potes de barro e
+  o fogo, aceso à noite), e a gameleira do sambaqui, na ponta da praia perto das pedras
+  (a árvore maior que a mata, em cima de um monte de concha, com potes entre as
+  raízes). Só peças do catálogo, nos dois estilos; por código só o chão (o terreiro e
+  o monte de concha). Os mastros com pano branco e as fitas do 2D esperam peça do
+  Tripo, que é geração paga. Perto de um marco, o E: no da sua fé,
   o rito (fôlego, XP de fé e bênção, uma vez a cada sete dias — fora do prazo o marco
   diz o dia em que a graça volta); no de outra, a troca, em duas perguntas, com o
   preço de levar o acumulado (85%) e o social ditos antes do sim; sem fé, a entrada —

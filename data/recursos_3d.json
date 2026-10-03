@@ -75,6 +75,43 @@
       "quantidade": 1
     },
     {
+      "observacao": "TRÊS MOITAS A MAIS, para a mesa da folha do candomblé (#52): a Dona Zefa leva cinco das seis de cima, e a mesa pede três. Alvo não volta a nascer na mesma partida; sem estas, a mesa ficava impossível para quem fez a missão das ervas — que é quase todo mundo.",
+      "id": "erva_mirante_g",
+      "nome": "Moita de ervas",
+      "peca": "moita",
+      "lugar": "mirante",
+      "desvio": [-6.5, 1.0],
+      "tamanho": 1.0,
+      "ferramenta": "foice",
+      "golpes": 1,
+      "rende": "erva_da_serra",
+      "quantidade": 1
+    },
+    {
+      "id": "erva_mirante_h",
+      "nome": "Moita de ervas",
+      "peca": "moita",
+      "lugar": "mirante",
+      "desvio": [0.5, 7.0],
+      "tamanho": 1.0,
+      "ferramenta": "foice",
+      "golpes": 1,
+      "rende": "erva_da_serra",
+      "quantidade": 1
+    },
+    {
+      "id": "erva_mirante_i",
+      "nome": "Moita de ervas",
+      "peca": "moita",
+      "lugar": "mirante",
+      "desvio": [-1.5, -7.0],
+      "tamanho": 1.0,
+      "ferramenta": "foice",
+      "golpes": 1,
+      "rende": "erva_da_serra",
+      "quantidade": 1
+    },
+    {
       "id": "cana_rocado_a",
       "nome": "Pé de cana",
       "peca": "cana",
@@ -116,6 +153,31 @@
       "peca": "cana",
       "lugar": "rocado",
       "desvio": [-4.5, 4.5],
+      "tamanho": 1.0,
+      "ferramenta": "foice",
+      "golpes": 2,
+      "rende": "cana",
+      "quantidade": 2
+    },
+    {
+      "observacao": "DOIS PÉS A MAIS, pelo mesmo motivo das moitas do mirante: a Candinha leva seis das oito canas, e a mesa da folha (#52) pede duas.",
+      "id": "cana_rocado_e",
+      "nome": "Pé de cana",
+      "peca": "cana",
+      "lugar": "rocado",
+      "desvio": [1.5, 10.0],
+      "tamanho": 1.0,
+      "ferramenta": "foice",
+      "golpes": 2,
+      "rende": "cana",
+      "quantidade": 2
+    },
+    {
+      "id": "cana_rocado_f",
+      "nome": "Pé de cana",
+      "peca": "cana",
+      "lugar": "rocado",
+      "desvio": [-5.0, 8.5],
       "tamanho": 1.0,
       "ferramenta": "foice",
       "golpes": 2,
@@ -231,6 +293,55 @@
       "golpes": 4,
       "rende": "pedra",
       "quantidade": 3
+    },
+    {
+      "observacao": "AS OSTRAS DA MESA DO CABOCLO (#52): 'cata ostra na beira da maré e põe as suas conchas em cima das deles' (arraial.json do 2D, fe_monte). Nas pedras da maré, perto das pedras da ponta da praia, que é onde fica a gameleira do sambaqui. SEM FERRAMENTA ('ferramenta' vazia é à mão): ostra se cata, não se derruba. Quatro pedras de duas ostras cada, para as seis da missão e uma folga.",
+      "id": "ostra_pedras_a",
+      "nome": "Ostras na pedra",
+      "peca": "pedra_mare",
+      "lugar": "pedras",
+      "desvio": [3.0, 2.5],
+      "tamanho": 0.8,
+      "ferramenta": "",
+      "golpes": 1,
+      "rende": "ostra",
+      "quantidade": 2
+    },
+    {
+      "id": "ostra_pedras_b",
+      "nome": "Ostras na pedra",
+      "peca": "pedra_mare",
+      "lugar": "pedras",
+      "desvio": [-3.5, 3.5],
+      "tamanho": 0.8,
+      "ferramenta": "",
+      "golpes": 1,
+      "rende": "ostra",
+      "quantidade": 2
+    },
+    {
+      "id": "ostra_pedras_c",
+      "nome": "Ostras na pedra",
+      "peca": "pedra_mare",
+      "lugar": "pedras",
+      "desvio": [4.5, -2.0],
+      "tamanho": 0.8,
+      "ferramenta": "",
+      "golpes": 1,
+      "rende": "ostra",
+      "quantidade": 2
+    },
+    {
+      "id": "ostra_pedras_d",
+      "nome": "Ostras na pedra",
+      "peca": "pedra_mare",
+      "lugar": "pedras",
+      "desvio": [-2.0, -4.0],
+      "tamanho": 0.8,
+      "ferramenta": "",
+      "golpes": 1,
+      "rende": "ostra",
+      "quantidade": 2
     }
   ]
 }

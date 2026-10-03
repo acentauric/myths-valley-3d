@@ -1,0 +1,36 @@
+{
+  "observacao": "A MISSÃO PRÓPRIA DO CABOCLO (#52), do jogo 2D (arraial.json, fe_monte): pagar o monte — catar ostra e pôr as conchas em cima das de quem esteve aqui antes de todo mundo. Voz do mundo, sem nome; congela quando o jogador muda de fé. As ostras se catam à mão nas pedras da maré, perto das pedras da ponta da praia (recursos_3d.json).",
+  "dono": "fe_caboclo",
+  "nome": "Pagar o monte",
+  "nome_en": "Paying the mound",
+  "nome_es": "Pagar el montículo",
+  "principal": false,
+  "passos": [
+    {
+      "id": "fe_monte",
+      "titulo": "Pagar o monte",
+      "titulo_en": "Paying the mound",
+      "titulo_es": "Pagar el montículo",
+      "resumo": "Leve 6 ostras à gameleira",
+      "resumo_en": "Bring 6 oysters to the gameleira",
+      "resumo_es": "Lleva 6 ostras a la gameleira",
+      "lugar": "gameleira",
+      "raio": 5.0,
+      "audio": "",
+      "texto": "O monte debaixo da gameleira é concha, milhões, e quem juntou não deixou nome. Quem é do caboclo paga o monte: cata ostra nas pedras da maré, ali perto das pedras da ponta da praia, e põe as suas conchas em cima das deles. Seis bastam para a primeira vez. Não é oferenda. É continuar uma coisa que começou antes de todo mundo.",
+      "texto_en": "The mound under the gameleira is shell, millions, and whoever gathered it left no name. Those who follow the Caboclo pay the mound: pick oysters from the tide rocks, there by the rocks at the tip of the beach, and put your shells on top of theirs. Six are enough the first time. It is not an offering. It is carrying on something that began before everyone.",
+      "texto_es": "El montículo debajo de la gameleira es concha, millones, y quien lo juntó no dejó nombre. Quien es del caboclo paga el montículo: junta ostras en las piedras de la marea, ahí cerca de las piedras de la punta de la playa, y pone sus conchas encima de las de ellos. Seis bastan la primera vez. No es ofrenda. Es continuar algo que empezó antes que todos.",
+      "recompensa": { "peixe_assado": 2 },
+      "xp_de_fe": true,
+      "meta": {
+        "tipo": "oferendar",
+        "lugar": "gameleira",
+        "itens": { "ostra": 6 },
+        "raio": 5.0,
+        "resposta": "Seis conchas no alto do monte. Não se veem, de tanta que já tem. Você desce a mão pela raiz. O corpo não afrouxa; fica mais duro. É o que esta fé promete.",
+        "resposta_en": "Six shells at the top of the mound. They cannot be seen, there are so many already. You run your hand down the root. Your body does not loosen; it grows harder. That is what this faith promises.",
+        "resposta_es": "Seis conchas en lo alto del montículo. No se ven, de tantas que ya hay. Bajas la mano por la raíz. El cuerpo no se afloja; se endurece. Es lo que promete esta fe."
+      }
+    }
+  ]
+}

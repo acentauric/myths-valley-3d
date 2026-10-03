@@ -738,11 +738,15 @@ var dentro_de := ""
 
 
 ## Põe o corpo noutro lugar de uma vez, de frente para `rumo` (ângulo em Y) e
-## com a câmera atrás dele.
+## com a câmera atrás dele. A TERRA FIRME DE REFERÊNCIA RECOMEÇA ALI, como no
+## `reset_position`: chegar de uma vez num chão mais baixo — do terreiro, no
+## alto, à praia da gameleira — não é cair no mar, e a regra dos 2,5 m devolvia
+## o corpo ao lugar de onde ele saiu.
 func teleportar(destino: Vector3, rumo: float) -> void:
 	_cancel_walk()
 	global_position = destino
 	velocity = Vector3.ZERO
+	_last_land = Vector3.INF
 	_jumping = false
 	_jump_buffer_remaining = 0.0
 	visual.rotation.y = rumo

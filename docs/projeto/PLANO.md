@@ -6,11 +6,14 @@ raiz. O jogo 2D segue sua própria linha em `acentauric/myths-valley`.
 ## O que já roda
 
 Exploração do vale, moradores, missões em âncoras com recompensa (#48) e
-diário de missões acompanhadas, calendário, energia, vida, inventário,
-equipamento, talentos, fé, cartas, coleção, obras, pesca, cozinha, oficina,
-o primeiro cômodo (a igreja do Bom Jesus, #26) e três vagas de salvamento. A
-existência de um sistema não significa que todos os seus gatilhos ou telas
-estejam concluídos.
+diário de missões acompanhadas, calendário (com o registro das mudanças no
+relógio), energia, vida, inventário, equipamento, talentos, cartas, coleção,
+obras, pesca, cozinha, oficina, a fé (#52: os seis marcos, o rito, a troca, a
+teia da fé no K e as missões da Dona Zefa e de cada fé), o primeiro cômodo (a
+igreja do Bom Jesus, por dentro da própria igreja, #26) e três vagas de
+salvamento. A existência de um sistema não significa que todos os seus
+gatilhos ou telas estejam concluídos: a festa de cada fé, com os moradores no
+marco à tarde, ainda não tem quem os leve até lá.
 
 ## Próxima tarefa
 

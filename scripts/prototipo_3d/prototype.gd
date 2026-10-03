@@ -6,6 +6,7 @@ extends Node3D
 const NPCS := "res://data/npcs_3d.json"
 const TeclasMovimento = preload("res://scripts/prototipo_3d/teclas_movimento.gd")
 const MarcosDaFe = preload("res://scripts/prototipo_3d/marcos_da_fe.gd")
+const VozDoMarco = preload("res://scripts/prototipo_3d/voz_do_marco.gd")
 const CaixaDePergunta = preload("res://scripts/prototipo_3d/caixa_de_pergunta.gd")
 const TelaCarregamento = preload("res://scripts/prototipo_3d/tela_carregamento.gd")
 const TemaMenu = preload("res://scripts/prototipo_3d/tema_menu.gd")
@@ -538,7 +539,7 @@ func _ready() -> void:
 	marcos.name = "MarcosDaFe"
 	add_child(marcos)
 	marcos.configurar(world, player, hud, interiores)
-	marcos.liberada = func() -> bool: return Fe.ativa != ""
+	_pendurar_as_filas_da_fe()
 	interiores.entrou.connect(_ao_mudar_de_lado.unbind(1))
 	interiores.saiu.connect(_ao_mudar_de_lado.unbind(1))
 	# A PARTIDA SALVA entra depois de o vale estar montado — moradores, Pedro,
@@ -567,6 +568,65 @@ func _ao_mudar_de_lado() -> void:
 		hud.set_region_title(interiores.nome_de(qual))
 	else:
 		hud.set_region_title(world.get_region_title())
+
+
+## AS FILAS DA FÉ (#52), as missões do 2D trazidas para os marcos do vale.
+##
+## A DA DONA ZEFA vem pela boca do Pedro, como no 2D ("A Dona Zefa mandou te
+## chamar"), e abre com o mirante consertado: ela começa reconhecendo o que o
+## jogador fez. Mostra os três marcos, conta como é, e só então eles aceitam
+## alguém (`marcos.liberada`). Na primeira chegada a cada marco, o mundo conta o
+## que se vê dali.
+##
+## AS DE CADA FÉ não têm morador: o marco as dá, na voz do mundo
+## (`voz_do_marco.gd`), no dia em que o jogador entra na fé — e congelam quando
+## ele muda para outra, voltando a correr se ele voltar.
+func _pendurar_as_filas_da_fe() -> void:
+	var da_fe: Node = null
+	if pedro != null:
+		da_fe = _pendurar_cadeia(pedro, "res://data/missoes_fe.json", 6.0, "pedro_fe")
+	if da_fe != null:
+		da_fe.depois_de = func() -> bool:
+			var arraial = _cadeias.get("pedro_arraial")
+			return arraial != null and arraial.acabou()
+		da_fe.ponto_do_lugar = Callable(marcos, "ponto")
+		da_fe.visitou.connect(func(lugar: String) -> void: marcos.narrar_visita(lugar))
+	marcos.liberada = func() -> bool:
+		var fila = _cadeias.get("pedro_fe")
+		return Fe.ativa != "" or (fila != null and fila.passou("fe_voltar"))
+	for fe in Fe.ids():
+		var marco := Fe.marco_maior(str(fe))
+		var voz := VozDoMarco.new()
+		voz.name = "VozDo_" + marco
+		voz.dados = {"id": "fe_" + str(fe), "nome": tr(str(MarcosDaFe.NOMES_DOS_MARCOS.get(marco, marco)))}
+		add_child(voz)
+		if marcos.ponto(marco).is_finite():
+			voz.global_position = marcos.ponto(marco)
+		var fila = _pendurar_cadeia(voz, "res://data/missoes_fe_%s.json" % str(fe), 0.0, "fe_" + str(fe))
+		if fila == null:
+			continue
+		fila.ponto_do_lugar = Callable(marcos, "ponto")
+		var esta := str(fe)
+		fila.so_enquanto = func() -> bool: return Fe.ativa == esta
+	# POR MÉTODO, e não por lambda: o `Fe` é autoload e não morre, e o vale
+	# é refeito a cada carga — método de nó liberado o Godot desliga sozinho.
+	Fe.adotou.connect(_ao_entrar_numa_fe)
+	Fe.migrou.connect(_ao_migrar_de_fe)
+
+
+func _ao_migrar_de_fe(_de: String, para: String) -> void:
+	_ao_entrar_numa_fe(para)
+
+
+## ENTROU NUMA FÉ — a primeira ou outra: as filas que esperam por isso ficam
+## sabendo (a da Dona Zefa fecha a escolha), e a missão própria da fé abre, se
+## ainda não abriu.
+func _ao_entrar_numa_fe(fe: String) -> void:
+	for qual in _cadeias:
+		_cadeias[qual].registrar_evento("adotou_fe")
+	var fila = _cadeias.get("fe_" + fe)
+	if fila != null and not fila.iniciado:
+		fila.comecar(1.5)
 
 
 ## AS FOTOS DOS MORADORES saem com o vale de pé e um respiro depois, para não
@@ -1510,7 +1570,7 @@ func _exit_tree() -> void:
 ## `chave` é o nome da fila no save; vazio, o id do morador. O Pedro tem duas
 ## filas — o guia, que mora dentro dele, e a do arraial —, e cada uma precisa
 ## de um nome seu.
-func _pendurar_cadeia(morador: MoradorNPC, arquivo: String, perto: float, chave: String = "") -> Node:
+func _pendurar_cadeia(morador: Node3D, arquivo: String, perto: float, chave: String = "") -> Node:
 	var cadeia := CadeiaDeMissoes.new()
 	cadeia.name = "CadeiaDeMissoes" if chave == "" else "CadeiaDeMissoes_" + chave
 	cadeia.dono = morador

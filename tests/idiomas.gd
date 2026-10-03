@@ -37,6 +37,11 @@ const TRADUZIDOS := {
 	"res://data/historico_3d.json": ["titulo", "estado"],
 	# A fé (#52): o que os marcos dizem.
 	"res://data/marcos_fe.json": ["linhas", "texto", "convite", "resumo", "pratica"],
+	# E as missões dela.
+	"res://data/missoes_fe.json": ["texto", "resumo", "nome", "titulo", "resposta"],
+	"res://data/missoes_fe_catolica.json": ["texto", "resumo", "nome", "titulo", "resposta"],
+	"res://data/missoes_fe_candomble.json": ["texto", "resumo", "nome", "titulo", "resposta"],
+	"res://data/missoes_fe_caboclo.json": ["texto", "resumo", "nome", "titulo", "resposta"],
 }
 
 ## O QUE AINDA NÃO ESTÁ NOS TRÊS, e por quê. Esvaziar esta lista é o trabalho;

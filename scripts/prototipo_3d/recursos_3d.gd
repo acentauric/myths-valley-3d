@@ -188,6 +188,8 @@ func _mais_perto() -> String:
 ## O que a dica diz depois do nome: a ferramenta que falta, ou o que vai render.
 func _o_que_falta(ficha: Dictionary) -> String:
 	var ferramenta := str(ficha.get("ferramenta", ""))
+	if ferramenta == "":
+		return tr("à mão") if Energia.aguenta("bater") else "sem fôlego"
 	if not _tem_ferramenta(ferramenta):
 		if Inventario.tem(ferramenta):
 			return tr("ponha na mão: %s") % _nome_do_item(ferramenta)
@@ -212,7 +214,8 @@ func _nome_do_item(id: String) -> String:
 ## golpe e o machado no braço. A pesca (vara) e o coqueiro (machado) já
 ## perguntavam pela mão; os alvos de trabalho passam a perguntar também.
 func _tem_ferramenta(id: String) -> bool:
-	return Equipamento.em_uso(id)
+	# SEM FERRAMENTA É À MÃO: a ostra se cata na pedra (#52).
+	return id == "" or Equipamento.em_uso(id)
 
 
 ## O GOLPE.

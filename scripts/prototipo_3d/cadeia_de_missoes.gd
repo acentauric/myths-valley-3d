@@ -40,6 +40,11 @@ extends Node
 ##   juntar    conta item na mochila (lenha, pedra)
 ##   derrubar  conta ALVOS DE TRABALHO que caíram, por peça
 ##
+## (Vieram outros depois — levar, falar, evento, obra —, e com a fé, #52, mais
+## dois: `visitar`, que risca cada lugar de uma lista ao chegar perto dele — os
+## três marcos, a romaria —, e `oferendar`, que é o `levar` com um LUGAR no
+## lugar de uma pessoa: a mesa do terreiro, as conchas da gameleira.)
+##
 ## O segundo existe por causa do capim do cemitério. No 2D, cortar o mato não
 ## põe nada na mochila — o mato some, que é o que limpar quer dizer. Contar
 ## pela mochila obrigaria a inventar um item "capim" no catálogo
@@ -48,6 +53,8 @@ extends Node
 signal missao_mudou(texto: String, alvo: Vector3, indice: int, total: int)
 ## Um passo fechou e pagou (ver `_pagar`): o texto diz de quem e o quê.
 signal pagou(texto: String)
+## A meta `visitar` riscou um lugar — o vale conta o que se vê dali.
+signal visitou(lugar: String)
 
 const IdiomaMenu = preload("res://scripts/prototipo_3d/idioma_menu.gd")
 
@@ -72,6 +79,14 @@ var recursos: Node = null
 ## nunca se cumpre — e isso é honesto, porque sem saber quem é o destinatário
 ## não há entrega.
 var achar_morador: Callable = Callable()
+## ONDE FICA UM LUGAR, respondido de fora, para as metas `visitar` e
+## `oferendar`. Sem resposta, é a âncora do `Lugares`; com ela, o vale pode
+## dizer que "capela" é o ALTAR da igreja, e não o meio do telhado.
+var ponto_do_lugar: Callable = Callable()
+## SÓ ANDA ENQUANTO isto responder verdadeiro: a missão de uma fé CONGELA quando
+## o jogador muda para outra, e volta a correr quando ele voltar (é a regra do
+## 2D, docs/FE.md §2). Congelada, nem risca, nem entrega, nem anuncia.
+var so_enquanto: Callable = Callable()
 
 ## Passos cuja entrega já foi feita, por id. A meta "levar" não se mede olhando
 ## o mundo: ela ACONTECE num instante — o jogador chega com o item e ele muda de
@@ -125,9 +140,15 @@ func carregar(caminho: String) -> bool:
 		return false
 
 	for bruto in dado.get("passos", []):
-		var passo: Dictionary = bruto.duplicate()
+		var passo: Dictionary = bruto.duplicate(true)
 		passo["texto"] = str(IdiomaMenu.campo(passo, "texto"))
 		passo["resumo"] = str(IdiomaMenu.campo(passo, "resumo", ""))
+		passo["titulo"] = str(IdiomaMenu.campo(passo, "titulo", ""))
+		# A RESPOSTA DE QUEM RECEBE também é fala do jogador ler, e também nasce
+		# nos três idiomas (`resposta`, `resposta_en`, `resposta_es`).
+		var meta: Dictionary = passo.get("meta", {})
+		if meta.has("resposta"):
+			meta["resposta"] = str(IdiomaMenu.campo(meta, "resposta", ""))
 		passos.append(passo)
 	chave = str(dado.get("dono", ""))
 	principal = bool(dado.get("principal", false))
@@ -325,6 +346,17 @@ func resumo_do_passo(passo: Dictionary) -> String:
 			gerado = tr("Leve %s a %s") % [", ".join(itens), _nome_de(str(meta.get("a_quem", "")))]
 		"falar":
 			gerado = tr("Fale com %s") % _nome_de(str(meta.get("a_quem", "")))
+		"visitar":
+			var lugares := _lugares_da_meta(meta)
+			conta = "%d/%d" % [_visitados(passo).size(), lugares.size()]
+		"oferendar":
+			var carga := _carga_da_meta(meta)
+			var tem := 0
+			var pede := 0
+			for qual in carga:
+				pede += int(carga[qual])
+				tem += mini(int(carga[qual]), Inventario.quantidade(str(qual)))
+			conta = "%d/%d" % [tem, pede]
 	var frase := escrito if escrito != "" else gerado
 	if frase == "":
 		# Passo sem meta e sem resumo escrito: o título, que é curto.
@@ -519,6 +551,11 @@ func falta_a_meta(passo: Dictionary) -> bool:
 			# A OBRA FEITA, do `Obras` — o mirante levantado. Isso o mundo
 			# guarda sozinho, e o save também.
 			return not Obras.ja_feita(str(meta.get("construcao", "")), str(meta.get("obra", "")))
+		"visitar":
+			# CHEGAR É ACONTECIMENTO, como o encontro: a memória diz quem já foi.
+			return _visitados(passo).size() < _lugares_da_meta(meta).size()
+		"oferendar":
+			return not bool(_levados.get(str(passo.get("id", "")), false))
 		_:
 			return false
 
@@ -575,6 +612,11 @@ func avancar() -> void:
 	var fechando := passo_atual()
 	if not fechando.is_empty():
 		_pagar(fechando)
+		# MISSÃO DE FÉ RENDE NA FÉ ATIVA, e no ofício também, como no 2D
+		# (`Arraial._fechar_a_missao_da_fe`). Sem fé ainda, o `Fe` não credita.
+		if bool(fechando.get("xp_de_fe", false)):
+			Fe.ganhar("missao")
+			Talentos.ganhar("missao")
 		CadernoDoVale.concluir(_id_no_caderno(fechando))
 	missao += 1
 	if missao >= passos.size():
@@ -621,6 +663,15 @@ func _acertar_o_caderno(passo: Dictionary) -> void:
 			CadernoDoVale.andar(id, tem_tudo, pede_tudo, linha)
 		"evento", "obra":
 			CadernoDoVale.andar(id, 0 if falta_a_meta(passo) else 1, 1, str(passo.get("resumo", "")))
+		"visitar":
+			CadernoDoVale.andar(id, _visitados(passo).size(), _lugares_da_meta(meta).size(), str(passo.get("resumo", "")))
+		"oferendar":
+			var entregou: bool = bool(_levados.get(str(passo.get("id", "")), false))
+			var pedidos := _carga_da_meta(meta)
+			var faltas: Array[String] = []
+			for qual in pedidos:
+				faltas.append("%s %d/%d" % [_nome_do_item(str(qual)), mini(int(pedidos[qual]), Inventario.quantidade(str(qual))), int(pedidos[qual])])
+			CadernoDoVale.andar(id, 1 if entregou else 0, 1, " · ".join(faltas))
 		"derrubar":
 			var peca := str(meta.get("alvo", ""))
 			var quantos_pes := int(meta.get("quantos", 1))
@@ -669,6 +720,35 @@ func posicao_do_passo(indice: int) -> Vector3:
 		return Vector3.ZERO
 	var passo: Dictionary = passos[indice]
 	var meta: Dictionary = passo.get("meta", {})
+	# PASSO DE VÁRIOS LUGARES — a escolha da fé, em qualquer um dos três marcos:
+	# o marcador aponta o mais perto.
+	if passo.has("lugares") and str(meta.get("tipo", "")) != "visitar":
+		var de_cada: Vector3 = jogador.global_position if jogador != null else Vector3.ZERO
+		var o_mais_perto := Lugares.NENHUM
+		for lugar in passo.get("lugares", []):
+			var la := _ponto_do(str(lugar))
+			if la.is_finite() and (not o_mais_perto.is_finite() or de_cada.distance_to(la) < de_cada.distance_to(o_mais_perto)):
+				o_mais_perto = la
+		if o_mais_perto.is_finite():
+			return o_mais_perto
+	# OS LUGARES DA FÉ: o mais perto que ainda falta, e o lugar da oferenda.
+	match str(meta.get("tipo", "")):
+		"visitar":
+			var de_onde: Vector3 = jogador.global_position if jogador != null else Vector3.ZERO
+			var vistos := _visitados(passo)
+			var melhor := Lugares.NENHUM
+			for lugar in _lugares_da_meta(meta):
+				if vistos.has(lugar):
+					continue
+				var ali := _ponto_do(str(lugar))
+				if ali.is_finite() and (not melhor.is_finite() or de_onde.distance_to(ali) < de_onde.distance_to(melhor)):
+					melhor = ali
+			if melhor.is_finite():
+				return melhor
+		"oferendar":
+			var ali := _ponto_do(str(meta.get("lugar", passo.get("lugar", ""))))
+			if ali.is_finite():
+				return ali
 	if recursos != null and not meta.is_empty():
 		var de: Vector3 = jogador.global_position if jogador != null else Vector3.ZERO
 		var perto: Vector3 = Lugares.NENHUM
@@ -721,6 +801,8 @@ func _physics_process(delta: float) -> void:
 	if dono == null or jogador == null:
 		return
 	if not iniciado and depois_de.is_valid() and not bool(depois_de.call()):
+		return
+	if so_enquanto.is_valid() and not bool(so_enquanto.call()):
 		return
 	if comeca_perto_de > 0.0 and not iniciado:
 		var perto := dono.global_position.distance_to(jogador.global_position) < comeca_perto_de
@@ -787,6 +869,12 @@ static func _carga_da_meta(meta: Dictionary) -> Dictionary:
 func _tentar_encontro(passo: Dictionary) -> void:
 	var meta: Dictionary = passo.get("meta", {})
 	var tipo := str(meta.get("tipo", ""))
+	if tipo == "visitar":
+		_tentar_visita(passo, meta)
+		return
+	if tipo == "oferendar":
+		_tentar_oferenda(passo, meta)
+		return
 	if tipo != "levar" and tipo != "falar":
 		return
 	var id := str(passo.get("id", ""))
@@ -819,3 +907,90 @@ func _tentar_encontro(passo: Dictionary) -> void:
 	var resposta := str(meta.get("resposta", ""))
 	if resposta != "" and quem.has_method("narrar"):
 		quem.narrar("", resposta)
+
+
+# --- os lugares da fé (#52) -----------------------------------------------------
+
+## CHEGAR PERTO RISCA o lugar da lista, uma vez — e o vale fica sabendo
+## (`visitou`), para contar o que se vê dali.
+func _tentar_visita(passo: Dictionary, meta: Dictionary) -> void:
+	var id := str(passo.get("id", ""))
+	for lugar in _lugares_da_meta(meta):
+		var chave_da_visita := _chave_da_visita(id, str(lugar))
+		if bool(_levados.get(chave_da_visita, false)):
+			continue
+		if _perto_do_lugar(str(lugar), float(meta.get("raio", 6.0))):
+			_levados[chave_da_visita] = true
+			visitou.emit(str(lugar))
+
+
+## A OFERENDA: com tudo na mochila e no pé do lugar, o que se leva fica lá. As
+## duas condições juntas, como no 2D — quem junta tudo e gasta no caminho chega
+## de mão vazia, e a conta desce sozinha.
+func _tentar_oferenda(passo: Dictionary, meta: Dictionary) -> void:
+	var id := str(passo.get("id", ""))
+	if bool(_levados.get(id, false)):
+		return
+	var carga := _carga_da_meta(meta)
+	if carga.is_empty():
+		return
+	for qual in carga:
+		if Inventario.quantidade(str(qual)) < int(carga[qual]):
+			return
+	if not _perto_do_lugar(str(meta.get("lugar", passo.get("lugar", ""))), float(meta.get("raio", 4.0))):
+		return
+	for qual in carga:
+		Inventario.consumir(str(qual), int(carga[qual]))
+	_levados[id] = true
+	var resposta := str(meta.get("resposta", ""))
+	if resposta != "":
+		_falar("", resposta)
+
+
+## Os lugares da meta que o vale tem. Lugar que ainda não existe some da conta,
+## como o passo de lugar que não existe é pulado.
+func _lugares_da_meta(meta: Dictionary) -> Array:
+	var lista: Array = []
+	for lugar in meta.get("lugares", []):
+		if _ponto_do(str(lugar)).is_finite():
+			lista.append(str(lugar))
+	return lista
+
+
+func _visitados(passo: Dictionary) -> Array:
+	var id := str(passo.get("id", ""))
+	var lista: Array = []
+	for lugar in _lugares_da_meta(passo.get("meta", {})):
+		if bool(_levados.get(_chave_da_visita(id, str(lugar)), false)):
+			lista.append(lugar)
+	return lista
+
+
+static func _chave_da_visita(passo: String, lugar: String) -> String:
+	return "visita:%s:%s" % [passo, lugar]
+
+
+func _ponto_do(lugar: String) -> Vector3:
+	if ponto_do_lugar.is_valid():
+		var achado = ponto_do_lugar.call(lugar)
+		if achado is Vector3 and (achado as Vector3).is_finite():
+			return achado
+	return Lugares.ponto(lugar)
+
+
+func _perto_do_lugar(lugar: String, raio: float) -> bool:
+	var ali := _ponto_do(lugar)
+	if not ali.is_finite() or jogador == null:
+		return false
+	var no_chao := ali - jogador.global_position
+	no_chao.y = 0.0
+	return no_chao.length() <= raio and absf(ali.y - jogador.global_position.y) < 4.0
+
+
+## O passo de id `id` já fechou? É o que a fé pergunta para saber se a Dona Zefa
+## já mostrou as três (o passo de contar a ela).
+func passou(id: String) -> bool:
+	for i in mini(missao, passos.size()):
+		if str((passos[i] as Dictionary).get("id", "")) == id:
+			return true
+	return false

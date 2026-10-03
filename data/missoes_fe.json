@@ -1,0 +1,128 @@
+{
+  "observacao": "A FÉ DO ARRAIAL (#52), do jogo 2D (arraial.json, passos fe_zefa / fe_marcos / fe_voltar / fe_escolher, e as falas de arremate da Dona Zefa), adaptada ao vale. No 2D quem anuncia é o Pedro e quem conta é a Dona Zefa; aqui também: o Pedro passa o recado e aponta, e é ela quem fala quando o jogador chega (a 'resposta' das metas de falar). Abre com o mirante consertado, porque ela começa reconhecendo o que o jogador fez. Os três lugares são o cruzeiro diante da igreja, o terreiro na mata a poente da rua do mirante e a gameleira do sambaqui na ponta da praia; a escolha só se abre depois de ela contar como é (marcos_da_fe.gd, 'liberada'). O passo de escolher fecha no evento 'adotou_fe', que o vale dá a todas as cadeias quando o jogador entra numa fé.",
+  "dono": "pedro",
+  "nome": "A fé do arraial",
+  "nome_en": "The faith of the village",
+  "nome_es": "La fe del caserío",
+  "principal": true,
+  "passos": [
+    {
+      "id": "fe_zefa",
+      "titulo": "O recado da Dona Zefa",
+      "titulo_en": "Dona Zefa's message",
+      "titulo_es": "El recado de doña Zefa",
+      "resumo": "Fale com a Dona Zefa",
+      "resumo_en": "Talk to Dona Zefa",
+      "resumo_es": "Habla con doña Zefa",
+      "lugar": "casa_de_taipa",
+      "raio": 7.0,
+      "audio": "",
+      "texto": "A Dona Zefa mandou te chamar. Ela é benzedeira: quando alguém aqui adoece, vai nela antes de ir no padre — e o padre sabe, e não diz nada. De manhã e de noite ela fica na casa de taipa; de tarde, no poço. Vá lá.",
+      "texto_en": "Dona Zefa sent for you. She is a healer: when someone here falls ill, they go to her before the priest — and the priest knows, and says nothing. Mornings and nights she stays at the rammed-earth house; afternoons, at the well. Go see her.",
+      "texto_es": "Doña Zefa mandó a llamarte. Es curandera: cuando alguien aquí se enferma, va con ella antes que con el cura, y el cura lo sabe y no dice nada. Por la mañana y por la noche está en la casa de tapia; por la tarde, en el pozo. Ve a verla.",
+      "meta": {
+        "tipo": "falar",
+        "a_quem": "zefa",
+        "raio": 3.4,
+        "resposta": "Senta, meu filho. Eu já ia te chamar de qualquer jeito. Você levantou o mirante de novo; isso é braço, e braço todo mundo tem. Agora eu vou te falar da outra coisa, a que não é braço — e das três, porque as três existem aqui, e quem te disser que é uma só tá te escondendo o arraial. Não vou escolher por você: vou te mostrar os três lugares. Depois você vai sozinho no que te chamar.",
+        "resposta_en": "Sit down, my child. I was going to send for you anyway. You raised the lookout again; that is arms, and everyone has arms. Now I will tell you about the other thing, the one that is not arms — and about all three, because all three are here, and whoever tells you there is only one is hiding the village from you. I will not choose for you: I will show you the three places. Then you go alone to the one that calls you.",
+        "resposta_es": "Siéntate, hijo. Igual te iba a llamar. Levantaste el mirador de nuevo; eso es brazo, y brazo tiene todo el mundo. Ahora te voy a hablar de la otra cosa, la que no es brazo, y de las tres, porque las tres existen aquí, y quien te diga que es una sola te está escondiendo el caserío. No voy a elegir por ti: te voy a mostrar los tres lugares. Después vas solo al que te llame."
+      }
+    },
+    {
+      "id": "fe_marcos",
+      "titulo": "Os três lugares",
+      "titulo_en": "The three places",
+      "titulo_es": "Los tres lugares",
+      "resumo": "Visite os três marcos",
+      "resumo_en": "Visit the three landmarks",
+      "resumo_es": "Visita los tres hitos",
+      "lugar": "cruzeiro",
+      "raio": 6.0,
+      "audio": "",
+      "texto": "Ela quer que você veja os três com os seus olhos. O cruzeiro, diante da igreja — esse você já passou por ele cem vezes sem olhar. O terreiro: sobe a rua do mirante e, antes da curva grande, sai uma vereda pro poente que entra na mata e some. Você não acha de longe, e é de propósito: em ano de hoje, terreiro que se vê da estrada é terreiro que a polícia fecha. E a gameleira do sambaqui, na ponta da praia, perto das pedras: aquele monte branco embaixo dela é concha. Vá nos três. Chegue perto e olhe. Não tem o que fazer ainda — só olhar.",
+      "texto_en": "She wants you to see all three with your own eyes. The wayside cross, before the church — you have walked past it a hundred times without looking. The terreiro: go up the lookout road and, before the big bend, a footpath leaves toward the west, enters the forest and disappears. You will not find it from afar, and that is on purpose: in this day and age, a terreiro seen from the road is a terreiro the police close down. And the gameleira on the shell mound, at the tip of the beach, near the rocks: that white mound under it is shell. Go to all three. Come close and look. There is nothing to do yet — just look.",
+      "texto_es": "Ella quiere que veas los tres con tus propios ojos. El crucero, frente a la iglesia: ese ya lo pasaste cien veces sin mirar. El terreiro: sube la calle del mirador y, antes de la curva grande, sale un sendero hacia el poniente que entra en el monte y se pierde. No lo encuentras de lejos, y es a propósito: en los tiempos que corren, terreiro que se ve desde el camino es terreiro que la policía cierra. Y la gameleira del sambaquí, en la punta de la playa, cerca de las piedras: ese montículo blanco debajo es concha. Ve a los tres. Acércate y mira. Todavía no hay nada que hacer: solo mirar.",
+      "recompensa": { "cocada": 2 },
+      "meta": {
+        "tipo": "visitar",
+        "lugares": ["cruzeiro", "terreiro", "gameleira"],
+        "raio": 6.0
+      }
+    },
+    {
+      "id": "fe_voltar",
+      "titulo": "Contar à Dona Zefa",
+      "titulo_en": "Telling Dona Zefa",
+      "titulo_es": "Contarle a doña Zefa",
+      "resumo": "Conte à Dona Zefa o que viu",
+      "resumo_en": "Tell Dona Zefa what you saw",
+      "resumo_es": "Cuéntale a doña Zefa lo que viste",
+      "lugar": "casa_de_taipa",
+      "raio": 7.0,
+      "audio": "",
+      "texto": "Andou os três? Então volte à Dona Zefa e conte o que viu. Ela não sai de casa para isso: quem foi mandado ver, volta para contar.",
+      "texto_en": "Did you walk all three? Then go back to Dona Zefa and tell her what you saw. She will not leave home for that: whoever was sent to see comes back to tell.",
+      "texto_es": "¿Recorriste los tres? Entonces vuelve con doña Zefa y cuéntale lo que viste. Ella no sale de casa para eso: quien fue mandado a ver, vuelve para contar.",
+      "meta": {
+        "tipo": "falar",
+        "a_quem": "zefa",
+        "raio": 3.4,
+        "resposta": "Andou os três. Então agora escuta, que é a parte que importa. Você vai ser de uma — não de três, de uma. Aqui muita gente vai na missa de manhã e no terreiro de noite, e eu sou uma delas, mas por dentro cada um sabe de qual é. O que você aprender numa, aprende nela; o que juntar nela, junta nela. Se um dia você mudar, o que você era fica guardado, inteirinho, do jeito que você deixou — só que parar de valer, para. E se quiser levar junto o que juntou, aí custa quase tudo: de cada dez, chega um e meio. Vá no que te chamar e aceite lá. Não precisa ser hoje.",
+        "resposta_en": "You walked all three. So now listen, this is the part that matters. You will belong to one — not three, one. Many people here go to mass in the morning and to the terreiro at night, and I am one of them, but inside each one knows which is theirs. What you learn in one, you learn in it; what you gather in it, you gather in it. If one day you change, what you were stays kept, whole, the way you left it — but it does stop counting. And if you want to bring along what you gathered, that costs almost everything: of every ten, one and a half arrive. Go to the one that calls you and accept there. It does not have to be today.",
+        "resposta_es": "Recorriste los tres. Entonces ahora escucha, que es la parte que importa. Vas a ser de una: no de tres, de una. Aquí mucha gente va a misa por la mañana y al terreiro por la noche, y yo soy una de ellas, pero por dentro cada uno sabe de cuál es. Lo que aprendas en una, lo aprendes en ella; lo que juntes en ella, lo juntas en ella. Si un día cambias, lo que eras queda guardado, entero, como lo dejaste; pero deja de valer. Y si quieres llevar contigo lo que juntaste, eso cuesta casi todo: de cada diez, llega uno y medio. Ve al que te llame y acepta allí. No tiene que ser hoy."
+      }
+    },
+    {
+      "id": "fe_escolher",
+      "titulo": "A que te chamar",
+      "titulo_en": "The one that calls you",
+      "titulo_es": "La que te llame",
+      "resumo": "Entre numa fé, no marco dela",
+      "resumo_en": "Join a faith, at its landmark",
+      "resumo_es": "Entra en una fe, en su hito",
+      "lugar": "cruzeiro",
+      "lugares": ["cruzeiro", "terreiro", "gameleira"],
+      "raio": 6.0,
+      "audio": "",
+      "texto": "É com os pés, não é com a boca, ela disse. Volte no lugar que te chamou — o cruzeiro, o terreiro ou a gameleira —, chegue de frente e aceite ali.",
+      "texto_en": "It is done with the feet, not with the mouth, she said. Go back to the place that called you — the wayside cross, the terreiro or the gameleira —, face it and accept there.",
+      "texto_es": "Es con los pies, no con la boca, dijo ella. Vuelve al lugar que te llamó —el crucero, el terreiro o la gameleira—, ponte de frente y acepta allí.",
+      "recompensa": { "beiju": 2, "garapa": 2 },
+      "xp_de_fe": true,
+      "meta": {
+        "tipo": "evento",
+        "evento": "adotou_fe"
+      }
+    },
+    {
+      "id": "fe_contar",
+      "titulo": "O que a fé pede",
+      "titulo_en": "What faith asks",
+      "titulo_es": "Lo que pide la fe",
+      "resumo": "Conte à Dona Zefa qual foi",
+      "resumo_en": "Tell Dona Zefa which one it was",
+      "resumo_es": "Cuéntale a doña Zefa cuál fue",
+      "lugar": "casa_de_taipa",
+      "raio": 7.0,
+      "audio": "",
+      "texto": "Volte à Dona Zefa: ela quer saber qual foi.",
+      "texto_en": "Go back to Dona Zefa: she wants to know which one it was.",
+      "texto_es": "Vuelve con doña Zefa: quiere saber cuál fue.",
+      "meta": {
+        "tipo": "falar",
+        "a_quem": "zefa",
+        "raio": 3.4,
+        "resposta": "Pronto. Agora você é de alguma coisa. Aperte K e depois Tab: a teia da fé é outra teia, com pontos que são só dela. E toda vez que você parar num marco seu, você junta um tanto — uma vez por semana em cada um, que graça não é de todo dia, senão não era graça. Uma última coisa, e guarde: fé aqui nunca foi só o que a gente acredita. Foi o que sobrou depois que tiraram tudo o mais.",
+        "resposta_en": "There. Now you belong to something. Press K and then Tab: the web of faith is another web, with points that are its alone. And every time you stop at a landmark of yours, you gather a little — once a week at each one, for grace is not for every day, or it would not be grace. One last thing, and keep it: faith here was never only what we believe. It was what was left after they took everything else.",
+        "resposta_es": "Listo. Ahora eres de algo. Pulsa K y luego Tab: la red de la fe es otra red, con puntos que son solo suyos. Y cada vez que te detengas en un hito tuyo, juntas un poco: una vez por semana en cada uno, que la gracia no es de todos los días, si no, no sería gracia. Una última cosa, y guárdala: la fe aquí nunca fue solo lo que creemos. Fue lo que quedó después de que se llevaron todo lo demás."
+      }
+    }
+  ],
+  "arremate": {
+    "texto": "Você é de alguma coisa no arraial, e o arraial sabe.",
+    "texto_en": "You belong to something in the village, and the village knows it.",
+    "texto_es": "Eres de algo en el caserío, y el caserío lo sabe.",
+    "narra": false
+  }
+}

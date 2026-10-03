@@ -41,6 +41,11 @@ const IdiomaMenu = preload("res://scripts/prototipo_3d/idioma_menu.gd")
 const TEXTOS := "res://data/marcos_fe.json"
 
 const MARCOS := ["cruzeiro", "capela", "capela_estrada", "cemiterio", "terreiro", "gameleira"]
+## O nome de cada marco para gente ler (o diário, a voz que dá a missão da fé).
+const NOMES_DOS_MARCOS := {
+	"cruzeiro": "Cruzeiro", "capela": "Igreja do Bom Jesus", "capela_estrada": "Capela velha",
+	"cemiterio": "Cemitério", "terreiro": "Terreiro", "gameleira": "Gameleira",
+}
 ## Até onde a tecla E aparece, no chão.
 const ALCANCE := 2.8
 ## Perto o bastante para contar como chegada (as missões de visita).
@@ -172,7 +177,10 @@ func _unhandled_key_input(event: InputEvent) -> void:
 	if not (event is InputEventKey and event.pressed and not event.echo \
 			and event.physical_keycode == Atalhos.tecla("interagir")):
 		return
-	if Dialogo.ocupado():
+	# COM O CORPO PARADO, O E NÃO VALE PARA O MUNDO, como nas lápides e nos
+	# achados: este nó ouve no _unhandled_key_input, ANTES das telas que ouvem
+	# no _unhandled_input (o cartão do amanhecer, o folheto).
+	if Dialogo.ocupado() or not _jogador.is_physics_processing():
 		return
 	get_viewport().set_input_as_handled()
 	no_marco(_perto)
