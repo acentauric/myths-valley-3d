@@ -11,6 +11,17 @@ const EspumaAgua = preload("res://scripts/prototipo_3d/espuma_agua.gd")
 signal saudou(morador: MoradorNPC, texto: String)
 
 const PASTA_VOZES := "res://assets/audio/vozes/"
+## O DIA DA FESTA DA FÉ (#52): da uma da tarde até a meia-noite, quem é da fé
+## da festa troca o posto de sempre pela roda no marco maior dela — a hora é a
+## do 2D (`Mundo.HORA_DA_TARDE`).
+const HORA_DA_FESTA := 13.0
+const POSTO_DA_FESTA := "festa"
+## O raio da roda em volta de cada marco: fora da caixa do cruzeiro, em volta do
+## fogo do terreiro, em cima do monte da gameleira.
+const RODA_DA_FESTA := {"cruzeiro": 2.6, "terreiro": 2.5, "gameleira": 3.2}
+## Até onde o jogador vê quem anda: mais longe que isto, ou fora da câmera, o
+## caminho da festa se encurta (ver `_encurtar_o_caminho`).
+const VISTA := 70.0
 const VELOCIDADE := 1.35
 const RAIO_SAUDACAO := 3.4
 const RAIO_BALAO := 6.0
@@ -71,6 +82,8 @@ var _desvios := 0
 var _parado := 0.0
 var _lado_desvio := 0.0
 var _ponto_bloqueio := Vector3.INF
+## A caminho da festa, ou voltando dela: o caminho que pode se encurtar.
+var _caminho_da_festa := false
 
 
 ## Anda até `ponto` (em vez do posto do período), na `velocidade` dada, até liberar().
@@ -144,7 +157,7 @@ func _ready() -> void:
 	_aplicar_volume()
 	if Audio.has_signal("volumes_alterados"):
 		Audio.volumes_alterados.connect(_aplicar_volume)
-	_posto = _posto_para(Dia.periodo())
+	_posto = _posto_de_agora()
 	_alvo = _posicao_do_posto(_posto)
 	if _alvo != Vector3.ZERO:
 		global_position = _alvo + Vector3(0, 0.05, 0)
@@ -179,10 +192,13 @@ func _montar_modelo() -> void:
 
 
 func _physics_process(delta: float) -> void:
-	var posto := _posto_para(Dia.periodo())
+	var posto := _posto_de_agora()
 	if posto != _posto:
+		_caminho_da_festa = posto == POSTO_DA_FESTA or _posto == POSTO_DA_FESTA
 		_posto = posto
 		_alvo = _posicao_do_posto(posto)
+	if _caminho_da_festa:
+		_encurtar_o_caminho()
 	# Destino avulso (ir_ate) vale mais que o posto até ser liberado.
 	var destino := _destino_avulso if _destino_avulso.is_finite() else _alvo
 	var deslocamento := destino - global_position
@@ -480,6 +496,87 @@ func narrar(nome_audio: String, texto: String) -> void:
 		animador.play_gesture(2)
 
 
+## O POSTO DE AGORA, com a festa por cima. No dia da festa da fé do morador
+## (`Fe.FESTAS`), da tarde até a meia-noite ele vai para o marco maior dela —
+## "à tarde, quem é da fé vai para o marco maior dela" (`Mundo._posto_de` do
+## 2D). É o CALENDÁRIO que manda, e não a fé do jogador: a festa acontece no
+## arraial quer o jogador seja dela ou não, e quem é dela o encontra lá.
+func _posto_de_agora() -> String:
+	var festa := Fe.festa_de_hoje()
+	if festa != "" and Dia.hora >= HORA_DA_FESTA \
+			and Afinidade.fe_de(str(dados.get("id", ""))) == festa \
+			and Lugares.resolve(Fe.marco_maior(festa)):
+		return POSTO_DA_FESTA
+	return _posto_para(Dia.periodo())
+
+
+## O LUGAR DO MORADOR NA RODA da festa: a roda em volta do marco, repartida por
+## igual entre os da fé (`Afinidade.da_fe`), para dois não disputarem o mesmo
+## chão. No terreiro a roda é em volta do fogo, metro e meio à frente do meio do
+## chão batido, e a gente fica dos lados dele — atrás estão os potes e a parede.
+func _lugar_na_festa() -> Vector3:
+	var festa := Fe.festa_de_hoje()
+	var marco := Fe.marco_maior(festa)
+	var centro: Vector3 = Lugares.ponto(marco)
+	if not centro.is_finite():
+		return global_position
+	var frente: Vector3 = ancoras.get(str(Lugares.DE_PARA.get(marco, "")) + "Frente", Vector3.ZERO)
+	var base := Vector3.BACK
+	if frente.length() > 0.01:
+		base = frente.normalized()
+		centro += base * 1.5
+	var da_fe: Array = Afinidade.da_fe(festa)
+	var vez := maxi(da_fe.find(str(dados.get("id", ""))), 0)
+	var direcao := base.rotated(Vector3.UP, TAU * (float(vez) + 0.5) / float(maxi(da_fe.size(), 1)))
+	var lugar := centro + direcao * float(RODA_DA_FESTA.get(marco, 2.6))
+	return _chao_de_verdade(terreno.ground_position(lugar, 0.0) if terreno != null else lugar)
+
+
+## O CHÃO DE VERDADE no lugar da roda, e não só o do terreno: o monte de concha
+## da gameleira é corpo, e não relevo, e quem fosse posto na altura do terreno
+## nasceria dentro dele.
+func _chao_de_verdade(ponto: Vector3) -> Vector3:
+	if not is_inside_tree():
+		return ponto
+	var pergunta := PhysicsRayQueryParameters3D.create(ponto + Vector3.UP * 3.0, ponto + Vector3.DOWN)
+	pergunta.exclude = [get_rid()]
+	var achou: Dictionary = get_world_3d().direct_space_state.intersect_ray(pergunta)
+	return achou.get("position", ponto)
+
+
+## O CAMINHO DA FESTA É LONGO. O terreiro e a gameleira ficam longe da vila, e
+## o morador anda em linha reta, sem mapa: a pé, o Tonho levaria a tarde quase
+## inteira do píer até a gameleira, e no caminho há mata e casa que podem
+## prendê-lo. Então, LONGE DOS OLHOS DO JOGADOR, ele chega pelo caminho de
+## sempre — é posto no lugar dele, como na carga do jogo. Visto, anda o que se
+## vê; e não aparece do nada no lugar para onde o jogador está olhando. A volta,
+## à meia-noite, é igual.
+func _encurtar_o_caminho() -> void:
+	if _destino_avulso.is_finite():
+		return
+	if Vector2(_alvo.x - global_position.x, _alvo.z - global_position.z).length() < 1.0:
+		_caminho_da_festa = false
+		return
+	if _a_vista(global_position) or _a_vista(_alvo):
+		return
+	global_position = _alvo + Vector3(0, 0.05, 0)
+	velocity = Vector3.ZERO
+	_preso = 0.0
+	_desvios = 0
+	_desvio_tempo = 0.0
+	_parado = 0.0
+	_ponto_bloqueio = Vector3.INF
+	_caminho_da_festa = false
+
+
+## O jogador vê este ponto? Perto dele e na frente da câmera.
+func _a_vista(ponto: Vector3) -> bool:
+	if jogador == null or jogador.global_position.distance_to(ponto) > VISTA:
+		return false
+	var camera := get_viewport().get_camera_3d()
+	return camera == null or camera.is_position_in_frustum(ponto + Vector3.UP * altura * 0.5)
+
+
 ## Nome do posto para o período: "manha", "tarde", "entardecer", "noite" ou "madrugada".
 func _posto_para(periodo: String) -> String:
 	var postos: Dictionary = dados.get("postos", {})
@@ -492,6 +589,8 @@ func _posto_para(periodo: String) -> String:
 
 
 func _posicao_do_posto(periodo: String) -> Vector3:
+	if periodo == POSTO_DA_FESTA:
+		return _lugar_na_festa()
 	var postos: Dictionary = dados.get("postos", {})
 	if periodo == "" or not postos.has(periodo):
 		return global_position

@@ -9,11 +9,11 @@ Exploração do vale, moradores, missões em âncoras com recompensa (#48) e
 diário de missões acompanhadas, calendário (com o registro das mudanças no
 relógio), energia, vida, inventário, equipamento, talentos, cartas, coleção,
 obras, pesca, cozinha, oficina, a fé (#52: os seis marcos, o rito, a troca, a
-teia da fé no K e as missões da Dona Zefa e de cada fé), o primeiro cômodo (a
-igreja do Bom Jesus, por dentro da própria igreja, #26) e três vagas de
-salvamento. A existência de um sistema não significa que todos os seus
-gatilhos ou telas estejam concluídos: a festa de cada fé, com os moradores no
-marco à tarde, ainda não tem quem os leve até lá.
+teia da fé no K, as missões da Dona Zefa e de cada fé e a festa de cada uma,
+com os moradores no marco à tarde), o primeiro cômodo (a igreja do Bom Jesus,
+por dentro da própria igreja, #26) e três vagas de salvamento. A existência de
+um sistema não significa que todos os seus gatilhos ou telas estejam
+concluídos.
 
 ## Próxima tarefa
 

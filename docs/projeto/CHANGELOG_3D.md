@@ -26,6 +26,15 @@ atualize esse arquivo e este documento juntos.
 
 ## Em desenvolvimento — 03/10/2026
 
+- **No dia da festa de cada fé, quem é dela vai ao marco à tarde** (#52). O calendário
+  já sabia as três festas — o Bom Jesus dos Navegantes, Cosme e Damião e o Dois de
+  Julho —, mas ninguém saía do posto de sempre. Agora, no dia da festa, da uma da tarde
+  até a meia-noite, quem é da fé vai para a roda no marco maior dela, como no 2D: os
+  quatro católicos em volta do cruzeiro, a Dona Zefa e o Cosme dos lados do fogo do
+  terreiro, o Tonho em cima do monte da gameleira, cada um no seu lugar. Quem está à
+  vista do jogador sai andando; longe dos olhos dele, o morador chega pelo caminho de
+  sempre, porque o terreiro e a gameleira ficam longe da vila e o morador anda sem
+  mapa. A volta, à meia-noite, é igual (`tests/festa_da_fe.gd`, falsificado).
 - **O J vira diário, como no Witcher, e o HUD segue a missão acompanhada.** Escolher
   uma missão no J mudava só a cor da linha: o HUD e a seta seguiam a última cadeia que
   falou, e o foco do caderno era uma posição na lista, que andava sozinha quando outra
