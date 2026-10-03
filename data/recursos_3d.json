@@ -208,11 +208,12 @@
       "quantidade": 0
     },
     {
+      "observacao": "O LAJEDO DO ROÇADO, dois passos mais para o nascente. A quatro unidades e meia da lenha da casa de taipa, o pé dele (3,3 de pegada, a peça em tamanho 2,2) alcançava o lado de cá do tronco: quem encostava na lenha pelo leste ouvia o E oferecer a pedra, e quem ganhava era decidido pelos dois quadros de física depois de chegar (tests/alcance_dos_alvos.gd).",
       "id": "pedra_rocado",
       "nome": "Lajedo",
       "peca": "pedras",
       "lugar": "rocado",
-      "desvio": [8.0, 3.0],
+      "desvio": [10.0, 2.5],
       "tamanho": 2.2,
       "ferramenta": "picareta",
       "golpes": 4,

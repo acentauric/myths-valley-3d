@@ -131,7 +131,13 @@ func _run() -> void:
 		# Medir a lista do caderno, e não o sinal do HUD, continua sendo o ponto:
 		# o sinal funcionava; era o caderno que estava vazio.
 		var no_caderno := "%s_%s" % ["pedro", id]
-		_conferir(caderno.tem(no_caderno),
+		# ENTROU, MESMO QUE JÁ TENHA FECHADO. Passo de visita anunciado com o
+		# jogador já dentro do raio fecha no pulso seguinte da cadeia — é o caso
+		# da enxada, no roçado, quando a pedra do passo de antes foi quebrada
+		# ali perto. Se a pergunta viesse depois desse pulso, o passo estaria nas
+		# cumpridas, que o J também mostra; perguntar só pelas ativas fazia o
+		# portão depender de quantos quadros de física cabem em dois de desenho.
+		_conferir(caderno.tem(no_caderno) or caderno.cumprida(no_caderno),
 			"o passo '%s' anunciou e não entrou no caderno do vale: o painel J mostra a aba vazia" % id)
 		if not meta.is_empty() and caderno.tem(no_caderno):
 			var conta: Vector2i = caderno.andamento(no_caderno)
