@@ -179,6 +179,19 @@ func _ready() -> void:
 		await world.pronto
 		set_process(true)
 		player.set_physics_process(true)
+	# AS CONSTRUÇÕES POR DENTRO (interiores.gd), a começar pela igreja: o cômodo
+	# mora dentro da casca dela, no lugar dela. Medidas LOGO DEPOIS de o vale
+	# ficar de pé, antes de qualquer morador, do Pedro e da partida salva: a
+	# medida espera dois quadros de física, e nesses quadros nada que dependa da
+	# partida pode estar andando. Medidas depois deles, o Pedro saudava como na
+	# chegada ao píer — a fila dele ainda não tinha voltado do save. E antes da
+	# partida salva também porque ela pode pôr o jogador lá dentro.
+	interiores = Interiores.new()
+	interiores.name = "Interiores"
+	add_child(interiores)
+	set_process(false)
+	await interiores.configurar(world, player)
+	set_process(true)
 	# O menu também move o relógio visual. A partida começa sua própria contagem;
 	# quando houver save, `restaurar_do_save` devolve a contagem guardada.
 	Dia.horas_decorridas = 0.0
@@ -498,6 +511,11 @@ func _ready() -> void:
 		for qual in _cadeias:
 			_cadeias[qual].registrar_evento("abriu_arraial"))
 	Dia.periodo_mudou.connect(_on_periodo_mudou)
+	# Os corpos de quem anda no vale entram na luz de dentro dos cômodos — agora
+	# que os moradores e o Pedro existem (ver `Interiores.marcar_os_corpos`).
+	interiores.marcar_os_corpos()
+	interiores.entrou.connect(_ao_mudar_de_lado.unbind(1))
+	interiores.saiu.connect(_ao_mudar_de_lado.unbind(1))
 	# A PARTIDA SALVA entra depois de o vale estar montado — moradores, Pedro,
 	# luta —, porque o estado do mundo aponta para eles. Ver Partida e
 	# `estado_para_salvar`.
@@ -509,31 +527,20 @@ func _ready() -> void:
 	achados.espalhar()
 	_comecar_no_lugar_pedido()
 	_atualizar_relogio()
-	# AS CONSTRUÇÕES POR DENTRO (interiores.gd), a começar pela igreja. Entra no
-	# vale por último de propósito: na soleira, o E da porta vale mais que o de
-	# qualquer outro nó, e quem entra depois ouve primeiro.
-	interiores = Interiores.new()
-	interiores.name = "Interiores"
-	add_child(interiores)
-	interiores.configurar(world, player, hud)
-	interiores.entrou.connect(_ao_mudar_de_lado.unbind(1))
-	interiores.saiu.connect(_ao_mudar_de_lado.unbind(1))
 	print("PROTOTYPE_READY: estilo=%s hora=%s moradores=%d user_dir=%s" % [Estilo.modo, Dia.texto_hora(), moradores.size(), OS.get_user_data_dir()])
 	_pedir_os_retratos()
 
 
-## Entrou ou saiu de uma construção: o som de fora abafa, o HUD diz onde se
-## está, e a seta da missão some lá dentro — ela apontaria para o vale através
-## da parede, de um lugar que não é o vale.
+## Entrou ou saiu de uma construção: o som de fora abafa e o HUD diz onde se
+## está.
 func _ao_mudar_de_lado() -> void:
 	var qual: String = interiores.dentro()
 	if ambiente != null:
 		ambiente.abafado = 1.0 if qual != "" else 0.0
 	if qual != "":
-		hud.set_region_title(str(interiores.CONSTRUCOES[qual]["nome"]))
+		hud.set_region_title(interiores.nome_de(qual))
 	else:
 		hud.set_region_title(world.get_region_title())
-	_mostrar_a_acompanhada()
 
 
 ## AS FOTOS DOS MORADORES saem com o vale de pé e um respiro depois, para não
@@ -789,9 +796,7 @@ func _mostrar_a_acompanhada() -> void:
 	hud.set_objective(resumo, str(acompanhada.get("missao", "")))
 	hud.set_mission_step(int(acompanhada.get("passo", 0)), int(acompanhada.get("passos", 0)))
 	var alvo: Vector3 = acompanhada.get("alvo", Vector3.ZERO)
-	# Dentro de uma construção a seta some: ela apontaria para o vale através
-	# da parede, de um cômodo que mora longe dele (ver `interiores.gd`).
-	if alvo == Vector3.ZERO or player.no_interior():
+	if alvo == Vector3.ZERO:
 		_seta.limpar()
 	else:
 		_seta.definir_alvo(alvo, resumo)
@@ -1190,9 +1195,7 @@ func _texto_da_partida(chave: String) -> String:
 ## hora é o `Dia`, e o `Relogio` só a espelha (ver dia.gd).
 func estado_para_salvar() -> Dictionary:
 	var estado := {
-		# Dentro de uma construção, o lugar no vale é a porta dela (ver
-		# `posicao_no_mapa`): carregar põe o jogador na soleira de fora.
-		"jogador": [player.posicao_no_mapa().x, player.posicao_no_mapa().y, player.posicao_no_mapa().z],
+		"jogador": [player.global_position.x, player.global_position.y, player.global_position.z],
 		"giro": player.visual.rotation.y,
 		"hora": Dia.hora,
 		"horas_decorridas": Dia.horas_decorridas,
@@ -1245,7 +1248,12 @@ func restaurar_do_save(estado: Dictionary) -> void:
 	var onde: Array = estado.get("jogador", [])
 	if onde.size() == 3:
 		var ponto := Vector3(float(onde[0]), float(onde[1]), float(onde[2]))
-		player.global_position = world.ground_position(ponto, 0.07) if world.is_on_land(ponto) else ponto
+		# Dentro de uma construção o chão é o assoalho dela, e não o do lote:
+		# assentar no terreno poria o corpo embaixo do chão da nave.
+		if interiores != null and interiores.contem(ponto) != "":
+			player.global_position = ponto
+		else:
+			player.global_position = world.ground_position(ponto, 0.07) if world.is_on_land(ponto) else ponto
 		player.velocity = Vector3.ZERO
 		player.visual.rotation.y = float(estado.get("giro", player.visual.rotation.y))
 	Dia.horas_decorridas = maxf(0.0, float(estado.get("horas_decorridas", 0.0)))

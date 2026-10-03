@@ -1,108 +1,76 @@
 extends Node3D
-## AS CONSTRUÇÕES POR DENTRO: a porta de fora, o cômodo, e a passagem entre os dois.
+## AS CONSTRUÇÕES POR DENTRO, no lugar delas no vale.
 ##
 ## O vale não tinha cômodo nenhum (#26: "o buraco maior"). A primeira
 ## construção que se abre é a igreja do Bom Jesus (`interior_igreja.gd`).
 ##
 ##
-## POR QUE O CÔMODO MORA LONGE
+## DENTRO DA PRÓPRIA CONSTRUÇÃO
 ##
-## A igreja do Tripo é UMA malha fechada, com colisão em caixa: não há como
-## entrar nela. Em vez de esvaziar o modelo, o cômodo é montado à parte, num
-## canto do quadro e bem acima do vale (`ALTURA`), e a porta de fora leva até
-## ele com um escurecer rápido — como as casas do Stardew e as cavernas do
-## Skyrim. Lá em cima o mar não chega, o bicho não caça e os sons de lugar
-## (mar, fogueira) somem sozinhos.
-##
-## O que precisa saber que o jogador está no vale — a bússola, o mapa, o Pedro
-## que o segue, o save — pergunta a `posicao_no_mapa()` do jogador, que dentro
-## é a porta de fora. O Pedro espera na porta.
+## "Os cômodos têm que ser em 3D mesmo. O 2D é só referência." A primeira
+## versão fazia como o 2D: a nave morava longe do vale, e a porta levava até
+## ela num escurecer — e tudo o que pergunta onde o jogador está (a bússola, o
+## mapa, o Pedro, o save) precisava ser enganado para ver a porta. Agora o
+## cômodo mora DENTRO DA CASCA do modelo, no lugar da igreja: entra-se andando
+## pela porta, o Pedro entra junto, e o vale vê o jogador onde ele está.
 ##
 ##
-## A TECLA
+## COMO O CÔMODO CABE NA CASCA
 ##
-## O E de interagir, com a dica em cima da porta, como o resto do vale. Este nó
-## entra no vale por último, e por isso ouve o E antes dos outros: na soleira,
-## a porta vale mais que o coqueiro do adro.
+## O modelo do Tripo é uma malha fechada, com uma caixa de colisão inteira por
+## cima — não há onde entrar. Ao montar, este nó:
+##
+##   1. MEDE A CASCA por dentro, com raios contra a própria malha (uma colisão
+##      provisória, numa camada só dela, desfeita em seguida): onde ficam as
+##      paredes, o fundo, a fachada, o beiral e o chão; e, contra a colisão do
+##      mundo, o patamar na porta, a quina do alicerce e o chão livre até o
+##      cruzeiro. Assim o cômodo acompanha o modelo, e o estilo procedural —
+##      cuja porta atravessa a torre — também.
+##   2. TIRA A COLISÃO INTEIRA da construção, e o cômodo põe a dele: paredes um
+##      palmo para dentro da casca, o vão da porta, e rampas onde degrau
+##      travaria o pé — da nave ao patamar, e do patamar ao adro por cima da
+##      quina do alicerce de pedra.
+##   3. ABRE A PORTA: um vão escuro por cima da porta pintada da fachada. De
+##      dentro, o vão mostra o adro — a casca do modelo só desenha a face de
+##      fora, e por isso some de dentro. E a câmera fica do lado da porta em
+##      que o jogador está (`camera_do_lado_de_dentro`).
+##
+## O que este nó NÃO faz: esvaziar o modelo, ou esconder pedaço dele. A casca
+## fica inteira, e o cômodo cabe nela.
 
 signal entrou(qual: String)
 signal saiu(qual: String)
 
-const Atalhos = preload("res://scripts/prototipo_3d/atalhos.gd")
-const DicaTecla = preload("res://scripts/prototipo_3d/dica_tecla.gd")
 const InteriorIgreja = preload("res://scripts/prototipo_3d/interior_igreja.gd")
 
-## Onde os cômodos moram: num canto do quadro do mapa, e BEM ACIMA do vale.
-##
-## Não podem morar fora do quadro: o mundo jogável é o retângulo 16:9, e o mar
-## põe paredes invisíveis nas quatro bordas dele (`Mar._paredes`, planos sem
-## fim). Corpo posto além da borda é empurrado de volta até ela no quadro
-## seguinte — foi assim que o primeiro teste da igreja achou o jogador caindo
-## do céu na borda do mapa. Dentro do quadro e a 400 de altura, nenhuma conta
-## de água vale, o bicho não alcança e o som de lugar não chega.
-const ALTURA := 400.0
-const RECUO_DA_BORDA := 40.0
-## Da porta de fora, a que distância a dica aparece e o E entra.
-const ALCANCE_DA_PORTA := 3.0
-## Longe assim do cômodo, quem estava dentro saiu por outra porta: a queda que
-## leva à cama, o "Destravar o boneco" do J, o R que reinicia.
-const SAIU_POR_OUTRO_LADO := 120.0
-const ESCURECER := 0.28
-
-## As construções que se abrem: a âncora do vale, o nome que o HUD escreve, e a
-## profundidade da fachada no estilo procedural (no Tripo ela é medida).
+## As construções que se abrem: a âncora do vale, o nome que o HUD escreve, e
+## o nome do corpo de colisão inteiro que o catálogo pôs nela no estilo Tripo.
 const CONSTRUCOES := {
-	"igreja": {"ancora": "Igreja", "nome": "Igreja do Bom Jesus", "fachada_procedural": 7.15},
+	"igreja": {"ancora": "Igreja", "nome": "Igreja do Bom Jesus", "colisao": "IgrejaColisao"},
 }
+
+## A camada de física das colisões provisórias da medida (só elas moram nela).
+const CAMADA_DE_MEDIR := 1 << 19
+## Quanto a parede do cômodo fica para dentro da casca do modelo.
+const FOLGA := 0.1
 
 var _mundo: Node3D
 var _jogador: Node3D
-var _hud
-## qual -> {"porta": Vector3 (fora), "frente": Vector3, "sala": Node3D}
-var _portas: Dictionary = {}
+## qual -> {"sala": Node3D, "nome": String}
+var _construcoes: Dictionary = {}
 var _dentro := ""
-var _na_porta := ""
-var _dica: PanelContainer
-var _veu: ColorRect
-var _passando := false
 
 
-func configurar(mundo: Node3D, jogador: Node3D, hud) -> void:
+## Monta os cômodos. É uma corrotina: a medida espera dois quadros de física
+## para a colisão provisória valer — quem precisa do cômodo pronto (o save que
+## põe o jogador lá dentro) espera com `await`. Os corpos dos moradores entram
+## na luz de dentro depois, quando eles existirem (`marcar_os_corpos`).
+func configurar(mundo: Node3D, jogador: Node3D) -> void:
 	_mundo = mundo
 	_jogador = jogador
-	_hud = hud
-	_dica = DicaTecla.criar(hud.map_layer(), Atalhos.letra("interagir"), "Entrar")
-	var camada := CanvasLayer.new()
-	camada.layer = 29
-	add_child(camada)
-	_veu = ColorRect.new()
-	_veu.name = "Veu"
-	_veu.color = Color(0, 0, 0, 0)
-	_veu.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_veu.set_anchors_preset(Control.PRESET_FULL_RECT)
-	camada.add_child(_veu)
-	var longe := Vector3(0.0, ALTURA, 0.0)
-	if mundo.has_method("has_map_frame") and mundo.has_map_frame():
-		var quadro: Rect2 = mundo.get_map_frame()
-		longe = Vector3(quadro.position.x + RECUO_DA_BORDA, ALTURA, quadro.position.y + RECUO_DA_BORDA)
-	var indice := 0
+	add_to_group("interiores")
 	for qual in CONSTRUCOES:
-		var porta := _porta_de_fora(qual)
-		if not porta.is_finite():
-			continue
-		var sala: Node3D = null
-		match qual:
-			"igreja":
-				sala = InteriorIgreja.new()
-		if sala == null:
-			continue
-		sala.name = "Interior_" + qual
-		# A nave corre para -Z a partir da porta: a sala começa um comprimento
-		# para dentro do quadro, para caber inteira nele.
-		sala.position = longe + Vector3(indice * 60.0, 0.0, InteriorIgreja.COMPRIMENTO + 2.0)
-		add_child(sala)
-		_portas[qual] = {"porta": porta, "frente": _frente(qual), "sala": sala}
-		indice += 1
+		await _abrir(qual)
 
 
 ## Em que construção o jogador está, ou "".
@@ -110,132 +78,323 @@ func dentro() -> String:
 	return _dentro
 
 
-func porta_de(qual: String) -> Vector3:
-	return (_portas[qual]["porta"] as Vector3) if _portas.has(qual) else Vector3.INF
-
-
 func sala_de(qual: String) -> Node3D:
-	return _portas[qual]["sala"] if _portas.has(qual) else null
+	return _construcoes[qual]["sala"] if _construcoes.has(qual) else null
 
 
-## A PORTA DE FORA: no meio da fachada, rente ao chão. A fachada é a frente do
-## lote (`<âncora>Frente`), a mesma que põe o cruzeiro no adro; a distância do
-## meio dela é a metade da caixa do modelo do Tripo, ou a medida do procedural.
-func _porta_de_fora(qual: String) -> Vector3:
+func nome_de(qual: String) -> String:
+	return str(CONSTRUCOES.get(qual, {}).get("nome", ""))
+
+
+## Em que cômodo este ponto do mundo está, ou "".
+func contem(ponto: Vector3) -> String:
+	for qual in _construcoes:
+		if (_construcoes[qual]["sala"] as Node3D).contem(ponto):
+			return qual
+	return ""
+
+
+## O PRÓXIMO PONTO no caminho de `de` até `para`, quando um está dentro de um
+## cômodo e o outro não: a soleira do lado de quem anda, e, já no corredor da
+## porta, a do outro lado. Sem cômodo no meio, é o próprio destino. É por aqui
+## que o Pedro entra junto: andando em linha reta ele empurraria a parede, e
+## não acharia a porta.
+##
+## O corredor é uma faixa, e não a distância até a soleira: com a distância, o
+## Pedro que passava da soleira de fora rumo à porta ficava longe dela de novo,
+## dava meia-volta, e ficava indo e vindo no patamar.
+func passagem(de: Vector3, para: Vector3) -> Vector3:
+	for qual in _construcoes:
+		var sala: Node3D = _construcoes[qual]["sala"]
+		var de_dentro: bool = sala.contem(de)
+		if de_dentro == sala.contem(para):
+			continue
+		var fora: Vector3 = sala.soleira_de_fora()
+		var por_dentro: Vector3 = sala.soleira_de_dentro()
+		if sala.no_vao(de):
+			return fora if de_dentro else por_dentro
+		return por_dentro if de_dentro else fora
+	return para
+
+
+func _process(_delta: float) -> void:
+	if _jogador == null:
+		return
+	var agora := contem(_jogador.global_position)
+	if agora == _dentro:
+		return
+	var antes := _dentro
+	_dentro = agora
+	if "dentro_de" in _jogador:
+		_jogador.dentro_de = agora
+	for qual in _construcoes:
+		(_construcoes[qual]["sala"] as Node3D).camera_do_lado_de_dentro(qual == agora)
+	if antes != "":
+		saiu.emit(antes)
+	if agora != "":
+		entrou.emit(agora)
+
+
+# --- montar um cômodo -----------------------------------------------------------
+
+func _abrir(qual: String) -> void:
 	var dado: Dictionary = CONSTRUCOES[qual]
 	var ancora := str(dado["ancora"])
 	if _mundo == null or not ("ancoras" in _mundo) or not _mundo.ancoras.has(ancora):
-		return Vector3.INF
+		return
 	var base: Vector3 = _mundo.ancoras[ancora]
-	var meia := float(dado.get("fachada_procedural", 6.0))
-	var modelo := _mundo.get_node_or_null(ancora.capitalize() + "Tripo")
-	if modelo != null and modelo.has_meta("limites"):
-		meia = (modelo.get_meta("limites") as AABB).size.z * 0.5
-	var ponto := base + _frente(qual) * (meia + 0.8)
-	return _mundo.ground_position(ponto, 0.05) if _mundo.has_method("ground_position") else ponto
+	var frente := _frente(ancora)
+	var chao: float = _mundo.ground_height_at(base)
+	var centro := Vector3(base.x, chao, base.z)
+	var modelo: Node3D = _mundo.get_node_or_null(ancora.capitalize() + "Tripo")
+	var malhas := _malhas_da_casca(modelo, centro, frente)
+	if malhas.is_empty():
+		return
+	var caixa_inteira: Node = _mundo.get_node_or_null(str(dado.get("colisao", "")))
+	var medida: Dictionary = await _medir(malhas, centro, frente, caixa_inteira)
+	if medida.is_empty():
+		return
+	_tirar_a_colisao_inteira(str(dado.get("colisao", "")), modelo, centro, frente, medida)
+	if modelo != null:
+		_casca_so_por_fora(modelo)
+
+	var sala: Node3D = null
+	match qual:
+		"igreja":
+			sala = InteriorIgreja.new()
+	if sala == null:
+		return
+	# A parede do cômodo fica FOLGA para dentro da casca; a da frente, rente
+	# ao lado de dentro da porta. A origem do cômodo é o meio da soleira, por
+	# dentro, e o cômodo corre para trás (-Z), longe da fachada.
+	var meia_largura: float = float(medida["lado"]) - FOLGA - InteriorIgreja.PAREDE
+	var ate_a_frente: float = float(medida["frente"]) - FOLGA - InteriorIgreja.PAREDE
+	var ate_o_fundo: float = float(medida["fundo"]) - FOLGA - InteriorIgreja.PAREDE
+	var chao_da_nave: float = float(medida["chao"])
+	sala.configurar({
+		"largura": meia_largura * 2.0,
+		"comprimento": ate_a_frente + ate_o_fundo,
+		"pe_direito": float(medida["teto"]) - chao_da_nave - 0.25,
+		"fundo_da_porta": float(medida["fachada"]) - (ate_a_frente + InteriorIgreja.PAREDE),
+		"soleira": chao_da_nave - float(medida["soleira"]),
+		"degrau_de_fora": float(medida["soleira"]) - float(medida["terreno"]),
+		"borda": float(medida["borda"]) - ate_a_frente,
+		"livre": float(medida["livre"]),
+	})
+	sala.name = "Interior_" + qual
+	add_child(sala)
+	sala.global_transform = Transform3D(Basis.looking_at(-frente, Vector3.UP),
+		centro + frente * ate_a_frente + Vector3.UP * chao_da_nave)
+	_construcoes[qual] = {"sala": sala, "nome": str(dado["nome"])}
 
 
-func _frente(qual: String) -> Vector3:
-	var ancora := str(CONSTRUCOES[qual]["ancora"])
+func _frente(ancora: String) -> Vector3:
 	var frente: Vector3 = _mundo.ancoras.get(ancora + "Frente", Vector3.BACK)
 	frente.y = 0.0
 	return frente.normalized() if frente.length() > 0.01 else Vector3.BACK
 
 
-func _process(_delta: float) -> void:
-	if _jogador == null or _passando:
-		return
-	# SAIU POR OUTRA PORTA: a queda, o destravar e o reinício tiram o corpo da
-	# sala sem passar por aqui. O estado de dentro não pode ficar valendo.
-	if _dentro != "" and _jogador.global_position.distance_to((_portas[_dentro]["sala"] as Node3D).global_position) > SAIU_POR_OUTRO_LADO:
-		_marcar_fora()
-	_na_porta = ""
-	var camera := get_viewport().get_camera_3d()
-	if _dentro != "":
-		var sala: Node3D = _portas[_dentro]["sala"]
-		if sala.perto_da_porta(_jogador.global_position):
-			_na_porta = _dentro
-			DicaTecla.mostrar_em(_dica, camera, sala.porta() + Vector3(0, 0.4, 0), tr("Sair"))
-			return
-	else:
-		for qual in _portas:
-			var porta: Vector3 = _portas[qual]["porta"]
-			var aqui: Vector3 = _jogador.global_position
-			if Vector2(aqui.x - porta.x, aqui.z - porta.z).length() <= ALCANCE_DA_PORTA and absf(aqui.y - porta.y) < 3.0:
-				_na_porta = qual
-				# Na altura do peito, como as outras dicas: em cima do batente ela
-				# saía do alto da tela com a câmera colada na porta.
-				DicaTecla.mostrar_em(_dica, camera, porta + Vector3(0, 1.5, 0),
-					tr("Entrar: %s") % str(CONSTRUCOES[qual]["nome"]))
-				return
-	_dica.visible = false
+## As malhas que formam a casca: as do modelo do Tripo, ou, no procedural, as
+## do mundo que estão dentro do lote da construção.
+func _malhas_da_casca(modelo: Node3D, centro: Vector3, frente: Vector3) -> Array:
+	var lista: Array = []
+	if modelo != null:
+		for no in modelo.find_children("*", "MeshInstance3D", true, false):
+			lista.append(no)
+		return lista
+	var lado := frente.cross(Vector3.UP).normalized()
+	for no in _mundo.get_children():
+		if not (no is MeshInstance3D):
+			continue
+		var onde: Vector3 = (no as MeshInstance3D).global_position - centro
+		if absf(onde.dot(lado)) < 4.5 and absf(onde.dot(frente)) < 8.0 and onde.y > -0.5 and onde.y < 12.0:
+			lista.append(no)
+	return lista
 
 
-func _unhandled_key_input(event: InputEvent) -> void:
-	if _na_porta == "" or _passando:
-		return
-	if not (event is InputEventKey and event.pressed and not event.echo
-			and event.physical_keycode == Atalhos.tecla("interagir")):
-		return
-	# Com tela aberta, ou com o corpo parado (o escuro da queda), a porta não abre.
-	if get_tree().paused or not _jogador.is_physics_processing():
-		return
-	get_viewport().set_input_as_handled()
-	if _dentro != "":
-		sair()
-	else:
-		entrar(_na_porta)
-
-
-## ENTRA na construção: escurece, põe o corpo na soleira de dentro, clareia.
-func entrar(qual: String) -> void:
-	if not _portas.has(qual) or _dentro != "" or _passando:
-		return
-	_passando = true
-	_dica.visible = false
-	Audio.efeito("porta_abrir")
-	await _escurecer(1.0)
-	var sala: Node3D = _portas[qual]["sala"]
-	_jogador.porta_do_interior = _portas[qual]["porta"]
-	_jogador.teleportar(sala.chegada(), PI)
-	_dentro = qual
-	Audio.efeito("porta_fechar")
-	entrou.emit(qual)
+## A MEDIDA DA CASCA, por dentro e pela fachada, em unidades a partir do centro
+## da construção no chão. Raios contra uma colisão provisória da própria malha:
+##
+##   lado     metade da largura por dentro, à altura de um homem
+##   frente   do centro até a parede da fachada, por dentro (o menor dos três
+##            pontos do meio: a porta pintada costuma ser rebaixada)
+##   fundo    do centro até a parede do fundo, por dentro
+##   fachada  do centro até a face de FORA da fachada, no meio da porta
+##   teto     a altura do beiral junto das paredes, por dentro
+##   chao     a altura do chão da nave: o da casca, ou a soleira, o que for maior
+##   soleira  a altura do patamar de FORA, na porta: o que o corpo pisa ao
+##            chegar — no Tripo, o topo da escadaria de pedra que o vale põe
+##            na frente da igreja; no procedural, o chão. Medido contra a
+##            colisão do mundo, sem a caixa inteira que vai sair.
+func _medir(malhas: Array, centro: Vector3, frente: Vector3, caixa_inteira: Node = null) -> Dictionary:
+	var corpo := StaticBody3D.new()
+	corpo.name = "MedidaDaCasca"
+	corpo.collision_layer = CAMADA_DE_MEDIR
+	corpo.collision_mask = 0
+	_mundo.add_child(corpo)
+	for malha in malhas:
+		var mi := malha as MeshInstance3D
+		if mi.mesh == null:
+			continue
+		var forma := mi.mesh.create_trimesh_shape()
+		if forma == null:
+			continue
+		forma.backface_collision = true
+		var cs := CollisionShape3D.new()
+		cs.shape = forma
+		corpo.add_child(cs)
+		cs.global_transform = mi.global_transform
 	await get_tree().physics_frame
-	await _escurecer(0.0)
-	_passando = false
-
-
-## SAI para a porta de fora, de costas para ela e de frente para o adro.
-func sair() -> void:
-	if _dentro == "" or _passando:
-		return
-	_passando = true
-	_dica.visible = false
-	Audio.efeito("porta_abrir")
-	await _escurecer(1.0)
-	var qual := _dentro
-	var frente: Vector3 = _portas[qual]["frente"]
-	_jogador.teleportar(_portas[qual]["porta"] + frente * 0.6, atan2(frente.x, frente.z))
-	_marcar_fora()
-	Audio.efeito("porta_fechar")
 	await get_tree().physics_frame
-	await _escurecer(0.0)
-	_passando = false
+	var espaco: PhysicsDirectSpaceState3D = _mundo.get_world_3d().direct_space_state
+	var lado := frente.cross(Vector3.UP).normalized()
+	var medida := {}
+	var meio_1 := centro + Vector3.UP * 1.5
+	var meio_2 := centro + Vector3.UP * 2.2
+	var lado_mais := minf(_distancia(espaco, meio_1, lado), _distancia(espaco, meio_2, lado))
+	var lado_menos := minf(_distancia(espaco, meio_1, -lado), _distancia(espaco, meio_2, -lado))
+	medida["lado"] = minf(lado_mais, lado_menos)
+	medida["fundo"] = minf(_distancia(espaco, meio_1, -frente), _distancia(espaco, meio_2, -frente))
+	var frente_por_dentro := INF
+	for x in [-0.5, 0.0, 0.5]:
+		frente_por_dentro = minf(frente_por_dentro, _distancia(espaco, meio_1 + lado * x, frente))
+	medida["frente"] = frente_por_dentro
+	# A face de fora da fachada, vinda de longe na direção do centro.
+	var de_fora := meio_1 + frente * 30.0
+	var na_fachada := _raio(espaco, de_fora, meio_1)
+	medida["fachada"] = (na_fachada - centro).dot(frente) if na_fachada.is_finite() else frente_por_dentro
+	# O beiral, junto das paredes: o menor teto de três pontos de cada lado.
+	var teto := INF
+	for x in [-1.0, 1.0]:
+		for z in [-0.5, 0.0, 0.5]:
+			var ponto: Vector3 = centro + lado * x * (float(medida["lado"]) - 0.35) \
+				+ frente * z * float(medida["fundo"]) + Vector3.UP * 1.0
+			var acima := _raio(espaco, ponto, ponto + Vector3.UP * 30.0)
+			if acima.is_finite():
+				teto = minf(teto, acima.y - centro.y)
+	medida["teto"] = teto if is_finite(teto) else 4.5
+	# O chão: o da casca por dentro, e a soleira da escadaria pela frente.
+	var de_cima := centro + Vector3.UP * 3.0
+	var no_chao := _raio(espaco, de_cima, centro - Vector3.UP * 2.0)
+	var chao_de_dentro: float = (no_chao.y - centro.y) if no_chao.is_finite() else 0.0
+	var diante := centro + frente * (float(medida["fachada"]) + 0.35) + Vector3.UP * 8.0
+	var degrau := _raio(espaco, diante, diante - Vector3.UP * 12.0)
+	var soleira: float = (degrau.y - centro.y) if degrau.is_finite() else 0.0
+	medida["chao"] = clampf(maxf(chao_de_dentro, soleira), 0.0, 2.0)
+	# O patamar de fora, contra a colisão do mundo (camada 1), um palmo além
+	# da fachada — sem a caixa inteira da construção, que sai em seguida.
+	var no_patamar := centro + frente * (float(medida["fachada"]) + 0.3) + Vector3.UP * 4.0
+	var pergunta := PhysicsRayQueryParameters3D.create(no_patamar, no_patamar - Vector3.UP * 10.0, 1)
+	if caixa_inteira is CollisionObject3D:
+		pergunta.exclude = [(caixa_inteira as CollisionObject3D).get_rid()]
+	var patamar: Vector3 = espaco.intersect_ray(pergunta).get("position", Vector3.INF)
+	medida["soleira"] = (patamar.y - centro.y) if patamar.is_finite() else \
+		(_mundo.ground_height_at(no_patamar) - centro.y)
+	# ONDE O PATAMAR ACABA, e o chão do adro logo depois: o alicerce de pedra em
+	# que o vale assenta a igreja fica um palmo acima do adro, e a quina dele
+	# trava o corpo. Raios de cima para baixo, saindo da fachada a cada cinco
+	# dedos, até o chão cair abaixo do patamar. (Um raio deitado, de fora para
+	# dentro, batia no cruzeiro, que fica na frente da igreja.)
+	medida["borda"] = float(medida["fachada"])
+	medida["terreno"] = float(medida["soleira"])
+	var passo := 0.05
+	while passo < 4.0:
+		var ponto := centro + frente * (float(medida["fachada"]) + passo)
+		var altura := _altura_do_mundo(espaco, ponto, centro.y + float(medida["soleira"]), pergunta.exclude)
+		if is_finite(altura) and altura < centro.y + float(medida["soleira"]) - 0.05:
+			medida["borda"] = float(medida["fachada"]) + passo - 0.025
+			break
+		passo += 0.05
+	if float(medida["borda"]) > float(medida["fachada"]):
+		var no_pe := centro + frente * (float(medida["borda"]) + 0.9)
+		var no_adro := _altura_do_mundo(espaco, no_pe, centro.y + float(medida["soleira"]), pergunta.exclude)
+		if is_finite(no_adro):
+			medida["terreno"] = no_adro - centro.y
+	# O CHÃO LIVRE na frente da porta, até o primeiro estorvo: raios deitados,
+	# na altura do joelho e do peito, da fachada para fora.
+	medida["livre"] = 3.0
+	for altura in [0.3, 1.0]:
+		var de: Vector3 = centro + frente * (float(medida["fachada"]) + 0.05) \
+			+ Vector3.UP * (float(medida["soleira"]) + altura)
+		var adiante := PhysicsRayQueryParameters3D.create(de, de + frente * 3.0, 1)
+		adiante.exclude = pergunta.exclude
+		var estorvo: Vector3 = espaco.intersect_ray(adiante).get("position", Vector3.INF)
+		if estorvo.is_finite():
+			medida["livre"] = minf(float(medida["livre"]), (estorvo - de).dot(frente) + 0.05)
+	corpo.queue_free()
+	for chave in ["lado", "frente", "fundo"]:
+		if not is_finite(float(medida[chave])) or float(medida[chave]) < 1.5:
+			push_warning("Interiores: a casca da construção não mediu '%s' (%s); o cômodo não foi montado." % [chave, str(medida[chave])])
+			return {}
+	return medida
 
 
-func _marcar_fora() -> void:
-	var qual := _dentro
-	_dentro = ""
-	_jogador.porta_do_interior = Vector3.INF
-	if qual != "":
-		saiu.emit(qual)
+func _raio(espaco: PhysicsDirectSpaceState3D, de: Vector3, para: Vector3) -> Vector3:
+	var pergunta := PhysicsRayQueryParameters3D.create(de, para, CAMADA_DE_MEDIR)
+	pergunta.hit_back_faces = true
+	return espaco.intersect_ray(pergunta).get("position", Vector3.INF)
 
 
-func _escurecer(alvo: float) -> void:
-	if not is_instance_valid(_veu):
+## A altura do que se pisa neste ponto, na colisão do mundo (camada 1), de um
+## metro acima de `ate` para baixo.
+func _altura_do_mundo(espaco: PhysicsDirectSpaceState3D, ponto: Vector3, ate: float, fora: Array) -> float:
+	var de_cima := Vector3(ponto.x, ate + 1.0, ponto.z)
+	var pergunta := PhysicsRayQueryParameters3D.create(de_cima, de_cima - Vector3.UP * 4.0, 1)
+	pergunta.exclude = fora
+	var onde: Vector3 = espaco.intersect_ray(pergunta).get("position", Vector3.INF)
+	return onde.y if onde.is_finite() else INF
+
+
+func _distancia(espaco: PhysicsDirectSpaceState3D, de: Vector3, direcao: Vector3) -> float:
+	var ponto := _raio(espaco, de, de + direcao * 30.0)
+	return (ponto - de).dot(direcao) if ponto.is_finite() else INF
+
+
+## TIRA A COLISÃO INTEIRA da construção: a caixa que o catálogo pôs no Tripo,
+## ou, no procedural, os corpos das caixas da igreja dentro do lote. O cômodo
+## põe a dele no lugar.
+func _tirar_a_colisao_inteira(nome: String, modelo: Node3D, centro: Vector3, frente: Vector3, medida: Dictionary) -> void:
+	if modelo != null:
+		var caixa := _mundo.get_node_or_null(nome)
+		if caixa != null:
+			caixa.queue_free()
 		return
-	var tween := create_tween()
-	tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
-	tween.tween_property(_veu, "color:a", alvo, ESCURECER)
-	await tween.finished
+	var lado := frente.cross(Vector3.UP).normalized()
+	for no in _mundo.get_children():
+		if not (no is StaticBody3D) or str(no.name) == "MedidaDaCasca":
+			continue
+		var onde: Vector3 = (no as StaticBody3D).global_position - centro
+		if absf(onde.dot(lado)) <= float(medida["lado"]) + 0.6 \
+				and onde.dot(frente) <= float(medida["fachada"]) + 0.6 \
+				and onde.dot(frente) >= -float(medida["fundo"]) - 0.8 and onde.y < 12.0:
+			no.queue_free()
+
+
+## A CASCA SÓ POR FORA: material de dois lados desenharia a parede também de
+## dentro, e o vão da porta mostraria o avesso da porta pintada em vez do adro.
+## Só nesta construção, e com cópia do material, para não mexer em mais ninguém.
+func _casca_so_por_fora(modelo: Node3D) -> void:
+	for no in modelo.find_children("*", "MeshInstance3D", true, false):
+		var mi := no as MeshInstance3D
+		if mi.mesh == null:
+			continue
+		for i in mi.mesh.get_surface_count():
+			var material := mi.get_active_material(i)
+			if material is BaseMaterial3D and (material as BaseMaterial3D).cull_mode != BaseMaterial3D.CULL_BACK:
+				var copia := (material as BaseMaterial3D).duplicate() as BaseMaterial3D
+				copia.cull_mode = BaseMaterial3D.CULL_BACK
+				mi.set_surface_override_material(i, copia)
+
+
+## OS CORPOS NA LUZ DE DENTRO: as luzes do cômodo só acendem a camada dele e a
+## dos corpos (ver `interior_igreja.gd`). O jogador e os moradores entram nela,
+## para a vela do altar iluminar quem chega perto dela.
+func marcar_os_corpos() -> void:
+	var corpos: Array = []
+	if _jogador != null:
+		corpos.append(_jogador)
+	for morador in get_tree().get_nodes_in_group("moradores"):
+		corpos.append(morador)
+	for corpo in corpos:
+		for no in (corpo as Node).find_children("*", "GeometryInstance3D", true, false):
+			(no as GeometryInstance3D).layers |= InteriorIgreja.CAMADA_DOS_CORPOS

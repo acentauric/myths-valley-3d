@@ -197,8 +197,7 @@ func limpar_alvo() -> void:
 
 func _seguir() -> void:
 	# Filho direto do SubViewport: a posição já é em coordenadas do mundo.
-	# Dentro de uma construção a vista fica na porta dela (ver `posicao_no_mapa`).
-	_camera.position = _onde_esta_o_jogador() + Vector3(0, ALTURA_CAMERA, 0)
+	_camera.position = _jogador.global_position + Vector3(0, ALTURA_CAMERA, 0)
 
 
 func _desenhar() -> void:
@@ -235,17 +234,9 @@ func _desenhar() -> void:
 ## preso num canto cai justamente no pedaço que o shader apaga, e o jogador
 ## perderia o marcador exatamente quando mais precisa dele — longe do alvo.
 func _no_quadro(pos: Vector3, centro: Vector2, escala: float) -> Vector2:
-	var aqui := _onde_esta_o_jogador()
-	var fora := Vector2(pos.x - aqui.x,
-		pos.z - aqui.z) * escala
+	var fora := Vector2(pos.x - _jogador.global_position.x,
+		pos.z - _jogador.global_position.z) * escala
 	var aro: float = minf(_sobre.size.x, _sobre.size.y) * 0.5 - MARGEM_DO_ARO
 	if fora.length() > aro:
 		fora = fora.normalized() * aro
 	return centro + fora
-
-
-## Onde o jogador está NO VALE: dentro de uma construção, a porta dela.
-func _onde_esta_o_jogador() -> Vector3:
-	if _jogador.has_method("posicao_no_mapa"):
-		return _jogador.posicao_no_mapa()
-	return _jogador.global_position

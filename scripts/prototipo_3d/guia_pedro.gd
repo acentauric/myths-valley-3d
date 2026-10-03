@@ -90,18 +90,26 @@ func _physics_process(delta: float) -> void:
 	# estar de pé, e ela não anda sem saber de quem se aproximar.
 	if _cadeia.jogador == null:
 		_cadeia.jogador = jogador
-	# ONDE O JOGADOR ESTÁ NO VALE: dentro da igreja, a porta dela. O cômodo
-	# mora longe do vale (ver `interiores.gd`), e seguir o corpo lá dentro
-	# era atravessar o mapa correndo; o Pedro espera na porta.
-	var onde_esta: Vector3 = jogador.posicao_no_mapa() if jogador.has_method("posicao_no_mapa") else jogador.global_position
-	var para_jogador := onde_esta - global_position
+	# O PEDRO ENTRA JUNTO. Com o jogador dentro da igreja e ele fora (ou o
+	# contrário), seguir em linha reta era empurrar a parede: o caminho passa
+	# pela porta, ponto a ponto (`Interiores.passagem`), e só depois volta a
+	# ser o jogador. Ponto de passagem se alcança de perto; o jogador, não.
+	var onde_esta: Vector3 = jogador.global_position
+	var alvo := onde_esta
+	var basta := SEGUIR_MAX
+	var interiores := get_tree().get_first_node_in_group("interiores")
+	if interiores != null:
+		alvo = interiores.passagem(global_position, onde_esta)
+		if not alvo.is_equal_approx(onde_esta):
+			basta = 0.35
+	var para_jogador := alvo - global_position
 	para_jogador.y = 0.0
 	var distancia := para_jogador.length()
 	var direcao := Vector3.ZERO
 	var velocidade := ANDAR
-	if distancia > SEGUIR_MAX:
+	if distancia > basta:
 		direcao = para_jogador / distancia
-		velocidade = CORRER if distancia > CORRER_ALEM else ANDAR
+		velocidade = CORRER if (onde_esta - global_position).length() > CORRER_ALEM else ANDAR
 	_mover(direcao, velocidade, delta)
 	if direcao == Vector3.ZERO:
 		_olhar_para(onde_esta, delta)
