@@ -1,0 +1,100 @@
+{
+  "observacao": "Lote de texto para 3D enviado ao Tripo Studio em 03/10/2026 pela ponte do Playwright MCP com a extensão do Chrome (Playwright MCP Bridge), na sessão já logada, com tools/tripo/lote_studio.js: Modelo HD H3.1 com a textura 8K desligada (55 créditos cada, preço lido na interface), Retopologia Malha Smart em quads com o alvo de faces de cada peça (40 créditos cada, idem) e exportação GLB com textura 1K. Aprovado na conversa: \"as 12 peças\". Total: 1.140 créditos; o saldo da interface antes do lote era 16.385. Os GLBs foram baixados pelo link assinado de cada exportação para .assets-raw/tripo/gerados/ (o Chrome segurou os downloads da aba) e copiados para assets/prototipo_3d/{moveis,aderecos}/.",
+  "estilo": "stylized game prop, clean silhouette, soft even lighting, isolated object, no ground plane, no text",
+  "categorias": {
+    "movel": {
+      "pasta": "moveis",
+      "textura": "1k"
+    },
+    "adereco": {
+      "pasta": "aderecos",
+      "textura": "1k"
+    }
+  },
+  "tarefas": {
+    "cama": {
+      "tarefa": "9b39c244-1268-4e9a-9616-292d8c676061",
+      "projeto": "fec71f42-10cf-4c94-a043-fffdaa9d3ee7",
+      "categoria": "movel",
+      "faces": 3000,
+      "prompt": "a rustic wooden bed frame with a thin straw mattress and a folded woven cotton blanket, 19th century rural Bahia Brazil, simple and poor, stylized game prop, clean silhouette, soft even lighting, isolated object, no ground plane, no text"
+    },
+    "mesa": {
+      "tarefa": "f707084a-ea9e-45e2-8ba4-7228d450d282",
+      "projeto": "f2841ed8-e100-4740-874f-f28e3d4011b6",
+      "categoria": "movel",
+      "faces": 2000,
+      "prompt": "a rustic wooden kitchen table made of rough planks with four square legs, 19th century rural Bahia Brazil, stylized game prop, clean silhouette, soft even lighting, isolated object, no ground plane, no text"
+    },
+    "banco_tosco": {
+      "tarefa": "8fdc7378-0a00-47dd-94ae-9136902b1410",
+      "projeto": "8e103d70-1f33-4b85-84c9-58b6732eb7de",
+      "categoria": "movel",
+      "faces": 1200,
+      "prompt": "a rough rustic bench made of a single thick wooden plank on two short log legs, 19th century rural Brazil, stylized game prop, clean silhouette, soft even lighting, isolated object, no ground plane, no text"
+    },
+    "bau": {
+      "tarefa": "6c71357e-9ff0-4070-9c46-f2ab2a96df19",
+      "projeto": "db3f7dcd-fc20-4bea-96ae-359893e5b2ed",
+      "categoria": "movel",
+      "faces": 2000,
+      "prompt": "an old wooden storage chest with iron straps, a closed lid and a lock plate, 19th century rural Brazil, stylized game prop, clean silhouette, soft even lighting, isolated object, no ground plane, no text"
+    },
+    "barril": {
+      "tarefa": "fb76296e-0c75-4750-ab9c-70b7ab2b1025",
+      "projeto": "e3b8a601-319d-4e4b-a2ef-7438cf7b2f50",
+      "categoria": "movel",
+      "faces": 1500,
+      "prompt": "a small wooden barrel with dark iron hoops, standing upright, 19th century, stylized game prop, clean silhouette, soft even lighting, isolated object, no ground plane, no text"
+    },
+    "cantareira": {
+      "tarefa": "5560ec0b-cc1f-4247-9102-3947179b8913",
+      "projeto": "bf09e815-37d6-4b12-b175-624e3cb56449",
+      "categoria": "movel",
+      "faces": 2500,
+      "prompt": "a wooden stand holding two red clay water jars with clay lids, Brazilian colonial cantareira, 19th century rural kitchen, stylized game prop, clean silhouette, soft even lighting, isolated object, no ground plane, no text"
+    },
+    "fogao_barro": {
+      "tarefa": "6961ac8b-06de-4b8e-94c4-91e46405b070",
+      "projeto": "02f45138-45bd-4c7a-afeb-8fbb5dc1c077",
+      "categoria": "movel",
+      "faces": 3000,
+      "prompt": "a traditional Brazilian wood-burning clay stove made of adobe, rectangular block with two round cooking holes on top, a clay pot on one hole, a fire opening in the front, 19th century rural Bahia, stylized game prop, clean silhouette, soft even lighting, isolated object, no ground plane, no text"
+    },
+    "jirau": {
+      "tarefa": "0d5853e4-df05-4501-aee2-4bd6f9e1ed3b",
+      "projeto": "73462cdf-6088-4380-8070-34e5fbd7fd0a",
+      "categoria": "movel",
+      "faces": 2000,
+      "prompt": "a rustic wall shelf made of thin wooden sticks tied with rope, with a few clay bowls on it, Brazilian jirau, 19th century rural kitchen, stylized game prop, clean silhouette, soft even lighting, isolated object, no ground plane, no text"
+    },
+    "oratorio": {
+      "tarefa": "a7894da9-2fe6-4d80-8cd6-c6781aa387e0",
+      "projeto": "a3ad74d6-2082-4557-b85d-932613f93ccd",
+      "categoria": "movel",
+      "faces": 2500,
+      "prompt": "a small wooden Catholic home altar cabinet with two open doors and a tiny saint statue inside, painted in faded blue and gold, Brazilian oratorio, 19th century, stylized game prop, clean silhouette, soft even lighting, isolated object, no ground plane, no text"
+    },
+    "rede": {
+      "tarefa": "c59bfe12-4f30-4bba-909f-2bff105cfd28",
+      "projeto": "9070599b-bfc1-4783-b103-cc84528924f1",
+      "categoria": "movel",
+      "faces": 2000,
+      "prompt": "a woven cotton hammock with colorful stripes and fringes, hanging in a curve between two short ropes, Brazilian rede, stylized game prop, clean silhouette, soft even lighting, isolated object, no ground plane, no text"
+    },
+    "mastro_pano": {
+      "tarefa": "8503a824-842e-492a-b6f8-f19806186055",
+      "projeto": "2902acf3-dd86-41f3-a23c-ff2f3cd7e64c",
+      "categoria": "adereco",
+      "faces": 1500,
+      "prompt": "a tall thin wooden pole stuck in the ground with a long plain white cloth banner hanging from its top, Afro-Brazilian candomble terreiro flag mast, stylized game prop, clean silhouette, soft even lighting, isolated object, no ground plane, no text"
+    },
+    "fitas_gameleira": {
+      "tarefa": "3759ce96-e243-4d2a-88a1-0e2383a4a723",
+      "projeto": "76dc5c06-db53-42fb-ba83-6576562ddb1f",
+      "categoria": "adereco",
+      "faces": 1500,
+      "prompt": "a wide white cloth sash wrapped in a ring and tied in a large bow, as if around a thick tree trunk but with the trunk removed, hollow cylindrical ring of fabric with colorful ribbons hanging down, Afro-Brazilian offering, stylized game prop, clean silhouette, soft even lighting, isolated object, no ground plane, no text"
+    }
+  }
+}

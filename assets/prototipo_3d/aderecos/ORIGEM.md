@@ -61,3 +61,29 @@ Jesus e dos barcos de passeio/pesca (cascos lisos, sem letreiro).
 | `pedra_mare_tripo.glb` | laje escura de recife com algas, exposta na maré baixa | `6865c7a6-7776-4663-86a3-e6129bac00b0` | 4.865 | 1K |
 | `bote_tripo.glb` | bote de pesca branco e azul com toldo de lona, sem letreiro | `726765df-3516-434a-8ea2-625c0a313c42` | 5.892 | 1K |
 | `canoa_amarela_tripo.glb` | canoa amarela de casco vermelho por dentro, desgastada | `91fc17de-dacb-4338-b6c9-1603113d4e41` | 3.673 | 1K |
+
+<!-- lote-2026-10-03:inicio -->
+
+## Lote de 03/10/2026: o terreiro e a gameleira (#52)
+
+Os dois mastros com pano branco do terreiro e as fitas no tronco da gameleira, que
+o 2D descreve e o vale esperava (`world_builder._build_marcos_de_fe`). Entram só
+no estilo Tripo.
+
+Geradas por texto no Tripo Studio em 03/10/2026 (Modelo HD H3.1, textura 8K
+desligada, 55 créditos) e passadas pela Retopologia (Quad, Malha Smart, 40
+créditos) com o alvo de faces de cada peça; exportadas em GLB com textura 1K.
+Geração, retopologia e exportação pela ponte do Playwright MCP com a extensão do
+Chrome, com `tools/tripo/lote_studio.js`; os originais ficam em
+`.assets-raw/tripo/gerados/` (fora do Git). Tarefas, projetos, alvos e prompts
+completos em `tools/tripo/lote_2026-10-03.json`. A conta Tripo exibia um plano
+pago durante a geração; a [ajuda oficial sobre uso comercial](https://www.tripo3d.ai/help/privacy-policy/how-to-use-tripo-models-commercially)
+concede direitos comerciais aos usuários de planos pagos — conferir as condições
+vigentes antes de publicar.
+
+| Arquivo | O que é (prompt) | Tarefa Tripo | Triângulos | Textura | MB |
+| --- | --- | --- | ---: | --- | ---: |
+| `mastro_pano_tripo.glb` | A tall thin wooden pole stuck in the ground with a long plain white cloth banner hanging from its top. | `8503a824-842e-492a-b6f8-f19806186055` | 2.648 | 1K | 2.0 |
+| `fitas_gameleira_tripo.glb` | A wide white cloth sash wrapped in a ring and tied in a large bow, as if around a thick tree trunk but with the trunk removed, hollow cylindrical ring of fabric with colorful ribbons hanging down. | `3759ce96-e243-4d2a-88a1-0e2383a4a723` | 2.831 | 1K | 2.7 |
+
+<!-- lote-2026-10-03:fim -->

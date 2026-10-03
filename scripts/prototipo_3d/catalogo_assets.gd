@@ -104,6 +104,24 @@ const PECAS := {
 	"prato_comida": {"tripo": "itens/prato_comida_tripo.glb", "largura": 0.3},
 	"cacho_banana": {"tripo": "itens/cacho_banana_tripo.glb", "altura": 0.45},
 	"jaca": {"tripo": "itens/jaca_tripo.glb", "altura": 0.45},
+	# Mobília da casa herdada (#26). A casa põe cada uma na largura do lugar dela
+	# (`interior_casa._movel`), com a frente no +Z; a cama e a cantareira vieram
+	# de comprido no Z, e o giro as deita no X: a cabeceira para a parede da
+	# esquerda, e os dois potes lado a lado, de frente para a sala.
+	"cama": {"tripo": "moveis/cama_tripo.glb", "largura": 1.9, "girar": [0, 90, 0]},
+	"mesa": {"tripo": "moveis/mesa_tripo.glb", "largura": 1.1},
+	"banco_tosco": {"tripo": "moveis/banco_tosco_tripo.glb", "largura": 1.0},
+	"bau": {"tripo": "moveis/bau_tripo.glb", "largura": 0.9},
+	"barril": {"tripo": "moveis/barril_tripo.glb", "altura": 0.8},
+	"cantareira": {"tripo": "moveis/cantareira_tripo.glb", "altura": 0.9, "girar": [0, 90, 0]},
+	"fogao_barro": {"tripo": "moveis/fogao_barro_tripo.glb", "largura": 1.0},
+	"jirau": {"tripo": "moveis/jirau_tripo.glb", "largura": 1.2},
+	"oratorio": {"tripo": "moveis/oratorio_tripo.glb", "altura": 0.6},
+	"rede": {"tripo": "moveis/rede_tripo.glb", "largura": 2.4},
+	# O que faltava ao terreiro e à gameleira (#52): os dois mastros com pano
+	# branco e as fitas no tronco (`world_builder._build_marcos_de_fe`).
+	"mastro_pano": {"tripo": "aderecos/mastro_pano_tripo.glb", "altura": 5.0, "tronco": 0.05},
+	"fitas_gameleira": {"tripo": "aderecos/fitas_gameleira_tripo.glb", "largura": 3.0},
 }
 
 static var _cenas: Dictionary = {}

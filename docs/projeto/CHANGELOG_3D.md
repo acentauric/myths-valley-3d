@@ -26,6 +26,22 @@ atualize esse arquivo e este documento juntos.
 
 ## Em desenvolvimento — 03/10/2026
 
+- **A casa herdada mobiliada, e o terreiro e a gameleira completos: o lote do Tripo
+  de 03/10/2026** (#26, #52). Doze peças geradas no Tripo Studio (Modelo HD H3.1 com a
+  textura 8K desligada, 55 créditos; Retopologia Malha Smart, 40; GLB com textura 1K —
+  1.140 créditos ao todo, preços lidos na interface antes de gastar), pela ponte do
+  Playwright MCP com a extensão do Chrome e o `tools/tripo/lote_studio.js`. A casa
+  troca as caixas cinza pela mobília do catálogo: a cama de cabeceira na parede da
+  esquerda, o baú com a fechadura para a sala, a mesa sob a janela com o banco, a
+  cantareira perto da porta, o fogão de barro e o barril no canto, o jirau de cuias na
+  parede e o oratório aberto na parede da esquerda; a cama e a cantareira vieram de
+  comprido no Z, e o catálogo as gira. O fogão estava de costas para a sala (giro de
+  meia-volta) e agora mostra a boca do fogo. No terreiro, os dois mastros com pano branco
+  ladeiam a entrada do lado da rua; na gameleira, o pano das fitas é amarrado no tronco
+  liso, acima das sapopemas, na medida do tronco ali, tirada da própria malha. Os dois só
+  no estilo Tripo, que o procedural não ganha peça nova. A rede fica para a obra de armar
+  rede. Registro em `moveis/ORIGEM.md`, `aderecos/ORIGEM.md`, `assets/CREDITOS.md` e
+  `tools/tripo/lote_2026-10-03.json`.
 - **Os cordéis no estilo do vale: o folheto em alta, a capa de cada um e o barbante da
   feira.** O folheto veio do 2D desenhado em 640x360 e era ampliado duas vezes no vale,
   com a letra borrada; agora é medido na tela do vale (1280x720), nas letras da Crônica

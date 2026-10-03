@@ -62,6 +62,13 @@ publicar.
 | `assets/audio/musica/musica_{manha,tarde,noite,mata}.mp3` | músicas por período do dia e da mata fechada, ElevenLabs Music (instrumental) | `tools/elevenlabs/gerar-musicas-periodos.ps1` |
 | `assets/audio/{efeitos,ambiente}/…` (bem-te-vi, sussurros da mata, passos v2, lama, poça, tubarão) | efeitos novos do ElevenLabs Sound Effects | `tools/elevenlabs/gerar-sons-vale.ps1` |
 
+### Lote da casa e dos marcos (03/10/2026)
+
+| Arquivos | O que são | Registro |
+| --- | --- | --- |
+| `assets/prototipo_3d/moveis/{cama,mesa,banco_tosco,bau,barril,cantareira,fogao_barro,jirau,oratorio,rede}_tripo.glb` | a mobília da casa herdada, Tripo Studio (texto → 3D + Malha Smart) | `moveis/ORIGEM.md` e `tools/tripo/lote_2026-10-03.json` |
+| `assets/prototipo_3d/aderecos/{mastro_pano,fitas_gameleira}_tripo.glb` | os mastros com pano branco do terreiro e as fitas da gameleira, Tripo Studio | `aderecos/ORIGEM.md` e `tools/tripo/lote_2026-10-03.json` |
+
 ### Identidade visual do protótipo 3D (28/09/2026)
 
 | Arquivos | O que são | Registro |

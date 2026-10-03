@@ -149,10 +149,15 @@ func _montar_moveis() -> void:
 	_peca("moringa", (mesa + Vector3(-0.25, MESA.y, 0.05)) if tem_mesa else (agua + Vector3(-0.3, 0.0, -0.45)), 0.4, 0.3)
 	# O canto do FOGÃO, no fundo à direita; o jirau na parede de cima dele, e o
 	# barril ao lado.
+	# A boca do fogo é a frente do modelo (o +Z, como a dos outros móveis), e
+	# ela olha para a sala: no fundo, para a porta; sem lugar no fundo, ao lado
+	# do baú, o fogão vai para a parede da direita, de frente para o meio.
 	var fogao := Vector3(largura * 0.5 - 0.55, 0.0, -comprimento + 0.45)
+	var giro_do_fogao := 0.0
 	if fogao.x - 0.5 < _bau.x + BAU.x * 0.5 + 0.2:
-		fogao.z = -comprimento * 0.5
-	_movel("fogao_barro", fogao, PI, Vector3(1.0, 0.8, 0.7), false)
+		fogao = Vector3(largura * 0.5 - 0.4, 0.0, -comprimento * 0.5)
+		giro_do_fogao = -PI * 0.5
+	_movel("fogao_barro", fogao, giro_do_fogao, Vector3(1.0, 0.8, 0.7), false)
 	_movel("jirau", Vector3(largura * 0.5 - 0.25, 1.5, -comprimento * 0.5), -PI * 0.5, Vector3(1.2, 0.6, 0.4), false)
 	_movel("barril", Vector3(largura * 0.5 - 0.35, 0.0, -comprimento * 0.5 + 0.7), 0.0, Vector3(0.55, 0.8, 0.55), false)
 	# O ORATÓRIO na parede da esquerda, entre a mesa e a cama.

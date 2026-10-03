@@ -1822,10 +1822,11 @@ func _body(shape: Shape3D, position: Vector3, body_name: String = "", yaw: float
 ## cruzeiro, a igreja, a capela velha e o cemitério já estavam). Feitos SÓ com o
 ## que o catálogo tem — a casa de taipa, o pote, a fogueira, a moita e a árvore
 ## da mata larga, que o almanaque chama de gameleira —, nos dois estilos, como
-## manda a regra de não misturar. O que o 2D descreve e o catálogo não tem — os
-## dois mastros com pano branco do terreiro, as fitas no tronco da gameleira —
-## espera peça do Tripo, que é geração paga. Por código só o chão: o terreiro de
-## chão batido e o monte de concha, que são relevo, como o terreno.
+## manda a regra de não misturar. Os dois mastros com pano branco do terreiro e
+## as fitas no tronco da gameleira, que o 2D descreve, chegaram do Tripo no lote
+## de 03/10/2026 e entram só no estilo Tripo: o procedural não ganha peça nova.
+## Por código só o chão: o terreiro de chão batido e o monte de concha, que são
+## relevo, como o terreno.
 func _build_marcos_de_fe() -> void:
 	_build_terreiro()
 	_build_gameleira()
@@ -1863,6 +1864,14 @@ func _build_terreiro() -> void:
 		_adereco("pote", ground_position(na_parede), giro + float(i), 0.62)
 	# O fogo, no meio do terreiro.
 	_fogo_do_terreiro = _adereco("fogueira", ground_position(centro + frente * 1.0), giro)
+	# OS DOIS MASTROS COM PANO BRANCO, um de cada lado da entrada do terreiro,
+	# do lado da rua — de onde se chega.
+	if estilo_tripo():
+		for sinal in [-1.0, 1.0]:
+			var pe_do_mastro := ground_position(centro + frente * 3.9 + lado * sinal * 3.8)
+			var mastro := CatalogoAssets.instanciar("mastro_pano", self, pe_do_mastro, 1.0, giro)
+			if mastro != null:
+				CatalogoAssets.colisao("mastro_pano", mastro, self, pe_do_mastro, 1.0, giro)
 	# A linha de árvores entre o terreiro e a rua, com moita nos vãos: de quem
 	# passa na rua, a casa fica atrás dela.
 	var especies := ["mata_alta", "jaqueira", "mata_larga", "embauba", "mata_alta"]
@@ -1885,6 +1894,30 @@ func _build_terreiro() -> void:
 const RAIO_DO_SAMBAQUI := 5.0
 const ALTURA_DO_SAMBAQUI := 1.5
 const ENTERRADO := 0.5
+## Onde o pano das fitas é amarrado, do alto do monte para cima: no tronco liso,
+## acima das sapopemas e abaixo dos galhos (medido em 03/10/2026: o tronco tem
+## de 1,1 a 1,9 de raio entre dois e quatro metros e meio).
+const ALTURA_DAS_FITAS := 3.3
+
+
+## O RAIO DO TRONCO perto de `altura` acima de `centro`: o vértice mais afastado
+## do eixo numa faixa de pouco mais de dois metros, sem os galhos (longe dele).
+func _raio_do_tronco(modelo: Node3D, centro: Vector3, altura: float) -> float:
+	var raio := 0.0
+	for no in modelo.find_children("*", "MeshInstance3D", true, false):
+		var mi := no as MeshInstance3D
+		if mi.mesh == null:
+			continue
+		for superficie in mi.mesh.get_surface_count():
+			var vertices: PackedVector3Array = mi.mesh.surface_get_arrays(superficie)[Mesh.ARRAY_VERTEX]
+			for v in vertices:
+				var global: Vector3 = mi.global_transform * v
+				if absf(global.y - centro.y - altura) > 1.2:
+					continue
+				var d := Vector2(global.x - centro.x, global.z - centro.z).length()
+				if d < 3.0:
+					raio = maxf(raio, d)
+	return raio
 
 
 ## O PÉ DO TRONCO de um modelo: o meio dos vértices mais baixos, no mundo. As
@@ -1975,6 +2008,18 @@ func _build_gameleira() -> void:
 			if pe.is_finite():
 				arvore.global_position += Vector3(topo.x - pe.x, 0.0, topo.z - pe.z)
 			CatalogoAssets.colisao("mata_larga", arvore, self, topo, tamanho, 0.7)
+			# AS FITAS NO TRONCO: o pano branco amarrado em volta dele, com as
+			# fitas coloridas pendendo — "a gameleira é morada de Iroko". Acima
+			# das sapopemas, que se abrem até quatro, cinco de raio no primeiro
+			# metro e meio; e na medida do tronco ali, um tanto folgada.
+			var raio := _raio_do_tronco(arvore, topo, ALTURA_DAS_FITAS)
+			if raio > 0.1:
+				var roda := (raio + 0.15) * 2.0
+				var fitas := CatalogoAssets.instanciar("fitas_gameleira", self, topo, roda / float(CatalogoAssets.PECAS["fitas_gameleira"]["largura"]), 0.0)
+				if fitas != null:
+					# O pano é o alto da peça; as fitas pendem dele.
+					var alto: float = (fitas.get_meta("limites") as AABB).size.y
+					fitas.global_position.y += ALTURA_DAS_FITAS + 0.4 - alto
 	if arvore == null:
 		var feita: Dictionary = FloraReconcavo.especie("mata_alta", tamanho * 1.15)
 		var malha := MeshInstance3D.new()
