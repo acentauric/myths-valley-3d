@@ -16,13 +16,27 @@
 Este histórico acompanha apenas o jogo 3D, hoje na raiz deste repositório.
 A linha anterior usava a branch `prototype/myths-valley-3d`. O projeto 2D foi a base da derivação, mas
 suas fases, versões e novidades não são entradas deste registro. Os marcos
-abaixo seguem o que mudou no 3D. A identificação atual é **v0.1.0-dev · Build #5**,
-exclusiva desta derivação e ainda sem distribuição publicada.
+abaixo seguem o que mudou no 3D. A identificação atual é **v0.1.0-dev · Build #7**,
+exclusiva desta derivação e publicada para download em mythsvalley.app.br/jogar.
 
 O texto clicável de versão e build no rodapé da abertura mostra resumos destes
 marcos. Os textos curtos e a identificação exibidos no jogo ficam em
 `data/historico_3d.json`; ao registrar um novo marco ou build,
 atualize esse arquivo e este documento juntos.
+
+## Build #7 — 03/10/2026
+
+- **O jogo se atualiza pelo site** (#74). Ao abrir o menu, o executável pergunta a
+  `https://mythsvalley.app.br/api/jogo/atualizacao` pela build mais nova; havendo uma, a
+  linha embaixo da versão, no rodapé do retábulo, oferece a atualização. Aceita, o jogo
+  baixa o zip para `user://atualizacao/`, confere o SHA-256 do manifesto, extrai ao lado
+  do executável, guarda o atual como `.old`, põe o novo no lugar e pede para reiniciar;
+  na abertura seguinte, o `.old` e as sobras somem. Só instala sozinho numa build
+  exportada no Windows com a pasta gravável — fora disso, a oferta abre a página de
+  download. Sem rede, fica quieto. Portão: `tests/atualizacao.gd`.
+- Fecha a **Build #7**, a primeira publicada para download, com o que entrou desde a #6:
+  o sobrevoo que contorna, o vale em cinco segundos, a tela de carregamento quieta, as
+  seis cadeias de missão e o E que não age atrás de tela.
 
 ## Em desenvolvimento — 02/10/2026
 
