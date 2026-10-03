@@ -117,6 +117,16 @@ func _run() -> void:
 	# enfeite e a missão fecha por proximidade como qualquer visita.
 	inv.consumir("pirao", 1)
 	_conferir(not inv.tem("pirao"), "não consegui tirar o pirão da mochila para o teste")
+	# A FILA DO TONHO FICA QUIETA durante esta pergunta. Encostar nele abre a
+	# cadeia dele, e o primeiro passo — "vá ao pontal" — fecha na hora e PAGA
+	# um pirão (a recompensa do 2D, #48). Com esse pirão na mochila a entrega da
+	# Filó fecha, e com razão: pirão é pirão. Mas aí a pergunta "sem o pirão
+	# não fecha" deixaria de ser feita sem pirão. Só a da Filó anda aqui.
+	var fila_do_tonho = tonho.get_node_or_null("CadeiaDeMissoes")
+	var perto_do_tonho := 0.0
+	if fila_do_tonho != null and not fila_do_tonho.iniciado:
+		perto_do_tonho = fila_do_tonho.comeca_perto_de
+		fila_do_tonho.comeca_perto_de = 0.0
 	jogador.global_position = tonho.global_position + Vector3(1.0, 0.0, 0.8)
 	var antes: int = cadeia.missao
 	await _ate(func() -> bool: return cadeia.missao != antes, 3.0)
@@ -148,6 +158,9 @@ func _run() -> void:
 	_conferir(not inv.tem("pirao"), "o pirão voltou para a mochila depois da entrega")
 	_conferir(cadeia.acabou(),
 		"a cadeia reabriu o passo da entrega com a mochila vazia: pediria o pirão outra vez")
+	# A fila do Tonho volta a poder abrir: as perguntas da entrega acabaram.
+	if fila_do_tonho != null and perto_do_tonho > 0.0:
+		fila_do_tonho.comeca_perto_de = perto_do_tonho
 
 	# --- 6. O ARREMATE NÃO É FALADO ------------------------------------------
 	_conferir(not bool(cadeia.arremate.get("narra", true)),

@@ -1,0 +1,64 @@
+{
+  "observacao": "AS MISSÕES DO ARRAIAL que o Pedro dá depois do tutorial, trazidas do jogo 2D (data/dialogos/arraial.json, passos povo_conhecer, mirante_ver, mirante_material e mirante_obra, e o bloco vista_do_mirante). No 2D elas vêm 'depois que o Pedro termina de ensinar a sobreviver', e aqui também: a cadeia só abre com a do guia terminada (CadeiaDeMissoes.depois_de). ADAPTADAS AO VALE: o mirante do 3D está de pé no modelo do Tripo, então o estrago não é o assoalho que arriou do 2D, e sim o tabuado que range e o guarda-corpo podre — a obra 'mirante_levantar' é a mesma e o custo também (20 tábuas, 12 pedras, 6 cordas); ela se toca no J, na aba de obras, ao pé do mirante (bancadas_vale.gd). O canteiro do 2D (canteiro_material, canteiro_obra) espera o roçado ter canteiro (#27). '{jogador}' saiu das falas: o vale ainda não tem o nome do jogador (#56). A recompensa é a do 2D: a vaquinha do arraial pela obra pública, e o pirão do Pedro por fora (#48). TRADUÇÃO: nome e resumos nos três idiomas; as falas em português, com inglês e espanhol pendentes e do Ramon.",
+  "dono": "pedro",
+  "nome": "O mirante",
+  "nome_en": "The lookout",
+  "nome_es": "El mirador",
+  "principal": true,
+  "traducao": "pendente",
+  "passos": [
+    {
+      "id": "povo_conhecer",
+      "titulo": "Quem é quem no arraial",
+      "resumo": "Aperte P e veja quem é quem no arraial",
+      "resumo_en": "Press P to see who's who in the village",
+      "resumo_es": "Pulsa P y mira quién es quién en el pueblo",
+      "lugar": "praca",
+      "raio": 9.0,
+      "audio": "",
+      "texto": "Você falou com gente daqui. Reparou que ela lembra de você? Aqui todo mundo lembra: quem apareceu, quem trouxe o quê, quem passou reto. Aperte P — a letra de povo. Abre a lista de quem mora aqui, com a cara de cada um e o quanto já confia em você.",
+      "meta": { "tipo": "evento", "evento": "abriu_arraial" }
+    },
+    {
+      "id": "mirante_ver",
+      "titulo": "O que ninguém consertou",
+      "resumo": "Suba a estrada até o mirante",
+      "resumo_en": "Climb the road up to the lookout",
+      "resumo_es": "Sube el camino hasta el mirador",
+      "lugar": "mirante",
+      "raio": 9.0,
+      "audio": "",
+      "texto": "Agora você sabe de quem está perto. Tem outra coisa que eu quero te mostrar, e é subindo. Saia da praça pelo poente e pegue a estrada que serpenteia até o alto. Lá em cima tem um mirante: dali se vê a baía inteira, e no dia limpo dá pra ver saveiro chegando antes de ele chegar. Era assim que a gente sabia quem vinha. Vá ver como ele está.",
+      "meta": {}
+    },
+    {
+      "id": "mirante_material",
+      "titulo": "Tabuado, pedra e corda",
+      "resumo": "Junte tábua, pedra e corda para o mirante",
+      "resumo_en": "Gather boards, stone and rope for the lookout",
+      "resumo_es": "Junta tablas, piedra y cuerda para el mirador",
+      "lugar": "mirante",
+      "raio": 9.0,
+      "audio": "",
+      "texto": "Tá vendo? Os esteios ficaram, mas o tabuado range e o guarda-corpo apodreceu. Foi uma chuva de março, faz uns vinte anos, e ninguém subiu mais — nem consertou, que é o que a gente faz aqui: espera cair, depois espera alguém. O que falta é tabuado corrido, pedra pro calço e corda pro guarda-corpo. Vinte tábuas, doze pedras e seis cordas; tábua e corda saem da oficina. Ponte é chão, mirante é altura: o que sustenta gente no alto tem que ser mais do que o que sustenta gente no raso.",
+      "meta": { "tipo": "juntar", "itens": { "tabua": 20, "pedra": 12, "corda": 6 } }
+    },
+    {
+      "id": "mirante_obra",
+      "titulo": "De pé, outra vez",
+      "resumo": "Conserte o mirante: [J] › Obras, ao pé dele",
+      "resumo_en": "Fix the lookout: [J] › Works, at its foot",
+      "resumo_es": "Arregla el mirador: [J] › Obras, al pie de él",
+      "lugar": "mirante",
+      "raio": 9.0,
+      "audio": "",
+      "texto": "Tudo aí. Agora é botar de pé. Chegue ao pé do mirante e abra o painel, no J, na aba de obras: o conserto está na lista. Eu subo com você. Essa eu não perco.",
+      "meta": { "tipo": "obra", "construcao": "mirante", "obra": "mirante_levantar" },
+      "recompensa": { "reis": 1200, "pirao": 1 }
+    }
+  ],
+  "arremate": {
+    "texto": "Olha isso. Eu nunca tinha subido aqui — nasci embaixo desse morro e nunca tinha subido aqui. Daqui de cima o arraial cabe todo numa olhada: a praça, a capela, o casario descendo até a areia, o píer onde você desembarcou no dia em que não conhecia ninguém. E toma: o povo juntou. Foi a Dona Candinha que passou o chapéu na praça, moeda por moeda. Eu botei um pirão junto, porque dinheiro do povo é do povo, mas o pirão é meu.",
+    "traducao": "pendente"
+  }
+}

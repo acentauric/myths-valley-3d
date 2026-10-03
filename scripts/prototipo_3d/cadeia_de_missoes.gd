@@ -46,6 +46,8 @@ extends Node
 ## COMPARTILHADO, e mexer no jogo 2D por uma necessidade que é daqui.
 
 signal missao_mudou(texto: String, alvo: Vector3, indice: int, total: int)
+## Um passo fechou e pagou (ver `_pagar`): o texto diz de quem e o quê.
+signal pagou(texto: String)
 
 const IdiomaMenu = preload("res://scripts/prototipo_3d/idioma_menu.gd")
 
@@ -282,7 +284,10 @@ func _feitos() -> Array:
 		if not Lugares.resolve(str(anterior.get("lugar", ""))):
 			continue
 		var escrito := str(anterior.get("resumo", "")).strip_edges()
-		lista.append(escrito if escrito != "" else _titulo_do_passo(anterior))
+		var feito := escrito if escrito != "" else _titulo_do_passo(anterior)
+		# O que se ganhou vai junto do objetivo riscado, como no diário do Witcher.
+		var ganho := _texto_da_recompensa(anterior)
+		lista.append(feito if ganho == "" else "%s  —  %s" % [feito, ganho])
 	return lista
 
 
@@ -293,10 +298,19 @@ func resumo_do_passo(passo: Dictionary) -> String:
 	var gerado := ""
 	match str(meta.get("tipo", "")):
 		"juntar":
-			var item := str(meta.get("item", ""))
-			var quantos := int(meta.get("quantos", 1))
-			conta = "%d/%d" % [mini(quantos, Inventario.quantidade(item)), quantos]
-			gerado = tr("Junte %s") % _nome_do_item(item).to_lower()
+			var carga := _carga_da_meta(meta)
+			var tem := 0
+			var pede := 0
+			var nomes: Array[String] = []
+			for qual in carga:
+				pede += int(carga[qual])
+				tem += mini(int(carga[qual]), Inventario.quantidade(str(qual)))
+				nomes.append(_nome_do_item(str(qual)).to_lower())
+			conta = "%d/%d" % [tem, pede]
+			gerado = tr("Junte %s") % ", ".join(nomes)
+		"obra":
+			var obra := str(meta.get("obra", ""))
+			gerado = tr("Faça a obra: %s") % str(Obras.dados(obra).get("nome", obra))
 		"derrubar":
 			var quantos_pes := int(meta.get("quantos", 1))
 			var caidos := 0
@@ -360,6 +374,9 @@ func _registrar_no_caderno(passo: Dictionary) -> void:
 		return
 	CadernoDoVale.abrir_missao(id, _titulo_do_passo(passo), chave, principal,
 		_com_o_nome(str(passo.get("texto", ""))))
+	# LIÇÃO ANTES DO TRABALHO, como no 2D: o passo que abre ensina a planta
+	# que ele vai cobrar adiante (`Receitas`, porta "missao").
+	Receitas.passo_abriu(str(passo.get("id", "")))
 	CadernoDoVale.descrever(id, {
 		"missao": nome_da_missao if nome_da_missao != "" else _titulo_do_passo(passo),
 		"quem": _nome_do_dono(),
@@ -477,7 +494,13 @@ func falta_a_meta(passo: Dictionary) -> bool:
 		return false
 	match str(meta.get("tipo", "")):
 		"juntar":
-			return Inventario.quantidade(str(meta.get("item", ""))) < int(meta.get("quantos", 1))
+			# UM ITEM OU VÁRIOS: `item`/`quantos`, ou `itens` {id: quanto} — o
+			# material do mirante é tábua, pedra e corda de uma vez.
+			var carga := _carga_da_meta(meta)
+			for qual in carga:
+				if Inventario.quantidade(str(qual)) < int(carga[qual]):
+					return true
+			return false
 		"levar", "falar":
 			# Encontro é ACONTECIMENTO, e não estado do mundo: depois dele não
 			# sobra nada no mundo que diga que aconteceu. Quem responde é a
@@ -487,8 +510,61 @@ func falta_a_meta(passo: Dictionary) -> bool:
 			if recursos == null or not recursos.has_method("derrubados"):
 				return true
 			return int(recursos.derrubados(str(meta.get("alvo", "")))) < int(meta.get("quantos", 1))
+		"evento":
+			# ACONTECIMENTO DO VALE que o vale avisa (`registrar_evento`): abrir a
+			# tela do P, por exemplo. Também é memória, pela mesma razão do
+			# encontro.
+			return not bool(_levados.get(_chave_do_evento(str(meta.get("evento", ""))), false))
+		"obra":
+			# A OBRA FEITA, do `Obras` — o mirante levantado. Isso o mundo
+			# guarda sozinho, e o save também.
+			return not Obras.ja_feita(str(meta.get("construcao", "")), str(meta.get("obra", "")))
 		_:
 			return false
+
+
+## UM ACONTECIMENTO DO VALE que um passo pode esperar — "abriu_arraial" é o
+## jogador abrindo a tela do P. O vale avisa todas as cadeias, mesmo as que
+## ainda não chegaram no passo: quem já sabe usar o P não precisa aprender de
+## novo. Fica na memória da cadeia, que vai no save.
+func registrar_evento(nome: String) -> void:
+	_levados[_chave_do_evento(nome)] = true
+
+
+static func _chave_do_evento(nome: String) -> String:
+	return "evento:" + nome
+
+
+## A RECOMPENSA DO PASSO (#48), paga quando ele fecha: itens e réis, com os
+## números do jogo 2D (bloco `recompensas` do `arraial.json` de lá). Paga UMA
+## vez porque o passo só fecha uma vez — carregar a partida põe a cadeia no
+## passo seguinte, e `avancar` não roda de novo para o que já fechou.
+##
+## O HUD diz o que se ganhou (`pagou`), e o diário escreve ao lado do
+## objetivo riscado (`_feitos`).
+func _pagar(passo: Dictionary) -> void:
+	var recompensa: Dictionary = passo.get("recompensa", {})
+	if recompensa.is_empty():
+		return
+	for chave in recompensa:
+		var quanto := int(recompensa[chave])
+		if str(chave) == "reis":
+			Jogo.dinheiro += quanto
+		elif Catalogo.existe(str(chave)):
+			Inventario.adicionar(str(chave), quanto)
+	pagou.emit(tr("Recebido de %s: %s") % [_nome_do_dono(), _texto_da_recompensa(passo)])
+
+
+func _texto_da_recompensa(passo: Dictionary) -> String:
+	var partes: Array[String] = []
+	var recompensa: Dictionary = passo.get("recompensa", {})
+	for chave in recompensa:
+		var quanto := int(recompensa[chave])
+		if str(chave) == "reis":
+			partes.append(tr("%d réis") % quanto)
+		else:
+			partes.append("%d %s" % [quanto, _nome_do_item(str(chave)).to_lower()])
+	return ", ".join(partes)
 
 
 ## Próximo passo; depois do último, emite com indice == total para a seta sumir.
@@ -498,6 +574,7 @@ func avancar() -> void:
 	# que está em curso e não o histórico inteiro.
 	var fechando := passo_atual()
 	if not fechando.is_empty():
+		_pagar(fechando)
 		CadernoDoVale.concluir(_id_no_caderno(fechando))
 	missao += 1
 	if missao >= passos.size():
@@ -529,11 +606,21 @@ func _acertar_o_caderno(passo: Dictionary) -> void:
 	var meta: Dictionary = passo.get("meta", {})
 	match str(meta.get("tipo", "")):
 		"juntar":
-			var item := str(meta.get("item", ""))
-			var quantos := int(meta.get("quantos", 1))
-			var tem := mini(quantos, Inventario.quantidade(item))
-			CadernoDoVale.andar(id, tem, quantos,
-				"Juntar %s: %d de %d" % [_nome_do_item(item), tem, quantos])
+			var carga := _carga_da_meta(meta)
+			var tem_tudo := 0
+			var pede_tudo := 0
+			var partes: Array[String] = []
+			for qual in carga:
+				var pede := int(carga[qual])
+				var tem := mini(pede, Inventario.quantidade(str(qual)))
+				tem_tudo += tem
+				pede_tudo += pede
+				partes.append("%s %d/%d" % [_nome_do_item(str(qual)), tem, pede])
+			var linha := "Juntar %s: %d de %d" % [_nome_do_item(str(carga.keys()[0])), tem_tudo, pede_tudo] \
+				if carga.size() == 1 else "Juntar " + " · ".join(partes)
+			CadernoDoVale.andar(id, tem_tudo, pede_tudo, linha)
+		"evento", "obra":
+			CadernoDoVale.andar(id, 0 if falta_a_meta(passo) else 1, 1, str(passo.get("resumo", "")))
 		"derrubar":
 			var peca := str(meta.get("alvo", ""))
 			var quantos_pes := int(meta.get("quantos", 1))
@@ -587,8 +674,15 @@ func posicao_do_passo(indice: int) -> Vector3:
 		var perto: Vector3 = Lugares.NENHUM
 		match str(meta.get("tipo", "")):
 			"juntar":
+				# Com vários itens, aponta o alvo do primeiro que ainda falta;
+				# o que não sai de alvo (tábua e corda saem da oficina) cai na
+				# âncora do passo.
 				if recursos.has_method("mais_perto_que_rende"):
-					perto = recursos.mais_perto_que_rende(str(meta.get("item", "")), de)
+					var carga := _carga_da_meta(meta)
+					for qual in carga:
+						if Inventario.quantidade(str(qual)) < int(carga[qual]):
+							perto = recursos.mais_perto_que_rende(str(qual), de)
+							break
 			"levar", "falar":
 				var quem := _morador(str(meta.get("a_quem", "")))
 				if quem != null:
@@ -610,6 +704,10 @@ func posicao_do_passo(indice: int) -> Vector3:
 ## não tiver fila de missões no vale, chegar perto faz o mesmo serviço e não
 ## deixa a missão inalcançável.
 var comeca_perto_de := 0.0
+## SÓ DEPOIS DE OUTRA COISA: a cadeia não abre enquanto isto responder falso.
+## A do mirante espera o Pedro terminar o tutorial — no 2D as missões do
+## arraial vêm "depois que o Pedro termina de ensinar a sobreviver".
+var depois_de: Callable = Callable()
 ## Folga entre abrir e o primeiro anúncio.
 var folga_inicial := 2.0
 
@@ -621,6 +719,8 @@ var folga_inicial := 2.0
 ## `correr` — ele só cria o nó e escuta o sinal. Uma cadeia, um pulso.
 func _physics_process(delta: float) -> void:
 	if dono == null or jogador == null:
+		return
+	if not iniciado and depois_de.is_valid() and not bool(depois_de.call()):
 		return
 	if comeca_perto_de > 0.0 and not iniciado:
 		var perto := dono.global_position.distance_to(jogador.global_position) < comeca_perto_de

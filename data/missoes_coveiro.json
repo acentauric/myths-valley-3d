@@ -43,6 +43,7 @@
       "audio": "",
       "texto": "Pronto. Essa é a minha, e essa aqui é a sua — duas achas dão dois cabos, e eu não ia fazer uma só e ficar com ela. Agora desce comigo aquele capim. Corta rente: capim cortado pela metade volta em três semanas, e volta mais forte.",
       "entrega": { "item": "foice", "quantidade": 1 },
+      "recompensa": { "reis": 800 },
       "meta": { "tipo": "derrubar", "alvo": "capim", "quantos": 4 }
     }
   ],

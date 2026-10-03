@@ -204,10 +204,16 @@ func _run() -> void:
 	for morador in current_scene.get("moradores"):
 		moram_no_vale.append(str((morador.dados as Dictionary).get("id", "")))
 
-	var metas_que_o_vale_sabe := ["juntar", "derrubar", "levar", "falar"]
+	var metas_que_o_vale_sabe := ["juntar", "derrubar", "levar", "falar", "evento", "obra"]
+	# OS ACONTECIMENTOS QUE O VALE AVISA às cadeias (`registrar_evento`). Meta de
+	# evento que ninguém avisa é passo que nunca fecha.
+	var eventos_que_o_vale_avisa := ["abriu_arraial"]
 	var passos_com_meta := 0
+	# A CADEIA DO MIRANTE VEM DEPOIS DO GUIA (`depois_de`): o que o guia entregou
+	# — o machado, a picareta — já está na mão de quem chega nela.
+	var entregues_pelo_guia: Array[String] = []
 	for nome in ["missoes_guia", "missoes_coveiro", "missoes_filo", "missoes_zefa",
-			"missoes_tonho", "missoes_candinha"]:
+			"missoes_tonho", "missoes_candinha", "missoes_arraial"]:
 		var texto := FileAccess.get_file_as_string("res://data/%s.json" % nome)
 		_conferir(texto != "", "não consegui ler %s.json" % nome)
 		var dado = JSON.parse_string(texto)
@@ -217,6 +223,8 @@ func _run() -> void:
 		# O QUE JÁ FOI ENTREGADO ATÉ AQUI, na ordem dos passos: a ferramenta pode
 		# vir no passo que cobra o trabalho ou em qualquer um antes dele.
 		var entregues: Array[String] = []
+		if nome == "missoes_arraial":
+			entregues = entregues_pelo_guia.duplicate()
 		for passo: Dictionary in dado.get("passos", []):
 			var qual_passo := "%s/%s" % [nome, str(passo.get("id", "?"))]
 			var entrega: Dictionary = passo.get("entrega", {})
@@ -225,6 +233,8 @@ func _run() -> void:
 				_conferir(Catalogo.ITENS.has(dado_agora),
 					"o passo '%s' entrega '%s', que não está no catálogo" % [qual_passo, dado_agora])
 				entregues.append(dado_agora)
+				if nome == "missoes_guia":
+					entregues_pelo_guia.append(dado_agora)
 
 			var meta: Dictionary = passo.get("meta", {})
 			if meta.is_empty():
@@ -236,18 +246,31 @@ func _run() -> void:
 					% [qual_passo, tipo])
 			match tipo:
 				"juntar":
-					var pedido := str(meta.get("item", ""))
-					_conferir(Catalogo.ITENS.has(pedido),
-						"o passo '%s' pede '%s', que não está no catálogo" % [qual_passo, pedido])
-					_conferir(_da_no_vale(pedido, ferramenta_de_rende),
-						"o passo '%s' pede '%s', que nenhum alvo posto no vale rende e a bancada não faz"
-							% [qual_passo, pedido])
-					# A FERRAMENTA SÓ SE COBRA DE QUEM CAI DE ALVO: o que sai da
-					# bancada sai de material, e o material já foi perguntado.
-					var precisa := str(ferramenta_de_rende.get(pedido, ""))
-					_conferir(precisa == "" or entregues.has(precisa),
-						"o passo '%s' pede %s, que só sai de %s, e ninguém entregou a %s até aqui"
-							% [qual_passo, pedido, precisa, precisa])
+					# Um item (`item`) ou vários (`itens`), como o material do mirante.
+					for bruto in _carga_do_passo(meta):
+						var pedido := str(bruto)
+						_conferir(Catalogo.ITENS.has(pedido),
+							"o passo '%s' pede '%s', que não está no catálogo" % [qual_passo, pedido])
+						_conferir(_da_no_vale(pedido, ferramenta_de_rende),
+							"o passo '%s' pede '%s', que nenhum alvo posto no vale rende e a bancada não faz"
+								% [qual_passo, pedido])
+						# A FERRAMENTA SÓ SE COBRA DE QUEM CAI DE ALVO: o que sai da
+						# bancada sai de material, e o material já foi perguntado.
+						var precisa := str(ferramenta_de_rende.get(pedido, ""))
+						_conferir(precisa == "" or entregues.has(precisa),
+							"o passo '%s' pede %s, que só sai de %s, e ninguém entregou a %s até aqui"
+								% [qual_passo, pedido, precisa, precisa])
+				"evento":
+					_conferir(str(meta.get("evento", "")) in eventos_que_o_vale_avisa,
+						"o passo '%s' espera o evento '%s', que o vale não avisa: o passo nunca fecha"
+							% [qual_passo, str(meta.get("evento", ""))])
+				"obra":
+					var obras_no := root.get_node("/root/Obras")
+					var a_obra := str(meta.get("obra", ""))
+					_conferir(not (obras_no.dados(a_obra) as Dictionary).is_empty(),
+						"o passo '%s' cobra a obra '%s', que não existe" % [qual_passo, a_obra])
+					_conferir(load("res://scripts/prototipo_3d/bancadas_vale.gd").OBRAS.has(str(meta.get("construcao", ""))),
+						"o passo '%s' cobra obra em '%s', que não tem lugar de obra no vale" % [qual_passo, str(meta.get("construcao", ""))])
 				"derrubar":
 					var peca := str(meta.get("alvo", ""))
 					_conferir(ferramenta_de_peca.has(peca),

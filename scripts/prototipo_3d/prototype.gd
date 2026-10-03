@@ -484,6 +484,19 @@ func _ready() -> void:
 			_pendurar_cadeia(morador, "res://data/missoes_tonho.json", 4.0)
 		elif quem == "candinha":
 			_pendurar_cadeia(morador, "res://data/missoes_candinha.json", 4.0)
+	# AS MISSÕES DO ARRAIAL, do Pedro, DEPOIS DO TUTORIAL: no 2D elas vêm
+	# "depois que o Pedro termina de ensinar a sobreviver". A cadeia fica
+	# pendurada nele, mas só abre com a do guia terminada e a despedida dita.
+	if pedro != null:
+		var do_arraial = _pendurar_cadeia(pedro, "res://data/missoes_arraial.json", 6.0, "pedro_arraial")
+		if do_arraial != null:
+			do_arraial.depois_de = func() -> bool:
+				return pedro.missao >= pedro.MISSOES.size() and bool(pedro.get("_despedida_feita"))
+	# OS ACONTECIMENTOS QUE UM PASSO PODE ESPERAR (meta "evento"): abrir a tela
+	# do P. Todas as cadeias ouvem, mesmo as que ainda não chegaram no passo.
+	social.abriu.connect(func() -> void:
+		for qual in _cadeias:
+			_cadeias[qual].registrar_evento("abriu_arraial"))
 	Dia.periodo_mudou.connect(_on_periodo_mudou)
 	# A PARTIDA SALVA entra depois de o vale estar montado — moradores, Pedro,
 	# luta —, porque o estado do mundo aponta para eles. Ver Partida e
@@ -1408,9 +1421,13 @@ func _exit_tree() -> void:
 ## Os alvos de trabalho vão junto: sem eles o marcador aponta a âncora do
 ## lugar em vez do pé de capim, que foi a queixa "marca a casa quando devia
 ## marcar os troncos".
-func _pendurar_cadeia(morador: MoradorNPC, arquivo: String, perto: float) -> Node:
+##
+## `chave` é o nome da fila no save; vazio, o id do morador. O Pedro tem duas
+## filas — o guia, que mora dentro dele, e a do arraial —, e cada uma precisa
+## de um nome seu.
+func _pendurar_cadeia(morador: MoradorNPC, arquivo: String, perto: float, chave: String = "") -> Node:
 	var cadeia := CadeiaDeMissoes.new()
-	cadeia.name = "CadeiaDeMissoes"
+	cadeia.name = "CadeiaDeMissoes" if chave == "" else "CadeiaDeMissoes_" + chave
 	cadeia.dono = morador
 	cadeia.jogador = player
 	cadeia.recursos = _recursos
@@ -1429,6 +1446,8 @@ func _pendurar_cadeia(morador: MoradorNPC, arquivo: String, perto: float) -> Nod
 		return null
 	cadeia.missao_mudou.connect(func(t: String, a: Vector3, i: int, n: int) -> void:
 		missao_do_vale_mudou.emit(t, a, i, n))
+	# A RECOMPENSA DO PASSO (#48) é dita no HUD, como no 2D.
+	cadeia.pagou.connect(func(texto: String) -> void: hud.set_notice(texto))
 	morador.add_child(cadeia)
-	_cadeias[str(morador.dados.get("id", ""))] = cadeia
+	_cadeias[chave if chave != "" else str(morador.dados.get("id", ""))] = cadeia
 	return cadeia

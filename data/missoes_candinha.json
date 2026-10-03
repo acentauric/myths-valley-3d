@@ -1,5 +1,5 @@
 {
-  "observacao": "A GARAPA DA PRAÇA, trazida do jogo 2D (data/dialogos/arraial.json, passos candinha_cana / candinha_cana_fim). A Dona Candinha mói cana na praça e quer seis da do jogador, do roçado dele, para não comprar do engenho do outro lado da vila. É a primeira cadeia do vale que junta TRABALHO e ENTREGA: corta-se com a foice no roçado e leva-se à mão dela, ao contrário do pirão da Filó (que vem pronto) e da conversa da Zefa (que não pede nada). Por ela nasceu a conta na meta 'levar': até aqui a entrega levava UM item, e o 2D pede seis. A RECOMPENSA DO 2D FICOU FORA: lá a garapa rende 3 garapas e a informação da praça, e a CadeiaDeMissoes ainda não tem campo de recompensa — o número está em arraial.json, em 'recompensas'. TRADUÇÃO: só em português neste primeiro momento; inglês e espanhol são do Ramon.",
+  "observacao": "A GARAPA DA PRAÇA, trazida do jogo 2D (data/dialogos/arraial.json, passos candinha_cana / candinha_cana_fim). A Dona Candinha mói cana na praça e quer seis da do jogador, do roçado dele, para não comprar do engenho do outro lado da vila. É a primeira cadeia do vale que junta TRABALHO e ENTREGA: corta-se com a foice no roçado e leva-se à mão dela, ao contrário do pirão da Filó (que vem pronto) e da conversa da Zefa (que não pede nada). Por ela nasceu a conta na meta 'levar': até aqui a entrega levava UM item, e o 2D pede seis. A RECOMPENSA DO 2D VEIO (#48): as 3 garapas, pagas quando a cana chega à Candinha (campo 'recompensa' do passo); a informação da praça continua só na fala. TRADUÇÃO: só em português neste primeiro momento; inglês e espanhol são do Ramon.",
   "dono": "candinha",
   "nome": "A garapa da praça",
   "nome_en": "The square's cane juice",
@@ -28,6 +28,7 @@
       "raio": 7.0,
       "audio": "",
       "texto": "Seis. Traga aqui no meio da praça que eu moo na hora, e o que sair é seu e meu, meio a meio.",
+      "recompensa": { "garapa": 3 },
       "meta": {
         "tipo": "levar",
         "item": "cana",

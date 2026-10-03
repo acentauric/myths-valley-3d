@@ -50,6 +50,21 @@ atualize esse arquivo e este documento juntos.
   invisíveis do mar o empurravam de volta —, e a bússola, o mapa, o Pedro (que espera
   na porta) e o save leem a porta de fora. Dentro, o mato e as aves abafam, a seta da
   missão some e o HUD diz onde se está (`tests/interiores.gd`).
+- **O mirante, as missões do arraial do Pedro depois do tutorial, e a recompensa de
+  missão** (#48). Vieram do 2D (`arraial.json`): aperte P e veja quem é quem, suba ao
+  mirante, junte 20 tábuas, 12 pedras e 6 cordas e conserte-o no J, aba de obras — com
+  o mirante do Tripo de pé, o estrago é o tabuado que range e o guarda-corpo podre. A
+  cadeia só abre com o tutorial terminado (`depois_de`). Metas novas: `evento` (o P
+  avisa as cadeias), `obra` e `juntar` de vários itens. Todo passo pode ter
+  `recompensa` (itens e réis), paga uma vez quando ele fecha, dita no HUD e escrita ao
+  lado do objetivo riscado no diário: as cadeias que já estavam no vale ganharam os
+  números do 2D (800 réis do cemitério, as garapas da Candinha, as cocadas e os
+  pirões do Tonho e da Zefa), e o mirante paga os 1200 réis da vaquinha e o pirão do
+  Pedro. De quebra: a planta que um passo ensina ("abre": {"missao": ...}) nunca era
+  aprendida no 3D, porque só o `Missoes` do 2D avisava o `Receitas`; agora a cadeia
+  avisa, e o mirante pode ser levantado (`tests/cadeia_do_mirante.gd`, falsificado;
+  `tests/ferramentas.gd` cobra as sete cadeias). O canteiro espera o roçado (#27); a
+  fé, a luta e a capoeira têm issue própria (#52, #53).
 
 ## Em desenvolvimento — 02/10/2026
 
