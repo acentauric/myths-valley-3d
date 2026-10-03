@@ -243,10 +243,12 @@ func arvores() -> Array[Dictionary]:
 ##
 ## `deixar_toco` falso é para a carga da partida, quando a árvore já passou do
 ## toco: recortar a malha só para jogá-la fora no mesmo quadro é o passo caro.
-func cortar_arvore(posicao: Vector3, deixar_toco: bool = true) -> bool:
+## `cair_para` é o lado para onde ela tomba (`CoqueiroCortado.derrubar`), longe
+## de quem cortou; vazio, ela some sem cair, como na carga.
+func cortar_arvore(posicao: Vector3, deixar_toco: bool = true, cair_para: Vector3 = Vector3.ZERO) -> bool:
 	var indice := _indice_da_nomeada(posicao, false)
 	if indice < 0:
-		return _region.cortar_arvore(posicao, deixar_toco) if _region != null else false
+		return _region.cortar_arvore(posicao, deixar_toco, cair_para) if _region != null else false
 	var arvore: Dictionary = _arvores_nomeadas[indice]
 	var original := arvore.get("visual") as Node3D
 	if original == null:
@@ -264,6 +266,8 @@ func cortar_arvore(posicao: Vector3, deixar_toco: bool = true) -> bool:
 		add_child(toco)
 		toco.global_position = pe
 		arvore["toco"] = toco
+		if cair_para != Vector3.ZERO:
+			_derrubar_a_copa(partes, toco, pe, cair_para)
 	original.visible = false
 	_colisao_da_nomeada(arvore, false)
 	arvore["transformacao_original"] = original.transform
@@ -330,6 +334,16 @@ func restaurar_arvore(posicao: Vector3) -> bool:
 	arvore.erase("transformacao_original")
 	_arvores_nomeadas[indice] = arvore
 	return true
+
+
+## A COPA CAI do toco para `cair_para`: a árvore de cima do corte, girando em
+## volta do eixo do tronco na altura dele (ver `CoqueiroCortado.copa`).
+func _derrubar_a_copa(partes: Array[Dictionary], toco: Node3D, pe: Vector3, cair_para: Vector3) -> void:
+	var eixo: Vector2 = toco.get_meta("eixo", Vector2.ZERO)
+	var pivo := pe + Vector3(eixo.x, float(toco.get_meta("altura", CoqueiroCortado.ALTURA_DO_TOCO)), eixo.y)
+	var copa := CoqueiroCortado.copa(partes, pivo)
+	if copa != null:
+		CoqueiroCortado.derrubar(copa, self, pivo, cair_para)
 
 
 ## A árvore plantada à mão com o pé neste ponto, cortada ou de pé, ou -1.

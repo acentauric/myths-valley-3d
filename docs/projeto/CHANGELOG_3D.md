@@ -26,6 +26,17 @@ atualize esse arquivo e este documento juntos.
 
 ## Em desenvolvimento — 03/10/2026
 
+- **A árvore cortada cai.** "Produza a animação das árvores caindo ao cortá-las." No
+  último golpe, a copa — a árvore de cima do corte — tomba do toco para longe de quem
+  cortou: devagar no começo e depressa no fim, como árvore de verdade, dá um tranco no
+  chão, fica um instante deitada e afunda na terra até sumir, uns quatro segundos e meio
+  ao todo (`CoqueiroCortado.copa` e `derrubar`). A copa é a malha da própria árvore, sem
+  recortar triângulo por triângulo — só os índices dos que ficam abaixo do corte saem —,
+  para o golpe final não travar o quadro (57 ms numa mangueira); vale para as plantadas e
+  para as da mata, da orla e da beira do rio. A embaúba nova do cemitério, que é alvo de
+  trabalho, cai inteira, do pé (`"cai": true`). O portão `corte_das_arvores` confere que a
+  copa está a caminho no meio do tombo, deita para o lado de longe de quem cortou e some
+  sozinha; falsificado de três jeitos (sem lado para cair, sem tombo, a embaúba que some).
 - **O baú se mexe com o mouse, a árvore cortada não diz quando volta, e a pitangueira
   cortada deixa toco, e não mesa.** O baú da casa abria a mochila direto, sem passar pelo
   dono das telas: o cursor seguia preso na câmera livre e o vale andava atrás da tela. Agora

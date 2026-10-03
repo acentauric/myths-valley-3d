@@ -27,6 +27,7 @@ const DicaTecla = preload("res://scripts/prototipo_3d/dica_tecla.gd")
 const Atalhos = preload("res://scripts/prototipo_3d/atalhos.gd")
 const CatalogoAssets = preload("res://scripts/prototipo_3d/catalogo_assets.gd")
 const IdiomaMenu = preload("res://scripts/prototipo_3d/idioma_menu.gd")
+const CoqueiroCortado = preload("res://scripts/prototipo_3d/coqueiro_cortado.gd")
 
 const DADOS := "res://data/recursos_3d.json"
 ## Distância no chão para a dica aparecer e para o golpe valer.
@@ -344,7 +345,12 @@ func bater() -> bool:
 		Inventario.adicionar(rende, quantos)
 	var no: Node3D = alvo["no"]
 	if is_instance_valid(no):
-		no.queue_free()
+		# A ÁRVORE NOVA CAI (`"cai": true`), do pé, para longe de quem cortou,
+		# como as árvores do vale; o resto some onde estava.
+		if bool(ficha.get("cai", false)):
+			CoqueiroCortado.derrubar(no, no.get_parent(), no.global_position, no.global_position - _jogador.global_position)
+		else:
+			no.queue_free()
 	# E A COLISÃO COM ELE. Ver o comentário em `_erguer`: ela é nó irmão, e
 	# esquecê-la deixa o caminho barrado por um tronco que não existe mais.
 	for corpo in alvo.get("corpos", []):

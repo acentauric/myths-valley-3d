@@ -1,6 +1,8 @@
 extends RefCounted
 ## Recorta a malha da própria árvore na altura do golpe, preservando seus materiais.
 ## Nasceu para o coqueiro e recorta qualquer malha: é o toco de toda árvore cortada.
+## E a QUEDA: a copa, de cima do corte, cai para longe de quem cortou (`copa`,
+## `derrubar`).
 
 ## A altura do toco de sempre, quando a copa começa acima dela.
 const ALTURA_DO_TOCO := 0.85
@@ -227,6 +229,7 @@ static func criar(partes: Array[Dictionary], pe: Vector3, raio_tronco: float) ->
 	corpo.add_child(colisao)
 	modelo.add_child(corpo)
 	modelo.set_meta("altura", altura)
+	modelo.set_meta("eixo", eixo)
 	return modelo
 
 
@@ -316,3 +319,133 @@ static func _adicionar_corte(modelo: Node3D, bordas: Array[Vector3], raio_tronco
 	exposta.material_override = madeira
 	exposta.position = centro + Vector3(0, 0.019, 0)
 	modelo.add_child(exposta)
+
+
+
+# --- a queda ----------------------------------------------------------------------
+
+## Quanto a queda leva: o tombo, o tranco no chão, o tempo deitada e o afundar.
+const QUEDA_SEGUNDOS := 1.5
+const DEITADA_SEGUNDOS := 1.2
+const AFUNDAR_SEGUNDOS := 1.4
+## Até onde ela tomba, em graus: quase deitada, que o chão tem relevo e a copa
+## apoia nos galhos.
+const TOMBO := 86.0
+
+
+## A COPA QUE CAI: a árvore de cima do corte, para a queda.
+##
+## Não é recortada como o toco. A copa é quase todo triângulo da árvore, e
+## recortar um por um — o que o toco faz com os poucos de baixo — travaria o
+## quadro do último golpe. Aqui saem só os triângulos inteiros abaixo do corte,
+## pelos ÍNDICES, sobre os vértices originais; os que atravessam o corte vão
+## inteiros, e a sobra de um palmo some no primeiro instante do tombo.
+##
+## `pivo` é o ponto do corte no mundo (o eixo do tronco na altura do toco): as
+## partes ficam postas em volta dele, para girar a partir dali.
+static func copa(partes: Array[Dictionary], pivo: Vector3) -> Node3D:
+	var no := Node3D.new()
+	no.name = "CopaCaindo"
+	for parte: Dictionary in partes:
+		var malha: Mesh = parte["mesh"]
+		if malha == null:
+			continue
+		var transformacao: Transform3D = parte["transform"]
+		var materiais: Array = parte.get("materiais", [])
+		var nova := ArrayMesh.new()
+		for superficie in range(malha.get_surface_count()):
+			if malha.surface_get_primitive_type(superficie) != Mesh.PRIMITIVE_TRIANGLES:
+				continue
+			var dados := malha.surface_get_arrays(superficie)
+			if not (dados[Mesh.ARRAY_VERTEX] is PackedVector3Array):
+				continue
+			var vertices: PackedVector3Array = dados[Mesh.ARRAY_VERTEX]
+			var acima := PackedByteArray()
+			acima.resize(vertices.size())
+			for i in vertices.size():
+				acima[i] = 1 if (transformacao * vertices[i]).y > pivo.y else 0
+			var indices := PackedInt32Array()
+			if dados[Mesh.ARRAY_INDEX] is PackedInt32Array:
+				indices = dados[Mesh.ARRAY_INDEX]
+			else:
+				indices.resize(vertices.size())
+				for i in vertices.size():
+					indices[i] = i
+			var ficam := PackedInt32Array()
+			for t in range(0, indices.size() - 2, 3):
+				if acima[indices[t]] == 1 or acima[indices[t + 1]] == 1 or acima[indices[t + 2]] == 1:
+					ficam.append(indices[t])
+					ficam.append(indices[t + 1])
+					ficam.append(indices[t + 2])
+			if ficam.is_empty():
+				continue
+			dados[Mesh.ARRAY_INDEX] = ficam
+			nova.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, dados)
+			var material: Material = materiais[superficie] if superficie < materiais.size() else null
+			if material == null:
+				material = malha.surface_get_material(superficie)
+			nova.surface_set_material(nova.get_surface_count() - 1, material)
+		if nova.get_surface_count() == 0:
+			continue
+		var pedaco := MeshInstance3D.new()
+		pedaco.name = "Copa"
+		pedaco.mesh = nova
+		pedaco.transform = Transform3D(transformacao.basis, transformacao.origin - pivo)
+		no.add_child(pedaco)
+	if no.get_child_count() == 0:
+		no.free()
+		return null
+	return no
+
+
+## A QUEDA: `o_que` gira em volta de `pivo` para o lado de `direcao` (no chão),
+## começando devagar e acelerando, como árvore de verdade; dá um tranco no
+## chão, fica um instante deitado e afunda na terra até sumir. É desenho e não
+## corpo: não tem colisão, e o caminho fica livre quando ela some.
+##
+## Serve à copa que `copa` monta (posta em volta do pivô, sem pai) e a uma peça
+## inteira já no mundo — a embaúba nova do cemitério —, que cai do próprio pé.
+## Devolve o nó que gira, que se solta sozinho no fim.
+static func derrubar(o_que: Node3D, onde: Node, pivo: Vector3, direcao: Vector3) -> Node3D:
+	var giro := Node3D.new()
+	giro.name = "ArvoreCaindo"
+	# Nome legível mesmo com duas caindo ao mesmo tempo (ArvoreCaindo2…).
+	onde.add_child(giro, true)
+	giro.global_position = pivo
+	if o_que.get_parent() != null:
+		o_que.reparent(giro, true)
+	else:
+		giro.add_child(o_que)
+		o_que.position = Vector3.ZERO
+	var deitar := Vector3(direcao.x, 0.0, direcao.z)
+	if deitar.length_squared() < 0.0001:
+		deitar = Vector3.FORWARD
+	deitar = deitar.normalized()
+	# Girar em volta deste eixo leva o alto da árvore para o lado de `deitar`.
+	var eixo := Vector3.UP.cross(deitar).normalized()
+	var deitada := deg_to_rad(TOMBO)
+	var afundar := maxf(_largura(o_que) * 0.6 + 0.5, 1.5)
+	var tween := giro.create_tween()
+	var girar := func(angulo: float) -> void: giro.basis = Basis(eixo, angulo)
+	tween.tween_method(girar, 0.0, deitada, QUEDA_SEGUNDOS).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+	tween.tween_method(girar, deitada, deitada - deg_to_rad(7.0), 0.18).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	tween.tween_method(girar, deitada - deg_to_rad(7.0), deitada - deg_to_rad(2.0), 0.22).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN_OUT)
+	tween.tween_interval(DEITADA_SEGUNDOS)
+	tween.tween_property(giro, "position:y", giro.position.y - afundar, AFUNDAR_SEGUNDOS).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
+	tween.tween_callback(giro.queue_free)
+	return giro
+
+
+## A maior largura das malhas de `no` no mundo, ainda de pé: o quanto a árvore
+## deitada tem de afundar para sumir na terra. Chamada com ela já na árvore.
+static func _largura(no: Node3D) -> float:
+	var caixa := AABB()
+	var primeira := true
+	var malhas: Array = no.find_children("*", "MeshInstance3D", true, false)
+	if no is MeshInstance3D:
+		malhas.append(no)
+	for malha: MeshInstance3D in malhas:
+		var dela := malha.global_transform * malha.get_aabb()
+		caixa = dela if primeira else caixa.merge(dela)
+		primeira = false
+	return maxf(caixa.size.x, caixa.size.z)

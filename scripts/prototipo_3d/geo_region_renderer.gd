@@ -1749,7 +1749,7 @@ func _build_coast_palms(rng: RandomNumberGenerator) -> void:
 ## lugar, fica o toco: a malha dela mesma recortada na altura do golpe
 ## (`CoqueiroCortado`). Precisa da instância registrada (`registros` em
 ## `_multimesh_em_blocos`), que toda árvore com tronco passou a ter.
-func cortar_arvore(posicao: Vector3, deixar_toco: bool = true) -> bool:
+func cortar_arvore(posicao: Vector3, deixar_toco: bool = true, cair_para: Vector3 = Vector3.ZERO) -> bool:
 	var indice := _indice_do_tronco(posicao, false)
 	if indice < 0:
 		return false
@@ -1771,6 +1771,13 @@ func cortar_arvore(posicao: Vector3, deixar_toco: bool = true) -> bool:
 		add_child(toco)
 		toco.global_position = pe
 		tronco["toco"] = toco
+		# A COPA CAI longe de quem cortou, enquanto a instância some.
+		if cair_para != Vector3.ZERO:
+			var eixo: Vector2 = toco.get_meta("eixo", Vector2.ZERO)
+			var pivo := pe + Vector3(eixo.x, float(toco.get_meta("altura", CoqueiroCortado.ALTURA_DO_TOCO)), eixo.y)
+			var copa := CoqueiroCortado.copa(partes, pivo)
+			if copa != null:
+				CoqueiroCortado.derrubar(copa, self, pivo, cair_para)
 	# `transformacao` passa a ser a de AGORA — a que a instância mostra —, e a
 	# inteira fica em `transformacao_original` até a árvore voltar adulta. A
 	# MultiMesh não devolve a transformação no servidor de renderização sem

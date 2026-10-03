@@ -14,7 +14,8 @@ extends SceneTree
 ##      rio — cada tronco da região guarda a instância dele na MultiMesh.
 ##   2. A MADEIRA BRANCA CAI NO MACHADO DE FERRO, pela tecla de verdade, e cada
 ##      golpe cobra vigor, fôlego (bater × dureza) e ensina (XP). Cai em toco,
-##      e rende lenha.
+##      e rende lenha — e a copa TOMBA do toco para longe de quem cortou, deita
+##      e afunda até sumir; a embaúba nova do cemitério também cai, do pé.
 ##   3. A MADEIRA DE LEI PEDE O TALENTO, e a recusa diz QUAIS — os nomes lidos
 ##      das teias, que existem de verdade. Com o talento, cai, e o golpe custa
 ##      o dobro e ensina como trabalho duro.
@@ -135,6 +136,38 @@ func _run() -> void:
 	_conferir(not nomeada.is_empty() and not (nomeada["visual"] as Node3D).visible, "a mangueira cortada continua de pé no mundo")
 	_conferir(is_instance_valid(nomeada.get("toco")), "a mangueira cortada não deixou toco")
 	_conferir(arvores.estagio_da(branca) == "toco", "a mangueira recém-cortada está no estágio '%s'" % arvores.estagio_da(branca))
+
+	# --- 2b. ELA CAI -----------------------------------------------------------
+	# "Produza a animação das árvores caindo ao cortá-las." A copa — a árvore de
+	# cima do corte — tomba do toco PARA LONGE DE QUEM CORTOU, devagar no começo
+	# e depressa no fim, deita e afunda até sumir sozinha.
+	var caindo: Node3D = null
+	for filho in mundo.get_children():
+		if str(filho.name).begins_with("ArvoreCaindo") and filho.find_child("CopaCaindo", true, false) != null:
+			caindo = filho
+	_conferir(caindo != null, "a mangueira cortada não caiu: não há copa caindo no mundo")
+	if caindo != null:
+		var pe_da_mangueira: Vector3 = arvores._cortaveis[branca]["pos"]
+		var de_quem_cortou: Vector3 = pe_da_mangueira - jogador.global_position
+		de_quem_cortou.y = 0.0
+		var desde_a_queda := Time.get_ticks_msec()
+		# NO MEIO DO TOMBO ela está a caminho: nem de pé, nem já deitada. Árvore
+		# que some de pé e aparece deitada não caiu, foi trocada.
+		while Time.get_ticks_msec() - desde_a_queda < 750 and is_instance_valid(caindo):
+			await process_frame
+		if is_instance_valid(caindo):
+			var no_meio := rad_to_deg((caindo.basis * Vector3.UP).angle_to(Vector3.UP))
+			_conferir(no_meio > 3.0 and no_meio < 60.0, "no meio do tombo a copa está a %.0f graus: não está caindo, foi trocada" % no_meio)
+		while Time.get_ticks_msec() - desde_a_queda < 1700 and is_instance_valid(caindo):
+			await process_frame
+		_conferir(is_instance_valid(caindo), "a copa sumiu antes de acabar de cair")
+		if is_instance_valid(caindo):
+			var topo: Vector3 = caindo.basis * Vector3.UP
+			_conferir(rad_to_deg(topo.angle_to(Vector3.UP)) > 70.0, "a copa não deitou: tombou só %.0f graus" % rad_to_deg(topo.angle_to(Vector3.UP)))
+			_conferir(Vector3(topo.x, 0.0, topo.z).dot(de_quem_cortou) > 0.0, "a copa caiu para o lado de quem cortou")
+		while Time.get_ticks_msec() - desde_a_queda < 6500 and is_instance_valid(caindo):
+			await process_frame
+		_conferir(not is_instance_valid(caindo), "a copa caída não sumiu: continua deitada no chão")
 
 	# --- 3. A MADEIRA DE LEI PEDE O TALENTO ---------------------------------------
 	_conferir(progressao.nivel("machado") == 1, "a partida nova começou com o machado no nível %d" % progressao.nivel("machado"))
@@ -358,6 +391,21 @@ func _run() -> void:
 			print("  toco da %-12s corte de %.2f de raio a %.2f do chão" % [especie, raio_do_corte, exposta.position.y])
 		mundo.restaurar_arvore(pe_dela)
 	_conferir(vistas.has("pitangueira"), "não achei a pitangueira plantada para conferir o toco dela")
+
+	# --- 11. A EMBAÚBA NOVA DO CEMITÉRIO TAMBÉM CAI -----------------------------
+	# É alvo de trabalho (`Recursos3D`), e não árvore do vale: cai inteira, do
+	# pé, quando o último golpe a derruba (`"cai": true` no JSON).
+	if recursos._alvos.has("embauba_cemiterio_a"):
+		_por_na_mao("machado")
+		await _encostar(recursos, jogador, "embauba_cemiterio_a")
+		var embauba: Node3D = recursos._alvos["embauba_cemiterio_a"]["no"]
+		var golpes_dela := int(recursos._alvos["embauba_cemiterio_a"]["ficha"].get("golpes", 3))
+		for i in golpes_dela:
+			energia.encher()
+			recursos.bater()
+		await _quadros(2)
+		_conferir(is_instance_valid(embauba) and embauba.get_parent() != null and str(embauba.get_parent().name).begins_with("ArvoreCaindo"),
+			"a embaúba nova do cemitério sumiu em vez de cair")
 	_fechar()
 
 
@@ -484,7 +532,7 @@ func _lista(v: Vector3) -> Array:
 func _fechar() -> void:
 	print("")
 	if falhas == 0:
-		print("CORTE_OK: toda árvore do vale se corta, a madeira branca no machado de ferro, a de lei com o talento e a de lei dura com o aço; a gameleira e a bananeira dizem por que não; a cortada cresce do pé em toco, muda, nova e crescida e só volta adulta com um ano do calendário; o save guarda o dia do corte; a mata cresce do pé; e a pedra dura pede o talento e o matacão, a picareta de aço")
+		print("CORTE_OK: toda árvore do vale se corta e tomba para longe de quem cortou, a madeira branca no machado de ferro, a de lei com o talento e a de lei dura com o aço; a gameleira e a bananeira dizem por que não; a cortada cresce do pé em toco, muda, nova e crescida e só volta adulta com um ano do calendário; o save guarda o dia do corte; a mata cresce do pé; e a pedra dura pede o talento e o matacão, a picareta de aço")
 	else:
 		print("corte das árvores: %d falha(s)" % falhas)
 	quit(1 if falhas > 0 else 0)

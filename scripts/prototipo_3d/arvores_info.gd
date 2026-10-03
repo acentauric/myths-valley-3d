@@ -461,7 +461,10 @@ func _ao_golpe_concluido() -> void:
 	arvore["golpes"] = int(arvore["golpes"]) + 1
 	_golpes_restantes_na_acao -= 1
 	if int(arvore["golpes"]) >= _golpes_da(indice):
-		if bool(_world.call("cortar_arvore", arvore["pos"])):
+		# ELA CAI PARA LONGE DE QUEM CORTOU, como manda o lenhador.
+		var cair_para: Vector3 = (arvore["pos"] as Vector3) - _jogador.global_position
+		cair_para.y = 0.0
+		if bool(_world.call("cortar_arvore", arvore["pos"], true, cair_para)):
 			arvore["cortado"] = true
 			arvore["dia_do_corte"] = Relogio.dia_absoluto()
 			arvore["escala"] = 0.0
