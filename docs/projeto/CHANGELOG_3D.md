@@ -35,6 +35,14 @@ atualize esse arquivo e este documento juntos.
   vista do jogador sai andando; longe dos olhos dele, o morador chega pelo caminho de
   sempre, porque o terreiro e a gameleira ficam longe da vila e o morador anda sem
   mapa. A volta, à meia-noite, é igual (`tests/festa_da_fe.gd`, falsificado).
+- **O portão do alcance dos alvos deixa de depender da carga da máquina** (#37). Ele
+  punha o corpo encostado em cada alvo e esperava dois quadros: na encosta do mirante o
+  corpo escorregava, e quanto escorregava dependia de quantos passos de física cabiam
+  ali — na bateria cheia o jogo oferecia a `erva_mirante_d` encostado em outro alvo, e
+  sozinho não. Agora a pergunta é de conta, sem física, dos quatro lados de cada alvo,
+  e o segundo alvo mais perto tem de ficar meia unidade além (o corpo escorrega até
+  0,41): par de alvos que disputa o E reprova sempre, e não às vezes
+  (`tests/alcance_dos_alvos.gd`, falsificado com um alvo intruso).
 - **O J vira diário, como no Witcher, e o HUD segue a missão acompanhada.** Escolher
   uma missão no J mudava só a cor da linha: o HUD e a seta seguiam a última cadeia que
   falou, e o foco do caderno era uma posição na lista, que andava sozinha quando outra
