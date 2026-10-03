@@ -81,7 +81,10 @@ func montar(costa: PackedVector2Array, pier: Vector3, mar_adentro: Vector3, nive
 		_fases.append(rng.randf() * TAU)
 
 
-func _process(_delta: float) -> void:
+## O BALANÇO NO PASSO DE FÍSICA: o casco é corpo (`AnimatableBody3D`), e quem
+## está dentro dele anda com ele. Movido no `_process`, ele pulava entre dois
+## passos de física, e o corpo de dentro levava o tranco contra o costado.
+func _physics_process(_delta: float) -> void:
 	var t := Time.get_ticks_msec() / 1000.0
 	var nivel := _nivel_preamar + Mare.nivel_offset()
 	for i in _canoas.size():
@@ -116,52 +119,59 @@ func _criar(tripo: bool) -> Node3D:
 		# vêm com o comprimento em Z; o giro os deita no eixo X, como o casco procedural.
 		var modelo := CatalogoAssets.instanciar(chave, raiz, Vector3(0, -CALADO_TRIPO, 0), 1.0, PI * 0.5)
 		if modelo != null:
-			# Caixa pelo tamanho real do modelo (medido deitado no eixo X pelo giro):
-			# do fundo até a borda, sem a proa alta.
-			var limites: AABB = modelo.get_meta("limites")
-			raiz.add_child(_colisao(Vector3(limites.size.z * 0.9, limites.size.y * 0.4, limites.size.x * 0.85), -CALADO_TRIPO))
+			raiz.add_child(_colisao_do_casco(modelo, raiz))
 			# O calado decide quando a maré baixa encalha a canoa (unidades).
 			raiz.set_meta("calado", CALADO_TRIPO)
 			return raiz
-	raiz.add_child(_casco_procedural())
-	raiz.add_child(_colisao(Vector3(COMPRIMENTO * 0.92, PONTAL + CALADO, BOCA), -CALADO))
+	var casco := _casco_procedural()
+	raiz.add_child(casco)
+	raiz.add_child(_colisao_do_casco(casco, raiz))
 	raiz.set_meta("calado", CALADO)
 	return raiz
 
 
-## Casco oco (comprimento, altura, boca), que acompanha o balanço: fundo interno, dois
-## costados e as duas pontas. Ninguém atravessa a canoa, e quem pula a borda fica
-## dentro dela, no fundo, e não em cima.
-const ESPESSURA_CASCO := 0.12
-## Altura do fundo interno, em fração da altura do casco a partir da quilha.
-const FUNDO_INTERNO := 0.35
-
-
-static func _colisao(tamanho: Vector3, fundo: float) -> AnimatableBody3D:
+## A COLISÃO É O PRÓPRIO CASCO: a malha dele, dos dois lados, num corpo que
+## acompanha o balanço. Por fora é parede; por dentro é fundo e costado, e
+## quem pula a borda fica dentro da canoa, no fundo, e não em cima.
+##
+## "Pulei neles e atravessei a parede." A colisão eram caixas de doze dedos,
+## medidas como fração da caixa do modelo: o costado de colisão acabava abaixo
+## da borda que se vê — a altura era 40% do modelo inteiro, e a proa alta conta
+## no modelo —, e a proa e a popa não tinham colisão nenhuma. O pulo passava
+## por cima do costado de colisão e através do costado desenhado.
+static func _colisao_do_casco(visual: Node3D, raiz: Node3D) -> AnimatableBody3D:
 	var corpo := AnimatableBody3D.new()
 	corpo.name = "Colisão da canoa"
-	var piso := fundo + tamanho.y * FUNDO_INTERNO
-	var topo := fundo + tamanho.y
-	var parede := topo - piso
-	var e := ESPESSURA_CASCO
-	# Fundo interno (e o casco abaixo dele, maciço).
-	_peca(corpo, Vector3(tamanho.x, piso - fundo, tamanho.z), Vector3(0.0, (fundo + piso) * 0.5, 0.0))
-	# Costados, ao longo do comprimento.
-	for lado in [-1.0, 1.0]:
-		_peca(corpo, Vector3(tamanho.x, parede, e), Vector3(0.0, piso + parede * 0.5, lado * (tamanho.z - e) * 0.5))
-	# Proa e popa, fechando as pontas.
-	for lado in [-1.0, 1.0]:
-		_peca(corpo, Vector3(e, parede, tamanho.z), Vector3(lado * (tamanho.x - e) * 0.5, piso + parede * 0.5, 0.0))
+	var malhas: Array = visual.find_children("*", "MeshInstance3D", true, false)
+	if visual is MeshInstance3D:
+		malhas.push_front(visual)
+	for no in malhas:
+		var malha := no as MeshInstance3D
+		if malha.mesh == null:
+			continue
+		var forma := malha.mesh.create_trimesh_shape()
+		if forma == null:
+			continue
+		# Os dois lados: o casco do Tripo e o de tábuas são cascas, e de dentro
+		# o lado de fora delas é o avesso.
+		forma.backface_collision = true
+		var colisao := CollisionShape3D.new()
+		colisao.shape = forma
+		colisao.transform = _relativo(malha, raiz)
+		corpo.add_child(colisao)
 	return corpo
 
 
-static func _peca(corpo: Node3D, tamanho: Vector3, centro: Vector3) -> void:
-	var forma := BoxShape3D.new()
-	forma.size = tamanho
-	var colisao := CollisionShape3D.new()
-	colisao.shape = forma
-	colisao.position = centro
-	corpo.add_child(colisao)
+## A transformação de `no` vista de `ate`, pela cadeia de pais: a canoa ainda
+## não está no mundo quando a colisão é montada.
+static func _relativo(no: Node3D, ate: Node3D) -> Transform3D:
+	var transformacao := Transform3D()
+	var atual: Node = no
+	while atual != null and atual != ate:
+		if atual is Node3D:
+			transformacao = (atual as Node3D).transform * transformacao
+		atual = atual.get_parent()
+	return transformacao
 
 
 ## Casco de canoa de tábuas: seções em meia elipse ao longo do comprimento, mais

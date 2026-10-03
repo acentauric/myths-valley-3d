@@ -26,6 +26,17 @@ atualize esse arquivo e este documento juntos.
 
 ## Em desenvolvimento — 03/10/2026
 
+- **A canoa é sólida na medida do desenho.** "Pulei neles e atravessei a parede." A
+  colisão das canoas eram caixas finas medidas como fração da caixa do modelo: o costado
+  de colisão acabava meio metro abaixo da borda que se vê (a altura era 40% do modelo
+  inteiro, com a proa alta), e a proa e a popa não tinham colisão. O pulo passava por cima
+  do costado de colisão e através do desenhado. Agora a colisão é a própria malha do casco,
+  dos dois lados (`Canoas._colisao_do_casco`): por fora é parede, por dentro é fundo e
+  costado — no bote, o toldo e os postes também —, e o balanço passou ao passo de física,
+  para quem está dentro andar com a canoa. Portão novo `tests/canoas.gd`: raios de fora e
+  de dentro, na linha d'água e um palmo abaixo da borda desenhada, batem no casco de cada
+  canoa, e quem pula nela fica dentro mesmo andando contra o costado. Com a colisão antiga
+  ele reprova (o raio a 0,77 da água atravessa).
 - **A árvore cortada cai.** "Produza a animação das árvores caindo ao cortá-las." No
   último golpe, a copa — a árvore de cima do corte — tomba do toco para longe de quem
   cortou: devagar no começo e depressa no fim, como árvore de verdade, dá um tranco no
