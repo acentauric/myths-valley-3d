@@ -230,6 +230,38 @@ func _run() -> void:
 	# comparar coisas que só coincidem por sorte.
 	_conferir(str(caderno.atual().get("id", "")) == "outro_do_painel",
 		"o E não fixou a missão escolhida: em foco está '%s'" % str(caderno.atual().get("id", "")))
+
+	# O HUD SEGUE A MISSÃO ACOMPANHADA, como no Witcher.
+	#
+	# "No MENU J, de missões, eu tô clicando para trocar a missão de resumo,
+	# mas não muda." O E (e o clique) mudavam o foco do caderno, e o HUD seguia
+	# a última cadeia que falou. Escolher no diário tem de trocar o canto da
+	# tela — e pelo BOTÃO do diário também, que é o gesto de quem usa o mouse.
+	await _frames(2)
+	_conferir(str(vale.hud.get("_objective")) == "Outro passo",
+		"acompanhei 'Outro passo' no diário e o HUD diz '%s'" % str(vale.hud.get("_objective")))
+	painel.escolher(0)
+	await _frames(2)
+	var acompanhar: Button = null
+	for no in painel.find_children("Acompanhar", "Button", true, false):
+		acompanhar = no as Button
+	_conferir(acompanhar != null and not acompanhar.disabled,
+		"o diário da missão escolhida não tem o botão de acompanhar")
+	if acompanhar != null:
+		acompanhar.pressed.emit()
+		await _frames(2)
+		_conferir(str(caderno.atual().get("id", "")) == "teste_do_painel",
+			"o botão ACOMPANHAR não acompanhou a missão escolhida: em foco está '%s'" % str(caderno.atual().get("id", "")))
+		_conferir(str(vale.hud.get("_objective")) == "Um passo de teste",
+			"acompanhei pelo botão e o HUD diz '%s'" % str(vale.hud.get("_objective")))
+	# E A ESCOLHA FICA: missão nova de outra pessoa não rouba o acompanhamento.
+	caderno.abrir_missao("intrusa_do_painel", "Uma terceira", "zefa", false)
+	await _frames(2)
+	_conferir(str(caderno.atual().get("id", "")) == "teste_do_painel",
+		"uma missão nova roubou o acompanhamento: em foco está '%s'" % str(caderno.atual().get("id", "")))
+	caderno.concluir("intrusa_do_painel")
+	painel.escolher(1)
+	_tecla(painel, KEY_E)
 	_tecla(painel, KEY_J)
 	await _frames(2)
 	_conferir(not painel.aberto, "o J não fechou o painel")

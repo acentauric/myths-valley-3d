@@ -69,6 +69,11 @@ var _arvores_info	# arvores_info.gd — saúde e regeneração dos coqueiros
 ## vale já guardava antes de existir a segunda cadeia.
 var _cadeias: Dictionary = {}
 var _relogio_pausado_antes := false
+## A seta da missão acompanhada (seta_missao.gd).
+var _seta
+## O que o HUD diz quando o caderno não tem missão aberta: o convite do começo,
+## e depois o fim da última cadeia. Ver `_on_missao_mudou`.
+var _objetivo_sem_missao := "Fale com Pedro: ele veio te esperar no píer."
 ## Foi a fala longa que parou o vale? Ver `_ao_abrir_a_fala`.
 var _fala_parou_o_vale := false
 ## O cordel que o folheto vai abrir, e a tela a que ele volta. Ver `ler_o_folheto`.
@@ -449,7 +454,7 @@ func _ready() -> void:
 		var viajante := "viajante do Tripo" if player.model != null and player.model.scene_file_path.ends_with("viajante_tripo.glb") else "personagem GLB provisório"
 		hud.set_model_status("Estilo Tripo: modelos do Tripo Studio (%s)" % viajante)
 		hud.set_telemetry("Tripo · 1,78 m")
-	hud.set_objective("Fale com Pedro: ele veio te esperar no píer.")
+	hud.set_objective(_objetivo_sem_missao)
 	hud.set_notice("Bom Jesus dos Pobres, 1887 · 1 unidade = %s m" % _formatar(world.get_meters_per_unit()))
 	_montar_som()
 	_montar_moradores(spawn)
@@ -560,16 +565,14 @@ func _montar_moradores(spawn: Vector3) -> void:
 	placas.name = "PlacasNomes"
 	add_child(placas)
 	placas.configurar(player, hud.map_layer())
-	# Seta da missão: cone e anel no mundo + chevron na borda da tela seguem o alvo.
-	var seta := SetaMissao.new()
-	seta.name = "SetaMissao"
-	add_child(seta)
-	seta.configurar(hud.map_layer())
-	missao_do_vale_mudou.connect(func(texto: String, destino: Vector3, indice: int, total: int) -> void:
-		if indice >= total:
-			seta.limpar()
-		else:
-			seta.definir_alvo(destino, texto))
+	# Seta da missão: cone e anel no mundo + chevron na borda da tela seguem o
+	# alvo DA MISSÃO ACOMPANHADA (ver `_mostrar_a_acompanhada`).
+	_seta = SetaMissao.new()
+	_seta.name = "SetaMissao"
+	add_child(_seta)
+	_seta.configurar(hud.map_layer())
+	CadernoDoVale.mudou.connect(_mostrar_a_acompanhada)
+	CadernoDoVale.abriu.connect(_ao_abrir_missao)
 	# Tubarão da parte funda: persegue só o jogador nadando no fundo; o susto vai ao HUD.
 	var tubarao := Tubarao.new()
 	tubarao.name = "Tubarao"
@@ -618,16 +621,13 @@ func _montar_moradores(spawn: Vector3) -> void:
 	pegadas_no.name = "Pegadas"
 	add_child(pegadas_no)
 
-	# Minimapa do canto inferior esquerdo, com o alvo da missão do Pedro.
+	# Minimapa do canto inferior esquerdo. O losango dele segue a missão
+	# acompanhada no caderno, sozinho (`Minimapa._alvo_do_caderno`).
 	var minimapa := Minimapa.new()
 	minimapa.name = "Minimapa"
 	hud.map_layer().add_child(minimapa)
 	minimapa.configurar(player, pedro, hud)
-	missao_do_vale_mudou.connect(func(_texto: String, alvo: Vector3, indice: int, total: int) -> void:
-		if indice >= total or alvo == Vector3.ZERO:
-			minimapa.limpar_alvo()
-		else:
-			minimapa.definir_alvo(alvo))
+	_mostrar_a_acompanhada()
 
 
 func _fechar_info_aberta() -> void:
@@ -687,15 +687,65 @@ func _on_saudacao(morador: MoradorNPC, texto: String) -> void:
 	hud.set_notice("%s: %s" % [String(morador.dados.get("nome", "Morador")), texto])
 
 
-## A MISSÃO EM CURSO, e QUANTO FALTA em linha separada.
+## O QUE UMA CADEIA ANUNCIA SÓ VAI AO HUD QUANDO NÃO HÁ MISSÃO ABERTA.
 ##
-## Antes a conta vinha grudada no texto — "Fale com o Damião  (3/9)" —, e ela
-## voltava a aparecer a cada reanúncio no meio de uma frase que o jogador já
-## estava lendo. Agora a frase é só a frase, e a conta mora ao lado do nome da
-## região, onde ela não disputa a leitura.
+## Quem manda no HUD é a missão ACOMPANHADA (`_mostrar_a_acompanhada`). O que
+## sobra para cá é o fim de uma cadeia ("Concluído: missões com Damião"), que
+## fica escrito enquanto o caderno não tiver outra coisa para mostrar.
 func _on_missao_mudou(texto: String, _alvo: Vector3, indice: int, total: int) -> void:
-	hud.set_objective(texto)
-	hud.set_mission_step(indice, total)
+	if indice >= total:
+		_objetivo_sem_missao = texto
+	_mostrar_a_acompanhada()
+
+
+## O HUD, A SETA E A BÚSSOLA SEGUEM A MISSÃO ACOMPANHADA.
+##
+## "No MENU J, de missões, eu tô clicando para trocar a missão de resumo, mas
+## não muda. O comportamento tem que ser muito próximo de jogos de RPG como The
+## Witcher 3." Lá, o diário escolhe a missão acompanhada, e o canto da tela
+## mostra o nome dela e o objetivo de agora; a bússola e o marcador apontam
+## para ela. Aqui era a última cadeia que FALOU quem mandava no HUD e na seta, e
+## o "[E] fixar" do J só mudava a cor da linha.
+##
+## Agora há uma fonte só, o `CadernoDoVale.atual()`: escolher no J, cumprir um
+## passo, abrir uma missão — tudo passa pelo `mudou` do caderno e chega aqui.
+func _mostrar_a_acompanhada() -> void:
+	if hud == null or not is_instance_valid(_seta):
+		return
+	var acompanhada: Dictionary = CadernoDoVale.atual()
+	if acompanhada.is_empty():
+		hud.set_objective(_objetivo_sem_missao)
+		hud.set_mission_step(0, 0)
+		_seta.limpar()
+		return
+	var resumo := str(acompanhada.get("resumo", ""))
+	if resumo == "":
+		resumo = str(acompanhada.get("linha", ""))
+	if resumo == "":
+		resumo = str(acompanhada.get("titulo", ""))
+	hud.set_objective(resumo, str(acompanhada.get("missao", "")))
+	hud.set_mission_step(int(acompanhada.get("passo", 0)), int(acompanhada.get("passos", 0)))
+	var alvo: Vector3 = acompanhada.get("alvo", Vector3.ZERO)
+	if alvo == Vector3.ZERO:
+		_seta.limpar()
+	else:
+		_seta.definir_alvo(alvo, resumo)
+
+
+## Depois de o quadro acabar: quem abre a missão a `descrever` logo em seguida,
+## e o aviso precisa do nome e do passo que só chegam ali.
+func _ao_abrir_missao(id: String) -> void:
+	_avisar_missao_nova.call_deferred(id)
+
+
+## "NOVA MISSÃO", como no Witcher: quem dá uma missão nova não rouba o
+## acompanhamento de quem o jogador escolheu — mas avisa, e diz onde trocar.
+func _avisar_missao_nova(id: String) -> void:
+	var nova: Dictionary = CadernoDoVale.de(id)
+	if nova.is_empty() or CadernoDoVale.acompanhada(id) or int(nova.get("passo", 1)) > 1:
+		return
+	hud.set_notice(tr("Nova missão: %s  ·  [%s] para acompanhar") % [
+		str(nova.get("missao", nova.get("titulo", ""))), Atalhos.letra("painel")])
 
 
 func _bind(action: StringName, keys: Array, replace_existing := false) -> void:

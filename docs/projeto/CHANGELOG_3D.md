@@ -24,6 +24,18 @@ marcos. Os textos curtos e a identificação exibidos no jogo ficam em
 `data/historico_3d.json`; ao registrar um novo marco ou build,
 atualize esse arquivo e este documento juntos.
 
+## Em desenvolvimento — 03/10/2026
+
+- **O J vira diário, como no Witcher, e o HUD segue a missão acompanhada.** Escolher
+  uma missão no J mudava só a cor da linha: o HUD e a seta seguiam a última cadeia que
+  falou, e o foco do caderno era uma posição na lista, que andava sozinha quando outra
+  missão abria ou fechava. Agora o caderno acompanha pelo id; o J mostra a lista
+  agrupada à esquerda e, à direita, o nome da missão, quem a deu, a fala inteira, os
+  objetivos cumpridos riscados, o de agora com a barra e o botão ACOMPANHAR (E, ou o
+  segundo clique). O canto da tela mostra o nome da missão acompanhada em cima do
+  objetivo; o passo seguinte herda o acompanhamento, e missão nova de outra pessoa só
+  avisa. Cada cadeia ganhou `nome` nos três idiomas (`tests/painel.gd`, falsificado).
+
 ## Em desenvolvimento — 02/10/2026
 
 - **O sobrevoo do menu contorna árvores e casas pelos lados, sem subir** (#34). A elipse

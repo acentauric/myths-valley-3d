@@ -43,7 +43,7 @@ const DO_MUNDO := {
 	# lista de dicionários e o alvo de cada missão é um Vector3 — coisa que o
 	# save escreve como array de três números e tem de voltar como Vector3.
 	# Guardar campo a campo aqui seria refazer essa conversão do lado errado.
-	"CadernoDoVale": ["ativas", "cumpridas", "em_foco"],
+	"CadernoDoVale": ["ativas", "cumpridas", "em_foco", "foco"],
 }
 
 ## O que do 3D fica FORA do save, campo a campo, com a razão.

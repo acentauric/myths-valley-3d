@@ -94,6 +94,10 @@ var espera := 0.0
 var despedida_feita := false
 ## O último resumo mandado ao HUD, para só reenviar quando ele muda.
 var _resumo_mostrado := ""
+## O NOME DA MISSÃO INTEIRA ("O cemitério esquecido"), que é o que o diário
+## lista e o HUD escreve em cima do objetivo — o passo é só onde ela está. Vem
+## do campo `nome` do arquivo, nos três idiomas.
+var nome_da_missao := ""
 
 
 ## Lê os passos do arquivo, já no idioma escolhido.
@@ -125,6 +129,7 @@ func carregar(caminho: String) -> bool:
 		passos.append(passo)
 	chave = str(dado.get("dono", ""))
 	principal = bool(dado.get("principal", false))
+	nome_da_missao = str(IdiomaMenu.campo(dado, "nome", ""))
 	arremate = dado.get("arremate", {}).duplicate()
 	arremate["texto"] = str(IdiomaMenu.campo(arremate, "texto"))
 	return not passos.is_empty()
@@ -264,7 +269,21 @@ func anunciar() -> void:
 ## só reenvia quando ele muda (ver `correr`).
 func _mostrar_o_resumo(passo: Dictionary) -> void:
 	_resumo_mostrado = resumo_do_passo(passo)
+	CadernoDoVale.descrever(_id_no_caderno(passo), {"resumo": _resumo_mostrado})
 	missao_mudou.emit(_resumo_mostrado, posicao_do_passo(missao), missao + 1, passos.size())
+
+
+## Os passos já cumpridos desta missão, pelo resumo de cada um, para o diário
+## riscar. Passo de lugar que o cenário não tem foi pulado, e não entra.
+func _feitos() -> Array:
+	var lista: Array = []
+	for i in range(0, mini(missao, passos.size())):
+		var anterior: Dictionary = passos[i]
+		if not Lugares.resolve(str(anterior.get("lugar", ""))):
+			continue
+		var escrito := str(anterior.get("resumo", "")).strip_edges()
+		lista.append(escrito if escrito != "" else _titulo_do_passo(anterior))
+	return lista
 
 
 func resumo_do_passo(passo: Dictionary) -> String:
@@ -341,6 +360,14 @@ func _registrar_no_caderno(passo: Dictionary) -> void:
 		return
 	CadernoDoVale.abrir_missao(id, _titulo_do_passo(passo), chave, principal,
 		_com_o_nome(str(passo.get("texto", ""))))
+	CadernoDoVale.descrever(id, {
+		"missao": nome_da_missao if nome_da_missao != "" else _titulo_do_passo(passo),
+		"quem": _nome_do_dono(),
+		"resumo": resumo_do_passo(passo),
+		"passo": missao + 1,
+		"passos": passos.size(),
+		"feitos": _feitos(),
+	})
 	var alvo := posicao_do_passo(missao)
 	if alvo != Vector3.ZERO:
 		CadernoDoVale.apontar(id, alvo)

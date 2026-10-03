@@ -1,6 +1,9 @@
 {
   "observacao": "A MISSÃO DO CEMITÉRIO, trazida do jogo 2D (data/dialogos/arraial.json, passos coveiro_ver / coveiro_foice / coveiro_limpar). É a primeira cadeia do vale que NÃO é do Pedro: o dono dela é o Damião, o zelador que o intendente nomeou sem dar ferramenta nenhuma. O formato é o mesmo de missoes_guia.json — 'lugar' é nome de contrato do autoload Lugares, 'raio' é em unidades (1 u = 4 m) — porque quem conduz é o mesmo código. TRADUÇÃO: os textos estão só em português neste primeiro momento; inglês e espanhol estão declarados como pendentes e são do Ramon.",
   "dono": "damiao",
+  "nome": "O cemitério esquecido",
+  "nome_en": "The forgotten cemetery",
+  "nome_es": "El cementerio olvidado",
   "abre_em": "cemiterio",
   "traducao": "pendente",
   "passos": [

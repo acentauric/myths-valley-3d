@@ -71,6 +71,9 @@ var _root: Control
 var _region_label: Label
 ## "3 de 9" da missão em curso, à direita do nome da região.
 var _mission_step: Label
+## O nome da missão acompanhada, em cima do objetivo (ver `set_objective`).
+var _quest_label: Label
+var _missao := ""
 var _performance_panel: Panel
 var _performance_label: Label
 var _performance_button: Button
@@ -130,6 +133,11 @@ func _ready() -> void:
 	_mission_step = _label("", 12, GOLD)
 	_mission_step.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	_place(_mission_step, Vector2(HEADING_WIDTH - 108, 26), Vector2(92, 20))
+	_quest_label = _label("", 13, GOLD)
+	_quest_label.name = "MissaoAcompanhada"
+	_quest_label.clip_text = true
+	_quest_label.visible = false
+	_place(_quest_label, Vector2(33, 50), Vector2(HEADING_WIDTH - 50, 20))
 	_objective_label = _label(_objective, 17, INK)
 	_objective_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_place(_objective_label, Vector2(33, 52), Vector2(HEADING_WIDTH - 50, 42))
@@ -474,8 +482,15 @@ func clear_house_info() -> void:
 	_house_info_panel.visible = false
 
 
-func set_objective(value: String) -> void:
+## O OBJETIVO, e em cima dele o NOME DA MISSÃO acompanhada, como no canto do
+## Witcher: "◆ O CEMITÉRIO ESQUECIDO" e embaixo "Corte o capim com a foice
+## (2/4)". Sem missão (o convite do começo, o fim de uma cadeia), só a frase.
+func set_objective(value: String, missao: String = "") -> void:
 	_objective = value
+	_missao = missao
+	if is_instance_valid(_quest_label):
+		_quest_label.text = ("◆  " + missao.to_upper()) if missao != "" else ""
+		_quest_label.visible = missao != ""
 	if is_instance_valid(_objective_label):
 		_objective_label.text = value
 		_fit_heading()
@@ -585,8 +600,11 @@ func _fit_heading() -> void:
 	if not is_instance_valid(_heading):
 		return
 	var lines := maxi(1, _objective_label.get_line_count())
-	# 52 é onde a missão começa (ver `_montar`); 18 de respiro embaixo.
-	var altura := 52.0 + lines * _objective_label.get_line_height() + 18.0
+	# 52 é onde a missão começa (ver `_montar`); com o nome da missão em cima,
+	# ela desce 22. 18 de respiro embaixo.
+	var topo := 52.0 + (22.0 if _missao != "" else 0.0)
+	_objective_label.position.y = _heading.position.y + topo - 18.0
+	var altura := topo + lines * _objective_label.get_line_height() + 18.0
 	_objective_label.size.y = lines * _objective_label.get_line_height()
 	_heading.size.y = altura
 	if is_instance_valid(_house_info_panel):
@@ -969,4 +987,4 @@ func almanaque() -> Control:
 func set_mission_step(indice: int, total: int) -> void:
 	if not is_instance_valid(_mission_step):
 		return
-	_mission_step.text = "" if total <= 0 or indice >= total else "%d de %d" % [indice, total]
+	_mission_step.text = "" if total <= 0 or indice <= 0 or indice > total else "%d de %d" % [indice, total]

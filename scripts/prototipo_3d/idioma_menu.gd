@@ -255,6 +255,7 @@ const EN := {
 	"Ninguém dorme debaixo de jaqueira carregada.": "Nobody sleeps under a jackfruit tree heavy with fruit.",
 	# Menu do Esc: o relógio e a tela de controles
 	"Relógio: %s": "Clock: %s",
+	"Nova missão: %s  ·  [%s] para acompanhar": "New quest: %s  ·  [%s] to track",
 	"Junte %s": "Gather %s",
 	"Corte %s": "Cut %s",
 	"Leve %s a %s": "Take %s to %s",
@@ -533,6 +534,7 @@ const ES := {
 	"Ninguém dorme debaixo de jaqueira carregada.": "Nadie duerme debajo de una jaquera cargada.",
 	# Menu do Esc: o relógio e a tela de controles
 	"Relógio: %s": "Reloj: %s",
+	"Nova missão: %s  ·  [%s] para acompanhar": "Nueva misión: %s  ·  [%s] para seguirla",
 	"Junte %s": "Junta %s",
 	"Corte %s": "Corta %s",
 	"Leve %s a %s": "Lleva %s a %s",

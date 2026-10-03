@@ -46,7 +46,11 @@ const COR_BORDA := Color(0.84, 0.73, 0.47, 0.8)
 enum Aba { MISSOES, CARTAS, OBRAS, OFICINA, COZINHA, VENDA, TRABALHO, AJUSTES }
 const NOME_DA_ABA := ["Missões", "Cartas", "Obras", "Oficina", "Cozinha", "Venda", "Trabalho", "Jogo"]
 
-const TAMANHO := Vector2(900, 520)
+## Maior que a do 2D desde que a aba de missões virou DIÁRIO, com a lista e a
+## página da missão lado a lado: cabe em 1280×720 com folga de 100 e de 50.
+const TAMANHO := Vector2(1080, 620)
+## A largura da lista de missões, à esquerda do diário.
+const LARGURA_DA_LISTA_DE_MISSOES := 300.0
 ## Largura da coluna das abas, à esquerda. A mesma proporção do almanaque.
 const LARGURA_DAS_ABAS := 230.0
 const ALTURA_DA_LINHA := 28.0
@@ -107,6 +111,9 @@ var _lista: VBoxContainer
 ## Só as linhas ESCOLHÍVEIS, na ordem do cursor (ver o 2D).
 var _escolhiveis: Array = []
 var _dica: Label
+## O diário da aba de missões: a página da missão escolhida, à direita da lista.
+var _diario: ScrollContainer
+var _detalhe: VBoxContainer
 var _rodape: Label
 var _linhas: Array = []
 var _botao_jogo: Button
@@ -475,7 +482,26 @@ func _montar() -> void:
 	_rolagem.get_v_scroll_bar().add_theme_stylebox_override("grabber", _estilo_do_puxador(false))
 	_rolagem.get_v_scroll_bar().add_theme_stylebox_override("grabber_highlight", _estilo_do_puxador(true))
 	_rolagem.get_v_scroll_bar().add_theme_stylebox_override("grabber_pressed", _estilo_do_puxador(true))
-	pagina.add_child(_rolagem)
+	# A lista e, na aba de missões, O DIÁRIO ao lado dela — como no Witcher: as
+	# missões à esquerda, a escolhida aberta à direita (ver `_desenhar_missoes`).
+	# Nas outras abas o diário some e a lista toma a largura toda.
+	var corpo := HBoxContainer.new()
+	corpo.add_theme_constant_override("separation", 18)
+	corpo.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	pagina.add_child(corpo)
+	corpo.add_child(_rolagem)
+	_diario = ScrollContainer.new()
+	_diario.name = "Diario"
+	_diario.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_diario.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_diario.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	_diario.visible = false
+	corpo.add_child(_diario)
+	_detalhe = VBoxContainer.new()
+	_detalhe.name = "Detalhe"
+	_detalhe.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_detalhe.add_theme_constant_override("separation", 8)
+	_diario.add_child(_detalhe)
 
 	_lista = VBoxContainer.new()
 	_lista.add_theme_constant_override("separation", 3)
@@ -600,6 +626,16 @@ func _redesenhar() -> void:
 	_montar_abas()
 	_titulo.text = "Painel  ›  %s" % str(NOME_DA_ABA[_aba])
 	_botao_jogo.text = "‹ VOLTAR" if _aba == Aba.AJUSTES else "JOGO"
+	# O diário só existe na aba de missões; nela a lista estreita e a dica de
+	# baixo some, porque o diário é a dica, inteira.
+	var no_diario := _aba == Aba.MISSOES
+	_diario.visible = no_diario
+	_dica.visible = not no_diario
+	_rolagem.size_flags_horizontal = Control.SIZE_FILL if no_diario else Control.SIZE_EXPAND_FILL
+	_rolagem.custom_minimum_size.x = LARGURA_DA_LISTA_DE_MISSOES if no_diario else 0.0
+	for filho in _detalhe.get_children():
+		_detalhe.remove_child(filho)
+		filho.queue_free()
 
 	match _aba:
 		Aba.MISSOES: _desenhar_missoes()
@@ -761,12 +797,28 @@ func _desenhar_oficina() -> void:
 ## "Levar pirão de peixe a Tonho"). Quem conduz decide a frase; esta tela não
 ## tenta entender de que tipo é a meta, e por isso meta nova não pede linha nova
 ## aqui.
+##
+##
+## O DIÁRIO, COMO NO WITCHER
+##
+## "No MENU J, de missões, eu tô clicando para trocar a missão de resumo, mas
+## não muda. O comportamento tem que ser muito próximo de jogos de RPG como The
+## Witcher 3." O diário de lá tem a lista à esquerda, agrupada, com a marca da
+## missão acompanhada; a escolhida aberta à direita — nome, quem deu, o texto,
+## os objetivos com os cumpridos riscados — e o botão de acompanhar. Acompanhar
+## é o que muda o canto da tela e o marcador; escolher na lista só abre a página.
+##
+## Aqui é o mesmo: W/S ou o clique escolhem; E, o segundo clique na mesma linha
+## ou o botão ACOMPANHAR acompanham (`CadernoDoVale.fixar`). O HUD, a seta e a
+## bússola seguem o caderno, e por isso mudam juntos (ver `_mostrar_a_acompanhada`
+## no `prototype.gd`).
 func _desenhar_missoes() -> void:
-	_titulo.text = "Missões abertas"
+	_titulo.text = "Diário  ›  Missões"
 	var abertas: Array = CadernoDoVale.por_importancia()
 	if abertas.is_empty():
 		_adicionar_linha("Nada em aberto por enquanto.", COR_APAGADA)
-		_dica.text = "Fale com quem mora no vale: quem tem o que pedir, pede."
+		_detalhe.add_child(_texto_do_diario(
+			"Fale com quem mora no vale: quem tem o que pedir, pede.", 17, COR_APAGADA))
 		_rodape.text = "[Esc] fechar"
 		return
 	# Dois grupos, com cabeçalho: enredo e dia a dia se leem diferente (ver o 2D).
@@ -777,28 +829,140 @@ func _desenhar_missoes() -> void:
 		if qual != grupo:
 			grupo = qual
 			_adicionar_linha(qual, COR_APAGADA, true)
-		var marca := "◆" if bool(missao.get("principal", false)) else "◇"
-		var conta := ""
-		if int(missao.get("total", 0)) > 0:
-			conta = "  (%d de %d)" % [int(missao["feito"]), int(missao["total"])]
-		var cor := COR_CURSOR if i == _cursor else (COR_FIXADA if i == CadernoDoVale.em_foco else COR_TEXTO)
-		_adicionar_linha("%s  %s%s" % [marca, str(missao.get("titulo", "")), conta], cor)
-		# A LINHA DE ANDAMENTO entra como texto, e só na missão sob o cursor: na
-		# lista inteira ela viraria parede de letra.
-		if i == _cursor and str(missao.get("linha", "")) != "":
-			_adicionar_linha("      %s" % str(missao["linha"]),
-				COR_FIXADA if int(missao.get("feito", 0)) >= int(missao.get("total", 1)) else COR_APAGADA,
-				true)
-	# O TEXTO COMPLETO DA MISSÃO MORA AQUI. O HUD mostra só o resumo ("Corte o
-	# capim com a foice (2/4)"); a fala inteira de quem pediu — o porquê, o
-	# lugar, o tom — é lida no painel, na missão sob o cursor.
-	var escolhida: Dictionary = abertas[_cursor] if _cursor < abertas.size() else {}
-	var completo := str(escolhida.get("texto", ""))
-	if completo == "":
-		completo = str(escolhida.get("titulo", ""))
-	_dica.text = completo if not escolhida.is_empty() else \
-		"Verde é a missão em foco: a que a seta aponta. ◆ é enredo, ◇ é do dia a dia."
-	_rodape.text = "[W/S] escolher · [E] fixar · [Esc] fechar"
+		var id := str(missao.get("id", ""))
+		var acompanhada := CadernoDoVale.acompanhada(id)
+		# ◆ cheio é a acompanhada, como o losango do Witcher; ◇ as outras.
+		var marca := "◆" if acompanhada else "◇"
+		var cor := COR_CURSOR if i == _cursor else (COR_FIXADA if acompanhada else COR_TEXTO)
+		_adicionar_linha("%s  %s" % [marca, _nome_da_missao(missao)], cor)
+	var escolhida: Dictionary = abertas[clampi(_cursor, 0, abertas.size() - 1)]
+	_desenhar_o_diario(escolhida)
+	_rodape.text = "[W/S] escolher · [E] acompanhar · [Esc] fechar"
+
+
+func _nome_da_missao(missao: Dictionary) -> String:
+	var nome := str(missao.get("missao", ""))
+	return nome if nome != "" else str(missao.get("titulo", ""))
+
+
+## A PÁGINA DA MISSÃO ESCOLHIDA, à direita da lista.
+##
+## O TEXTO COMPLETO MORA AQUI. O HUD mostra só o resumo ("Corte o capim com a
+## foice (2/4)"); a fala inteira de quem pediu — o porquê, o lugar, o tom — é
+## lida no diário. E os objetivos vêm como no Witcher: os cumpridos riscados em
+## cinza, o de agora aceso, com a barra quando há conta.
+func _desenhar_o_diario(missao: Dictionary) -> void:
+	var id := str(missao.get("id", ""))
+	var acompanhada := CadernoDoVale.acompanhada(id)
+
+	var nome := Label.new()
+	nome.name = "NomeDaMissao"
+	nome.text = _nome_da_missao(missao)
+	nome.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	nome.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_TITULO, 600, 1))
+	nome.add_theme_font_size_override("font_size", 24)
+	nome.add_theme_color_override("font_color", Identidade.CREME)
+	Identidade.sombra_texto(nome)
+	_detalhe.add_child(nome)
+
+	var tipo := "◆ Enredo" if bool(missao.get("principal", false)) else "◇ Do dia a dia"
+	var quem := str(missao.get("quem", ""))
+	var linha_de_quem := tipo if quem == "" else "%s  ·  dada por %s" % [tipo, quem]
+	var passo := int(missao.get("passo", 0))
+	var passos := int(missao.get("passos", 0))
+	if passo > 0 and passos > 0:
+		linha_de_quem += "  ·  passo %d de %d" % [passo, passos]
+	var sub := _texto_do_diario(linha_de_quem, 15, Identidade.OURO)
+	sub.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_ITALICO, 400))
+	_detalhe.add_child(sub)
+
+	var filete := Identidade.filete_centrado(1.0)
+	filete.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_detalhe.add_child(filete)
+
+	# A FALA DE QUEM PEDIU, inteira. O caderno a guarda com o nome na frente
+	# ("Damião: O senhor subiu..."); aqui o nome já está em cima, e a fala vem
+	# como citação.
+	var fala := str(missao.get("texto", ""))
+	if quem != "" and fala.begins_with(quem + ": "):
+		fala = fala.substr(quem.length() + 2)
+	if fala != "":
+		var citacao := _texto_do_diario("“%s”" % fala, 17, COR_TEXTO)
+		citacao.name = "Fala"
+		citacao.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_ITALICO, 400))
+		_detalhe.add_child(citacao)
+
+	var objetivos := _texto_do_diario("OBJETIVOS", 13, Identidade.OURO)
+	objetivos.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_TEXTO, 600))
+	_detalhe.add_child(objetivos)
+	for feito in missao.get("feitos", []):
+		var riscado := _texto_do_diario("✓  %s" % str(feito), 15, COR_APAGADA)
+		riscado.name = "Feito"
+		_detalhe.add_child(riscado)
+	var agora := str(missao.get("resumo", ""))
+	if agora == "":
+		agora = str(missao.get("linha", missao.get("titulo", "")))
+	var objetivo := _texto_do_diario("◆  %s" % agora, 16, COR_CURSOR if acompanhada else COR_TEXTO)
+	objetivo.name = "ObjetivoDeAgora"
+	_detalhe.add_child(objetivo)
+	var total := int(missao.get("total", 0))
+	if total > 0:
+		var barra := ProgressBar.new()
+		barra.name = "Andamento"
+		barra.show_percentage = false
+		barra.custom_minimum_size = Vector2(0, 10)
+		barra.max_value = float(total)
+		barra.value = float(int(missao.get("feito", 0)))
+		var fundo := StyleBoxFlat.new()
+		fundo.bg_color = Color(0.13, 0.16, 0.12, 0.9)
+		fundo.border_color = Color(0.32, 0.35, 0.30, 0.9)
+		fundo.set_border_width_all(1)
+		fundo.set_corner_radius_all(3)
+		var cheio := StyleBoxFlat.new()
+		cheio.bg_color = COR_FIXADA
+		cheio.set_corner_radius_all(3)
+		barra.add_theme_stylebox_override("background", fundo)
+		barra.add_theme_stylebox_override("fill", cheio)
+		_detalhe.add_child(barra)
+
+	# ACOMPANHAR, o botão do Witcher. Acompanhada, ele diz que é e não faz nada.
+	var respiro := Control.new()
+	respiro.custom_minimum_size = Vector2(0, 6)
+	_detalhe.add_child(respiro)
+	var botao := Button.new()
+	botao.name = "Acompanhar"
+	botao.text = "◆  ACOMPANHANDO" if acompanhada else "ACOMPANHAR  [%s]" % Atalhos.letra("interagir")
+	botao.focus_mode = Control.FOCUS_NONE
+	botao.disabled = acompanhada
+	botao.mouse_default_cursor_shape = Control.CURSOR_ARROW if acompanhada else Control.CURSOR_POINTING_HAND
+	botao.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	botao.custom_minimum_size = Vector2(220, 38)
+	botao.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_TITULO, 600))
+	botao.add_theme_font_size_override("font_size", 15)
+	botao.add_theme_color_override("font_color", Identidade.CREME)
+	botao.add_theme_color_override("font_disabled_color", COR_FIXADA)
+	var estilo := StyleBoxFlat.new()
+	estilo.bg_color = Color(0.10, 0.17, 0.11, 0.95) if acompanhada else Color(0.19, 0.21, 0.15, 0.96)
+	estilo.border_color = COR_FIXADA if acompanhada else Color(Identidade.OURO.r, Identidade.OURO.g, Identidade.OURO.b, 0.75)
+	estilo.set_border_width_all(1)
+	estilo.set_corner_radius_all(4)
+	for estado in ["normal", "hover", "pressed", "disabled"]:
+		botao.add_theme_stylebox_override(estado, estilo)
+	botao.pressed.connect(func() -> void:
+		CadernoDoVale.fixar(id)
+		Audio.efeito("menu_confirma"))
+	_detalhe.add_child(botao)
+
+
+func _texto_do_diario(texto: String, tamanho: int, cor: Color) -> Label:
+	var etiqueta := Label.new()
+	etiqueta.text = texto
+	etiqueta.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	etiqueta.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	etiqueta.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_TEXTO, 400))
+	etiqueta.add_theme_font_size_override("font_size", tamanho)
+	etiqueta.add_theme_color_override("font_color", cor)
+	return etiqueta
 
 
 ## O "o que fazer" da missão, de TODOS os arquivos de fala (ver o 2D).

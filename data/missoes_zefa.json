@@ -1,6 +1,9 @@
 {
   "observacao": "A CONVERSA DA DONA ZEFA, trazida do jogo 2D (data/dialogos/arraial.json, passos zefa_ervas / zefa_cosme / zefa_conversa / zefa_terra). É a cadeia mais falada do vale, e a ORDEM É A DE LÁ: as ervas vêm antes do Cosme porque a última linha do zefa_ervas_fim é ela mandando falar com o neto. O passo do saveiro é o zefa_terra de lá, o 'Encontre os dois no píer'. O primeiro passo manda à serra, os dois do meio vão de uma pessoa a outra, e é assim que a história do Cosme se conta. Usa a meta 'falar', que é a de 'levar' sem o item. O texto é o de lá, encurtado no que cabe num balão; a prosa inteira está no arraial.json e volta quando o vale tiver caixa de diálogo (#21). TRADUÇÃO: só em português neste primeiro momento; inglês e espanhol são do Ramon.",
   "dono": "zefa",
+  "nome": "O que a serra guarda",
+  "nome_en": "What the hills keep",
+  "nome_es": "Lo que guarda la sierra",
   "principal": true,
   "abre_em": "casa_de_taipa",
   "traducao": "pendente",
