@@ -1,0 +1,178 @@
+{
+  "observacao": "OS MARCOS DE FÉ DO VALE (#52): o que se lê num marco — ao chegar perto na missão dos três lugares, e ao apertar E: o rito, a entrada numa fé e a troca de fé. Vem do Mundo._no_marco do jogo 2D (_celebrar, _oferecer_fe, _oferecer_migracao) e das falas dos marcos do arraial.json, com o lugar de cada um dito como ele é no vale 3D: o cruzeiro diante da igreja, o terreiro na mata a poente da rua do mirante, a gameleira na ponta da praia, perto das pedras. Os nomes, os resumos e as bênçãos das fés moram no fe.gd compartilhado, só em português; aqui ficam nos três idiomas. As chaves entre chaves ({pratica}, {dia}) são trocadas pelo marcos_da_fe.gd.",
+  "fes": {
+    "catolica": {
+      "nome": "Católica", "nome_en": "Catholic", "nome_es": "Católica",
+      "o": "a católica", "o_en": "the Catholic faith", "o_es": "la católica",
+      "de": "da católica", "de_en": "the Catholic faith", "de_es": "de la católica",
+      "convite": "Parar um instante e rezar?",
+      "convite_en": "Stop for a moment and pray?",
+      "convite_es": "¿Detenerte un momento a rezar?",
+      "resumo": "A fé do calendário e da promessa. Anda com o arraial inteiro: o que ela dá, dá devagar e dá para todo mundo junto.",
+      "resumo_en": "The faith of the calendar and the vow. It walks with the whole village: what it gives, it gives slowly, and to everyone together.",
+      "resumo_es": "La fe del calendario y de la promesa. Anda con todo el caserío: lo que da, lo da despacio y para todos juntos.",
+      "pratica": "Reza no cruzeiro diante da igreja, no altar da igreja do Bom Jesus, na capela velha da rua do mirante e no cemitério.",
+      "pratica_en": "Pray at the wayside cross before the church, at the altar of the Bom Jesus church, at the old chapel on the lookout road and at the cemetery.",
+      "pratica_es": "Reza en el crucero frente a la iglesia, en el altar de la iglesia del Bom Jesus, en la capilla vieja de la calle del mirador y en el cementerio."
+    },
+    "candomble": {
+      "nome": "Candomblé", "nome_en": "Candomblé", "nome_es": "Candomblé",
+      "o": "o candomblé", "o_en": "Candomblé", "o_es": "el candomblé",
+      "de": "do candomblé", "de_en": "Candomblé", "de_es": "del candomblé",
+      "convite": "Pedir licença e deixar a oferenda?",
+      "convite_en": "Ask leave and set down the offering?",
+      "convite_es": "¿Pedir permiso y dejar la ofrenda?",
+      "resumo": "A fé da folha, do ferro e da água. Ensina o que a terra e o mar dão, e ensina em roda — ninguém aprende sozinho num terreiro.",
+      "resumo_en": "The faith of leaf, iron and water. It teaches what the land and the sea give, and it teaches in a circle — no one learns alone in a terreiro.",
+      "resumo_es": "La fe de la hoja, del hierro y del agua. Enseña lo que dan la tierra y el mar, y enseña en rueda: nadie aprende solo en un terreiro.",
+      "pratica": "Oferenda no terreiro, escondido na mata a poente da rua do mirante, antes da curva.",
+      "pratica_en": "Make your offerings at the terreiro, hidden in the forest west of the lookout road, before the bend.",
+      "pratica_es": "Ofrenda en el terreiro, escondido en el monte al poniente de la calle del mirador, antes de la curva."
+    },
+    "caboclo": {
+      "nome": "Caboclo", "nome_en": "Caboclo", "nome_es": "Caboclo",
+      "o": "o caboclo", "o_en": "the Caboclo faith", "o_es": "el caboclo",
+      "de": "do caboclo", "de_en": "the Caboclo faith", "de_es": "del caboclo",
+      "convite": "Bater na raiz e deixar o que trouxe?",
+      "convite_en": "Knock on the root and leave what you brought?",
+      "convite_es": "¿Golpear la raíz y dejar lo que trajiste?",
+      "resumo": "A fé do mato e do antigo. Não promete fartura: promete corpo que aguenta, pé que anda e olho que enxerga longe.",
+      "resumo_en": "The faith of the bush and of the ancient. It does not promise plenty: it promises a body that endures, feet that walk and eyes that see far.",
+      "resumo_es": "La fe del monte y de lo antiguo. No promete abundancia: promete un cuerpo que aguanta, un pie que anda y un ojo que ve lejos.",
+      "pratica": "Oferenda na gameleira do sambaqui, na ponta poente da praia, perto das pedras.",
+      "pratica_en": "Make your offerings at the gameleira on the shell mound, at the western tip of the beach, near the rocks.",
+      "pratica_es": "Ofrenda en la gameleira del sambaquí, en la punta poniente de la playa, cerca de las piedras."
+    }
+  },
+  "bencaos": {
+    "mao_leve": {"texto": "Mão leve", "texto_en": "Light hand", "texto_es": "Mano ligera",
+      "resumo": "Por dois dias, todo trabalho custa um quarto menos de fôlego.",
+      "resumo_en": "For two days, all work costs a quarter less stamina.",
+      "resumo_es": "Durante dos días, todo trabajo cuesta un cuarto menos de aliento."},
+    "bom_sono": {"texto": "Bom sono", "texto_en": "Good sleep", "texto_es": "Buen sueño",
+      "resumo": "Por dois dias, a noite devolve metade a mais.",
+      "resumo_en": "For two days, the night gives back half again as much.",
+      "resumo_es": "Durante dos días, la noche devuelve la mitad más."},
+    "folego_de_boi": {"texto": "Fôlego de boi", "texto_en": "Ox's breath", "texto_es": "Aliento de buey",
+      "resumo": "Por dois dias, seu teto de fôlego sobe um terço.",
+      "resumo_en": "For two days, your stamina ceiling rises by a third.",
+      "resumo_es": "Durante dos días, tu tope de aliento sube un tercio."},
+    "axe_da_folha": {"texto": "Axé da folha", "texto_en": "Axé of the leaf", "texto_es": "Axé de la hoja",
+      "resumo": "Por dois dias, seu teto de fôlego sobe quase pela metade.",
+      "resumo_en": "For two days, your stamina ceiling rises by almost half.",
+      "resumo_es": "Durante dos días, tu tope de aliento sube casi la mitad."},
+    "mao_de_ogum": {"texto": "Mão de Ogum", "texto_en": "Ogum's hand", "texto_es": "Mano de Ogum",
+      "resumo": "Por dois dias, ferramenta pesa menos: todo trabalho custa 30% a menos.",
+      "resumo_en": "For two days, tools weigh less: all work costs 30% less.",
+      "resumo_es": "Durante dos días, la herramienta pesa menos: todo trabajo cuesta un 30% menos."},
+    "agua_doce": {"texto": "Água doce", "texto_en": "Sweet water", "texto_es": "Agua dulce",
+      "resumo": "Por dois dias, a noite devolve mais da metade a mais.",
+      "resumo_en": "For two days, the night gives back more than half again as much.",
+      "resumo_es": "Durante dos días, la noche devuelve más de la mitad más."},
+    "pe_de_mata": {"texto": "Pé de mata", "texto_en": "Forest foot", "texto_es": "Pie de monte",
+      "resumo": "Por dois dias, tudo custa 40% menos. É a graça mais forte que existe aqui.",
+      "resumo_en": "For two days, everything costs 40% less. It is the strongest grace there is here.",
+      "resumo_es": "Durante dos días, todo cuesta un 40% menos. Es la gracia más fuerte que hay aquí."},
+    "couro_duro": {"texto": "Couro duro", "texto_en": "Tough hide", "texto_es": "Cuero duro",
+      "resumo": "Por dois dias, apagar no chão devolve o dobro.",
+      "resumo_en": "For two days, passing out on the ground gives back twice as much.",
+      "resumo_es": "Durante dos días, desmayarte en el suelo devuelve el doble."},
+    "folego_de_caca": {"texto": "Fôlego de caça", "texto_en": "Hunter's breath", "texto_es": "Aliento de caza",
+      "resumo": "Por dois dias, seu teto de fôlego sobe um terço.",
+      "resumo_en": "For two days, your stamina ceiling rises by a third.",
+      "resumo_es": "Durante dos días, tu tope de aliento sube un tercio."}
+  },
+  "visita": {
+    "cruzeiro": {
+      "linhas": ["Uma cruz de madeira escura, sem imagem, fincada num calço de pedra.", "A base está gasta de tanta mão. Alguém deixou uma fita amarrada no pé.", "É o marco mais antigo do lugar depois da igreja — e o único que fica no caminho de todo mundo."],
+      "linhas_en": ["A dark wooden cross, with no image, planted in a stone base.", "The base is worn smooth by so many hands. Someone left a ribbon tied at its foot.", "It is the oldest landmark here after the church — and the only one on everyone's way."],
+      "linhas_es": ["Una cruz de madera oscura, sin imagen, clavada en una base de piedra.", "La base está gastada de tantas manos. Alguien dejó una cinta atada al pie.", "Es el hito más antiguo del lugar después de la iglesia, y el único que está en el camino de todos."]
+    },
+    "terreiro": {
+      "linhas": ["Você quase passa sem ver. A trilha some no capim e a casa está atrás da linha de árvores.", "Taipa caiada, palha no telhado, porta fechada. Dois mastros com pano branco, e potes de barro alinhados na parede.", "Não tem nada escrito, nada que diga o que é. Em 1887, é isso que mantém um lugar destes de pé."],
+      "linhas_en": ["You almost walk past without seeing it. The trail fades into the grass and the house sits behind the line of trees.", "Whitewashed rammed earth, a thatched roof, a closed door. Two masts with white cloth, and clay pots lined up along the wall.", "Nothing is written, nothing says what it is. In 1887, that is what keeps a place like this standing."],
+      "linhas_es": ["Casi pasas sin verlo. El sendero se pierde en el pasto y la casa está detrás de la línea de árboles.", "Tapia encalada, techo de paja, puerta cerrada. Dos mástiles con tela blanca, y vasijas de barro alineadas en la pared.", "No hay nada escrito, nada que diga lo que es. En 1887, eso es lo que mantiene en pie un lugar así."]
+    },
+    "gameleira": {
+      "linhas": ["A árvore é maior do que qualquer coisa que o arraial construiu.", "As raízes descem por cima de um monte baixo e branco. De perto se vê que não é pedra: é concha, milhões delas, empilhadas ao longo de um tempo que ninguém aqui sabe contar.", "Tem fitas no tronco e cuias de barro entre as raízes. Alguém esteve aqui esta semana.", "Quem levantou este monte não deixou nome. Deixou o monte."],
+      "linhas_en": ["The tree is bigger than anything the village has built.", "The roots come down over a low white mound. Up close you see it is not stone: it is shell, millions of them, piled up over a time no one here knows how to count.", "There are ribbons on the trunk and clay bowls between the roots. Someone was here this week.", "Whoever raised this mound left no name. They left the mound."],
+      "linhas_es": ["El árbol es más grande que cualquier cosa que el caserío haya construido.", "Las raíces bajan por encima de un montículo bajo y blanco. De cerca se ve que no es piedra: es concha, millones de ellas, apiladas a lo largo de un tiempo que nadie aquí sabe contar.", "Hay cintas en el tronco y cuencos de barro entre las raíces. Alguien estuvo aquí esta semana.", "Quien levantó este montículo no dejó nombre. Dejó el montículo."]
+    }
+  },
+  "travado": {
+    "linhas": ["Você para na frente e tira o chapéu, por educação.", "Não sabe o que se faz aqui. Ainda."],
+    "linhas_en": ["You stop in front of it and take off your hat, out of courtesy.", "You do not know what is done here. Not yet."],
+    "linhas_es": ["Te detienes enfrente y te quitas el sombrero, por educación.", "No sabes lo que se hace aquí. Todavía."]
+  },
+  "entrar": {
+    "texto": "Passar a ser {de}?",
+    "texto_en": "Follow {de}?",
+    "texto_es": "¿Pasar a ser {de}?",
+    "linhas": ["Pronto. Daqui em diante é esta a sua.", "{pratica}", "Aperte {teia} e depois Tab: a teia da fé é outra, e os pontos dela também."],
+    "linhas_en": ["There. From now on, this one is yours.", "{pratica}", "Press {teia} and then Tab: the web of faith is a different web, and so are its points."],
+    "linhas_es": ["Listo. De aquí en adelante, esta es la tuya.", "{pratica}", "Pulsa {teia} y luego Tab: la red de la fe es otra, y sus puntos también."]
+  },
+  "rito": {
+    "linhas": ["Você tira o chapéu e fica um tempo calado.", "O corpo afrouxa. Alguma coisa aqui devolve parte do que o dia levou.", "{bencao} — {resumo}"],
+    "linhas_en": ["You take off your hat and stay quiet for a while.", "Your body loosens. Something here gives back part of what the day took.", "{bencao} — {resumo}"],
+    "linhas_es": ["Te quitas el sombrero y te quedas un rato en silencio.", "El cuerpo se afloja. Algo aquí devuelve parte de lo que el día se llevó.", "{bencao} — {resumo}"]
+  },
+  "rito_cedo": {
+    "linhas": ["Você fica um tempo calado, e é só isso: o corpo não afrouxa.", "A graça deste marco volta no {dia}."],
+    "linhas_en": ["You stay quiet for a while, and that is all: your body does not loosen.", "This landmark's grace returns on {dia}."],
+    "linhas_es": ["Te quedas un rato en silencio, y eso es todo: el cuerpo no se afloja.", "La gracia de este hito vuelve el {dia}."]
+  },
+  "migrar": {
+    "linhas": ["Este não é o seu marco. Você é {de_antiga}.", "{resumo}"],
+    "linhas_en": ["This is not your landmark. You follow {de_antiga}.", "{resumo}"],
+    "linhas_es": ["Este no es tu hito. Tú eres {de_antiga}.", "{resumo}"]
+  },
+  "congelar": {
+    "linhas": ["Trocar não apaga nada. A sua teia {de_antiga} congela inteira, e o dia em que você voltar ela está como estava.", "{volta}", "O que congela para de valer, porém. Bênção, desconto, sorte — tudo que a fé antiga dava, para de dar hoje."],
+    "linhas_en": ["Switching erases nothing. Your web of {de_antiga} freezes whole, and on the day you come back it will be as it was.", "{volta}", "What freezes stops counting, though. Blessing, discount, luck — everything the old faith gave stops giving today."],
+    "linhas_es": ["Cambiar no borra nada. Tu red {de_antiga} se congela entera, y el día que vuelvas estará como estaba.", "{volta}", "Lo que se congela deja de valer, eso sí. Bendición, descuento, suerte: todo lo que daba la fe antigua deja de dar hoy."]
+  },
+  "ja_foi": {
+    "texto": "Você já foi disso antes: a teia volta do jeito que você deixou, com {pontos} ponto(s) por gastar.",
+    "texto_en": "You have been this before: the web comes back the way you left it, with {pontos} point(s) to spend.",
+    "texto_es": "Ya fuiste de esto antes: la red vuelve como la dejaste, con {pontos} punto(s) por gastar."
+  },
+  "nunca_foi": {
+    "texto": "Esta aqui você nunca praticou: a teia começa vazia.",
+    "texto_en": "You have never practised this one: the web starts empty.",
+    "texto_es": "Esta nunca la practicaste: la red empieza vacía."
+  },
+  "social": {
+    "texto": "E tem o arraial. Quem é {de_antiga} vai ficar sabendo, e não vai gostar: {quem}.",
+    "texto_en": "And there is the village. Those who follow {de_antiga} will hear of it, and they will not like it: {quem}.",
+    "texto_es": "Y está el caserío. Los que son {de_antiga} se van a enterar, y no les va a gustar: {quem}."
+  },
+  "trocar": {
+    "texto": "Deixar {o_antiga} e passar a ser {de_nova}?",
+    "texto_en": "Leave {o_antiga} and follow {de_nova}?",
+    "texto_es": "¿Dejar {o_antiga} y pasar a ser {de_nova}?"
+  },
+  "nada_a_levar": {
+    "texto": "Feito. Você não tinha nada juntado para levar.",
+    "texto_en": "Done. You had nothing gathered to bring along.",
+    "texto_es": "Hecho. No tenías nada juntado para llevar."
+  },
+  "levar": {
+    "texto": "Trazer os {sai} pontos e perder {perde}?",
+    "texto_en": "Bring the {sai} points and lose {perde}?",
+    "texto_es": "¿Traer los {sai} puntos y perder {perde}?",
+    "linhas": ["Falta decidir o que fazer com o que você juntou {de_antiga}.", "São {sai} pontos lá. Se ficarem, ficam inteiros, esperando você voltar.", "Se vierem, chegam {chega}. Perdem-se {perde} no caminho, e isso não volta nunca.", "Aqui você está no nível {antes}. Com eles, ficaria no {depois}."],
+    "linhas_en": ["It remains to decide what to do with what you gathered in {de_antiga}.", "There are {sai} points there. If they stay, they stay whole, waiting for you to come back.", "If they come, {chega} arrive. {perde} are lost on the way, and that never comes back.", "Here you are at level {antes}. With them, you would be at {depois}."],
+    "linhas_es": ["Falta decidir qué hacer con lo que juntaste {de_antiga}.", "Son {sai} puntos allá. Si se quedan, se quedan enteros, esperando que vuelvas.", "Si vienen, llegan {chega}. Se pierden {perde} en el camino, y eso no vuelve nunca.", "Aquí estás en el nivel {antes}. Con ellos, quedarías en el {depois}."]
+  },
+  "ficam": {
+    "texto": "Ficam lá. É o que a maioria faz.",
+    "texto_en": "They stay there. It is what most people do.",
+    "texto_es": "Se quedan allá. Es lo que hace la mayoría."
+  },
+  "trouxe": {
+    "linhas": ["Você larga o que sobrou do outro caminho e traz o que coube na mão.", "{chega} de {sai}. É pouco, e é o preço."],
+    "linhas_en": ["You let go of what was left of the other path and bring what fit in your hand.", "{chega} of {sai}. It is little, and it is the price."],
+    "linhas_es": ["Sueltas lo que quedó del otro camino y traes lo que cupo en la mano.", "{chega} de {sai}. Es poco, y es el precio."]
+  }
+}

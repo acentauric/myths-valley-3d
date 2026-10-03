@@ -375,6 +375,9 @@ func _regravar_regiao(cenario: Node3D, regiao_no: Node, tripo: bool, blocos_vivo
 	copia.call("set_meters_per_unit", float(regiao_no.call("get_meters_per_unit")))
 	copia.call("set_vertical_exaggeration", float(regiao_no.call("get_vertical_exaggeration")))
 	copia.call("set_estilo_tripo", tripo)
+	# As clareiras que o vale pede antes de a mata nascer (o terreiro e a gameleira,
+	# #52): sem elas a copia planta oito arvores que o vale vivo nao tem.
+	(copia.get("clareiras") as Array).assign(regiao_no.get("clareiras"))
 	var dados: Dictionary = cenario.call("_active_region_data")
 	await copia.call("build_region", String(dados["geometry"]), String(dados["scenario"]))
 	var gravados: Array = copia.get("gravados")

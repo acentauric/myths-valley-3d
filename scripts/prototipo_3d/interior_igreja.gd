@@ -142,6 +142,12 @@ func soleira_de_dentro() -> Vector3:
 	return to_global(Vector3(0.0, 0.05, -1.0))
 
 
+## ONDE SE REZA: no meio do presbitério, diante do altar. É o marco "capela"
+## da fé católica (ver `marcos_da_fe.gd`).
+func ponto_do_altar() -> Vector3:
+	return to_global(Vector3(0.0, ALTURA_DO_PRESBITERIO, -comprimento + _fundo_do_presbiterio * 0.6))
+
+
 func soleira_de_fora() -> Vector3:
 	return to_global(Vector3(0.0, -altura_da_soleira + 0.05, PAREDE + fundo_da_porta + afastamento_de_fora))
 

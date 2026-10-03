@@ -47,6 +47,12 @@ const DE_PARA := {
 	"poco": "Poço",
 	"mirante": "Mirante",
 	"cemiterio": "Cemitério",
+	# Os marcos de fé (#52): o cruzeiro diante da igreja, a capela velha da rua do
+	# mirante (a "capelinha de estrada" do 2D), o terreiro e a gameleira.
+	"cruzeiro": "Cruzeiro",
+	"capela_estrada": "Capela velha",
+	"terreiro": "Terreiro",
+	"gameleira": "Gameleira",
 	"rocado": "Roçado",
 	"casa_de_taipa": "Casa de taipa",
 	"casa_da_estrada": "Casa da estrada",

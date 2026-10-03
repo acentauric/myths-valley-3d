@@ -56,6 +56,17 @@ var _house_targets: Array[Area3D] = []
 var _hovered_house: Area3D
 var _selected_house: Area3D
 var _house_sites: Array[Dictionary] = []
+## OS MARCOS DE FÉ QUE O MAPA NÃO TEM (#52), em metros no referencial do mapa,
+## como as árvores de `_build_trees`. O lugar é o que o jogo 2D descreve:
+##   terreiro   "sobe a estrada do mirante e, antes da curva, tem uma vereda de
+##              pé saindo pro poente. Ela entra na mata e some" — uns setenta
+##              metros a poente da rua, antes da curva grande dela.
+##   gameleira  "na ponta do poente da praia, onde a estrada rareia" — no mato
+##              da beira, perto das pedras.
+const TERREIRO_M := Vector3(-262, 0, -238)
+const GAMELEIRA_M := Vector3(-300, 0, 560)
+var _fogo_do_terreiro: Node3D
+
 ## Lote (posição e giro) de cada construção nomeada, decidido por _loteamento().
 var _lotes: Dictionary = {}
 ## Montagem aos poucos: o vale é erguido ao longo de vários quadros, com o progresso
@@ -485,6 +496,9 @@ func _montar() -> void:
 	_region.set_estilo_tripo(estilo_tripo())
 	# A região vale 0 a 75% do progresso; a vila, o resto.
 	_region.etapa.connect(func(fracao: float, texto: String) -> void: progresso.emit(fracao * 0.75, texto))
+	# Os marcos de fé que o mapa não tem pedem clareira antes de a mata nascer.
+	_region.clareiras.assign([Vector2(TERREIRO_M.x, TERREIRO_M.z) / _meters_per_unit,
+		Vector2(GAMELEIRA_M.x, GAMELEIRA_M.z) / _meters_per_unit])
 	await _region.build_region(String(region_data["geometry"]), String(region_data["scenario"]))
 	# O sol segue a latitude do lugar (a origem do KML).
 	if _region._projection.has("origin_lat"):
@@ -668,6 +682,7 @@ func _construir_vila() -> void:
 	_build_landmark_details()
 	await _etapa(0.93, "Espalhando os objetos")
 	_build_pecas()
+	_build_marcos_de_fe()
 	await _etapa(0.94, "Assentando as pedras")
 	_build_pedras()
 	await _etapa(0.95, "Fundeando as canoas")
@@ -1454,7 +1469,9 @@ func _build_pecas() -> void:
 	_adereco("varal", ground_position(_na_casa("Casa de taipa", Vector3(-4.9, 0, 1.4))), 0.35 + giro_taipa)
 	_adereco("lenha", ground_position(_na_casa("Casa de taipa", Vector3(3.6, 0, -0.4))), giro_taipa)
 	_adereco("pote", ground_position(_na_casa("Casa de taipa", Vector3(2.4, 0, 2.9))))
-	_adereco("cruzeiro", ground_position(_na_casa("Igreja", Vector3(0, 0, 9.0))))
+	# O CRUZEIRO é marco de fé (#52), e marco tem âncora: é onde se reza.
+	ancoras["Cruzeiro"] = ground_position(_na_casa("Igreja", Vector3(0, 0, 9.0)))
+	_adereco("cruzeiro", ancoras["Cruzeiro"])
 	var farm: Vector3 = _region.get_feature_center("Fazenda", "area")
 	_adereco("carroca", ground_position(farm + Vector3(8.5, 0, -5.5)), -0.6)
 	var pier_direction: Vector3 = ancoras.get("PierDirecao", Vector3.FORWARD)
@@ -1509,6 +1526,9 @@ func _build_luzes_epoca() -> void:
 	_luzes.candeeiro(luz_no_pier, _adereco("candeeiro", modelo_luz_no_pier))
 	ancoras["Fogueira"] = ground_position(farm + Vector3(7.0, 0, 4.5))
 	_luzes.fogueira(ancoras["Fogueira"], _adereco("fogueira", ancoras["Fogueira"]))
+	# O fogo do terreiro de santo, aceso à noite como o da fazenda.
+	if is_instance_valid(_fogo_do_terreiro):
+		_luzes.fogueira(_fogo_do_terreiro.global_position, _fogo_do_terreiro)
 	_luzes.janela(_na_casa("Casa de taipa", Vector3(-1.35, 1.9, 2.2)))
 	_luzes.janela(_na_casa("Igreja", Vector3(0, 3.6, 4.6)))
 	_luzes.aplicar_hora(Dia.hora)
@@ -1698,3 +1718,237 @@ func _body(shape: Shape3D, position: Vector3, body_name: String = "", yaw: float
 	collision.shape = shape
 	body.add_child(collision)
 	add_child(body)
+
+
+# --- os marcos de fé (#52) -------------------------------------------------------
+
+## O TERREIRO E A GAMELEIRA, os dois marcos de fé que o vale não tinha (o
+## cruzeiro, a igreja, a capela velha e o cemitério já estavam). Feitos com o
+## que o catálogo tem — a casa de taipa, o pote, a fogueira, a árvore da mata
+## larga, que o almanaque chama de gameleira — e o resto por código: nenhuma
+## peça foi gerada para eles.
+func _build_marcos_de_fe() -> void:
+	_build_terreiro()
+	_build_gameleira()
+
+
+## "Taipa caiada, palha no telhado, porta fechada. Dois mastros com pano branco,
+## e potes de barro alinhados na parede." A casa de frente para a rua, que fica
+## a leste; o terreiro de chão batido na frente dela, com o fogo; e uma linha de
+## árvores entre o terreiro e a rua — "a casa está atrás da linha de árvores".
+func _build_terreiro() -> void:
+	var centro := ground_position(_u(TERREIRO_M))
+	ancoras["Terreiro"] = centro
+	var frente := Vector3.RIGHT
+	var lado := Vector3.BACK
+	var giro := atan2(frente.x, frente.z)
+	ancoras["TerreiroFrente"] = frente
+	# O chão batido, drapeado no terreno como o terreiro das casas.
+	var cantos := PackedVector2Array()
+	for canto in [Vector2(-5.5, -5.0), Vector2(5.5, -5.0), Vector2(5.5, 4.5), Vector2(-5.5, 4.5)]:
+		var ponto: Vector3 = centro + lado * canto.x + frente * canto.y
+		cantos.append(Vector2(ponto.x, ponto.z))
+	_region._add_polygon("Terreiro de santo", cantos, 0.03, Color("958d79"), false, _terreiro_material())
+	# A casa, menor que a de morar, atrás do terreiro.
+	var casa := ground_position(centro - frente * 3.6)
+	var modelo: Node3D = null
+	if estilo_tripo():
+		modelo = CatalogoAssets.instanciar("casa_taipa", self, casa, 0.72, giro)
+		if modelo != null:
+			CatalogoAssets.colisao("casa_taipa", modelo, self, casa, 0.72, giro)
+	if modelo == null:
+		_house(casa, Color("efe8d8"), Color("8a6a3f"))
+	# Os potes de barro alinhados na parede da frente.
+	for i in 4:
+		var na_parede: Vector3 = casa + frente * 2.4 + lado * (-1.8 + float(i) * 1.2)
+		_adereco("pote", ground_position(na_parede), giro + float(i), 0.62)
+	# Os dois mastros, com o pano branco no alto.
+	for lado_do_mastro in [-1.0, 1.0]:
+		_mastro(ground_position(centro + lado * lado_do_mastro * 3.6 + frente * 1.2))
+	# O fogo, no meio do terreiro.
+	_fogo_do_terreiro = _adereco("fogueira", ground_position(centro + frente * 1.0), giro)
+	# A linha de árvores entre o terreiro e a rua, com moita nos vãos: de quem
+	# passa na rua, a casa fica atrás dela.
+	var especies := ["mata_alta", "jaqueira", "mata_larga", "embauba", "mata_alta"]
+	for i in especies.size():
+		var onde: Vector3 = centro + frente * 8.5 + lado * (-8.0 + float(i) * 4.0)
+		_arvore(str(especies[i]), onde, 0.9 + 0.08 * float(i % 3), float(i) * 1.7)
+	for i in 4:
+		var no_vao: Vector3 = centro + frente * (9.5 + 0.6 * float(i % 2)) + lado * (-6.0 + float(i) * 4.0)
+		_adereco("moita", ground_position(no_vao), float(i) * 2.1, 1.35)
+
+
+## Um mastro de madeira com o pano branco no alto.
+func _mastro(pe: Vector3) -> void:
+	var madeira := FloraReconcavo.material(Color("6b4a2c"))
+	var pau := MeshInstance3D.new()
+	var cilindro := CylinderMesh.new()
+	cilindro.top_radius = 0.05
+	cilindro.bottom_radius = 0.07
+	cilindro.height = 3.6
+	pau.mesh = cilindro
+	pau.material_override = madeira
+	pau.position = pe + Vector3.UP * 1.8
+	add_child(pau)
+	var pano := MeshInstance3D.new()
+	var tecido := BoxMesh.new()
+	tecido.size = Vector3(0.03, 0.75, 0.62)
+	pano.mesh = tecido
+	pano.material_override = FloraReconcavo.material(Color("f3efe4"), 0.9)
+	pano.position = pe + Vector3(0.0, 3.15, 0.33)
+	add_child(pano)
+	var corpo := StaticBody3D.new()
+	corpo.name = "MastroColisao"
+	var forma := CollisionShape3D.new()
+	var haste := CylinderShape3D.new()
+	haste.radius = 0.1
+	haste.height = 3.6
+	forma.shape = haste
+	corpo.add_child(forma)
+	corpo.position = pe + Vector3.UP * 1.8
+	add_child(corpo)
+
+
+## "A árvore é maior do que qualquer coisa que o arraial construiu. As raízes
+## descem por cima de um monte baixo e branco": o sambaqui, monte de concha, e a
+## gameleira em cima dele, com fitas no tronco e cuias de barro entre as raízes.
+## A árvore não entra na lista das árvores nomeadas: não é lenha nem ficha de
+## almanaque — "a gameleira é morada de Iroko, e não se corta".
+## O SAMBAQUI: o meio-eixo do domo (raio e altura) e quanto dele fica enterrado.
+## Enterrado assim, a borda sobe a uns 40 graus — rampa que se anda (o chão do
+## corpo vai até 46), e não degrau.
+const RAIO_DO_SAMBAQUI := 5.0
+const ALTURA_DO_SAMBAQUI := 1.5
+const ENTERRADO := 0.5
+
+
+## O PÉ DO TRONCO de um modelo: o meio dos vértices mais baixos, no mundo. As
+## raízes se abrem para todo lado, e o meio delas é o tronco.
+func _pe_do_tronco(modelo: Node3D) -> Vector3:
+	var pontos: Array[Vector3] = []
+	var mais_baixo := INF
+	for no in modelo.find_children("*", "MeshInstance3D", true, false):
+		var mi := no as MeshInstance3D
+		if mi.mesh == null:
+			continue
+		for superficie in mi.mesh.get_surface_count():
+			var vertices: PackedVector3Array = mi.mesh.surface_get_arrays(superficie)[Mesh.ARRAY_VERTEX]
+			for v in vertices:
+				var global: Vector3 = mi.global_transform * v
+				pontos.append(global)
+				mais_baixo = minf(mais_baixo, global.y)
+	if pontos.is_empty():
+		return Vector3.INF
+	var soma := Vector3.ZERO
+	var quantos := 0
+	for p in pontos:
+		if p.y < mais_baixo + 1.2:
+			soma += p
+			quantos += 1
+	return soma / float(quantos) if quantos > 0 else Vector3.INF
+
+
+## CONCHA, E NÃO REBOCO: um salpicado de dois tons, que de perto se lê como
+## milhões de conchas e de longe como um monte claro.
+func _material_de_concha() -> StandardMaterial3D:
+	var ruido := FastNoiseLite.new()
+	ruido.noise_type = FastNoiseLite.TYPE_CELLULAR
+	ruido.frequency = 0.03
+	ruido.seed = 1887
+	var cores := Gradient.new()
+	cores.set_color(0, Color("6f6757"))
+	cores.set_color(1, Color("cdc6b2"))
+	var textura := NoiseTexture2D.new()
+	textura.noise = ruido
+	textura.seamless = true
+	textura.color_ramp = cores
+	var material := StandardMaterial3D.new()
+	material.albedo_texture = textura
+	material.uv1_scale = Vector3(2.0, 2.0, 2.0)
+	material.roughness = 0.95
+	return material
+
+
+func _build_gameleira() -> void:
+	var chao := ground_position(_u(GAMELEIRA_M))
+	ancoras["Gameleira"] = chao
+	# O SAMBAQUI: um domo baixo e largo, quase todo enterrado, para a borda ser
+	# rampa e não degrau (um corpo sobe por ela andando).
+	var domo := SphereMesh.new()
+	domo.radius = RAIO_DO_SAMBAQUI
+	domo.height = ALTURA_DO_SAMBAQUI * 2.0
+	domo.radial_segments = 28
+	domo.rings = 10
+	var monte := MeshInstance3D.new()
+	monte.name = "Sambaqui"
+	monte.mesh = domo
+	monte.material_override = _material_de_concha()
+	monte.position = chao - Vector3.UP * ENTERRADO
+	add_child(monte)
+	var corpo := StaticBody3D.new()
+	corpo.name = "SambaquiColisao"
+	var forma := CollisionShape3D.new()
+	forma.shape = domo.create_trimesh_shape()
+	corpo.add_child(forma)
+	corpo.position = monte.position
+	add_child(corpo)
+	var topo := chao + Vector3.UP * (ALTURA_DO_SAMBAQUI - ENTERRADO)
+	ancoras["Gameleira"] = topo
+	# MAIOR QUE A MATA EM VOLTA: a gameleira é "maior do que qualquer coisa que
+	# o arraial construiu", e as árvores da mata são do mesmo modelo.
+	var tamanho := 2.6
+	var arvore: Node3D = null
+	if estilo_tripo():
+		arvore = CatalogoAssets.instanciar("mata_larga", self, topo - Vector3(0.0, _region.ARVORE_AFUNDADA, 0.0), tamanho, 0.7)
+		if arvore != null:
+			# O TRONCO NO MEIO DO MONTE: o pivô do modelo não é o pé do tronco, e
+			# a árvore nascia ao lado do sambaqui em vez de em cima dele.
+			var pe := _pe_do_tronco(arvore)
+			if pe.is_finite():
+				arvore.global_position += Vector3(topo.x - pe.x, 0.0, topo.z - pe.z)
+			CatalogoAssets.colisao("mata_larga", arvore, self, topo, tamanho, 0.7)
+	if arvore == null:
+		var feita: Dictionary = FloraReconcavo.especie("mata_alta", tamanho * 1.15)
+		var malha := MeshInstance3D.new()
+		malha.name = "Gameleira"
+		malha.mesh = feita.mesh
+		malha.position = topo
+		add_child(malha)
+		var tronco := StaticBody3D.new()
+		var forma_do_tronco := CollisionShape3D.new()
+		var cilindro := CylinderShape3D.new()
+		cilindro.radius = float(feita.get("trunk_radius", 0.6))
+		cilindro.height = 4.0
+		forma_do_tronco.shape = cilindro
+		tronco.add_child(forma_do_tronco)
+		tronco.position = topo + Vector3.UP * 2.0
+		add_child(tronco)
+	# As fitas no tronco, e as cuias de barro entre as raízes.
+	var raio_do_tronco := float(CatalogoAssets.PECAS["mata_larga"].get("tronco", 0.5)) * tamanho
+	var cores := [Color("b8352d"), Color("f2efe6"), Color("2f5d93"), Color("d9a730"), Color("f2efe6")]
+	for i in cores.size():
+		var angulo := TAU * float(i) / float(cores.size()) + 0.4
+		var fita := MeshInstance3D.new()
+		var tira := BoxMesh.new()
+		tira.size = Vector3(0.05, 0.55, 0.09)
+		fita.mesh = tira
+		fita.material_override = FloraReconcavo.material(cores[i], 0.85)
+		fita.position = topo + Vector3(cos(angulo), 0.0, sin(angulo)) * (raio_do_tronco + 0.04) + Vector3.UP * (1.45 + 0.12 * float(i % 2))
+		fita.rotation.y = -angulo
+		add_child(fita)
+	for i in 4:
+		var angulo := TAU * float(i) / 4.0 + 0.9
+		var cuia := MeshInstance3D.new()
+		var bojo := SphereMesh.new()
+		bojo.radius = 0.2
+		bojo.height = 0.2
+		bojo.is_hemisphere = true
+		cuia.mesh = bojo
+		cuia.material_override = FloraReconcavo.material(Color("8a5a35"), 0.9)
+		cuia.rotation.x = PI
+		var raio := raio_do_tronco + 1.3
+		var onde: Vector3 = topo + Vector3(cos(angulo), 0.0, sin(angulo)) * raio
+		# Em cima do monte, que ali já desceu um tanto.
+		var no_monte := ALTURA_DO_SAMBAQUI * sqrt(maxf(0.0, 1.0 - pow(raio / RAIO_DO_SAMBAQUI, 2.0))) - ENTERRADO
+		cuia.position = Vector3(onde.x, chao.y + no_monte + 0.12, onde.z)
+		add_child(cuia)

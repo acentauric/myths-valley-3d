@@ -5,6 +5,7 @@ extends Node3D
 
 const NPCS := "res://data/npcs_3d.json"
 const TeclasMovimento = preload("res://scripts/prototipo_3d/teclas_movimento.gd")
+const MarcosDaFe = preload("res://scripts/prototipo_3d/marcos_da_fe.gd")
 const CaixaDePergunta = preload("res://scripts/prototipo_3d/caixa_de_pergunta.gd")
 const TelaCarregamento = preload("res://scripts/prototipo_3d/tela_carregamento.gd")
 const TemaMenu = preload("res://scripts/prototipo_3d/tema_menu.gd")
@@ -74,6 +75,9 @@ var _cadeias: Dictionary = {}
 var _relogio_pausado_antes := false
 ## A pergunta da tecla de adiantar a hora, enquanto está aberta.
 var _pergunta_do_relogio = null
+## OS MARCOS DE FÉ (#52): o cruzeiro, a igreja, a capela velha, o cemitério, o
+## terreiro e a gameleira — e o que acontece neles (`marcos_da_fe.gd`).
+var marcos: Node
 ## A seta da missão acompanhada (seta_missao.gd).
 var _seta
 ## O que o HUD diz quando o caderno não tem missão aberta: o convite do começo,
@@ -527,6 +531,14 @@ func _ready() -> void:
 	# Os corpos de quem anda no vale entram na luz de dentro dos cômodos — agora
 	# que os moradores e o Pedro existem (ver `Interiores.marcar_os_corpos`).
 	interiores.marcar_os_corpos()
+	# OS MARCOS DE FÉ (#52): o rito, a entrada numa fé e a troca, no lugar de
+	# cada um. Antes da partida salva, que pode estar no meio de uma missão de
+	# fé. A escolha só se abre depois que a Dona Zefa mostra as três.
+	marcos = MarcosDaFe.new()
+	marcos.name = "MarcosDaFe"
+	add_child(marcos)
+	marcos.configurar(world, player, hud, interiores)
+	marcos.liberada = func() -> bool: return Fe.ativa != ""
 	interiores.entrou.connect(_ao_mudar_de_lado.unbind(1))
 	interiores.saiu.connect(_ao_mudar_de_lado.unbind(1))
 	# A PARTIDA SALVA entra depois de o vale estar montado — moradores, Pedro,

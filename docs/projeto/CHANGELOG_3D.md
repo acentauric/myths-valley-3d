@@ -40,6 +40,23 @@ atualize esse arquivo e este documento juntos.
   mira a cabeça de três quartos com luz de estúdio num mundo próprio e guarda a foto. A
   teia social (lista e página) e o diário (o rosto de quem deu a missão) usam a foto; o
   desenho 2D fica de reserva até ela sair, e sem placa de vídeo (`tests/teia_social.gd`).
+- **A fé chega ao chão do vale: os seis marcos, o rito e a teia da fé no K** (#52). As
+  três fés já estavam no vale (os autoloads `Fe`, `Ritos` e `Afinidade` do 2D),
+  sem lugar onde acontecer. Agora há seis marcos: o cruzeiro diante da igreja, o
+  ALTAR da igreja do Bom Jesus (por dentro da nave), a capela velha da rua do
+  mirante, o cemitério, e dois que o vale não tinha — o terreiro, na mata a poente da
+  rua do mirante, atrás de uma linha de árvores (casa de taipa caiada, dois mastros
+  com pano branco, potes de barro e o fogo, aceso à noite), e a gameleira do
+  sambaqui, na ponta da praia perto das pedras (a árvore maior que a mata, em cima de
+  um monte de concha, com fitas no tronco e cuias entre as raízes). Nada foi gerado: é
+  o que o catálogo tinha, e o resto por código. Perto de um marco, o E: no da sua fé,
+  o rito (fôlego, XP de fé e bênção, uma vez a cada sete dias — fora do prazo o marco
+  diz o dia em que a graça volta); no de outra, a troca, em duas perguntas, com o
+  preço de levar o acumulado (85%) e o social ditos antes do sim; sem fé, a entrada —
+  depois que a Dona Zefa mostrar as três. O Tab do K troca para a teia da fé, com a
+  página "Regras da fé": a fé de agora e as congeladas, a espera de cada marco, a
+  bênção, a festa e o preço de trocar. Falas nos três idiomas
+  (`data/marcos_fe.json`; `tests/fe_no_vale.gd`, falsificado).
 - **O relógio pode ser mexido, com aviso, confirmação e registro no save.** "Parada"
   voltou à passagem do tempo do AJUSTAR, e "Pausar o relógio no jogo" (Permitido, de
   fábrica, ou Bloqueado) voltou a ser opção. Parar o tempo — pela linha Relógio do

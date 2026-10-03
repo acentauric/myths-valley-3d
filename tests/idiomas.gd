@@ -35,6 +35,8 @@ var _pendentes := 0
 const TRADUZIDOS := {
 	"res://data/missoes_guia.json": ["texto", "resumo", "nome"],
 	"res://data/historico_3d.json": ["titulo", "estado"],
+	# A fé (#52): o que os marcos dizem.
+	"res://data/marcos_fe.json": ["linhas", "texto", "convite", "resumo", "pratica"],
 }
 
 ## O QUE AINDA NÃO ESTÁ NOS TRÊS, e por quê. Esvaziar esta lista é o trabalho;

@@ -62,6 +62,18 @@ var _roads: Array[Dictionary] = []
 var _rivers: Array[Dictionary] = []
 var _shore_access_routes: Array[Dictionary] = []
 var _point_positions: Array[Vector2] = []
+## CLAREIRAS PEDIDAS DE FORA, em unidades: lugares que o mapa não tem e o vale
+## põe — o terreiro e a gameleira do sambaqui (#52). A mata, a restinga da orla e
+## o sub-bosque não plantam nelas.
+##
+## SEM MEXER NO RESTO DA MATA. O plantio é um sorteio com semente: cada árvore
+## aceita puxa a espécie, o tamanho e o giro da mesma fila de números. Recusar o
+## ponto da clareira na hora do sorteio desloca a fila, e a mata INTEIRA nasce em
+## outro lugar — o tronco que estava longe da lenha da casa de taipa passou a
+## estar perto dela. Então a árvore da clareira é sorteada como antes, e só não
+## é plantada (`_em_clareira`, no instante de plantar).
+var clareiras: Array[Vector2] = []
+const RAIO_DAS_CLAREIRAS := 8.0
 var _elevation_samples: Array[Dictionary] = []
 ## Altura já calculada de cada vértice das malhas do terreno: vizinhos da subdivisão
 ## repetem os mesmos pontos, e ground_height_at percorre todas as amostras a cada vez.
@@ -1469,6 +1481,8 @@ func _build_forest(configuration: Dictionary) -> void:
 			var point: Vector2 = group[i]
 			var scale := rng.randf_range(0.8, 1.25)
 			var yaw := rng.randf_range(0.0, TAU)
+			if _em_clareira(point):
+				continue
 			var ground := ground_height_at(Vector3(point.x, 0, point.y))
 			var transformacao := Transform3D(Basis.from_euler(Vector3(0, yaw, 0)).scaled(Vector3.ONE * scale), Vector3(point.x, ground - ARVORE_AFUNDADA, point.y)) * base
 			# `base` centraliza a malha do GLB e desloca a origem local. O ponto
@@ -1501,7 +1515,10 @@ func _build_sub_bosque(arvores_mata: Array[Vector2], rng: RandomNumberGenerator)
 			continue
 		var chao := ground_height_at(Vector3(ponto.x, 0, ponto.y))
 		var escala := rng.randf_range(0.7, 1.3)
-		transforms.append(Transform3D(Basis.from_euler(Vector3(0, rng.randf() * TAU, 0)).scaled(Vector3.ONE * escala), Vector3(ponto.x, chao - 0.03, ponto.y)) * (tufo.base as Transform3D))
+		var giro_do_tufo := rng.randf() * TAU
+		if _em_clareira(ponto):
+			continue
+		transforms.append(Transform3D(Basis.from_euler(Vector3(0, giro_do_tufo, 0)).scaled(Vector3.ONE * escala), Vector3(ponto.x, chao - 0.03, ponto.y)) * (tufo.base as Transform3D))
 	if not transforms.is_empty():
 		_multimesh_em_blocos("Sub-bosque", tufo.mesh, transforms, LOD_SUB_BOSQUE)
 
@@ -1685,9 +1702,10 @@ func _build_coast_palms(rng: RandomNumberGenerator) -> void:
 					var local: String = restinga[rng.randi_range(0, restinga.size() - 1)]
 					var malha_local: Dictionary = malhas_restinga[local]
 					var giro_livre := rng.randf_range(0.0, TAU)
-					(transforms_restinga[local] as Array[Transform3D]).append(Transform3D(Basis.from_euler(Vector3(0, giro_livre, 0)).scaled(Vector3.ONE * scale), Vector3(candidate.x, ground - ARVORE_AFUNDADA, candidate.y)) * (malha_local.base as Transform3D))
-					_tree_trunks.append({"point": candidate, "ground": ground, "height": minf(float(malha_local.altura) * scale, 4.0), "radius": float(malha_local.tronco) * scale, "especie": local})
-				else:
+					if not _em_clareira(candidate):
+						(transforms_restinga[local] as Array[Transform3D]).append(Transform3D(Basis.from_euler(Vector3(0, giro_livre, 0)).scaled(Vector3.ONE * scale), Vector3(candidate.x, ground - ARVORE_AFUNDADA, candidate.y)) * (malha_local.base as Transform3D))
+						_tree_trunks.append({"point": candidate, "ground": ground, "height": minf(float(malha_local.altura) * scale, 4.0), "radius": float(malha_local.tronco) * scale, "especie": local})
+				elif not _em_clareira(candidate):
 					var transformacao := Transform3D(Basis.from_euler(Vector3(0, yaw, 0)).scaled(Vector3.ONE * scale), Vector3(candidate.x, ground - ARVORE_AFUNDADA, candidate.y)) * lean * modelo_base
 					transforms.append(transformacao)
 					# O ponto de plantio serve à interação; a colisão segue a base
@@ -1979,6 +1997,14 @@ func _garantir_grade_troncos() -> void:
 func _near_interest(point: Vector2, radius: float) -> bool:
 	for interest in _point_positions:
 		if point.distance_squared_to(interest) < radius * radius:
+			return true
+	return false
+
+
+## O ponto cai numa clareira pedida de fora? (Ver `clareiras`.)
+func _em_clareira(point: Vector2) -> bool:
+	for clareira in clareiras:
+		if point.distance_squared_to(clareira) < RAIO_DAS_CLAREIRAS * RAIO_DAS_CLAREIRAS:
 			return true
 	return false
 
