@@ -40,7 +40,8 @@ func abrir(world: Node3D, jogador: Node3D, pai_ui: Control) -> void:
 	_tamanho_total = maxf(30.0, minf(frame.size.y, por_largura) if world.has_map_frame() else maxf(frame.size.y, por_largura))
 	# Começa aproximado no jogador, para ver logo onde se está.
 	_camera.size = minf(_tamanho_total, 420.0 / world.get_meters_per_unit())
-	_alvo = Vector3(jogador.global_position.x, 0, jogador.global_position.z)
+	var aqui: Vector3 = jogador.posicao_no_mapa() if jogador.has_method("posicao_no_mapa") else jogador.global_position
+	_alvo = Vector3(aqui.x, 0, aqui.z)
 	_limitar()
 	# Da altura da câmera o nevoeiro apagaria tudo: só esta vista fica sem névoa.
 	var ambiente: Environment = get_viewport().world_3d.environment
@@ -128,7 +129,7 @@ func _atualizar() -> void:
 		marcador.position = ponto + Vector2(5, -13)
 		marcador.visible = Rect2(Vector2.ZERO, tela).has_point(ponto)
 	if is_instance_valid(_voce) and is_instance_valid(_jogador):
-		var ponto := _camera.unproject_position(_jogador.global_position)
+		var ponto := _camera.unproject_position(_jogador.posicao_no_mapa() if _jogador.has_method("posicao_no_mapa") else _jogador.global_position)
 		# Acima do ponto, para não cobrir o marcador de um lugar onde o jogador está.
 		_voce.reset_size()
 		_voce.position = ponto - Vector2(_voce.size.x * 0.5, _voce.size.y + 18.0)

@@ -90,7 +90,11 @@ func _physics_process(delta: float) -> void:
 	# estar de pé, e ela não anda sem saber de quem se aproximar.
 	if _cadeia.jogador == null:
 		_cadeia.jogador = jogador
-	var para_jogador := jogador.global_position - global_position
+	# ONDE O JOGADOR ESTÁ NO VALE: dentro da igreja, a porta dela. O cômodo
+	# mora longe do vale (ver `interiores.gd`), e seguir o corpo lá dentro
+	# era atravessar o mapa correndo; o Pedro espera na porta.
+	var onde_esta: Vector3 = jogador.posicao_no_mapa() if jogador.has_method("posicao_no_mapa") else jogador.global_position
+	var para_jogador := onde_esta - global_position
 	para_jogador.y = 0.0
 	var distancia := para_jogador.length()
 	var direcao := Vector3.ZERO
@@ -100,7 +104,7 @@ func _physics_process(delta: float) -> void:
 		velocidade = CORRER if distancia > CORRER_ALEM else ANDAR
 	_mover(direcao, velocidade, delta)
 	if direcao == Vector3.ZERO:
-		_olhar_para(jogador.global_position, delta)
+		_olhar_para(onde_esta, delta)
 	_atualizar_animacao(delta)
 	_atualizar_interacao(delta)
 	_verificar_anoitecer()

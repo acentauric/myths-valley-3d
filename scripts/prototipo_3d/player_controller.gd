@@ -670,6 +670,10 @@ func is_swimming() -> bool:
 ## Chão sob os pés para o som do passo: madeira no píer, na ponte e na canoa; água rasa
 ## ou funda conforme a lâmina; senão o que o cenário diz (grama, terra, areia).
 func chao_dos_pes() -> String:
+	# Dentro de uma construção o chão é de lajota e tábua, e não o do mapa —
+	# que, longe do vale onde o cômodo mora, responderia grama.
+	if no_interior():
+		return "madeira"
 	var profundidade := _profundidade()
 	if profundidade > 0.35:
 		return "agua_funda"
@@ -725,6 +729,38 @@ func _back_to_land() -> void:
 	if animator and animator.has_method("finish_jump"):
 		animator.finish_jump(0.0)
 	navigation_status.emit("De volta à terra firme.")
+
+
+## DENTRO DE UMA CONSTRUÇÃO, a porta de fora por onde se entrou; fora, INF.
+##
+## O cômodo mora longe do vale (ver `interiores.gd`), e quem pergunta "onde
+## está o jogador?" para desenhar MAPA — a bússola, o mapa grande, o Pedro que
+## o segue, o save — tem de ouvir a porta, e não o lugar do cômodo no mundo.
+var porta_do_interior := Vector3.INF
+
+
+func no_interior() -> bool:
+	return porta_do_interior.is_finite()
+
+
+## Onde o jogador está NO VALE: a porta da construção, se ele estiver dentro dela.
+func posicao_no_mapa() -> Vector3:
+	return porta_do_interior if no_interior() else global_position
+
+
+## Põe o corpo noutro lugar de uma vez — a porta de uma construção —, de frente
+## para `rumo` (ângulo em Y) e com a câmera atrás dele.
+func teleportar(destino: Vector3, rumo: float) -> void:
+	_cancel_walk()
+	global_position = destino
+	velocity = Vector3.ZERO
+	_jumping = false
+	_jump_buffer_remaining = 0.0
+	visual.rotation.y = rumo
+	_yaw = rumo + PI
+	_pitch = -0.19
+	inspecting = false
+	_apply_camera()
 
 
 func reset_position() -> void:

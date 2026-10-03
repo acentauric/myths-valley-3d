@@ -40,6 +40,16 @@ atualize esse arquivo e este documento juntos.
   mira a cabeça de três quartos com luz de estúdio num mundo próprio e guarda a foto. A
   teia social (lista e página) e o diário (o rosto de quem deu a missão) usam a foto; o
   desenho 2D fica de reserva até ela sair, e sem placa de vídeo (`tests/teia_social.gd`).
+- **A igreja do Bom Jesus abre por dentro, o primeiro cômodo do vale** (#26). A porta da
+  fachada (E) leva, num escurecer, à nave caiada com a barra de azulejo azul, chão de
+  lajota, forro de tábua com as vigas, três janelas de cada lado que acompanham o dia,
+  o presbitério com os degraus e a grade de comunhão, o altar com o frontal vermelho e
+  o retábulo dourado com a cruz no nicho. Os móveis são peças que o catálogo já tinha
+  (banco, candeeiro, cruzeiro, pote), no estilo escolhido; nenhuma peça foi gerada. O
+  cômodo mora num canto do quadro, 400 acima do vale — fora dele, as paredes
+  invisíveis do mar o empurravam de volta —, e a bússola, o mapa, o Pedro (que espera
+  na porta) e o save leem a porta de fora. Dentro, o mato e as aves abafam, a seta da
+  missão some e o HUD diz onde se está (`tests/interiores.gd`).
 
 ## Em desenvolvimento — 02/10/2026
 

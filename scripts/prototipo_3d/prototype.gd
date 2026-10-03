@@ -30,6 +30,7 @@ const TelaControles = preload("res://scripts/prototipo_3d/tela_controles.gd")
 const TeiaTalentos = preload("res://scripts/prototipo_3d/teia_talentos.gd")
 const TeiaSocial = preload("res://scripts/prototipo_3d/teia_social.gd")
 const Retratos3D = preload("res://scripts/prototipo_3d/retratos_3d.gd")
+const Interiores = preload("res://scripts/prototipo_3d/interiores.gd")
 const MENU_SCENE := "res://scenes/prototipo_3d/abertura.tscn"
 ## Raio de terra firme em volta do ponto de chegada.
 const RAIO_CHEGADA := 6.0
@@ -93,6 +94,8 @@ var teia
 var social
 ## O estúdio dos retratos 3D dos moradores (retratos_3d.gd).
 var retratos
+## As construções por dentro (interiores.gd).
+var interiores
 ## As plaquinhas de nome dos moradores; somem com tela aberta (placas_nomes.gd).
 var placas
 ## A aba pedida no último `abrir_o_painel`, entregue à abertura crua.
@@ -493,8 +496,31 @@ func _ready() -> void:
 	achados.espalhar()
 	_comecar_no_lugar_pedido()
 	_atualizar_relogio()
+	# AS CONSTRUÇÕES POR DENTRO (interiores.gd), a começar pela igreja. Entra no
+	# vale por último de propósito: na soleira, o E da porta vale mais que o de
+	# qualquer outro nó, e quem entra depois ouve primeiro.
+	interiores = Interiores.new()
+	interiores.name = "Interiores"
+	add_child(interiores)
+	interiores.configurar(world, player, hud)
+	interiores.entrou.connect(_ao_mudar_de_lado.unbind(1))
+	interiores.saiu.connect(_ao_mudar_de_lado.unbind(1))
 	print("PROTOTYPE_READY: estilo=%s hora=%s moradores=%d user_dir=%s" % [Estilo.modo, Dia.texto_hora(), moradores.size(), OS.get_user_data_dir()])
 	_pedir_os_retratos()
+
+
+## Entrou ou saiu de uma construção: o som de fora abafa, o HUD diz onde se
+## está, e a seta da missão some lá dentro — ela apontaria para o vale através
+## da parede, de um lugar que não é o vale.
+func _ao_mudar_de_lado() -> void:
+	var qual: String = interiores.dentro()
+	if ambiente != null:
+		ambiente.abafado = 1.0 if qual != "" else 0.0
+	if qual != "":
+		hud.set_region_title(str(interiores.CONSTRUCOES[qual]["nome"]))
+	else:
+		hud.set_region_title(world.get_region_title())
+	_mostrar_a_acompanhada()
 
 
 ## AS FOTOS DOS MORADORES saem com o vale de pé e um respiro depois, para não
@@ -750,7 +776,9 @@ func _mostrar_a_acompanhada() -> void:
 	hud.set_objective(resumo, str(acompanhada.get("missao", "")))
 	hud.set_mission_step(int(acompanhada.get("passo", 0)), int(acompanhada.get("passos", 0)))
 	var alvo: Vector3 = acompanhada.get("alvo", Vector3.ZERO)
-	if alvo == Vector3.ZERO:
+	# Dentro de uma construção a seta some: ela apontaria para o vale através
+	# da parede, de um cômodo que mora longe dele (ver `interiores.gd`).
+	if alvo == Vector3.ZERO or player.no_interior():
 		_seta.limpar()
 	else:
 		_seta.definir_alvo(alvo, resumo)
@@ -1149,7 +1177,9 @@ func _texto_da_partida(chave: String) -> String:
 ## hora é o `Dia`, e o `Relogio` só a espelha (ver dia.gd).
 func estado_para_salvar() -> Dictionary:
 	var estado := {
-		"jogador": [player.global_position.x, player.global_position.y, player.global_position.z],
+		# Dentro de uma construção, o lugar no vale é a porta dela (ver
+		# `posicao_no_mapa`): carregar põe o jogador na soleira de fora.
+		"jogador": [player.posicao_no_mapa().x, player.posicao_no_mapa().y, player.posicao_no_mapa().z],
 		"giro": player.visual.rotation.y,
 		"hora": Dia.hora,
 		"horas_decorridas": Dia.horas_decorridas,
