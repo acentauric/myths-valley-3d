@@ -512,9 +512,17 @@ func _unhandled_input(event: InputEvent) -> void:
 			_pending_walk_click = event.position
 			_pending_walk_run = event.double_click
 		elif event.button_index == MOUSE_BUTTON_WHEEL_UP or event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
+			# A RODA TROCA O ITEM DA MÃO, como no 2D (#2): é o gesto que se faz o
+			# tempo todo no meio do trabalho. O zoom ficou no Ctrl+roda e no
+			# mais e menos (`mv_zoom_in`/`mv_zoom_out`). Para baixo é o espaço
+			# seguinte, como lá. Com mapa ou tela aberta este nó não ouve nada,
+			# então a roda de lá continua sendo de lá.
 			var para_cima: bool = event.button_index == MOUSE_BUTTON_WHEEL_UP
-			_aproximar_a_camera(para_cima)
-			get_viewport().set_input_as_handled()
+			if event.ctrl_pressed:
+				_aproximar_a_camera(para_cima)
+			else:
+				Inventario.selecionar(Inventario.anterior_da_mao() if para_cima else Inventario.proximo_da_mao())
+				get_viewport().set_input_as_handled()
 		_apply_camera()
 	if event.is_action_pressed("mv_zoom_in", true):
 		_aproximar_a_camera(true)
