@@ -1361,11 +1361,12 @@ func _abrir_personagens() -> void:
 ## CADA VAGA É UM CARTÃO: "No MENU de save, ao invés de abrir um combo embaixo
 ## para deletar o save, coloque o ícone dentro do próprio balão do save. Na
 ## esquerda pode colocar o ícone de editar o nome do save e deletar o save."
-## Clicar no cartão continua a partida (ou começa, na vaga vazia). Dentro dele,
-## à esquerda, o lápis edita o nome da vaga (`Partida.renomear`) e a lixeira a
-## apaga — no SEGUNDO clique, com o cartão dizendo o que se perde: vaga ocupada
-## nunca é apagada num toque (ver `scripts/ui/slots_tela.gd` no 2D). À direita,
-## a seta circular abre os PONTOS DE RESTAURAÇÃO da vaga
+## E depois: "me confundi. O correto é no lado direito." Clicar no cartão
+## continua a partida (ou começa, na vaga vazia). Dentro dele, à direita do
+## texto, o lápis edita o nome da vaga (`Partida.renomear`) e a lixeira a apaga
+## — no SEGUNDO clique, com o cartão dizendo o que se perde: vaga ocupada nunca
+## é apagada num toque (ver `scripts/ui/slots_tela.gd` no 2D). Depois deles, a
+## seta circular abre os PONTOS DE RESTAURAÇÃO da vaga
 ## (`pontos_de_restauracao.gd`) quando ela tem algum — inclusive vazia, depois
 ## de apagada, que é como apagar se desfaz.
 const PontosDeRestauracao = preload("res://scripts/prototipo_3d/pontos_de_restauracao.gd")
@@ -1393,8 +1394,8 @@ func _nome_da_vaga(slot: int, resumo: Dictionary) -> String:
 	return dado if dado != "" else str(resumo.get("nome", ""))
 
 
-## O CARTÃO DE UMA VAGA: o botão inteiro continua (ou começa); dentro dele, à
-## esquerda, o lápis e a lixeira da vaga ocupada, e à direita os pontos.
+## O CARTÃO DE UMA VAGA: o botão inteiro continua (ou começa); dentro dele, o
+## texto e, à direita, o lápis e a lixeira da vaga ocupada e a seta dos pontos.
 func _cartao_da_vaga(slot: int) -> Button:
 	var resumo := Salvamento.resumo(slot)
 	var ocupada := bool(resumo.get("existe", false))
@@ -1410,9 +1411,6 @@ func _cartao_da_vaga(slot: int) -> Button:
 	linha.add_theme_constant_override("separation", 2)
 	linha.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	cartao.add_child(linha)
-	if ocupada:
-		linha.add_child(_icone_da_vaga("Editar%d" % slot, "editar", "Editar o nome da vaga", func(): _editar_o_nome(slot)))
-		linha.add_child(_icone_da_vaga("Apagar%d" % slot, "apagar", "Apagar a partida", func(): _apagar_a_vaga(slot, nome)))
 	# DUAS LINHAS: o nome em cima, na letra dos botões, e a vaga e o dia embaixo,
 	# miúdos — numa linha só, ao lado dos ícones, o texto não cabia no cartão.
 	var textos := VBoxContainer.new()
@@ -1432,6 +1430,9 @@ func _cartao_da_vaga(slot: int) -> Button:
 	else:
 		texto.text = tr("VAGA %d · VAZIA") % slot
 		detalhe.text = tr("COMEÇAR AQUI")
+	if ocupada:
+		linha.add_child(_icone_da_vaga("Editar%d" % slot, "editar", "Editar o nome da vaga", func(): _editar_o_nome(slot)))
+		linha.add_child(_icone_da_vaga("Apagar%d" % slot, "apagar", "Apagar a partida", func(): _apagar_a_vaga(slot, nome)))
 	if not PontosDeRestauracao.listar(slot).is_empty():
 		linha.add_child(_icone_da_vaga("Pontos%d" % slot, "restaurar", "Pontos de restauração", func(): _pontos_da_vaga(slot), true))
 	return cartao

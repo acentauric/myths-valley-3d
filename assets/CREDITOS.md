@@ -78,6 +78,13 @@ publicar.
 | `assets/prototipo_3d/moveis/{rede_de_pesca,remos,ervas_secando,pilao,gamela}_tripo.glb` | o que diz quem mora na casa do Pedro e na da Zefa, Tripo Studio | `moveis/ORIGEM.md` e `tools/tripo/lote_2026-10-03b.json` |
 | `assets/prototipo_3d/personagens/quirino_tripo.glb` | o mestre Quirino, Tripo Studio (texto → 3D, Malha Smart, Auto Rig e animações prontas) | `personagens/ORIGEM.md` e `tools/tripo/lote_2026-10-03b.json` |
 
+### As luvas de couro (04/10/2026)
+
+| Arquivos | O que são | Registro |
+| --- | --- | --- |
+| `assets/prototipo_3d/itens/luvas_de_couro_tripo.glb` | a luva de couro do encaixe das Mãos, Tripo Studio (texto → 3D + Malha Smart) | `itens/ORIGEM.md` e `tools/tripo/lote_2026-10-04.json` |
+| `assets/sprites/itens/luvas_de_couro.png` | o ícone de 32 px das luvas na mochila, PixelLab (Pixflux, no estilo dos itens do 2D) | `tools/pixellab/gerar-luvas.ps1` e `assets/sprites/cofre/REGISTRO.tsv` |
+
 ### Capas dos cordéis (03/10/2026)
 
 | Arquivos | O que são | Registro |

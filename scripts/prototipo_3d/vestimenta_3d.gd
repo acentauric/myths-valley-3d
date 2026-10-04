@@ -7,8 +7,8 @@ extends RefCounted
 ## (`player_controller.gd`) vestem pelo mesmo caminho, daqui: o boneco nunca
 ## mostra o que o corpo no vale não mostra, nem o contrário.
 ##
-## Aparecem o que tem modelo: o chapéu na cabeça e, na mão, o machado (de ferro
-## ou de aço, que é o mesmo modelo) ou o facão. O gibão e o patuá ainda não têm
+## Aparecem o que tem modelo: o chapéu na cabeça, as luvas nas duas mãos e, na
+## mão, o machado (de ferro ou de aço, que é o mesmo modelo) ou o facão. O gibão e o patuá ainda não têm
 ## modelo, e nada aparece por eles. No estilo procedural só o machado, que é o
 ## que aquele estilo desenha: o procedural não ganha arte nova.
 
@@ -19,6 +19,19 @@ const CatalogoAssets = preload("res://scripts/prototipo_3d/catalogo_assets.gd")
 ## osso, no referencial dele).
 const NA_CABECA := {
 	"chapeu": {"peca": "chapeu", "metros": 0.42, "acima": 0.115, "frente": 0.012},
+}
+## Os ossos da raiz de cada dedo, pelo nome que segue o do osso da mão (Mixamo).
+const DEDOS := ["Thumb1", "Index1", "Middle1", "Ring1", "Pinky1"]
+## AS LUVAS, o encaixe das Mãos ("não é para armas, mas sim para luvas"): a
+## peça do catálogo, o comprimento da luva em metros (das pontas dos dedos à
+## boca do punho), quanto ela recua do osso da mão para o punho cobrir o pulso,
+## o deslocamento no quadro da mão (metros: X para o polegar, Z para a palma),
+## quanto ela engrossa no eixo da palma (o couro grosso cobre a mão dos dois
+## lados), o giro (graus) por cima do quadro, e quanto os dedos encolhem dentro
+## dela. O modelo é de mão direita; na esquerda vai espelhado. Os números saíram
+## de folhas de fotos do boneco (`scratch/foto/ajuste_luva.gd`).
+const NAS_MAOS := {
+	"luvas_de_couro": {"peca": "luvas_de_couro", "metros": 0.28, "recuo": 0.07, "deslocamento": Vector3(0.025, 0.0, -0.0075), "espessura": 1.25, "giro": Vector3.ZERO, "dedos": 0.1},
 }
 ## O MACHADO COM O CORPO PARADO: o jogador o leva a -30° em volta da pegada
 ## (`player_controller._atualizar_pose_machado`), e o boneco o mostra assim.
@@ -43,6 +56,13 @@ static func item_na_mao() -> String:
 	if Equipamento.em_uso("facao"):
 		return "facao"
 	return ""
+
+
+## O que o corpo mostra nas mãos agora (as luvas): o id do item, se ele tem
+## modelo, ou "".
+static func item_nas_maos() -> String:
+	var id := Equipamento.no_encaixe("maos")
+	return id if NAS_MAOS.has(id) else ""
 
 
 ## O que o corpo mostra na cabeça agora: o id do item, se ele tem modelo, ou "".
@@ -185,6 +205,117 @@ static func machado_procedural(pai: Node3D) -> void:
 	lamina.material_override = ferro
 	pai.add_child(lamina)
 	pai.set_meta("peca", "machado")
+
+
+## AS LUVAS NAS DUAS MÃOS (só no estilo Tripo): presas aos ossos das mãos, a
+## direita como o modelo vem e a esquerda espelhada. Devolve as âncoras postas
+## (para quem as tira depois).
+static func luvas(modelo: Node3D, id: String) -> Array[Node3D]:
+	var postas: Array[Node3D] = []
+	if not Estilo.tripo() or not NAS_MAOS.has(id):
+		return postas
+	var dedos := PackedInt32Array()
+	for lado in [["righthand", "LuvaDireita", false], ["lefthand", "LuvaEsquerda", true]]:
+		var ancora := _no_osso(modelo, str(lado[0]), str(lado[1]))
+		if ancora == null:
+			continue
+		if _luva(ancora, id, bool(lado[2])) != null:
+			postas.append(ancora)
+			var anexo := ancora.get_parent() as BoneAttachment3D
+			var esqueleto := anexo.get_parent() as Skeleton3D
+			for dedo in DEDOS:
+				var osso := esqueleto.find_bone(String(anexo.bone_name) + str(dedo))
+				if osso >= 0:
+					dedos.append(osso)
+	# OS DEDOS DENTRO DA LUVA: a luva é rígida, de dedos esticados, e a mão do
+	# modelo dobra os dedos (no parado, na pegada); dobrados, eles furariam o
+	# couro. Encolhidos desde o nó, ficam dentro dela. Só os dedos: do osso da
+	# mão pendem o machado e o facão, que não podem encolher junto.
+	if not dedos.is_empty():
+		var esqueleto := postas[0].get_parent().get_parent() as Skeleton3D
+		var encolhe := MaoNaLuva.new()
+		encolhe.name = "MaoNaLuva"
+		encolhe.ossos = dedos
+		encolhe.escala = float(NAS_MAOS[id].get("dedos", 1.0))
+		esqueleto.add_child(encolhe)
+		postas.append(encolhe)
+	return postas
+
+
+## Encolhe os dedos depois da animação, a cada quadro: o modificador do
+## esqueleto roda por último, e a animação não o desfaz. O Godot devolve a pose
+## de antes ao fim do quadro: sem o modificador, a mão volta ao tamanho dela.
+class MaoNaLuva extends SkeletonModifier3D:
+	var ossos := PackedInt32Array()
+	var escala := 1.0
+
+	func _process_modification_with_delta(_delta: float) -> void:
+		var esqueleto := get_skeleton()
+		if esqueleto == null:
+			return
+		for osso in ossos:
+			esqueleto.set_bone_pose_scale(osso, Vector3.ONE * escala)
+
+
+static func _luva(ancora: Node3D, id: String, esquerda: bool) -> Node3D:
+	var ajuste: Dictionary = NAS_MAOS[id]
+	var peca := str(ajuste["peca"])
+	var escala := ancora.global_basis.get_scale().x if ancora.is_inside_tree() else 1.0
+	# O pivô põe a luva no QUADRO DA MÃO (os eixos dela, medidos nos ossos dos
+	# dedos); dentro dele, na mão esquerda, um espelho, porque o modelo é de mão
+	# direita. A boca do punho recua para cobrir o pulso.
+	var pivo := Node3D.new()
+	pivo.name = "Pivo"
+	ancora.add_child(pivo)
+	var giro: Vector3 = ajuste["giro"]
+	pivo.basis = _quadro_da_mao(ancora, esquerda) * Basis.from_euler(Vector3(deg_to_rad(giro.x), deg_to_rad(giro.y), deg_to_rad(giro.z)))
+	var dentro: Node3D = pivo
+	if esquerda:
+		dentro = Node3D.new()
+		dentro.name = "Espelho"
+		dentro.scale = Vector3(-1.0, 1.0, 1.0)
+		pivo.add_child(dentro)
+	var tamanho := _tamanho_na_ancora(ancora, peca, float(ajuste["metros"]))
+	var deslocamento: Vector3 = ajuste.get("deslocamento", Vector3.ZERO)
+	var assento := Vector3(deslocamento.x, -float(ajuste["recuo"]), deslocamento.z) / maxf(escala, 0.0001)
+	var no := CatalogoAssets.instanciar(peca, dentro, assento, tamanho)
+	if no == null:
+		return null
+	no.set_meta("peca", peca)
+	# Mais grossa no eixo da palma, em volta do meio da luva (e não da origem
+	# do GLB, que fica fora do meio).
+	var espessura := float(ajuste.get("espessura", 1.0))
+	var meio: Vector3 = (no.get_meta("limites", AABB()) as AABB).get_center()
+	no.scale.z *= espessura
+	no.position.z -= meio.z * (espessura - 1.0)
+	return no
+
+
+## O QUADRO DA MÃO, no espaço do osso dela: o Y vai do pulso ao nó do dedo
+## médio, o X atravessa a palma do mínimo para o indicador (para o polegar), e
+## o Z sai da palma. Medido nas posições de descanso dos ossos dos dedos, e não
+## nos eixos do osso da mão, que cada rig vira de um jeito. A luva do modelo tem
+## os dedos no +Y, o polegar no +X e a palma no +Z; na mão esquerda, que vai
+## espelhada, o X do quadro aponta para longe do polegar.
+static func _quadro_da_mao(ancora: Node3D, esquerda: bool) -> Basis:
+	var anexo := ancora.get_parent() as BoneAttachment3D
+	var esqueleto := anexo.get_parent() as Skeleton3D if anexo != null else null
+	if esqueleto == null:
+		return Basis.IDENTITY
+	var osso := String(anexo.bone_name)
+	var mao := esqueleto.find_bone(osso)
+	var medio := esqueleto.find_bone(osso + "Middle1")
+	var indicador := esqueleto.find_bone(osso + "Index1")
+	var minimo := esqueleto.find_bone(osso + "Pinky1")
+	if mao < 0 or medio < 0 or indicador < 0 or minimo < 0:
+		return Basis.IDENTITY
+	var para_a_mao := esqueleto.get_bone_global_rest(mao).affine_inverse()
+	var eixo := (para_a_mao * esqueleto.get_bone_global_rest(medio).origin).normalized()
+	var lado := (para_a_mao * esqueleto.get_bone_global_rest(indicador).origin) - (para_a_mao * esqueleto.get_bone_global_rest(minimo).origin)
+	if esquerda:
+		lado = -lado
+	var x := (lado - eixo * lado.dot(eixo)).normalized()
+	return Basis(x, eixo, x.cross(eixo))
 
 
 ## O QUE VAI NA CABEÇA (só no estilo Tripo).

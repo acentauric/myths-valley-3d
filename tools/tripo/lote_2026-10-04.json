@@ -1,0 +1,13 @@
+{
+  "observacao": "Lote de 04/10/2026: as luvas de couro, a primeira peça do encaixe das Mãos (\"No campo mãos do inventário, não é para armas, mas sim para luvas\"; \"sobre a luva, pode gerar\"). Tripo Studio pela ponte do Playwright MCP com a extensão do Chrome, com tools/tripo/lote_studio.js: Modelo HD H3.1 com a textura 8K desligada (55 créditos) e Retopologia Malha Smart em quads com alvo de 1.500 faces (40 créditos), exportação GLB com textura 1K. Saldo da interface: 14.465 antes, 14.370 depois. O ícone de 32 px da mochila veio do PixelLab (tools/pixellab/gerar-luvas.ps1, cofre em assets/sprites/cofre/).",
+  "tarefas": {
+    "luvas_de_couro": {
+      "tarefa": "d640df1b-f21a-4ff8-bf1e-88c3cbd3e591",
+      "projeto": "43aff056-aad5-45be-8ebe-a4d990d039cf",
+      "pasta": "itens",
+      "faces": 1500,
+      "textura": "1k",
+      "prompt": "A single worn brown leather work glove for the right hand, seen from the back of the hand, fingers straight and close together, thumb slightly apart, short flared cuff, visible stitched seams, 19th-century rural Bahia farm glove. Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no text."
+    }
+  }
+}

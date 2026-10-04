@@ -5,7 +5,7 @@ extends SceneTree
 ##
 ## "No inventário, ao lado dos itens equipados, coloque o 3D do boneco com os
 ## itens equipados, igual nos jogos de RPG. Assim ele pode ver as alterações
-## conforme vai equipando." Oito perguntas:
+## conforme vai equipando." Nove perguntas:
 ##
 ##   1. ELE ESTÁ AO LADO DOS ENCAIXES: aberta a mochila, o boneco está à direita
 ##      da coluna dos encaixes, na altura dela, e a mochila inteira cabe na tela.
@@ -22,6 +22,11 @@ extends SceneTree
 ##   8. COM O BAÚ, O BONECO SAI: a mochila do baú é tela de transferir, e com o
 ##      boneco ela passava da altura da tela; sem ele, cabe, e o palco não
 ##      renderiza.
+##   9. AS LUVAS NAS DUAS MÃOS: as luvas de couro vão para o encaixe das Mãos
+##      ("não é para armas, mas sim para luvas") e aparecem nas duas mãos do
+##      boneco e do jogador; os dedos encolhem dentro delas, que são rígidas,
+##      e o machado na mão não muda de tamanho por isso; tiradas, saem dos dois
+##      e os dedos voltam.
 
 var falhas := 0
 var inventario
@@ -159,7 +164,52 @@ func _run() -> void:
 	var com_bau: Rect2 = mochila.transform * painel.get_global_rect()
 	_conferir(tela.encloses(com_bau), "com o baú aberto, a mochila não cabe na tela: %s" % str(com_bau))
 	_fechar_a_mochila(vale)
+
+	# --- 9. AS LUVAS NAS DUAS MÃOS -----------------------------------------------------
+	# O tamanho dos dedos é lido no meio da atualização do esqueleto: fora dela o
+	# Godot já devolveu a pose de antes dos modificadores.
+	var esqueletos: Array = do_jogador.find_children("*", "Skeleton3D", true, false)
+	_conferir(not esqueletos.is_empty(), "o corpo do jogador não tem esqueleto")
+	if not esqueletos.is_empty():
+		var esqueleto: Skeleton3D = esqueletos[0]
+		var dedo := esqueleto.find_bone("mixamorig_RightHandIndex1")
+		_conferir(dedo >= 0, "o esqueleto do jogador não tem o osso do indicador direito")
+		var dedo_no_quadro := [1.0]
+		esqueleto.skeleton_updated.connect(func() -> void: dedo_no_quadro[0] = esqueleto.get_bone_pose_scale(maxi(dedo, 0)).x)
+		inventario.selecionar(_espaco_de("machado"))
+		await _segundos(0.4)
+		var machado_antes := _escala_do_machado(do_jogador)
+		_conferir(machado_antes > 0.0, "com o machado escolhido na barra, o jogador não está com ele na mão")
+		inventario.adicionar("luvas_de_couro", 1)
+		equipamento.equipar_do_espaco(_espaco_de("luvas_de_couro"))
+		_conferir(equipamento.no_encaixe("maos") == "luvas_de_couro", "as luvas de couro não foram para o encaixe das Mãos (%s)" % equipamento.no_encaixe("maos"))
+		_abrir(vale)
+		await _segundos(0.5)
+		_conferir(boneco.pecas_vestidas().count("luvas_de_couro") == 2, "com as luvas nas Mãos, o boneco não está de luvas nas duas mãos (%s)" % str(boneco.pecas_vestidas()))
+		_fechar_a_mochila(vale)
+		await _segundos(0.4)
+		_conferir(_pecas(do_jogador).count("luvas_de_couro") == 2, "com as luvas nas Mãos, o jogador no vale não está de luvas nas duas mãos (%s)" % str(_pecas(do_jogador)))
+		_conferir(float(dedo_no_quadro[0]) < 0.5, "de luvas, os dedos do jogador não encolhem dentro delas, e furam o couro (escala %.2f)" % float(dedo_no_quadro[0]))
+		var machado_com := _escala_do_machado(do_jogador)
+		_conferir(absf(machado_com - machado_antes) <= 0.001 * maxf(machado_antes, 0.001), "de luvas, o machado na mão mudou de tamanho (%.3f → %.3f)" % [machado_antes, machado_com])
+		equipamento.desequipar("maos")
+		await _segundos(0.5)
+		_conferir(_pecas(do_jogador).count("luvas_de_couro") == 0, "tiradas as luvas, o jogador continua de luvas")
+		_conferir(float(dedo_no_quadro[0]) > 0.99, "tiradas as luvas, os dedos do jogador continuam encolhidos (escala %.2f)" % float(dedo_no_quadro[0]))
+		_abrir(vale)
+		await _segundos(0.5)
+		_conferir(boneco.pecas_vestidas().count("luvas_de_couro") == 0, "tiradas as luvas, o boneco continua de luvas")
+		_fechar_a_mochila(vale)
+		inventario.selecionar(-1)
 	_fechar()
+
+
+## O tamanho do machado na mão de um corpo (a escala dele no mundo), ou 0 sem ele.
+func _escala_do_machado(modelo: Node3D) -> float:
+	for no in modelo.find_children("*", "Node3D", true, false):
+		if str(no.get_meta("peca", "")) == "machado" and not no.is_queued_for_deletion():
+			return (no as Node3D).global_basis.get_scale().x
+	return 0.0
 
 
 func _abrir(vale) -> void:
@@ -218,7 +268,7 @@ func _segundos(s: float) -> void:
 func _fechar() -> void:
 	print("")
 	if falhas == 0:
-		print("BONECO_OK: aberta a mochila, o boneco está ao lado dos encaixes e ela cabe na tela; é o corpo do jogador, parado no idle; só desenha com a mochila aberta; o chapéu, o machado e o facão da barra aparecem nele e no jogador, e somem dos dois; o mouse o gira por cima e não fora; o chapéu solto em cima dele vai para a cabeça; e com o baú aberto ele sai")
+		print("BONECO_OK: aberta a mochila, o boneco está ao lado dos encaixes e ela cabe na tela; é o corpo do jogador, parado no idle; só desenha com a mochila aberta; o chapéu, o machado e o facão da barra aparecem nele e no jogador, e somem dos dois; o mouse o gira por cima e não fora; o chapéu solto em cima dele vai para a cabeça; com o baú aberto ele sai; e as luvas das Mãos vestem as duas mãos dele e do jogador, com os dedos dentro e o machado do mesmo tamanho, e saem dos dois")
 	else:
 		print("boneco: %d falha(s)" % falhas)
 	quit(1 if falhas > 0 else 0)

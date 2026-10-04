@@ -49,6 +49,7 @@ var camera: Camera3D
 ## O que o boneco está vestindo agora, como o `Vestimenta3D` diz.
 var vestido_na_mao := ""
 var vestido_na_cabeca := ""
+var vestido_nas_maos := ""
 var giro := GIRO_INICIAL
 
 var _mochila
@@ -237,11 +238,12 @@ func _process(delta: float) -> void:
 
 
 ## VESTE O BONECO com o que o corpo mostra agora (`Vestimenta3D`): o chapéu na
-## cabeça e, na mão, o machado ou o facão. Só refaz o que mudou.
+## cabeça, as luvas nas mãos e, na mão, o machado ou o facão. Só refaz o que mudou.
 func vestir() -> void:
 	var na_mao := Vestimenta3D.item_na_mao()
 	var na_cabeca := Vestimenta3D.item_na_cabeca()
-	if na_mao == vestido_na_mao and na_cabeca == vestido_na_cabeca and _anexos.all(func(a) -> bool: return is_instance_valid(a)):
+	var nas_maos := Vestimenta3D.item_nas_maos()
+	if na_mao == vestido_na_mao and na_cabeca == vestido_na_cabeca and nas_maos == vestido_nas_maos and _anexos.all(func(a) -> bool: return is_instance_valid(a)):
 		return
 	for anexo in _anexos:
 		if is_instance_valid(anexo):
@@ -250,8 +252,12 @@ func vestir() -> void:
 	_anexos.clear()
 	vestido_na_mao = na_mao
 	vestido_na_cabeca = na_cabeca
+	vestido_nas_maos = nas_maos
 	if modelo == null:
 		return
+	if nas_maos != "":
+		for ancora in Vestimenta3D.luvas(modelo, nas_maos):
+			_anexos.append(_raiz(ancora))
 	if na_cabeca != "":
 		var cabeca := Vestimenta3D.ancora_da_cabeca(modelo)
 		if cabeca != null:

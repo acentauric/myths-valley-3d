@@ -442,6 +442,19 @@ const ITENS := {
 	## numerais." O facão deixou de ser equipamento de encaixe (e o efeito de
 	## cintura dele foi junto): é ferramenta da barra de mão, como o machado.
 	## A partida salva com ele vestido o devolve à barra (`Partida`).
+	## AS LUVAS DE COURO, a primeira peça do encaixe das Mãos — "não é para armas,
+	## mas sim para luvas". Couro curtido de vaqueiro, para a lida: com as mãos
+	## guardadas o trabalho cansa menos (o mesmo -5% de fôlego gasto que o facão
+	## dava na cintura). Vendem no balcão.
+	"luvas_de_couro": {
+		"nome": "Luvas de couro",
+		"tipo": "equipamento",
+		"encaixe": "maos",
+		"efeito": {"eficiencia": -0.05},
+		"resumo": "Couro curtido de vaqueiro. Com as mãos guardadas, a lida cansa menos.",
+		"icone": "luvas_de_couro",
+		"empilhavel": false,
+	},
 	"facao": {
 		"nome": "Facão de mato",
 		"tipo": "ferramenta",

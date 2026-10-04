@@ -335,8 +335,9 @@ func _conferir_a_arma_das_maos() -> void:
 ## A TELA DE VAGAS: três cartões, o da ocupada com o nome de quem joga. "Ao
 ## invés de abrir um combo embaixo para deletar o save, coloque o ícone dentro do
 ## próprio balão do save. Na esquerda pode colocar o ícone de editar o nome do
-## save e deletar o save." O lápis e a lixeira estão DENTRO do cartão, à
-## esquerda do texto, e não há mais botão embaixo; o lápis grava o nome da vaga
+## save e deletar o save." E depois: "me confundi. O correto é no lado
+## direito." O lápis e a lixeira estão DENTRO do cartão, à direita do texto, e
+## não há mais botão embaixo; o lápis grava o nome da vaga
 ## no cartão, e gravar a partida não o apaga; a lixeira só apaga no SEGUNDO
 ## clique, e tocar no cartão entre os dois desiste; apagada, a vaga guarda o
 ## ponto de restauração e mostra a seta dos pontos; e a vaga vazia começa ali.
@@ -367,7 +368,7 @@ func _conferir_as_vagas() -> void:
 	if editar == null or apagar == null or texto == null:
 		return
 	var textos: Control = vaga_2.get_node("Linha/Textos")
-	_conferir(editar.get_index() < textos.get_index() and apagar.get_index() < textos.get_index(), "o lápis e a lixeira não estão à esquerda do texto do cartão")
+	_conferir(editar.get_index() > textos.get_index() and apagar.get_index() > textos.get_index(), "o lápis e a lixeira não estão à direita do texto do cartão")
 	_conferir(vaga_1.get_node_or_null("Linha/Apagar1") == null and vaga_1.get_node_or_null("Linha/Editar1") == null, "a vaga vazia ganhou lápis ou lixeira")
 	_conferir(vaga_1.get_node("Linha/Textos/Texto").text.contains("VAZIA"), "a vaga 1, vazia, diz %s" % vaga_1.get_node("Linha/Textos/Texto").text)
 	_conferir(texto.text.contains("Zé do Teste"), "a vaga 2 não diz de quem é a partida: %s" % texto.text)

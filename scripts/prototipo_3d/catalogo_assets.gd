@@ -103,6 +103,9 @@ const PECAS := {
 	"tabua": {"tripo": "itens/tabua_tripo.glb", "largura": 1.6, "girar": [-90, 0, 0]},
 	"farinha": {"tripo": "itens/farinha_tripo.glb", "altura": 0.6},
 	"chapeu": {"tripo": "itens/chapeu_tripo.glb", "largura": 0.4},
+	# A luva de couro, de mão direita e em pé (dedos para cima): o corpo a põe
+	# nas duas mãos, a esquerda espelhada (`Vestimenta3D.luvas`).
+	"luvas_de_couro": {"tripo": "itens/luvas_de_couro_tripo.glb", "altura": 0.25},
 	"milho": {"tripo": "itens/milho_tripo.glb", "largura": 0.3},
 	"cana": {"tripo": "itens/cana_tripo.glb", "altura": 1.6},
 	"moringa": {"tripo": "itens/moringa_tripo.glb", "altura": 0.35},

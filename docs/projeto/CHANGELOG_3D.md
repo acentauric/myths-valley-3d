@@ -37,27 +37,42 @@ atualize esse arquivo e este documento juntos.
 - **As vagas viram cartões, com o lápis e a lixeira dentro, e cada partida guarda pontos de
   restauração.** "No MENU de save, ao invés de abrir um combo embaixo para deletar o save,
   coloque o ícone dentro do próprio balão do save. Na esquerda pode colocar o ícone de
-  editar o nome do save e deletar o save." Cada vaga é um cartão. Tocar nele continua a
-  partida (ou começa, na vaga vazia); à esquerda, dentro dele, o lápis edita o nome da
-  vaga e a lixeira apaga, no segundo clique, com o cartão dizendo o que se perde. O nome
-  mora fora do save (`user://vagas.json`), e gravar a partida não o apaga. O botão
-  "RECOMEÇAR" embaixo de cada vaga saiu: recomeçar é apagar e começar na vaga vazia.
+  editar o nome do save e deletar o save." E, na volta: "eu pedi para colocar os ícones
+  na tela de save na esquerda, mas me confundi. O correto é no lado direito." Cada vaga é
+  um cartão. Tocar nele continua a partida (ou começa, na vaga vazia); à direita, dentro
+  dele, depois do nome, o lápis edita o nome da vaga e a lixeira apaga, no segundo
+  clique, com o cartão dizendo o que se perde. O nome mora fora do save
+  (`user://vagas.json`), e gravar a partida não o apaga. O botão "RECOMEÇAR" embaixo de
+  cada vaga saiu: recomeçar é apagar e começar na vaga vazia.
   "Aproveite e implemente uma política de 'ponto de restauração', assim impede a pessoa
   de perder o save caso encontre algum bug grave." A primeira gravação de cada dia do
   jogo guarda um ponto da vaga, e ficam os sete dias mais novos. Apagar, começar por cima
   e restaurar guardam antes o ponto do que se perde, e ficam os três mais novos. Os
   pontos moram em `user://pontos/`, longe dos arquivos que o `Salvamento` gira
-  (`pontos_de_restauracao.gd`). A seta à direita do cartão abre os pontos da vaga — até
-  da apagada, que volta por eles —, e restaurar pede o segundo clique e confere que o
-  ponto se lê antes de tocar a vaga. Portão novo `tests/pontos_de_restauracao.gd`, e o
+  (`pontos_de_restauracao.gd`). A seta circular, depois da lixeira, abre os pontos da
+  vaga — até da apagada, que volta por eles —, e restaurar pede o segundo clique e
+  confere que o ponto se lê antes de tocar a vaga. Portão novo `tests/pontos_de_restauracao.gd`, e o
   `salvamento` confere o cartão; os dois falsificados.
 - **O encaixe das Mãos é das luvas; arma vai nos números.** "No campo mãos do inventário,
   não é para armas, mas sim para luvas. Armas são nos campos numerais." O machado, o
   machado de aço e o facão deixaram de vestir as Mãos e ficam na barra de mão (1–0), de
   onde já batiam, cortavam e tiravam a piaçava. O facão perdeu o efeito de cintura que
   dava vestido (−5% no fôlego gasto). A partida salva com um deles vestido o devolve à
-  barra e tira o efeito da progressão. Ainda não há luvas no jogo: o encaixe fica à
-  espera da primeira.
+  barra e tira o efeito da progressão. A primeira peça do encaixe são as luvas de couro.
+- **As luvas de couro, a primeira peça das Mãos.** "sobre a luva, pode gerar". Couro
+  curtido de vaqueiro, vendido no balcão da venda por 240 réis e vestido no encaixe das
+  Mãos: com as mãos guardadas, a lida cansa menos (−5% no fôlego gasto, o mesmo que o
+  facão dava na cintura). O corpo as mostra nas duas mãos, no vale e no boneco da
+  mochila (`Vestimenta3D.luvas`). O modelo é uma luva de mão direita; a esquerda vai
+  espelhada, e as duas assentam no quadro da mão medido nos ossos dos dedos, e não nos
+  eixos do osso, que cada rig vira de um jeito. A luva é rígida, de dedos esticados, e os
+  dedos dobrados do modelo furariam o couro: um modificador do esqueleto os encolhe
+  dentro dela a cada quadro, e só eles — o machado e o facão, presos ao osso da mão, não
+  mudam de tamanho. Modelo do Tripo Studio (95 créditos: geração 55 e retopologia 40)
+  e ícone de 32 px do PixelLab, no estilo dos itens do 2D. O cliente do PixelLab veio do
+  2D para `tools/pixellab/`, e toda arte gerada fica guardada no cofre
+  (`assets/sprites/cofre/`). O portão `boneco_da_mochila` ganha a nona pergunta,
+  falsificada.
 
 ## Em desenvolvimento — 03/10/2026
 

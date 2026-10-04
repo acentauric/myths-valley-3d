@@ -43,6 +43,7 @@ const MERCADORIAS := {
 	"picareta": {"base": 650, "margem": 0.3},
 	"foice": {"base": 420, "margem": 0.3},
 	"facao": {"base": 380, "margem": 0.3},
+	"luvas_de_couro": {"base": 240, "margem": 0.3},
 	# O AÇO VEM DE FORA, e mais caro que o ferro: um machado de aço custa dois e
 	# meio dos de ferro. É ele que abre a madeira de lei dura e a picareta de
 	# aço, o matacão — o que o talento sozinho não abre (ver arvores_3d.json e

@@ -116,6 +116,9 @@ var _chapeu_ancora: Node3D
 var _chapeu_id := ""
 var _facao_ancora: Node3D
 var _facao_pivo: Node3D
+## As luvas nas duas mãos (o encaixe das Mãos), e o id delas.
+var _luvas: Array[Node3D] = []
+var _luvas_id := ""
 var _acao_golpe_restante := 0.0
 var _acao_golpe_espera_animacao := false
 
@@ -228,10 +231,18 @@ func _atualizar_machado_na_mao() -> void:
 	_machado_pivo = Vestimenta3D.machado(_machado_ancora, visual)
 
 
-## O CHAPÉU NA CABEÇA E O FACÃO NA MÃO, pelo que está vestido e na mão agora
-## (`Vestimenta3D`). O machado tem o caminho dele, acima, por causa do balanço
+## O CHAPÉU NA CABEÇA, AS LUVAS NAS MÃOS E O FACÃO NA MÃO, pelo que está
+## vestido e na mão agora (`Vestimenta3D`). O machado tem o caminho dele, acima, por causa do balanço
 ## do braço; o facão só aparece quando o machado não está na mão.
 func _atualizar_vestimenta() -> void:
+	var luvas := Vestimenta3D.item_nas_maos()
+	if luvas != _luvas_id:
+		for ancora in _luvas:
+			_soltar(ancora)
+		_luvas.clear()
+		_luvas_id = luvas
+		if luvas != "" and model != null:
+			_luvas = Vestimenta3D.luvas(model, luvas)
 	var chapeu := Vestimenta3D.item_na_cabeca()
 	if chapeu != _chapeu_id:
 		_soltar(_chapeu_ancora)
