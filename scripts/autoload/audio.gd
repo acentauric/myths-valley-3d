@@ -69,6 +69,8 @@ var _timer_previa: Timer
 var _cache: Dictionary = {}
 var _rng := RandomNumberGenerator.new()
 var _transicao_musica: Tween
+const FADE_MUSICA := 2.5
+const FADE_SAIDA := 1.25
 var _transicoes_ambiente: Dictionary = {}
 var _caminho_musica: String = ""
 var _ambiente_menu_ativo: bool = false
@@ -228,29 +230,22 @@ func tocar_musica(caminho: String = MUSICA_ROCADO, forcar_troca: bool = false) -
 	# Reentrar no menu ou mudar opções visuais não reinicia a composição.
 	if not forcar_troca and caminho == _caminho_musica and (_musica.playing or (_transicao_musica and _transicao_musica.is_running())):
 		return
-	_configurar_loop(fluxo)
-	if _transicao_musica and _transicao_musica.is_valid():
-		_transicao_musica.kill()
-	_caminho_musica = caminho
-	_transicao_musica = create_tween()
-	if _musica.playing:
-		_transicao_musica.tween_property(self, "_ganho_musica", 0.0, 0.22)
-	else:
-		_ganho_musica = 0.0
-	_transicao_musica.tween_callback(func() -> void:
-		_musica.stream = fluxo
-		_musica.play()
-	)
-	_transicao_musica.tween_property(self, "_ganho_musica", 1.0, 0.65)
+	_cruzar_musica(caminho, FADE_MUSICA, forcar_troca)
 
 
 func parar_musica() -> void:
 	if _transicao_musica and _transicao_musica.is_valid():
 		_transicao_musica.kill()
-	_musica.stop()
 	_caminho_musica = ""
 	_musica_do_jogo = false
 	_mata_ativa = false
+	if not _musica.playing:
+		_ganho_musica = 0.0
+		return
+	_transicao_musica = create_tween()
+	_transicao_musica.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	_transicao_musica.tween_property(self, "_ganho_musica", 0.0, FADE_SAIDA)
+	_transicao_musica.tween_callback(_musica.stop)
 
 
 ## Música de tensão da mata fechada: cruza para ela ao entrar e volta ao sair.
@@ -287,8 +282,8 @@ func _ao_mudar_hora(_hora: float) -> void:
 
 
 ## Troca de trilha com fusão: abaixa a atual, troca o fluxo e sobe a nova.
-func _cruzar_musica(caminho: String, segundos: float) -> void:
-	if caminho == _caminho_musica:
+func _cruzar_musica(caminho: String, segundos: float, forcar: bool = false) -> void:
+	if not forcar and caminho == _caminho_musica and (_musica.playing or (_transicao_musica and _transicao_musica.is_running())):
 		return
 	var fluxo := _carregar(caminho)
 	if fluxo == null:
@@ -298,6 +293,7 @@ func _cruzar_musica(caminho: String, segundos: float) -> void:
 		_transicao_musica.kill()
 	_caminho_musica = caminho
 	_transicao_musica = create_tween()
+	_transicao_musica.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 	if _musica.playing:
 		_transicao_musica.tween_property(self, "_ganho_musica", 0.0, segundos * 0.5)
 	else:

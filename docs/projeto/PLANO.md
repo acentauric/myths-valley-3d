@@ -33,6 +33,9 @@ explícito, e cada asset mantém origem e créditos.
 
 ## Registros
 
+As trocas e paradas de trilha usam fades, inclusive ao carregar o vale.
+Uma nova solicitação cancela a transição anterior sem cortar o ganho (#79).
+
 O painel Personagens apresenta moradores individualmente, com modelo 3D,
 falas e edição. O catálogo de assets usa cartões paginados e registros individuais (#78).
 

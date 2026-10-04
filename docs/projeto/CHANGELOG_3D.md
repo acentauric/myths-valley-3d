@@ -2,6 +2,10 @@
 
 ## Em desenvolvimento — 04/10/2026
 
+- As trilhas do menu, do jogo, dos períodos e da mata mudam com fade de saída
+  e entrada. Parar a música também reduz o ganho antes de encerrar; pedidos
+  durante uma transição cancelam o callback anterior e mantêm o volume atual (#79).
+
 - PERSONAGENS apresenta um morador por vez, com prévia 3D do modelo do jogo,
   navegação entre moradores e falas, busca e edição individual. ASSETS ganha
   cartões paginados; selecionar uma peça abre seu registro e sua edição.

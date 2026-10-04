@@ -19,7 +19,8 @@
     "*Histórico resumido* em páginas sem rolagem.",
     "*Notas do fundo* ficam ocultas nos modais.",
     "*Moradores e assets* em fichas e cartões com prévia 3D.",
-    "*Vagas* centralizadas com × no cabeçalho."
+    "*Vagas* centralizadas com × no cabeçalho.",
+    "*Trilhas* entram e saem em fades suaves."
    ],
    "mudancas_en": [
     "Choose your *language* before loading the valley.",
@@ -30,7 +31,8 @@
     "*Brief changelog* on pages without scrolling.",
     "*Background notes* stay hidden behind modals.",
     "*Residents and assets* in cards with 3D previews.",
-    "*Save slots* centered with a close icon."
+    "*Save slots* centered with a close icon.",
+    "*Music tracks* fade in and out smoothly."
    ],
    "mudancas_es": [
     "Elige el *idioma* antes de cargar el valle.",
@@ -41,7 +43,8 @@
     "*Historial breve* en páginas sin desplazamiento.",
     "*Notas del fondo* ocultas detrás de los modales.",
     "*Habitantes y assets* en fichas con vista previa 3D.",
-    "*Partidas* centradas con × en la cabecera."
+    "*Partidas* centradas con × en la cabecera.",
+    "*Música* con entradas y salidas suaves."
    ]
   },
   {
