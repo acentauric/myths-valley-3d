@@ -1370,9 +1370,9 @@ var _confirmando_vaga := 0
 
 func _vagas() -> void:
 	_clear()
+	_place_modal(HISTORY_SIZE)
 	_confirmando_vaga = 0
-	_label("Vagas", 30)
-	_label("Três partidas, cada uma inteira. Escolha onde jogar.", 18)
+	_modal_header("Vagas", _home, "Três partidas, cada uma inteira. Escolha onde jogar.")
 	var primeiro: Button = null
 	for slot in range(1, Salvamento.QUANTOS_SLOTS + 1):
 		var resumo := Salvamento.resumo(slot)
@@ -1394,7 +1394,6 @@ func _vagas() -> void:
 		botao.name = "Vaga%d" % slot
 		if primeiro == null:
 			primeiro = botao
-	_button("VOLTAR", _home)
 	primeiro.grab_focus()
 
 

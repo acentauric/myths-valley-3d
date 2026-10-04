@@ -2,6 +2,12 @@
 
 ## Em desenvolvimento — 04/10/2026
 
+- PERSONAGENS apresenta um morador por vez, com prévia 3D do modelo do jogo,
+  navegação entre moradores e falas, busca e edição individual. ASSETS ganha
+  cartões paginados; selecionar uma peça abre seu registro e sua edição.
+  O × fecha o painel; o FECHAR redundante sai do rodapé (#78).
+- Vagas usa um modal central com × no cabeçalho, sem VOLTAR no rodapé (#77).
+
 - O histórico do jogo resume cada item em uma linha e mostra até oito itens
   por página, sem rolagem. A entrada de 03/10 incorpora publicação das builds
   e validação de arquivos registradas no Git; a de 04/10 resume a nova interface.

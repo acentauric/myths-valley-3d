@@ -33,6 +33,9 @@ explícito, e cada asset mantém origem e créditos.
 
 ## Registros
 
+O painel Personagens apresenta moradores individualmente, com modelo 3D,
+falas e edição. O catálogo de assets usa cartões paginados e registros individuais (#78).
+
 A entrada leve pergunta o idioma antes de carregar o cenário do menu (#77).
 Sua moldura reutiliza a talha SVG da home; na primeira abertura o idioma do
 sistema sugere a opção, sem substituir uma escolha salva nem pular a confirmação.

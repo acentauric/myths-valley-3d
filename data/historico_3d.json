@@ -17,7 +17,9 @@
     "*Molduras SVG* da home nos painéis internos.",
     "*Versão e build* identificam a entrada.",
     "*Histórico resumido* em páginas sem rolagem.",
-    "*Notas do fundo* ficam ocultas nos modais."
+    "*Notas do fundo* ficam ocultas nos modais.",
+    "*Moradores e assets* em fichas e cartões com prévia 3D.",
+    "*Vagas* centralizadas com × no cabeçalho."
    ],
    "mudancas_en": [
     "Choose your *language* before loading the valley.",
@@ -26,7 +28,9 @@
     "*SVG frames* from the home page on internal panels.",
     "*Version and build* identify the welcome screen.",
     "*Brief changelog* on pages without scrolling.",
-    "*Background notes* stay hidden behind modals."
+    "*Background notes* stay hidden behind modals.",
+    "*Residents and assets* in cards with 3D previews.",
+    "*Save slots* centered with a close icon."
    ],
    "mudancas_es": [
     "Elige el *idioma* antes de cargar el valle.",
@@ -35,7 +39,9 @@
     "*Marcos SVG* de la portada en los paneles internos.",
     "*Versión y build* identifican la entrada.",
     "*Historial breve* en páginas sin desplazamiento.",
-    "*Notas del fondo* ocultas detrás de los modales."
+    "*Notas del fondo* ocultas detrás de los modales.",
+    "*Habitantes y assets* en fichas con vista previa 3D.",
+    "*Partidas* centradas con × en la cabecera."
    ]
   },
   {

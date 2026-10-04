@@ -150,6 +150,12 @@ func _run() -> void:
 		_conferir(moldura_menu.texture.resource_path.ends_with("moldura_idioma.svg") and moldura_menu.visible, "moldura SVG visível em %s" % pagina)
 		var retangulo := moldura_menu.get_global_rect()
 		_conferir(retangulo.encloses(abertura.panel.get_global_rect()), "moldura acompanha o painel %s" % pagina)
+		if pagina == "_vagas":
+			_conferir(abertura.panel.get_global_rect().get_center().is_equal_approx(root.get_visible_rect().get_center()), "vagas centralizadas")
+			var controles: Array[Button] = []
+			_buscar_botoes(abertura.content, controles)
+			_conferir(controles.any(func(b: Button) -> bool: return b.tooltip_text == TranslationServer.translate("Fechar") and b.get_child_count() > 0), "vagas têm ícone de fechar no cabeçalho")
+			_conferir(not controles.any(func(b: Button) -> bool: return b.text == TranslationServer.translate("VOLTAR")), "vagas sem botão voltar redundante")
 		if pagina == "_home":
 			abertura.version_link.mouse_entered.emit()
 			abertura.version_link.grab_focus()

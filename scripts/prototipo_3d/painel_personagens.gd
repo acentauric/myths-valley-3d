@@ -1,15 +1,18 @@
 extends Control
 ## PERSONAGENS: painel do menu com os moradores do vale (dados, postos e falas com
-## áudio) e o catálogo de peças do Tripo (catalogo_assets.gd), com filtro por nome.
+## áudio), um por vez, e cartões paginados do catálogo, com filtro por nome.
 ## EDITAR abre os campos de cada morador (nome, altura, volume da voz, falas e o posto
 ## de cada período) e de cada peça (medida, afundar, tronco); tudo é salvo na hora em
 ## ajustes_conteudo.gd e vale na próxima montagem do vale.
 ## O anfitrião (abertura.gd) adiciona o painel à camada do menu e chama abrir(tema);
-## o × do cabeçalho e o FECHAR emitem `fechado`, e quem hospeda libera o nó.
+## O × do cabeçalho emite `fechado`, e quem hospeda libera o nó.
 
 const TemaMenu = preload("res://scripts/prototipo_3d/tema_menu.gd")
 const PainelAjustes = preload("res://scripts/prototipo_3d/painel_ajustes.gd")
 const Identidade = preload("res://scripts/prototipo_3d/identidade.gd")
+const IdiomaMenu = preload("res://scripts/prototipo_3d/idioma_menu.gd")
+const Humanoide = preload("res://scripts/prototipo_3d/personagem_procedural.gd")
+const CARTOES_POR_PAGINA := 12
 
 ## Pedido de fechar (×, FECHAR): o anfitrião volta à Home e libera o painel.
 signal fechado
@@ -26,6 +29,14 @@ const PASTAS := [["arvores", "Árvores"], ["construcoes", "Construções"], ["ca
 
 ## Aba aberta: 0 = MORADORES, 1 = ASSETS.
 var aba := 0
+var _morador_indice := 0
+var _asset_pagina := 0
+var _peca_selecionada := ""
+var _indice_fala := 0
+var _caixa: PanelContainer
+var _preview_modelo: Node3D
+var _preview_viewport: SubViewport
+var _textos: Dictionary
 ## Filtro por nome (minúsculas), aplicado na aba aberta.
 var filtro := ""
 ## Pedro primeiro, depois os moradores e por fim o viajante (dicionários de npcs_3d.json).
@@ -47,10 +58,12 @@ func abrir(tema: Theme) -> void:
 	# Cliques fora da caixa passam ao anfitrião, que fecha o modal (padrão dos outros).
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	theme = tema if tema else TemaMenu.criar()
+	_textos = JSON.parse_string(FileAccess.get_file_as_string("res://data/galeria_personagens.json"))
 	_carregar_pessoas()
 	_voz = AudioStreamPlayer.new()
 	add_child(_voz)
 	var caixa := PanelContainer.new()
+	_caixa = caixa
 	# O fundo vem da moldura de talha, como nos outros modais; o stylebox só guarda as
 	# margens (28/22, as mesmas do estilo_painel).
 	var vazio := StyleBoxEmpty.new()
@@ -68,7 +81,7 @@ func abrir(tema: Theme) -> void:
 	var coluna := VBoxContainer.new()
 	coluna.add_theme_constant_override("separation", 10)
 	caixa.add_child(coluna)
-	PainelAjustes.cabecalho(coluna, tr("Personagens"), func() -> void: fechado.emit(),
+	var fechar := PainelAjustes.cabecalho(coluna, tr("Personagens"), func() -> void: fechado.emit(),
 		tr("Moradores e peças do vale, com falas e medidas."))
 	var abas := HBoxContainer.new()
 	abas.add_theme_constant_override("separation", 8)
@@ -92,6 +105,11 @@ func abrir(tema: Theme) -> void:
 	campo.clear_button_enabled = true
 	campo.text_changed.connect(func(texto: String) -> void:
 		filtro = texto.strip_edges().to_lower()
+		_morador_indice = 0
+		_asset_pagina = 0
+		_peca_selecionada = ""
+		_editando.clear()
+		_voz.stop()
 		_reconstruir_lista())
 	coluna.add_child(campo)
 	_rolagem = ScrollContainer.new()
@@ -100,6 +118,7 @@ func abrir(tema: Theme) -> void:
 	coluna.add_child(_rolagem)
 	_lista = VBoxContainer.new()
 	_lista.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_lista.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_lista.add_theme_constant_override("separation", 6)
 	_rolagem.add_child(_lista)
 	var aviso := Label.new()
@@ -124,14 +143,6 @@ func abrir(tema: Theme) -> void:
 			_carregar_pessoas()
 			_reconstruir_lista())
 		rodape.add_child(gravar)
-	var fechar := Button.new()
-	fechar.text = tr("FECHAR")
-	fechar.custom_minimum_size = Vector2(220, 44)
-	fechar.mouse_entered.connect(func() -> void: Audio.efeito("ui_hover"))
-	fechar.pressed.connect(func() -> void:
-		Audio.efeito("ui_voltar")
-		fechado.emit())
-	rodape.add_child(fechar)
 	_trocar_aba(0)
 	fechar.grab_focus()
 
@@ -154,9 +165,9 @@ func _carregar_pessoas() -> void:
 		"altura": float(viajante.get("altura", 1.78)),
 		"nota": tr("É você: o recém-chegado da capital."),
 	})
-	_ancoras.clear()
 	var mundo := get_tree().get_first_node_in_group("mundo") if is_inside_tree() else null
 	if mundo != null and mundo.get("ancoras") is Dictionary:
+		_ancoras.clear()
 		for nome: String in mundo.ancoras:
 			# Direções e frentes das casas não são lugares.
 			if nome.ends_with("Frente") or nome == "PierDirecao":
@@ -167,6 +178,9 @@ func _carregar_pessoas() -> void:
 
 func _trocar_aba(nova: int) -> void:
 	aba = nova
+	_editando.clear()
+	_peca_selecionada = ""
+	_voz.stop()
 	# A aba ativa fica dourada, como nas abas do painel de ajustes.
 	for indice in range(_botoes_abas.size()):
 		var botao := _botoes_abas[indice]
@@ -184,6 +198,10 @@ func _reconstruir_lista() -> void:
 		_lista.remove_child(filho)
 		filho.queue_free()
 	_rolagem.scroll_vertical = 0
+	_preview_modelo = null
+	_preview_viewport = null
+	_carregar_pessoas()
+	_rolagem.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED if _editando.is_empty() else ScrollContainer.SCROLL_MODE_AUTO
 	if aba == 0:
 		_montar_moradores()
 	else:
@@ -192,43 +210,155 @@ func _reconstruir_lista() -> void:
 
 ## MORADORES: nome dourado, linha de dados, postos por período e as falas com ▶.
 func _montar_moradores() -> void:
-	var achou := false
-	for pessoa: Dictionary in _pessoas:
-		var id := str(pessoa.get("id", ""))
-		var nome := str(pessoa.get("nome", id))
-		if not _passa_filtro([nome, id]):
-			continue
-		achou = true
-		var editavel := id != "viajante"
-		_titulo_com_editar(nome, 24, "m:" + id if editavel else "", AjustesConteudo.morador_ajustado(id))
-		var dados: Array = [id]
-		if pessoa.has("altura"):
-			dados.append("%s m" % _numero(float(pessoa["altura"])))
-		var voz: Dictionary = pessoa.get("voz", {})
-		if voz.has("nome"):
-			dados.append(tr("voz %s") % str(voz["nome"]))
-		_detalhe(" · ".join(PackedStringArray(dados)))
-		var postos: Dictionary = pessoa.get("postos", {})
-		if not postos.is_empty():
-			var linhas := PackedStringArray()
-			for periodo: Array in PERIODOS:
-				if postos.has(periodo[0]):
-					var posto: Array = postos[periodo[0]]
-					linhas.append("%s · %s" % [tr(String(periodo[1])), tr(str(posto[0]))])
-			_detalhe("\n".join(linhas))
-		elif id == "pedro":
-			# O guia não tem postos: acompanha o jogador (guia_pedro.gd).
-			_detalhe(tr("Sem posto fixo: acompanha o viajante pelo vale."))
-		if pessoa.has("nota"):
-			_detalhe(str(pessoa["nota"]))
-		for fala in pessoa.get("falas", []):
-			if fala is Dictionary:
-				_linha_fala(fala)
-		if editavel and _editando.has("m:" + id):
-			_editor_morador(pessoa)
-		_respiro()
-	if not achou:
+	var visiveis: Array = _pessoas.filter(func(p: Dictionary) -> bool: return _passa_filtro([p.get("nome", ""), p.get("id", "")]))
+	if visiveis.is_empty():
 		_detalhe(tr("Nada com esse nome por aqui."))
+		return
+	_morador_indice = clampi(_morador_indice, 0, visiveis.size() - 1)
+	var pessoa: Dictionary = visiveis[_morador_indice]
+	var id := str(pessoa.id)
+	_lista.set_meta("morador", id)
+	_titulo_com_editar(str(pessoa.get("nome", id)), 24, "m:" + id if id != "viajante" else "", AjustesConteudo.morador_ajustado(id))
+	if _editando.has("m:" + id):
+		_editor_morador(pessoa)
+		return
+	var ficha := HBoxContainer.new()
+	ficha.add_theme_constant_override("separation", 18)
+	_lista.add_child(ficha)
+	_montar_previa(ficha, id, float(pessoa.get("altura", 1.7)))
+	var detalhes := VBoxContainer.new()
+	detalhes.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	detalhes.add_theme_constant_override("separation", 8)
+	ficha.add_child(detalhes)
+	var principal := _lista
+	_lista = detalhes
+	var voz: Dictionary = pessoa.get("voz", {})
+	_detalhe("%s m · %s" % [_numero(float(pessoa.get("altura", 1.7))), tr("voz %s") % voz.get("nome", "—")])
+	var postos: Dictionary = pessoa.get("postos", {})
+	var linhas := PackedStringArray()
+	for periodo: Array in PERIODOS:
+		if postos.has(periodo[0]):
+			linhas.append("%s · %s" % [tr(String(periodo[1])), tr(str(postos[periodo[0]][0]))])
+	if not linhas.is_empty():
+		_detalhe("\n".join(linhas))
+	elif id == "pedro":
+		_detalhe(tr("Sem posto fixo: acompanha o viajante pelo vale."))
+	if pessoa.has("nota"):
+		_detalhe(str(pessoa.nota))
+	var falas: Array = pessoa.get("falas", [])
+	if not falas.is_empty():
+		_indice_fala = clampi(_indice_fala, 0, falas.size() - 1)
+		_linha_fala(falas[_indice_fala])
+		_navegacao(_indice_fala, falas.size(), func(passo: int) -> void:
+			_indice_fala += passo
+			_voz.stop()
+			_reconstruir_lista())
+	_lista = principal
+	_navegacao(_morador_indice, visiveis.size(), _navegar_morador)
+
+
+func _navegar_morador(passo: int) -> void:
+	_morador_indice += passo
+	_indice_fala = 0
+	_editando.clear()
+	_voz.stop()
+	_reconstruir_lista()
+
+
+func _navegacao(indice: int, quantidade: int, mudar: Callable) -> void:
+	var linha := HBoxContainer.new()
+	linha.name = "Navegacao"
+	linha.add_theme_constant_override("separation", 10)
+	_lista.add_child(linha)
+	var anterior := Button.new()
+	anterior.text = "‹"
+	anterior.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_TEXTO, 600))
+	anterior.custom_minimum_size = Vector2(48, 30)
+	anterior.disabled = indice == 0
+	anterior.pressed.connect(func() -> void: mudar.call(-1))
+	linha.add_child(anterior)
+	var contador := Label.new()
+	contador.text = "%d / %d" % [indice + 1, quantidade]
+	contador.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	contador.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	linha.add_child(contador)
+	var proximo := Button.new()
+	proximo.text = "›"
+	proximo.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_TEXTO, 600))
+	proximo.custom_minimum_size = Vector2(48, 30)
+	proximo.disabled = indice >= quantidade - 1
+	proximo.pressed.connect(func() -> void: mudar.call(1))
+	linha.add_child(proximo)
+
+
+func _texto(chave: String) -> String:
+	return str(IdiomaMenu.campo(_textos, chave))
+
+
+## Mundo 3D isolado: reutiliza o catálogo, sem adicionar moradores ao vale.
+func _montar_previa(pai: Control, chave: String, altura: float = 0) -> void:
+	var suporte := SubViewportContainer.new()
+	suporte.name = "Previa3D"
+	suporte.custom_minimum_size = Vector2(230, 260)
+	suporte.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	suporte.stretch = true
+	suporte.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	pai.add_child(suporte)
+	var viewport := SubViewport.new()
+	_preview_viewport = viewport
+	viewport.size = Vector2i(230, 260)
+	viewport.own_world_3d = true
+	viewport.render_target_update_mode = SubViewport.UPDATE_ONCE
+	suporte.add_child(viewport)
+	var mundo := Node3D.new()
+	viewport.add_child(mundo)
+	var ambiente := WorldEnvironment.new()
+	var luz_ambiente := Environment.new()
+	luz_ambiente.background_mode = Environment.BG_COLOR
+	luz_ambiente.background_color = Color("102018")
+	luz_ambiente.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
+	luz_ambiente.ambient_light_color = Color.WHITE
+	luz_ambiente.ambient_light_energy = 0.7
+	ambiente.environment = luz_ambiente
+	mundo.add_child(ambiente)
+	var luz := DirectionalLight3D.new()
+	luz.rotation_degrees = Vector3(-35, -25, 0)
+	luz.light_energy = 1.5
+	mundo.add_child(luz)
+	var modelo: Node3D
+	var dimensao := Vector3(1, maxf(altura, 1.7), 1)
+	if Estilo.tripo():
+		var escala := altura / float(AjustesConteudo.peca(chave).get("altura", altura)) if altura > 0 else 1.0
+		modelo = CatalogoAssets.instanciar(chave, mundo, Vector3.ZERO, escala)
+		if modelo != null:
+			dimensao = (modelo.get_meta("limites") as AABB).size
+	elif altura > 0:
+		modelo = Humanoide.novo(chave, altura)
+		mundo.add_child(modelo)
+	_preview_modelo = modelo
+	if modelo == null:
+		var aviso := Label.new()
+		aviso.text = _texto("indisponivel")
+		aviso.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		aviso.custom_minimum_size = Vector2(230, 0)
+		pai.add_child(aviso)
+		return
+	# Usa uma pose do idle autoral, em vez de apresentar o rig em T.
+	for tocador: AnimationPlayer in modelo.find_children("*", "AnimationPlayer", true, false):
+		for clipe: StringName in tocador.get_animation_list():
+			if str(clipe).to_lower().contains("idle"):
+				tocador.play(clipe)
+				tocador.advance(0.2)
+				tocador.pause()
+				break
+	var camera := Camera3D.new()
+	camera.fov = 35
+	mundo.add_child(camera)
+	var distancia := maxf(maxf(dimensao.x, dimensao.y), dimensao.z) * 2.3
+	var centro := Vector3(0, dimensao.y * 0.5, 0)
+	camera.position = centro + Vector3(distancia * 0.2, distancia * 0.08, distancia)
+	camera.look_at(centro)
+	camera.current = true
 
 
 ## Uma fala: botão ▶ (toca assets/audio/vozes/<audio>.mp3) e o texto ao lado.
@@ -274,36 +404,53 @@ func _tocar(caminho: String) -> void:
 ## ASSETS: peças de catalogo_assets.gd agrupadas pela pasta do GLB, na ordem de PASTAS;
 ## pastas novas (fora da lista) aparecem no fim para nenhuma peça ficar escondida.
 func _montar_assets() -> void:
-	var grupos: Dictionary = {}
-	for chave: String in CatalogoAssets.PECAS:
-		var spec: Dictionary = CatalogoAssets.PECAS[chave]
-		var pasta := str(spec.get("tripo", "")).get_slice("/", 0)
-		if not grupos.has(pasta):
-			grupos[pasta] = []
-		(grupos[pasta] as Array).append(chave)
-	var ordem: Array = []
-	for pasta: Array in PASTAS:
-		ordem.append([String(pasta[0]), String(pasta[1])])
-	for pasta_extra: String in grupos:
-		var conhecida := false
-		for pasta: Array in PASTAS:
-			if String(pasta[0]) == pasta_extra:
-				conhecida = true
-		if not conhecida:
-			ordem.append([pasta_extra, pasta_extra.capitalize()])
-	var achou := false
-	for pasta: Array in ordem:
-		var chaves: Array = grupos.get(pasta[0], [])
-		var visiveis: Array = chaves.filter(func(chave: String) -> bool: return _passa_filtro([chave]))
-		if visiveis.is_empty():
-			continue
-		achou = true
-		_titulo_bloco(tr(String(pasta[1])), 20)
-		for chave: String in visiveis:
-			_linha_peca(chave, AjustesConteudo.peca(chave))
-		_respiro()
-	if not achou:
+	if not _peca_selecionada.is_empty():
+		var voltar := Button.new()
+		voltar.text = _texto("voltar_catalogo")
+		voltar.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+		voltar.pressed.connect(func() -> void:
+			_peca_selecionada = ""
+			_editando.clear()
+			_reconstruir_lista())
+		_lista.add_child(voltar)
+		_linha_peca(_peca_selecionada, AjustesConteudo.peca(_peca_selecionada))
+		if _editando.is_empty():
+			_montar_previa(_lista, _peca_selecionada)
+		return
+	_detalhe(_texto("selecionar_peca"))
+	var chaves: Array = CatalogoAssets.PECAS.keys().filter(func(chave: String) -> bool: return _passa_filtro([chave, chave.replace("_", " ")]))
+	chaves.sort()
+	if chaves.is_empty():
 		_detalhe(tr("Nada com esse nome por aqui."))
+		return
+	var paginas := ceili(float(chaves.size()) / CARTOES_POR_PAGINA)
+	_asset_pagina = clampi(_asset_pagina, 0, paginas - 1)
+	var grade := GridContainer.new()
+	grade.name = "GradeAssets"
+	grade.columns = 4
+	grade.add_theme_constant_override("h_separation", 8)
+	grade.add_theme_constant_override("v_separation", 8)
+	_lista.add_child(grade)
+	for chave: String in chaves.slice(_asset_pagina * CARTOES_POR_PAGINA, (_asset_pagina + 1) * CARTOES_POR_PAGINA):
+		var cartao := Button.new()
+		cartao.name = "Peca_" + chave
+		cartao.text = chave.replace("_", " ").capitalize()
+		cartao.tooltip_text = chave
+		cartao.clip_text = true
+		cartao.add_theme_font_size_override("font_size", 14)
+		cartao.custom_minimum_size = Vector2(170, 76)
+		cartao.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		cartao.pressed.connect(func() -> void: _abrir_peca(chave))
+		grade.add_child(cartao)
+	_navegacao(_asset_pagina, paginas, func(passo: int) -> void:
+		_asset_pagina += passo
+		_reconstruir_lista())
+
+
+func _abrir_peca(chave: String) -> void:
+	_peca_selecionada = chave
+	_editando.clear()
+	_reconstruir_lista()
 
 
 ## Uma peça: chave, nome do arquivo, medida e as marcações do catálogo quando existem.

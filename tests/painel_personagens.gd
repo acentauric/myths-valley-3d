@@ -10,15 +10,25 @@ func _initialize() -> void:
 func _run() -> void:
 	AjustesConteudo.restaurar_morador("benedito")
 	AjustesConteudo.restaurar_peca("mangueira")
-	_assert(change_scene_to_file("res://scenes/prototipo_3d/abertura.tscn") == OK, "abertura carrega")
-	await _frames(4)
-	await _mundo_pronto()
-	var abertura = current_scene
-	abertura._abrir_personagens()
+	var host := Control.new()
+	host.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	root.add_child(host)
+	var painel = load("res://scripts/prototipo_3d/painel_personagens.gd").new()
+	host.add_child(painel)
+	painel.abrir(load("res://scripts/prototipo_3d/tema_menu.gd").criar())
+	painel._ancoras.assign(["Bar", "Casa de Carro Quebrado", "Igreja", "Pier", "Praça", "Roçado"])
 	await _frames(3)
-	var painel = abertura.painel_personagens
-	_assert(painel != null, "painel aberto")
-	_assert(painel._ancoras.size() > 5, "âncoras do vale disponíveis para os postos")
+	_assert(painel._lista.get_meta("morador") == "pedro", "um morador por vez começa pelo Pedro")
+	_assert(painel._preview_modelo != null and not painel._preview_modelo.find_children("*", "MeshInstance3D", true, false).is_empty(), "prévia usa o modelo 3D real")
+	_assert(painel._preview_viewport.own_world_3d, "prévia não mistura luzes e objetos com o vale")
+	_assert(painel._rolagem.get_global_rect().encloses(painel._lista.get_global_rect()), "ficha cabe sem rolagem")
+	await _capturar("morador")
+	for botao in painel.find_children("*", "Button", true, false):
+		_assert(botao.text != "FECHAR", "sem botão FECHAR redundante")
+	painel._navegar_morador(1)
+	await _frames(3)
+	_assert(painel._lista.get_meta("morador") == "benedito", "navegação mostra apenas Benedito")
+	_assert(painel._preview_modelo.name.begins_with("Benedito"), "prévia acompanha o morador")
 	# Edita o Benedito pelo botão EDITAR.
 	painel._editando["m:benedito"] = true
 	painel._reconstruir_lista()
@@ -43,6 +53,37 @@ func _run() -> void:
 	_assert(is_equal_approx(float(ajustado["altura"]), 1.9), "altura ajustada chega aos dados")
 	_assert(String(ajustado["postos"]["manha"][0]) == painel._ancoras[1] or String(ajustado["postos"]["manha"][0]) != "", "posto ajustado")
 	_assert(ajustado["falas"].any(func(f): return f["texto"] == "Fala de teste."), "fala ajustada")
+	painel._trocar_aba(1)
+	await _frames(3)
+	var grade: GridContainer = painel._lista.get_node("GradeAssets")
+	var primeiro_cartao := str(grade.get_child(0).name)
+	_assert(grade.columns == 4 and grade.get_child_count() == 12, "assets em grade paginada")
+	_assert(painel._lista.find_children("*", "SpinBox", true, false).is_empty(), "grade não abre todos os editores")
+	_assert(painel._rolagem.get_global_rect().encloses(painel._lista.get_global_rect()), "grade cabe sem rolagem")
+	await _capturar("assets")
+	painel._asset_pagina = 1
+	painel._reconstruir_lista()
+	await _frames(3)
+	_assert(str(painel._lista.get_node("GradeAssets").get_child(0).name) != primeiro_cartao, "paginação muda os cartões")
+	painel._abrir_peca("mangueira")
+	await _frames(3)
+	_assert(not painel._lista.has_node("GradeAssets") and painel._preview_modelo != null, "selecionar peça abre só seu registro e modelo")
+	await _capturar("registro")
+	painel._editando["p:mangueira"] = true
+	painel._reconstruir_lista()
+	await _frames(3)
+	var campos_peca: Array = painel._lista.find_children("*", "SpinBox", true, false)
+	_assert(campos_peca.size() >= 2, "editor da peça selecionada")
+	await _capturar("editor")
+	var altura_antes := float(AjustesConteudo.peca("mangueira")["altura"])
+	campos_peca[0].value = altura_antes + 1.5
+	_assert(is_equal_approx(float(AjustesConteudo.peca("mangueira")["altura"]), altura_antes + 1.5), "campo da peça grava ajuste")
+	for argumento in OS.get_cmdline_user_args():
+		if argumento.begins_with("--captura="):
+			painel._trocar_aba(0)
+			await _frames(3)
+			await RenderingServer.frame_post_draw
+			root.get_texture().get_image().save_png(argumento.trim_prefix("--captura="))
 	# Peça: a medida da mangueira muda a especificação usada pelo catálogo.
 	var antes := float(CatalogoAssets.PECAS["mangueira"]["altura"])
 	AjustesConteudo.definir_peca("mangueira", "altura", antes + 1.5)
@@ -54,6 +95,13 @@ func _run() -> void:
 	_assert(is_equal_approx(float(AjustesConteudo.peca("mangueira")["altura"]), antes), "peça restaurada")
 	print("PAINEL_PERSONAGENS_OK")
 	quit()
+
+
+func _capturar(nome: String) -> void:
+	for argumento in OS.get_cmdline_user_args():
+		if argumento.begins_with("--capturas="):
+			await RenderingServer.frame_post_draw
+			root.get_texture().get_image().save_png(argumento.trim_prefix("--capturas=") + "-" + nome + ".png")
 
 
 func _assert(condition: bool, label: String) -> void:
