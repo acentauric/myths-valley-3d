@@ -1,5 +1,20 @@
 # Histórico de mudanças — Myths' Valley 3D
 
+## Em desenvolvimento — 03/10/2026
+
+- A atualização limita manifesto e download, confere origem HTTPS e tamanho,
+  recusa caminhos perigosos, links e conteúdo inesperado, e valida os registros
+  locais e centrais do ZIP antes de qualquer extração (#76).
+- A leitura das partidas bloqueia objetos e recursos antes da desserialização,
+  preservando o formato e os tipos dos saves legítimos, inclusive os resumos
+  das vagas no menu (#76).
+- O portão `tests/seguranca_arquivos.gd` reproduz os defeitos com marcadores
+  inofensivos e exige rejeição sem executar código nem gravar fora da pasta.
+- As correções ficam no código do repositório; a distribuição pública permanece
+  na **Build #8** até a próxima versão estável. O SHA-256 continua sendo conferido
+  contra o manifesto HTTPS e não substitui uma assinatura de release
+  independente do servidor.
+
 ## Build #8 — 03/10/2026
 
 - A tela Sobre apresenta a equipe atual do projeto: Ramon Santos, Renato Leal

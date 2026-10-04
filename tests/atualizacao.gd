@@ -39,6 +39,7 @@ func _manifesto() -> void:
 		"url": "https://mythsvalley.app.br/downloads/MythsValley3D-build7-windows.zip",
 		"arquivo": "MythsValley3D-build7-windows.zip",
 		"sha256": "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad",
+		"bytes": 100,
 	}
 	_conferir(Atualizacao.manifesto_valido(bom), "um manifesto completo foi recusado")
 	_conferir(Atualizacao.ha_versao_nova(bom, 6), "a Build 7 não foi oferecida a quem tem a 6")
