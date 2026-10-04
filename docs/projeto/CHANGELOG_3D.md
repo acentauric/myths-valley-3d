@@ -32,6 +32,33 @@ marcos. Os textos curtos e a identificação exibidos no jogo ficam em
 `data/historico_3d.json`; ao registrar um novo marco ou build,
 atualize esse arquivo e este documento juntos.
 
+## Em desenvolvimento — 04/10/2026
+
+- **As vagas viram cartões, com o lápis e a lixeira dentro, e cada partida guarda pontos de
+  restauração.** "No MENU de save, ao invés de abrir um combo embaixo para deletar o save,
+  coloque o ícone dentro do próprio balão do save. Na esquerda pode colocar o ícone de
+  editar o nome do save e deletar o save." Cada vaga é um cartão. Tocar nele continua a
+  partida (ou começa, na vaga vazia); à esquerda, dentro dele, o lápis edita o nome da
+  vaga e a lixeira apaga, no segundo clique, com o cartão dizendo o que se perde. O nome
+  mora fora do save (`user://vagas.json`), e gravar a partida não o apaga. O botão
+  "RECOMEÇAR" embaixo de cada vaga saiu: recomeçar é apagar e começar na vaga vazia.
+  "Aproveite e implemente uma política de 'ponto de restauração', assim impede a pessoa
+  de perder o save caso encontre algum bug grave." A primeira gravação de cada dia do
+  jogo guarda um ponto da vaga, e ficam os sete dias mais novos. Apagar, começar por cima
+  e restaurar guardam antes o ponto do que se perde, e ficam os três mais novos. Os
+  pontos moram em `user://pontos/`, longe dos arquivos que o `Salvamento` gira
+  (`pontos_de_restauracao.gd`). A seta à direita do cartão abre os pontos da vaga — até
+  da apagada, que volta por eles —, e restaurar pede o segundo clique e confere que o
+  ponto se lê antes de tocar a vaga. Portão novo `tests/pontos_de_restauracao.gd`, e o
+  `salvamento` confere o cartão; os dois falsificados.
+- **O encaixe das Mãos é das luvas; arma vai nos números.** "No campo mãos do inventário,
+  não é para armas, mas sim para luvas. Armas são nos campos numerais." O machado, o
+  machado de aço e o facão deixaram de vestir as Mãos e ficam na barra de mão (1–0), de
+  onde já batiam, cortavam e tiravam a piaçava. O facão perdeu o efeito de cintura que
+  dava vestido (−5% no fôlego gasto). A partida salva com um deles vestido o devolve à
+  barra e tira o efeito da progressão. Ainda não há luvas no jogo: o encaixe fica à
+  espera da primeira.
+
 ## Em desenvolvimento — 03/10/2026
 
 - **O boneco da mochila: o personagem em 3D ao lado dos encaixes, com o que veste.** "No

@@ -66,11 +66,10 @@ func da_familia_em_uso(familia: String) -> String:
 	return ""
 
 
+## O ENCAIXE DAS MÃOS É DAS LUVAS: arma e ferramenta vão na barra de mão (os
+## números), e só peça de vestir entra num encaixe.
 func e_equipamento(id: String) -> bool:
-	var encaixe := encaixe_de(id)
-	if encaixe == "":
-		return false
-	return Catalogo.tipo(id) == "equipamento" or (Catalogo.tipo(id) == "ferramenta" and encaixe == "maos")
+	return encaixe_de(id) != "" and Catalogo.tipo(id) == "equipamento"
 
 
 ## Veste o item que está no espaço dado da mochila. O que estava no encaixe

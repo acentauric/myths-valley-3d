@@ -350,7 +350,23 @@ func _arquivos_das_vagas() -> Array:
 	for slot in range(1, salvamento.QUANTOS_SLOTS + 1):
 		for caminho in [salvamento.arquivo(slot), salvamento.anterior(slot), salvamento.rascunho(slot)]:
 			todos.append(caminho)
+	todos.append("user://vagas.json")
 	return todos
+
+
+## OS PONTOS DE RESTAURAÇÃO são do jogador como os saves (ver salvamento.gd).
+const PONTOS := "user://pontos"
+
+
+func _apagar_pasta(caminho: String) -> void:
+	var pasta := DirAccess.open(caminho)
+	if pasta == null:
+		return
+	for dentro in pasta.get_directories():
+		_apagar_pasta(caminho.path_join(dentro))
+	for arquivo in pasta.get_files():
+		DirAccess.remove_absolute(caminho.path_join(arquivo))
+	DirAccess.remove_absolute(caminho)
 
 
 func _guardar_os_saves_de_verdade() -> void:
@@ -358,12 +374,15 @@ func _guardar_os_saves_de_verdade() -> void:
 	for caminho in _arquivos_das_vagas():
 		if FileAccess.file_exists(caminho):
 			DirAccess.rename_absolute(caminho, RESERVA.path_join(caminho.get_file()))
+	if DirAccess.dir_exists_absolute(PONTOS):
+		DirAccess.rename_absolute(PONTOS, RESERVA.path_join(PONTOS.get_file()))
 
 
 func _devolver_os_saves_de_verdade() -> void:
 	for caminho in _arquivos_das_vagas():
 		if FileAccess.file_exists(caminho):
 			DirAccess.remove_absolute(caminho)
+	_apagar_pasta(PONTOS)
 	_devolver_reserva_esquecida()
 
 
@@ -377,7 +396,11 @@ func _devolver_reserva_esquecida() -> void:
 		if FileAccess.file_exists(destino):
 			DirAccess.remove_absolute(destino)
 		DirAccess.rename_absolute(RESERVA.path_join(nome), destino)
-	if DirAccess.open(RESERVA).get_files().is_empty():
+	for nome in pasta.get_directories():
+		var destino := "user://".path_join(nome)
+		_apagar_pasta(destino)
+		DirAccess.rename_absolute(RESERVA.path_join(nome), destino)
+	if DirAccess.open(RESERVA).get_files().is_empty() and DirAccess.open(RESERVA).get_directories().is_empty():
 		DirAccess.remove_absolute(RESERVA)
 
 

@@ -280,13 +280,12 @@ func _no_dia(qual: int, hora: float) -> void:
 
 
 func _por_o_facao() -> void:
-	var equipamento = root.get_node("/root/Equipamento")
-	if equipamento.no_encaixe("maos") == "facao":
+	if inventario.na_mao() == "facao":
 		return
 	inventario.adicionar("facao", 1)
-	for i in inventario.espacos.size():
+	for i in inventario.ESPACOS_MAO:
 		if str((inventario.espacos[i] as Dictionary).get("id", "")) == "facao":
-			equipamento.equipar_do_espaco(i)
+			inventario.selecionar(i)
 			return
 
 

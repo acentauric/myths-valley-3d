@@ -143,11 +143,15 @@ func trocar(a: int, b: int) -> void:
 ## Partida salva no tempo da reserva tem o machado lá embaixo, onde o número
 ## não alcança. Este passo o sobe para o primeiro espaço livre da barra; sem
 ## espaço livre ele fica onde está, e o jogador o arrasta.
+## As ferramentas que já moraram no encaixe das Mãos (que hoje é das luvas) e
+## que uma partida antiga pode ter guardado na reserva.
+const FERRAMENTAS_QUE_FORAM_DE_ENCAIXE := ["machado", "machado_de_aco", "facao"]
+
 func trazer_ferramentas_para_a_mao() -> void:
 	var mudou_de_lugar := false
 	for origem in range(ESPACOS_MAO, ESPACOS):
 		var id := str(espacos[origem].get("id", ""))
-		if not (Catalogo.tipo(id) == "ferramenta" and str(Catalogo.dados(id).get("encaixe", "")) == "maos"):
+		if not FERRAMENTAS_QUE_FORAM_DE_ENCAIXE.has(id):
 			continue
 		var destino := -1
 		for indice in ESPACOS_MAO:

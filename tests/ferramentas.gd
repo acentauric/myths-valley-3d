@@ -151,9 +151,15 @@ func _run() -> void:
 	inv.adicionar("machado", 1)
 	for i in inv.espacos.size():
 		if str((inv.espacos[i] as Dictionary).get("id", "")) == "machado":
-			_conferir(equipamento.equipar_do_espaco(i), "o machado não entrou no encaixe")
+			# O ENCAIXE DAS MÃOS É DAS LUVAS: "Armas são nos campos numerais."
+			# O machado não veste as Mãos, nem pedindo o encaixe; vai na barra.
+			_conferir(not equipamento.equipar_do_espaco(i) and not equipamento.equipar_do_espaco(i, "maos"),
+				"o machado entrou no encaixe das Mãos, que é das luvas")
+			inv.selecionar(i)
 			break
-	_conferir(equipamento.no_encaixe("maos") == "machado",
+	_conferir(not equipamento.e_equipamento("facao") and not equipamento.e_equipamento("machado_de_aco"),
+		"o facão ou o machado de aço ainda vestem um encaixe: arma vai nos números")
+	_conferir(inv.na_mao() == "machado",
 		"o machado não está na mão: os golpes abaixo mediriam a recusa, não o golpe")
 	energia.encher()
 	var golpes: int = int(recursos._alvos[alvo_id]["ficha"].get("golpes", 3))

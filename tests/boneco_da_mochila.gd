@@ -13,8 +13,9 @@ extends SceneTree
 ##   3. SÓ DESENHA COM A MOCHILA ABERTA: fechada, o palco não renderiza.
 ##   4. O QUE SE VESTE APARECE NOS DOIS: o chapéu no encaixe da cabeça aparece no
 ##      boneco e no jogador; tirado, some dos dois.
-##   5. A MÃO TAMBÉM: o machado escolhido na barra de mão e o facão vestido nas
-##      Mãos aparecem na mão do boneco e do jogador, um de cada vez.
+##   5. A MÃO TAMBÉM: o machado e o facão escolhidos na barra de mão (arma vai
+##      nos números; o encaixe das Mãos é das luvas) aparecem na mão do boneco
+##      e do jogador, um de cada vez.
 ##   6. O MOUSE GIRA O BONECO: arrastar por cima dele gira; arrastar fora, não.
 ##   7. SOLTAR A PEÇA NO BONECO VESTE: arrastada da mochila e solta em cima
 ##      dele, o chapéu vai para o encaixe da cabeça.
@@ -111,17 +112,16 @@ func _run() -> void:
 	_abrir(vale)
 	await _segundos(0.5)
 	_conferir(boneco.pecas_vestidas().has("machado"), "com o machado na mão, o boneco não está com ele (%s)" % str(boneco.pecas_vestidas()))
-	inventario.selecionar(-1)
 	inventario.adicionar("facao", 1)
-	equipamento.equipar_do_espaco(_espaco_de("facao"))
+	inventario.selecionar(_espaco_de("facao"))
 	await _segundos(0.5)
 	var na_mao: Array = boneco.pecas_vestidas()
-	_conferir(na_mao.has("facao") and not na_mao.has("machado"), "com o facão nas Mãos e a mão da barra livre, o boneco mostra %s" % str(na_mao))
+	_conferir(na_mao.has("facao") and not na_mao.has("machado"), "com o facão escolhido na barra, o boneco mostra %s" % str(na_mao))
 	_fechar_a_mochila(vale)
 	await _segundos(0.4)
 	var do_corpo := _pecas(do_jogador)
-	_conferir(do_corpo.has("facao") and not do_corpo.has("machado"), "com o facão nas Mãos, o jogador mostra %s" % str(do_corpo))
-	equipamento.desequipar("maos")
+	_conferir(do_corpo.has("facao") and not do_corpo.has("machado"), "com o facão escolhido na barra, o jogador mostra %s" % str(do_corpo))
+	inventario.selecionar(-1)
 	await _segundos(0.4)
 	_conferir(not _pecas(do_jogador).has("facao"), "tirado o facão, o jogador continua com ele na mão")
 
@@ -218,7 +218,7 @@ func _segundos(s: float) -> void:
 func _fechar() -> void:
 	print("")
 	if falhas == 0:
-		print("BONECO_OK: aberta a mochila, o boneco está ao lado dos encaixes e ela cabe na tela; é o corpo do jogador, parado no idle; só desenha com a mochila aberta; o chapéu, o machado da barra e o facão das Mãos aparecem nele e no jogador, e somem dos dois; o mouse o gira por cima e não fora; o chapéu solto em cima dele vai para a cabeça; e com o baú aberto ele sai")
+		print("BONECO_OK: aberta a mochila, o boneco está ao lado dos encaixes e ela cabe na tela; é o corpo do jogador, parado no idle; só desenha com a mochila aberta; o chapéu, o machado e o facão da barra aparecem nele e no jogador, e somem dos dois; o mouse o gira por cima e não fora; o chapéu solto em cima dele vai para a cabeça; e com o baú aberto ele sai")
 	else:
 		print("boneco: %d falha(s)" % falhas)
 	quit(1 if falhas > 0 else 0)

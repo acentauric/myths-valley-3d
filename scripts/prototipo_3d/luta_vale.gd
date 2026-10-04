@@ -227,15 +227,10 @@ func _conferir_o_golpe_segurado() -> void:
 		bater(golpe, mao)
 
 
-## Com que se bate: a ARMA da barra de mão, se o número escolheu uma; senão, o
-## que está vestido em "Mãos"; senão, o que estiver na mão (a mão livre bate de
-## punho). A barra vem antes porque é a escolha mais recente do jogador.
+## Com que se bate: o que está na barra de mão (a mão livre bate de punho).
+## Arma vai nos números; o encaixe das Mãos é das luvas.
 func _item_em_uso() -> String:
-	var da_barra := Inventario.na_mao()
-	if Catalogo.dados(da_barra).has("dano"):
-		return da_barra
-	var equipado := Equipamento.no_encaixe("maos")
-	return equipado if equipado != "" else da_barra
+	return Inventario.na_mao()
 
 
 ## Um golpe inteiro: o fôlego, o corpo, e a pancada no tempo do braço.

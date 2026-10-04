@@ -1,7 +1,8 @@
 extends Control
 ## Ícones vetoriais dos botões de canto do HUD, no mesmo traço do som e do relógio:
 ## "casa" (HOME), "ajustes" (engrenagem), "restaurar" (seta circular), "mapa", "ajuda" (?), "fechar" (×), "externo" (link que sai do jogo), "camera" (anel dourado quando travada), "velocidade" (setas conforme
-## a Passagem do tempo, 0–3) e "estilo" (cubo para Tripo, chaves para Procedural).
+## a Passagem do tempo, 0–3) e "estilo" (cubo para Tripo, chaves para Procedural), "editar" (lápis)
+## e "apagar" (lixeira, vermelha pedindo a confirmação) dos cartões das vagas.
 
 var tipo := "casa"
 var ativo := false
@@ -56,6 +57,21 @@ func _draw() -> void:
 		"fechar":
 			draw_line(Vector2(6, 6), Vector2(18, 18), tinta, 2.0, true)
 			draw_line(Vector2(18, 6), Vector2(6, 18), tinta, 2.0, true)
+		"editar":
+			# Lápis deitado: corpo, ponta e a cinta da borracha (o nome da vaga).
+			var cor_lapis := ouro if ativo else tinta
+			draw_polyline(PackedVector2Array([Vector2(16, 4), Vector2(20, 8), Vector2(9, 19), Vector2(4, 20), Vector2(5, 15), Vector2(16, 4)]), cor_lapis, 1.7, true)
+			draw_line(Vector2(13.5, 6.5), Vector2(17.5, 10.5), cor_lapis, 1.5, true)
+			draw_line(Vector2(5, 15), Vector2(9, 19), cor_lapis, 1.3, true)
+		"apagar":
+			# Lixeira: tampa com alça, corpo e duas frisas; vermelha pedindo a
+			# confirmação (o segundo clique apaga).
+			var cor_lixo := Color("e07a64") if ativo else tinta
+			draw_line(Vector2(5, 7), Vector2(19, 7), cor_lixo, 1.8, true)
+			draw_polyline(PackedVector2Array([Vector2(10, 7), Vector2(10, 4.5), Vector2(14, 4.5), Vector2(14, 7)]), cor_lixo, 1.6, true)
+			draw_polyline(PackedVector2Array([Vector2(7, 7), Vector2(8, 20), Vector2(16, 20), Vector2(17, 7)]), cor_lixo, 1.8, true)
+			draw_line(Vector2(10.5, 10), Vector2(10.5, 17), cor_lixo, 1.4, true)
+			draw_line(Vector2(13.5, 10), Vector2(13.5, 17), cor_lixo, 1.4, true)
 		"casa":
 			# Dourada quando já se está na Home (como o relógio andando).
 			var cor_casa := ouro if ativo else tinta

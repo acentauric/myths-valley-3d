@@ -30,7 +30,6 @@ const ITENS := {
 	"machado": {
 		"nome": "Machado",
 		"tipo": "ferramenta",
-		"encaixe": "maos",
 		"icone": "machado",
 		"empilhavel": false,
 		"dano": 3.0,
@@ -52,7 +51,6 @@ const ITENS := {
 	"machado_de_aco": {
 		"nome": "Machado de aço",
 		"tipo": "ferramenta",
-		"encaixe": "maos",
 		"icone": "machado",
 		"empilhavel": false,
 		"dano": 3.0,
@@ -438,12 +436,16 @@ const ITENS := {
 	## 6-A deu as duas coisas que faltavam: a oficina bate um (ver Oficina) e
 	## ele é a ARMA do jogo, a que bate mais que o machado. Continua sendo
 	## equipamento e continua cortando cana; o `dano` é o que ele ganhou.
+	##
+	## ARMA VAI NOS NÚMEROS, e o encaixe das Mãos é das luvas: "No campo mãos do
+	## inventário, não é para armas, mas sim para luvas. Armas são nos campos
+	## numerais." O facão deixou de ser equipamento de encaixe (e o efeito de
+	## cintura dele foi junto): é ferramenta da barra de mão, como o machado.
+	## A partida salva com ele vestido o devolve à barra (`Partida`).
 	"facao": {
 		"nome": "Facão de mato",
-		"tipo": "equipamento",
-		"encaixe": "maos",
-		"efeito": {"eficiencia": -0.05},
-		"resumo": "Na cintura, resolve o que o machado não vale a pena. Na mão, é o que corta.",
+		"tipo": "ferramenta",
+		"resumo": "Na mão, é o que corta: a arma do mato, a cana e a fibra da piaçava.",
 		"icone": "facao",
 		"empilhavel": false,
 		"dano": 4.0,

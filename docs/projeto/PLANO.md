@@ -22,7 +22,8 @@ com os moradores no marco à tarde, e a capelinha do cemitério de costas para o
 mar), os cômodos por dentro das próprias
 construções (#26: a igreja do Bom Jesus e a casa herdada, com a cama que vira o
 dia, o baú e o desmaio das duas da #50; e a casa do Pedro e a da Dona Zefa,
-cada uma com o interior de quem mora) e três vagas de salvamento. A
+cada uma com o interior de quem mora) e três vagas de salvamento, com os
+pontos de restauração de cada uma. A
 existência de um sistema não significa que todos os seus gatilhos ou telas
 estejam concluídos.
 
