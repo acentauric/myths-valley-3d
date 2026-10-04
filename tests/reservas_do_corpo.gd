@@ -23,7 +23,7 @@ func _run() -> void:
 		var original: Script = instancia.get_node("Jogador").get_script()
 		var modelo: PackedScene = instancia.get_node("Jogador").model_scene
 		var quebrado := GDScript.new()
-		quebrado.source_code = original.source_code.replace("\t\t_cobrar_folego(CUSTO_FOLEGO_NADO_POR_SEGUNDO * delta)", "\t\tpass # cobrança do nado ausente")
+		quebrado.source_code = original.source_code.replace("\t\t_cobrar_folego(CUSTO_FOLEGO_NADO_POR_SEGUNDO * (delta - tempo_com_vigor))", "\t\tpass # cobrança do nado ausente")
 		_conferir(quebrado.reload() == OK, "a falsificação não compilou")
 		instancia.get_node("Jogador").set_script(quebrado)
 		instancia.get_node("Jogador").model_scene = modelo
@@ -54,8 +54,18 @@ func _run() -> void:
 	_conferir(jogador.gastar_vigor(5.0), "o esforço com pouco fôlego foi recusado")
 	_conferir(jogador.folego_atual() == 3.0 and vida.atual == saude, "o esforço em terra atingiu o fôlego baixo ou a vida")
 	jogador.set("_nadando", true)
+	jogador.velocity = Vector3(1, 0, 0)
 	jogador._atualizar_vigor(1.0, false)
-	_conferir(jogador.folego_atual() == 0.0 and vida.atual == saude - 2.0, "nadar deve consumir fôlego e só o excedente deve atingir a vida")
+	_conferir(jogador.vigor_atual() == 80.0 and jogador.folego_atual() > 3.0 and vida.atual == saude,
+		"nadar com vigor deve gastar vigor e recuperar fôlego sem ferir")
+	jogador.definir_vigor(2.0)
+	jogador.definir_folego(3.0)
+	jogador._atualizar_vigor(1.0, false)
+	_conferir(jogador.vigor_atual() == 0.0 and is_equal_approx(jogador.folego_atual(), 1.0) and vida.atual == saude,
+		"ao esgotar vigor no meio do nado, só o tempo restante deve consumir fôlego")
+	jogador._atualizar_vigor(1.0, false)
+	_conferir(jogador.folego_atual() == 0.0 and is_equal_approx(vida.atual, saude - 4.0),
+		"nadar sem vigor deve consumir fôlego e só o excedente deve atingir a vida")
 	_conferir(hud.barra_folego.value == 0.0 and hud.barra_vida.value == vida.atual, "o HUD não acompanhou o nado")
 	jogador.set("_nadando", false)
 	_conferir(hud.barra_vida.value == vida.atual and hud._vida_texto.text.begins_with("Vida "), "a barra de vida perdeu valor ou descrição")
@@ -87,7 +97,7 @@ func _run() -> void:
 	energia.desmaiar()
 	_conferir(jogador.folego_atual() == jogador.folego_maximo(), "desmaio não recuperou respiração")
 	await _conferir_apresentacao(hud)
-	print("RESERVAS_DO_CORPO_OK: vigor em terra, fôlego no nado, vida, HUD, descanso e save" if falhas == 0 else "reservas_do_corpo: %d falhas" % falhas)
+	print("RESERVAS_DO_CORPO_OK: vigor antes do fôlego no nado, vida, HUD, descanso e save" if falhas == 0 else "reservas_do_corpo: %d falhas" % falhas)
 	quit(1 if falhas > 0 else 0)
 
 func _somente_hud() -> void:

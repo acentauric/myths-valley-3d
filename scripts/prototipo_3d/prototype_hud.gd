@@ -85,6 +85,11 @@ var _notice_label: Label
 var _notice_panel: Panel
 var _objective_label: Label
 var _heading: Panel
+var _mission_pages: Array[String] = []
+var _mission_page_index := 0
+var _mission_previous: Button
+var _mission_next: Button
+var _mission_close: Button
 var _control_mode_label: Label
 var _controls_panel: Panel
 var _help_icon	# hud_icon.gd
@@ -102,6 +107,7 @@ var _ajustes	# painel_ajustes.gd
 ## Painéis escondidos enquanto o mapa está aberto (a coluna do canto continua).
 var _hidden_for_map: Array[Control] = []
 var _corner_nodes: Array[Node] = []
+var _shortcut_badges: Dictionary = {}
 var mapa_aberto := false
 
 
@@ -135,6 +141,12 @@ func _ready() -> void:
 	_objective_label = _label(_objective, 17, INK)
 	_objective_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_place(_objective_label, Vector2(33, 52), Vector2(HEADING_WIDTH - 50, 42))
+	_mission_previous = _mission_button("◀", "PaginaAnterior")
+	_mission_previous.pressed.connect(func() -> void: _change_mission_page(-1))
+	_mission_next = _mission_button("▶", "ProximaPagina")
+	_mission_next.pressed.connect(func() -> void: _change_mission_page(1))
+	_mission_close = _mission_button("×", "FecharMissao")
+	_mission_close.pressed.connect(_close_mission_pages)
 
 	_create_performance_panel()
 	_create_corner_buttons()
@@ -478,10 +490,55 @@ func clear_house_info() -> void:
 
 
 func set_objective(value: String) -> void:
+	if value != _objective and is_instance_valid(_heading):
+		for control: Control in [_heading, _region_label, _mission_step, _objective_label]:
+			control.visible = true
 	_objective = value
 	if is_instance_valid(_objective_label):
 		_objective_label.text = value
 		_fit_heading()
+
+
+func set_mission_pages(pages: Array[String]) -> void:
+	_mission_pages = pages
+
+
+func _change_mission_page(direction: int) -> void:
+	_mission_page_index = clampi(_mission_page_index + direction, 0, _mission_pages.size() - 1)
+	_show_mission_page()
+
+
+func _show_mission_page() -> void:
+	if _mission_pages.is_empty():
+		return
+	_objective_label.text = _mission_pages[_mission_page_index]
+	_mission_step.text = "%d de %d" % [_mission_page_index + 1, _mission_pages.size()]
+	_mission_previous.visible = _mission_page_index > 0
+	_mission_next.visible = _mission_page_index < _mission_pages.size() - 1
+	_mission_close.visible = _mission_page_index == _mission_pages.size() - 1
+	_fit_heading()
+
+
+func _close_mission_pages() -> void:
+	if _mission_page_index != _mission_pages.size() - 1:
+		return
+	for control: Control in [_heading, _region_label, _mission_step, _objective_label,
+			_mission_previous, _mission_next, _mission_close]:
+		control.visible = false
+
+
+func _mission_button(symbol: String, node_name: String) -> Button:
+	var button := Button.new()
+	button.name = node_name
+	button.text = symbol
+	button.focus_mode = Control.FOCUS_NONE
+	button.mouse_filter = Control.MOUSE_FILTER_STOP
+	button.add_theme_font_size_override("font_size", 15)
+	button.add_theme_color_override("font_color", GOLD)
+	button.size = Vector2(32, 26)
+	button.visible = false
+	_root.add_child(button)
+	return button
 
 
 func set_clock(value: String) -> void:
@@ -584,9 +641,14 @@ func _fit_heading() -> void:
 		return
 	var lines := maxi(1, _objective_label.get_line_count())
 	# 52 é onde a missão começa (ver `_montar`); 18 de respiro embaixo.
-	var altura := 52.0 + lines * _objective_label.get_line_height() + 18.0
+	var footer := not _mission_pages.is_empty()
+	var altura := 52.0 + lines * _objective_label.get_line_height() + (42.0 if footer else 18.0)
 	_objective_label.size.y = lines * _objective_label.get_line_height()
 	_heading.size.y = altura
+	var button_y := _heading.position.y + altura - 34.0
+	_mission_previous.position = Vector2(33, button_y)
+	_mission_next.position = Vector2(73, button_y)
+	_mission_close.position = Vector2(HEADING_WIDTH - 24, button_y)
 	if is_instance_valid(_house_info_panel):
 		_house_info_panel.position.y = 18.0 + altura + 12.0
 
@@ -639,6 +701,7 @@ func _create_corner_buttons() -> void:
 	_map_icon = HudIcon.new().configurar("mapa")
 	var map: Array = BotaoCanto.criar(_root, top, _map_icon)
 	(map[1] as Label).text = "Mapa do Vale"
+	_shortcut_badges["mapa"] = BotaoCanto.marcar_atalho(map[0], Atalhos.letra("mapa"))
 	_corner_setup(map[0], func() -> void: map_requested.emit())
 
 
@@ -647,6 +710,7 @@ func _create_corner_buttons() -> void:
 	var camera: Array = BotaoCanto.criar(_root, top, _camera_icon)
 	_camera_lock_button = camera[0]
 	_camera_hint = camera[1]
+	_shortcut_badges["camera"] = BotaoCanto.marcar_atalho(_camera_lock_button, Atalhos.letra("camera"))
 	_camera_lock_button.toggle_mode = true
 	_camera_lock_button.focus_mode = Control.FOCUS_NONE
 	_camera_lock_button.toggled.connect(func(locked: bool):
@@ -683,6 +747,7 @@ func _create_corner_buttons() -> void:
 	var quest_data = JSON.parse_string(FileAccess.get_file_as_string("res://data/hud_3d.json"))
 	var quest_texts: Dictionary = quest_data if quest_data is Dictionary else {}
 	(quests[1] as Label).text = str(IdiomaMenu.campo(quest_texts.get("botao_missoes", {}), "rotulo", "Missões e objetivos"))
+	_shortcut_badges["painel"] = BotaoCanto.marcar_atalho(quests[0], Atalhos.letra("painel"))
 	_corner_setup(quests[0], func() -> void: quests_requested.emit())
 	set_camera_locked(_camera_locked)
 	for index in range(first_child, _root.get_child_count()):
@@ -792,6 +857,9 @@ func close_settings() -> void:
 	_settings.queue_free()
 	_settings = null
 	_settings_icon.definir(false)
+	for action: String in _shortcut_badges:
+		(_shortcut_badges[action] as Label).text = Atalhos.letra(action)
+	set_camera_locked(_camera_locked)
 	settings_closed.emit()
 
 
@@ -943,7 +1011,18 @@ func almanaque() -> Control:
 ## reaparecia no meio da frase a cada reanúncio. Separada, ela é um número que
 ## se olha de relance sem reler a missão. Com a cadeia terminada (indice >=
 ## total) some, em vez de mostrar "9/9" para sempre.
-func set_mission_step(indice: int, total: int) -> void:
+func set_mission_step(indice: int, total: int, finished := false) -> void:
 	if not is_instance_valid(_mission_step):
 		return
+	if total > 1 and not finished and not _mission_pages.is_empty():
+		_mission_page_index = clampi(indice - 1, 0, _mission_pages.size() - 1)
+		for control: Control in [_heading, _region_label, _mission_step, _objective_label]:
+			control.visible = true
+		_show_mission_page()
+		return
+	_mission_pages.clear()
+	_mission_previous.visible = false
+	_mission_next.visible = false
+	_mission_close.visible = false
 	_mission_step.text = "" if total <= 0 or indice >= total else "%d de %d" % [indice, total]
+	_fit_heading()

@@ -17,10 +17,8 @@ extends Node
 ##   escreve a hora de acordar, e escrever a hora é o que prende o calendário
 ##   de novo. Na ordem inversa, o calendário andaria sozinho até o próximo
 ##   quadro, que é o defeito que `tests/calendario.gd` procura.
-## - O CARTÃO DO AMANHECER E A FALA vieram com a #21, na ordem do 2D
-##   (`Mundo._apagar`): o cartão do dia novo é lido no escuro, antes de
-##   clarear, e a fala de quem caiu sai na caixa de fala longa depois — o balão
-##   3D é para cumprimento de passagem.
+## - O CARTÃO DO AMANHECER vem antes de clarear; depois, a explicação da queda
+##   aparece no painel do HUD com botão de fechar, sem prender o vale.
 ##
 ## O que NÃO muda: a mesma trava de uma noite só (`_virando_a_noite`), o
 ## `Energia.desmaiar()` e o `Vida.dormir()` — cair é a mesma virada do desmaio
@@ -126,17 +124,19 @@ func _ao_cair() -> void:
 	_player.set_process_unhandled_input(true)
 	_virando_a_noite = false
 	acordou.emit()
-	# Alguém diz o que houve, porque quem caiu no mato não sabe.
-	await Dialogo.falar("", _falas())
+	# A explicação fica no painel do HUD, com botão de fechar e jogo responsivo.
+	_hud.show_house_info("\n\n".join(_falas()), str(IdiomaMenu.campo(_dado().get("titulo", {}), "texto")))
 
 
 func _levar_para_casa() -> void:
 	var destino := ponto_de_casa()
 	if not destino.is_finite():
 		_player.reset_position()
+		_player.sair_do_nado_ao_renascer()
 		return
 	_player.global_position = destino
 	_player.velocity = Vector3.ZERO
+	_player.sair_do_nado_ao_renascer()
 	# Terra firme conhecida passa a ser a porta de casa: se a próxima volta à
 	# terra (o tubarão, o fundo do mar) vier antes de o jogador pisar em outro
 	# chão, ela o traz para cá, e não para onde ele estava antes de cair.

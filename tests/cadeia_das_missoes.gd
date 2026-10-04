@@ -104,6 +104,15 @@ func _run() -> void:
 			"o passo '%s' não chegou a anunciar em %s s: alguém nunca solta a palavra"
 				% [id, str(SEGUNDOS_PARA_ANUNCIAR)])
 		await _frames(2)
+		if indice == 0:
+			var hud = jogo.get("hud")
+			_conferir(hud._mission_pages.size() == total and hud._mission_next.visible,
+				"a missão não expôs as páginas no HUD")
+			if hud._mission_next.visible:
+				hud._mission_next.pressed.emit()
+				_conferir(pedro.missao == indice and hud._mission_step.text == "2 de %d" % total,
+					"consultar a próxima página alterou o progresso da missão")
+				hud._mission_previous.pressed.emit()
 
 		# A ferramenta prometida tem de estar na mão ANTES de o trabalho ser
 		# cobrado. É a regra 1 do tutorial do 2D.

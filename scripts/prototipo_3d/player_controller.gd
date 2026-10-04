@@ -26,6 +26,7 @@ const RUN_STOP_SPEED := 0.15
 const VIGOR_MAXIMO := 100.0
 const FOLEGO_MAXIMO := 100.0
 const CUSTO_FOLEGO_NADO_POR_SEGUNDO := 5.0
+const CUSTO_VIGOR_NADO_POR_SEGUNDO := 5.0
 const FOLEGO_RECUPERACAO_ANDANDO := 2.5
 const FOLEGO_RECUPERACAO_PARADO := 10.0
 const VIGOR_MINIMO_PARA_CORRER := 0.5
@@ -686,6 +687,17 @@ func is_swimming() -> bool:
 	return _nadando
 
 
+## O respawn acontece com a física parada; não espera um quadro para sair da pose de nado.
+func sair_do_nado_ao_renascer() -> void:
+	_nadando = false
+	if animator and animator.has_method("set_swimming"):
+		animator.set_swimming(false)
+	if is_instance_valid(camera_pivot):
+		camera_pivot.position.y = PIVO_CAMERA
+	if is_instance_valid(visual):
+		visual.position.y = 0.0
+
+
 ## Chão sob os pés para o som do passo: madeira no píer, na ponte e na canoa; água rasa
 ## ou funda conforme a lâmina; senão o que o cenário diz (grama, terra, areia).
 func chao_dos_pes() -> String:
@@ -986,7 +998,7 @@ func gastar_vigor(quantidade: float) -> bool:
 	return true
 
 
-## Só o nado consome respiração. Quando ela acaba, continuar na água tira vida.
+## Nadar sem vigor consome respiração. Quando ela acaba, continuar na água tira vida.
 func _cobrar_folego(quantidade: float) -> void:
 	var falta := maxf(0.0, quantidade - _folego)
 	definir_folego(_folego - quantidade)
@@ -996,7 +1008,14 @@ func _cobrar_folego(quantidade: float) -> void:
 
 func _atualizar_vigor(delta: float, corrida_ativa: bool) -> void:
 	if _nadando:
-		_cobrar_folego(CUSTO_FOLEGO_NADO_POR_SEGUNDO * delta)
+		var tempo_com_vigor := minf(delta, _vigor / CUSTO_VIGOR_NADO_POR_SEGUNDO)
+		_definir_vigor(_vigor - CUSTO_VIGOR_NADO_POR_SEGUNDO * delta)
+		# No quadro em que o vigor acaba, só o tempo restante cobra fôlego.
+		var movendo := Vector2(velocity.x, velocity.z).length_squared() > 0.04
+		var recuperacao_folego := FOLEGO_RECUPERACAO_ANDANDO if movendo else FOLEGO_RECUPERACAO_PARADO
+		repor_folego(recuperacao_folego * tempo_com_vigor)
+		_cobrar_folego(CUSTO_FOLEGO_NADO_POR_SEGUNDO * (delta - tempo_com_vigor))
+		return
 	if corrida_ativa:
 		gastar_vigor(minf(_vigor, CUSTO_CORRIDA_POR_SEGUNDO * delta))
 		if _vigor <= 0.0:

@@ -84,3 +84,20 @@ static func criar(pai: Node, topo: float, icone: Control) -> Array:
 	botao.add_child(icone)
 	canto.add_child(botao)
 	return [botao, rotulo]
+
+
+## Letra sempre visível, no mesmo canto usado pelos números da barra de itens.
+## Fica sobre o ícone sem capturar cliques ou foco do botão.
+static func marcar_atalho(botao: Button, tecla: String) -> Label:
+	var marca := Label.new()
+	marca.name = "TeclaDeAtalho"
+	marca.text = tecla
+	marca.position = Vector2(2, 1)
+	marca.add_theme_font_size_override("font_size", 11)
+	marca.add_theme_color_override("font_color", Identidade.OURO)
+	marca.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.95))
+	marca.add_theme_constant_override("shadow_offset_x", 1)
+	marca.add_theme_constant_override("shadow_offset_y", 1)
+	marca.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	botao.add_child(marca)
+	return marca

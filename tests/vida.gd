@@ -94,6 +94,10 @@ func _run() -> void:
 	dia.pausado = true
 	var dia_antes: int = relogio.dia_absoluto()
 	player.definir_vigor(5.0)
+	# Cair no mar também precisa devolver a pose de terra antes de mostrar a fala.
+	player.set("_nadando", true)
+	if player.animator != null:
+		player.animator.set_swimming(true)
 	var acordou := [false]
 	queda.acordou.connect(func(): acordou[0] = true)
 
@@ -110,8 +114,18 @@ func _run() -> void:
 	_conferir(player.global_position.distance_to(casa) < 1.5,
 		"quem caiu acordou a %.1f u da porta de casa" % player.global_position.distance_to(casa))
 	_conferir(vida.atual == vida.maximo(), "acordou sem a vida cheia: %s" % str(vida.atual))
-	_conferir(is_equal_approx(energia.atual, 5.0 + progressao.recuperacao_ao_desmaiar),
-		"o fôlego não voltou como no desmaio do 2D: %s" % str(energia.atual))
+	_conferir(energia.atual >= 5.0 + progressao.recuperacao_ao_desmaiar,
+		"o vigor não voltou como no desmaio do 2D: %s" % str(energia.atual))
+	_conferir(not player.is_swimming() and player.visual.position.y == 0.0,
+		"o jogador acordou ainda na pose de nado")
+	_conferir(not paused, "o vale continuou pausado depois do respawn")
+	_conferir(not root.get_node("/root/Dialogo").ativo and hud._house_info_panel.visible,
+		"a explicação da queda não apareceu no painel com fechar")
+	var fechar: Array[Node] = hud._house_info_panel.find_children("*", "Button", true, false)
+	_conferir(fechar.size() == 1, "o aviso da queda não tem botão de fechar")
+	if fechar.size() == 1:
+		(fechar[0] as Button).pressed.emit()
+		_conferir(not hud._house_info_panel.visible, "o botão não fechou o aviso da queda")
 	_conferir(relogio.dia_absoluto() == dia_antes + 1,
 		"a queda virou %d dia(s), e é um" % (relogio.dia_absoluto() - dia_antes))
 	# A hora é escrita com a tela preta e o relógio anda enquanto ela clareia

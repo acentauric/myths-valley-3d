@@ -113,6 +113,10 @@ func retomar() -> void:
 	_cadeia.retomar()
 
 
+func paginas_do_hud() -> Array[String]:
+	return _cadeia.paginas_do_hud()
+
+
 func saudar() -> void:
 	super()
 	_cadeia.comecar(6.5)

@@ -217,12 +217,25 @@ func _run() -> void:
 	var hud = jogo.get("hud")
 	_conferir(hud != null, "não achei o HUD")
 	if hud != null:
+		var atalhos = load("res://scripts/prototipo_3d/atalhos.gd")
+		var teclas_da_coluna := {4: "mapa", 5: "camera", 9: "painel"}
 		_conferir(hud._corner_nodes.size() == 20, "faltam atalhos ou dicas na coluna do HUD")
 		for i in range(0, hud._corner_nodes.size() - 1, 2):
 			var canto: Control = hud._corner_nodes[i]
 			var dica: Control = hud._corner_nodes[i + 1]
 			var botoes_canto: Array[Node] = canto.find_children("*", "Button", true, false)
 			var rotulos: Array[Node] = dica.find_children("*", "Label", true, false)
+			var marcas: Array[Node] = canto.find_children("TeclaDeAtalho", "Label", true, false)
+			var acao: String = str(teclas_da_coluna.get(i >> 1, ""))
+			if acao.is_empty():
+				_conferir(marcas.is_empty(), "botão sem tecla mostra atalho inexistente")
+			else:
+				_conferir(marcas.size() == 1, "botão de %s não mostra a tecla" % acao)
+				if marcas.size() == 1:
+					_conferir((marcas[0] as Label).text == atalhos.letra(acao),
+						"tecla de %s não corresponde ao atalho configurado" % acao)
+					_conferir((marcas[0] as Label).mouse_filter == Control.MOUSE_FILTER_IGNORE,
+						"a dica de %s captura o clique do botão" % acao)
 			_conferir(botoes_canto.size() == 1 and rotulos.size() == 1, "atalho perdeu botão ou rótulo")
 			if botoes_canto.size() == 1 and rotulos.size() == 1:
 				_conferir(not (rotulos[0] as Label).text.is_empty(), "atalho ficou sem descrição")

@@ -509,6 +509,7 @@ func _montar_moradores(spawn: Vector3) -> void:
 		pedro.global_position = world.ground_position(spawn + lado, 0.05)
 		pedro.saudou.connect(_on_saudacao)
 		pedro.missao_mudou.connect(func(t: String, a: Vector3, i: int, n: int) -> void:
+			hud.set_mission_pages(pedro.paginas_do_hud())
 			missao_do_vale_mudou.emit(t, a, i, n))
 		# OS ALVOS DE TRABALHO, para o marcador apontar o tronco e não a casa.
 		pedro.recursos = _recursos
@@ -653,9 +654,9 @@ func _on_saudacao(morador: MoradorNPC, texto: String) -> void:
 ## voltava a aparecer a cada reanúncio no meio de uma frase que o jogador já
 ## estava lendo. Agora a frase é só a frase, e a conta mora ao lado do nome da
 ## região, onde ela não disputa a leitura.
-func _on_missao_mudou(texto: String, _alvo: Vector3, indice: int, total: int) -> void:
+func _on_missao_mudou(texto: String, alvo: Vector3, indice: int, total: int) -> void:
 	hud.set_objective(texto)
-	hud.set_mission_step(indice, total)
+	hud.set_mission_step(indice, total, alvo == Vector3.ZERO)
 
 
 func _bind(action: StringName, keys: Array, replace_existing := false) -> void:
@@ -1281,6 +1282,7 @@ func _pendurar_cadeia(morador: MoradorNPC, arquivo: String, perto: float) -> Nod
 		cadeia.free()
 		return null
 	cadeia.missao_mudou.connect(func(t: String, a: Vector3, i: int, n: int) -> void:
+		hud.set_mission_pages(cadeia.paginas_do_hud())
 		missao_do_vale_mudou.emit(t, a, i, n))
 	morador.add_child(cadeia)
 	_cadeias[str(morador.dados.get("id", ""))] = cadeia
