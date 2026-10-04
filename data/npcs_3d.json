@@ -519,7 +519,7 @@
     {
       "id": "quirino",
       "nome": "Mestre Quirino",
-      "observacao": "O MESTRE DO SAVEIRO, comprador que encosta no píer UMA VEZ POR ESTAÇÃO, no dia 14 (data/saveiro.json; scripts/prototipo_3d/saveiro_vale.gd): fora desse dia ele não está no vale — escondido, não anda, não fala e não recebe entrega. É o mestre de saveiro que o Pedro diz ter trazido o jogador ('O mestre do saveiro jurou que trazia você hoje'). Fica de pé no píer, perto do saveiro atracado; todos os postos são o mesmo. Sem voz gravada (o balão basta) e, até o modelo dele chegar do Tripo, no corpo procedural.",
+      "observacao": "O MESTRE DO SAVEIRO, comprador que encosta no píer UMA VEZ POR ESTAÇÃO, no dia 14 (data/saveiro.json; scripts/prototipo_3d/saveiro_vale.gd): fora desse dia ele não está no vale — escondido, não anda, não fala e não recebe entrega. É o mestre de saveiro que o Pedro diz ter trazido o jogador ('O mestre do saveiro jurou que trazia você hoje'). Fica de pé no píer, perto do saveiro atracado; todos os postos são o mesmo. Sem voz gravada (o balão basta) e, até o modelo dele chegar do Tripo, caixa cinza provisória no estilo Tripo (npc.gd._corpo_provisorio), que peça procedural não entra nele.",
       "altura": 1.7,
       "gesto_saudacao": 0,
       "gesto_tripo": 0,

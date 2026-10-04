@@ -150,12 +150,13 @@ func _fotografar(id: String) -> Texture2D:
 	return ImageTexture.create_from_image(imagem)
 
 
-## O mesmo modelo que o `npc.gd` monta, no estilo escolhido.
+## O mesmo modelo que o `npc.gd` monta, no estilo escolhido. No estilo Tripo,
+## quem ainda não tem modelo não tem retrato: o morador é a caixa cinza
+## provisória (`npc.gd._corpo_provisorio`), peça procedural não entra no estilo,
+## e o diário mostra o nome sozinho.
 func _montar_modelo(id: String, cena: Node3D) -> Node3D:
 	if Estilo.tripo():
-		var modelo := CatalogoAssets.instanciar(id, cena, Vector3.ZERO, 1.0)
-		if modelo != null:
-			return modelo
+		return CatalogoAssets.instanciar(id, cena, Vector3.ZERO, 1.0)
 	var altura := float(CatalogoAssets.PECAS.get(id, {}).get("altura", 1.7))
 	var procedural := PersonagemProcedural.novo(id, altura)
 	cena.add_child(procedural)

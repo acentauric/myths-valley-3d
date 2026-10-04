@@ -43,8 +43,9 @@ atualize esse arquivo e este documento juntos.
   viagem; se o saveiro parte sem ela, ela sai do caderno sem entrar nas cumpridas
   (`CadernoDoVale.encerrar`). A piaçabeira da restinga dá dois feixes no fio da foice ou do
   facão e fica de pé; dá de novo na estação seguinte, e a dica não diz quando. Com a
-  mochila cheia, nem fôlego se gasta. O mestre fica no corpo procedural até o modelo dele
-  chegar do Tripo, e a placa de nome olha o morador, e não só o rótulo: fora do dia, o
+  mochila cheia, nem fôlego se gasta. O mestre é uma caixa cinza provisória no estilo Tripo
+  até o modelo dele chegar (peça procedural não entra no estilo, e o diário mostra o nome
+  dele sem retrato), e a placa de nome olha o morador, e não só o rótulo: fora do dia, o
   nome dele não flutua sobre o píer vazio. O posto da tarde do Pedro, que ficava na água
   além da ponta do píer, voltou ao tabuado medido. Portão novo `tests/saveiro.gd`, com
   sete perguntas, falsificado seis vezes: o mestre escondido que recebe, o saveiro que vem

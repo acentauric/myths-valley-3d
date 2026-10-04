@@ -33,6 +33,8 @@ const INTERVALO_SAUDACAO_MS := 45000
 const RAIO_CONVERSA := 18.0
 ## Folga entre o fim de uma fala e o começo da seguinte, em segundos.
 const PAUSA_ENTRE_FALAS := 0.6
+## O cinza das peças provisórias (a oficina, o caititu, os móveis de uso).
+const CINZA_PROVISORIO := Color(0.52, 0.53, 0.52)
 
 ## Água: como o jogador (player_controller.gd), nada onde o fundo passa do peito.
 const NADA_A_PARTIR := 0.72
@@ -255,11 +257,44 @@ func _montar_modelo() -> void:
 			add_child(autoral)
 			autoral.configure(modelo)
 			animador = autoral
+		if modelo == null:
+			# NO ESTILO TRIPO, QUEM AINDA NÃO TEM MODELO É CAIXA CINZA, e não o boneco
+			# do procedural: peça procedural não entra no estilo Tripo. É o trato do
+			# caititu e da oficina — a mecânica não espera o modelo, e o modelo entra
+			# depois pelo catálogo sem tocar nela. Hoje é só o mestre Quirino. Sem
+			# animador: toda chamada a ele pergunta antes se existe, e o balanço do
+			# passo (`_atualizar_animacao`) anda sozinho.
+			modelo = _corpo_provisorio()
 	if modelo == null:
 		var procedural := PersonagemProcedural.novo(id, altura)
 		visual.add_child(procedural)
 		modelo = procedural
 		animador = procedural
+
+
+## O CORPO PROVISÓRIO: caixa cinza na altura do morador, com a cabeça um pouco
+## à frente (+Z, para onde o corpo olha) para ele ter rosto, como o caititu.
+func _corpo_provisorio() -> Node3D:
+	var corpo := Node3D.new()
+	corpo.name = "CorpoProvisorio"
+	var tinta := StandardMaterial3D.new()
+	tinta.albedo_color = CINZA_PROVISORIO
+	var tronco := MeshInstance3D.new()
+	var malha := BoxMesh.new()
+	malha.size = Vector3(0.46, altura * 0.82, 0.28)
+	tronco.mesh = malha
+	tronco.material_override = tinta
+	tronco.position.y = malha.size.y * 0.5
+	corpo.add_child(tronco)
+	var cabeca := MeshInstance3D.new()
+	var malha_cabeca := BoxMesh.new()
+	malha_cabeca.size = Vector3(0.24, altura * 0.16, 0.24)
+	cabeca.mesh = malha_cabeca
+	cabeca.material_override = tinta
+	cabeca.position = Vector3(0.0, malha.size.y + malha_cabeca.size.y * 0.5, 0.05)
+	corpo.add_child(cabeca)
+	visual.add_child(corpo)
+	return corpo
 
 
 func _physics_process(delta: float) -> void:

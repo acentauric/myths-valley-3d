@@ -7,7 +7,7 @@ extends SceneTree
 ## chega ao porto. Na missão algum NPC irá ensinar ao jogador que o comprador
 ## de mercadorias vem 1x por estação do calendário do jogo e compra o que foi
 ## produzido no mês, dando a possibilidade do jogador levar algumas mercadorias
-## para vender por um bom preço." Sete perguntas:
+## para vender por um bom preço." Oito perguntas:
 ##
 ##   1. O MESTRE SÓ VEM NO DIA DELE: fora do dia 14 nem ele nem o saveiro estão
 ##      no vale; no dia, da manhã à tarde, os dois estão no píer.
@@ -26,6 +26,9 @@ extends SceneTree
 ##   6. A PARTIDA SALVA LEMBRA a visita, o que ele levou e a fibra tirada.
 ##   7. A PLACA DE NOME VAI COM ELE: no dia, olhando para ele, o nome aparece;
 ##      fora do dia, no mesmo lugar e olhando para o mesmo ponto, não.
+##   8. SEM MODELO, CAIXA CINZA: no estilo Tripo, enquanto o catálogo não tem o
+##      mestre, o corpo dele é a caixa provisória, e não o boneco do procedural —
+##      nem no retrato do diário, que fica sem foto.
 
 var falhas := 0
 var relogio
@@ -79,6 +82,18 @@ func _run() -> void:
 	if quirino == null or benedito == null:
 		_fechar()
 		return
+
+	# --- 8. SEM MODELO, CAIXA CINZA ------------------------------------------------
+	if root.get_node("/root/Estilo").tripo() and not load("res://scripts/prototipo_3d/catalogo_assets.gd").tem_tripo("quirino"):
+		var corpo = quirino.get("modelo")
+		_conferir(corpo != null and str(corpo.name) == "CorpoProvisorio" and quirino.get("animador") == null, "no estilo Tripo, sem modelo no catálogo, o mestre não é a caixa cinza provisória (é %s)" % (str(corpo.name) if corpo != null else "nada"))
+		# Nem o retrato do diário sai do boneco do procedural: sem modelo, sem foto.
+		var estudio = vale.get("retratos")
+		if estudio != null:
+			var palco := Node3D.new()
+			var foto = estudio._montar_modelo("quirino", palco)
+			_conferir(foto == null, "no estilo Tripo, o retrato do mestre sem modelo sai do boneco do procedural")
+			palco.free()
 
 	# --- 1. O MESTRE SÓ VEM NO DIA DELE --------------------------------------------
 	await _no_dia(10, 9.0)
@@ -288,7 +303,7 @@ func _ate(condicao: Callable, segundos: float) -> bool:
 func _fechar() -> void:
 	print("")
 	if falhas == 0:
-		print("SAVEIRO_OK: o mestre Quirino e o saveiro só estão no píer no dia 14, da manhã à tarde; a piaçava se tira no facão sem derrubar a palmeira, uma vez por estação; o Seu Benedito ensina, e a entrega espera o dia do mestre; perto dele o painel tem a aba do saveiro, que paga mais que a venda até o tanto que leva; a encomenda volta toda estação, dá o agrado e sai do caderno se o saveiro parte sem ela; o save lembra; e a placa de nome some com ele")
+		print("SAVEIRO_OK: o mestre Quirino e o saveiro só estão no píer no dia 14, da manhã à tarde; a piaçava se tira no facão sem derrubar a palmeira, uma vez por estação; o Seu Benedito ensina, e a entrega espera o dia do mestre; perto dele o painel tem a aba do saveiro, que paga mais que a venda até o tanto que leva; a encomenda volta toda estação, dá o agrado e sai do caderno se o saveiro parte sem ela; o save lembra; a placa de nome some com ele; e, sem modelo, ele é a caixa cinza do estilo Tripo")
 	else:
 		print("saveiro: %d falha(s)" % falhas)
 	quit(1 if falhas > 0 else 0)
