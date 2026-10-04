@@ -139,6 +139,11 @@ func _run() -> void:
 	await _frames(2)
 
 	# ELA DÁ A FOICE AO PEDIR O CORTE.
+	# A ferramenta recebida é usada pela barra, como no jogo.
+	for espaco in inv.ESPACOS_MAO:
+		if str(inv.espacos[espaco].get("id", "")) == "foice":
+			inv.selecionar(espaco)
+			break
 	_conferir(recursos._tem_ferramenta("foice"),
 		"a Dona Zefa pediu erva cortada e não deixou a foice à mão")
 

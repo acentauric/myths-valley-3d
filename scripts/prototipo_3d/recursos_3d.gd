@@ -47,11 +47,11 @@ var _postos: Dictionary = {}
 var _caidos: Array[String] = []
 
 
-func configurar(world: Node3D, jogador: Node3D, hud) -> void:
+func configurar(world: Node3D, jogador: Node3D, hud, hud_layer: Control) -> void:
 	_world = world
 	_jogador = jogador
 	_hud = hud
-	_dica = DicaTecla.criar(hud.map_layer(), Atalhos.letra("interagir"), "Bater")
+	_dica = DicaTecla.criar(hud_layer, Atalhos.letra("interagir"), "Bater")
 	# OS ALVOS SÓ SOBEM COM O VALE PRONTO: eles se põem em lugares que o
 	# `Lugares` resolve, e o `Lugares` só conhece o vale depois do
 	# `world_builder._concluir`. Erguer antes é erguer no nada.

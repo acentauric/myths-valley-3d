@@ -66,3 +66,10 @@ extrair, e a leitura de saves recusa objetos que carregariam código (#76).
 O formato das partidas é preservado. Os portões de segurança cobrem caminhos
 perigosos, links, cabeçalhos conflitantes e a leitura de saves legítimos.
 A autenticidade da distribuição ainda depende do servidor HTTPS oficial.
+
+## Reservas do corpo em 04/10/2026
+
+A decisão da #45 mantém três reservas: vigor para o esforço imediato, fôlego
+para o nado e vida para o dano. Corrida, salto e ações gastam só vigor; nadar
+consome fôlego por segundo e, depois que ele acaba, tira vida. O HUD e o guia
+descrevem os três, e `tests/reservas_do_corpo.gd` cobre os custos e a restauração.

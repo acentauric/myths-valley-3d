@@ -1,4 +1,10 @@
 {
+  "medidores": {
+    "vida": "Vida", "vida_en": "Health", "vida_es": "Salud",
+    "vigor": "Vigor", "vigor_en": "Stamina", "vigor_es": "Resistencia",
+    "folego": "Fôlego", "folego_en": "Breath", "folego_es": "Aliento",
+    "cansado": "cansado", "cansado_en": "tired", "cansado_es": "agotado"
+  },
   "botao_missoes": {
     "rotulo": "Missões e objetivos",
     "rotulo_en": "Quests and objectives",

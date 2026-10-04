@@ -35,6 +35,7 @@ var _pendentes := 0
 const TRADUZIDOS := {
 	"res://data/galeria_personagens.json": ["voltar_catalogo", "indisponivel", "selecionar_peca"],
 	"res://data/selecao_idioma.json": ["titulo", "descricao", "aviso"],
+	"res://data/hud_3d.json": ["rotulo", "vida", "vigor", "folego", "cansado"],
 	"res://data/missoes_guia.json": ["texto"],
 	"res://data/historico_3d.json": ["titulo", "estado"],
 }

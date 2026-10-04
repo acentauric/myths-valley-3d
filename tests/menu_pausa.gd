@@ -19,8 +19,8 @@ extends SceneTree
 ##      "Som: ligado" responde o que o botão faz E em que pé está.
 ##   4. APERTAR UMA LINHA MUDA O ESTADO E O RÓTULO JUNTO. Menu que faz e não se
 ##      redesenha é menu mentindo sobre o que ele mesmo acabou de fazer.
-##   5. A COLUNA DE ÍCONES SUMIU DE VERDADE do HUD — senão a mudança seria só
-##      acrescentar um menu, e as duas coisas ficariam na tela.
+##   5. OS ATALHOS DA COLUNA DIREITA TÊM DICAS — o HEAD voltou a oferecê-los,
+##      e cada um deve explicar sua ação ao passar o mouse.
 ##   6. O MENU CABE NA JANELA, que é a pergunta da barra de mão.
 
 var falhas := 0
@@ -211,25 +211,25 @@ func _run() -> void:
 	_conferir(filetes > 0,
 		"não há separação entre as linhas de ajuste e as de saída: elas viram a mesma lista")
 
-	# --- 5. A COLUNA DE ÍCONES SUMIU DO HUD ----------------------------------
-	#
-	# Se ela continuasse lá, a mudança teria sido só acrescentar um menu — e o
-	# jogador ficaria com as duas coisas na tela, que é o contrário do pedido.
+	# --- 5. OS ATALHOS DO HUD TÊM DICAS --------------------------------------
+	# O commit 8413ae7 reintroduziu a coluna direita, incluindo missões.
+	# O menu continua completo; a coluna tem de explicar cada atalho ao mouse.
 	var hud = jogo.get("hud")
 	_conferir(hud != null, "não achei o HUD")
 	if hud != null:
-		var redondos := 0
-		for no in (hud as Node).find_children("*", "Button", true, false):
-			var botao := no as Button
-			# O FPS ganhou depois um painel proprio, com portao em
-			# hud_desempenho.gd; ele nao pertence a antiga coluna de menus.
-			if botao == hud._performance_button:
-				continue
-			# Os botões da coluna eram redondos e pequenos, sem texto.
-			if botao.text.strip_edges() == "" and botao.size.x <= 48.0 and botao.size.y <= 48.0:
-				redondos += 1
-		_conferir(redondos == 0,
-			"o HUD ainda tem %d botão(ões) redondo(s) sem rótulo: a coluna do canto não saiu" % redondos)
+		_conferir(hud._corner_nodes.size() == 20, "faltam atalhos ou dicas na coluna do HUD")
+		for i in range(0, hud._corner_nodes.size() - 1, 2):
+			var canto: Control = hud._corner_nodes[i]
+			var dica: Control = hud._corner_nodes[i + 1]
+			var botoes_canto: Array[Node] = canto.find_children("*", "Button", true, false)
+			var rotulos: Array[Node] = dica.find_children("*", "Label", true, false)
+			_conferir(botoes_canto.size() == 1 and rotulos.size() == 1, "atalho perdeu botão ou rótulo")
+			if botoes_canto.size() == 1 and rotulos.size() == 1:
+				_conferir(not (rotulos[0] as Label).text.is_empty(), "atalho ficou sem descrição")
+				botoes_canto[0].mouse_entered.emit()
+				_conferir(dica.visible, "o mouse não revela a descrição do atalho")
+				botoes_canto[0].mouse_exited.emit()
+				_conferir(not dica.visible, "a descrição fica presa ao retirar o mouse")
 
 	# --- 6. CABE NA JANELA ---------------------------------------------------
 	var caixa := _achar(menu, "Caixa") as Control
@@ -268,7 +268,7 @@ func _achar(raiz: Node, nome: String) -> Node:
 func _fechar() -> void:
 	print("")
 	if falhas == 0:
-		print("MENU_PAUSA_OK: o Esc abre o menu com o vale parado; as linhas que eram a coluna de ícones estão lá com ícone E estado escrito, apertar uma troca as duas coisas junto, salvar devolve recado como no 2D, as duas saídas ficam embaixo em destaque, a coluna do canto saiu do HUD, e o menu cabe na janela")
+		print("MENU_PAUSA_OK: o Esc abre o menu com o vale parado; as linhas que eram a coluna de ícones estão lá com ícone E estado escrito, apertar uma troca as duas coisas junto, salvar devolve recado como no 2D, as duas saídas ficam embaixo em destaque, os atalhos do canto têm dicas, e o menu cabe na janela")
 	else:
 		print("menu do Esc: %d falha(s)" % falhas)
 	quit(1 if falhas > 0 else 0)

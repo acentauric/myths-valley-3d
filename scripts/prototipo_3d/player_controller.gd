@@ -25,6 +25,9 @@ const JUMP_COYOTE_TIME := 0.16
 const RUN_STOP_SPEED := 0.15
 const VIGOR_MAXIMO := 100.0
 const FOLEGO_MAXIMO := 100.0
+const CUSTO_FOLEGO_NADO_POR_SEGUNDO := 5.0
+const FOLEGO_RECUPERACAO_ANDANDO := 2.5
+const FOLEGO_RECUPERACAO_PARADO := 10.0
 const VIGOR_MINIMO_PARA_CORRER := 0.5
 const CUSTO_CORRIDA_POR_SEGUNDO := 5.0
 const CUSTO_PULO_FRACAO := 0.10
@@ -440,15 +443,8 @@ func _physics_process(delta: float) -> void:
 		speed = VELOCIDADE_NADO * (2.0 if is_running() else 1.0)
 	elif profundidade > 0.0:
 		speed *= lerpf(1.0, VELOCIDADE_NA_AGUA, clampf(profundidade / (character_height * NADA_A_PARTIR), 0.0, 1.0))
-	# O CANSAÇO PESA NO CORPO, exatamente como no jogo 2D: abaixo de um quinto
-	# do fôlego o passo cai para 62% e a corrida deixa de responder. A regra é
-	# do `Energia`, que os dois projetos compartilham — aqui só se lê o número,
-	# e é por isso que ela não precisou ser reescrita.
-	#
-	# NADA GASTA FÔLEGO NO VALE AINDA, porque não há trabalho aqui: no 2D quem
-	# cobra é a enxada, o machado e a picareta. Então isto é regra ligada e
-	# dormente, e é o estado certo — inventar um custo de corrida seria
-	# escrever mecânica nova em nome de migrar uma antiga.
+	# Energia acompanha o vigor do corpo. Abaixo de um quinto do teto,
+	# a regra de cansaço encurta o passo para 62%.
 	speed *= Energia.passo()
 	if _knockback_remaining > 0.0:
 		# Empurrão (ex.: o coveiro): o impulso manda até o fim, sem controle do jogador.
@@ -557,7 +553,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		elif Input.mouse_mode == Input.MOUSE_MODE_VISIBLE and event.button_index == MOUSE_BUTTON_RIGHT:
 			_pending_walk_click = event.position
 			_pending_walk_run = event.double_click
-		elif event.button_index == MOUSE_BUTTON_WHEEL_UP or event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
+		elif event.ctrl_pressed and (event.button_index == MOUSE_BUTTON_WHEEL_UP or event.button_index == MOUSE_BUTTON_WHEEL_DOWN):
 			var para_cima: bool = event.button_index == MOUSE_BUTTON_WHEEL_UP
 			_aproximar_a_camera(para_cima)
 			get_viewport().set_input_as_handled()
@@ -990,22 +986,31 @@ func gastar_vigor(quantidade: float) -> bool:
 	return true
 
 
+## Só o nado consome respiração. Quando ela acaba, continuar na água tira vida.
+func _cobrar_folego(quantidade: float) -> void:
+	var falta := maxf(0.0, quantidade - _folego)
+	definir_folego(_folego - quantidade)
+	if falta > 0.0:
+		Vida.ferir(falta)
+
+
 func _atualizar_vigor(delta: float, corrida_ativa: bool) -> void:
+	if _nadando:
+		_cobrar_folego(CUSTO_FOLEGO_NADO_POR_SEGUNDO * delta)
 	if corrida_ativa:
-		_definir_vigor(_vigor - CUSTO_CORRIDA_POR_SEGUNDO * delta)
+		gastar_vigor(minf(_vigor, CUSTO_CORRIDA_POR_SEGUNDO * delta))
 		if _vigor <= 0.0:
 			_run_toggled = false
 			_walk_run = false
 			_ran_since_toggle = false
 		return
-	if _vigor >= vigor_maximo():
-		return
 	var gesticulando := animator != null and animator.has_method("gesture_ativa") and bool(animator.call("gesture_ativa"))
-	if _acao_golpe_restante > 0.0 or gesticulando or not is_on_floor():
+	if _nadando or _acao_golpe_restante > 0.0 or gesticulando or not is_on_floor():
 		return
 	var andando := Vector2(velocity.x, velocity.z).length_squared() > 0.04
 	var taxa := VIGOR_RECUPERACAO_ANDANDO if andando else VIGOR_RECUPERACAO_PARADO
 	_definir_vigor(_vigor + taxa * delta)
+	repor_folego((FOLEGO_RECUPERACAO_ANDANDO if andando else FOLEGO_RECUPERACAO_PARADO) * delta)
 
 
 func _definir_vigor(valor: float) -> void:

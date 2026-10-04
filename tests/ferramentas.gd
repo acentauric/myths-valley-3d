@@ -99,10 +99,7 @@ func _run() -> void:
 	# --- 2. SEM FERRAMENTA NÃO SE BATE ---------------------------------------
 	var recusas: Array[String] = []
 	recursos.recusado.connect(func(motivo: String) -> void: recusas.append(motivo))
-	# SEM FERRAMENTA MUDOU DE LUGAR. O vale passou a dar um machado de saída, e
-	# bater passou a exigir a ferramenta ENCAIXADA e não só carregada
-	# (`Recursos3D._tem_ferramenta`). Então "sem machado" não é mais mochila
-	# vazia: é encaixe vazio. Tira-se das duas para poder perguntar.
+	# Retira o machado inicial antes de medir a recusa sem ferramenta.
 	equipamento.desequipar("maos")
 	while inv.tem("machado"):
 		inv.consumir("machado", 1)
@@ -115,14 +112,13 @@ func _run() -> void:
 			"a recusa não disse de que ferramenta precisa: '%s'" % recusas[0])
 
 	# --- 3 e 4. COM A FERRAMENTA SE BATE, E CAI NO NÚMERO CERTO --------------
-	# NA MÃO, e não na mochila: é o que o vale cobra agora, e é o que a missão
-	# faz por quem recebe a ferramenta (`CadeiaDeMissoes.entregar`).
+	# Na mão ativa da barra, escolhida por número, como o jogador faz.
 	inv.adicionar("machado", 1)
-	for i in inv.espacos.size():
+	for i in inv.ESPACOS_MAO:
 		if str((inv.espacos[i] as Dictionary).get("id", "")) == "machado":
-			_conferir(equipamento.equipar_do_espaco(i), "o machado não entrou no encaixe")
+			inv.selecionar(i)
 			break
-	_conferir(equipamento.no_encaixe("maos") == "machado",
+	_conferir(inv.na_mao() == "machado",
 		"o machado não está na mão: os golpes abaixo mediriam a recusa, não o golpe")
 	energia.encher()
 	var golpes: int = int(recursos._alvos[alvo_id]["ficha"].get("golpes", 3))
@@ -296,7 +292,7 @@ func _da_no_vale(item: String, de_alvo: Dictionary, fundo: int = 4) -> bool:
 func _fechar() -> void:
 	print("")
 	if falhas == 0:
-		print("FERRAMENTAS_OK: os alvos estão no vale, sem a ferramenta à mão o jogo recusa DIZENDO qual falta, com ela encaixada o golpe gasta fôlego, o alvo cai na conta certa e o material entra na mochila; e nas seis cadeias de missão toda meta é de um tipo que o vale sabe cumprir, todo material pedido sai de um alvo posto com a ferramenta entregue antes, e todo morador procurado mora aqui")
+		print("FERRAMENTAS_OK: os alvos estão no vale, sem a ferramenta à mão o jogo recusa DIZENDO qual falta, com ela selecionada na barra o golpe gasta vigor, o alvo cai na conta certa e o material entra na mochila; e nas seis cadeias de missão toda meta é de um tipo que o vale sabe cumprir, todo material pedido sai de um alvo posto com a ferramenta entregue antes, e todo morador procurado mora aqui")
 	else:
 		print("ferramentas: %d falha(s)" % falhas)
 	quit(1 if falhas > 0 else 0)

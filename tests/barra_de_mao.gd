@@ -88,10 +88,8 @@ func _run() -> void:
 
 	# --- 5. O QUE ENTRA APARECE ----------------------------------------------
 	#
-	# COM A PICARETA, e não com o machado. O machado virou item de encaixe, e o
-	# `Inventario._somente_reserva` o proíbe nos dez espaços da mão: exigir que
-	# ele apareça aqui seria exigir o que o vale decidiu não fazer. A picareta é
-	# ferramenta sem encaixe, mora na mão, e mede a mesma coisa.
+	# Ferramentas são escolhidas nos dez espaços da mão; o encaixe Mãos
+	# pertence ao equipamento sem dano (por exemplo, luvas).
 	Inv.adicionar("picareta", 1)
 	var espaco := -1
 	for i in Inv.ESPACOS_MAO:
@@ -102,17 +100,14 @@ func _run() -> void:
 	Inv.selecionar(maxi(espaco, 0))
 	await _frames(2)
 
-	# E O MACHADO NÃO TOMA ESPAÇO DA MÃO — a regra nova, e a que faz da barra a
-	# fila do que se usa depressa. Sem medir isto, um dia ela volta a comer um
-	# dos dez calada e o jogador perde um espaço de comida para uma ferramenta
-	# que nem se usa dali.
+	# O machado também precisa estar disponível pela barra, como a picareta.
 	Inv.adicionar("machado", 1)
 	var machado_na_mao := false
 	for i in Inv.ESPACOS_MAO:
 		if str((Inv.espacos[i] as Dictionary).get("id", "")) == "machado":
 			machado_na_mao = true
-	_conferir(not machado_na_mao,
-		"o machado ocupou um dos dez espaços da mão: ferramenta de encaixe é da reserva")
+	_conferir(machado_na_mao,
+		"o machado não entrou na barra: a ferramenta precisa ser escolhida por número")
 	_conferir(Inv.tem("machado"), "o machado não entrou em lugar nenhum da mochila")
 
 	var primeiro := fila.get_child(maxi(espaco, 0)) as Panel

@@ -110,11 +110,11 @@ func _run() -> void:
 		var entrega: Dictionary = passo.get("entrega", {})
 		if not entrega.is_empty():
 			var ferramenta := str(entrega.get("item", ""))
-			# À MÃO, e não na mochila. O vale passou a cobrar a ferramenta
-			# ENCAIXADA (`Recursos3D._tem_ferramenta`), e é o encaixe que a
-			# entrega do passo preenche; perguntar pela mochila reprovaria
-			# justamente a entrega que funciona. Pergunta-se à regra do jogo
-			# para a medida não poder divergir dela.
+			# A entrega vai para a barra; o jogador escolhe o número da ferramenta.
+			for espaco in inv.ESPACOS_MAO:
+				if str(inv.espacos[espaco].get("id", "")) == ferramenta:
+					inv.selecionar(espaco)
+					break
 			_conferir(recursos._tem_ferramenta(ferramenta),
 				"o passo '%s' cobra trabalho e não deixou %s à mão" % [id, ferramenta])
 

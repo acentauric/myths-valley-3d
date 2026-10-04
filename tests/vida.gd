@@ -93,7 +93,7 @@ func _run() -> void:
 	# esconderia o defeito; parado, ninguém prende, e o calendário anda sozinho.
 	dia.pausado = true
 	var dia_antes: int = relogio.dia_absoluto()
-	energia.atual = 5.0
+	player.definir_vigor(5.0)
 	var acordou := [false]
 	queda.acordou.connect(func(): acordou[0] = true)
 

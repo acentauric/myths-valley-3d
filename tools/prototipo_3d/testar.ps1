@@ -24,6 +24,12 @@
 
 param(
 	[string]$Teste = "",
+	# Argumentos opcionais do portao, por exemplo --falsificar.
+	[string[]]$ArgumentosTeste = @(),
+	# Simula quadros de 1/60 s sem esperar o relogio de parede (opcional).
+	[switch]$QuadrosFixos,
+	[switch]$ComJanela,
+	[switch]$Compatibility,
 	[string]$Godot = "C:\Tools\Godot\Godot_v4.7.2-stable_win64_console.exe",
 	# O vale monta o mundo inteiro antes de qualquer pergunta, e a cadeia das
 	# missões ainda joga os nove passos. Quem passar disto está preso.
@@ -66,7 +72,7 @@ $REGUAS = @("ordem_da_visita")
 
 # QUEM PRECISA DE MAIS TEMPO, E POR QUE. O teto geral e de 420 s e serve a
 # quase tudo. O `agua_rasa` nao: ele atravessa o bracinho de mar a pe, e o
-# vigor novo (correr custa folego) deixou a travessia mais lenta, entao o
+# vigor novo (correr custa vigor) deixou a travessia mais lenta, entao o
 # orcamento dele subiu para 14000 + 16000 quadros de fisica -- perto de 500 s
 # de relogio. Cortar o orcamento faria o portao dizer "nao da pe" quando o que
 # falta e distancia; cortar o teto faz o portao TRAVAR sem medir nada. O que
@@ -167,10 +173,17 @@ try {
 		$env:APPDATA = $perfil
 		$log = Join-Path $saida "$nome.txt"
 		$erros = "$log.err"
+		$argumentosGodot = @("--path", ".", "--script", "res://tests/$nome.gd")
+		if (-not $ComJanela) { $argumentosGodot = @("--headless") + $argumentosGodot }
+		if ($Compatibility) { $argumentosGodot += @("--rendering-method", "gl_compatibility") }
+		if ($QuadrosFixos) { $argumentosGodot += @("--fixed-fps", "60") }
+		if ($ArgumentosTeste.Count -gt 0) {
+			$argumentosGodot += @("--") + $ArgumentosTeste
+		}
 
 		$processo = Start-Process -FilePath $Godot -PassThru -WindowStyle Hidden `
 			-WorkingDirectory $raiz `
-			-ArgumentList @("--headless", "--path", ".", "--script", "res://tests/$nome.gd") `
+			-ArgumentList $argumentosGodot `
 			-RedirectStandardOutput $log -RedirectStandardError $erros
 
 		$null = $processo.Handle
@@ -203,12 +216,16 @@ try {
 
 		$falhas = @($linhas | Where-Object { $_ -clike "FALHA:*" })
 		if ($texto -match "Parse Error|Compile Error|SCRIPT ERROR|Failed loading resource") {
-			Write-Host ("NAO ABRE {0,-24} o script não compilou" -f $nome)
+			Write-Host ("ERRO     {0,-24} erro de script ou recurso" -f $nome)
 			Write-Host ("         " + ((($texto -split "`n") | Where-Object { $_ -match "Parse Error|Compile Error|SCRIPT ERROR|Failed loading resource" } | Select-Object -First 2) -join "`n         "))
 			$reprovados++
 		} elseif ($processo.ExitCode -ne 0 -or $falhas.Count -gt 0) {
 			Write-Host ("FALHOU   {0,-24} saiu com {1}" -f $nome, $processo.ExitCode)
 			foreach ($f in $falhas) { Write-Host ("         " + $f.Trim()) }
+			if ($falhas.Count -eq 0) {
+				$motivos = ($reclamado -split "`n") | Where-Object { $_ -cmatch "FALHA:|_FALHOU:" } | Select-Object -First 2
+				foreach ($motivo in $motivos) { Write-Host ("         " + $motivo.Trim()) }
+			}
 			$reprovados++
 		} else {
 			# O RESUMO É A ÚLTIMA LINHA DO TESTE, não a última linha do processo.
@@ -221,13 +238,12 @@ try {
 			#
 			# Todo portão daqui termina com "<NOME>_OK: <o que passou>". É essa
 			# linha que se procura; o resto é rede de segurança.
-			$resumo = ($linhas | Where-Object { $_ -cmatch "_OK:" } | Select-Object -Last 1)
+			$resumo = ($linhas | Where-Object { $_ -cmatch "_OK\b" } | Select-Object -Last 1)
 			if (-not $resumo) {
-				$resumo = ($linhas |
-					Where-Object { $_.Trim() -ne "" -and $_ -notmatch '^(ERROR|WARNING|\s+at:|\s+\[)' } |
-					Select-Object -Last 1)
+				Write-Host ("INCOMPLETO {0,-24} terminou sem confirmar o fim do portao" -f $nome)
+				$reprovados++
+				continue
 			}
-			if (-not $resumo) { $resumo = "" }
 			Write-Host ("ok       {0,-24} {1}" -f $nome, $resumo.Trim())
 		}
 	}
@@ -238,7 +254,24 @@ try {
 	if (-not $alvo.StartsWith($temporarios, [StringComparison]::OrdinalIgnoreCase)) {
 		throw "A pasta de testes saiu do diretorio temporario."
 	}
-	Remove-Item -LiteralPath $alvo -Recurse -Force
+	# O cache de shaders pode ultrapassar MAX_PATH no Windows/PowerShell 5.1.
+	# O alvo normalizado ja foi conferido dentro de TEMP acima.
+	if ($reprovados -gt 0) {
+		Write-Host ("logs e perfil isolado da falha: " + $alvo)
+	} else {
+		$limpou = $false
+		for ($tentativa = 0; $tentativa -lt 3; $tentativa++) {
+			try {
+				Remove-Item -LiteralPath ("\\?\" + $alvo) -Recurse -Force
+				$limpou = $true
+				break
+			} catch {
+				# O renderer pode demorar a soltar o cache depois de o console sair.
+				Start-Sleep -Milliseconds 100
+			}
+		}
+		if (-not $limpou) { Write-Host ("perfil temporario ainda em uso: " + $alvo) }
+	}
 	Pop-Location
 }
 

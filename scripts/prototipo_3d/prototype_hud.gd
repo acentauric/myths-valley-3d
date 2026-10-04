@@ -107,11 +107,13 @@ var mapa_aberto := false
 
 func _ready() -> void:
 	layer = 20
-	_root = Control.new()
-	_root.name = "PrototypeHUD"
+	_root = get_node_or_null("PrototypeHUD") as Control
+	if _root == null:
+		_root = Control.new()
+		_root.name = "PrototypeHUD"
+		add_child(_root)
 	_root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_root.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	add_child(_root)
 
 	# O BLOCO DA MISSÃO, e não o letreiro do jogo.
 	#
@@ -265,12 +267,16 @@ var _vida_texto: Label
 var _vida_preenchimento: StyleBoxFlat
 var barra_stamina: ProgressBar
 var _stamina_texto: Label
-var _stamina_rotulo := ""
+var _textos_medidores: Dictionary = {}
 
 
 func _criar_barra_de_vida() -> void:
+	var dados = JSON.parse_string(FileAccess.get_file_as_string("res://data/hud_3d.json"))
+	if dados is Dictionary:
+		_textos_medidores = dados.get("medidores", {})
 	barra_vida = ProgressBar.new()
 	barra_vida.name = "Vida"
+	barra_vida.step = 0.01
 	barra_vida.show_percentage = false
 	# Transparente ao mouse, como os rótulos do HUD: o clique no chão atrás dela
 	# é caminhada (clique direito) e não pode morrer numa barra de 16 px.
@@ -287,10 +293,10 @@ func _criar_barra_de_vida() -> void:
 	barra_vida.add_theme_stylebox_override("fill", _vida_preenchimento)
 	_root.add_child(barra_vida)
 	barra_vida.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP)
-	barra_vida.offset_left = -70
-	barra_vida.offset_right = 70
+	barra_vida.offset_left = -110
+	barra_vida.offset_right = 110
 	barra_vida.offset_top = 78
-	barra_vida.offset_bottom = 94
+	barra_vida.offset_bottom = 98
 	_vida_texto = _label("", 11, INK)
 	barra_vida.add_child(_vida_texto)
 	_vida_texto.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -310,12 +316,11 @@ func _atualizar_vida() -> void:
 		return
 	barra_vida.max_value = vida.maximo()
 	barra_vida.value = vida.atual
-	_vida_texto.text = "%d" % roundi(vida.atual)
+	_vida_texto.text = _texto_medidor("vida", barra_vida)
 	_vida_preenchimento.bg_color = COR_VIDA_ENVENENADA if vida.envenenado_agora() else COR_VIDA
 
 
-## Reserva de respiração para as futuras missões no oceano. As ações do vale
-## gastam o vigor verde; esta barra azul acompanha apenas o fôlego do jogador.
+## Respiração consumida no nado; depois que acaba, a água atinge a vida.
 const COR_FOLEGO := Color("398fd2")
 var barra_folego: ProgressBar
 var _folego_texto: Label
@@ -326,6 +331,7 @@ var _jogador_folego: Node
 func _criar_barra_de_folego() -> void:
 	barra_folego = ProgressBar.new()
 	barra_folego.name = "Folego"
+	barra_folego.step = 0.01
 	barra_folego.show_percentage = false
 	# Transparente ao mouse, como a da vida.
 	barra_folego.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -336,10 +342,10 @@ func _criar_barra_de_folego() -> void:
 	barra_folego.add_theme_stylebox_override("fill", _folego_preenchimento)
 	_root.add_child(barra_folego)
 	barra_folego.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP)
-	barra_folego.offset_left = -70
-	barra_folego.offset_right = 70
-	barra_folego.offset_top = 98
-	barra_folego.offset_bottom = 114
+	barra_folego.offset_left = -110
+	barra_folego.offset_right = 110
+	barra_folego.offset_top = 102
+	barra_folego.offset_bottom = 122
 	_folego_texto = _label("", 11, INK)
 	barra_folego.add_child(_folego_texto)
 	_folego_texto.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -361,12 +367,17 @@ func _atualizar_folego(_valor: float = 0.0) -> void:
 		return
 	barra_folego.max_value = float(_jogador_folego.call("folego_maximo"))
 	barra_folego.value = float(_jogador_folego.call("folego_atual"))
-	_folego_texto.text = "Fôlego %d" % roundi(barra_folego.value)
+	_folego_texto.text = _texto_medidor("folego", barra_folego)
+	var cansado := barra_folego.value <= barra_folego.max_value * 0.2
+	_folego_preenchimento.bg_color = Color("bd803e") if cansado else COR_FOLEGO
+	if cansado:
+		_folego_texto.text += " · " + str(IdiomaMenu.campo(_textos_medidores, "cansado"))
 
 
 func _criar_barra_de_stamina() -> void:
 	barra_stamina = ProgressBar.new()
 	barra_stamina.name = "Stamina"
+	barra_stamina.step = 0.01
 	barra_stamina.max_value = 100.0
 	barra_stamina.value = 100.0
 	barra_stamina.show_percentage = false
@@ -383,23 +394,32 @@ func _criar_barra_de_stamina() -> void:
 	barra_stamina.add_theme_stylebox_override("fill", preenchimento)
 	_root.add_child(barra_stamina)
 	barra_stamina.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP)
-	barra_stamina.offset_left = -70
-	barra_stamina.offset_right = 70
-	barra_stamina.offset_top = 118
-	barra_stamina.offset_bottom = 134
-	_stamina_texto = _label("100%", 11, INK)
+	barra_stamina.offset_left = -110
+	barra_stamina.offset_right = 110
+	barra_stamina.offset_top = 126
+	barra_stamina.offset_bottom = 146
+	_stamina_texto = _label("", 11, INK)
 	barra_stamina.add_child(_stamina_texto)
 	_stamina_texto.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_stamina_texto.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_stamina_texto.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	var energia := get_node_or_null("/root/Energia")
+	if energia != null:
+		energia.mudou.connect(_atualizar_vigor)
+	_atualizar_vigor()
 
 
-func definir_stamina(valor: float, rotulo: String) -> void:
-	if barra_stamina == null:
+func _texto_medidor(chave: String, barra: ProgressBar) -> String:
+	return "%s %d/%d" % [IdiomaMenu.campo(_textos_medidores, chave), roundi(barra.value), roundi(barra.max_value)]
+
+
+func _atualizar_vigor() -> void:
+	var energia := get_node_or_null("/root/Energia")
+	if energia == null or barra_stamina == null:
 		return
-	_stamina_rotulo = rotulo
-	barra_stamina.value = clampf(valor, 0.0, 100.0)
-	_stamina_texto.text = "%s %d%%" % [_stamina_rotulo, roundi(barra_stamina.value)]
+	barra_stamina.max_value = energia.maximo()
+	barra_stamina.value = energia.atual
+	_stamina_texto.text = _texto_medidor("vigor", barra_stamina)
 
 
 func _process(delta: float) -> void:

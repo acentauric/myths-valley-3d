@@ -48,7 +48,7 @@ var _aberta := -1
 var _pagina := 0
 
 
-func configurar(world: Node3D, jogador: Node3D, hud) -> void:
+func configurar(world: Node3D, jogador: Node3D, hud, hud_layer: Control) -> void:
 	_world = world
 	_jogador = jogador
 	_hud = hud
@@ -86,13 +86,12 @@ func configurar(world: Node3D, jogador: Node3D, hud) -> void:
 				menor_distancia = distancia
 				ficha_proxima = indice
 		coqueiro["ficha"] = ficha_proxima
-	_dica = DicaTecla.criar(hud.map_layer(), Atalhos.letra("interagir"), "Sobre a árvore")
-	_criar_balao_vida(hud.map_layer())
+	_dica = DicaTecla.criar(hud_layer, Atalhos.letra("interagir"), "Sobre a árvore")
+	_criar_balao_vida(hud_layer)
 	_stamina = float(_jogador.call("vigor_atual"))
 	_jogador.connect("vigor_mudou", Callable(self, "_ao_vigor_mudar"))
 	if not Dia.hora_mudou.is_connected(_ao_hora_mudar):
 		Dia.hora_mudou.connect(_ao_hora_mudar)
-	_atualizar_stamina_hud()
 	_animador = _jogador.get("animator") as Node
 	if _animador != null and _animador.has_signal("golpe_concluido"):
 		_animador.connect("golpe_concluido", Callable(self, "_ao_golpe_concluido"))
@@ -435,12 +434,6 @@ func _definir_ficha_cortada(pos: Vector3, cortado: bool) -> void:
 
 func _ao_vigor_mudar(valor: float) -> void:
 	_stamina = valor
-	_atualizar_stamina_hud()
-
-
-func _atualizar_stamina_hud() -> void:
-	var maximo := maxf(1.0, float(_jogador.call("vigor_maximo")))
-	_hud.definir_stamina(100.0 * _stamina / maximo, str(IdiomaMenu.campo(_acoes.get("coqueiro", {}), "stamina")))
 
 
 func _criar_balao_vida(camada: Control) -> void:

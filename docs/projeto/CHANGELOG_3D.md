@@ -73,8 +73,29 @@
   Vozes e partes do vale continuam em português; a tradução integral segue na #51.
 - O portão `selecao_idioma` confere que o cenário não carrega antes da escolha,
   a persistência dos quatro idiomas, o foco, o clique duplicado e a transição.
-- O ícone das missões declara seu tipo no HUD: a inferência sobre o retorno
-  sem tipo de `configurar` impedia o script de compilar após o pull.
+- Vida, fôlego e vigor aparecem alinhados, com nome e valor atual/máximo nos
+  três idiomas. O vigor do HUD acompanha Energia diretamente, sem depender
+  do módulo das árvores (#45).
+- Corrida, salto, corte, trabalho e luta gastam vigor. O fôlego só é consumido
+  durante o nado; continuar nadando depois que ele acaba tira vida. Descanso
+  recupera respiração; sono e desmaio a enchem (#45).
+- Fechar as missões pelo botão × avisa ao controlador das telas para devolver
+  o movimento, a câmera e a pausa do vale. O painel deixou de pausar o relógio
+  por conta própria, para que a restauração da pausa tenha um único responsável.
+- Corrige a inferência de tipo do ícone de missões que impedia o HUD de
+  compilar. A camada da interface já existe na cena e é reutilizada na
+  inicialização; o smoke espera a montagem do mundo antes de medir o corpo.
+- Portão `reservas_do_corpo`: cobrança, recusa sem efeitos, recuperação,
+  ligação com Energia, atualização das três barras, save e redimensionamento.
+- Ajusta preparações antigas dos portões: vida passa a definir o vigor pelo
+  personagem; energia confere a barra de vigor; a barra de mão exige o
+  machado nos espaços numerados, conforme a regra já integrada no código.
+- As cadeias e as ferramentas selecionam o item recebido pela barra para
+  medir o trabalho. O menu confere as dicas da coluna direita reintroduzida
+  no commit anterior; a roda sem Ctrl volta a escolher a mão (#37).
+- As esperas pela troca de cena têm teto de tempo de parede, em vez de
+  pressupor uma quantidade de quadros para o carregamento assíncrono.
+  O runner exige confirmação de término e conserva os logs quando reprova.
 
 ## Em desenvolvimento — 03/10/2026
 

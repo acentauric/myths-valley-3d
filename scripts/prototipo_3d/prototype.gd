@@ -34,7 +34,8 @@ const RAIO_CHEGADA := 6.0
 const PERIODOS := {"madrugada": "Madrugada", "manha": "Manhã", "tarde": "Tarde", "entardecer": "Entardecer", "noite": "Noite"}
 
 @onready var player = $Jogador
-@onready var hud = $HUD
+@onready var hud: Variant = $HUD
+@onready var hud_layer: Control = $HUD/PrototypeHUD
 @onready var world = $Cenario
 var ambiente: AmbienteVale
 ## A MISSÃO EM CURSO DO VALE MUDOU, venha ela de quem vier.
@@ -175,27 +176,27 @@ func _ready() -> void:
 	player.spawn_position = spawn
 	player.global_position = spawn
 	player.configure_click_world(world)
-	player.capture_changed.connect(hud.set_captured)
-	player.camera_lock_changed.connect(hud.set_camera_locked)
+	player.capture_changed.connect(Callable(hud, "set_captured"))
+	player.camera_lock_changed.connect(Callable(hud, "set_camera_locked"))
 	player.animation_requested.connect(_on_animation_requested)
-	player.navigation_status.connect(hud.set_notice)
-	hud.camera_lock_requested.connect(player.set_camera_locked)
+	player.navigation_status.connect(Callable(hud, "set_notice"))
+	hud.connect("camera_lock_requested", Callable(player, "set_camera_locked"))
 	world.house_interacted.connect(func(properties: Dictionary): hud.show_house_info(world.format_house_properties(properties)))
-	world.house_interaction_cleared.connect(hud.clear_house_info)
-	hud.house_info_close_requested.connect(_fechar_info_aberta)
-	hud.menu_prompt_requested.connect(_ask_return_to_menu)
-	hud.menu_requested.connect(_return_to_menu)
-	hud.menu_cancelled.connect(_on_menu_cancelled)
+	world.house_interaction_cleared.connect(Callable(hud, "clear_house_info"))
+	hud.connect("house_info_close_requested", Callable(self, "_fechar_info_aberta"))
+	hud.connect("menu_prompt_requested", Callable(self, "_ask_return_to_menu"))
+	hud.connect("menu_requested", Callable(self, "_return_to_menu"))
+	hud.connect("menu_cancelled", Callable(self, "_on_menu_cancelled"))
 	mapa = MapaJogo.new()
 	mapa.name = "Mapa"
 	add_child(mapa)
-	hud.map_requested.connect(_toggle_map)
-	hud.quests_requested.connect(func() -> void:
+	hud.connect("map_requested", Callable(self, "_toggle_map"))
+	hud.connect("quests_requested", func() -> void:
 		hud.set_controls_open(false)
 		abrir_o_painel(PainelVale.Aba.MISSOES))
-	hud.settings_requested.connect(_open_settings)
-	hud.settings_closed.connect(_on_menu_cancelled)
-	hud.style_changed.connect(func() -> void:
+	hud.connect("settings_requested", Callable(self, "_open_settings"))
+	hud.connect("settings_closed", Callable(self, "_on_menu_cancelled"))
+	hud.connect("style_changed", func() -> void:
 		# Novo estilo visual: reconstrói o vale inteiro, com a tela de carregamento.
 		get_tree().paused = false
 		# Os ajustes tinham parado o relógio; ele volta como estava antes de abri-los.
@@ -204,16 +205,16 @@ func _ready() -> void:
 		# Trocar o estilo RECARREGA o vale, e o vale recarregado lê a vaga:
 		# sem salvar aqui, o jogador voltaria ao último save.
 		Partida.salvar()
-		var barra := TelaCarregamento.mostrar(hud.map_layer(), TemaMenu.criar(), tr("Trocando o estilo do vale…"))
+		var barra := TelaCarregamento.mostrar(hud_layer, TemaMenu.criar(), tr("Trocando o estilo do vale…"))
 		TelaCarregamento.trocar_cena(get_tree(), scene_file_path, barra))
 	lapides = Lapides.new()
 	lapides.name = "Lapides"
 	add_child(lapides)
-	lapides.configurar(world, player, hud)
+	lapides.configurar(world, player, hud, hud_layer)
 	var arvores := ArvoresInfo.new()
 	arvores.name = "ArvoresInfo"
 	add_child(arvores)
-	arvores.configurar(world, player, hud)
+	arvores.configurar(world, player, hud, hud_layer)
 	_arvores_info = arvores
 	# ONDE BATER: os troncos e lajedos que respondem à ferramenta. Vem depois
 	# das árvores porque usa o mesmo alcance e a mesma dica, e quem estiver
@@ -221,7 +222,7 @@ func _ready() -> void:
 	var recursos := Recursos3D.new()
 	recursos.name = "Recursos3D"
 	add_child(recursos)
-	recursos.configurar(world, player, hud)
+	recursos.configurar(world, player, hud, hud_layer)
 	recursos.recusado.connect(func(motivo: String) -> void: hud.set_notice(motivo))
 	recursos.derrubado.connect(_ao_derrubar)
 	_recursos = recursos
@@ -422,7 +423,6 @@ func _ready() -> void:
 	var retomou_partida := _retomar_a_partida()
 	Energia.registrar_vigor(player)
 	hud.configurar_folego(player)
-	_arvores_info._atualizar_stamina_hud()
 	Equipamento.migrar_ferramenta_das_maos()
 	if not _barra_de_ferramentas_migrada:
 		Inventario.mover_ferramentas_para_barra()
@@ -516,12 +516,12 @@ func _montar_moradores(spawn: Vector3) -> void:
 	placas = PlacasNomes.new()
 	placas.name = "PlacasNomes"
 	add_child(placas)
-	placas.configurar(player, hud.map_layer())
+	placas.configurar(player, hud_layer)
 	# Seta da missão: cone e anel no mundo + chevron na borda da tela seguem o alvo.
 	var seta := SetaMissao.new()
 	seta.name = "SetaMissao"
 	add_child(seta)
-	seta.configurar(hud.map_layer())
+	seta.configurar(hud_layer)
 	missao_do_vale_mudou.connect(func(texto: String, destino: Vector3, indice: int, total: int) -> void:
 		if indice >= total:
 			seta.limpar()
@@ -558,7 +558,7 @@ func _montar_moradores(spawn: Vector3) -> void:
 	luta.name = "Luta"
 	add_child(luta)
 	luta.configurar(world, player, hud)
-	achados.configurar(world, player, hud, luta)
+	achados.configurar(world, player, hud, luta, hud_layer)
 	achados.achou.connect(_ao_achar)
 	# O painel da tecla J (painel_vale.gd), por cima do HUD.
 	painel = PainelVale.new()
@@ -566,6 +566,9 @@ func _montar_moradores(spawn: Vector3) -> void:
 	add_child(painel)
 	painel.abriu.connect(_parar_o_jogador)
 	painel.fechou.connect(_soltar_o_jogador)
+	# O botão × e as ações do painel fecham por conta própria; o dono das telas
+	# precisa receber o mesmo aviso que recebe ao fechar por tecla ou Esc.
+	painel.fechou.connect(func() -> void: telas.fechou_por_conta("painel"))
 	painel.pediu.connect(_ao_pedido_do_painel)
 	# Quem está lendo não perde vida: a peçonha espera o painel fechar (ver
 	# Vida.esta_lendo). Por método, que deixa de valer quando o vale sai.
@@ -578,7 +581,7 @@ func _montar_moradores(spawn: Vector3) -> void:
 	# Minimapa do canto inferior esquerdo, com o alvo da missão do Pedro.
 	var minimapa := Minimapa.new()
 	minimapa.name = "Minimapa"
-	hud.map_layer().add_child(minimapa)
+	hud_layer.add_child(minimapa)
 	minimapa.configurar(player, pedro, hud)
 	missao_do_vale_mudou.connect(func(_texto: String, alvo: Vector3, indice: int, total: int) -> void:
 		if indice >= total or alvo == Vector3.ZERO:
@@ -723,7 +726,7 @@ func _toggle_map() -> void:
 		# se navega — e não devolvia nada depois. É o mesmo defeito que o menu
 		# tinha, no lugar de que ninguém desconfia.
 		player.set_captured(false)
-		mapa.abrir(world, player, hud.map_layer())
+		mapa.abrir(world, player, hud_layer)
 	else:
 		mapa.fechar()
 		_camera_da_preferencia()

@@ -86,7 +86,7 @@ func _run() -> void:
 
 	# --- 2. ABRIR PARA O JOGADOR, E NÃO O MUNDO --------------------------------
 	dia.pausado = false
-	vale.abrir_o_painel()
+	vale.hud.quests_requested.emit()
 	await _frames(2)
 	_conferir(painel.aberto and painel.visible, "abrir_o_painel não abriu o painel")
 	_conferir(painel.layer > vale.hud.layer, "o painel ficou por baixo do HUD")
@@ -110,6 +110,18 @@ func _run() -> void:
 	# compra, venda e salvar — continuam passando com ela parada. Foi medido,
 	# não suposto.
 	_conferir(paused, "o painel não pausou o vale atrás dele")
+	# O botão de fechar é usado pelo mouse no HUD de missões. Ele fecha o painel
+	# por conta própria, então também precisa devolver pausa, câmera e movimento.
+	var botao_fechar: Button = painel.find_child("Fechar", true, false)
+	_conferir(botao_fechar != null, "o painel não tem botão de fechar")
+	if botao_fechar != null:
+		botao_fechar.pressed.emit()
+		await _frames(2)
+		_conferir(not paused and vale.telas.aberta() == "", "fechar missões deixou a tela ou o vale travado")
+		_conferir(player.is_physics_processing(), "fechar missões não devolveu o movimento")
+		_conferir(player.camera_travada() == load("res://scripts/prototipo_3d/camera_mouse.gd").travada(), "fechar missões não devolveu a câmera")
+		vale.abrir_o_painel()
+		await _frames(2)
 	# --- A FORMA: ÍNDICE À ESQUERDA, PÁGINA À DIREITA ------------------------
 	#
 	# O painel passou a ter a cara do almanaque — "tente deixar o menu de missão

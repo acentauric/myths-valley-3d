@@ -1,34 +1,8 @@
 extends SceneTree
-## Confere que o FÔLEGO do jogo 2D chegou ao vale, e que ele pesa no corpo.
-##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/folego.gd
-##
-## `Progressao` e `Energia` não são código escrito para o 3D: são os mesmos
-## arquivos do jogo 2D, em `scripts/compartilhado/`, conferidos byte a byte
-## pelo `testar_compartilhado` do outro projeto. Eles atravessaram porque não
-## sabem o que é um tile — e este teste existe para que continuem assim.
-##
-## Quatro perguntas:
-##
-##   1. OS DOIS SUBIRAM, e com os números do 2D. Autoload que falha ao carregar
-##      não derruba o jogo no Godot: ele some, e quem o chama é que estoura,
-##      três telas adiante.
-##   2. A REGRA DO CANSAÇO É A DO 2D: abaixo de um quinto do fôlego o passo cai
-##      para 62%, e não para outro número inventado aqui.
-##   3. O CORPO SENTE. O `player_controller` multiplica a velocidade pelo
-##      `Energia.passo()` — lido do fonte, porque medir velocidade de um corpo
-##      que anda por física dá um teste que falha por pouco em máquina lenta.
-##   4. SÓ A LUTA GASTA FÔLEGO, e só a queda desmaia. No 2D quem cobra é a
-##      enxada, o machado, a picareta e a luta; o vale ainda não tem trabalho,
-##      e a luta chegou com a #14 — o golpe e a ginga cobram "bater" como lá, e
-##      o `tests/luta.gd` confere quanto. A QUEDA (`queda.gd`, #10) chama
-##      `Energia.desmaiar()` como o `_apagar` do 2D, que devolve fôlego. Quem
-##      mais passar a gastar ou a desmaiar reprova aqui, e o recado é o mesmo
-##      de antes: escreva o portão do que passou a gastar, e ponha o arquivo na
-##      lista.
-##   5. O HUD MOSTRA (#3). A barra de fôlego acompanha o número, e abaixo do
-##      limiar muda de cor e diz "cansado" — o corpo já sentia, e quem joga
-##      não sabia por quê.
+## Confere Progressao e Energia, a regra do cansaço e a cobrança das ações.
+## No 3D, Energia acompanha o vigor do personagem; a barra azul representa
+## a respiração. A ligação vigor -> fôlego -> vida e sua apresentação são
+## verificadas por reservas_do_corpo.gd.
 
 var falhas := 0
 
@@ -140,27 +114,17 @@ func _run() -> void:
 	_conferir(desmaia.search(queda) != null,
 		"a queda não chama Energia.desmaiar(): cair deixou de ser a mesma noite do desmaio do 2D")
 
-	# --- 5. O HUD MOSTRA ------------------------------------------------------
+	# Energia representa o vigor no 3D; o fôlego azul pertence ao jogador.
 	var hud = load("res://scripts/prototipo_3d/prototype_hud.gd").new()
 	root.add_child(hud)
 	await process_frame
-	_conferir(hud.barra_folego != null and hud.barra_folego.visible, "o HUD não tem a barra de fôlego")
-	if hud.barra_folego != null:
-		energia.encher()
-		_conferir(is_equal_approx(hud.barra_folego.value, energia.atual), "de fôlego cheio, a barra não está cheia")
-		var cor_cheia: Color = hud._folego_preenchimento.bg_color
-		_conferir(not hud._folego_texto.text.contains("cansado"), "de fôlego cheio, o HUD já dizia cansado")
-		energia.atual = energia.maximo() * 0.5
-		energia.mudou.emit()
-		_conferir(is_equal_approx(hud.barra_folego.value, energia.atual),
-			"a barra mostra %s e o fôlego é %s" % [str(hud.barra_folego.value), str(energia.atual)])
-		energia.atual = energia.maximo() * 0.1
-		energia.mudou.emit()
-		_conferir(hud._folego_preenchimento.bg_color != cor_cheia, "cansado, a barra não mudou de cor")
-		_conferir(hud._folego_texto.text.contains("cansado"), "cansado, o HUD não diz cansado")
-		energia.encher()
-		_conferir(hud._folego_preenchimento.bg_color == cor_cheia, "descansado, a barra não voltou à cor do fôlego")
-		_conferir(not hud._folego_texto.text.contains("cansado"), "descansado, o HUD ainda diz cansado")
+	_conferir(hud.barra_stamina != null and hud.barra_stamina.visible, "o HUD não tem a barra de vigor")
+	energia.encher()
+	_conferir(is_equal_approx(hud.barra_stamina.value, energia.atual), "a barra não mostra o vigor cheio")
+	energia.atual = energia.maximo() * 0.5
+	energia.mudou.emit()
+	_conferir(is_equal_approx(hud.barra_stamina.value, energia.atual), "a barra não acompanha o gasto de vigor")
+	energia.encher()
 	hud.queue_free()
 
 	_fechar()
@@ -169,7 +133,7 @@ func _run() -> void:
 func _fechar() -> void:
 	print("")
 	if falhas == 0:
-		print("FOLEGO_OK: Progressao e Energia subiram com os números do 2D, o cansaço encurta o passo para 62% e o corpo lê isso; quem gasta fôlego é o trabalho e a luta, e só a queda desmaia; o HUD mostra o fôlego e o cansaço")
+		print("FOLEGO_OK: Progressao e Energia subiram com os números do 2D, o cansaço encurta o passo para 62% e o corpo lê isso; trabalho e luta cobram Energia, só a queda desmaia, e o HUD mostra o vigor")
 	else:
 		print("folego: %d falha(s)" % falhas)
 	quit(1 if falhas > 0 else 0)
