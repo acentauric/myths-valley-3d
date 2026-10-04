@@ -62,11 +62,36 @@ func _run() -> void:
 	_conferir(int(preferencias.get_value("menu", "idioma", -1)) == 2 and tela.preferida(), "salvar o cursor preserva idioma e tela")
 	tela.definir_cursor(99)
 	_conferir(tela.cursor == tela.CURSORES.size() - 1, "índice fora da lista não quebra")
+	# Tamanho do texto e do HUD: salvos, e o texto escala a partir do tamanho original.
+	for rotulo in tela.ROTULOS_TAMANHO + ["Tamanho do texto", "Tamanho do HUD"]:
+		_conferir(idioma.EN.has(rotulo) and idioma.ES.has(rotulo), "tamanho traduzido: %s" % rotulo)
+	var ajuda = load("res://scripts/prototipo_3d/ajuda_menu.gd")
+	_conferir(ajuda.tem("Tamanho do texto") and ajuda.tem("Tamanho do HUD"), "tamanhos têm ajuda no ?")
+	var fixo := Label.new()
+	fixo.add_theme_font_size_override("font_size", 20)
+	var do_tema := Label.new()
+	root.add_child(fixo)
+	root.add_child(do_tema)
+	var base_tema := do_tema.get_theme_font_size("font_size")
+	tela.definir_tamanho_texto(3)
+	_conferir(fixo.get_theme_font_size("font_size") == 26 and do_tema.get_theme_font_size("font_size") == roundi(base_tema * 1.3), "Muito grande escala os textos na tela")
+	var novo := Label.new()
+	novo.add_theme_font_size_override("font_size", 10)
+	root.add_child(novo)
+	await process_frame
+	_conferir(novo.get_theme_font_size("font_size") == 13, "texto que entra depois já chega escalado")
+	tela.definir_tamanho_texto(1)
+	_conferir(fixo.get_theme_font_size("font_size") == 20 and not do_tema.has_theme_font_size_override("font_size"), "Médio devolve o tamanho original")
+	tela.definir_tamanho_hud(2)
+	_conferir(tela.escala_hud == 1.3 and tela._tamanho_salvo("tamanho_hud") == 2 and tela._tamanho_salvo("tamanho_texto") == 1, "tamanhos ficam salvos")
+	tela.definir_tamanho_hud(1)
+	for no in [fixo, do_tema, novo]:
+		no.queue_free()
 	# O jogador nasce sob a tela de carregamento: prender o cursor no _ready
 	# sumia com o mouse durante a montagem do vale.
 	var jogador := FileAccess.get_file_as_string("res://scripts/prototipo_3d/player_controller.gd")
 	var pronto := jogador.get_slice("func _ready()", 1).get_slice("\nfunc ", 0)
 	_conferir(pronto != "" and not pronto.contains("MOUSE_MODE_CAPTURED"), "o jogador não prende o cursor antes de o vale ficar pronto")
 	if falhas == 0:
-		print("TELA_OK: abre cheia, F11 alterna, escolha salva, dica traduzida, cursor escolhível e mouse livre no carregamento")
+		print("TELA_OK: abre cheia, F11 alterna, escolha salva, dica traduzida, cursor e tamanhos escolhíveis e mouse livre no carregamento")
 	quit(falhas)

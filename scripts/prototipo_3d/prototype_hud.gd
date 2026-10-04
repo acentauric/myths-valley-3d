@@ -575,18 +575,18 @@ func _fit_heading() -> void:
 ## câmera, velocidade do tempo e dados de desempenho.
 func _create_corner_buttons() -> void:
 	var first_child := _root.get_child_count()
-	var top := 32.0
+	var top := 0
 	var home: Array = BotaoCanto.criar(_root, top, HudIcon.new().configurar("casa"))
 	(home[1] as Label).text = "HOME · voltar ao menu"
 	_corner_setup(home[0], func() -> void: menu_prompt_requested.emit())
 
-	top += BotaoCanto.ESPACO
+	top += 1
 	_settings_icon = HudIcon.new().configurar("ajustes")
 	var settings: Array = BotaoCanto.criar(_root, top, _settings_icon)
 	(settings[1] as Label).text = "Ajustes"
 	_corner_setup(settings[0], func() -> void: settings_requested.emit())
 
-	top += BotaoCanto.ESPACO
+	top += 1
 	var audio_icon := AudioToggleIcon.new()
 	audio_icon.set_active(Audio.som_ativo)
 	var audio: Array = BotaoCanto.criar(_root, top, audio_icon)
@@ -597,12 +597,10 @@ func _create_corner_buttons() -> void:
 		audio_icon.set_active(Audio.som_ativo)
 		audio_hint.text = "Desativar" if Audio.som_ativo else "Ativar")
 
-	top += BotaoCanto.ESPACO
+	top += 1
 	var clock_icon := ClockIcon.new()
 	clock_icon.set_running(not Dia.pausado)
-	var clock: Array = BotaoCanto.criar(_root, top, clock_icon)
-	clock_icon.position = Vector2(6, 6)
-	clock_icon.size = Vector2(28, 28)
+	var clock: Array = BotaoCanto.criar(_root, top, clock_icon, 28.0)
 	_clock_hint = clock[1]
 	_corner_setup(clock[0], func() -> void:
 		if not Dia.pausa_no_jogo:
@@ -615,14 +613,14 @@ func _create_corner_buttons() -> void:
 	(clock[0] as Button).mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND if Dia.pausa_no_jogo else Control.CURSOR_ARROW
 	Dia.hora_mudou.connect(_update_clock_hint.unbind(1))
 
-	top += BotaoCanto.ESPACO
+	top += 1
 	_map_icon = HudIcon.new().configurar("mapa")
 	var map: Array = BotaoCanto.criar(_root, top, _map_icon)
 	(map[1] as Label).text = "Mapa do Vale"
 	_corner_setup(map[0], func() -> void: map_requested.emit())
 
 
-	top += BotaoCanto.ESPACO
+	top += 1
 	_camera_icon = HudIcon.new().configurar("camera")
 	var camera: Array = BotaoCanto.criar(_root, top, _camera_icon)
 	_camera_lock_button = camera[0]
@@ -633,7 +631,7 @@ func _create_corner_buttons() -> void:
 		Audio.efeito("ui_confirmar")
 		camera_lock_requested.emit(locked))
 
-	top += BotaoCanto.ESPACO
+	top += 1
 	_speed_icon = HudIcon.new().configurar("velocidade")
 	var speed: Array = BotaoCanto.criar(_root, top, _speed_icon)
 	_speed_hint = speed[1]
@@ -641,7 +639,7 @@ func _create_corner_buttons() -> void:
 		Dia.definir_velocidade((Dia.velocidade + 1) % Dia.VELOCIDADES.size())
 		_update_telemetry())
 
-	top += BotaoCanto.ESPACO
+	top += 1
 	var style_icon = HudIcon.new().configurar("estilo")
 	style_icon.definir(Estilo.tripo())
 	var style: Array = BotaoCanto.criar(_root, top, style_icon)
@@ -651,13 +649,13 @@ func _create_corner_buttons() -> void:
 		_performance_open = not _performance_open
 		_sync_performance_panel())
 
-	top += BotaoCanto.ESPACO
+	top += 1
 	_help_icon = HudIcon.new().configurar("ajuda")
 	var help: Array = BotaoCanto.criar(_root, top, _help_icon)
 	(help[1] as Label).text = "Controles"
 	_corner_setup(help[0], func() -> void: set_controls_open(not controls_open()))
 
-	top += BotaoCanto.ESPACO
+	top += 1
 	var quest_icon: Control = HudIcon.new().configurar("missoes")
 	var quests: Array = BotaoCanto.criar(_root, top, quest_icon)
 	var quest_data = JSON.parse_string(FileAccess.get_file_as_string("res://data/hud_3d.json"))

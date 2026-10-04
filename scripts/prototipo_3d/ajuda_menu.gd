@@ -113,6 +113,16 @@ const TEXTOS := {
 		"Look of the mouse pointer in the menu and in the valley. In every set the arrow points and the hand with the index finger shows where you can click.\n\nClassic: the game's first cursor.\nPolished gold: carved gold, thinner and easier to read.\nTile: white with cobalt lines, like the church tiles.\nCarved with cuff: a golden hand with a lace cuff.\nParchment: sepia ink on paper.\nLantern light: glowing amber that stands out at night.\n\nThe change applies right away and is saved.",
 		"Aspecto del puntero del ratón en el menú y en el valle. En todos, la flecha apunta y la mano con el dedo índice aparece donde se puede hacer clic.\n\nClásico: el primer cursor del juego.\nOro pulido: oro tallado, más fino y legible.\nAzulejo: blanco con trazo cobalto, como los azulejos de la iglesia.\nTalla con puño: mano dorada con puño de encaje.\nPergamino: tinta sepia sobre papel.\nLuz del farol: ámbar encendido, que se ve bien de noche.\n\nEl cambio vale al momento y queda guardado.",
 	],
+	"Tamanho do texto": [
+		"Tamanho de todos os textos do jogo: menu, ajustes, janelas, diálogos e HUD.\n\nMédio é o tamanho de fábrica. Pequeno deixa mais espaço na tela; Grande e Muito grande ajudam a ler de longe ou numa tela pequena.\n\nA troca vale na hora e fica salva.",
+		"Size of every text in the game: menu, settings, windows, dialogues and HUD.\n\nMedium is the default size. Small leaves more room on screen; Large and Extra large help when reading from afar or on a small screen.\n\nThe change applies right away and is saved.",
+		"Tamaño de todos los textos del juego: menú, ajustes, ventanas, diálogos y HUD.\n\nMediano es el tamaño predeterminado. Pequeño deja más espacio en pantalla; Grande y Muy grande ayudan a leer de lejos o en una pantalla pequeña.\n\nEl cambio vale al momento y queda guardado.",
+	],
+	"Tamanho do HUD": [
+		"Tamanho dos botões do canto da tela, no menu e no vale: Home, ajustes, som, relógio, mapa e os demais.\n\nMédio é o tamanho de fábrica, mais discreto. Grande devolve o tamanho antigo, e Muito grande facilita o clique.\n\nA troca vale na hora e fica salva.",
+		"Size of the buttons in the corner of the screen, in the menu and in the valley: Home, settings, sound, clock, map and the rest.\n\nMedium is the default, more discreet size. Large brings back the old size, and Extra large makes clicking easier.\n\nThe change applies right away and is saved.",
+		"Tamaño de los botones de la esquina de la pantalla, en el menú y en el valle: Inicio, ajustes, sonido, reloj, mapa y los demás.\n\nMediano es el tamaño predeterminado, más discreto. Grande recupera el tamaño anterior, y Muy grande facilita el clic.\n\nEl cambio vale al momento y queda guardado.",
+	],
 }
 
 

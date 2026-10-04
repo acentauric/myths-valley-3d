@@ -716,8 +716,8 @@ func _menu_theme() -> Theme:
 
 ## Botões redondos do canto superior direito (som, relógio): ver botao_canto.gd.
 ## Devolve [botão, rótulo da dica].
-func _corner_button(layer: CanvasLayer, top: float, icon: Control) -> Array:
-	var parts := BotaoCanto.criar(layer, top, icon)
+func _corner_button(layer: CanvasLayer, posicao: int, icon: Control, lado_icone := 24.0) -> Array:
+	var parts := BotaoCanto.criar(layer, posicao, icon, lado_icone)
 	(parts[0] as Button).toggle_mode = true
 	return parts
 
@@ -726,7 +726,7 @@ func _corner_button(layer: CanvasLayer, top: float, icon: Control) -> Array:
 ## (modal, mapa, travessia) volta direto ao menu inicial, sem carregamento.
 func _create_home_button(layer: CanvasLayer) -> void:
 	home_icon = HudIcon.new().configurar("casa")
-	var parts := BotaoCanto.criar(layer, 32.0, home_icon)
+	var parts := BotaoCanto.criar(layer, 0, home_icon)
 	home_corner = parts[0]
 	(parts[1] as Label).text = "Home"
 	home_corner.pressed.connect(func() -> void:
@@ -740,7 +740,7 @@ func _create_home_button(layer: CanvasLayer) -> void:
 ## ajustes; aberto, fica dourado e fecha de volta para a Home.
 func _create_ajustes_button(layer: CanvasLayer) -> void:
 	ajustes_icon = HudIcon.new().configurar("ajustes")
-	var parts := BotaoCanto.criar(layer, 96.0, ajustes_icon)
+	var parts := BotaoCanto.criar(layer, 1, ajustes_icon)
 	(parts[1] as Label).text = tr("Ajustes")
 	(parts[0] as Button).pressed.connect(func() -> void:
 		if starting:
@@ -756,7 +756,7 @@ func _create_ajustes_button(layer: CanvasLayer) -> void:
 ## vale; com o mapa aberto fica dourado e fecha de volta para a Home.
 func _create_map_button(layer: CanvasLayer) -> void:
 	map_icon = HudIcon.new().configurar("mapa")
-	var parts := BotaoCanto.criar(layer, 288.0, map_icon)
+	var parts := BotaoCanto.criar(layer, 4, map_icon)
 	(parts[1] as Label).text = tr("Mapa")
 	(parts[0] as Button).pressed.connect(func() -> void:
 		if starting:
@@ -772,7 +772,7 @@ func _create_map_button(layer: CanvasLayer) -> void:
 ## F11 (o autoload `Tela`), e a dica ensina o atalho. Dourado em tela cheia.
 func _create_tela_button(layer: CanvasLayer) -> void:
 	var tela_icon: Control = HudIcon.new().configurar("tela_cheia")
-	var parts := BotaoCanto.criar(layer, 352.0, tela_icon)
+	var parts := BotaoCanto.criar(layer, 5, tela_icon)
 	var hint_label: Label = parts[1]
 	var atualizar := func(cheia: bool) -> void:
 		tela_icon.definir(cheia)
@@ -800,7 +800,7 @@ func _set_home_corner(at_home: bool) -> void:
 func _create_quick_mute(layer: CanvasLayer) -> void:
 	var audio_icon := AudioToggleIcon.new()
 	audio_icon.set_active(Audio.som_ativo)
-	var parts := _corner_button(layer, 160.0, audio_icon)
+	var parts := _corner_button(layer, 2, audio_icon)
 	var quick_mute: Button = parts[0]
 	var hint_label: Label = parts[1]
 	quick_mute.button_pressed = Audio.som_ativo
@@ -817,11 +817,9 @@ func _create_quick_mute(layer: CanvasLayer) -> void:
 func _create_clock(layer: CanvasLayer) -> void:
 	var clock_icon := ClockIcon.new()
 	clock_icon.set_running(clock_running)
-	var parts := _corner_button(layer, 224.0, clock_icon)
+	var parts := _corner_button(layer, 3, clock_icon, 28.0)
 	var clock_button: Button = parts[0]
 	var hint_label: Label = parts[1]
-	clock_icon.position = Vector2(6, 6)
-	clock_icon.size = Vector2(28, 28)
 	clock_button.button_pressed = clock_running
 	clock_hint = hint_label
 	_refresh_clock_hint()
@@ -1004,7 +1002,7 @@ func _placa(texto: String, acao: Callable, negativa := false, puxa_foco := true)
 	var placa := Button.new()
 	placa.text = texto
 	placa.theme_type_variation = &"BotaoCronicaNegativo" if negativa else &"BotaoCronica"
-	placa.custom_minimum_size.y = 46
+	placa.custom_minimum_size.y = TemaMenu.ALTURA_BOTAO
 	content.add_child(placa)
 	for lado in [false, true]:
 		var suporte := Control.new()
@@ -1097,7 +1095,7 @@ func _open_map() -> void:
 	map_icon.definir(true)
 	var layer := panel.get_parent()
 	var help_icon: Control = HudIcon.new().configurar("ajuda")
-	var help_parts := BotaoCanto.criar(layer, 416.0, help_icon)
+	var help_parts := BotaoCanto.criar(layer, 6, help_icon)
 	var help_button: Button = help_parts[0]
 	map_help_button = help_button
 	var help_hint: Label = help_parts[1]

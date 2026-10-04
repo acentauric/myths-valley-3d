@@ -14,6 +14,12 @@
   vale: Clássico, Ouro polido (o novo padrão), Azulejo, Talha com punho,
   Pergaminho e Luz do lampião. Todos seguem a mesma regra: seta para apontar e
   mão com o indicador para clicar. A troca vale na hora e fica salva.
+- A interface fica menor por padrão: botões com fonte e altura globais (as placas
+  do menu seguem as mesmas medidas) e a coluna de botões do canto, no menu e no
+  vale, com placas de 40 em vez de 52. AJUSTAR > Cenário > Interface ganha
+  Tamanho do texto e Tamanho do HUD, que valem na hora e ficam salvos.
+- A escolha de idioma fica mais leve: botões menores, espaçamento equilibrado,
+  modal mais alto, versão junto dele e um × discreto no canto para sair do jogo.
 - A escolha de idioma ganha folga vertical, e o aviso do rodapé fica centralizado.
 
 - As trilhas do menu, do jogo, dos períodos e da mata mudam com fade de saída

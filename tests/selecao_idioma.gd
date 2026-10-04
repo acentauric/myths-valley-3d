@@ -77,8 +77,12 @@ func _run() -> void:
 	await create_timer(1.0).timeout
 	_conferir(capa.get_transform() == transformacao and capa.scale == Vector2.ONE, "fundo estático sem zoom")
 	var botoes: Array[Button] = []
-	_buscar_botoes(tela, botoes)
+	_buscar_botoes(tela.get_node("CentroIdioma"), botoes)
 	_conferir(botoes.size() == 4, "quatro idiomas selecionáveis")
+	var sair := tela.find_child("SairIdioma", true, false) as Button
+	_conferir(sair != null and sair.get_global_rect().position.x > tela.get_global_rect().size.x * 0.9 and sair.get_global_rect().position.y < 80.0, "× de sair no canto superior direito")
+	for sufixo in idioma.SUFIXOS:
+		_conferir(not str(dados.get("sair" + sufixo, "")).is_empty(), "dica de sair no idioma '%s'" % sufixo)
 	_conferir(get_root().gui_get_focus_owner() == botoes[salvo], "foco lembra a escolha salva")
 	_conferir(inicio._titulo.text == dados["titulo" + idioma.SUFIXOS[salvo]] and inicio._descricao.text == dados["descricao" + idioma.SUFIXOS[salvo]], "textos iniciais correspondem ao botão focado")
 	for i in mini(4, botoes.size()):

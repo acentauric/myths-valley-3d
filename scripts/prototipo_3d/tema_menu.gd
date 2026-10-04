@@ -10,6 +10,12 @@ const LACA_NORMAL := Color(0.082, 0.129, 0.106, 0.92)
 const LACA_HOVER := Color(0.114, 0.173, 0.141)
 const LACA_PRESSED := Color(0.29, 0.24, 0.12)
 const BORDA_SUAVE := Color(0.706, 0.604, 0.376, 0.55)
+## Medidas globais dos botões comuns (Cinzel): a fonte vale para todo Button do tema, e
+## a altura é a que as telas usam no custom_minimum_size. As placas do retábulo da home
+## (BotaoCronica) seguem as mesmas medidas. Em tela cheia a interface é
+## esticada da referência 1280×720, então 15 e 44 já saem com 22 e 66 px em 1080p.
+const FONTE_BOTAO := 15
+const ALTURA_BOTAO := 44
 
 
 ## `fonte` vem da opção "Fonte do menu": "" é a Crônica (Cormorant no corpo e Cinzel
@@ -40,7 +46,7 @@ static func criar(fonte: String = "") -> Theme:
 		# Ações em Cinzel; o corpo dos seletores e campos continua em Cormorant, que
 		# tem minúsculas (OptionButton herdaria a fonte de Button pela árvore de tipos).
 		theme.set_font("font", "Button", Identidade.fonte(Identidade.FONTE_TITULO, 600, 2))
-		theme.set_font_size("font_size", "Button", 17)
+		theme.set_font_size("font_size", "Button", FONTE_BOTAO)
 		for corpo in ["OptionButton", "PopupMenu", "LineEdit", "TextEdit", "SpinBox"]:
 			theme.set_font("font", corpo, theme.default_font)
 			theme.set_font_size("font_size", corpo, 19)
@@ -56,7 +62,7 @@ static func criar(fonte: String = "") -> Theme:
 		"focus": [Color(0, 0, 0, 0), Identidade.OURO, 2],
 	}, 16, 8, true)
 	theme.set_font("font", "BotaoCronica", Identidade.fonte(Identidade.FONTE_TITULO, 600, 3))
-	theme.set_font_size("font_size", "BotaoCronica", 19)
+	theme.set_font_size("font_size", "BotaoCronica", FONTE_BOTAO)
 	theme.set_color("font_color", "BotaoCronica", Color(Identidade.CREME, 0.92))
 	theme.set_color("font_hover_color", "BotaoCronica", Color("fff8e6"))
 	theme.set_color("font_focus_color", "BotaoCronica", Color("fff8e6"))
@@ -72,7 +78,7 @@ static func criar(fonte: String = "") -> Theme:
 		"focus": [Color(0, 0, 0, 0), Color("f4c2ad"), 2],
 	}, 16, 8, true)
 	theme.set_font("font", "BotaoCronicaNegativo", Identidade.fonte(Identidade.FONTE_TITULO, 600, 3))
-	theme.set_font_size("font_size", "BotaoCronicaNegativo", 19)
+	theme.set_font_size("font_size", "BotaoCronicaNegativo", FONTE_BOTAO)
 	theme.set_color("font_color", "BotaoCronicaNegativo", Color("f2d3c6"))
 	theme.set_color("font_hover_color", "BotaoCronicaNegativo", Color.WHITE)
 	theme.set_color("font_focus_color", "BotaoCronicaNegativo", Color.WHITE)
