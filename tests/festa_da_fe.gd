@@ -165,9 +165,14 @@ func _run() -> void:
 	_fechar()
 
 
-## O posto e o lugar de sempre para o período, sem festa nenhuma por cima.
+## O posto e o lugar de sempre para o período, sem festa nenhuma por cima. Quem
+## não está no vale não tem posto a cumprir: o mestre Quirino só encosta no píer
+## no dia do saveiro, e escondido não anda nem troca de posto (`saveiro_vale.gd`).
 func _no_posto_de_sempre(id: String, periodo: String, quando: String) -> void:
 	var morador = por_id[id]
+	var saveiro = vale.get("saveiro")
+	if saveiro != null and morador == saveiro.comprador and not saveiro.presente():
+		return
 	var esperado: String = morador._posto_para(periodo)
 	_conferir(morador._posto == esperado, "%s, '%s' está no posto '%s', e não no '%s'" % [quando, id, morador._posto, esperado])
 	var lugar: Vector3 = morador._posicao_do_posto(esperado)

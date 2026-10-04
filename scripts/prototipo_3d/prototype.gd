@@ -25,6 +25,7 @@ const PescaVale = preload("res://scripts/prototipo_3d/pesca_vale.gd")
 const Atalhos = preload("res://scripts/prototipo_3d/atalhos.gd")
 const CameraMouse = preload("res://scripts/prototipo_3d/camera_mouse.gd")
 const Recursos3D = preload("res://scripts/prototipo_3d/recursos_3d.gd")
+const SaveiroVale = preload("res://scripts/prototipo_3d/saveiro_vale.gd")
 const Minimapa = preload("res://scripts/prototipo_3d/minimapa.gd")
 const CadeiaDeMissoes = preload("res://scripts/prototipo_3d/cadeia_de_missoes.gd")
 const TelasDoVale = preload("res://scripts/prototipo_3d/telas_do_vale.gd")
@@ -71,6 +72,8 @@ var mapa	# mapa_jogo.gd
 var _recursos  # recursos_3d.gd — os alvos de trabalho (troncos, lajedos)
 var lapides	# lapides.gd
 var _arvores_info	# arvores_info.gd — as fichas, o corte e o ano de crescer das árvores
+## O saveiro do mestre Quirino, que encosta no píer uma vez por estação.
+var saveiro
 ## Modo de câmera de antes da pausa, para o retorno devolver o que havia.
 ## As filas de missão penduradas em moradores, por id do morador — para o save
 ## e para quem precise achá-las. A do Pedro NÃO está aqui: ela mora dentro do
@@ -545,6 +548,26 @@ func _ready() -> void:
 		if do_arraial != null:
 			do_arraial.depois_de = func() -> bool:
 				return pedro.missao >= pedro.MISSOES.size() and bool(pedro.get("_despedida_feita"))
+	# O SAVEIRO DA ESTAÇÃO (data/missoes_saveiro.json): o Seu Benedito, que vende
+	# a colheita para o saveiro há quarenta e duas safras, ensina que o mestre
+	# Quirino encosta no píer uma vez por estação — depois do tutorial, que antes
+	# disso o jogador anda com o Pedro. O saveiro (saveiro_vale.gd) traz e leva o
+	# mestre e o barco pelo calendário, e a encomenda de piaçava volta toda
+	# estação depois da cadeia.
+	var do_saveiro: Node = null
+	var quirino: Node3D = null
+	for morador in moradores:
+		match String(morador.dados.get("id", "")):
+			"benedito":
+				do_saveiro = _pendurar_cadeia(morador, "res://data/missoes_saveiro.json", 4.0, "benedito_saveiro")
+			"quirino":
+				quirino = morador
+	if do_saveiro != null and pedro != null:
+		do_saveiro.depois_de = func() -> bool: return pedro.terminou_o_tutorial()
+	saveiro = SaveiroVale.new()
+	saveiro.name = "Saveiro"
+	add_child(saveiro)
+	saveiro.configurar(world, quirino, hud, do_saveiro)
 	# O CEMITÉRIO QUE A FILA DO DAMIÃO CONSERTA: as lajes que a raiz levantou
 	# endireitam com o conserto, e o cercado sobe com a obra do J. Os dois se
 	# leem da fila e do `Obras`, que já vão no save (`cemiterio_vale.gd`).
@@ -1424,6 +1447,10 @@ func estado_para_salvar() -> Dictionary:
 	estado["caderno"] = CadernoDoVale.estado()
 	if _arvores_info != null:
 		estado["arvores_cortadas"] = _arvores_info.estado_para_salvar()
+		# As piaçabeiras que já deram fibra nesta estação.
+		estado["piacava_tirada"] = _arvores_info.fibra_para_salvar()
+	if saveiro != null:
+		estado["saveiro"] = saveiro.estado_para_salvar()
 	if pedro != null:
 		estado["pedro"] = {"missao": pedro.missao, "iniciado": pedro.get("_iniciado"),
 			"despedida": pedro.get("_despedida_feita")}
@@ -1490,6 +1517,11 @@ func restaurar_do_save(estado: Dictionary) -> void:
 	if _arvores_info != null:
 		# A chave velha é a do tempo em que só o coqueiro se cortava.
 		_arvores_info.restaurar_do_save(estado.get("arvores_cortadas", estado.get("coqueiros_cortados", [])))
+		_arvores_info.restaurar_fibra(estado.get("piacava_tirada", []))
+	# O SAVEIRO depois do caderno e das cadeias: a encomenda da estação mora no
+	# caderno, e só volta com a cadeia do Benedito acabada.
+	if saveiro != null:
+		saveiro.restaurar(estado.get("saveiro", {}))
 	var guia: Dictionary = estado.get("pedro", {})
 	if pedro != null and not guia.is_empty():
 		pedro.set("_iniciado", bool(guia.get("iniciado", false)))

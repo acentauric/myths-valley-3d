@@ -188,6 +188,19 @@ func concluir(id: String) -> void:
 	mudou.emit()
 
 
+## ENCERRA SEM CUMPRIR: a missão sai das ativas e não entra nas cumpridas. É a
+## encomenda do saveiro que ficou para trás — ele partiu sem ela, e a da
+## estação que vem é outra.
+func encerrar(id: String) -> void:
+	var i := indice(id)
+	if i < 0:
+		return
+	ativas.remove_at(i)
+	if foco == id:
+		foco = ""
+	mudou.emit()
+
+
 func tem(id: String) -> bool:
 	return indice(id) >= 0
 

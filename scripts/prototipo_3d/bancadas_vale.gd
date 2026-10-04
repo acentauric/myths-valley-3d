@@ -103,6 +103,9 @@ static func obra_perto(world, ponto: Vector3) -> String:
 ## Liga no painel as abas do lugar onde o jogador está.
 static func aplicar(painel, world, ponto: Vector3) -> void:
 	painel.na_venda = perto(world, ponto, "venda")
+	# O SAVEIRO, perto do mestre Quirino no dia dele (`saveiro_vale.gd`).
+	var saveiro = painel.get_tree().get_first_node_in_group("saveiro") if painel.is_inside_tree() else null
+	painel.saveiro = saveiro if saveiro != null and saveiro.perto(ponto) else null
 	painel.na_cozinha = perto(world, ponto, "cozinha")
 	painel.obra_em_foco = obra_perto(world, ponto)
 

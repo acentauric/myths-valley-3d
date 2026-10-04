@@ -1,8 +1,9 @@
 extends Node
 ## Plaquinhas com o nome de cada morador, na identidade do HUD (painel escuro, borda e
 ## nome dourados), presas acima da cabeça. Somem enquanto o morador fala (o balão já
-## traz o nome), longe demais ou atrás da câmera, e quando AJUSTAR → Cenário → Nomes dos
-## personagens está em Ocultar.
+## traz o nome), longe demais ou atrás da câmera, com o morador fora do vale (o mestre
+## Quirino fora do dia do saveiro: o rótulo dele continua `visible`, quem some é ele) e
+## quando AJUSTAR → Cenário → Nomes dos personagens está em Ocultar.
 
 const DISTANCIA_MAXIMA := 22.0
 const ACIMA_DA_CABECA := 0.1
@@ -36,7 +37,7 @@ func _process(_delta: float) -> void:
 			_placas.erase(morador)
 			continue
 		var topo := morador.global_position + Vector3(0, float(morador.get("altura")) + ACIMA_DA_CABECA, 0)
-		var mostrar: bool = _permitido and em_jogo and Estilo.mostrar_nomes and morador.nome_label.visible \
+		var mostrar: bool = _permitido and em_jogo and Estilo.mostrar_nomes and morador.nome_label.is_visible_in_tree() \
 			and morador.global_position.distance_to(_jogador.global_position) < DISTANCIA_MAXIMA \
 			and not camera.is_position_behind(topo)
 		placa.visible = mostrar

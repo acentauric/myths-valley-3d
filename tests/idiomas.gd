@@ -51,6 +51,11 @@ const TRADUZIDOS := {
 	# A missão do cemitério: os três passos do 2D declaram a pendência um a um,
 	# e o mato, o conserto, o cercado e o arremate nasceram nos três idiomas.
 	"res://data/missoes_coveiro.json": ["texto", "resumo", "nome", "titulo", "resposta"],
+	# O saveiro do mestre Quirino: a cadeia do Seu Benedito que o ensina, e o que o
+	# saveiro diz — a chegada, a encomenda da estação e a aba dele no painel.
+	"res://data/missoes_saveiro.json": ["texto", "resumo", "nome", "titulo", "resposta"],
+	"res://data/saveiro.json": ["chegou", "partiu", "encomenda_titulo", "encomenda_texto", "encomenda_linha", "agrado",
+		"painel_titulo", "painel_linha", "painel_dica", "painel_rodape", "ja_levou", "nao_tem"],
 }
 
 ## O QUE AINDA NÃO ESTÁ NOS TRÊS, e por quê. Esvaziar esta lista é o trabalho;

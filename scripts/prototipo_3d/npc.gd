@@ -5,6 +5,7 @@ extends CharacterBody3D
 ## visita — texto no balão e voz por proximidade (AudioStreamPlayer3D). O corpo é o
 ## humanoide procedural ou o modelo do Tripo, conforme o estilo escolhido em AJUSTAR.
 
+const IdiomaMenu = preload("res://scripts/prototipo_3d/idioma_menu.gd")
 const BalaoFala = preload("res://scripts/prototipo_3d/balao_fala.gd")
 const EspumaAgua = preload("res://scripts/prototipo_3d/espuma_agua.gd")
 
@@ -528,7 +529,8 @@ func saudar() -> void:
 	if not falas.is_empty():
 		var fala: Dictionary = falas[_proxima_fala % falas.size()]
 		_proxima_fala += 1
-		texto = String(fala.get("texto", ""))
+		# Na língua do jogo, quando a fala a tem (texto_en, texto_es).
+		texto = String(IdiomaMenu.campo(fala, "texto", ""))
 		var caminho := PASTA_VOZES + String(fala.get("audio", "")) + ".mp3"
 		voz.stream = load(caminho) if ResourceLoader.exists(caminho) else null
 	mostrar_balao(texto, maxf(5.0, voz.stream.get_length() + 1.5) if voz.stream != null else 7.0)

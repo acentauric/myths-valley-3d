@@ -43,8 +43,8 @@ const COR_FIXADA := Color("9fd89a")
 const COR_FUNDO := Color(0.055, 0.085, 0.075, 0.96)
 const COR_BORDA := Color(0.84, 0.73, 0.47, 0.8)
 
-enum Aba { MISSOES, CARTAS, OBRAS, OFICINA, COZINHA, VENDA, TRABALHO, AJUSTES }
-const NOME_DA_ABA := ["Missões", "Cartas", "Obras", "Oficina", "Cozinha", "Venda", "Trabalho", "Jogo"]
+enum Aba { MISSOES, CARTAS, OBRAS, OFICINA, COZINHA, VENDA, TRABALHO, AJUSTES, SAVEIRO }
+const NOME_DA_ABA := ["Missões", "Cartas", "Obras", "Oficina", "Cozinha", "Venda", "Trabalho", "Jogo", "Saveiro"]
 
 ## Maior que a do 2D desde que a aba de missões virou DIÁRIO, com a lista e a
 ## página da missão lado a lado: cabe em 1280×720 com folga de 100 e de 50.
@@ -91,6 +91,9 @@ var aberto: bool = false
 var obra_em_foco: String = ""
 ## No balcão da venda.
 var na_venda: bool = false
+## Perto do mestre Quirino, no dia do saveiro: o `SaveiroVale`, ou null. Com
+## ele, a aba do saveiro, onde ele compra o que se produziu no mês.
+var saveiro: Node = null
 ## De frente para o fogão da própria casa.
 var na_cozinha: bool = false
 
@@ -206,6 +209,8 @@ func abas_validas() -> Array:
 		lista.append(Aba.COZINHA)
 	if na_venda:
 		lista.append(Aba.VENDA)
+	if saveiro != null:
+		lista.append(Aba.SAVEIRO)
 	return lista
 
 
@@ -232,6 +237,7 @@ func _lista_atual() -> Array:
 		Aba.OFICINA: return Oficina.receitas()
 		Aba.COZINHA: return Cozinha.receitas()
 		Aba.VENDA: return o_que_o_balcao_tem()
+		Aba.SAVEIRO: return saveiro.o_que_compra() if saveiro != null else []
 		_: return ACOES + CAMPOS
 
 
@@ -339,6 +345,18 @@ func _confirmar() -> void:
 				return
 			if not fazer_a_acao(ACOES[_cursor]):
 				return
+		Aba.SAVEIRO:
+			# O MESTRE COMPRA UM, pelo preço dele; o porquê de não comprar vai
+			# para a linha de aviso.
+			var o_que: Array = saveiro.o_que_compra() if saveiro != null else []
+			if _cursor >= o_que.size():
+				return
+			var motivo: String = saveiro.vender(str(o_que[_cursor]))
+			if motivo != "":
+				_aviso = motivo
+				_redesenhar()
+				return
+			_aviso = ""
 		_:
 			return
 	Audio.efeito("menu_confirma")
@@ -649,6 +667,7 @@ func _redesenhar() -> void:
 		Aba.OFICINA: _desenhar_oficina()
 		Aba.COZINHA: _desenhar_cozinha()
 		Aba.VENDA: _desenhar_venda()
+		Aba.SAVEIRO: _desenhar_saveiro()
 		_: _desenhar_ajustes()
 
 	_rolar_ate_o_cursor()
@@ -1120,6 +1139,23 @@ func _desenhar_venda() -> void:
 		return
 	_dica.text = "O que o arraial produz sai barato e entra caro. Mandioca e lenha vendem bem na estiagem."
 	_rodape.text = "[W/S] escolher · [E] comprar · [A] vender · [Tab] outra aba · [Esc] fechar"
+
+
+## A ABA DO SAVEIRO: o que o mestre Quirino compra, quanto paga por um, quanto
+## o jogador tem e até quanto ele leva nesta viagem. Os textos são do
+## `data/saveiro.json`, nos três idiomas.
+func _desenhar_saveiro() -> void:
+	if saveiro == null:
+		return
+	_titulo.text = saveiro.texto("painel_titulo") % Jogo.dinheiro
+	var lista: Array = saveiro.o_que_compra()
+	for i in lista.size():
+		var id := str(lista[i])
+		var falta: int = saveiro.leva(id) - saveiro.levou(id)
+		var texto: String = saveiro.texto("painel_linha") % [Catalogo.nome(id), saveiro.paga(id), Inventario.quantidade(id), maxi(falta, 0)]
+		_adicionar_linha(texto, COR_CURSOR if i == _cursor else (COR_APAGADA if Inventario.quantidade(id) == 0 or falta <= 0 else COR_TEXTO))
+	_dica.text = (_aviso + "\n" if _aviso != "" else "") + saveiro.texto("painel_dica")
+	_rodape.text = saveiro.texto("painel_rodape")
 
 
 func _precos(custo: Dictionary) -> String:

@@ -32,6 +32,10 @@ const MERCADORIAS := {
 	"robalo": {"base": 210, "margem": 0.65},
 	"traira": {"base": 140, "margem": 0.65},
 	"lenha": {"base": 25, "margem": 0.5},
+	# A PIAÇAVA: a venda paga pouco (14) e cobra acima do que o mestre do saveiro
+	# paga (34), para ninguém comprar aqui e vender lá. Quem quer o preço bom
+	# espera o saveiro (ver saveiro_vale.gd).
+	"piacava": {"base": 36, "margem": 0.4},
 	"pedra": {"base": 20, "margem": 0.5},
 	"tabua": {"base": 120, "margem": 0.35},
 	"corda": {"base": 80, "margem": 0.35},

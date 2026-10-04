@@ -179,6 +179,15 @@ const ITENS := {
 		"icone": "lenha",
 		"empilhavel": true,
 	},
+	## A FIBRA DA PIAÇAVA, tirada da bainha da folha da palmeira da restinga sem
+	## derrubá-la (ver `ArvoresInfo`). É o que o mestre Quirino, do saveiro, mais
+	## leva para Salvador: vassoura, corda de navio, cobertura de casa.
+	"piacava": {
+		"nome": "Piaçava",
+		"tipo": "recurso",
+		"icone": "piacava",
+		"empilhavel": true,
+	},
 	"madeira_de_coqueiro": {
 		"nome": "Madeira de coqueiro",
 		"tipo": "recurso",

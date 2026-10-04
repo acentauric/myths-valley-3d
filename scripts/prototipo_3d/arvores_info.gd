@@ -43,6 +43,13 @@ const ESTAGIOS := [
 ]
 ## Madeira de espécie que o JSON não classifica.
 const MADEIRA_PADRAO := "branca"
+## A PIAÇAVA SE TIRA, NÃO SE DERRUBA: a fibra sai da bainha da folha, no fio da
+## foice ou do facão, e a palmeira fica de pé e dá de novo na estação seguinte.
+## É o que o mestre Quirino, do saveiro, mais leva (`saveiro_vale.gd`).
+const PALMEIRA_DA_FIBRA := "piacava"
+const FIBRA := "piacava"
+const FEIXES_POR_PALMEIRA := 2
+const GESTO_GOLPEAR := 6
 
 var _fichas: Dictionary = {}
 var _acoes: Dictionary = {}
@@ -62,6 +69,10 @@ var _hud
 var _dica: PanelContainer
 var _perto := -1
 var _cortavel_perto := -1
+## A piaçabeira ao alcance da foice ou do facão, e o dia (absoluto) em que cada
+## uma deu fibra pela última vez, por índice em `_cortaveis`.
+var _fibra_perto := -1
+var _fibra_tirada: Dictionary = {}
 var _cortavel_pendente := -1
 var _em_golpe := -1
 var _golpes_restantes_na_acao := 0
@@ -132,6 +143,7 @@ func _process(_delta: float) -> void:
 		_aberta = -1
 	_perto = _mais_proxima() if em_jogo else -1
 	_cortavel_perto = _mais_proxima_cortavel() if em_jogo and _machado_na_mao() and not _outro_dono_do_e() else -1
+	_fibra_perto = _mais_proxima_piacabeira() if em_jogo and _fio_na_mao() != "" and not _outro_dono_do_e() else -1
 	_atualizar_golpe_pendente()
 	_atualizar_acao_de_golpe()
 	_atualizar_balao_vida(camera if em_jogo else null)
@@ -143,6 +155,10 @@ func _process(_delta: float) -> void:
 	if _corte_vale_a_tecla():
 		var arvore: Dictionary = _cortaveis[_cortavel_perto]
 		DicaTecla.mostrar_em(_dica, camera, (arvore["pos"] as Vector3) + Vector3(0, ALTURA_DICA, 0), _texto_do_corte(_cortavel_perto))
+		return
+	if _fibra_perto >= 0:
+		var palmeira: Dictionary = _cortaveis[_fibra_perto]
+		DicaTecla.mostrar_em(_dica, camera, (palmeira["pos"] as Vector3) + Vector3(0, ALTURA_DICA, 0), _texto_da_fibra(_fibra_perto))
 		return
 	if _perto < 0 or _perto == _aberta:
 		_dica.visible = false
@@ -173,6 +189,9 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 	elif _em_golpe >= 0:
 		_parar_golpe(true)
+		get_viewport().set_input_as_handled()
+	elif _fibra_perto >= 0 and _cortavel_perto < 0:
+		_tirar_a_fibra(_fibra_perto)
 		get_viewport().set_input_as_handled()
 	elif _corte_vale_a_tecla() and not bool(_cortaveis[_cortavel_perto]["cortado"]):
 		# Árvore cortada só mostra quando volta; o E dela segue adiante.
@@ -279,6 +298,104 @@ func _distancia_da_cortavel(indice: int) -> float:
 
 func _machado_na_mao() -> bool:
 	return bool(_jogador.call("machado_na_mao"))
+
+
+# --- a piaçava ---------------------------------------------------------------------
+
+## A foice ou o facão na mão (o id do que está), ou "".
+func _fio_na_mao() -> String:
+	for familia in ["foice", "facao"]:
+		var na_mao := Equipamento.da_familia_em_uso(familia)
+		if na_mao != "":
+			return na_mao
+	return ""
+
+
+## A piaçabeira de pé mais perto, ao alcance, ou -1.
+func _mais_proxima_piacabeira() -> int:
+	var centro := Vector2i(floori(_jogador.global_position.x / QUADRA), floori(_jogador.global_position.z / QUADRA))
+	var melhor := -1
+	var menor := ALCANCE
+	for dx in range(-1, 2):
+		for dz in range(-1, 2):
+			for indice: int in _cortaveis_por_quadra.get(centro + Vector2i(dx, dz), []):
+				var palmeira: Dictionary = _cortaveis[indice]
+				if str(palmeira["especie"]) != PALMEIRA_DA_FIBRA or bool(palmeira["cortado"]):
+					continue
+				var distancia := _distancia_da_cortavel(indice)
+				if distancia < menor:
+					menor = distancia
+					melhor = indice
+	return melhor
+
+
+## A palmeira tem fibra para dar? Uma vez por estação.
+func fibra_pronta(indice: int) -> bool:
+	if not _fibra_tirada.has(indice):
+		return true
+	return Relogio.dia_absoluto() - int(_fibra_tirada[indice]) >= Relogio.DIAS_POR_ESTACAO
+
+
+## O que a dica diz da piaçabeira: tirar, ou — já tirada — que a fibra cresce de
+## novo, sem dizer quando (como a árvore cortada).
+func _texto_da_fibra(indice: int) -> String:
+	var acoes: Dictionary = _acoes.get("arvore", {})
+	if not fibra_pronta(indice):
+		return str(IdiomaMenu.campo(acoes, "fibra_crescendo")) % _nome_da_especie(PALMEIRA_DA_FIBRA)
+	if not Energia.aguenta("colher"):
+		return str(IdiomaMenu.campo(acoes, "sem_folego"))
+	return str(IdiomaMenu.campo(acoes, "tirar_fibra"))
+
+
+## TIRA A FIBRA: o golpe da foice (o gesto de golpear), o fôlego e o que o
+## trabalho ensina de colheita, e os feixes na mochila. A palmeira fica de pé.
+func _tirar_a_fibra(indice: int) -> void:
+	if not fibra_pronta(indice):
+		_hud.set_notice(_texto_da_fibra(indice))
+		return
+	# Mochila cheia: nem fôlego nem golpe, e a palmeira guarda a fibra.
+	if not _cabe(FIBRA):
+		_hud.set_notice(str(IdiomaMenu.campo(_acoes.get("arvore", {}), "inventario_cheio")))
+		return
+	if not Energia.gastar("colher"):
+		_hud.set_notice(str(IdiomaMenu.campo(_acoes.get("arvore", {}), "sem_folego")))
+		return
+	Talentos.ganhar("colher")
+	var animador = _jogador.get("animator")
+	if animador != null and animador.has_method("play_gesture"):
+		animador.play_gesture(GESTO_GOLPEAR)
+	Inventario.adicionar(FIBRA, FEIXES_POR_PALMEIRA)
+	_fibra_tirada[indice] = Relogio.dia_absoluto()
+
+
+## Cabe mais disso na mochila: a pilha que já tem, ou um espaço vazio.
+func _cabe(id: String) -> bool:
+	for espaco: Dictionary in Inventario.espacos:
+		if espaco.is_empty() or (str(espaco.get("id", "")) == id and int(espaco["qtd"]) < Inventario.PILHA_MAXIMA):
+			return true
+	return false
+
+
+## As piaçabeiras já tiradas, com o dia, para o save: [{pos, dia}].
+func fibra_para_salvar() -> Array[Dictionary]:
+	var lista: Array[Dictionary] = []
+	for indice: int in _fibra_tirada:
+		var pos: Vector3 = _cortaveis[indice]["pos"]
+		lista.append({"pos": [pos.x, pos.y, pos.z], "dia": int(_fibra_tirada[indice])})
+	return lista
+
+
+func restaurar_fibra(lista: Array) -> void:
+	_fibra_tirada.clear()
+	for registro in lista:
+		if not registro is Dictionary:
+			continue
+		var onde: Array = registro.get("pos", [])
+		if onde.size() != 3:
+			continue
+		var indice := _indice_da_cortavel(Vector3(float(onde[0]), float(onde[1]), float(onde[2])))
+		if indice >= 0:
+			_fibra_tirada[indice] = int(registro.get("dia", Relogio.dia_absoluto()))
 
 
 ## O E É DE OUTRO AQUI: um alvo de trabalho, um achado, um marco, o campo da

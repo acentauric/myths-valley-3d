@@ -14,7 +14,9 @@ alta com a capa de cada um), a lavoura da casa
 roçado do 2D), o cemitério do Damião (o mato, o conserto das lajes e o cercado,
 que é obra), o corte das árvores (toda árvore do vale, que volta adulta em um
 ano do calendário, com a madeira de lei e a pedra dura presas ao talento e à
-ferramenta de aço), a fé (#52: os seis marcos, o rito, a troca, a
+ferramenta de aço), o saveiro do mestre Quirino (o comprador que encosta no
+píer no dia 14 de cada estação, com a cadeia do Seu Benedito, a encomenda de
+piaçava e a piaçava tirada no facão), a fé (#52: os seis marcos, o rito, a troca, a
 teia da fé no K, as missões da Dona Zefa e de cada fé e a festa de cada uma,
 com os moradores no marco à tarde, e a capelinha do cemitério de costas para o
 mar), os cômodos por dentro das próprias

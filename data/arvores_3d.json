@@ -77,7 +77,13 @@
       "precisa_os_dois_es": "%s pide un hacha de acero y el talento %s.",
       "crescendo": "%s · crescendo de novo",
       "crescendo_en": "%s · growing back",
-      "crescendo_es": "%s · volviendo a crecer"
+      "crescendo_es": "%s · volviendo a crecer",
+      "tirar_fibra": "Tirar piaçava",
+      "tirar_fibra_en": "Harvest piassava",
+      "tirar_fibra_es": "Sacar piasava",
+      "fibra_crescendo": "%s · a fibra cresce de novo",
+      "fibra_crescendo_en": "%s · the fiber is growing back",
+      "fibra_crescendo_es": "%s · la fibra vuelve a crecer"
     }
   },
   "arvores": {

@@ -895,6 +895,10 @@ func _tentar_encontro(passo: Dictionary) -> void:
 	var quem := _morador(str(meta.get("a_quem", "")))
 	if quem == null or jogador == null:
 		return
+	# QUEM NÃO ESTÁ NÃO RECEBE: o mestre Quirino só encosta no píer no dia do
+	# saveiro (o SaveiroVale); fora dele, escondido, a entrega espera.
+	if not quem.is_visible_in_tree():
+		return
 	var no_chao := quem.global_position - jogador.global_position
 	no_chao.y = 0.0
 	if no_chao.length() > float(meta.get("raio", 3.0)):

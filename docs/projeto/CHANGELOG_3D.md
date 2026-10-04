@@ -26,6 +26,31 @@ atualize esse arquivo e este documento juntos.
 
 ## Em desenvolvimento — 03/10/2026
 
+- **O saveiro do mestre Quirino encosta no píer uma vez por estação, e a piaçava se tira
+  no facão.** "Introduza uma missão de venda de piaçava 1x por mês para um NPC novo que
+  chega ao porto." O mês do vale é a estação do calendário, de 28 dias: no dia 14, das 7h
+  às 17h, o mestre Quirino — o morador novo, o mestre de saveiro que o Pedro diz ter
+  trazido o jogador — fica de pé no tabuado do píer, com o saveiro atracado do lado; nos
+  outros dias não há nem ele nem o barco (`SaveiroVale`, `data/saveiro.json`). Perto dele
+  o painel (J) ganha a aba do saveiro: ele compra o que se produziu no mês — piaçava,
+  farinha, mandioca, milho, cana, peixe, robalo, traíra, ostra e lenha — pagando mais que a
+  venda, até o tanto que leva em cada viagem. Quem ensina é o Seu Benedito, que vende para
+  o saveiro há quarenta e duas safras (`data/missoes_saveiro.json`, depois do tutorial do
+  Pedro): empresta o facão, manda ao píer ver onde o saveiro atraca, pede dez feixes de
+  piaçava e manda esperar o dia do mestre. Fora do dia a entrega espera, porque quem não
+  está não recebe (`CadeiaDeMissoes._tentar_encontro`). Depois da cadeia, a encomenda de dez
+  feixes volta toda estação no caderno, com um agrado para quem entrega tudo na mesma
+  viagem; se o saveiro parte sem ela, ela sai do caderno sem entrar nas cumpridas
+  (`CadernoDoVale.encerrar`). A piaçabeira da restinga dá dois feixes no fio da foice ou do
+  facão e fica de pé; dá de novo na estação seguinte, e a dica não diz quando. Com a
+  mochila cheia, nem fôlego se gasta. O mestre fica no corpo procedural até o modelo dele
+  chegar do Tripo, e a placa de nome olha o morador, e não só o rótulo: fora do dia, o
+  nome dele não flutua sobre o píer vazio. O posto da tarde do Pedro, que ficava na água
+  além da ponta do píer, voltou ao tabuado medido. Portão novo `tests/saveiro.gd`, com
+  sete perguntas, falsificado seis vezes: o mestre escondido que recebe, o saveiro que vem
+  todo dia, a fibra sem estação, a encomenda perdida que fica no caderno, a viagem sem teto
+  e a placa que fica sem o dono. O `festa_da_fe` não cobra posto de quem não está no vale.
+
 - **A casa do Pedro e a da Dona Zefa abrem por dentro, e as casas não são iguais.**
   "Produza o ambiente interno da casa de Pedro e Dona Zefa. Lembre de fazer algumas
   variações para todas as casas não serem iguais." O vale escolhe as duas entre as casas
