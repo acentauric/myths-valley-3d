@@ -2,6 +2,15 @@
 
 ## Em desenvolvimento — 04/10/2026
 
+- O histórico do jogo resume cada item em uma linha e mostra até oito itens
+  por página, sem rolagem. A entrada de 03/10 incorpora publicação das builds
+  e validação de arquivos registradas no Git; a de 04/10 resume a nova interface.
+- Modais ocultam as notas “Dizem no vale”/“Do almanaque” e sua sombra; fechar
+  restaura o almanaque do fundo (#77).
+
+- A versão/build no menu abre o histórico sem sublinhado no hover ou foco;
+  o cursor de mão indica que continua clicável (#77).
+
 - A seleção reserva a altura dos textos dos quatro idiomas com as fontes
   efetivas, mantendo modal, botões e build imóveis durante a prévia. O último
   idioma sob o mouse permanece marcado mesmo após sair do botão; a confirmação

@@ -150,10 +150,38 @@ func _run() -> void:
 		_conferir(moldura_menu.texture.resource_path.ends_with("moldura_idioma.svg") and moldura_menu.visible, "moldura SVG visível em %s" % pagina)
 		var retangulo := moldura_menu.get_global_rect()
 		_conferir(retangulo.encloses(abertura.panel.get_global_rect()), "moldura acompanha o painel %s" % pagina)
+		if pagina == "_home":
+			abertura.version_link.mouse_entered.emit()
+			abertura.version_link.grab_focus()
+			_conferir(abertura.version_link.get_child_count() == 0, "versão sem sublinhado no hover ou foco")
+			_conferir(abertura.version_link.mouse_default_cursor_shape == Control.CURSOR_POINTING_HAND, "versão usa cursor de mão")
+			abertura.version_link.pressed.emit()
+			_conferir(abertura.modal_open, "versão continua abrindo histórico")
+			_conferir(not abertura.bloco_almanaque.visible and not abertura.sombra_almanaque.visible, "histórico oculta notas do fundo")
+			abertura._home()
+			_conferir(abertura.bloco_almanaque.visible, "home restaura notas do fundo")
 		for argumento in OS.get_cmdline_user_args():
 			if argumento.begins_with("--captura-menu="):
 				await RenderingServer.frame_post_draw
 				get_root().get_texture().get_image().save_png(argumento.trim_prefix("--captura-menu=").replace(".png", pagina + ".png"))
+	for lingua in 4:
+		idioma.definir(lingua)
+		for pagina in abertura.history_entries.size():
+			abertura.history_index = pagina
+			abertura._render_history()
+			await process_frame
+			await process_frame
+			_conferir(abertura.content.find_children("*", "ScrollContainer", true, false).is_empty(), "histórico sem scroll %d/%d" % [lingua, pagina])
+			var lista: VBoxContainer = abertura.content.get_node("MudancasHistorico")
+			for item: RichTextLabel in lista.get_children():
+				_conferir(item.get_line_count() == 1 and item.get_content_width() <= item.size.x + 1 and item.get_content_height() <= item.size.y + 1, "item inteiro em uma linha %d/%d" % [lingua, pagina])
+			_conferir(abertura.panel.get_global_rect().encloses(lista.get_global_rect()), "lista cabe no modal %d/%d" % [lingua, pagina])
+			_conferir(not abertura.bloco_almanaque.visible, "notas ocultas no modal %d/%d" % [lingua, pagina])
+	# Uma entrada futura com mais de oito itens preserva todos em páginas extras.
+	var itens := range(19)
+	var extras: Array = abertura._paginar_historico([{"mudancas": itens, "mudancas_en": itens, "mudancas_es": itens}])
+	_conferir(extras.size() == 3 and extras[2].mudancas == [16, 17, 18], "paginação preserva itens excedentes")
+	idioma.definir(2)
 	# Na travessia, a legenda continua sem moldura; voltar restaura a talha.
 	abertura._place_legenda()
 	_conferir(not moldura_menu.visible, "travessia esconde moldura")

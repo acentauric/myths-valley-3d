@@ -3,6 +3,42 @@
  "build_numero": 8,
  "entradas": [
   {
+   "data": "04/10/2026",
+   "estado": "EM DESENVOLVIMENTO",
+   "estado_en": "IN DEVELOPMENT",
+   "estado_es": "EN DESARROLLO",
+   "titulo": "Uma entrada mais leve e clara",
+   "titulo_en": "A lighter, clearer welcome",
+   "titulo_es": "Una entrada más ligera y clara",
+   "mudancas": [
+    "*Idioma* escolhido antes de carregar o vale.",
+    "*Língua do sistema* sugerida na primeira abertura.",
+    "*Prévia dos idiomas* com tamanho e destaque estáveis.",
+    "*Molduras SVG* da home nos painéis internos.",
+    "*Versão e build* identificam a entrada.",
+    "*Histórico resumido* em páginas sem rolagem.",
+    "*Notas do fundo* ficam ocultas nos modais."
+   ],
+   "mudancas_en": [
+    "Choose your *language* before loading the valley.",
+    "*System language* suggested on first launch.",
+    "*Language previews* with stable size and selection.",
+    "*SVG frames* from the home page on internal panels.",
+    "*Version and build* identify the welcome screen.",
+    "*Brief changelog* on pages without scrolling.",
+    "*Background notes* stay hidden behind modals."
+   ],
+   "mudancas_es": [
+    "Elige el *idioma* antes de cargar el valle.",
+    "*Idioma del sistema* sugerido al iniciar por primera vez.",
+    "*Previa de idiomas* con tamaño y selección estables.",
+    "*Marcos SVG* de la portada en los paneles internos.",
+    "*Versión y build* identifican la entrada.",
+    "*Historial breve* en páginas sin desplazamiento.",
+    "*Notas del fondo* ocultas detrás de los modales."
+   ]
+  },
+  {
    "data": "03/10/2026",
    "estado": "EM DESENVOLVIMENTO",
    "estado_en": "IN DEVELOPMENT",
@@ -11,13 +47,22 @@
    "titulo_en": "The current team appears in the valley",
    "titulo_es": "El equipo actual aparece en el valle",
    "mudancas": [
-    "A tela *Sobre* apresenta Ramon Santos, Renato Leal e Matheus Ché como a equipe atual do projeto."
+    "Equipe atual apresentada na tela *Sobre*.",
+    "*Builds 7 e 8* publicadas para Windows.",
+    "*Atualizações* conferem os arquivos antes de instalar.",
+    "*Partidas* validam os arquivos antes de abrir."
    ],
    "mudancas_en": [
-    "The *About* screen lists Ramon Santos, Renato Leal and Matheus Ché as the current project team."
+    "Current team presented on the *About* screen.",
+    "*Builds 7 and 8* released for Windows.",
+    "*Updates* validate files before installation.",
+    "*Saved games* validate files before loading."
    ],
    "mudancas_es": [
-    "La pantalla *Acerca de* presenta a Ramon Santos, Renato Leal y Matheus Ché como el equipo actual del proyecto."
+    "Equipo actual presentado en la pantalla *Acerca de*.",
+    "*Builds 7 y 8* publicadas para Windows.",
+    "Las *actualizaciones* validan archivos antes de instalar.",
+    "Las *partidas* validan archivos antes de abrir."
    ]
   },
   {
@@ -29,28 +74,28 @@
    "titulo_en": "The game updates itself",
    "titulo_es": "El juego se actualiza solo",
    "mudancas": [
-    "*Atualização pelo site*: o menu avisa quando sai uma build nova, baixa, confere e se instala; é só reiniciar.",
-    "O vale *monta em cinco segundos*, e não em quase trinta.",
-    "O sobrevoo do menu *contorna árvores e casas* pelos lados, sem subir.",
-    "A tela de carregamento ficou *quieta*: sem partículas e sem som.",
-    "*Seis cadeias de missão* com os moradores, cada uma no seu caderno.",
-    "O E não age com o corpo parado nem atrás de uma tela aberta."
+    "*Atualização pelo site*: baixar, conferir e reiniciar.",
+    "O vale *monta em cinco segundos*.",
+    "O sobrevoo *contorna árvores e casas*.",
+    "Carregamento *sem partículas nem som*.",
+    "*Seis cadeias de missão* com os moradores.",
+    "Interações respeitam *pausa e telas abertas*."
    ],
    "mudancas_en": [
-    "*Updates from the site*: the menu tells you when a new build is out, downloads it, checks it and installs it; just restart.",
-    "The valley *builds in five seconds*, not almost thirty.",
-    "The menu flyover *goes around trees and houses*, without climbing.",
-    "The loading screen is *quiet* now: no particles and no sound.",
-    "*Six quest chains* with the villagers, each in its own notebook.",
-    "E no longer acts while the body is still or behind an open screen."
+    "*Site updates*: download, verify and restart.",
+    "The valley *builds in five seconds*.",
+    "The flyover *avoids trees and houses*.",
+    "Loading *without particles or sound*.",
+    "*Six quest chains* with the villagers.",
+    "Interactions respect *pause and open screens*."
    ],
    "mudancas_es": [
-    "*Actualización desde el sitio*: el menú avisa cuando sale una build nueva, la descarga, la verifica y se instala; solo hay que reiniciar.",
-    "El valle *se arma en cinco segundos*, y no en casi treinta.",
-    "El vuelo del menú *rodea árboles y casas* por los lados, sin subir.",
-    "La pantalla de carga quedó *tranquila*: sin partículas y sin sonido.",
-    "*Seis cadenas de misiones* con los vecinos, cada una en su cuaderno.",
-    "La E ya no actúa con el cuerpo quieto ni detrás de una pantalla abierta."
+    "*Actualización del sitio*: descargar, verificar y reiniciar.",
+    "El valle *se arma en cinco segundos*.",
+    "El vuelo *evita árboles y casas*.",
+    "Carga *sin partículas ni sonido*.",
+    "*Seis cadenas de misiones* con los vecinos.",
+    "Las interacciones respetan *pausa y pantallas abiertas*."
    ]
   },
   {
@@ -62,34 +107,34 @@
    "titulo_en": "The real sea and the whole village",
    "titulo_es": "El mar de verdad y todo el pueblo",
    "mudancas": [
-    "O *mar da carta náutica*: fundo real, água clara, espuma fina e ondas em séries.",
-    "A *maré* enche e vaza (em AJUSTAR), expondo lama, poças e as pedras do recife.",
-    "Dá para *nadar* — e um *tubarão* ronda a parte funda.",
-    "A *igreja de Bom Jesus*, as pedras, as castanholas e os barcos vieram das fotos do lugar.",
-    "*Música por período*, bem-te-vi de dia e a mata fechada ficou de arrepiar.",
-    "Minimapa, seta de missão, pegadas, fichas de árvore e o painel *PERSONAGENS*.",
-    "Tela de carregamento nova: *capa pintada* do vale, de dia ou de noite, e o logotipo em talha dourada.",
-    "O menu inteiro entrou na identidade: *moldura de talha* no retábulo e nos modais, placas em versalete, rosas dos ventos no item escolhido, almanaque sobre o vale e a travessia em *cinema*."
+    "*Mar da carta náutica*, água clara e ondas.",
+    "*Maré* expõe lama, poças e recifes.",
+    "*Natação* e tubarão na parte funda.",
+    "*Igreja, pedras e barcos* inspirados no lugar.",
+    "*Música por período* e sons da mata.",
+    "*Minimapa, missões e fichas* das árvores.",
+    "*Capa pintada* de dia e de noite.",
+    "*Menu em talha* e travessia em cinema."
    ],
    "mudancas_en": [
-    "The *nautical-chart sea*: real seabed, clear water, thin foam and wave sets.",
-    "The *tide* rises and falls (in ADJUST), exposing mud, tide pools and the reef rocks.",
-    "You can *swim* — and a *shark* prowls the deep water.",
-    "The *Bom Jesus church*, the rocks, the beach almonds and the boats came from photos of the place.",
-    "*Music per time of day*, kiskadees in the morning and the deep woods got chilling.",
-    "Minimap, mission marker, footprints, tree cards and the *CHARACTERS* panel.",
-    "New loading screen: a *painted cover* of the valley, by day or by night, and the gilded logo.",
-    "The whole menu joined the identity: a *gilded frame* on the panel and modals, small-caps plaques, wind roses on the chosen item, the almanac over the valley and the crossing as *cinema*."
+    "*Chart-based sea*, clear water and waves.",
+    "*Tides* expose mud, pools and reefs.",
+    "*Swimming* and a shark in deep water.",
+    "*Church, rocks and boats* inspired by the place.",
+    "*Music by time of day* and woodland sounds.",
+    "*Minimap, quests and tree cards*.",
+    "*Painted covers* for day and night.",
+    "*Gilded menu* and a cinematic crossing."
    ],
    "mudancas_es": [
-    "El *mar de la carta náutica*: fondo real, agua clara, espuma fina y series de olas.",
-    "La *marea* sube y baja (en AJUSTAR), exponiendo barro, charcos y las rocas del arrecife.",
-    "Se puede *nadar* — y un *tiburón* ronda la parte honda.",
-    "La *iglesia de Bom Jesus*, las rocas, los almendros y los barcos salieron de fotos del lugar.",
-    "*Música por período*, el bienteveo de día y el bosque cerrado da escalofríos.",
-    "Minimapa, flecha de misión, huellas, fichas de árboles y el panel *PERSONAJES*.",
-    "Nueva pantalla de carga: *portada pintada* del valle, de día o de noche, y el logotipo dorado.",
-    "Todo el menú entró en la identidad: *marco dorado* en el panel y los modales, placas en versalitas, rosas de los vientos en la opción elegida, el almanaque sobre el valle y la travesía como *cine*."
+    "*Mar de carta náutica*, agua clara y olas.",
+    "La *marea* descubre barro, charcos y arrecifes.",
+    "*Natación* y un tiburón en aguas profundas.",
+    "*Iglesia, rocas y barcos* inspirados en el lugar.",
+    "*Música por período* y sonidos del bosque.",
+    "*Minimapa, misiones y fichas* de árboles.",
+    "*Portadas pintadas* de día y de noche.",
+    "*Menú dorado* y travesía de cine."
    ]
   },
   {
