@@ -17,6 +17,15 @@
   vale passa a avisar a janta, a farinha, a corda, a leira, a cama e o papel
   lido. Portões: cadeia_das_missoes joga a chegada inteira pelo caminho do
   jogo; pedidos_do_arraial cobra a roça, o mutirão, quem paga e o save antigo.
+- O jogo abre em tela cheia. F11 alterna entre tela cheia e janela em qualquer
+  tela, e o novo botão do canto do menu faz o mesmo, com a dica ensinando o
+  atalho. A escolha fica salva; em janela, o jogo ocupa 80% do monitor em 16:9.
+  O "?" do mapa desce uma posição na coluna do canto.
+- O mouse não some mais ao carregar o vale: o jogador deixava o cursor preso
+  desde o primeiro quadro, por baixo da tela de carregamento; agora só o modo de
+  câmera escolhido o prende, quando o vale fica pronto. O jogo ganha cursor
+  próprio, seta e mão em ouro com contorno de laca.
+- A escolha de idioma ganha folga vertical, e o aviso do rodapé fica centralizado.
 
 - As trilhas do menu, do jogo, dos períodos e da mata mudam com fade de saída
   e entrada. Parar a música também reduz o ganho antes de encerrar; pedidos
