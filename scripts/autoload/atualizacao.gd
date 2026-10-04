@@ -34,6 +34,10 @@ const PASTA_DOWNLOAD := "user://atualizacao"
 const PASTA_EXTRACAO := ".atualizacao"
 const SUFIXO_ANTIGO := ".old"
 const TEMPO_CONSULTA := 8.0
+const ORIGEM := "https://mythsvalley.app.br"
+const MAX_ZIP := 768 * 1024 * 1024
+const MAX_EXTRAIDO := 1024 * 1024 * 1024
+const MAX_ENTRADAS := 16
 
 enum Estado { PARADO, VERIFICANDO, EM_DIA, DISPONIVEL, BAIXANDO, CONFERINDO, INSTALANDO, PRONTA, FALHOU }
 
@@ -45,6 +49,7 @@ var erro := ""
 
 var _http: HTTPRequest
 var _trabalho: Thread
+var _redirecionamentos := 0
 
 
 func _ready() -> void:
@@ -66,6 +71,8 @@ func verificar() -> void:
 	estado = Estado.VERIFICANDO
 	_http = HTTPRequest.new()
 	_http.timeout = TEMPO_CONSULTA
+	_http.body_size_limit = 65536
+	_http.max_redirects = 0
 	add_child(_http)
 	_http.request_completed.connect(_ao_receber_manifesto, CONNECT_ONE_SHOT)
 	var url := "%s?build=%d&plataforma=windows" % [_url_do_manifesto(), _build_atual()]
@@ -105,9 +112,18 @@ func atualizar() -> void:
 		OS.shell_open(pagina_de_download())
 		return
 	DirAccess.make_dir_recursive_absolute(PASTA_DOWNLOAD)
-	var destino := "%s/%s" % [PASTA_DOWNLOAD, str(manifesto.get("arquivo", "atualizacao.zip"))]
+	# O servidor não escolhe um caminho no computador do jogador.
+	var destino := PASTA_DOWNLOAD.path_join("atualizacao.zip")
+	_redirecionamentos = 0
+	_requisitar_download(str(manifesto["url"]), destino)
+
+
+func _requisitar_download(url: String, destino: String) -> void:
 	_http = HTTPRequest.new()
 	_http.use_threads = true
+	_http.timeout = 300.0
+	_http.max_redirects = 0
+	_http.body_size_limit = int(manifesto["bytes"])
 	_http.download_file = destino
 	_http.download_chunk_size = 1 << 20
 	add_child(_http)
@@ -115,7 +131,7 @@ func atualizar() -> void:
 	progresso = 0.0
 	erro = ""
 	_mudar(Estado.BAIXANDO)
-	if _http.request(str(manifesto["url"])) != OK:
+	if _http.request(url) != OK:
 		_falhar("não foi possível começar o download")
 
 
@@ -128,8 +144,9 @@ func reiniciar() -> void:
 
 func pagina_de_download() -> String:
 	var paginas: Dictionary = manifesto.get("pagina", {}) if manifesto.get("pagina") is Dictionary else {}
-	var idioma: String = ["pt", "en", "es"][clampi(_indice_idioma(), 0, 2)]
-	return str(paginas.get(idioma, paginas.get("pt", "https://mythsvalley.app.br/jogar")))
+	var idioma: String = ["pt", "en", "es", "en"][clampi(_indice_idioma(), 0, 3)]
+	var pagina := str(paginas.get(idioma, paginas.get("pt", ORIGEM + "/jogar")))
+	return pagina if url_confiavel(pagina) else ORIGEM + "/jogar"
 
 
 func _process(_delta: float) -> void:
@@ -158,11 +175,33 @@ func _ao_receber_manifesto(resultado: int, codigo: int, _cabecalhos: PackedStrin
 		_mudar(Estado.EM_DIA)
 
 
-func _ao_baixar(resultado: int, codigo: int, _cabecalhos: PackedStringArray, _corpo: PackedByteArray, arquivo: String) -> void:
+func _ao_baixar(resultado: int, codigo: int, cabecalhos: PackedStringArray, _corpo: PackedByteArray, arquivo: String) -> void:
 	_soltar_http()
+	if codigo in [301, 302, 303, 307, 308] and resultado in [HTTPRequest.RESULT_SUCCESS, HTTPRequest.RESULT_REDIRECT_LIMIT_REACHED]:
+		var proxima := ""
+		for cabecalho in cabecalhos:
+			if cabecalho.to_lower().begins_with("location:"):
+				proxima = cabecalho.substr(9).strip_edges()
+		if proxima.begins_with("/") and not proxima.begins_with("//"):
+			proxima = ORIGEM + proxima
+		if _redirecionamentos >= 3 or not url_confiavel(proxima):
+			DirAccess.remove_absolute(ProjectSettings.globalize_path(arquivo))
+			_falhar("o download redirecionou para uma origem não permitida")
+			return
+		_redirecionamentos += 1
+		_requisitar_download(proxima, arquivo)
+		return
 	if resultado != HTTPRequest.RESULT_SUCCESS or codigo != 200:
 		DirAccess.remove_absolute(ProjectSettings.globalize_path(arquivo))
 		_falhar("o download não terminou (%d/%d)" % [resultado, codigo])
+		return
+	var baixado := FileAccess.open(arquivo, FileAccess.READ)
+	var tamanho := baixado.get_length() if baixado != null else -1
+	if baixado != null:
+		baixado.close()
+	if tamanho != int(manifesto["bytes"]):
+		DirAccess.remove_absolute(ProjectSettings.globalize_path(arquivo))
+		_falhar("o tamanho do arquivo baixado não confere com o site")
 		return
 	progresso = 1.0
 	_mudar(Estado.CONFERINDO)
@@ -244,12 +283,44 @@ static func _instalavel() -> bool:
 
 ## O manifesto tem o que a instalação precisa, e de onde se espera.
 static func manifesto_valido(dados: Dictionary) -> bool:
-	var sha := str(dados.get("sha256", ""))
-	var url := str(dados.get("url", ""))
-	return int(dados.get("build", 0)) > 0 \
-		and url.begins_with("https://") \
-		and str(dados.get("arquivo", "")).ends_with(".zip") \
-		and sha.length() == 64 and sha.is_valid_hex_number()
+	for campo in ["sha256", "url", "arquivo"]:
+		if not dados.get(campo) is String:
+			return false
+	for campo in ["build", "bytes"]:
+		if not (dados.get(campo) is int or dados.get(campo) is float):
+			return false
+		var numero := float(dados[campo])
+		if not is_finite(numero) or numero <= 0 or numero != floor(numero):
+			return false
+	var sha: String = dados["sha256"]
+	var arquivo: String = dados["arquivo"]
+	return float(dados["build"]) < 1000000 and float(dados["bytes"]) <= MAX_ZIP \
+		and url_confiavel(dados["url"]) and nome_seguro(arquivo) and not "/" in arquivo \
+		and arquivo.ends_with(".zip") and sha.length() == 64 and sha.is_valid_hex_number()
+
+
+static func url_confiavel(url: String) -> bool:
+	if not url.begins_with(ORIGEM + "/") or "\\" in url:
+		return false
+	for c in url:
+		if c.unicode_at(0) <= 32 or c.unicode_at(0) == 127:
+			return false
+	return true
+
+
+static func nome_seguro(nome: String) -> bool:
+	if nome.is_empty() or nome.length() > 180 or nome.begins_with("/") or "\\" in nome or ":" in nome:
+		return false
+	for c in nome:
+		if c.unicode_at(0) < 32 or c.unicode_at(0) == 127:
+			return false
+	for parte in nome.trim_suffix("/").split("/"):
+		if parte in ["", ".", ".."] or parte.ends_with(".") or parte.ends_with(" "):
+			return false
+		var base := parte.get_slice(".", 0).to_upper()
+		if base in ["CON", "PRN", "AUX", "NUL", "CONIN$", "CONOUT$"] or (base.length() == 4 and (base.begins_with("COM") or base.begins_with("LPT")) and base.substr(3) in ["1", "2", "3", "4", "5", "6", "7", "8", "9", "¹", "²", "³"]):
+			return false
+	return true
 
 
 static func ha_versao_nova(dados: Dictionary, build_atual: int) -> bool:
@@ -270,11 +341,17 @@ static func sha256_do_arquivo(caminho: String) -> String:
 
 ## Extrai com o tar do Windows (lê o zip em fluxo); sem ele, pelo ZIPReader.
 static func extrair_zip(zip: String, destino: String) -> String:
+	# Antes de qualquer gravação, confira também cabeçalhos locais, tamanhos,
+	# atributos e nomes alternativos que o tar poderia interpretar de outro modo.
+	var falha := conferir_zip(zip)
+	if not falha.is_empty():
+		return falha
 	var tar := OS.get_environment("SystemRoot").path_join("System32/tar.exe")
 	if FileAccess.file_exists(tar):
 		var saida: Array = []
 		if OS.execute(tar, ["-xf", zip, "-C", destino], saida, true) == 0:
 			return ""
+		return "não foi possível extrair o pacote validado"
 	var leitor := ZIPReader.new()
 	if leitor.open(zip) != OK:
 		return "não foi possível abrir o zip"
@@ -292,6 +369,123 @@ static func extrair_zip(zip: String, destino: String) -> String:
 		arquivo.close()
 	leitor.close()
 	return ""
+
+
+## O pacote desta distribuição contém um EXE e instruções, na raiz ou em
+## MythsValley3D/. ZIP64, links e extras desconhecidos não fazem parte do formato.
+static func conferir_zip(zip: String) -> String:
+	var f := FileAccess.open(zip, FileAccess.READ)
+	if f == null or f.get_length() < 22 or f.get_length() > MAX_ZIP:
+		return "pacote inexistente ou grande demais"
+	var comprimento := f.get_length()
+	var inicio := maxi(0, comprimento - 65557)
+	f.seek(inicio)
+	var cauda := f.get_buffer(comprimento - inicio)
+	var fim := -1
+	for i in range(cauda.size() - 22, -1, -1):
+		if cauda.decode_u32(i) == 0x06054b50 and i + 22 + cauda.decode_u16(i + 20) == cauda.size():
+			fim = i
+			break
+	if fim < 0 or cauda.decode_u16(fim + 4) != 0 or cauda.decode_u16(fim + 6) != 0:
+		return "índice ZIP inválido"
+	var quantidade := cauda.decode_u16(fim + 10)
+	var tamanho_indice := cauda.decode_u32(fim + 12)
+	var indice := cauda.decode_u32(fim + 16)
+	if quantidade < 1 or quantidade > MAX_ENTRADAS or quantidade != cauda.decode_u16(fim + 8) or tamanho_indice > 65536 or indice + tamanho_indice != inicio + fim:
+		return "índice ZIP fora dos limites"
+	var vistos := {}
+	var total := 0
+	var executaveis := 0
+	var intervalos: Array[Vector2i] = []
+	f.seek(indice)
+	for _i in quantidade:
+		var h := f.get_buffer(46)
+		if h.size() != 46 or h.decode_u32(0) != 0x02014b50:
+			return "entrada ZIP inválida"
+		var flags := h.decode_u16(8)
+		var metodo := h.decode_u16(10)
+		var comprimido := h.decode_u32(20)
+		var expandido := h.decode_u32(24)
+		var tamanho_nome := h.decode_u16(28)
+		var tamanho_extra := h.decode_u16(30)
+		var tamanho_comentario := h.decode_u16(32)
+		var atributos := h.decode_u32(38)
+		var modo := (atributos >> 16) & 0xf000
+		var local := h.decode_u32(42)
+		if flags & 1 or metodo not in [0, 8] or h.decode_u16(34) != 0 or modo not in [0, 0x8000, 0x4000] or atributos & 0x400 or local >= indice or comprimido > MAX_ZIP or expandido > MAX_EXTRAIDO:
+			return "pacote com link, criptografia ou tamanho inválido"
+		var nome_bytes := f.get_buffer(tamanho_nome)
+		var nome := nome_bytes.get_string_from_utf8()
+		var extra := f.get_buffer(tamanho_extra)
+		f.get_buffer(tamanho_comentario)
+		var proxima := f.get_position()
+		if nome.to_utf8_buffer() != nome_bytes or not nome_seguro(nome) or vistos.has(nome.to_lower()) or not _conteudo_permitido(nome) or not _extras_seguros(extra):
+			return "pacote com nome ou conteúdo não permitido"
+		vistos[nome.to_lower()] = true
+		if nome.get_file() == "MythsValley3D.exe":
+			executaveis += 1
+		elif not nome.ends_with("/") and expandido > 1048576:
+			return "instruções do pacote grandes demais"
+		total += expandido
+		if total > MAX_EXTRAIDO:
+			return "pacote expandido grande demais"
+		f.seek(local)
+		var cabecalho := f.get_buffer(30)
+		if cabecalho.size() != 30 or cabecalho.decode_u32(0) != 0x04034b50 or cabecalho.decode_u16(6) != flags or cabecalho.decode_u16(8) != metodo:
+			return "cabeçalho local não confere"
+		var nome_local := f.get_buffer(cabecalho.decode_u16(26))
+		var extra_local := f.get_buffer(cabecalho.decode_u16(28))
+		if nome_local != nome_bytes or not _extras_seguros(extra_local) or f.get_position() + comprimido > indice:
+			return "caminho ou dados locais não conferem"
+		if not flags & 8 and (cabecalho.decode_u32(18) != comprimido or cabecalho.decode_u32(22) != expandido):
+			return "tamanhos locais não conferem"
+		var fim_local := f.get_position() + comprimido
+		if flags & 8:
+			f.seek(fim_local)
+			var descritor := f.get_buffer(16)
+			if descritor.size() < 12:
+				return "descritor ZIP incompleto"
+			var deslocamento := 4 if descritor.decode_u32(0) == 0x08074b50 else 0
+			if descritor.decode_u32(deslocamento) != h.decode_u32(16) or descritor.decode_u32(deslocamento + 4) != comprimido or descritor.decode_u32(deslocamento + 8) != expandido:
+				return "descritor ZIP não confere"
+			fim_local += 12 + deslocamento
+		intervalos.append(Vector2i(local, fim_local))
+		f.seek(proxima)
+	if f.get_position() != indice + tamanho_indice or executaveis != 1:
+		return "o pacote precisa conter um único MythsValley3D.exe"
+	# O extrator não pode encontrar entradas locais omitidas do índice central,
+	# nem interpretar dados sobrepostos como outro arquivo.
+	intervalos.sort_custom(func(a: Vector2i, b: Vector2i) -> bool: return a.x < b.x)
+	var coberto := 0
+	for intervalo in intervalos:
+		if intervalo.x != coberto or intervalo.y > indice:
+			return "registros ZIP sobrepostos ou fora do índice"
+		coberto = intervalo.y
+	if coberto != indice:
+		return "dados ZIP não declarados no índice"
+	f.close()
+	return ""
+
+
+static func _conteudo_permitido(nome: String) -> bool:
+	if nome == "MythsValley3D/":
+		return true
+	var relativo := nome.trim_prefix("MythsValley3D/")
+	return relativo in ["MythsValley3D.exe", "README.txt", "README_WINDOWS.txt", "README.md", "LEIA-ME.txt"]
+
+
+static func _extras_seguros(extra: PackedByteArray) -> bool:
+	var i := 0
+	while i < extra.size():
+		if i + 4 > extra.size():
+			return false
+		var id := extra.decode_u16(i)
+		var tamanho := extra.decode_u16(i + 2)
+		# Só timestamps. Nomes Unicode alternativos e links Unix são recusados.
+		if id not in [0x5455, 0x000a] or i + 4 + tamanho > extra.size():
+			return false
+		i += 4 + tamanho
+	return true
 
 
 ## O executável de mesmo nome dentro do que foi extraído (o zip pode ter uma pasta).
@@ -339,6 +533,10 @@ static func pasta_gravavel(pasta: String) -> bool:
 
 
 static func _apagar_pasta(pasta: String) -> void:
+	var pai := DirAccess.open(pasta.get_base_dir())
+	if pai != null and pai.is_link(pasta.get_file()):
+		DirAccess.remove_absolute(pasta)
+		return
 	if not DirAccess.dir_exists_absolute(pasta):
 		return
 	for arquivo in DirAccess.get_files_at(pasta):

@@ -8,7 +8,8 @@ extends RefCounted
 ## mostra o que o corpo no vale não mostra, nem o contrário.
 ##
 ## Aparecem o que tem modelo: o chapéu na cabeça, as luvas nas duas mãos e, na
-## mão, o machado (de ferro ou de aço, que é o mesmo modelo) ou o facão. O gibão e o patuá ainda não têm
+## mão, o machado (de ferro ou de aço, que é o mesmo modelo), o facão, a foice
+## ou a ferramenta da barra que tiver modelo. O gibão e o patuá ainda não têm
 ## modelo, e nada aparece por eles. No estilo procedural só o machado, que é o
 ## que aquele estilo desenha: o procedural não ganha arte nova.
 
@@ -48,14 +49,58 @@ const NA_MAO := {
 }
 
 
-## O que o corpo mostra na mão agora: "machado", "facao" ou "". O machado ganha
-## do facão, como na mão de verdade só cabe um.
+## O que o corpo mostra na mão agora: "machado" (o de ferro ou o de aço), a
+## peça da ferramenta ou arma escolhida na barra que tenha modelo — o facão, a
+## foice, a de aço com o modelo da de ferro (`Catalogo.familia`) —, ou "". Na
+## mão de verdade só cabe uma, e o procedural só desenha o machado.
 static func item_na_mao() -> String:
 	if Equipamento.da_familia_em_uso("machado") != "":
 		return "machado"
-	if Equipamento.em_uso("facao"):
-		return "facao"
-	return ""
+	var id := Inventario.na_mao()
+	if id == "" or (Catalogo.tipo(id) != "ferramenta" and Catalogo.dano(id) <= 0.0):
+		return ""
+	var peca := Catalogo.familia(id)
+	if not Estilo.tripo() or not CatalogoAssets.tem_tripo(peca):
+		return ""
+	return peca
+
+
+## O nome da âncora da mão para a peça: "MachadoNaMao", "FacaoNaMao"...
+static func nome_da_ancora(peca: String) -> String:
+	return peca.to_pascal_case() + "NaMao"
+
+
+## A PEÇA NA MÃO, a que `item_na_mao` deu. Devolve o pivô da pegada (o balanço
+## do braço gira em volta dele), ou null quando a peça não balança.
+static func na_mao(ancora: Node3D, visual: Node3D, peca: String) -> Node3D:
+	if peca == "machado":
+		return machado(ancora, visual)
+	if NA_MAO.has(peca):
+		return _na_mao(ancora, visual, peca)
+	if peca == "foice":
+		return _foice(ancora)
+	# As outras ferramentas com modelo vão firmes no punho, sem balanço.
+	var no := CatalogoAssets.instanciar(peca, ancora, Vector3.ZERO, 0.5)
+	if no != null:
+		no.rotation_degrees = Vector3(0.0, 0.0, 90.0)
+		no.position = Vector3(0.0, -0.08, 0.0)
+		no.set_meta("peca", peca)
+	return null
+
+
+## A FOICE: a pegada fica junto à base do cabo, e o pivô acompanha o mesmo
+## balanço de mão do machado.
+static func _foice(ancora: Node3D) -> Node3D:
+	var pivo := Node3D.new()
+	pivo.name = "PivoDaFoice"
+	ancora.add_child(pivo)
+	var foice := CatalogoAssets.instanciar("foice", pivo, Vector3.ZERO, 0.95)
+	if foice != null:
+		foice.rotation_degrees = Vector3(0.0, -90.0, 80.0)
+		foice.position -= foice.basis * Vector3(0.0, 0.11, 0.0)
+		foice.position += Vector3(0.0, 0.02, 0.0)
+		foice.set_meta("peca", "foice")
+	return pivo
 
 
 ## O que o corpo mostra nas mãos agora (as luvas): o id do item, se ele tem
@@ -141,14 +186,6 @@ static func machado(ancora: Node3D, visual: Node3D) -> Node3D:
 		machado_procedural(ancora)
 		return null
 	return _na_mao(ancora, visual, "machado")
-
-
-## O FACÃO NA MÃO (só no estilo Tripo, que é onde ele tem modelo), pelo mesmo
-## caminho do machado. Devolve o pivô da pegada.
-static func facao(ancora: Node3D, visual: Node3D) -> Node3D:
-	if not Estilo.tripo():
-		return null
-	return _na_mao(ancora, visual, "facao")
 
 
 ## A PEÇA NA MÃO: deitada no punho, com a pegada na palma e um pivô em volta da

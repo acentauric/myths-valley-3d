@@ -28,6 +28,8 @@ const SITE_SEARCH_DIRECTIONS := 24
 ## centro afastado do eixo o bastante para não invadir a rua, terreno quase plano.
 const RECUO_DA_RUA := 1.6
 const DESNIVEL_MAXIMO_CASA := 0.35
+## Enterra discretamente as casas pequenas e seus alicerces no terreno inclinado.
+const AFUNDAMENTO_CASAS_PEQUENAS := 0.18
 const PASSO_NA_RUA := 2.5
 const ALCANCE_NA_RUA := 60.0
 
@@ -144,9 +146,10 @@ func _support_house(position: Vector3, footprint: Vector2, yaw: float, chave: St
 	var church := chave == "igreja"
 	var base_margin := 0.36 if church else 0.16
 	var heights := _house_ground_range(position, footprint + Vector2.ONE * base_margin, yaw)
-	var placed := Vector3(position.x, heights.y + 0.02, position.z)
+	var bury := AFUNDAMENTO_CASAS_PEQUENAS if chave in ["casa_taipa", "casa_carro_quebrado"] else 0.0
+	var placed := Vector3(position.x, heights.y + 0.02 - bury, position.z)
 	var top := placed.y + (0.12 if church else 0.04)
-	var bottom := heights.x - (0.24 if church else 0.06)
+	var bottom := minf(heights.x - (0.24 if church else 0.06), top - 0.08)
 	var foundation_size := Vector3(footprint.x + base_margin, top - bottom, footprint.y + base_margin)
 	_box(foundation_size, Vector3(position.x, (top + bottom) * 0.5, position.z), Color("9c927e") if church else Color("958d79"), true, null if church else _terreiro_material(), yaw)
 	if church:
@@ -384,9 +387,22 @@ func water_level() -> float:
 	return (preamar + Mare.nivel_offset()) if is_finite(preamar) else -INF
 
 
-## Lâmina d'água (unidades) sobre o fundo do mar no ponto, já com a maré; 0 em terra,
-## no fundo exposto pela baixa-mar ou sem mar real.
+## O rio acompanha o relevo e tem nível local; o mar continua seguindo a maré.
+func water_level_at(world_position: Vector3) -> float:
+	if _region != null:
+		var river_level: float = _region.river_water_level_at(world_position)
+		if is_finite(river_level):
+			return river_level
+	return water_level()
+
+
+## Lâmina d'água (unidades) sobre o leito do rio ou do mar no ponto.
+## O rio segue o relevo; o mar acompanha a maré.
 func water_depth_at(world_position: Vector3) -> float:
+	if _region != null:
+		var river_depth: float = _region.river_water_depth_at(world_position)
+		if river_depth > 0.0:
+			return river_depth
 	if not is_finite(water_level()):
 		return 0.0
 	var lamina := Mar.lamina_em(Vector2(world_position.x, world_position.z))
@@ -446,6 +462,35 @@ func _road_yaw_at(point: Vector3) -> float:
 				direction = segment.normalized()
 	# Girar yaw leva o X local para (cos yaw, -sen yaw) no plano XZ.
 	return atan2(-direction.y, direction.x)
+
+
+## A travessia do rio central não tinha marcador no KML. Usa as linhas já
+## suavizadas que desenham a Rua Principal e a água para achar o encontro real.
+func _central_road_river_crossing() -> Vector3:
+	var found := false
+	var best := INF
+	var point := Vector2.ZERO
+	for road in _region._roads:
+		if String(road.name) != "Rua Principal":
+			continue
+		var road_points: PackedVector2Array = road.points
+		for river in _region._rivers:
+			if _region._is_northern_river(river):
+				continue
+			var river_points: PackedVector2Array = river.points
+			for i in range(road_points.size() - 1):
+				for j in range(river_points.size() - 1):
+					var crossing: Variant = Geometry2D.segment_intersects_segment(
+						road_points[i], road_points[i + 1], river_points[j], river_points[j + 1])
+					if not (crossing is Vector2):
+						continue
+					var candidate: Vector2 = crossing
+					var distance := candidate.length_squared()
+					if not found or distance < best:
+						point = candidate
+						best = distance
+						found = true
+	return Vector3(point.x, 0.0, point.y) if found else Vector3.INF
 
 
 ## O raycast deve usar HOUSE_INTERACTION_LAYER e collide_with_areas = true.
@@ -846,7 +891,7 @@ func _construcao(chave: String, origin: Vector3, yaw: float, procedural: Callabl
 				# O modelo Tripo tem o próprio tabuado e recebe colisão pela malha.
 				var pier_deck_top := piso_position.y + piso_size.y * 0.5
 				ancoras["PierPiso"] = Vector3(placed_origin.x, pier_deck_top, placed_origin.z)
-			else:
+			elif chave != "ponte":
 				# Terreiro de chão batido drapeado no próprio terreno (acompanha o declive):
 				# uma caixa plana ficava flutuando do lado baixo do lote.
 				var meio := Vector2(piso_size.x, piso_size.z) * 0.5
@@ -1294,6 +1339,10 @@ func _arvore(especie: String, origin: Vector3, size: float = 1.0, yaw: float = 0
 			_arvores_nomeadas[registro]["visual"] = node
 			var corpo := get_child(get_child_count() - 1) as StaticBody3D
 			_arvores_nomeadas[registro]["colisao"] = corpo
+			if especie == "cajueiro" and corpo != null:
+				var cilindro := (corpo.get_child(0) as CollisionShape3D).shape as CylinderShape3D
+				_arvores_nomeadas[registro]["pos"] = Vector3(corpo.position.x, placed_origin.y, corpo.position.z)
+				_arvores_nomeadas[registro]["raio"] = cilindro.radius
 			if especie == "coqueiro":
 				_alinhar_colisao_coqueiro(node, corpo)
 			return
@@ -1449,6 +1498,19 @@ func _build_details() -> void:
 			_box(Vector3(0.16, 0.10, 0.16), ground_position(flower, 0.30), Color("e4c782") if i % 2 == 0 else Color("ce9d99"))
 
 
+## A mesma peça e a mesma colisão atendem às duas travessias do vale.
+func _erguer_ponte(point: Vector3, anchor: String) -> void:
+	var bridge := point
+	bridge.y = _footprint_height(bridge, 5.5) + 0.1
+	ancoras[anchor] = bridge
+	var bridge_yaw := _road_yaw_at(bridge)
+	_construcao("ponte", bridge, bridge_yaw, func():
+		_box(Vector3(11, 0.35, 6), bridge + Vector3(0, 0.22, 0), Color("987b57"), true, null, bridge_yaw)
+		for side in [-2.8, 2.8]:
+			var rail_offset := Vector3(0, 0.95, side).rotated(Vector3.UP, bridge_yaw)
+			_box(Vector3(11, 0.18, 0.15), bridge + rail_offset, WOOD, true, null, bridge_yaw))
+
+
 func _build_landmark_details() -> void:
 	var church: Vector3 = ancoras["Igreja"]
 	var church_yaw: float = _lotes.get("Igreja", {}).get("yaw", 0.0)
@@ -1492,15 +1554,12 @@ func _build_landmark_details() -> void:
 		for offset in [-7.0, 0.0, 7.0]:
 			for side in [-1.8, 1.8]:
 				_box(Vector3(0.3, 1.5, 0.3), pier + Vector3(side, -0.75, offset), WOOD))
-	var bridge: Vector3 = _region.get_feature_center("Ponte", "poi")
-	bridge.y = _footprint_height(bridge, 5.5) + 0.1
-	ancoras["Ponte"] = bridge
-	var bridge_yaw := _road_yaw_at(bridge)
-	_construcao("ponte", bridge, bridge_yaw, func():
-		_box(Vector3(11, 0.35, 6), bridge + Vector3(0, 0.22, 0), Color("987b57"), true, null, bridge_yaw)
-		for side in [-2.8, 2.8]:
-			var rail_offset := Vector3(0, 0.95, side).rotated(Vector3.UP, bridge_yaw)
-			_box(Vector3(11, 0.18, 0.15), bridge + rail_offset, WOOD, true, null, bridge_yaw))
+	_erguer_ponte(_region.get_feature_center("Ponte", "poi"), "Ponte")
+	var central_bridge := _central_road_river_crossing()
+	if central_bridge.is_finite():
+		_erguer_ponte(central_bridge, "Ponte do rio central")
+	else:
+		push_warning("Não foi encontrado o cruzamento da Rua Principal com o rio central.")
 	var lookout: Vector3 = _region.get_feature_center("Mirante", "poi")
 	lookout.y = _footprint_height(lookout, 4.3) + 0.02
 	ancoras["Mirante"] = lookout
@@ -1731,7 +1790,9 @@ func _build_luzes_epoca() -> void:
 	luz_no_pier.y += 1.6
 	var modelo_luz_no_pier := _posicao_no_pier(0.3, 2.0) + Vector3.UP * 1.5
 	_luzes.candeeiro(luz_no_pier, _adereco("candeeiro", modelo_luz_no_pier))
-	ancoras["Fogueira"] = ground_position(farm + Vector3(7.0, 0, 4.5))
+	# O lajedo de trabalho ocupa (8, 3) e seu modelo se estende além da colisão.
+	# A fogueira fica no terreiro, com folga visível entre as toras e o rochedo.
+	ancoras["Fogueira"] = ground_position(farm + Vector3(19.0, 0, 4.0))
 	_luzes.fogueira(ancoras["Fogueira"], _adereco("fogueira", ancoras["Fogueira"]))
 	# O fogo do terreiro de santo, aceso à noite como o da fazenda.
 	if is_instance_valid(_fogo_do_terreiro):

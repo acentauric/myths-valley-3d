@@ -25,6 +25,89 @@ func candeeiro(posicao: Vector3, modelo: Node3D) -> void:
 
 func fogueira(posicao: Vector3, modelo: Node3D) -> void:
 	_chama(posicao + Vector3(0, 0.55, 0), COR_FOGO, 9.0, 3.2, 0.35, modelo, Vector3(0, 0.3, 0), 0.0)
+	_particulas_fogueira(posicao)
+
+
+## A chama e as brasas são partículas luminosas; o modelo contém só madeira.
+func _particulas_fogueira(posicao: Vector3) -> void:
+	var particulas := GPUParticles3D.new()
+	particulas.name = "ChamaDaFogueira"
+	particulas.position = posicao + Vector3(0.0, 0.28, 0.0)
+	particulas.amount = 72
+	particulas.lifetime = 0.68
+	particulas.preprocess = 0.68
+	particulas.emitting = true
+	particulas.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	var movimento := ParticleProcessMaterial.new()
+	movimento.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_SPHERE
+	movimento.emission_sphere_radius = 0.16
+	movimento.direction = Vector3.UP
+	movimento.spread = 16.0
+	movimento.gravity = Vector3(0.0, 0.45, 0.0)
+	movimento.initial_velocity_min = 0.55
+	movimento.initial_velocity_max = 1.15
+	movimento.scale_min = 0.35
+	movimento.scale_max = 1.0
+	var cores := Gradient.new()
+	cores.set_color(0, Color(1.0, 0.82, 0.25, 0.95))
+	cores.add_point(0.5, Color(1.0, 0.42, 0.07, 0.8))
+	cores.set_color(1, Color(1.0, 0.19, 0.04, 0.0))
+	var rampa := GradientTexture1D.new()
+	rampa.gradient = cores
+	movimento.color_ramp = rampa
+	particulas.process_material = movimento
+	var chama := QuadMesh.new()
+	chama.size = Vector2(0.16, 0.38)
+	var material := StandardMaterial3D.new()
+	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	material.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+	material.billboard_mode = BaseMaterial3D.BILLBOARD_ENABLED
+	material.vertex_color_use_as_albedo = true
+	material.cull_mode = BaseMaterial3D.CULL_DISABLED
+	material.emission_enabled = true
+	material.emission = Color(1.0, 0.4, 0.08)
+	material.emission_energy_multiplier = 1.2
+	var borda := Gradient.new()
+	borda.set_color(0, Color.WHITE)
+	borda.set_color(1, Color(1.0, 1.0, 1.0, 0.0))
+	var textura := GradientTexture2D.new()
+	textura.gradient = borda
+	textura.fill = GradientTexture2D.FILL_RADIAL
+	textura.fill_from = Vector2(0.5, 0.55)
+	textura.fill_to = Vector2(0.5, 0.0)
+	material.albedo_texture = textura
+	chama.material = material
+	particulas.draw_pass_1 = chama
+	add_child(particulas)
+	var brasas := GPUParticles3D.new()
+	brasas.name = "BrasasDaFogueira"
+	brasas.position = posicao + Vector3(0.0, 0.32, 0.0)
+	brasas.amount = 16
+	brasas.lifetime = 1.2
+	brasas.preprocess = 1.2
+	brasas.emitting = true
+	brasas.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	var movimento_brasas := ParticleProcessMaterial.new()
+	movimento_brasas.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_SPHERE
+	movimento_brasas.emission_sphere_radius = 0.12
+	movimento_brasas.direction = Vector3.UP
+	movimento_brasas.spread = 32.0
+	movimento_brasas.gravity = Vector3(0.0, -0.15, 0.0)
+	movimento_brasas.initial_velocity_min = 0.8
+	movimento_brasas.initial_velocity_max = 1.8
+	var cores_brasas := Gradient.new()
+	cores_brasas.set_color(0, Color(1.0, 0.75, 0.3, 0.9))
+	cores_brasas.set_color(1, Color(1.0, 0.18, 0.03, 0.0))
+	var rampa_brasas := GradientTexture1D.new()
+	rampa_brasas.gradient = cores_brasas
+	movimento_brasas.color_ramp = rampa_brasas
+	brasas.process_material = movimento_brasas
+	var ponto := QuadMesh.new()
+	ponto.size = Vector2(0.045, 0.045)
+	ponto.material = material
+	brasas.draw_pass_1 = ponto
+	add_child(brasas)
 
 
 ## Janela iluminada por dentro: um quadrado emissivo quente sem luz projetada.

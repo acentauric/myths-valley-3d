@@ -735,7 +735,8 @@ func _ao_vigor_mudar(valor: float) -> void:
 
 
 func _atualizar_stamina_hud() -> void:
-	_hud.definir_stamina(_stamina, str(IdiomaMenu.campo(_acoes.get("arvore", {}), "stamina")))
+	var maximo := maxf(1.0, float(_jogador.call("vigor_maximo")))
+	_hud.definir_stamina(100.0 * _stamina / maximo, str(IdiomaMenu.campo(_acoes.get("arvore", {}), "stamina")))
 
 
 func _criar_balao_vida(camada: Control) -> void:

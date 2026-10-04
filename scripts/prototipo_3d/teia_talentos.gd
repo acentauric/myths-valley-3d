@@ -566,7 +566,7 @@ func linhas_da_pagina_da_fe() -> Array:
 		if str(fe) != Fe.ativa and Fe.conhecida(str(fe)):
 			linhas.append(tr("%s está congelada no nível %d, com %d ponto(s) e %d de acumulado. Voltar a ela devolve a teia como ficou.") % [
 				_da_fe(str(fe), "nome"), Fe.nivel_da(str(fe)), Fe.pontos_da(str(fe)), Fe.total(str(fe))])
-	linhas.append(tr("Cada marco da sua fé dá graça uma vez a cada %d dia(s): fôlego, experiência de fé e uma bênção que dura %d dia(s).") % [Ritos.espera(), Ritos.duracao()])
+	linhas.append(tr("Cada marco da sua fé dá graça uma vez a cada %d dia(s): vigor, experiência de fé e uma bênção que dura %d dia(s).") % [Ritos.espera(), Ritos.duracao()])
 	for marco in (Fe.dados_da_fe(Fe.ativa).get("marcos", []) as Array):
 		var nome := tr(str(NOMES_DOS_MARCOS.get(str(marco), str(marco))))
 		if Ritos.pode_celebrar(str(marco)):

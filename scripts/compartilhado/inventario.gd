@@ -137,8 +137,8 @@ func trocar(a: int, b: int) -> void:
 ## O machado chegou a morar só na reserva — usado encaixando-o em "Mãos" na
 ## mochila —, e quem jogou apertava o número dele e nada acontecia: "o machado
 ## no inventário não tá subindo para a mão, os outros itens estão normal". Ele
-## voltou a ser item de mão como a picareta e a foice; o encaixe continua
-## existindo para quem prefere vesti-lo.
+## voltou a ser item de mão como a picareta e a foice, e o encaixe das Mãos
+## ficou para as luvas.
 ##
 ## Partida salva no tempo da reserva tem o machado lá embaixo, onde o número
 ## não alcança. Este passo o sobe para o primeiro espaço livre da barra; sem

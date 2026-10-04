@@ -1,15 +1,16 @@
 extends RefCounted
-## Idioma do menu (abertura): português, inglês ou espanhol. Usa o TranslationServer do Godot
+## Idioma do menu: português, inglês, espanhol ou chinês (parcial, fallback inglês).
+## Usa o TranslationServer do Godot
 ## com as frases em português como chave, então Label, Button e OptionButton se
 ## traduzem sozinhos; textos compostos passam por tr(). Só o menu muda de idioma —
 ## ao entrar no vale o locale volta ao português e o jogo segue como está.
-## Textos vindos de dados (travessia, histórico) usam campos *_en / *_es nos próprios JSON.
+## Dados usam *_en / *_es; chinês aceita *_zh e usa *_en onde faltar.
 
 const ARQUIVO := "user://preferencias_visuais.cfg"
-const LOCALES := ["pt_BR", "en", "es"]
-const ROTULOS := ["Português", "English", "Español"]
+const LOCALES := ["pt_BR", "en", "es", "zh_CN"]
+const ROTULOS := ["Português", "English", "Español", "中文"]
 ## Sufixo dos campos traduzidos nos JSON, por índice de idioma.
-const SUFIXOS := ["", "_en", "_es"]
+const SUFIXOS := ["", "_en", "_es", "_zh"]
 
 const EN := {
 	# Início
@@ -292,6 +293,7 @@ const EN := {
 	"Pede o talento %s.": "Needs the talent %s.",
 	"pede o talento %s": "needs the talent %s",
 	"ponha na mão: %s": "put it in hand: %s",
+	"selecione %s (%s)": "select %s (%s)",
 	"Relógio: %s · sem conquistas": "Clock: %s · no achievements",
 	"Relógio: %s · pausa bloqueada": "Clock: %s · pause locked",
 	"Pausar o relógio está bloqueado em AJUSTAR → Geral.": "Pausing the clock is locked in SETTINGS → General.",
@@ -327,7 +329,7 @@ const EN := {
 	"Uma fé por vez. A que você deixar congela inteira, e trocar de novo não apaga nada.": "One faith at a time. The one you leave freezes whole, and switching again erases nothing.",
 	"Você é %s: nível %d, %d ponto(s) para gastar.": "You follow %s: level %d, %d point(s) to spend.",
 	"%s está congelada no nível %d, com %d ponto(s) e %d de acumulado. Voltar a ela devolve a teia como ficou.": "%s is frozen at level %d, with %d point(s) and %d gathered. Going back to it returns the web as it was.",
-	"Cada marco da sua fé dá graça uma vez a cada %d dia(s): fôlego, experiência de fé e uma bênção que dura %d dia(s).": "Each landmark of your faith gives grace once every %d day(s): stamina, faith experience and a blessing that lasts %d day(s).",
+	"Cada marco da sua fé dá graça uma vez a cada %d dia(s): vigor, experiência de fé e uma bênção que dura %d dia(s).": "Each landmark of your faith gives grace once every %d day(s): stamina, faith experience and a blessing that lasts %d day(s).",
 	"dá graça hoje": "gives grace today",
 	"a graça volta no %s": "grace returns on %s",
 	"Bênção de agora: %s, por mais %d dia(s).": "Current blessing: %s, for %d more day(s).",
@@ -650,6 +652,7 @@ const ES := {
 	"Pede o talento %s.": "Pide el talento %s.",
 	"pede o talento %s": "pide el talento %s",
 	"ponha na mão: %s": "tómalo en la mano: %s",
+	"selecione %s (%s)": "elige %s (%s)",
 	"Relógio: %s · sem conquistas": "Reloj: %s · sin logros",
 	"Relógio: %s · pausa bloqueada": "Reloj: %s · pausa bloqueada",
 	"Pausar o relógio está bloqueado em AJUSTAR → Geral.": "Pausar el reloj está bloqueado en AJUSTES → General.",
@@ -683,7 +686,7 @@ const ES := {
 	"Uma fé por vez. A que você deixar congela inteira, e trocar de novo não apaga nada.": "Una fe a la vez. La que dejes se congela entera, y cambiar de nuevo no borra nada.",
 	"Você é %s: nível %d, %d ponto(s) para gastar.": "Eres %s: nivel %d, %d punto(s) por gastar.",
 	"%s está congelada no nível %d, com %d ponto(s) e %d de acumulado. Voltar a ela devolve a teia como ficou.": "%s está congelada en el nivel %d, con %d punto(s) y %d acumulado. Volver a ella devuelve la red como quedó.",
-	"Cada marco da sua fé dá graça uma vez a cada %d dia(s): fôlego, experiência de fé e uma bênção que dura %d dia(s).": "Cada hito de tu fe da gracia una vez cada %d día(s): aliento, experiencia de fe y una bendición que dura %d día(s).",
+	"Cada marco da sua fé dá graça uma vez a cada %d dia(s): vigor, experiência de fé e uma bênção que dura %d dia(s).": "Cada hito de tu fe da gracia una vez cada %d día(s): resistencia, experiencia de fe y una bendición que dura %d día(s).",
 	"dá graça hoje": "da gracia hoy",
 	"a graça volta no %s": "la gracia vuelve el %s",
 	"Bênção de agora: %s, por mais %d dia(s).": "Bendición actual: %s, por %d día(s) más.",
@@ -739,14 +742,24 @@ static var _traducao: Translation
 
 
 static func indice() -> int:
+	return indice_preferido(OS.get_locale_language())
+
+
+## A escolha salva vence; sem ela, o sistema apenas sugere o idioma.
+static func indice_preferido(lingua_sistema: String) -> int:
 	var preferencias := ConfigFile.new()
-	if preferencias.load(ARQUIVO) != OK:
-		return 0
-	return clampi(int(preferencias.get_value("menu", "idioma", 0)), 0, LOCALES.size() - 1)
+	if preferencias.load(ARQUIVO) == OK and preferencias.has_section_key("menu", "idioma"):
+		return clampi(int(preferencias.get_value("menu", "idioma")), 0, LOCALES.size() - 1)
+	return indice_do_sistema(lingua_sistema)
+
+
+static func indice_do_sistema(lingua: String) -> int:
+	var codigo := lingua.to_lower().replace("-", "_").get_slice("_", 0)
+	return {"pt": 0, "en": 1, "es": 2, "zh": 3}.get(codigo, 1)
 
 
 static func ingles() -> bool:
-	return indice() == 1
+	return indice() in [1, 3]
 
 
 static func sufixo() -> String:
@@ -768,7 +781,12 @@ static func aplicar_menu() -> void:
 	var atual := indice()
 	if atual == 0:
 		return
-	var frases: Dictionary = EN if atual == 1 else ES
+	# Chinês ainda em preparação: fallback inglês explícito na tela inicial.
+	var frases: Dictionary = (EN if atual in [1, 3] else ES).duplicate()
+	if atual == 3:
+		var dados: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://data/selecao_idioma.json"))
+		for chave: String in dados.get("menu_zh", {}):
+			frases[chave] = dados["menu_zh"][chave]
 	_traducao = Translation.new()
 	_traducao.locale = LOCALES[atual]
 	for chave: String in frases:
@@ -785,9 +803,17 @@ static func restaurar_jogo() -> void:
 	TranslationServer.set_locale(LOCALES[0])
 
 
-## Campo de dados no idioma do menu: `chave_en` / `chave_es` quando existir.
+## Campo no idioma do menu: *_en / *_es / *_zh, com fallback inglês para chinês.
 static func campo(dados: Dictionary, chave: String, padrao: Variant = "") -> Variant:
-	var traduzida := chave + sufixo()
+	return campo_no_idioma(dados, chave, indice(), padrao)
+
+
+## Prévia de texto sem alterar o locale nem a preferência salva.
+static func campo_no_idioma(dados: Dictionary, chave: String, atual: int, padrao: Variant = "") -> Variant:
+	atual = clampi(atual, 0, LOCALES.size() - 1)
+	var traduzida: String = chave + SUFIXOS[atual]
 	if traduzida != chave and dados.has(traduzida):
 		return dados[traduzida]
+	if atual == 3 and dados.has(chave + "_en"):
+		return dados[chave + "_en"]
 	return dados.get(chave, padrao)

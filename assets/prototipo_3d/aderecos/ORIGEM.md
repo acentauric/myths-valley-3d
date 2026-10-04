@@ -21,7 +21,7 @@ antigos continuam no histórico do Git.
 | `carroca_tripo.glb` | Ox cart (carro de boi) from rural Brazil: two large solid wooden wheels, wooden yoke pole, plank cargo bed with side rails, no animals. | `bc1c9b43-0db2-4619-88ac-a5bfed38773a` | 4.115 | 1K | 2.6 |
 | `cerca_tripo.glb` | Rustic wooden fence section: three rough posts and two horizontal rails, weathered wood, about four meters long. | `dede644a-6bd2-459d-b264-74d522459951` | 3.950 | 1K | 2.6 |
 | `cruzeiro_tripo.glb` | Tall wooden cross (cruzeiro) on a stepped stone base, dark weathered wood with simple carved details. | `f73bad86-1c25-447c-bfec-fc6763bc7d24` | 4.609 | 1K | 2.5 |
-| `fogueira_tripo.glb` | Small campfire: ring of gray stones, a few burning logs with orange flames and embers. | `b87c7576-4c98-45dd-8460-edf72edfc32f` | 4.054 | 1K | 2.2 |
+| `fogueira_tripo.glb` | Small campfire: ring of gray stones and burning logs. The original 4,054-face Tripo model had 1,379 rigid flame triangles removed locally with `tools/prototipo_3d/remover_chama_fogueira.py`; the flame now comes from particles in `luzes_epoca.gd`. | `b87c7576-4c98-45dd-8460-edf72edfc32f` | 2.675 | 1K | 2.2 |
 | `lampiao_poste_tripo.glb` | 19th-century street oil lamp on a wooden post: iron lantern with glass panes and a small metal roof, wooden post with an iron bracket. | `cba6e2fa-0f24-487b-88ac-1d466a35d919` | 3.971 | 1K | 2.6 |
 | `lenha_tripo.glb` | Stack of split firewood logs neatly piled, bark outside and pale cut ends. | `bac80f06-04b6-4303-86d5-0b435c8bb637` | 3.997 | 1K | 1.9 |
 | `mandioca_canteiro_tripo.glb` | Cassava plot: several cassava plants (manihot) with reddish stems and palmate leaves growing from a mound of dark earth. | `0f75f635-c5cc-43a4-955f-870824c70ec9` | 3.949 | 1K | 2.7 |

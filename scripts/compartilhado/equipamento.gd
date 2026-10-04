@@ -67,9 +67,45 @@ func da_familia_em_uso(familia: String) -> String:
 
 
 ## O ENCAIXE DAS MÃOS É DAS LUVAS: arma e ferramenta vão na barra de mão (os
-## números), e só peça de vestir entra num encaixe.
+## números), e só peça de vestir entra num encaixe — nas Mãos, só a que não
+## bate: luva protege, não fere.
 func e_equipamento(id: String) -> bool:
-	return encaixe_de(id) != "" and Catalogo.tipo(id) == "equipamento"
+	var encaixe := encaixe_de(id)
+	if encaixe == "" or Catalogo.tipo(id) != "equipamento":
+		return false
+	return encaixe != "maos" or Catalogo.dano(id) <= 0.0
+
+
+## O EFEITO QUE A FERRAMENTA SOMAVA QUANDO SE VESTIA. O facão ia na cintura com
+## -5% de fôlego gasto; hoje ele é da barra, o efeito é das luvas, e o catálogo
+## não o lembra mais. A partida salva com ele vestido traz esse efeito somado
+## na `Progressao`, e é daqui que a migração sabe tirá-lo.
+const EFEITO_DE_QUANDO_SE_VESTIA := {"facao": {"eficiencia": -0.05}}
+
+
+## Partidas antigas podiam vestir machado ou facão no encaixe das Mãos. Devolve
+## a ferramenta à barra sem perdê-la (com a mochila cheia, ela fica vestida até
+## haver espaço), e tira da `Progressao` o que ela somava vestida.
+func migrar_ferramenta_das_maos() -> void:
+	var id := no_encaixe("maos")
+	if id == "" or e_equipamento(id):
+		return
+	var destino := -1
+	for indice in Inventario.ESPACOS:
+		if Inventario.vazio(indice):
+			destino = indice
+			break
+	if destino < 0:
+		return
+	_desaplicar(id)
+	var antigo: Dictionary = EFEITO_DE_QUANDO_SE_VESTIA.get(id, {})
+	for campo in antigo:
+		if Progressao.get(campo) != null:
+			Progressao.ajustar(campo, float(Progressao.get(campo)) - float(antigo[campo]))
+	Inventario.espacos[destino] = {"id": id, "qtd": 1}
+	vestido["maos"] = ""
+	Inventario.mudou.emit()
+	mudou.emit()
 
 
 ## Veste o item que está no espaço dado da mochila. O que estava no encaixe

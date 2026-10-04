@@ -1,38 +1,70 @@
 # Histórico de mudanças — Myths' Valley 3D
 
-## Build #8 — 03/10/2026
-
-- A tela Sobre apresenta a equipe atual do projeto: Ramon Santos, Renato Leal
-  e Matheus Ché (#40).
-- Fecha a **Build #8** para Windows com os créditos atuais e o histórico
-  do jogo em português, inglês e espanhol. O download estável do site
-  passa a entregar esta versão (#40).
-
-## Em desenvolvimento — 01/10/2026
-
-- A oficina provisória ganha âncora na beira do roçado: depois do loteamento,
-  a casa ocupava o mesmo centro e escondia a oficina no painel. Os portões
-  de obras e ofício reproduziram o defeito e conferem a fabricação (#11).
-- O vale passa a abrir na raiz de um repositório próprio, com histórico
-  exclusivo da linha 3D, sistemas locais e testes sem checkout do 2D.
-- Abertura e controles contam falhas e saem com código; a medição de alcance
-  reinicia a referência de terra firme ao teleportar o jogador.
-- Modelos e áudio WAV passam a usar Git LFS. O FBX antigo fica apenas no
-  histórico; caches, sincronizadores e ferramentas descontinuadas saem.
-
-
-Este histórico acompanha apenas o jogo 3D, hoje na raiz deste repositório.
-A linha anterior usava a branch `prototype/myths-valley-3d`. O projeto 2D foi a base da derivação, mas
-suas fases, versões e novidades não são entradas deste registro. Os marcos
-abaixo seguem o que mudou no 3D. A identificação atual é **v0.1.0-dev · Build #8**,
-exclusiva desta derivação e publicada para download em mythsvalley.app.br/jogar.
-
-O texto clicável de versão e build no rodapé da abertura mostra resumos destes
-marcos. Os textos curtos e a identificação exibidos no jogo ficam em
-`data/historico_3d.json`; ao registrar um novo marco ou build,
-atualize esse arquivo e este documento juntos.
-
 ## Em desenvolvimento — 04/10/2026
+
+- As trilhas do menu, do jogo, dos períodos e da mata mudam com fade de saída
+  e entrada. Parar a música também reduz o ganho antes de encerrar; pedidos
+  durante uma transição cancelam o callback anterior e mantêm o volume atual (#79).
+
+- PERSONAGENS apresenta um morador por vez, com prévia 3D do modelo do jogo,
+  navegação entre moradores e falas, busca e edição individual. ASSETS ganha
+  cartões paginados; selecionar uma peça abre seu registro e sua edição.
+  O × fecha o painel; o FECHAR redundante sai do rodapé (#78).
+- Vagas usa um modal central com × no cabeçalho, sem VOLTAR no rodapé (#77).
+
+- O histórico do jogo resume cada item em uma linha e mostra até oito itens
+  por página, sem rolagem. A entrada de 03/10 incorpora publicação das builds
+  e validação de arquivos registradas no Git; a de 04/10 resume a nova interface.
+- Modais ocultam as notas “Dizem no vale”/“Do almanaque” e sua sombra; fechar
+  restaura o almanaque do fundo (#77).
+
+- A versão/build no menu abre o histórico sem sublinhado no hover ou foco;
+  o cursor de mão indica que continua clicável (#77).
+
+- A seleção reserva a altura dos textos dos quatro idiomas com as fontes
+  efetivas, mantendo modal, botões e build imóveis durante a prévia. O último
+  idioma sob o mouse permanece marcado mesmo após sair do botão; a confirmação
+  continua sendo por clique ou Enter (#77).
+
+- Na seleção, o destaque do botão acompanha a língua dos textos ao passar o
+  mouse. Enter confirma a prévia visível, sem salvar o idioma durante o hover.
+  O portão confere também que a intro usa a língua confirmada (#77).
+
+- O modal de idioma sobe para acomodar a identificação da versão e da build
+  centralizada logo abaixo. O carimbo vem de `Versao`, a fonte usada nos saves (#77).
+- O menu Jogar/Explorar, suas páginas e os painéis internos passam a usar a
+  mesma talha SVG da home. A textura antiga do retábulo sai do componente
+  compartilhado; as molduras continuam acompanhando posição e visibilidade (#77).
+
+- A seleção inicial recebe a moldura SVG da home: talha nos quatro cantos,
+  filetes dourados e linha azul. As nove fatias preservam os ornamentos ao
+  redimensionar o painel, com a capa estática (#77).
+- Sem idioma salvo, a entrada sugere a língua do sistema (português, inglês,
+  espanhol ou chinês), com inglês para línguas sem suporte. Uma escolha salva
+  tem prioridade; a sugestão continua aguardando confirmação (#77).
+
+- Na seleção inicial, passar o mouse ou focar um idioma pelo teclado traduz
+  o título, a orientação e o aviso para esse idioma. A prévia só vira
+  preferência salva quando o jogador confirma a escolha (#77).
+
+- Na seleção inicial, a marca fica centralizada acima do painel, que desce
+  para dar espaço ao logotipo e ao subtítulo. O carregamento mantém sua
+  composição própria (#77).
+
+- A seleção de idioma fica no centro, com moldura dourada e fundo escurecido
+  para destacar a escolha. A imagem permanece estática tanto na seleção como
+  no carregamento, sem zoom nem efeitos animados na capa noturna (#77).
+
+- A entrada pergunta o idioma antes de carregar a abertura 3D, usando a mesma
+  capa de dia e o logotipo do carregamento. Mouse e teclado escolhem português,
+  inglês, espanhol ou chinês; a preferência salva recebe foco na próxima abertura (#77).
+- Chinês traduz a seleção e as etapas do carregamento; o restante do menu usa
+  inglês enquanto a tradução está em preparação, conforme aviso na seleção.
+  Vozes e partes do vale continuam em português; a tradução integral segue na #51.
+- O portão `selecao_idioma` confere que o cenário não carrega antes da escolha,
+  a persistência dos quatro idiomas, o foco, o clique duplicado e a transição.
+- O ícone das missões declara seu tipo no HUD: a inferência sobre o retorno
+  sem tipo de `configurar` impedia o script de compilar após o pull.
 
 - **As vagas viram cartões, com o lápis e a lixeira dentro, e cada partida guarda pontos de
   restauração.** "No MENU de save, ao invés de abrir um combo embaixo para deletar o save,
@@ -75,6 +107,25 @@ atualize esse arquivo e este documento juntos.
   falsificada.
 
 ## Em desenvolvimento — 03/10/2026
+
+- Os créditos e o README registram a confirmação do autor: a fonte Miva é
+  criação da equipe, com direitos do projeto, e as vozes foram produzidas
+  de forma generativa para o jogo (#40).
+- O README apresenta o jogo, a contribuição do Tripo, os controles, os marcos
+  do Git e a origem do trabalho para o evento; o guia passa a descrever o
+  repositório 3D independente e a build Windows já disponível (#40).
+- A atualização limita manifesto e download, confere origem HTTPS e tamanho,
+  recusa caminhos perigosos, links e conteúdo inesperado, e valida os registros
+  locais e centrais do ZIP antes de qualquer extração (#76).
+- A leitura das partidas bloqueia objetos e recursos antes da desserialização,
+  preservando o formato e os tipos dos saves legítimos, inclusive os resumos
+  das vagas no menu (#76).
+- O portão `tests/seguranca_arquivos.gd` reproduz os defeitos com marcadores
+  inofensivos e exige rejeição sem executar código nem gravar fora da pasta.
+- As correções ficam no código do repositório; a distribuição pública permanece
+  na **Build #8** até a próxima versão estável. O SHA-256 continua sendo conferido
+  contra o manifesto HTTPS e não substitui uma assinatura de release
+  independente do servidor.
 
 - **O boneco da mochila: o personagem em 3D ao lado dos encaixes, com o que veste.** "No
   inventário, ao lado dos itens equipados, coloque o 3D do boneco com os itens equipados,
@@ -457,6 +508,39 @@ atualize esse arquivo e este documento juntos.
   avisa, e o mirante pode ser levantado (`tests/cadeia_do_mirante.gd`, falsificado;
   `tests/ferramentas.gd` cobra as sete cadeias). O canteiro espera o roçado (#27); a
   fé, a luta e a capoeira têm issue própria (#52, #53).
+
+## Build #8 — 03/10/2026
+
+- A tela Sobre apresenta a equipe atual do projeto: Ramon Santos, Renato Leal
+  e Matheus Ché (#40).
+- Fecha a **Build #8** para Windows com os créditos atuais e o histórico
+  do jogo em português, inglês e espanhol. O download estável do site
+  passa a entregar esta versão (#40).
+
+## Em desenvolvimento — 01/10/2026
+
+- A oficina provisória ganha âncora na beira do roçado: depois do loteamento,
+  a casa ocupava o mesmo centro e escondia a oficina no painel. Os portões
+  de obras e ofício reproduziram o defeito e conferem a fabricação (#11).
+- O vale passa a abrir na raiz de um repositório próprio, com histórico
+  exclusivo da linha 3D, sistemas locais e testes sem checkout do 2D.
+- Abertura e controles contam falhas e saem com código; a medição de alcance
+  reinicia a referência de terra firme ao teleportar o jogador.
+- Modelos e áudio WAV passam a usar Git LFS. O FBX antigo fica apenas no
+  histórico; caches, sincronizadores e ferramentas descontinuadas saem.
+
+
+Este histórico acompanha apenas o jogo 3D, hoje na raiz deste repositório.
+A linha anterior usava a branch `prototype/myths-valley-3d`. O projeto 2D foi a base da derivação, mas
+suas fases, versões e novidades não são entradas deste registro. Os marcos
+abaixo seguem o que mudou no 3D. A identificação atual é **v0.1.0-dev · Build #8**,
+exclusiva desta derivação e publicada para download em mythsvalley.app.br/jogar.
+
+O texto clicável de versão e build no rodapé da abertura mostra resumos destes
+marcos. Os textos curtos e a identificação exibidos no jogo ficam em
+`data/historico_3d.json`; ao registrar um novo marco ou build,
+atualize esse arquivo e este documento juntos.
+
 ## Build #7 — 03/10/2026
 
 - **O jogo se atualiza pelo site** (#74). Ao abrir o menu, o executável pergunta a

@@ -15,7 +15,7 @@ const TERRACOTA := Color("e39475")
 const PASTA := "res://assets/prototipo_3d/identidade/"
 const LOGO := PASTA + "logo_myths_valley.png"
 const ROSA := PASTA + "rosa_dos_ventos.png"
-const MOLDURA := PASTA + "moldura_retabulo.png"
+const MOLDURA := "res://assets/ui/moldura_idioma.svg"
 const FONTE_TITULO := "res://assets/fonts/Cinzel-Variavel.ttf"
 const FONTE_TEXTO := "res://assets/fonts/CormorantGaramond-Variavel.ttf"
 const FONTE_ITALICO := "res://assets/fonts/CormorantGaramond-Italico-Variavel.ttf"
@@ -39,11 +39,11 @@ const NOTAS_NOITE := [
 	"Ninguém dorme debaixo de jaqueira carregada.",
 ]
 
-## Moldura de talha (moldura_retabulo.png): margens do NinePatch na textura e a escala
-## em tela. Com 0,3, a banda de ouro fica com ~29 px e os cantos com ~44 px; a moldura
+## Moldura SVG da home: margens do NinePatch na textura e a escala
+## em tela. Os cantos internos ficam com ~47 px; a moldura
 ## cresce CRESCIMENTO px para fora da caixa que emoldura.
-const MOLDURA_MARGENS := [140, 150, 140, 160]
-const MOLDURA_ESCALA := 0.3
+const MOLDURA_MARGENS := [72, 72, 72, 72]
+const MOLDURA_ESCALA := 0.65
 const CRESCIMENTO := 12.0
 
 
@@ -55,6 +55,16 @@ static func fonte(caminho: String, peso: int, espaco_letras: int = 0) -> FontVar
 	variacao.variation_opentype = {TextServerManager.get_primary_interface().name_to_tag("wght"): peso}
 	variacao.spacing_glyph = espaco_letras
 	return variacao
+
+
+## A mesma talha SVG para painéis que desenham a moldura no próprio stylebox.
+static func estilo_moldura(margem_h: float = 40, margem_v: float = 40) -> StyleBoxTexture:
+	var estilo := StyleBoxTexture.new()
+	estilo.texture = preload(MOLDURA)
+	for lado in [SIDE_LEFT, SIDE_TOP, SIDE_RIGHT, SIDE_BOTTOM]:
+		estilo.set_texture_margin(lado, 72)
+		estilo.set_content_margin(lado, margem_h if lado in [SIDE_LEFT, SIDE_RIGHT] else margem_v)
+	return estilo
 
 
 ## Cormorant com números oldstyle (para versões, horas e porcentagens).
@@ -242,7 +252,7 @@ static func emoldurar(caixa: Control) -> Array[Control]:
 	var moldura := NinePatchRect.new()
 	moldura.name = "Moldura"
 	moldura.texture = load(MOLDURA) as Texture2D
-	moldura.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+	moldura.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
 	moldura.patch_margin_left = MOLDURA_MARGENS[0]
 	moldura.patch_margin_top = MOLDURA_MARGENS[1]
 	moldura.patch_margin_right = MOLDURA_MARGENS[2]

@@ -29,6 +29,7 @@ const TOLERANCIA_ANCORA_U := 0.05
 ## lerp antigo (7 m em média) cortava as curvas por dentro, em cima das árvores.
 const CHEGADA_SEGUNDOS := 2.0
 const HISTORY_SIZE := Vector2(640, 600)
+const HISTORY_ROWS := 8
 const GAME_SCENE := "res://scenes/prototipo_3d/vale.tscn"
 ## Equipe exibida em SOBRE.
 const CREDITS_HIGHLIGHTS := [
@@ -144,7 +145,7 @@ func _ready() -> void:
 		lines = IdiomaMenu.campo(dialog_data, "travessia", [])
 	var history_data = JSON.parse_string(FileAccess.get_file_as_string("res://data/historico_3d.json"))
 	if history_data is Dictionary:
-		history_entries = history_data.get("entradas", [])
+		history_entries = _paginar_historico(history_data.get("entradas", []))
 		version_text = "v%s · Build #%d" % [str(history_data.get("versao_atual", "0.1.0-dev")), int(history_data.get("build_numero", 1))]
 	var layer := CanvasLayer.new()
 	add_child(layer)
@@ -533,8 +534,8 @@ func _decoracao_modo(modo: String) -> void:
 	var travessia := modo == "travessia"
 	decoracao.visible = modo != "mapa"
 	veu_esquerdo.visible = not travessia
-	sombra_almanaque.visible = not travessia
-	bloco_almanaque.visible = not travessia
+	sombra_almanaque.visible = modo == "home"
+	bloco_almanaque.visible = modo == "home"
 	faixa_cima.visible = travessia
 	faixa_baixo.visible = travessia
 	fio_base.modulate.a = 1.0 if travessia else 0.45
@@ -829,6 +830,7 @@ func _create_version_link() -> void:
 	version_link.text = version_text
 	version_link.tooltip_text = "Ver o histórico"
 	version_link.flat = true
+	version_link.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	version_link.add_theme_font_override("font", Identidade.fonte_numeros(600))
 	version_link.add_theme_font_size_override("font_size", 18)
 	version_link.add_theme_color_override("font_color", Color("c9b98f"))
@@ -837,21 +839,6 @@ func _create_version_link() -> void:
 	version_link.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	version_link.custom_minimum_size.y = 26
 	content.add_child(version_link)
-	# O sublinhado de ouro só aparece com o mouse ou o foco (Button não tem nativo).
-	var sublinhado := ColorRect.new()
-	sublinhado.color = Color(Identidade.OURO, 0.8)
-	sublinhado.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
-	sublinhado.offset_left = 8.0
-	sublinhado.offset_right = -8.0
-	sublinhado.offset_top = -3.0
-	sublinhado.offset_bottom = -2.0
-	sublinhado.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	sublinhado.visible = false
-	version_link.add_child(sublinhado)
-	for sinal in [version_link.mouse_entered, version_link.focus_entered]:
-		sinal.connect(func() -> void: sublinhado.visible = true)
-	for sinal in [version_link.mouse_exited, version_link.focus_exited]:
-		sinal.connect(func() -> void: sublinhado.visible = version_link.has_focus())
 	version_link.pressed.connect(_open_history)
 	linha_atualizacao = Button.new()
 	linha_atualizacao.flat = true
@@ -1207,6 +1194,22 @@ func _open_history() -> void:
 	history_index = 0
 	_render_history()
 
+
+## Entradas longas viram páginas extras, mantendo cada alteração inteira.
+func _paginar_historico(entradas: Array) -> Array:
+	var paginas: Array = []
+	for entrada: Dictionary in entradas:
+		var quantidade := 0
+		for chave in ["mudancas", "mudancas_en", "mudancas_es", "mudancas_zh"]:
+			quantidade = maxi(quantidade, entrada.get(chave, []).size())
+		for inicio in range(0, maxi(1, quantidade), HISTORY_ROWS):
+			var pagina := entrada.duplicate(true)
+			for chave in ["mudancas", "mudancas_en", "mudancas_es", "mudancas_zh"]:
+				if pagina.has(chave):
+					pagina[chave] = entrada[chave].slice(inicio, inicio + HISTORY_ROWS)
+			paginas.append(pagina)
+	return paginas
+
 ## Tecla ← / →: o botão da seta aparece pressionado por um instante (como no clique)
 ## e só então a página muda.
 func _press_history_arrow(index: int) -> void:
@@ -1236,8 +1239,7 @@ func _change_history(step: int) -> void:
 
 func _render_history() -> void:
 	_clear()
-	# Todas as páginas têm o mesmo tamanho: as mudanças quebram linha e rolam dentro
-	# da área do meio; paginação e VOLTAR ficam presos ao pé do painel.
+	# Resumos em uma linha, até oito por página, sem área de rolagem.
 	_place_modal(HISTORY_SIZE)
 	history_open = true
 	var entry: Dictionary = history_entries[history_index]
@@ -1245,23 +1247,26 @@ func _render_history() -> void:
 	_modal_header("Histórico", _home, "O que mudou no vale a cada versão.")
 	_label("%s · %s" % [entry.get("data", ""), IdiomaMenu.campo(entry, "estado")], 16)
 	_label(str(IdiomaMenu.campo(entry, "titulo")), 22)
-	var scroll := ScrollContainer.new()
-	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	content.add_child(scroll)
 	var changes := VBoxContainer.new()
+	changes.name = "MudancasHistorico"
 	changes.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	changes.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	changes.add_theme_constant_override("separation", 10)
-	scroll.add_child(changes)
+	content.add_child(changes)
 	# Os termos entre *asteriscos* no historico_3d.json aparecem em dourado.
 	for change in IdiomaMenu.campo(entry, "mudancas", []):
 		var change_label := RichTextLabel.new()
 		change_label.bbcode_enabled = true
-		change_label.fit_content = true
+		change_label.custom_minimum_size.y = 28
 		change_label.scroll_active = false
-		change_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		change_label.autowrap_mode = TextServer.AUTOWRAP_OFF
 		change_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		change_label.add_theme_font_size_override("normal_font_size", 17)
+		var fonte := change_label.get_theme_font("normal_font")
+		var tamanho := 17
+		var texto_simples := "• " + str(change).replace("*", "")
+		while tamanho > 14 and fonte.get_string_size(texto_simples, HORIZONTAL_ALIGNMENT_LEFT, -1, tamanho).x > HISTORY_SIZE.x - 56:
+			tamanho -= 1
+		change_label.add_theme_font_size_override("normal_font_size", tamanho)
 		change_label.add_theme_color_override("default_color", Color.WHITE)
 		var parts := ("• " + str(change)).replace("[", "[lb]").split("*")
 		for i in range(1, parts.size(), 2):
@@ -1376,15 +1381,14 @@ var _confirmando_ponto := ""
 
 func _vagas() -> void:
 	_clear()
+	_place_modal(HISTORY_SIZE)
 	_confirmando_vaga = 0
-	_label("Vagas", 30)
-	_label("Três partidas, cada uma inteira. Escolha onde jogar.", 18)
+	_modal_header("Vagas", _home, "Três partidas, cada uma inteira. Escolha onde jogar.")
 	var primeiro: Button = null
 	for slot in range(1, Salvamento.QUANTOS_SLOTS + 1):
 		var cartao := _cartao_da_vaga(slot)
 		if primeiro == null:
 			primeiro = cartao
-	_button("VOLTAR", _home)
 	primeiro.grab_focus()
 
 

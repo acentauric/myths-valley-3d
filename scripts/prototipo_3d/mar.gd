@@ -27,7 +27,7 @@ static var _metros_por_unidade := 4.0
 ## Monta água, fundo, colisão do fundo e paredes do quadro como filhos de `pai`.
 ## `nivel` é a altura da superfície, `extensao` o retângulo (unidades, XZ) que a água
 ## cobre e `quadro` o mundo jogável (o quadro Mapa).
-static func montar(pai: Node3D, dados: Dictionary, nivel: float, metros_por_unidade: float, extensao: Rect2, quadro: Rect2) -> void:
+static func montar(pai: Node3D, dados: Dictionary, nivel: float, metros_por_unidade: float, extensao: Rect2, quadro: Rect2, rios: Array[Dictionary] = [], terra: PackedVector2Array = PackedVector2Array()) -> void:
 	var imagem := elevacao(dados)
 	if imagem == null:
 		return
@@ -35,6 +35,7 @@ static func montar(pai: Node3D, dados: Dictionary, nivel: float, metros_por_unid
 	var grade := Rect2(
 		Vector2(float(limites_m["min_x"]), float(limites_m["min_z"])) / metros_por_unidade,
 		Vector2(float(limites_m["max_x"]) - float(limites_m["min_x"]), float(limites_m["max_z"]) - float(limites_m["min_z"])) / metros_por_unidade)
+	_abrir_calha_na_batimetria(pai, imagem, dados, grade, nivel, metros_por_unidade, rios, terra)
 	_imagem = imagem
 	_dados = dados
 	_grade = grade
@@ -72,6 +73,47 @@ static func montar(pai: Node3D, dados: Dictionary, nivel: float, metros_por_unid
 	_colisao_do_fundo(pai, imagem, dados, grade, quadro, nivel, metros_por_unidade)
 	_paredes(pai, quadro)
 	_superficie_da_camera(pai, nivel)
+
+
+## O mapa de colisão do mar continua sob a terra. Sem esse corte, o jogador
+## pisa nele antes de alcançar o novo leito do rio. O mesmo corte na imagem
+## mantém o fundo visível abaixo da calha, inclusive na saída para o mar.
+static func _abrir_calha_na_batimetria(pai: Node3D, imagem: Image, dados: Dictionary, grade: Rect2, nivel: float, metros_por_unidade: float, rios: Array[Dictionary], terra: PackedVector2Array) -> void:
+	if rios.is_empty():
+		return
+	var image_size := imagem.get_size()
+	var cell := grade.size / Vector2(image_size)
+	var elevation_min := float(dados["elevation_min_m"])
+	var elevation_range := float(dados["elevation_max_m"]) - elevation_min
+	for rio in rios:
+		var points: PackedVector2Array = rio.points
+		if points.size() < 2:
+			continue
+		var reach := float(rio.width) * 0.5 + maxf(cell.x, cell.y) * 1.5
+		var bounds: Rect2 = (rio.bounds as Rect2).grow(reach)
+		var from_cell := Vector2i(((bounds.position - grade.position) / cell).floor()).clamp(Vector2i.ZERO, image_size - Vector2i.ONE)
+		var to_cell := Vector2i(((bounds.end - grade.position) / cell).ceil()).clamp(Vector2i.ZERO, image_size - Vector2i.ONE)
+		for z in range(from_cell.y, to_cell.y + 1):
+			for x in range(from_cell.x, to_cell.x + 1):
+				var point := grade.position + (Vector2(x, z) + Vector2(0.5, 0.5)) * cell
+				if _distance_to_river(point, points) > reach:
+					continue
+				var in_land := terra.size() >= 3 and Geometry2D.is_point_in_polygon(point, terra)
+				var position := Vector3(point.x, 0.0, point.y)
+				var floor_height: float = float(pai.call("ground_height_at", position)) - 0.12 if in_land else nivel - 0.32
+				var target := clampf(((floor_height - nivel) * metros_por_unidade - elevation_min) / elevation_range, 0.0, 1.0)
+				var current := imagem.get_pixel(x, z).r
+				if target < current:
+					imagem.set_pixel(x, z, Color(target, 0.0, 0.0))
+
+
+static func _distance_to_river(point: Vector2, path: PackedVector2Array) -> float:
+	var closest := INF
+	for i in range(path.size() - 1):
+		var segment := path[i + 1] - path[i]
+		var fraction := clampf((point - path[i]).dot(segment) / maxf(segment.length_squared(), 0.0001), 0.0, 1.0)
+		closest = minf(closest, point.distance_to(path[i] + segment * fraction))
+	return closest
 
 
 ## Lâmina d'água (m) no ponto XZ em unidades, pela célula mais próxima; negativa em

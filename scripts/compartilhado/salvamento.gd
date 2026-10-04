@@ -363,7 +363,7 @@ func salvar(slot: int = 0) -> bool:
 	# e cala. Sem esta conferência, o save incompleto tomaria o lugar do bom
 	# com a bênção do jogo.
 	var conferencia := FileAccess.open(rascunho(onde), FileAccess.READ)
-	var voltou = str_to_var(conferencia.get_as_text()) if conferencia != null else null
+	var voltou = decodificar_dados(conferencia.get_as_text()) if conferencia != null else null
 	if conferencia != null:
 		conferencia.close()
 	if not (voltou is Dictionary) or int((voltou as Dictionary).get("versao", 0)) != VERSAO:
@@ -432,13 +432,75 @@ func _ler_arquivo(caminho: String) -> Dictionary:
 	if arquivo == null:
 		push_error("Salvamento: não consegui abrir %s para ler" % caminho)
 		return {}
+	if arquivo.get_length() > 16 * 1024 * 1024:
+		arquivo.close()
+		push_warning("Salvamento: arquivo grande demais; a partida permanece intacta")
+		return {}
 	var bruto := arquivo.get_as_text()
 	arquivo.close()
-	var tudo = str_to_var(bruto)
+	var tudo = decodificar_dados(bruto)
 	if not (tudo is Dictionary):
-		push_error("Salvamento: %s não tem forma de partida" % caminho)
+		push_warning("Salvamento: %s não tem forma de partida segura" % caminho)
 		return {}
 	return tudo
+
+
+## Mantém o formato e os tipos dos saves existentes, mas impede que o parser
+## instancie Object/Resource ou carregue scripts. A verificação ocorre ANTES da
+## desserialização, inclusive quando o menu só pede o resumo de uma vaga.
+static func decodificar_dados(texto: String) -> Variant:
+	if texto.length() > 16 * 1024 * 1024 or not texto_de_save_seguro(texto):
+		return null
+	return str_to_var(texto)
+
+
+static func texto_de_save_seguro(texto: String) -> bool:
+	const TIPOS := ["null", "true", "false", "inf", "inf_neg", "nan", "bool", "int", "float", "String", "StringName", "Vector2", "Vector2i", "Vector3", "Vector3i", "Vector4", "Vector4i", "Rect2", "Rect2i", "Transform2D", "Plane", "Quaternion", "AABB", "Basis", "Transform3D", "Projection", "Color", "NodePath", "Array", "Dictionary", "PackedByteArray", "PackedInt32Array", "PackedInt64Array", "PackedFloat32Array", "PackedFloat64Array", "PackedStringArray", "PackedVector2Array", "PackedVector3Array", "PackedVector4Array", "PackedColorArray"]
+	var i := 0
+	while i < texto.length():
+		var c := texto.unicode_at(i)
+		if c == 34: # String entre aspas, incluindo escapes: não é código.
+			i += 1
+			var fechou := false
+			while i < texto.length():
+				if texto.unicode_at(i) == 92:
+					i += 2
+					continue
+				if texto.unicode_at(i) == 34:
+					fechou = true
+					i += 1
+					break
+				i += 1
+			if not fechou:
+				return false
+			continue
+		if c == 35: # O parser aceita cores #hex; nossos saves usam Color(...).
+			return false
+		if c == 59: # Comentário de variante, até o fim da linha.
+			while i < texto.length() and texto.unicode_at(i) != 10:
+				i += 1
+			continue
+		if (c >= 48 and c <= 57) or c in [43, 45, 46]:
+			# Números em notação científica não são identificadores.
+			while i < texto.length():
+				var numero := texto.unicode_at(i)
+				if not ((numero >= 48 and numero <= 57) or numero in [43, 45, 46, 69, 101]):
+					break
+				i += 1
+			continue
+		if (c >= 65 and c <= 90) or (c >= 97 and c <= 122) or c == 95:
+			var inicio := i
+			i += 1
+			while i < texto.length():
+				var seguinte := texto.unicode_at(i)
+				if not ((seguinte >= 65 and seguinte <= 90) or (seguinte >= 97 and seguinte <= 122) or (seguinte >= 48 and seguinte <= 57) or seguinte == 95):
+					break
+				i += 1
+			if texto.substr(inicio, i - inicio) not in TIPOS:
+				return false
+			continue
+		i += 1
+	return true
 
 
 ## SOBE A ESCADA, um degrau por vez, da versão do arquivo até a do jogo.

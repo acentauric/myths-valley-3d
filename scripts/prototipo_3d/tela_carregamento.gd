@@ -46,8 +46,24 @@ const NOTAS_NOITE := Identidade.NOTAS_NOITE
 ## `hora` escolhe a capa (dia ou noite); negativa, vale a hora atual do relógio.
 static func mostrar(pai: Node, tema: Theme, mensagem: String, hora: float = -1.0) -> ProgressBar:
 	var noite: bool = Dia.eh_noite_em(Dia.hora if hora < 0.0 else hora)
-	var screen := Control.new()
+	var screen := mostrar_capa(pai, tema, noite)
 	screen.name = "TelaCarregamento"
+	_almanaque(screen, noite)
+	var textos := _situacao(screen, mensagem)
+	var bar := _barra(screen, textos[1])
+	screen.modulate.a = 0.0
+	var entrada := screen.create_tween()
+	entrada.tween_property(screen, "modulate:a", 1.0, 0.2)
+	screen.set_meta("entrada", entrada)
+	bar.set_meta("tela", screen)
+	bar.set_meta("mensagem", textos[0])
+	return bar
+
+
+## Capa e marca compartilhadas com a seleção inicial; só recursos de interface.
+static func mostrar_capa(pai: Node, tema: Theme, noite: bool = false, marca_central: bool = false) -> Control:
+	var screen := Control.new()
+	screen.name = "SelecaoIdioma"
 	screen.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	screen.theme = tema
 	screen.mouse_filter = Control.MOUSE_FILTER_STOP
@@ -61,20 +77,11 @@ static func mostrar(pai: Node, tema: Theme, mensagem: String, hora: float = -1.0
 	screen.add_child(fundo)
 	_capa(screen, noite)
 	_veus(screen)
-	_marca(screen)
-	_almanaque(screen, noite)
-	var textos := _situacao(screen, mensagem)
-	var bar := _barra(screen, textos[1])
-	screen.modulate.a = 0.0
-	var entrada := screen.create_tween()
-	entrada.tween_property(screen, "modulate:a", 1.0, 0.2)
-	screen.set_meta("entrada", entrada)
-	bar.set_meta("tela", screen)
-	bar.set_meta("mensagem", textos[0])
-	return bar
+	_marca(screen, marca_central)
+	return screen
 
 
-## A capa pintada cobre a tela e avança devagar sobre o foco (46 s para ir, 46 para voltar).
+## A capa pintada cobre a tela e permanece estática na seleção e no carregamento.
 static func _capa(tela: Control, noite: bool) -> void:
 	var espelhada := noite and ESPELHAR_NOITE
 	var capa := TextureRect.new()
@@ -86,16 +93,7 @@ static func _capa(tela: Control, noite: bool) -> void:
 	capa.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
 	_cobrir(capa)
 	tela.add_child(capa)
-	var foco := _na_capa(FOCO_NOITE if noite else FOCO_DIA, espelhada)
-	capa.resized.connect(func() -> void: capa.pivot_offset = capa.size * foco)
-	capa.pivot_offset = capa.size * foco
-	capa.scale = Vector2.ONE * 1.03
-	var camera := capa.create_tween().set_loops().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-	camera.tween_property(capa, "scale", Vector2.ONE * 1.12, 46.0)
-	camera.tween_property(capa, "scale", Vector2.ONE * 1.03, 46.0)
-	if noite:
-		_lampiao(capa, _na_capa(LAMPIAO, espelhada))
-		_olhos(capa, _na_capa(OLHOS, espelhada))
+	capa.scale = Vector2.ONE
 
 
 ## Luz quente e trêmula no lampião do viajante (capa da noite). Filha da capa, acompanha
@@ -173,11 +171,12 @@ static func _veus(tela: Control) -> void:
 
 
 ## Logotipo em talha dourada com o lugar e o ano entre filetes de ouro, no alto à esquerda.
-static func _marca(tela: Control) -> void:
+static func _marca(tela: Control, central: bool = false) -> void:
 	var textura := load(LOGO) as Texture2D
 	var altura_logo := LARGURA_LOGO * float(textura.get_height()) / float(textura.get_width())
 	# Sombra difusa atrás do logotipo: separa o ouro do céu claro do entardecer.
 	var sombra := TextureRect.new()
+	sombra.name = "SombraMarca"
 	sombra.texture = _brilho(Color(0.02, 0.02, 0.04, 0.5), 128)
 	sombra.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	sombra.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -185,8 +184,21 @@ static func _marca(tela: Control) -> void:
 	sombra.size = Vector2(LARGURA_LOGO + 140.0, altura_logo + 130.0)
 	tela.add_child(sombra)
 	var marca := VBoxContainer.new()
+	marca.name = "Marca"
 	marca.position = Vector2(MARGEM, 24.0)
 	marca.custom_minimum_size = Vector2(LARGURA_LOGO, 0)
+	if central:
+		marca.anchor_left = 0.5
+		marca.anchor_right = 0.5
+		marca.offset_left = -LARGURA_LOGO / 2.0
+		marca.offset_right = LARGURA_LOGO / 2.0
+		marca.offset_top = 40.0
+		marca.grow_horizontal = Control.GROW_DIRECTION_BOTH
+		sombra.anchor_left = 0.5
+		sombra.anchor_right = 0.5
+		sombra.offset_left = -(LARGURA_LOGO + 140.0) / 2.0
+		sombra.offset_right = (LARGURA_LOGO + 140.0) / 2.0
+		sombra.offset_top = -24.0
 	marca.add_theme_constant_override("separation", 8)
 	marca.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	tela.add_child(marca)

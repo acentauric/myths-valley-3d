@@ -50,6 +50,20 @@ explícito, e cada asset mantém origem e créditos.
 
 ## Registros
 
+As trocas e paradas de trilha usam fades, inclusive ao carregar o vale.
+Uma nova solicitação cancela a transição anterior sem cortar o ganho (#79).
+
+O painel Personagens apresenta moradores individualmente, com modelo 3D,
+falas e edição. O catálogo de assets usa cartões paginados e registros individuais (#78).
+
+A entrada leve pergunta o idioma antes de carregar o cenário do menu (#77).
+Sua moldura reutiliza a talha SVG da home; na primeira abertura o idioma do
+sistema sugere a opção, sem substituir uma escolha salva nem pular a confirmação.
+A versão e a build identificam a entrada abaixo do modal. A talha SVG também
+emoldura o menu Jogar/Explorar e os painéis internos por meio da identidade comum.
+Chinês tem seleção e etapas do carregamento traduzidas, com fallback inglês
+declarado. A tradução integral do vale permanece no escopo de #51 e #6.
+
 - [Histórico de mudanças](CHANGELOG_3D.md).
 - [Etapas e decisões anteriores](HISTORICO_DESENVOLVIMENTO_3D.md).
 - [Arquitetura](ARQUITETURA.md).
@@ -61,3 +75,11 @@ O projeto abre na raiz, com sistemas locais, sem sincronização ou testes
 dependentes de outro checkout (#44 e #61). Modelos e WAVs, inclusive suas
 versões históricas, usam Git LFS (#60). Abertura e controles contam falhas e
 foram falsificados para conferir a reprovação por código de saída (#69).
+
+## Validação de arquivos externos em 03/10/2026
+
+A atualização confere origem, limites e estrutura dos pacotes antes de
+extrair, e a leitura de saves recusa objetos que carregariam código (#76).
+O formato das partidas é preservado. Os portões de segurança cobrem caminhos
+perigosos, links, cabeçalhos conflitantes e a leitura de saves legítimos.
+A autenticidade da distribuição ainda depende do servidor HTTPS oficial.

@@ -7,6 +7,7 @@ signal camera_lock_changed(locked: bool)
 signal animation_requested(label: String)
 signal navigation_status(message: String)
 signal vigor_mudou(valor: float)
+signal folego_mudou(valor: float)
 
 const ClickNavigation = preload("res://scripts/prototipo_3d/click_navigation.gd")
 const TeclasMovimento = preload("res://scripts/prototipo_3d/teclas_movimento.gd")
@@ -26,8 +27,10 @@ const JUMP_BUFFER_TIME := 0.16
 const JUMP_COYOTE_TIME := 0.16
 const RUN_STOP_SPEED := 0.15
 const VIGOR_MAXIMO := 100.0
+const FOLEGO_MAXIMO := 100.0
 const VIGOR_MINIMO_PARA_CORRER := 0.5
 const CUSTO_CORRIDA_POR_SEGUNDO := 5.0
+const CUSTO_PULO_FRACAO := 0.10
 const VIGOR_RECUPERACAO_ANDANDO := 2.5
 const VIGOR_RECUPERACAO_PARADO := 20.0
 ## Água: o jogador entra andando no raso, mais devagar conforme ela sobe; onde o fundo
@@ -107,15 +110,17 @@ var _land_check := 0.0
 var _run_toggled := false
 var _ran_since_toggle := false
 var _vigor := VIGOR_MAXIMO
+var _folego := FOLEGO_MAXIMO
+## O que está na mão (o machado, o facão, a foice...) e a peça que ela mostra
+## (`Vestimenta3D.item_na_mao`), "" quando nada.
 var _machado_ancora: Node3D
 var _machado_pivo: Node3D
+var _item_visualizado := ""
 var _machado_ancora_posicao_base := Vector3.ZERO
 var _machado_angulo_lateral := 0.0
-## O chapéu na cabeça e o facão na mão, com o id de cada um ("" quando nada).
+## O chapéu na cabeça, com o id dele ("" quando nada).
 var _chapeu_ancora: Node3D
 var _chapeu_id := ""
-var _facao_ancora: Node3D
-var _facao_pivo: Node3D
 ## As luvas nas duas mãos (o encaixe das Mãos), e o id delas.
 var _luvas: Array[Node3D] = []
 var _luvas_id := ""
@@ -214,26 +219,30 @@ func liberar_acao_de_golpe() -> void:
 	_acao_golpe_espera_animacao = false
 
 
+## A FERRAMENTA OU A ARMA NA MÃO, a que a barra escolheu (`Vestimenta3D`, o
+## mesmo caminho do boneco da mochila). O machado de aço mostra o de ferro.
 func _atualizar_machado_na_mao() -> void:
-	var deve_mostrar := machado_na_mao()
-	if deve_mostrar == (_machado_ancora != null):
+	var id := Vestimenta3D.item_na_mao()
+	if id == _item_visualizado and (id == "" or _machado_ancora != null):
 		return
-	if not deve_mostrar:
-		_machado_ancora.queue_free()
+	if _machado_ancora != null:
+		_soltar(_machado_ancora)
 		_machado_ancora = null
 		_machado_pivo = null
 		_machado_angulo_lateral = 0.0
+	_item_visualizado = id
+	if id == "" or model == null:
 		return
-	_machado_ancora = Vestimenta3D.ancora_da_mao(model, character_height, visual)
+	_machado_ancora = Vestimenta3D.ancora_da_mao(model, character_height, visual, Vestimenta3D.nome_da_ancora(id))
 	if _machado_ancora == null:
 		return
 	_machado_ancora_posicao_base = _machado_ancora.position
-	_machado_pivo = Vestimenta3D.machado(_machado_ancora, visual)
+	_machado_pivo = Vestimenta3D.na_mao(_machado_ancora, visual, id)
 
 
-## O CHAPÉU NA CABEÇA, AS LUVAS NAS MÃOS E O FACÃO NA MÃO, pelo que está
-## vestido e na mão agora (`Vestimenta3D`). O machado tem o caminho dele, acima, por causa do balanço
-## do braço; o facão só aparece quando o machado não está na mão.
+## O CHAPÉU NA CABEÇA E AS LUVAS NAS MÃOS, pelo que está vestido agora
+## (`Vestimenta3D`). O que vai na mão tem o caminho dele, acima, por causa do
+## balanço do braço.
 func _atualizar_vestimenta() -> void:
 	var luvas := Vestimenta3D.item_nas_maos()
 	if luvas != _luvas_id:
@@ -252,20 +261,6 @@ func _atualizar_vestimenta() -> void:
 			_chapeu_ancora = Vestimenta3D.ancora_da_cabeca(model)
 			if _chapeu_ancora != null:
 				Vestimenta3D.na_cabeca(_chapeu_ancora, chapeu)
-	var com_facao := Vestimenta3D.item_na_mao() == "facao"
-	if com_facao != (_facao_ancora != null):
-		if not com_facao:
-			_soltar(_facao_ancora)
-			_facao_ancora = null
-			_facao_pivo = null
-		elif model != null:
-			_facao_ancora = Vestimenta3D.ancora_da_mao(model, character_height, visual, "FacaoNaMao")
-			if _facao_ancora != null:
-				_facao_pivo = Vestimenta3D.facao(_facao_ancora, visual)
-	# O facão balança como o machado: de lado com o corpo parado, reto no golpe.
-	if _facao_pivo != null and is_instance_valid(_facao_pivo):
-		var golpeando: bool = animator != null and animator.has_method("gesture_ativa") and animator.gesture_ativa()
-		Vestimenta3D.girar_o_machado(_facao_ancora, _facao_pivo, visual, 0.0 if golpeando or _nadando else deg_to_rad(Vestimenta3D.MACHADO_PARADO))
 
 
 ## Tira uma âncora do corpo, com o anexo do osso que ela tinha.
@@ -415,7 +410,7 @@ func _physics_process(delta: float) -> void:
 	else:
 		velocity.x = move_toward(velocity.x, direction.x * speed, 18.0 * delta)
 		velocity.z = move_toward(velocity.z, direction.z * speed, 18.0 * delta)
-	if _jump_buffer_remaining > 0.0 and _grounded_grace_remaining > 0.0 and not _jumping and not _nadando and _acao_golpe_restante <= 0.0:
+	if _jump_buffer_remaining > 0.0 and _grounded_grace_remaining > 0.0 and not _jumping and not _nadando and _acao_golpe_restante <= 0.0 and gastar_vigor(vigor_maximo() * CUSTO_PULO_FRACAO):
 		velocity.y = JUMP_VELOCITY
 		_jumping = true
 		_jump_buffer_remaining = 0.0
@@ -517,17 +512,9 @@ func _unhandled_input(event: InputEvent) -> void:
 			_pending_walk_click = event.position
 			_pending_walk_run = event.double_click
 		elif event.button_index == MOUSE_BUTTON_WHEEL_UP or event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
-			# A RODA TROCA O ITEM DA MÃO, como no 2D (#2): é o gesto que se faz o
-			# tempo todo no meio do trabalho. O zoom ficou no Ctrl+roda e no
-			# mais e menos (`mv_zoom_in`/`mv_zoom_out`). Para baixo é o espaço
-			# seguinte, como lá. Com mapa ou tela aberta este nó não ouve nada,
-			# então a roda de lá continua sendo de lá.
 			var para_cima: bool = event.button_index == MOUSE_BUTTON_WHEEL_UP
-			if event.ctrl_pressed:
-				_aproximar_a_camera(para_cima)
-			else:
-				Inventario.selecionar(Inventario.anterior_da_mao() if para_cima else Inventario.proximo_da_mao())
-				get_viewport().set_input_as_handled()
+			_aproximar_a_camera(para_cima)
+			get_viewport().set_input_as_handled()
 		_apply_camera()
 	if event.is_action_pressed("mv_zoom_in", true):
 		_aproximar_a_camera(true)
@@ -670,7 +657,8 @@ func empurrar(impulso: Vector3, segundos: float = 0.45) -> void:
 func _profundidade() -> float:
 	if _click_world == null or not _click_world.has_method("water_level"):
 		return 0.0
-	return maxf(_click_world.water_level() - global_position.y, 0.0)
+	var level: float = _click_world.water_level_at(global_position) if _click_world.has_method("water_level_at") else _click_world.water_level()
+	return maxf(level - global_position.y, 0.0)
 
 
 ## Lâmina d'água sobre o fundo no ponto do jogador (0 em terra), para decidir o nado.
@@ -824,6 +812,20 @@ func reset_position() -> void:
 		animator.finish_jump(0.0)
 	visual.rotation.y = 0.0
 	_yaw = 0.0
+	_pitch = -0.19
+	_distance = 8.0
+	inspecting = false
+	_apply_camera()
+
+
+## Na chegada nova, o jogador olha para a praia e a câmera fica à frente dele.
+## O movimento continua relativo à câmera: avançar leva para dentro do vale.
+func iniciar_de_frente(direcao: Vector3) -> void:
+	direcao.y = 0.0
+	if direcao.length_squared() < 0.001:
+		return
+	visual.rotation.y = atan2(direcao.x, direcao.z)
+	_yaw = visual.rotation.y
 	_pitch = -0.19
 	_distance = 8.0
 	inspecting = false
@@ -986,6 +988,47 @@ func vigor_atual() -> float:
 	return _vigor
 
 
+func vigor_maximo() -> float:
+	return Energia.maximo()
+
+
+func definir_vigor(valor: float) -> void:
+	_definir_vigor(valor)
+
+
+func repor_vigor(quantidade: float) -> void:
+	_definir_vigor(_vigor + quantidade)
+
+
+func folego_atual() -> float:
+	return _folego
+
+
+func folego_maximo() -> float:
+	return FOLEGO_MAXIMO
+
+
+func definir_folego(valor: float) -> void:
+	var novo := clampf(valor, 0.0, FOLEGO_MAXIMO)
+	if is_equal_approx(novo, _folego):
+		return
+	_folego = novo
+	folego_mudou.emit(_folego)
+
+
+func gastar_folego(quantidade: float) -> bool:
+	if quantidade <= 0.0:
+		return true
+	if _folego + 0.001 < quantidade:
+		return false
+	definir_folego(_folego - quantidade)
+	return true
+
+
+func repor_folego(quantidade: float) -> void:
+	definir_folego(_folego + quantidade)
+
+
 func gastar_vigor(quantidade: float) -> bool:
 	if quantidade <= 0.0:
 		return true
@@ -1003,7 +1046,7 @@ func _atualizar_vigor(delta: float, corrida_ativa: bool) -> void:
 			_walk_run = false
 			_ran_since_toggle = false
 		return
-	if _vigor >= VIGOR_MAXIMO:
+	if _vigor >= vigor_maximo():
 		return
 	var gesticulando := animator != null and animator.has_method("gesture_ativa") and bool(animator.call("gesture_ativa"))
 	if _acao_golpe_restante > 0.0 or gesticulando or not is_on_floor():
@@ -1014,7 +1057,7 @@ func _atualizar_vigor(delta: float, corrida_ativa: bool) -> void:
 
 
 func _definir_vigor(valor: float) -> void:
-	var novo := clampf(valor, 0.0, VIGOR_MAXIMO)
+	var novo := clampf(valor, 0.0, vigor_maximo())
 	if novo < VIGOR_MINIMO_PARA_CORRER:
 		_run_toggled = false
 		_walk_run = false

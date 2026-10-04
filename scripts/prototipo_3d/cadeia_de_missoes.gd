@@ -466,10 +466,10 @@ func _nome_do_dono() -> String:
 ## mapa procurando uma ferramenta que ninguém deu.
 ##
 ## E "na mão" quer dizer NA MÃO: bater exige a ferramenta escolhida na barra de
-## mão (ou vestida em "Mãos"), e não só carregada na mochila
-## (`Recursos3D._tem_ferramenta`). Entregar na mochila e deixar o jogador
-## descobrir sozinho que falta pegar é a mesma ferramenta que ninguém deu, com
-## um passo a mais.
+## mão, e não só carregada na mochila (`Recursos3D._tem_ferramenta`); os
+## encaixes ficam para as peças de vestir. Entregar na mochila e deixar o
+## jogador descobrir sozinho que falta pegar é a mesma ferramenta que ninguém
+## deu, com um passo a mais.
 ##
 ## Então quem entrega, acende o espaço da barra (ver `_por_na_mao`).
 ##
@@ -482,10 +482,7 @@ func entregar(passo: Dictionary) -> void:
 	var item := str(entrega.get("item", ""))
 	if item == "":
 		return
-	# JÁ TEM NÃO É JÁ RECEBEU. O vale entrega um machado de saída e manda
-	# equipar; se o passo desistisse por achar o item na mochila, o "toma o
-	# machado e vai cortar" não daria nada e o trabalho ficaria impossível para
-	# quem ainda não descobriu o encaixe. Não ganha outro — ganha na mão.
+	# Não duplica um item já recebido ou vestido em uma partida salva.
 	if not Inventario.tem(item) and not _na_mao(item):
 		if not Inventario.adicionar(item, int(entrega.get("quantidade", 1))):
 			return

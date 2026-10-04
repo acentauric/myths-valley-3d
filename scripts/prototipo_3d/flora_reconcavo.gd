@@ -442,19 +442,15 @@ static func candeeiro() -> Node3D:
 	return root
 
 
-## Fogueira do terreiro: pedras em roda e toras cruzadas.
+## Fogueira do terreiro: somente toras cruzadas; a chama vem das partículas.
 static func fogueira() -> Node3D:
 	var root := Node3D.new()
 	root.name = "Fogueira"
-	for i in range(8):
-		var angle := TAU * float(i) / 8.0
-		root.add_child(_mesh_instance(_blob(0.18, 0.22, 6, 3), Vector3(cos(angle) * 0.7, 0.1, sin(angle) * 0.7), PEDRA))
 	for i in range(3):
 		var log := _cylinder(0.08, 0.08, 0.9, 6)
 		var instance := _mesh_instance(log, Vector3(0, 0.12 + float(i) * 0.05, 0), TRONCO)
 		instance.rotation = Vector3(0.35, TAU * float(i) / 3.0, PI * 0.5)
 		root.add_child(instance)
-	root.add_child(_mesh_instance(_blob(0.2, 0.3, 6, 4), Vector3(0, 0.3, 0), Color("ff7a2a")))
 	return root
 
 

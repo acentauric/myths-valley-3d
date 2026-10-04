@@ -1,6 +1,6 @@
-[gd_scene format=4]
+[gd_scene format=4 uid="uid://c18rb1s8j1d0f"]
 
-[ext_resource type="Texture2D" path="res://assets/prototipo_3d/materiais/grama_terra_mata_v1.png" id="1_kl8bl"]
+[ext_resource type="Texture2D" uid="uid://l4vompp0b370" path="res://assets/prototipo_3d/materiais/grama_terra_mata_v1.png" id="1_kl8bl"]
 
 [sub_resource type="Shader" id="Shader_wksoj"]
 code = "

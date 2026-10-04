@@ -14,6 +14,7 @@ const Identidade = preload("res://scripts/prototipo_3d/identidade.gd")
 const PainelAjustes = preload("res://scripts/prototipo_3d/painel_ajustes.gd")
 const CaixaDePergunta = preload("res://scripts/prototipo_3d/caixa_de_pergunta.gd")
 const Minimapa = preload("res://scripts/prototipo_3d/minimapa.gd")
+const IdiomaMenu = preload("res://scripts/prototipo_3d/idioma_menu.gd")
 
 
 ## Camada dos modais do jogo (ajustes): roda com o vale pausado e trata Esc.
@@ -47,6 +48,7 @@ signal menu_requested
 signal menu_cancelled
 ## Botão de mapa do canto: abre ou fecha o mapa do vale.
 signal map_requested
+signal quests_requested
 ## Engrenagem do canto: pede os ajustes; `settings_closed` quando o modal fecha.
 signal settings_requested
 signal settings_closed
@@ -151,9 +153,9 @@ func _ready() -> void:
 	# menu ESC" — e estão, em linhas com o estado escrito (`menu_pausa.gd`).
 	#
 	# `_create_corner_buttons` continua aqui, sem ser chamada, porque ela é a
-	# receita dos ícones e do que cada um fazia: apagar agora seria perder o
-	# registro de nove comportamentos no mesmo commit em que eles mudam de casa.
-	# Sai no commit seguinte, com o `set_map_open` que fala dela.
+	# receita dos ícones e do que cada um fazia — inclusive o das missões, que
+	# abre a mesma aba do diário que o J abre. O FPS fica sozinho no canto, com
+	# o número escrito nele.
 	_create_performance_panel()
 	_create_performance_button()
 
@@ -334,19 +336,13 @@ func _atualizar_vida() -> void:
 	_vida_preenchimento.bg_color = COR_VIDA_ENVENENADA if vida.envenenado_agora() else COR_VIDA
 
 
-## O FÔLEGO (#3), logo abaixo da vida e na mesma medida, com as cores do 2D
-## (`scripts/ui/hud.gd`): verde enquanto há fôlego, vermelho quando o corpo
-## está no fim. O número vem do `Energia` compartilhado, e o limiar é o dele
-## (`Energia.cansado()`), não um número daqui.
-##
-## Cansado, o texto diz "cansado" além de mudar a cor. O cansaço já pesa no
-## corpo — o passo cai para 62% e a corrida não responde —, e sem aviso quem
-## joga pensa que o jogo travou (ver `Energia.cansou`).
-const COR_FOLEGO := Color(0.55, 0.78, 0.45)
-const COR_FOLEGO_BAIXO := Color(0.9, 0.42, 0.34)
+## Reserva de respiração para as futuras missões no oceano. As ações do vale
+## gastam o vigor verde; esta barra azul acompanha apenas o fôlego do jogador.
+const COR_FOLEGO := Color("398fd2")
 var barra_folego: ProgressBar
 var _folego_texto: Label
 var _folego_preenchimento: StyleBoxFlat
+var _jogador_folego: Node
 
 
 func _criar_barra_de_folego() -> void:
@@ -371,23 +367,23 @@ func _criar_barra_de_folego() -> void:
 	_folego_texto.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_folego_texto.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_folego_texto.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	var energia := get_node_or_null("/root/Energia")
-	if energia == null:
-		barra_folego.visible = false
-		return
-	energia.mudou.connect(_atualizar_folego)
 	_atualizar_folego()
 
 
-func _atualizar_folego() -> void:
-	var energia := get_node_or_null("/root/Energia")
-	if energia == null or barra_folego == null:
+func configurar_folego(jogador: Node) -> void:
+	if is_instance_valid(_jogador_folego) and _jogador_folego.is_connected("folego_mudou", _atualizar_folego):
+		_jogador_folego.disconnect("folego_mudou", _atualizar_folego)
+	_jogador_folego = jogador
+	_jogador_folego.connect("folego_mudou", _atualizar_folego)
+	_atualizar_folego()
+
+
+func _atualizar_folego(_valor: float = 0.0) -> void:
+	if not is_instance_valid(_jogador_folego) or barra_folego == null:
 		return
-	barra_folego.max_value = energia.maximo()
-	barra_folego.value = energia.atual
-	var cansado: bool = energia.cansado()
-	_folego_texto.text = ("%d · cansado" if cansado else "%d") % roundi(energia.atual)
-	_folego_preenchimento.bg_color = COR_FOLEGO_BAIXO if cansado else COR_FOLEGO
+	barra_folego.max_value = float(_jogador_folego.call("folego_maximo"))
+	barra_folego.value = float(_jogador_folego.call("folego_atual"))
+	_folego_texto.text = "Fôlego %d" % roundi(barra_folego.value)
 
 
 func _criar_barra_de_stamina() -> void:
@@ -576,13 +572,7 @@ func _update_telemetry() -> void:
 	var vram := Performance.get_monitor(Performance.RENDER_VIDEO_MEM_USED) / 1048576.0
 	var suffix := "  ·  " + _telemetry if not _telemetry.is_empty() else ""
 	_performance_label.text = "%d FPS%s\n%s\n%s tri · %d draws · %d MB VRAM" % [Engine.get_frames_per_second(), suffix, _model_status, _compact(triangles), int(draws), int(vram)]
-	# OS ÍCONES DO CANTO PODEM NÃO EXISTIR.
-	#
-	# A coluna deles saiu para dentro do menu do Esc, e `_create_corner_buttons`
-	# deixou de ser chamada — então `_speed_icon` e companhia ficam nulos. As
-	# medições continuam sendo feitas (o `_performance_label` acima é a dica de
-	# desempenho, que tem dono próprio); o que se guarda aqui é só não falar com
-	# quem não nasceu.
+	# A coluna é criada junto do HUD; as guardas também cobrem sua desmontagem.
 	if is_instance_valid(_speed_icon):
 		_speed_icon.definir(false, Dia.velocidade)
 	if is_instance_valid(_speed_hint):
@@ -692,6 +682,14 @@ func _create_corner_buttons() -> void:
 	var help: Array = BotaoCanto.criar(_root, top, _help_icon)
 	(help[1] as Label).text = "Controles"
 	_corner_setup(help[0], func() -> void: set_controls_open(not controls_open()))
+
+	top += BotaoCanto.ESPACO
+	var quest_icon: Control = HudIcon.new().configurar("missoes")
+	var quests: Array = BotaoCanto.criar(_root, top, quest_icon)
+	var quest_data = JSON.parse_string(FileAccess.get_file_as_string("res://data/hud_3d.json"))
+	var quest_texts: Dictionary = quest_data if quest_data is Dictionary else {}
+	(quests[1] as Label).text = str(IdiomaMenu.campo(quest_texts.get("botao_missoes", {}), "rotulo", "Missões e objetivos"))
+	_corner_setup(quests[0], func() -> void: quests_requested.emit())
 	set_camera_locked(_camera_locked)
 	for index in range(first_child, _root.get_child_count()):
 		_corner_nodes.append(_root.get_child(index))

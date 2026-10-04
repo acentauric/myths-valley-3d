@@ -238,7 +238,7 @@ func _process(delta: float) -> void:
 
 
 ## VESTE O BONECO com o que o corpo mostra agora (`Vestimenta3D`): o chapéu na
-## cabeça, as luvas nas mãos e, na mão, o machado ou o facão. Só refaz o que mudou.
+## cabeça, as luvas nas mãos e, na mão, o que a barra escolheu. Só refaz o que mudou.
 func vestir() -> void:
 	var na_mao := Vestimenta3D.item_na_mao()
 	var na_cabeca := Vestimenta3D.item_na_cabeca()
@@ -264,10 +264,10 @@ func vestir() -> void:
 			Vestimenta3D.na_cabeca(cabeca, na_cabeca)
 			_anexos.append(_raiz(cabeca))
 	if na_mao != "":
-		var mao := Vestimenta3D.ancora_da_mao(modelo, _altura, corpo, "FacaoNaMao" if na_mao == "facao" else "MachadoNaMao")
+		var mao := Vestimenta3D.ancora_da_mao(modelo, _altura, corpo, Vestimenta3D.nome_da_ancora(na_mao))
 		if mao != null:
 			_ancora_do_machado = mao
-			_pivo_do_machado = Vestimenta3D.machado(mao, corpo) if na_mao == "machado" else Vestimenta3D.facao(mao, corpo)
+			_pivo_do_machado = Vestimenta3D.na_mao(mao, corpo, na_mao)
 			_anexos.append(_raiz(mao))
 
 

@@ -212,8 +212,13 @@ func _mais_perto() -> String:
 func _o_que_falta(ficha: Dictionary) -> String:
 	var ferramenta := str(ficha.get("ferramenta", ""))
 	if ferramenta == "":
-		return tr("à mão") if Energia.aguenta("bater", _dureza(ficha)) else "sem fôlego"
+		return tr("à mão") if Energia.aguenta("bater", _dureza(ficha)) else "sem vigor"
 	if not _tem_ferramenta(ferramenta):
+		# Na barra, mas não escolhida: diz a tecla. Só na mochila: manda pôr na mão.
+		for indice in Inventario.ESPACOS_MAO:
+			var na_barra := str(Inventario.espacos[indice].get("id", ""))
+			if na_barra != "" and Catalogo.familia(na_barra) == ferramenta:
+				return tr("selecione %s (%s)") % [_nome_do_item(na_barra), Inventario.rotulo_do_espaco(indice)]
 		if _carrega(ferramenta):
 			return tr("ponha na mão: %s") % _nome_do_item(ferramenta)
 		return "precisa de %s" % _nome_do_item(ferramenta)
@@ -221,7 +226,7 @@ func _o_que_falta(ficha: Dictionary) -> String:
 	if impede != "":
 		return impede
 	if not Energia.aguenta("bater", _dureza(ficha)):
-		return "sem fôlego"
+		return "sem vigor"
 	return "com %s" % _nome_do_item(Equipamento.da_familia_em_uso(ferramenta))
 
 
@@ -323,7 +328,7 @@ func bater() -> bool:
 		return false
 	var dureza := _dureza(ficha)
 	if not Energia.gastar("bater", dureza):
-		recusado.emit("Sem fôlego para bater.")
+		recusado.emit("Sem vigor para bater.")
 		return false
 	# QUEM TRABALHA APRENDE, e o duro ensina mais (`Talentos.XP_POR_ACAO`): é por
 	# aqui que o golpe leva à teia que abre o alvo mais duro.

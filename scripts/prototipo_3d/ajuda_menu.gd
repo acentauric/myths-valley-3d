@@ -117,4 +117,6 @@ static func tem(titulo: String) -> bool:
 
 static func texto(titulo: String, idioma: int) -> String:
 	var textos: Array = TEXTOS.get(titulo, [""])
+	if idioma == 3:
+		idioma = 1 # Chinês em preparação: ajuda em inglês.
 	return textos[idioma] if idioma < textos.size() else textos[0]
