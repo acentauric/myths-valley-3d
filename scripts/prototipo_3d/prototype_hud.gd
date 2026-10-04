@@ -719,13 +719,23 @@ func _create_performance_button() -> void:
 	_fps_label.add_theme_color_override("font_color", Identidade.CREME)
 	_fps_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_fps_label.text = "--"
-	var dados: Array = BotaoCanto.criar(_root, 32.0, _fps_label)
-	# O canto põe ícone num quadrado de 24 no meio; o número usa o botão todo,
-	# para "144" caber sem cortar.
-	_fps_label.position = Vector2.ZERO
-	_fps_label.size = Vector2(40, 40)
+	# O CANTO RECEBE A POSIÇÃO NA COLUNA (0 é o alto), e não os pixels do topo.
+	#
+	# Desde o "Tamanho do HUD" do AJUSTAR, o `BotaoCanto` mede a placa pela
+	# escala escolhida e a refaz na hora (`BotaoCanto.reaplicar`). Aqui ainda se
+	# passava 32.0, o topo em pixels de antes: lido como posição, o botão ia
+	# parar 1.600 px abaixo, fora da tela — e sem erro nenhum.
+	#
+	# E O NÚMERO NÃO É ÍCONE. O canto encolhe o ícone para um quadrado de 16 no
+	# meio da placa, e refaz essa conta a cada troca de tamanho; o número usa o
+	# botão todo, para "144" caber sem cortar. Por isso o ícone do canto é um
+	# nó vazio, e o número é filho do botão, ancorado nele inteiro: acompanha a
+	# placa em qualquer tamanho do HUD.
+	var dados: Array = BotaoCanto.criar(_root, 0, Control.new())
 	(dados[1] as Label).text = "FPS"
 	_performance_button = dados[0]
+	_performance_button.add_child(_fps_label)
+	_fps_label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_corner_setup(_performance_button, func() -> void:
 		_performance_open = not _performance_open
 		_sync_performance_panel())
