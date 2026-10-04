@@ -62,6 +62,18 @@ func _run() -> void:
 	_conferir(get_root().gui_get_focus_owner() == botoes[salvo], "foco lembra a escolha salva")
 	for i in mini(4, botoes.size()):
 		_conferir(botoes[i].text == dados.opcoes[i] and not botoes[i].disabled, "opção nativa %d" % i)
+	var locale_salvo := TranslationServer.get_locale()
+	for i in 4:
+		botoes[i].mouse_entered.emit()
+		_conferir(inicio._titulo.text == dados["titulo" + idioma.SUFIXOS[i]], "título no hover %d" % i)
+		_conferir(inicio._descricao.text == dados["descricao" + idioma.SUFIXOS[i]], "descrição no hover %d" % i)
+		_conferir(inicio._aviso.text == dados["aviso" + idioma.SUFIXOS[i]], "aviso no hover %d" % i)
+		_conferir(idioma.indice() == salvo and TranslationServer.get_locale() == locale_salvo and not inicio.carregando, "prévia não salva nem carrega %d" % i)
+	for i in 4:
+		botoes[i].grab_focus()
+		_conferir(inicio._descricao.text == dados["descricao" + idioma.SUFIXOS[i]], "prévia pelo teclado %d" % i)
+		_conferir(idioma.indice() == salvo, "foco não salva idioma %d" % i)
+	botoes[salvo].grab_focus()
 	for argumento in OS.get_cmdline_user_args():
 		if argumento.begins_with("--captura="):
 			await RenderingServer.frame_post_draw

@@ -10,6 +10,10 @@ var carregando := false
 var _camada: CanvasLayer
 var _tela: Control
 var _botoes: Array[Button] = []
+var _dados: Dictionary
+var _titulo: Label
+var _descricao: Label
+var _aviso: Label
 
 
 func _ready() -> void:
@@ -31,6 +35,7 @@ func _ready() -> void:
 	centro.offset_top = 140.0
 	_tela.add_child(centro)
 	var dados: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://data/selecao_idioma.json"))
+	_dados = dados
 	var painel := PanelContainer.new()
 	painel.name = "OpcoesIdioma"
 	painel.custom_minimum_size = Vector2(600, 350)
@@ -47,14 +52,15 @@ func _ready() -> void:
 	coluna.add_theme_constant_override("separation", 12)
 	painel.add_child(coluna)
 	var titulo := Label.new()
-	titulo.text = str(dados["titulo"])
+	_titulo = titulo
 	titulo.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
 	titulo.add_theme_font_size_override("font_size", 24)
 	titulo.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	titulo.add_theme_color_override("font_color", Color("e8c46a"))
 	coluna.add_child(titulo)
 	var descricao := Label.new()
-	descricao.text = str(IdiomaMenu.campo(dados, "descricao"))
+	_descricao = descricao
+	descricao.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
 	descricao.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	descricao.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	coluna.add_child(descricao)
@@ -71,16 +77,26 @@ func _ready() -> void:
 		botao.custom_minimum_size = Vector2(230, 58)
 		botao.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		botao.pressed.connect(_escolher.bind(i))
+		botao.mouse_entered.connect(_mostrar_idioma.bind(i))
+		botao.focus_entered.connect(_mostrar_idioma.bind(i))
 		grade.add_child(botao)
 		_botoes.append(botao)
 	var aviso := Label.new()
-	aviso.text = str(IdiomaMenu.campo(dados, "aviso"))
-	if IdiomaMenu.indice() != 3:
-		aviso.text = str(dados["nota_zh"]) + "\n" + aviso.text
+	_aviso = aviso
+	aviso.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
 	aviso.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	aviso.add_theme_font_size_override("font_size", 16)
 	coluna.add_child(aviso)
+	_mostrar_idioma(IdiomaMenu.indice())
 	_botoes[IdiomaMenu.indice()].grab_focus.call_deferred()
+
+
+func _mostrar_idioma(indice: int) -> void:
+	if carregando:
+		return
+	_titulo.text = str(IdiomaMenu.campo_no_idioma(_dados, "titulo", indice))
+	_descricao.text = str(IdiomaMenu.campo_no_idioma(_dados, "descricao", indice))
+	_aviso.text = str(IdiomaMenu.campo_no_idioma(_dados, "aviso", indice))
 
 
 func _escolher(indice: int) -> void:

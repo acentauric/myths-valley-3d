@@ -574,7 +574,12 @@ static func restaurar_jogo() -> void:
 
 ## Campo no idioma do menu: *_en / *_es / *_zh, com fallback inglês para chinês.
 static func campo(dados: Dictionary, chave: String, padrao: Variant = "") -> Variant:
-	var atual := indice()
+	return campo_no_idioma(dados, chave, indice(), padrao)
+
+
+## Prévia de texto sem alterar o locale nem a preferência salva.
+static func campo_no_idioma(dados: Dictionary, chave: String, atual: int, padrao: Variant = "") -> Variant:
+	atual = clampi(atual, 0, LOCALES.size() - 1)
 	var traduzida: String = chave + SUFIXOS[atual]
 	if traduzida != chave and dados.has(traduzida):
 		return dados[traduzida]

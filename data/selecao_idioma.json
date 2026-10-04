@@ -1,8 +1,8 @@
 {
-  "titulo": "Idioma · Language · Idioma · 语言",
-  "titulo_en": "Language · Idioma · 语言",
-  "titulo_es": "Idioma · Language · 语言",
-  "titulo_zh": "语言 · Language · Idioma",
+  "titulo": "Escolha o idioma",
+  "titulo_en": "Choose your language",
+  "titulo_es": "Elige tu idioma",
+  "titulo_zh": "选择语言",
   "descricao": "Escolha o idioma para começar. Sua escolha será lembrada.",
   "descricao_en": "Choose your language to begin. Your choice will be remembered.",
   "descricao_es": "Elige tu idioma para comenzar. Recordaremos tu elección.",

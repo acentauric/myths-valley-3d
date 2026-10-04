@@ -2,6 +2,10 @@
 
 ## Em desenvolvimento — 04/10/2026
 
+- Na seleção inicial, passar o mouse ou focar um idioma pelo teclado traduz
+  o título, a orientação e o aviso para esse idioma. A prévia só vira
+  preferência salva quando o jogador confirma a escolha (#77).
+
 - Na seleção inicial, a marca fica centralizada acima do painel, que desce
   para dar espaço ao logotipo e ao subtítulo. O carregamento mantém sua
   composição própria (#77).
