@@ -2,6 +2,9 @@
 
 ## Em desenvolvimento — 03/10/2026
 
+- O README apresenta o jogo, a contribuição do Tripo, os controles, os marcos
+  do Git e a origem do trabalho para o evento; o guia passa a descrever o
+  repositório 3D independente e a build Windows já disponível (#40).
 - A atualização limita manifesto e download, confere origem HTTPS e tamanho,
   recusa caminhos perigosos, links e conteúdo inesperado, e valida os registros
   locais e centrais do ZIP antes de qualquer extração (#76).

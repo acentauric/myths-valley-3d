@@ -6,7 +6,7 @@ Abra `JOGAR_3D.cmd`. O atalho importa os recursos e abre o jogo usando o Godot i
 
 Para depurar, `JOGAR_3D.cmd -Lugar igreja` começa o jogador direto num lugar do vale (`praca`, `igreja`, `cemiterio`, `mirante`, `pier`, `rocado`...), sem refazer o caminho; pelo Godot, é `-- --lugar=igreja` depois dos argumentos do projeto.
 
-No Godot Project Manager, outra opção é importar **`project.godot`** e executar `scenes/prototipo_3d/vale.tscn`. O `project.godot` da raiz continua sendo a base 2D.
+No Godot Project Manager, outra opção é importar **`project.godot`** e executar o projeto (F6 abre apenas a cena selecionada; F5 abre pela tela inicial). A raiz contém o jogo 3D independente, sem depender do projeto 2D.
 
 ## Controles
 
@@ -162,4 +162,4 @@ myths-valley-3d/
 
 Godot validado: `4.7.2.stable.official.ed1daf0bf`, renderer Forward+. Se a GPU não suportar esse perfil, execute `JOGAR_3D.cmd -Compatibility`.
 
-A máquina de preparação ainda não possui os templates de exportação Windows correspondentes. Isso não impede o teste local, mas uma versão `.exe` distribuível exige instalar os templates antes.
+A build Windows pode ser baixada em [mythsvalley.app.br/jogar](https://mythsvalley.app.br/jogar). Para exportar o projeto, instale os templates da mesma versão da engine e use o preset `Windows Desktop`; o executável inclui o pacote de recursos.
