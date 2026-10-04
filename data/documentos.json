@@ -1,0 +1,23 @@
+{
+  "observacao": "OS PAPÉIS QUE O JOGADOR LÊ no vale: F em cima do documento, na mochila (Mochila.abrir_documento, ligado pelo prototype.gd). A caixa de fala mostra as linhas, e o vale avisa as cadeias 'leu:<id>' — é como o último passo da chegada fecha (data/missoes_guia.json, convite). O convite é o do 2D (data/dialogos/pedro.json, convite_texto), aqui nos três idiomas. É o gancho do capítulo 6 (docs/enredo/capitulo-06.md): a fazenda isolada que convida o vilarejo inteiro, sem assinatura.",
+  "convite": {
+    "nome": "Convite da fazenda",
+    "nome_en": "Invitation from the farm",
+    "nome_es": "Invitación de la hacienda",
+    "linhas": [
+      "\"Aos moradores de Bom Jesus e redondezas: compareçam à fazenda no dia marcado. Haverá um grande evento, com fartura para todos.\"",
+      "\"Todos são convidados. Venham.\"",
+      "Não há assinatura. Só o selo — vermelho, sem brasão."
+    ],
+    "linhas_en": [
+      "\"To the residents of Bom Jesus and its surroundings: come to the farm on the appointed day. There will be a great event, with plenty for all.\"",
+      "\"Everyone is invited. Come.\"",
+      "There is no signature. Only the seal — red, with no coat of arms."
+    ],
+    "linhas_es": [
+      "\"A los vecinos de Bom Jesus y sus alrededores: acudan a la hacienda el día señalado. Habrá un gran evento, con abundancia para todos.\"",
+      "\"Todos están invitados. Vengan.\"",
+      "No hay firma. Solo el sello: rojo, sin escudo."
+    ]
+  }
+}

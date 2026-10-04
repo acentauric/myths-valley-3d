@@ -77,8 +77,9 @@ const RECEITAS := {
 		"rende": 1,
 		"folego": 4.0,
 		## O PASSO DA PESCA, que é onde o jogador tira o primeiro peixe da água —
-		## e o Tonho, que tira peixe todo dia.
-		"abre": {"missao": "pesca", "morador": "tonho", "grau": 1},
+		## e o Tonho, que tira peixe todo dia. No vale, também a primeira janta
+		## da chegada, que assa o peixe que o Tonho deu no píer.
+		"abre": {"missao": ["pesca", "janta"], "morador": "tonho", "grau": 1},
 	},
 	## A CAÇA NA BRASA, irmã do peixe assado: mesmo gesto, mesma lenha, e
 	## sustenta mais — carne de caça é o que se come depois de um dia de mata,

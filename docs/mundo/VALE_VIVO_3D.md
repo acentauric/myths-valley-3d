@@ -100,11 +100,14 @@ ouve o Damião, cada vez mais bravo (voz ElevenLabs "Matheus Clear", estabilidad
 0,5 → 0,35 → 0,2); na terceira ele derruba o jogador para o corredor entre as
 fileiras. Só reclama se estiver no cemitério (30 u); 90 s sem subir, ele esquece.
 
-**Pedro** (`guia_pedro.gd`) não tem posto: acompanha o jogador (anda a 3 u/s,
-corre se ficar para trás) e conduz as missões de chegada, narradas em voz
-quando está por perto: praça → capela → casa de pasto → roçado → píer antes de
-escurecer. Ao entardecer avisa que vai escurecer (`pedro_anoitecer`). O
-objetivo do HUD mostra a missão atual (n/5).
+**Pedro** (`guia_pedro.gd`) não tem posto durante a chegada: acompanha o
+jogador (anda a 3 u/s, corre se ficar para trás) e a conduz pelos pedidos dos
+moradores — o bom-dia ao Tonho, a chave que a Dona Candinha sabe com quem
+ficou, o fogo da casa do finado, o mutirão do poço com a Dona Zefa e o Cosme, a
+primeira janta, a primeira noite, a leira e o convite sem assinatura
+([CHEGADA_E_MUTIROES.md](CHEGADA_E_MUTIROES.md)). Ao entardecer avisa que vai
+escurecer (`pedro_anoitecer`). Acabada a chegada, volta ao píer, e as filas dos
+moradores abrem.
 
 O jogador chega de barco: começa no píer, com o Pedro ao lado.
 

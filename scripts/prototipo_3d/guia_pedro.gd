@@ -1,8 +1,10 @@
 class_name GuiaPedro
 extends MoradorNPC
-## Pedro, o pescador que conduz o tutorial: acompanha o jogador de perto e narra as
-## missões de chegada (píer, praça, casa de pasto, capela, roçado e as ferramentas)
-## com voz do ElevenLabs quando está por perto. Ao entardecer avisa que vai escurecer.
+## Pedro, o pescador que conduz o tutorial: acompanha o jogador de perto e narra a
+## chegada — os pedidos do Tonho, da Candinha e da Dona Zefa, o fogo da casa do
+## finado, o mutirão do poço, a primeira janta e a primeira noite, a leira e o
+## convite (docs/mundo/CHEGADA_E_MUTIROES.md) —, com voz do ElevenLabs onde há.
+## Ao entardecer avisa que vai escurecer.
 ##
 ##
 ## A FILA DE MISSÕES NÃO MORA MAIS AQUI.
@@ -25,6 +27,9 @@ extends MoradorNPC
 
 signal missao_mudou(texto: String, alvo: Vector3, indice: int, total: int)
 signal narrou(texto: String)
+## A RECOMPENSA DE UM PASSO DA CHEGADA, já dita ("Recebido de Tonho: 1 peixe").
+## A chegada antiga não pagava nada, e por isso este sinal não existia.
+signal pagou(texto: String)
 
 const CadeiaDeMissoes = preload("res://scripts/prototipo_3d/cadeia_de_missoes.gd")
 const ARQUIVO_MISSOES := "res://data/missoes_guia.json"
@@ -86,6 +91,7 @@ func _ready() -> void:
 	_cadeia.missao_mudou.connect(
 		func(texto: String, alvo: Vector3, indice: int, total: int) -> void:
 			missao_mudou.emit(texto, alvo, indice, total))
+	_cadeia.pagou.connect(func(texto: String) -> void: pagou.emit(texto))
 	add_child(_cadeia)
 
 
@@ -95,6 +101,51 @@ func _ready() -> void:
 ## assim, chegando perto dele (`prototype._pendurar_cadeia`, 6 de raio).
 func terminou_o_tutorial() -> bool:
 	return _cadeia.acabou() and _cadeia.despedida_feita
+
+
+## O passo de id `id` da chegada já fechou? A roça do Cosme abre depois da
+## primeira leira (`roca`).
+func passou(id: String) -> bool:
+	return _cadeia.passou(id)
+
+
+## O id do passo em curso, ou "" — é o que vai no save, para a partida voltar ao
+## MESMO passo mesmo que a lista mude (ver `ir_ao_passo`).
+func passo_em_curso() -> String:
+	return str(_cadeia.passo_atual().get("id", ""))
+
+
+## Põe a chegada no passo de id `id`. Devolve false se a lista não o tem.
+func ir_ao_passo(id: String) -> bool:
+	for i in _cadeia.passos.size():
+		if str((_cadeia.passos[i] as Dictionary).get("id", "")) == id:
+			_cadeia.missao = i
+			return true
+	return false
+
+
+## UM ACONTECIMENTO DO VALE (`CadeiaDeMissoes.registrar_evento`): a chegada
+## espera a janta, a cama, a leira e a leitura do convite.
+func registrar_evento(nome: String) -> void:
+	_cadeia.registrar_evento(nome)
+
+
+## QUEM É O MORADOR DE TAL ID, respondido pelo vale — a chegada agora fala com
+## o Tonho, a Candinha e a Dona Zefa, e chama o Cosme ao mutirão do poço.
+func ligar_moradores(achar: Callable) -> void:
+	_cadeia.achar_morador = achar
+
+
+## A MEMÓRIA DA CHEGADA (encontros, acontecimentos, mutirão), para o save: sem
+## ela, salvar no meio da primeira leira esqueceria que a terra já foi arada.
+func lembrancas() -> Array:
+	return _cadeia._levados.keys()
+
+
+func lembrar(chaves: Array) -> void:
+	_cadeia._levados.clear()
+	for chave in chaves:
+		_cadeia._levados[str(chave)] = true
 
 
 func _physics_process(delta: float) -> void:

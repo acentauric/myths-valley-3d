@@ -259,9 +259,11 @@ o script passa a usar `frame_coords` como o
 
 1. ~~**As missões de dono.**~~ As três existem desde setembro de 2026. A do
    Tonho é a dívida no armazém; a da Zefa é a série das ervas, que acaba com o
-   neto dela embarcando para Salvador. O que falta agora é OUTRA coisa: o
-   Benedito só vende, e a terra dele é a única que ainda não tem caminho de
-   favor nenhum.
+   neto dela embarcando para Salvador. ~~O Benedito só vende.~~ Desde outubro
+   de 2026 ele tem o caminho de favor dele: a carroça do avô, que dá nome à
+   casa, consertada em mutirão com o Cosme e o Tonho
+   ([CHEGADA_E_MUTIROES.md](CHEGADA_E_MUTIROES.md)). Falta a compra da terra
+   reconhecer o favor, como a do Tonho reconhece a dívida paga.
 2. **Rotina de dia, o resto dela.** Cada morador tem **dois** postos desde
    setembro de 2026: o da manhã e o da tarde, que vira às 13h (ver
    `ALDEOES.tarde` e `Mundo._posto_de`). Quatro dos seis mudam de lugar — a

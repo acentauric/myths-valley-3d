@@ -536,19 +536,38 @@ func _ready() -> void:
 	hud.set_notice("Bom Jesus dos Pobres, 1887 · 1 unidade = %s m" % _formatar(world.get_meters_per_unit()))
 	_montar_som()
 	_montar_moradores(spawn)
+	# OS PEDIDOS DOS MORADORES ESPERAM A APRESENTAÇÃO. Cada fila abria ao primeiro
+	# passo perto do dono, e no píer, antes de o Pedro acabar a primeira frase, o
+	# Tonho já contava a dívida do armazém. A chegada agora apresenta o arraial
+	# pelos pedidos de cada um (docs/mundo/CHEGADA_E_MUTIROES.md), e as filas
+	# deles vêm depois dela — a ordem do 2D, a mesma do mirante e da fé. Fila que
+	# já tinha começado numa partida salva continua: `depois_de` só segura quem
+	# ainda não abriu.
+	var depois_da_chegada := func() -> bool: return pedro == null or pedro.terminou_o_tutorial()
 	for morador in moradores:
 		var quem := String(morador.dados.get("id", ""))
+		var fila: Node = null
 		if quem == "damiao":
 			lapides.coveiro = morador
-			_pendurar_cadeia(morador, "res://data/missoes_coveiro.json", 4.0)
+			fila = _pendurar_cadeia(morador, "res://data/missoes_coveiro.json", 4.0)
 		elif quem == "filo":
-			_pendurar_cadeia(morador, "res://data/missoes_filo.json", 4.0)
+			fila = _pendurar_cadeia(morador, "res://data/missoes_filo.json", 4.0)
 		elif quem == "zefa":
-			_pendurar_cadeia(morador, "res://data/missoes_zefa.json", 4.0)
+			fila = _pendurar_cadeia(morador, "res://data/missoes_zefa.json", 4.0)
 		elif quem == "tonho":
-			_pendurar_cadeia(morador, "res://data/missoes_tonho.json", 4.0)
+			fila = _pendurar_cadeia(morador, "res://data/missoes_tonho.json", 4.0)
 		elif quem == "candinha":
-			_pendurar_cadeia(morador, "res://data/missoes_candinha.json", 4.0)
+			fila = _pendurar_cadeia(morador, "res://data/missoes_candinha.json", 4.0)
+		elif quem == "cosme":
+			# A ROÇA DO FINADO (data/missoes_roca.json) é a frente que corre ao
+			# lado: abre quando a chegada passa da primeira leira, perto do Cosme,
+			# que capinava para o tio. Colher, torrar a farinha e levar a primeira
+			# cuia à Dona Filó.
+			var roca = _pendurar_cadeia(morador, "res://data/missoes_roca.json", 6.0, "cosme_roca")
+			if roca != null:
+				roca.depois_de = func() -> bool: return pedro == null or pedro.passou("roca")
+		if fila != null:
+			fila.depois_de = depois_da_chegada
 	# AS MISSÕES DO ARRAIAL, do Pedro, DEPOIS DO TUTORIAL: no 2D elas vêm
 	# "depois que o Pedro termina de ensinar a sobreviver". A cadeia fica
 	# pendurada nele, mas só abre com a do guia terminada e a despedida dita.
@@ -564,15 +583,24 @@ func _ready() -> void:
 	# mestre e o barco pelo calendário, e a encomenda de piaçava volta toda
 	# estação depois da cadeia.
 	var do_saveiro: Node = null
+	var da_carroca: Node = null
 	var quirino: Node3D = null
 	for morador in moradores:
 		match String(morador.dados.get("id", "")):
 			"benedito":
 				do_saveiro = _pendurar_cadeia(morador, "res://data/missoes_saveiro.json", 4.0, "benedito_saveiro")
+				# A CARROÇA DO AVÔ (data/missoes_carroca.json): a colheita que ele
+				# vende ao saveiro desce no ombro desde a cheia de fevereiro. Ele
+				# fala dela depois da piaçava — quando o jogador já trabalhou para
+				# ele uma vez —, e o fim é o mutirão no terreiro dele.
+				da_carroca = _pendurar_cadeia(morador, "res://data/missoes_carroca.json", 4.0, "benedito_carroca")
 			"quirino":
 				quirino = morador
 	if do_saveiro != null and pedro != null:
 		do_saveiro.depois_de = func() -> bool: return pedro.terminou_o_tutorial()
+	if da_carroca != null:
+		da_carroca.depois_de = func() -> bool:
+			return do_saveiro == null or bool(do_saveiro.call("passou", "saveiro_piacava"))
 	saveiro = SaveiroVale.new()
 	saveiro.name = "Saveiro"
 	add_child(saveiro)
@@ -586,9 +614,19 @@ func _ready() -> void:
 	cemiterio.configurar(world, _cadeias.get("damiao"))
 	# OS ACONTECIMENTOS QUE UM PASSO PODE ESPERAR (meta "evento"): abrir a tela
 	# do P. Todas as cadeias ouvem, mesmo as que ainda não chegaram no passo.
-	social.abriu.connect(func() -> void:
-		for qual in _cadeias:
-			_cadeias[qual].registrar_evento("abriu_arraial"))
+	social.abriu.connect(func() -> void: _avisar_as_cadeias("abriu_arraial"))
+	# E OS DA CHEGADA (docs/mundo/CHEGADA_E_MUTIROES.md): a janta, a farinha, a
+	# corda, a leira, a cama e o papel lido. Métodos, e não lambdas, nos sinais
+	# dos autoloads: eles ficam quando o vale sai, e `_exit_tree` os desliga.
+	Cozinha.cozinhou.connect(_ao_cozinhar)
+	Cozinha.comeu.connect(_ao_comer)
+	Oficina.fabricou.connect(_ao_fabricar)
+	lavoura.arou.connect(_avisar_as_cadeias.bind("arou"))
+	lavoura.plantou.connect(_avisar_as_cadeias.bind("plantou"))
+	lavoura.regou.connect(_avisar_as_cadeias.bind("regou"))
+	lavoura.colheu.connect(_avisar_as_cadeias.bind("colheu"))
+	noite.deitou.connect(_ao_deitar)
+	Mochila.abrir_documento = _ler_documento
 	Dia.periodo_mudou.connect(_on_periodo_mudou)
 	# Os corpos de quem anda no vale entram na luz de dentro dos cômodos — agora
 	# que os moradores e o Pedro existem (ver `Interiores.marcar_os_corpos`).
@@ -692,8 +730,7 @@ func _ao_migrar_de_fe(_de: String, para: String) -> void:
 ## sabendo (a da Dona Zefa fecha a escolha), e a missão própria da fé abre, se
 ## ainda não abriu.
 func _ao_entrar_numa_fe(fe: String) -> void:
-	for qual in _cadeias:
-		_cadeias[qual].registrar_evento("adotou_fe")
+	_avisar_as_cadeias("adotou_fe")
 	var fila = _cadeias.get("fe_" + fe)
 	if fila != null and not fila.iniciado:
 		fila.comecar(1.5)
@@ -785,7 +822,10 @@ func _montar_moradores(spawn: Vector3) -> void:
 			missao_do_vale_mudou.emit(t, a, i, n))
 		# OS ALVOS DE TRABALHO, para o marcador apontar o tronco e não a casa.
 		pedro.recursos = _recursos
+		pedro.ligar_moradores(_achar_morador)
 		pedro.narrou.connect(func(texto: String) -> void: hud.set_notice("Pedro: " + texto))
+		# O QUE A CHEGADA PAGA é dito no HUD, como nas filas dos moradores.
+		pedro.pagou.connect(func(texto: String) -> void: hud.set_notice(texto))
 	placas = PlacasNomes.new()
 	placas.name = "PlacasNomes"
 	add_child(placas)
@@ -1475,7 +1515,8 @@ func estado_para_salvar() -> Dictionary:
 		estado["saveiro"] = saveiro.estado_para_salvar()
 	if pedro != null:
 		estado["pedro"] = {"missao": pedro.missao, "iniciado": pedro.get("_iniciado"),
-			"despedida": pedro.get("_despedida_feita")}
+			"despedida": pedro.get("_despedida_feita"), "passo": pedro.passo_em_curso(),
+			"levados": pedro.lembrancas()}
 	var luta := get_node_or_null("Luta")
 	if luta != null:
 		estado["mortes"] = luta.mortes.duplicate(true)
@@ -1550,7 +1591,8 @@ func restaurar_do_save(estado: Dictionary) -> void:
 	if pedro != null and not guia.is_empty():
 		pedro.set("_iniciado", bool(guia.get("iniciado", false)))
 		pedro.set("_despedida_feita", bool(guia.get("despedida", false)))
-		pedro.missao = int(guia.get("missao", -1))
+		pedro.missao = _passo_da_chegada_salvo(guia)
+		pedro.lembrar(guia.get("levados", []))
 		# Ele NÃO reanuncia o passo: quem salvou no primeiro passo ouvia a
 		# abertura do jogo de novo ao voltar, como se a partida recomeçasse. O
 		# que volta é o objetivo — caderno e marcador. Ver `CadeiaDeMissoes.retomar`.
@@ -1664,6 +1706,11 @@ func _lendo() -> bool:
 func _exit_tree() -> void:
 	if Vida.esta_lendo == Callable(self, "_lendo"):
 		Vida.esta_lendo = Callable()
+	if Mochila.abrir_documento == Callable(self, "_ler_documento"):
+		Mochila.abrir_documento = Callable()
+	for ligado in [[Cozinha.cozinhou, _ao_cozinhar], [Cozinha.comeu, _ao_comer], [Oficina.fabricou, _ao_fabricar]]:
+		if (ligado[0] as Signal).is_connected(ligado[1]):
+			(ligado[0] as Signal).disconnect(ligado[1])
 	# UMA FALA ABERTA NÃO SOBREVIVE AO VALE (#21). O `Dialogo` é autoload e fica;
 	# quem sai no meio dela — a volta ao menu, um portão que troca de cena — não
 	# deixa a árvore parada nem a caixa esperando um E que ninguém vai dar. Os
@@ -1701,6 +1748,85 @@ func _exit_tree() -> void:
 ## `chave` é o nome da fila no save; vazio, o id do morador. O Pedro tem duas
 ## filas — o guia, que mora dentro dele, e a do arraial —, e cada uma precisa
 ## de um nome seu.
+## O PASSO DA CHEGADA NUMA PARTIDA SALVA. O save novo guarda o id do passo
+## (`passo`), e a partida volta a ele mesmo que a lista mude. O save de antes
+## da chegada nova (Builds #7 e #8, publicadas) só tem o índice na lista velha
+## de nove passos: quem tinha acabado a chegada continua acabado, e quem estava
+## no meio volta ao passo novo que faz o mesmo papel.
+const CHEGADA_ANTIGA := ["pier", "praca", "casa_pasto", "capela", "rocado", "machado", "lenha", "picareta", "enxada"]
+const CHEGADA_ANTIGA_PARA_NOVA := {
+	"pier": "bom_dia", "praca": "chave", "casa_pasto": "chave", "capela": "chave",
+	"rocado": "chave", "machado": "lenha", "lenha": "lenha", "picareta": "pedra_do_poco",
+	"enxada": "roca",
+}
+
+func _passo_da_chegada_salvo(guia: Dictionary) -> int:
+	var indice := int(guia.get("missao", -1))
+	var id := str(guia.get("passo", ""))
+	if id == "" and not guia.has("passo"):
+		if indice >= CHEGADA_ANTIGA.size():
+			return pedro.MISSOES.size()
+		if indice >= 0:
+			id = str(CHEGADA_ANTIGA_PARA_NOVA.get(CHEGADA_ANTIGA[indice], ""))
+	if id != "" and pedro.ir_ao_passo(id):
+		return pedro.missao
+	return indice
+
+
+## UM ACONTECIMENTO DO VALE, avisado a TODAS as cadeias — as dos moradores e a
+## da chegada, que é do Pedro e não mora em `_cadeias`. Quem ainda não chegou
+## no passo guarda para depois: quem já cozinhou não aprende de novo.
+func _avisar_as_cadeias(evento: String) -> void:
+	for qual in _cadeias:
+		_cadeias[qual].registrar_evento(evento)
+	if pedro != null:
+		pedro.registrar_evento(evento)
+
+
+func _ao_cozinhar(id: String, _quantos: int) -> void:
+	_avisar_as_cadeias("cozinhou:" + id)
+
+
+func _ao_comer(id: String) -> void:
+	_avisar_as_cadeias("comeu:" + id)
+
+
+func _ao_fabricar(id: String, _quantos: int) -> void:
+	_avisar_as_cadeias("fabricou:" + id)
+
+
+## A NOITE VIROU: pela cama é "dormiu"; pelo desmaio não é sono, é queda.
+func _ao_deitar(motivo: String) -> void:
+	if motivo == "cama":
+		_avisar_as_cadeias("dormiu")
+
+
+## LER UM PAPEL (F em cima dele, na mochila): a caixa de fala mostra as linhas
+## do `data/documentos.json` na língua do jogador, e as cadeias ficam sabendo
+## ("leu:convite" fecha a chegada). Papel sem texto ainda avisa: ler é o gesto.
+const DOCUMENTOS := "res://data/documentos.json"
+
+func _ler_documento(id: String) -> void:
+	var dados = JSON.parse_string(FileAccess.get_file_as_string(DOCUMENTOS))
+	var papel: Dictionary = dados.get(id, {}) if dados is Dictionary and dados.get(id) is Dictionary else {}
+	var linhas = IdiomaMenu.campo(papel, "linhas", [])
+	if linhas is Array and not (linhas as Array).is_empty():
+		await Dialogo.falar(str(IdiomaMenu.campo(papel, "nome", Catalogo.nome(id))), linhas)
+	_avisar_as_cadeias("leu:" + id)
+
+
+## QUEM É O MORADOR DE TAL ID, respondido por esta casa, que é a que tem a lista.
+## A meta "levar" precisa disso para achar quem recebe; o mutirão, para chamar
+## quem ajuda; e a chegada do Pedro, para o bom-dia ao Tonho.
+func _achar_morador(quem: String) -> Node3D:
+	for outro in moradores:
+		if String(outro.dados.get("id", "")) == quem:
+			return outro
+	if pedro != null and quem == "pedro":
+		return pedro
+	return null
+
+
 func _pendurar_cadeia(morador: Node3D, arquivo: String, perto: float, chave: String = "") -> Node:
 	var cadeia := CadeiaDeMissoes.new()
 	cadeia.name = "CadeiaDeMissoes" if chave == "" else "CadeiaDeMissoes_" + chave
@@ -1708,15 +1834,7 @@ func _pendurar_cadeia(morador: Node3D, arquivo: String, perto: float, chave: Str
 	cadeia.jogador = player
 	cadeia.recursos = _recursos
 	cadeia.comeca_perto_de = perto
-	# QUEM É O MORADOR DE TAL ID, respondido por esta casa, que é a que tem a
-	# lista. A meta "levar" precisa disso para achar quem recebe.
-	cadeia.achar_morador = func(quem: String) -> Node3D:
-		for outro in moradores:
-			if String(outro.dados.get("id", "")) == quem:
-				return outro
-		if pedro != null and quem == "pedro":
-			return pedro
-		return null
+	cadeia.achar_morador = _achar_morador
 	if not cadeia.carregar(arquivo):
 		cadeia.free()
 		return null

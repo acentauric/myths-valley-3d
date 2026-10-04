@@ -127,6 +127,17 @@ func _run() -> void:
 		var onde: Vector3 = lugares.ponto(str(passo.get("lugar", "")))
 		if onde == lugares.NENHUM:
 			continue
+		# O QUE SAI DA BANCADA não cai de alvo nenhum: a corda da chegada se torce na
+		# oficina (docs/mundo/CHEGADA_E_MUTIROES.md). Para ele, o alvo é a bancada, e
+		# o passo tem de apontar para perto dela.
+		if not (root.get_node("/root/Oficina").dados(item) as Dictionary).is_empty():
+			var bancada: Vector3 = lugares.ponto("oficina")
+			var ate_a_bancada := INF if bancada == lugares.NENHUM else _plano(onde, bancada)
+			print("  missão   %-18s pede %-8s bancada a %.1f u" % [str(passo.get("id", "?")), item, ate_a_bancada])
+			_conferir(ate_a_bancada < 40.0,
+				"o passo '%s' pede %s, que sai da bancada, e a bancada está a %.1f u do lugar dele"
+					% [str(passo.get("id", "?")), item, ate_a_bancada])
+			continue
 		var menor := INF
 		for id in recursos._alvos:
 			if str(recursos._alvos[id]["ficha"].get("rende", "")) != item:
