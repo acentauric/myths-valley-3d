@@ -81,7 +81,7 @@ static func mostrar_capa(pai: Node, tema: Theme, noite: bool = false) -> Control
 	return screen
 
 
-## A capa pintada cobre a tela e avança devagar sobre o foco (46 s para ir, 46 para voltar).
+## A capa pintada cobre a tela e permanece estática na seleção e no carregamento.
 static func _capa(tela: Control, noite: bool) -> void:
 	var espelhada := noite and ESPELHAR_NOITE
 	var capa := TextureRect.new()
@@ -93,16 +93,7 @@ static func _capa(tela: Control, noite: bool) -> void:
 	capa.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
 	_cobrir(capa)
 	tela.add_child(capa)
-	var foco := _na_capa(FOCO_NOITE if noite else FOCO_DIA, espelhada)
-	capa.resized.connect(func() -> void: capa.pivot_offset = capa.size * foco)
-	capa.pivot_offset = capa.size * foco
-	capa.scale = Vector2.ONE * 1.03
-	var camera := capa.create_tween().set_loops().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-	camera.tween_property(capa, "scale", Vector2.ONE * 1.12, 46.0)
-	camera.tween_property(capa, "scale", Vector2.ONE * 1.03, 46.0)
-	if noite:
-		_lampiao(capa, _na_capa(LAMPIAO, espelhada))
-		_olhos(capa, _na_capa(OLHOS, espelhada))
+	capa.scale = Vector2.ONE
 
 
 ## Luz quente e trêmula no lampião do viajante (capa da noite). Filha da capa, acompanha

@@ -45,6 +45,12 @@ func _run() -> void:
 	_conferir(not ResourceLoader.has_cached(inicio.ABERTURA), "abertura não está carregada antes da escolha")
 	var tela: Control = inicio.get_node("CanvasLayer/SelecaoIdioma")
 	_conferir(tela.get_node("Capa").texture.resource_path.ends_with("capa_dia.webp"), "mesma capa da abertura")
+	var painel: Control = tela.get_node("CentroIdioma/OpcoesIdioma")
+	_conferir((painel.get_global_rect().get_center() - tela.get_global_rect().get_center()).length() < 1.0, "seleção centralizada na tela")
+	var capa: TextureRect = tela.get_node("Capa")
+	var transformacao: Transform2D = capa.get_transform()
+	await create_timer(1.0).timeout
+	_conferir(capa.get_transform() == transformacao and capa.scale == Vector2.ONE, "fundo estático sem zoom")
 	var botoes: Array[Button] = []
 	_buscar_botoes(tela, botoes)
 	_conferir(botoes.size() == 4, "quatro idiomas selecionáveis")
@@ -69,6 +75,7 @@ func _run() -> void:
 	inicio._escolher(1)
 	_conferir(inicio.carregando and idioma.indice() == 2, "escolha única aplica e salva espanhol")
 	_conferir(inicio.has_node("CanvasLayer/TelaCarregamento"), "mostra carregamento após escolher")
+	_conferir(inicio.get_node("CanvasLayer/TelaCarregamento/Capa").scale == Vector2.ONE, "carregamento também usa fundo estático")
 	var prazo := Time.get_ticks_msec() + 120000
 	while current_scene == inicio and Time.get_ticks_msec() < prazo:
 		await process_frame

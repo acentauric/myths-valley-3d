@@ -2,6 +2,10 @@
 
 ## Em desenvolvimento — 04/10/2026
 
+- A seleção de idioma fica no centro, com moldura dourada e fundo escurecido
+  para destacar a escolha. A imagem permanece estática tanto na seleção como
+  no carregamento, sem zoom nem efeitos animados na capa noturna (#77).
+
 - A entrada pergunta o idioma antes de carregar a abertura 3D, usando a mesma
   capa de dia e o logotipo do carregamento. Mouse e teclado escolhem português,
   inglês, espanhol ou chinês; a preferência salva recebe foco na próxima abertura (#77).
