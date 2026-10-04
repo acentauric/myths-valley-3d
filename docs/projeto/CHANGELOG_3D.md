@@ -2,6 +2,12 @@
 
 ## Em desenvolvimento — 04/10/2026
 
+- O modal de idioma sobe para acomodar a identificação da versão e da build
+  centralizada logo abaixo. O carimbo vem de `Versao`, a fonte usada nos saves (#77).
+- O menu Jogar/Explorar, suas páginas e os painéis internos passam a usar a
+  mesma talha SVG da home. A textura antiga do retábulo sai do componente
+  compartilhado; as molduras continuam acompanhando posição e visibilidade (#77).
+
 - A seleção inicial recebe a moldura SVG da home: talha nos quatro cantos,
   filetes dourados e linha azul. As nove fatias preservam os ornamentos ao
   redimensionar o painel, com a capa estática (#77).

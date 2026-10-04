@@ -143,22 +143,9 @@ static func criar(fonte: String = "") -> Theme:
 	return theme
 
 
-## Cartela dos modais e caixas: tinta escura com borda de ouro, chanfro e sombra.
-static func estilo_painel() -> StyleBoxFlat:
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.043, 0.055, 0.047, 0.95)
-	style.border_color = Color(Identidade.OURO, 0.55)
-	style.set_border_width_all(1)
-	style.set_corner_radius_all(6)
-	style.corner_detail = 1
-	style.shadow_color = Color(0, 0, 0, 0.5)
-	style.shadow_size = 24
-	style.shadow_offset = Vector2(0, 8)
-	style.content_margin_left = 28
-	style.content_margin_right = 28
-	style.content_margin_top = 22
-	style.content_margin_bottom = 22
-	return style
+## Cartela dos modais e caixas: a talha SVG compartilhada com a entrada.
+static func estilo_painel() -> StyleBoxTexture:
+	return Identidade.estilo_moldura()
 
 
 static func _trilha(fundo: Color, borda: Color) -> StyleBoxFlat:

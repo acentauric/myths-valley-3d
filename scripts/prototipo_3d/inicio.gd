@@ -32,21 +32,28 @@ func _ready() -> void:
 	var centro := CenterContainer.new()
 	centro.name = "CentroIdioma"
 	centro.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	centro.offset_top = 140.0
+	centro.offset_top = 120.0
 	_tela.add_child(centro)
+	var bloco := VBoxContainer.new()
+	bloco.name = "BlocoIdioma"
+	bloco.add_theme_constant_override("separation", 10)
+	centro.add_child(bloco)
 	var dados: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://data/selecao_idioma.json"))
 	_dados = dados
 	var painel := PanelContainer.new()
 	painel.name = "OpcoesIdioma"
 	painel.custom_minimum_size = Vector2(600, 350)
-	var estilo := StyleBoxTexture.new()
-	estilo.texture = preload("res://assets/ui/moldura_idioma.svg")
-	# Nove fatias preservam os ornamentos quando o painel muda de tamanho.
-	for lado in [SIDE_LEFT, SIDE_TOP, SIDE_RIGHT, SIDE_BOTTOM]:
-		estilo.set_texture_margin(lado, 72)
-		estilo.set_content_margin(lado, 40)
-	painel.add_theme_stylebox_override("panel", estilo)
-	centro.add_child(painel)
+	painel.add_theme_stylebox_override("panel", TemaMenu.Identidade.estilo_moldura())
+	bloco.add_child(painel)
+	var build := Label.new()
+	build.name = "IdentificacaoBuild"
+	build.text = Versao.texto()
+	build.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
+	build.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	build.add_theme_font_size_override("font_size", 16)
+	build.add_theme_color_override("font_color", Color("e2c170"))
+	TemaMenu.Identidade.sombra_texto(build)
+	bloco.add_child(build)
 	var coluna := VBoxContainer.new()
 	coluna.add_theme_constant_override("separation", 12)
 	painel.add_child(coluna)

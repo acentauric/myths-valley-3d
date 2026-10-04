@@ -58,14 +58,17 @@ func _run() -> void:
 	_conferir(not ResourceLoader.has_cached(inicio.ABERTURA), "abertura não está carregada antes da escolha")
 	var tela: Control = inicio.get_node("CanvasLayer/SelecaoIdioma")
 	_conferir(tela.get_node("Capa").texture.resource_path.ends_with("capa_dia.webp"), "mesma capa da abertura")
-	var painel: Control = tela.get_node("CentroIdioma/OpcoesIdioma")
+	var painel: Control = tela.get_node("CentroIdioma/BlocoIdioma/OpcoesIdioma")
+	var build: Label = tela.get_node("CentroIdioma/BlocoIdioma/IdentificacaoBuild")
+	_conferir(build.text == root.get_node("Versao").texto(), "identificação usa a build do jogo")
+	_conferir(build.get_global_rect().position.y >= painel.get_global_rect().end.y + 8 and absf(build.get_global_rect().get_center().x - painel.get_global_rect().get_center().x) < 1, "build centralizada abaixo do modal")
 	var moldura := painel.get_theme_stylebox("panel") as StyleBoxTexture
 	_conferir(moldura != null and moldura.texture.resource_path.ends_with("moldura_idioma.svg"), "moldura SVG da home")
 	if moldura != null:
 		_conferir(moldura.get_texture_margin(SIDE_LEFT) == 72 and moldura.get_texture_margin(SIDE_BOTTOM) == 72, "cantos preservados nas nove fatias")
 	var centro_tela := tela.get_global_rect().get_center()
 	var centro_painel := painel.get_global_rect().get_center()
-	_conferir(absf(centro_painel.x - centro_tela.x) < 1.0 and absf(centro_painel.y - centro_tela.y - 70.0) < 1.0, "painel centralizado e abaixo da marca")
+	_conferir(absf(centro_painel.x - centro_tela.x) < 1.0 and centro_painel.y - centro_tela.y < 50.0 and centro_painel.y > centro_tela.y, "painel sobe e permanece abaixo da marca")
 	var marca: Control = tela.get_node("Marca")
 	_conferir(absf(marca.get_global_rect().get_center().x - centro_tela.x) < 1.0, "marca centralizada")
 	_conferir(painel.get_global_rect().position.y - marca.get_global_rect().end.y >= 32.0, "espaço entre marca e painel")
@@ -115,6 +118,32 @@ func _run() -> void:
 	while current_scene == inicio and Time.get_ticks_msec() < prazo:
 		await process_frame
 	_conferir(current_scene != inicio, "transição para a abertura após escolha")
+	var abertura := current_scene
+	var cenario := abertura.get_node("Cenario")
+	# Capturas incluem o cenário pronto; o portão de interface dispensa montá-lo.
+	if Array(OS.get_cmdline_user_args()).any(func(arg: String) -> bool: return arg.begins_with("--captura-menu=")):
+		while not cenario.construido and Time.get_ticks_msec() < prazo:
+			await process_frame
+		await create_timer(1.5).timeout
+	abertura._aplicar_entrada_final()
+	var moldura_menu: NinePatchRect = abertura.moldura_nodes[1]
+	for pagina in ["_home", "_vagas", "_options", "_credits"]:
+		abertura.call(pagina)
+		await process_frame
+		_conferir(moldura_menu.texture.resource_path.ends_with("moldura_idioma.svg") and moldura_menu.visible, "moldura SVG visível em %s" % pagina)
+		var retangulo := moldura_menu.get_global_rect()
+		_conferir(retangulo.encloses(abertura.panel.get_global_rect()), "moldura acompanha o painel %s" % pagina)
+		for argumento in OS.get_cmdline_user_args():
+			if argumento.begins_with("--captura-menu="):
+				await RenderingServer.frame_post_draw
+				get_root().get_texture().get_image().save_png(argumento.trim_prefix("--captura-menu=").replace(".png", pagina + ".png"))
+	# Na travessia, a legenda continua sem moldura; voltar restaura a talha.
+	abertura._place_legenda()
+	_conferir(not moldura_menu.visible, "travessia esconde moldura")
+	abertura._home()
+	_conferir(moldura_menu.visible, "voltar restaura moldura")
+	var tema = load("res://scripts/prototipo_3d/tema_menu.gd")
+	_conferir(tema.estilo_painel().texture.resource_path == moldura_menu.texture.resource_path, "modais auxiliares usam o mesmo SVG")
 	if falhas == 0:
 		print("SELECAO_IDIOMA_OK: espera sem cenário, quatro opções, persistência, foco e transição")
 	quit(0 if falhas == 0 else 1)
