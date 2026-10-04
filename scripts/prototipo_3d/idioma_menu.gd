@@ -1,15 +1,16 @@
 extends RefCounted
-## Idioma do menu (abertura): português, inglês ou espanhol. Usa o TranslationServer do Godot
+## Idioma do menu: português, inglês, espanhol ou chinês (parcial, fallback inglês).
+## Usa o TranslationServer do Godot
 ## com as frases em português como chave, então Label, Button e OptionButton se
 ## traduzem sozinhos; textos compostos passam por tr(). Só o menu muda de idioma —
 ## ao entrar no vale o locale volta ao português e o jogo segue como está.
-## Textos vindos de dados (travessia, histórico) usam campos *_en / *_es nos próprios JSON.
+## Dados usam *_en / *_es; chinês aceita *_zh e usa *_en onde faltar.
 
 const ARQUIVO := "user://preferencias_visuais.cfg"
-const LOCALES := ["pt_BR", "en", "es"]
-const ROTULOS := ["Português", "English", "Español"]
+const LOCALES := ["pt_BR", "en", "es", "zh_CN"]
+const ROTULOS := ["Português", "English", "Español", "中文"]
 ## Sufixo dos campos traduzidos nos JSON, por índice de idioma.
-const SUFIXOS := ["", "_en", "_es"]
+const SUFIXOS := ["", "_en", "_es", "_zh"]
 
 const EN := {
 	# Início
@@ -527,7 +528,7 @@ static func indice() -> int:
 
 
 static func ingles() -> bool:
-	return indice() == 1
+	return indice() in [1, 3]
 
 
 static func sufixo() -> String:
@@ -549,7 +550,12 @@ static func aplicar_menu() -> void:
 	var atual := indice()
 	if atual == 0:
 		return
-	var frases: Dictionary = EN if atual == 1 else ES
+	# Chinês ainda em preparação: fallback inglês explícito na tela inicial.
+	var frases: Dictionary = (EN if atual in [1, 3] else ES).duplicate()
+	if atual == 3:
+		var dados: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://data/selecao_idioma.json"))
+		for chave: String in dados.get("menu_zh", {}):
+			frases[chave] = dados["menu_zh"][chave]
 	_traducao = Translation.new()
 	_traducao.locale = LOCALES[atual]
 	for chave: String in frases:
@@ -566,9 +572,12 @@ static func restaurar_jogo() -> void:
 	TranslationServer.set_locale(LOCALES[0])
 
 
-## Campo de dados no idioma do menu: `chave_en` / `chave_es` quando existir.
+## Campo no idioma do menu: *_en / *_es / *_zh, com fallback inglês para chinês.
 static func campo(dados: Dictionary, chave: String, padrao: Variant = "") -> Variant:
-	var traduzida := chave + sufixo()
+	var atual := indice()
+	var traduzida: String = chave + SUFIXOS[atual]
 	if traduzida != chave and dados.has(traduzida):
 		return dados[traduzida]
+	if atual == 3 and dados.has(chave + "_en"):
+		return dados[chave + "_en"]
 	return dados.get(chave, padrao)

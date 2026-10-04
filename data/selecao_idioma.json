@@ -1,0 +1,33 @@
+{
+  "titulo": "Idioma · Language · Idioma · 语言",
+  "titulo_en": "Language · Idioma · 语言",
+  "titulo_es": "Idioma · Language · 语言",
+  "titulo_zh": "语言 · Language · Idioma",
+  "descricao": "Escolha o idioma para começar. Sua escolha será lembrada.",
+  "descricao_en": "Choose your language to begin. Your choice will be remembered.",
+  "descricao_es": "Elige tu idioma para comenzar. Recordaremos tu elección.",
+  "descricao_zh": "请选择语言。我们会保存您的选择。",
+  "opcoes": ["Português", "English", "Español", "中文"],
+  "nota_zh": "中文翻译准备中，未译内容使用英语。",
+  "aviso": "Chinês em preparação: textos sem tradução usam inglês. Vozes e partes do jogo permanecem em português.",
+  "aviso_en": "Chinese is in preparation: untranslated texts use English. Voices and parts of the game remain in Portuguese.",
+  "aviso_es": "Chino en preparación: los textos sin traducir usan inglés. Las voces y partes del juego siguen en portugués.",
+  "aviso_zh": "中文翻译尚在准备中，未翻译的内容使用英语。语音及部分游戏内容仍为葡萄牙语。",
+  "menu_zh": {
+    "Carregando o vale…": "正在加载山谷…",
+    "Enchendo a baía": "填充海湾",
+    "Moldando o terreno": "塑造地形",
+    "Estendendo a praia e os rios": "铺设海滩与河流",
+    "Abrindo as ruas": "开辟街道",
+    "Plantando a mata": "种植森林",
+    "Medindo os lotes": "测量地块",
+    "Erguendo as casas": "建造房屋",
+    "Cercando o roçado": "围起农田",
+    "Plantando as árvores da vila": "种植村庄树木",
+    "Erguendo a capela, a venda e o píer": "建造教堂、商店与码头",
+    "Espalhando os objetos": "布置物品",
+    "Fundeando as canoas": "停泊独木舟",
+    "Acendendo os lampiões": "点亮灯笼",
+    "Pronto": "准备就绪"
+  }
+}

@@ -33,6 +33,10 @@ explícito, e cada asset mantém origem e créditos.
 
 ## Registros
 
+A entrada leve pergunta o idioma antes de carregar o cenário do menu (#77).
+Chinês tem seleção e etapas do carregamento traduzidas, com fallback inglês
+declarado. A tradução integral do vale permanece no escopo de #51 e #6.
+
 - [Histórico de mudanças](CHANGELOG_3D.md).
 - [Etapas e decisões anteriores](HISTORICO_DESENVOLVIMENTO_3D.md).
 - [Arquitetura](ARQUITETURA.md).

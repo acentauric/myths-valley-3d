@@ -46,8 +46,24 @@ const NOTAS_NOITE := Identidade.NOTAS_NOITE
 ## `hora` escolhe a capa (dia ou noite); negativa, vale a hora atual do relógio.
 static func mostrar(pai: Node, tema: Theme, mensagem: String, hora: float = -1.0) -> ProgressBar:
 	var noite: bool = Dia.eh_noite_em(Dia.hora if hora < 0.0 else hora)
-	var screen := Control.new()
+	var screen := mostrar_capa(pai, tema, noite)
 	screen.name = "TelaCarregamento"
+	_almanaque(screen, noite)
+	var textos := _situacao(screen, mensagem)
+	var bar := _barra(screen, textos[1])
+	screen.modulate.a = 0.0
+	var entrada := screen.create_tween()
+	entrada.tween_property(screen, "modulate:a", 1.0, 0.2)
+	screen.set_meta("entrada", entrada)
+	bar.set_meta("tela", screen)
+	bar.set_meta("mensagem", textos[0])
+	return bar
+
+
+## Capa e marca compartilhadas com a seleção inicial; só recursos de interface.
+static func mostrar_capa(pai: Node, tema: Theme, noite: bool = false) -> Control:
+	var screen := Control.new()
+	screen.name = "SelecaoIdioma"
 	screen.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	screen.theme = tema
 	screen.mouse_filter = Control.MOUSE_FILTER_STOP
@@ -62,16 +78,7 @@ static func mostrar(pai: Node, tema: Theme, mensagem: String, hora: float = -1.0
 	_capa(screen, noite)
 	_veus(screen)
 	_marca(screen)
-	_almanaque(screen, noite)
-	var textos := _situacao(screen, mensagem)
-	var bar := _barra(screen, textos[1])
-	screen.modulate.a = 0.0
-	var entrada := screen.create_tween()
-	entrada.tween_property(screen, "modulate:a", 1.0, 0.2)
-	screen.set_meta("entrada", entrada)
-	bar.set_meta("tela", screen)
-	bar.set_meta("mensagem", textos[0])
-	return bar
+	return screen
 
 
 ## A capa pintada cobre a tela e avança devagar sobre o foco (46 s para ir, 46 para voltar).

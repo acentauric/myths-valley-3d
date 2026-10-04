@@ -658,7 +658,7 @@ func _create_corner_buttons() -> void:
 	_corner_setup(help[0], func() -> void: set_controls_open(not controls_open()))
 
 	top += BotaoCanto.ESPACO
-	var quest_icon := HudIcon.new().configurar("missoes")
+	var quest_icon: Control = HudIcon.new().configurar("missoes")
 	var quests: Array = BotaoCanto.criar(_root, top, quest_icon)
 	var quest_data = JSON.parse_string(FileAccess.get_file_as_string("res://data/hud_3d.json"))
 	var quest_texts: Dictionary = quest_data if quest_data is Dictionary else {}

@@ -1,5 +1,18 @@
 # Histórico de mudanças — Myths' Valley 3D
 
+## Em desenvolvimento — 04/10/2026
+
+- A entrada pergunta o idioma antes de carregar a abertura 3D, usando a mesma
+  capa de dia e o logotipo do carregamento. Mouse e teclado escolhem português,
+  inglês, espanhol ou chinês; a preferência salva recebe foco na próxima abertura (#77).
+- Chinês traduz a seleção e as etapas do carregamento; o restante do menu usa
+  inglês enquanto a tradução está em preparação, conforme aviso na seleção.
+  Vozes e partes do vale continuam em português; a tradução integral segue na #51.
+- O portão `selecao_idioma` confere que o cenário não carrega antes da escolha,
+  a persistência dos quatro idiomas, o foco, o clique duplicado e a transição.
+- O ícone das missões declara seu tipo no HUD: a inferência sobre o retorno
+  sem tipo de `configurar` impedia o script de compilar após o pull.
+
 ## Em desenvolvimento — 03/10/2026
 
 - Os créditos e o README registram a confirmação do autor: a fonte Miva é

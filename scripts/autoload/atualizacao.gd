@@ -144,7 +144,7 @@ func reiniciar() -> void:
 
 func pagina_de_download() -> String:
 	var paginas: Dictionary = manifesto.get("pagina", {}) if manifesto.get("pagina") is Dictionary else {}
-	var idioma: String = ["pt", "en", "es"][clampi(_indice_idioma(), 0, 2)]
+	var idioma: String = ["pt", "en", "es", "en"][clampi(_indice_idioma(), 0, 3)]
 	var pagina := str(paginas.get(idioma, paginas.get("pt", ORIGEM + "/jogar")))
 	return pagina if url_confiavel(pagina) else ORIGEM + "/jogar"
 
