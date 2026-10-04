@@ -1,5 +1,34 @@
 # Histórico de mudanças — Myths' Valley 3D
 
+## Em desenvolvimento — 03/10/2026
+
+- Os créditos e o README registram a confirmação do autor: a fonte Miva é
+  criação da equipe, com direitos do projeto, e as vozes foram produzidas
+  de forma generativa para o jogo (#40).
+- O README apresenta o jogo, a contribuição do Tripo, os controles, os marcos
+  do Git e a origem do trabalho para o evento; o guia passa a descrever o
+  repositório 3D independente e a build Windows já disponível (#40).
+- A atualização limita manifesto e download, confere origem HTTPS e tamanho,
+  recusa caminhos perigosos, links e conteúdo inesperado, e valida os registros
+  locais e centrais do ZIP antes de qualquer extração (#76).
+- A leitura das partidas bloqueia objetos e recursos antes da desserialização,
+  preservando o formato e os tipos dos saves legítimos, inclusive os resumos
+  das vagas no menu (#76).
+- O portão `tests/seguranca_arquivos.gd` reproduz os defeitos com marcadores
+  inofensivos e exige rejeição sem executar código nem gravar fora da pasta.
+- As correções ficam no código do repositório; a distribuição pública permanece
+  na **Build #8** até a próxima versão estável. O SHA-256 continua sendo conferido
+  contra o manifesto HTTPS e não substitui uma assinatura de release
+  independente do servidor.
+
+## Build #8 — 03/10/2026
+
+- A tela Sobre apresenta a equipe atual do projeto: Ramon Santos, Renato Leal
+  e Matheus Ché (#40).
+- Fecha a **Build #8** para Windows com os créditos atuais e o histórico
+  do jogo em português, inglês e espanhol. O download estável do site
+  passa a entregar esta versão (#40).
+
 ## Em desenvolvimento — 01/10/2026
 
 - A oficina provisória ganha âncora na beira do roçado: depois do loteamento,
@@ -16,13 +45,27 @@
 Este histórico acompanha apenas o jogo 3D, hoje na raiz deste repositório.
 A linha anterior usava a branch `prototype/myths-valley-3d`. O projeto 2D foi a base da derivação, mas
 suas fases, versões e novidades não são entradas deste registro. Os marcos
-abaixo seguem o que mudou no 3D. A identificação atual é **v0.1.0-dev · Build #5**,
-exclusiva desta derivação e ainda sem distribuição publicada.
+abaixo seguem o que mudou no 3D. A identificação atual é **v0.1.0-dev · Build #8**,
+exclusiva desta derivação e publicada para download em mythsvalley.app.br/jogar.
 
 O texto clicável de versão e build no rodapé da abertura mostra resumos destes
 marcos. Os textos curtos e a identificação exibidos no jogo ficam em
 `data/historico_3d.json`; ao registrar um novo marco ou build,
 atualize esse arquivo e este documento juntos.
+
+## Build #7 — 03/10/2026
+
+- **O jogo se atualiza pelo site** (#74). Ao abrir o menu, o executável pergunta a
+  `https://mythsvalley.app.br/api/jogo/atualizacao` pela build mais nova; havendo uma, a
+  linha embaixo da versão, no rodapé do retábulo, oferece a atualização. Aceita, o jogo
+  baixa o zip para `user://atualizacao/`, confere o SHA-256 do manifesto, extrai ao lado
+  do executável, guarda o atual como `.old`, põe o novo no lugar e pede para reiniciar;
+  na abertura seguinte, o `.old` e as sobras somem. Só instala sozinho numa build
+  exportada no Windows com a pasta gravável — fora disso, a oferta abre a página de
+  download. Sem rede, fica quieto. Portão: `tests/atualizacao.gd`.
+- Fecha a **Build #7**, a primeira publicada para download, com o que entrou desde a #6:
+  o sobrevoo que contorna, o vale em cinco segundos, a tela de carregamento quieta, as
+  seis cadeias de missão e o E que não age atrás de tela.
 
 ## Em desenvolvimento — 02/10/2026
 

@@ -44,3 +44,11 @@ O projeto abre na raiz, com sistemas locais, sem sincronização ou testes
 dependentes de outro checkout (#44 e #61). Modelos e WAVs, inclusive suas
 versões históricas, usam Git LFS (#60). Abertura e controles contam falhas e
 foram falsificados para conferir a reprovação por código de saída (#69).
+
+## Validação de arquivos externos em 03/10/2026
+
+A atualização confere origem, limites e estrutura dos pacotes antes de
+extrair, e a leitura de saves recusa objetos que carregariam código (#76).
+O formato das partidas é preservado. Os portões de segurança cobrem caminhos
+perigosos, links, cabeçalhos conflitantes e a leitura de saves legítimos.
+A autenticidade da distribuição ainda depende do servidor HTTPS oficial.

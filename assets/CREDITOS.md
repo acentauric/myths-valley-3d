@@ -39,9 +39,12 @@ geradas por script do projeto.
 | `assets/audio/ambiente/{mata_dia,mata_noite,riacho,fogueira}.mp3` | loops de 24 s gerados no ElevenLabs Sound Effects | `docs/mundo/VALE_VIVO_3D.md` |
 | `assets/audio/efeitos/{corrida_*,passo_agua_funda,passo_nado}.mp3` | corrida por tipo de chão, passo na água funda e braçada, ElevenLabs Sound Effects (27/09/2026) | `tools/elevenlabs/gerar-efeitos-3d.ps1` |
 
-Os textos das vozes saem de `data/dialogos/aldeoes.json` e `pedro.json`. O plano pago
-do ElevenLabs permite uso comercial das gerações; confirmar os termos vigentes da
-biblioteca de vozes antes de publicar.
+Os textos das vozes saem de `data/dialogos/aldeoes.json` e `pedro.json`; os áudios
+são produzidos com ElevenLabs Text to Speech.
+
+Em 03/10/2026, o responsável confirmou que as falas e vozes do jogo foram
+produzidas pela equipe de forma generativa para o projeto. Os nomes acima
+registram as vozes utilizadas na geração dos áudios.
 
 ### Dados geográficos do protótipo 3D
 
@@ -78,6 +81,7 @@ vigentes antes de publicar.
 ## Fontes e interface
 
 As fontes Cinzel e Cormorant Garamond acompanham os textos OFL em
-`assets/fonts/`. Almendra e Miva são recursos herdados de interface; mantenha
-sua atribuição e verificação de licença antes de redistribuir. Ícones
-reutilizados da interface e catálogo foram produzidos no PixelLab.
+`assets/fonts/`. Almendra é de Ana Sanfelippo, sob SIL OFL 1.1.
+`assets/fonts/miva.ttf` é uma fonte original criada pela equipe; em
+03/10/2026, o responsável confirmou que seus direitos pertencem ao projeto.
+Ícones reutilizados da interface e catálogo foram produzidos no PixelLab.

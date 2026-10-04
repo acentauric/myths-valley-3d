@@ -36,7 +36,7 @@ const CREDITS_HIGHLIGHTS := [
 	"primeira visita", "first visit", "primera visita",
 	"Batalha de Mitos",
 ]
-const COLLABORATORS := ["Ramon Santos", "Renato Leal", "Matheus Ché", "Pedro Almeida"]
+const COLLABORATORS := ["Ramon Santos", "Renato Leal", "Matheus Ché"]
 ## Fonte do menu (AJUSTAR → Cenário): padrão do Godot ou as duas fontes do 2D.
 const MENU_FONTS := PainelAjustes.FONTES_MENU
 ## Trocar o estilo visual reconstrói a cena do menu; ao voltar, reabre a página de ajustes.
@@ -54,6 +54,8 @@ var content: VBoxContainer
 ## Onde _label/_button/_slider/_choice inserem controles; volta a `content` a cada _clear().
 var ui_parent: Container
 var version_link: Button
+## A oferta de atualização, embaixo da versão (some quando o jogo está em dia).
+var linha_atualizacao: Button
 var caption: Label
 ## Quanto falta do trecho da travessia na tela (1 → 0), para o jogador saber quando passa.
 var line_bar: ProgressBar
@@ -183,6 +185,7 @@ func _ready() -> void:
 	_era_noite = Dia.eh_noite()
 	# Método (não lambda): o Godot desconecta sozinho quando o menu é liberado.
 	Dia.hora_mudou.connect(_ao_mudar_hora)
+	Atualizacao.mudou.connect(_atualizar_oferta)
 	_ao_mudar_hora(Dia.hora)
 	_home()
 	if _reabrir_ajustes:
@@ -299,6 +302,7 @@ func _iniciar_som_do_menu() -> void:
 	_som_liberado = true
 	Audio.tocar_musica(Audio.obter_caminho_musica_menu())
 	Audio.iniciar_ambiente_menu()
+	Atualizacao.verificar()
 
 
 ## Lê o trajeto planejado e confere se ele é deste vale (escala e âncoras de algum dos
@@ -849,6 +853,55 @@ func _create_version_link() -> void:
 	for sinal in [version_link.mouse_exited, version_link.focus_exited]:
 		sinal.connect(func() -> void: sublinhado.visible = version_link.has_focus())
 	version_link.pressed.connect(_open_history)
+	linha_atualizacao = Button.new()
+	linha_atualizacao.flat = true
+	linha_atualizacao.add_theme_font_override("font", Identidade.fonte_numeros(600))
+	linha_atualizacao.add_theme_font_size_override("font_size", 15)
+	linha_atualizacao.add_theme_color_override("font_color", Identidade.OURO)
+	linha_atualizacao.add_theme_color_override("font_hover_color", Identidade.CREME)
+	linha_atualizacao.add_theme_color_override("font_focus_color", Identidade.CREME)
+	linha_atualizacao.add_theme_color_override("font_disabled_color", Color("c9b98f"))
+	linha_atualizacao.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	linha_atualizacao.custom_minimum_size.y = 24
+	linha_atualizacao.mouse_entered.connect(func(): Audio.efeito("ui_hover"))
+	linha_atualizacao.pressed.connect(_acionar_atualizacao)
+	content.add_child(linha_atualizacao)
+	_atualizar_oferta()
+
+
+## A linha embaixo da versão diz em que pé está a atualização. Só aparece quando há
+## uma build nova no site; durante o download e a instalação, não aceita clique.
+func _atualizar_oferta() -> void:
+	if linha_atualizacao == null or not is_instance_valid(linha_atualizacao):
+		return
+	var E := Atualizacao.Estado
+	var estado: int = Atualizacao.estado
+	var build := Atualizacao.build_nova()
+	var texto := ""
+	if estado == E.DISPONIVEL:
+		texto = (tr("Nova versão: Build %d · Atualizar") if Atualizacao.instala_sozinho() else tr("Nova versão: Build %d · Baixar no site")) % build
+	elif estado == E.BAIXANDO:
+		texto = tr("Baixando a Build %d… %d%%") % [build, int(Atualizacao.progresso * 100.0)]
+	elif estado == E.CONFERINDO:
+		texto = tr("Conferindo o arquivo…")
+	elif estado == E.INSTALANDO:
+		texto = tr("Instalando a Build %d…") % build
+	elif estado == E.PRONTA:
+		texto = tr("Build %d instalada · Reiniciar o jogo") % build
+	elif estado == E.FALHOU:
+		texto = tr("A atualização falhou · Tentar de novo")
+	linha_atualizacao.visible = not texto.is_empty()
+	linha_atualizacao.text = texto
+	linha_atualizacao.tooltip_text = Atualizacao.erro if estado == E.FALHOU else ""
+	linha_atualizacao.disabled = estado in [E.BAIXANDO, E.CONFERINDO, E.INSTALANDO]
+
+
+func _acionar_atualizacao() -> void:
+	Audio.efeito("ui_confirmar")
+	if Atualizacao.estado == Atualizacao.Estado.PRONTA:
+		Atualizacao.reiniciar()
+	else:
+		Atualizacao.atualizar()
 
 func _label(text: String, size: int = 18) -> Label:
 	var label := Label.new()

@@ -23,6 +23,7 @@ boot_splash/show_image=false
 Audio="*res://scripts/autoload/audio.gd"
 Estilo="*res://scripts/autoload/estilo.gd"
 Versao="*res://scripts/autoload/versao.gd"
+Atualizacao="*res://scripts/autoload/atualizacao.gd"
 Progressao="*res://scripts/compartilhado/progressao.gd"
 Energia="*res://scripts/compartilhado/energia.gd"
 Inventario="*res://scripts/compartilhado/inventario.gd"
