@@ -121,6 +121,15 @@ const EN := {
 	"Cenário": "Scenery",
 	"Estilo visual": "Visual style",
 	"Nomes dos personagens": "Character names",
+	# Cursor do mouse (04/10).
+	"Interface": "Interface",
+	"Cursor do mouse": "Mouse cursor",
+	"Clássico": "Classic",
+	"Ouro polido": "Polished gold",
+	"Azulejo": "Tile",
+	"Talha com punho": "Carved with cuff",
+	"Pergaminho": "Parchment",
+	"Luz do lampião": "Lantern light",
 	# Maré, minimapa, atalhos, personagens e sons (28/09).
 	"Os ajustes valem na próxima vez que o vale for montado (JOGAR).": "Changes apply the next time the valley is built (PLAY).",
 	"GRAVAR NO PROJETO": "SAVE TO PROJECT",
@@ -373,6 +382,15 @@ const ES := {
 	"Cenário": "Escenario",
 	"Estilo visual": "Estilo visual",
 	"Nomes dos personagens": "Nombres de los personajes",
+	# Cursor do mouse (04/10).
+	"Interface": "Interfaz",
+	"Cursor do mouse": "Cursor del ratón",
+	"Clássico": "Clásico",
+	"Ouro polido": "Oro pulido",
+	"Azulejo": "Azulejo",
+	"Talha com punho": "Talla con puño",
+	"Pergaminho": "Pergamino",
+	"Luz do lampião": "Luz del farol",
 	# Marea, minimapa, atajos, personajes y sonidos (28/09).
 	"Os ajustes valem na próxima vez que o vale for montado (JOGAR).": "Los ajustes valen la próxima vez que se monte el valle (JUGAR).",
 	"GRAVAR NO PROJETO": "GUARDAR EN EL PROYECTO",

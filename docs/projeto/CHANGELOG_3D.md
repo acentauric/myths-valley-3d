@@ -10,6 +10,10 @@
   desde o primeiro quadro, por baixo da tela de carregamento; agora só o modo de
   câmera escolhido o prende, quando o vale fica pronto. O jogo ganha cursor
   próprio, seta e mão em ouro com contorno de laca.
+- O cursor vira escolha em AJUSTAR > Cenário (seção Interface), no menu e no
+  vale: Clássico, Ouro polido (o novo padrão), Azulejo, Talha com punho,
+  Pergaminho e Luz do lampião. Todos seguem a mesma regra: seta para apontar e
+  mão com o indicador para clicar. A troca vale na hora e fica salva.
 - A escolha de idioma ganha folga vertical, e o aviso do rodapé fica centralizado.
 
 - As trilhas do menu, do jogo, dos períodos e da mata mudam com fade de saída

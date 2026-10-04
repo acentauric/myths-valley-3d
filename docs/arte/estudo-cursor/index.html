@@ -246,7 +246,7 @@ function desenharMao(e) {
     <g fill="${e.pele}">${formas}</g>
     <g stroke="${e.vinco}" stroke-width=".55" fill="none" stroke-linecap="round">
       <path d="M15.2 12.6 L15.2 17.4"/><path d="M19.2 13.8 L19.2 18.4"/><path d="M23 15.4 L23 19.2"/>
-      <path d="M11.6 17.2 L9.8 21.4"/>
+      ${e.semVincoPolegar ? "" : `<path d="M11.6 17.2 L9.8 21.4"/>`}
     </g>
     <path d="M12.1 4.2 Q13.2 3 14.3 4.2" stroke="${e.brilho}" stroke-width=".55" fill="none" stroke-linecap="round"/>
     <path d="M12 6 L12 14.6" stroke="${e.brilho}" stroke-width=".55" stroke-linecap="round" opacity=".6"/>
@@ -263,7 +263,7 @@ const ESTILOS = {
   ouro: { pele: "url(#ouro)", borda: L, vinco: "#7a5222", brilho: "#fff6d0", largura: 2.2 },
   azulejo: {
     pele: "url(#azulejo)", borda: "#142a5c", vinco: "#2f56a8", brilho: "#ffffff", largura: 2.3,
-    forma: AGULHA,
+    forma: AGULHA, semVincoPolegar: true,
     detalheSeta: `<path d="M3 2.5 L11.6 11.6" stroke="#2f56a8" stroke-width=".7"/>
       <path d="M11.3 8.6 L13.1 11.3 L11.3 14 L9.5 11.3Z" fill="#2f56a8"/>`,
     detalheMao: `<path d="M18.6 21.6 L20.4 23.4 L18.6 25.2 L16.8 23.4Z" fill="#2f56a8"/>`,

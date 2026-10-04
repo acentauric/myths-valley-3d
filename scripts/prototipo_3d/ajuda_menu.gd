@@ -108,6 +108,11 @@ const TEXTOS := {
 		"Which keys move the character in the valley.\n\nWASD: only W, A, S and D.\nArrows: only the arrow keys.\nWASD and arrows: both work.\n\nThe controls bar in game shows the chosen keys. Shift still runs and right-clicking still walks to a point.",
 		"Qué teclas mueven al personaje en el valle.\n\nWASD: solo W, A, S y D.\nFlechas: solo las flechas del teclado.\nWASD y flechas: funcionan las dos.\n\nLa barra de controles del juego muestra las teclas elegidas. Shift sigue corriendo y el clic derecho sigue llevando hasta el punto.",
 	],
+	"Cursor do mouse": [
+		"Desenho do ponteiro do mouse no menu e no vale. Em todos, a seta aponta e a mão com o dedo indicador aparece onde dá para clicar.\n\nClássico: o primeiro cursor do jogo.\nOuro polido: o ouro de talha, mais fino e legível.\nAzulejo: branco com traço cobalto, como os azulejos da igreja.\nTalha com punho: mão dourada com punho de renda.\nPergaminho: tinta sépia sobre papel.\nLuz do lampião: âmbar aceso, que aparece bem à noite.\n\nA troca vale na hora e fica salva.",
+		"Look of the mouse pointer in the menu and in the valley. In every set the arrow points and the hand with the index finger shows where you can click.\n\nClassic: the game's first cursor.\nPolished gold: carved gold, thinner and easier to read.\nTile: white with cobalt lines, like the church tiles.\nCarved with cuff: a golden hand with a lace cuff.\nParchment: sepia ink on paper.\nLantern light: glowing amber that stands out at night.\n\nThe change applies right away and is saved.",
+		"Aspecto del puntero del ratón en el menú y en el valle. En todos, la flecha apunta y la mano con el dedo índice aparece donde se puede hacer clic.\n\nClásico: el primer cursor del juego.\nOro pulido: oro tallado, más fino y legible.\nAzulejo: blanco con trazo cobalto, como los azulejos de la iglesia.\nTalla con puño: mano dorada con puño de encaje.\nPergamino: tinta sepia sobre papel.\nLuz del farol: ámbar encendido, que se ve bien de noche.\n\nEl cambio vale al momento y queda guardado.",
+	],
 }
 
 

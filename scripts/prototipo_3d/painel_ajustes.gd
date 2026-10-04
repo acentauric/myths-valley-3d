@@ -222,7 +222,7 @@ func _aba_sons(esquerda: VBoxContainer, direita: VBoxContainer) -> void:
 		_volume(String(Audio.ROTULOS_CAMADAS[camada]), float(Audio.volume_camadas[camada]), func(v: float) -> void: Audio.definir_volume_camada(camada, v), camada)
 
 
-## Cenário: estilo visual do vale (Tripo ou procedural) e, no menu, o fundo e a fonte.
+## Cenário: estilo visual do vale (Tripo ou procedural), o cursor e, no menu, o fundo e a fonte.
 func _aba_cenario(esquerda: VBoxContainer, direita: VBoxContainer) -> void:
 	_pai = esquerda
 	_secao("Vale")
@@ -243,9 +243,11 @@ func _aba_cenario(esquerda: VBoxContainer, direita: VBoxContainer) -> void:
 		if preferencias.save(PREFERENCIAS_VISUAIS) != OK:
 			push_warning("Não foi possível salvar a preferência do minimapa."), 0)
 	_escolha("Maré", ["Sem maré", "Ciclo do lugar", "Ciclo lento", "Rápida (ver acontecer)"], Mare.modo, Mare.definir_modo, 0)
+	_pai = direita
+	_secao("Interface")
+	_escolha("Cursor do mouse", Tela.ROTULOS_CURSOR, Tela.cursor, Tela.definir_cursor, Tela.PADRAO_CURSOR)
 	if no_jogo:
 		return
-	_pai = direita
 	_secao("Menu")
 	var preferencias := ConfigFile.new()
 	preferencias.load(PREFERENCIAS_VISUAIS)

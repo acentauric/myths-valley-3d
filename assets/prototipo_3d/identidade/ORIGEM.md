@@ -11,6 +11,8 @@ hoje e para outros usos que ainda vão ser definidos (menu, capa, loja, crédito
 | `capa_noite.webp` | Capa pintada da noite: o viajante com o lampião na boca da mata, a lua sobre a baía e a igreja lá embaixo; 2048×1152 | tela de carregamento de noite (entra espelhada) |
 | `rosa_dos_ventos.png` | Rosa dos ventos em ouro com anel de azulejo cobalto; fundo transparente, 512×512 | indicador de carregamento (gira) e marcador de foco das placas da home |
 | `moldura_retabulo.png` | Moldura de talha dourada com fio cobalto, volutas de acanto e losangos de azulejo nos cantos; interior em laca lisa (achatado por script), 994×1502, fundo externo transparente | NinePatch do retábulo da home e de todos os modais (identidade.gd, margens 140/150/140/160, escala 0,3) |
+| `cursor_seta.png`, `cursor_mao.png` | Cursor Clássico: seta e mão em ouro com contorno de laca, 40×40 (`tools/prototipo_3d/cursor/gerar_cursor.py`) | opção Clássico do cursor (`Tela.CURSORES`) |
+| `cursores/*.png` | Os outros cinco conjuntos de cursor (ouro, azulejo, talha, pergaminho, lampião), seta e mão, 40×40, desenhados em SVG em `tools/prototipo_3d/cursor/desenhos.js` e rasterizados por `gerar_cursores.js` | escolha do cursor em AJUSTAR > Cenário; o padrão é o Ouro polido |
 
 ## Como foram feitas
 

@@ -11,29 +11,38 @@ extends Node
 ## resolução de desenho (1280×720) é só a referência do layout, e a janela não
 ## precisa ficar desse tamanho.
 ##
-## O cursor do jogo também mora aqui: seta e mão em ouro com contorno de laca
-## (`tools/prototipo_3d/cursor/gerar_cursor.py`). É cursor de hardware, que o
-## sistema desenha mesmo quando a montagem do vale segura os quadros.
+## O cursor do jogo também mora aqui. É cursor de hardware, que o sistema desenha
+## mesmo quando a montagem do vale segura os quadros. O jogador escolhe o conjunto
+## em AJUSTAR > Cenário; todos seguem a mesma regra: seta para apontar e mão com o
+## indicador para clicar. O Clássico vem de `tools/prototipo_3d/cursor/gerar_cursor.py`;
+## os demais, de `desenhos.js` pelo `gerar_cursores.js`, na mesma pasta.
 
 signal modo_mudou(cheia: bool)
 
 const ARQUIVO := "user://preferencias_visuais.cfg"
 const FRACAO_JANELA := 0.8
+## Conjuntos de cursor, na ordem do AJUSTAR: [seta, ponto quente, mão, ponto quente].
 const CURSORES := [
-	[Input.CURSOR_ARROW, "res://assets/prototipo_3d/identidade/cursor_seta.png", Vector2(4, 3)],
-	[Input.CURSOR_POINTING_HAND, "res://assets/prototipo_3d/identidade/cursor_mao.png", Vector2(16, 2)],
+	["res://assets/prototipo_3d/identidade/cursor_seta.png", Vector2(4, 3), "res://assets/prototipo_3d/identidade/cursor_mao.png", Vector2(16, 2)],
+	["res://assets/prototipo_3d/identidade/cursores/ouro_seta.png", Vector2(4, 3), "res://assets/prototipo_3d/identidade/cursores/ouro_mao.png", Vector2(17, 2)],
+	["res://assets/prototipo_3d/identidade/cursores/azulejo_seta.png", Vector2(4, 3), "res://assets/prototipo_3d/identidade/cursores/azulejo_mao.png", Vector2(17, 2)],
+	["res://assets/prototipo_3d/identidade/cursores/talha_seta.png", Vector2(4, 3), "res://assets/prototipo_3d/identidade/cursores/talha_mao.png", Vector2(17, 2)],
+	["res://assets/prototipo_3d/identidade/cursores/pergaminho_seta.png", Vector2(4, 3), "res://assets/prototipo_3d/identidade/cursores/pergaminho_mao.png", Vector2(17, 2)],
+	["res://assets/prototipo_3d/identidade/cursores/lampiao_seta.png", Vector2(4, 3), "res://assets/prototipo_3d/identidade/cursores/lampiao_mao.png", Vector2(17, 2)],
 ]
+const ROTULOS_CURSOR := ["Clássico", "Ouro polido", "Azulejo", "Talha com punho", "Pergaminho", "Luz do lampião"]
+const PADRAO_CURSOR := 1
 
 var cheia := true
+var cursor := PADRAO_CURSOR
 
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	cheia = preferida()
 	_aplicar()
-	if DisplayServer.get_name() != "headless":
-		for cursor in CURSORES:
-			Input.set_custom_mouse_cursor(load(cursor[1]), cursor[0], cursor[2])
+	cursor = cursor_preferido()
+	_aplicar_cursor()
 
 
 ## A escolha salva vence; sem ela, tela cheia.
@@ -57,6 +66,33 @@ func definir(nova: bool) -> void:
 		push_warning("Não foi possível salvar o modo da tela.")
 	_aplicar()
 	modo_mudou.emit(nova)
+
+
+## Conjunto de cursor salvo; sem escolha, o padrão.
+static func cursor_preferido() -> int:
+	var preferencias := ConfigFile.new()
+	if preferencias.load(ARQUIVO) == OK:
+		return clampi(int(preferencias.get_value("interface", "cursor", PADRAO_CURSOR)), 0, CURSORES.size() - 1)
+	return PADRAO_CURSOR
+
+
+## Troca o cursor na hora e guarda a escolha para as próximas aberturas.
+func definir_cursor(indice: int) -> void:
+	cursor = clampi(indice, 0, CURSORES.size() - 1)
+	var preferencias := ConfigFile.new()
+	preferencias.load(ARQUIVO)
+	preferencias.set_value("interface", "cursor", cursor)
+	if preferencias.save(ARQUIVO) != OK:
+		push_warning("Não foi possível salvar o cursor.")
+	_aplicar_cursor()
+
+
+func _aplicar_cursor() -> void:
+	if DisplayServer.get_name() == "headless":
+		return
+	var conjunto: Array = CURSORES[cursor]
+	Input.set_custom_mouse_cursor(load(conjunto[0]), Input.CURSOR_ARROW, conjunto[1])
+	Input.set_custom_mouse_cursor(load(conjunto[2]), Input.CURSOR_POINTING_HAND, conjunto[3])
 
 
 ## Dica dos botões: diz o que o clique faz e ensina o atalho.
