@@ -2,6 +2,13 @@
 
 ## Em desenvolvimento — 04/10/2026
 
+- A seleção inicial recebe a moldura SVG da home: talha nos quatro cantos,
+  filetes dourados e linha azul. As nove fatias preservam os ornamentos ao
+  redimensionar o painel, com a capa estática (#77).
+- Sem idioma salvo, a entrada sugere a língua do sistema (português, inglês,
+  espanhol ou chinês), com inglês para línguas sem suporte. Uma escolha salva
+  tem prioridade; a sugestão continua aguardando confirmação (#77).
+
 - Na seleção inicial, passar o mouse ou focar um idioma pelo teclado traduz
   o título, a orientação e o aviso para esse idioma. A prévia só vira
   preferência salva quando o jogador confirma a escolha (#77).

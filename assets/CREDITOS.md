@@ -2,6 +2,13 @@
 
 Os registros de origem acompanham os modelos e suas fontes de produção.
 
+## Moldura da seleção de idioma
+
+`ui/moldura_idioma.svg` adapta os filetes e a talha de acanto da home do
+próprio Myths' Valley, definidos em `resources/views/components/moldura.blade.php`
+e `resources/views/layouts/site.blade.php` do projeto do site. Os cantos são
+preservados em nove fatias; não há dependência de fontes ou de recursos remotos.
+
 ## Áudio (gerado por IA)
 
 | Pasta | O que tem |

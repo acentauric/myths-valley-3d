@@ -39,13 +39,12 @@ func _ready() -> void:
 	var painel := PanelContainer.new()
 	painel.name = "OpcoesIdioma"
 	painel.custom_minimum_size = Vector2(600, 350)
-	var estilo := StyleBoxFlat.new()
-	estilo.bg_color = Color(0.035, 0.055, 0.045, 0.97)
-	estilo.border_color = Color("e8c46a")
-	estilo.set_border_width_all(2)
-	estilo.set_content_margin_all(28)
-	estilo.shadow_color = Color(0, 0, 0, 0.55)
-	estilo.shadow_size = 20
+	var estilo := StyleBoxTexture.new()
+	estilo.texture = preload("res://assets/ui/moldura_idioma.svg")
+	# Nove fatias preservam os ornamentos quando o painel muda de tamanho.
+	for lado in [SIDE_LEFT, SIDE_TOP, SIDE_RIGHT, SIDE_BOTTOM]:
+		estilo.set_texture_margin(lado, 72)
+		estilo.set_content_margin(lado, 40)
 	painel.add_theme_stylebox_override("panel", estilo)
 	centro.add_child(painel)
 	var coluna := VBoxContainer.new()

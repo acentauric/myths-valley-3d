@@ -34,6 +34,8 @@ explícito, e cada asset mantém origem e créditos.
 ## Registros
 
 A entrada leve pergunta o idioma antes de carregar o cenário do menu (#77).
+Sua moldura reutiliza a talha SVG da home; na primeira abertura o idioma do
+sistema sugere a opção, sem substituir uma escolha salva nem pular a confirmação.
 Chinês tem seleção e etapas do carregamento traduzidas, com fallback inglês
 declarado. A tradução integral do vale permanece no escopo de #51 e #6.
 

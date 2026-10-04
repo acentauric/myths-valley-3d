@@ -16,6 +16,19 @@ func _conferir(ok: bool, rotulo: String) -> void:
 
 func _run() -> void:
 	var idioma = load("res://scripts/prototipo_3d/idioma_menu.gd")
+	# O runner usa um perfil isolado: também cobre arquivo sem a chave de idioma.
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(idioma.ARQUIVO))
+	_conferir(idioma.indice() == idioma.indice_do_sistema(OS.get_locale_language()), "primeira abertura usa idioma do SO")
+	_conferir(not FileAccess.file_exists(idioma.ARQUIVO), "detecção não cria preferência")
+	var preferencias := ConfigFile.new()
+	preferencias.set_value("menu", "volume", 0.5)
+	preferencias.save(idioma.ARQUIVO)
+	for caso in [["pt_BR", 0], ["pt-PT", 0], ["en_US", 1], ["es_MX", 2], ["zh_Hans_CN", 3], ["zh-TW", 3], ["fr_FR", 1], ["", 1]]:
+		_conferir(idioma.indice_preferido(caso[0]) == caso[1], "sugestão do sistema %s" % caso[0])
+	preferencias.load(idioma.ARQUIVO)
+	_conferir(not preferencias.has_section_key("menu", "idioma"), "sugestão não salva escolha")
+	idioma.definir(2)
+	_conferir(idioma.indice_preferido("zh_CN") == 2, "escolha salva vence o sistema")
 	var dados: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://data/selecao_idioma.json"))
 	for i in 4:
 		idioma.definir(i)
@@ -46,6 +59,10 @@ func _run() -> void:
 	var tela: Control = inicio.get_node("CanvasLayer/SelecaoIdioma")
 	_conferir(tela.get_node("Capa").texture.resource_path.ends_with("capa_dia.webp"), "mesma capa da abertura")
 	var painel: Control = tela.get_node("CentroIdioma/OpcoesIdioma")
+	var moldura := painel.get_theme_stylebox("panel") as StyleBoxTexture
+	_conferir(moldura != null and moldura.texture.resource_path.ends_with("moldura_idioma.svg"), "moldura SVG da home")
+	if moldura != null:
+		_conferir(moldura.get_texture_margin(SIDE_LEFT) == 72 and moldura.get_texture_margin(SIDE_BOTTOM) == 72, "cantos preservados nas nove fatias")
 	var centro_tela := tela.get_global_rect().get_center()
 	var centro_painel := painel.get_global_rect().get_center()
 	_conferir(absf(centro_painel.x - centro_tela.x) < 1.0 and absf(centro_painel.y - centro_tela.y - 70.0) < 1.0, "painel centralizado e abaixo da marca")
@@ -70,6 +87,7 @@ func _run() -> void:
 		_conferir(inicio._aviso.text == dados["aviso" + idioma.SUFIXOS[i]], "aviso no hover %d" % i)
 		_conferir(idioma.indice() == salvo and TranslationServer.get_locale() == locale_salvo and not inicio.carregando, "prévia não salva nem carrega %d" % i)
 	for i in 4:
+		get_root().gui_get_focus_owner().release_focus()
 		botoes[i].grab_focus()
 		_conferir(inicio._descricao.text == dados["descricao" + idioma.SUFIXOS[i]], "prévia pelo teclado %d" % i)
 		_conferir(idioma.indice() == salvo, "foco não salva idioma %d" % i)

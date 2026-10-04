@@ -521,10 +521,20 @@ static var _traducao: Translation
 
 
 static func indice() -> int:
+	return indice_preferido(OS.get_locale_language())
+
+
+## A escolha salva vence; sem ela, o sistema apenas sugere o idioma.
+static func indice_preferido(lingua_sistema: String) -> int:
 	var preferencias := ConfigFile.new()
-	if preferencias.load(ARQUIVO) != OK:
-		return 0
-	return clampi(int(preferencias.get_value("menu", "idioma", 0)), 0, LOCALES.size() - 1)
+	if preferencias.load(ARQUIVO) == OK and preferencias.has_section_key("menu", "idioma"):
+		return clampi(int(preferencias.get_value("menu", "idioma")), 0, LOCALES.size() - 1)
+	return indice_do_sistema(lingua_sistema)
+
+
+static func indice_do_sistema(lingua: String) -> int:
+	var codigo := lingua.to_lower().replace("-", "_").get_slice("_", 0)
+	return {"pt": 0, "en": 1, "es": 2, "zh": 3}.get(codigo, 1)
 
 
 static func ingles() -> bool:
