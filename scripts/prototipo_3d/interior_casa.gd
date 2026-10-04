@@ -211,7 +211,8 @@ func _moveis_do_pescador() -> void:
 	_bau = Vector3(-largura * 0.5 + BAU.x * 0.5 + 0.1, 0.0, -comprimento + 1.45)
 	_movel("bau", _bau, PI * 0.5, Vector3(0.75, 0.45, 0.42), false)
 	_movel("rede_de_pesca", Vector3(largura * 0.5 - 0.2, 1.0, -comprimento * 0.55), -PI * 0.5, Vector3(1.2, 1.4, 0.4), false)
-	_movel("remos", Vector3(largura * 0.5 - 0.3, 0.0, -0.75), -PI * 0.5, Vector3(0.5, 2.0, 0.4), false)
+	# Os remos vieram cruzados em X: na parede, ao comprido dela.
+	_movel("remos", Vector3(largura * 0.5 - 0.3, 0.0, -0.8), -PI * 0.5, Vector3(1.2, 1.7, 0.45), false)
 	var agua := Vector3(-largura * 0.5 + 0.35, 0.0, -0.5)
 	_colisao_da_peca(_peca("pote", agua, 0.0, 0.6), "Pote")
 	var barril := Vector3(-largura * 0.5 + 0.45, 0.0, -comprimento * 0.5)

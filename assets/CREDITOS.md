@@ -69,6 +69,15 @@ publicar.
 | `assets/prototipo_3d/moveis/{cama,mesa,banco_tosco,bau,barril,cantareira,fogao_barro,jirau,oratorio,rede}_tripo.glb` | a mobília da casa herdada, Tripo Studio (texto → 3D + Malha Smart) | `moveis/ORIGEM.md` e `tools/tripo/lote_2026-10-03.json` |
 | `assets/prototipo_3d/aderecos/{mastro_pano,fitas_gameleira}_tripo.glb` | os mastros com pano branco do terreiro e as fitas da gameleira, Tripo Studio | `aderecos/ORIGEM.md` e `tools/tripo/lote_2026-10-03.json` |
 
+### Lote do saveiro, das casas e do cemitério (03/10/2026)
+
+| Arquivos | O que são | Registro |
+| --- | --- | --- |
+| `assets/prototipo_3d/aderecos/tronco_caido_tripo.glb` | o tronco caído do cemitério, Tripo Studio (texto → 3D + Malha Smart) | `aderecos/ORIGEM.md` e `tools/tripo/lote_2026-10-03b.json` |
+| `assets/prototipo_3d/construcoes/capelinha_tripo.glb` | a capelinha pobre do cemitério, Tripo Studio | `construcoes/ORIGEM.md` e `tools/tripo/lote_2026-10-03b.json` |
+| `assets/prototipo_3d/moveis/{rede_de_pesca,remos,ervas_secando,pilao,gamela}_tripo.glb` | o que diz quem mora na casa do Pedro e na da Zefa, Tripo Studio | `moveis/ORIGEM.md` e `tools/tripo/lote_2026-10-03b.json` |
+| `assets/prototipo_3d/personagens/quirino_tripo.glb` | o mestre Quirino, Tripo Studio (texto → 3D, Malha Smart, Auto Rig e animações prontas) | `personagens/ORIGEM.md` e `tools/tripo/lote_2026-10-03b.json` |
+
 ### Capas dos cordéis (03/10/2026)
 
 | Arquivos | O que são | Registro |

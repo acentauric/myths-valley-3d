@@ -26,6 +26,23 @@ atualize esse arquivo e este documento juntos.
 
 ## Em desenvolvimento — 03/10/2026
 
+- **O tronco caído, a capelinha pobre, as peças das casas e o mestre Quirino chegam do
+  Tripo.** "Crie um asset de tronco caído que pode coletar a madeira mediante uso do
+  machado para cortar. Substitua as madeiras empilhadas na missão do cemitério por esse
+  tronco caído", e "a capela próximo ao cemitério deve ser mais rudimentar, com um
+  aspecto pobre". Lote de oito peças no Tripo Studio, 780 créditos: a geração (55), a
+  retopologia Malha Smart (40) e, no mestre, o Auto Rig (20) com as sete animações dos
+  moradores. Está registrado nos ORIGEM.md de cada pasta, no CREDITOS.md e em
+  `tools/tripo/lote_2026-10-03b.json`. No cemitério do Damião, a lenha empilhada deu
+  lugar a três troncos caídos (`tronco_caido`), cada um num giro (`"giro"`, novo em
+  `data/recursos_3d.json`): saem no machado e rendem a mesma lenha, e o Damião fala dos
+  troncos que a trovoada derrubou. A capelinha do cemitério é de taipa, com a cal
+  rachada, a telha velha e a cruz tosca, no lugar da capela colonial reduzida. A casa do
+  Pedro ganha a rede de pesca e os remos, e a da Dona Zefa, as ervas secando, o pilão e
+  a gamela; o lugar de cada uma já estava pronto, e elas entraram sozinhas. O mestre
+  Quirino deixa a caixa cinza: no píer, é o modelo dele, com os clipes de andar,
+  cumprimentar e olhar em volta. O portão `saveiro` ganhou a pergunta do modelo.
+
 - **O saveiro do mestre Quirino encosta no píer uma vez por estação, e a piaçava se tira
   no facão.** "Introduza uma missão de venda de piaçava 1x por mês para um NPC novo que
   chega ao porto." O mês do vale é a estação do calendário, de 28 dias: no dia 14, das 7h

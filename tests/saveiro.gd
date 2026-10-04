@@ -26,9 +26,10 @@ extends SceneTree
 ##   6. A PARTIDA SALVA LEMBRA a visita, o que ele levou e a fibra tirada.
 ##   7. A PLACA DE NOME VAI COM ELE: no dia, olhando para ele, o nome aparece;
 ##      fora do dia, no mesmo lugar e olhando para o mesmo ponto, não.
-##   8. SEM MODELO, CAIXA CINZA: no estilo Tripo, enquanto o catálogo não tem o
-##      mestre, o corpo dele é a caixa provisória, e não o boneco do procedural —
-##      nem no retrato do diário, que fica sem foto.
+##   8. SEM MODELO, CAIXA CINZA; COM MODELO, O DELE: no estilo Tripo, enquanto o
+##      catálogo não tem o mestre, o corpo dele é a caixa provisória, e não o
+##      boneco do procedural — nem no retrato do diário, que fica sem foto; com o
+##      modelo no catálogo, é o modelo dele, com os clipes no animador autoral.
 
 var falhas := 0
 var relogio
@@ -83,8 +84,13 @@ func _run() -> void:
 		_fechar()
 		return
 
-	# --- 8. SEM MODELO, CAIXA CINZA ------------------------------------------------
-	if root.get_node("/root/Estilo").tripo() and not load("res://scripts/prototipo_3d/catalogo_assets.gd").tem_tripo("quirino"):
+	# --- 8. SEM MODELO, CAIXA CINZA; COM MODELO, O DELE -----------------------------
+	var estilo_tripo: bool = root.get_node("/root/Estilo").tripo()
+	var tem_modelo: bool = load("res://scripts/prototipo_3d/catalogo_assets.gd").tem_tripo("quirino")
+	if estilo_tripo and tem_modelo:
+		var o_modelo = quirino.get("modelo")
+		_conferir(o_modelo != null and str(o_modelo.name) == "QuirinoTripo" and quirino.get("animador") != null and quirino.animador.has_method("is_using_authored_clips"), "no estilo Tripo, com o modelo no catálogo, o mestre não usa o modelo dele com os clipes (é %s)" % (str(o_modelo.name) if o_modelo != null else "nada"))
+	if estilo_tripo and not tem_modelo:
 		var corpo = quirino.get("modelo")
 		_conferir(corpo != null and str(corpo.name) == "CorpoProvisorio" and quirino.get("animador") == null, "no estilo Tripo, sem modelo no catálogo, o mestre não é a caixa cinza provisória (é %s)" % (str(corpo.name) if corpo != null else "nada"))
 		# Nem o retrato do diário sai do boneco do procedural: sem modelo, sem foto.
@@ -303,7 +309,7 @@ func _ate(condicao: Callable, segundos: float) -> bool:
 func _fechar() -> void:
 	print("")
 	if falhas == 0:
-		print("SAVEIRO_OK: o mestre Quirino e o saveiro só estão no píer no dia 14, da manhã à tarde; a piaçava se tira no facão sem derrubar a palmeira, uma vez por estação; o Seu Benedito ensina, e a entrega espera o dia do mestre; perto dele o painel tem a aba do saveiro, que paga mais que a venda até o tanto que leva; a encomenda volta toda estação, dá o agrado e sai do caderno se o saveiro parte sem ela; o save lembra; a placa de nome some com ele; e, sem modelo, ele é a caixa cinza do estilo Tripo")
+		print("SAVEIRO_OK: o mestre Quirino e o saveiro só estão no píer no dia 14, da manhã à tarde; a piaçava se tira no facão sem derrubar a palmeira, uma vez por estação; o Seu Benedito ensina, e a entrega espera o dia do mestre; perto dele o painel tem a aba do saveiro, que paga mais que a venda até o tanto que leva; a encomenda volta toda estação, dá o agrado e sai do caderno se o saveiro parte sem ela; o save lembra; a placa de nome some com ele; e no estilo Tripo ele é o modelo dele, com os clipes, ou, sem modelo, a caixa cinza")
 	else:
 		print("saveiro: %d falha(s)" % falhas)
 	quit(1 if falhas > 0 else 0)

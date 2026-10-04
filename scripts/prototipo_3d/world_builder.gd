@@ -1231,12 +1231,17 @@ func _capelinha_do_cemiterio(cemetery: Vector3) -> void:
 	var yaw := atan2(frente.x, frente.z)
 	var porta := Vector3.INF
 	if estilo_tripo():
-		var capela := CatalogoAssets.instanciar("capela", self, centro, CAPELINHA_TAMANHO, yaw)
+		# A CAPELINHA POBRE do cemitério, de taipa e cal rachada ("deve ser mais
+		# rudimentar, com um aspecto pobre"), ou, sem ela no catálogo, a capela
+		# colonial reduzida que estava ali.
+		var chave := "capelinha" if CatalogoAssets.tem_tripo("capelinha") else "capela"
+		var tamanho := 1.0 if chave == "capelinha" else CAPELINHA_TAMANHO
+		var capela := CatalogoAssets.instanciar(chave, self, centro, tamanho, yaw)
 		if capela != null:
 			var limites: AABB = capela.get_meta("limites")
 			var assentada := _support_house(centro, Vector2(limites.size.x, limites.size.z), yaw)
 			capela.position.y += assentada.y - centro.y
-			var corpo := CatalogoAssets.colisao("capela", capela, self, assentada, CAPELINHA_TAMANHO, yaw)
+			var corpo := CatalogoAssets.colisao(chave, capela, self, assentada, tamanho, yaw)
 			construcoes["Capelinha"] = {"modelo": capela, "colisao": corpo}
 			centro = assentada
 			porta = assentada + frente * (limites.size.z * 0.5)

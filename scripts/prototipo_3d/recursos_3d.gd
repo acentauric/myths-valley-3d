@@ -94,8 +94,10 @@ func _erguer() -> void:
 		pos = _world.ground_position(pos)
 
 		var id := str(ficha.get("id", ""))
+		# "giro" (graus) vira a peça no chão: três troncos caídos não caem paralelos.
+		var giro := deg_to_rad(float(ficha.get("giro", 0.0)))
 		var no := CatalogoAssets.instanciar(str(ficha.get("peca", "")), _world, pos,
-			float(ficha.get("tamanho", 1.0)))
+			float(ficha.get("tamanho", 1.0)), giro)
 		if no == null:
 			continue
 
@@ -111,7 +113,7 @@ func _erguer() -> void:
 		# e depois — então é o que se faz.
 		var antes := _world.get_child_count()
 		CatalogoAssets.colisao(str(ficha.get("peca", "")), no, _world, pos,
-			float(ficha.get("tamanho", 1.0)))
+			float(ficha.get("tamanho", 1.0)), giro)
 		var corpos: Array[Node] = []
 		for i in range(antes, _world.get_child_count()):
 			corpos.append(_world.get_child(i))
@@ -462,7 +464,7 @@ func mais_perto_que_rende(item: String, de: Vector3) -> Vector3:
 ## não o material: dois alvos de peças diferentes podem render a mesma coisa.
 ##
 ## OU PELO GRUPO, quando o pedido junta peças diferentes: o mato do cemitério é
-## embaúba nova e galhada caída (`"grupo": "mato_do_cemiterio"` no JSON), e o
+## embaúba nova e tronco caído (`"grupo": "mato_do_cemiterio"` no JSON), e o
 ## Damião pede o mato, não a peça. O grupo é só mais um nome que o alvo atende.
 func derrubados(peca: String) -> int:
 	return int(_postos.get(peca, 0)) - _de_pe(peca)

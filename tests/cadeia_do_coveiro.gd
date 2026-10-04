@@ -36,7 +36,7 @@ extends SceneTree
 ##      cada pé cortado — defeito calado, que só apareceria na tela da mochila.
 ##
 ##   5. QUE HAJA TRABALHO DE LIMPAR: oito pés de capim, e o mato — embaúba nova
-##      e galhada — contado PELO GRUPO, porque o Damião pede o mato e não a
+##      e tronco caído — contado PELO GRUPO, porque o Damião pede o mato e não a
 ##      peça. Sem o grupo, a meta contava zero e o passo nunca fechava.
 ##
 ##   6. QUE A CAPELINHA DÊ AS COSTAS PARA O MAR, e que se reze DIANTE DA PORTA
@@ -57,6 +57,11 @@ extends SceneTree
 ##      cemitério dá cobrem o conserto e o cercado, pelas receitas da oficina.
 ##      O vale tem pouca lenha fora dali, e missão que pede o que não existe é
 ##      missão que trava sem aviso.
+##
+##  10. QUE O MATO SEJA O TRONCO CAÍDO E A CAPELINHA SEJA POBRE: no lugar da lenha
+##      empilhada, os três troncos caídos, que saem no machado e rendem lenha
+##      (no estilo Tripo, o modelo do catálogo); e a capelinha de taipa do
+##      catálogo no lugar da capela colonial reduzida.
 ##
 ## A espera é em SEGUNDO REAL, e não em quadro, pela razão escrita no
 ## `cadeia_das_missoes.gd`: o cadeado da fala do jogo é de relógio de parede, e
@@ -130,11 +135,29 @@ func _run() -> void:
 	# --- 2. O CAPIM ESTÁ NO CEMITÉRIO, E SÓ SAI DE FOICE ---------------------
 	var pes: int = recursos.derrubados("capim") + recursos._de_pe("capim")
 	_conferir(pes >= CAPINS, "o cemitério tem %d pé(s) de capim, e a missão pede oito" % pes)
-	# E O MATO, PELO GRUPO: embaúba e galhada são peças diferentes, e o pedido é um.
+	# E O MATO, PELO GRUPO: embaúba e tronco caído são peças diferentes, e o pedido é um.
 	var mato: int = recursos.derrubados(GRUPO_DO_MATO) + recursos._de_pe(GRUPO_DO_MATO)
 	_conferir(mato >= MATO, "o grupo '%s' tem %d alvo(s), e o passo do mato pede sete" % [GRUPO_DO_MATO, mato])
 	_conferir(recursos.mais_perto_da_peca(GRUPO_DO_MATO, jogador.global_position) != Lugares.NENHUM,
 		"o marcador não acha o mato pelo grupo: o passo apontaria para o nada")
+	# O TRONCO CAÍDO NO LUGAR DA LENHA EMPILHADA ("Substitua as madeiras empilhadas
+	# na missão do cemitério por esse tronco caído"): o mato que não é embaúba é
+	# tronco caído, que sai no machado e rende lenha — e, no estilo Tripo, é o
+	# modelo dele, e não a pilha.
+	var tripo: bool = root.get_node("/root/Estilo").tripo()
+	var troncos := 0
+	for id in recursos._alvos:
+		var ficha: Dictionary = recursos._alvos[id]["ficha"]
+		if str(ficha.get("grupo", "")) != GRUPO_DO_MATO or str(ficha.get("peca", "")) == "embauba":
+			continue
+		troncos += 1
+		_conferir(str(ficha.get("peca", "")) == "tronco_caido" and str(ficha.get("ferramenta", "")) == "machado" and str(ficha.get("rende", "")) == "lenha",
+			"o mato do cemitério ainda tem '%s' em %s, e não o tronco caído no machado" % [str(ficha.get("peca", "")), str(id)])
+		var no = recursos._alvos[id]["no"]
+		if tripo:
+			_conferir(no != null and str(no.scene_file_path).ends_with("tronco_caido_tripo.glb"),
+				"no estilo Tripo, %s não é o tronco caído do catálogo (%s)" % [str(id), str(no.scene_file_path) if no != null else "nada"])
+	_conferir(troncos == 3, "o mato do cemitério tem %d tronco(s) caído(s), e são três" % troncos)
 
 	var perto_do_capim: Vector3 = recursos.mais_perto_da_peca("capim", jogador.global_position)
 	_conferir(perto_do_capim != Lugares.NENHUM, "não achei pé de capim nenhum no vale")
@@ -360,6 +383,13 @@ func _conferir_a_capelinha(jogo, mundo, jogador, recursos) -> void:
 					mar = rumo
 				break
 	_conferir(mar != Vector3.ZERO, "não achei o mar a partir do cemitério")
+	# A CAPELINHA POBRE ("deve ser mais rudimentar, com um aspecto pobre"): no
+	# estilo Tripo, é a de taipa do catálogo, e não a capela colonial reduzida.
+	if root.get_node("/root/Estilo").tripo():
+		var construida: Dictionary = mundo.construcoes.get("Capelinha", {})
+		var modelo = construida.get("modelo", null)
+		_conferir(modelo != null and str(modelo.scene_file_path).ends_with("capelinha_tripo.glb"),
+			"a capelinha do cemitério não é a capelinha pobre do catálogo (%s)" % (str(modelo.scene_file_path) if modelo != null else "nada"))
 	var frente: Vector3 = ancoras["CapelinhaFrente"]
 	_conferir(frente.dot(mar) < -0.7,
 		"a capelinha não dá as costas para o mar: a porta olha %s e o mar está em %s" % [str(frente), str(mar.snapped(Vector3.ONE * 0.01))])
@@ -558,7 +588,7 @@ func _derrubar(recursos, energia, jogador, peca: String, quantos: int, id: Strin
 func _fechar() -> void:
 	print("")
 	if falhas == 0:
-		print("COVEIRO_OK: o Damião tem fila própria, ela abre ao chegar perto dele, o capim só cai de foice e a foice vem antes do corte, o mato conta pelo grupo, a capelinha dá as costas para o mar e se reza diante dela, as lajes endireitam com o conserto, o cercado é obra com entrada onde a rua chega e a malha passa por ela, a conta do material fecha, os seis passos fecham, o mato cortado não vira item de mochila, e recarregar devolve a fila no passo certo com o capim cortado e o outeiro como estava")
+		print("COVEIRO_OK: o Damião tem fila própria, ela abre ao chegar perto dele, o capim só cai de foice e a foice vem antes do corte, o mato conta pelo grupo e é tronco caído, a capelinha é a pobre, dá as costas para o mar e se reza diante dela, as lajes endireitam com o conserto, o cercado é obra com entrada onde a rua chega e a malha passa por ela, a conta do material fecha, os seis passos fecham, o mato cortado não vira item de mochila, e recarregar devolve a fila no passo certo com o capim cortado e o outeiro como estava")
 	else:
 		print("coveiro: %d falha(s)" % falhas)
 	quit(1 if falhas > 0 else 0)

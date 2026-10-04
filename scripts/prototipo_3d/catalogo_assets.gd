@@ -42,6 +42,8 @@ const PECAS := {
 	"capim": {"tripo": "arvores/capim_tripo.glb", "altura": 0.9},
 	# Construções
 	"capela": {"tripo": "construcoes/capela_tripo.glb", "largura": 9.0, "caixa": true},
+	# A capelinha pobre do cemitério, de taipa e cal rachada (lote de 03/10/2026).
+	"capelinha": {"tripo": "construcoes/capelinha_tripo.glb", "largura": 4.6, "caixa": true},
 	"igreja": {"tripo": "construcoes/igreja_tripo.glb", "largura": 10.0, "caixa": true},
 	"casa_taipa": {"tripo": "construcoes/casa_taipa_tripo.glb", "largura": 6.5, "caixa": true},
 	"casa_carro_quebrado": {"tripo": "casas/casa_carro_quebrado_tripo.glb", "largura": 5.2, "caixa": true},
@@ -58,6 +60,8 @@ const PECAS := {
 	"carroca": {"tripo": "aderecos/carroca_tripo.glb", "largura": 3.2, "caixa": true},
 	"varal": {"tripo": "aderecos/varal_tripo.glb", "largura": 3.8},
 	"lenha": {"tripo": "aderecos/lenha_tripo.glb", "largura": 1.5, "caixa": true},
+	# O tronco que a trovoada derrubou no cemitério: vem de comprido no Z.
+	"tronco_caido": {"tripo": "aderecos/tronco_caido_tripo.glb", "largura": 2.6, "caixa": true},
 	"pote": {"tripo": "aderecos/pote_tripo.glb", "altura": 0.95},
 	"banco": {"tripo": "aderecos/banco_tripo.glb", "altura": 1.0, "caixa": true},
 	"lampiao_poste": {"tripo": "aderecos/lampiao_poste_tripo.glb", "altura": 3.4, "tronco": 0.15},
@@ -79,6 +83,7 @@ const PECAS := {
 	"filo": {"tripo": "personagens/filo_tripo.glb", "altura": 1.6},
 	"damiao": {"tripo": "personagens/damiao_tripo.glb", "altura": 1.74},
 	"candinha": {"tripo": "personagens/candinha_tripo.glb", "altura": 1.62},
+	"quirino": {"tripo": "personagens/quirino_tripo.glb", "altura": 1.7},
 	"viajante": {"tripo": "personagens/viajante_tripo.glb", "altura": 1.78},
 	# Itens de mão (os mesmos do 2D)
 	"machado": {"tripo": "itens/machado_tripo.glb", "altura": 0.85},
@@ -118,6 +123,14 @@ const PECAS := {
 	"jirau": {"tripo": "moveis/jirau_tripo.glb", "largura": 1.2},
 	"oratorio": {"tripo": "moveis/oratorio_tripo.glb", "altura": 0.6},
 	"rede": {"tripo": "moveis/rede_tripo.glb", "largura": 2.4},
+	# O que diz quem mora (lote de 03/10/2026): a rede de pesca e os remos do
+	# Pedro, e as ervas, o pilão e a gamela da Dona Zefa. Rede, remos e ervas vêm
+	# chatos no Z, para ir na parede.
+	"rede_de_pesca": {"tripo": "moveis/rede_de_pesca_tripo.glb", "altura": 1.4},
+	"remos": {"tripo": "moveis/remos_tripo.glb", "altura": 1.8},
+	"ervas_secando": {"tripo": "moveis/ervas_secando_tripo.glb", "largura": 1.3},
+	"pilao": {"tripo": "moveis/pilao_tripo.glb", "altura": 1.0},
+	"gamela": {"tripo": "moveis/gamela_tripo.glb", "largura": 0.7},
 	# O que faltava ao terreiro e à gameleira (#52): os dois mastros com pano
 	# branco e as fitas no tronco (`world_builder._build_marcos_de_fe`).
 	"mastro_pano": {"tripo": "aderecos/mastro_pano_tripo.glb", "altura": 5.0, "tronco": 0.05},

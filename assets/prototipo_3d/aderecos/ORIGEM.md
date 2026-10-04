@@ -87,3 +87,26 @@ vigentes antes de publicar.
 | `fitas_gameleira_tripo.glb` | A wide white cloth sash wrapped in a ring and tied in a large bow, as if around a thick tree trunk but with the trunk removed, hollow cylindrical ring of fabric with colorful ribbons hanging down. | `3759ce96-e243-4d2a-88a1-0e2383a4a723` | 2.831 | 1K | 2.7 |
 
 <!-- lote-2026-10-03:fim -->
+
+<!-- lote-2026-10-03b:inicio -->
+
+## O tronco caído do cemitério (03/10/2026)
+
+O tronco que a trovoada derrubou entre as covas do cemitério do Damião, no lugar
+da lenha empilhada: alvo do machado do `data/recursos_3d.json` (grupo
+`mato_do_cemiterio`), que rende lenha.
+
+Geradas por texto no Tripo Studio em 03/10/2026 (Modelo HD H3.1, textura 8K
+desligada, 55 créditos) e passadas pela Retopologia (Quad, Malha Smart, 40
+créditos) com o alvo de faces de cada peça; exportadas em GLB. Geração,
+retopologia e exportação pela ponte do Playwright MCP com a extensão do Chrome,
+com `tools/tripo/lote_studio.js`; os originais ficam em
+`.assets-raw/tripo/gerados/` (fora do Git). Tarefas, projetos, alvos e prompts
+completos em `tools/tripo/lote_2026-10-03b.json`. Uso comercial: plano pago no
+momento da geração (ver `assets/CREDITOS.md`).
+
+| Arquivo | O que é (prompt) | Tarefa Tripo | Triângulos | Textura | MB |
+| --- | --- | --- | ---: | --- | ---: |
+| `tronco_caido_tripo.glb` | A single fallen tree trunk lying horizontally on the ground, thick weathered log about four meters long with rough cracked bark, a few short broken branch stubs, patches of moss and dry lichen, one end jagged where it snapped. | `a9f373e0-ee82-4659-a828-a6066ae7ad87` | 4.118 | 1K | 2,5 |
+
+<!-- lote-2026-10-03b:fim -->
