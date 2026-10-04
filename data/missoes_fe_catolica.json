@@ -1,0 +1,37 @@
+{
+  "observacao": "A MISSÃO PRÓPRIA DA CATÓLICA (#52), do jogo 2D (arraial.json, fe_romaria): dada pelo próprio marco no dia em que se entra na fé, na voz do mundo, sem nome — ninguém mora nos marcos. Congela quando o jogador muda de fé e volta a correr quando ele voltar. No vale, os quatro marcos da igreja são o cruzeiro diante dela, o altar lá dentro, a capela velha da rua do mirante (a 'capelinha de estrada' do 2D) e o cemitério.",
+  "dono": "fe_catolica",
+  "nome": "A romaria",
+  "nome_en": "The pilgrimage",
+  "nome_es": "La romería",
+  "principal": false,
+  "passos": [
+    {
+      "id": "fe_romaria",
+      "titulo": "A romaria",
+      "titulo_en": "The pilgrimage",
+      "titulo_es": "La romería",
+      "resumo": "Passe nos quatro marcos da igreja",
+      "resumo_en": "Pass by the four landmarks of the church",
+      "resumo_es": "Pasa por los cuatro hitos de la iglesia",
+      "lugar": "cruzeiro",
+      "raio": 6.0,
+      "audio": "",
+      "texto": "Agora que é da igreja, tem uma coisa que todo católico daqui faz uma vez: anda os quatro. O cruzeiro diante da igreja, o altar lá dentro, a capela velha da rua do mirante e o cemitério. Não é reza — é passar, tirar o chapéu e seguir. Quem andou os quatro, o arraial passa a contar como gente daqui.",
+      "texto_en": "Now that you belong to the church, there is something every Catholic here does once: walk the four. The wayside cross before the church, the altar inside it, the old chapel on the lookout road and the cemetery. It is not prayer — it is passing by, taking off your hat and moving on. Whoever has walked the four, the village starts counting as one of its own.",
+      "texto_es": "Ahora que eres de la iglesia, hay algo que todo católico de aquí hace una vez: recorre los cuatro. El crucero frente a la iglesia, el altar adentro, la capilla vieja de la calle del mirador y el cementerio. No es rezo: es pasar, quitarse el sombrero y seguir. A quien recorrió los cuatro, el caserío lo empieza a contar como gente de aquí.",
+      "recompensa": { "beiju": 2 },
+      "xp_de_fe": true,
+      "meta": {
+        "tipo": "visitar",
+        "lugares": ["cruzeiro", "capela", "capela_estrada", "cemiterio"],
+        "raio": 6.0
+      }
+    }
+  ],
+  "arremate": {
+    "texto": "Andou os quatro. Ninguém viu você andar, e todo mundo ficou sabendo. É assim que a católica funciona aqui: devagar, e para todo mundo junto.",
+    "texto_en": "You walked the four. No one saw you walk, and everyone came to know. That is how the Catholic faith works here: slowly, and for everyone together.",
+    "texto_es": "Recorriste los cuatro. Nadie te vio andar, y todo el mundo se enteró. Así funciona la católica aquí: despacio, y para todos juntos."
+  }
+}

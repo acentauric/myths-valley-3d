@@ -1,7 +1,9 @@
 # Credenciais locais
 
 O jogo e os testes não precisam de chaves. Ferramentas de produção de áudio
-podem usar ELEVENLABS_API_KEY por variável de ambiente ou `.env` local na raiz.
+podem usar ELEVENLABS_API_KEY por variável de ambiente ou `.env` local na raiz;
+a das capas dos cordéis (`tools/openai/gerar-capas-cordeis.ps1`) usa
+OPENAI_API_KEY do mesmo jeito, e mostra o custo estimado antes (`-Estimar`).
 `tools/comum/chaves.ps1` lê a variável de ambiente antes do arquivo local.
 O `.env` nunca é versionado, lido pelo agente ou copiado para scripts.
 

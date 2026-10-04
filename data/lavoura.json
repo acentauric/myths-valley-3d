@@ -1,0 +1,30 @@
+{
+	"_sobre": "O que se lê na lavoura da casa (#8): o que a tecla diz no leito e os recados do gesto que não cabe. Os recados são os do jogo 2D (Mundo._usar_no_rocado e Mundo._avisar_cansaco), verbatim; O %s de 'plantar' é a semente, o de 'colher' é a planta; 'colheita' leva a qualidade, a quantidade e o nome.",
+	"acoes": {
+		"arar": {"texto": "Arar", "texto_en": "Till", "texto_es": "Arar la tierra"},
+		"regar": {"texto": "Regar", "texto_en": "Water", "texto_es": "Regar el surco"},
+		"plantar": {"texto": "Plantar %s", "texto_en": "Plant %s", "texto_es": "Sembrar %s"},
+		"colher": {"texto": "Colher %s", "texto_en": "Harvest %s", "texto_es": "Cosechar %s"},
+		"olhar": {"texto": "Ver o leito", "texto_en": "Look at the bed", "texto_es": "Mirar el surco"}
+	},
+	"recados": {
+		"ja_arado": {"texto": "Esse chão já está arado.", "texto_en": "This ground is already tilled.", "texto_es": "Esta tierra ya está arada."},
+		"molhar_chao_duro": {"texto": "Não adianta molhar chão duro. A enxada vem antes.", "texto_en": "No use watering hard ground. The hoe comes first.", "texto_es": "No sirve mojar la tierra dura. Primero va la azada."},
+		"ja_molhado": {"texto": "Esse leito já está molhado.", "texto_en": "This bed is already wet.", "texto_es": "Este surco ya está mojado."},
+		"nao_serve": {"texto": "%s não serve na terra. Enxada para arar, balde para molhar.", "texto_en": "%s is no use on the soil. Hoe to till, bucket to wet.", "texto_es": "%s no sirve en la tierra. Azada para arar, balde para mojar."},
+		"semente_chao_duro": {"texto": "Semente não pega em chão duro. Passe a enxada primeiro.", "texto_en": "Seed won't take in hard ground. Use the hoe first.", "texto_es": "La semilla no prende en tierra dura. Pasa la azada primero."},
+		"ja_plantado": {"texto": "Já tem coisa plantada nesse leito.", "texto_en": "Something is already planted in this bed.", "texto_es": "Ya hay algo sembrado en este surco."},
+		"chao_bruto": {"texto": "Chão bruto. A enxada abre o leito.", "texto_en": "Raw ground. The hoe opens the bed.", "texto_es": "Tierra bruta. La azada abre el surco."},
+		"leito_vazio": {"texto": "Leito aberto e vazio. Falta a semente.", "texto_en": "Open, empty bed. It needs a seed.", "texto_es": "Surco abierto y vacío. Falta la semilla."},
+		"inverno": {"texto": "No inverno não amadurece. Espera a estação virar.", "texto_en": "Nothing ripens in winter. Wait for the season to turn.", "texto_es": "En invierno no madura. Espera a que cambie la estación."},
+		"inverno_regando": {"texto": "No inverno a planta não anda. Ela espera a estação virar.", "texto_en": "In winter the plant doesn't grow. It waits for the season to turn.", "texto_es": "En invierno la planta no crece. Espera a que cambie la estación."},
+		"nao_esta_no_ponto": {"texto": "Ainda não está no ponto. Regue e espere.", "texto_en": "Not ripe yet. Water it and wait.", "texto_es": "Todavía no está a punto. Riega y espera."},
+		"cansaco": {"texto": "O braço não sobe mais. Por hoje chega.", "texto_en": "Your arm won't lift anymore. That's enough for today.", "texto_es": "El brazo ya no sube. Por hoy basta."},
+		"colheita": {"texto": "Colheita %s: %d %s.", "texto_en": "Harvest (%s): %d %s.", "texto_es": "Cosecha %s: %d %s."}
+	},
+	"qualidades": [
+		{"texto": "miúda", "texto_en": "small", "texto_es": "menuda"},
+		{"texto": "boa", "texto_en": "good", "texto_es": "buena"},
+		{"texto": "de primeira", "texto_en": "first-rate", "texto_es": "de primera"}
+	]
+}

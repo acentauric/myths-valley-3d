@@ -114,15 +114,52 @@ func _run() -> void:
 		_conferir(recusas[0].to_lower().contains("machado"),
 			"a recusa não disse de que ferramenta precisa: '%s'" % recusas[0])
 
+	# --- 2b. NA MOCHILA NÃO BASTA: A FERRAMENTA DO ALVO TEM DE ESTAR NA MÃO --
+	#
+	# "Na missão de introdução da foice eu consegui fazer a animação usando o
+	# machado. Cada ferramenta tem seus pontos de interação e nenhuma deve
+	# invadir a interação da outra." O alvo conferia a mochila: com a ferramenta
+	# certa guardada e OUTRA na mão, o golpe saía com a outra no braço.
+	inv.adicionar("machado", 1)
+	inv.adicionar("foice", 1)
+	for i in inv.ESPACOS_MAO:
+		if str((inv.espacos[i] as Dictionary).get("id", "")) == "foice":
+			inv.selecionar(i)
+	_conferir(inv.na_mao() == "foice", "não consegui pôr a foice na mão para a pergunta da mão errada")
+	recusas.clear()
+	_conferir(not recursos.bater(), "com a foice na mão e o machado na mochila, o tronco apanhou")
+	_conferir(recusas.size() == 1 and recusas[0].to_lower().contains("mão"),
+		"a recusa da mão errada não diz para pôr a ferramenta na mão: %s" % str(recusas))
+	# E O CASO DA QUEIXA, com ferramenta SEM encaixe: o machado já pedia a mão
+	# antes; a foice e a picareta se contentavam com a mochila. Machado na mão,
+	# foice guardada: o capim não é do machado.
+	for i in inv.ESPACOS_MAO:
+		if str((inv.espacos[i] as Dictionary).get("id", "")) == "machado":
+			inv.selecionar(i)
+	_conferir(inv.na_mao() == "machado", "não consegui pôr o machado na mão para a pergunta do capim")
+	_conferir(not recursos._tem_ferramenta("foice"),
+		"com o machado na mão e a foice na mochila, o capim aceita o golpe: uma ferramenta invade a outra")
+	inv.selecionar(inv.MAO_LIVRE)
+	while inv.tem("foice"):
+		inv.consumir("foice", 1)
+	while inv.tem("machado"):
+		inv.consumir("machado", 1)
+
 	# --- 3 e 4. COM A FERRAMENTA SE BATE, E CAI NO NÚMERO CERTO --------------
 	# NA MÃO, e não na mochila: é o que o vale cobra agora, e é o que a missão
 	# faz por quem recebe a ferramenta (`CadeiaDeMissoes.entregar`).
 	inv.adicionar("machado", 1)
 	for i in inv.espacos.size():
 		if str((inv.espacos[i] as Dictionary).get("id", "")) == "machado":
-			_conferir(equipamento.equipar_do_espaco(i), "o machado não entrou no encaixe")
+			# O ENCAIXE DAS MÃOS É DAS LUVAS: "Armas são nos campos numerais."
+			# O machado não veste as Mãos, nem pedindo o encaixe; vai na barra.
+			_conferir(not equipamento.equipar_do_espaco(i) and not equipamento.equipar_do_espaco(i, "maos"),
+				"o machado entrou no encaixe das Mãos, que é das luvas")
+			inv.selecionar(i)
 			break
-	_conferir(equipamento.no_encaixe("maos") == "machado",
+	_conferir(not equipamento.e_equipamento("facao") and not equipamento.e_equipamento("machado_de_aco"),
+		"o facão ou o machado de aço ainda vestem um encaixe: arma vai nos números")
+	_conferir(inv.na_mao() == "machado",
 		"o machado não está na mão: os golpes abaixo mediriam a recusa, não o golpe")
 	energia.encher()
 	var golpes: int = int(recursos._alvos[alvo_id]["ficha"].get("golpes", 3))
@@ -168,15 +205,25 @@ func _run() -> void:
 			ferramenta_de_rende[str(ficha["rende"])] = qual
 		if str(ficha.get("peca", "")) != "":
 			ferramenta_de_peca[str(ficha["peca"])] = qual
+		# O GRUPO TAMBÉM É NOME DE PEDIDO: o mato do cemitério é embaúba e
+		# tronco caído, e o passo pede o grupo (`Recursos3D.derrubados`).
+		if str(ficha.get("grupo", "")) != "":
+			ferramenta_de_peca[str(ficha["grupo"])] = qual
 
 	var moram_no_vale: Array[String] = []
 	for morador in current_scene.get("moradores"):
 		moram_no_vale.append(str((morador.dados as Dictionary).get("id", "")))
 
-	var metas_que_o_vale_sabe := ["juntar", "derrubar", "levar", "falar"]
+	var metas_que_o_vale_sabe := ["juntar", "derrubar", "levar", "falar", "evento", "obra"]
+	# OS ACONTECIMENTOS QUE O VALE AVISA às cadeias (`registrar_evento`). Meta de
+	# evento que ninguém avisa é passo que nunca fecha.
+	var eventos_que_o_vale_avisa := ["abriu_arraial"]
 	var passos_com_meta := 0
+	# A CADEIA DO MIRANTE VEM DEPOIS DO GUIA (`depois_de`): o que o guia entregou
+	# — o machado, a picareta — já está na mão de quem chega nela.
+	var entregues_pelo_guia: Array[String] = []
 	for nome in ["missoes_guia", "missoes_coveiro", "missoes_filo", "missoes_zefa",
-			"missoes_tonho", "missoes_candinha"]:
+			"missoes_tonho", "missoes_candinha", "missoes_arraial"]:
 		var texto := FileAccess.get_file_as_string("res://data/%s.json" % nome)
 		_conferir(texto != "", "não consegui ler %s.json" % nome)
 		var dado = JSON.parse_string(texto)
@@ -186,6 +233,8 @@ func _run() -> void:
 		# O QUE JÁ FOI ENTREGADO ATÉ AQUI, na ordem dos passos: a ferramenta pode
 		# vir no passo que cobra o trabalho ou em qualquer um antes dele.
 		var entregues: Array[String] = []
+		if nome == "missoes_arraial":
+			entregues = entregues_pelo_guia.duplicate()
 		for passo: Dictionary in dado.get("passos", []):
 			var qual_passo := "%s/%s" % [nome, str(passo.get("id", "?"))]
 			var entrega: Dictionary = passo.get("entrega", {})
@@ -194,6 +243,8 @@ func _run() -> void:
 				_conferir(Catalogo.ITENS.has(dado_agora),
 					"o passo '%s' entrega '%s', que não está no catálogo" % [qual_passo, dado_agora])
 				entregues.append(dado_agora)
+				if nome == "missoes_guia":
+					entregues_pelo_guia.append(dado_agora)
 
 			var meta: Dictionary = passo.get("meta", {})
 			if meta.is_empty():
@@ -205,18 +256,31 @@ func _run() -> void:
 					% [qual_passo, tipo])
 			match tipo:
 				"juntar":
-					var pedido := str(meta.get("item", ""))
-					_conferir(Catalogo.ITENS.has(pedido),
-						"o passo '%s' pede '%s', que não está no catálogo" % [qual_passo, pedido])
-					_conferir(_da_no_vale(pedido, ferramenta_de_rende),
-						"o passo '%s' pede '%s', que nenhum alvo posto no vale rende e a bancada não faz"
-							% [qual_passo, pedido])
-					# A FERRAMENTA SÓ SE COBRA DE QUEM CAI DE ALVO: o que sai da
-					# bancada sai de material, e o material já foi perguntado.
-					var precisa := str(ferramenta_de_rende.get(pedido, ""))
-					_conferir(precisa == "" or entregues.has(precisa),
-						"o passo '%s' pede %s, que só sai de %s, e ninguém entregou a %s até aqui"
-							% [qual_passo, pedido, precisa, precisa])
+					# Um item (`item`) ou vários (`itens`), como o material do mirante.
+					for bruto in _carga_do_passo(meta):
+						var pedido := str(bruto)
+						_conferir(Catalogo.ITENS.has(pedido),
+							"o passo '%s' pede '%s', que não está no catálogo" % [qual_passo, pedido])
+						_conferir(_da_no_vale(pedido, ferramenta_de_rende),
+							"o passo '%s' pede '%s', que nenhum alvo posto no vale rende e a bancada não faz"
+								% [qual_passo, pedido])
+						# A FERRAMENTA SÓ SE COBRA DE QUEM CAI DE ALVO: o que sai da
+						# bancada sai de material, e o material já foi perguntado.
+						var precisa := str(ferramenta_de_rende.get(pedido, ""))
+						_conferir(precisa == "" or entregues.has(precisa),
+							"o passo '%s' pede %s, que só sai de %s, e ninguém entregou a %s até aqui"
+								% [qual_passo, pedido, precisa, precisa])
+				"evento":
+					_conferir(str(meta.get("evento", "")) in eventos_que_o_vale_avisa,
+						"o passo '%s' espera o evento '%s', que o vale não avisa: o passo nunca fecha"
+							% [qual_passo, str(meta.get("evento", ""))])
+				"obra":
+					var obras_no := root.get_node("/root/Obras")
+					var a_obra := str(meta.get("obra", ""))
+					_conferir(not (obras_no.dados(a_obra) as Dictionary).is_empty(),
+						"o passo '%s' cobra a obra '%s', que não existe" % [qual_passo, a_obra])
+					_conferir(load("res://scripts/prototipo_3d/bancadas_vale.gd").OBRAS.has(str(meta.get("construcao", ""))),
+						"o passo '%s' cobra obra em '%s', que não tem lugar de obra no vale" % [qual_passo, str(meta.get("construcao", ""))])
 				"derrubar":
 					var peca := str(meta.get("alvo", ""))
 					_conferir(ferramenta_de_peca.has(peca),

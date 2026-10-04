@@ -41,6 +41,31 @@ const ITENS := {
 		"empilhavel": false,
 		"dano": 2.0,
 	},
+	## AS FERRAMENTAS DE AÇO são da mesma FAMÍLIA que as de ferro — servem a
+	## todo alvo que pede machado ou picareta — e têm GRAU 2: só elas abrem o
+	## alvo que pede aço (`"aco": true` na madeira, `"grau": 2` na pedra).
+	## Ferramenta melhor não barateia o golpe, ela DESTRAVA alvo mais duro (ver
+	## Energia), e por isso a de aço bate igual à de ferro, na lida e na luta: o
+	## que muda é aonde ela chega. O ícone e o modelo na mão são os da de ferro
+	## até haver arte própria, que é geração paga e espera o pedido.
+	"machado_de_aco": {
+		"nome": "Machado de aço",
+		"tipo": "ferramenta",
+		"icone": "machado",
+		"empilhavel": false,
+		"dano": 3.0,
+		"familia": "machado",
+		"grau": 2,
+	},
+	"picareta_de_aco": {
+		"nome": "Picareta de aço",
+		"tipo": "ferramenta",
+		"icone": "picareta",
+		"empilhavel": false,
+		"dano": 2.0,
+		"familia": "picareta",
+		"grau": 2,
+	},
 	"foice": {
 		"nome": "Foice",
 		"tipo": "ferramenta",
@@ -150,6 +175,15 @@ const ITENS := {
 		"nome": "Lenha",
 		"tipo": "recurso",
 		"icone": "lenha",
+		"empilhavel": true,
+	},
+	## A FIBRA DA PIAÇAVA, tirada da bainha da folha da palmeira da restinga sem
+	## derrubá-la (ver `ArvoresInfo`). É o que o mestre Quirino, do saveiro, mais
+	## leva para Salvador: vassoura, corda de navio, cobertura de casa.
+	"piacava": {
+		"nome": "Piaçava",
+		"tipo": "recurso",
+		"icone": "piacava",
 		"empilhavel": true,
 	},
 	"madeira_de_coqueiro": {
@@ -397,12 +431,34 @@ const ITENS := {
 		"icone": "chapeu",
 		"empilhavel": false,
 	},
-	## O facão é uma ferramenta de corte e arma escolhida pela barra numerada.
+	## O FACÃO JÁ EXISTIA, e não tinha de onde vir: arte no lote original, corte
+	## de cana em `Recursos`, encaixe de cintura aqui — e fonte nenhuma. A fase
+	## 6-A deu as duas coisas que faltavam: a oficina bate um (ver Oficina) e
+	## ele é a ARMA do jogo, a que bate mais que o machado. Continua sendo
+	## equipamento e continua cortando cana; o `dano` é o que ele ganhou.
+	##
+	## ARMA VAI NOS NÚMEROS, e o encaixe das Mãos é das luvas: "No campo mãos do
+	## inventário, não é para armas, mas sim para luvas. Armas são nos campos
+	## numerais." O facão deixou de ser equipamento de encaixe (e o efeito de
+	## cintura dele foi junto): é ferramenta da barra de mão, como o machado.
+	## A partida salva com ele vestido o devolve à barra (`Partida`).
+	## AS LUVAS DE COURO, a primeira peça do encaixe das Mãos — "não é para armas,
+	## mas sim para luvas". Couro curtido de vaqueiro, para a lida: com as mãos
+	## guardadas o trabalho cansa menos (o mesmo -5% de fôlego gasto que o facão
+	## dava na cintura). Vendem no balcão.
+	"luvas_de_couro": {
+		"nome": "Luvas de couro",
+		"tipo": "equipamento",
+		"encaixe": "maos",
+		"efeito": {"eficiencia": -0.05},
+		"resumo": "Couro curtido de vaqueiro. Com as mãos guardadas, a lida cansa menos.",
+		"icone": "luvas_de_couro",
+		"empilhavel": false,
+	},
 	"facao": {
 		"nome": "Facão de mato",
 		"tipo": "ferramenta",
-		"efeito": {"eficiencia": -0.05},
-		"resumo": "Selecione na barra para cortar o mato e lutar.",
+		"resumo": "Na mão, é o que corta: a arma do mato, a cana e a fibra da piaçava.",
 		"icone": "facao",
 		"empilhavel": false,
 		"dano": 4.0,
@@ -521,6 +577,17 @@ static func dano(id: String) -> float:
 
 static func tipo(id: String) -> String:
 	return ITENS.get(id, {}).get("tipo", "")
+
+
+## DE QUE FAMÍLIA É A FERRAMENTA: o machado de aço é machado. O item sem
+## `familia` é a família dele mesmo — o machado de ferro, a foice.
+static func familia(id: String) -> String:
+	return str(dados(id).get("familia", id))
+
+
+## O GRAU DA FERRAMENTA: 1 a de ferro (e toda ferramenta sem grau), 2 a de aço.
+static func grau(id: String) -> int:
+	return int(dados(id).get("grau", 1))
 
 
 static func icone(id: String) -> Texture2D:

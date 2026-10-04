@@ -1,0 +1,78 @@
+{
+  "observacao": "Segundo lote de 03/10/2026, enviado ao Tripo Studio pela ponte do Playwright MCP com a extensão do Chrome (Playwright MCP Bridge), na sessão já logada, com tools/tripo/lote_studio.js: Modelo HD H3.1 com a textura 8K desligada (55 créditos cada, preço lido na interface), Retopologia Malha Smart em quads com o alvo de faces de cada peça (40 créditos cada, idem) e exportação GLB; o mestre Quirino, gerado em pose T, levou ainda o Auto Rig Mixamo (20 créditos) e as sete predefinições de animação dos moradores, exportado com animação no lugar e textura 1K. Aprovado na conversa: \"tente fazer as gerações do tripo novamente. eu aprovo\", depois da estimativa de 780 créditos para as oito peças. O saldo da interface era 15.245 antes do lote e 14.465 depois. Os GLBs foram baixados pelo link assinado de cada exportação para .assets-raw/tripo/gerados/ e copiados para assets/prototipo_3d/{aderecos,construcoes,moveis,personagens}/.",
+  "estilo": "Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no text.",
+  "tarefas": {
+    "tronco_caido": {
+      "tarefa": "a9f373e0-ee82-4659-a828-a6066ae7ad87",
+      "projeto": "c856f26e-2fe6-43d6-9510-9a2d468100a3",
+      "pasta": "aderecos",
+      "faces": 2000,
+      "textura": "1k",
+      "rig": false,
+      "prompt": "a single fallen tree trunk lying horizontally on the ground, thick weathered log about four meters long with rough cracked bark, a few short broken branch stubs, patches of moss and dry lichen, one end jagged where it snapped, tropical Atlantic forest of Bahia Brazil. Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no text."
+    },
+    "capelinha": {
+      "tarefa": "64edc23b-9af4-41be-9e93-e1195135c7c8",
+      "projeto": "796996a1-e133-4532-969a-c8a8c50dc28c",
+      "pasta": "construcoes",
+      "faces": 6000,
+      "textura": "2k",
+      "rig": false,
+      "prompt": "a tiny poor rustic chapel in a rural cemetery, single small room, walls of wattle and daub with cracked whitewash falling off and exposed mud and sticks, a low roof of old uneven clay tiles with some missing, a narrow plain wooden door, a small crooked wooden cross on the roof ridge, no bell tower, no ornaments, 19th century rural Bahia Brazil. Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no text."
+    },
+    "rede_de_pesca": {
+      "tarefa": "7982797b-9173-48fd-8568-66da8363c591",
+      "projeto": "0a6955eb-6648-4235-8c01-22667403a0bf",
+      "pasta": "moveis",
+      "faces": 2000,
+      "textura": "1k",
+      "rig": false,
+      "prompt": "an old cotton fishing net hanging to dry from a wooden peg, draped in folds, with small cork floats along the top rope and a few stone sinkers at the bottom, 19th century Brazilian fisherman's hut. Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no text."
+    },
+    "remos": {
+      "tarefa": "e392a8a6-9625-4eac-bb8d-4f3644d0a857",
+      "projeto": "68d2c186-d0f4-444e-90ec-e26ca1243607",
+      "pasta": "moveis",
+      "faces": 1200,
+      "textura": "1k",
+      "rig": false,
+      "prompt": "two worn wooden canoe paddles leaning upright side by side, long handles and wide flat blades, hand carved, 19th century Brazilian fisherman. Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no text."
+    },
+    "ervas_secando": {
+      "tarefa": "a2eba5b0-a356-43fb-9bde-72d8b9a9728b",
+      "projeto": "960af5a6-ff1c-4eb4-8810-14a51b8dbac1",
+      "pasta": "moveis",
+      "faces": 2000,
+      "textura": "1k",
+      "rig": false,
+      "prompt": "several bundles of dried medicinal herbs and leaves tied with string, hanging upside down in a row from a horizontal wooden rod, folk healer's house in rural Bahia Brazil. Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no text."
+    },
+    "pilao": {
+      "tarefa": "b907c5ed-392f-4c42-9af7-b7b165dae56c",
+      "projeto": "6451c71d-f5cb-4b2e-ad24-9b22aeaa1e94",
+      "pasta": "moveis",
+      "faces": 1500,
+      "textura": "1k",
+      "rig": false,
+      "prompt": "a tall wooden mortar carved from a single log with a long wooden pestle standing inside it, Brazilian pilao for pounding grains and herbs, 19th century rural Bahia. Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no text."
+    },
+    "gamela": {
+      "tarefa": "1d25eb90-f6a9-40c0-8944-46d5aae71676",
+      "projeto": "197d92d7-9c37-4e14-adc8-75d2b65618eb",
+      "pasta": "moveis",
+      "faces": 1200,
+      "textura": "1k",
+      "rig": false,
+      "prompt": "a shallow oval wooden bowl carved from a single piece of wood with two small handle ends, Brazilian gamela, holding a few dried leaves, 19th century rural Bahia. Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no text."
+    },
+    "quirino": {
+      "tarefa": "5280d475-a738-4496-8ac9-9ee7557fe93f",
+      "projeto": "91b0edbe-e93a-40f3-a800-46e24592ef52",
+      "pasta": "personagens",
+      "faces": 8000,
+      "textura": "1k",
+      "rig": true,
+      "prompt": "Mestre Quirino, a weathered middle-aged sailboat master (mestre de saveiro) from Bahia in 1887, standing in T-pose with arms straight out: short gray beard, sun-darkened mixed-race skin, wide straw hat, loose white cotton shirt with rolled sleeves, faded blue cotton trousers rolled to the calf, rope belt, barefoot, strong calm build, full body character. Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no text."
+    }
+  }
+}

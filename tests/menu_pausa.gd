@@ -243,12 +243,168 @@ func _run() -> void:
 				and quadro.end.x <= janela.x + 1.0 and quadro.end.y <= janela.y + 1.0,
 			"o menu está fora da janela: %s numa tela de %s" % [str(quadro), str(janela)])
 
+	# --- 7. O RELÓGIO DIZ A ESCOLHA DO JOGADOR, E PARAR AVISA ---------------
+	#
+	# "O relógio parado no MENU não tá funcionando para voltar a fazer o tempo
+	# correr. Por padrão o relógio deve estar funcionando e se o jogador tentar
+	# desabilitar o relógio, deve informar que isso fará ele perder as
+	# conquistas dali para frente."
+	var dia := root.get_node("/root/Dia")
+	var i_relogio := _linha_com(lista, "Relógio:")
+	_conferir(i_relogio >= 0, "não achei a linha do relógio")
+	if i_relogio >= 0:
+		_conferir(not dia.relogio_alterado, "a partida já começou com o relógio marcado como parado")
+		var texto_relogio: String = (_lista_de(menu).get_child(i_relogio) as Button).text
+		_conferir(texto_relogio.contains("andando"),
+			"com o menu aberto e o relógio do jogador andando, a linha diz '%s'" % texto_relogio)
+		# Apertar abre a CAIXA DE CONFIRMAÇÃO, que fala das conquistas.
+		menu._cursor = i_relogio
+		menu._fazer()
+		await _frames(2)
+		_conferir(menu.perguntando(), "parar o relógio não pediu confirmação")
+		var pergunta := _achar(menu, "Pergunta")
+		var texto_da_pergunta: String = (_achar(pergunta, "Texto") as Label).text if pergunta != null else ""
+		_conferir(texto_da_pergunta.contains("conquistas"),
+			"a confirmação de parar o relógio não fala das conquistas: '%s'" % texto_da_pergunta)
+		_conferir(not dia.relogio_alterado, "o relógio parou antes de o jogador confirmar")
+		# O Esc desiste — da pergunta, e não do menu.
+		var esc_da_pergunta := InputEventKey.new()
+		esc_da_pergunta.physical_keycode = KEY_ESCAPE
+		esc_da_pergunta.pressed = true
+		Input.parse_input_event(esc_da_pergunta)
+		await _frames(3)
+		_conferir(not menu.perguntando() and menu.aberto, "o Esc na confirmação não voltou ao menu")
+		_conferir(not dia.relogio_alterado and (_lista_de(menu).get_child(i_relogio) as Button).text.contains("andando"),
+			"desistir da confirmação parou o relógio mesmo assim")
+		# Confirmar: para, e marca a partida.
+		menu._cursor = i_relogio
+		menu._fazer()
+		await _frames(2)
+		menu._responder(true)
+		await _frames(2)
+		_conferir(dia.relogio_alterado, "parar o relógio não marcou a partida (relogio_alterado)")
+		# "...desde que tenha o aviso, a confirmação e a alteração no backlog do
+		# save": a parada entra no registro do relógio.
+		_conferir(not dia.registro_do_relogio.is_empty()
+				and str(dia.registro_do_relogio[-1].get("o_que", "")) == "parou",
+			"parar o relógio não entrou no registro dele: %s" % str(dia.registro_do_relogio))
+		texto_relogio = (_lista_de(menu).get_child(i_relogio) as Button).text
+		_conferir(texto_relogio.contains("parado"), "o relógio parou e a linha diz '%s'" % texto_relogio)
+		# Fechar devolve o vale andando e o relógio parado, como o jogador pediu.
+		jogo.telas.fechar_tudo()
+		await _frames(2)
+		_conferir(not paused, "fechar o menu deixou o vale parado")
+		_conferir(dia.pausado, "o jogador parou o relógio e ele voltou andando ao fechar o menu")
+		# E religar funciona, sem pedir nada.
+		jogo.telas.abrir("menu_pausa")
+		await _frames(2)
+		menu._cursor = i_relogio
+		menu._fazer()
+		await _frames(2)
+		jogo.telas.fechar_tudo()
+		await _frames(2)
+		_conferir(not dia.pausado, "religar o relógio pelo menu não fez o tempo voltar a correr")
+		_conferir(dia.relogio_alterado, "religar o relógio apagou a marca: 'dali para frente' não volta")
+		_conferir(str(dia.registro_do_relogio[-1].get("o_que", "")) == "voltou",
+			"religar o relógio não entrou no registro dele: %s" % str(dia.registro_do_relogio))
+		_conferir(jogo.estado_para_salvar().get("relogio_alterado", false) == true,
+			"a marca do relógio não vai para o save")
+		_conferir((jogo.estado_para_salvar().get("registro_do_relogio", []) as Array).size() == dia.registro_do_relogio.size(),
+			"o registro do relógio não vai para o save")
+		dia.relogio_alterado = false
+
+		# A TRANCA DO AJUSTAR: bloqueado, a linha não para o tempo e diz por quê.
+		# Mexe-se no campo, e não no `definir_pausa_no_jogo`, para o portão não
+		# gravar a preferência do jogador.
+		dia.pausa_no_jogo = false
+		var registro_antes: int = dia.registro_do_relogio.size()
+		jogo.telas.abrir("menu_pausa")
+		await _frames(2)
+		var com_tranca: String = (_lista_de(menu).get_child(i_relogio) as Button).text
+		_conferir(com_tranca.contains("bloqueada"), "com a pausa bloqueada, a linha do relógio diz '%s'" % com_tranca)
+		menu._cursor = i_relogio
+		menu._fazer()
+		await _frames(2)
+		_conferir(not menu.perguntando(), "com a pausa bloqueada, a linha ainda pergunta se pode parar")
+		_conferir(str(menu.get("_aviso")).contains("bloqueado"),
+			"com a pausa bloqueada, a linha não diz por que não parou: '%s'" % str(menu.get("_aviso")))
+		jogo.telas.fechar_tudo()
+		await _frames(2)
+		_conferir(not dia.pausado and not dia.relogio_alterado and dia.registro_do_relogio.size() == registro_antes,
+			"com a pausa bloqueada, a linha do relógio parou o tempo mesmo assim")
+		dia.pausa_no_jogo = true
+
+	# --- 8. LINHA QUE FECHA O MENU DEVOLVE O VALE ----------------------------
+	#
+	# "Quando abri MENU > Controles, ele travou o jogo." As linhas que fecham o
+	# menu o fechavam por dentro, sem avisar o dono das telas, e a árvore ficava
+	# pausada. Os Ajustes pioravam: guardavam o relógio parado pelo menu como
+	# se fosse a escolha do jogador.
+	jogo.telas.abrir("menu_pausa")
+	await _frames(2)
+	var i_voltar := _linha_com(_lista_de(menu), "Voltar ao vale")
+	if i_voltar >= 0:
+		menu._cursor = i_voltar
+		menu._fazer()
+		await _frames(2)
+		_conferir(not menu.aberto, "'Voltar ao vale' não fechou o menu")
+		_conferir(not paused, "'Voltar ao vale' fechou o menu e deixou o vale parado")
+	jogo.telas.abrir("menu_pausa")
+	await _frames(2)
+	var i_ajustes := _linha_com(_lista_de(menu), "Ajustes")
+	if i_ajustes >= 0:
+		menu._cursor = i_ajustes
+		menu._fazer()
+		await _frames(2)
+		_conferir(paused, "os Ajustes abriram com o vale andando atrás")
+		jogo.hud.close_settings()
+		await _frames(2)
+		_conferir(not paused, "fechar os Ajustes abertos pelo menu deixou o vale parado")
+		_conferir(not dia.pausado, "fechar os Ajustes abertos pelo menu deixou o relógio parado")
+
+	# --- 9. CONTROLES É TELA, E O ESC VOLTA AO MENU --------------------------
+	jogo.telas.abrir("menu_pausa")
+	await _frames(2)
+	var i_controles := _linha_com(_lista_de(menu), "Controles")
+	_conferir(i_controles >= 0, "não achei a linha dos controles")
+	if i_controles >= 0:
+		menu._cursor = i_controles
+		menu._fazer()
+		await _frames(2)
+		var controles = jogo.get("tela_controles")
+		_conferir(controles != null and controles.aberta, "'Controles' não abriu a tela de controles")
+		_conferir(jogo.telas.aberta() == "controles", "a tela de controles não é do dono das telas")
+		_conferir(paused, "a tela de controles abriu com o vale andando atrás")
+		if controles != null and controles.aberta:
+			_conferir(controles._teclas.size() == load("res://scripts/prototipo_3d/atalhos.gd").DEFINICOES.size(),
+				"a tela de controles não lista todos os atalhos")
+			var esc := InputEventKey.new()
+			esc.physical_keycode = KEY_ESCAPE
+			esc.pressed = true
+			# Esperando a tecla nova, o Esc só desiste dela — e a tela fica.
+			# (Sem trocar letra de verdade: o portão roda nas preferências do
+			# jogador, e elas não são dele.)
+			controles._esperar(controles._acoes[0])
+			Input.parse_input_event(esc)
+			await _frames(3)
+			_conferir(controles.aberta and controles._esperando == "",
+				"o Esc esperando a tecla não desistiu dela, ou fechou a tela de controles")
+			Input.parse_input_event(esc)
+			await _frames(3)
+			_conferir(not controles.aberta and menu.aberto, "o Esc nos controles não voltou ao menu do Esc")
+			_conferir(paused, "voltar dos controles ao menu soltou o vale")
+
 	jogo.telas.fechar_tudo()
 	await _frames(2)
 	_conferir(not menu.aberto, "fechar tudo deixou o menu do Esc aberto")
 	_conferir(not paused, "fechar o menu do Esc deixou o vale parado")
 
 	_fechar()
+
+
+## A lista é refeita a cada redesenho; pega a de agora.
+func _lista_de(menu: Node) -> VBoxContainer:
+	return _achar(menu, "Linhas") as VBoxContainer
 
 
 func _linha_com(lista: VBoxContainer, pedaco: String) -> int:

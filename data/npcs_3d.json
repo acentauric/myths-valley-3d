@@ -1,11 +1,13 @@
 {
-  "observacao": "Moradores do arraial no protótipo 3D. Cada posto é [nome de âncora de world_builder.ancoras, deslocamento em unidades]. As falas são a primeira linha da apresentação em data/dialogos/aldeoes.json; a saudação em áudio (ElevenLabs, pt-BR) fica em assets/audio/vozes/<saudacao>.mp3. Pedro é o guia (scripts/prototipo_3d/guia_pedro.gd) e não tem postos: acompanha o jogador. gesto_saudacao indexa os gestos do humanoide procedural; gesto_tripo, os clipes do GLB com rig (authored_animator.gd: 0 saudação, 1 tchau, 2 concordar, 3 olhar ao redor).",
+  "observacao": "Moradores do arraial no protótipo 3D. Cada posto é [nome de âncora de world_builder.ancoras, deslocamento em unidades]. As falas são a primeira linha da apresentação em data/dialogos/aldeoes.json; a saudação em áudio (ElevenLabs, pt-BR) fica em assets/audio/vozes/<saudacao>.mp3. Pedro é o guia (scripts/prototipo_3d/guia_pedro.gd): acompanha o jogador durante o tutorial e, depois dele, vai para os postos dele (guia.postos). gesto_saudacao indexa os gestos do humanoide procedural; gesto_tripo, os clipes do GLB com rig (authored_animator.gd: 0 saudação, 1 tchau, 2 concordar, 3 olhar ao redor).",
   "guia": {
     "id": "pedro",
     "nome": "Pedro",
     "altura": 1.75,
     "gesto_saudacao": 0,
     "gesto_tripo": 0,
+    "observacao_postos": "DEPOIS DO TUTORIAL o Pedro para de seguir o jogador e volta à vida de pescador (guia_pedro.terminou_o_tutorial): de manhã e de tarde no píer, ao lado do Tonho; ao entardecer na praça; de noite na porta de casa ('Casa do Pedro', a casa de taipa do arraial mais perto do píer, que o vale escolhe em WorldBuilder.casas_dos_moradores). A Dona Zefa e o Cosme ficam na casa deles ('Casa da Zefa', a vizinha da casa herdada), e não mais na porta da casa do jogador. Só âncoras que o vale sempre tem — âncora que falta vira a origem do mundo.",
+    "postos": {"manha": ["PierPiso", [1.4, 0, 2.0]], "tarde": ["PierPiso", [-0.8, 0, -2.0]], "entardecer": ["Praça", [2.6, 0, 6.0]], "noite": ["Casa do Pedro", [0.9, 0, 3.0]], "madrugada": ["Casa do Pedro", [0.9, 0, 3.0]]},
     "voz": {
       "id": "YbP0Eq5RE5uOoCEl7F3T",
       "nome": "Weverton - Youthful, Energetic and Clear",
@@ -107,7 +109,7 @@
       "gesto_saudacao": 0,
       "postos": {
         "manha": [
-          "Casa de taipa",
+          "Casa da Zefa",
           [
             -4.2,
             0,
@@ -123,7 +125,7 @@
           ]
         ],
         "entardecer": [
-          "Casa de taipa",
+          "Casa da Zefa",
           [
             -2.0,
             0,
@@ -131,7 +133,7 @@
           ]
         ],
         "noite": [
-          "Casa de taipa",
+          "Casa da Zefa",
           [
             -1.2,
             0,
@@ -139,7 +141,7 @@
           ]
         ],
         "madrugada": [
-          "Casa de taipa",
+          "Casa da Zefa",
           [
             -1.2,
             0,
@@ -176,11 +178,11 @@
       "gesto_saudacao": 0,
       "postos": {
         "manha": [
-          "Roçado",
+          "Lavoura",
           [
-            2.0,
+            -1.0,
             0,
-            -1.6
+            -3.2
           ]
         ],
         "tarde": [
@@ -200,7 +202,7 @@
           ]
         ],
         "noite": [
-          "Casa de taipa",
+          "Casa da Zefa",
           [
             2.6,
             0,
@@ -208,7 +210,7 @@
           ]
         ],
         "madrugada": [
-          "Casa de taipa",
+          "Casa da Zefa",
           [
             2.6,
             0,
@@ -511,6 +513,35 @@
         {
           "texto": "Mato de cemitério só sai na foice. E quem limpa não leva nada pra casa.",
           "audio": "damiao_fala_3"
+        }
+      ]
+    },
+    {
+      "id": "quirino",
+      "nome": "Mestre Quirino",
+      "observacao": "O MESTRE DO SAVEIRO, comprador que encosta no píer UMA VEZ POR ESTAÇÃO, no dia 14 (data/saveiro.json; scripts/prototipo_3d/saveiro_vale.gd): fora desse dia ele não está no vale — escondido, não anda, não fala e não recebe entrega. É o mestre de saveiro que o Pedro diz ter trazido o jogador ('O mestre do saveiro jurou que trazia você hoje'). Fica de pé no píer, perto do saveiro atracado; todos os postos são o mesmo. Sem voz gravada (o balão basta) e, até o modelo dele chegar do Tripo, caixa cinza provisória no estilo Tripo (npc.gd._corpo_provisorio), que peça procedural não entra nele.",
+      "altura": 1.7,
+      "gesto_saudacao": 0,
+      "gesto_tripo": 0,
+      "postos": {"manha": ["PierPiso", [-0.6, 0, 1.2]], "tarde": ["PierPiso", [-0.6, 0, 1.2]], "entardecer": ["PierPiso", [-0.6, 0, 1.2]], "noite": ["PierPiso", [-0.6, 0, 1.2]], "madrugada": ["PierPiso", [-0.6, 0, 1.2]]},
+      "falas": [
+        {
+          "texto": "Mestre Quirino, do saveiro. Encosto aqui no dia catorze de cada estação: o que o arraial produziu no mês, eu levo pra Salvador.",
+          "texto_en": "Master Quirino, of the sailboat. I dock here on the fourteenth of every season: what the village produced that month, I take to Salvador.",
+          "texto_es": "Maestro Quirino, del velero. Atraco aquí el día catorce de cada estación: lo que el pueblo produjo en el mes, me lo llevo a Salvador.",
+          "audio": ""
+        },
+        {
+          "texto": "Piaçava é o que Salvador mais gasta: vassoura, corda de navio, cobertura de casa. Fibra comprida e bem seca, que eu pago bem.",
+          "texto_en": "Piassava is what Salvador uses up most: brooms, ship rope, roof thatch. Long, well-dried fiber, and I pay well.",
+          "texto_es": "La piasava es lo que Salvador más gasta: escoba, soga de barco, techo de casa. Fibra larga y bien seca, que pago bien.",
+          "audio": ""
+        },
+        {
+          "texto": "Fui eu que trouxe você da capital, lembra? O mar estava manso. Hoje também.",
+          "texto_en": "I'm the one who brought you from the capital, remember? The sea was calm. It is today, too.",
+          "texto_es": "Fui yo quien te trajo de la capital, ¿te acuerdas? El mar estaba manso. Hoy también.",
+          "audio": ""
         }
       ]
     }

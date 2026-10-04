@@ -1,11 +1,17 @@
 {
   "observacao": "As missões de chegada que o Pedro conduz. Saíram de uma constante dentro de guia_pedro.gd e viraram dado — é o formato que o sistema de missões do 2D vai ler quando atravessar (ver docs/projeto/MIGRACAO_2D_3D.md, Fase 3). O campo 'lugar' é NOME DE CONTRATO do autoload Lugares, e não nome de âncora do world_builder: é o que faz o mesmo passo servir nos dois jogos. 'raio' é em unidades (1 u = 4 m). 'audio' é o arquivo em assets/audio/vozes/, sem extensão; vazio quer dizer que o Pedro fala só no balão. Todo texto que o jogador lê existe nos três idiomas (pt-BR, en, es), que é a regra deste projeto.",
   "dono": "pedro",
+  "nome": "Chegada ao arraial",
+  "nome_en": "Arrival in the village",
+  "nome_es": "Llegada al pueblo",
   "principal": true,
   "passos": [
     {
       "id": "pier",
       "titulo": "A chegada pelo píer",
+      "resumo": "Vá até o píer",
+      "resumo_en": "Go to the pier",
+      "resumo_es": "Ve al muelle",
       "lugar": "pier",
       "raio": 7.0,
       "audio": "pedro_pier",
@@ -16,6 +22,9 @@
     {
       "id": "praca",
       "titulo": "A praça do arraial",
+      "resumo": "Siga o Pedro até a praça",
+      "resumo_en": "Follow Pedro to the square",
+      "resumo_es": "Sigue a Pedro hasta la plaza",
       "lugar": "praca",
       "raio": 9.0,
       "audio": "pedro_praca",
@@ -26,6 +35,9 @@
     {
       "id": "casa_pasto",
       "titulo": "A casa de pasto",
+      "resumo": "Vá até a casa de pasto",
+      "resumo_en": "Go to the eating house",
+      "resumo_es": "Ve a la casa de comidas",
       "lugar": "casa_de_pasto",
       "raio": 7.0,
       "audio": "pedro_casa_pasto",
@@ -36,6 +48,9 @@
     {
       "id": "capela",
       "titulo": "A capela do arraial",
+      "resumo": "Vá até a capela",
+      "resumo_en": "Go to the chapel",
+      "resumo_es": "Ve a la capilla",
       "lugar": "capela",
       "raio": 8.0,
       "audio": "pedro_capela",
@@ -46,6 +61,9 @@
     {
       "id": "rocado",
       "titulo": "O roçado, morro acima",
+      "resumo": "Suba até o roçado",
+      "resumo_en": "Climb up to the cassava field",
+      "resumo_es": "Sube hasta el campo de yuca",
       "lugar": "rocado",
       "raio": 9.0,
       "audio": "",
@@ -57,6 +75,9 @@
     {
       "id": "machado",
       "titulo": "O machado do teu tio",
+      "resumo": "Corte lenha com o machado",
+      "resumo_en": "Chop firewood with the axe",
+      "resumo_es": "Corta leña con el hacha",
       "traducao": "pendente",
       "lugar": "casa_de_taipa",
       "raio": 7.0,
@@ -68,6 +89,9 @@
     {
       "id": "lenha",
       "titulo": "Mais dois feixes de lenha",
+      "resumo": "Corte mais lenha",
+      "resumo_en": "Chop more firewood",
+      "resumo_es": "Corta más leña",
       "traducao": "pendente",
       "lugar": "rocado",
       "raio": 9.0,
@@ -78,6 +102,9 @@
     {
       "id": "picareta",
       "titulo": "A picareta e o lajedo",
+      "resumo": "Quebre pedra com a picareta",
+      "resumo_en": "Break stone with the pickaxe",
+      "resumo_es": "Rompe piedra con el pico",
       "traducao": "pendente",
       "lugar": "rocado",
       "raio": 7.0,
@@ -89,6 +116,9 @@
     {
       "id": "enxada",
       "titulo": "A enxada do finado",
+      "resumo": "Pegue a enxada no roçado",
+      "resumo_en": "Get the hoe at the field",
+      "resumo_es": "Toma la azada en el campo",
       "traducao": "pendente",
       "lugar": "rocado",
       "raio": 9.0,
@@ -99,8 +129,8 @@
     }
   ],
   "arremate": {
-    "texto": "Você conheceu o arraial. Explore o vale como quiser — Pedro fica por perto.",
-    "texto_en": "You've seen the village. Explore the valley as you please — Pedro stays close by.",
-    "texto_es": "Ya conociste el pueblo. Explora el valle a tu gusto — Pedro se queda cerca."
+    "texto": "Você conheceu o arraial. Explore o vale como quiser — o Pedro volta pro píer, que é onde você o acha.",
+    "texto_en": "You've seen the village. Explore the valley as you please — Pedro goes back to the pier, where you'll find him.",
+    "texto_es": "Ya conociste el pueblo. Explora el valle a tu gusto — Pedro vuelve al muelle, donde lo encontrarás."
   }
 }

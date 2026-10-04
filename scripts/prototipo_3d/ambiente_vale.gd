@@ -109,14 +109,28 @@ func _tocador(caminho: String) -> AudioStreamPlayer:
 	return tocador
 
 
+## DENTRO DE UMA CONSTRUÇÃO o mato, a noite e as aves chegam abafados pela
+## parede. As fontes de lugar (mar, fogueira) já somem sozinhas: o cômodo mora
+## longe delas. 0 é ao ar livre, 1 é de porta fechada. Ver `interiores.gd`.
+var abafado := 0.0:
+	set(valor):
+		abafado = clampf(valor, 0.0, 1.0)
+		_aplicar(Dia.hora)
+## Quanto do som de fora passa pela parede (12%, ou -18 dB).
+const PASSA_PELA_PAREDE := 0.12
+
+
 func _aplicar(_hora: float) -> void:
+	if _dia == null:
+		return
 	var luz := Dia.luz_do_dia()
 	var mata := Audio.volume_camada_db("mata")
-	_dia.volume_db = _mistura(mata + MATA_AJUSTE_DB, luz * _mata_fator)
-	_noite.volume_db = _mistura(mata + 1.5 + MATA_AJUSTE_DB, (1.0 - luz) * _mata_fator)
+	var parede := lerpf(1.0, PASSA_PELA_PAREDE, abafado)
+	_dia.volume_db = _mistura(mata + MATA_AJUSTE_DB, luz * _mata_fator * parede)
+	_noite.volume_db = _mistura(mata + 1.5 + MATA_AJUSTE_DB, (1.0 - luz) * _mata_fator * parede)
 	# As aves cantam mais no alvorecer e no fim da tarde.
 	var horizonte := 1.0 - smoothstep(0.75, 1.0, luz)
-	_aves.volume_db = _mistura(Audio.volume_camada_db("aves") - 7.0, luz * (0.55 + 0.45 * horizonte))
+	_aves.volume_db = _mistura(Audio.volume_camada_db("aves") - 7.0, luz * (0.55 + 0.45 * horizonte) * parede)
 	for fonte_info in _fontes:
 		var tocador: AudioStreamPlayer3D = fonte_info["tocador"]
 		var fator := (1.0 - luz) if bool(fonte_info["noturno"]) else 1.0
@@ -132,7 +146,9 @@ func _mistura(base_db: float, fator: float) -> float:
 ## Bem-te-vi de manhã e à tarde: um canto curto vindo de um ponto aleatório ao
 ## redor do jogador, no volume da camada "aves".
 func _processar_bem_te_vi(delta: float) -> void:
-	if Dia.periodo() not in ["manha", "tarde"]:
+	# Bem-te-vi não canta dentro da igreja: o canto é posto ao redor do corpo,
+	# e lá dentro ele sairia de dentro das paredes.
+	if Dia.periodo() not in ["manha", "tarde"] or abafado > 0.5:
 		return
 	_bem_te_vi_espera -= delta
 	if _bem_te_vi_espera > 0.0:

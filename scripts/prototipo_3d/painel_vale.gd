@@ -43,10 +43,14 @@ const COR_FIXADA := Color("9fd89a")
 const COR_FUNDO := Color(0.055, 0.085, 0.075, 0.96)
 const COR_BORDA := Color(0.84, 0.73, 0.47, 0.8)
 
-enum Aba { MISSOES, CARTAS, OBRAS, OFICINA, COZINHA, VENDA, TRABALHO, AJUSTES }
-const NOME_DA_ABA := ["Missões", "Cartas", "Obras", "Oficina", "Cozinha", "Venda", "Trabalho", "Jogo"]
+enum Aba { MISSOES, CARTAS, OBRAS, OFICINA, COZINHA, VENDA, TRABALHO, AJUSTES, SAVEIRO }
+const NOME_DA_ABA := ["Missões", "Cartas", "Obras", "Oficina", "Cozinha", "Venda", "Trabalho", "Jogo", "Saveiro"]
 
-const TAMANHO := Vector2(900, 520)
+## Maior que a do 2D desde que a aba de missões virou DIÁRIO, com a lista e a
+## página da missão lado a lado: cabe em 1280×720 com folga de 100 e de 50.
+const TAMANHO := Vector2(1080, 620)
+## A largura da lista de missões, à esquerda do diário.
+const LARGURA_DA_LISTA_DE_MISSOES := 300.0
 ## Largura da coluna das abas, à esquerda. A mesma proporção do almanaque.
 const LARGURA_DAS_ABAS := 230.0
 const ALTURA_DA_LINHA := 28.0
@@ -57,7 +61,7 @@ const LETRA_DICA := 14
 
 ## Campos editáveis da aba do jogo: rótulo, campo em Progressao, passo.
 const CAMPOS := [
-	{"rotulo": "Vigor máximo", "campo": "energia_maxima", "passo": 10.0,
+	{"rotulo": "Fôlego máximo", "campo": "energia_maxima", "passo": 10.0,
 		"dica": "O teto. Subir isto sozinho não faz acordar com mais."},
 	{"rotulo": "Sono devolve", "campo": "recuperacao_ao_dormir", "passo": 5.0,
 		"dica": "Pontos fixos por noite, não fração do máximo."},
@@ -87,6 +91,9 @@ var aberto: bool = false
 var obra_em_foco: String = ""
 ## No balcão da venda.
 var na_venda: bool = false
+## Perto do mestre Quirino, no dia do saveiro: o `SaveiroVale`, ou null. Com
+## ele, a aba do saveiro, onde ele compra o que se produziu no mês.
+var saveiro: Node = null
 ## De frente para o fogão da própria casa.
 var na_cozinha: bool = false
 
@@ -107,6 +114,12 @@ var _lista: VBoxContainer
 ## Só as linhas ESCOLHÍVEIS, na ordem do cursor (ver o 2D).
 var _escolhiveis: Array = []
 var _dica: Label
+## O estúdio dos retratos 3D (retratos_3d.gd), posto pelo vale: o diário mostra
+## o rosto de quem deu a missão, como o Witcher mostra o de quem a pediu.
+var retratos: Node = null
+## O diário da aba de missões: a página da missão escolhida, à direita da lista.
+var _diario: ScrollContainer
+var _detalhe: VBoxContainer
 var _rodape: Label
 var _linhas: Array = []
 var _botao_jogo: Button
@@ -119,6 +132,8 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	_montar()
 	visible = false
+	if retratos != null:
+		retratos.pronto.connect(func(_id: String, _foto: Texture2D) -> void: _redesenhar())
 	CadernoDoVale.mudou.connect(_redesenhar)
 	Progressao.mudou.connect(_redesenhar)
 	Inventario.mudou.connect(_redesenhar)
@@ -194,6 +209,8 @@ func abas_validas() -> Array:
 		lista.append(Aba.COZINHA)
 	if na_venda:
 		lista.append(Aba.VENDA)
+	if saveiro != null:
+		lista.append(Aba.SAVEIRO)
 	return lista
 
 
@@ -220,6 +237,7 @@ func _lista_atual() -> Array:
 		Aba.OFICINA: return Oficina.receitas()
 		Aba.COZINHA: return Cozinha.receitas()
 		Aba.VENDA: return o_que_o_balcao_tem()
+		Aba.SAVEIRO: return saveiro.o_que_compra() if saveiro != null else []
 		_: return ACOES + CAMPOS
 
 
@@ -327,6 +345,18 @@ func _confirmar() -> void:
 				return
 			if not fazer_a_acao(ACOES[_cursor]):
 				return
+		Aba.SAVEIRO:
+			# O MESTRE COMPRA UM, pelo preço dele; o porquê de não comprar vai
+			# para a linha de aviso.
+			var o_que: Array = saveiro.o_que_compra() if saveiro != null else []
+			if _cursor >= o_que.size():
+				return
+			var motivo: String = saveiro.vender(str(o_que[_cursor]))
+			if motivo != "":
+				_aviso = motivo
+				_redesenhar()
+				return
+			_aviso = ""
 		_:
 			return
 	Audio.efeito("menu_confirma")
@@ -475,7 +505,26 @@ func _montar() -> void:
 	_rolagem.get_v_scroll_bar().add_theme_stylebox_override("grabber", _estilo_do_puxador(false))
 	_rolagem.get_v_scroll_bar().add_theme_stylebox_override("grabber_highlight", _estilo_do_puxador(true))
 	_rolagem.get_v_scroll_bar().add_theme_stylebox_override("grabber_pressed", _estilo_do_puxador(true))
-	pagina.add_child(_rolagem)
+	# A lista e, na aba de missões, O DIÁRIO ao lado dela — como no Witcher: as
+	# missões à esquerda, a escolhida aberta à direita (ver `_desenhar_missoes`).
+	# Nas outras abas o diário some e a lista toma a largura toda.
+	var corpo := HBoxContainer.new()
+	corpo.add_theme_constant_override("separation", 18)
+	corpo.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	pagina.add_child(corpo)
+	corpo.add_child(_rolagem)
+	_diario = ScrollContainer.new()
+	_diario.name = "Diario"
+	_diario.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_diario.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_diario.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	_diario.visible = false
+	corpo.add_child(_diario)
+	_detalhe = VBoxContainer.new()
+	_detalhe.name = "Detalhe"
+	_detalhe.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_detalhe.add_theme_constant_override("separation", 8)
+	_diario.add_child(_detalhe)
 
 	_lista = VBoxContainer.new()
 	_lista.add_theme_constant_override("separation", 3)
@@ -600,6 +649,16 @@ func _redesenhar() -> void:
 	_montar_abas()
 	_titulo.text = "Painel  ›  %s" % str(NOME_DA_ABA[_aba])
 	_botao_jogo.text = "‹ VOLTAR" if _aba == Aba.AJUSTES else "JOGO"
+	# O diário só existe na aba de missões; nela a lista estreita e a dica de
+	# baixo some, porque o diário é a dica, inteira.
+	var no_diario := _aba == Aba.MISSOES
+	_diario.visible = no_diario
+	_dica.visible = not no_diario
+	_rolagem.size_flags_horizontal = Control.SIZE_FILL if no_diario else Control.SIZE_EXPAND_FILL
+	_rolagem.custom_minimum_size.x = LARGURA_DA_LISTA_DE_MISSOES if no_diario else 0.0
+	for filho in _detalhe.get_children():
+		_detalhe.remove_child(filho)
+		filho.queue_free()
 
 	match _aba:
 		Aba.MISSOES: _desenhar_missoes()
@@ -608,6 +667,7 @@ func _redesenhar() -> void:
 		Aba.OFICINA: _desenhar_oficina()
 		Aba.COZINHA: _desenhar_cozinha()
 		Aba.VENDA: _desenhar_venda()
+		Aba.SAVEIRO: _desenhar_saveiro()
 		_: _desenhar_ajustes()
 
 	_rolar_ate_o_cursor()
@@ -632,7 +692,7 @@ func _quantas_faltam(todas: Array) -> String:
 
 
 func _desenhar_cozinha() -> void:
-	_titulo.text = "Fogão      vigor %d/%d" % [int(Energia.atual), int(Energia.maximo())]
+	_titulo.text = "Fogão      %s %d/%d" % [Energia.nome_recurso(), int(Energia.atual), int(Energia.maximo())]
 	var pratos := Cozinha.receitas()
 	if pratos.is_empty():
 		_adicionar_linha("Você ainda não sabe cozinhar nada.", COR_APAGADA)
@@ -645,13 +705,13 @@ func _desenhar_cozinha() -> void:
 		var devolve := int(Catalogo.dados(id).get("folego", 0.0))
 		var texto := "%s   %-22s %s" % [
 			"✓" if pode else "·", Cozinha.dados(id).get("nome", id),
-			"+%d de vigor" % devolve if devolve > 0 else "ingrediente"]
+			"+%d de %s" % [devolve, Energia.nome_recurso()] if devolve > 0 else "ingrediente"]
 		_adicionar_linha(texto, COR_CURSOR if i == _cursor else (COR_TEXTO if pode else COR_APAGADA))
 	var escolhido := str(pratos[_cursor]) if _cursor < pratos.size() else ""
 	var impede := Cozinha.impedimento(escolhido)
 	_dica.text = str(Cozinha.dados(escolhido).get("resumo", "")) + "\n" + (
-		impede if impede != "" else "Gasta: %s   ·   e %d de vigor pra fazer" % [
-			Cozinha.custo_em_texto(escolhido), int(Cozinha.dados(escolhido).get("folego", 0))]
+		impede if impede != "" else "Gasta: %s   ·   e %d de %s pra fazer" % [
+			Cozinha.custo_em_texto(escolhido), int(Cozinha.dados(escolhido).get("folego", 0)), Energia.nome_recurso()]
 		) + _quantas_faltam(Cozinha.RECEITAS.keys())
 	_rodape.text = "[W/S] escolher · [E] cozinhar · [Esc] fechar"
 
@@ -761,12 +821,28 @@ func _desenhar_oficina() -> void:
 ## "Levar pirão de peixe a Tonho"). Quem conduz decide a frase; esta tela não
 ## tenta entender de que tipo é a meta, e por isso meta nova não pede linha nova
 ## aqui.
+##
+##
+## O DIÁRIO, COMO NO WITCHER
+##
+## "No MENU J, de missões, eu tô clicando para trocar a missão de resumo, mas
+## não muda. O comportamento tem que ser muito próximo de jogos de RPG como The
+## Witcher 3." O diário de lá tem a lista à esquerda, agrupada, com a marca da
+## missão acompanhada; a escolhida aberta à direita — nome, quem deu, o texto,
+## os objetivos com os cumpridos riscados — e o botão de acompanhar. Acompanhar
+## é o que muda o canto da tela e o marcador; escolher na lista só abre a página.
+##
+## Aqui é o mesmo: W/S ou o clique escolhem; E, o segundo clique na mesma linha
+## ou o botão ACOMPANHAR acompanham (`CadernoDoVale.fixar`). O HUD, a seta e a
+## bússola seguem o caderno, e por isso mudam juntos (ver `_mostrar_a_acompanhada`
+## no `prototype.gd`).
 func _desenhar_missoes() -> void:
-	_titulo.text = "Missões abertas"
+	_titulo.text = "Diário  ›  Missões"
 	var abertas: Array = CadernoDoVale.por_importancia()
 	if abertas.is_empty():
 		_adicionar_linha("Nada em aberto por enquanto.", COR_APAGADA)
-		_dica.text = "Fale com quem mora no vale: quem tem o que pedir, pede."
+		_detalhe.add_child(_texto_do_diario(
+			"Fale com quem mora no vale: quem tem o que pedir, pede.", 17, COR_APAGADA))
 		_rodape.text = "[Esc] fechar"
 		return
 	# Dois grupos, com cabeçalho: enredo e dia a dia se leem diferente (ver o 2D).
@@ -777,22 +853,166 @@ func _desenhar_missoes() -> void:
 		if qual != grupo:
 			grupo = qual
 			_adicionar_linha(qual, COR_APAGADA, true)
-		var marca := "◆" if bool(missao.get("principal", false)) else "◇"
-		var conta := ""
-		if int(missao.get("total", 0)) > 0:
-			conta = "  (%d de %d)" % [int(missao["feito"]), int(missao["total"])]
-		var cor := COR_CURSOR if i == _cursor else (COR_FIXADA if i == CadernoDoVale.em_foco else COR_TEXTO)
-		_adicionar_linha("%s  %s%s" % [marca, str(missao.get("titulo", "")), conta], cor)
-		# A LINHA DE ANDAMENTO entra como texto, e só na missão sob o cursor: na
-		# lista inteira ela viraria parede de letra.
-		if i == _cursor and str(missao.get("linha", "")) != "":
-			_adicionar_linha("      %s" % str(missao["linha"]),
-				COR_FIXADA if int(missao.get("feito", 0)) >= int(missao.get("total", 1)) else COR_APAGADA,
-				true)
-	var escolhida: Dictionary = abertas[_cursor] if _cursor < abertas.size() else {}
-	_dica.text = str(escolhida.get("titulo", "")) if not escolhida.is_empty() else \
-		"Verde é a missão em foco: a que a seta aponta. ◆ é enredo, ◇ é do dia a dia."
-	_rodape.text = "[W/S] escolher · [E] fixar · [Esc] fechar"
+		var id := str(missao.get("id", ""))
+		var acompanhada := CadernoDoVale.acompanhada(id)
+		# ◆ cheio é a acompanhada, como o losango do Witcher; ◇ as outras.
+		var marca := "◆" if acompanhada else "◇"
+		var cor := COR_CURSOR if i == _cursor else (COR_FIXADA if acompanhada else COR_TEXTO)
+		_adicionar_linha("%s  %s" % [marca, _nome_da_missao(missao)], cor)
+	var escolhida: Dictionary = abertas[clampi(_cursor, 0, abertas.size() - 1)]
+	_desenhar_o_diario(escolhida)
+	_rodape.text = "[W/S] escolher · [E] acompanhar · [Esc] fechar"
+
+
+func _nome_da_missao(missao: Dictionary) -> String:
+	var nome := str(missao.get("missao", ""))
+	return nome if nome != "" else str(missao.get("titulo", ""))
+
+
+## A PÁGINA DA MISSÃO ESCOLHIDA, à direita da lista.
+##
+## O TEXTO COMPLETO MORA AQUI. O HUD mostra só o resumo ("Corte o capim com a
+## foice (2/4)"); a fala inteira de quem pediu — o porquê, o lugar, o tom — é
+## lida no diário. E os objetivos vêm como no Witcher: os cumpridos riscados em
+## cinza, o de agora aceso, com a barra quando há conta.
+func _desenhar_o_diario(missao: Dictionary) -> void:
+	var id := str(missao.get("id", ""))
+	var acompanhada := CadernoDoVale.acompanhada(id)
+
+	# O ROSTO DE QUEM DEU A MISSÃO, ao lado do nome dela, quando o estúdio já
+	# tirou a foto (`retratos_3d.gd`). Sem foto, o nome sozinho.
+	var topo := HBoxContainer.new()
+	topo.add_theme_constant_override("separation", 14)
+	_detalhe.add_child(topo)
+	var foto: Texture2D = retratos.textura(str(missao.get("dono", ""))) if retratos != null else null
+	if foto != null:
+		var moldura := PanelContainer.new()
+		var estilo_moldura := StyleBoxFlat.new()
+		estilo_moldura.bg_color = Color(0.09, 0.12, 0.10, 0.95)
+		estilo_moldura.border_color = Color(Identidade.OURO.r, Identidade.OURO.g, Identidade.OURO.b, 0.6)
+		estilo_moldura.set_border_width_all(1)
+		estilo_moldura.set_corner_radius_all(4)
+		estilo_moldura.set_content_margin_all(3)
+		moldura.add_theme_stylebox_override("panel", estilo_moldura)
+		var rosto := TextureRect.new()
+		rosto.name = "RostoDeQuemDeu"
+		rosto.texture = foto
+		rosto.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		rosto.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		rosto.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+		rosto.custom_minimum_size = Vector2(72, 72)
+		moldura.add_child(rosto)
+		topo.add_child(moldura)
+	var nome := Label.new()
+	nome.name = "NomeDaMissao"
+	nome.text = _nome_da_missao(missao)
+	nome.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	nome.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	nome.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	nome.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_TITULO, 600, 1))
+	nome.add_theme_font_size_override("font_size", 24)
+	nome.add_theme_color_override("font_color", Identidade.CREME)
+	Identidade.sombra_texto(nome)
+	topo.add_child(nome)
+
+	var tipo := "◆ Enredo" if bool(missao.get("principal", false)) else "◇ Do dia a dia"
+	var quem := str(missao.get("quem", ""))
+	var linha_de_quem := tipo if quem == "" else "%s  ·  dada por %s" % [tipo, quem]
+	var passo := int(missao.get("passo", 0))
+	var passos := int(missao.get("passos", 0))
+	if passo > 0 and passos > 0:
+		linha_de_quem += "  ·  passo %d de %d" % [passo, passos]
+	var sub := _texto_do_diario(linha_de_quem, 15, Identidade.OURO)
+	sub.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_ITALICO, 400))
+	_detalhe.add_child(sub)
+
+	var filete := Identidade.filete_centrado(1.0)
+	filete.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_detalhe.add_child(filete)
+
+	# A FALA DE QUEM PEDIU, inteira. O caderno a guarda com o nome na frente
+	# ("Damião: O senhor subiu..."); aqui o nome já está em cima, e a fala vem
+	# como citação.
+	var fala := str(missao.get("texto", ""))
+	if quem != "" and fala.begins_with(quem + ": "):
+		fala = fala.substr(quem.length() + 2)
+	if fala != "":
+		var citacao := _texto_do_diario("“%s”" % fala, 17, COR_TEXTO)
+		citacao.name = "Fala"
+		citacao.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_ITALICO, 400))
+		_detalhe.add_child(citacao)
+
+	var objetivos := _texto_do_diario("OBJETIVOS", 13, Identidade.OURO)
+	objetivos.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_TEXTO, 600))
+	_detalhe.add_child(objetivos)
+	for feito in missao.get("feitos", []):
+		var riscado := _texto_do_diario("✓  %s" % str(feito), 15, COR_APAGADA)
+		riscado.name = "Feito"
+		_detalhe.add_child(riscado)
+	var agora := str(missao.get("resumo", ""))
+	if agora == "":
+		agora = str(missao.get("linha", missao.get("titulo", "")))
+	var objetivo := _texto_do_diario("◆  %s" % agora, 16, COR_CURSOR if acompanhada else COR_TEXTO)
+	objetivo.name = "ObjetivoDeAgora"
+	_detalhe.add_child(objetivo)
+	var total := int(missao.get("total", 0))
+	if total > 0:
+		var barra := ProgressBar.new()
+		barra.name = "Andamento"
+		barra.show_percentage = false
+		barra.custom_minimum_size = Vector2(0, 10)
+		barra.max_value = float(total)
+		barra.value = float(int(missao.get("feito", 0)))
+		var fundo := StyleBoxFlat.new()
+		fundo.bg_color = Color(0.13, 0.16, 0.12, 0.9)
+		fundo.border_color = Color(0.32, 0.35, 0.30, 0.9)
+		fundo.set_border_width_all(1)
+		fundo.set_corner_radius_all(3)
+		var cheio := StyleBoxFlat.new()
+		cheio.bg_color = COR_FIXADA
+		cheio.set_corner_radius_all(3)
+		barra.add_theme_stylebox_override("background", fundo)
+		barra.add_theme_stylebox_override("fill", cheio)
+		_detalhe.add_child(barra)
+
+	# ACOMPANHAR, o botão do Witcher. Acompanhada, ele diz que é e não faz nada.
+	var respiro := Control.new()
+	respiro.custom_minimum_size = Vector2(0, 6)
+	_detalhe.add_child(respiro)
+	var botao := Button.new()
+	botao.name = "Acompanhar"
+	botao.text = "◆  ACOMPANHANDO" if acompanhada else "ACOMPANHAR  [%s]" % Atalhos.letra("interagir")
+	botao.focus_mode = Control.FOCUS_NONE
+	botao.disabled = acompanhada
+	botao.mouse_default_cursor_shape = Control.CURSOR_ARROW if acompanhada else Control.CURSOR_POINTING_HAND
+	botao.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	botao.custom_minimum_size = Vector2(220, 38)
+	botao.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_TITULO, 600))
+	botao.add_theme_font_size_override("font_size", 15)
+	botao.add_theme_color_override("font_color", Identidade.CREME)
+	botao.add_theme_color_override("font_disabled_color", COR_FIXADA)
+	var estilo := StyleBoxFlat.new()
+	estilo.bg_color = Color(0.10, 0.17, 0.11, 0.95) if acompanhada else Color(0.19, 0.21, 0.15, 0.96)
+	estilo.border_color = COR_FIXADA if acompanhada else Color(Identidade.OURO.r, Identidade.OURO.g, Identidade.OURO.b, 0.75)
+	estilo.set_border_width_all(1)
+	estilo.set_corner_radius_all(4)
+	for estado in ["normal", "hover", "pressed", "disabled"]:
+		botao.add_theme_stylebox_override(estado, estilo)
+	botao.pressed.connect(func() -> void:
+		CadernoDoVale.fixar(id)
+		Audio.efeito("menu_confirma"))
+	_detalhe.add_child(botao)
+
+
+func _texto_do_diario(texto: String, tamanho: int, cor: Color) -> Label:
+	var etiqueta := Label.new()
+	etiqueta.text = texto
+	etiqueta.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	etiqueta.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	etiqueta.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_TEXTO, 400))
+	etiqueta.add_theme_font_size_override("font_size", tamanho)
+	etiqueta.add_theme_color_override("font_color", cor)
+	return etiqueta
 
 
 ## O "o que fazer" da missão, de TODOS os arquivos de fala (ver o 2D).
@@ -869,7 +1089,7 @@ func _desenhar_obras() -> void:
 
 
 const NOME_DO_ATRIBUTO := {
-	"energia_maxima": "vigor máximo",
+	"energia_maxima": "fôlego máximo",
 	"recuperacao_ao_dormir": "descanso da noite",
 	"recuperacao_ao_desmaiar": "descanso de quem apaga",
 	"eficiencia": "esforço de toda tarefa",
@@ -919,6 +1139,23 @@ func _desenhar_venda() -> void:
 		return
 	_dica.text = "O que o arraial produz sai barato e entra caro. Mandioca e lenha vendem bem na estiagem."
 	_rodape.text = "[W/S] escolher · [E] comprar · [A] vender · [Tab] outra aba · [Esc] fechar"
+
+
+## A ABA DO SAVEIRO: o que o mestre Quirino compra, quanto paga por um, quanto
+## o jogador tem e até quanto ele leva nesta viagem. Os textos são do
+## `data/saveiro.json`, nos três idiomas.
+func _desenhar_saveiro() -> void:
+	if saveiro == null:
+		return
+	_titulo.text = saveiro.texto("painel_titulo") % Jogo.dinheiro
+	var lista: Array = saveiro.o_que_compra()
+	for i in lista.size():
+		var id := str(lista[i])
+		var falta: int = saveiro.leva(id) - saveiro.levou(id)
+		var texto: String = saveiro.texto("painel_linha") % [Catalogo.nome(id), saveiro.paga(id), Inventario.quantidade(id), maxi(falta, 0)]
+		_adicionar_linha(texto, COR_CURSOR if i == _cursor else (COR_APAGADA if Inventario.quantidade(id) == 0 or falta <= 0 else COR_TEXTO))
+	_dica.text = (_aviso + "\n" if _aviso != "" else "") + saveiro.texto("painel_dica")
+	_rodape.text = saveiro.texto("painel_rodape")
 
 
 func _precos(custo: Dictionary) -> String:

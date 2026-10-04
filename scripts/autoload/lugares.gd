@@ -47,12 +47,25 @@ const DE_PARA := {
 	"poco": "Poço",
 	"mirante": "Mirante",
 	"cemiterio": "Cemitério",
+	# Os marcos de fé (#52): o cruzeiro diante da igreja, a capela velha da rua do
+	# mirante (a "capelinha de estrada" do 2D), o terreiro e a gameleira.
+	"cruzeiro": "Cruzeiro",
+	"capela_estrada": "Capela velha",
+	"terreiro": "Terreiro",
+	"gameleira": "Gameleira",
 	"rocado": "Roçado",
+	# A lavoura da casa (#8), na frente dela: onde se planta.
+	"lavoura": "Lavoura",
+	"horta": "Lavoura",
 	"casa_de_taipa": "Casa de taipa",
 	"casa_da_estrada": "Casa da estrada",
 	"casa_carro_quebrado": "Casa de Carro Quebrado",
 	"fogueira": "Fogueira",
 	"pedras": "Pedras",
+	# As casas do Pedro e da Dona Zefa, abertas por dentro: o vale escolhe o lote
+	# de cada um (`WorldBuilder.casas_dos_moradores`).
+	"casa_do_pedro": "Casa do Pedro",
+	"casa_da_zefa": "Casa da Zefa",
 }
 
 ## Os nomes que a campanha do 2D usa e o vale ainda NÃO tem, com o que falta
@@ -68,8 +81,6 @@ const FALTAM_NO_VALE := {
 	"oficina": "a oficina de materiais — Fase 7, e a âncora com ela",
 	"canteiro": "o canteiro de obras — Fase 7",
 	"curral": "o curral — Fase 7",
-	"horta": "a horta do roçado — cabe dentro do Roçado, a decidir",
-	"casa_do_pedro": "a casa do Pedro — Fase 7",
 	"portao_da_fazenda": "a fazenda, do outro lado do rio — Fase 2.5",
 	"patio_da_fazenda": "o pátio onde a recepção da 6.1 acontece, dentro da fazenda — Fase 2.5",
 	"cabra_do_alto": "o morro do Seu Benedito — Fase 2.5",

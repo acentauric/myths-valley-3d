@@ -1,12 +1,18 @@
 {
   "observacao": "O PIRÃO DA DONA FILÓ, trazido do jogo 2D (data/dialogos/arraial.json, passo filo_almoco). É a primeira missão do vale que se cumpre LEVANDO uma coisa a alguém, e não juntando nem derrubando — daí a meta 'levar'. A resposta é do Tonho, e não da Dona Filó: quem fala no fim é quem recebe, senão o jogador ouve o agradecimento do outro lado do vale. 'lugar' é nome de contrato do autoload Lugares. TRADUÇÃO: só em português neste primeiro momento; inglês e espanhol estão declarados como pendentes e são do Ramon.",
   "dono": "filo",
+  "nome": "O pirão da Dona Filó",
+  "nome_en": "Dona Filó's pirão",
+  "nome_es": "El pirão de doña Filó",
   "abre_em": "casa_da_estrada",
   "traducao": "pendente",
   "passos": [
     {
       "id": "filo_pedido",
       "titulo": "O pirão da Dona Filó",
+      "resumo": "Vá até a casa da Dona Filó, na estrada",
+      "resumo_en": "Go to Dona Filó's house by the road",
+      "resumo_es": "Ve a la casa de doña Filó, junto al camino",
       "lugar": "casa_da_estrada",
       "raio": 6.0,
       "audio": "",
@@ -21,6 +27,7 @@
       "audio": "",
       "texto": "Eu já não desço aquela ladeira — minhas pernas param na terceira pedra. Leve pra ele. Eu fico olhando a estrada daqui, como sempre, e hoje pelo menos vou saber que ele comeu.",
       "entrega": { "item": "pirao", "quantidade": 1 },
+      "recompensa": { "cocada": 2 },
       "meta": {
         "tipo": "levar",
         "item": "pirao",

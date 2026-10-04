@@ -23,6 +23,10 @@ extends SceneTree
 ##      vale tem está guardado pelo mundo ou declarado fora do save, com a
 ##      razão escrita. É a regra do 2D (`O_QUE_GUARDAR` ou `FORA_DO_SAVE`)
 ##      estendida ao que o 2D não tem.
+##   7. AS VAGAS NA ABERTURA, com o cartão de cada uma (ver `_conferir_as_vagas`).
+##   8. A PARTIDA ANTIGA DEVOLVE A ARMA DAS MÃOS: o encaixe das Mãos é das
+##      luvas, e o facão vestido nele numa partida salva volta para a barra de
+##      mão, com o efeito de cintura que ele dava tirado da Progressao.
 ##
 ## OS SAVES DE VERDADE NÃO SÃO TOCADOS. O portão os move para uma pasta de
 ## reserva no começo e os devolve no fim; se uma rodada anterior parou no
@@ -32,16 +36,22 @@ const RESERVA := "user://reserva_do_teste_de_salvamento"
 
 ## O que do 3D entra no save pela mão do vale (`estado_para_salvar`), com a
 ## MESMA chave lá. `horas_decorridas` é a conta que não volta a zero à
-## meia-noite, e é por ela que o coqueiro cortado sabe quando voltar (ver
-## arvores_info.gd): sem ela no save, o prazo guardado apontaria para longe.
+## meia-noite: espera de horas conta por ela, e sem ela no save o prazo
+## guardado apontaria para longe. (O coqueiro cortado contava por ela; a árvore
+## cortada passou a contar pelo calendário, o dia do corte no Relogio.)
 const DO_MUNDO := {
-	"Dia": ["hora", "horas_decorridas"],
+	# `relogio_alterado` é a marca de que o jogador parou o relógio e a partida
+	# deixou de contar conquista; sem ela no save, carregar apagaria o aviso.
+	# `registro_do_relogio` diz quando e como ele mexeu no relógio ("a
+	# alteração no backlog do save"), e `pausado` é o relógio que ELE parou:
+	# carregar não o religa calado.
+	"Dia": ["hora", "horas_decorridas", "relogio_alterado", "registro_do_relogio", "pausado"],
 	# O CADERNO DO VALE não é guardado campo a campo: o `estado()` dele devolve
 	# os três de uma vez e o `restaurar()` os põe de volta, porque `ativas` é
 	# lista de dicionários e o alvo de cada missão é um Vector3 — coisa que o
 	# save escreve como array de três números e tem de voltar como Vector3.
 	# Guardar campo a campo aqui seria refazer essa conversão do lado errado.
-	"CadernoDoVale": ["ativas", "cumpridas", "em_foco"],
+	"CadernoDoVale": ["ativas", "cumpridas", "em_foco", "foco"],
 }
 
 ## O que do 3D fica FORA do save, campo a campo, com a razão.
@@ -49,8 +59,7 @@ const FORA_DO_SAVE := {
 	"Dia": {
 		"velocidade": "preferência do AJUSTAR (a velocidade do tempo), não da partida",
 		"hora_inicial": "preferência do AJUSTAR: a hora em que uma partida NOVA começa",
-		"pausado": "estado de tela: o relógio pausado pelo botão do HUD ou pelos ajustes",
-		"pausa_no_jogo": "preferência do AJUSTAR: se o relógio pode ser pausado no jogo",
+		"pausa_no_jogo": "preferência do AJUSTAR (pode-se parar o relógio pelo menu do Esc?), não da partida",
 		"congelado_na_carga": "estado da tela de carregamento, que dura segundos",
 		"latitude": "o lugar do vale no globo, para a curva do sol; não muda com a partida",
 	},
@@ -158,6 +167,11 @@ func _run() -> void:
 	relogio.dormir()
 	dia.definir_hora(15.5)
 	var dia_salvo: int = relogio.dia_absoluto()
+	# O RELÓGIO QUE O JOGADOR PAROU, e o registro disso. Sem tela aberta, o
+	# `Dia` parado é a escolha dele.
+	dia.marcar_relogio_alterado()
+	dia.registrar_no_relogio("parou", "menu")
+	dia.pausado = true
 	if vale.pedro != null:
 		vale.pedro.missao = 2
 		vale.pedro.set("_iniciado", true)
@@ -211,6 +225,16 @@ func _run() -> void:
 	var falou_ao_voltar: Array[String] = []
 	if vale.pedro != null and vale.pedro.has_signal("narrou"):
 		vale.pedro.narrou.connect(func(texto: String) -> void: falou_ao_voltar.append(texto))
+	# A SAUDAÇÃO TAMBÉM. "A fala do Pedro depois de dar um loading não está
+	# condizente com o momento do jogo": a saudação dele é a da chegada no píer,
+	# e o "já saudei" não vai no save. Ele é posto ao lado do jogador, e na
+	# primeira passada perto dizia "Opa! É você o moço da capital?" outra vez.
+	if vale.pedro != null:
+		# Ela sai nos quadros em que o vale ainda se abre, antes de dar para
+		# escutar o sinal — então pergunta-se pelo rastro dela, o balão.
+		_conferir(float(vale.pedro.get("_balao_tempo")) <= 0.0,
+			"ao continuar a partida o Pedro saudou de novo, com a fala da chegada no píer")
+		vale.pedro.saudou.connect(func(_quem, texto: String) -> void: falou_ao_voltar.append(texto))
 	await _frames(4)
 	var longe: float = Vector2(player.global_position.x - igreja.x, player.global_position.z - igreja.z).length()
 	_conferir(longe < 0.6, "o jogador voltou a %.1f u de onde estava" % longe)
@@ -218,6 +242,12 @@ func _run() -> void:
 	_conferir(absf(dia.hora - 15.5) < 0.3, "a hora voltou %s, e era 15h30: o Dia não recebeu a hora do save" % dia.texto_hora())
 	_conferir(relogio.dia_absoluto() == dia_salvo, "o dia voltou %d, e era %d" % [relogio.dia_absoluto(), dia_salvo])
 	_conferir(relogio.pausado, "depois de carregar, o calendário ficou solto do Dia")
+	_conferir(dia.relogio_alterado, "a marca do relógio parado não voltou do save")
+	_conferir(dia.registro_do_relogio.size() == 1 and str(dia.registro_do_relogio[0].get("o_que", "")) == "parou",
+		"o registro do relógio voltou %s, e era uma parada" % str(dia.registro_do_relogio))
+	_conferir(dia.pausado, "o relógio que o jogador parou voltou andando do save")
+	dia.pausado = false
+	dia.relogio_alterado = false
 	_conferir(inventario.quantidade("facao") == 1, "o facão não voltou na mochila")
 	_conferir(is_equal_approx(vida.atual, vida.maximo() - 6.0), "a vida voltou %s" % str(vida.atual))
 	_conferir(regra.sabe("ginga"), "a ginga aprendida não voltou")
@@ -273,14 +303,50 @@ func _run() -> void:
 	# --- 7. AS VAGAS NA ABERTURA -----------------------------------------------
 	await _conferir_as_vagas()
 
+	# --- 8. A PARTIDA ANTIGA DEVOLVE A ARMA DAS MÃOS ---------------------------
+	_conferir_a_arma_das_maos()
+
 	_fechar()
 
 
-## A tela de vagas: três, a ocupada com o nome de quem joga, e recomeçar uma
-## ocupada só apaga no SEGUNDO clique.
+## "No campo mãos do inventário, não é para armas, mas sim para luvas. Armas são
+## nos campos numerais." A partida salva com o facão vestido nas Mãos — e a
+## Progressao com o efeito de cintura dele somado — volta com o facão na barra
+## de mão, o encaixe vazio e o efeito tirado.
+func _conferir_a_arma_das_maos() -> void:
+	partida.comecar(0)
+	var progressao = root.get_node("/root/Progressao")
+	var equipamento = root.get_node("/root/Equipamento")
+	var de_fabrica := float(progressao.eficiencia)
+	var antiga: Dictionary = partida.instantaneo()
+	antiga["Equipamento"]["vestido"]["maos"] = "facao"
+	antiga["Progressao"]["eficiencia"] = de_fabrica - 0.05
+	salvamento.carregar(antiga)
+	_conferir(equipamento.no_encaixe("maos") == "", "a partida antiga continua com o facão vestido nas Mãos, que são das luvas")
+	var na_barra := false
+	for i in inventario.ESPACOS_MAO:
+		if str((inventario.espacos[i] as Dictionary).get("id", "")) == "facao":
+			na_barra = true
+	_conferir(na_barra, "o facão da partida antiga não voltou para a barra de mão")
+	_conferir(is_equal_approx(float(progressao.eficiencia), de_fabrica),
+		"o efeito de cintura do facão ficou na partida antiga: eficiência %.3f, e era %.3f" % [float(progressao.eficiencia), de_fabrica])
+	partida.comecar(0)
+
+
+## A TELA DE VAGAS: três cartões, o da ocupada com o nome de quem joga. "Ao
+## invés de abrir um combo embaixo para deletar o save, coloque o ícone dentro do
+## próprio balão do save. Na esquerda pode colocar o ícone de editar o nome do
+## save e deletar o save." E depois: "me confundi. O correto é no lado
+## direito." O lápis e a lixeira estão DENTRO do cartão, à direita do texto, e
+## não há mais botão embaixo; o lápis grava o nome da vaga
+## no cartão, e gravar a partida não o apaga; a lixeira só apaga no SEGUNDO
+## clique, e tocar no cartão entre os dois desiste; apagada, a vaga guarda o
+## ponto de restauração e mostra a seta dos pontos; e a vaga vazia começa ali.
 func _conferir_as_vagas() -> void:
 	for slot in range(1, salvamento.QUANTOS_SLOTS + 1):
 		salvamento.apagar(slot)
+		partida.renomear(slot, "")
+	_apagar_pasta(PONTOS)
 	partida.comecar(2, true)
 	root.get_node("/root/Jogo").nome_jogador = "Zé do Teste"
 	_conferir(partida.salvar(), "não consegui preparar a vaga 2 para a tela")
@@ -292,25 +358,57 @@ func _conferir_as_vagas() -> void:
 	var vaga_1: Button = abertura.content.get_node_or_null("Vaga1")
 	var vaga_2: Button = abertura.content.get_node_or_null("Vaga2")
 	var vaga_3: Button = abertura.content.get_node_or_null("Vaga3")
-	var recomecar: Button = abertura.content.get_node_or_null("Recomecar2")
 	_conferir(vaga_1 != null and vaga_2 != null and vaga_3 != null, "a tela não mostra as três vagas")
-	if vaga_1 == null or vaga_2 == null or recomecar == null:
-		_conferir(recomecar != null, "a vaga ocupada não tem o botão de recomeçar")
+	if vaga_1 == null or vaga_2 == null:
 		return
-	_conferir(vaga_1.text.contains("VAZIA"), "a vaga 1, vazia, diz '%s'" % vaga_1.text)
-	_conferir(vaga_2.text.contains("Zé do Teste"), "a vaga 2 não diz de quem é a partida: '%s'" % vaga_2.text)
-	_conferir(abertura.content.get_node_or_null("Recomecar1") == null, "vaga vazia ganhou botão de recomeçar")
-	var antes := recomecar.text
-	recomecar.pressed.emit()
+	_conferir(abertura.content.get_node_or_null("Recomecar2") == null, "a vaga ocupada ainda tem o botão de recomeçar embaixo")
+	var editar: Button = vaga_2.get_node_or_null("Linha/Editar2")
+	var apagar: Button = vaga_2.get_node_or_null("Linha/Apagar2")
+	var texto: Label = vaga_2.get_node_or_null("Linha/Textos/Texto")
+	_conferir(editar != null and apagar != null and texto != null, "o cartão da vaga ocupada não tem o lápis e a lixeira dentro dele")
+	if editar == null or apagar == null or texto == null:
+		return
+	var textos: Control = vaga_2.get_node("Linha/Textos")
+	_conferir(editar.get_index() > textos.get_index() and apagar.get_index() > textos.get_index(), "o lápis e a lixeira não estão à direita do texto do cartão")
+	_conferir(vaga_1.get_node_or_null("Linha/Apagar1") == null and vaga_1.get_node_or_null("Linha/Editar1") == null, "a vaga vazia ganhou lápis ou lixeira")
+	_conferir(vaga_1.get_node("Linha/Textos/Texto").text.contains("VAZIA"), "a vaga 1, vazia, diz %s" % vaga_1.get_node("Linha/Textos/Texto").text)
+	_conferir(texto.text.contains("Zé do Teste"), "a vaga 2 não diz de quem é a partida: %s" % texto.text)
+
+	# O NOME DA VAGA: o lápis abre o campo, o Enter grava, o cartão mostra.
+	editar.pressed.emit()
 	await _frames(2)
-	_conferir(salvamento.existe_partida(2), "um clique em recomeçar já apagou a partida")
-	_conferir(recomecar.text != antes and recomecar.text.contains("Zé do Teste"),
-		"o primeiro clique não disse o que vai ser apagado: '%s'" % recomecar.text)
-	recomecar.pressed.emit()
+	var campo: LineEdit = abertura.content.get_node_or_null("Vaga2/Linha/Nome")
+	_conferir(campo != null, "o lápis não abriu o campo do nome da vaga")
+	if campo != null:
+		campo.text = "Fazenda do Tio"
+		campo.text_submitted.emit(campo.text)
+		await _frames(2)
+	_conferir(abertura.content.get_node("Vaga2/Linha/Textos/Texto").text.contains("Fazenda do Tio"), "o nome novo não aparece no cartão: %s" % abertura.content.get_node("Vaga2/Linha/Textos/Texto").text)
+	_conferir(partida.salvar() and partida.nome_da_vaga(2) == "Fazenda do Tio", "gravar a partida apagou o nome da vaga")
+
+	# APAGAR: o primeiro clique só avisa; tocar no cartão desiste; o segundo apaga.
+	(abertura.content.get_node("Vaga2/Linha/Apagar2") as Button).pressed.emit()
 	await _frames(2)
-	_conferir(not salvamento.existe_partida(2), "o segundo clique em recomeçar não apagou a partida")
-	_conferir(salvamento.slot_atual == 2, "recomeçar a vaga 2 não escolheu a vaga 2")
-	_conferir(abertura.line_index >= 0, "recomeçar não abriu a travessia da partida nova")
+	_conferir(salvamento.existe_partida(2), "um clique na lixeira já apagou a partida")
+	_conferir(abertura.content.get_node("Vaga2/Linha/Textos/Texto").text.contains("Fazenda do Tio"), "o primeiro clique não disse o que vai ser apagado: %s" % abertura.content.get_node("Vaga2/Linha/Textos/Texto").text)
+	(abertura.content.get_node("Vaga2") as Button).pressed.emit()
+	await _frames(2)
+	_conferir(salvamento.existe_partida(2) and salvamento.slot_atual == 2 and abertura.line_index < 0, "tocar no cartão com a lixeira pedindo a confirmação não desistiu de apagar")
+	_conferir(abertura._confirmando_vaga == 0, "tocar no cartão deixou a lixeira pedindo a confirmação")
+	(abertura.content.get_node("Vaga2/Linha/Apagar2") as Button).pressed.emit()
+	await _frames(2)
+	(abertura.content.get_node("Vaga2/Linha/Apagar2") as Button).pressed.emit()
+	await _frames(2)
+	_conferir(not salvamento.existe_partida(2), "o segundo clique na lixeira não apagou a partida")
+	_conferir(partida.nome_da_vaga(2) == "", "a vaga apagada continua com o nome que tinha")
+	_conferir(abertura.content.get_node_or_null("Vaga2/Linha/Pontos2") != null, "a vaga apagada não mostra os pontos de restauração: apagar não se desfaz")
+	_conferir(abertura.content.get_node("Vaga2/Linha/Textos/Texto").text.contains("VAZIA"), "a vaga apagada não ficou vazia")
+
+	# A VAGA VAZIA COMEÇA ALI, pela travessia.
+	(abertura.content.get_node("Vaga2") as Button).pressed.emit()
+	await _frames(2)
+	_conferir(salvamento.slot_atual == 2, "tocar na vaga vazia não escolheu a vaga 2")
+	_conferir(abertura.line_index >= 0, "tocar na vaga vazia não abriu a travessia da partida nova")
 	root.get_node("/root/Audio").parar_narracao()
 
 
@@ -373,7 +471,25 @@ func _arquivos_das_vagas() -> Array:
 	for slot in range(1, salvamento.QUANTOS_SLOTS + 1):
 		for caminho in [salvamento.arquivo(slot), salvamento.anterior(slot), salvamento.rascunho(slot)]:
 			todos.append(caminho)
+	# O nome que o jogador deu a cada vaga também é dele.
+	todos.append("user://vagas.json")
 	return todos
+
+
+## OS PONTOS DE RESTAURAÇÃO são do jogador como os saves: a pasta inteira vai
+## para a reserva e volta no fim.
+const PONTOS := "user://pontos"
+
+
+func _apagar_pasta(caminho: String) -> void:
+	var pasta := DirAccess.open(caminho)
+	if pasta == null:
+		return
+	for dentro in pasta.get_directories():
+		_apagar_pasta(caminho.path_join(dentro))
+	for arquivo in pasta.get_files():
+		DirAccess.remove_absolute(caminho.path_join(arquivo))
+	DirAccess.remove_absolute(caminho)
 
 
 func _guardar_os_saves_de_verdade() -> void:
@@ -381,6 +497,8 @@ func _guardar_os_saves_de_verdade() -> void:
 	for caminho in _arquivos_das_vagas():
 		if FileAccess.file_exists(caminho):
 			DirAccess.rename_absolute(caminho, RESERVA.path_join(caminho.get_file()))
+	if DirAccess.dir_exists_absolute(PONTOS):
+		DirAccess.rename_absolute(PONTOS, RESERVA.path_join(PONTOS.get_file()))
 
 
 func _devolver_os_saves_de_verdade() -> void:
@@ -388,6 +506,7 @@ func _devolver_os_saves_de_verdade() -> void:
 	for caminho in _arquivos_das_vagas():
 		if FileAccess.file_exists(caminho):
 			DirAccess.remove_absolute(caminho)
+	_apagar_pasta(PONTOS)
 	_devolver_reserva_esquecida()
 
 
@@ -402,7 +521,11 @@ func _devolver_reserva_esquecida() -> void:
 		if FileAccess.file_exists(destino):
 			DirAccess.remove_absolute(destino)
 		DirAccess.rename_absolute(RESERVA.path_join(nome), destino)
-	if DirAccess.open(RESERVA).get_files().is_empty():
+	for nome in pasta.get_directories():
+		var destino := "user://".path_join(nome)
+		_apagar_pasta(destino)
+		DirAccess.rename_absolute(RESERVA.path_join(nome), destino)
+	if DirAccess.open(RESERVA).get_files().is_empty() and DirAccess.open(RESERVA).get_directories().is_empty():
 		DirAccess.remove_absolute(RESERVA)
 
 

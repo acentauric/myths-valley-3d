@@ -32,6 +32,10 @@ const MERCADORIAS := {
 	"robalo": {"base": 210, "margem": 0.65},
 	"traira": {"base": 140, "margem": 0.65},
 	"lenha": {"base": 25, "margem": 0.5},
+	# A PIAÇAVA: a venda paga pouco (14) e cobra acima do que o mestre do saveiro
+	# paga (34), para ninguém comprar aqui e vender lá. Quem quer o preço bom
+	# espera o saveiro (ver saveiro_vale.gd).
+	"piacava": {"base": 36, "margem": 0.4},
 	"pedra": {"base": 20, "margem": 0.5},
 	"tabua": {"base": 120, "margem": 0.35},
 	"corda": {"base": 80, "margem": 0.35},
@@ -39,6 +43,13 @@ const MERCADORIAS := {
 	"picareta": {"base": 650, "margem": 0.3},
 	"foice": {"base": 420, "margem": 0.3},
 	"facao": {"base": 380, "margem": 0.3},
+	"luvas_de_couro": {"base": 240, "margem": 0.3},
+	# O AÇO VEM DE FORA, e mais caro que o ferro: um machado de aço custa dois e
+	# meio dos de ferro. É ele que abre a madeira de lei dura e a picareta de
+	# aço, o matacão — o que o talento sozinho não abre (ver arvores_3d.json e
+	# recursos_3d.json).
+	"machado_de_aco": {"base": 1500, "margem": 0.3},
+	"picareta_de_aco": {"base": 1600, "margem": 0.3},
 	# A CARNE DE CAÇA vale mais que o peixe comum e menos que o robalo: é
 	# trabalho de ir à mata funda, mas quem compra no arraial come peixe todo
 	# dia e caça de vez em quando.

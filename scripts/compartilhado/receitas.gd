@@ -187,6 +187,15 @@ func _ao_abrir_passo(missao: String) -> void:
 	_abrir_por("missao", missao)
 
 
+## UM PASSO DE CADEIA DO VALE ABRIU. O 3D não conduz missão pelo `Missoes`:
+## quem conduz é a `CadeiaDeMissoes`, e é ela que avisa aqui — a mesma porta
+## de `Missoes.abriu`, com o id do passo. Sem isto a planta que um passo
+## ensina ("abre": {"missao": "mirante_material"}) nunca entrava na cabeça do
+## jogador, e o passo seguinte pedia uma obra que a aba não listava.
+func passo_abriu(missao: String) -> void:
+	_abrir_por("missao", missao)
+
+
 func _ao_achar(_colecao: String, id: String) -> void:
 	_abrir_por("achado", id)
 

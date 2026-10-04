@@ -13,6 +13,9 @@ const ClickNavigation = preload("res://scripts/prototipo_3d/click_navigation.gd"
 const TeclasMovimento = preload("res://scripts/prototipo_3d/teclas_movimento.gd")
 const Mar = preload("res://scripts/prototipo_3d/mar.gd")
 const EspumaAgua = preload("res://scripts/prototipo_3d/espuma_agua.gd")
+## O que o corpo mostra do que veste: o chapéu, o machado e o facão — o mesmo
+## caminho do boneco da mochila (`boneco_da_mochila.gd`).
+const Vestimenta3D = preload("res://scripts/prototipo_3d/vestimenta_3d.gd")
 const HOUSE_INTERACTION_LAYER := 1 << 12
 const ARRIVAL_DISTANCE := 0.7
 const CAMERA_DRAG_THRESHOLD := 6.0
@@ -108,11 +111,19 @@ var _run_toggled := false
 var _ran_since_toggle := false
 var _vigor := VIGOR_MAXIMO
 var _folego := FOLEGO_MAXIMO
+## O que está na mão (o machado, o facão, a foice...) e a peça que ela mostra
+## (`Vestimenta3D.item_na_mao`), "" quando nada.
 var _machado_ancora: Node3D
 var _machado_pivo: Node3D
 var _item_visualizado := ""
 var _machado_ancora_posicao_base := Vector3.ZERO
 var _machado_angulo_lateral := 0.0
+## O chapéu na cabeça, com o id dele ("" quando nada).
+var _chapeu_ancora: Node3D
+var _chapeu_id := ""
+## As luvas nas duas mãos (o encaixe das Mãos), e o id delas.
+var _luvas: Array[Node3D] = []
+var _luvas_id := ""
 var _acao_golpe_restante := 0.0
 var _acao_golpe_espera_animacao := false
 
@@ -189,10 +200,12 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	_atualizar_machado_na_mao()
 	_atualizar_pose_machado(delta)
+	_atualizar_vestimenta()
 
 
+## Machado de ferro ou de aço: os dois são da família do machado (`Catalogo.familia`).
 func machado_na_mao() -> bool:
-	return Inventario.na_mao() == "machado"
+	return Equipamento.da_familia_em_uso("machado") != ""
 
 
 func travar_acao_de_golpe(duracao: float, aguardar_animacao: bool) -> void:
@@ -209,60 +222,58 @@ func liberar_acao_de_golpe() -> void:
 	_acao_golpe_espera_animacao = false
 
 
+## A FERRAMENTA OU A ARMA NA MÃO, a que a barra escolheu (`Vestimenta3D`, o
+## mesmo caminho do boneco da mochila). O machado de aço mostra o de ferro.
 func _atualizar_machado_na_mao() -> void:
-	var id := Inventario.na_mao()
-	if Catalogo.tipo(id) != "ferramenta" and Catalogo.dano(id) <= 0.0:
-		id = ""
-	if id != "" and id != "machado" and not CatalogoAssets.tem_tripo(id):
-		id = ""
+	var id := Vestimenta3D.item_na_mao()
 	if id == _item_visualizado and (id == "" or _machado_ancora != null):
 		return
 	if _machado_ancora != null:
-		_machado_ancora.queue_free()
+		_soltar(_machado_ancora)
 		_machado_ancora = null
 		_machado_pivo = null
 		_machado_angulo_lateral = 0.0
 	_item_visualizado = id
-	if id == "":
+	if id == "" or model == null:
 		return
-	_machado_ancora = _criar_ancora_da_mao()
+	_machado_ancora = Vestimenta3D.ancora_da_mao(model, character_height, visual, Vestimenta3D.nome_da_ancora(id))
 	if _machado_ancora == null:
 		return
 	_machado_ancora_posicao_base = _machado_ancora.position
-	if id == "machado" and Estilo.procedural():
-		_criar_machado_procedural(_machado_ancora)
-	elif id == "machado":
-		var machado := CatalogoAssets.instanciar("machado", _machado_ancora, Vector3.ZERO, 0.46)
-		if machado != null:
-			machado.rotation = Vector3(deg_to_rad(1.0), deg_to_rad(2.0), deg_to_rad(92.0))
-			machado.basis = machado.basis * Basis(Vector3.UP, PI)
-			# A pegada fica logo acima da ponta real do cabo no GLB.
-			var pegada_cabo := Vector3(0.34, 0.12, 0.0)
-			machado.position -= machado.transform * pegada_cabo
-			machado.position += Vector3(0.0, 0.06, 0.0)
-			machado.position += _machado_ancora.global_basis.inverse() * (visual.global_basis.x * 0.08)
-			# Gira em torno da pegada para a ponta do cabo permanecer na mão direita.
-			_machado_pivo = Node3D.new()
-			_machado_pivo.name = "PivoDaPegada"
-			_machado_ancora.add_child(_machado_pivo)
-			_machado_pivo.position = machado.transform * pegada_cabo
-			machado.reparent(_machado_pivo, true)
-	elif id == "foice":
-		# O GLB da foice já existe. A pegada fica junto à base do cabo, e o
-		# pivô acompanha o mesmo movimento de mão usado pelo machado.
-		_machado_pivo = Node3D.new()
-		_machado_pivo.name = "PivoDaFoice"
-		_machado_ancora.add_child(_machado_pivo)
-		var foice := CatalogoAssets.instanciar("foice", _machado_pivo, Vector3.ZERO, 0.95)
-		if foice != null:
-			foice.rotation_degrees = Vector3(0.0, -90.0, 80.0)
-			foice.position -= foice.basis * Vector3(0.0, 0.11, 0.0)
-			foice.position += Vector3(0.0, 0.02, 0.0)
+	_machado_pivo = Vestimenta3D.na_mao(_machado_ancora, visual, id)
+
+
+## O CHAPÉU NA CABEÇA E AS LUVAS NAS MÃOS, pelo que está vestido agora
+## (`Vestimenta3D`). O que vai na mão tem o caminho dele, acima, por causa do
+## balanço do braço.
+func _atualizar_vestimenta() -> void:
+	var luvas := Vestimenta3D.item_nas_maos()
+	if luvas != _luvas_id:
+		for ancora in _luvas:
+			_soltar(ancora)
+		_luvas.clear()
+		_luvas_id = luvas
+		if luvas != "" and model != null:
+			_luvas = Vestimenta3D.luvas(model, luvas)
+	var chapeu := Vestimenta3D.item_na_cabeca()
+	if chapeu != _chapeu_id:
+		_soltar(_chapeu_ancora)
+		_chapeu_ancora = null
+		_chapeu_id = chapeu
+		if chapeu != "" and model != null:
+			_chapeu_ancora = Vestimenta3D.ancora_da_cabeca(model)
+			if _chapeu_ancora != null:
+				Vestimenta3D.na_cabeca(_chapeu_ancora, chapeu)
+
+
+## Tira uma âncora do corpo, com o anexo do osso que ela tinha.
+func _soltar(ancora: Node3D) -> void:
+	if ancora == null:
+		return
+	if ancora.get_parent() is BoneAttachment3D:
+		ancora.get_parent().queue_free()
 	else:
-		var ferramenta := CatalogoAssets.instanciar(id, _machado_ancora, Vector3.ZERO, 0.5)
-		if ferramenta != null:
-			ferramenta.rotation_degrees = Vector3(0.0, 0.0, 90.0)
-			ferramenta.position = Vector3(0.0, -0.08, 0.0)
+		ancora.queue_free()
 
 
 func _atualizar_pose_machado(delta: float) -> void:
@@ -276,64 +287,9 @@ func _atualizar_pose_machado(delta: float) -> void:
 	var afastamento := -0.01 if em_idle else 0.0
 	_machado_ancora.position = _machado_ancora_posicao_base + _machado_ancora.global_basis.inverse() * (visual.global_basis.x * afastamento)
 	if _machado_pivo != null:
-		var angulo_alvo := 0.0 if em_golpe or _nadando else deg_to_rad(-30.0)
+		var angulo_alvo := 0.0 if em_golpe or _nadando else deg_to_rad(Vestimenta3D.MACHADO_PARADO)
 		_machado_angulo_lateral = move_toward(_machado_angulo_lateral, angulo_alvo, 4.0 * delta)
-		var eixo_vertical_local := (_machado_ancora.global_basis.inverse() * visual.global_basis.y).normalized()
-		_machado_pivo.basis = Basis(eixo_vertical_local, _machado_angulo_lateral)
-
-
-func _criar_ancora_da_mao() -> Node3D:
-	if model is PersonagemProcedural:
-		var cotovelo := model.find_child("CotoveloD", true, false) as Node3D
-		if cotovelo == null:
-			return null
-		var ancora := Node3D.new()
-		ancora.name = "MachadoNaMao"
-		ancora.position = Vector3(0.0, -character_height * 0.16, 0.0)
-		cotovelo.add_child(ancora)
-		return ancora
-	for encontrado in model.find_children("*", "Skeleton3D", true, false):
-		var esqueleto := encontrado as Skeleton3D
-		for indice in esqueleto.get_bone_count():
-			var nome := String(esqueleto.get_bone_name(indice)).to_lower()
-			if not nome.ends_with("righthand"):
-				continue
-			var anexo := BoneAttachment3D.new()
-			anexo.name = "MachadoNaMao"
-			anexo.bone_name = esqueleto.get_bone_name(indice)
-			esqueleto.add_child(anexo)
-			var ancora := Node3D.new()
-			anexo.add_child(ancora)
-			return ancora
-	var ancora := Node3D.new()
-	ancora.name = "MachadoNaMao"
-	ancora.position = Vector3(0.34, 0.9, 0.08)
-	visual.add_child(ancora)
-	return ancora
-
-
-func _criar_machado_procedural(pai: Node3D) -> void:
-	var cabo := MeshInstance3D.new()
-	var malha_cabo := CylinderMesh.new()
-	malha_cabo.top_radius = 0.018
-	malha_cabo.bottom_radius = 0.024
-	malha_cabo.height = 0.52
-	cabo.mesh = malha_cabo
-	cabo.position.y = -0.19
-	var madeira := StandardMaterial3D.new()
-	madeira.albedo_color = Color("70492d")
-	cabo.material_override = madeira
-	pai.add_child(cabo)
-	var lamina := MeshInstance3D.new()
-	var malha_lamina := BoxMesh.new()
-	malha_lamina.size = Vector3(0.23, 0.15, 0.055)
-	lamina.mesh = malha_lamina
-	lamina.position = Vector3(0.07, -0.4, 0.0)
-	var ferro := StandardMaterial3D.new()
-	ferro.albedo_color = Color("777a78")
-	ferro.metallic = 0.55
-	lamina.material_override = ferro
-	pai.add_child(lamina)
+		Vestimenta3D.girar_o_machado(_machado_ancora, _machado_pivo, visual, _machado_angulo_lateral)
 
 
 func _tem_animacoes(scene: PackedScene) -> bool:
@@ -482,6 +438,7 @@ func _physics_process(delta: float) -> void:
 		velocity.y = -0.1
 	var distance_before := _distance_to_next_waypoint()
 	move_and_slide()
+	_empurrar_quem_barra(direction)
 	_subir_degrau(direction)
 	_atualizar_vigor(delta, corrida_ativa)
 	if _run_toggled and _ran_since_toggle and direction.length_squared() <= 0.01 and Vector2(velocity.x, velocity.z).length_squared() <= RUN_STOP_SPEED * RUN_STOP_SPEED:
@@ -558,9 +515,17 @@ func _unhandled_input(event: InputEvent) -> void:
 			_pending_walk_click = event.position
 			_pending_walk_run = event.double_click
 		elif event.button_index == MOUSE_BUTTON_WHEEL_UP or event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
+			# A RODA TROCA O ITEM DA MÃO, como no 2D (#2): é o gesto que se faz o
+			# tempo todo no meio do trabalho. O zoom ficou no Ctrl+roda e no
+			# mais e menos (`mv_zoom_in`/`mv_zoom_out`). Para baixo é o espaço
+			# seguinte, como lá. Com mapa ou tela aberta este nó não ouve nada,
+			# então a roda de lá continua sendo de lá.
 			var para_cima: bool = event.button_index == MOUSE_BUTTON_WHEEL_UP
-			_aproximar_a_camera(para_cima)
-			get_viewport().set_input_as_handled()
+			if event.ctrl_pressed:
+				_aproximar_a_camera(para_cima)
+			else:
+				Inventario.selecionar(Inventario.anterior_da_mao() if para_cima else Inventario.proximo_da_mao())
+				get_viewport().set_input_as_handled()
 		_apply_camera()
 	if event.is_action_pressed("mv_zoom_in", true):
 		_aproximar_a_camera(true)
@@ -589,6 +554,48 @@ func _unhandled_input(event: InputEvent) -> void:
 ## Um passo de zoom: perto é para cima na roda, e o mais no teclado.
 func _aproximar_a_camera(perto: bool) -> void:
 	_distance = maxf(1.6, _distance - 0.35) if perto else minf(12.0, _distance + 0.35)
+	if _de_cima:
+		_distance = clampf(_distance, DE_CIMA_PERTO, DE_CIMA_LONGE)
+
+
+## A CÂMERA DE CIMA, num cômodo pequeno (a casa herdada). A câmera de passeio,
+## oito metros atrás e quase na altura dos olhos, não cabe num quarto de três
+## por quatro: o braço bate na parede, encolhe, e a câmera ia parar dentro da
+## cabeça do jogador. Lá dentro ela sobe e olha de cima — o cômodo some o teto
+## para ela (`comodo.gd`, `por_dentro`) —, e ao sair volta como estava.
+const DE_CIMA_DISTANCIA := 4.4
+const DE_CIMA_INCLINACAO := -1.2
+const DE_CIMA_PERTO := 3.2
+const DE_CIMA_LONGE := 5.6
+var _de_cima := false
+var _antes_de_cima := Vector2.ZERO
+## As paredes do cômodo que o braço da câmera atravessa enquanto ela está de
+## cima: sem isso, junto da parede, o braço batia nela e encolhia.
+var _atravessa: Array[RID] = []
+
+
+func camera_de_cima(ativa: bool, corpos_do_comodo: Array[RID] = []) -> void:
+	if ativa == _de_cima:
+		return
+	_de_cima = ativa
+	for corpo in _atravessa:
+		spring.remove_excluded_object(corpo)
+	_atravessa.clear()
+	if ativa:
+		_antes_de_cima = Vector2(_distance, _pitch)
+		_distance = DE_CIMA_DISTANCIA
+		_pitch = DE_CIMA_INCLINACAO
+		for corpo in corpos_do_comodo:
+			spring.add_excluded_object(corpo)
+			_atravessa.append(corpo)
+	else:
+		_distance = _antes_de_cima.x
+		_pitch = _antes_de_cima.y
+	_apply_camera()
+
+
+func esta_de_cima() -> bool:
+	return _de_cima
 
 
 ## PERDER O FOCO SOLTA O MOUSE, MAS NÃO TROCA O MODO.
@@ -638,7 +645,10 @@ func set_camera_locked(value: bool) -> void:
 
 func _rotate_camera(relative: Vector2) -> void:
 	_yaw -= relative.x * mouse_sensitivity
-	_pitch = clampf(_pitch - relative.y * mouse_sensitivity, -0.95, 0.35)
+	if _de_cima:
+		_pitch = clampf(_pitch - relative.y * mouse_sensitivity, -1.4, -0.85)
+	else:
+		_pitch = clampf(_pitch - relative.y * mouse_sensitivity, -0.95, 0.35)
 	_apply_camera()
 
 ## Derruba o jogador: impulso horizontal `impulso` (m/s) mais um pequeno salto, sem
@@ -693,6 +703,10 @@ func is_swimming() -> bool:
 ## Chão sob os pés para o som do passo: madeira no píer, na ponte e na canoa; água rasa
 ## ou funda conforme a lâmina; senão o que o cenário diz (grama, terra, areia).
 func chao_dos_pes() -> String:
+	# Dentro de uma construção o chão é de lajota e tábua, e não o do mapa —
+	# que, embaixo do assoalho, responderia o chão do lote.
+	if dentro_de != "":
+		return "madeira"
 	var profundidade := _profundidade()
 	if profundidade > 0.35:
 		return "agua_funda"
@@ -725,6 +739,25 @@ func step_interval() -> float:
 	return intervalo
 
 
+## QUEM BARRA O CAMINHO DÁ PASSAGEM. Andando contra um morador — de frente, e
+## não roçando de lado —, ele sai do caminho (`MoradorNPC.dar_passagem`). Era a
+## queixa: o Pedro parou no vão da porta da casa herdada, e o jogador não saía
+## mais de casa. Vale para qualquer morador, em qualquer porta ou corredor.
+func _empurrar_quem_barra(direcao: Vector3) -> void:
+	if direcao.length_squared() < 0.01:
+		return
+	var rumo := Vector3(direcao.x, 0.0, direcao.z).normalized()
+	for i in get_slide_collision_count():
+		var colisao := get_slide_collision(i)
+		var corpo := colisao.get_collider()
+		if corpo == null or not corpo.has_method("dar_passagem"):
+			continue
+		var empurrao := -colisao.get_normal()
+		empurrao.y = 0.0
+		if empurrao.length_squared() > 0.0001 and empurrao.normalized().dot(rumo) > 0.3:
+			corpo.dar_passagem(empurrao)
+
+
 ## Bordas baixas (a areia da praia saindo da água, meio-fio, rampa do píer) viram
 ## parede para o CharacterBody3D: se o que barra o passo cabe em DEGRAU, sobe nele.
 func _subir_degrau(direcao: Vector3) -> void:
@@ -748,6 +781,32 @@ func _back_to_land() -> void:
 	if animator and animator.has_method("finish_jump"):
 		animator.finish_jump(0.0)
 	navigation_status.emit("De volta à terra firme.")
+
+
+## Em que construção o jogador está, ou "" ao ar livre. Quem escreve é o
+## `interiores.gd`; o cômodo mora dentro da casca da construção, no lugar dela
+## no vale, então o resto do jogo vê o jogador onde ele está.
+var dentro_de := ""
+
+
+## Põe o corpo noutro lugar de uma vez, de frente para `rumo` (ângulo em Y) e
+## com a câmera atrás dele. A TERRA FIRME DE REFERÊNCIA RECOMEÇA ALI, como no
+## `reset_position`: chegar de uma vez num chão mais baixo — do terreiro, no
+## alto, à praia da gameleira — não é cair no mar, e a regra dos 2,5 m devolvia
+## o corpo ao lugar de onde ele saiu.
+func teleportar(destino: Vector3, rumo: float) -> void:
+	_cancel_walk()
+	global_position = destino
+	velocity = Vector3.ZERO
+	_last_land = Vector3.INF
+	_jumping = false
+	_jump_buffer_remaining = 0.0
+	visual.rotation.y = rumo
+	_yaw = rumo + PI
+	# Dentro da casa a câmera continua de cima (ver `camera_de_cima`).
+	_pitch = DE_CIMA_INCLINACAO if _de_cima else -0.19
+	inspecting = false
+	_apply_camera()
 
 
 func reset_position() -> void:
@@ -940,8 +999,12 @@ func vigor_atual() -> float:
 	return _vigor
 
 
+## O VIGOR É O FÔLEGO CURTO DO CORPO, e não a reserva do dia: corre, pula e
+## golpeia, e volta sozinho em segundos. A reserva (o `Energia`, o fôlego do 2D)
+## é outra conta, que só a comida, a cama e o desmaio devolvem, e que a
+## bênção, o talento e a luva mexem. Por isso o teto aqui é o dele.
 func vigor_maximo() -> float:
-	return Energia.maximo()
+	return VIGOR_MAXIMO
 
 
 func definir_vigor(valor: float) -> void:

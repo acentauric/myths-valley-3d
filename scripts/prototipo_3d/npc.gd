@@ -5,12 +5,24 @@ extends CharacterBody3D
 ## visita — texto no balão e voz por proximidade (AudioStreamPlayer3D). O corpo é o
 ## humanoide procedural ou o modelo do Tripo, conforme o estilo escolhido em AJUSTAR.
 
+const IdiomaMenu = preload("res://scripts/prototipo_3d/idioma_menu.gd")
 const BalaoFala = preload("res://scripts/prototipo_3d/balao_fala.gd")
 const EspumaAgua = preload("res://scripts/prototipo_3d/espuma_agua.gd")
 
 signal saudou(morador: MoradorNPC, texto: String)
 
 const PASTA_VOZES := "res://assets/audio/vozes/"
+## O DIA DA FESTA DA FÉ (#52): da uma da tarde até a meia-noite, quem é da fé
+## da festa troca o posto de sempre pela roda no marco maior dela — a hora é a
+## do 2D (`Mundo.HORA_DA_TARDE`).
+const HORA_DA_FESTA := 13.0
+const POSTO_DA_FESTA := "festa"
+## O raio da roda em volta de cada marco: fora da caixa do cruzeiro, em volta do
+## fogo do terreiro, em cima do monte da gameleira.
+const RODA_DA_FESTA := {"cruzeiro": 2.6, "terreiro": 2.5, "gameleira": 3.2}
+## Até onde o jogador vê quem anda: mais longe que isto, ou fora da câmera, o
+## caminho da festa se encurta (ver `_encurtar_o_caminho`).
+const VISTA := 70.0
 const VELOCIDADE := 1.35
 const RAIO_SAUDACAO := 3.4
 const RAIO_BALAO := 6.0
@@ -21,6 +33,8 @@ const INTERVALO_SAUDACAO_MS := 45000
 const RAIO_CONVERSA := 18.0
 ## Folga entre o fim de uma fala e o começo da seguinte, em segundos.
 const PAUSA_ENTRE_FALAS := 0.6
+## O cinza das peças provisórias (a oficina, o caititu, os móveis de uso).
+const CINZA_PROVISORIO := Color(0.52, 0.53, 0.52)
 
 ## Água: como o jogador (player_controller.gd), nada onde o fundo passa do peito.
 const NADA_A_PARTIR := 0.72
@@ -71,6 +85,26 @@ var _desvios := 0
 var _parado := 0.0
 var _lado_desvio := 0.0
 var _ponto_bloqueio := Vector3.INF
+## A caminho da festa, ou voltando dela: o caminho que pode se encurtar.
+var _caminho_da_festa := false
+## O CAMINHO PELA MALHA (`navegacao_vale.gd`): os pontos até o destino, o da
+## vez, para onde ele foi feito e quando refazer. Sem malha, anda-se reto.
+var _caminho: PackedVector3Array = PackedVector3Array()
+var _ponto_da_vez := 0
+var _caminho_ate := Vector3.INF
+var _refazer_em := 0.0
+## De quanto em quanto tempo o caminho se refaz (o jogador, outro morador e a
+## porta aberta mudam o que está no meio), e de que distância o ponto da vez
+## conta como alcançado: perto, para o corpo não cortar a quina rumo ao ponto
+## seguinte e raspar nela.
+const REFAZER_CAMINHO := 4.0
+const PONTO_ALCANCADO := 0.35
+## DAR PASSAGEM: o passo para fora do caminho e quanto tempo se fica fora dele,
+## o bastante para quem empurrou passar. Ver `dar_passagem`.
+const PASSAGEM_PASSO := 1.4
+const PASSAGEM_DURA := 2.5
+var _passagem_ate := Vector3.INF
+var _passagem_resta := 0.0
 
 
 ## Anda até `ponto` (em vez do posto do período), na `velocidade` dada, até liberar().
@@ -82,6 +116,58 @@ func ir_ate(ponto: Vector3, velocidade: float = 2.6) -> void:
 ## Volta ao posto do período.
 func liberar() -> void:
 	_destino_avulso = Vector3.INF
+
+
+## Já no posto do período, sem andar até ele: a carga de uma partida põe cada
+## um onde ele estaria.
+func ir_ao_posto_agora() -> void:
+	_posto = _posto_de_agora()
+	_alvo = _posicao_do_posto(_posto)
+	if _alvo != Vector3.ZERO:
+		global_position = _alvo + Vector3(0, 0.05, 0)
+		velocity = Vector3.ZERO
+
+
+## DAR PASSAGEM. Morador parado no caminho é parede que fala: o Pedro entrou
+## atrás do jogador na casa herdada, parou no vão da porta, e "não consigo mais
+## sair de casa". Quem anda contra um morador — o jogador, pelo
+## `player_controller._empurrar_quem_barra` — faz ele sair do caminho: DE LADO,
+## se há lado; ADIANTE, na direção do empurrão, se o lado é parede — no vão da
+## porta, adiante é para fora dela. Fica fora do caminho `PASSAGEM_DURA`
+## segundos, e então volta ao que fazia.
+func dar_passagem(empurrao: Vector3) -> void:
+	if _passagem_resta > 0.0:
+		return
+	var rumo := Vector3(empurrao.x, 0.0, empurrao.z)
+	if rumo.length() < 0.01:
+		return
+	rumo = rumo.normalized()
+	var lado := rumo.cross(Vector3.UP).normalized()
+	# Do chão um palmo acima, para o roçar do pé no chão não contar como parede.
+	var de := global_transform.translated(Vector3.UP * 0.12)
+	for saida in [lado, -lado, rumo, (rumo + lado).normalized(), (rumo - lado).normalized()]:
+		var passo: Vector3 = saida * PASSAGEM_PASSO
+		if not test_move(de, passo):
+			_passagem_ate = global_position + passo
+			_passagem_resta = PASSAGEM_DURA
+			return
+
+
+func dando_passagem() -> bool:
+	return _passagem_resta > 0.0
+
+
+## Um pulso de quem está dando passagem: anda até o lugar de fora do caminho e
+## espera lá o resto do tempo. Devolve se ainda está dando passagem.
+func _andar_dando_passagem(delta: float) -> bool:
+	if _passagem_resta <= 0.0:
+		return false
+	_passagem_resta -= delta
+	var falta := _passagem_ate - global_position
+	falta.y = 0.0
+	var direcao := falta.normalized() if falta.length() > 0.12 else Vector3.ZERO
+	_mover(direcao, VELOCIDADE * 1.3, delta)
+	return true
 
 
 func configurar(d: Dictionary, anc: Dictionary, alvo_jogador: Node3D, mundo: Node3D = null) -> void:
@@ -144,7 +230,7 @@ func _ready() -> void:
 	_aplicar_volume()
 	if Audio.has_signal("volumes_alterados"):
 		Audio.volumes_alterados.connect(_aplicar_volume)
-	_posto = _posto_para(Dia.periodo())
+	_posto = _posto_de_agora()
 	_alvo = _posicao_do_posto(_posto)
 	if _alvo != Vector3.ZERO:
 		global_position = _alvo + Vector3(0, 0.05, 0)
@@ -171,6 +257,14 @@ func _montar_modelo() -> void:
 			add_child(autoral)
 			autoral.configure(modelo)
 			animador = autoral
+		if modelo == null:
+			# NO ESTILO TRIPO, QUEM AINDA NÃO TEM MODELO É CAIXA CINZA, e não o boneco
+			# do procedural: peça procedural não entra no estilo Tripo. É o trato do
+			# caititu e da oficina — a mecânica não espera o modelo, e o modelo entra
+			# depois pelo catálogo sem tocar nela. Hoje é só o mestre Quirino. Sem
+			# animador: toda chamada a ele pergunta antes se existe, e o balanço do
+			# passo (`_atualizar_animacao`) anda sozinho.
+			modelo = _corpo_provisorio()
 	if modelo == null:
 		var procedural := PersonagemProcedural.novo(id, altura)
 		visual.add_child(procedural)
@@ -178,11 +272,43 @@ func _montar_modelo() -> void:
 		animador = procedural
 
 
+## O CORPO PROVISÓRIO: caixa cinza na altura do morador, com a cabeça um pouco
+## à frente (+Z, para onde o corpo olha) para ele ter rosto, como o caititu.
+func _corpo_provisorio() -> Node3D:
+	var corpo := Node3D.new()
+	corpo.name = "CorpoProvisorio"
+	var tinta := StandardMaterial3D.new()
+	tinta.albedo_color = CINZA_PROVISORIO
+	var tronco := MeshInstance3D.new()
+	var malha := BoxMesh.new()
+	malha.size = Vector3(0.46, altura * 0.82, 0.28)
+	tronco.mesh = malha
+	tronco.material_override = tinta
+	tronco.position.y = malha.size.y * 0.5
+	corpo.add_child(tronco)
+	var cabeca := MeshInstance3D.new()
+	var malha_cabeca := BoxMesh.new()
+	malha_cabeca.size = Vector3(0.24, altura * 0.16, 0.24)
+	cabeca.mesh = malha_cabeca
+	cabeca.material_override = tinta
+	cabeca.position = Vector3(0.0, malha.size.y + malha_cabeca.size.y * 0.5, 0.05)
+	corpo.add_child(cabeca)
+	visual.add_child(corpo)
+	return corpo
+
+
 func _physics_process(delta: float) -> void:
-	var posto := _posto_para(Dia.periodo())
+	if _andar_dando_passagem(delta):
+		_atualizar_animacao(delta)
+		_atualizar_interacao(delta)
+		return
+	var posto := _posto_de_agora()
 	if posto != _posto:
+		_caminho_da_festa = posto == POSTO_DA_FESTA or _posto == POSTO_DA_FESTA
 		_posto = posto
 		_alvo = _posicao_do_posto(posto)
+	if _caminho_da_festa:
+		_encurtar_o_caminho()
 	# Destino avulso (ir_ate) vale mais que o posto até ser liberado.
 	var destino := _destino_avulso if _destino_avulso.is_finite() else _alvo
 	var deslocamento := destino - global_position
@@ -190,7 +316,11 @@ func _physics_process(delta: float) -> void:
 	var distancia := deslocamento.length()
 	var direcao := Vector3.ZERO
 	if distancia > (0.2 if _destino_avulso.is_finite() else 0.6):
-		direcao = deslocamento / distancia
+		# Pela malha, quando há: o rumo é o ponto da vez do caminho, e não o
+		# destino em linha reta.
+		var rumo := _ponto_do_caminho(destino, delta) - global_position
+		rumo.y = 0.0
+		direcao = rumo.normalized() if rumo.length() > 0.05 else deslocamento / distancia
 	_mover(direcao, _velocidade_avulsa if _destino_avulso.is_finite() else VELOCIDADE, delta)
 	if direcao == Vector3.ZERO and jogador != null and jogador.global_position.distance_to(global_position) < RAIO_BALAO:
 		_olhar_para(jogador.global_position, delta)
@@ -280,16 +410,17 @@ func _contornar_bloqueio(direcao: Vector3, delta: float) -> Vector3:
 ## sabia nadar, então ele nadava — e ficava batendo na estrutura do píer, que
 ## é o que se via de fora.
 ##
-## O conserto não é malha de navegação: o vale é construído em tempo de
-## execução e assar navmesh a cada partida custaria mais do que o problema
-## vale. É preferência local. Antes de andar, o NPC olha para onde o passo vai
-## cair; se cai em água funda, ele tenta ângulos cada vez mais abertos até
-## achar chão. Na beira do píer isso o faz seguir a costa até a cabeceira, que
-## é o que uma pessoa faria.
+## O conserto foi preferência local. Antes de andar, o NPC olha para onde o
+## passo vai cair; se cai em água funda, ele tenta ângulos cada vez mais
+## abertos até achar chão. Na beira do píer isso o faz seguir a costa até a
+## cabeceira, que é o que uma pessoa faria.
 ##
-## O que esta escolha NÃO resolve, e é honesto dizer: enseada em forma de U
-## pode fazê-lo hesitar na boca dela, porque decisão local não vê o mapa
-## inteiro. Se isso aparecer, aí sim é hora de navegação de verdade.
+## O que ela NÃO resolvia — enseada em forma de U podia fazê-lo hesitar na
+## boca dela, porque decisão local não vê o mapa inteiro — a malha de
+## navegação resolve (`navegacao_vale.gd`): com ela pronta, o rumo é o ponto
+## da vez do caminho, que fica em terra. Este olhar continua por baixo, para
+## os primeiros segundos, antes de a malha ficar pronta, e para o corpo
+## empurrado para fora do caminho.
 ##
 ## Quem já está na água não é desviado: NADANDO, o caminho mais curto para
 ## terra é em frente, e empurrá-lo para os lados o faria circular no mar.
@@ -433,7 +564,8 @@ func saudar() -> void:
 	if not falas.is_empty():
 		var fala: Dictionary = falas[_proxima_fala % falas.size()]
 		_proxima_fala += 1
-		texto = String(fala.get("texto", ""))
+		# Na língua do jogo, quando a fala a tem (texto_en, texto_es).
+		texto = String(IdiomaMenu.campo(fala, "texto", ""))
 		var caminho := PASTA_VOZES + String(fala.get("audio", "")) + ".mp3"
 		voz.stream = load(caminho) if ResourceLoader.exists(caminho) else null
 	mostrar_balao(texto, maxf(5.0, voz.stream.get_length() + 1.5) if voz.stream != null else 7.0)
@@ -480,6 +612,107 @@ func narrar(nome_audio: String, texto: String) -> void:
 		animador.play_gesture(2)
 
 
+## O POSTO DE AGORA, com a festa por cima. No dia da festa da fé do morador
+## (`Fe.FESTAS`), da tarde até a meia-noite ele vai para o marco maior dela —
+## "à tarde, quem é da fé vai para o marco maior dela" (`Mundo._posto_de` do
+## 2D). É o CALENDÁRIO que manda, e não a fé do jogador: a festa acontece no
+## arraial quer o jogador seja dela ou não, e quem é dela o encontra lá.
+func _posto_de_agora() -> String:
+	var festa := Fe.festa_de_hoje()
+	if festa != "" and Dia.hora >= HORA_DA_FESTA \
+			and Afinidade.fe_de(str(dados.get("id", ""))) == festa \
+			and Lugares.resolve(Fe.marco_maior(festa)):
+		return POSTO_DA_FESTA
+	return _posto_para(Dia.periodo())
+
+
+## O LUGAR DO MORADOR NA RODA da festa: a roda em volta do marco, repartida por
+## igual entre os da fé (`Afinidade.da_fe`), para dois não disputarem o mesmo
+## chão. No terreiro a roda é em volta do fogo, metro e meio à frente do meio do
+## chão batido, e a gente fica dos lados dele — atrás estão os potes e a parede.
+func _lugar_na_festa() -> Vector3:
+	var festa := Fe.festa_de_hoje()
+	var marco := Fe.marco_maior(festa)
+	var centro: Vector3 = Lugares.ponto(marco)
+	if not centro.is_finite():
+		return global_position
+	var frente: Vector3 = ancoras.get(str(Lugares.DE_PARA.get(marco, "")) + "Frente", Vector3.ZERO)
+	var base := Vector3.BACK
+	if frente.length() > 0.01:
+		base = frente.normalized()
+		centro += base * 1.5
+	var da_fe: Array = Afinidade.da_fe(festa)
+	var vez := maxi(da_fe.find(str(dados.get("id", ""))), 0)
+	var direcao := base.rotated(Vector3.UP, TAU * (float(vez) + 0.5) / float(maxi(da_fe.size(), 1)))
+	var lugar := centro + direcao * float(RODA_DA_FESTA.get(marco, 2.6))
+	return _chao_de_verdade(terreno.ground_position(lugar, 0.0) if terreno != null else lugar)
+
+
+## O CHÃO DE VERDADE no lugar da roda, e não só o do terreno: o monte de concha
+## da gameleira é corpo, e não relevo, e quem fosse posto na altura do terreno
+## nasceria dentro dele.
+func _chao_de_verdade(ponto: Vector3) -> Vector3:
+	if not is_inside_tree():
+		return ponto
+	var pergunta := PhysicsRayQueryParameters3D.create(ponto + Vector3.UP * 3.0, ponto + Vector3.DOWN)
+	pergunta.exclude = [get_rid()]
+	var achou: Dictionary = get_world_3d().direct_space_state.intersect_ray(pergunta)
+	return achou.get("position", ponto)
+
+
+## O CAMINHO DA FESTA É LONGO. O terreiro e a gameleira ficam longe da vila:
+## pela malha de navegação (`navegacao_vale.gd`) o Tonho chega à gameleira
+## andando, mas leva a tarde quase inteira desde o píer. Então, LONGE DOS OLHOS
+## DO JOGADOR, ele chega pelo caminho de sempre — é posto no lugar dele, como na
+## carga do jogo. Visto, anda o que se vê; e não aparece do nada no lugar para
+## onde o jogador está olhando. A volta, à meia-noite, é igual.
+func _encurtar_o_caminho() -> void:
+	if _destino_avulso.is_finite():
+		return
+	if Vector2(_alvo.x - global_position.x, _alvo.z - global_position.z).length() < 1.0:
+		_caminho_da_festa = false
+		return
+	if _a_vista(global_position) or _a_vista(_alvo):
+		return
+	global_position = _alvo + Vector3(0, 0.05, 0)
+	velocity = Vector3.ZERO
+	_preso = 0.0
+	_desvios = 0
+	_desvio_tempo = 0.0
+	_parado = 0.0
+	_ponto_bloqueio = Vector3.INF
+	_caminho_da_festa = false
+
+
+## O jogador vê este ponto? Perto dele e na frente da câmera.
+func _a_vista(ponto: Vector3) -> bool:
+	if jogador == null or jogador.global_position.distance_to(ponto) > VISTA:
+		return false
+	var camera := get_viewport().get_camera_3d()
+	return camera == null or camera.is_position_in_frustum(ponto + Vector3.UP * altura * 0.5)
+
+
+## O PONTO DA VEZ no caminho pela malha até `destino`: refeito quando o destino
+## muda, a cada `REFAZER_CAMINHO` segundos, e quando o corpo empaca. Sem malha
+## — ela assa enquanto o vale começa —, ou sem caminho, é o próprio destino.
+func _ponto_do_caminho(destino: Vector3, delta: float) -> Vector3:
+	var navegacao := get_tree().get_first_node_in_group("navegacao")
+	if navegacao == null or not navegacao.esta_pronta():
+		return destino
+	_refazer_em -= delta
+	if _caminho_ate.distance_to(destino) > 0.3 or _refazer_em <= 0.0 or _preso > TEMPO_PRESO * 0.9:
+		_caminho = navegacao.caminho(global_position, destino)
+		_ponto_da_vez = 1 if _caminho.size() > 1 else 0
+		_caminho_ate = destino
+		_refazer_em = REFAZER_CAMINHO
+	if _caminho.is_empty():
+		return destino
+	while _ponto_da_vez < _caminho.size() - 1 \
+			and Vector2(_caminho[_ponto_da_vez].x - global_position.x, _caminho[_ponto_da_vez].z - global_position.z).length() < PONTO_ALCANCADO:
+		_ponto_da_vez += 1
+	return destino if _ponto_da_vez >= _caminho.size() - 1 else _caminho[_ponto_da_vez]
+
+
 ## Nome do posto para o período: "manha", "tarde", "entardecer", "noite" ou "madrugada".
 func _posto_para(periodo: String) -> String:
 	var postos: Dictionary = dados.get("postos", {})
@@ -492,6 +725,8 @@ func _posto_para(periodo: String) -> String:
 
 
 func _posicao_do_posto(periodo: String) -> Vector3:
+	if periodo == POSTO_DA_FESTA:
+		return _lugar_na_festa()
 	var postos: Dictionary = dados.get("postos", {})
 	if periodo == "" or not postos.has(periodo):
 		return global_position

@@ -132,13 +132,26 @@ func trocar(a: int, b: int) -> void:
 	mudou.emit()
 
 
-## O machado das partidas antigas era guardado fora da barra por obrigação.
-## Traz apenas esses machados de volta, sem mexer na arrumação dos demais itens.
-func mover_ferramentas_para_barra() -> void:
+## A FERRAMENTA DE ENCAIXE MORA NA BARRA DE MÃO, como as outras.
+##
+## O machado chegou a morar só na reserva — usado encaixando-o em "Mãos" na
+## mochila —, e quem jogou apertava o número dele e nada acontecia: "o machado
+## no inventário não tá subindo para a mão, os outros itens estão normal". Ele
+## voltou a ser item de mão como a picareta e a foice, e o encaixe das Mãos
+## ficou para as luvas.
+##
+## Partida salva no tempo da reserva tem o machado lá embaixo, onde o número
+## não alcança. Este passo o sobe para o primeiro espaço livre da barra; sem
+## espaço livre ele fica onde está, e o jogador o arrasta.
+## As ferramentas que já moraram no encaixe das Mãos (que hoje é das luvas) e
+## que uma partida antiga pode ter guardado na reserva.
+const FERRAMENTAS_QUE_FORAM_DE_ENCAIXE := ["machado", "machado_de_aco", "facao"]
+
+func trazer_ferramentas_para_a_mao() -> void:
 	var mudou_de_lugar := false
 	for origem in range(ESPACOS_MAO, ESPACOS):
 		var id := str(espacos[origem].get("id", ""))
-		if id != "machado":
+		if not FERRAMENTAS_QUE_FORAM_DE_ENCAIXE.has(id):
 			continue
 		var destino := -1
 		for indice in ESPACOS_MAO:
@@ -146,7 +159,7 @@ func mover_ferramentas_para_barra() -> void:
 				destino = indice
 				break
 		if destino < 0:
-			continue
+			break
 		espacos[destino] = espacos[origem]
 		espacos[origem] = {}
 		mudou_de_lugar = true

@@ -89,19 +89,19 @@ const TEXTOS := {
 		"Cómo se construye todo el valle, siempre en un único estilo.\n\nTripo: casas, árboles, objetos y personajes como modelos 3D generados en Tripo Studio.\nProcedural: todo montado por código con formas simples, hasta el personaje.\n\nCambiar el estilo reconstruye el escenario del menú al momento.",
 	],
 	"Passagem do tempo": [
-		"Velocidade do relógio do vale.\n\nParada: o tempo não anda.\nLenta: 2 minutos reais por hora do jogo.\nNormal: 45 segundos por hora.\nRápida: 10 segundos por hora.\n\nVale no menu, onde o dia começa às 6h30, e dentro do vale. No jogo, o botão de setas também troca a velocidade.",
-		"Speed of the valley clock.\n\nStopped: time does not move.\nSlow: 2 real minutes per game hour.\nNormal: 45 seconds per hour.\nFast: 10 seconds per hour.\n\nIt applies in the menu, where the day starts at 6:30, and inside the valley. In game, the arrows button also changes the speed.",
-		"Velocidad del reloj del valle.\n\nDetenido: el tiempo no avanza.\nLento: 2 minutos reales por hora de juego.\nNormal: 45 segundos por hora.\nRápido: 10 segundos por hora.\n\nVale en el menú, donde el día empieza a las 6:30, y dentro del valle. En el juego, el botón de flechas también cambia la velocidad.",
+		"Velocidade do relógio do vale.\n\nParada: o tempo não anda.\nLenta: 90 segundos reais por hora do jogo.\nNormal: 30 segundos por hora.\nRápida: 10 segundos por hora.\n\nVale no menu, onde o dia começa às 6h30, e dentro do vale. No jogo, o menu do Esc também troca a velocidade.\n\nParada pede confirmação: com o tempo parado, a partida perde as conquistas dali em diante, e a mudança fica no registro do relógio, no save.",
+		"Speed of the valley clock.\n\nStopped: time does not move.\nSlow: 90 real seconds per game hour.\nNormal: 30 seconds per hour.\nFast: 10 seconds per hour.\n\nIt applies in the menu, where the day starts at 6:30, and inside the valley. In game, the Esc menu also changes the speed.\n\nStopped asks for confirmation: with time stopped, the game loses achievements from then on, and the change is kept in the clock log, in the save.",
+		"Velocidad del reloj del valle.\n\nDetenido: el tiempo no avanza.\nLento: 90 segundos reales por hora de juego.\nNormal: 30 segundos por hora.\nRápido: 10 segundos por hora.\n\nVale en el menú, donde el día empieza a las 6:30, y dentro del valle. En el juego, el menú de Esc también cambia la velocidad.\n\nDetenido pide confirmación: con el tiempo detenido, la partida pierde los logros de ahí en adelante, y el cambio queda en el registro del reloj, en la partida guardada.",
+	],
+	"Pausar o relógio no jogo": [
+		"Se a linha Relógio do menu do Esc pode parar o tempo no meio da partida.\n\nPermitido: parar pede confirmação, porque a partida perde as conquistas dali em diante; a mudança fica no registro do relógio, no save.\nBloqueado: o tempo não para pelo menu. Um relógio já parado sempre pode voltar a correr.",
+		"Whether the Clock line in the Esc menu can stop time during a game.\n\nAllowed: stopping asks for confirmation, because the game loses achievements from then on; the change is kept in the clock log, in the save.\nLocked: time cannot be stopped from the menu. A clock that is already stopped can always run again.",
+		"Si la línea Reloj del menú de Esc puede detener el tiempo durante la partida.\n\nPermitido: detenerlo pide confirmación, porque la partida pierde los logros de ahí en adelante; el cambio queda en el registro del reloj, en la partida guardada.\nBloqueado: el tiempo no se detiene desde el menú. Un reloj ya detenido siempre puede volver a correr.",
 	],
 	"Hora inicial": [
 		"Hora em que o dia começa quando você entra no vale por JOGAR ou EXPLORAR.\n\nO menu sempre abre no começo do dia; esta hora só vale para o jogo.",
 		"Time of day when you enter the valley through PLAY or EXPLORE.\n\nThe menu always opens at the start of the day; this time only applies to the game.",
 		"Hora del día en que entras al valle con JUGAR o EXPLORAR.\n\nEl menú siempre abre al comienzo del día; esta hora solo se aplica al juego.",
-	],
-	"Pausar o relógio no jogo": [
-		"Se o botão de relógio no canto do jogo pode pausar e retomar o dia.\n\nPermitido: clicar no relógio congela a hora até você clicar de novo.\nBloqueado: o dia sempre corre; o relógio só mostra a hora.",
-		"Whether the clock button in the game corner can pause and resume the day.\n\nAllowed: clicking the clock freezes time until you click again.\nLocked: the day always runs; the clock only shows the time.",
-		"Si el botón de reloj en la esquina del juego puede pausar y reanudar el día.\n\nPermitido: al hacer clic en el reloj el tiempo se congela hasta que vuelvas a hacer clic.\nBloqueado: el día siempre avanza; el reloj solo muestra la hora.",
 	],
 	"Teclas de movimento": [
 		"Quais teclas andam com o personagem no vale.\n\nWASD: só W, A, S e D.\nSetas: só as setas do teclado.\nWASD e setas: as duas funcionam.\n\nO rodapé de controles no jogo mostra as teclas escolhidas. Shift continua correndo e o clique com o botão direito continua levando até o ponto.",

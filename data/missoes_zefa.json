@@ -1,6 +1,9 @@
 {
   "observacao": "A CONVERSA DA DONA ZEFA, trazida do jogo 2D (data/dialogos/arraial.json, passos zefa_ervas / zefa_cosme / zefa_conversa / zefa_terra). É a cadeia mais falada do vale, e a ORDEM É A DE LÁ: as ervas vêm antes do Cosme porque a última linha do zefa_ervas_fim é ela mandando falar com o neto. O passo do saveiro é o zefa_terra de lá, o 'Encontre os dois no píer'. O primeiro passo manda à serra, os dois do meio vão de uma pessoa a outra, e é assim que a história do Cosme se conta. Usa a meta 'falar', que é a de 'levar' sem o item. O texto é o de lá, encurtado no que cabe num balão; a prosa inteira está no arraial.json e volta quando o vale tiver caixa de diálogo (#21). TRADUÇÃO: só em português neste primeiro momento; inglês e espanhol são do Ramon.",
   "dono": "zefa",
+  "nome": "O que a serra guarda",
+  "nome_en": "What the hills keep",
+  "nome_es": "Lo que guarda la sierra",
   "principal": true,
   "abre_em": "casa_de_taipa",
   "traducao": "pendente",
@@ -13,6 +16,7 @@
       "audio": "",
       "texto": "Você lembra do que eu te falei, do chão e da troca? Pois é hoje que eu peço. Alecrim-do-campo, arruda brava, folha de mamona — não nasce aqui embaixo: precisa de ar seco e de sol de manhã, e isso só tem lá em cima, na serra. Sobe pela picada do mirante e procura onde a mata abre, que é na clareira que o sol bate. Na grota da nascente não adianta, que lá é sombra e água, e não se mete no fundo, que lá é do caititu. Cinco maços, e não arranque pela raiz: corte no meio do pé, que o que se arranca não volta e eu vou precisar no ano que vem também. Toma a foice, e vá com calma que eu não vou a lugar nenhum.",
       "entrega": { "item": "foice", "quantidade": 1 },
+      "recompensa": { "cocada": 2 },
       "meta": {
         "tipo": "levar",
         "item": "erva_da_serra",
@@ -43,6 +47,7 @@
       "raio": 7.0,
       "audio": "",
       "texto": "Agora volte aqui. A conversa que eu te prometi é esta, e é melhor sentado.",
+      "recompensa": { "beiju": 2 },
       "meta": {
         "tipo": "falar",
         "a_quem": "zefa",
@@ -53,10 +58,14 @@
     {
       "id": "zefa_saveiro",
       "titulo": "O saveiro das seis",
+      "resumo": "Esteja no píer para o saveiro",
+      "resumo_en": "Be at the pier for the sailboat",
+      "resumo_es": "Estate en el muelle para el velero",
       "lugar": "pier",
       "raio": 8.0,
       "audio": "",
       "texto": "Amanhã tem saveiro pra Salvador. Me encontre no píer — e não se atrase, que saveiro não espera ninguém.",
+      "recompensa": { "cocada": 3, "pirao": 1 },
       "meta": {}
     }
   ],
