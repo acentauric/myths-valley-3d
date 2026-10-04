@@ -332,14 +332,8 @@ func _com_o_nome(texto: String) -> String:
 ## mesma frase. Pedir primeiro e entregar depois é o que faz o jogador rodar o
 ## mapa procurando uma ferramenta que ninguém deu.
 ##
-## E "na mão" passou a querer dizer ENCAIXADA. O vale mudou a regra do trabalho:
-## bater agora exige a ferramenta no encaixe, e não só na mochila
-## (`Recursos3D._tem_ferramenta`) — que é o certo, e é o do 2D. Mas a promessa
-## da fala não mudou: entregar na mochila e deixar o jogador descobrir sozinho
-## que falta equipar é a mesma ferramenta que ninguém deu, com um passo a mais.
-##
-## Então quem entrega, encaixa. Se o encaixe estiver ocupado, o que estava lá
-## volta para a mochila — quem cuida disso é o `Equipamento`, e não esta linha.
+## Ferramentas recebidas vão para a barra; o jogador escolhe o espaço numerado.
+## Peças de proteção continuam usando os encaixes do equipamento.
 ##
 ## Entrega uma vez só: o anúncio de cada passo acontece uma vez, e retomar o
 ## passo não reanuncia.
@@ -350,10 +344,7 @@ func entregar(passo: Dictionary) -> void:
 	var item := str(entrega.get("item", ""))
 	if item == "":
 		return
-	# JÁ TEM NÃO É JÁ RECEBEU. O vale entrega um machado de saída e manda
-	# equipar; se o passo desistisse por achar o item na mochila, o "toma o
-	# machado e vai cortar" não daria nada e o trabalho ficaria impossível para
-	# quem ainda não descobriu o encaixe. Não ganha outro — ganha na mão.
+	# Não duplica um item já recebido ou vestido em uma partida salva.
 	if not Inventario.tem(item) and not _na_mao(item):
 		if not Inventario.adicionar(item, int(entrega.get("quantidade", 1))):
 			return

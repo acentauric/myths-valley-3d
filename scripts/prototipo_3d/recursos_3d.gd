@@ -16,13 +16,7 @@ extends Node
 ## nenhum modelo novo foi preciso.
 ##
 ##
-## A FERRAMENTA É ESCOLHIDA PELO ALVO, e isso é uma simplificação declarada.
-##
-## No 2D o jogador põe a ferramenta na mão com as teclas 1 a 0. No vale, 1 a 8
-## já são os gestos do personagem, e roubá-las seria mexer no que funciona.
-## Então aqui a regra é: o alvo diz de que ferramenta precisa, e o golpe só
-## acontece se ela estiver NA MOCHILA. "Precisa do machado" continua sendo a
-## mecânica; "qual das dez mãos" espera a mochila chegar (Fase 6 do plano).
+## A ferramenta precisa estar no espaço selecionado da barra de mão.
 
 const DicaTecla = preload("res://scripts/prototipo_3d/dica_tecla.gd")
 const Atalhos = preload("res://scripts/prototipo_3d/atalhos.gd")
@@ -190,9 +184,14 @@ func _mais_perto() -> String:
 func _o_que_falta(ficha: Dictionary) -> String:
 	var ferramenta := str(ficha.get("ferramenta", ""))
 	if not _tem_ferramenta(ferramenta):
+		for indice in Inventario.ESPACOS_MAO:
+			if str(Inventario.espacos[indice].get("id", "")) == ferramenta:
+				return "selecione %s (%s)" % [_nome_do_item(ferramenta), Inventario.rotulo_do_espaco(indice)]
+		if Inventario.tem(ferramenta):
+			return "ponha %s na barra" % _nome_do_item(ferramenta)
 		return "precisa de %s" % _nome_do_item(ferramenta)
 	if not Energia.aguenta("bater"):
-		return "sem fôlego"
+		return "sem vigor"
 	return "com %s" % _nome_do_item(ferramenta)
 
 
@@ -202,10 +201,7 @@ func _nome_do_item(id: String) -> String:
 
 
 func _tem_ferramenta(id: String) -> bool:
-	var encaixe := str(Catalogo.dados(id).get("encaixe", ""))
-	if Catalogo.tipo(id) == "ferramenta" and encaixe != "":
-		return Equipamento.no_encaixe(encaixe) == id
-	return Inventario.tem(id)
+	return id == "" or Inventario.na_mao() == id
 
 
 ## O GOLPE.
@@ -224,7 +220,7 @@ func bater() -> bool:
 		recusado.emit("Precisa de %s." % _nome_do_item(ferramenta))
 		return false
 	if not Energia.gastar("bater"):
-		recusado.emit("Sem fôlego para bater.")
+		recusado.emit("Sem vigor para bater.")
 		return false
 
 	_golpear_com_o_corpo()

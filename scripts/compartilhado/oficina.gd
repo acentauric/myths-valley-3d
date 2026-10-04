@@ -99,7 +99,7 @@ func impedimento(id: String) -> String:
 		if Inventario.quantidade(item) < pedido:
 			return "Falta %s: %d de %d." % [Catalogo.nome(item), Inventario.quantidade(item), pedido]
 	if not Energia.aguenta("arar", folego(id) / Energia.CUSTOS["arar"]):
-		return "Sem fôlego para isto."
+		return "Sem %s para isto." % Energia.nome_recurso()
 	return ""
 
 

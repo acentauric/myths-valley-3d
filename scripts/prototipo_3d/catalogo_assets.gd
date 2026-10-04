@@ -18,7 +18,10 @@ const PECAS := {
 	# Árvores nomeadas (perto do jogador)
 	"mangueira": {"tripo": "arvores/mangueira_tripo.glb", "altura": 7.2, "tronco": 0.55},
 	"jaqueira": {"tripo": "arvores/jaqueira_tripo.glb", "altura": 8.4, "tronco": 0.4},
-	"cajueiro": {"tripo": "arvores/cajueiro_tripo.glb", "altura": 5.4, "tronco": 0.42},
+	# A base do tronco fica à esquerda do centro da copa no GLB. O desvio está
+	# nas coordenadas originais do modelo e acompanha escala e rotação da árvore.
+	"cajueiro": {"tripo": "arvores/cajueiro_tripo.glb", "altura": 5.4,
+		"tronco": 0.7, "tronco_altura": 2.2, "tronco_centro": Vector2(-0.15, 0.06)},
 	"coqueiro": {"tripo": "arvores/coqueiro_tripo.glb", "altura": 9.5, "tronco": 0.24},
 	"pau_brasil": {"tripo": "arvores/pau_brasil_tripo.glb", "altura": 5.6, "tronco": 0.38},
 	"dendezeiro": {"tripo": "arvores/dende_tripo.glb", "altura": 6.5, "tronco": 0.4},
@@ -43,7 +46,9 @@ const PECAS := {
 	# Construções
 	"capela": {"tripo": "construcoes/capela_tripo.glb", "largura": 9.0, "caixa": true},
 	"igreja": {"tripo": "construcoes/igreja_tripo.glb", "largura": 10.0, "caixa": true},
-	"casa_taipa": {"tripo": "construcoes/casa_taipa_tripo.glb", "largura": 6.5, "caixa": true},
+	# As paredes começam cerca de 0,20 unidade acima do mínimo do GLB;
+	# esse recuo encosta a parede no alicerce sem deslocar o terreno.
+	"casa_taipa": {"tripo": "construcoes/casa_taipa_tripo.glb", "largura": 6.5, "caixa": true, "afundar": 0.20},
 	"casa_carro_quebrado": {"tripo": "casas/casa_carro_quebrado_tripo.glb", "largura": 5.2, "caixa": true},
 	"venda": {"tripo": "construcoes/venda_tripo.glb", "largura": 8.0, "caixa": true},
 	"casa_pasto": {"tripo": "construcoes/casa_pasto_tripo.glb", "largura": 8.5, "caixa": true},
@@ -62,7 +67,8 @@ const PECAS := {
 	"banco": {"tripo": "aderecos/banco_tripo.glb", "altura": 1.0, "caixa": true},
 	"lampiao_poste": {"tripo": "aderecos/lampiao_poste_tripo.glb", "altura": 3.4, "tronco": 0.15},
 	"candeeiro": {"tripo": "aderecos/candeeiro_tripo.glb", "altura": 0.42},
-	"fogueira": {"tripo": "aderecos/fogueira_tripo.glb", "largura": 1.6},
+	# A pilha de toras não traz chama rígida nem aro de pedra; o fogo vem de partículas.
+	"fogueira": {"tripo": "aderecos/lenha_tripo.glb", "largura": 1.6},
 	"mandioca_canteiro": {"tripo": "aderecos/mandioca_canteiro_tripo.glb", "largura": 3.5},
 	"pedras": {"tripo": "aderecos/pedras_tripo.glb", "largura": 3.0, "caixa": true},
 	"pedras_praia": {"tripo": "aderecos/pedras_praia_tripo.glb", "largura": 9.0, "caixa": true},
@@ -192,14 +198,19 @@ static func colisao(chave: String, node: Node3D, parent: Node, origin: Vector3, 
 	if spec.has("tronco"):
 		var shape := CylinderShape3D.new()
 		shape.radius = float(spec["tronco"]) * size
-		shape.height = minf(bounds.size.y, 3.0)
+		shape.height = minf(bounds.size.y, float(spec.get("tronco_altura", 3.0)) * size)
 		collision.shape = shape
 		body.position = origin + Vector3(0, shape.height * 0.5, 0)
+		if spec.has("tronco_centro"):
+			var centro: Vector2 = spec["tronco_centro"]
+			var base_visual: Vector3 = node.transform * Vector3(centro.x, 0.0, centro.y)
+			body.position.x = base_visual.x
+			body.position.z = base_visual.z
 	elif spec.get("caixa", false):
 		var shape := BoxShape3D.new()
 		shape.size = bounds.size
 		collision.shape = shape
-		body.position = origin + Vector3(0, bounds.size.y * 0.5, 0)
+		body.position = origin + Vector3(0, bounds.size.y * 0.5 - float(spec.get("afundar", 0.0)), 0)
 		body.rotation.y = yaw
 	else:
 		return

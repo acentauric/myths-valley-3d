@@ -30,7 +30,6 @@ const ITENS := {
 	"machado": {
 		"nome": "Machado",
 		"tipo": "ferramenta",
-		"encaixe": "maos",
 		"icone": "machado",
 		"empilhavel": false,
 		"dano": 3.0,
@@ -398,17 +397,12 @@ const ITENS := {
 		"icone": "chapeu",
 		"empilhavel": false,
 	},
-	## O FACÃO JÁ EXISTIA, e não tinha de onde vir: arte no lote original, corte
-	## de cana em `Recursos`, encaixe de cintura aqui — e fonte nenhuma. A fase
-	## 6-A deu as duas coisas que faltavam: a oficina bate um (ver Oficina) e
-	## ele é a ARMA do jogo, a que bate mais que o machado. Continua sendo
-	## equipamento e continua cortando cana; o `dano` é o que ele ganhou.
+	## O facão é uma ferramenta de corte e arma escolhida pela barra numerada.
 	"facao": {
 		"nome": "Facão de mato",
-		"tipo": "equipamento",
-		"encaixe": "maos",
+		"tipo": "ferramenta",
 		"efeito": {"eficiencia": -0.05},
-		"resumo": "Na cintura, resolve o que o machado não vale a pena. Na mão, é o que corta.",
+		"resumo": "Selecione na barra para cortar o mato e lutar.",
 		"icone": "facao",
 		"empilhavel": false,
 		"dano": 4.0,

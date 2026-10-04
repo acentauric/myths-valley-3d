@@ -11,7 +11,7 @@ uniform float inicio_sumir = 0.45;
 uniform float entrada_suave = 0.1;
 uniform bool limite_na_costa = false;
 uniform float correnteza = 0.12;
-uniform float transparencia : hint_range(0.0, 1.0) = 0.72;
+uniform float transparencia : hint_range(0.0, 1.0) = 1.0;
 uniform float deslocamento_percurso = 0.0;
 uniform float sentido_percurso = 1.0;
 varying vec2 mundo;
@@ -41,5 +41,5 @@ void fragment() {
 	float dilui = 1.0 - smoothstep(inicio_sumir, 1.0, fim);
 	float margem = smoothstep(0.0, 0.12, UV.x) * (1.0 - smoothstep(0.88, 1.0, UV.x));
 	float entrada = smoothstep(0.0, max(entrada_suave, 0.001), t);
-	ALPHA = entrada * dilui * margem * mix(0.45, transparencia, meio);
+	ALPHA = entrada * dilui * margem * mix(0.9, transparencia, meio);
 }

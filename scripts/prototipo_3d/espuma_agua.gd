@@ -1,8 +1,8 @@
 extends GPUParticles3D
-## Espuma em volta de quem anda ou nada no mar: placas de espuma deitadas na superfície
+## Espuma em volta de quem anda ou nada na água: placas de espuma deitadas na superfície
 ## que nascem em anel em volta das pernas (ou do corpo, nadando), se abrem e somem;
 ## mais densas correndo.
-## Filho do CharacterBody3D; `mundo` responde water_level().
+## Filho do CharacterBody3D; `mundo` responde water_level_at().
 
 ## Raio do anel (unidades) e altura acima da superfície onde a espuma nasce.
 const RAIO := 0.32
@@ -70,7 +70,7 @@ func _physics_process(_delta: float) -> void:
 	if _dono == null or mundo == null or not mundo.has_method("water_level"):
 		emitting = false
 		return
-	var nivel: float = mundo.water_level()
+	var nivel: float = mundo.water_level_at(_dono.global_position) if mundo.has_method("water_level_at") else mundo.water_level()
 	var lamina := nivel - _dono.global_position.y
 	var andando := Vector2(_dono.velocity.x, _dono.velocity.z).length() > 0.3
 	emitting = is_finite(nivel) and lamina > LAMINA_MINIMA and andando

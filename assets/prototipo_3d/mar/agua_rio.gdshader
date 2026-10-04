@@ -19,7 +19,7 @@ uniform vec3 cor_ceu : source_color = vec3(0.62, 0.7, 0.68);
 // Velocidade da correnteza em larguras do rio por segundo.
 uniform float correnteza = 0.12;
 uniform float ondulacao = 0.14;
-uniform float transparencia : hint_range(0.0, 1.0) = 0.72;
+uniform float transparencia : hint_range(0.0, 1.0) = 1.0;
 uniform float comprimento = 1.0;
 uniform float transicao_foz_larguras = 1.0;
 uniform bool suavizar_inicio = false;
@@ -49,5 +49,5 @@ void fragment() {
 	if (suavizar_fim) {
 		transicao_foz *= 1.0 - smoothstep(max(comprimento - transicao_foz_larguras, 0.0), comprimento, UV.y);
 	}
-	ALPHA = transicao_foz * margem * mix(0.45, transparencia, meio);
+	ALPHA = transicao_foz * margem * mix(0.9, transparencia, meio);
 }

@@ -182,7 +182,7 @@ func impedimento(id: String) -> String:
 		if Inventario.quantidade(item) < pedido:
 			return "Falta %s: %d de %d." % [Catalogo.nome(item), Inventario.quantidade(item), pedido]
 	if not Energia.aguenta("arar", _dureza(id)):
-		return "Sem fôlego nem pra mexer a panela."
+		return "Sem %s nem pra mexer a panela." % Energia.nome_recurso()
 	return ""
 
 
@@ -249,8 +249,8 @@ func recado_de_desperdicio(id: String) -> String:
 			Catalogo.nome(id), int(Vida.atual), int(Vida.maximo())]
 	var perde := desperdicio(id)
 	if perde >= 1.0 and vida <= 0.0:
-		return "%s agora passa do seu limite: %d de fôlego vão no lixo (você está em %d de %d)." % [
-			Catalogo.nome(id), int(perde), int(Energia.atual), int(Energia.maximo())]
+		return "%s agora passa do seu limite: %d de %s vão no lixo (você está em %d de %d)." % [
+			Catalogo.nome(id), int(perde), Energia.nome_recurso(), int(Energia.atual), int(Energia.maximo())]
 	return ""
 
 

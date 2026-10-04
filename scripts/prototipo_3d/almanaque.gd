@@ -835,7 +835,7 @@ func _pagina_da_receita(id: String) -> String:
 		texto += "Leva: %s.\n" % ", ".join(partes)
 	texto += "Rende %d.\n" % int(dado.get("rende", 1))
 	if float(dado.get("folego", 0.0)) > 0.0:
-		texto += "Alimenta %d de fôlego." % int(dado["folego"])
+		texto += "Alimenta %d de vigor." % int(dado["folego"])
 	return texto
 
 

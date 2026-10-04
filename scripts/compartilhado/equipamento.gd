@@ -39,7 +39,27 @@ func e_equipamento(id: String) -> bool:
 	var encaixe := encaixe_de(id)
 	if encaixe == "":
 		return false
-	return Catalogo.tipo(id) == "equipamento" or (Catalogo.tipo(id) == "ferramenta" and encaixe == "maos")
+	return Catalogo.tipo(id) == "equipamento" and (encaixe != "maos" or Catalogo.dano(id) <= 0.0)
+
+
+## Partidas antigas podiam vestir machado ou facão no encaixe de proteção.
+## Devolve a ferramenta à barra sem perdê-la se o inventário estiver cheio.
+func migrar_ferramenta_das_maos() -> void:
+	var id := no_encaixe("maos")
+	if id == "" or e_equipamento(id):
+		return
+	var destino := -1
+	for indice in Inventario.ESPACOS:
+		if Inventario.vazio(indice):
+			destino = indice
+			break
+	if destino < 0:
+		return
+	_desaplicar(id)
+	Inventario.espacos[destino] = {"id": id, "qtd": 1}
+	vestido["maos"] = ""
+	Inventario.mudou.emit()
+	mudou.emit()
 
 
 ## Veste o item que está no espaço dado da mochila. O que estava no encaixe

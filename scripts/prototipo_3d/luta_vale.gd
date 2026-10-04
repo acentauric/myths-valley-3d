@@ -228,8 +228,7 @@ func _conferir_o_golpe_segurado() -> void:
 
 
 func _item_em_uso() -> String:
-	var equipado := Equipamento.no_encaixe("maos")
-	return equipado if equipado != "" else Inventario.na_mao()
+	return Inventario.na_mao()
 
 
 ## Um golpe inteiro: o fôlego, o corpo, e a pancada no tempo do braço.

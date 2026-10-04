@@ -856,6 +856,8 @@ func _descrever() -> String:
 	if _nos_encaixes():
 		id = Equipamento.no_encaixe(_encaixe_do_cursor())
 		if id == "":
+			if _encaixe_do_cursor() == "maos":
+				return "Mãos — proteção para luvas ou escudo. Ferramentas são usadas pela barra numerada."
 			return "%s — vazio." % Equipamento.NOME_DO_ENCAIXE[_encaixe_do_cursor()]
 	else:
 		if Inventario.vazio(_cursor):
@@ -872,7 +874,7 @@ func _descrever() -> String:
 		# O remédio diz que é remédio (ver Cozinha, o chá de folha): a reclamação
 		# que o Graveyard Keeper mais ouviu foi de quem não sabia o que curava.
 		if float(dados.get("vida", 0.0)) > 0.0:
-			texto += "   [+%d de vida, +%d de fôlego]" % [int(dados["vida"]), int(dados.get("folego", 0))]
+			texto += "   [+%d de vida, +%d de %s]" % [int(dados["vida"]), int(dados.get("folego", 0)), Energia.nome_recurso()]
 		else:
-			texto += "   [+%d de fôlego]" % int(dados.get("folego", 0))
+			texto += "   [+%d de %s]" % [int(dados.get("folego", 0)), Energia.nome_recurso()]
 	return texto

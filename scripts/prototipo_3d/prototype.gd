@@ -76,7 +76,7 @@ var _voltar_do_folheto := ""
 var painel	# painel_vale.gd — tecla J
 ## Dono único das telas: só uma fica aberta. Ver telas_do_vale.gd.
 var telas
-## O menu do Esc, com o que era a coluna de ícones. Ver menu_pausa.gd.
+## O menu do Esc também reúne os atalhos da coluna do HUD. Ver menu_pausa.gd.
 var menu_pausa
 ## A teia de talentos, na tecla K (teia_talentos.gd).
 var teia
@@ -87,6 +87,7 @@ var placas
 ## A aba pedida no último `abrir_o_painel`, entregue à abertura crua.
 var _aba_pedida := 0
 var _machado_inicial_entregue := false
+var _barra_de_ferramentas_migrada := false
 var achados	# achados_vale.gd — cordéis, sinais e cartas no chão
 var pesca	# pesca_vale.gd — a vara na mão e o E na beira da água
 
@@ -189,6 +190,9 @@ func _ready() -> void:
 	mapa.name = "Mapa"
 	add_child(mapa)
 	hud.map_requested.connect(_toggle_map)
+	hud.quests_requested.connect(func() -> void:
+		hud.set_controls_open(false)
+		abrir_o_painel(PainelVale.Aba.MISSOES))
 	hud.settings_requested.connect(_open_settings)
 	hud.settings_closed.connect(_on_menu_cancelled)
 	hud.style_changed.connect(func() -> void:
@@ -268,13 +272,10 @@ func _ready() -> void:
 		func() -> bool: return painel != null and painel.aberto,
 		_abrir_painel_cru,
 		func() -> void: if painel != null: painel.fechar())
-	# O MENU DO ESC, com o que estava na coluna de ícones do canto esquerdo.
+	# O MENU DO ESC reúne os atalhos que também ficam na coluna do HUD.
 	#
-	# "Os ícones na esquerda do HUD podem ser todos dentro do menu ESC." Eram
-	# nove botões redondos empilhados na borda, por cima do vale, o tempo todo —
-	# e sem rótulo: o do som era um desenho diferente ligado e desligado, e só
-	# passando o mouse se descobria qual era qual. Em linha, com o estado
-	# escrito, "Som: ligado" responde as duas perguntas de uma vez.
+	# As mesmas ações também aparecem em linhas com rótulos e estado escrito;
+	# assim continuam acessíveis pelo Esc quando o cursor está capturado.
 	#
 	# As linhas são declaradas AQUI e não lá dentro, porque quem sabe pausar o
 	# relógio e trocar o estilo é esta casa. O menu só desenha, lê o rótulo e
@@ -418,17 +419,26 @@ func _ready() -> void:
 	# luta —, porque o estado do mundo aponta para eles. Ver Partida e
 	# `estado_para_salvar`.
 	Salvamento.registrar_mundo(self)
-	_retomar_a_partida()
-	Inventario.mover_ferramentas_para_reserva()
+	var retomou_partida := _retomar_a_partida()
+	Energia.registrar_vigor(player)
+	hud.configurar_folego(player)
+	_arvores_info._atualizar_stamina_hud()
+	Equipamento.migrar_ferramenta_das_maos()
+	if not _barra_de_ferramentas_migrada:
+		Inventario.mover_ferramentas_para_barra()
+		_barra_de_ferramentas_migrada = true
 	_entregar_machado_inicial()
 	# Depois da partida salva: o que ela diz que já foi achado não volta ao chão.
 	achados.espalhar()
-	_comecar_no_lugar_pedido()
+	var lugar_pedido := _comecar_no_lugar_pedido()
+	if not retomou_partida and not lugar_pedido:
+		var direcao_para_praia: Vector3 = world.ancoras.get("Pier", spawn) - spawn
+		player.iniciar_de_frente(direcao_para_praia)
 	_atualizar_relogio()
 	print("PROTOTYPE_READY: estilo=%s hora=%s moradores=%d user_dir=%s" % [Estilo.modo, Dia.texto_hora(), moradores.size(), OS.get_user_data_dir()])
 
 
-## O jogador chega de barco: começa no píer, de frente para a praça.
+## O jogador chega de barco pelo píer; a orientação inicial olha de volta para a praia.
 func _ponto_de_chegada() -> Vector3:
 	var spawn: Vector3 = world.get_spawn_position()
 	if world.ancoras.has("Pier") and world.ancoras.has("Praça"):
@@ -973,20 +983,22 @@ func _bind_alt(action: StringName, key: int) -> void:
 ## A vaga em curso tem partida? Então ela volta: sistemas, jogador, hora,
 ## Pedro, o que o vale lembra. Sem vaga (EXPLORAR) ou vaga nova, o vale começa
 ## do píer, como sempre.
-func _retomar_a_partida() -> void:
+func _retomar_a_partida() -> bool:
 	if not Partida.tem_vaga() or not Salvamento.existe_partida():
-		return
+		return false
 	var guardado := Salvamento.ler()
 	if guardado.is_empty():
 		# Há arquivo e ele não abriu: partida de uma versão mais nova. O arquivo
 		# não é tocado; o jogador fica sabendo, em vez de achar a vila do zero.
 		if not Salvamento.ultimo_relato.is_empty():
 			hud.set_notice(" ".join(Salvamento.ultimo_relato))
-		return
+		return false
 	if Salvamento.carregar(guardado):
 		hud.set_notice(_texto_da_partida("de_volta"))
 		if not Salvamento.ultimo_relato.is_empty():
 			hud.set_notice(" ".join(Salvamento.ultimo_relato))
+		return true
+	return false
 
 
 ## One starter axe per game; the saved marker also migrates older saves.
@@ -998,7 +1010,7 @@ func _entregar_machado_inicial() -> void:
 		return
 	if Inventario.adicionar("machado"):
 		_machado_inicial_entregue = true
-		hud.set_notice("Machado recebido. Equipe-o no encaixe Mãos da mochila.")
+		hud.set_notice("Machado recebido. Selecione-o na barra com a tecla do espaço.")
 	else:
 		hud.set_notice("Mochila cheia. Libere um espaco para receber o machado.")
 
@@ -1017,9 +1029,11 @@ func estado_para_salvar() -> Dictionary:
 	var estado := {
 		"jogador": [player.global_position.x, player.global_position.y, player.global_position.z],
 		"giro": player.visual.rotation.y,
+		"folego_oceano": player.folego_atual(),
 		"hora": Dia.hora,
 		"horas_decorridas": Dia.horas_decorridas,
 		"machado_inicial_entregue": _machado_inicial_entregue,
+		"barra_de_ferramentas_migrada": _barra_de_ferramentas_migrada,
 		"visitados": _visited.keys(),
 	}
 	# AS FILAS DOS OUTROS MORADORES, e os alvos que já caíram.
@@ -1062,6 +1076,7 @@ func estado_para_salvar() -> Dictionary:
 
 
 func restaurar_do_save(estado: Dictionary) -> void:
+	player.definir_folego(float(estado.get("folego_oceano", player.folego_maximo())))
 	var onde: Array = estado.get("jogador", [])
 	if onde.size() == 3:
 		var ponto := Vector3(float(onde[0]), float(onde[1]), float(onde[2]))
@@ -1070,6 +1085,7 @@ func restaurar_do_save(estado: Dictionary) -> void:
 		player.visual.rotation.y = float(estado.get("giro", player.visual.rotation.y))
 	Dia.horas_decorridas = maxf(0.0, float(estado.get("horas_decorridas", 0.0)))
 	_machado_inicial_entregue = bool(estado.get("machado_inicial_entregue", false))
+	_barra_de_ferramentas_migrada = bool(estado.get("barra_de_ferramentas_migrada", false))
 	if estado.has("hora"):
 		Dia.definir_hora(float(estado["hora"]))
 	_visited.clear()
@@ -1119,20 +1135,21 @@ func restaurar_do_save(estado: Dictionary) -> void:
 ## DEPURAÇÃO: `-- --lugar=<nome>` começa o jogador direto num lugar do
 ## `Lugares` (praca, igreja, cemiterio, mirante...), sem refazer o caminho.
 ## Vem depois da partida salva: pedir um lugar é pedir para ir lá agora.
-func _comecar_no_lugar_pedido() -> void:
+func _comecar_no_lugar_pedido() -> bool:
 	for arg in OS.get_cmdline_user_args():
 		if not arg.begins_with("--lugar="):
 			continue
 		var nome := arg.substr("--lugar=".length())
 		if not Lugares.resolve(nome):
 			push_warning("--lugar=%s: o vale não tem esse lugar. Há: %s" % [nome, ", ".join(Lugares.nomes())])
-			return
+			return false
 		player.global_position = world.ground_position(Lugares.ponto(nome), 0.07)
 		player.velocity = Vector3.ZERO
 		if pedro != null:
 			pedro.global_position = world.ground_position(player.global_position + Vector3(-1.6, 0, 1.4), 0.05)
 		print("DEPURACAO: começando em %s" % nome)
-		return
+		return true
+	return false
 
 
 func _notification(what: int) -> void:
@@ -1205,6 +1222,7 @@ func _lendo() -> bool:
 
 
 func _exit_tree() -> void:
+	Energia.desregistrar_vigor(player)
 	if Vida.esta_lendo == Callable(self, "_lendo"):
 		Vida.esta_lendo = Callable()
 	# UMA FALA ABERTA NÃO SOBREVIVE AO VALE (#21). O `Dialogo` é autoload e fica;

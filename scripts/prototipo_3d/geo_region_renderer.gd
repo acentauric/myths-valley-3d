@@ -43,6 +43,15 @@ const TERRAIN_CELL_SIZE := 4.0
 const PRACA_AMPLIACAO := 1.5
 const SURFACE_SEGMENT_SIZE := 3.0
 const NORTHERN_RIVER_WIDTH_FACTOR := 0.8
+## Lâmina no centro: 0,27 de calha mais 0,025 acima da margem, rasa para a canela.
+const RIVER_BED_DEPTH := 0.27
+const RIVER_WATER_OFFSET := 0.025
+## Fica acima das camadas de grama (até 0,027), sem expor o leito no centro da água.
+const RIVER_BED_SAND_OFFSET := 0.06
+const RIVER_TERRAIN_CELL_SIZE := 0.8
+const RIVER_BANK_RISE := 0.07
+const BEACH_BERM_RISE := 0.08
+enum BankProfile { FLAT, RIVER, BEACH, MOUTH }
 
 var landmarks: Array[Dictionary] = []
 var areas: Array[Dictionary] = []
@@ -58,8 +67,10 @@ var _forest := PackedVector2Array()
 var _kml_forest := PackedVector2Array()
 var _village := PackedVector2Array()
 var _coast := PackedVector2Array()
+var _beach_gap_coast_points := PackedVector2Array()
 var _roads: Array[Dictionary] = []
 var _rivers: Array[Dictionary] = []
+var _mouth_extensions: Array[Dictionary] = []
 var _shore_access_routes: Array[Dictionary] = []
 var _point_positions: Array[Vector2] = []
 var _elevation_samples: Array[Dictionary] = []
@@ -187,6 +198,11 @@ func build_region(kml_json_path: String, scenario_json_path: String) -> void:
 	_forest = _to_points(scenario.get("forest_polygon_m", []))
 	_village = _to_points(scenario.get("village_polygon_m", []))
 	_coast = _to_points(scenario.get("coastline_m", []))
+	_beach_gap_coast_points = _to_points(scenario.get("beach_gap_coast_points_m", []))
+	if _beach_gap_coast_points.size() == 2:
+		_land = _smooth_mouth_outline(_land)
+		_forest = _smooth_mouth_outline(_forest)
+		_coast = _smooth_mouth_outline(_coast)
 	_costa_limites = _points_bounds(_coast) if _coast.size() >= 2 else Rect2()
 	if _bounds.size.x <= 0.0 or _bounds.size.y <= 0.0 or _land.size() < 3:
 		push_error("A região não contém limites e polígono de terra válidos.")
@@ -233,13 +249,37 @@ func build_region(kml_json_path: String, scenario_json_path: String) -> void:
 					_roads.append({"name": String(feature.get("name", "")), "points": points, "width": width, "bounds": _points_bounds(points).grow(width * 0.5)})
 			"river":
 				if points.size() >= 2:
-					_rivers.append({"name": String(feature.get("name", "")), "points": points, "width": _units(9.0, 4.0)})
+					var river_width := _units(9.0, 4.0)
+					_rivers.append({"name": String(feature.get("name", "")), "points": points, "width": river_width, "bounds": _points_bounds(points).grow(river_width * 0.5)})
 	_curve_roads()
+	_prepare_mouth_extensions()
 	if not terrain_only:
 		await _marcar(0.02, "Enchendo a baía")
 		_build_background()
 	# Ladrilho maior deixa folhas e tufos mais legiveis no terreno ao redor da via.
 	var mata_material := _terrain_texture_material(GRAMA_TERRA_MATA_TEXTURE, 12.0)
+	# A franja recortada da areia deixa o terreno aparecer nas margens. Na foz
+	# central, esse terreno precisa passar de areia para grama junto com a calha.
+	for river in _rivers:
+		if _is_northern_river(river):
+			continue
+		for from_end in [false, true]:
+			var points: PackedVector2Array = river.points
+			if not _tem_foz_no_extremo(points, from_end):
+				continue
+			var approach_far := _mouth_approach_on_river(points, from_end, _units(80.0, 20.0))
+			var approach_mid := _mouth_approach_on_river(points, from_end, _units(45.0, 11.25))
+			var approach_near := _mouth_approach_on_river(points, from_end, _units(15.0, 3.75))
+			var tip: Vector2 = points[-1] if from_end else points[0]
+			var before: Vector2 = points[-2] if from_end else points[1]
+			var direction := (tip - before).normalized()
+			mata_material.set_shader_parameter("mouth_sand_enabled", true)
+			mata_material.set_shader_parameter("mouth_a", approach_far[0])
+			mata_material.set_shader_parameter("mouth_b", approach_mid[0])
+			mata_material.set_shader_parameter("mouth_c", approach_near[0])
+			mata_material.set_shader_parameter("mouth_d", tip)
+			mata_material.set_shader_parameter("mouth_e", tip + direction * _units(24.0, 6.0))
+			break
 	await _marcar(0.05, "Moldando o terreno")
 	await _add_polygon("Terra", _land, 0.0, LAND_COLOR, true, mata_material, true)
 	await _marcar(0.38, "Moldando o terreno")
@@ -285,10 +325,10 @@ func build_region(kml_json_path: String, scenario_json_path: String) -> void:
 		material_leito.set_shader_parameter("areia", AREIA_TEXTURE)
 		var fracao_canal := float(river.width) / largura_total
 		material_leito.set_shader_parameter("fracao_canal", fracao_canal)
-		material_leito.set_shader_parameter("franja", minf(1.0, 1.6 / largura_margem))
+		material_leito.set_shader_parameter("franja", 0.22)
 		# Uma só malha de areia evita frestas com grama entre leito e margens.
 		# Na faixa central, os vértices coincidem com os da água acima dela.
-		_add_ribbon("Areia do rio", river.points, largura_total, 0.05, Color.WHITE, false, material_leito, NAN, 6, 1.5, fracao_canal, null, false, northern)
+		_add_ribbon("Areia do rio", river.points, largura_total, RIVER_BED_SAND_OFFSET, Color.WHITE, true, material_leito, NAN, 6, 0.8, fracao_canal, null, false, northern, false, NAN, false, BankProfile.RIVER)
 		# Água doce de mata: escura, âmbar, correnteza lenta (agua_rio.gdshader).
 		var material_rio := ShaderMaterial.new()
 		material_rio.shader = AGUA_RIO
@@ -298,10 +338,21 @@ func build_region(kml_json_path: String, scenario_json_path: String) -> void:
 		for i in range(river.points.size() - 1):
 			comprimento_rio += river.points[i].distance_to(river.points[i + 1])
 		material_rio.set_shader_parameter("comprimento", comprimento_rio / float(river.width))
-		material_rio.set_shader_parameter("suavizar_inicio", _tem_foz_no_extremo(river.points, false))
-		material_rio.set_shader_parameter("suavizar_fim", _tem_foz_no_extremo(river.points, true))
+		# Na foz central a malha da foz cobre a junta. Dissolver a ponta do
+		# canal revelava a areia do leito como uma faixa atravessando a agua.
+		material_rio.set_shader_parameter("suavizar_inicio", false)
+		material_rio.set_shader_parameter("suavizar_fim", false)
 		material_rio.set_shader_parameter("transicao_foz_larguras", _units(100.0, 25.0) / float(river.width) if northern else 1.0)
-		_add_ribbon("Rio", river.points, river.width, 0.09, RIVER_COLOR, false, material_rio, NAN, 6, 1.5, 0.0, null, false, northern)
+		_add_ribbon("Rio", river.points, river.width, RIVER_WATER_OFFSET, RIVER_COLOR, false, material_rio, NAN, 6, 1.5, 0.0, null, false, northern, false, 0.015 if not northern else NAN, true)
+	for mouth in _mouth_extensions:
+		var bank_width := _units(12.0, 3.0)
+		var total_width := float(mouth.width) + bank_width * 2.0
+		var bed_material := ShaderMaterial.new()
+		bed_material.shader = LEITO_RIO
+		bed_material.set_shader_parameter("areia", AREIA_TEXTURE)
+		bed_material.set_shader_parameter("fracao_canal", float(mouth.width) / total_width)
+		bed_material.set_shader_parameter("franja", 0.22)
+		_add_ribbon("Ladeira da foz", mouth.points, total_width, RIVER_BED_SAND_OFFSET, Color.WHITE, true, bed_material, NAN, 6, 0.8, float(mouth.width) / total_width, null, false, false, false, NAN, false, BankProfile.MOUTH)
 	_add_river_mouths()
 	# A rua mais larga fica por cima nas sobreposições (as ramificações entram por baixo
 	# dela), e cada cruzamento ganha um remendo de terra batida que cobre a emenda.
@@ -373,7 +424,7 @@ func has_map_frame() -> bool:
 
 ## Altitude KML em metros convertida pela mesma escala X/Z da região.
 ## Interpolação IDW dos pontos medidos; o KML não fornece um DEM contínuo.
-func ground_height_at(position: Vector3) -> float:
+func _terrain_height_at(position: Vector3) -> float:
 	var point := Vector2(position.x, position.z)
 	var weighted_height := 0.0
 	var total_weight := 0.0
@@ -402,6 +453,68 @@ func ground_height_at(position: Vector3) -> float:
 	var coast_distance := _distancia_costa(point, shore_width)
 	var inland_weight := smoothstep(0.0, shore_width, coast_distance)
 	return lerpf(SEA_SURFACE_Y, sampled_height, inland_weight)
+
+
+## A calha acompanha o relevo, mas só afunda o terreno sob a largura da água.
+## O platô central mantém a profundidade estável; as laterais sobem até as margens.
+func _riverbed_profile(point: Vector2) -> float:
+	var deepest := 0.0
+	for river in _rivers:
+		var width := float(river.width)
+		if not (river.bounds as Rect2).has_point(point):
+			continue
+		var distance := _distance_to_line(point, river.points)
+		var shape := 1.0 - smoothstep(width * 0.25, width * 0.58, distance)
+		deepest = maxf(deepest, RIVER_BED_DEPTH * shape)
+	for mouth in _mouth_extensions:
+		if not (mouth.bounds as Rect2).has_point(point):
+			continue
+		var width := float(mouth.width)
+		var distance := _distance_to_line(point, mouth.points)
+		var shape := 1.0 - smoothstep(width * 0.25, width * 0.58, distance)
+		deepest = maxf(deepest, RIVER_BED_DEPTH * shape)
+	return deepest
+
+
+func _riverbed_lowering(point: Vector2) -> float:
+	var depth := _riverbed_profile(point)
+	return depth if depth > 0.0 and _land.size() >= 3 and Geometry2D.is_point_in_polygon(point, _land) else 0.0
+
+
+## A areia elevada da margem afunda antes de alcançar o mar, sem um degrau
+## exatamente sobre o limite do polígono de terra.
+func _river_shore_weight(point: Vector2) -> float:
+	if _background_kind != "sea":
+		return 1.0
+	if not Geometry2D.is_point_in_polygon(point, _land):
+		return 0.0
+	var shore_span := _units(16.0, 4.0)
+	if not _costa_limites.grow(shore_span).has_point(point):
+		return 1.0
+	return smoothstep(0.0, shore_span, _distancia_costa(point, shore_span))
+
+
+func ground_height_at(position: Vector3) -> float:
+	return _terrain_height_at(position) - _riverbed_lowering(Vector2(position.x, position.z))
+
+
+## A altura da água usa o relevo sem o corte da calha; o fundo fica abaixo dela.
+func river_water_level_at(position: Vector3) -> float:
+	var point := Vector2(position.x, position.z)
+	if _land.size() < 3 or not Geometry2D.is_point_in_polygon(point, _land):
+		return -INF
+	for river in _rivers:
+		var width := float(river.width)
+		if (river.bounds as Rect2).has_point(point) and _distance_to_line(point, river.points) <= width * 0.5:
+			var offset := _coastal_ribbon_height(point, RIVER_WATER_OFFSET, 0.015) if not _is_northern_river(river) else RIVER_WATER_OFFSET
+			return _terrain_height_at(position) + offset
+	return -INF
+
+
+func river_water_depth_at(position: Vector3) -> float:
+	var level := river_water_level_at(position)
+	# O jogador pisa na malha de areia, ligeiramente acima do terreno esculpido.
+	return maxf(level - ground_height_at(position) - RIVER_BED_SAND_OFFSET, 0.0) if is_finite(level) else 0.0
 
 
 func ground_position(position: Vector3, offset_y: float = 0.0) -> Vector3:
@@ -598,6 +711,7 @@ func _clear_region() -> void:
 	_projection.clear()
 	_roads.clear()
 	_rivers.clear()
+	_mouth_extensions.clear()
 	_shore_access_routes.clear()
 	_point_positions.clear()
 	_elevation_samples.clear()
@@ -616,6 +730,7 @@ func _clear_region() -> void:
 	_kml_forest.clear()
 	_village.clear()
 	_coast.clear()
+	_beach_gap_coast_points.clear()
 
 
 func _to_points(coordinates: Array) -> PackedVector2Array:
@@ -628,6 +743,48 @@ func _to_points(coordinates: Array) -> PackedVector2Array:
 	if result.size() > 2 and result[0].distance_squared_to(result[-1]) < 0.0001:
 		result.remove_at(result.size() - 1)
 	return result
+
+
+## Arredonda apenas a pequena curva da foz central, mantendo os pontos do
+## cenário e os marcadores onde a faixa de praia termina.
+func _smooth_mouth_outline(points: PackedVector2Array) -> PackedVector2Array:
+	if points.size() < 5:
+		return points
+	var markers := PackedInt32Array()
+	for marker in _beach_gap_coast_points:
+		var nearest := -1
+		var best := 0.001
+		for i in range(points.size()):
+			var distance := points[i].distance_squared_to(marker)
+			if distance < best:
+				nearest = i
+				best = distance
+		if nearest < 0:
+			return points
+		markers.append(nearest)
+	var first := mini(markers[0], markers[1])
+	var last := maxi(markers[0], markers[1])
+	if last <= first + 1:
+		return points
+	var start := maxi(0, first - 1)
+	var finish := mini(points.size() - 1, last + 1)
+	var smoothed := PackedVector2Array()
+	for i in range(start):
+		smoothed.append(points[i])
+	for i in range(start, finish):
+		var p0 := points[maxi(0, i - 1)]
+		var p1 := points[i]
+		var p2 := points[i + 1]
+		var p3 := points[mini(points.size() - 1, i + 2)]
+		for step in range(4):
+			var t := float(step) / 4.0
+			var t2 := t * t
+			var t3 := t2 * t
+			smoothed.append(0.5 * (2.0 * p1 + (p2 - p0) * t + (2.0 * p0 - 5.0 * p1 + 4.0 * p2 - p3) * t2 + (3.0 * p1 - p0 - 3.0 * p2 + p3) * t3))
+	smoothed.append(points[finish])
+	for i in range(finish + 1, points.size()):
+		smoothed.append(points[i])
+	return smoothed
 
 
 func _points_bounds(points: PackedVector2Array) -> Rect2:
@@ -669,9 +826,24 @@ shader_type spatial;
 render_mode cull_disabled;
 
 uniform sampler2D terrain_texture : source_color, repeat_enable, filter_linear_mipmap_anisotropic;
+uniform sampler2D sand_texture : source_color, repeat_enable, filter_linear_mipmap_anisotropic;
 uniform float tile_size = 8.0;
 uniform vec3 tint : source_color = vec3(1.0);
+uniform bool mouth_sand_enabled = false;
+uniform vec2 mouth_a;
+uniform vec2 mouth_b;
+uniform vec2 mouth_c;
+uniform vec2 mouth_d;
+uniform vec2 mouth_e;
+uniform float mouth_sand_inner = 4.0;
+uniform float mouth_sand_outer = 4.75;
 varying vec2 world_xz;
+
+float distance_to_segment(vec2 point, vec2 a, vec2 b) {
+	vec2 segment = b - a;
+	float along = clamp(dot(point - a, segment) / max(dot(segment, segment), 0.0001), 0.0, 1.0);
+	return distance(point, a + segment * along);
+}
 
 void vertex() {
 	vec3 world_vertex = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
@@ -679,15 +851,28 @@ void vertex() {
 }
 
 void fragment() {
-	ALBEDO = texture(terrain_texture, world_xz / tile_size).rgb * tint;
+	vec3 grass = texture(terrain_texture, world_xz / tile_size).rgb * tint;
+	ALBEDO = grass;
+	if (mouth_sand_enabled) {
+		float distance_from_mouth = min(
+			min(distance_to_segment(world_xz, mouth_a, mouth_b), distance_to_segment(world_xz, mouth_b, mouth_c)),
+			min(distance_to_segment(world_xz, mouth_c, mouth_d), distance_to_segment(world_xz, mouth_d, mouth_e))
+		);
+		float sand_amount = 1.0 - smoothstep(mouth_sand_inner, mouth_sand_outer, distance_from_mouth);
+		vec3 sand = texture(sand_texture, world_xz / 5.0).rgb * vec3(0.92, 0.88, 0.8);
+		ALBEDO = mix(grass, sand, sand_amount);
+	}
 	ROUGHNESS = 0.94;
 }
 """
 	var material := ShaderMaterial.new()
 	material.shader = shader
 	material.set_shader_parameter("terrain_texture", texture)
+	material.set_shader_parameter("sand_texture", AREIA_TEXTURE)
 	material.set_shader_parameter("tile_size", maxf(tile_units, 0.1))
 	material.set_shader_parameter("tint", TINTA_GRAMA)
+	material.set_shader_parameter("mouth_sand_inner", _units(16.0, 4.0))
+	material.set_shader_parameter("mouth_sand_outer", _units(19.0, 4.75))
 	return material
 
 
@@ -759,7 +944,7 @@ void fragment() {
 func _build_background() -> void:
 	# O fundo ultrapassa a borda da região para a vista aérea não revelar um retângulo vazio.
 	if _background_kind == "sea" and not _bathymetry.is_empty():
-		Mar.montar(self, _bathymetry, SEA_SURFACE_Y, _meters_per_unit, _bounds.grow(4000.0), get_map_frame())
+		Mar.montar(self, _bathymetry, SEA_SURFACE_Y, _meters_per_unit, _bounds.grow(4000.0), get_map_frame(), _rivers, _land)
 		return
 	var mesh := BoxMesh.new()
 	mesh.size = Vector3(_bounds.size.x + 8000.0, 0.3, _bounds.size.y + 8000.0)
@@ -813,7 +998,14 @@ func _add_draped_triangle(surface: SurfaceTool, a: Vector2, b: Vector2, c: Vecto
 	var ab := a.distance_squared_to(b)
 	var bc := b.distance_squared_to(c)
 	var ca := c.distance_squared_to(a)
-	if depth < 18 and maxf(ab, maxf(bc, ca)) > TERRAIN_CELL_SIZE * TERRAIN_CELL_SIZE * 2.0:
+	var cell_size := TERRAIN_CELL_SIZE
+	var center := (a + b + c) / 3.0
+	var radius := sqrt(maxf(ab, maxf(bc, ca)))
+	for river in _rivers:
+		if (river.bounds as Rect2).grow(radius).has_point(center) and _distance_to_line(center, river.points) < radius + float(river.width):
+			cell_size = RIVER_TERRAIN_CELL_SIZE
+			break
+	if depth < 22 and maxf(ab, maxf(bc, ca)) > cell_size * cell_size * 2.0:
 		if ab >= bc and ab >= ca:
 			var middle := (a + b) * 0.5
 			_add_draped_triangle(surface, a, middle, c, offset_y, depth + 1)
@@ -882,8 +1074,21 @@ func _triangle_uv_at(point: Vector2, a: Vector2, b: Vector2, c: Vector2, uv_a: V
 	return uv_a * (1.0 - weight_b - weight_c) + uv_b * weight_b + uv_c * weight_c
 
 
+func _triangle_height_at(point: Vector2, a: Vector3, b: Vector3, c: Vector3) -> float:
+	var pa := Vector2(a.x, a.z)
+	var ab := Vector2(b.x, b.z) - pa
+	var ac := Vector2(c.x, c.z) - pa
+	var denominator := ab.cross(ac)
+	if absf(denominator) < 0.000001:
+		return (a.y + b.y + c.y) / 3.0
+	var relative := point - pa
+	var weight_b := relative.cross(ac) / denominator
+	var weight_c := ab.cross(relative) / denominator
+	return a.y * (1.0 - weight_b - weight_c) + b.y * weight_b + c.y * weight_c
+
+
 ## Corta a superfície na costa para que o rio norte nunca cubra o oceano.
-func _add_land_clipped_triangle_uv(surface: SurfaceTool, a: Vector3, b: Vector3, c: Vector3, uv_a: Vector2, uv_b: Vector2, uv_c: Vector2, y: float) -> void:
+func _add_land_clipped_triangle_uv(surface: SurfaceTool, a: Vector3, b: Vector3, c: Vector3, uv_a: Vector2, uv_b: Vector2, uv_c: Vector2, _y: float) -> void:
 	var pa := Vector2(a.x, a.z)
 	var pb := Vector2(b.x, b.z)
 	var pc := Vector2(c.x, c.z)
@@ -896,9 +1101,9 @@ func _add_land_clipped_triangle_uv(surface: SurfaceTool, a: Vector3, b: Vector3,
 			var p0: Vector2 = polygon[indices[i]]
 			var p1: Vector2 = polygon[indices[i + 1]]
 			var p2: Vector2 = polygon[indices[i + 2]]
-			var v0 := ground_position(Vector3(p0.x, 0, p0.y), y)
-			var v1 := ground_position(Vector3(p1.x, 0, p1.y), y)
-			var v2 := ground_position(Vector3(p2.x, 0, p2.y), y)
+			var v0 := Vector3(p0.x, _triangle_height_at(p0, a, b, c), p0.y)
+			var v1 := Vector3(p1.x, _triangle_height_at(p1, a, b, c), p1.y)
+			var v2 := Vector3(p2.x, _triangle_height_at(p2, a, b, c), p2.y)
 			var t0 := _triangle_uv_at(p0, pa, pb, pc, uv_a, uv_b, uv_c)
 			var t1 := _triangle_uv_at(p1, pa, pb, pc, uv_a, uv_b, uv_c)
 			var t2 := _triangle_uv_at(p2, pa, pb, pc, uv_a, uv_b, uv_c)
@@ -962,7 +1167,10 @@ func _curve_roads() -> void:
 		road.points = _chaikin(road.points)
 	# O rio do KML também vem em segmentos retos com quinas: as mesmas curvas.
 	for river in _rivers:
-		river.points = _river_path_on_land(_chaikin(river.points))
+		var curved := _chaikin(river.points)
+		# A foz central agora tem um pequeno canal aberto na costa. Mantém o
+		# trecho da linha do rio nesse canal para a água chegar até a baía.
+		river.points = _river_path_on_land(curved) if _is_northern_river(river) else curved
 		river.bounds = _points_bounds(river.points).grow(float(river.width) * 0.5 + _units(12.0, 3.0) + 1.0)
 	# A foz maior continua alargando, mas toda a calha do rio norte fica 20% mais estreita.
 	for river in _rivers:
@@ -1024,6 +1232,33 @@ func _river_path_on_land(points: PackedVector2Array) -> PackedVector2Array:
 	if last < points.size() - 1:
 		on_land.append(_landward_shore_point(points[last], points[last + 1]))
 	return on_land
+
+
+## O fundo caminhável continua sob a água da foz até ultrapassar a praia.
+## A linha do rio termina antes disso; sem esta continuação a colisão sobe na ponta.
+func _prepare_mouth_extensions() -> void:
+	_mouth_extensions.clear()
+	for river in _rivers:
+		var points: PackedVector2Array = river.points
+		for from_end in [false, true]:
+			if not _tem_foz_no_extremo(points, from_end):
+				continue
+			var tip: Vector2 = points[-1] if from_end else points[0]
+			var before: Vector2 = points[-2] if from_end else points[1]
+			var direction := (tip - before).normalized()
+			if direction == Vector2.ZERO:
+				continue
+			var extension := PackedVector2Array([tip])
+			var point := tip
+			for step in 200:
+				point += direction
+				extension.append(point)
+				if not Geometry2D.is_point_in_polygon(point, _land):
+					break
+			var tail := _units(24.0, 6.0)
+			extension.append(point + direction * tail)
+			var width := float(river.width)
+			_mouth_extensions.append({"points": extension, "width": width, "bounds": _points_bounds(extension).grow(width * 0.5 + _units(12.0, 3.0))})
 
 
 func _is_northern_river(river: Dictionary) -> bool:
@@ -1154,9 +1389,39 @@ func _road_height_under_rivers(point: Vector2, height: float) -> float:
 	return result
 
 
+func _beach_height_under_flow(point: Vector2, height: float) -> float:
+	var result := height
+	for river in _rivers:
+		var bounds: Rect2 = river.bounds
+		if not bounds.has_point(point):
+			continue
+		var width := float(river.width)
+		var distance := _distance_to_line(point, river.points)
+		var submerged := 1.0 - smoothstep(width * 0.35, width * 0.5, distance)
+		result = minf(result, lerpf(height, -0.06, submerged))
+	for mouth in _mouth_extensions:
+		if not (mouth.bounds as Rect2).has_point(point):
+			continue
+		var width := float(mouth.width)
+		var distance := _distance_to_line(point, mouth.points)
+		var submerged := 1.0 - smoothstep(width * 0.35, width * 0.5, distance)
+		result = minf(result, lerpf(height, -0.06, submerged))
+	return result
+
+
+func _coastal_ribbon_height(point: Vector2, inland_height: float, sea_height: float) -> float:
+	if not Geometry2D.is_point_in_polygon(point, _land):
+		return sea_height
+	var shore_band := _units(28.0, 7.0)
+	if not _costa_limites.grow(shore_band).has_point(point):
+		return inland_height
+	var distance := _distancia_costa(point, shore_band)
+	return lerpf(sea_height, inland_height, smoothstep(0.0, shore_band, distance))
+
+
 ## Faixa ao longo de `points`, `y` acima do chão; `y_right` (se dado) é a altura do lado
 ## direito, para faixas em rampa como a praia entrando na água.
-func _add_ribbon(label: String, points: PackedVector2Array, width: float, y: float, color: Color, with_collision: bool = false, material_override: Material = null, y_right: float = NAN, cross_steps: int = 1, segment_size: float = SURFACE_SEGMENT_SIZE, channel_fraction: float = 0.0, width_profile: Variant = null, lower_under_rivers: bool = false, clip_to_land: bool = false) -> void:
+func _add_ribbon(label: String, points: PackedVector2Array, width: float, y: float, color: Color, with_collision: bool = false, material_override: Material = null, y_right: float = NAN, cross_steps: int = 1, segment_size: float = SURFACE_SEGMENT_SIZE, channel_fraction: float = 0.0, width_profile: Variant = null, lower_under_rivers: bool = false, clip_to_land: bool = false, bury_beach_in_river: bool = false, coastal_height: float = NAN, use_uncarved_ground: bool = false, bank_profile: BankProfile = BankProfile.FLAT) -> void:
 	if points.size() < 2:
 		return
 	var widths := PackedFloat32Array()
@@ -1222,8 +1487,36 @@ func _add_ribbon(label: String, points: PackedVector2Array, width: float, y: flo
 			var t_j := cross_positions[j]
 			var ponta := left[i].lerp(right[i], t_j)
 			var base := lerpf(y, y_right, t_j) if not is_nan(y_right) else y
-			var altura := _road_height_under_rivers(ponta, base) if lower_under_rivers else base
-			grade[i * colunas + j] = ground_position(Vector3(ponta.x, 0, ponta.y), altura)
+			var shore_weight := 1.0
+			var bank_fraction := 0.0
+			if bank_profile == BankProfile.RIVER or bank_profile == BankProfile.MOUTH:
+				shore_weight = _river_shore_weight(ponta)
+				var side := absf(t_j - 0.5) * 2.0
+				bank_fraction = clampf((side - channel_fraction) / maxf(1.0 - channel_fraction, 0.001), 0.0, 1.0)
+				base += RIVER_BANK_RISE * smoothstep(0.0, 0.45, bank_fraction) * (1.0 - smoothstep(0.7, 1.0, bank_fraction)) * shore_weight
+			elif bank_profile == BankProfile.BEACH:
+				base += BEACH_BERM_RISE * smoothstep(0.0, 0.15, t_j) * (1.0 - smoothstep(0.55, 0.85, t_j))
+			var altura := _beach_height_under_flow(ponta, base) if bury_beach_in_river else (_road_height_under_rivers(ponta, base) if lower_under_rivers else base)
+			if not is_nan(coastal_height) and bank_profile != BankProfile.RIVER and bank_profile != BankProfile.MOUTH:
+				altura = _coastal_ribbon_height(ponta, altura, coastal_height)
+			var position := Vector3(ponta.x, 0, ponta.y)
+			var terrain_height := 0.0
+			if bank_profile == BankProfile.RIVER or bank_profile == BankProfile.MOUTH:
+				var river_depth := _riverbed_profile(ponta)
+				# O afundamento da foz age na borda externa; sob a correnteza a
+				# areia continua por cima do terreno e da grama sobreposta.
+				var submerged_bank := (RIVER_BED_DEPTH - river_depth) * (1.0 - shore_weight) * smoothstep(0.15, 0.8, bank_fraction)
+				terrain_height = _terrain_height_at(position) - river_depth - submerged_bank
+				if bank_profile == BankProfile.MOUTH and not Geometry2D.is_point_in_polygon(ponta, _land):
+					var sea_depth := Mar.lamina_em(ponta)
+					if not is_nan(sea_depth):
+						var sea_floor := SEA_SURFACE_Y - sea_depth / _meters_per_unit
+						var ramp_length := _units(24.0, 6.0)
+						var slope := smoothstep(0.0, ramp_length, _distancia_costa(ponta, ramp_length))
+						terrain_height = lerpf(terrain_height, sea_floor + 0.02 - altura, slope)
+			else:
+				terrain_height = _terrain_height_at(position) if use_uncarved_ground else ground_height_at(position)
+			grade[i * colunas + j] = Vector3(ponta.x, terrain_height + altura, ponta.y)
 	for i in range(sampled.size() - 1):
 		for lateral_index in range(colunas - 1):
 			var t_a := cross_positions[lateral_index]
@@ -1277,11 +1570,69 @@ func _add_beach() -> void:
 	var material := ShaderMaterial.new()
 	material.shader = AREIA_PRAIA
 	material.set_shader_parameter("textura_areia", AREIA_TEXTURE)
+	# Franja curta: a transparencia antiga revelava faixas e triangulos de
+	# grama ao longo da praia, sobretudo na largura variavel perto da foz.
+	material.set_shader_parameter("franja", 0.10)
 	# A faixa úmida acompanha a maré: o material recebe "mare_offset_m" do Mare.
 	var mare := get_node_or_null("/root/Mare")
 	if mare != null:
 		mare.call("registrar_material", material)
-	_add_ribbon("Orla de areia", coast, width, 0.075, BEACH_COLOR, true, material, -0.06)
+	var mouth_tips: Array[Vector2] = []
+	for river in _rivers:
+		for from_end in [true, false]:
+			if _tem_foz_no_extremo(river.points, from_end):
+				mouth_tips.append(river.points[river.points.size() - 1] if from_end else river.points[0])
+	var widths := PackedFloat32Array()
+	for point in coast:
+		var local_width := width
+		for tip in mouth_tips:
+			var narrowing := 1.0 - smoothstep(_units(35.0, 9.0), _units(70.0, 18.0), point.distance_to(tip))
+			local_width = minf(local_width, lerpf(width, _units(8.0, 2.0), narrowing))
+		widths.append(local_width)
+	# A pequena enseada da foz ja tem margens de areia no leito do rio. Fazer
+	# a faixa da praia contornar essa curva estreita sobrepunha as duas malhas
+	# e desenhava uma ponte de areia sobre a correnteza.
+	var sections: Array[Vector2i] = [Vector2i(0, coast.size() - 1)]
+	if _beach_gap_coast_points.size() == 2:
+		var gap_indices := PackedInt32Array()
+		for marker in _beach_gap_coast_points:
+			var closest_index := 0
+			var closest_distance := INF
+			for i in range(coast.size()):
+				var distance := coast[i].distance_squared_to(marker)
+				if distance < closest_distance:
+					closest_distance = distance
+					closest_index = i
+			gap_indices.append(closest_index)
+		var first := mini(gap_indices[0], gap_indices[1])
+		var last := maxi(gap_indices[0], gap_indices[1])
+		if first > 0 and last < coast.size() - 1 and last > first + 1:
+			sections = [Vector2i(0, first), Vector2i(last, coast.size() - 1)]
+	for section in sections:
+		var section_coast := PackedVector2Array()
+		var section_widths := PackedFloat32Array()
+		for i in range(section.x, section.y + 1):
+			section_coast.append(coast[i])
+			section_widths.append(widths[i])
+		# A faixa termina afinando sob a areia do rio; um corte reto em toda a
+		# largura aparecia como uma placa quadrada na entrada da foz.
+		if sections.size() == 2:
+			var cap_length := _units(20.0, 5.0)
+			var cap_width := _units(0.5, 0.12)
+			var walked := 0.0
+			if section.x > 0:
+				for i in range(section_coast.size()):
+					if i > 0:
+						walked += section_coast[i].distance_to(section_coast[i - 1])
+					section_widths[i] = lerpf(cap_width, section_widths[i], smoothstep(0.0, cap_length, walked))
+			else:
+				for i in range(section_coast.size() - 1, -1, -1):
+					if i < section_coast.size() - 1:
+						walked += section_coast[i].distance_to(section_coast[i + 1])
+					section_widths[i] = lerpf(cap_width, section_widths[i], smoothstep(0.0, cap_length, walked))
+		# Só a praia dentro da correnteza desce sob a agua; o leito cobre
+		# as duas margens durante o intervalo sem faixa costeira.
+		_add_ribbon("Orla de areia", section_coast, width, 0.035, BEACH_COLOR, true, material, -0.06, 8, 1.0, 0.0, section_widths, false, false, true, NAN, false, BankProfile.BEACH)
 
 
 ## Rios que terminam perto da costa seguem até o mar: a foz atravessa a areia e a água
@@ -1290,7 +1641,7 @@ func _tem_foz_no_extremo(points: PackedVector2Array, from_end: bool) -> bool:
 	if _background_kind != "sea" or _land.size() < 3 or points.size() < 2:
 		return false
 	var tip: Vector2 = points[points.size() - 1] if from_end else points[0]
-	return _distance_to_line(tip, _coast) <= _units(60.0, 15.0) and Geometry2D.is_point_in_polygon(tip, _land)
+	return _distance_to_line(tip, _coast) <= _units(60.0, 15.0)
 
 
 func _mouth_approach_on_river(points: PackedVector2Array, from_end: bool, distance: float) -> PackedVector2Array:
@@ -1319,7 +1670,6 @@ func _add_river_mouths() -> void:
 		var points: PackedVector2Array = river.points
 		if points.size() < 2:
 			continue
-		var northern := _is_northern_river(river)
 		var comprimento_rio := 0.0
 		for i in range(points.size() - 1):
 			comprimento_rio += points[i].distance_to(points[i + 1])
@@ -1331,53 +1681,57 @@ func _add_river_mouths() -> void:
 			var mouth := PackedVector2Array()
 			var shore_length := 0.0
 			var tail := 0.0
-			if northern:
-				mouth = _mouth_approach_on_river(points, from_end, _units(100.0, 25.0))
-			else:
-				var direction := (tip - before).normalized()
-				if direction == Vector2.ZERO:
-					continue
-				mouth = PackedVector2Array([tip - direction * float(river.width), tip])
-				var point := tip
-				for step in 200:
-					point += direction
-					mouth.append(point)
-					if not Geometry2D.is_point_in_polygon(point, _land):
-						break
-				shore_length = mouth[0].distance_to(point)
-				tail = _units(24.0, 6.0)
-				for step in range(1, 7):
-					mouth.append(point + direction * tail * float(step) / 6.0)
+			var direction := (tip - before).normalized()
+			if direction == Vector2.ZERO:
+				continue
+			# O rio norte também cruza a praia e alcança a baía. A sobreposição
+			# curta mantém a correnteza contínua sobre a junção com o canal.
+			mouth = _mouth_approach_on_river(points, from_end, float(river.width) * 2.0)
+			if mouth.size() < 2:
+				continue
+			var point := tip
+			for step in 200:
+				point += direction
+				mouth.append(point)
+				if not Geometry2D.is_point_in_polygon(point, _land):
+					break
+			for i in range(mouth.size() - 1):
+				shore_length += mouth[i].distance_to(mouth[i + 1])
+			tail = _units(24.0, 6.0)
+			for step in range(1, 7):
+				mouth.append(point + direction * tail * float(step) / 6.0)
 			if mouth.size() < 2:
 				continue
 			var length := 0.0
 			for i in range(mouth.size() - 1):
 				length += mouth[i].distance_to(mouth[i + 1])
-			if northern:
-				shore_length = length
 			var mouth_widths := PackedFloat32Array()
-			var flare_length := length if northern else maxf(shore_length - float(river.width) + tail * 0.7, float(river.width) * 1.5)
+			# A foz central abre com suavidade no trecho final do rio e termina
+			# um pouco mais larga que o canal, sem o alargamento excessivo anterior.
+			var width_start := float(river.width)
+			var flare_length := maxf(shore_length - float(river.width) + tail * 0.7, float(river.width) * 1.5)
+			var flare_amount := 0.8
 			var traveled := 0.0
 			for i in range(mouth.size() - 1):
-				var widening := clampf((traveled if northern else traveled - float(river.width)) / flare_length, 0.0, 1.0)
+				var widening := clampf((traveled - width_start) / flare_length, 0.0, 1.0)
 				widening = widening * widening * (3.0 - 2.0 * widening)
-				mouth_widths.append(float(river.width) * (1.0 + (2.6 if northern else 1.2) * widening))
+				mouth_widths.append(float(river.width) * (1.0 + flare_amount * widening))
 				traveled += mouth[i].distance_to(mouth[i + 1])
-			var widening_final := clampf((length if northern else length - float(river.width)) / flare_length, 0.0, 1.0)
+			var widening_final := clampf((length - float(river.width)) / flare_length, 0.0, 1.0)
 			widening_final = widening_final * widening_final * (3.0 - 2.0 * widening_final)
-			mouth_widths.append(float(river.width) * (1.0 + (2.6 if northern else 1.2) * widening_final))
+			mouth_widths.append(float(river.width) * (1.0 + flare_amount * widening_final))
 			var material := ShaderMaterial.new()
 			material.shader = FOZ_RIO
 			material.set_shader_parameter("ondas_a", Mar.textura_ruido("ondas_a", 0.035, true))
 			material.set_shader_parameter("ondas_b", Mar.textura_ruido("ondas_b", 0.05, true))
 			material.set_shader_parameter("comprimento", length / float(river.width))
-			material.set_shader_parameter("inicio_sumir", 0.72 if northern else clampf((shore_length - float(river.width) * 0.15) / length, 0.25, 0.82))
-			material.set_shader_parameter("entrada_suave", 0.62 if northern else float(river.width) / length)
-			material.set_shader_parameter("limite_na_costa", northern)
-			var overlap_lengths := length / float(river.width) if northern else 1.0
+			material.set_shader_parameter("inicio_sumir", clampf((shore_length - float(river.width) * 0.15) / length, 0.0, 0.96))
+			material.set_shader_parameter("entrada_suave", float(river.width) / length)
+			material.set_shader_parameter("limite_na_costa", false)
+			var overlap_lengths := 1.0
 			material.set_shader_parameter("deslocamento_percurso", comprimento_rio / float(river.width) - overlap_lengths if from_end else overlap_lengths)
 			material.set_shader_parameter("sentido_percurso", 1.0 if from_end else -1.0)
-			_add_ribbon("Foz do rio", mouth, float(river.width), 0.10, RIVER_COLOR, false, material, NAN, 10, 1.0, 0.0, mouth_widths, false, northern)
+			_add_ribbon("Foz do rio", mouth, float(river.width), RIVER_WATER_OFFSET + 0.01, RIVER_COLOR, false, material, NAN, 10, 1.0, 0.0, mouth_widths, false, false, false, 0.015, true)
 
 
 func _distance_to_line(point: Vector2, line: PackedVector2Array) -> float:
@@ -1391,6 +1745,15 @@ func _distance_to_line(point: Vector2, line: PackedVector2Array) -> float:
 		var t := clampf((point - line[i]).dot(segment) / segment.length_squared(), 0.0, 1.0)
 		closest = minf(closest, point.distance_to(line[i] + segment * t))
 	return closest
+
+
+func _near_river(point: Vector2, clearance: float) -> bool:
+	for river in _rivers:
+		var width := float(river.width)
+		var bounds: Rect2 = river.bounds
+		if bounds.grow(clearance).has_point(point) and _distance_to_line(point, river.points) < width * 0.5 + clearance:
+			return true
+	return false
 
 
 func _build_forest(configuration: Dictionary) -> void:
@@ -1497,7 +1860,9 @@ func _build_sub_bosque(arvores_mata: Array[Vector2], rng: RandomNumberGenerator)
 	var transforms: Array[Transform3D] = []
 	for i in range(0, arvores_mata.size(), 3):
 		var ponto: Vector2 = arvores_mata[i] + Vector2.RIGHT.rotated(rng.randf() * TAU) * rng.randf_range(2.0, 4.5)
-		if not Geometry2D.is_point_in_polygon(ponto, _land) or _near_route(ponto, _units(4.0, 1.5)):
+		# O tufo tem volume para fora do ponto de plantio; deixa uma faixa livre
+		# além da margem do rio para ele não aparecer dentro da correnteza.
+		if not Geometry2D.is_point_in_polygon(ponto, _land) or _near_route(ponto, _units(4.0, 1.5)) or _near_river(ponto, _units(5.0, 2.0)):
 			continue
 		var chao := ground_height_at(Vector3(ponto.x, 0, ponto.y))
 		var escala := rng.randf_range(0.7, 1.3)
@@ -1537,7 +1902,10 @@ func _build_margens_do_rio(rng: RandomNumberGenerator) -> void:
 				var base := a + direcao * (proximo - percorrido)
 				var no_mangue := tem_mangue and _distance_to_line(base, _coast) < perto_do_mar
 				for lado in [-1.0, 1.0]:
-					var ponto: Vector2 = base + normal * float(lado) * (largura * 0.5 + rng.randf_range(0.8, 2.5))
+					# O modelo do ingazeiro inclui uma pedra de ate 4,8 u de raio
+					# na maior escala; mantenha a base inteira fora da agua.
+					var recuo := rng.randf_range(0.8, 2.5) if no_mangue else rng.randf_range(5.2, 6.0)
+					var ponto: Vector2 = base + normal * float(lado) * (largura * 0.5 + recuo)
 					if not Geometry2D.is_point_in_polygon(ponto, _land) or _near_route(ponto, _units(5.0, 2.0)):
 						continue
 					var chao := ground_height_at(Vector3(ponto.x, 0, ponto.y))

@@ -53,6 +53,12 @@ func _draw() -> void:
 			draw_arc(Vector2(12, 9), 4.5, PI, TAU + PI * 0.25, 16, cor_ajuda, 2.0, true)
 			draw_polyline(PackedVector2Array([Vector2(15.2, 12.2), Vector2(12, 14.5), Vector2(12, 16)]), cor_ajuda, 2.0, true)
 			draw_circle(Vector2(12, 19.6), 1.3, cor_ajuda)
+		"missoes":
+			var cor_missoes := ouro if ativo else tinta
+			draw_rect(Rect2(5, 4, 15, 17), cor_missoes, false, 1.7, true)
+			draw_line(Vector2(8, 9), Vector2(17, 9), cor_missoes, 1.5, true)
+			draw_line(Vector2(8, 13), Vector2(17, 13), cor_missoes, 1.5, true)
+			draw_polyline(PackedVector2Array([Vector2(8, 17), Vector2(10, 19), Vector2(14, 15)]), cor_missoes, 1.6, true)
 		"fechar":
 			draw_line(Vector2(6, 6), Vector2(18, 18), tinta, 2.0, true)
 			draw_line(Vector2(18, 6), Vector2(6, 18), tinta, 2.0, true)

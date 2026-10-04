@@ -102,7 +102,6 @@ func adicionar(id: String, quantidade: int = 1) -> bool:
 		return false
 
 	var empilhavel: bool = Catalogo.dados(id).get("empilhavel", true)
-	var primeiro_espaco := ESPACOS_MAO if _somente_reserva(id) else 0
 
 	if empilhavel:
 		for espaco in espacos:
@@ -113,7 +112,7 @@ func adicionar(id: String, quantidade: int = 1) -> bool:
 				return true
 
 	# Enche a barra de mão primeiro: o que se pega é o que se vai usar.
-	for i in range(primeiro_espaco, ESPACOS):
+	for i in ESPACOS:
 		if espacos[i].is_empty():
 			espacos[i] = {"id": id, "qtd": quantidade}
 			mudou.emit()
@@ -127,29 +126,22 @@ func adicionar(id: String, quantidade: int = 1) -> bool:
 func trocar(a: int, b: int) -> void:
 	if a == b or a < 0 or b < 0 or a >= ESPACOS or b >= ESPACOS:
 		return
-	var ferramenta_em_a := _somente_reserva(str(espacos[a].get("id", "")))
-	var ferramenta_em_b := _somente_reserva(str(espacos[b].get("id", "")))
-	if (a < ESPACOS_MAO and ferramenta_em_b) or (b < ESPACOS_MAO and ferramenta_em_a):
-		return
 	var guardado = espacos[a]
 	espacos[a] = espacos[b]
 	espacos[b] = guardado
 	mudou.emit()
 
 
-## Hand-slot tools stay in storage slots and are used by equipping them.
-func _somente_reserva(id: String) -> bool:
-	return Catalogo.tipo(id) == "ferramenta" and str(Catalogo.dados(id).get("encaixe", "")) == "maos"
-
-
-## Move hand tools from numbered slots in older saves into storage slots.
-func mover_ferramentas_para_reserva() -> void:
+## O machado das partidas antigas era guardado fora da barra por obrigação.
+## Traz apenas esses machados de volta, sem mexer na arrumação dos demais itens.
+func mover_ferramentas_para_barra() -> void:
 	var mudou_de_lugar := false
-	for origem in ESPACOS_MAO:
-		if not _somente_reserva(str(espacos[origem].get("id", ""))):
+	for origem in range(ESPACOS_MAO, ESPACOS):
+		var id := str(espacos[origem].get("id", ""))
+		if id != "machado":
 			continue
 		var destino := -1
-		for indice in range(ESPACOS_MAO, ESPACOS):
+		for indice in ESPACOS_MAO:
 			if espacos[indice].is_empty():
 				destino = indice
 				break

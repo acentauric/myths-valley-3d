@@ -150,7 +150,7 @@ func _rotulo(tamanho: int, cor: Color) -> Label:
 func _preencher(lembretes: Array) -> void:
 	_dia.text = "Dia %d" % Relogio.dia
 	_data.text = "%s · Ano %d" % [Relogio.nome_estacao(), Relogio.ano]
-	_folego.text = "Fôlego %d de %d" % [roundi(Energia.atual), roundi(Energia.maximo())]
+	_folego.text = "%s %d de %d" % [Energia.nome_recurso().capitalize(), roundi(Energia.atual), roundi(Energia.maximo())]
 
 	if lembretes.is_empty():
 		_lembretes.text = "Nada marcado no arraial."
