@@ -80,11 +80,13 @@ func _run() -> void:
 	_buscar_botoes(tela, botoes)
 	_conferir(botoes.size() == 4, "quatro idiomas selecionáveis")
 	_conferir(get_root().gui_get_focus_owner() == botoes[salvo], "foco lembra a escolha salva")
+	_conferir(inicio._titulo.text == dados["titulo" + idioma.SUFIXOS[salvo]] and inicio._descricao.text == dados["descricao" + idioma.SUFIXOS[salvo]], "textos iniciais correspondem ao botão focado")
 	for i in mini(4, botoes.size()):
 		_conferir(botoes[i].text == dados.opcoes[i] and not botoes[i].disabled, "opção nativa %d" % i)
 	var locale_salvo := TranslationServer.get_locale()
 	for i in 4:
 		botoes[i].mouse_entered.emit()
+		_conferir(get_root().gui_get_focus_owner() == botoes[i], "destaque acompanha o idioma da prévia %d" % i)
 		_conferir(inicio._titulo.text == dados["titulo" + idioma.SUFIXOS[i]], "título no hover %d" % i)
 		_conferir(inicio._descricao.text == dados["descricao" + idioma.SUFIXOS[i]], "descrição no hover %d" % i)
 		_conferir(inicio._aviso.text == dados["aviso" + idioma.SUFIXOS[i]], "aviso no hover %d" % i)
@@ -119,6 +121,7 @@ func _run() -> void:
 		await process_frame
 	_conferir(current_scene != inicio, "transição para a abertura após escolha")
 	var abertura := current_scene
+	_conferir(abertura.lines == dados_travessia("travessia_es"), "intro segue o espanhol confirmado")
 	var cenario := abertura.get_node("Cenario")
 	# Capturas incluem o cenário pronto; o portão de interface dispensa montá-lo.
 	if Array(OS.get_cmdline_user_args()).any(func(arg: String) -> bool: return arg.begins_with("--captura-menu=")):
@@ -154,3 +157,8 @@ func _buscar_botoes(no: Node, resultado: Array[Button]) -> void:
 		resultado.append(no)
 	for filho in no.get_children():
 		_buscar_botoes(filho, resultado)
+
+
+func dados_travessia(chave: String) -> Array:
+	var dialogos: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://data/dialogos/pedro.json"))
+	return dialogos[chave]

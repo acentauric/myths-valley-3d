@@ -83,7 +83,7 @@ func _ready() -> void:
 		botao.custom_minimum_size = Vector2(230, 58)
 		botao.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		botao.pressed.connect(_escolher.bind(i))
-		botao.mouse_entered.connect(_mostrar_idioma.bind(i))
+		botao.mouse_entered.connect(_previsualizar_idioma.bind(i))
 		botao.focus_entered.connect(_mostrar_idioma.bind(i))
 		grade.add_child(botao)
 		_botoes.append(botao)
@@ -103,6 +103,14 @@ func _mostrar_idioma(indice: int) -> void:
 	_titulo.text = str(IdiomaMenu.campo_no_idioma(_dados, "titulo", indice))
 	_descricao.text = str(IdiomaMenu.campo_no_idioma(_dados, "descricao", indice))
 	_aviso.text = str(IdiomaMenu.campo_no_idioma(_dados, "aviso", indice))
+
+
+func _previsualizar_idioma(indice: int) -> void:
+	if carregando:
+		return
+	# O destaque acompanha a prévia; Enter confirma o idioma que está sendo lido.
+	_botoes[indice].grab_focus()
+	_mostrar_idioma(indice)
 
 
 func _escolher(indice: int) -> void:

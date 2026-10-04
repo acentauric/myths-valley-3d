@@ -2,6 +2,10 @@
 
 ## Em desenvolvimento — 04/10/2026
 
+- Na seleção, o destaque do botão acompanha a língua dos textos ao passar o
+  mouse. Enter confirma a prévia visível, sem salvar o idioma durante o hover.
+  O portão confere também que a intro usa a língua confirmada (#77).
+
 - O modal de idioma sobe para acomodar a identificação da versão e da build
   centralizada logo abaixo. O carimbo vem de `Versao`, a fonte usada nos saves (#77).
 - O menu Jogar/Explorar, suas páginas e os painéis internos passam a usar a
