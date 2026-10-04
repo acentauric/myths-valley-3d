@@ -177,6 +177,7 @@ func _ready() -> void:
 	_create_quick_mute(layer)
 	_create_clock(layer)
 	_create_map_button(layer)
+	_create_tela_button(layer)
 	# O som do menu só começa quando o menu aparece: tocava debaixo da tela de
 	# carregamento, desde os 25% da barra, e era a tela que parecia ter som.
 	if $Cenario.construido:
@@ -767,6 +768,25 @@ func _create_map_button(layer: CanvasLayer) -> void:
 			_open_map())
 
 
+## TELA CHEIA na coluna do canto, abaixo do mapa: alterna tela cheia e janela, como o
+## F11 (o autoload `Tela`), e a dica ensina o atalho. Dourado em tela cheia.
+func _create_tela_button(layer: CanvasLayer) -> void:
+	var tela_icon: Control = HudIcon.new().configurar("tela_cheia")
+	var parts := BotaoCanto.criar(layer, 352.0, tela_icon)
+	var hint_label: Label = parts[1]
+	var atualizar := func(cheia: bool) -> void:
+		tela_icon.definir(cheia)
+		hint_label.text = Tela.dica()
+	atualizar.call(Tela.cheia)
+	Tela.modo_mudou.connect(atualizar)
+	tree_exiting.connect(func() -> void: Tela.modo_mudou.disconnect(atualizar))
+	(parts[0] as Button).pressed.connect(func() -> void:
+		if starting:
+			return
+		Audio.efeito("ui_confirmar")
+		Tela.alternar())
+
+
 ## Na Home a casa fica dourada e não responde (já se está lá); em qualquer outra tela
 ## (modal, mapa, travessia) volta a ser clicável.
 func _set_home_corner(at_home: bool) -> void:
@@ -1072,12 +1092,12 @@ func _open_map() -> void:
 			_focus_map_marker(destination, true))
 		points.add_child(button)
 	# O mapa ocupa a tela toda: as informações ficam ocultas e o "?" do canto (abaixo de
-	# HOME, som, relógio e mapa) as mostra.
+	# HOME, som, relógio, mapa e tela cheia) as mostra.
 	panel.visible = false
 	map_icon.definir(true)
 	var layer := panel.get_parent()
 	var help_icon: Control = HudIcon.new().configurar("ajuda")
-	var help_parts := BotaoCanto.criar(layer, 352.0, help_icon)
+	var help_parts := BotaoCanto.criar(layer, 416.0, help_icon)
 	var help_button: Button = help_parts[0]
 	map_help_button = help_button
 	var help_hint: Label = help_parts[1]
