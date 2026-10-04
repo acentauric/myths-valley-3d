@@ -47,6 +47,11 @@ const OBRAS := {
 	"mirante": {"ancora": "Mirante", "raio": 8.0},
 	"poco": {"ancora": "Poço", "raio": 4.0},
 	"trapiche": {"ancora": "PierPiso", "raio": 6.0},
+	# A CARROÇA DO SEU BENEDITO, que dá nome à casa dele ("do carro quebrado"):
+	# a obra do arraial "Recuperar a carroça" se toca no terreiro dele, e é o
+	# fim do mutirão da carroça (data/missoes_carroca.json). O modelo da
+	# carroça, quebrada e consertada, é do Tripo (#29).
+	"carroca": {"ancora": "Casa de Carro Quebrado", "peca": "casa_carro_quebrado"},
 	# O CERCADO DO CEMITÉRIO, o fim da missão do Damião: a aba vale no outeiro
 	# inteiro, de dentro do cercado que vai subir (`cemiterio_vale.gd`).
 	"cemiterio": {"ancora": "Cemitério", "raio": 12.0},
@@ -57,7 +62,6 @@ const FALTAM := {
 	"oficio": "a casa de farinha, o engenho e a cabana de pesca são do roçado e do rio (#27)",
 	"forno_barro": "o forno do arraial ainda não foi posto no vale (#27)",
 	"monjolo": "o monjolo fica na beira do rio grande, que o vale ainda não tem (#23)",
-	"carroca": "a carroça do armazém ainda não foi posta no vale (#29)",
 }
 
 

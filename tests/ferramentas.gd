@@ -215,15 +215,14 @@ func _run() -> void:
 		moram_no_vale.append(str((morador.dados as Dictionary).get("id", "")))
 
 	var metas_que_o_vale_sabe := ["juntar", "derrubar", "levar", "falar", "evento", "obra"]
-	# OS ACONTECIMENTOS QUE O VALE AVISA às cadeias (`registrar_evento`). Meta de
-	# evento que ninguém avisa é passo que nunca fecha.
-	var eventos_que_o_vale_avisa := ["abriu_arraial"]
 	var passos_com_meta := 0
-	# A CADEIA DO MIRANTE VEM DEPOIS DO GUIA (`depois_de`): o que o guia entregou
-	# — o machado, a picareta — já está na mão de quem chega nela.
+	# AS FILAS VÊM DEPOIS DA CHEGADA (`depois_de`, docs/mundo/CHEGADA_E_MUTIROES.md):
+	# o que o Pedro entregou — o machado, a picareta, a enxada — já está na mão de
+	# quem chega nelas. A roça do Cosme abre no meio da chegada, depois da leira, e
+	# a essa altura também já recebeu tudo isso.
 	var entregues_pelo_guia: Array[String] = []
 	for nome in ["missoes_guia", "missoes_coveiro", "missoes_filo", "missoes_zefa",
-			"missoes_tonho", "missoes_candinha", "missoes_arraial"]:
+			"missoes_tonho", "missoes_candinha", "missoes_arraial", "missoes_roca", "missoes_carroca"]:
 		var texto := FileAccess.get_file_as_string("res://data/%s.json" % nome)
 		_conferir(texto != "", "não consegui ler %s.json" % nome)
 		var dado = JSON.parse_string(texto)
@@ -233,18 +232,36 @@ func _run() -> void:
 		# O QUE JÁ FOI ENTREGADO ATÉ AQUI, na ordem dos passos: a ferramenta pode
 		# vir no passo que cobra o trabalho ou em qualquer um antes dele.
 		var entregues: Array[String] = []
-		if nome == "missoes_arraial":
+		if nome != "missoes_guia":
 			entregues = entregues_pelo_guia.duplicate()
 		for passo: Dictionary in dado.get("passos", []):
 			var qual_passo := "%s/%s" % [nome, str(passo.get("id", "?"))]
-			var entrega: Dictionary = passo.get("entrega", {})
-			if not entrega.is_empty():
-				var dado_agora := str(entrega.get("item", ""))
+			# A ENTREGA PODE SER UMA LISTA: a enxada E a maniva na mesma fala.
+			var entregas: Array = passo.get("entrega") if passo.get("entrega") is Array else [passo.get("entrega", {})]
+			for entrega in entregas:
+				if not (entrega is Dictionary) or (entrega as Dictionary).is_empty():
+					continue
+				var dado_agora := str((entrega as Dictionary).get("item", ""))
 				_conferir(Catalogo.ITENS.has(dado_agora),
 					"o passo '%s' entrega '%s', que não está no catálogo" % [qual_passo, dado_agora])
 				entregues.append(dado_agora)
 				if nome == "missoes_guia":
 					entregues_pelo_guia.append(dado_agora)
+			# QUEM PAGA e QUEM VEM AO MUTIRÃO moram no vale, e o mutirão só traz o
+			# que o catálogo conhece.
+			if str(passo.get("quem_paga", "")) != "":
+				_conferir(moram_no_vale.has(str(passo["quem_paga"])),
+					"o passo '%s' é pago por '%s', que não mora no vale" % [qual_passo, str(passo["quem_paga"])])
+			var mutirao = passo.get("mutirao", {})
+			_conferir(mutirao is Dictionary, "o mutirão do passo '%s' não é um objeto {quem: {item: quanto}}" % qual_passo)
+			if mutirao is Dictionary:
+				for quem in mutirao:
+					_conferir(moram_no_vale.has(str(quem)),
+						"o passo '%s' chama '%s' ao mutirão, e ele não mora no vale" % [qual_passo, str(quem)])
+					for traz in (mutirao[quem] as Dictionary):
+						_conferir(Catalogo.ITENS.has(str(traz)),
+							"no mutirão do passo '%s', '%s' traz '%s', fora do catálogo" % [qual_passo, str(quem), str(traz)])
+						entregues.append(str(traz))
 
 			var meta: Dictionary = passo.get("meta", {})
 			if meta.is_empty():
@@ -271,9 +288,15 @@ func _run() -> void:
 							"o passo '%s' pede %s, que só sai de %s, e ninguém entregou a %s até aqui"
 								% [qual_passo, pedido, precisa, precisa])
 				"evento":
-					_conferir(str(meta.get("evento", "")) in eventos_que_o_vale_avisa,
-						"o passo '%s' espera o evento '%s', que o vale não avisa: o passo nunca fecha"
-							% [qual_passo, str(meta.get("evento", ""))])
+					var pedidos: Array = meta.get("eventos", []) if not (meta.get("eventos", []) as Array).is_empty() else [meta.get("evento", "")]
+					for evento in pedidos:
+						_conferir(_o_vale_avisa(str(evento)),
+							"o passo '%s' espera o evento '%s', que o vale não avisa: o passo nunca fecha"
+								% [qual_passo, str(evento)])
+						# O QUE UM PASSO MANDOU COZINHAR, o jogador tem dali em diante:
+						# a farinha da roça é o que o passo seguinte manda levar.
+						if str(evento).begins_with("cozinhou:"):
+							entregues.append(str(evento).trim_prefix("cozinhou:"))
 				"obra":
 					var obras_no := root.get_node("/root/Obras")
 					var a_obra := str(meta.get("obra", ""))
@@ -313,11 +336,32 @@ func _run() -> void:
 							_conferir(entregues.has(qual_carga) or _da_no_vale(qual_carga, ferramenta_de_rende),
 								"o passo '%s' manda levar %s, que ninguém deu, nenhum alvo do vale rende e a bancada não faz"
 									% [qual_passo, qual_carga])
-	print("  passos com meta nas seis cadeias: %d" % passos_com_meta)
+	print("  passos com meta nas nove cadeias: %d" % passos_com_meta)
 	_conferir(passos_com_meta >= 13,
-		"só achei %d passo(s) com meta nas seis cadeias" % passos_com_meta)
+		"só achei %d passo(s) com meta nas nove cadeias" % passos_com_meta)
 
 	_fechar()
+
+
+## OS ACONTECIMENTOS QUE O VALE AVISA às cadeias (`Prototype._avisar_as_cadeias`).
+## Meta de evento que ninguém avisa é passo que nunca fecha. Os nomes fixos são os
+## que o vale liga um a um; os de prefixo levam o id do que aconteceu, e o id tem
+## de existir — "cozinhou:farinha" pede uma receita da cozinha chamada farinha.
+const EVENTOS_FIXOS := ["abriu_arraial", "adotou_fe", "arou", "plantou", "regou", "colheu", "dormiu"]
+
+func _o_vale_avisa(evento: String) -> bool:
+	if evento in EVENTOS_FIXOS:
+		return true
+	if evento.begins_with("cozinhou:"):
+		return not (root.get_node("/root/Cozinha").dados(evento.trim_prefix("cozinhou:")) as Dictionary).is_empty()
+	if evento.begins_with("fabricou:"):
+		return not (root.get_node("/root/Oficina").dados(evento.trim_prefix("fabricou:")) as Dictionary).is_empty()
+	if evento.begins_with("comeu:"):
+		return Catalogo.tipo(evento.trim_prefix("comeu:")) == "comida"
+	if evento.begins_with("leu:"):
+		var papeis = JSON.parse_string(FileAccess.get_file_as_string("res://data/documentos.json"))
+		return papeis is Dictionary and (papeis as Dictionary).has(evento.trim_prefix("leu:"))
+	return false
 
 
 ## O que a entrega cobra, na mesma leitura da `CadeiaDeMissoes`: `item` com
@@ -360,7 +404,7 @@ func _da_no_vale(item: String, de_alvo: Dictionary, fundo: int = 4) -> bool:
 func _fechar() -> void:
 	print("")
 	if falhas == 0:
-		print("FERRAMENTAS_OK: os alvos estão no vale, sem a ferramenta à mão o jogo recusa DIZENDO qual falta, com ela encaixada o golpe gasta fôlego, o alvo cai na conta certa e o material entra na mochila; e nas seis cadeias de missão toda meta é de um tipo que o vale sabe cumprir, todo material pedido sai de um alvo posto com a ferramenta entregue antes, e todo morador procurado mora aqui")
+		print("FERRAMENTAS_OK: os alvos estão no vale, sem a ferramenta à mão o jogo recusa DIZENDO qual falta, com ela encaixada o golpe gasta fôlego, o alvo cai na conta certa e o material entra na mochila; e nas nove cadeias de missão toda meta é de um tipo que o vale sabe cumprir, todo acontecimento esperado é um que o vale avisa, todo material pedido sai de um alvo posto com a ferramenta entregue antes, e todo morador procurado, que paga ou que vem ao mutirão mora aqui")
 	else:
 		print("ferramentas: %d falha(s)" % falhas)
 	quit(1 if falhas > 0 else 0)

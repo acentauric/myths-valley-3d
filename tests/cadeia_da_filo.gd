@@ -92,6 +92,14 @@ func _run() -> void:
 
 	jogador.global_position = filo.global_position + Vector3(1.2, 0.0, 1.0)
 	await _frames(3)
+	# A FILA ESPERA A CHEGADA DO PEDRO (docs/mundo/CHEGADA_E_MUTIROES.md, regra 7):
+	# ao lado do morador, com a chegada em curso, ela não abre; acabada, abre.
+	var guia = current_scene.get("pedro")
+	await _ate(func() -> bool: return false, 1.5)
+	_conferir(not cadeia.iniciado, "a fila da Dona Filó abriu com a chegada do Pedro em curso")
+	if guia != null:
+		guia.missao = guia.MISSOES.size()
+		guia.set("_despedida_feita", true)
 	var abriu := await _ate(func() -> bool: return bool(cadeia.iniciado), SEGUNDOS_PARA_ANUNCIAR)
 	_conferir(abriu, "cheguei ao lado da Dona Filó e a missão não abriu")
 	if not abriu:

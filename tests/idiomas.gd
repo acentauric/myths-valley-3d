@@ -35,7 +35,14 @@ var _pendentes := 0
 const TRADUZIDOS := {
 	"res://data/galeria_personagens.json": ["voltar_catalogo", "indisponivel", "selecionar_peca"],
 	"res://data/selecao_idioma.json": ["titulo", "descricao", "aviso"],
-	"res://data/missoes_guia.json": ["texto", "resumo", "nome"],
+	# A chegada (docs/mundo/CHEGADA_E_MUTIROES.md) nasceu nos três idiomas inteira:
+	# título, resumo, fala, a resposta de quem o jogador procura e o arremate. E as
+	# duas filas que ela abre, a roça do Cosme e a carroça do Seu Benedito, mais o
+	# papel que o último passo manda ler.
+	"res://data/missoes_guia.json": ["texto", "resumo", "nome", "titulo", "resposta"],
+	"res://data/missoes_roca.json": ["texto", "resumo", "nome", "titulo", "resposta"],
+	"res://data/missoes_carroca.json": ["texto", "resumo", "nome", "titulo", "resposta"],
+	"res://data/documentos.json": ["nome", "linhas"],
 	"res://data/historico_3d.json": ["titulo", "estado"],
 	# A fé (#52): o que os marcos dizem.
 	"res://data/marcos_fe.json": ["linhas", "texto", "convite", "resumo", "pratica"],

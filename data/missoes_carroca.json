@@ -1,0 +1,67 @@
+{
+  "observacao": "A CARROÇA DO AVÔ (docs/mundo/CHEGADA_E_MUTIROES.md): o caminho de favor do Seu Benedito, que era o único morador sem nenhum (docs/mundo/MORADORES.md, 'O que ainda não existe'). A casa dele chama 'do carro quebrado' por causa desta carroça. Abre depois que o jogador junta a piaçava do saveiro para ele (missoes_saveiro.json, saveiro_piacava): quem já trabalhou para ele uma vez ouve a história. O fim é a obra do arraial 'Recuperar a carroça' (arraial_carroca, tábua 20, corda 10, pedra 4), feita em MUTIRÃO no terreiro dele: o jogador junta a parte dele, e o Cosme e o Tonho trazem o resto ao chegar ('mutirao'). Tábua e corda saem da bancada da oficina, por isso os dois primeiros passos apontam para ela.",
+  "dono": "benedito",
+  "nome": "A carroça do avô",
+  "nome_en": "Grandfather's cart",
+  "nome_es": "La carreta del abuelo",
+  "principal": false,
+  "passos": [
+    {
+      "id": "carroca_tabua",
+      "titulo": "Tábua pro estrado",
+      "titulo_en": "Planks for the cart bed",
+      "titulo_es": "Tablas para la plataforma",
+      "resumo": "Junte 8 tábuas para o estrado",
+      "resumo_en": "Gather 8 planks for the cart bed",
+      "resumo_es": "Junta 8 tablas para la plataforma",
+      "lugar": "oficina",
+      "raio": 6.0,
+      "audio": "",
+      "texto": "Essa carroça era do meu avô, e a roda foi o avô dele que fez. A cheia de fevereiro comeu o barranco da estrada, e o eixo partiu na volta. Quarenta e duas safras eu desci nela; esta desci no ombro, três viagens por saco. O estrado apodreceu de esperar. Me arranja oito tábuas serradas, da bancada do roçado, que o resto a gente vê.",
+      "texto_en": "This cart was my grandfather's, and his grandfather made the wheel. February's flood ate the bank along the road, and the axle snapped on the way back. Forty-two harvests I brought down in it; this one I carried on my shoulder, three trips a sack. The bed rotted from waiting. Get me eight sawn planks from the workbench by the field, and we'll see to the rest.",
+      "texto_es": "Esta carreta era de mi abuelo, y la rueda la hizo su abuelo. La crecida de febrero se comió el barranco del camino y el eje se partió a la vuelta. Cuarenta y dos cosechas bajé en ella; esta la bajé al hombro, tres viajes por saco. La plataforma se pudrió de esperar. Consígueme ocho tablas aserradas, del banco del sembrado, y lo demás lo vemos.",
+      "meta": { "tipo": "juntar", "item": "tabua", "quantos": 8 }
+    },
+    {
+      "id": "carroca_corda",
+      "titulo": "Corda e calço",
+      "titulo_en": "Rope and wedge",
+      "titulo_es": "Cuerda y calzo",
+      "resumo": "Junte 4 cordas e 4 pedras",
+      "resumo_en": "Gather 4 ropes and 4 stones",
+      "resumo_es": "Junta 4 cuerdas y 4 piedras",
+      "lugar": "oficina",
+      "raio": 6.0,
+      "audio": "",
+      "texto": "Tábua boa. Agora corda pra amarrar o cocho e pedra pra calçar a roda enquanto o eixo entra: quatro de cada. Pedra tem no lajedo do roçado e no do poço.",
+      "texto_en": "Good planks. Now rope to lash the trough and stone to wedge the wheel while the axle goes in: four of each. There's stone at the rock slab by the field and the one by the well.",
+      "texto_es": "Buenas tablas. Ahora cuerda para amarrar el cajón y piedra para calzar la rueda mientras entra el eje: cuatro de cada una. Piedra hay en la laja del sembrado y en la del pozo.",
+      "meta": { "tipo": "juntar", "itens": { "corda": 4, "pedra": 4 } }
+    },
+    {
+      "id": "carroca_mutirao",
+      "titulo": "Mutirão na carroça",
+      "titulo_en": "All hands on the cart",
+      "titulo_es": "Manos a la obra en la carreta",
+      "resumo": "Recupere a carroça com o mutirão",
+      "resumo_en": "Restore the cart with the work party",
+      "resumo_es": "Repara la carreta con los vecinos",
+      "lugar": "casa_carro_quebrado",
+      "raio": 8.0,
+      "audio": "",
+      "texto": "Pronto: o resto vem do arraial. Chamei o Cosme, que tem braço, e o Tonho, que tem corda — cada um traz o que tem, que mutirão é assim. Quando chegarem, abre o J aqui no terreiro, na aba de obras, e a gente bota a carroça de pé.",
+      "texto_en": "There: the rest comes from the village. I called Cosme, who has the arms, and Tonho, who has the rope — each brings what he has; that's how a work party goes. When they get here, open J here in the yard, on the works tab, and we'll get the cart back on its wheels.",
+      "texto_es": "Listo: lo demás viene del pueblo. Llamé a Cosme, que tiene brazo, y a Tonho, que tiene cuerda: cada uno trae lo que tiene, que el trabajo en común es así. Cuando lleguen, abre la J aquí en el patio, en la pestaña de obras, y ponemos la carreta de pie.",
+      "meta": { "tipo": "obra", "construcao": "carroca", "obra": "arraial_carroca" },
+      "mutirao": { "cosme": { "tabua": 12 }, "tonho": { "corda": 6 } },
+      "roda": 4.2,
+      "quem_paga": "benedito",
+      "recompensa": { "semente_milho": 6, "milho": 3 }
+    }
+  ],
+  "arremate": {
+    "texto": "Olha ela de pé. Amanhã a colheita desce numa viagem só. Quarenta e duas safras, e é a primeira vez que o arraial sobe aqui sem ser pra comprar. Seu tio ia gostar de ver.",
+    "texto_en": "Look at her, back on her wheels. Tomorrow the harvest goes down in a single trip. Forty-two harvests, and this is the first time the village came up here for something other than buying. Your uncle would have liked to see it.",
+    "texto_es": "Mírala de pie. Mañana la cosecha baja en un solo viaje. Cuarenta y dos cosechas, y es la primera vez que el pueblo sube aquí para algo que no sea comprar. A tu tío le habría gustado verlo."
+  }
+}

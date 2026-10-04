@@ -296,6 +296,20 @@
       "custo": { "pedra": 60, "tabua": 24, "corda": 8 }
     },
 
+    "poco_corda": {
+      "observacao": "OBRA DO VALE, e não do 2D: o primeiro mutirão do jogo, o passo mutirao_poco da chegada (data/missoes_guia.json), que ensina o plano ao abrir. É pequena de propósito — uma corda e as três pedras que o lajedo do poço dá —, porque é a obra de quem chegou ontem. A roldana, a cacimba e o bebedouro continuam sendo a obra do arraial (arraial_poco), de rendimento, para depois. Nome e resumo nos três idiomas, como o cemiterio_cercado. Ver docs/mundo/CHEGADA_E_MUTIROES.md.",
+      "eixo": "planta",
+      "ordem": 0,
+      "alvos": ["poco"],
+      "nome": "A boca do poço",
+      "nome_en": "The mouth of the well",
+      "nome_es": "La boca del pozo",
+      "resumo": "Corda nova no balde e três pedras calçando a boca que esfarelava. O balde volta a descer sem levar a borda junto, e o arraial volta a beber dali.",
+      "resumo_en": "A new rope on the bucket and three stones shoring up the crumbling mouth. The bucket goes down again without taking the rim with it, and the village drinks from it again.",
+      "resumo_es": "Cuerda nueva en el balde y tres piedras calzando la boca que se desmoronaba. El balde vuelve a bajar sin arrastrar el borde, y el pueblo vuelve a beber de ahí.",
+      "abre": { "missao": "mutirao_poco" },
+      "custo": { "corda": 1, "pedra": 3 }
+    },
     "arraial_poco": {
       "eixo": "planta",
       "ordem": 1,
@@ -329,7 +343,7 @@
       "alvos": ["carroca"],
       "nome": "Recuperar a carroça",
       "resumo": "Roda refeita, eixo escorado, estrado novo. O que descia a ladeira em três viagens desce numa. Rende mais em quem tira lenha e em quem trança corda e cesto.",
-      "abre": { "morador": "cosme", "grau": 1, "compra": 240 },
+      "abre": { "missao": "carroca_mutirao", "morador": "cosme", "grau": 1, "compra": 240 },
       "custo": { "tabua": 20, "corda": 10, "pedra": 4 }
     },
     "arraial_trapiche": {

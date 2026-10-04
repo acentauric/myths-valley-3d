@@ -2,6 +2,21 @@
 
 ## Em desenvolvimento — 04/10/2026
 
+- A chegada do Pedro deixa de ser visita guiada: onze passos em dois dias, cada
+  um nascido de um morador ou da casa do finado — o bom-dia ao Tonho, a chave
+  que a Dona Candinha sabe com quem ficou, o fogo, o mutirão do poço com a Dona
+  Zefa e o Cosme, a janta, a cama, a leira e o convite sem assinatura, que é o
+  gancho do capítulo 6. Quem pede paga com o que tem em casa, e o HUD diz quem.
+  As filas dos moradores abrem depois da chegada, e o save de antes dela volta
+  ao passo novo que faz o mesmo papel (docs/mundo/CHEGADA_E_MUTIROES.md).
+- Duas filas novas: a roça do Cosme (colher, torrar a primeira farinha e levar
+  a cuia à Dona Filó, que ensina o pirão) e a carroça do Seu Benedito, o
+  primeiro caminho de favor dele, consertada em mutirão: o Cosme e o Tonho
+  trazem o que falta ao chegar.
+- As cadeias ganham `quem_paga`, entrega em lista, `eventos` e `mutirao`, e o
+  vale passa a avisar a janta, a farinha, a corda, a leira, a cama e o papel
+  lido. Portões: cadeia_das_missoes joga a chegada inteira pelo caminho do
+  jogo; pedidos_do_arraial cobra a roça, o mutirão, quem paga e o save antigo.
 - O jogo abre em tela cheia. F11 alterna entre tela cheia e janela em qualquer
   tela, e o novo botão do canto do menu faz o mesmo, com a dica ensinando o
   atalho. A escolha fica salva; em janela, o jogo ocupa 80% do monitor em 16:9.

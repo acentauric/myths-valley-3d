@@ -196,6 +196,14 @@ func _run() -> void:
 	jogador.spawn_position = damiao.global_position + Vector3(1.4, 0.0, 1.0)
 	jogador.reset_position()
 	await _frames(3)
+	# A FILA ESPERA A CHEGADA DO PEDRO (docs/mundo/CHEGADA_E_MUTIROES.md, regra 7):
+	# ao lado do morador, com a chegada em curso, ela não abre; acabada, abre.
+	var guia = current_scene.get("pedro")
+	await _ate(func() -> bool: return false, 1.5)
+	_conferir(not cadeia.iniciado, "a fila do Damião abriu com a chegada do Pedro em curso")
+	if guia != null:
+		guia.missao = guia.MISSOES.size()
+		guia.set("_despedida_feita", true)
 	var abriu := await _ate(func() -> bool: return bool(cadeia.iniciado), SEGUNDOS_PARA_ANUNCIAR)
 	_conferir(abriu,
 		"cheguei ao lado do Damião e a missão não abriu: ela existe e é inalcançável")

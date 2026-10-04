@@ -45,6 +45,17 @@ extends Node
 ## três marcos, a romaria —, e `oferendar`, que é o `levar` com um LUGAR no
 ## lugar de uma pessoa: a mesa do terreiro, as conchas da gameleira.)
 ##
+##
+## O QUE A CHEGADA ACRESCENTOU (docs/mundo/CHEGADA_E_MUTIROES.md)
+##
+##   quem_paga  o morador que paga a recompensa: o HUD diz "Recebido de Tonho",
+##              e não o nome do dono da cadeia, quando quem pagou foi outro
+##   entrega    também uma LISTA de entregas: a enxada E a maniva na mesma fala
+##   eventos    a meta `evento` com vários acontecimentos, todos cobrados, e a
+##              conta no HUD: arar, plantar e regar a primeira leira
+##   mutirao    quem ajuda: {id: {item: quanto}}. Cada um vai ao lugar do passo e
+##              fica lá até ele fechar; o que tem itens os entrega ao chegar
+##
 ## O segundo existe por causa do capim do cemitério. No 2D, cortar o mato não
 ## põe nada na mochila — o mato some, que é o que limpar quer dizer. Contar
 ## pela mochila obrigaria a inventar um item "capim" no catálogo
@@ -232,6 +243,7 @@ func correr(delta: float, palavra_livre: bool) -> void:
 		# Meta que ACONTECE, e não só se mede: a entrega precisa de alguém para
 		# tentar antes de a pergunta ser feita.
 		_tentar_encontro(passo)
+		_receber_o_mutirao(passo)
 		_acertar_o_caderno(passo)
 		if not falta_a_meta(passo):
 			avancar()
@@ -265,6 +277,7 @@ func retomar() -> void:
 	var passo: Dictionary = passos[missao]
 	_registrar_no_caderno(passo)
 	_mostrar_o_resumo(passo)
+	_chamar_o_mutirao(passo)
 
 
 ## Anuncia o passo em curso: entrega o que ele promete e fala.
@@ -276,6 +289,7 @@ func anunciar() -> void:
 	_registrar_no_caderno(passo)
 	_falar(str(passo.get("audio", "")), str(passo.get("texto", "")))
 	_mostrar_o_resumo(passo)
+	_chamar_o_mutirao(passo)
 
 
 ## O OBJETIVO DO HUD É O RESUMO, e não a fala.
@@ -346,6 +360,10 @@ func resumo_do_passo(passo: Dictionary) -> String:
 			gerado = tr("Leve %s a %s") % [", ".join(itens), _nome_de(str(meta.get("a_quem", "")))]
 		"falar":
 			gerado = tr("Fale com %s") % _nome_de(str(meta.get("a_quem", "")))
+		"evento":
+			var pedidos := eventos_da_meta(meta)
+			if pedidos.size() > 1:
+				conta = "%d/%d" % [_eventos_feitos(meta), pedidos.size()]
 		"visitar":
 			var lugares := _lugares_da_meta(meta)
 			conta = "%d/%d" % [_visitados(passo).size(), lugares.size()]
@@ -475,18 +493,39 @@ func _nome_do_dono() -> String:
 ##
 ## Entrega uma vez só: o anúncio de cada passo acontece uma vez, e retomar o
 ## passo não reanuncia.
+##
+## UMA ENTREGA OU VÁRIAS: a primeira leira pede a enxada E a maniva na mesma
+## fala. A PRIMEIRA ferramenta da lista é a que fica acesa na barra — a enxada,
+## que é o primeiro gesto; a maniva vai para a mochila.
 func entregar(passo: Dictionary) -> void:
-	var entrega: Dictionary = passo.get("entrega", {})
-	if entrega.is_empty():
-		return
-	var item := str(entrega.get("item", ""))
-	if item == "":
-		return
-	# Não duplica um item já recebido ou vestido em uma partida salva.
-	if not Inventario.tem(item) and not _na_mao(item):
-		if not Inventario.adicionar(item, int(entrega.get("quantidade", 1))):
-			return
-	_por_na_mao(item)
+	var acender := ""
+	for entrega: Dictionary in entregas_do_passo(passo):
+		var item := str(entrega.get("item", ""))
+		if item == "":
+			continue
+		# Não duplica um item já recebido ou vestido em uma partida salva.
+		if not Inventario.tem(item) and not _na_mao(item):
+			if not Inventario.adicionar(item, int(entrega.get("quantidade", 1))):
+				continue
+		if acender == "":
+			acender = item if Catalogo.tipo(item) == "ferramenta" or Equipamento.e_equipamento(item) else ""
+	if acender != "":
+		_por_na_mao(acender)
+
+
+## As entregas do passo como lista, nas duas formas que o dado aceita: um objeto
+## `{"item", "quantidade"}` ou uma lista deles.
+static func entregas_do_passo(passo: Dictionary) -> Array[Dictionary]:
+	var lista: Array[Dictionary] = []
+	var bruto = passo.get("entrega", {})
+	if bruto is Dictionary:
+		if not (bruto as Dictionary).is_empty():
+			lista.append(bruto)
+	elif bruto is Array:
+		for uma in bruto:
+			if uma is Dictionary and not (uma as Dictionary).is_empty():
+				lista.append(uma)
+	return lista
 
 
 ## O item está na mão agora — pela barra ou pelo encaixe?
@@ -542,8 +581,8 @@ func falta_a_meta(passo: Dictionary) -> bool:
 		"evento":
 			# ACONTECIMENTO DO VALE que o vale avisa (`registrar_evento`): abrir a
 			# tela do P, por exemplo. Também é memória, pela mesma razão do
-			# encontro.
-			return not bool(_levados.get(_chave_do_evento(str(meta.get("evento", ""))), false))
+			# encontro. Com `eventos`, todos os da lista.
+			return _eventos_feitos(meta) < eventos_da_meta(meta).size()
 		"obra":
 			# A OBRA FEITA, do `Obras` — o mirante levantado. Isso o mundo
 			# guarda sozinho, e o save também.
@@ -569,6 +608,24 @@ static func _chave_do_evento(nome: String) -> String:
 	return "evento:" + nome
 
 
+## Os acontecimentos que a meta cobra: `eventos` (todos), ou o `evento` só.
+static func eventos_da_meta(meta: Dictionary) -> Array[String]:
+	var lista: Array[String] = []
+	for nome in meta.get("eventos", []):
+		lista.append(str(nome))
+	if lista.is_empty() and str(meta.get("evento", "")) != "":
+		lista.append(str(meta["evento"]))
+	return lista
+
+
+func _eventos_feitos(meta: Dictionary) -> int:
+	var feitos := 0
+	for nome in eventos_da_meta(meta):
+		if bool(_levados.get(_chave_do_evento(nome), false)):
+			feitos += 1
+	return feitos
+
+
 ## A RECOMPENSA DO PASSO (#48), paga quando ele fecha: itens e réis, com os
 ## números do jogo 2D (bloco `recompensas` do `arraial.json` de lá). Paga UMA
 ## vez porque o passo só fecha uma vez — carregar a partida põe a cadeia no
@@ -586,7 +643,15 @@ func _pagar(passo: Dictionary) -> void:
 			Jogo.dinheiro += quanto
 		elif Catalogo.existe(str(chave)):
 			Inventario.adicionar(str(chave), quanto)
-	pagou.emit(tr("Recebido de %s: %s") % [_nome_do_dono(), _texto_da_recompensa(passo)])
+	pagou.emit(tr("Recebido de %s: %s") % [_quem_paga(passo), _texto_da_recompensa(passo)])
+
+
+## QUEM PAGA é quem pediu. O Pedro conduz a chegada, mas o peixe é do Tonho e a
+## garapa é da Dona Candinha: o HUD dizer "Recebido de Pedro" seria pôr na boca
+## dele o agrado dos outros. Sem `quem_paga`, é o dono da cadeia, como sempre.
+func _quem_paga(passo: Dictionary) -> String:
+	var quem := str(passo.get("quem_paga", ""))
+	return _nome_do_dono() if quem == "" else _nome_de(quem)
 
 
 func _texto_da_recompensa(passo: Dictionary) -> String:
@@ -609,6 +674,7 @@ func avancar() -> void:
 	var fechando := passo_atual()
 	if not fechando.is_empty():
 		_pagar(fechando)
+		_dispensar_o_mutirao(fechando)
 		# MISSÃO DE FÉ RENDE NA FÉ ATIVA, e no ofício também, como no 2D
 		# (`Arraial._fechar_a_missao_da_fe`). Sem fé ainda, o `Fe` não credita.
 		if bool(fechando.get("xp_de_fe", false)):
@@ -658,7 +724,9 @@ func _acertar_o_caderno(passo: Dictionary) -> void:
 			var linha := "Juntar %s: %d de %d" % [_nome_do_item(str(carga.keys()[0])), tem_tudo, pede_tudo] \
 				if carga.size() == 1 else "Juntar " + " · ".join(partes)
 			CadernoDoVale.andar(id, tem_tudo, pede_tudo, linha)
-		"evento", "obra":
+		"evento":
+			CadernoDoVale.andar(id, _eventos_feitos(meta), maxi(eventos_da_meta(meta).size(), 1), str(passo.get("resumo", "")))
+		"obra":
 			CadernoDoVale.andar(id, 0 if falta_a_meta(passo) else 1, 1, str(passo.get("resumo", "")))
 		"visitar":
 			CadernoDoVale.andar(id, _visitados(passo).size(), _lugares_da_meta(meta).size(), str(passo.get("resumo", "")))
@@ -986,6 +1054,84 @@ func _perto_do_lugar(lugar: String, raio: float) -> bool:
 	var no_chao := ali - jogador.global_position
 	no_chao.y = 0.0
 	return no_chao.length() <= raio and absf(ali.y - jogador.global_position.y) < 4.0
+
+
+# --- o mutirão --------------------------------------------------------------------
+
+## O MUTIRÃO: obra do arraial se faz junto. "Uns foram ajudando os outros nas
+## passagens quase virgens" é o capítulo 6; aqui é o dia a dia — a corda do poço,
+## a carroça do Seu Benedito.
+##
+## Quem ajuda (`mutirao` no passo) vai ao lugar do passo ao anúncio, numa roda em
+## volta dele, e fica até o passo fechar: dia e noite, que mutirão espera a obra.
+## Quem tem itens no dado os entrega AO CHEGAR, e o HUD diz quem trouxe o quê —
+## é o que faz o mutirão ser mecânica, e não enfeite: o Cosme chega com as
+## tábuas que faltavam. Entrega uma vez (`_levados`, que vai no save).
+##
+## A RODA TEM O RAIO DO LUGAR (`roda` no passo): o poço é um ponto, e 2,4 u em
+## volta dele é o terreiro; a casa do Seu Benedito tem 2,6 u de meia largura, e a
+## roda dela precisa passar das paredes. Quem chega perto do LUGAR — e não do
+## seu ponto exato da roda, que pode ser canto que a malha não alcança — chegou.
+const RAIO_DA_RODA := 2.4
+const CHEGOU_AO_MUTIRAO := 1.8
+
+
+func _ajudantes(passo: Dictionary) -> Dictionary:
+	var bruto = passo.get("mutirao", {})
+	return bruto if bruto is Dictionary else {}
+
+
+## O lugar de cada ajudante: uma roda em volta do lugar do passo.
+func _lugar_no_mutirao(passo: Dictionary, indice: int, quantos: int) -> Vector3:
+	var centro := _ponto_do(str(passo.get("lugar", "")))
+	if not centro.is_finite():
+		return Lugares.NENHUM
+	var angulo := TAU * float(indice) / float(maxi(quantos, 1)) + 0.6
+	return centro + Vector3(cos(angulo), 0.0, sin(angulo)) * float(passo.get("roda", RAIO_DA_RODA))
+
+
+func _chamar_o_mutirao(passo: Dictionary) -> void:
+	var ajudantes := _ajudantes(passo)
+	var i := 0
+	for quem in ajudantes:
+		var morador := _morador(str(quem))
+		var ali := _lugar_no_mutirao(passo, i, ajudantes.size())
+		if morador != null and morador.has_method("ir_ate") and ali.is_finite():
+			morador.ir_ate(ali)
+		i += 1
+
+
+func _dispensar_o_mutirao(passo: Dictionary) -> void:
+	for quem in _ajudantes(passo):
+		var morador := _morador(str(quem))
+		if morador != null and morador.has_method("liberar"):
+			morador.liberar()
+
+
+func _receber_o_mutirao(passo: Dictionary) -> void:
+	var ajudantes := _ajudantes(passo)
+	var i := 0
+	for quem in ajudantes:
+		var traz: Dictionary = ajudantes[quem] if ajudantes[quem] is Dictionary else {}
+		var chave_do_ajudante := "mutirao:%s:%s" % [str(passo.get("id", "")), str(quem)]
+		var ali := _lugar_no_mutirao(passo, i, ajudantes.size())
+		i += 1
+		if traz.is_empty() or bool(_levados.get(chave_do_ajudante, false)):
+			continue
+		var morador := _morador(str(quem))
+		if morador == null or not ali.is_finite():
+			continue
+		var centro := _ponto_do(str(passo.get("lugar", "")))
+		var falta := morador.global_position - centro
+		falta.y = 0.0
+		if falta.length() > float(passo.get("roda", RAIO_DA_RODA)) + CHEGOU_AO_MUTIRAO:
+			continue
+		_levados[chave_do_ajudante] = true
+		var partes: Array[String] = []
+		for item in traz:
+			Inventario.adicionar(str(item), int(traz[item]))
+			partes.append("%d %s" % [int(traz[item]), _nome_do_item(str(item)).to_lower()])
+		pagou.emit(tr("Mutirão: %s trouxe %s") % [_nome_de(str(quem)), ", ".join(partes)])
 
 
 ## O passo de id `id` já fechou? É o que a fé pergunta para saber se a Dona Zefa

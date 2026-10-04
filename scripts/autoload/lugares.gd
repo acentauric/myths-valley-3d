@@ -61,6 +61,10 @@ const DE_PARA := {
 	"casa_da_estrada": "Casa da estrada",
 	"casa_carro_quebrado": "Casa de Carro Quebrado",
 	"fogueira": "Fogueira",
+	# A BANCADA DA OFICINA, provisória na beira do roçado (`bancadas_vale.gd`,
+	# #11): é ali que a lenha vira tábua e corda, e a chegada manda torcer a
+	# primeira corda nela. A construção de verdade é do Tripo (#27).
+	"oficina": "Oficina",
 	"pedras": "Pedras",
 	# As casas do Pedro e da Dona Zefa, abertas por dentro: o vale escolhe o lote
 	# de cada um (`WorldBuilder.casas_dos_moradores`).
@@ -78,7 +82,6 @@ const FALTAM_NO_VALE := {
 	"expansao": "a chapada de expansão — Fase 2.5",
 	"lapa": "a lapa e a rampa do morro — Fase 2.5",
 	"lagoa": "a lagoa a leste do Seu Benedito — Fase 2.5",
-	"oficina": "a oficina de materiais — Fase 7, e a âncora com ela",
 	"canteiro": "o canteiro de obras — Fase 7",
 	"curral": "o curral — Fase 7",
 	"portao_da_fazenda": "a fazenda, do outro lado do rio — Fase 2.5",
