@@ -1,9 +1,12 @@
 # Histórico de mudanças — Myths' Valley 3D
 
-## Em desenvolvimento — 03/10/2026
+## Build #8 — 03/10/2026
 
 - A tela Sobre apresenta a equipe atual do projeto: Ramon Santos, Renato Leal
   e Matheus Ché (#40).
+- Fecha a **Build #8** para Windows com os créditos atuais e o histórico
+  do jogo em português, inglês e espanhol. O download estável do site
+  passa a entregar esta versão (#40).
 
 ## Em desenvolvimento — 01/10/2026
 
@@ -21,7 +24,7 @@
 Este histórico acompanha apenas o jogo 3D, hoje na raiz deste repositório.
 A linha anterior usava a branch `prototype/myths-valley-3d`. O projeto 2D foi a base da derivação, mas
 suas fases, versões e novidades não são entradas deste registro. Os marcos
-abaixo seguem o que mudou no 3D. A identificação atual é **v0.1.0-dev · Build #7**,
+abaixo seguem o que mudou no 3D. A identificação atual é **v0.1.0-dev · Build #8**,
 exclusiva desta derivação e publicada para download em mythsvalley.app.br/jogar.
 
 O texto clicável de versão e build no rodapé da abertura mostra resumos destes
