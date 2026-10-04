@@ -2,6 +2,9 @@
 
 ## Em desenvolvimento — 03/10/2026
 
+- Os créditos e o README registram a confirmação do autor: a fonte Miva é
+  criação da equipe, com direitos do projeto, e as vozes foram produzidas
+  de forma generativa para o jogo (#40).
 - O README apresenta o jogo, a contribuição do Tripo, os controles, os marcos
   do Git e a origem do trabalho para o evento; o guia passa a descrever o
   repositório 3D independente e a build Windows já disponível (#40).

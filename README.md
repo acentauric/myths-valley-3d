@@ -110,9 +110,10 @@ um estilo visual procedural alternativo permite comparação no menu.
 
 A identidade visual usa imagens geradas com OpenAI, fontes Cinzel e
 Cormorant Garamond e ornamentos em ouro e cobalto. Música, efeitos e vozes
-foram produzidos com ElevenLabs. Ícones herdados da interface têm origem
-PixelLab. Os [créditos](assets/CREDITOS.md) e registros de origem distinguem
-essas fontes e as verificações de licença ainda pendentes. O repositório
+foram produzidos pela equipe de forma generativa com ElevenLabs. A fonte
+Miva também é uma criação da equipe, com direitos pertencentes ao projeto.
+Ícones herdados da interface têm origem PixelLab. Os [créditos](assets/CREDITOS.md)
+e registros de origem distinguem a produção própria e as fontes externas. O repositório
 público, por si só, não define uma licença geral de reutilização dos assets.
 
 ## Origem e evolução
