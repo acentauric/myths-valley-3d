@@ -336,13 +336,21 @@ func _atualizar_vida() -> void:
 	_vida_preenchimento.bg_color = COR_VIDA_ENVENENADA if vida.envenenado_agora() else COR_VIDA
 
 
-## Reserva de respiração para as futuras missões no oceano. As ações do vale
-## gastam o vigor verde; esta barra azul acompanha apenas o fôlego do jogador.
-const COR_FOLEGO := Color("398fd2")
+## O FÔLEGO (#3), logo abaixo da vida e na mesma medida, com as cores do 2D
+## (`scripts/ui/hud.gd`): verde enquanto há fôlego, vermelho quando o corpo
+## está no fim. O número vem do `Energia` compartilhado, e o limiar é o dele
+## (`Energia.cansado()`), não um número daqui. O vigor, a barra verde da
+## corrida e do golpe, é outra conta (`_criar_barra_de_stamina`), e a
+## respiração do mergulho ainda não tem barra: nada a gasta por enquanto.
+##
+## Cansado, o texto diz "cansado" além de mudar a cor. O cansaço já pesa no
+## corpo — o passo cai para 62% e a corrida não responde —, e sem aviso quem
+## joga pensa que o jogo travou (ver `Energia.cansou`).
+const COR_FOLEGO := Color(0.55, 0.78, 0.45)
+const COR_FOLEGO_BAIXO := Color(0.9, 0.42, 0.34)
 var barra_folego: ProgressBar
 var _folego_texto: Label
 var _folego_preenchimento: StyleBoxFlat
-var _jogador_folego: Node
 
 
 func _criar_barra_de_folego() -> void:
@@ -367,23 +375,23 @@ func _criar_barra_de_folego() -> void:
 	_folego_texto.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_folego_texto.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_folego_texto.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	_atualizar_folego()
-
-
-func configurar_folego(jogador: Node) -> void:
-	if is_instance_valid(_jogador_folego) and _jogador_folego.is_connected("folego_mudou", _atualizar_folego):
-		_jogador_folego.disconnect("folego_mudou", _atualizar_folego)
-	_jogador_folego = jogador
-	_jogador_folego.connect("folego_mudou", _atualizar_folego)
-	_atualizar_folego()
-
-
-func _atualizar_folego(_valor: float = 0.0) -> void:
-	if not is_instance_valid(_jogador_folego) or barra_folego == null:
+	var energia := get_node_or_null("/root/Energia")
+	if energia == null:
+		barra_folego.visible = false
 		return
-	barra_folego.max_value = float(_jogador_folego.call("folego_maximo"))
-	barra_folego.value = float(_jogador_folego.call("folego_atual"))
-	_folego_texto.text = "Fôlego %d" % roundi(barra_folego.value)
+	energia.mudou.connect(_atualizar_folego)
+	_atualizar_folego()
+
+
+func _atualizar_folego() -> void:
+	var energia := get_node_or_null("/root/Energia")
+	if energia == null or barra_folego == null:
+		return
+	barra_folego.max_value = energia.maximo()
+	barra_folego.value = energia.atual
+	var cansado: bool = energia.cansado()
+	_folego_texto.text = ("%d · cansado" if cansado else "%d") % roundi(energia.atual)
+	_folego_preenchimento.bg_color = COR_FOLEGO_BAIXO if cansado else COR_FOLEGO
 
 
 func _criar_barra_de_stamina() -> void:

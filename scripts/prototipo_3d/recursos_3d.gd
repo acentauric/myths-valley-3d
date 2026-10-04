@@ -212,7 +212,7 @@ func _mais_perto() -> String:
 func _o_que_falta(ficha: Dictionary) -> String:
 	var ferramenta := str(ficha.get("ferramenta", ""))
 	if ferramenta == "":
-		return tr("à mão") if Energia.aguenta("bater", _dureza(ficha)) else "sem vigor"
+		return tr("à mão") if Energia.aguenta("bater", _dureza(ficha)) else "sem %s" % Energia.nome_recurso()
 	if not _tem_ferramenta(ferramenta):
 		# Na barra, mas não escolhida: diz a tecla. Só na mochila: manda pôr na mão.
 		for indice in Inventario.ESPACOS_MAO:
@@ -226,7 +226,7 @@ func _o_que_falta(ficha: Dictionary) -> String:
 	if impede != "":
 		return impede
 	if not Energia.aguenta("bater", _dureza(ficha)):
-		return "sem vigor"
+		return "sem %s" % Energia.nome_recurso()
 	return "com %s" % _nome_do_item(Equipamento.da_familia_em_uso(ferramenta))
 
 
@@ -328,7 +328,7 @@ func bater() -> bool:
 		return false
 	var dureza := _dureza(ficha)
 	if not Energia.gastar("bater", dureza):
-		recusado.emit("Sem vigor para bater.")
+		recusado.emit("Sem %s para bater." % Energia.nome_recurso())
 		return false
 	# QUEM TRABALHA APRENDE, e o duro ensina mais (`Talentos.XP_POR_ACAO`): é por
 	# aqui que o golpe leva à teia que abre o alvo mais duro.

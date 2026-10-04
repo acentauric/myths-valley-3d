@@ -609,8 +609,8 @@ func _ready() -> void:
 	Salvamento.registrar_mundo(self)
 	var retomou_partida := _retomar_a_partida()
 	_conferir_o_relogio_parado()
-	Energia.registrar_vigor(player)
-	hud.configurar_folego(player)
+	# DOIS FÔLEGOS: o vigor do corpo (a barra verde da corrida e do golpe) e a
+	# reserva do dia (o `Energia`), cada um na sua conta. Ver `vigor_maximo`.
 	_arvores_info._atualizar_stamina_hud()
 	Equipamento.migrar_ferramenta_das_maos()
 	if not _barra_de_ferramentas_migrada:
@@ -1662,7 +1662,6 @@ func _lendo() -> bool:
 
 
 func _exit_tree() -> void:
-	Energia.desregistrar_vigor(player)
 	if Vida.esta_lendo == Callable(self, "_lendo"):
 		Vida.esta_lendo = Callable()
 	# UMA FALA ABERTA NÃO SOBREVIVE AO VALE (#21). O `Dialogo` é autoload e fica;

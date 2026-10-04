@@ -61,7 +61,7 @@ const LETRA_DICA := 14
 
 ## Campos editáveis da aba do jogo: rótulo, campo em Progressao, passo.
 const CAMPOS := [
-	{"rotulo": "Vigor máximo", "campo": "energia_maxima", "passo": 10.0,
+	{"rotulo": "Fôlego máximo", "campo": "energia_maxima", "passo": 10.0,
 		"dica": "O teto. Subir isto sozinho não faz acordar com mais."},
 	{"rotulo": "Sono devolve", "campo": "recuperacao_ao_dormir", "passo": 5.0,
 		"dica": "Pontos fixos por noite, não fração do máximo."},
@@ -692,7 +692,7 @@ func _quantas_faltam(todas: Array) -> String:
 
 
 func _desenhar_cozinha() -> void:
-	_titulo.text = "Fogão      vigor %d/%d" % [int(Energia.atual), int(Energia.maximo())]
+	_titulo.text = "Fogão      %s %d/%d" % [Energia.nome_recurso(), int(Energia.atual), int(Energia.maximo())]
 	var pratos := Cozinha.receitas()
 	if pratos.is_empty():
 		_adicionar_linha("Você ainda não sabe cozinhar nada.", COR_APAGADA)
@@ -705,13 +705,13 @@ func _desenhar_cozinha() -> void:
 		var devolve := int(Catalogo.dados(id).get("folego", 0.0))
 		var texto := "%s   %-22s %s" % [
 			"✓" if pode else "·", Cozinha.dados(id).get("nome", id),
-			"+%d de vigor" % devolve if devolve > 0 else "ingrediente"]
+			"+%d de %s" % [devolve, Energia.nome_recurso()] if devolve > 0 else "ingrediente"]
 		_adicionar_linha(texto, COR_CURSOR if i == _cursor else (COR_TEXTO if pode else COR_APAGADA))
 	var escolhido := str(pratos[_cursor]) if _cursor < pratos.size() else ""
 	var impede := Cozinha.impedimento(escolhido)
 	_dica.text = str(Cozinha.dados(escolhido).get("resumo", "")) + "\n" + (
-		impede if impede != "" else "Gasta: %s   ·   e %d de vigor pra fazer" % [
-			Cozinha.custo_em_texto(escolhido), int(Cozinha.dados(escolhido).get("folego", 0))]
+		impede if impede != "" else "Gasta: %s   ·   e %d de %s pra fazer" % [
+			Cozinha.custo_em_texto(escolhido), int(Cozinha.dados(escolhido).get("folego", 0)), Energia.nome_recurso()]
 		) + _quantas_faltam(Cozinha.RECEITAS.keys())
 	_rodape.text = "[W/S] escolher · [E] cozinhar · [Esc] fechar"
 
@@ -1089,7 +1089,7 @@ func _desenhar_obras() -> void:
 
 
 const NOME_DO_ATRIBUTO := {
-	"energia_maxima": "vigor máximo",
+	"energia_maxima": "fôlego máximo",
 	"recuperacao_ao_dormir": "descanso da noite",
 	"recuperacao_ao_desmaiar": "descanso de quem apaga",
 	"eficiencia": "esforço de toda tarefa",

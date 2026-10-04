@@ -48,9 +48,14 @@ const PECAS := {
 	# A capelinha pobre do cemitério, de taipa e cal rachada (lote de 03/10/2026).
 	"capelinha": {"tripo": "construcoes/capelinha_tripo.glb", "largura": 4.6, "caixa": true},
 	"igreja": {"tripo": "construcoes/igreja_tripo.glb", "largura": 10.0, "caixa": true},
-	# As paredes começam cerca de 0,20 unidade acima do mínimo do GLB;
-	# esse recuo encosta a parede no alicerce sem deslocar o terreno.
-	"casa_taipa": {"tripo": "construcoes/casa_taipa_tripo.glb", "largura": 6.5, "caixa": true, "afundar": 0.20},
+	# SEM "afundar": as paredes começam uns 0,20 acima do mínimo do GLB, e a
+	# casca afundada encostava a parede no alicerce — mas a casa herdada, a do
+	# Pedro e a da Zefa têm o cômodo DENTRO da casca, medido nela
+	# (`Interiores._medir`): com os 0,20 a mais, ninguém entrava andando nas
+	# três, e sem eles entra (tests/casa.gd, casas_dos_moradores.gd).
+	# O enterro das casas pequenas no terreno inclinado continua
+	# (`WorldBuilder.AFUNDAMENTO_CASAS_PEQUENAS`).
+	"casa_taipa": {"tripo": "construcoes/casa_taipa_tripo.glb", "largura": 6.5, "caixa": true},
 	"casa_carro_quebrado": {"tripo": "casas/casa_carro_quebrado_tripo.glb", "largura": 5.2, "caixa": true},
 	"venda": {"tripo": "construcoes/venda_tripo.glb", "largura": 8.0, "caixa": true},
 	"casa_pasto": {"tripo": "construcoes/casa_pasto_tripo.glb", "largura": 8.5, "caixa": true},

@@ -996,8 +996,12 @@ func vigor_atual() -> float:
 	return _vigor
 
 
+## O VIGOR É O FÔLEGO CURTO DO CORPO, e não a reserva do dia: corre, pula e
+## golpeia, e volta sozinho em segundos. A reserva (o `Energia`, o fôlego do 2D)
+## é outra conta, que só a comida, a cama e o desmaio devolvem, e que a
+## bênção, o talento e a luva mexem. Por isso o teto aqui é o dele.
 func vigor_maximo() -> float:
-	return Energia.maximo()
+	return VIGOR_MAXIMO
 
 
 func definir_vigor(valor: float) -> void:
