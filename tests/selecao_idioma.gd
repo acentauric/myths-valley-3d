@@ -46,7 +46,12 @@ func _run() -> void:
 	var tela: Control = inicio.get_node("CanvasLayer/SelecaoIdioma")
 	_conferir(tela.get_node("Capa").texture.resource_path.ends_with("capa_dia.webp"), "mesma capa da abertura")
 	var painel: Control = tela.get_node("CentroIdioma/OpcoesIdioma")
-	_conferir((painel.get_global_rect().get_center() - tela.get_global_rect().get_center()).length() < 1.0, "seleção centralizada na tela")
+	var centro_tela := tela.get_global_rect().get_center()
+	var centro_painel := painel.get_global_rect().get_center()
+	_conferir(absf(centro_painel.x - centro_tela.x) < 1.0 and absf(centro_painel.y - centro_tela.y - 70.0) < 1.0, "painel centralizado e abaixo da marca")
+	var marca: Control = tela.get_node("Marca")
+	_conferir(absf(marca.get_global_rect().get_center().x - centro_tela.x) < 1.0, "marca centralizada")
+	_conferir(painel.get_global_rect().position.y - marca.get_global_rect().end.y >= 32.0, "espaço entre marca e painel")
 	var capa: TextureRect = tela.get_node("Capa")
 	var transformacao: Transform2D = capa.get_transform()
 	await create_timer(1.0).timeout

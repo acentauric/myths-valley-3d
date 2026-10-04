@@ -61,7 +61,7 @@ static func mostrar(pai: Node, tema: Theme, mensagem: String, hora: float = -1.0
 
 
 ## Capa e marca compartilhadas com a seleção inicial; só recursos de interface.
-static func mostrar_capa(pai: Node, tema: Theme, noite: bool = false) -> Control:
+static func mostrar_capa(pai: Node, tema: Theme, noite: bool = false, marca_central: bool = false) -> Control:
 	var screen := Control.new()
 	screen.name = "SelecaoIdioma"
 	screen.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -77,7 +77,7 @@ static func mostrar_capa(pai: Node, tema: Theme, noite: bool = false) -> Control
 	screen.add_child(fundo)
 	_capa(screen, noite)
 	_veus(screen)
-	_marca(screen)
+	_marca(screen, marca_central)
 	return screen
 
 
@@ -171,11 +171,12 @@ static func _veus(tela: Control) -> void:
 
 
 ## Logotipo em talha dourada com o lugar e o ano entre filetes de ouro, no alto à esquerda.
-static func _marca(tela: Control) -> void:
+static func _marca(tela: Control, central: bool = false) -> void:
 	var textura := load(LOGO) as Texture2D
 	var altura_logo := LARGURA_LOGO * float(textura.get_height()) / float(textura.get_width())
 	# Sombra difusa atrás do logotipo: separa o ouro do céu claro do entardecer.
 	var sombra := TextureRect.new()
+	sombra.name = "SombraMarca"
 	sombra.texture = _brilho(Color(0.02, 0.02, 0.04, 0.5), 128)
 	sombra.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	sombra.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -183,8 +184,21 @@ static func _marca(tela: Control) -> void:
 	sombra.size = Vector2(LARGURA_LOGO + 140.0, altura_logo + 130.0)
 	tela.add_child(sombra)
 	var marca := VBoxContainer.new()
+	marca.name = "Marca"
 	marca.position = Vector2(MARGEM, 24.0)
 	marca.custom_minimum_size = Vector2(LARGURA_LOGO, 0)
+	if central:
+		marca.anchor_left = 0.5
+		marca.anchor_right = 0.5
+		marca.offset_left = -LARGURA_LOGO / 2.0
+		marca.offset_right = LARGURA_LOGO / 2.0
+		marca.offset_top = 40.0
+		marca.grow_horizontal = Control.GROW_DIRECTION_BOTH
+		sombra.anchor_left = 0.5
+		sombra.anchor_right = 0.5
+		sombra.offset_left = -(LARGURA_LOGO + 140.0) / 2.0
+		sombra.offset_right = (LARGURA_LOGO + 140.0) / 2.0
+		sombra.offset_top = -24.0
 	marca.add_theme_constant_override("separation", 8)
 	marca.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	tela.add_child(marca)

@@ -2,6 +2,10 @@
 
 ## Em desenvolvimento — 04/10/2026
 
+- Na seleção inicial, a marca fica centralizada acima do painel, que desce
+  para dar espaço ao logotipo e ao subtítulo. O carregamento mantém sua
+  composição própria (#77).
+
 - A seleção de idioma fica no centro, com moldura dourada e fundo escurecido
   para destacar a escolha. A imagem permanece estática tanto na seleção como
   no carregamento, sem zoom nem efeitos animados na capa noturna (#77).

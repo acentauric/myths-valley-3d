@@ -18,15 +18,17 @@ func _ready() -> void:
 	_camada = CanvasLayer.new()
 	_camada.name = "CanvasLayer"
 	add_child(_camada)
-	_tela = TelaCarregamento.mostrar_capa(_camada, TemaMenu.criar())
+	_tela = TelaCarregamento.mostrar_capa(_camada, TemaMenu.criar(), false, true)
 	var sombra := ColorRect.new()
 	sombra.color = Color(0, 0, 0, 0.24)
 	sombra.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	sombra.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_tela.add_child(sombra)
+	_tela.move_child(_tela.get_node("Marca"), _tela.get_child_count() - 1)
 	var centro := CenterContainer.new()
 	centro.name = "CentroIdioma"
 	centro.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	centro.offset_top = 140.0
 	_tela.add_child(centro)
 	var dados: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://data/selecao_idioma.json"))
 	var painel := PanelContainer.new()
