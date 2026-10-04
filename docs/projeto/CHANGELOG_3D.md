@@ -2,6 +2,11 @@
 
 ## Em desenvolvimento — 04/10/2026
 
+- A seleção reserva a altura dos textos dos quatro idiomas com as fontes
+  efetivas, mantendo modal, botões e build imóveis durante a prévia. O último
+  idioma sob o mouse permanece marcado mesmo após sair do botão; a confirmação
+  continua sendo por clique ou Enter (#77).
+
 - Na seleção, o destaque do botão acompanha a língua dos textos ao passar o
   mouse. Enter confirma a prévia visível, sem salvar o idioma durante o hover.
   O portão confere também que a intro usa a língua confirmada (#77).

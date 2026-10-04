@@ -84,8 +84,22 @@ func _run() -> void:
 	for i in mini(4, botoes.size()):
 		_conferir(botoes[i].text == dados.opcoes[i] and not botoes[i].disabled, "opção nativa %d" % i)
 	var locale_salvo := TranslationServer.get_locale()
+	var retangulo_painel := painel.get_global_rect()
+	var retangulo_build := build.get_global_rect()
+	var retangulos_botoes: Array[Rect2] = []
+	for botao in botoes:
+		retangulos_botoes.append(botao.get_global_rect())
 	for i in 4:
 		botoes[i].mouse_entered.emit()
+		await process_frame
+		await process_frame
+		_conferir(painel.get_global_rect().is_equal_approx(retangulo_painel) and build.get_global_rect().is_equal_approx(retangulo_build), "modal e build não saltam no idioma %d" % i)
+		for j in 4:
+			_conferir(botoes[j].get_global_rect().is_equal_approx(retangulos_botoes[j]), "botão %d imóvel no idioma %d" % [j, i])
+		botoes[i].mouse_exited.emit()
+		await process_frame
+		for j in 4:
+			_conferir(botoes[j].button_pressed == (j == i), "pré-seleção persistente e única %d/%d" % [i, j])
 		_conferir(get_root().gui_get_focus_owner() == botoes[i], "destaque acompanha o idioma da prévia %d" % i)
 		_conferir(inicio._titulo.text == dados["titulo" + idioma.SUFIXOS[i]], "título no hover %d" % i)
 		_conferir(inicio._descricao.text == dados["descricao" + idioma.SUFIXOS[i]], "descrição no hover %d" % i)

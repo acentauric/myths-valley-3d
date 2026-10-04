@@ -80,6 +80,7 @@ func _ready() -> void:
 		botao.name = "Idioma%d" % i
 		botao.text = str(dados["opcoes"][i])
 		botao.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
+		botao.toggle_mode = true
 		botao.custom_minimum_size = Vector2(230, 58)
 		botao.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		botao.pressed.connect(_escolher.bind(i))
@@ -93,6 +94,7 @@ func _ready() -> void:
 	aviso.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	aviso.add_theme_font_size_override("font_size", 16)
 	coluna.add_child(aviso)
+	_reservar_textos()
 	_mostrar_idioma(IdiomaMenu.indice())
 	_botoes[IdiomaMenu.indice()].grab_focus.call_deferred()
 
@@ -100,9 +102,27 @@ func _ready() -> void:
 func _mostrar_idioma(indice: int) -> void:
 	if carregando:
 		return
+	for i in _botoes.size():
+		_botoes[i].set_pressed_no_signal(i == indice)
 	_titulo.text = str(IdiomaMenu.campo_no_idioma(_dados, "titulo", indice))
 	_descricao.text = str(IdiomaMenu.campo_no_idioma(_dados, "descricao", indice))
 	_aviso.text = str(IdiomaMenu.campo_no_idioma(_dados, "aviso", indice))
+
+
+func _reservar_textos() -> void:
+	# Mede todos os idiomas com a fonte real (inclusive o fallback chinês).
+	# A largura útil é 600 menos as duas margens de 40 da moldura.
+	for par in [[_titulo, "titulo"], [_descricao, "descricao"], [_aviso, "aviso"]]:
+		var rotulo: Label = par[0]
+		var altura := 0.0
+		for i in IdiomaMenu.LOCALES.size():
+			var paragrafo := TextParagraph.new()
+			paragrafo.width = 520
+			paragrafo.break_flags = TextServer.BREAK_MANDATORY | TextServer.BREAK_WORD_BOUND | TextServer.BREAK_ADAPTIVE
+			paragrafo.add_string(str(IdiomaMenu.campo_no_idioma(_dados, par[1], i)), rotulo.get_theme_font("font"), rotulo.get_theme_font_size("font_size"))
+			altura = maxf(altura, paragrafo.get_size().y)
+		rotulo.custom_minimum_size.y = ceilf(altura) + 4
+		rotulo.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 
 
 func _previsualizar_idioma(indice: int) -> void:
