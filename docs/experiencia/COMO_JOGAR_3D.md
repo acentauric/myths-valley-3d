@@ -43,7 +43,7 @@ As letras marcadas com * são **remapeáveis** em AJUSTAR → Geral → Atalhos;
 
 | Tecla | Tela |
 | --- | --- |
-| Mochila* (I) | Os 30 espaços (os 10 primeiros são a barra de mão) à esquerda, o que o corpo veste à direita. As setas ou WASD escolhem, F veste ou come o que está sob o cursor, E pega e solta para arrumar; com o mouse, arrastar arruma e o segundo clique veste ou come |
+| Mochila* (I) | Os 30 espaços (os 10 primeiros são a barra de mão) à esquerda, o que o corpo veste à direita. As setas ou WASD escolhem, F veste ou come o que está sob o cursor, E pega e solta para arrumar; com o mouse, arrastar arruma e o segundo clique veste ou come. Ao lado dos encaixes, o personagem em 3D veste o que está neles e na mão: arraste por cima dele para girá-lo, e solte nele uma peça da mochila para vesti-la |
 | Painel* (J) | Missões, cartas e, perto do lugar certo, venda, fogão, bancada e obras; pelo botão JOGO, salvar, voltar ao menu e sair. Dentro dele, Tab troca de aba, W/S escolhem, E confirma |
 | Árvore de habilidades* (K) | A teia de talentos, onde se gasta o ponto que o vale dá |
 | Almanaque* (L) | O caderno do que já se viu: plantas, cordéis, sinais e bichos. A vaga em branco mostra quantos faltam achar |

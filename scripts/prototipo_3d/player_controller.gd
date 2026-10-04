@@ -12,6 +12,9 @@ const ClickNavigation = preload("res://scripts/prototipo_3d/click_navigation.gd"
 const TeclasMovimento = preload("res://scripts/prototipo_3d/teclas_movimento.gd")
 const Mar = preload("res://scripts/prototipo_3d/mar.gd")
 const EspumaAgua = preload("res://scripts/prototipo_3d/espuma_agua.gd")
+## O que o corpo mostra do que veste: o chapéu, o machado e o facão — o mesmo
+## caminho do boneco da mochila (`boneco_da_mochila.gd`).
+const Vestimenta3D = preload("res://scripts/prototipo_3d/vestimenta_3d.gd")
 const HOUSE_INTERACTION_LAYER := 1 << 12
 const ARRIVAL_DISTANCE := 0.7
 const CAMERA_DRAG_THRESHOLD := 6.0
@@ -108,6 +111,11 @@ var _machado_ancora: Node3D
 var _machado_pivo: Node3D
 var _machado_ancora_posicao_base := Vector3.ZERO
 var _machado_angulo_lateral := 0.0
+## O chapéu na cabeça e o facão na mão, com o id de cada um ("" quando nada).
+var _chapeu_ancora: Node3D
+var _chapeu_id := ""
+var _facao_ancora: Node3D
+var _facao_pivo: Node3D
 var _acao_golpe_restante := 0.0
 var _acao_golpe_espera_animacao := false
 
@@ -181,6 +189,7 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	_atualizar_machado_na_mao()
 	_atualizar_pose_machado(delta)
+	_atualizar_vestimenta()
 
 
 ## Machado de ferro ou de aço: os dois são da família do machado (`Catalogo.familia`).
@@ -212,28 +221,50 @@ func _atualizar_machado_na_mao() -> void:
 		_machado_pivo = null
 		_machado_angulo_lateral = 0.0
 		return
-	_machado_ancora = _criar_ancora_da_mao()
+	_machado_ancora = Vestimenta3D.ancora_da_mao(model, character_height, visual)
 	if _machado_ancora == null:
 		return
 	_machado_ancora_posicao_base = _machado_ancora.position
-	if Estilo.procedural():
-		_criar_machado_procedural(_machado_ancora)
+	_machado_pivo = Vestimenta3D.machado(_machado_ancora, visual)
+
+
+## O CHAPÉU NA CABEÇA E O FACÃO NA MÃO, pelo que está vestido e na mão agora
+## (`Vestimenta3D`). O machado tem o caminho dele, acima, por causa do balanço
+## do braço; o facão só aparece quando o machado não está na mão.
+func _atualizar_vestimenta() -> void:
+	var chapeu := Vestimenta3D.item_na_cabeca()
+	if chapeu != _chapeu_id:
+		_soltar(_chapeu_ancora)
+		_chapeu_ancora = null
+		_chapeu_id = chapeu
+		if chapeu != "" and model != null:
+			_chapeu_ancora = Vestimenta3D.ancora_da_cabeca(model)
+			if _chapeu_ancora != null:
+				Vestimenta3D.na_cabeca(_chapeu_ancora, chapeu)
+	var com_facao := Vestimenta3D.item_na_mao() == "facao"
+	if com_facao != (_facao_ancora != null):
+		if not com_facao:
+			_soltar(_facao_ancora)
+			_facao_ancora = null
+			_facao_pivo = null
+		elif model != null:
+			_facao_ancora = Vestimenta3D.ancora_da_mao(model, character_height, visual, "FacaoNaMao")
+			if _facao_ancora != null:
+				_facao_pivo = Vestimenta3D.facao(_facao_ancora, visual)
+	# O facão balança como o machado: de lado com o corpo parado, reto no golpe.
+	if _facao_pivo != null and is_instance_valid(_facao_pivo):
+		var golpeando: bool = animator != null and animator.has_method("gesture_ativa") and animator.gesture_ativa()
+		Vestimenta3D.girar_o_machado(_facao_ancora, _facao_pivo, visual, 0.0 if golpeando or _nadando else deg_to_rad(Vestimenta3D.MACHADO_PARADO))
+
+
+## Tira uma âncora do corpo, com o anexo do osso que ela tinha.
+func _soltar(ancora: Node3D) -> void:
+	if ancora == null:
+		return
+	if ancora.get_parent() is BoneAttachment3D:
+		ancora.get_parent().queue_free()
 	else:
-		var machado := CatalogoAssets.instanciar("machado", _machado_ancora, Vector3.ZERO, 0.46)
-		if machado != null:
-			machado.rotation = Vector3(deg_to_rad(1.0), deg_to_rad(2.0), deg_to_rad(92.0))
-			machado.basis = machado.basis * Basis(Vector3.UP, PI)
-			# A pegada fica logo acima da ponta real do cabo no GLB.
-			var pegada_cabo := Vector3(0.34, 0.12, 0.0)
-			machado.position -= machado.transform * pegada_cabo
-			machado.position += Vector3(0.0, 0.06, 0.0)
-			machado.position += _machado_ancora.global_basis.inverse() * (visual.global_basis.x * 0.08)
-			# Gira em torno da pegada para a ponta do cabo permanecer na mão direita.
-			_machado_pivo = Node3D.new()
-			_machado_pivo.name = "PivoDaPegada"
-			_machado_ancora.add_child(_machado_pivo)
-			_machado_pivo.position = machado.transform * pegada_cabo
-			machado.reparent(_machado_pivo, true)
+		ancora.queue_free()
 
 
 func _atualizar_pose_machado(delta: float) -> void:
@@ -247,64 +278,9 @@ func _atualizar_pose_machado(delta: float) -> void:
 	var afastamento := -0.01 if em_idle else 0.0
 	_machado_ancora.position = _machado_ancora_posicao_base + _machado_ancora.global_basis.inverse() * (visual.global_basis.x * afastamento)
 	if _machado_pivo != null:
-		var angulo_alvo := 0.0 if em_golpe or _nadando else deg_to_rad(-30.0)
+		var angulo_alvo := 0.0 if em_golpe or _nadando else deg_to_rad(Vestimenta3D.MACHADO_PARADO)
 		_machado_angulo_lateral = move_toward(_machado_angulo_lateral, angulo_alvo, 4.0 * delta)
-		var eixo_vertical_local := (_machado_ancora.global_basis.inverse() * visual.global_basis.y).normalized()
-		_machado_pivo.basis = Basis(eixo_vertical_local, _machado_angulo_lateral)
-
-
-func _criar_ancora_da_mao() -> Node3D:
-	if model is PersonagemProcedural:
-		var cotovelo := model.find_child("CotoveloD", true, false) as Node3D
-		if cotovelo == null:
-			return null
-		var ancora := Node3D.new()
-		ancora.name = "MachadoNaMao"
-		ancora.position = Vector3(0.0, -character_height * 0.16, 0.0)
-		cotovelo.add_child(ancora)
-		return ancora
-	for encontrado in model.find_children("*", "Skeleton3D", true, false):
-		var esqueleto := encontrado as Skeleton3D
-		for indice in esqueleto.get_bone_count():
-			var nome := String(esqueleto.get_bone_name(indice)).to_lower()
-			if not nome.ends_with("righthand"):
-				continue
-			var anexo := BoneAttachment3D.new()
-			anexo.name = "MachadoNaMao"
-			anexo.bone_name = esqueleto.get_bone_name(indice)
-			esqueleto.add_child(anexo)
-			var ancora := Node3D.new()
-			anexo.add_child(ancora)
-			return ancora
-	var ancora := Node3D.new()
-	ancora.name = "MachadoNaMao"
-	ancora.position = Vector3(0.34, 0.9, 0.08)
-	visual.add_child(ancora)
-	return ancora
-
-
-func _criar_machado_procedural(pai: Node3D) -> void:
-	var cabo := MeshInstance3D.new()
-	var malha_cabo := CylinderMesh.new()
-	malha_cabo.top_radius = 0.018
-	malha_cabo.bottom_radius = 0.024
-	malha_cabo.height = 0.52
-	cabo.mesh = malha_cabo
-	cabo.position.y = -0.19
-	var madeira := StandardMaterial3D.new()
-	madeira.albedo_color = Color("70492d")
-	cabo.material_override = madeira
-	pai.add_child(cabo)
-	var lamina := MeshInstance3D.new()
-	var malha_lamina := BoxMesh.new()
-	malha_lamina.size = Vector3(0.23, 0.15, 0.055)
-	lamina.mesh = malha_lamina
-	lamina.position = Vector3(0.07, -0.4, 0.0)
-	var ferro := StandardMaterial3D.new()
-	ferro.albedo_color = Color("777a78")
-	ferro.metallic = 0.55
-	lamina.material_override = ferro
-	pai.add_child(lamina)
+		Vestimenta3D.girar_o_machado(_machado_ancora, _machado_pivo, visual, _machado_angulo_lateral)
 
 
 func _tem_animacoes(scene: PackedScene) -> bool:

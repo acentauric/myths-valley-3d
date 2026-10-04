@@ -34,6 +34,23 @@ atualize esse arquivo e este documento juntos.
 
 ## Em desenvolvimento — 03/10/2026
 
+- **O boneco da mochila: o personagem em 3D ao lado dos encaixes, com o que veste.** "No
+  inventário, ao lado dos itens equipados, coloque o 3D do boneco com os itens equipados,
+  igual nos jogos de RPG. Assim ele pode ver as alterações conforme vai equipando." Com a
+  mochila aberta (I), à direita dos cinco encaixes fica o corpo do jogador em 3D, num palco
+  próprio (`BonecoDaMochila`): a mesma cena, a mesma escala e os mesmos materiais, parado
+  no idle. Ele aparece com o que está nos encaixes e na mão: o chapéu de palha na cabeça
+  e, na mão, o machado da barra ou o facão das Mãos. Arrastar o mouse por cima dele gira o
+  corpo, e soltar nele uma peça arrastada da mochila veste a peça no encaixe dela, como nos
+  RPGs. O que o boneco mostra o jogador também mostra no vale, pelo mesmo caminho
+  (`Vestimenta3D`): o chapéu e o facão passam a aparecer no corpo, como o machado já
+  aparecia, e o machado continua com o mesmo encaixe na mão. O gibão e o patuá ainda não
+  têm modelo, e nada aparece por eles. A mochila é tela do 2D e não se mexe nela: o boneco
+  entra no alto da coluna dos efeitos, que ficam embaixo dele, e a largura dela não muda
+  (numa coluna nova, ela passava da tela). Com o baú aberto, que é tela de transferir, o
+  boneco sai e a mochila fica como era. Portão novo `tests/boneco_da_mochila.gd`, com
+  oito perguntas, cada uma falsificada.
+
 - **O tronco caído, a capelinha pobre, as peças das casas e o mestre Quirino chegam do
   Tripo.** "Crie um asset de tronco caído que pode coletar a madeira mediante uso do
   machado para cortar. Substitua as madeiras empilhadas na missão do cemitério por esse

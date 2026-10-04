@@ -14,6 +14,7 @@ const MapaJogo = preload("res://scripts/prototipo_3d/mapa_jogo.gd")
 const Lapides = preload("res://scripts/prototipo_3d/lapides.gd")
 const ArvoresInfo = preload("res://scripts/prototipo_3d/arvores_info.gd")
 const PlacasNomes = preload("res://scripts/prototipo_3d/placas_nomes.gd")
+const BonecoDaMochila = preload("res://scripts/prototipo_3d/boneco_da_mochila.gd")
 const Tubarao = preload("res://scripts/prototipo_3d/tubarao.gd")
 const Queda = preload("res://scripts/prototipo_3d/queda.gd")
 const LutaVale = preload("res://scripts/prototipo_3d/luta_vale.gd")
@@ -124,6 +125,8 @@ var navegacao: Node3D
 var cemiterio: Node3D
 ## As plaquinhas de nome dos moradores; somem com tela aberta (placas_nomes.gd).
 var placas
+## O personagem em 3D na mochila, ao lado dos encaixes (boneco_da_mochila.gd).
+var boneco_da_mochila
 ## A aba pedida no último `abrir_o_painel`, entregue à abertura crua.
 var _aba_pedida := 0
 var _machado_inicial_entregue := false
@@ -304,6 +307,11 @@ func _ready() -> void:
 		func() -> void: Mochila.fechar())
 	_ajustar_as_telas_do_2d()
 	get_viewport().size_changed.connect(_ajustar_as_telas_do_2d)
+	# O BONECO DA MOCHILA: "ao lado dos itens equipados, coloque o 3D do boneco
+	# com os itens equipados, igual nos jogos de RPG". A mochila é tela do 2D e
+	# não se mexe nela: o boneco entra na fileira dela daqui.
+	boneco_da_mochila = BonecoDaMochila.new()
+	boneco_da_mochila.montar(Mochila, player)
 	# A FALA LONGA (#21) para o vale como uma tela, sem ser tela: ninguém a
 	# abre por tecla, é o mundo que fala. Ver `_ao_abrir_a_fala`.
 	Dialogo.abriu.connect(_ao_abrir_a_fala)
