@@ -1,5 +1,10 @@
 # Histórico de mudanças — Myths' Valley 3D
 
+## Em desenvolvimento — 03/10/2026
+
+- A tela Sobre apresenta a equipe atual do projeto: Ramon Santos, Renato Leal
+  e Matheus Ché (#40).
+
 ## Em desenvolvimento — 01/10/2026
 
 - A oficina provisória ganha âncora na beira do roçado: depois do loteamento,

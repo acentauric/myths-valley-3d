@@ -36,7 +36,7 @@ const CREDITS_HIGHLIGHTS := [
 	"primeira visita", "first visit", "primera visita",
 	"Batalha de Mitos",
 ]
-const COLLABORATORS := ["Ramon Santos", "Renato Leal", "Matheus Ché", "Pedro Almeida"]
+const COLLABORATORS := ["Ramon Santos", "Renato Leal", "Matheus Ché"]
 ## Fonte do menu (AJUSTAR → Cenário): padrão do Godot ou as duas fontes do 2D.
 const MENU_FONTS := PainelAjustes.FONTES_MENU
 ## Trocar o estilo visual reconstrói a cena do menu; ao voltar, reabre a página de ajustes.
