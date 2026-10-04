@@ -42,7 +42,7 @@ func _ready() -> void:
 	_dados = dados
 	var painel := PanelContainer.new()
 	painel.name = "OpcoesIdioma"
-	painel.custom_minimum_size = Vector2(600, 350)
+	painel.custom_minimum_size = Vector2(600, 384)
 	painel.add_theme_stylebox_override("panel", TemaMenu.Identidade.estilo_moldura())
 	bloco.add_child(painel)
 	var build := Label.new()
@@ -55,7 +55,8 @@ func _ready() -> void:
 	TemaMenu.Identidade.sombra_texto(build)
 	bloco.add_child(build)
 	var coluna := VBoxContainer.new()
-	coluna.add_theme_constant_override("separation", 12)
+	coluna.add_theme_constant_override("separation", 18)
+	coluna.alignment = BoxContainer.ALIGNMENT_CENTER
 	painel.add_child(coluna)
 	var titulo := Label.new()
 	_titulo = titulo
@@ -92,6 +93,7 @@ func _ready() -> void:
 	_aviso = aviso
 	aviso.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
 	aviso.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	aviso.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	aviso.add_theme_font_size_override("font_size", 16)
 	coluna.add_child(aviso)
 	_reservar_textos()

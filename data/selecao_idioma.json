@@ -14,6 +14,8 @@
   "aviso_es": "Chino en preparación: los textos sin traducir usan inglés. Las voces y partes del juego siguen en portugués.",
   "aviso_zh": "中文翻译尚在准备中，未翻译的内容使用英语。语音及部分游戏内容仍为葡萄牙语。",
   "menu_zh": {
+    "Tela cheia (F11)": "全屏 (F11)",
+    "Modo janela (F11)": "窗口模式 (F11)",
     "Carregando o vale…": "正在加载山谷…",
     "Enchendo a baía": "填充海湾",
     "Moldando o terreno": "塑造地形",

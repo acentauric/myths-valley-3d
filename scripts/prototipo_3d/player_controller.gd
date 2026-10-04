@@ -128,7 +128,10 @@ var _acao_golpe_restante := 0.0
 var _acao_golpe_espera_animacao := false
 
 func _ready() -> void:
-	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+	# O cursor NÃO é preso aqui: o jogador nasce com a tela de carregamento por
+	# cima, e prender agora sumia com o mouse durante toda a montagem do vale.
+	# Quem decide o modo é o `prototype.gd`, quando o vale fica pronto
+	# (`set_camera_locked(CameraMouse.travada())`).
 	add_to_group("map_player")
 	spawn_position = position
 	floor_snap_length = 0.35

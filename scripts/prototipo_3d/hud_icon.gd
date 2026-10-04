@@ -1,6 +1,6 @@
 extends Control
 ## Ícones vetoriais dos botões de canto do HUD, no mesmo traço do som e do relógio:
-## "casa" (HOME), "ajustes" (engrenagem), "restaurar" (seta circular), "mapa", "ajuda" (?), "fechar" (×), "externo" (link que sai do jogo), "camera" (anel dourado quando travada), "velocidade" (setas conforme
+## "casa" (HOME), "ajustes" (engrenagem), "restaurar" (seta circular), "mapa", "ajuda" (?), "tela_cheia" (cantos para fora em janela, para dentro em tela cheia), "fechar" (×), "externo" (link que sai do jogo), "camera" (anel dourado quando travada), "velocidade" (setas conforme
 ## a Passagem do tempo, 0–3) e "estilo" (cubo para Tripo, chaves para Procedural), "editar" (lápis)
 ## e "apagar" (lixeira, vermelha pedindo a confirmação) dos cartões das vagas.
 
@@ -54,6 +54,14 @@ func _draw() -> void:
 			draw_arc(Vector2(12, 9), 4.5, PI, TAU + PI * 0.25, 16, cor_ajuda, 2.0, true)
 			draw_polyline(PackedVector2Array([Vector2(15.2, 12.2), Vector2(12, 14.5), Vector2(12, 16)]), cor_ajuda, 2.0, true)
 			draw_circle(Vector2(12, 19.6), 1.3, cor_ajuda)
+		"tela_cheia":
+			# Quatro cantos: para fora em janela (expandir); para dentro e dourados em
+			# tela cheia (voltar à janela).
+			var cor_tela := ouro if ativo else tinta
+			for canto in [Vector2(-1, -1), Vector2(1, -1), Vector2(1, 1), Vector2(-1, 1)]:
+				var ponta: Vector2 = Vector2(12, 12) + canto * (4.0 if ativo else 8.0)
+				var dentro := 1.0 if ativo else -1.0
+				draw_polyline(PackedVector2Array([ponta + Vector2(canto.x * dentro * 4.5, 0), ponta, ponta + Vector2(0, canto.y * dentro * 4.5)]), cor_tela, 1.8, true)
 		"missoes":
 			var cor_missoes := ouro if ativo else tinta
 			draw_rect(Rect2(5, 4, 15, 17), cor_missoes, false, 1.7, true)
