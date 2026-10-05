@@ -1,6 +1,6 @@
 extends Control
 ## Ícones vetoriais dos botões de canto do HUD, no mesmo traço do som e do relógio:
-## "casa" (HOME), "ajustes" (engrenagem), "restaurar" (seta circular), "mapa", "ajuda" (?), "tela_cheia" (cantos para fora em janela, para dentro em tela cheia), "fechar" (×), "externo" (link que sai do jogo), "camera" (anel dourado quando travada), "velocidade" (setas conforme
+## "casa" (HOME), "ajustes" (engrenagem), "restaurar" (seta circular), "mapa", "ajuda" (?), "tela_cheia" (cantos para fora em janela, para dentro em tela cheia), "fechar" (×), "salvar" (disquete), "editar" (lápis), "tocar" (play), "pausar", "externo" (link que sai do jogo), "camera" (anel dourado quando travada), "velocidade" (setas conforme
 ## a Passagem do tempo, 0–3) e "estilo" (cubo para Tripo, chaves para Procedural).
 
 var tipo := "casa"
@@ -67,6 +67,23 @@ func _draw() -> void:
 			draw_line(Vector2(8, 9), Vector2(17, 9), cor_missoes, 1.5, true)
 			draw_line(Vector2(8, 13), Vector2(17, 13), cor_missoes, 1.5, true)
 			draw_polyline(PackedVector2Array([Vector2(8, 17), Vector2(10, 19), Vector2(14, 15)]), cor_missoes, 1.6, true)
+		"salvar":
+			# Disquete; dourado quando há ajustes ainda não gravados.
+			var cor_salvar := ouro if ativo else tinta
+			draw_polyline(PackedVector2Array([Vector2(4, 4), Vector2(16, 4), Vector2(20, 8), Vector2(20, 20), Vector2(4, 20), Vector2(4, 4)]), cor_salvar, 1.7, true)
+			draw_rect(Rect2(8, 4, 7, 5), cor_salvar, false, 1.5, true)
+			draw_rect(Rect2(7.5, 13, 9, 7), cor_salvar, false, 1.5, true)
+		"editar":
+			# Lápis; dourado com a edição aberta.
+			var cor_editar := ouro if ativo else tinta
+			draw_polyline(PackedVector2Array([Vector2(15, 5), Vector2(19, 9), Vector2(9, 19), Vector2(5, 19), Vector2(5, 15), Vector2(15, 5)]), cor_editar, 1.7, true)
+			draw_line(Vector2(12.5, 7.5), Vector2(16.5, 11.5), cor_editar, 1.5, true)
+		"pausar":
+			draw_rect(Rect2(7, 5.5, 3.5, 13), ouro if ativo else tinta, true)
+			draw_rect(Rect2(13.5, 5.5, 3.5, 13), ouro if ativo else tinta, true)
+		"tocar":
+			# Play: o triângulo fica no centro óptico do quadro de 24.
+			draw_colored_polygon(PackedVector2Array([Vector2(8.5, 5.5), Vector2(18.5, 12), Vector2(8.5, 18.5)]), ouro if ativo else tinta)
 		"fechar":
 			draw_line(Vector2(6, 6), Vector2(18, 18), tinta, 2.0, true)
 			draw_line(Vector2(18, 6), Vector2(6, 18), tinta, 2.0, true)

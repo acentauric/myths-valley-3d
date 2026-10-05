@@ -1,11 +1,5 @@
 {
-  "voltar_catalogo": "Voltar ao catálogo",
-  "voltar_catalogo_en": "Back to the catalogue",
-  "voltar_catalogo_es": "Volver al catálogo",
   "indisponivel": "Prévia indisponível para esta peça neste estilo.",
   "indisponivel_en": "Preview unavailable for this piece in this style.",
-  "indisponivel_es": "Vista previa no disponible para esta pieza en este estilo.",
-  "selecionar_peca": "Selecione uma peça para abrir seu registro.",
-  "selecionar_peca_en": "Select a piece to open its record.",
-  "selecionar_peca_es": "Selecciona una pieza para abrir su ficha."
+  "indisponivel_es": "Vista previa no disponible para esta pieza en este estilo."
 }

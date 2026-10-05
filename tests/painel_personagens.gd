@@ -1,6 +1,9 @@
 extends SceneTree
-## Painel PERSONAGENS: abre, edita um morador (altura, posto, fala) e uma peça
-## (medida), confere que os ajustes chegam aos dados do jogo e restaura o padrão.
+## Painel PERSONAGENS: as duas abas abrem em cartões e cada cartão abre a ficha no mesmo
+## formato (prévia 3D e dados, todas as falas, sem filtro); EDITAR e GRAVAR ficam no
+## cabeçalho; edita um morador (altura, posto, fala) e uma peça (medida), confere que os
+## ajustes chegam aos dados do jogo, que fechar com ajuste pendente pede confirmação e
+## restaura o padrão.
 
 
 func _initialize() -> void:
@@ -17,22 +20,66 @@ func _run() -> void:
 	host.add_child(painel)
 	painel.abrir(load("res://scripts/prototipo_3d/tema_menu.gd").criar())
 	painel._ancoras.assign(["Bar", "Casa de Carro Quebrado", "Igreja", "Pier", "Praça", "Roçado"])
+	var fechou := [false]
+	painel.fechado.connect(func() -> void: fechou[0] = true)
 	await _frames(3)
-	_assert(painel._lista.get_meta("morador") == "pedro", "um morador por vez começa pelo Pedro")
+	# MORADORES abre em cartões, como ASSETS.
+	var cartoes: GridContainer = painel._lista.get_node("GradeMoradores")
+	_assert(cartoes.columns == 4 and cartoes.get_child_count() == painel._pessoas.size(), "moradores em cartões")
+	_assert(str(cartoes.get_child(0).name) == "Morador_viajante" and str(cartoes.get_child(1).name) == "Morador_pedro", "o viajante é o primeiro cartão, depois o Pedro")
+	_assert(painel._campo_filtro.visible and not painel._botao_editar.visible, "nos cartões há filtro e não há EDITAR")
+	for botao in painel.find_children("*", "Button", true, false):
+		_assert(not (botao.text in ["FECHAR", "GRAVAR NO PROJETO", "Voltar ao catálogo"]), "sem botões antigos no corpo: %s" % botao.text)
+	for rotulo in painel.find_children("*", "Label", true, false):
+		_assert(not rotulo.text.begins_with("Os ajustes valem") and not rotulo.text.begins_with("Selecione"), "sem avisos que a interface já comunica")
+	await _capturar("cartoes")
+	# A ficha do Pedro: prévia real, dados à direita e as três falas, sem navegar entre falas.
+	painel._abrir("pedro")
+	await _frames(3)
+	_assert(painel._lista.get_meta("ficha") == "pedro", "cartão abre a ficha")
 	_assert(painel._preview_modelo != null and not painel._preview_modelo.find_children("*", "MeshInstance3D", true, false).is_empty(), "prévia usa o modelo 3D real")
 	_assert(painel._preview_viewport.own_world_3d, "prévia não mistura luzes e objetos com o vale")
+	_assert(painel._voz.bus == &"Escuta", "a fala toca fora do mudo geral")
+	var audio := root.get_node("/root/Audio")
+	var som_antes: bool = audio.som_ativo
+	audio.definir_som_ativo(false)
+	_assert(AudioServer.is_bus_mute(AudioServer.get_bus_index(&"Geral")) and not AudioServer.is_bus_mute(AudioServer.get_bus_index(&"Escuta")) and not AudioServer.is_bus_mute(0), "som desligado cala o Geral e deixa a fala pedida tocar")
+	audio.definir_som_ativo(som_antes)
+	_assert(not painel._campo_filtro.visible and painel._botao_editar.visible, "na ficha o filtro some e EDITAR aparece")
+	var falas: Array = painel._lista.find_children("Fala*", "HBoxContainer", true, false)
+	_assert(falas.size() == 3, "as três falas na ficha")
+	for fala: HBoxContainer in falas:
+		var texto := fala.get_child(1) as Label
+		_assert(texto.max_lines_visible == 2 and texto.get_visible_line_count() <= 2, "fala em até duas linhas")
+	_assert(painel._rodape.find_children("Navegacao", "", true, false).size() == 1 and painel._lista.find_children("Navegacao", "", true, false).is_empty(), "só a navegação entre fichas, no rodapé")
+	_assert(painel._lista.find_child("FundoPrevia", true, false) != null and painel._preview_viewport.transparent_bg, "prévia sobre o fundo de azulejo")
+	# O ▶ vira ❚❚ e o segundo clique para a fala.
+	var tocar := falas[0].get_child(0) as Button
+	if not tocar.disabled:
+		tocar.pressed.emit()
+		_assert(painel._fala_tocando == tocar and tocar.get_meta("icone").tipo == "pausar", "tocar mostra a pausa")
+		tocar.pressed.emit()
+		_assert(painel._fala_tocando == null and not painel._voz.playing and tocar.get_meta("icone").tipo == "tocar", "segundo clique para a fala")
+	# Girar a prévia com o mouse.
+	var giro_antes: float = painel._preview_pivo.rotation.y
+	var arrasto := InputEventMouseMotion.new()
+	arrasto.button_mask = MOUSE_BUTTON_MASK_LEFT
+	arrasto.relative = Vector2(40, 0)
+	painel._girar_previa(arrasto)
+	_assert(not is_equal_approx(painel._preview_pivo.rotation.y, giro_antes), "arrastar gira o modelo")
 	_assert(painel._rolagem.get_global_rect().encloses(painel._lista.get_global_rect()), "ficha cabe sem rolagem")
 	await _capturar("morador")
-	for botao in painel.find_children("*", "Button", true, false):
-		_assert(botao.text != "FECHAR", "sem botão FECHAR redundante")
-	painel._navegar_morador(1)
+	var direita := InputEventKey.new()
+	direita.keycode = KEY_RIGHT
+	direita.pressed = true
+	painel._input(direita)
 	await _frames(3)
-	_assert(painel._lista.get_meta("morador") == "benedito", "navegação mostra apenas Benedito")
+	_assert(painel._lista.get_meta("ficha") == "benedito", "a seta → vai para o Benedito")
 	_assert(painel._preview_modelo.name.begins_with("Benedito"), "prévia acompanha o morador")
-	# Edita o Benedito pelo botão EDITAR.
-	painel._editando["m:benedito"] = true
-	painel._reconstruir_lista()
+	# Edita o Benedito pelo EDITAR do cabeçalho.
+	painel._botao_editar.pressed.emit()
 	await _frames(2)
+	_assert(painel.editando and painel._icone_editar.ativo, "EDITAR abre a edição e fica dourado")
 	var spins: Array = painel._lista.find_children("*", "SpinBox", true, false)
 	var opcoes: Array = painel._lista.find_children("*", "OptionButton", true, false)
 	print("PAINEL: %d campos numéricos, %d seletores de lugar" % [spins.size(), opcoes.size()])
@@ -40,8 +87,8 @@ func _run() -> void:
 	(spins[0] as SpinBox).value = 1.9
 	(opcoes[0] as OptionButton).select(1)
 	(opcoes[0] as OptionButton).item_selected.emit(1)
-	var falas: Array = painel._lista.find_children("*", "LineEdit", true, false)
-	var campo_fala: LineEdit = falas[falas.size() - 1]
+	var campos: Array = painel._lista.find_children("*", "LineEdit", true, false)
+	var campo_fala: LineEdit = campos[campos.size() - 1]
 	campo_fala.text = "Fala de teste."
 	campo_fala.text_changed.emit("Fala de teste.")
 	var dados = JSON.parse_string(FileAccess.get_file_as_string("res://data/npcs_3d.json"))
@@ -51,26 +98,39 @@ func _run() -> void:
 			ajustado = m
 	print("PAINEL: altura %s · manhã %s · falas %s" % [ajustado.get("altura"), ajustado["postos"]["manha"], ajustado["falas"].map(func(f): return f["texto"])])
 	_assert(is_equal_approx(float(ajustado["altura"]), 1.9), "altura ajustada chega aos dados")
-	_assert(String(ajustado["postos"]["manha"][0]) == painel._ancoras[1] or String(ajustado["postos"]["manha"][0]) != "", "posto ajustado")
+	_assert(String(ajustado["postos"]["manha"][0]) != "", "posto ajustado")
 	_assert(ajustado["falas"].any(func(f): return f["texto"] == "Fala de teste."), "fala ajustada")
+	if painel._botao_gravar != null:
+		# O destaque é conferido a cada 0,25 s.
+		await create_timer(0.5).timeout
+		_assert(painel._icone_gravar.ativo, "GRAVAR fica dourado com ajuste pendente")
+		painel.pedir_fechar()
+		_assert(is_instance_valid(painel._confirmacao) and not fechou[0], "fechar com ajuste pendente pede confirmação")
+		await _capturar("confirmacao")
+		painel.pedir_fechar()
+		_assert(not is_instance_valid(painel._confirmacao) and not fechou[0], "Esc de novo só cancela a confirmação")
+	# ASSETS: os mesmos cartões e a ficha no mesmo formato.
 	painel._trocar_aba(1)
 	await _frames(3)
 	var grade: GridContainer = painel._lista.get_node("GradeAssets")
 	var primeiro_cartao := str(grade.get_child(0).name)
 	_assert(grade.columns == 4 and grade.get_child_count() == 12, "assets em grade paginada")
-	_assert(painel._lista.find_children("*", "SpinBox", true, false).is_empty(), "grade não abre todos os editores")
+	_assert(painel._lista.find_children("*", "SpinBox", true, false).is_empty(), "grade não abre editores")
 	_assert(painel._rolagem.get_global_rect().encloses(painel._lista.get_global_rect()), "grade cabe sem rolagem")
+	for chave: String in CatalogoAssets.PECAS:
+		if str(CatalogoAssets.PECAS[chave].get("tripo", "")).begins_with("personagens/"):
+			_assert(not painel._itens().any(func(item: Array) -> bool: return item[0] == chave), "morador fora de ASSETS: %s" % chave)
 	await _capturar("assets")
-	painel._asset_pagina = 1
-	painel._reconstruir_lista()
+	painel._rodape.find_children("Navegacao", "", true, false)[0].get_child(2).pressed.emit()
 	await _frames(3)
 	_assert(str(painel._lista.get_node("GradeAssets").get_child(0).name) != primeiro_cartao, "paginação muda os cartões")
-	painel._abrir_peca("mangueira")
+	painel._abrir("mangueira")
 	await _frames(3)
-	_assert(not painel._lista.has_node("GradeAssets") and painel._preview_modelo != null, "selecionar peça abre só seu registro e modelo")
+	_assert(not painel._lista.has_node("GradeAssets") and painel._preview_modelo != null, "cartão abre só o registro e o modelo")
+	_assert(painel._lista.get_node("Ficha/Detalhes") != null and painel._lista.get_node("Ficha/FundoPrevia/Previa3D") != null, "ficha da peça no formato da do morador")
+	_assert(not painel._campo_filtro.visible, "registro da peça sem filtro")
 	await _capturar("registro")
-	painel._editando["p:mangueira"] = true
-	painel._reconstruir_lista()
+	painel._botao_editar.pressed.emit()
 	await _frames(3)
 	var campos_peca: Array = painel._lista.find_children("*", "SpinBox", true, false)
 	_assert(campos_peca.size() >= 2, "editor da peça selecionada")
@@ -78,21 +138,18 @@ func _run() -> void:
 	var altura_antes := float(AjustesConteudo.peca("mangueira")["altura"])
 	campos_peca[0].value = altura_antes + 1.5
 	_assert(is_equal_approx(float(AjustesConteudo.peca("mangueira")["altura"]), altura_antes + 1.5), "campo da peça grava ajuste")
-	for argumento in OS.get_cmdline_user_args():
-		if argumento.begins_with("--captura="):
-			painel._trocar_aba(0)
-			await _frames(3)
-			await RenderingServer.frame_post_draw
-			root.get_texture().get_image().save_png(argumento.trim_prefix("--captura="))
-	# Peça: a medida da mangueira muda a especificação usada pelo catálogo.
+	painel._trocar_aba(1)
+	await _frames(2)
+	_assert(painel._lista.has_node("GradeAssets") and painel.selecionado.is_empty(), "clicar na aba volta aos cartões")
+	# Restaurar volta ao padrão do projeto, e sem pendência o × fecha direto.
 	var antes := float(CatalogoAssets.PECAS["mangueira"]["altura"])
-	AjustesConteudo.definir_peca("mangueira", "altura", antes + 1.5)
-	_assert(is_equal_approx(float(AjustesConteudo.peca("mangueira")["altura"]), antes + 1.5), "medida da peça ajustada")
-	# Restaurar volta ao padrão do projeto.
 	AjustesConteudo.restaurar_morador("benedito")
 	AjustesConteudo.restaurar_peca("mangueira")
 	_assert(not AjustesConteudo.morador_ajustado("benedito"), "morador restaurado")
 	_assert(is_equal_approx(float(AjustesConteudo.peca("mangueira")["altura"]), antes), "peça restaurada")
+	if not AjustesConteudo.tem_pendencias():
+		painel.pedir_fechar()
+		_assert(fechou[0], "sem pendência o × fecha")
 	print("PAINEL_PERSONAGENS_OK")
 	quit()
 
@@ -114,14 +171,3 @@ func _assert(condition: bool, label: String) -> void:
 func _frames(count: int) -> void:
 	for frame in range(count):
 		await process_frame
-
-
-## O vale se monta ao longo de vários quadros (world_builder): espera ficar pronto.
-func _mundo_pronto() -> void:
-	for i in range(3000):
-		var mundo := get_first_node_in_group("mundo")
-		if mundo != null and mundo.construido:
-			break
-		await process_frame
-	await process_frame
-	await process_frame

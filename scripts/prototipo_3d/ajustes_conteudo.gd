@@ -166,6 +166,12 @@ static func restaurar_peca(chave: String) -> void:
 
 # ---------------------------------------------------------------- projeto
 
+## Há ajustes do jogador ainda não gravados nos arquivos do projeto.
+static func tem_pendencias() -> bool:
+	_carregar()
+	return not (_usuario["moradores"] as Dictionary).is_empty() or not (_usuario["pecas"] as Dictionary).is_empty()
+
+
 ## Só rodando pelo editor os arquivos res:// são graváveis.
 static func pode_gravar_no_projeto() -> bool:
 	return OS.has_feature("editor")

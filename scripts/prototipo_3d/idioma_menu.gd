@@ -152,6 +152,19 @@ const EN := {
 	"Afundar (u)": "Sink (u)",
 	"Tronco (raio, u)": "Trunk (radius, u)",
 	"Restaurar o padrão": "Restore default",
+	"Gravar no projeto. Os ajustes valem na próxima montagem do vale.": "Save to the project. Changes apply the next time the valley is built.",
+	"Gravado: %d moradores, %d peças": "Saved: %d villagers, %d pieces",
+	"Editar": "Edit",
+	"Fechar a edição": "Close editing",
+	"Sair sem gravar?": "Leave without saving?",
+	"Há ajustes que ainda não foram gravados no projeto.": "Some changes have not been saved to the project yet.",
+	"Sem gravar, eles ficam só nesta máquina.": "Without saving, they stay only on this computer.",
+	"GRAVAR E SAIR": "SAVE AND LEAVE",
+	"SAIR SEM GRAVAR": "LEAVE WITHOUT SAVING",
+	"Anterior": "Previous",
+	"Parar a fala": "Stop the line",
+	"Arraste para girar": "Drag to rotate",
+	"Próximo": "Next",
 	"HOME · voltar ao menu": "HOME · back to the menu",
 	"Maré": "Tide",
 	"Sem maré": "No tide",
@@ -419,6 +432,19 @@ const ES := {
 	"Afundar (u)": "Hundir (u)",
 	"Tronco (raio, u)": "Tronco (radio, u)",
 	"Restaurar o padrão": "Restaurar lo predeterminado",
+	"Gravar no projeto. Os ajustes valem na próxima montagem do vale.": "Guardar en el proyecto. Los ajustes valen en el próximo montaje del valle.",
+	"Gravado: %d moradores, %d peças": "Guardado: %d vecinos, %d piezas",
+	"Editar": "Editar",
+	"Fechar a edição": "Cerrar la edición",
+	"Sair sem gravar?": "¿Salir sin guardar?",
+	"Há ajustes que ainda não foram gravados no projeto.": "Hay ajustes que aún no se guardaron en el proyecto.",
+	"Sem gravar, eles ficam só nesta máquina.": "Sin guardar, se quedan solo en este equipo.",
+	"GRAVAR E SAIR": "GUARDAR Y SALIR",
+	"SAIR SEM GRAVAR": "SALIR SIN GUARDAR",
+	"Anterior": "Anterior",
+	"Parar a fala": "Detener la frase",
+	"Arraste para girar": "Arrastra para girar",
+	"Próximo": "Siguiente",
 	"HOME · voltar ao menu": "HOME · volver al menú",
 	"Maré": "Marea",
 	"Sem maré": "Sin marea",
@@ -564,6 +590,20 @@ static func indice_preferido(lingua_sistema: String) -> int:
 	if preferencias.load(ARQUIVO) == OK and preferencias.has_section_key("menu", "idioma"):
 		return clampi(int(preferencias.get_value("menu", "idioma")), 0, LOCALES.size() - 1)
 	return indice_do_sistema(lingua_sistema)
+
+
+## Índice da última escolha salva; -1 se o jogador ainda não escolheu.
+static func escolha_salva() -> int:
+	var preferencias := ConfigFile.new()
+	if preferencias.load(ARQUIVO) == OK and preferencias.has_section_key("menu", "idioma"):
+		return clampi(int(preferencias.get_value("menu", "idioma")), 0, LOCALES.size() - 1)
+	return -1
+
+
+## Índice do idioma do sistema quando o jogo o tem; -1 para os outros (que caem no inglês).
+static func idioma_do_sistema(lingua: String) -> int:
+	var codigo := lingua.to_lower().replace("-", "_").get_slice("_", 0)
+	return {"pt": 0, "en": 1, "es": 2, "zh": 3}.get(codigo, -1)
 
 
 static func indice_do_sistema(lingua: String) -> int:

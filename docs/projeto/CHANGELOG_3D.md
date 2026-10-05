@@ -20,6 +20,17 @@
   Tamanho do texto e Tamanho do HUD, que valem na hora e ficam salvos.
 - A escolha de idioma fica mais leve: botões menores, espaçamento equilibrado,
   modal mais alto, versão junto dele e um × discreto no canto para sair do jogo.
+  Cada botão mostra, discretas, a última escolha salva e o idioma do sistema.
+- PERSONAGENS fica igual nas duas abas: cartões com filtro e, ao abrir um, a ficha
+  com prévia 3D (fundo de azulejo, girar arrastando, todos na mesma altura) e
+  navegação no rodapé, também pelas setas do teclado. Editar e gravar no projeto
+  (disquete dourado com ajuste pendente, confirmação ao sair) ficam ao lado do ×.
+  As falas aparecem juntas; o ▶ vira pausa e toca mesmo com o som desligado. O
+  viajante abre a lista, e os moradores saem da aba ASSETS.
+- O histórico fica mais compacto, com a navegação junto do número da página e
+  cada item começando pela ideia central em dourado.
+- As dicas (tooltip) seguem a identidade dos botões do canto; o "Por trás do
+  vale" ganha o link do site e letra menor; sai a mancha atrás do almanaque.
 - A escolha de idioma ganha folga vertical, e o aviso do rodapé fica centralizado.
 
 - As trilhas do menu, do jogo, dos períodos e da mata mudam com fade de saída
