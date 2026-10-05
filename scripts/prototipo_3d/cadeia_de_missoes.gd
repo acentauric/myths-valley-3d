@@ -64,6 +64,9 @@ extends Node
 signal missao_mudou(texto: String, alvo: Vector3, indice: int, total: int)
 ## Um passo fechou e pagou (ver `_pagar`): o texto diz de quem e o quê.
 signal pagou(texto: String)
+## O morador entregou uma ferramenta (ver `entregar`): o texto diz o número da
+## barra que a põe na mão.
+signal entregou(texto: String)
 ## A meta `visitar` riscou um lugar — o vale conta o que se vê dali.
 signal visitou(lugar: String)
 ## Fechou um passo que tem `cena` (a luz dourada da chapada, a cabra que desce
@@ -71,6 +74,7 @@ signal visitou(lugar: String)
 signal cena(nome: String)
 
 const IdiomaMenu = preload("res://scripts/prototipo_3d/idioma_menu.gd")
+const Atalhos = preload("res://scripts/prototipo_3d/atalhos.gd")
 ## Toda cadeia viva entra neste grupo: é por ele que um morador pergunta se tem
 ## missão com o jogador antes de cumprimentar (`npc.gd`, `tem_missao`).
 const GRUPO := &"cadeias_de_missoes"
@@ -531,34 +535,35 @@ func _nome_do_dono() -> String:
 	return str((dono.dados as Dictionary).get("nome", ""))
 
 
-## O MORADOR ENTREGA A FERRAMENTA AO ANUNCIAR, E JÁ NA MÃO.
+## O MORADOR ENTREGA A FERRAMENTA AO ANUNCIAR, NA BARRA DE MÃO.
 ##
 ## É a regra 1 do tutorial do 2D — o NPC anuncia antes de cobrar — levada a
 ## sério: quem ouve "toma o machado e vai cortar" precisa ter o machado na
 ## mesma frase. Pedir primeiro e entregar depois é o que faz o jogador rodar o
 ## mapa procurando uma ferramenta que ninguém deu.
 ##
-## E "na mão" quer dizer NA MÃO: bater exige a ferramenta escolhida na barra de
-## mão, e não só carregada na mochila (`Recursos3D._tem_ferramenta`); os
-## encaixes ficam para as peças de vestir. Entregar na mochila e deixar o
-## jogador descobrir sozinho que falta pegar é a mesma ferramenta que ninguém
-## deu, com um passo a mais.
-##
-## Então quem entrega, acende o espaço da barra (ver `_por_na_mao`).
+## NA BARRA, E NÃO NA MÃO. Bater exige a ferramenta escolhida na barra
+## (`Recursos3D._tem_ferramenta`), e a entrega chegou a escolhê-la sozinha —
+## até o dia em que a primeira leira fechou com o balde na mão e o machado do
+## passo seguinte tomou o lugar dele: "ele trocou automaticamente para o
+## machado de madeira. Isso não deve acontecer." A mão é do jogador. A
+## ferramenta vai para um dos dez da barra, e o HUD diz o número que a põe na
+## mão (ver `_por_na_barra`) — é o que a fala do Pedro já ensinava: "o número
+## dele na barra põe o machado na mão".
 ##
 ## Entrega uma vez só: o anúncio de cada passo acontece uma vez, e retomar o
 ## passo não reanuncia.
 ##
 ## UMA ENTREGA OU VÁRIAS: a primeira leira pede a enxada E a maniva na mesma
-## fala. A PRIMEIRA ferramenta da lista é a que fica acesa na barra — a enxada,
-## que é o primeiro gesto; a maniva vai para a mochila.
+## fala. A PRIMEIRA ferramenta da lista é a que o HUD aponta na barra — a
+## enxada, que é o primeiro gesto; a maniva vai para a mochila.
 func entregar(passo: Dictionary) -> void:
 	# O GOLPE QUE O PASSO ENSINA (`ensina`), na mesma fala que o pede: o golpe
 	# forte, a ginga, a meia-lua e a rasteira do `Luta` só valem para quem os
 	# aprendeu, e no vale só a missão os ensina.
 	if str(passo.get("ensina", "")) != "":
 		Luta.aprender(str(passo["ensina"]))
-	var acender := ""
+	var apontar := ""
 	for entrega: Dictionary in entregas_do_passo(passo):
 		var item := str(entrega.get("item", ""))
 		if item == "":
@@ -567,10 +572,10 @@ func entregar(passo: Dictionary) -> void:
 		if not Inventario.tem(item) and not _na_mao(item):
 			if not Inventario.adicionar(item, int(entrega.get("quantidade", 1))):
 				continue
-		if acender == "":
-			acender = item if Catalogo.tipo(item) == "ferramenta" or Equipamento.e_equipamento(item) else ""
-	if acender != "":
-		_por_na_mao(acender)
+		if apontar == "":
+			apontar = item if Catalogo.tipo(item) == "ferramenta" or Equipamento.e_equipamento(item) else ""
+	if apontar != "":
+		_por_na_barra(apontar)
 
 
 ## As entregas do passo como lista, nas duas formas que o dado aceita: um objeto
@@ -593,26 +598,28 @@ func _na_mao(item: String) -> bool:
 	return Equipamento.em_uso(item)
 
 
-## PÕE NA MÃO PELA BARRA, que é a porta que o jogador usa: o número do espaço
-## fica aceso, e é o mesmo número que ele vai apertar para guardar e pegar de
-## novo. Só quando o item não está em nenhum dos dez da barra (mochila cheia lá
-## em cima) é que ele vai para o encaixe. Quem não é de encaixe fica onde está.
-func _por_na_mao(item: String) -> void:
-	if _na_mao(item) or not (Catalogo.tipo(item) == "ferramenta" or Equipamento.e_equipamento(item)):
+## A FERRAMENTA FICA NA BARRA, e o HUD diz o número (ver `entregar`). O
+## `Inventario.adicionar` já enche a barra antes da mochila; com a barra cheia
+## ela fica na mochila, e o HUD diz isso também, em vez de o jogador apertar
+## número atrás de número. A PEÇA DE VESTIR vai para o corpo, como antes: vestir
+## não mexe no que está na mão.
+func _por_na_barra(item: String) -> void:
+	if _na_mao(item):
 		return
-	# Toda ferramenta, e não só a de encaixe: o trabalho cobra a ferramenta NA
-	# MÃO (`Recursos3D._tem_ferramenta`), e a foice entregue para o capim tem de
-	# chegar acesa na barra como o machado.
+	if Equipamento.e_equipamento(item):
+		for i in Inventario.espacos.size():
+			if str((Inventario.espacos[i] as Dictionary).get("id", "")) == item:
+				Equipamento.equipar_do_espaco(i)
+				return
+		return
+	if Catalogo.tipo(item) != "ferramenta":
+		return
+	var nome := tr(str(Catalogo.dados(item).get("nome", item)))
 	for i in Inventario.ESPACOS_MAO:
 		if str((Inventario.espacos[i] as Dictionary).get("id", "")) == item:
-			Inventario.selecionar(i)
+			entregou.emit(tr("Recebido: %s. Aperte %s para usar.") % [nome, Inventario.rotulo_do_espaco(i)])
 			return
-	if not Equipamento.e_equipamento(item):
-		return
-	for i in Inventario.espacos.size():
-		if str((Inventario.espacos[i] as Dictionary).get("id", "")) == item:
-			Equipamento.equipar_do_espaco(i)
-			return
+	entregou.emit(tr("Recebido: %s, na mochila. Arraste para a barra de mão (%s abre a mochila).") % [nome, Atalhos.letra("mochila")])
 
 
 ## A meta do passo ainda não foi cumprida? Passo sem meta nunca falta.

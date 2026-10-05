@@ -99,10 +99,10 @@ func _run() -> void:
 	# --- 2. SEM FERRAMENTA NÃO SE BATE ---------------------------------------
 	var recusas: Array[String] = []
 	recursos.recusado.connect(func(motivo: String) -> void: recusas.append(motivo))
-	# SEM FERRAMENTA MUDOU DE LUGAR. O vale passou a dar um machado de saída, e
-	# bater passou a exigir a ferramenta ENCAIXADA e não só carregada
-	# (`Recursos3D._tem_ferramenta`). Então "sem machado" não é mais mochila
-	# vazia: é encaixe vazio. Tira-se das duas para poder perguntar.
+	# SEM FERRAMENTA é mochila sem machado E mão sem machado: bater exige a
+	# ferramenta NA MÃO, e não só carregada (`Recursos3D._tem_ferramenta`). O jogo
+	# novo já começa sem ele (o machado é da ponte); tira-se das duas mesmo assim,
+	# para a pergunta não depender de como o vale começa.
 	equipamento.desequipar("maos")
 	while inv.tem("machado"):
 		inv.consumir("machado", 1)
@@ -198,11 +198,21 @@ func _run() -> void:
 	# aqui seria tê-la em dois lugares, e o segundo envelheceria calado.
 	var ferramenta_de_rende := {}
 	var ferramenta_de_peca := {}
+	# O QUE SE CATA NA MÃO, POR LUGAR: a galhada seca do terreiro dá a lenha da
+	# primeira noite sem machado (o passo 'lenha' da chegada, no mesmo lugar); em
+	# outro lugar a lenha é do machado. Por isso a ferramenta de quem rende fica
+	# com a ferramenta, quando há as duas, e a mão vale só no lugar dela.
+	var a_mao_no_lugar := {}
 	for id in recursos._alvos:
 		var ficha: Dictionary = recursos._alvos[id]["ficha"]
 		var qual := str(ficha.get("ferramenta", ""))
 		if str(ficha.get("rende", "")) != "":
-			ferramenta_de_rende[str(ficha["rende"])] = qual
+			if qual != "" or not ferramenta_de_rende.has(str(ficha["rende"])):
+				ferramenta_de_rende[str(ficha["rende"])] = qual
+			if qual == "":
+				var no_lugar: Array = a_mao_no_lugar.get(str(ficha.get("lugar", "")), [])
+				no_lugar.append(str(ficha["rende"]))
+				a_mao_no_lugar[str(ficha.get("lugar", ""))] = no_lugar
 		if str(ficha.get("peca", "")) != "":
 			ferramenta_de_peca[str(ficha["peca"])] = qual
 		# O GRUPO TAMBÉM É NOME DE PEDIDO: o mato do cemitério é embaúba e
@@ -228,9 +238,15 @@ func _run() -> void:
 	# quem chega nelas. A roça do Cosme abre no meio da chegada, depois da leira, e
 	# a essa altura também já recebeu tudo isso.
 	var entregues_pelo_guia: Array[String] = []
-	for nome in ["missoes_guia", "missoes_coveiro", "missoes_filo", "missoes_zefa",
+	# O MACHADO É DA PONTE (`prototype._ja_recebeu_o_machado`): as filas que pedem
+	# madeira — o Damião, o Tonho, a carroça e o mirante, que espera a ponte
+	# inteira — abrem depois dos machados do avô, e herdam o que a ponte entregou.
+	# A ponte vem logo depois da chegada nesta lista para isso.
+	var entregues_pela_ponte: Array[String] = []
+	const DEPOIS_DO_MACHADO := ["missoes_coveiro", "missoes_tonho", "missoes_carroca", "missoes_arraial"]
+	for nome in ["missoes_guia", "missoes_ponte", "missoes_coveiro", "missoes_filo", "missoes_zefa",
 			"missoes_tonho", "missoes_candinha", "missoes_arraial", "missoes_roca", "missoes_carroca",
-			"missoes_armas", "missoes_oficio", "missoes_capoeira", "missoes_metas", "missoes_ponte", "missoes_chapada", "missoes_lombada", "missoes_fazenda"]:
+			"missoes_armas", "missoes_oficio", "missoes_capoeira", "missoes_metas", "missoes_chapada", "missoes_lombada", "missoes_fazenda"]:
 		var texto := FileAccess.get_file_as_string("res://data/%s.json" % nome)
 		_conferir(texto != "", "não consegui ler %s.json" % nome)
 		var dado = JSON.parse_string(texto)
@@ -242,6 +258,8 @@ func _run() -> void:
 		var entregues: Array[String] = []
 		if nome != "missoes_guia":
 			entregues = entregues_pelo_guia.duplicate()
+		if nome in DEPOIS_DO_MACHADO:
+			entregues.append_array(entregues_pela_ponte)
 		for passo: Dictionary in dado.get("passos", []):
 			var qual_passo := "%s/%s" % [nome, str(passo.get("id", "?"))]
 			# A ENTREGA PODE SER UMA LISTA: a enxada E a maniva na mesma fala.
@@ -255,6 +273,8 @@ func _run() -> void:
 				entregues.append(dado_agora)
 				if nome == "missoes_guia":
 					entregues_pelo_guia.append(dado_agora)
+				elif nome == "missoes_ponte":
+					entregues_pela_ponte.append(dado_agora)
 			# QUEM PAGA e QUEM VEM AO MUTIRÃO moram no vale, e o mutirão só traz o
 			# que o catálogo conhece.
 			if str(passo.get("quem_paga", "")) != "":
@@ -303,7 +323,8 @@ func _run() -> void:
 						# A FERRAMENTA SÓ SE COBRA DE QUEM CAI DE ALVO: o que sai da
 						# bancada sai de material, e o material já foi perguntado.
 						var precisa := str(ferramenta_de_rende.get(pedido, ""))
-						_conferir(precisa == "" or entregues.has(precisa),
+						var na_mao_aqui: bool = (a_mao_no_lugar.get(str(passo.get("lugar", "")), []) as Array).has(pedido)
+						_conferir(precisa == "" or na_mao_aqui or entregues.has(precisa),
 							"o passo '%s' pede %s, que só sai de %s, e ninguém entregou a %s até aqui"
 								% [qual_passo, pedido, precisa, precisa])
 				"evento", "contar":

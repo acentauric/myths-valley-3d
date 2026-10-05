@@ -2,6 +2,57 @@
 
 ## Em desenvolvimento — 05/10/2026
 
+- O machado chega na ponte, como no 2D: o jogo novo não dá mais machado de
+  saída, e a chegada também não. O fogo da primeira noite sai da galhada seca
+  atrás da casa, quebrada na mão (três montes, seis lenhas: as quatro da chegada
+  e folga). Na ponte, depois de contar ao Pedro o que viu, ele conduz até a porta
+  da casa dele, perto do píer, e entrega os machados do avô ("Toma. Esse tem mais
+  idade que nós dois somados"). O cabo da foice e o mato do Damião, a rede do
+  Tonho e a carroça do Seu Benedito esperam esse machado. O marcador de missão
+  aponta o que o jogador consegue bater (o galho seco, e não o tronco que pede
+  machado). Portão novo: `machado`.
+- A ferramenta que a missão entrega vai para a barra de mão e não troca o que
+  está na mão: regar a primeira leira com o balde não pula mais para o machado.
+  O HUD diz o número que a põe na mão.
+- O foco do E: de tudo o que responde ao E — morador, cordel, árvore, lápide,
+  alvo de trabalho, bancada, marco, lavoura, cama e baú, pesca e luta —, um só
+  leva a tecla e acende a dica: o que está na frente do jogador, e mais perto. O
+  cordel aos pés com a Dona Candinha do lado se pega virando para ele; virar
+  para ela é conversar. Com bicho perto, o E é golpe antes de tudo. E o cordel do
+  píer saiu de debaixo do Tonho: pendia no ponto exato em que ele fica, e o E
+  empatava entre os dois. Portão novo: `foco_do_e`.
+- O relógio para na conversa: a fala da missão e a resposta do E no balão, a
+  narração do vale, o aviso da primeira vez e a festa da missão cumprida seguram
+  o dia enquanto duram (não é o relógio parado do jogador, e não custa
+  conquista). A caixa de fala já parava o vale.
+- A festa da missão cumprida ficou suave: a sombra sobe devagar, uma luz clara
+  se abre atrás do emblema, tudo fica mais de três segundos e, no fim, a tela
+  clareia e a festa se desfaz nela. E ela espera a conversa: o passo que fecha
+  no E fecha com o morador ainda respondendo, e a festa só entra depois.
+- O aviso de voltar para perto do Pedro: na condução, quando ele para porque o
+  jogador ficou para trás, o alto da tela diz "Pedro está esperando você: volte
+  para perto para seguir", até o jogador voltar.
+- Da praça à Dona Zefa, o Pedro atravessa a ponte do rio central: a malha de
+  navegação dos moradores não tem mais o leito dos rios, e quem anda pela malha
+  atravessa rio pela ponte. O coqueiro da orla que pende para o mar barra o
+  caminho pela base visível dele, e o portão `navegacao`, vermelho desde antes,
+  ficou verde.
+- Os avisos da primeira vez: o primeiro cordel pego conta o que é um cordel —
+  para quem não é do Nordeste — e que ele fica no almanaque (L), com a capa dele
+  ao lado; a primeira árvore conhecida diz o mesmo do almanaque. O vale e o
+  relógio param enquanto o aviso está aberto. Portão novo: `avisos_da_primeira_vez`.
+- O cordel pendurado no barbante tem capa dos dois lados, com o título impresso
+  no alto e a xilogravura embaixo: quem chegava pelo verso via uma folha em
+  branco.
+- A lavoura da casa é terra de verdade: grão e torrão na terra, três camalhões
+  no leito arado, o molhado mais escuro, a terra batida por baixo dos leitos — e
+  um cercado rasteiro de vara em volta, com a passagem do lado da casa.
+- O Pedro narra a explicação das três barras (a vida, o fôlego e o vigor) na
+  voz dele, linha a linha, na caixa de fala (cinco falas novas do ElevenLabs,
+  `tools/elevenlabs/gerar-falas-do-guia.ps1`).
+- O balão de fala dos moradores e a dica do E no desenho do jogo: a laca
+  verde-escura com filete de ouro, o nome em Cinzel e a fala em Cormorant
+  Garamond, com o balão acima da dica do E.
 - A jornada da fazenda, a fatia 6.1 do 2D: do outro lado do rio grande, na ponta
   da Rua Principal, a fazenda do convite — o portão baixo de ferro fino e a
   guarita de pedra velha do capítulo 6, o pátio de terra batida e o casarão

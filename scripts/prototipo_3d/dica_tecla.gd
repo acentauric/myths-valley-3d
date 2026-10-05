@@ -1,10 +1,17 @@
 extends RefCounted
 ## Dica flutuante de interação (tecla em papel claro e o que ela faz, no fundo escuro do
-## HUD), presa a um ponto do mundo. Usada pelas lápides e pelas árvores.
+## HUD), presa a um ponto do mundo. Usada por tudo o que responde ao E.
+##
+## Na identidade do jogo (`identidade.gd`), como o balão de fala: a laca com o
+## filete de ouro, a letra da tecla em Cinzel no papel creme, e a ação em
+## Cormorant Garamond — "melhore o design dos balões de interação de acordo com o
+## visual do MythsValley 3D".
 
-const FUNDO := Color(0.055, 0.085, 0.075, 0.92)
-const OURO := Color("b49a60")
-const PAPEL := Color("f3ead3")
+const Identidade = preload("res://scripts/prototipo_3d/identidade.gd")
+
+const FUNDO := Color(Identidade.LACA, 0.94)
+const OURO := Color(Identidade.OURO, 0.7)
+const PAPEL := Identidade.CREME
 const TINTA := Color("2b2a22")
 
 
@@ -16,11 +23,13 @@ static func criar(pai: Control, tecla_texto: String, acao: String) -> PanelConta
 	estilo.bg_color = FUNDO
 	estilo.border_color = OURO
 	estilo.set_border_width_all(1)
-	estilo.set_corner_radius_all(8)
+	estilo.set_corner_radius_all(7)
 	estilo.content_margin_left = 6
-	estilo.content_margin_right = 10
+	estilo.content_margin_right = 12
 	estilo.content_margin_top = 5
 	estilo.content_margin_bottom = 5
+	estilo.shadow_color = Color(0, 0, 0, 0.3)
+	estilo.shadow_size = 4
 	dica.add_theme_stylebox_override("panel", estilo)
 	pai.add_child(dica)
 	var linha := HBoxContainer.new()
@@ -39,14 +48,16 @@ static func criar(pai: Control, tecla_texto: String, acao: String) -> PanelConta
 	linha.add_child(tecla)
 	var letra := Label.new()
 	letra.text = tecla_texto
-	letra.add_theme_font_size_override("font_size", 15)
+	letra.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_TITULO, 700))
+	letra.add_theme_font_size_override("font_size", 14)
 	letra.add_theme_color_override("font_color", TINTA)
 	tecla.add_child(letra)
 	var texto := Label.new()
 	texto.name = "Acao"
 	texto.text = acao
-	texto.add_theme_font_size_override("font_size", 14)
-	texto.add_theme_color_override("font_color", Color("e8e4d7"))
+	texto.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_TEXTO, 600))
+	texto.add_theme_font_size_override("font_size", 17)
+	texto.add_theme_color_override("font_color", Identidade.TEXTO)
 	linha.add_child(texto)
 	return dica
 

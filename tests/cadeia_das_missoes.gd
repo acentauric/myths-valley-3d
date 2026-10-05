@@ -121,20 +121,26 @@ func _run() -> void:
 				% [id, str(SEGUNDOS_PARA_ANUNCIAR), _quem_fala(pedro, jogador)])
 		await _frames(2)
 
-		# A ferramenta prometida tem de estar na mão ANTES de o trabalho ser
-		# cobrado. É a regra 1 do tutorial do 2D.
+		# A ferramenta prometida tem de estar À MÃO DO JOGADOR ANTES de o trabalho
+		# ser cobrado. É a regra 1 do tutorial do 2D.
 		var entregas: Array = passo.get("entrega", []) if passo.get("entrega") is Array else [passo.get("entrega", {})]
 		var ferramentas := entregas.filter(func(e) -> bool:
 			return e is Dictionary and Catalogo.tipo(str((e as Dictionary).get("item", ""))) == "ferramenta")
 		if not ferramentas.is_empty():
 			var ferramenta := str((ferramentas[0] as Dictionary).get("item", ""))
-			# À MÃO, e não na mochila. O vale passou a cobrar a ferramenta
-			# ENCAIXADA (`Recursos3D._tem_ferramenta`), e é o encaixe que a
-			# entrega do passo preenche; perguntar pela mochila reprovaria
-			# justamente a entrega que funciona. Pergunta-se à regra do jogo
-			# para a medida não poder divergir dela.
+			# NA BARRA, e não trocada sozinha para a mão: "ele trocou
+			# automaticamente para o machado de madeira. Isso não deve acontecer"
+			# (`CadeiaDeMissoes._por_na_barra`). O jogador aperta o número, e é o
+			# que o portão faz; depois pergunta à regra do jogo se dá para bater.
+			var na_barra := -1
+			for i in inv.ESPACOS_MAO:
+				if str((inv.espacos[i] as Dictionary).get("id", "")) == ferramenta:
+					na_barra = i
+			_conferir(na_barra >= 0, "o passo '%s' entregou %s fora da barra de mão: o número não a alcança" % [id, ferramenta])
+			if na_barra >= 0:
+				inv.selecionar(na_barra)
 			_conferir(recursos._tem_ferramenta(ferramenta),
-				"o passo '%s' cobra trabalho e não deixou %s à mão" % [id, ferramenta])
+				"o passo '%s' cobra trabalho e, com o número dela apertado, %s não ficou à mão" % [id, ferramenta])
 
 		# O PASSO ESTÁ NO CADERNO DO VALE, que é o que o painel J mostra.
 		#

@@ -22,7 +22,8 @@ extends Node3D
 ##
 ## O QUE SAI: o FUNDO DO MAR, que tem colisão para o corpo andar no raso, mas
 ## que morador não atravessa — fica só o que está acima da preamar, o que mantém
-## o píer e a ponte —; e as ILHAS: assada das colisões, a malha punha chão no
+## o píer e a ponte —; o LEITO DOS RIOS, pelo mesmo motivo (ver `_leito_dos_rios`);
+## e as ILHAS: assada das colisões, a malha punha chão no
 ## telhado de cada casa e no tampo de cada caixote, e o ponto mais perto de quem
 ## está junto de uma casa podia cair lá em cima, num pedaço sem saída. Fica só o
 ## pedaço ligado maior, o chão do vale.
@@ -109,6 +110,7 @@ func _assar() -> void:
 	var fonte := NavigationMeshSourceGeometryData3D.new()
 	NavigationServer3D.parse_source_geometry_data(_malha, fonte, _raiz)
 	_troncos_da_mata(fonte, _malha.filter_baking_aabb)
+	_leito_dos_rios(fonte, _malha.filter_baking_aabb)
 	NavigationServer3D.bake_from_source_geometry_data_async(_malha, fonte, _ao_assar)
 
 
@@ -146,6 +148,27 @@ func _area() -> AABB:
 	return caixa
 
 
+## ONDE O TRONCO TOCA O CHÃO. Quase sempre é o ponto de plantio; o COQUEIRO DA
+## ORLA, que pende para o mar, tem a base visível deslocada dele
+## (`geo_region_renderer`, "base_tronco") — é ali que a colisão fica. O
+## obstáculo no ponto de plantio deixava o caminho do píer à gameleira cortar
+## por dentro do coqueiro.
+static func tronco_no_chao(tronco: Dictionary) -> Vector2:
+	var base = tronco.get("base_tronco", null)
+	if base is Vector3:
+		return Vector2((base as Vector3).x, (base as Vector3).z)
+	return tronco.get("point", Vector2.INF)
+
+
+## O RAIO DO TRONCO NO CHÃO: o da base visível do coqueiro, mais uma célula da
+## malha — o Recast desenha o buraco em células de CELULA e simplifica a borda,
+## e um tronco fino de base larga sobrava por dentro do caminho.
+static func raio_no_chao(tronco: Dictionary) -> float:
+	if tronco.has("raio_base"):
+		return float(tronco["raio_base"]) + CELULA
+	return float(tronco.get("radius", 0.3))
+
+
 ## OS TRONCOS DA MATA como obstáculos: um octógono no pé de cada um, do chão a
 ## quatro metros.
 func _troncos_da_mata(fonte: NavigationMeshSourceGeometryData3D, area: AABB) -> void:
@@ -153,12 +176,12 @@ func _troncos_da_mata(fonte: NavigationMeshSourceGeometryData3D, area: AABB) -> 
 	if regiao == null:
 		return
 	for tronco in regiao._tree_trunks:
-		var ponto: Vector2 = tronco.get("point", Vector2.INF)
+		var ponto: Vector2 = tronco_no_chao(tronco)
 		if not ponto.is_finite() or not area.has_point(Vector3(ponto.x, area.position.y + 1.0, ponto.y)):
 			continue
 		# O octógono POR FORA do tronco: com o raio nos vértices ele ficava por
 		# dentro do círculo, e o caminho raspava no tronco pelo meio das arestas.
-		var raio := maxf(float(tronco.get("radius", 0.3)), 0.2) / cos(PI / 8.0)
+		var raio := maxf(raio_no_chao(tronco), 0.2) / cos(PI / 8.0)
 		var contorno := PackedVector3Array()
 		for k in 8:
 			var angulo := TAU * float(k) / 8.0
@@ -167,6 +190,56 @@ func _troncos_da_mata(fonte: NavigationMeshSourceGeometryData3D, area: AABB) -> 
 		# todo tronco traz: sem ele o octógono ficava embaixo da terra.
 		var pe: float = _mundo.ground_height_at(Vector3(ponto.x, 0.0, ponto.y))
 		fonte.add_projected_obstruction(contorno, pe - 1.0, 5.0, true)
+
+
+## O LEITO DOS RIOS como obstáculo: um quadrilátero por trecho da linha do rio,
+## da largura da água e um palmo de margem, do fundo até um pouco acima da lâmina.
+##
+## "Quando Pedro chama o jogador para ir a casa de Dona Zefa na primeira missão,
+## faça eles irem atravessando a ponte." O rio central é raso de dar pé, e o
+## leito tem colisão — o corpo do jogador anda nele —, então a malha o tinha como
+## chão: da praça à Dona Zefa o caminho mais curto molhava o pé a sete unidades
+## da ponte, e o Pedro, que vai na frente pela malha, entrava no rio. Morador
+## atravessa rio pela ponte, como atravessa o mar pelo píer.
+##
+## A PONTE FICA porque o obstáculo é PROJETADO até uma altura: o Recast só marca
+## o chão que cai entre o fundo e a lâmina d'água mais a folga, e o tabuleiro da
+## ponte passa por cima disso.
+const MARGEM_DO_RIO := 0.3
+const ACIMA_DA_AGUA := 0.3
+
+func _leito_dos_rios(fonte: NavigationMeshSourceGeometryData3D, area: AABB) -> void:
+	var regiao = _mundo.get("_region")
+	if regiao == null:
+		return
+	var caixa := Rect2(area.position.x, area.position.z, area.size.x, area.size.z)
+	for rio in regiao._rivers:
+		if not (rio.bounds as Rect2).intersects(caixa):
+			continue
+		var pontos: PackedVector2Array = rio.points
+		var meia := float(rio.width) * 0.5 + MARGEM_DO_RIO
+		for i in range(pontos.size() - 1):
+			var a: Vector2 = pontos[i]
+			var b: Vector2 = pontos[i + 1]
+			if not caixa.grow(meia).has_point(a) and not caixa.grow(meia).has_point(b):
+				continue
+			var ao_longo := b - a
+			if ao_longo.length() < 0.01:
+				continue
+			ao_longo = ao_longo.normalized()
+			# Um pouco além das pontas do trecho, para as juntas das curvas não
+			# deixarem fresta de chão no meio da água.
+			var a2 := a - ao_longo * meia * 0.5
+			var b2 := b + ao_longo * meia * 0.5
+			var lado := Vector2(-ao_longo.y, ao_longo.x) * meia
+			var contorno := PackedVector3Array([
+				Vector3(a2.x + lado.x, 0.0, a2.y + lado.y), Vector3(b2.x + lado.x, 0.0, b2.y + lado.y),
+				Vector3(b2.x - lado.x, 0.0, b2.y - lado.y), Vector3(a2.x - lado.x, 0.0, a2.y - lado.y)])
+			var fundo := minf(_mundo.ground_height_at(Vector3(a.x, 0.0, a.y)), _mundo.ground_height_at(Vector3(b.x, 0.0, b.y)))
+			var lamina := maxf(regiao.river_water_level_at(Vector3(a.x, 0.0, a.y)), regiao.river_water_level_at(Vector3(b.x, 0.0, b.y)))
+			if not is_finite(lamina):
+				continue
+			fonte.add_projected_obstruction(contorno, fundo - 1.0, lamina + ACIMA_DA_AGUA - (fundo - 1.0), true)
 
 
 ## ASSADA: fora o fundo do mar e as ilhas, e a malha entra no vale.

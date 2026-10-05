@@ -1,27 +1,43 @@
 extends Control
 ## Balão de fala em tela, com tamanho fixo na interface (não encolhe com a distância),
-## fundo claro, nome em cima e a ponta apontando para a cabeça de quem fala.
+## nome em cima e a ponta apontando para a cabeça de quem fala.
+##
+## NO DESENHO DO MYTHS' VALLEY. "Melhore o design dos balões de interação de acordo
+## com o visual do MythsValley 3D." Era papel creme com a letra de fábrica da
+## engine, o único pedaço da interface fora da identidade do jogo
+## (`identidade.gd`). Agora é a LACA verde-escura dos menus e do HUD, com o filete
+## de ouro, o nome em Cinzel, em versalete dourado, e a fala em Cormorant
+## Garamond, a letra do resto do jogo; a ponta é da mesma laca, com o mesmo
+## filete.
 ## A posição é escolhida a cada quadro entre cinco lugares em volta da cabeça (acima,
 ## acima à direita/esquerda, ao lado direito/esquerdo): ganha o que menos cobre quem
 ## fala, o jogador e os painéis do HUD. Uma folga (histerese) evita que o balão pule
 ## de um lado para o outro. Some quando quem fala sai da câmera ou fica longe demais.
 
-const LARGURA_MAX := 270.0
+const Identidade = preload("res://scripts/prototipo_3d/identidade.gd")
+
+const LARGURA_MAX := 300.0
 const ALCANCE := 45.0
 const MARGEM := 12.0
 ## Espaço livre no pé da tela (aviso do HUD).
 const RODAPE := 110.0
-## Distância entre o balão e a cabeça (onde cabe a ponta).
-const FOLGA := 16.0
-const PONTA := 12.0
+## Distância entre o balão e a cabeça (onde cabe a ponta). Alta o bastante para a
+## dica do E de quem fala (`tecla_dos_moradores`, logo acima da cabeça) caber
+## embaixo do balão, e não por cima do pé da fala.
+const FOLGA := 44.0
+const PONTA := 26.0
 ## Painéis fixos do HUD que o balão evita: bloco do título (esquerda), relógio (centro)
 ## e coluna de botões (direita, medida a partir da borda).
 const HUD_TITULO := Rect2(0, 0, 395, 215)
 const HUD_RELOGIO := Rect2(-90, 0, 180, 118)
 const HUD_COLUNA := 110.0
-const PAPEL := Color("f3ead3")
-const TINTA := Color("2b2a22")
-const OURO := Color("b49a60")
+## A laca dos menus, o ouro do filete, o rótulo dourado e a letra clara
+## (`identidade.gd`).
+const FUNDO := Color(Identidade.LACA, 0.95)
+const FILETE := Color(Identidade.OURO, 0.8)
+const NOME := Identidade.ROTULO
+const LETRA := Identidade.TEXTO
+const TAMANHO_DA_FALA := 17
 
 var alvo: Node3D
 var altura := 2.0
@@ -51,37 +67,48 @@ func _init() -> void:
 	_painel = PanelContainer.new()
 	_painel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var estilo := StyleBoxFlat.new()
-	estilo.bg_color = PAPEL
-	estilo.border_color = OURO
-	estilo.set_border_width_all(2)
-	estilo.set_corner_radius_all(10)
-	estilo.content_margin_left = 12
-	estilo.content_margin_right = 12
-	estilo.content_margin_top = 6
-	estilo.content_margin_bottom = 8
-	estilo.shadow_color = Color(0, 0, 0, 0.22)
-	estilo.shadow_size = 3
+	estilo.bg_color = FUNDO
+	estilo.border_color = FILETE
+	estilo.set_border_width_all(1)
+	estilo.set_corner_radius_all(8)
+	estilo.content_margin_left = 14
+	estilo.content_margin_right = 14
+	estilo.content_margin_top = 7
+	estilo.content_margin_bottom = 9
+	estilo.shadow_color = Color(0, 0, 0, 0.35)
+	estilo.shadow_size = 6
+	estilo.shadow_offset = Vector2(0, 2)
 	_painel.add_theme_stylebox_override("panel", estilo)
 	add_child(_painel)
 	var coluna := VBoxContainer.new()
-	coluna.add_theme_constant_override("separation", 1)
+	coluna.add_theme_constant_override("separation", 3)
 	coluna.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_painel.add_child(coluna)
 	_nome = Label.new()
+	_nome.uppercase = true
+	_nome.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_TITULO, 600, 2))
 	_nome.add_theme_font_size_override("font_size", 12)
-	_nome.add_theme_color_override("font_color", Color("8a6a2c"))
+	_nome.add_theme_color_override("font_color", NOME)
 	coluna.add_child(_nome)
+	# O filete de ouro entre o nome e a fala, como nos títulos dos menus.
+	var filete := ColorRect.new()
+	filete.color = Color(Identidade.OURO, 0.35)
+	filete.custom_minimum_size = Vector2(0, 1)
+	filete.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	coluna.add_child(filete)
 	_texto = Label.new()
 	_texto.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_texto.add_theme_font_size_override("font_size", 14)
-	_texto.add_theme_color_override("font_color", TINTA)
+	_texto.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_TEXTO, 600))
+	_texto.add_theme_font_size_override("font_size", TAMANHO_DA_FALA)
+	_texto.add_theme_color_override("font_color", LETRA)
+	_texto.add_theme_constant_override("line_spacing", -1)
 	coluna.add_child(_texto)
 
 
 func mostrar(texto: String) -> void:
 	_texto.text = texto
 	var fonte := _texto.get_theme_font("font")
-	var largura := fonte.get_string_size(texto, HORIZONTAL_ALIGNMENT_LEFT, -1, 14).x + 2.0
+	var largura := fonte.get_string_size(texto, HORIZONTAL_ALIGNMENT_LEFT, -1, TAMANHO_DA_FALA).x + 2.0
 	_texto.custom_minimum_size.x = minf(largura, LARGURA_MAX)
 	_painel.reset_size()
 	visible = texto != ""
@@ -206,5 +233,5 @@ func _desenhar_ponta() -> void:
 	var bico := base + direcao * minf(PONTA, base.distance_to(alvo_ponta))
 	var a := base - lado * 8.0
 	var b := base + lado * 8.0
-	_ponta.draw_colored_polygon(PackedVector2Array([a, b, bico]), PAPEL)
-	_ponta.draw_polyline(PackedVector2Array([a, bico, b]), OURO, 2.0, true)
+	_ponta.draw_colored_polygon(PackedVector2Array([a, b, bico]), FUNDO)
+	_ponta.draw_polyline(PackedVector2Array([a, bico, b]), FILETE, 1.0, true)

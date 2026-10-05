@@ -99,6 +99,8 @@ func narrar(frases: Array) -> void:
 	if _tocando:
 		return
 	_tocando = true
+	# A narração é instrução do jogo: o dia não corre enquanto ela fala (`Dia.segurar`).
+	Dia.segurar("narracao")
 	_fundo.visible = true
 	var escuro := create_tween()
 	escuro.tween_property(_fundo, "color:a", 1.0, ENTRA)
@@ -125,4 +127,9 @@ func narrar(frases: Array) -> void:
 	await clareia.finished
 	_fundo.visible = false
 	_tocando = false
+	Dia.soltar("narracao")
 	terminou.emit()
+
+
+func _exit_tree() -> void:
+	Dia.soltar("narracao")

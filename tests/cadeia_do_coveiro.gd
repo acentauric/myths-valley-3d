@@ -177,6 +177,10 @@ func _run() -> void:
 		_conferir(not cortou, "o capim caiu sem foice: o passo de encabar a foice virou enfeite")
 		_conferir(not recusas.is_empty() and recusas[0].to_lower().contains("foice"),
 			"a recusa não disse que falta a foice: disse %s" % str(recusas))
+		# O machado da pergunta sai: com machado na mochila a fila do Damião não
+		# espera o da ponte, e a pergunta da espera (adiante) não valeria nada.
+		while inv.tem("machado"):
+			inv.consumir("machado", 1)
 
 	# --- 3. A CAPELINHA DE COSTAS PARA O MAR, E A REZA DIANTE DELA -----------
 	await _conferir_a_capelinha(jogo, mundo, jogador, recursos)
@@ -206,6 +210,20 @@ func _run() -> void:
 	if guia != null:
 		guia.missao = guia.MISSOES.size()
 		guia.set("_despedida_feita", true)
+	# O DAMIÃO NÃO TEM FERRAMENTA, e a fila dele é de madeira — o cabo da foice, o
+	# mato que levanta laje —: ela espera os machados do avô do Pedro, na ponte
+	# (`prototype._ja_recebeu_o_machado`). Sem eles, o E não abre; com eles, o
+	# jogador chega com o machado na barra.
+	await _falar_com(damiao)
+	await _frames(3)
+	_conferir(not cadeia.iniciado, "a fila do Damião abriu antes dos machados do avô: ela pede madeira, e ainda não há machado")
+	var da_ponte = current_scene._cadeias.get("pedro_ponte")
+	if da_ponte != null:
+		da_ponte.iniciado = true
+		for i in da_ponte.passos.size():
+			if str((da_ponte.passos[i] as Dictionary).get("id", "")) == "buscar_machado":
+				da_ponte.missao = i + 1
+	inv.adicionar("machado", 1)
 	await _falar_com(damiao)
 	var abriu := await _ate(func() -> bool: return bool(cadeia.iniciado), SEGUNDOS_PARA_ANUNCIAR)
 	_conferir(abriu,
@@ -240,13 +258,21 @@ func _run() -> void:
 		var entrega: Dictionary = passo.get("entrega", {})
 		if not entrega.is_empty():
 			var ferramenta := str(entrega.get("item", ""))
-			# À MÃO, e não na mochila. O vale passou a cobrar a ferramenta
-			# ENCAIXADA (`Recursos3D._tem_ferramenta`), e é o encaixe que a
-			# entrega do passo preenche; perguntar pela mochila reprovaria
-			# justamente a entrega que funciona. Pergunta-se à regra do jogo
-			# para a medida não poder divergir dela.
-			_conferir(recursos._tem_ferramenta(ferramenta),
-				"o passo '%s' cobra trabalho e não deixou %s à mão" % [id, ferramenta])
+			# NA BARRA, e não trocada sozinha para a mão
+			# (`CadeiaDeMissoes._por_na_barra`): o jogador aperta o número dela.
+			_conferir(_na_barra(inv, ferramenta) >= 0,
+				"o passo '%s' entregou %s fora da barra de mão" % [id, ferramenta])
+		# A FERRAMENTA DO TRABALHO NA MÃO, como o jogador faz: o número da que o
+		# alvo pede — o machado da ponte para a lenha e o mato, a foice do Damião
+		# para o capim.
+		var precisa := _ferramenta_do_passo(recursos, meta)
+		if precisa != "":
+			var no_numero := _na_barra(inv, precisa)
+			_conferir(no_numero >= 0, "o passo '%s' pede %s, e não há %s na barra" % [id, precisa, precisa])
+			if no_numero >= 0:
+				inv.selecionar(no_numero)
+			_conferir(recursos._tem_ferramenta(precisa),
+				"o passo '%s' cobra trabalho e, com o número dela apertado, %s não ficou à mão" % [id, precisa])
 
 		match str(meta.get("tipo", "")):
 			"juntar":
@@ -596,6 +622,34 @@ func _derrubar(recursos, energia, jogador, peca: String, quantos: int, id: Strin
 	_conferir(recursos.derrubados(peca) >= quantos,
 		"o passo '%s' pede %d de %s e só derrubei %d"
 			% [id, quantos, peca, recursos.derrubados(peca)])
+
+
+## Em que número da barra de mão está `item`, ou -1.
+static func _na_barra(inv, item: String) -> int:
+	for i in inv.ESPACOS_MAO:
+		if str((inv.espacos[i] as Dictionary).get("id", "")) == item:
+			return i
+	return -1
+
+
+## A ferramenta que o trabalho do passo pede, lida dos alvos postos no vale: a
+## de quem rende o item (juntar) ou a da peça ou grupo (derrubar). "" quando é
+## na mão, ou quando o passo não é de trabalho.
+static func _ferramenta_do_passo(recursos, meta: Dictionary) -> String:
+	var tipo := str(meta.get("tipo", ""))
+	if tipo != "juntar" and tipo != "derrubar":
+		return ""
+	var pedido := str(meta.get("item", "")) if tipo == "juntar" else str(meta.get("alvo", ""))
+	for id in recursos._alvos:
+		var ficha: Dictionary = recursos._alvos[id]["ficha"]
+		var bate := str(ficha.get("ferramenta", ""))
+		if bate == "":
+			continue
+		if tipo == "juntar" and str(ficha.get("rende", "")) == pedido:
+			return bate
+		if tipo == "derrubar" and (str(ficha.get("peca", "")) == pedido or str(ficha.get("grupo", "")) == pedido):
+			return bate
+	return ""
 
 
 ## O E AO LADO DE QUEM SE FALA, pelo caminho do jogo (`tecla_dos_moradores.gd`):

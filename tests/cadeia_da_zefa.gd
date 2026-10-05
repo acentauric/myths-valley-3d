@@ -149,9 +149,17 @@ func _run() -> void:
 	_conferir(anunciou, "o primeiro passo não chegou a anunciar")
 	await _frames(2)
 
-	# ELA DÁ A FOICE AO PEDIR O CORTE.
+	# ELA DÁ A FOICE AO PEDIR O CORTE — na barra de mão, sem trocar o que está na
+	# mão (`CadeiaDeMissoes._por_na_barra`): o jogador aperta o número dela.
+	var da_foice := -1
+	for i in inv.ESPACOS_MAO:
+		if str((inv.espacos[i] as Dictionary).get("id", "")) == "foice":
+			da_foice = i
+	_conferir(da_foice >= 0, "a Dona Zefa pediu erva cortada e não deixou a foice na barra de mão")
+	if da_foice >= 0:
+		inv.selecionar(da_foice)
 	_conferir(recursos._tem_ferramenta("foice"),
-		"a Dona Zefa pediu erva cortada e não deixou a foice à mão")
+		"com o número da foice apertado, a foice da Dona Zefa não ficou à mão")
 
 	# O CORTE É DE VERDADE: anda até uma moita e bate, como o jogador.
 	var antes_de_cortar: int = inv.quantidade("erva_da_serra")

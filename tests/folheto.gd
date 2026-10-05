@@ -91,6 +91,12 @@ func _run() -> void:
 		await _frames(3)
 		_conferir(achados.interagir(), "perto do cordel, o E não pegou nada")
 		await _frames(3)
+		# O PRIMEIRO cordel vem com o aviso do que é um cordel
+		# (`aviso_da_primeira_vez.gd`); fechado ele, o papel abre.
+		var aviso = vale.get("aviso_da_primeira_vez")
+		if aviso != null and aviso.aberto():
+			aviso.fechar()
+			await _frames(3)
 		_conferir(folheto.aberto, "o cordel achado não abriu no papel")
 		_conferir(paused, "o papel abriu com o vale andando atrás dele")
 		_conferir(dia.pausado, "o papel abriu com o relógio andando")

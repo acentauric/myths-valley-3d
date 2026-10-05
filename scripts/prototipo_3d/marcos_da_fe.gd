@@ -39,6 +39,7 @@ signal chegou(marco: String)
 const DicaTecla = preload("res://scripts/prototipo_3d/dica_tecla.gd")
 const Atalhos = preload("res://scripts/prototipo_3d/atalhos.gd")
 const IdiomaMenu = preload("res://scripts/prototipo_3d/idioma_menu.gd")
+const FocoDoE = preload("res://scripts/prototipo_3d/foco_do_e.gd")
 const TEXTOS := "res://data/marcos_fe.json"
 
 const MARCOS := ["cruzeiro", "capela", "capela_estrada", "cemiterio", "terreiro", "gameleira"]
@@ -87,6 +88,7 @@ func configurar(mundo: Node3D, jogador: Node3D, hud, interiores) -> void:
 		if onde.is_finite():
 			_pontos[marco] = onde
 	_dica = DicaTecla.criar(hud.map_layer(), Atalhos.letra("interagir"), "")
+	add_to_group(FocoDoE.GRUPO)
 
 
 ## Onde o marco está, ou INF se o vale não o tem.
@@ -144,10 +146,17 @@ func _process(_delta: float) -> void:
 	var camera := get_viewport().get_camera_3d()
 	var em_jogo: bool = camera != null and camera == _jogador.get("camera")
 	_perto = _mais_perto(onde) if em_jogo and not _ocupado and not Dialogo.ativo else ""
-	if _perto == "":
+	if _perto == "" or not FocoDoE.e_dele(self):
 		_dica.visible = false
 		return
 	DicaTecla.mostrar_em(_dica, camera, _pontos[_perto] + Vector3.UP * ALTURA_DA_DICA, _acao(_perto))
+
+
+## O QUE O E FARIA AQUI, para o foco (`foco_do_e.gd`): o rito ou o olhar do marco.
+func alvo_do_e() -> Dictionary:
+	if _perto == "" or _ocupado or not _pontos.has(_perto):
+		return {}
+	return {"ponto": _pontos[_perto]}
 
 
 ## O jogador alcança o marco desta distância? O altar só se alcança de dentro
@@ -193,7 +202,7 @@ func _unhandled_key_input(event: InputEvent) -> void:
 	# COM O CORPO PARADO, O E NÃO VALE PARA O MUNDO, como nas lápides e nos
 	# achados: este nó ouve no _unhandled_key_input, ANTES das telas que ouvem
 	# no _unhandled_input (o cartão do amanhecer, o folheto).
-	if Dialogo.ocupado() or not _jogador.is_physics_processing():
+	if Dialogo.ocupado() or not _jogador.is_physics_processing() or not FocoDoE.e_dele(self):
 		return
 	get_viewport().set_input_as_handled()
 	no_marco(_perto)

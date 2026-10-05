@@ -14,6 +14,10 @@ const MapaJogo = preload("res://scripts/prototipo_3d/mapa_jogo.gd")
 const Lapides = preload("res://scripts/prototipo_3d/lapides.gd")
 const TeclaDasBancadas = preload("res://scripts/prototipo_3d/tecla_das_bancadas.gd")
 const TeclaDosMoradores = preload("res://scripts/prototipo_3d/tecla_dos_moradores.gd")
+const FocoDoE = preload("res://scripts/prototipo_3d/foco_do_e.gd")
+const AvisoDaPrimeiraVez = preload("res://scripts/prototipo_3d/aviso_da_primeira_vez.gd")
+const CapaDeCordel = preload("res://scripts/prototipo_3d/capa_de_cordel.gd")
+const Almanaque = preload("res://scripts/prototipo_3d/almanaque.gd")
 const ConquistaDaMissao = preload("res://scripts/prototipo_3d/conquista_da_missao.gd")
 const LuzDourada = preload("res://scripts/prototipo_3d/luz_dourada.gd")
 const ArvoresInfo = preload("res://scripts/prototipo_3d/arvores_info.gd")
@@ -145,7 +149,6 @@ var placas
 var boneco_da_mochila
 ## A aba pedida no último `abrir_o_painel`, entregue à abertura crua.
 var _aba_pedida := 0
-var _machado_inicial_entregue := false
 var _barra_de_ferramentas_migrada := false
 var achados	# achados_vale.gd — cordéis, sinais e cartas no chão
 var pesca	# pesca_vale.gd — a vara na mão e o E na beira da água
@@ -153,6 +156,10 @@ var pesca	# pesca_vale.gd — a vara na mão e o E na beira da água
 var tecla_das_bancadas: Node
 ## O E nos moradores: conversar e cumprir passo (`tecla_dos_moradores.gd`).
 var tecla_dos_moradores: Node
+## Quem leva o E entre tudo o que o aceita (`foco_do_e.gd`).
+var foco_do_e: Node
+## O cartão do primeiro cordel e da primeira árvore (`aviso_da_primeira_vez.gd`).
+var aviso_da_primeira_vez: CanvasLayer
 ## A tela da missão cumprida (`conquista_da_missao.gd`).
 var conquista: CanvasLayer
 ## A luz dourada da chegada à chapada (`luz_dourada.gd`), uma das cenas dos passos.
@@ -352,7 +359,8 @@ func _ready() -> void:
 	# abre por tecla, é o mundo que fala. Ver `_ao_abrir_a_fala`.
 	Dialogo.abriu.connect(_ao_abrir_a_fala)
 	Dialogo.terminou.connect(_ao_calar_a_fala)
-	telas.ocupado = func() -> bool: return Dialogo.ocupado() or Amanhecer.aberto
+	telas.ocupado = func() -> bool: return Dialogo.ocupado() or Amanhecer.aberto \
+		or (aviso_da_primeira_vez != null and aviso_da_primeira_vez.aberto())
 	# O FOLHETO (#21) é tela, mas quem o abre é o mundo: o cordel achado, ou o
 	# almanaque pedindo para reler. Nenhuma tecla é dele (`minha` diz que não);
 	# sendo tela, o Esc o guarda, e a tecla de outra tela troca para ela — é o
@@ -576,6 +584,9 @@ func _ready() -> void:
 	# já tinha começado numa partida salva continua: `depois_de` só segura quem
 	# ainda não abriu.
 	var depois_da_chegada := func() -> bool: return pedro == null or pedro.terminou_o_tutorial()
+	# O cabo da foice e o mato do Damião, e a rede do Tonho, são de madeira: esperam
+	# o machado da ponte (ver `_ja_recebeu_o_machado`).
+	var depois_do_machado := func() -> bool: return depois_da_chegada.call() and _ja_recebeu_o_machado()
 	for morador in moradores:
 		var quem := String(morador.dados.get("id", ""))
 		var fila: Node = null
@@ -599,7 +610,7 @@ func _ready() -> void:
 			if roca != null:
 				roca.depois_de = func() -> bool: return pedro == null or pedro.passou("roca")
 		if fila != null:
-			fila.depois_de = depois_da_chegada
+			fila.depois_de = depois_do_machado if quem in ["damiao", "tonho"] else depois_da_chegada
 	# A PONTE DO RIO GRANDE (data/missoes_ponte.json), a frente da trilha do 2D:
 	# ver a ponte cercada, a lenha, as tábuas e a obra. É enredo — a fazenda do
 	# convite fica do outro lado do rio —, e por isso é a PRIMEIRA fila que o E
@@ -650,8 +661,10 @@ func _ready() -> void:
 	if do_saveiro != null and pedro != null:
 		do_saveiro.depois_de = func() -> bool: return pedro.terminou_o_tutorial()
 	if da_carroca != null:
+		# Oito tábuas e quatro cordas: a carroça também espera o machado da ponte.
 		da_carroca.depois_de = func() -> bool:
-			return do_saveiro == null or bool(do_saveiro.call("passou", "saveiro_piacava"))
+			return (do_saveiro == null or bool(do_saveiro.call("passou", "saveiro_piacava"))) \
+				and _ja_recebeu_o_machado()
 	saveiro = SaveiroVale.new()
 	saveiro.name = "Saveiro"
 	add_child(saveiro)
@@ -714,8 +727,7 @@ func _ready() -> void:
 	interiores.saiu.connect(_ao_mudar_de_lado.unbind(1))
 	# O E NOS MORADORES (tecla_dos_moradores.gd): conversar, cumprir o passo que
 	# manda falar com alguém ou levar alguma coisa, e abrir a fila de quem tem o
-	# que pedir. Entra depois de todo mundo que ouve o E, e por isso o recebe
-	# primeiro: com alguém ao alcance, conversar vem antes do resto.
+	# que pedir. Quem decide se o E é dele ou do cordel ao lado é o foco.
 	tecla_dos_moradores = TeclaDosMoradores.new()
 	tecla_dos_moradores.name = "TeclaDosMoradores"
 	add_child(tecla_dos_moradores)
@@ -726,6 +738,24 @@ func _ready() -> void:
 				todos.append(pedro)
 			return todos,
 		func() -> bool: return not _lendo() and (telas == null or telas.aberta() == ""))
+	# O FOCO DO E (foco_do_e.gd): de tudo o que responde ao E — morador, cordel,
+	# árvore, lápide, alvo de trabalho, bancada, marco, lavoura, casa, pesca e
+	# luta —, só um leva a tecla e acende a dica: o da frente do jogador, e mais
+	# perto. Antes quem levava era o último nó posto no vale.
+	foco_do_e = FocoDoE.new()
+	foco_do_e.name = "FocoDoE"
+	add_child(foco_do_e)
+	foco_do_e.configurar(player)
+	# O AVISO DA PRIMEIRA VEZ (aviso_da_primeira_vez.gd): o primeiro cordel e a
+	# primeira árvore dizem onde ficam guardados. É instrução, e segura o vale e o
+	# relógio como a caixa de fala.
+	aviso_da_primeira_vez = AvisoDaPrimeiraVez.new()
+	aviso_da_primeira_vez.name = "AvisoDaPrimeiraVez"
+	add_child(aviso_da_primeira_vez)
+	aviso_da_primeira_vez.abriu.connect(func() -> void: _ao_abrir_a_fala(""))
+	aviso_da_primeira_vez.fechou.connect(_ao_calar_a_fala)
+	if _arvores_info != null and _arvores_info.has_signal("conheceu"):
+		_arvores_info.conheceu.connect(_ao_conhecer_a_arvore)
 	# A CONQUISTA: toda missão cumprida escurece a tela e festeja
 	# (conquista_da_missao.gd).
 	conquista = ConquistaDaMissao.new()
@@ -751,7 +781,8 @@ func _ready() -> void:
 	if not _barra_de_ferramentas_migrada:
 		Inventario.trazer_ferramentas_para_a_mao()
 		_barra_de_ferramentas_migrada = true
-	_entregar_machado_inicial()
+	# SEM MACHADO DE SAÍDA: ele chega na ponte, nos machados do avô do Pedro
+	# (data/missoes_ponte.json, "buscar_machado"). Ver `_ja_recebeu_o_machado`.
 	# Depois da partida salva: o que ela diz que já foi achado não volta ao chão.
 	achados.espalhar()
 	var lugar_pedido := _comecar_no_lugar_pedido()
@@ -1105,6 +1136,10 @@ func _montar_moradores(spawn: Vector3) -> void:
 		pedro.narrou.connect(func(texto: String) -> void: hud.set_notice("Pedro: " + texto))
 		# O QUE A CHEGADA PAGA é dito no HUD, como nas filas dos moradores.
 		pedro.pagou.connect(func(texto: String) -> void: hud.set_notice(texto))
+		pedro.entregou.connect(func(texto: String) -> void: hud.set_notice(texto))
+		# QUEM FICOU PARA TRÁS NA CONDUÇÃO vê, no alto da tela, o aviso de voltar.
+		pedro.esperando_quem_ficou.connect(func(esperando: bool) -> void:
+			hud.set_aviso_de_espera(tr("%s está esperando você: volte para perto para seguir.") % str(pedro.dados.get("nome", "Pedro")) if esperando else ""))
 	placas = PlacasNomes.new()
 	placas.name = "PlacasNomes"
 	add_child(placas)
@@ -1570,8 +1605,24 @@ func ler_o_folheto(id: String, voltar_para := "") -> void:
 
 
 func _ao_achar(tipo: String, id: String) -> void:
-	if tipo == "cordel":
-		ler_o_folheto(id)
+	if tipo != "cordel":
+		return
+	# O PRIMEIRO CORDEL vem com o aviso — o que é um cordel, e que ele fica no
+	# almanaque —, e o papel abre depois dele: UM QUADRO DEPOIS. O vale volta do
+	# aviso no fim do quadro em que ele fecha (`_retomar_se_a_fala_acabou`); com
+	# o papel aberto no mesmo quadro, essa volta soltava o vale por baixo do papel
+	# — o E ia para o mundo e comia o que estava na mão — e o papel guardava o
+	# relógio parado como se fosse o de antes dele.
+	if Colecao.quantos("cordeis") == 1 and aviso_da_primeira_vez != null:
+		await aviso_da_primeira_vez.mostrar("cordel", CapaDeCordel.textura(id))
+		await get_tree().process_frame
+	ler_o_folheto(id)
+
+
+## A PRIMEIRA ÁRVORE do almanaque vem com o aviso de onde ela fica guardada.
+func _ao_conhecer_a_arvore(_especie: String) -> void:
+	if Almanaque.conhecidas().size() == 1 and aviso_da_primeira_vez != null:
+		aviso_da_primeira_vez.mostrar("arvore")
 
 
 ## O papel se guardou com o E ou o clique, por conta dele: o dono das telas
@@ -1739,25 +1790,23 @@ func _retomar_a_partida() -> bool:
 	return false
 
 
-## One starter axe per game; the saved marker also migrates older saves.
-func _entregar_machado_inicial() -> void:
-	if _machado_inicial_entregue:
-		return
-	if Inventario.tem("machado") or Equipamento.no_encaixe("maos") == "machado":
-		_machado_inicial_entregue = true
-		return
-	if Inventario.adicionar("machado"):
-		_machado_inicial_entregue = true
-		var espaco := -1
-		for i in Inventario.ESPACOS_MAO:
-			if str((Inventario.espacos[i] as Dictionary).get("id", "")) == "machado":
-				espaco = i
-		if espaco >= 0:
-			hud.set_notice(tr("Machado recebido. Aperte %s para pô-lo na mão.") % Inventario.rotulo_do_espaco(espaco))
-		else:
-			hud.set_notice(tr("Machado recebido. Arraste-o da mochila para a barra de mão."))
-	else:
-		hud.set_notice("Mochila cheia. Libere um espaco para receber o machado.")
+## O MACHADO CHEGA NA PONTE, nos machados do avô do Pedro ("buscar_machado",
+## data/missoes_ponte.json), como no 2D: "lembre-se que o machado só é
+## introduzido na missão da ponte, com o Pedro indo buscar o machado em casa".
+## O vale chegou a dar um machado de saída a todo jogo novo, e a chegada dava
+## outro na lenha da casa; os dois saíram, e o fogo da primeira noite é de
+## galho seco, catado na mão (data/recursos_3d.json, "lenha_casa_taipa").
+##
+## AS FILAS QUE PEDEM MADEIRA ESPERAM O MACHADO: o cabo da foice e o mato do
+## Damião, a rede do Tonho, a carroça do Seu Benedito. No 2D elas vêm depois do
+## tutorial, e a ponte é do tutorial de lá. Quem já tem um machado — partida
+## salva de antes, ou um comprado — não espera.
+func _ja_recebeu_o_machado() -> bool:
+	var da_ponte = _cadeias.get("pedro_ponte")
+	if da_ponte != null and da_ponte.passou("buscar_machado"):
+		return true
+	return Inventario.tem("machado") or Inventario.tem("machado_de_aco") \
+		or Equipamento.da_familia_em_uso("machado") != ""
 
 
 func _texto_da_partida(chave: String) -> String:
@@ -1787,7 +1836,6 @@ func estado_para_salvar() -> Dictionary:
 		# tela aberta o `Dia` está parado pela tela, e a escolha do jogador é a
 		# que ela vai devolver ao fechar.
 		"pausado": _relogio_pausado_antes if get_tree().paused else Dia.pausado,
-		"machado_inicial_entregue": _machado_inicial_entregue,
 		"barra_de_ferramentas_migrada": _barra_de_ferramentas_migrada,
 		"visitados": _visited.keys(),
 	}
@@ -1860,7 +1908,6 @@ func restaurar_do_save(estado: Dictionary) -> void:
 	Dia.registro_do_relogio = (registro as Array).duplicate(true) if registro is Array else []
 	_relogio_pausado_antes = bool(estado.get("pausado", false))
 	Dia.pausado = _relogio_pausado_antes or get_tree().paused
-	_machado_inicial_entregue = bool(estado.get("machado_inicial_entregue", false))
 	_barra_de_ferramentas_migrada = bool(estado.get("barra_de_ferramentas_migrada", false))
 	if estado.has("hora"):
 		Dia.definir_hora(float(estado["hora"]))
@@ -2179,6 +2226,8 @@ func _pendurar_cadeia(morador: Node3D, arquivo: String, perto: float, chave: Str
 		missao_do_vale_mudou.emit(t, a, i, n))
 	# A RECOMPENSA DO PASSO (#48) é dita no HUD, como no 2D.
 	cadeia.pagou.connect(func(texto: String) -> void: hud.set_notice(texto))
+	# A FERRAMENTA ENTREGUE fica na barra, e o HUD diz o número que a põe na mão.
+	cadeia.entregou.connect(func(texto: String) -> void: hud.set_notice(texto))
 	cadeia.cena.connect(_tocar_a_cena)
 	morador.add_child(cadeia)
 	_cadeias[chave if chave != "" else str(morador.dados.get("id", ""))] = cadeia

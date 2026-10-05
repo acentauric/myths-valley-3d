@@ -6,6 +6,7 @@ extends Node
 
 const DicaTecla = preload("res://scripts/prototipo_3d/dica_tecla.gd")
 const Atalhos = preload("res://scripts/prototipo_3d/atalhos.gd")
+const FocoDoE = preload("res://scripts/prototipo_3d/foco_do_e.gd")
 const DADOS := "res://data/lapides_3d.json"
 ## Distância (no chão) para a tecla E aparecer e para o painel fechar sozinho.
 const ALCANCE := 2.2
@@ -57,6 +58,7 @@ func configurar(world: Node3D, jogador: Node3D, hud) -> void:
 	if dados is Dictionary:
 		_historias = dados.get("lapides", [])
 	_dica = DicaTecla.criar(hud.map_layer(), Atalhos.letra("interagir"), "Ler lápide")
+	add_to_group(FocoDoE.GRUPO)
 
 
 func _process(delta: float) -> void:
@@ -81,10 +83,22 @@ func _process(delta: float) -> void:
 	if _aberta >= 0 and _distancia(_aberta) > ALCANCE_FECHAR:
 		_aberta = -1
 		_hud.clear_house_info()
-	if _perto < 0 or _perto == _aberta:
+	if _perto < 0 or _perto == _aberta or not FocoDoE.e_dele(self):
 		_dica.visible = false
 		return
 	DicaTecla.mostrar_em(_dica, camera, _world.lapides[_perto] + Vector3(0, ALTURA_DICA, 0))
+
+
+## O QUE O E FARIA AQUI, para o foco (`foco_do_e.gd`): fechar a lápide aberta
+## (que leva o E sempre), ou ler a que está ao alcance.
+func alvo_do_e() -> Dictionary:
+	if _world == null or _jogador == null or not _jogador.is_physics_processing():
+		return {}
+	if _aberta >= 0 and _aberta < _world.lapides.size():
+		return {"ponto": _world.lapides[_aberta], "vies": 100.0}
+	if _perto >= 0 and _perto < _world.lapides.size():
+		return {"ponto": _world.lapides[_perto]}
+	return {}
 
 
 ## E perto de um túmulo abre a lápide; com ela aberta, E fecha.
@@ -93,7 +107,7 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		return
 	# COM O CORPO PARADO, O E NÃO VALE PARA O MUNDO, como nos achados, na pesca
 	# e na luta: quem está desacordado não lê lápide.
-	if not _jogador.is_physics_processing():
+	if not _jogador.is_physics_processing() or not FocoDoE.e_dele(self):
 		return
 	if _aberta >= 0:
 		_aberta = -1

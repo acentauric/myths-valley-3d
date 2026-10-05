@@ -167,6 +167,12 @@ func _run() -> void:
 		if oferece:
 			achados.interagir()
 			await _frames(3)
+			# O PRIMEIRO cordel vem com o aviso do que é um cordel
+			# (`aviso_da_primeira_vez.gd`); fechado ele, o papel abre.
+			var aviso = current_scene.get("aviso_da_primeira_vez")
+			if aviso != null and aviso.aberto():
+				aviso.fechar()
+				await _frames(3)
 			# O cordel achado abre no papel (#21): guardado, o próximo se pega.
 			var folheto := root.get_node("/root/Folheto")
 			_conferir(folheto.aberto, "peguei o cordel '%s' e ele não abriu no papel" % id)
@@ -198,15 +204,20 @@ func _conferir_o_barbante(achados, espaco: PhysicsDirectSpaceState3D, achado: Di
 	var altura: float = (folheto as Node3D).global_position.y - onde.y
 	_conferir(altura > 0.8 and altura < 1.4,
 		"o folheto '%s' pende a %.2f do chão: fora da altura de quem passa" % [id, altura])
-	var capa := (folheto as Node3D).get_node_or_null("Capa") as MeshInstance3D
-	var textura: Texture2D = null
-	if capa != null and capa.material_override is StandardMaterial3D:
-		textura = (capa.material_override as StandardMaterial3D).albedo_texture
-	_conferir(textura != null, "o folheto '%s' pende sem capa" % id)
-	if textura != null:
-		var desenhada = CapaDeCordel.desenhada(id)
-		_conferir(textura == (desenhada if desenhada != null else CapaDeCordel.bloco()),
-			"o folheto '%s' pende com uma capa que não é a dele" % id)
+	# A CAPA DOS DOIS LADOS, com o título impresso: "mais bonito que essa folha em
+	# branco" — o verso era papel liso, e quem chegava por ele via uma folha vazia.
+	for lado in ["Capa", "CapaDeTras"]:
+		var gravura := (folheto as Node3D).get_node_or_null("%s/Gravura" % lado) as MeshInstance3D
+		var textura: Texture2D = null
+		if gravura != null and gravura.material_override is StandardMaterial3D:
+			textura = (gravura.material_override as StandardMaterial3D).albedo_texture
+		_conferir(textura != null, "o folheto '%s' pende sem a gravura na folha '%s': quem chega por ali vê uma folha em branco" % [id, lado])
+		if textura != null:
+			var desenhada = CapaDeCordel.desenhada(id)
+			_conferir(textura == (desenhada if desenhada != null else CapaDeCordel.bloco()),
+				"o folheto '%s' pende com uma capa que não é a dele (%s)" % [id, lado])
+		var titulo := (folheto as Node3D).get_node_or_null("%s/Titulo" % lado) as Label3D
+		_conferir(titulo != null and titulo.text != "", "o folheto '%s' pende sem o título impresso na folha '%s'" % [id, lado])
 	# O FOLHETO NÃO ESTÁ DENTRO DE COISA SÓLIDA: o do mirante ficava no meio da
 	# caixa de colisão dele, e o portão, de corpo parado, não via.
 	var dentro := PhysicsPointQueryParameters3D.new()

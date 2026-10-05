@@ -228,19 +228,15 @@
       "titulo": "Fogo na casa fechada",
       "titulo_en": "Fire in the closed house",
       "titulo_es": "Fuego en la casa cerrada",
-      "resumo": "Junte lenha para o fogo da casa",
-      "resumo_en": "Gather firewood for the house fire",
-      "resumo_es": "Junta leña para el fuego de la casa",
+      "resumo": "Quebre galho seco para o fogo da casa (E)",
+      "resumo_en": "Snap dry branches for the house fire (E)",
+      "resumo_es": "Quiebra ramas secas para el fuego de la casa (E)",
       "lugar": "casa_de_taipa",
       "raio": 7,
       "audio": "",
-      "texto": "A Dona Zefa tem razão: casa fechada junta frio. Toma o machado do seu tio — tava encostado do lado da porta, do jeito que ele deixava. O número dele na barra põe o machado na mão. Tem tronco caído aqui perto: encosta e aperta E. Junta um tanto a mais, que lenha também vira corda na bancada.",
-      "texto_en": "Dona Zefa is right: a closed house gathers cold. Take your uncle's axe — it was leaning by the door, the way he left it. Its number on the bar puts the axe in your hand. There's a fallen trunk nearby: walk up and press E. Gather a bit extra, since firewood also becomes rope at the workbench.",
-      "texto_es": "Doña Zefa tiene razón: casa cerrada junta frío. Toma el hacha de tu tío: estaba apoyada al lado de la puerta, como él la dejaba. Su número en la barra pone el hacha en la mano. Hay un tronco caído aquí cerca: acércate y pulsa E. Junta un poco de más, que la leña también se vuelve cuerda en el banco.",
-      "entrega": {
-        "item": "machado",
-        "quantidade": 1
-      },
+      "texto": "A Dona Zefa tem razão: casa fechada junta frio. Fogo de casa não pede machado: galho seco se quebra na mão. Tem galhada caída aqui atrás da casa — encosta e aperta E. Junta um tanto a mais, que lenha também vira corda na bancada.",
+      "texto_en": "Dona Zefa is right: a closed house gathers cold. A house fire doesn't need an axe: dry branches snap by hand. There's deadwood fallen right behind the house — walk up and press E. Gather a bit extra, since firewood also becomes rope at the workbench.",
+      "texto_es": "Doña Zefa tiene razón: casa cerrada junta frío. El fuego de la casa no pide hacha: la rama seca se quiebra con la mano. Hay ramas caídas aquí detrás de la casa: acércate y pulsa E. Junta un poco de más, que la leña también se vuelve cuerda en el banco.",
       "meta": {
         "tipo": "juntar",
         "item": "lenha",
@@ -394,28 +390,38 @@
   },
   "corpo": [
     {
+      "audio": "pedro_corpo_respiro",
+      "tts": "[catching his breath] Para um instante e respira. [warmly] Olha as três barras lá em cima, que eu te explico.",
       "texto": "Para um instante e respira. Olha as três barras lá em cima, que eu te explico.",
       "texto_en": "Stop for a moment and breathe. Look at the three bars up there, I'll explain.",
       "texto_es": "Para un momento y respira. Mira las tres barras de arriba, que te explico."
     },
     {
+      "audio": "pedro_corpo_vida",
+      "tts": "A vermelha, a de cima, é a vida. [seriously] Bicho e peçonha tiram dela. Se acabar, você apaga, e alguém te leva pra casa — acorda no outro dia.",
       "texto": "A vermelha, a de cima, é a vida. Bicho e peçonha tiram dela. Se acabar, você apaga, e alguém te leva pra casa — acorda no outro dia.",
       "texto_en": "The red one, on top, is your life. Animals and venom take from it. If it runs out, you black out and someone carries you home — you wake the next day.",
       "texto_es": "La roja, la de arriba, es la vida. Los bichos y el veneno le quitan. Si se acaba, te desmayas y alguien te lleva a casa: despiertas al otro día."
     },
     {
+      "audio": "pedro_corpo_folego",
+      "tts": "A do meio, só com o número, é o fôlego: a reserva do dia. Enxada, machado e picareta gastam dele, e só comida, cama e desmaio devolvem. [thoughtfully] No fim dele o corpo fica cansado, o passo encurta e não dá pra correr.",
       "texto": "A do meio, só com o número, é o fôlego: a reserva do dia. Enxada, machado e picareta gastam dele, e só comida, cama e desmaio devolvem. No fim dele o corpo fica cansado, o passo encurta e não dá pra correr.",
       "texto_en": "The middle one, with just the number, is your breath: the day's reserve. Hoe, axe and pickaxe spend it, and only food, bed and fainting give it back. When it runs low your body gets tired, your step shortens and you can't run.",
       "texto_es": "La del medio, solo con el número, es el aliento: la reserva del día. La azada, el hacha y el pico lo gastan, y solo la comida, la cama y el desmayo lo devuelven. Al final de él el cuerpo se cansa, el paso se acorta y no se puede correr."
     },
     {
       "quando": "cansado",
+      "audio": "pedro_corpo_vigor_cansado",
+      "tts": "E a de baixo é o vigor, o fôlego curto: correr, pular e bater gastam, e ele volta sozinho, parado ou andando. [laughs softly] Foi ele que você gastou agora — por isso a perna pesou. Anda um pouco, que ele volta.",
       "texto": "E a de baixo é o vigor, o fôlego curto: correr, pular e bater gastam, e ele volta sozinho, parado ou andando. Foi ele que você gastou agora — por isso a perna pesou. Anda um pouco, que ele volta.",
       "texto_en": "And the bottom one is your vigor, the short breath: running, jumping and striking spend it, and it comes back on its own, standing or walking. That's the one you just spent — that's why your legs got heavy. Walk a little and it comes back.",
       "texto_es": "Y la de abajo es el vigor, el aliento corto: correr, saltar y golpear lo gastan, y vuelve solo, parado o caminando. Es el que acabas de gastar, por eso te pesó la pierna. Camina un poco, que vuelve."
     },
     {
       "quando": "descansado",
+      "audio": "pedro_corpo_vigor",
+      "tts": "E a de baixo é o vigor, o fôlego curto: correr, pular e bater gastam, e ele volta sozinho, parado ou andando. [calmly] Quando ele acaba, a corrida para, e é só andar um pouco que ele volta.",
       "texto": "E a de baixo é o vigor, o fôlego curto: correr, pular e bater gastam, e ele volta sozinho, parado ou andando. Quando ele acaba, a corrida para, e é só andar um pouco que ele volta.",
       "texto_en": "And the bottom one is your vigor, the short breath: running, jumping and striking spend it, and it comes back on its own, standing or walking. When it runs out, the running stops — just walk a little and it comes back.",
       "texto_es": "Y la de abajo es el vigor, el aliento corto: correr, saltar y golpear lo gastan, y vuelve solo, parado o caminando. Cuando se acaba, la carrera para, y basta caminar un poco para que vuelva."

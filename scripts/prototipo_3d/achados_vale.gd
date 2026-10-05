@@ -26,6 +26,7 @@ const DicaTecla = preload("res://scripts/prototipo_3d/dica_tecla.gd")
 const Atalhos = preload("res://scripts/prototipo_3d/atalhos.gd")
 const IdiomaMenu = preload("res://scripts/prototipo_3d/idioma_menu.gd")
 const CapaDeCordel = preload("res://scripts/prototipo_3d/capa_de_cordel.gd")
+const FocoDoE = preload("res://scripts/prototipo_3d/foco_do_e.gd")
 const TEXTOS := "res://data/achados.json"
 
 ## Quão perto, no chão, para a tecla aparecer e o E valer.
@@ -50,7 +51,13 @@ const CORDEIS := {
 	# No mirante, na serra — AO PÉ dele, e não no meio: o meio é a caixa de
 	# colisão do mirante, e o folheto ficava lá dentro, onde ninguém chegava.
 	"porfia_do_caboclo": {"ancora": "Mirante", "desvio": [3.2, 0.0]},
-	"moleque_do_pier": {"ancora": "PierPiso", "piso": true},            # na ponta do píer
+	# No tabuado do píer, quatro passos para dentro e um de lado — e NÃO no ponto
+	# do píer, que é onde o Tonho fica de manhã e de tarde, com o mestre Quirino a
+	# um passo e o Pedro a dois: o cordel pendia dentro do Tonho, o E empatava
+	# entre os dois, e não havia para onde virar ("Ao tentar interagir com o
+	# cordel e tem um NPC próximo [...] não consigo clicar no cordel").
+	# `no_pier` é [de lado, ao longo], no rumo do píer, como os postos de lá.
+	"moleque_do_pier": {"ancora": "PierPiso", "piso": true, "no_pier": [0.9, -4.0]},
 }
 const CORDEIS_QUE_FALTAM := {
 	"moca_da_agua": "na beira da lagoa, que o vale ainda não tem (#23)",
@@ -99,6 +106,7 @@ func configurar(world, player, hud, luta) -> void:
 	_textos = lido if lido is Dictionary else {}
 	_dica = DicaTecla.criar(hud.map_layer(), Atalhos.letra("interagir"), _texto("dica_cordel"))
 	_dica.visible = false
+	add_to_group(FocoDoE.GRUPO)
 	var mata := _ponto_da_mata()
 	if mata.is_finite():
 		lugares["mata_do_dende"] = mata
@@ -163,7 +171,10 @@ func ponto_do_cordel(id: String) -> Vector3:
 	if not base.is_finite():
 		return Vector3.INF
 	if bool(onde.get("piso", false)):
-		return base + Vector3(0.0, 0.02, 0.0)
+		var no_pier: Array = onde.get("no_pier", [0.0, 0.0])
+		var direcao: Vector3 = _world.ancoras.get("PierDirecao", Vector3.FORWARD)
+		var ao_lado := Vector3(float(no_pier[0]), 0.0, float(no_pier[1])).rotated(Vector3.UP, atan2(direcao.x, direcao.z))
+		return base + ao_lado + Vector3(0.0, 0.02, 0.0)
 	if onde.has("desvio"):
 		var desvio: Array = onde["desvio"]
 		return _terra_perto(base + Vector3(float(desvio[0]), 0.0, float(desvio[1])))
@@ -272,9 +283,8 @@ func _process(_delta: float) -> void:
 		return
 	_balancar_os_folhetos()
 	var camera := get_viewport().get_camera_3d()
-	var em_jogo: bool = camera != null and camera == _player.get("camera") and _player.is_physics_processing()
 	var perto = mais_perto()
-	if not em_jogo or perto == null:
+	if not _em_jogo() or perto == null or not FocoDoE.e_dele(self):
 		_dica.visible = false
 		return
 	var rotulo := ""
@@ -306,7 +316,9 @@ const BARBANTE_VAO := 0.9
 const BARBANTE_ALTURA := 1.15
 ## A capa do folheto, um tanto maior que os 11 por 16 cm de verdade: do tamanho
 ## real, de longe, era um ponto claro e não um folheto.
-const FOLHETO := Vector2(0.24, 0.36)
+const FOLHETO := Vector2(0.26, 0.41)
+## A letra do título impresso no alto da capa (ver `_capa_de_feira`).
+const FONTE_DO_TITULO := "res://assets/fonts/Cinzel-Variavel.ttf"
 ## O quanto cada metade do folheto se abre da vertical, a cavalo na corda.
 const ABERTURA := 0.16
 const ALTURA_DICA_CORDEL := 1.62
@@ -363,42 +375,97 @@ func _corda(de: Vector3, ate: Vector3) -> MeshInstance3D:
 	return fio
 
 
-## O folheto a cavalo no barbante: a capa de um lado, o verso do outro, abertos
-## num V estreito a partir da corda.
+## O folheto a cavalo no barbante, aberto num V estreito a partir da corda — COM
+## A CAPA DOS DOIS LADOS.
+##
+## "Coloque as imagens que geramos dos cordeis na capa dele no mundo, acho que
+## ficará mais bonito que essa folha em branco." A xilogravura já ia de um lado,
+## e o outro era o verso em papel liso: o barbante gira para os mourões caberem
+## (`_giro_livre`), e quem chegava pelo lado do verso via uma folha em branco. Na
+## banca da feira os folhetos pendem costas com costas, cada um com a sua capa —
+## é o que fica. E a capa é a de folheto de verdade: o TÍTULO impresso no alto,
+## em letra de forma, e a gravura no quadro de baixo.
 func _folheto_pendurado(id: String) -> Node3D:
 	var folheto := Node3D.new()
 	folheto.name = "Folheto"
-	var capa := StandardMaterial3D.new()
-	capa.albedo_texture = CapaDeCordel.textura(id)
-	capa.roughness = 1.0
-	capa.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC
-	# Um pouco de luz própria, como o papel no chão tinha: na sombra da venda o
-	# folheto ainda se acha. Pouco — mais que isso desbota a xilogravura.
-	capa.emission_enabled = true
-	capa.emission_texture = capa.albedo_texture
-	capa.emission = Color.WHITE
-	capa.emission_energy_multiplier = 0.1
-	var verso := StandardMaterial3D.new()
-	verso.albedo_color = CapaDeCordel.PAPEL
-	verso.roughness = 1.0
-	verso.emission_enabled = true
-	verso.emission = CapaDeCordel.PAPEL
-	verso.emission_energy_multiplier = 0.18
 	for lado in [1.0, -1.0]:
-		var folha := MeshInstance3D.new()
-		folha.name = "Capa" if lado > 0.0 else "Verso"
-		var quadro := QuadMesh.new()
-		quadro.size = FOLHETO
-		folha.mesh = quadro
-		folha.material_override = capa if lado > 0.0 else verso
+		var capa := _capa_de_feira(id)
+		capa.name = "Capa" if lado > 0.0 else "CapaDeTras"
 		# O alto da folha na corda, e ela pendendo aberta para o seu lado.
 		var giro := Basis(Vector3.RIGHT, -ABERTURA)
 		if lado < 0.0:
 			giro = Basis(Vector3.UP, PI) * giro
-		folha.basis = giro
-		folha.position = giro * Vector3(0.0, -FOLHETO.y * 0.5, 0.0)
-		folheto.add_child(folha)
+		capa.basis = giro
+		capa.position = giro * Vector3(0.0, -FOLHETO.y * 0.5, 0.0)
+		folheto.add_child(capa)
 	return folheto
+
+
+## UMA CAPA DE FOLHETO, virada para o +Z dela: o papel, o título no alto e a
+## gravura no quadro de baixo (a xilogravura desenhada, ou o bloco de sempre
+## enquanto ela não vem — `CapaDeCordel`).
+func _capa_de_feira(id: String) -> Node3D:
+	var capa := Node3D.new()
+	var papel := MeshInstance3D.new()
+	papel.name = "Papel"
+	var folha := QuadMesh.new()
+	folha.size = FOLHETO
+	papel.mesh = folha
+	papel.material_override = _papel_de_folheto(null, CapaDeCordel.PAPEL, 0.12)
+	capa.add_child(papel)
+	# A GRAVURA, na proporção dela (2 por 3), com a margem do papel em volta e a
+	# faixa do título em cima.
+	var margem := FOLHETO.x * 0.08
+	var altura := minf((FOLHETO.x - margem * 2.0) * 1.5, FOLHETO.y * 0.72)
+	var largura := altura / 1.5
+	var gravura := MeshInstance3D.new()
+	gravura.name = "Gravura"
+	var quadro := QuadMesh.new()
+	quadro.size = Vector2(largura, altura)
+	gravura.mesh = quadro
+	# Um pouco de luz própria, como o papel no chão tinha: na sombra da venda o
+	# folheto ainda se acha. Pouco — mais que isso desbota a xilogravura.
+	gravura.material_override = _papel_de_folheto(CapaDeCordel.textura(id), Color.WHITE, 0.08)
+	gravura.position = Vector3(0.0, -FOLHETO.y * 0.5 + margem + altura * 0.5, 0.002)
+	capa.add_child(gravura)
+	# O TÍTULO, em letra de forma preta, centrado na faixa de cima.
+	var faixa := FOLHETO.y - altura - margem * 2.0
+	var titulo := Label3D.new()
+	titulo.name = "Titulo"
+	titulo.text = str(Colecao.dados("cordeis", id).get("titulo", "")).to_upper()
+	titulo.modulate = CapaDeCordel.TINTA
+	# O contorno na mesma tinta engrossa a letra: a variável da Cinzel vem fina, e
+	# título de folheto é letra de forma carregada.
+	titulo.outline_size = 5
+	titulo.outline_modulate = CapaDeCordel.TINTA
+	titulo.font_size = 40 if titulo.text.length() <= 18 else 30
+	titulo.pixel_size = 0.0005
+	titulo.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	titulo.width = (FOLHETO.x - margem * 2.0) / titulo.pixel_size
+	titulo.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	titulo.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	titulo.double_sided = false
+	titulo.shaded = true
+	if ResourceLoader.exists(FONTE_DO_TITULO):
+		titulo.font = load(FONTE_DO_TITULO)
+	titulo.position = Vector3(0.0, FOLHETO.y * 0.5 - margem * 0.5 - faixa * 0.5, 0.003)
+	capa.add_child(titulo)
+	return capa
+
+
+func _papel_de_folheto(textura: Texture2D, cor: Color, luz_propria: float) -> StandardMaterial3D:
+	var material := StandardMaterial3D.new()
+	material.roughness = 1.0
+	if textura != null:
+		material.albedo_texture = textura
+		material.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC
+		material.emission_texture = textura
+	else:
+		material.albedo_color = cor
+	material.emission_enabled = true
+	material.emission = cor
+	material.emission_energy_multiplier = luz_propria
+	return material
 
 
 ## O vento da feira: cada folheto balança no seu compasso.
@@ -446,6 +513,19 @@ func mourao_encosta(espaco: PhysicsDirectSpaceState3D, pe: Vector3, piso: float)
 	return false
 
 
+func _em_jogo() -> bool:
+	var camera := get_viewport().get_camera_3d() if is_inside_tree() else null
+	return camera != null and camera == _player.get("camera") and _player.is_physics_processing()
+
+
+## O QUE O E FARIA AQUI, para o foco (`foco_do_e.gd`): pegar o achado ao alcance.
+func alvo_do_e() -> Dictionary:
+	if _player == null or not _em_jogo():
+		return {}
+	var perto = mais_perto()
+	return {} if perto == null else {"ponto": perto["ponto"]}
+
+
 ## O achado ao alcance do jogador, ou null.
 func mais_perto():
 	var aqui: Vector3 = _player.global_position
@@ -463,6 +543,8 @@ func _unhandled_key_input(event: InputEvent) -> void:
 	if not (event is InputEventKey and event.pressed and not event.echo):
 		return
 	if event.physical_keycode != Atalhos.tecla("interagir") or not _player.is_physics_processing():
+		return
+	if not FocoDoE.e_dele(self):
 		return
 	if interagir():
 		get_viewport().set_input_as_handled()

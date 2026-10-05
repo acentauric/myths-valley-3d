@@ -135,6 +135,18 @@ func _run() -> void:
 	if guia != null:
 		guia.missao = guia.MISSOES.size()
 		guia.set("_despedida_feita", true)
+	# A REDE É DE MADEIRA, e a fila espera os machados do avô do Pedro, na ponte
+	# (`prototype._ja_recebeu_o_machado`): com a chegada feita e sem eles, o E
+	# ainda não abre; com a ponte passada deles, abre.
+	await _falar_com(tonho)
+	await _frames(3)
+	_conferir(not cadeia.iniciado, "a fila do Tonho abriu antes dos machados do avô: a rede pede madeira, e ainda não há machado")
+	var da_ponte = current_scene._cadeias.get("pedro_ponte")
+	if da_ponte != null:
+		da_ponte.iniciado = true
+		for i in da_ponte.passos.size():
+			if str((da_ponte.passos[i] as Dictionary).get("id", "")) == "buscar_machado":
+				da_ponte.missao = i + 1
 	await _falar_com(tonho)
 	var abriu := await _ate(func() -> bool: return bool(cadeia.iniciado), SEGUNDOS_PARA_ANUNCIAR)
 	_conferir(abriu, "com o E no Tonho, a conversa não abriu")

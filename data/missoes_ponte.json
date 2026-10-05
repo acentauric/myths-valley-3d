@@ -1,5 +1,5 @@
 {
-  "observacao": "A PONTE DO RIO GRANDE, do Pedro (docs/projeto/MISSOES_DO_2D.md, 1.3: ponte_caida, buscar_machado, lenha, tabuas, ponte). É enredo e a trava da jornada: a fazenda do convite fica do outro lado do rio grande. ADAPTADA AO VALE: o rio grande é o rio do norte do mapa, raso de dar pé, e a ponte é a 'Ponte' do KML, na Rua Principal; ela está de pé no modelo do Tripo, então o estrago é o que não se vê de longe — a cheia comeu os esteios do meio — e a ponte está CERCADA nas duas cabeceiras até a obra (`ponte_vale.gd`). Gente atravessa no vau, ao lado; carroça, não. O machado do avô (buscar_machado) não entra: no vale ele vem na chegada. Depois do tutorial o Pedro não segue o jogador, então ver a ponte e voltar para contar são dois passos, como o 'fe_contar' da fé; a obra se faz no J, na aba de obras, ao pé da ponte, como a do mirante; e o fim da ponte (o 'ponte_fim' do 2D) é a resposta dele quando o jogador volta. A lenha conta o que já virou tábua e corda (`equivale`, o 'Missoes.contagem' do 2D), e a conta sai das receitas da oficina: doze tábuas a duas lenhas e quatro cordas a três são trinta e seis. O SOCORRO da mungunzá (o `_vigiar_o_folego` do 2D, `prototype._conferir_o_socorro`): na lenha e nas tábuas, quem não aguenta mais bater e não tem o que comer ganha as seis cuias da mãe do Pedro, uma vez por partida; a fala vem na caixa, como a explicação do corpo, porque depois da chegada o Pedro não segue o jogador.",
+  "observacao": "A PONTE DO RIO GRANDE, do Pedro (docs/projeto/MISSOES_DO_2D.md, 1.3: ponte_caida, buscar_machado, lenha, tabuas, ponte). É enredo e a trava da jornada: a fazenda do convite fica do outro lado do rio grande. ADAPTADA AO VALE: o rio grande é o rio do norte do mapa, raso de dar pé, e a ponte é a 'Ponte' do KML, na Rua Principal; ela está de pé no modelo do Tripo, então o estrago é o que não se vê de longe — a cheia comeu os esteios do meio — e a ponte está CERCADA nas duas cabeceiras até a obra (`ponte_vale.gd`). Gente atravessa no vau, ao lado; carroça, não. O MACHADO DO AVÔ (buscar_machado) é a primeira vez que o jogador tem machado, como no 2D: \"lembre-se que o machado só é introduzido na missão da ponte, com o Pedro indo buscar o machado em casa\". O Pedro conduz até a casa dele, perto do píer (`guia_pedro._outra_que_conduz`), e entrega o machado no anúncio da lenha, na barra de mão e sem trocar o que o jogador segura (`CadeiaDeMissoes._por_na_barra`); as filas que pedem madeira esperam este passo (`prototype._ja_recebeu_o_machado`). Depois do tutorial o Pedro não segue o jogador, então ver a ponte e voltar para contar são dois passos, como o 'fe_contar' da fé; a obra se faz no J, na aba de obras, ao pé da ponte, como a do mirante; e o fim da ponte (o 'ponte_fim' do 2D) é a resposta dele quando o jogador volta. A lenha conta o que já virou tábua e corda (`equivale`, o 'Missoes.contagem' do 2D), e a conta sai das receitas da oficina: doze tábuas a duas lenhas e quatro cordas a três são trinta e seis. O SOCORRO da mungunzá (o `_vigiar_o_folego` do 2D, `prototype._conferir_o_socorro`): na lenha e nas tábuas, quem não aguenta mais bater e não tem o que comer ganha as seis cuias da mãe do Pedro, uma vez por partida; a fala vem na caixa, como a explicação do corpo, porque depois da chegada o Pedro não segue o jogador.",
   "dono": "pedro",
   "nome": "A ponte do rio grande",
   "nome_en": "The bridge over the big river",
@@ -39,10 +39,27 @@
       "meta": {
         "tipo": "falar",
         "a_quem": "pedro",
-        "resposta": "Cercada, né? Fui eu e o Seu Benedito que pregamos a cerca, depois da cheia de fevereiro. A água comeu os esteios do meio, e o tabuado ficou pendurado no que sobrou: de longe parece inteira, e não aguenta um cabrito. Gente atravessa no vau, com água na canela; carroça, não. Ninguém consertou. Aqui nada muda, eu já disse — a gente espera cair, depois espera alguém. Dessa vez o alguém somos nós.",
-        "resposta_en": "Fenced off, right? Seu Benedito and I nailed that fence up after the February flood. The water ate the middle posts, and the planking is hanging from what's left: from far away it looks whole, and it wouldn't hold a goat. People cross at the ford, water up to the shin; a cart, no. Nobody fixed it. Nothing changes here, I told you — we wait for it to fall, then we wait for someone. This time the someone is us.",
-        "resposta_es": "Cercado, ¿no? Fuimos el señor Benedito y yo quienes clavamos la cerca, después de la crecida de febrero. El agua se comió los pilotes del medio, y el tablado quedó colgando de lo que sobró: de lejos parece entero, y no aguanta ni una cabra. La gente cruza por el vado, con el agua en la canilla; una carreta, no. Nadie lo arregló. Aquí nada cambia, ya te dije: esperamos que se caiga, y después esperamos a alguien. Esta vez el alguien somos nosotros."
+        "resposta": "Cercada, né? Fui eu e o Seu Benedito que pregamos a cerca, depois da cheia de fevereiro. A água comeu os esteios do meio, e o tabuado ficou pendurado no que sobrou: de longe parece inteira, e não aguenta um cabrito. Gente atravessa no vau, com água na canela; carroça, não. Ninguém consertou. Aqui nada muda, eu já disse — a gente espera cair, depois espera alguém. Dessa vez o alguém somos nós. Vou em casa buscar os machados do meu avô.",
+        "resposta_en": "Fenced off, right? Seu Benedito and I nailed that fence up after the February flood. The water ate the middle posts, and the planking is hanging from what's left: from far away it looks whole, and it wouldn't hold a goat. People cross at the ford, water up to the shin; a cart, no. Nobody fixed it. Nothing changes here, I told you — we wait for it to fall, then we wait for someone. This time the someone is us. I'm going home to get my grandfather's axes.",
+        "resposta_es": "Cercado, ¿no? Fuimos el señor Benedito y yo quienes clavamos la cerca, después de la crecida de febrero. El agua se comió los pilotes del medio, y el tablado quedó colgando de lo que sobró: de lejos parece entero, y no aguanta ni una cabra. La gente cruza por el vado, con el agua en la canilla; una carreta, no. Nadie lo arregló. Aquí nada cambia, ya te dije: esperamos que se caiga, y después esperamos a alguien. Esta vez el alguien somos nosotros. Voy a casa a buscar las hachas de mi abuelo."
       }
+    },
+    {
+      "id": "buscar_machado",
+      "titulo": "Os machados do avô",
+      "titulo_en": "Grandfather's axes",
+      "titulo_es": "Las hachas del abuelo",
+      "resumo": "Siga o Pedro até a casa dele, perto do píer",
+      "resumo_en": "Follow Pedro to his house, near the pier",
+      "resumo_es": "Sigue a Pedro hasta su casa, cerca del muelle",
+      "lugar": "casa_do_pedro",
+      "raio": 5,
+      "audio": "",
+      "conduz": true,
+      "texto": "Vem comigo. A casa é aqui perto do píer — eu vou na frente.",
+      "texto_en": "Come with me. The house is near the pier — I'll lead the way.",
+      "texto_es": "Ven conmigo. La casa está aquí cerca del muelle; yo voy delante.",
+      "meta": {}
     },
     {
       "id": "ponte_lenha",
@@ -55,9 +72,13 @@
       "lugar": "oficina",
       "raio": 6,
       "audio": "",
-      "texto": "Ponte se faz de tábua, e tábua se faz de lenha. Muita lenha: doze tábuas e quatro cordas são trinta e seis paus. Derrube pau na mata com o machado na mão — encoste no tronco e aperte E, que não sai no primeiro golpe. O que você já tiver serrado em tábua ou torcido em corda conta junto. E ferramenta certa pra cada coisa: machado é pra pau, picareta é pra pedra; na coisa errada você só bate e cansa.",
-      "texto_en": "A bridge is made of boards, and boards are made of firewood. Lots of firewood: twelve boards and four ropes come to thirty-six logs. Fell trees in the woods with the axe in hand — walk up to the trunk and press E, it won't come down on the first blow. Whatever you've already sawn into boards or twisted into rope counts too. And the right tool for each thing: the axe is for wood, the pickaxe is for stone; on the wrong thing you just strike and tire.",
-      "texto_es": "Un puente se hace de tablas, y las tablas se hacen de leña. Mucha leña: doce tablas y cuatro cuerdas son treinta y seis palos. Derriba árboles en el monte con el hacha en la mano: acércate al tronco y pulsa E, que no cae al primer golpe. Lo que ya hayas aserrado en tabla o torcido en cuerda cuenta también. Y la herramienta justa para cada cosa: el hacha es para la madera, el pico es para la piedra; con la equivocada solo golpeas y te cansas.",
+      "texto": "Toma. Esse tem mais idade que nós dois somados; meu avô diz que corta melhor por isso. Ponte se faz de tábua, e tábua se faz de lenha. Muita lenha: doze tábuas e quatro cordas são trinta e seis paus. Derrube pau na mata com o machado na mão — encoste no tronco e aperte E, que não sai no primeiro golpe. O que você já tiver serrado em tábua ou torcido em corda conta junto. E ferramenta certa pra cada coisa: machado é pra pau, picareta é pra pedra; na coisa errada você só bate e cansa.",
+      "texto_en": "Here. This one is older than the two of us put together; my grandfather says that's why it cuts better. A bridge is made of boards, and boards are made of firewood. Lots of firewood: twelve boards and four ropes come to thirty-six logs. Fell trees in the woods with the axe in hand — walk up to the trunk and press E, it won't come down on the first blow. Whatever you've already sawn into boards or twisted into rope counts too. And the right tool for each thing: the axe is for wood, the pickaxe is for stone; on the wrong thing you just strike and tire.",
+      "texto_es": "Toma. Esta tiene más años que nosotros dos juntos; mi abuelo dice que por eso corta mejor. Un puente se hace de tablas, y las tablas se hacen de leña. Mucha leña: doce tablas y cuatro cuerdas son treinta y seis palos. Derriba árboles en el monte con el hacha en la mano: acércate al tronco y pulsa E, que no cae al primer golpe. Lo que ya hayas aserrado en tabla o torcido en cuerda cuenta también. Y la herramienta justa para cada cosa: el hacha es para la madera, el pico es para la piedra; con la equivocada solo golpeas y te cansas.",
+      "entrega": {
+        "item": "machado",
+        "quantidade": 1
+      },
       "meta": {
         "tipo": "juntar",
         "item": "lenha",

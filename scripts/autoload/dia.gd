@@ -90,6 +90,19 @@ var relogio_alterado := false
 ## hora_inicial, a mesma que escolheu a capa (dia ou noite) da tela de carregamento.
 ## Separado de `pausado`, que é a escolha do jogador e aparece no HUD.
 var congelado_na_carga := false
+## O RELÓGIO SEGURADO PELA CONVERSA, pelo motivo de cada um.
+##
+## "O relógio deve parar quando o jogador estiver em uma interação de conversa
+## com o NPC ou instruções nativas do jogo." A caixa de fala já parava o vale
+## inteiro (`prototype._ao_abrir_a_fala`); o que corria era o resto: a fala da
+## missão e a resposta do E no balão (`npc.narrar`, `npc.conversar`), a
+## narração do vale e a festa da missão cumprida. Cada um segura com o seu
+## motivo e solta o seu — dois ao mesmo tempo não se soltam um ao outro.
+##
+## NÃO É O RELÓGIO PARADO: `pausado` é escolha do jogador, custa as conquistas e
+## vai para o registro do relógio; isto é o tempo de ler, e não custa nada nem
+## vai para o save.
+var _segurado_por: Dictionary = {}
 var _periodo := ""
 
 
@@ -108,9 +121,35 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	var segundos_por_hora: float = VELOCIDADES[velocidade]
-	if pausado or congelado_na_carga or segundos_por_hora <= 0.0:
+	if pausado or congelado_na_carga or segurado() or segundos_por_hora <= 0.0:
 		return
 	avancar(delta / segundos_por_hora)
+
+
+## Segura o relógio por `motivo` (ver `_segurado_por`). COM PRAZO, em segundos
+## de relógio de parede, ele se solta sozinho: o balão de quem fala tem duração
+## certa, e um balão que nunca avisasse o fim não pode parar o dia para sempre.
+## Sem prazo (zero), vale até o `soltar`.
+func segurar(motivo: String, prazo: float = 0.0) -> void:
+	_segurado_por[motivo] = Time.get_ticks_msec() + int(prazo * 1000.0) if prazo > 0.0 else 0
+
+
+func soltar(motivo: String) -> void:
+	_segurado_por.erase(motivo)
+
+
+## Alguém segura o relógio agora? Com `prefixo`, só os motivos que começam por
+## ele ("fala:" é a conversa de qualquer morador).
+func segurado(prefixo: String = "") -> bool:
+	var agora := Time.get_ticks_msec()
+	var achou := false
+	for motivo: String in _segurado_por.keys():
+		var prazo := int(_segurado_por[motivo])
+		if prazo > 0 and prazo <= agora:
+			_segurado_por.erase(motivo)
+		elif prefixo == "" or motivo.begins_with(prefixo):
+			achou = true
+	return achou
 
 
 func definir_hora(nova: float) -> void:
@@ -215,6 +254,7 @@ func zerar_a_partida() -> void:
 	relogio_alterado = false
 	registro_do_relogio = []
 	pausado = false
+	_segurado_por.clear()
 
 
 ## Escreve uma mudança no registro do relógio (ver `registro_do_relogio`).

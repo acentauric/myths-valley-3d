@@ -26,7 +26,11 @@ extends Node
 const Criatura = preload("res://scripts/prototipo_3d/criatura_vale.gd")
 const Atalhos = preload("res://scripts/prototipo_3d/atalhos.gd")
 const IdiomaMenu = preload("res://scripts/prototipo_3d/idioma_menu.gd")
+const FocoDoE = preload("res://scripts/prototipo_3d/foco_do_e.gd")
 const TEXTOS := "res://data/luta.json"
+## COM BICHO AO ALCANCE, O E É GOLPE ANTES DE TUDO (`foco_do_e.gd`): conversa,
+## cordel e árvore esperam. Antes era a ordem dos nós no vale que decidia.
+const VIES_DA_LUTA := 1000.0
 
 ## Até onde o E procura bicho para lutar, em pixels do 2D.
 const ALCANCE_DE_LUTA := 40.0
@@ -82,6 +86,7 @@ func configurar(world, player, hud) -> void:
 	_world = world
 	_player = player
 	_hud = hud
+	add_to_group(FocoDoE.GRUPO)
 	_repouso_do_corpo = player.visual.position
 	u_por_px = float(player.walk_speed) / Criatura.PASSO_DO_JOGADOR_2D
 	segurando = func() -> bool: return Input.is_physical_key_pressed(Atalhos.tecla("interagir"))
@@ -186,7 +191,7 @@ func _unhandled_key_input(event: InputEvent) -> void:
 	if _player == null or not _player.is_physics_processing():
 		return
 	if event.physical_keycode == Atalhos.tecla("interagir"):
-		if armar_a_luta():
+		if FocoDoE.e_dele(self) and armar_a_luta():
 			get_viewport().set_input_as_handled()
 	elif event.physical_keycode == Atalhos.tecla("gingar"):
 		if gingar():
@@ -196,6 +201,16 @@ func _unhandled_key_input(event: InputEvent) -> void:
 func _process(_delta: float) -> void:
 	if _golpe_segurado_desde >= 0.0:
 		_conferir_o_golpe_segurado()
+
+
+## O QUE O E FARIA AQUI, para o foco: o golpe no bicho ao alcance, antes de tudo.
+func alvo_do_e() -> Dictionary:
+	if _player == null or not _player.is_physics_processing():
+		return {}
+	if Luta.golpe_da_mao(_item_em_uso(), false) == "":
+		return {}
+	var bicho = _criatura_perto(ALCANCE_DE_LUTA * u_por_px)
+	return {} if bicho == null else {"ponto": bicho.global_position, "vies": VIES_DA_LUTA}
 
 
 ## O E apertou com bicho perto: o corpo se vira para ele e começa a contar o

@@ -144,9 +144,18 @@ func _run() -> void:
 	_conferir(not carroca.iniciado, "a carroça abriu antes de o jogador juntar a piaçava do saveiro")
 	do_saveiro.iniciado = true
 	do_saveiro.missao = _indice_de(do_saveiro, "saveiro_piacava") + 1
+	# A CARROÇA É DE MADEIRA: oito tábuas e quatro cordas esperam os machados do
+	# avô do Pedro, na ponte (`prototype._ja_recebeu_o_machado`).
+	jogo.get("tecla_dos_moradores").usar(benedito)
+	await _ate(func() -> bool: return false, 1.0)
+	_conferir(not carroca.iniciado, "a carroça abriu antes dos machados do avô: ela pede madeira, e ainda não há machado")
+	var da_ponte = jogo._cadeias.get("pedro_ponte")
+	if da_ponte != null:
+		da_ponte.iniciado = true
+		da_ponte.missao = _indice_de(da_ponte, "buscar_machado") + 1
 	jogo.get("tecla_dos_moradores").usar(benedito)
 	_conferir(await _ate(func() -> bool: return carroca.iniciado, SEGUNDOS),
-		"juntada a piaçava, o E no Seu Benedito não abriu a carroça")
+		"juntada a piaçava e com o machado da ponte, o E no Seu Benedito não abriu a carroça")
 	await _ate(func() -> bool: return carroca.espera <= 0.0, SEGUNDOS)
 	var da_carroca: Array[String] = []
 	carroca.pagou.connect(func(texto: String) -> void: da_carroca.append(texto))

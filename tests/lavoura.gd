@@ -20,6 +20,9 @@ extends SceneTree
 ##   6. O INVERNO PARA A ROÇA: regada, a planta não anda.
 ##   7. NO CAMPO A TECLA É DA LAVOURA: os alvos de trabalho em volta calam.
 ##   8. O SAVE GUARDA A LAVOURA inteira, e ela volta desenhada.
+##   9. A TERRA É DE VERDADE E O CAMPO É CERCADO: grão e torrão no leito, os
+##      camalhões no arado, a terra batida por baixo, e a cerca rasteira em volta
+##      de todos os leitos, abaixo do degrau, com a passagem do lado da casa.
 
 var falhas := 0
 var vale
@@ -201,6 +204,65 @@ func _run() -> void:
 	_conferir(_desenho(a) == "cana:%d" % plantacao.estagio(a), "a lavoura voltou do save sem a planta desenhada (%s)" % _desenho(a))
 	var do_vale: Dictionary = vale.estado_para_salvar()
 	_conferir(do_vale.has("lavoura"), "o save do vale não leva a lavoura")
+
+	# --- 9. TERRA DE VERDADE E O CERCADO RASTEIRO -------------------------------------
+	# "Melhore o asset da terra agricultável pelo Pedro e coloque um cercado bem
+	# rasteiro em volta dessa parte."
+	var bruto := Vector2i(5, 3)
+	plantacao.restaurar_leitos({})
+	lavoura._desenhar(bruto)
+	var leito: MeshInstance3D = lavoura.get("_leitos_3d")[bruto]["chao"]
+	var terra := leito.material_override as StandardMaterial3D
+	_conferir(terra != null and terra.albedo_texture != null and terra.normal_texture != null,
+		"o leito ainda é de cor lisa: a terra não tem grão nem torrão")
+	var malha_bruta: Mesh = leito.mesh
+	plantacao.arar(bruto)
+	lavoura._desenhar(bruto)
+	_conferir(leito.mesh != malha_bruta and leito.mesh.get_aabb().size.y > malha_bruta.get_aabb().size.y,
+		"arado, o leito não ganhou os camalhões: a malha é a mesma do chão bruto")
+	_conferir(lavoura.get_node_or_null("TerraBatida") != null,
+		"o campo não tem a terra batida por baixo dos leitos: cada leito é um ladrilho solto na grama")
+	var cercado = lavoura.get_node_or_null("Cercado")
+	_conferir(cercado != null, "o campo da lavoura não tem cercado")
+	if cercado != null:
+		var estacas: MultiMeshInstance3D = cercado.get_node_or_null("Estacas") as MultiMeshInstance3D
+		_conferir(estacas != null and estacas.multimesh.instance_count >= 30,
+			"o cercado tem %d estaca(s): não cerca o campo" % (estacas.multimesh.instance_count if estacas != null else 0))
+		# RASTEIRO: abaixo do degrau que o corpo sobe sozinho (`player_controller.DEGRAU`,
+		# 0,4) — encostar nele não empaca ninguém.
+		var mais_alta := 0.0
+		var corpo: Node = cercado.get_node_or_null("CercadoColisao")
+		if corpo != null:
+			for forma in corpo.get_children():
+				if forma is CollisionShape3D and (forma as CollisionShape3D).shape is BoxShape3D:
+					mais_alta = maxf(mais_alta, ((forma as CollisionShape3D).shape as BoxShape3D).size.y)
+		_conferir(mais_alta > 0.0 and mais_alta < 0.4, "a cerca tem %.2f de altura: não é rasteira, ou não tem corpo" % mais_alta)
+		# CERCA O CAMPO: todo leito fica dentro dela.
+		var lados: Array = lavoura.lados_do_cercado
+		var meia_x := absf((lados[1][0] as Vector2).x)
+		var meia_z := absf((lados[0][0] as Vector2).y)
+		var x_da_casa: Vector3 = lavoura.get("_x")
+		var z_da_casa: Vector3 = lavoura.get("_z")
+		var meio: Vector3 = vale.world.ancoras["Lavoura"]
+		var fora := 0
+		for y in lavoura.LINHAS:
+			for x in lavoura.COLUNAS:
+				var d: Vector3 = lavoura.posicao_da(Vector2i(x, y)) - meio
+				if absf(d.dot(x_da_casa)) + lavoura.LADO_DO_LEITO * 0.5 > meia_x or absf(d.dot(z_da_casa)) + lavoura.LADO_DO_LEITO * 0.5 > meia_z:
+					fora += 1
+		_conferir(fora == 0, "%d leito(s) ficam fora do cercado" % fora)
+		# A PASSAGEM É DO LADO DA CASA, e é larga de passar: o vão entre os dois
+		# pedaços do lado da frente, medido onde eles estão, e não onde deviam estar.
+		var antes_do_vao: Vector2 = lados[3][1]
+		var depois_do_vao: Vector2 = lados[4][0]
+		var vao: float = antes_do_vao.distance_to(depois_do_vao)
+		_conferir(vao >= 1.0, "a passagem do cercado tem %.2f de largura: não se passa" % vao)
+		var no_campo: Vector2 = (antes_do_vao + depois_do_vao) * 0.5
+		var da_casa: Vector3 = vale.world.ancoras["Casa de taipa"]
+		var da_passagem: Vector3 = lavoura._no_chao_do_campo(no_campo)
+		var do_outro_lado: Vector3 = lavoura._no_chao_do_campo(-no_campo)
+		_conferir(da_passagem.distance_to(da_casa) < do_outro_lado.distance_to(da_casa),
+			"a passagem do cercado não fica do lado da casa: quem sai de casa dá a volta no campo")
 	_fechar()
 
 
@@ -226,7 +288,7 @@ func _desenho(celula: Vector2i) -> String:
 func _fechar() -> void:
 	print("")
 	if falhas == 0:
-		print("LAVOURA_OK: a lavoura fica na frente da casa, em terra plana e livre; o gesto é o da mão — mão livre não ara, a enxada ara e cansa, a semente planta e gasta, o balde molha; o dia que vira faz crescer só o regado e seca tudo; o milho de primeira se colhe com a semente de volta; a cana rebrota e espera a carência; o inverno para a roça; no campo a tecla é da lavoura; e o save a guarda inteira")
+		print("LAVOURA_OK: a lavoura fica na frente da casa, em terra plana e livre; o gesto é o da mão — mão livre não ara, a enxada ara e cansa, a semente planta e gasta, o balde molha; o dia que vira faz crescer só o regado e seca tudo; o milho de primeira se colhe com a semente de volta; a cana rebrota e espera a carência; o inverno para a roça; no campo a tecla é da lavoura; o save a guarda inteira; e a terra tem grão, torrão e camalhão, com a terra batida por baixo e o cercado rasteiro em volta, aberto do lado da casa")
 	else:
 		print("lavoura: %d falha(s)" % falhas)
 	quit(1 if falhas > 0 else 0)

@@ -28,6 +28,7 @@ const Atalhos = preload("res://scripts/prototipo_3d/atalhos.gd")
 const CatalogoAssets = preload("res://scripts/prototipo_3d/catalogo_assets.gd")
 const IdiomaMenu = preload("res://scripts/prototipo_3d/idioma_menu.gd")
 const CoqueiroCortado = preload("res://scripts/prototipo_3d/coqueiro_cortado.gd")
+const FocoDoE = preload("res://scripts/prototipo_3d/foco_do_e.gd")
 
 const DADOS := "res://data/recursos_3d.json"
 ## Distância no chão para a dica aparecer e para o golpe valer.
@@ -59,6 +60,7 @@ func configurar(world: Node3D, jogador: Node3D, hud) -> void:
 	_jogador = jogador
 	_hud = hud
 	_dica = DicaTecla.criar(hud.map_layer(), Atalhos.letra("interagir"), "Bater")
+	add_to_group(FocoDoE.GRUPO)
 	# OS ALVOS SÓ SOBEM COM O VALE PRONTO: eles se põem em lugares que o
 	# `Lugares` resolve, e o `Lugares` só conhece o vale depois do
 	# `world_builder._concluir`. Erguer antes é erguer no nada.
@@ -151,6 +153,11 @@ func _process(_delta: float) -> void:
 		_dica.visible = _perto != ""
 	if _perto == "":
 		return
+	# O E É DE OUTRO (`foco_do_e.gd`): a dica daqui se apaga.
+	if not FocoDoE.e_dele(self):
+		_dica.visible = false
+		return
+	_dica.visible = true
 	var alvo: Dictionary = _alvos[_perto]
 	var ficha: Dictionary = alvo["ficha"]
 	# A dica diz o nome do alvo E o que falta para bater nele — a ferramenta
@@ -412,10 +419,20 @@ func _unhandled_key_input(event: InputEvent) -> void:
 	# COM O CORPO PARADO, O E NÃO VALE PARA O MUNDO, como nos achados, na pesca
 	# e na luta. No escuro da queda o jogador já está na porta de casa, e o E
 	# batia no tronco ao lado dela sem corpo nenhum de pé para bater.
-	if not _jogador.is_physics_processing():
+	if not _jogador.is_physics_processing() or not FocoDoE.e_dele(self):
 		return
 	bater()
 	get_viewport().set_input_as_handled()
+
+
+## O QUE O E FARIA AQUI, para o foco (`foco_do_e.gd`): bater no alvo ao alcance.
+## A conta desconta a meia-pegada: encostado no lajedo grande, a distância é a
+## da face dele, e não a do meio.
+func alvo_do_e() -> Dictionary:
+	if _perto == "" or not _alvos.has(_perto) or _jogador == null or not _jogador.is_physics_processing():
+		return {}
+	var alvo: Dictionary = _alvos[_perto]
+	return {"ponto": alvo["pos"], "vies": float(alvo.get("meia_pegada", 0.0))}
 
 
 ## O CORPO GOLPEIA, e o clipe já existia.
@@ -444,9 +461,16 @@ func _golpear_com_o_corpo() -> void:
 ## ele marcava a ÂNCORA do passo — a casa, o roçado — e mandava o jogador a um
 ## lugar onde não havia o que bater. "Marca a casa quando devia marcar os
 ## troncos", nas palavras de quem jogou.
+##
+## E MARCA O QUE O JOGADOR PODE BATER: o que se cata na mão, ou o da ferramenta
+## que ele carrega. A lenha da primeira noite sai da galhada seca, sem machado
+## (o machado é da ponte); marcar o tronco caído mais perto, que pede machado,
+## era mandá-lo bater no que não cede. Sem nenhum desses, vale o mais perto.
 func mais_perto_que_rende(item: String, de: Vector3) -> Vector3:
 	var melhor: Vector3 = Lugares.NENHUM
 	var menor := INF
+	var cede: Vector3 = Lugares.NENHUM
+	var menor_que_cede := INF
 	for id in _alvos:
 		var ficha: Dictionary = _alvos[id]["ficha"]
 		if str(ficha.get("rende", "")) != item:
@@ -456,7 +480,11 @@ func mais_perto_que_rende(item: String, de: Vector3) -> Vector3:
 		if d.length() < menor:
 			menor = d.length()
 			melhor = _alvos[id]["pos"]
-	return melhor
+		var ferramenta := str(ficha.get("ferramenta", ""))
+		if (ferramenta == "" or _carrega(ferramenta)) and d.length() < menor_que_cede:
+			menor_que_cede = d.length()
+			cede = _alvos[id]["pos"]
+	return cede if cede != Lugares.NENHUM else melhor
 
 
 ## QUANTOS ALVOS DESTA PEÇA JÁ CAÍRAM.
