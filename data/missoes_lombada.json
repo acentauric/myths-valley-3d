@@ -1,0 +1,72 @@
+{
+  "observacao": "A LAPA E A CABRA, do Pedro (docs/projeto/MISSOES_DO_2D.md, 1.5: picareta e cabra), a frente do ofício do 2D. Espera a lenha da ponte, como lá (`_frente_do_oficio`: abria na primeira machadada, e o jogador pulava as falas apertando E no tronco). O LUGAR é a lombada de pedra que o vale levantou entre a casa e a chapada (`lombada_vale.gd`), revisada pelo autor. A missão da lapa FECHA PELA PASSAGEM, e não por oito pedras quaisquer: a meta é derrubar a lapa (`recursos_3d.json`, `lapa_da_lombada`), que dá as oito do calço da varanda. A cabra vem depois de a passagem abrir, e chegar perto dela a faz descer (a `cena` 'cabra_desce'). No vale a picareta vem na chegada, no poço, então o Pedro a lembra em vez de dá-la. Depois do tutorial o Pedro não segue o jogador, e o 'cabra_fim' do 2D — a cabra que desce e a placa da Santa Casa — é a resposta dele na volta.",
+  "dono": "pedro",
+  "nome": "A lombada da lapa",
+  "nome_en": "The ridge of the rock slab",
+  "nome_es": "La loma de la laja",
+  "principal": false,
+  "passos": [
+    {
+      "id": "picareta",
+      "titulo": "A lapa na boca da rampa",
+      "titulo_en": "The slab at the foot of the ramp",
+      "titulo_es": "La laja en la boca de la rampa",
+      "resumo": "Racha a lapa da lombada com a picareta (E)",
+      "resumo_en": "Break the slab on the ridge with the pickaxe (E)",
+      "resumo_es": "Parte la laja de la loma con el pico (E)",
+      "lugar": "lapa",
+      "raio": 6.0,
+      "audio": "",
+      "texto": "Olha lá, pro poente, entre a sua casa e a chapada: aquela lombada de pedra, com a rampa do lado de cá. Choveu forte na semana que você passou embarcado; a ladeira amoleceu e uma lapa desceu rolando — parou bem atravessada no pé da rampa. Pedra atravessada num caminho vira pedra atravessada pra sempre, se ninguém encostar nela. Pegue aquela picareta do poço: machado é pra pau, picareta é pra pedra; na coisa errada você só bate e cansa. E a lapa não é só estorvo, é material: dá oito pedras certinhas, que é o calço da varanda da sua casa. Fique de frente pra ela, aperte E e bata até rachar.",
+      "texto_en": "Look over there, to the west, between your house and the plateau: that stone ridge, with the ramp on this side. It rained hard the week you were at sea; the slope softened and a slab of rock came rolling down — it stopped right across the foot of the ramp. A rock lying across a path stays there forever, if nobody touches it. Take that pickaxe from the well: the axe is for wood, the pickaxe is for stone; on the wrong thing you just strike and tire. And the slab isn't just in the way, it's material: it gives exactly eight stones, which is the footing for your house's porch. Face it, press E and strike until it cracks.",
+      "texto_es": "Mira allá, hacia el poniente, entre tu casa y la meseta: esa loma de piedra, con la rampa de este lado. Llovió fuerte la semana que pasaste embarcado; la ladera se ablandó y una laja bajó rodando: se detuvo justo atravesada al pie de la rampa. Piedra atravesada en un camino queda atravesada para siempre, si nadie la toca. Toma ese pico del pozo: el hacha es para la madera, el pico es para la piedra; con la equivocada solo golpeas y te cansas. Y la laja no es solo estorbo, es material: da ocho piedras justas, que es el calce del porche de tu casa. Ponte de frente, pulsa E y golpea hasta que se parta.",
+      "meta": {"tipo": "derrubar", "alvo": "lapa", "quantos": 1},
+      "recompensa": {"beiju": 2}
+    },
+    {
+      "id": "cabra",
+      "titulo": "A cabra que subiu e não desce",
+      "titulo_en": "The goat that went up and won't come down",
+      "titulo_es": "La cabra que subió y no baja",
+      "resumo": "Suba a rampa e chegue perto da cabra, lá no alto da lombada",
+      "resumo_en": "Climb the ramp and get close to the goat, up on the ridge",
+      "resumo_es": "Sube la rampa y acércate a la cabra, en lo alto de la loma",
+      "lugar": "cabra_do_alto",
+      "raio": 3.5,
+      "audio": "",
+      "cena": "cabra_desce",
+      "texto": "Ouviu? Tem bicho lá em cima. É uma cabra do Seu Benedito: subiu antes de a lapa descer e ficou presa. Sobe a rampa e chega perto dela. Não precisa pegar no pelo: bicho preso desce sozinho quando vê que dá. Ela vai estranhar você — chega devagar e fica de pé ali um instante, que é o bastante.",
+      "texto_en": "Hear that? There's an animal up there. It's one of Seu Benedito's goats: it went up before the slab came down and got stuck. Climb the ramp and get close to it. No need to grab it: a trapped animal comes down on its own once it sees it can. It'll be wary of you — approach slowly and stand there a moment, that's enough.",
+      "texto_es": "¿Oíste? Hay un bicho allá arriba. Es una cabra del señor Benedito: subió antes de que bajara la laja y quedó atrapada. Sube la rampa y acércate a ella. No hace falta agarrarla: el bicho atrapado baja solo cuando ve que puede. Te va a extrañar; acércate despacio y quédate de pie ahí un instante, que basta.",
+      "meta": {}
+    },
+    {
+      "id": "cabra_volta",
+      "titulo": "A placa da Santa Casa",
+      "titulo_en": "The Santa Casa sign",
+      "titulo_es": "El letrero de la Santa Casa",
+      "resumo": "Volte ao Pedro e conte da cabra",
+      "resumo_en": "Go back to Pedro and tell him about the goat",
+      "resumo_es": "Vuelve con Pedro y cuéntale de la cabra",
+      "lugar": "pier",
+      "raio": 6.0,
+      "audio": "",
+      "texto": "A cabra desceu? Volte aqui, que eu conto de quem é aquele alto.",
+      "texto_en": "Did the goat come down? Come back here, and I'll tell you whose that high ground is.",
+      "texto_es": "¿Bajó la cabra? Vuelve aquí, que te cuento de quién es ese alto.",
+      "meta": {
+        "tipo": "falar",
+        "a_quem": "pedro",
+        "resposta": "Desceu, né? Vai direto pro cercado do Seu Benedito, que é onde ela mora: bicho sabe o caminho de casa melhor que gente. E a placa lá em cima, você leu? Aquele alto inteiro é da Santa Casa de Misericórdia. É a irmandade que cuida do cemitério e do hospital da vila — terra de irmandade não tem herdeiro, então ela vende quando aparece dinheiro. É outra conversa das suas, essa: você chegou com uma terra e já tá medindo as outras com os olhos. Mas guarde: a Santa Casa não pede favor e não faz amizade. Com ela é réis. Os vizinhos de porta, esses você conquista.",
+        "resposta_en": "It came down, right? It went straight to Seu Benedito's pen, which is where it lives: an animal knows the way home better than people do. And the sign up there, did you read it? That whole high ground belongs to the Santa Casa de Misericórdia. It's the brotherhood that runs the cemetery and the village hospital — brotherhood land has no heirs, so it sells when money shows up. That's another one of your conversations: you arrived with one plot and you're already measuring the others with your eyes. But remember: the Santa Casa doesn't ask favors and doesn't make friends. With it, it's réis. The neighbors next door, those you can win over.",
+        "resposta_es": "Bajó, ¿no? Se fue derecho al corral del señor Benedito, que es donde vive: el bicho sabe el camino a casa mejor que la gente. Y el letrero de allá arriba, ¿lo leíste? Todo ese alto es de la Santa Casa de Misericordia. Es la hermandad que cuida el cementerio y el hospital del pueblo; tierra de hermandad no tiene herederos, así que la vende cuando aparece dinero. Esa es otra de tus conversaciones: llegaste con una tierra y ya estás midiendo las otras con los ojos. Pero recuerda: la Santa Casa no pide favores ni hace amistades. Con ella son réis. A los vecinos de al lado, a esos sí los conquistas."
+      }
+    }
+  ],
+  "arremate": {
+    "narra": false,
+    "texto": "A lombada aberta, e a cabra do Seu Benedito em casa.",
+    "texto_en": "The ridge open, and Seu Benedito's goat back home.",
+    "texto_es": "La loma abierta, y la cabra del señor Benedito en casa."
+  }
+}

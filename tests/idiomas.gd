@@ -42,6 +42,16 @@ const TRADUZIDOS := {
 	"res://data/missoes_guia.json": ["texto", "resumo", "nome", "titulo", "resposta"],
 	"res://data/missoes_roca.json": ["texto", "resumo", "nome", "titulo", "resposta"],
 	"res://data/missoes_carroca.json": ["texto", "resumo", "nome", "titulo", "resposta"],
+	# As frentes do 2D que não pedem lugar novo: as armas e o ofício do Pedro, a
+	# capoeira do Cosme e a meta dos caititus.
+	"res://data/missoes_armas.json": ["texto", "resumo", "nome", "titulo", "resposta"],
+	"res://data/missoes_oficio.json": ["texto", "resumo", "nome", "titulo", "resposta"],
+	"res://data/missoes_capoeira.json": ["texto", "resumo", "nome", "titulo", "resposta"],
+	"res://data/missoes_metas.json": ["texto", "resumo", "nome", "titulo", "resposta"],
+	"res://data/missoes_ponte.json": ["texto", "resumo", "nome", "titulo", "resposta"],
+	"res://data/missoes_chapada.json": ["texto", "resumo", "nome", "titulo", "resposta"],
+	"res://data/missoes_lombada.json": ["texto", "resumo", "nome", "titulo", "resposta"],
+	"res://data/missoes_fazenda.json": ["texto", "resumo", "nome", "titulo", "resposta"],
 	"res://data/documentos.json": ["nome", "linhas"],
 	"res://data/historico_3d.json": ["titulo", "estado"],
 	# A fé (#52): o que os marcos dizem.

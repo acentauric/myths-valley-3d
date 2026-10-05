@@ -107,6 +107,13 @@ func comecar(slot: int, apagar: bool = false) -> void:
 	Salvamento.carregar(fabrica.duplicate(true))
 	Salvamento.ultimo_relato.clear()
 	Salvamento.slot_atual = slot
+	# O CADERNO DO VALE TAMBÉM VOLTA À FÁBRICA. Ele é do 3D e não está na tabela
+	# do `Salvamento` — quem o guarda e devolve é o vale, e só quando há save. Na
+	# partida nova, ficava com as missões da anterior: "Eu tinha deletado o save
+	# e abri um novo em cima do mesmo slot", e o HUD e o marcador seguiam a
+	# chave com a Dona Candinha da partida apagada, com a chegada nova em outro
+	# passo. Para continuar, o vale o restaura do arquivo logo depois.
+	CadernoDoVale.limpar()
 
 
 ## Salva a partida em curso, se ela tem vaga. Devolve false no passeio.

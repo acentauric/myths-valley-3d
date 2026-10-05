@@ -64,16 +64,30 @@ func _run() -> void:
 	# --- 1. ESPERA O MIRANTE ----------------------------------------------------
 	await _segundos(2.0)
 	_conferir(not fila.iniciado, "a fila da fé abriu antes do mirante consertado")
+	# A fé vem depois do arraial, que vem depois da ponte e da chegada: com a
+	# chegada no desembarque, o E no Pedro é o do desembarque (falar com ele), e
+	# com a ponte por fazer, é o da ponte — os dois vêm antes.
+	vale.pedro.missao = vale.pedro.MISSOES.size()
+	vale.pedro.set("_despedida_feita", true)
+	var ponte = cadeias.get("pedro_ponte")
+	if ponte != null:
+		ponte.iniciado = true
+		ponte.missao = ponte.passos.size()
+		ponte.despedida_feita = true
 	arraial.iniciado = true
 	arraial.missao = arraial.passos.size()
 	vale.pedro.global_position = jogador.global_position + Vector3(1.5, 0, 0)
+	await _segundos(1.0)
+	_conferir(not fila.iniciado, "ao lado do Pedro, a fila da fé abriu sozinha, sem o E")
+	vale.tecla_dos_moradores.usar(vale.pedro)
 	var abriu := await _ate(func() -> bool: return fila.iniciado and fila.espera <= 0.0, 12.0)
 	_conferir(abriu, "com o mirante de pé a fila da fé não abriu e anunciou")
 	_conferir(root.get_node("/root/CadernoDoVale").tem("pedro_fe_zefa"), "o recado da Dona Zefa não entrou no diário")
 
 	# --- 2. A DONA ZEFA ------------------------------------------------------------
 	await _ir_a(zefa.global_position + Vector3(1.6, 0, 0))
-	_conferir(await _ate(func() -> bool: return fila.missao == 1, 8.0), "chegar na Dona Zefa não fechou o recado (passo %d)" % fila.missao)
+	vale.tecla_dos_moradores.usar(zefa)
+	_conferir(await _ate(func() -> bool: return fila.missao == 1, 8.0), "o E na Dona Zefa não fechou o recado (passo %d)" % fila.missao)
 	_conferir(not bool(marcos.liberada.call()), "os marcos aceitam gente antes de a Dona Zefa mostrar as três")
 
 	# --- 3. OS TRÊS LUGARES ------------------------------------------------------------
@@ -94,6 +108,7 @@ func _run() -> void:
 	# --- 4. CONTAR À DONA ZEFA ---------------------------------------------------------
 	await _ate(func() -> bool: return fila.espera <= 0.0, 8.0, lidas)
 	await _ir_a(zefa.global_position + Vector3(1.6, 0, 0), lidas)
+	vale.tecla_dos_moradores.usar(zefa)
 	_conferir(await _ate(func() -> bool: return fila.missao == 3, 8.0, lidas), "contar à Dona Zefa não fechou o passo (passo %d)" % fila.missao)
 	_conferir(bool(marcos.liberada.call()), "depois de a Dona Zefa contar como é, os marcos continuam travados")
 
@@ -125,6 +140,7 @@ func _run() -> void:
 	# --- a fila da Dona Zefa fecha ---------------------------------------------------
 	await _ate(func() -> bool: return fila.espera <= 0.0, 8.0, lidas)
 	await _ir_a(zefa.global_position + Vector3(1.6, 0, 0), lidas)
+	vale.tecla_dos_moradores.usar(zefa)
 	_conferir(await _ate(func() -> bool: return fila.acabou(), 8.0, lidas), "o último passo da fila da fé não fechou com a Dona Zefa")
 
 	# --- 7. CONGELA AO TROCAR ----------------------------------------------------------
@@ -235,7 +251,7 @@ func _fechar() -> void:
 		dialogo._fechar()
 	print("")
 	if falhas == 0:
-		print("CADEIA_DA_FE_OK: a fila da fé espera o mirante e abre com ele; a Dona Zefa fala quando se chega; os três lugares riscam a conta, contam o que se vê e pagam; contar a ela libera a escolha; escolher no marco fecha, paga, rende XP e abre a missão da fé; a romaria passa nos quatro marcos, o altar lá dentro; a missão de uma fé congela na troca e volta a correr na volta; as ostras se catam à mão e pagam o monte; e o save leva as filas")
+		print("CADEIA_DA_FE_OK: a fila da fé espera o mirante e abre com ele; a Dona Zefa fala no E; os três lugares riscam a conta, contam o que se vê e pagam; contar a ela libera a escolha; escolher no marco fecha, paga, rende XP e abre a missão da fé; a romaria passa nos quatro marcos, o altar lá dentro; a missão de uma fé congela na troca e volta a correr na volta; as ostras se catam à mão e pagam o monte; e o save leva as filas")
 	else:
 		print("cadeia_da_fe: %d falha(s)" % falhas)
 	quit(1 if falhas > 0 else 0)

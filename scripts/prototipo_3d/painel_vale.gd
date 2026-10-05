@@ -34,6 +34,7 @@ signal pediu(acao: String)
 
 const Atalhos = preload("res://scripts/prototipo_3d/atalhos.gd")
 const Identidade = preload("res://scripts/prototipo_3d/identidade.gd")
+const BancadasVale = preload("res://scripts/prototipo_3d/bancadas_vale.gd")
 
 const COR_TITULO := Color("d6ba78")
 const COR_TEXTO := Color("e8e4d7")
@@ -1064,7 +1065,7 @@ func pagar_o_que_a_obra_da(obra: String) -> void:
 
 
 func _desenhar_obras() -> void:
-	_titulo.text = "Obras — %s" % Jogo.nome_da_construcao(obra_em_foco)
+	_titulo.text = "Obras — %s" % BancadasVale.nome(obra_em_foco)
 	var lista := Obras.disponiveis(obra_em_foco)
 	if lista.is_empty():
 		_adicionar_linha("Nada a fazer aqui por enquanto.", COR_APAGADA)

@@ -96,12 +96,15 @@ func _run() -> void:
 	# ao lado do morador, com a chegada em curso, ela não abre; acabada, abre.
 	var guia = current_scene.get("pedro")
 	await _ate(func() -> bool: return false, 1.5)
+	_conferir(not cadeia.iniciado, "ao lado da Dona Filó, a fila dela abriu sozinha, sem o E")
+	await _falar_com(filo)
 	_conferir(not cadeia.iniciado, "a fila da Dona Filó abriu com a chegada do Pedro em curso")
 	if guia != null:
 		guia.missao = guia.MISSOES.size()
 		guia.set("_despedida_feita", true)
+	await _falar_com(filo)
 	var abriu := await _ate(func() -> bool: return bool(cadeia.iniciado), SEGUNDOS_PARA_ANUNCIAR)
-	_conferir(abriu, "cheguei ao lado da Dona Filó e a missão não abriu")
+	_conferir(abriu, "com o E na Dona Filó, a missão não abriu")
 	if not abriu:
 		_fechar()
 		return
@@ -137,17 +140,19 @@ func _run() -> void:
 		fila_do_tonho.comeca_perto_de = 0.0
 	jogador.global_position = tonho.global_position + Vector3(1.0, 0.0, 0.8)
 	var antes: int = cadeia.missao
+	await _falar_com(tonho)
 	await _ate(func() -> bool: return cadeia.missao != antes, 3.0)
 	_conferir(cadeia.missao == antes,
 		"o passo da entrega fechou sem o pirão: a entrega virou enfeite")
 
-	# --- 4 e 5. COM O PIRÃO, ENCOSTAR ENTREGA, E QUEM FALA É ELE -------------
+	# --- 4 e 5. COM O PIRÃO, O E ENTREGA, E QUEM FALA É ELE -------------------
 	inv.adicionar("pirao", 1)
 	var respostas: Array[String] = []
 	if tonho.has_signal("narrou"):
 		tonho.narrou.connect(func(texto: String) -> void: respostas.append(texto))
 	jogador.global_position = tonho.global_position + Vector3(1.0, 0.0, 0.8)
 	await _frames(3)
+	await _falar_com(tonho)
 	var entregou := await _ate(func() -> bool: return not inv.tem("pirao"), SEGUNDOS_POR_PASSO)
 	_conferir(entregou, "encostei no Tonho com o pirão na mão e ele não saiu da mochila")
 	var fechou := await _ate(func() -> bool: return cadeia.acabou(), SEGUNDOS_POR_PASSO)
@@ -156,8 +161,9 @@ func _run() -> void:
 
 	# A resposta é DELE. Sem acesso ao balão em headless, o que se mede é que o
 	# Tonho tomou a palavra — é ele quem fala, e a fala é a do 2D.
-	_conferir(tonho._balao_tempo > 0.0 or not respostas.is_empty(),
-		"quem recebeu não respondeu: a fala do fim ficou na boca de quem pediu")
+	var no_balao := str(tonho.balao.get("_texto").text)
+	_conferir(tonho._balao_tempo > 0.0 and no_balao.contains("Ela mandou"),
+		"quem recebeu não respondeu: a fala do fim ficou na boca de quem pediu ('%s')" % no_balao)
 	if not respostas.is_empty():
 		_conferir(str(respostas[0]).contains("Ela mandou"),
 			"a resposta do Tonho não é a do 2D: '%s'" % respostas[0])
@@ -205,10 +211,17 @@ func _run() -> void:
 	_fechar()
 
 
+## O E AO LADO DE QUEM SE FALA, pelo caminho do jogo (`tecla_dos_moradores.gd`):
+## conversar, abrir a fila do morador, cumprir o passo que manda a ele.
+func _falar_com(morador) -> void:
+	current_scene.get("tecla_dos_moradores").usar(morador)
+	await process_frame
+
+
 func _fechar() -> void:
 	print("")
 	if falhas == 0:
-		print("PIRAO_OK: a fila é da Dona Filó e abre ao lado dela, ela dá o pirão ao anunciar, chegar perto do Tonho sem o pirão não fecha nada, com ele na mão a entrega acontece e quem responde é o Tonho, entregar uma vez basta, o arremate fica escrito em vez de falado longe, e recarregar não pede o pirão de novo")
+		print("PIRAO_OK: a fila é da Dona Filó e abre no E, ao lado dela, ela dá o pirão ao anunciar, chegar perto do Tonho sem o pirão não fecha nada, com ele na mão a entrega acontece e quem responde é o Tonho, entregar uma vez basta, o arremate fica escrito em vez de falado longe, e recarregar não pede o pirão de novo")
 	else:
 		print("pirão: %d falha(s)" % falhas)
 	quit(1 if falhas > 0 else 0)

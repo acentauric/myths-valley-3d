@@ -105,12 +105,15 @@ func _run() -> void:
 	# ao lado do morador, com a chegada em curso, ela não abre; acabada, abre.
 	var guia = current_scene.get("pedro")
 	await _ate(func() -> bool: return false, 1.5)
+	_conferir(not cadeia.iniciado, "ao lado da Dona Candinha, a fila dela abriu sozinha, sem o E")
+	await _falar_com(candinha)
 	_conferir(not cadeia.iniciado, "a fila da Dona Candinha abriu com a chegada do Pedro em curso")
 	if guia != null:
 		guia.missao = guia.MISSOES.size()
 		guia.set("_despedida_feita", true)
+	await _falar_com(candinha)
 	var abriu := await _ate(func() -> bool: return bool(cadeia.iniciado), SEGUNDOS_PARA_ANUNCIAR)
-	_conferir(abriu, "cheguei ao lado da Dona Candinha e a conversa não abriu")
+	_conferir(abriu, "com o E na Dona Candinha, a conversa não abriu")
 	if not abriu:
 		_fechar()
 		return
@@ -172,6 +175,7 @@ func _run() -> void:
 
 	jogador.global_position = candinha.global_position + Vector3(1.0, 0.0, 0.8)
 	await _frames(3)
+	await _falar_com(candinha)
 	await _ate(func() -> bool: return cadeia.missao > na_entrega, 5.0)
 	_conferir(cadeia.missao == na_entrega,
 		"cheguei com %d canas e a entrega de %d fechou: a conta da meta 'levar' não está sendo feita"
@@ -188,6 +192,7 @@ func _run() -> void:
 	_conferir(na_mochila_antes == CANAS_DA_MISSAO,
 		"queria %d canas na mochila e tenho %d" % [CANAS_DA_MISSAO, na_mochila_antes])
 	await _frames(3)
+	await _falar_com(candinha)
 	var entregou := await _ate(func() -> bool: return cadeia.missao > na_entrega, SEGUNDOS_POR_PASSO)
 	_conferir(entregou, "cheguei com as seis canas e a entrega não fechou")
 	print("  %-18s %s" % ["candinha_garapa", "fechou" if entregou else "PRESO"])
@@ -195,8 +200,9 @@ func _run() -> void:
 		_conferir(inv.quantidade("cana") == na_mochila_antes - CANAS_DA_MISSAO,
 			"a entrega tirou %d cana(s) da mochila, e devia tirar %d"
 				% [na_mochila_antes - inv.quantidade("cana"), CANAS_DA_MISSAO])
-	_conferir(candinha._balao_tempo > 0.0 or not respostas.is_empty(),
-		"quem recebeu a cana não respondeu: a fala do fim ficou na boca de quem pediu")
+	var no_balao := str(candinha.balao.get("_texto").text)
+	_conferir(candinha._balao_tempo > 0.0 and (no_balao.contains("caldo") or no_balao.contains("garapa")),
+		"quem recebeu a cana não respondeu: a fala do fim ficou na boca de quem pediu ('%s')" % no_balao)
 	if not respostas.is_empty():
 		_conferir(str(respostas[0]).contains("caldo") or str(respostas[0]).contains("garapa"),
 			"a resposta da Candinha não é a do 2D: '%s'" % respostas[0])
@@ -217,6 +223,13 @@ func _run() -> void:
 		"recarregar esqueceu a entrega das seis canas")
 
 	_fechar()
+
+
+## O E AO LADO DE QUEM SE FALA, pelo caminho do jogo (`tecla_dos_moradores.gd`):
+## conversar, abrir a fila do morador, cumprir o passo que manda a ele.
+func _falar_com(morador) -> void:
+	current_scene.get("tecla_dos_moradores").usar(morador)
+	await process_frame
 
 
 func _fechar() -> void:

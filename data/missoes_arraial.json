@@ -1,5 +1,5 @@
 {
-  "observacao": "AS MISSÕES DO ARRAIAL que o Pedro dá depois do tutorial, trazidas do jogo 2D (data/dialogos/arraial.json, passos povo_conhecer, mirante_ver, mirante_material e mirante_obra, e o bloco vista_do_mirante). No 2D elas vêm 'depois que o Pedro termina de ensinar a sobreviver', e aqui também: a cadeia só abre com a do guia terminada (CadeiaDeMissoes.depois_de). ADAPTADAS AO VALE: o mirante do 3D está de pé no modelo do Tripo, então o estrago não é o assoalho que arriou do 2D, e sim o tabuado que range e o guarda-corpo podre — a obra 'mirante_levantar' é a mesma e o custo também (20 tábuas, 12 pedras, 6 cordas); ela se toca no J, na aba de obras, ao pé do mirante (bancadas_vale.gd). O canteiro do 2D (canteiro_material, canteiro_obra) espera o roçado ter canteiro (#27). '{jogador}' saiu das falas: o vale ainda não tem o nome do jogador (#56). A recompensa é a do 2D: a vaquinha do arraial pela obra pública, e o pirão do Pedro por fora (#48). TRADUÇÃO: nome e resumos nos três idiomas; as falas em português, com inglês e espanhol pendentes e do Ramon.",
+  "observacao": "AS MISSÕES DO ARRAIAL que o Pedro dá depois do tutorial, trazidas do jogo 2D (data/dialogos/arraial.json, passos povo_conhecer, mirante_ver, mirante_material e mirante_obra, e o bloco vista_do_mirante). No 2D elas vêm 'depois que o Pedro termina de ensinar a sobreviver', e aqui também: a cadeia só abre com a do guia terminada (CadeiaDeMissoes.depois_de). ADAPTADAS AO VALE: o mirante do 3D está de pé no modelo do Tripo, então o estrago não é o assoalho que arriou do 2D, e sim o tabuado que range e o guarda-corpo podre — a obra 'mirante_levantar' é a mesma e o custo também (20 tábuas, 12 pedras, 6 cordas); ela se toca no J, na aba de obras, ao pé do mirante (bancadas_vale.gd). O CANTEIRO do 2D (canteiro_material, canteiro_obra) vem antes do mirante, como lá: a mesa do prumo é provisória, ao lado da bancada da oficina (`bancadas_vale.gd`), e a prancheta abate 10% de toda obra — por isso o material do mirante é 'da_obra', a conta de hoje. '{jogador}' saiu das falas: o vale ainda não tem o nome do jogador (#56). A recompensa é a do 2D: a vaquinha do arraial pela obra pública, e o pirão do Pedro por fora (#48). TRADUÇÃO: nome e resumos nos três idiomas; as falas em português, com inglês e espanhol pendentes e do Ramon.",
   "dono": "pedro",
   "nome": "O mirante",
   "nome_en": "The lookout",
@@ -14,10 +14,58 @@
       "resumo_en": "Press P to see who's who in the village",
       "resumo_es": "Pulsa P y mira quién es quién en el pueblo",
       "lugar": "praca",
-      "raio": 9.0,
+      "raio": 9,
       "audio": "",
       "texto": "Você falou com gente daqui. Reparou que ela lembra de você? Aqui todo mundo lembra: quem apareceu, quem trouxe o quê, quem passou reto. Aperte P — a letra de povo. Abre a lista de quem mora aqui, com a cara de cada um e o quanto já confia em você.",
-      "meta": { "tipo": "evento", "evento": "abriu_arraial" }
+      "meta": {
+        "tipo": "evento",
+        "evento": "abriu_arraial"
+      }
+    },
+    {
+      "id": "canteiro_material",
+      "titulo": "O prumo e o serrote",
+      "titulo_en": "The plumb line and the saw",
+      "titulo_es": "La plomada y el serrucho",
+      "resumo": "Junte 8 tábuas e 12 lenhas para o canteiro",
+      "resumo_en": "Gather 8 boards and 12 firewood for the site table",
+      "resumo_es": "Junta 8 tablas y 12 leñas para la mesa de obras",
+      "lugar": "canteiro",
+      "raio": 6,
+      "audio": "",
+      "texto": "Lembra da outra mesa do seu terreno? Aquela do lado da bancada da oficina. Você serrou tábua a semana inteira e nunca chegou perto dela — eu reparei. Não é culpa sua: elas parecem a mesma coisa e não são. A bancada é serrote: entra lenha, sai tábua. A do lado é prumo: ali não sai nada, ali você risca. E obra riscada antes sai mais barata que obra improvisada; meu avô dizia que quem mede duas vezes corta uma. Junte oito tábuas e doze lenhas. É pouco, e o que ela te devolve não é pouco.",
+      "texto_en": "Remember the other table on your land? The one next to the workshop bench. You sawed boards all week and never went near it — I noticed. It's not your fault: they look like the same thing and they aren't. The bench is a saw: firewood goes in, boards come out. The one beside it is a plumb line: nothing comes out of it, there you draw. And work drawn beforehand comes out cheaper than work improvised; my grandfather used to say whoever measures twice cuts once. Gather eight boards and twelve pieces of firewood. It's little, and what it gives back is not little.",
+      "texto_es": "¿Te acuerdas de la otra mesa de tu terreno? La que está al lado del banco del taller. Aserraste tablas la semana entera y nunca te acercaste a ella; me di cuenta. No es culpa tuya: parecen la misma cosa y no lo son. El banco es serrucho: entra leña, sale tabla. La de al lado es plomada: de ahí no sale nada, ahí trazas. Y la obra trazada antes sale más barata que la improvisada; mi abuelo decía que quien mide dos veces corta una. Junta ocho tablas y doce leñas. Es poco, y lo que te devuelve no es poco.",
+      "meta": {
+        "tipo": "juntar",
+        "itens": {
+          "tabua": 8,
+          "lenha": 12
+        }
+      }
+    },
+    {
+      "id": "canteiro_obra",
+      "titulo": "Riscar antes de levantar",
+      "titulo_en": "Draw before you build",
+      "titulo_es": "Trazar antes de levantar",
+      "resumo": "No canteiro, faça a prancheta (E)",
+      "resumo_en": "At the site table, make the drafting board (E)",
+      "resumo_es": "En la mesa de obras, haz el tablero de dibujo (E)",
+      "lugar": "canteiro",
+      "raio": 6,
+      "audio": "",
+      "texto": "Isso. Agora vai lá e risca. Chegue no canteiro e aperte E: abre a aba de obras daquela mesa. Escolha a prancheta, a régua e o prumo, e toque a obra. Daqui em diante toda obra do mapa te sai mais barata — dez por cento, que numa obra de quarenta tábuas é quatro tábuas que você não precisa derrubar.",
+      "texto_en": "That's it. Now go and draw. Get to the site table and press E: it opens that table's works tab. Pick the drafting board, the ruler and the plumb line, and get the work going. From then on every work on the map comes out cheaper for you — ten percent, which on a forty-board job is four boards you don't have to cut down.",
+      "texto_es": "Eso. Ahora ve y traza. Llega a la mesa de obras y pulsa E: abre la pestaña de obras de esa mesa. Elige el tablero, la regla y la plomada, y empieza la obra. De ahora en adelante toda obra del mapa te sale más barata: diez por ciento, que en una obra de cuarenta tablas son cuatro tablas que no tienes que derribar.",
+      "meta": {
+        "tipo": "obra",
+        "construcao": "canteiro",
+        "obra": "canteiro_prancheta"
+      },
+      "recompensa": {
+        "beiju": 3
+      }
     },
     {
       "id": "mirante_ver",
@@ -26,9 +74,9 @@
       "resumo_en": "Climb the road up to the lookout",
       "resumo_es": "Sube el camino hasta el mirador",
       "lugar": "mirante",
-      "raio": 9.0,
+      "raio": 9,
       "audio": "",
-      "texto": "Agora você sabe de quem está perto. Tem outra coisa que eu quero te mostrar, e é subindo. Saia da praça pelo poente e pegue a estrada que serpenteia até o alto. Lá em cima tem um mirante: dali se vê a baía inteira, e no dia limpo dá pra ver saveiro chegando antes de ele chegar. Era assim que a gente sabia quem vinha. Vá ver como ele está.",
+      "texto": "Agora que você sabe riscar obra, tem outra coisa que eu quero te mostrar, e é subindo. Saia da praça pelo poente e pegue a estrada que serpenteia até o alto. Lá em cima tem um mirante: dali se vê a baía inteira, e no dia limpo dá pra ver saveiro chegando antes de ele chegar. Era assim que a gente sabia quem vinha. Vá ver como ele está.",
       "meta": {}
     },
     {
@@ -38,10 +86,13 @@
       "resumo_en": "Gather boards, stone and rope for the lookout",
       "resumo_es": "Junta tablas, piedra y cuerda para el mirador",
       "lugar": "mirante",
-      "raio": 9.0,
+      "raio": 9,
       "audio": "",
-      "texto": "Tá vendo? Os esteios ficaram, mas o tabuado range e o guarda-corpo apodreceu. Foi uma chuva de março, faz uns vinte anos, e ninguém subiu mais — nem consertou, que é o que a gente faz aqui: espera cair, depois espera alguém. O que falta é tabuado corrido, pedra pro calço e corda pro guarda-corpo. Vinte tábuas, doze pedras e seis cordas; tábua e corda saem da oficina. Ponte é chão, mirante é altura: o que sustenta gente no alto tem que ser mais do que o que sustenta gente no raso.",
-      "meta": { "tipo": "juntar", "itens": { "tabua": 20, "pedra": 12, "corda": 6 } }
+      "texto": "Tá vendo? Os esteios ficaram, mas o tabuado range e o guarda-corpo apodreceu. Foi uma chuva de março, faz uns vinte anos, e ninguém subiu mais — nem consertou, que é o que a gente faz aqui: espera cair, depois espera alguém. O que falta é tabuado corrido, pedra pro calço e corda pro guarda-corpo. Vinte tábuas, doze pedras e seis cordas, menos o que a prancheta do canteiro abate; tábua e corda saem da oficina. Ponte é chão, mirante é altura: o que sustenta gente no alto tem que ser mais do que o que sustenta gente no raso.",
+      "meta": {
+        "tipo": "juntar",
+        "da_obra": "mirante_levantar"
+      }
     },
     {
       "id": "mirante_obra",
@@ -50,11 +101,18 @@
       "resumo_en": "Fix the lookout: [J] › Works, at its foot",
       "resumo_es": "Arregla el mirador: [J] › Obras, al pie de él",
       "lugar": "mirante",
-      "raio": 9.0,
+      "raio": 9,
       "audio": "",
       "texto": "Tudo aí. Agora é botar de pé. Chegue ao pé do mirante e abra o painel, no J, na aba de obras: o conserto está na lista. Eu subo com você. Essa eu não perco.",
-      "meta": { "tipo": "obra", "construcao": "mirante", "obra": "mirante_levantar" },
-      "recompensa": { "reis": 1200, "pirao": 1 }
+      "meta": {
+        "tipo": "obra",
+        "construcao": "mirante",
+        "obra": "mirante_levantar"
+      },
+      "recompensa": {
+        "reis": 1200,
+        "pirao": 1
+      }
     }
   ],
   "arremate": {

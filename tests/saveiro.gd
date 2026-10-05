@@ -167,7 +167,9 @@ func _run() -> void:
 	root.get_node("/root/Equipamento").desequipar("maos")
 	inventario.consumir("facao", inventario.quantidade("facao"))
 	jogador.teleportar(benedito.global_position + Vector3(1.2, 0.0, 1.0), 0.0)
-	_conferir(await _ate(func() -> bool: return bool(cadeia.iniciado), 12.0), "ao lado do Seu Benedito, depois do tutorial, a cadeia do saveiro não abriu")
+	await _quadros(5)
+	vale.tecla_dos_moradores.usar(benedito)
+	_conferir(await _ate(func() -> bool: return bool(cadeia.iniciado), 12.0), "com o E no Seu Benedito, depois do tutorial, a cadeia do saveiro não abriu")
 	_conferir(await _ate(func() -> bool: return inventario.tem("facao") or root.get_node("/root/Equipamento").no_encaixe("maos") == "facao", 6.0), "o Seu Benedito não deu o facão")
 	var ponto_do_pier: Vector3 = root.get_node("/root/Lugares").ponto("pier")
 	jogador.teleportar(mundo.ground_position(ponto_do_pier, 0.07) if mundo.is_on_land(ponto_do_pier) else ponto_do_pier, 0.0)
@@ -182,13 +184,16 @@ func _run() -> void:
 	await _no_dia(10, 9.0)
 	jogador.teleportar(_no_tabuado(quirino, mundo), 0.0)
 	_conferir(await _ate(func() -> bool: return float(cadeia.espera) <= 0.0, 45.0), "o passo da entrega não se anunciou no píer")
+	vale.tecla_dos_moradores.usar(quirino)
 	await _passos_de_fisica(30)
 	_conferir(cadeia.missao == 2 and inventario.quantidade("piacava") >= 10, "fora do dia do saveiro, o mestre escondido recebeu a piaçava")
 	# No dia: ele recebe e paga.
 	var dinheiro_antes: int = jogo.dinheiro
 	await _no_dia(saveiro.dia, 9.0)
 	jogador.teleportar(_no_tabuado(quirino, mundo), 0.0)
-	_conferir(await _ate(func() -> bool: return cadeia.acabou(), 15.0), "no dia do saveiro, ao lado do mestre, a entrega não aconteceu")
+	await _quadros(5)
+	vale.tecla_dos_moradores.usar(quirino)
+	_conferir(await _ate(func() -> bool: return cadeia.acabou(), 15.0), "no dia do saveiro, com o E no mestre, a entrega não aconteceu")
 	_conferir(jogo.dinheiro - dinheiro_antes == 340, "o mestre pagou %d pela piaçava da cadeia, e são 340" % (jogo.dinheiro - dinheiro_antes))
 
 	# --- 4. ELE COMPRA O QUE SE PRODUZIU, MAIS CARO QUE A VENDA ----------------------

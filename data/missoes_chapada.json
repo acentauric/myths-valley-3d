@@ -1,0 +1,56 @@
+{
+  "observacao": "A CHAPADA DO SEU BENEDITO, do Pedro (docs/projeto/MISSOES_DO_2D.md, 1.4). É enredo no 2D (Missoes.PRINCIPAIS) e o único momento sonhador do tutorial: o Pedro fala de terra que poderia ser do jogador. Espera a primeira colheita, como lá (`_frente_da_chapada`): dita antes, é conversa no vazio. O LUGAR é do vale de hoje, revisado pelo autor em 05/10/2026: a terra alta para lá da Dona Zefa, de frente para o rio grande (`world_builder`, \"Chapada\"; `Lugares` \"expansao\"). A chegada é cena — a luz dourada (`luz_dourada.gd`, `cena`) — e paga a garapa e a cocada do 2D. Depois do tutorial o Pedro não segue o jogador, então o 'chapada_fim' do 2D é a resposta dele quando o jogador volta, como na ponte. No vale o Seu Benedito mora no arraial, e a roça dele é que fica na chapada. As placas de preço das terras do 2D não entram: o vale ainda não vende terra.",
+  "dono": "pedro",
+  "nome": "A chapada do Seu Benedito",
+  "nome_en": "Seu Benedito's plateau",
+  "nome_es": "La meseta del señor Benedito",
+  "principal": true,
+  "passos": [
+    {
+      "id": "chapada",
+      "titulo": "A terra do Seu Benedito",
+      "titulo_en": "Seu Benedito's land",
+      "titulo_es": "La tierra del señor Benedito",
+      "resumo": "Vá ver a chapada do Seu Benedito, passando pela terra da Dona Zefa",
+      "resumo_en": "Go see Seu Benedito's plateau, past Dona Zefa's land",
+      "resumo_es": "Ve a ver la meseta del señor Benedito, pasando por la tierra de doña Zefa",
+      "lugar": "expansao",
+      "raio": 14.0,
+      "audio": "",
+      "cena": "luz_dourada",
+      "texto": "Agora que você já tirou coisa do chão com a própria mão, tem uma que eu quero te mostrar. É só pra olhar — não é sua, que fique claro. Saindo da sua casa pro poente, depois da terra da Dona Zefa, vem a chapada do Seu Benedito, de frente pro rio grande. Ele tá velho e os filhos foram tudo pra Salvador; anda dizendo que vende, se aparecer quem queira. Mas terra se toma pela divisa: pra chegar na dele, você precisa ter a da Zefa antes. Vá lá medir com os olhos, e depois volte pra me contar.",
+      "texto_en": "Now that you've pulled something out of the ground with your own hands, there's something I want to show you. It's just for looking — it isn't yours, let that be clear. Going west from your house, past Dona Zefa's land, there's Seu Benedito's plateau, facing the big river. He's old and his children all went off to Salvador; he goes around saying he'd sell, if someone wanted it. But land is taken by its border: to reach his, you need to have Zefa's first. Go and measure it with your eyes, then come back and tell me.",
+      "texto_es": "Ahora que ya sacaste algo de la tierra con tus propias manos, hay una cosa que quiero mostrarte. Es solo para mirar; no es tuya, que quede claro. Saliendo de tu casa hacia el poniente, después de la tierra de doña Zefa, está la meseta del señor Benedito, frente al río grande. Él está viejo y los hijos se fueron todos a Salvador; anda diciendo que la vende, si aparece quien la quiera. Pero la tierra se toma por la linde: para llegar a la suya, necesitas tener antes la de Zefa. Ve a medirla con los ojos, y después vuelve a contarme.",
+      "meta": {},
+      "recompensa": {"garapa": 1, "cocada": 1}
+    },
+    {
+      "id": "chapada_volta",
+      "titulo": "Terra com água",
+      "titulo_en": "Land with water",
+      "titulo_es": "Tierra con agua",
+      "resumo": "Volte ao Pedro e conte o que viu",
+      "resumo_en": "Go back to Pedro and tell him what you saw",
+      "resumo_es": "Vuelve con Pedro y cuéntale lo que viste",
+      "lugar": "pier",
+      "raio": 6.0,
+      "audio": "",
+      "texto": "Viu a chapada? Volte aqui, que eu conto o que cabe nela.",
+      "texto_en": "Saw the plateau? Come back here, and I'll tell you what it can hold.",
+      "texto_es": "¿Viste la meseta? Vuelve aquí, que te cuento lo que cabe en ella.",
+      "meta": {
+        "tipo": "falar",
+        "a_quem": "pedro",
+        "resposta": "Viu a água lá embaixo? O rio grande corre o ano todo — nem na seca de setenta e sete ele parou. Cabe muita coisa numa terra dessas: casa de farinha, curral, roda d'água, moradia pra quem vier. Mas é conversa pra quando tiver dinheiro, e pra depois da terra da Zefa, que é o que separa a sua daquela. E outra: o Seu Benedito tem a roça dele ali faz quarenta e duas safras, e não larga nem vendendo. Quem compra a terra herda o vizinho. Não que isso seja ruim: velho que plantou quarenta e duas safras sabe dessa terra o que você não vai saber em dez anos.",
+        "resposta_en": "Did you see the water down below? The big river runs all year — not even in the drought of seventy-seven did it stop. A lot fits on land like that: a flour house, a corral, a water wheel, a home for whoever comes. But that's talk for when there's money, and for after Zefa's land, which is what separates yours from that one. And another thing: Seu Benedito has had his field there for forty-two harvests, and he won't let go of it even if he sells. Whoever buys the land inherits the neighbor. Not that that's bad: an old man who planted forty-two harvests knows things about that land you won't know in ten years.",
+        "resposta_es": "¿Viste el agua allá abajo? El río grande corre todo el año; ni en la sequía del setenta y siete se detuvo. Cabe mucho en una tierra así: casa de harina, corral, rueda de agua, morada para quien venga. Pero es charla para cuando haya dinero, y para después de la tierra de Zefa, que es lo que separa la tuya de aquella. Y otra cosa: el señor Benedito tiene su roza allí hace cuarenta y dos cosechas, y no la suelta ni vendiendo. Quien compra la tierra hereda al vecino. No es que eso sea malo: un viejo que plantó cuarenta y dos cosechas sabe de esa tierra lo que tú no vas a saber en diez años."
+      }
+    }
+  ],
+  "arremate": {
+    "narra": false,
+    "texto": "A chapada do Seu Benedito, vista com os próprios olhos.",
+    "texto_en": "Seu Benedito's plateau, seen with your own eyes.",
+    "texto_es": "La meseta del señor Benedito, vista con tus propios ojos."
+  }
+}

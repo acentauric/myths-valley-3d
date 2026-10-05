@@ -1,0 +1,66 @@
+{
+  "observacao": "AS ARMAS, do Pedro (docs/projeto/MISSOES_DO_2D.md, 3.9). O combate do vale já rodava e ninguém o ensinava. Depois da chegada, o E no Pedro abre: bater um facão na bancada da oficina (a receita abre no anúncio do passo, `Oficina` 'abre: missao armas_facao'), encarar um caititu — o aviso do bote — e o golpe de peso, que o passo ensina ao anunciar (`ensina`). Os acontecimentos vêm do `Luta` pelo vale: `derrubou:<espécie>` e `acertou:<golpe>` (`prototype._ao_acertar`). 'contar' conta o acontecimento desde o anúncio do passo.",
+  "dono": "pedro",
+  "nome": "As armas do mato",
+  "nome_en": "Weapons for the woods",
+  "nome_es": "Las armas del monte",
+  "principal": false,
+  "passos": [
+    {
+      "id": "armas_facao",
+      "titulo": "Um facão de mato",
+      "titulo_en": "A bush machete",
+      "titulo_es": "Un machete de monte",
+      "resumo": "Bata um facão na bancada da oficina",
+      "resumo_en": "Forge a machete at the workshop bench",
+      "resumo_es": "Forja un machete en el banco del taller",
+      "lugar": "oficina",
+      "raio": 6.0,
+      "audio": "",
+      "texto": "Bicho do mato não espera você estar pronto. Machado é pra árvore; pra caititu, é facão. Na bancada da oficina, duas lenhas de cabo e uma pedra de amolar viram um — encosta e aperta E. Se já tiver o seu, melhor ainda.",
+      "texto_en": "A wild animal won't wait for you to be ready. An axe is for trees; for a peccary, it's a machete. At the workshop bench, two pieces of firewood for the handle and a whetstone make one — walk up and press E. If you already have your own, even better.",
+      "texto_es": "El bicho del monte no espera a que estés listo. El hacha es para el árbol; para el pecarí, el machete. En el banco del taller, dos leñas de mango y una piedra de afilar hacen uno: acércate y pulsa E. Si ya tienes el tuyo, mejor aún.",
+      "meta": {"tipo": "juntar", "item": "facao", "quantos": 1}
+    },
+    {
+      "id": "armas_bote",
+      "titulo": "Encarar um caititu",
+      "titulo_en": "Facing a peccary",
+      "titulo_es": "Enfrentar un pecarí",
+      "resumo": "Derrube um caititu na mata",
+      "resumo_en": "Bring down a peccary in the woods",
+      "resumo_es": "Derriba un pecarí en el monte",
+      "lugar": "pedras",
+      "raio": 10.0,
+      "audio": "",
+      "texto": "Caititu avisa antes de morder: para, baixa a cabeça, e o corpo clareia. É nessa hora que se sai da frente — e depois se bate. Três pancadas de facão derrubam um. Tem bando na mata do dendê e no pé da pedreira.",
+      "texto_en": "A peccary warns before it bites: it stops, lowers its head, and its body lightens. That's when you step out of the way — and then you strike. Three blows of the machete bring one down. There's a herd in the palm woods and at the foot of the quarry.",
+      "texto_es": "El pecarí avisa antes de morder: se para, baja la cabeza y el cuerpo se le aclara. En ese momento se sale del frente, y después se pega. Tres golpes de machete derriban uno. Hay manada en el monte de las palmeras y al pie de la cantera.",
+      "meta": {"tipo": "evento", "evento": "derrubou:caititu"},
+      "recompensa": {"peixe_assado": 2}
+    },
+    {
+      "id": "armas_forte",
+      "titulo": "O golpe de peso",
+      "titulo_en": "The heavy blow",
+      "titulo_es": "El golpe de peso",
+      "resumo": "Acerte 3 golpes fortes em bicho (segure E e solte)",
+      "resumo_en": "Land 3 heavy blows on an animal (hold E, release)",
+      "resumo_es": "Acierta 3 golpes fuertes a un bicho (mantén E y suelta)",
+      "lugar": "pedras",
+      "raio": 10.0,
+      "audio": "",
+      "ensina": "golpe_forte",
+      "texto": "Pancada ligeira cansa o bicho; a de peso derruba. Segura o E, deixa o braço juntar força e solta em cima dele. Três dessas, e o braço aprendeu.",
+      "texto_en": "A quick blow tires the animal; a heavy one brings it down. Hold E, let your arm gather strength and release it on the animal. Three of those, and your arm has learned.",
+      "texto_es": "El golpe ligero cansa al bicho; el de peso lo derriba. Mantén la E, deja que el brazo junte fuerza y suelta encima de él. Tres de esos, y el brazo aprendió.",
+      "meta": {"tipo": "contar", "evento": "acertou:golpe_forte", "quantos": 3},
+      "recompensa": {"pirao": 2}
+    }
+  ],
+  "arremate": {
+    "texto": "Agora você anda na mata como quem é daqui. Bicho que avisa, a gente respeita; bicho que morde, a gente derruba.",
+    "texto_en": "Now you walk the woods like someone from here. An animal that warns, we respect; an animal that bites, we bring down.",
+    "texto_es": "Ahora andas por el monte como quien es de aquí. Al bicho que avisa, lo respetamos; al que muerde, lo derribamos."
+  }
+}

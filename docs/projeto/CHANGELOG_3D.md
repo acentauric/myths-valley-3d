@@ -102,6 +102,75 @@
   existiam — 14.035 créditos, no extrato da carteira. Registro em `ORIGEM.md` de cada pasta, em
   `assets/CREDITOS.md` e nos lotes `tools/tripo/lote_2026-10-05_*.json`.
 
+- A jornada da fazenda, a fatia 6.1 do 2D: do outro lado do rio grande, na ponta
+  da Rua Principal, a fazenda do convite — o portão baixo de ferro fino e a
+  guarita de pedra velha do capítulo 6, o pátio de terra batida e o casarão
+  (modelos novos do Tripo). Na manhã seguinte à fé escolhida, com a ponte de pé,
+  o arraial está sentado no pátio e o Pedro vem à porta: "acorda, que é hoje".
+  Ele conduz o jogador pela ponte até o portão; lá fala do portão que não guarda
+  nada, o escuro sobe e a voz do mundo narra a chegada (o E passa a frase), e os
+  dois estão dentro. No pé da escadaria, a fala dele fecha a fatia; no dia
+  seguinte o arraial volta para casa. Depois do tutorial o Pedro passa a
+  conduzir quando a fila dele pede (`conduz`). Portão novo: `fazenda`.
+- A lapa e a cabra, a frente do ofício do 2D: entre a casa e a chapada, uma
+  lombada de pedra com a rampa trancada pela lapa que a chuva rolou. Depois da
+  lenha da ponte, o E no Pedro manda rachá-la com a picareta — oito golpes, oito
+  pedras, o calço da varanda —, e a passagem aberta fecha o passo. Lá em cima,
+  a cabra do Seu Benedito (modelo novo do Tripo) desce quando o jogador chega
+  perto, e a placa da Santa Casa diz de quem é o alto. A mata abre clareira na
+  lombada e na chapada. Portão novo: `lombada`.
+- A chapada do Seu Benedito, a frente do 2D que mostra terra que poderia ser do
+  jogador: depois da primeira colheita, o E no Pedro manda ver a terra alta para
+  lá da Dona Zefa, de frente para o rio grande (lugar revisado pelo autor). A
+  chegada acende a luz dourada na tela e paga a garapa e a cocada; de volta, o
+  Pedro fala da água que corre o ano todo. Passo de missão novo: `cena`, que o
+  vale toca quando o passo fecha. Portão novo: `chapada`.
+- O canteiro de obras chega ao roçado: a mesa do prumo, ao lado da bancada da
+  oficina (provisória, a mesma mesa), onde o E abre a aba de obras dela. Antes
+  do mirante, como no 2D, o Pedro manda juntar oito tábuas e doze lenhas e
+  riscar a prancheta, que abate 10% de toda obra do mapa; o material do
+  mirante passa a ser a conta de hoje da obra (`juntar` com `da_obra`).
+  `cadeia_do_mirante`, `rocado` e `ferramentas` cobrem o canteiro.
+- A ponte do rio grande, a frente da trilha do 2D: o rio grande é o rio do
+  norte do mapa, raso de dar pé, e a ponte da Rua Principal começa cercada nas
+  duas cabeceiras — a cheia comeu os esteios do meio. Gente atravessa no vau, ao
+  lado. Depois da chegada, o primeiro E no Pedro abre a frente: ver a ponte,
+  voltar e contar, juntar a lenha (trinta e seis paus, e a tábua e a corda já
+  feitas contam), serrar doze tábuas e quatro cordas na bancada e levantar a
+  ponte no J, na aba de obras, ao pé dela. A obra tira a cerca. O mirante passa a
+  esperar a ponte, como no 2D. Quem esgota o fôlego na lenha ou nas tábuas ganha
+  as seis cuias de mungunzá da mãe do Pedro, uma vez. Meta nova: `juntar` com
+  `equivale`. Portão novo:
+  `ponte`; `cadeia_do_mirante`, `cadeia_da_fe`, `missoes`, `ferramentas`,
+  `idiomas` e `painel` ajustados.
+- As frentes do 2D que não pedem lugar novo chegam ao vale: as **armas** do
+  Pedro (bater um facão na oficina, derrubar um caititu, o golpe de peso, que o
+  passo ensina), o **ofício** (a vara do pai do Pedro e dois peixes, e um
+  talento destravado na teia), a **capoeira** do Cosme para quem é do
+  candomblé (a ginga, a meia-lua e a rasteira, cada lição de volta ao Cosme), a
+  **meta dos caititus** (dez derrubados, e o Pedro dá o gibão do pai), a
+  **caderneta** na chegada (abrir o J) e a **primeira refeição** no fim da roça
+  (comer o pirão da Dona Filó). As frentes do Pedro abrem uma por E, depois da
+  chegada; a da onça espera a onça. Meta nova: `contar` (o mesmo acontecimento
+  N vezes, que o save lembra). Portão novo: `frentes`.
+
+- Falar com os moradores é o E, e é o Pedro quem ensina, no desembarque. Perto
+  de alguém, a dica "E — Falar" aparece sobre a cabeça dele: o E conversa (a
+  fala inteira no balão), cumpre o passo que manda falar com ele ou levar
+  alguma coisa ("Entregar"), e abre a fila de pedidos de quem tem o que pedir.
+  Chegar perto não fecha mais passo nenhum, e fila de morador não abre mais
+  sozinha. Na chegada, o E no Pedro repete o que fazer agora.
+- Todo passo de missão cumprido escurece a tela por um instante e mostra o
+  emblema dourado, "Missão concluída", o nome do passo e a missão de que ele é.
+- Partida nova no mesmo slot começa com o caderno de missões limpo. Ele não
+  voltava à fábrica, e o HUD e o marcador seguiam a missão da partida apagada
+  — a chave com a Dona Candinha, com a chegada nova em outro passo.
+- O passo que espera a palavra livre para se anunciar espera no máximo 6 s:
+  num lugar cheio, os cumprimentos emendavam e o passo nunca começava.
+  Portão novo: `interacao`; os das filas dos moradores, `cadeia_das_missoes`,
+  `chegada`, `saudacao`, `cadeia_do_mirante`, `cadeia_da_fe`,
+  `pedidos_do_arraial` e `saveiro` passam a falar com o E.
+
 - O jogo começa em cima do saveiro do mestre Quirino, atracado no píer: um
   modelo novo do Tripo (lote de 05/10, `aderecos/saveiro_tripo.glb`), que
   assenta carregado e desce ao tabuado por uma prancha. O barco fica o primeiro
@@ -112,8 +181,9 @@
   saveiro andando (WASD ou setas), correr um trecho com o Shift, e o Pedro vai
   NA FRENTE e apresenta o Tonho, a Dona Candinha e a Dona Zefa, que dá a chave.
   A casa fica trancada até a chave; dentro, o baú tem as ferramentas do finado
-  (a enxada, o balde e a maniva), e a primeira roça vem no primeiro dia, antes
-  do fogo, do poço, da janta, da noite e do convite. Quinze passos.
+  (a enxada, o balde e a maniva), o J abre a caderneta, e a primeira roça vem
+  no primeiro dia, antes do fogo, do poço, da janta, da noite e do convite.
+  Dezesseis passos.
 - Na primeira vez que o vigor cai a 30% na caminhada em que o Pedro conduz,
   ele explica as três barras — a vida, o fôlego e o vigor — numa fala longa;
   quem chega à porta sem cansar ouve o mesmo lá. Uma vez por partida, e vai no
@@ -769,7 +839,6 @@
   reinicia a referência de terra firme ao teleportar o jogador.
 - Modelos e áudio WAV passam a usar Git LFS. O FBX antigo fica apenas no
   histórico; caches, sincronizadores e ferramentas descontinuadas saem.
-
 
 Este histórico acompanha apenas o jogo 3D, hoje na raiz deste repositório.
 A linha anterior usava a branch `prototype/myths-valley-3d`. O projeto 2D foi a base da derivação, mas

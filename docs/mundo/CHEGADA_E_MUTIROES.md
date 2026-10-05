@@ -53,6 +53,16 @@ primeira frase, o Tonho já contava a dívida do armazém.
    passo do jogador, e espera quem fica para trás. O fio das perguntas (regra
    3) continua: a chave ainda está com quem a Dona Candinha diz — mas é o
    Pedro quem leva até ela.
+9. **Falar é o E** (05/10/2026): "O ideal é o Pedro ensinar a apertar E para
+   iniciar as interações com os NPCs, incluindo cumprir etapas de missões."
+   Chegar perto não fecha mais o passo que manda falar com alguém ou levar
+   alguma coisa (`falar`, `levar`): fecha o E ao lado dele
+   (`tecla_dos_moradores.gd`, `CadeiaDeMissoes.interagir`), e o Pedro ensina
+   no desembarque. A fila de pedidos de um morador também abre no E, e não
+   sozinha quando o jogador passa. Sem passo nenhum com ele, o E é conversa: a
+   fala inteira dele no balão. O passo que espera a palavra livre para se
+   anunciar espera até 6 s; depois, anuncia (num lugar cheio, os cumprimentos
+   emendavam um no outro e o passo nunca começava).
 
 ## A chegada (Pedro, `missoes_guia.json`)
 
@@ -76,14 +86,15 @@ dia 14 — e larga quando o dia vira.
 | 5 | A chave com a Dona Zefa | a Candinha manda (o Pedro conduz) | buscar a chave com a Dona Zefa | a pergunta que leva à pergunta | a Zefa: 1 cocada |
 | 6 | A porta que ninguém abriu | a chave na mão (o Pedro conduz) | entrar na casa do finado | a casa é sua: a porta espera a chave | — |
 | 7 | As ferramentas do finado | o baú | pegar a enxada, o balde e a maniva | o baú da casa (E), a mochila; o J das obras | — |
-| 8 | A roça do finado | a terra parada (o Cosme capinava para o tio) | arar, plantar e regar uma leira | a lavoura, a ferramenta na mão | o Cosme: 1 beiju |
-| 9 | Fogo na casa fechada | a Zefa ("casa fechada junta frio") | juntar 4 lenhas | o machado na barra de mão (1–0), o E no tronco | a avó do Pedro: 1 beiju |
-| 10 | A boca do poço | a Zefa, no poço | tirar 3 pedras do lajedo do poço | a picareta | — |
-| 11 | Corda nova | o poço | torcer 1 corda na bancada | a bancada da oficina (J) | — |
-| 12 | Mutirão no poço | a Zefa, com o Cosme | a obra "Corda nova no poço" | a aba de obras (J); o mutirão | a Zefa: 2 cocadas |
-| 13 | A primeira janta | a fome | assar o peixe do Tonho na fogueira | a cozinha (J no fogo do terreiro) | — |
-| 14 | A primeira noite | o escuro | dormir na cama da casa | a cama que vira o dia | a avó do Pedro: 1 mungunzá |
-| 15 | O papel sem assinatura | o convite que chegou a cada casa | ler o convite (F na mochila) | ler documento | — |
+| 8 | A lista do que está aberto | o Pedro | abrir o J | a caderneta: o que cada um pediu, o que falta | — |
+| 9 | A roça do finado | a terra parada (o Cosme capinava para o tio) | arar, plantar e regar uma leira | a lavoura, a ferramenta na mão | o Cosme: 1 beiju |
+| 10 | Fogo na casa fechada | a Zefa ("casa fechada junta frio") | juntar 4 lenhas | o machado na barra de mão (1–0), o E no tronco | a avó do Pedro: 1 beiju |
+| 11 | A boca do poço | a Zefa, no poço | tirar 3 pedras do lajedo do poço | a picareta | — |
+| 12 | Corda nova | o poço | torcer 1 corda na bancada | a bancada da oficina (J) | — |
+| 13 | Mutirão no poço | a Zefa, com o Cosme | a obra "Corda nova no poço" | a aba de obras (J); o mutirão | a Zefa: 2 cocadas |
+| 14 | A primeira janta | a fome | assar o peixe do Tonho na fogueira | a cozinha (J no fogo do terreiro) | — |
+| 15 | A primeira noite | o escuro | dormir na cama da casa | a cama que vira o dia | a avó do Pedro: 1 mungunzá |
+| 16 | O papel sem assinatura | o convite que chegou a cada casa | ler o convite (F na mochila) | ler documento | — |
 
 O arremate é o gancho do capítulo 6: o convite não tem assinatura, vem da
 fazenda que ninguém nunca viu o dono, e os avós do Pedro já decidiram ir. O
@@ -111,7 +122,7 @@ punhado de maniva (`CasaDoJogador.DO_FINADO`), com os dois beijus da avó do
 Pedro. A enxada deixou de vir da mão do Pedro, e a roça veio para o primeiro
 dia, antes do fogo, que é onde o 2D a põe.
 
-O passo 12 é o primeiro mutirão do jogo: a Dona Zefa e o Cosme vão ao poço e
+O passo 13 é o primeiro mutirão do jogo: a Dona Zefa e o Cosme vão ao poço e
 ficam lá enquanto a obra não sai. A obra é pequena e nova (`poco_corda`, uma
 corda e três pedras), e não a "Roldana e cacimba no poço" do arraial
 (`arraial_poco`), que continua sendo a obra de rendimento de depois.

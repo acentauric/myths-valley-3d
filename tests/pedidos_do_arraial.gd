@@ -90,11 +90,15 @@ func _run() -> void:
 	if roca != null:
 		jogador.teleportar(cosme.global_position + Vector3(1.2, 0.0, 1.0), 0.0)
 		await _ate(func() -> bool: return false, 1.5)
+		jogo.get("tecla_dos_moradores").usar(cosme)
 		_conferir(not roca.iniciado, "a roça abriu antes da primeira leira da chegada")
 		_conferir(pedro.ir_ao_passo("convite"), "a chegada não tem o passo do convite")
 		jogador.teleportar(cosme.global_position + Vector3(1.2, 0.0, 1.0), 0.0)
+		await _ate(func() -> bool: return false, 1.0)
+		_conferir(not roca.iniciado, "ao lado do Cosme, a roça abriu sozinha, sem o E")
+		jogo.get("tecla_dos_moradores").usar(cosme)
 		_conferir(await _ate(func() -> bool: return roca.iniciado, SEGUNDOS),
-			"passada a leira, ao lado do Cosme, a roça não abriu")
+			"passada a leira, o E no Cosme não abriu a roça")
 		await _ate(func() -> bool: return roca.espera <= 0.0, SEGUNDOS)
 		var pagamentos: Array[String] = []
 		roca.pagou.connect(func(texto: String) -> void: pagamentos.append(texto))
@@ -111,9 +115,16 @@ func _run() -> void:
 			"torrada a farinha, o passo não fechou: o 'cozinhou:farinha' não chega à roça")
 		var filo: Node3D = moradores["filo"]
 		jogador.teleportar(filo.global_position + Vector3(1.0, 0.0, 0.6), 0.0)
-		_conferir(await _ate(func() -> bool: return roca.acabou(), SEGUNDOS),
-			"ao lado da Dona Filó, com a farinha, a cuia não foi entregue")
+		await _ate(func() -> bool: return roca.espera <= 0.0, SEGUNDOS)
+		jogo.get("tecla_dos_moradores").usar(filo)
+		_conferir(await _ate(func() -> bool: return roca.missao >= 3, SEGUNDOS),
+			"com o E na Dona Filó, com a farinha, a cuia não foi entregue")
 		_conferir(inv.quantidade("pirao") >= 1, "a Dona Filó não deu o pirão")
+		# A PRIMEIRA REFEIÇÃO (o 'comer' do 2D): o pirão se come, e a roça acaba.
+		await _ate(func() -> bool: return roca.espera <= 0.0, SEGUNDOS)
+		_conferir(root.get_node("/root/Cozinha").comer("pirao"), "o pirão da Dona Filó não se comeu")
+		_conferir(await _ate(func() -> bool: return roca.acabou(), SEGUNDOS),
+			"comido o pirão, o passo da primeira refeição não fechou")
 		_conferir(receitas.sabe("pirao"), "o passo da cuia abriu e não ensinou o pirão")
 		_conferir(pagamentos.any(func(t: String) -> bool: return t.contains(_nome(filo))),
 			"o pirão é da Dona Filó, e o HUD disse: %s" % str(pagamentos))
@@ -133,8 +144,9 @@ func _run() -> void:
 	_conferir(not carroca.iniciado, "a carroça abriu antes de o jogador juntar a piaçava do saveiro")
 	do_saveiro.iniciado = true
 	do_saveiro.missao = _indice_de(do_saveiro, "saveiro_piacava") + 1
+	jogo.get("tecla_dos_moradores").usar(benedito)
 	_conferir(await _ate(func() -> bool: return carroca.iniciado, SEGUNDOS),
-		"juntada a piaçava, ao lado do Seu Benedito, a carroça não abriu")
+		"juntada a piaçava, o E no Seu Benedito não abriu a carroça")
 	await _ate(func() -> bool: return carroca.espera <= 0.0, SEGUNDOS)
 	var da_carroca: Array[String] = []
 	carroca.pagou.connect(func(texto: String) -> void: da_carroca.append(texto))

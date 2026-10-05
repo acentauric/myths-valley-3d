@@ -194,6 +194,9 @@ func _run() -> void:
 					_conferir(marcado.distance_to(quem.global_position) < 0.5,
 						"o marcador do passo '%s' não está em %s" % [id, str(meta.get("a_quem", ""))])
 					jogador.teleportar(quem.global_position + Vector3(1.0, 0.0, 0.6), 0.0)
+					# E O E: chegar perto não fecha o encontro; conversar fecha.
+					await _frames(2)
+					jogo.get("tecla_dos_moradores").usar(quem)
 			"juntar":
 				for item in _carga(meta):
 					await _juntar(str(item), int(_carga(meta)[item]), id, inv, recursos, jogador, energia)
@@ -311,6 +314,13 @@ func _acontecer(evento: String, id: String, jogo, jogador, inv, energia, dialogo
 			"o passo '%s' pede %s no fogo, e a cozinha recusou: %s" % [id, receita, cozinha.impedimento(receita)])
 	elif evento == "dormiu":
 		jogo.noite.dormir_na_cama()
+	elif evento == "abriu_painel":
+		# O J: abre a lista, como o jogador, e fecha.
+		jogo.abrir_o_painel()
+		await _frames(3)
+		var painel = jogo.get("painel")
+		if painel != null and painel.aberto:
+			painel.fechar()
 	elif evento == "correu":
 		# O Shift e a frente, de onde o desembarque deixou o jogador (ao lado do
 		# Pedro, no píer) rumo à praça, pelo tabuado: o vale conta o trecho

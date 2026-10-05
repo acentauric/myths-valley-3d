@@ -106,7 +106,7 @@ func _run() -> void:
 	_conferir(com_galinha >= 5, "galinhas em %d casas (mínimo 5)" % com_galinha)
 	_conferir(_aves_da_casa(gerente, "Casa da Zefa", "galinha_dangola").size() >= 4, "a Zefa não tem as galinhas-d'angola")
 	_conferir(_da_casa(gerente, "Casa de Carro Quebrado", "porco").size() >= 2 and _da_casa(gerente, "Casa de Carro Quebrado", "leitao").size() >= 1, "faltam os porcos e o leitão no chiqueiro")
-	_conferir(_da_casa(gerente, "Casa de Carro Quebrado", "cabra").size() >= 2 and _da_casa(gerente, "Casa de Carro Quebrado", "bode").size() >= 1, "faltam as cabras e o bode no terreiro do Benedito")
+	_conferir(_da_casa(gerente, "Casa de Carro Quebrado", "cabra_solta").size() >= 2 and _da_casa(gerente, "Casa de Carro Quebrado", "bode").size() >= 1, "faltam as cabras e o bode no terreiro do Benedito")
 	_conferir(_da_casa(gerente, "Venda do Bar", "jumento").size() >= 1, "o vendeiro não tem o jumento")
 	_conferir(_aves_da_casa(gerente, "Ponte do rio central", "pato").size() >= 3, "faltam os patos no riacho")
 	_conferir(_aves_da_casa(gerente, "Igreja", "pavao").size() == 1 and _aves_da_casa(gerente, "Igreja", "pavoa").size() >= 3, "o adro da Igreja não tem o pavão e as pavoas")

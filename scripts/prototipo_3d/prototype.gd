@@ -13,6 +13,9 @@ const TemaMenu = preload("res://scripts/prototipo_3d/tema_menu.gd")
 const MapaJogo = preload("res://scripts/prototipo_3d/mapa_jogo.gd")
 const Lapides = preload("res://scripts/prototipo_3d/lapides.gd")
 const TeclaDasBancadas = preload("res://scripts/prototipo_3d/tecla_das_bancadas.gd")
+const TeclaDosMoradores = preload("res://scripts/prototipo_3d/tecla_dos_moradores.gd")
+const ConquistaDaMissao = preload("res://scripts/prototipo_3d/conquista_da_missao.gd")
+const LuzDourada = preload("res://scripts/prototipo_3d/luz_dourada.gd")
 const ArvoresInfo = preload("res://scripts/prototipo_3d/arvores_info.gd")
 const PlacasNomes = preload("res://scripts/prototipo_3d/placas_nomes.gd")
 const BonecoDaMochila = preload("res://scripts/prototipo_3d/boneco_da_mochila.gd")
@@ -41,6 +44,10 @@ const CasaDoJogador = preload("res://scripts/prototipo_3d/casa_do_jogador.gd")
 const LavouraVale = preload("res://scripts/prototipo_3d/lavoura_vale.gd")
 const NavegacaoVale = preload("res://scripts/prototipo_3d/navegacao_vale.gd")
 const CemiterioVale = preload("res://scripts/prototipo_3d/cemiterio_vale.gd")
+const PonteVale = preload("res://scripts/prototipo_3d/ponte_vale.gd")
+const LombadaVale = preload("res://scripts/prototipo_3d/lombada_vale.gd")
+const FazendaVale = preload("res://scripts/prototipo_3d/fazenda_vale.gd")
+const NarracaoDoVale = preload("res://scripts/prototipo_3d/narracao_do_vale.gd")
 const MENU_SCENE := "res://scenes/prototipo_3d/abertura.tscn"
 ## Raio de terra firme em volta do ponto de chegada.
 const RAIO_CHEGADA := 6.0
@@ -124,6 +131,14 @@ var navegacao: Node3D
 ## O cemitério que a missão do Damião conserta: as lajes tortas e o cercado
 ## (`cemiterio_vale.gd`).
 var cemiterio: Node3D
+## A ponte do rio grande, cercada até a obra da frente da trilha (`ponte_vale.gd`).
+var ponte_do_rio: Node3D
+## A lombada de pedra, a lapa e a cabra da frente do ofício (`lombada_vale.gd`).
+var lombada: Node3D
+## A fazenda do convite e o dia dela (`fazenda_vale.gd`).
+var fazenda: Node3D
+## A voz do mundo, sem nome, sobre o escuro (`narracao_do_vale.gd`).
+var narracao: CanvasLayer
 ## As plaquinhas de nome dos moradores; somem com tela aberta (placas_nomes.gd).
 var placas
 ## O personagem em 3D na mochila, ao lado dos encaixes (boneco_da_mochila.gd).
@@ -136,6 +151,12 @@ var achados	# achados_vale.gd — cordéis, sinais e cartas no chão
 var pesca	# pesca_vale.gd — a vara na mão e o E na beira da água
 ## O E na bancada da oficina e na fogueira (`tecla_das_bancadas.gd`).
 var tecla_das_bancadas: Node
+## O E nos moradores: conversar e cumprir passo (`tecla_dos_moradores.gd`).
+var tecla_dos_moradores: Node
+## A tela da missão cumprida (`conquista_da_missao.gd`).
+var conquista: CanvasLayer
+## A luz dourada da chegada à chapada (`luz_dourada.gd`), uma das cenas dos passos.
+var luz_dourada: CanvasLayer
 
 
 func _enter_tree() -> void:
@@ -579,14 +600,33 @@ func _ready() -> void:
 				roca.depois_de = func() -> bool: return pedro == null or pedro.passou("roca")
 		if fila != null:
 			fila.depois_de = depois_da_chegada
+	# A PONTE DO RIO GRANDE (data/missoes_ponte.json), a frente da trilha do 2D:
+	# ver a ponte cercada, a lenha, as tábuas e a obra. É enredo — a fazenda do
+	# convite fica do outro lado do rio —, e por isso é a PRIMEIRA fila que o E
+	# no Pedro abre depois da chegada: pendurada antes das outras dele.
+	#
 	# AS MISSÕES DO ARRAIAL, do Pedro, DEPOIS DO TUTORIAL: no 2D elas vêm
-	# "depois que o Pedro termina de ensinar a sobreviver". A cadeia fica
-	# pendurada nele, mas só abre com a do guia terminada e a despedida dita.
+	# "depois que o Pedro termina de ensinar a sobreviver", e a ponte é do
+	# tutorial — o mirante é "a segunda coisa que muda neste arraial em vinte
+	# anos", e a primeira é ela. A cadeia fica pendurada nele, mas só abre com a
+	# do guia terminada, a despedida dita e a ponte de pé.
 	if pedro != null:
+		var da_ponte = _pendurar_cadeia(pedro, "res://data/missoes_ponte.json", 6.0, "pedro_ponte")
+		if da_ponte != null:
+			da_ponte.depois_de = func() -> bool: return pedro.terminou_o_tutorial()
+		# A CHAPADA DO SEU BENEDITO (data/missoes_chapada.json), a frente do 2D que
+		# ESPERA A PRIMEIRA COLHEITA: a conversa de terra que poderia ser sua, dita a
+		# quem nunca tirou nada do chão, é conversa no vazio (`_frente_da_chapada`).
+		var da_chapada = _pendurar_cadeia(pedro, "res://data/missoes_chapada.json", 6.0, "pedro_chapada")
+		if da_chapada != null:
+			da_chapada.depois_de = func() -> bool:
+				var roca = _cadeias.get("cosme_roca")
+				return pedro.terminou_o_tutorial() and roca != null and roca.passou("colher")
 		var do_arraial = _pendurar_cadeia(pedro, "res://data/missoes_arraial.json", 6.0, "pedro_arraial")
 		if do_arraial != null:
 			do_arraial.depois_de = func() -> bool:
-				return pedro.missao >= pedro.MISSOES.size() and bool(pedro.get("_despedida_feita"))
+				return pedro.missao >= pedro.MISSOES.size() and bool(pedro.get("_despedida_feita")) \
+					and (da_ponte == null or da_ponte.acabou())
 	# O SAVEIRO DA ESTAÇÃO (data/missoes_saveiro.json): o Seu Benedito, que vende
 	# a colheita para o saveiro há quarenta e duas safras, ensina que o mestre
 	# Quirino encosta no píer uma vez por estação — depois do tutorial, que antes
@@ -623,6 +663,12 @@ func _ready() -> void:
 	cemiterio.name = "Cemiterio"
 	add_child(cemiterio)
 	cemiterio.configurar(world, _cadeias.get("damiao"))
+	# A PONTE DO RIO GRANDE, cercada nas duas cabeceiras até a obra da frente da
+	# trilha (data/missoes_ponte.json). Quem diz é o `Obras`, que vai no save.
+	ponte_do_rio = PonteVale.new()
+	ponte_do_rio.name = "PonteDoRio"
+	add_child(ponte_do_rio)
+	ponte_do_rio.configurar(world)
 	# OS ACONTECIMENTOS QUE UM PASSO PODE ESPERAR (meta "evento"): abrir a tela
 	# do P. Todas as cadeias ouvem, mesmo as que ainda não chegaram no passo.
 	social.abriu.connect(func() -> void: _avisar_as_cadeias("abriu_arraial"))
@@ -650,13 +696,53 @@ func _ready() -> void:
 	add_child(marcos)
 	marcos.configurar(world, player, hud, interiores)
 	_pendurar_as_filas_da_fe()
+	_pendurar_as_frentes_do_2d()
+	# A LOMBADA DA LAPA E DA CABRA, entre a casa e a chapada: a lapa é alvo de
+	# trabalho (`_recursos`), e a cabra desce com o passo da frente dela, que
+	# acabou de ser pendurada (data/missoes_lombada.json).
+	lombada = LombadaVale.new()
+	lombada.name = "Lombada"
+	add_child(lombada)
+	lombada.configurar(world, _cadeias.get("pedro_lombada"), _recursos)
+	# A FAZENDA DO CONVITE, do outro lado do rio grande, e o dia dela: a manhã
+	# seguinte à fé escolhida, com a ponte de pé (data/missoes_fazenda.json).
+	fazenda = FazendaVale.new()
+	fazenda.name = "Fazenda"
+	add_child(fazenda)
+	fazenda.configurar(world, self)
 	interiores.entrou.connect(_ao_mudar_de_lado.unbind(1))
 	interiores.saiu.connect(_ao_mudar_de_lado.unbind(1))
+	# O E NOS MORADORES (tecla_dos_moradores.gd): conversar, cumprir o passo que
+	# manda falar com alguém ou levar alguma coisa, e abrir a fila de quem tem o
+	# que pedir. Entra depois de todo mundo que ouve o E, e por isso o recebe
+	# primeiro: com alguém ao alcance, conversar vem antes do resto.
+	tecla_dos_moradores = TeclaDosMoradores.new()
+	tecla_dos_moradores.name = "TeclaDosMoradores"
+	add_child(tecla_dos_moradores)
+	tecla_dos_moradores.configurar(player, hud,
+		func() -> Array:
+			var todos: Array = moradores.duplicate()
+			if pedro != null:
+				todos.append(pedro)
+			return todos,
+		func() -> bool: return not _lendo() and (telas == null or telas.aberta() == ""))
+	# A CONQUISTA: toda missão cumprida escurece a tela e festeja
+	# (conquista_da_missao.gd).
+	conquista = ConquistaDaMissao.new()
+	conquista.name = "ConquistaDaMissao"
+	add_child(conquista)
+	luz_dourada = LuzDourada.new()
+	luz_dourada.name = "LuzDourada"
+	add_child(luz_dourada)
+	narracao = NarracaoDoVale.new()
+	narracao.name = "NarracaoDoVale"
+	add_child(narracao)
 	# A PARTIDA SALVA entra depois de o vale estar montado — moradores, Pedro,
 	# luta —, porque o estado do mundo aponta para eles. Ver Partida e
 	# `estado_para_salvar`.
 	Salvamento.registrar_mundo(self)
 	var retomou_partida := _retomar_a_partida()
+	_ligar_os_acontecimentos_das_frentes()
 	_conferir_o_relogio_parado()
 	# DOIS FÔLEGOS: o vigor do corpo (a barra verde da corrida e do golpe) e a
 	# reserva do dia (o `Energia`), cada um na sua conta. Ver `vigor_maximo`.
@@ -785,6 +871,134 @@ func _pendurar_as_filas_da_fe() -> void:
 	# é refeito a cada carga — método de nó liberado o Godot desliga sozinho.
 	Fe.adotou.connect(_ao_entrar_numa_fe)
 	Fe.migrou.connect(_ao_migrar_de_fe)
+
+
+## AS FRENTES DO 2D QUE NÃO PEDEM LUGAR NOVO (docs/projeto/MISSOES_DO_2D.md): o
+## combate, a pesca e a teia de talentos já rodavam no vale, e ninguém levava o
+## jogador até eles.
+##
+## AS ARMAS E O OFÍCIO são do Pedro, depois da chegada, cada uma aberta por um E
+## nele — penduradas depois do arraial e da fé, que são enredo e têm a vez antes
+## na conversa. A CAPOEIRA é do Cosme e da fé do candomblé: abre com a mesa da
+## folha cumprida e congela fora dele. A META DOS CAITITUS abre sozinha quando a
+## conta de abatidos chega (`_conferir_as_metas`), e fecha no E no Pedro.
+func _pendurar_as_frentes_do_2d() -> void:
+	if pedro != null:
+		# A LAPA E A CABRA (data/missoes_lombada.json), a frente do ofício do 2D, a
+		# primeira das de ofício e DEPOIS DAS DE ENREDO no E do Pedro (a ponte, a
+		# chapada, o mirante e a fé): no 2D o enredo entra na frente. ESPERA A LENHA
+		# DA PONTE, como lá — a missão da picareta abria na primeira machadada, e o
+		# jogador pulava as falas apertando E no tronco (`_frente_do_oficio`).
+		var da_lombada = _pendurar_cadeia(pedro, "res://data/missoes_lombada.json", 6.0, "pedro_lombada")
+		if da_lombada != null:
+			da_lombada.depois_de = func() -> bool:
+				var da_ponte = _cadeias.get("pedro_ponte")
+				return pedro.terminou_o_tutorial() and da_ponte != null and da_ponte.passou("ponte_lenha")
+		for qual in ["armas", "oficio"]:
+			var frente = _pendurar_cadeia(pedro, "res://data/missoes_%s.json" % qual, 6.0, "pedro_" + qual)
+			if frente != null:
+				frente.depois_de = func() -> bool: return pedro.terminou_o_tutorial()
+		_pendurar_cadeia(pedro, "res://data/missoes_metas.json", 0.0, "pedro_metas")
+		# A JORNADA DA FAZENDA (data/missoes_fazenda.json): não abre no E; quem a
+		# começa é o dia dela (`fazenda_vale.gd`).
+		_pendurar_cadeia(pedro, "res://data/missoes_fazenda.json", 0.0, "pedro_fazenda")
+		var bichos = JSON.parse_string(FileAccess.get_file_as_string("res://data/colecionaveis/bichos.json"))
+		if bichos is Dictionary:
+			var caititu: Dictionary = ((bichos as Dictionary).get("bichos", {}) as Dictionary).get("caititu", {})
+			_caititus_da_meta = int((caititu.get("meta", {}) as Dictionary).get("conta", _caititus_da_meta))
+	var cosme := _achar_morador("cosme")
+	if cosme != null:
+		var capoeira = _pendurar_cadeia(cosme, "res://data/missoes_capoeira.json", 4.0, "cosme_capoeira")
+		if capoeira != null:
+			capoeira.depois_de = func() -> bool:
+				var mesa = _cadeias.get("fe_candomble")
+				return Fe.ativa == "candomble" and mesa != null and mesa.acabou()
+			capoeira.so_enquanto = func() -> bool: return Fe.ativa == "candomble"
+
+
+## Quantos caititus abrem a meta do gibão (`bichos.json`, a parede da Guilda).
+var _caititus_da_meta := 10
+
+
+## A META ABRE SOZINHA: com a conta de caititus derrubados, o Pedro chama.
+## O SOCORRO DA MUNGUNZÁ (o `_vigiar_o_folego` do 2D): trinta e seis paus de
+## lenha não cabem num fôlego só, e a frente da ponte não pode morrer de fome —
+## quem esgota no meio dela fica sem nada a fazer a não ser dormir. Na lenha e
+## nas tábuas, quem não aguenta mais bater e não tem o que comer ganha a panela
+## da mãe do Pedro: seis cuias, uma vez por partida (a lembrança vai na fila da
+## ponte, que vai no save). Depois da chegada o Pedro não segue o jogador, então
+## a fala vem na caixa, como a explicação do corpo, e não no balão dele.
+const CUIAS_DE_MUNGUNZA := 6
+const PASSOS_DO_SOCORRO := ["ponte_lenha", "tabuas"]
+
+
+func _conferir_o_socorro() -> void:
+	var ponte = _cadeias.get("pedro_ponte")
+	if ponte == null or not ponte.iniciado or ponte.acabou() or ponte.aconteceu("socorro"):
+		return
+	if not PASSOS_DO_SOCORRO.has(str(ponte.passo_atual().get("id", ""))):
+		return
+	if Dialogo.ocupado() or Energia.aguenta("bater", 1.0):
+		return
+	if Inventario.tem("mungunza") or Efeitos.tem("comida"):
+		return
+	ponte.registrar_evento("socorro")
+	var linhas: Array = []
+	for fala in (Jogo.dados("res://data/missoes_ponte.json").get("socorro", []) as Array):
+		linhas.append(str(IdiomaMenu.campo(fala, "texto", "")))
+	Dialogo.falar(str(pedro.dados.get("nome", "Pedro")) if pedro != null else "Pedro", linhas)
+	Inventario.adicionar("mungunza", CUIAS_DE_MUNGUNZA)
+	Audio.efeito("pegar")
+
+
+func _conferir_as_metas() -> void:
+	var metas = _cadeias.get("pedro_metas")
+	if metas != null and not metas.iniciado and Luta.abatidos("caititu") >= _caititus_da_meta:
+		metas.comecar(1.0)
+
+
+## OS ACONTECIMENTOS DAS FRENTES: o golpe que acertou, o bicho que caiu, o que
+## ficou tonto, o bote esquivado, o peixe que veio na linha e o talento
+## destravado. Métodos, e não lambdas: os sinais são de autoloads.
+func _ao_acertar(golpe: String, especie: String, derrubou: bool, tonteou: bool) -> void:
+	_avisar_as_cadeias("acertou:" + golpe)
+	if derrubou:
+		_avisar_as_cadeias("derrubou:" + especie)
+	if tonteou:
+		_avisar_as_cadeias("tonteou")
+
+
+func _ao_esquivar(_especie: String) -> void:
+	_avisar_as_cadeias("esquivou")
+
+
+func _ao_pescar(_peixe: String, quantos: int) -> void:
+	for i in maxi(quantos, 1):
+		_avisar_as_cadeias("pescou")
+
+
+## Destravou um nó da teia: o `Talentos` só diz que mudou, e a carga do save
+## também muda — por isso a conta começa DEPOIS da partida salva
+## (`_ligar_os_acontecimentos_das_frentes`), e só a que cresce avisa.
+var _talentos_destravados := -1
+
+
+func _ao_mudar_os_talentos() -> void:
+	var agora: int = Talentos.destravados.size()
+	if _talentos_destravados >= 0 and agora > _talentos_destravados:
+		_avisar_as_cadeias("destravou_talento")
+	_talentos_destravados = agora
+
+
+func _ligar_os_acontecimentos_das_frentes() -> void:
+	_talentos_destravados = Talentos.destravados.size()
+	for ligado in [[Luta.acertou, _ao_acertar], [Luta.esquivou, _ao_esquivar],
+			[Pesca.terminou, _ao_pescar], [Talentos.mudou, _ao_mudar_os_talentos]]:
+		if not (ligado[0] as Signal).is_connected(ligado[1]):
+			(ligado[0] as Signal).connect(ligado[1])
+	# O J ABERTO (a caderneta da chegada).
+	if painel != null and painel.has_signal("abriu") and not painel.abriu.is_connected(_avisar_as_cadeias):
+		painel.abriu.connect(_avisar_as_cadeias.bind("abriu_painel"))
 
 
 func _ao_migrar_de_fe(_de: String, para: String) -> void:
@@ -1023,6 +1237,8 @@ func _process(_delta: float) -> void:
 	if _conferir_a_porta_em <= 0.0:
 		_conferir_a_porta_em = 0.5
 		_acertar_a_porta_da_casa()
+		_conferir_as_metas()
+		_conferir_o_socorro()
 	_atualizar_relogio()
 
 
@@ -1812,7 +2028,9 @@ func _exit_tree() -> void:
 		Vida.esta_lendo = Callable()
 	if Mochila.abrir_documento == Callable(self, "_ler_documento"):
 		Mochila.abrir_documento = Callable()
-	for ligado in [[Cozinha.cozinhou, _ao_cozinhar], [Cozinha.comeu, _ao_comer], [Oficina.fabricou, _ao_fabricar]]:
+	for ligado in [[Cozinha.cozinhou, _ao_cozinhar], [Cozinha.comeu, _ao_comer], [Oficina.fabricou, _ao_fabricar],
+			[Luta.acertou, _ao_acertar], [Luta.esquivou, _ao_esquivar], [Pesca.terminou, _ao_pescar],
+			[Talentos.mudou, _ao_mudar_os_talentos]]:
 		if (ligado[0] as Signal).is_connected(ligado[1]):
 			(ligado[0] as Signal).disconnect(ligado[1])
 	# UMA FALA ABERTA NÃO SOBREVIVE AO VALE (#21). O `Dialogo` é autoload e fica;
@@ -1931,6 +2149,25 @@ func _achar_morador(quem: String) -> Node3D:
 	return null
 
 
+## AS CENAS DOS PASSOS (`cena` no dado da missão, `CadeiaDeMissoes.cena`): a luz
+## dourada da chegada à chapada, a cabra que desce da lombada, o portão da fazenda
+## e o pé da escadaria.
+func _tocar_a_cena(nome: String) -> void:
+	match nome:
+		"luz_dourada":
+			if luz_dourada != null:
+				luz_dourada.tocar()
+		"cabra_desce":
+			if lombada != null:
+				lombada.a_cabra_desce()
+		"portao_se_abre":
+			if fazenda != null:
+				fazenda.o_portao_se_abre()
+		"chegou_ao_patio":
+			if fazenda != null:
+				fazenda.chegou_ao_patio()
+
+
 func _pendurar_cadeia(morador: Node3D, arquivo: String, perto: float, chave: String = "") -> Node:
 	var cadeia := CadeiaDeMissoes.new()
 	cadeia.name = "CadeiaDeMissoes" if chave == "" else "CadeiaDeMissoes_" + chave
@@ -1946,6 +2183,7 @@ func _pendurar_cadeia(morador: Node3D, arquivo: String, perto: float, chave: Str
 		missao_do_vale_mudou.emit(t, a, i, n))
 	# A RECOMPENSA DO PASSO (#48) é dita no HUD, como no 2D.
 	cadeia.pagou.connect(func(texto: String) -> void: hud.set_notice(texto))
+	cadeia.cena.connect(_tocar_a_cena)
 	morador.add_child(cadeia)
 	_cadeias[chave if chave != "" else str(morador.dados.get("id", ""))] = cadeia
 	return cadeia

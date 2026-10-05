@@ -11,7 +11,7 @@
 		"porco": {"tipo": "quadrupede", "caixa": [0.45, 0.55, 1.05], "cor": "d8a49c", "passo": 0.6, "corrida": 2.2},
 		"leitao": {"tipo": "quadrupede", "caixa": [0.22, 0.28, 0.48], "cor": "e2b2aa", "passo": 0.6, "corrida": 2.4},
 		"jumento": {"tipo": "quadrupede", "caixa": [0.45, 1.1, 1.4], "cor": "8a8478", "passo": 0.7, "corrida": 2.4},
-		"cabra": {"tipo": "quadrupede", "caixa": [0.3, 0.75, 0.95], "cor": "e6dfd0", "passo": 0.8, "corrida": 2.8},
+		"cabra_solta": {"tipo": "quadrupede", "caixa": [0.3, 0.75, 0.95], "cor": "e6dfd0", "passo": 0.8, "corrida": 2.8},
 		"bode": {"tipo": "quadrupede", "caixa": [0.32, 0.8, 1.0], "cor": "7a6a58", "passo": 0.8, "corrida": 2.8},
 		"galo": {"tipo": "ave", "caixa": [0.22, 0.6, 0.5], "cor": "a8442f", "passo": 0.7, "corrida": 2.4},
 		"galinha": {"tipo": "ave", "caixa": [0.2, 0.42, 0.38], "cor": "c9a87c", "passo": 0.6, "corrida": 2.2},
@@ -28,7 +28,7 @@
 			{"rotina": "cao", "especie": "filhote_caramelo", "porta": [1.9, 0, 3.1], "segue": "cachorro_caramelo"},
 			{"rotina": "porco", "especie": "porco", "quantos": 2, "chiqueiro": [-2.5, 0, -5.9], "raio": 1.3},
 			{"rotina": "porco", "especie": "leitao", "chiqueiro": [-2.5, 0, -5.9], "raio": 1.3},
-			{"rotina": "solto", "especie": "cabra", "quantos": 2, "terreiro": [4.2, 0, -3.8], "raio": 2.6},
+			{"rotina": "solto", "especie": "cabra_solta", "quantos": 2, "terreiro": [4.2, 0, -3.8], "raio": 2.6},
 			{"rotina": "solto", "especie": "bode", "terreiro": [4.2, 0, -3.8], "raio": 2.6},
 			{"rotina": "bando", "terreiro": [-4.6, 0, -2.9], "raio": 2.2, "poleiro": "pitangueira",
 				"aves": [{"especie": "galo", "lider": true}, {"especie": "galinha", "quantos": 5}, {"especie": "pintinho", "quantos": 4, "segue": "galinha"}]}

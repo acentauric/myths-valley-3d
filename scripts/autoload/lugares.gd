@@ -44,6 +44,25 @@ const DE_PARA := {
 	"casa_de_pasto": "Restaurante",
 	"pier": "Pier",
 	"ponte_da_vila": "Ponte",
+	# O RIO GRANDE é o rio do norte do mapa, raso de dar pé, e a ponte dele é a
+	# "Ponte" do KML, onde a Rua Principal o cruza: cercada até a primeira obra do
+	# jogo (`ponte_vale.gd`, data/missoes_ponte.json). O vau é a passagem a pé ao
+	# lado dela (`world_builder._vau_ao_lado`).
+	"vau": "Vau",
+	# A CHAPADA DO SEU BENEDITO, a terra alta para lá da Dona Zefa, de frente para o
+	# rio grande (data/missoes_chapada.json, `world_builder._build_farm`).
+	"expansao": "Chapada",
+	# A LOMBADA DE PEDRA entre a casa e a chapada (`lombada_vale.gd`): a lapa no pé
+	# da rampa e a cabra lá em cima (data/missoes_lombada.json).
+	"lapa": "Lapa",
+	"cabra_do_alto": "Cabra do alto",
+	"lombada": "Lombada",
+	# A FAZENDA DO CONVITE, do outro lado do rio grande (`fazenda_vale.gd`,
+	# data/missoes_fazenda.json): o portão baixo e o pé da escadaria do casarão.
+	"portao_da_fazenda": "Portão da fazenda",
+	"patio_da_fazenda": "Pátio da fazenda",
+	"casarao": "Casarão",
+	"ponte_do_vau": "Ponte",
 	"poco": "Poço",
 	"mirante": "Mirante",
 	"cemiterio": "Cemitério",
@@ -65,6 +84,9 @@ const DE_PARA := {
 	# #11): é ali que a lenha vira tábua e corda, e a chegada manda torcer a
 	# primeira corda nela. A construção de verdade é do Tripo (#27).
 	"oficina": "Oficina",
+	# O CANTEIRO DE OBRAS, a mesa do prumo ao lado da bancada (`bancadas_vale.gd`):
+	# onde se risca a obra antes de levantar, e ela sai mais barata.
+	"canteiro": "Canteiro de obras",
 	"pedras": "Pedras",
 	# As casas do Pedro e da Dona Zefa, abertas por dentro: o vale escolhe o lote
 	# de cada um (`WorldBuilder.casas_dos_moradores`).
@@ -77,16 +99,8 @@ const DE_PARA := {
 ## ninguém aqui esteja escrito errado, e a Fase 2.5 esvazia esta lista movendo
 ## linha por linha para `DE_PARA`.
 const FALTAM_NO_VALE := {
-	"vau": "o rio grande e a passagem de pau — Fase 2.5",
-	"ponte_do_vau": "a ponte reconstruída sobre o vau, que é a primeira obra do jogo — Fase 2.5",
-	"expansao": "a chapada de expansão — Fase 2.5",
-	"lapa": "a lapa e a rampa do morro — Fase 2.5",
 	"lagoa": "a lagoa a leste do Seu Benedito — Fase 2.5",
-	"canteiro": "o canteiro de obras — Fase 7",
 	"curral": "o curral — Fase 7",
-	"portao_da_fazenda": "a fazenda, do outro lado do rio — Fase 2.5",
-	"patio_da_fazenda": "o pátio onde a recepção da 6.1 acontece, dentro da fazenda — Fase 2.5",
-	"cabra_do_alto": "o morro do Seu Benedito — Fase 2.5",
 }
 
 var _mundo: Node3D = null

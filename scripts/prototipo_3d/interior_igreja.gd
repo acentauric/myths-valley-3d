@@ -51,6 +51,16 @@ var _fundo_do_presbiterio := 2.2
 const ALTURA_DO_PRESBITERIO := 0.3
 
 
+## A RAMPA INTEIRA DA PORTA, como a da casa (`comodo._montar_porta`). A rampa
+## estreita da soleira só se subia de frente, e no procedural o cruzeiro da
+## composição fica no pé dela, no eixo da porta: o Pedro que seguia o jogador
+## para dentro batia nele, e o desvio cego o levava em volta ou fachada afora,
+## conforme o quadro — de um dos lados, nunca entrava. Com a rampa da largura da
+## porta e mais um tanto, chega-se à soleira de qualquer lado.
+func _init() -> void:
+	rampa_da_porta_inteira = true
+
+
 func _comprimento_minimo() -> float:
 	return 5.0
 

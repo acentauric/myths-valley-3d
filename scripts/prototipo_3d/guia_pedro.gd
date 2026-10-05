@@ -203,6 +203,14 @@ func _physics_process(delta: float) -> void:
 	if _cadeia.jogador == null:
 		_cadeia.jogador = jogador
 	if terminou_o_tutorial():
+		# DEPOIS DO TUTORIAL ELE AINDA CONDUZ quando uma fila dele pede: a jornada da
+		# fazenda, em que ele leva o jogador pela ponte até o portão, como no 2D.
+		var conduzindo := _outra_que_conduz()
+		if conduzindo != null:
+			_conduzir(delta, conduzindo)
+			_atualizar_animacao(delta)
+			_atualizar_interacao(delta)
+			return
 		super(delta)
 		return
 	if _andar_dando_passagem(delta):
@@ -267,8 +275,8 @@ func _physics_process(delta: float) -> void:
 ## UM PULSO DA CONDUÇÃO (ver CONDUZ_ATE): pela malha até o destino do passo, no
 ## passo do jogador; parado, virado para ele, quando chegou ou quando ele ficou
 ## para trás.
-func _conduzir(delta: float) -> void:
-	var destino := _destino_da_conducao()
+func _conduzir(delta: float, cadeia: Node = null) -> void:
+	var destino := _destino_da_conducao(cadeia)
 	var onde_esta: Vector3 = jogador.global_position
 	var do_jogador := Vector2(onde_esta.x - global_position.x, onde_esta.z - global_position.z).length()
 	if _esperando_quem_ficou:
@@ -291,8 +299,9 @@ func _conduzir(delta: float) -> void:
 ## PARA ONDE ELE CONDUZ: quem o passo apresenta, ou o lugar do passo — e, sendo
 ## o lugar um cômodo em que ele não entra (a casa herdada), a porta dela, do
 ## lado de fora.
-func _destino_da_conducao() -> Vector3:
-	var destino := _cadeia.posicao_do_passo(_cadeia.missao)
+func _destino_da_conducao(cadeia: Node = null) -> Vector3:
+	var quem: Node = cadeia if cadeia != null else _cadeia
+	var destino: Vector3 = quem.posicao_do_passo(quem.missao)
 	var interiores := get_tree().get_first_node_in_group("interiores")
 	if interiores != null:
 		var sala_do_destino: String = interiores.contem(destino)
@@ -306,6 +315,17 @@ func _chegou_ao_destino() -> bool:
 	var falta := _destino_da_conducao() - global_position
 	falta.y = 0.0
 	return falta.length() <= CONDUZ_ATE + 0.5
+
+
+## A OUTRA FILA DELE QUE CONDUZ AGORA, além da chegada: a primeira, entre as
+## penduradas nele, cujo passo em curso tem `conduz`. Ou null.
+func _outra_que_conduz() -> Node:
+	for filho in get_children():
+		if filho == _cadeia or not filho.has_method("passo_atual"):
+			continue
+		if filho.iniciado and not filho.acabou() and bool(filho.passo_atual().get("conduz", false)):
+			return filho
+	return null
 
 
 ## O vigor do jogador, de 0 a 1 (ver `player_controller.vigor_atual`).
@@ -376,6 +396,23 @@ func saudar() -> void:
 		return
 	super()
 	_cadeia.comecar(6.5)
+
+
+## O E NO PEDRO (`tecla_dos_moradores.gd`), quando nenhuma fila usa a conversa:
+## antes da chegada, é a saudação que a abre; durante ela, ele repete o que fazer
+## agora — quem se perdeu pergunta ao Pedro. Depois do tutorial, é a conversa de
+## qualquer morador.
+func conversar() -> void:
+	if not _cadeia.iniciado:
+		saudar()
+		return
+	if not terminou_o_tutorial() and not _cadeia.acabou():
+		var texto := _cadeia.texto_do_passo()
+		if texto != "":
+			_ultima_saudacao_ms = Time.get_ticks_msec()
+			narrar("", texto)
+			return
+	super()
 
 
 ## O mesmo `narrar` da base, mais o `narrou` — que é o que põe a fala do Pedro

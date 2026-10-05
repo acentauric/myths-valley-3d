@@ -1,0 +1,40 @@
+{
+  "observacao": "AS METAS DO CADERNO DOS BICHOS (docs/projeto/MISSOES_DO_2D.md, 3.11), da parede da Guilda do Stardew. Abre sozinha quando a conta de abatidos chega (`data/colecionaveis/bichos.json`, `meta.conta`; o vale confere `Luta.abatidos`), e fecha no E em quem paga. Só a do caititu: a do couro de onça espera a onça no vale.",
+  "dono": "pedro",
+  "nome": "O gibão do pai do Pedro",
+  "nome_en": "Pedro's father's leather jerkin",
+  "nome_es": "El jubón del padre de Pedro",
+  "principal": false,
+  "passos": [
+    {
+      "id": "meta_caititu",
+      "titulo": "Dez caititus",
+      "titulo_en": "Ten peccaries",
+      "titulo_es": "Diez pecaríes",
+      "resumo": "Fale com o Pedro: dez caititus caíram",
+      "resumo_en": "Talk to Pedro: ten peccaries are down",
+      "resumo_es": "Habla con Pedro: cayeron diez pecaríes",
+      "lugar": "pier",
+      "raio": 8.0,
+      "audio": "",
+      "texto": "Dez caititus? O arraial inteiro já sabe. Vem cá, que eu guardo uma coisa do meu pai pra quem fizesse isso.",
+      "texto_en": "Ten peccaries? The whole village already knows. Come here, I've been keeping something of my father's for whoever did that.",
+      "texto_es": "¿Diez pecaríes? Todo el pueblo ya lo sabe. Ven acá, que guardo una cosa de mi padre para quien hiciera eso.",
+      "meta": {
+        "tipo": "falar",
+        "a_quem": "pedro",
+        "raio": 3.4,
+        "resposta": "Era do meu pai: couro de caititu, curtido na casca de angico. Bicho nenhum morde através dele. Agora é seu.",
+        "resposta_en": "It was my father's: peccary hide, tanned in angico bark. No animal bites through it. Now it's yours.",
+        "resposta_es": "Era de mi padre: cuero de pecarí, curtido en corteza de angico. Ningún bicho muerde a través de él. Ahora es tuyo."
+      },
+      "recompensa": {"gibao_de_couro": 1}
+    }
+  ],
+  "arremate": {
+    "texto": "Dez caíram, e o gibão do pai do Pedro é seu.",
+    "texto_en": "Ten are down, and Pedro's father's jerkin is yours.",
+    "texto_es": "Cayeron diez, y el jubón del padre de Pedro es tuyo.",
+    "narra": false
+  }
+}

@@ -66,6 +66,9 @@ signal missao_mudou(texto: String, alvo: Vector3, indice: int, total: int)
 signal pagou(texto: String)
 ## A meta `visitar` riscou um lugar — o vale conta o que se vê dali.
 signal visitou(lugar: String)
+## Fechou um passo que tem `cena` (a luz dourada da chapada, a cabra que desce
+## da lombada): o vale a toca. A cadeia só diz o nome; quem sabe tocar é o vale.
+signal cena(nome: String)
 
 const IdiomaMenu = preload("res://scripts/prototipo_3d/idioma_menu.gd")
 ## Toda cadeia viva entra neste grupo: é por ele que um morador pergunta se tem
@@ -125,6 +128,13 @@ var espera := 0.0
 var despedida_feita := false
 ## O último resumo mandado ao HUD, para só reenviar quando ele muda.
 var _resumo_mostrado := ""
+## A VEZ DE FALAR TEM PRAZO. O anúncio espera a palavra livre — ninguém falando
+## a RAIO_CONVERSA do jogador —, e num lugar cheio (a praça, o píer) um
+## cumprimento emendava no outro: o passo nunca anunciava, e a meta dele nunca
+## começava a contar. Foi a chave com a Dona Candinha que "não deu para
+## interagir". Esperada a vez por este tanto, o passo anuncia mesmo assim.
+const ESPERA_MAXIMA_PELA_VEZ := 6.0
+var _esperou_a_vez := 0.0
 ## O NOME DA MISSÃO INTEIRA ("O cemitério esquecido"), que é o que o diário
 ## lista e o HUD escreve em cima do objetivo — o passo é só onde ela está. Vem
 ## do campo `nome` do arquivo, nos três idiomas.
@@ -270,10 +280,13 @@ func correr(delta: float, palavra_livre: bool) -> void:
 	if espera > 0.0:
 		espera -= delta
 		if espera <= 0.0:
-			if palavra_livre:
+			if palavra_livre or _esperou_a_vez >= ESPERA_MAXIMA_PELA_VEZ:
+				_esperou_a_vez = 0.0
 				anunciar()
 			else:
-				# Alguém ainda fala por perto: tenta de novo daqui a pouco.
+				# Alguém ainda fala por perto: tenta de novo daqui a pouco — mas
+				# não para sempre (ver ESPERA_MAXIMA_PELA_VEZ).
+				_esperou_a_vez += 0.25
 				espera = 0.25
 		return
 
@@ -378,7 +391,7 @@ func resumo_do_passo(passo: Dictionary) -> String:
 			var nomes: Array[String] = []
 			for qual in carga:
 				pede += int(carga[qual])
-				tem += mini(int(carga[qual]), Inventario.quantidade(str(qual)))
+				tem += mini(int(carga[qual]), _tem_para_a_meta(meta, str(qual)))
 				nomes.append(_nome_do_item(str(qual)).to_lower())
 			conta = "%d/%d" % [tem, pede]
 			gerado = tr("Junte %s") % ", ".join(nomes)
@@ -403,6 +416,9 @@ func resumo_do_passo(passo: Dictionary) -> String:
 			var pedidos := eventos_da_meta(meta)
 			if pedidos.size() > 1:
 				conta = "%d/%d" % [_eventos_feitos(meta), pedidos.size()]
+		"contar":
+			var vezes := int(meta.get("quantos", 1))
+			conta = "%d/%d" % [mini(_contados(passo), vezes), vezes]
 		"visitar":
 			var lugares := _lugares_da_meta(meta)
 			conta = "%d/%d" % [_visitados(passo).size(), lugares.size()]
@@ -537,6 +553,11 @@ func _nome_do_dono() -> String:
 ## fala. A PRIMEIRA ferramenta da lista é a que fica acesa na barra — a enxada,
 ## que é o primeiro gesto; a maniva vai para a mochila.
 func entregar(passo: Dictionary) -> void:
+	# O GOLPE QUE O PASSO ENSINA (`ensina`), na mesma fala que o pede: o golpe
+	# forte, a ginga, a meia-lua e a rasteira do `Luta` só valem para quem os
+	# aprendeu, e no vale só a missão os ensina.
+	if str(passo.get("ensina", "")) != "":
+		Luta.aprender(str(passo["ensina"]))
 	var acender := ""
 	for entrega: Dictionary in entregas_do_passo(passo):
 		var item := str(entrega.get("item", ""))
@@ -602,10 +623,11 @@ func falta_a_meta(passo: Dictionary) -> bool:
 	match str(meta.get("tipo", "")):
 		"juntar":
 			# UM ITEM OU VÁRIOS: `item`/`quantos`, ou `itens` {id: quanto} — o
-			# material do mirante é tábua, pedra e corda de uma vez.
+			# material do mirante é tábua, pedra e corda de uma vez. Com
+			# `equivale`, a lenha da ponte conta a tábua já serrada.
 			var carga := _carga_da_meta(meta)
 			for qual in carga:
-				if Inventario.quantidade(str(qual)) < int(carga[qual]):
+				if _tem_para_a_meta(meta, str(qual)) < int(carga[qual]):
 					return true
 			return false
 		"levar", "falar":
@@ -622,6 +644,11 @@ func falta_a_meta(passo: Dictionary) -> bool:
 			# tela do P, por exemplo. Também é memória, pela mesma razão do
 			# encontro. Com `eventos`, todos os da lista.
 			return _eventos_feitos(meta) < eventos_da_meta(meta).size()
+		"contar":
+			# O MESMO ACONTECIMENTO, N VEZES, contadas desde que o passo abriu: o
+			# 'contar' do 2D, que não volta atrás (o golpe forte dado não se
+			# desdá).
+			return _contados(passo) < int(meta.get("quantos", 1))
 		"obra":
 			# A OBRA FEITA, do `Obras` — o mirante levantado. Isso o mundo
 			# guarda sozinho, e o save também.
@@ -641,6 +668,28 @@ func falta_a_meta(passo: Dictionary) -> bool:
 ## novo. Fica na memória da cadeia, que vai no save.
 func registrar_evento(nome: String) -> void:
 	_levados[_chave_do_evento(nome)] = true
+	# O PASSO QUE CONTA ESTE ACONTECIMENTO ('contar': três golpes fortes, dois
+	# peixes): cada vez vira uma lembrança numerada, que vai no save como as
+	# outras — recarregar no meio da conta não a zera.
+	var passo := passo_atual()
+	var meta: Dictionary = passo.get("meta", {})
+	if iniciado and str(meta.get("tipo", "")) == "contar" and str(meta.get("evento", "")) == nome:
+		_levados["conta:%s:%d" % [str(passo.get("id", "")), _contados(passo) + 1]] = true
+
+
+## Quantas vezes o acontecimento do passo 'contar' já aconteceu nele.
+func _contados(passo: Dictionary) -> int:
+	var prefixo := "conta:%s:" % str(passo.get("id", ""))
+	var vezes := 0
+	for chave in _levados:
+		if str(chave).begins_with(prefixo):
+			vezes += 1
+	return vezes
+
+
+## O acontecimento `nome` já chegou a esta fila (`registrar_evento`)?
+func aconteceu(nome: String) -> bool:
+	return bool(_levados.get(_chave_do_evento(nome), false))
 
 
 static func _chave_do_evento(nome: String) -> String:
@@ -720,6 +769,8 @@ func avancar() -> void:
 			Fe.ganhar("missao")
 			Talentos.ganhar("missao")
 		CadernoDoVale.concluir(_id_no_caderno(fechando))
+		if str(fechando.get("cena", "")) != "":
+			cena.emit(str(fechando["cena"]))
 	missao += 1
 	if missao >= passos.size():
 		# O FIM TAMBÉM É CURTO NO HUD: o arremate é fala (balão, ou a nota da
@@ -756,7 +807,7 @@ func _acertar_o_caderno(passo: Dictionary) -> void:
 			var partes: Array[String] = []
 			for qual in carga:
 				var pede := int(carga[qual])
-				var tem := mini(pede, Inventario.quantidade(str(qual)))
+				var tem := mini(pede, _tem_para_a_meta(meta, str(qual)))
 				tem_tudo += tem
 				pede_tudo += pede
 				partes.append("%s %d/%d" % [_nome_do_item(str(qual)), tem, pede])
@@ -765,6 +816,9 @@ func _acertar_o_caderno(passo: Dictionary) -> void:
 			CadernoDoVale.andar(id, tem_tudo, pede_tudo, linha)
 		"evento":
 			CadernoDoVale.andar(id, _eventos_feitos(meta), maxi(eventos_da_meta(meta).size(), 1), str(passo.get("resumo", "")))
+		"contar":
+			var vezes := int(meta.get("quantos", 1))
+			CadernoDoVale.andar(id, mini(_contados(passo), vezes), vezes, str(passo.get("resumo", "")))
 		"obra":
 			CadernoDoVale.andar(id, 0 if falta_a_meta(passo) else 1, 1, str(passo.get("resumo", "")))
 		"visitar":
@@ -864,7 +918,7 @@ func posicao_do_passo(indice: int) -> Vector3:
 				if recursos.has_method("mais_perto_que_rende"):
 					var carga := _carga_da_meta(meta)
 					for qual in carga:
-						if Inventario.quantidade(str(qual)) < int(carga[qual]):
+						if _tem_para_a_meta(meta, str(qual)) < int(carga[qual]):
 							perto = recursos.mais_perto_que_rende(str(qual), de)
 							break
 			"levar", "falar":
@@ -880,13 +934,17 @@ func posicao_do_passo(indice: int) -> Vector3:
 	return Vector3.ZERO if ponto == Lugares.NENHUM else ponto
 
 
-## A DISTÂNCIA EM QUE A CADEIA SE ABRE SOZINHA, em unidades. Zero quer dizer
-## "quem abre é outro" — é o caso do Pedro, que abre no `saudar()`.
+## A FILA SE ABRE CONVERSANDO COM O DONO: maior que zero, ela espera o jogador
+## chegar perto do dono e apertar E (`interagir`). Zero quer dizer "quem abre é
+## outro" — é o caso do Pedro, que abre no `saudar()`, e das filas da fé, que
+## abrem na entrada numa fé.
 ##
-## O Damião abre assim: o jogador sobe ao cemitério, chega perto dele, e a
+## O Damião abre assim: o jogador sobe ao cemitério, vai falar com ele, e a
 ## conversa começa. No jogo 2D quem manda subir lá é a Dona Zefa; enquanto ela
-## não tiver fila de missões no vale, chegar perto faz o mesmo serviço e não
-## deixa a missão inalcançável.
+## não tiver fila de missões no vale, falar com ele faz o mesmo serviço e não
+## deixa a missão inalcançável. Abria sozinha ao chegar perto, até 05/10/2026:
+## "o ideal é o Pedro ensinar a apertar E para iniciar as interações com os
+## NPCs".
 var comeca_perto_de := 0.0
 ## SÓ DEPOIS DE OUTRA COISA: a cadeia não abre enquanto isto responder falso.
 ## A do mirante espera o Pedro terminar o tutorial — no 2D as missões do
@@ -908,12 +966,10 @@ func _physics_process(delta: float) -> void:
 		return
 	if so_enquanto.is_valid() and not bool(so_enquanto.call()):
 		return
+	# QUEM ABRE A FILA DE UM MORADOR É O E (`interagir`): ele espera o jogador ir
+	# falar com ele, e não começa a falar sozinho quando o jogador passa perto.
 	if comeca_perto_de > 0.0 and not iniciado:
-		var perto := dono.global_position.distance_to(jogador.global_position) < comeca_perto_de
-		if perto:
-			comecar(folga_inicial)
-		else:
-			return
+		return
 	correr(delta, _palavra_livre())
 
 
@@ -936,10 +992,11 @@ func _morador(quem: String) -> Node3D:
 	return achado as Node3D
 
 
-## O ENCONTRO: chegar perto de quem espera — com a coisa na mão, ou de mãos vazias.
+## O ENCONTRO: falar com quem espera (o E ao lado dele, `interagir`) — com a
+## coisa na mão, ou de mãos vazias.
 ##
 ## São duas metas com o mesmo corpo. "Levar" pede o item junto; "falar" só pede
-## que o jogador chegue. Escrevê-las separadas seria ter a mesma travessia
+## que o jogador vá falar. Escrevê-las separadas seria ter a mesma travessia
 ## escrita duas vezes, e a segunda ficaria para trás no dia em que a primeira
 ## ganhasse um conserto.
 ##
@@ -960,6 +1017,16 @@ func _morador(quem: String) -> Node3D:
 ## `itens` é a de várias, que é a rede do Tonho ("cinco cordas e três tábuas").
 ## Sem número é um, que é como estava antes de qualquer conta existir.
 static func _carga_da_meta(meta: Dictionary) -> Dictionary:
+	# O MATERIAL DE UMA OBRA PELA CONTA DE HOJE (`da_obra`): com a prancheta do
+	# canteiro, o mirante pede dezoito tábuas e não vinte. O passo que manda
+	# juntar cobra o que a obra vai cobrar — no 2D, "a conta de hoje".
+	var da_obra := str(meta.get("da_obra", ""))
+	if da_obra != "":
+		var custo := {}
+		var conta: Dictionary = Obras.custo(da_obra)
+		for qual in conta:
+			custo[str(qual)] = maxi(int(conta[qual]), 1)
+		return custo
 	var varios: Dictionary = meta.get("itens", {})
 	if not varios.is_empty():
 		var conta := {}
@@ -967,7 +1034,41 @@ static func _carga_da_meta(meta: Dictionary) -> Dictionary:
 			conta[str(qual)] = maxi(int(varios[qual]), 1)
 		return conta
 	var um := str(meta.get("item", ""))
+	if um != "" and meta.has("equivale"):
+		return {um: alvo_da_equivalencia(meta)}
 	return {} if um == "" else {um: maxi(int(meta.get("quantos", 1)), 1)}
+
+
+## A CONTA DA LENHA DA PONTE, tirada das receitas (`equivale`, o
+## `Missoes.contagem` do 2D): a bancada rodada tantas vezes quanto a peça pedida
+## exige, cada vez com o seu custo no item. Doze tábuas a duas lenhas e quatro
+## cordas a três são trinta e seis. O número não se escreve à mão — a obra da
+## oficina que rende mais tira lenha da conta.
+static func alvo_da_equivalencia(meta: Dictionary) -> int:
+	var qual := str(meta.get("item", ""))
+	var credito: Dictionary = meta.get("equivale", {})
+	var alvo := 0
+	for peca in credito:
+		var por_vez := int((Oficina.dados(str(peca)).get("custo", {}) as Dictionary).get(qual, 0))
+		alvo += ceili(float(int(credito[peca])) / float(Oficina.rende(str(peca)))) * por_vez
+	return maxi(alvo, 1)
+
+
+## QUANTO DO ITEM A META CONTA: o que está na mochila e, com `equivale`, o que já
+## virou outra peça na bancada — até o tanto dela que a meta pede. Sem isto,
+## quem serra a tábua antes de juntar a lenha toda vê a conta voltar atrás, e a
+## missão dos trinta e seis paus pede mais paus. A conta que o HUD mostra e a que
+## fecha o passo são esta mesma.
+static func _tem_para_a_meta(meta: Dictionary, qual: String) -> int:
+	var tem := Inventario.quantidade(qual)
+	if str(meta.get("item", "")) != qual:
+		return tem
+	var credito: Dictionary = meta.get("equivale", {})
+	for peca in credito:
+		var por_vez := int((Oficina.dados(str(peca)).get("custo", {}) as Dictionary).get(qual, 0))
+		var feitas := mini(Inventario.quantidade(str(peca)), int(credito[peca]))
+		tem += ceili(float(feitas) / float(Oficina.rende(str(peca)))) * por_vez
+	return tem
 
 
 func _tentar_encontro(passo: Dictionary) -> void:
@@ -975,43 +1076,99 @@ func _tentar_encontro(passo: Dictionary) -> void:
 	var tipo := str(meta.get("tipo", ""))
 	if tipo == "visitar":
 		_tentar_visita(passo, meta)
-		return
-	if tipo == "oferendar":
+	elif tipo == "oferendar":
 		_tentar_oferenda(passo, meta)
-		return
+	# "Levar" e "falar" não fecham mais ao chegar perto: fecham no E, ao lado de
+	# quem recebe (`interagir`).
+
+
+## O E AO LADO DE UM MORADOR (`tecla_dos_moradores.gd`), perguntado a cada fila.
+## "O ideal é o Pedro ensinar a apertar E para iniciar as interações com os
+## NPCs, incluindo cumprir etapas de missões." Devolve se esta fila usou a
+## conversa:
+##
+##   - o dono da fila que espera o jogador vir falar (`comeca_perto_de`) a abre
+##     e diz o primeiro passo;
+##   - quem o passo de agora manda procurar (`falar`), ou a quem levar alguma
+##     coisa (`levar`, com tudo na mochila), recebe e responde.
+func interagir(morador: Node3D) -> bool:
+	match o_que_o_e_faz(morador):
+		"abrir":
+			comecar(0.0)
+			anunciar()
+			return true
+		"falar", "entregar":
+			var passo := passo_atual()
+			# O PASSO QUE AINDA NÃO SE ANUNCIOU — a palavra estava ocupada — se
+			# cumpre do mesmo jeito: quem foi direto à pessoa recebe junto o que o
+			# anúncio daria, a ferramenta e a linha no caderno, sem a fala.
+			if espera > 0.0:
+				espera = 0.0
+				_esperou_a_vez = 0.0
+				entregar(passo)
+				_registrar_no_caderno(passo)
+				_mostrar_o_resumo(passo)
+			_encontrar(passo, morador)
+			return true
+	return false
+
+
+## O QUE O E FARIA COM ESTE MORADOR, nesta fila: "abrir", "falar", "entregar",
+## ou "" (nada aqui). É o que a dica da tecla diz.
+func o_que_o_e_faz(morador: Node3D) -> String:
+	if morador == null or dono == null or (so_enquanto.is_valid() and not bool(so_enquanto.call())):
+		return ""
+	if not iniciado:
+		if morador == dono and comeca_perto_de > 0.0 and (not depois_de.is_valid() or bool(depois_de.call())):
+			return "abrir"
+		return ""
+	if acabou():
+		return ""
+	var passo := passo_atual()
+	if not _recebe(passo, morador):
+		return ""
+	return "entregar" if str((passo.get("meta", {}) as Dictionary).get("tipo", "")) == "levar" else "falar"
+
+
+## O passo manda o jogador a este morador, e ele já pode receber?
+##
+## A ENTREGA TEM CONTA, E PODE TER MAIS DE UM ITEM. A Dona Candinha pede SEIS
+## canas, e enquanto a meta levava um só, chegar ao lado dela com uma cana
+## fechava a missão das seis. O Tonho pede cinco cordas E três tábuas na mesma
+## frase, e partir isso em dois passos seria partir o que ele diz de uma vez.
+func _recebe(passo: Dictionary, morador: Node3D) -> bool:
+	var meta: Dictionary = passo.get("meta", {})
+	var tipo := str(meta.get("tipo", ""))
 	if tipo != "levar" and tipo != "falar":
-		return
-	var id := str(passo.get("id", ""))
-	if bool(_levados.get(id, false)):
-		return
-	# A ENTREGA TEM CONTA, E PODE TER MAIS DE UM ITEM. A Dona Candinha pede SEIS
-	# canas, e enquanto a meta levava um só, chegar ao lado dela com uma cana
-	# fechava a missão das seis: o balão saía, o passo fechava, e a conta não
-	# acontecia. O Tonho pede cinco cordas E três tábuas na mesma frase, e partir
-	# isso em dois passos seria partir o que ele diz de uma vez.
-	var carga := _carga_da_meta(meta)
-	if tipo == "levar":
-		if carga.is_empty():
-			return
-		for qual in carga:
-			if Inventario.quantidade(str(qual)) < int(carga[qual]):
-				return
-	var quem := _morador(str(meta.get("a_quem", "")))
-	if quem == null or jogador == null:
-		return
+		return false
+	if bool(_levados.get(str(passo.get("id", "")), false)):
+		return false
+	var dados = morador.get("dados")
+	if not (dados is Dictionary) or str((dados as Dictionary).get("id", "")) != str(meta.get("a_quem", "")):
+		return false
 	# QUEM NÃO ESTÁ NÃO RECEBE: o mestre Quirino só encosta no píer no dia do
 	# saveiro (o SaveiroVale); fora dele, escondido, a entrega espera.
-	if not quem.is_visible_in_tree():
-		return
-	var no_chao := quem.global_position - jogador.global_position
-	no_chao.y = 0.0
-	if no_chao.length() > float(meta.get("raio", 3.0)):
-		return
-
+	if not morador.is_visible_in_tree():
+		return false
 	if tipo == "levar":
+		var carga := _carga_da_meta(meta)
+		if carga.is_empty():
+			return false
+		for qual in carga:
+			if Inventario.quantidade(str(qual)) < int(carga[qual]):
+				return false
+	return true
+
+
+## O ENCONTRO: o que se leva sai da mochila, a memória guarda que aconteceu, e
+## QUEM FALA NO FIM É QUEM RECEBE, e não quem pediu.
+func _encontrar(passo: Dictionary, quem: Node3D) -> void:
+	var meta: Dictionary = passo.get("meta", {})
+	if str(meta.get("tipo", "")) == "levar":
+		var carga := _carga_da_meta(meta)
 		for qual in carga:
 			Inventario.consumir(str(qual), int(carga[qual]))
-	_levados[id] = true
+	_levados[str(passo.get("id", ""))] = true
 	var resposta := str(meta.get("resposta", ""))
 	if resposta != "" and quem.has_method("narrar"):
 		quem.narrar("", resposta)

@@ -129,12 +129,15 @@ func _run() -> void:
 	# ao lado do morador, com a chegada em curso, ela não abre; acabada, abre.
 	var guia = current_scene.get("pedro")
 	await _ate(func() -> bool: return false, 1.5)
+	_conferir(not cadeia.iniciado, "ao lado do Tonho, a fila dele abriu sozinha, sem o E")
+	await _falar_com(tonho)
 	_conferir(not cadeia.iniciado, "a fila do Tonho abriu com a chegada do Pedro em curso")
 	if guia != null:
 		guia.missao = guia.MISSOES.size()
 		guia.set("_despedida_feita", true)
+	await _falar_com(tonho)
 	var abriu := await _ate(func() -> bool: return bool(cadeia.iniciado), SEGUNDOS_PARA_ANUNCIAR)
-	_conferir(abriu, "cheguei ao lado do Tonho e a conversa não abriu")
+	_conferir(abriu, "com o E no Tonho, a conversa não abriu")
 	if not abriu:
 		_fechar()
 		return
@@ -175,6 +178,7 @@ func _run() -> void:
 
 	jogador.global_position = tonho.global_position + Vector3(1.0, 0.0, 0.8)
 	await _frames(3)
+	await _falar_com(tonho)
 	await _ate(func() -> bool: return cadeia.missao > na_rede, 5.0)
 	_conferir(cadeia.missao == na_rede,
 		"cheguei com uma tábua de menos e a rede fechou: a conta da entrega não é feita item por item")
@@ -189,6 +193,7 @@ func _run() -> void:
 	var corda_antes: int = inv.quantidade("corda")
 	var tabua_antes: int = inv.quantidade("tabua")
 	await _frames(3)
+	await _falar_com(tonho)
 	var fez_a_rede := await _ate(func() -> bool: return cadeia.missao > na_rede, SEGUNDOS_POR_PASSO)
 	_conferir(fez_a_rede, "cheguei com as cinco cordas e as três tábuas e a rede não fechou")
 	print("  %-16s %s" % ["pescador_rede", "fechou" if fez_a_rede else "PRESO"])
@@ -236,11 +241,13 @@ func _run() -> void:
 	respostas.clear()
 	jogador.global_position = tonho.global_position + Vector3(1.0, 0.0, 0.8)
 	await _frames(3)
+	await _falar_com(tonho)
 	var voltou := await _ate(func() -> bool: return cadeia.missao > no_armazem, SEGUNDOS_POR_PASSO)
 	_conferir(voltou, "voltei ao Tonho e o passo da terra não fechou")
 	print("  %-16s %s" % ["tonho_terra", "fechou" if voltou else "PRESO"])
-	_conferir(tonho._balao_tempo > 0.0 or not respostas.is_empty(),
-		"quem entrega a terra não falou: a fala do fim ficou na boca de quem mandou embora")
+	var no_balao := str(tonho.balao.get("_texto").text)
+	_conferir(tonho._balao_tempo > 0.0 and (no_balao.contains("chão") or no_balao.contains("terra")),
+		"quem entrega a terra não falou: a fala do fim ficou na boca de quem mandou embora ('%s')" % no_balao)
 	if not respostas.is_empty():
 		var tudo2 := " ".join(respostas)
 		_conferir(tudo2.contains("chão") or tudo2.contains("terra"),
@@ -276,6 +283,13 @@ func _run() -> void:
 		"recarregar esqueceu a entrega da terra")
 
 	_fechar()
+
+
+## O E AO LADO DE QUEM SE FALA, pelo caminho do jogo (`tecla_dos_moradores.gd`):
+## conversar, abrir a fila do morador, cumprir o passo que manda a ele.
+func _falar_com(morador) -> void:
+	current_scene.get("tecla_dos_moradores").usar(morador)
+	await process_frame
 
 
 func _fechar() -> void:

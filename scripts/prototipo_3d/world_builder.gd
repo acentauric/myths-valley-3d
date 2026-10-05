@@ -18,6 +18,8 @@ const Camadas = preload("res://scripts/prototipo_3d/camadas.gd")
 const CoqueiroCortado = preload("res://scripts/prototipo_3d/coqueiro_cortado.gd")
 const MAP_CATALOG := "res://data/mapas/regioes.json"
 const ComposicaoVale = preload("res://scripts/prototipo_3d/composicao_vale.gd")
+const LombadaVale = preload("res://scripts/prototipo_3d/lombada_vale.gd")
+const FazendaVale = preload("res://scripts/prototipo_3d/fazenda_vale.gd")
 const TERREIRO_CASA := preload("res://scenes/prototipo_3d/terreiro_casa.tscn")
 const CASA_TAIPA_CAL_TEXTURE := preload("res://assets/prototipo_3d/materiais/cal_taipa_envelhecida_v1.png")
 const TELHA_COLONIAL_TEXTURE := preload("res://assets/prototipo_3d/materiais/telha_colonial_envelhecida_v1.png")
@@ -83,6 +85,21 @@ const GAMELEIRA_M := Vector3(-300, 0, 560)
 const VAO_NORTE_DO_SOBREVOO_M := Vector3(294, 0, -50)
 var _fogo_do_terreiro: Node3D
 
+## AS CLAREIRAS DOS LUGARES NOVOS DAS FRENTES DO 2D, em unidades: a lombada da lapa
+## (o alto e o corredor da rampa), a chapada do Seu Benedito (o alto e a beira de
+## frente para o rio) e a fazenda do convite. Os três caíam no meio da mata — onze a catorze troncos a
+## menos de 12 u —, e tronco atravessando pedra é o que se vê primeiro.
+func _clareiras_das_frentes() -> Array[Vector2]:
+	var lombada := Vector2(LombadaVale.CENTRO_M.x, LombadaVale.CENTRO_M.z) / _meters_per_unit
+	var chapada := Vector2(CHAPADA_DO_BENEDITO_M.x, CHAPADA_DO_BENEDITO_M.z) / _meters_per_unit
+	var lista: Array[Vector2] = [lombada + Vector2(2.0, 0.0), lombada + Vector2(LombadaVale.PE_DA_RAMPA, 0.0),
+		chapada, chapada + Vector2(1.0, -11.0)]
+	# E A FAZENDA: o portão e a guarita, o pátio e o casarão (`FazendaVale.CLAREIRAS_M`).
+	for ponto: Vector2 in FazendaVale.CLAREIRAS_M:
+		lista.append(ponto / _meters_per_unit)
+	return lista
+
+
 ## Lote (posição e giro) de cada construção nomeada, decidido por _loteamento().
 var _lotes: Dictionary = {}
 ## O MODELO E A COLISÃO INTEIRA de cada construção com nome, no estilo Tripo:
@@ -90,6 +107,10 @@ var _lotes: Dictionary = {}
 ## (`interiores.gd`) os acha por aqui, e não pelo nome do nó: há várias casas
 ## de taipa no vale, e o Godot renomeia as repetidas.
 var construcoes: Dictionary = {}
+## AS PONTES, pela âncora: {"centro", "ao_longo" (de cabeceira a cabeceira),
+## "comprimento", "largura"}. Quem cerca a do rio grande até a obra a lê daqui
+## (`ponte_vale.gd`).
+var pontes: Dictionary = {}
 ## A importação inicial pode ignorar a cena, mas uma partida sempre lê a autoria.
 var ignorar_composicao := false
 var caminho_composicao := ComposicaoVale.CENA
@@ -610,7 +631,7 @@ func _montar() -> void:
 	_region.etapa.connect(func(fracao: float, texto: String) -> void: progresso.emit(fracao * 0.75, texto))
 	# Os marcos de fé que o mapa não tem pedem clareira antes de a mata nascer.
 	_region.clareiras.assign([Vector2(TERREIRO_M.x, TERREIRO_M.z) / _meters_per_unit,
-		Vector2(GAMELEIRA_M.x, GAMELEIRA_M.z) / _meters_per_unit])
+		Vector2(GAMELEIRA_M.x, GAMELEIRA_M.z) / _meters_per_unit] + _clareiras_das_frentes())
 	# E o voo do menu pede o vão dele livre na fileira da orla.
 	_region.vaos_do_sobrevoo.assign([Vector2(VAO_NORTE_DO_SOBREVOO_M.x, VAO_NORTE_DO_SOBREVOO_M.z) / _meters_per_unit])
 	await _region.build_region(String(region_data["geometry"]), String(region_data["scenario"]))
@@ -1532,6 +1553,12 @@ const LAVOURA_NA_CASA := Vector3(4.0, 0.0, 14.0)
 ## — que a casa passou a ocupar —, e com a casa aberta por dentro ele aparecia
 ## no meio da sala.
 const CANTEIRO_NA_CASA := Vector3(10.5, 0.0, 12.0)
+## A mesa do canteiro de obras, a do prumo, a partir do meio do roçado: junto
+## da bancada da oficina (-3, -9), atrás dela e da casa.
+const CANTEIRO_DE_OBRAS := Vector3(-3.0, 0.0, -12.0)
+## A chapada do Seu Benedito, em metros a partir da praça (x 24 m a oeste dela,
+## 1.072 m ao norte).
+const CHAPADA_DO_BENEDITO_M := Vector3(-24.0, 0.0, -1072.0)
 
 
 func _build_farm() -> void:
@@ -1546,6 +1573,34 @@ func _build_farm() -> void:
 	# lajedo e a árvore mais perto ficam a mais de 5 m nos dois estilos, e o E
 	# perto dela é só da oficina (`tecla_das_bancadas.gd`).
 	ancoras["Oficina"] = ground_position(origin + Vector3(-3.0, 0.0, -9.0))
+	# A MESA DO CANTEIRO DE OBRAS, a do prumo, junto da do serrote ("a do lado,
+	# com a planta em cima, é outra coisa — é onde se decide obra", no 2D). Ao
+	# fundo, e não do lado: quem encosta na bancada pelo leste é dela, e o tronco
+	# e o lajedo mais perto ficam a dez passos daqui.
+	ancoras["Canteiro de obras"] = ground_position(origin + CANTEIRO_DE_OBRAS)
+	# A CHAPADA DO SEU BENEDITO (`Lugares` "expansao", data/missoes_chapada.json):
+	# a terra alta para lá da Dona Zefa, de frente para o rio grande, "passando
+	# pela terra da Dona Zefa" como no 2D. Posta no vale de hoje, sem mexer no KML
+	# (revisada pelo autor): o chão sobe devagar para o poente, de 5 na casa a 7
+	# ali, e o rio passa 17 u ao norte — "tá vendo a água?".
+	ancoras["Chapada"] = ground_position(_u(CHAPADA_DO_BENEDITO_M))
+	# A LOMBADA, A LAPA E A CABRA (`Lugares` "lapa" e "cabra_do_alto",
+	# data/missoes_lombada.json): o alto de pedra que o vale não tinha perto das
+	# terras, levantado por `lombada_vale.gd` — lugar revisado pelo autor. A âncora
+	# da lombada fica no chão mais alto debaixo dela, que é onde o alto se apoia; a
+	# da cabra, em cima; a da lapa, no pé da rampa, onde a pedra a tranca.
+	var lombada := _u(LombadaVale.CENTRO_M)
+	lombada.y = _footprint_height(lombada, LombadaVale.ALTO.x * 0.5)
+	ancoras["Lombada"] = lombada
+	ancoras["Cabra do alto"] = lombada + Vector3(0.0, LombadaVale.ALTO.y, 0.0)
+	ancoras["Lapa"] = ground_position(lombada + Vector3(LombadaVale.PE_DA_RAMPA + LombadaVale.ANTES_DA_LAPA, 0.0, 0.0))
+	# A FAZENDA DO CONVITE (`Lugares` "portao_da_fazenda" e "patio_da_fazenda",
+	# `fazenda_vale.gd`): do outro lado do rio grande, na ponta da Rua Principal,
+	# logo depois da ponte — revisada pelo autor. O pátio é o pé da escadaria do
+	# casarão, que é onde o 2D fecha o passo.
+	ancoras["Portão da fazenda"] = ground_position(_u(FazendaVale.PORTAO_M))
+	ancoras["Pátio da fazenda"] = ground_position(_u(FazendaVale.PATIO_M))
+	ancoras["Casarão"] = ground_position(_u(FazendaVale.CASARAO_M))
 	ancoras["Lavoura"] = ground_position(_na_casa("Casa de taipa", LAVOURA_NA_CASA))
 	ancoras["LavouraFrente"] = ancoras.get("Casa de taipaFrente", Vector3.BACK)
 	var canteiro := ground_position(_na_casa("Casa de taipa", CANTEIRO_NA_CASA))
@@ -1628,11 +1683,68 @@ func _erguer_ponte(point: Vector3, anchor: String) -> void:
 	bridge.y = _footprint_height(bridge, 5.5) + 0.1
 	ancoras[anchor] = bridge
 	var bridge_yaw := _road_yaw_at(bridge)
-	_construcao("ponte", bridge, bridge_yaw, func():
+	var modelo := _construcao("ponte", bridge, bridge_yaw, func():
 		_box(Vector3(11, 0.35, 6), bridge + Vector3(0, 0.22, 0), Color("987b57"), true, null, bridge_yaw)
 		for side in [-2.8, 2.8]:
 			var rail_offset := Vector3(0, 0.95, side).rotated(Vector3.UP, bridge_yaw)
 			_box(Vector3(11, 0.18, 0.15), bridge + rail_offset, WOOD, true, null, bridge_yaw))
+	# AS MEDIDAS DA PONTE COMO ELA FICOU: as da caixa procedural (11 por 6, comprida
+	# no X dela) ou as do modelo do Tripo, comprido no eixo maior. Girar o yaw leva
+	# o X local para (cos, -sen) e o Z local para (sen, cos).
+	var ao_longo := Vector3(cos(bridge_yaw), 0.0, -sin(bridge_yaw))
+	var comprimento := 11.0
+	var largura := 6.0
+	if modelo != null and modelo.has_meta("limites"):
+		var limites: AABB = modelo.get_meta("limites")
+		comprimento = maxf(limites.size.x, limites.size.z)
+		largura = minf(limites.size.x, limites.size.z)
+		if limites.size.z > limites.size.x:
+			ao_longo = Vector3(sin(bridge_yaw), 0.0, cos(bridge_yaw))
+	pontes[anchor] = {"centro": bridge, "ao_longo": ao_longo, "comprimento": comprimento, "largura": largura}
+
+
+## O VAU DO RIO GRANDE (`Lugares` "vau"): o ponto do rio do norte a VAU_DA_PONTE
+## da ponte, pela linha dele — onde se atravessa a pé, com água na canela,
+## enquanto a ponte está cercada (`ponte_vale.gd`). Rio abaixo pela ordem dos
+## pontos; se a linha acaba antes, rio acima. Sem rio do norte, INF, e o nome não
+## resolve.
+const VAU_DA_PONTE := 8.0
+
+
+func _vau_ao_lado(ponte: Vector3) -> Vector3:
+	if _region == null:
+		return Vector3.INF
+	var alvo := Vector2(ponte.x, ponte.z)
+	var linha := PackedVector2Array()
+	var trecho := -1
+	var perto := Vector2.ZERO
+	var menor := INF
+	for river in _region._rivers:
+		if not _region._is_northern_river(river):
+			continue
+		var pontos: PackedVector2Array = river.points
+		for i in range(pontos.size() - 1):
+			var mais_perto := Geometry2D.get_closest_point_to_segment(alvo, pontos[i], pontos[i + 1])
+			if mais_perto.distance_to(alvo) < menor:
+				menor = mais_perto.distance_to(alvo)
+				linha = pontos
+				trecho = i
+				perto = mais_perto
+	if trecho < 0:
+		return Vector3.INF
+	for sentido in [1, -1]:
+		var falta := VAU_DA_PONTE
+		var de := perto
+		var i: int = trecho + 1 if sentido > 0 else trecho
+		while i >= 0 and i < linha.size():
+			var passo := de.distance_to(linha[i])
+			if passo >= falta:
+				var ali := de + (linha[i] - de).normalized() * falta
+				return ground_position(Vector3(ali.x, 0.0, ali.y))
+			falta -= passo
+			de = linha[i]
+			i += sentido
+	return Vector3.INF
 
 
 func _build_landmark_details() -> void:
@@ -1679,6 +1791,9 @@ func _build_landmark_details() -> void:
 			for side in [-1.8, 1.8]:
 				_box(Vector3(0.3, 1.5, 0.3), pier + Vector3(side, -0.75, offset), WOOD))
 	_erguer_ponte(_region.get_feature_center("Ponte", "poi"), "Ponte")
+	var vau := _vau_ao_lado(ancoras["Ponte"])
+	if vau.is_finite():
+		ancoras["Vau"] = vau
 	var central_bridge := _central_road_river_crossing()
 	if central_bridge.is_finite():
 		_erguer_ponte(central_bridge, "Ponte do rio central")

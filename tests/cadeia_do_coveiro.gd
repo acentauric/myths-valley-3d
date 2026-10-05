@@ -192,7 +192,7 @@ func _run() -> void:
 		_conferir(is_instance_valid(tumulo) and _inclinacao(tumulo) > 0.15,
 			"a laje %d está na lista das tortas e o desenho dela está reto" % indice)
 
-	# --- 6. A CADEIA ABRE SOZINHA AO CHEGAR PERTO DO DAMIÃO ------------------
+	# --- 6. A CADEIA ABRE NO E, AO LADO DO DAMIÃO -----------------------------
 	jogador.spawn_position = damiao.global_position + Vector3(1.4, 0.0, 1.0)
 	jogador.reset_position()
 	await _frames(3)
@@ -200,10 +200,13 @@ func _run() -> void:
 	# ao lado do morador, com a chegada em curso, ela não abre; acabada, abre.
 	var guia = current_scene.get("pedro")
 	await _ate(func() -> bool: return false, 1.5)
+	_conferir(not cadeia.iniciado, "ao lado do Damião, a fila dele abriu sozinha, sem o E")
+	await _falar_com(damiao)
 	_conferir(not cadeia.iniciado, "a fila do Damião abriu com a chegada do Pedro em curso")
 	if guia != null:
 		guia.missao = guia.MISSOES.size()
 		guia.set("_despedida_feita", true)
+	await _falar_com(damiao)
 	var abriu := await _ate(func() -> bool: return bool(cadeia.iniciado), SEGUNDOS_PARA_ANUNCIAR)
 	_conferir(abriu,
 		"cheguei ao lado do Damião e a missão não abriu: ela existe e é inalcançável")
@@ -254,7 +257,7 @@ func _run() -> void:
 					str(meta.get("alvo", "")), int(meta.get("quantos", 1)), id)
 			"levar":
 				# O CONSERTO: antes dele as lajes estão tortas; com a pedra e a
-				# tábua na mochila, chegar ao lado do Damião entrega.
+				# tábua na mochila, o E ao lado do Damião entrega.
 				_conferir(cemiterio.lajes_tortas().size() == 3,
 					"no passo do conserto as lajes já estavam retas: endireitaram antes da pedra e da tábua")
 				var itens: Dictionary = meta.get("itens", {})
@@ -262,6 +265,8 @@ func _run() -> void:
 					inv.adicionar(str(item), int(itens[item]))
 				jogador.spawn_position = damiao.global_position + Vector3(1.2, 0.0, 0.8)
 				jogador.reset_position()
+				await _frames(2)
+				await _falar_com(damiao)
 			"obra":
 				# O CERCADO É OBRA DO J: o plano veio com o passo, a aba aparece
 				# no cemitério, e sem o material ela diz o que falta.
@@ -593,10 +598,17 @@ func _derrubar(recursos, energia, jogador, peca: String, quantos: int, id: Strin
 			% [id, quantos, peca, recursos.derrubados(peca)])
 
 
+## O E AO LADO DE QUEM SE FALA, pelo caminho do jogo (`tecla_dos_moradores.gd`):
+## conversar, abrir a fila do morador, cumprir o passo que manda a ele.
+func _falar_com(morador) -> void:
+	current_scene.get("tecla_dos_moradores").usar(morador)
+	await process_frame
+
+
 func _fechar() -> void:
 	print("")
 	if falhas == 0:
-		print("COVEIRO_OK: o Damião tem fila própria, ela abre ao chegar perto dele, o capim só cai de foice e a foice vem antes do corte, o mato conta pelo grupo e é tronco caído, a capelinha é a pobre, dá as costas para o mar e se reza diante dela, as lajes endireitam com o conserto, o cercado é obra com entrada onde a rua chega e a malha passa por ela, a conta do material fecha, os seis passos fecham, o mato cortado não vira item de mochila, e recarregar devolve a fila no passo certo com o capim cortado e o outeiro como estava")
+		print("COVEIRO_OK: o Damião tem fila própria, ela abre no E, ao lado dele, o capim só cai de foice e a foice vem antes do corte, o mato conta pelo grupo e é tronco caído, a capelinha é a pobre, dá as costas para o mar e se reza diante dela, as lajes endireitam com o conserto, o cercado é obra com entrada onde a rua chega e a malha passa por ela, a conta do material fecha, os seis passos fecham, o mato cortado não vira item de mochila, e recarregar devolve a fila no passo certo com o capim cortado e o outeiro como estava")
 	else:
 		print("coveiro: %d falha(s)" % falhas)
 	quit(1 if falhas > 0 else 0)
