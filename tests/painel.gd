@@ -90,7 +90,7 @@ func _run() -> void:
 	player.reset_position()
 	await _frames(2)
 	dia.pausado = false
-	vale.abrir_o_painel()
+	vale.hud.quests_requested.emit()
 	await _frames(2)
 	_conferir(painel.aberto and painel.visible, "abrir_o_painel não abriu o painel")
 	_conferir(painel.layer > vale.hud.layer, "o painel ficou por baixo do HUD")

@@ -29,6 +29,13 @@ const JUMP_COYOTE_TIME := 0.16
 const RUN_STOP_SPEED := 0.15
 const VIGOR_MAXIMO := 100.0
 const FOLEGO_MAXIMO := 100.0
+const CUSTO_FOLEGO_NADO_POR_SEGUNDO := 5.0
+const INTERVALO_DANO_SEM_FOLEGO := 1.0
+const FRACAO_DANO_SEM_FOLEGO := 0.20
+const CUSTO_VIGOR_NADO_POR_SEGUNDO := 5.0
+const CUSTO_VIGOR_NADO_RAPIDO_POR_SEGUNDO := 10.0
+const FOLEGO_RECUPERACAO_ANDANDO := 2.5
+const FOLEGO_RECUPERACAO_PARADO := 10.0
 const VIGOR_MINIMO_PARA_CORRER := 0.5
 const CUSTO_CORRIDA_POR_SEGUNDO := 5.0
 const CUSTO_PULO_FRACAO := 0.10
@@ -44,6 +51,8 @@ const VELOCIDADE_NADO := 1.5
 ## Quanto do corpo fica abaixo da superfície nadando (fração da altura): entre ANDA_ATE
 ## e NADA_A_PARTIR, então os pés só roçam o fundo perto da hora de voltar a andar.
 const SUBMERSO_NADANDO := 0.68
+## Parado, sem a elevação do clipe de nado, a superfície fica junto ao pescoço.
+const SUBMERSO_NADO_PARADO := 0.84
 ## Degrau que o jogador sobe sem pular (borda da areia, meio-fio, píer).
 const DEGRAU := 0.4
 ## Altura do pivô da câmera (acima dos pés); nadando ele sobe para a cabeça, acima da
@@ -143,11 +152,15 @@ var _jumping := false
 var _last_land := Vector3.INF
 var _knockback_remaining := 0.0
 var _nadando := false
+var _sonda_barco: RayCast3D
+var _visual_nado_elevado := false
+var _tween_altura_nado: Tween
 var _land_check := 0.0
 var _run_toggled := false
 var _ran_since_toggle := false
 var _vigor := VIGOR_MAXIMO
 var _folego := FOLEGO_MAXIMO
+var _timer_dano_sem_folego: Timer
 ## O que está na mão (o machado, o facão, a foice...) e a peça que ela mostra
 ## (`Vestimenta3D.item_na_mao`), "" quando nada.
 var _machado_ancora: Node3D
@@ -170,6 +183,14 @@ func _ready() -> void:
 	# Quem decide o modo é o `prototype.gd`, quando o vale fica pronto
 	# (`set_camera_locked(CameraMouse.travada())`).
 	add_to_group("map_player")
+	_timer_dano_sem_folego = Timer.new()
+	_timer_dano_sem_folego.name = "DanoSemFolego"
+	_timer_dano_sem_folego.wait_time = INTERVALO_DANO_SEM_FOLEGO
+	_timer_dano_sem_folego.one_shot = true
+	_timer_dano_sem_folego.process_callback = Timer.TIMER_PROCESS_PHYSICS
+	_timer_dano_sem_folego.process_mode = Node.PROCESS_MODE_ALWAYS
+	_timer_dano_sem_folego.timeout.connect(_ao_timer_dano_sem_folego)
+	add_child(_timer_dano_sem_folego)
 	spawn_position = position
 	floor_snap_length = 0.35
 	floor_max_angle = deg_to_rad(46)
@@ -180,11 +201,14 @@ func _ready() -> void:
 	collision.shape = capsule
 	collision.position.y = character_height * 0.5
 	add_child(collision)
+	_sonda_barco = RayCast3D.new()
+	_sonda_barco.position.y = 0.25
+	_sonda_barco.target_position = Vector3(0.0, -0.95, 0.0)
+	add_child(_sonda_barco)
 	visual = Node3D.new()
 	visual.name = "Visual"
 	add_child(visual)
-	# No estilo Tripo o viajante gerado no Studio substitui o GLB medieval só quando já
-	# tiver rig e clipes (AnimationPlayer); um modelo estático deslizaria sem andar.
+	# Confere o rig e os clipes do viajante antes de usá-lo no estilo Tripo.
 	var scene: PackedScene = model_scene
 	if Estilo.tripo() and CatalogoAssets.tem_tripo("viajante"):
 		var candidato := CatalogoAssets.cena("viajante")
@@ -480,15 +504,8 @@ func _physics_process(delta: float) -> void:
 		speed = VELOCIDADE_NADO * (2.0 if is_running() else 1.0)
 	elif profundidade > 0.0:
 		speed *= lerpf(1.0, VELOCIDADE_NA_AGUA, clampf(profundidade / (character_height * NADA_A_PARTIR), 0.0, 1.0))
-	# O CANSAÇO PESA NO CORPO, exatamente como no jogo 2D: abaixo de um quinto
-	# do fôlego o passo cai para 62% e a corrida deixa de responder. A regra é
-	# do `Energia`, que os dois projetos compartilham — aqui só se lê o número,
-	# e é por isso que ela não precisou ser reescrita.
-	#
-	# NADA GASTA FÔLEGO NO VALE AINDA, porque não há trabalho aqui: no 2D quem
-	# cobra é a enxada, o machado e a picareta. Então isto é regra ligada e
-	# dormente, e é o estado certo — inventar um custo de corrida seria
-	# escrever mecânica nova em nome de migrar uma antiga.
+	# Energia acompanha o vigor do corpo. Abaixo de um quinto do teto,
+	# a regra de cansaço encurta o passo para 62%.
 	speed *= Energia.passo()
 	if _knockback_remaining > 0.0:
 		# Empurrão (ex.: o coveiro): o impulso manda até o fim, sem controle do jogador.
@@ -508,8 +525,10 @@ func _physics_process(delta: float) -> void:
 				animation_requested.emit(label)
 	_jump_buffer_remaining = maxf(0.0, _jump_buffer_remaining - delta)
 	if _nadando:
-		# Boia: puxa o corpo para a altura de nado, sem gravidade.
-		var altura_nado: float = _click_world.water_level() - character_height * SUBMERSO_NADANDO
+		# Nadando em movimento, o clipe deita e o modelo sobe um pouco. Parado,
+		# o corpo fica na água até o pescoço e a animação de escada não o ergue.
+		var submersao := SUBMERSO_NADANDO if _visual_nado_elevado else SUBMERSO_NADO_PARADO
+		var altura_nado: float = _click_world.water_level() - character_height * submersao
 		velocity.y = clampf((altura_nado - global_position.y) * 5.0, -3.0, 3.0)
 		# Roçando o fundo, não empurra contra ele (o fundo virava parede e prendia).
 		if is_on_floor():
@@ -542,6 +561,7 @@ func _physics_process(delta: float) -> void:
 		visual.rotation.y = lerp_angle(visual.rotation.y, atan2(direction.x, direction.z), 1.0 - exp(-12.0 * delta))
 	if animator:
 		animator.update_motion(Vector2(velocity.x, velocity.z).length(), delta)
+	_atualizar_altura_visual_nado()
 	_land_check -= delta
 	if _land_check <= 0.0 and is_on_floor() and _click_world != null:
 		_land_check = 0.25
@@ -590,7 +610,10 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
 		_rotate_camera(event.relative)
 	if event is InputEventMouseButton and event.pressed:
-		if _camera_locked and event.button_index == MOUSE_BUTTON_LEFT:
+		if event.button_index == MOUSE_BUTTON_WHEEL_UP or event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
+			_aproximar_a_camera(event.button_index == MOUSE_BUTTON_WHEEL_UP)
+			get_viewport().set_input_as_handled()
+		elif _camera_locked and event.button_index == MOUSE_BUTTON_LEFT:
 			_camera_drag_pressed = true
 			_camera_drag_moved = false
 			_camera_drag_double_click = event.double_click
@@ -636,7 +659,7 @@ func _unhandled_input(event: InputEvent) -> void:
 					animation_requested.emit(label)
 				break
 
-## Um passo de zoom: perto é para cima na roda, e o mais no teclado.
+## Um passo de zoom: a roda afasta ou aproxima a câmera; + e - também funcionam.
 func _aproximar_a_camera(perto: bool) -> void:
 	_distance = maxf(1.6, _distance - 0.35) if perto else minf(12.0, _distance + 0.35)
 	if _de_cima:
@@ -758,6 +781,8 @@ func empurrar(impulso: Vector3, segundos: float = 0.45) -> void:
 func _profundidade() -> float:
 	if _click_world == null or not _click_world.has_method("water_level"):
 		return 0.0
+	if _sobre_barco():
+		return 0.0
 	var level: float = _click_world.water_level_at(global_position) if _click_world.has_method("water_level_at") else _click_world.water_level()
 	return maxf(level - global_position.y, 0.0)
 
@@ -771,23 +796,58 @@ func _fundo_da_agua() -> float:
 
 func _atualizar_nado() -> void:
 	var fundo := _fundo_da_agua()
-	var nadar := fundo > character_height * (ANDA_ATE if _nadando else NADA_A_PARTIR)
+	var nadar := fundo > character_height * (ANDA_ATE if _nadando else NADA_A_PARTIR) and not _sobre_barco()
 	if nadar == _nadando:
 		return
 	_nadando = nadar
+	_atualizar_timer_dano_sem_folego()
 	if _nadando:
 		_cancel_walk()
 		_jumping = false
 		navigation_status.emit("Nadando: aqui a água já não dá pé.")
 	if animator and animator.has_method("set_swimming"):
 		animator.set_swimming(_nadando)
-	var ajuste := create_tween().set_parallel()
-	ajuste.tween_property(self, "_altura_do_pivo", PIVO_CAMERA_NADANDO if _nadando else PIVO_CAMERA, 0.35)
-	ajuste.tween_property(visual, "position:y", character_height * MODELO_ACIMA_NADANDO if _nadando else 0.0, 0.35)
+	# A altura do pivô é variável (a câmera suave a lê a cada quadro); o corpo sobe na água
+	# só nadando em movimento (`_atualizar_altura_visual_nado`).
+	create_tween().tween_property(self, "_altura_do_pivo", PIVO_CAMERA_NADANDO if _nadando else PIVO_CAMERA, 0.35)
+
+
+func _atualizar_altura_visual_nado() -> void:
+	var velocidade_horizontal := Vector2(velocity.x, velocity.z).length()
+	var elevar := _nadando and velocidade_horizontal > 0.2
+	if elevar == _visual_nado_elevado:
+		return
+	_visual_nado_elevado = elevar
+	if _tween_altura_nado != null and _tween_altura_nado.is_running():
+		_tween_altura_nado.kill()
+	_tween_altura_nado = create_tween()
+	_tween_altura_nado.tween_property(visual, "position:y", character_height * MODELO_ACIMA_NADANDO if elevar else 0.0, 0.35)
+
+
+func _sobre_barco() -> bool:
+	if _sonda_barco == null or not _sonda_barco.is_inside_tree():
+		return false
+	_sonda_barco.force_raycast_update()
+	var corpo := _sonda_barco.get_collider() as Node
+	return corpo != null and corpo.is_in_group("embarcacao_piso")
 
 
 func is_swimming() -> bool:
 	return _nadando
+
+
+## O respawn acontece com a física parada; não espera um quadro para sair da pose de nado.
+func sair_do_nado_ao_renascer() -> void:
+	_nadando = false
+	_atualizar_timer_dano_sem_folego()
+	if animator and animator.has_method("set_swimming"):
+		animator.set_swimming(false)
+	# A câmera suave relê a altura do pivô desta variável a cada quadro.
+	_altura_do_pivo = PIVO_CAMERA
+	if is_instance_valid(camera_pivot):
+		camera_pivot.position.y = PIVO_CAMERA
+	if is_instance_valid(visual):
+		visual.position.y = 0.0
 
 
 ## Chão sob os pés para o som do passo: madeira no píer, na ponte e na canoa; água rasa
@@ -1119,10 +1179,11 @@ func folego_maximo() -> float:
 
 func definir_folego(valor: float) -> void:
 	var novo := clampf(valor, 0.0, FOLEGO_MAXIMO)
-	if is_equal_approx(novo, _folego):
-		return
+	var mudou := not is_equal_approx(novo, _folego)
 	_folego = novo
-	folego_mudou.emit(_folego)
+	_atualizar_timer_dano_sem_folego()
+	if mudou:
+		folego_mudou.emit(_folego)
 
 
 func gastar_folego(quantidade: float) -> bool:
@@ -1147,22 +1208,60 @@ func gastar_vigor(quantidade: float) -> bool:
 	return true
 
 
+## Nadar sem vigor consome respiração. Ao zerar no nado, perde 20% da vida
+## por segundo. O timer sempre ativo continua durante falas que pausam a física.
+func _cobrar_folego(quantidade: float) -> void:
+	if quantidade > 0.0:
+		definir_folego(_folego - quantidade)
+
+
+func _atualizar_timer_dano_sem_folego() -> void:
+	if _timer_dano_sem_folego == null:
+		return
+	if _nadando and is_zero_approx(_folego) and Vida.atual > 0.0:
+		if _timer_dano_sem_folego.is_stopped():
+			_timer_dano_sem_folego.start()
+	else:
+		_timer_dano_sem_folego.stop()
+
+
+func _ao_timer_dano_sem_folego() -> void:
+	if not _nadando or not is_zero_approx(_folego) or Vida.atual <= 0.0:
+		_atualizar_timer_dano_sem_folego()
+		return
+	Vida.ferir(Vida.maximo() * FRACAO_DANO_SEM_FOLEGO)
+	_atualizar_timer_dano_sem_folego()
+
+
 func _atualizar_vigor(delta: float, corrida_ativa: bool) -> void:
+	if _nadando:
+		var movendo := Vector2(velocity.x, velocity.z).length_squared() > 0.04
+		if not movendo:
+			_definir_vigor(_vigor + VIGOR_RECUPERACAO_PARADO * delta)
+			if _vigor > 0.0:
+				repor_folego(FOLEGO_RECUPERACAO_PARADO * delta)
+			return
+		var custo := CUSTO_VIGOR_NADO_RAPIDO_POR_SEGUNDO if corrida_ativa else CUSTO_VIGOR_NADO_POR_SEGUNDO
+		var tempo_com_vigor := minf(delta, _vigor / custo)
+		_definir_vigor(_vigor - custo * delta)
+		# No quadro em que o vigor acaba, só o tempo restante cobra fôlego.
+		repor_folego(FOLEGO_RECUPERACAO_ANDANDO * tempo_com_vigor)
+		_cobrar_folego(CUSTO_FOLEGO_NADO_POR_SEGUNDO * (delta - tempo_com_vigor))
+		return
 	if corrida_ativa:
-		_definir_vigor(_vigor - CUSTO_CORRIDA_POR_SEGUNDO * delta)
+		gastar_vigor(minf(_vigor, CUSTO_CORRIDA_POR_SEGUNDO * delta))
 		if _vigor <= 0.0:
 			_run_toggled = false
 			_walk_run = false
 			_ran_since_toggle = false
 		return
-	if _vigor >= vigor_maximo():
-		return
 	var gesticulando := animator != null and animator.has_method("gesture_ativa") and bool(animator.call("gesture_ativa"))
-	if _acao_golpe_restante > 0.0 or gesticulando or not is_on_floor():
+	if _nadando or _acao_golpe_restante > 0.0 or gesticulando or not is_on_floor():
 		return
 	var andando := Vector2(velocity.x, velocity.z).length_squared() > 0.04
 	var taxa := VIGOR_RECUPERACAO_ANDANDO if andando else VIGOR_RECUPERACAO_PARADO
 	_definir_vigor(_vigor + taxa * delta)
+	repor_folego((FOLEGO_RECUPERACAO_ANDANDO if andando else FOLEGO_RECUPERACAO_PARADO) * delta)
 
 
 func _definir_vigor(valor: float) -> void:

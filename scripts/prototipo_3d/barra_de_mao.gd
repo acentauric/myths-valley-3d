@@ -107,6 +107,10 @@ func _montar() -> void:
 		conteudo.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 		conteudo.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 		conteudo.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		conteudo.z_index = 2
+		conteudo.add_theme_color_override("font_shadow_color", Color(0.02, 0.025, 0.02, 0.95))
+		conteudo.add_theme_constant_override("shadow_offset_x", 1)
+		conteudo.add_theme_constant_override("shadow_offset_y", 1)
 		espaco.add_child(conteudo)
 
 		var icone := TextureRect.new()
@@ -168,7 +172,9 @@ func _repintar() -> void:
 		# vezes dele — é o que o 2D faz com nó de talento sem arte.
 		if textura != null:
 			conteudo.text = str(quantos) if quantos > 1 or id == "madeira_de_coqueiro" else ""
-			conteudo.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
+			conteudo.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+			conteudo.vertical_alignment = VERTICAL_ALIGNMENT_TOP
+			conteudo.add_theme_font_size_override("font_size", 14)
 		else:
 			conteudo.text = nome.substr(0, 2) if quantos <= 1 else "%s %d" % [nome.substr(0, 2), quantos]
 			conteudo.vertical_alignment = VERTICAL_ALIGNMENT_CENTER

@@ -123,20 +123,18 @@ func _run() -> void:
 	await _esperar_ate(func() -> bool: return acordou[0], 10.0)
 	_conferir(acordou[0], "a queda não terminou: o jogador ficou no escuro")
 	await _frames(3)
+	var hud = vale.hud
 	var falas: Array = queda._falas()
-	_conferir(dialogo.ativo, "acordado, a fala de quem caiu não veio na caixa de fala")
-	if dialogo.ativo and not falas.is_empty():
-		_conferir(dialogo._texto.text == str(falas[0]),
-			"a caixa abriu com '%s', e a primeira fala da queda é '%s'" % [dialogo._texto.text, falas[0]])
-		_conferir(paused, "a fala de quem caiu abriu com o vale andando")
-		for i in falas.size() + 2:
-			if not dialogo.ativo:
-				break
-			await _esperar(dialogo.CARENCIA_DE_ABERTURA + 0.05)
-			await _tecla(KEY_E)
-		await _frames(3)
-		_conferir(not dialogo.ativo, "o E não passou as falas da queda até o fim")
-		_conferir(not paused, "passadas as falas da queda, o vale ficou parado")
+	_conferir(not dialogo.ativo, "a queda ainda abriu o diálogo modal antigo")
+	_conferir(hud._house_info_panel.visible, "acordado, a explicação da queda não veio no painel com fechar")
+	_conferir(hud._house_info_label.text.contains(str(falas[0])) if not falas.is_empty() else false,
+		"o painel da queda não mostra a explicação")
+	_conferir(not paused, "a explicação da queda abriu com o vale parado")
+	var botoes_fechar: Array[Node] = hud._house_info_panel.find_children("*", "Button", true, false)
+	_conferir(botoes_fechar.size() == 1, "a explicação da queda não tem o botão de fechar")
+	if botoes_fechar.size() == 1:
+		(botoes_fechar[0] as Button).pressed.emit()
+		_conferir(not hud._house_info_panel.visible, "o botão não fechou a explicação da queda")
 	dia.pausado = false
 
 	# --- 5. OS LEMBRETES SÃO OS DO 2D ------------------------------------------
@@ -203,7 +201,7 @@ func _fechar() -> void:
 		dialogo.calar()
 	print("")
 	if falhas == 0:
-		print("AMANHECER_OK: o cartão cabe na tela em qualquer data e sai sozinho, fica acima da tela preta da queda no tamanho do vale, a queda o mostra no escuro com o dia já virado e o vale parado, sem tecla que abra tela, mapa ou menu ou que coma, a fala de quem acorda vem na caixa de fala e o E a passa, e os lembretes são o dia da fazenda e a festa da fé")
+		print("AMANHECER_OK: o cartão cabe na tela em qualquer data e sai sozinho, fica acima da tela preta da queda no tamanho do vale, o painel fechável mostra a explicação sem parar o jogo, sem tecla que abra tela, mapa ou menu ou que coma, e os lembretes são o dia da fazenda e a festa da fé")
 	else:
 		print("amanhecer: %d falha(s)" % falhas)
 	quit(1 if falhas > 0 else 0)

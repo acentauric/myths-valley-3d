@@ -17,10 +17,8 @@ extends Node
 ##   escreve a hora de acordar, e escrever a hora é o que prende o calendário
 ##   de novo. Na ordem inversa, o calendário andaria sozinho até o próximo
 ##   quadro, que é o defeito que `tests/calendario.gd` procura.
-## - O CARTÃO DO AMANHECER E A FALA vieram com a #21, na ordem do 2D
-##   (`Mundo._apagar`): o cartão do dia novo é lido no escuro, antes de
-##   clarear, e a fala de quem caiu sai na caixa de fala longa depois — o balão
-##   3D é para cumprimento de passagem.
+## - O CARTÃO DO AMANHECER vem antes de clarear; depois, a explicação da queda
+##   aparece no painel do HUD com botão de fechar, sem prender o vale.
 ##
 ## O que NÃO muda: a mesma trava de uma noite só (`_virando_a_noite`), o
 ## `Energia.desmaiar()` e o `Vida.dormir()` — cair é a mesma virada do desmaio
@@ -192,7 +190,7 @@ func _virar_a_noite(motivo: String) -> void:
 	# de cansaço ouve o que o corpo diz. Quem deitou na cama sabe o que fez.
 	match motivo:
 		"queda":
-			await Dialogo.falar("", _falas())
+			_hud.show_house_info("\n\n".join(_falas()), str(IdiomaMenu.campo(_dado().get("titulo", {}), "texto")))
 		"desmaio":
 			await Dialogo.falar("", _falas_do_desmaio())
 
@@ -201,9 +199,12 @@ func _levar_para_casa() -> void:
 	var destino := ponto_de_casa()
 	if not destino.is_finite():
 		_player.reset_position()
+		_player.sair_do_nado_ao_renascer()
 		return
 	_player.global_position = destino
 	_player.velocity = Vector3.ZERO
+	if _player.has_method("sair_do_nado_ao_renascer"):
+		_player.sair_do_nado_ao_renascer()
 	# No quarto, acorda de frente para a porta.
 	var sala := _quarto()
 	if sala != null and "visual" in _player:

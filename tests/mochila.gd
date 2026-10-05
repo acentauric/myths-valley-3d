@@ -125,16 +125,16 @@ func _run() -> void:
 	await _tecla(KEY_ESCAPE)
 	_conferir(not mochila.aberta, "o Esc não fechou a mochila depois de usar o teclado")
 
-	# --- 4. A RODA TROCA A MÃO; CTRL+RODA E +/- DÃO O ZOOM --------------------
+	# --- 4. A RODA DÁ ZOOM; NÃO TROCA O ITEM DA MÃO ---------------------------
 	inventario.selecionar(0)
 	var zoom: float = player._distance
-	# O zoom se mede a CADA giro: para baixo e para cima se anulariam.
 	await _roda(MOUSE_BUTTON_WHEEL_DOWN, false)
-	_conferir(inventario.selecionado == 1, "a roda para baixo não passou a mão para o espaço seguinte (está no %d)" % inventario.selecionado)
-	_conferir(is_equal_approx(player._distance, zoom), "a roda para baixo, sem Ctrl, mexeu no zoom: %.2f → %.2f" % [zoom, player._distance])
+	_conferir(inventario.selecionado == 0, "a roda para baixo trocou o item da mão")
+	_conferir(player._distance > zoom, "a roda para baixo não afastou a câmera: %.2f → %.2f" % [zoom, player._distance])
+	zoom = player._distance
 	await _roda(MOUSE_BUTTON_WHEEL_UP, false)
-	_conferir(inventario.selecionado == 0, "a roda para cima não voltou a mão (está no %d)" % inventario.selecionado)
-	_conferir(is_equal_approx(player._distance, zoom), "a roda para cima, sem Ctrl, mexeu no zoom: %.2f → %.2f" % [zoom, player._distance])
+	_conferir(inventario.selecionado == 0, "a roda para cima trocou o item da mão")
+	_conferir(player._distance < zoom, "a roda para cima não aproximou a câmera: %.2f → %.2f" % [zoom, player._distance])
 	await _roda(MOUSE_BUTTON_WHEEL_UP, true)
 	_conferir(player._distance < zoom, "Ctrl+roda para cima não aproximou a câmera")
 	_conferir(inventario.selecionado == 0, "Ctrl+roda trocou a mão")
@@ -224,7 +224,7 @@ func _responde(acao: String, codigo: int, com_alt := false) -> bool:
 func _fechar() -> void:
 	print("")
 	if falhas == 0:
-		print("MOCHILA_OK: o I abre e fecha a mochila e o vale para atrás dela, ela fica por cima do HUD e cabe na janela no tamanho da barra de mão, com a grade à esquerda e o que se veste à direita, o teclado anda, veste, come e arruma dentro dela, a roda troca a mão e Ctrl+roda e +/- dão o zoom, e as teclas do 3D continuam no lugar")
+		print("MOCHILA_OK: o I abre e fecha a mochila e o vale para atrás dela, ela fica por cima do HUD e cabe na janela no tamanho da barra de mão, com a grade à esquerda e o que se veste à direita, o teclado anda, veste, come e arruma dentro dela, a roda afasta e aproxima a câmera sem trocar o item da mão, e as teclas do 3D continuam no lugar")
 	else:
 		print("mochila: %d falha(s)" % falhas)
 	quit(1 if falhas > 0 else 0)

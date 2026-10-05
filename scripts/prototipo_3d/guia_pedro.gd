@@ -144,6 +144,10 @@ func terminou_o_tutorial() -> bool:
 	return _cadeia.acabou() and _cadeia.despedida_feita
 
 
+func paginas_do_hud() -> Array[String]:
+	return _cadeia.paginas_do_hud()
+
+
 ## O passo de id `id` da chegada já fechou? A roça do Cosme abre depois da
 ## primeira leira (`roca`).
 func passou(id: String) -> bool:

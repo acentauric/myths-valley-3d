@@ -3,6 +3,7 @@ extends SceneTree
 
 var game: Node3D
 var player: CharacterBody3D
+var hud
 var failed := false
 
 
@@ -22,11 +23,19 @@ func _run() -> void:
 	root.add_child(game)
 	current_scene = game
 	player = game.get_node_or_null("Jogador") as CharacterBody3D
+	hud = game.get_node_or_null("HUD")
 	if not _check(player != null and player.get("model") != null, "personagem instanciado"):
 		quit(1)
 		return
+	if not _check(hud != null, "HUD instanciado"):
+		quit(1)
+		return
 	player.call("set_captured", true)
-	game.hud.set_captured(true)
+	hud.set_captured(true)
+	# O mundo é montado em vários quadros; 45 quadros não garantem chão e HUD prontos.
+	var mundo = game.get_node("Cenario")
+	if not mundo.construido:
+		await mundo.pronto
 	await _frames(45)
 	var model: Node3D = player.get("model")
 	var skeletons := model.find_children("*", "Skeleton3D", true, false)
@@ -128,7 +137,7 @@ func _run() -> void:
 	await _frames(6)
 	var spawn: Vector3 = player.get("spawn_position")
 	_check(Vector2(player.global_position.x - spawn.x, player.global_position.z - spawn.z).length() < 0.05, "reiniciar retorna ao ponto inicial")
-	game.hud.set_notice("Modelo importado · passeio livre pelo vale")
+	hud.set_notice("Modelo importado · passeio livre pelo vale")
 	await _screenshot("preview.png")
 	player.set("_yaw", player.get("visual").rotation.y)
 	player.set("_pitch", -0.08)
@@ -215,7 +224,7 @@ func _screenshot(filename: String) -> void:
 	if DisplayServer.get_name() == "headless":
 		print("SKIP: captura de imagem em modo headless")
 		return
-	game.hud.set_captured(true)
+	hud.set_captured(true)
 	await RenderingServer.frame_post_draw
 	var directory := "res://scratch/prototipo_3d"
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(directory))

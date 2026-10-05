@@ -139,6 +139,7 @@ const PECAS := {
 	"candinha": {"tripo": "personagens/candinha_tripo.glb", "altura": 1.62},
 	"quirino": {"tripo": "personagens/quirino_tripo.glb", "altura": 1.7},
 	"viajante": {"tripo": "personagens/viajante_tripo.glb", "altura": 1.78},
+	"tubarao": {"tripo": "mar/tubarao_tripo.glb", "largura": 2.6},
 	# Itens de mão (os mesmos do 2D)
 	"machado": {"tripo": "itens/machado_tripo.glb", "altura": 0.85},
 	"enxada": {"tripo": "itens/enxada_tripo.glb", "altura": 0.95},
@@ -257,7 +258,7 @@ const PECAS := {
 	"piaba": {"tripo": "peixes/piaba_tripo.glb", "largura": 0.14, "girar": [0, -90, 0]},
 	"traira": {"tripo": "peixes/traira_tripo.glb", "largura": 0.45, "girar": [0, 90, 0]},
 	"acara": {"tripo": "peixes/acara_tripo.glb", "largura": 0.22, "girar": [0, 90, 0]},
-	"tubarao": {"tripo": "peixes/tubarao_tripo.glb", "largura": 2.6, "girar": [0, -90, 0]},
+	"tubarao_cabeca_chata": {"tripo": "peixes/tubarao_tripo.glb", "largura": 2.6, "girar": [0, -90, 0]},
 	# Flora do paisagismo por zonas (lote de 05/10/2026)
 	"mamoeiro": {"tripo": "arvores/mamoeiro_tripo.glb", "altura": 4.2, "tronco": 0.14},
 	"goiabeira": {"tripo": "arvores/goiabeira_tripo.glb", "altura": 4.6, "tronco": 0.22},

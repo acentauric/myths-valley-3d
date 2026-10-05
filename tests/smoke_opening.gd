@@ -73,8 +73,9 @@ func _run() -> void:
 	await process_frame
 	_conferir(hud.menu_confirm_open() and paused, "Condição do teste: hud.menu_confirm_open() and paused")
 	hud._close_menu_confirm(true)
-	# A leitura em segundo plano do vale passa de 700 quadros (734 medidos): 600 reprovava um vale que carregava bem.
-	for i in range(3000):
+	# O vale do level design (05/10) lê mais modelos em segundo plano: com a bateria cheia passa de 30 s.
+	var limite_da_cena := Time.get_ticks_msec() + 90000
+	while Time.get_ticks_msec() < limite_da_cena:
 		if current_scene != null and current_scene.name == "Abertura":
 			break
 		await process_frame
@@ -101,8 +102,9 @@ func _run() -> void:
 
 ## A entrada no vale carrega em segundo plano (tela de carregamento).
 func _wait_game() -> void:
-	# A leitura em segundo plano do vale passa de 700 quadros (734 medidos): 600 reprovava um vale que carregava bem.
-	for i in range(3000):
+	# O vale do level design (05/10) lê mais modelos em segundo plano: com a bateria cheia passa de 30 s.
+	var limite_do_jogo := Time.get_ticks_msec() + 90000
+	while Time.get_ticks_msec() < limite_do_jogo:
 		if current_scene != null and current_scene.name == "Vale3D":
 			break
 		await process_frame

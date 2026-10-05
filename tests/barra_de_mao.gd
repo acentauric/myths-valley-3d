@@ -136,6 +136,22 @@ func _run() -> void:
 		# e ainda não veio para cá, e aí a inicial do item faz as vezes dela.
 		_conferir(icone.texture != null or conteudo.text != "",
 			"a picareta entrou na mochila e o espaço ficou vazio na tela")
+	Inv.adicionar("cana", 2)
+	var espaco_da_cana := -1
+	for i in Inv.ESPACOS_MAO:
+		if str((Inv.espacos[i] as Dictionary).get("id", "")) == "cana":
+			espaco_da_cana = i
+			break
+	if espaco_da_cana >= 0:
+		var slot_cana := fila.get_child(espaco_da_cana) as Panel
+		var quantidade_cana := slot_cana.get_node("Conteudo") as Label
+		var icone_cana := slot_cana.get_node("Icone") as TextureRect
+		_conferir(quantidade_cana.text == "2" and quantidade_cana.z_index > icone_cana.z_index
+			and quantidade_cana.horizontal_alignment == HORIZONTAL_ALIGNMENT_RIGHT
+			and quantidade_cana.vertical_alignment == VERTICAL_ALIGNMENT_TOP,
+			"a quantidade da cana não aparece sobre o ícone, no canto superior")
+	else:
+		_conferir(false, "a cana não entrou na barra para testar o contador")
 
 	var na_mao := barra.get_node_or_null("NaMao") as Label
 	_conferir(na_mao != null, "não há rótulo do que está na mão")

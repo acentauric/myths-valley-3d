@@ -1,6 +1,7 @@
 class_name PersonagemProcedural
 extends Node3D
 signal golpe_concluido
+signal golpe_impacto
 ## Humanoide estilizado construído por código (estilo "procedural"): serve ao jogador e
 ## aos moradores. Cada membro é um pivô com uma malha simples, animado por senos — sem
 ## esqueleto, sem GLB. Interface igual à dos animadores do modelo Tripo:
@@ -53,6 +54,7 @@ var _gesto := -1
 var _gesto_tempo := 0.0
 var _golpe_tempo := -1.0
 var _golpes_restantes := 0
+var _golpe_impacto_emitido := false
 var _perna := 0.0
 var _tronco := 0.0
 var _construido := false
@@ -185,11 +187,15 @@ func update_motion(speed: float, delta: float) -> void:
 	if _golpe_tempo >= 0.0:
 		_golpe_tempo += delta * VELOCIDADE_GOLPE
 		_aplicar_golpe()
+		if not _golpe_impacto_emitido and _golpe_tempo >= DURACAO_GOLPE * 0.5:
+			_golpe_impacto_emitido = true
+			golpe_impacto.emit()
 		if _golpe_tempo >= DURACAO_GOLPE:
 			golpe_concluido.emit()
 			if _golpes_restantes > 1:
 				_golpes_restantes -= 1
 				_golpe_tempo = 0.0
+				_golpe_impacto_emitido = false
 			else:
 				_golpes_restantes = 0
 				_golpe_tempo = -1.0
@@ -281,6 +287,7 @@ func play_chop(repeticoes: int = 2) -> String:
 	_gesto = -1
 	_golpes_restantes = maxi(repeticoes, 1)
 	_golpe_tempo = 0.0
+	_golpe_impacto_emitido = false
 	return "Golpear"
 
 
@@ -295,6 +302,7 @@ func chop_ativo() -> bool:
 func stop_chop() -> void:
 	_golpes_restantes = 0
 	_golpe_tempo = -1.0
+	_golpe_impacto_emitido = false
 
 
 func _aplicar_golpe() -> void:

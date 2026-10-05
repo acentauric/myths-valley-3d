@@ -1,7 +1,7 @@
 [gd_scene load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scripts/prototipo_3d/player_controller.gd" id="1"]
-[ext_resource type="PackedScene" path="res://assets/prototipo_3d/personagem/medieval_character_animated.glb" id="2"]
+[ext_resource type="PackedScene" path="res://assets/prototipo_3d/personagens/viajante_tripo.glb" id="2"]
 
 [node name="Jogador" type="CharacterBody3D"]
 script = ExtResource("1")

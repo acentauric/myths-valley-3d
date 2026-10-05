@@ -56,6 +56,8 @@ signal settings_closed
 signal style_changed
 signal camera_lock_requested(locked: bool)
 signal house_info_close_requested
+signal controls_requested
+signal controls_closed
 
 const INK := Color("e8e4d7")
 const MUTED := Color("aebaae")
@@ -91,11 +93,20 @@ var _notice_label: Label
 var _notice_panel: Panel
 var _objective_label: Label
 var _heading: Panel
+var _mission_pages: Array[String] = []
+var _mission_page_index := 0
+var _mission_previous: Button
+var _mission_next: Button
+var _mission_close: Button
 var _control_mode_label: Label
-var _controls_panel: Panel
+var _controls_overlay: Control
+var _controls_panel: PanelContainer
+var _controls_screen_open := false
 var _help_icon	# hud_icon.gd
 var _camera_lock_button: Button
 var _clock_hint: Label
+var _clock_button: Button
+var _clock_icon
 var _house_info_panel: Panel
 var _house_info_label: Label
 var _house_info_heading: Label
@@ -108,16 +119,20 @@ var _ajustes	# painel_ajustes.gd
 ## Painéis escondidos enquanto o mapa está aberto (a coluna do canto continua).
 var _hidden_for_map: Array[Control] = []
 var _corner_nodes: Array[Node] = []
+var _shortcut_badges: Dictionary = {}
 var mapa_aberto := false
 
 
 func _ready() -> void:
 	layer = 20
-	_root = Control.new()
-	_root.name = "PrototypeHUD"
+	set_process_unhandled_key_input(true)
+	_root = get_node_or_null("PrototypeHUD") as Control
+	if _root == null:
+		_root = Control.new()
+		_root.name = "PrototypeHUD"
+		add_child(_root)
 	_root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_root.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	add_child(_root)
 
 	# O BLOCO DA MISSÃO, e não o letreiro do jogo.
 	#
@@ -144,6 +159,17 @@ func _ready() -> void:
 	_objective_label = _label(_objective, 17, INK)
 	_objective_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_place(_objective_label, Vector2(33, 52), Vector2(HEADING_WIDTH - 50, 42))
+	_mission_previous = _mission_button("◀", "PaginaAnterior")
+	_mission_previous.pressed.connect(func() -> void: _change_mission_page(-1))
+	_mission_next = _mission_button("▶", "ProximaPagina")
+	_mission_next.pressed.connect(func() -> void: _change_mission_page(1))
+	_mission_close = _mission_button("×", "FecharMissao")
+	_mission_close.pressed.connect(_close_mission_pages)
+	# A bússola/minimapa é acrescentada depois do HUD e, por isso, fica por cima
+	# dos controles no mesmo CanvasLayer. A página precisa continuar legível ali.
+	for control: Control in [_heading, _region_label, _mission_step, _objective_label,
+			_mission_previous, _mission_next, _mission_close]:
+		control.z_index = 100
 
 	# A COLUNA DE ÍCONES DO CANTO SAIU.
 	#
@@ -157,6 +183,7 @@ func _ready() -> void:
 	# abre a mesma aba do diário que o J abre. O FPS fica sozinho no canto, com
 	# o número escrito nele.
 	_create_performance_panel()
+	_create_corner_buttons()
 	_create_performance_button()
 
 	_house_info_panel = _panel(Color(0.055, 0.085, 0.075, 0.92))
@@ -183,28 +210,58 @@ func _ready() -> void:
 	_house_info_panel.add_child(close_house_info)
 	close_house_info.pressed.connect(func(): house_info_close_requested.emit())
 
-	# Controles: painel à esquerda, embaixo, como o das casas; começa oculto e abre
-	# pelo "?" da coluna do canto.
-	_controls_panel = _panel(Color(0.055, 0.085, 0.075, 0.92))
-	_root.add_child(_controls_panel)
-	_controls_panel.visible = false
-	var controls_heading := _label("CONTROLES", 13, GOLD)
-	_controls_panel.add_child(controls_heading)
-	controls_heading.position = Vector2(16, 10)
-	controls_heading.size = Vector2(270, 24)
-	_control_mode_label = _label("", 14, INK)
-	_control_mode_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_controls_panel.add_child(_control_mode_label)
-	_control_mode_label.position = Vector2(16, 38)
-	_control_mode_label.size = Vector2(HEADING_WIDTH - 32, 0)
+	# A mesma apresentação modal das telas do vale: fundo escurecido, caixa ao
+	# centro e conteúdo rolável para janelas menores.
+	_controls_overlay = Control.new()
+	_controls_overlay.name = "ModalControles"
+	_controls_overlay.process_mode = Node.PROCESS_MODE_ALWAYS
+	_controls_overlay.z_index = 100
+	_controls_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_controls_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
+	_root.add_child(_controls_overlay)
+	_controls_overlay.visible = false
+	var shade := ColorRect.new()
+	shade.color = Color(0.02, 0.03, 0.03, 0.72)
+	shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	shade.mouse_filter = Control.MOUSE_FILTER_STOP
+	_controls_overlay.add_child(shade)
+	_controls_panel = PanelContainer.new()
+	_controls_panel.name = "CaixaControles"
+	var controls_style := StyleBoxFlat.new()
+	controls_style.bg_color = Color(0.055, 0.085, 0.075, 0.97)
+	controls_style.border_color = GOLD
+	controls_style.set_border_width_all(1)
+	controls_style.set_corner_radius_all(10)
+	controls_style.set_content_margin_all(18)
+	_controls_panel.add_theme_stylebox_override("panel", controls_style)
+	_controls_overlay.add_child(_controls_panel)
+	var controls_column := VBoxContainer.new()
+	controls_column.add_theme_constant_override("separation", 12)
+	_controls_panel.add_child(controls_column)
+	var controls_top := HBoxContainer.new()
+	controls_column.add_child(controls_top)
+	var controls_heading := _label("CONTROLES", 19, GOLD)
+	controls_heading.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_TITULO, 500, 2))
+	controls_heading.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	controls_top.add_child(controls_heading)
 	var close_controls := Button.new()
+	close_controls.name = "FecharControles"
 	close_controls.text = "×"
 	close_controls.tooltip_text = "Fechar controles"
-	close_controls.position = Vector2(HEADING_WIDTH - 41, 7)
-	close_controls.size = Vector2(32, 28)
+	close_controls.custom_minimum_size = Vector2(32, 28)
 	close_controls.focus_mode = Control.FOCUS_NONE
-	_controls_panel.add_child(close_controls)
+	controls_top.add_child(close_controls)
 	close_controls.pressed.connect(func(): set_controls_open(false))
+	var controls_scroll := ScrollContainer.new()
+	controls_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	controls_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	controls_column.add_child(controls_scroll)
+	_control_mode_label = _label("", 17, INK)
+	_control_mode_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_control_mode_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	controls_scroll.add_child(_control_mode_label)
+	_layout_controls_modal()
+	get_viewport().size_changed.connect(_layout_controls_modal)
 
 	_notice_panel = _panel(Color(0.055, 0.085, 0.075, 0.82))
 	_notice_panel.name = "Aviso"
@@ -262,10 +319,15 @@ func _ready() -> void:
 	_root.add_child(barra)
 	_barra = barra
 
-	# O ALMANAQUE por cima de tudo: é tela cheia, e tela cheia cobre.
+	# Como o painel de Missões, o almanaque tem camada própria acima do HUD.
+	# O minimapa e as plaquinhas entram depois na raiz, mas ficam sob a cortina.
+	var almanaque_layer := CanvasLayer.new()
+	almanaque_layer.name = "CamadaAlmanaque"
+	almanaque_layer.layer = 25
+	add_child(almanaque_layer)
 	var almanaque := Almanaque.new()
 	almanaque.name = "Almanaque"
-	_root.add_child(almanaque)
+	almanaque_layer.add_child(almanaque)
 	_almanaque = almanaque
 
 	_update_control_mode()
@@ -287,12 +349,17 @@ var _vida_texto: Label
 var _vida_preenchimento: StyleBoxFlat
 var barra_stamina: ProgressBar
 var _stamina_texto: Label
-var _stamina_rotulo := ""
+var _stamina_preenchimento: StyleBoxFlat
+var _textos_medidores: Dictionary = {}
 
 
 func _criar_barra_de_vida() -> void:
+	var dados = JSON.parse_string(FileAccess.get_file_as_string("res://data/hud_3d.json"))
+	if dados is Dictionary:
+		_textos_medidores = dados.get("medidores", {})
 	barra_vida = ProgressBar.new()
 	barra_vida.name = "Vida"
+	barra_vida.step = 0.01
 	barra_vida.show_percentage = false
 	# Transparente ao mouse, como os rótulos do HUD: o clique no chão atrás dela
 	# é caminhada (clique direito) e não pode morrer numa barra de 16 px.
@@ -309,10 +376,10 @@ func _criar_barra_de_vida() -> void:
 	barra_vida.add_theme_stylebox_override("fill", _vida_preenchimento)
 	_root.add_child(barra_vida)
 	barra_vida.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP)
-	barra_vida.offset_left = -70
-	barra_vida.offset_right = 70
+	barra_vida.offset_left = -110
+	barra_vida.offset_right = 110
 	barra_vida.offset_top = 78
-	barra_vida.offset_bottom = 94
+	barra_vida.offset_bottom = 98
 	_vida_texto = _label("", 11, INK)
 	barra_vida.add_child(_vida_texto)
 	_vida_texto.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -332,7 +399,7 @@ func _atualizar_vida() -> void:
 		return
 	barra_vida.max_value = vida.maximo()
 	barra_vida.value = vida.atual
-	_vida_texto.text = "%d" % roundi(vida.atual)
+	_vida_texto.text = _texto_medidor("vida", barra_vida)
 	_vida_preenchimento.bg_color = COR_VIDA_ENVENENADA if vida.envenenado_agora() else COR_VIDA
 
 
@@ -348,14 +415,18 @@ func _atualizar_vida() -> void:
 ## joga pensa que o jogo travou (ver `Energia.cansou`).
 const COR_FOLEGO := Color(0.55, 0.78, 0.45)
 const COR_FOLEGO_BAIXO := Color(0.9, 0.42, 0.34)
+const COR_VIGOR := Color("56ad67")
+const COR_MEDIDOR_BAIXO := Color("bd803e")
 var barra_folego: ProgressBar
 var _folego_texto: Label
 var _folego_preenchimento: StyleBoxFlat
+var _jogador_folego: Node
 
 
 func _criar_barra_de_folego() -> void:
 	barra_folego = ProgressBar.new()
 	barra_folego.name = "Folego"
+	barra_folego.step = 0.01
 	barra_folego.show_percentage = false
 	# Transparente ao mouse, como a da vida.
 	barra_folego.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -366,37 +437,42 @@ func _criar_barra_de_folego() -> void:
 	barra_folego.add_theme_stylebox_override("fill", _folego_preenchimento)
 	_root.add_child(barra_folego)
 	barra_folego.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP)
-	barra_folego.offset_left = -70
-	barra_folego.offset_right = 70
-	barra_folego.offset_top = 98
-	barra_folego.offset_bottom = 114
+	barra_folego.offset_left = -110
+	barra_folego.offset_right = 110
+	barra_folego.offset_top = 102
+	barra_folego.offset_bottom = 122
 	_folego_texto = _label("", 11, INK)
 	barra_folego.add_child(_folego_texto)
 	_folego_texto.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_folego_texto.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_folego_texto.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	var energia := get_node_or_null("/root/Energia")
-	if energia == null:
-		barra_folego.visible = false
-		return
-	energia.mudou.connect(_atualizar_folego)
+	barra_folego.visible = true
+
+
+func configurar_folego(jogador: Node) -> void:
+	if is_instance_valid(_jogador_folego) and _jogador_folego.is_connected("folego_mudou", _atualizar_folego):
+		_jogador_folego.disconnect("folego_mudou", _atualizar_folego)
+	_jogador_folego = jogador
+	_jogador_folego.connect("folego_mudou", _atualizar_folego)
 	_atualizar_folego()
 
 
-func _atualizar_folego() -> void:
-	var energia := get_node_or_null("/root/Energia")
-	if energia == null or barra_folego == null:
+func _atualizar_folego(_valor: float = 0.0) -> void:
+	if not is_instance_valid(_jogador_folego) or barra_folego == null:
 		return
-	barra_folego.max_value = energia.maximo()
-	barra_folego.value = energia.atual
-	var cansado: bool = energia.cansado()
-	_folego_texto.text = ("%d · cansado" if cansado else "%d") % roundi(energia.atual)
-	_folego_preenchimento.bg_color = COR_FOLEGO_BAIXO if cansado else COR_FOLEGO
+	barra_folego.max_value = float(_jogador_folego.call("folego_maximo"))
+	barra_folego.value = float(_jogador_folego.call("folego_atual"))
+	_folego_texto.text = _texto_medidor("folego", barra_folego)
+	var baixo := barra_folego.value <= barra_folego.max_value * 0.2
+	_folego_preenchimento.bg_color = COR_MEDIDOR_BAIXO if baixo else COR_FOLEGO
+	if baixo:
+		_folego_texto.text += " · " + str(IdiomaMenu.campo(_textos_medidores, "afogamento"))
 
 
 func _criar_barra_de_stamina() -> void:
 	barra_stamina = ProgressBar.new()
 	barra_stamina.name = "Stamina"
+	barra_stamina.step = 0.01
 	barra_stamina.max_value = 100.0
 	barra_stamina.value = 100.0
 	barra_stamina.show_percentage = false
@@ -407,29 +483,51 @@ func _criar_barra_de_stamina() -> void:
 	fundo.set_border_width_all(1)
 	fundo.border_color = Color(0.58, 0.64, 0.48, 0.2)
 	barra_stamina.add_theme_stylebox_override("background", fundo)
-	var preenchimento := StyleBoxFlat.new()
-	preenchimento.bg_color = Color("56ad67")
-	preenchimento.set_corner_radius_all(6)
-	barra_stamina.add_theme_stylebox_override("fill", preenchimento)
+	_stamina_preenchimento = StyleBoxFlat.new()
+	_stamina_preenchimento.bg_color = COR_VIGOR
+	_stamina_preenchimento.set_corner_radius_all(6)
+	barra_stamina.add_theme_stylebox_override("fill", _stamina_preenchimento)
 	_root.add_child(barra_stamina)
 	barra_stamina.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP)
-	barra_stamina.offset_left = -70
-	barra_stamina.offset_right = 70
-	barra_stamina.offset_top = 118
-	barra_stamina.offset_bottom = 134
-	_stamina_texto = _label("100%", 11, INK)
+	barra_stamina.offset_left = -110
+	barra_stamina.offset_right = 110
+	barra_stamina.offset_top = 126
+	barra_stamina.offset_bottom = 146
+	_stamina_texto = _label("", 11, INK)
 	barra_stamina.add_child(_stamina_texto)
 	_stamina_texto.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_stamina_texto.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_stamina_texto.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	var energia := get_node_or_null("/root/Energia")
+	if energia != null:
+		energia.mudou.connect(_atualizar_vigor)
+	_atualizar_vigor()
 
 
+func _texto_medidor(chave: String, barra: ProgressBar) -> String:
+	return "%s %d/%d" % [IdiomaMenu.campo(_textos_medidores, chave), roundi(barra.value), roundi(barra.max_value)]
+
+
+func _atualizar_vigor() -> void:
+	var energia := get_node_or_null("/root/Energia")
+	if energia == null or barra_stamina == null:
+		return
+	barra_stamina.max_value = energia.maximo()
+	barra_stamina.value = energia.atual
+	_stamina_texto.text = _texto_medidor("vigor", barra_stamina)
+	var cansado := barra_stamina.value <= barra_stamina.max_value * 0.2
+	_stamina_preenchimento.bg_color = COR_MEDIDOR_BAIXO if cansado else COR_VIGOR
+	if cansado:
+		_stamina_texto.text += " · " + str(IdiomaMenu.campo(_textos_medidores, "cansado"))
+
+
+## Compatibility hook for resource actions that report their own temporary stamina.
 func definir_stamina(valor: float, rotulo: String) -> void:
 	if barra_stamina == null:
 		return
-	_stamina_rotulo = rotulo
-	barra_stamina.value = clampf(valor, 0.0, 100.0)
-	_stamina_texto.text = "%s %d%%" % [_stamina_rotulo, roundi(barra_stamina.value)]
+	barra_stamina.value = clampf(valor, 0.0, barra_stamina.max_value)
+	_stamina_texto.text = "%s %d%%" % [rotulo, roundi(barra_stamina.value)]
+	_stamina_preenchimento.bg_color = COR_MEDIDOR_BAIXO if barra_stamina.value <= barra_stamina.max_value * 0.2 else COR_VIGOR
 
 
 func _process(delta: float) -> void:
@@ -493,12 +591,78 @@ func clear_house_info() -> void:
 func set_objective(value: String, missao: String = "") -> void:
 	_objective = value
 	_missao = missao
+	_heading.visible = true
+	_objective_label.visible = true
 	if is_instance_valid(_quest_label):
 		_quest_label.text = ("◆  " + missao.to_upper()) if missao != "" else ""
 		_quest_label.visible = missao != ""
 	if is_instance_valid(_objective_label):
 		_objective_label.text = value
 		_fit_heading()
+
+
+func set_mission_pages(pages: Array[String]) -> void:
+	_mission_pages = pages
+	_mission_page_index = 0
+	if not _mission_pages.is_empty():
+		_show_mission_page()
+
+
+func _change_mission_page(direction: int) -> void:
+	_mission_page_index = clampi(_mission_page_index + direction, 0, _mission_pages.size() - 1)
+	_show_mission_page()
+
+
+func _show_mission_page() -> void:
+	if _mission_pages.is_empty():
+		return
+	_heading.visible = true
+	_region_label.visible = true
+	_mission_step.visible = true
+	_objective_label.visible = true
+	_objective_label.text = _mission_pages[_mission_page_index]
+	_mission_step.text = "%d de %d" % [_mission_page_index + 1, _mission_pages.size()]
+	_mission_previous.visible = _mission_pages.size() > 1
+	_mission_previous.disabled = _mission_page_index == 0
+	_mission_next.visible = _mission_page_index < _mission_pages.size() - 1
+	_mission_next.disabled = _mission_page_index >= _mission_pages.size() - 1
+	_mission_close.visible = _mission_page_index == _mission_pages.size() - 1
+	_fit_heading()
+
+
+func _unhandled_key_input(event: InputEvent) -> void:
+	if not (event is InputEventKey and event.pressed and not event.echo):
+		return
+	if _mission_pages.size() <= 1 or not is_instance_valid(_mission_step) or not _mission_step.visible:
+		return
+	if event.keycode == KEY_LEFT:
+		_change_mission_page(-1)
+		get_viewport().set_input_as_handled()
+	elif event.keycode == KEY_RIGHT:
+		_change_mission_page(1)
+		get_viewport().set_input_as_handled()
+
+
+func _close_mission_pages() -> void:
+	if _mission_page_index != _mission_pages.size() - 1:
+		return
+	for control: Control in [_heading, _region_label, _mission_step, _objective_label,
+			_mission_previous, _mission_next, _mission_close]:
+		control.visible = false
+
+
+func _mission_button(symbol: String, node_name: String) -> Button:
+	var button := Button.new()
+	button.name = node_name
+	button.text = symbol
+	button.focus_mode = Control.FOCUS_NONE
+	button.mouse_filter = Control.MOUSE_FILTER_STOP
+	button.add_theme_font_size_override("font_size", 15)
+	button.add_theme_color_override("font_color", GOLD)
+	button.size = Vector2(32, 26)
+	button.visible = false
+	_root.add_child(button)
+	return button
 
 
 func set_clock(value: String) -> void:
@@ -539,15 +703,18 @@ func _update_control_mode() -> void:
 		"%s: painel (missões, cartas, venda, jogo)  ·  %s: almanaque (plantas, cordéis, sinais, bichos)" % [Atalhos.letra("painel"), Atalhos.letra("almanaque")],
 		mode,
 		"Tab ou %s: alterna a câmera  ·  Esc: menu" % Atalhos.letra("camera"),
-		"Rodinha: item da mão  ·  Ctrl+rodinha ou +/-: zoom  ·  %s: avança a hora" % Atalhos.letra("hora"),
+		"Rodinha: zoom  ·  1 a 0: item da mão  ·  %s: avança a hora" % Atalhos.letra("hora"),
 		"%s: reinicia  ·  %s: mapa · minimapa em AJUSTAR" % [Atalhos.letra("reiniciar"), Atalhos.letra("mapa")],
 	])
-	var text_height := _text_height(_control_mode_label)
-	_control_mode_label.size.y = text_height
-	var height := 38.0 + text_height + 16.0
-	var screen := get_viewport().get_visible_rect().size if is_inside_tree() else Vector2(1280, 720)
-	_controls_panel.size = Vector2(HEADING_WIDTH, height)
-	_controls_panel.position = Vector2(18, screen.y - height - 18.0)
+
+
+func _layout_controls_modal() -> void:
+	if not is_instance_valid(_controls_panel):
+		return
+	var screen := get_viewport().get_visible_rect().size
+	var dimensions := Vector2(minf(900.0, screen.x - 48.0), minf(520.0, screen.y - 48.0))
+	_controls_panel.position = (screen - dimensions) * 0.5
+	_controls_panel.size = dimensions
 
 
 ## Altura do texto de um rótulo com quebra de linha, contando o espaço entre linhas.
@@ -557,17 +724,26 @@ func _text_height(label: Label) -> float:
 
 
 func controls_open() -> bool:
-	return is_instance_valid(_controls_panel) and _controls_panel.visible
+	return _controls_screen_open or (is_instance_valid(_controls_overlay) and _controls_overlay.visible)
 
 
-## "?" do canto: mostra ou esconde o painel de controles (o "?" fica dourado aberto).
+func set_controls_screen_open(open: bool) -> void:
+	_controls_screen_open = open
+	_sync_performance_panel()
+
+
+## Modal de controles; o dono das telas do vale cuida da pausa e do Esc.
 func set_controls_open(open: bool) -> void:
-	_controls_panel.visible = open
+	if controls_open() == open:
+		return
+	_controls_overlay.visible = open
 	if is_instance_valid(_help_icon):
 		_help_icon.definir(open)
 	_sync_performance_panel()
 	if open:
 		_update_control_mode()
+	else:
+		controls_closed.emit()
 
 
 func _update_telemetry() -> void:
@@ -591,7 +767,17 @@ func _update_telemetry() -> void:
 func _update_clock_hint() -> void:
 	if not is_instance_valid(_clock_hint):
 		return
-	_clock_hint.text = Dia.texto_hora()
+	var andando: bool = not Dia.pausado and Dia.velocidade > 0
+	if is_instance_valid(_clock_icon):
+		_clock_icon.set_running(andando)
+	if is_instance_valid(_clock_button):
+		_clock_button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND if not andando or Dia.pausa_no_jogo else Control.CURSOR_ARROW
+	if not andando:
+		_clock_hint.text = "%s · Retomar" % Dia.texto_hora()
+	elif Dia.pausa_no_jogo:
+		_clock_hint.text = "%s · Pausar" % Dia.texto_hora()
+	else:
+		_clock_hint.text = Dia.texto_hora()
 
 
 ## O painel do canto esquerdo cresce só o necessário para o objetivo caber.
@@ -606,6 +792,10 @@ func _fit_heading() -> void:
 	var altura := topo + lines * _objective_label.get_line_height() + 18.0
 	_objective_label.size.y = lines * _objective_label.get_line_height()
 	_heading.size.y = altura
+	var button_y := _heading.position.y + altura - 34.0
+	_mission_previous.position = Vector2(33, button_y)
+	_mission_next.position = Vector2(73, button_y)
+	_mission_close.position = Vector2(HEADING_WIDTH - 24, button_y)
 	if is_instance_valid(_house_info_panel):
 		_house_info_panel.position.y = 18.0 + altura + 12.0
 
@@ -640,17 +830,30 @@ func _create_corner_buttons() -> void:
 	var clock_icon := ClockIcon.new()
 	clock_icon.set_running(not Dia.pausado)
 	var clock: Array = BotaoCanto.criar(_root, top, clock_icon, 28.0)
+	_clock_icon = clock_icon
+	_clock_button = clock[0]
 	_clock_hint = clock[1]
-	# Só mostra a hora: parar o relógio desliga as conquistas da partida, e a
-	# única porta para isso é a linha "Relógio" do menu do Esc, que avisa antes.
-	_corner_setup(clock[0], func() -> void: Audio.efeito("ui_trava"), false)
-	(clock[0] as Button).mouse_default_cursor_shape = Control.CURSOR_ARROW
+	_corner_setup(clock[0], func() -> void:
+		if Dia.velocidade == 0:
+			Dia.definir_velocidade(2)
+			Dia.pausado = false
+		elif Dia.pausado:
+			Dia.pausado = false
+		elif Dia.pausa_no_jogo:
+			Dia.pausado = true
+		else:
+			Audio.efeito("ui_trava")
+			return
+		Audio.efeito("ui_confirmar")
+		_update_telemetry(), false)
+	_update_clock_hint()
 	Dia.hora_mudou.connect(_update_clock_hint.unbind(1))
 
 	top += 1
 	_map_icon = HudIcon.new().configurar("mapa")
 	var map: Array = BotaoCanto.criar(_root, top, _map_icon)
 	(map[1] as Label).text = "Mapa do Vale"
+	_shortcut_badges["mapa"] = BotaoCanto.marcar_atalho(map[0], Atalhos.letra("mapa"))
 	_corner_setup(map[0], func() -> void: map_requested.emit())
 
 
@@ -659,6 +862,7 @@ func _create_corner_buttons() -> void:
 	var camera: Array = BotaoCanto.criar(_root, top, _camera_icon)
 	_camera_lock_button = camera[0]
 	_camera_hint = camera[1]
+	_shortcut_badges["camera"] = BotaoCanto.marcar_atalho(_camera_lock_button, Atalhos.letra("camera"))
 	_camera_lock_button.toggle_mode = true
 	_camera_lock_button.focus_mode = Control.FOCUS_NONE
 	_camera_lock_button.toggled.connect(func(locked: bool):
@@ -687,7 +891,7 @@ func _create_corner_buttons() -> void:
 	_help_icon = HudIcon.new().configurar("ajuda")
 	var help: Array = BotaoCanto.criar(_root, top, _help_icon)
 	(help[1] as Label).text = "Controles"
-	_corner_setup(help[0], func() -> void: set_controls_open(not controls_open()))
+	_corner_setup(help[0], func() -> void: controls_requested.emit())
 
 	top += 1
 	var quest_icon: Control = HudIcon.new().configurar("missoes")
@@ -695,6 +899,7 @@ func _create_corner_buttons() -> void:
 	var quest_data = JSON.parse_string(FileAccess.get_file_as_string("res://data/hud_3d.json"))
 	var quest_texts: Dictionary = quest_data if quest_data is Dictionary else {}
 	(quests[1] as Label).text = str(IdiomaMenu.campo(quest_texts.get("botao_missoes", {}), "rotulo", "Missões e objetivos"))
+	_shortcut_badges["painel"] = BotaoCanto.marcar_atalho(quests[0], Atalhos.letra("painel"))
 	_corner_setup(quests[0], func() -> void: quests_requested.emit())
 	set_camera_locked(_camera_locked)
 	for index in range(first_child, _root.get_child_count()):
@@ -951,7 +1156,16 @@ func almanaque() -> Control:
 ## reaparecia no meio da frase a cada reanúncio. Separada, ela é um número que
 ## se olha de relance sem reler a missão. Com a cadeia terminada (indice >=
 ## total) some, em vez de mostrar "9/9" para sempre.
-func set_mission_step(indice: int, total: int) -> void:
+func set_mission_step(indice: int, total: int, finished := false) -> void:
 	if not is_instance_valid(_mission_step):
 		return
 	_mission_step.text = "" if total <= 0 or indice <= 0 or indice > total else "%d de %d" % [indice, total]
+	if _mission_pages.is_empty():
+		return
+	if finished:
+		for control: Control in [_mission_previous, _mission_next, _mission_close]:
+			control.visible = false
+		return
+	if total == _mission_pages.size() and indice > 0:
+		_mission_page_index = clampi(indice - 1, 0, _mission_pages.size() - 1)
+		_show_mission_page()

@@ -70,6 +70,10 @@ func _run() -> void:
 		return
 	var tela: Control = hud.almanaque()
 	_conferir(tela != null, "o HUD não montou o almanaque")
+	if tela != null:
+		var camada := tela.get_parent() as CanvasLayer
+		_conferir(camada != null and camada.layer > hud.layer,
+			"o almanaque não tem camada modal acima do HUD e do minimapa")
 	if tela == null:
 		_fechar()
 		return
@@ -99,6 +103,10 @@ func _run() -> void:
 	tela._escolhido = ""
 	tela.abrir()
 	await _frames(3)
+	if "--capture" in OS.get_cmdline_user_args() and DisplayServer.get_name() != "headless":
+		await RenderingServer.frame_post_draw
+		DirAccess.make_dir_recursive_absolute("res://scratch/almanaque")
+		root.get_texture().get_image().save_png("res://scratch/almanaque/modal.png")
 	var raiz := _textos_de(cadeia)
 	_conferir(raiz.size() == 5,
 		"a raiz da cadeia mostra %d linha(s) e as seções são cinco: %s" % [raiz.size(), str(raiz)])

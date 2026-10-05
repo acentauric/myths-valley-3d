@@ -49,14 +49,14 @@ var _aberta := -1
 var _dica: PanelContainer
 
 
-func configurar(world: Node3D, jogador: Node3D, hud) -> void:
+func configurar(world: Node3D, jogador: Node3D, hud, hud_layer: Control) -> void:
 	_world = world
 	_jogador = jogador
 	_hud = hud
 	var dados = JSON.parse_string(FileAccess.get_file_as_string(DADOS))
 	if dados is Dictionary:
 		_historias = dados.get("lapides", [])
-	_dica = DicaTecla.criar(hud.map_layer(), Atalhos.letra("interagir"), "Ler lápide")
+	_dica = DicaTecla.criar(hud_layer, Atalhos.letra("interagir"), "Ler lápide")
 
 
 func _process(delta: float) -> void:

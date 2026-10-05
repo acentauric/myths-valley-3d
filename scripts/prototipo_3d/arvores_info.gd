@@ -88,7 +88,7 @@ var _aberta := -1
 var _pagina := 0
 
 
-func configurar(world: Node3D, jogador: Node3D, hud) -> void:
+func configurar(world: Node3D, jogador: Node3D, hud, hud_layer: Control) -> void:
 	_world = world
 	_jogador = jogador
 	_hud = hud

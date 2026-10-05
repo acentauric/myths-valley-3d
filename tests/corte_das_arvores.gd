@@ -353,6 +353,7 @@ func _run() -> void:
 		progressao.subir_ferramenta("picareta", 2)
 		folego_antes = energia.atual
 		_conferir(recursos.bater(), "com Mão de pedra, a pedra dura não apanhou")
+		await _esperar_golpe(recursos)
 		_conferir(is_equal_approx(folego_antes - energia.atual, energia.custo("bater", 2.0)), "o golpe na pedra dura não custou bater × 2")
 		await _encostar(recursos, jogador, "matacao_mirante")
 		recusas.clear()
@@ -361,6 +362,7 @@ func _run() -> void:
 		_por_na_mao("picareta_de_aco")
 		_conferir(recursos._perto == "matacao_mirante", "com a picareta de aço o matacão saiu do alcance")
 		_conferir(recursos.bater(), "o matacão não apanhou da picareta de aço")
+		await _esperar_golpe(recursos)
 		_conferir(venda.mercadorias().has("machado_de_aco") and venda.mercadorias().has("picareta_de_aco"), "a venda não vende o aço")
 
 	# --- 10. O TOCO É DE TRONCO, E NÃO DE COPA --------------------------------
@@ -402,8 +404,8 @@ func _run() -> void:
 		var golpes_dela := int(recursos._alvos["embauba_cemiterio_a"]["ficha"].get("golpes", 3))
 		for i in golpes_dela:
 			energia.encher()
-			recursos.bater()
-		await _quadros(2)
+			if recursos.bater():
+				await _esperar_golpe(recursos)
 		_conferir(is_instance_valid(embauba) and embauba.get_parent() != null and str(embauba.get_parent().name).begins_with("ArvoreCaindo"),
 			"a embaúba nova do cemitério sumiu em vez de cair")
 	_fechar()
@@ -461,6 +463,12 @@ func _golpear_ate_cair(arvores, jogador, indice: int) -> int:
 		await process_frame
 	arvores._parar_golpe(true)
 	return int(arvores._cortaveis[indice]["golpes"]) if bool(arvores._cortaveis[indice]["cortado"]) else 0
+
+
+func _esperar_golpe(recursos) -> void:
+	var limite := Time.get_ticks_msec() + 2500
+	while Time.get_ticks_msec() < limite and (str(recursos.get("_golpe_pendente")) != "" or bool(recursos.get("_golpe_animando"))):
+		await process_frame
 
 
 func _encostar(recursos, jogador, id: String) -> void:
