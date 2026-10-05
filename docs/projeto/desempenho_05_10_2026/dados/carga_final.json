@@ -1,0 +1,2185 @@
+{
+	"estilo": "tripo",
+	"godot": "4.7.2-stable (official)",
+	"headless": false,
+	"medicoes": [
+		{
+			"ate_o_pronto_ms": 26314.7,
+			"caminho": "res://scenes/prototipo_3d/abertura.tscn",
+			"cena": "abertura",
+			"contagem": {
+				"alvos_de_casa": 21,
+				"amostras_heightmap": 75762,
+				"colisoes_desligadas": 0,
+				"controles_de_interface": 90,
+				"faces_trimesh": 265684,
+				"formas_de_colisao": {
+					"BoxShape3D": 185,
+					"ConcavePolygonShape3D": 25,
+					"ConvexPolygonShape3D": 1,
+					"CylinderShape3D": 67,
+					"HeightMapShape3D": 1,
+					"WorldBoundaryShape3D": 5
+				},
+				"glbs_instanciados": {
+					"Angico": 1,
+					"Balde": 1,
+					"Bananeira": 1,
+					"Banco": 1,
+					"Bote": 2,
+					"Cacho Banana": 1,
+					"Cajueiro": 1,
+					"Candeeiro": 1,
+					"Canoa": 3,
+					"Canoa Amarela": 2,
+					"Canoa Em Obra": 1,
+					"Capela": 1,
+					"Capelinha": 1,
+					"Carroca": 1,
+					"Casa Carro Quebrado": 1,
+					"Casa Farinha": 1,
+					"Casa Meia Agua": 1,
+					"Casa Paroquial": 1,
+					"Casa Pasto": 1,
+					"Casa Pescador": 1,
+					"Casa Taipa": 1,
+					"Casa Taipa Azul": 1,
+					"Casa Taipa Ocre": 1,
+					"Casa Taipa Rosa": 1,
+					"Casa Taipa Verde": 1,
+					"Casa Varanda": 1,
+					"Cerca": 1,
+					"Cesto": 1,
+					"Chiqueiro": 1,
+					"Cocho": 1,
+					"Coqueiro": 1,
+					"Cruzeiro": 1,
+					"Dendezeiro": 1,
+					"Embauba": 1,
+					"Enxada": 1,
+					"Farinha": 1,
+					"Fitas Gameleira": 1,
+					"Fogueira": 1,
+					"Galinheiro": 1,
+					"Gameleira": 1,
+					"Igreja": 1,
+					"Ipe Amarelo": 1,
+					"Ipe Roxo": 1,
+					"Jaqueira": 1,
+					"Jatoba": 1,
+					"Jequitiba": 1,
+					"Lampiao Poste": 1,
+					"Lavadouro Pedra": 1,
+					"Lenha": 1,
+					"Machado": 1,
+					"Mandioca Canteiro": 1,
+					"Mangueira": 1,
+					"Massaranduba": 1,
+					"Mastro Pano": 1,
+					"Mata Alta": 1,
+					"Mata Larga": 1,
+					"Mirante": 1,
+					"Moita": 1,
+					"Moringa": 1,
+					"Pau Brasil": 1,
+					"Pedra Mare": 1,
+					"Pedras": 1,
+					"Pedras Praia": 1,
+					"Peixe": 1,
+					"Penedo Lapa": 1,
+					"Pier": 1,
+					"Pitangueira": 1,
+					"Poco": 1,
+					"Ponte": 1,
+					"Pote": 1,
+					"Sapucaia": 1,
+					"Tumulo": 1,
+					"Vara Pescar": 1,
+					"Varal": 1,
+					"Varal Bambu": 1,
+					"Varal Estacas": 1,
+					"Venda": 1
+				},
+				"instancias_de_glb": 81,
+				"instancias_multimesh": 9592,
+				"jogador": 0,
+				"luzes_com_sombra": 1,
+				"malhas_distintas": 211,
+				"multimesh_por_grupo": {
+					"Copa distante, modelo_ Coqueiros da orla": {
+						"blocos": 12,
+						"instancias": 22
+					},
+					"Copa distante, modelo_ Ingazeiros do rio": {
+						"blocos": 13,
+						"instancias": 25
+					},
+					"Copa distante, modelo_ Manguezal": {
+						"blocos": 6,
+						"instancias": 34
+					},
+					"Copa distante, modelo_ Mata_ dendezeiro": {
+						"blocos": 33,
+						"instancias": 116
+					},
+					"Copa distante, modelo_ Mata_ ingazeiro": {
+						"blocos": 15,
+						"instancias": 50
+					},
+					"Copa distante, modelo_ Mata_ piacava": {
+						"blocos": 8,
+						"instancias": 34
+					},
+					"Copa distante, modelo_ Restinga da orla_ castanhola": {
+						"blocos": 6,
+						"instancias": 10
+					},
+					"Copa distante, modelo_ Restinga da orla_ piacava": {
+						"blocos": 4,
+						"instancias": 4
+					},
+					"Copa distante_ Coqueiros da orla": {
+						"blocos": 12,
+						"instancias": 22
+					},
+					"Copa distante_ Ingazeiros do rio": {
+						"blocos": 13,
+						"instancias": 25
+					},
+					"Copa distante_ Manguezal": {
+						"blocos": 6,
+						"instancias": 34
+					},
+					"Copa distante_ Mata_ angico": {
+						"blocos": 25,
+						"instancias": 246
+					},
+					"Copa distante_ Mata_ aroeira": {
+						"blocos": 33,
+						"instancias": 141
+					},
+					"Copa distante_ Mata_ cajueiro": {
+						"blocos": 4,
+						"instancias": 10
+					},
+					"Copa distante_ Mata_ clusia": {
+						"blocos": 7,
+						"instancias": 52
+					},
+					"Copa distante_ Mata_ dendezeiro": {
+						"blocos": 33,
+						"instancias": 116
+					},
+					"Copa distante_ Mata_ embauba": {
+						"blocos": 93,
+						"instancias": 354
+					},
+					"Copa distante_ Mata_ ingazeiro": {
+						"blocos": 15,
+						"instancias": 50
+					},
+					"Copa distante_ Mata_ ipe_amarelo": {
+						"blocos": 36,
+						"instancias": 166
+					},
+					"Copa distante_ Mata_ jaqueira": {
+						"blocos": 22,
+						"instancias": 50
+					},
+					"Copa distante_ Mata_ jatoba": {
+						"blocos": 81,
+						"instancias": 521
+					},
+					"Copa distante_ Mata_ jenipapeiro": {
+						"blocos": 30,
+						"instancias": 165
+					},
+					"Copa distante_ Mata_ jequitiba": {
+						"blocos": 65,
+						"instancias": 446
+					},
+					"Copa distante_ Mata_ massaranduba": {
+						"blocos": 37,
+						"instancias": 257
+					},
+					"Copa distante_ Mata_ mata_alta": {
+						"blocos": 28,
+						"instancias": 147
+					},
+					"Copa distante_ Mata_ pau_brasil": {
+						"blocos": 30,
+						"instancias": 112
+					},
+					"Copa distante_ Mata_ piacava": {
+						"blocos": 8,
+						"instancias": 34
+					},
+					"Copa distante_ Mata_ pitangueira": {
+						"blocos": 3,
+						"instancias": 7
+					},
+					"Copa distante_ Restinga da orla_ castanhola": {
+						"blocos": 6,
+						"instancias": 10
+					},
+					"Copa distante_ Restinga da orla_ clusia": {
+						"blocos": 4,
+						"instancias": 6
+					},
+					"Copa distante_ Restinga da orla_ piacava": {
+						"blocos": 4,
+						"instancias": 4
+					},
+					"Coqueiros da orla": {
+						"blocos": 12,
+						"instancias": 22
+					},
+					"Ingazeiros do rio": {
+						"blocos": 13,
+						"instancias": 25
+					},
+					"Manguezal": {
+						"blocos": 6,
+						"instancias": 34
+					},
+					"Mata_ angico": {
+						"blocos": 25,
+						"instancias": 246
+					},
+					"Mata_ aroeira": {
+						"blocos": 33,
+						"instancias": 141
+					},
+					"Mata_ cajueiro": {
+						"blocos": 4,
+						"instancias": 10
+					},
+					"Mata_ clusia": {
+						"blocos": 7,
+						"instancias": 52
+					},
+					"Mata_ dendezeiro": {
+						"blocos": 33,
+						"instancias": 116
+					},
+					"Mata_ embauba": {
+						"blocos": 93,
+						"instancias": 354
+					},
+					"Mata_ ingazeiro": {
+						"blocos": 15,
+						"instancias": 50
+					},
+					"Mata_ ipe_amarelo": {
+						"blocos": 36,
+						"instancias": 166
+					},
+					"Mata_ jaqueira": {
+						"blocos": 22,
+						"instancias": 50
+					},
+					"Mata_ jatoba": {
+						"blocos": 81,
+						"instancias": 521
+					},
+					"Mata_ jenipapeiro": {
+						"blocos": 30,
+						"instancias": 165
+					},
+					"Mata_ jequitiba": {
+						"blocos": 65,
+						"instancias": 446
+					},
+					"Mata_ massaranduba": {
+						"blocos": 37,
+						"instancias": 257
+					},
+					"Mata_ mata_alta": {
+						"blocos": 28,
+						"instancias": 147
+					},
+					"Mata_ pau_brasil": {
+						"blocos": 30,
+						"instancias": 112
+					},
+					"Mata_ piacava": {
+						"blocos": 8,
+						"instancias": 34
+					},
+					"Mata_ pitangueira": {
+						"blocos": 3,
+						"instancias": 7
+					},
+					"Paisagismo_ aroeira_leve 140": {
+						"blocos": 4,
+						"instancias": 11
+					},
+					"Paisagismo_ bananeira_leve 140": {
+						"blocos": 9,
+						"instancias": 521
+					},
+					"Paisagismo_ bromelia 60": {
+						"blocos": 7,
+						"instancias": 10
+					},
+					"Paisagismo_ cajueiro_leve 140": {
+						"blocos": 8,
+						"instancias": 25
+					},
+					"Paisagismo_ capim 140": {
+						"blocos": 4,
+						"instancias": 66
+					},
+					"Paisagismo_ capim 60": {
+						"blocos": 36,
+						"instancias": 128
+					},
+					"Paisagismo_ cerca_varas": {
+						"blocos": 16,
+						"instancias": 204
+					},
+					"Paisagismo_ clusia_leve 140": {
+						"blocos": 2,
+						"instancias": 2
+					},
+					"Paisagismo_ dendezeiro_leve 140": {
+						"blocos": 6,
+						"instancias": 36
+					},
+					"Paisagismo_ goiabeira 140": {
+						"blocos": 11,
+						"instancias": 67
+					},
+					"Paisagismo_ heliconia 60": {
+						"blocos": 2,
+						"instancias": 3
+					},
+					"Paisagismo_ heliconia 80": {
+						"blocos": 4,
+						"instancias": 16
+					},
+					"Paisagismo_ ingazeiro_leve 140": {
+						"blocos": 3,
+						"instancias": 11
+					},
+					"Paisagismo_ jaqueira_leve 140": {
+						"blocos": 4,
+						"instancias": 16
+					},
+					"Paisagismo_ jenipapeiro_leve 140": {
+						"blocos": 4,
+						"instancias": 18
+					},
+					"Paisagismo_ mamoeiro 140": {
+						"blocos": 14,
+						"instancias": 50
+					},
+					"Paisagismo_ mangueira_leve 140": {
+						"blocos": 7,
+						"instancias": 27
+					},
+					"Paisagismo_ pe_de_fumo 80": {
+						"blocos": 5,
+						"instancias": 167
+					},
+					"Paisagismo_ pe_de_mandioca 80": {
+						"blocos": 11,
+						"instancias": 397
+					},
+					"Paisagismo_ pe_de_milho 80": {
+						"blocos": 4,
+						"instancias": 283
+					},
+					"Paisagismo_ piacava_leve 140": {
+						"blocos": 5,
+						"instancias": 26
+					},
+					"Paisagismo_ pitangueira_leve 140": {
+						"blocos": 10,
+						"instancias": 105
+					},
+					"Paisagismo_ samambaia 60": {
+						"blocos": 6,
+						"instancias": 8
+					},
+					"Paisagismo_ samambaia 80": {
+						"blocos": 4,
+						"instancias": 18
+					},
+					"Paisagismo_ touceira_bambu 80": {
+						"blocos": 1,
+						"instancias": 4
+					},
+					"Paisagismo_ touceira_cana 60": {
+						"blocos": 4,
+						"instancias": 10
+					},
+					"Peixes": {
+						"blocos": 1,
+						"instancias": 14
+					},
+					"Pé das árvores (areia)": {
+						"blocos": 15,
+						"instancias": 94
+					},
+					"Pé das árvores (grama)": {
+						"blocos": 26,
+						"instancias": 58
+					},
+					"Restinga da orla_ castanhola": {
+						"blocos": 6,
+						"instancias": 10
+					},
+					"Restinga da orla_ clusia": {
+						"blocos": 4,
+						"instancias": 6
+					},
+					"Restinga da orla_ piacava": {
+						"blocos": 4,
+						"instancias": 4
+					},
+					"Sub-bosque": {
+						"blocos": 148,
+						"instancias": 952
+					}
+				},
+				"nos": 3009,
+				"nos_por_ramo": {
+					"@Camera3D@125": 1,
+					"@CanvasLayer@126": 92,
+					"Cenario": 2915
+				},
+				"npcs": 0,
+				"por_classe": {
+					"Area3D": 21,
+					"Camera3D": 1,
+					"CanvasLayer": 1,
+					"CollisionShape3D": 284,
+					"DirectionalLight3D": 2,
+					"GPUParticles3D": 4,
+					"Label3D": 21,
+					"MeshInstance3D": 350,
+					"MultiMeshInstance3D": 1668,
+					"OmniLight3D": 12,
+					"StaticBody3D": 248,
+					"Timer": 1,
+					"WorldEnvironment": 1
+				},
+				"triangulos_em_malhas": 2122505,
+				"triangulos_multimesh_lod0": 26732051
+			},
+			"desenho_cpu_ms": 190.0,
+			"desenho_gpu_ms": 3094.5,
+			"etapas": [
+				{
+					"avisos": 0,
+					"etapa": "(monta a tela de carregamento)",
+					"inicio_ms": 0.0,
+					"maior_trecho_sem_ceder_ms": 64.6,
+					"ms": 64.6,
+					"nos_criados": 29,
+					"quadros": 0
+				},
+				{
+					"avisos": 0,
+					"etapa": "(leitura em segundo plano)",
+					"inicio_ms": 64.6,
+					"maior_trecho_sem_ceder_ms": 156.1,
+					"ms": 1669.7,
+					"nos_criados": 0,
+					"quadros": 95
+				},
+				{
+					"avisos": 0,
+					"etapa": "(instanciar a cena)",
+					"inicio_ms": 1734.3,
+					"maior_trecho_sem_ceder_ms": 0.1,
+					"ms": 0.1,
+					"nos_criados": 0,
+					"quadros": 0
+				},
+				{
+					"avisos": 0,
+					"etapa": "(troca de cena: libera a anterior e espera o fim do quadro)",
+					"inicio_ms": 1734.4,
+					"maior_trecho_sem_ceder_ms": 0.1,
+					"ms": 0.1,
+					"nos_criados": 1,
+					"quadros": 0
+				},
+				{
+					"avisos": 0,
+					"etapa": "(a cena entra na árvore)",
+					"inicio_ms": 1734.5,
+					"maior_trecho_sem_ceder_ms": 0.0,
+					"ms": 0.0,
+					"nos_criados": 1,
+					"quadros": 0
+				},
+				{
+					"avisos": 0,
+					"etapa": "(mundo: antes da primeira etapa)",
+					"inicio_ms": 1734.5,
+					"maior_trecho_sem_ceder_ms": 340.8,
+					"ms": 340.8,
+					"nos_criados": 5,
+					"quadros": 0
+				},
+				{
+					"avisos": 0,
+					"etapa": "(_ready da cena: Abertura)",
+					"inicio_ms": 2075.4,
+					"maior_trecho_sem_ceder_ms": 57.6,
+					"ms": 57.6,
+					"nos_criados": 93,
+					"quadros": 0
+				},
+				{
+					"avisos": 0,
+					"etapa": "Enchendo a baía",
+					"fracao_final": 0.015,
+					"fracao_inicial": 0.015,
+					"inicio_ms": 2133.0,
+					"maior_trecho_sem_ceder_ms": 526.8,
+					"ms": 660.7,
+					"nos_criados": 12,
+					"quadros": 1
+				},
+				{
+					"avisos": 166,
+					"etapa": "Moldando o terreno · terra: malha e colisão",
+					"fracao_final": 0.283,
+					"fracao_inicial": 0.038,
+					"inicio_ms": 2793.7,
+					"maior_trecho_sem_ceder_ms": 2795.9,
+					"ms": 12663.9,
+					"nos_criados": 3,
+					"quadros": 24
+				},
+				{
+					"avisos": 1,
+					"etapa": "Moldando o terreno · vila e áreas do KML",
+					"fracao_final": 0.285,
+					"fracao_inicial": 0.285,
+					"inicio_ms": 15457.5,
+					"maior_trecho_sem_ceder_ms": 8.9,
+					"ms": 9.0,
+					"nos_criados": 0,
+					"quadros": 1
+				},
+				{
+					"avisos": 1,
+					"etapa": "Estendendo a praia e os rios",
+					"fracao_final": 0.315,
+					"fracao_inicial": 0.315,
+					"inicio_ms": 15466.5,
+					"maior_trecho_sem_ceder_ms": 1868.0,
+					"ms": 1875.2,
+					"nos_criados": 22,
+					"quadros": 1
+				},
+				{
+					"avisos": 10,
+					"etapa": "Abrindo as ruas",
+					"fracao_final": 0.368,
+					"fracao_inicial": 0.345,
+					"inicio_ms": 17341.7,
+					"maior_trecho_sem_ceder_ms": 864.7,
+					"ms": 3069.0,
+					"nos_criados": 39,
+					"quadros": 8
+				},
+				{
+					"avisos": 213,
+					"etapa": "Plantando a mata · sorteio dos pontos",
+					"fracao_final": 0.525,
+					"fracao_inicial": 0.375,
+					"inicio_ms": 20410.7,
+					"maior_trecho_sem_ceder_ms": 962.6,
+					"ms": 1555.0,
+					"nos_criados": 0,
+					"quadros": 8
+				},
+				{
+					"avisos": 31,
+					"etapa": "Plantando a mata · malhas por espécie",
+					"fracao_final": 0.525,
+					"fracao_inicial": 0.525,
+					"inicio_ms": 21965.8,
+					"maior_trecho_sem_ceder_ms": 112.2,
+					"ms": 973.9,
+					"nos_criados": 1156,
+					"quadros": 10
+				},
+				{
+					"avisos": 2,
+					"etapa": "Plantando a mata · sub-bosque, rio e orla",
+					"fracao_final": 0.75,
+					"fracao_inicial": 0.735,
+					"inicio_ms": 22939.7,
+					"maior_trecho_sem_ceder_ms": 240.0,
+					"ms": 240.3,
+					"nos_criados": 279,
+					"quadros": 1
+				},
+				{
+					"avisos": 1,
+					"etapa": "Medindo os lotes",
+					"fracao_final": 0.76,
+					"fracao_inicial": 0.76,
+					"inicio_ms": 23180.0,
+					"maior_trecho_sem_ceder_ms": 7.5,
+					"ms": 8.3,
+					"nos_criados": 0,
+					"quadros": 1
+				},
+				{
+					"avisos": 1,
+					"etapa": "Erguendo as casas",
+					"fracao_final": 0.8,
+					"fracao_inicial": 0.8,
+					"inicio_ms": 23188.2,
+					"maior_trecho_sem_ceder_ms": 105.7,
+					"ms": 410.4,
+					"nos_criados": 209,
+					"quadros": 5
+				},
+				{
+					"avisos": 1,
+					"etapa": "Cercando o roçado",
+					"fracao_final": 0.84,
+					"fracao_inicial": 0.84,
+					"inicio_ms": 23598.6,
+					"maior_trecho_sem_ceder_ms": 74.1,
+					"ms": 81.2,
+					"nos_criados": 14,
+					"quadros": 1
+				},
+				{
+					"avisos": 1,
+					"etapa": "Plantando as árvores da vila",
+					"fracao_final": 0.86,
+					"fracao_inicial": 0.86,
+					"inicio_ms": 23679.8,
+					"maior_trecho_sem_ceder_ms": 108.5,
+					"ms": 391.7,
+					"nos_criados": 192,
+					"quadros": 5
+				},
+				{
+					"avisos": 1,
+					"etapa": "Erguendo a capela, a venda e o píer",
+					"fracao_final": 0.89,
+					"fracao_inicial": 0.89,
+					"inicio_ms": 24071.5,
+					"maior_trecho_sem_ceder_ms": 289.4,
+					"ms": 291.6,
+					"nos_criados": 150,
+					"quadros": 1
+				},
+				{
+					"avisos": 1,
+					"etapa": "Espalhando os objetos",
+					"fracao_final": 0.93,
+					"fracao_inicial": 0.93,
+					"inicio_ms": 24363.1,
+					"maior_trecho_sem_ceder_ms": 395.2,
+					"ms": 397.4,
+					"nos_criados": 205,
+					"quadros": 1
+				},
+				{
+					"avisos": 1,
+					"etapa": "Assentando as pedras",
+					"fracao_final": 0.94,
+					"fracao_inicial": 0.94,
+					"inicio_ms": 24760.5,
+					"maior_trecho_sem_ceder_ms": 273.5,
+					"ms": 434.2,
+					"nos_criados": 268,
+					"quadros": 1
+				},
+				{
+					"avisos": 1,
+					"etapa": "Fundeando as canoas",
+					"fracao_final": 0.95,
+					"fracao_inicial": 0.95,
+					"inicio_ms": 25194.8,
+					"maior_trecho_sem_ceder_ms": 142.1,
+					"ms": 144.5,
+					"nos_criados": 38,
+					"quadros": 1
+				},
+				{
+					"avisos": 1,
+					"etapa": "Acendendo os lampiões",
+					"fracao_final": 0.97,
+					"fracao_inicial": 0.97,
+					"inicio_ms": 25339.3,
+					"maior_trecho_sem_ceder_ms": 104.7,
+					"ms": 109.6,
+					"nos_criados": 55,
+					"quadros": 1
+				},
+				{
+					"avisos": 1,
+					"etapa": "Plantando as árvores da vila",
+					"fracao_final": 0.975,
+					"fracao_inicial": 0.975,
+					"inicio_ms": 25448.9,
+					"maior_trecho_sem_ceder_ms": 844.5,
+					"ms": 865.8,
+					"nos_criados": 268,
+					"quadros": 1
+				},
+				{
+					"avisos": 0,
+					"etapa": "(depois do pronto, no mesmo quadro)",
+					"inicio_ms": 26314.7,
+					"maior_trecho_sem_ceder_ms": 17.2,
+					"ms": 17.2,
+					"nos_criados": 0,
+					"quadros": 0
+				},
+				{
+					"avisos": 0,
+					"etapa": "(primeiros quadros com o vale à vista)",
+					"inicio_ms": 26331.8,
+					"maior_trecho_sem_ceder_ms": 172.9,
+					"ms": 1402.5,
+					"nos_criados": 0,
+					"quadros": 31
+				}
+			],
+			"glbs": {
+				"carregados_no_total": 123,
+				"chaves_novas": [
+					"angico",
+					"aroeira_leve",
+					"balde",
+					"bananeira",
+					"bananeira_leve",
+					"banco",
+					"barraca_feira",
+					"bote",
+					"bromelia",
+					"cacho_banana",
+					"cajueiro",
+					"cajueiro_leve",
+					"candeeiro",
+					"canoa",
+					"canoa_amarela",
+					"canoa_em_obra",
+					"capela",
+					"capelinha",
+					"capim",
+					"carro_de_boi",
+					"carroca",
+					"casa_carro_quebrado",
+					"casa_farinha",
+					"casa_meia_agua",
+					"casa_paroquial",
+					"casa_pasto",
+					"casa_pescador",
+					"casa_taipa",
+					"casa_taipa_azul",
+					"casa_taipa_ocre",
+					"casa_taipa_rosa",
+					"casa_taipa_verde",
+					"casa_varanda",
+					"castanhola",
+					"castanhola_leve",
+					"castanhola_longe",
+					"cerca",
+					"cerca_varas",
+					"cesto",
+					"chiqueiro",
+					"clusia",
+					"clusia_leve",
+					"cocho",
+					"coqueiro",
+					"coqueiro_leve",
+					"coqueiro_longe",
+					"cruzeiro",
+					"dendezeiro",
+					"dendezeiro_leve",
+					"dendezeiro_longe",
+					"embauba",
+					"enxada",
+					"estaleiro_fumo",
+					"farinha",
+					"fitas_gameleira",
+					"fogueira",
+					"galinheiro",
+					"gameleira",
+					"goiabeira",
+					"heliconia",
+					"igreja",
+					"ingazeiro",
+					"ingazeiro_leve",
+					"ingazeiro_longe",
+					"ipe_amarelo",
+					"ipe_amarelo_leve",
+					"ipe_roxo",
+					"jaqueira",
+					"jaqueira_leve",
+					"jatoba",
+					"jenipapeiro_leve",
+					"jequitiba",
+					"lampiao_poste",
+					"lavadouro_pedra",
+					"lenha",
+					"machado",
+					"mamoeiro",
+					"mandioca_canteiro",
+					"mangue",
+					"mangue_leve",
+					"mangue_longe",
+					"mangueira",
+					"mangueira_leve",
+					"massaranduba",
+					"mastro_pano",
+					"mata_alta",
+					"mata_larga",
+					"mirante",
+					"moita",
+					"monjolo",
+					"moringa",
+					"pau_brasil",
+					"pau_brasil_leve",
+					"pe_de_fumo",
+					"pe_de_mandioca",
+					"pe_de_milho",
+					"pedra_mare",
+					"pedras",
+					"pedras_praia",
+					"peixe",
+					"penedo_lapa",
+					"piacava",
+					"piacava_leve",
+					"piacava_longe",
+					"pier",
+					"pitangueira",
+					"pitangueira_leve",
+					"poco",
+					"ponte",
+					"porteira",
+					"pote",
+					"samambaia",
+					"sapucaia",
+					"sub_bosque",
+					"tainha",
+					"touceira_bambu",
+					"touceira_cana",
+					"tumulo",
+					"vara_pescar",
+					"varal",
+					"varal_bambu",
+					"varal_estacas",
+					"venda"
+				],
+				"faltando": [],
+				"novos_nesta_cena": 123
+			},
+			"leitura_ms": 1669.6,
+			"maiores_quadros": [
+				{
+					"etapa_no_fim": "Moldando o terreno · terra: malha e colisão",
+					"etapa_no_inicio": "Moldando o terreno · terra: malha e colisão",
+					"ms": 2795.9,
+					"terminou_em_ms": 6245.3
+				},
+				{
+					"etapa_no_fim": "Moldando o terreno · terra: malha e colisão",
+					"etapa_no_inicio": "Moldando o terreno · terra: malha e colisão",
+					"ms": 2155.8,
+					"terminou_em_ms": 8803.5
+				},
+				{
+					"etapa_no_fim": "Abrindo as ruas",
+					"etapa_no_inicio": "Estendendo a praia e os rios",
+					"ms": 1870.5,
+					"terminou_em_ms": 17344.2
+				},
+				{
+					"etapa_no_fim": "Plantando a mata · malhas por espécie",
+					"etapa_no_inicio": "Plantando a mata · sorteio dos pontos",
+					"ms": 991.3,
+					"terminou_em_ms": 21994.5
+				},
+				{
+					"etapa_no_fim": "Moldando o terreno · terra: malha e colisão",
+					"etapa_no_inicio": "Enchendo a baía",
+					"ms": 880.7,
+					"terminou_em_ms": 3147.6
+				},
+				{
+					"etapa_no_fim": "(primeiros quadros com o vale à vista)",
+					"etapa_no_inicio": "Plantando as árvores da vila",
+					"ms": 878.5,
+					"terminou_em_ms": 26348.6
+				},
+				{
+					"etapa_no_fim": "Abrindo as ruas",
+					"etapa_no_inicio": "Abrindo as ruas",
+					"ms": 864.7,
+					"terminou_em_ms": 19632.7
+				},
+				{
+					"etapa_no_fim": "Moldando o terreno · terra: malha e colisão",
+					"etapa_no_inicio": "Moldando o terreno · terra: malha e colisão",
+					"ms": 841.2,
+					"terminou_em_ms": 14192.1
+				},
+				{
+					"etapa_no_fim": "Abrindo as ruas",
+					"etapa_no_inicio": "Abrindo as ruas",
+					"ms": 802.5,
+					"terminou_em_ms": 18146.7
+				},
+				{
+					"etapa_no_fim": "Moldando o terreno · vila e áreas do KML",
+					"etapa_no_inicio": "Moldando o terreno · terra: malha e colisão",
+					"ms": 720.5,
+					"terminou_em_ms": 15466.4
+				}
+			],
+			"monitores": {
+				"buffers_mb": 84.7,
+				"chamadas_de_desenho": 702.0,
+				"fisica_corpos_ativos": 0.0,
+				"fisica_ilhas": 0.0,
+				"fisica_pares": 53.0,
+				"memoria_estatica_mb": 281.8,
+				"nos": 3310.0,
+				"nos_orfaos": 0.0,
+				"objetos": 8844.0,
+				"objetos_no_quadro": 1787.0,
+				"primitivas_no_quadro": 2050330.0,
+				"recursos": 990.0,
+				"texturas_mb": 762.8,
+				"video_mb": 921.2
+			},
+			"mundo": {
+				"alturas_em_cache": 66338,
+				"ancoras": 130,
+				"arvores_nomeadas": 59,
+				"blocos_com_lod": 934,
+				"construido": true,
+				"nos_da_regiao": 1748,
+				"nos_do_cenario": 2915,
+				"pontos_de_interesse": 12,
+				"troncos_registrados": 3894
+			},
+			"passos_de_fisica": 370,
+			"quadros": 198,
+			"quadros_desenhados": 198,
+			"quadros_lentos": 29,
+			"raiz": "Abertura",
+			"sons": [
+				{
+					"em_ms": 26331.8,
+					"etapa": "(depois do pronto, no mesmo quadro)",
+					"som": "/root/Audio/Aves ← res://assets/audio/ambiente/aves_reconcavo.ogg",
+					"volume_db": -80.0
+				},
+				{
+					"em_ms": 26331.8,
+					"etapa": "(depois do pronto, no mesmo quadro)",
+					"som": "/root/Audio/Mare ← res://assets/audio/ambiente/mare_mansa.ogg",
+					"volume_db": -80.0
+				},
+				{
+					"em_ms": 26348.7,
+					"etapa": "(primeiros quadros com o vale à vista)",
+					"som": "/root/Audio/Musica ← res://assets/audio/musica/tema_introducao.wav",
+					"volume_db": -59.0
+				}
+			],
+			"tela": {
+				"montada": true,
+				"particulas": true
+			},
+			"tocando_no_fim": [
+				"/root/Audio/Musica ← res://assets/audio/musica/tema_introducao.wav",
+				"/root/Audio/Mare ← res://assets/audio/ambiente/mare_mansa.ogg",
+				"/root/Audio/Aves ← res://assets/audio/ambiente/aves_reconcavo.ogg"
+			],
+			"tocando_no_inicio": [],
+			"total_ms": 27734.3
+		},
+		{
+			"ate_o_pronto_ms": 23029.5,
+			"caminho": "res://scenes/prototipo_3d/vale.tscn",
+			"cena": "vale",
+			"contagem": {
+				"alvos_de_casa": 21,
+				"amostras_heightmap": 75762,
+				"colisoes_desligadas": 44,
+				"controles_de_interface": 535,
+				"faces_trimesh": 274026,
+				"formas_de_colisao": {
+					"BoxShape3D": 306,
+					"CapsuleShape3D": 46,
+					"ConcavePolygonShape3D": 26,
+					"ConvexPolygonShape3D": 1,
+					"CylinderShape3D": 120,
+					"HeightMapShape3D": 1,
+					"WorldBoundaryShape3D": 5
+				},
+				"glbs_instanciados": {
+					"Angico": 1,
+					"Balde": 3,
+					"Bananeira": 1,
+					"Banco": 2,
+					"Banco Tosco": 1,
+					"Barril": 2,
+					"Bau": 2,
+					"Beata": 1,
+					"Benedito": 1,
+					"Bode": 1,
+					"Bote": 2,
+					"Cabra": 1,
+					"Cabra Solta": 2,
+					"Cacho Banana": 1,
+					"Cachorro Caramelo": 3,
+					"Cachorro Malhado": 3,
+					"Caititu": 1,
+					"Cajueiro": 1,
+					"Cama": 2,
+					"Cana": 1,
+					"Candeeiro": 5,
+					"Candinha": 1,
+					"Canoa": 3,
+					"Canoa Amarela": 2,
+					"Canoa Em Obra": 1,
+					"Cantareira": 1,
+					"Capela": 1,
+					"Capelinha": 1,
+					"Capim": 1,
+					"Carpinteiro": 1,
+					"Carroca": 1,
+					"Casa Carro Quebrado": 1,
+					"Casa Farinha": 1,
+					"Casa Meia Agua": 1,
+					"Casa Paroquial": 1,
+					"Casa Pasto": 1,
+					"Casa Pescador": 1,
+					"Casa Taipa": 1,
+					"Casa Taipa Azul": 1,
+					"Casa Taipa Ocre": 1,
+					"Casa Taipa Rosa": 1,
+					"Casa Taipa Verde": 1,
+					"Casa Varanda": 1,
+					"Casarao Fazenda": 1,
+					"Cerca": 3,
+					"Cesto": 2,
+					"Chiqueiro": 1,
+					"Cocho": 1,
+					"Coqueiro": 1,
+					"Cosme": 1,
+					"Cruzeiro": 2,
+					"Damiao": 1,
+					"Dendezeiro": 1,
+					"Embauba": 1,
+					"Enxada": 1,
+					"Ervas Secando": 1,
+					"Farinha": 1,
+					"Filhote Caramelo": 1,
+					"Filo": 1,
+					"Fitas Gameleira": 1,
+					"Fogao Barro": 1,
+					"Fogueira": 1,
+					"Galinha": 25,
+					"Galinha Dangola": 5,
+					"Galinheiro": 1,
+					"Galo": 3,
+					"Gamela": 1,
+					"Gameleira": 1,
+					"Gato Amarelo": 2,
+					"Gato Malhado": 4,
+					"Gato Preto": 2,
+					"Guarda": 1,
+					"Guarita Fazenda": 1,
+					"Igreja": 1,
+					"Ipe Amarelo": 1,
+					"Ipe Roxo": 1,
+					"Jaqueira": 1,
+					"Jatoba": 1,
+					"Jequitiba": 1,
+					"Jumento": 1,
+					"Lampiao Poste": 1,
+					"Lapa": 1,
+					"Lavadeira": 1,
+					"Lavadouro Pedra": 1,
+					"Leitao": 1,
+					"Lenha": 1,
+					"Machado": 1,
+					"Mandioca Canteiro": 1,
+					"Mangueira": 1,
+					"Marisqueira": 1,
+					"Massaranduba": 1,
+					"Mastro Pano": 1,
+					"Mata Alta": 1,
+					"Mata Larga": 1,
+					"Menina": 1,
+					"Menino": 1,
+					"Mercador": 1,
+					"Mesa": 1,
+					"Mestre Saveiro": 1,
+					"Mirante": 1,
+					"Moita": 1,
+					"Moringa": 2,
+					"Onca Pintada": 1,
+					"Onca Preta": 1,
+					"Oratorio": 1,
+					"Padre": 1,
+					"Pato": 4,
+					"Pau Brasil": 1,
+					"Pavao": 1,
+					"Pavoa": 3,
+					"Pedra Mare": 1,
+					"Pedras": 2,
+					"Pedras Praia": 1,
+					"Pedro": 1,
+					"Peixe": 1,
+					"Penedo Lapa": 3,
+					"Peru": 1,
+					"Pescador": 1,
+					"Pier": 1,
+					"Pilao": 1,
+					"Pintinho": 7,
+					"Pitangueira": 1,
+					"Poco": 1,
+					"Ponte": 1,
+					"Porco": 2,
+					"Portao Fazenda": 1,
+					"Pote": 4,
+					"Quirino": 1,
+					"Quituteira": 1,
+					"Rede": 2,
+					"Rede De Pesca": 1,
+					"Remos": 1,
+					"Rendeira": 1,
+					"Sacristao": 1,
+					"Sapucaia": 1,
+					"Saveiro": 1,
+					"Tabuleiro": 1,
+					"Tonho": 1,
+					"Tronco Caido": 1,
+					"Trouxa Roupa": 1,
+					"Tumulo": 1,
+					"Vara Pescar": 1,
+					"Varal": 1,
+					"Varal Bambu": 1,
+					"Varal Estacas": 1,
+					"Vassoura Piacava": 1,
+					"Venda": 1,
+					"Zefa": 1
+				},
+				"instancias_de_glb": 226,
+				"instancias_multimesh": 9883,
+				"jogador": 1,
+				"luzes_com_sombra": 1,
+				"malhas_distintas": 561,
+				"multimesh_por_grupo": {
+					"Copa distante, modelo_ Coqueiros da orla": {
+						"blocos": 12,
+						"instancias": 22
+					},
+					"Copa distante, modelo_ Ingazeiros do rio": {
+						"blocos": 13,
+						"instancias": 25
+					},
+					"Copa distante, modelo_ Manguezal": {
+						"blocos": 6,
+						"instancias": 34
+					},
+					"Copa distante, modelo_ Mata_ dendezeiro": {
+						"blocos": 33,
+						"instancias": 116
+					},
+					"Copa distante, modelo_ Mata_ ingazeiro": {
+						"blocos": 15,
+						"instancias": 50
+					},
+					"Copa distante, modelo_ Mata_ piacava": {
+						"blocos": 8,
+						"instancias": 34
+					},
+					"Copa distante, modelo_ Restinga da orla_ castanhola": {
+						"blocos": 6,
+						"instancias": 10
+					},
+					"Copa distante, modelo_ Restinga da orla_ piacava": {
+						"blocos": 4,
+						"instancias": 4
+					},
+					"Copa distante_ Coqueiros da orla": {
+						"blocos": 12,
+						"instancias": 22
+					},
+					"Copa distante_ Ingazeiros do rio": {
+						"blocos": 13,
+						"instancias": 25
+					},
+					"Copa distante_ Manguezal": {
+						"blocos": 6,
+						"instancias": 34
+					},
+					"Copa distante_ Mata_ angico": {
+						"blocos": 25,
+						"instancias": 246
+					},
+					"Copa distante_ Mata_ aroeira": {
+						"blocos": 33,
+						"instancias": 141
+					},
+					"Copa distante_ Mata_ cajueiro": {
+						"blocos": 4,
+						"instancias": 10
+					},
+					"Copa distante_ Mata_ clusia": {
+						"blocos": 7,
+						"instancias": 52
+					},
+					"Copa distante_ Mata_ dendezeiro": {
+						"blocos": 33,
+						"instancias": 116
+					},
+					"Copa distante_ Mata_ embauba": {
+						"blocos": 93,
+						"instancias": 354
+					},
+					"Copa distante_ Mata_ ingazeiro": {
+						"blocos": 15,
+						"instancias": 50
+					},
+					"Copa distante_ Mata_ ipe_amarelo": {
+						"blocos": 36,
+						"instancias": 166
+					},
+					"Copa distante_ Mata_ jaqueira": {
+						"blocos": 22,
+						"instancias": 50
+					},
+					"Copa distante_ Mata_ jatoba": {
+						"blocos": 81,
+						"instancias": 521
+					},
+					"Copa distante_ Mata_ jenipapeiro": {
+						"blocos": 30,
+						"instancias": 165
+					},
+					"Copa distante_ Mata_ jequitiba": {
+						"blocos": 65,
+						"instancias": 446
+					},
+					"Copa distante_ Mata_ massaranduba": {
+						"blocos": 37,
+						"instancias": 257
+					},
+					"Copa distante_ Mata_ mata_alta": {
+						"blocos": 28,
+						"instancias": 147
+					},
+					"Copa distante_ Mata_ pau_brasil": {
+						"blocos": 30,
+						"instancias": 112
+					},
+					"Copa distante_ Mata_ piacava": {
+						"blocos": 8,
+						"instancias": 34
+					},
+					"Copa distante_ Mata_ pitangueira": {
+						"blocos": 3,
+						"instancias": 7
+					},
+					"Copa distante_ Restinga da orla_ castanhola": {
+						"blocos": 6,
+						"instancias": 10
+					},
+					"Copa distante_ Restinga da orla_ clusia": {
+						"blocos": 4,
+						"instancias": 6
+					},
+					"Copa distante_ Restinga da orla_ piacava": {
+						"blocos": 4,
+						"instancias": 4
+					},
+					"Coqueiros da orla": {
+						"blocos": 12,
+						"instancias": 22
+					},
+					"Ingazeiros do rio": {
+						"blocos": 13,
+						"instancias": 25
+					},
+					"Manguezal": {
+						"blocos": 6,
+						"instancias": 34
+					},
+					"Mata_ angico": {
+						"blocos": 25,
+						"instancias": 246
+					},
+					"Mata_ aroeira": {
+						"blocos": 33,
+						"instancias": 141
+					},
+					"Mata_ cajueiro": {
+						"blocos": 4,
+						"instancias": 10
+					},
+					"Mata_ clusia": {
+						"blocos": 7,
+						"instancias": 52
+					},
+					"Mata_ dendezeiro": {
+						"blocos": 33,
+						"instancias": 116
+					},
+					"Mata_ embauba": {
+						"blocos": 93,
+						"instancias": 354
+					},
+					"Mata_ ingazeiro": {
+						"blocos": 15,
+						"instancias": 50
+					},
+					"Mata_ ipe_amarelo": {
+						"blocos": 36,
+						"instancias": 166
+					},
+					"Mata_ jaqueira": {
+						"blocos": 22,
+						"instancias": 50
+					},
+					"Mata_ jatoba": {
+						"blocos": 81,
+						"instancias": 521
+					},
+					"Mata_ jenipapeiro": {
+						"blocos": 30,
+						"instancias": 165
+					},
+					"Mata_ jequitiba": {
+						"blocos": 65,
+						"instancias": 446
+					},
+					"Mata_ massaranduba": {
+						"blocos": 37,
+						"instancias": 257
+					},
+					"Mata_ mata_alta": {
+						"blocos": 28,
+						"instancias": 147
+					},
+					"Mata_ pau_brasil": {
+						"blocos": 30,
+						"instancias": 112
+					},
+					"Mata_ piacava": {
+						"blocos": 8,
+						"instancias": 34
+					},
+					"Mata_ pitangueira": {
+						"blocos": 3,
+						"instancias": 7
+					},
+					"Paisagismo_ aroeira_leve 140": {
+						"blocos": 4,
+						"instancias": 11
+					},
+					"Paisagismo_ bananeira_leve 140": {
+						"blocos": 9,
+						"instancias": 521
+					},
+					"Paisagismo_ bromelia 60": {
+						"blocos": 7,
+						"instancias": 10
+					},
+					"Paisagismo_ cajueiro_leve 140": {
+						"blocos": 8,
+						"instancias": 25
+					},
+					"Paisagismo_ capim 140": {
+						"blocos": 4,
+						"instancias": 66
+					},
+					"Paisagismo_ capim 60": {
+						"blocos": 36,
+						"instancias": 128
+					},
+					"Paisagismo_ cerca_varas": {
+						"blocos": 16,
+						"instancias": 204
+					},
+					"Paisagismo_ clusia_leve 140": {
+						"blocos": 2,
+						"instancias": 2
+					},
+					"Paisagismo_ dendezeiro_leve 140": {
+						"blocos": 6,
+						"instancias": 36
+					},
+					"Paisagismo_ goiabeira 140": {
+						"blocos": 11,
+						"instancias": 67
+					},
+					"Paisagismo_ heliconia 60": {
+						"blocos": 2,
+						"instancias": 3
+					},
+					"Paisagismo_ heliconia 80": {
+						"blocos": 4,
+						"instancias": 16
+					},
+					"Paisagismo_ ingazeiro_leve 140": {
+						"blocos": 3,
+						"instancias": 11
+					},
+					"Paisagismo_ jaqueira_leve 140": {
+						"blocos": 4,
+						"instancias": 16
+					},
+					"Paisagismo_ jenipapeiro_leve 140": {
+						"blocos": 4,
+						"instancias": 18
+					},
+					"Paisagismo_ mamoeiro 140": {
+						"blocos": 14,
+						"instancias": 50
+					},
+					"Paisagismo_ mangueira_leve 140": {
+						"blocos": 7,
+						"instancias": 27
+					},
+					"Paisagismo_ pe_de_fumo 80": {
+						"blocos": 5,
+						"instancias": 167
+					},
+					"Paisagismo_ pe_de_mandioca 80": {
+						"blocos": 11,
+						"instancias": 397
+					},
+					"Paisagismo_ pe_de_milho 80": {
+						"blocos": 4,
+						"instancias": 283
+					},
+					"Paisagismo_ piacava_leve 140": {
+						"blocos": 5,
+						"instancias": 26
+					},
+					"Paisagismo_ pitangueira_leve 140": {
+						"blocos": 10,
+						"instancias": 105
+					},
+					"Paisagismo_ samambaia 60": {
+						"blocos": 6,
+						"instancias": 8
+					},
+					"Paisagismo_ samambaia 80": {
+						"blocos": 4,
+						"instancias": 18
+					},
+					"Paisagismo_ touceira_bambu 80": {
+						"blocos": 1,
+						"instancias": 4
+					},
+					"Paisagismo_ touceira_cana 60": {
+						"blocos": 4,
+						"instancias": 10
+					},
+					"Peixes": {
+						"blocos": 37,
+						"instancias": 305
+					},
+					"Pé das árvores (areia)": {
+						"blocos": 15,
+						"instancias": 94
+					},
+					"Pé das árvores (grama)": {
+						"blocos": 26,
+						"instancias": 58
+					},
+					"Restinga da orla_ castanhola": {
+						"blocos": 6,
+						"instancias": 10
+					},
+					"Restinga da orla_ clusia": {
+						"blocos": 4,
+						"instancias": 6
+					},
+					"Restinga da orla_ piacava": {
+						"blocos": 4,
+						"instancias": 4
+					},
+					"Sub-bosque": {
+						"blocos": 148,
+						"instancias": 952
+					}
+				},
+				"nos": 5644,
+				"nos_por_ramo": {
+					"Achados": 50,
+					"Ambiente": 8,
+					"ArvoresInfo": 1,
+					"Bancada CanteiroColisao": 2,
+					"Bancada OficinaColisao": 2,
+					"Bancada_canteiro": 2,
+					"Bancada_oficina": 2,
+					"BichosDeCasa": 519,
+					"CasaDoJogador": 1,
+					"Cemiterio": 1,
+					"Cenario": 3165,
+					"ConquistaDaMissao": 10,
+					"FaunaVale": 73,
+					"Fazenda": 13,
+					"HUD": 258,
+					"Interiores": 657,
+					"Jogador": 16,
+					"Lapides": 1,
+					"Lavoura": 25,
+					"Lombada": 64,
+					"Luta": 39,
+					"LuzDourada": 2,
+					"Mapa": 2,
+					"MarcosDaFe": 1,
+					"MenuPausa": 42,
+					"MoradorBeata": 24,
+					"MoradorBenedito": 21,
+					"MoradorCandinha": 20,
+					"MoradorCarpinteiro": 19,
+					"MoradorCosme": 21,
+					"MoradorDamiao": 20,
+					"MoradorFilo": 20,
+					"MoradorGuarda": 19,
+					"MoradorLavadeira": 23,
+					"MoradorMarisqueira": 23,
+					"MoradorMenina": 19,
+					"MoradorMenino": 19,
+					"MoradorMercador": 19,
+					"MoradorMestre Saveiro": 19,
+					"MoradorPadre": 19,
+					"MoradorPedro": 29,
+					"MoradorPescador": 19,
+					"MoradorQuirino": 19,
+					"MoradorQuituteira": 23,
+					"MoradorRendeira": 24,
+					"MoradorSacristao": 24,
+					"MoradorTonho": 20,
+					"MoradorZefa": 20,
+					"NarracaoDoVale": 3,
+					"Navegacao": 2,
+					"Painel": 26,
+					"Pegadas": 65,
+					"Pesca": 4,
+					"PlacasNomes": 1,
+					"PonteDoRio": 11,
+					"Queda": 3,
+					"Recursos3D": 3,
+					"Retratos3D": 1,
+					"Saveiro": 1,
+					"SetaMissao": 3,
+					"TeclaDasBancadas": 1,
+					"TeclaDosMoradores": 1,
+					"TeiaSocial": 19,
+					"TeiaTalentos": 20,
+					"TelaControles": 23,
+					"TelasDoVale": 1,
+					"Tubarao": 10,
+					"VozDo_cruzeiro": 2,
+					"VozDo_gameleira": 2,
+					"VozDo_terreiro": 2
+				},
+				"npcs": 23,
+				"por_classe": {
+					"AnimationPlayer": 49,
+					"Area3D": 21,
+					"AudioStreamPlayer": 3,
+					"AudioStreamPlayer3D": 27,
+					"Camera3D": 2,
+					"CanvasLayer": 35,
+					"CharacterBody3D": 49,
+					"CollisionShape3D": 505,
+					"DirectionalLight3D": 2,
+					"GPUParticles3D": 29,
+					"Label3D": 46,
+					"MeshInstance3D": 899,
+					"MultiMeshInstance3D": 1704,
+					"OmniLight3D": 22,
+					"Skeleton3D": 50,
+					"SpotLight3D": 5,
+					"StaticBody3D": 417,
+					"Timer": 3,
+					"WorldEnvironment": 1
+				},
+				"triangulos_em_malhas": 3227575,
+				"triangulos_multimesh_lod0": 27396488
+			},
+			"desenho_cpu_ms": 427.8,
+			"desenho_gpu_ms": 6399.3,
+			"etapas": [
+				{
+					"avisos": 0,
+					"etapa": "(monta a tela de carregamento)",
+					"inicio_ms": 0.0,
+					"maior_trecho_sem_ceder_ms": 2.6,
+					"ms": 2.6,
+					"nos_criados": 29,
+					"quadros": 0
+				},
+				{
+					"avisos": 0,
+					"etapa": "(leitura em segundo plano)",
+					"inicio_ms": 2.6,
+					"maior_trecho_sem_ceder_ms": 49.2,
+					"ms": 3224.3,
+					"nos_criados": 0,
+					"quadros": 83
+				},
+				{
+					"avisos": 0,
+					"etapa": "(instanciar a cena)",
+					"inicio_ms": 3226.9,
+					"maior_trecho_sem_ceder_ms": 4.5,
+					"ms": 4.5,
+					"nos_criados": 0,
+					"quadros": 0
+				},
+				{
+					"avisos": 0,
+					"etapa": "(troca de cena: libera a anterior e espera o fim do quadro)",
+					"inicio_ms": 3231.4,
+					"maior_trecho_sem_ceder_ms": 50.4,
+					"ms": 50.4,
+					"nos_criados": 1,
+					"quadros": 0
+				},
+				{
+					"avisos": 0,
+					"etapa": "(a cena entra na árvore)",
+					"inicio_ms": 3281.7,
+					"maior_trecho_sem_ceder_ms": 0.1,
+					"ms": 0.1,
+					"nos_criados": 1,
+					"quadros": 0
+				},
+				{
+					"avisos": 0,
+					"etapa": "(mundo: antes da primeira etapa)",
+					"inicio_ms": 3281.8,
+					"maior_trecho_sem_ceder_ms": 243.3,
+					"ms": 243.3,
+					"nos_criados": 8,
+					"quadros": 0
+				},
+				{
+					"avisos": 0,
+					"etapa": "(_ready da cena: Vale3D)",
+					"inicio_ms": 3525.1,
+					"maior_trecho_sem_ceder_ms": 34.4,
+					"ms": 34.4,
+					"nos_criados": 185,
+					"quadros": 0
+				},
+				{
+					"avisos": 0,
+					"etapa": "Enchendo a baía",
+					"fracao_final": 0.015,
+					"fracao_inicial": 0.015,
+					"inicio_ms": 3559.4,
+					"maior_trecho_sem_ceder_ms": 456.5,
+					"ms": 562.9,
+					"nos_criados": 12,
+					"quadros": 1
+				},
+				{
+					"avisos": 166,
+					"etapa": "Moldando o terreno · terra: malha e colisão",
+					"fracao_final": 0.283,
+					"fracao_inicial": 0.038,
+					"inicio_ms": 4122.4,
+					"maior_trecho_sem_ceder_ms": 2624.8,
+					"ms": 11553.9,
+					"nos_criados": 3,
+					"quadros": 24
+				},
+				{
+					"avisos": 1,
+					"etapa": "Moldando o terreno · vila e áreas do KML",
+					"fracao_final": 0.285,
+					"fracao_inicial": 0.285,
+					"inicio_ms": 15676.3,
+					"maior_trecho_sem_ceder_ms": 11.3,
+					"ms": 11.5,
+					"nos_criados": 0,
+					"quadros": 1
+				},
+				{
+					"avisos": 1,
+					"etapa": "Estendendo a praia e os rios",
+					"fracao_final": 0.315,
+					"fracao_inicial": 0.315,
+					"inicio_ms": 15687.7,
+					"maior_trecho_sem_ceder_ms": 1678.9,
+					"ms": 1727.2,
+					"nos_criados": 22,
+					"quadros": 1
+				},
+				{
+					"avisos": 10,
+					"etapa": "Abrindo as ruas",
+					"fracao_final": 0.368,
+					"fracao_inicial": 0.345,
+					"inicio_ms": 17414.9,
+					"maior_trecho_sem_ceder_ms": 902.7,
+					"ms": 2839.7,
+					"nos_criados": 39,
+					"quadros": 8
+				},
+				{
+					"avisos": 213,
+					"etapa": "Plantando a mata · sorteio dos pontos",
+					"fracao_final": 0.525,
+					"fracao_inicial": 0.375,
+					"inicio_ms": 20254.6,
+					"maior_trecho_sem_ceder_ms": 303.9,
+					"ms": 1030.7,
+					"nos_criados": 0,
+					"quadros": 9
+				},
+				{
+					"avisos": 31,
+					"etapa": "Plantando a mata · malhas por espécie",
+					"fracao_final": 0.525,
+					"fracao_inicial": 0.525,
+					"inicio_ms": 21285.3,
+					"maior_trecho_sem_ceder_ms": 90.3,
+					"ms": 190.6,
+					"nos_criados": 1156,
+					"quadros": 3
+				},
+				{
+					"avisos": 2,
+					"etapa": "Plantando a mata · sub-bosque, rio e orla",
+					"fracao_final": 0.75,
+					"fracao_inicial": 0.735,
+					"inicio_ms": 21475.9,
+					"maior_trecho_sem_ceder_ms": 90.5,
+					"ms": 90.8,
+					"nos_criados": 279,
+					"quadros": 1
+				},
+				{
+					"avisos": 1,
+					"etapa": "Medindo os lotes",
+					"fracao_final": 0.76,
+					"fracao_inicial": 0.76,
+					"inicio_ms": 21566.7,
+					"maior_trecho_sem_ceder_ms": 7.8,
+					"ms": 8.5,
+					"nos_criados": 0,
+					"quadros": 1
+				},
+				{
+					"avisos": 1,
+					"etapa": "Erguendo as casas",
+					"fracao_final": 0.8,
+					"fracao_inicial": 0.8,
+					"inicio_ms": 21575.2,
+					"maior_trecho_sem_ceder_ms": 18.0,
+					"ms": 34.4,
+					"nos_criados": 209,
+					"quadros": 2
+				},
+				{
+					"avisos": 1,
+					"etapa": "Cercando o roçado",
+					"fracao_final": 0.84,
+					"fracao_inicial": 0.84,
+					"inicio_ms": 21609.6,
+					"maior_trecho_sem_ceder_ms": 26.0,
+					"ms": 28.3,
+					"nos_criados": 14,
+					"quadros": 1
+				},
+				{
+					"avisos": 1,
+					"etapa": "Plantando as árvores da vila",
+					"fracao_final": 0.86,
+					"fracao_inicial": 0.86,
+					"inicio_ms": 21637.9,
+					"maior_trecho_sem_ceder_ms": 91.7,
+					"ms": 194.8,
+					"nos_criados": 288,
+					"quadros": 3
+				},
+				{
+					"avisos": 1,
+					"etapa": "Erguendo a capela, a venda e o píer",
+					"fracao_final": 0.89,
+					"fracao_inicial": 0.89,
+					"inicio_ms": 21832.7,
+					"maior_trecho_sem_ceder_ms": 79.2,
+					"ms": 81.6,
+					"nos_criados": 150,
+					"quadros": 1
+				},
+				{
+					"avisos": 1,
+					"etapa": "Espalhando os objetos",
+					"fracao_final": 0.93,
+					"fracao_inicial": 0.93,
+					"inicio_ms": 21914.3,
+					"maior_trecho_sem_ceder_ms": 66.0,
+					"ms": 68.3,
+					"nos_criados": 205,
+					"quadros": 1
+				},
+				{
+					"avisos": 1,
+					"etapa": "Assentando as pedras",
+					"fracao_final": 0.94,
+					"fracao_inicial": 0.94,
+					"inicio_ms": 21982.6,
+					"maior_trecho_sem_ceder_ms": 153.8,
+					"ms": 164.4,
+					"nos_criados": 268,
+					"quadros": 1
+				},
+				{
+					"avisos": 1,
+					"etapa": "Fundeando as canoas",
+					"fracao_final": 0.95,
+					"fracao_inicial": 0.95,
+					"inicio_ms": 22147.0,
+					"maior_trecho_sem_ceder_ms": 61.6,
+					"ms": 80.1,
+					"nos_criados": 38,
+					"quadros": 1
+				},
+				{
+					"avisos": 1,
+					"etapa": "Acendendo os lampiões",
+					"fracao_final": 0.97,
+					"fracao_inicial": 0.97,
+					"inicio_ms": 22227.1,
+					"maior_trecho_sem_ceder_ms": 84.1,
+					"ms": 88.3,
+					"nos_criados": 55,
+					"quadros": 1
+				},
+				{
+					"avisos": 1,
+					"etapa": "Plantando as árvores da vila",
+					"fracao_final": 0.975,
+					"fracao_inicial": 0.975,
+					"inicio_ms": 22315.4,
+					"maior_trecho_sem_ceder_ms": 709.8,
+					"ms": 714.1,
+					"nos_criados": 268,
+					"quadros": 1
+				},
+				{
+					"avisos": 0,
+					"etapa": "(depois do pronto, no mesmo quadro)",
+					"inicio_ms": 23029.5,
+					"maior_trecho_sem_ceder_ms": 44.2,
+					"ms": 44.2,
+					"nos_criados": 3,
+					"quadros": 0
+				},
+				{
+					"avisos": 0,
+					"etapa": "(primeiros quadros com o vale à vista)",
+					"inicio_ms": 23073.7,
+					"maior_trecho_sem_ceder_ms": 3884.3,
+					"ms": 6927.4,
+					"nos_criados": 2614,
+					"quadros": 31
+				}
+			],
+			"glbs": {
+				"carregados_no_total": 209,
+				"chaves_novas": [
+					"acara",
+					"baiacu",
+					"bancada_canteiro",
+					"bancada_oficina",
+					"banco_tosco",
+					"barril",
+					"bau",
+					"beata",
+					"benedito",
+					"bode",
+					"budiao",
+					"cabra",
+					"cabra_solta",
+					"cachorro_caramelo",
+					"cachorro_malhado",
+					"caititu",
+					"cama",
+					"cana",
+					"candinha",
+					"cantareira",
+					"carpinteiro",
+					"casarao_fazenda",
+					"cavala",
+					"cosme",
+					"damiao",
+					"ervas_secando",
+					"filhote_caramelo",
+					"filo",
+					"fogao_barro",
+					"galinha",
+					"galinha_dangola",
+					"galo",
+					"gamela",
+					"gato_amarelo",
+					"gato_malhado",
+					"gato_preto",
+					"guarda",
+					"guarita_fazenda",
+					"jumento",
+					"lapa",
+					"lavadeira",
+					"leitao",
+					"marisqueira",
+					"menina",
+					"menino",
+					"mercador",
+					"mesa",
+					"mestre_saveiro",
+					"onca_pintada",
+					"onca_preta",
+					"oratorio",
+					"padre",
+					"pato",
+					"pavao",
+					"pavoa",
+					"pedro",
+					"peru",
+					"pescador",
+					"piaba",
+					"pilao",
+					"pintinho",
+					"porco",
+					"portao_fazenda",
+					"quirino",
+					"quituteira",
+					"raia",
+					"raia_pintada",
+					"rede",
+					"rede_de_pesca",
+					"remos",
+					"rendeira",
+					"sacristao",
+					"sardinha",
+					"sargentinho",
+					"saveiro",
+					"sororoca",
+					"tabuleiro",
+					"tonho",
+					"traira",
+					"tronco_caido",
+					"trouxa_roupa",
+					"tubarao",
+					"vassoura_piacava",
+					"viajante",
+					"xareu",
+					"zefa"
+				],
+				"faltando": [],
+				"novos_nesta_cena": 86
+			},
+			"leitura_ms": 3224.3,
+			"maiores_quadros": [
+				{
+					"etapa_no_fim": "(primeiros quadros com o vale à vista)",
+					"etapa_no_inicio": "(primeiros quadros com o vale à vista)",
+					"ms": 3884.3,
+					"terminou_em_ms": 28493.2
+				},
+				{
+					"etapa_no_fim": "Moldando o terreno · terra: malha e colisão",
+					"etapa_no_inicio": "Moldando o terreno · terra: malha e colisão",
+					"ms": 2624.8,
+					"terminou_em_ms": 7002.8
+				},
+				{
+					"etapa_no_fim": "Moldando o terreno · terra: malha e colisão",
+					"etapa_no_inicio": "Moldando o terreno · terra: malha e colisão",
+					"ms": 2123.3,
+					"terminou_em_ms": 9516.5
+				},
+				{
+					"etapa_no_fim": "Abrindo as ruas",
+					"etapa_no_inicio": "Estendendo a praia e os rios",
+					"ms": 1681.0,
+					"terminou_em_ms": 17417.0
+				},
+				{
+					"etapa_no_fim": "(primeiros quadros com o vale à vista)",
+					"etapa_no_inicio": "Plantando as árvores da vila",
+					"ms": 1211.3,
+					"terminou_em_ms": 23531.0
+				},
+				{
+					"etapa_no_fim": "(primeiros quadros com o vale à vista)",
+					"etapa_no_inicio": "(primeiros quadros com o vale à vista)",
+					"ms": 1077.9,
+					"terminou_em_ms": 24608.9
+				},
+				{
+					"etapa_no_fim": "Abrindo as ruas",
+					"etapa_no_inicio": "Abrindo as ruas",
+					"ms": 902.7,
+					"terminou_em_ms": 19685.1
+				},
+				{
+					"etapa_no_fim": "Abrindo as ruas",
+					"etapa_no_inicio": "Abrindo as ruas",
+					"ms": 775.3,
+					"terminou_em_ms": 18192.3
+				},
+				{
+					"etapa_no_fim": "Moldando o terreno · vila e áreas do KML",
+					"etapa_no_inicio": "Moldando o terreno · terra: malha e colisão",
+					"ms": 677.6,
+					"terminou_em_ms": 15687.6
+				},
+				{
+					"etapa_no_fim": "Moldando o terreno · terra: malha e colisão",
+					"etapa_no_inicio": "Moldando o terreno · terra: malha e colisão",
+					"ms": 508.3,
+					"terminou_em_ms": 14428.2
+				}
+			],
+			"monitores": {
+				"buffers_mb": 131.9,
+				"chamadas_de_desenho": 891.0,
+				"fisica_corpos_ativos": 22.0,
+				"fisica_ilhas": 21.0,
+				"fisica_pares": 514.0,
+				"memoria_estatica_mb": 458.4,
+				"nos": 6058.0,
+				"nos_orfaos": 0.0,
+				"objetos": 14967.0,
+				"objetos_no_quadro": 1800.0,
+				"primitivas_no_quadro": 1927518.0,
+				"recursos": 1958.0,
+				"texturas_mb": 1563.1,
+				"video_mb": 1774.7
+			},
+			"mundo": {
+				"alturas_em_cache": 66399,
+				"ancoras": 130,
+				"arvores_nomeadas": 59,
+				"blocos_com_lod": 934,
+				"construido": true,
+				"nos_da_regiao": 1845,
+				"nos_do_cenario": 3165,
+				"pontos_de_interesse": 12,
+				"troncos_registrados": 3894
+			},
+			"passos_de_fisica": 444,
+			"quadros": 175,
+			"quadros_desenhados": 175,
+			"quadros_lentos": 26,
+			"raiz": "Vale3D",
+			"sons": [
+				{
+					"em_ms": 15687.7,
+					"etapa": "Moldando o terreno · vila e áreas do KML",
+					"som": "/root/Audio/Musica ← res://assets/audio/musica/musica_manha.mp3",
+					"volume_db": -61.9
+				},
+				{
+					"em_ms": 28497.1,
+					"etapa": "(primeiros quadros com o vale à vista)",
+					"som": "/root/Vale3D/MoradorPedro/Voz ← res://assets/audio/vozes/pedro_saudacao_3.mp3",
+					"volume_db": 2.0
+				},
+				{
+					"em_ms": 28497.1,
+					"etapa": "(primeiros quadros com o vale à vista)",
+					"som": "/root/Vale3D/Ambiente/@AudioStreamPlayer3D@2355 ← res://assets/audio/ambiente/fogueira.mp3",
+					"volume_db": -48.9
+				},
+				{
+					"em_ms": 28497.1,
+					"etapa": "(primeiros quadros com o vale à vista)",
+					"som": "/root/Vale3D/Ambiente/@AudioStreamPlayer3D@2354 ← res://assets/audio/ambiente/riacho.mp3",
+					"volume_db": -15.0
+				},
+				{
+					"em_ms": 28497.1,
+					"etapa": "(primeiros quadros com o vale à vista)",
+					"som": "/root/Vale3D/Ambiente/@AudioStreamPlayer3D@2353 ← res://assets/audio/ambiente/riacho.mp3",
+					"volume_db": -15.0
+				},
+				{
+					"em_ms": 28497.1,
+					"etapa": "(primeiros quadros com o vale à vista)",
+					"som": "/root/Vale3D/Ambiente/@AudioStreamPlayer3D@2352 ← res://assets/audio/ambiente/mare_mansa.ogg",
+					"volume_db": -11.9
+				},
+				{
+					"em_ms": 28497.2,
+					"etapa": "(primeiros quadros com o vale à vista)",
+					"som": "/root/Vale3D/Ambiente/@AudioStreamPlayer@2351 ← res://assets/audio/ambiente/aves_reconcavo.ogg",
+					"volume_db": -25.7
+				},
+				{
+					"em_ms": 28497.2,
+					"etapa": "(primeiros quadros com o vale à vista)",
+					"som": "/root/Vale3D/Ambiente/@AudioStreamPlayer@2350 ← res://assets/audio/ambiente/mata_noite.mp3",
+					"volume_db": -80.0
+				},
+				{
+					"em_ms": 28497.2,
+					"etapa": "(primeiros quadros com o vale à vista)",
+					"som": "/root/Vale3D/Ambiente/@AudioStreamPlayer@2349 ← res://assets/audio/ambiente/mata_dia.mp3",
+					"volume_db": -80.0
+				}
+			],
+			"tela": {
+				"montada": true,
+				"particulas": true
+			},
+			"tocando_no_fim": [
+				"/root/Audio/Musica ← res://assets/audio/musica/musica_manha.mp3",
+				"/root/Vale3D/Ambiente/@AudioStreamPlayer@2349 ← res://assets/audio/ambiente/mata_dia.mp3",
+				"/root/Vale3D/Ambiente/@AudioStreamPlayer@2350 ← res://assets/audio/ambiente/mata_noite.mp3",
+				"/root/Vale3D/Ambiente/@AudioStreamPlayer@2351 ← res://assets/audio/ambiente/aves_reconcavo.ogg",
+				"/root/Vale3D/Ambiente/@AudioStreamPlayer3D@2352 ← res://assets/audio/ambiente/mare_mansa.ogg",
+				"/root/Vale3D/Ambiente/@AudioStreamPlayer3D@2353 ← res://assets/audio/ambiente/riacho.mp3",
+				"/root/Vale3D/Ambiente/@AudioStreamPlayer3D@2354 ← res://assets/audio/ambiente/riacho.mp3",
+				"/root/Vale3D/Ambiente/@AudioStreamPlayer3D@2355 ← res://assets/audio/ambiente/fogueira.mp3",
+				"/root/Vale3D/MoradorPedro/Voz ← res://assets/audio/vozes/pedro_saudacao_3.mp3"
+			],
+			"tocando_no_inicio": [
+				"/root/Audio/Musica ← res://assets/audio/musica/tema_introducao.wav",
+				"/root/Audio/Mare ← res://assets/audio/ambiente/mare_mansa.ogg",
+				"/root/Audio/Aves ← res://assets/audio/ambiente/aves_reconcavo.ogg"
+			],
+			"total_ms": 30001.1
+		}
+	],
+	"motor_ate_o_script_ms": 2825,
+	"opcoes": {
+		"cena": "abertura,vale",
+		"estilo": "",
+		"mudo": "1",
+		"particulas": "1",
+		"precarregar": "0",
+		"quadros_depois": "30",
+		"saida": "P:\\medicoes\\carga_final.json",
+		"so_compilar": "0",
+		"soltar_mouse": "1",
+		"tela": "1",
+		"teto": "500"
+	}
+}

@@ -6,6 +6,25 @@
 
 **Como ler:** as seções 1 e 2 bastam para decidir. As seções 4 a 8 são a prova. Os dados brutos, as fotos antes/depois, o medidor e os oito relatórios por subsistema estão em [desempenho_05_10_2026/](desempenho_05_10_2026/LEIA-ME.md).
 
+## Resultado: a Build 9 do Tripothon (medida em 05/10, 19h20)
+
+As correções entraram na branch `tripothon/build-otimizada` (cache da costa, sombra em 2 cascatas até 70 u, FXAA no lugar do MSAA, teto de 3 ticks, vegetação a ~0,6 do alcance, faces de trás descartadas, remédios de CPU dos bichos e moradores, mata pela metade com 12 clareiras de árvore-destaque, minimapa em foto estática e, na build do Tripothon, o lobby em vídeo em vez do vale 3D). Medido na mesma máquina, mesmas 80 vistas (10 lugares × 8 rumos), tela cheia 1080p, com a placa ainda no estado de energia da seção 4.7:
+
+| Medida | Antes | Build 9 |
+|---|---:|---:|
+| FPS na pior vista | 5,3 | **18,0** |
+| FPS na vista mediana | 12,9 | **28,9** |
+| FPS na melhor vista | 30,1 | **42,8** |
+| Quadro mediano | 77 ms | **35 ms** |
+| GPU mediana | 63 ms | **32 ms** |
+| Triângulos por quadro (mediana) | 5,7 M | **1,8 M** |
+| Ticks de física por quadro (mediana) | 4,6 | **2,1** |
+| Montagem do vale | 48 s | **29 s** |
+| Carga do menu (idioma → menu) | 48 s | **28 s** com o vale 3D; **~3 s** no lobby em vídeo da build do Tripothon |
+| Carga do JOGAR (menu → vale) | 51 s | **30 s** |
+
+A etapa "Estendendo a praia e os rios" caiu de 19,6 s para 1,9 s. Dados em `desempenho_05_10_2026/dados/` (`fps_final.json`, `carga_final.json`, `comparacao_final.md`). A build foi exportada pelo preset "Windows Tripothon" (feature `tripothon`: sem atualização automática, linha de atualização desativada no menu) e publicada no site como `MythsValley3D-v0.1.0-dev-build9-tripothon-windows.zip` (1.085.272.196 bytes, SHA-256 `f1263fc3186223b425e4175ba88517446cda1096e8eb6c6c52ae61869faacc7c`).
+
 ---
 
 ## 1. Veredito em uma página
