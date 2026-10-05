@@ -198,7 +198,7 @@ func _run() -> void:
 	await _usar_a_cama([false])
 	_conferir(relogio.dia_absoluto() == dia_antes and absf(dia.hora - 22.0) < 0.1,
 		"dizendo que não, a cama virou o dia ou mexeu na hora (%s)" % dia.texto_hora())
-	energia.atual = 5.0
+	energia.definir(5.0)
 	var motivo := [""]
 	noite.deitou.connect(func(qual: String): motivo[0] = qual)
 	var acordou := [false]
@@ -284,7 +284,7 @@ func _run() -> void:
 	await _quadros_de_fisica(6)
 	dia.definir_hora(1.9)
 	dia_antes = relogio.dia_absoluto()
-	energia.atual = 5.0
+	energia.definir(5.0)
 	motivo[0] = ""
 	acordou[0] = false
 	var lidas: Array = []

@@ -149,7 +149,7 @@ func _run() -> void:
 	var energia = root.get_node("/root/Energia")
 	var dialogo = root.get_node("/root/Dialogo")
 	inv.consumir("mungunza", inv.quantidade("mungunza"))
-	energia.atual = energia.custo("bater", 1.0) * 0.5
+	energia.definir(energia.custo("bater", 1.0) * 0.5)
 	_conferir(await _ate(func() -> bool: return inv.quantidade("mungunza") == 6, 3.0),
 		"sem fôlego no meio da lenha, a mungunzá da mãe do Pedro não veio: %d cuia(s)" % inv.quantidade("mungunza"))
 	_conferir(dialogo.ativo, "a mungunzá veio sem a fala do Pedro na caixa")

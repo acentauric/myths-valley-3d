@@ -55,9 +55,10 @@ de onde parou, e uma recarga da página só pede reinjetar. O que se aprendeu na
 noite de 05/10, com 157 peças:
 
 - **O saldo de verdade** está em `wm-billing/wallet` (`__mv.saldo()`) e o extrato
-  em `wm-billing/records?limit=100&offset=N`. O número do cabeçalho do Studio não
-  se atualiza com chamadas feitas por fora: mostrava 39.150 quando a carteira
-  tinha 14.135. `produzir` não começa uma geração sem saldo para a retopologia.
+  em `wm-billing/records?limit=100&offset=N`. O cabeçalho do Studio só se atualiza
+  ao recarregar a página; a carteira mostra também créditos que vencem antes do
+  plano (em 05/10: 24.640, dos quais 24.620 vencem em 07/10). `produzir` não
+  começa uma geração sem saldo para a retopologia.
 - **O download pelo clique falha** quando o Chrome deixa o arquivo "Não
   confirmado". `__mv.links()` devolve as URLs assinadas: salve-as com o `filename`
   do `browser_evaluate` e baixe com `tools/tripo/baixar_links.py`; depois

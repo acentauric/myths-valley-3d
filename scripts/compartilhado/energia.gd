@@ -28,7 +28,15 @@ const CUSTOS := {
 	"colher": 2.0,
 	"bater": 5.0,
 	"ritual": 12.0,
+	# O braço num golpe de ferramenta (vigor), já com o "bater" dentro (arvores_info).
+	"golpe": 50.0,
 }
+
+## Os custos de agora: os de cima, ou os que o jogador acertou em Ajustes → Esforço
+## (`definir_custo`). Os portões calculam a conta por `custo()`, então mudar o
+## balanço do fôlego e do vigor não reprova teste nenhum.
+var custos: Dictionary = CUSTOS.duplicate()
+const PREFERENCIAS_ESFORCO := "user://esforco.cfg"
 
 ## Abaixo disto o HUD avisa e o passo encurta.
 const LIMIAR_DE_CANSACO := 0.2
@@ -57,6 +65,7 @@ var _estava_cansado: bool = false
 
 
 func _ready() -> void:
+	_ler_custos()
 	atual = Progressao.energia_maxima
 	Progressao.mudou.connect(_ao_mudar_progressao)
 	# Ouvir o próprio `mudou` pega TODO caminho que mexe no fôlego — gastar,
@@ -130,7 +139,37 @@ func passo() -> float:
 
 ## Quanto uma ação custa contra um alvo daquela dureza.
 func custo(acao: String, dureza: float = 1.0) -> float:
-	return CUSTOS.get(acao, 0.0) * dureza * Progressao.eficiencia
+	return float(custos.get(acao, 0.0)) * dureza * Progressao.eficiencia
+
+
+## Muda o custo-base de uma ação (Ajustes → Esforço) e guarda a escolha.
+func definir_custo(acao: String, valor: float) -> void:
+	if not CUSTOS.has(acao):
+		return
+	custos[acao] = maxf(0.0, valor)
+	var arquivo := ConfigFile.new()
+	arquivo.load(PREFERENCIAS_ESFORCO)
+	arquivo.set_value("custos", acao, custos[acao])
+	if arquivo.save(PREFERENCIAS_ESFORCO) != OK:
+		push_warning("Não foi possível salvar o custo de %s." % acao)
+
+
+func _ler_custos() -> void:
+	var arquivo := ConfigFile.new()
+	if arquivo.load(PREFERENCIAS_ESFORCO) != OK:
+		return
+	for acao in CUSTOS:
+		custos[acao] = maxf(0.0, float(arquivo.get_value("custos", acao, CUSTOS[acao])))
+
+
+## Põe a reserva num valor exato. No vale 3D a reserva é o vigor do corpo
+## (`registrar_vigor`): escrever direto em `atual` seria desfeito no próximo gasto.
+func definir(valor: float) -> void:
+	if is_instance_valid(_jogador_vigor):
+		_jogador_vigor.call("definir_vigor", clampf(valor, 0.0, maximo()))
+		return
+	atual = clampf(valor, 0.0, maximo())
+	mudou.emit()
 
 
 ## Tem fôlego para esta ação? Quem pergunta é o mundo, antes de deixar agir.

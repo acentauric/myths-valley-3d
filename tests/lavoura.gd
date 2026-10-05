@@ -111,7 +111,7 @@ func _run() -> void:
 	lavoura.usar(a)
 	_conferir(not plantacao.arado(a), "de mão livre, o chão bruto foi arado")
 	_na_mao("enxada")
-	energia.atual = 50.0
+	energia.definir(50.0)
 	lavoura.usar(a)
 	_conferir(plantacao.arado(a), "com a enxada na mão, o leito não foi arado")
 	_conferir(energia.atual < 50.0, "arar não gastou fôlego")
@@ -144,7 +144,7 @@ func _run() -> void:
 	inventario.selecionar(inventario.MAO_LIVRE)
 	var milhos: int = inventario.quantidade("milho")
 	sementes = inventario.quantidade("semente_milho")
-	energia.atual = 50.0
+	energia.definir(50.0)
 	lavoura.usar(a)
 	_conferir(inventario.quantidade("milho") > milhos + 2, "colher o milho de primeira deu %d" % (inventario.quantidade("milho") - milhos))
 	_conferir(inventario.quantidade("semente_milho") == sementes + 1, "colher o milho não devolveu a semente")

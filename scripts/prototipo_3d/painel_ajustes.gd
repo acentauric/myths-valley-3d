@@ -27,7 +27,7 @@ signal cenario_menu_mudou(sobrevoo: bool)
 ## Mesma altura dos outros modais do menu; só a largura varia. Abas que passam da altura
 ## rolam por dentro.
 const TAMANHO := Vector2(900, 600)
-const ABAS := ["Geral", "Sons do vale", "Cenário", "Atalhos"]
+const ABAS := ["Geral", "Sons do vale", "Cenário", "Atalhos", "Esforço"]
 ## Altura de cada campo e do controle dentro dele (seleção ou volume).
 const ALTURA_CAMPO := 66.0
 const ALTURA_CONTROLE := 36.0
@@ -118,6 +118,7 @@ func construir(content: VBoxContainer, camada: Node, nova_aba: int = 0) -> void:
 		1: _aba_sons(esquerda, direita)
 		2: _aba_cenario(esquerda, direita)
 		3: _aba_atalhos(esquerda, direita)
+		4: _aba_esforco(esquerda, direita)
 		_: _aba_geral(esquerda, direita)
 	# Os volumes moram em Geral e em Sons do vale.
 	if aba in [0, 1]:
@@ -285,6 +286,56 @@ func _aba_cenario(esquerda: VBoxContainer, direita: VBoxContainer) -> void:
 		_salvar_preferencia("fonte_menu", i)
 		fonte_menu_mudou.emit(i)
 		_reconstruir(2), 0)
+
+
+## O ESFORÇO DO CORPO: o custo-base de cada ação em fôlego/vigor (`Energia.custos`),
+## para afinar o balanço sem mexer no código. Os portões leem a conta de
+## `Energia.custo()`, então valem para qualquer valor escolhido aqui.
+const ESFORCO := [
+	["golpe", "Golpe de ferramenta (vigor do braço)"],
+	["bater", "Bater (machado, picareta)"],
+	["arar", "Arar"],
+	["plantar", "Plantar"],
+	["regar", "Regar"],
+	["colher", "Colher"],
+	["ritual", "Rito"],
+]
+
+
+func _aba_esforco(esquerda: VBoxContainer, direita: VBoxContainer) -> void:
+	for i in range(ESFORCO.size()):
+		_pai = esquerda if i < 4 else direita
+		if i == 0 or i == 4:
+			_secao("Custo por ação" if i == 0 else "Lavoura e fé")
+		_custo(String(ESFORCO[i][0]), String(ESFORCO[i][1]))
+
+
+func _custo(acao: String, titulo: String) -> void:
+	var anterior := _abrir_campo()
+	_rotulo_do_campo(titulo, titulo)
+	var linha := HBoxContainer.new()
+	linha.add_theme_constant_override("separation", 10)
+	_pai.add_child(linha)
+	var campo := SpinBox.new()
+	campo.min_value = 0.0
+	campo.max_value = 200.0
+	campo.step = 0.5
+	campo.custom_minimum_size.y = ALTURA_CONTROLE
+	campo.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	campo.value = float(Energia.custos.get(acao, 0.0))
+	linha.add_child(campo)
+	var padrao := float(Energia.CUSTOS.get(acao, 0.0))
+	var voltar := _botao_padrao(linha)
+	var atualizar := func() -> void:
+		_marcar_padrao(voltar, is_equal_approx(campo.value, padrao), str(padrao))
+	atualizar.call()
+	campo.value_changed.connect(func(valor: float) -> void:
+		Energia.definir_custo(acao, valor)
+		atualizar.call())
+	voltar.pressed.connect(func() -> void:
+		Audio.efeito("ui_confirmar")
+		campo.value = padrao)
+	_pai = anterior
 
 
 ## Preferência de fonte do menu, com migração: a chave antiga "fonte" era de antes da

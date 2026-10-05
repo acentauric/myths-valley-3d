@@ -77,7 +77,7 @@ func _run() -> void:
 	_conferir(energia.passo() == 1.0, "de fôlego cheio, o passo não é inteiro")
 
 	# Um décimo do teto: abaixo do limiar, e o passo tem de encurtar.
-	energia.atual = progressao.ENERGIA_MAXIMA_INICIAL * 0.1
+	energia.definir(progressao.ENERGIA_MAXIMA_INICIAL * 0.1)
 	_conferir(energia.cansado(), "com 10% do fôlego, o corpo não se deu por cansado")
 	_conferir(is_equal_approx(energia.passo(), energia.PESO_DO_CANSACO),
 		"cansado, o passo é %s e devia ser %s" % [str(energia.passo()), str(energia.PESO_DO_CANSACO)])
@@ -159,7 +159,7 @@ func _run() -> void:
 	_conferir(hud.barra_stamina != null and hud.barra_stamina.visible, "o HUD não tem a barra de vigor")
 	energia.encher()
 	_conferir(is_equal_approx(hud.barra_stamina.value, energia.atual), "a barra não mostra o vigor cheio")
-	energia.atual = energia.maximo() * 0.5
+	energia.definir(energia.maximo() * 0.5)
 	energia.mudou.emit()
 	_conferir(is_equal_approx(hud.barra_stamina.value, energia.atual), "a barra não acompanha o gasto de vigor")
 	energia.encher()

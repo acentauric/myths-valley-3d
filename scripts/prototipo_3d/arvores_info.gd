@@ -31,7 +31,7 @@ const ALCANCE_FECHAR := 7.0
 const ALTURA_DICA := 2.0
 const DISTANCIA_PARA_GOLPEAR := 2.45
 const DISTANCIA_DE_APROXIMACAO := 1.45
-const CUSTO_DO_GOLPE := 50.0
+## O vigor de um golpe sai de Energia ("golpe"), ajustável em Ajustes → Esforço.
 ## OS ESTÁGIOS DE QUEM VOLTA A CRESCER, em fração do ano desde o corte: a
 ## partir de `de`, a árvore aparece com `escala` do tamanho dela. Antes do
 ## primeiro é toco; do ano inteiro em diante, adulta.
@@ -464,7 +464,7 @@ func _recusa(indice: int) -> String:
 		return str(IdiomaMenu.campo(acoes, "precisa_aco")) % nome_da_madeira
 	if falta_talento:
 		return str(IdiomaMenu.campo(acoes, "precisa_talento")) % [nome_da_madeira, talentos]
-	if _stamina < CUSTO_DO_GOLPE:
+	if _stamina < Energia.custo("golpe"):
 		return str(IdiomaMenu.campo(acoes, "sem_stamina"))
 	if not Energia.aguenta("bater", float(madeira.get("dureza", 1.0))):
 		return str(IdiomaMenu.campo(acoes, "sem_folego"))
@@ -533,7 +533,7 @@ func _atualizar_golpe_pendente() -> void:
 			# Quantos golpes cabem agora: no que falta para a árvore cair, no
 			# vigor do braço e no fôlego do dia — o que acabar primeiro.
 			var faltam := _golpes_da(indice) - int(_cortaveis[indice]["golpes"])
-			var de_vigor := int(floorf((_stamina + 0.001) / CUSTO_DO_GOLPE))
+			var de_vigor := int(floorf((_stamina + 0.001) / maxf(Energia.custo("golpe"), 0.001)))
 			var custo_do_folego := Energia.custo("bater", float(madeira_de(String(_cortaveis[indice]["especie"])).get("dureza", 1.0)))
 			var de_folego := int(floorf((Energia.atual + 0.001) / custo_do_folego)) if custo_do_folego > 0.0 else faltam
 			_golpes_restantes_na_acao = mini(mini(de_vigor, de_folego), faltam)
@@ -569,7 +569,7 @@ func _ao_golpe_concluido() -> void:
 	# No vale 3D, Energia.gastar também desconta do vigor do jogador. Dividir
 	# o custo total evita cobrar duas vezes e encerrar o corte antes do segundo impacto.
 	var custo_energia := Energia.custo("bater", dureza)
-	var custo_braco := maxf(CUSTO_DO_GOLPE - custo_energia, 0.0)
+	var custo_braco := maxf(Energia.custo("golpe") - custo_energia, 0.0)
 	if not bool(_jogador.call("gastar_vigor", custo_braco)):
 		_parar_golpe(false)
 		return
@@ -598,7 +598,7 @@ func _ao_golpe_concluido() -> void:
 		else:
 			arvore["golpes"] = _golpes_da(indice) - 1
 	_cortaveis[indice] = arvore
-	if _golpes_restantes_na_acao <= 0 or _stamina < CUSTO_DO_GOLPE or bool(arvore["cortado"]):
+	if _golpes_restantes_na_acao <= 0 or _stamina < Energia.custo("golpe") or bool(arvore["cortado"]):
 		_parar_golpe(false)
 
 

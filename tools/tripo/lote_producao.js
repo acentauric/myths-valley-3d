@@ -41,9 +41,8 @@
     if (j.code !== 0) throw new Error('retarget ' + preset + ' ' + JSON.stringify(j).slice(0, 160));
     return j.data.operation_id;
   };
-  // Saldo de verdade da conta (a soma das carteiras). O número do cabeçalho do Studio não se
-  // atualiza com chamadas feitas por fora e, em 05/10/2026, mostrava 39.150 quando a carteira
-  // tinha 14.135. O extrato fica em wm-billing/records?limit=100&offset=N.
+  // Saldo de verdade da conta (a soma das carteiras). O cabeçalho do Studio só se atualiza ao
+  // recarregar a página. O extrato fica em wm-billing/records?limit=100&offset=N.
   mv.saldo = async () => {
     const j = await mv.api('wm-billing/wallet', undefined, 'GET');
     return ((j.data && j.data.types) || []).reduce((a, t) => a + (t.balance || 0), 0);

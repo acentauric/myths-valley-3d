@@ -114,7 +114,7 @@ func _run() -> void:
 		teia.fechar()
 
 	# --- 6. O RITO ---------------------------------------------------------------------
-	energia.atual = 5.0
+	energia.definir(5.0)
 	var xp_antes: float = fe.total_exato("candomble")
 	await _no_marco("terreiro", [true])
 	_conferir(energia.atual > 5.0, "o rito não devolveu fôlego")

@@ -129,8 +129,11 @@ func _run() -> void:
 	_conferir(bool(arvores._cortaveis[branca]["cortado"]), "a mangueira não caiu nos golpes da madeira branca")
 	_conferir(cortou_em == 3, "a mangueira caiu com %d golpes, e a madeira branca pede 3" % cortou_em)
 	_conferir(inventario.quantidade("lenha") == lenha_antes + 2, "a mangueira caiu e rendeu %d de lenha, e devia render 2" % (inventario.quantidade("lenha") - lenha_antes))
-	_conferir(is_equal_approx(folego_antes - energia.atual, 3.0 * energia.custo("bater", 1.0)),
-		"três golpes de madeira branca custaram %.1f de fôlego, e a conta é %.1f" % [folego_antes - energia.atual, 3.0 * energia.custo("bater", 1.0)])
+	# O golpe cobra o vigor do braço ("golpe", com o "bater" dentro) e o corpo descansa
+	# entre um e outro: o gasto fica entre o fôlego do dia e o golpe inteiro, os dois
+	# lidos de Energia — mudar o balanço em Ajustes → Esforço não reprova o portão.
+	_conferir(_gasto_coerente(energia, folego_antes - energia.atual, 3, 1.0),
+		"três golpes de madeira branca custaram %.1f, fora de [%.1f, %.1f]" % [folego_antes - energia.atual, 3.0 * energia.custo("bater", 1.0), 3.0 * maxf(energia.custo("golpe"), energia.custo("bater", 1.0))])
 	_conferir(is_equal_approx(_xp_ganho, 15.0), "três golpes de madeira branca ensinaram %.0f de XP, e são 15 (bater)" % _xp_ganho)
 	var nomeada: Dictionary = _nomeada_em(mundo, arvores._cortaveis[branca]["pos"])
 	_conferir(not nomeada.is_empty() and not (nomeada["visual"] as Node3D).visible, "a mangueira cortada continua de pé no mundo")
@@ -190,8 +193,8 @@ func _run() -> void:
 		var golpes_de_lei := await _golpear_ate_cair(arvores, jogador, de_lei)
 		_conferir(bool(arvores._cortaveis[de_lei]["cortado"]), "com o talento, a jaqueira não caiu")
 		_conferir(golpes_de_lei == 4, "a jaqueira caiu com %d golpes, e a madeira de lei pede 4" % golpes_de_lei)
-		_conferir(is_equal_approx(folego_antes - energia.atual, 4.0 * energia.custo("bater", 2.0)),
-			"quatro golpes de madeira de lei custaram %.1f, e a conta é %.1f (o dobro da branca)" % [folego_antes - energia.atual, 4.0 * energia.custo("bater", 2.0)])
+		_conferir(_gasto_coerente(energia, folego_antes - energia.atual, 4, 2.0),
+			"quatro golpes de madeira de lei custaram %.1f, fora de [%.1f, %.1f]" % [folego_antes - energia.atual, 4.0 * energia.custo("bater", 2.0), 4.0 * maxf(energia.custo("golpe"), energia.custo("bater", 2.0))])
 		_conferir(is_equal_approx(_xp_ganho, 48.0), "quatro golpes de madeira de lei ensinaram %.0f de XP, e são 48 (bater_duro)" % _xp_ganho)
 
 	# --- 4. A MADEIRA DE LEI DURA PEDE O AÇO ----------------------------------
@@ -207,6 +210,7 @@ func _run() -> void:
 			"sem talento e sem aço, o pau-brasil devia pedir os dois: '%s'" % os_dois)
 		progressao.nivel_de_ferramenta["machado"] = 2
 		_por_na_mao("machado_de_aco")
+		energia.encher()
 		_conferir(jogador.machado_na_mao(), "o machado de aço na mão não conta como machado")
 		_conferir(arvores._recusa(dura) == "", "com o talento e o machado de aço, o pau-brasil recusa: '%s'" % arvores._recusa(dura))
 		energia.encher()
@@ -559,3 +563,11 @@ func _mundo_pronto() -> void:
 		await process_frame
 	await process_frame
 	await process_frame
+
+
+## O gasto de `golpes` golpes numa madeira de `dureza`: ao menos o fôlego do dia
+## (bater x dureza) e no máximo o golpe inteiro do braço, os dois de Energia.
+func _gasto_coerente(energia, gasto: float, golpes: int, dureza: float) -> bool:
+	var minimo: float = golpes * energia.custo("bater", dureza)
+	var maximo: float = golpes * maxf(energia.custo("golpe"), energia.custo("bater", dureza))
+	return gasto >= minimo - 0.01 and gasto <= maximo + 0.01
