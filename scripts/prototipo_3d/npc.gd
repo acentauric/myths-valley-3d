@@ -580,6 +580,30 @@ func _exit_tree() -> void:
 ## tem "falas" (até três) alterna entre elas a cada encontro; sem elas, usa "fala".
 func saudar() -> void:
 	_ultima_saudacao_ms = Time.get_ticks_msec()
+	var texto := _escolher_a_fala()
+	# O balão leva a fala enxuta; a voz e o aviso do HUD (`saudou`) levam a inteira.
+	mostrar_balao(balao_curto(texto), maxf(5.0, voz.stream.get_length() + 1.5) if voz.stream != null else 7.0)
+	_falar_com_voz_e_gesto()
+	saudou.emit(self, texto)
+
+
+## A CONVERSA DO E (`tecla_dos_moradores.gd`): chegou perto e apertou E, sem
+## missão nenhuma com este morador — ele diz a fala INTEIRA no balão, com a voz
+## e o gesto da saudação, como no 2D ("Converse com cada morador do arraial:
+## chegue perto e aperte E"). A de passagem, ao chegar perto, é a curta. No
+## balão, e não na caixa de fala longa: a caixa é do que o jogador precisa ler
+## antes de seguir (`dialogo_vale.gd`), e conversa de passagem não é isso.
+func conversar() -> void:
+	_ultima_saudacao_ms = Time.get_ticks_msec()
+	var texto := _escolher_a_fala()
+	mostrar_balao(texto, maxf(7.0, voz.stream.get_length() + 2.0) if voz.stream != null else 9.0)
+	_falar_com_voz_e_gesto()
+	saudou.emit(self, texto)
+
+
+## A próxima das "falas" (até três, alternando a cada encontro), na língua do
+## jogo, com a voz dela posta; sem "falas", a "fala".
+func _escolher_a_fala() -> String:
 	var texto := String(dados.get("fala", ""))
 	var falas: Array = dados.get("falas", [])
 	if not falas.is_empty():
@@ -589,8 +613,10 @@ func saudar() -> void:
 		texto = String(IdiomaMenu.campo(fala, "texto", ""))
 		var caminho := PASTA_VOZES + String(fala.get("audio", "")) + ".mp3"
 		voz.stream = load(caminho) if ResourceLoader.exists(caminho) else null
-	# O balão leva a fala enxuta; a voz e o aviso do HUD (`saudou`) levam a inteira.
-	mostrar_balao(balao_curto(texto), maxf(5.0, voz.stream.get_length() + 1.5) if voz.stream != null else 7.0)
+	return texto
+
+
+func _falar_com_voz_e_gesto() -> void:
 	_tomar_palavra(voz.stream.get_length() if voz.stream != null else 4.0)
 	if voz.stream != null:
 		voz.stop()
@@ -598,7 +624,6 @@ func saudar() -> void:
 	if animador != null and animador.has_method("play_gesture"):
 		var chave := "gesto_tripo" if animador.has_method("is_using_authored_clips") else "gesto_saudacao"
 		animador.play_gesture(int(dados.get(chave, 0)))
-	saudou.emit(self, texto)
 
 
 ## O BALÃO DA SAUDAÇÃO É CURTO; a fala continua inteira.

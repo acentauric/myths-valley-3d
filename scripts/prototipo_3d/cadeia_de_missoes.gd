@@ -125,6 +125,13 @@ var espera := 0.0
 var despedida_feita := false
 ## O último resumo mandado ao HUD, para só reenviar quando ele muda.
 var _resumo_mostrado := ""
+## A VEZ DE FALAR TEM PRAZO. O anúncio espera a palavra livre — ninguém falando
+## a RAIO_CONVERSA do jogador —, e num lugar cheio (a praça, o píer) um
+## cumprimento emendava no outro: o passo nunca anunciava, e a meta dele nunca
+## começava a contar. Foi a chave com a Dona Candinha que "não deu para
+## interagir". Esperada a vez por este tanto, o passo anuncia mesmo assim.
+const ESPERA_MAXIMA_PELA_VEZ := 6.0
+var _esperou_a_vez := 0.0
 ## O NOME DA MISSÃO INTEIRA ("O cemitério esquecido"), que é o que o diário
 ## lista e o HUD escreve em cima do objetivo — o passo é só onde ela está. Vem
 ## do campo `nome` do arquivo, nos três idiomas.
@@ -270,10 +277,13 @@ func correr(delta: float, palavra_livre: bool) -> void:
 	if espera > 0.0:
 		espera -= delta
 		if espera <= 0.0:
-			if palavra_livre:
+			if palavra_livre or _esperou_a_vez >= ESPERA_MAXIMA_PELA_VEZ:
+				_esperou_a_vez = 0.0
 				anunciar()
 			else:
-				# Alguém ainda fala por perto: tenta de novo daqui a pouco.
+				# Alguém ainda fala por perto: tenta de novo daqui a pouco — mas
+				# não para sempre (ver ESPERA_MAXIMA_PELA_VEZ).
+				_esperou_a_vez += 0.25
 				espera = 0.25
 		return
 
@@ -880,13 +890,17 @@ func posicao_do_passo(indice: int) -> Vector3:
 	return Vector3.ZERO if ponto == Lugares.NENHUM else ponto
 
 
-## A DISTÂNCIA EM QUE A CADEIA SE ABRE SOZINHA, em unidades. Zero quer dizer
-## "quem abre é outro" — é o caso do Pedro, que abre no `saudar()`.
+## A FILA SE ABRE CONVERSANDO COM O DONO: maior que zero, ela espera o jogador
+## chegar perto do dono e apertar E (`interagir`). Zero quer dizer "quem abre é
+## outro" — é o caso do Pedro, que abre no `saudar()`, e das filas da fé, que
+## abrem na entrada numa fé.
 ##
-## O Damião abre assim: o jogador sobe ao cemitério, chega perto dele, e a
+## O Damião abre assim: o jogador sobe ao cemitério, vai falar com ele, e a
 ## conversa começa. No jogo 2D quem manda subir lá é a Dona Zefa; enquanto ela
-## não tiver fila de missões no vale, chegar perto faz o mesmo serviço e não
-## deixa a missão inalcançável.
+## não tiver fila de missões no vale, falar com ele faz o mesmo serviço e não
+## deixa a missão inalcançável. Abria sozinha ao chegar perto, até 05/10/2026:
+## "o ideal é o Pedro ensinar a apertar E para iniciar as interações com os
+## NPCs".
 var comeca_perto_de := 0.0
 ## SÓ DEPOIS DE OUTRA COISA: a cadeia não abre enquanto isto responder falso.
 ## A do mirante espera o Pedro terminar o tutorial — no 2D as missões do
@@ -908,12 +922,10 @@ func _physics_process(delta: float) -> void:
 		return
 	if so_enquanto.is_valid() and not bool(so_enquanto.call()):
 		return
+	# QUEM ABRE A FILA DE UM MORADOR É O E (`interagir`): ele espera o jogador ir
+	# falar com ele, e não começa a falar sozinho quando o jogador passa perto.
 	if comeca_perto_de > 0.0 and not iniciado:
-		var perto := dono.global_position.distance_to(jogador.global_position) < comeca_perto_de
-		if perto:
-			comecar(folga_inicial)
-		else:
-			return
+		return
 	correr(delta, _palavra_livre())
 
 
@@ -936,10 +948,11 @@ func _morador(quem: String) -> Node3D:
 	return achado as Node3D
 
 
-## O ENCONTRO: chegar perto de quem espera — com a coisa na mão, ou de mãos vazias.
+## O ENCONTRO: falar com quem espera (o E ao lado dele, `interagir`) — com a
+## coisa na mão, ou de mãos vazias.
 ##
 ## São duas metas com o mesmo corpo. "Levar" pede o item junto; "falar" só pede
-## que o jogador chegue. Escrevê-las separadas seria ter a mesma travessia
+## que o jogador vá falar. Escrevê-las separadas seria ter a mesma travessia
 ## escrita duas vezes, e a segunda ficaria para trás no dia em que a primeira
 ## ganhasse um conserto.
 ##
@@ -975,43 +988,99 @@ func _tentar_encontro(passo: Dictionary) -> void:
 	var tipo := str(meta.get("tipo", ""))
 	if tipo == "visitar":
 		_tentar_visita(passo, meta)
-		return
-	if tipo == "oferendar":
+	elif tipo == "oferendar":
 		_tentar_oferenda(passo, meta)
-		return
+	# "Levar" e "falar" não fecham mais ao chegar perto: fecham no E, ao lado de
+	# quem recebe (`interagir`).
+
+
+## O E AO LADO DE UM MORADOR (`tecla_dos_moradores.gd`), perguntado a cada fila.
+## "O ideal é o Pedro ensinar a apertar E para iniciar as interações com os
+## NPCs, incluindo cumprir etapas de missões." Devolve se esta fila usou a
+## conversa:
+##
+##   - o dono da fila que espera o jogador vir falar (`comeca_perto_de`) a abre
+##     e diz o primeiro passo;
+##   - quem o passo de agora manda procurar (`falar`), ou a quem levar alguma
+##     coisa (`levar`, com tudo na mochila), recebe e responde.
+func interagir(morador: Node3D) -> bool:
+	match o_que_o_e_faz(morador):
+		"abrir":
+			comecar(0.0)
+			anunciar()
+			return true
+		"falar", "entregar":
+			var passo := passo_atual()
+			# O PASSO QUE AINDA NÃO SE ANUNCIOU — a palavra estava ocupada — se
+			# cumpre do mesmo jeito: quem foi direto à pessoa recebe junto o que o
+			# anúncio daria, a ferramenta e a linha no caderno, sem a fala.
+			if espera > 0.0:
+				espera = 0.0
+				_esperou_a_vez = 0.0
+				entregar(passo)
+				_registrar_no_caderno(passo)
+				_mostrar_o_resumo(passo)
+			_encontrar(passo, morador)
+			return true
+	return false
+
+
+## O QUE O E FARIA COM ESTE MORADOR, nesta fila: "abrir", "falar", "entregar",
+## ou "" (nada aqui). É o que a dica da tecla diz.
+func o_que_o_e_faz(morador: Node3D) -> String:
+	if morador == null or dono == null or (so_enquanto.is_valid() and not bool(so_enquanto.call())):
+		return ""
+	if not iniciado:
+		if morador == dono and comeca_perto_de > 0.0 and (not depois_de.is_valid() or bool(depois_de.call())):
+			return "abrir"
+		return ""
+	if acabou():
+		return ""
+	var passo := passo_atual()
+	if not _recebe(passo, morador):
+		return ""
+	return "entregar" if str((passo.get("meta", {}) as Dictionary).get("tipo", "")) == "levar" else "falar"
+
+
+## O passo manda o jogador a este morador, e ele já pode receber?
+##
+## A ENTREGA TEM CONTA, E PODE TER MAIS DE UM ITEM. A Dona Candinha pede SEIS
+## canas, e enquanto a meta levava um só, chegar ao lado dela com uma cana
+## fechava a missão das seis. O Tonho pede cinco cordas E três tábuas na mesma
+## frase, e partir isso em dois passos seria partir o que ele diz de uma vez.
+func _recebe(passo: Dictionary, morador: Node3D) -> bool:
+	var meta: Dictionary = passo.get("meta", {})
+	var tipo := str(meta.get("tipo", ""))
 	if tipo != "levar" and tipo != "falar":
-		return
-	var id := str(passo.get("id", ""))
-	if bool(_levados.get(id, false)):
-		return
-	# A ENTREGA TEM CONTA, E PODE TER MAIS DE UM ITEM. A Dona Candinha pede SEIS
-	# canas, e enquanto a meta levava um só, chegar ao lado dela com uma cana
-	# fechava a missão das seis: o balão saía, o passo fechava, e a conta não
-	# acontecia. O Tonho pede cinco cordas E três tábuas na mesma frase, e partir
-	# isso em dois passos seria partir o que ele diz de uma vez.
-	var carga := _carga_da_meta(meta)
-	if tipo == "levar":
-		if carga.is_empty():
-			return
-		for qual in carga:
-			if Inventario.quantidade(str(qual)) < int(carga[qual]):
-				return
-	var quem := _morador(str(meta.get("a_quem", "")))
-	if quem == null or jogador == null:
-		return
+		return false
+	if bool(_levados.get(str(passo.get("id", "")), false)):
+		return false
+	var dados = morador.get("dados")
+	if not (dados is Dictionary) or str((dados as Dictionary).get("id", "")) != str(meta.get("a_quem", "")):
+		return false
 	# QUEM NÃO ESTÁ NÃO RECEBE: o mestre Quirino só encosta no píer no dia do
 	# saveiro (o SaveiroVale); fora dele, escondido, a entrega espera.
-	if not quem.is_visible_in_tree():
-		return
-	var no_chao := quem.global_position - jogador.global_position
-	no_chao.y = 0.0
-	if no_chao.length() > float(meta.get("raio", 3.0)):
-		return
-
+	if not morador.is_visible_in_tree():
+		return false
 	if tipo == "levar":
+		var carga := _carga_da_meta(meta)
+		if carga.is_empty():
+			return false
+		for qual in carga:
+			if Inventario.quantidade(str(qual)) < int(carga[qual]):
+				return false
+	return true
+
+
+## O ENCONTRO: o que se leva sai da mochila, a memória guarda que aconteceu, e
+## QUEM FALA NO FIM É QUEM RECEBE, e não quem pediu.
+func _encontrar(passo: Dictionary, quem: Node3D) -> void:
+	var meta: Dictionary = passo.get("meta", {})
+	if str(meta.get("tipo", "")) == "levar":
+		var carga := _carga_da_meta(meta)
 		for qual in carga:
 			Inventario.consumir(str(qual), int(carga[qual]))
-	_levados[id] = true
+	_levados[str(passo.get("id", ""))] = true
 	var resposta := str(meta.get("resposta", ""))
 	if resposta != "" and quem.has_method("narrar"):
 		quem.narrar("", resposta)

@@ -2,6 +2,23 @@
 
 ## Em desenvolvimento — 05/10/2026
 
+- Falar com os moradores é o E, e é o Pedro quem ensina, no desembarque. Perto
+  de alguém, a dica "E — Falar" aparece sobre a cabeça dele: o E conversa (a
+  fala inteira no balão), cumpre o passo que manda falar com ele ou levar
+  alguma coisa ("Entregar"), e abre a fila de pedidos de quem tem o que pedir.
+  Chegar perto não fecha mais passo nenhum, e fila de morador não abre mais
+  sozinha. Na chegada, o E no Pedro repete o que fazer agora.
+- Todo passo de missão cumprido escurece a tela por um instante e mostra o
+  emblema dourado, "Missão concluída", o nome do passo e a missão de que ele é.
+- Partida nova no mesmo slot começa com o caderno de missões limpo. Ele não
+  voltava à fábrica, e o HUD e o marcador seguiam a missão da partida apagada
+  — a chave com a Dona Candinha, com a chegada nova em outro passo.
+- O passo que espera a palavra livre para se anunciar espera no máximo 6 s:
+  num lugar cheio, os cumprimentos emendavam e o passo nunca começava.
+  Portão novo: `interacao`; os das filas dos moradores, `cadeia_das_missoes`,
+  `chegada`, `saudacao`, `cadeia_do_mirante`, `cadeia_da_fe`,
+  `pedidos_do_arraial` e `saveiro` passam a falar com o E.
+
 - O jogo começa em cima do saveiro do mestre Quirino, atracado no píer: um
   modelo novo do Tripo (lote de 05/10, `aderecos/saveiro_tripo.glb`), que
   assenta carregado e desce ao tabuado por uma prancha. O barco fica o primeiro

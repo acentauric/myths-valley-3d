@@ -13,6 +13,8 @@ const TemaMenu = preload("res://scripts/prototipo_3d/tema_menu.gd")
 const MapaJogo = preload("res://scripts/prototipo_3d/mapa_jogo.gd")
 const Lapides = preload("res://scripts/prototipo_3d/lapides.gd")
 const TeclaDasBancadas = preload("res://scripts/prototipo_3d/tecla_das_bancadas.gd")
+const TeclaDosMoradores = preload("res://scripts/prototipo_3d/tecla_dos_moradores.gd")
+const ConquistaDaMissao = preload("res://scripts/prototipo_3d/conquista_da_missao.gd")
 const ArvoresInfo = preload("res://scripts/prototipo_3d/arvores_info.gd")
 const PlacasNomes = preload("res://scripts/prototipo_3d/placas_nomes.gd")
 const BonecoDaMochila = preload("res://scripts/prototipo_3d/boneco_da_mochila.gd")
@@ -136,6 +138,10 @@ var achados	# achados_vale.gd — cordéis, sinais e cartas no chão
 var pesca	# pesca_vale.gd — a vara na mão e o E na beira da água
 ## O E na bancada da oficina e na fogueira (`tecla_das_bancadas.gd`).
 var tecla_das_bancadas: Node
+## O E nos moradores: conversar e cumprir passo (`tecla_dos_moradores.gd`).
+var tecla_dos_moradores: Node
+## A tela da missão cumprida (`conquista_da_missao.gd`).
+var conquista: CanvasLayer
 
 
 func _enter_tree() -> void:
@@ -652,6 +658,25 @@ func _ready() -> void:
 	_pendurar_as_filas_da_fe()
 	interiores.entrou.connect(_ao_mudar_de_lado.unbind(1))
 	interiores.saiu.connect(_ao_mudar_de_lado.unbind(1))
+	# O E NOS MORADORES (tecla_dos_moradores.gd): conversar, cumprir o passo que
+	# manda falar com alguém ou levar alguma coisa, e abrir a fila de quem tem o
+	# que pedir. Entra depois de todo mundo que ouve o E, e por isso o recebe
+	# primeiro: com alguém ao alcance, conversar vem antes do resto.
+	tecla_dos_moradores = TeclaDosMoradores.new()
+	tecla_dos_moradores.name = "TeclaDosMoradores"
+	add_child(tecla_dos_moradores)
+	tecla_dos_moradores.configurar(player, hud,
+		func() -> Array:
+			var todos: Array = moradores.duplicate()
+			if pedro != null:
+				todos.append(pedro)
+			return todos,
+		func() -> bool: return not _lendo() and (telas == null or telas.aberta() == ""))
+	# A CONQUISTA: toda missão cumprida escurece a tela e festeja
+	# (conquista_da_missao.gd).
+	conquista = ConquistaDaMissao.new()
+	conquista.name = "ConquistaDaMissao"
+	add_child(conquista)
 	# A PARTIDA SALVA entra depois de o vale estar montado — moradores, Pedro,
 	# luta —, porque o estado do mundo aponta para eles. Ver Partida e
 	# `estado_para_salvar`.

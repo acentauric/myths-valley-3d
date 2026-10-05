@@ -53,6 +53,16 @@ primeira frase, o Tonho já contava a dívida do armazém.
    passo do jogador, e espera quem fica para trás. O fio das perguntas (regra
    3) continua: a chave ainda está com quem a Dona Candinha diz — mas é o
    Pedro quem leva até ela.
+9. **Falar é o E** (05/10/2026): "O ideal é o Pedro ensinar a apertar E para
+   iniciar as interações com os NPCs, incluindo cumprir etapas de missões."
+   Chegar perto não fecha mais o passo que manda falar com alguém ou levar
+   alguma coisa (`falar`, `levar`): fecha o E ao lado dele
+   (`tecla_dos_moradores.gd`, `CadeiaDeMissoes.interagir`), e o Pedro ensina
+   no desembarque. A fila de pedidos de um morador também abre no E, e não
+   sozinha quando o jogador passa. Sem passo nenhum com ele, o E é conversa: a
+   fala inteira dele no balão. O passo que espera a palavra livre para se
+   anunciar espera até 6 s; depois, anuncia (num lugar cheio, os cumprimentos
+   emendavam um no outro e o passo nunca começava).
 
 ## A chegada (Pedro, `missoes_guia.json`)
 

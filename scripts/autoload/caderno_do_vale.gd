@@ -60,6 +60,8 @@ signal concluiu(id: String)
 var ativas: Array[Dictionary] = []
 ## Os ids já cumpridos, para não reabrir e para a tela poder dizer "já fiz".
 var cumpridas: Array[String] = []
+## A última missão cumprida, como estava nas ativas (ver `concluir`).
+var ultima_concluida: Dictionary = {}
 
 ## A MISSÃO ACOMPANHADA, pelo ID — e não pela posição na lista.
 ##
@@ -178,6 +180,10 @@ func concluir(id: String) -> void:
 	var i := indice(id)
 	if i < 0:
 		return
+	# O QUE ACABOU DE SER CUMPRIDO, com nome e tudo, para quem festeja a
+	# conquista (`conquista_da_missao.gd`) — depois do `concluiu` ela já saiu
+	# das ativas.
+	ultima_concluida = ativas[i].duplicate(true)
 	ativas.remove_at(i)
 	if not cumpridas.has(id):
 		cumpridas.append(id)
@@ -284,6 +290,7 @@ func girar_o_foco() -> void:
 func limpar() -> void:
 	ativas.clear()
 	cumpridas.clear()
+	ultima_concluida = {}
 	foco = ""
 	_cadeia_do_foco = ""
 	mudou.emit()

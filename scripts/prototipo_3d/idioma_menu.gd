@@ -354,6 +354,11 @@ const EN := {
 	# A casa herdada (#50): a tecla da cama e do baú, e o nome lá dentro.
 	"Dormir": "Sleep",
 	"Baú": "Chest",
+	# O E nos moradores (tecla_dos_moradores.gd) e a tela da missão cumprida
+	# (conquista_da_missao.gd).
+	"Falar": "Talk",
+	"Entregar": "Hand over",
+	"Missão concluída": "Quest complete",
 	# O E na bancada da oficina e na fogueira (tecla_das_bancadas.gd).
 	"Oficina": "Workshop",
 	"Cozinhar": "Cook",
@@ -757,6 +762,11 @@ const ES := {
 	"Olhar": "Mirar",
 	"Dormir": "Dormir",
 	"Baú": "Baúl",
+	# O E nos moradores (tecla_dos_moradores.gd) e a tela da missão cumprida
+	# (conquista_da_missao.gd).
+	"Falar": "Hablar",
+	"Entregar": "Dar",
+	"Missão concluída": "Misión cumplida",
 	# O E na bancada da oficina e na fogueira (tecla_das_bancadas.gd).
 	"Oficina": "Taller",
 	"Cozinhar": "Cocinar",

@@ -133,12 +133,15 @@ func _run() -> void:
 	# ao lado do morador, com a chegada em curso, ela não abre; acabada, abre.
 	var guia = current_scene.get("pedro")
 	await _ate(func() -> bool: return false, 1.5)
+	_conferir(not cadeia.iniciado, "ao lado da Dona Zefa, a fila dela abriu sozinha, sem o E")
+	await _falar_com(zefa)
 	_conferir(not cadeia.iniciado, "a fila da Dona Zefa abriu com a chegada do Pedro em curso")
 	if guia != null:
 		guia.missao = guia.MISSOES.size()
 		guia.set("_despedida_feita", true)
+	await _falar_com(zefa)
 	var abriu := await _ate(func() -> bool: return bool(cadeia.iniciado), SEGUNDOS_PARA_ANUNCIAR)
-	_conferir(abriu, "cheguei ao lado da Dona Zefa e a conversa não abriu")
+	_conferir(abriu, "com o E na Dona Zefa, a conversa não abriu")
 	if not abriu:
 		_fechar()
 		return
@@ -180,6 +183,7 @@ func _run() -> void:
 
 	jogador.global_position = zefa.global_position + Vector3(1.0, 0.0, 0.8)
 	await _frames(3)
+	await _falar_com(zefa)
 	await _ate(func() -> bool: return cadeia.missao > nas_ervas, 5.0)
 	_conferir(cadeia.missao == nas_ervas,
 		"cheguei com %d maços e a entrega de %d fechou: a conta da meta 'levar' não é feita"
@@ -194,6 +198,7 @@ func _run() -> void:
 	inv.adicionar("erva_da_serra", 1)
 	var macos_antes: int = inv.quantidade("erva_da_serra")
 	await _frames(3)
+	await _falar_com(zefa)
 	var entregou := await _ate(func() -> bool: return cadeia.missao > nas_ervas, SEGUNDOS_POR_PASSO)
 	_conferir(entregou, "cheguei com os cinco maços e a entrega não fechou")
 	print("  %-16s %s" % ["zefa_ervas", "fechou" if entregou else "PRESO"])
@@ -218,6 +223,7 @@ func _run() -> void:
 	_conferir(cadeia.missao == 1,
 		"a cadeia pulou o passo do neto: está no passo %d" % (cadeia.missao + 1))
 	var no_neto: int = cadeia.missao
+	await _falar_com(zefa)
 	await _ate(func() -> bool: return cadeia.missao != no_neto, 4.0)
 	_conferir(cadeia.missao == no_neto,
 		"o passo que pede o Cosme fechou ao lado da Dona Zefa: a meta de falar virou enfeite")
@@ -228,11 +234,13 @@ func _run() -> void:
 		cosme.narrou.connect(func(texto: String) -> void: do_cosme.append(texto))
 	jogador.global_position = cosme.global_position + Vector3(1.0, 0.0, 0.8)
 	await _frames(3)
+	await _falar_com(cosme)
 	var fechou := await _ate(func() -> bool: return cadeia.missao > no_neto, SEGUNDOS_POR_PASSO)
-	_conferir(fechou, "cheguei ao lado do Cosme e o passo não fechou")
+	_conferir(fechou, "com o E no Cosme, o passo não fechou")
 	print("  %-16s %s" % ["zefa_cosme", "fechou" if fechou else "PRESO"])
-	_conferir(cosme._balao_tempo > 0.0 or not do_cosme.is_empty(),
-		"quem recebeu não respondeu: a fala do fim ficou na boca de quem pediu")
+	var do_balao := str(cosme.balao.get("_texto").text)
+	_conferir(cosme._balao_tempo > 0.0 and do_balao.contains("Salvador"),
+		"quem recebeu não respondeu: a fala do fim ficou na boca de quem pediu ('%s')" % do_balao)
 	if not do_cosme.is_empty():
 		_conferir(str(do_cosme[0]).contains("Salvador"),
 			"a resposta do Cosme não é a do 2D: '%s'" % do_cosme[0])
@@ -246,11 +254,13 @@ func _run() -> void:
 	var anunciou3 := await _ate(func() -> bool: return cadeia.espera <= 0.0, SEGUNDOS_PARA_ANUNCIAR)
 	_conferir(anunciou3, "o passo da conversa não chegou a anunciar")
 	var na_conversa: int = cadeia.missao
+	await _falar_com(cosme)
 	await _ate(func() -> bool: return cadeia.missao != na_conversa, 4.0)
 	_conferir(cadeia.missao == na_conversa,
 		"o passo que manda voltar à Dona Zefa fechou com o jogador ao lado do Cosme")
 	jogador.global_position = zefa.global_position + Vector3(1.0, 0.0, 0.8)
 	await _frames(3)
+	await _falar_com(zefa)
 	var voltou := await _ate(func() -> bool: return cadeia.missao > na_conversa, SEGUNDOS_POR_PASSO)
 	_conferir(voltou, "voltei à Dona Zefa e o passo não fechou")
 	print("  %-16s %s" % ["zefa_conversa", "fechou" if voltou else "PRESO"])
@@ -276,6 +286,13 @@ func _run() -> void:
 		"recarregar esqueceu a conversa com o Cosme")
 
 	_fechar()
+
+
+## O E AO LADO DE QUEM SE FALA, pelo caminho do jogo (`tecla_dos_moradores.gd`):
+## conversar, abrir a fila do morador, cumprir o passo que manda a ele.
+func _falar_com(morador) -> void:
+	current_scene.get("tecla_dos_moradores").usar(morador)
+	await process_frame
 
 
 func _fechar() -> void:

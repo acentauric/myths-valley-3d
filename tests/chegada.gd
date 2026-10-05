@@ -15,8 +15,8 @@ extends SceneTree
 ##   2. O PEDRO ESPERA NA PONTA DA PRANCHA: já saudou, a chegada começou pelo
 ##      desembarque, e ele fica ali enquanto o jogador não desce.
 ##   3. A PRANCHA LEVA AO TABUADO: andando para a frente, o corpo desce do convés
-##      ao píer, sem cair na água e sem empacar na borda — e falar com o Pedro
-##      fecha o desembarque.
+##      ao píer, sem cair na água e sem empacar na borda — e o E no Pedro, e não
+##      só chegar perto dele, fecha o desembarque.
 ##   4. CORRER É UM PASSO: com o Shift, correr um trecho fecha o passo da
 ##      corrida; tocar o Shift parado não fecha.
 ##   5. O PEDRO VAI NA FRENTE: depois da corrida vem o bom-dia ao Tonho; na
@@ -99,8 +99,13 @@ func _run() -> void:
 	_conferir(desceu, "andando para a frente, o jogador não chegou ao Pedro pela prancha (está em %s, o Pedro em %s)" % [str(jogador.global_position), str(pedro.global_position)])
 	_conferir(not jogador.is_swimming() and jogador.global_position.y > mundo.water_level() and absf(jogador.global_position.y - piso.y) < 1.0,
 		"a descida não acabou no tabuado (altura %.2f, piso %.2f, nadando %s)" % [jogador.global_position.y, piso.y, str(jogador.is_swimming())])
+	# CHEGAR PERTO NÃO BASTA: o E é que conversa, e é o Pedro quem ensina.
+	await _passos_de_fisica(30)
+	_conferir(pedro.passo_em_curso() == "desembarque", "o desembarque fechou só de chegar perto do Pedro, sem o E")
+	_conferir(vale.tecla_dos_moradores.perto() == pedro, "ao lado do Pedro, o E não está nele (está em %s)" % str(vale.tecla_dos_moradores.perto()))
+	_apertar_e(vale)
 	_conferir(await _ate(func() -> bool: return pedro.passo_em_curso() != "desembarque", 10.0),
-		"ao lado do Pedro, o desembarque não fechou")
+		"com o E no Pedro, o desembarque não fechou")
 
 	# --- 4. CORRER É UM PASSO --------------------------------------------------------
 	_conferir(pedro.passo_em_curso() == "correr", "depois do desembarque não vem a corrida (vem '%s')" % pedro.passo_em_curso())
@@ -199,6 +204,16 @@ func _rumo_livre(jogador, mundo) -> Vector3:
 	return rumo
 
 
+## O E, pelo caminho do jogo: a tecla de interagir, a quem conversa com os
+## moradores (`tecla_dos_moradores.gd`).
+func _apertar_e(vale) -> void:
+	var tecla := InputEventKey.new()
+	tecla.keycode = KEY_E
+	tecla.physical_keycode = KEY_E
+	tecla.pressed = true
+	vale.tecla_dos_moradores._unhandled_key_input(tecla)
+
+
 ## O Shift, pelo caminho do jogo: a tecla da ação de correr.
 func _tocar_o_shift(jogador) -> void:
 	var tecla := InputEventKey.new()
@@ -224,7 +239,7 @@ func _fechar() -> void:
 	Input.action_release("mv_forward")
 	print("")
 	if falhas == 0:
-		print("CHEGADA_OK: a partida nova nasce de pé no convés do saveiro; o Pedro espera na ponta da prancha e não sai dali; a prancha leva ao tabuado sem água nem borda, e falar com ele fecha o desembarque; correr com o Shift fecha a corrida, e tocá-lo parado não; na chave o Pedro vai na frente rumo à Dona Candinha e espera quem ficou para trás; com o vigor baixo ele explica a vida, o fôlego e o vigor uma vez só, e a lembrança vai no save; a casa espera a chave da Dona Zefa, com a enxada, o balde e a maniva no baú; e no dia seguinte o saveiro larga")
+		print("CHEGADA_OK: a partida nova nasce de pé no convés do saveiro; o Pedro espera na ponta da prancha e não sai dali; a prancha leva ao tabuado sem água nem borda, e o E nele, e não chegar perto, fecha o desembarque; correr com o Shift fecha a corrida, e tocá-lo parado não; na chave o Pedro vai na frente rumo à Dona Candinha e espera quem ficou para trás; com o vigor baixo ele explica a vida, o fôlego e o vigor uma vez só, e a lembrança vai no save; a casa espera a chave da Dona Zefa, com a enxada, o balde e a maniva no baú; e no dia seguinte o saveiro larga")
 	else:
 		print("chegada: %d falha(s)" % falhas)
 	quit(1 if falhas > 0 else 0)

@@ -378,6 +378,23 @@ func saudar() -> void:
 	_cadeia.comecar(6.5)
 
 
+## O E NO PEDRO (`tecla_dos_moradores.gd`), quando nenhuma fila usa a conversa:
+## antes da chegada, é a saudação que a abre; durante ela, ele repete o que fazer
+## agora — quem se perdeu pergunta ao Pedro. Depois do tutorial, é a conversa de
+## qualquer morador.
+func conversar() -> void:
+	if not _cadeia.iniciado:
+		saudar()
+		return
+	if not terminou_o_tutorial() and not _cadeia.acabou():
+		var texto := _cadeia.texto_do_passo()
+		if texto != "":
+			_ultima_saudacao_ms = Time.get_ticks_msec()
+			narrar("", texto)
+			return
+	super()
+
+
 ## O mesmo `narrar` da base, mais o `narrou` — que é o que põe a fala do Pedro
 ## no aviso do HUD. A parte comum subiu para o `npc.gd` quando o Damião ganhou
 ## fila de missões; o que sobrou aqui é o sinal, que é do guia.

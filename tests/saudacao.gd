@@ -97,8 +97,11 @@ func _run() -> void:
 	tonho.saudou.connect(func(_quem, texto: String) -> void: do_tonho.append(texto))
 	tonho.set("_ultima_saudacao_ms", -1)
 	jogador.teleportar(tonho.global_position + Vector3(1.0, 0.0, 0.8), 0.0)
+	# Chegar perto não fecha o bom-dia: o E é que cumprimenta.
+	await _ate(func() -> bool: return false, 1.0)
+	jogo.get("tecla_dos_moradores").usar(tonho)
 	var fechou := await _ate(func() -> bool: return int(pedro.missao) > no_bom_dia, SEGUNDOS_PARA_SAUDAR + 4.0)
-	_conferir(fechou, "ao lado do Tonho o bom-dia não fechou")
+	_conferir(fechou, "com o E no Tonho o bom-dia não fechou")
 	await _ate(func() -> bool: return false, 1.5)
 	_conferir(do_tonho.is_empty(),
 		"o Tonho tinha missão e cumprimentou mesmo assim: '%s'" % (" | ".join(do_tonho)))

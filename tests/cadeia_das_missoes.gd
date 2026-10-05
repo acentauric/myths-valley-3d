@@ -194,6 +194,9 @@ func _run() -> void:
 					_conferir(marcado.distance_to(quem.global_position) < 0.5,
 						"o marcador do passo '%s' não está em %s" % [id, str(meta.get("a_quem", ""))])
 					jogador.teleportar(quem.global_position + Vector3(1.0, 0.0, 0.6), 0.0)
+					# E O E: chegar perto não fecha o encontro; conversar fecha.
+					await _frames(2)
+					jogo.get("tecla_dos_moradores").usar(quem)
 			"juntar":
 				for item in _carga(meta):
 					await _juntar(str(item), int(_carga(meta)[item]), id, inv, recursos, jogador, energia)

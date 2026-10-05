@@ -67,8 +67,11 @@ func _run() -> void:
 	pedro.missao = pedro.MISSOES.size()
 	pedro.set("_despedida_feita", true)
 	jogador.global_position = pedro.global_position + Vector3(1.2, 0.0, 1.0)
+	await _segundos(1.0)
+	_conferir(not cadeia.iniciado, "ao lado do Pedro, a cadeia do mirante abriu sozinha, sem o E")
+	vale.tecla_dos_moradores.usar(pedro)
 	var abriu := await _ate(func() -> bool: return bool(cadeia.iniciado), SEGUNDOS)
-	_conferir(abriu, "com o tutorial terminado e o Pedro ao lado, a cadeia do mirante não abriu")
+	_conferir(abriu, "com o tutorial terminado e o E no Pedro, a cadeia do mirante não abriu")
 	if not abriu:
 		_fechar()
 		return
