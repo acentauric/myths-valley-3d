@@ -30,7 +30,8 @@ extends SceneTree
 ##   8. NADANDO, A PEÇA SOME.
 ##   9. O MACHADO E O FACÃO NÃO MUDAM: comparados, em cada estado, com uma
 ##      cópia montada pela conta aprovada (`_na_mao` de antes, giro de -30°
-##      parado e 0° no golpe), até 1 cm.
+##      parado e 0° no golpe), até 1 cm. Os números dela (`APROVADOS`) são os do
+##      corpo de hoje: trocar o corpo do jogador pede linhas novas nos dois lugares.
 ##  10. NO PROCEDURAL SÓ O MACHADO: o estilo procedural não ganha arte nova.
 ##
 ## A folha de fotos dos mesmos estados é `tools/prototipo_3d/fotos_da_mao.gd`,
@@ -56,9 +57,14 @@ const PALMA_MAXIMA_DA_PECA := {"facao": 0.06, "enxada": 0.045}
 const PALMA_DO_BALDE_NO_GOLPE := 0.09
 const CORPO_MAXIMO := 10.0
 ## A conta aprovada do machado e do facão, congelada: [tamanho, pegada, acerto].
+## É a do corpo do viajante: o acerto é do osso da mão do corpo em que foi medido
+## (ver `Vestimenta3D.NA_MAO`), e quando o corpo do jogador mudou — do personagem
+## medieval para o viajante do Tripo, cujo osso da mão gira 158° em volta dos
+## dedos — as duas linhas foram levadas para o osso novo (a peça segura como o
+## machado aprovado a segurava) e congeladas de novo aqui. Corpo novo, linha nova.
 const APROVADOS := {
-	"machado": [0.46, Vector3(0.34, 0.12, 0.0), Vector3.ZERO],
-	"facao": [0.34, Vector3(0.31, 0.19, 0.13), Vector3(23.0, 0.0, 0.0)],
+	"machado": [0.46, Vector3(0.34, 0.12, 0.014), Vector3(21.9, -177.6, 174.0)],
+	"facao": [0.34, Vector3(0.307, 0.199, 0.159), Vector3(-1.0, -175.2, 174.4)],
 }
 ## As cápsulas do corpo: [osso, osso, raio]. Sem o antebraço e a mão direitos,
 ## que seguram a peça.
@@ -135,12 +141,17 @@ static func montar_jogador(arvore: SceneTree) -> Node3D:
 
 
 ## PÕE O ITEM NA MÃO pela barra (o primeiro espaço) e devolve a peça que o
-## corpo mostra, ou null.
+## corpo mostra, ou null. O corpo assenta no repouso antes: o deslocamento da
+## pegada (`Vestimenta3D._na_mao`) é tirado da pose do corpo na hora em que a
+## peça nasce, e logo depois de um golpe ou de um passo essa pose ainda é a
+## mistura com o clipe de antes (0,18 s de transição) — a peça de cada item
+## nascia num lugar diferente conforme o que o item anterior tinha feito.
 static func por_na_mao(arvore: SceneTree, jogador: Node3D, id: String) -> Node3D:
 	var inventario := arvore.root.get_node("/root/Inventario")
 	inventario.selecionar(-1)
-	for _i in 3:
-		await arvore.process_frame
+	jogador.set("velocity", Vector3.ZERO)
+	jogador.get("animator").update_motion(0.0, 0.016)
+	await _segundos(arvore, 0.5)
 	inventario.espacos[0] = {"id": id, "qtd": 1}
 	inventario.selecionar(0)
 	for _i in 4:

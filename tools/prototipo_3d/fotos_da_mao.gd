@@ -2,7 +2,12 @@ extends SceneTree
 ## A FOLHA DE FOTOS DOS ITENS NA MÃO: para acertar a pegada, o acerto e a pose
 ## de cada peça olhando, e não só pelos números.
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --path . --script res://tools/prototipo_3d/fotos_da_mao.gd -- --saida=<pasta> [--itens=foice,balde] [--estados=parado,golpe@0.45]
+##     Godot_v4.7.2-stable_win64_console.exe --path . --script res://tools/prototipo_3d/fotos_da_mao.gd -- --saida=<pasta> [--itens=foice,balde] [--estados=parado,golpe@0.45] [--janela=1.0]
+##
+## Com `--janela=<metros>` as câmeras miram a PALMA em cada estado, com essa
+## altura de quadro (1,0 mostra a mão e o cabo, de frente, de lado, de 3/4 e de
+## cima), e a folha sai como `zoom_<item>.png`: é o jeito de ver se o cabo passa
+## pelo punho, que a folha do corpo inteiro (3,2 m de quadro) não mostra.
 ##
 ## Roda COM JANELA (sem --headless: o headless não desenha). Monta o corpo do
 ## jogador sozinho, como o portão `tests/itens_na_mao.gd` — chão, luz e uma
@@ -24,9 +29,15 @@ const ESTADOS := ["parado", "andando", "golpe@0.30", "golpe@0.45", "uso"]
 const VISTA := Vector2i(320, 400)
 ## [nome, de onde a câmera olha (no quadro do corpo: x à esquerda, z à frente)]
 const VISTAS := [["frente", Vector3(0.0, 0.0, 1.0)], ["lado", Vector3(-1.0, 0.0, 0.0)], ["3/4", Vector3(-0.7, 0.45, 0.75)]]
+## Na folha da palma (`--janela`) a vista é quadrada e ganha a de cima.
+const VISTA_DA_PALMA := Vector2i(360, 360)
+const VISTA_DE_CIMA := ["cima", Vector3(0.0, 1.0, 0.05)]
 
 var T
 var V
+var janela := 0.0
+var tamanho_da_vista := VISTA
+var vistas: Array = VISTAS
 
 
 func _initialize() -> void:
@@ -47,6 +58,10 @@ func _run() -> void:
 		return
 	var saida := _arg("saida", "user://fotos_da_mao")
 	DirAccess.make_dir_recursive_absolute(saida)
+	janela = float(_arg("janela", "0"))
+	if janela > 0.0:
+		tamanho_da_vista = VISTA_DA_PALMA
+		vistas = VISTAS + [VISTA_DE_CIMA]
 	root.get_node("/root/Estilo").modo = "tripo"
 	T = load("res://tests/itens_na_mao.gd")
 	V = load("res://scripts/prototipo_3d/vestimenta_3d.gd")
@@ -63,22 +78,24 @@ func _run() -> void:
 			continue
 		var peca := str(no.get_meta("peca"))
 		var deste: Array = estados.filter(func(e) -> bool: return e != "uso" or V.NA_MAO.get(peca, {}).has("uso"))
-		var folha := Image.create(VISTA.x * VISTAS.size(), VISTA.y * deste.size(), false, Image.FORMAT_RGBA8)
+		var folha := Image.create(tamanho_da_vista.x * vistas.size(), tamanho_da_vista.y * deste.size(), false, Image.FORMAT_RGBA8)
 		for linha in deste.size():
 			var estado := str(deste[linha])
 			await T.ir_ao_estado(self, jogador, estado)
 			var m: Dictionary = T.medir(jogador, no)
 			print("%s %s: %s | palma_na_peca=%s perto_na_peca=%s" % [id, estado, T.descrever(m), _v(m["palma_na_peca"]), _v(m["perto_na_peca"])])
 			for coluna in cameras.size():
-				(cameras[coluna]["rotulo"] as Label).text = "%s  %s  %s" % [peca, estado, VISTAS[coluna][0]]
+				(cameras[coluna]["rotulo"] as Label).text = "%s  %s  %s" % [peca, estado, vistas[coluna][0]]
+			if janela > 0.0:
+				_mirar_a_palma(cameras, corpo, corpo * (m["palma_no_corpo"] as Vector3))
 			await RenderingServer.frame_post_draw
 			await RenderingServer.frame_post_draw
 			for coluna in cameras.size():
 				var foto := (cameras[coluna]["vista"] as SubViewport).get_texture().get_image()
 				foto.convert(Image.FORMAT_RGBA8)
-				folha.blit_rect(foto, Rect2i(Vector2i.ZERO, VISTA), Vector2i(coluna * VISTA.x, linha * VISTA.y))
+				folha.blit_rect(foto, Rect2i(Vector2i.ZERO, tamanho_da_vista), Vector2i(coluna * tamanho_da_vista.x, linha * tamanho_da_vista.y))
 			await T.sair_do_estado(self, jogador)
-		var arquivo := saida.path_join("mao_%s.png" % id)
+		var arquivo := saida.path_join(("zoom_%s.png" if janela > 0.0 else "mao_%s.png") % id)
 		folha.save_png(arquivo)
 		print("FOLHA: ", ProjectSettings.globalize_path(arquivo))
 	quit(0)
@@ -127,14 +144,14 @@ func _montar_o_palco(palco: Node3D, corpo: Transform3D) -> void:
 ## e o rótulo da foto por cima. O corpo fica de frente para +Z.
 func _montar_as_cameras(corpo: Transform3D) -> Array:
 	var lista := []
-	for vista in VISTAS:
+	for vista in vistas:
 		var sub := SubViewport.new()
-		sub.size = VISTA
+		sub.size = tamanho_da_vista
 		sub.render_target_update_mode = SubViewport.UPDATE_ALWAYS
 		root.add_child(sub)
 		var camera := Camera3D.new()
 		camera.projection = Camera3D.PROJECTION_ORTHOGONAL
-		camera.size = 3.2
+		camera.size = janela if janela > 0.0 else 3.2
 		var alvo := corpo * Vector3(0.1, 1.05, 0.55)
 		var dir: Vector3 = (corpo.basis * (vista[1] as Vector3)).normalized()
 		sub.add_child(camera)
@@ -144,5 +161,14 @@ func _montar_as_cameras(corpo: Transform3D) -> Array:
 		rotulo.position = Vector2(6, 4)
 		rotulo.add_theme_color_override("font_color", Color.BLACK)
 		sub.add_child(rotulo)
-		lista.append({"vista": sub, "rotulo": rotulo})
+		lista.append({"vista": sub, "rotulo": rotulo, "camera": camera})
 	return lista
+
+
+## Aponta as câmeras para a palma (em coordenadas do mundo), cada uma do seu lado.
+## A de cima olha para baixo com a frente do corpo para o alto da imagem.
+func _mirar_a_palma(cameras: Array, corpo: Transform3D, alvo: Vector3) -> void:
+	for coluna in cameras.size():
+		var dir: Vector3 = (corpo.basis * (vistas[coluna][1] as Vector3)).normalized()
+		var cima := Vector3.UP if absf(dir.y) < 0.9 else corpo.basis * Vector3(0.0, 0.0, -1.0)
+		(cameras[coluna]["camera"] as Camera3D).look_at_from_position(alvo + dir * 6.0, alvo, cima)

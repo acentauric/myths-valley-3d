@@ -60,8 +60,13 @@
   cabo e a "mandioca" era um chapéu —, e todo cabo é segurado no molde do
   machado, com pose por estado. Arar leva a lâmina ao leito, regar tomba o
   balde, pescar ergue a vara com a linha até a bóia e dá um tranco quando o
-  peixe fisga; nadando, o item some. Machado e facão ficam como estavam.
-  Portão novo: `itens_na_mao`.
+  peixe fisga; nadando, o item some. Machado e facão ficam como estavam. Com o
+  corpo do jogador trocado pelo viajante do Tripo, cujo osso da mão gira 158° em
+  volta dos dedos em relação ao do personagem medieval, a tabela de encaixes
+  (`Vestimenta3D.NA_MAO`) foi levada para o osso novo — cada peça fica na mão como
+  o machado aprovado a segurava —, com a pegada do machado, do facão e da foice 1
+  cm mais para dentro da palma e a enxada com pose própria no andar. Portão novo:
+  `itens_na_mao`.
 - Catorze moradores novos, sem fala e com jornada: o padre Anselmo, o
   sacristão Zacarias e Sá Joaquina, o vendeiro Seu Nicolau, o guarda Aristides
   (sem arma, de candeeiro à noite), o pescador Seu Jerônimo, a marisqueira Dona

@@ -57,23 +57,45 @@ const MACHADO_PARADO := -30.0
 ## — nunca deitado no punho. "ponta" é o ponto do GLB de onde sai alguma coisa:
 ## a linha da vara (`ponta_na_mao`).
 ##
+## O ACERTO É DO OSSO DA MÃO DO CORPO EM QUE FOI MEDIDO. Cada rig do Tripo vira o
+## osso da mão de um jeito em volta do eixo dos dedos: o do viajante
+## (`viajante_tripo.glb`) difere 158° do do personagem medieval, em que estas
+## linhas nasceram, e o mesmo acerto deita a peça na mão de um e a atravessa na do
+## outro (foi o que reprovou o portão quando o corpo do jogador mudou). Dois
+## corpos no mesmo clipe têm a mão para o mesmo lado — o que se mede nos nós dos
+## dedos: a linha do mínimo ao indicador e o eixo do pulso ao dedo médio —, e só a
+## rolagem do osso muda; então trocar o corpo é levar o acerto de cada linha pela
+## rotação entre os dois ossos (`tools/prototipo_3d/acerto_para_o_corpo.gd` faz a
+## conta), e a peça fica na mão como o machado aprovado a segurava. A pegada, o
+## tamanho e as poses seguem. Assim ficou a tabela abaixo (viajante, 05/10): o
+## machado, o facão e a foice chegaram com a pegada cerca de 1 cm mais para dentro
+## da palma (o machado, na pior fase da passada, de 3,4 para 2,5 cm dela), e a
+## enxada ganhou o `aperto` e uma pose do andar só dela — em fases do passo o cabo
+## batia no braço direito, até 14% da peça dentro dele.
+##
+## O que o morador leva na mão (`npc._levar`) passa por aqui com o osso do rig dele,
+## que gira de outro jeito (a rolagem varia de um morador a outro) e sem pose: o
+## encaixe da enxada, da foice e da vara vale para o viajante.
+##
 ## A enxada, o balde, a vara e a picareta foram refeitos no Tripo na noite de
 ## 05/10 (cabo reto e lâmina larga, alça de balde, vara de bambu, picareta de
 ## verdade): GLB novo pede só medir de novo e trocar a linha dele aqui, com a
 ## folha de `fotos_da_mao.gd`.
 const NA_MAO := {
-	"machado": {"tamanho": 0.46, "pegada": Vector3(0.34, 0.12, 0.0), "acerto": Vector3.ZERO},
-	"facao": {"tamanho": 0.34, "pegada": Vector3(0.31, 0.19, 0.13), "acerto": Vector3(23.0, 0.0, 0.0)},
+	"machado": {"tamanho": 0.46, "pegada": Vector3(0.34, 0.12, 0.014), "acerto": Vector3(21.9, -177.6, 174.0)},
+	"facao": {"tamanho": 0.34, "pegada": Vector3(0.307, 0.199, 0.159), "acerto": Vector3(-1.0, -175.2, 174.4)},
 	# No golpe a ponta desce 25°: a picareta bate na pedra, e não no ar.
-	"picareta": {"tamanho": 0.536, "pegada": Vector3(0.149, 0.070, 0.078), "acerto": Vector3(-0.3, 155.2, -45.0), "golpe": Vector2(0.0, 25.0)},
+	"picareta": {"tamanho": 0.536, "pegada": Vector3(0.149, 0.070, 0.078), "acerto": Vector3(-22.0, 29.2, 130.8), "golpe": Vector2(0.0, 25.0)},
 	# A foicinha de mão (~0,55 m): parada, a lâmina vai à frente e para cima. O
 	# cabo é fino, e a pegada entra no punho ("aperto").
-	"foice": {"tamanho": 0.459, "pegada": Vector3(0.307, 0.133, 0.311), "acerto": Vector3(58.8, -169.5, -95.6), "parado": Vector2(-30.0, -60.0), "aperto": 0.6},
+	"foice": {"tamanho": 0.459, "pegada": Vector3(0.33, 0.138, 0.309), "acerto": Vector3(-75.9, -46.6, 126.7), "parado": Vector2(-30.0, -60.0), "aperto": 0.6},
 	# A enxada de cabo reto (~1,3 m) e lâmina larga (~0,3 m): a pegada fica a
-	# ~35 cm do pé do cabo (o pé passa entre as duas mãos do golpe).
-	"enxada": {"tamanho": 0.545, "pegada": Vector3(0.176, 0.617, -0.075), "acerto": Vector3(-1.6, 179.1, -171.9), "parado": Vector2(80.0, -105.0), "golpe": Vector2(0.0, 33.0)},
+	# ~35 cm do pé do cabo (o pé passa entre as duas mãos do golpe). Em pé ela vai
+	# ao ombro, com a lâmina para cima e para trás; andando, 8° mais para trás e 4°
+	# a mais de giro, para o cabo não bater no braço na passada.
+	"enxada": {"tamanho": 0.545, "pegada": Vector3(0.19, 0.578, -0.036), "acerto": Vector3(-20.4, 3.6, 13.7), "parado": Vector2(80.0, -105.0), "andando": Vector2(84.0, -113.0), "golpe": Vector2(0.0, 33.0), "aperto": 0.6},
 	# A vara de 2,4 m: erguida, senão a ponta se enterra; pescando, baixa para a água.
-	"vara_pescar": {"tamanho": 0.553, "pegada": Vector3(0.106, 0.029, 0.259), "acerto": Vector3(21.9, 155.2, -48.1), "parado": Vector2(-42.0, -55.0), "golpe": Vector2(0.0, -55.0), "uso": Vector2(-36.0, -35.0), "ponta": Vector3(-0.12, 0.97, -0.33)},
+	"vara_pescar": {"tamanho": 0.553, "pegada": Vector3(0.106, 0.029, 0.259), "acerto": Vector3(-44.1, 31.4, 126.5), "parado": Vector2(-42.0, -55.0), "golpe": Vector2(0.0, -55.0), "uso": Vector2(-36.0, -35.0), "ponta": Vector3(-0.12, 0.97, -0.33)},
 	# Regando, o balde tomba para a frente pela alça e a boca despeja.
 	"balde": {"tamanho": 0.5, "pegada": Vector3(0.09, 0.84, 0.06), "pendurar": true, "uso": Vector2(0.0, 70.0)},
 }
