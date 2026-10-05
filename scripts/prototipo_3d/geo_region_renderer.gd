@@ -167,6 +167,8 @@ var _grade_rotas_chave := Vector2i(-1, -1)
 var _grade_costa := {}
 var _grade_costa_n := -1
 var _grade_costa_margem := -1.0
+## As grades já montadas, uma por margem (ver `_distancia_costa`).
+var _grades_costa := {}
 var _grade_troncos := {}
 var _grade_troncos_n := -1
 var _maior_raio_tronco := 2.0
@@ -188,11 +190,14 @@ const BLOCO_MATA := 40.0
 ## O GLB já traz LOD de malha quando o importador consegue simplificá-lo. O segundo
 ## nível aqui é a ocultação gradual do bloco inteiro: plantas baixas desaparecem
 ## antes das copas, que ainda compõem a paisagem vista à distância.
-const LOD_SUB_BOSQUE := 85.0
-const LOD_RESTINGA := 200.0
-const LOD_ARVORE_RIO := 230.0
-const LOD_COQUEIRO := 250.0
-const LOD_MATA := 280.0
+## Encurtados em 05/10 para cerca de 0,6 dos valores de 30/09: dentro de 280 u cabiam 8
+## milhões de triângulos, quase o vale inteiro, e a copa distante já cobre o longe
+## (docs/projeto/DESEMPENHO_05_10_2026.md, F1).
+const LOD_SUB_BOSQUE := 55.0
+const LOD_RESTINGA := 130.0
+const LOD_ARVORE_RIO := 150.0
+const LOD_COQUEIRO := 160.0
+const LOD_MATA := 170.0
 const LOD_MARGEM := 20.0
 const LOD_BIAS := 0.65
 var _blocos_vegetacao_lod: Array[Dictionary] = []
@@ -789,6 +794,7 @@ func _clear_region() -> void:
 	_kml_forest.clear()
 	_village.clear()
 	_coast.clear()
+	_grade_costa_n = -1
 	_beach_gap_coast_points.clear()
 	solo = null
 
@@ -1041,6 +1047,9 @@ func _add_polygon(label: String, points: PackedVector2Array, y: float, color: Co
 	var visual := MeshInstance3D.new()
 	visual.name = label
 	visual.mesh = mesh
+	# O chão recebe sombra, não projeta: as 130 mil faces do terreno eram redesenhadas
+	# em cada cascata do sol para quase nenhuma sombra visível.
+	visual.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	add_child(visual)
 	if with_collision:
 		var body := StaticBody3D.new()
@@ -1589,6 +1598,9 @@ func _add_ribbon(label: String, points: PackedVector2Array, width: float, y: flo
 	var visual := MeshInstance3D.new()
 	visual.name = label
 	visual.mesh = surface.commit()
+	# Fita deitada no chão (rua, areia, rio): a sombra dela não aparece, e projetá-la
+	# redesenhava a fita em cada cascata do sol.
+	visual.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	add_child(visual)
 	if with_collision:
 		var body := StaticBody3D.new()
@@ -2642,18 +2654,31 @@ func _garantir_grade_rotas() -> void:
 ## Distância à costa medida só nos segmentos da célula do ponto. Cada segmento entra nas
 ## células da sua caixa crescida de margem; ponto mais longe que isso de toda a costa
 ## recebe INF, e quem chama só usa a distância até a margem (o smoothstep satura em 1).
+##
+## UMA GRADE POR MARGEM. Desde 04/10 a distância é pedida com margens diferentes (4,
+## 6, 7, 20 e 26 u), alternando até no mesmo vértice, e a grade única era refeita a
+## cada troca: 23 mil vezes ao estender a praia e os rios (19 s num quadro só, na
+## carga do menu e na do jogo) e duas por consulta de água no rio central durante o
+## jogo. Guardada por margem, cada grade nasce uma vez e a resposta é a mesma
+## (docs/projeto/DESEMPENHO_05_10_2026.md, seção 5.2).
 func _distancia_costa(point: Vector2, margem: float) -> float:
-	if _grade_costa_n != _coast.size() or _grade_costa_margem != margem:
-		_grade_costa = {}
-		for i in range(_coast.size() - 1):
-			var caixa := Rect2(_coast[i], Vector2.ZERO).expand(_coast[i + 1]).grow(margem)
-			for cx in range(floori(caixa.position.x / CELULA_COSTA), floori(caixa.end.x / CELULA_COSTA) + 1):
-				for cy in range(floori(caixa.position.y / CELULA_COSTA), floori(caixa.end.y / CELULA_COSTA) + 1):
-					var celula := Vector2i(cx, cy)
-					if not _grade_costa.has(celula):
-						_grade_costa[celula] = []
-					_grade_costa[celula].append(i)
+	if _grade_costa_n != _coast.size():
+		_grades_costa = {}
 		_grade_costa_n = _coast.size()
+		_grade_costa_margem = -1.0
+	if _grade_costa_margem != margem:
+		if not _grades_costa.has(margem):
+			var grade := {}
+			for i in range(_coast.size() - 1):
+				var caixa := Rect2(_coast[i], Vector2.ZERO).expand(_coast[i + 1]).grow(margem)
+				for cx in range(floori(caixa.position.x / CELULA_COSTA), floori(caixa.end.x / CELULA_COSTA) + 1):
+					for cy in range(floori(caixa.position.y / CELULA_COSTA), floori(caixa.end.y / CELULA_COSTA) + 1):
+						var celula := Vector2i(cx, cy)
+						if not grade.has(celula):
+							grade[celula] = []
+						grade[celula].append(i)
+			_grades_costa[margem] = grade
+		_grade_costa = _grades_costa[margem]
 		_grade_costa_margem = margem
 	var lista: Variant = _grade_costa.get(Vector2i(floori(point.x / CELULA_COSTA), floori(point.y / CELULA_COSTA)))
 	if lista == null:

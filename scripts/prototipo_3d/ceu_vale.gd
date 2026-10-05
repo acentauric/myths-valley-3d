@@ -89,8 +89,10 @@ func montar(pai: Node3D) -> void:
 	sol = DirectionalLight3D.new()
 	sol.name = "Sol"
 	sol.shadow_enabled = true
-	sol.directional_shadow_max_distance = 180.0
-	sol.directional_shadow_mode = DirectionalLight3D.SHADOW_PARALLEL_4_SPLITS
+	# Até 70 u em duas cascatas: a sombra de perto continua nítida, e o sol deixa de
+	# redesenhar a vila inteira quatro vezes (docs/projeto/DESEMPENHO_05_10_2026.md, F3).
+	sol.directional_shadow_max_distance = 70.0
+	sol.directional_shadow_mode = DirectionalLight3D.SHADOW_PARALLEL_2_SPLITS
 	pai.add_child(sol)
 	lua = DirectionalLight3D.new()
 	lua.name = "Lua"
