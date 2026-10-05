@@ -21,7 +21,8 @@ extends SceneTree
 ##   3. OS DEZ ESPAÇOS ESTÃO LÁ, um por espaço de mão do `Inventario`.
 ##   4. ELA ESTÁ NO RODAPÉ E NO MEIO, dentro da tela — não fora dela, que é o
 ##      outro jeito de um Control existir sem aparecer.
-##   5. O QUE ENTRA NA MOCHILA APARECE NELA, e o que está na mão se destaca.
+##   5. O QUE ENTRA NA MOCHILA APARECE NELA, e o que está na mão se destaca —
+##      inclusive o machado, que o número põe na mão.
 
 var falhas := 0
 var Inv: Node = null
@@ -88,10 +89,6 @@ func _run() -> void:
 
 	# --- 5. O QUE ENTRA APARECE ----------------------------------------------
 	#
-	# COM A PICARETA, e não com o machado. O machado virou item de encaixe, e o
-	# `Inventario._somente_reserva` o proíbe nos dez espaços da mão: exigir que
-	# ele apareça aqui seria exigir o que o vale decidiu não fazer. A picareta é
-	# ferramenta sem encaixe, mora na mão, e mede a mesma coisa.
 	Inv.adicionar("picareta", 1)
 	var espaco := -1
 	for i in Inv.ESPACOS_MAO:
@@ -102,18 +99,33 @@ func _run() -> void:
 	Inv.selecionar(maxi(espaco, 0))
 	await _frames(2)
 
-	# E O MACHADO NÃO TOMA ESPAÇO DA MÃO — a regra nova, e a que faz da barra a
-	# fila do que se usa depressa. Sem medir isto, um dia ela volta a comer um
-	# dos dez calada e o jogador perde um espaço de comida para uma ferramenta
-	# que nem se usa dali.
-	Inv.adicionar("machado", 1)
-	var machado_na_mao := false
+	# O MACHADO SOBE PARA A MÃO PELO NÚMERO, como a picareta.
+	#
+	# "O machado no inventário não tá subindo para a mão (1,2,3,4,5,6,7,8,9,0),
+	# os outros itens estão normal." Ele tinha ido morar só na reserva, usado
+	# pelo encaixe "Mãos" da mochila, e o número dele não existia. O vale dá um
+	# machado de saída; ele tem de estar num dos dez, e a TECLA — não a chamada
+	# direta — tem de pô-lo na mão e no braço do personagem.
+	if not Inv.tem("machado"):
+		Inv.adicionar("machado", 1)
+	var espaco_do_machado := -1
 	for i in Inv.ESPACOS_MAO:
 		if str((Inv.espacos[i] as Dictionary).get("id", "")) == "machado":
-			machado_na_mao = true
-	_conferir(not machado_na_mao,
-		"o machado ocupou um dos dez espaços da mão: ferramenta de encaixe é da reserva")
-	_conferir(Inv.tem("machado"), "o machado não entrou em lugar nenhum da mochila")
+			espaco_do_machado = i
+	_conferir(espaco_do_machado >= 0,
+		"o machado não está em nenhum dos dez espaços da mão: o número dele não alcança")
+	if espaco_do_machado >= 0:
+		Inv.selecionar(Inv.MAO_LIVRE)
+		await _tecla(KEY_0 if espaco_do_machado == 9 else KEY_1 + espaco_do_machado)
+		_conferir(Inv.na_mao() == "machado",
+			"apertei o número do machado (%s) e a mão ficou com '%s'"
+				% [Inv.rotulo_do_espaco(espaco_do_machado), Inv.na_mao()])
+		var jogador_5 = current_scene.get("player")
+		if jogador_5 != null:
+			_conferir(bool(jogador_5.machado_na_mao()),
+				"o machado está na barra e na mão, e o personagem não o segura")
+		Inv.selecionar(maxi(espaco, 0))
+		await _frames(2)
 
 	var primeiro := fila.get_child(maxi(espaco, 0)) as Panel
 	var conteudo := primeiro.get_node_or_null("Conteudo") as Label
@@ -185,10 +197,6 @@ func _run() -> void:
 		# FERRAMENTA NÃO SE COME. É a outra metade: a mão não pode engolir a
 		# ferramenta porque o jogador apertou E perto de nada.
 		#
-		# COM A PICARETA. O machado não serve para perguntar isto: ele não cabe
-		# mais num espaço da mão (`_somente_reserva`), e a seleção cairia no
-		# pirão do trecho de cima — a mão comeria o pirão, o portão diria que
-		# comeu o machado, e a medida seria de outra coisa.
 		Inv.adicionar("picareta", 1)
 		var achou_picareta := false
 		for i in Inv.ESPACOS_MAO:
@@ -279,8 +287,8 @@ func _run() -> void:
 		if nova >= 0:
 			jogador.set_physics_process(false)
 			arvores._aberta = -1
-			arvores._coqueiro_em_golpe = -1
-			arvores._coqueiro_perto = -1
+			arvores._em_golpe = -1
+			arvores._cortavel_perto = -1
 			arvores._perto = nova
 			arvores._unhandled_key_input(e_de_interagir)
 			_conferir(arvores._aberta == -1, "com o corpo parado, o E abriu a ficha da árvore")

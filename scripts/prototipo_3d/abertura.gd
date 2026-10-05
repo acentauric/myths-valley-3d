@@ -1421,12 +1421,23 @@ func _abrir_personagens() -> void:
 ## AS TRÊS VAGAS (#7), por baixo da abertura. O `menu_inicial` do 2D não
 ## entra; entra a pergunta dele — "qual vaga?" — com a cara deste menu. Vaga
 ## vazia começa ali, com a travessia; vaga ocupada continua de onde parou, sem
-## ela. Recomeçar uma vaga ocupada pede um SEGUNDO clique, e o botão passa a
-## dizer o que se perde: é a única coisa desta tela que não se desfaz (ver
-## `scripts/ui/slots_tela.gd` no 2D, "vaga ocupada nunca é sobrescrita num
-## toque"). Ainda há a rede do `Salvamento`, que guarda a partida anterior numa
-## cópia antes de escrever.
+## ela.
+##
+## CADA VAGA É UM CARTÃO: "No MENU de save, ao invés de abrir um combo embaixo
+## para deletar o save, coloque o ícone dentro do próprio balão do save. Na
+## esquerda pode colocar o ícone de editar o nome do save e deletar o save."
+## E depois: "me confundi. O correto é no lado direito." Clicar no cartão
+## continua a partida (ou começa, na vaga vazia). Dentro dele, à direita do
+## texto, o lápis edita o nome da vaga (`Partida.renomear`) e a lixeira a apaga
+## — no SEGUNDO clique, com o cartão dizendo o que se perde: vaga ocupada nunca
+## é apagada num toque (ver `scripts/ui/slots_tela.gd` no 2D). Depois deles, a
+## seta circular abre os PONTOS DE RESTAURAÇÃO da vaga
+## (`pontos_de_restauracao.gd`) quando ela tem algum — inclusive vazia, depois
+## de apagada, que é como apagar se desfaz.
+const PontosDeRestauracao = preload("res://scripts/prototipo_3d/pontos_de_restauracao.gd")
 var _confirmando_vaga := 0
+## O ponto de restauração que pede o segundo clique, pelo caminho, ou "".
+var _confirmando_ponto := ""
 
 func _vagas() -> void:
 	_clear()
@@ -1435,34 +1446,228 @@ func _vagas() -> void:
 	_modal_header("Vagas", _home, "Três partidas, cada uma inteira. Escolha onde jogar.")
 	var primeiro: Button = null
 	for slot in range(1, Salvamento.QUANTOS_SLOTS + 1):
-		var resumo := Salvamento.resumo(slot)
-		var botao: Button
-		if bool(resumo.get("existe", false)):
-			var nome := str(resumo.get("nome", ""))
-			botao = _button(tr("VAGA %d · %s · DIA %d") % [slot, nome, int(resumo.get("dia", 1))],
-				func(): _abrir_vaga(slot, false))
-			# O lambda guarda o valor da variável na hora em que nasce: o botão
-			# de recomeçar chega a ele por esta lista, preenchida logo abaixo.
-			var este := []
-			var recomecar := _button(tr("RECOMEÇAR A VAGA %d") % slot,
-				func(): _recomecar_vaga(slot, nome, este[0]))
-			este.append(recomecar)
-			recomecar.name = "Recomecar%d" % slot
-			recomecar.theme_type_variation = &"BotaoNegativo"
-		else:
-			botao = _button(tr("VAGA %d · VAZIA · COMEÇAR AQUI") % slot, func(): _abrir_vaga(slot, true))
-		botao.name = "Vaga%d" % slot
+		var cartao := _cartao_da_vaga(slot)
 		if primeiro == null:
-			primeiro = botao
+			primeiro = cartao
 	primeiro.grab_focus()
 
 
-func _recomecar_vaga(slot: int, nome: String, botao: Button) -> void:
-	if _confirmando_vaga != slot:
-		_confirmando_vaga = slot
-		botao.text = tr("APAGA A PARTIDA DE %s · CLIQUE DE NOVO") % nome
+## O nome que o cartão mostra: o que o jogador deu à vaga, ou o de quem joga.
+func _nome_da_vaga(slot: int, resumo: Dictionary) -> String:
+	var dado := Partida.nome_da_vaga(slot)
+	return dado if dado != "" else str(resumo.get("nome", ""))
+
+
+## O CARTÃO DE UMA VAGA: o botão inteiro continua (ou começa); dentro dele, o
+## texto e, à direita, o lápis e a lixeira da vaga ocupada e a seta dos pontos.
+func _cartao_da_vaga(slot: int) -> Button:
+	var resumo := Salvamento.resumo(slot)
+	var ocupada := bool(resumo.get("existe", false))
+	var nome := _nome_da_vaga(slot, resumo)
+	var cartao := _button("", func(): _ao_tocar_a_vaga(slot, ocupada))
+	cartao.name = "Vaga%d" % slot
+	cartao.custom_minimum_size.y = 52
+	var linha := HBoxContainer.new()
+	linha.name = "Linha"
+	linha.set_anchors_preset(Control.PRESET_FULL_RECT)
+	linha.offset_left = 6.0
+	linha.offset_right = -6.0
+	linha.add_theme_constant_override("separation", 2)
+	linha.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	cartao.add_child(linha)
+	# DUAS LINHAS: o nome em cima, na letra dos botões, e a vaga e o dia embaixo,
+	# miúdos — numa linha só, ao lado dos ícones, o texto não cabia no cartão.
+	var textos := VBoxContainer.new()
+	textos.name = "Textos"
+	textos.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	textos.alignment = BoxContainer.ALIGNMENT_CENTER
+	textos.add_theme_constant_override("separation", -3)
+	textos.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	linha.add_child(textos)
+	var texto := _linha_do_cartao(cartao, "Texto", cartao.get_theme_font_size("font_size"), 1.0)
+	var detalhe := _linha_do_cartao(cartao, "Detalhe", 12, 0.62)
+	textos.add_child(texto)
+	textos.add_child(detalhe)
+	if ocupada:
+		texto.text = nome
+		detalhe.text = tr("VAGA %d · DIA %d") % [slot, int(resumo.get("dia", 1))]
+	else:
+		texto.text = tr("VAGA %d · VAZIA") % slot
+		detalhe.text = tr("COMEÇAR AQUI")
+	if ocupada:
+		linha.add_child(_icone_da_vaga("Editar%d" % slot, "editar", "Editar o nome da vaga", func(): _editar_o_nome(slot)))
+		linha.add_child(_icone_da_vaga("Apagar%d" % slot, "apagar", "Apagar a partida", func(): _apagar_a_vaga(slot, nome)))
+	if not PontosDeRestauracao.listar(slot).is_empty():
+		linha.add_child(_icone_da_vaga("Pontos%d" % slot, "restaurar", "Pontos de restauração", func(): _pontos_da_vaga(slot), true))
+	return cartao
+
+
+## Uma linha de texto do cartão, na letra do botão.
+func _linha_do_cartao(cartao: Button, nome: String, tamanho: int, opaco: float) -> Label:
+	var texto := Label.new()
+	texto.name = nome
+	texto.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	texto.clip_text = true
+	texto.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	texto.add_theme_font_override("font", cartao.get_theme_font("font"))
+	texto.add_theme_font_size_override("font_size", tamanho)
+	texto.add_theme_color_override("font_color", Color(cartao.get_theme_color("font_color"), opaco))
+	return texto
+
+
+## Um ícone dentro do cartão: botão próprio, que fica com o clique dele (o
+## cartão não continua a partida por baixo).
+func _icone_da_vaga(nome: String, icone: String, dica: String, acao: Callable, aceso := false) -> Button:
+	var botao := Button.new()
+	botao.name = nome
+	botao.custom_minimum_size = Vector2(36, 36)
+	botao.theme_type_variation = &"BotaoIcone"
+	botao.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	botao.tooltip_text = tr(dica)
+	botao.mouse_filter = Control.MOUSE_FILTER_STOP
+	var glifo = HudIcon.new().configurar(icone)
+	glifo.name = "Glifo"
+	glifo.position = Vector2(6, 6)
+	glifo.size = Vector2(24, 24)
+	glifo.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	glifo.definir(aceso)
+	botao.add_child(glifo)
+	botao.mouse_entered.connect(func(): Audio.efeito("ui_hover"))
+	botao.focus_entered.connect(_tique_de_foco)
+	botao.pressed.connect(func():
+		Audio.efeito("ui_confirmar")
+		acao.call())
+	return botao
+
+
+## Tocar no cartão continua a partida (ou começa a nova); com a lixeira pedindo
+## a confirmação, desiste de apagar.
+func _ao_tocar_a_vaga(slot: int, ocupada: bool) -> void:
+	if _confirmando_vaga == slot:
+		_vagas()
+		(content.get_node("Vaga%d" % slot) as Button).grab_focus()
 		return
-	_abrir_vaga(slot, true)
+	_abrir_vaga(slot, not ocupada)
+
+
+## A LIXEIRA: o primeiro clique pinta o cartão e diz o que se perde; o segundo
+## apaga. Apagar guarda antes o ponto de restauração da vaga (`Partida`).
+func _apagar_a_vaga(slot: int, nome: String) -> void:
+	if _confirmando_vaga != slot:
+		_vagas()
+		_confirmando_vaga = slot
+		var cartao := content.get_node("Vaga%d" % slot) as Button
+		cartao.theme_type_variation = &"BotaoNegativo"
+		var texto := cartao.get_node("Linha/Textos/Texto") as Label
+		texto.text = tr("APAGAR A PARTIDA DE %s?") % nome
+		# Letra menor, e o lápis sai enquanto a lixeira pergunta: a pergunta leva
+		# o nome inteiro, e tem de caber no cartão.
+		texto.add_theme_font_size_override("font_size", 14)
+		cartao.get_node("Linha/Editar%d" % slot).visible = false
+		texto.add_theme_color_override("font_color", cartao.get_theme_color("font_color"))
+		var detalhe := cartao.get_node("Linha/Textos/Detalhe") as Label
+		detalhe.text = tr("CLIQUE NA LIXEIRA DE NOVO")
+		detalhe.add_theme_color_override("font_color", Color(cartao.get_theme_color("font_color"), 0.75))
+		var lixeira := cartao.get_node("Linha/Apagar%d" % slot) as Button
+		lixeira.get_node("Glifo").definir(true)
+		lixeira.grab_focus()
+		return
+	Partida.apagar_vaga(slot)
+	_vagas()
+	(content.get_node("Vaga%d" % slot) as Button).grab_focus()
+
+
+## O LÁPIS: o texto do cartão vira um campo com o nome da vaga. Enter (ou sair
+## do campo) grava; Esc desiste. Nome vazio volta ao de quem joga.
+func _editar_o_nome(slot: int) -> void:
+	var cartao := content.get_node("Vaga%d" % slot) as Button
+	var texto := cartao.get_node("Linha/Textos") as Control
+	var campo := LineEdit.new()
+	campo.name = "Nome"
+	campo.text = _nome_da_vaga(slot, Salvamento.resumo(slot))
+	campo.placeholder_text = tr("Nome da vaga")
+	campo.max_length = Partida.NOME_MAXIMO
+	campo.alignment = HORIZONTAL_ALIGNMENT_CENTER
+	campo.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	campo.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	texto.get_parent().add_child(campo)
+	texto.get_parent().move_child(campo, texto.get_index())
+	texto.visible = false
+	var feito := [false]
+	var gravar := func(novo: String) -> void:
+		if feito[0]:
+			return
+		feito[0] = true
+		Partida.renomear(slot, novo)
+		_vagas()
+		(content.get_node("Vaga%d" % slot) as Button).grab_focus()
+	campo.text_submitted.connect(gravar)
+	campo.focus_exited.connect(func() -> void: gravar.call(campo.text))
+	campo.gui_input.connect(func(evento: InputEvent) -> void:
+		if evento.is_action_pressed("ui_cancel"):
+			feito[0] = true
+			campo.accept_event()
+			_vagas()
+			(content.get_node("Vaga%d" % slot) as Button).grab_focus())
+	campo.grab_focus()
+	campo.select_all()
+
+
+## OS PONTOS DE RESTAURAÇÃO DE UMA VAGA: do mais novo ao mais velho, cada um com
+## o dia do jogo, quando foi guardado e por quê. Restaurar pede o segundo
+## clique, e o que a vaga tinha vira um ponto também.
+func _pontos_da_vaga(slot: int) -> void:
+	_clear()
+	_confirmando_ponto = ""
+	var resumo := Salvamento.resumo(slot)
+	_label("Pontos de restauração", 30)
+	if bool(resumo.get("existe", false)):
+		_label(tr("Vaga %d · %s · dia %d") % [slot, _nome_da_vaga(slot, resumo), int(resumo.get("dia", 1))], 18)
+	else:
+		_label(tr("Vaga %d · vazia") % slot, 18)
+	_label("O jogo guarda um ponto por dia de jogo — os sete mais novos — e um antes de apagar ou de restaurar a partida. Restaurar volta a vaga para o ponto escolhido, e o que ela tinha fica guardado como ponto também.", 15)
+	var primeiro: Button = null
+	var ordem := 0
+	for ponto in PontosDeRestauracao.listar(slot):
+		var este := []
+		var botao := _button(_texto_do_ponto(ponto), func(): _restaurar_o_ponto(slot, ponto, este[0]))
+		# Letra menor: a data e o porquê numa linha só, sem alargar o painel.
+		botao.add_theme_font_size_override("font_size", 14)
+		este.append(botao)
+		botao.name = "Ponto%d" % ordem
+		ordem += 1
+		if primeiro == null:
+			primeiro = botao
+	var voltar := _button("VOLTAR", func():
+		_vagas()
+		(content.get_node("Vaga%d" % slot) as Button).grab_focus())
+	(primeiro if primeiro != null else voltar).grab_focus()
+
+
+func _texto_do_ponto(ponto: Dictionary) -> String:
+	var por_que := {
+		PontosDeRestauracao.DIA: tr("COMEÇO DO DIA"),
+		PontosDeRestauracao.ANTES_DE_APAGAR: tr("ANTES DE APAGAR"),
+		PontosDeRestauracao.ANTES_DE_RESTAURAR: tr("ANTES DE RESTAURAR"),
+	}
+	# O relógio de parede de quem joga, e não o UTC do arquivo.
+	var fuso := int(Time.get_time_zone_from_system().get("bias", 0)) * 60
+	var data := Time.get_datetime_dict_from_unix_time(int(ponto["quando"]) / 1000 + fuso)
+	var quando := "%02d/%02d %02d:%02d" % [int(data["day"]), int(data["month"]), int(data["hour"]), int(data["minute"])]
+	return tr("DIA %d · %s · %s") % [int(ponto["dia"]), quando, str(por_que.get(str(ponto["tipo"]), str(ponto["tipo"])))]
+
+
+func _restaurar_o_ponto(slot: int, ponto: Dictionary, botao: Button) -> void:
+	var caminho := str(ponto["caminho"])
+	if _confirmando_ponto != caminho:
+		_confirmando_ponto = caminho
+		botao.text = tr("RESTAURAR O DIA %d · CLIQUE DE NOVO") % int(ponto["dia"])
+		botao.theme_type_variation = &"BotaoNegativo"
+		return
+	if PontosDeRestauracao.restaurar(slot, caminho):
+		Audio.efeito("ui_confirmar")
+	_vagas()
+	(content.get_node("Vaga%d" % slot) as Button).grab_focus()
 
 
 ## Vaga nova: a partida começa do zero ali, pela travessia. Vaga ocupada: o

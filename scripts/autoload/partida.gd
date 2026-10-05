@@ -19,13 +19,55 @@ extends Node
 ##
 ## SEM VAGA NÃO SE SALVA, como no 2D. É o EXPLORAR da abertura: um passeio
 ## livre, que não grava nada e não apaga nada.
+##
+## OS PONTOS DE RESTAURAÇÃO (`pontos_de_restauracao.gd`) passam por aqui: cada
+## gravação dá ao dia do jogo o ponto dele, e apagar uma vaga — ou começar uma
+## partida nova por cima dela — guarda antes o ponto do que se perde. E o NOME
+## DA VAGA, que a tela de vagas deixa editar, mora num arquivo à parte
+## (`user://vagas.json`), e não no save: gravar a partida não o apaga.
+
+const PontosDeRestauracao = preload("res://scripts/prototipo_3d/pontos_de_restauracao.gd")
+const NOMES_DAS_VAGAS := "user://vagas.json"
+## Quantas letras cabem no nome de uma vaga, no cartão dela.
+const NOME_MAXIMO := 24
 
 ## O estado de todos os sistemas salvos no instante em que o jogo abriu.
 var fabrica: Dictionary = {}
 
+## O QUE O ENCAIXE DAVA a quem ainda tem a peça vestida numa partida antiga: o
+## facão vestido nas Mãos tirava 5% do fôlego gasto, e a `Progressao` foi salva
+## com isso somado. Ver `_devolver_o_que_saiu_do_encaixe`.
+const EFEITO_QUE_O_ENCAIXE_DAVA := {"facao": {"eficiencia": -0.05}}
+
 
 func _ready() -> void:
 	fabrica = instantaneo()
+	Salvamento.carregou.connect(_devolver_o_que_saiu_do_encaixe)
+	Salvamento.salvou.connect(func() -> void: PontosDeRestauracao.depois_de_salvar(Salvamento.slot_atual))
+
+
+## O QUE SAIU DO ENCAIXE volta para a barra de mão. "No campo mãos do inventário,
+## não é para armas, mas sim para luvas. Armas são nos campos numerais." A
+## partida salva com o machado ou o facão vestido nas Mãos os traz de volta à
+## barra (a mochila enche a barra primeiro), e o facão leva junto o efeito de
+## cintura que dava. Sem lugar na mochila, a peça fica vestida até haver.
+func _devolver_o_que_saiu_do_encaixe() -> void:
+	var devolvidos: Array = []
+	for encaixe in Equipamento.ENCAIXES:
+		var id := Equipamento.no_encaixe(str(encaixe))
+		if id == "" or (Equipamento.encaixe_de(id) == encaixe and Equipamento.e_equipamento(id)):
+			continue
+		if not Inventario.adicionar(id, 1):
+			continue
+		var efeito: Dictionary = EFEITO_QUE_O_ENCAIXE_DAVA.get(id, {})
+		for campo in efeito:
+			if Progressao.get(campo) != null:
+				Progressao.ajustar(campo, float(Progressao.get(campo)) - float(efeito[campo]))
+		Equipamento.vestido[encaixe] = ""
+		devolvidos.append(Catalogo.nome(id))
+	if not devolvidos.is_empty():
+		Salvamento.ultimo_relato.append("Voltou para a barra de mão, que é onde vai arma: %s." % ", ".join(devolvidos))
+		Equipamento.mudou.emit()
 
 
 ## O estado de hoje, no formato do arquivo, sem escrever nada: a mesma tabela
@@ -57,8 +99,8 @@ func instantaneo() -> Dictionary:
 ## estado da partida anterior. O vale carrega o arquivo da vaga depois de
 ## montado (ver `prototype.gd`), como o 2D faz.
 func comecar(slot: int, apagar: bool = false) -> void:
-	if apagar and slot > 0:
-		Salvamento.apagar(slot)
+	if apagar and slot > 0 and Salvamento.existe_partida(slot):
+		apagar_vaga(slot)
 	# Mundo nenhum registrado enquanto a fábrica volta: o vale que se
 	# apresentou pode já ter saído da árvore.
 	Salvamento.registrar_mundo(null)
@@ -76,3 +118,36 @@ func salvar() -> bool:
 
 func tem_vaga() -> bool:
 	return Salvamento.slot_atual > 0
+
+
+## APAGA A VAGA, com o ponto de restauração dela guardado antes, e esquece o
+## nome que ela tinha.
+func apagar_vaga(slot: int) -> void:
+	PontosDeRestauracao.apagar_vaga(slot)
+	renomear(slot, "")
+
+
+## O NOME DA VAGA que o jogador deu, ou "" se não deu (o cartão mostra então o
+## nome de quem joga).
+func nome_da_vaga(slot: int) -> String:
+	return str(_nomes().get(str(slot), ""))
+
+
+func renomear(slot: int, nome: String) -> void:
+	var nomes := _nomes()
+	var limpo := nome.strip_edges().left(NOME_MAXIMO)
+	if limpo == "":
+		nomes.erase(str(slot))
+	else:
+		nomes[str(slot)] = limpo
+	var arquivo := FileAccess.open(NOMES_DAS_VAGAS, FileAccess.WRITE)
+	if arquivo != null:
+		arquivo.store_string(JSON.stringify(nomes, "\t"))
+		arquivo.close()
+
+
+func _nomes() -> Dictionary:
+	if not FileAccess.file_exists(NOMES_DAS_VAGAS):
+		return {}
+	var lido = JSON.parse_string(FileAccess.get_file_as_string(NOMES_DAS_VAGAS))
+	return lido if lido is Dictionary else {}

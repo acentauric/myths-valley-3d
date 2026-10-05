@@ -45,10 +45,17 @@ const PECAS := {
 	"capim": {"tripo": "arvores/capim_tripo.glb", "altura": 0.9},
 	# Construções
 	"capela": {"tripo": "construcoes/capela_tripo.glb", "largura": 9.0, "caixa": true},
+	# A capelinha pobre do cemitério, de taipa e cal rachada (lote de 03/10/2026).
+	"capelinha": {"tripo": "construcoes/capelinha_tripo.glb", "largura": 4.6, "caixa": true},
 	"igreja": {"tripo": "construcoes/igreja_tripo.glb", "largura": 10.0, "caixa": true},
-	# As paredes começam cerca de 0,20 unidade acima do mínimo do GLB;
-	# esse recuo encosta a parede no alicerce sem deslocar o terreno.
-	"casa_taipa": {"tripo": "construcoes/casa_taipa_tripo.glb", "largura": 6.5, "caixa": true, "afundar": 0.20},
+	# SEM "afundar": as paredes começam uns 0,20 acima do mínimo do GLB, e a
+	# casca afundada encostava a parede no alicerce — mas a casa herdada, a do
+	# Pedro e a da Zefa têm o cômodo DENTRO da casca, medido nela
+	# (`Interiores._medir`): com os 0,20 a mais, ninguém entrava andando nas
+	# três, e sem eles entra (tests/casa.gd, casas_dos_moradores.gd).
+	# O enterro das casas pequenas no terreno inclinado continua
+	# (`WorldBuilder.AFUNDAMENTO_CASAS_PEQUENAS`).
+	"casa_taipa": {"tripo": "construcoes/casa_taipa_tripo.glb", "largura": 6.5, "caixa": true},
 	"casa_carro_quebrado": {"tripo": "casas/casa_carro_quebrado_tripo.glb", "largura": 5.2, "caixa": true},
 	"venda": {"tripo": "construcoes/venda_tripo.glb", "largura": 8.0, "caixa": true},
 	"casa_pasto": {"tripo": "construcoes/casa_pasto_tripo.glb", "largura": 8.5, "caixa": true},
@@ -63,6 +70,8 @@ const PECAS := {
 	"carroca": {"tripo": "aderecos/carroca_tripo.glb", "largura": 3.2, "caixa": true},
 	"varal": {"tripo": "aderecos/varal_tripo.glb", "largura": 3.8},
 	"lenha": {"tripo": "aderecos/lenha_tripo.glb", "largura": 1.5, "caixa": true},
+	# O tronco que a trovoada derrubou no cemitério: vem de comprido no Z.
+	"tronco_caido": {"tripo": "aderecos/tronco_caido_tripo.glb", "largura": 2.6, "caixa": true},
 	"pote": {"tripo": "aderecos/pote_tripo.glb", "altura": 0.95},
 	"banco": {"tripo": "aderecos/banco_tripo.glb", "altura": 1.0, "caixa": true},
 	"lampiao_poste": {"tripo": "aderecos/lampiao_poste_tripo.glb", "altura": 3.4, "tronco": 0.15},
@@ -85,6 +94,7 @@ const PECAS := {
 	"filo": {"tripo": "personagens/filo_tripo.glb", "altura": 1.6},
 	"damiao": {"tripo": "personagens/damiao_tripo.glb", "altura": 1.74},
 	"candinha": {"tripo": "personagens/candinha_tripo.glb", "altura": 1.62},
+	"quirino": {"tripo": "personagens/quirino_tripo.glb", "altura": 1.7},
 	"viajante": {"tripo": "personagens/viajante_tripo.glb", "altura": 1.78},
 	# Itens de mão (os mesmos do 2D)
 	"machado": {"tripo": "itens/machado_tripo.glb", "altura": 0.85},
@@ -104,12 +114,41 @@ const PECAS := {
 	"tabua": {"tripo": "itens/tabua_tripo.glb", "largura": 1.6, "girar": [-90, 0, 0]},
 	"farinha": {"tripo": "itens/farinha_tripo.glb", "altura": 0.6},
 	"chapeu": {"tripo": "itens/chapeu_tripo.glb", "largura": 0.4},
+	# A luva de couro, de mão direita e em pé (dedos para cima): o corpo a põe
+	# nas duas mãos, a esquerda espelhada (`Vestimenta3D.luvas`).
+	"luvas_de_couro": {"tripo": "itens/luvas_de_couro_tripo.glb", "altura": 0.25},
 	"milho": {"tripo": "itens/milho_tripo.glb", "largura": 0.3},
 	"cana": {"tripo": "itens/cana_tripo.glb", "altura": 1.6},
 	"moringa": {"tripo": "itens/moringa_tripo.glb", "altura": 0.35},
 	"prato_comida": {"tripo": "itens/prato_comida_tripo.glb", "largura": 0.3},
 	"cacho_banana": {"tripo": "itens/cacho_banana_tripo.glb", "altura": 0.45},
 	"jaca": {"tripo": "itens/jaca_tripo.glb", "altura": 0.45},
+	# Mobília da casa herdada (#26). A casa põe cada uma na largura do lugar dela
+	# (`interior_casa._movel`), com a frente no +Z; a cama e a cantareira vieram
+	# de comprido no Z, e o giro as deita no X: a cabeceira para a parede da
+	# esquerda, e os dois potes lado a lado, de frente para a sala.
+	"cama": {"tripo": "moveis/cama_tripo.glb", "largura": 1.9, "girar": [0, 90, 0]},
+	"mesa": {"tripo": "moveis/mesa_tripo.glb", "largura": 1.1},
+	"banco_tosco": {"tripo": "moveis/banco_tosco_tripo.glb", "largura": 1.0},
+	"bau": {"tripo": "moveis/bau_tripo.glb", "largura": 0.9},
+	"barril": {"tripo": "moveis/barril_tripo.glb", "altura": 0.8},
+	"cantareira": {"tripo": "moveis/cantareira_tripo.glb", "altura": 0.9, "girar": [0, 90, 0]},
+	"fogao_barro": {"tripo": "moveis/fogao_barro_tripo.glb", "largura": 1.0},
+	"jirau": {"tripo": "moveis/jirau_tripo.glb", "largura": 1.2},
+	"oratorio": {"tripo": "moveis/oratorio_tripo.glb", "altura": 0.6},
+	"rede": {"tripo": "moveis/rede_tripo.glb", "largura": 2.4},
+	# O que diz quem mora (lote de 03/10/2026): a rede de pesca e os remos do
+	# Pedro, e as ervas, o pilão e a gamela da Dona Zefa. Rede, remos e ervas vêm
+	# chatos no Z, para ir na parede.
+	"rede_de_pesca": {"tripo": "moveis/rede_de_pesca_tripo.glb", "altura": 1.4},
+	"remos": {"tripo": "moveis/remos_tripo.glb", "altura": 1.8},
+	"ervas_secando": {"tripo": "moveis/ervas_secando_tripo.glb", "largura": 1.3},
+	"pilao": {"tripo": "moveis/pilao_tripo.glb", "altura": 1.0},
+	"gamela": {"tripo": "moveis/gamela_tripo.glb", "largura": 0.7},
+	# O que faltava ao terreiro e à gameleira (#52): os dois mastros com pano
+	# branco e as fitas no tronco (`world_builder._build_marcos_de_fe`).
+	"mastro_pano": {"tripo": "aderecos/mastro_pano_tripo.glb", "altura": 5.0, "tronco": 0.05},
+	"fitas_gameleira": {"tripo": "aderecos/fitas_gameleira_tripo.glb", "largura": 3.0},
 }
 
 static var _cenas: Dictionary = {}
@@ -181,14 +220,16 @@ static func instanciar(chave: String, parent: Node, origin: Vector3, size: float
 
 
 ## Colisão simples para um modelo instanciado por `instanciar`: cilindro no tronco ou caixa.
-static func colisao(chave: String, node: Node3D, parent: Node, origin: Vector3, size: float = 1.0, yaw: float = 0.0) -> void:
+## Devolve o corpo criado (null quando a peça não leva corpo próprio), para quem
+## precisa achá-lo depois — o cômodo de dentro tira a caixa inteira da casa.
+static func colisao(chave: String, node: Node3D, parent: Node, origin: Vector3, size: float = 1.0, yaw: float = 0.0) -> StaticBody3D:
 	if node == null:
-		return
+		return null
 	if chave in ["ponte", "pier"]:
 		# A superfície caminhável acompanha a malha importada da ponte e do píer.
 		for child in node.find_children("*", "MeshInstance3D", true, false):
 			(child as MeshInstance3D).create_trimesh_collision()
-		return
+		return null
 	# Medidas com os ajustes do painel PERSONAGENS por cima (ajustes_conteudo.gd).
 	var spec: Dictionary = AjustesConteudo.peca(chave)
 	var bounds: AABB = node.get_meta("limites", AABB())
@@ -213,9 +254,10 @@ static func colisao(chave: String, node: Node3D, parent: Node, origin: Vector3, 
 		body.position = origin + Vector3(0, bounds.size.y * 0.5 - float(spec.get("afundar", 0.0)), 0)
 		body.rotation.y = yaw
 	else:
-		return
+		return null
 	body.add_child(collision)
 	parent.add_child(body)
+	return body
 
 
 ## Malha + transformação-base para usar o modelo do Tripo em MultiMesh (mata, orla, itens).

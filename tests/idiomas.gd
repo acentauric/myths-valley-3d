@@ -35,8 +35,36 @@ var _pendentes := 0
 const TRADUZIDOS := {
 	"res://data/galeria_personagens.json": ["indisponivel"],
 	"res://data/selecao_idioma.json": ["titulo", "descricao", "aviso"],
-	"res://data/missoes_guia.json": ["texto"],
+	# A chegada (docs/mundo/CHEGADA_E_MUTIROES.md) nasceu nos três idiomas inteira:
+	# título, resumo, fala, a resposta de quem o jogador procura e o arremate. E as
+	# duas filas que ela abre, a roça do Cosme e a carroça do Seu Benedito, mais o
+	# papel que o último passo manda ler.
+	"res://data/missoes_guia.json": ["texto", "resumo", "nome", "titulo", "resposta"],
+	"res://data/missoes_roca.json": ["texto", "resumo", "nome", "titulo", "resposta"],
+	"res://data/missoes_carroca.json": ["texto", "resumo", "nome", "titulo", "resposta"],
+	"res://data/documentos.json": ["nome", "linhas"],
 	"res://data/historico_3d.json": ["titulo", "estado"],
+	# A fé (#52): o que os marcos dizem.
+	"res://data/marcos_fe.json": ["linhas", "texto", "convite", "resumo", "pratica"],
+	# E as missões dela.
+	"res://data/missoes_fe.json": ["texto", "resumo", "nome", "titulo", "resposta"],
+	"res://data/missoes_fe_catolica.json": ["texto", "resumo", "nome", "titulo", "resposta"],
+	"res://data/missoes_fe_candomble.json": ["texto", "resumo", "nome", "titulo", "resposta"],
+	"res://data/missoes_fe_caboclo.json": ["texto", "resumo", "nome", "titulo", "resposta"],
+	# A casa herdada (#50): a pergunta da cama e as falas do desmaio das duas.
+	# O "titulo" fica de fora da cobrança, e não da tradução: "Cama" é a mesma
+	# palavra em espanhol, e a regra da cópia reprovaria o certo.
+	"res://data/casa.json": ["texto", "pergunta"],
+	# E a lavoura (#8): o que a tecla diz no leito e os recados do gesto.
+	"res://data/lavoura.json": ["texto"],
+	# A missão do cemitério: os três passos do 2D declaram a pendência um a um,
+	# e o mato, o conserto, o cercado e o arremate nasceram nos três idiomas.
+	"res://data/missoes_coveiro.json": ["texto", "resumo", "nome", "titulo", "resposta"],
+	# O saveiro do mestre Quirino: a cadeia do Seu Benedito que o ensina, e o que o
+	# saveiro diz — a chegada, a encomenda da estação e a aba dele no painel.
+	"res://data/missoes_saveiro.json": ["texto", "resumo", "nome", "titulo", "resposta"],
+	"res://data/saveiro.json": ["chegou", "partiu", "encomenda_titulo", "encomenda_texto", "encomenda_linha", "agrado",
+		"painel_titulo", "painel_linha", "painel_dica", "painel_rodape", "ja_levou", "nao_tem"],
 }
 
 ## O QUE AINDA NÃO ESTÁ NOS TRÊS, e por quê. Esvaziar esta lista é o trabalho;

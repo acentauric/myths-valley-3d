@@ -8,26 +8,82 @@
     "oficio": { "nome": "De lavoura e ofício", "resumo": "O que vira azeite, vassoura e corda de navio." },
     "outras": { "nome": "Outras", "resumo": "As que ainda não foram arrumadas em grupo." }
   },
+  "observacao_corte": "TODA ÁRVORE DO VALE SE CORTA, de machado na mão, e volta: o pé cortado vira toco, o toco dá muda, a muda vira árvore nova, e só um ano do calendário depois do corte (112 dias, que é quantos o Relogio tem) ela é adulta e se corta de novo. QUEM DIZ O QUE CADA UMA PEDE É A MADEIRA: 'nivel' é o do machado em Progressao, que só o talento sobe (Braços de machado, no ofício; Ferro de Ogum, na teia do candomblé — a recusa lê os nomes das teias, por Talentos.que_abrem); 'aco' pede o machado de aço na mão, porque o de ferro não aguenta o fio; 'dureza' é a do Energia (o fôlego de cada golpe é bater x dureza) e, acima de 1,5, o golpe ensina como trabalho duro (XP de bater_duro). A gameleira não se corta, e a bananeira também não, cada uma com a sua razão escrita em 'nao_se_corta'. Espécie sem entrada em 'especies' é madeira branca.",
+  "madeiras": {
+    "branca": { "nome": "Madeira branca", "nome_en": "Softwood", "nome_es": "Madera blanda", "nivel": 1, "aco": false, "dureza": 1.0, "golpes": 3, "rende": "lenha", "quantidade": 2 },
+    "de_lei": { "nome": "Madeira de lei", "nome_en": "Hardwood", "nome_es": "Madera dura", "nivel": 2, "aco": false, "dureza": 2.0, "golpes": 4, "rende": "lenha", "quantidade": 4 },
+    "dura": { "nome": "Madeira de lei dura", "nome_en": "Ironwood", "nome_es": "Madera de hierro", "nivel": 2, "aco": true, "dureza": 3.0, "golpes": 5, "rende": "lenha", "quantidade": 6 }
+  },
+  "especies": {
+    "coqueiro": { "madeira": "branca", "rende": "madeira_de_coqueiro", "quantidade": 1 },
+    "dendezeiro": { "madeira": "branca" },
+    "embauba": { "madeira": "branca" },
+    "mangueira": { "madeira": "branca" },
+    "cajueiro": { "madeira": "branca" },
+    "pitangueira": { "madeira": "branca" },
+    "ingazeiro": { "madeira": "branca" },
+    "clusia": { "madeira": "branca" },
+    "piacava": { "madeira": "branca" },
+    "castanhola": { "madeira": "branca" },
+    "jaqueira": { "madeira": "de_lei" },
+    "jenipapeiro": { "madeira": "de_lei" },
+    "ipe_amarelo": { "madeira": "de_lei" },
+    "ipe_roxo": { "madeira": "de_lei" },
+    "aroeira": { "madeira": "de_lei" },
+    "mangue": { "madeira": "de_lei" },
+    "pau_brasil": { "madeira": "dura" },
+    "mata_alta": { "madeira": "dura" }
+  },
+  "nao_se_corta": {
+    "mata_larga": {
+      "texto": "Gameleira não se corta: é a árvore de Iroko.",
+      "texto_en": "A gameleira is never felled: it is Iroko's tree.",
+      "texto_es": "La gameleira no se tala: es el árbol de Iroko."
+    },
+    "bananeira": {
+      "texto": "Bananeira não é árvore, é erva grande: não dá lenha.",
+      "texto_en": "A banana plant is not a tree but a giant herb: it gives no firewood.",
+      "texto_es": "El banano no es árbol, es una hierba grande: no da leña."
+    }
+  },
   "acoes": {
-    "coqueiro": {
-      "golpear": "Golpear coqueiro",
-      "golpear_en": "Chop coconut tree",
-      "golpear_es": "Golpear cocotero",
-      "cortado": "Coqueiro cortado",
-      "cortado_en": "Cut coconut tree",
-      "cortado_es": "Cocotero cortado",
+    "arvore": {
+      "golpear": "Golpear: %s",
+      "golpear_en": "Chop: %s",
+      "golpear_es": "Talar: %s",
       "stamina": "Vigor",
       "stamina_en": "Stamina",
       "stamina_es": "Resistencia",
       "sem_stamina": "Aguarde recuperar o vigor.",
       "sem_stamina_en": "Wait for your stamina to recover.",
       "sem_stamina_es": "Espera a que se recupere la resistencia.",
-      "sem_caminho": "Não encontrei um caminho até o coqueiro.",
-      "sem_caminho_en": "I couldn't find a path to the coconut tree.",
-      "sem_caminho_es": "No encontré un camino hasta el cocotero.",
-      "inventario_cheio": "O coqueiro foi cortado, mas o inventário está cheio.",
-      "inventario_cheio_en": "The coconut tree was cut, but your inventory is full.",
-      "inventario_cheio_es": "El cocotero fue cortado, pero el inventario está lleno."
+      "sem_folego": "Sem fôlego para bater.",
+      "sem_folego_en": "Too out of breath to chop.",
+      "sem_folego_es": "Sin aliento para golpear.",
+      "sem_caminho": "Não encontrei um caminho até a árvore.",
+      "sem_caminho_en": "I couldn't find a path to the tree.",
+      "sem_caminho_es": "No encontré un camino hasta el árbol.",
+      "inventario_cheio": "A árvore caiu, mas a mochila está cheia.",
+      "inventario_cheio_en": "The tree came down, but your backpack is full.",
+      "inventario_cheio_es": "El árbol cayó, pero la mochila está llena.",
+      "precisa_talento": "%s pede o talento %s.",
+      "precisa_talento_en": "%s needs the talent %s.",
+      "precisa_talento_es": "%s pide el talento %s.",
+      "precisa_aco": "%s pede machado de aço.",
+      "precisa_aco_en": "%s needs a steel axe.",
+      "precisa_aco_es": "%s pide un hacha de acero.",
+      "precisa_os_dois": "%s pede machado de aço e o talento %s.",
+      "precisa_os_dois_en": "%s needs a steel axe and the talent %s.",
+      "precisa_os_dois_es": "%s pide un hacha de acero y el talento %s.",
+      "crescendo": "%s · crescendo de novo",
+      "crescendo_en": "%s · growing back",
+      "crescendo_es": "%s · volviendo a crecer",
+      "tirar_fibra": "Tirar piaçava",
+      "tirar_fibra_en": "Harvest piassava",
+      "tirar_fibra_es": "Sacar piasava",
+      "fibra_crescendo": "%s · a fibra cresce de novo",
+      "fibra_crescendo_en": "%s · the fiber is growing back",
+      "fibra_crescendo_es": "%s · la fibra vuelve a crecer"
     }
   },
   "arvores": {

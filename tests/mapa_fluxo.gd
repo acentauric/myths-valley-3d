@@ -97,7 +97,8 @@ func _run() -> void:
 	await _capture("travessia")
 	opening._start_game()
 	# A entrada no vale carrega em segundo plano (tela de carregamento).
-	for i in range(600):
+	var limite_da_cena := Time.get_ticks_msec() + 30000
+	while Time.get_ticks_msec() < limite_da_cena:
 		if current_scene != null and current_scene.name == "Vale3D":
 			break
 		await process_frame
@@ -131,11 +132,14 @@ func _run() -> void:
 	_assert(player.global_position.distance_to(start_position) > 3.0, "caminhada")
 	_assert(player.is_on_floor() and _above_ground(world, player), "caminhada sem queda")
 	# Shift liga o modo corrida com um toque; outro toque desliga.
+	# Continua rumo à terra: ao nascer no píer, correr de lado entra na água
+	# e mede a velocidade de nado em vez da corrida.
 	await _tap_shift()
-	Input.action_press("mv_right")
+	Input.action_press("mv_forward")
 	var run_start: Vector3 = player.global_position
 	await _physics_frames(90)
-	Input.action_release("mv_right")
+	Input.action_release("mv_forward")
+	print("MAPA_RUN start=", run_start, " end=", player.global_position, " vigor=", player.vigor_atual())
 	await _tap_shift()
 	_assert(player.global_position.distance_to(run_start) > 5.0, "corrida")
 	_assert(player.is_on_floor() and _above_ground(world, player), "corrida sem queda")
@@ -183,7 +187,9 @@ func _run() -> void:
 		_assert(game._visited.has(landmark.id), "exploração de %s" % landmark.name)
 		offshore_visits += 1
 		await _capture("acesso_%d" % offshore_visits)
-	_assert(offshore_visits == 2, "dois acessos sobre a água")
+	# A Casa da estrada passou a terra firme na revisão do KML. Todos os
+	# pontos que ainda ficam sobre a água são medidos acima, sem fixar o total antigo.
+	_assert(offshore_visits >= 1, "ao menos um acesso sobre a água foi conferido")
 	player.spawn_position = spawn_original
 	player.reset_position()
 	await _physics_frames(20)
@@ -197,7 +203,8 @@ func _run() -> void:
 	_assert(not hud.menu_confirm_open() and not paused, "cancelar volta ao passeio")
 	game._ask_return_to_menu()
 	hud._close_menu_confirm(true)
-	for i in range(600):
+	var limite_do_menu := Time.get_ticks_msec() + 30000
+	while Time.get_ticks_msec() < limite_do_menu:
 		if current_scene != null and current_scene.name == "Abertura":
 			break
 		await process_frame

@@ -79,8 +79,13 @@ Quebrado, Casa da estrada…) mais um deslocamento. `npc.gd` (`MoradorNPC`)
 caminha entre os postos, olha para quem chega e, a 3,4 unidades, cumprimenta
 uma vez a cada 45 s. Cada morador tem até **três falas** (`falas` em
 `npcs_3d.json`) e alterna entre elas a cada encontro, começando numa ao acaso;
-o balão mostra o `texto` e a voz lê o `tts` (o mesmo texto com marcações de
-interpretação do `eleven_v3`, como `[sighs]` e `[whispers]`). Os áudios ficam em
+a voz lê o `tts` (o mesmo texto com marcações de interpretação do
+`eleven_v3`, como `[sighs]` e `[whispers]`), o aviso do HUD mostra o `texto`
+inteiro e o balão só a primeira frase, com no máximo 60 letras
+(`MoradorNPC.balao_curto`). **Quem tem missão com o jogador não cumprimenta:**
+o dono de uma fila que está andando ou que vai abrir ao chegar perto, e quem o
+passo de agora manda procurar, falam a missão e só ela
+(`CadeiaDeMissoes.envolve`). Os áudios ficam em
 `assets/audio/vozes/<id>_fala_<n>.mp3` e saem de
 `tools/elevenlabs/gerar-falas-moradores.ps1`. Uma voz por pessoa: Manoel Lopes
 (Benedito), Edna (Zefa), Matheus Energetic (Cosme), Matheus Santos (Tonho),
@@ -100,11 +105,14 @@ ouve o Damião, cada vez mais bravo (voz ElevenLabs "Matheus Clear", estabilidad
 0,5 → 0,35 → 0,2); na terceira ele derruba o jogador para o corredor entre as
 fileiras. Só reclama se estiver no cemitério (30 u); 90 s sem subir, ele esquece.
 
-**Pedro** (`guia_pedro.gd`) não tem posto: acompanha o jogador (anda a 3 u/s,
-corre se ficar para trás) e conduz as missões de chegada, narradas em voz
-quando está por perto: praça → capela → casa de pasto → roçado → píer antes de
-escurecer. Ao entardecer avisa que vai escurecer (`pedro_anoitecer`). O
-objetivo do HUD mostra a missão atual (n/5).
+**Pedro** (`guia_pedro.gd`) não tem posto durante a chegada: acompanha o
+jogador (anda a 3 u/s, corre se ficar para trás) e a conduz pelos pedidos dos
+moradores — o bom-dia ao Tonho, a chave que a Dona Candinha sabe com quem
+ficou, o fogo da casa do finado, o mutirão do poço com a Dona Zefa e o Cosme, a
+primeira janta, a primeira noite, a leira e o convite sem assinatura
+([CHEGADA_E_MUTIROES.md](CHEGADA_E_MUTIROES.md)). Ao entardecer avisa que vai
+escurecer (`pedro_anoitecer`). Acabada a chegada, volta ao píer, e as filas dos
+moradores abrem.
 
 O jogador chega de barco: começa no píer, com o Pedro ao lado.
 
@@ -209,11 +217,21 @@ traçado é que desvia, sempre a 14,6–17,4 m do chão:
   mais tempo que a ida.
 - Folga mínima de 5 m da **geometria real** (triângulos, não AABB: a caixa do coqueiro
   do Tripo tem 49 m de largura, e a 16 m ele ocupa só o tronco e as pontas das
-  folhas), nos dois estilos: 6,25 m no Tripo e 5,74 m no procedural.
+  folhas), nos dois estilos: 6,12 m no Tripo e 5,74 m no procedural.
 - Conforto no nível do voo que já existia: guinada até 21,6 graus/s (p95 17,4, contra
-  19,4 na elipse), aceleração lateral até 1,42 m/s², subida e descida até 1,31 m/s.
-  A velocidade desacelera nas curvas (3,4 a 13,7 m/s).
+  19,4 na elipse), aceleração lateral até 1,41 m/s², subida e descida até 1,38 m/s.
+  A velocidade desacelera nas curvas (3,4 a 15,3 m/s).
 - Se as âncoras ou a escala mudarem, o menu avisa e volta à elipse antiga.
+- **O vão norte da fileira fica livre.** A fileira da orla é sorteada ao longo da
+  costa e da foz, e mudar o desenho delas põe cada árvore em outro lugar. A revisão
+  da foz de 04/10 pôs um mangue a 8 m do eixo do voo, na ida, com a fileira fechada
+  dos dois lados dele: não havia outro vão por onde replanejar. O vale passa a não
+  plantar tronco a menos de 10 m do ponto em que o voo cruza a fileira
+  (`VAO_NORTE_DO_SOBREVOO_M`, no `world_builder.gd`); a árvore é sorteada como antes
+  e só não nasce, como nas clareiras, para o resto da fileira ficar onde está. Hoje
+  isso tira um mangue. Na volta, pelo sul, havia espaço: o voo foi replanejado e
+  passa 9 m mais ao sul, longe das folhas do último coqueiro da fileira; a ida e a
+  curva da praça continuam as mesmas.
 
 Os portões `tests/sobrevoo_livre.gd` (Tripo) e `tests/sobrevoo_livre_procedural.gd`
 montam o vale, rasterizam os triângulos em volta do voo e conferem o trajeto gravado

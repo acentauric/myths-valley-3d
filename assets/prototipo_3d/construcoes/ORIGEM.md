@@ -53,3 +53,26 @@ piramidal), projeto `bb67178f-f47b-4eb9-bc4b-f6b0a643d55d`, Malha Smart, 13.332
 triângulos, textura 2K. Fica no marco "Igreja" do KML; a capela genérica anterior
 (`capela_tripo.glb`) virou a "Capela velha", bem afastada, na rua do mirante.
 Original em `.assets-raw/tripo/construcoes/igreja_tripo.glb`.
+
+<!-- lote-2026-10-03b:inicio -->
+
+## A capelinha pobre do cemitério (03/10/2026)
+
+A capelinha de taipa ao lado do cemitério, de costas para o mar
+(`world_builder._capelinha_do_cemiterio`): um cômodo só, cal rachada, telha
+velha e cruz tosca, no lugar da capela colonial reduzida que estava ali.
+
+Geradas por texto no Tripo Studio em 03/10/2026 (Modelo HD H3.1, textura 8K
+desligada, 55 créditos) e passadas pela Retopologia (Quad, Malha Smart, 40
+créditos) com o alvo de faces de cada peça; exportadas em GLB. Geração,
+retopologia e exportação pela ponte do Playwright MCP com a extensão do Chrome,
+com `tools/tripo/lote_studio.js`; os originais ficam em
+`.assets-raw/tripo/gerados/` (fora do Git). Tarefas, projetos, alvos e prompts
+completos em `tools/tripo/lote_2026-10-03b.json`. Uso comercial: plano pago no
+momento da geração (ver `assets/CREDITOS.md`).
+
+| Arquivo | O que é (prompt) | Tarefa Tripo | Triângulos | Textura | MB |
+| --- | --- | --- | ---: | --- | ---: |
+| `capelinha_tripo.glb` | A tiny poor rustic chapel in a rural cemetery, single small room, walls of wattle and daub with cracked whitewash falling off and exposed mud and sticks, a low roof of old uneven clay tiles with some missing, a narrow plain wooden door, a small crooked wooden cross on the roof ridge, no bell tower, no ornaments. | `64edc23b-9af4-41be-9e93-e1195135c7c8` | 12.326 | 2K | 8,1 |
+
+<!-- lote-2026-10-03b:fim -->

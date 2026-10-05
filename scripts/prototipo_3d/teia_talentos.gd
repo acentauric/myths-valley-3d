@@ -31,6 +31,18 @@ extends CanvasLayer
 ## telas com formas diferentes é o jogador reaprendendo a ler em cada uma.
 ##
 ##
+## A TEIA DA FÉ, NO TAB (#52)
+##
+## "Aperte K e depois Tab: a teia da fé é outra teia", diz a Dona Zefa no 2D. É
+## a mesma tela com outra fonte: o `Fe` compartilhado responde às mesmas
+## perguntas que o `Talentos` (raízes, nós, quem exige quem, o impedimento, o
+## destravar) sobre a árvore da fé ATIVA — e o que ele não sabe responder, esta
+## tela não inventa. Sem fé ainda, a página diz as três e onde cada uma se
+## pratica. E há uma raiz a mais, "Regras da fé", que não é árvore: é o que a
+## fé cobra e o que ela dá — a espera de cada marco, a bênção de agora, as
+## festas, as fés congeladas e o preço de trocar.
+##
+##
 ## GASTAR PONTO ACONTECE AQUI, e o `Talentos` é quem decide
 ##
 ## O E sobre um nó chama `Talentos.destravar`, que recusa sozinho quando falta
@@ -71,6 +83,20 @@ const MARGEM_COM_ICONE := int(RECUO_DO_ICONE + LADO_DO_ICONE + 6.0)
 const VAO_COLUNA := 56.0
 const VAO_LINHA := 18.0
 
+## As duas teias que o Tab alterna.
+const MODO_OFICIO := "oficio"
+const MODO_FE := "fe"
+## A raiz da fé que não é árvore: a página das regras.
+const REGRAS := "regras"
+## As palavras da fé nos três idiomas: nomes, resumos e onde cada uma se pratica.
+const TEXTOS_DA_FE := "res://data/marcos_fe.json"
+const IdiomaMenu = preload("res://scripts/prototipo_3d/idioma_menu.gd")
+## O nome de cada marco na página das regras.
+const NOMES_DOS_MARCOS := {
+	"cruzeiro": "Cruzeiro", "capela": "Igreja do Bom Jesus", "capela_estrada": "Capela velha",
+	"cemiterio": "Cemitério", "terreiro": "Terreiro", "gameleira": "Gameleira",
+}
+
 var aberta := false
 
 var _caixa: PanelContainer
@@ -85,6 +111,9 @@ var _raiz := ""
 var _no := ""
 ## Os nós na ordem em que o teclado anda: por coluna, de cima para baixo.
 var _ordem: Array[String] = []
+## Qual teia está aberta: a de ofício (`Talentos`) ou a da fé (`Fe`).
+var _modo := MODO_OFICIO
+var _textos_da_fe: Dictionary = {}
 ## id do nó → o painel dele na tela, para pintar o foco sem redesenhar tudo.
 var _caixinhas: Dictionary = {}
 
@@ -96,6 +125,14 @@ func _ready() -> void:
 	_montar()
 	visible = false
 	Talentos.mudou.connect(func() -> void: if aberta: _encher())
+	Fe.mudou.connect(func() -> void: if aberta: _encher())
+	# FÉ NOVA, ÁRVORE NOVA: a raiz que estava aberta era a da fé de antes (ou a
+	# página das regras, a única que há sem fé). A próxima abertura começa na
+	# primeira raiz da fé de agora.
+	Fe.adotou.connect(func(_fe: String) -> void: _raiz = "")
+	Fe.migrou.connect(func(_de: String, _para: String) -> void: _raiz = "")
+	var lido = JSON.parse_string(FileAccess.get_file_as_string(TEXTOS_DA_FE))
+	_textos_da_fe = lido if lido is Dictionary else {}
 
 
 func _montar() -> void:
@@ -180,11 +217,38 @@ func _montar() -> void:
 	coluna.add_child(_rodape)
 
 
+## Quem responde pela teia aberta.
+func _fonte() -> Node:
+	return Fe if _modo == MODO_FE else Talentos
+
+
+## As raízes da teia aberta. A da fé tem uma a mais, a das regras.
+func _raizes() -> Array:
+	var todas: Array = _fonte().raizes().duplicate()
+	if _modo == MODO_FE:
+		todas.append(REGRAS)
+	return todas
+
+
+## O Tab: da teia de ofício para a da fé, e de volta.
+func trocar_de_teia() -> void:
+	_modo = MODO_FE if _modo == MODO_OFICIO else MODO_OFICIO
+	var todas := _raizes()
+	_raiz = str(todas[0]) if not todas.is_empty() else ""
+	_no = ""
+	Audio.efeito("ui_confirmar")
+	_encher()
+
+
+func modo() -> String:
+	return _modo
+
+
 func abrir() -> void:
 	if aberta:
 		return
-	if _raiz == "" or not Talentos.raizes().has(_raiz):
-		var todas := Talentos.raizes()
+	if _raiz == "" or not _raizes().has(_raiz):
+		var todas := _raizes()
 		_raiz = str(todas[0]) if not todas.is_empty() else ""
 	aberta = true
 	visible = true
@@ -201,26 +265,41 @@ func fechar() -> void:
 
 
 func _encher() -> void:
-	_caminho.text = "Habilidades  ›  %s        nível %d  ·  %d/%d de experiência  ·  %s" % [
-		_raiz if _raiz != "" else "—", Talentos.nivel, int(Talentos.xp),
-		Talentos.xp_do_nivel(), _texto_dos_pontos()]
+	if _modo == MODO_FE:
+		if Fe.ativa == "":
+			_caminho.text = tr("Fé  ›  nenhuma ainda")
+		else:
+			_caminho.text = tr("Fé %s  ›  %s        nível %d  ·  %d/%d de experiência  ·  %s") % [
+				_da_fe(Fe.ativa, "nome"), _nome_da_raiz(_raiz), Fe.nivel, int(Fe.xp),
+				Fe.xp_do_nivel(), _texto_dos_pontos()]
+	else:
+		_caminho.text = "Habilidades  ›  %s        nível %d  ·  %d/%d de experiência  ·  %s" % [
+			_raiz if _raiz != "" else "—", Talentos.nivel, int(Talentos.xp),
+			Talentos.xp_do_nivel(), _texto_dos_pontos()]
 	_montar_raizes()
 	_montar_arvore()
 	_montar_ficha()
-	_rodape.text = "↑↓ ou W/S: andar    ·    ←→ ou A/D: trocar de raiz    ·    E ou Enter: destravar    ·    %s ou Esc: fechar" \
-		% OS.get_keycode_string(Atalhos.tecla("talentos"))
+	_rodape.text = tr("↑↓ ou W/S: andar    ·    ←→ ou A/D: trocar de raiz    ·    E ou Enter: destravar    ·    Tab: %s    ·    %s ou Esc: fechar") \
+		% [tr("a teia da fé") if _modo == MODO_OFICIO else tr("a teia de ofício"), OS.get_keycode_string(Atalhos.tecla("talentos"))]
+
+
+func _nome_da_raiz(raiz: String) -> String:
+	if raiz == REGRAS:
+		return tr("Regras da fé")
+	return raiz if raiz != "" else "—"
 
 
 func _texto_dos_pontos() -> String:
-	if Talentos.pontos == 0:
+	var pontos: int = int(_fonte().pontos)
+	if pontos == 0:
 		return "nenhum ponto para gastar"
-	return "1 ponto para gastar" if Talentos.pontos == 1 else "%d pontos para gastar" % Talentos.pontos
+	return "1 ponto para gastar" if pontos == 1 else "%d pontos para gastar" % pontos
 
 
 func _montar_raizes() -> void:
 	for filho in _raizes_coluna.get_children():
 		filho.queue_free()
-	for bruta in Talentos.raizes():
+	for bruta in _raizes():
 		var raiz := str(bruta)
 		var aberta_agora: bool = raiz == _raiz
 		var linha := Button.new()
@@ -228,7 +307,7 @@ func _montar_raizes() -> void:
 		linha.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 		linha.custom_minimum_size = Vector2(0, ALTURA_DA_LINHA + 4.0)
 		linha.alignment = HORIZONTAL_ALIGNMENT_LEFT
-		linha.text = ("▾ " if aberta_agora else "▸ ") + raiz + "    " + _conta_da_raiz(raiz)
+		linha.text = ("▾ " if aberta_agora else "▸ ") + _nome_da_raiz(raiz) + "    " + _conta_da_raiz(raiz)
 		linha.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_TITULO, 600))
 		linha.add_theme_font_size_override("font_size", 16)
 		linha.add_theme_color_override("font_color",
@@ -242,10 +321,12 @@ func _montar_raizes() -> void:
 
 ## "3 de 8" da raiz: quantos nós dela o jogador já destravou.
 func _conta_da_raiz(raiz: String) -> String:
-	var nos: Array = Talentos.nos_da_raiz(raiz)
+	if raiz == REGRAS:
+		return ""
+	var nos: Array = _fonte().nos_da_raiz(raiz)
 	var tem := 0
 	for no in nos:
-		if Talentos.tem(str(no)):
+		if _fonte().tem(str(no)):
 			tem += 1
 	return "%d de %d" % [tem, nos.size()]
 
@@ -262,10 +343,14 @@ func _montar_arvore() -> void:
 		filho.queue_free()
 	_caixinhas.clear()
 	_ordem.clear()
+	if _modo == MODO_FE and (_raiz == REGRAS or Fe.ativa == ""):
+		_no = ""
+		_montar_pagina_da_fe()
+		return
 	if _raiz == "":
 		return
 
-	var nos: Array = Talentos.nos_da_raiz(_raiz)
+	var nos: Array = _fonte().nos_da_raiz(_raiz)
 	var degrau: Dictionary = {}
 	for no in nos:
 		degrau[str(no)] = _degrau_de(str(no), nos)
@@ -300,12 +385,12 @@ func _montar_arvore() -> void:
 
 	# OS FIOS, desenhados por baixo dos nós: entram como primeiros filhos.
 	for no in nos:
-		for exigido in (Talentos.dados(str(no)).get("exige", []) as Array):
+		for exigido in (_fonte().dados(str(no)).get("exige", []) as Array):
 			if not _caixinhas.has(str(exigido)):
 				continue
 			var de: Vector2 = centro[str(exigido)]
 			var para: Vector2 = (_caixinhas[str(no)] as Control).position + Vector2(0.0, NO_ALTURA * 0.5)
-			var fio := _fio(de, para, Talentos.tem(str(exigido)))
+			var fio := _fio(de, para, _fonte().tem(str(exigido)))
 			_tela_da_arvore.add_child(fio)
 			_tela_da_arvore.move_child(fio, 0)
 
@@ -319,7 +404,7 @@ func _degrau_de(no: String, nos_da_raiz: Array, profundidade: int = 0) -> int:
 	if profundidade > 12:
 		return 0            # exigência circular: para de descer em vez de travar
 	var maior := -1
-	for exigido in (Talentos.dados(no).get("exige", []) as Array):
+	for exigido in (_fonte().dados(no).get("exige", []) as Array):
 		if not nos_da_raiz.has(str(exigido)):
 			continue
 		maior = maxi(maior, _degrau_de(str(exigido), nos_da_raiz, profundidade + 1))
@@ -345,13 +430,13 @@ func _icone_do_talento(no: String) -> TextureRect:
 	quadro.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	# TALENTO TRAVADO FICA APAGADO, como o nome dele: o desenho tem de contar a
 	# mesma coisa que a cor da letra, senão a teia diz duas coisas ao mesmo tempo.
-	if not Talentos.tem(no):
-		quadro.modulate = Color(1, 1, 1, 0.85 if Talentos.pode(no) else 0.45)
+	if not _fonte().tem(no):
+		quadro.modulate = Color(1, 1, 1, 0.85 if _fonte().pode(no) else 0.45)
 	return quadro
 
 
 func _caixinha_do_no(no: String) -> Button:
-	var dado: Dictionary = Talentos.dados(no)
+	var dado: Dictionary = _fonte().dados(no)
 	var botao := Button.new()
 	botao.name = "No_" + no
 	botao.focus_mode = Control.FOCUS_NONE
@@ -366,9 +451,9 @@ func _caixinha_do_no(no: String) -> Button:
 	# A COR DIZ O ESTADO, e são três: destravado, pronto para destravar, e
 	# travado. É a informação que o jogador procura ao abrir a tela.
 	var cor := COR_TRAVADO
-	if Talentos.tem(no):
+	if _fonte().tem(no):
 		cor = Identidade.OURO
-	elif Talentos.pode(no):
+	elif _fonte().pode(no):
 		cor = COR_PRONTO
 	botao.add_theme_color_override("font_color", cor)
 	botao.add_theme_color_override("font_hover_color", Identidade.CREME)
@@ -386,8 +471,8 @@ func _caixinha_do_no(no: String) -> Button:
 
 func _estilo_do_no(no: String, realce: bool) -> StyleBoxFlat:
 	var estilo := StyleBoxFlat.new()
-	var dono: bool = Talentos.tem(no)
-	var pronto: bool = not dono and Talentos.pode(no)
+	var dono: bool = _fonte().tem(no)
+	var pronto: bool = not dono and _fonte().pode(no)
 	estilo.bg_color = Color(0.13, 0.17, 0.12, 0.95) if not realce else Color(0.18, 0.22, 0.16, 0.98)
 	estilo.border_color = Identidade.OURO if dono else (COR_PRONTO if pronto else Color(0.3, 0.33, 0.29, 0.9))
 	estilo.set_border_width_all(2 if dono or pronto else 1)
@@ -421,10 +506,12 @@ func _fio(de: Vector2, para: Vector2, andado: bool) -> Line2D:
 func _montar_ficha() -> void:
 	for filho in _ficha.get_children():
 		filho.queue_free()
+	if _modo == MODO_FE and (_raiz == REGRAS or Fe.ativa == ""):
+		return
 	if _no == "":
 		_ficha.add_child(_corpo("Escolha uma raiz à esquerda."))
 		return
-	var dado: Dictionary = Talentos.dados(_no)
+	var dado: Dictionary = _fonte().dados(_no)
 
 	var nome := Label.new()
 	nome.text = str(dado.get("nome", _no))
@@ -435,18 +522,73 @@ func _montar_ficha() -> void:
 	_ficha.add_child(_corpo(str(dado.get("resumo", ""))))
 
 	var estado := ""
-	if Talentos.tem(_no):
+	if _fonte().tem(_no):
 		estado = "Você tem este talento."
 	else:
-		var trava := str(Talentos.impedimento(_no))
+		var trava := str(_fonte().impedimento(_no))
 		var custo := int(dado.get("custo", 1))
 		estado = "Custa %s.  %s" % [
 			"1 ponto" if custo == 1 else "%d pontos" % custo,
 			"Aperte E para destravar." if trava == "" else trava]
 	var linha := _corpo(estado)
 	linha.add_theme_color_override("font_color",
-		Identidade.OURO if Talentos.tem(_no) else (COR_PRONTO if Talentos.pode(_no) else COR_APAGADA))
+		Identidade.OURO if _fonte().tem(_no) else (COR_PRONTO if _fonte().pode(_no) else COR_APAGADA))
 	_ficha.add_child(linha)
+
+
+## A PÁGINA DA FÉ QUE NÃO É ÁRVORE: sem fé, as três e onde cada uma se pratica;
+## com fé, as regras — o que ela cobra e o que ela dá agora. Tudo lido do `Fe`
+## e do `Ritos`; esta tela não guarda regra nenhuma.
+func _montar_pagina_da_fe() -> void:
+	var pagina := VBoxContainer.new()
+	pagina.name = "PaginaDaFe"
+	pagina.add_theme_constant_override("separation", 10)
+	pagina.custom_minimum_size = Vector2(TAMANHO.x - LARGURA_DAS_RAIZES - 110.0, 0)
+	_tela_da_arvore.add_child(pagina)
+	for linha in linhas_da_pagina_da_fe():
+		var rotulo := _corpo(str(linha))
+		rotulo.custom_minimum_size = Vector2(TAMANHO.x - LARGURA_DAS_RAIZES - 120.0, 0)
+		pagina.add_child(rotulo)
+	_tela_da_arvore.custom_minimum_size = Vector2(TAMANHO.x - LARGURA_DAS_RAIZES - 110.0, 10.0)
+
+
+## As linhas da página (ver `_montar_pagina_da_fe`). Pública para o portão ler.
+func linhas_da_pagina_da_fe() -> Array:
+	var linhas: Array = []
+	if Fe.ativa == "":
+		linhas.append(tr("Você ainda não é de fé nenhuma. No arraial há três, e cada uma se escolhe com os pés: no marco dela."))
+		for fe in Fe.ids():
+			linhas.append("%s — %s %s" % [_da_fe(str(fe), "nome"), _da_fe(str(fe), "resumo"), _da_fe(str(fe), "pratica")])
+		linhas.append(tr("Uma fé por vez. A que você deixar congela inteira, e trocar de novo não apaga nada."))
+		return linhas
+	linhas.append(tr("Você é %s: nível %d, %d ponto(s) para gastar.") % [_da_fe(Fe.ativa, "de"), Fe.nivel, Fe.pontos])
+	for fe in Fe.ids():
+		if str(fe) != Fe.ativa and Fe.conhecida(str(fe)):
+			linhas.append(tr("%s está congelada no nível %d, com %d ponto(s) e %d de acumulado. Voltar a ela devolve a teia como ficou.") % [
+				_da_fe(str(fe), "nome"), Fe.nivel_da(str(fe)), Fe.pontos_da(str(fe)), Fe.total(str(fe))])
+	linhas.append(tr("Cada marco da sua fé dá graça uma vez a cada %d dia(s): fôlego, experiência de fé e uma bênção que dura %d dia(s).") % [Ritos.espera(), Ritos.duracao()])
+	for marco in (Fe.dados_da_fe(Fe.ativa).get("marcos", []) as Array):
+		var nome := tr(str(NOMES_DOS_MARCOS.get(str(marco), str(marco))))
+		if Ritos.pode_celebrar(str(marco)):
+			linhas.append("    %s: %s" % [nome, tr("dá graça hoje")])
+		else:
+			linhas.append("    %s: %s" % [nome, tr("a graça volta no %s") % Relogio.texto_do_dia(Ritos.dia_liberado(str(marco)))])
+	var bencao := Ritos.bencao_ativa()
+	if bencao != "":
+		linhas.append(tr("Bênção de agora: %s, por mais %d dia(s).") % [bencao, Ritos.dias_de_bencao()])
+	else:
+		linhas.append(tr("Nenhuma bênção agora."))
+	var festa: Dictionary = Fe.festa(Fe.ativa)
+	if not festa.is_empty():
+		linhas.append(tr("A festa da sua fé: %s. Nesse dia o marco dá graça mesmo fora do prazo, e quem é da fé se junta lá à tarde.") % str(festa.get("nome", "")))
+	linhas.append(tr("Trocar de fé não apaga nada: a teia de agora congela inteira e para de valer. Levar o acumulado junto custa caro: de cada cem pontos, chegam quinze."))
+	return linhas
+
+
+func _da_fe(fe: String, campo: String) -> String:
+	var dado: Dictionary = _textos_da_fe.get("fes", {}).get(fe, {})
+	var escrito := str(IdiomaMenu.campo(dado, campo, ""))
+	return escrito if escrito != "" else Fe.nome(fe)
 
 
 func _corpo(texto: String) -> Label:
@@ -498,7 +640,7 @@ func _escolher_raiz(raiz: String) -> void:
 
 
 func _andar_raiz(passo: int) -> void:
-	var todas := Talentos.raizes()
+	var todas := _raizes()
 	if todas.is_empty():
 		return
 	var onde := todas.find(_raiz)
@@ -521,7 +663,7 @@ func _andar(passo: int) -> void:
 func _destravar() -> void:
 	if _no == "":
 		return
-	if Talentos.destravar(_no):
+	if _fonte().destravar(_no):
 		Audio.efeito("ui_confirmar")
 	else:
 		Audio.efeito("ui_trava")
@@ -544,6 +686,8 @@ func _unhandled_key_input(event: InputEvent) -> void:
 			_andar_raiz(1)
 		KEY_ENTER, KEY_KP_ENTER:
 			_destravar()
+		KEY_TAB:
+			trocar_de_teia()
 		_:
 			if event.physical_keycode == Atalhos.tecla("interagir"):
 				_destravar()

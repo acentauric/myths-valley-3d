@@ -1,0 +1,83 @@
+{
+  "observacao": "O SAVEIRO DA ESTAÇÃO, do Seu Benedito, que vende a colheita para o saveiro há quarenta e duas safras: é ele que ensina que o mestre Quirino encosta no píer UMA VEZ POR ESTAÇÃO (o mês do calendário do vale), no dia 14, e compra o que se produziu no mês, pagando melhor que a venda. Três passos: ir ao píer ver onde o saveiro atraca (com o facão dele emprestado, que piaçava se tira no fio), tirar dez feixes de piaçava da restinga sem derrubar a palmeira, e levá-los ao mestre no dia dele. O mestre só está no píer no dia do saveiro (scripts/prototipo_3d/saveiro_vale.gd); fora dele a entrega espera. Depois desta cadeia, a encomenda de piaçava volta toda estação no caderno (a mesma saveiro_vale.gd). Abre depois do tutorial do Pedro. Nasceu nos três idiomas.",
+  "dono": "benedito",
+  "nome": "O saveiro da estação",
+  "nome_en": "The season's sailboat",
+  "nome_es": "El velero de la estación",
+  "abre_em": "casa_carro_quebrado",
+  "passos": [
+    {
+      "id": "saveiro_conversa",
+      "titulo": "O saveiro do mestre Quirino",
+      "titulo_en": "Master Quirino's sailboat",
+      "titulo_es": "El velero del maestro Quirino",
+      "resumo": "Vá ao píer, onde o saveiro atraca",
+      "resumo_en": "Go to the pier, where the sailboat docks",
+      "resumo_es": "Ve al muelle, donde atraca el velero",
+      "lugar": "pier",
+      "raio": 8,
+      "audio": "",
+      "texto": "Você já viu o saveiro do mestre Quirino? Encosta no píer uma vez por estação, no dia catorze, de manhã até a tarde, e leva pra Salvador o que o arraial produziu no mês: farinha, milho, peixe — e piaçava acima de tudo, que lá vira vassoura, corda de navio e cobertura de casa. Paga melhor que a venda, que a venda revende pra ele. Quarenta e duas safras eu vendo pro saveiro, meu filho. Vai até o píer e olha onde ele atraca; e toma o meu facão velho, que piaçava se tira no fio.",
+      "texto_en": "Have you seen Master Quirino's sailboat? It docks at the pier once a season, on the fourteenth, from morning to afternoon, and takes to Salvador what the village produced that month: flour, corn, fish — and piassava above all, which there turns into brooms, ship rope and roof thatch. He pays better than the store, since the store resells to him. Forty-two harvests I've sold to that sailboat, son. Go to the pier and see where it docks; and take my old machete, since piassava is cut with an edge.",
+      "texto_es": "¿Ya viste el velero del maestro Quirino? Atraca en el muelle una vez por estación, el día catorce, de la mañana a la tarde, y lleva a Salvador lo que el pueblo produjo en el mes: harina, maíz, pescado — y piasava sobre todo, que allá se vuelve escoba, soga de barco y techo de casa. Paga mejor que la tienda, que la tienda le revende a él. Cuarenta y dos cosechas le vendo a ese velero, hijo. Ve al muelle y mira dónde atraca; y toma mi machete viejo, que la piasava se saca con filo.",
+      "entrega": {
+        "item": "facao",
+        "quantidade": 1
+      }
+    },
+    {
+      "id": "saveiro_piacava",
+      "titulo": "A fibra da restinga",
+      "titulo_en": "The fiber of the restinga",
+      "titulo_es": "La fibra de la restinga",
+      "resumo": "Tire dez feixes de piaçava das palmeiras da restinga",
+      "resumo_en": "Harvest ten bundles of piassava from the restinga palms",
+      "resumo_es": "Saca diez haces de piasava de las palmeras de la restinga",
+      "lugar": "pier",
+      "raio": 8,
+      "audio": "",
+      "texto": "A piaçabeira é a palmeira de folha comprida e fibra pendurada que cresce na restinga, na beira da praia, entre os coqueiros. Com o facão na mão, chega perto e tira a fibra da bainha da folha — dois feixes por palmeira, e sem derrubar: ela dá de novo na estação que vem. Junta dez feixes.",
+      "texto_en": "The piassava palm is the one with long leaves and hanging fiber that grows in the restinga, along the beach, among the coconut palms. With the machete in hand, get close and cut the fiber from the leaf sheath — two bundles per palm, and without felling it: it gives again next season. Gather ten bundles.",
+      "texto_es": "La palmera de piasava es la de hoja larga y fibra colgante que crece en la restinga, a la orilla de la playa, entre los cocoteros. Con el machete en la mano, acércate y saca la fibra de la vaina de la hoja — dos haces por palmera, y sin talarla: vuelve a dar la estación que viene. Junta diez haces.",
+      "meta": {
+        "tipo": "juntar",
+        "item": "piacava",
+        "quantos": 10
+      }
+    },
+    {
+      "id": "saveiro_vender",
+      "titulo": "No dia do saveiro",
+      "titulo_en": "On sailboat day",
+      "titulo_es": "El día del velero",
+      "resumo": "Leve a piaçava ao mestre Quirino · dia 14, no píer",
+      "resumo_en": "Bring the piassava to Master Quirino · day 14, at the pier",
+      "resumo_es": "Lleva la piasava al maestro Quirino · día 14, en el muelle",
+      "lugar": "pier",
+      "raio": 6,
+      "audio": "",
+      "texto": "Agora é esperar o dia catorze. O mestre chega de manhã e larga à tarde — quem perde a hora espera a estação que vem. Leva os dez feixes pra ele no píer.",
+      "texto_en": "Now it's a matter of waiting for the fourteenth. The master arrives in the morning and casts off in the afternoon — whoever misses the hour waits for next season. Take the ten bundles to him at the pier.",
+      "texto_es": "Ahora hay que esperar el día catorce. El maestro llega de mañana y zarpa por la tarde — quien pierde la hora espera la estación que viene. Llévale los diez haces al muelle.",
+      "meta": {
+        "tipo": "levar",
+        "item": "piacava",
+        "quantos": 10,
+        "a_quem": "quirino",
+        "raio": 3.4,
+        "resposta": "Fibra comprida, bem tirada... foi o Benedito que te ensinou, que ele não arranca pela raiz. Trinta e quatro réis o feixe, que a venda te dá catorze. Toda estação eu volto no dia catorze: dez feixes de piaçava eu levo sempre — e o que a sua roça der no mês, também.",
+        "resposta_en": "Long fiber, well cut... Benedito taught you, since he never pulls it out by the root. Thirty-four réis a bundle, where the store gives you fourteen. Every season I come back on the fourteenth: ten bundles of piassava I always take — and whatever your fields give that month, too.",
+        "resposta_es": "Fibra larga, bien sacada... te enseñó Benedito, que él no la arranca de raíz. Treinta y cuatro réis el haz, donde la tienda te da catorce. Cada estación vuelvo el día catorce: diez haces de piasava me llevo siempre — y lo que tu roza dé en el mes, también."
+      },
+      "recompensa": {
+        "reis": 340
+      }
+    }
+  ],
+  "arremate": {
+    "texto": "O saveiro do mestre Quirino encosta no píer no dia 14 de cada estação.",
+    "texto_en": "Master Quirino's sailboat docks at the pier on the 14th of every season.",
+    "texto_es": "El velero del maestro Quirino atraca en el muelle el día 14 de cada estación.",
+    "narra": false
+  }
+}

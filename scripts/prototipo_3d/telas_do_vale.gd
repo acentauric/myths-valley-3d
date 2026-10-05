@@ -68,10 +68,14 @@ func _init() -> void:
 ## Registra uma tela. `minha` recebe o evento de tecla e diz se é a dela — assim
 ## serve tanto para ação do InputMap quanto para letra da tabela de atalhos, sem
 ## este nó precisar saber qual é qual.
+##
+## `volta` é a tela a que o Esc leva, para a tela que é um degrau de outra: os
+## Controles se abrem do menu do Esc, e o Esc neles devolve ao menu, como em
+## todo jogo, em vez de largar o jogador no vale. Vazio, o Esc fecha.
 func registrar(nome: String, minha: Callable, aberta: Callable,
-		abrir: Callable, fechar: Callable) -> void:
+		abrir: Callable, fechar: Callable, volta: String = "") -> void:
 	_telas.append({"nome": nome, "minha": minha, "aberta": aberta,
-		"abrir": abrir, "fechar": fechar})
+		"abrir": abrir, "fechar": fechar, "volta": volta})
 
 
 ## O nome da tela aberta, ou "" se nenhuma está.
@@ -111,6 +115,26 @@ func _fechar(tela: Dictionary) -> void:
 	_fechando = false
 
 
+## ABRE UMA TELA POR OUTRA PORTA: a mochila com o baú do lado, que o baú da
+## casa abre. As regras são as da tela — uma de cada vez, o vale parado e o
+## cursor do mouse solto para clicar e arrastar — e só o jeito de abrir muda.
+##
+## "No manuseio do baú deve poder usar o ponteiro do mouse igual na mochila."
+## O baú abria a mochila direto, sem passar por aqui: ninguém soltava o cursor
+## (que a câmera livre prende), e o vale seguia andando atrás da tela.
+func abrir_por(nome: String, como: Callable) -> void:
+	if _segurado():
+		return
+	for tela in _telas:
+		if str(tela["nome"]) != nome:
+			continue
+		fechar_tudo()
+		como.call()
+		if bool((tela["aberta"] as Callable).call()):
+			tela_mudou.emit(nome, true)
+		return
+
+
 ## Abre uma tela pelo nome, fechando antes a que estiver aberta.
 ##
 ## Apertar a tecla da tela JÁ ABERTA fecha, que é o que toda tela de menu faz.
@@ -134,6 +158,13 @@ func abrir(nome: String) -> void:
 		return
 
 
+func _volta_de(nome: String) -> String:
+	for tela in _telas:
+		if str(tela["nome"]) == nome:
+			return str(tela.get("volta", ""))
+	return ""
+
+
 func _segurado() -> bool:
 	return ocupado.is_valid() and bool(ocupado.call())
 
@@ -148,7 +179,11 @@ func _input(event: InputEvent) -> void:
 	# quem cuida dele daí em diante é a escada do `Prototype`, que fecha o mapa
 	# ou abre o menu. Consumir o Esc aqui em todo caso mataria o menu.
 	if event.physical_keycode == KEY_ESCAPE:
-		if fechar_tudo() != "":
+		var volta := _volta_de(aberta())
+		if volta != "":
+			abrir(volta)
+			get_viewport().set_input_as_handled()
+		elif fechar_tudo() != "":
 			get_viewport().set_input_as_handled()
 		return
 

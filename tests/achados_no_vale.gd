@@ -15,7 +15,7 @@ extends SceneTree
 ## Coisa colecionável tem o mesmo risco e é pior de notar — ninguém reclama do
 ## cordel que nunca viu.
 ##
-## Cinco perguntas:
+## Seis perguntas:
 ##
 ##   1. TODO CORDEL DECLARADO FOI POSTO, ou está na lista dos que faltam COM A
 ##      RAZÃO. Sumir calado é o defeito que este portão existe para pegar.
@@ -27,11 +27,19 @@ extends SceneTree
 ##   5. PEGAR GUARDA NA COLEÇÃO. O cordel não vai para a mochila: vai para o
 ##      caderno, e é assim no 2D ("coisa que se guarda na memória não entra na
 ##      mochila").
+##   6. PENDE NUM BARBANTE, como na feira: dois mourões e a corda, o folheto à
+##      altura de quem passa, com a capa dele para fora (`CapaDeCordel`) — e
+##      nenhum dos mourões entra em coisa sólida (no cemitério ele fica entre
+##      duas covas).
+##   7. NENHUM MARCO DE FÉ TOMA O E DELE: os marcos entram na árvore depois e
+##      recebem a tecla primeiro, e o cordel da capela velha ficava a três
+##      palmos do lugar da reza — o E rezava, e o folheto não se pegava.
 ##
 ## OS ACHADOS DO JOGADOR NÃO SÃO TOCADOS: a coleção é persistida, e este portão
 ## guarda o que havia antes e devolve no fim.
 
 var falhas := 0
+const CapaDeCordel = preload("res://scripts/prototipo_3d/capa_de_cordel.gd")
 ## Chão livre exigido em volta, em unidades, e em quantas das oito direções.
 const RAIO_LIVRE := 1.6
 const LIVRES_MINIMO := 3
@@ -135,6 +143,16 @@ func _run() -> void:
 		_conferir(livres >= LIVRES_MINIMO,
 			"o cordel '%s' tem só %d de 8 direções livres a %.1f u: encravado" % [id, livres, RAIO_LIVRE])
 
+		# 6. NO BARBANTE, com a capa para fora.
+		_conferir_o_barbante(achados, espaco, achado, id, onde)
+
+		# 7. NENHUM MARCO TOMA O E DELE.
+		var marcos = jogo.get("marcos")
+		if marcos != null:
+			var dono_do_e: String = marcos._mais_perto(onde)
+			_conferir(dono_do_e == "",
+				"o cordel '%s' fica debaixo do E do marco '%s': o E reza, e o folheto não se pega" % [id, dono_do_e])
+
 		# 4. O JOGADOR CHEGA E O JOGO OFERECE.
 		jogador.global_position = onde + Vector3(0.8, 0.0, 0.0)
 		await _frames(4)
@@ -164,6 +182,48 @@ func _run() -> void:
 	_fechar()
 
 
+## O CORDEL PENDURADO: dois mourões e o barbante, o folheto à altura de quem
+## passa, a capa dele na folha de fora, e os mourões fora de coisa sólida.
+func _conferir_o_barbante(achados, espaco: PhysicsDirectSpaceState3D, achado: Dictionary, id: String, onde: Vector3) -> void:
+	var suporte: Node3D = achado.get("no")
+	var folheto = achado.get("folheto")
+	_conferir(is_instance_valid(suporte) and folheto != null and is_instance_valid(folheto),
+		"o cordel '%s' não está pendurado: não há folheto no barbante" % id)
+	if not is_instance_valid(suporte) or folheto == null or not is_instance_valid(folheto):
+		return
+	var mouroes := suporte.find_children("Mourao*", "MeshInstance3D", false, false)
+	var cordas := suporte.find_children("Barbante*", "MeshInstance3D", false, false)
+	_conferir(mouroes.size() == 2 and cordas.size() >= 1,
+		"o cordel '%s' não tem os dois mourões e a corda (%d mourões, %d pedaços de corda)" % [id, mouroes.size(), cordas.size()])
+	var altura: float = (folheto as Node3D).global_position.y - onde.y
+	_conferir(altura > 0.8 and altura < 1.4,
+		"o folheto '%s' pende a %.2f do chão: fora da altura de quem passa" % [id, altura])
+	var capa := (folheto as Node3D).get_node_or_null("Capa") as MeshInstance3D
+	var textura: Texture2D = null
+	if capa != null and capa.material_override is StandardMaterial3D:
+		textura = (capa.material_override as StandardMaterial3D).albedo_texture
+	_conferir(textura != null, "o folheto '%s' pende sem capa" % id)
+	if textura != null:
+		var desenhada = CapaDeCordel.desenhada(id)
+		_conferir(textura == (desenhada if desenhada != null else CapaDeCordel.bloco()),
+			"o folheto '%s' pende com uma capa que não é a dele" % id)
+	# O FOLHETO NÃO ESTÁ DENTRO DE COISA SÓLIDA: o do mirante ficava no meio da
+	# caixa de colisão dele, e o portão, de corpo parado, não via.
+	var dentro := PhysicsPointQueryParameters3D.new()
+	dentro.position = onde + Vector3(0.0, 0.5, 0.0)
+	dentro.collision_mask = 1
+	var parede := ""
+	for toque in espaco.intersect_point(dentro, 8):
+		if toque.get("collider") is StaticBody3D:
+			parede = str((toque["collider"] as Node).name)
+	_conferir(parede == "",
+		"o cordel '%s' está dentro de coisa sólida (%s) em %s: ninguém chega nele" % [id, parede, str(onde.round())])
+	for mourao in mouroes:
+		var pe: Vector3 = (mourao as Node3D).global_position
+		_conferir(not achados.mourao_encosta(espaco, Vector3(pe.x, onde.y, pe.z), onde.y),
+			"um mourão do cordel '%s' entra em coisa sólida em %s" % [id, str(pe.round())])
+
+
 ## Devolve a coleção como estava: este portão pega cordéis para provar que se
 ## pegam, e o que o jogador achou é dele.
 func _devolver() -> void:
@@ -177,7 +237,7 @@ func _fechar() -> void:
 	_devolver()
 	print("")
 	if falhas == 0:
-		print("ACHADOS_OK: todo cordel do catálogo está posto no vale ou declarado ausente com a razão, cada um posto está em terra firme com chão livre em volta, o vale oferece quando o jogador chega, e pegar guarda na coleção e não na mochila")
+		print("ACHADOS_OK: todo cordel do catálogo está posto no vale ou declarado ausente com a razão, cada um posto está em terra firme com chão livre em volta, pende num barbante com a capa dele e os mourões fora de coisa sólida, nenhum marco de fé toma o E dele, o vale oferece quando o jogador chega, e pegar guarda na coleção e não na mochila")
 	else:
 		print("achados: %d falha(s)" % falhas)
 	quit(1 if falhas > 0 else 0)

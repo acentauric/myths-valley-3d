@@ -365,6 +365,26 @@ func xp_do_nivel() -> int:
 ##
 ## A fração nunca chega à tela: quem mostra usa `%d`, que trunca. Meia
 ## experiência não é coisa que se mostre a ninguém — mas é coisa que se guarda.
+## OS TALENTOS QUE ABREM ESTA FERRAMENTA NESTE NÍVEL, pelo nome — os desta
+## teia e os das teias das fés (`Fe.ARVORES`), lidos do efeito de cada nó e
+## não de uma lista à parte. É o que a recusa da madeira de lei e da pedra
+## dura diz ao jogador, e por isso não pode prometer talento que não existe:
+## no 2D a madeira de lei mandava procurar "machado melhor", que não havia, e
+## o jogador gastava a tarde no armazém.
+func que_abrem(ferramenta: String, nivel: int) -> Array[String]:
+	var nomes: Array[String] = []
+	var campo := "ferramenta_" + ferramenta
+	var teias: Array = [NOS]
+	for fe in Fe.ARVORES:
+		teias.append(Fe.ARVORES[fe])
+	for teia: Dictionary in teias:
+		for id in teia:
+			var no: Dictionary = teia[id]
+			if int((no.get("efeito", {}) as Dictionary).get(campo, 0)) >= nivel:
+				nomes.append(str(no.get("nome", id)))
+	return nomes
+
+
 func ganhar(acao: String, vezes: float = 1.0) -> void:
 	var quanto: float = float(XP_POR_ACAO.get(acao, 0)) * vezes
 	if quanto <= 0.0:

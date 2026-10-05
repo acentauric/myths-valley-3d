@@ -230,6 +230,38 @@ func _run() -> void:
 	# comparar coisas que só coincidem por sorte.
 	_conferir(str(caderno.atual().get("id", "")) == "outro_do_painel",
 		"o E não fixou a missão escolhida: em foco está '%s'" % str(caderno.atual().get("id", "")))
+
+	# O HUD SEGUE A MISSÃO ACOMPANHADA, como no Witcher.
+	#
+	# "No MENU J, de missões, eu tô clicando para trocar a missão de resumo,
+	# mas não muda." O E (e o clique) mudavam o foco do caderno, e o HUD seguia
+	# a última cadeia que falou. Escolher no diário tem de trocar o canto da
+	# tela — e pelo BOTÃO do diário também, que é o gesto de quem usa o mouse.
+	await _frames(2)
+	_conferir(str(vale.hud.get("_objective")) == "Outro passo",
+		"acompanhei 'Outro passo' no diário e o HUD diz '%s'" % str(vale.hud.get("_objective")))
+	painel.escolher(0)
+	await _frames(2)
+	var acompanhar: Button = null
+	for no in painel.find_children("Acompanhar", "Button", true, false):
+		acompanhar = no as Button
+	_conferir(acompanhar != null and not acompanhar.disabled,
+		"o diário da missão escolhida não tem o botão de acompanhar")
+	if acompanhar != null:
+		acompanhar.pressed.emit()
+		await _frames(2)
+		_conferir(str(caderno.atual().get("id", "")) == "teste_do_painel",
+			"o botão ACOMPANHAR não acompanhou a missão escolhida: em foco está '%s'" % str(caderno.atual().get("id", "")))
+		_conferir(str(vale.hud.get("_objective")) == "Um passo de teste",
+			"acompanhei pelo botão e o HUD diz '%s'" % str(vale.hud.get("_objective")))
+	# E A ESCOLHA FICA: missão nova de outra pessoa não rouba o acompanhamento.
+	caderno.abrir_missao("intrusa_do_painel", "Uma terceira", "zefa", false)
+	await _frames(2)
+	_conferir(str(caderno.atual().get("id", "")) == "teste_do_painel",
+		"uma missão nova roubou o acompanhamento: em foco está '%s'" % str(caderno.atual().get("id", "")))
+	caderno.concluir("intrusa_do_painel")
+	painel.escolher(1)
+	_tecla(painel, KEY_E)
 	_tecla(painel, KEY_J)
 	await _frames(2)
 	_conferir(not painel.aberto, "o J não fechou o painel")
@@ -318,7 +350,23 @@ func _arquivos_das_vagas() -> Array:
 	for slot in range(1, salvamento.QUANTOS_SLOTS + 1):
 		for caminho in [salvamento.arquivo(slot), salvamento.anterior(slot), salvamento.rascunho(slot)]:
 			todos.append(caminho)
+	todos.append("user://vagas.json")
 	return todos
+
+
+## OS PONTOS DE RESTAURAÇÃO são do jogador como os saves (ver salvamento.gd).
+const PONTOS := "user://pontos"
+
+
+func _apagar_pasta(caminho: String) -> void:
+	var pasta := DirAccess.open(caminho)
+	if pasta == null:
+		return
+	for dentro in pasta.get_directories():
+		_apagar_pasta(caminho.path_join(dentro))
+	for arquivo in pasta.get_files():
+		DirAccess.remove_absolute(caminho.path_join(arquivo))
+	DirAccess.remove_absolute(caminho)
 
 
 func _guardar_os_saves_de_verdade() -> void:
@@ -326,12 +374,15 @@ func _guardar_os_saves_de_verdade() -> void:
 	for caminho in _arquivos_das_vagas():
 		if FileAccess.file_exists(caminho):
 			DirAccess.rename_absolute(caminho, RESERVA.path_join(caminho.get_file()))
+	if DirAccess.dir_exists_absolute(PONTOS):
+		DirAccess.rename_absolute(PONTOS, RESERVA.path_join(PONTOS.get_file()))
 
 
 func _devolver_os_saves_de_verdade() -> void:
 	for caminho in _arquivos_das_vagas():
 		if FileAccess.file_exists(caminho):
 			DirAccess.remove_absolute(caminho)
+	_apagar_pasta(PONTOS)
 	_devolver_reserva_esquecida()
 
 
@@ -345,7 +396,11 @@ func _devolver_reserva_esquecida() -> void:
 		if FileAccess.file_exists(destino):
 			DirAccess.remove_absolute(destino)
 		DirAccess.rename_absolute(RESERVA.path_join(nome), destino)
-	if DirAccess.open(RESERVA).get_files().is_empty():
+	for nome in pasta.get_directories():
+		var destino := "user://".path_join(nome)
+		_apagar_pasta(destino)
+		DirAccess.rename_absolute(RESERVA.path_join(nome), destino)
+	if DirAccess.open(RESERVA).get_files().is_empty() and DirAccess.open(RESERVA).get_directories().is_empty():
 		DirAccess.remove_absolute(RESERVA)
 
 

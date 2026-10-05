@@ -25,8 +25,26 @@ extends Node
 ## O que NÃO muda: a mesma trava de uma noite só (`_virando_a_noite`), o
 ## `Energia.desmaiar()` e o `Vida.dormir()` — cair é a mesma virada do desmaio
 ## de cansaço, com outra fala.
+##
+##
+## A NOITE TEM TRÊS PORTAS (#50)
+##
+## A queda foi a primeira; com a casa aberta por dentro vieram as outras duas,
+## e as três viram o dia pelo mesmo caminho (`_virar_a_noite`):
+##
+##   cama     o jogador deita e responde que sim (`casa_do_jogador.gd`):
+##            acorda descansado, sem fala nenhuma.
+##   desmaio  passou das duas da manhã sem deitar (`Dia.passou_das_duas`):
+##            o dia do 2D vai das 6h às 2h (`Relogio.HORA_LIMITE`), e quem não
+##            deitou apaga de cansaço e acorda com as falas do 2D.
+##   queda    a vida no chão, como sempre.
+##
+## E CASA PASSOU A SER AO PÉ DA CAMA: com o cômodo montado, quem desmaia ou cai
+## acorda no chão do quarto, como no 2D (`Mundo._deitar_no_chao_de_casa`); sem
+## ele, diante da porta, como antes.
 
 const FALAS := "res://data/queda.json"
+const TEXTOS_DA_CASA := "res://data/casa.json"
 const IdiomaMenu = preload("res://scripts/prototipo_3d/idioma_menu.gd")
 ## A dois passos da porta, do lado de fora: longe da parede o bastante para a
 ## cápsula do jogador não nascer encostada nela.
@@ -35,10 +53,14 @@ const ESCURECER := 0.9
 const CLAREAR := 1.2
 
 signal acordou
+## A noite começou a virar, e por qual das três portas.
+signal deitou(motivo: String)
 
 var _world
 var _player
 var _hud
+## O cômodo da casa, quando há (ver `ponto_de_casa`).
+var interiores: Node
 var _virando_a_noite := false
 var _preto: ColorRect
 
@@ -62,10 +84,22 @@ func configurar(world, player, hud) -> void:
 	var vida := get_node_or_null("/root/Vida")
 	if vida != null:
 		vida.caiu.connect(_ao_cair)
+	var dia := get_node_or_null("/root/Dia")
+	if dia != null and dia.has_signal("passou_das_duas"):
+		dia.passou_das_duas.connect(_ao_passar_das_duas)
 
 
-## Onde o jogador acorda: diante da porta da casa herdada, no chão.
+## A noite está virando agora (a cama, o desmaio ou a queda)?
+func virando_a_noite() -> bool:
+	return _virando_a_noite
+
+
+## Onde o jogador acorda: ao pé da cama, no quarto da casa herdada; sem o
+## cômodo, diante da porta, no chão.
 func ponto_de_casa() -> Vector3:
+	var sala := _quarto()
+	if sala != null:
+		return sala.lugar_de_acordar()
 	var ancoras: Dictionary = _world.ancoras
 	var casa: Vector3 = ancoras.get("Casa de taipa", Vector3.INF)
 	if not casa.is_finite():
@@ -81,10 +115,34 @@ func _raio_da_casa() -> float:
 	return float(spec.get("largura", 6.5)) * 0.5
 
 
+## O cômodo da casa herdada, se o vale o montou.
+func _quarto() -> Node3D:
+	if interiores == null or not interiores.has_method("sala_de"):
+		return null
+	var sala = interiores.sala_de("casa")
+	return sala if sala != null and sala.has_method("lugar_de_acordar") else null
+
+
+## A CAMA: quem chama já perguntou e ouviu que sim (`casa_do_jogador.gd`).
+func dormir_na_cama() -> void:
+	await _virar_a_noite("cama")
+
+
 func _ao_cair() -> void:
+	await _virar_a_noite("queda")
+
+
+## PASSOU DAS DUAS SEM DEITAR: o cansaço vence. Quem já está virando a noite —
+## o próprio sono anda o relógio por cima das duas — não conta de novo.
+func _ao_passar_das_duas() -> void:
+	await _virar_a_noite("desmaio")
+
+
+func _virar_a_noite(motivo: String) -> void:
 	if _virando_a_noite:
 		return                      # já há uma noite em curso: esta não conta
 	_virando_a_noite = true
+	deitou.emit(motivo)
 	_player.set_physics_process(false)
 	_player.set_process_unhandled_input(false)
 	_player.velocity = Vector3.ZERO
@@ -97,7 +155,11 @@ func _ao_cair() -> void:
 	await escurece.finished
 
 	_levar_para_casa()
-	Energia.desmaiar()
+	# Na cama o corpo descansa; no chão, só o fôlego do desmaio (como no 2D).
+	if motivo == "cama":
+		Energia.dormir()
+	else:
+		Energia.desmaiar()
 	Vida.dormir()
 	var horas_ate_amanha := fposmod(float(Relogio.HORA_DE_ACORDAR) - Dia.hora, 24.0)
 	if horas_ate_amanha < 0.001:
@@ -126,8 +188,13 @@ func _ao_cair() -> void:
 	_player.set_process_unhandled_input(true)
 	_virando_a_noite = false
 	acordou.emit()
-	# Alguém diz o que houve, porque quem caiu no mato não sabe.
-	await Dialogo.falar("", _falas())
+	# Alguém diz o que houve, porque quem caiu no mato não sabe; e quem apagou
+	# de cansaço ouve o que o corpo diz. Quem deitou na cama sabe o que fez.
+	match motivo:
+		"queda":
+			await Dialogo.falar("", _falas())
+		"desmaio":
+			await Dialogo.falar("", _falas_do_desmaio())
 
 
 func _levar_para_casa() -> void:
@@ -137,6 +204,10 @@ func _levar_para_casa() -> void:
 		return
 	_player.global_position = destino
 	_player.velocity = Vector3.ZERO
+	# No quarto, acorda de frente para a porta.
+	var sala := _quarto()
+	if sala != null and "visual" in _player:
+		_player.visual.rotation.y = sala.giro_de_acordar()
 	# Terra firme conhecida passa a ser a porta de casa: se a próxima volta à
 	# terra (o tubarão, o fundo do mar) vier antes de o jogador pisar em outro
 	# chão, ela o traz para cá, e não para onde ele estava antes de cair.
@@ -160,6 +231,16 @@ func _falas() -> Array:
 	var falas := []
 	for entrada in _dado().get("fala", []):
 		falas.append(str(IdiomaMenu.campo(entrada, "texto")))
+	return falas
+
+
+## As falas do desmaio das duas, as do 2D (`Mundo._ao_desmaiar`).
+func _falas_do_desmaio() -> Array:
+	var dado = JSON.parse_string(FileAccess.get_file_as_string(TEXTOS_DA_CASA))
+	var falas := []
+	if dado is Dictionary:
+		for entrada in dado.get("desmaio", []):
+			falas.append(str(IdiomaMenu.campo(entrada, "texto")))
 	return falas
 
 

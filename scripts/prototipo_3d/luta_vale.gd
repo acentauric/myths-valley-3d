@@ -227,6 +227,8 @@ func _conferir_o_golpe_segurado() -> void:
 		bater(golpe, mao)
 
 
+## Com que se bate: o que está na barra de mão (a mão livre bate de punho).
+## Arma vai nos números; o encaixe das Mãos é das luvas.
 func _item_em_uso() -> String:
 	return Inventario.na_mao()
 

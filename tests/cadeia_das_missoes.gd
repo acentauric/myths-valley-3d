@@ -18,6 +18,17 @@ extends SceneTree
 ## chegar ao fim, o portão diz em qual passo ela parou e por quê.
 ##
 ##
+## A CHEGADA PEDE DE TUDO (docs/mundo/CHEGADA_E_MUTIROES.md)
+##
+## Deixou de ser "vá até" e "junte N": o bom-dia ao Tonho, a pergunta à Dona
+## Candinha, a corda torcida na bancada, o mutirão do poço, a janta, a cama, a
+## leira e o convite lido. Cada meta se cumpre aqui PELO CAMINHO DO JOGO: ao lado
+## de quem se fala, `Oficina.fabricar`, `Obras.executar`, `Cozinha.cozinhar`, a
+## lavoura pela ferramenta na mão, a cama pela `Queda`, o papel pela leitura da
+## mochila. O que o portão não faz é chamar `registrar_evento`: o acontecimento
+## tem de chegar à cadeia pelo fio que o vale ligou, ou o passo não fecha.
+##
+##
 ## POR QUE A ESPERA É EM SEGUNDOS, E NÃO EM QUADROS
 ##
 ## A primeira versão esperava 240 QUADROS por passo e travava no roçado, com o
@@ -35,9 +46,11 @@ extends SceneTree
 
 var falhas := 0
 ## Teto REAL por passo. Passo que não fecha nisto está preso.
-const SEGUNDOS_POR_PASSO := 15.0
+const SEGUNDOS_POR_PASSO := 30.0
 ## Teto real para o anúncio sair, que é onde a ferramenta é entregue.
 const SEGUNDOS_PARA_ANUNCIAR := 12.0
+## O teto do resumo de missão no HUD, com a conta "(2/4)" dentro.
+const LETRAS_DO_RESUMO := 60
 
 
 func _initialize() -> void:
@@ -65,6 +78,7 @@ func _run() -> void:
 	var inv := root.get_node("/root/Inventario")
 	var caderno := root.get_node("/root/CadernoDoVale")
 	var energia := root.get_node("/root/Energia")
+	var dialogo := root.get_node("/root/Dialogo")
 	_conferir(pedro != null and recursos != null and jogador != null,
 		"não achei o Pedro, os recursos ou o jogador")
 	if pedro == null or recursos == null or jogador == null:
@@ -107,9 +121,11 @@ func _run() -> void:
 
 		# A ferramenta prometida tem de estar na mão ANTES de o trabalho ser
 		# cobrado. É a regra 1 do tutorial do 2D.
-		var entrega: Dictionary = passo.get("entrega", {})
-		if not entrega.is_empty():
-			var ferramenta := str(entrega.get("item", ""))
+		var entregas: Array = passo.get("entrega", []) if passo.get("entrega") is Array else [passo.get("entrega", {})]
+		var ferramentas := entregas.filter(func(e) -> bool:
+			return e is Dictionary and Catalogo.tipo(str((e as Dictionary).get("item", ""))) == "ferramenta")
+		if not ferramentas.is_empty():
+			var ferramenta := str((ferramentas[0] as Dictionary).get("item", ""))
 			# À MÃO, e não na mochila. O vale passou a cobrar a ferramenta
 			# ENCAIXADA (`Recursos3D._tem_ferramenta`), e é o encaixe que a
 			# entrega do passo preenche; perguntar pela mochila reprovaria
@@ -129,7 +145,13 @@ func _run() -> void:
 		# Medir a lista do caderno, e não o sinal do HUD, continua sendo o ponto:
 		# o sinal funcionava; era o caderno que estava vazio.
 		var no_caderno := "%s_%s" % ["pedro", id]
-		_conferir(caderno.tem(no_caderno),
+		# ENTROU, MESMO QUE JÁ TENHA FECHADO. Passo de visita anunciado com o
+		# jogador já dentro do raio fecha no pulso seguinte da cadeia — é o caso
+		# da enxada, no roçado, quando a pedra do passo de antes foi quebrada
+		# ali perto. Se a pergunta viesse depois desse pulso, o passo estaria nas
+		# cumpridas, que o J também mostra; perguntar só pelas ativas fazia o
+		# portão depender de quantos quadros de física cabem em dois de desenho.
+		_conferir(caderno.tem(no_caderno) or caderno.cumprida(no_caderno),
 			"o passo '%s' anunciou e não entrou no caderno do vale: o painel J mostra a aba vazia" % id)
 		if not meta.is_empty() and caderno.tem(no_caderno):
 			var conta: Vector2i = caderno.andamento(no_caderno)
@@ -138,33 +160,55 @@ func _run() -> void:
 			_conferir(str(caderno.de(no_caderno).get("linha", "")) != "",
 				"o passo '%s' pede trabalho e não escreveu a linha de andamento" % id)
 
-		if meta.is_empty():
-			# Passo de visita: chega e fecha.
-			var alvo: Vector3 = pedro._posicao_da_missao(indice)
-			jogador.spawn_position = alvo
-			jogador.reset_position()
-		else:
-			# Passo de trabalho: bate no alvo até render o que falta.
-			var item := str(meta.get("item", ""))
-			var quantos := int(meta.get("quantos", 1))
-			var marcado: Vector3 = pedro._posicao_da_missao(indice)
-			_conferir(marcado != Vector3.ZERO,
-				"o passo '%s' não marcou lugar nenhum" % id)
-			var tentativas := 0
-			while inv.quantidade(item) < quantos and tentativas < 40:
-				tentativas += 1
-				var onde: Vector3 = recursos.mais_perto_que_rende(item, jogador.global_position)
-				if onde == Lugares.NENHUM:
-					break
-				jogador.spawn_position = onde
+		# O HUD MOSTRA O RESUMO, E O PAINEL A FALA INTEIRA.
+		#
+		# "A descrição da missão no HUD deve ser um resumo com atividades
+		# diretas ao ponto. O texto completo deve ficar apenas no painel de
+		# missão (J)." O HUD recebia a fala com o nome na frente.
+		var objetivo := str(current_scene.hud.get("_objective"))
+		var fala := str(passo.get("texto", ""))
+		_conferir(objetivo.length() <= LETRAS_DO_RESUMO,
+			"o objetivo do HUD no passo '%s' tem %d letras, e resumo é até %d: '%s'"
+				% [id, objetivo.length(), LETRAS_DO_RESUMO, objetivo])
+		_conferir(fala.length() <= LETRAS_DO_RESUMO or not objetivo.contains(fala),
+			"o objetivo do HUD no passo '%s' é a fala inteira: '%s'" % [id, objetivo])
+		if caderno.tem(no_caderno):
+			_conferir(str(caderno.de(no_caderno).get("texto", "")).contains(fala),
+				"a fala inteira do passo '%s' não está no caderno, que é o que o painel J mostra" % id)
+
+		var marcado: Vector3 = pedro._posicao_da_missao(indice)
+		_conferir(meta.is_empty() or marcado != Vector3.ZERO,
+			"o passo '%s' não marcou lugar nenhum" % id)
+		match str(meta.get("tipo", "")):
+			"":
+				# Passo de visita: chega e fecha.
+				jogador.spawn_position = marcado
 				jogador.reset_position()
-				await _frames(2)
+			"falar", "levar":
+				# Ao lado de quem se fala: o marcador segue a pessoa.
+				var quem = jogo._achar_morador(str(meta.get("a_quem", "")))
+				_conferir(quem != null, "o passo '%s' procura '%s', que não está no vale" % [id, str(meta.get("a_quem", ""))])
+				if quem != null:
+					_conferir(marcado.distance_to(quem.global_position) < 0.5,
+						"o marcador do passo '%s' não está em %s" % [id, str(meta.get("a_quem", ""))])
+					jogador.teleportar(quem.global_position + Vector3(1.0, 0.0, 0.6), 0.0)
+			"juntar":
+				for item in _carga(meta):
+					await _juntar(str(item), int(_carga(meta)[item]), id, inv, recursos, jogador, energia)
+			"obra":
+				jogador.teleportar(marcado, 0.0)
+				await _frames(3)
 				energia.encher()
-				if not recursos.bater():
-					break
-			_conferir(inv.quantidade(item) >= quantos,
-				"o passo '%s' pede %d de %s e só consegui juntar %d batendo no vale"
-					% [id, quantos, item, inv.quantidade(item)])
+				var obras := root.get_node("/root/Obras")
+				var construcao := str(meta.get("construcao", ""))
+				var a_obra := str(meta.get("obra", ""))
+				_conferir(obras.executar(construcao, a_obra),
+					"o passo '%s' pede a obra '%s', e ela não saiu: %s" % [id, a_obra, obras.impedimento(construcao, a_obra)])
+			"evento":
+				for evento in _eventos(meta):
+					await _acontecer(str(evento), id, jogo, jogador, inv, energia, dialogo)
+			_:
+				_conferir(false, "o passo '%s' tem meta '%s', que este portão não sabe jogar" % [id, str(meta.get("tipo", ""))])
 
 		# Espera o passo fechar — também em segundo real, pela mesma razão.
 		var fechou := await _ate(func() -> bool: return pedro.missao != indice,
@@ -186,10 +230,102 @@ func _run() -> void:
 	_fechar()
 
 
+## Os acontecimentos da meta, como a cadeia os lê (`eventos`, ou o `evento` só).
+## Lido aqui, e não pelo script da cadeia: `preload` dele num `--script` compila
+## antes dos autoloads e fica quebrado no cache.
+static func _eventos(meta: Dictionary) -> Array:
+	var lista: Array = meta.get("eventos", [])
+	return lista if not lista.is_empty() else [str(meta.get("evento", ""))]
+
+
+static func _carga(meta: Dictionary) -> Dictionary:
+	var varios: Dictionary = meta.get("itens", {})
+	if not varios.is_empty():
+		return varios
+	return {str(meta.get("item", "")): int(meta.get("quantos", 1))}
+
+
+## JUNTA O ITEM PELO CAMINHO DO JOGO: o que cai de alvo, batendo; o que sai da
+## bancada (corda, tábua), juntando a lenha e fabricando, como o J faz.
+func _juntar(item: String, quantos: int, id: String, inv, recursos, jogador, energia) -> void:
+	var oficina := root.get_node("/root/Oficina")
+	var tentativas := 0
+	while inv.quantidade(item) < quantos and tentativas < 60:
+		tentativas += 1
+		var receita: Dictionary = oficina.dados(item)
+		if not receita.is_empty():
+			for material in receita.get("custo", {}):
+				await _juntar(str(material), int(receita["custo"][material]), id, inv, recursos, jogador, energia)
+			energia.encher()
+			if not oficina.fabricar(item):
+				break
+			continue
+		var onde: Vector3 = recursos.mais_perto_que_rende(item, jogador.global_position)
+		if onde == Lugares.NENHUM:
+			break
+		jogador.spawn_position = onde
+		jogador.reset_position()
+		await _frames(2)
+		energia.encher()
+		if not recursos.bater():
+			break
+	_conferir(inv.quantidade(item) >= quantos,
+		"o passo '%s' pede %d de %s e só consegui juntar %d no vale" % [id, quantos, item, inv.quantidade(item)])
+
+
+## FAZ O ACONTECIMENTO ACONTECER pelo caminho do jogo, e não pelo
+## `registrar_evento`: é o fio do vale que está sendo medido.
+func _acontecer(evento: String, id: String, jogo, jogador, inv, energia, dialogo) -> void:
+	energia.encher()
+	if evento.begins_with("cozinhou:"):
+		var cozinha := root.get_node("/root/Cozinha")
+		var receita := evento.trim_prefix("cozinhou:")
+		jogador.teleportar(root.get_node("/root/Lugares").ponto("fogueira") + Vector3(1.4, 0.0, 0.0), 0.0)
+		_conferir(cozinha.cozinhar(receita),
+			"o passo '%s' pede %s no fogo, e a cozinha recusou: %s" % [id, receita, cozinha.impedimento(receita)])
+	elif evento == "dormiu":
+		jogo.noite.dormir_na_cama()
+	elif evento in ["arou", "plantou", "regou"]:
+		var lavoura = jogo.lavoura
+		var leito := Vector2i(0, 0)
+		var na_mao := {"arou": "enxada", "plantou": "semente_mandioca", "regou": "balde"}
+		_conferir(_por_na_mao(inv, str(na_mao[evento])),
+			"o passo '%s' precisa de %s na mão, e não há na mochila" % [id, str(na_mao[evento])])
+		jogador.teleportar(lavoura.posicao_da(leito) + Vector3(0.0, 0.0, -0.6), 0.0)
+		await _frames(2)
+		lavoura.usar(leito)
+	elif evento.begins_with("leu:"):
+		var papel := evento.trim_prefix("leu:")
+		_conferir(inv.quantidade(papel) > 0, "o passo '%s' pede ler %s, e ninguém o deu" % [id, papel])
+		jogo._ler_documento(papel)
+		var ate := Time.get_ticks_msec() + 6000
+		while not dialogo.ativo and Time.get_ticks_msec() < ate:
+			await process_frame
+		while dialogo.ativo and Time.get_ticks_msec() < ate:
+			dialogo._fechar()
+			await process_frame
+	else:
+		_conferir(false, "o passo '%s' espera '%s', e este portão não sabe fazer isso acontecer" % [id, evento])
+	await _frames(2)
+
+
+## Acende na barra o item, trazendo-o da reserva se for o caso.
+static func _por_na_mao(inv, item: String) -> bool:
+	for i in inv.ESPACOS:
+		if str((inv.espacos[i] as Dictionary).get("id", "")) != item:
+			continue
+		if i >= inv.ESPACOS_MAO:
+			inv.trocar(i, inv.ESPACOS_MAO - 1)
+			i = inv.ESPACOS_MAO - 1
+		inv.selecionar(i)
+		return true
+	return false
+
+
 func _fechar() -> void:
 	print("")
 	if falhas == 0:
-		print("CADEIA_OK: os passos de visita fecham ao chegar, os de trabalho entregam a ferramenta e fecham ao cumprir a meta onde quer que o jogador esteja, e cada passo entra no caderno DO VALE com a conta e a linha de andamento dele")
+		print("CADEIA_OK: a chegada joga do bom-dia ao convite — falar, perguntar, juntar, torcer corda, o mutirão do poço, a janta, a cama, a leira e o papel lido —, cada passo entrega a ferramenta antes de cobrar, fecha pelo fio do vale e entra no caderno DO VALE com a conta e a linha de andamento dele")
 	else:
 		print("cadeia: %d falha(s)" % falhas)
 	quit(1 if falhas > 0 else 0)

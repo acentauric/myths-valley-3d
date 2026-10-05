@@ -31,6 +31,12 @@ const LIVRES_MINIMO := 3
 ## Raio do corpo do jogador, medido no `vale.tscn`. É o quanto a colisão o
 ## mantém afastado da face de qualquer coisa.
 const RAIO_DO_CORPO := 0.28
+## Encostado num alvo, quanto o segundo mais perto tem de estar além dele. O
+## corpo solto escorrega até 0,41 na encosta do mirante (medido em 03/10/2026);
+## com menos folga que isso, um passo de lado troca o alvo que o E oferece.
+const FOLGA_MINIMA := 0.5
+## Os quatro lados de onde se chega a um alvo.
+const LADOS := [Vector3.RIGHT, Vector3.LEFT, Vector3.BACK, Vector3.FORWARD]
 
 
 func _initialize() -> void:
@@ -121,6 +127,17 @@ func _run() -> void:
 		var onde: Vector3 = lugares.ponto(str(passo.get("lugar", "")))
 		if onde == lugares.NENHUM:
 			continue
+		# O QUE SAI DA BANCADA não cai de alvo nenhum: a corda da chegada se torce na
+		# oficina (docs/mundo/CHEGADA_E_MUTIROES.md). Para ele, o alvo é a bancada, e
+		# o passo tem de apontar para perto dela.
+		if not (root.get_node("/root/Oficina").dados(item) as Dictionary).is_empty():
+			var bancada: Vector3 = lugares.ponto("oficina")
+			var ate_a_bancada := INF if bancada == lugares.NENHUM else _plano(onde, bancada)
+			print("  missão   %-18s pede %-8s bancada a %.1f u" % [str(passo.get("id", "?")), item, ate_a_bancada])
+			_conferir(ate_a_bancada < 40.0,
+				"o passo '%s' pede %s, que sai da bancada, e a bancada está a %.1f u do lugar dele"
+					% [str(passo.get("id", "?")), item, ate_a_bancada])
+			continue
 		var menor := INF
 		for id in recursos._alvos:
 			if str(recursos._alvos[id]["ficha"].get("rende", "")) != item:
@@ -150,27 +167,63 @@ func _run() -> void:
 	# Chão livre não adianta quando o que barra é o próprio alvo.
 	#
 	# Aqui o jogador é posto onde a colisão o deixaria — encostado na face, mais
-	# o corpo dele — e se pergunta ao `Recursos3D` qual alvo está ao alcance. Se
-	# não for este, ele é inalcançável, seja qual for a aritmética por dentro.
+	# o corpo dele —, DOS QUATRO LADOS, e se pergunta ao `Recursos3D` qual alvo
+	# está ao alcance. Se não for este, por ali ele é inalcançável, seja qual
+	# for a aritmética por dentro.
+	#
+	# SEM FÍSICA, de propósito (#37). A pergunta é de conta — onde o corpo para
+	# e o que o alcance aceita dali —, e o corpo solto andava: escorregava na
+	# encosta do mirante, e quanto escorregava dependia de quantos passos de
+	# física cabiam nos dois quadros de espera. Na bateria cheia, com a máquina
+	# ocupada, cabiam outros: o portão reprovava ("o jogo oferece
+	# 'erva_mirante_d'") e passava sozinho. O que o corpo anda entra na conta
+	# como FOLGA_MINIMA, e não como sorte.
 	print("")
+	var corpo_solto: bool = jogador.is_physics_processing()
+	jogador.set_physics_process(false)
 	for id in recursos._alvos.keys():
 		var alvo: Dictionary = recursos._alvos[id]
 		var meia: float = float(alvo.get("meia_pegada", 0.0))
 		var centro: Vector3 = alvo["pos"]
-		var encostado := centro + Vector3(meia + RAIO_DO_CORPO, 0.0, 0.0)
-		# Uma teleportaçao para terreno mais baixo nao e uma queda na agua.
-		# Reinicia a referencia de terra firme antes de medir o alcance.
-		jogador.spawn_position = encostado
-		jogador.reset_position()
-		await _frames(2)
-		var respondeu: String = recursos._mais_perto()
-		print("  braço    %-18s meia-pegada=%.2f  encostado a %.2f  responde=%s"
-			% [str(id), meia, meia + RAIO_DO_CORPO, respondeu if respondeu != "" else "NINGUÉM"])
-		_conferir(respondeu == str(id),
-			"encostado no '%s' o jogo oferece '%s': a peça tem %.2f de pegada e o alcance é %.2f — o corpo para na face antes de o golpe valer"
-				% [str(id), respondeu if respondeu != "" else "nada", meia, float(recursos.ALCANCE)])
+		var vizinho := ""
+		var menor_folga := INF
+		for lado: Vector3 in LADOS:
+			var encostado := centro + lado * (meia + RAIO_DO_CORPO)
+			jogador.global_position = encostado
+			var respondeu: String = recursos._mais_perto()
+			_conferir(respondeu == str(id),
+				"encostado no '%s' pelo lado %s o jogo oferece '%s': a peça tem %.2f de pegada e o alcance é %.2f — o corpo para na face antes de o golpe valer, ou outro alvo está mais perto"
+					% [str(id), str(lado), respondeu if respondeu != "" else "nada", meia, float(recursos.ALCANCE)])
+			var disputa := _disputa(recursos, str(id), encostado)
+			if float(disputa[1]) < menor_folga:
+				vizinho = str(disputa[0])
+				menor_folga = float(disputa[1])
+			_conferir(float(disputa[1]) >= FOLGA_MINIMA,
+				"encostado no '%s' pelo lado %s o '%s' fica só %.2f além: um passo de lado e o E oferece o outro"
+					% [str(id), str(lado), str(disputa[0]), float(disputa[1])])
+		print("  braço    %-18s meia-pegada=%.2f  encostado a %.2f  4 lados  %s"
+			% [str(id), meia, meia + RAIO_DO_CORPO,
+				("vizinho '%s' %.2f além" % [vizinho, menor_folga]) if vizinho != "" else "sem vizinho ao alcance"])
+	jogador.set_physics_process(corpo_solto)
 
 	_fechar()
+
+
+## O alvo que disputa o E com `id` com o jogador em `ponto`: o de menor sobra
+## entre os outros ao alcance, e quanto ele fica além de `id`. Sem disputa,
+## ["", INF].
+func _disputa(recursos: Node, id: String, ponto: Vector3) -> Array:
+	var sobra_dele := _plano(ponto, recursos._alvos[id]["pos"]) - float(recursos._alvos[id].get("meia_pegada", 0.0))
+	var quem := ""
+	var folga := INF
+	for outro in recursos._alvos:
+		if str(outro) == id:
+			continue
+		var sobra := _plano(ponto, recursos._alvos[outro]["pos"]) - float(recursos._alvos[outro].get("meia_pegada", 0.0))
+		if sobra < float(recursos.ALCANCE) and sobra - sobra_dele < folga:
+			quem = str(outro)
+			folga = sobra - sobra_dele
+	return [quem, folga]
 
 
 ## Quantas das oito direções em volta têm chão livre ao alcance do golpe.
@@ -202,7 +255,7 @@ func _plano(a: Vector3, b: Vector3) -> float:
 func _fechar() -> void:
 	print("")
 	if falhas == 0:
-		print("ALCANCE_OK: todo alvo posto está em terra firme, com chão livre em volta, o braço alcança além da pegada dele, e toda missão que pede material tem alvo perto do lugar dela")
+		print("ALCANCE_OK: todo alvo posto está em terra firme, com chão livre em volta, o braço alcança além da pegada dele dos quatro lados sem outro alvo disputando o E, e toda missão que pede material tem alvo perto do lugar dela")
 	else:
 		print("alcance: %d falha(s)" % falhas)
 	quit(1 if falhas > 0 else 0)

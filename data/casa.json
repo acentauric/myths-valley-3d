@@ -1,0 +1,33 @@
+{
+	"_sobre": "O que se lê na casa herdada (#50, #26): a pergunta da cama, o título do baú e as três falas de quem desmaia às duas da manhã sem ter deitado. A pergunta e as falas são as do jogo 2D (Mundo._tentar_dormir e Mundo._ao_desmaiar), verbatim; 'titulo' e 'pergunta' saem na caixa de pergunta (Dialogo.perguntar) e as falas na caixa de fala longa. O %s da pergunta é o dia e a hora (Relogio.texto).",
+	"cama": {
+		"titulo": "Cama",
+		"titulo_en": "Bed",
+		"titulo_es": "Cama",
+		"pergunta": "%s.\nDormir até o amanhecer?",
+		"pergunta_en": "%s.\nSleep until dawn?",
+		"pergunta_es": "%s.\n¿Dormir hasta el amanecer?"
+	},
+	"bau": {
+		"titulo": "Baú da casa",
+		"titulo_en": "House chest",
+		"titulo_es": "Baúl de la casa"
+	},
+	"desmaio": [
+		{
+			"texto": "O cansaço venceu antes de você chegar na cama.",
+			"texto_en": "Exhaustion won before you made it to bed.",
+			"texto_es": "El cansancio te venció antes de llegar a la cama."
+		},
+		{
+			"texto": "Alguém — ou alguma coisa — te deitou aqui antes do sol nascer.",
+			"texto_en": "Someone — or something — laid you here before sunrise.",
+			"texto_es": "Alguien —o algo— te acostó aquí antes de que saliera el sol."
+		},
+		{
+			"texto": "O corpo dói. Dormir no chão não descansa igual.",
+			"texto_en": "Your body aches. Sleeping on the floor doesn't rest you the same.",
+			"texto_es": "Te duele el cuerpo. Dormir en el suelo no descansa igual."
+		}
+	]
+}

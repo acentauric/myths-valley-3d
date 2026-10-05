@@ -1,0 +1,36 @@
+{
+  "observacao": "A MISSÃO PRÓPRIA DO CANDOMBLÉ (#52), do jogo 2D (arraial.json, fe_mesa): a mesa da folha, levada ao terreiro — o que a terra dá, o que a água dá e o que a mão fez. Voz do mundo, sem nome; congela quando o jogador muda de fé. As ervas são as da serra (as do mirante), o peixe sai da pesca e a cana, do roçado. No 2D a terceira coisa era farinha, 'o que a mão fez'; o vale ainda não tem casa de farinha (#27), e a mesa fica com o que a mão plantou.",
+  "dono": "fe_candomble",
+  "nome": "A mesa da folha",
+  "nome_en": "The table of the leaf",
+  "nome_es": "La mesa de la hoja",
+  "principal": false,
+  "passos": [
+    {
+      "id": "fe_mesa",
+      "titulo": "A mesa da folha",
+      "titulo_en": "The table of the leaf",
+      "titulo_es": "La mesa de la hoja",
+      "resumo": "Leve 3 ervas, 2 peixes e 2 canas ao terreiro",
+      "resumo_en": "Bring 3 herbs, 2 fish and 2 canes to the terreiro",
+      "resumo_es": "Lleva 3 hierbas, 2 peces y 2 cañas al terreiro",
+      "lugar": "terreiro",
+      "raio": 4.0,
+      "audio": "",
+      "texto": "Terreiro não se entra de mão vazia, e a primeira mesa é sua. Folha da serra, peixe da maré e cana da roça: o que o mato dá, o que a água dá e o que a mão plantou. Três ervas, dois peixes, duas canas. Leve tudo junto ao terreiro. Lá se aprende em roda; ninguém aprende sozinho.",
+      "texto_en": "No one enters a terreiro empty-handed, and the first table is yours. Leaf from the hills, fish from the tide and cane from the field: what the bush gives, what the water gives and what the hand has planted. Three herbs, two fish, two canes. Bring it all together to the terreiro. There one learns in a circle; no one learns alone.",
+      "texto_es": "Al terreiro no se entra con las manos vacías, y la primera mesa es tuya. Hoja de la sierra, pez de la marea y caña de la roza: lo que da el monte, lo que da el agua y lo que plantó la mano. Tres hierbas, dos peces, dos cañas. Llévalo todo junto al terreiro. Allí se aprende en rueda; nadie aprende solo.",
+      "recompensa": { "pirao": 2 },
+      "xp_de_fe": true,
+      "meta": {
+        "tipo": "oferendar",
+        "lugar": "terreiro",
+        "itens": { "erva_da_serra": 3, "peixe": 2, "cana": 2 },
+        "raio": 4.0,
+        "resposta": "Você deixa tudo no chão de barro batido, e alguém que você não viu recolhe. Não se agradece. A mesa é para a casa, e a casa é de todos.",
+        "resposta_en": "You set it all down on the packed-earth floor, and someone you did not see gathers it up. One does not give thanks. The table is for the house, and the house belongs to everyone.",
+        "resposta_es": "Dejas todo en el suelo de barro apisonado, y alguien que no viste lo recoge. No se agradece. La mesa es para la casa, y la casa es de todos."
+      }
+    }
+  ]
+}

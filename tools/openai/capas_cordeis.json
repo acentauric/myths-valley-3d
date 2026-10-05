@@ -1,0 +1,25 @@
+{
+  "observacao": "AS CAPAS DOS CORDÉIS: uma xilogravura por folheto, gerada no OpenAI pelo tools/openai/gerar-capas-cordeis.ps1. GERAÇÃO PAGA — só com pedido explícito, e o custo estimado aparece antes (-Estimar). O estilo é o da capa de folheto de feira: um bloco de madeira entalhado, tinta preta em papel de jornal envelhecido, figuras de arte popular. A imagem NÃO leva letra nenhuma: o título, o autor e o preço o jogo imprime por cima, em Cinzel e Cormorant (scripts/ui/folheto.gd), nos três idiomas que vierem. As cenas saem dos versos e da nota de cada folheto (data/colecionaveis/cordeis.json). As geradas caem em .assets-raw/cordeis/ (fora do Git) e as aprovadas vão para assets/prototipo_3d/cordeis/<id>.jpg pelo tools/openai/promover_capas.gd (768x1152, JPG 88).",
+  "modelo": "gpt-image-2",
+  "tamanho": "1024x1536",
+  "qualidade": "medium",
+  "preco_estimado_usd": {
+    "observacao": "Por imagem de 1024x1536, conferido em 03/10/2026 em levantamentos de preço publicados (a página de preços do OpenAI não abriu para a ferramenta). A cobrança de verdade é a do painel do OpenAI.",
+    "low": 0.005,
+    "medium": 0.041,
+    "high": 0.165
+  },
+  "estilo": "Traditional Brazilian 'literatura de cordel' booklet cover: a single woodcut (xilogravura) block print, black ink on aged cream newsprint paper, Reconcavo Baiano, 1887. Bold hand-carved lines, visible gouge marks and wood grain, flat high-contrast black and paper shapes, naive folk-art figures, a thick carved border around the picture. Portrait composition filling the block. Absolutely no text, no letters, no numbers, no words, no title, no signature, no watermark.",
+  "capas": {
+    "peso_falso": "A shopkeeper behind a wooden counter under a hanging beam balance scale; on one pan a hollow lead weight split open, empty inside; coins spilling; the scale tipping by itself after his death, a candle by the counter.",
+    "cachorro_do_enterro": "A faithful thin dog lying on top of a fresh grave marked by a simple wooden cross, ignoring a bowl of food and water beside it; small mourners walking away in the background under a big sun.",
+    "vendeu_a_chuva": "A smiling trickster in a wide-brimmed hat at a market stall selling rain sealed in glass bottles; a mustached colonel in a white suit paying with a herd of oxen; a rain cloud gathering over the market.",
+    "missa_dos_afogados": "A small seaside chapel at night in a strong east wind, its window glowing; through a crack in the door we see the pews full of drowned fishermen in dripping clothes; waves and a crescent moon behind.",
+    "moca_da_agua": "A young woman with very long flowing hair rising from a deep, silent bend of a river among reeds and a big stone; a man on the bank calling to her; rings spreading on the still water.",
+    "cabra_da_fazenda": "An isolated farmhouse under a full moon behind a tall wrought-iron gate; dancing silhouettes in every window that never stop; a lone man in a hat walking through the open gate.",
+    "porfia_do_caboclo": "A caboclo man in a leather hat on a hilltop challenging the south wind, drawn as a puffing face in the clouds; his hat flying off his head; below, a village church standing firm against the gust.",
+    "santo_do_pau_oco": "A carved wooden saint statue cut open to show gold nuggets hidden in its hollow belly; smugglers rowing a small boat at night; a royal tax collector watching from the shore.",
+    "boi_do_reconcavo": "A tired ox yoked to an ox cart at a sugar mill, speaking with its mouth open; a colonel in a white suit and a cane frowning; sugarcane fields and a smoking mill chimney behind.",
+    "moleque_do_pier": "A barefoot boy on a wooden pier pulling the full moon out of the sea with a fishing line; his mother on the beach waving her arms, scolding him; small waves and stars."
+  }
+}

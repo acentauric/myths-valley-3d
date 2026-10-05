@@ -53,3 +53,29 @@ Mesmo projeto do Pedro (`c8a8039c-…`): retarget da predefinição `preset:bipe
 (sem custo) e nova exportação com os oito clipes (idle, walk, run, greet_01, agree,
 look_around, wave_goodbye_02, swim), textura 1K, 4,5 MB, por `__mv.animar()` de
 `tools/tripo/lote_studio.js`. Original em `.assets-raw/tripo/personagens/pedro_tripo_nado.glb`.
+
+<!-- lote-2026-10-03b:inicio -->
+
+## Mestre Quirino (03/10/2026)
+
+O mestre do saveiro, que encosta no píer no dia 14 de cada estação
+(`scripts/prototipo_3d/saveiro_vale.gd`). Gerado em pose T (55), Malha Smart com
+alvo de 8.000 faces (40), Auto Rig humanoide com esqueleto Mixamo (20) e as sete
+predefinições dos moradores (idle, walk, run, greet_01, agree, look_around,
+wave_goodbye_02), exportado com animação no lugar e textura 1K por
+`__mv.animar()`.
+
+Geradas por texto no Tripo Studio em 03/10/2026 (Modelo HD H3.1, textura 8K
+desligada, 55 créditos) e passadas pela Retopologia (Quad, Malha Smart, 40
+créditos) com o alvo de faces de cada peça; exportadas em GLB. Geração,
+retopologia e exportação pela ponte do Playwright MCP com a extensão do Chrome,
+com `tools/tripo/lote_studio.js`; os originais ficam em
+`.assets-raw/tripo/gerados/` (fora do Git). Tarefas, projetos, alvos e prompts
+completos em `tools/tripo/lote_2026-10-03b.json`. Uso comercial: plano pago no
+momento da geração (ver `assets/CREDITOS.md`).
+
+| Arquivo | O que é (prompt) | Tarefa Tripo | Triângulos | Textura | MB |
+| --- | --- | --- | ---: | --- | ---: |
+| `quirino_tripo.glb` | Mestre Quirino, a weathered middle-aged sailboat master (mestre de saveiro) from Bahia in 1887, standing in T-pose with arms straight out: short gray beard, sun-darkened mixed-race skin, wide straw hat, loose white cotton shirt with rolled sleeves, faded blue cotton trousers rolled to the calf, rope belt, barefoot, strong calm build, full body character. | `5280d475-a738-4496-8ac9-9ee7557fe93f` | 14.509 | 1K | 4,3 |
+
+<!-- lote-2026-10-03b:fim -->

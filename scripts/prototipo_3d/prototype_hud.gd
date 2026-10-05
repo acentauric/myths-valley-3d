@@ -12,6 +12,7 @@ const TemaMenu = preload("res://scripts/prototipo_3d/tema_menu.gd")
 const TelaCarregamento = preload("res://scripts/prototipo_3d/tela_carregamento.gd")
 const Identidade = preload("res://scripts/prototipo_3d/identidade.gd")
 const PainelAjustes = preload("res://scripts/prototipo_3d/painel_ajustes.gd")
+const CaixaDePergunta = preload("res://scripts/prototipo_3d/caixa_de_pergunta.gd")
 const Minimapa = preload("res://scripts/prototipo_3d/minimapa.gd")
 const IdiomaMenu = preload("res://scripts/prototipo_3d/idioma_menu.gd")
 
@@ -73,10 +74,15 @@ var _root: Control
 var _region_label: Label
 ## "3 de 9" da missão em curso, à direita do nome da região.
 var _mission_step: Label
+## O nome da missão acompanhada, em cima do objetivo (ver `set_objective`).
+var _quest_label: Label
+var _missao := ""
 var _performance_panel: Panel
 var _performance_label: Label
 var _performance_button: Button
 var _performance_open := false
+## O número de FPS escrito no próprio botão (ver `_create_performance_button`).
+var _fps_label: Label
 var _speed_hint: Label
 var _speed_icon	# hud_icon.gd
 var _camera_icon	# hud_icon.gd
@@ -94,7 +100,7 @@ var _house_info_panel: Panel
 var _house_info_label: Label
 var _house_info_heading: Label
 var _clock_label: Label
-var _menu_confirm: Control
+var _menu_confirm = null	# caixa_de_pergunta.gd
 var _map_icon	# hud_icon.gd
 var _settings_icon	# hud_icon.gd
 var _settings: Control
@@ -130,12 +136,28 @@ func _ready() -> void:
 	_mission_step = _label("", 12, GOLD)
 	_mission_step.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	_place(_mission_step, Vector2(HEADING_WIDTH - 108, 26), Vector2(92, 20))
+	_quest_label = _label("", 13, GOLD)
+	_quest_label.name = "MissaoAcompanhada"
+	_quest_label.clip_text = true
+	_quest_label.visible = false
+	_place(_quest_label, Vector2(33, 50), Vector2(HEADING_WIDTH - 50, 20))
 	_objective_label = _label(_objective, 17, INK)
 	_objective_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_place(_objective_label, Vector2(33, 52), Vector2(HEADING_WIDTH - 50, 42))
 
+	# A COLUNA DE ÍCONES DO CANTO SAIU.
+	#
+	# Eram nove botões redondos empilhados na borda esquerda, por cima do vale,
+	# o tempo todo: HOME, ajustes, som, relógio, mapa, câmera, velocidade,
+	# estilo e controles. "Os ícones na esquerda do HUD podem ser todos dentro do
+	# menu ESC" — e estão, em linhas com o estado escrito (`menu_pausa.gd`).
+	#
+	# `_create_corner_buttons` continua aqui, sem ser chamada, porque ela é a
+	# receita dos ícones e do que cada um fazia — inclusive o das missões, que
+	# abre a mesma aba do diário que o J abre. O FPS fica sozinho no canto, com
+	# o número escrito nele.
 	_create_performance_panel()
-	_create_corner_buttons()
+	_create_performance_button()
 
 	_house_info_panel = _panel(Color(0.055, 0.085, 0.075, 0.92))
 	_root.add_child(_house_info_panel)
@@ -257,7 +279,7 @@ func _ready() -> void:
 ## É widget ACRESCENTADO, como a migração manda: o HUD continua sendo este, e
 ## não o do 2D. O número vem do `Vida` compartilhado — por `get_node_or_null`,
 ## porque quem monta o HUD sozinho, sem o projeto inteiro, não pode estourar
-## aqui. A barra verde do corte dos coqueiros fica embaixo, na mesma medida.
+## aqui. A barra verde do corte das árvores fica embaixo, na mesma medida.
 const COR_VIDA := Color(0.78, 0.28, 0.26)
 const COR_VIDA_ENVENENADA := Color(0.45, 0.62, 0.22)
 var barra_vida: ProgressBar
@@ -314,13 +336,21 @@ func _atualizar_vida() -> void:
 	_vida_preenchimento.bg_color = COR_VIDA_ENVENENADA if vida.envenenado_agora() else COR_VIDA
 
 
-## Reserva de respiração para as futuras missões no oceano. As ações do vale
-## gastam o vigor verde; esta barra azul acompanha apenas o fôlego do jogador.
-const COR_FOLEGO := Color("398fd2")
+## O FÔLEGO (#3), logo abaixo da vida e na mesma medida, com as cores do 2D
+## (`scripts/ui/hud.gd`): verde enquanto há fôlego, vermelho quando o corpo
+## está no fim. O número vem do `Energia` compartilhado, e o limiar é o dele
+## (`Energia.cansado()`), não um número daqui. O vigor, a barra verde da
+## corrida e do golpe, é outra conta (`_criar_barra_de_stamina`), e a
+## respiração do mergulho ainda não tem barra: nada a gasta por enquanto.
+##
+## Cansado, o texto diz "cansado" além de mudar a cor. O cansaço já pesa no
+## corpo — o passo cai para 62% e a corrida não responde —, e sem aviso quem
+## joga pensa que o jogo travou (ver `Energia.cansou`).
+const COR_FOLEGO := Color(0.55, 0.78, 0.45)
+const COR_FOLEGO_BAIXO := Color(0.9, 0.42, 0.34)
 var barra_folego: ProgressBar
 var _folego_texto: Label
 var _folego_preenchimento: StyleBoxFlat
-var _jogador_folego: Node
 
 
 func _criar_barra_de_folego() -> void:
@@ -345,23 +375,23 @@ func _criar_barra_de_folego() -> void:
 	_folego_texto.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_folego_texto.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_folego_texto.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	_atualizar_folego()
-
-
-func configurar_folego(jogador: Node) -> void:
-	if is_instance_valid(_jogador_folego) and _jogador_folego.is_connected("folego_mudou", _atualizar_folego):
-		_jogador_folego.disconnect("folego_mudou", _atualizar_folego)
-	_jogador_folego = jogador
-	_jogador_folego.connect("folego_mudou", _atualizar_folego)
-	_atualizar_folego()
-
-
-func _atualizar_folego(_valor: float = 0.0) -> void:
-	if not is_instance_valid(_jogador_folego) or barra_folego == null:
+	var energia := get_node_or_null("/root/Energia")
+	if energia == null:
+		barra_folego.visible = false
 		return
-	barra_folego.max_value = float(_jogador_folego.call("folego_maximo"))
-	barra_folego.value = float(_jogador_folego.call("folego_atual"))
-	_folego_texto.text = "Fôlego %d" % roundi(barra_folego.value)
+	energia.mudou.connect(_atualizar_folego)
+	_atualizar_folego()
+
+
+func _atualizar_folego() -> void:
+	var energia := get_node_or_null("/root/Energia")
+	if energia == null or barra_folego == null:
+		return
+	barra_folego.max_value = energia.maximo()
+	barra_folego.value = energia.atual
+	var cansado: bool = energia.cansado()
+	_folego_texto.text = ("%d · cansado" if cansado else "%d") % roundi(energia.atual)
+	_folego_preenchimento.bg_color = COR_FOLEGO_BAIXO if cansado else COR_FOLEGO
 
 
 func _criar_barra_de_stamina() -> void:
@@ -457,8 +487,15 @@ func clear_house_info() -> void:
 	_house_info_panel.visible = false
 
 
-func set_objective(value: String) -> void:
+## O OBJETIVO, e em cima dele o NOME DA MISSÃO acompanhada, como no canto do
+## Witcher: "◆ O CEMITÉRIO ESQUECIDO" e embaixo "Corte o capim com a foice
+## (2/4)". Sem missão (o convite do começo, o fim de uma cadeia), só a frase.
+func set_objective(value: String, missao: String = "") -> void:
 	_objective = value
+	_missao = missao
+	if is_instance_valid(_quest_label):
+		_quest_label.text = ("◆  " + missao.to_upper()) if missao != "" else ""
+		_quest_label.visible = missao != ""
 	if is_instance_valid(_objective_label):
 		_objective_label.text = value
 		_fit_heading()
@@ -534,6 +571,8 @@ func set_controls_open(open: bool) -> void:
 
 
 func _update_telemetry() -> void:
+	if is_instance_valid(_fps_label):
+		_fps_label.text = str(int(Engine.get_frames_per_second()))
 	if not is_instance_valid(_performance_label):
 		return
 	var triangles := Performance.get_monitor(Performance.RENDER_TOTAL_PRIMITIVES_IN_FRAME)
@@ -552,10 +591,7 @@ func _update_telemetry() -> void:
 func _update_clock_hint() -> void:
 	if not is_instance_valid(_clock_hint):
 		return
-	if Dia.pausa_no_jogo:
-		_clock_hint.text = "%s · %s" % [Dia.texto_hora(), "Retomar" if Dia.pausado else "Pausar"]
-	else:
-		_clock_hint.text = Dia.texto_hora()
+	_clock_hint.text = Dia.texto_hora()
 
 
 ## O painel do canto esquerdo cresce só o necessário para o objetivo caber.
@@ -563,8 +599,11 @@ func _fit_heading() -> void:
 	if not is_instance_valid(_heading):
 		return
 	var lines := maxi(1, _objective_label.get_line_count())
-	# 52 é onde a missão começa (ver `_montar`); 18 de respiro embaixo.
-	var altura := 52.0 + lines * _objective_label.get_line_height() + 18.0
+	# 52 é onde a missão começa (ver `_montar`); com o nome da missão em cima,
+	# ela desce 22. 18 de respiro embaixo.
+	var topo := 52.0 + (22.0 if _missao != "" else 0.0)
+	_objective_label.position.y = _heading.position.y + topo - 18.0
+	var altura := topo + lines * _objective_label.get_line_height() + 18.0
 	_objective_label.size.y = lines * _objective_label.get_line_height()
 	_heading.size.y = altura
 	if is_instance_valid(_house_info_panel):
@@ -602,15 +641,10 @@ func _create_corner_buttons() -> void:
 	clock_icon.set_running(not Dia.pausado)
 	var clock: Array = BotaoCanto.criar(_root, top, clock_icon, 28.0)
 	_clock_hint = clock[1]
-	_corner_setup(clock[0], func() -> void:
-		if not Dia.pausa_no_jogo:
-			Audio.efeito("ui_trava")
-			return
-		Audio.efeito("ui_confirmar")
-		Dia.pausado = not Dia.pausado
-		clock_icon.set_running(not Dia.pausado)
-		_update_clock_hint(), false)
-	(clock[0] as Button).mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND if Dia.pausa_no_jogo else Control.CURSOR_ARROW
+	# Só mostra a hora: parar o relógio desliga as conquistas da partida, e a
+	# única porta para isso é a linha "Relógio" do menu do Esc, que avisa antes.
+	_corner_setup(clock[0], func() -> void: Audio.efeito("ui_trava"), false)
+	(clock[0] as Button).mouse_default_cursor_shape = Control.CURSOR_ARROW
 	Dia.hora_mudou.connect(_update_clock_hint.unbind(1))
 
 	top += 1
@@ -636,7 +670,7 @@ func _create_corner_buttons() -> void:
 	var speed: Array = BotaoCanto.criar(_root, top, _speed_icon)
 	_speed_hint = speed[1]
 	_corner_setup(speed[0], func() -> void:
-		Dia.definir_velocidade((Dia.velocidade + 1) % Dia.VELOCIDADES.size())
+		Dia.definir_velocidade(Dia.proxima_velocidade())
 		_update_telemetry())
 
 	top += 1
@@ -667,6 +701,46 @@ func _create_corner_buttons() -> void:
 		_corner_nodes.append(_root.get_child(index))
 
 
+## A largura menor troca a dica horizontal por um painel de leitura persistente.
+## A posição acompanha a moldura do minimapa, sem depender da resolução da janela.
+##
+## O BOTÃO MOSTRA O FPS, e não um ícone. Ele levava o ícone de "estilo", que no
+## estilo procedural é um par de chaves — e quem jogou viu "{}" no lugar do
+## indicador: "o indicador de FPS não tá mostrando o FPS, está travado com {}".
+## Agora o número vive no botão, refeito com o resto das medições
+## (`_update_telemetry`); o clique continua abrindo o painel com o detalhe.
+func _create_performance_button() -> void:
+	_fps_label = Label.new()
+	_fps_label.name = "FPS"
+	_fps_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_fps_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_fps_label.add_theme_font_override("font", Identidade.fonte_numeros(600))
+	_fps_label.add_theme_font_size_override("font_size", 15)
+	_fps_label.add_theme_color_override("font_color", Identidade.CREME)
+	_fps_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_fps_label.text = "--"
+	# O CANTO RECEBE A POSIÇÃO NA COLUNA (0 é o alto), e não os pixels do topo.
+	#
+	# Desde o "Tamanho do HUD" do AJUSTAR, o `BotaoCanto` mede a placa pela
+	# escala escolhida e a refaz na hora (`BotaoCanto.reaplicar`). Aqui ainda se
+	# passava 32.0, o topo em pixels de antes: lido como posição, o botão ia
+	# parar 1.600 px abaixo, fora da tela — e sem erro nenhum.
+	#
+	# E O NÚMERO NÃO É ÍCONE. O canto encolhe o ícone para um quadrado de 16 no
+	# meio da placa, e refaz essa conta a cada troca de tamanho; o número usa o
+	# botão todo, para "144" caber sem cortar. Por isso o ícone do canto é um
+	# nó vazio, e o número é filho do botão, ancorado nele inteiro: acompanha a
+	# placa em qualquer tamanho do HUD.
+	var dados: Array = BotaoCanto.criar(_root, 0, Control.new())
+	(dados[1] as Label).text = "FPS"
+	_performance_button = dados[0]
+	_performance_button.add_child(_fps_label)
+	_fps_label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_corner_setup(_performance_button, func() -> void:
+		_performance_open = not _performance_open
+		_sync_performance_panel())
+
+
 func _create_performance_panel() -> void:
 	_performance_panel = _panel(Color(0.055, 0.085, 0.075, 0.92))
 	_performance_panel.name = "DadosDeDesempenho"
@@ -692,8 +766,10 @@ func _sync_performance_panel() -> void:
 		_performance_panel.visible = _performance_open and not controls_open() and not mapa_aberto
 
 
-## Com o mapa aberto, a coluna do canto continua acessível; o restante do HUD
-## some e volta ao fechar o mapa.
+## Com o mapa aberto somem título, relógio, avisos e controles, e voltam como
+## estavam. Antes ficava também a coluna de ícones do canto, com o do mapa em
+## dourado — ela saiu para dentro do menu do Esc, e o mapa hoje se fecha pelo
+## Esc ou pela mesma linha do menu que o abriu.
 func set_map_open(open: bool) -> void:
 	mapa_aberto = open
 	if is_instance_valid(_map_icon):
@@ -701,7 +777,7 @@ func set_map_open(open: bool) -> void:
 	if open:
 		_hidden_for_map.clear()
 		for child in _root.get_children():
-			if child is Control and child.name == "VidaDoCoqueiro":
+			if child is Control and child.name == "VidaDaArvore":
 				child.visible = false
 				continue
 			if child is Control and child.visible and child != _menu_confirm and not _corner_nodes.has(child):
@@ -760,7 +836,8 @@ func open_settings() -> void:
 		else:
 			close_settings()
 	_ajustes.construir(content, overlay, 0)
-	_settings_icon.definir(true)
+	if is_instance_valid(_settings_icon):
+		_settings_icon.definir(true)
 
 
 func close_settings() -> void:
@@ -769,7 +846,8 @@ func close_settings() -> void:
 	_ajustes.fechar_ajuda()
 	_settings.queue_free()
 	_settings = null
-	_settings_icon.definir(false)
+	if is_instance_valid(_settings_icon):
+		_settings_icon.definir(false)
 	settings_closed.emit()
 
 
@@ -777,68 +855,20 @@ func menu_confirm_open() -> bool:
 	return is_instance_valid(_menu_confirm)
 
 
-## Confirmação de saída para o menu, no mesmo visual dos modais do menu. Roda com o
-## jogo pausado (PROCESS_MODE_ALWAYS); Esc ou clique fora cancelam.
+## Confirmação de saída para o menu, na caixa de pergunta do vale
+## (`caixa_de_pergunta.gd`), a mesma do relógio. Roda com o jogo pausado; Esc ou
+## clique fora cancelam.
 func open_menu_confirm() -> void:
 	if menu_confirm_open():
 		return
-	_menu_confirm = Control.new()
-	_menu_confirm.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	_menu_confirm.theme = TemaMenu.criar()
-	_menu_confirm.process_mode = Node.PROCESS_MODE_ALWAYS
-	_root.add_child(_menu_confirm)
-	var shade := ColorRect.new()
-	shade.color = Color(0, 0, 0, 0.55)
-	shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	shade.gui_input.connect(func(event: InputEvent) -> void:
-		if event is InputEventMouseButton and event.pressed:
-			_close_menu_confirm(false))
-	_menu_confirm.add_child(shade)
-	var box := PanelContainer.new()
-	box.add_theme_stylebox_override("panel", TemaMenu.estilo_painel())
-	box.custom_minimum_size = Vector2(440, 0)
-	box.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
-	box.grow_horizontal = Control.GROW_DIRECTION_BOTH
-	box.grow_vertical = Control.GROW_DIRECTION_BOTH
-	_menu_confirm.add_child(box)
-	var column := VBoxContainer.new()
-	column.add_theme_constant_override("separation", 14)
-	box.add_child(column)
-	var title := Label.new()
-	title.text = "Voltar ao menu?"
-	title.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_TITULO, 600, 2))
-	title.add_theme_font_size_override("font_size", 24)
-	title.add_theme_color_override("font_color", Identidade.CREME)
-	column.add_child(title)
-	var text := Label.new()
-	text.text = "O passeio termina aqui. Ao entrar de novo, o dia recomeça."
-	text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	text.add_theme_font_size_override("font_size", 16)
-	text.add_theme_color_override("font_color", Color("c9b98f"))
-	column.add_child(text)
-	var buttons := HBoxContainer.new()
-	buttons.add_theme_constant_override("separation", 12)
-	column.add_child(buttons)
-	var cancel := Button.new()
-	cancel.text = "CONTINUAR"
-	cancel.custom_minimum_size.y = 44
-	cancel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	var escape := InputEventKey.new()
-	escape.keycode = KEY_ESCAPE
-	cancel.shortcut = Shortcut.new()
-	cancel.shortcut.events = [escape]
-	cancel.pressed.connect(_close_menu_confirm.bind(false))
-	buttons.add_child(cancel)
-	var leave := Button.new()
-	leave.text = "IR AO MENU"
-	leave.custom_minimum_size.y = 44
-	leave.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	leave.theme_type_variation = &"BotaoNegativo"
-	leave.pressed.connect(_close_menu_confirm.bind(true))
-	buttons.add_child(leave)
-	for button: Button in [cancel, leave]:
-		button.mouse_entered.connect(func(): Audio.efeito("ui_hover"))
-	cancel.grab_focus()
+	_menu_confirm = CaixaDePergunta.new()
+	_menu_confirm.perguntar(self, {
+		"titulo": "Voltar ao menu?",
+		"texto": "O passeio termina aqui. Ao entrar de novo, o dia recomeça.",
+		"nao": "CONTINUAR",
+		"sim": "IR AO MENU",
+	})
+	_menu_confirm.respondeu.connect(_close_menu_confirm)
 
 
 func _close_menu_confirm(leave: bool) -> void:
@@ -924,4 +954,4 @@ func almanaque() -> Control:
 func set_mission_step(indice: int, total: int) -> void:
 	if not is_instance_valid(_mission_step):
 		return
-	_mission_step.text = "" if total <= 0 or indice >= total else "%d de %d" % [indice, total]
+	_mission_step.text = "" if total <= 0 or indice <= 0 or indice > total else "%d de %d" % [indice, total]

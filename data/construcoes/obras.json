@@ -12,7 +12,8 @@
     "cabana_pesca": "oficio",
     "engenho": "oficio",
     "casa_farinha": "oficio",
-    "mirante": "mirante"
+    "mirante": "mirante",
+    "cemiterio": "cemiterio"
   },
 
   "obras": {
@@ -223,6 +224,23 @@
       "custo": { "tabua": 20, "pedra": 12, "corda": 6 }
     },
 
+    "cemiterio_cercado": {
+      "observacao": "OBRA DO VALE, e não do 2D: o fim da missão do Damião (data/missoes_coveiro.json, coveiro_cercado), que ensina o plano ao abrir. O custo é o que o cemitério dá — a lenha da embaúba e da galhada que o próprio passo do mato derrubou, e a corda torcida dela na oficina —, e a conta fecha no tests/cadeia_do_coveiro.gd. Quem levanta é o cemiterio_vale.gd, ouvindo a obra feita. Nome e resumo já nos três idiomas, para quando a aba de obras ler o idioma (o resto do arquivo está com o Ramon).",
+      "eixo": "casca",
+      "compartimento": "Casco",
+      "ordem": 1,
+      "vira": "cercado",
+      "alvos": ["cemiterio"],
+      "nome": "Cercar o cemitério",
+      "nome_en": "Fence the cemetery",
+      "nome_es": "Cercar el cementerio",
+      "resumo": "Cercado de pau roliço amarrado de corda, com a entrada do lado da rua. Cabrito e porco ficam do lado de fora, e quem é de dentro descansa.",
+      "resumo_en": "A fence of round poles lashed with rope, with the way in on the road side. Goats and pigs stay outside, and those within get their rest.",
+      "resumo_es": "Cerca de palos redondos atada con cuerda, con la entrada del lado de la calle. Cabras y cerdos se quedan afuera, y los de adentro descansan.",
+      "abre": { "missao": "coveiro_cercado" },
+      "custo": { "lenha": 6, "corda": 2 }
+    },
+
     "canteiro_prancheta": {
       "eixo": "planta",
       "ordem": 1,
@@ -278,6 +296,20 @@
       "custo": { "pedra": 60, "tabua": 24, "corda": 8 }
     },
 
+    "poco_corda": {
+      "observacao": "OBRA DO VALE, e não do 2D: o primeiro mutirão do jogo, o passo mutirao_poco da chegada (data/missoes_guia.json), que ensina o plano ao abrir. É pequena de propósito — uma corda e as três pedras que o lajedo do poço dá —, porque é a obra de quem chegou ontem. A roldana, a cacimba e o bebedouro continuam sendo a obra do arraial (arraial_poco), de rendimento, para depois. Nome e resumo nos três idiomas, como o cemiterio_cercado. Ver docs/mundo/CHEGADA_E_MUTIROES.md.",
+      "eixo": "planta",
+      "ordem": 0,
+      "alvos": ["poco"],
+      "nome": "A boca do poço",
+      "nome_en": "The mouth of the well",
+      "nome_es": "La boca del pozo",
+      "resumo": "Corda nova no balde e três pedras calçando a boca que esfarelava. O balde volta a descer sem levar a borda junto, e o arraial volta a beber dali.",
+      "resumo_en": "A new rope on the bucket and three stones shoring up the crumbling mouth. The bucket goes down again without taking the rim with it, and the village drinks from it again.",
+      "resumo_es": "Cuerda nueva en el balde y tres piedras calzando la boca que se desmoronaba. El balde vuelve a bajar sin arrastrar el borde, y el pueblo vuelve a beber de ahí.",
+      "abre": { "missao": "mutirao_poco" },
+      "custo": { "corda": 1, "pedra": 3 }
+    },
     "arraial_poco": {
       "eixo": "planta",
       "ordem": 1,
@@ -311,7 +343,7 @@
       "alvos": ["carroca"],
       "nome": "Recuperar a carroça",
       "resumo": "Roda refeita, eixo escorado, estrado novo. O que descia a ladeira em três viagens desce numa. Rende mais em quem tira lenha e em quem trança corda e cesto.",
-      "abre": { "morador": "cosme", "grau": 1, "compra": 240 },
+      "abre": { "missao": "carroca_mutirao", "morador": "cosme", "grau": 1, "compra": 240 },
       "custo": { "tabua": 20, "corda": 10, "pedra": 4 }
     },
     "arraial_trapiche": {

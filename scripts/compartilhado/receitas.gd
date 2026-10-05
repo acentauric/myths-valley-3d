@@ -63,6 +63,10 @@ extends Node
 ##     "abre": {"achado": "boi_do_reconcavo"}     o mundo ensina
 ##     "abre": {"compra": 240}                    o balcão vende
 ##     "abre": {"missao": "x", "compra": 300}     as duas, a primeira que vier
+##     "abre": {"missao": ["pesca", "janta"]}  qualquer um dos passos ensina
+##
+## A MISSÃO PODE SER UMA LISTA: o peixe na brasa se aprende na pesca do 2D e
+## na primeira janta da chegada do vale, que são passos de cadeias diferentes.
 ##
 ##
 ## O QUE NASCE SABIDO, E POR QUE SÃO TÃO POUCOS
@@ -165,7 +169,7 @@ func conferir() -> void:
 			continue
 		if bool(portas.get("comeco", false)):
 			aprender(str(id), "comeco")
-		elif portas.has("missao") and Missoes.cumprida(str(portas["missao"])):
+		elif portas.has("missao") and _passos_da_porta(portas["missao"]).any(func(p: String) -> bool: return Missoes.cumprida(p)):
 			aprender(str(id), "missao")
 		elif portas.has("morador") \
 				and Afinidade.grau(str(portas["morador"])) >= int(portas.get("grau", 1)):
@@ -184,6 +188,15 @@ func _ja_achou(chave: String) -> bool:
 
 
 func _ao_abrir_passo(missao: String) -> void:
+	_abrir_por("missao", missao)
+
+
+## UM PASSO DE CADEIA DO VALE ABRIU. O 3D não conduz missão pelo `Missoes`:
+## quem conduz é a `CadeiaDeMissoes`, e é ela que avisa aqui — a mesma porta
+## de `Missoes.abriu`, com o id do passo. Sem isto a planta que um passo
+## ensina ("abre": {"missao": "mirante_material"}) nunca entrava na cabeça do
+## jogador, e o passo seguinte pedia uma obra que a aba não listava.
+func passo_abriu(missao: String) -> void:
 	_abrir_por("missao", missao)
 
 
@@ -216,8 +229,20 @@ func _abrir_por(porta: String, chave: String) -> void:
 	var todas := tudo()
 	for id in todas:
 		var portas: Dictionary = todas[id].get("abre", {})
-		if str(portas.get(porta, "")) == chave:
+		if portas.has(porta) and _passos_da_porta(portas[porta]).has(chave):
 			aprender(str(id), porta)
+
+
+## O valor de uma porta como lista de nomes: "x" vale ["x"], e a lista vale
+## ela mesma (ver o cabeçalho, "a missão pode ser uma lista").
+static func _passos_da_porta(valor) -> Array[String]:
+	var lista: Array[String] = []
+	if valor is Array:
+		for um in valor:
+			lista.append(str(um))
+	else:
+		lista.append(str(valor))
+	return lista
 
 
 # --- o balcão -----------------------------------------------------------------

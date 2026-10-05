@@ -5,10 +5,27 @@ raiz. O jogo 2D segue sua própria linha em `acentauric/myths-valley`.
 
 ## O que já roda
 
-Exploração do vale, moradores, missões em âncoras, calendário, energia, vida,
-inventário, equipamento, talentos, fé, cartas, coleção, obras, pesca,
-cozinha, oficina e três vagas de salvamento. A existência de um sistema não
-significa que todos os seus gatilhos ou telas estejam concluídos.
+Exploração do vale, moradores (que andam pela malha de navegação), missões em
+âncoras com recompensa (#48) e diário de missões acompanhadas, calendário (com
+o registro das mudanças no relógio), energia, vida, inventário, equipamento,
+talentos, cartas, coleção, obras, pesca, cozinha, oficina, os cordéis (pendurados no barbante, o folheto em
+alta com a capa de cada um), a lavoura da casa
+(#8: arar, plantar, regar, crescer por dia regado e colher, com a regra do
+roçado do 2D), o cemitério do Damião (o mato, o conserto das lajes e o cercado,
+que é obra), o corte das árvores (toda árvore do vale, que volta adulta em um
+ano do calendário, com a madeira de lei e a pedra dura presas ao talento e à
+ferramenta de aço), o saveiro do mestre Quirino (o comprador que encosta no
+píer no dia 14 de cada estação, com a cadeia do Seu Benedito, a encomenda de
+piaçava e a piaçava tirada no facão), a fé (#52: os seis marcos, o rito, a troca, a
+teia da fé no K, as missões da Dona Zefa e de cada fé e a festa de cada uma,
+com os moradores no marco à tarde, e a capelinha do cemitério de costas para o
+mar), os cômodos por dentro das próprias
+construções (#26: a igreja do Bom Jesus e a casa herdada, com a cama que vira o
+dia, o baú e o desmaio das duas da #50; e a casa do Pedro e a da Dona Zefa,
+cada uma com o interior de quem mora) e três vagas de salvamento, com os
+pontos de restauração de cada uma. A
+existência de um sistema não significa que todos os seus gatilhos ou telas
+estejam concluídos.
 
 ## Próxima tarefa
 

@@ -16,11 +16,18 @@ extends Node
 ## nenhum modelo novo foi preciso.
 ##
 ##
-## A ferramenta precisa estar no espaço selecionado da barra de mão.
+## O ALVO DIZ DE QUE FERRAMENTA PRECISA, E ELA TEM DE ESTAR NA MÃO.
+##
+## Começou como simplificação — bastava a ferramenta na mochila, enquanto a
+## barra de mão não existia. A barra chegou (teclas 1 a 0, como no 2D; os
+## gestos ficaram no Alt), e a simplificação virou defeito: com o machado na
+## mão, o capim da foice se cortava. Ver `_tem_ferramenta`.
 
 const DicaTecla = preload("res://scripts/prototipo_3d/dica_tecla.gd")
 const Atalhos = preload("res://scripts/prototipo_3d/atalhos.gd")
 const CatalogoAssets = preload("res://scripts/prototipo_3d/catalogo_assets.gd")
+const IdiomaMenu = preload("res://scripts/prototipo_3d/idioma_menu.gd")
+const CoqueiroCortado = preload("res://scripts/prototipo_3d/coqueiro_cortado.gd")
 
 const DADOS := "res://data/recursos_3d.json"
 ## Distância no chão para a dica aparecer e para o golpe valer.
@@ -39,9 +46,9 @@ var _dica: PanelContainer
 ## id → {"no", "pos", "ficha", "golpes_dados"}
 var _alvos: Dictionary = {}
 var _perto := ""
-## Quantos alvos de cada peça foram POSTOS no mundo, para a conta de quantos
-## já caíram: alvo derrubado some de `_alvos`, e sem este número não haveria
-## de onde subtrair. Ver `derrubados`.
+## Quantos alvos de cada peça — e de cada grupo — foram POSTOS no mundo, para a
+## conta de quantos já caíram: alvo derrubado some de `_alvos`, e sem este
+## número não haveria de onde subtrair. Ver `derrubados`.
 var _postos: Dictionary = {}
 ## Os ids dos alvos que já caíram nesta partida, para o save. Ver `caidos`.
 var _caidos: Array[String] = []
@@ -87,8 +94,10 @@ func _erguer() -> void:
 		pos = _world.ground_position(pos)
 
 		var id := str(ficha.get("id", ""))
+		# "giro" (graus) vira a peça no chão: três troncos caídos não caem paralelos.
+		var giro := deg_to_rad(float(ficha.get("giro", 0.0)))
 		var no := CatalogoAssets.instanciar(str(ficha.get("peca", "")), _world, pos,
-			float(ficha.get("tamanho", 1.0)))
+			float(ficha.get("tamanho", 1.0)), giro)
 		if no == null:
 			continue
 
@@ -104,7 +113,7 @@ func _erguer() -> void:
 		# e depois — então é o que se faz.
 		var antes := _world.get_child_count()
 		CatalogoAssets.colisao(str(ficha.get("peca", "")), no, _world, pos,
-			float(ficha.get("tamanho", 1.0)))
+			float(ficha.get("tamanho", 1.0)), giro)
 		var corpos: Array[Node] = []
 		for i in range(antes, _world.get_child_count()):
 			corpos.append(_world.get_child(i))
@@ -126,6 +135,9 @@ func _erguer() -> void:
 
 		var peca := str(ficha.get("peca", ""))
 		_postos[peca] = int(_postos.get(peca, 0)) + 1
+		var grupo := str(ficha.get("grupo", ""))
+		if grupo != "":
+			_postos[grupo] = int(_postos.get(grupo, 0)) + 1
 		_alvos[id] = {"no": no, "pos": pos, "ficha": ficha, "golpes_dados": 0,
 			"corpos": corpos, "meia_pegada": meia}
 
@@ -146,7 +158,7 @@ func _process(_delta: float) -> void:
 	# bater" manda o jogador apertar uma tecla que não vai fazer nada.
 	DicaTecla.mostrar_em(_dica, get_viewport().get_camera_3d(),
 		alvo["pos"] + Vector3(0.0, ALTURA_DICA, 0.0),
-		"%s · %s" % [str(ficha.get("nome", "")), _o_que_falta(ficha)])
+		"%s · %s" % [str(IdiomaMenu.campo(ficha, "nome")), _o_que_falta(ficha)])
 
 
 ## O alvo ao alcance, ou "" — o mais perto quando há mais de um.
@@ -167,32 +179,106 @@ func _process(_delta: float) -> void:
 ## é somado à meia-pegada de cada um, que é o quanto ele empurra o jogador para
 ## longe do próprio centro — e aí "encoste e aperte E" volta a ser verdade para
 ## qualquer tamanho de peça.
+##
+## NA LAVOURA, A TECLA É DELA: os pés de cana e a lenha da beira do roçado
+## ficam a um alcance do campo, e o E que ara o leito batia na cana.
+##
+## E A PAREDE SEPARA. A lenha da casa de taipa fica do lado de fora da parede
+## direita, perto o bastante para o alcance passar por ela: de dentro da casa,
+## junto do fogão, o E oferecia a lenha. Quem está dentro de um cômodo só
+## alcança o que está dentro dele, e quem está fora, o que está fora.
 func _mais_perto() -> String:
 	var melhor := ""
 	var menor := INF
+	var lavoura := get_tree().get_first_node_in_group("lavoura") if is_inside_tree() else null
+	if lavoura != null and lavoura.no_campo(_jogador.global_position):
+		return ""
+	var interiores := get_tree().get_first_node_in_group("interiores") if is_inside_tree() else null
+	var lado_do_jogador: String = interiores.contem(_jogador.global_position) if interiores != null else ""
 	for id in _alvos:
 		var d: Vector3 = _alvos[id]["pos"] - _jogador.global_position
 		d.y = 0.0
 		var sobra: float = d.length() - float(_alvos[id].get("meia_pegada", 0.0))
 		if sobra < ALCANCE and sobra < menor:
+			if interiores != null and interiores.contem(_alvos[id]["pos"]) != lado_do_jogador:
+				continue
 			menor = sobra
 			melhor = id
 	return melhor
 
 
-## O que a dica diz depois do nome: a ferramenta que falta, ou o que vai render.
+## O que a dica diz depois do nome: a ferramenta que falta, o talento ou o aço
+## que o alvo pede, ou com o que se vai bater.
 func _o_que_falta(ficha: Dictionary) -> String:
 	var ferramenta := str(ficha.get("ferramenta", ""))
+	if ferramenta == "":
+		return tr("à mão") if Energia.aguenta("bater", _dureza(ficha)) else "sem %s" % Energia.nome_recurso()
 	if not _tem_ferramenta(ferramenta):
+		# Na barra, mas não escolhida: diz a tecla. Só na mochila: manda pôr na mão.
 		for indice in Inventario.ESPACOS_MAO:
-			if str(Inventario.espacos[indice].get("id", "")) == ferramenta:
-				return "selecione %s (%s)" % [_nome_do_item(ferramenta), Inventario.rotulo_do_espaco(indice)]
-		if Inventario.tem(ferramenta):
-			return "ponha %s na barra" % _nome_do_item(ferramenta)
+			var na_barra := str(Inventario.espacos[indice].get("id", ""))
+			if na_barra != "" and Catalogo.familia(na_barra) == ferramenta:
+				return tr("selecione %s (%s)") % [_nome_do_item(na_barra), Inventario.rotulo_do_espaco(indice)]
+		if _carrega(ferramenta):
+			return tr("ponha na mão: %s") % _nome_do_item(ferramenta)
 		return "precisa de %s" % _nome_do_item(ferramenta)
-	if not Energia.aguenta("bater"):
-		return "sem vigor"
-	return "com %s" % _nome_do_item(ferramenta)
+	var impede := _o_que_impede(ficha, false)
+	if impede != "":
+		return impede
+	if not Energia.aguenta("bater", _dureza(ficha)):
+		return "sem %s" % Energia.nome_recurso()
+	return "com %s" % _nome_do_item(Equipamento.da_familia_em_uso(ferramenta))
+
+
+## A dureza do alvo para o Energia: o fôlego de cada golpe é bater x dureza.
+## Sem o campo, 1 — o lajedo e o tronco caído de sempre.
+static func _dureza(ficha: Dictionary) -> float:
+	return float(ficha.get("dureza", 1.0))
+
+
+## O QUE O ALVO PEDE ALÉM DA FERRAMENTA CERTA NA MÃO, ou "".
+##
+## Dois pedidos, e eles não se parecem — foi a queixa do 2D: "precisa
+## diferenciar uma árvore que precisa de machado melhor de uma que precisa
+## destravar a habilidade". `"nivel": 2` é o do talento (`Progressao.nivel`,
+## que só a teia sobe: Mão de pedra, Pedra de Xangô), e manda à teia;
+## `"grau": 2` é a ferramenta de aço na mão, e manda à venda. A pedra dura pede
+## o talento; o matacão pede os dois. `frase` é a recusa inteira, com ponto;
+## sem ela, o pedaço que a dica põe depois do nome.
+func _o_que_impede(ficha: Dictionary, frase: bool) -> String:
+	var ferramenta := str(ficha.get("ferramenta", ""))
+	if ferramenta == "":
+		return ""
+	var nivel := int(ficha.get("nivel", 1))
+	var grau := int(ficha.get("grau", 1))
+	var falta_talento := Progressao.nivel(ferramenta) < nivel
+	var falta_aco := Catalogo.grau(Equipamento.da_familia_em_uso(ferramenta)) < grau
+	if not falta_talento and not falta_aco:
+		return ""
+	var de_aco := _nome_do_item(_da_familia_no_grau(ferramenta, grau))
+	var talentos := " / ".join(Talentos.que_abrem(ferramenta, nivel))
+	if falta_talento and falta_aco:
+		return (tr("Pede %s e o talento %s.") if frase else tr("pede %s e o talento %s")) % [de_aco, talentos]
+	if falta_aco:
+		return (tr("Pede %s.") if frase else tr("pede %s")) % de_aco
+	return (tr("Pede o talento %s.") if frase else tr("pede o talento %s")) % talentos
+
+
+## A ferramenta desta família naquele grau — a picareta de aço, para a
+## picareta no grau 2 —, ou a própria família quando não há.
+static func _da_familia_no_grau(familia: String, grau: int) -> String:
+	for id in Catalogo.ITENS:
+		if Catalogo.familia(id) == familia and Catalogo.grau(id) == grau:
+			return str(id)
+	return familia
+
+
+## Tem na mochila alguma ferramenta desta família (a de ferro ou a de aço)?
+func _carrega(familia: String) -> bool:
+	for id in Catalogo.ITENS:
+		if Catalogo.familia(id) == familia and Inventario.tem(str(id)):
+			return true
+	return false
 
 
 func _nome_do_item(id: String) -> String:
@@ -200,8 +286,20 @@ func _nome_do_item(id: String) -> String:
 	return str(item.get("nome", id))
 
 
+## A FERRAMENTA DO ALVO TEM DE ESTAR NA MÃO — pelo número da barra, ou vestida
+## em "Mãos" —, e não só na mochila.
+##
+## "Na missão de introdução da foice eu consegui fazer a animação usando o
+## machado. Cada ferramenta tem seus pontos de interação e nenhuma deve invadir
+## a interação da outra." O capim pedia foice e conferia só se ela estava na
+## mochila: com o machado na mão e a foice guardada, o E cortava o capim com o
+## golpe e o machado no braço. A pesca (vara) e o coqueiro (machado) já
+## perguntavam pela mão; os alvos de trabalho passam a perguntar também.
 func _tem_ferramenta(id: String) -> bool:
-	return id == "" or Inventario.na_mao() == id
+	# SEM FERRAMENTA É À MÃO: a ostra se cata na pedra (#52). E o machado de
+	# aço é machado: a ficha pede a FAMÍLIA, e o grau é conta à parte
+	# (`_o_que_impede`).
+	return id == "" or Equipamento.da_familia_em_uso(id) != ""
 
 
 ## O GOLPE.
@@ -217,11 +315,24 @@ func bater() -> bool:
 	var ferramenta := str(ficha.get("ferramenta", ""))
 
 	if not _tem_ferramenta(ferramenta):
-		recusado.emit("Precisa de %s." % _nome_do_item(ferramenta))
+		# Carregando a certa e segurando outra (ou nada): diz qual pôr na mão.
+		if _carrega(ferramenta):
+			recusado.emit(tr("Ponha na mão: %s.") % _nome_do_item(ferramenta))
+		else:
+			recusado.emit("Precisa de %s." % _nome_do_item(ferramenta))
 		return false
-	if not Energia.gastar("bater"):
-		recusado.emit("Sem vigor para bater.")
+	# A certa na mão e o alvo duro demais para ela, ou para quem a segura.
+	var impede := _o_que_impede(ficha, true)
+	if impede != "":
+		recusado.emit(impede)
 		return false
+	var dureza := _dureza(ficha)
+	if not Energia.gastar("bater", dureza):
+		recusado.emit("Sem %s para bater." % Energia.nome_recurso())
+		return false
+	# QUEM TRABALHA APRENDE, e o duro ensina mais (`Talentos.XP_POR_ACAO`): é por
+	# aqui que o golpe leva à teia que abre o alvo mais duro.
+	Talentos.ganhar("bater_duro" if dureza > 1.5 else "bater")
 
 	_golpear_com_o_corpo()
 	alvo["golpes_dados"] = int(alvo["golpes_dados"]) + 1
@@ -241,7 +352,12 @@ func bater() -> bool:
 		Inventario.adicionar(rende, quantos)
 	var no: Node3D = alvo["no"]
 	if is_instance_valid(no):
-		no.queue_free()
+		# A ÁRVORE NOVA CAI (`"cai": true`), do pé, para longe de quem cortou,
+		# como as árvores do vale; o resto some onde estava.
+		if bool(ficha.get("cai", false)):
+			CoqueiroCortado.derrubar(no, no.get_parent(), no.global_position, no.global_position - _jogador.global_position)
+		else:
+			no.queue_free()
 	# E A COLISÃO COM ELE. Ver o comentário em `_erguer`: ela é nó irmão, e
 	# esquecê-la deixa o caminho barrado por um tronco que não existe mais.
 	for corpo in alvo.get("corpos", []):
@@ -351,20 +467,29 @@ func mais_perto_que_rende(item: String, de: Vector3) -> Vector3:
 ##
 ## Pela PEÇA, e não pelo que rende, porque o que o passo pede é o pé cortado e
 ## não o material: dois alvos de peças diferentes podem render a mesma coisa.
+##
+## OU PELO GRUPO, quando o pedido junta peças diferentes: o mato do cemitério é
+## embaúba nova e tronco caído (`"grupo": "mato_do_cemiterio"` no JSON), e o
+## Damião pede o mato, não a peça. O grupo é só mais um nome que o alvo atende.
 func derrubados(peca: String) -> int:
 	return int(_postos.get(peca, 0)) - _de_pe(peca)
 
 
-## Quantos alvos desta peça ainda estão de pé.
+## Quantos alvos desta peça (ou deste grupo) ainda estão de pé.
 func _de_pe(peca: String) -> int:
 	var conta := 0
 	for id in _alvos:
-		if str((_alvos[id]["ficha"] as Dictionary).get("peca", "")) == peca:
+		if _atende(_alvos[id]["ficha"], peca):
 			conta += 1
 	return conta
 
 
-## ONDE ESTÁ O ALVO MAIS PERTO DESTA PEÇA, ou `Lugares.NENHUM`.
+## O alvo desta ficha atende pelo nome `peca` — o da peça ou o do grupo dele?
+static func _atende(ficha: Dictionary, peca: String) -> bool:
+	return str(ficha.get("peca", "")) == peca or (peca != "" and str(ficha.get("grupo", "")) == peca)
+
+
+## ONDE ESTÁ O ALVO MAIS PERTO DESTA PEÇA (ou deste grupo), ou `Lugares.NENHUM`.
 ##
 ## É o `mais_perto_que_rende` para os que não rendem nada. O losango do
 ## cemitério mostra o pé de capim mais perto, e quando ele parar de mostrar,
@@ -373,7 +498,7 @@ func mais_perto_da_peca(peca: String, de: Vector3) -> Vector3:
 	var melhor: Vector3 = Lugares.NENHUM
 	var menor := INF
 	for id in _alvos:
-		if str((_alvos[id]["ficha"] as Dictionary).get("peca", "")) != peca:
+		if not _atende(_alvos[id]["ficha"], peca):
 			continue
 		var d: Vector3 = _alvos[id]["pos"] - de
 		d.y = 0.0

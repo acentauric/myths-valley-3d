@@ -35,6 +35,12 @@ extends Node
 ##     linha     UMA linha de andamento, escrita por quem conduz
 ##     feito     quanto já foi, e de quanto (`total`); 0/0 quer dizer "sem conta"
 ##     alvo      onde o marcador aponta, ou `Vector3.ZERO`
+##     texto     a fala inteira de quem pediu, que só o diário (J) mostra
+##
+## E, escrito por `descrever`, o que o diário e o HUD mostram da missão
+## inteira: `missao` (o nome dela), `quem` (o nome de quem a deu), `resumo` (a
+## linha do HUD), `passo` e `passos` (em qual está, de quantos) e `feitos` (os
+## resumos dos passos já cumpridos, que o diário risca).
 ##
 ## NÃO HÁ CHECKLIST. Uma missão tem uma linha de andamento e não uma lista de
 ## itens, e é essa a diferença que importa: quem conduz decide o que escrever
@@ -54,19 +60,83 @@ signal concluiu(id: String)
 var ativas: Array[Dictionary] = []
 ## Os ids já cumpridos, para não reabrir e para a tela poder dizer "já fiz".
 var cumpridas: Array[String] = []
-## Qual da lista está em foco — a que o marcador segue. Índice em `por_importancia`.
-var em_foco: int = 0
+
+## A MISSÃO ACOMPANHADA, pelo ID — e não pela posição na lista.
+##
+## "No MENU J, de missões, eu tô clicando para trocar a missão de resumo, mas
+## não muda. O comportamento tem que ser muito próximo de jogos de RPG como The
+## Witcher 3." Eram dois defeitos. O HUD e a seta seguiam a última cadeia que
+## FALOU, e não esta escolha; e a escolha era um ÍNDICE em `por_importancia` —
+## missão que abria ou fechava antes dela na lista mudava, calada, qual estava
+## em foco. Acompanhar é escolher UMA missão, e o nome de uma missão é o id.
+##
+## Como no Witcher: o que o jogador escolhe fica escolhido. O passo seguinte da
+## missão acompanhada herda o acompanhamento (`_cadeia_do_foco`); missão nova
+## de outra pessoa NÃO o rouba — só é acompanhada sozinha quando não há nenhuma.
+var foco: String = ""
+## A mesma escolha como posição em `por_importancia`, que é como a lista do
+## painel a desenha. Escrever aqui escolhe a missão daquela posição.
+var em_foco: int:
+	get:
+		var ordem := por_importancia()
+		for i in ordem.size():
+			if str((ordem[i] as Dictionary)["id"]) == str(atual().get("id", "")):
+				return i
+		return 0
+	set(valor):
+		var ordem := por_importancia()
+		if ordem.is_empty():
+			return
+		var escolhida: Dictionary = ordem[clampi(valor, 0, ordem.size() - 1)]
+		foco = str(escolhida["id"])
+		_cadeia_do_foco = str(escolhida.get("dono", ""))
+## De quem é a missão acompanhada. Quando ela se cumpre, o próximo passo DA
+## MESMA PESSOA é acompanhado ao abrir — é a mesma missão andando.
+var _cadeia_do_foco := ""
 
 
 ## Abre uma missão. Reabrir a mesma id não duplica.
+##
+## `texto` é a fala inteira de quem pediu. O HUD mostra só o resumo; a fala
+## inteira mora aqui, e é o painel do J que a mostra. Missão aberta por uma
+## partida de antes do campo ganha o texto quando o passo se reabre.
 func abrir_missao(id: String, titulo: String, dono: String = "",
-		principal: bool = false) -> void:
-	if id == "" or indice(id) >= 0:
+		principal: bool = false, texto: String = "") -> void:
+	if id == "":
+		return
+	var ja := indice(id)
+	if ja >= 0:
+		if texto != "" and str(ativas[ja].get("texto", "")) == "":
+			ativas[ja]["texto"] = texto
+			mudou.emit()
 		return
 	ativas.append({"id": id, "titulo": titulo, "dono": dono, "principal": principal,
-		"linha": "", "feito": 0, "total": 0, "alvo": Vector3.ZERO})
+		"texto": texto, "linha": "", "feito": 0, "total": 0, "alvo": Vector3.ZERO})
+	# QUEM HERDA O ACOMPANHAMENTO: o passo seguinte da missão acompanhada, ou
+	# qualquer missão quando não há nenhuma acompanhada.
+	if not tem(foco) and (foco == "" or dono == _cadeia_do_foco):
+		foco = id
+		_cadeia_do_foco = dono
 	abriu.emit(id)
 	mudou.emit()
+
+
+## O QUE A MISSÃO É, além do passo: o nome dela (a missão inteira, e não o
+## passo), quem a deu, o resumo do HUD, em que passo está e os passos já
+## feitos. É o que o diário do J desenha à direita — nome, quem pediu, a fala,
+## os objetivos riscados e o de agora — e o que o HUD mostra da acompanhada.
+## Só emite `mudou` quando algo mudou, porque a cadeia chama isto a cada pulso.
+func descrever(id: String, dados: Dictionary) -> void:
+	var i := indice(id)
+	if i < 0:
+		return
+	var mexeu := false
+	for chave in dados:
+		if ativas[i].get(chave) != dados[chave]:
+			ativas[i][chave] = dados[chave]
+			mexeu = true
+	if mexeu:
+		mudou.emit()
 
 
 ## O ANDAMENTO, numa linha só, escrita por quem conduz.
@@ -111,8 +181,23 @@ func concluir(id: String) -> void:
 	ativas.remove_at(i)
 	if not cumpridas.has(id):
 		cumpridas.append(id)
-	em_foco = clampi(em_foco, 0, maxi(0, ativas.size() - 1))
+	# O `foco` fica apontando a cumprida de propósito: é assim que o próximo
+	# passo da mesma pessoa o herda ao abrir (ver `abrir_missao`). Até lá,
+	# `atual` cai na primeira da lista.
 	concluiu.emit(id)
+	mudou.emit()
+
+
+## ENCERRA SEM CUMPRIR: a missão sai das ativas e não entra nas cumpridas. É a
+## encomenda do saveiro que ficou para trás — ele partiu sem ela, e a da
+## estação que vem é outra.
+func encerrar(id: String) -> void:
+	var i := indice(id)
+	if i < 0:
+		return
+	ativas.remove_at(i)
+	if foco == id:
+		foco = ""
 	mudou.emit()
 
 
@@ -162,21 +247,29 @@ func por_importancia() -> Array:
 	return enredo + resto
 
 
-## A missão em foco, ou {} quando não há nenhuma.
+## A missão acompanhada, ou {} quando não há nenhuma aberta. Com a acompanhada
+## cumprida e o passo seguinte ainda por abrir, vale a primeira da lista.
 func atual() -> Dictionary:
+	var i := indice(foco)
+	if i >= 0:
+		return ativas[i]
 	var ordem := por_importancia()
-	if ordem.is_empty():
-		return {}
-	return ordem[clampi(em_foco, 0, ordem.size() - 1)]
+	return {} if ordem.is_empty() else ordem[0]
 
 
+## ACOMPANHA ESTA MISSÃO. É o "Acompanhar" do diário: o HUD, a seta e a bússola
+## passam a seguir esta, e ela fica escolhida até o jogador escolher outra.
 func fixar(id: String) -> void:
-	var ordem := por_importancia()
-	for i in ordem.size():
-		if str((ordem[i] as Dictionary)["id"]) == id:
-			em_foco = i
-			mudou.emit()
-			return
+	var i := indice(id)
+	if i < 0 or foco == id:
+		return
+	foco = id
+	_cadeia_do_foco = str(ativas[i].get("dono", ""))
+	mudou.emit()
+
+
+func acompanhada(id: String) -> bool:
+	return id != "" and str(atual().get("id", "")) == id
 
 
 ## Gira o foco para a próxima da lista. É o que a tecla de missão faz.
@@ -184,23 +277,24 @@ func girar_o_foco() -> void:
 	var ordem := por_importancia()
 	if ordem.size() <= 1:
 		return
-	em_foco = wrapi(em_foco + 1, 0, ordem.size())
-	mudou.emit()
+	fixar(str((ordem[wrapi(em_foco + 1, 0, ordem.size())] as Dictionary)["id"]))
 
 
 ## Esvazia o caderno. Partida nova começa sem missão nenhuma.
 func limpar() -> void:
 	ativas.clear()
 	cumpridas.clear()
-	em_foco = 0
+	foco = ""
+	_cadeia_do_foco = ""
 	mudou.emit()
 
 
 ## O QUE ENTRA NO SAVE. Missão em curso é estado de partida, e perder a lista ao
-## recarregar seria o jogador voltando sem saber o que estava fazendo.
+## recarregar seria o jogador voltando sem saber o que estava fazendo. O `foco`
+## vai pelo id; `em_foco` continua indo, para a partida salva antes dele.
 func estado() -> Dictionary:
 	return {"ativas": ativas.duplicate(true), "cumpridas": cumpridas.duplicate(),
-		"em_foco": em_foco}
+		"em_foco": em_foco, "foco": foco}
 
 
 func restaurar(guardado: Dictionary) -> void:
@@ -215,5 +309,12 @@ func restaurar(guardado: Dictionary) -> void:
 	cumpridas.clear()
 	for id in guardado.get("cumpridas", []):
 		cumpridas.append(str(id))
-	em_foco = int(guardado.get("em_foco", 0))
+	foco = ""
+	_cadeia_do_foco = ""
+	if str(guardado.get("foco", "")) != "":
+		foco = str(guardado["foco"])
+		var i := indice(foco)
+		_cadeia_do_foco = str(ativas[i].get("dono", "")) if i >= 0 else ""
+	else:
+		em_foco = int(guardado.get("em_foco", 0))
 	mudou.emit()

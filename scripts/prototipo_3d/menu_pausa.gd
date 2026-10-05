@@ -34,6 +34,8 @@ signal abriu
 signal fechou
 
 const Identidade = preload("res://scripts/prototipo_3d/identidade.gd")
+const CaixaDePergunta = preload("res://scripts/prototipo_3d/caixa_de_pergunta.gd")
+const TemaMenu = preload("res://scripts/prototipo_3d/tema_menu.gd")
 const Atalhos = preload("res://scripts/prototipo_3d/atalhos.gd")
 
 ## OS ÍCONES VOLTARAM, e é o autor que pediu: "não precisa descartar os ícones
@@ -91,6 +93,10 @@ var _rodape: Label
 ## Recado da última ação, quando ela não muda nada na tela (salvar). Some na
 ## próxima mexida — ver `_fazer`.
 var _aviso := ""
+## A caixa que pergunta antes de uma linha com `confirmar` e a linha que espera
+## a resposta. Ver `_perguntar`.
+var _pergunta = null	# caixa_de_pergunta.gd
+var _pergunta_de := -1
 
 
 func _ready() -> void:
@@ -219,6 +225,7 @@ func _redesenhar() -> void:
 	_pintar()
 	_rodape.text = _aviso if _aviso != "" \
 		else "↑↓ ou W/S: andar    ·    E ou Enter: escolher    ·    Esc: voltar ao vale"
+	_rodape.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_rodape.add_theme_color_override("font_color",
 		Identidade.CREME if _aviso != "" else COR_APAGADA)
 
@@ -235,8 +242,12 @@ func _icone_de(item: Dictionary) -> Control:
 			som.set_active(Audio.som_ativo)
 			return som
 		"relogio":
+			# O estado vem da linha (`ligado`): com o menu aberto o `Dia` está
+			# sempre parado, e o ícone mostraria o que o menu fez, não o que o
+			# jogador escolheu.
 			var relogio := ClockIcon.new()
-			relogio.set_running(not Dia.pausado)
+			var ligado = item.get("ligado", null)
+			relogio.set_running(bool(ligado.call()) if ligado is Callable else not Dia.pausado)
 			return relogio
 		_:
 			return HudIcon.new().configurar(tipo)
@@ -279,6 +290,11 @@ func abrir() -> void:
 func fechar() -> void:
 	if not aberto:
 		return
+	# Pergunta aberta não sobrevive ao menu: fechar é desistir dela.
+	if perguntando():
+		_pergunta.queue_free()
+		_pergunta = null
+		_pergunta_de = -1
 	aberto = false
 	visible = false
 	fechou.emit()
@@ -309,24 +325,82 @@ func _andar(passo: int) -> void:
 ## tela fica igual, e ação sem retorno é a que se aperta três vezes (é o que o
 ## painel do J já faz, vindo do 2D). Quem devolve texto tem o texto mostrado no
 ## rodapé, no lugar da linha das teclas, até a mexida seguinte.
+##
+## LINHA QUE PEDE CONFIRMAÇÃO PERGUNTA ANTES, numa caixa por cima do menu.
+## `confirmar` devolve {titulo, texto, sim, nao}, ou {} quando não há o que
+## perguntar; só o "sim" faz. Serve ao relógio: parar o tempo desliga as
+## conquistas da partida, e isso o jogador tem de ler e aceitar antes. (Foi
+## primeiro um aviso no rodapé com "escolha de novo", e passava despercebido:
+## "o jogo deve pedir para o jogador confirmar ao congelar o relógio".)
+##
+## LINHA QUE FECHA, FECHA ANTES DE FAZER. O fechamento devolve o vale (o
+## `Prototype` escuta o `fechou`), e a linha pode querer pará-lo de novo — os
+## Ajustes param o vale ao abrir. Na ordem antiga, os Ajustes abriam com o vale
+## ainda parado pelo menu, guardavam esse relógio parado como se fosse a escolha
+## do jogador, e o menu fechava em seguida soltando o vale por baixo deles.
 func _fazer() -> void:
 	if _cursor < 0 or _cursor >= _itens.size():
 		return
 	var item: Dictionary = _itens[_cursor]
 	_aviso = ""
+	var confirmar = item.get("confirmar", null)
+	if confirmar is Callable:
+		var pergunta = confirmar.call()
+		if pergunta is Dictionary and not (pergunta as Dictionary).is_empty():
+			_perguntar(_cursor, pergunta)
+			return
+	_executar(_cursor)
+
+
+func _executar(indice: int) -> void:
+	if indice < 0 or indice >= _itens.size():
+		return
+	var item: Dictionary = _itens[indice]
 	var acao = item.get("fazer", null)
+	if bool(item.get("fecha", false)):
+		fechar()
+		if acao is Callable:
+			acao.call()
+		return
 	if acao is Callable:
 		var resposta = acao.call()
 		if typeof(resposta) == TYPE_STRING:
 			_aviso = str(resposta)
-	if bool(item.get("fecha", false)):
-		fechar()
+	if aberto:
+		_redesenhar()
+
+
+## A caixa de confirmação está aberta?
+func perguntando() -> bool:
+	return is_instance_valid(_pergunta)
+
+
+## A CAIXA DA PERGUNTA (`CaixaDePergunta`), por cima do menu. As teclas, com
+## ela aberta, são dela — inclusive o Esc, que desiste.
+func _perguntar(indice: int, dados: Dictionary) -> void:
+	_pergunta_de = indice
+	_pergunta = CaixaDePergunta.new()
+	_pergunta.perguntar(self, dados)
+	_pergunta.respondeu.connect(_responder)
+	Audio.efeito("ui_trava")
+
+
+func _responder(sim: bool) -> void:
+	if not perguntando():
 		return
-	_redesenhar()
+	var indice := _pergunta_de
+	_pergunta.queue_free()
+	_pergunta = null
+	_pergunta_de = -1
+	if sim:
+		_executar(indice)
+	else:
+		Audio.efeito("ui_voltar")
+		_redesenhar()
 
 
 func _unhandled_key_input(event: InputEvent) -> void:
-	if not aberto:
+	if not aberto or perguntando():
 		return
 	if not (event is InputEventKey and event.pressed and not event.echo):
 		return

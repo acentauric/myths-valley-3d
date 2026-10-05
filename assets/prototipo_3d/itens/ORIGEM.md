@@ -50,3 +50,23 @@ antigos continuam no histórico do Git.
 Uso comercial: plano Max no momento da geração (ver `assets/CREDITOS.md`).
 
 <!-- lote-2026-09-26:fim -->
+
+<!-- lote-2026-10-04:inicio -->
+
+## As luvas de couro (04/10/2026)
+
+A primeira peça do encaixe das Mãos. O modelo é uma luva de mão direita, em pé
+(dedos para cima); o corpo a põe nas duas mãos, a esquerda espelhada
+(`Vestimenta3D.luvas`). Gerada por texto no Tripo Studio (Modelo HD H3.1, textura
+8K desligada, 55 créditos) e passada pela Retopologia (Quad, Malha Smart, alvo de
+1.500 faces, 40 créditos); exportada em GLB com textura 1K. Original em
+`.assets-raw/tripo/gerados/luvas_de_couro/` (fora do Git); tarefa, projeto e
+prompt em `tools/tripo/lote_2026-10-04.json`.
+
+| Arquivo | O que é (prompt) | Tarefa Tripo | Triângulos | Textura | MB |
+| --- | --- | --- | ---: | --- | ---: |
+| `luvas_de_couro_tripo.glb` | A single worn brown leather work glove for the right hand, fingers straight and close together, thumb slightly apart, short flared cuff, visible stitched seams. | `d640df1b-f21a-4ff8-bf1e-88c3cbd3e591` | 3.154 | 1K | 2,2 |
+
+Uso comercial: plano pago no momento da geração (ver `assets/CREDITOS.md`).
+
+<!-- lote-2026-10-04:fim -->
