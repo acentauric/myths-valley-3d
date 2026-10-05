@@ -41,7 +41,8 @@ antigas podem descrever como ausente algo que já foi incorporado.
 
 Leia a issue e o portão do assunto, implemente a mudança, acrescente ou
 ajuste a verificação de comportamento e mostre que ela detecta o defeito.
-Rode a bateria com perfil isolado; erro de compilação e travamento reprovam.
+Rode `testar.ps1` (só os portões que a mudança alcança, em paralelo e com
+perfil isolado); erro de compilação e travamento reprovam.
 Registre a mudança no CHANGELOG_3D e cite a issue no corpo do commit.
 
 Os sistemas deste repositório evoluem aqui. Não há sincronizador de regras,

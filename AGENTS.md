@@ -9,8 +9,8 @@ Myths' Valley 3D: projeto Godot independente na raiz.
 Assunto em **prosa, no presente, dizendo o que mudou no jogo** — e não um rótulo
 de categoria. A regra inteira, e por que ela não é `tipo(escopo):`, está em
 [.agents/rules/commits.md](.agents/rules/commits.md). Cada fatia é um commit,
-com portão e falsificação. `main` sempre abre e roda; trabalho novo em
-`feature/<nome>`.
+com portão e falsificação. Trabalha-se direto na `main`; ela sempre abre e
+roda, porque nada é enviado (`git push`) sem `testar.ps1` verde no estado final.
 
 ### Chaves
 
@@ -175,6 +175,12 @@ luz, som ou moradores do 3D.
 ## Sistemas e validação
 
 Os sistemas de `scripts/compartilhado/` pertencem ao 3D; não copie versões de
-outro checkout. Rode `.\tools\prototipo_3d\testar.ps1` antes de commitar.
+outro checkout. Rode `.\tools\prototipo_3d\testar.ps1` antes de commitar e,
+obrigatoriamente, antes de `git push`. Ele roda **só os portões que a mudança
+alcança** (fecho de dependências de cada teste, com impressão digital do
+conteúdo), reaproveita o que já ficou verde nesta máquina e o que é igual a
+`origin/main`, e roda em paralelo. Doc mudada não roda portão nenhum; não
+contorne isso rodando a bateria inteira à mão. `-Explicar` diz o que rodaria e
+por quê; `-Tudo` força a bateria completa e fica para antes de fechar build.
 Os testes não podem acessar o diretório pai do projeto. Preserve UIDs, opções
 de importação e o diretório de saves. Os binários grandes usam Git LFS.
