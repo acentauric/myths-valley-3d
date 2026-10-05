@@ -869,6 +869,36 @@ var _caititus_da_meta := 10
 
 
 ## A META ABRE SOZINHA: com a conta de caititus derrubados, o Pedro chama.
+## O SOCORRO DA MUNGUNZÁ (o `_vigiar_o_folego` do 2D): trinta e seis paus de
+## lenha não cabem num fôlego só, e a frente da ponte não pode morrer de fome —
+## quem esgota no meio dela fica sem nada a fazer a não ser dormir. Na lenha e
+## nas tábuas, quem não aguenta mais bater e não tem o que comer ganha a panela
+## da mãe do Pedro: seis cuias, uma vez por partida (a lembrança vai na fila da
+## ponte, que vai no save). Depois da chegada o Pedro não segue o jogador, então
+## a fala vem na caixa, como a explicação do corpo, e não no balão dele.
+const CUIAS_DE_MUNGUNZA := 6
+const PASSOS_DO_SOCORRO := ["ponte_lenha", "tabuas"]
+
+
+func _conferir_o_socorro() -> void:
+	var ponte = _cadeias.get("pedro_ponte")
+	if ponte == null or not ponte.iniciado or ponte.acabou() or ponte.aconteceu("socorro"):
+		return
+	if not PASSOS_DO_SOCORRO.has(str(ponte.passo_atual().get("id", ""))):
+		return
+	if Dialogo.ocupado() or Energia.aguenta("bater", 1.0):
+		return
+	if Inventario.tem("mungunza") or Efeitos.tem("comida"):
+		return
+	ponte.registrar_evento("socorro")
+	var linhas: Array = []
+	for fala in (Jogo.dados("res://data/missoes_ponte.json").get("socorro", []) as Array):
+		linhas.append(str(IdiomaMenu.campo(fala, "texto", "")))
+	Dialogo.falar(str(pedro.dados.get("nome", "Pedro")) if pedro != null else "Pedro", linhas)
+	Inventario.adicionar("mungunza", CUIAS_DE_MUNGUNZA)
+	Audio.efeito("pegar")
+
+
 func _conferir_as_metas() -> void:
 	var metas = _cadeias.get("pedro_metas")
 	if metas != null and not metas.iniciado and Luta.abatidos("caititu") >= _caititus_da_meta:
@@ -1152,6 +1182,7 @@ func _process(_delta: float) -> void:
 		_conferir_a_porta_em = 0.5
 		_acertar_a_porta_da_casa()
 		_conferir_as_metas()
+		_conferir_o_socorro()
 	_atualizar_relogio()
 
 

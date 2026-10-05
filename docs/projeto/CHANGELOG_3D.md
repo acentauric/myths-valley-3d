@@ -9,7 +9,9 @@
   voltar e contar, juntar a lenha (trinta e seis paus, e a tábua e a corda já
   feitas contam), serrar doze tábuas e quatro cordas na bancada e levantar a
   ponte no J, na aba de obras, ao pé dela. A obra tira a cerca. O mirante passa a
-  esperar a ponte, como no 2D. Meta nova: `juntar` com `equivale`. Portão novo:
+  esperar a ponte, como no 2D. Quem esgota o fôlego na lenha ou nas tábuas ganha
+  as seis cuias de mungunzá da mãe do Pedro, uma vez. Meta nova: `juntar` com
+  `equivale`. Portão novo:
   `ponte`; `cadeia_do_mirante`, `cadeia_da_fe`, `missoes`, `ferramentas`,
   `idiomas` e `painel` ajustados.
 - As frentes do 2D que não pedem lugar novo chegam ao vale: as **armas** do

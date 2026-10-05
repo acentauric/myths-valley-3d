@@ -132,9 +132,10 @@ dele, no píer. Ver [CHEGADA_E_MUTIROES.md](../mundo/CHEGADA_E_MUTIROES.md).
 | 7 | `ponte` | De pé outra vez | Levante a ponte no vau do rio grande (E) | ponte de pé | 2 pirões, 2 cocadas | **pronta** (`ponte`: a obra `ponte_levantar`, no J ao pé da ponte, tira a cerca das cabeceiras; e `ponte_de_pe`, o fim no Pedro) |
 
 Se o fôlego zera no meio da ponte, o Pedro aparece com o mungunzá da mãe
-(`socorro`, seis cuias): é o que deixa fechar a frente no mesmo dia. **No 3D
-ainda não**: depois da chegada o Pedro não segue o jogador, e a comida da mãe
-dele teria de chegar por outro caminho.
+(`socorro`, seis cuias): é o que deixa fechar a frente no mesmo dia. **No 3D**
+também, na lenha e nas tábuas, uma vez por partida (`prototype._conferir_o_socorro`);
+como depois da chegada o Pedro não segue o jogador, a fala vem na caixa, como a
+explicação do corpo.
 
 **No 3D (05/10/2026)** a ponte é a "Ponte" do KML, onde a Rua Principal cruza o
 rio do norte — raso de dar pé, e por isso o vau. Ela está de pé no modelo do
@@ -321,7 +322,7 @@ não tem missão em nenhum dos dois jogos:
 
 ## 5. O que falta trazer, em ordem de dependência
 
-1. ~~A ponte~~ (`ponte_caida` → `ponte`, 1.3): **pronta** em 05/10/2026, menos
+1. ~~A ponte~~ (`ponte_caida` → `ponte`, 1.3): **pronta** em 05/10/2026, com
    o socorro da mungunzá. É enredo e é a trava da jornada: a fazenda fica do
    outro lado do rio grande.
 2. **A lapa e a cabra** (`picareta`, `cabra`, 1.5), que abrem a lombada e

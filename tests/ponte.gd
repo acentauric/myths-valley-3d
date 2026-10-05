@@ -17,6 +17,7 @@ extends SceneTree
 ##      segundo, com a resposta dele no balão.
 ##   5. A LENHA CONTA O QUE JÁ VIROU TÁBUA: a conta sai das receitas — trinta e
 ##      seis, como a fala diz —; trinta lenhas não fecham, e três tábuas a mais sim.
+##      E SEM FÔLEGO PARA BATER, a mungunzá da mãe do Pedro vem, uma vez só.
 ##   6. SERRAR: doze tábuas e quatro cordas fecham o passo, que paga três beijus e
 ##      ensina o plano da obra.
 ##   7. A OBRA TIRA A CERCA: ao pé da ponte o J tem a obra; feita, a cerca sai e o
@@ -143,6 +144,23 @@ func _run() -> void:
 	_conferir(str(da_lenha.get("texto", "")).contains("trinta e seis"), "a fala da lenha não diz a conta que a missão cobra")
 	for item in ["lenha", "tabua", "corda"]:
 		inv.consumir(item, inv.quantidade(item))
+	# O SOCORRO: sem fôlego para bater (abaixo do custo de um golpe, e não zero,
+	# que é desmaio) e sem nada para comer, as seis cuias, com a fala na caixa.
+	var energia = root.get_node("/root/Energia")
+	var dialogo = root.get_node("/root/Dialogo")
+	inv.consumir("mungunza", inv.quantidade("mungunza"))
+	energia.atual = energia.custo("bater", 1.0) * 0.5
+	_conferir(await _ate(func() -> bool: return inv.quantidade("mungunza") == 6, 3.0),
+		"sem fôlego no meio da lenha, a mungunzá da mãe do Pedro não veio: %d cuia(s)" % inv.quantidade("mungunza"))
+	_conferir(dialogo.ativo, "a mungunzá veio sem a fala do Pedro na caixa")
+	var ate_fechar := Time.get_ticks_msec() + 4000
+	while dialogo.ativo and Time.get_ticks_msec() < ate_fechar:
+		dialogo._fechar()
+		await process_frame
+	inv.consumir("mungunza", 6)
+	await _ate(func() -> bool: return false, 1.2)
+	_conferir(inv.quantidade("mungunza") == 0, "a mungunzá veio duas vezes na mesma partida")
+	energia.encher()
 	var assados: int = inv.quantidade("peixe_assado")
 	inv.adicionar("lenha", 30)
 	await _quadros(8)
@@ -209,7 +227,7 @@ func _no_balao(morador) -> String:
 func _fechar() -> void:
 	print("")
 	if falhas == 0:
-		print("PONTE_OK: o rio grande tem o vau ao lado da ponte, e a ponte começa cercada nas duas cabeceiras; a frente espera a chegada, abre no primeiro E do Pedro e segura o mirante; ver a ponte e contar ao Pedro fecham os dois primeiros passos; a lenha conta o que já virou tábua, na conta das receitas; serrar ensina o plano da obra e paga; a obra tira a cerca, e a partida de antes dela a põe de volta; e o fim no Pedro abre o mirante")
+		print("PONTE_OK: o rio grande tem o vau ao lado da ponte, e a ponte começa cercada nas duas cabeceiras; a frente espera a chegada, abre no primeiro E do Pedro e segura o mirante; ver a ponte e contar ao Pedro fecham os dois primeiros passos; a lenha conta o que já virou tábua, na conta das receitas, e quem esgota nela ganha a mungunzá uma vez; serrar ensina o plano da obra e paga; a obra tira a cerca, e a partida de antes dela a põe de volta; e o fim no Pedro abre o mirante")
 	else:
 		print("ponte: %d falha(s)" % falhas)
 	quit(1 if falhas > 0 else 0)

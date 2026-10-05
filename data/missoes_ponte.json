@@ -1,5 +1,5 @@
 {
-  "observacao": "A PONTE DO RIO GRANDE, do Pedro (docs/projeto/MISSOES_DO_2D.md, 1.3: ponte_caida, buscar_machado, lenha, tabuas, ponte). É enredo e a trava da jornada: a fazenda do convite fica do outro lado do rio grande. ADAPTADA AO VALE: o rio grande é o rio do norte do mapa, raso de dar pé, e a ponte é a 'Ponte' do KML, na Rua Principal; ela está de pé no modelo do Tripo, então o estrago é o que não se vê de longe — a cheia comeu os esteios do meio — e a ponte está CERCADA nas duas cabeceiras até a obra (`ponte_vale.gd`). Gente atravessa no vau, ao lado; carroça, não. O machado do avô (buscar_machado) não entra: no vale ele vem na chegada. Depois do tutorial o Pedro não segue o jogador, então ver a ponte e voltar para contar são dois passos, como o 'fe_contar' da fé; a obra se faz no J, na aba de obras, ao pé da ponte, como a do mirante; e o fim da ponte (o 'ponte_fim' do 2D) é a resposta dele quando o jogador volta. A lenha conta o que já virou tábua e corda (`equivale`, o 'Missoes.contagem' do 2D), e a conta sai das receitas da oficina: doze tábuas a duas lenhas e quatro cordas a três são trinta e seis.",
+  "observacao": "A PONTE DO RIO GRANDE, do Pedro (docs/projeto/MISSOES_DO_2D.md, 1.3: ponte_caida, buscar_machado, lenha, tabuas, ponte). É enredo e a trava da jornada: a fazenda do convite fica do outro lado do rio grande. ADAPTADA AO VALE: o rio grande é o rio do norte do mapa, raso de dar pé, e a ponte é a 'Ponte' do KML, na Rua Principal; ela está de pé no modelo do Tripo, então o estrago é o que não se vê de longe — a cheia comeu os esteios do meio — e a ponte está CERCADA nas duas cabeceiras até a obra (`ponte_vale.gd`). Gente atravessa no vau, ao lado; carroça, não. O machado do avô (buscar_machado) não entra: no vale ele vem na chegada. Depois do tutorial o Pedro não segue o jogador, então ver a ponte e voltar para contar são dois passos, como o 'fe_contar' da fé; a obra se faz no J, na aba de obras, ao pé da ponte, como a do mirante; e o fim da ponte (o 'ponte_fim' do 2D) é a resposta dele quando o jogador volta. A lenha conta o que já virou tábua e corda (`equivale`, o 'Missoes.contagem' do 2D), e a conta sai das receitas da oficina: doze tábuas a duas lenhas e quatro cordas a três são trinta e seis. O SOCORRO da mungunzá (o `_vigiar_o_folego` do 2D, `prototype._conferir_o_socorro`): na lenha e nas tábuas, quem não aguenta mais bater e não tem o que comer ganha as seis cuias da mãe do Pedro, uma vez por partida; a fala vem na caixa, como a explicação do corpo, porque depois da chegada o Pedro não segue o jogador.",
   "dono": "pedro",
   "nome": "A ponte do rio grande",
   "nome_en": "The bridge over the big river",
@@ -140,6 +140,33 @@
         "resposta_en": "Standing. The first thing to change here in twenty years, and it was us. The way my grandparents tell it, that's how people reached that farm: opening the way, one helping the other.",
         "resposta_es": "En pie. La primera cosa que cambia aquí en veinte años, y fuimos nosotros. Por lo que cuentan mis abuelos, así llegó la gente a aquella hacienda: abriendo camino, uno ayudando al otro."
       }
+    }
+  ],
+  "socorro": [
+    {
+      "texto": "Para. Olha pra sua cara. Você não bota mais esse machado no ombro hoje.",
+      "texto_en": "Stop. Look at your face. You're not putting that axe on your shoulder again today.",
+      "texto_es": "Para. Mírate la cara. Hoy ya no te echas ese hacha al hombro."
+    },
+    {
+      "texto": "Minha mãe fez mungunzá de manhã e mandou trazer a panela inteira. Milho branco, leite de coco e canela, da panela de ferro.",
+      "texto_en": "My mother made mungunzá this morning and sent the whole pot. White corn, coconut milk and cinnamon, from the iron pot.",
+      "texto_es": "Mi madre hizo mungunzá en la mañana y mandó traer la olla entera. Maíz blanco, leche de coco y canela, de la olla de hierro."
+    },
+    {
+      "texto": "Tem seis cuias aí. Come uma agora e as outras quando o braço pesar de novo: o I abre a mochila, e o F em cima da cuia come.",
+      "texto_en": "There are six bowls there. Eat one now and the others when your arm gets heavy again: I opens the backpack, and F on the bowl eats it.",
+      "texto_es": "Ahí hay seis cuencos. Come uno ahora y los otros cuando el brazo vuelva a pesar: la I abre la mochila, y la F sobre el cuenco lo come."
+    },
+    {
+      "texto": "Isso sustenta o corpo até a ponte subir. Dá pra fechar tudo hoje, se você não parar.",
+      "texto_en": "That keeps the body going until the bridge is up. You can finish it all today, if you don't stop.",
+      "texto_es": "Eso sostiene el cuerpo hasta que el puente suba. Se puede terminar todo hoy, si no paras."
+    },
+    {
+      "texto": "Só que é hoje, viu? Amanhã o corpo cobra o que você gastou. Aqui as coisas sempre foram assim.",
+      "texto_en": "But just for today, all right? Tomorrow the body charges for what you spent. Things here have always been like that.",
+      "texto_es": "Pero es solo hoy, ¿eh? Mañana el cuerpo cobra lo que gastaste. Aquí las cosas siempre fueron así."
     }
   ],
   "arremate": {

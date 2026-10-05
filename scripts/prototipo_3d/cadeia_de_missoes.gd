@@ -684,6 +684,11 @@ func _contados(passo: Dictionary) -> int:
 	return vezes
 
 
+## O acontecimento `nome` já chegou a esta fila (`registrar_evento`)?
+func aconteceu(nome: String) -> bool:
+	return bool(_levados.get(_chave_do_evento(nome), false))
+
+
 static func _chave_do_evento(nome: String) -> String:
 	return "evento:" + nome
 
