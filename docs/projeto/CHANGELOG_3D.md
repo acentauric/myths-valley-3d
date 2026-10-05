@@ -2,6 +2,24 @@
 
 ## Em desenvolvimento — 05/10/2026
 
+- Abrir e fechar o painel (J) não para mais o relógio. O painel parava o
+  relógio por conta própria antes do dono das telas, que então guardava "já
+  estava parado" e devolvia isso ao fechar. Fechar pelo × também devolve o vale,
+  a câmera e o movimento (o conserto do Renato na `feature/retomada-hud`).
+- A fogueira é sólida nos dois estilos: o corpo não entra mais no meio das
+  toras acesas.
+- A bancada da oficina ganha peça e corpo (a mesa rústica do Tripo; no
+  procedural, a caixa cinza ganha colisão), muda para trás da casa, longe do
+  tronco caído que roubava o E, e abre com o E, como no 2D; o E na fogueira
+  abre o fogão. O Pedro passa a dizer "aperta E" na corda e na janta.
+- A casa do jogador começa com o básico — cama, baú, o pote d'água e a
+  lamparina — e cada obra de mobília feita (mesa e banco, oratório, estante,
+  canto da cozinha, rede) põe o móvel dela no cômodo. As obras já davam XP e
+  atributo. Nas três casas, nenhum móvel de chão toma mais a passagem da porta:
+  a cantareira, o barril e o fogão ficavam no vão da casa herdada, e a rede do
+  Cosme atravessava a entrada da casa da Dona Zefa. Portões novos: `rocado` e
+  `rocado_procedural`; `moveis` e `painel` ampliados.
+
 - Morador com missão não cumprimenta mais ao chegar perto: fala só a missão.
   O Tonho, no bom-dia da chegada, respondia a missão e logo depois soltava a
   saudação de passagem, e o jogador não sabia qual das duas valia. Vale para o
