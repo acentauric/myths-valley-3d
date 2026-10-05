@@ -58,6 +58,7 @@ CadernoDoVale="*res://scripts/autoload/caderno_do_vale.gd"
 Dia="*res://scripts/autoload/dia.gd"
 Mare="*res://scripts/autoload/mare.gd"
 Partida="*res://scripts/autoload/partida.gd"
+MCPRuntime="*uid://bxrrrxdt8ouw2"
 
 [display]
 
@@ -69,6 +70,10 @@ window/size/window_height_override=720
 window/stretch/mode="canvas_items"
 window/size/min_width=960
 window/size/min_height=540
+
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/godot_mcp/plugin.cfg")
 
 [importer_defaults]
 

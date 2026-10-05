@@ -23,3 +23,6 @@ export/
 *.pck
 *.apk
 *.aab
+
+# Cache local do addon Godot MCP
+addons/godot_mcp/cache/
