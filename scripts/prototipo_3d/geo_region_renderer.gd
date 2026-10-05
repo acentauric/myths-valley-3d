@@ -1421,7 +1421,11 @@ func _coastal_ribbon_height(point: Vector2, inland_height: float, sea_height: fl
 
 ## Faixa ao longo de `points`, `y` acima do chão; `y_right` (se dado) é a altura do lado
 ## direito, para faixas em rampa como a praia entrando na água.
-func _add_ribbon(label: String, points: PackedVector2Array, width: float, y: float, color: Color, with_collision: bool = false, material_override: Material = null, y_right: float = NAN, cross_steps: int = 1, segment_size: float = SURFACE_SEGMENT_SIZE, channel_fraction: float = 0.0, width_profile: Variant = null, lower_under_rivers: bool = false, clip_to_land: bool = false, bury_beach_in_river: bool = false, coastal_height: float = NAN, use_uncarved_ground: bool = false, bank_profile: BankProfile = BankProfile.FLAT) -> void:
+func _add_ribbon(label: String, points: PackedVector2Array, width: float, y: float, color: Color, with_collision: bool = false, material_override: Material = null, y_right_padrao: Variant = null, cross_steps: int = 1, segment_size: float = SURFACE_SEGMENT_SIZE, channel_fraction: float = 0.0, width_profile: Variant = null, lower_under_rivers: bool = false, clip_to_land: bool = false, bury_beach_in_river: bool = false, coastal_height_padrao: Variant = null, use_uncarved_ground: bool = false, bank_profile: BankProfile = BankProfile.FLAT) -> void:
+	# NaN marca "sem valor", mas como padrão de parâmetro ele quebra o JSON do LSP do editor
+	# (aviso de NaN no JSON.stringify ao conectar o VS Code). O padrão é null e vira NaN aqui.
+	var y_right: float = NAN if y_right_padrao == null else float(y_right_padrao)
+	var coastal_height: float = NAN if coastal_height_padrao == null else float(coastal_height_padrao)
 	if points.size() < 2:
 		return
 	var widths := PackedFloat32Array()
