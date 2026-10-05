@@ -63,6 +63,9 @@ const FORA_DO_SAVE := {
 		"congelado_na_carga": "estado da tela de carregamento, que dura segundos",
 		"latitude": "o lugar do vale no globo, para a curva do sol; não muda com a partida",
 	},
+	"CadernoDoVale": {
+		"ultima_concluida": "o passo que acabou de fechar, lido pela tela de missão concluída no mesmo sinal: dura a animação, e o fechamento em si vai em `cumpridas`",
+	},
 	# A MOCHILA É TELA, e o que ela mostra mora no `Inventario`.
 	#
 	# Ela é arquivo compartilhado com o 2D e mora em `scripts/ui/`, fora de

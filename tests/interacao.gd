@@ -94,11 +94,14 @@ func _run() -> void:
 	var festejou := await _ate(func() -> bool: return conquista.ativa(), 6.0)
 	_conferir(festejou, "o desembarque cumprido não mostrou a tela da conquista")
 	if festejou:
-		await _quadros(20)
 		_conferir(str(conquista.mostrada.get("titulo", "")) == "As pernas de terra firme",
 			"a conquista mostra '%s', e o passo cumprido é 'As pernas de terra firme'" % str(conquista.mostrada.get("titulo", "")))
+		# A SOMBRA ENTRA EM SEGUNDOS DE RELÓGIO (`ENTRA`, 0,35), e não em quadros:
+		# sem tela, o quadro dura o que a máquina deixa, e vinte deles já foram
+		# 0,15 s — a sombra ainda a 0,26, subindo.
 		var sombra: ColorRect = conquista.get("_sombra")
-		_conferir(sombra != null and sombra.color.a > 0.3, "a conquista não escureceu a tela (sombra %.2f)" % (sombra.color.a if sombra != null else -1.0))
+		var escureceu: bool = sombra != null and await _ate(func() -> bool: return sombra.color.a > 0.3, 2.0)
+		_conferir(escureceu, "a conquista não escureceu a tela (sombra %.2f)" % (sombra.color.a if sombra != null else -1.0))
 		_conferir(str(conquista.get("_titulo").text) == "MISSÃO CONCLUÍDA", "o título da conquista é '%s'" % str(conquista.get("_titulo").text))
 		_conferir(await _ate(func() -> bool: return not conquista.ativa(), 8.0), "a tela da conquista não sumiu sozinha")
 
