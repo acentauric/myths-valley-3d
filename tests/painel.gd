@@ -241,7 +241,7 @@ func _run() -> void:
 	var cadeia_script = load("res://scripts/prototipo_3d/cadeia_de_missoes.gd")
 	for nome in ["missoes_guia", "missoes_coveiro", "missoes_filo", "missoes_zefa",
 			"missoes_tonho", "missoes_candinha", "missoes_roca", "missoes_armas",
-			"missoes_oficio", "missoes_capoeira", "missoes_metas", "missoes_ponte", "missoes_chapada"]:
+			"missoes_oficio", "missoes_capoeira", "missoes_metas", "missoes_ponte", "missoes_chapada", "missoes_lombada"]:
 		var dado = JSON.parse_string(FileAccess.get_file_as_string("res://data/%s.json" % nome))
 		if not (dado is Dictionary):
 			continue

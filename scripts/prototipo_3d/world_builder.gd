@@ -17,6 +17,7 @@ const Mar = preload("res://scripts/prototipo_3d/mar.gd")
 const CoqueiroCortado = preload("res://scripts/prototipo_3d/coqueiro_cortado.gd")
 const MAP_CATALOG := "res://data/mapas/regioes.json"
 const ComposicaoVale = preload("res://scripts/prototipo_3d/composicao_vale.gd")
+const LombadaVale = preload("res://scripts/prototipo_3d/lombada_vale.gd")
 const TERREIRO_CASA := preload("res://scenes/prototipo_3d/terreiro_casa.tscn")
 const CASA_TAIPA_CAL_TEXTURE := preload("res://assets/prototipo_3d/materiais/cal_taipa_envelhecida_v1.png")
 const TELHA_COLONIAL_TEXTURE := preload("res://assets/prototipo_3d/materiais/telha_colonial_envelhecida_v1.png")
@@ -79,6 +80,17 @@ const GAMELEIRA_M := Vector3(-300, 0, 560)
 ## Mude este ponto junto, ou tire-o se o voo não cruzar mais a fileira.
 const VAO_NORTE_DO_SOBREVOO_M := Vector3(294, 0, -50)
 var _fogo_do_terreiro: Node3D
+
+## AS CLAREIRAS DOS LUGARES NOVOS DAS FRENTES DO 2D, em unidades: a lombada da lapa
+## (o alto e o corredor da rampa) e a chapada do Seu Benedito (o alto e a beira de
+## frente para o rio). Os dois caíam no meio da mata — onze a catorze troncos a
+## menos de 12 u —, e tronco atravessando pedra é o que se vê primeiro.
+func _clareiras_das_frentes() -> Array[Vector2]:
+	var lombada := Vector2(LombadaVale.CENTRO_M.x, LombadaVale.CENTRO_M.z) / _meters_per_unit
+	var chapada := Vector2(CHAPADA_DO_BENEDITO_M.x, CHAPADA_DO_BENEDITO_M.z) / _meters_per_unit
+	return [lombada + Vector2(2.0, 0.0), lombada + Vector2(LombadaVale.PE_DA_RAMPA, 0.0),
+		chapada, chapada + Vector2(1.0, -11.0)]
+
 
 ## Lote (posição e giro) de cada construção nomeada, decidido por _loteamento().
 var _lotes: Dictionary = {}
@@ -611,7 +623,7 @@ func _montar() -> void:
 	_region.etapa.connect(func(fracao: float, texto: String) -> void: progresso.emit(fracao * 0.75, texto))
 	# Os marcos de fé que o mapa não tem pedem clareira antes de a mata nascer.
 	_region.clareiras.assign([Vector2(TERREIRO_M.x, TERREIRO_M.z) / _meters_per_unit,
-		Vector2(GAMELEIRA_M.x, GAMELEIRA_M.z) / _meters_per_unit])
+		Vector2(GAMELEIRA_M.x, GAMELEIRA_M.z) / _meters_per_unit] + _clareiras_das_frentes())
 	# E o voo do menu pede o vão dele livre na fileira da orla.
 	_region.vaos_do_sobrevoo.assign([Vector2(VAO_NORTE_DO_SOBREVOO_M.x, VAO_NORTE_DO_SOBREVOO_M.z) / _meters_per_unit])
 	await _region.build_region(String(region_data["geometry"]), String(region_data["scenario"]))
@@ -1563,6 +1575,16 @@ func _build_farm() -> void:
 	# (revisada pelo autor): o chão sobe devagar para o poente, de 5 na casa a 7
 	# ali, e o rio passa 17 u ao norte — "tá vendo a água?".
 	ancoras["Chapada"] = ground_position(_u(CHAPADA_DO_BENEDITO_M))
+	# A LOMBADA, A LAPA E A CABRA (`Lugares` "lapa" e "cabra_do_alto",
+	# data/missoes_lombada.json): o alto de pedra que o vale não tinha perto das
+	# terras, levantado por `lombada_vale.gd` — lugar revisado pelo autor. A âncora
+	# da lombada fica no chão mais alto debaixo dela, que é onde o alto se apoia; a
+	# da cabra, em cima; a da lapa, no pé da rampa, onde a pedra a tranca.
+	var lombada := _u(LombadaVale.CENTRO_M)
+	lombada.y = _footprint_height(lombada, LombadaVale.ALTO.x * 0.5)
+	ancoras["Lombada"] = lombada
+	ancoras["Cabra do alto"] = lombada + Vector3(0.0, LombadaVale.ALTO.y, 0.0)
+	ancoras["Lapa"] = ground_position(lombada + Vector3(LombadaVale.PE_DA_RAMPA + LombadaVale.ANTES_DA_LAPA, 0.0, 0.0))
 	ancoras["Lavoura"] = ground_position(_na_casa("Casa de taipa", LAVOURA_NA_CASA))
 	ancoras["LavouraFrente"] = ancoras.get("Casa de taipaFrente", Vector3.BACK)
 	var canteiro := ground_position(_na_casa("Casa de taipa", CANTEIRO_NA_CASA))

@@ -45,6 +45,7 @@ const LavouraVale = preload("res://scripts/prototipo_3d/lavoura_vale.gd")
 const NavegacaoVale = preload("res://scripts/prototipo_3d/navegacao_vale.gd")
 const CemiterioVale = preload("res://scripts/prototipo_3d/cemiterio_vale.gd")
 const PonteVale = preload("res://scripts/prototipo_3d/ponte_vale.gd")
+const LombadaVale = preload("res://scripts/prototipo_3d/lombada_vale.gd")
 const MENU_SCENE := "res://scenes/prototipo_3d/abertura.tscn"
 ## Raio de terra firme em volta do ponto de chegada.
 const RAIO_CHEGADA := 6.0
@@ -130,6 +131,8 @@ var navegacao: Node3D
 var cemiterio: Node3D
 ## A ponte do rio grande, cercada até a obra da frente da trilha (`ponte_vale.gd`).
 var ponte_do_rio: Node3D
+## A lombada de pedra, a lapa e a cabra da frente do ofício (`lombada_vale.gd`).
+var lombada: Node3D
 ## As plaquinhas de nome dos moradores; somem com tela aberta (placas_nomes.gd).
 var placas
 ## O personagem em 3D na mochila, ao lado dos encaixes (boneco_da_mochila.gd).
@@ -688,6 +691,13 @@ func _ready() -> void:
 	marcos.configurar(world, player, hud, interiores)
 	_pendurar_as_filas_da_fe()
 	_pendurar_as_frentes_do_2d()
+	# A LOMBADA DA LAPA E DA CABRA, entre a casa e a chapada: a lapa é alvo de
+	# trabalho (`_recursos`), e a cabra desce com o passo da frente dela, que
+	# acabou de ser pendurada (data/missoes_lombada.json).
+	lombada = LombadaVale.new()
+	lombada.name = "Lombada"
+	add_child(lombada)
+	lombada.configurar(world, _cadeias.get("pedro_lombada"), _recursos)
 	interiores.entrou.connect(_ao_mudar_de_lado.unbind(1))
 	interiores.saiu.connect(_ao_mudar_de_lado.unbind(1))
 	# O E NOS MORADORES (tecla_dos_moradores.gd): conversar, cumprir o passo que
@@ -859,6 +869,16 @@ func _pendurar_as_filas_da_fe() -> void:
 ## conta de abatidos chega (`_conferir_as_metas`), e fecha no E no Pedro.
 func _pendurar_as_frentes_do_2d() -> void:
 	if pedro != null:
+		# A LAPA E A CABRA (data/missoes_lombada.json), a frente do ofício do 2D, a
+		# primeira das de ofício e DEPOIS DAS DE ENREDO no E do Pedro (a ponte, a
+		# chapada, o mirante e a fé): no 2D o enredo entra na frente. ESPERA A LENHA
+		# DA PONTE, como lá — a missão da picareta abria na primeira machadada, e o
+		# jogador pulava as falas apertando E no tronco (`_frente_do_oficio`).
+		var da_lombada = _pendurar_cadeia(pedro, "res://data/missoes_lombada.json", 6.0, "pedro_lombada")
+		if da_lombada != null:
+			da_lombada.depois_de = func() -> bool:
+				var da_ponte = _cadeias.get("pedro_ponte")
+				return pedro.terminou_o_tutorial() and da_ponte != null and da_ponte.passou("ponte_lenha")
 		for qual in ["armas", "oficio"]:
 			var frente = _pendurar_cadeia(pedro, "res://data/missoes_%s.json" % qual, 6.0, "pedro_" + qual)
 			if frente != null:
@@ -2108,12 +2128,15 @@ func _achar_morador(quem: String) -> Node3D:
 
 
 ## AS CENAS DOS PASSOS (`cena` no dado da missão, `CadeiaDeMissoes.cena`): a luz
-## dourada da chegada à chapada.
+## dourada da chegada à chapada, a cabra que desce da lombada.
 func _tocar_a_cena(nome: String) -> void:
 	match nome:
 		"luz_dourada":
 			if luz_dourada != null:
 				luz_dourada.tocar()
+		"cabra_desce":
+			if lombada != null:
+				lombada.a_cabra_desce()
 
 
 func _pendurar_cadeia(morador: Node3D, arquivo: String, perto: float, chave: String = "") -> Node:

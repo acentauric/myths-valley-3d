@@ -154,8 +154,8 @@ segunda coisa que muda neste arraial em vinte anos".
 
 | # | id | Título | Objetivo | Abre quando | Fecha quando | Paga | 3D |
 |---|---|---|---|---|---|---|---|
-| 1 | `picareta` | A lapa na boca da rampa | Fique de frente para a lapa da lombada e aperte E até rachar — são 8 pedras | `lenha` cumprida; o Pedro dá a picareta | a passagem aberta (não a conta de pedra) | 2 beijus | falta (a picareta é ensinada no poço) |
-| 2 | `cabra` | A cabra que subiu e não desce | Suba a rampa e chegue perto da cabra, lá no alto da lombada | lapa aberta | chegou perto da cabra; ela desce sozinha, e o Pedro mostra a placa da Santa Casa | — | falta |
+| 1 | `picareta` | A lapa na boca da rampa | Fique de frente para a lapa da lombada e aperte E até rachar — são 8 pedras | `lenha` cumprida; o Pedro dá a picareta | a passagem aberta (não a conta de pedra) | 2 beijus | **pronta** (`picareta`, `missoes_lombada.json`: a lapa é alvo de trabalho no pé da rampa da lombada de pedra, `lombada_vale.gd`; oito golpes, oito pedras) |
+| 2 | `cabra` | A cabra que subiu e não desce | Suba a rampa e chegue perto da cabra, lá no alto da lombada | lapa aberta | chegou perto da cabra; ela desce sozinha, e o Pedro mostra a placa da Santa Casa | — | **pronta** (`cabra`: a cabra do Tripo no alto desce com a `cena`; a placa está lá em cima, e a Santa Casa é a fala do Pedro na volta) |
 | 3 | `pesca` | A vara do pai do Pedro | No píer, pesque 2 peixes (E pra lançar, E pra ferrar) | o Pedro dá a vara | 2 peixes | 1 cocada | **pronta** (`pesca`, `missoes_oficio.json`: o Pedro dá a vara; conta dois peixes) |
 | 4 | `talentos` | O corpo aprende | Abra a teia de talentos (K) e destrave um talento | tem ponto de talento | gastou um ponto (abrir a tela não basta) | — | **pronta** (`talentos`, `missoes_oficio.json`) |
 
@@ -325,8 +325,8 @@ não tem missão em nenhum dos dois jogos:
 1. ~~A ponte~~ (`ponte_caida` → `ponte`, 1.3): **pronta** em 05/10/2026, com
    o socorro da mungunzá. É enredo e é a trava da jornada: a fazenda fica do
    outro lado do rio grande.
-2. **A lapa e a cabra** (`picareta`, `cabra`, 1.5), que abrem a lombada e
-   apresentam a Santa Casa.
+2. ~~A lapa e a cabra~~ (`picareta`, `cabra`, 1.5): **prontas** em 05/10/2026, na
+   lombada de pedra que o vale levantou entre a casa e a chapada.
 3. ~~A chapada~~ (1.4): **pronta** em 05/10/2026, no lugar que o autor revisou.
 4. ~~O canteiro~~ (3.1): **pronto** em 05/10/2026, antes do mirante como no 2D.
 5. **A jornada da fazenda** (4), que só pode abrir com 1 e com a fé (já

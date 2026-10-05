@@ -2,6 +2,13 @@
 
 ## Em desenvolvimento — 05/10/2026
 
+- A lapa e a cabra, a frente do ofício do 2D: entre a casa e a chapada, uma
+  lombada de pedra com a rampa trancada pela lapa que a chuva rolou. Depois da
+  lenha da ponte, o E no Pedro manda rachá-la com a picareta — oito golpes, oito
+  pedras, o calço da varanda —, e a passagem aberta fecha o passo. Lá em cima,
+  a cabra do Seu Benedito (modelo novo do Tripo) desce quando o jogador chega
+  perto, e a placa da Santa Casa diz de quem é o alto. A mata abre clareira na
+  lombada e na chapada. Portão novo: `lombada`.
 - A chapada do Seu Benedito, a frente do 2D que mostra terra que poderia ser do
   jogador: depois da primeira colheita, o E no Pedro manda ver a terra alta para
   lá da Dona Zefa, de frente para o rio grande (lugar revisado pelo autor). A

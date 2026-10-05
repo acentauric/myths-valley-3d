@@ -52,6 +52,11 @@ const DE_PARA := {
 	# A CHAPADA DO SEU BENEDITO, a terra alta para lá da Dona Zefa, de frente para o
 	# rio grande (data/missoes_chapada.json, `world_builder._build_farm`).
 	"expansao": "Chapada",
+	# A LOMBADA DE PEDRA entre a casa e a chapada (`lombada_vale.gd`): a lapa no pé
+	# da rampa e a cabra lá em cima (data/missoes_lombada.json).
+	"lapa": "Lapa",
+	"cabra_do_alto": "Cabra do alto",
+	"lombada": "Lombada",
 	"ponte_do_vau": "Ponte",
 	"poco": "Poço",
 	"mirante": "Mirante",
@@ -89,12 +94,10 @@ const DE_PARA := {
 ## ninguém aqui esteja escrito errado, e a Fase 2.5 esvazia esta lista movendo
 ## linha por linha para `DE_PARA`.
 const FALTAM_NO_VALE := {
-	"lapa": "a lapa e a rampa do morro — Fase 2.5",
 	"lagoa": "a lagoa a leste do Seu Benedito — Fase 2.5",
 	"curral": "o curral — Fase 7",
 	"portao_da_fazenda": "a fazenda, do outro lado do rio — Fase 2.5",
 	"patio_da_fazenda": "o pátio onde a recepção da 6.1 acontece, dentro da fazenda — Fase 2.5",
-	"cabra_do_alto": "o morro do Seu Benedito — Fase 2.5",
 }
 
 var _mundo: Node3D = null

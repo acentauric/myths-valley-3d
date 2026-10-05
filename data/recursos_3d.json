@@ -632,6 +632,19 @@
       "golpes": 1,
       "rende": "ostra",
       "quantidade": 2
+    },
+    {
+      "observacao": "A LAPA DA LOMBADA (docs/projeto/MISSOES_DO_2D.md, 1.5; data/missoes_lombada.json): a pedra que a chuva rolou ladeira abaixo e parou atravessada no pé da rampa, que é a subida de cá (`lombada_vale.gd`). Racha com a picareta em oito golpes e dá oito pedras — o calço da varanda, como no 2D. Peça própria (\"lapa\", a mesma pedra do catálogo) para a meta \"derrubar\" contar só ela; caída, vai no save (`caidos`) e a rampa fica aberta.",
+      "id": "lapa_da_lombada",
+      "nome": "Lapa",
+      "peca": "lapa",
+      "lugar": "lapa",
+      "desvio": [0.0, 0.0],
+      "tamanho": 1.15,
+      "ferramenta": "picareta",
+      "golpes": 8,
+      "rende": "pedra",
+      "quantidade": 8
     }
   ]
 }

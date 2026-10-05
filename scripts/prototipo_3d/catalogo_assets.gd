@@ -88,6 +88,11 @@ const PECAS := {
 	"bancada_canteiro": {"tripo": "moveis/mesa_tripo.glb", "largura": 1.5, "caixa": true},
 	"mandioca_canteiro": {"tripo": "aderecos/mandioca_canteiro_tripo.glb", "largura": 3.5},
 	"pedras": {"tripo": "aderecos/pedras_tripo.glb", "largura": 3.0, "caixa": true},
+	# A lapa da lombada é a mesma pedra, com nome próprio: a meta "derrubar" da
+	# missão conta só ela (`recursos_3d.derrubados`).
+	"lapa": {"tripo": "aderecos/pedras_tripo.glb", "largura": 3.0, "caixa": true},
+	# A cabra do Seu Benedito, presa no alto da lombada (lote do Tripo de 05/10).
+	"cabra": {"tripo": "aderecos/cabra_tripo.glb", "largura": 1.3},
 	"pedras_praia": {"tripo": "aderecos/pedras_praia_tripo.glb", "largura": 9.0, "caixa": true},
 	"pedra_mare": {"tripo": "aderecos/pedra_mare_tripo.glb", "largura": 3.2},
 	"bote": {"tripo": "aderecos/bote_tripo.glb", "largura": 6.0},

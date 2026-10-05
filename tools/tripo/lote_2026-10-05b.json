@@ -1,0 +1,32 @@
+{
+  "observacao": "Lote de 05/10/2026 (tarde): a fazenda do convite e a cabra da lombada, para as missões do 2D que ainda faltavam (docs/projeto/MISSOES_DO_2D.md, 1.5 e 4: picareta, cabra, fazenda_ida, fazenda_chegada). Pedido do usuário: \"Gere no Tripo\". Tripo Studio pela ponte do Playwright MCP com a extensão do Chrome, com tools/tripo/lote_studio.js: Modelo HD H3.1 com a textura 8K desligada (55 créditos cada) e Retopologia Malha Smart em quads (40 créditos cada), 285 créditos ao todo; exportação GLB, baixada pelo link assinado de operation/download_with_name (o link vence em minutos: pedir na hora de baixar). Os ids de tarefa e de exportação ficaram no histórico de cada projeto no Studio; aqui vai o projeto. Medidas no Godot, normalizadas (o maior eixo perto de 1): o portão 0,98 x 0,65 x 0,21, de frente para +Z; o casarão 0,98 x 0,42 x 0,69, com a escadaria na frente; a cabra 0,29 x 0,85 x 0,98, comprida em Z e de cabeça para +Z.",
+  "tarefas": {
+    "portao_fazenda": {
+      "projeto": "971d6477-e56e-4010-a5d2-38f1dbb47d99",
+      "pasta": "construcoes",
+      "faces": 5000,
+      "textura": "2k",
+      "triangulos": 9314,
+      "sha256": "ab82bae93eb73736adb64565708bb0ca0b8a384e9b1d5332541a491c41e4df3c",
+      "prompt": "The main entrance gate of an old 19th-century sugar-cane plantation in the Reconcavo Baiano, Bahia, Brazil: two tall square whitewashed masonry pillars with weathered peeling plaster and stone caps, a wide closed double gate of dark wrought-iron bars with simple scrollwork between them, and a short stretch of low whitewashed wall on each side. Stylized hand-painted 3D game asset, rural Bahia, Brazil (1887), warm colors, quietly ominous, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no people, no text."
+    },
+    "casarao_fazenda": {
+      "projeto": "f7755c16-5f04-48a7-b56b-003b0e6b0bd2",
+      "pasta": "construcoes",
+      "faces": 8000,
+      "textura": "2k",
+      "triangulos": 17319,
+      "sha256": "b1e2ae735b2749289931d08de3ca3117cf246c04afa5904a4007bf6de4eee57e",
+      "prompt": "The great two-story colonial manor house (casarao) of a 19th-century sugar-cane plantation in the Reconcavo Baiano, Bahia, Brazil: long symmetrical facade with whitewashed walls and faded ochre trim, many tall green wooden shuttered windows, a red clay-tile hip roof, a wide stone staircase rising to a central double front door, a long wooden balcony along the upper floor, grand but neglected and silent. Stylized hand-painted 3D game asset, rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated building, no ground plane, no background, no people, no text."
+    },
+    "cabra": {
+      "projeto": "e65a8a4e-cce9-4bc6-a1ea-5d5fe9874b59",
+      "pasta": "aderecos",
+      "faces": 4000,
+      "textura": "1k",
+      "triangulos": 7244,
+      "sha256": "88830e92ae7abc69321e388ada30ebeaa5668591da5c591615a111592931525f",
+      "prompt": "A brown and white backyard goat from rural Bahia, Brazil, standing on all four legs in a calm relaxed pose, short curved horns, a small beard, floppy ears, lean body, head slightly raised and turned to one side. Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated animal, no ground plane, no background, no people, no text."
+    }
+  }
+}
