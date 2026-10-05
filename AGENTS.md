@@ -33,6 +33,15 @@ desenvolvedor no meio do trabalho, várias vezes, levando junto cena não salva.
 
 Matar só **por PID**, e só PID que o próprio script levantou.
 
+### MCP do Godot
+
+Dois servidores, registrados por cada um no seu Claude Code
+([docs/ferramentas/GODOT_MCP.md](docs/ferramentas/GODOT_MCP.md)): o
+`godot-editor`, que fala com o addon `addons/godot_mcp/` e edita cenas e
+scripts com o editor aberto, e o `godot`, que abre o editor, roda o jogo e lê a
+saída de depuração sem editor nenhum. Não rode o jogo por eles durante a
+bateria de portões.
+
 ### Geração paga
 
 Arte e áudio gerados consomem crédito: execute **só quando pedido
