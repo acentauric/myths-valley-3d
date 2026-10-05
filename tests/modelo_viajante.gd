@@ -24,6 +24,17 @@ func _run() -> void:
 	var clipes: Dictionary = animador.get("_clips")
 	for nome in ["idle", "walk", "run", "swim", "run_upstairs", "chop", "jump_down", "greet_01", "wave_goodbye_02", "agree", "look_around", "afraid", "fold_arms"]:
 		_conferir(clipes.has(nome), "clipe ausente: " + nome)
+	var idle: Animation = animador.animation_player.get_animation(clipes["idle"])
+	var idle_mantem_movimento_das_pernas := false
+	var idle_mantem_balanco_do_tronco := false
+	for faixa in idle.get_track_count():
+		var osso := String(idle.track_get_path(faixa)).to_lower().get_slice(":", String(idle.track_get_path(faixa)).get_slice_count(":") - 1)
+		if osso.contains("upleg") or osso.ends_with("leg") or osso.ends_with("foot"):
+			idle_mantem_movimento_das_pernas = true
+		if osso.ends_with("spine") or osso.ends_with("spine1") or osso.ends_with("spine2"):
+			idle_mantem_balanco_do_tronco = true
+	_conferir(idle_mantem_movimento_das_pernas, "o clipe idle deve manter a animação original das pernas")
+	_conferir(idle_mantem_balanco_do_tronco, "o clipe idle deve manter o movimento lateral do tronco")
 	var escada: Animation = animador.animation_player.get_animation(clipes["run_upstairs"])
 	var quadris_nivelados := false
 	for faixa in escada.get_track_count():

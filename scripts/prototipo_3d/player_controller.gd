@@ -26,7 +26,8 @@ const RUN_STOP_SPEED := 0.15
 const VIGOR_MAXIMO := 100.0
 const FOLEGO_MAXIMO := 100.0
 const CUSTO_FOLEGO_NADO_POR_SEGUNDO := 5.0
-const INTERVALO_DANO_SEM_FOLEGO := 2.0
+const INTERVALO_DANO_SEM_FOLEGO := 1.0
+const FRACAO_DANO_SEM_FOLEGO := 0.20
 const CUSTO_VIGOR_NADO_POR_SEGUNDO := 5.0
 const CUSTO_VIGOR_NADO_RAPIDO_POR_SEGUNDO := 10.0
 const FOLEGO_RECUPERACAO_ANDANDO := 2.5
@@ -120,7 +121,6 @@ var _ran_since_toggle := false
 var _vigor := VIGOR_MAXIMO
 var _folego := FOLEGO_MAXIMO
 var _tempo_sem_folego := 0.0
-var _proximo_dano_sem_folego := 1
 var _machado_ancora: Node3D
 var _machado_pivo: Node3D
 var _item_visualizado := ""
@@ -1037,26 +1037,33 @@ func gastar_vigor(quantidade: float) -> bool:
 	return true
 
 
-## Nadar sem vigor consome respiração. Sem fôlego, a vida cai a cada dois segundos.
-func _cobrar_folego(quantidade: float) -> void:
+## Nadar sem vigor consome respiração. Sem fôlego, a vida perde 20% por segundo.
+func _cobrar_folego(quantidade: float) -> float:
 	if quantidade <= 0.0:
-		return
+		return 0.0
 	# Conta o tempo real passado sem ar neste passo. Se o fôlego zera no meio
 	# do passo, só a fração restante avança o relógio progressivo de dano.
 	var segundos_de_consumo := quantidade / CUSTO_FOLEGO_NADO_POR_SEGUNDO
 	var segundos_com_ar := minf(segundos_de_consumo, _folego / CUSTO_FOLEGO_NADO_POR_SEGUNDO)
 	var tempo_sem_ar := maxf(0.0, segundos_de_consumo - segundos_com_ar)
 	definir_folego(_folego - quantidade)
-	_tempo_sem_folego += tempo_sem_ar
+	return tempo_sem_ar
+
+
+## Relógio próprio do estado de falta de ar: avança pelo tempo em que o
+## fôlego permanece zerado, sem depender do tamanho da cobrança deste quadro.
+func _atualizar_dano_sem_folego(delta_sem_ar: float) -> void:
+	if not _nadando or not is_zero_approx(_folego):
+		_reiniciar_dano_sem_folego()
+		return
+	_tempo_sem_folego += delta_sem_ar
 	while _tempo_sem_folego >= INTERVALO_DANO_SEM_FOLEGO:
 		_tempo_sem_folego -= INTERVALO_DANO_SEM_FOLEGO
-		Vida.ferir(float(_proximo_dano_sem_folego))
-		_proximo_dano_sem_folego += 1
+		Vida.ferir(Vida.maximo() * FRACAO_DANO_SEM_FOLEGO)
 
 
 func _reiniciar_dano_sem_folego() -> void:
 	_tempo_sem_folego = 0.0
-	_proximo_dano_sem_folego = 1
 
 
 func _atualizar_vigor(delta: float, corrida_ativa: bool) -> void:
@@ -1066,13 +1073,15 @@ func _atualizar_vigor(delta: float, corrida_ativa: bool) -> void:
 			_definir_vigor(_vigor + VIGOR_RECUPERACAO_PARADO * delta)
 			if _vigor > 0.0:
 				repor_folego(FOLEGO_RECUPERACAO_PARADO * delta)
+			_atualizar_dano_sem_folego(delta if is_zero_approx(_folego) else 0.0)
 			return
 		var custo := CUSTO_VIGOR_NADO_RAPIDO_POR_SEGUNDO if corrida_ativa else CUSTO_VIGOR_NADO_POR_SEGUNDO
 		var tempo_com_vigor := minf(delta, _vigor / custo)
 		_definir_vigor(_vigor - custo * delta)
 		# No quadro em que o vigor acaba, só o tempo restante cobra fôlego.
 		repor_folego(FOLEGO_RECUPERACAO_ANDANDO * tempo_com_vigor)
-		_cobrar_folego(CUSTO_FOLEGO_NADO_POR_SEGUNDO * (delta - tempo_com_vigor))
+		var tempo_sem_ar := _cobrar_folego(CUSTO_FOLEGO_NADO_POR_SEGUNDO * (delta - tempo_com_vigor))
+		_atualizar_dano_sem_folego(tempo_sem_ar)
 		return
 	_reiniciar_dano_sem_folego()
 	if corrida_ativa:
