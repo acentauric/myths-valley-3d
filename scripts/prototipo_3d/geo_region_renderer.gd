@@ -120,6 +120,29 @@ var _point_positions: Array[Vector2] = []
 ## é plantada (`_em_clareira`, no instante de plantar).
 var clareiras: Array[Vector2] = []
 const RAIO_DAS_CLAREIRAS := 8.0
+## AS CLAREIRAS-DESTAQUE DA MATA (`data/mapas/clareiras_da_mata.json`, planejado
+## por tools/mapas/planejar_clareiras_da_mata.py): metade das árvores saiu da mata
+## para aliviar o quadro, e no lugar dela ficam umas dez clareiras isoladas, cada
+## uma com UMA árvore de espécie diferente no centro, pedras em volta e uma
+## trilha de terra até a rua mais perto. Cada item: "centro" (Vector2), "raio",
+## "especie", "escala", "giro", "chao" ("terra" ou "folhico"), "casa" (a chave
+## do catálogo da casa isolada que ocupa o lugar da árvore, ou vazio), "trilha"
+## (PackedVector2Array, da rua para a clareira, já em curva), "caixa_trilha"
+## (Rect2) e "pedras" (tipo, deslocamento do centro, escala, giro).
+##
+## Como nas clareiras de cima, a mata sorteia os troncos como sempre e só deixa de
+## plantar os que caem dentro (`_em_clareira`): o resto não sai do lugar. Quem
+## planta a árvore-destaque e as pedras é o `world_builder`, que tem o catálogo.
+var clareiras_da_mata: Array[Dictionary] = []
+## Tronco a menos disto da borda da clareira (u) não é plantado: a copa dele
+## entraria no descampado.
+const FOLGA_DA_CLAREIRA := 1.5
+## Tronco ou tufo a menos disto do eixo da trilha (u) não é plantado: o caminho
+## de terra não pode ter árvore no meio, nem a colisão dela barrar quem anda.
+const FOLGA_DA_TRILHA := 3.0
+## Meia largura da trilha pintada no chão (u): 2,3 u de terra no mapa (menos que isso a
+## suavização apaga a trilha nas diagonais); o recorte do shader a deixa em uns 2 a 3 u.
+const MEIA_LARGURA_DA_TRILHA := 1.15
 ## OS VÃOS DO SOBREVOO DO MENU, em unidades: por onde o voo gravado
 ## (`data/sobrevoo_menu.json`) cruza a fileira de árvores da orla ("Sobrevoo da
 ## abertura", no VALE_VIVO_3D.md). O manguezal, os coqueiros e a restinga da
@@ -319,6 +342,7 @@ func build_region(kml_json_path: String, scenario_json_path: String) -> void:
 					_rivers.append({"name": String(feature.get("name", "")), "points": points, "width": river_width, "bounds": _points_bounds(points).grow(river_width * 0.5)})
 	_curve_roads()
 	_prepare_mouth_extensions()
+	_ler_clareiras_da_mata(String(scenario.get("vegetation", {}).get("clearings_file", "")))
 	_montar_mapa_de_solo()
 	if not terrain_only:
 		await _marcar(0.02, "Enchendo a baía")
@@ -796,6 +820,7 @@ func _clear_region() -> void:
 	_coast.clear()
 	_grade_costa_n = -1
 	_beach_gap_coast_points.clear()
+	clareiras_da_mata.clear()
 	solo = null
 
 
@@ -965,6 +990,7 @@ func _montar_mapa_de_solo() -> void:
 		solo.faixa(MapaDeSolo.Camada.LAMA, mouth.points, float(mouth.width) * 0.5 + 7.0, 0.45)
 	for river in _rivers:
 		solo.faixa(MapaDeSolo.Camada.LAMA, river.points, float(river.width) * 0.5 + 3.5, 1.0)
+	_pintar_clareiras_da_mata()
 	solo.publicar()
 
 
@@ -988,11 +1014,84 @@ func pintar_vida(arvores: Array, portas: Array) -> void:
 			var pe: Vector3 = arvore["pos"]
 			var lado := clampf(float(arvore.get("raio", 0.4)) * 7.0, 2.0, 5.0) * 1.7
 			solo.mancha(MapaDeSolo.Camada.COPA, Vector2(pe.x, pe.z), lado, 1.0 if cheio else 0.5)
+	# O folhiço das clareiras que não são de terra batida: a camada da copa foi
+	# apagada acima, e o descampado, sem árvore da mata, não a repintaria.
+	for clareira: Dictionary in clareiras_da_mata:
+		if String(clareira["chao"]) == "folhico":
+			solo.poligono(MapaDeSolo.Camada.COPA, _contorno_da_clareira(clareira, 0.9), 1.0)
 	for porta: Vector2 in portas:
 		var rua := _ponto_mais_perto_das_ruas(porta, 40.0)
 		if rua.is_finite():
 			solo.faixa(MapaDeSolo.Camada.TERRA, PackedVector2Array([porta, rua]), 1.0)
 	solo.publicar([MapaDeSolo.Camada.TERRA, MapaDeSolo.Camada.COPA])
+
+
+## LÊ AS CLAREIRAS-DESTAQUE DA MATA (ver `clareiras_da_mata`). Depois das ruas em
+## curva: a ponta da trilha que encosta na rua gruda no eixo dela já suavizado.
+## Sem arquivo (outra região, ou o campo ausente no cenário), a mata fica inteira.
+func _ler_clareiras_da_mata(caminho: String) -> void:
+	clareiras_da_mata.clear()
+	if caminho.is_empty():
+		return
+	var dados := _read_json(caminho)
+	for item_valor in dados.get("clareiras", []):
+		var item: Dictionary = item_valor
+		var centro := Vector2(float(item["centro"][0]), float(item["centro"][1]))
+		if _land.size() >= 3 and not Geometry2D.is_point_in_polygon(centro, _land):
+			continue
+		var trilha := PackedVector2Array()
+		for ponto in item.get("trilha", []):
+			trilha.append(Vector2(float(ponto[0]), float(ponto[1])))
+		trilha = _chaikin(trilha)
+		if trilha.size() >= 2:
+			var rua := _ponto_mais_perto_das_ruas(trilha[0], 12.0)
+			if rua.is_finite():
+				trilha[0] = rua
+		var pedras: Array[Dictionary] = []
+		for pedra: Dictionary in item.get("pedras", []):
+			pedras.append(pedra)
+		clareiras_da_mata.append({
+			"centro": centro,
+			"raio": float(item.get("raio", 14.0)),
+			"especie": String(item.get("especie", "")),
+			"escala": float(item.get("escala", 1.0)),
+			"giro": float(item.get("giro", 0.0)),
+			"chao": String(item.get("chao", "terra")),
+			"casa": String(item.get("casa", "")),
+			"trilha": trilha,
+			"caixa_trilha": _points_bounds(trilha).grow(FOLGA_DA_TRILHA + 1.0) if trilha.size() >= 2 else Rect2(),
+			"pedras": pedras,
+		})
+
+
+## O contorno irregular do chão de uma clareira: `fracao` do raio, com a borda
+## ondulada (três harmônicas, de fase própria de cada clareira), para não sair um
+## círculo de compasso no chão.
+func _contorno_da_clareira(clareira: Dictionary, fracao: float) -> PackedVector2Array:
+	var centro: Vector2 = clareira["centro"]
+	var raio: float = float(clareira["raio"]) * fracao
+	var fase := float(clareira["giro"])
+	var contorno := PackedVector2Array()
+	for i in 28:
+		var angulo := TAU * float(i) / 28.0
+		var onda := 0.14 * sin(angulo * 2.0 + fase) + 0.09 * sin(angulo * 3.0 + fase * 1.7) + 0.05 * sin(angulo * 5.0 + fase * 2.3)
+		contorno.append(centro + Vector2.from_angle(angulo) * raio * (1.0 + onda))
+	return contorno
+
+
+## O CHÃO FIXO DAS CLAREIRAS no mapa de solo: a trilha de terra batida de cada uma
+## até a rua e, nas de "terra", o descampado de terra em volta da árvore. O folhiço
+## das outras vem em `pintar_vida`, junto da copa. Sem malha: é só o que o shader do
+## terreno e o passo (`surface_at`) leem.
+func _pintar_clareiras_da_mata() -> void:
+	for clareira: Dictionary in clareiras_da_mata:
+		var trilha: PackedVector2Array = clareira["trilha"]
+		solo.faixa(MapaDeSolo.Camada.TERRA, trilha, MEIA_LARGURA_DA_TRILHA)
+		if String(clareira["chao"]) == "terra":
+			solo.poligono(MapaDeSolo.Camada.TERRA, _contorno_da_clareira(clareira, 0.72), 1.0)
+		else:
+			# Terra só no pé da árvore e nas bordas das pedras; o resto é folhiço.
+			solo.poligono(MapaDeSolo.Camada.TERRA, _contorno_da_clareira(clareira, 0.26), 1.0)
 
 
 ## Ponto do eixo de rua mais perto de `ponto`, até `alcance` u; INF se nenhum.
@@ -1830,6 +1929,14 @@ func _build_forest(configuration: Dictionary) -> void:
 	var target := maxi(int(configuration.get("tree_count", 1800)), 0)
 	if target == 0:
 		return
+	# A MATA PELA METADE, SEM MEXER NO RESTO DO VALE. `draw_count` é o tamanho do
+	# sorteio de pontos (o de antes de a mata encolher); `tree_count`, quantas
+	# árvores ficam. Planta-se um ponto a cada `passo_da_mata` do sorteio: o que
+	# fica é a mesma árvore de antes (mesma espécie, mesmo lugar), só mais rala, e
+	# o sorteio gasta os mesmos números da fila — então o sub-bosque, o rio, a orla
+	# e o vão do sobrevoo, que vêm depois dela, nascem exatamente onde nasciam.
+	var sorteio_total := maxi(int(configuration.get("draw_count", target)), target)
+	var passo_da_mata := maxi(roundi(float(sorteio_total) / float(target)), 1)
 	var rng := RandomNumberGenerator.new()
 	rng.seed = int(configuration.get("seed", 1887))
 	var clearing := _units(float(configuration.get("clearing_m", 8.0)), 2.5)
@@ -1839,10 +1946,10 @@ func _build_forest(configuration: Dictionary) -> void:
 	var coast_clearing := _units(18.0, 5.0)
 	var interest_clearing := _units(16.0, 6.0)
 	var attempts := 0
-	while positions.size() < target and attempts < target * 35:
+	while positions.size() < sorteio_total and attempts < sorteio_total * 35:
 		attempts += 1
 		if attempts % 200 == 0:
-			await _marcar(0.5 + 0.2 * float(positions.size()) / float(target), "Plantando a mata", false)
+			await _marcar(0.5 + 0.2 * float(positions.size()) / float(sorteio_total), "Plantando a mata", false)
 		var point := Vector2(
 			rng.randf_range(_bounds.position.x, _bounds.end.x),
 			rng.randf_range(_bounds.position.y, _bounds.end.y)
@@ -1889,18 +1996,29 @@ func _build_forest(configuration: Dictionary) -> void:
 	# por árvore como antes — é o que deixa idênticos, bit a bit, o tamanho e o
 	# giro de cada pé, o sub-bosque, o rio e a orla que vêm depois.
 	const EspeciesDaMata := preload("res://scripts/prototipo_3d/especies_da_mata.gd")
-	var classes: PackedStringArray = _classes_da_mata(positions) if _estilo_tripo else PackedStringArray()
+	# A classe só de quem fica: é a conta cara, e a árvore que sai não a usa.
+	var mantidas: Array[Vector2] = []
+	for i in range(positions.size()):
+		if i % passo_da_mata == 0:
+			mantidas.append(positions[i])
+	var classes: PackedStringArray = _classes_da_mata(mantidas) if _estilo_tripo else PackedStringArray()
+	var proxima_mantida := 0
+	var descartadas := 0
 	for i in range(positions.size()):
 		var sorteio := rng.randi_range(0, lista.size() - 1)
+		if i % passo_da_mata != 0:
+			descartadas += 1
+			continue
 		var species: String = lista[sorteio]
 		if _estilo_tripo:
-			var da_mancha := EspeciesDaMata.especie(positions[i], sorteio, lista.size(), classes[i])
+			var da_mancha := EspeciesDaMata.especie(positions[i], sorteio, lista.size(), classes[proxima_mantida])
 			# Sem o GLB, o procedural da espécie puxaria números da fila: fica a da fila.
 			if CatalogoAssets.tem_tripo(EspeciesDaMata.malha(da_mancha)):
 				species = da_mancha
 			elif species == "mata_larga":
 				# A gameleira é uma só (a de Iroko): na mata, a copa larga é o jatobá.
 				species = "jatoba"
+		proxima_mantida += 1
 		if not by_species.has(species):
 			by_species[species] = []
 		by_species[species].append(positions[i])
@@ -1938,8 +2056,12 @@ func _build_forest(configuration: Dictionary) -> void:
 			# Afundada um palmo: o pé entra no chão em vez de pousar sobre ele.
 			transforms.append(transformacao)
 		_multimesh_em_blocos("Mata: " + species, built.mesh, transforms, LOD_MATA, registros)
+	# Tamanho e giro das árvores que saíram: gasta os números que elas gastariam.
+	for _k in descartadas:
+		rng.randf_range(0.8, 1.25)
+		rng.randf_range(0.0, TAU)
 	await _marcar(0.98, "Plantando a mata", false)
-	_build_sub_bosque(positions, rng)
+	_build_sub_bosque(positions, rng, passo_da_mata)
 	_build_margens_do_rio(rng)
 	_build_coast_palms(rng)
 
@@ -2024,7 +2146,10 @@ func _classes_da_mata(positions: Array[Vector2]) -> PackedStringArray:
 ## Sub-bosque da Mata Atlântica (helicônias, bromélias, samambaias) espalhado entre as
 ## árvores da mata: um tufo a cada poucas árvores, deslocado para o vão entre elas.
 ## Sem colisão (é de passar por dentro) e só no estilo Tripo.
-func _build_sub_bosque(arvores_mata: Array[Vector2], rng: RandomNumberGenerator) -> void:
+## O sub-bosque nasce de uma em cada três árvores do SORTEIO; com a mata mais rala
+## (`passo_da_mata`, ver `_build_forest`), só os tufos das árvores que ficaram
+## são plantados, e os números da fila são gastos como antes.
+func _build_sub_bosque(arvores_mata: Array[Vector2], rng: RandomNumberGenerator, passo_da_mata: int = 1) -> void:
 	if not _estilo_tripo or not CatalogoAssets.tem_tripo("sub_bosque"):
 		return
 	var tufo: Dictionary = _malha_da_especie("sub_bosque", rng)
@@ -2038,7 +2163,7 @@ func _build_sub_bosque(arvores_mata: Array[Vector2], rng: RandomNumberGenerator)
 		var chao := ground_height_at(Vector3(ponto.x, 0, ponto.y))
 		var escala := rng.randf_range(0.7, 1.3)
 		var giro_do_tufo := rng.randf() * TAU
-		if _em_clareira(ponto):
+		if i % passo_da_mata != 0 or _em_clareira(ponto):
 			continue
 		transforms.append(Transform3D(Basis.from_euler(Vector3(0, giro_do_tufo, 0)).scaled(Vector3.ONE * escala), Vector3(ponto.x, chao - 0.03, ponto.y)) * (tufo.base as Transform3D))
 	if not transforms.is_empty():
@@ -2719,6 +2844,13 @@ func _near_interest(point: Vector2, radius: float) -> bool:
 func _em_clareira(point: Vector2) -> bool:
 	for clareira in clareiras:
 		if point.distance_squared_to(clareira) < RAIO_DAS_CLAREIRAS * RAIO_DAS_CLAREIRAS:
+			return true
+	# As clareiras-destaque (raio próprio) e as trilhas até elas.
+	for destaque in clareiras_da_mata:
+		var raio: float = float(destaque["raio"]) + FOLGA_DA_CLAREIRA
+		if point.distance_squared_to(destaque["centro"]) < raio * raio:
+			return true
+		if (destaque["caixa_trilha"] as Rect2).has_point(point) and _distance_to_line(point, destaque["trilha"]) < FOLGA_DA_TRILHA:
 			return true
 	return false
 
