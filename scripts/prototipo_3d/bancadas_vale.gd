@@ -121,10 +121,16 @@ static func ponto_da_provisoria(world, qual: String) -> Vector3:
 	return world.ground_position(onde, 0.0) if onde.is_finite() else Vector3.INF
 
 
-## AS BANCADAS PROVISÓRIAS NO CHÃO: uma caixa cinza onde a construção ainda não
-## tem modelo, para o jogador achar onde ela fica — o trato da criatura (#14):
-## a mecânica não espera o modelo, e o modelo entra depois sem tocar nela.
-## Sem colisão: é marca, não parede, e não pode fechar caminho no roçado.
+## AS BANCADAS DE QUEM AINDA NÃO TEM CONSTRUÇÃO, no chão: a oficina é uma
+## bancada na beira do roçado até a construção dela chegar (#27) — o trato da
+## criatura (#14): a mecânica não espera o modelo.
+##
+## Era uma caixa cinza sem corpo, "marca, não parede". Quem jogou leu outra
+## coisa: "a bancada não tem asset e não consegui interagir". Agora, no estilo
+## Tripo, é a peça `bancada_oficina` do catálogo (a mesa rústica, sólida); no
+## procedural, que é só comparação e não ganha arte nova, a caixa cinza ganhou
+## corpo. Na beira do roçado, uma bancada de metro e meio não fecha caminho.
+## Quem abre a oficina é o E (`tecla_das_bancadas.gd`) ou o J.
 static func montar_as_provisorias(world, pai: Node) -> void:
 	for qual in OBRAS:
 		if not bool(OBRAS[qual].get("provisoria", false)):
@@ -132,13 +138,34 @@ static func montar_as_provisorias(world, pai: Node) -> void:
 		var ponto := ponto_da_provisoria(world, str(qual))
 		if not ponto.is_finite():
 			continue
-		var bancada := MeshInstance3D.new()
+		var peca := "bancada_" + str(qual)
+		var bancada: Node3D = null
+		if bool(world.call("estilo_tripo")) and CatalogoAssets.PECAS.has(peca):
+			bancada = CatalogoAssets.instanciar(peca, pai, ponto)
+			if bancada != null:
+				CatalogoAssets.colisao(peca, bancada, pai, ponto)
+		if bancada == null:
+			bancada = _caixa_provisoria(pai, ponto)
 		bancada.name = "Bancada_%s" % qual
-		var caixa := BoxMesh.new()
-		caixa.size = Vector3(1.4, 0.85, 0.7)
-		bancada.mesh = caixa
-		var tinta := StandardMaterial3D.new()
-		tinta.albedo_color = Color(0.52, 0.53, 0.52)
-		bancada.material_override = tinta
-		pai.add_child(bancada)
-		bancada.global_position = ponto + Vector3(0.0, 0.425, 0.0)
+
+
+static func _caixa_provisoria(pai: Node, ponto: Vector3) -> Node3D:
+	var medida := Vector3(1.4, 0.85, 0.7)
+	var bancada := MeshInstance3D.new()
+	var caixa := BoxMesh.new()
+	caixa.size = medida
+	bancada.mesh = caixa
+	var tinta := StandardMaterial3D.new()
+	tinta.albedo_color = Color(0.52, 0.53, 0.52)
+	bancada.material_override = tinta
+	var corpo := StaticBody3D.new()
+	corpo.name = "Corpo"
+	var forma := CollisionShape3D.new()
+	var caixa_do_corpo := BoxShape3D.new()
+	caixa_do_corpo.size = medida
+	forma.shape = caixa_do_corpo
+	corpo.add_child(forma)
+	bancada.add_child(corpo)
+	pai.add_child(bancada)
+	bancada.global_position = ponto + Vector3(0.0, medida.y * 0.5, 0.0)
+	return bancada

@@ -1475,7 +1475,13 @@ func _build_farm() -> void:
 	ancoras["Roçado"] = origin
 	# A casa passou a ocupar o centro do roçado. A oficina precisa de ponto
 	# próprio na beira, senão a distância empatada sempre escolhe a casa.
-	ancoras["Oficina"] = ground_position(origin + Vector3(-8.0, 0.0, -4.0))
+	#
+	# E LONGE DE TRONCO: em (-8, -4) ela ficava a 2,8 m do tronco caído da
+	# chegada (`lenha_rocado_b`), e o E ao lado da bancada batia nele — "não
+	# consegui interagir" com a bancada. Aqui, atrás da casa, o tronco, o
+	# lajedo e a árvore mais perto ficam a mais de 5 m nos dois estilos, e o E
+	# perto dela é só da oficina (`tecla_das_bancadas.gd`).
+	ancoras["Oficina"] = ground_position(origin + Vector3(-3.0, 0.0, -9.0))
 	ancoras["Lavoura"] = ground_position(_na_casa("Casa de taipa", LAVOURA_NA_CASA))
 	ancoras["LavouraFrente"] = ancoras.get("Casa de taipaFrente", Vector3.BACK)
 	var canteiro := ground_position(_na_casa("Casa de taipa", CANTEIRO_NA_CASA))

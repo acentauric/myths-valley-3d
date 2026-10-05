@@ -451,6 +451,12 @@ static func fogueira() -> Node3D:
 		var instance := _mesh_instance(log, Vector3(0, 0.12 + float(i) * 0.05, 0), TRONCO)
 		instance.rotation = Vector3(0.35, TAU * float(i) / 3.0, PI * 0.5)
 		root.add_child(instance)
+	# Sólida, como a do Tripo (`CatalogoAssets`, "fogueira"): o corpo não entra
+	# no meio das toras acesas.
+	var corpo := CylinderShape3D.new()
+	corpo.radius = 0.5
+	corpo.height = 0.5
+	_collision(root, corpo, Vector3(0, 0.25, 0))
 	return root
 
 

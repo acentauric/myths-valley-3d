@@ -77,7 +77,13 @@ const PECAS := {
 	"lampiao_poste": {"tripo": "aderecos/lampiao_poste_tripo.glb", "altura": 3.4, "tronco": 0.15},
 	"candeeiro": {"tripo": "aderecos/candeeiro_tripo.glb", "altura": 0.42},
 	# A pilha de toras não traz chama rígida nem aro de pedra; o fogo vem de partículas.
-	"fogueira": {"tripo": "aderecos/lenha_tripo.glb", "largura": 1.6},
+	# Sólida: sem a caixa o corpo entrava no meio das toras acesas ("estou dentro
+	# da fogueira"). Cozinhar não depende de encostar nela (`BancadasVale`, raio).
+	"fogueira": {"tripo": "aderecos/lenha_tripo.glb", "largura": 1.6, "caixa": true},
+	# A BANCADA DA OFICINA, na beira do roçado: a mesa rústica do lote dos móveis,
+	# maior e sólida, faz as vezes do banco de carpinteiro até a oficina ter
+	# construção própria (#27). Não é arte nova: é o mesmo GLB da `mesa`.
+	"bancada_oficina": {"tripo": "moveis/mesa_tripo.glb", "largura": 1.5, "caixa": true},
 	"mandioca_canteiro": {"tripo": "aderecos/mandioca_canteiro_tripo.glb", "largura": 3.5},
 	"pedras": {"tripo": "aderecos/pedras_tripo.glb", "largura": 3.0, "caixa": true},
 	"pedras_praia": {"tripo": "aderecos/pedras_praia_tripo.glb", "largura": 9.0, "caixa": true},

@@ -127,9 +127,9 @@
       "lugar": "oficina",
       "raio": 6.0,
       "audio": "",
-      "texto": "Agora a corda. A bancada do seu tio fica na beira do roçado: é ali que lenha vira tábua e vira corda. Encosta nela, abre o J e torce uma — três lenhas dão uma corda.",
-      "texto_en": "Now the rope. Your uncle's workbench is at the edge of the field: that's where firewood becomes plank and becomes rope. Walk up to it, open J and twist one — three pieces of firewood make a rope.",
-      "texto_es": "Ahora la cuerda. El banco de tu tío está a la orilla del sembrado: ahí la leña se vuelve tabla y se vuelve cuerda. Acércate, abre la J y tuerce una: tres leñas dan una cuerda.",
+      "texto": "Agora a corda. A bancada do seu tio fica na beira do roçado: é ali que lenha vira tábua e vira corda. Encosta nela e aperta E pra torcer uma — três lenhas dão uma corda.",
+      "texto_en": "Now the rope. Your uncle's workbench is at the edge of the field: that's where firewood becomes plank and becomes rope. Walk up to it and press E to twist one — three pieces of firewood make a rope.",
+      "texto_es": "Ahora la cuerda. El banco de tu tío está a la orilla del sembrado: ahí la leña se vuelve tabla y se vuelve cuerda. Acércate y pulsa E para torcer una: tres leñas dan una cuerda.",
       "meta": { "tipo": "juntar", "item": "corda", "quantos": 1 }
     },
     {
@@ -162,9 +162,9 @@
       "lugar": "fogueira",
       "raio": 6.0,
       "audio": "",
-      "texto": "O balde que a Dona Zefa te deu era do seu tio: com ele se rega a roça amanhã. Agora a janta, que o peixe do Tonho tá esperando. A fogueira do terreiro é o fogão da casa por enquanto: encosta, abre o J e asse — peixe na brasa pede uma lenha.",
-      "texto_en": "The bucket Dona Zefa gave you was your uncle's: tomorrow it waters the field. Now supper — Tonho's fish is waiting. The yard fire is the house stove for now: walk up to it, open J and roast — fish on the coals takes one piece of firewood.",
-      "texto_es": "El balde que te dio doña Zefa era de tu tío: con él se riega el sembrado mañana. Ahora la cena, que el pescado de Tonho está esperando. La fogata del patio es el fogón de la casa por ahora: acércate, abre la J y ásalo; pescado a la brasa pide una leña.",
+      "texto": "O balde que a Dona Zefa te deu era do seu tio: com ele se rega a roça amanhã. Agora a janta, que o peixe do Tonho tá esperando. A fogueira do terreiro é o fogão da casa por enquanto: encosta, aperta E e asse — peixe na brasa pede uma lenha.",
+      "texto_en": "The bucket Dona Zefa gave you was your uncle's: tomorrow it waters the field. Now supper — Tonho's fish is waiting. The yard fire is the house stove for now: walk up to it, press E and roast — fish on the coals takes one piece of firewood.",
+      "texto_es": "El balde que te dio doña Zefa era de tu tío: con él se riega el sembrado mañana. Ahora la cena, que el pescado de Tonho está esperando. La fogata del patio es el fogón de la casa por ahora: acércate, pulsa E y ásalo; pescado a la brasa pide una leña.",
       "meta": { "tipo": "evento", "evento": "cozinhou:peixe_assado" }
     },
     {
