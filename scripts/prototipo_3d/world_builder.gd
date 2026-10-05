@@ -70,6 +70,12 @@ var _house_sites: Array[Dictionary] = []
 ##              da beira, perto das pedras.
 const TERREIRO_M := Vector3(-262, 0, -238)
 const GAMELEIRA_M := Vector3(-300, 0, 560)
+## O VÃO NORTE DO SOBREVOO DO MENU, em metros no mesmo referencial: onde o voo
+## gravado (`data/sobrevoo_menu.json`), aos 7 s, cruza a fileira do manguezal da
+## foz na ida do píer para a praça. A fileira não planta tronco a menos de 10 m
+## dele (`GeoRegionRenderer.vaos_do_sobrevoo`). Replanejou o voo por outro vão?
+## Mude este ponto junto, ou tire-o se o voo não cruzar mais a fileira.
+const VAO_NORTE_DO_SOBREVOO_M := Vector3(294, 0, -50)
 var _fogo_do_terreiro: Node3D
 
 ## Lote (posição e giro) de cada construção nomeada, decidido por _loteamento().
@@ -620,6 +626,8 @@ func _montar() -> void:
 	# Os marcos de fé que o mapa não tem pedem clareira antes de a mata nascer.
 	_region.clareiras.assign([Vector2(TERREIRO_M.x, TERREIRO_M.z) / _meters_per_unit,
 		Vector2(GAMELEIRA_M.x, GAMELEIRA_M.z) / _meters_per_unit])
+	# E o voo do menu pede o vão dele livre na fileira da orla.
+	_region.vaos_do_sobrevoo.assign([Vector2(VAO_NORTE_DO_SOBREVOO_M.x, VAO_NORTE_DO_SOBREVOO_M.z) / _meters_per_unit])
 	await _region.build_region(String(region_data["geometry"]), String(region_data["scenario"]))
 	# O sol segue a latitude do lugar (a origem do KML).
 	if _region._projection.has("origin_lat"):

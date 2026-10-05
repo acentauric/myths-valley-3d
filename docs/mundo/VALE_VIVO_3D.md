@@ -212,11 +212,21 @@ traçado é que desvia, sempre a 14,6–17,4 m do chão:
   mais tempo que a ida.
 - Folga mínima de 5 m da **geometria real** (triângulos, não AABB: a caixa do coqueiro
   do Tripo tem 49 m de largura, e a 16 m ele ocupa só o tronco e as pontas das
-  folhas), nos dois estilos: 6,25 m no Tripo e 5,74 m no procedural.
+  folhas), nos dois estilos: 6,12 m no Tripo e 5,74 m no procedural.
 - Conforto no nível do voo que já existia: guinada até 21,6 graus/s (p95 17,4, contra
-  19,4 na elipse), aceleração lateral até 1,42 m/s², subida e descida até 1,31 m/s.
-  A velocidade desacelera nas curvas (3,4 a 13,7 m/s).
+  19,4 na elipse), aceleração lateral até 1,41 m/s², subida e descida até 1,38 m/s.
+  A velocidade desacelera nas curvas (3,4 a 15,3 m/s).
 - Se as âncoras ou a escala mudarem, o menu avisa e volta à elipse antiga.
+- **O vão norte da fileira fica livre.** A fileira da orla é sorteada ao longo da
+  costa e da foz, e mudar o desenho delas põe cada árvore em outro lugar. A revisão
+  da foz de 04/10 pôs um mangue a 8 m do eixo do voo, na ida, com a fileira fechada
+  dos dois lados dele: não havia outro vão por onde replanejar. O vale passa a não
+  plantar tronco a menos de 10 m do ponto em que o voo cruza a fileira
+  (`VAO_NORTE_DO_SOBREVOO_M`, no `world_builder.gd`); a árvore é sorteada como antes
+  e só não nasce, como nas clareiras, para o resto da fileira ficar onde está. Hoje
+  isso tira um mangue. Na volta, pelo sul, havia espaço: o voo foi replanejado e
+  passa 9 m mais ao sul, longe das folhas do último coqueiro da fileira; a ida e a
+  curva da praça continuam as mesmas.
 
 Os portões `tests/sobrevoo_livre.gd` (Tripo) e `tests/sobrevoo_livre_procedural.gd`
 montam o vale, rasterizam os triângulos em volta do voo e conferem o trajeto gravado

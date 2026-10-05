@@ -85,6 +85,20 @@ var _point_positions: Array[Vector2] = []
 ## é plantada (`_em_clareira`, no instante de plantar).
 var clareiras: Array[Vector2] = []
 const RAIO_DAS_CLAREIRAS := 8.0
+## OS VÃOS DO SOBREVOO DO MENU, em unidades: por onde o voo gravado
+## (`data/sobrevoo_menu.json`) cruza a fileira de árvores da orla ("Sobrevoo da
+## abertura", no VALE_VIVO_3D.md). O manguezal, os coqueiros e a restinga da
+## orla não plantam tronco neles.
+##
+## A fileira é sorteada ao longo da costa e da foz: quando o desenho delas muda,
+## cada árvore cai em outro lugar, e uma pode cair bem no vão. Foi o que a
+## revisão da foz fez com o vão norte: um mangue a 8 m do eixo do voo, com a
+## copa na altura da câmera, e a fileira fechada dos dois lados dele — sem outro
+## vão por onde replanejar. Como nas clareiras, a árvore do vão é sorteada como
+## antes e só não é plantada, para o resto da fileira não sair do lugar.
+var vaos_do_sobrevoo: Array[Vector2] = []
+## Tronco a menos disto do centro do vão põe a copa dentro da folga do voo.
+const RAIO_DO_VAO := 2.5
 var _elevation_samples: Array[Dictionary] = []
 ## Altura já calculada de cada vértice das malhas do terreno: vizinhos da subdivisão
 ## repetem os mesmos pontos, e ground_height_at percorre todas as amostras a cada vez.
@@ -1935,6 +1949,9 @@ func _build_margens_do_rio(rng: RandomNumberGenerator) -> void:
 					var escala := rng.randf_range(0.8, 1.2)
 					var giro := Basis.from_euler(Vector3(0, rng.randf() * TAU, 0)).scaled(Vector3.ONE * escala)
 					if no_mangue:
+						# No vão do sobrevoo o mangue já foi sorteado, e só não nasce.
+						if _no_vao_do_sobrevoo(ponto):
+							continue
 						var no_rio := Transform3D(giro, Vector3(ponto.x, chao - ARVORE_AFUNDADA, ponto.y)) * (mangue.base as Transform3D)
 						do_mangue.append(no_rio)
 						_tree_trunks.append({"point": ponto, "ground": chao, "height": minf(float(mangue.altura) * escala, 4.0), "radius": float(mangue.tronco) * escala, "especie": "mangue", "transformacao": no_rio})
@@ -1976,6 +1993,9 @@ func _build_margens_do_rio(rng: RandomNumberGenerator) -> void:
 						var chao := ground_height_at(Vector3(ponto.x, 0, ponto.y))
 						var escala := rng.randf_range(0.75, 1.2)
 						var na_foz := Transform3D(Basis.from_euler(Vector3(0, rng.randf() * TAU, 0)).scaled(Vector3.ONE * escala), Vector3(ponto.x, chao - ARVORE_AFUNDADA, ponto.y)) * (mangue.base as Transform3D)
+						# No vão do sobrevoo o mangue já foi sorteado, e só não nasce.
+						if _no_vao_do_sobrevoo(ponto):
+							continue
 						do_mangue.append(na_foz)
 						_tree_trunks.append({"point": ponto, "ground": chao, "height": minf(float(mangue.altura) * escala, 4.0), "radius": float(mangue.tronco) * escala, "especie": "mangue", "transformacao": na_foz})
 						registros_mangue.append(_tree_trunks.size() - 1)
@@ -2084,12 +2104,12 @@ func _build_coast_palms(rng: RandomNumberGenerator) -> void:
 					var local: String = restinga[rng.randi_range(0, restinga.size() - 1)]
 					var malha_local: Dictionary = malhas_restinga[local]
 					var giro_livre := rng.randf_range(0.0, TAU)
-					if not _em_clareira(candidate):
+					if not _em_clareira(candidate) and not _no_vao_do_sobrevoo(candidate):
 						var na_restinga := Transform3D(Basis.from_euler(Vector3(0, giro_livre, 0)).scaled(Vector3.ONE * scale), Vector3(candidate.x, ground - ARVORE_AFUNDADA, candidate.y)) * (malha_local.base as Transform3D)
 						(transforms_restinga[local] as Array[Transform3D]).append(na_restinga)
 						_tree_trunks.append({"point": candidate, "ground": ground, "height": minf(float(malha_local.altura) * scale, 4.0), "radius": float(malha_local.tronco) * scale, "especie": local, "transformacao": na_restinga})
 						(registros_restinga[local] as Array[int]).append(_tree_trunks.size() - 1)
-				elif not _em_clareira(candidate):
+				elif not _em_clareira(candidate) and not _no_vao_do_sobrevoo(candidate):
 					var transformacao := Transform3D(Basis.from_euler(Vector3(0, yaw, 0)).scaled(Vector3.ONE * scale), Vector3(candidate.x, ground - ARVORE_AFUNDADA, candidate.y)) * lean * modelo_base
 					transforms.append(transformacao)
 					# O ponto de plantio serve à interação; a colisão segue a base
@@ -2460,6 +2480,14 @@ func _near_interest(point: Vector2, radius: float) -> bool:
 func _em_clareira(point: Vector2) -> bool:
 	for clareira in clareiras:
 		if point.distance_squared_to(clareira) < RAIO_DAS_CLAREIRAS * RAIO_DAS_CLAREIRAS:
+			return true
+	return false
+
+
+## O ponto cai num vão do sobrevoo do menu? (Ver `vaos_do_sobrevoo`.)
+func _no_vao_do_sobrevoo(point: Vector2) -> bool:
+	for vao in vaos_do_sobrevoo:
+		if point.distance_squared_to(vao) < RAIO_DO_VAO * RAIO_DO_VAO:
 			return true
 	return false
 

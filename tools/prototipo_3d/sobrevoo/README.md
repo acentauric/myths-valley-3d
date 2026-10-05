@@ -34,6 +34,23 @@ enquadramento, continuidade e fidelidade ao desenho (píer no início, praça a 
 Se o planejador disser `NAO CABE`, as curvas novas pedem mais que 72 s nos limites de
 conforto: abra o mapa da geometria (`$S/mapa_uniao.png`) e veja o que fechou o caminho.
 
+## Quando replanejar não basta (04/10/2026)
+
+O otimizador é local, e o laço tem pouca sobra de tempo. Três coisas que a revisão da
+foz ensinou, na ordem em que apareceram:
+
+- **Obstáculo em cima do trajeto.** Se o voo passa quase por cima de uma árvore nova,
+  a folga não cresce para lado nenhum e o planejador não sai do lugar (a folga piora).
+  Parta de um laço já empurrado de lado: `--inicial` aceita uma lista de `[x, z]`.
+- **Vão fechado.** O laço cruza a fileira da orla em dois vãos, ida ao norte e volta
+  ao sul. Um mangue sorteado no vão norte, com a fileira fechada dos dois lados dele,
+  não se contorna: o vale não planta tronco a menos de 10 m do ponto do vão
+  (`VAO_NORTE_DO_SOBREVOO_M`, no `world_builder.gd`). Mudou o voo de vão? Mude o ponto.
+- **A curva da praça.** Otimizando os 22 controles, o planejador paga o tempo de um
+  desvio afrouxando a curva da praça: ela foi a 35,2 m, e o avaliador cobra 35. O voo
+  gravado saiu de uma otimização só dos controles do desvio (15 a 21 e 0 a 3), com os
+  da praça parados, e de `--rodadas=0` para regravar o trajeto a partir deles.
+
 ## Arquivos
 
 | Arquivo | O que faz |
