@@ -566,7 +566,11 @@ func _ao_golpe_concluido() -> void:
 	var arvore: Dictionary = _cortaveis[indice]
 	var madeira := madeira_de(String(arvore["especie"]))
 	var dureza := float(madeira.get("dureza", 1.0))
-	if not bool(_jogador.call("gastar_vigor", CUSTO_DO_GOLPE)):
+	# No vale 3D, Energia.gastar também desconta do vigor do jogador. Dividir
+	# o custo total evita cobrar duas vezes e encerrar o corte antes do segundo impacto.
+	var custo_energia := Energia.custo("bater", dureza)
+	var custo_braco := maxf(CUSTO_DO_GOLPE - custo_energia, 0.0)
+	if not bool(_jogador.call("gastar_vigor", custo_braco)):
 		_parar_golpe(false)
 		return
 	_stamina = float(_jogador.call("vigor_atual"))

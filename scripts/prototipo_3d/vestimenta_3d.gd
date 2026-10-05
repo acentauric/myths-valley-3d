@@ -82,6 +82,8 @@ const MACHADO_PARADO := -30.0
 ## verdade): GLB novo pede só medir de novo e trocar a linha dele aqui, com a
 ## folha de `fotos_da_mao.gd`.
 const NA_MAO := {
+	# O fio do machado à frente e para baixo vem do acerto levado ao osso do viajante;
+	# `eixo_inversao`/`rebater_lamina` (da main) ficam para peça que precise.
 	"machado": {"tamanho": 0.46, "pegada": Vector3(0.34, 0.12, 0.014), "acerto": Vector3(21.9, -177.6, 174.0)},
 	"facao": {"tamanho": 0.34, "pegada": Vector3(0.307, 0.199, 0.159), "acerto": Vector3(-1.0, -175.2, 174.4)},
 	# No golpe a ponta desce 25°: a picareta bate na pedra, e não no ar.
@@ -333,7 +335,10 @@ static func _na_mao(ancora: Node3D, visual: Node3D, peca: String) -> Node3D:
 		return null
 	no.rotation = Vector3(deg_to_rad(1.0), deg_to_rad(2.0), deg_to_rad(92.0))
 	var acerto: Vector3 = ajuste["acerto"]
-	no.basis = no.basis * Basis(Vector3.UP, PI) * Basis.from_euler(Vector3(deg_to_rad(acerto.x), deg_to_rad(acerto.y), deg_to_rad(acerto.z)))
+	var eixo_inversao: Vector3 = ajuste.get("eixo_inversao", Vector3.UP)
+	no.basis = no.basis * Basis(eixo_inversao, PI) * Basis.from_euler(Vector3(deg_to_rad(acerto.x), deg_to_rad(acerto.y), deg_to_rad(acerto.z)))
+	if ajuste.get("rebater_lamina", false):
+		no.basis = no.basis * Basis.from_scale(Vector3(-1.0, 1.0, 1.0))
 	# A pegada fica logo acima da ponta real do cabo no GLB.
 	var pegada: Vector3 = ajuste["pegada"]
 	no.position -= no.transform * pegada
