@@ -1133,11 +1133,11 @@
         },
         {
           "de": 11.0,
-          "lugar": "PierPiso",
+          "lugar": "Praça",
           "desloc": [
-            -1.0,
+            6.0,
             0,
-            3.4
+            -5.0
           ],
           "acao": "vigiar"
         },
@@ -1207,11 +1207,11 @@
           ]
         ],
         "manha": [
-          "PierPiso",
+          "Rio 2",
           [
-            1.0,
+            -5.0,
             0,
-            3.0
+            -4.0
           ]
         ],
         "tarde": [
@@ -1242,11 +1242,11 @@
       "agenda": [
         {
           "de": 7.0,
-          "lugar": "PierPiso",
+          "lugar": "Rio 2",
           "desloc": [
-            1.0,
+            -5.0,
             0,
-            3.0
+            -4.0
           ],
           "acao": "pescar",
           "mao": "vara_pescar"
@@ -2054,27 +2054,27 @@
           ]
         ],
         "manha": [
-          "PierPiso",
+          "Rio 2",
           [
-            -1.8,
+            5.0,
             0,
-            3.4
+            -5.0
           ]
         ],
         "tarde": [
-          "PierPiso",
+          "Rio 2",
           [
-            -1.8,
+            5.0,
             0,
-            3.4
+            -5.0
           ]
         ],
         "entardecer": [
-          "PierPiso",
+          "Rio 2",
           [
-            -1.8,
+            5.0,
             0,
-            3.4
+            -5.0
           ]
         ],
         "noite": [
@@ -2089,21 +2089,21 @@
       "agenda": [
         {
           "de": 8.5,
-          "lugar": "PierPiso",
+          "lugar": "Rio 2",
           "desloc": [
-            -1.8,
+            5.0,
             0,
-            3.4
+            -5.0
           ],
           "acao": "esperar"
         },
         {
           "de": 12.5,
-          "lugar": "PierPiso",
+          "lugar": "Rio 2",
           "desloc": [
-            -1.8,
+            5.0,
             0,
-            3.4
+            -5.0
           ],
           "acao": "descansar"
         },

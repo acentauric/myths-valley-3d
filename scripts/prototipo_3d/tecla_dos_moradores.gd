@@ -66,9 +66,14 @@ func _process(_delta: float) -> void:
 	DicaTecla.mostrar_em(_dica, camera, _perto.global_position + Vector3.UP * (altura + ACIMA_DA_CABECA), tr(_rotulo(_perto)))
 
 
+## O mais perto ao alcance, preferindo quem fala: os moradores mudos (só acenam, sem
+## conversa) levam o E apenas quando ninguém que fala está perto. Sem isso o saveirista
+## parado no píer tomava o E do Pedro no desembarque.
 func _mais_perto() -> Node3D:
 	var melhor: Node3D = null
 	var menor := ALCANCE
+	var melhor_mudo: Node3D = null
+	var menor_mudo := ALCANCE
 	if not _quem_mora.is_valid():
 		return null
 	for no in _quem_mora.call():
@@ -80,10 +85,15 @@ func _mais_perto() -> Node3D:
 		if absf(falta.y) > 2.0:
 			continue
 		falta.y = 0.0
-		if falta.length() <= menor:
+		var mudo: bool = morador.has_method("eh_mudo") and bool(morador.call("eh_mudo"))
+		if mudo:
+			if falta.length() <= menor_mudo:
+				menor_mudo = falta.length()
+				melhor_mudo = morador
+		elif falta.length() <= menor:
 			menor = falta.length()
 			melhor = morador
-	return melhor
+	return melhor if melhor != null else melhor_mudo
 
 
 ## "Entregar" quando a conversa entrega o que um passo pede; "Falar", senão.

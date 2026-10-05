@@ -294,6 +294,26 @@ func _conduzir(delta: float, cadeia: Node = null) -> void:
 	rumo.y = 0.0
 	var correndo := jogador.has_method("is_running") and bool(jogador.call("is_running"))
 	_mover(rumo.normalized() if rumo.length() > 0.05 else Vector3.ZERO, CORRER if correndo else ANDAR, delta)
+	_pedir_passagem(rumo)
+
+
+## QUEM BARRA A CONDUÇÃO DÁ PASSAGEM, como dá ao jogador
+## (`player_controller._empurrar_quem_barra`): no tabuado estreito do píer o Tonho,
+## parado de bom-dia a dois passos da prancha, ficava no meio do caminho da malha, e
+## o Pedro empacava nele em vez de levar o jogador à Dona Candinha.
+func _pedir_passagem(rumo: Vector3) -> void:
+	if rumo.length_squared() < 0.0025:
+		return
+	var direcao := Vector3(rumo.x, 0.0, rumo.z).normalized()
+	for i in get_slide_collision_count():
+		var colisao := get_slide_collision(i)
+		var corpo := colisao.get_collider()
+		if corpo == null or corpo == self or not corpo.has_method("dar_passagem"):
+			continue
+		var empurrao := -colisao.get_normal()
+		empurrao.y = 0.0
+		if empurrao.length_squared() > 0.0001 and empurrao.normalized().dot(direcao) > 0.3:
+			corpo.dar_passagem(empurrao)
 
 
 ## PARA ONDE ELE CONDUZ: quem o passo apresenta, ou o lugar do passo — e, sendo

@@ -946,6 +946,12 @@ func _eh_mudo() -> bool:
 	return bool(dados.get("mudo", false))
 
 
+## Público para o E (`tecla_dos_moradores.gd`): quem não fala só leva o E quando não há
+## ninguém que fale ao alcance — o saveirista no píer não toma a conversa do Pedro.
+func eh_mudo() -> bool:
+	return _eh_mudo()
+
+
 func _acenar_mudo() -> void:
 	if _trabalhando() or _recolhido:
 		return
