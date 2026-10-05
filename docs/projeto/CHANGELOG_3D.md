@@ -42,6 +42,12 @@
   ajuda do "?" fica maior. O foco dos botões de ícone perde o contorno duplo.
 - O histórico do jogo ganha os dias 29/09, 30/09 e 01/10 e mais itens por dia,
   tirados do git log.
+- A travessia ganha narração própria e música nova: as nove legendas narradas pela
+  voz do narrador do projeto (ElevenLabs Eleven v3, numa tomada só) e cortadas em
+  um trecho por legenda pelos tempos do Whisper; cada legenda dura o seu trecho, e
+  CONTINUAR e PULAR fazem a voz sumir antes da próxima, sem encavalar. O tema da
+  travessia (ElevenLabs Music) fica por baixo da voz. A narração de boas-vindas
+  antiga, que não falava da travessia, sai de cena.
 - A escolha de idioma ganha folga vertical, e o aviso do rodapé fica centralizado.
 
 - As trilhas do menu, do jogo, dos períodos e da mata mudam com fade de saída

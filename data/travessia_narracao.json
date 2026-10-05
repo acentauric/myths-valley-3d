@@ -1,0 +1,60 @@
+{
+ "fonte": "ElevenLabs Eleven v3, voz BDM · Nelson Silvestre · Narrador; cortes pelo Whisper (whisper-1)",
+ "duracao_total": 56.999,
+ "trechos": [
+  {
+   "arquivo": "trecho_01.mp3",
+   "inicio": 0.0,
+   "fim": 7.91,
+   "duracao": 7.91
+  },
+  {
+   "arquivo": "trecho_02.mp3",
+   "inicio": 7.91,
+   "fim": 16.43,
+   "duracao": 8.52
+  },
+  {
+   "arquivo": "trecho_03.mp3",
+   "inicio": 16.43,
+   "fim": 23.67,
+   "duracao": 7.24
+  },
+  {
+   "arquivo": "trecho_04.mp3",
+   "inicio": 23.67,
+   "fim": 25.57,
+   "duracao": 1.9
+  },
+  {
+   "arquivo": "trecho_05.mp3",
+   "inicio": 25.57,
+   "fim": 32.52,
+   "duracao": 6.95
+  },
+  {
+   "arquivo": "trecho_06.mp3",
+   "inicio": 32.52,
+   "fim": 40.23,
+   "duracao": 7.71
+  },
+  {
+   "arquivo": "trecho_07.mp3",
+   "inicio": 40.23,
+   "fim": 48.28,
+   "duracao": 8.05
+  },
+  {
+   "arquivo": "trecho_08.mp3",
+   "inicio": 48.28,
+   "fim": 54.21,
+   "duracao": 5.93
+  },
+  {
+   "arquivo": "trecho_09.mp3",
+   "inicio": 54.21,
+   "fim": 56.999,
+   "duracao": 2.789
+  }
+ ]
+}
