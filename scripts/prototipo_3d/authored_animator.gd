@@ -39,6 +39,9 @@ var _swimming := false
 ## apoio (ver _medir_passada): a reprodução acompanha o deslocamento e o pé não desliza.
 var _passada: Dictionary = {}
 var _medido := false
+## O TRABALHO EM CURSO (`trabalhar`): o nome do clipe que roda enquanto o corpo está
+## parado (a cópia em laço da biblioteca "trabalho", quando o original não é laço).
+var _trabalho := ""
 
 
 func configure(model_root: Node) -> bool:
@@ -75,6 +78,11 @@ func _process(_delta: float) -> void:
 func update_motion(speed: float, _delta: float) -> void:
 	if animation_player == null:
 		return
+	if _trabalho != "":
+		# Trabalhando, o corpo parado segue no clipe; ao se mover, o trabalho acaba.
+		if speed < 0.2 and not _swimming:
+			return
+		parar_trabalho()
 	if _jump_active:
 		return
 	if _gesture_active:
@@ -244,6 +252,86 @@ func _medir_passada(role: String) -> float:
 	for v in velocidades:
 		total += v
 	return total / velocidades.size()
+
+
+## O CLIPE DE TRABALHO dos moradores (capinar, lavar, vigiar, rezar...): roda em
+## laço enquanto o corpo está parado, e acaba sozinho quando ele anda. Com
+## `em_laco` falso o clipe roda uma vez e segura a última pose (sentar). Devolve
+## falso quando o modelo não tem o clipe, e o corpo segue em pé.
+func trabalhar(clipe: String, em_laco: bool = true) -> bool:
+	var real := String(_clips.get(clipe, ""))
+	if animation_player == null or real.is_empty():
+		return false
+	parar_trabalho()
+	real = _copia_de_trabalho(real, em_laco)
+	_trabalho = real
+	_gesture_active = false
+	_jump_active = false
+	_chop_repetitions_left = 0
+	_current_motion = ""
+	animation_player.speed_scale = 1.0
+	animation_player.play(real, 0.3)
+	return true
+
+
+## O laço do trabalho vai numa CÓPIA do clipe, numa biblioteca só deste corpo. A
+## Animation do GLB é um recurso compartilhado entre todas as instâncias do mesmo
+## modelo — e o corpo do jogador usa o mesmo `chop`: mudar o loop_mode do original
+## deixava o golpe do machado do jogador em laço, sem nunca terminar
+## (tests/corte_das_arvores.gd).
+func _copia_de_trabalho(real: String, em_laco: bool) -> String:
+	var modo := Animation.LOOP_LINEAR if em_laco else Animation.LOOP_NONE
+	var original := animation_player.get_animation(real)
+	if original == null or original.loop_mode == modo:
+		return real
+	if not animation_player.has_animation_library("trabalho"):
+		animation_player.add_animation_library("trabalho", AnimationLibrary.new())
+	var biblioteca := animation_player.get_animation_library("trabalho")
+	var chave := real.replace("/", "_") + ("_laco" if em_laco else "_uma")
+	if not biblioteca.has_animation(chave):
+		var copia := original.duplicate() as Animation
+		copia.loop_mode = modo
+		biblioteca.add_animation(chave, copia)
+	return "trabalho/" + chave
+
+
+## Larga o trabalho: o clipe volta a ser o que era e o corpo volta ao parado (o
+## `update_motion` do quadro seguinte escolhe o passo, se ele anda).
+func parar_trabalho() -> void:
+	if _trabalho.is_empty():
+		return
+	_trabalho = ""
+	_current_motion = ""
+
+
+func trabalhando() -> bool:
+	return not _trabalho.is_empty()
+
+
+## DORMIR: o morador longe do jogador anda sem corpo (`npc.gd`, economia): o
+## esqueleto não precisa tocar clipe que ninguém vê. Pausado, e não desligado: desligado
+## ele volta à pose de fábrica (os braços abertos), e o vale se vê de longe.
+## Ao acordar o `update_motion` do quadro seguinte retoma o clipe.
+func dormir(dormindo: bool) -> void:
+	if animation_player == null:
+		return
+	if dormindo:
+		# Longe, o corpo guarda a última pose. Quem nasce longe do jogador ainda não
+		# tocou clipe nenhum: guarda a pose do parado, e nunca a pose T do esqueleto,
+		# que se vê do Mirante e do outro lado da praça.
+		if String(animation_player.assigned_animation).is_empty():
+			var parado := String(_clips.get(MOTION_CLIPS["idle"], ""))
+			if not parado.is_empty():
+				animation_player.play(parado)
+		if not String(animation_player.assigned_animation).is_empty():
+			# Aplica a pose do quadro atual antes de parar: quem pausa no mesmo quadro em
+			# que o clipe começou (o `configure` toca o parado ao montar) ficava na pose T.
+			animation_player.seek(animation_player.current_animation_position, true)
+		animation_player.pause()
+	elif not animation_player.is_playing() and not String(animation_player.assigned_animation).is_empty():
+		# Acordando: o passo volta sozinho no update_motion, mas o clipe de trabalho
+		# não (o corpo está parado no posto) — retoma o que estava tocando.
+		animation_player.play()
 
 
 func set_swimming(swimming: bool) -> void:

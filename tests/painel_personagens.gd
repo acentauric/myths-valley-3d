@@ -25,8 +25,14 @@ func _run() -> void:
 	await _frames(3)
 	# MORADORES abre em cartões, como ASSETS.
 	var cartoes: GridContainer = painel._lista.get_node("GradeMoradores")
-	_assert(cartoes.columns == 4 and cartoes.get_child_count() == painel._pessoas.size(), "moradores em cartões")
-	_assert(str(cartoes.get_child(0).name) == "Morador_pedro" and str(cartoes.get_child(cartoes.get_child_count() - 1).name) == "Morador_viajante", "Pedro abre os cartões e o viajante fecha")
+	# Com os moradores novos de 05/10 são mais de uma página de cartões: a primeira vem cheia, e o viajante fecha a lista.
+	_assert(cartoes.columns == 4 and cartoes.get_child_count() == mini(painel._pessoas.size(), painel.CARTOES_POR_PAGINA), "moradores em cartões")
+	_assert(str(cartoes.get_child(0).name) == "Morador_pedro" and str((painel._pessoas.back() as Dictionary).get("id", "")) == "viajante", "Pedro abre os cartões e o viajante fecha")
+	var ids_na_lista: Array = []
+	for pessoa: Dictionary in painel._pessoas:
+		ids_na_lista.append(str(pessoa.get("id", "")))
+	for novo in ["padre", "guarda", "lavadeira", "mestre_saveiro"]:
+		_assert(novo in ids_na_lista, "o morador novo '%s' aparece no painel PERSONAGENS" % novo)
 	_assert(painel._campo_filtro.visible and not painel._botao_editar.visible, "nos cartões há filtro e não há EDITAR")
 	for botao in painel.find_children("*", "Button", true, false):
 		_assert(not (botao.text in ["FECHAR", "GRAVAR NO PROJETO", "Voltar ao catálogo"]), "sem botões antigos no corpo: %s" % botao.text)

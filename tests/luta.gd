@@ -84,11 +84,12 @@ func _run() -> void:
 		"a onça (%.2f u/s) não ficou entre o passo (%.2f) e a carreira (%.2f)" % [onca, player.walk_speed, player.run_speed])
 
 	# --- 2. O CAITITU MORA NA MATA FECHADA -------------------------------------
-	_conferir(luta.criaturas.size() == 1, "o vale devia ter um caititu, tem %d criatura(s)" % luta.criaturas.size())
-	if luta.criaturas.is_empty():
+	# POR ESPÉCIE, e não a lista inteira: a mata tem onça também (#28).
+	_conferir(_caititus(luta).size() == 1, "o vale devia ter um caititu, tem %d" % _caititus(luta).size())
+	if _caititus(luta).is_empty():
 		_fechar()
 		return
-	var bicho = luta.criaturas[0]
+	var bicho = _caititus(luta)[0]
 	var ninho: Vector3 = bicho.global_position
 	var casa: Vector3 = world.ancoras.get("Casa de taipa", Vector3.INF)
 	print("LUTA: ninho do caititu em %s · %.0f u da casa · %.0f u da chegada" % [str(ninho),
@@ -203,16 +204,16 @@ func _run() -> void:
 	bicho.set_physics_process(true)
 	await create_timer(Criatura.TEMPO_DA_MORTE + Criatura.TEMPO_DO_SUMICO + 0.3).timeout
 	_conferir(not is_instance_valid(bicho), "o caititu caído não sumiu")
-	_conferir(luta.criaturas.is_empty(), "a mata ainda conta o caititu caído")
+	_conferir(_caititus(luta).is_empty(), "a mata ainda conta o caititu caído")
 	for noite in 2:
 		relogio.dormir()
 	await _frames(2)
-	_conferir(luta.criaturas.is_empty(), "o caititu voltou antes dos três dias")
+	_conferir(_caititus(luta).is_empty(), "o caititu voltou antes dos três dias")
 	relogio.dormir()
 	await _frames(2)
-	_conferir(luta.criaturas.size() == 1, "três dias depois, a mata não repôs o caititu")
-	if luta.criaturas.size() == 1:
-		_conferir(_plano(luta.criaturas[0].global_position - ninho).length() < 1.0, "o caititu voltou fora do ninho")
+	_conferir(_caititus(luta).size() == 1, "três dias depois, a mata não repôs o caititu")
+	if _caititus(luta).size() == 1:
+		_conferir(_plano(_caititus(luta)[0].global_position - ninho).length() < 1.0, "o caititu voltou fora do ninho")
 
 	_fechar()
 
@@ -252,6 +253,11 @@ func _esperar_o_bote(bicho, segundos: float) -> bool:
 		await physics_frame
 		passou += 1.0 / Engine.physics_ticks_per_second
 	return false
+
+
+## Os caititus de pé (a luta também tem onças).
+func _caititus(luta) -> Array:
+	return (luta.criaturas + luta.oncas).filter(func(c): return is_instance_valid(c) and c.especie == "caititu")
 
 
 func _espaco_de(id: String) -> int:

@@ -904,10 +904,14 @@ func _montar_moradores(spawn: Vector3) -> void:
 	CadernoDoVale.mudou.connect(_mostrar_a_acompanhada)
 	CadernoDoVale.abriu.connect(_ao_abrir_missao)
 	# Tubarão da parte funda: persegue só o jogador nadando no fundo; o susto vai ao HUD.
+	# Depois dele, os cardumes e as raias (fauna_vale.gd), que rondam o pesqueiro dele.
 	var tubarao := Tubarao.new()
 	tubarao.name = "Tubarao"
 	add_child(tubarao)
 	tubarao.configurar(world, player, func(texto: String) -> void: hud.set_notice(texto))
+	add_child(preload("res://scripts/prototipo_3d/fauna_vale.gd").new(world, player, tubarao, saveiro))
+	# E os bichos de casa: cães, gatos, porcos, bandos de aves (bichos_de_casa.gd).
+	add_child(preload("res://scripts/prototipo_3d/bichos_de_casa.gd").new(world, player))
 	# Vida no chão é noite no chão — e a cama e as duas da manhã também viram a
 	# noite pelo mesmo nó (queda.gd). Com o cômodo da casa, acorda-se ao pé da
 	# cama; sem ele, na porta.

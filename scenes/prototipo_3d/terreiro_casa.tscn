@@ -1,9 +1,9 @@
 [gd_scene format=3]
 
-[ext_resource type="Texture2D" path="res://assets/prototipo_3d/materiais/terreiro_terra_batida_v1.png" id="1_terra"]
+[ext_resource type="Texture2D" path="res://assets/prototipo_3d/materiais/terreiro_varrido_v1.png" id="1_terra"]
 
 [node name="Terreiro" type="Decal"]
-editor_description = "Chão de terra batida da casa. Ajuste Size (X/Z = área, Y = alcance vertical), posição e giro Y. Ctrl+S na composição leva para o jogo."
+editor_description = "Chão de terra batida varrida da casa, de borda oval irregular (a mesma terra das ruas e da praça). Ajuste Size (X/Z = área, Y = alcance vertical), posição e giro Y. Ctrl+S na composição leva para o jogo."
 size = Vector3(9, 2.4, 8)
 texture_albedo = ExtResource("1_terra")
 modulate = Color(1, 0.97, 0.92, 1)

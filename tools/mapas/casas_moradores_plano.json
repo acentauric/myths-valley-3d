@@ -1,0 +1,385 @@
+{
+	"casas": {
+		"Casa da estrada": [
+			{
+				"chave": "varal_bambu",
+				"giro": -1.5708,
+				"id": "Varal",
+				"tipo": "adereco",
+				"x": 4.9,
+				"y": 0.05,
+				"z": -1.2
+			},
+			{
+				"chave": "galinheiro",
+				"giro": 0.0,
+				"id": "Galinheiro",
+				"tipo": "adereco",
+				"x": -1.5,
+				"y": 0.02,
+				"z": -5.49
+			}
+		],
+		"Casa da lavadeira": [
+			{
+				"chave": "varal_bambu",
+				"giro": -1.5708,
+				"id": "Varal",
+				"tipo": "adereco",
+				"x": 4.9,
+				"y": -0.04,
+				"z": -1.2
+			},
+			{
+				"chave": "lavadouro_pedra",
+				"giro": 0.0,
+				"id": "Lavadouro Pedra",
+				"tipo": "adereco",
+				"x": 1.5,
+				"y": -0.13,
+				"z": -5.85
+			},
+			{
+				"chave": "galinheiro",
+				"giro": 0.0,
+				"id": "Galinheiro",
+				"tipo": "adereco",
+				"x": 0.0,
+				"y": -0.15,
+				"z": -5.95
+			},
+			{
+				"chave": "pitangueira",
+				"giro": 1.35,
+				"id": "Pitangueira",
+				"tipo": "arvore",
+				"x": 4.81,
+				"y": -0.08,
+				"z": -5.85
+			}
+		],
+		"Casa da marisqueira": [
+			{
+				"chave": "varal",
+				"giro": -1.5708,
+				"id": "Varal",
+				"tipo": "adereco",
+				"x": 4.25,
+				"y": -0.1,
+				"z": -1.2
+			},
+			{
+				"chave": "pitangueira",
+				"giro": 1.13,
+				"id": "Pitangueira",
+				"tipo": "arvore",
+				"x": -4.16,
+				"y": -0.22,
+				"z": 0.2
+			}
+		],
+		"Casa da quituteira": [
+			{
+				"chave": "varal",
+				"giro": 1.5708,
+				"id": "Varal",
+				"tipo": "adereco",
+				"x": -5.15,
+				"y": -0.05,
+				"z": 0.8
+			},
+			{
+				"chave": "pitangueira",
+				"giro": 3.03,
+				"id": "Pitangueira",
+				"tipo": "arvore",
+				"x": 5.06,
+				"y": -0.16,
+				"z": 0.2
+			}
+		],
+		"Casa da rendeira": [
+			{
+				"chave": "varal_estacas",
+				"giro": -1.5708,
+				"id": "Varal",
+				"tipo": "adereco",
+				"x": 4.9,
+				"y": -0.21,
+				"z": 0.8
+			},
+			{
+				"chave": "galinheiro",
+				"giro": 1.5708,
+				"id": "Galinheiro",
+				"tipo": "adereco",
+				"x": -5.95,
+				"y": 0.0,
+				"z": -0.82
+			},
+			{
+				"chave": "pitangueira",
+				"giro": 1.12,
+				"id": "Pitangueira",
+				"tipo": "arvore",
+				"x": -4.81,
+				"y": -0.01,
+				"z": -5.74
+			}
+		],
+		"Casa de Carro Quebrado": [
+			{
+				"chave": "varal",
+				"giro": 0.0,
+				"id": "Varal",
+				"tipo": "adereco",
+				"x": -1.8,
+				"y": -0.36,
+				"z": -4.25
+			},
+			{
+				"chave": "galinheiro",
+				"giro": 1.5708,
+				"id": "Galinheiro",
+				"tipo": "adereco",
+				"x": -5.07,
+				"y": -0.37,
+				"z": -0.85
+			},
+			{
+				"chave": "chiqueiro",
+				"giro": 0.0,
+				"id": "Chiqueiro",
+				"tipo": "adereco",
+				"x": -2.5,
+				"y": -0.47,
+				"z": -5.9
+			},
+			{
+				"chave": "cocho",
+				"giro": 1.5708,
+				"id": "Cocho",
+				"tipo": "adereco",
+				"x": 0.3,
+				"y": -0.37,
+				"z": -5.9
+			}
+		],
+		"Casa do arraial 1": [
+			{
+				"chave": "varal_estacas",
+				"giro": 1.5708,
+				"id": "Varal",
+				"tipo": "adereco",
+				"x": -4.9,
+				"y": 0.33,
+				"z": -1.2
+			}
+		],
+		"Casa do arraial 2": [
+			{
+				"chave": "varal",
+				"giro": 1.5708,
+				"id": "Varal",
+				"tipo": "adereco",
+				"x": -4.9,
+				"y": -0.13,
+				"z": -0.4
+			}
+		],
+		"Casa do arraial 3": [
+			{
+				"chave": "varal_bambu",
+				"giro": 1.5708,
+				"id": "Varal",
+				"tipo": "adereco",
+				"x": -4.02,
+				"y": 0.16,
+				"z": -1.2
+			}
+		],
+		"Casa do arraial 4": [
+			{
+				"chave": "varal_estacas",
+				"giro": -1.5708,
+				"id": "Varal",
+				"tipo": "adereco",
+				"x": 4.9,
+				"y": 0.23,
+				"z": -1.2
+			}
+		],
+		"Casa do arraial 5": [
+			{
+				"chave": "varal",
+				"giro": 1.5708,
+				"id": "Varal",
+				"tipo": "adereco",
+				"x": -4.02,
+				"y": 0.1,
+				"z": -1.2
+			}
+		],
+		"Casa do arraial 6": [
+			{
+				"chave": "varal_bambu",
+				"giro": -1.5708,
+				"id": "Varal",
+				"tipo": "adereco",
+				"x": 4.9,
+				"y": -0.36,
+				"z": -1.2
+			},
+			{
+				"chave": "galinheiro",
+				"giro": 0.0,
+				"id": "Galinheiro",
+				"tipo": "adereco",
+				"x": 0.0,
+				"y": -0.29,
+				"z": -5.49
+			}
+		],
+		"Casa do arraial 7": [
+			{
+				"chave": "varal_estacas",
+				"giro": 0.0,
+				"id": "Varal",
+				"tipo": "adereco",
+				"x": 1.2,
+				"y": 0.15,
+				"z": -5.4
+			}
+		],
+		"Casa do arraial 8": [
+			{
+				"chave": "varal",
+				"giro": 1.5708,
+				"id": "Varal",
+				"tipo": "adereco",
+				"x": -4.9,
+				"y": -0.74,
+				"z": -1.2
+			}
+		],
+		"Casa do carpinteiro": [
+			{
+				"chave": "varal_bambu",
+				"giro": 1.5708,
+				"id": "Varal",
+				"tipo": "adereco",
+				"x": -4.9,
+				"y": -0.03,
+				"z": 0.8
+			},
+			{
+				"chave": "canoa_em_obra",
+				"giro": 1.5708,
+				"id": "Canoa Em Obra",
+				"tipo": "adereco",
+				"x": -7.45,
+				"y": 0.03,
+				"z": -0.72
+			},
+			{
+				"chave": "galinheiro",
+				"giro": -1.5708,
+				"id": "Galinheiro",
+				"tipo": "adereco",
+				"x": 5.95,
+				"y": -0.21,
+				"z": -0.72
+			},
+			{
+				"chave": "pitangueira",
+				"giro": 0.28,
+				"id": "Pitangueira",
+				"tipo": "arvore",
+				"x": -4.81,
+				"y": 0.02,
+				"z": -5.54
+			}
+		],
+		"Casa do guarda": [
+			{
+				"chave": "varal_bambu",
+				"giro": -1.5708,
+				"id": "Varal",
+				"tipo": "adereco",
+				"x": 4.9,
+				"y": -0.02,
+				"z": -1.2
+			},
+			{
+				"chave": "pitangueira",
+				"giro": 2.72,
+				"id": "Pitangueira",
+				"tipo": "arvore",
+				"x": -4.81,
+				"y": -0.17,
+				"z": -5.85
+			}
+		],
+		"Casa do pescador": [
+			{
+				"chave": "varal_estacas",
+				"giro": -1.5708,
+				"id": "Varal",
+				"tipo": "adereco",
+				"x": 4.55,
+				"y": -0.06,
+				"z": -1.2
+			},
+			{
+				"chave": "galinheiro",
+				"giro": 1.5708,
+				"id": "Galinheiro",
+				"tipo": "adereco",
+				"x": -5.6,
+				"y": -0.12,
+				"z": -2.0
+			},
+			{
+				"chave": "pitangueira",
+				"giro": 5.13,
+				"id": "Pitangueira",
+				"tipo": "arvore",
+				"x": -4.46,
+				"y": -0.17,
+				"z": 0.2
+			}
+		],
+		"Restaurante": [
+			{
+				"chave": "varal",
+				"giro": -1.5708,
+				"id": "Varal",
+				"tipo": "adereco",
+				"x": 5.4,
+				"y": -0.09,
+				"z": -1.2
+			},
+			{
+				"chave": "galinheiro",
+				"giro": 0.0,
+				"id": "Galinheiro",
+				"tipo": "adereco",
+				"x": 2.5,
+				"y": -0.01,
+				"z": -6.95
+			}
+		],
+		"Venda do Bar": [
+			{
+				"chave": "varal_estacas",
+				"giro": 0.0,
+				"id": "Varal",
+				"tipo": "adereco",
+				"x": -1.8,
+				"y": -1.17,
+				"z": -4.8
+			}
+		]
+	},
+	"observacao": "Escrito por tools/mapas/planejar_casas_moradores.gd; aplicado por aplicar_casas_moradores.py. Coordenadas no referencial da casa (porta no +Z)."
+}

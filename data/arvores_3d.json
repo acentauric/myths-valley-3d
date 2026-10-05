@@ -21,6 +21,9 @@
     "mangueira": { "madeira": "branca" },
     "cajueiro": { "madeira": "branca" },
     "pitangueira": { "madeira": "branca" },
+    "goiabeira": { "madeira": "de_lei" },
+    "mamoeiro": { "madeira": "branca" },
+    "bambu": { "madeira": "branca" },
     "ingazeiro": { "madeira": "branca" },
     "clusia": { "madeira": "branca" },
     "piacava": { "madeira": "branca" },
@@ -32,7 +35,11 @@
     "aroeira": { "madeira": "de_lei" },
     "mangue": { "madeira": "de_lei" },
     "pau_brasil": { "madeira": "dura" },
-    "mata_alta": { "madeira": "dura" }
+    "mata_alta": { "madeira": "dura" },
+    "jatoba": { "madeira": "de_lei" },
+    "jequitiba": { "madeira": "de_lei" },
+    "massaranduba": { "madeira": "dura" },
+    "angico": { "madeira": "dura" }
   },
   "nao_se_corta": {
     "mata_larga": {
@@ -233,6 +240,63 @@
         "Solta um látex amarelo de cheiro forte que o povo usa para colar e calafetar. As flores cor-de-rosa abrem de manhã cedo e fecham com o sol quente."
       ]
     },
+    "goiabeira": {
+      "grupo": "frutiferas",
+      "nome": "Goiabeira",
+      "nome_en": "Guava tree",
+      "nome_es": "Guayabo",
+      "cientifico": "Psidium guajava",
+      "paginas": [
+        "Árvore de tronco liso e retorcido, que descasca em placas e deixa a madeira clara por baixo. Nasce sozinha nos quintais, onde o passarinho larga a semente.",
+        "A goiaba madura perfuma o terreiro e vira doce em calda e goiabada de tacho. O chá da folha é remédio de barriga, e a madeira dura serve de cabo de enxada."
+      ],
+      "paginas_en": [
+        "A tree with a smooth, twisted trunk that peels in plates and shows pale wood beneath. It comes up on its own in backyards, wherever a bird dropped the seed.",
+        "The ripe guava perfumes the yard and becomes syrup preserve and copper-pot guava paste. Leaf tea is a stomach remedy, and the hard wood makes hoe handles."
+      ],
+      "paginas_es": [
+        "Árbol de tronco liso y retorcido, que se descascara en placas y deja la madera clara debajo. Nace sola en los patios, donde el pájaro soltó la semilla.",
+        "La guayaba madura perfuma el patio y se vuelve dulce en almíbar y bocadillo de olla. El té de la hoja es remedio de barriga, y la madera dura sirve de cabo de azada."
+      ]
+    },
+    "mamoeiro": {
+      "grupo": "frutiferas",
+      "nome": "Mamoeiro",
+      "nome_en": "Papaya tree",
+      "nome_es": "Papayo",
+      "cientifico": "Carica papaya",
+      "paginas": [
+        "Mais erva que árvore: tronco oco e mole, sem um galho, com as folhas em estrela lá no alto e o mamão grudado embaixo delas. Cresce depressa e dura poucos anos.",
+        "O mamão maduro é sobremesa de domingo; o verde, ralado, vira doce e vai na carne para amaciar. O leite que sai do fruto verde é remédio de lombriga."
+      ],
+      "paginas_en": [
+        "More herb than tree: a hollow, soft trunk without a single branch, leaves in a star at the top and the fruit tucked beneath them. It grows fast and lives only a few years.",
+        "Ripe papaya is Sunday dessert; the green one, grated, becomes preserve and goes into the stew to tenderise the meat. The milk of the green fruit is a remedy for worms."
+      ],
+      "paginas_es": [
+        "Más hierba que árbol: tronco hueco y blando, sin una rama, con las hojas en estrella arriba y la papaya pegada debajo. Crece deprisa y dura pocos años.",
+        "La papaya madura es postre de domingo; la verde, rallada, se vuelve dulce y va en la carne para ablandarla. La leche del fruto verde es remedio para las lombrices."
+      ]
+    },
+    "bambu": {
+      "grupo": "beira",
+      "nome": "Bambu",
+      "nome_en": "Bamboo",
+      "nome_es": "Bambú",
+      "cientifico": "Bambusa vulgaris",
+      "paginas": [
+        "Touceira que cresce em moita fechada na beira dos rios, onde a terra é úmida. Cada colmo sobe reto, oco e de gomos, e à noite a moita estala e geme com o vento.",
+        "Do colmo se faz vara de pesca, esteio de varal, cano para a água e cerca de roça. As folhas secas forram o chão e abafam o mato embaixo."
+      ],
+      "paginas_en": [
+        "A clump that grows in a tight thicket along the riverbanks, where the soil is damp. Each culm rises straight, hollow and jointed, and at night the thicket creaks and groans in the wind.",
+        "The culm becomes fishing rods, clothesline posts, water pipes and field fences. The dry leaves carpet the ground and smother the weeds beneath."
+      ],
+      "paginas_es": [
+        "Mata que crece en macolla cerrada a la orilla de los ríos, donde la tierra es húmeda. Cada caña sube recta, hueca y de nudos, y de noche la macolla cruje y gime con el viento.",
+        "De la caña se hace vara de pescar, poste de tendedero, caño para el agua y cerca de chacra. Las hojas secas tapizan el suelo y ahogan la maleza debajo."
+      ]
+    },
     "pitangueira": {
       "grupo": "frutiferas",
       "nome": "Pitangueira",
@@ -249,6 +313,101 @@
       "paginas": [
         "Árvore alta de tronco liso e reto, que perde as folhas por um tempo e floresce em branco e amarelo.",
         "O fruto verde tinge a pele de azul-escuro por dias — pintura dos povos indígenas. Maduro, vira o licor de jenipapo das festas de São João do Recôncavo."
+      ]
+    },
+    "jatoba": {
+      "grupo": "mata",
+      "nome": "Jatobá",
+      "nome_en": "Jatobá",
+      "nome_es": "Jatobá",
+      "cientifico": "Hymenaea courbaril",
+      "paginas": [
+        "Copa larga e fechada sobre um tronco grosso e reto. Na baixada, onde a terra é funda, faz jatobazal: uma copa encostada na outra.",
+        "Madeira de lei, pesada e vermelha, que vira esteio, viga e roda de engenho. A vagem dura guarda uma farinha doce e cheirosa, e o tronco sangra uma resina que o povo queima como incenso."
+      ],
+      "paginas_en": [
+        "A broad, closed crown over a thick, straight trunk. In the lowlands, where the soil is deep, it forms jatobá groves: one crown leaning against the next.",
+        "Hardwood, heavy and red, made into posts, beams and sugar-mill wheels. The hard pod holds a sweet, fragrant flour, and the trunk bleeds a resin that folk burn as incense."
+      ],
+      "paginas_es": [
+        "Copa ancha y cerrada sobre un tronco grueso y recto. En la hondonada, donde la tierra es honda, forma jatobazales: una copa apoyada en la otra.",
+        "Madera dura, pesada y roja, que se vuelve horcón, viga y rueda de ingenio. La vaina dura guarda una harina dulce y olorosa, y el tronco sangra una resina que la gente quema como incienso."
+      ]
+    },
+    "jequitiba": {
+      "grupo": "mata",
+      "nome": "Jequitibá",
+      "nome_en": "Jequitibá",
+      "nome_es": "Jequitibá",
+      "cientifico": "Cariniana legalis",
+      "paginas": [
+        "Rei da mata: sobe reto e grosso, sem um galho por dezenas de metros, e passa dos quinhentos anos. Quem entra na sombra dele fala baixo.",
+        "A madeira clara vira canoa, forro e tampo de mesa de engenho. A casca, fervida, vai para a tosse e para a garganta."
+      ],
+      "paginas_en": [
+        "King of the forest: it rises straight and thick, without a branch for dozens of metres, and lives past five hundred years. Whoever steps into its shade speaks low.",
+        "The pale wood becomes canoes, ceilings and mill tabletops. The bark, boiled, is taken for coughs and sore throats."
+      ],
+      "paginas_es": [
+        "Rey del monte: sube recto y grueso, sin una rama por decenas de metros, y pasa de los quinientos años. Quien entra en su sombra habla bajo.",
+        "La madera clara se vuelve canoa, cielo raso y tablero de mesa de ingenio. La corteza, hervida, va para la tos y la garganta."
+      ]
+    },
+    "massaranduba": {
+      "grupo": "mata",
+      "nome": "Massaranduba",
+      "nome_en": "Massaranduba",
+      "nome_es": "Massaranduba",
+      "cientifico": "Manilkara huberi",
+      "paginas": [
+        "Árvore de copa alta e escura, que demora um século para ficar adulta. Se cortada, deixa um leite branco e grudento no toco.",
+        "A madeira é tão dura e pesada que afunda n'água, e não apodrece: vira dormente, ponte, quilha de saveiro e esteio de engenho. O fruto adocicado é de passarinho e de menino."
+      ],
+      "paginas_en": [
+        "A tree with a tall, dark crown that takes a century to grow up. When cut, it leaves a sticky white milk on the stump.",
+        "The wood is so hard and heavy that it sinks in water, and it does not rot: it becomes sleepers, bridges, saveiro keels and mill posts. The sweet fruit is for birds and boys."
+      ],
+      "paginas_es": [
+        "Árbol de copa alta y oscura, que tarda un siglo en hacerse adulto. Si lo cortan, deja una leche blanca y pegajosa en el tocón.",
+        "La madera es tan dura y pesada que se hunde en el agua, y no se pudre: se vuelve durmiente, puente, quilla de saveiro y horcón de ingenio. El fruto dulzón es de pájaro y de niño."
+      ]
+    },
+    "angico": {
+      "grupo": "mata",
+      "nome": "Angico",
+      "nome_en": "Angico",
+      "nome_es": "Angico",
+      "cientifico": "Anadenanthera colubrina",
+      "paginas": [
+        "Copa rala e achatada, folha miúda que fecha ao anoitecer. Gosta de morro seco e pedregoso, onde pouca árvore aguenta o vento.",
+        "A casca solta uma goma que o raizeiro mistura em xarope para peito. A madeira vermelha, de lei, dura mais que o dono: é a das cercas e dos mourões do sertão."
+      ],
+      "paginas_en": [
+        "A thin, flat-topped crown with tiny leaves that fold at dusk. It likes dry, stony hills, where few trees stand the wind.",
+        "The bark gives a gum the root doctor mixes into chest syrup. The red hardwood outlasts its owner: it is what the backlands' fences and posts are made of."
+      ],
+      "paginas_es": [
+        "Copa rala y achatada, hoja menuda que se cierra al anochecer. Le gusta el cerro seco y pedregoso, donde pocos árboles aguantan el viento.",
+        "La corteza suelta una goma que el curandero mezcla en jarabe para el pecho. La madera roja, dura, dura más que el dueño: es la de las cercas y los postes del sertón."
+      ]
+    },
+    "aroeira": {
+      "grupo": "mata",
+      "nome": "Aroeira",
+      "nome_en": "Aroeira",
+      "nome_es": "Aroeira",
+      "cientifico": "Schinus terebinthifolia",
+      "paginas": [
+        "Árvore baixa e copada, de folha que cheira a resina quando se amassa. Aguenta sol, vento e chão pobre: toma o alto dos morros e a beira da mata.",
+        "Os cachos de frutinha vermelha ardem como pimenta. A casca vai para o chá e o banho de quem tem ferida, e o raizeiro a guarda para inflamação."
+      ],
+      "paginas_en": [
+        "A low, leafy tree whose leaves smell of resin when crushed. It stands sun, wind and poor soil: it takes the hilltops and the edge of the forest.",
+        "The bunches of little red berries burn like pepper. The bark goes into tea and into baths for wounds, and the root doctor keeps it for inflammation."
+      ],
+      "paginas_es": [
+        "Árbol bajo y frondoso, de hoja que huele a resina cuando se estruja. Aguanta sol, viento y suelo pobre: ocupa lo alto de los cerros y el borde del monte.",
+        "Los racimos de frutillas rojas pican como pimienta. La corteza va al té y al baño de quien tiene heridas, y el curandero la guarda para la inflamación."
       ]
     }
   }

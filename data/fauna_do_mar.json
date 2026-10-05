@@ -1,0 +1,8 @@
+{
+	"_sobre": "O que o jogador lê da fauna do mar (fauna_vale.gd, tubarao.gd): o aviso de quando o tubarão alcança quem nada no fundo e o jogador volta à terra firme.",
+	"tubarao": {
+		"susto": "Um tubarão! Por pouco…",
+		"susto_en": "A shark! That was close…",
+		"susto_es": "¡Un tiburón! Por poco…"
+	}
+}

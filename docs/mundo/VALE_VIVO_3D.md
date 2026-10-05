@@ -173,6 +173,63 @@ Para repetir a comparação A/B na mesma carga do mundo, rode o Godot com janela
 gráfica e `--path . --script res://tools/prototipo_3d/medir_lod.gd`
 (sem `--headless`).
 
+### Copas distantes (a serra coberta de mata)
+
+Cada bloco de árvores some a `LOD_MATA` (280 u) e o chão vai até 2.800 u: a montanha
+ficava pelada. Cada bloco de 40 u que some ganha agora um IRMÃO (`copas_distantes.gd`) que
+entra exatamente onde a árvore sai (`visibility_range_begin` = o fim da camada, a mesma
+margem de 20 u, sem desvanecimento) e vai até 1.200 u:
+
+- **a copa low-poly** (64 triângulos, `copa_distante.gdshader`): uma elipsoide facetada por
+  tronco, na silhueta e na cor da espécie (a cor média da folhagem do GLB, puxada para o
+  `#3E6B34` do chão e escurecida, com malhado de folhagem do mesmo ruído do terreno). As
+  espécies novas da mata (jatobá, sapucaia, jequitibá, cedro, angico, massaranduba), que não
+  têm versão `_longe`, usam só ela;
+- **o modelo `*_longe` do Tripo**, só para quem não é uma bola — coqueiro, dendê, piaçava,
+  mangue, castanhola e ingá (524 troncos): de 280 a 600 u, e a copa low-poly de 600 a 1.200 u.
+
+Por que não o modelo de longe em tudo: são ~6,8 mil troncos, e quase todos além de 280 u.
+A 1,1 a 2,1 mil triângulos cada um, seriam de 7 a 12 M de triângulos por quadro (conta, não
+medida). A copa de 64 faces custou +0,26 a +0,53 M triângulos e +120 a +400 chamadas de
+desenho nas vistas medidas (Mirante olhando a vila e praça olhando a serra, de dia e na hora
+dourada); o FPS não mudou além do ruído da máquina dividida entre várias sessões.
+
+O corte, o crescimento e a restauração da árvore (`_mostrar_instancia`) movem também a copa
+e o modelo de longe da mesma árvore. O mapa grande esconde as duas camadas (a câmera
+ortográfica a 3.000 u veria tudo em duplicata); o minimapa (a 100 u, janela de 55 u) nunca
+chega a 280 u. O extrator do sobrevoo não vê as copas (só o que `_multimesh_em_blocos`
+recebe, e elas não passam por ali). No estilo procedural a copa funciona igual (a caixa da
+malha dá a forma). Portão: `tests/lod_vegetacao.gd`.
+
+## Paisagismo do arraial (zonas de uma espécie só)
+
+A mata (`_build_forest`) não entra na vila, e o arraial tinha 78% das células a mais de 9 u de
+qualquer árvore. O paisagismo o preenche com **agrupamentos de uma espécie só**, como o lavrador
+planta: bananal em touceiras, pomares de quintal em bosquetes (cada um de uma fruta), roças de
+mandioca, milho e fumo em fileiras com corredor, dendezal da foz, cajual do outeiro, piaçabal da
+restinga e mata ciliar em faixas ao longo do rio (taboa, helicônia, samambaia, bambu, ingá e
+jenipapo). A repetição é melhor que a mistura: a pureza das zonas fica acima de 0,95.
+
+- **A cena é a fonte**: `scenes/prototipo_3d/paisagismo_vale.tscn` tem `Zonas/<nome>`, cada uma um
+  `Path3D` fechado com `zona_de_flora.gd` (receita, semente, densidade, rumo). Puxe um ponto no
+  editor ou troque a receita e o vale replanta no próximo jogo. `tools/mapas/planejar_paisagismo.gd`
+  escreveu a cena uma vez a partir de `data/paisagismo/zonas_iniciais.json` e **recusa sobrescrevê-la**.
+- **As receitas** (`data/paisagismo/receitas.json`): padrão (`fileiras`, `touceiras`, `manchas`,
+  `esparso`, `faixa`), espécies e pesos, espaçamento, escala, LOD, forro, e as medidas de cada
+  espécie (copa, altura, tronco, ficha). Só espécies LEVES do Tripo; nunca coqueiro nem mangue (da
+  orla) nem licuri (semiárido).
+- **`paisagismo_vale.gd`**: `gerar` é puro e determinístico (cada candidato tira todos os números
+  de um hash antes de testar as reservas: mover uma casa só tira os pés que ela cobre). As
+  reservas: rua, casa e faixa da porta até a rua, nomeadas, âncoras, cemitério (16 u), orla (18 u da
+  costa), leito dos rios, veredas e o corredor do sobrevoo do menu (só entra pé de até 2,4 u). Os
+  adereços (cerca de varas e porteira em volta das roças, estaleiro de fumo, carro de boi, monjolo,
+  barraca de feira na praça) saem da forma das zonas.
+- **Gancho**: `world_builder._build_paisagismo`, depois das luzes e antes dos pés das árvores. Pés
+  com tronco entram em `_tree_trunks` (colisão, corte, navegação e o folhiço do chão valem); o
+  extrator do sobrevoo replanta o paisagismo na cópia para conferir o voo contra as copas dele.
+- **Só no estilo Tripo.** O procedural segue sem pomar. Fichas novas (goiabeira, mamoeiro, bambu) em
+  `data/arvores_3d.json`. Portão: `tests/paisagismo.gd` (`--falsificar=reservas|sorteio|semente|voo|vazio`).
+
 ## Onde mexer
 
 | Quero… | Arquivo |
@@ -184,8 +241,10 @@ gráfica e `--path . --script res://tools/prototipo_3d/medir_lod.gd`
 | missões do Pedro | `guia_pedro.gd::MISSOES` |
 | paletas do humanoide procedural | `personagem_procedural.gd::PALETAS` |
 | catálogo de GLBs do Tripo | `catalogo_assets.gd::PECAS` |
+| pomares, roças e mata ciliar do arraial | `scenes/prototipo_3d/paisagismo_vale.tscn` + `data/paisagismo/receitas.json` |
 | gesto que cada morador faz ao cumprimentar | `npcs_3d.json` (`gesto_saudacao` no procedural, `gesto_tripo` com rig) |
 | trazer peças novas do Tripo | `docs/arte/ASSETS_TRIPO.md` → "Do download ao jogo" |
+| o chão: camadas, ruas, praça, praia, rios, trilhas, lavoura | `docs/mundo/SOLO_E_FRANJAS.md` |
 
 ## Balões de fala
 

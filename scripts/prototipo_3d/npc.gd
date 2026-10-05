@@ -8,6 +8,7 @@ extends CharacterBody3D
 const IdiomaMenu = preload("res://scripts/prototipo_3d/idioma_menu.gd")
 const BalaoFala = preload("res://scripts/prototipo_3d/balao_fala.gd")
 const EspumaAgua = preload("res://scripts/prototipo_3d/espuma_agua.gd")
+const Vestimenta3D = preload("res://scripts/prototipo_3d/vestimenta_3d.gd")
 
 signal saudou(morador: MoradorNPC, texto: String)
 
@@ -55,6 +56,49 @@ const DESVIOS_MAXIMOS := 4
 const LIVRE_APOS := 4.0
 const PAUSA_DESISTIU := 4.0
 
+## A JORNADA DO MORADOR (`agenda` em npcs_3d.json). Quem tem agenda não segue os cinco
+## postos do dia: cada entrada diz de que hora ("de"), onde ("lugar" e "desloc", o
+## mesmo par âncora + deslocamento dos postos; "Casa" é a casa dele, "Casa/Varal" o
+## varal dela) e o que faz ali ("acao", com "mao" e "cabeca" para o que leva).
+## A entrada vale até a hora da seguinte, e depois da meia-noite vale a última do dia
+## anterior. Ele SAI ANTES, para chegar na hora (`_entrada_agora`).
+const PREFIXO_AGENDA := "agenda:"
+## Mais longe que isto (u), a troca de posto é um caminho longo: fora da vista, o
+## morador é posto no destino na hora marcada (`_encurtar_o_caminho`).
+const CAMINHO_LONGO := 40.0
+## A malha de navegação é de 5 a 10 % mais longa que a reta.
+const FOLGA_DO_CAMINHO := 1.15
+## Um salto de relógio maior que isto (horas) refaz o dia do morador (dormir, tecla T, save).
+const SALTO_DE_HORA := 0.5
+## Longe do jogador mais que isto (u), o morador anda sem corpo: sem física, sem esqueleto.
+const LONGE := 90.0
+## O que cada ação faz com o corpo: o clipe do GLB (vazio é ficar em pé). `SEM_LACO`
+## roda uma vez e segura a pose (sentar); `SUBSTITUTO` é o clipe do mesmo gesto para
+## quem não tem o primeiro.
+const ACOES := {
+	"varrer": "dig", "lavar": "dig", "mariscar": "dig", "capinar": "dig",
+	"rachar": "chop", "carregar": "lift_heavy", "estender": "lift_heavy", "recolher": "lift_heavy",
+	"balcao": "fold_arms", "vigiar": "fold_arms", "esperar": "fold_arms",
+	"rezar": "bow", "benzer": "bow", "conversar": "look_around", "olhar": "look_around",
+	"remendar": "sit", "renda": "sit", "descansar": "sit", "brincar": "look_around",
+	"pescar": "", "vender": "", "recolhido": "",
+}
+const SEM_LACO := ["sit"]
+const SUBSTITUTO := {"lift_heavy": "chop", "bow": "agree", "sit": "fold_arms"}
+## O que se leva na mão (pela alça, como o balde do jogador, ou pelo cabo) e na
+## cabeça: o tamanho em metros e como se pega. O que está em `Vestimenta3D.NA_MAO`
+## (balde, enxada, vara) usa o encaixe de lá.
+const NA_MAO_DO_MORADOR := {
+	"vassoura_piacava": {"metros": 1.3, "agarra": 0.25},
+	"candeeiro": {"metros": 0.34, "agarra": 0.0},
+	"cesto": {"metros": 0.36, "agarra": 0.0},
+}
+const NA_CABECA_DO_MORADOR := {
+	"trouxa_roupa": {"metros": 0.55, "acima": 0.1, "frente": 0.0},
+	"tabuleiro": {"metros": 0.7, "acima": 0.12, "frente": 0.0},
+	"cesto": {"metros": 0.45, "acima": 0.1, "frente": 0.0},
+}
+
 ## Até quando (ms) cada morador que está falando segura a palavra.
 static var _falando: Dictionary = {}
 
@@ -88,7 +132,7 @@ var _desvios := 0
 var _parado := 0.0
 var _lado_desvio := 0.0
 var _ponto_bloqueio := Vector3.INF
-## A caminho da festa, ou voltando dela: o caminho que pode se encurtar.
+## A caminho de um posto longe (a festa, a agenda): o caminho que pode se encurtar.
 var _caminho_da_festa := false
 ## O CAMINHO PELA MALHA (`navegacao_vale.gd`): os pontos até o destino, o da
 ## vez, para onde ele foi feito e quando refazer. Sem malha, anda-se reto.
@@ -108,6 +152,19 @@ const PASSAGEM_PASSO := 1.4
 const PASSAGEM_DURA := 2.5
 var _passagem_ate := Vector3.INF
 var _passagem_resta := 0.0
+## A agenda (ordenada por hora), a entrada de agora, e o que ela pede.
+var _agenda: Array = []
+var _entrada := -1
+var _alvos_da_agenda: Dictionary = {}
+var _acao := ""
+var _levados: Array[Node] = []
+var _levados_andando: Array[Node] = []
+var _recolhido := false
+var _dormindo := false
+var _hora_vista := -1.0
+var _sem_antecipar := false
+var _relogio_saltou := false
+var _avisados: Dictionary = {}
 
 
 ## Anda até `ponto` (em vez do posto do período), na `velocidade` dada, até liberar().
@@ -124,11 +181,16 @@ func liberar() -> void:
 ## Já no posto do período, sem andar até ele: a carga de uma partida põe cada
 ## um onde ele estaria.
 func ir_ao_posto_agora() -> void:
+	# Posto da hora, sem sair antes: quem é posto no lugar vem do relógio, e não do ponto de onde estava.
+	_sem_antecipar = true
 	_posto = _posto_de_agora()
+	_sem_antecipar = false
 	_alvo = _posicao_do_posto(_posto)
+	_caminho_da_festa = false
 	if _alvo != Vector3.ZERO:
 		global_position = _alvo + Vector3(0, 0.05, 0)
 		velocity = Vector3.ZERO
+	_aplicar_entrada()
 
 
 ## DAR PASSAGEM. Morador parado no caminho é parede que fala: o Pedro entrou
@@ -169,7 +231,7 @@ func _andar_dando_passagem(delta: float) -> bool:
 	var falta := _passagem_ate - global_position
 	falta.y = 0.0
 	var direcao := falta.normalized() if falta.length() > 0.12 else Vector3.ZERO
-	_mover(direcao, VELOCIDADE * 1.3, delta)
+	_mover(direcao, _velocidade_de_passo() * 1.3, delta)
 	return true
 
 
@@ -185,6 +247,8 @@ func configurar(d: Dictionary, anc: Dictionary, alvo_jogador: Node3D, mundo: Nod
 		add_child(espuma)
 	altura = float(d.get("altura", 1.7))
 	name = "Morador" + String(d.get("id", "morador")).capitalize()
+	_agenda = (d.get("agenda", []) as Array).duplicate()
+	_agenda.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return float(a["de"]) < float(b["de"]))
 
 
 func _ready() -> void:
@@ -237,6 +301,8 @@ func _ready() -> void:
 	_alvo = _posicao_do_posto(_posto)
 	if _alvo != Vector3.ZERO:
 		global_position = _alvo + Vector3(0, 0.05, 0)
+	_hora_vista = Dia.hora
+	_aplicar_entrada()
 
 
 func _aplicar_volume() -> void:
@@ -246,14 +312,16 @@ func _aplicar_volume() -> void:
 
 func _montar_modelo() -> void:
 	var id := String(dados.get("id", "viajante"))
+	# O corpo é o do "modelo" quando o morador o diz (duas lavadeiras podem usar o mesmo GLB).
+	var corpo := String(dados.get("modelo", id))
 	modelo = null
 	animador = null
 	if Estilo.tripo():
 		var tamanho := 1.0
-		var spec_modelo: Dictionary = AjustesConteudo.peca(id)
+		var spec_modelo: Dictionary = AjustesConteudo.peca(corpo)
 		if spec_modelo.has("altura"):
 			tamanho = altura / float(spec_modelo["altura"])
-		modelo = CatalogoAssets.instanciar(id, visual, Vector3.ZERO, tamanho, float(dados.get("yaw_modelo", 0.0)))
+		modelo = CatalogoAssets.instanciar(corpo, visual, Vector3.ZERO, tamanho, float(dados.get("yaw_modelo", 0.0)))
 		if modelo != null and not modelo.find_children("*", "AnimationPlayer", true, false).is_empty():
 			# GLB com rig e clipes do Tripo (idle/walk/run + gestos): usa o animador autoral.
 			var autoral: Node = load("res://scripts/prototipo_3d/authored_animator.gd").new()
@@ -269,7 +337,7 @@ func _montar_modelo() -> void:
 			# passo (`_atualizar_animacao`) anda sozinho.
 			modelo = _corpo_provisorio()
 	if modelo == null:
-		var procedural := PersonagemProcedural.novo(id, altura)
+		var procedural := PersonagemProcedural.novo(corpo, altura)
 		visual.add_child(procedural)
 		modelo = procedural
 		animador = procedural
@@ -305,13 +373,25 @@ func _physics_process(delta: float) -> void:
 		_atualizar_animacao(delta)
 		_atualizar_interacao(delta)
 		return
+	_vigiar_o_relogio()
 	var posto := _posto_de_agora()
-	if posto != _posto:
-		_caminho_da_festa = posto == POSTO_DA_FESTA or _posto == POSTO_DA_FESTA
+	if posto != _posto or _relogio_saltou:
+		_relogio_saltou = false
+		var vinha_da_festa := _posto == POSTO_DA_FESTA
 		_posto = posto
 		_alvo = _posicao_do_posto(posto)
+		# A festa se encurta sempre; o resto, quando o caminho é longo (`CAMINHO_LONGO`).
+		_caminho_da_festa = posto == POSTO_DA_FESTA or vinha_da_festa or (_alvo != Vector3.ZERO \
+			and Vector2(_alvo.x - global_position.x, _alvo.z - global_position.z).length() > CAMINHO_LONGO)
+		_aplicar_entrada()
 	if _caminho_da_festa:
 		_encurtar_o_caminho()
+	if _recolhido:
+		# Dentro de casa: sem corpo nenhum até a hora de sair.
+		return
+	if _andar_longe(delta):
+		_atualizar_trabalho()
+		return
 	# Destino avulso (ir_ate) vale mais que o posto até ser liberado.
 	var destino := _destino_avulso if _destino_avulso.is_finite() else _alvo
 	var deslocamento := destino - global_position
@@ -324,10 +404,12 @@ func _physics_process(delta: float) -> void:
 		var rumo := _ponto_do_caminho(destino, delta) - global_position
 		rumo.y = 0.0
 		direcao = rumo.normalized() if rumo.length() > 0.05 else deslocamento / distancia
-	_mover(direcao, _velocidade_avulsa if _destino_avulso.is_finite() else VELOCIDADE, delta)
-	if direcao == Vector3.ZERO and jogador != null and jogador.global_position.distance_to(global_position) < RAIO_BALAO:
+	_mover(direcao, _velocidade_avulsa if _destino_avulso.is_finite() else _velocidade_de_passo(), delta)
+	if direcao == Vector3.ZERO and jogador != null and jogador.global_position.distance_to(global_position) < RAIO_BALAO \
+			and not _trabalhando():
 		_olhar_para(jogador.global_position, delta)
 	_atualizar_animacao(delta)
+	_atualizar_trabalho()
 	_atualizar_interacao(delta)
 
 
@@ -522,7 +604,8 @@ func _atualizar_interacao(delta: float) -> void:
 	if jogador == null:
 		return
 	var distancia := jogador.global_position.distance_to(global_position)
-	if distancia < RAIO_SAUDACAO and (_ultima_saudacao_ms < 0 or Time.get_ticks_msec() - _ultima_saudacao_ms > intervalo_saudacao_ms) and pode_falar():
+	if distancia < RAIO_SAUDACAO and (_ultima_saudacao_ms < 0 or Time.get_ticks_msec() - _ultima_saudacao_ms > intervalo_saudacao_ms) \
+			and (_eh_mudo() or pode_falar()):
 		if tem_missao():
 			# Quem tem missão com o jogador fala a missão, e não o cumprimento. A
 			# saudação se dá por feita: sem isso, ela sairia no quadro seguinte ao
@@ -579,6 +662,9 @@ func _exit_tree() -> void:
 ## Cumprimenta o jogador: balão com a fala e voz do ElevenLabs por proximidade. Quem
 ## tem "falas" (até três) alterna entre elas a cada encontro; sem elas, usa "fala".
 func saudar() -> void:
+	if _eh_mudo():
+		_acenar_mudo()
+		return
 	_ultima_saudacao_ms = Time.get_ticks_msec()
 	var texto := String(dados.get("fala", ""))
 	var falas: Array = dados.get("falas", [])
@@ -678,6 +764,8 @@ func _posto_de_agora() -> String:
 			and Afinidade.fe_de(str(dados.get("id", ""))) == festa \
 			and Lugares.resolve(Fe.marco_maior(festa)):
 		return POSTO_DA_FESTA
+	if not _agenda.is_empty():
+		return PREFIXO_AGENDA + str(_entrada_agora())
 	return _posto_para(Dia.periodo())
 
 
@@ -728,6 +816,10 @@ func _encurtar_o_caminho() -> void:
 		_caminho_da_festa = false
 		return
 	if _a_vista(global_position) or _a_vista(_alvo):
+		return
+	# Na agenda, o morador sai antes para chegar na hora: fora da vista ele anda
+	# até a hora marcada e só então é posto no lugar, se ainda não chegou.
+	if _entrada >= 0 and _posto.begins_with(PREFIXO_AGENDA) and _horas_ate(float(_agenda[_entrada]["de"])) > 0.1:
 		return
 	global_position = _alvo + Vector3(0, 0.05, 0)
 	velocity = Vector3.ZERO
@@ -782,14 +874,25 @@ func _posto_para(periodo: String) -> String:
 func _posicao_do_posto(periodo: String) -> Vector3:
 	if periodo == POSTO_DA_FESTA:
 		return _lugar_na_festa()
+	if periodo.begins_with(PREFIXO_AGENDA):
+		return _lugar_da_entrada(int(periodo.substr(PREFIXO_AGENDA.length())))
 	var postos: Dictionary = dados.get("postos", {})
 	if periodo == "" or not postos.has(periodo):
 		return global_position
 	var posto: Array = postos[periodo]
-	var ancora_nome := String(posto[0])
+	return _ponto_da_ancora(String(posto[0]), posto[1] if posto.size() > 1 and posto[1] is Array else [])
+
+
+## O ponto de uma âncora do cenário com o deslocamento no referencial dela. Âncora que
+## não existe avisa uma vez (e vira a origem, que os chamadores tomam por "sem posto").
+func _ponto_da_ancora(ancora_nome: String, offset: Array) -> Vector3:
+	if ancora_nome == "Casa" or ancora_nome.begins_with("Casa/"):
+		ancora_nome = String(dados.get("casa", "")) + ancora_nome.substr(4)
+	if not ancoras.has(ancora_nome) and not _avisados.has(ancora_nome):
+		_avisados[ancora_nome] = true
+		push_warning("Morador %s: a âncora '%s' não existe no cenário." % [dados.get("id", "?"), ancora_nome])
 	var base: Vector3 = ancoras.get(ancora_nome, Vector3.ZERO)
-	if posto.size() > 1 and posto[1] is Array and (posto[1] as Array).size() >= 3:
-		var offset: Array = posto[1]
+	if offset.size() >= 3:
 		var deslocamento := Vector3(float(offset[0]), float(offset[1]), float(offset[2]))
 		if ancora_nome == "PierPiso":
 			var direcao: Vector3 = ancoras.get("PierDirecao", Vector3.FORWARD)
@@ -805,3 +908,243 @@ func _posicao_do_posto(periodo: String) -> Vector3:
 		if terreno != null:
 			base = terreno.ground_position(base, float(offset[1]))
 	return base
+
+
+# ---------------------------------------------------------------------------
+# A JORNADA DO DIA: agenda, trabalho, o que se leva, recolher, economia longe
+# ---------------------------------------------------------------------------
+
+## Quem não fala: os moradores novos têm jornada e ofício, mas nenhuma fala. Cumprimentam
+## com um aceno, parados, e só: sem balão, sem voz, sem aviso no HUD e sem tomar a
+## palavra dos vizinhos (um aviso "Nome: " vazio e uma fala que cala o vale inteiro).
+func _eh_mudo() -> bool:
+	return bool(dados.get("mudo", false))
+
+
+func _acenar_mudo() -> void:
+	if _trabalhando() or _recolhido:
+		return
+	_ultima_saudacao_ms = Time.get_ticks_msec()
+	if animador != null and animador.has_method("play_gesture"):
+		var chave := "gesto_tripo" if animador.has_method("is_using_authored_clips") else "gesto_saudacao"
+		animador.play_gesture(int(dados.get(chave, 0)))
+
+
+## A passada do morador: a de sempre, ou a dele (as crianças correm mais que os velhos).
+func _velocidade_de_passo() -> float:
+	return float(dados.get("velocidade", VELOCIDADE))
+
+
+## Quantas horas do relógio faltam para `hora_marcada` (negativo: já passou). Vai de
+## -12 a 12: a agenda dá a volta na meia-noite.
+func _horas_ate(hora_marcada: float) -> float:
+	return fposmod(hora_marcada - Dia.hora + 12.0, 24.0) - 12.0
+
+
+## A ENTRADA DA AGENDA DE AGORA: a última que já começou (antes da primeira do dia,
+## a última da véspera) — ou a seguinte, quando o caminho até ela leva tanto quanto
+## falta para a hora dela. É assim que ele chega na hora, e não depois dela.
+func _entrada_agora() -> int:
+	var n := _agenda.size()
+	var atual := n - 1
+	for i in n:
+		if float(_agenda[i]["de"]) <= Dia.hora:
+			atual = i
+	if n > 1 and not _sem_antecipar:
+		var seguinte := (atual + 1) % n
+		var falta := _horas_ate(float(_agenda[seguinte]["de"]))
+		if falta > 0.0 and falta <= _horas_de_caminho(seguinte):
+			atual = seguinte
+	_entrada = atual
+	return atual
+
+
+## Quantas horas de relógio o morador leva para chegar à entrada `i` daqui. Com o relógio
+## parado não se antecipa nada.
+func _horas_de_caminho(i: int) -> float:
+	var segundos_por_hora: float = Dia.VELOCIDADES[Dia.velocidade]
+	if segundos_por_hora <= 0.0:
+		return 0.0
+	var alvo := _lugar_da_entrada(i)
+	var distancia := Vector2(alvo.x - global_position.x, alvo.z - global_position.z).length()
+	return distancia * FOLGA_DO_CAMINHO / maxf(_velocidade_de_passo(), 0.1) / segundos_por_hora
+
+
+## Onde a entrada `i` da agenda põe o morador (a conta é feita uma vez).
+func _lugar_da_entrada(i: int) -> Vector3:
+	if i < 0 or i >= _agenda.size():
+		return global_position
+	if not _alvos_da_agenda.has(i):
+		var entrada: Dictionary = _agenda[i]
+		var desloc: Variant = entrada.get("desloc", [])
+		_alvos_da_agenda[i] = _ponto_da_ancora(String(entrada.get("lugar", "")), desloc if desloc is Array else [])
+	return _alvos_da_agenda[i]
+
+
+## O RELÓGIO SALTOU (a cama, a tecla T, um save carregado): o morador refaz o dia. Fora
+## da vista ele é posto onde estaria (o caminho longo); à vista, anda.
+func _vigiar_o_relogio() -> void:
+	var salto := absf(_horas_ate(_hora_vista))
+	_hora_vista = Dia.hora
+	if salto > SALTO_DE_HORA:
+		_relogio_saltou = true
+
+
+## A entrada que começa agora: o que ele leva, o que faz, e se sai de casa. Chamada
+## quando o posto muda, e na hora em que o morador nasce.
+func _aplicar_entrada() -> void:
+	_largar_o_que_leva()
+	_acao = ""
+	if animador != null and animador.has_method("parar_trabalho"):
+		animador.parar_trabalho()
+	if _agenda.is_empty() or not _posto.begins_with(PREFIXO_AGENDA):
+		_recolher(false)
+		return
+	var entrada: Dictionary = _agenda[int(_posto.substr(PREFIXO_AGENDA.length()))]
+	_acao = String(entrada.get("acao", ""))
+	if _acao != "recolhido":
+		_recolher(false)
+	for onde in ["mao", "cabeca"]:
+		_levar_de(String(entrada.get(onde, "")), onde, _levados)
+		_levar_de(String(entrada.get(onde + "_andando", "")), onde, _levados_andando)
+	if _acao == "recolhido" and Vector2(_alvo.x - global_position.x, _alvo.z - global_position.z).length() < 0.8:
+		_atualizar_trabalho()
+
+
+func _levar_de(peca: String, onde: String, lista: Array[Node]) -> void:
+	var raiz := _levar(peca, onde)
+	if raiz != null:
+		lista.append(raiz)
+
+
+func _largar_o_que_leva() -> void:
+	for no in _levados + _levados_andando:
+		if is_instance_valid(no):
+			no.queue_free()
+	_levados.clear()
+	_levados_andando.clear()
+
+
+## O QUE ELE LEVA: a peça na mão (pela alça ou pelo cabo) ou na cabeça, presa ao osso
+## do esqueleto — o trouxa na cabeça da lavadeira, o candeeiro do guarda. Só no
+## estilo Tripo (as peças são GLB). Devolve o nó que apaga a peça, ou null.
+func _levar(peca: String, onde: String) -> Node:
+	if peca == "" or not Estilo.tripo() or modelo == null or not CatalogoAssets.tem_tripo(peca):
+		return null
+	var ancora: Node3D = null
+	if onde == "cabeca":
+		if not NA_CABECA_DO_MORADOR.has(peca):
+			return null
+		var ajuste: Dictionary = NA_CABECA_DO_MORADOR[peca]
+		ancora = Vestimenta3D.ancora_da_cabeca(modelo, "ObjetoNaCabeca")
+		if ancora == null:
+			return null
+		var escala := ancora.global_basis.get_scale().x
+		var assento := Vector3(0.0, float(ajuste["acima"]), float(ajuste["frente"])) / maxf(escala, 0.0001)
+		CatalogoAssets.instanciar(peca, ancora, assento, Vestimenta3D._tamanho_na_ancora(ancora, peca, float(ajuste["metros"])))
+	else:
+		if not Vestimenta3D.NA_MAO.has(peca) and not NA_MAO_DO_MORADOR.has(peca):
+			return null
+		ancora = Vestimenta3D.ancora_da_mao(modelo, altura, visual, "ObjetoNaMao")
+		if ancora == null:
+			return null
+		if Vestimenta3D.NA_MAO.has(peca):
+			Vestimenta3D.na_mao(ancora, visual, peca)
+		else:
+			var ajuste: Dictionary = NA_MAO_DO_MORADOR[peca]
+			var pivo := Vestimenta3D._pendurado(ancora, visual, peca, {"tamanho": Vestimenta3D._tamanho_na_ancora(ancora, peca, float(ajuste["metros"]))})
+			if pivo != null and pivo.get_child_count() > 0 and float(ajuste["agarra"]) > 0.0:
+				# Pega mais embaixo do cabo: o topo na palma deixaria a vassoura arrastando no chão.
+				var no := pivo.get_child(0) as Node3D
+				no.position.y += (no.get_meta("limites", AABB()) as AABB).size.y * float(ajuste["agarra"])
+	return ancora.get_parent() if ancora.get_parent() is BoneAttachment3D else ancora
+
+
+func _trabalhando() -> bool:
+	return animador != null and animador.has_method("trabalhando") and bool(animador.trabalhando())
+
+
+## Um pulso por quadro: chegou ao posto? Então trabalha (o clipe da ação, em laço) ou, se
+## é hora de se recolher, entra em casa. Saiu do posto, larga o trabalho. O que se leva
+## só para andar ("mao_andando", "cabeca_andando") some quando ele chega.
+func _atualizar_trabalho() -> void:
+	if _agenda.is_empty():
+		return
+	var chegou := Vector2(_alvo.x - global_position.x, _alvo.z - global_position.z).length() < 0.8
+	if chegou and _acao == "recolhido" and bool(dados.get("recolhe", false)):
+		_recolher(true)
+		return
+	var parado := chegou and _velocidade_atual < 0.25
+	if parado and ACOES.has(_acao) and not _trabalhando():
+		_comecar_o_trabalho()
+	elif not parado and _trabalhando():
+		animador.parar_trabalho()
+	for no in _levados_andando:
+		if is_instance_valid(no):
+			(no as Node3D).visible = not parado
+
+
+func _comecar_o_trabalho() -> void:
+	var clipe := String(ACOES.get(_acao, ""))
+	if clipe == "" or animador == null or not animador.has_method("trabalhar"):
+		return
+	if not animador.trabalhar(clipe, not clipe in SEM_LACO):
+		var outro := String(SUBSTITUTO.get(clipe, ""))
+		if outro != "":
+			animador.trabalhar(outro, not outro in SEM_LACO)
+
+
+## RECOLHER-SE: na porta de casa o morador some (invisível e sem colisão) e só volta
+## quando a agenda o chama. O corpo continua na cena, com o processamento mínimo, para
+## acordar de manhã: desligar o processo dele (PROCESS_MODE_DISABLED) não o acordaria.
+var _camadas_de_fora := Vector2i(-1, -1)
+
+func _recolher(dentro: bool) -> void:
+	if dentro == _recolhido:
+		return
+	_recolhido = dentro
+	visible = not dentro
+	if dentro:
+		_camadas_de_fora = Vector2i(collision_layer, collision_mask)
+		collision_layer = 0
+		collision_mask = 0
+		velocity = Vector3.ZERO
+		balao.esconder()
+	elif _camadas_de_fora.x >= 0:
+		collision_layer = _camadas_de_fora.x
+		collision_mask = _camadas_de_fora.y
+
+
+func esta_recolhido() -> bool:
+	return _recolhido
+
+
+## A ECONOMIA LONGE: a mais de `LONGE` do jogador o morador anda o caminho sem física
+## nem colisão (o chão é o do terreno) e com o esqueleto parado — ninguém o vê, e
+## catorze corpos andando em silêncio custariam o quadro de quem está no píer.
+## Devolve se ele andou assim neste quadro.
+func _andar_longe(delta: float) -> bool:
+	var longe: bool = jogador != null and terreno != null and not _destino_avulso.is_finite() and not _nadando \
+		and jogador.global_position.distance_squared_to(global_position) > LONGE * LONGE
+	if longe != _dormindo:
+		_dormindo = longe
+		if animador != null and animador.has_method("dormir"):
+			animador.dormir(longe)
+	if not longe:
+		return false
+	var falta := _alvo - global_position
+	falta.y = 0.0
+	if falta.length() < 0.6:
+		velocity = Vector3.ZERO
+		return true
+	var rumo := _ponto_do_caminho(_alvo, delta) - global_position
+	rumo.y = 0.0
+	var direcao := rumo.normalized() if rumo.length() > 0.05 else falta.normalized()
+	global_position += direcao * _velocidade_de_passo() * delta
+	var chao: float = terreno.ground_height_at(global_position)
+	if chao > terreno.water_level():
+		# No píer o chão do terreno é o fundo do mar: ali o corpo fica na altura em que estava.
+		global_position.y = chao + 0.05
+	visual.rotation.y = atan2(direcao.x, direcao.z)
+	_velocidade_atual = 0.0
+	return true

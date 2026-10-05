@@ -74,19 +74,30 @@ func _run() -> void:
 
 	# --- 3. NÃO ATRAVESSA O QUE NÃO SE ATRAVESSA -----------------------------------
 	var agua: float = world.water_level()
+	# Cada tronco medido uma vez, no pé que se vê e que barra (`base_do_tronco`),
+	# não no meio da copa: [x, z, raio].
+	var troncos: Array[Vector3] = []
+	for tronco in world._region._tree_trunks:
+		var p: Vector2 = tronco.get("point", Vector2.INF)
+		if not p.is_finite():
+			continue
+		if world._region.has_method("base_do_tronco"):
+			var base: Vector3 = world._region.base_do_tronco(tronco)
+			p = Vector2(base.x, base.z)
+		troncos.append(Vector3(p.x, p.y, float(tronco.get("radius", 0.3))))
 	for nome in caminhos:
 		var caminho: PackedVector3Array = caminhos[nome]
 		for k in range(1, caminho.size()):
 			var de: Vector3 = caminho[k - 1]
 			var para: Vector3 = caminho[k]
-			var passos := maxi(1, int(de.distance_to(para) / 0.5))
+			# A cada 0,25 u: a 0,5 o caminho raspava a clúsia de (34, 45) entre duas amostras.
+			var passos := maxi(1, int(de.distance_to(para) / 0.25))
 			for i in passos + 1:
 				var ponto := de.lerp(para, float(i) / float(passos))
 				_conferir(ponto.y > agua - 0.05, "o caminho %s desce ao fundo do mar em %s" % [nome, str(ponto)])
-				for tronco in world._region._tree_trunks:
-					var p: Vector2 = tronco.get("point", Vector2.INF)
-					if p.distance_to(Vector2(ponto.x, ponto.z)) < float(tronco.get("radius", 0.3)) - 0.05:
-						_conferir(false, "o caminho %s atravessa um tronco da mata em %s" % [nome, str(p)])
+				for t in troncos:
+					if Vector2(t.x, t.y).distance_to(Vector2(ponto.x, ponto.z)) < t.z - 0.05:
+						_conferir(false, "o caminho %s atravessa um tronco da mata em %s" % [nome, str(Vector2(t.x, t.y))])
 		var espaco: PhysicsDirectSpaceState3D = world.get_world_3d().direct_space_state
 		for k in range(1, caminho.size()):
 			var raio := PhysicsRayQueryParameters3D.create(caminho[k - 1] + Vector3.UP * 0.9, caminho[k] + Vector3.UP * 0.9, 1)

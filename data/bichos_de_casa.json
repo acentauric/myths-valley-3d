@@ -1,0 +1,99 @@
+{
+	"_sobre": "Os bichos de casa do vale (#28): quem mora em que quintal e o que faz em cada hora. Sem texto para o jogador. Os pontos são deslocamentos no referencial da casa (porta no +Z), como os postos de npcs_3d.json. 'dono' é o id de um morador de npcs_3d.json (o cão o acompanha; o gato do Tonho vai com ele ao píer). 'poleiro' é a árvore onde as aves dormem: 'pitangueira' é a do quintal, 'ipe' o do adro, 'arvore' a mais perto de qualquer espécie, e vazio é dormir no chão. As rotinas são 'cao', 'gato', 'porco', 'solto' (cabra, bode, jumento: ronda o 'terreiro') e 'bando' (aves de chão). A 'casa' é uma âncora do mundo, e o '*Frente' dela gira os pontos; casa sem âncora no vale é pulada. Casa nova de morador entra com uma linha em 'casas'. Ver scripts/prototipo_3d/bichos_de_casa.gd.",
+	"especies": {
+		"_sobre": "Medida da caixa do procedural (largura, altura, comprimento, em u) e a cor dela; 'passo' e 'corrida' em u/s; 'tipo' é quadrupede (corpo com física e o clipe de andar do GLB) ou ave (sem física, animada por código). 'deitado' é o GLB parado que entra quando o bicho deita; 'leque', o do pavão de cauda aberta.",
+		"cachorro_caramelo": {"tipo": "quadrupede", "caixa": [0.28, 0.55, 0.8], "cor": "b07a40", "passo": 1.25, "corrida": 3.6, "deitado": "cachorro_deitado"},
+		"cachorro_malhado": {"tipo": "quadrupede", "caixa": [0.28, 0.52, 0.78], "cor": "d8d0c0", "passo": 1.25, "corrida": 3.6, "deitado": "cachorro_deitado"},
+		"filhote_caramelo": {"tipo": "quadrupede", "caixa": [0.16, 0.32, 0.42], "cor": "c08a50", "passo": 1.0, "corrida": 2.6},
+		"gato_amarelo": {"tipo": "quadrupede", "caixa": [0.16, 0.3, 0.5], "cor": "d09a50", "passo": 0.75, "corrida": 4.2},
+		"gato_preto": {"tipo": "quadrupede", "caixa": [0.16, 0.3, 0.5], "cor": "2a2a2e", "passo": 0.75, "corrida": 4.2},
+		"gato_malhado": {"tipo": "quadrupede", "caixa": [0.16, 0.3, 0.5], "cor": "9a9488", "passo": 0.75, "corrida": 4.2},
+		"porco": {"tipo": "quadrupede", "caixa": [0.45, 0.55, 1.05], "cor": "d8a49c", "passo": 0.6, "corrida": 2.2},
+		"leitao": {"tipo": "quadrupede", "caixa": [0.22, 0.28, 0.48], "cor": "e2b2aa", "passo": 0.6, "corrida": 2.4},
+		"jumento": {"tipo": "quadrupede", "caixa": [0.45, 1.1, 1.4], "cor": "8a8478", "passo": 0.7, "corrida": 2.4},
+		"cabra": {"tipo": "quadrupede", "caixa": [0.3, 0.75, 0.95], "cor": "e6dfd0", "passo": 0.8, "corrida": 2.8},
+		"bode": {"tipo": "quadrupede", "caixa": [0.32, 0.8, 1.0], "cor": "7a6a58", "passo": 0.8, "corrida": 2.8},
+		"galo": {"tipo": "ave", "caixa": [0.22, 0.6, 0.5], "cor": "a8442f", "passo": 0.7, "corrida": 2.4},
+		"galinha": {"tipo": "ave", "caixa": [0.2, 0.42, 0.38], "cor": "c9a87c", "passo": 0.6, "corrida": 2.2},
+		"pintinho": {"tipo": "ave", "caixa": [0.07, 0.1, 0.1], "cor": "e8d070", "passo": 0.45, "corrida": 1.4},
+		"galinha_dangola": {"tipo": "ave", "caixa": [0.22, 0.48, 0.45], "cor": "4a4c58", "passo": 0.8, "corrida": 2.8},
+		"pato": {"tipo": "ave", "caixa": [0.22, 0.45, 0.48], "cor": "e8e4da", "passo": 0.5, "corrida": 1.6},
+		"peru": {"tipo": "ave", "caixa": [0.35, 0.8, 0.8], "cor": "3a3028", "passo": 0.55, "corrida": 2.0},
+		"pavao": {"tipo": "ave", "caixa": [0.28, 1.0, 1.35], "cor": "2a5a8a", "passo": 0.55, "corrida": 2.0, "leque": "pavao_leque"},
+		"pavoa": {"tipo": "ave", "caixa": [0.28, 0.8, 0.8], "cor": "8a7a60", "passo": 0.55, "corrida": 2.0}
+	},
+	"casas": [
+		{"casa": "Casa de Carro Quebrado", "dono": "benedito", "bichos": [
+			{"rotina": "cao", "especie": "cachorro_caramelo", "porta": [1.2, 0, 3.4]},
+			{"rotina": "cao", "especie": "filhote_caramelo", "porta": [1.9, 0, 3.1], "segue": "cachorro_caramelo"},
+			{"rotina": "porco", "especie": "porco", "quantos": 2, "chiqueiro": [-2.5, 0, -5.9], "raio": 1.3},
+			{"rotina": "porco", "especie": "leitao", "chiqueiro": [-2.5, 0, -5.9], "raio": 1.3},
+			{"rotina": "solto", "especie": "cabra", "quantos": 2, "terreiro": [4.2, 0, -3.8], "raio": 2.6},
+			{"rotina": "solto", "especie": "bode", "terreiro": [4.2, 0, -3.8], "raio": 2.6},
+			{"rotina": "bando", "terreiro": [-4.6, 0, -2.9], "raio": 2.2, "poleiro": "pitangueira",
+				"aves": [{"especie": "galo", "lider": true}, {"especie": "galinha", "quantos": 5}, {"especie": "pintinho", "quantos": 4, "segue": "galinha"}]}
+		]},
+		{"casa": "Casa da estrada", "dono": "filo", "bichos": [
+			{"rotina": "cao", "especie": "cachorro_caramelo", "dono": "tonho", "porta": [2.4, 0, 3.6]},
+			{"rotina": "gato", "especie": "gato_malhado", "dono": "tonho", "soleira": [0.6, 0, 3.1]},
+			{"rotina": "bando", "terreiro": [-1.4, 0, -5.2], "raio": 3.0, "poleiro": "pitangueira",
+				"aves": [{"especie": "galinha", "lider": true}, {"especie": "galinha", "quantos": 3}]}
+		]},
+		{"casa": "Casa do Pedro", "dono": "pedro", "bichos": [
+			{"rotina": "cao", "especie": "cachorro_caramelo", "porta": [2.0, 0, 3.4]}
+		]},
+		{"casa": "Casa da Zefa", "dono": "zefa", "bichos": [
+			{"rotina": "gato", "especie": "gato_preto", "soleira": [0.8, 0, 3.1]},
+			{"rotina": "bando", "terreiro": [-0.8, 0, -5.2], "raio": 3.2, "poleiro": "pitangueira",
+				"aves": [{"especie": "galinha_dangola", "lider": true}, {"especie": "galinha_dangola", "quantos": 4}]}
+		]},
+		{"casa": "Restaurante", "dono": "candinha", "bichos": [
+			{"rotina": "gato", "especie": "gato_malhado", "soleira": [1.4, 0, 4.7]},
+			{"rotina": "bando", "terreiro": [2.8, 0, -5.0], "raio": 3.0, "poleiro": "arvore",
+				"aves": [{"especie": "galinha", "lider": true}, {"especie": "galinha", "quantos": 2}, {"especie": "peru"}]}
+		]},
+		{"casa": "Venda do Bar", "dono": "mercador", "bichos": [
+			{"rotina": "gato", "especie": "gato_amarelo", "soleira": [1.6, 0, 4.4]},
+			{"rotina": "solto", "especie": "jumento", "dono": "mercador", "terreiro": [-5.0, 0, 3.4], "raio": 1.2}
+		]},
+		{"casa": "Igreja", "bichos": [
+			{"rotina": "bando", "terreiro": [-3.2, 0, 7.4], "raio": 3.6, "poleiro": "ipe",
+				"aves": [{"especie": "pavao", "lider": true, "leque": true}, {"especie": "pavoa", "quantos": 3}]}
+		]},
+		{"casa": "Casa do guarda", "dono": "guarda", "bichos": [
+			{"rotina": "cao", "especie": "cachorro_malhado", "porta": [1.8, 0, 4.0]}
+		]},
+		{"casa": "Casa do pescador", "dono": "pescador", "bichos": [
+			{"rotina": "cao", "especie": "cachorro_malhado", "porta": [1.4, 0, 3.3]},
+			{"rotina": "bando", "terreiro": [-4.2, 0, -2.8], "raio": 2.6, "poleiro": "pitangueira",
+				"aves": [{"especie": "galinha", "lider": true}, {"especie": "galinha", "quantos": 3}, {"especie": "pintinho", "quantos": 3, "segue": "galinha"}]}
+		]},
+		{"casa": "Casa da marisqueira", "dono": "marisqueira", "bichos": [
+			{"rotina": "gato", "especie": "gato_preto", "soleira": [1.0, 0, 3.3]}
+		]},
+		{"casa": "Casa da lavadeira", "dono": "lavadeira", "bichos": [
+			{"rotina": "bando", "terreiro": [-0.8, 0, -4.8], "raio": 2.8, "poleiro": "pitangueira",
+				"aves": [{"especie": "galo", "lider": true}, {"especie": "galinha", "quantos": 3}]}
+		]},
+		{"casa": "Casa da rendeira", "dono": "rendeira", "bichos": [
+			{"rotina": "gato", "especie": "gato_malhado", "soleira": [1.2, 0, 4.0]},
+			{"rotina": "bando", "terreiro": [-4.4, 0, -2.6], "raio": 2.8, "poleiro": "pitangueira",
+				"aves": [{"especie": "galinha", "lider": true}, {"especie": "galinha", "quantos": 3}]}
+		]},
+		{"casa": "Casa da quituteira", "dono": "quituteira", "bichos": [
+			{"rotina": "gato", "especie": "gato_amarelo", "soleira": [1.2, 0, 4.3]}
+		]},
+		{"casa": "Casa do carpinteiro", "dono": "carpinteiro", "bichos": [
+			{"rotina": "cao", "especie": "cachorro_malhado", "porta": [1.6, 0, 3.7]},
+			{"rotina": "bando", "terreiro": [4.4, 0, -2.6], "raio": 2.8, "poleiro": "pitangueira",
+				"aves": [{"especie": "galo", "lider": true}, {"especie": "galinha", "quantos": 2}]}
+		]},
+		{"casa": "Casa de farinha", "bichos": [
+			{"rotina": "gato", "especie": "gato_malhado", "soleira": [1.4, 0, 4.7]}
+		]},
+		{"casa": "Ponte do rio central", "bichos": [
+			{"rotina": "bando", "terreiro": [3.0, 0, 3.0], "raio": 3.2, "poleiro": "",
+				"aves": [{"especie": "pato", "lider": true}, {"especie": "pato", "quantos": 3}]}
+		]}
+	]
+}

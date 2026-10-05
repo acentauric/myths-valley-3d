@@ -24,9 +24,16 @@ extends Node
 ##
 ## ANDAR RECOLHE A LINHA. Pescar é esperar parado; quem sai de onde lançou
 ## desistiu.
+##
+## A VARA NA MÃO PESCA: do lance ao fim da espera ela fica na pose de "uso"
+## (`Vestimenta3D.NA_MAO`, a ponta baixa para a água), e uma linha fina desce
+## da ponta dela até a bóia, com a barriga que a linha frouxa tem. O peixe que
+## fisga dá um tranco na vara. A linha sai da ponta que a peça mostra: no estilo
+## procedural não há vara na mão, e então não há linha, só a bóia.
 
 const Atalhos = preload("res://scripts/prototipo_3d/atalhos.gd")
 const IdiomaMenu = preload("res://scripts/prototipo_3d/idioma_menu.gd")
+const Vestimenta3D = preload("res://scripts/prototipo_3d/vestimenta_3d.gd")
 const TEXTOS := "res://data/pesca.json"
 const VARA := "vara_de_pescar"
 
@@ -38,12 +45,17 @@ const FUNDO_MINIMO := 0.25
 const DESISTE := 1.2
 ## Perto assim do centro de um cardume, a linha está "no cardume".
 const RAIO_DO_CARDUME := 6.0
+## Os segmentos da linha, e quanto ela cai no meio (fração do comprimento).
+const SEGMENTOS_DA_LINHA := 14
+const BARRIGA_DA_LINHA := 0.06
 
 var _world
 var _player
 var _hud
 var _textos: Dictionary = {}
 var _boia: MeshInstance3D
+var _linha: MeshInstance3D
+var _malha_da_linha: ImmediateMesh
 var _sinal: Label3D
 var _lancou_de: Vector3 = Vector3.INF
 ## A última água em que se lançou: "mar", "doce", ou "".
@@ -90,6 +102,17 @@ func _montar_a_boia() -> void:
 	_sinal.no_depth_test = true
 	_sinal.visible = false
 	add_child(_sinal)
+	_malha_da_linha = ImmediateMesh.new()
+	_linha = MeshInstance3D.new()
+	_linha.name = "Linha"
+	_linha.mesh = _malha_da_linha
+	var fio := StandardMaterial3D.new()
+	fio.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	fio.albedo_color = Color(0.93, 0.9, 0.78)
+	_linha.material_override = fio
+	_linha.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	_linha.visible = false
+	add_child(_linha)
 
 
 # --- a água ------------------------------------------------------------------
@@ -155,6 +178,7 @@ func _unhandled_key_input(event: InputEvent) -> void:
 
 
 func _process(_delta: float) -> void:
+	_desenhar_a_linha()
 	if not Pesca.pescando or not _lancou_de.is_finite():
 		return
 	var andou := Vector2(_player.global_position.x - _lancou_de.x, _player.global_position.z - _lancou_de.z).length()
@@ -180,12 +204,15 @@ func lancar() -> Dictionary:
 	_boia.global_position = onde
 	_boia.visible = true
 	_sinal.visible = false
+	if _player.has_method("usar_item_na_mao"):
+		_player.call("usar_item_na_mao", INF)
 	Audio.efeito("passo_agua")
 	_avisar(_texto("no_cardume") if no_cardume else _texto("na_agua"))
 	var premio: Dictionary = await Pesca.pescar(agua_do_lance, no_cardume)
 	_lancou_de = Vector3.INF
 	_boia.visible = false
 	_sinal.visible = false
+	_baixar_a_vara()
 	if premio.is_empty():
 		if not _recolhida:
 			_avisar(_texto("vazia"))
@@ -210,6 +237,7 @@ func recolher() -> void:
 	_boia.visible = false
 	_sinal.visible = false
 	_lancou_de = Vector3.INF
+	_baixar_a_vara()
 
 
 func ferrar() -> bool:
@@ -223,8 +251,39 @@ func _ao_fisgar() -> void:
 	_boia.global_position.y = _world.water_level() - 0.12
 	_sinal.global_position = _boia.global_position + Vector3(0.0, 0.7, 0.0)
 	_sinal.visible = true
+	if _player.has_method("sacudir_item_na_mao"):
+		_player.call("sacudir_item_na_mao")
 	Audio.efeito("regar")
 	_avisar(_texto("fisgou"))
+
+
+## A vara volta à pose de parada, e a linha some.
+func _baixar_a_vara() -> void:
+	if _player != null and _player.has_method("usar_item_na_mao"):
+		_player.call("usar_item_na_mao", 0.0)
+	if _linha != null:
+		_linha.visible = false
+
+
+## A LINHA, da ponta da vara à bóia, num traço de segmentos com a barriga que a
+## linha frouxa faz. Sem a ponta (a vara não está na mão), nada a desenhar.
+func _desenhar_a_linha() -> void:
+	if _linha == null:
+		return
+	var ponta := Vector3.INF
+	if Pesca.pescando and _boia.visible and _player != null and _player.get("visual") != null:
+		ponta = Vestimenta3D.ponta_na_mao(_player.get("visual"))
+	_linha.visible = ponta.is_finite()
+	_malha_da_linha.clear_surfaces()
+	if not ponta.is_finite():
+		return
+	var fim := _boia.global_position
+	var barriga := ponta.distance_to(fim) * BARRIGA_DA_LINHA
+	_malha_da_linha.surface_begin(Mesh.PRIMITIVE_LINE_STRIP)
+	for i in SEGMENTOS_DA_LINHA + 1:
+		var t := float(i) / SEGMENTOS_DA_LINHA
+		_malha_da_linha.surface_add_vertex(ponta.lerp(fim, t) - Vector3(0.0, 4.0 * t * (1.0 - t) * barriga, 0.0))
+	_malha_da_linha.surface_end()
 
 
 ## "2 peixe" soava a erro de digitação (ver o 2D).

@@ -18,7 +18,7 @@ extends SceneTree
 ##   3. A RAIZ MOSTRA AS QUATRO SEÇÕES, e as plantas descem por grupo. Grupo sem espécie conhecida
 ##      não aparece — cabeçalho de gaveta vazia é a caça ao item que a silhueta
 ##      seria.
-##   4. A CONTA DE CADA GRUPO ESTÁ NA LINHA ("2 de 6"): é o que responde "falta
+##   4. A CONTA DE CADA GRUPO ESTÁ NA LINHA ("2 de N", com N lido do dado): é o que responde "falta
 ##      muito?" sem dizer o que falta.
 ##   5. ABRIR UM GRUPO ABRE AS ESPÉCIES DELE NO LUGAR, e o caminho escreve onde
 ##      se está.
@@ -135,8 +135,13 @@ func _run() -> void:
 		"um grupo SEM espécie conhecida apareceu na cadeia: %s" % linhas)
 	_conferir(not linhas.contains("Mangueira"),
 		"a cadeia despejou a espécie com o grupo fechado: %s" % linhas)
-	_conferir(linhas.contains("2 de 6"),
-		"a conta das frutíferas não está na linha (esperava '2 de 6'): %s" % linhas)
+	# O total vem do dado: cada fruteira nova que ganha ficha (goiabeira, mamoeiro...) entra na conta.
+	var total_de_frutiferas := 0
+	for ficha in Alm._fichas.values():
+		if String((ficha as Dictionary).get("grupo", "")) == "frutiferas":
+			total_de_frutiferas += 1
+	_conferir(linhas.contains("2 de %d" % total_de_frutiferas),
+		"a conta das frutíferas não está na linha (esperava '2 de %d'): %s" % [total_de_frutiferas, linhas])
 
 	# --- 5. ABRIR O GRUPO ABRE AS ESPÉCIES DELE ------------------------------
 	tela._escolher_grupo("frutiferas")

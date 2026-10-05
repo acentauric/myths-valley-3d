@@ -17,7 +17,8 @@ func _run() -> void:
 		return
 	var cena := pacote.instantiate()
 	var dados := Composicao.extrair(cena)
-	_verificar(dados.size() == 15, "as quinze construções atuais têm identidade única")
+	# As quinze de antes e as oito dos moradores novos (tools/mapas/aplicar_casas_moradores.py).
+	_verificar(dados.size() == 23, "as vinte e três construções atuais têm identidade única")
 	_verificar(cena.get_node_or_null("BaseGeografica") == null, "base pesada não é instanciada fora do editor")
 	var ruas := (load("res://scenes/prototipo_3d/ruas_referencia.tscn") as PackedScene).instantiate()
 	_verificar(ruas.find_children("Rua*", "MeshInstance3D", true, false).size() == 8, "as oito ruas estão visíveis na referência")
@@ -70,10 +71,13 @@ func _run() -> void:
 	_verificar(alvos == 1, "não duplica o alvo da casa")
 	var visual: Node3D = mundo.construcoes_editaveis["Casa de taipa"]["visual"]
 	_verificar(absf(angle_difference(visual.rotation.y, giro)) < 0.0001, "modelo acompanha o giro salvo")
-	# A colisão vem do catálogo e tem o mesmo centro X/Z e giro da composição.
+	# A colisão vem do catálogo e tem o giro da composição, no lugar da casa. O
+	# centro dela é o da PEGADA do que o modelo ocupa na altura do corpo
+	# (`CatalogoAssets.pegada`), e não o da caixa envolvente: o beiral que sobra
+	# de um lado desloca a caixa de parede, por isso a folga de 0,6 m.
 	var corpos := 0
 	for filho in mundo.get_children():
-		if filho is StaticBody3D and String(filho.name).begins_with("Casa TaipaColisao") and Vector2(filho.position.x, filho.position.z).distance_to(Vector2(esperado.x, esperado.z)) < 0.002:
+		if filho is StaticBody3D and String(filho.name).begins_with("Casa TaipaColisao") and Vector2(filho.position.x, filho.position.z).distance_to(Vector2(esperado.x, esperado.z)) < 0.6:
 			corpos += 1
 			_verificar(absf(angle_difference(filho.rotation.y, giro)) < 0.0001, "colisão acompanha o giro salvo")
 	_verificar(corpos == 1, "colisão da casa acompanha o deslocamento, sem duplicação")

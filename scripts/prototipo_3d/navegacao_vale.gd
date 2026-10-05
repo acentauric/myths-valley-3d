@@ -51,7 +51,11 @@ const RAMPA := 40.0
 const FOLGA := 20.0
 ## As âncoras por onde os moradores andam: os postos e os marcos da festa.
 const LUGARES := ["Praça", "Igreja", "Cruzeiro", "PierPiso", "Casa de taipa", "Lavoura", "Terreiro",
-	"Gameleira", "Cemitério", "Bar", "Restaurante", "Casa da estrada", "Casa de Carro Quebrado", "Poço"]
+	"Gameleira", "Cemitério", "Bar", "Restaurante", "Casa da estrada", "Casa de Carro Quebrado", "Poço",
+	# As casas dos moradores novos e os lugares da jornada deles.
+	"Casa do arraial 1", "Casa do arraial 4", "Casa do arraial 7", "Casa do guarda", "Casa do pescador",
+	"Casa da marisqueira", "Casa da lavadeira", "Casa da rendeira", "Casa da quituteira", "Casa do carpinteiro",
+	"Casa de farinha", "Rio 2", "Ponte do rio central"]
 
 var _mundo
 var _raiz: Node
@@ -156,6 +160,11 @@ func _troncos_da_mata(fonte: NavigationMeshSourceGeometryData3D, area: AABB) -> 
 		var ponto: Vector2 = tronco.get("point", Vector2.INF)
 		if not ponto.is_finite() or not area.has_point(Vector3(ponto.x, area.position.y + 1.0, ponto.y)):
 			continue
+		# NO PÉ DO TRONCO QUE SE VÊ, o mesmo do corpo (`base_do_tronco`): o ponto
+		# de plantio é o meio da copa, e na mata fica a quase um metro da madeira.
+		if regiao.has_method("base_do_tronco"):
+			var base: Vector3 = regiao.base_do_tronco(tronco)
+			ponto = Vector2(base.x, base.z)
 		# O octógono POR FORA do tronco: com o raio nos vértices ele ficava por
 		# dentro do círculo, e o caminho raspava no tronco pelo meio das arestas.
 		var raio := maxf(float(tronco.get("radius", 0.3)), 0.2) / cos(PI / 8.0)
@@ -166,7 +175,12 @@ func _troncos_da_mata(fonte: NavigationMeshSourceGeometryData3D, area: AABB) -> 
 		# O PÉ DO TRONCO é o chão do vale ali, e não o "ground" da lista, que nem
 		# todo tronco traz: sem ele o octógono ficava embaixo da terra.
 		var pe: float = _mundo.ground_height_at(Vector3(ponto.x, 0.0, ponto.y))
-		fonte.add_projected_obstruction(contorno, pe - 1.0, 5.0, true)
+		# SEM "carve": o obstáculo cortado (carve = true) escapa da erosão do raio
+		# do agente, e o contorno simplificado (edge_max_error de 1,3 u) virava
+		# uma aresta que passava pelo meio do tronco — o caminho do píer à
+		# gameleira raspava a 0,17 u do eixo de um coqueiro de raio 0,24. Sem o
+		# corte, o buraco cresce do raio do agente e o caminho contorna o tronco.
+		fonte.add_projected_obstruction(contorno, pe - 1.0, 5.0, false)
 
 
 ## ASSADA: fora o fundo do mar e as ilhas, e a malha entra no vale.

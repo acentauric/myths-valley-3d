@@ -1,12 +1,21 @@
 shader_type spatial;
 render_mode cull_disabled;
 
-// Uma única superfície de areia cobre o fundo e as margens do rio.
+// Uma única superfície cobre o fundo e as margens do rio: areia na calha e, com
+// `mistura_lama`, lama nas margens (a mesma lama de mangue que o terreno pinta em
+// volta, pelo mapa de solo — docs/mundo/SOLO_E_FRANJAS.md). Com mistura_lama 0, que é
+// o padrão, é a areia de sempre (a cena da orla usa este shader assim).
 uniform sampler2D areia : source_color, filter_linear_mipmap_anisotropic, repeat_enable;
 uniform float ladrilho = 5.0;
 uniform vec3 tom : source_color = vec3(0.92, 0.88, 0.8);
 uniform float fracao_canal = 0.55;
 uniform float franja = 0.3;
+uniform sampler2D lama : source_color, filter_linear_mipmap_anisotropic, repeat_enable;
+uniform float ladrilho_lama = 4.0;
+uniform vec3 tinta_lama : source_color = vec3(1.0);
+uniform float mistura_lama = 0.0;
+// A areia de rio é mais escura e fria que a de praia: tom da calha com a lama.
+uniform vec3 tom_calha_com_lama : source_color = vec3(0.7, 0.64, 0.54);
 varying vec2 mundo;
 
 float hash21(vec2 p) {
@@ -38,8 +47,19 @@ void fragment() {
 	vec2 posicao = vec2(hash21(celula + vec2(13.0, 7.0)), hash21(celula + vec2(3.0, 17.0)));
 	float grao = presente * centro * (1.0 - smoothstep(0.025, 0.075, distance(local, posicao)));
 	cor *= 1.0 - grao * 0.12;
+	float rugosidade = 0.94;
+	if (mistura_lama > 0.0) {
+		// Calha em areia de rio escura; da beira da água para fora, lama, com a
+		// troca recortada por ruído (sem linha reta acompanhando o rio).
+		vec3 calha = cor * mix(vec3(1.0), tom_calha_com_lama / tom, mistura_lama);
+		vec3 barro = texture(lama, mundo / ladrilho_lama).rgb * tinta_lama;
+		float fora = smoothstep(fracao_canal * 0.75, fracao_canal * 1.1, lateral + (ruido(mundo * 0.7) - 0.5) * 0.25);
+		float m = fora * mistura_lama;
+		cor = mix(calha, barro, m);
+		rugosidade = mix(0.94, 0.6, m);
+	}
 	ALBEDO = cor;
-	ROUGHNESS = 0.94;
+	ROUGHNESS = rugosidade;
 	SPECULAR = 0.18;
 
 	// Mesmo recorte externo da praia; o centro permanece inteiramente coberto.

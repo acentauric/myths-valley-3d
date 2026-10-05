@@ -73,7 +73,8 @@ func _run() -> void:
 	await process_frame
 	_conferir(hud.menu_confirm_open() and paused, "Condição do teste: hud.menu_confirm_open() and paused")
 	hud._close_menu_confirm(true)
-	for i in range(600):
+	# A leitura em segundo plano do vale passa de 700 quadros (734 medidos): 600 reprovava um vale que carregava bem.
+	for i in range(3000):
 		if current_scene != null and current_scene.name == "Abertura":
 			break
 		await process_frame
@@ -100,7 +101,8 @@ func _run() -> void:
 
 ## A entrada no vale carrega em segundo plano (tela de carregamento).
 func _wait_game() -> void:
-	for i in range(600):
+	# A leitura em segundo plano do vale passa de 700 quadros (734 medidos): 600 reprovava um vale que carregava bem.
+	for i in range(3000):
 		if current_scene != null and current_scene.name == "Vale3D":
 			break
 		await process_frame

@@ -106,9 +106,15 @@ func _run() -> void:
 	pesca.lancar()
 	await _frames(3)
 	_conferir(pesca_regra.pescando, "o segundo lance não começou")
+	# A vara pesca: a pose de uso, e a linha desce da ponta dela até a bóia.
+	var ponta_da_vara: Vector3 = load("res://scripts/prototipo_3d/vestimenta_3d.gd").ponta_na_mao(player.visual)
+	_conferir(ponta_da_vara.is_finite(), "com a vara na mão pescando, a ponta dela não aparece")
+	_conferir(pesca._linha.visible, "pescando, não há linha da vara até a bóia")
+	_conferir(float(player.get("_uso_restante")) > 1000.0, "pescando, a vara não está na pose de uso")
 	player.global_position += Vector3(0.0, 0.0, pesca.DESISTE + 1.0)
 	await _frames(3)
 	_conferir(not pesca_regra.pescando, "andar com a linha na água não recolheu")
+	_conferir(not pesca._linha.visible and float(player.get("_uso_restante")) < 1.0, "recolhida a linha, a vara continua pescando")
 
 	# --- 3. A COZINHA NO FOGO DO TERREIRO ----------------------------------------
 	var Bancadas = load("res://scripts/prototipo_3d/bancadas_vale.gd")

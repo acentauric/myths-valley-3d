@@ -118,12 +118,12 @@ func _montar_presbiterio() -> void:
 		while absf(x) <= largura * 0.5 - 0.05:
 			_caixa(Vector3(0.05, 0.85, 0.05), Vector3(x, ALTURA_DO_PRESBITERIO + 0.425, frente - 0.08), _cor(MADEIRA_CLARA), false, "Balaustre")
 			x += lado * 0.26
-		_caixa(Vector3(trecho, 0.9, 0.12), Vector3(meio_x, ALTURA_DO_PRESBITERIO + 0.45, frente - 0.08), null, true, "GradeColisao")
+		_caixa(Vector3(trecho, 0.9, 0.12), Vector3(meio_x, ALTURA_DO_PRESBITERIO + 0.45, frente - 0.08), null, true, "GradeColisao", false)
 	# O altar de alvenaria, com a toalha branca e o frontal vermelho bordado.
 	var altar_z := -comprimento + 0.85
 	var chao := ALTURA_DO_PRESBITERIO
 	var largura_do_altar := minf(2.4, largura * 0.42)
-	_caixa(Vector3(largura_do_altar, 0.95, 0.8), Vector3(0, chao + 0.475, altar_z), _cal(), true, "Altar")
+	_caixa(Vector3(largura_do_altar, 0.95, 0.8), Vector3(0, chao + 0.475, altar_z), _cal(), true, "Altar", false)
 	_caixa(Vector3(largura_do_altar + 0.14, 0.05, 0.92), Vector3(0, chao + 0.975, altar_z), _cor(Color("f6f2e8")), false, "Toalha")
 	_caixa(Vector3(largura_do_altar + 0.14, 0.3, 0.02), Vector3(0, chao + 0.82, altar_z + 0.46), _cor(Color("f6f2e8")), false, "Toalha")
 	_caixa(Vector3(largura_do_altar - 0.3, 0.6, 0.03), Vector3(0, chao + 0.36, altar_z + 0.415), _cor(VERMELHO), false, "Frontal")
@@ -231,7 +231,7 @@ func _montar_moveis() -> void:
 			# de comprimento fixo; sem modelo, a caixa de sempre.
 			var banco := _peca("banco", onde, PI, escala)
 			if _colisao_da_peca(banco, "Banco") == null:
-				_caixa(Vector3(comprimento_do_banco, 0.85, 0.6), onde + Vector3(0, 0.42, 0), null, true, "BancoColisao")
+				_caixa(Vector3(comprimento_do_banco, 0.85, 0.6), onde + Vector3(0, 0.42, 0), null, true, "BancoColisao", false)
 		fila -= 1.3
 	# A pia de água benta, à direita de quem entra.
 	_colisao_da_peca(_peca("pote", Vector3(largura * 0.5 - 0.35, 0.0, -0.55), 0.0, 0.55), "Pote")

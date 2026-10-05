@@ -50,6 +50,10 @@ func _run() -> void:
 	world = vale.world
 	jogador = vale.player
 	for morador in vale.moradores:
+		# Quem tem agenda (os moradores novos) não segue os cinco postos do dia: a jornada
+		# deles é o portão `rotina_dos_moradores`.
+		if morador.dados.has("agenda"):
+			continue
 		por_id[str(morador.dados.get("id", ""))] = morador
 	for id in afinidade.MORADORES:
 		_conferir(por_id.has(id), "o morador '%s' não está no vale" % id)

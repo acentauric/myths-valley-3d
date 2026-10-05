@@ -20,6 +20,7 @@ const CHAO_PRACA_TEXTURE := preload("res://assets/prototipo_3d/materiais/chao_pr
 const GRAMA_TERRA_MATA_TEXTURE := preload("res://assets/prototipo_3d/materiais/grama_terra_mata_v1.png")
 const Mar = preload("res://scripts/prototipo_3d/mar.gd")
 const CoqueiroCortado = preload("res://scripts/prototipo_3d/coqueiro_cortado.gd")
+const CopasDistantes = preload("res://scripts/prototipo_3d/copas_distantes.gd")
 const AREIA_PRAIA := preload("res://assets/prototipo_3d/mar/areia_praia.gdshader")
 const FOZ_RIO := preload("res://assets/prototipo_3d/mar/foz_rio.gdshader")
 const AGUA_RIO := preload("res://assets/prototipo_3d/mar/agua_rio.gdshader")
@@ -28,6 +29,40 @@ const AREIA_TEXTURE := preload("res://assets/prototipo_3d/materiais/areia_praia_
 ## Tinta da textura de grama/terra: com o sol batendo no chão (não mais só a luz
 ## ambiente), a textura crua fica ocre; puxa de volta para o verde do Recôncavo.
 const TINTA_GRAMA := Color(0.74, 0.86, 0.6)
+## O CHÃO EM CAMADAS (docs/mundo/SOLO_E_FRANJAS.md): o shader do terreno mistura oito
+## texturas pelo mapa de solo, pelo declive e pela altura guardada no alfa de cada
+## uma. As texturas vêm do OpenAI (tools/openai/texturas_chao.json), preparadas
+## pelo tools/materiais/preparar_textura_chao.py.
+const TERRENO_SHADER := preload("res://assets/prototipo_3d/materiais/terreno.gdshader")
+const ESTRADA_ACOSTAMENTO := preload("res://assets/prototipo_3d/materiais/estrada_acostamento.gdshader")
+const CRUZAMENTO_SHADER := preload("res://assets/prototipo_3d/materiais/cruzamento.gdshader")
+const MapaDeSolo = preload("res://scripts/prototipo_3d/mapa_de_solo.gd")
+## Camada do shader: [textura, ladrilho em u, tinta]. A tinta acerta a média medida
+## de cada textura com a paleta da AMBIENTACAO §7.
+const CAMADAS_DO_CHAO := {
+	"grama": [preload("res://assets/prototipo_3d/materiais/grama_baixa_v1.png"), 4.0, Color(1.0, 1.0, 1.0)],
+	"capim": [preload("res://assets/prototipo_3d/materiais/capim_seco_v1.png"), 5.0, Color(0.92, 0.95, 0.95)],
+	"folhico": [preload("res://assets/prototipo_3d/materiais/folhico_mata_v1.png"), 3.5, Color(1.3, 1.25, 1.2)],
+	"terra": [preload("res://assets/prototipo_3d/materiais/terra_batida_varrida_v1.png"), 4.0, Color(1.0, 0.94, 0.86)],
+	"barro": [preload("res://assets/prototipo_3d/materiais/barro_vermelho_v1.png"), 5.0, Color(0.95, 1.1, 1.1)],
+	"pedrisco": [preload("res://assets/prototipo_3d/materiais/pedrisco_v1.png"), 3.0, Color(1.0, 1.0, 1.0)],
+	"areia": [preload("res://assets/prototipo_3d/materiais/areia_restinga_v1.png"), 5.0, Color(1.0, 1.0, 1.0)],
+	"lama": [preload("res://assets/prototipo_3d/materiais/lama_mangue_v1.png"), 4.0, Color(1.0, 1.0, 1.0)],
+}
+## Tinta da estrada, quente como a terra batida da vila em volta dela.
+const TINTA_ESTRADA := Color("e8d2ae")
+const TINTA_ESTRADA_PRINCIPAL := Color("eedbb8")
+## Tinta do remendo dos cruzamentos. Ele usa a terra batida (sem direção) e não o
+## ocre da estrada, que é ~28% mais claro em média (linear: 0,48/0,29/0,11 contra
+## 0,35/0,20/0,07): com a tinta da estrada, cada cruzamento virava uma mancha escura
+## e redonda no meio da praça. Esta tinta leva a média da terra à da estrada.
+const TINTA_CRUZAMENTO := Color(1.05, 0.96, 0.8)
+## Acostamento de cada lado da rua (u): a fita da estrada se esfarela nele sobre a
+## terra batida do mapa de solo, que por sua vez se desfaz em tufos na grama.
+const ACOSTAMENTO := 2.5
+## O mapa de solo da região (mapa_de_solo.gd): montado com o terreno, recebe a copa
+## e as trilhas de pé quando o mundo termina (`pintar_vida`).
+var solo: RefCounted = null
 ## Montagem aos poucos: nos laços pesados (terreno, mata) a região devolve o controle
 ## para o Godot desenhar um quadro a cada ORCAMENTO_QUADRO_US, e avisa o progresso
 ## (0 a 1) e a etapa — a tela de carregamento anda em vez de congelar.
@@ -279,11 +314,11 @@ func build_region(kml_json_path: String, scenario_json_path: String) -> void:
 					_rivers.append({"name": String(feature.get("name", "")), "points": points, "width": river_width, "bounds": _points_bounds(points).grow(river_width * 0.5)})
 	_curve_roads()
 	_prepare_mouth_extensions()
+	_montar_mapa_de_solo()
 	if not terrain_only:
 		await _marcar(0.02, "Enchendo a baía")
 		_build_background()
-	# Ladrilho maior deixa folhas e tufos mais legiveis no terreno ao redor da via.
-	var mata_material := _terrain_texture_material(GRAMA_TERRA_MATA_TEXTURE, 12.0)
+	var mata_material := _terrain_texture_material()
 	# A franja recortada da areia deixa o terreno aparecer nas margens. Na foz
 	# central, esse terreno precisa passar de areia para grama junto com a calha.
 	for river in _rivers:
@@ -312,32 +347,15 @@ func build_region(kml_json_path: String, scenario_json_path: String) -> void:
 	if terrain_only:
 		await _marcar(1.0, "Terreno pronto")
 		return
-	# Quando a mata acompanha todo o continente, evita criar uma segunda malha
-	# sobre a terra. As duas malhas tinham triangulações diferentes e podiam
-	# deixar a textura parecer recortada após a interpolação das elevações.
-	if _forest.size() >= 3 and _forest != _land:
-		_add_polygon("Cobertura florestal", _forest, 0.012, FOREST_COLOR, false, mata_material)
-	# Vila e áreas do KML só existem em terra: sem o recorte, a vila avançava sobre
-	# o mar ao lado do píer como um gramado.
-	for parte in _on_land(_village):
-		_add_polygon("Área ocupada", parte, 0.018, VILLAGE_COLOR, false, mata_material)
-	for feature in _features:
-		if feature.get("kind", "") == "area":
-			var color := LAND_COLOR
-			match String(feature.get("name", "")):
-				"Mata": color = Color("648a5c")
-				"Fazenda": color = Color("86aa67")
-				"Praça": color = Color("d9c39a")
-			var area_material: Material = mata_material
-			var pontos_area := _to_points(feature.get("coordinates_m", []))
-			if String(feature.get("name", "")) == "Praça":
-				area_material = _textured_material(CHAO_PRACA_TEXTURE, Color("f2e6c8"), 6.0)
-				pontos_area = _ampliar_poligono(pontos_area, PRACA_AMPLIACAO)
-			for parte in _on_land(pontos_area):
-				_add_polygon(String(feature.get("name", "Área")), parte, 0.027, color, false, area_material)
-	# Mantém a areia acima das sobreposições da Mata (offset 0.027). Sem essa
-	# margem, a textura de grama cobre trechos da praia apesar de a faixa e sua
-	# colisão já existirem na mesma linha costeira.
+	# AS SOBREPOSIÇÕES DO KML SAÍRAM. "Cobertura florestal", "Área ocupada", "Mata" e
+	# "Fazenda" eram malhas inteiras por cima da terra com o MESMO material dela: não
+	# mudavam nada na tela (e a cor de cada uma nunca aparecia). A praça era uma
+	# placa de aresta reta. Agora tudo isso é o mapa de solo, que o shader do
+	# terreno lê: terra na praça, com borda ruidosa; capim na fazenda; folhiço sob a
+	# copa (docs/mundo/SOLO_E_FRANJAS.md).
+	# A areia fica acima do chão (as sobreposições antigas iam até 0.027): sem essa
+	# margem, a grama cobria trechos da praia apesar de a faixa e sua colisão já
+	# existirem na mesma linha costeira.
 	await _marcar(0.42, "Estendendo a praia e os rios")
 	_add_beach()
 	for river in _rivers:
@@ -351,7 +369,14 @@ func build_region(kml_json_path: String, scenario_json_path: String) -> void:
 		material_leito.set_shader_parameter("areia", AREIA_TEXTURE)
 		var fracao_canal := float(river.width) / largura_total
 		material_leito.set_shader_parameter("fracao_canal", fracao_canal)
-		material_leito.set_shader_parameter("franja", 0.22)
+		# Margens de lama (a mesma do terreno embaixo, que o mapa de solo pinta ao
+		# longo do rio), calha de areia de rio mais escura: no mapa o rio deixa de
+		# parecer uma estrada de areia, e o manguezal da orla não pisa em praia.
+		material_leito.set_shader_parameter("lama", CAMADAS_DO_CHAO["lama"][0])
+		material_leito.set_shader_parameter("ladrilho_lama", CAMADAS_DO_CHAO["lama"][1])
+		material_leito.set_shader_parameter("tinta_lama", CAMADAS_DO_CHAO["lama"][2])
+		material_leito.set_shader_parameter("mistura_lama", 1.0)
+		material_leito.set_shader_parameter("franja", 0.35)
 		# Uma só malha de areia evita frestas com grama entre leito e margens.
 		# Na faixa central, os vértices coincidem com os da água acima dela.
 		_add_ribbon("Areia do rio", river.points, largura_total, RIVER_BED_SAND_OFFSET, Color.WHITE, true, material_leito, NAN, 6, 0.8, fracao_canal, null, false, northern, false, NAN, false, BankProfile.RIVER)
@@ -392,9 +417,8 @@ func build_region(kml_json_path: String, scenario_json_path: String) -> void:
 		var road_width: float = float(road.width)
 		var road_y := 0.064 if road_width >= widest else 0.058
 		var road_path := _soften_road_corners(road.points, road_width)
-		var tint := Color("fff8e8") if road.name == "Rua Principal" else Color("f7e7c6")
-		var shoulder_width := _units(4.0, 1.15)
-		var transition_width: float = road_width + shoulder_width * 2.0
+		var tint := TINTA_ESTRADA_PRINCIPAL if road.name == "Rua Principal" else TINTA_ESTRADA
+		var transition_width: float = road_width + ACOSTAMENTO * 2.0
 		var transition_material := _road_shoulder_material(road_width / transition_width, tint)
 		_add_ribbon("Transição " + road.name, road_path, transition_width, 0.052, ROAD_COLOR, false, transition_material, NAN, 4, 1.5, 0.0, null, true)
 		_add_ribbon(road.name, road_path, road_width, road_y, ROAD_COLOR, true, _textured_material(ESTRADA_OCRE_TEXTURE, tint), NAN, 4, 1.5, 0.0, null, true)
@@ -714,6 +738,15 @@ func surface_at(world_position: Vector3) -> String:
 			return "terra"
 	if not _land.is_empty() and not Geometry2D.is_point_in_polygon(point, _land):
 		return "agua" if _background_kind == "sea" else "grama"
+	# O resto do chão diz o que é pelo mapa de solo, o mesmo que o shader pinta: o
+	# passo na lama da margem, na areia da restinga, na terra da praça e das trilhas.
+	if solo != null:
+		if solo.peso(MapaDeSolo.Camada.LAMA, point) > 0.6:
+			return "lama"
+		if solo.peso(MapaDeSolo.Camada.AREIA, point) > 0.5:
+			return "areia"
+		if solo.peso(MapaDeSolo.Camada.TERRA, point) > 0.5:
+			return "terra"
 	return "grama"
 
 
@@ -757,6 +790,7 @@ func _clear_region() -> void:
 	_village.clear()
 	_coast.clear()
 	_beach_gap_coast_points.clear()
+	solo = null
 
 
 func _to_points(coordinates: Array) -> PackedVector2Array:
@@ -843,128 +877,133 @@ func _textured_material(texture: Texture2D, tint: Color, world_tile_units: float
 	return material
 
 
-## Projeta o chão usando coordenadas do mundo, sem depender dos UVs da malha.
-## Assim cada fragmento acompanha o relevo e a textura não se perde nas subdivisões.
-func _terrain_texture_material(texture: Texture2D, tile_units: float) -> ShaderMaterial:
-	var shader := Shader.new()
-	shader.code = """
-shader_type spatial;
-render_mode cull_disabled;
-
-uniform sampler2D terrain_texture : source_color, repeat_enable, filter_linear_mipmap_anisotropic;
-uniform sampler2D sand_texture : source_color, repeat_enable, filter_linear_mipmap_anisotropic;
-uniform float tile_size = 8.0;
-uniform vec3 tint : source_color = vec3(1.0);
-uniform bool mouth_sand_enabled = false;
-uniform vec2 mouth_a;
-uniform vec2 mouth_b;
-uniform vec2 mouth_c;
-uniform vec2 mouth_d;
-uniform vec2 mouth_e;
-uniform float mouth_sand_inner = 4.0;
-uniform float mouth_sand_outer = 4.75;
-varying vec2 world_xz;
-
-float distance_to_segment(vec2 point, vec2 a, vec2 b) {
-	vec2 segment = b - a;
-	float along = clamp(dot(point - a, segment) / max(dot(segment, segment), 0.0001), 0.0, 1.0);
-	return distance(point, a + segment * along);
-}
-
-void vertex() {
-	vec3 world_vertex = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
-	world_xz = world_vertex.xz;
-}
-
-void fragment() {
-	vec3 grass = texture(terrain_texture, world_xz / tile_size).rgb * tint;
-	ALBEDO = grass;
-	if (mouth_sand_enabled) {
-		float distance_from_mouth = min(
-			min(distance_to_segment(world_xz, mouth_a, mouth_b), distance_to_segment(world_xz, mouth_b, mouth_c)),
-			min(distance_to_segment(world_xz, mouth_c, mouth_d), distance_to_segment(world_xz, mouth_d, mouth_e))
-		);
-		float sand_amount = 1.0 - smoothstep(mouth_sand_inner, mouth_sand_outer, distance_from_mouth);
-		vec3 sand = texture(sand_texture, world_xz / 5.0).rgb * vec3(0.92, 0.88, 0.8);
-		ALBEDO = mix(grass, sand, sand_amount);
-	}
-	ROUGHNESS = 0.94;
-}
-"""
+## O material do chão inteiro (terreno.gdshader): oito camadas misturadas pelo mapa
+## de solo, pelo declive e pela altura de cada textura, projetadas pelo mundo (X/Z),
+## sem depender dos UVs da malha. Ao longe, a copa pintada e erguida.
+func _terrain_texture_material() -> ShaderMaterial:
 	var material := ShaderMaterial.new()
-	material.shader = shader
-	material.set_shader_parameter("terrain_texture", texture)
+	material.shader = TERRENO_SHADER
+	for camada: String in CAMADAS_DO_CHAO:
+		var dados: Array = CAMADAS_DO_CHAO[camada]
+		material.set_shader_parameter("tex_" + camada, dados[0])
+		material.set_shader_parameter("ladrilho_" + camada, dados[1])
+		material.set_shader_parameter("tinta_" + camada, dados[2])
 	material.set_shader_parameter("sand_texture", AREIA_TEXTURE)
-	material.set_shader_parameter("tile_size", maxf(tile_units, 0.1))
-	material.set_shader_parameter("tint", TINTA_GRAMA)
+	material.set_shader_parameter("forca_declive", 1.0)
+	material.set_shader_parameter("variacao_grande", 0.1)
+	# O Mirante tem 45,6 u: o pedrisco cobre o topo, acima de 38.
+	material.set_shader_parameter("altura_pedrisco", 38.0)
+	# A copa é pintada antes de o bloco de árvores sumir (LOD_MATA + a margem, medidos
+	# do centro de um bloco de 40 u): de LOD_MATA - 80 a LOD_MATA - 30, ela já cobre.
+	# Ergue 3 u do chão a partir de LOD_MATA - 60, quando a mata ainda esconde o degrau.
+	material.set_shader_parameter("copa_inicio", LOD_MATA - 80.0)
+	material.set_shader_parameter("copa_cheia", LOD_MATA - 30.0)
+	material.set_shader_parameter("copa_ergue", 3.0)
+	material.set_shader_parameter("ergue_inicio", LOD_MATA - 60.0)
+	material.set_shader_parameter("ergue_cheio", LOD_MATA - 10.0)
 	material.set_shader_parameter("mouth_sand_inner", _units(16.0, 4.0))
 	material.set_shader_parameter("mouth_sand_outer", _units(19.0, 4.75))
+	_ligar_mapa_de_solo(material)
 	return material
 
 
-## Mistura os materiais reais de estrada e mata ao longo do acostamento.
-## As bordas externas usam a mesma projeção do terreno; as internas coincidem
-## com o UV da estrada para nao criar uma linha de cor entre as malhas.
+## Põe o mapa de solo (se já montado) num material do chão.
+func _ligar_mapa_de_solo(material: ShaderMaterial) -> void:
+	if solo == null or not solo.pronto():
+		return
+	material.set_shader_parameter("solo_ativo", true)
+	material.set_shader_parameter("solo", solo.textura)
+	material.set_shader_parameter("solo_origem", solo.origem)
+	material.set_shader_parameter("solo_tamanho", Vector2(solo.tamanho))
+
+
+## O acostamento (estrada_acostamento.gdshader): a fita mais larga embaixo da rua que
+## desenha só a estrada, esfarelada para fora, sobre a terra batida do mapa de solo.
 func _road_shoulder_material(road_ratio: float, road_tint: Color) -> ShaderMaterial:
-	var shader := Shader.new()
-	shader.code = """
-shader_type spatial;
-render_mode cull_disabled;
-
-uniform sampler2D forest_texture : source_color, repeat_enable, filter_linear_mipmap_anisotropic;
-uniform sampler2D road_texture : source_color, repeat_enable, filter_linear_mipmap_anisotropic;
-uniform float forest_tile_size = 12.0;
-uniform float road_fraction = 0.65;
-uniform vec4 road_tint : source_color = vec4(1.0);
-uniform vec3 forest_tint : source_color = vec3(1.0);
-varying vec2 shoulder_uv;
-varying vec2 world_xz;
-
-void vertex() {
-	shoulder_uv = UV;
-	world_xz = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xz;
-}
-
-float hash21(vec2 point) {
-	return fract(sin(dot(point, vec2(127.1, 311.7))) * 43758.5453);
-}
-
-float value_noise(vec2 point) {
-	vec2 cell = floor(point);
-	vec2 fraction = fract(point);
-	fraction = fraction * fraction * (3.0 - 2.0 * fraction);
-	float a = hash21(cell);
-	float b = hash21(cell + vec2(1.0, 0.0));
-	float c = hash21(cell + vec2(0.0, 1.0));
-	float d = hash21(cell + vec2(1.0, 1.0));
-	return mix(mix(a, b, fraction.x), mix(c, d, fraction.x), fraction.y);
-}
-
-void fragment() {
-	float shoulder_span = max((1.0 - road_fraction) * 0.5, 0.001);
-	float local_u = shoulder_uv.x < 0.5
-		? shoulder_uv.x / shoulder_span
-		: (1.0 - shoulder_uv.x) / shoulder_span;
-	float road_u = (shoulder_uv.x - shoulder_span) / max(road_fraction, 0.001);
-	float road_v = shoulder_uv.y / max(road_fraction, 0.001);
-	vec3 forest = texture(forest_texture, world_xz / forest_tile_size).rgb * forest_tint;
-	vec3 road = texture(road_texture, vec2(road_u, road_v)).rgb * road_tint.rgb;
-	float organic_offset = (value_noise(world_xz * 0.28) - 0.5) * 0.28;
-	float blend_start = 0.39 + organic_offset;
-	float blend = smoothstep(blend_start, blend_start + 0.36, clamp(local_u, 0.0, 1.0));
-	ALBEDO = mix(forest, road, blend);
-	ROUGHNESS = 0.94;
-}
-"""
 	var material := ShaderMaterial.new()
-	material.shader = shader
-	material.set_shader_parameter("forest_texture", GRAMA_TERRA_MATA_TEXTURE)
-	material.set_shader_parameter("forest_tile_size", 12.0)
-	material.set_shader_parameter("forest_tint", TINTA_GRAMA)
+	material.shader = ESTRADA_ACOSTAMENTO
 	material.set_shader_parameter("road_texture", ESTRADA_OCRE_TEXTURE)
 	material.set_shader_parameter("road_fraction", clampf(road_ratio, 0.1, 0.9))
 	material.set_shader_parameter("road_tint", road_tint)
 	return material
+
+
+## MAPA DE SOLO, camadas fixas (mapa_de_solo.gd): terra nas ruas, na praça e nos
+## cruzamentos; areia ao longo da costa; lama nos rios; pasto na fazenda e, ralo, na
+## vila. A copa e as trilhas de pé vêm depois, em `pintar_vida`, quando as árvores e
+## as casas existem. Larguras em unidades (docs/mundo/SOLO_E_FRANJAS.md).
+func _montar_mapa_de_solo() -> void:
+	solo = MapaDeSolo.new()
+	solo.comecar(_points_bounds(_land))
+	for parte in _on_land(_village):
+		solo.poligono(MapaDeSolo.Camada.PASTO, parte, 0.35)
+	for feature in _features:
+		if feature.get("kind", "") != "area":
+			continue
+		var pontos := _to_points(feature.get("coordinates_m", []))
+		match String(feature.get("name", "")):
+			"Fazenda":
+				solo.poligono(MapaDeSolo.Camada.PASTO, pontos, 1.0)
+			"Praça":
+				solo.poligono(MapaDeSolo.Camada.TERRA, _ampliar_poligono(pontos, PRACA_AMPLIACAO), 1.0)
+	for road in _roads:
+		solo.faixa(MapaDeSolo.Camada.TERRA, road.points, float(road.width) * 0.5 + ACOSTAMENTO)
+	for junction in _road_junctions:
+		solo.faixa(MapaDeSolo.Camada.TERRA, PackedVector2Array([junction.point, junction.point + Vector2(0.01, 0.0)]), float(junction.width) * 0.96 + 1.0)
+	if _coast.size() >= 2:
+		solo.faixa(MapaDeSolo.Camada.AREIA, _coast, 9.0)
+	# Rio: a cauda (meio-tom) é a umidade da mata ciliar; o núcleo, lama de margem.
+	for river in _rivers:
+		solo.faixa(MapaDeSolo.Camada.LAMA, river.points, float(river.width) * 0.5 + 7.0, 0.45)
+	for mouth in _mouth_extensions:
+		solo.faixa(MapaDeSolo.Camada.LAMA, mouth.points, float(mouth.width) * 0.5 + 7.0, 0.45)
+	for river in _rivers:
+		solo.faixa(MapaDeSolo.Camada.LAMA, river.points, float(river.width) * 0.5 + 3.5, 1.0)
+	solo.publicar()
+
+
+## MAPA DE SOLO, o que nasce com o mundo: a copa de cada árvore (folhiço embaixo
+## dela, verde-mata ao longe) e as trilhas de pé da porta de cada casa até a rua.
+## `arvores` é a lista do world_builder.arvores() (espécie, pé e raio do tronco);
+## `portas`, os pontos de porta (Vector2). Chamado de novo, repinta as duas coisas.
+func pintar_vida(arvores: Array, portas: Array) -> void:
+	if solo == null:
+		return
+	solo.limpar(MapaDeSolo.Camada.COPA)
+	# O mangue cobre pela metade (a copa é rala e a lama aparece); o coqueiro não
+	# cobre: a orla continua de areia. Os de peso cheio por último, por cima.
+	for cheio in [false, true]:
+		for arvore: Dictionary in arvores:
+			var especie := String(arvore.get("especie", ""))
+			if especie.contains("coqueiro") or especie.contains("dende"):
+				continue
+			if (especie == "mangue") == cheio:
+				continue
+			var pe: Vector3 = arvore["pos"]
+			var lado := clampf(float(arvore.get("raio", 0.4)) * 7.0, 2.0, 5.0) * 1.7
+			solo.mancha(MapaDeSolo.Camada.COPA, Vector2(pe.x, pe.z), lado, 1.0 if cheio else 0.5)
+	for porta: Vector2 in portas:
+		var rua := _ponto_mais_perto_das_ruas(porta, 40.0)
+		if rua.is_finite():
+			solo.faixa(MapaDeSolo.Camada.TERRA, PackedVector2Array([porta, rua]), 1.0)
+	solo.publicar([MapaDeSolo.Camada.TERRA, MapaDeSolo.Camada.COPA])
+
+
+## Ponto do eixo de rua mais perto de `ponto`, até `alcance` u; INF se nenhum.
+func _ponto_mais_perto_das_ruas(ponto: Vector2, alcance: float) -> Vector2:
+	var melhor := Vector2.INF
+	var melhor_d := alcance * alcance
+	for road in _roads:
+		if not (road.bounds as Rect2).grow(alcance).has_point(ponto):
+			continue
+		var pontos: PackedVector2Array = road.points
+		for i in pontos.size() - 1:
+			var perto := Geometry2D.get_closest_point_to_segment(ponto, pontos[i], pontos[i + 1])
+			var d := ponto.distance_squared_to(perto)
+			if d < melhor_d:
+				melhor_d = d
+				melhor = perto
+	return melhor
 
 
 func _build_background() -> void:
@@ -993,6 +1032,11 @@ func _add_polygon(label: String, points: PackedVector2Array, y: float, color: Co
 	# Triangulate the full polygon, then subdivide triangles to follow terrain height.
 	# Cell-by-cell clipping had fragmented the visual ground on uneven areas.
 	await _add_draped_polygon(surface, points, y, pausavel)
+	# Normal suave: os vértices repetidos viram um só (index) e a normal de cada um
+	# é a média das faces em volta. Com uma normal por face, a luz facetava o morro
+	# e a camada do declive no shader desenhava os triângulos.
+	surface.index()
+	surface.generate_normals()
 	var mesh := surface.commit()
 	var visual := MeshInstance3D.new()
 	visual.name = label
@@ -1001,6 +1045,8 @@ func _add_polygon(label: String, points: PackedVector2Array, y: float, color: Co
 	if with_collision:
 		var body := StaticBody3D.new()
 		body.name = "Colisão da terra"
+		# O chão barra o corpo e a câmera (`camadas.gd`).
+		body.collision_layer = preload("res://scripts/prototipo_3d/camadas.gd").MUNDO_E_CAMERA
 		var collision := CollisionShape3D.new()
 		collision.name = "Forma"
 		var shape := mesh.create_trimesh_shape()
@@ -1045,7 +1091,7 @@ func _add_draped_triangle(surface: SurfaceTool, a: Vector2, b: Vector2, c: Vecto
 			_add_draped_triangle(surface, a, b, middle, offset_y, depth + 1)
 			_add_draped_triangle(surface, middle, b, c, offset_y, depth + 1)
 		return
-	_add_up_triangle(surface, Vector3(a.x, _altura_vertice(a) + offset_y, a.y), Vector3(b.x, _altura_vertice(b) + offset_y, b.y), Vector3(c.x, _altura_vertice(c) + offset_y, c.y))
+	_add_up_triangle(surface, Vector3(a.x, _altura_vertice(a) + offset_y, a.y), Vector3(b.x, _altura_vertice(b) + offset_y, b.y), Vector3(c.x, _altura_vertice(c) + offset_y, c.y), false)
 
 
 func _altura_vertice(ponto: Vector2) -> float:
@@ -1056,7 +1102,9 @@ func _altura_vertice(ponto: Vector2) -> float:
 	return altura
 
 
-func _add_up_triangle(surface: SurfaceTool, a: Vector3, b: Vector3, c: Vector3) -> void:
+## `com_normal` falso deixa a normal para o generate_normals de quem monta a malha
+## (o chão drapeado de _add_polygon, que quer normal suave).
+func _add_up_triangle(surface: SurfaceTool, a: Vector3, b: Vector3, c: Vector3, com_normal: bool = true) -> void:
 	if (b - a).cross(c - a).y < 0.0:
 		var swapped := b
 		b = c
@@ -1066,7 +1114,8 @@ func _add_up_triangle(surface: SurfaceTool, a: Vector3, b: Vector3, c: Vector3) 
 	# material sem descarte de faces via o verso, invertia a normal e o chão só
 	# recebia sol e lua por baixo.
 	for vertex in [a, c, b]:
-		surface.set_normal(normal)
+		if com_normal:
+			surface.set_normal(normal)
 		surface.set_uv(Vector2(vertex.x, vertex.z) / 10.0)
 		surface.add_vertex(vertex)
 
@@ -1300,42 +1349,9 @@ func _is_northern_river(river: Dictionary) -> bool:
 
 
 ## Remendo de terra batida em cada cruzamento: um disco drapeado no chão, acima das
-## duas ruas, com a textura da estrada projetada pelo mundo e a borda irregular.
+## duas ruas, com a terra batida sem direção (cruzamento.gdshader) e a borda
+## esfarelada sobre a terra do mapa de solo.
 func _build_road_junctions() -> void:
-	var shader := Shader.new()
-	shader.code = """
-shader_type spatial;
-render_mode cull_back;
-
-uniform sampler2D road_texture : source_color, repeat_enable, filter_linear_mipmap_anisotropic;
-uniform vec4 tint : source_color = vec4(1.0);
-uniform vec2 center;
-uniform float radius = 3.0;
-varying vec2 world_xz;
-
-float hash21(vec2 p) {
-	return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
-}
-
-float value_noise(vec2 p) {
-	vec2 c = floor(p);
-	vec2 f = fract(p);
-	f = f * f * (3.0 - 2.0 * f);
-	return mix(mix(hash21(c), hash21(c + vec2(1.0, 0.0)), f.x), mix(hash21(c + vec2(0.0, 1.0)), hash21(c + vec2(1.0, 1.0)), f.x), f.y);
-}
-
-void vertex() {
-	world_xz = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xz;
-}
-
-void fragment() {
-	ALBEDO = texture(road_texture, world_xz / 6.0).rgb * tint.rgb;
-	ROUGHNESS = 0.95;
-	float edge = distance(world_xz, center) / radius + (value_noise(world_xz * 0.9) - 0.5) * 0.35;
-	ALPHA = 1.0 - step(1.0, edge);
-	ALPHA_SCISSOR_THRESHOLD = 0.5;
-}
-"""
 	for junction in _road_junctions:
 		var center: Vector2 = junction.point
 		var radius: float = float(junction.width) * 0.8
@@ -1343,11 +1359,12 @@ void fragment() {
 		for i in 16:
 			circle.append(center + Vector2.RIGHT.rotated(TAU * i / 16.0) * radius * 1.2)
 		var material := ShaderMaterial.new()
-		material.shader = shader
-		material.set_shader_parameter("road_texture", ESTRADA_OCRE_TEXTURE)
-		material.set_shader_parameter("tint", Color("f7e7c6"))
+		material.shader = CRUZAMENTO_SHADER
+		material.set_shader_parameter("road_texture", CAMADAS_DO_CHAO["terra"][0])
+		material.set_shader_parameter("ladrilho", CAMADAS_DO_CHAO["terra"][1])
+		material.set_shader_parameter("tint", TINTA_CRUZAMENTO)
 		material.set_shader_parameter("center", center)
-		material.set_shader_parameter("radius", radius)
+		material.set_shader_parameter("radius", radius * 1.2)
 		_add_polygon("Cruzamento", circle, 0.07, ROAD_COLOR, false, material)
 
 
@@ -1576,6 +1593,8 @@ func _add_ribbon(label: String, points: PackedVector2Array, width: float, y: flo
 	if with_collision:
 		var body := StaticBody3D.new()
 		body.name = "Colisão " + label
+		# Rua, areia e orla: chão para o corpo e para a câmera (`camadas.gd`).
+		body.collision_layer = preload("res://scripts/prototipo_3d/camadas.gd").MUNDO_E_CAMERA
 		var collision := CollisionShape3D.new()
 		var shape := visual.mesh.create_trimesh_shape()
 		shape.backface_collision = true
@@ -1600,9 +1619,10 @@ func _add_beach() -> void:
 	var material := ShaderMaterial.new()
 	material.shader = AREIA_PRAIA
 	material.set_shader_parameter("textura_areia", AREIA_TEXTURE)
-	# Franja curta: a transparencia antiga revelava faixas e triangulos de
-	# grama ao longo da praia, sobretudo na largura variavel perto da foz.
-	material.set_shader_parameter("franja", 0.10)
+	# A franja tinha encolhido para 0,10 porque a transparência revelava grama ao
+	# longo da praia. Agora o chão embaixo é a areia de restinga do mapa de solo, e a
+	# praia volta a se desfazer devagar sobre ela.
+	material.set_shader_parameter("franja", 0.25)
 	# A faixa úmida acompanha a maré: o material recebe "mare_offset_m" do Mare.
 	var mare := get_node_or_null("/root/Mare")
 	if mare != null:
@@ -1786,6 +1806,12 @@ func _near_river(point: Vector2, clearance: float) -> bool:
 	return false
 
 
+## TRONCO DA MATA A MENOS DISTO DA BEIRA DE UMA RUA (u) é sorteado e não
+## plantado: eram 66 pés colados às ruas (33 na Rua do mirante), e a câmera, que
+## bate nos troncos, pulava ao passar por eles.
+const AFASTAMENTO_DA_RUA := 4.0
+
+
 func _build_forest(configuration: Dictionary) -> void:
 	if _forest.size() < 3 and _kml_forest.size() < 3:
 		return
@@ -1846,14 +1872,31 @@ func _build_forest(configuration: Dictionary) -> void:
 	for local in ["aroeira", "jenipapeiro", "piacava"]:
 		if _estilo_tripo and CatalogoAssets.tem_tripo(local):
 			lista.append(local)
+	# NO TRIPO, A MATA EM MANCHAS (`especies_da_mata.gd`): a classe do lugar e a
+	# mancha escolhem a espécie. O número da fila continua sendo tirado aqui, um
+	# por árvore como antes — é o que deixa idênticos, bit a bit, o tamanho e o
+	# giro de cada pé, o sub-bosque, o rio e a orla que vêm depois.
+	const EspeciesDaMata := preload("res://scripts/prototipo_3d/especies_da_mata.gd")
+	var classes: PackedStringArray = _classes_da_mata(positions) if _estilo_tripo else PackedStringArray()
 	for i in range(positions.size()):
-		var species: String = lista[rng.randi_range(0, lista.size() - 1)]
+		var sorteio := rng.randi_range(0, lista.size() - 1)
+		var species: String = lista[sorteio]
+		if _estilo_tripo:
+			var da_mancha := EspeciesDaMata.especie(positions[i], sorteio, lista.size(), classes[i])
+			# Sem o GLB, o procedural da espécie puxaria números da fila: fica a da fila.
+			if CatalogoAssets.tem_tripo(EspeciesDaMata.malha(da_mancha)):
+				species = da_mancha
+			elif species == "mata_larga":
+				# A gameleira é uma só (a de Iroko): na mata, a copa larga é o jatobá.
+				species = "jatoba"
 		if not by_species.has(species):
 			by_species[species] = []
 		by_species[species].append(positions[i])
 	for species in by_species.keys():
 		var group: Array = by_species[species]
-		var built: Dictionary = _malha_da_especie(species, rng)
+		# A versão leve do Tripo (mesma forma, 3 a 6 mil faces) quando existe; a
+		# espécie do tronco, que a ficha e o corte leem, continua a de sempre.
+		var built: Dictionary = _malha_da_especie(EspeciesDaMata.malha(species) if _estilo_tripo else species, rng)
 		var base: Transform3D = built.base
 		var transforms: Array[Transform3D] = []
 		# TODA ÁRVORE DA MATA SE CORTA, e por isso cada uma guarda a instância
@@ -1870,6 +1913,10 @@ func _build_forest(configuration: Dictionary) -> void:
 				continue
 			var ground := ground_height_at(Vector3(point.x, 0, point.y))
 			var transformacao := Transform3D(Basis.from_euler(Vector3(0, yaw, 0)).scaled(Vector3.ONE * scale), Vector3(point.x, ground - ARVORE_AFUNDADA, point.y)) * base
+			# Beira de rua: também sorteia e não planta (como a clareira), medindo
+			# o ponto e o pé do tronco que se vê, que na aroeira fica a 1,6 u dele.
+			if _perto_da_rua_para_plantar(point, built.mesh, transformacao, float(built.tronco) * scale):
+				continue
 			# `base` centraliza a malha do GLB e desloca a origem local. O ponto
 			# de plantio continua sendo `point`; usar transformacao.origin aqui
 			# desloca o colisor para fora do tronco visual.
@@ -1883,6 +1930,83 @@ func _build_forest(configuration: Dictionary) -> void:
 	_build_sub_bosque(positions, rng)
 	_build_margens_do_rio(rng)
 	_build_coast_palms(rng)
+
+
+## Distância do ponto à beira da rua mais perto (u), medida só nas ruas da grade
+## de rotas (não nos rios); INF além de FOLGA_MAXIMA_ROTAS.
+func _distancia_da_rua(point: Vector2) -> float:
+	_garantir_grade_rotas()
+	# A grade numera primeiro os segmentos das ruas, depois os dos rios.
+	var segmentos_de_rua := 0
+	for road in _roads:
+		segmentos_de_rua += maxi((road.points as PackedVector2Array).size() - 1, 0)
+	var lista: Variant = _grade_rotas.get(Vector2i(floori(point.x / CELULA_ROTAS), floori(point.y / CELULA_ROTAS)))
+	if lista == null:
+		return INF
+	var menor := INF
+	for id: int in lista:
+		if id >= segmentos_de_rua:
+			continue
+		var inicio := _rotas_a[id]
+		var segment := _rotas_b[id] - inicio
+		if segment.length_squared() < 0.000001:
+			continue
+		var t := clampf((point - inicio).dot(segment) / segment.length_squared(), 0.0, 1.0)
+		menor = minf(menor, point.distance_to(inicio + segment * t) - _rotas_meia[id])
+	return menor if menor < FOLGA_MAXIMA_ROTAS else INF
+
+
+## O tronco plantado em `point` fica a menos de AFASTAMENTO_DA_RUA da beira de
+## uma rua, pelo ponto ou pelo pé medido na malha (`CatalogoAssets.tronco_da_malha`,
+## o mesmo de `base_do_tronco`)?
+func _perto_da_rua_para_plantar(point: Vector2, malha: Mesh, transformacao: Transform3D, raio: float) -> bool:
+	if _distancia_da_rua(point) < AFASTAMENTO_DA_RUA:
+		return true
+	if not _estilo_tripo:
+		return false
+	var local := CatalogoAssets.tronco_da_malha(malha, transformacao)
+	if not local.is_finite():
+		return false
+	var pe := transformacao * local
+	var pe_2d := Vector2(pe.x, pe.z)
+	# Desvio maior que a copa é medida errada (malha sem tronco), como em `base_do_tronco`.
+	if pe_2d.distance_to(point) > maxf(raio * 6.0, 2.0):
+		return false
+	return _distancia_da_rua(pe_2d) < AFASTAMENTO_DA_RUA
+
+
+## A classe de cada ponto da mata (`especies_da_mata.gd`): Mata do mapa,
+## restinga, beira de rio, borda de rua ou da vila, topo, encosta ou baixada.
+func _classes_da_mata(positions: Array[Vector2]) -> PackedStringArray:
+	const EspeciesDaMata := preload("res://scripts/prototipo_3d/especies_da_mata.gd")
+	# A costa primeiro, toda de uma vez: a grade dela se refaz quando a margem
+	# pedida muda, e o chão (ground_height_at) pede outra.
+	var costa := PackedFloat64Array()
+	costa.resize(positions.size())
+	var margem_costa := EspeciesDaMata.RESTINGA_ATE_A_COSTA
+	for i in range(positions.size()):
+		costa[i] = _distancia_costa(positions[i], margem_costa) if _costa_limites.grow(margem_costa).has_point(positions[i]) else INF
+	var borda := EspeciesDaMata.BORDA_ATE_A_RUA
+	var classes := PackedStringArray()
+	classes.resize(positions.size())
+	for i in range(positions.size()):
+		var ponto := positions[i]
+		var rio := INF
+		for river in _rivers:
+			if (river.bounds as Rect2).grow(EspeciesDaMata.CILIAR_ATE_O_RIO).has_point(ponto):
+				rio = minf(rio, _distance_to_line(ponto, river.points) - float(river.width) * 0.5)
+		var perto_da_vila := false
+		if _village.size() >= 3:
+			for desvio in [Vector2(borda, 0), Vector2(-borda, 0), Vector2(0, borda), Vector2(0, -borda)]:
+				if Geometry2D.is_point_in_polygon(ponto + desvio, _village):
+					perto_da_vila = true
+					break
+		classes[i] = EspeciesDaMata.classe({
+			"no_mapa": _kml_forest.size() >= 3 and Geometry2D.is_point_in_polygon(ponto, _kml_forest),
+			"costa": costa[i], "rio": rio, "rua": _distancia_da_rua(ponto), "vila": perto_da_vila,
+			"altura": ground_height_at(Vector3(ponto.x, 0.0, ponto.y)),
+		})
+	return classes
 
 
 ## Sub-bosque da Mata Atlântica (helicônias, bromélias, samambaias) espalhado entre as
@@ -2037,6 +2161,19 @@ func _multimesh_em_blocos(nome: String, mesh: Mesh, transforms: Array[Transform3
 			visual.visibility_range_end = distancia_lod
 			visual.visibility_range_end_margin = LOD_MARGEM
 		add_child(visual)
+		# A COPA DISTANTE entra onde a árvore sai (`copas_distantes.gd`): só nos
+		# blocos de árvore que têm tronco registrado e LOD (mata, rio, restinga e
+		# coqueiros da orla). Não passa por esta função de novo: o extrator do
+		# sobrevoo só grava o que ela recebe.
+		var camadas: Array[Dictionary] = []
+		var especie_da_copa := CopasDistantes.especie_do_bloco(nome)
+		if distancia_lod > 0.0 and especie_da_copa != "" and not registros.is_empty():
+			var daqui: Array[Transform3D] = []
+			for indice in lista:
+				daqui.append(transforms[int(indice)])
+			camadas = CopasDistantes.montar("%s %d,%d" % [nome, chave.x, chave.y], especie_da_copa, mesh, daqui, distancia_lod, LOD_MARGEM)
+			for camada in camadas:
+				add_child(camada["visual"])
 		for i in range(lista.size()):
 			var indice: int = lista[i]
 			if indice >= registros.size():
@@ -2044,9 +2181,20 @@ func _multimesh_em_blocos(nome: String, mesh: Mesh, transforms: Array[Transform3
 			var tronco: Dictionary = _tree_trunks[registros[indice]]
 			tronco["visual"] = visual
 			tronco["instancia"] = i
+			if not camadas.is_empty():
+				var de_longe: Array[Dictionary] = []
+				for camada in camadas:
+					de_longe.append({"visual": camada["visual"], "forma": (camada["formas"] as Array[Transform3D])[i]})
+				tronco["longe"] = de_longe
 			_tree_trunks[registros[indice]] = tronco
 		if distancia_lod > 0.0:
-			_blocos_vegetacao_lod.append({"visual": visual, "distancia": distancia_lod})
+			var bloco := {"visual": visual, "distancia": distancia_lod}
+			if not camadas.is_empty():
+				var visuais: Array[MultiMeshInstance3D] = []
+				for camada in camadas:
+					visuais.append(camada["visual"])
+				bloco["longe"] = visuais
+			_blocos_vegetacao_lod.append(bloco)
 
 
 ## Coqueiros ao longo da orla, do lado da terra, inclinados para o mar.
@@ -2264,6 +2412,10 @@ func _indice_do_tronco(posicao: Vector3, cortado: bool) -> int:
 ## tronco guarda qual é.
 func _mostrar_instancia(tronco: Dictionary, transformacao: Transform3D) -> void:
 	(tronco["visual"] as MultiMeshInstance3D).multimesh.set_instance_transform(int(tronco["instancia"]), transformacao)
+	# O que se vê dela de longe (modelo e copa) acompanha a árvore: some com ela,
+	# encolhe e cresce com ela.
+	for camada: Dictionary in tronco.get("longe", []):
+		(camada["visual"] as MultiMeshInstance3D).multimesh.set_instance_transform(int(tronco["instancia"]), transformacao * (camada["forma"] as Transform3D))
 	tronco["transformacao"] = transformacao
 
 
@@ -2296,6 +2448,9 @@ func _atualizar_lod_da_camera() -> void:
 	for bloco in _blocos_vegetacao_lod:
 		var visual := bloco.visual as MultiMeshInstance3D
 		visual.visibility_range_end = 0.0 if mapa else float(bloco.distancia)
+		# O mapa alto mostra as árvores de verdade: a copa de longe se esconde.
+		for de_longe: MultiMeshInstance3D in bloco.get("longe", []):
+			de_longe.visible = not mapa
 
 
 func _refresh_tree_collisions() -> void:
@@ -2305,15 +2460,7 @@ func _refresh_tree_collisions() -> void:
 		return
 	_ensure_tree_collision_pool()
 	var player_local := to_local(player.global_position)
-	var player_point := Vector2(player_local.x, player_local.z)
-	var nearby: Array[Dictionary] = []
-	for trunk in _tree_trunks:
-		if bool(trunk.get("cortado", false)):
-			continue
-		var distance_squared: float = player_point.distance_squared_to(trunk.point)
-		if distance_squared <= TREE_COLLISION_RADIUS * TREE_COLLISION_RADIUS:
-			nearby.append({"point": trunk.point, "ground": trunk.ground, "height": trunk.height, "radius": trunk.get("radius", 0.36), "especie": trunk.get("especie", ""), "base_tronco": trunk.get("base_tronco", Vector3(trunk.point.x, float(trunk.ground), trunk.point.y)), "alto_tronco": trunk.get("alto_tronco", Vector3(trunk.point.x, float(trunk.ground) + 1.0, trunk.point.y)), "raio_base": trunk.get("raio_base", 0.0), "distance_squared": distance_squared})
-	nearby.sort_custom(Callable(self, "_collision_nearer"))
+	var nearby := troncos_para_o_conjunto(Vector2(player_local.x, player_local.z))
 	for i in range(_tree_collision_pool.size()):
 		var slot := _tree_collision_pool[i]
 		var collider: CollisionShape3D = slot.collision
@@ -2327,8 +2474,8 @@ func _refresh_tree_collisions() -> void:
 		var shape: CylinderShape3D = slot.shape
 		shape.height = tree.height
 		var raio := float(tree.get("radius", 0.36))
-		# Os coqueiros ficam muito juntos na orla; prioriza seus troncos no pool
-		# e dá uma pequena margem ao cilindro para a colisão acompanhar a malha.
+		# Os coqueiros ficam muito juntos na orla: uma pequena margem ao
+		# cilindro deixa a colisão acompanhar a malha.
 		shape.radius = maxf(raio * 1.25, float(tree.get("raio_base", 0.0)) * 0.9) if tree.get("especie", "") == "coqueiro" else raio
 		var base_tronco: Vector3 = tree["base_tronco"]
 		var alto_tronco: Vector3 = tree["alto_tronco"]
@@ -2342,12 +2489,75 @@ func _refresh_tree_collisions() -> void:
 			slot.active = true
 
 
+## OS TRONCOS QUE GANHAM CORPO com o jogador em `ponto` (no referencial da
+## região): os de pé num raio de `TREE_COLLISION_RADIUS`, do mais perto ao mais
+## longe, até as vagas do conjunto. É a escolha do jogo, e o portão
+## `colisoes_do_vale.gd` a usa para cobrar que nenhum tronco ao alcance fique
+## sem corpo.
+##
+## A DISTÂNCIA É ATÉ O PÉ DO TRONCO (`base_do_tronco`), não até o ponto de
+## plantio, e é ela que manda. O coqueiro passava na frente de qualquer outra
+## árvore, a qualquer distância: na foz, um mangue a um metro perdia a vaga
+## para um coqueiro a vinte e sete. Agora ele só desempata.
+func troncos_para_o_conjunto(ponto: Vector2) -> Array[Dictionary]:
+	_garantir_grade_troncos()
+	var nearby: Array[Dictionary] = []
+	var celulas := int(ceil(TREE_COLLISION_RADIUS / CELULA_TRONCOS)) + 1
+	var celula := Vector2i(floori(ponto.x / CELULA_TRONCOS), floori(ponto.y / CELULA_TRONCOS))
+	for dx in range(-celulas, celulas + 1):
+		for dy in range(-celulas, celulas + 1):
+			for i: int in _grade_troncos.get(celula + Vector2i(dx, dy), []):
+				var trunk: Dictionary = _tree_trunks[i]
+				if bool(trunk.get("cortado", false)):
+					continue
+				if ponto.distance_squared_to(trunk.point) > TREE_COLLISION_RADIUS * TREE_COLLISION_RADIUS:
+					continue
+				var base := base_do_tronco(trunk)
+				nearby.append({"point": trunk.point, "ground": trunk.ground, "height": trunk.height, "radius": trunk.get("radius", 0.36), "especie": trunk.get("especie", ""), "base_tronco": base, "alto_tronco": trunk.get("alto_tronco", base + Vector3.UP), "raio_base": trunk.get("raio_base", 0.0), "distance_squared": ponto.distance_squared_to(Vector2(base.x, base.z))})
+	nearby.sort_custom(Callable(self, "_collision_nearer"))
+	if nearby.size() > TREE_COLLISION_POOL_SIZE:
+		nearby.resize(TREE_COLLISION_POOL_SIZE)
+	return nearby
+
+
+## O PÉ DO TRONCO QUE SE VÊ, no referencial da região. O coqueiro da orla já
+## nasce com ele (`base_tronco`, da malha inclinada). As outras árvores eram
+## postas no ponto de plantio, que é o MEIO DA CAIXA do GLB — o meio da copa: a
+## mata_alta e a mata_larga, oito em cada dez árvores da mata, tinham o corpo a
+## quase um metro da madeira, e a aroeira a 1,35. O jogador atravessava o tronco
+## e batia no ar ao lado. Agora o pé é medido na malha da própria instância
+## (`CatalogoAssets.tronco_da_malha`, uma vez por malha) e guardado no tronco.
+## O plantio, o clique e o corte continuam no ponto de plantio.
+func base_do_tronco(trunk: Dictionary) -> Vector3:
+	if trunk.has("base_tronco"):
+		return trunk["base_tronco"]
+	var ponto: Vector2 = trunk["point"]
+	var pe := Vector3(ponto.x, float(trunk["ground"]), ponto.y)
+	if not _estilo_tripo or not trunk.has("transformacao") or bool(trunk.get("cortado", false)):
+		return pe
+	var visual := trunk.get("visual") as MultiMeshInstance3D
+	if visual == null or visual.multimesh == null:
+		return pe
+	var local := CatalogoAssets.tronco_da_malha(visual.multimesh.mesh, trunk["transformacao"])
+	if not local.is_finite():
+		return pe
+	var base: Vector3 = (trunk["transformacao"] as Transform3D) * local
+	base.y = pe.y
+	# Desvio maior que a copa é medida errada (malha sem tronco): fica o plantio.
+	if Vector2(base.x - pe.x, base.z - pe.z).length() > maxf(float(trunk.get("radius", 0.36)) * 6.0, 2.0):
+		return pe
+	trunk["base_tronco"] = base
+	trunk["alto_tronco"] = base + Vector3.UP
+	return base
+
+
 func _collision_nearer(a: Dictionary, b: Dictionary) -> bool:
-	var a_coqueiro: bool = a.get("especie", "") == "coqueiro"
-	var b_coqueiro: bool = b.get("especie", "") == "coqueiro"
-	if a_coqueiro != b_coqueiro:
-		return a_coqueiro
-	return float(a.distance_squared) < float(b.distance_squared)
+	var da := float(a.distance_squared)
+	var db := float(b.distance_squared)
+	if not is_equal_approx(da, db):
+		return da < db
+	# Só no empate o coqueiro vem antes: é ele que fica colado aos outros na orla.
+	return a.get("especie", "") == "coqueiro" and b.get("especie", "") != "coqueiro"
 
 
 func _ensure_tree_collision_pool() -> void:

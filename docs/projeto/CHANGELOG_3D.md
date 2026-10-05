@@ -2,6 +2,106 @@
 
 ## Em desenvolvimento — 05/10/2026
 
+- O vale ganha céu: um shader próprio (`ceu_vale.gdshader`, `CeuVale`) com
+  azul-cobalto de dia, sol com disco, lua, estrelas e Via Láctea à noite (não
+  há luz elétrica em 1887), cúmulos de tempo bom que andam devagar e cirros
+  sutis; a outra margem da baía aparece como morros na bruma. A névoa passa a
+  ter perspectiva aérea — o mar e a serra se dissolvem no próprio horizonte, e a
+  serra não fica mais "pelada" quando a mata some ao longe —, com neblina de
+  baixada na alvorada. A terra de fora do quadro sobe com o mesmo exagero do
+  relevo: o degrau na borda do mundo caiu de 11 u para 0,3 u. Portão novo:
+  `ceu_horizonte`.
+- O chão deixa de ser uma textura só. Oito camadas — grama baixa, capim seco,
+  folhiço, terra batida, barro vermelho, pedrisco, areia de restinga e lama de
+  mangue, com nove texturas novas da OpenAI (gpt-image-2, `tools/openai/`) —
+  se misturam por um mapa de solo montado com o vale (`mapa_de_solo.gd`), pelo
+  declive e pela altura de cada textura (`terreno.gdshader`). A rua se desfaz
+  num acostamento esfarelado, o cruzamento é terra sem direção, a praça tem
+  borda ruidosa, a praia e os rios se desfazem em restinga e lama, o terreiro é
+  varrido em oval, a lavoura é terra arada e cada casa tem trilha de pé até a
+  rua. Os passos leem o chão novo. Portão novo: `mapa_de_solo`
+  (`docs/mundo/SOLO_E_FRANJAS.md`).
+- A mata vira manchas de uma espécie só, por lugar — encosta, topo, baixada,
+  beira de rio, borda e restinga —, com seis espécies novas da mata atlântica
+  (jatobá, sapucaia, jequitibá, cedro, angico, massaranduba) e as versões
+  leves das árvores pesadas (de 12–16 mil faces para cerca de 5 mil); a pureza
+  da vizinhança foi de 0,19 a 0,67. A gameleira volta a ser única, com modelo
+  próprio. Nenhum tronco fica a menos de 4 u da rua, e o caminho do píer à
+  gameleira não atravessa mais o coqueiro em (−36, 112): a malha de navegação
+  abria o buraco do tronco sem a folga do corpo e o simplificava numa aresta.
+  Portão novo: `mata_em_manchas`; `navegacao` amostra a cada 0,25 u.
+- O arraial deixa de ser vazio (78% de chão sem planta a 9 u, agora 10%): uma
+  cena de zonas editável (`paisagismo_vale.tscn`, com receitas em
+  `data/paisagismo/`) planta bananal, sítio das mangueiras, pomares de quintal
+  de uma fruta cada, roças de mandioca, milho e fumo em fileiras, dendezal da
+  foz, cajual do outeiro, piaçabal de restinga e a mata ciliar dos rios (ingá,
+  jenipapo, bambu, helicônia, samambaia, taboa), com cerca de varas e porteira
+  nas roças, estaleiro de fumo, carro de boi na estrada da roça, monjolo na
+  beira do rio e barracas de feira na praça. Mover uma casa só tira os pés que
+  ela cobre. Portão novo: `paisagismo`.
+- A serra fica vestida ao longe: onde cada bloco de árvores some (280 u), entra
+  a copa de longe da espécie — o modelo de longe do Tripo nas palmeiras até
+  600 u e uma copa de 64 triângulos na cor da espécie até 1.200 u
+  (`copas_distantes.gd`), por +5 a 10% de triângulos. `lod_vegetacao` cobre as
+  copas.
+- A câmera não salta mais. O braço só bate no que é parede de verdade —
+  terreno, fundo do mar, casas, igreja, pedras — numa camada própria
+  (`camadas.gd`), e entra rápido e sai devagar. Passar ao lado do cruzeiro,
+  girar junto da mata, andar no convés do saveiro e cruzar com um morador
+  deixam o braço em 8 m, sem salto; antes, no cruzeiro, ele caía de 8 para 1 m
+  num quadro. As colisões ficam onde está o desenho: o cruzeiro deixa de ser
+  uma parede invisível de 2,6 m, as casas medem a pegada na altura do corpo e
+  não o beiral, o poço, o lampião e o mastro vão para o eixo de verdade, os
+  troncos da mata para o tronco desenhado (a aroeira ficava 1,35 u fora) e o
+  saveiro tira a vela e o mastro do casco. Portões novos: `colisoes_do_vale` e
+  `colisoes_do_vale_procedural`.
+- Os itens de mão cabem na mão. A enxada, o balde, a vara, a picareta e a
+  mandioca foram refeitos no Tripo — a enxada tinha a lâmina do tamanho do
+  cabo e a "mandioca" era um chapéu —, e todo cabo é segurado no molde do
+  machado, com pose por estado. Arar leva a lâmina ao leito, regar tomba o
+  balde, pescar ergue a vara com a linha até a bóia e dá um tranco quando o
+  peixe fisga; nadando, o item some. Machado e facão ficam como estavam.
+  Portão novo: `itens_na_mao`.
+- Catorze moradores novos, sem fala e com jornada: o padre Anselmo, o
+  sacristão Zacarias e Sá Joaquina, o vendeiro Seu Nicolau, o guarda Aristides
+  (sem arma, de candeeiro à noite), o pescador Seu Jerônimo, a marisqueira Dona
+  Rosa, a lavadeira Sá Rita, a rendeira Dona Estefânia, a quituteira Dona
+  Ambrósia, o carpinteiro Seu Epifânio, as crianças Tonico e Mariinha e o
+  saveirista Seu Ladislau. Cada um tem casa, ofício nos três idiomas e agenda
+  por hora: sai antes para chegar na hora, trabalha no posto com o clipe do
+  ofício e o que leva na mão ou na cabeça (vassoura, trouxa, tabuleiro, vara,
+  candeeiro), e recolhe à noite. Oito casas novas nos lotes do oeste da praça,
+  a casa paroquial, e um varal em cada uma das 19 casas, no quintal e fora do
+  caminho da porta. Portão novo: `rotina_dos_moradores`.
+- O vale ganha bichos de casa e da mata (`bichos_de_casa.gd`,
+  `data/bichos_de_casa.json`): cães caramelo no Pedro, no Tonho e no Benedito,
+  que seguem o dono de dia e deitam na porta à noite; gatos na Venda, no
+  Restaurante e em mais casas, que fogem do cão; galinhas, galo e pintos em 8
+  quintais, que sobem na pitangueira ao entardecer; galinha-d'angola na Zefa,
+  patos no riacho, porcos no chiqueiro do Benedito, cabras e bode no terreiro
+  dele, o jumento de cangalha na Venda, e o pavão com três pavoas no adro, que
+  abre o leque quando o jogador para perto. As onças, pintada e preta, moram
+  cada uma no seu penedo com lapa, longe das casas: veem o jogador pelo cone e
+  pela linha livre, farejam pelas costas, avisam uma vez e atacam, e a coleira
+  do território as manda de volta; a preta só anda do entardecer à madrugada,
+  de olhos acesos. Portões novos: `onca`, `bichos_de_casa` e
+  `bichos_de_casa_procedural`; `luta` conta por espécie.
+- O mar ganha cardumes (`fauna_vale.gd`, `cardume.gd` em MultiMesh com nado
+  por shader): tainhas e uma bola de sardinhas em cada canoa, xaréus que
+  atacam as bolas, sargentinhos e budiões nas pedras, piabas, acarás e traíras
+  nos poços do rio, cavalas e sororocas no mar de fora e bandos de raias; o
+  peixe foge de quem nada e de quem caça, e fica sempre acima do leito. O
+  tubarão vira o cabeça-chata do Tripo e caça cavalas e sororocas a cada 45 a
+  90 s, sem deixar de caçar quem nada no fundo. Portões novos: `fauna_do_mar` e
+  `fauna_do_mar_procedural`.
+- Os modelos desta noite vieram do Tripo Studio pela ponte do Playwright MCP
+  (`tools/tripo/lote_producao.js`): 14 moradores com rig Mixamo e até 13
+  clipes, 31 bichos (os quadrúpedes com o rig do Studio), 16 peixes e raias e
+  o tubarão, 25 plantas e árvores, 12 casas e construções, 16 adereços de
+  quintal e roça, 9 itens e 32 versões leves e de longe das árvores que já
+  existiam — 14.035 créditos, no extrato da carteira. Registro em `ORIGEM.md` de cada pasta, em
+  `assets/CREDITOS.md` e nos lotes `tools/tripo/lote_2026-10-05_*.json`.
+
 - O jogo começa em cima do saveiro do mestre Quirino, atracado no píer: um
   modelo novo do Tripo (lote de 05/10, `aderecos/saveiro_tripo.glb`), que
   assenta carregado e desce ao tabuado por uma prancha. O barco fica o primeiro

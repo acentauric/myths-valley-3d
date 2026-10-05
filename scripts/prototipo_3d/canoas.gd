@@ -139,7 +139,13 @@ func _criar(tripo: bool) -> Node3D:
 ## da borda que se vê — a altura era 40% do modelo inteiro, e a proa alta conta
 ## no modelo —, e a proa e a popa não tinham colisão nenhuma. O pulo passava
 ## por cima do costado de colisão e através do costado desenhado.
-static func _colisao_do_casco(visual: Node3D, raiz: Node3D) -> AnimatableBody3D:
+##
+## `teto` (altura no referencial de `raiz`): só entram os triângulos inteiros
+## abaixo dele. O saveiro tem mastro, retranca e vela acima da borda, e a malha
+## inteira fazia da vela uma parede a 1,76 m do convés — o jogador batia nela
+## andando para a popa. Quem tem teto põe o mastro à parte
+## (`SaveiroVale._montar_o_barco`).
+static func _colisao_do_casco(visual: Node3D, raiz: Node3D, teto: float = INF) -> AnimatableBody3D:
 	var corpo := AnimatableBody3D.new()
 	corpo.name = "Colisão da canoa"
 	var malhas: Array = visual.find_children("*", "MeshInstance3D", true, false)
@@ -149,7 +155,7 @@ static func _colisao_do_casco(visual: Node3D, raiz: Node3D) -> AnimatableBody3D:
 		var malha := no as MeshInstance3D
 		if malha.mesh == null:
 			continue
-		var forma := malha.mesh.create_trimesh_shape()
+		var forma: ConcavePolygonShape3D = malha.mesh.create_trimesh_shape() if is_inf(teto) else _abaixo_do_teto(malha, raiz, teto)
 		if forma == null:
 			continue
 		# Os dois lados: o casco do Tripo e o de tábuas são cascas, e de dentro
@@ -160,6 +166,25 @@ static func _colisao_do_casco(visual: Node3D, raiz: Node3D) -> AnimatableBody3D:
 		colisao.transform = _relativo(malha, raiz)
 		corpo.add_child(colisao)
 	return corpo
+
+
+## A malha de colisão de `malha` só com os triângulos que ficam inteiros abaixo
+## de `teto` (no referencial de `raiz`), ou null quando não sobra nenhum.
+static func _abaixo_do_teto(malha: MeshInstance3D, raiz: Node3D, teto: float) -> ConcavePolygonShape3D:
+	var para_a_raiz := _relativo(malha, raiz)
+	var faces := malha.mesh.get_faces()
+	var ficam := PackedVector3Array()
+	for i in range(0, faces.size() - 2, 3):
+		if (para_a_raiz * faces[i]).y > teto or (para_a_raiz * faces[i + 1]).y > teto or (para_a_raiz * faces[i + 2]).y > teto:
+			continue
+		ficam.append(faces[i])
+		ficam.append(faces[i + 1])
+		ficam.append(faces[i + 2])
+	if ficam.is_empty():
+		return null
+	var forma := ConcavePolygonShape3D.new()
+	forma.set_faces(ficam)
+	return forma
 
 
 ## A transformação de `no` vista de `ate`, pela cadeia de pais: a canoa ainda

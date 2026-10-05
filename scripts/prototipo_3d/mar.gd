@@ -13,6 +13,8 @@ const SUBDIVISOES_DISTANTE := 96
 ## Camada física só da câmera: a superfície da água barra o braço da câmera (ela não
 ## mergulha) e não é vista pelo jogador, pelos moradores nem pelos cliques.
 const CAMADA_CAMERA_AGUA := 1 << 13
+## A camada de tudo o que tem corpo (`camadas.gd`, `MUNDO`).
+const CAMADA_MUNDO := 1
 ## Folga entre a água e o ponto mais baixo que a câmera alcança.
 const FOLGA_CAMERA := 0.2
 
@@ -22,6 +24,9 @@ static var _imagem: Image
 static var _dados: Dictionary = {}
 static var _grade := Rect2()
 static var _metros_por_unidade := 4.0
+## Exagero do relevo que a terra além do quadro recebe (o da região, pai.get_vertical_exaggeration).
+static var _exageracao := 1.0
+static var _nivel := 0.0
 
 
 ## Monta água, fundo, colisão do fundo e paredes do quadro como filhos de `pai`.
@@ -40,6 +45,9 @@ static func montar(pai: Node3D, dados: Dictionary, nivel: float, metros_por_unid
 	_dados = dados
 	_grade = grade
 	_metros_por_unidade = metros_por_unidade
+	_nivel = nivel
+	# A terra de fora sobe com o exagero do relevo do jogo: sem ele, degrau na borda.
+	_exageracao = float(pai.call("get_vertical_exaggeration")) if pai.has_method("get_vertical_exaggeration") else 1.0
 	var leito := ShaderMaterial.new()
 	leito.shader = LEITO
 	leito.set_shader_parameter("elevacao", ImageTexture.create_from_image(imagem))
@@ -50,6 +58,7 @@ static func montar(pai: Node3D, dados: Dictionary, nivel: float, metros_por_unid
 	leito.set_shader_parameter("elevacao_min_m", float(dados["elevation_min_m"]))
 	leito.set_shader_parameter("elevacao_max_m", float(dados["elevation_max_m"]))
 	leito.set_shader_parameter("metros_por_unidade", metros_por_unidade)
+	leito.set_shader_parameter("exageracao_vertical", _exageracao)
 	var colunas := int(imagem.get_width() / CELULAS_POR_VERTICE)
 	var linhas := int(imagem.get_height() / CELULAS_POR_VERTICE)
 	_plano(pai, "Fundo do mar", grade, nivel, colunas, linhas, leito)
@@ -126,6 +135,27 @@ static func lamina_em(ponto: Vector2) -> float:
 	return -lerpf(float(_dados["elevation_min_m"]), float(_dados["elevation_max_m"]), t)
 
 
+## Altura (u) do fundo desenhado num ponto XZ, como leito_mar.gdshader a calcula:
+## textura bilinear e o exagero do relevo só na terra. NAN antes da montagem ou fora da grade.
+static func altura_do_fundo(ponto: Vector2) -> float:
+	if _imagem == null or not _grade.has_point(ponto):
+		return NAN
+	var tamanho := Vector2(_imagem.get_size())
+	var p := (ponto - _grade.position) / _grade.size * tamanho - Vector2(0.5, 0.5)
+	var a := Vector2i(p.floor())
+	var f := p - Vector2(a)
+	var limite := _imagem.get_size() - Vector2i.ONE
+	var t00 := _imagem.get_pixelv(a.clamp(Vector2i.ZERO, limite)).r
+	var t10 := _imagem.get_pixelv((a + Vector2i(1, 0)).clamp(Vector2i.ZERO, limite)).r
+	var t01 := _imagem.get_pixelv((a + Vector2i(0, 1)).clamp(Vector2i.ZERO, limite)).r
+	var t11 := _imagem.get_pixelv((a + Vector2i(1, 1)).clamp(Vector2i.ZERO, limite)).r
+	var t := lerpf(lerpf(t00, t10, f.x), lerpf(t01, t11, f.x), f.y)
+	var lamina := -lerpf(float(_dados["elevation_min_m"]), float(_dados["elevation_max_m"]), t)
+	if lamina < 0.0:
+		lamina *= _exageracao
+	return _nivel - lamina / _metros_por_unidade
+
+
 ## Elevação acima da preamar, normalizada entre elevation_min_m e elevation_max_m
 ## (float16 cru, gerado por gerar_batimetria.py), como imagem de um canal.
 static func elevacao(dados: Dictionary) -> Image:
@@ -155,6 +185,8 @@ static func _colisao_do_fundo(pai: Node3D, imagem: Image, dados: Dictionary, gra
 		float(dados["elevation_max_m"]) / metros_por_unidade / celula)
 	var corpo := StaticBody3D.new()
 	corpo.name = "Chão do mar"
+	# Chão para o corpo e para a câmera (`camadas.gd`).
+	corpo.collision_layer = CAMADA_MUNDO | CAMADA_CAMERA_AGUA
 	var colisao := CollisionShape3D.new()
 	colisao.shape = forma
 	colisao.scale = Vector3.ONE * celula
@@ -190,6 +222,8 @@ static func _acompanha_mare(no: Node3D, base_y: float) -> void:
 static func _paredes(pai: Node3D, quadro: Rect2) -> void:
 	var corpo := StaticBody3D.new()
 	corpo.name = "Borda do quadro"
+	# A câmera também não sai do quadro (`camadas.gd`).
+	corpo.collision_layer = CAMADA_MUNDO | CAMADA_CAMERA_AGUA
 	pai.add_child(corpo)
 	for lado: Vector2 in [Vector2(-1, 0), Vector2(1, 0), Vector2(0, -1), Vector2(0, 1)]:
 		var forma := WorldBoundaryShape3D.new()

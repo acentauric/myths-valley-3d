@@ -12,6 +12,7 @@ signal folego_mudou(valor: float)
 const ClickNavigation = preload("res://scripts/prototipo_3d/click_navigation.gd")
 const TeclasMovimento = preload("res://scripts/prototipo_3d/teclas_movimento.gd")
 const Mar = preload("res://scripts/prototipo_3d/mar.gd")
+const Camadas = preload("res://scripts/prototipo_3d/camadas.gd")
 const EspumaAgua = preload("res://scripts/prototipo_3d/espuma_agua.gd")
 ## O que o corpo mostra do que veste: o chapéu, o machado e o facão — o mesmo
 ## caminho do boneco da mochila (`boneco_da_mochila.gd`).
@@ -49,6 +50,26 @@ const DEGRAU := 0.4
 ## superfície que barra a câmera.
 const PIVO_CAMERA := 1.18
 const PIVO_CAMERA_NADANDO := 1.66
+## O BRAÇO DA CÂMERA É SUAVE ("a câmera dá um pulo ao passar na frente do
+## cruzeiro"). O SpringArm3D mede até onde a câmera cabe a cada tick de física,
+## e a câmera ia direto para lá: de 8 m para 1 m num quadro, e de volta no
+## seguinte. Agora o braço mede e a câmera segue (`_posicionar_camera`): ENTRA
+## depressa (a esta taxa, por segundo), para não ficar atrás da parede; SAI
+## devagar, e só depois de `BRACO_ESPERA` segundos livre, para não sanfonar ao
+## passar rente a uma quina. Quem barra o braço é só a camada `CAMERA`
+## (`camadas.gd`): chão, parede e água, e não poste, tronco ou morador.
+const BRACO_ENTRA := 24.0
+const BRACO_SAI := 3.0
+const BRACO_ESPERA := 0.3
+## O zoom sem obstáculo, mais ligeiro que a volta depois de uma parede.
+const BRACO_ZOOM := 10.0
+## O ATRASO VERTICAL: o degrau de 0,4 m (`_subir_degrau`) e o pulo não
+## sacodem a câmera; ela alcança o corpo a esta taxa, sem ficar mais de
+## `ATRASO_MAXIMO` m para trás.
+const ATRASO_VOLTA := 10.0
+const ATRASO_MAXIMO := 0.6
+## A câmera de cima entra e sai do cômodo em tanto tempo (s).
+const DE_CIMA_TRANSICAO := 0.3
 ## O clipe "swim" deita o corpo na altura da raiz (os pés): nadando, o modelo sobe esta
 ## fração da altura para as costas ficarem na linha d'água.
 const MODELO_ACIMA_NADANDO := 0.44
@@ -77,6 +98,22 @@ var _yaw: float = 0.0
 var _pitch: float = -0.19
 ## A câmera abre já recuada (o antigo máximo) e pode afastar um pouco além.
 var _distance: float = 8.0
+## O braço que se vê: a distância da câmera ao pivô agora, que persegue a que o
+## SpringArm3D mede (`_posicionar_camera`).
+var _braco: float = 8.0
+var _espera_para_sair := 0.0
+## Quantos ticks de física a câmera ainda vai direto ao ponto medido, sem
+## suavizar: depois de um teleporte o braço precisa de um tick para medir o
+## lugar novo (`_encaixar_a_camera`).
+var _encaixe_restante := 3
+var _atraso_y := 0.0
+var _y_anterior := NAN
+## A altura do pivô sem o atraso: a do corpo andando, a da cabeça nadando.
+var _altura_do_pivo: float = PIVO_CAMERA
+var _transicao_de_cima: Tween
+## O braço está voltando de um obstáculo (sai devagar) ou só seguindo o zoom.
+var _voltando_de_obstaculo := false
+var _tick_do_encaixe := -1
 var _click_world: Node3D
 var _navigator = ClickNavigation.new()
 var _walk_path := PackedVector3Array()
@@ -185,19 +222,28 @@ func _ready() -> void:
 	var camera_shape := SphereShape3D.new()
 	camera_shape.radius = 0.18
 	spring.shape = camera_shape
-	# A câmera não mergulha: o braço também bate na superfície da água (camada própria).
-	spring.collision_mask |= Mar.CAMADA_CAMERA_AGUA
+	# SÓ A CAMADA DA CÂMERA barra o braço (`camadas.gd`): o chão, as paredes, a
+	# borda do quadro e a superfície da água (ela não mergulha).
+	spring.collision_mask = Camadas.CAMERA
 	spring.add_excluded_object(get_rid())
 	camera_pivot.add_child(spring)
+	# O braço só MEDE: a ponta dele é um nó vazio, e a câmera é filha do pivô,
+	# posta por `_posicionar_camera` no comprimento que se vê.
+	var ponta := Node3D.new()
+	ponta.name = "Ponta"
+	spring.add_child(ponta)
 	camera = Camera3D.new()
 	camera.fov = 58.0
 	camera.near = 0.08
 	camera.far = 2800.0
-	spring.add_child(camera)
+	camera_pivot.add_child(camera)
 	camera.current = true
 	_apply_camera()
+	_encaixar_a_camera()
+	_posicionar_camera(0.0)
 
 func _process(delta: float) -> void:
+	_posicionar_camera(delta)
 	_atualizar_machado_na_mao()
 	_atualizar_pose_machado(delta)
 	_atualizar_vestimenta()
@@ -276,9 +322,36 @@ func _soltar(ancora: Node3D) -> void:
 		ancora.queue_free()
 
 
+## A LIDA QUE NÃO É GOLPE (regar, pescar): por quanto tempo ainda a peça na
+## mão fica na pose de "uso" (`Vestimenta3D.pose_de`). INF até alguém dizer 0.
+var _uso_restante := 0.0
+## O sacolejo da peça (a vara quando o peixe fisga), em segundos que faltam.
+var _sacolejo := 0.0
+## A inclinação da peça (radianos), que anda junto do giro, e o pivô que já foi
+## posado: peça nova começa na pose dela, sem varrer o ar até lá.
+var _machado_inclinacao := 0.0
+var _pivo_posado: Node3D
+
+
+## A peça na mão em "uso" por `segundos` (0 encerra; INF até encerrar).
+func usar_item_na_mao(segundos: float) -> void:
+	_uso_restante = maxf(segundos, 0.0)
+
+
+## Um tranco curto na peça da mão: o peixe pegou.
+func sacudir_item_na_mao() -> void:
+	_sacolejo = 0.4
+
+
+## A POSE DA PEÇA NA MÃO pelo estado do corpo: parado, andando, golpe ou uso
+## (`Vestimenta3D.pose_de`). Nadando a peça some — uma vara de 2,4 m no meio da
+## braçada, ou um machado, é o que ninguém leva nadando.
 func _atualizar_pose_machado(delta: float) -> void:
 	if _machado_ancora == null:
 		return
+	_uso_restante = maxf(_uso_restante - delta, 0.0)
+	_sacolejo = maxf(_sacolejo - delta, 0.0)
+	_machado_ancora.visible = not _nadando
 	var parado := Vector2(velocity.x, velocity.z).length_squared() < 0.04
 	var em_golpe := _acao_golpe_restante > 0.0
 	if animator != null and animator.has_method("gesture_ativa") and animator.gesture_ativa():
@@ -287,9 +360,20 @@ func _atualizar_pose_machado(delta: float) -> void:
 	var afastamento := -0.01 if em_idle else 0.0
 	_machado_ancora.position = _machado_ancora_posicao_base + _machado_ancora.global_basis.inverse() * (visual.global_basis.x * afastamento)
 	if _machado_pivo != null:
-		var angulo_alvo := 0.0 if em_golpe or _nadando else deg_to_rad(Vestimenta3D.MACHADO_PARADO)
-		_machado_angulo_lateral = move_toward(_machado_angulo_lateral, angulo_alvo, 4.0 * delta)
-		Vestimenta3D.girar_o_machado(_machado_ancora, _machado_pivo, visual, _machado_angulo_lateral)
+		var estado := "golpe" if em_golpe else ("uso" if _uso_restante > 0.0 else ("parado" if parado else "andando"))
+		var alvo := Vestimenta3D.pose_de(_item_visualizado, estado)
+		if _pivo_posado != _machado_pivo:
+			_pivo_posado = _machado_pivo
+			_machado_angulo_lateral = deg_to_rad(alvo.x)
+			_machado_inclinacao = deg_to_rad(alvo.y)
+		# 4 rad/s, como o machado sempre andou; a distância grande (a enxada do
+		# ombro ao golpe) chega em ~0,15 s, para o golpe não cair a meio caminho.
+		var giro_alvo := deg_to_rad(alvo.x)
+		var inclinacao_alvo := deg_to_rad(alvo.y)
+		_machado_angulo_lateral = move_toward(_machado_angulo_lateral, giro_alvo, maxf(4.0, absf(giro_alvo - _machado_angulo_lateral) / 0.15) * delta)
+		_machado_inclinacao = move_toward(_machado_inclinacao, inclinacao_alvo, maxf(4.0, absf(inclinacao_alvo - _machado_inclinacao) / 0.15) * delta)
+		var tranco := sin(_sacolejo * 45.0) * 9.0 * (_sacolejo / 0.4)
+		Vestimenta3D.posar(_machado_ancora, _machado_pivo, visual, Vector2(rad_to_deg(_machado_angulo_lateral), rad_to_deg(_machado_inclinacao) + tranco))
 
 
 func _tem_animacoes(scene: PackedScene) -> bool:
@@ -541,6 +625,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		_pitch = -0.08 if inspecting else -0.19
 		_distance = 3.1 if inspecting else 8.0
 		_apply_camera()
+		_encaixar_a_camera()
 	if _acao_golpe_restante > 0.0:
 		return
 	if not _jumping:
@@ -581,16 +666,21 @@ func camera_de_cima(ativa: bool, corpos_do_comodo: Array[RID] = []) -> void:
 	for corpo in _atravessa:
 		spring.remove_excluded_object(corpo)
 	_atravessa.clear()
+	var ate := Vector2(DE_CIMA_DISTANCIA, DE_CIMA_INCLINACAO)
 	if ativa:
 		_antes_de_cima = Vector2(_distance, _pitch)
-		_distance = DE_CIMA_DISTANCIA
-		_pitch = DE_CIMA_INCLINACAO
 		for corpo in corpos_do_comodo:
 			spring.add_excluded_object(corpo)
 			_atravessa.append(corpo)
 	else:
-		_distance = _antes_de_cima.x
-		_pitch = _antes_de_cima.y
+		ate = _antes_de_cima
+	# A CÂMERA SOBE E DESCE EM TRÂNSITO, e não de um quadro para o outro; o
+	# modo (`esta_de_cima`) muda na hora.
+	if _transicao_de_cima != null and _transicao_de_cima.is_valid():
+		_transicao_de_cima.kill()
+	_transicao_de_cima = create_tween().set_parallel().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	_transicao_de_cima.tween_property(self, "_distance", ate.x, DE_CIMA_TRANSICAO)
+	_transicao_de_cima.tween_property(self, "_pitch", ate.y, DE_CIMA_TRANSICAO)
 	_apply_camera()
 
 
@@ -692,7 +782,7 @@ func _atualizar_nado() -> void:
 	if animator and animator.has_method("set_swimming"):
 		animator.set_swimming(_nadando)
 	var ajuste := create_tween().set_parallel()
-	ajuste.tween_property(camera_pivot, "position:y", PIVO_CAMERA_NADANDO if _nadando else PIVO_CAMERA, 0.35)
+	ajuste.tween_property(self, "_altura_do_pivo", PIVO_CAMERA_NADANDO if _nadando else PIVO_CAMERA, 0.35)
 	ajuste.tween_property(visual, "position:y", character_height * MODELO_ACIMA_NADANDO if _nadando else 0.0, 0.35)
 
 
@@ -778,6 +868,7 @@ func _back_to_land() -> void:
 	global_position = _last_land + Vector3(0, 0.1, 0)
 	velocity = Vector3.ZERO
 	_jumping = false
+	_encaixar_a_camera()
 	if animator and animator.has_method("finish_jump"):
 		animator.finish_jump(0.0)
 	navigation_status.emit("De volta à terra firme.")
@@ -807,6 +898,7 @@ func teleportar(destino: Vector3, rumo: float) -> void:
 	_pitch = DE_CIMA_INCLINACAO if _de_cima else -0.19
 	inspecting = false
 	_apply_camera()
+	_encaixar_a_camera()
 
 
 func reset_position() -> void:
@@ -827,6 +919,7 @@ func reset_position() -> void:
 	_distance = 8.0
 	inspecting = false
 	_apply_camera()
+	_encaixar_a_camera()
 
 
 ## Na chegada nova, o jogador olha para a praia e a câmera fica à frente dele.
@@ -841,6 +934,7 @@ func iniciar_de_frente(direcao: Vector3) -> void:
 	_distance = 8.0
 	inspecting = false
 	_apply_camera()
+	_encaixar_a_camera()
 
 
 func _raycast_cursor(mouse: Vector2, mask: int, areas: bool = false) -> Dictionary:
@@ -1087,6 +1181,59 @@ func _apply_camera() -> void:
 	camera_pivot.rotation.y = _yaw
 	spring.rotation.x = _pitch
 	spring.spring_length = _distance
+
+
+## A CÂMERA VAI DIRETO ao ponto que o braço medir, nos próximos ticks: depois
+## de teleporte, volta à terra, reinício, chegada e inspeção, perseguir o braço
+## de longe seria a câmera voando pelo vale.
+func _encaixar_a_camera() -> void:
+	_encaixe_restante = 3
+	_atraso_y = 0.0
+	_y_anterior = NAN
+
+
+## A CÂMERA NO COMPRIMENTO QUE SE VÊ (ver `BRACO_ENTRA`). No `_process`, e não
+## na física: o clique do mouse é lido no `_physics_process` com a câmera de
+## antes (tests/click_controls.gd move a câmera à mão e conta com isso).
+func _posicionar_camera(delta: float) -> void:
+	if camera == null or spring == null:
+		return
+	_apply_camera()
+	# O atraso vertical: o corpo subiu `dy` desde o quadro passado, e o pivô
+	# fica para trás e alcança.
+	var y := global_position.y
+	if is_nan(_y_anterior) or _encaixe_restante > 0:
+		_atraso_y = 0.0
+	else:
+		_atraso_y = clampf(_atraso_y - (y - _y_anterior), -ATRASO_MAXIMO, ATRASO_MAXIMO)
+		_atraso_y *= exp(-ATRASO_VOLTA * delta)
+	_y_anterior = y
+	camera_pivot.position.y = _altura_do_pivo + _atraso_y
+	var alvo := spring.get_hit_length()
+	var barrado := alvo < spring.spring_length - 0.05
+	# Enquanto uma parede encurta o braço, a saída dela é a devagar, mesmo depois
+	# de ele ter parado de encurtar: quem para rente a uma quina e depois anda
+	# não vê a câmera dar um pulo ao se soltar.
+	if barrado:
+		_voltando_de_obstaculo = true
+	if _encaixe_restante > 0:
+		_braco = alvo
+		_espera_para_sair = 0.0
+		if Engine.get_physics_frames() != _tick_do_encaixe:
+			_tick_do_encaixe = Engine.get_physics_frames()
+			_encaixe_restante -= 1
+	elif alvo < _braco:
+		_braco = lerpf(_braco, alvo, 1.0 - exp(-BRACO_ENTRA * delta))
+		if barrado:
+			_espera_para_sair = BRACO_ESPERA
+			_voltando_de_obstaculo = true
+	elif _espera_para_sair > 0.0:
+		_espera_para_sair = maxf(_espera_para_sair - delta, 0.0)
+	else:
+		_braco = lerpf(_braco, alvo, 1.0 - exp(-(BRACO_SAI if _voltando_de_obstaculo else BRACO_ZOOM) * delta))
+		if not barrado and alvo - _braco < 0.05:
+			_voltando_de_obstaculo = false
+	camera.transform = spring.transform * Transform3D(Basis(), Vector3(0.0, 0.0, _braco))
 
 
 ## A câmera está no modo de arrastar? Quem pergunta é quem vai pausar o jogo e

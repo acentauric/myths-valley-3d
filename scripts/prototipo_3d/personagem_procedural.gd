@@ -23,6 +23,21 @@ const PALETAS := {
 	"filo": {"pele": "5e3d2b", "camisa": "7c5c8c", "calca": "cbbfa5", "chapeu": "", "cabelo": "cfc8bd", "pes": "3d2a1c", "saia": true, "lenco": "e8dcc0"},
 	"candinha": {"pele": "4f3322", "camisa": "d29a3c", "calca": "f0e7d2", "chapeu": "", "cabelo": "1a120c", "pes": "", "saia": true, "lenco": "f7f1e3"},
 	"damiao": {"pele": "3f2a1c", "camisa": "6c6a63", "calca": "3b3a36", "chapeu": "5b5145", "cabelo": "111111", "pes": "2f221a"},
+	# Os moradores novos da noite de 05/10 (data/npcs_3d.json, agenda e ofício).
+	"padre": {"pele": "8a5a3c", "camisa": "26241f", "calca": "26241f", "chapeu": "", "cabelo": "cfc8bd", "pes": "1c1a16", "saia": true},
+	"sacristao": {"pele": "6e4630", "camisa": "e4dcc8", "calca": "5b4a3a", "chapeu": "", "cabelo": "2a1b12", "pes": ""},
+	"beata": {"pele": "6a4630", "camisa": "3c3a46", "calca": "3c3a46", "chapeu": "", "cabelo": "d8d3c9", "pes": "", "saia": true, "lenco": "2a2a30"},
+	"mercador": {"pele": "9a6a45", "camisa": "e9dfc6", "calca": "5a4a3a", "chapeu": "", "cabelo": "2a1b12", "pes": "3d2a1c"},
+	"guarda": {"pele": "7a5237", "camisa": "4a5a6a", "calca": "3a3f4a", "chapeu": "2f343d", "cabelo": "1a120c", "pes": "2a1d14"},
+	"pescador": {"pele": "5e3d2b", "camisa": "b9c0b2", "calca": "4e5a63", "chapeu": "c9b07a", "cabelo": "1a120c", "pes": ""},
+	"marisqueira": {"pele": "5a3a26", "camisa": "d6a24a", "calca": "e6dcc4", "chapeu": "", "cabelo": "1a120c", "pes": "", "saia": true, "lenco": "e9dfc6"},
+	"lavadeira": {"pele": "4f3322", "camisa": "e9e2d0", "calca": "6f8aa0", "chapeu": "", "cabelo": "1a120c", "pes": "", "saia": true, "lenco": "ffffff"},
+	"rendeira": {"pele": "7a5237", "camisa": "f0e6c8", "calca": "8a4a5a", "chapeu": "", "cabelo": "cfc8bd", "pes": "", "saia": true, "lenco": "f7f1e3"},
+	"quituteira": {"pele": "4a3020", "camisa": "f4efe0", "calca": "b04a3f", "chapeu": "", "cabelo": "1a120c", "pes": "", "saia": true, "lenco": "c8453a"},
+	"carpinteiro": {"pele": "6a4630", "camisa": "c9b88f", "calca": "5b4a3a", "chapeu": "9c8455", "cabelo": "2a1b12", "pes": "3d2a1c"},
+	"menino": {"pele": "7a5237", "camisa": "e9dfc6", "calca": "6b5a43", "chapeu": "", "cabelo": "1a120c", "pes": ""},
+	"menina": {"pele": "6a4630", "camisa": "d8a24a", "calca": "7f9c8a", "chapeu": "", "cabelo": "1a120c", "pes": "", "saia": true, "lenco": "e9dfc6"},
+	"mestre_saveiro": {"pele": "5a3a26", "camisa": "d9cfb4", "calca": "34495e", "chapeu": "c9b07a", "cabelo": "cfc8bd", "pes": ""},
 }
 
 var altura := 1.78

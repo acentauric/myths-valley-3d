@@ -233,8 +233,10 @@ func _process(delta: float) -> void:
 	if _precisa_vestir:
 		_precisa_vestir = false
 		vestir()
+	# A peça na pose de parado dela (`Vestimenta3D.pose_de`): o machado a -30°, a
+	# vara erguida, o balde em pé — a mesma do jogador parado.
 	if is_instance_valid(_pivo_do_machado) and is_instance_valid(_ancora_do_machado):
-		Vestimenta3D.girar_o_machado(_ancora_do_machado, _pivo_do_machado, corpo, deg_to_rad(Vestimenta3D.MACHADO_PARADO))
+		Vestimenta3D.posar(_ancora_do_machado, _pivo_do_machado, corpo, Vestimenta3D.pose_de(vestido_na_mao, "parado"))
 
 
 ## VESTE O BONECO com o que o corpo mostra agora (`Vestimenta3D`): o chapéu na

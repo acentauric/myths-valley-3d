@@ -46,6 +46,16 @@ const CALADO := 0.32
 ## borda 0,95, e descer do barco era pular de um muro; assim o convés fica um
 ## palmo acima, e a quilha some no fundo raso do píer.
 const CALADO_DO_SAVEIRO := 0.6
+## A BORDA DO SAVEIRO, em fração da altura do modelo (medida no GLB, 05/10/2026):
+## o casco vai até 2,0 m dos 6,9 m, e dali para cima é mastro, retranca e vela.
+## A colisão do casco fica abaixo dela (`Canoas._colisao_do_casco`).
+const BORDA_DO_SAVEIRO := 0.30
+## O mastro: no meio do casco, um palmo para a popa (fração da caixa, X e Z),
+## do convés (17% da altura) ao topo (96%), com 12 cm de raio.
+const MASTRO_NO_MODELO := Vector2(-0.017, 0.011)
+const MASTRO_DE := 0.17
+const MASTRO_ATE := 0.96
+const RAIO_DO_MASTRO := 0.12
 ## O PRIMEIRO DIA DO JOGO (`Relogio.dia_absoluto`), o da chegada.
 const DIA_DA_CHEGADA := 1
 ## ONDE O JOGADOR NASCE E DESCE: na proa, que a vela vai do mastro (no meio do
@@ -239,10 +249,12 @@ func _montar_o_barco() -> void:
 	# e o píer fica do lado -Z do barco.
 	barco.rotation.y = giro - PI * 0.5
 	var casco: Node3D = null
+	var e_o_saveiro := false
 	if Estilo.tripo() and CatalogoAssets.tem_tripo("saveiro"):
 		# O comprimento do saveiro é o X do modelo, com a proa no +X: ela aponta
 		# mar adentro, e a vela fica do lado da terra.
 		casco = CatalogoAssets.instanciar("saveiro", barco, Vector3(0.0, -CALADO_DO_SAVEIRO, 0.0), 1.0, 0.0)
+		e_o_saveiro = casco != null
 	elif Estilo.tripo() and CatalogoAssets.tem_tripo("bote"):
 		casco = CatalogoAssets.instanciar("bote", barco, Vector3(0.0, -CALADO, 0.0), 1.0, PI * 0.5)
 	if casco == null:
@@ -253,12 +265,31 @@ func _montar_o_barco() -> void:
 	# o barco atracado só desce à água ao atracar, e o corpo sincronizado
 	# desfazia esse movimento: ficava 0,38 acima do desenho, e o jogador do
 	# convés nascia dentro do casco.
-	var corpo := Canoas._colisao_do_casco(casco, barco)
+	#
+	# NO SAVEIRO DO TRIPO, O CASCO VAI SÓ ATÉ A BORDA, e o mastro é um cilindro:
+	# com a malha inteira, a vela e a retranca eram parede no meio do convés.
+	var limites: AABB = casco.get_meta("limites", AABB())
+	var teto := -CALADO_DO_SAVEIRO + limites.size.y * BORDA_DO_SAVEIRO if e_o_saveiro else INF
+	var corpo := Canoas._colisao_do_casco(casco, barco, teto)
+	if e_o_saveiro:
+		corpo.add_child(_mastro(limites))
 	corpo.sync_to_physics = false
 	barco.add_child(corpo)
 	_guardar_as_faces(casco)
 	barco.visible = false
 	barco.process_mode = Node.PROCESS_MODE_DISABLED
+
+
+## O MASTRO DO SAVEIRO, um cilindro do convés ao topo, no referencial do barco.
+func _mastro(limites: AABB) -> CollisionShape3D:
+	var forma := CylinderShape3D.new()
+	forma.radius = RAIO_DO_MASTRO
+	forma.height = limites.size.y * (MASTRO_ATE - MASTRO_DE)
+	var colisao := CollisionShape3D.new()
+	colisao.name = "Mastro"
+	colisao.shape = forma
+	colisao.position = Vector3(limites.size.x * MASTRO_NO_MODELO.x, -CALADO_DO_SAVEIRO + limites.size.y * (MASTRO_DE + MASTRO_ATE) * 0.5, limites.size.z * MASTRO_NO_MODELO.y)
+	return colisao
 
 
 # --- a chegada ---------------------------------------------------------------------

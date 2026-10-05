@@ -25,9 +25,28 @@ extends CharacterBody3D
 ## O JOGADOR ATRAVESSA A CRIATURA, como no 2D: quem morde é a distância, não a
 ## colisão. Sem a exceção de colisão, a cápsula do jogador pararia o caititu
 ## antes do alcance da boca e ele nunca morderia.
+##
+## O CORPO DO TRIPO (#28). No estilo Tripo o bicho veste o GLB do catálogo
+## (`MODELOS`; a onça escolhe pela `pelagem`), e a caixa cinza fica para o
+## procedural e para o GLB que ainda não chegou. Por isso o aviso e a pancada
+## são `material_overlay`, e a queda é `transparency` — os três valem em
+## qualquer malha, sem saber de que material ela é feita. O passo é o clipe do
+## GLB com o resto por cima (`animador_bicho.gd`).
+##
+## A ONÇA VÊ, e não só fareja (`VISTA`, números só do 3D, em unidades do vale):
+## um cone à frente, mais curto de noite, com a linha livre de casa, pedra e
+## tronco; o faro do 2D continua valendo pelas costas. Quem é visto passa por
+## RONDA → ESPREITA (o corpo abaixa e ela vem devagar) → CARGA → BOTE → RECUA,
+## e de novo carga enquanto o vir. A COLEIRA é o território: longe demais do
+## ninho, ou o jogador longe demais dela, e ela VOLTA, cega por uns segundos —
+## quem foge da mata se livra dela de verdade.
+
+const Animador = preload("res://scripts/prototipo_3d/animador_bicho.gd")
 
 signal mordeu(quanto: float)
 signal morreu(criatura)
+## Viu o jogador e começou a caçar (só quem tem `VISTA`).
+signal avistou(criatura)
 
 ## Os números do 2D, verbatim (`Criatura.ESPECIES`). Distâncias e passo em
 ## pixels; tempos em segundos. `corpo` e `desenho_y` do 2D ficaram de fora: são
@@ -56,6 +75,41 @@ const CORPO := {
 	"jararaca": Vector3(0.16, 0.12, 1.1),
 }
 
+## O modelo de cada espécie no catálogo (estilo Tripo). A onça tem dois, pela
+## pelagem; sem pelagem, a pintada.
+const MODELOS := {
+	"caititu": "caititu",
+	"jararaca": "jararaca",
+	"onca": {"pintada": "onca_pintada", "preta": "onca_preta"},
+}
+
+## A VISTA, só do 3D e já em unidades (não é número do 2D, que só farejava):
+## até onde enxerga de dia e de noite, a abertura do cone em graus, a coleira
+## (`desiste`, do jogador; `territorio`, do ninho), quanto tempo espreita antes
+## da carga e o raio da ronda.
+const VISTA := {
+	"onca": {"alcance": 16.0, "alcance_noite": 10.0, "cone": 140.0, "desiste": 26.0,
+		"territorio": 34.0, "espreita": 2.0, "ronda": 9.0},
+}
+## De quanto em quanto tempo ela olha (s): o raio de física não é de graça.
+const OLHAR_A_CADA := 0.25
+## Altura dos olhos e do peito de quem é visto, para a linha.
+const ALTURA_DOS_OLHOS := 0.6
+const ALTURA_DO_ALVO := 0.9
+## Sem ver o jogador por isto (s), volta à ronda.
+const PERDE_DE_VISTA := 3.0
+## Quanto tempo fica cega depois que a coleira a manda de volta (s).
+const CEGA_NA_VOLTA := 6.0
+## Espreitando: o corpo abaixa até esta fração e o passo cai para esta outra.
+const ESPREITA_ABAIXA := 0.85
+const ESPREITA_PASSO := 0.45
+## Depois do bote ela se afasta um pouco antes da próxima carga (s, fração do passo).
+const RECUO := 1.1
+const RECUO_PASSO := 0.6
+## Até onde (u) é "chegou ao ninho" na volta.
+const CHEGOU_AO_NINHO := 2.0
+const COR_DOS_OLHOS := Color(1.0, 0.86, 0.32)
+
 ## O passo do jogador no 2D, em pixels por segundo (`Jogador`). É a régua da
 ## escala: `u_por_px = walk_speed / PASSO_DO_JOGADOR_2D`.
 const PASSO_DO_JOGADOR_2D := 62.0
@@ -77,6 +131,10 @@ const COR_DO_AVISO := Color(1.0, 0.62, 0.18)
 const COR_DA_PANCADA := Color(0.95, 0.32, 0.28)
 
 var especie: String = "caititu"
+## "pintada" ou "preta", para a onça; vazio para os outros.
+var pelagem: String = ""
+## ronda, espreita, carga, recua ou volta (só quem tem `VISTA`); ver `estado_agora`.
+var estado: String = "ronda"
 var vida: float = 1.0
 ## Está atrás do jogador agora? Ver a nota dos dois raios, no 2D.
 var cacando: bool = false
@@ -103,8 +161,19 @@ var _aceso: bool = false
 var _rng := RandomNumberGenerator.new()
 
 var _corpo: Node3D
-var _material: StandardMaterial3D
+var _modelo: Node3D
+var _animador
+var _malhas: Array[GeometryInstance3D] = []
+var _tinta_do_aviso: StandardMaterial3D
+var _tinta_da_pancada: StandardMaterial3D
 var _marca: MeshInstance3D
+var _olhos: Array[MeshInstance3D] = []
+var _proxima_olhada: float = 0.0
+var _sem_ver: float = 0.0
+var _cega_ate: float = -1.0
+var _espreita_resta: float = 0.0
+var _recua_resta: float = 0.0
+var _ativa := true
 
 
 func dados() -> Dictionary:
@@ -113,6 +182,27 @@ func dados() -> Dictionary:
 
 func nome() -> String:
 	return str(dados().get("nome", especie))
+
+
+## A chave do catálogo do corpo desta criatura.
+func chave_do_modelo() -> String:
+	var modelo = MODELOS.get(especie, especie)
+	if modelo is Dictionary:
+		return str(modelo.get(pelagem, modelo.values()[0]))
+	return str(modelo)
+
+
+func tem_vista() -> bool:
+	return VISTA.has(especie)
+
+
+func vista() -> Dictionary:
+	return VISTA.get(especie, {})
+
+
+## O que ela está fazendo agora: o estado, ou "bote" no meio dele.
+func estado_agora() -> String:
+	return "bote" if no_bote() else estado
 
 
 ## Um número de distância ou passo da espécie, já no vale.
@@ -155,30 +245,29 @@ func _montar() -> void:
 	forma.position.y = tamanho.y * 0.5
 	add_child(forma)
 
-	_material = StandardMaterial3D.new()
-	_material.albedo_color = COR_DO_CORPO
-	_material.emission_enabled = true
-	_material.emission = COR_DO_AVISO
-	_material.emission_energy_multiplier = 0.0
 	_corpo = Node3D.new()
 	_corpo.name = "Corpo"
 	add_child(_corpo)
-	var tronco := MeshInstance3D.new()
-	var malha := BoxMesh.new()
-	malha.size = tamanho
-	tronco.mesh = malha
-	tronco.material_override = _material
-	tronco.position.y = tamanho.y * 0.5
-	_corpo.add_child(tronco)
-	# A CABEÇA, uma caixa menor na frente: sem ela a caixa não tem frente, e o
-	# bote precisa de uma — é para ela que o jogador olha.
-	var cabeca := MeshInstance3D.new()
-	var malha_cabeca := BoxMesh.new()
-	malha_cabeca.size = Vector3(tamanho.x * 0.7, tamanho.y * 0.6, tamanho.z * 0.28)
-	cabeca.mesh = malha_cabeca
-	cabeca.material_override = _material
-	cabeca.position = Vector3(0.0, tamanho.y * 0.62, tamanho.z * 0.5 + malha_cabeca.size.z * 0.4)
-	_corpo.add_child(cabeca)
+	# A POSE fica entre o corpo e o modelo: o animador mexe nela (respirar,
+	# abaixar, inclinar), e o bote e a queda continuam mexendo no corpo.
+	var pose := Node3D.new()
+	pose.name = "Pose"
+	_corpo.add_child(pose)
+	# A caixa tem cabeça na frente: sem ela não teria frente, e o bote precisa
+	# de uma — é para ela que o jogador olha.
+	var chave := chave_do_modelo()
+	_modelo = Animador.vestir(chave, pose, tamanho, COR_DO_CORPO)
+	_animador = Animador.new()
+	_animador.name = "Animador"
+	add_child(_animador)
+	_animador.configurar(pose, _modelo, false, chave, _u("passo"))
+	_malhas = Animador.malhas(_modelo)
+	# O AVISO e a PANCADA por cima de qualquer malha, sem luz: o âmbar lê igual
+	# de dia e de noite, e na onça-preta também.
+	_tinta_do_aviso = _tinta_por_cima(COR_DO_AVISO, 0.5)
+	_tinta_da_pancada = _tinta_por_cima(COR_DA_PANCADA, 0.6)
+	if pelagem == "preta":
+		_montar_os_olhos(tamanho)
 
 	# A MARCA NO CHÃO: do focinho até onde a mordida alcança, na largura do
 	# corpo. Sem sombra e sem luz, para ler igual de dia e de noite.
@@ -198,6 +287,81 @@ func _montar() -> void:
 	_marca.position = Vector3(0.0, 0.04, comprimento * 0.5)
 	_marca.visible = false
 	add_child(_marca)
+
+
+func _tinta_por_cima(cor: Color, alfa: float) -> StandardMaterial3D:
+	var tinta := StandardMaterial3D.new()
+	tinta.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	tinta.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	tinta.albedo_color = Color(cor, alfa)
+	return tinta
+
+
+## OS OLHOS DA ONÇA-PRETA, que brilham de noite. Sem eles ela é invisível no
+## escuro, e o bote de quem não se vê não tem aviso — é injusto. No GLB eles
+## seguem o osso da cabeça (o último `Head`); na caixa, a frente da cabeça.
+func _montar_os_olhos(tamanho: Vector3) -> void:
+	var tinta := StandardMaterial3D.new()
+	tinta.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	tinta.albedo_color = COR_DOS_OLHOS
+	tinta.emission_enabled = true
+	tinta.emission = COR_DOS_OLHOS
+	tinta.emission_energy_multiplier = 3.0
+	var bola := SphereMesh.new()
+	bola.radius = 0.028
+	bola.height = 0.05
+	bola.radial_segments = 8
+	bola.rings = 4
+	var centro := Vector3(0.0, tamanho.y * 0.66, tamanho.z * 0.5 + tamanho.z * 0.2)
+	var lado := 0.055
+	var esqueleto: Skeleton3D = null
+	var cabeca := -1
+	var esqueletos := _modelo.find_children("*", "Skeleton3D", true, false)
+	if not esqueletos.is_empty():
+		esqueleto = esqueletos[0] as Skeleton3D
+		var maior := -1
+		for i in esqueleto.get_bone_count():
+			var nome_do_osso := esqueleto.get_bone_name(i)
+			if "Head_" in nome_do_osso:
+				var numero := nome_do_osso.get_slice("Head_", 1).to_int()
+				if numero > maior:
+					maior = numero
+					cabeca = i
+	var pai: Node3D = _corpo
+	var osso := Transform3D.IDENTITY
+	if cabeca >= 0:
+		var preso := BoneAttachment3D.new()
+		preso.name = "Olhos"
+		esqueleto.add_child(preso)
+		preso.bone_idx = cabeca
+		pai = preso
+		# O osso no referencial do bicho; os olhos vão um pouco acima e à frente
+		# dele, e voltam para o referencial do osso para segui-lo no passo.
+		osso = esqueleto.global_transform * esqueleto.get_bone_global_pose(cabeca)
+		var comprimento := tamanho.z * 1.4
+		centro = global_transform.affine_inverse() * osso.origin + Vector3(0.0, comprimento * 0.02, comprimento * 0.02)
+		lado = comprimento * 0.024
+	for x in [-lado, lado]:
+		var olho := MeshInstance3D.new()
+		olho.name = "Olho"
+		olho.mesh = bola
+		olho.material_override = tinta
+		olho.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		pai.add_child(olho)
+		var no_bicho: Vector3 = centro + Vector3(x, 0.0, 0.0)
+		if cabeca >= 0:
+			# Do referencial do bicho para o do osso, sem a escala dele.
+			var local := osso.affine_inverse() * (global_transform * no_bicho)
+			olho.transform = Transform3D(Basis(), local)
+			olho.scale = Vector3.ONE / maxf(osso.basis.get_scale().x, 0.001)
+		else:
+			olho.position = no_bicho
+		olho.visible = false
+		_olhos.append(olho)
+
+
+func olhos_acesos() -> bool:
+	return not _olhos.is_empty() and _olhos[0].visible
 
 
 # --- a pancada que o bicho leva ----------------------------------------------
@@ -231,7 +395,7 @@ func _morrer() -> void:
 	velocity = Vector3.ZERO
 	collision_layer = 0
 	collision_mask = 0
-	_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	estado = "ronda"
 
 
 func tonto() -> bool:
@@ -266,9 +430,13 @@ func _physics_process(delta: float) -> void:
 		velocity.z = _empurrao.z
 		_mover(delta)
 		_empurrao = _empurrao.move_toward(Vector3.ZERO, _freio * delta)
-	# O FARO CORRE EM TODO QUADRO, antes do tonto e do bote (ver o 2D).
+	# O FARO CORRE EM TODO QUADRO, antes do tonto e do bote (ver o 2D). Quem
+	# tem vista olha, e o faro entra no olhar (`enxerga`).
 	var distancia := _plano(_alvo.global_position - global_position).length()
-	_farejar(distancia)
+	if tem_vista():
+		_olhar(delta)
+	else:
+		_farejar(distancia)
 	if tonto():
 		_parar(delta)
 		_corpo.rotation.z = sin(_relogio * 18.0) * 0.14
@@ -277,7 +445,9 @@ func _physics_process(delta: float) -> void:
 	if _no_bote >= 0.0:
 		_seguir_o_bote(delta)
 		return
-	if cacando:
+	if tem_vista():
+		_cacar_com_os_olhos(delta, distancia)
+	elif cacando:
 		_cacar(delta, distancia)
 	else:
 		_pastar(delta)
@@ -301,7 +471,7 @@ func _farejar(distancia: float) -> void:
 		cacando = true
 
 
-func _cacar(delta: float, distancia: float) -> void:
+func _cacar(delta: float, distancia: float, fracao_do_passo: float = 1.0) -> void:
 	var rumo := _plano(_alvo.global_position - global_position).normalized()
 	if distancia <= _u("mordida"):
 		_parar(delta)
@@ -309,17 +479,175 @@ func _cacar(delta: float, distancia: float) -> void:
 		if _desde_a_mordida >= float(dados().get("entre_mordidas", 1.0)):
 			_comecar_o_bote()
 		return
-	velocity.x = rumo.x * _u("passo")
-	velocity.z = rumo.z * _u("passo")
+	velocity.x = rumo.x * _u("passo") * fracao_do_passo
+	velocity.z = rumo.z * _u("passo") * fracao_do_passo
 	_mover(delta)
 	_virar(rumo)
 
 
-func _pastar(delta: float) -> void:
+# --- a vista (onça) ------------------------------------------------------------
+
+## ENXERGA o ponto? Dentro do alcance (mais curto de noite) e do cone da
+## frente, ou a menos do faro do 2D por qualquer lado — e, nos dois casos, com
+## a linha livre. Cega na volta da coleira.
+func enxerga(ponto: Vector3) -> bool:
+	if _relogio < _cega_ate:
+		return false
+	var v := vista()
+	var para := _plano(ponto - global_position)
+	var d := para.length()
+	if d > _u("fareja"):
+		var alcance := float(v.get("alcance_noite", 10.0)) if Dia.eh_noite() else float(v.get("alcance", 16.0))
+		if d > alcance:
+			return false
+		var frente := _plano(global_basis.z).normalized()
+		if d > 0.01 and frente.dot(para / d) < cos(deg_to_rad(float(v.get("cone", 140.0)) * 0.5)):
+			return false
+	return linha_livre(ponto)
+
+
+## A LINHA LIVRE dos olhos ao peito: um raio na camada 1 (casa, pedra, chão, e
+## os troncos que têm colisão perto do jogador) e, só lendo, a grade de troncos
+## da região — longe do jogador a mata tem só um punhado de colisões de tronco.
+func linha_livre(ponto: Vector3) -> bool:
+	var de := global_position + Vector3.UP * ALTURA_DOS_OLHOS
+	var ate := ponto + Vector3.UP * ALTURA_DO_ALVO
+	if is_inside_tree():
+		var pergunta := PhysicsRayQueryParameters3D.create(de, ate, 1)
+		var fora: Array[RID] = [get_rid()]
+		if _alvo is CollisionObject3D:
+			fora.append((_alvo as CollisionObject3D).get_rid())
+		pergunta.exclude = fora
+		if not get_world_3d().direct_space_state.intersect_ray(pergunta).is_empty():
+			return false
+	return not _tronco_no_caminho(de, ate)
+
+
+func _tronco_no_caminho(de: Vector3, ate: Vector3) -> bool:
+	var regiao = _world.get("_region") if _world != null else null
+	if regiao == null:
+		return false
+	regiao._garantir_grade_troncos()
+	var a := Vector2(de.x, de.z)
+	var b := Vector2(ate.x, ate.z)
+	var celula: float = regiao.CELULA_TRONCOS
+	var grade: Dictionary = regiao._grade_troncos
+	for cx in range(floori((minf(a.x, b.x) - 1.0) / celula), floori((maxf(a.x, b.x) + 1.0) / celula) + 1):
+		for cy in range(floori((minf(a.y, b.y) - 1.0) / celula), floori((maxf(a.y, b.y) + 1.0) / celula) + 1):
+			for i: int in grade.get(Vector2i(cx, cy), []):
+				var tronco: Dictionary = regiao._tree_trunks[i]
+				if bool(tronco.get("cortado", false)):
+					continue
+				var pe: Vector2 = tronco["point"]
+				# O pé de quem olha e o de quem é olhado não tapam a vista.
+				if pe.distance_to(a) < 0.5 or pe.distance_to(b) < 0.5:
+					continue
+				if Geometry2D.get_closest_point_to_segment(pe, a, b).distance_to(pe) < float(tronco["radius"]):
+					return true
+	return false
+
+
+func _olhar(delta: float) -> void:
+	if _alvo_travado():
+		if cacando:
+			_perder_de_vista()
+		return
+	_proxima_olhada -= delta
+	if _proxima_olhada > 0.0:
+		return
+	_proxima_olhada = OLHAR_A_CADA
+	_atualizar_os_olhos()
+	if estado == "volta":
+		return
+	if enxerga(_alvo.global_position):
+		_sem_ver = 0.0
+		if estado == "ronda":
+			estado = "espreita"
+			_espreita_resta = float(vista().get("espreita", 2.0))
+			cacando = true
+			avistou.emit(self)
+	elif cacando:
+		_sem_ver += OLHAR_A_CADA
+
+
+func _atualizar_os_olhos() -> void:
+	var acesos := Dia.eh_noite() and _morrendo < 0.0
+	for olho in _olhos:
+		olho.visible = acesos
+
+
+func _perder_de_vista() -> void:
+	cacando = false
+	estado = "ronda"
+	_sem_ver = 0.0
+	_animador.abaixar(1.0)
+
+
+## A COLEIRA: volta ao ninho, cega por `CEGA_NA_VOLTA` segundos.
+func voltar_ao_ninho() -> void:
+	cacando = false
+	estado = "volta"
+	_sem_ver = 0.0
+	_cega_ate = _relogio + CEGA_NA_VOLTA
+	_animador.abaixar(1.0)
+
+
+func cega() -> bool:
+	return _relogio < _cega_ate
+
+
+func _cacar_com_os_olhos(delta: float, distancia: float) -> void:
+	var v := vista()
+	if estado in ["espreita", "carga", "recua"]:
+		if _plano(global_position - _ninho).length() > float(v.get("territorio", 34.0)) \
+				or distancia > float(v.get("desiste", 26.0)):
+			voltar_ao_ninho()
+		elif _sem_ver >= PERDE_DE_VISTA:
+			_perder_de_vista()
+	match estado:
+		"espreita":
+			# ABAIXADA, devagar: o tempo de o jogador perceber e decidir.
+			_animador.abaixar(ESPREITA_ABAIXA)
+			_espreita_resta -= delta
+			if _espreita_resta <= 0.0:
+				estado = "carga"
+			_cacar(delta, distancia, ESPREITA_PASSO)
+		"carga":
+			_animador.abaixar(1.0)
+			_cacar(delta, distancia)
+		"recua":
+			# Depois do bote ela se afasta um passo, de frente para quem caça.
+			_recua_resta -= delta
+			var de_costas := _plano(global_position - _alvo.global_position).normalized()
+			velocity.x = de_costas.x * _u("passo") * RECUO_PASSO
+			velocity.z = de_costas.z * _u("passo") * RECUO_PASSO
+			_mover(delta)
+			_virar(-de_costas)
+			if _recua_resta <= 0.0:
+				estado = "carga"
+		"volta":
+			var para := _plano(_ninho - global_position)
+			if para.length() <= CHEGOU_AO_NINHO:
+				estado = "ronda"
+				_parar(delta)
+				return
+			velocity.x = para.normalized().x * _u("passo")
+			velocity.z = para.normalized().z * _u("passo")
+			var antes := global_position
+			_mover(delta)
+			_virar(para)
+			# Presa (casa, barranco, beira d'água): volta pelo caminho que não há.
+			if global_position.distance_to(antes) < 0.002:
+				global_position = _ninho
+		_:
+			_pastar(delta, float(v.get("ronda", 9.0)))
+
+
+func _pastar(delta: float, raio: float = -1.0) -> void:
 	if _plano(_destino - global_position).length() <= _u_de(CHEGOU):
 		if _relogio >= _parado_ate:
 			_parado_ate = _relogio + _rng.randf_range(PARADA_MINIMA, PARADA_MAXIMA)
-			_destino = _ponto_perto_do_ninho()
+			_destino = _ponto_perto_do_ninho(raio)
 		_parar(delta)
 		return
 	if _relogio < _parado_ate:
@@ -332,7 +660,7 @@ func _pastar(delta: float) -> void:
 	_mover(delta)
 	_virar(rumo)
 	if global_position.distance_to(antes) < 0.2 * u_por_px:
-		_destino = _ponto_perto_do_ninho()
+		_destino = _ponto_perto_do_ninho(raio)
 		_parado_ate = _relogio + 1.0
 
 
@@ -368,6 +696,9 @@ func _seguir_o_bote(delta: float) -> void:
 	if t >= 1.0:
 		_no_bote = -1.0
 		_desde_a_mordida = 0.0
+		if tem_vista() and cacando:
+			estado = "recua"
+			_recua_resta = RECUO
 
 
 func _parar_o_bote() -> void:
@@ -412,11 +743,13 @@ func _mover(delta: float) -> void:
 	if _world != null and not _world.is_on_land(global_position):
 		global_position = antes
 		velocity = Vector3.ZERO
+	_animador.velocidade = Vector2(velocity.x, velocity.z).length()
 
 
 func _parar(delta: float) -> void:
 	velocity.x = 0.0
 	velocity.z = 0.0
+	_animador.velocidade = 0.0
 	if not is_on_floor():
 		velocity.y -= 20.0 * delta
 		move_and_slide()
@@ -431,30 +764,75 @@ func _acender(aceso: bool) -> void:
 	_aceso = aceso
 	if _marca != null:
 		_marca.visible = aceso
-	if _material != null:
-		_material.emission_energy_multiplier = 1.6 if aceso else 0.0
+	_pintar_por_cima()
+
+
+## O que vai por cima da malha agora: a pancada pisca por cima de tudo; o
+## aviso fica enquanto o bote está armado.
+func _pintar_por_cima() -> void:
+	var tinta: Material = null
+	if _piscar > 0.0:
+		tinta = _tinta_da_pancada
+	elif _aceso:
+		tinta = _tinta_do_aviso
+	for malha in _malhas:
+		if is_instance_valid(malha):
+			malha.material_overlay = tinta
+
+
+## A tinta que está por cima do corpo agora (nula, a do aviso ou a da pancada).
+func tinta_por_cima() -> Material:
+	return _malhas[0].material_overlay if not _malhas.is_empty() else null
 
 
 func _piscar_o_corpo(delta: float) -> void:
 	if _piscar <= 0.0:
 		return
 	_piscar -= delta
-	var cor := COR_DA_PANCADA if _piscar > 0.0 else COR_DO_CORPO
-	_material.albedo_color = Color(cor, _material.albedo_color.a)
+	_pintar_por_cima()
 
 
 func _cair(delta: float) -> void:
 	_morrendo += delta
 	_corpo.rotation.z = lerpf(0.0, PI * 0.5, minf(1.0, _morrendo / TEMPO_DA_MORTE))
 	if _morrendo > TEMPO_DA_MORTE:
+		# A transparência da instância, e não do material: vale para qualquer GLB.
 		var alfa := maxf(0.0, 1.0 - (_morrendo - TEMPO_DA_MORTE) / TEMPO_DO_SUMICO)
-		_material.albedo_color = Color(_material.albedo_color, alfa)
+		for malha in _malhas:
+			if is_instance_valid(malha):
+				malha.transparency = 1.0 - alfa
+		for olho in _olhos:
+			olho.visible = false
 	if _morrendo >= TEMPO_DA_MORTE + TEMPO_DO_SUMICO:
 		queue_free()
 
 
-func _ponto_perto_do_ninho() -> Vector3:
-	var raio := _u_de(RAIO_DO_NINHO)
+## Liga e desliga a criatura sem tirá-la do vale (a onça-preta só anda do
+## entardecer à madrugada): some, para de pensar e volta ao ninho.
+func ativar(ligada: bool) -> void:
+	if ligada == _ativa:
+		return
+	_ativa = ligada
+	visible = ligada
+	set_physics_process(ligada)
+	_parar_o_bote()
+	cacando = false
+	estado = "ronda"
+	velocity = Vector3.ZERO
+	if ligada:
+		global_position = _ninho
+		_destino = _ninho
+
+
+## Anda agora? Pela chave própria, e não pela física: o portão desliga a
+## física do bicho para pô-lo à mão, e ele continua no vale.
+func ativa() -> bool:
+	return _ativa
+
+
+func _ponto_perto_do_ninho(raio: float = -1.0) -> Vector3:
+	if raio <= 0.0:
+		raio = _u_de(RAIO_DO_NINHO)
 	for i in 10:
 		var ponto := _ninho + Vector3(_rng.randf_range(-raio, raio), 0.0, _rng.randf_range(-raio, raio))
 		if _world == null or _world.is_on_land(ponto):

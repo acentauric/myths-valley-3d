@@ -1,10 +1,11 @@
 {
-	"_sobre": "O que o jogador lê na luta do vale (#14). 'caiu', 'cansado' e as palavras que sobem sobre quem apanhou são as do jogo 2D (Mundo._acertar, _avisar_cansaco, _mostrar_pancada), verbatim. 'levou' é do vale: aqui o que o bicho deixa vai direto para a mochila, porque o vale ainda não tem coleta no chão. A tradução en/es é do Ramon; ver FALTAM_TRADUCAO em tests/idiomas.gd.",
+	"_sobre": "O que o jogador lê na luta do vale (#14). 'caiu', 'cansado' e as palavras que sobem sobre quem apanhou são as do jogo 2D (Mundo._acertar, _avisar_cansaco, _mostrar_pancada), verbatim. 'levou' é do vale: aqui o que o bicho deixa vai direto para a mochila, porque o vale ainda não tem coleta no chão. A tradução en/es é do Ramon; ver FALTAM_TRADUCAO em tests/idiomas.gd. 'onca_viu' (a primeira vez que uma onça vê o jogador, #28) nasceu no vale, já nos três idiomas.",
 	"caiu": {"texto": "%s caiu."},
 	"levou": {"texto": "%s caiu. Na mochila: %s."},
 	"cansado": {"texto": "O braço não sobe mais. Por hoje chega."},
 	"escapou": {"texto": "escapou"},
 	"tonto": {"texto": "tonto"},
 	"veneno": {"texto": "veneno"},
-	"cortou": {"texto": "cortou"}
+	"cortou": {"texto": "cortou"},
+	"onca_viu": {"texto": "A onça te viu! Quem vai andando é alcançado; quem corre, escapa.", "texto_en": "The jaguar has seen you! Walk and she catches you; run and you get away.", "texto_es": "¡El jaguar te vio! Quien camina es alcanzado; quien corre, escapa."}
 }

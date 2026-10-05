@@ -544,6 +544,1590 @@
           "audio": ""
         }
       ]
+    },
+    {
+      "id": "padre",
+      "nome": "Padre Anselmo",
+      "oficio": "padre da freguesia",
+      "oficio_en": "parish priest",
+      "oficio_es": "cura de la parroquia",
+      "altura": 1.72,
+      "mudo": true,
+      "casa": "Casa do arraial 7",
+      "recolhe": true,
+      "gesto_saudacao": 0,
+      "gesto_tripo": 0,
+      "postos": {
+        "madrugada": [
+          "Casa do arraial 7",
+          [
+            0.0,
+            0,
+            3.0
+          ]
+        ],
+        "manha": [
+          "Cemitério",
+          [
+            0.0,
+            0,
+            6.8
+          ]
+        ],
+        "tarde": [
+          "Casa do arraial 7",
+          [
+            -1.0,
+            0,
+            4.2
+          ]
+        ],
+        "entardecer": [
+          "Igreja",
+          [
+            -3.0,
+            0,
+            7.0
+          ]
+        ],
+        "noite": [
+          "Casa do arraial 7",
+          [
+            0.0,
+            0,
+            3.0
+          ]
+        ]
+      },
+      "agenda": [
+        {
+          "de": 5.0,
+          "lugar": "Casa",
+          "desloc": [
+            1.0,
+            0,
+            4.2
+          ],
+          "acao": "olhar"
+        },
+        {
+          "de": 6.0,
+          "lugar": "Igreja",
+          "desloc": [
+            0.0,
+            0,
+            7.0
+          ],
+          "acao": "rezar"
+        },
+        {
+          "de": 9.0,
+          "lugar": "Cemitério",
+          "desloc": [
+            0.0,
+            0,
+            6.8
+          ],
+          "acao": "benzer"
+        },
+        {
+          "de": 11.0,
+          "lugar": "Casa da estrada",
+          "desloc": [
+            2.4,
+            0,
+            4.6
+          ],
+          "acao": "conversar"
+        },
+        {
+          "de": 13.5,
+          "lugar": "Casa",
+          "desloc": [
+            -1.0,
+            0,
+            4.2
+          ],
+          "acao": "descansar"
+        },
+        {
+          "de": 15.5,
+          "lugar": "Igreja",
+          "desloc": [
+            -3.0,
+            0,
+            7.0
+          ],
+          "acao": "olhar"
+        },
+        {
+          "de": 17.7,
+          "lugar": "Cruzeiro",
+          "desloc": [
+            2.6,
+            0,
+            0.0
+          ],
+          "acao": "rezar"
+        },
+        {
+          "de": 19.0,
+          "lugar": "Casa",
+          "desloc": [
+            0.0,
+            0,
+            3.0
+          ],
+          "acao": "recolhido"
+        }
+      ]
+    },
+    {
+      "id": "sacristao",
+      "nome": "Sacristão Zacarias",
+      "oficio": "sacristão da igreja",
+      "oficio_en": "church sexton",
+      "oficio_es": "sacristán de la iglesia",
+      "altura": 1.62,
+      "mudo": true,
+      "casa": "Casa do arraial 1",
+      "recolhe": true,
+      "gesto_saudacao": 0,
+      "gesto_tripo": 0,
+      "postos": {
+        "madrugada": [
+          "Casa do arraial 1",
+          [
+            0.0,
+            0,
+            3.0
+          ]
+        ],
+        "manha": [
+          "Igreja",
+          [
+            3.4,
+            0,
+            6.6
+          ]
+        ],
+        "tarde": [
+          "Cemitério",
+          [
+            4.4,
+            0,
+            3.4
+          ]
+        ],
+        "entardecer": [
+          "Igreja",
+          [
+            0.0,
+            0,
+            7.4
+          ]
+        ],
+        "noite": [
+          "Casa do arraial 1",
+          [
+            0.0,
+            0,
+            3.0
+          ]
+        ]
+      },
+      "agenda": [
+        {
+          "de": 5.0,
+          "lugar": "Casa",
+          "desloc": [
+            1.0,
+            0,
+            4.0
+          ],
+          "acao": "olhar"
+        },
+        {
+          "de": 5.6,
+          "lugar": "Igreja",
+          "desloc": [
+            -3.2,
+            0,
+            6.6
+          ],
+          "acao": "varrer",
+          "mao": "vassoura_piacava"
+        },
+        {
+          "de": 8.0,
+          "lugar": "Igreja",
+          "desloc": [
+            3.4,
+            0,
+            6.6
+          ],
+          "acao": "olhar"
+        },
+        {
+          "de": 13.0,
+          "lugar": "Cemitério",
+          "desloc": [
+            4.4,
+            0,
+            3.4
+          ],
+          "acao": "capinar"
+        },
+        {
+          "de": 16.5,
+          "lugar": "Igreja",
+          "desloc": [
+            0.0,
+            0,
+            7.4
+          ],
+          "acao": "rezar"
+        },
+        {
+          "de": 19.5,
+          "lugar": "Casa",
+          "desloc": [
+            0.0,
+            0,
+            3.0
+          ],
+          "acao": "recolhido"
+        }
+      ]
+    },
+    {
+      "id": "beata",
+      "nome": "Sá Joaquina",
+      "oficio": "beata, reza o terço",
+      "oficio_en": "devout parishioner",
+      "oficio_es": "beata del pueblo",
+      "altura": 1.55,
+      "mudo": true,
+      "casa": "Casa do arraial 1",
+      "recolhe": true,
+      "gesto_saudacao": 0,
+      "gesto_tripo": 0,
+      "postos": {
+        "madrugada": [
+          "Casa do arraial 1",
+          [
+            0.0,
+            0,
+            3.0
+          ]
+        ],
+        "manha": [
+          "Poço",
+          [
+            -1.6,
+            0,
+            1.8
+          ]
+        ],
+        "tarde": [
+          "Casa do arraial 1",
+          [
+            -1.2,
+            0,
+            4.0
+          ]
+        ],
+        "entardecer": [
+          "Igreja",
+          [
+            1.4,
+            0,
+            7.2
+          ]
+        ],
+        "noite": [
+          "Casa do arraial 1",
+          [
+            0.0,
+            0,
+            3.0
+          ]
+        ]
+      },
+      "agenda": [
+        {
+          "de": 5.5,
+          "lugar": "Casa",
+          "desloc": [
+            -1.2,
+            0,
+            4.0
+          ],
+          "acao": "olhar"
+        },
+        {
+          "de": 6.2,
+          "lugar": "Igreja",
+          "desloc": [
+            1.4,
+            0,
+            7.2
+          ],
+          "acao": "rezar"
+        },
+        {
+          "de": 8.0,
+          "lugar": "Poço",
+          "desloc": [
+            -1.6,
+            0,
+            1.8
+          ],
+          "acao": "olhar",
+          "mao": "balde"
+        },
+        {
+          "de": 9.5,
+          "lugar": "Praça",
+          "desloc": [
+            3.0,
+            0,
+            -4.0
+          ],
+          "acao": "conversar"
+        },
+        {
+          "de": 12.0,
+          "lugar": "Casa",
+          "desloc": [
+            -1.2,
+            0,
+            4.0
+          ],
+          "acao": "descansar"
+        },
+        {
+          "de": 15.0,
+          "lugar": "Igreja",
+          "desloc": [
+            1.4,
+            0,
+            7.2
+          ],
+          "acao": "rezar"
+        },
+        {
+          "de": 17.7,
+          "lugar": "Cruzeiro",
+          "desloc": [
+            -2.6,
+            0,
+            0.0
+          ],
+          "acao": "rezar"
+        },
+        {
+          "de": 19.0,
+          "lugar": "Casa",
+          "desloc": [
+            0.0,
+            0,
+            3.0
+          ],
+          "acao": "recolhido"
+        }
+      ]
+    },
+    {
+      "id": "mercador",
+      "nome": "Seu Nicolau",
+      "oficio": "dono da venda",
+      "oficio_en": "storekeeper",
+      "oficio_es": "dueño de la venta",
+      "altura": 1.72,
+      "mudo": true,
+      "casa": "Venda do Bar",
+      "recolhe": true,
+      "gesto_saudacao": 0,
+      "gesto_tripo": 0,
+      "postos": {
+        "madrugada": [
+          "Bar",
+          [
+            0.0,
+            0,
+            3.4
+          ]
+        ],
+        "manha": [
+          "Bar",
+          [
+            1.8,
+            0,
+            3.8
+          ]
+        ],
+        "tarde": [
+          "Bar",
+          [
+            1.8,
+            0,
+            3.8
+          ]
+        ],
+        "entardecer": [
+          "Bar",
+          [
+            1.8,
+            0,
+            3.8
+          ]
+        ],
+        "noite": [
+          "Bar",
+          [
+            0.0,
+            0,
+            3.4
+          ]
+        ]
+      },
+      "agenda": [
+        {
+          "de": 5.5,
+          "lugar": "Bar",
+          "desloc": [
+            -1.6,
+            0,
+            4.6
+          ],
+          "acao": "varrer",
+          "mao": "vassoura_piacava"
+        },
+        {
+          "de": 6.3,
+          "lugar": "Bar",
+          "desloc": [
+            1.8,
+            0,
+            3.8
+          ],
+          "acao": "balcao"
+        },
+        {
+          "de": 12.0,
+          "lugar": "Bar",
+          "desloc": [
+            -3.0,
+            0,
+            4.4
+          ],
+          "acao": "descansar"
+        },
+        {
+          "de": 13.0,
+          "lugar": "Bar",
+          "desloc": [
+            1.8,
+            0,
+            3.8
+          ],
+          "acao": "balcao"
+        },
+        {
+          "de": 18.0,
+          "lugar": "Bar",
+          "desloc": [
+            3.4,
+            0,
+            4.6
+          ],
+          "acao": "olhar"
+        },
+        {
+          "de": 20.0,
+          "lugar": "Bar",
+          "desloc": [
+            0.0,
+            0,
+            3.4
+          ],
+          "acao": "recolhido"
+        }
+      ]
+    },
+    {
+      "id": "guarda",
+      "nome": "Guarda Aristides",
+      "oficio": "guarda da vila (sem arma)",
+      "oficio_en": "village watchman (unarmed)",
+      "oficio_es": "guardia de la villa (sin arma)",
+      "altura": 1.74,
+      "mudo": true,
+      "casa": "Casa do guarda",
+      "recolhe": true,
+      "gesto_saudacao": 0,
+      "gesto_tripo": 0,
+      "postos": {
+        "madrugada": [
+          "Casa do guarda",
+          [
+            0.0,
+            0,
+            3.0
+          ]
+        ],
+        "manha": [
+          "Praça",
+          [
+            -3.2,
+            0,
+            4.0
+          ]
+        ],
+        "tarde": [
+          "Igreja",
+          [
+            -4.4,
+            0,
+            7.4
+          ]
+        ],
+        "entardecer": [
+          "Praça",
+          [
+            3.4,
+            0,
+            4.4
+          ]
+        ],
+        "noite": [
+          "Igreja",
+          [
+            4.6,
+            0,
+            7.6
+          ]
+        ]
+      },
+      "agenda": [
+        {
+          "de": 5.5,
+          "lugar": "Casa",
+          "desloc": [
+            1.4,
+            0,
+            3.8
+          ],
+          "acao": "vigiar"
+        },
+        {
+          "de": 7.0,
+          "lugar": "Praça",
+          "desloc": [
+            -3.2,
+            0,
+            4.0
+          ],
+          "acao": "vigiar"
+        },
+        {
+          "de": 11.0,
+          "lugar": "PierPiso",
+          "desloc": [
+            -1.0,
+            0,
+            3.4
+          ],
+          "acao": "vigiar"
+        },
+        {
+          "de": 14.0,
+          "lugar": "Igreja",
+          "desloc": [
+            -4.4,
+            0,
+            7.4
+          ],
+          "acao": "vigiar"
+        },
+        {
+          "de": 17.5,
+          "lugar": "Praça",
+          "desloc": [
+            3.4,
+            0,
+            4.4
+          ],
+          "acao": "vigiar",
+          "mao": "candeeiro"
+        },
+        {
+          "de": 20.5,
+          "lugar": "Igreja",
+          "desloc": [
+            4.6,
+            0,
+            7.6
+          ],
+          "acao": "vigiar",
+          "mao": "candeeiro"
+        },
+        {
+          "de": 23.8,
+          "lugar": "Casa",
+          "desloc": [
+            0.0,
+            0,
+            3.0
+          ],
+          "acao": "recolhido"
+        }
+      ]
+    },
+    {
+      "id": "pescador",
+      "nome": "Seu Jerônimo",
+      "oficio": "pescador de linha",
+      "oficio_en": "line fisherman",
+      "oficio_es": "pescador de caña",
+      "altura": 1.73,
+      "mudo": true,
+      "casa": "Casa do pescador",
+      "recolhe": true,
+      "gesto_saudacao": 0,
+      "gesto_tripo": 0,
+      "postos": {
+        "madrugada": [
+          "Casa do pescador",
+          [
+            0.0,
+            0,
+            3.0
+          ]
+        ],
+        "manha": [
+          "PierPiso",
+          [
+            1.0,
+            0,
+            3.0
+          ]
+        ],
+        "tarde": [
+          "Casa do pescador",
+          [
+            -1.4,
+            0,
+            4.0
+          ]
+        ],
+        "entardecer": [
+          "Praça",
+          [
+            -5.0,
+            0,
+            3.4
+          ]
+        ],
+        "noite": [
+          "Casa do pescador",
+          [
+            0.0,
+            0,
+            3.0
+          ]
+        ]
+      },
+      "agenda": [
+        {
+          "de": 7.0,
+          "lugar": "PierPiso",
+          "desloc": [
+            1.0,
+            0,
+            3.0
+          ],
+          "acao": "pescar",
+          "mao": "vara_pescar"
+        },
+        {
+          "de": 13.0,
+          "lugar": "Casa",
+          "desloc": [
+            -1.4,
+            0,
+            4.0
+          ],
+          "acao": "remendar"
+        },
+        {
+          "de": 16.5,
+          "lugar": "Praça",
+          "desloc": [
+            -5.0,
+            0,
+            3.4
+          ],
+          "acao": "conversar"
+        },
+        {
+          "de": 19.0,
+          "lugar": "Casa",
+          "desloc": [
+            0.0,
+            0,
+            3.0
+          ],
+          "acao": "recolhido"
+        }
+      ]
+    },
+    {
+      "id": "marisqueira",
+      "nome": "Dona Rosa",
+      "oficio": "marisqueira",
+      "oficio_en": "shellfish gatherer",
+      "oficio_es": "marisquera",
+      "altura": 1.6,
+      "mudo": true,
+      "casa": "Casa da marisqueira",
+      "recolhe": true,
+      "gesto_saudacao": 0,
+      "gesto_tripo": 0,
+      "postos": {
+        "madrugada": [
+          "Casa da marisqueira",
+          [
+            0.0,
+            0,
+            3.0
+          ]
+        ],
+        "manha": [
+          "Rio 2",
+          [
+            0.0,
+            0,
+            -7.0
+          ]
+        ],
+        "tarde": [
+          "Casa da marisqueira",
+          [
+            1.4,
+            0,
+            4.0
+          ]
+        ],
+        "entardecer": [
+          "Casa da marisqueira",
+          [
+            1.4,
+            0,
+            4.0
+          ]
+        ],
+        "noite": [
+          "Casa da marisqueira",
+          [
+            0.0,
+            0,
+            3.0
+          ]
+        ]
+      },
+      "agenda": [
+        {
+          "de": 6.5,
+          "lugar": "Rio 2",
+          "desloc": [
+            0.0,
+            0,
+            -7.0
+          ],
+          "acao": "mariscar",
+          "mao_andando": "cesto"
+        },
+        {
+          "de": 10.5,
+          "lugar": "Praça",
+          "desloc": [
+            -4.0,
+            0,
+            4.4
+          ],
+          "acao": "vender",
+          "cabeca": "cesto"
+        },
+        {
+          "de": 14.0,
+          "lugar": "Casa",
+          "desloc": [
+            1.4,
+            0,
+            4.0
+          ],
+          "acao": "descansar"
+        },
+        {
+          "de": 18.5,
+          "lugar": "Casa",
+          "desloc": [
+            0.0,
+            0,
+            3.0
+          ],
+          "acao": "recolhido"
+        }
+      ]
+    },
+    {
+      "id": "lavadeira",
+      "nome": "Sá Rita",
+      "oficio": "lavadeira",
+      "oficio_en": "laundress",
+      "oficio_es": "lavandera",
+      "altura": 1.6,
+      "mudo": true,
+      "casa": "Casa da lavadeira",
+      "recolhe": true,
+      "gesto_saudacao": 0,
+      "gesto_tripo": 0,
+      "postos": {
+        "madrugada": [
+          "Casa da lavadeira",
+          [
+            0.0,
+            0,
+            3.0
+          ]
+        ],
+        "manha": [
+          "Ponte do rio central",
+          [
+            2.0,
+            0,
+            4.0
+          ]
+        ],
+        "tarde": [
+          "Casa da lavadeira/Varal",
+          [
+            0.0,
+            0,
+            1.2
+          ]
+        ],
+        "entardecer": [
+          "Casa da lavadeira/Varal",
+          [
+            0.0,
+            0,
+            1.2
+          ]
+        ],
+        "noite": [
+          "Casa da lavadeira",
+          [
+            0.0,
+            0,
+            3.0
+          ]
+        ]
+      },
+      "agenda": [
+        {
+          "de": 5.0,
+          "lugar": "Casa",
+          "desloc": [
+            1.2,
+            0,
+            3.8
+          ],
+          "acao": "varrer",
+          "mao": "vassoura_piacava"
+        },
+        {
+          "de": 7.5,
+          "lugar": "Ponte do rio central",
+          "desloc": [
+            2.0,
+            0,
+            4.0
+          ],
+          "acao": "lavar",
+          "cabeca_andando": "trouxa_roupa"
+        },
+        {
+          "de": 12.5,
+          "lugar": "Casa/Varal",
+          "desloc": [
+            0.0,
+            0,
+            1.2
+          ],
+          "acao": "estender",
+          "cabeca_andando": "trouxa_roupa"
+        },
+        {
+          "de": 15.0,
+          "lugar": "Poço",
+          "desloc": [
+            2.4,
+            0,
+            1.0
+          ],
+          "acao": "conversar"
+        },
+        {
+          "de": 17.0,
+          "lugar": "Casa/Varal",
+          "desloc": [
+            0.0,
+            0,
+            1.2
+          ],
+          "acao": "recolher"
+        },
+        {
+          "de": 18.5,
+          "lugar": "Casa",
+          "desloc": [
+            0.0,
+            0,
+            3.0
+          ],
+          "acao": "recolhido"
+        }
+      ]
+    },
+    {
+      "id": "rendeira",
+      "nome": "Dona Estefânia",
+      "oficio": "rendeira",
+      "oficio_en": "lacemaker",
+      "oficio_es": "encajera",
+      "altura": 1.58,
+      "mudo": true,
+      "casa": "Casa da rendeira",
+      "recolhe": true,
+      "gesto_saudacao": 0,
+      "gesto_tripo": 0,
+      "postos": {
+        "madrugada": [
+          "Casa da rendeira",
+          [
+            0.0,
+            0,
+            3.0
+          ]
+        ],
+        "manha": [
+          "Casa da rendeira",
+          [
+            -1.6,
+            0,
+            3.6
+          ]
+        ],
+        "tarde": [
+          "Praça",
+          [
+            4.4,
+            0,
+            3.8
+          ]
+        ],
+        "entardecer": [
+          "Casa da rendeira",
+          [
+            -1.6,
+            0,
+            3.6
+          ]
+        ],
+        "noite": [
+          "Casa da rendeira",
+          [
+            0.0,
+            0,
+            3.0
+          ]
+        ]
+      },
+      "agenda": [
+        {
+          "de": 6.0,
+          "lugar": "Casa",
+          "desloc": [
+            -1.6,
+            0,
+            3.6
+          ],
+          "acao": "renda"
+        },
+        {
+          "de": 11.5,
+          "lugar": "Poço",
+          "desloc": [
+            -1.4,
+            0,
+            1.6
+          ],
+          "acao": "olhar",
+          "mao": "balde"
+        },
+        {
+          "de": 13.0,
+          "lugar": "Praça",
+          "desloc": [
+            4.4,
+            0,
+            3.8
+          ],
+          "acao": "conversar"
+        },
+        {
+          "de": 15.0,
+          "lugar": "Casa",
+          "desloc": [
+            -1.6,
+            0,
+            3.6
+          ],
+          "acao": "renda"
+        },
+        {
+          "de": 18.5,
+          "lugar": "Casa",
+          "desloc": [
+            0.0,
+            0,
+            3.0
+          ],
+          "acao": "recolhido"
+        }
+      ]
+    },
+    {
+      "id": "quituteira",
+      "nome": "Dona Ambrósia",
+      "oficio": "quituteira, vende acarajé e beiju",
+      "oficio_en": "street cook, sells acarajé and beiju",
+      "oficio_es": "cocinera ambulante, vende acarajé y beiju",
+      "altura": 1.62,
+      "mudo": true,
+      "casa": "Casa da quituteira",
+      "recolhe": true,
+      "gesto_saudacao": 0,
+      "gesto_tripo": 0,
+      "postos": {
+        "madrugada": [
+          "Casa da quituteira",
+          [
+            0.0,
+            0,
+            3.0
+          ]
+        ],
+        "manha": [
+          "Praça",
+          [
+            5.4,
+            0,
+            -3.8
+          ]
+        ],
+        "tarde": [
+          "Igreja",
+          [
+            -2.6,
+            0,
+            7.8
+          ]
+        ],
+        "entardecer": [
+          "Igreja",
+          [
+            -2.6,
+            0,
+            7.8
+          ]
+        ],
+        "noite": [
+          "Casa da quituteira",
+          [
+            0.0,
+            0,
+            3.0
+          ]
+        ]
+      },
+      "agenda": [
+        {
+          "de": 7.0,
+          "lugar": "Praça",
+          "desloc": [
+            5.4,
+            0,
+            -3.8
+          ],
+          "acao": "vender",
+          "cabeca": "tabuleiro"
+        },
+        {
+          "de": 13.0,
+          "lugar": "Igreja",
+          "desloc": [
+            -2.6,
+            0,
+            7.8
+          ],
+          "acao": "vender",
+          "cabeca": "tabuleiro"
+        },
+        {
+          "de": 18.5,
+          "lugar": "Casa",
+          "desloc": [
+            0.0,
+            0,
+            3.0
+          ],
+          "acao": "recolhido"
+        }
+      ]
+    },
+    {
+      "id": "carpinteiro",
+      "nome": "Seu Epifânio",
+      "oficio": "carpinteiro de canoas",
+      "oficio_en": "canoe carpenter",
+      "oficio_es": "carpintero de canoas",
+      "altura": 1.76,
+      "mudo": true,
+      "casa": "Casa do carpinteiro",
+      "recolhe": true,
+      "gesto_saudacao": 0,
+      "gesto_tripo": 0,
+      "postos": {
+        "madrugada": [
+          "Casa do carpinteiro",
+          [
+            0.0,
+            0,
+            3.0
+          ]
+        ],
+        "manha": [
+          "Casa do carpinteiro/Canoa",
+          [
+            0.0,
+            0,
+            2.2
+          ]
+        ],
+        "tarde": [
+          "Casa do carpinteiro/Canoa",
+          [
+            0.0,
+            0,
+            2.2
+          ]
+        ],
+        "entardecer": [
+          "Casa do carpinteiro/Canoa",
+          [
+            0.0,
+            0,
+            2.2
+          ]
+        ],
+        "noite": [
+          "Casa do carpinteiro",
+          [
+            0.0,
+            0,
+            3.0
+          ]
+        ]
+      },
+      "agenda": [
+        {
+          "de": 6.5,
+          "lugar": "Casa/canoa_em_obra",
+          "desloc": [
+            0.0,
+            0,
+            2.2
+          ],
+          "acao": "rachar"
+        },
+        {
+          "de": 12.0,
+          "lugar": "Casa",
+          "desloc": [
+            1.4,
+            0,
+            4.0
+          ],
+          "acao": "descansar"
+        },
+        {
+          "de": 13.0,
+          "lugar": "Casa/canoa_em_obra",
+          "desloc": [
+            0.0,
+            0,
+            2.2
+          ],
+          "acao": "carregar"
+        },
+        {
+          "de": 18.0,
+          "lugar": "Casa",
+          "desloc": [
+            0.0,
+            0,
+            3.0
+          ],
+          "acao": "recolhido"
+        }
+      ]
+    },
+    {
+      "id": "menino",
+      "nome": "Tonico",
+      "oficio": "menino, filho do carpinteiro",
+      "oficio_en": "boy, the carpenter's son",
+      "oficio_es": "niño, hijo del carpintero",
+      "altura": 1.3,
+      "mudo": true,
+      "casa": "Casa do carpinteiro",
+      "recolhe": true,
+      "velocidade": 1.9,
+      "gesto_saudacao": 0,
+      "gesto_tripo": 0,
+      "postos": {
+        "madrugada": [
+          "Casa do carpinteiro",
+          [
+            0.0,
+            0,
+            3.0
+          ]
+        ],
+        "manha": [
+          "Casa do carpinteiro",
+          [
+            2.0,
+            0,
+            4.2
+          ]
+        ],
+        "tarde": [
+          "Poço",
+          [
+            -1.0,
+            0,
+            2.4
+          ]
+        ],
+        "entardecer": [
+          "Casa do carpinteiro",
+          [
+            2.0,
+            0,
+            4.2
+          ]
+        ],
+        "noite": [
+          "Casa do carpinteiro",
+          [
+            0.0,
+            0,
+            3.0
+          ]
+        ]
+      },
+      "agenda": [
+        {
+          "de": 7.0,
+          "lugar": "Casa",
+          "desloc": [
+            2.0,
+            0,
+            4.2
+          ],
+          "acao": "brincar"
+        },
+        {
+          "de": 10.0,
+          "lugar": "Praça",
+          "desloc": [
+            -2.4,
+            0,
+            -4.4
+          ],
+          "acao": "brincar"
+        },
+        {
+          "de": 11.5,
+          "lugar": "Poço",
+          "desloc": [
+            -1.0,
+            0,
+            2.4
+          ],
+          "acao": "brincar"
+        },
+        {
+          "de": 15.0,
+          "lugar": "Praça",
+          "desloc": [
+            2.6,
+            0,
+            4.6
+          ],
+          "acao": "brincar"
+        },
+        {
+          "de": 16.5,
+          "lugar": "Casa",
+          "desloc": [
+            2.0,
+            0,
+            4.2
+          ],
+          "acao": "brincar"
+        },
+        {
+          "de": 18.5,
+          "lugar": "Casa",
+          "desloc": [
+            0.0,
+            0,
+            3.0
+          ],
+          "acao": "recolhido"
+        }
+      ]
+    },
+    {
+      "id": "menina",
+      "nome": "Mariinha",
+      "oficio": "menina, filha da quituteira",
+      "oficio_en": "girl, the street cook's daughter",
+      "oficio_es": "niña, hija de la cocinera",
+      "altura": 1.24,
+      "mudo": true,
+      "casa": "Casa da quituteira",
+      "recolhe": true,
+      "velocidade": 1.9,
+      "gesto_saudacao": 0,
+      "gesto_tripo": 0,
+      "postos": {
+        "madrugada": [
+          "Casa da quituteira",
+          [
+            0.0,
+            0,
+            3.0
+          ]
+        ],
+        "manha": [
+          "Casa da quituteira",
+          [
+            -2.0,
+            0,
+            4.2
+          ]
+        ],
+        "tarde": [
+          "Poço",
+          [
+            1.6,
+            0,
+            2.4
+          ]
+        ],
+        "entardecer": [
+          "Casa da quituteira",
+          [
+            -2.0,
+            0,
+            4.2
+          ]
+        ],
+        "noite": [
+          "Casa da quituteira",
+          [
+            0.0,
+            0,
+            3.0
+          ]
+        ]
+      },
+      "agenda": [
+        {
+          "de": 7.5,
+          "lugar": "Casa",
+          "desloc": [
+            -2.0,
+            0,
+            4.2
+          ],
+          "acao": "brincar"
+        },
+        {
+          "de": 10.0,
+          "lugar": "Praça",
+          "desloc": [
+            -4.2,
+            0,
+            3.6
+          ],
+          "acao": "brincar"
+        },
+        {
+          "de": 11.8,
+          "lugar": "Poço",
+          "desloc": [
+            1.6,
+            0,
+            2.4
+          ],
+          "acao": "brincar"
+        },
+        {
+          "de": 15.0,
+          "lugar": "Praça",
+          "desloc": [
+            4.4,
+            0,
+            -4.0
+          ],
+          "acao": "brincar"
+        },
+        {
+          "de": 16.8,
+          "lugar": "Casa",
+          "desloc": [
+            -2.0,
+            0,
+            4.2
+          ],
+          "acao": "brincar"
+        },
+        {
+          "de": 18.5,
+          "lugar": "Casa",
+          "desloc": [
+            0.0,
+            0,
+            3.0
+          ],
+          "acao": "recolhido"
+        }
+      ]
+    },
+    {
+      "id": "mestre_saveiro",
+      "nome": "Seu Ladislau",
+      "oficio": "saveirista, marinheiro do Recôncavo",
+      "oficio_en": "saveiro sailor of the Recôncavo",
+      "oficio_es": "marinero de saveiro del Recôncavo",
+      "altura": 1.7,
+      "mudo": true,
+      "casa": "Casa do arraial 4",
+      "recolhe": true,
+      "gesto_saudacao": 0,
+      "gesto_tripo": 0,
+      "postos": {
+        "madrugada": [
+          "Casa do arraial 4",
+          [
+            0.0,
+            0,
+            3.0
+          ]
+        ],
+        "manha": [
+          "PierPiso",
+          [
+            -1.8,
+            0,
+            3.4
+          ]
+        ],
+        "tarde": [
+          "PierPiso",
+          [
+            -1.8,
+            0,
+            3.4
+          ]
+        ],
+        "entardecer": [
+          "PierPiso",
+          [
+            -1.8,
+            0,
+            3.4
+          ]
+        ],
+        "noite": [
+          "Casa do arraial 4",
+          [
+            0.0,
+            0,
+            3.0
+          ]
+        ]
+      },
+      "agenda": [
+        {
+          "de": 8.5,
+          "lugar": "PierPiso",
+          "desloc": [
+            -1.8,
+            0,
+            3.4
+          ],
+          "acao": "esperar"
+        },
+        {
+          "de": 12.5,
+          "lugar": "PierPiso",
+          "desloc": [
+            -1.8,
+            0,
+            3.4
+          ],
+          "acao": "descansar"
+        },
+        {
+          "de": 17.8,
+          "lugar": "Bar",
+          "desloc": [
+            -2.6,
+            0,
+            4.8
+          ],
+          "acao": "conversar"
+        },
+        {
+          "de": 20.0,
+          "lugar": "Casa",
+          "desloc": [
+            0.0,
+            0,
+            3.0
+          ],
+          "acao": "recolhido"
+        }
+      ]
     }
   ]
 }

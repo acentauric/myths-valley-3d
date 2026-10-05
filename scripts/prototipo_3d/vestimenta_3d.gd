@@ -8,8 +8,9 @@ extends RefCounted
 ## mostra o que o corpo no vale não mostra, nem o contrário.
 ##
 ## Aparecem o que tem modelo: o chapéu na cabeça, as luvas nas duas mãos e, na
-## mão, o machado (de ferro ou de aço, que é o mesmo modelo), o facão, a foice
-## ou a ferramenta da barra que tiver modelo. O gibão e o patuá ainda não têm
+## mão, o machado (de ferro ou de aço, que é o mesmo modelo), o facão, a foice,
+## a picareta, a enxada, a vara de pescar ou o balde — a ferramenta da barra que
+## tiver modelo. O gibão e o patuá ainda não têm
 ## modelo, e nada aparece por eles. No estilo procedural só o machado, que é o
 ## que aquele estilo desenha: o procedural não ganha arte nova.
 
@@ -43,10 +44,42 @@ const MACHADO_PARADO := -30.0
 ## cabo embaixo à direita, ponta em cima à esquerda —, mas com a lâmina 23°
 ## para trás, e o acerto a endireita; a pegada dele é o meio do cabo (medido
 ## nas vistas do GLB, `scratch/foto/foto_facao.gd`).
+##
+## TODO CABO É SEGURO COMO O MACHADO, que é o molde aprovado: o acerto de cada
+## peça é o giro que leva o eixo do cabo e o lado da cabeça dela até os do
+## machado no GLB, e a pegada fica a 7,4 cm da ponta do cabo, como a dele. Por
+## cima do molde, a POSE de cada estado do corpo (`pose_de`): o giro em volta da
+## vertical e a inclinação em volta do lado do corpo — positiva abaixa a ponta —,
+## em graus. Sem pose escrita, parado e andando são (-30, 0) e o golpe (0, 0),
+## que é o machado de sempre; "uso" é a lida que não é golpe (regar, pescar).
+##
+## O BALDE VAI PENDURADO ("pendurar"): em pé, pela alça, com a vertical do mundo
+## — nunca deitado no punho. "ponta" é o ponto do GLB de onde sai alguma coisa:
+## a linha da vara (`ponta_na_mao`).
+##
+## A enxada, o balde, a vara e a picareta foram refeitos no Tripo na noite de
+## 05/10 (cabo reto e lâmina larga, alça de balde, vara de bambu, picareta de
+## verdade): GLB novo pede só medir de novo e trocar a linha dele aqui, com a
+## folha de `fotos_da_mao.gd`.
 const NA_MAO := {
 	"machado": {"tamanho": 0.46, "pegada": Vector3(0.34, 0.12, 0.0), "acerto": Vector3.ZERO},
 	"facao": {"tamanho": 0.34, "pegada": Vector3(0.31, 0.19, 0.13), "acerto": Vector3(23.0, 0.0, 0.0)},
+	# No golpe a ponta desce 25°: a picareta bate na pedra, e não no ar.
+	"picareta": {"tamanho": 0.536, "pegada": Vector3(0.149, 0.070, 0.078), "acerto": Vector3(-0.3, 155.2, -45.0), "golpe": Vector2(0.0, 25.0)},
+	# A foicinha de mão (~0,55 m): parada, a lâmina vai à frente e para cima. O
+	# cabo é fino, e a pegada entra no punho ("aperto").
+	"foice": {"tamanho": 0.459, "pegada": Vector3(0.307, 0.133, 0.311), "acerto": Vector3(58.8, -169.5, -95.6), "parado": Vector2(-30.0, -60.0), "aperto": 0.6},
+	# A enxada de cabo reto (~1,3 m) e lâmina larga (~0,3 m): a pegada fica a
+	# ~35 cm do pé do cabo (o pé passa entre as duas mãos do golpe).
+	"enxada": {"tamanho": 0.545, "pegada": Vector3(0.176, 0.617, -0.075), "acerto": Vector3(-1.6, 179.1, -171.9), "parado": Vector2(80.0, -105.0), "golpe": Vector2(0.0, 33.0)},
+	# A vara de 2,4 m: erguida, senão a ponta se enterra; pescando, baixa para a água.
+	"vara_pescar": {"tamanho": 0.553, "pegada": Vector3(0.106, 0.029, 0.259), "acerto": Vector3(21.9, 155.2, -48.1), "parado": Vector2(-42.0, -55.0), "golpe": Vector2(0.0, -55.0), "uso": Vector2(-36.0, -35.0), "ponta": Vector3(-0.12, 0.97, -0.33)},
+	# Regando, o balde tomba para a frente pela alça e a boca despeja.
+	"balde": {"tamanho": 0.5, "pegada": Vector3(0.09, 0.84, 0.06), "pendurar": true, "uso": Vector2(0.0, 70.0)},
 }
+## O ITEM QUE TEM OUTRO NOME NO CATÁLOGO DE MODELOS: o item é "vara_de_pescar",
+## e a peça é "vara_pescar" (o cenário da orla já usa essa chave, que fica).
+const PECA_DO_ITEM := {"vara_de_pescar": "vara_pescar"}
 
 
 ## O que o corpo mostra na mão agora: "machado" (o de ferro ou o de aço), a
@@ -60,6 +93,7 @@ static func item_na_mao() -> String:
 	if id == "" or (Catalogo.tipo(id) != "ferramenta" and Catalogo.dano(id) <= 0.0):
 		return ""
 	var peca := Catalogo.familia(id)
+	peca = str(PECA_DO_ITEM.get(peca, peca))
 	if not Estilo.tripo() or not CatalogoAssets.tem_tripo(peca):
 		return ""
 	return peca
@@ -70,37 +104,117 @@ static func nome_da_ancora(peca: String) -> String:
 	return peca.to_pascal_case() + "NaMao"
 
 
-## A PEÇA NA MÃO, a que `item_na_mao` deu. Devolve o pivô da pegada (o balanço
-## do braço gira em volta dele), ou null quando a peça não balança.
+## A PEÇA NA MÃO, a que `item_na_mao` deu. Devolve o pivô da pegada (a pose de
+## cada estado gira em volta dele, `posar`), ou null quando a peça não tem pivô
+## (o machado procedural).
 static func na_mao(ancora: Node3D, visual: Node3D, peca: String) -> Node3D:
 	if peca == "machado":
 		return machado(ancora, visual)
-	if NA_MAO.has(peca):
-		return _na_mao(ancora, visual, peca)
-	if peca == "foice":
-		return _foice(ancora)
-	# As outras ferramentas com modelo vão firmes no punho, sem balanço.
-	var no := CatalogoAssets.instanciar(peca, ancora, Vector3.ZERO, 0.5)
-	if no != null:
-		no.rotation_degrees = Vector3(0.0, 0.0, 90.0)
-		no.position = Vector3(0.0, -0.08, 0.0)
-		no.set_meta("peca", peca)
-	return null
+	if not NA_MAO.has(peca):
+		# Peça sem encaixe medido vai pendurada pelo topo: é o modo que nunca
+		# entra no braço. Ela pede uma linha em NA_MAO.
+		push_warning("Vestimenta3D: a peça \"%s\" não tem encaixe na mão (NA_MAO); vai pendurada pelo topo." % peca)
+		return _pendurado(ancora, visual, peca, {})
+	if bool(NA_MAO[peca].get("pendurar", false)):
+		return _pendurado(ancora, visual, peca, NA_MAO[peca])
+	return _na_mao(ancora, visual, peca)
 
 
-## A FOICE: a pegada fica junto à base do cabo, e o pivô acompanha o mesmo
-## balanço de mão do machado.
-static func _foice(ancora: Node3D) -> Node3D:
-	var pivo := Node3D.new()
-	pivo.name = "PivoDaFoice"
+## A POSE DA PEÇA num estado do corpo — "parado", "andando", "golpe" ou "uso" —:
+## (giro em volta da vertical, inclinação em volta do lado do corpo), em graus.
+## O que a linha da peça não diz é o do machado; pendurada, ela fica em pé.
+static func pose_de(peca: String, estado: String) -> Vector2:
+	var ajuste: Dictionary = NA_MAO.get(peca, {})
+	var em_pe := bool(ajuste.get("pendurar", false)) or not NA_MAO.has(peca)
+	var parado: Vector2 = ajuste.get("parado", Vector2.ZERO if em_pe else Vector2(MACHADO_PARADO, 0.0))
+	match estado:
+		"andando":
+			return ajuste.get("andando", parado)
+		"golpe":
+			return ajuste.get("golpe", Vector2.ZERO)
+		"uso":
+			return ajuste.get("uso", parado)
+	return parado
+
+
+## POSA A PEÇA em volta da pegada: `pose` é (giro, inclinação) em graus, no
+## quadro do corpo (`visual`), como `pose_de` dá. A pendurada guarda a pose e se
+## apruma sozinha a cada quadro do esqueleto.
+static func posar(ancora: Node3D, pivo: Node3D, visual: Node3D, pose: Vector2) -> void:
+	if pivo is PivoPendurado:
+		pivo.giro = pose.x
+		pivo.inclinacao = pose.y
+		pivo.aprumar()
+		return
+	var vertical := (ancora.global_basis.inverse() * visual.global_basis.y).normalized()
+	var lateral := (ancora.global_basis.inverse() * visual.global_basis.x).normalized()
+	pivo.basis = Basis(vertical, deg_to_rad(pose.x)) * Basis(lateral, deg_to_rad(pose.y))
+
+
+## ONDE A PONTA DA PEÇA NA MÃO ESTÁ NO MUNDO (a da vara, de onde sai a linha; a
+## boca do balde), procurando em `corpo` a peça vestida; INF se não houver.
+static func ponta_na_mao(corpo: Node) -> Vector3:
+	if corpo == null:
+		return Vector3.INF
+	for encontrado in corpo.find_children("*", "Node3D", true, false):
+		var no := encontrado as Node3D
+		if not no.has_meta("peca") or no.is_queued_for_deletion() or not no.is_visible_in_tree():
+			continue
+		var ajuste: Dictionary = NA_MAO.get(str(no.get_meta("peca")), {})
+		if ajuste.has("ponta"):
+			return no.global_transform * (ajuste["ponta"] as Vector3)
+	return Vector3.INF
+
+
+## A PEÇA PENDURADA (o balde): em pé, pela pegada, que fica na palma. Sem
+## pegada medida, pelo meio do topo do GLB.
+static func _pendurado(ancora: Node3D, visual: Node3D, peca: String, ajuste: Dictionary) -> Node3D:
+	var no := CatalogoAssets.instanciar(peca, ancora, Vector3.ZERO, float(ajuste.get("tamanho", 0.5)))
+	if no == null:
+		return null
+	var fator := no.scale.x
+	var pegada: Vector3 = ajuste.get("pegada", Vector3.INF)
+	if not pegada.is_finite():
+		var caixa: AABB = no.get_meta("limites", AABB())
+		pegada = Vector3(caixa.get_center().x, caixa.end.y, caixa.get_center().z) / maxf(fator, 0.0001)
+	var pivo := PivoPendurado.new()
+	pivo.name = "PivoDaAlca"
+	pivo.corpo = visual
+	pivo.position = Vector3(0.0, 0.06, 0.0)
 	ancora.add_child(pivo)
-	var foice := CatalogoAssets.instanciar("foice", pivo, Vector3.ZERO, 0.95)
-	if foice != null:
-		foice.rotation_degrees = Vector3(0.0, -90.0, 80.0)
-		foice.position -= foice.basis * Vector3(0.0, 0.11, 0.0)
-		foice.position += Vector3(0.0, 0.02, 0.0)
-		foice.set_meta("peca", "foice")
+	no.reparent(pivo, false)
+	no.transform = Transform3D(Basis.IDENTITY.scaled(Vector3.ONE * fator), -pegada * fator)
+	no.set_meta("peca", peca)
+	pivo.aprumar()
 	return pivo
+
+
+## O PIVÔ DA PEÇA PENDURADA: segue a palma, mas não o giro da mão — fica com a
+## vertical do mundo e o rumo do corpo, mais a pose. Ele se apruma no sinal do
+## esqueleto, DEPOIS de a animação mexer a mão: no `_process` ele correria um
+## quadro atrás dela, e o balde tremeria.
+class PivoPendurado extends Node3D:
+	var corpo: Node3D
+	var giro := 0.0
+	var inclinacao := 0.0
+
+	func _ready() -> void:
+		var no := get_parent()
+		while no != null and not (no is Skeleton3D):
+			no = no.get_parent()
+		if no != null:
+			(no as Skeleton3D).skeleton_updated.connect(aprumar)
+		set_process(no == null)
+
+	func _process(_delta: float) -> void:
+		aprumar()
+
+	func aprumar() -> void:
+		if not is_instance_valid(corpo) or not is_inside_tree():
+			return
+		var escala := get_parent_node_3d().global_basis.get_scale().x
+		var rumo := corpo.global_rotation.y + deg_to_rad(giro)
+		global_basis = (Basis(Vector3.UP, rumo) * Basis(Vector3.RIGHT, deg_to_rad(inclinacao))).scaled(Vector3.ONE * escala)
 
 
 ## O que o corpo mostra nas mãos agora (as luvas): o id do item, se ele tem
@@ -209,14 +323,33 @@ static func _na_mao(ancora: Node3D, visual: Node3D, peca: String) -> Node3D:
 	ancora.add_child(pivo)
 	pivo.position = no.transform * pegada
 	no.reparent(pivo, true)
+	# CABO FINO: o lugar da pegada do machado deixa o cabo dele, grosso, junto da
+	# palma; um cabo fino ali ficaria solto, longe dos dedos. O pivô — e a peça
+	# com ele — anda essa fração do caminho até a palma.
+	if ajuste.has("aperto"):
+		pivo.position = pivo.position.lerp(_palma_na_ancora(ancora), float(ajuste["aperto"]))
 	no.set_meta("peca", peca)
 	return pivo
 
 
-## O balanço do machado em volta da pegada, no eixo vertical do corpo.
+## A PALMA no quadro da âncora da mão: o meio do osso da mão e da raiz do dedo
+## médio. Sem esqueleto, o lugar da pegada do machado.
+static func _palma_na_ancora(ancora: Node3D) -> Vector3:
+	var anexo := ancora.get_parent() as BoneAttachment3D
+	var esqueleto := anexo.get_parent() as Skeleton3D if anexo != null else null
+	if esqueleto == null:
+		return Vector3(0.0, 0.06, 0.0)
+	var mao := esqueleto.find_bone(String(anexo.bone_name))
+	var medio := esqueleto.find_bone(String(anexo.bone_name) + "Middle1")
+	if mao < 0 or medio < 0:
+		return Vector3(0.0, 0.06, 0.0)
+	return 0.5 * (esqueleto.get_bone_global_rest(mao).affine_inverse() * esqueleto.get_bone_global_rest(medio).origin)
+
+
+## O balanço do machado em volta da pegada, no eixo vertical do corpo (o atalho
+## de `posar` sem inclinação; `angulo` em radianos).
 static func girar_o_machado(ancora: Node3D, pivo: Node3D, visual: Node3D, angulo: float) -> void:
-	var eixo_vertical_local := (ancora.global_basis.inverse() * visual.global_basis.y).normalized()
-	pivo.basis = Basis(eixo_vertical_local, angulo)
+	posar(ancora, pivo, visual, Vector2(rad_to_deg(angulo), 0.0))
 
 
 static func machado_procedural(pai: Node3D) -> void:

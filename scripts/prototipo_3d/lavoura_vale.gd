@@ -39,6 +39,8 @@ const MARGEM := 0.7
 const ALTURA_DA_DICA := 1.2
 ## Com que se rega: o balde d'água, como no 2D.
 const DE_REGAR := ["balde"]
+## Quanto tempo o balde fica tombado, despejando (s).
+const GESTO_DE_REGAR := 0.8
 
 ## O desenho de cada estágio: a peça do catálogo e o tamanho dela.
 const ESTAGIOS := {
@@ -144,7 +146,7 @@ func _montar_o_chao() -> void:
 			var caixa := BoxMesh.new()
 			caixa.size = Vector3(LADO_DO_LEITO, 0.05, LADO_DO_LEITO)
 			chao.mesh = caixa
-			chao.material_override = _terra(Color("a58a63"))
+			chao.material_override = _terra(COR_BRUTA)
 			add_child(chao)
 			chao.global_position = posicao_da(celula) + Vector3.UP * 0.02
 			chao.global_basis = Basis.looking_at(-_z, Vector3.UP)
@@ -160,7 +162,7 @@ func _desenhar(celula: Vector2i) -> void:
 		chao.material_override = _material_molhado if plantacao.molhado(celula) else _material_seco
 		(chao.mesh as BoxMesh).size = Vector3(LADO_DO_LEITO, 0.09, LADO_DO_LEITO)
 	else:
-		chao.material_override = _terra(Color("a58a63"))
+		chao.material_override = _terra(COR_BRUTA)
 		(chao.mesh as BoxMesh).size = Vector3(LADO_DO_LEITO, 0.05, LADO_DO_LEITO)
 	var cultura: String = plantacao.cultura_em(celula)
 	var desenho := "" if cultura == "" else "%s:%d" % [cultura, plantacao.estagio(celula)]
@@ -204,10 +206,33 @@ func _planta(cultura: String, qual: int, onde: Vector3, giro: float) -> Node3D:
 	return broto
 
 
+## A terra arada (terra_arada_v1, do OpenAI): sulcos paralelos no sentido de cada leito
+## (o UV é o da caixa, que gira com o campo). Um material por tinta, compartilhado
+## pelos 24 leitos: antes era um novo a cada célula, e liso.
+const TERRA_ARADA := "res://assets/prototipo_3d/materiais/terra_arada_v1.png"
+## Quantas vezes a textura (3 m de chão, 0,75 u) se repete num leito de 1 u.
+const REPETE_ARADA := 1.35
+## O leito ainda por arar, mais claro que o arado para se ver onde a lavoura é.
+const COR_BRUTA := Color("8c7253")
+## A cor média da textura (medida em Python): a tinta a acerta para a cor do estado.
+const MEDIA_ARADA := Color(0.262, 0.189, 0.138)
+var _terras: Dictionary = {}
+
+
 func _terra(cor: Color) -> StandardMaterial3D:
+	if _terras.has(cor):
+		return _terras[cor]
 	var material := StandardMaterial3D.new()
-	material.albedo_color = cor
+	material.albedo_texture = load(TERRA_ARADA)
+	# A tinta de cada estado (bruto, seco, molhado) é a cor de antes dividida pela
+	# média da textura: o leito arado continua escuro e o bruto, claro.
+	# A divisão é em luz linear, que é onde a cor da caixa multiplica a textura.
+	var alvo := cor.srgb_to_linear()
+	var media := MEDIA_ARADA.srgb_to_linear()
+	material.albedo_color = Color(alvo.r / media.r, alvo.g / media.g, alvo.b / media.b).linear_to_srgb()
+	material.uv1_scale = Vector3(REPETE_ARADA, REPETE_ARADA, 1.0)
 	material.roughness = 0.95
+	_terras[cor] = material
 	return material
 
 
@@ -264,7 +289,34 @@ func _unhandled_key_input(event: InputEvent) -> void:
 	if Dialogo.ocupado() or not _jogador.is_physics_processing():
 		return
 	get_viewport().set_input_as_handled()
+	_gesto_no_leito(_perto)
 	usar(_perto)
+
+
+## O GESTO QUE ACOMPANHA O EFEITO (arar e regar): o corpo se vira para o leito, e
+## a enxada cai nele — o golpe do machado, uma vez, e com ele a pose de golpe da
+## enxada (`Vestimenta3D.NA_MAO`) — ou o balde tomba e despeja. Só quando o
+## efeito vai acontecer: a enxada num leito já arado, ou o balde num leito seco
+## demais, não fazem gesto nenhum. Fica FORA de `usar()`, que os portões chamam
+## aos montes: o gesto é da tecla.
+func _gesto_no_leito(celula: Vector2i) -> void:
+	if not na_grade(celula) or _jogador == null:
+		return
+	var mao := Inventario.na_mao()
+	var arar: bool = mao == "enxada" and not plantacao.arado(celula)
+	var regar: bool = mao in DE_REGAR and plantacao.arado(celula) and not plantacao.molhado(celula)
+	if not arar and not regar:
+		return
+	var visual := _jogador.get("visual") as Node3D
+	if visual != null:
+		var alvo := posicao_da(celula)
+		visual.rotation.y = atan2(alvo.x - _jogador.global_position.x, alvo.z - _jogador.global_position.z)
+	if arar:
+		var animador = _jogador.get("animator")
+		if animador != null and animador.has_method("play_chop") and animador.play_chop(1) != "":
+			_jogador.call("travar_acao_de_golpe", 5.0, true)
+	elif _jogador.has_method("usar_item_na_mao"):
+		_jogador.call("usar_item_na_mao", GESTO_DE_REGAR)
 
 
 ## O GESTO NO LEITO, pelo que está na mão — `Mundo._usar_no_rocado` do 2D.

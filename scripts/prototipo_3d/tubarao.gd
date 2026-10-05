@@ -4,6 +4,13 @@ extends Node3D
 ## funda mais próxima do píer e persegue apenas o JOGADOR nadando no fundo — moradores
 ## e Pedro nunca são alvo. Ao alcançar, efeito de tela num CanvasLayer próprio e o
 ## jogador volta à terra firme (player._back_to_land()). Na maré baixa ele some.
+##
+## Também come: a cada 45 a 90 s, longe do jogador, arranca atrás do cardume mais
+## perto do grupo `presas_do_tubarao` (as cavalas e sororocas do mar de fora,
+## fauna_vale.gd) e, chegando junto, um peixe some com respingo — o cardume o repõe
+## depois. O jogador nadando no fundo continua sendo a primeira presa. Está no grupo
+## `predadores`, de quem os cardumes fogem. No estilo Tripo o corpo é o GLB
+## "tubarao" (cabeça-chata, nadando com o clipe do rig); no procedural, os prismas.
 
 ## Lâminas d'água (unidades): onde ele vive, onde ainda persegue e onde não entra.
 const LAMINA_FUNDA := 1.8
@@ -19,6 +26,19 @@ const COOLDOWN_ATAQUE := 25.0
 const ELIPSE_A := 14.0
 const ELIPSE_B := 8.0
 const SOM_ATAQUE := "res://assets/audio/efeitos/tubarao_ataque.mp3"
+## O aviso do susto, nos três idiomas.
+const TEXTOS := "res://data/fauna_do_mar.json"
+const IdiomaMenu = preload("res://scripts/prototipo_3d/idioma_menu.gd")
+const Cardume = preload("res://scripts/prototipo_3d/cardume.gd")
+## A caça aos cardumes: de quanto em quanto tempo (s), até onde ele procura, a
+## arrancada (u/s) e quanto dura no máximo, e a distância do bote no peixe.
+const INTERVALO_CACA := Vector2(45.0, 90.0)
+const ALCANCE_CACA := 40.0
+const VELOCIDADE_CACA := 2.8
+const DURACAO_CACA := 10.0
+const RAIO_BOTE_PEIXE := 1.0
+## O corpo do Tripo: a ponta da barbatana fica este tanto acima da água.
+const BARBATANA_FORA := 0.12
 
 var _world	# world_builder.gd (water_level, water_depth_at, ancoras)
 var _player	# player_controller.gd (is_swimming, _back_to_land)
@@ -37,6 +57,12 @@ var _proximo_ataque := 0.0
 var _checagem_mare := 0.0
 var _espuma: GPUParticles3D
 var _tela: CanvasLayer
+var _proxima_caca := 0.0
+var _caca_ate := 0.0
+var _presa = null
+var _corpo_tripo: Node3D
+var _nado: AnimationPlayer
+var _rng := RandomNumberGenerator.new()
 var _flash: ColorRect
 var _vinheta: TextureRect
 var _preto: ColorRect
@@ -60,6 +86,9 @@ func configurar(world, player, aviso: Callable) -> void:
 	global_position = _ponto_elipse(_angulo)
 	_rumo = rotation.y
 	_ativo = true
+	add_to_group("predadores")
+	_rng.seed = 2611
+	_proxima_caca = Time.get_ticks_msec() / 1000.0 + _rng.randf_range(INTERVALO_CACA.x, INTERVALO_CACA.y)
 
 
 func _physics_process(delta: float) -> void:
@@ -94,11 +123,22 @@ func _physics_process(delta: float) -> void:
 		_angulo = fposmod(_angulo + VELOCIDADE_PATRULHA * delta / maxf(raio_local, 1.0), TAU)
 		destino = _ponto_elipse(_angulo)
 		velocidade = VELOCIDADE_PATRULHA
+	var cacando := false
+	if perseguindo:
+		_largar_presa(agora)
+	else:
+		var bote := _alvo_da_caca(agora)
+		if bote.is_finite():
+			cacando = true
+			destino = bote
+			velocidade = VELOCIDADE_CACA
 	var dif := Vector3(destino.x - pos.x, 0.0, destino.z - pos.z)
 	var dist := dif.length()
 	if perseguindo and dist < RAIO_ATAQUE:
 		_atacar()
 		return
+	if cacando and dist < RAIO_BOTE_PEIXE:
+		_comer(agora)
 	if dist > 0.005:
 		var direcao := dif / dist
 		var proxima := pos + direcao * minf(velocidade * delta, dist)
@@ -110,7 +150,9 @@ func _physics_process(delta: float) -> void:
 			rotation.y = _rumo
 	if _espuma:
 		_espuma.emitting = true
-		_espuma.amount_ratio = 1.0 if perseguindo else 0.5
+		_espuma.amount_ratio = 1.0 if perseguindo or cacando else 0.5
+	if _nado != null:
+		_nado.speed_scale = velocidade / VELOCIDADE_PATRULHA
 
 
 ## Posição do jogador se ele é caçável agora; Vector3.INF caso contrário.
@@ -126,6 +168,64 @@ func _alvo_perseguicao(agora: float) -> Vector3:
 	if Vector2(ppos.x - global_position.x, ppos.z - global_position.z).length() > RAIO_PERCEPCAO:
 		return Vector3.INF
 	return ppos
+
+
+## A caça aos cardumes, quando não está atrás do jogador: na hora, escolhe o
+## cardume-presa mais perto; caçando, devolve o peixe mais perto dele (ou INF).
+func _alvo_da_caca(agora: float) -> Vector3:
+	if _presa == null:
+		if agora < _proxima_caca:
+			return Vector3.INF
+		_presa = _cardume_mais_perto()
+		if _presa == null:
+			_proxima_caca = agora + _rng.randf_range(INTERVALO_CACA.x, INTERVALO_CACA.y) * 0.5
+			return Vector3.INF
+		_caca_ate = agora + DURACAO_CACA
+	if not is_instance_valid(_presa) or agora > _caca_ate:
+		_largar_presa(agora)
+		return Vector3.INF
+	var i: int = _presa.peixe_mais_perto(global_position)
+	if i < 0:
+		_largar_presa(agora)
+		return Vector3.INF
+	return _presa.posicao(i)
+
+
+func _cardume_mais_perto():
+	var melhor = null
+	var menor := ALCANCE_CACA
+	for cardume in get_tree().get_nodes_in_group("presas_do_tubarao"):
+		if not cardume is Node3D or not cardume.has_method("peixe_mais_perto") or bool(cardume.get("dormindo")):
+			continue
+		var onde: Vector3 = cardume.centro_atual()
+		var d := Vector2(onde.x - global_position.x, onde.z - global_position.z).length()
+		if d < menor:
+			menor = d
+			melhor = cardume
+	return melhor
+
+
+## O bote no cardume: o peixe mais perto some com respingo, e a caça acaba.
+func _comer(agora: float) -> void:
+	if _presa != null and is_instance_valid(_presa):
+		var i: int = _presa.peixe_mais_perto(global_position)
+		if i >= 0:
+			_presa.devorar(i)
+		Cardume.respingo(get_parent(), Vector3(global_position.x, _nivel(), global_position.z), 1.6)
+	_largar_presa(agora)
+
+
+func _largar_presa(agora: float) -> void:
+	if _presa == null:
+		return
+	_presa = null
+	_proxima_caca = agora + _rng.randf_range(INTERVALO_CACA.x, INTERVALO_CACA.y)
+
+
+## Para o portão: a próxima caça é agora.
+func forcar_caca() -> void:
+	_presa = null
+	_proxima_caca = 0.0
 
 
 func _atacar() -> void:
@@ -157,12 +257,23 @@ func _resgatar() -> void:
 	if _player != null and _player.has_method("_back_to_land"):
 		_player._back_to_land()
 	if _aviso.is_valid():
-		_aviso.call("Um tubarão! Por pouco…")
+		_aviso.call(_texto_do_susto())
 	# Recomeça a patrulha do lado oposto da elipse, longe do jogador.
 	if _player != null:
 		var rel: Vector3 = _player.global_position - _centro
 		_angulo = fposmod(atan2(rel.dot(_eixo_b), rel.dot(_eixo_a)) + PI, TAU)
 	global_position = _ponto_elipse(_angulo)
+
+
+## O aviso do susto, no idioma do jogador (data/fauna_do_mar.json).
+func _texto_do_susto() -> String:
+	var arquivo := FileAccess.open(TEXTOS, FileAccess.READ)
+	if arquivo == null:
+		return ""
+	var dados = JSON.parse_string(arquivo.get_as_text())
+	if not dados is Dictionary:
+		return ""
+	return str(IdiomaMenu.campo(dados.get("tubarao", {}), "susto", ""))
 
 
 func _encerrar_ataque() -> void:
@@ -226,8 +337,32 @@ func _lamina(ponto: Vector3) -> float:
 	return float(_world.water_depth_at(ponto))
 
 
-## Barbatana rente à superfície, corpo achatado como sombra e uma caudal discreta.
+## Estilo Tripo: o GLB inteiro debaixo d'água, só a barbatana de fora, nadando com
+## o clipe do rig. Procedural (ou sem o GLB): os prismas e a sombra.
 func _montar_visual() -> void:
+	if Estilo.tripo() and CatalogoAssets.tem_tripo("tubarao"):
+		_corpo_tripo = CatalogoAssets.instanciar("tubarao", self, Vector3.ZERO)
+		if _corpo_tripo != null:
+			_corpo_tripo.name = "CorpoTripo"
+			var limites: AABB = _corpo_tripo.get_meta("limites", AABB())
+			# instanciar() põe o pé do modelo na origem: desce até a barbatana aflorar.
+			_corpo_tripo.position.y += BARBATANA_FORA - limites.size.y
+			for malha in _corpo_tripo.find_children("*", "GeometryInstance3D", true, false):
+				(malha as GeometryInstance3D).visibility_range_end = 160.0
+				(malha as GeometryInstance3D).cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+			for no in _corpo_tripo.find_children("*", "AnimationPlayer", true, false):
+				_nado = no as AnimationPlayer
+				break
+			if _nado != null and not _nado.get_animation_list().is_empty():
+				var clipe := _nado.get_animation_list()[0]
+				_nado.get_animation(clipe).loop_mode = Animation.LOOP_LINEAR
+				_nado.play(clipe)
+			return
+	_montar_prismas()
+
+
+## Barbatana rente à superfície, corpo achatado como sombra e uma caudal discreta.
+func _montar_prismas() -> void:
 	var pele := StandardMaterial3D.new()
 	pele.albedo_color = Color("39444e")
 	pele.roughness = 0.55

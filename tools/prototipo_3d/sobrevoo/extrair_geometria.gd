@@ -383,6 +383,15 @@ func _regravar_regiao(cenario: Node3D, regiao_no: Node, tripo: bool, blocos_vivo
 	(copia.get("vaos_do_sobrevoo") as Array).assign(regiao_no.get("vaos_do_sobrevoo"))
 	var dados: Dictionary = cenario.call("_active_region_data")
 	await copia.call("build_region", String(dados["geometry"]), String(dados["scenario"]))
+	# O paisagismo (pomares, roças, mata ciliar, cercas) entra no vale vivo depois da
+	# região: a cópia o replanta com os mesmos pés, para a conta de troncos bater e
+	# para o voo ser conferido contra as copas dele também.
+	var plantas_do_paisagismo: Variant = cenario.get("paisagismo_plantas")
+	if plantas_do_paisagismo is Array and not (plantas_do_paisagismo as Array).is_empty():
+		var Paisagismo: GDScript = load("res://scripts/prototipo_3d/paisagismo_vale.gd")
+		var receitas_do_paisagismo: Dictionary = Paisagismo.call("ler_receitas")
+		Paisagismo.call("plantar", copia, plantas_do_paisagismo, receitas_do_paisagismo)
+		Paisagismo.call("plantar_cercas", copia, cenario.get("paisagismo_aderecos"), receitas_do_paisagismo)
 	var gravados: Array = copia.get("gravados")
 	# Contagem por nome de bloco ("<nome> x,z", com o nome saneado como o Godot faz).
 	var vivos := {}

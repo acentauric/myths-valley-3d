@@ -14,6 +14,7 @@ const LuzesEpoca = preload("res://scripts/prototipo_3d/luzes_epoca.gd")
 const Canoas = preload("res://scripts/prototipo_3d/canoas.gd")
 const Cardume = preload("res://scripts/prototipo_3d/cardume.gd")
 const Mar = preload("res://scripts/prototipo_3d/mar.gd")
+const Camadas = preload("res://scripts/prototipo_3d/camadas.gd")
 const CoqueiroCortado = preload("res://scripts/prototipo_3d/coqueiro_cortado.gd")
 const MAP_CATALOG := "res://data/mapas/regioes.json"
 const ComposicaoVale = preload("res://scripts/prototipo_3d/composicao_vale.gd")
@@ -55,7 +56,9 @@ var _vertical_exaggeration := 1.0
 var _sun: DirectionalLight3D
 var _moon: DirectionalLight3D
 var _environment: Environment
-var _sky_material: ProceduralSkyMaterial
+## Céu, névoa, sol e lua (ceu_vale.gd).
+const CeuVale = preload("res://scripts/prototipo_3d/ceu_vale.gd")
+var _ceu: CeuVale
 var _luzes: Node3D
 ## Pontos de interesse e âncoras que os NPCs e as luzes usam (nome → posição no chão).
 var ancoras: Dictionary = {}
@@ -691,65 +694,19 @@ func _active_region_data() -> Dictionary:
 # ---------------------------------------------------------------------------
 
 func _build_lighting() -> void:
-	_sky_material = ProceduralSkyMaterial.new()
-	_sky_material.sun_angle_max = 12.0
-	var sky := Sky.new()
-	sky.sky_material = _sky_material
-	_environment = Environment.new()
-	_environment.background_mode = Environment.BG_SKY
-	_environment.sky = sky
-	_environment.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
-	_environment.tonemap_mode = Environment.TONE_MAPPER_FILMIC
-	_environment.fog_enabled = true
-	_environment.fog_density = 0.0
-	_environment.fog_sky_affect = 0.25
-	var world_environment := WorldEnvironment.new()
-	world_environment.environment = _environment
-	add_child(world_environment)
-	_sun = DirectionalLight3D.new()
-	_sun.name = "Sol"
-	_sun.shadow_enabled = true
-	_sun.directional_shadow_max_distance = 180.0
-	_sun.directional_shadow_mode = DirectionalLight3D.SHADOW_PARALLEL_4_SPLITS
-	add_child(_sun)
-	_moon = DirectionalLight3D.new()
-	_moon.name = "Lua"
-	_moon.light_color = Color("9fb3d6")
-	_moon.shadow_enabled = false
-	add_child(_moon)
+	# O céu é do CeuVale: shader próprio, névoa com perspectiva aérea, sol e lua.
+	_ceu = CeuVale.new()
+	_ceu.montar(self)
+	_sun = _ceu.sol
+	_moon = _ceu.lua
+	_environment = _ceu.ambiente
 	_aplicar_hora(Dia.hora)
 	Dia.hora_mudou.connect(_aplicar_hora)
 
 
-## Curvas de cor por hora: madrugada azul, alvorada rosada, meio-dia claro, entardecer dourado.
+## O céu acompanha a hora (curvas de cor e de névoa em ceu_vale.gd), e as luzes de 1887 também.
 func _aplicar_hora(hora: float) -> void:
-	var luz := Dia.luz_do_dia()
-	var elevacao := Dia.elevacao_solar()
-	var horizonte := 1.0 - smoothstep(6.0, 22.0, absf(elevacao))
-	# Sol na posição real do lugar (Dia.direcao_da_luz_solar): nasce a leste, culmina ao
-	# norte e se põe a oeste. Perto do horizonte a luz fica em ~2° para não varar o chão.
-	var luz_solar := Dia.direcao_da_luz_solar()
-	if luz_solar.y > -0.035:
-		luz_solar = Vector3(luz_solar.x, 0.0, luz_solar.z).normalized() * cos(0.035) + Vector3(0.0, -0.035, 0.0)
-	_sun.basis = Basis.looking_at(luz_solar, Vector3.UP if absf(luz_solar.y) < 0.99 else Vector3.FORWARD)
-	_sun.light_energy = lerpf(0.0, 1.15, luz)
-	_sun.light_color = Color("fff0d0").lerp(Color("ff9d5c"), horizonte * 0.85)
-	_sun.visible = luz > 0.02
-	# Lua alta, do lado oposto ao sol.
-	var horizontal := Vector3(-luz_solar.x, 0.0, -luz_solar.z).normalized()
-	_moon.basis = Basis.looking_at(horizontal * cos(deg_to_rad(52.0)) + Vector3(0.0, -sin(deg_to_rad(52.0)), 0.0), Vector3.UP)
-	_moon.light_energy = lerpf(0.26, 0.0, luz)
-	_moon.visible = luz < 0.98
-	var noite := 1.0 - luz
-	_sky_material.sky_top_color = Color("709aaa").lerp(Color("0b1327"), noite).lerp(Color("5e6fa8"), horizonte * luz * 0.4)
-	_sky_material.sky_horizon_color = Color("e8d9bc").lerp(Color("1a2440"), noite).lerp(Color("f2a266"), horizonte * luz * 0.7)
-	_sky_material.ground_bottom_color = Color("586957").lerp(Color("0a0e18"), noite)
-	_sky_material.ground_horizon_color = Color("e8d9bc").lerp(Color("1a2440"), noite)
-	_sky_material.sun_angle_max = lerpf(4.0, 14.0, horizonte)
-	_environment.ambient_light_color = Color("cad9d5").lerp(Color("2b3454"), noite)
-	_environment.ambient_light_energy = lerpf(0.3, 0.65, luz)
-	_environment.fog_light_color = Color("e8d9bc").lerp(Color("111a2e"), noite)
-	_environment.fog_density = lerpf(0.004, 0.0008, luz) + horizonte * luz * 0.003
+	_ceu.aplicar(hora)
 	if _luzes != null:
 		_luzes.aplicar_hora(hora)
 
@@ -777,12 +734,19 @@ func _construir_vila() -> void:
 	# As demais casas do arraial, nos lotes reservados pelo loteamento.
 	var paletas := [[Color("e4d7bd"), Color("a85a40")], [Color("d9c49a"), Color("8f5a44")], [Color("efe3c8"), Color("9c4f38")], [Color("cbb98f"), Color("7d5b46")]]
 	var casa_indice := 0
+	# Toda moradia da composição sobe aqui — as "Casa do arraial" e as casas dos
+	# moradores novos (a do guarda, a da lavadeira...) —, menos as que já subiram
+	# acima e as que sobem com os marcos. Casa nova cujo GLB ainda não chegou sobe
+	# com a casca da casa de taipa, e não com o boneco procedural.
 	for nome_lote in _lotes:
-		if not String(nome_lote).begins_with("Casa do arraial"):
+		var chave_lote := String(_lotes[nome_lote]["chave"])
+		if not _is_house_key(chave_lote) or String(nome_lote) in ["Casa de taipa", "Casa de Carro Quebrado", "Casa da estrada", "Venda do Bar", "Restaurante"]:
 			continue
+		if estilo_tripo() and not CatalogoAssets.tem_tripo(chave_lote):
+			chave_lote = "casa_taipa"
 		casa_indice += 1
 		var paleta: Array = paletas[casa_indice % paletas.size()]
-		_construcao(String(_lotes[nome_lote]["chave"]), _lotes[nome_lote]["pos"], 0.0, func(at: Vector3): _house(at, paleta[0], paleta[1]), 1.0, String(nome_lote))
+		_construcao(chave_lote, _lotes[nome_lote]["pos"], 0.0, func(at: Vector3): _house(at, paleta[0], paleta[1]), 1.0, String(nome_lote))
 		await _pausar()
 	_escolher_as_casas_dos_moradores()
 	await _etapa(0.84, "Cercando o roçado")
@@ -801,9 +765,34 @@ func _construir_vila() -> void:
 	_build_canoas()
 	await _etapa(0.97, "Acendendo os lampiões")
 	_build_luzes_epoca()
+	await _etapa(0.975, "Plantando as árvores da vila")
+	_build_paisagismo()
 	_build_bases_das_arvores()
 	if COMPARAR_MANGUEIRAS:
 		_bancada_mangueiras(Vector3(-2, 0, -30))
+
+
+## O PAISAGISMO DO VALE: os bananais, pomares, roças e a mata ciliar do arraial,
+## plantados pelas zonas de `scenes/prototipo_3d/paisagismo_vale.tscn` e pelas
+## receitas de `data/paisagismo/receitas.json` (`paisagismo_vale.gd`). Vem depois
+## de tudo o que tem lugar fixo — casas, nomeadas, âncoras, luzes — porque planta
+## só no que sobrou, e antes dos pés das árvores, que o chão pinta. Só no estilo
+## Tripo (as espécies são os GLBs dele); o procedural segue sem pomar.
+const PaisagismoVale := preload("res://scripts/prototipo_3d/paisagismo_vale.gd")
+## O que o paisagismo plantou (ver `PaisagismoVale.gerar`), para os portões.
+var paisagismo_plantas: Array[Dictionary] = []
+var paisagismo_aderecos: Array[Dictionary] = []
+
+
+func _build_paisagismo() -> void:
+	if not estilo_tripo() or _region == null:
+		return
+	var receitas := PaisagismoVale.ler_receitas()
+	var plano := PaisagismoVale.planejar(self, PaisagismoVale.ler(), receitas)
+	paisagismo_plantas.assign(plano["plantas"])
+	paisagismo_aderecos.assign(plano["aderecos"])
+	PaisagismoVale.plantar(_region, paisagismo_plantas, receitas)
+	PaisagismoVale.plantar_aderecos(self, paisagismo_aderecos, receitas)
 
 
 ## AS CASAS DO PEDRO E DA DONA ZEFA, entre as casas de taipa do arraial: a do
@@ -1023,6 +1012,16 @@ func _montar_pecas(tipos: Array) -> void:
 					_adereco(chave_item, pos, yaw, tamanho)
 					if chave_item == "cruzeiro" and not ancoras.has("Cruzeiro"):
 						ancoras["Cruzeiro"] = pos
+					elif chave_item.begins_with("varal") and not ancoras.has(String(nome) + "/Varal"):
+						# O varal da casa é posto da agenda ("Casa/Varal", `npc.gd`):
+						# a frente dele é o +Z do modelo, a corda corre no X.
+						ancoras[String(nome) + "/Varal"] = pos
+						ancoras[String(nome) + "/VaralFrente"] = Vector3(sin(yaw), 0.0, cos(yaw))
+					elif chave_item in ["canoa_em_obra", "lavadouro_pedra"] and not ancoras.has(String(nome) + "/" + chave_item):
+						# A canoa do carpinteiro e o lavadouro da lavadeira, no quintal: o
+						# posto de trabalho de quem mora ali ("Casa/canoa_em_obra").
+						ancoras[String(nome) + "/" + chave_item] = pos
+						ancoras[String(nome) + "/" + chave_item + "Frente"] = Vector3(sin(yaw), 0.0, cos(yaw))
 				"item":
 					if estilo_tripo():
 						pos.y = maxf(pos.y, ground_height_at(pos))
@@ -1092,7 +1091,9 @@ func _loteamento() -> void:
 			if not sitio.is_finite():
 				continue
 			lote = {"pos": sitio, "yaw": 0.0}
-		lote["chave"] = pedido[1]
+		# O modelo da casa autoral é o da composição (a casa paroquial no lugar da
+		# Casa do arraial 7); a do pedido vale para quem ainda não foi editado.
+		lote["chave"] = String(_casas_autorais[nome]["chave"]) if _casas_autorais.has(nome) and String(_casas_autorais[nome].get("chave", "")) != "" else pedido[1]
 		lote["inicial"] = lote["pos"]
 		_lotes[nome] = lote
 		ancoras[nome] = lote["pos"]
@@ -1216,10 +1217,13 @@ func _na_linha(pontos: PackedVector2Array, s: float) -> Array:
 	return [pontos[0], Vector2.RIGHT]
 
 
-## Chão batido com seixos (o mesmo da Praça) para terreiros e alicerces das casas.
+## Chão batido varrido para terreiros e alicerces das casas: a mesma terra (textura,
+## ladrilho e tinta) que o shader do terreno pinta na praça, nas ruas e nas trilhas,
+## para o terreiro emendar no chão em volta sem trocar de cor.
 func _terreiro_material() -> Material:
 	if _terreiro == null:
-		_terreiro = _region._textured_material(_region.CHAO_PRACA_TEXTURE, Color("b8a27e"), 6.0)
+		var terra: Array = _region.CAMADAS_DO_CHAO["terra"]
+		_terreiro = _region._textured_material(terra[0], Color(0.98, 0.94, 0.88), float(terra[1]))
 	return _terreiro
 
 
@@ -1721,11 +1725,11 @@ func _build_landmark_details() -> void:
 
 func _igreja_procedural(church: Vector3) -> void:
 	_box(Vector3(8, 0.25, 13), church + Vector3(0, 0.125, 0), Color("958d79"), true)
-	_box(Vector3(7.4, 5.2, 12), church + Vector3(0, 2.7, 0), Color("eee5cf"), true)
+	_box(Vector3(7.4, 5.2, 12), church + Vector3(0, 2.7, 0), Color("eee5cf"), true, null, 0.0, true)
 	var roof := PrismMesh.new()
 	roof.size = Vector3(8.8, 2.6, 13.3)
 	_mesh(roof, church + Vector3(0, 6.4, 0), Color("a55b3c"))
-	_box(Vector3(2.3, 8.2, 2.3), church + Vector3(0, 4.2, 6.0), Color("e5dcc8"), true)
+	_box(Vector3(2.3, 8.2, 2.3), church + Vector3(0, 4.2, 6.0), Color("e5dcc8"), true, null, 0.0, true)
 	_box(Vector3(0.22, 2.0, 0.22), church + Vector3(0, 9.2, 6.0), WOOD)
 	_box(Vector3(1.4, 0.2, 0.22), church + Vector3(0, 9.45, 6.0), WOOD)
 
@@ -1738,16 +1742,36 @@ const BASE_ARVORE_AREIA := preload("res://assets/prototipo_3d/materiais/base_arv
 
 
 func _build_bases_das_arvores() -> void:
+	# O chão pinta a copa de cada árvore (folhiço embaixo, verde-mata ao longe) e as
+	# trilhas de pé da porta de cada casa até a rua: o mapa de solo da região
+	# (docs/mundo/SOLO_E_FRANJAS.md). Aqui, porque é quando as árvores e as casas
+	# já existem todas.
+	var todas := arvores()
+	var portas: Array[Vector2] = []
+	for nome_lote in _lotes:
+		if not ancoras.has(nome_lote) or not ancoras.has(String(nome_lote) + "Frente"):
+			continue
+		var centro: Vector3 = ancoras[nome_lote]
+		var frente: Vector3 = ancoras[String(nome_lote) + "Frente"]
+		var porta := centro + frente * _raio_do_lote(String(_lotes[nome_lote].get("chave", ""))) * 0.55
+		portas.append(Vector2(porta.x, porta.z))
+	_region.pintar_vida(todas, portas)
 	# Um decalque por tipo de chão: terra e folhas na grama, areia revolvida na praia
-	# (a base escura sobre a areia clara destoava).
+	# (a base escura sobre a areia clara destoava). Só nas árvores nomeadas e nas da
+	# areia: o pé das ~6 mil da mata já é o folhiço do chão, e os decalques, sem LOD,
+	# viravam pontos escuros cintilando no morro ao longe.
 	var por_chao := {"grama": [BASE_ARVORE, [] as Array[Transform3D]], "areia": [BASE_ARVORE_AREIA, [] as Array[Transform3D]]}
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 1887
-	for arvore: Dictionary in arvores():
+	for indice in todas.size():
+		var arvore: Dictionary = todas[indice]
 		var tamanho := clampf(float(arvore["raio"]) * 9.0, 1.8, 5.0)
 		var pos: Vector3 = arvore["pos"]
 		var chao := "areia" if _region.surface_at(pos) == "areia" else "grama"
-		var giro := Basis(Vector3.UP, rng.randf() * TAU).scaled(Vector3(tamanho, 1.0, tamanho))
+		var giro_sorteado := rng.randf() * TAU
+		if indice >= _arvores_nomeadas.size() and chao != "areia":
+			continue
+		var giro := Basis(Vector3.UP, giro_sorteado).scaled(Vector3(tamanho, 1.0, tamanho))
 		(por_chao[chao][1] as Array[Transform3D]).append(Transform3D(giro, pos + Vector3(0.0, 0.035, 0.0)))
 	for chao in por_chao:
 		var transforms: Array[Transform3D] = por_chao[chao][1]
@@ -1964,7 +1988,7 @@ func _milhar(value: int) -> String:
 
 func _house(origin: Vector3, wall: Color, roof_color: Color) -> void:
 	_box(Vector3(5.6, 0.25, 4.8), origin + Vector3(0, 0.125, 0), Color("96968b"), true)
-	_box(Vector3(5.0, 3.1, 4.2), origin + Vector3(0, 1.7, 0), wall, true)
+	_box(Vector3(5.0, 3.1, 4.2), origin + Vector3(0, 1.7, 0), wall, true, null, 0.0, true)
 	var roof := PrismMesh.new()
 	roof.size = Vector3(5.9, 2.0, 5.1)
 	_mesh(roof, origin + Vector3(0, 4.0, 0), roof_color)
@@ -2010,7 +2034,7 @@ func _casa_de_taipa_referencia(origin: Vector3) -> void:
 	# Alicerce baixo e piso de terreiro, antes das paredes caiadas de taipa.
 	_box(Vector3(5.65, 0.28, 4.85), origin + Vector3(0, 0.14, 0), Color("8c8879"), true)
 	_box(Vector3(6.5, 0.035, 1.4), origin + Vector3(0, 0.03, 2.65), PATH)
-	_box(Vector3(5.0, 3.1, 4.2), origin + Vector3(0, 1.83, 0), cal, true, parede_material)
+	_box(Vector3(5.0, 3.1, 4.2), origin + Vector3(0, 1.83, 0), cal, true, parede_material, 0.0, true)
 
 	# Telhado de duas águas com beiral curto e fileiras de telha-canal desbotada.
 	var roof := PrismMesh.new()
@@ -2046,7 +2070,9 @@ func _fence(origin: Vector3, count: int, spacing: float) -> void:
 		_box(Vector3(width, 0.12, 0.12), origin + Vector3(width * 0.5, height, 0), Color("987650"), true)
 
 
-func _box(size: Vector3, position: Vector3, color: Color, solid: bool = false, material_override: Material = null, yaw: float = 0.0) -> MeshInstance3D:
+## `barra_camera`: o corpo barra também o braço da câmera (`camadas.gd`). No estilo
+## procedural só as paredes das casas e da igreja: poste, cerca e corrimão não.
+func _box(size: Vector3, position: Vector3, color: Color, solid: bool = false, material_override: Material = null, yaw: float = 0.0, barra_camera: bool = false) -> MeshInstance3D:
 	var box := BoxMesh.new()
 	box.size = size
 	var instance := _mesh(box, position, color, material_override)
@@ -2054,7 +2080,7 @@ func _box(size: Vector3, position: Vector3, color: Color, solid: bool = false, m
 	if solid:
 		var shape := BoxShape3D.new()
 		shape.size = size
-		_body(shape, position, "", yaw)
+		_body(shape, position, "", yaw, barra_camera)
 	return instance
 
 
@@ -2085,8 +2111,10 @@ func _material_de_superficie(texture: Texture2D, uv_scale: Vector3) -> StandardM
 	return material
 
 
-func _body(shape: Shape3D, position: Vector3, body_name: String = "", yaw: float = 0.0) -> void:
+func _body(shape: Shape3D, position: Vector3, body_name: String = "", yaw: float = 0.0, barra_camera: bool = false) -> void:
 	var body := StaticBody3D.new()
+	if barra_camera:
+		body.collision_layer = Camadas.MUNDO_E_CAMERA
 	if not body_name.is_empty():
 		body.name = body_name
 	body.position = position
@@ -2179,6 +2207,8 @@ const ENTERRADO := 0.5
 ## acima das sapopemas e abaixo dos galhos (medido em 03/10/2026: o tronco tem
 ## de 1,1 a 1,9 de raio entre dois e quatro metros e meio).
 const ALTURA_DAS_FITAS := 3.3
+## A escala do modelo da gameleira (14 m de altura): a árvore mais alta do vale.
+const GAMELEIRA_TAMANHO := 1.3
 
 
 ## O RAIO DO TRONCO perto de `altura` acima de `centro`: o vértice mais afastado
@@ -2277,18 +2307,19 @@ func _build_gameleira() -> void:
 	var topo := chao + Vector3.UP * (ALTURA_DO_SAMBAQUI - ENTERRADO)
 	ancoras["Gameleira"] = topo
 	# MAIOR QUE A MATA EM VOLTA: a gameleira é "maior do que qualquer coisa que
-	# o arraial construiu", e as árvores da mata são do mesmo modelo.
-	var tamanho := 2.6
+	# o arraial construiu". Tem modelo próprio (`gameleira`, 14 m, com as
+	# sapopemas): é a única, e a mata em volta é de jatobá e jequitibá.
+	var tamanho := GAMELEIRA_TAMANHO
 	var arvore: Node3D = null
 	if estilo_tripo():
-		arvore = CatalogoAssets.instanciar("mata_larga", self, topo - Vector3(0.0, _region.ARVORE_AFUNDADA, 0.0), tamanho, 0.7)
+		arvore = CatalogoAssets.instanciar("gameleira", self, topo - Vector3(0.0, _region.ARVORE_AFUNDADA, 0.0), tamanho, 0.7)
 		if arvore != null:
 			# O TRONCO NO MEIO DO MONTE: o pivô do modelo não é o pé do tronco, e
 			# a árvore nascia ao lado do sambaqui em vez de em cima dele.
 			var pe := _pe_do_tronco(arvore)
 			if pe.is_finite():
 				arvore.global_position += Vector3(topo.x - pe.x, 0.0, topo.z - pe.z)
-			CatalogoAssets.colisao("mata_larga", arvore, self, topo, tamanho, 0.7)
+			CatalogoAssets.colisao("gameleira", arvore, self, topo, tamanho, 0.7)
 			# AS FITAS NO TRONCO: o pano branco amarrado em volta dele, com as
 			# fitas coloridas pendendo — "a gameleira é morada de Iroko". Acima
 			# das sapopemas, que se abrem até quatro, cinco de raio no primeiro
@@ -2318,7 +2349,7 @@ func _build_gameleira() -> void:
 		tronco.position = topo + Vector3.UP * 2.0
 		add_child(tronco)
 	# Os potes de barro entre as raízes, em cima do monte: o pote do catálogo.
-	var raio_do_tronco := float(CatalogoAssets.PECAS["mata_larga"].get("tronco", 0.5)) * tamanho
+	var raio_do_tronco := float(CatalogoAssets.PECAS["gameleira"].get("tronco", 1.2)) * tamanho
 	for i in 4:
 		var angulo := TAU * float(i) / 4.0 + 0.9
 		var raio := raio_do_tronco + 1.3

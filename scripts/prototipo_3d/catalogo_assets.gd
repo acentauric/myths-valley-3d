@@ -5,7 +5,10 @@ extends RefCounted
 ## peça vive em FloraReconcavo / world_builder e é escolhido quando Estilo.procedural().
 ##
 ## "altura" normaliza pela altura visual; "largura" pela maior dimensão horizontal.
-## "tronco" é o raio da colisão cilíndrica (árvores); "caixa" pede colisão em caixa.
+## "tronco" é o raio da colisão cilíndrica (árvores), no eixo do tronco medido no modelo;
+## "caixa" pede colisão em caixa, na pegada da altura do corpo; "caixas" é uma lista de
+## [tamanho, centro] (metros, pé no meio da caixa) para peça feita de partes;
+## "camera" diz se a peça barra também o braço da câmera (ver `colisao`).
 ## "girar" (graus, x/y/z) deita ou vira o modelo antes de medir (peixe e tábua vêm de pé);
 ## "afundar" (unidades) enterra o modelo depois de normalizado (píer com estacas altas);
 ## "piso" é a altura do tabuado caminhável que world_builder cria por cima.
@@ -13,15 +16,17 @@ extends RefCounted
 ## tools/tripo/medir_glb.py.
 
 const PASTA := "res://assets/prototipo_3d/"
+const Camadas = preload("res://scripts/prototipo_3d/camadas.gd")
+const CoqueiroCortado = preload("res://scripts/prototipo_3d/coqueiro_cortado.gd")
 
 const PECAS := {
 	# Árvores nomeadas (perto do jogador)
 	"mangueira": {"tripo": "arvores/mangueira_tripo.glb", "altura": 7.2, "tronco": 0.55},
 	"jaqueira": {"tripo": "arvores/jaqueira_tripo.glb", "altura": 8.4, "tronco": 0.4},
-	# A base do tronco fica à esquerda do centro da copa no GLB. O desvio está
-	# nas coordenadas originais do modelo e acompanha escala e rotação da árvore.
+	# O cilindro vai no eixo do tronco medido no modelo (`tronco`): o deslocamento
+	# à mão que havia aqui (-0,15; 0,06) ficava a 0,4 u do tronco desenhado.
 	"cajueiro": {"tripo": "arvores/cajueiro_tripo.glb", "altura": 5.4,
-		"tronco": 0.7, "tronco_altura": 2.2, "tronco_centro": Vector2(-0.15, 0.06)},
+		"tronco": 0.7, "tronco_altura": 2.2},
 	"coqueiro": {"tripo": "arvores/coqueiro_tripo.glb", "altura": 9.5, "tronco": 0.24},
 	"pau_brasil": {"tripo": "arvores/pau_brasil_tripo.glb", "altura": 5.6, "tronco": 0.38},
 	"dendezeiro": {"tripo": "arvores/dende_tripo.glb", "altura": 6.5, "tronco": 0.4},
@@ -44,10 +49,10 @@ const PECAS := {
 	"sub_bosque": {"tripo": "arvores/sub_bosque_tripo.glb", "altura": 1.3},
 	"capim": {"tripo": "arvores/capim_tripo.glb", "altura": 0.9},
 	# Construções
-	"capela": {"tripo": "construcoes/capela_tripo.glb", "largura": 9.0, "caixa": true},
+	"capela": {"tripo": "construcoes/capela_tripo.glb", "largura": 9.0, "caixa": true, "camera": true},
 	# A capelinha pobre do cemitério, de taipa e cal rachada (lote de 03/10/2026).
-	"capelinha": {"tripo": "construcoes/capelinha_tripo.glb", "largura": 4.6, "caixa": true},
-	"igreja": {"tripo": "construcoes/igreja_tripo.glb", "largura": 10.0, "caixa": true},
+	"capelinha": {"tripo": "construcoes/capelinha_tripo.glb", "largura": 4.6, "caixa": true, "camera": true},
+	"igreja": {"tripo": "construcoes/igreja_tripo.glb", "largura": 10.0, "caixa": true, "camera": true},
 	# SEM "afundar": as paredes começam uns 0,20 acima do mínimo do GLB, e a
 	# casca afundada encostava a parede no alicerce — mas a casa herdada, a do
 	# Pedro e a da Zefa têm o cômodo DENTRO da casca, medido nela
@@ -55,17 +60,33 @@ const PECAS := {
 	# três, e sem eles entra (tests/casa.gd, casas_dos_moradores.gd).
 	# O enterro das casas pequenas no terreno inclinado continua
 	# (`WorldBuilder.AFUNDAMENTO_CASAS_PEQUENAS`).
-	"casa_taipa": {"tripo": "construcoes/casa_taipa_tripo.glb", "largura": 6.5, "caixa": true},
-	"casa_carro_quebrado": {"tripo": "casas/casa_carro_quebrado_tripo.glb", "largura": 5.2, "caixa": true},
-	"venda": {"tripo": "construcoes/venda_tripo.glb", "largura": 8.0, "caixa": true},
-	"casa_pasto": {"tripo": "construcoes/casa_pasto_tripo.glb", "largura": 8.5, "caixa": true},
+	"casa_taipa": {"tripo": "construcoes/casa_taipa_tripo.glb", "largura": 6.5, "caixa": true, "camera": true},
+	"casa_carro_quebrado": {"tripo": "casas/casa_carro_quebrado_tripo.glb", "largura": 5.2, "caixa": true, "camera": true},
+	"venda": {"tripo": "construcoes/venda_tripo.glb", "largura": 8.0, "caixa": true, "camera": true},
+	"casa_pasto": {"tripo": "construcoes/casa_pasto_tripo.glb", "largura": 8.5, "caixa": true, "camera": true},
 	"pier": {"tripo": "construcoes/pier_tripo.glb", "largura": 12.0, "afundar": 2.9, "piso": 0.22},
 	"ponte": {"tripo": "construcoes/ponte_tripo.glb", "largura": 9.0, "afundar": 1.1, "piso": 0.2},
-	"mirante": {"tripo": "construcoes/mirante_tripo.glb", "altura": 3.6, "caixa": true},
+	# O MIRANTE É UMA TORRE ABERTA, de quatro pernas com mão-francesa dos lados,
+	# o assoalho a 2,45 m e a escada na frente: em caixa única era um bloco de
+	# 3,3 × 3,6 × 4,6, e quem chegava à âncora (embaixo dele) nascia preso. Medido
+	# no GLB (05/10/2026). Não barra a câmera: é armação, e ela passa entre as
+	# pernas.
+	"mirante": {"tripo": "construcoes/mirante_tripo.glb", "altura": 3.6, "camera": false, "caixas": [
+		[Vector3(0.3, 2.45, 3.0), Vector3(-1.35, 1.22, -0.6)],
+		[Vector3(0.3, 2.45, 3.0), Vector3(1.35, 1.22, -0.6)],
+		[Vector3(3.2, 0.35, 3.1), Vector3(0.0, 2.5, -0.65)],
+		[Vector3(0.9, 1.2, 0.7), Vector3(-0.6, 0.6, 1.85)]]},
 	# Adereços
-	"poco": {"tripo": "construcoes/poco_tripo.glb", "altura": 3.1, "tronco": 1.05},
+	# O anel de pedra tem 3,1 × 2,6 m: com 1,05 o corpo entrava meio palmo nele.
+	"poco": {"tripo": "construcoes/poco_tripo.glb", "altura": 3.1, "tronco": 1.3, "camera": false},
 	"cerca": {"tripo": "aderecos/cerca_tripo.glb", "altura": 1.15, "caixa": true},
-	"cruzeiro": {"tripo": "aderecos/cruzeiro_tripo.glb", "altura": 4.5, "caixa": true},
+	# O CRUZEIRO É BASE, FUSTE E BRAÇOS (medidos no GLB, 05/10/2026). Em caixa
+	# única eram 2,62 m de largura do chão aos 4,5 m: 0,9 m de parede invisível
+	# de cada lado do fuste, e a câmera saltava ao passar na frente dele.
+	"cruzeiro": {"tripo": "aderecos/cruzeiro_tripo.glb", "altura": 4.5, "caixas": [
+		[Vector3(0.92, 0.6, 0.92), Vector3(0.0, 0.3, 0.0)],
+		[Vector3(0.3, 3.9, 0.3), Vector3(0.0, 2.55, 0.0)],
+		[Vector3(2.62, 0.9, 0.5), Vector3(0.0, 3.45, 0.0)]]},
 	"tumulo": {"tripo": "aderecos/tumulo_tripo.glb", "largura": 1.6},
 	"carroca": {"tripo": "aderecos/carroca_tripo.glb", "largura": 3.2, "caixa": true},
 	"varal": {"tripo": "aderecos/varal_tripo.glb", "largura": 3.8},
@@ -85,8 +106,8 @@ const PECAS := {
 	# construção própria (#27). Não é arte nova: é o mesmo GLB da `mesa`.
 	"bancada_oficina": {"tripo": "moveis/mesa_tripo.glb", "largura": 1.5, "caixa": true},
 	"mandioca_canteiro": {"tripo": "aderecos/mandioca_canteiro_tripo.glb", "largura": 3.5},
-	"pedras": {"tripo": "aderecos/pedras_tripo.glb", "largura": 3.0, "caixa": true},
-	"pedras_praia": {"tripo": "aderecos/pedras_praia_tripo.glb", "largura": 9.0, "caixa": true},
+	"pedras": {"tripo": "aderecos/pedras_tripo.glb", "largura": 3.0, "caixa": true, "camera": true},
+	"pedras_praia": {"tripo": "aderecos/pedras_praia_tripo.glb", "largura": 9.0, "caixa": true, "camera": true},
 	"pedra_mare": {"tripo": "aderecos/pedra_mare_tripo.glb", "largura": 3.2},
 	"bote": {"tripo": "aderecos/bote_tripo.glb", "largura": 6.0},
 	# O saveiro do mestre Quirino, o barco da chegada (lote de 05/10/2026). O
@@ -107,8 +128,8 @@ const PECAS := {
 	"viajante": {"tripo": "personagens/viajante_tripo.glb", "altura": 1.78},
 	# Itens de mão (os mesmos do 2D)
 	"machado": {"tripo": "itens/machado_tripo.glb", "altura": 0.85},
-	"enxada": {"tripo": "itens/enxada_tripo.glb", "altura": 1.4},
-	"balde": {"tripo": "itens/balde_tripo.glb", "altura": 0.35},
+	"enxada": {"tripo": "itens/enxada_tripo.glb", "altura": 0.95},
+	"balde": {"tripo": "itens/balde_tripo.glb", "altura": 0.38},
 	"picareta": {"tripo": "itens/picareta_tripo.glb", "altura": 0.9},
 	"foice": {"tripo": "itens/foice_tripo.glb", "largura": 0.5},
 	"regador": {"tripo": "itens/regador_tripo.glb", "altura": 0.4},
@@ -158,6 +179,167 @@ const PECAS := {
 	# branco e as fitas no tronco (`world_builder._build_marcos_de_fe`).
 	"mastro_pano": {"tripo": "aderecos/mastro_pano_tripo.glb", "altura": 5.0, "tronco": 0.05},
 	"fitas_gameleira": {"tripo": "aderecos/fitas_gameleira_tripo.glb", "largura": 3.0},
+	# --- lote 05/10 level design: início ---
+	# Moradores sem fala e quem faltava no arraial (lote de 05/10/2026, rig Mixamo com seis clipes)
+	"padre": {"tripo": "personagens/padre_tripo.glb", "altura": 1.72},
+	"mercador": {"tripo": "personagens/mercador_tripo.glb", "altura": 1.72},
+	"guarda": {"tripo": "personagens/guarda_tripo.glb", "altura": 1.74},
+	"sacristao": {"tripo": "personagens/sacristao_tripo.glb", "altura": 1.62},
+	"beata": {"tripo": "personagens/beata_tripo.glb", "altura": 1.55},
+	"pescador": {"tripo": "personagens/pescador_tripo.glb", "altura": 1.73},
+	"marisqueira": {"tripo": "personagens/marisqueira_tripo.glb", "altura": 1.6},
+	"lavadeira": {"tripo": "personagens/lavadeira_tripo.glb", "altura": 1.6},
+	"rendeira": {"tripo": "personagens/rendeira_tripo.glb", "altura": 1.58},
+	"quituteira": {"tripo": "personagens/quituteira_tripo.glb", "altura": 1.62},
+	"carpinteiro": {"tripo": "personagens/carpinteiro_tripo.glb", "altura": 1.76},
+	"menino": {"tripo": "personagens/menino_tripo.glb", "altura": 1.3},
+	"menina": {"tripo": "personagens/menina_tripo.glb", "altura": 1.24},
+	"mestre_saveiro": {"tripo": "personagens/mestre_saveiro_tripo.glb", "altura": 1.7},
+	# Bichos do vale (lote de 05/10/2026): quadrúpedes com o rig do Studio e o andar; aves paradas ou com rig
+	"cachorro_caramelo": {"tripo": "animais/cachorro_caramelo_tripo.glb", "largura": 1.0},
+	"cachorro_malhado": {"tripo": "animais/cachorro_malhado_tripo.glb", "largura": 0.95, "girar": [0, 90, 0]},
+	"filhote_caramelo": {"tripo": "animais/filhote_caramelo_tripo.glb", "largura": 0.5, "girar": [0, 90, 0]},
+	"gato_malhado": {"tripo": "animais/gato_malhado_tripo.glb", "largura": 0.72, "girar": [0, 90, 0]},
+	"gato_preto": {"tripo": "animais/gato_preto_tripo.glb", "largura": 0.72},
+	"gato_amarelo": {"tripo": "animais/gato_amarelo_tripo.glb", "largura": 0.72, "girar": [0, -90, 0]},
+	"porco": {"tripo": "animais/porco_tripo.glb", "largura": 1.25, "girar": [0, 90, 0]},
+	"leitao": {"tripo": "animais/leitao_tripo.glb", "largura": 0.5, "girar": [0, 90, 0]},
+	"onca_pintada": {"tripo": "animais/onca_pintada_tripo.glb", "largura": 2.3, "girar": [0, -90, 0]},
+	"onca_preta": {"tripo": "animais/onca_preta_tripo.glb", "largura": 2.3, "girar": [0, 90, 0]},
+	"jumento": {"tripo": "animais/jumento_tripo.glb", "largura": 1.9, "girar": [0, -90, 0]},
+	"cabra": {"tripo": "animais/cabra_tripo.glb", "largura": 1.15, "girar": [0, -90, 0]},
+	"galinha": {"tripo": "animais/galinha_tripo.glb", "altura": 0.45, "girar": [0, -90, 0]},
+	"galo": {"tripo": "animais/galo_tripo.glb", "altura": 0.62, "girar": [0, -90, 0]},
+	"pintinho": {"tripo": "animais/pintinho_tripo.glb", "altura": 0.11, "girar": [0, -90, 0]},
+	"galinha_dangola": {"tripo": "animais/galinha_dangola_tripo.glb", "altura": 0.5, "girar": [0, -90, 0]},
+	"pato": {"tripo": "animais/pato_tripo.glb", "altura": 0.5, "girar": [0, -90, 0]},
+	"peru": {"tripo": "animais/peru_tripo.glb", "altura": 0.85, "girar": [0, 90, 0]},
+	"pavao": {"tripo": "animais/pavao_tripo.glb", "largura": 1.5, "girar": [0, -90, 0]},
+	"pavoa": {"tripo": "animais/pavoa_tripo.glb", "altura": 0.85, "girar": [0, 90, 0]},
+	"caititu": {"tripo": "animais/caititu_tripo.glb", "largura": 1.0},
+	"cachorro_deitado": {"tripo": "animais/cachorro_deitado_tripo.glb", "largura": 1.0, "girar": [0, 18, 0]},
+	"pavao_leque": {"tripo": "animais/pavao_leque_tripo.glb", "altura": 1.25},
+	"jararaca": {"tripo": "animais/jararaca_tripo.glb", "largura": 1.3},
+	"garca": {"tripo": "animais/garca_tripo.glb", "altura": 0.95},
+	"bode": {"tripo": "animais/bode_tripo.glb", "largura": 1.25},
+	"boi": {"tripo": "animais/boi_tripo.glb", "largura": 2.4},
+	"cavalo": {"tripo": "animais/cavalo_tripo.glb", "largura": 2.3},
+	"urubu": {"tripo": "animais/urubu_tripo.glb", "largura": 1.5},
+	"capivara": {"tripo": "animais/capivara_tripo.glb", "largura": 1.2},
+	"tatu": {"tripo": "animais/tatu_tripo.glb", "largura": 0.75},
+	# Peixes e raias (lote de 05/10/2026): o jogo os faz nadar por código
+	"sardinha": {"tripo": "peixes/sardinha_tripo.glb", "largura": 0.2, "girar": [0, -90, 0]},
+	"tainha": {"tripo": "peixes/tainha_tripo.glb", "largura": 0.5, "girar": [0, 90, 0]},
+	"xareu": {"tripo": "peixes/xareu_tripo.glb", "largura": 0.7, "girar": [0, -90, 0]},
+	"cavala": {"tripo": "peixes/cavala_tripo.glb", "largura": 1.0, "girar": [0, 90, 0]},
+	"sororoca": {"tripo": "peixes/sororoca_tripo.glb", "largura": 0.75, "girar": [0, 90, 0]},
+	"robalo": {"tripo": "peixes/robalo_tripo.glb", "largura": 0.8, "girar": [0, -90, 0]},
+	"garoupa": {"tripo": "peixes/garoupa_tripo.glb", "largura": 0.9, "girar": [0, 90, 0]},
+	"budiao": {"tripo": "peixes/budiao_tripo.glb", "largura": 0.45, "girar": [0, 90, 0]},
+	"sargentinho": {"tripo": "peixes/sargentinho_tripo.glb", "largura": 0.2, "girar": [0, 90, 0]},
+	"baiacu": {"tripo": "peixes/baiacu_tripo.glb", "largura": 0.25, "girar": [0, -90, 0]},
+	"moreia": {"tripo": "peixes/moreia_tripo.glb", "largura": 1.2, "girar": [0, 90, 0]},
+	"raia": {"tripo": "peixes/raia_tripo.glb", "largura": 1.3, "girar": [-90, -90, 0]},
+	"raia_pintada": {"tripo": "peixes/raia_pintada_tripo.glb", "largura": 1.9, "girar": [-52, 0, 0]},
+	"piaba": {"tripo": "peixes/piaba_tripo.glb", "largura": 0.14, "girar": [0, -90, 0]},
+	"traira": {"tripo": "peixes/traira_tripo.glb", "largura": 0.45, "girar": [0, 90, 0]},
+	"acara": {"tripo": "peixes/acara_tripo.glb", "largura": 0.22, "girar": [0, 90, 0]},
+	"tubarao": {"tripo": "peixes/tubarao_tripo.glb", "largura": 2.6, "girar": [0, -90, 0]},
+	# Flora do paisagismo por zonas (lote de 05/10/2026)
+	"mamoeiro": {"tripo": "arvores/mamoeiro_tripo.glb", "altura": 4.2, "tronco": 0.14},
+	"goiabeira": {"tripo": "arvores/goiabeira_tripo.glb", "altura": 4.6, "tronco": 0.22},
+	"touceira_bambu": {"tripo": "arvores/touceira_bambu_tripo.glb", "altura": 9.0, "tronco": 0.9},
+	"licurizeiro": {"tripo": "arvores/licurizeiro_tripo.glb", "altura": 5.2, "tronco": 0.25},
+	"pe_de_fumo": {"tripo": "arvores/pe_de_fumo_tripo.glb", "altura": 1.3},
+	"pe_de_milho": {"tripo": "arvores/pe_de_milho_tripo.glb", "altura": 2.2},
+	"touceira_cana": {"tripo": "arvores/touceira_cana_tripo.glb", "altura": 3.0},
+	"pe_de_mandioca": {"tripo": "arvores/pe_de_mandioca_tripo.glb", "altura": 1.8},
+	"heliconia": {"tripo": "arvores/heliconia_tripo.glb", "altura": 2.2},
+	"bromelia": {"tripo": "arvores/bromelia_tripo.glb", "altura": 0.8},
+	"samambaia": {"tripo": "arvores/samambaia_tripo.glb", "altura": 1.0},
+	"taboa": {"tripo": "arvores/taboa_tripo.glb", "altura": 1.8},
+	"jatoba": {"tripo": "arvores/jatoba_tripo.glb", "altura": 10.0, "tronco": 0.45},
+	"sapucaia": {"tripo": "arvores/sapucaia_tripo.glb", "altura": 9.5, "tronco": 0.45},
+	"jequitiba": {"tripo": "arvores/jequitiba_tripo.glb", "altura": 13.0, "tronco": 0.6},
+	"cedro": {"tripo": "arvores/cedro_tripo.glb", "altura": 9.0, "tronco": 0.4},
+	"angico": {"tripo": "arvores/angico_tripo.glb", "altura": 7.5, "tronco": 0.35},
+	"massaranduba": {"tripo": "arvores/massaranduba_tripo.glb", "altura": 10.0, "tronco": 0.45},
+	"gameleira": {"tripo": "arvores/gameleira_tripo.glb", "altura": 14.0, "tronco": 1.2},
+	"canteiro_couve": {"tripo": "arvores/canteiro_couve_tripo.glb", "largura": 2.4},
+	"pe_de_pimenta": {"tripo": "arvores/pe_de_pimenta_tripo.glb", "altura": 0.8},
+	"quiabeiro": {"tripo": "arvores/quiabeiro_tripo.glb", "altura": 1.2},
+	"latada_maracuja": {"tripo": "arvores/latada_maracuja_tripo.glb", "largura": 3.5},
+	"abobora_rasteira": {"tripo": "arvores/abobora_rasteira_tripo.glb", "largura": 2.0},
+	"algodoeiro_praia": {"tripo": "arvores/algodoeiro_praia_tripo.glb", "altura": 5.0, "tronco": 0.3},
+	# Casas e construções novas (lote de 05/10/2026)
+	"casa_taipa_azul": {"tripo": "construcoes/casa_taipa_azul_tripo.glb", "largura": 6.5, "caixa": true, "camera": true},
+	"casa_taipa_ocre": {"tripo": "construcoes/casa_taipa_ocre_tripo.glb", "largura": 6.5, "caixa": true, "camera": true},
+	"casa_pescador": {"tripo": "construcoes/casa_pescador_tripo.glb", "largura": 5.6, "caixa": true, "camera": true},
+	"casa_palha": {"tripo": "construcoes/casa_palha_tripo.glb", "largura": 5.2, "caixa": true, "camera": true},
+	"casa_farinha": {"tripo": "construcoes/casa_farinha_tripo.glb", "largura": 8.0, "caixa": true, "camera": true},
+	"sobrado": {"tripo": "construcoes/sobrado_tripo.glb", "largura": 7.5, "caixa": true, "camera": true},
+	"cadeia": {"tripo": "construcoes/cadeia_tripo.glb", "largura": 7.0, "caixa": true, "camera": true},
+	"casa_paroquial": {"tripo": "construcoes/casa_paroquial_tripo.glb", "largura": 7.5, "caixa": true, "camera": true},
+	"casa_taipa_rosa": {"tripo": "construcoes/casa_taipa_rosa_tripo.glb", "largura": 6.5, "caixa": true, "camera": true},
+	"casa_taipa_verde": {"tripo": "construcoes/casa_taipa_verde_tripo.glb", "largura": 6.5, "caixa": true, "camera": true},
+	"casa_varanda": {"tripo": "construcoes/casa_varanda_tripo.glb", "largura": 7.0, "caixa": true, "camera": true},
+	"casa_meia_agua": {"tripo": "construcoes/casa_meia_agua_tripo.glb", "largura": 5.0, "caixa": true, "camera": true},
+	# Quintais: varais, galinheiro, chiqueiro e cocho (lote de 05/10/2026)
+	"varal_bambu": {"tripo": "aderecos/varal_bambu_tripo.glb", "largura": 3.6},
+	"varal_estacas": {"tripo": "aderecos/varal_estacas_tripo.glb", "largura": 4.2},
+	"galinheiro": {"tripo": "aderecos/galinheiro_tripo.glb", "largura": 2.2, "caixa": true},
+	"chiqueiro": {"tripo": "aderecos/chiqueiro_tripo.glb", "largura": 3.0},
+	"cocho": {"tripo": "aderecos/cocho_tripo.glb", "largura": 1.6, "caixa": true},
+	"lavadouro_pedra": {"tripo": "aderecos/lavadouro_pedra_tripo.glb", "largura": 1.6, "caixa": true},
+	"canoa_em_obra": {"tripo": "aderecos/canoa_em_obra_tripo.glb", "largura": 5.0, "caixa": true},
+	"cerca_varas": {"tripo": "aderecos/cerca_varas_tripo.glb", "largura": 3.0},
+	"porteira": {"tripo": "aderecos/porteira_tripo.glb", "largura": 3.2, "caixa": true},
+	"carro_de_boi": {"tripo": "aderecos/carro_de_boi_tripo.glb", "largura": 4.2, "caixa": true},
+	"monjolo": {"tripo": "aderecos/monjolo_tripo.glb", "largura": 4.5, "caixa": true},
+	"forno_barro": {"tripo": "aderecos/forno_barro_tripo.glb", "largura": 1.6, "caixa": true},
+	"estaleiro_fumo": {"tripo": "aderecos/estaleiro_fumo_tripo.glb", "largura": 4.0, "caixa": true},
+	"sacos_farinha": {"tripo": "aderecos/sacos_farinha_tripo.glb", "largura": 1.3, "caixa": true},
+	"barraca_feira": {"tripo": "aderecos/barraca_feira_tripo.glb", "largura": 2.6, "caixa": true},
+	"penedo_lapa": {"tripo": "aderecos/penedo_lapa_tripo.glb", "altura": 6.0, "caixa": true, "camera": true},
+	# Objetos do ofício dos moradores (lote de 05/10/2026)
+	"trouxa_roupa": {"tripo": "itens/trouxa_roupa_tripo.glb", "largura": 0.6},
+	"tabuleiro": {"tripo": "itens/tabuleiro_tripo.glb", "largura": 0.7},
+	"vassoura_piacava": {"tripo": "itens/vassoura_piacava_tripo.glb", "altura": 1.4},
+	"rolo_fumo": {"tripo": "itens/rolo_fumo_tripo.glb", "largura": 0.5},
+	# Versões leves (~2.500 faces) e de longe (~700) das árvores, refeitas pela retopologia do Tripo (lote de 05/10/2026)
+	"aroeira_leve": {"tripo": "arvores/aroeira_leve_tripo.glb", "altura": 4.5, "tronco": 0.4},
+	"jenipapeiro_leve": {"tripo": "arvores/jenipapeiro_leve_tripo.glb", "altura": 8.5, "tronco": 0.4},
+	"piacava_leve": {"tripo": "arvores/piacava_leve_tripo.glb", "altura": 5.5, "tronco": 0.45},
+	"bananeira_leve": {"tripo": "arvores/bananeira_leve_tripo.glb", "altura": 3.2, "tronco": 0.25},
+	"cajueiro_leve": {"tripo": "arvores/cajueiro_leve_tripo.glb", "altura": 5.4},
+	"pitangueira_leve": {"tripo": "arvores/pitangueira_leve_tripo.glb", "altura": 3.0, "tronco": 0.25},
+	"mangueira_leve": {"tripo": "arvores/mangueira_leve_tripo.glb", "altura": 7.2, "tronco": 0.55},
+	"jaqueira_leve": {"tripo": "arvores/jaqueira_leve_tripo.glb", "altura": 8.4, "tronco": 0.4},
+	"castanhola_leve": {"tripo": "arvores/castanhola_leve_tripo.glb", "altura": 6.0, "tronco": 0.45},
+	"ingazeiro_leve": {"tripo": "arvores/ingazeiro_leve_tripo.glb", "altura": 7.5, "tronco": 0.4},
+	"mangue_leve": {"tripo": "arvores/mangue_leve_tripo.glb", "altura": 5.0, "tronco": 0.6},
+	"coqueiro_leve": {"tripo": "arvores/coqueiro_leve_tripo.glb", "altura": 9.5, "tronco": 0.24},
+	"dendezeiro_leve": {"tripo": "arvores/dendezeiro_leve_tripo.glb", "altura": 6.5, "tronco": 0.4},
+	"clusia_leve": {"tripo": "arvores/clusia_leve_tripo.glb", "altura": 3.2, "tronco": 0.35},
+	"ipe_amarelo_leve": {"tripo": "arvores/ipe_amarelo_leve_tripo.glb", "altura": 6.5, "tronco": 0.3},
+	"ipe_roxo_leve": {"tripo": "arvores/ipe_roxo_leve_tripo.glb", "altura": 6.5, "tronco": 0.3},
+	"pau_brasil_leve": {"tripo": "arvores/pau_brasil_leve_tripo.glb", "altura": 5.6, "tronco": 0.38},
+	"coqueiro_longe": {"tripo": "arvores/coqueiro_longe_tripo.glb", "altura": 9.5},
+	"mangue_longe": {"tripo": "arvores/mangue_longe_tripo.glb", "altura": 5.0},
+	"ingazeiro_longe": {"tripo": "arvores/ingazeiro_longe_tripo.glb", "altura": 7.5},
+	"castanhola_longe": {"tripo": "arvores/castanhola_longe_tripo.glb", "altura": 6.0},
+	"mata_alta_longe": {"tripo": "arvores/mata_alta_longe_tripo.glb", "altura": 11.0},
+	"mata_larga_longe": {"tripo": "arvores/mata_larga_longe_tripo.glb", "altura": 9.0},
+	"jenipapeiro_longe": {"tripo": "arvores/jenipapeiro_longe_tripo.glb", "altura": 8.5},
+	"aroeira_longe": {"tripo": "arvores/aroeira_longe_tripo.glb", "altura": 4.5},
+	"piacava_longe": {"tripo": "arvores/piacava_longe_tripo.glb", "altura": 5.5},
+	"embauba_longe": {"tripo": "arvores/embauba_longe_tripo.glb", "altura": 8.0},
+	"mangueira_longe": {"tripo": "arvores/mangueira_longe_tripo.glb", "altura": 7.2},
+	"jaqueira_longe": {"tripo": "arvores/jaqueira_longe_tripo.glb", "altura": 8.4},
+	"cajueiro_longe": {"tripo": "arvores/cajueiro_longe_tripo.glb", "altura": 5.4},
+	"bananeira_longe": {"tripo": "arvores/bananeira_longe_tripo.glb", "altura": 3.2},
+	"dendezeiro_longe": {"tripo": "arvores/dendezeiro_longe_tripo.glb", "altura": 6.5},
+	# --- lote 05/10 level design: fim ---
 }
 
 static var _cenas: Dictionary = {}
@@ -168,6 +350,8 @@ static var faltando: Array[String] = []
 ## Esquece as malhas medidas (uma medida foi ajustada no painel PERSONAGENS).
 static func limpar_cache() -> void:
 	_malhas.clear()
+	_pegadas.clear()
+	_troncos.clear()
 
 
 static func caminho(chave: String) -> String:
@@ -231,42 +415,270 @@ static func instanciar(chave: String, parent: Node, origin: Vector3, size: float
 ## Colisão simples para um modelo instanciado por `instanciar`: cilindro no tronco ou caixa.
 ## Devolve o corpo criado (null quando a peça não leva corpo próprio), para quem
 ## precisa achá-lo depois — o cômodo de dentro tira a caixa inteira da casa.
+##
+## A COLISÃO FICA ONDE ESTÁ O DESENHO ("revise todas as colisões, há
+## anomalias"). Antes, a caixa era a caixa envolvente inteira do GLB — o beiral,
+## a varanda, os braços do cruzeiro descendo até o chão — e o cilindro ficava no
+## meio dela, e não no tronco: o lampião barrava 0,43 m ao lado do poste, a
+## aroeira 1,35 m ao lado da madeira. Agora:
+##   · "tronco": o cilindro vai no eixo do tronco MEDIDO no modelo (`tronco`),
+##     salvo quando a peça traz "tronco_centro" à mão;
+##   · "caixa": a pegada do que o modelo ocupa na altura do corpo (`pegada`),
+##     com a altura inteira;
+##   · "caixas": várias caixas, para o que é feito de partes (o cruzeiro é
+##     base, fuste e braços; o mirante é perna, assoalho e escada).
+## Só BoxShape3D e CylinderShape3D, filhos diretos do corpo, que é filho de
+## `parent`: é o que `ClickNavigation` e `Recursos3D` leem.
+##
+## "camera": a peça barra também o braço da câmera (`camadas.gd`). Construção
+## e pedra barram; o resto — poste, mastro, cruzeiro, cerca, banco — não, e a
+## câmera não salta ao passar perto deles (`barra_camera`).
 static func colisao(chave: String, node: Node3D, parent: Node, origin: Vector3, size: float = 1.0, yaw: float = 0.0) -> StaticBody3D:
 	if node == null:
-		return null
-	if chave in ["ponte", "pier"]:
-		# A superfície caminhável acompanha a malha importada da ponte e do píer.
-		for child in node.find_children("*", "MeshInstance3D", true, false):
-			(child as MeshInstance3D).create_trimesh_collision()
 		return null
 	# Medidas com os ajustes do painel PERSONAGENS por cima (ajustes_conteudo.gd).
 	var spec: Dictionary = AjustesConteudo.peca(chave)
 	var bounds: AABB = node.get_meta("limites", AABB())
+	# O giro é o do modelo posto (`instanciar` o grava em `node.rotation.y`): quem
+	# chamava sem `yaw` (as pedras da praia, giradas ao acaso) tinha a caixa
+	# reta e o desenho torto.
+	yaw = node.rotation.y
+	if chave in ["ponte", "pier"]:
+		# A superfície caminhável acompanha a malha importada da ponte e do píer.
+		for child in node.find_children("*", "MeshInstance3D", true, false):
+			(child as MeshInstance3D).create_trimesh_collision()
+		_laje_da_camera(chave, spec, bounds, parent, origin, yaw)
+		return null
 	var body := StaticBody3D.new()
 	body.name = chave.capitalize() + "Colisao"
-	var collision := CollisionShape3D.new()
+	if barra_camera(chave):
+		body.collision_layer = Camadas.MUNDO_E_CAMERA
 	if spec.has("tronco"):
+		var collision := CollisionShape3D.new()
 		var shape := CylinderShape3D.new()
 		shape.radius = float(spec["tronco"]) * size
 		shape.height = minf(bounds.size.y, float(spec.get("tronco_altura", 3.0)) * size)
 		collision.shape = shape
+		body.add_child(collision)
 		body.position = origin + Vector3(0, shape.height * 0.5, 0)
+		var base_visual := Vector3.INF
 		if spec.has("tronco_centro"):
 			var centro: Vector2 = spec["tronco_centro"]
-			var base_visual: Vector3 = node.transform * Vector3(centro.x, 0.0, centro.y)
+			base_visual = node.transform * Vector3(centro.x, 0.0, centro.y)
+		else:
+			var medido := tronco(chave, size)
+			if not medido.is_empty():
+				base_visual = node.transform * (medido["centro"] as Vector3)
+		if base_visual.is_finite():
 			body.position.x = base_visual.x
 			body.position.z = base_visual.z
+	elif spec.has("caixas"):
+		# Em metros na medida do catálogo, com o pé no meio da caixa envolvente.
+		var escala := _escala_do_catalogo(chave, bounds)
+		for parte: Array in spec["caixas"]:
+			var collision := CollisionShape3D.new()
+			var shape := BoxShape3D.new()
+			shape.size = (parte[0] as Vector3) * escala
+			collision.shape = shape
+			collision.position = (parte[1] as Vector3) * escala
+			body.add_child(collision)
+		body.position = origin - Vector3(0, float(spec.get("afundar", 0.0)), 0)
+		body.rotation.y = yaw
 	elif spec.get("caixa", false):
+		var collision := CollisionShape3D.new()
 		var shape := BoxShape3D.new()
-		shape.size = bounds.size
+		var marca := pegada(chave)
+		shape.size = Vector3(marca.size.x * bounds.size.x, bounds.size.y, marca.size.y * bounds.size.z)
 		collision.shape = shape
-		body.position = origin + Vector3(0, bounds.size.y * 0.5 - float(spec.get("afundar", 0.0)), 0)
+		body.add_child(collision)
+		var desvio := Vector3((marca.get_center().x - 0.5) * bounds.size.x, 0.0, (marca.get_center().y - 0.5) * bounds.size.z)
+		body.position = origin + desvio.rotated(Vector3.UP, yaw) + Vector3(0, bounds.size.y * 0.5 - float(spec.get("afundar", 0.0)), 0)
 		body.rotation.y = yaw
 	else:
+		body.free()
 		return null
-	body.add_child(collision)
 	parent.add_child(body)
 	return body
+
+
+## A peça barra o braço da câmera? Pela chave "camera" do catálogo; sem ela,
+## barra o que é construção ("caixa" num GLB de `construcoes/` ou `casas/`),
+## para a casa nova do lote entrar barrando sem ninguém lembrar dela.
+static func barra_camera(chave: String) -> bool:
+	if not PECAS.has(chave):
+		return false
+	var spec: Dictionary = PECAS[chave]
+	if spec.has("camera"):
+		return bool(spec["camera"])
+	var arquivo := String(spec.get("tripo", ""))
+	return bool(spec.get("caixa", false)) and (arquivo.begins_with("construcoes/") or arquivo.begins_with("casas/"))
+
+
+## A LAJE DA CÂMERA no píer e na ponte. A malha deles barra o corpo, mas não a
+## câmera: o corrimão da ponte encolhia o braço em 24 de 72 direções. A laje,
+## na altura do tabuado ("piso") e do tamanho da peça, é só da câmera — que não
+## mergulha por baixo do tabuado nem no rio.
+static func _laje_da_camera(chave: String, spec: Dictionary, bounds: AABB, parent: Node, origin: Vector3, yaw: float) -> void:
+	if bounds.size.x <= 0.0:
+		return
+	var laje := StaticBody3D.new()
+	laje.name = chave.capitalize() + "LajeDaCamera"
+	laje.collision_layer = Camadas.CAMERA
+	laje.collision_mask = 0
+	var forma := CollisionShape3D.new()
+	var caixa := BoxShape3D.new()
+	caixa.size = Vector3(bounds.size.x, 0.2, bounds.size.z)
+	forma.shape = caixa
+	laje.add_child(forma)
+	laje.position = origin + Vector3(0, float(spec.get("piso", 0.0)) - 0.1, 0)
+	laje.rotation.y = yaw
+	parent.add_child(laje)
+
+
+## Quanto a peça posta (`bounds`, de `instanciar`) é maior que a medida do
+## catálogo: o "tamanho" de quem a pôs e o ajuste do painel PERSONAGENS.
+static func _escala_do_catalogo(chave: String, bounds: AABB) -> float:
+	var original: Dictionary = PECAS.get(chave, {})
+	if original.has("altura"):
+		return bounds.size.y / maxf(float(original["altura"]), 0.001)
+	if original.has("largura"):
+		return maxf(bounds.size.x, bounds.size.z) / maxf(float(original["largura"]), 0.001)
+	return 1.0
+
+
+## A ALTURA DO CORPO, em metros, em que a pegada da caixa é tirada: acima do pé
+## (o alicerce e a calçada que vazam) e abaixo do beiral.
+const PEGADA_DE := 0.15
+const PEGADA_ATE := 2.0
+static var _pegadas: Dictionary = {}
+static var _troncos: Dictionary = {}
+static var _troncos_de_malha: Dictionary = {}
+static var _vertices_por_malha: Dictionary = {}
+
+
+## A PEGADA DA PEÇA NA ALTURA DO CORPO, em fração da caixa envolvente (Rect2 no
+## plano X/Z, de 0 a 1): o que o modelo ocupa entre `PEGADA_DE` e `PEGADA_ATE`.
+## A casa de taipa tem 6,5 × 5,6 de caixa e 5,4 × 5,2 de parede — o beiral
+## sobrando era 0,55 m de parede invisível de cada lado. Medida uma vez.
+static func pegada(chave: String) -> Rect2:
+	if _pegadas.has(chave):
+		return _pegadas[chave]
+	var resultado := Rect2(0, 0, 1, 1)
+	var medida := _em_metros(chave)
+	if not medida.is_empty():
+		var menor := Vector2(INF, INF)
+		var maior := Vector2(-INF, -INF)
+		for superficie: Dictionary in medida["superficies"]:
+			var transformacao: Transform3D = superficie["transformacao"]
+			for vertice: Vector3 in superficie["vertices"]:
+				var p := transformacao * vertice
+				if p.y < PEGADA_DE or p.y > PEGADA_ATE:
+					continue
+				menor = Vector2(minf(menor.x, p.x), minf(menor.y, p.z))
+				maior = Vector2(maxf(maior.x, p.x), maxf(maior.y, p.z))
+		var caixa: AABB = medida["caixa"]
+		if is_finite(menor.x) and caixa.size.x > 0.001 and caixa.size.z > 0.001:
+			var de := Vector2((menor.x - caixa.position.x) / caixa.size.x, (menor.y - caixa.position.z) / caixa.size.z)
+			var ate := Vector2((maior.x - caixa.position.x) / caixa.size.x, (maior.y - caixa.position.z) / caixa.size.z)
+			resultado = Rect2(de, ate - de)
+	_pegadas[chave] = resultado
+	return resultado
+
+
+## O TRONCO MEDIDO NO MODELO, pela regra do corte (`CoqueiroCortado.medir_o_corte`):
+## a faixa mais estreita entre a raiz e a copa. Devolve {"centro": o pé do eixo
+## no espaço do modelo (o de `instanciar`, antes da escala), "meia_largura" em
+## metros na medida do catálogo, "eixo": o desvio em metros do meio da caixa},
+## ou {} sem GLB. O cilindro do lampião ficava 0,43 m ao lado do poste porque
+## era posto no meio da caixa, que inclui o braço da lanterna.
+static func tronco(chave: String, escala: float = 1.0) -> Dictionary:
+	# A regra do corte olha faixas de altura em metros (a raiz larga sobe um palmo
+	# acima do chão): a árvore de tamanho 1,6 não tem o mesmo tronco "mais
+	# estreito" que a de tamanho 1. Mede-se na escala em que ela está posta, em
+	# passos de 0,05 para o cache.
+	var passo := snappedf(escala, 0.05)
+	var registro := "%s@%.2f" % [chave, passo]
+	if _troncos.has(registro):
+		return _troncos[registro]
+	var resultado := {}
+	var medida := _em_metros(chave, passo)
+	if not medida.is_empty():
+		var corte: Dictionary = CoqueiroCortado.medir_o_corte(medida["superficies"], Vector3.ZERO)
+		if is_finite(float(corte["tronco"])):
+			var eixo: Vector2 = corte["eixo"]
+			var para_o_modelo: Transform3D = (medida["em_metros"] as Transform3D).affine_inverse()
+			resultado = {"centro": para_o_modelo * Vector3(eixo.x, 0.0, eixo.y), "meia_largura": float(corte["tronco"]), "eixo": eixo}
+	_troncos[registro] = resultado
+	return resultado
+
+
+## O PÉ DO TRONCO NUMA MALHA DA MATA, no espaço da malha (Vector3.INF quando
+## não há tronco). É o `tronco` para quem planta por MultiMesh e só tem a
+## malha e a transformação de uma instância (`exemplo`, que dá a escala em
+## metros): o conjunto de troncos do `GeoRegionRenderer` põe o cilindro aqui, e
+## não no ponto de plantio, que é o meio da copa. Medido uma vez por malha.
+static func tronco_da_malha(malha: Mesh, exemplo: Transform3D) -> Vector3:
+	if malha == null:
+		return Vector3.INF
+	# Uma medida por malha e por faixa de tamanho (passos de 8%, no máximo uns
+	# sete por malha): a regra do corte olha faixas de altura em metros, e a
+	# árvore grande não tem o tronco "mais estreito" no mesmo lugar que a
+	# pequena (a jequitibá, de raiz tabular, errava um metro). Medir uma por
+	# árvore custaria o plantio inteiro. A rotação não conta: o resultado volta
+	# ao espaço da malha.
+	var tamanho := maxf(exemplo.basis.get_scale().y, 0.001)
+	var chave := "%d@%d" % [malha.get_instance_id(), roundi(log(tamanho) / log(1.08))]
+	if _troncos_de_malha.has(chave):
+		return _troncos_de_malha[chave]
+	var giro := Transform3D(exemplo.basis, Vector3.ZERO)
+	var limites_da_malha := malha.get_aabb()
+	var pe := giro * Vector3(limites_da_malha.get_center().x, limites_da_malha.position.y, limites_da_malha.get_center().z)
+	# Os vértices lidos uma vez por malha: `surface_get_arrays` copia tudo.
+	var id_da_malha := malha.get_instance_id()
+	if not _vertices_por_malha.has(id_da_malha):
+		var lidos: Array[PackedVector3Array] = []
+		for s in malha.get_surface_count():
+			lidos.append(malha.surface_get_arrays(s)[Mesh.ARRAY_VERTEX])
+		_vertices_por_malha[id_da_malha] = lidos
+	var superficies: Array[Dictionary] = []
+	for vertices: PackedVector3Array in _vertices_por_malha[id_da_malha]:
+		superficies.append({"transformacao": giro, "vertices": vertices})
+	var corte: Dictionary = CoqueiroCortado.medir_o_corte(superficies, pe)
+	var resultado := Vector3.INF
+	if is_finite(float(corte["tronco"])):
+		var eixo: Vector2 = corte["eixo"]
+		resultado = giro.affine_inverse() * (pe + Vector3(eixo.x, 0.0, eixo.y))
+	_troncos_de_malha[chave] = resultado
+	return resultado
+
+
+## Os vértices do modelo em metros, na medida do catálogo e com o pé no meio da
+## caixa (como `instanciar` o põe com tamanho 1 e sem giro): {"superficies",
+## "em_metros" (do espaço do modelo para metros), "caixa" (em metros)}.
+static func _em_metros(chave: String, escala: float = 1.0) -> Dictionary:
+	var scene := cena(chave)
+	if scene == null:
+		return {}
+	var spec: Dictionary = AjustesConteudo.peca(chave)
+	var node := scene.instantiate() as Node3D
+	var bounds := limites(node)
+	var factor := 1.0
+	if spec.has("altura"):
+		factor = float(spec["altura"]) / maxf(bounds.size.y, 0.001)
+	elif spec.has("largura"):
+		factor = float(spec["largura"]) / maxf(maxf(bounds.size.x, bounds.size.z), 0.001)
+	factor *= escala
+	var em_metros := Transform3D(Basis().scaled(Vector3.ONE * factor), -Vector3(bounds.get_center().x, bounds.position.y, bounds.get_center().z) * factor)
+	var superficies: Array[Dictionary] = []
+	for filho in node.find_children("*", "MeshInstance3D", true, false):
+		var instancia := filho as MeshInstance3D
+		if instancia.mesh == null:
+			continue
+		var transformacao := em_metros * _relativa(node, instancia)
+		for s in instancia.mesh.get_surface_count():
+			superficies.append({"transformacao": transformacao, "vertices": instancia.mesh.surface_get_arrays(s)[Mesh.ARRAY_VERTEX]})
+	node.free()
+	return {"superficies": superficies, "em_metros": em_metros, "caixa": em_metros * bounds}
 
 
 ## Malha + transformação-base para usar o modelo do Tripo em MultiMesh (mata, orla, itens).
@@ -283,9 +695,17 @@ static func malha(chave: String, size: float = 1.0) -> Dictionary:
 	if instances.is_empty():
 		node.free()
 		return {}
-	var bounds := limites(node)
 	# Medidas com os ajustes do painel PERSONAGENS por cima (ajustes_conteudo.gd).
 	var spec: Dictionary = AjustesConteudo.peca(chave)
+	if spec.has("girar"):
+		# O mesmo giro de `instanciar`: a medida e a transformação-base saem do modelo
+		# já deitado/virado (o peixe do cardume nada de cabeça no -Z).
+		var girado := Node3D.new()
+		var graus: Array = spec["girar"]
+		node.rotation_degrees = Vector3(float(graus[0]), float(graus[1]), float(graus[2]))
+		girado.add_child(node)
+		node = girado
+	var bounds := limites(node)
 	var factor := 1.0
 	if spec.has("altura"):
 		factor = float(spec["altura"]) * size / maxf(bounds.size.y, 0.001)

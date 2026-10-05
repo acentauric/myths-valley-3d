@@ -21,6 +21,9 @@ uniform bool recortar_grade = false;
 uniform float elevacao_min_m = -35.0;
 uniform float elevacao_max_m = 100.0;
 uniform float metros_por_unidade = 4.0;
+// A terra além do quadro sobe com o mesmo exagero do relevo do jogo (vertical_exaggeration);
+// sem ele ficava na metade da altura, num degrau na borda. O fundo do mar não exagera.
+uniform float exageracao_vertical = 1.0;
 // Deslocamento da maré em metros: 0 na preamar, até -2,4 na baixa-mar.
 uniform float mare_offset_m = 0.0;
 
@@ -42,16 +45,21 @@ float lamina(vec2 uv) {
 	return -mix(elevacao_min_m, elevacao_max_m, texture(elevacao, uv).r);
 }
 
+// Lâmina com o exagero do relevo só onde é terra (lâmina negativa).
+float relevo(float l) {
+	return l < 0.0 ? l * exageracao_vertical : l;
+}
+
 void vertex() {
 	chao = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xz;
 	vec2 uv = (chao - origem) / tamanho;
 	lamina_m = lamina(uv);
-	VERTEX.y = -lamina_m / metros_por_unidade;
+	VERTEX.y = -relevo(lamina_m) / metros_por_unidade;
 	vec2 passo = texel * tamanho;
-	float leste = lamina(uv + vec2(texel.x, 0.0));
-	float oeste = lamina(uv - vec2(texel.x, 0.0));
-	float sul = lamina(uv + vec2(0.0, texel.y));
-	float norte = lamina(uv - vec2(0.0, texel.y));
+	float leste = relevo(lamina(uv + vec2(texel.x, 0.0)));
+	float oeste = relevo(lamina(uv - vec2(texel.x, 0.0)));
+	float sul = relevo(lamina(uv + vec2(0.0, texel.y)));
+	float norte = relevo(lamina(uv - vec2(0.0, texel.y)));
 	NORMAL = normalize(vec3(
 		(leste - oeste) / metros_por_unidade / (2.0 * passo.x),
 		1.0,

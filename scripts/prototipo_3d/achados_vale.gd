@@ -211,8 +211,12 @@ func _ponto_da_mata() -> Vector3:
 	var casa: Vector3 = _world.ancoras.get("Casa de taipa", Vector3.INF)
 	var chegada: Vector3 = _player.spawn_position
 	var bicho := Vector3.INF
-	if _luta != null and not _luta.criaturas.is_empty():
-		bicho = _luta.criaturas[0]._ninho
+	if _luta != null:
+		# Pela espécie, e não pela vez na lista: a mata tem mais de um bicho.
+		for c in _luta.criaturas:
+			if c.especie == "caititu":
+				bicho = c._ninho
+				break
 	var melhor := Vector3.INF
 	var melhor_d := INF
 	var passos := int(BUSCA_RAIO / BUSCA_PASSO)

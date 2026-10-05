@@ -274,3 +274,39 @@ o script passa a usar `frame_coords` como o
    que o jogador possa consultar, que hoje só se descobre andando.
 3. **Equipamento visível.** O jogador já veste (`Equipamento`); o NPC ainda não
    mostra nada.
+
+## Os moradores novos e as jornadas (05/10/2026)
+
+Catorze moradores novos, **sem falas** e com jornada própria, cada um ligado a uma
+casa: Padre Anselmo, Sacristão Zacarias, Sá Joaquina (beata), Seu Nicolau
+(mercador, mora nos fundos da Venda do Bar), Guarda Aristides (sem arma, à noite
+com candeeiro), Seu Jerônimo (pescador), Dona Rosa (marisqueira), Sá Rita
+(lavadeira), Dona Estefânia (rendeira), Dona Ambrósia (quituteira), Seu Epifânio
+(carpinteiro de canoas), Tonico e Mariinha (filhos do carpinteiro e da
+quituteira) e Seu Ladislau (`mestre_saveiro`, marinheiro de saveiro). Nenhum é
+cativo; todos têm ofício, nos três idiomas (`oficio`, `oficio_en`, `oficio_es`).
+
+- **Dados** (`data/npcs_3d.json`): `mudo`, `casa`, `recolhe`, `velocidade`, `modelo`
+  (corpo diferente do id) e `agenda`: entradas `{de, lugar, desloc, acao, mao, cabeca,
+  mao_andando, cabeca_andando}`. `lugar` é âncora do cenário com o deslocamento no
+  referencial dela; `Casa` é a casa do morador e `Casa/Varal`, `Casa/canoa_em_obra`
+  são as peças do quintal (`world_builder._montar_pecas`). Os cinco `postos` por
+  período saem da agenda e só servem ao painel PERSONAGENS.
+- **Agenda** (`npc.gd`): vale a última entrada que já começou; ele **sai antes** para
+  chegar na hora (distância × 1,15 ÷ passo ÷ segundos por hora do relógio); caminho
+  acima de 40 u, fora da vista, é encurtado na hora marcada; um salto de relógio
+  maior que meia hora refaz o dia; a mais de 90 u do jogador ele anda sem física
+  nem esqueleto (`LONGE`).
+- **Ofício** (`authored_animator.trabalhar`): parado no posto, toca o clipe da ação
+  (`npc.ACOES`) em laço (sentar, uma vez); leva a vassoura, o cesto, a trouxa, o
+  tabuleiro, o candeeiro, o balde e a vara na mão ou na cabeça.
+- **Recolher**: quem `recolhe` some (invisível, sem colisão) na porta quando a ação
+  é `recolhido`.
+- **Mudo**: acena parado; sem balão, sem voz, sem aviso no HUD, sem tomar a palavra.
+- **Casas**: oito lotes novos na composição (`tools/mapas/aplicar_casas_moradores.py`,
+  plano medido por `planejar_casas_moradores.gd`), nenhum chamado "Casa do arraial".
+  Um **varal em cada casa** (varal, bambu e estacas alternados), mais galinheiro,
+  chiqueiro e cocho onde os bichos têm galinha e porco, a canoa em obra do
+  carpinteiro e o lavadouro da lavadeira. A casa de farinha é posto de trabalho sem
+  morador (fica a 270 u do oeste: a jornada de quem mora lá não cabe).
+- **Portão**: `tests/rotina_dos_moradores.gd` (`-- --falsificar-rotina` tem de reprovar).

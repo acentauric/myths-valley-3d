@@ -18,6 +18,14 @@ extends Node
 ## A ESCALA sai do passo do jogador, como na criatura (`u_por_px`): o alcance
 ## de 26 px do golpe de facão vira pouco menos de um metro.
 ##
+## AS ONÇAS (#28) moram nas duas pontas da Mata: a pintada no penedo, junto das
+## Pedras, como no 2D; a preta na outra ponta, e só do entardecer à madrugada.
+## Ficam numa lista própria (`oncas`), e não em `criaturas`: `criaturas` é o
+## que a mata repõe perto da vila — o caititu —, e é por ela que o caderno, a
+## Caipora e a partida salva perguntam. A luta vale para todas (`_vivas`).
+## Quando uma onça vê o jogador pela primeira vez, o HUD avisa; enquanto
+## alguma caça, toca a música da mata.
+##
 ## O QUE O VALE AINDA NÃO TEM, e a luta não espera: a mão se escolhe pela
 ## mochila (#2) e pelas teclas (#4); até lá, só quem pôs a arma na mão por
 ## código luta de facão — de mão vazia, luta quem aprendeu a capoeira. O que o
@@ -45,6 +53,34 @@ const LONGE_DA_CHEGADA := 45.0
 const BUSCA_RAIO := 320.0
 const BUSCA_PASSO := 8.0
 
+## As onças e onde cada uma mora (ver `ponto_da_onca`).
+const NINHOS_DA_ONCA := ["pintada", "preta"]
+const ONCA_LONGE_DO_CAITITU := 30.0
+const ONCA_LONGE_DE_CASA := 120.0
+const ONCA_LONGE_DA_CHEGADA := 60.0
+const ONCA_LONGE_DA_RUA := 25.0
+## Entre a pintada e a preta, ou a preta vai para a serra.
+const ONCAS_SEPARADAS := 40.0
+## O penedo: até onde das Pedras se procura o ninho da pintada, e até onde
+## dele vale "colado na mata" mesmo fora do polígono.
+const PENEDO_BUSCA := 30.0
+const PENEDO_COLADO := 12.0
+const PASSO_DA_ONCA := 2.0
+## Chão de onça: acima da praia (onde a terra acaba, a colisão da terra também, e
+## quem nasce ali cai no vazio) e longe das pedras da orla.
+const ONCA_CHAO_MINIMO := 1.8
+const PENEDO_LONGE_DA_PRAIA := 8.0
+## O PENEDO COM LAPA de cada onça (o GLB `penedo_lapa`): o tamanho em relação ao
+## do catálogo, quanto atrás do ninho fica o centro dele (u) e o giro que põe a
+## boca da lapa de frente para o ninho.
+const PENEDO_TAMANHO := 0.75
+const PENEDO_ATRAS := 4.2
+const PENEDO_GIRO := 0.0
+## Quando a onça-preta anda.
+const PRETA_ANDA := ["entardecer", "noite", "madrugada"]
+## De quanto em quanto tempo a luta confere a música e a hora da preta (s).
+const CONFERIR_A_CADA := 0.25
+
 ## O número da pancada, com as cores do 2D (`Mundo._mostrar_pancada`).
 const COR_DA_PANCADA := Color(0.96, 0.93, 0.84)
 const COR_DA_PANCADA_PESADA := Color(1.0, 0.8, 0.3)
@@ -60,6 +96,10 @@ signal bateu(golpe: String)
 
 var u_por_px: float = 2.1 / Criatura.PASSO_DO_JOGADOR_2D
 var criaturas: Array = []
+## As onças da Mata, fora de `criaturas` (ver o cabeçalho).
+var oncas: Array = []
+## Algum bicho já viu o jogador nesta partida? O aviso é só da primeira vez.
+var avisou_da_onca := false
 ## Quem caiu e quando volta: {especie, ninho, volta_em} (`volta_em` é dia absoluto).
 var mortes: Array = []
 ## O E ainda está apertado? Por Callable para o portão poder segurar a tecla
@@ -76,6 +116,8 @@ var _textos: Dictionary = {}
 ## Onde o corpo fica em repouso: golpe e ginga podem se atropelar, e cada um
 ## voltar para onde o outro o deixou desalinharia o corpo da cápsula.
 var _repouso_do_corpo: Vector3 = Vector3.ZERO
+var _conferir_em: float = 0.0
+var _musica_da_caca := false
 
 
 func configurar(world, player, hud) -> void:
@@ -97,6 +139,15 @@ func configurar(world, player, hud) -> void:
 			nascer(especie, ninho)
 		else:
 			push_warning("Luta: não achei mata fechada longe de casa para o ninho de %s" % especie)
+	var outra := Vector3.INF
+	for pelagem in NINHOS_DA_ONCA:
+		var ninho := ponto_da_onca(pelagem, outra)
+		if not ninho.is_finite():
+			push_warning("Luta: não achei onde a onça %s mora" % pelagem)
+			continue
+		nascer("onca", ninho, pelagem)
+		outra = ninho
+	_conferir_a_preta()
 
 
 func _texto(chave: String) -> String:
@@ -130,23 +181,223 @@ func ponto_de_ninho() -> Vector3:
 	return _world.ground_position(melhor, 0.05) if melhor.is_finite() else Vector3.INF
 
 
-func nascer(especie: String, onde: Vector3):
+## ONDE A ONÇA MORA. A pintada, no penedo: o ponto bom mais perto das Pedras,
+## dentro da Mata ou colado nela. A preta, na outra ponta: o ponto bom da Mata
+## mais longe da pintada, se ficar a `ONCAS_SEPARADAS` dela; senão, na serra
+## além da rua do mirante. Ponto bom é terra firme, longe do ninho do caititu,
+## das casas, da chegada e das ruas — onça não mora no caminho de ninguém.
+func ponto_da_onca(pelagem: String, outra: Vector3 = Vector3.INF) -> Vector3:
+	var regiao = _world.get("_region")
+	if regiao == null:
+		return Vector3.INF
+	var mata: PackedVector2Array = regiao._kml_forest if regiao._kml_forest.size() >= 3 else regiao._forest
+	var pedras: Vector3 = _world.ancoras.get("Pedras", Vector3.INF)
+	var melhor := Vector3.INF
+	if pelagem == "pintada" and pedras.is_finite():
+		var melhor_d := INF
+		var passos := int(PENEDO_BUSCA / PASSO_DA_ONCA)
+		for i in range(-passos, passos + 1):
+			for j in range(-passos, passos + 1):
+				var p := pedras + Vector3(i * PASSO_DA_ONCA, 0.0, j * PASSO_DA_ONCA)
+				var d := Criatura._plano(p - pedras).length()
+				if d >= melhor_d or d > PENEDO_BUSCA or d < PENEDO_LONGE_DA_PRAIA:
+					continue
+				if not (_world.na_mata_fechada(p) or (d <= PENEDO_COLADO and _na_mata(mata, p))) and d > PENEDO_COLADO:
+					continue
+				if _serve_para_onca(p):
+					melhor = p
+					melhor_d = d
+	elif pelagem != "pintada" and mata.size() >= 3:
+		var caixa := Rect2(mata[0], Vector2.ZERO)
+		for ponto in mata:
+			caixa = caixa.expand(ponto)
+		var melhor_d := -INF
+		var x := caixa.position.x
+		while x <= caixa.end.x:
+			var z := caixa.position.y
+			while z <= caixa.end.y:
+				var p := Vector3(x, 0.0, z)
+				z += PASSO_DA_ONCA * 2.0
+				if not _world.na_mata_fechada(p) or not _serve_para_onca(p):
+					continue
+				var d := Criatura._plano(p - outra).length() if outra.is_finite() else 0.0
+				if d > melhor_d:
+					melhor = p
+					melhor_d = d
+			x += PASSO_DA_ONCA * 2.0
+		if outra.is_finite() and melhor_d < ONCAS_SEPARADAS:
+			melhor = _ponto_na_serra(regiao, outra)
+	return _world.ground_position(melhor, 0.05) if melhor.is_finite() else Vector3.INF
+
+
+func _na_mata(mata: PackedVector2Array, p: Vector3) -> bool:
+	return mata.size() >= 3 and Geometry2D.is_point_in_polygon(Vector2(p.x, p.z), mata)
+
+
+func _serve_para_onca(p: Vector3) -> bool:
+	if not _world.is_on_land(p) or _world.ground_height_at(p) < ONCA_CHAO_MINIMO:
+		return false
+	for c in criaturas:
+		if is_instance_valid(c) and Criatura._plano(c._ninho - p).length() < ONCA_LONGE_DO_CAITITU:
+			return false
+	if Criatura._plano(_player.spawn_position - p).length() < ONCA_LONGE_DA_CHEGADA:
+		return false
+	var lotes: Dictionary = _world.get("_lotes") if _world.get("_lotes") != null else {}
+	for nome in lotes:
+		if Criatura._plano(_world.ancoras.get(nome, Vector3.INF) - p).length() < ONCA_LONGE_DE_CASA:
+			return false
+	var regiao = _world.get("_region")
+	if regiao != null:
+		var ponto := Vector2(p.x, p.z)
+		for rua in regiao._roads:
+			if (rua.bounds as Rect2).grow(ONCA_LONGE_DA_RUA).has_point(ponto) \
+					and regiao._distance_to_line(ponto, rua.points) < ONCA_LONGE_DA_RUA + float(rua.width) * 0.5:
+				return false
+	return true
+
+
+## A SERRA ALÉM DA RUA DO MIRANTE, quando a Mata é curta para duas onças: o
+## ponto bom mais longe da outra entre 30 e 60 u da metade de cima da rua,
+## dentro da mata cênica (o predicado de mata da serra; o da Mata do KML não a
+## alcança).
+func _ponto_na_serra(regiao, outra: Vector3) -> Vector3:
+	var mata_da_serra: PackedVector2Array = regiao._forest
+	var melhor := Vector3.INF
+	var melhor_d := -INF
+	for rua in regiao._roads:
+		if String(rua.name) != "Rua do mirante":
+			continue
+		var pontos: PackedVector2Array = rua.points
+		for k in range(int(pontos.size() * 0.5), pontos.size(), 6):
+			for giro in 8:
+				for raio in [30.0, 45.0, 60.0]:
+					var q: Vector2 = pontos[k] + Vector2.RIGHT.rotated(TAU * giro / 8.0) * raio
+					var p := Vector3(q.x, 0.0, q.y)
+					if mata_da_serra.size() >= 3 and not _na_mata(mata_da_serra, p):
+						continue
+					if not _serve_para_onca(p):
+						continue
+					var d := Criatura._plano(p - outra).length()
+					if d > melhor_d:
+						melhor = p
+						melhor_d = d
+	return melhor
+
+
+func nascer(especie: String, onde: Vector3, pelagem: String = ""):
 	var bicho = Criatura.new()
 	bicho.especie = especie
-	bicho.name = "Criatura_%s" % especie
+	bicho.pelagem = pelagem
+	bicho.name = "Criatura_%s" % (especie if pelagem == "" else especie + "_" + pelagem)
 	add_child(bicho)
 	bicho.global_position = onde
 	bicho.configurar(_world, _player, u_por_px)
 	bicho.morreu.connect(_ao_morrer)
-	criaturas.append(bicho)
+	if bicho.tem_vista():
+		bicho.avistou.connect(_ao_avistar)
+		oncas.append(bicho)
+		_montar_o_penedo(bicho)
+	else:
+		criaturas.append(bicho)
 	return bicho
+
+
+## O PENEDO COM LAPA do ninho da onça: fica atrás dela, com a boca da lapa
+## virada para o ninho — e, portanto, para a vila, de onde o jogador vem. Uma vez
+## só por ninho: a onça que a mata repõe volta ao mesmo penedo. No Tripo é o GLB
+## com a colisão da pegada; no procedural, três pedras cinza amassadas.
+func _montar_o_penedo(onca) -> void:
+	var nome := "Penedo da onça %s" % onca.pelagem
+	if _world.get_node_or_null(nome) != null:
+		return
+	var ninho: Vector3 = onca._ninho
+	var para_a_vila := Criatura._plano(_player.spawn_position - ninho).normalized()
+	if para_a_vila == Vector3.ZERO:
+		para_a_vila = Vector3.BACK
+	var raiz := Node3D.new()
+	raiz.name = nome
+	_world.add_child(raiz)
+	var centro: Vector3 = _world.ground_position(ninho - para_a_vila * PENEDO_ATRAS, 0.0)
+	raiz.global_position = centro
+	var giro := atan2(para_a_vila.x, para_a_vila.z) + PENEDO_GIRO
+	if Estilo.tripo() and CatalogoAssets.tem_tripo("penedo_lapa"):
+		var modelo := CatalogoAssets.instanciar("penedo_lapa", raiz, Vector3.ZERO, PENEDO_TAMANHO, giro)
+		CatalogoAssets.colisao("penedo_lapa", modelo, raiz, Vector3.ZERO, PENEDO_TAMANHO, giro)
+		return
+	var tinta := StandardMaterial3D.new()
+	tinta.albedo_color = Color(0.43, 0.41, 0.38)
+	tinta.roughness = 1.0
+	var corpo := StaticBody3D.new()
+	corpo.name = "Colisao"
+	corpo.collision_layer = 1
+	raiz.add_child(corpo)
+	for pedra: Array in [[Vector3(0.0, 1.0, 0.0), Vector3(2.7, 1.9, 2.3)], [Vector3(-1.8, 0.7, 0.9), Vector3(1.7, 1.3, 1.5)], [Vector3(1.9, 0.6, 0.6), Vector3(1.5, 1.1, 1.4)]]:
+		var malha := MeshInstance3D.new()
+		var esfera := SphereMesh.new()
+		esfera.radius = 1.0
+		esfera.height = 2.0
+		esfera.radial_segments = 14
+		esfera.rings = 7
+		malha.mesh = esfera
+		malha.material_override = tinta
+		malha.scale = pedra[1] * 0.5
+		malha.position = (pedra[0] as Vector3).rotated(Vector3.UP, giro)
+		raiz.add_child(malha)
+		var forma := CollisionShape3D.new()
+		var caixa := BoxShape3D.new()
+		caixa.size = (pedra[1] as Vector3) * 0.8
+		forma.shape = caixa
+		forma.position = malha.position
+		corpo.add_child(forma)
 
 
 func _ao_morrer(bicho) -> void:
 	var volta := int(bicho.dados().get("volta", 3))
-	mortes.append({"especie": bicho.especie, "ninho": bicho._ninho,
-		"volta_em": Relogio.dia_absoluto() + volta})
+	var morte := {"especie": bicho.especie, "ninho": bicho._ninho,
+		"volta_em": Relogio.dia_absoluto() + volta}
+	if bicho.pelagem != "":
+		morte["pelagem"] = bicho.pelagem
+	mortes.append(morte)
 	criaturas.erase(bicho)
+	oncas.erase(bicho)
+
+
+## A PRIMEIRA VEZ QUE UMA ONÇA VÊ O JOGADOR, o HUD diz — só a primeira: o aviso
+## ensina que ela caça com os olhos, e repetido vira ruído.
+func _ao_avistar(_bicho) -> void:
+	if avisou_da_onca:
+		return
+	avisou_da_onca = true
+	_avisar(_texto("onca_viu"))
+
+
+## A música da mata enquanto alguma onça caça, e a hora da preta.
+func _conferir_as_oncas(delta: float) -> void:
+	_conferir_em -= delta
+	if _conferir_em > 0.0:
+		return
+	_conferir_em = CONFERIR_A_CADA
+	_conferir_a_preta()
+	var caca := false
+	for onca in oncas:
+		if is_instance_valid(onca) and onca.cacando and not onca.morto():
+			caca = true
+	if caca:
+		# Repetido de propósito: o ambiente desliga a música quando o jogador sai
+		# da mata, e quem foge da onça sai da mata com ela atrás.
+		Audio.tocar_musica_mata(true)
+	elif _musica_da_caca:
+		Audio.tocar_musica_mata(_player != null and _world.na_mata_fechada(_player.global_position))
+	_musica_da_caca = caca
+
+
+## A onça-preta só anda do entardecer à madrugada. Caçando, ela termina a caça.
+func _conferir_a_preta() -> void:
+	var anda: bool = Dia.periodo() in PRETA_ANDA
+	for onca in oncas:
+		if is_instance_valid(onca) and onca.pelagem == "preta" and not onca.morto() \
+				and onca.ativa() != anda and not onca.cacando:
+			onca.ativar(anda)
 
 
 ## A MATA REPÕE quem morreu, em dias (`volta` da espécie): três no caititu.
@@ -156,7 +407,7 @@ func _ao_comecar_o_dia(_dia: int, _estacao: int, _ano: int) -> void:
 	for morte in mortes.duplicate():
 		if hoje >= int(morte["volta_em"]):
 			mortes.erase(morte)
-			nascer(str(morte["especie"]), morte["ninho"])
+			nascer(str(morte["especie"]), morte["ninho"], str(morte.get("pelagem", "")))
 
 
 ## A partida salva diz quem caiu e ainda não voltou (#7). Quem está nessa
@@ -168,14 +419,17 @@ func restaurar_mortes(lista: Array) -> void:
 		if morte is Dictionary:
 			mortes.append(morte.duplicate(true))
 	for morte in mortes:
-		for c in _vivas():
-			if c.especie == str(morte.get("especie", "")) 					and Criatura._plano(c._ninho - morte.get("ninho", Vector3.INF)).length() < 1.0:
+		for c in criaturas + oncas:
+			if is_instance_valid(c) and not c.morto() and c.especie == str(morte.get("especie", "")) \
+					and Criatura._plano(c._ninho - morte.get("ninho", Vector3.INF)).length() < 1.0:
 				criaturas.erase(c)
+				oncas.erase(c)
 				c.queue_free()
 
 
+## Quem está de pé para a luta: os da mata e as onças que andam agora.
 func _vivas() -> Array:
-	return criaturas.filter(func(c): return is_instance_valid(c) and not c.morto())
+	return (criaturas + oncas).filter(func(c): return is_instance_valid(c) and not c.morto() and c.ativa())
 
 
 # --- a tecla -----------------------------------------------------------------
@@ -193,9 +447,11 @@ func _unhandled_key_input(event: InputEvent) -> void:
 			get_viewport().set_input_as_handled()
 
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
 	if _golpe_segurado_desde >= 0.0:
 		_conferir_o_golpe_segurado()
+	if _world != null:
+		_conferir_as_oncas(delta)
 
 
 ## O E apertou com bicho perto: o corpo se vira para ele e começa a contar o

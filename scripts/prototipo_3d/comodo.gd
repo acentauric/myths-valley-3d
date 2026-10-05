@@ -29,6 +29,7 @@ extends Node3D
 
 const CatalogoAssets = preload("res://scripts/prototipo_3d/catalogo_assets.gd")
 const Mar = preload("res://scripts/prototipo_3d/mar.gd")
+const Camadas = preload("res://scripts/prototipo_3d/camadas.gd")
 
 ## As camadas visuais do cômodo e dos corpos que andam nele (1 << n-1).
 const CAMADA_DO_COMODO := 1 << 10
@@ -397,6 +398,8 @@ func por_dentro(dentro: bool) -> void:
 func _rampa(nome: String, largura_da_rampa: float, alto: Vector2, baixo: Vector2, x: float = INF) -> void:
 	var rampa := StaticBody3D.new()
 	rampa.name = nome
+	# Chão para a câmera também: ela não passa por baixo da rampa da porta.
+	rampa.collision_layer = Camadas.MUNDO_E_CAMERA
 	var forma := CollisionShape3D.new()
 	var caixa := BoxShape3D.new()
 	caixa.size = Vector3(largura_da_rampa, 0.1, alto.distance_to(baixo))
@@ -574,7 +577,12 @@ func _por_na_camada(no: Node) -> void:
 
 ## Uma caixa: malha com o material, e corpo de colisão quando `solida`. Sem
 ## material, só a colisão (os bancos, o túnel da porta).
-func _caixa(tamanho: Vector3, onde: Vector3, material: Material, solida: bool, nome: String) -> Node3D:
+##
+## `barra_camera`: a caixa sólida barra também o braço da câmera
+## (`camadas.gd`). Parede, chão, forro, verga e tranca barram — a câmera não
+## sai do cômodo pela parede; móvel, banco, altar e grade não, e a câmera não
+## salta ao passar por eles.
+func _caixa(tamanho: Vector3, onde: Vector3, material: Material, solida: bool, nome: String, barra_camera: bool = true) -> Node3D:
 	var raiz := Node3D.new()
 	# Nome numerado: irmãos de mesmo nome o Godot renomeia para "@Node3D@57", e
 	# quem procura "BancoColisao_*" não os acharia.
@@ -591,6 +599,7 @@ func _caixa(tamanho: Vector3, onde: Vector3, material: Material, solida: bool, n
 		raiz.add_child(malha)
 	if solida:
 		var corpo := StaticBody3D.new()
+		corpo.collision_layer = Camadas.MUNDO_E_CAMERA if barra_camera else Camadas.MUNDO
 		var forma := CollisionShape3D.new()
 		var formato := BoxShape3D.new()
 		formato.size = tamanho
@@ -617,7 +626,7 @@ func _colisao_da_peca(peca: Node3D, nome: String) -> Node3D:
 	var caixa := caixa_no_comodo(peca)
 	if caixa.size.x < 0.02 or caixa.size.z < 0.02:
 		return null
-	var corpo := _caixa(caixa.size, caixa.get_center(), null, true, nome + "Colisao")
+	var corpo := _caixa(caixa.size, caixa.get_center(), null, true, nome + "Colisao", false)
 	_moveis.append({"nome": nome, "peca": peca, "corpo": corpo})
 	return corpo
 
