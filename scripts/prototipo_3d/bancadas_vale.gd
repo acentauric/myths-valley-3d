@@ -55,14 +55,27 @@ const OBRAS := {
 	# O CERCADO DO CEMITÉRIO, o fim da missão do Damião: a aba vale no outeiro
 	# inteiro, de dentro do cercado que vai subir (`cemiterio_vale.gd`).
 	"cemiterio": {"ancora": "Cemitério", "raio": 12.0},
+	# A PONTE DO RIO GRANDE, cercada até a obra (`ponte_vale.gd`,
+	# data/missoes_ponte.json): a aba vale nas duas cabeceiras, do lado de fora
+	# da cerca.
+	"ponte": {"ancora": "Ponte", "raio": 9.0, "nome": "ponte do rio grande"},
 }
 
 const FALTAM := {
 	"canteiro": "o canteiro, onde se decidem as obras e que abate o material delas, também é do roçado (#27)",
 	"oficio": "a casa de farinha, o engenho e a cabana de pesca são do roçado e do rio (#27)",
 	"forno_barro": "o forno do arraial ainda não foi posto no vale (#27)",
-	"monjolo": "o monjolo fica na beira do rio grande, que o vale ainda não tem (#23)",
+	"monjolo": "o monjolo fica na beira do rio grande, e ninguém o pôs lá ainda (#23)",
 }
+
+
+## O nome da construção na aba de obras: o do `Jogo` (o arquivo do 2D), ou o que
+## a construção do vale traz — a ponte do rio grande não existe no 2D como obra.
+static func nome(qual: String) -> String:
+	var bancada := _bancada(qual)
+	if bancada.has("nome"):
+		return str(bancada["nome"])
+	return Jogo.nome_da_construcao(qual)
 
 
 static func _bancada(qual: String) -> Dictionary:

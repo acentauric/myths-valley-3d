@@ -54,7 +54,7 @@ const CORDEIS := {
 }
 const CORDEIS_QUE_FALTAM := {
 	"moca_da_agua": "na beira da lagoa, que o vale ainda não tem (#23)",
-	"cabra_da_fazenda": "no vau do rio grande, debaixo da ponte caída, que o vale ainda não tem (#23)",
+	"cabra_da_fazenda": "no vau do rio grande, debaixo da ponte: o vau chegou com a ponte (data/missoes_ponte.json), e o chão da margem para o folheto ainda não foi medido (#23)",
 	"santo_do_pau_oco": "na ruína do palacete, que é a segunda região (#25)",
 	"boi_do_reconcavo": "no engenho, construção do roçado que ainda não existe (#27)",
 }

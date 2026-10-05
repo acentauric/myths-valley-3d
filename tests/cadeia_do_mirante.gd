@@ -9,7 +9,9 @@ extends SceneTree
 ##
 ##   1. A CADEIA É DO PEDRO, é de enredo e tem os quatro passos.
 ##   2. ELA NÃO ABRE ANTES DO TUTORIAL: no 2D estas missões vêm "depois que o
-##      Pedro termina de ensinar a sobreviver". Com o guia terminado, abre.
+##      Pedro termina de ensinar a sobreviver" — e a ponte do rio grande é do
+##      tutorial (data/missoes_ponte.json). Com o guia terminado, o E no Pedro
+##      abre a ponte, e não o mirante; com a ponte de pé, abre o mirante.
 ##   3. O P FECHA O PRIMEIRO PASSO: a meta é o acontecimento "abriu_arraial",
 ##      que o vale avisa quando a tela do arraial abre.
 ##   4. CHEGAR AO MIRANTE fecha o segundo.
@@ -69,6 +71,17 @@ func _run() -> void:
 	jogador.global_position = pedro.global_position + Vector3(1.2, 0.0, 1.0)
 	await _segundos(1.0)
 	_conferir(not cadeia.iniciado, "ao lado do Pedro, a cadeia do mirante abriu sozinha, sem o E")
+	var ponte = vale._cadeias.get("pedro_ponte")
+	_conferir(ponte != null, "o Pedro não tem a frente da ponte")
+	vale.tecla_dos_moradores.usar(pedro)
+	await _frames(3)
+	_conferir(not cadeia.iniciado and ponte != null and ponte.iniciado,
+		"acabado o tutorial, o primeiro E no Pedro abriu o mirante, e a ponte vem antes dele")
+	# A PONTE DE PÉ (o portão `ponte` a joga inteira): o mirante passa a abrir.
+	if ponte != null:
+		ponte.missao = ponte.passos.size()
+		ponte.despedida_feita = true
+	await _frames(3)
 	vale.tecla_dos_moradores.usar(pedro)
 	var abriu := await _ate(func() -> bool: return bool(cadeia.iniciado), SEGUNDOS)
 	_conferir(abriu, "com o tutorial terminado e o E no Pedro, a cadeia do mirante não abriu")

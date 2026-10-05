@@ -212,6 +212,18 @@
     },
 
 
+    "ponte_levantar": {
+      "eixo": "casca",
+      "compartimento": "Casco",
+      "ordem": 1,
+      "vira": "ponte",
+      "alvos": ["ponte"],
+      "nome": "Levantar a ponte do rio grande",
+      "resumo": "Esteio novo no lugar do que a cheia comeu, tabuado amarrado de cabeceira a cabeceira, e a cerca de interdição no chão. Carroça volta a passar — e é a primeira coisa que muda neste arraial em vinte anos.",
+      "abre": { "missao": "tabuas" },
+      "custo": { "tabua": 12, "corda": 4 }
+    },
+
     "mirante_levantar": {
       "eixo": "casca",
       "compartimento": "Casco",

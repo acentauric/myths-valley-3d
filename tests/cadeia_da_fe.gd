@@ -64,10 +64,16 @@ func _run() -> void:
 	# --- 1. ESPERA O MIRANTE ----------------------------------------------------
 	await _segundos(2.0)
 	_conferir(not fila.iniciado, "a fila da fé abriu antes do mirante consertado")
-	# A fé vem depois do arraial, que vem depois da chegada: com a chegada no
-	# desembarque, o E no Pedro é o do desembarque (falar com ele), que vem antes.
+	# A fé vem depois do arraial, que vem depois da ponte e da chegada: com a
+	# chegada no desembarque, o E no Pedro é o do desembarque (falar com ele), e
+	# com a ponte por fazer, é o da ponte — os dois vêm antes.
 	vale.pedro.missao = vale.pedro.MISSOES.size()
 	vale.pedro.set("_despedida_feita", true)
+	var ponte = cadeias.get("pedro_ponte")
+	if ponte != null:
+		ponte.iniciado = true
+		ponte.missao = ponte.passos.size()
+		ponte.despedida_feita = true
 	arraial.iniciado = true
 	arraial.missao = arraial.passos.size()
 	vale.pedro.global_position = jogador.global_position + Vector3(1.5, 0, 0)

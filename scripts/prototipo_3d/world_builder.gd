@@ -87,6 +87,10 @@ var _lotes: Dictionary = {}
 ## (`interiores.gd`) os acha por aqui, e não pelo nome do nó: há várias casas
 ## de taipa no vale, e o Godot renomeia as repetidas.
 var construcoes: Dictionary = {}
+## AS PONTES, pela âncora: {"centro", "ao_longo" (de cabeceira a cabeceira),
+## "comprimento", "largura"}. Quem cerca a do rio grande até a obra a lê daqui
+## (`ponte_vale.gd`).
+var pontes: Dictionary = {}
 ## A importação inicial pode ignorar a cena, mas uma partida sempre lê a autoria.
 var ignorar_composicao := false
 var caminho_composicao := ComposicaoVale.CENA
@@ -1624,11 +1628,68 @@ func _erguer_ponte(point: Vector3, anchor: String) -> void:
 	bridge.y = _footprint_height(bridge, 5.5) + 0.1
 	ancoras[anchor] = bridge
 	var bridge_yaw := _road_yaw_at(bridge)
-	_construcao("ponte", bridge, bridge_yaw, func():
+	var modelo := _construcao("ponte", bridge, bridge_yaw, func():
 		_box(Vector3(11, 0.35, 6), bridge + Vector3(0, 0.22, 0), Color("987b57"), true, null, bridge_yaw)
 		for side in [-2.8, 2.8]:
 			var rail_offset := Vector3(0, 0.95, side).rotated(Vector3.UP, bridge_yaw)
 			_box(Vector3(11, 0.18, 0.15), bridge + rail_offset, WOOD, true, null, bridge_yaw))
+	# AS MEDIDAS DA PONTE COMO ELA FICOU: as da caixa procedural (11 por 6, comprida
+	# no X dela) ou as do modelo do Tripo, comprido no eixo maior. Girar o yaw leva
+	# o X local para (cos, -sen) e o Z local para (sen, cos).
+	var ao_longo := Vector3(cos(bridge_yaw), 0.0, -sin(bridge_yaw))
+	var comprimento := 11.0
+	var largura := 6.0
+	if modelo != null and modelo.has_meta("limites"):
+		var limites: AABB = modelo.get_meta("limites")
+		comprimento = maxf(limites.size.x, limites.size.z)
+		largura = minf(limites.size.x, limites.size.z)
+		if limites.size.z > limites.size.x:
+			ao_longo = Vector3(sin(bridge_yaw), 0.0, cos(bridge_yaw))
+	pontes[anchor] = {"centro": bridge, "ao_longo": ao_longo, "comprimento": comprimento, "largura": largura}
+
+
+## O VAU DO RIO GRANDE (`Lugares` "vau"): o ponto do rio do norte a VAU_DA_PONTE
+## da ponte, pela linha dele — onde se atravessa a pé, com água na canela,
+## enquanto a ponte está cercada (`ponte_vale.gd`). Rio abaixo pela ordem dos
+## pontos; se a linha acaba antes, rio acima. Sem rio do norte, INF, e o nome não
+## resolve.
+const VAU_DA_PONTE := 8.0
+
+
+func _vau_ao_lado(ponte: Vector3) -> Vector3:
+	if _region == null:
+		return Vector3.INF
+	var alvo := Vector2(ponte.x, ponte.z)
+	var linha := PackedVector2Array()
+	var trecho := -1
+	var perto := Vector2.ZERO
+	var menor := INF
+	for river in _region._rivers:
+		if not _region._is_northern_river(river):
+			continue
+		var pontos: PackedVector2Array = river.points
+		for i in range(pontos.size() - 1):
+			var mais_perto := Geometry2D.get_closest_point_to_segment(alvo, pontos[i], pontos[i + 1])
+			if mais_perto.distance_to(alvo) < menor:
+				menor = mais_perto.distance_to(alvo)
+				linha = pontos
+				trecho = i
+				perto = mais_perto
+	if trecho < 0:
+		return Vector3.INF
+	for sentido in [1, -1]:
+		var falta := VAU_DA_PONTE
+		var de := perto
+		var i: int = trecho + 1 if sentido > 0 else trecho
+		while i >= 0 and i < linha.size():
+			var passo := de.distance_to(linha[i])
+			if passo >= falta:
+				var ali := de + (linha[i] - de).normalized() * falta
+				return ground_position(Vector3(ali.x, 0.0, ali.y))
+			falta -= passo
+			de = linha[i]
+			i += sentido
+	return Vector3.INF
 
 
 func _build_landmark_details() -> void:
@@ -1675,6 +1736,9 @@ func _build_landmark_details() -> void:
 			for side in [-1.8, 1.8]:
 				_box(Vector3(0.3, 1.5, 0.3), pier + Vector3(side, -0.75, offset), WOOD))
 	_erguer_ponte(_region.get_feature_center("Ponte", "poi"), "Ponte")
+	var vau := _vau_ao_lado(ancoras["Ponte"])
+	if vau.is_finite():
+		ancoras["Vau"] = vau
 	var central_bridge := _central_road_river_crossing()
 	if central_bridge.is_finite():
 		_erguer_ponte(central_bridge, "Ponte do rio central")

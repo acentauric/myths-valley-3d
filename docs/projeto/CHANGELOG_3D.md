@@ -2,6 +2,16 @@
 
 ## Em desenvolvimento — 05/10/2026
 
+- A ponte do rio grande, a frente da trilha do 2D: o rio grande é o rio do
+  norte do mapa, raso de dar pé, e a ponte da Rua Principal começa cercada nas
+  duas cabeceiras — a cheia comeu os esteios do meio. Gente atravessa no vau, ao
+  lado. Depois da chegada, o primeiro E no Pedro abre a frente: ver a ponte,
+  voltar e contar, juntar a lenha (trinta e seis paus, e a tábua e a corda já
+  feitas contam), serrar doze tábuas e quatro cordas na bancada e levantar a
+  ponte no J, na aba de obras, ao pé dela. A obra tira a cerca. O mirante passa a
+  esperar a ponte, como no 2D. Meta nova: `juntar` com `equivale`. Portão novo:
+  `ponte`; `cadeia_do_mirante`, `cadeia_da_fe`, `missoes`, `ferramentas`,
+  `idiomas` e `painel` ajustados.
 - As frentes do 2D que não pedem lugar novo chegam ao vale: as **armas** do
   Pedro (bater um facão na oficina, derrubar um caititu, o golpe de peso, que o
   passo ensina), o **ofício** (a vara do pai do Pedro e dois peixes, e um

@@ -48,6 +48,7 @@ const TRADUZIDOS := {
 	"res://data/missoes_oficio.json": ["texto", "resumo", "nome", "titulo", "resposta"],
 	"res://data/missoes_capoeira.json": ["texto", "resumo", "nome", "titulo", "resposta"],
 	"res://data/missoes_metas.json": ["texto", "resumo", "nome", "titulo", "resposta"],
+	"res://data/missoes_ponte.json": ["texto", "resumo", "nome", "titulo", "resposta"],
 	"res://data/documentos.json": ["nome", "linhas"],
 	"res://data/historico_3d.json": ["titulo", "estado"],
 	# A fé (#52): o que os marcos dizem.

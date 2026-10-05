@@ -84,18 +84,18 @@ func _run() -> void:
 
 	# --- 4. NOME QUE O VALE AINDA NÃO TEM -------------------------------------
 	#
-	# Metade da campanha do 2D aponta para o vau, a chapada, a lagoa e a
-	# fazenda, que só chegam na Fase 2.5. Até lá a missão abre sem bússola — e
+	# Boa parte da campanha do 2D aponta para a chapada, a lagoa e a fazenda,
+	# que só chegam na Fase 2.5 (o vau já chegou, com a ponte do rio grande). Até lá a missão abre sem bússola — e
 	# ABRIR É O QUE IMPORTA: missão que não abre trava a campanha; missão sem
 	# seta só obriga a procurar.
-	missoes.adicionar("teste_vau", "Ver a ponte caída", false, [], "", true, "teste")
-	missoes.apontar("teste_vau", "vau")
-	var j: int = missoes.indice("teste_vau")
+	missoes.adicionar("teste_chapada", "Ver a chapada", false, [], "", true, "teste")
+	missoes.apontar("teste_chapada", "expansao")
+	var j: int = missoes.indice("teste_chapada")
 	_conferir(j >= 0, "a missão que aponta para lugar ausente não abriu")
 	if j >= 0:
 		var sem_alvo = missoes.ativas[j].get("alvo", null)
 		_conferir(sem_alvo == null or sem_alvo == lugares.NENHUM,
-			"o vau não existe no vale e mesmo assim virou alvo: %s" % str(sem_alvo))
+			"a chapada não existe no vale e mesmo assim virou alvo: %s" % str(sem_alvo))
 
 	# --- 5. A CHECKLIST CONTA ITEM --------------------------------------------
 	inv.adicionar("tabua", 3)
@@ -129,7 +129,7 @@ func _run() -> void:
 			"girar o foco não trocou: continuou em %d" % missoes.em_foco)
 
 	# Limpa o que este teste abriu, para não deixar missão de conferência viva.
-	missoes.concluir("teste_vau")
+	missoes.concluir("teste_chapada")
 	missoes.concluir("teste_ponte")
 
 	_fechar()

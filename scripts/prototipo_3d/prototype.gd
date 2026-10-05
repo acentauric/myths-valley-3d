@@ -43,6 +43,7 @@ const CasaDoJogador = preload("res://scripts/prototipo_3d/casa_do_jogador.gd")
 const LavouraVale = preload("res://scripts/prototipo_3d/lavoura_vale.gd")
 const NavegacaoVale = preload("res://scripts/prototipo_3d/navegacao_vale.gd")
 const CemiterioVale = preload("res://scripts/prototipo_3d/cemiterio_vale.gd")
+const PonteVale = preload("res://scripts/prototipo_3d/ponte_vale.gd")
 const MENU_SCENE := "res://scenes/prototipo_3d/abertura.tscn"
 ## Raio de terra firme em volta do ponto de chegada.
 const RAIO_CHEGADA := 6.0
@@ -126,6 +127,8 @@ var navegacao: Node3D
 ## O cemitério que a missão do Damião conserta: as lajes tortas e o cercado
 ## (`cemiterio_vale.gd`).
 var cemiterio: Node3D
+## A ponte do rio grande, cercada até a obra da frente da trilha (`ponte_vale.gd`).
+var ponte_do_rio: Node3D
 ## As plaquinhas de nome dos moradores; somem com tela aberta (placas_nomes.gd).
 var placas
 ## O personagem em 3D na mochila, ao lado dos encaixes (boneco_da_mochila.gd).
@@ -585,14 +588,25 @@ func _ready() -> void:
 				roca.depois_de = func() -> bool: return pedro == null or pedro.passou("roca")
 		if fila != null:
 			fila.depois_de = depois_da_chegada
+	# A PONTE DO RIO GRANDE (data/missoes_ponte.json), a frente da trilha do 2D:
+	# ver a ponte cercada, a lenha, as tábuas e a obra. É enredo — a fazenda do
+	# convite fica do outro lado do rio —, e por isso é a PRIMEIRA fila que o E
+	# no Pedro abre depois da chegada: pendurada antes das outras dele.
+	#
 	# AS MISSÕES DO ARRAIAL, do Pedro, DEPOIS DO TUTORIAL: no 2D elas vêm
-	# "depois que o Pedro termina de ensinar a sobreviver". A cadeia fica
-	# pendurada nele, mas só abre com a do guia terminada e a despedida dita.
+	# "depois que o Pedro termina de ensinar a sobreviver", e a ponte é do
+	# tutorial — o mirante é "a segunda coisa que muda neste arraial em vinte
+	# anos", e a primeira é ela. A cadeia fica pendurada nele, mas só abre com a
+	# do guia terminada, a despedida dita e a ponte de pé.
 	if pedro != null:
+		var da_ponte = _pendurar_cadeia(pedro, "res://data/missoes_ponte.json", 6.0, "pedro_ponte")
+		if da_ponte != null:
+			da_ponte.depois_de = func() -> bool: return pedro.terminou_o_tutorial()
 		var do_arraial = _pendurar_cadeia(pedro, "res://data/missoes_arraial.json", 6.0, "pedro_arraial")
 		if do_arraial != null:
 			do_arraial.depois_de = func() -> bool:
-				return pedro.missao >= pedro.MISSOES.size() and bool(pedro.get("_despedida_feita"))
+				return pedro.missao >= pedro.MISSOES.size() and bool(pedro.get("_despedida_feita")) \
+					and (da_ponte == null or da_ponte.acabou())
 	# O SAVEIRO DA ESTAÇÃO (data/missoes_saveiro.json): o Seu Benedito, que vende
 	# a colheita para o saveiro há quarenta e duas safras, ensina que o mestre
 	# Quirino encosta no píer uma vez por estação — depois do tutorial, que antes
@@ -629,6 +643,12 @@ func _ready() -> void:
 	cemiterio.name = "Cemiterio"
 	add_child(cemiterio)
 	cemiterio.configurar(world, _cadeias.get("damiao"))
+	# A PONTE DO RIO GRANDE, cercada nas duas cabeceiras até a obra da frente da
+	# trilha (data/missoes_ponte.json). Quem diz é o `Obras`, que vai no save.
+	ponte_do_rio = PonteVale.new()
+	ponte_do_rio.name = "PonteDoRio"
+	add_child(ponte_do_rio)
+	ponte_do_rio.configurar(world)
 	# OS ACONTECIMENTOS QUE UM PASSO PODE ESPERAR (meta "evento"): abrir a tela
 	# do P. Todas as cadeias ouvem, mesmo as que ainda não chegaram no passo.
 	social.abriu.connect(func() -> void: _avisar_as_cadeias("abriu_arraial"))

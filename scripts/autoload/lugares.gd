@@ -44,6 +44,12 @@ const DE_PARA := {
 	"casa_de_pasto": "Restaurante",
 	"pier": "Pier",
 	"ponte_da_vila": "Ponte",
+	# O RIO GRANDE é o rio do norte do mapa, raso de dar pé, e a ponte dele é a
+	# "Ponte" do KML, onde a Rua Principal o cruza: cercada até a primeira obra do
+	# jogo (`ponte_vale.gd`, data/missoes_ponte.json). O vau é a passagem a pé ao
+	# lado dela (`world_builder._vau_ao_lado`).
+	"vau": "Vau",
+	"ponte_do_vau": "Ponte",
 	"poco": "Poço",
 	"mirante": "Mirante",
 	"cemiterio": "Cemitério",
@@ -77,8 +83,6 @@ const DE_PARA := {
 ## ninguém aqui esteja escrito errado, e a Fase 2.5 esvazia esta lista movendo
 ## linha por linha para `DE_PARA`.
 const FALTAM_NO_VALE := {
-	"vau": "o rio grande e a passagem de pau — Fase 2.5",
-	"ponte_do_vau": "a ponte reconstruída sobre o vau, que é a primeira obra do jogo — Fase 2.5",
 	"expansao": "a chapada de expansão — Fase 2.5",
 	"lapa": "a lapa e a rampa do morro — Fase 2.5",
 	"lagoa": "a lagoa a leste do Seu Benedito — Fase 2.5",

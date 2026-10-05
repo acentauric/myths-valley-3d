@@ -125,14 +125,23 @@ dele, no píer. Ver [CHEGADA_E_MUTIROES.md](../mundo/CHEGADA_E_MUTIROES.md).
 |---|---|---|---|---|---|---|
 | 1 | `vilarejo` | Conhecer o arraial | Siga a estrada da praia para oeste até a praça | chegou à praça; a Dona Candinha oferece a primeira garapa (cena) | — | adaptada (a chegada passa pela praça) |
 | 2 | `convite` | O papel sem assinatura | Leia o convite no mural da praça (E) | o convite na mochila | — | **pronta** (`convite`, último passo da chegada) |
-| 3 | `ponte_caida` | O que a cheia levou | Siga a estrada para leste até a ponte do rio grande | chegou ao vau | — | falta |
-| 4 | `buscar_machado` | Os machados do avô | Siga o Pedro até a casa dele, na praia | chegou à casa do Pedro; ganha o machado | — | falta (o machado vem na chegada) |
-| 5 | `lenha` | Trinta e seis paus | Junte 36 lenhas na mata (machado, E) | 36 lenhas, contando as já serradas em tábua e corda (`equivale`) | 2 peixes assados | falta |
-| 6 | `tabuas` | Serrar e torcer | Encoste na bancada da oficina e aperte E: faça 12 tábuas e 4 cordas | a conta da ponte na mochila | 3 beijus | falta (a oficina existe) |
-| 7 | `ponte` | De pé outra vez | Levante a ponte no vau do rio grande (E) | ponte de pé | 2 pirões, 2 cocadas | falta |
+| 3 | `ponte_caida` | O que a cheia levou | Siga a estrada para leste até a ponte do rio grande | chegou ao vau | — | **pronta** (`ponte_caida`, `missoes_ponte.json`: o vau é o rio do norte, ao lado da "Ponte" do KML; e `ponte_contar`, voltar ao Pedro) |
+| 4 | `buscar_machado` | Os machados do avô | Siga o Pedro até a casa dele, na praia | chegou à casa do Pedro; ganha o machado | — | adaptada (o machado vem na chegada, no passo `lenha`) |
+| 5 | `lenha` | Trinta e seis paus | Junte 36 lenhas na mata (machado, E) | 36 lenhas, contando as já serradas em tábua e corda (`equivale`) | 2 peixes assados | **pronta** (`ponte_lenha`: a conta sai das receitas, `equivale`) |
+| 6 | `tabuas` | Serrar e torcer | Encoste na bancada da oficina e aperte E: faça 12 tábuas e 4 cordas | a conta da ponte na mochila | 3 beijus | **pronta** (`tabuas`; ensina o plano da obra) |
+| 7 | `ponte` | De pé outra vez | Levante a ponte no vau do rio grande (E) | ponte de pé | 2 pirões, 2 cocadas | **pronta** (`ponte`: a obra `ponte_levantar`, no J ao pé da ponte, tira a cerca das cabeceiras; e `ponte_de_pe`, o fim no Pedro) |
 
 Se o fôlego zera no meio da ponte, o Pedro aparece com o mungunzá da mãe
-(`socorro`, seis cuias): é o que deixa fechar a frente no mesmo dia.
+(`socorro`, seis cuias): é o que deixa fechar a frente no mesmo dia. **No 3D
+ainda não**: depois da chegada o Pedro não segue o jogador, e a comida da mãe
+dele teria de chegar por outro caminho.
+
+**No 3D (05/10/2026)** a ponte é a "Ponte" do KML, onde a Rua Principal cruza o
+rio do norte — raso de dar pé, e por isso o vau. Ela está de pé no modelo do
+Tripo, então o estrago é o que não se vê de longe, e o que se vê é a cerca nas
+duas cabeceiras (`ponte_vale.gd`), que a obra tira. A frente é a primeira que o
+E no Pedro abre depois da chegada, e o mirante espera por ela — o mirante é "a
+segunda coisa que muda neste arraial em vinte anos".
 
 ### 1.4 Frente da chapada
 
@@ -312,8 +321,9 @@ não tem missão em nenhum dos dois jogos:
 
 ## 5. O que falta trazer, em ordem de dependência
 
-1. **A ponte** (`ponte_caida` → `ponte`, 1.3). É enredo e é a trava da
-   jornada: a fazenda fica do outro lado do rio grande.
+1. ~~A ponte~~ (`ponte_caida` → `ponte`, 1.3): **pronta** em 05/10/2026, menos
+   o socorro da mungunzá. É enredo e é a trava da jornada: a fazenda fica do
+   outro lado do rio grande.
 2. **A lapa e a cabra** (`picareta`, `cabra`, 1.5), que abrem a lombada e
    apresentam a Santa Casa.
 3. **A chapada** (1.4), que mostra a terra do Seu Benedito.

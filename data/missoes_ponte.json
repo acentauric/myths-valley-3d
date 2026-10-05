@@ -1,0 +1,151 @@
+{
+  "observacao": "A PONTE DO RIO GRANDE, do Pedro (docs/projeto/MISSOES_DO_2D.md, 1.3: ponte_caida, buscar_machado, lenha, tabuas, ponte). É enredo e a trava da jornada: a fazenda do convite fica do outro lado do rio grande. ADAPTADA AO VALE: o rio grande é o rio do norte do mapa, raso de dar pé, e a ponte é a 'Ponte' do KML, na Rua Principal; ela está de pé no modelo do Tripo, então o estrago é o que não se vê de longe — a cheia comeu os esteios do meio — e a ponte está CERCADA nas duas cabeceiras até a obra (`ponte_vale.gd`). Gente atravessa no vau, ao lado; carroça, não. O machado do avô (buscar_machado) não entra: no vale ele vem na chegada. Depois do tutorial o Pedro não segue o jogador, então ver a ponte e voltar para contar são dois passos, como o 'fe_contar' da fé; a obra se faz no J, na aba de obras, ao pé da ponte, como a do mirante; e o fim da ponte (o 'ponte_fim' do 2D) é a resposta dele quando o jogador volta. A lenha conta o que já virou tábua e corda (`equivale`, o 'Missoes.contagem' do 2D), e a conta sai das receitas da oficina: doze tábuas a duas lenhas e quatro cordas a três são trinta e seis.",
+  "dono": "pedro",
+  "nome": "A ponte do rio grande",
+  "nome_en": "The bridge over the big river",
+  "nome_es": "El puente del río grande",
+  "principal": true,
+  "passos": [
+    {
+      "id": "ponte_caida",
+      "titulo": "O que a cheia levou",
+      "titulo_en": "What the flood took",
+      "titulo_es": "Lo que se llevó la crecida",
+      "resumo": "Siga a estrada para o norte até a ponte do rio grande",
+      "resumo_en": "Follow the road north to the bridge over the big river",
+      "resumo_es": "Sigue el camino hacia el norte hasta el puente del río grande",
+      "lugar": "vau",
+      "raio": 14,
+      "audio": "",
+      "texto": "A fazenda do convite fica do outro lado do rio grande, pro norte. Siga a estrada, para lá da sua casa, até o rio. Eu quero que você veja uma coisa com os próprios olhos — depois volte aqui e me diga o que viu.",
+      "texto_en": "The farm from the invitation lies across the big river, to the north. Follow the road past your house, all the way to the river. I want you to see something with your own eyes — then come back and tell me what you saw.",
+      "texto_es": "La hacienda de la invitación queda al otro lado del río grande, hacia el norte. Sigue el camino, más allá de tu casa, hasta el río. Quiero que veas una cosa con tus propios ojos; después vuelve y dime lo que viste.",
+      "meta": {}
+    },
+    {
+      "id": "ponte_contar",
+      "titulo": "A cerca na cabeceira",
+      "titulo_en": "The fence at the bridgehead",
+      "titulo_es": "La cerca en la cabecera",
+      "resumo": "Volte ao Pedro e conte o que viu",
+      "resumo_en": "Go back to Pedro and tell him what you saw",
+      "resumo_es": "Vuelve con Pedro y cuéntale lo que viste",
+      "lugar": "pier",
+      "raio": 6,
+      "audio": "",
+      "texto": "Viu a ponte? Então volte aqui, que eu conto o resto.",
+      "texto_en": "Saw the bridge? Then come back here, and I'll tell you the rest.",
+      "texto_es": "¿Viste el puente? Entonces vuelve aquí, que te cuento el resto.",
+      "meta": {
+        "tipo": "falar",
+        "a_quem": "pedro",
+        "resposta": "Cercada, né? Fui eu e o Seu Benedito que pregamos a cerca, depois da cheia de fevereiro. A água comeu os esteios do meio, e o tabuado ficou pendurado no que sobrou: de longe parece inteira, e não aguenta um cabrito. Gente atravessa no vau, com água na canela; carroça, não. Ninguém consertou. Aqui nada muda, eu já disse — a gente espera cair, depois espera alguém. Dessa vez o alguém somos nós.",
+        "resposta_en": "Fenced off, right? Seu Benedito and I nailed that fence up after the February flood. The water ate the middle posts, and the planking is hanging from what's left: from far away it looks whole, and it wouldn't hold a goat. People cross at the ford, water up to the shin; a cart, no. Nobody fixed it. Nothing changes here, I told you — we wait for it to fall, then we wait for someone. This time the someone is us.",
+        "resposta_es": "Cercado, ¿no? Fuimos el señor Benedito y yo quienes clavamos la cerca, después de la crecida de febrero. El agua se comió los pilotes del medio, y el tablado quedó colgando de lo que sobró: de lejos parece entero, y no aguanta ni una cabra. La gente cruza por el vado, con el agua en la canilla; una carreta, no. Nadie lo arregló. Aquí nada cambia, ya te dije: esperamos que se caiga, y después esperamos a alguien. Esta vez el alguien somos nosotros."
+      }
+    },
+    {
+      "id": "ponte_lenha",
+      "titulo": "Trinta e seis paus",
+      "titulo_en": "Thirty-six logs",
+      "titulo_es": "Treinta y seis palos",
+      "resumo": "Junte lenha para 12 tábuas e 4 cordas (machado, E)",
+      "resumo_en": "Gather firewood for 12 boards and 4 ropes (axe, E)",
+      "resumo_es": "Junta leña para 12 tablas y 4 cuerdas (hacha, E)",
+      "lugar": "oficina",
+      "raio": 6,
+      "audio": "",
+      "texto": "Ponte se faz de tábua, e tábua se faz de lenha. Muita lenha: doze tábuas e quatro cordas são trinta e seis paus. Derrube pau na mata com o machado na mão — encoste no tronco e aperte E, que não sai no primeiro golpe. O que você já tiver serrado em tábua ou torcido em corda conta junto. E ferramenta certa pra cada coisa: machado é pra pau, picareta é pra pedra; na coisa errada você só bate e cansa.",
+      "texto_en": "A bridge is made of boards, and boards are made of firewood. Lots of firewood: twelve boards and four ropes come to thirty-six logs. Fell trees in the woods with the axe in hand — walk up to the trunk and press E, it won't come down on the first blow. Whatever you've already sawn into boards or twisted into rope counts too. And the right tool for each thing: the axe is for wood, the pickaxe is for stone; on the wrong thing you just strike and tire.",
+      "texto_es": "Un puente se hace de tablas, y las tablas se hacen de leña. Mucha leña: doce tablas y cuatro cuerdas son treinta y seis palos. Derriba árboles en el monte con el hacha en la mano: acércate al tronco y pulsa E, que no cae al primer golpe. Lo que ya hayas aserrado en tabla o torcido en cuerda cuenta también. Y la herramienta justa para cada cosa: el hacha es para la madera, el pico es para la piedra; con la equivocada solo golpeas y te cansas.",
+      "meta": {
+        "tipo": "juntar",
+        "item": "lenha",
+        "equivale": {
+          "tabua": 12,
+          "corda": 4
+        }
+      },
+      "recompensa": {
+        "peixe_assado": 2
+      }
+    },
+    {
+      "id": "tabuas",
+      "titulo": "Serrar e torcer",
+      "titulo_en": "Saw and twist",
+      "titulo_es": "Aserrar y torcer",
+      "resumo": "Na bancada da oficina, faça 12 tábuas e 4 cordas",
+      "resumo_en": "At the workshop bench, make 12 boards and 4 ropes",
+      "resumo_es": "En el banco del taller, haz 12 tablas y 4 cuerdas",
+      "lugar": "oficina",
+      "raio": 6,
+      "audio": "",
+      "texto": "Chega de lenha. Agora é serrar. Na bancada da oficina, encoste e aperte E: ali a lenha vira tábua e vira corda. A ponte pede doze tábuas e quatro cordas. Serre até ter tudo.",
+      "texto_en": "That's enough firewood. Now it's sawing. At the workshop bench, walk up and press E: that's where firewood becomes boards and becomes rope. The bridge needs twelve boards and four ropes. Saw until you have it all.",
+      "texto_es": "Basta de leña. Ahora toca aserrar. En el banco del taller, acércate y pulsa E: ahí la leña se vuelve tabla y se vuelve cuerda. El puente pide doce tablas y cuatro cuerdas. Asierra hasta tenerlo todo.",
+      "meta": {
+        "tipo": "juntar",
+        "itens": {
+          "tabua": 12,
+          "corda": 4
+        }
+      },
+      "recompensa": {
+        "beiju": 3
+      }
+    },
+    {
+      "id": "ponte",
+      "titulo": "De pé outra vez",
+      "titulo_en": "Standing again",
+      "titulo_es": "En pie otra vez",
+      "resumo": "Levante a ponte: [J] › Obras, ao pé dela",
+      "resumo_en": "Raise the bridge: [J] › Works, at its foot",
+      "resumo_es": "Levanta el puente: [J] › Obras, al pie de él",
+      "lugar": "ponte_do_vau",
+      "raio": 9,
+      "audio": "",
+      "texto": "Material pronto. Agora é carregar até o rio. Chegue à cabeceira da ponte com tudo nas costas e abra o J, na aba de obras: o conserto está lá. Esteio novo no meio, o tabuado amarrado, e a cerca vai pro chão.",
+      "texto_en": "The material is ready. Now carry it to the river. Get to the bridgehead with it all on your back and open J, on the works tab: the repair is there. New posts in the middle, the planking lashed down, and the fence comes down.",
+      "texto_es": "El material está listo. Ahora hay que cargarlo hasta el río. Llega a la cabecera del puente con todo a cuestas y abre la J, en la pestaña de obras: el arreglo está ahí. Pilotes nuevos en el medio, el tablado amarrado, y la cerca al suelo.",
+      "meta": {
+        "tipo": "obra",
+        "construcao": "ponte",
+        "obra": "ponte_levantar"
+      },
+      "recompensa": {
+        "pirao": 2,
+        "cocada": 2
+      }
+    },
+    {
+      "id": "ponte_de_pe",
+      "titulo": "Vinte anos depois",
+      "titulo_en": "Twenty years later",
+      "titulo_es": "Veinte años después",
+      "resumo": "Volte ao Pedro: a ponte está de pé",
+      "resumo_en": "Go back to Pedro: the bridge is standing",
+      "resumo_es": "Vuelve con Pedro: el puente está en pie",
+      "lugar": "pier",
+      "raio": 6,
+      "audio": "",
+      "texto": "Eu vi a cerca no chão daqui. Venha cá.",
+      "texto_en": "I saw the fence come down from here. Come over.",
+      "texto_es": "Vi la cerca caer desde aquí. Ven acá.",
+      "meta": {
+        "tipo": "falar",
+        "a_quem": "pedro",
+        "resposta": "De pé. Primeira coisa que muda aqui em vinte anos, e fomos nós. No que meus avós contam, foi assim que o povo chegou naquela fazenda: abrindo caminho, um ajudando o outro.",
+        "resposta_en": "Standing. The first thing to change here in twenty years, and it was us. The way my grandparents tell it, that's how people reached that farm: opening the way, one helping the other.",
+        "resposta_es": "En pie. La primera cosa que cambia aquí en veinte años, y fuimos nosotros. Por lo que cuentan mis abuelos, así llegó la gente a aquella hacienda: abriendo camino, uno ayudando al otro."
+      }
+    }
+  ],
+  "arremate": {
+    "narra": false,
+    "texto": "A ponte do rio grande está de pé, e a estrada do norte, aberta.",
+    "texto_en": "The bridge over the big river is standing, and the northern road is open.",
+    "texto_es": "El puente del río grande está en pie, y el camino del norte, abierto."
+  }
+}

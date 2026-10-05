@@ -388,7 +388,7 @@ func resumo_do_passo(passo: Dictionary) -> String:
 			var nomes: Array[String] = []
 			for qual in carga:
 				pede += int(carga[qual])
-				tem += mini(int(carga[qual]), Inventario.quantidade(str(qual)))
+				tem += mini(int(carga[qual]), _tem_para_a_meta(meta, str(qual)))
 				nomes.append(_nome_do_item(str(qual)).to_lower())
 			conta = "%d/%d" % [tem, pede]
 			gerado = tr("Junte %s") % ", ".join(nomes)
@@ -620,10 +620,11 @@ func falta_a_meta(passo: Dictionary) -> bool:
 	match str(meta.get("tipo", "")):
 		"juntar":
 			# UM ITEM OU VÁRIOS: `item`/`quantos`, ou `itens` {id: quanto} — o
-			# material do mirante é tábua, pedra e corda de uma vez.
+			# material do mirante é tábua, pedra e corda de uma vez. Com
+			# `equivale`, a lenha da ponte conta a tábua já serrada.
 			var carga := _carga_da_meta(meta)
 			for qual in carga:
-				if Inventario.quantidade(str(qual)) < int(carga[qual]):
+				if _tem_para_a_meta(meta, str(qual)) < int(carga[qual]):
 					return true
 			return false
 		"levar", "falar":
@@ -796,7 +797,7 @@ func _acertar_o_caderno(passo: Dictionary) -> void:
 			var partes: Array[String] = []
 			for qual in carga:
 				var pede := int(carga[qual])
-				var tem := mini(pede, Inventario.quantidade(str(qual)))
+				var tem := mini(pede, _tem_para_a_meta(meta, str(qual)))
 				tem_tudo += tem
 				pede_tudo += pede
 				partes.append("%s %d/%d" % [_nome_do_item(str(qual)), tem, pede])
@@ -907,7 +908,7 @@ func posicao_do_passo(indice: int) -> Vector3:
 				if recursos.has_method("mais_perto_que_rende"):
 					var carga := _carga_da_meta(meta)
 					for qual in carga:
-						if Inventario.quantidade(str(qual)) < int(carga[qual]):
+						if _tem_para_a_meta(meta, str(qual)) < int(carga[qual]):
 							perto = recursos.mais_perto_que_rende(str(qual), de)
 							break
 			"levar", "falar":
@@ -1013,7 +1014,41 @@ static func _carga_da_meta(meta: Dictionary) -> Dictionary:
 			conta[str(qual)] = maxi(int(varios[qual]), 1)
 		return conta
 	var um := str(meta.get("item", ""))
+	if um != "" and meta.has("equivale"):
+		return {um: alvo_da_equivalencia(meta)}
 	return {} if um == "" else {um: maxi(int(meta.get("quantos", 1)), 1)}
+
+
+## A CONTA DA LENHA DA PONTE, tirada das receitas (`equivale`, o
+## `Missoes.contagem` do 2D): a bancada rodada tantas vezes quanto a peça pedida
+## exige, cada vez com o seu custo no item. Doze tábuas a duas lenhas e quatro
+## cordas a três são trinta e seis. O número não se escreve à mão — a obra da
+## oficina que rende mais tira lenha da conta.
+static func alvo_da_equivalencia(meta: Dictionary) -> int:
+	var qual := str(meta.get("item", ""))
+	var credito: Dictionary = meta.get("equivale", {})
+	var alvo := 0
+	for peca in credito:
+		var por_vez := int((Oficina.dados(str(peca)).get("custo", {}) as Dictionary).get(qual, 0))
+		alvo += ceili(float(int(credito[peca])) / float(Oficina.rende(str(peca)))) * por_vez
+	return maxi(alvo, 1)
+
+
+## QUANTO DO ITEM A META CONTA: o que está na mochila e, com `equivale`, o que já
+## virou outra peça na bancada — até o tanto dela que a meta pede. Sem isto,
+## quem serra a tábua antes de juntar a lenha toda vê a conta voltar atrás, e a
+## missão dos trinta e seis paus pede mais paus. A conta que o HUD mostra e a que
+## fecha o passo são esta mesma.
+static func _tem_para_a_meta(meta: Dictionary, qual: String) -> int:
+	var tem := Inventario.quantidade(qual)
+	if str(meta.get("item", "")) != qual:
+		return tem
+	var credito: Dictionary = meta.get("equivale", {})
+	for peca in credito:
+		var por_vez := int((Oficina.dados(str(peca)).get("custo", {}) as Dictionary).get(qual, 0))
+		var feitas := mini(Inventario.quantidade(str(peca)), int(credito[peca]))
+		tem += ceili(float(feitas) / float(Oficina.rende(str(peca)))) * por_vez
+	return tem
 
 
 func _tentar_encontro(passo: Dictionary) -> void:
