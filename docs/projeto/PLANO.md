@@ -33,6 +33,12 @@ explícito, e cada asset mantém origem e créditos.
 
 ## Registros
 
+As posições e giros das quinze construções atuais passam a ser autoria salva em
+`scenes/prototipo_3d/composicao_vale.tscn` (#57, primeira fatia). O editor mostra
+terreno e ruas como referência, e o jogo aplica as transformações salvas às casas,
+colisões, interações e âncoras. Vegetação autoral, alteração do traçado das ruas,
+inclusão/remoção de construções e escultura do terreno continuam pendentes.
+
 As trocas e paradas de trilha usam fades, inclusive ao carregar o vale.
 Uma nova solicitação cancela a transição anterior sem cortar o ganho (#79).
 

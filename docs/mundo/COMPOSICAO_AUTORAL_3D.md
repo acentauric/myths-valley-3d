@@ -127,7 +127,51 @@ O critério de sucesso não é apenas o jogo continuar igual. O autor deve conse
 abrir o Godot, localizar um objeto pelo nome, movê-lo visualmente, salvar e ver a
 mudança no jogo sem editar coordenadas em GDScript e sem depender da IA.
 
-## Primeira prévia persistida do terreno
+## Casas e ruas no editor — 04/10/2026 (#57)
+
+Abra `scenes/prototipo_3d/composicao_vale.tscn` no Godot. A cena reúne as quinze
+construções atuais (incluindo igreja, capela, venda e restaurante), com os GLBs
+do catálogo, e mostra o terreno e as oito ruas como referência. Expanda **Casas**,
+selecione o nó com o nome da construção, mova ou gire no eixo Y e pressione
+**Ctrl+S**. Execute o projeto normalmente: o jogo lê a posição salva nessa cena,
+reconstruindo as colisões, alicerces, interações e âncoras naquele lugar. A altura Y
+salva também é respeitada no Tripo; ajuste-a ao chão ao mover para outro declive.
+
+Mova o nó da casa, não o filho `Visual`. Os identificadores, chaves do catálogo e
+referências iniciais devem ser preservados. A etapa atual cobre deslocar e girar
+as construções existentes; escala, inclinação, inclusão e remoção de construções
+exigem ampliar o contrato de composição. O legado procedural mantém seu próprio
+apoio e orientação inicial, aplicando o deslocamento e giro relativos da autoria.
+
+A mesma cena textual `.tscn` é editável por código/IA: sua transformação salva é
+a fonte de verdade para posição e giro. Não há um segundo arquivo de coordenadas
+para sincronizar, e `world_builder.gd` não procura outro lote para a casa movida.
+Os GLBs e suas colisões continuam sendo resolvidos pelo catálogo existente.
+O visual é instanciado pelo catálogo somente na prévia do editor; ler as posições
+na partida não carrega uma segunda cópia de terreno, ruas ou modelos. Os lotes
+autorais são preservados mesmo quando a geografia importada tem menos ruas.
+
+Terreno e ruas são **referências da base geográfica**, carregadas pelo script
+`@tool` somente dentro do editor. Nesta etapa, editar a referência das ruas não
+altera seu traçado no jogo: o traçado continua vindo dos dados geográficos. A
+referência está em `scenes/prototipo_3d/ruas_referencia.tscn`. Não mova essas malhas
+para tentar editar a rua de uma partida.
+
+`tools/mapas/extrair_composicao_vale.gd` fez a primeira extração usando o próprio
+mundo Tripo. Ele recusa sobrescrever uma composição já existente. Regenerar
+`terreno_editavel.tscn` não altera `composicao_vale.tscn` nem reposiciona casas.
+A prévia em `abertura.tscn` e `vale.tscn` mostra essa composição; para editar e
+salvar a autoria, abra a cena `composicao_vale.tscn` diretamente.
+
+O portão `tests/composicao_vale.gd` move e gira uma casa numa cena temporária,
+salva, reabre e constrói o mundo com ela; confere modelo, colisão, interação e
+âncora, testa o giro do legado procedural e verifica que a cena original permanece
+intacta. A falsificação `-- --falsificar-composicao` desliga a leitura no construtor:
+o portão reprova a posição, giro, colisão, interação e âncora, saindo com código 1.
+Mudanças perto do voo do menu também precisam passar `sobrevoo_livre` nos dois estilos; se o trajeto
+colidir, replaneje-o pelo procedimento existente.
+
+## Primeira prévia persistida do terreno — 30/09/2026
 
 A primeira fatia dessa migração está em teste na issue #33. Somente a malha de
 terra da região ativa é persistida em
@@ -138,7 +182,7 @@ o arquivo pesado não é carregado e o `WorldBuilder` continua gerando o vale re
 Para atualizar a prévia depois de mudar KML, geometria, cenário ou escala:
 
 ```powershell
-cd prototipo_3d
+cd C:\VIRTUALENVS\myths-valley\myths-valley-3D
 & 'C:\Tools\Godot\Godot_v4.7.2-stable_win64_console.exe' `
   --headless --path . --script res://tools/mapas/gerar_terreno_editavel.gd
 ```

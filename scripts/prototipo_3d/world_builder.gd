@@ -16,6 +16,7 @@ const Cardume = preload("res://scripts/prototipo_3d/cardume.gd")
 const Mar = preload("res://scripts/prototipo_3d/mar.gd")
 const CoqueiroCortado = preload("res://scripts/prototipo_3d/coqueiro_cortado.gd")
 const MAP_CATALOG := "res://data/mapas/regioes.json"
+const ComposicaoVale = preload("res://scripts/prototipo_3d/composicao_vale.gd")
 const CASA_TAIPA_CAL_TEXTURE := preload("res://assets/prototipo_3d/materiais/cal_taipa_envelhecida_v1.png")
 const TELHA_COLONIAL_TEXTURE := preload("res://assets/prototipo_3d/materiais/telha_colonial_envelhecida_v1.png")
 ## Bancada de comparação (desenvolvimento): três mangueiras lado a lado ao sul da Praça.
@@ -60,6 +61,12 @@ var _selected_house: Area3D
 var _house_sites: Array[Dictionary] = []
 ## Lote (posição e giro) de cada construção nomeada, decidido por _loteamento().
 var _lotes: Dictionary = {}
+## A importação inicial pode ignorar a cena, mas uma partida sempre lê a autoria.
+var ignorar_composicao := false
+var caminho_composicao := ComposicaoVale.CENA
+var _casas_autorais: Dictionary = {}
+## Registros do resultado real, usados somente pela ferramenta de primeira extração.
+var construcoes_editaveis: Dictionary = {}
 ## Montagem aos poucos: o vale é erguido ao longo de vários quadros, com o progresso
 ## (0 a 1) e a etapa avisados à tela de carregamento (tela_carregamento.gd), e
 ## `pronto` no fim. Quem depende do mundo espera `construido`/`pronto`.
@@ -123,12 +130,17 @@ func _house_ground_range(position: Vector3, footprint: Vector2, yaw: float) -> V
 
 ## Apoia a casa no ponto mais alto sob sua base e estende o alicerce até o
 ## ponto mais baixo. A pequena sobreposição esconde a junta entre modelo e base.
-func _support_house(position: Vector3, footprint: Vector2, yaw: float, chave: String = "") -> Vector3:
+func _support_house(position: Vector3, footprint: Vector2, yaw: float, chave: String = "", altura_autoral_padrao: Variant = null, deslocamento_y: float = 0.0) -> Vector3:
+	# Padrão null em vez de NaN: NaN como padrão quebra o JSON do LSP do editor.
+	var altura_autoral: float = NAN if altura_autoral_padrao == null else float(altura_autoral_padrao)
 	var church := chave == "igreja"
 	var base_margin := 0.36 if church else 0.16
 	var heights := _house_ground_range(position, footprint + Vector2.ONE * base_margin, yaw)
 	var bury := AFUNDAMENTO_CASAS_PEQUENAS if chave in ["casa_taipa", "casa_carro_quebrado"] else 0.0
 	var placed := Vector3(position.x, heights.y + 0.02 - bury, position.z)
+	if is_finite(altura_autoral):
+		placed.y = altura_autoral
+	placed.y += deslocamento_y
 	var top := placed.y + (0.12 if church else 0.04)
 	var bottom := minf(heights.x - (0.24 if church else 0.06), top - 0.08)
 	var foundation_size := Vector3(footprint.x + base_margin, top - bottom, footprint.y + base_margin)
@@ -514,6 +526,8 @@ func _montar() -> void:
 	# Escondido enquanto monta: os quadros cedidos à tela de carregamento não gastam
 	# tempo desenhando o vale pela metade atrás dela.
 	visible = false
+	if not ignorar_composicao:
+		_casas_autorais = ComposicaoVale.ler(caminho_composicao)
 	_build_lighting()
 	var region_data := _active_region_data()
 	if region_data.is_empty():
@@ -726,6 +740,9 @@ func _construir_vila() -> void:
 
 ## Construção: GLB do Tripo com colisão em caixa; senão o construtor procedural.
 func _construcao(chave: String, origin: Vector3, yaw: float, procedural: Callable, size: float = 1.0, nome: String = "") -> Node3D:
+	if chave == "igreja" and nome.is_empty():
+		nome = "Igreja"
+	var autoria: Dictionary = _casas_autorais.get(nome, {})
 	var is_house := _is_house_key(chave)
 	var placed_origin := origin
 	if is_house:
@@ -739,13 +756,16 @@ func _construcao(chave: String, origin: Vector3, yaw: float, procedural: Callabl
 			return null
 	else:
 		placed_origin = ground_position(origin, maxf(origin.y - ground_height_at(origin), 0.0))
+	if not autoria.is_empty() and estilo_tripo():
+		placed_origin = autoria["pos"]
+		yaw = autoria["yaw"]
 	if estilo_tripo():
 		var node := CatalogoAssets.instanciar(chave, self, placed_origin, size, yaw)
 		if node != null:
 			var limites: AABB = node.get_meta("limites")
 			if is_house or chave == "igreja":
 				var original_y := placed_origin.y
-				placed_origin = _support_house(placed_origin, Vector2(limites.size.x, limites.size.z), yaw, chave)
+				placed_origin = _support_house(placed_origin, Vector2(limites.size.x, limites.size.z), yaw, chave, placed_origin.y if not autoria.is_empty() else NAN)
 				node.position.y += placed_origin.y - original_y
 				if is_house:
 					_remember_house_position(nome, placed_origin, yaw, true)
@@ -770,16 +790,40 @@ func _construcao(chave: String, origin: Vector3, yaw: float, procedural: Callabl
 				_region._add_polygon("Terreiro", cantos, 0.03, Color("958d79"), false, _terreiro_material())
 			if is_house:
 				_register_house(nome if not nome.is_empty() else chave.capitalize(), chave, placed_origin, yaw, limites.size, "Tripo")
+			if _lotes.has(nome):
+				construcoes_editaveis[nome] = {"chave": chave, "pos": placed_origin, "yaw": yaw, "visual": node}
 			return node
 	if is_house:
 		# Os construtores procedurais usam a porta no +Z, sem o giro do lote.
-		placed_origin = _support_house(placed_origin, Vector2(5.65, 4.85), 0.0)
-		_remember_house_position(nome, placed_origin, 0.0, false)
+		var giro_legado := 0.0 if autoria.is_empty() else float(autoria["yaw"] - autoria["giro_inicial"])
+		var deslocamento_y := 0.0 if autoria.is_empty() else float(autoria["pos"].y - autoria["inicial"].y)
+		placed_origin = _support_house(placed_origin, Vector2(5.65, 4.85), giro_legado, "", NAN, deslocamento_y)
+		_remember_house_position(nome, placed_origin, giro_legado, not autoria.is_empty())
+		var filhos_antes := get_children()
 		procedural.call(placed_origin)
-		_register_house(nome if not nome.is_empty() else chave.capitalize(), chave, placed_origin, 0.0, Vector3(5.9, 5.4, 5.1), "Procedural")
+		_girar_construcao_procedural(filhos_antes, placed_origin, giro_legado)
+		_register_house(nome if not nome.is_empty() else chave.capitalize(), chave, placed_origin, giro_legado, Vector3(5.9, 5.4, 5.1), "Procedural")
 	else:
+		var filhos_antes := get_children()
 		procedural.call()
+		if not autoria.is_empty():
+			var giro_legado := float(autoria["yaw"] - autoria["giro_inicial"])
+			_girar_construcao_procedural(filhos_antes, origin, giro_legado)
+			_remember_house_position(nome, origin, giro_legado, true)
 	return null
+
+
+func _girar_construcao_procedural(filhos_antes: Array[Node], origem: Vector3, giro: float) -> void:
+	if is_zero_approx(giro):
+		return
+	var grupo := Node3D.new()
+	grupo.name = "ConstrucaoAutoralProcedural"
+	add_child(grupo)
+	grupo.position = origem
+	for filho in get_children():
+		if filho is Node3D and filho != grupo and filho not in filhos_antes:
+			filho.reparent(grupo, true)
+	grupo.rotation.y = giro
 
 
 func _is_house_key(chave: String) -> bool:
@@ -813,12 +857,26 @@ func _loteamento() -> void:
 		["Capela velha", "capela", _region.get_feature_center("Rua do mirante", "road")],
 	]
 	pedidos.append_array(_pedidos_casas_do_arraial())
+	# Uma atualização geográfica não pode apagar casas já promovidas à autoria.
+	var nomes_pedidos := {}
+	for pedido in pedidos:
+		nomes_pedidos[pedido[0]] = true
+	for nome in _casas_autorais:
+		if not nomes_pedidos.has(nome):
+			var autoria: Dictionary = _casas_autorais[nome]
+			pedidos.append([nome, autoria["chave"], autoria["pos"]])
 	for pedido in pedidos:
 		var nome: String = pedido[0]
 		var templo: bool = pedido[1] in ["capela", "igreja"]
 		var raio := 7.5 if templo else _raio_do_lote(pedido[1])
 		var lote := {}
-		if nome == "Igreja":
+		if _casas_autorais.has(nome):
+			var autoria: Dictionary = _casas_autorais[nome]
+			lote = {"pos": autoria["pos"], "yaw": autoria["yaw"]}
+			if not estilo_tripo():
+				lote["pos"].y = autoria["lote_inicial"].y + autoria["pos"].y - autoria["inicial"].y
+			_house_sites.append({"position": lote["pos"], "radius": raio})
+		elif nome == "Igreja":
 			# A igreja fica exatamente no marco do KML (o lugar dela na vila real),
 			# só girando a frente para a rua; os templos têm base própria de pedra.
 			lote = _lote_fixo_virado_para_rua(pedido[2], raio)
@@ -836,6 +894,7 @@ func _loteamento() -> void:
 				continue
 			lote = {"pos": sitio, "yaw": 0.0}
 		lote["chave"] = pedido[1]
+		lote["inicial"] = lote["pos"]
 		_lotes[nome] = lote
 		ancoras[nome] = lote["pos"]
 		var yaw: float = lote["yaw"] if estilo_tripo() else 0.0
