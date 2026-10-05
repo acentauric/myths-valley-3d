@@ -29,7 +29,12 @@ const TOLERANCIA_ANCORA_U := 0.05
 ## lerp antigo (7 m em média) cortava as curvas por dentro, em cima das árvores.
 const CHEGADA_SEGUNDOS := 2.0
 const HISTORY_SIZE := Vector2(640, 600)
-const HISTORY_ROWS := 8
+const HISTORY_ROWS := 10
+## Lista do histórico: fonte base (desce até o mínimo se a linha não couber) e respiro.
+const HISTORY_FONTE := 15
+const HISTORY_FONTE_MIN := 13
+## Setas de página, compactas e juntas do "N / M".
+const HISTORY_SETA := Vector2(44, 32)
 const GAME_SCENE := "res://scenes/prototipo_3d/vale.tscn"
 ## Equipe exibida em SOBRE.
 const CREDITS_HIGHLIGHTS := [
@@ -99,7 +104,6 @@ var clock_hint: Label
 var decoracao: Control
 var veu_vertical: TextureRect
 var veu_esquerdo: TextureRect
-var sombra_almanaque: TextureRect
 var bloco_almanaque: VBoxContainer
 var rotulo_almanaque: Label
 var nota_almanaque: Label
@@ -410,16 +414,8 @@ func _montar_decoracao(layer: CanvasLayer) -> void:
 	vinheta.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	decoracao.add_child(vinheta)
 	# Sombra difusa atrás do almanaque: o texto fica legível sobre o mar claro.
-	sombra_almanaque = TextureRect.new()
-	sombra_almanaque.texture = Identidade.brilho(Color(0.02, 0.02, 0.04, 0.5), 128)
-	sombra_almanaque.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	sombra_almanaque.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	sombra_almanaque.set_anchors_preset(Control.PRESET_BOTTOM_RIGHT)
-	sombra_almanaque.offset_left = -540.0
-	sombra_almanaque.offset_right = 0.0
-	sombra_almanaque.offset_top = -200.0
-	sombra_almanaque.offset_bottom = 0.0
-	decoracao.add_child(sombra_almanaque)
+	# Sem borrão escuro atrás: com frase curta ele aparecia como mancha à esquerda do
+	# rótulo. A leitura sobre o cenário vem da sombra no próprio texto.
 	bloco_almanaque = VBoxContainer.new()
 	bloco_almanaque.alignment = BoxContainer.ALIGNMENT_END
 	bloco_almanaque.add_theme_constant_override("separation", 9)
@@ -438,6 +434,7 @@ func _montar_decoracao(layer: CanvasLayer) -> void:
 	linha_rotulo.add_child(Identidade.losango())
 	rotulo_almanaque = Identidade.rotulo("Do almanaque")
 	rotulo_almanaque.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
+	Identidade.sombra_texto(rotulo_almanaque)
 	linha_rotulo.add_child(rotulo_almanaque)
 	nota_almanaque = Label.new()
 	nota_almanaque.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
@@ -535,7 +532,6 @@ func _decoracao_modo(modo: String) -> void:
 	var travessia := modo == "travessia"
 	decoracao.visible = modo != "mapa"
 	veu_esquerdo.visible = not travessia
-	sombra_almanaque.visible = modo == "home"
 	bloco_almanaque.visible = modo == "home"
 	faixa_cima.visible = travessia
 	faixa_baixo.visible = travessia
@@ -604,14 +600,14 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		elif history_open and event.keycode in [KEY_LEFT, KEY_RIGHT]:
 			_press_history_arrow(1 if event.keycode == KEY_RIGHT else 0)
 		elif event.keycode == KEY_ESCAPE:
-			_home()
+			_voltar_home()
 
 
 func _unhandled_input(event: InputEvent) -> void:
 	# Clique fora de um modal (fora do painel e dos botões do canto) fecha e volta ao menu.
 	if modal_open and not ajustes.ajuda_aberta() and event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 		Audio.efeito("ui_voltar")
-		_home()
+		_voltar_home()
 		return
 	if not map_open:
 		return
@@ -733,7 +729,7 @@ func _create_home_button(layer: CanvasLayer) -> void:
 		if starting:
 			return
 		Audio.efeito("ui_confirmar")
-		_home())
+		_voltar_home())
 
 
 ## AJUSTAR na coluna do canto, logo abaixo de HOME (mesma posição no jogo): abre os
@@ -1257,32 +1253,32 @@ func _change_history(step: int) -> void:
 
 func _render_history() -> void:
 	_clear()
-	# Resumos em uma linha, até oito por página, sem área de rolagem.
+	# Resumos em uma linha, até dez por página, sem área de rolagem.
 	_place_modal(HISTORY_SIZE)
 	history_open = true
 	var entry: Dictionary = history_entries[history_index]
 	# Sem foco em botão: as teclas ← → ficam livres para trocar de página.
 	_modal_header("Histórico", _home, "O que mudou no vale a cada versão.")
-	_label("%s · %s" % [entry.get("data", ""), IdiomaMenu.campo(entry, "estado")], 16)
-	_label(str(IdiomaMenu.campo(entry, "titulo")), 22)
+	_label("%s · %s" % [entry.get("data", ""), IdiomaMenu.campo(entry, "estado")], 14)
+	_label(str(IdiomaMenu.campo(entry, "titulo")), 20)
 	var changes := VBoxContainer.new()
 	changes.name = "MudancasHistorico"
 	changes.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	changes.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	changes.add_theme_constant_override("separation", 10)
+	changes.add_theme_constant_override("separation", 4)
 	content.add_child(changes)
 	# Os termos entre *asteriscos* no historico_3d.json aparecem em dourado.
 	for change in IdiomaMenu.campo(entry, "mudancas", []):
 		var change_label := RichTextLabel.new()
 		change_label.bbcode_enabled = true
-		change_label.custom_minimum_size.y = 28
+		change_label.custom_minimum_size.y = 24
 		change_label.scroll_active = false
 		change_label.autowrap_mode = TextServer.AUTOWRAP_OFF
 		change_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		var fonte := change_label.get_theme_font("normal_font")
-		var tamanho := 17
+		var tamanho := HISTORY_FONTE
 		var texto_simples := "• " + str(change).replace("*", "")
-		while tamanho > 14 and fonte.get_string_size(texto_simples, HORIZONTAL_ALIGNMENT_LEFT, -1, tamanho).x > HISTORY_SIZE.x - 56:
+		while tamanho > HISTORY_FONTE_MIN and fonte.get_string_size(texto_simples, HORIZONTAL_ALIGNMENT_LEFT, -1, tamanho).x > HISTORY_SIZE.x - 56:
 			tamanho -= 1
 		change_label.add_theme_font_size_override("normal_font_size", tamanho)
 		change_label.add_theme_color_override("default_color", Color.WHITE)
@@ -1291,34 +1287,23 @@ func _render_history() -> void:
 			parts[i] = "[color=#e2c47f]%s[/color]" % parts[i]
 		change_label.text = "".join(parts)
 		changes.add_child(change_label)
+	# Setas pequenas, centradas junto do "N / M"; o chevron é desenhado (as setas ‹ › da
+	# fonte ficavam fora do centro do botão).
 	var navigation := HBoxContainer.new()
-	navigation.add_theme_constant_override("separation", 8)
+	navigation.alignment = BoxContainer.ALIGNMENT_CENTER
+	navigation.add_theme_constant_override("separation", 14)
 	content.add_child(navigation)
-	var previous := Button.new()
-	previous.text = "‹"
-	previous.tooltip_text = "Página anterior"
-	# As setas ‹ › não existem na Cinzel: as duas ficam na fonte do corpo.
-	previous.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_TEXTO, 600))
-	previous.add_theme_font_size_override("font_size", 24)
-	previous.custom_minimum_size = Vector2(72, 40)
-	previous.disabled = history_index == 0
-	previous.pressed.connect(func(): _change_history(-1))
+	var previous := _seta_historico(-1, "Página anterior", history_index == 0)
 	navigation.add_child(previous)
 	history_buttons = [previous]
 	var position := Label.new()
 	position.text = "%d / %d" % [history_index + 1, history_entries.size()]
 	position.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	position.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	position.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	position.custom_minimum_size.x = 64
+	position.add_theme_font_size_override("font_size", 16)
 	navigation.add_child(position)
-	var next := Button.new()
-	next.text = "›"
-	next.tooltip_text = "Próxima página"
-	next.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_TEXTO, 600))
-	next.add_theme_font_size_override("font_size", 24)
-	next.custom_minimum_size = Vector2(72, 40)
-	next.disabled = history_index == history_entries.size() - 1
-	next.pressed.connect(func(): _change_history(1))
+	var next := _seta_historico(1, "Próxima página", history_index == history_entries.size() - 1)
 	navigation.add_child(next)
 	history_buttons.append(next)
 	# Clique numa seta desativada (primeira/última página) toca o som de trava.
@@ -1326,6 +1311,24 @@ func _render_history() -> void:
 		arrow.gui_input.connect(func(event: InputEvent) -> void:
 			if arrow.disabled and event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 				Audio.efeito("ui_trava"))
+
+func _seta_historico(passo: int, dica: String, desativada: bool) -> Button:
+	var botao := Button.new()
+	botao.tooltip_text = dica
+	botao.custom_minimum_size = HISTORY_SETA
+	botao.disabled = desativada
+	botao.pressed.connect(func(): _change_history(passo))
+	var chevron := Control.new()
+	chevron.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	chevron.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	chevron.draw.connect(func() -> void:
+		var centro := chevron.size * 0.5
+		var cor := Color(1, 1, 1, 0.3) if botao.disabled else Color(Identidade.CREME, 0.92)
+		var ponta := Vector2(4.0 * passo, 0)
+		chevron.draw_polyline(PackedVector2Array([centro - ponta + Vector2(0, -6), centro + ponta, centro - ponta + Vector2(0, 6)]), cor, 1.8, true))
+	botao.add_child(chevron)
+	return botao
+
 
 func _confirm_exit() -> void:
 	_clear()
@@ -1361,8 +1364,17 @@ func _options(tab: int = 0) -> void:
 	ajustes.construir(content, panel.get_parent(), tab)
 
 
+## Esc, clique fora e HOME: com PERSONAGENS aberto, o painel decide (pode pedir para
+## confirmar ajustes não gravados) e emite `fechado` quando pode voltar à Home.
+func _voltar_home() -> void:
+	if is_instance_valid(painel_personagens):
+		painel_personagens.pedir_fechar()
+		return
+	_home()
+
+
 ## PERSONAGENS: painel próprio (painel_personagens.gd) sobre a camada do menu, no
-## padrão dos modais: Esc, ×, FECHAR ou clique fora voltam à Home (_clear o libera).
+## padrão dos modais: Esc, × ou clique fora voltam à Home (_clear o libera).
 func _abrir_personagens() -> void:
 	_clear()
 	_decoracao_modo("modal")
@@ -1659,42 +1671,48 @@ func _credits() -> void:
 	_highlighted("O vale nasceu do encontro entre paisagens, memórias e histórias brasileiras. Entre casas, caminhos e mata, cada lugar convida a uma descoberta.")
 	_highlighted("Música, narração e efeitos acompanham a travessia e dão voz aos lugares e personagens. Esta é uma primeira visita a esse mundo. Obrigado por caminhar conosco enquanto a jornada cresce.")
 	_highlighted("Myths’ Valley é uma criação da equipe da Alpha Centauri, um spin-off do projeto Batalha de Mitos. Você pode saber mais acessando:")
-	# Ícone de link externo antes do endereço: avisa que o clique abre o navegador.
-	var open_site := func() -> void: OS.shell_open("https://www.batalhademitos.com.br")
-	var link_row := HBoxContainer.new()
-	link_row.add_theme_constant_override("separation", 8)
-	content.add_child(link_row)
-	var external := Button.new()
-	external.flat = true
-	external.focus_mode = Control.FOCUS_NONE
-	external.custom_minimum_size = Vector2(28, 28)
-	external.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	external.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-	var external_icon = HudIcon.new().configurar("externo")
-	external_icon.position = Vector2(2, 2)
-	external_icon.size = Vector2(24, 24)
-	external_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	external.add_child(external_icon)
-	external.pressed.connect(open_site)
-	link_row.add_child(external)
-	var site := LinkButton.new()
-	site.text = "batalhademitos.com.br"
-	site.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	site.add_theme_font_size_override("font_size", 20)
-	site.add_theme_color_override("font_color", Color("e2c47f"))
-	site.add_theme_color_override("font_hover_color", Color("f5e3b3"))
-	site.pressed.connect(open_site)
-	link_row.add_child(site)
-	for hoverable: Control in [external, site]:
-		hoverable.mouse_entered.connect(func() -> void: external_icon.definir(true))
-		hoverable.mouse_exited.connect(func() -> void: external_icon.definir(false))
+	_link_externo("batalhademitos.com.br", "https://www.batalhademitos.com.br")
+	_link_externo("mythsvalley.app.br", Atualizacao.ORIGEM)
 	var team_gap := Control.new()
 	team_gap.custom_minimum_size.y = 6
 	content.add_child(team_gap)
-	var team_title := _label("Colaboradores", 16)
+	var team_title := _label("Colaboradores", 15)
 	team_title.add_theme_color_override("font_color", Color("e2c47f"))
-	_label(" · ".join(COLLABORATORS), 18)
+	_label(" · ".join(COLLABORATORS), 16)
 	home.grab_focus()
+
+
+## Endereço com o ícone de link externo antes: avisa que o clique abre o navegador.
+func _link_externo(texto: String, url: String) -> void:
+	var abrir := func() -> void: OS.shell_open(url)
+	var linha := HBoxContainer.new()
+	linha.add_theme_constant_override("separation", 8)
+	content.add_child(linha)
+	var externo := Button.new()
+	externo.flat = true
+	externo.focus_mode = Control.FOCUS_NONE
+	externo.custom_minimum_size = Vector2(26, 26)
+	externo.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	externo.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	var icone = HudIcon.new().configurar("externo")
+	icone.position = Vector2(3, 3)
+	icone.size = Vector2(24, 24)
+	icone.scale = Vector2.ONE * (20.0 / 24.0)
+	icone.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	externo.add_child(icone)
+	externo.pressed.connect(abrir)
+	linha.add_child(externo)
+	var site := LinkButton.new()
+	site.text = texto
+	site.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	site.add_theme_font_size_override("font_size", 17)
+	site.add_theme_color_override("font_color", Color("e2c47f"))
+	site.add_theme_color_override("font_hover_color", Color("f5e3b3"))
+	site.pressed.connect(abrir)
+	linha.add_child(site)
+	for hoverable: Control in [externo, site]:
+		hoverable.mouse_entered.connect(func() -> void: icone.definir(true))
+		hoverable.mouse_exited.connect(func() -> void: icone.definir(false))
 
 ## Parágrafo com os termos de CREDITS_HIGHLIGHTS em dourado, para a leitura correr
 ## pelos pontos principais. O texto é traduzido antes; os termos cobrem os três idiomas.
@@ -1705,7 +1723,7 @@ func _highlighted(text: String) -> void:
 	rich.scroll_active = false
 	rich.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	rich.custom_minimum_size.x = 375
-	rich.add_theme_font_size_override("normal_font_size", 20)
+	rich.add_theme_font_size_override("normal_font_size", 17)
 	rich.add_theme_color_override("default_color", Color.WHITE)
 	var translated := tr(text).replace("[", "[lb]")
 	for term: String in CREDITS_HIGHLIGHTS:

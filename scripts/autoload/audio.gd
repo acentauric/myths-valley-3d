@@ -45,6 +45,12 @@ const CANAIS_GERAIS := ["musica", "narracao", "vozes", "efeitos", "ambiente"]
 ## Emitido quando um volume muda: os tocadores 3D do vale (NPCs, ambiente) reaplicam o seu.
 signal volumes_alterados
 
+## Barramentos: todo som do jogo sai por GERAL, que o botão de som silencia; ESCUTA
+## fica de fora do mudo, para o que o jogador pede para ouvir com um clique (a fala no
+## painel PERSONAGENS). Os dois desembocam no Master.
+const GERAL := &"Geral"
+const ESCUTA := &"Escuta"
+
 var som_ativo: bool = true
 var musica_menu_opcao: int = 1
 var efeitos_menu_opcao: int = 2
@@ -90,6 +96,7 @@ var _ganho_musica: float = 1.0:
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	_criar_barramentos()
 	_carregar_preferencias()
 	_musica = _criar_tocador("Musica", VOLUME_MUSICA)
 	_narracao = _criar_tocador("Narracao", VOLUME_NARRACAO)
@@ -479,9 +486,39 @@ func _aplicar_volumes() -> void:
 
 
 func _aplicar_mute() -> void:
-	var indice := AudioServer.get_bus_index("Master")
+	var indice := AudioServer.get_bus_index(GERAL)
 	if indice >= 0:
 		AudioServer.set_bus_mute(indice, not som_ativo)
+
+
+func _criar_barramentos() -> void:
+	for nome: StringName in [GERAL, ESCUTA]:
+		if AudioServer.get_bus_index(nome) < 0:
+			AudioServer.add_bus()
+			var indice := AudioServer.bus_count - 1
+			AudioServer.set_bus_name(indice, nome)
+			AudioServer.set_bus_send(indice, &"Master")
+	# Quem nasce no Master (o padrão de todo tocador) passa para o GERAL: o que já
+	# existe agora e tudo o que entrar depois.
+	_varrer_para_geral(get_tree().root)
+	get_tree().node_added.connect(_mover_para_geral)
+
+
+func _varrer_para_geral(no: Node) -> void:
+	_mover_para_geral(no)
+	for filho in no.get_children():
+		_varrer_para_geral(filho)
+
+
+func _mover_para_geral(no: Node) -> void:
+	if (no is AudioStreamPlayer or no is AudioStreamPlayer2D or no is AudioStreamPlayer3D) and no.bus == &"Master":
+		no.bus = GERAL
+
+
+## Volume de uma fala pedida pelo jogador: ignora o mudo do canal (o clique é o pedido)
+## e, com o volume de vozes zerado, usa o de fábrica.
+func volume_escuta_vozes_db() -> float:
+	return _volume_db(VOLUME_VOZ, volume_vozes if volume_vozes > 0.0 else float(PADROES["vozes"]))
 
 
 func _carregar_preferencias() -> void:

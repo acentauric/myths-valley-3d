@@ -42,6 +42,23 @@ static func criar(fonte: String = "") -> Theme:
 	theme.set_color("font_pressed_color", "Button", Color("fff4d6"))
 	theme.set_color("font_hover_pressed_color", "Button", Color("fff4d6"))
 	theme.set_color("font_disabled_color", "Button", Color(1, 1, 1, 0.3))
+	# Dicas (tooltip) de todo controle com este tema, iguais às dos botões do canto:
+	# laca, fio de ouro e Cormorant itálico em creme.
+	var dica := StyleBoxFlat.new()
+	dica.bg_color = Color(0.055, 0.09, 0.075, 0.96)
+	dica.border_color = Color(Identidade.OURO, 0.45)
+	dica.set_border_width_all(1)
+	dica.set_corner_radius_all(6)
+	dica.corner_detail = 1
+	dica.content_margin_left = 12
+	dica.content_margin_right = 12
+	dica.content_margin_top = 4
+	dica.content_margin_bottom = 4
+	theme.set_stylebox("panel", "TooltipPanel", dica)
+	theme.set_font("font", "TooltipLabel", Identidade.fonte(Identidade.FONTE_ITALICO, 500))
+	theme.set_font_size("font_size", "TooltipLabel", 18)
+	theme.set_color("font_color", "TooltipLabel", Identidade.CREME)
+	theme.set_color("font_shadow_color", "TooltipLabel", Color(0, 0, 0, 0))
 	if cronica:
 		# Ações em Cinzel; o corpo dos seletores e campos continua em Cormorant, que
 		# tem minúsculas (OptionButton herdaria a fonte de Button pela árvore de tipos).

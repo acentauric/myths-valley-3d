@@ -23,7 +23,7 @@
     "*Trilhas* entram e saem em fades suaves."
    ],
    "mudancas_en": [
-    "Choose your *language* before loading the valley.",
+    "*Language* chosen before loading the valley.",
     "*System language* suggested on first launch.",
     "*Language previews* with stable size and selection.",
     "*SVG frames* from the home page on internal panels.",
@@ -35,7 +35,7 @@
     "*Music tracks* fade in and out smoothly."
    ],
    "mudancas_es": [
-    "Elige el *idioma* antes de cargar el valle.",
+    "*Idioma* elegido antes de cargar el valle.",
     "*Idioma del sistema* sugerido al iniciar por primera vez.",
     "*Previa de idiomas* con tamaño y selección estables.",
     "*Marcos SVG* de la portada en los paneles internos.",
@@ -56,22 +56,22 @@
    "titulo_en": "The current team appears in the valley",
    "titulo_es": "El equipo actual aparece en el valle",
    "mudancas": [
-    "Equipe atual apresentada na tela *Sobre*.",
+    "*Equipe atual* apresentada na tela Sobre.",
     "*Builds 7 e 8* publicadas para Windows.",
     "*Atualizações* conferem os arquivos antes de instalar.",
     "*Partidas* validam os arquivos antes de abrir."
    ],
    "mudancas_en": [
-    "Current team presented on the *About* screen.",
+    "*Current team* shown on the About screen.",
     "*Builds 7 and 8* released for Windows.",
     "*Updates* validate files before installation.",
     "*Saved games* validate files before loading."
    ],
    "mudancas_es": [
-    "Equipo actual presentado en la pantalla *Acerca de*.",
+    "*Equipo actual* presentado en la pantalla Acerca de.",
     "*Builds 7 y 8* publicadas para Windows.",
-    "Las *actualizaciones* validan archivos antes de instalar.",
-    "Las *partidas* validan archivos antes de abrir."
+    "*Actualizaciones* que verifican los archivos antes de instalar.",
+    "*Partidas* que verifican los archivos antes de abrir."
    ]
   },
   {
@@ -84,27 +84,27 @@
    "titulo_es": "El juego se actualiza solo",
    "mudancas": [
     "*Atualização pelo site*: baixar, conferir e reiniciar.",
-    "O vale *monta em cinco segundos*.",
-    "O sobrevoo *contorna árvores e casas*.",
-    "Carregamento *sem partículas nem som*.",
+    "*Montagem do vale* em cinco segundos.",
+    "*Sobrevoo* contorna árvores e casas.",
+    "*Carregamento* sem partículas nem som.",
     "*Seis cadeias de missão* com os moradores.",
-    "Interações respeitam *pausa e telas abertas*."
+    "*Interações* respeitam pausa e telas abertas."
    ],
    "mudancas_en": [
     "*Site updates*: download, verify and restart.",
-    "The valley *builds in five seconds*.",
-    "The flyover *avoids trees and houses*.",
-    "Loading *without particles or sound*.",
+    "*Valley build* in five seconds.",
+    "*Flyover* goes around trees and houses.",
+    "*Loading* without particles or sound.",
     "*Six quest chains* with the villagers.",
-    "Interactions respect *pause and open screens*."
+    "*Interactions* respect pause and open screens."
    ],
    "mudancas_es": [
     "*Actualización del sitio*: descargar, verificar y reiniciar.",
-    "El valle *se arma en cinco segundos*.",
-    "El vuelo *evita árboles y casas*.",
-    "Carga *sin partículas ni sonido*.",
+    "*Montaje del valle* en cinco segundos.",
+    "*Sobrevuelo* que rodea árboles y casas.",
+    "*Carga* sin partículas ni sonido.",
     "*Seis cadenas de misiones* con los vecinos.",
-    "Las interacciones respetan *pausa y pantallas abiertas*."
+    "*Interacciones* que respetan la pausa y las pantallas abiertas."
    ]
   },
   {
@@ -137,7 +137,7 @@
    ],
    "mudancas_es": [
     "*Mar de carta náutica*, agua clara y olas.",
-    "La *marea* descubre barro, charcos y arrecifes.",
+    "*Marea* que descubre barro, charcos y arrecifes.",
     "*Natación* y un tiburón en aguas profundas.",
     "*Iglesia, rocas y barcos* inspirados en el lugar.",
     "*Música por período* y sonidos del bosque.",
@@ -155,28 +155,28 @@
    "titulo_en": "Day and night, villagers and two styles",
    "titulo_es": "Día y noche, aldeanos y dos estilos",
    "mudancas": [
-    "Escolha entre o vale do Tripo e o *vale procedural*.",
-    "O sol nasce, se põe e os *lampiões de 1887* acendem.",
-    "A *mata canta* de dia e de noite; o mar e o riacho soam perto.",
+    "*Dois estilos*: o vale do Tripo ou o procedural.",
+    "*Dia e noite*: o sol nasce, se põe e os lampiões acendem.",
+    "*Mata que canta* de dia e de noite; mar e riacho por perto.",
     "*Sete moradores* com voz cumprimentam quem chega.",
-    "Pedro acompanha o jogador e *narra as missões*.",
-    "Sessenta e seis *peças novas* chegaram do Tripo."
+    "*Pedro* acompanha o jogador e narra as missões.",
+    "*Sessenta e seis peças* novas chegaram do Tripo."
    ],
    "mudancas_en": [
-    "Choose between the Tripo valley and the *procedural valley*.",
-    "The sun rises and sets, and the *1887 street lamps* light up.",
-    "The *woods sing* by day and by night; the sea and the stream sound nearby.",
+    "*Two styles*: the Tripo valley or the procedural one.",
+    "*Day and night*: the sun rises, sets and the lamps light up.",
+    "*Singing woods* by day and by night; sea and stream nearby.",
     "*Seven villagers* with voices greet whoever arrives.",
-    "Pedro walks with the player and *narrates the missions*.",
-    "Sixty-six *new pieces* arrived from Tripo."
+    "*Pedro* walks with the player and narrates the quests.",
+    "*Sixty-six new pieces* arrived from Tripo."
    ],
    "mudancas_es": [
-    "Elige entre el valle de Tripo y el *valle procedural*.",
-    "El sol sale y se pone, y se encienden los *faroles de 1887*.",
-    "El *bosque canta* de día y de noche; el mar y el arroyo suenan cerca.",
+    "*Dos estilos*: el valle de Tripo o el procedural.",
+    "*Día y noche*: el sol sale, se pone y los faroles se encienden.",
+    "*Bosque que canta* de día y de noche; mar y arroyo cerca.",
     "*Siete aldeanos* con voz saludan a quien llega.",
-    "Pedro acompaña al jugador y *narra las misiones*.",
-    "Llegaron sesenta y seis *piezas nuevas* de Tripo."
+    "*Pedro* acompaña al jugador y narra las misiones.",
+    "*Sesenta y seis piezas* nuevas llegaron de Tripo."
    ]
   },
   {
@@ -188,28 +188,28 @@
    "titulo_en": "Compact valley and Recôncavo flora",
    "titulo_es": "Valle compacto y flora del Recôncavo",
    "mudancas": [
-    "O vale passou a usar *quatro metros* por unidade.",
-    "Ruas e praça ganharam chão de *terra batida*.",
-    "Mangueira, jaqueira, *cajueiro* e coqueiro chegaram do Tripo.",
-    "A capela e o poço ganharam *modelos próprios*.",
-    "A mata e a orla ganharam *espécies do Recôncavo*.",
-    "Poço, cruzeiro, carroça e varal *chegaram do 2D*."
+    "*Quatro metros* por unidade no vale.",
+    "*Terra batida* no chão das ruas e da praça.",
+    "*Frutíferas do Tripo*: mangueira, jaqueira, cajueiro e coqueiro.",
+    "*Capela e poço* com modelos próprios.",
+    "*Espécies do Recôncavo* na mata e na orla.",
+    "*Peças do 2D*: poço, cruzeiro, carroça e varal."
    ],
    "mudancas_en": [
-    "The valley now uses *four meters* per unit.",
-    "Streets and square got *packed-earth* ground.",
-    "Mango, jackfruit, *cashew* and coconut trees arrived from Tripo.",
-    "The chapel and the well got their *own models*.",
-    "The woods and the shore got *Recôncavo species*.",
-    "Well, wayside cross, cart and clothesline *arrived from the 2D*."
+    "*Four meters* per unit in the valley.",
+    "*Packed earth* on the streets and the square.",
+    "*Fruit trees from Tripo*: mango, jackfruit, cashew and coconut.",
+    "*Chapel and well* with their own models.",
+    "*Recôncavo species* in the woods and on the shore.",
+    "*Pieces from the 2D*: well, wayside cross, cart and clothesline."
    ],
    "mudancas_es": [
-    "El valle pasó a usar *cuatro metros* por unidad.",
-    "Calles y plaza ganaron suelo de *tierra apisonada*.",
-    "Mango, jaca, *anacardo* y cocotero llegaron de Tripo.",
-    "La capilla y el pozo ganaron *modelos propios*.",
-    "El bosque y la costa ganaron *especies del Recôncavo*.",
-    "Pozo, cruz, carreta y tendedero *llegaron del 2D*."
+    "*Cuatro metros* por unidad en el valle.",
+    "*Tierra apisonada* en las calles y la plaza.",
+    "*Frutales de Tripo*: mango, jaca, anacardo y cocotero.",
+    "*Capilla y pozo* con modelos propios.",
+    "*Especies del Recôncavo* en el bosque y la costa.",
+    "*Piezas del 2D*: pozo, cruz, carreta y tendedero."
    ]
   },
   {
@@ -222,23 +222,23 @@
    "titulo_es": "Mapa del valle a escala real",
    "mudancas": [
     "*Ruas caminháveis* e rios seguem o mapa desenhado.",
-    "A costa e a mata ganharam *novas formas*.",
-    "O vale usa *um metro* por unidade.",
-    "O mapa aéreo ganhou *zoom* e marcadores.",
+    "*Costa e mata* com novas formas.",
+    "*Um metro* por unidade no vale.",
+    "*Mapa aéreo* com zoom e marcadores.",
     "*Passarelas* levam aos pontos sobre a água."
    ],
    "mudancas_en": [
     "*Walkable streets* and rivers follow the drawn map.",
-    "The coast and the woods got *new shapes*.",
-    "The valley uses *one meter* per unit.",
-    "The aerial map got *zoom* and markers.",
+    "*Coast and woods* with new shapes.",
+    "*One meter* per unit in the valley.",
+    "*Aerial map* with zoom and markers.",
     "*Boardwalks* lead to the points over the water."
    ],
    "mudancas_es": [
     "*Calles transitables* y ríos siguen el mapa dibujado.",
-    "La costa y el bosque ganaron *nuevas formas*.",
-    "El valle usa *un metro* por unidad.",
-    "El mapa aéreo ganó *zoom* y marcadores.",
+    "*Costa y bosque* con nuevas formas.",
+    "*Un metro* por unidad en el valle.",
+    "*Mapa aéreo* con zoom y marcadores.",
     "*Pasarelas* llevan a los puntos sobre el agua."
    ]
   },
@@ -251,31 +251,31 @@
    "titulo_en": "Menu and navigation",
    "titulo_es": "Menú y navegación",
    "mudancas": [
-    "O menu *confirma a saída*.",
-    "O som ganhou *controle rápido*.",
+    "*Saída* confirmada pelo menu.",
+    "*Som* com controle rápido.",
     "*HOME* retorna ao menu.",
-    "A abertura ganhou *novos textos*.",
-    "O 3D ganhou *histórico próprio*.",
-    "O menu ganhou um *sobrevoo* do vale.",
-    "O menu passou a incluir um *mapa superior*."
+    "*Novos textos* na abertura.",
+    "*Histórico próprio* do 3D.",
+    "*Sobrevoo do vale* no menu.",
+    "*Mapa superior* no menu."
    ],
    "mudancas_en": [
-    "The menu *confirms before quitting*.",
-    "Sound got a *quick toggle*.",
+    "*Quitting* asks for confirmation.",
+    "*Sound* with a quick toggle.",
     "*HOME* returns to the menu.",
-    "The opening got *new texts*.",
-    "The 3D got its *own changelog*.",
-    "The menu got a *flyover* of the valley.",
-    "The menu now includes a *top-down map*."
+    "*New texts* in the opening.",
+    "*Own changelog* for the 3D.",
+    "*Valley flyover* in the menu.",
+    "*Top-down map* in the menu."
    ],
    "mudancas_es": [
-    "El menú *confirma antes de salir*.",
-    "El sonido ganó un *control rápido*.",
+    "*Salida* confirmada por el menú.",
+    "*Sonido* con control rápido.",
     "*HOME* vuelve al menú.",
-    "La apertura ganó *textos nuevos*.",
-    "El 3D ganó su *propio historial*.",
-    "El menú ganó un *sobrevuelo* del valle.",
-    "El menú pasó a incluir un *mapa superior*."
+    "*Textos nuevos* en la apertura.",
+    "*Historial propio* del 3D.",
+    "*Sobrevuelo del valle* en el menú.",
+    "*Mapa superior* en el menú."
    ]
   },
   {
@@ -287,18 +287,18 @@
    "titulo_en": "Opening and scenery",
    "titulo_es": "Apertura y escenario",
    "mudancas": [
-    "A travessia ganhou *abertura 3D*.",
-    "O menu ganhou *música e narração*.",
+    "*Abertura 3D* na travessia.",
+    "*Música e narração* no menu.",
     "*Casa e árvores* ampliaram o vale."
    ],
    "mudancas_en": [
-    "The crossing got a *3D opening*.",
-    "The menu got *music and narration*.",
+    "*3D opening* for the crossing.",
+    "*Music and narration* in the menu.",
     "*House and trees* expanded the valley."
    ],
    "mudancas_es": [
-    "La travesía ganó una *apertura 3D*.",
-    "El menú ganó *música y narración*.",
+    "*Apertura 3D* en la travesía.",
+    "*Música y narración* en el menú.",
     "*Casa y árboles* ampliaron el valle."
    ]
   },
@@ -311,18 +311,18 @@
    "titulo_en": "First steps",
    "titulo_es": "Primeros pasos",
    "mudancas": [
-    "O vale 3D abriu para *exploração*.",
-    "O personagem ganhou *animações*.",
+    "*Exploração* do vale 3D aberta.",
+    "*Animações* do personagem.",
     "*Praça, horta e costa* ganharam forma."
    ],
    "mudancas_en": [
-    "The 3D valley opened for *exploration*.",
-    "The character got *animations*.",
+    "*Exploration* of the 3D valley opens.",
+    "*Animations* for the character.",
     "*Square, garden and coast* took shape."
    ],
    "mudancas_es": [
-    "El valle 3D se abrió a la *exploración*.",
-    "El personaje ganó *animaciones*.",
+    "*Exploración* del valle 3D abierta.",
+    "*Animaciones* del personaje.",
     "*Plaza, huerta y costa* tomaron forma."
    ]
   }

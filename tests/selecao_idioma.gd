@@ -84,6 +84,19 @@ func _run() -> void:
 	for sufixo in idioma.SUFIXOS:
 		_conferir(not str(dados.get("sair" + sufixo, "")).is_empty(), "dica de sair no idioma '%s'" % sufixo)
 	_conferir(get_root().gui_get_focus_owner() == botoes[salvo], "foco lembra a escolha salva")
+	# Marcas em todos os botões; acesas só na última escolha e no idioma do sistema.
+	var sistema: int = idioma.idioma_do_sistema(OS.get_locale_language())
+	for i in botoes.size():
+		var escolha := botoes[i].find_child("MarcaEscolha", true, false)
+		var do_sistema := botoes[i].find_child("MarcaSistema", true, false)
+		_conferir(escolha != null and do_sistema != null, "as duas marcas no botão %d" % i)
+		_conferir(bool(escolha.get_meta("ativa")) == (i == salvo), "marcador aceso só no idioma %d salvo" % salvo)
+		_conferir(bool(do_sistema.get_meta("ativa")) == (i == sistema), "monitor aceso só no idioma do sistema")
+		_conferir(escolha.get_global_rect().get_center().y < do_sistema.get_global_rect().get_center().y and absf(escolha.get_parent().get_global_rect().get_center().y - botoes[i].get_global_rect().get_center().y) < 1.5, "marcas empilhadas e centradas no botão %d" % i)
+	for chave in ["marca_escolha", "marca_sistema"]:
+		for sufixo in idioma.SUFIXOS:
+			_conferir(not str(dados.get(chave + sufixo, "")).is_empty(), "dica %s no idioma '%s'" % [chave, sufixo])
+	_conferir(idioma.idioma_do_sistema("fr_FR") == -1 and idioma.idioma_do_sistema("pt_BR") == 0, "só idiomas do jogo marcam o sistema")
 	_conferir(inicio._titulo.text == dados["titulo" + idioma.SUFIXOS[salvo]] and inicio._descricao.text == dados["descricao" + idioma.SUFIXOS[salvo]], "textos iniciais correspondem ao botão focado")
 	for i in mini(4, botoes.size()):
 		_conferir(botoes[i].text == dados.opcoes[i] and not botoes[i].disabled, "opção nativa %d" % i)
@@ -167,7 +180,7 @@ func _run() -> void:
 			_conferir(abertura.version_link.mouse_default_cursor_shape == Control.CURSOR_POINTING_HAND, "versão usa cursor de mão")
 			abertura.version_link.pressed.emit()
 			_conferir(abertura.modal_open, "versão continua abrindo histórico")
-			_conferir(not abertura.bloco_almanaque.visible and not abertura.sombra_almanaque.visible, "histórico oculta notas do fundo")
+			_conferir(not abertura.bloco_almanaque.visible, "histórico oculta notas do fundo")
 			abertura._home()
 			_conferir(abertura.bloco_almanaque.visible, "home restaura notas do fundo")
 		for argumento in OS.get_cmdline_user_args():
@@ -187,10 +200,10 @@ func _run() -> void:
 				_conferir(item.get_line_count() == 1 and item.get_content_width() <= item.size.x + 1 and item.get_content_height() <= item.size.y + 1, "item inteiro em uma linha %d/%d" % [lingua, pagina])
 			_conferir(abertura.panel.get_global_rect().encloses(lista.get_global_rect()), "lista cabe no modal %d/%d" % [lingua, pagina])
 			_conferir(not abertura.bloco_almanaque.visible, "notas ocultas no modal %d/%d" % [lingua, pagina])
-	# Uma entrada futura com mais de oito itens preserva todos em páginas extras.
-	var itens := range(19)
+	# Uma entrada futura com mais de dez itens preserva todos em páginas extras.
+	var itens := range(23)
 	var extras: Array = abertura._paginar_historico([{"mudancas": itens, "mudancas_en": itens, "mudancas_es": itens}])
-	_conferir(extras.size() == 3 and extras[2].mudancas == [16, 17, 18], "paginação preserva itens excedentes")
+	_conferir(extras.size() == 3 and extras[2].mudancas == [20, 21, 22], "paginação preserva itens excedentes")
 	idioma.definir(2)
 	# Na travessia, a legenda continua sem moldura; voltar restaura a talha.
 	abertura._place_legenda()

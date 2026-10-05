@@ -23,6 +23,8 @@ var _titulo: Label
 var _descricao: Label
 var _aviso: Label
 var _canto: Control
+## Marcas no canto dos botões: [marca, chave do texto da dica].
+var _marcas: Array = []
 var _dica_sair: Label
 
 
@@ -113,9 +115,57 @@ func _ready() -> void:
 	aviso.add_theme_font_size_override("font_size", 16)
 	coluna.add_child(aviso)
 	_criar_sair()
+	_marcar_botoes()
 	_reservar_textos()
 	_mostrar_idioma(IdiomaMenu.indice())
 	_botoes[IdiomaMenu.indice()].grab_focus.call_deferred()
+
+
+## Marcas mínimas em todos os botões, uma sobre a outra à direita: o marcador (última
+## escolha salva) e o monitor (idioma do sistema, quando o jogo o tem). Douradas no idioma
+## a que se referem; nos demais, verdes e apagadas. As dicas dizem o que cada uma marca.
+func _marcar_botoes() -> void:
+	var salva := IdiomaMenu.escolha_salva()
+	var sistema := IdiomaMenu.idioma_do_sistema(OS.get_locale_language())
+	for i in _botoes.size():
+		var coluna := VBoxContainer.new()
+		coluna.name = "Marcas"
+		coluna.alignment = BoxContainer.ALIGNMENT_CENTER
+		coluna.add_theme_constant_override("separation", 4)
+		coluna.anchor_left = 1.0
+		coluna.anchor_right = 1.0
+		coluna.anchor_top = 0.5
+		coluna.anchor_bottom = 0.5
+		coluna.offset_left = -26.0
+		coluna.offset_right = -12.0
+		coluna.offset_top = -14.0
+		coluna.offset_bottom = 14.0
+		coluna.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		_botoes[i].add_child(coluna)
+		for tipo in ["escolha", "sistema"]:
+			var ativa: bool = i == (salva if tipo == "escolha" else sistema)
+			var marca := Control.new()
+			marca.name = "MarcaEscolha" if tipo == "escolha" else "MarcaSistema"
+			marca.set_meta("ativa", ativa)
+			marca.custom_minimum_size = Vector2(12, 12)
+			# PASS: a dica da marca aparece e o botão continua recebendo o mouse.
+			marca.mouse_filter = Control.MOUSE_FILTER_PASS if ativa else Control.MOUSE_FILTER_IGNORE
+			marca.draw.connect(_desenhar_marca.bind(marca, tipo, ativa))
+			coluna.add_child(marca)
+			if ativa:
+				_marcas.append([marca, "marca_escolha" if tipo == "escolha" else "marca_sistema"])
+
+
+func _desenhar_marca(marca: Control, tipo: String, ativa: bool) -> void:
+	# Discretas: informam sem disputar com o nome do idioma.
+	var cor := Color(Color("e2c47f"), 0.65) if ativa else Color(0.45, 0.6, 0.5, 0.22)
+	if tipo == "escolha":
+		# Marcador de página: a escolha guardada.
+		marca.draw_colored_polygon(PackedVector2Array([Vector2(2.5, 1), Vector2(9.5, 1), Vector2(9.5, 11), Vector2(6, 8), Vector2(2.5, 11)]), cor)
+	else:
+		marca.draw_rect(Rect2(1.5, 1.5, 9, 6.5), cor, false, 1.2, true)
+		marca.draw_line(Vector2(6, 8), Vector2(6, 10.5), cor, 1.2, true)
+		marca.draw_line(Vector2(3.5, 10.5), Vector2(8.5, 10.5), cor, 1.2, true)
 
 
 ## × no canto superior direito, no lugar do HOME do menu: fecha o jogo antes de escolher
@@ -179,6 +229,8 @@ func _mostrar_idioma(indice: int) -> void:
 	_descricao.text = str(IdiomaMenu.campo_no_idioma(_dados, "descricao", indice))
 	_aviso.text = str(IdiomaMenu.campo_no_idioma(_dados, "aviso", indice))
 	_dica_sair.text = str(IdiomaMenu.campo_no_idioma(_dados, "sair", indice))
+	for marca: Array in _marcas:
+		(marca[0] as Control).tooltip_text = str(IdiomaMenu.campo_no_idioma(_dados, marca[1], indice))
 
 
 func _reservar_textos() -> void:
