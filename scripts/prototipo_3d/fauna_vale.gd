@@ -37,6 +37,9 @@ const ALCANCE_SALTO := 25.0
 const ATAQUE_XAREU := Vector2(40.0, 90.0)
 const ALCANCE_ATAQUE := 80.0
 const DURACAO_ATAQUE := 15.0
+## A cada quantos ticks de física a lista de perigos dos cardumes é refeita.
+const PERIGOS_A_CADA := 4
+
 ## As raias e o mar de fora: lâminas (u) e quantos.
 const LAMINA_PINTADAS := Vector2(0.65, 1.0)
 const LAMINA_MANTEIGAS := Vector2(0.25, 0.6)
@@ -598,7 +601,10 @@ func _physics_process(delta: float) -> void:
 	if _tempo >= _proxima_olhada_saveiro:
 		_proxima_olhada_saveiro = _tempo + 1.0
 		_olhar_o_saveiro()
-	_perigos = _juntar_perigos()
+	# A lista de perigos (grupos + um Dictionary por morador) se refaz a cada 4 ticks:
+	# um peixe reage a quem passa com 70 ms de atraso, e ninguém vê.
+	if (_quadro - 1) % PERIGOS_A_CADA == 0:
+		_perigos = _juntar_perigos()
 	_ataques_dos_xareus()
 	var olho := _olho()
 	for k in cardumes.size():
@@ -617,7 +623,9 @@ func _physics_process(delta: float) -> void:
 		if not cardume.visible:
 			cardume.visible = true
 		_atraso[cardume] = float(_atraso.get(cardume, 0.0)) + delta
-		var passo := 1 if d < alcance * PERTO else 3
+		# Perto, no máximo a 30 Hz (um tick sim, outro não; o `_atraso` acumulado entrega o
+		# tempo inteiro ao peixe); longe, a cada 3.
+		var passo := 2 if d < alcance * PERTO else 3
 		if (_quadro + k) % passo != 0:
 			continue
 		cardume.perigos = _perigos

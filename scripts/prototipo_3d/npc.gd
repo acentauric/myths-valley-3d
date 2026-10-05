@@ -125,6 +125,12 @@ var _proxima_fala := 0
 var _destino_avulso := Vector3.INF
 var _velocidade_avulsa := VELOCIDADE
 var _nadando := false
+## Nado e espuma não precisam de 60 Hz (a histerese do nado aguenta): cada morador os
+## atualiza a cada `NADO_A_CADA` ticks, e a fase por instância espalha o custo entre eles.
+const NADO_A_CADA := 4
+const ESPUMA_A_CADA := 4
+var _fase_de_custo := randi() % NADO_A_CADA
+var _tique_nado := 0
 var _preso := 0.0
 var _desvio := Vector3.ZERO
 var _desvio_tempo := 0.0
@@ -244,6 +250,9 @@ func configurar(d: Dictionary, anc: Dictionary, alvo_jogador: Node3D, mundo: Nod
 		var espuma := EspumaAgua.new()
 		espuma.name = "Espuma"
 		espuma.mundo = mundo
+		# A espuma do morador atualiza a cada 4 ticks, com fase por instância (a do jogador, por tick).
+		espuma.intervalo = ESPUMA_A_CADA
+		espuma.fase = _fase_de_custo
 		add_child(espuma)
 	altura = float(d.get("altura", 1.7))
 	name = "Morador" + String(d.get("id", "morador")).capitalize()
@@ -416,7 +425,9 @@ func _physics_process(delta: float) -> void:
 ## Movimento com gravidade e colisão; vira o corpo para a direção do passo.
 func _mover(direcao: Vector3, velocidade: float, delta: float) -> void:
 	direcao = _contornar_bloqueio(direcao, delta)
-	_atualizar_nado()
+	_tique_nado += 1
+	if (_tique_nado + _fase_de_custo) % NADO_A_CADA == 0:
+		_atualizar_nado()
 	if _nadando:
 		velocidade = minf(velocidade, VELOCIDADE_NADO)
 	velocity.x = move_toward(velocity.x, direcao.x * velocidade, 12.0 * delta)
@@ -430,6 +441,12 @@ func _mover(direcao: Vector3, velocidade: float, delta: float) -> void:
 		velocity.y -= 20.0 * delta
 	else:
 		velocity.y = -0.1
+	# Parado, no chão e sem nadar (velocidade zero, e já medida como zero): o
+	# move_and_slide não tem o que resolver, e custava ~3 ms por tick na praça. Quem
+	# é empurrado ganha velocidade e volta a passar por ele.
+	if not _nadando and velocity.x == 0.0 and velocity.z == 0.0 and _velocidade_atual < 0.01 and is_on_floor():
+		_velocidade_atual = 0.0
+		return
 	move_and_slide()
 	_subir_degrau(direcao)
 	_medir_bloqueio(direcao, velocidade, delta)

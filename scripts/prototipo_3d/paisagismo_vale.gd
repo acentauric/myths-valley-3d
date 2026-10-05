@@ -38,7 +38,7 @@ const MARGEM_DA_COSTA := 26.0
 ## O raio de busca das reservas de copa: nenhuma copa de receita passa disto.
 const COPA_MAXIMA := 4.0
 ## A malha de um pé de forro (capim, bromélia) some mais cedo que a das árvores.
-const LOD_DO_FORRO := 90.0
+const LOD_DO_FORRO := 60.0
 ## O chão em que a muda não pega: rente ao nível do mar não se planta.
 const FOLGA_DA_AGUA := 0.05
 

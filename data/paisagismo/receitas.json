@@ -71,7 +71,7 @@
   },
  "aderecos": {
   "observacao": "Os adereços de roça e de quintal que o paisagismo põe (paisagismo_vale.gd, aderecos): a cerca de varas em volta das roças com a porteira onde elas chegam mais perto da rua, o estaleiro de fumo na roça de fumo, o carro de boi parado junto da estrada da maior roça de mandioca, o monjolo na beira do rio e as barracas de feira na praça. Nada é sorteado: tudo sai da forma das zonas e das reservas, e os pés das zonas plantam em volta deles.",
-  "cerca": {"chave": "cerca_varas", "passo": 3.0, "folga": 0.6, "lod": 110.0, "receitas": ["roca_mandioca", "roca_milho_fumo"]},
+  "cerca": {"chave": "cerca_varas", "passo": 3.0, "folga": 0.6, "lod": 75.0, "receitas": ["roca_mandioca", "roca_milho_fumo"]},
   "porteira": {"chave": "porteira", "alcance_da_rua": 8.0},
   "estaleiro_fumo": {"chave": "estaleiro_fumo", "receita": "roca_milho_fumo", "quantidade": 2, "raio": 2.6, "recuo": 7.0, "afastar": 14.0},
   "carro_de_boi": {"chave": "carro_de_boi", "receita": "roca_mandioca", "raio": 2.6, "fora": 3.8, "alcance_da_rua": 8.0},
@@ -88,7 +88,7 @@
    "raio_touceira": 1.5,
    "falhas": 0.12,
    "escala": [0.85, 1.2],
-   "lod": 230.0,
+   "lod": 140.0,
    "chao": "folhico",
    "forro": {"capim": 0.12}
   },
@@ -102,7 +102,7 @@
    "vazias": 0.12,
    "falhas": 0.15,
    "escala": [0.9, 1.3],
-   "lod": 230.0,
+   "lod": 140.0,
    "chao": "pasto",
    "forro": {"capim": 0.9}
   },
@@ -121,7 +121,7 @@
    "vazias": 0.08,
    "falhas": 0.15,
    "escala": [0.85, 1.2],
-   "lod": 230.0,
+   "lod": 140.0,
    "chao": "terreiro",
    "forro": {"touceira_cana": 0.1, "capim": 0.3}
   },
@@ -136,7 +136,7 @@
    "pousio": 0.3,
    "falhas": 0.06,
    "escala": [0.8, 1.15],
-   "lod": 120.0,
+   "lod": 80.0,
    "chao": "roca",
    "forro": {"capim": 0.25}
   },
@@ -151,7 +151,7 @@
    "pousio": 0.25,
    "falhas": 0.06,
    "escala": [0.85, 1.15],
-   "lod": 120.0,
+   "lod": 80.0,
    "chao": "roca",
    "forro": {"capim": 0.25}
   },
@@ -162,7 +162,7 @@
    "espacamento": 7.2,
    "falhas": 0.15,
    "escala": [0.85, 1.25],
-   "lod": 230.0,
+   "lod": 140.0,
    "chao": "folhico",
    "forro": {"samambaia": 0.5, "heliconia": 0.2}
   },
@@ -172,13 +172,13 @@
    "faixas": [
     {"de": 0.4, "ate": 1.8, "espacamento": 1.6, "trecho": 22.0, "vazios": 0.3, "beira": true, "lod": 85.0,
      "especies": {"taboa": 1.0}, "escala": [0.8, 1.2]},
-    {"de": 3.5, "ate": 7.0, "espacamento": 3.0, "trecho": 26.0, "vazios": 0.2, "lod": 120.0,
+    {"de": 3.5, "ate": 7.0, "espacamento": 3.0, "trecho": 26.0, "vazios": 0.2, "lod": 80.0,
      "especies": {"heliconia": 1.2, "samambaia": 1.0, "touceira_bambu": {"peso": 0.5, "porte": 2.8}}, "escala": [0.7, 1.15]},
-    {"de": 8.0, "ate": 15.0, "espacamento": 5.0, "trecho": 45.0, "vazios": 0.1, "lod": 230.0,
+    {"de": 8.0, "ate": 15.0, "espacamento": 5.0, "trecho": 45.0, "vazios": 0.1, "lod": 140.0,
      "especies": {"ingazeiro_leve": 2.0, "jenipapeiro_leve": 1.0}, "escala": [0.8, 1.15]}
    ],
    "falhas": 0.1,
-   "lod": 230.0,
+   "lod": 140.0,
    "chao": "folhico",
    "forro": {}
   },
@@ -191,7 +191,7 @@
    "vazias": 0.25,
    "falhas": 0.15,
    "escala": [0.85, 1.2],
-   "lod": 230.0,
+   "lod": 140.0,
    "chao": "capim_seco",
    "forro": {"capim": 1.0}
   },
@@ -204,7 +204,7 @@
    "vazias": 0.2,
    "falhas": 0.15,
    "escala": [0.85, 1.2],
-   "lod": 230.0,
+   "lod": 140.0,
    "chao": "restinga",
    "forro": {"capim": 0.6, "bromelia": 0.4}
   },
@@ -218,7 +218,7 @@
    "vazias": 0.0,
    "falhas": 0.05,
    "escala": [0.85, 1.15],
-   "lod": 230.0,
+   "lod": 140.0,
    "chao": "restinga",
    "baixa_no_voo": "capim",
    "forro": {"capim": 0.5, "bromelia": 0.3}

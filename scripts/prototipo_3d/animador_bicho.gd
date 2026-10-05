@@ -304,6 +304,11 @@ func abaixar(fracao: float) -> void:
 
 func _process(delta: float) -> void:
 	if pose == null or not pose.is_visible_in_tree():
+		# Bicho escondido (longe) não anima: sem pausar aqui o clipe de andar seguia
+		# tocando, com o esqueleto, enquanto ninguém o via. Ao voltar, o `play` abaixo retoma.
+		if animacao != null and animacao.is_playing():
+			animacao.pause()
+			_parado_no_quadro = true
 		return
 	_tempo += delta
 	var relativa := velocidade / maxf(passada, 0.05)
