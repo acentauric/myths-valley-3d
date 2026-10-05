@@ -9,16 +9,18 @@
   (`edicao_estatica()`), e a linha embaixo da versão no menu fica à vista,
   desativada, dizendo "Edição Tripothon · atualização desativada" nos três idiomas.
   Portão: `tests/atualizacao.gd` (finge a feature com `forcar_estatica`).
-- **Vídeo no fundo das cargas longas.** A primeira carga (idioma → menu) mostra o
-  sobrevoo do vale (`carregamento_sobrevoo.ogv`, 21 s, laço sem emenda) e a do JOGAR
-  (menu → vale) mostra a cinemática de abertura (`cinematica_abertura.ogv`, 36 s),
-  ambos em `assets/prototipo_3d/identidade/video/`: Theora 1280×720, mudos (volume
-  -80 dB: as telas de carregamento seguem silenciosas), cobrindo a tela com corte, por
-  baixo do logotipo, da barra e dos textos. A seleção de idioma, a volta ao menu e a
-  troca de estilo continuam com a capa estática, que também é o que aparece se o
-  arquivo faltar. Gerados com a API do LTX a partir das pinturas do próprio projeto
-  (`assets/CREDITOS.md`); `*.ogv` entra como binário no Git, sem LFS (37 MB, abaixo do
-  limite de arquivo do GitHub).
+- **O lobby da build do Tripothon é um vídeo, e não o vale 3D.** Com a feature
+  `tripothon` (ou `-- --lobby-video` no editor), a abertura tira o `Cenario` antes de
+  ele entrar na árvore e põe por trás do retábulo o sobrevoo pintado do LTX
+  (`assets/prototipo_3d/identidade/video/carregamento_sobrevoo.ogv`, 21 s, laço sem
+  emenda, Theora 1280×720, mudo). O menu deixa de montar o vale inteiro só para o voo
+  de fundo (a primeira carga levava ~27 s) e de desenhá-lo a cada quadro. Nesse modo o
+  botão do mapa do menu não nasce (não há vale para mostrar), e "Sobrevoo" desligado
+  em AJUSTAR para o vídeo no quadro. Sem a feature, o menu segue com o vale 3D, e os
+  portões rodam nele. As telas de carregamento ficam na capa estática: a montagem
+  segura a thread principal, e um vídeo ali engasgava. A cinemática de abertura gerada
+  no mesmo lote ficou só no site. Gerado com a API do LTX a partir das pinturas do
+  próprio projeto (`assets/CREDITOS.md`); `*.ogv` entra como binário no Git, sem LFS.
 - **A tela do JOGAR só sai quando o vale termina de verdade.** `prototype.gd` avisa
   `carga_concluida` no fim do `_ready` (moradores, bichos, telas, partida salva); a
   `tela_carregamento.gd` reserva o último décimo da barra para esse trecho, espera o
@@ -29,7 +31,7 @@
 - Histórico do jogo: `build_numero` 9 e a entrada "Edição Tripothon" (05/10/2026) nos
   três idiomas, com o que mudou na build de desempenho: carga sem o congelamento de
   19 s, FPS dobrado (sombra, faces de trás, mata mais leve), mata pela metade com
-  clareiras de árvore-destaque, minimapa pintado e estático, e os vídeos de carga.
+  clareiras de árvore-destaque, minimapa pintado e estático, e o lobby em vídeo.
 
 ## Em desenvolvimento — 05/10/2026
 

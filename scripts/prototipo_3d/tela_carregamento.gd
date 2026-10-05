@@ -20,9 +20,10 @@ const CAPA_NOITE := Identidade.PASTA + "capa_noite.webp"
 const FONTE_TITULO := Identidade.FONTE_TITULO
 const FONTE_TEXTO := Identidade.FONTE_TEXTO
 const FONTE_ITALICO := Identidade.FONTE_ITALICO
-## Vídeos de fundo das cargas longas (gerados com o LTX a partir das capas pintadas).
+## O sobrevoo pintado em vídeo (LTX, a partir das capas): é o fundo do lobby na build do
+## Tripothon (abertura.gd, VIDEO_LOBBY). As telas de carregamento ficam na capa estática:
+## a montagem do vale segura a thread principal, e o vídeo travava junto.
 const VIDEO_SOBREVOO := Identidade.PASTA + "video/carregamento_sobrevoo.ogv"
-const VIDEO_ABERTURA := Identidade.PASTA + "video/cinematica_abertura.ogv"
 ## Proporção dos vídeos (1280×720): o corte para cobrir a tela parte dela.
 const PROPORCAO_VIDEO := 16.0 / 9.0
 
@@ -130,9 +131,16 @@ static func _video(tela: Control, caminho: String) -> void:
 	caixa.add_child(player)
 	caixa.resized.connect(_cobrir_com_video.bind(caixa, player))
 	tela.add_child(caixa)
-	tela.move_child(caixa, tela.get_node("Capa").get_index() + 1)
+	var capa := tela.get_node_or_null("Capa")
+	if capa != null:
+		tela.move_child(caixa, capa.get_index() + 1)
 	_cobrir_com_video(caixa, player)
 	player.play()
+
+
+## O mesmo vídeo em laço, cobrindo `tela`, para quem não é tela de carregamento (o lobby).
+static func video_em_laco(tela: Control, caminho: String) -> void:
+	_video(tela, caminho)
 
 
 static func _cobrir_com_video(caixa: Control, player: VideoStreamPlayer) -> void:

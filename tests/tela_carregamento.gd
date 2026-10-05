@@ -37,7 +37,7 @@ func _run() -> void:
 	tela_dia.free()
 
 	# 1b. Vídeo de fundo: mudo, em laço, entre a capa e o logotipo; sem o arquivo, só a capa.
-	for video in [tela_script.VIDEO_SOBREVOO, tela_script.VIDEO_ABERTURA]:
+	for video in [tela_script.VIDEO_SOBREVOO]:
 		_assert(ResourceLoader.exists(video), "o vídeo existe: " + video)
 		var barra_video: ProgressBar = tela_script.mostrar(camada, tema, "teste", 12.0, video)
 		var tela_video: Control = barra_video.get_meta("tela")

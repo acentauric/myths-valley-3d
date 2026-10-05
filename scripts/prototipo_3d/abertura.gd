@@ -10,6 +10,15 @@ const PainelAjustes = preload("res://scripts/prototipo_3d/painel_ajustes.gd")
 const PainelPersonagens = preload("res://scripts/prototipo_3d/painel_personagens.gd")
 const TelaCarregamento = preload("res://scripts/prototipo_3d/tela_carregamento.gd")
 const Identidade = preload("res://scripts/prototipo_3d/identidade.gd")
+## O LOBBY EM VÍDEO (build do Tripothon): o sobrevoo pintado do LTX em laço, no lugar do
+## vale 3D de fundo. O menu deixava a primeira carga em ~27 s só para montar o vale inteiro
+## por trás do voo, e depois o desenhava a cada quadro. Vale com a feature "tripothon" do
+## preset de exportação ou, para conferir no editor, com `-- --lobby-video`; sem o arquivo
+## do vídeo, o menu volta ao vale 3D. Nas telas de carregamento não há vídeo: a montagem
+## segura a thread principal e ele engasgava.
+const VIDEO_LOBBY := TelaCarregamento.VIDEO_SOBREVOO
+var lobby_em_video := false
+var _video_lobby: VideoStreamPlayer
 const VISUAL_PREFERENCES := "user://preferencias_visuais.cfg"
 const FLYOVER_SECONDS := 72.0
 ## Metros reais: a escala do mapa muda as unidades, mas nao a proximidade do voo.
@@ -132,6 +141,18 @@ var _modo_camera := ""
 ## JOGAR não toca o "tique" de passar por cima debaixo dela.
 var _som_liberado := false
 
+func _enter_tree() -> void:
+	lobby_em_video = (OS.has_feature("tripothon") or "--lobby-video" in OS.get_cmdline_user_args()) \
+		and ResourceLoader.exists(VIDEO_LOBBY)
+	if lobby_em_video:
+		# O vale sai antes de entrar na árvore: o _ready do world_builder, que é a montagem
+		# inteira, nunca roda. Nada mais aqui toca o $Cenario com o lobby em vídeo.
+		var cenario := get_node_or_null("Cenario")
+		if cenario != null:
+			remove_child(cenario)
+			cenario.free()
+
+
 func _ready() -> void:
 	IdiomaMenu.aplicar_menu()
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
@@ -166,7 +187,9 @@ func _ready() -> void:
 		menu_font_option = option
 		panel.theme = _menu_theme()
 		ajustes.tema = panel.theme)
-	ajustes.cenario_menu_mudou.connect(func(sobrevoo: bool) -> void: flyover_active = sobrevoo)
+	ajustes.cenario_menu_mudou.connect(func(sobrevoo: bool) -> void:
+		flyover_active = sobrevoo
+		_aplicar_video_do_lobby())
 	_montar_decoracao(layer)
 	panel = PanelContainer.new()
 	panel.position = Vector2(36, 32)
@@ -183,11 +206,15 @@ func _ready() -> void:
 	_create_ajustes_button(layer)
 	_create_quick_mute(layer)
 	_create_clock(layer)
-	_create_map_button(layer)
+	# Sem vale no lobby em vídeo não há mapa para abrir: o botão não nasce.
+	if not lobby_em_video:
+		_create_map_button(layer)
 	_create_tela_button(layer)
+	if lobby_em_video:
+		_montar_video_do_lobby()
 	# O som do menu só começa quando o menu aparece: tocava debaixo da tela de
 	# carregamento, desde os 25% da barra, e era a tela que parecia ter som.
-	if $Cenario.construido:
+	if lobby_em_video or $Cenario.construido:
 		_iniciar_som_do_menu()
 	else:
 		$Cenario.pronto.connect(_iniciar_som_do_menu, CONNECT_ONE_SHOT)
@@ -202,16 +229,31 @@ func _ready() -> void:
 		_options(2)
 	# A entrada anima véus, retábulo e placas quando o vale termina de montar (a tela
 	# de carregamento some logo depois). Na recarga da troca de estilo, sem animação.
-	if $Cenario.construido:
-		_start_flyover()
+	if lobby_em_video:
+		# Sem vale para esperar: o retábulo entra já, enquanto a tela de carregamento some.
+		if not options_open:
+			_preparar_entrada()
+			_entrada.call_deferred()
 	else:
-		$Cenario.pronto.connect(_start_flyover, CONNECT_ONE_SHOT)
-	if not $Cenario.construido and not options_open:
-		_preparar_entrada()
-		$Cenario.pronto.connect(_entrada, CONNECT_ONE_SHOT)
+		if $Cenario.construido:
+			_start_flyover()
+		else:
+			$Cenario.pronto.connect(_start_flyover, CONNECT_ONE_SHOT)
+		if not $Cenario.construido and not options_open:
+			_preparar_entrada()
+			$Cenario.pronto.connect(_entrada, CONNECT_ONE_SHOT)
 	print("OPENING_READY: audio compartilhado e abertura 3D · estilo=%s" % Estilo.modo)
 
 func _process(delta: float) -> void:
+	if lobby_em_video:
+		# Sem câmera para mover: só as falas da travessia andam, com o tempo delas.
+		if line_index >= 0:
+			line_time -= delta
+			if line_bar:
+				line_bar.value = clampf(line_time / line_total, 0.0, 1.0)
+			if line_time <= 0:
+				_next_line()
+		return
 	if not $Cenario.construido:
 		return
 	if map_open:
@@ -290,6 +332,28 @@ func _flyover_target(progress: float) -> Vector3:
 	# Uma inclinacao leve mostra fachadas e arvores, em vez de mirar o chao da praca.
 	target.y = maxf(eye.y - 5.0 / scale_m, $Cenario.ground_height_at(target) + 4.0 / scale_m)
 	return target
+
+
+## O sobrevoo em vídeo numa camada atrás do retábulo, cobrindo a tela (ver VIDEO_LOBBY).
+func _montar_video_do_lobby() -> void:
+	var camada := CanvasLayer.new()
+	camada.name = "VideoDoLobby"
+	camada.layer = -1
+	add_child(camada)
+	var fundo := Control.new()
+	fundo.name = "Fundo"
+	fundo.set_anchors_preset(Control.PRESET_FULL_RECT)
+	fundo.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	camada.add_child(fundo)
+	TelaCarregamento.video_em_laco(fundo, VIDEO_LOBBY)
+	_video_lobby = fundo.get_node_or_null("Video/Player") as VideoStreamPlayer
+	_aplicar_video_do_lobby()
+
+
+## "Sobrevoo" desligado em AJUSTAR → Cenário: o vídeo para no quadro, como a câmera parava.
+func _aplicar_video_do_lobby() -> void:
+	if _video_lobby != null:
+		_video_lobby.paused = not flyover_active
 
 
 func _start_flyover() -> void:
@@ -1867,7 +1931,7 @@ func _start_game() -> void:
 ## ou noite) segue a hora em que o jogo vai começar, não a do cenário do menu.
 func _show_loading() -> ProgressBar:
 	_close_help()
-	return TelaCarregamento.mostrar(panel.get_parent(), panel.theme, tr("Carregando o vale…"), Dia.hora_inicial, TelaCarregamento.VIDEO_ABERTURA)
+	return TelaCarregamento.mostrar(panel.get_parent(), panel.theme, tr("Carregando o vale…"), Dia.hora_inicial)
 
 
 func _formatar_escala(meters_per_unit: float) -> String:

@@ -263,7 +263,7 @@ func _escolher(indice: int) -> void:
 	for botao in _botoes:
 		botao.disabled = true
 	IdiomaMenu.definir(indice)
-	var barra := TelaCarregamento.mostrar(_camada, TemaMenu.criar(), tr("Carregando o vale…"), Dia.INICIO_DO_DIA, TelaCarregamento.VIDEO_SOBREVOO)
+	var barra := TelaCarregamento.mostrar(_camada, TemaMenu.criar(), tr("Carregando o vale…"), Dia.INICIO_DO_DIA)
 	_tela.get_node("CentroIdioma").hide()
 	_canto.hide()
 	# Mostra a tela traduzida antes de iniciar a montagem do cenário.

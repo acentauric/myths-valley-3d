@@ -15,21 +15,21 @@
     "*FPS dobrado*: sombra enxuta e sem faces de trás.",
     "*Mata* pela metade, com clareiras de árvore-destaque.",
     "*Minimapa* pintado e estático.",
-    "*Vídeos* de sobrevoo e de abertura na carga."
+    "*Lobby* em vídeo: o menu não monta mais o vale 3D."
    ],
    "mudancas_en": [
     "*Loading* without the 19 s freeze.",
     "*Doubled FPS*: lean shadows and no back faces.",
     "*Forest* cut in half, with clearings for landmark trees.",
     "*Minimap* painted and static.",
-    "*Videos* of the flyover and the opening while loading."
+    "*Video lobby*: the menu no longer builds the 3D valley."
    ],
    "mudancas_es": [
     "*Carga* sin el congelamiento de 19 s.",
     "*FPS duplicados*: sombra reducida y sin caras traseras.",
     "*Bosque* a la mitad, con claros para árboles destacados.",
     "*Minimapa* pintado y estático.",
-    "*Vídeos* de sobrevuelo y de apertura durante la carga."
+    "*Lobby* en vídeo: el menú ya no monta el valle 3D."
    ]
   },
   {
