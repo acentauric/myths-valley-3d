@@ -17,7 +17,9 @@ import sys
 FFMPEG = r"C:\Program Files\ffmpeg\bin\ffmpeg.exe"
 FFPROBE = r"C:\Program Files\ffmpeg\bin\ffprobe.exe"
 FUSAO = 1.0
-NORMA = "scale=1920:1080:force_original_aspect_ratio=increase,crop=1920:1080,fps=24,format=yuv420p,setpts=PTS-STARTPTS"
+# setpts antes do fps: depois dele o setpts deixa a taxa de quadros indefinida, e o
+# xfade exige taxa constante.
+NORMA = "setpts=PTS-STARTPTS,scale=1920:1080:force_original_aspect_ratio=increase,crop=1920:1080,fps=24,format=yuv420p"
 
 
 def duracao(arquivo):
@@ -69,8 +71,9 @@ def main():
         filtro, total = cadeia_de_fusoes(len(fundo), d)
         # A emenda do laço: o corpo (de 1 s ao fim) funde no fim com o primeiro segundo;
         # o último quadro vira o quadro de 1 s, que é onde o laço recomeça.
-        filtro += ["[s]split[s1][s2]", f"[s1]trim=start={FUSAO},setpts=PTS-STARTPTS[corpo]",
-                   f"[s2]trim=end={FUSAO},setpts=PTS-STARTPTS[cabeca]",
+        # O trim perde a taxa de quadros, e o xfade exige taxa constante: fps=24 de novo.
+        filtro += ["[s]split[s1][s2]", f"[s1]trim=start={FUSAO},setpts=PTS-STARTPTS,fps=24[corpo]",
+                   f"[s2]trim=end={FUSAO},setpts=PTS-STARTPTS,fps=24[cabeca]",
                    f"[corpo][cabeca]xfade=transition=fade:duration={FUSAO}:offset={total - 2 * FUSAO:.3f}[laco]"]
         feitos["carregamento_sobrevoo"] = gravar(filtro, fundo, "laco", os.path.join(saida, "carregamento_sobrevoo"))
 
