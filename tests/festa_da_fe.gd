@@ -110,12 +110,17 @@ func _run() -> void:
 	dia.definir_hora(15.0)
 	await _passos(20)
 	var depois: Vector3 = candinha.global_position
-	var faltava := _no_chao(candinha._alvo).distance_to(_no_chao(antes))
-	var falta := _no_chao(candinha._alvo).distance_to(_no_chao(depois))
+	# PELO CAMINHO DELA, e não em linha reta. Entre a praça e o cruzeiro corre o
+	# rio central, e morador atravessa rio pela ponte
+	# (`navegacao_vale._leito_dos_rios`): o primeiro trecho vai para a ponte, de
+	# lado para a roda, e em vinte passos a linha reta até o lugar não encurta
+	# nem um centímetro (100,49 para 100,48, medido) com ela andando o tempo todo.
+	var faltava := _falta_pelo_caminho(candinha, antes, 1)
+	var falta := _falta_pelo_caminho(candinha, depois, candinha._ponto_da_vez)
 	_conferir(candinha._posto == "festa", "à tarde do Bom Jesus a Candinha não saiu para a festa (posto '%s')" % candinha._posto)
 	_conferir(faltava > 4.0, "(preparo) a Candinha já estava a %.1f do lugar dela na roda" % faltava)
 	_conferir(antes.distance_to(depois) < 1.0, "à vista do jogador a Candinha pulou %.1f em vinte passos de física" % antes.distance_to(depois))
-	_conferir(falta < faltava - 0.05, "à vista do jogador a Candinha não andou para a roda (faltava %.2f, falta %.2f)" % [faltava, falta])
+	_conferir(falta < faltava - 0.05, "à vista do jogador a Candinha não andou para a roda (pelo caminho faltava %.2f, falta %.2f)" % [faltava, falta])
 
 	# --- 4. LONGE DOS OLHOS, JÁ ESTÃO LÁ ------------------------------------------
 	jogador.teleportar(perto_da_gameleira, 0.0)
@@ -235,6 +240,20 @@ func _chao_livre(lugar: Vector3, morador: Node) -> bool:
 
 func _no_chao(ponto: Vector3) -> Vector2:
 	return Vector2(ponto.x, ponto.z)
+
+
+## QUANTO FALTA ANDAR pelo caminho que o morador traçou na malha: de `de` até o
+## ponto `da_vez` dele, e daí ao fim. Sem caminho — a malha ainda assando, ou o
+## morador sem ter para onde ir —, é a linha reta até o lugar.
+func _falta_pelo_caminho(morador, de: Vector3, da_vez: int) -> float:
+	var caminho: PackedVector3Array = morador._caminho
+	if caminho.size() < 2:
+		return _no_chao(morador._alvo).distance_to(_no_chao(de))
+	da_vez = clampi(da_vez, 0, caminho.size() - 1)
+	var soma := _no_chao(caminho[da_vez]).distance_to(_no_chao(de))
+	for i in range(da_vez + 1, caminho.size()):
+		soma += _no_chao(caminho[i]).distance_to(_no_chao(caminho[i - 1]))
+	return soma
 
 
 func _dia_sem_festa() -> void:

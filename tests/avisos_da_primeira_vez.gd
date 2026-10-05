@@ -11,7 +11,8 @@ extends SceneTree
 ##
 ##   1. O PRIMEIRO CORDEL AVISA: pegar o primeiro abre o aviso, que diz o que é
 ##      um cordel e que ele fica no almanaque, na letra do almanaque; o vale e o
-##      relógio param enquanto ele está aberto; o E o fecha, e o papel do cordel
+##      relógio param enquanto ele está aberto; ele mora acima do HUD e recolhe
+##      as plaquinhas de nome dos moradores; o E o fecha, e o papel do cordel
 ##      abre depois dele.
 ##   2. O SEGUNDO NÃO: o segundo cordel abre o papel direto.
 ##   3. A PRIMEIRA ÁRVORE AVISA: o E na primeira espécie abre a ficha e o aviso
@@ -63,6 +64,12 @@ func _run() -> void:
 			"o aviso do cordel não conta o que é um cordel para quem não é do Nordeste: '%s'" % dito)
 		_conferir(dito.contains("Almanaque (L)"), "o aviso do cordel não diz que ele fica no almanaque, na tecla dele: '%s'" % dito)
 		_conferir(paused and dia.pausado, "com o aviso aberto, o vale (%s) ou o relógio (%s) seguiu andando" % [str(paused), str(dia.pausado)])
+		# NADA DO HUD POR CIMA DO CARTÃO: ele mora acima do HUD, como a caixa de
+		# fala e o folheto, e as plaquinhas de nome dos moradores se recolhem.
+		_conferir(aviso.layer > vale.hud.layer,
+			"o aviso está na camada %d e o HUD na %d: o HUD desenha por cima do cartão" % [aviso.layer, vale.hud.layer])
+		_conferir(not vale.placas._permitido,
+			"com o aviso aberto, as plaquinhas de nome dos moradores continuam acesas por cima do cartão")
 		# O E logo de cara é engolido: é o mesmo que pegou o cordel.
 		_apertar_e()
 		await _quadros(2)
@@ -77,10 +84,13 @@ func _run() -> void:
 		await _quadros(4)
 		_conferir(paused and vale.telas.aberta() == "folheto",
 			"com o papel do primeiro cordel aberto, o vale anda atrás dele: a volta do aviso o soltou")
+		_conferir(not vale.placas._permitido,
+			"fechado o aviso, as plaquinhas de nome voltaram por cima do papel do cordel")
 		vale.telas.fechar_tudo()
 		await _ate(func() -> bool: return not paused, 3.0)
 		_conferir(not paused and not dia.pausado,
 			"guardado o papel do primeiro cordel, o vale (%s) ou o relógio (%s) ficou parado" % [str(paused), str(dia.pausado)])
+		_conferir(vale.placas._permitido, "guardado o papel, as plaquinhas de nome dos moradores não voltaram")
 	await _guardar_tudo()
 
 	# --- 2. O SEGUNDO NÃO -------------------------------------------------------------------

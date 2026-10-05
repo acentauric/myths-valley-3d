@@ -433,6 +433,12 @@ func _aplicar_golpe(id: String) -> void:
 	# um item de id vazio na mochila do jogador a cada pé cortado.
 	if rende != "":
 		Inventario.adicionar(rende, quantos)
+	# O MONTE QUE SE REFAZ rende e fica: nem some, nem entra nos caídos do save.
+	if _renova(ficha):
+		alvo["golpes_dados"] = 0
+		_sacudir(alvo["no"])
+		derrubado.emit(id, rende, quantos)
+		return
 	var no: Node3D = alvo["no"]
 	if is_instance_valid(no):
 		# A ÁRVORE NOVA CAI (`"cai": true`), do pé, para longe de quem cortou,
@@ -455,13 +461,33 @@ func _aplicar_golpe(id: String) -> void:
 	derrubado.emit(id, rende, quantos)
 
 
+## O ALVO QUE SE REFAZ ENQUANTO O JOGADOR NÃO TEM A FERRAMENTA (`"renova_sem"`).
+##
+## É a galhada seca do terreiro (`"renova_sem": "machado"`). O machado só chega
+## na missão da ponte, e antes dela a lenha do vale era contada: a chegada pede
+## quatro, e quem gastasse uma em outra coisa — corda a mais na bancada — ficava
+## sem ter onde buscar, com o peixe da janta por assar e a noite sem virar.
+## Enquanto não há machado na mochila nem na mão, o monte rende e continua lá.
+## Com o machado, rende a última vez e cai como qualquer alvo: daí em diante a
+## lenha é dele.
+func _renova(ficha: Dictionary) -> bool:
+	var sem := str(ficha.get("renova_sem", ""))
+	return sem != "" and not _carrega(sem) and Equipamento.da_familia_em_uso(sem) == ""
+
+
 ## Um tranco na peça a cada golpe, para o jogador ver que acertou. Não é
 ## animação: é a peça recuando e voltando, que é o bastante para a batida ter
 ## resposta e não custa arte nenhuma.
 func _sacudir(no: Node3D) -> void:
 	if not is_instance_valid(no):
 		return
-	var de := no.position
+	# O REPOUSO FICA GUARDADO. Lida da peça, a posição de um segundo golpe dado no
+	# meio do tranco já vinha afundada, e o tranco voltava para ela: alvo comum
+	# some antes de isso aparecer, mas o monte que se refaz desceria um pouco a
+	# cada par de golpes ligeiros.
+	if not no.has_meta("repouso"):
+		no.set_meta("repouso", no.position)
+	var de: Vector3 = no.get_meta("repouso")
 	var tween := no.create_tween()
 	tween.tween_property(no, "position", de + Vector3(0.0, -0.08, 0.0), 0.06)
 	tween.tween_property(no, "position", de, 0.12)

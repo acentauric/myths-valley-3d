@@ -49,6 +49,12 @@ const DEFINICOES := {
 	# letras não a enxergava — dava para pôr o mapa no I e ter as duas na mesma
 	# tecla. I como no 2D.
 	"mochila": {"rotulo": "Mochila", "padrao": KEY_I},
+	# O X QUE FECHA O QUADRO DA MISSÃO ENTRA NA TABELA, pelo mesmo motivo da
+	# mochila. Ele nasceu escrito à mão no `prototype_hud.gd`, e o HUD ouve no
+	# `_input`, antes do vale: com o mapa remapeado para o X, o primeiro toque
+	# fechava o quadro e o mapa não abria. Aqui o AJUSTAR o enxerga e a troca de
+	# letras o protege.
+	"fechar_missao": {"rotulo": "Fechar o quadro da missão", "padrao": KEY_X},
 }
 ## Ação do InputMap que `aplicar()` re-registra para cada atalho.
 const ACOES_INPUT := {

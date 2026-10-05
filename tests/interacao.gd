@@ -8,7 +8,7 @@ extends SceneTree
 ## O ideal é o Pedro ensinar a apertar E para iniciar as interações com os NPCs,
 ## incluindo cumprir etapas de missões. Sempre que concluir uma missão, deve
 ## aparecer uma animação na tela, sombreando toda a tela e dando um destaque para
-## a animação." Seis perguntas:
+## a animação." Sete perguntas:
 ##
 ##   1. A PARTIDA NOVA ZERA O CADERNO: missões da partida anterior (ativas,
 ##      cumpridas e a acompanhada) não passam para a nova no mesmo slot.
@@ -19,11 +19,14 @@ extends SceneTree
 ##   4. A CONQUISTA: o passo cumprido escurece a tela e mostra "Missão
 ##      concluída" com o nome do passo — DEPOIS da resposta de quem fala, com o
 ##      relógio parado durante a fala e durante a festa, entrando devagar e
-##      ficando pelo menos cinco segundos.
+##      ficando pelo menos cinco segundos, com as plaquinhas de nome dos
+##      moradores recolhidas enquanto dura.
 ##   5. A FILA DE UM MORADOR ABRE NO E: depois da chegada, ao lado do Tonho, a
 ##      fila dele não abre sozinha; o E a abre.
 ##   6. A VEZ DE FALAR TEM PRAZO: com alguém falando sem parar ao lado do
 ##      jogador, o passo seguinte se anuncia mesmo assim.
+##   7. O E EM QUEM NÃO FALA É ACENO: num morador novo, que não tem fala, o E não
+##      abre balão vazio, não põe aviso no HUD e não segura o relógio.
 
 var falhas := 0
 var dialogo
@@ -110,6 +113,10 @@ func _run() -> void:
 		var desde := Time.get_ticks_msec()
 		_conferir(not pedro.conversando(), "a conquista entrou com o Pedro ainda no balão")
 		_conferir(dia_do_vale.segurado("conquista"), "a festa da conquista não segurou o relógio do vale")
+		# AS PLAQUINHAS DE NOME SE RECOLHEM: são do HUD, que desenha por cima da
+		# festa, e o nome do Pedro — parado na frente do jogador — caía no emblema.
+		_conferir(not vale.placas._permitido,
+			"durante a festa da missão, as plaquinhas de nome dos moradores continuam acesas por cima dela")
 		_conferir(str(conquista.mostrada.get("titulo", "")) == "As pernas de terra firme",
 			"a conquista mostra '%s', e o passo cumprido é 'As pernas de terra firme'" % str(conquista.mostrada.get("titulo", "")))
 		# SUAVE: a sombra sobe numa curva de segundos (`ENTRA`), e não num estalo —
@@ -127,6 +134,7 @@ func _run() -> void:
 		var durou := (Time.get_ticks_msec() - desde) / 1000.0
 		_conferir(durou >= 5.0, "a conquista ficou %.1f s na tela, e o pedido é ela durar mais" % durou)
 		_conferir(not dia_do_vale.segurado("conquista"), "a festa acabou e o relógio continuou segurado por ela")
+		_conferir(vale.placas._permitido, "a festa acabou e as plaquinhas de nome dos moradores não voltaram")
 
 	# --- 5. A FILA DE UM MORADOR ABRE NO E -----------------------------------------
 	pedro.missao = pedro.MISSOES.size()
@@ -169,6 +177,29 @@ func _run() -> void:
 			await process_frame
 		_conferir(anunciou and fila.missao == antes, "com alguém falando sem parar, o passo não se anunciou em 12 s: a vez não tem prazo")
 		await _fechar_a_fala()
+
+	# --- 7. O E EM QUEM NÃO FALA É ACENO ---------------------------------------------
+	# Os moradores novos têm jornada e ofício, e nenhuma fala (`npc._eh_mudo`). A
+	# conversa do E neles abria um balão sem texto, punha "Nome: " no HUD e segurava
+	# o relógio por dez segundos de uma fala que não havia.
+	var calado = null
+	for morador in vale.moradores:
+		if morador.has_method("eh_mudo") and morador.eh_mudo() and morador.is_visible_in_tree() \
+				and not morador.esta_recolhido():
+			calado = morador
+			break
+	_conferir(calado != null, "o vale não tem morador que não fala, de corpo presente, para a pergunta do aceno")
+	if calado != null:
+		var avisos := [0]
+		calado.saudou.connect(func(_quem, _texto: String) -> void: avisos[0] += 1)
+		# Ao lado dele: a trava do relógio só pega com o jogador ao alcance da conversa.
+		_ao_lado_de(jogador, calado, Vector3(1.0, 0.1, 0.6))
+		await _passos_de_fisica(4)
+		tecla.usar(calado)
+		await _quadros(2)
+		_conferir(float(calado._balao_tempo) <= 0.0, "o E em quem não fala (%s) abriu um balão sem texto" % str(calado.dados.get("id", "")))
+		_conferir(not calado.conversando(), "o E em quem não fala segurou o relógio do vale por uma fala que não há")
+		_conferir(avisos[0] == 0, "o E em quem não fala pôs um aviso vazio no HUD")
 	_fechar()
 
 
@@ -208,7 +239,7 @@ func _fechar_a_fala() -> void:
 func _fechar() -> void:
 	print("")
 	if falhas == 0:
-		print("INTERACAO_OK: a partida nova zera o caderno da anterior; o E num morador sem missão o faz dizer a fala inteira; o passo que manda falar com alguém fecha no E, e não ao chegar perto; o relógio para enquanto ele responde; a conquista espera a resposta acabar, entra devagar, escurece a tela com o nome do passo, segura o relógio, fica mais de cinco segundos e some sozinha; a fila de um morador abre no E, e não sozinha; e com alguém falando sem parar o passo se anuncia mesmo assim")
+		print("INTERACAO_OK: a partida nova zera o caderno da anterior; o E num morador sem missão o faz dizer a fala inteira; o passo que manda falar com alguém fecha no E, e não ao chegar perto; o relógio para enquanto ele responde; a conquista espera a resposta acabar, entra devagar, escurece a tela com o nome do passo, segura o relógio, fica mais de cinco segundos e some sozinha; a fila de um morador abre no E, e não sozinha; com alguém falando sem parar o passo se anuncia mesmo assim; e o E em quem não fala é só o aceno, sem balão vazio nem relógio parado")
 	else:
 		print("interacao: %d falha(s)" % falhas)
 	quit(1 if falhas > 0 else 0)

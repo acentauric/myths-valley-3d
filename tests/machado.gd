@@ -9,14 +9,15 @@ extends SceneTree
 ## lembre-se que o machado só é introduzido na missão da ponte, com o Pedro indo
 ## buscar o machado em casa."
 ##
-## Seis perguntas:
+## Sete perguntas:
 ##
 ##   1. JOGO NOVO NÃO TEM MACHADO: nem na mochila, nem na mão.
-##   2. A CHEGADA NÃO DÁ MACHADO, e o fogo da primeira noite sai sem ele: o passo
-##      da lenha se cumpre com a galhada seca do terreiro, catada na mão, que
-##      rende o que ele pede e uma folga.
-##   3. A GALHADA SE QUEBRA NA MÃO: de mão livre, junto dela, os golpes da ficha
-##      rendem a lenha.
+##   2. A CHEGADA NÃO DÁ MACHADO, e o fogo da primeira noite sai sem ele: há
+##      galhada seca no terreiro, catada na mão, que SE REFAZ enquanto não há
+##      machado, e é ela que o marcador da lenha aponta.
+##   3. A GALHADA SE QUEBRA NA MÃO, E SE REFAZ: de mão livre, junto dela, os
+##      golpes da ficha rendem a lenha, leva após leva, até o que o passo pede e
+##      a folga — e o monte continua lá.
 ##   4. A PONTE TRAZ O MACHADO: "Os machados do avô" vem antes da lenha da
 ##      ponte, o Pedro conduz até a casa dele e para na porta, do lado de fora; e
 ##      o passo da lenha o entrega.
@@ -24,6 +25,8 @@ extends SceneTree
 ##      e não troca o balde; o HUD diz o número que o põe na mão.
 ##   6. AS FILAS DE MADEIRA ESPERAM O MACHADO: o Damião, o Tonho e a carroça do
 ##      Seu Benedito não abrem antes dos machados do avô, e abrem depois.
+##   7. COM O MACHADO, A GALHADA RENDE A ÚLTIMA VEZ e cai como qualquer alvo: daí
+##      em diante a lenha é dele.
 
 var falhas := 0
 
@@ -75,7 +78,6 @@ func _run() -> void:
 			pede_na_lenha = int((passo.get("meta", {}) as Dictionary).get("quantos", 0))
 	_conferir(pede_na_lenha > 0, "a chegada não tem o passo da lenha, ou ele não diz quantas pede")
 	var casa: Vector3 = root.get_node("/root/Lugares").ponto("casa_de_taipa")
-	var na_mao := 0
 	var galhada := ""
 	for id in recursos._alvos:
 		var ficha: Dictionary = recursos._alvos[id]["ficha"]
@@ -84,13 +86,20 @@ func _run() -> void:
 		var pos: Vector3 = recursos._alvos[id]["pos"]
 		if Vector2(pos.x - casa.x, pos.z - casa.z).length() > 12.0:
 			continue
-		na_mao += int(ficha.get("quantidade", 1))
-		if galhada == "":
+		if galhada == "" or str(ficha.get("renova_sem", "")) == "machado":
 			galhada = str(id)
-	_conferir(na_mao >= pede_na_lenha + 2,
-		"perto da casa a galhada catada na mão rende %d lenha(s), e o passo pede %d mais a folga de quem gasta no caminho" % [na_mao, pede_na_lenha])
+	_conferir(galhada != "",
+		"perto da casa não há lenha que se cate na mão: o fogo da primeira noite pediria o machado, que só chega na ponte")
+	# A LENHA DA CHEGADA NÃO PODE SER CONTADA. Sem machado não há outra, e quem
+	# gastasse uma a mais na bancada ficava com a janta por assar.
+	_conferir(galhada != "" and str(recursos._alvos[galhada]["ficha"].get("renova_sem", "")) == "machado",
+		"a galhada da casa não se refaz sem machado: gasta a lenha contada, o jogador fica sem ter onde buscar mais antes da ponte")
+	if galhada != "":
+		var da_galhada: Vector3 = recursos._alvos[galhada]["pos"]
+		_conferir(recursos.mais_perto_que_rende("lenha", casa).distance_to(da_galhada) < 0.1,
+			"sem machado, o marcador da lenha não aponta a galhada da casa: manda bater no tronco que pede machado")
 
-	# --- 3. A GALHADA SE QUEBRA NA MÃO ----------------------------------------------------
+	# --- 3. A GALHADA SE QUEBRA NA MÃO, E SE REFAZ ------------------------------------------
 	if galhada != "":
 		var jogador = vale.player
 		inv.selecionar(-1)
@@ -100,11 +109,20 @@ func _run() -> void:
 		if chegou:
 			var ficha: Dictionary = recursos._alvos[galhada]["ficha"]
 			var antes: int = inv.quantidade("lenha")
-			for golpe in int(ficha.get("golpes", 1)):
-				energia.encher()
-				_conferir(recursos.bater(), "de mão livre, a galhada recusou o golpe %d" % (golpe + 1))
-			_conferir(inv.quantidade("lenha") == antes + int(ficha.get("quantidade", 1)),
-				"a galhada quebrada na mão rendeu %d lenha(s), e a ficha diz %d" % [inv.quantidade("lenha") - antes, int(ficha.get("quantidade", 1))])
+			var por_leva := int(ficha.get("quantidade", 1))
+			var levas := 0
+			# Do mesmo monte, o que o passo pede e a folga de quem gasta no caminho.
+			while inv.quantidade("lenha") - antes < pede_na_lenha + 2 and levas < 12 and recursos._alvos.has(galhada):
+				for golpe in int(ficha.get("golpes", 1)):
+					energia.encher()
+					_conferir(recursos.bater(), "de mão livre, a galhada recusou o golpe %d da leva %d" % [golpe + 1, levas + 1])
+				levas += 1
+				_conferir(inv.quantidade("lenha") == antes + levas * por_leva,
+					"na leva %d a galhada quebrada na mão rendeu %d lenha(s) ao todo, e a ficha diz %d por leva" % [levas, inv.quantidade("lenha") - antes, por_leva])
+			_conferir(inv.quantidade("lenha") - antes >= pede_na_lenha + 2,
+				"sem machado, a galhada da casa rendeu %d lenha(s) e parou: o passo pede %d, mais a folga" % [inv.quantidade("lenha") - antes, pede_na_lenha])
+			_conferir(recursos._alvos.has(galhada) and not recursos.caidos().has(galhada),
+				"sem machado, a galhada sumiu depois de render: não há outra lenha antes da ponte")
 
 	# --- 4. A PONTE TRAZ O MACHADO --------------------------------------------------------
 	var ids: Array[String] = []
@@ -176,13 +194,30 @@ func _run() -> void:
 		_conferir(do_machado >= 0, "o machado entregue não está em nenhum dos dez da barra de mão")
 		_conferir(avisos.size() == 1 and do_machado >= 0 and avisos[0].contains(inv.rotulo_do_espaco(do_machado)),
 			"o HUD não diz o número que põe o machado na mão: %s" % str(avisos))
+
+	# --- 7. COM O MACHADO, A GALHADA RENDE A ÚLTIMA VEZ ----------------------------------------
+	# Depois do 5, que entrega o machado: daí em diante a lenha é dele.
+	if galhada != "" and recursos._alvos.has(galhada) and inv.tem("machado"):
+		var ficha: Dictionary = recursos._alvos[galhada]["ficha"]
+		vale.player.teleportar(recursos._alvos[galhada]["pos"] + Vector3(1.2, 0.3, 0.0), 0.0)
+		var chegou := await _ate(func() -> bool: return recursos._perto == galhada, 4.0)
+		_conferir(chegou, "(preparo) de volta à galhada, o alvo perto é '%s'" % recursos._perto)
+		if chegou:
+			var antes: int = inv.quantidade("lenha")
+			for golpe in int(ficha.get("golpes", 1)):
+				energia.encher()
+				recursos.bater()
+			_conferir(inv.quantidade("lenha") == antes + int(ficha.get("quantidade", 1)),
+				"com o machado na mochila, a última leva da galhada rendeu %d lenha(s)" % (inv.quantidade("lenha") - antes))
+			_conferir(not recursos._alvos.has(galhada) and recursos.caidos().has(galhada),
+				"com o machado na mochila a galhada continuou se refazendo: lenha de graça à porta de casa, para sempre")
 	_fechar()
 
 
 func _fechar() -> void:
 	print("")
 	if falhas == 0:
-		print("MACHADO_OK: jogo novo começa sem machado; a chegada não o dá, e o fogo da primeira noite sai da galhada catada na mão, com folga; os machados do avô vêm antes da lenha da ponte, com o Pedro conduzindo até a porta da casa dele; a entrega põe o machado na barra sem tirar o balde da mão, e o HUD diz o número; e o Damião, o Tonho e a carroça esperam o machado")
+		print("MACHADO_OK: jogo novo começa sem machado; a chegada não o dá, e o fogo da primeira noite sai da galhada do terreiro, catada na mão, que se refaz enquanto não há machado e rende a última vez quando ele chega; os machados do avô vêm antes da lenha da ponte, com o Pedro conduzindo até a porta da casa dele; a entrega põe o machado na barra sem tirar o balde da mão, e o HUD diz o número; e o Damião, o Tonho e a carroça esperam o machado")
 	else:
 		print("machado: %d falha(s)" % falhas)
 	quit(1 if falhas > 0 else 0)

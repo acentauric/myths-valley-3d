@@ -559,8 +559,7 @@ func _ready() -> void:
 		# moram no mesmo Control do HUD que o almanaque e a barra, e entram
 		# depois — "o nome do Pedro tá sobrescrevendo os MENUs". Ver
 		# `placas_nomes.gd`.
-		if placas != null:
-			placas.permitir(not aberta))
+		_acertar_as_placas())
 	# O VALE ABRE NO MODO DE CÂMERA ESCOLHIDO (AJUSTAR → Geral → Câmera do
 	# mouse). Era sempre livre, e quem preferia arrastar tinha de apertar a
 	# tecla da câmera toda vez que entrava.
@@ -755,6 +754,8 @@ func _ready() -> void:
 	add_child(aviso_da_primeira_vez)
 	aviso_da_primeira_vez.abriu.connect(func() -> void: _ao_abrir_a_fala(""))
 	aviso_da_primeira_vez.fechou.connect(_ao_calar_a_fala)
+	aviso_da_primeira_vez.abriu.connect(_acertar_as_placas)
+	aviso_da_primeira_vez.fechou.connect(_acertar_as_placas)
 	if _arvores_info != null and _arvores_info.has_signal("conheceu"):
 		_arvores_info.conheceu.connect(_ao_conhecer_a_arvore)
 	# A CONQUISTA: toda missão cumprida escurece a tela e festeja
@@ -762,6 +763,8 @@ func _ready() -> void:
 	conquista = ConquistaDaMissao.new()
 	conquista.name = "ConquistaDaMissao"
 	add_child(conquista)
+	conquista.comecou.connect(_acertar_as_placas)
+	conquista.acabou.connect(_acertar_as_placas)
 	luz_dourada = LuzDourada.new()
 	luz_dourada.name = "LuzDourada"
 	add_child(luz_dourada)
@@ -1582,6 +1585,21 @@ func _ao_abrir_a_fala(_quem: String) -> void:
 		_toggle_map()
 	_pause_valley()
 	_fala_parou_o_vale = true
+
+
+## AS PLAQUINHAS DE NOME SÃO DO MUNDO, e somem com o que se põe na frente dele:
+## uma tela aberta, o cartão da primeira vez e a festa da missão. As três
+## perguntas num lugar só, porque uma coisa fecha com a outra ainda na tela — o
+## cartão do primeiro cordel dá lugar ao folheto, a festa acaba com o painel
+## aberto —, e quem devolvesse as placas por conta própria as acenderia por cima
+## da que ficou.
+func _acertar_as_placas() -> void:
+	if placas == null:
+		return
+	var coberto: bool = (telas != null and telas.aberta() != "") \
+		or (aviso_da_primeira_vez != null and aviso_da_primeira_vez.aberto()) \
+		or (conquista != null and conquista.ativa())
+	placas.permitir(not coberto)
 
 
 ## E CALOU. Falas encadeadas abrem na linha seguinte do mesmo `await`, então o

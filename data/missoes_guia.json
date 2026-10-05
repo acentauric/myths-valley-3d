@@ -234,9 +234,9 @@
       "lugar": "casa_de_taipa",
       "raio": 7,
       "audio": "",
-      "texto": "A Dona Zefa tem razão: casa fechada junta frio. Fogo de casa não pede machado: galho seco se quebra na mão. Tem galhada caída atrás da casa, depois das bananeiras — encosta e aperta E. Junta um tanto a mais, que lenha também vira corda na bancada.",
-      "texto_en": "Dona Zefa is right: a closed house gathers cold. A house fire doesn't need an axe: dry branches snap by hand. There is deadwood fallen behind the house, past the banana trees — walk up and press E. Gather a bit extra, since firewood also becomes rope at the workbench.",
-      "texto_es": "Doña Zefa tiene razón: casa cerrada junta frío. El fuego de la casa no pide hacha: la rama seca se quiebra con la mano. Hay ramas caídas detrás de la casa, pasando los bananos: acércate y pulsa E. Junta un poco de más, que la leña también se vuelve cuerda en el banco.",
+      "texto": "A Dona Zefa tem razão: casa fechada junta frio. Fogo de casa não pede machado: galho seco se quebra na mão. Tem galhada caída aqui no terreiro, e a mata larga mais a cada vento — encosta e aperta E. Junta um tanto a mais, que lenha também vira corda na bancada.",
+      "texto_en": "Dona Zefa is right: a closed house gathers cold. A house fire doesn't need an axe: dry branches snap by hand. There's deadwood fallen right here in the yard, and the woods drop more with every wind — walk up and press E. Gather a bit extra, since firewood also becomes rope at the workbench.",
+      "texto_es": "Doña Zefa tiene razón: casa cerrada junta frío. El fuego de la casa no pide hacha: la rama seca se quiebra con la mano. Hay ramas caídas aquí en el patio, y el monte suelta más con cada viento: acércate y pulsa E. Junta un poco de más, que la leña también se vuelve cuerda en el banco.",
       "meta": {
         "tipo": "juntar",
         "item": "lenha",

@@ -163,7 +163,7 @@ func _ready() -> void:
 	_mission_previous.pressed.connect(func() -> void: _change_mission_page(-1))
 	_mission_next = _mission_button("▶", "ProximaPagina")
 	_mission_next.pressed.connect(func() -> void: _change_mission_page(1))
-	_mission_close = _mission_button("X para fechar", "FecharMissao")
+	_mission_close = _mission_button("%s para fechar" % Atalhos.letra("fechar_missao"), "FecharMissao")
 	_mission_close.size = Vector2(112, 26)
 	_mission_close.add_theme_font_size_override("font_size", 12)
 	_mission_close.pressed.connect(_close_mission_pages)
@@ -691,6 +691,8 @@ func _show_mission_page() -> void:
 	_mission_next.visible = _mission_page_index < _mission_pages.size() - 1
 	_mission_next.disabled = _mission_page_index >= _mission_pages.size() - 1
 	_mission_close.visible = _mission_page_index == _mission_pages.size() - 1
+	# Reescrito a cada página: a letra pode ter mudado no AJUSTAR com o vale aberto.
+	_mission_close.text = "%s para fechar" % Atalhos.letra("fechar_missao")
 	_fit_heading()
 
 
@@ -712,7 +714,10 @@ func _input(event: InputEvent) -> void:
 		return
 	if _mission_pages.is_empty() or not is_instance_valid(_mission_step) or not _mission_step.visible:
 		return
-	if event.keycode == KEY_X or event.physical_keycode == KEY_X:
+	# A letra vem da tabela (`atalhos.gd`): o HUD ouve antes do vale, e uma letra
+	# escrita aqui à mão comeria o atalho que o jogador pusesse nela no AJUSTAR.
+	var fechar := Atalhos.tecla("fechar_missao")
+	if event.keycode == fechar or event.physical_keycode == fechar:
 		_close_mission_pages()
 		get_viewport().set_input_as_handled()
 

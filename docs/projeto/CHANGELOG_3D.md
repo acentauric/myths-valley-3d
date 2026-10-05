@@ -4,8 +4,11 @@
 
 - O machado chega na ponte, como no 2D: o jogo novo não dá mais machado de
   saída, e a chegada também não. O fogo da primeira noite sai da galhada seca
-  atrás da casa, quebrada na mão (três montes, seis lenhas: as quatro da chegada
-  e folga). Na ponte, depois de contar ao Pedro o que viu, ele conduz até a porta
+  do terreiro, quebrada na mão: um monte só, onde ficava o tronco da casa, que
+  se refaz enquanto o jogador não carrega machado (a lenha de antes da ponte não
+  é mais contada, e gastar uma a mais na bancada não deixa a janta por assar) e
+  rende a última vez quando o machado chega. Na ponte, depois de contar ao Pedro
+  o que viu, ele conduz até a porta
   da casa dele, perto do píer, e entrega os machados do avô ("Toma. Esse tem mais
   idade que nós dois somados"). O cabo da foice e o mato do Damião, a rede do
   Tonho e a carroça do Seu Benedito esperam esse machado. O marcador de missão
@@ -39,6 +42,16 @@
   para quem não é do Nordeste — e que ele fica no almanaque (L), com a capa dele
   ao lado; a primeira árvore conhecida diz o mesmo do almanaque. O vale e o
   relógio param enquanto o aviso está aberto. Portão novo: `avisos_da_primeira_vez`.
+  O cartão mora acima do HUD, como a caixa de fala e o folheto, e as plaquinhas
+  de nome dos moradores se recolhem enquanto ele e a festa da missão estão na
+  tela (elas são do HUD e caíam por cima do texto e do emblema).
+- O E em quem não fala é aceno: os moradores novos têm jornada e nenhuma fala,
+  e a conversa do E neles abria um balão vazio e segurava o relógio por uma fala
+  que não havia. `interacao` cobra.
+- O X que fecha o quadro da missão entra na tabela de atalhos (AJUSTAR →
+  Atalhos, "Fechar o quadro da missão"): estava escrito à mão no HUD, que ouve
+  antes do vale, e comia o atalho que o jogador pusesse no X. O botão escreve a
+  letra escolhida. `atalhos` e `paginas_missao` cobram.
 - O cordel pendurado no barbante tem capa dos dois lados, com o título impresso
   no alto e a xilogravura embaixo: quem chegava pelo verso via uma folha em
   branco.

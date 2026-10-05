@@ -35,6 +35,13 @@ extends CanvasLayer
 ## telas abertas vêm antes; ela entra um respiro depois de a conversa acabar.
 ## Enquanto festeja, o relógio do vale fica segurado (`Dia.segurar`).
 
+## A festa entrou na tela, e saiu dela. O vale recolhe as plaquinhas de nome dos
+## moradores enquanto ela dura (`prototype._acertar_as_placas`): elas são do HUD,
+## que desenha por cima desta camada, e o nome de quem acabou de falar com o
+## jogador — parado bem na frente dele — caía em cima do emblema.
+signal comecou
+signal acabou
+
 const FONTE_DO_TITULO := "res://assets/fonts/Cinzel-Variavel.ttf"
 const FONTE_DO_NOME := "res://assets/fonts/CormorantGaramond-Variavel.ttf"
 const OURO := Color(0.96, 0.78, 0.36)
@@ -146,6 +153,7 @@ func _mostrar() -> void:
 	_raiz.visible = true
 	_tempo = 0.0
 	_entrar(0.0)
+	comecou.emit()
 	Audio.efeito("menu_confirma")
 	if _animacao != null:
 		_animacao.kill()
@@ -160,6 +168,7 @@ func _terminar() -> void:
 	_mostrando = false
 	_raiz.visible = false
 	Dia.soltar(MOTIVO)
+	acabou.emit()
 
 
 ## A ENTRADA, de 0 a 1: a sombra sobe numa curva suave; a luz se abre do meio; o

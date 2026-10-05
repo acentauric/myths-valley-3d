@@ -38,6 +38,12 @@ const APAGADA := Color(0.72, 0.64, 0.48, 1.0)
 ## O respiro antes de o aviso aceitar a tecla que o fecha, em segundos de relógio.
 const RESPIRO := 0.6
 const ENTRA := 0.35
+## ACIMA DO HUD (que é a 20), na camada das telas do vale: a caixa de fala, o
+## folheto e a mochila já moram na 25 (`prototype.CAMADA_DAS_TELAS`). O cartão
+## nasceu na 11, e as plaquinhas de nome dos moradores, que são do HUD,
+## desenhavam por cima dele — o nome de quem estava ao lado do cordel riscava o
+## texto que o jogador tinha de ler.
+const CAMADA := 25
 
 var _textos: Dictionary = {}
 var _aberto := false
@@ -54,7 +60,7 @@ var qual := ""
 
 
 func _ready() -> void:
-	layer = 11
+	layer = CAMADA
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	var lido = JSON.parse_string(FileAccess.get_file_as_string(TEXTOS))
 	_textos = lido if lido is Dictionary else {}

@@ -202,7 +202,14 @@ func _run() -> void:
 	var motivo := [""]
 	noite.deitou.connect(func(qual: String): motivo[0] = qual)
 	var acordou := [false]
-	noite.acordou.connect(func(): acordou[0] = true)
+	# A RESERVA SE LÊ NA HORA DE ACORDAR, e não quadros depois. No corpo de três
+	# barras o vigor volta sozinho com o jogador parado (vinte por segundo), e o
+	# `acordou` sai logo depois de a física dele ser religada: bastava um tique
+	# entre o sinal e a conferência para o sono devolver 45,33 em vez de 45.
+	var reserva_ao_acordar := [0.0]
+	noite.acordou.connect(func():
+		acordou[0] = true
+		reserva_ao_acordar[0] = energia.atual)
 	await _usar_a_cama([true])
 	_conferir(await _ate(func() -> bool: return acordou[0], 20.0), "dormindo, o jogador ficou no escuro")
 	_conferir(motivo[0] == "cama", "a noite virou pela porta '%s', e não pela da cama" % motivo[0])
@@ -211,8 +218,8 @@ func _run() -> void:
 	_conferir(dia.hora >= acordar and dia.hora < acordar + 0.25, "acordou às %s" % dia.texto_hora())
 	_conferir(jogador.global_position.distance_to(sala.lugar_de_acordar()) < 0.8,
 		"acordou a %.1f u do pé da cama" % jogador.global_position.distance_to(sala.lugar_de_acordar()))
-	_conferir(is_equal_approx(energia.atual, minf(energia.maximo(), 5.0 + progressao.recuperacao_ao_dormir)),
-		"na cama o fôlego voltou como desmaio, e não como sono: %s" % str(energia.atual))
+	_conferir(is_equal_approx(reserva_ao_acordar[0], minf(energia.maximo(), 5.0 + progressao.recuperacao_ao_dormir)),
+		"na cama o fôlego voltou como desmaio, e não como sono: %s" % str(reserva_ao_acordar[0]))
 	var guardado: Dictionary = salvamento.ler(1)
 	_conferir(not guardado.is_empty() and int(guardado.get("Relogio", {}).get("dia", -1)) == relogio.dia,
 		"a virada não salvou a partida do dia novo")
@@ -299,8 +306,8 @@ func _run() -> void:
 	_conferir(dia.hora >= acordar and dia.hora < acordar + 0.25, "depois do desmaio acordou às %s" % dia.texto_hora())
 	_conferir(jogador.global_position.distance_to(sala.lugar_de_acordar()) < 0.8,
 		"quem desmaiou na praça acordou a %.1f u do pé da cama" % jogador.global_position.distance_to(sala.lugar_de_acordar()))
-	_conferir(is_equal_approx(energia.atual, minf(energia.maximo(), 5.0 + progressao.recuperacao_ao_desmaiar)),
-		"o fôlego não voltou como no desmaio: %s" % str(energia.atual))
+	_conferir(is_equal_approx(reserva_ao_acordar[0], minf(energia.maximo(), 5.0 + progressao.recuperacao_ao_desmaiar)),
+		"o fôlego não voltou como no desmaio: %s" % str(reserva_ao_acordar[0]))
 	_conferir(" ".join(lidas).contains(_primeira_fala_do_desmaio()), "ao acordar do desmaio, as falas do 2D não vieram: %s" % str(lidas))
 
 	# --- 10. CHEGAR ÀS TRÊS ------------------------------------------------------------

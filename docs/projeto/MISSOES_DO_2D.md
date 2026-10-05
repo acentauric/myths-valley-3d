@@ -292,7 +292,7 @@ caçando. Lidas de `data/colecionaveis/bichos.json`.
 | id | Título | Objetivo | Conta | Quem paga | Paga | 3D |
 |---|---|---|---|---|---|---|
 | `meta_caititu` | O gibão do pai do Pedro | Fale com o Pedro | 10 caititus | Pedro | gibão de couro | **pronta** (`missoes_metas.json`, abre sozinha na conta) |
-| `meta_onca` | O patuá da Dona Zefa | Leve um couro de onça à Dona Zefa | 2 onças | Dona Zefa | patuá | falta (não há onça no vale) |
+| `meta_onca` | O patuá da Dona Zefa | Leve um couro de onça à Dona Zefa | 2 onças | Dona Zefa | patuá | falta escrever: a onça chegou ao vale em 05/10/2026 (`luta_vale.oncas`, a pintada e a preta, que largam `couro_de_onca`), e a meta ainda não está em `missoes_metas.json` |
 
 ---
 
@@ -334,7 +334,9 @@ não tem missão em nenhum dos dois jogos:
    No vale o dia vem na manhã seguinte à fé escolhida e com a ponte de pé, sem
    esperar todas as missões fechadas (regra aprovada pelo autor).
 6. ~~As armas, a capoeira e as metas~~ (3.9 a 3.11): **prontas** em 05/10/2026,
-   menos a meta da onça, que espera a onça no vale.
+   menos a meta da onça. Ela esperava a onça no vale, e a onça chegou no mesmo
+   dia (a pintada e a preta, com couro): **a meta da onça é o próximo passo
+   pequeno**, e não espera mais nada.
 7. **O segundo tutorial** (2): pomar, curral e capataz pedem sistemas que o 3D
    ainda não tem.
 8. ~~Os passos de apoio do tutorial~~ (`comer`, `pesca`, `talentos`,

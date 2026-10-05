@@ -1,5 +1,5 @@
 {
-  "observacao": "AS METAS DO CADERNO DOS BICHOS (docs/projeto/MISSOES_DO_2D.md, 3.11), da parede da Guilda do Stardew. Abre sozinha quando a conta de abatidos chega (`data/colecionaveis/bichos.json`, `meta.conta`; o vale confere `Luta.abatidos`), e fecha no E em quem paga. Só a do caititu: a do couro de onça espera a onça no vale.",
+  "observacao": "AS METAS DO CADERNO DOS BICHOS (docs/projeto/MISSOES_DO_2D.md, 3.11), da parede da Guilda do Stardew. Abre sozinha quando a conta de abatidos chega (`data/colecionaveis/bichos.json`, `meta.conta`; o vale confere `Luta.abatidos`), e fecha no E em quem paga. Só a do caititu, por enquanto: a onça já mora no vale (luta_vale.gd, a pintada e a preta, que largam couro_de_onca), e a meta do couro dela ainda está por escrever aqui.",
   "dono": "pedro",
   "nome": "O gibão do pai do Pedro",
   "nome_en": "Pedro's father's leather jerkin",
