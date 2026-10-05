@@ -44,6 +44,74 @@ func _run() -> void:
 		return
 	await physics_frame
 	await physics_frame
+
+	# --- A CASA DO JOGADOR COMEÇA COM O BÁSICO, E AS OBRAS PÕEM O RESTO --------
+	#
+	# "Não precisa ter tudo no início, apenas o básico. Cada expansão e melhoria
+	# deve dar XP ao jogador e melhorar atributos do personagem." (05/10/2026)
+	var casa = interiores.sala_de("casa")
+	_conferir(casa != null, "a casa do jogador não abriu por dentro")
+	if casa != null:
+		var no_comeco := _chaves(casa)
+		for basico in ["cama", "bau", "pote"]:
+			_conferir(no_comeco.has(basico), "a casa começa sem '%s', que é do básico: %s" % [basico, str(no_comeco.keys())])
+		for de_obra in ["mesa", "banco_tosco", "oratorio", "jirau", "fogao_barro", "barril", "cantareira"]:
+			_conferir(not no_comeco.has(de_obra), "a casa já começa com '%s', que é de obra: %s" % [de_obra, str(no_comeco.keys())])
+		var obras := root.get_node("/root/Obras")
+		var receitas := root.get_node("/root/Receitas")
+		var inventario := root.get_node("/root/Inventario")
+		var progressao := root.get_node("/root/Progressao")
+		var talentos := root.get_node("/root/Talentos")
+		# UMA OBRA FEITA PELO JOGADOR: a estante, com o material na mochila.
+		if not receitas.sabe("mobilia_guardado"):
+			receitas.aprender("mobilia_guardado")
+		var custo: Dictionary = obras.custo("mobilia_guardado")
+		for item in custo:
+			inventario.adicionar(str(item), int(custo[item]))
+		var ganhou := [0.0]
+		talentos.ganhou_xp.connect(func(quanto: float) -> void: ganhou[0] += quanto)
+		var teto_antes: float = progressao.energia_maxima
+		var impedimento: String = obras.impedimento("casa", "mobilia_guardado")
+		_conferir(impedimento == "", "a estante não pode ser feita com plano e material: '%s'" % impedimento)
+		# Pelo mesmo caminho do E na aba de obras (`painel_vale._confirmar`): o
+		# `executar` compartilhado dá o XP, e o painel paga o atributo.
+		_conferir(obras.executar("casa", "mobilia_guardado"), "a estante não se fez")
+		vale.painel.pagar_o_que_a_obra_da("mobilia_guardado")
+		await _quadros(3)
+		_conferir(ganhou[0] > 0.0, "a estante feita não deu XP")
+		_conferir(progressao.energia_maxima > teto_antes, "a estante feita não melhorou o atributo (fôlego máximo %s)" % str(progressao.energia_maxima))
+		_conferir(_chaves(casa).has("jirau"), "a estante feita não apareceu na casa: %s" % str(_chaves(casa).keys()))
+		# As outras obras de mobília, dadas de presente, para conferir que cabem
+		# sem fechar a porta e que são sólidas (o laço de baixo as mede).
+		for obra in ["mobilia_mesa_grande", "mobilia_altar", "mobilia_cozinha"]:
+			obras.conceder("casa", obra)
+		await _quadros(3)
+		await physics_frame
+		await physics_frame
+		var com_obras := _chaves(casa)
+		for peca in ["mesa", "banco_tosco", "oratorio", "fogao_barro"]:
+			_conferir(com_obras.has(peca), "com a obra feita, '%s' não apareceu na casa: %s" % [peca, str(com_obras.keys())])
+		_conferir(com_obras.has("cama") and com_obras.has("bau"), "refazer os móveis perdeu a cama ou o baú: %s" % str(com_obras.keys()))
+
+	# --- A PORTA DE TODA CASA FICA LIVRE ---------------------------------------
+	#
+	# "Os móveis ficaram na porta para entrar na casa." Nenhum móvel de chão toma
+	# o vão da porta, da fachada até ENTRADA para dentro.
+	for qual in interiores.CONSTRUCOES:
+		var sala = interiores.sala_de(qual)
+		if sala == null or not str(qual).begins_with("casa"):
+			continue
+		var vao := Rect2(sala.porta_x - sala.largura_da_porta * 0.5, -sala.ENTRADA, sala.largura_da_porta, sala.ENTRADA)
+		for movel: Dictionary in sala._moveis:
+			if not is_instance_valid(movel.get("peca")):
+				continue
+			var caixa: AABB = sala.caixa_no_comodo(movel["peca"])
+			if caixa.position.y >= sala.NA_PAREDE:
+				continue
+			_conferir(not Rect2(caixa.position.x, caixa.position.z, caixa.size.x, caixa.size.z).intersects(vao),
+				"em '%s', '%s' fica na frente da porta: x [%.2f, %.2f], z [%.2f, %.2f]" % [qual, str(movel.get("nome", "?")),
+					caixa.position.x, caixa.end.x, caixa.position.z, caixa.end.z])
+
 	var conferidos := 0
 	for qual in interiores.CONSTRUCOES:
 		var sala = interiores.sala_de(qual)
@@ -80,10 +148,19 @@ func _run() -> void:
 func _fechar() -> void:
 	print("")
 	if falhas == 0:
-		print("MOVEIS_OK: todo móvel no chão dos cômodos — cama, baú, mesa, banco, cantareira, fogão, barril, cesto, os bancos e a pia da igreja — é sólido dos quatro lados, na medida da caixa desenhada dele")
+		print("MOVEIS_OK: a casa do jogador começa com o básico (cama, baú e água) e a obra feita põe o móvel, dá XP e melhora o atributo; nenhum móvel toma a porta das casas; e todo móvel no chão dos cômodos — cama, baú, mesa, banco, cantareira, fogão, barril, cesto, os bancos e a pia da igreja — é sólido dos quatro lados, na medida da caixa desenhada dele")
 	else:
 		print("moveis: %d falha(s)" % falhas)
 	quit(1 if falhas > 0 else 0)
+
+
+## As peças do catálogo postas no cômodo, pela chave delas.
+func _chaves(sala: Node) -> Dictionary:
+	var chaves := {}
+	for no in sala.find_children("*", "Node3D", true, false):
+		if is_instance_valid(no) and not no.is_queued_for_deletion() and no.has_meta("chave"):
+			chaves[str(no.get_meta("chave"))] = true
+	return chaves
 
 
 func _quadros(n: int) -> void:

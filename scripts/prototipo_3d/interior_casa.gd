@@ -9,8 +9,8 @@ extends "res://scripts/prototipo_3d/comodo.gd"
 ## Uma casa de taipa do Recôncavo de 1887, no tamanho da casca que a contém:
 ## chão de terra batida, parede caiada com a barra de barro onde a cal
 ## descasca, telha-vã com os caibros à mostra, a janela da fachada à esquerda
-## da porta. Na parede do fundo, a cama e o baú; perto da porta, a água; debaixo
-## da janela, a mesa com a lamparina.
+## da porta. Na parede do fundo, a cama e o baú; a água ao lado da entrada, sem
+## tomar a passagem; o resto entra com as obras da casa (ver `_moveis_da_herdada`).
 ##
 ##
 ## O QUE É PEÇA E O QUE É ARQUITETURA
@@ -56,6 +56,29 @@ const CINZA_PROVISORIO := Color("8d9093")
 ## Onde ficou cada coisa, no cômodo (ver `_montar_dentro`).
 var _cama := Vector3.ZERO
 var _bau := Vector3.ZERO
+
+## A ENTRADA, da fachada para dentro, que nenhum móvel de chão toma; e a folga de
+## cada lado do vão da porta (ver `_reservar_a_passagem`).
+const ENTRADA := 1.4
+const FOLGA_DA_PORTA := 0.2
+## O que fica livre no fundo para a cama e o baú: o meio da sala vai da entrada
+## até esta distância da parede do fundo.
+const FUNDO_DA_DORMIDA := 1.2
+## Peça pendurada na parede de pelo menos esta altura não toma chão: só não
+## pode ficar por cima do vão da porta.
+const NA_PAREDE := 0.9
+## O chão reservado (a entrada e o meio da sala) e o chão já tomado, em x e z do
+## cômodo (Rect2: x, z).
+var _reservado: Array[Rect2] = []
+var _tomado: Array[Rect2] = []
+## Onde ficou o último móvel que `_por` conseguiu pôr.
+var _ultimo := Vector3.ZERO
+## Os nós que os móveis puseram, para refazê-los quando uma obra da casa fica
+## pronta (`_refazer_os_moveis`), e as obras de mobília que eles mostram.
+var _nos_dos_moveis: Array[Node] = []
+var _obras_mostradas := ""
+## A construção do painel de obras que é esta casa (`BancadasVale.OBRAS`).
+const CONSTRUCAO := "casa"
 
 
 func _init() -> void:
@@ -146,6 +169,8 @@ func _montar_janela() -> void:
 # --- os móveis ------------------------------------------------------------------
 
 func _montar_moveis() -> void:
+	_reservar_a_passagem()
+	var antes := get_children()
 	match perfil:
 		"pescador":
 			_moveis_do_pescador()
@@ -153,108 +178,338 @@ func _montar_moveis() -> void:
 			_moveis_da_rezadeira()
 		_:
 			_moveis_da_herdada()
+	_nos_dos_moveis.clear()
+	for filho in get_children():
+		if not antes.has(filho):
+			_nos_dos_moveis.append(filho)
+	_obras_mostradas = _assinatura_das_obras()
+	# A casa do jogador acompanha as obras dela: a obra que fica pronta põe o
+	# móvel na hora, e a partida carregada traz os dela.
+	if perfil == "herdada" and not Obras.mudou.is_connected(_ao_mudar_as_obras):
+		Obras.mudou.connect(_ao_mudar_as_obras)
 
 
+# --- onde cabe cada coisa -----------------------------------------------------------
+
+## O CHÃO QUE NENHUM MÓVEL TOMA: a entrada e o meio da sala.
+##
+## "Na casa (...) os móveis ficaram na porta para entrar na casa. É preciso
+## reestruturar para fazer sentido." A disposição era escrita parede a parede
+## — a água perto da porta, o barril do lado do fogão — e não sabia onde a
+## porta ficava. O cômodo é medido na casca de cada casa, e a casa de taipa do
+## Tripo dá 3,9 por 3,7 metros, com a porta na metade direita da fachada: a
+## cantareira, o barril e o fogão caíam encostados no vão, e na casa da Dona
+## Zefa a rede do Cosme atravessava a entrada.
+##
+## Agora todo móvel de chão pede lugar (`_por`), e cabe se não toma a ENTRADA
+## (o vão da porta, com folga dos lados, até ENTRADA para dentro), o MEIO DA
+## SALA (da entrada até a dormida, do vão para a esquerda) nem outro móvel. O que
+## não cabe em nenhum dos lugares que pede fica de fora: melhor um móvel a menos
+## do que uma porta fechada.
+func _reservar_a_passagem() -> void:
+	_reservado.clear()
+	_tomado.clear()
+	var esquerda := porta_x - largura_da_porta * 0.5 - FOLGA_DA_PORTA
+	var direita := porta_x + largura_da_porta * 0.5 + FOLGA_DA_PORTA
+	_reservado.append(Rect2(esquerda, -ENTRADA, direita - esquerda, ENTRADA))
+	var fundo := -maxf(ENTRADA, comprimento - FUNDO_DA_DORMIDA)
+	var meio := minf(esquerda, 0.0) - 0.35
+	if fundo < -ENTRADA:
+		_reservado.append(Rect2(meio, fundo, direita - meio, -ENTRADA - fundo))
+
+
+## O chão que o móvel ocupa, em x e z do cômodo, com o giro dele (de quarto em
+## quarto de volta, que é como a casa gira os móveis).
+func _pegada(onde: Vector3, giro: float, medida: Vector3) -> Rect2:
+	var de_lado := absf(sin(giro)) > 0.7
+	var x := medida.z if de_lado else medida.x
+	var z := medida.x if de_lado else medida.z
+	return Rect2(onde.x - x * 0.5, onde.z - z * 0.5, x, z)
+
+
+## O móvel cabe aqui? Dentro das paredes, fora da passagem e fora de outro
+## móvel. O que é de parede, no alto, só não pode ficar por cima do vão.
+func _cabe(pegada: Rect2, na_parede: bool) -> bool:
+	if pegada.position.x < -largura * 0.5 - 0.01 or pegada.end.x > largura * 0.5 + 0.01 \
+			or pegada.position.y < -comprimento - 0.01 or pegada.end.y > 0.01:
+		return false
+	if na_parede:
+		var vao := Rect2(porta_x - largura_da_porta * 0.5, -ENTRADA, largura_da_porta, ENTRADA)
+		return not pegada.intersects(vao)
+	for livre in _reservado:
+		if pegada.intersects(livre):
+			return false
+	for outro in _tomado:
+		if pegada.intersects(outro):
+			return false
+	return true
+
+
+## PÕE UM MÓVEL NO PRIMEIRO LUGAR QUE CABE, dos que ele pede: cada lugar é
+## [onde, giro]. Devolve o nó posto, ou null — sem lugar, ou sem modelo (`_movel`).
+func _por(chave: String, lugares: Array, medida: Vector3, de_uso: bool) -> Node3D:
+	_ultimo = Vector3.INF
+	for lugar: Array in lugares:
+		var onde: Vector3 = lugar[0]
+		var giro: float = lugar[1]
+		var na_parede := onde.y >= NA_PAREDE
+		var pegada := _pegada(onde, giro, medida)
+		if not _cabe(pegada, na_parede):
+			continue
+		var peca := _movel(chave, onde, giro, medida, de_uso)
+		if peca == null:
+			return null
+		_ultimo = onde
+		if not na_parede:
+			_tomado.append(pegada)
+		return peca
+	return null
+
+
+## Uma PEÇA miúda de chão do catálogo (o pote, o cesto), sólida, no primeiro
+## lugar que cabe.
+func _por_peca(chave: String, lugares: Array, tamanho: float, medida: Vector3) -> Node3D:
+	_ultimo = Vector3.INF
+	for lugar: Array in lugares:
+		var onde: Vector3 = lugar[0]
+		var giro: float = lugar[1]
+		var pegada := _pegada(onde, giro, medida)
+		if not _cabe(pegada, false):
+			continue
+		var peca := _peca(chave, onde, giro, tamanho)
+		if peca == null:
+			return null
+		_colisao_da_peca(peca, chave.capitalize())
+		_ultimo = onde
+		_tomado.append(pegada)
+		return peca
+	return null
+
+
+# --- as obras da casa ------------------------------------------------------------
+
+## A OBRA DESTA CASA ESTÁ FEITA? Só a herdada, que é a do jogador, tem obras: as
+## outras são de quem mora e já vêm como são.
+func _feita(obra: String) -> bool:
+	return perfil == "herdada" and Obras.ja_feita(CONSTRUCAO, obra)
+
+
+## As obras de mobília que a casa mostra agora, numa linha só: é por ela que se
+## sabe se o que está posto ainda vale.
+func _assinatura_das_obras() -> String:
+	if perfil != "herdada":
+		return ""
+	var feitas: Array = []
+	for obra in Obras.tudo_da(CONSTRUCAO):
+		if str(obra).begins_with("mobilia_"):
+			feitas.append(str(obra))
+	feitas.sort()
+	return ",".join(feitas)
+
+
+func _ao_mudar_as_obras() -> void:
+	if is_inside_tree() and _assinatura_das_obras() != _obras_mostradas:
+		_refazer_os_moveis()
+
+
+## TIRA OS MÓVEIS E PÕE DE NOVO, com as obras de agora. A arquitetura (parede,
+## chão, telha, janela) fica; saem os nós que os móveis puseram, com os corpos,
+## as chamas e o registro deles.
+func _refazer_os_moveis() -> void:
+	for no in _nos_dos_moveis:
+		if not is_instance_valid(no):
+			continue
+		for corpo in no.find_children("*", "StaticBody3D", true, false):
+			_corpos.erase((corpo as StaticBody3D).get_rid())
+		if no is OmniLight3D:
+			_velas.erase(no)
+		remove_child(no)
+		no.queue_free()
+	_moveis.clear()
+	_montar_moveis()
+	for no in _nos_dos_moveis:
+		if no is VisualInstance3D and not (no is Light3D):
+			(no as VisualInstance3D).layers = CAMADA_DO_COMODO
+		_por_na_camada(no)
+
+
+# --- os móveis de cada casa ----------------------------------------------------------
+
+## A CASA DO FINADO, que é a do jogador: SÓ O BÁSICO, e o resto pelas obras.
+##
+## "Lembre-se que pode implementar no futuro a compra de expansões e melhorias da
+## casa. Logo não precisa ter tudo no início, apenas o básico. Cada expansão e
+## melhoria deve dar XP ao jogador e melhorar atributos do personagem."
+##
+## O básico é o que o 2D põe na casa no primeiro dia ("Cama, baú e fogão de
+## barro. É o que tem, e é o que basta pra começar"), com o fogo do lado de
+## fora: a fogueira do terreiro é o fogão da casa até a cozinha ter lugar. Ficam
+## a CAMA e o BAÚ no fundo, a ÁGUA (o pote, com a moringa) e a LAMPARINA.
+##
+## O resto é obra da casa (`data/construcoes/obras.json`, alvo "casa"), e cada
+## obra já paga XP e atributo ao ser feita (`Obras.executar` e `ATRIBUTOS`):
+##
+##   mobilia_mesa_grande   a mesa debaixo da janela, com o banco
+##   mobilia_altar         o oratório na parede
+##   mobilia_guardado      a estante (o jirau) na parede do fundo
+##   mobilia_cozinha       o fogão de barro e o barril, no canto do fundo
+##   mobilia_rede          a rede no lugar da cama
+##
+## As de casca e de planta (a varanda, o sobrado, o quarto, o salão, o assoalho)
+## e o tapete ainda não mudam o cômodo: a casca do Tripo é uma só, e o tapete não
+## tem modelo.
 func _moveis_da_herdada() -> void:
-	# A CAMA, de comprido na parede do fundo, com a cabeceira na parede da
-	# esquerda; o BAÚ ao lado dela, no fundo. Os dois têm colisão: são o que se
-	# usa, e o corpo não atravessa.
-	_cama = Vector3(-largura * 0.5 + CAMA.x * 0.5 + 0.05, 0.0, -comprimento + CAMA.z * 0.5 + 0.05)
-	_movel("cama", _cama, 0.0, CAMA, true)
-	_bau = Vector3(_cama.x + CAMA.x * 0.5 + 0.2 + BAU.x * 0.5, 0.0, -comprimento + BAU.z * 0.5 + 0.05)
-	if _bau.x + BAU.x * 0.5 > largura * 0.5 - 0.05:
-		_bau.x = largura * 0.5 - BAU.x * 0.5 - 0.05
-	_movel("bau", _bau, 0.0, BAU, true)
-	# A MESA debaixo da janela, com a lamparina e a moringa; o banco na frente.
-	# Sem a mesa (ela chega do Tripo), a lamparina fica em cima do baú, e a
-	# moringa no chão, junto do pote da água.
+	# A DORMIDA, no fundo, com a cabeceira na parede da esquerda (ou da direita,
+	# se a esquerda não couber). Com a obra da rede, a rede no mesmo canto.
+	var fundo := -comprimento + CAMA.z * 0.5 + 0.05
+	var cantos := [[Vector3(-largura * 0.5 + CAMA.x * 0.5 + 0.05, 0.0, fundo), 0.0],
+		[Vector3(largura * 0.5 - CAMA.x * 0.5 - 0.05, 0.0, fundo), 0.0]]
+	var dormida: Node3D = null
+	if _feita("mobilia_rede"):
+		dormida = _por("rede", cantos, Vector3(CAMA.x, 1.0, CAMA.z), false)
+	if dormida == null:
+		_por("cama", cantos, CAMA, true)
+	_cama = _ultimo if _ultimo.is_finite() else cantos[0][0]
+	# O BAÚ ao lado dela, no fundo, do lado da sala; ou ao pé dela, na parede.
+	var lado := 1.0 if _cama.x < 0.0 else -1.0
+	var parede := -largura * 0.5 if lado > 0.0 else largura * 0.5
+	_por("bau", [
+		[Vector3(_cama.x + lado * (CAMA.x * 0.5 + 0.2 + BAU.x * 0.5), 0.0, -comprimento + BAU.z * 0.5 + 0.05), 0.0],
+		[Vector3(parede + lado * (BAU.z * 0.5 + 0.05), 0.0, _cama.z + CAMA.z * 0.5 + 0.1 + BAU.x * 0.5), PI * 0.5],
+	], BAU, true)
+	_bau = _ultimo if _ultimo.is_finite() else _cama
+	# A ÁGUA, à esquerda da entrada: o pote no chão, a moringa do lado.
+	var agua := _por_peca("pote", [
+		[Vector3(porta_x - largura_da_porta * 0.5 - FOLGA_DA_PORTA - 0.3, 0.0, -0.35), 0.0],
+		[Vector3(-largura * 0.5 + 0.3, 0.0, -comprimento * 0.5), 0.0],
+	], 0.6, Vector3(0.5, 0.6, 0.5))
+	var onde_da_agua := _ultimo
+	# A MESA (obra), debaixo da janela, com o banco na frente.
 	var mesa := Vector3(-largura * 0.5 + MESA.x * 0.5 + 0.15, 0.0, -MESA.z * 0.5 - 0.1)
-	var tem_mesa := _movel("mesa", mesa, 0.0, MESA, false) != null
-	_movel("banco_tosco", mesa + Vector3(0, 0, -MESA.z * 0.5 - 0.35), 0.0, Vector3(1.0, 0.45, 0.32), false)
+	var tem_mesa := false
+	if _feita("mobilia_mesa_grande"):
+		tem_mesa = _por("mesa", [[mesa, 0.0]], MESA, false) != null
+		if tem_mesa:
+			_por("banco_tosco", [[mesa + Vector3(0, 0, -MESA.z * 0.5 - 0.35), 0.0]], Vector3(1.0, 0.45, 0.32), false)
+	# A LAMPARINA na mesa, ou em cima do baú; a moringa na mesa, ou junto do pote.
 	var lamparina := mesa + Vector3(0.25, MESA.y, 0.0) if tem_mesa else _bau + Vector3(0.2, BAU.y, 0.0)
 	_peca("candeeiro", lamparina, 0.0, 0.45)
 	_vela("Lamparina", lamparina + Vector3(0, 0.45, 0.05), maxf(largura, comprimento) * 0.9, 1.1)
-	# A ÁGUA perto da porta: a cantareira, e o pote em cima dela — até ela
-	# chegar, o pote no chão.
-	var agua := Vector3(largura * 0.5 - 0.35, 0.0, -0.45)
-	if _movel("cantareira", agua, 0.0, Vector3(0.6, 0.9, 0.45), false) == null:
-		_colisao_da_peca(_peca("pote", agua, 0.0, 0.6), "Pote")
-	_peca("moringa", (mesa + Vector3(-0.25, MESA.y, 0.05)) if tem_mesa else (agua + Vector3(-0.3, 0.0, -0.45)), 0.4, 0.3)
-	# O canto do FOGÃO, no fundo à direita; o jirau na parede de cima dele, e o
-	# barril ao lado.
-	# A boca do fogo é a frente do modelo (o +Z, como a dos outros móveis), e
-	# ela olha para a sala: no fundo, para a porta; sem lugar no fundo, ao lado
-	# do baú, o fogão vai para a parede da direita, de frente para o meio.
-	var fogao := Vector3(largura * 0.5 - 0.55, 0.0, -comprimento + 0.45)
-	var giro_do_fogao := 0.0
-	if fogao.x - 0.5 < _bau.x + BAU.x * 0.5 + 0.2:
-		fogao = Vector3(largura * 0.5 - 0.4, 0.0, -comprimento * 0.5)
-		giro_do_fogao = -PI * 0.5
-	_movel("fogao_barro", fogao, giro_do_fogao, Vector3(1.0, 0.8, 0.7), false)
-	_movel("jirau", Vector3(largura * 0.5 - 0.25, 1.5, -comprimento * 0.5), -PI * 0.5, Vector3(1.2, 0.6, 0.4), false)
-	_movel("barril", Vector3(largura * 0.5 - 0.35, 0.0, -comprimento * 0.5 + 0.7), 0.0, Vector3(0.55, 0.8, 0.55), false)
-	# O ORATÓRIO na parede da esquerda, entre a mesa e a cama.
-	_movel("oratorio", Vector3(-largura * 0.5 + 0.18, 1.25, -comprimento * 0.5), PI * 0.5, Vector3(0.45, 0.6, 0.3), false)
-	# O CESTO no chão, ao pé da cama.
-	_colisao_da_peca(_peca("cesto", _cama + Vector3(CAMA.x * 0.5 - 0.2, 0.0, CAMA.z * 0.5 + 0.25), 0.3, 0.35), "Cesto")
+	if tem_mesa:
+		_peca("moringa", mesa + Vector3(-0.25, MESA.y, 0.05), 0.4, 0.3)
+	elif agua != null:
+		_peca("moringa", onde_da_agua + Vector3(0.0, 0.0, -0.4), 0.4, 0.3)
+	# O ORATÓRIO (obra), na parede da esquerda.
+	if _feita("mobilia_altar"):
+		_por("oratorio", [
+			[Vector3(-largura * 0.5 + 0.18, 1.25, -comprimento * 0.5), PI * 0.5],
+			[Vector3(largura * 0.5 - 0.18, 1.25, -comprimento * 0.5), -PI * 0.5],
+		], Vector3(0.45, 0.6, 0.3), false)
+	# A ESTANTE (obra), o jirau na parede do fundo, por cima do baú.
+	if _feita("mobilia_guardado"):
+		_por("jirau", [
+			[Vector3(_bau.x, 1.5, -comprimento + 0.22), 0.0],
+			[Vector3(-largura * 0.5 + 0.22, 1.5, -comprimento * 0.5), PI * 0.5],
+		], Vector3(1.2, 0.6, 0.4), false)
+	# O CANTO DA COZINHA (obra): o fogão no canto do fundo, de lado, com a boca
+	# para a sala, e o barril d'água onde couber.
+	if _feita("mobilia_cozinha"):
+		# Do lado do baú, que é o da sala: longe da cabeceira.
+		var do_outro_lado := lado
+		var parede_da_cozinha := largura * 0.5 * lado
+		_por("fogao_barro", [
+			[Vector3(parede_da_cozinha - do_outro_lado * 0.4, 0.0, -comprimento + 0.55), -PI * 0.5 * do_outro_lado],
+			[Vector3(parede_da_cozinha - do_outro_lado * 0.6, 0.0, -comprimento + 0.4), 0.0],
+		], Vector3(1.0, 0.8, 0.7), false)
+		_por("barril", [
+			[Vector3(-largura * 0.5 + 0.33, 0.0, -comprimento * 0.5), 0.0],
+			[Vector3(parede_da_cozinha - do_outro_lado * 0.33, 0.0, -comprimento + 1.4), 0.0],
+		], Vector3(0.55, 0.8, 0.55), false)
 
 
 ## A CASA DO PEDRO, pescador: a REDE de dormir de lado a lado no fundo, que
-## pescador dorme de rede; o baú pequeno ao pé dela; na parede da direita, a
-## rede de pesca pendurada e os remos no canto, perto da porta, que é por onde
-## eles saem de madrugada; a água na entrada; o fogão no canto do fundo, e o
-## banco com o barril fazendo de mesa, com o candeeiro em cima.
+## pescador dorme de rede; o baú pequeno na parede da esquerda; o barril com o
+## banco fazendo de mesa, e o candeeiro em cima; a água ao lado da entrada; a
+## rede de pesca pendurada na parede e os remos no canto, onde couberem; o fogão
+## no canto do fundo. Pouco móvel: pescador passa o dia no mar.
 func _moveis_do_pescador() -> void:
-	var rede := Vector3(0.0, 0.0, -comprimento + 0.55)
-	_movel("rede", rede, 0.0, Vector3(minf(2.4, largura - 0.4), 1.0, 0.8), false)
+	var rede := Vector3(0.0, 0.0, -comprimento + 0.5)
+	_por("rede", [[rede, 0.0]], Vector3(minf(2.2, largura - 1.6), 1.0, 0.8), false)
 	_cama = rede
-	_bau = Vector3(-largura * 0.5 + BAU.x * 0.5 + 0.1, 0.0, -comprimento + 1.45)
-	_movel("bau", _bau, PI * 0.5, Vector3(0.75, 0.45, 0.42), false)
-	_movel("rede_de_pesca", Vector3(largura * 0.5 - 0.2, 1.0, -comprimento * 0.55), -PI * 0.5, Vector3(1.2, 1.4, 0.4), false)
-	# Os remos vieram cruzados em X: na parede, ao comprido dela.
-	_movel("remos", Vector3(largura * 0.5 - 0.3, 0.0, -0.8), -PI * 0.5, Vector3(1.2, 1.7, 0.45), false)
-	var agua := Vector3(-largura * 0.5 + 0.35, 0.0, -0.5)
-	_colisao_da_peca(_peca("pote", agua, 0.0, 0.6), "Pote")
-	var barril := Vector3(-largura * 0.5 + 0.45, 0.0, -comprimento * 0.5)
-	var o_barril := _movel("barril", barril, 0.0, Vector3(0.55, 0.8, 0.55), false)
-	_movel("banco_tosco", barril + Vector3(0.75, 0.0, 0.0), PI * 0.5, Vector3(1.0, 0.45, 0.32), false)
+	_por("bau", [[Vector3(-largura * 0.5 + 0.3, 0.0, -comprimento + 1.45), PI * 0.5]], Vector3(0.75, 0.45, 0.42), false)
+	_bau = _ultimo if _ultimo.is_finite() else rede
+	var barril := Vector3(-largura * 0.5 + 0.35, 0.0, -comprimento + 2.1)
+	var o_barril := _por("barril", [[barril, 0.0], [Vector3(-largura * 0.5 + 0.35, 0.0, -1.0), 0.0]], Vector3(0.55, 0.8, 0.55), false)
+	if o_barril != null:
+		barril = _ultimo
+		_por("banco_tosco", [[barril + Vector3(0.6, 0.0, 0.0), PI * 0.5]], Vector3(1.0, 0.45, 0.32), false)
 	# O candeeiro EM CIMA do barril, na altura medida dele: o barril do Tripo tem
-	# 0,72, e não os 0,8 de onde ele é pedido.
-	var topo := caixa_no_comodo(o_barril).end.y if o_barril != null else 0.8
-	_peca("candeeiro", barril + Vector3(0.0, topo, 0.0), 0.0, 0.45)
-	_vela("Lamparina", barril + Vector3(0.0, topo + 0.45, 0.05), maxf(largura, comprimento) * 0.9, 1.0)
-	_movel("fogao_barro", Vector3(largura * 0.5 - 0.55, 0.0, -comprimento + 0.45), 0.0, Vector3(1.0, 0.8, 0.7), false)
-	_colisao_da_peca(_peca("cesto", Vector3(largura * 0.5 - 0.4, 0.0, -comprimento * 0.3), 0.6, 0.4), "Cesto")
+	# 0,72, e não os 0,8 de onde ele é pedido. Sem barril, em cima do baú.
+	var apoio := barril if o_barril != null else _bau
+	var topo := caixa_no_comodo(o_barril).end.y if o_barril != null else 0.45
+	_peca("candeeiro", apoio + Vector3(0.0, topo, 0.0), 0.0, 0.45)
+	_vela("Lamparina", apoio + Vector3(0.0, topo + 0.45, 0.05), maxf(largura, comprimento) * 0.9, 1.0)
+	_por_peca("pote", [
+		[Vector3(porta_x - largura_da_porta * 0.5 - FOLGA_DA_PORTA - 0.3, 0.0, -0.35), 0.0],
+		[Vector3(-largura * 0.5 + 0.35, 0.0, -0.5), 0.0],
+	], 0.6, Vector3(0.5, 0.6, 0.5))
+	_por("rede_de_pesca", [
+		[Vector3(largura * 0.5 - 0.2, 1.0, -comprimento + 1.3), -PI * 0.5],
+		[Vector3(-largura * 0.5 + 0.2, 1.0, -1.0), PI * 0.5],
+	], Vector3(1.2, 1.4, 0.4), false)
+	_por("fogao_barro", [
+		[Vector3(largura * 0.5 - 0.4, 0.0, -comprimento + 0.55), -PI * 0.5],
+	], Vector3(1.0, 0.8, 0.7), false)
+	_por("remos", [
+		[Vector3(-largura * 0.5 + 0.25, 0.0, -0.75), PI * 0.5],
+		[Vector3(largura * 0.5 - 0.25, 0.0, -comprimento + 1.75), -PI * 0.5],
+	], Vector3(1.2, 1.7, 0.45), false)
+	_por_peca("cesto", [
+		[Vector3(-largura * 0.5 + 0.3, 0.0, -comprimento + 2.75), 0.6],
+		[Vector3(largura * 0.5 - 0.3, 0.0, -comprimento + 1.3), 0.6],
+	], 0.4, Vector3(0.4, 0.4, 0.4))
 
 
 ## A CASA DA DONA ZEFA, rezadeira, que mora com o neto: a CAMA dela no fundo,
-## com a cabeceira na parede da esquerda, e a REDE do Cosme atravessada perto
-## da porta; o ORATÓRIO na parede do fundo, à direita da cama, com a luz
-## quente acesa; as ERVAS secando na parede da direita, por cima do PILÃO e
-## da GAMELA — e o barril ao lado, "que é onde o remédio se faz"; a mesa
-## debaixo da janela; os cestos que ela trança empilhados no canto.
+## com a cabeceira na parede da esquerda, e o ORATÓRIO na parede do fundo, com a
+## luz quente acesa; a REDE do Cosme armada ao comprido da parede da esquerda,
+## longe da porta; o canto do REMÉDIO no fundo à direita — o barril, a gamela, o
+## pilão e as ervas secando na parede, "que é onde o remédio se faz"; a mesa
+## debaixo da janela e a cantareira ao lado da entrada; os cestos que ela trança
+## onde couberem.
 func _moveis_da_rezadeira() -> void:
 	_cama = Vector3(-largura * 0.5 + CAMA.x * 0.5 + 0.05, 0.0, -comprimento + CAMA.z * 0.5 + 0.05)
-	_movel("cama", _cama, 0.0, CAMA, false)
+	_por("cama", [[_cama, 0.0]], CAMA, false)
 	var oratorio := Vector3(minf(_cama.x + CAMA.x * 0.5 + 0.6, largura * 0.5 - 0.6), 1.3, -comprimento + 0.18)
-	_movel("oratorio", oratorio, 0.0, Vector3(0.45, 0.6, 0.3), false)
-	# A luz quente do oratório, que a reza da casa não deixa apagar.
-	_vela("LuzDoOratorio", oratorio + Vector3(0.0, -0.2, 0.3), 2.6, 0.5)
-	_movel("rede", Vector3(0.0, 0.0, -0.9), 0.0, Vector3(minf(2.2, largura - 0.6), 1.0, 0.7), false)
-	var remedio := Vector3(largura * 0.5 - 0.45, 0.0, -comprimento * 0.55)
-	_movel("barril", remedio + Vector3(0.0, 0.0, 0.85), 0.0, Vector3(0.55, 0.8, 0.55), false)
-	_movel("gamela", remedio, -PI * 0.5, Vector3(0.7, 0.25, 0.5), false)
-	_movel("pilao", remedio + Vector3(0.0, 0.0, -0.8), 0.0, Vector3(0.4, 1.0, 0.4), false)
-	_movel("ervas_secando", Vector3(largura * 0.5 - 0.15, 1.75, -comprimento * 0.55), -PI * 0.5, Vector3(1.4, 0.7, 0.3), false)
+	if _por("oratorio", [[oratorio, 0.0]], Vector3(0.45, 0.6, 0.3), false) != null:
+		# A luz quente do oratório, que a reza da casa não deixa apagar.
+		_vela("LuzDoOratorio", oratorio + Vector3(0.0, -0.2, 0.3), 2.6, 0.5)
+	# O REMÉDIO, no canto do fundo à direita.
+	var direita := largura * 0.5
+	_por("barril", [[Vector3(direita - 0.33, 0.0, -comprimento + 0.33), 0.0]], Vector3(0.55, 0.8, 0.55), false)
+	_por("gamela", [[Vector3(direita - 1.0, 0.0, -comprimento + 0.3), 0.0]], Vector3(0.7, 0.25, 0.5), false)
+	_por("pilao", [[Vector3(direita - 0.3, 0.0, -comprimento + 0.95), 0.0]], Vector3(0.4, 1.0, 0.4), false)
+	_por("ervas_secando", [[Vector3(direita - 0.15, 1.75, -comprimento + 1.0), -PI * 0.5]], Vector3(1.4, 0.7, 0.3), false)
+	# A REDE DO COSME, ao comprido da parede da esquerda, entre a cama e a mesa.
+	var comprimento_da_rede := clampf(comprimento - CAMA.z - 1.2, 1.4, 2.2)
+	_por("rede", [
+		[Vector3(-largura * 0.5 + 0.4, 0.0, -comprimento + CAMA.z + 0.15 + comprimento_da_rede * 0.5), PI * 0.5],
+	], Vector3(comprimento_da_rede, 1.0, 0.7), false)
+	# A MESA debaixo da janela, com a lamparina; sem ela, a lamparina no oratório.
 	var mesa := Vector3(-largura * 0.5 + MESA.x * 0.5 + 0.15, 0.0, -MESA.z * 0.5 - 0.1)
-	var tem_mesa := _movel("mesa", mesa, 0.0, MESA, false) != null
+	var tem_mesa := _por("mesa", [[mesa, 0.0]], MESA, false) != null
 	var lamparina := mesa + Vector3(0.25, MESA.y, 0.0) if tem_mesa else oratorio + Vector3(0.0, -0.35, 0.2)
 	_peca("candeeiro", lamparina, 0.0, 0.45)
 	_vela("Lamparina", lamparina + Vector3(0, 0.45, 0.05), maxf(largura, comprimento) * 0.8, 0.9)
-	_movel("fogao_barro", Vector3(largura * 0.5 - 0.55, 0.0, -comprimento + 0.45), 0.0, Vector3(1.0, 0.8, 0.7), false)
-	_movel("cantareira", Vector3(largura * 0.5 - 0.35, 0.0, -0.45), 0.0, Vector3(0.6, 0.9, 0.45), false)
+	_por("cantareira", [
+		[Vector3(porta_x - largura_da_porta * 0.5 - FOLGA_DA_PORTA - 0.35, 0.0, -0.3), 0.0],
+	], Vector3(0.6, 0.9, 0.45), false)
+	_por("fogao_barro", [[Vector3(direita - 0.4, 0.0, -comprimento + 1.75), -PI * 0.5]], Vector3(1.0, 0.8, 0.7), false)
 	for i in 3:
-		_colisao_da_peca(_peca("cesto", Vector3(-largura * 0.5 + 0.35 + 0.42 * float(i % 2), 0.0, -comprimento * 0.5 + 0.4 * float(i)), 0.4 * float(i), 0.35 + 0.05 * float(i)), "Cesto")
+		_por_peca("cesto", [
+			[Vector3(-largura * 0.5 + 0.3, 0.0, -0.3 - 0.45 * float(i)), 0.4 * float(i)],
+			[Vector3(direita - 0.3, 0.0, -comprimento + 1.5 + 0.45 * float(i)), 0.4 * float(i)],
+		], 0.35 + 0.05 * float(i), Vector3(0.4, 0.4, 0.4))
 
 
 ## Um MÓVEL da casa: o modelo do catálogo, na largura pedida, ou — para os que
