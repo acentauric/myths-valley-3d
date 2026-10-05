@@ -117,7 +117,7 @@ dele, no píer. Ver [CHEGADA_E_MUTIROES.md](../mundo/CHEGADA_E_MUTIROES.md).
 | 2 | `colher` | O que a terra devolve | De mão livre, colha a mandioca madura (E) | planta madura | colheu | 1 beiju | **pronta** (`colher`, `missoes_roca.json`) |
 | 3 | `cozinhar` | Fogo e farinha | No fogão de casa, torre farinha (E) | colheu; o Pedro dá 2 lenhas | 2 farinhas na mochila | — | **pronta** (`cozinhar`) |
 | 4 | `pirao` | Pirão de quem chegou | No fogão, faça o pirão de peixe (E) | o Pedro dá 1 peixe | 1 pirão | — | adaptada (`pirao`: a cuia vai à Dona Filó) |
-| 5 | `comer` | A primeira refeição | Coma o pirão (I, depois F) | — | comeu de fato | — | falta (o passo; comer existe) |
+| 5 | `comer` | A primeira refeição | Coma o pirão (I, depois F) | — | comeu de fato | — | **pronta** (`comer`, último passo de `missoes_roca.json`: o pirão da Dona Filó) |
 
 ### 1.3 Frente da trilha — a ponte
 
@@ -146,15 +146,15 @@ Se o fôlego zera no meio da ponte, o Pedro aparece com o mungunzá da mãe
 |---|---|---|---|---|---|---|---|
 | 1 | `picareta` | A lapa na boca da rampa | Fique de frente para a lapa da lombada e aperte E até rachar — são 8 pedras | `lenha` cumprida; o Pedro dá a picareta | a passagem aberta (não a conta de pedra) | 2 beijus | falta (a picareta é ensinada no poço) |
 | 2 | `cabra` | A cabra que subiu e não desce | Suba a rampa e chegue perto da cabra, lá no alto da lombada | lapa aberta | chegou perto da cabra; ela desce sozinha, e o Pedro mostra a placa da Santa Casa | — | falta |
-| 3 | `pesca` | A vara do pai do Pedro | No píer, pesque 2 peixes (E pra lançar, E pra ferrar) | o Pedro dá a vara | 2 peixes | 1 cocada | só o sistema (`pesca_vale.gd`; a vara se compra) |
-| 4 | `talentos` | O corpo aprende | Abra a teia de talentos (K) e destrave um talento | tem ponto de talento | gastou um ponto (abrir a tela não basta) | — | só o sistema (teia no K) |
+| 3 | `pesca` | A vara do pai do Pedro | No píer, pesque 2 peixes (E pra lançar, E pra ferrar) | o Pedro dá a vara | 2 peixes | 1 cocada | **pronta** (`pesca`, `missoes_oficio.json`: o Pedro dá a vara; conta dois peixes) |
+| 4 | `talentos` | O corpo aprende | Abra a teia de talentos (K) e destrave um talento | tem ponto de talento | gastou um ponto (abrir a tela não basta) | — | **pronta** (`talentos`, `missoes_oficio.json`) |
 
 ### 1.6 Frente das apresentações e a caderneta
 
 | id | Título | Objetivo | Abre quando | Fecha quando | 3D |
 |---|---|---|---|---|---|
-| `apresentacoes` | Seis casas, seis conversas | Converse com cada morador do arraial: chegue perto e aperte E | `picareta` cumprida | uma conversa com cada morador (checklist; o Cosme fica fora) | adaptada (a chegada faz falar com Tonho, Candinha e Zefa) |
-| `caderneta` | A lista do que está aberto | Aperte J para abrir a lista de missões | junto com as frentes | abriu a lista e fechou a tela | só o sistema (diário no J) |
+| `apresentacoes` | Seis casas, seis conversas | Converse com cada morador do arraial: chegue perto e aperte E | `picareta` cumprida | uma conversa com cada morador (checklist; o Cosme fica fora) | adaptada (a chegada faz falar com Tonho, Candinha e Zefa; o E conversa com qualquer morador) |
+| `caderneta` | A lista do que está aberto | Aperte J para abrir a lista de missões | junto com as frentes | abriu a lista e fechou a tela | **pronta** (`caderneta`, na chegada, depois do baú) |
 
 Duas falas soltas do Pedro entram nessa altura sem missão: `companhia` (C para
 ele parar de seguir) e `anoitecer` (lembra a cama quando o sol cai).
@@ -259,9 +259,9 @@ Abre na primeira vez que um bicho persegue o jogador ou que ele entra na mata.
 
 | # | id | Título | Objetivo | Fecha quando | Paga | 3D |
 |---|---|---|---|---|---|---|
-| 1 | `armas_facao` | Um facão de mato | Bata um facão na oficina: duas lenhas e uma pedra | tem o facão (se já tinha, fecha na hora); a lição do aviso do bote (`armas_licao`) | — | só o sistema (a receita cita a missão) |
-| 2 | `armas_bote` | Encarar um caititu | Derrube um caititu na mata do dendê ou no pé da pedreira | 1 caititu | 2 peixes assados | só o sistema (`luta_vale.gd`) |
-| 3 | `armas_forte` | O golpe de peso | Acerte 3 golpes fortes em bicho da mata (segure E e solte) | 3 golpes fortes (contados); ensina o golpe forte antes de abrir | 2 pirões | falta |
+| 1 | `armas_facao` | Um facão de mato | Bata um facão na oficina: duas lenhas e uma pedra | tem o facão (se já tinha, fecha na hora); a lição do aviso do bote (`armas_licao`) | — | **pronta** (`missoes_armas.json`: a receita abre no anúncio) |
+| 2 | `armas_bote` | Encarar um caititu | Derrube um caititu na mata do dendê ou no pé da pedreira | 1 caititu | 2 peixes assados | **pronta** (`armas_bote`) |
+| 3 | `armas_forte` | O golpe de peso | Acerte 3 golpes fortes em bicho da mata (segure E e solte) | 3 golpes fortes (contados); ensina o golpe forte antes de abrir | 2 pirões | **pronta** (`armas_forte`: o passo ensina o golpe, `ensina`; meta `contar`) |
 
 ### 3.10 A capoeira (Cosme) — missões de fé, candomblé
 
@@ -270,9 +270,9 @@ bicho caçando o jogador. Cada lição volta ao Cosme para fechar.
 
 | # | id | Título | Objetivo | Fecha quando | Paga | 3D |
 |---|---|---|---|---|---|---|
-| 1 | `capoeira_ginga` | A ginga | Esquive de 3 botes com a ginga (V na hora do aviso) | 3 esquivas | — | falta (a regra está em `luta.gd`) |
-| 2 | `capoeira_meia_lua` | A meia-lua | Acerte 4 meias-luas em bicho da mata (E de mão vazia) | 4 acertos | 2 cocadas | falta |
-| 3 | `capoeira_rasteira` | A rasteira | Deixe 2 bichos tontos com a rasteira (segure E de mão vazia) | 2 bichos tontos | 2 mungunzás | falta |
+| 1 | `capoeira_ginga` | A ginga | Esquive de 3 botes com a ginga (V na hora do aviso) | 3 esquivas | — | **pronta** (`missoes_capoeira.json`; a volta ao Cosme é passo de falar) |
+| 2 | `capoeira_meia_lua` | A meia-lua | Acerte 4 meias-luas em bicho da mata (E de mão vazia) | 4 acertos | 2 cocadas | **pronta** |
+| 3 | `capoeira_rasteira` | A rasteira | Deixe 2 bichos tontos com a rasteira (segure E de mão vazia) | 2 bichos tontos | 2 mungunzás | **pronta** |
 
 ### 3.11 As metas do caderno dos bichos
 
@@ -281,8 +281,8 @@ caçando. Lidas de `data/colecionaveis/bichos.json`.
 
 | id | Título | Objetivo | Conta | Quem paga | Paga | 3D |
 |---|---|---|---|---|---|---|
-| `meta_caititu` | O gibão do pai do Pedro | Fale com o Pedro | 10 caititus | Pedro | gibão de couro | falta (os dados já vieram) |
-| `meta_onca` | O patuá da Dona Zefa | Leve um couro de onça à Dona Zefa | 2 onças | Dona Zefa | patuá | falta (os dados já vieram) |
+| `meta_caititu` | O gibão do pai do Pedro | Fale com o Pedro | 10 caititus | Pedro | gibão de couro | **pronta** (`missoes_metas.json`, abre sozinha na conta) |
+| `meta_onca` | O patuá da Dona Zefa | Leve um couro de onça à Dona Zefa | 2 onças | Dona Zefa | patuá | falta (não há onça no vale) |
 
 ---
 
@@ -320,13 +320,12 @@ não tem missão em nenhum dos dois jogos:
 4. **O canteiro** (3.1), que barateia o mirante já pronto.
 5. **A jornada da fazenda** (4), que só pode abrir com 1 e com a fé (já
    pronta).
-6. **As armas, a capoeira e as metas** (3.9 a 3.11): o combate do 3D já roda e
-   ninguém o ensina.
+6. ~~As armas, a capoeira e as metas~~ (3.9 a 3.11): **prontas** em 05/10/2026,
+   menos a meta da onça, que espera a onça no vale.
 7. **O segundo tutorial** (2): pomar, curral e capataz pedem sistemas que o 3D
    ainda não tem.
-8. Os passos de apoio do tutorial que viraram falta e não são enredo:
-   `comer`, `pesca`, `talentos`, `caderneta`. Hoje o 3D ensina essas teclas
-   pelo HUD e pelo diário.
+8. ~~Os passos de apoio do tutorial~~ (`comer`, `pesca`, `talentos`,
+   `caderneta`): **prontos** em 05/10/2026.
 
 Ficam no 3D sem par no 2D: a carroça do Seu Benedito (`missoes_carroca.json`), o
 saveiro do mestre Quirino (`missoes_saveiro.json`), `fe_contar`, `tonho_livro`

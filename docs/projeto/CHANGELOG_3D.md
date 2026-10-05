@@ -2,6 +2,17 @@
 
 ## Em desenvolvimento — 05/10/2026
 
+- As frentes do 2D que não pedem lugar novo chegam ao vale: as **armas** do
+  Pedro (bater um facão na oficina, derrubar um caititu, o golpe de peso, que o
+  passo ensina), o **ofício** (a vara do pai do Pedro e dois peixes, e um
+  talento destravado na teia), a **capoeira** do Cosme para quem é do
+  candomblé (a ginga, a meia-lua e a rasteira, cada lição de volta ao Cosme), a
+  **meta dos caititus** (dez derrubados, e o Pedro dá o gibão do pai), a
+  **caderneta** na chegada (abrir o J) e a **primeira refeição** no fim da roça
+  (comer o pirão da Dona Filó). As frentes do Pedro abrem uma por E, depois da
+  chegada; a da onça espera a onça. Meta nova: `contar` (o mesmo acontecimento
+  N vezes, que o save lembra). Portão novo: `frentes`.
+
 - Falar com os moradores é o E, e é o Pedro quem ensina, no desembarque. Perto
   de alguém, a dica "E — Falar" aparece sobre a cabeça dele: o E conversa (a
   fala inteira no balão), cumpre o passo que manda falar com ele ou levar
@@ -29,8 +40,9 @@
   saveiro andando (WASD ou setas), correr um trecho com o Shift, e o Pedro vai
   NA FRENTE e apresenta o Tonho, a Dona Candinha e a Dona Zefa, que dá a chave.
   A casa fica trancada até a chave; dentro, o baú tem as ferramentas do finado
-  (a enxada, o balde e a maniva), e a primeira roça vem no primeiro dia, antes
-  do fogo, do poço, da janta, da noite e do convite. Quinze passos.
+  (a enxada, o balde e a maniva), o J abre a caderneta, e a primeira roça vem
+  no primeiro dia, antes do fogo, do poço, da janta, da noite e do convite.
+  Dezesseis passos.
 - Na primeira vez que o vigor cai a 30% na caminhada em que o Pedro conduz,
   ele explica as três barras — a vida, o fôlego e o vigor — numa fala longa;
   quem chega à porta sem cansar ouve o mesmo lá. Uma vez por partida, e vai no

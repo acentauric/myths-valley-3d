@@ -656,6 +656,7 @@ func _ready() -> void:
 	add_child(marcos)
 	marcos.configurar(world, player, hud, interiores)
 	_pendurar_as_filas_da_fe()
+	_pendurar_as_frentes_do_2d()
 	interiores.entrou.connect(_ao_mudar_de_lado.unbind(1))
 	interiores.saiu.connect(_ao_mudar_de_lado.unbind(1))
 	# O E NOS MORADORES (tecla_dos_moradores.gd): conversar, cumprir o passo que
@@ -682,6 +683,7 @@ func _ready() -> void:
 	# `estado_para_salvar`.
 	Salvamento.registrar_mundo(self)
 	var retomou_partida := _retomar_a_partida()
+	_ligar_os_acontecimentos_das_frentes()
 	_conferir_o_relogio_parado()
 	# DOIS FÔLEGOS: o vigor do corpo (a barra verde da corrida e do golpe) e a
 	# reserva do dia (o `Energia`), cada um na sua conta. Ver `vigor_maximo`.
@@ -810,6 +812,91 @@ func _pendurar_as_filas_da_fe() -> void:
 	# é refeito a cada carga — método de nó liberado o Godot desliga sozinho.
 	Fe.adotou.connect(_ao_entrar_numa_fe)
 	Fe.migrou.connect(_ao_migrar_de_fe)
+
+
+## AS FRENTES DO 2D QUE NÃO PEDEM LUGAR NOVO (docs/projeto/MISSOES_DO_2D.md): o
+## combate, a pesca e a teia de talentos já rodavam no vale, e ninguém levava o
+## jogador até eles.
+##
+## AS ARMAS E O OFÍCIO são do Pedro, depois da chegada, cada uma aberta por um E
+## nele — penduradas depois do arraial e da fé, que são enredo e têm a vez antes
+## na conversa. A CAPOEIRA é do Cosme e da fé do candomblé: abre com a mesa da
+## folha cumprida e congela fora dele. A META DOS CAITITUS abre sozinha quando a
+## conta de abatidos chega (`_conferir_as_metas`), e fecha no E no Pedro.
+func _pendurar_as_frentes_do_2d() -> void:
+	if pedro != null:
+		for qual in ["armas", "oficio"]:
+			var frente = _pendurar_cadeia(pedro, "res://data/missoes_%s.json" % qual, 6.0, "pedro_" + qual)
+			if frente != null:
+				frente.depois_de = func() -> bool: return pedro.terminou_o_tutorial()
+		_pendurar_cadeia(pedro, "res://data/missoes_metas.json", 0.0, "pedro_metas")
+		var bichos = JSON.parse_string(FileAccess.get_file_as_string("res://data/colecionaveis/bichos.json"))
+		if bichos is Dictionary:
+			var caititu: Dictionary = ((bichos as Dictionary).get("bichos", {}) as Dictionary).get("caititu", {})
+			_caititus_da_meta = int((caititu.get("meta", {}) as Dictionary).get("conta", _caititus_da_meta))
+	var cosme := _achar_morador("cosme")
+	if cosme != null:
+		var capoeira = _pendurar_cadeia(cosme, "res://data/missoes_capoeira.json", 4.0, "cosme_capoeira")
+		if capoeira != null:
+			capoeira.depois_de = func() -> bool:
+				var mesa = _cadeias.get("fe_candomble")
+				return Fe.ativa == "candomble" and mesa != null and mesa.acabou()
+			capoeira.so_enquanto = func() -> bool: return Fe.ativa == "candomble"
+
+
+## Quantos caititus abrem a meta do gibão (`bichos.json`, a parede da Guilda).
+var _caititus_da_meta := 10
+
+
+## A META ABRE SOZINHA: com a conta de caititus derrubados, o Pedro chama.
+func _conferir_as_metas() -> void:
+	var metas = _cadeias.get("pedro_metas")
+	if metas != null and not metas.iniciado and Luta.abatidos("caititu") >= _caititus_da_meta:
+		metas.comecar(1.0)
+
+
+## OS ACONTECIMENTOS DAS FRENTES: o golpe que acertou, o bicho que caiu, o que
+## ficou tonto, o bote esquivado, o peixe que veio na linha e o talento
+## destravado. Métodos, e não lambdas: os sinais são de autoloads.
+func _ao_acertar(golpe: String, especie: String, derrubou: bool, tonteou: bool) -> void:
+	_avisar_as_cadeias("acertou:" + golpe)
+	if derrubou:
+		_avisar_as_cadeias("derrubou:" + especie)
+	if tonteou:
+		_avisar_as_cadeias("tonteou")
+
+
+func _ao_esquivar(_especie: String) -> void:
+	_avisar_as_cadeias("esquivou")
+
+
+func _ao_pescar(_peixe: String, quantos: int) -> void:
+	for i in maxi(quantos, 1):
+		_avisar_as_cadeias("pescou")
+
+
+## Destravou um nó da teia: o `Talentos` só diz que mudou, e a carga do save
+## também muda — por isso a conta começa DEPOIS da partida salva
+## (`_ligar_os_acontecimentos_das_frentes`), e só a que cresce avisa.
+var _talentos_destravados := -1
+
+
+func _ao_mudar_os_talentos() -> void:
+	var agora: int = Talentos.destravados.size()
+	if _talentos_destravados >= 0 and agora > _talentos_destravados:
+		_avisar_as_cadeias("destravou_talento")
+	_talentos_destravados = agora
+
+
+func _ligar_os_acontecimentos_das_frentes() -> void:
+	_talentos_destravados = Talentos.destravados.size()
+	for ligado in [[Luta.acertou, _ao_acertar], [Luta.esquivou, _ao_esquivar],
+			[Pesca.terminou, _ao_pescar], [Talentos.mudou, _ao_mudar_os_talentos]]:
+		if not (ligado[0] as Signal).is_connected(ligado[1]):
+			(ligado[0] as Signal).connect(ligado[1])
+	# O J ABERTO (a caderneta da chegada).
+	if painel != null and painel.has_signal("abriu") and not painel.abriu.is_connected(_avisar_as_cadeias):
+		painel.abriu.connect(_avisar_as_cadeias.bind("abriu_painel"))
 
 
 func _ao_migrar_de_fe(_de: String, para: String) -> void:
@@ -1044,6 +1131,7 @@ func _process(_delta: float) -> void:
 	if _conferir_a_porta_em <= 0.0:
 		_conferir_a_porta_em = 0.5
 		_acertar_a_porta_da_casa()
+		_conferir_as_metas()
 	_atualizar_relogio()
 
 
@@ -1833,7 +1921,9 @@ func _exit_tree() -> void:
 		Vida.esta_lendo = Callable()
 	if Mochila.abrir_documento == Callable(self, "_ler_documento"):
 		Mochila.abrir_documento = Callable()
-	for ligado in [[Cozinha.cozinhou, _ao_cozinhar], [Cozinha.comeu, _ao_comer], [Oficina.fabricou, _ao_fabricar]]:
+	for ligado in [[Cozinha.cozinhou, _ao_cozinhar], [Cozinha.comeu, _ao_comer], [Oficina.fabricou, _ao_fabricar],
+			[Luta.acertou, _ao_acertar], [Luta.esquivou, _ao_esquivar], [Pesca.terminou, _ao_pescar],
+			[Talentos.mudou, _ao_mudar_os_talentos]]:
 		if (ligado[0] as Signal).is_connected(ligado[1]):
 			(ligado[0] as Signal).disconnect(ligado[1])
 	# UMA FALA ABERTA NÃO SOBREVIVE AO VALE (#21). O `Dialogo` é autoload e fica;

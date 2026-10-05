@@ -178,6 +178,25 @@
       }
     },
     {
+      "id": "caderneta",
+      "titulo": "A lista do que está aberto",
+      "titulo_en": "The list of what's open",
+      "titulo_es": "La lista de lo que está abierto",
+      "resumo": "Aperte J e veja o que está aberto",
+      "resumo_en": "Press J and see what's open",
+      "resumo_es": "Pulsa J y mira lo que está abierto",
+      "lugar": "casa_de_taipa",
+      "raio": 8,
+      "audio": "",
+      "texto": "Antes da roça, uma coisa: o J abre a lista de tudo que tá aberto — o que cada um pediu, o que falta, quem paga. Aperta e dá uma olhada; depois fecha e segue.",
+      "texto_en": "Before the field, one thing: J opens the list of everything that's open — what each person asked for, what's missing, who pays. Press it and have a look; then close it and carry on.",
+      "texto_es": "Antes del sembrado, una cosa: la J abre la lista de todo lo que está abierto: lo que pidió cada uno, lo que falta, quién paga. Púlsala y échale un vistazo; después ciérrala y sigue.",
+      "meta": {
+        "tipo": "evento",
+        "evento": "abriu_painel"
+      }
+    },
+    {
       "id": "roca",
       "titulo": "A roça do finado",
       "titulo_en": "The late man's field",
@@ -188,9 +207,9 @@
       "lugar": "lavoura",
       "raio": 8,
       "audio": "",
-      "texto": "Agora a terra, que terra parada é terra que some. O Cosme, neto da Dona Zefa, capinava a roça do seu tio e não parou. Põe a enxada na mão e abre uma leira; a maniva na mão planta, e o balde molha — na ordem que quiser. Se perder o fio, o J guarda o que tá aberto.",
-      "texto_en": "Now the land, because idle land is land that disappears. Cosme, Dona Zefa's grandson, weeded your uncle's field and never stopped. Put the hoe in your hand and open a furrow; the cutting in your hand plants, and the bucket waters — in any order you like. If you lose track, J keeps what's open.",
-      "texto_es": "Ahora la tierra, que tierra parada es tierra que se pierde. Cosme, el nieto de doña Zefa, carpía el sembrado de tu tío y no paró. Pon la azada en la mano y abre un surco; el esqueje en la mano planta, y el balde riega, en el orden que quieras. Si pierdes el hilo, la J guarda lo que está abierto.",
+      "texto": "Agora a terra, que terra parada é terra que some. O Cosme, neto da Dona Zefa, capinava a roça do seu tio e não parou. Põe a enxada na mão e abre uma leira; a maniva na mão planta, e o balde molha — na ordem que quiser.",
+      "texto_en": "Now the land, because idle land is land that disappears. Cosme, Dona Zefa's grandson, weeded your uncle's field and never stopped. Put the hoe in your hand and open a furrow; the cutting in your hand plants, and the bucket waters — in any order you like.",
+      "texto_es": "Ahora la tierra, que tierra parada es tierra que se pierde. Cosme, el nieto de doña Zefa, carpía el sembrado de tu tío y no paró. Pon la azada en la mano y abre un surco; el esqueje en la mano planta, y el balde riega, en el orden que quieras.",
       "meta": {
         "tipo": "evento",
         "eventos": [

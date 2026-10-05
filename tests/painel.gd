@@ -240,7 +240,8 @@ func _run() -> void:
 	# todas as cadeias, que é onde a missão nova vai nascer.
 	var cadeia_script = load("res://scripts/prototipo_3d/cadeia_de_missoes.gd")
 	for nome in ["missoes_guia", "missoes_coveiro", "missoes_filo", "missoes_zefa",
-			"missoes_tonho", "missoes_candinha"]:
+			"missoes_tonho", "missoes_candinha", "missoes_roca", "missoes_armas",
+			"missoes_oficio", "missoes_capoeira", "missoes_metas"]:
 		var dado = JSON.parse_string(FileAccess.get_file_as_string("res://data/%s.json" % nome))
 		if not (dado is Dictionary):
 			continue

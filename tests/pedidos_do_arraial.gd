@@ -117,9 +117,14 @@ func _run() -> void:
 		jogador.teleportar(filo.global_position + Vector3(1.0, 0.0, 0.6), 0.0)
 		await _ate(func() -> bool: return roca.espera <= 0.0, SEGUNDOS)
 		jogo.get("tecla_dos_moradores").usar(filo)
-		_conferir(await _ate(func() -> bool: return roca.acabou(), SEGUNDOS),
+		_conferir(await _ate(func() -> bool: return roca.missao >= 3, SEGUNDOS),
 			"com o E na Dona Filó, com a farinha, a cuia não foi entregue")
 		_conferir(inv.quantidade("pirao") >= 1, "a Dona Filó não deu o pirão")
+		# A PRIMEIRA REFEIÇÃO (o 'comer' do 2D): o pirão se come, e a roça acaba.
+		await _ate(func() -> bool: return roca.espera <= 0.0, SEGUNDOS)
+		_conferir(root.get_node("/root/Cozinha").comer("pirao"), "o pirão da Dona Filó não se comeu")
+		_conferir(await _ate(func() -> bool: return roca.acabou(), SEGUNDOS),
+			"comido o pirão, o passo da primeira refeição não fechou")
 		_conferir(receitas.sabe("pirao"), "o passo da cuia abriu e não ensinou o pirão")
 		_conferir(pagamentos.any(func(t: String) -> bool: return t.contains(_nome(filo))),
 			"o pirão é da Dona Filó, e o HUD disse: %s" % str(pagamentos))

@@ -314,6 +314,13 @@ func _acontecer(evento: String, id: String, jogo, jogador, inv, energia, dialogo
 			"o passo '%s' pede %s no fogo, e a cozinha recusou: %s" % [id, receita, cozinha.impedimento(receita)])
 	elif evento == "dormiu":
 		jogo.noite.dormir_na_cama()
+	elif evento == "abriu_painel":
+		# O J: abre a lista, como o jogador, e fecha.
+		jogo.abrir_o_painel()
+		await _frames(3)
+		var painel = jogo.get("painel")
+		if painel != null and painel.aberto:
+			painel.fechar()
 	elif evento == "correu":
 		# O Shift e a frente, de onde o desembarque deixou o jogador (ao lado do
 		# Pedro, no píer) rumo à praça, pelo tabuado: o vale conta o trecho

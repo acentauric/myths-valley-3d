@@ -413,6 +413,9 @@ func resumo_do_passo(passo: Dictionary) -> String:
 			var pedidos := eventos_da_meta(meta)
 			if pedidos.size() > 1:
 				conta = "%d/%d" % [_eventos_feitos(meta), pedidos.size()]
+		"contar":
+			var vezes := int(meta.get("quantos", 1))
+			conta = "%d/%d" % [mini(_contados(passo), vezes), vezes]
 		"visitar":
 			var lugares := _lugares_da_meta(meta)
 			conta = "%d/%d" % [_visitados(passo).size(), lugares.size()]
@@ -547,6 +550,11 @@ func _nome_do_dono() -> String:
 ## fala. A PRIMEIRA ferramenta da lista é a que fica acesa na barra — a enxada,
 ## que é o primeiro gesto; a maniva vai para a mochila.
 func entregar(passo: Dictionary) -> void:
+	# O GOLPE QUE O PASSO ENSINA (`ensina`), na mesma fala que o pede: o golpe
+	# forte, a ginga, a meia-lua e a rasteira do `Luta` só valem para quem os
+	# aprendeu, e no vale só a missão os ensina.
+	if str(passo.get("ensina", "")) != "":
+		Luta.aprender(str(passo["ensina"]))
 	var acender := ""
 	for entrega: Dictionary in entregas_do_passo(passo):
 		var item := str(entrega.get("item", ""))
@@ -632,6 +640,11 @@ func falta_a_meta(passo: Dictionary) -> bool:
 			# tela do P, por exemplo. Também é memória, pela mesma razão do
 			# encontro. Com `eventos`, todos os da lista.
 			return _eventos_feitos(meta) < eventos_da_meta(meta).size()
+		"contar":
+			# O MESMO ACONTECIMENTO, N VEZES, contadas desde que o passo abriu: o
+			# 'contar' do 2D, que não volta atrás (o golpe forte dado não se
+			# desdá).
+			return _contados(passo) < int(meta.get("quantos", 1))
 		"obra":
 			# A OBRA FEITA, do `Obras` — o mirante levantado. Isso o mundo
 			# guarda sozinho, e o save também.
@@ -651,6 +664,23 @@ func falta_a_meta(passo: Dictionary) -> bool:
 ## novo. Fica na memória da cadeia, que vai no save.
 func registrar_evento(nome: String) -> void:
 	_levados[_chave_do_evento(nome)] = true
+	# O PASSO QUE CONTA ESTE ACONTECIMENTO ('contar': três golpes fortes, dois
+	# peixes): cada vez vira uma lembrança numerada, que vai no save como as
+	# outras — recarregar no meio da conta não a zera.
+	var passo := passo_atual()
+	var meta: Dictionary = passo.get("meta", {})
+	if iniciado and str(meta.get("tipo", "")) == "contar" and str(meta.get("evento", "")) == nome:
+		_levados["conta:%s:%d" % [str(passo.get("id", "")), _contados(passo) + 1]] = true
+
+
+## Quantas vezes o acontecimento do passo 'contar' já aconteceu nele.
+func _contados(passo: Dictionary) -> int:
+	var prefixo := "conta:%s:" % str(passo.get("id", ""))
+	var vezes := 0
+	for chave in _levados:
+		if str(chave).begins_with(prefixo):
+			vezes += 1
+	return vezes
 
 
 static func _chave_do_evento(nome: String) -> String:
@@ -775,6 +805,9 @@ func _acertar_o_caderno(passo: Dictionary) -> void:
 			CadernoDoVale.andar(id, tem_tudo, pede_tudo, linha)
 		"evento":
 			CadernoDoVale.andar(id, _eventos_feitos(meta), maxi(eventos_da_meta(meta).size(), 1), str(passo.get("resumo", "")))
+		"contar":
+			var vezes := int(meta.get("quantos", 1))
+			CadernoDoVale.andar(id, mini(_contados(passo), vezes), vezes, str(passo.get("resumo", "")))
 		"obra":
 			CadernoDoVale.andar(id, 0 if falta_a_meta(passo) else 1, 1, str(passo.get("resumo", "")))
 		"visitar":

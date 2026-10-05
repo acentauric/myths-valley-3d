@@ -218,7 +218,7 @@ func _run() -> void:
 	if current_scene.get("pedro") != null:
 		moram_no_vale.append("pedro")
 
-	var metas_que_o_vale_sabe := ["juntar", "derrubar", "levar", "falar", "evento", "obra"]
+	var metas_que_o_vale_sabe := ["juntar", "derrubar", "levar", "falar", "evento", "contar", "obra"]
 	# O BAÚ DA CASA também dá: as ferramentas do finado — a enxada, o balde e a
 	# maniva — esperam lá o passo da chegada que manda pegá-las, como no 2D.
 	var do_bau: Dictionary = load("res://scripts/prototipo_3d/casa_do_jogador.gd").DO_FINADO
@@ -229,7 +229,8 @@ func _run() -> void:
 	# a essa altura também já recebeu tudo isso.
 	var entregues_pelo_guia: Array[String] = []
 	for nome in ["missoes_guia", "missoes_coveiro", "missoes_filo", "missoes_zefa",
-			"missoes_tonho", "missoes_candinha", "missoes_arraial", "missoes_roca", "missoes_carroca"]:
+			"missoes_tonho", "missoes_candinha", "missoes_arraial", "missoes_roca", "missoes_carroca",
+			"missoes_armas", "missoes_oficio", "missoes_capoeira", "missoes_metas"]:
 		var texto := FileAccess.get_file_as_string("res://data/%s.json" % nome)
 		_conferir(texto != "", "não consegui ler %s.json" % nome)
 		var dado = JSON.parse_string(texto)
@@ -292,6 +293,10 @@ func _run() -> void:
 							if nome == "missoes_guia":
 								entregues_pelo_guia.append(pedido)
 							continue
+						# A RECEITA QUE O PRÓPRIO PASSO ENSINA (o facão das armas: a
+						# porta dela é a abertura do passo, `abre.missao`).
+						if _a_bancada_ensina(pedido, str(passo.get("id", "")), ferramenta_de_rende):
+							continue
 						_conferir(_da_no_vale(pedido, ferramenta_de_rende),
 							"o passo '%s' pede '%s', que nenhum alvo posto no vale rende, a bancada não faz e o baú não tem"
 								% [qual_passo, pedido])
@@ -301,7 +306,7 @@ func _run() -> void:
 						_conferir(precisa == "" or entregues.has(precisa),
 							"o passo '%s' pede %s, que só sai de %s, e ninguém entregou a %s até aqui"
 								% [qual_passo, pedido, precisa, precisa])
-				"evento":
+				"evento", "contar":
 					var pedidos: Array = meta.get("eventos", []) if not (meta.get("eventos", []) as Array).is_empty() else [meta.get("evento", "")]
 					for evento in pedidos:
 						_conferir(_o_vale_avisa(str(evento)),
@@ -361,7 +366,8 @@ func _run() -> void:
 ## Meta de evento que ninguém avisa é passo que nunca fecha. Os nomes fixos são os
 ## que o vale liga um a um; os de prefixo levam o id do que aconteceu, e o id tem
 ## de existir — "cozinhou:farinha" pede uma receita da cozinha chamada farinha.
-const EVENTOS_FIXOS := ["abriu_arraial", "adotou_fe", "arou", "plantou", "regou", "colheu", "dormiu", "correu"]
+const EVENTOS_FIXOS := ["abriu_arraial", "adotou_fe", "arou", "plantou", "regou", "colheu", "dormiu", "correu",
+	"pescou", "esquivou", "tonteou", "destravou_talento", "abriu_painel"]
 
 func _o_vale_avisa(evento: String) -> bool:
 	if evento in EVENTOS_FIXOS:
@@ -376,6 +382,13 @@ func _o_vale_avisa(evento: String) -> bool:
 		return not (root.get_node("/root/Oficina").dados(evento.trim_prefix("fabricou:")) as Dictionary).is_empty()
 	if evento.begins_with("comeu:"):
 		return Catalogo.tipo(evento.trim_prefix("comeu:")) == "comida"
+	# O COMBATE: o golpe tem de ser um que o `Luta` conhece, e o bicho, um do
+	# caderno dos bichos.
+	if evento.begins_with("acertou:"):
+		return root.get_node("/root/Luta").GOLPES.has(evento.trim_prefix("acertou:"))
+	if evento.begins_with("derrubou:"):
+		var bichos = JSON.parse_string(FileAccess.get_file_as_string("res://data/colecionaveis/bichos.json"))
+		return bichos is Dictionary and ((bichos as Dictionary).get("bichos", {}) as Dictionary).has(evento.trim_prefix("derrubou:"))
 	if evento.begins_with("leu:"):
 		var papeis = JSON.parse_string(FileAccess.get_file_as_string("res://data/documentos.json"))
 		return papeis is Dictionary and (papeis as Dictionary).has(evento.trim_prefix("leu:"))
@@ -403,6 +416,18 @@ func _carga_do_passo(meta: Dictionary) -> Dictionary:
 ## é um beco: o jogador junta a lenha e não tem o que fazer com ela. Tábua e
 ## corda nascem sabidas justamente por isto, e o comentário do `Oficina.RECEITAS`
 ## diz que é por causa desta rede.
+## A bancada faz o item com a receita que o passo `passo` ensina ao abrir, e o
+## material dela o vale dá.
+func _a_bancada_ensina(item: String, passo: String, de_alvo: Dictionary) -> bool:
+	var receita: Dictionary = _receitas.get(item, {})
+	if str((receita.get("abre", {}) as Dictionary).get("missao", "")) != passo:
+		return false
+	for custo in (receita.get("custo", {}) as Dictionary):
+		if not _da_no_vale(str(custo), de_alvo):
+			return false
+	return true
+
+
 func _da_no_vale(item: String, de_alvo: Dictionary, fundo: int = 4) -> bool:
 	if de_alvo.has(item):
 		return true

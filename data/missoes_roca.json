@@ -15,12 +15,15 @@
       "resumo_en": "Water every day and harvest the cassava",
       "resumo_es": "Riega cada día y cosecha la yuca",
       "lugar": "lavoura",
-      "raio": 8.0,
+      "raio": 8,
       "audio": "",
       "texto": "Mandioca pede um gole por dia, e paciência. Rega toda manhã e dorme: com quatro dias de chão molhado a rama amarela e a raiz tá no ponto. Aí é de mão livre — guarda a ferramenta e arranca com as duas mãos.",
       "texto_en": "Cassava asks for a sip a day, and patience. Water it every morning and sleep: after four days of wet soil the leaves turn yellow and the root is ready. Then it's bare-handed — put the tool away and pull it up with both hands.",
       "texto_es": "La yuca pide un trago por día, y paciencia. Riégala cada mañana y duerme: con cuatro días de tierra mojada la rama amarillea y la raíz está en su punto. Ahí es con la mano libre: guarda la herramienta y arráncala con las dos manos.",
-      "meta": { "tipo": "evento", "evento": "colheu" }
+      "meta": {
+        "tipo": "evento",
+        "evento": "colheu"
+      }
     },
     {
       "id": "cozinhar",
@@ -31,12 +34,15 @@
       "resumo_en": "Toast flour on the fire",
       "resumo_es": "Tuesta harina en la fogata",
       "lugar": "fogueira",
-      "raio": 6.0,
+      "raio": 6,
       "audio": "",
       "texto": "Mandioca crua não é comida, é raiz. Rala, prensa e torra: duas raízes e uma lenha dão uma farinha. O fogo do terreiro dá conta — o J na fogueira.",
       "texto_en": "Raw cassava isn't food, it's a root. Grate it, press it and toast it: two roots and one piece of firewood make one flour. The yard fire will do — J at the fire.",
       "texto_es": "La yuca cruda no es comida, es raíz. Rállala, prénsala y tuéstala: dos raíces y una leña dan una harina. El fuego del patio alcanza: la J en la fogata.",
-      "meta": { "tipo": "evento", "evento": "cozinhou:farinha" }
+      "meta": {
+        "tipo": "evento",
+        "evento": "cozinhou:farinha"
+      }
     },
     {
       "id": "pirao",
@@ -47,7 +53,7 @@
       "resumo_en": "Take flour to Dona Filó",
       "resumo_es": "Llévale harina a doña Filó",
       "lugar": "casa_da_estrada",
-      "raio": 8.0,
+      "raio": 8,
       "audio": "",
       "texto": "A primeira farinha de uma roça nova vai pra quem não pode mais plantar — é costume, e é o certo. A Dona Filó, mãe do Tonho, mora na casa da estrada. Leva uma cuia pra ela.",
       "texto_en": "The first flour from a new field goes to someone who can't plant anymore — it's custom, and it's right. Dona Filó, Tonho's mother, lives in the house by the road. Take her a bowl.",
@@ -63,7 +69,28 @@
         "resposta_es": "Harina del sembrado del difunto... Él también me traía la primera, cada año. Dios te lo pague, hijo. Y aprende el pirão, que la harina sola no sostiene: cocina el pescado, espesa el caldo con la harina y revuelve hasta que tome punto. Toma este, que lo hice para Tonho y ni bajó."
       },
       "quem_paga": "filo",
-      "recompensa": { "pirao": 1 }
+      "recompensa": {
+        "pirao": 1
+      }
+    },
+    {
+      "id": "comer",
+      "titulo": "A primeira refeição",
+      "titulo_en": "The first meal",
+      "titulo_es": "La primera comida",
+      "resumo": "Coma o pirão (I, depois F)",
+      "resumo_en": "Eat the pirão (I, then F)",
+      "resumo_es": "Come el pirão (I, después F)",
+      "lugar": "casa_da_estrada",
+      "raio": 8,
+      "audio": "",
+      "texto": "Pirão da Dona Filó não se guarda: se come quente. O I abre a mochila, e o F em cima do pirão come. Barriga cheia é fôlego de volta.",
+      "texto_en": "Dona Filó's pirão isn't for keeping: you eat it hot. I opens the backpack, and F on the pirão eats it. A full belly is breath back.",
+      "texto_es": "El pirão de doña Filó no se guarda: se come caliente. La I abre la mochila, y la F sobre el pirão lo come. Barriga llena es aliento de vuelta.",
+      "meta": {
+        "tipo": "evento",
+        "evento": "comeu:pirao"
+      }
     }
   ],
   "arremate": {
