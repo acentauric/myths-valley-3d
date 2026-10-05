@@ -1,5 +1,36 @@
 # Histórico de mudanças — Myths' Valley 3D
 
+## Build #9 — 05/10/2026 (edição Tripothon)
+
+- **Build especial do concurso, estática.** Novo preset de exportação "Windows
+  Tripothon" (`export_presets.cfg`, cópia do "Windows Desktop" com a feature
+  `tripothon`, saída em `build/tripothon/MythsValley3D.exe`; o preset normal não
+  mudou). Com a feature, o `Atualizacao` nunca consulta o site, baixa nem instala
+  (`edicao_estatica()`), e a linha embaixo da versão no menu fica à vista,
+  desativada, dizendo "Edição Tripothon · atualização desativada" nos três idiomas.
+  Portão: `tests/atualizacao.gd` (finge a feature com `forcar_estatica`).
+- **Vídeo no fundo das cargas longas.** A primeira carga (idioma → menu) mostra o
+  sobrevoo do vale (`carregamento_sobrevoo.ogv`, 21 s, laço sem emenda) e a do JOGAR
+  (menu → vale) mostra a cinemática de abertura (`cinematica_abertura.ogv`, 36 s),
+  ambos em `assets/prototipo_3d/identidade/video/`: Theora 1280×720, mudos (volume
+  -80 dB: as telas de carregamento seguem silenciosas), cobrindo a tela com corte, por
+  baixo do logotipo, da barra e dos textos. A seleção de idioma, a volta ao menu e a
+  troca de estilo continuam com a capa estática, que também é o que aparece se o
+  arquivo faltar. Gerados com a API do LTX a partir das pinturas do próprio projeto
+  (`assets/CREDITOS.md`); `*.ogv` entra como binário no Git, sem LFS (37 MB, abaixo do
+  limite de arquivo do GitHub).
+- **A tela do JOGAR só sai quando o vale termina de verdade.** `prototype.gd` avisa
+  `carga_concluida` no fim do `_ready` (moradores, bichos, telas, partida salva); a
+  `tela_carregamento.gd` reserva o último décimo da barra para esse trecho, espera o
+  aviso com teto de 15 s e segura 3 quadros com o mundo visível por baixo da tela opaca
+  antes do fade, para os shaders compilarem escondidos. Não encurta a carga: troca
+  "terminou e congelou" por uma barra que fecha quando acabou (relatório C4/C5 de
+  `docs/projeto/DESEMPENHO_05_10_2026.md`).
+- Histórico do jogo: `build_numero` 9 e a entrada "Edição Tripothon" (05/10/2026) nos
+  três idiomas, com o que mudou na build de desempenho: carga sem o congelamento de
+  19 s, FPS dobrado (sombra, faces de trás, mata mais leve), mata pela metade com
+  clareiras de árvore-destaque, minimapa pintado e estático, e os vídeos de carga.
+
 ## Em desenvolvimento — 05/10/2026
 
 - O vale ganha céu: um shader próprio (`ceu_vale.gdshader`, `CeuVale`) com

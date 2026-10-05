@@ -869,7 +869,9 @@ func _create_version_link() -> void:
 	linha_atualizacao.add_theme_color_override("font_disabled_color", Color("c9b98f"))
 	linha_atualizacao.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	linha_atualizacao.custom_minimum_size.y = 24
-	linha_atualizacao.mouse_entered.connect(func(): Audio.efeito("ui_hover"))
+	linha_atualizacao.mouse_entered.connect(func():
+		if not linha_atualizacao.disabled:
+			Audio.efeito("ui_hover"))
 	linha_atualizacao.pressed.connect(_acionar_atualizacao)
 	content.add_child(linha_atualizacao)
 	_atualizar_oferta()
@@ -879,6 +881,14 @@ func _create_version_link() -> void:
 ## uma build nova no site; durante o download e a instalação, não aceita clique.
 func _atualizar_oferta() -> void:
 	if linha_atualizacao == null or not is_instance_valid(linha_atualizacao):
+		return
+	# Build do evento (Tripothon): fixa, sem consulta nem oferta; a linha fica à vista,
+	# apagada e sem clique, dizendo por que não atualiza.
+	if Atualizacao.edicao_estatica():
+		linha_atualizacao.visible = true
+		linha_atualizacao.text = tr("Edição Tripothon · atualização desativada")
+		linha_atualizacao.tooltip_text = ""
+		linha_atualizacao.disabled = true
 		return
 	var E := Atualizacao.Estado
 	var estado: int = Atualizacao.estado
@@ -1857,7 +1867,7 @@ func _start_game() -> void:
 ## ou noite) segue a hora em que o jogo vai começar, não a do cenário do menu.
 func _show_loading() -> ProgressBar:
 	_close_help()
-	return TelaCarregamento.mostrar(panel.get_parent(), panel.theme, tr("Carregando o vale…"), Dia.hora_inicial)
+	return TelaCarregamento.mostrar(panel.get_parent(), panel.theme, tr("Carregando o vale…"), Dia.hora_inicial, TelaCarregamento.VIDEO_ABERTURA)
 
 
 func _formatar_escala(meters_per_unit: float) -> String:

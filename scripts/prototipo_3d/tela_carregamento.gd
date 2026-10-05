@@ -4,7 +4,9 @@ extends RefCounted
 ## o jogador chega ou sai —, o logotipo em talha dourada, uma nota do almanaque, a etapa
 ## com a porcentagem, a rosa dos ventos girando e um fio de ouro na base como barra.
 ## `trocar_cena` carrega a cena em segundo plano, avança a barra e troca de cena; a tela
-## some quando o vale fica pronto.
+## some quando o vale fica pronto. Nas duas cargas longas (idioma -> menu e JOGAR -> vale)
+## a capa estática ganha por cima um vídeo mudo em laço (sobrevoo ou abertura), por baixo
+## do logotipo, da barra e dos textos; sem o arquivo, fica só a capa.
 
 const Identidade = preload("res://scripts/prototipo_3d/identidade.gd")
 
@@ -18,6 +20,11 @@ const CAPA_NOITE := Identidade.PASTA + "capa_noite.webp"
 const FONTE_TITULO := Identidade.FONTE_TITULO
 const FONTE_TEXTO := Identidade.FONTE_TEXTO
 const FONTE_ITALICO := Identidade.FONTE_ITALICO
+## Vídeos de fundo das cargas longas (gerados com o LTX a partir das capas pintadas).
+const VIDEO_SOBREVOO := Identidade.PASTA + "video/carregamento_sobrevoo.ogv"
+const VIDEO_ABERTURA := Identidade.PASTA + "video/cinematica_abertura.ogv"
+## Proporção dos vídeos (1280×720): o corte para cobrir a tela parte dela.
+const PROPORCAO_VIDEO := 16.0 / 9.0
 
 ## A capa da noite entra espelhada: a lua sai de trás do logotipo e a igreja de trás do
 ## almanaque (e a torre fica à esquerda, como na igreja do jogo).
@@ -44,10 +51,12 @@ const NOTAS_NOITE := Identidade.NOTAS_NOITE
 
 ## Monta a tela sobre `pai` (CanvasLayer ou Control de tela cheia) e devolve a barra.
 ## `hora` escolhe a capa (dia ou noite); negativa, vale a hora atual do relógio.
-static func mostrar(pai: Node, tema: Theme, mensagem: String, hora: float = -1.0) -> ProgressBar:
+## `video` (caminho de um .ogv) põe o vídeo em laço por cima da capa; vazio, só a capa.
+static func mostrar(pai: Node, tema: Theme, mensagem: String, hora: float = -1.0, video: String = "") -> ProgressBar:
 	var noite: bool = Dia.eh_noite_em(Dia.hora if hora < 0.0 else hora)
 	var screen := mostrar_capa(pai, tema, noite)
 	screen.name = "TelaCarregamento"
+	_video(screen, video)
 	_almanaque(screen, noite)
 	var textos := _situacao(screen, mensagem)
 	var bar := _barra(screen, textos[1])
@@ -94,6 +103,55 @@ static func _capa(tela: Control, noite: bool) -> void:
 	_cobrir(capa)
 	tela.add_child(capa)
 	capa.scale = Vector2.ONE
+
+
+## Vídeo mudo em laço cobrindo a tela (corte, sem tarjas), logo acima da capa e abaixo dos
+## véus, do logotipo e dos textos. Se o arquivo faltar ou não abrir, a capa estática segue
+## sozinha, sem erro. As telas de carregamento são silenciosas: o volume vai a -80 dB mesmo
+## com os vídeos sem trilha de áudio.
+static func _video(tela: Control, caminho: String) -> void:
+	if caminho.is_empty() or not ResourceLoader.exists(caminho):
+		return
+	var fluxo := load(caminho) as VideoStream
+	if fluxo == null:
+		return
+	# O recorte: o contêiner corta o que passa da tela e o player cresce até cobri-la.
+	var caixa := Control.new()
+	caixa.name = "Video"
+	caixa.clip_contents = true
+	_cobrir(caixa)
+	var player := VideoStreamPlayer.new()
+	player.name = "Player"
+	player.stream = fluxo
+	player.loop = true
+	player.volume_db = -80.0
+	player.expand = true
+	player.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	caixa.add_child(player)
+	caixa.resized.connect(_cobrir_com_video.bind(caixa, player))
+	tela.add_child(caixa)
+	tela.move_child(caixa, tela.get_node("Capa").get_index() + 1)
+	_cobrir_com_video(caixa, player)
+	player.play()
+
+
+static func _cobrir_com_video(caixa: Control, player: VideoStreamPlayer) -> void:
+	var area := caixa.size
+	if area.x <= 0.0 or area.y <= 0.0:
+		return
+	var tamanho := Vector2(area.x, area.x / PROPORCAO_VIDEO)
+	if tamanho.y < area.y:
+		tamanho = Vector2(area.y * PROPORCAO_VIDEO, area.y)
+	player.set_anchors_preset(Control.PRESET_TOP_LEFT)
+	player.size = tamanho
+	player.position = (area - tamanho) * 0.5
+
+
+## O vídeo para ao sair da árvore (a tela muda de pai ao cruzar a troca de cena): retoma.
+static func _retomar_video(tela: Control) -> void:
+	var player := tela.get_node_or_null("Video/Player") as VideoStreamPlayer
+	if player != null and not player.is_playing():
+		player.play()
 
 
 ## Luz quente e trêmula no lampião do viajante (capa da noite). Filha da capa, acompanha
@@ -448,6 +506,14 @@ static func _na_capa(ponto: Vector2, espelhada: bool) -> Vector2:
 ## antes da troca, sobrevive a ela, mostra cada etapa e some quando o vale fica pronto.
 const FATIA_ARQUIVOS := 0.25
 const TEMPO_LEITURA_MS := 1100
+## Quando a cena nova ainda trabalha depois de o mundo ficar pronto (o vale monta
+## moradores, bichos e telas no resto do `_ready`), este último trecho da barra é dela:
+## a barra só fecha quando a cena avisa `carga_concluida`, com este teto de espera.
+const FATIA_POS_MUNDO := 0.1
+const TETO_POS_MUNDO_MS := 15000
+## Quadros com o mundo já visível por baixo da tela opaca antes do fade: os shaders e
+## pipelines do primeiro quadro compilam escondidos, não na cara do jogador.
+const QUADROS_DE_AQUECIMENTO := 3
 
 
 static func trocar_cena(arvore: SceneTree, cena: String, barra: ProgressBar) -> void:
@@ -473,28 +539,33 @@ static func trocar_cena(arvore: SceneTree, cena: String, barra: ProgressBar) -> 
 			entrada.kill()
 		tela.modulate.a = 1.0
 		tela.reparent(camada, false)
+		_retomar_video(tela)
 	if packed == null:
 		arvore.change_scene_to_file(cena)
 	else:
 		arvore.change_scene_to_packed(packed)
 	await arvore.process_frame
 	await arvore.process_frame
-	# A etapa escrita troca no máximo a cada TEMPO_LEITURA_MS, sempre para a mais
-	# recente: dá para ler cada texto sem atrasar a montagem (etapas-relâmpago pulam).
 	var mundo := arvore.get_first_node_in_group("mundo")
+	# A cena nova ainda tem trabalho depois do mundo? Então o fim da barra espera por ela.
+	var nova := arvore.current_scene
+	var espera_pos := nova != null and nova.has_signal("carga_concluida") and not bool(nova.get("carga_ok"))
+	var fatia_mundo := 1.0 - FATIA_ARQUIVOS - (FATIA_POS_MUNDO if espera_pos else 0.0)
 	# Sem VSync durante a montagem: cada quadro cedido à tela custa só o desenho dela,
 	# não a espera pelo monitor (eram segundos somados no carregamento).
 	var vsync := DisplayServer.window_get_vsync_mode()
 	DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_DISABLED)
+	var alvo := [FATIA_ARQUIVOS]
+	var mensagem: Label = barra.get_meta("mensagem", null)
+	var pendente := [""]
+	var ultima_troca := [0]
 	if mundo != null and not mundo.construido:
-		var alvo := [FATIA_ARQUIVOS]
-		var mensagem: Label = barra.get_meta("mensagem", null)
-		var pendente := [""]
-		var ultima_troca := [0]
 		mundo.progresso.connect(func(fracao: float, etapa: String) -> void:
-			alvo[0] = FATIA_ARQUIVOS + (1.0 - FATIA_ARQUIVOS) * fracao
+			alvo[0] = FATIA_ARQUIVOS + fatia_mundo * fracao
 			pendente[0] = etapa)
 		# A barra desliza até o alvo em vez de pular: a montagem cede um quadro por vez.
+		# A etapa escrita troca no máximo a cada TEMPO_LEITURA_MS, sempre para a mais
+		# recente: dá para ler cada texto sem atrasar a montagem (etapas-relâmpago pulam).
 		while is_instance_valid(mundo) and not mundo.construido:
 			barra.value = lerpf(barra.value, alvo[0], 0.15)
 			if mensagem != null and is_instance_valid(mensagem) and pendente[0] != "" \
@@ -502,6 +573,18 @@ static func trocar_cena(arvore: SceneTree, cena: String, barra: ProgressBar) -> 
 				mensagem.text = mensagem.tr(pendente[0]) + "…"
 				pendente[0] = ""
 				ultima_troca[0] = Time.get_ticks_msec()
+			await arvore.process_frame
+	if espera_pos and is_instance_valid(nova):
+		# O mundo está de pé, mas a cena segue povoando e montando telas: a barra
+		# anda devagar até perto do fim e só fecha quando ela termina de verdade.
+		var inicio := Time.get_ticks_msec()
+		var teto := FATIA_ARQUIVOS + fatia_mundo + FATIA_POS_MUNDO * 0.9
+		while is_instance_valid(nova) and not bool(nova.get("carga_ok")) \
+				and Time.get_ticks_msec() - inicio < TETO_POS_MUNDO_MS:
+			barra.value = lerpf(barra.value, teto, 0.02)
+			await arvore.process_frame
+		# Mundo visível por baixo da tela opaca: os shaders compilam escondidos.
+		for i in QUADROS_DE_AQUECIMENTO:
 			await arvore.process_frame
 	DisplayServer.window_set_vsync_mode(vsync)
 	barra.value = 1.0

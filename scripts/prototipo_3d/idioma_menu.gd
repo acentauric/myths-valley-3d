@@ -428,6 +428,7 @@ const EN := {
 	"Instalando a Build %d…": "Installing Build %d…",
 	"Build %d instalada · Reiniciar o jogo": "Build %d installed · Restart the game",
 	"A atualização falhou · Tentar de novo": "The update failed · Try again",
+	"Edição Tripothon · atualização desativada": "Tripothon Edition · updates turned off",
 }
 
 const ES := {
@@ -836,6 +837,7 @@ const ES := {
 	"Instalando a Build %d…": "Instalando la Build %d…",
 	"Build %d instalada · Reiniciar o jogo": "Build %d instalada · Reiniciar el juego",
 	"A atualização falhou · Tentar de novo": "La actualización falló · Intentar de nuevo",
+	"Edição Tripothon · atualização desativada": "Edición Tripothon · actualización desactivada",
 }
 
 ## Uma tradução fica registrada só enquanto o menu está no idioma dela: registrada,

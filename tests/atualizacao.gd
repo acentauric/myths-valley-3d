@@ -22,8 +22,9 @@ func _initialize() -> void:
 	_manifesto()
 	_hash()
 	_instalacao()
+	_edicao_estatica()
 	if falhas == 0:
-		print("ATUALIZACAO_OK: manifesto, builds, SHA-256, extração, troca do executável e limpeza")
+		print("ATUALIZACAO_OK: manifesto, builds, SHA-256, extração, troca do executável, limpeza e edição estática")
 	quit(1 if falhas > 0 else 0)
 
 
@@ -101,6 +102,36 @@ func _instalacao() -> void:
 	_conferir(not FileAccess.file_exists(exe + Atualizacao.SUFIXO_ANTIGO), "o .old ficou depois da limpeza")
 	_conferir(not DirAccess.dir_exists_absolute(extracao), "a pasta de extração ficou depois da limpeza")
 	_conferir(_ler(exe) == "build 7", "a limpeza levou o executável junto")
+
+
+## A build do Tripothon (feature `tripothon`) é fixa: nunca consulta, baixa nem instala.
+## O portão finge a feature pela variável do script e confere o preset de exportação.
+func _edicao_estatica() -> void:
+	_conferir(not Atualizacao.edicao_estatica(), "a edição normal foi tomada por estática")
+	var presets := ConfigFile.new()
+	_conferir(presets.load("res://export_presets.cfg") == OK, "export_presets.cfg não abriu")
+	var achou := false
+	for secao in presets.get_sections():
+		if presets.get_value(secao, "name", "") == "Windows Tripothon":
+			achou = true
+			_conferir("tripothon" in str(presets.get_value(secao, "custom_features", "")).split(","), "o preset Tripothon não traz a feature tripothon")
+			_conferir(str(presets.get_value(secao, "export_path", "")) == "build/tripothon/MythsValley3D.exe", "o preset Tripothon exporta para outro caminho")
+		elif presets.get_value(secao, "name", "") == "Windows Desktop":
+			_conferir(str(presets.get_value(secao, "custom_features", "")) == "", "o preset normal ganhou feature")
+	_conferir(achou, "falta o preset Windows Tripothon")
+	Atualizacao.forcar_estatica = true
+	_conferir(Atualizacao.edicao_estatica(), "a feature fingida não valeu")
+	var instancia: Node = Atualizacao.new()
+	instancia.verificar()
+	_conferir(instancia.estado == Atualizacao.Estado.PARADO and instancia._http == null, "a edição estática consultou o site")
+	_conferir(not instancia.instala_sozinho(), "a edição estática se instalaria sozinha")
+	# Mesmo com uma oferta na mão (manifesto de uma build nova), `atualizar` não anda.
+	instancia.manifesto = {"build": 99}
+	instancia.estado = Atualizacao.Estado.DISPONIVEL
+	instancia.atualizar()
+	_conferir(instancia.estado == Atualizacao.Estado.DISPONIVEL and instancia._http == null, "a edição estática começou a baixar")
+	instancia.free()
+	Atualizacao.forcar_estatica = false
 
 
 func _pasta_limpa(nome: String) -> String:

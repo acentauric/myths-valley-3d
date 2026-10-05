@@ -10,6 +10,19 @@ e `resources/views/layouts/site.blade.php` do projeto do site. Os cantos são
 preservados em nove fatias; a identidade compartilhada usa o mesmo desenho no
 menu e nos painéis internos. Não há dependência de fontes ou de recursos remotos.
 
+## Vídeos das telas de carregamento (gerados por IA)
+
+| Arquivo (em `assets/prototipo_3d/identidade/video/`) | O que é |
+|---|---|
+| `carregamento_sobrevoo.ogv` | sobrevoo do vale em laço sem emenda, 21 s, 1280×720; fundo da primeira carga (idioma → menu) |
+| `cinematica_abertura.ogv` | cinemática de abertura, 36 s, 1280×720; fundo da carga do JOGAR (menu → vale) |
+
+Gerados com a API do LTX (Lightricks) a partir das pinturas do próprio projeto
+(pinturas feitas com `gpt-image-2` para o jogo),
+sem trilha de áudio, e convertidos para Theora/Ogg para o Godot tocar. As
+versões em MP4 para o site e os originais em 1080p ficam fora do Git, em
+`.assets-raw/ltx/saida/`.
+
 ## Áudio (gerado por IA)
 
 | Pasta | O que tem |
