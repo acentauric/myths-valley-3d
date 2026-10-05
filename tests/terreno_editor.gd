@@ -25,7 +25,9 @@ func _initialize() -> void:
 		_verificar(not texto.contains("terreno_editavel.tscn"), cena + " não carrega a malha pesada no jogo")
 	var host := FileAccess.get_file_as_string("res://scripts/prototipo_3d/terreno_editor_preview.gd")
 	_verificar(host.contains("Engine.is_editor_hint()"), "host só carrega a prévia dentro do editor")
-	_verificar(host.contains(PREVIA), "host aponta para a cena editável")
+	_verificar(host.contains("composicao_vale.tscn"), "host aponta para a composição com referência do terreno")
+	var base_editor := FileAccess.get_file_as_string("res://scripts/prototipo_3d/composicao_editor.gd")
+	_verificar(base_editor.contains(PREVIA) and base_editor.contains("Engine.is_editor_hint()"), "base geográfica só é carregada no editor")
 	var construtor := FileAccess.get_file_as_string("res://scripts/prototipo_3d/world_builder.gd")
 	_verificar(construtor.contains('get_node_or_null("TerrenoEditor")'), "runtime encontra e remove a prévia")
 

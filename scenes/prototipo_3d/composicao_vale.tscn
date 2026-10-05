@@ -1,0 +1,152 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/prototipo_3d/casa_composicao.gd" id="3_pekll"]
+
+[ext_resource type="Script" path="res://scripts/prototipo_3d/composicao_editor.gd" id="10_editor"]
+
+[node name="ComposicaoDoVale" type="Node3D" unique_id=105167390]
+script = ExtResource("10_editor")
+editor_description = "Edite Casas: posição e giro Y. Ctrl+S salva a composição usada pelo jogo. Ruas e terreno são referências geográficas."
+
+[node name="Casas" type="Node3D" parent="." unique_id=857201751]
+
+[node name="Casa de taipa" type="Node3D" parent="Casas" unique_id=448818883]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 64.51694, 5.0968003, -212.2496)
+script = ExtResource("3_pekll")
+identificador = "Casa de taipa"
+chave = "casa_taipa"
+posicao_inicial = Vector3(64.51694, 5.0968003, -212.2496)
+posicao_lote_inicial = Vector3(64.51694, 5.3569517, -212.2496)
+metadata/_edit_group_ = true
+
+[node name="Casa de Carro Quebrado" type="Node3D" parent="Casas" unique_id=1822140909]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11.5, 3.8226373, -8.75)
+script = ExtResource("3_pekll")
+identificador = "Casa de Carro Quebrado"
+chave = "casa_carro_quebrado"
+posicao_inicial = Vector3(11.5, 3.8226373, -8.75)
+posicao_lote_inicial = Vector3(11.5, 4.1331, -8.75)
+metadata/_edit_group_ = true
+
+[node name="Casa da estrada" type="Node3D" parent="Casas" unique_id=1202892054]
+transform = Transform3D(0.25371966, 0, -0.9672778, 0, 1, 0, 0.9672778, 0, 0.25371966, -12.069272, 3.965995, -10.035116)
+script = ExtResource("3_pekll")
+identificador = "Casa da estrada"
+chave = "casa_taipa"
+posicao_inicial = Vector3(-12.069272, 3.965995, -10.035116)
+posicao_lote_inicial = Vector3(-12.069272, 4.190881, -10.035116)
+giro_inicial = -1.3142725
+metadata/_edit_group_ = true
+
+[node name="Casa do arraial 1" type="Node3D" parent="Casas" unique_id=1866681124]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 75.49301, 3.7352145, -104.52433)
+script = ExtResource("3_pekll")
+identificador = "Casa do arraial 1"
+chave = "casa_carro_quebrado"
+posicao_inicial = Vector3(75.49301, 3.7352145, -104.52433)
+posicao_lote_inicial = Vector3(75.49301, 4.1337347, -104.52433)
+metadata/_edit_group_ = true
+
+[node name="Casa do arraial 2" type="Node3D" parent="Casas" unique_id=1822616561]
+transform = Transform3D(-0.9054965, 0, 0.42435375, 0, 1, 0, -0.42435375, 0, -0.9054965, -54.20324, 3.2824101, 47.55879)
+script = ExtResource("3_pekll")
+identificador = "Casa do arraial 2"
+chave = "casa_taipa"
+posicao_inicial = Vector3(-54.20324, 3.2824101, 47.55879)
+posicao_lote_inicial = Vector3(-54.20324, 3.4982443, 47.55879)
+giro_inicial = 2.7033446
+metadata/_edit_group_ = true
+
+[node name="Casa do arraial 3" type="Node3D" parent="Casas" unique_id=2061193026]
+transform = Transform3D(0.8829905, 0, -0.46939087, 0, 1, 0, 0.46939087, 0, 0.8829905, 105.815025, 3.6861534, -147.29459)
+script = ExtResource("3_pekll")
+identificador = "Casa do arraial 3"
+chave = "casa_carro_quebrado"
+posicao_inicial = Vector3(105.815025, 3.6861534, -147.29459)
+posicao_lote_inicial = Vector3(105.815025, 3.9369175, -147.29459)
+giro_inicial = -0.4886008
+metadata/_edit_group_ = true
+
+[node name="Casa do arraial 4" type="Node3D" parent="Casas" unique_id=2016718184]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 89.92978, 3.7722642, -135.85727)
+script = ExtResource("3_pekll")
+identificador = "Casa do arraial 4"
+chave = "casa_taipa"
+posicao_inicial = Vector3(89.92978, 3.7722642, -135.85727)
+posicao_lote_inicial = Vector3(89.92978, 4.064134, -135.85727)
+metadata/_edit_group_ = true
+
+[node name="Casa do arraial 5" type="Node3D" parent="Casas" unique_id=711808738]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 60.710968, 6.1082816, -188.37894)
+script = ExtResource("3_pekll")
+identificador = "Casa do arraial 5"
+chave = "casa_carro_quebrado"
+posicao_inicial = Vector3(60.710968, 6.1082816, -188.37894)
+posicao_lote_inicial = Vector3(60.710968, 6.439136, -188.37894)
+metadata/_edit_group_ = true
+
+[node name="Casa do arraial 6" type="Node3D" parent="Casas" unique_id=2135901960]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 45.888573, 5.9491386, -212.78598)
+script = ExtResource("3_pekll")
+identificador = "Casa do arraial 6"
+chave = "casa_taipa"
+posicao_inicial = Vector3(45.888573, 5.9491386, -212.78598)
+posicao_lote_inicial = Vector3(45.888573, 6.218689, -212.78598)
+metadata/_edit_group_ = true
+
+[node name="Casa do arraial 7" type="Node3D" parent="Casas" unique_id=254719303]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 84.784744, 2.94382, -93.28899)
+script = ExtResource("3_pekll")
+identificador = "Casa do arraial 7"
+chave = "casa_carro_quebrado"
+posicao_inicial = Vector3(84.784744, 2.94382, -93.28899)
+posicao_lote_inicial = Vector3(84.784744, 3.2019913, -93.28899)
+metadata/_edit_group_ = true
+
+[node name="Casa do arraial 8" type="Node3D" parent="Casas" unique_id=159765379]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 63.110588, 2.6502178, -72.355774)
+script = ExtResource("3_pekll")
+identificador = "Casa do arraial 8"
+chave = "casa_taipa"
+posicao_inicial = Vector3(63.110588, 2.6502178, -72.355774)
+posicao_lote_inicial = Vector3(63.110588, 2.9567378, -72.355774)
+metadata/_edit_group_ = true
+
+[node name="Igreja" type="Node3D" parent="Casas" unique_id=1763349610]
+transform = Transform3D(-0.5298409, 0, -0.8480971, 0, 1, 0, 0.8480971, 0, -0.5298409, 79.6515, 2.067483, -68.79375)
+script = ExtResource("3_pekll")
+identificador = "Igreja"
+chave = "igreja"
+posicao_inicial = Vector3(79.6515, 2.067483, -68.79375)
+posicao_lote_inicial = Vector3(79.6515, 2.1152997, -68.79375)
+giro_inicial = -2.1292093
+metadata/_edit_group_ = true
+
+[node name="Capela velha" type="Node3D" parent="Casas" unique_id=834725067]
+transform = Transform3D(-0.9688165, 0, 0.24777924, 0, 1, 0, -0.24777924, 0, -0.9688165, -140.21893, 8.16768, -59.996353)
+script = ExtResource("3_pekll")
+identificador = "Capela velha"
+chave = "capela"
+posicao_inicial = Vector3(-140.21893, 8.16768, -59.996353)
+posicao_lote_inicial = Vector3(-140.21893, 8.16768, -59.996353)
+giro_inicial = 2.8912053
+metadata/_edit_group_ = true
+
+[node name="Venda do Bar" type="Node3D" parent="Casas" unique_id=2089636619]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 96.01141, 2.9482791, -114.87487)
+script = ExtResource("3_pekll")
+identificador = "Venda do Bar"
+chave = "venda"
+posicao_inicial = Vector3(96.01141, 2.9482791, -114.87487)
+posicao_lote_inicial = Vector3(96.01141, 2.9992273, -114.87487)
+metadata/_edit_group_ = true
+
+[node name="Restaurante" type="Node3D" parent="Casas" unique_id=1412363425]
+transform = Transform3D(-0.82329637, 0, 0.56761175, 0, 1, 0, -0.56761175, 0, -0.82329637, 12.981754, 1.9839056, 27.998358)
+script = ExtResource("3_pekll")
+identificador = "Restaurante"
+chave = "casa_pasto"
+posicao_inicial = Vector3(12.981754, 1.9839056, 27.998358)
+posicao_lote_inicial = Vector3(12.981754, 2.0437584, 27.998358)
+giro_inicial = 2.5379906
+metadata/_edit_group_ = true

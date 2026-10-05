@@ -17,6 +17,13 @@
   vale passa a avisar a janta, a farinha, a corda, a leira, a cama e o papel
   lido. Portões: cadeia_das_missoes joga a chegada inteira pelo caminho do
   jogo; pedidos_do_arraial cobra a roça, o mutirão, quem paga e o save antigo.
+- As quinze construções atuais ficam selecionáveis por nome numa cena do Godot,
+  com terreno e oito ruas de referência (#57). Mover e girar uma casa, salvar e
+  executar o projeto aplica a transformação à casa, colisão, interação e âncoras.
+  A cena também pode ser editada por código. A primeira extração preserva as
+  posições atuais e recusa sobrescrever autoria; regenerar o terreno não altera
+  as posições salvas. O traçado das ruas continua na base geográfica.
+
 - O jogo abre em tela cheia. F11 alterna entre tela cheia e janela em qualquer
   tela, e o novo botão do canto do menu faz o mesmo, com a dica ensinando o
   atalho. A escolha fica salva; em janela, o jogo ocupa 80% do monitor em 16:9.
