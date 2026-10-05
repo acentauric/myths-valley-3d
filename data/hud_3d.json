@@ -3,7 +3,8 @@
     "vida": "Vida", "vida_en": "Health", "vida_es": "Salud",
     "vigor": "Vigor", "vigor_en": "Stamina", "vigor_es": "Resistencia",
     "folego": "Fôlego", "folego_en": "Breath", "folego_es": "Aliento",
-    "cansado": "cansado", "cansado_en": "tired", "cansado_es": "agotado"
+    "cansado": "cansado", "cansado_en": "tired", "cansado_es": "agotado",
+    "afogamento": "afogamento", "afogamento_en": "drowning", "afogamento_es": "ahogamiento"
   },
   "botao_missoes": {
     "rotulo": "Missões e objetivos",

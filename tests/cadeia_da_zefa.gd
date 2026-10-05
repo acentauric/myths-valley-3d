@@ -159,6 +159,7 @@ func _run() -> void:
 			energia.encher()
 			if recursos.bater():
 				bateu = true
+				await _ate(func() -> bool: return recursos._golpe_pendente.is_empty() and not recursos._golpe_animando, 2.0)
 			if inv.quantidade("erva_da_serra") > antes_de_cortar:
 				break
 			await _frames(2)

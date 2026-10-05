@@ -23,7 +23,7 @@ func _run() -> void:
 		var original: Script = instancia.get_node("Jogador").get_script()
 		var modelo: PackedScene = instancia.get_node("Jogador").model_scene
 		var quebrado := GDScript.new()
-		quebrado.source_code = original.source_code.replace("\t\tvar tempo_sem_ar := _cobrar_folego(CUSTO_FOLEGO_NADO_POR_SEGUNDO * (delta - tempo_com_vigor))", "\t\tvar tempo_sem_ar := 0.0 # cobrança do nado ausente")
+		quebrado.source_code = original.source_code.replace("\t\t_cobrar_folego(CUSTO_FOLEGO_NADO_POR_SEGUNDO * (delta - tempo_com_vigor))", "\t\tpass # cobrança do nado ausente")
 		_conferir(quebrado.source_code != original.source_code, "a falsificação não encontrou o consumo de fôlego no nado")
 		_conferir(quebrado.reload() == OK, "a falsificação não compilou")
 		instancia.get_node("Jogador").set_script(quebrado)
@@ -55,6 +55,8 @@ func _run() -> void:
 	_conferir(jogador.gastar_vigor(5.0), "o esforço com pouco fôlego foi recusado")
 	_conferir(jogador.folego_atual() == 3.0 and vida.atual == saude, "o esforço em terra atingiu o fôlego baixo ou a vida")
 	jogador.set("_nadando", true)
+	var timer_afogamento: Timer = jogador.get_node("DanoSemFolego")
+	timer_afogamento.wait_time = 0.05
 	jogador.velocity = Vector3(1, 0, 0)
 	jogador._atualizar_vigor(1.0, false)
 	_conferir(jogador.vigor_atual() == 80.0 and jogador.folego_atual() > 3.0 and vida.atual == saude,
@@ -67,18 +69,17 @@ func _run() -> void:
 	jogador._atualizar_vigor(1.0, false)
 	_conferir(jogador.folego_atual() == 0.0 and is_equal_approx(vida.atual, saude),
 		"o fôlego zerado feriu antes de um segundo completo")
-	jogador._atualizar_vigor(0.19, false)
-	_conferir(is_equal_approx(vida.atual, saude), "a vida perdeu antes de completar um segundo sem ar")
-	jogador._atualizar_vigor(0.02, false)
+	await timer_afogamento.timeout
 	_conferir(is_equal_approx(vida.atual, saude - vida.maximo() * 0.20),
-		"um segundo sem fôlego não retirou 20% da vida máxima")
-	jogador._atualizar_vigor(1.0, false)
+		"o timer real não retirou 20% da vida depois de um segundo sem fôlego")
+	await timer_afogamento.timeout
 	_conferir(is_equal_approx(vida.atual, saude - vida.maximo() * 0.40),
 		"o segundo consecutivo sem fôlego não retirou outros 20%")
-	jogador._atualizar_vigor(1.0, false)
+	await timer_afogamento.timeout
 	_conferir(is_equal_approx(vida.atual, saude - vida.maximo() * 0.60),
 		"o terceiro segundo consecutivo sem fôlego não retirou outros 20%")
 	_conferir(hud.barra_folego.value == 0.0 and hud.barra_vida.value == vida.atual, "o HUD não acompanhou o nado")
+	_conferir(hud._folego_texto.text.contains("afogamento"), "o HUD não identificou risco de afogamento")
 	jogador.velocity = Vector3.ZERO
 	jogador._atualizar_vigor(1.0, false)
 	_conferir(is_equal_approx(jogador.vigor_atual(), 20.0) and is_equal_approx(jogador.folego_atual(), 10.0)
@@ -88,29 +89,28 @@ func _run() -> void:
 	jogador.definir_folego(0.0)
 	jogador.velocity = Vector3(1, 0, 0)
 	vida.dormir()
-	var vida_no_inicio_dos_passos: float = vida.atual
-	for _frame in 61:
-		jogador._atualizar_vigor(1.0 / 60.0, false)
-	_conferir(is_equal_approx(vida.atual, vida_no_inicio_dos_passos - vida.maximo() * 0.20),
-		"um segundo de quadros de física sem ar não retirou 20% da vida")
-	for _frame in 61:
-		jogador._atualizar_vigor(1.0 / 60.0, false)
-	_conferir(is_equal_approx(vida.atual, vida_no_inicio_dos_passos - vida.maximo() * 0.40),
-		"o segundo de quadros sem ar não retirou outros 20% da vida")
-	for _frame in 61:
-		jogador._atualizar_vigor(1.0 / 60.0, false)
-	_conferir(is_equal_approx(vida.atual, vida_no_inicio_dos_passos - vida.maximo() * 0.60),
-		"o terceiro segundo de quadros sem ar não retirou outros 20% da vida")
+	_conferir(timer_afogamento.process_mode == Node.PROCESS_MODE_ALWAYS,
+		"o timer de afogamento não continua durante pausas")
+	paused = true
+	await timer_afogamento.timeout
+	paused = false
+	_conferir(is_equal_approx(vida.atual, vida.maximo() * 0.80),
+		"o timer não aplicou dano real com a física do vale pausada")
 	jogador.definir_vigor(40.0)
 	jogador.definir_folego(50.0)
+	jogador.definir_vigor(20.0)
+	_conferir(hud._stamina_texto.text.contains("cansado") and hud._stamina_preenchimento.bg_color == Color("bd803e"),
+		"vigor baixo não mostra o aviso cansado nem muda a cor da barra")
+	jogador.definir_vigor(40.0)
 	jogador.velocity = Vector3(1, 0, 0)
 	jogador._atualizar_vigor(1.0, true)
 	_conferir(is_equal_approx(jogador.vigor_atual(), 30.0) and jogador.folego_atual() > 50.0,
 		"nado rápido não gastou mais vigor que o nado normal")
 	jogador.definir_folego(0.0)
-	jogador.set("_nadando", false)
+	jogador.sair_do_nado_ao_renascer()
+	_conferir(timer_afogamento.is_stopped(), "o timer continuou ativo depois de sair do nado")
 	_conferir(hud.barra_vida.value == vida.atual and hud._vida_texto.text.begins_with("Vida "), "a barra de vida perdeu valor ou descrição")
-	_conferir(hud._folego_texto.text.contains("cansado"), "o HUD não avisa sobre pouco fôlego")
+	_conferir(hud._folego_texto.text.contains("afogamento"), "o HUD não avisa sobre risco de afogamento")
 	var vigor: float = jogador.vigor_atual()
 	var saude_antes: float = vida.atual
 	_conferir(not jogador.gastar_vigor(vigor + 1.0), "o corpo aceitou esforço sem vigor")

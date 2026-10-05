@@ -247,6 +247,7 @@ func _juntar(recursos, inv, energia, jogador, item: String, quantos: int, id: St
 		energia.encher()
 		if not recursos.bater():
 			break
+		await _ate(func() -> bool: return recursos._golpe_pendente.is_empty() and not recursos._golpe_animando, 2.0)
 	_conferir(inv.quantidade(item) >= quantos,
 		"o passo '%s' pede %d de %s e só juntei %d" % [id, quantos, item, inv.quantidade(item)])
 
@@ -265,6 +266,7 @@ func _derrubar(recursos, energia, jogador, peca: String, quantos: int, id: Strin
 		energia.encher()
 		if not recursos.bater():
 			break
+		await _ate(func() -> bool: return recursos._golpe_pendente.is_empty() and not recursos._golpe_animando, 2.0)
 	_conferir(recursos.derrubados(peca) >= quantos,
 		"o passo '%s' pede %d pé(s) de %s e só derrubei %d"
 			% [id, quantos, peca, recursos.derrubados(peca)])

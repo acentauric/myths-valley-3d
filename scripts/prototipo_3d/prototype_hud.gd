@@ -118,6 +118,7 @@ var mapa_aberto := false
 
 func _ready() -> void:
 	layer = 20
+	set_process_unhandled_key_input(true)
 	_root = get_node_or_null("PrototypeHUD") as Control
 	if _root == null:
 		_root = Control.new()
@@ -152,6 +153,11 @@ func _ready() -> void:
 	_mission_next.pressed.connect(func() -> void: _change_mission_page(1))
 	_mission_close = _mission_button("×", "FecharMissao")
 	_mission_close.pressed.connect(_close_mission_pages)
+	# A bússola/minimapa é acrescentada depois do HUD e, por isso, fica por cima
+	# dos controles no mesmo CanvasLayer. A página precisa continuar legível ali.
+	for control: Control in [_heading, _region_label, _mission_step, _objective_label,
+			_mission_previous, _mission_next, _mission_close]:
+		control.z_index = 100
 
 	_create_performance_panel()
 	_create_corner_buttons()
@@ -319,6 +325,7 @@ var _vida_texto: Label
 var _vida_preenchimento: StyleBoxFlat
 var barra_stamina: ProgressBar
 var _stamina_texto: Label
+var _stamina_preenchimento: StyleBoxFlat
 var _textos_medidores: Dictionary = {}
 
 
@@ -374,6 +381,8 @@ func _atualizar_vida() -> void:
 
 ## Respiração consumida no nado; depois que acaba, a água atinge a vida.
 const COR_FOLEGO := Color("398fd2")
+const COR_MEDIDOR_BAIXO := Color("bd803e")
+const COR_VIGOR := Color("56ad67")
 var barra_folego: ProgressBar
 var _folego_texto: Label
 var _folego_preenchimento: StyleBoxFlat
@@ -420,10 +429,10 @@ func _atualizar_folego(_valor: float = 0.0) -> void:
 	barra_folego.max_value = float(_jogador_folego.call("folego_maximo"))
 	barra_folego.value = float(_jogador_folego.call("folego_atual"))
 	_folego_texto.text = _texto_medidor("folego", barra_folego)
-	var cansado := barra_folego.value <= barra_folego.max_value * 0.2
-	_folego_preenchimento.bg_color = Color("bd803e") if cansado else COR_FOLEGO
-	if cansado:
-		_folego_texto.text += " · " + str(IdiomaMenu.campo(_textos_medidores, "cansado"))
+	var baixo := barra_folego.value <= barra_folego.max_value * 0.2
+	_folego_preenchimento.bg_color = COR_MEDIDOR_BAIXO if baixo else COR_FOLEGO
+	if baixo:
+		_folego_texto.text += " · " + str(IdiomaMenu.campo(_textos_medidores, "afogamento"))
 
 
 func _criar_barra_de_stamina() -> void:
@@ -440,10 +449,10 @@ func _criar_barra_de_stamina() -> void:
 	fundo.set_border_width_all(1)
 	fundo.border_color = Color(0.58, 0.64, 0.48, 0.2)
 	barra_stamina.add_theme_stylebox_override("background", fundo)
-	var preenchimento := StyleBoxFlat.new()
-	preenchimento.bg_color = Color("56ad67")
-	preenchimento.set_corner_radius_all(6)
-	barra_stamina.add_theme_stylebox_override("fill", preenchimento)
+	_stamina_preenchimento = StyleBoxFlat.new()
+	_stamina_preenchimento.bg_color = COR_VIGOR
+	_stamina_preenchimento.set_corner_radius_all(6)
+	barra_stamina.add_theme_stylebox_override("fill", _stamina_preenchimento)
 	_root.add_child(barra_stamina)
 	barra_stamina.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP)
 	barra_stamina.offset_left = -110
@@ -472,6 +481,10 @@ func _atualizar_vigor() -> void:
 	barra_stamina.max_value = energia.maximo()
 	barra_stamina.value = energia.atual
 	_stamina_texto.text = _texto_medidor("vigor", barra_stamina)
+	var cansado := barra_stamina.value <= barra_stamina.max_value * 0.2
+	_stamina_preenchimento.bg_color = COR_MEDIDOR_BAIXO if cansado else COR_VIGOR
+	if cansado:
+		_stamina_texto.text += " · " + str(IdiomaMenu.campo(_textos_medidores, "cansado"))
 
 
 func _process(delta: float) -> void:
@@ -541,6 +554,7 @@ func set_objective(value: String) -> void:
 
 func set_mission_pages(pages: Array[String]) -> void:
 	_mission_pages = pages
+	_mission_page_index = 0
 
 
 func _change_mission_page(direction: int) -> void:
@@ -553,10 +567,25 @@ func _show_mission_page() -> void:
 		return
 	_objective_label.text = _mission_pages[_mission_page_index]
 	_mission_step.text = "%d de %d" % [_mission_page_index + 1, _mission_pages.size()]
-	_mission_previous.visible = _mission_page_index > 0
+	_mission_previous.visible = _mission_pages.size() > 1
+	_mission_previous.disabled = _mission_page_index == 0
 	_mission_next.visible = _mission_page_index < _mission_pages.size() - 1
+	_mission_next.disabled = _mission_page_index >= _mission_pages.size() - 1
 	_mission_close.visible = _mission_page_index == _mission_pages.size() - 1
 	_fit_heading()
+
+
+func _unhandled_key_input(event: InputEvent) -> void:
+	if not (event is InputEventKey and event.pressed and not event.echo):
+		return
+	if _mission_pages.size() <= 1 or not is_instance_valid(_mission_step) or not _mission_step.visible:
+		return
+	if event.keycode == KEY_LEFT:
+		_change_mission_page(-1)
+		get_viewport().set_input_as_handled()
+	elif event.keycode == KEY_RIGHT:
+		_change_mission_page(1)
+		get_viewport().set_input_as_handled()
 
 
 func _close_mission_pages() -> void:
@@ -1082,7 +1111,9 @@ func set_mission_step(indice: int, total: int, finished := false) -> void:
 		return
 	_mission_pages.clear()
 	_mission_previous.visible = false
+	_mission_previous.disabled = true
 	_mission_next.visible = false
+	_mission_next.disabled = true
 	_mission_close.visible = false
 	_mission_step.text = "" if total <= 0 or indice >= total else "%d de %d" % [indice, total]
 	_fit_heading()

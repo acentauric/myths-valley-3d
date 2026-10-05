@@ -146,6 +146,7 @@ func play_chop(repeticoes: int = 2) -> String:
 	var clip: String = _clips.get("chop", "")
 	if clip.is_empty():
 		return ""
+	animation_player.get_animation(clip).loop_mode = Animation.LOOP_NONE
 	_gesture_active = true
 	_chop_repetitions_left = maxi(repeticoes, 1)
 	_chop_impacto_emitido = false

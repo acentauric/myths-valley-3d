@@ -171,6 +171,7 @@ func _run() -> void:
 				energia.encher()
 				if not recursos.bater():
 					break
+				await _ate(func() -> bool: return recursos._golpe_pendente.is_empty() and not recursos._golpe_animando, 2.0)
 			_conferir(inv.quantidade(item) >= quantos,
 				"o passo '%s' pede %d de %s e só consegui juntar %d batendo no vale"
 					% [id, quantos, item, inv.quantidade(item)])

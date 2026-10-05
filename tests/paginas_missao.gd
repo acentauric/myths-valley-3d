@@ -18,6 +18,9 @@ func _run() -> void:
 	var hud = load("res://scripts/prototipo_3d/prototype_hud.gd").new()
 	root.add_child(hud)
 	await process_frame
+	var minimapa := Control.new()
+	minimapa.name = "Minimapa"
+	hud._root.add_child(minimapa)
 	var paginas: Array[String] = ["Primeira", "Segunda", "Terceira"]
 	hud.set_mission_pages(paginas)
 	hud.set_objective("Segunda")
@@ -25,8 +28,20 @@ func _run() -> void:
 	_conferir(hud._objective_label.text == "Segunda" and hud._mission_step.text == "2 de 3", "não abriu na página atual")
 	_conferir(hud._mission_previous.visible and hud._mission_next.visible and not hud._mission_close.visible,
 		"a página intermediária não mostra as duas setas ou já permite fechar")
+	_conferir(hud._heading.z_index > minimapa.z_index and hud._mission_next.z_index > minimapa.z_index,
+		"a mensagem ou suas setas ficam atrás do minimapa")
 	hud._mission_previous.pressed.emit()
-	_conferir(hud._objective_label.text == "Primeira" and not hud._mission_previous.visible, "a seta anterior não volta à primeira")
+	_conferir(hud._objective_label.text == "Primeira" and hud._mission_previous.visible and hud._mission_previous.disabled, "a seta anterior não volta à primeira ou some no limite")
+	var direita := InputEventKey.new()
+	direita.keycode = KEY_RIGHT
+	direita.pressed = true
+	hud._unhandled_key_input(direita)
+	_conferir(hud._objective_label.text == "Segunda", "a seta direita não avança uma página")
+	var esquerda := InputEventKey.new()
+	esquerda.keycode = KEY_LEFT
+	esquerda.pressed = true
+	hud._unhandled_key_input(esquerda)
+	_conferir(hud._objective_label.text == "Primeira", "a seta esquerda não volta uma página")
 	hud._mission_next.pressed.emit()
 	hud._mission_next.pressed.emit()
 	_conferir(hud._objective_label.text == "Terceira" and hud._mission_step.text == "3 de 3",

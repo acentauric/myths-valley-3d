@@ -127,13 +127,17 @@ func _run() -> void:
 
 	for i in range(golpes - 1):
 		_conferir(recursos.bater(), "o golpe %d não saiu" % (i + 1))
+		_conferir(not recursos._golpe_pendente.is_empty(), "a peça foi atingida antes do golpe começar")
 		_conferir(recursos.restantes("lenha") == troncos,
 			"o tronco caiu no golpe %d, antes da conta" % (i + 1))
+		await _esperar_golpe(recursos)
 
 	_conferir(energia.atual < folego_antes,
 		"bater não gastou fôlego: %s → %s" % [str(folego_antes), str(energia.atual)])
 
 	_conferir(recursos.bater(), "o golpe final não saiu")
+	_conferir(recursos.restantes("lenha") == troncos, "o tronco caiu antes do impacto do golpe final")
+	await _esperar_golpe(recursos)
 	_conferir(recursos.restantes("lenha") == troncos - 1,
 		"o tronco não caiu no golpe %d" % golpes)
 
@@ -301,6 +305,14 @@ func _fechar() -> void:
 func _frames(count: int) -> void:
 	for frame in range(count):
 		await process_frame
+
+
+func _esperar_golpe(recursos) -> void:
+	var limite := Time.get_ticks_msec() + 2000
+	while (not recursos._golpe_pendente.is_empty() or recursos._golpe_animando) and Time.get_ticks_msec() < limite:
+		await process_frame
+	_conferir(recursos._golpe_pendente.is_empty() and not recursos._golpe_animando,
+		"o golpe animado não chegou ao impacto e ao fim do clipe")
 
 
 func _mundo_pronto() -> void:
