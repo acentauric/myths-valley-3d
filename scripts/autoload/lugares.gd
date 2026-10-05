@@ -49,6 +49,9 @@ const DE_PARA := {
 	# jogo (`ponte_vale.gd`, data/missoes_ponte.json). O vau é a passagem a pé ao
 	# lado dela (`world_builder._vau_ao_lado`).
 	"vau": "Vau",
+	# A CHAPADA DO SEU BENEDITO, a terra alta para lá da Dona Zefa, de frente para o
+	# rio grande (data/missoes_chapada.json, `world_builder._build_farm`).
+	"expansao": "Chapada",
 	"ponte_do_vau": "Ponte",
 	"poco": "Poço",
 	"mirante": "Mirante",
@@ -86,7 +89,6 @@ const DE_PARA := {
 ## ninguém aqui esteja escrito errado, e a Fase 2.5 esvazia esta lista movendo
 ## linha por linha para `DE_PARA`.
 const FALTAM_NO_VALE := {
-	"expansao": "a chapada de expansão — Fase 2.5",
 	"lapa": "a lapa e a rampa do morro — Fase 2.5",
 	"lagoa": "a lagoa a leste do Seu Benedito — Fase 2.5",
 	"curral": "o curral — Fase 7",

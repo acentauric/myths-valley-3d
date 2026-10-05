@@ -148,7 +148,7 @@ segunda coisa que muda neste arraial em vinte anos".
 
 | id | Título | Objetivo | Abre quando | Fecha quando | Paga | 3D |
 |---|---|---|---|---|---|---|
-| `chapada` | A terra do Seu Benedito | Vá ver a chapada do Seu Benedito, passando pela terra da Dona Zefa | depois da primeira colheita | chegou à expansão (cena com luz dourada) | 1 garapa, 1 cocada | falta |
+| `chapada` | A terra do Seu Benedito | Vá ver a chapada do Seu Benedito, passando pela terra da Dona Zefa | depois da primeira colheita | chegou à expansão (cena com luz dourada) | 1 garapa, 1 cocada | **pronta** (`missoes_chapada.json`: a terra alta para lá da Dona Zefa, de frente para o rio grande; a luz dourada é `luz_dourada.gd`; o fim é a volta ao Pedro) |
 
 ### 1.5 Frente do ofício
 
@@ -327,7 +327,7 @@ não tem missão em nenhum dos dois jogos:
    outro lado do rio grande.
 2. **A lapa e a cabra** (`picareta`, `cabra`, 1.5), que abrem a lombada e
    apresentam a Santa Casa.
-3. **A chapada** (1.4), que mostra a terra do Seu Benedito.
+3. ~~A chapada~~ (1.4): **pronta** em 05/10/2026, no lugar que o autor revisou.
 4. ~~O canteiro~~ (3.1): **pronto** em 05/10/2026, antes do mirante como no 2D.
 5. **A jornada da fazenda** (4), que só pode abrir com 1 e com a fé (já
    pronta).

@@ -66,6 +66,9 @@ signal missao_mudou(texto: String, alvo: Vector3, indice: int, total: int)
 signal pagou(texto: String)
 ## A meta `visitar` riscou um lugar — o vale conta o que se vê dali.
 signal visitou(lugar: String)
+## Fechou um passo que tem `cena` (a luz dourada da chapada, a cabra que desce
+## da lombada): o vale a toca. A cadeia só diz o nome; quem sabe tocar é o vale.
+signal cena(nome: String)
 
 const IdiomaMenu = preload("res://scripts/prototipo_3d/idioma_menu.gd")
 ## Toda cadeia viva entra neste grupo: é por ele que um morador pergunta se tem
@@ -766,6 +769,8 @@ func avancar() -> void:
 			Fe.ganhar("missao")
 			Talentos.ganhar("missao")
 		CadernoDoVale.concluir(_id_no_caderno(fechando))
+		if str(fechando.get("cena", "")) != "":
+			cena.emit(str(fechando["cena"]))
 	missao += 1
 	if missao >= passos.size():
 		# O FIM TAMBÉM É CURTO NO HUD: o arremate é fala (balão, ou a nota da

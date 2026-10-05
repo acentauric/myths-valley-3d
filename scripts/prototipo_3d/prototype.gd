@@ -15,6 +15,7 @@ const Lapides = preload("res://scripts/prototipo_3d/lapides.gd")
 const TeclaDasBancadas = preload("res://scripts/prototipo_3d/tecla_das_bancadas.gd")
 const TeclaDosMoradores = preload("res://scripts/prototipo_3d/tecla_dos_moradores.gd")
 const ConquistaDaMissao = preload("res://scripts/prototipo_3d/conquista_da_missao.gd")
+const LuzDourada = preload("res://scripts/prototipo_3d/luz_dourada.gd")
 const ArvoresInfo = preload("res://scripts/prototipo_3d/arvores_info.gd")
 const PlacasNomes = preload("res://scripts/prototipo_3d/placas_nomes.gd")
 const BonecoDaMochila = preload("res://scripts/prototipo_3d/boneco_da_mochila.gd")
@@ -145,6 +146,8 @@ var tecla_das_bancadas: Node
 var tecla_dos_moradores: Node
 ## A tela da missão cumprida (`conquista_da_missao.gd`).
 var conquista: CanvasLayer
+## A luz dourada da chegada à chapada (`luz_dourada.gd`), uma das cenas dos passos.
+var luz_dourada: CanvasLayer
 
 
 func _enter_tree() -> void:
@@ -602,6 +605,14 @@ func _ready() -> void:
 		var da_ponte = _pendurar_cadeia(pedro, "res://data/missoes_ponte.json", 6.0, "pedro_ponte")
 		if da_ponte != null:
 			da_ponte.depois_de = func() -> bool: return pedro.terminou_o_tutorial()
+		# A CHAPADA DO SEU BENEDITO (data/missoes_chapada.json), a frente do 2D que
+		# ESPERA A PRIMEIRA COLHEITA: a conversa de terra que poderia ser sua, dita a
+		# quem nunca tirou nada do chão, é conversa no vazio (`_frente_da_chapada`).
+		var da_chapada = _pendurar_cadeia(pedro, "res://data/missoes_chapada.json", 6.0, "pedro_chapada")
+		if da_chapada != null:
+			da_chapada.depois_de = func() -> bool:
+				var roca = _cadeias.get("cosme_roca")
+				return pedro.terminou_o_tutorial() and roca != null and roca.passou("colher")
 		var do_arraial = _pendurar_cadeia(pedro, "res://data/missoes_arraial.json", 6.0, "pedro_arraial")
 		if do_arraial != null:
 			do_arraial.depois_de = func() -> bool:
@@ -698,6 +709,9 @@ func _ready() -> void:
 	conquista = ConquistaDaMissao.new()
 	conquista.name = "ConquistaDaMissao"
 	add_child(conquista)
+	luz_dourada = LuzDourada.new()
+	luz_dourada.name = "LuzDourada"
+	add_child(luz_dourada)
 	# A PARTIDA SALVA entra depois de o vale estar montado — moradores, Pedro,
 	# luta —, porque o estado do mundo aponta para eles. Ver Partida e
 	# `estado_para_salvar`.
@@ -2093,6 +2107,15 @@ func _achar_morador(quem: String) -> Node3D:
 	return null
 
 
+## AS CENAS DOS PASSOS (`cena` no dado da missão, `CadeiaDeMissoes.cena`): a luz
+## dourada da chegada à chapada.
+func _tocar_a_cena(nome: String) -> void:
+	match nome:
+		"luz_dourada":
+			if luz_dourada != null:
+				luz_dourada.tocar()
+
+
 func _pendurar_cadeia(morador: Node3D, arquivo: String, perto: float, chave: String = "") -> Node:
 	var cadeia := CadeiaDeMissoes.new()
 	cadeia.name = "CadeiaDeMissoes" if chave == "" else "CadeiaDeMissoes_" + chave
@@ -2108,6 +2131,7 @@ func _pendurar_cadeia(morador: Node3D, arquivo: String, perto: float, chave: Str
 		missao_do_vale_mudou.emit(t, a, i, n))
 	# A RECOMPENSA DO PASSO (#48) é dita no HUD, como no 2D.
 	cadeia.pagou.connect(func(texto: String) -> void: hud.set_notice(texto))
+	cadeia.cena.connect(_tocar_a_cena)
 	morador.add_child(cadeia)
 	_cadeias[chave if chave != "" else str(morador.dados.get("id", ""))] = cadeia
 	return cadeia

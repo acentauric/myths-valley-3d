@@ -2,6 +2,12 @@
 
 ## Em desenvolvimento — 05/10/2026
 
+- A chapada do Seu Benedito, a frente do 2D que mostra terra que poderia ser do
+  jogador: depois da primeira colheita, o E no Pedro manda ver a terra alta para
+  lá da Dona Zefa, de frente para o rio grande (lugar revisado pelo autor). A
+  chegada acende a luz dourada na tela e paga a garapa e a cocada; de volta, o
+  Pedro fala da água que corre o ano todo. Passo de missão novo: `cena`, que o
+  vale toca quando o passo fecha. Portão novo: `chapada`.
 - O canteiro de obras chega ao roçado: a mesa do prumo, ao lado da bancada da
   oficina (provisória, a mesma mesa), onde o E abre a aba de obras dela. Antes
   do mirante, como no 2D, o Pedro manda juntar oito tábuas e doze lenhas e

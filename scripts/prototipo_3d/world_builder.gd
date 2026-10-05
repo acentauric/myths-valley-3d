@@ -1535,6 +1535,9 @@ const CANTEIRO_NA_CASA := Vector3(10.5, 0.0, 12.0)
 ## A mesa do canteiro de obras, a do prumo, a partir do meio do roçado: junto
 ## da bancada da oficina (-3, -9), atrás dela e da casa.
 const CANTEIRO_DE_OBRAS := Vector3(-3.0, 0.0, -12.0)
+## A chapada do Seu Benedito, em metros a partir da praça (x 24 m a oeste dela,
+## 1.072 m ao norte).
+const CHAPADA_DO_BENEDITO_M := Vector3(-24.0, 0.0, -1072.0)
 
 
 func _build_farm() -> void:
@@ -1554,6 +1557,12 @@ func _build_farm() -> void:
 	# fundo, e não do lado: quem encosta na bancada pelo leste é dela, e o tronco
 	# e o lajedo mais perto ficam a dez passos daqui.
 	ancoras["Canteiro de obras"] = ground_position(origin + CANTEIRO_DE_OBRAS)
+	# A CHAPADA DO SEU BENEDITO (`Lugares` "expansao", data/missoes_chapada.json):
+	# a terra alta para lá da Dona Zefa, de frente para o rio grande, "passando
+	# pela terra da Dona Zefa" como no 2D. Posta no vale de hoje, sem mexer no KML
+	# (revisada pelo autor): o chão sobe devagar para o poente, de 5 na casa a 7
+	# ali, e o rio passa 17 u ao norte — "tá vendo a água?".
+	ancoras["Chapada"] = ground_position(_u(CHAPADA_DO_BENEDITO_M))
 	ancoras["Lavoura"] = ground_position(_na_casa("Casa de taipa", LAVOURA_NA_CASA))
 	ancoras["LavouraFrente"] = ancoras.get("Casa de taipaFrente", Vector3.BACK)
 	var canteiro := ground_position(_na_casa("Casa de taipa", CANTEIRO_NA_CASA))
