@@ -42,6 +42,14 @@ var _started_at_msec := 0
 
 
 func _ready() -> void:
+	# PATCH LOCAL (Myths' Valley), reaplicar ao atualizar o addon: o runtime só
+	# conversa com o MCP no jogo rodado pelo editor (F5). No jogo exportado (sem a
+	# feature "editor") e nos portões headless ele fica mudo: o exportado não
+	# aceita comandos de quem escutar em 127.0.0.1:6505, e portões em paralelo
+	# não disputam o servidor do MCP.
+	if not OS.has_feature("editor") or DisplayServer.get_name() == "headless":
+		set_process(false)
+		return
 	_project_path = ProjectSettings.globalize_path("res://")
 	_started_at_msec = Time.get_ticks_msec()
 	process_mode = Node.PROCESS_MODE_ALWAYS
