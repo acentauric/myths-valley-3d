@@ -20,7 +20,15 @@
     "*Notas do fundo* ficam ocultas nos modais.",
     "*Moradores e assets* em fichas e cartões com prévia 3D.",
     "*Vagas* centralizadas com × no cabeçalho.",
-    "*Trilhas* entram e saem em fades suaves."
+    "*Trilhas* entram e saem em fades suaves.",
+    "*Tela cheia* ao abrir; F11 alterna com janela.",
+    "*Cursor* escolhível entre seis conjuntos.",
+    "*Tamanho do texto e do HUD* em AJUSTAR.",
+    "*Interface* menor por padrão.",
+    "*Fichas de PERSONAGENS* com prévia que gira.",
+    "*Falas* tocam mesmo com o som desligado.",
+    "*Dicas* no estilo dos botões do canto.",
+    "*Site do jogo* na tela de créditos."
    ],
    "mudancas_en": [
     "*Language* chosen before loading the valley.",
@@ -32,7 +40,15 @@
     "*Background notes* stay hidden behind modals.",
     "*Residents and assets* in cards with 3D previews.",
     "*Save slots* centered with a close icon.",
-    "*Music tracks* fade in and out smoothly."
+    "*Music tracks* fade in and out smoothly.",
+    "*Fullscreen* on launch; F11 toggles a window.",
+    "*Cursor* chosen from six sets.",
+    "*Text and HUD size* in SETTINGS.",
+    "*Smaller interface* by default.",
+    "*CHARACTERS records* with a rotating preview.",
+    "*Voice lines* play even with sound off.",
+    "*Tooltips* styled like the corner buttons.",
+    "*Game website* on the credits screen."
    ],
    "mudancas_es": [
     "*Idioma* elegido antes de cargar el valle.",
@@ -44,7 +60,15 @@
     "*Notas del fondo* ocultas detrás de los modales.",
     "*Habitantes y assets* en fichas con vista previa 3D.",
     "*Partidas* centradas con × en la cabecera.",
-    "*Música* con entradas y salidas suaves."
+    "*Música* con entradas y salidas suaves.",
+    "*Pantalla completa* al abrir; F11 alterna.",
+    "*Cursor* a elegir entre seis conjuntos.",
+    "*Tamaño del texto y del HUD* en AJUSTES.",
+    "*Interfaz* más pequeña por defecto.",
+    "*Fichas de PERSONAJES* con vista que gira.",
+    "*Frases* suenan aun con el sonido apagado.",
+    "*Ayudas* con el estilo de los botones de esquina.",
+    "*Sitio del juego* en la pantalla de créditos."
    ]
   },
   {
@@ -59,19 +83,22 @@
     "*Equipe atual* apresentada na tela Sobre.",
     "*Builds 7 e 8* publicadas para Windows.",
     "*Atualizações* conferem os arquivos antes de instalar.",
-    "*Partidas* validam os arquivos antes de abrir."
+    "*Partidas* validam os arquivos antes de abrir.",
+    "*README* apresenta o vale e o Tripo."
    ],
    "mudancas_en": [
     "*Current team* shown on the About screen.",
     "*Builds 7 and 8* released for Windows.",
     "*Updates* validate files before installation.",
-    "*Saved games* validate files before loading."
+    "*Saved games* validate files before loading.",
+    "*README* introduces the valley and Tripo."
    ],
    "mudancas_es": [
     "*Equipo actual* presentado en la pantalla Acerca de.",
     "*Builds 7 y 8* publicadas para Windows.",
     "*Actualizaciones* que verifican los archivos antes de instalar.",
-    "*Partidas* que verifican los archivos antes de abrir."
+    "*Partidas* que verifican los archivos antes de abrir.",
+    "*README* presenta el valle y Tripo."
    ]
   },
   {
@@ -88,7 +115,8 @@
     "*Sobrevoo* contorna árvores e casas.",
     "*Carregamento* sem partículas nem som.",
     "*Seis cadeias de missão* com os moradores.",
-    "*Interações* respeitam pausa e telas abertas."
+    "*Interações* respeitam pausa e telas abertas.",
+    "*Exportador* leva os dados do jogo ao site."
    ],
    "mudancas_en": [
     "*Site updates*: download, verify and restart.",
@@ -96,7 +124,8 @@
     "*Flyover* goes around trees and houses.",
     "*Loading* without particles or sound.",
     "*Six quest chains* with the villagers.",
-    "*Interactions* respect pause and open screens."
+    "*Interactions* respect pause and open screens.",
+    "*Exporter* sends game data to the website."
    ],
    "mudancas_es": [
     "*Actualización del sitio*: descargar, verificar y reiniciar.",
@@ -104,7 +133,167 @@
     "*Sobrevuelo* que rodea árboles y casas.",
     "*Carga* sin partículas ni sonido.",
     "*Seis cadenas de misiones* con los vecinos.",
-    "*Interacciones* que respetan la pausa y las pantallas abiertas."
+    "*Interacciones* que respetan la pausa y las pantallas abiertas.",
+    "*Exportador* lleva los datos del juego al sitio."
+   ]
+  },
+  {
+   "data": "01/10/2026",
+   "estado": "EM DESENVOLVIMENTO",
+   "estado_en": "IN DEVELOPMENT",
+   "estado_es": "EN DESARROLLO",
+   "titulo": "O vale ganha casa própria",
+   "titulo_en": "The valley gets its own home",
+   "titulo_es": "El valle gana casa propia",
+   "mudancas": [
+    "*Repositório próprio* para o vale 3D.",
+    "*Oficina* volta a fabricar no roçado.",
+    "*Corrida* só com vigor disponível.",
+    "*Golpe e recuperação* de vigor refinados.",
+    "*Píer* refeito com acabamento melhor.",
+    "*Botão de FPS* com dados compactos.",
+    "*Mão* não age atrás de tela aberta.",
+    "*Sobrevoo* olha do píer à praça."
+   ],
+   "mudancas_en": [
+    "*Own repository* for the 3D valley.",
+    "*Workshop* crafts again at the field.",
+    "*Sprinting* only with stamina left.",
+    "*Strikes and stamina recovery* refined.",
+    "*Pier* rebuilt with a better finish.",
+    "*FPS button* with compact data.",
+    "*Hand* ignores keys behind open screens.",
+    "*Flyover* looks from the pier to the square."
+   ],
+   "mudancas_es": [
+    "*Repositorio propio* para el valle 3D.",
+    "*Taller* vuelve a fabricar en el huerto.",
+    "*Carrera* solo con vigor disponible.",
+    "*Golpe y recuperación* de vigor refinados.",
+    "*Muelle* rehecho con mejor acabado.",
+    "*Botón de FPS* con datos compactos.",
+    "*Mano* no actúa tras pantallas abiertas.",
+    "*Sobrevuelo* mira del muelle a la plaza."
+   ]
+  },
+  {
+   "data": "30/09/2026",
+   "estado": "EM DESENVOLVIMENTO",
+   "estado_en": "IN DEVELOPMENT",
+   "estado_es": "EN DESARROLLO",
+   "titulo": "Ofícios, almanaque e missões",
+   "titulo_en": "Crafts, almanac and quests",
+   "titulo_es": "Oficios, almanaque y misiones",
+   "mudancas": [
+    "*Pesca* no mar e no rio.",
+    "*Cozinha* no fogo do terreiro.",
+    "*Bancada* serra tábua no roçado.",
+    "*Coqueiros* caem no machado e dão madeira.",
+    "*Coqueiros cortados* voltam em 24 horas.",
+    "*Obras* perto de cada construção.",
+    "*Almanaque* em índice e página, com receitas.",
+    "*Cordéis* e o sinal da Caipora no almanaque.",
+    "*Teia de talentos* abre no K.",
+    "*Missões* da Filó, Zefa, Tonho e Candinha.",
+    "*Fala longa* com escolha de Sim e Não.",
+    "*Mochila* abre por cima do vale.",
+    "*Amanhecer*: quem cai acorda com um cartão.",
+    "*Minimapa* vira bússola.",
+    "*Relevo* mais marcado no terreno."
+   ],
+   "mudancas_en": [
+    "*Fishing* in the sea and the river.",
+    "*Cooking* on the yard fire.",
+    "*Workbench* saws planks at the field.",
+    "*Coconut palms* fall to the axe and give wood.",
+    "*Cut palms* grow back in 24 hours.",
+    "*Building works* next to each structure.",
+    "*Almanac* as index and page, with recipes.",
+    "*Cordel booklets* and the Caipora's sign.",
+    "*Talent web* opens with K.",
+    "*Quests* from Filó, Zefa, Tonho and Candinha.",
+    "*Long dialogue* with a Yes or No choice.",
+    "*Backpack* opens over the valley.",
+    "*Dawn*: a fall ends with a wake-up card.",
+    "*Minimap* becomes a compass.",
+    "*Terrain relief* more pronounced."
+   ],
+   "mudancas_es": [
+    "*Pesca* en el mar y en el río.",
+    "*Cocina* en el fuego del patio.",
+    "*Banco de trabajo* sierra tablas en el huerto.",
+    "*Cocoteros* caen con el hacha y dan madera.",
+    "*Cocoteros cortados* vuelven en 24 horas.",
+    "*Obras* junto a cada construcción.",
+    "*Almanaque* en índice y página, con recetas.",
+    "*Cordeles* y la señal de la Caipora.",
+    "*Red de talentos* se abre con la K.",
+    "*Misiones* de Filó, Zefa, Tonho y Candinha.",
+    "*Diálogo largo* con elección de Sí o No.",
+    "*Mochila* se abre sobre el valle.",
+    "*Amanecer*: quien cae despierta con una tarjeta.",
+    "*Minimapa* se vuelve brújula.",
+    "*Relieve* más marcado en el terreno."
+   ]
+  },
+  {
+   "data": "29/09/2026",
+   "estado": "EM DESENVOLVIMENTO",
+   "estado_en": "IN DEVELOPMENT",
+   "estado_es": "EN DESARROLLO",
+   "titulo": "O vale ganha os sistemas do 2D",
+   "titulo_en": "The valley gains the 2D systems",
+   "titulo_es": "El valle gana los sistemas del 2D",
+   "mudancas": [
+    "*Fôlego*: o cansaço pesa no passo.",
+    "*Mochila* com 30 espaços, 10 de mão.",
+    "*Catálogo* de 51 itens.",
+    "*Missões do Pedro* nos três idiomas.",
+    "*Calendário* chega ao vale.",
+    "*Teia, três fés* e os sete moradores.",
+    "*Venda e pesca* vindas do 2D.",
+    "*Save* com três vagas e o dia inteiro.",
+    "*Vida*: quem cai acorda na casa de taipa.",
+    "*Caititu* na mata, com aviso antes do bote.",
+    "*Ferramentas*, e o Esc abre o menu.",
+    "*Painel J*: missões, cartas e a venda.",
+    "*Coleção L* com as vagas a achar.",
+    "*Moradores* contornam a água.",
+    "*Home Retábulo* vira a identidade padrão."
+   ],
+   "mudancas_en": [
+    "*Stamina*: tiredness weighs on each step.",
+    "*Backpack* with 30 slots, 10 in hand.",
+    "*Catalogue* of 51 items.",
+    "*Pedro's quests* in three languages.",
+    "*Calendar* arrives in the valley.",
+    "*Web, three faiths* and the seven villagers.",
+    "*Shop and fishing* from the 2D.",
+    "*Save* with three slots and the whole day.",
+    "*Health*: a fall wakes you at the mud house.",
+    "*Peccary* in the woods, warning before it lunges.",
+    "*Tools*, and Esc opens the menu.",
+    "*J panel*: quests, letters and the shop.",
+    "*L collection* with slots still to find.",
+    "*Villagers* walk around the water.",
+    "*Altarpiece home* becomes the default look."
+   ],
+   "mudancas_es": [
+    "*Aliento*: el cansancio pesa en el paso.",
+    "*Mochila* con 30 espacios, 10 de mano.",
+    "*Catálogo* de 51 objetos.",
+    "*Misiones de Pedro* en tres idiomas.",
+    "*Calendario* llega al valle.",
+    "*Red, tres fes* y los siete vecinos.",
+    "*Venta y pesca* traídas del 2D.",
+    "*Guardado* con tres ranuras y el día entero.",
+    "*Vida*: quien cae despierta en la casa de adobe.",
+    "*Pecarí* en el bosque, avisa antes de embestir.",
+    "*Herramientas*, y Esc abre el menú.",
+    "*Panel J*: misiones, cartas y la venta.",
+    "*Colección L* con huecos por encontrar.",
+    "*Vecinos* rodean el agua.",
+    "*Portada Retablo* pasa a ser la identidad."
    ]
   },
   {
@@ -123,7 +312,15 @@
     "*Música por período* e sons da mata.",
     "*Minimapa, missões e fichas* das árvores.",
     "*Capa pintada* de dia e de noite.",
-    "*Menu em talha* e travessia em cinema."
+    "*Menu em talha* e travessia em cinema.",
+    "*Sol real* e casas de frente para a rua.",
+    "*Ruas curvas* e cruzamentos.",
+    "*Passos* com o som de cada chão.",
+    "*Ondas* em séries e marolas na areia.",
+    "*Mata de Saubara* com espécies locais.",
+    "*PERSONAGENS* editável no menu.",
+    "*Carregamento* em etapas, sem congelar.",
+    "*Plaquinhas de nome* sobre os moradores."
    ],
    "mudancas_en": [
     "*Chart-based sea*, clear water and waves.",
@@ -133,7 +330,15 @@
     "*Music by time of day* and woodland sounds.",
     "*Minimap, quests and tree cards*.",
     "*Painted covers* for day and night.",
-    "*Gilded menu* and a cinematic crossing."
+    "*Gilded menu* and a cinematic crossing.",
+    "*Real sun* and houses facing the street.",
+    "*Curved streets* and crossings.",
+    "*Footsteps* sound like each ground.",
+    "*Waves* in sets and ripples on the sand.",
+    "*Saubara woods* with local species.",
+    "*CHARACTERS* panel editable in the menu.",
+    "*Loading* in stages, without freezing.",
+    "*Name tags* above the villagers."
    ],
    "mudancas_es": [
     "*Mar de carta náutica*, agua clara y olas.",
@@ -143,7 +348,15 @@
     "*Música por período* y sonidos del bosque.",
     "*Minimapa, misiones y fichas* de árboles.",
     "*Portadas pintadas* de día y de noche.",
-    "*Menú dorado* y travesía de cine."
+    "*Menú dorado* y travesía de cine.",
+    "*Sol real* y casas frente a la calle.",
+    "*Calles curvas* y cruces.",
+    "*Pasos* con el sonido de cada suelo.",
+    "*Olas* en series y ondas en la arena.",
+    "*Bosque de Saubara* con especies locales.",
+    "*PERSONAJES* editable en el menú.",
+    "*Carga* por etapas, sin congelarse.",
+    "*Placas de nombre* sobre los vecinos."
    ]
   },
   {
@@ -160,7 +373,13 @@
     "*Mata que canta* de dia e de noite; mar e riacho por perto.",
     "*Sete moradores* com voz cumprimentam quem chega.",
     "*Pedro* acompanha o jogador e narra as missões.",
-    "*Sessenta e seis peças* novas chegaram do Tripo."
+    "*Sessenta e seis peças* novas chegaram do Tripo.",
+    "*Balões de fala* para moradores e Pedro.",
+    "*Áudio por camadas* e vozes audíveis.",
+    "*Menu trilíngue* com ajustes e ajuda.",
+    "*HUD* com botões de canto.",
+    "*Pulo* com pouso e câmera melhores.",
+    "*Tela de carregamento* ao entrar no vale."
    ],
    "mudancas_en": [
     "*Two styles*: the Tripo valley or the procedural one.",
@@ -168,7 +387,13 @@
     "*Singing woods* by day and by night; sea and stream nearby.",
     "*Seven villagers* with voices greet whoever arrives.",
     "*Pedro* walks with the player and narrates the quests.",
-    "*Sixty-six new pieces* arrived from Tripo."
+    "*Sixty-six new pieces* arrived from Tripo.",
+    "*Speech balloons* for villagers and Pedro.",
+    "*Layered audio* and audible voices.",
+    "*Trilingual menu* with settings and help.",
+    "*HUD* with corner buttons.",
+    "*Jump* with better landing and camera.",
+    "*Loading screen* when entering the valley."
    ],
    "mudancas_es": [
     "*Dos estilos*: el valle de Tripo o el procedural.",
@@ -176,7 +401,13 @@
     "*Bosque que canta* de día y de noche; mar y arroyo cerca.",
     "*Siete aldeanos* con voz saludan a quien llega.",
     "*Pedro* acompaña al jugador y narra las misiones.",
-    "*Sesenta y seis piezas* nuevas llegaron de Tripo."
+    "*Sesenta y seis piezas* nuevas llegaron de Tripo.",
+    "*Globos de diálogo* para vecinos y Pedro.",
+    "*Audio por capas* y voces audibles.",
+    "*Menú trilingüe* con ajustes y ayuda.",
+    "*HUD* con botones de esquina.",
+    "*Salto* con mejor aterrizaje y cámara.",
+    "*Pantalla de carga* al entrar al valle."
    ]
   },
   {
@@ -193,7 +424,12 @@
     "*Frutíferas do Tripo*: mangueira, jaqueira, cajueiro e coqueiro.",
     "*Capela e poço* com modelos próprios.",
     "*Espécies do Recôncavo* na mata e na orla.",
-    "*Peças do 2D*: poço, cruzeiro, carroça e varal."
+    "*Peças do 2D*: poço, cruzeiro, carroça e varal.",
+    "*Lote do Tripo* com 68 peças em Malha Smart.",
+    "*Machado e cacho de banana*, primeiros itens.",
+    "*Mata leve* com blocos e LOD.",
+    "*Ponte* alinhada com a rua sobre o rio.",
+    "*Controles de mouse* no vale."
    ],
    "mudancas_en": [
     "*Four meters* per unit in the valley.",
@@ -201,7 +437,12 @@
     "*Fruit trees from Tripo*: mango, jackfruit, cashew and coconut.",
     "*Chapel and well* with their own models.",
     "*Recôncavo species* in the woods and on the shore.",
-    "*Pieces from the 2D*: well, wayside cross, cart and clothesline."
+    "*Pieces from the 2D*: well, wayside cross, cart and clothesline.",
+    "*Tripo batch* of 68 Smart Mesh pieces.",
+    "*Axe and banana bunch*, the first items.",
+    "*Light woods* with blocks and LOD.",
+    "*Bridge* lined up with the street over the river.",
+    "*Mouse controls* in the valley."
    ],
    "mudancas_es": [
     "*Cuatro metros* por unidad en el valle.",
@@ -209,7 +450,12 @@
     "*Frutales de Tripo*: mango, jaca, anacardo y cocotero.",
     "*Capilla y pozo* con modelos propios.",
     "*Especies del Recôncavo* en el bosque y la costa.",
-    "*Piezas del 2D*: pozo, cruz, carreta y tendedero."
+    "*Piezas del 2D*: pozo, cruz, carreta y tendedero.",
+    "*Lote de Tripo* con 68 piezas Smart Mesh.",
+    "*Hacha y racimo de plátano*, primeros objetos.",
+    "*Bosque ligero* con bloques y LOD.",
+    "*Puente* alineado con la calle sobre el río.",
+    "*Controles de ratón* en el valle."
    ]
   },
   {
@@ -225,21 +471,33 @@
     "*Costa e mata* com novas formas.",
     "*Um metro* por unidade no vale.",
     "*Mapa aéreo* com zoom e marcadores.",
-    "*Passarelas* levam aos pontos sobre a água."
+    "*Passarelas* levam aos pontos sobre a água.",
+    "*KML do autor* guia ruas, rios e áreas.",
+    "*Terreno e costa* feitos de vetores.",
+    "*Colisão de troncos* só perto do jogador.",
+    "*Oito ruas* com bordas e chão caminhável."
    ],
    "mudancas_en": [
     "*Walkable streets* and rivers follow the drawn map.",
     "*Coast and woods* with new shapes.",
     "*One meter* per unit in the valley.",
     "*Aerial map* with zoom and markers.",
-    "*Boardwalks* lead to the points over the water."
+    "*Boardwalks* lead to the points over the water.",
+    "*Author's KML* guides streets, rivers and areas.",
+    "*Terrain and coast* built from vectors.",
+    "*Trunk collision* only near the player.",
+    "*Eight streets* with edges and walkable ground."
    ],
    "mudancas_es": [
     "*Calles transitables* y ríos siguen el mapa dibujado.",
     "*Costa y bosque* con nuevas formas.",
     "*Un metro* por unidad en el valle.",
     "*Mapa aéreo* con zoom y marcadores.",
-    "*Pasarelas* llevan a los puntos sobre el agua."
+    "*Pasarelas* llevan a los puntos sobre el agua.",
+    "*KML del autor* guía calles, ríos y áreas.",
+    "*Terreno y costa* hechos de vectores.",
+    "*Colisión de troncos* solo cerca del jugador.",
+    "*Ocho calles* con bordes y suelo transitable."
    ]
   },
   {
@@ -257,7 +515,10 @@
     "*Novos textos* na abertura.",
     "*Histórico próprio* do 3D.",
     "*Sobrevoo do vale* no menu.",
-    "*Mapa superior* no menu."
+    "*Mapa superior* no menu.",
+    "*Sobrevoo ou Parado* à escolha em AJUSTAR.",
+    "*Ícones de som* ligado e desligado.",
+    "*Créditos* revistos para o jogador."
    ],
    "mudancas_en": [
     "*Quitting* asks for confirmation.",
@@ -266,7 +527,10 @@
     "*New texts* in the opening.",
     "*Own changelog* for the 3D.",
     "*Valley flyover* in the menu.",
-    "*Top-down map* in the menu."
+    "*Top-down map* in the menu.",
+    "*Flyover or Still*, chosen in SETTINGS.",
+    "*Sound icons* for on and off.",
+    "*Credits* rewritten for the player."
    ],
    "mudancas_es": [
     "*Salida* confirmada por el menú.",
@@ -275,7 +539,10 @@
     "*Textos nuevos* en la apertura.",
     "*Historial propio* del 3D.",
     "*Sobrevuelo del valle* en el menú.",
-    "*Mapa superior* en el menú."
+    "*Mapa superior* en el menú.",
+    "*Sobrevuelo o Fijo*, a elegir en AJUSTES.",
+    "*Iconos de sonido* encendido y apagado.",
+    "*Créditos* revisados para el jugador."
    ]
   },
   {
@@ -289,17 +556,29 @@
    "mudancas": [
     "*Abertura 3D* na travessia.",
     "*Música e narração* no menu.",
-    "*Casa e árvores* ampliaram o vale."
+    "*Casa e árvores* ampliaram o vale.",
+    "*Casa do Tripo* com escala e colisão.",
+    "*Pau-brasil* chega à paisagem.",
+    "*Paisagem sonora* e música na travessia.",
+    "*Áudio compartilhado* entre menu e vale."
    ],
    "mudancas_en": [
     "*3D opening* for the crossing.",
     "*Music and narration* in the menu.",
-    "*House and trees* expanded the valley."
+    "*House and trees* expanded the valley.",
+    "*Tripo house* with scale and collision.",
+    "*Brazilwood tree* joins the landscape.",
+    "*Soundscape* and music on the crossing.",
+    "*Shared audio* between menu and valley."
    ],
    "mudancas_es": [
     "*Apertura 3D* en la travesía.",
     "*Música y narración* en el menú.",
-    "*Casa y árboles* ampliaron el valle."
+    "*Casa y árboles* ampliaron el valle.",
+    "*Casa de Tripo* con escala y colisión.",
+    "*Palo brasil* llega al paisaje.",
+    "*Paisaje sonoro* y música en la travesía.",
+    "*Audio compartido* entre menú y valle."
    ]
   },
   {
@@ -313,17 +592,32 @@
    "mudancas": [
     "*Exploração* do vale 3D aberta.",
     "*Animações* do personagem.",
-    "*Praça, horta e costa* ganharam forma."
+    "*Praça, horta e costa* ganharam forma.",
+    "*Câmera em terceira pessoa* e colisões.",
+    "*HUD* inicial no passeio.",
+    "*Gestos* acionáveis no jogo.",
+    "*Tripo* conectado ao projeto.",
+    "*Decisões de escopo* registradas."
    ],
    "mudancas_en": [
     "*Exploration* of the 3D valley opens.",
     "*Animations* for the character.",
-    "*Square, garden and coast* took shape."
+    "*Square, garden and coast* took shape.",
+    "*Third-person camera* and collisions.",
+    "*First HUD* for the walk.",
+    "*Gestures* triggered in the game.",
+    "*Tripo* connected to the project.",
+    "*Scope decisions* recorded."
    ],
    "mudancas_es": [
     "*Exploración* del valle 3D abierta.",
     "*Animaciones* del personaje.",
-    "*Plaza, huerta y costa* tomaron forma."
+    "*Plaza, huerta y costa* tomaron forma.",
+    "*Cámara en tercera persona* y colisiones.",
+    "*HUD* inicial en el paseo.",
+    "*Gestos* activables en el juego.",
+    "*Tripo* conectado al proyecto.",
+    "*Decisiones de alcance* registradas."
    ]
   }
  ]

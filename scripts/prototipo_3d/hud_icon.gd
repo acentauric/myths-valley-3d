@@ -1,8 +1,8 @@
 extends Control
 ## Ícones vetoriais dos botões de canto do HUD, no mesmo traço do som e do relógio:
-## "casa" (HOME), "ajustes" (engrenagem), "restaurar" (seta circular), "mapa", "ajuda" (?), "tela_cheia" (cantos para fora em janela, para dentro em tela cheia), "fechar" (×), "salvar" (disquete), "tocar" (play), "pausar", "externo" (link que sai do jogo), "camera" (anel dourado quando travada), "velocidade" (setas conforme
+## "casa" (HOME), "ajustes" (engrenagem), "restaurar" (seta circular), "mapa", "ajuda" (?), "tela_cheia" (cantos para fora em janela, para dentro em tela cheia), "fechar" (×), "salvar" (disquete), "tocar" (play), "pausar", "concluir" (✓), "externo" (link que sai do jogo), "camera" (anel dourado quando travada), "velocidade" (setas conforme
 ## a Passagem do tempo, 0–3) e "estilo" (cubo para Tripo, chaves para Procedural), "editar" (lápis, um só:
-## o do nome da vaga e o do painel PERSONAGENS) e "apagar" (lixeira, vermelha pedindo a confirmação) dos
+## o do nome da vaga e o do painel MODELOS) e "apagar" (lixeira, vermelha pedindo a confirmação) dos
 ## cartões das vagas.
 
 var tipo := "casa"
@@ -75,6 +75,9 @@ func _draw() -> void:
 			draw_polyline(PackedVector2Array([Vector2(4, 4), Vector2(16, 4), Vector2(20, 8), Vector2(20, 20), Vector2(4, 20), Vector2(4, 4)]), cor_salvar, 1.7, true)
 			draw_rect(Rect2(8, 4, 7, 5), cor_salvar, false, 1.5, true)
 			draw_rect(Rect2(7.5, 13, 9, 7), cor_salvar, false, 1.5, true)
+		"concluir":
+			# ✓: fecha a edição.
+			draw_polyline(PackedVector2Array([Vector2(5, 12.5), Vector2(10, 17.5), Vector2(19, 7)]), ouro, 2.0, true)
 		"pausar":
 			draw_rect(Rect2(7, 5.5, 3.5, 13), ouro if ativo else tinta, true)
 			draw_rect(Rect2(13.5, 5.5, 3.5, 13), ouro if ativo else tinta, true)
@@ -86,9 +89,9 @@ func _draw() -> void:
 			draw_line(Vector2(18, 6), Vector2(6, 18), tinta, 2.0, true)
 		"editar":
 			# Lápis deitado: corpo, ponta e a cinta da borracha. Dourado com a edição
-			# aberta. É um ícone só para o nome da vaga e para o painel PERSONAGENS:
-			# os dois chegaram no mesmo dia, cada um com o seu "editar", e num `match`
-			# o segundo ramo de mesmo nome nunca roda.
+			# aberta. É um ícone só para o nome da vaga e para o painel MODELOS: os
+			# dois chegaram no mesmo dia, cada um com o seu "editar", e num `match` o
+			# segundo ramo de mesmo nome nunca roda.
 			var cor_lapis := ouro if ativo else tinta
 			draw_polyline(PackedVector2Array([Vector2(16, 4), Vector2(20, 8), Vector2(9, 19), Vector2(4, 20), Vector2(5, 15), Vector2(16, 4)]), cor_lapis, 1.7, true)
 			draw_line(Vector2(13.5, 6.5), Vector2(17.5, 10.5), cor_lapis, 1.5, true)
