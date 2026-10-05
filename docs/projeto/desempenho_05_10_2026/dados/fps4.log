@@ -1,0 +1,67 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.312 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce GTX 1660 Ti with Max-Q Design
+
+MEDIR_FPS: remendo da grade da costa (so em memoria): ok
+DEPURACAO: começando em praca
+PROTOTYPE_READY: estilo=tripo hora=07:46 moradores=22 user_dir=P:/w/MythsValleyPrototype3D
+MEDIR_FPS: vale pronto em 33134 ms (jogo 33134 ms)
+MEDIR_FPS foto igreja_090_base.jpg (11.2 FPS, gpu 79.0 ms)
+MEDIR_FPS foto igreja_090_cull_back.jpg (13.3 FPS, gpu 65.1 ms)
+MEDIR_FPS foto igreja_090_mata_x050.jpg (14.8 FPS, gpu 57.0 ms)
+MEDIR_FPS foto igreja_090_mata_x035.jpg (16.2 FPS, gpu 51.4 ms)
+MEDIR_FPS foto igreja_090_sem_msaa_fxaa.jpg (12.3 FPS, gpu 70.7 ms)
+MEDIR_FPS foto igreja_090_sombra_60u.jpg (11.7 FPS, gpu 74.7 ms)
+MEDIR_FPS foto igreja_090_pacote_A.jpg (13.5 FPS, gpu 64.2 ms)
+MEDIR_FPS foto igreja_090_pacote_B.jpg (19.3 FPS, gpu 50.0 ms)
+MEDIR_FPS foto igreja_090_pacote_C.jpg (22.4 FPS, gpu 42.4 ms)
+MEDIR_FPS foto igreja_090_pacote_D.jpg (27.6 FPS, gpu 34.4 ms)
+MEDIR_FPS foto praca_000_base.jpg (11.1 FPS, gpu 76.2 ms)
+MEDIR_FPS foto praca_000_cull_back.jpg (13.8 FPS, gpu 60.0 ms)
+MEDIR_FPS foto praca_000_mata_x050.jpg (14.5 FPS, gpu 54.8 ms)
+MEDIR_FPS foto praca_000_mata_x035.jpg (16.1 FPS, gpu 48.9 ms)
+MEDIR_FPS foto praca_000_sem_msaa_fxaa.jpg (12.6 FPS, gpu 65.4 ms)
+MEDIR_FPS foto praca_000_sombra_60u.jpg (11.7 FPS, gpu 71.0 ms)
+MEDIR_FPS foto praca_000_pacote_A.jpg (13.5 FPS, gpu 60.7 ms)
+MEDIR_FPS foto praca_000_pacote_B.jpg (19.1 FPS, gpu 50.2 ms)
+MEDIR_FPS foto praca_000_pacote_C.jpg (22.4 FPS, gpu 42.5 ms)
+MEDIR_FPS foto praca_000_pacote_D.jpg (27.5 FPS, gpu 34.3 ms)
+MEDIR_FPS foto mirante_270_base.jpg (10.2 FPS, gpu 85.5 ms)
+MEDIR_FPS foto mirante_270_cull_back.jpg (12.6 FPS, gpu 67.6 ms)
+MEDIR_FPS foto mirante_270_mata_x050.jpg (13.4 FPS, gpu 62.1 ms)
+MEDIR_FPS foto mirante_270_mata_x035.jpg (15.2 FPS, gpu 53.5 ms)
+MEDIR_FPS foto mirante_270_sem_msaa_fxaa.jpg (11.2 FPS, gpu 76.5 ms)
+MEDIR_FPS foto mirante_270_sombra_60u.jpg (10.3 FPS, gpu 84.8 ms)
+MEDIR_FPS foto mirante_270_pacote_A.jpg (11.4 FPS, gpu 75.3 ms)
+MEDIR_FPS foto mirante_270_pacote_B.jpg (16.2 FPS, gpu 59.2 ms)
+MEDIR_FPS foto mirante_270_pacote_C.jpg (19.3 FPS, gpu 49.2 ms)
+MEDIR_FPS foto mirante_270_pacote_D.jpg (24.1 FPS, gpu 39.2 ms)
+MEDIR_FPS foto casa_de_taipa_135_base.jpg (23.9 FPS, gpu 28.8 ms)
+MEDIR_FPS foto casa_de_taipa_135_cull_back.jpg (25.3 FPS, gpu 27.5 ms)
+MEDIR_FPS foto casa_de_taipa_135_mata_x050.jpg (23.5 FPS, gpu 29.3 ms)
+MEDIR_FPS foto casa_de_taipa_135_mata_x035.jpg (23.9 FPS, gpu 29.2 ms)
+MEDIR_FPS foto casa_de_taipa_135_sem_msaa_fxaa.jpg (24.7 FPS, gpu 27.3 ms)
+MEDIR_FPS foto casa_de_taipa_135_sombra_60u.jpg (24.7 FPS, gpu 27.4 ms)
+MEDIR_FPS foto casa_de_taipa_135_pacote_A.jpg (27.0 FPS, gpu 24.4 ms)
+MEDIR_FPS foto casa_de_taipa_135_pacote_B.jpg (33.0 FPS, gpu 28.6 ms)
+MEDIR_FPS foto casa_de_taipa_135_pacote_C.jpg (37.7 FPS, gpu 24.8 ms)
+MEDIR_FPS foto casa_de_taipa_135_pacote_D.jpg (42.3 FPS, gpu 22.0 ms)
+MEDIR_FPS: aplicado (so neste processo): ["passos3", "minimapa_6hz", "luzes_interior_off", "msaa0_fxaa", "sombra60", "atlas2048", "cull_back", "mata050"]
+MEDIR_FPS: censo pronto, 5835 nos
+MEDIR_FPS vista pier               pior  22.7 FPS (rumo  90) gpu 40.1 ms cpu-rs 2.4 ms proc 2.07 ms fis 20.75 ms x2.7 draws 919 tri 3519939
+MEDIR_FPS vista praca              pior  19.7 FPS (rumo 270) gpu 34.7 ms cpu-rs 2.0 ms proc 4.32 ms fis 36.00 ms x2.8 draws 555 tri 3070089
+MEDIR_FPS vista igreja             pior  22.9 FPS (rumo  90) gpu 39.3 ms cpu-rs 2.7 ms proc 2.06 ms fis 13.89 ms x2.6 draws 1433 tri 3975093
+MEDIR_FPS vista venda              pior  24.9 FPS (rumo  90) gpu 36.7 ms cpu-rs 2.5 ms proc 2.03 ms fis 10.31 ms x2.4 draws 1127 tri 3746417
+MEDIR_FPS vista casa_de_taipa      pior  24.3 FPS (rumo 135) gpu 36.6 ms cpu-rs 3.7 ms proc 3.06 ms fis 13.00 ms x2.5 draws 1332 tri 4577018
+MEDIR_FPS vista lavoura            pior  22.2 FPS (rumo  90) gpu 40.7 ms cpu-rs 2.7 ms proc 2.61 ms fis 9.04 ms x2.7 draws 1265 tri 3902657
+MEDIR_FPS vista rocado             pior  24.5 FPS (rumo 135) gpu 36.7 ms cpu-rs 2.7 ms proc 2.04 ms fis 8.14 ms x2.4 draws 1335 tri 4599680
+MEDIR_FPS vista fogueira           pior  20.9 FPS (rumo  90) gpu 43.2 ms cpu-rs 2.6 ms proc 2.04 ms fis 9.83 ms x2.9 draws 1237 tri 4122142
+MEDIR_FPS vista mirante            pior  19.9 FPS (rumo 270) gpu 45.5 ms cpu-rs 2.8 ms proc 1.98 ms fis 7.96 ms x3.0 draws 1071 tri 4978870
+MEDIR_FPS vista cemiterio          pior  22.9 FPS (rumo  90) gpu 39.2 ms cpu-rs 2.2 ms proc 2.75 ms fis 9.22 ms x2.6 draws 830 tri 3280369
+MEDIR_FPS vista ponte_da_vila      pior  22.8 FPS (rumo 135) gpu 39.2 ms cpu-rs 2.1 ms proc 2.23 ms fis 9.55 ms x2.6 draws 768 tri 3691477
+MEDIR_FPS vista terreiro           pior  23.6 FPS (rumo 315) gpu 37.9 ms cpu-rs 2.3 ms proc 2.10 ms fis 9.25 ms x2.5 draws 843 tri 3584303
+MEDIR_FPS vista gameleira          pior  22.0 FPS (rumo   0) gpu 41.1 ms cpu-rs 3.0 ms proc 1.94 ms fis 17.17 ms x2.7 draws 1242 tri 4834385
+MEDIR_FPS vista expansao           pior  20.1 FPS (rumo 180) gpu 44.4 ms cpu-rs 2.7 ms proc 2.23 ms fis 10.90 ms x3.0 draws 968 tri 4167427
+MEDIR_FPS vista portao_da_fazenda  pior  19.4 FPS (rumo 135) gpu 47.0 ms cpu-rs 3.5 ms proc 2.04 ms fis 10.31 ms x3.0 draws 1333 tri 4916263
+MEDIR_FPS vista casa_da_estrada    pior  10.6 FPS (rumo 270) gpu 49.6 ms cpu-rs 2.4 ms proc 4.47 ms fis 75.60 ms x3.0 draws 652 tri 3161863
+MEDIR_FPS_FIM
+ERROR: 2 RID allocations of type 'N10RendererRD14TextureStorage7TextureE' were leaked at exit.

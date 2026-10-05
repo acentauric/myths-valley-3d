@@ -1,0 +1,116 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.312 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce GTX 1660 Ti with Max-Q Design
+
+DEPURACAO: começando em praca
+PROTOTYPE_READY: estilo=tripo hora=07:44 moradores=22 user_dir=P:/w/MythsValleyPrototype3D
+MEDIR_FPS: vale pronto em 50333 ms (jogo 50333 ms)
+MEDIR_FPS: censo pronto, 5846 nos
+MEDIR_FPS A/B cpu em praca rumo 270: 23 alternancias
+MEDIR_FPS AB   1/23   +7.20 ms  (6.8 -> 6.5 FPS)  gpu 66.4->50.9  proc 3.80->4.05  fis 127.15->141.84  relogio do dia PARADO (a base e com ele andando, como no jogo)
+MEDIR_FPS AB   2/23  -10.49 ms  (6.8 -> 7.3 FPS)  gpu 68.7->57.7  proc 3.84->2.80  fis 125.52->118.83  animacao: AnimationPlayers parados
+MEDIR_FPS AB   3/23 -106.41 ms  (6.4 -> 19.6 FPS)  gpu 62.6->37.0  proc 3.90->0.88  fis 140.74->0.38  CPU: TODOS os _process/_physics_process de script desligados
+MEDIR_FPS AB   4/23  +10.83 ms  (5.9 -> 5.5 FPS)  gpu 72.1->56.9  proc 3.88->3.63  fis 149.24->166.22  script: animador_bicho.gd (74 nos) desligado
+MEDIR_FPS AB   5/23  -12.16 ms  (5.8 -> 6.2 FPS)  gpu 71.8->79.0  proc 3.62->3.45  fis 153.01->141.52  script: cardume.gd (37 nos, fisica) desligado
+MEDIR_FPS AB   6/23  -16.62 ms  (5.2 -> 5.7 FPS)  gpu 60.5->56.5  proc 4.22->3.71  fis 178.74->163.16  script: authored_animator.gd (25 nos) desligado
+MEDIR_FPS AB   7/23  -21.13 ms  (5.3 -> 5.9 FPS)  gpu 54.9->51.4  proc 4.15->3.54  fis 176.63->156.84  script: espuma_agua.gd (24 nos, fisica) desligado
+MEDIR_FPS AB   8/23   -2.44 ms  (6.2 -> 6.2 FPS)  gpu 58.3->71.3  proc 3.46->3.57  fis 148.26->141.97  script: balao_fala.gd (23 nos) desligado
+MEDIR_FPS AB   9/23  -73.41 ms  (6.7 -> 13.2 FPS)  gpu 63.5->42.1  proc 3.61->3.87  fis 131.76->59.81  script: npc.gd (22 nos, fisica) desligado
+MEDIR_FPS AB  10/23   +5.60 ms  (6.8 -> 6.5 FPS)  gpu 59.5->62.2  proc 3.59->4.31  fis 129.36->139.88  script: cadeia_de_missoes.gd (22 nos, fisica) desligado
+MEDIR_FPS AB  11/23  -91.69 ms  (6.4 -> 15.7 FPS)  gpu 63.7->44.1  proc 4.19->3.50  fis 137.43->44.10  script: bicho_de_casa.gd (22 nos, fisica) desligado
+MEDIR_FPS AB  12/23  -17.54 ms  (6.1 -> 6.8 FPS)  gpu 70.0->69.6  proc 4.63->2.26  fis 147.63->134.01  script: bando_de_chao.gd (10 nos) desligado
+MEDIR_FPS AB  13/23  +12.78 ms  (6.3 -> 5.9 FPS)  gpu 73.8->82.5  proc 4.03->4.36  fis 137.38->145.79  script: criatura_vale.gd (2 nos, fisica) desligado
+MEDIR_FPS AB  14/23  +18.56 ms  (6.7 -> 6.0 FPS)  gpu 63.2->69.7  proc 3.82->3.55  fis 130.93->149.80  script: player_controller.gd (1 nos, fisica) desligado
+MEDIR_FPS AB  15/23   +7.47 ms  (5.8 -> 5.6 FPS)  gpu 62.7->78.5  proc 3.84->3.52  fis 153.68->154.05  script: canoas.gd (1 nos, fisica) desligado
+MEDIR_FPS AB  16/23  -12.59 ms  (5.3 -> 5.7 FPS)  gpu 68.6->82.4  proc 3.95->3.42  fis 169.40->161.66  script: vida.gd (1 nos, fisica) desligado
+MEDIR_FPS AB  17/23  -26.74 ms  (5.5 -> 6.4 FPS)  gpu 78.0->59.7  proc 3.81->3.48  fis 156.72->140.57  script: luta_vale.gd (1 nos, fisica) desligado
+MEDIR_FPS AB  18/23 -111.71 ms  (5.9 -> 17.1 FPS)  gpu 85.5->41.9  proc 3.47->3.50  fis 142.43->40.96  script: fauna_vale.gd (1 nos, fisica) desligado
+MEDIR_FPS AB  19/23   -5.03 ms  (6.3 -> 6.5 FPS)  gpu 81.0->68.2  proc 3.62->3.61  fis 139.31->128.65  script: tubarao.gd (1 nos, fisica) desligado
+MEDIR_FPS AB  20/23   -2.68 ms  (6.6 -> 6.7 FPS)  gpu 75.4->59.3  proc 3.65->3.54  fis 136.28->129.80  script: guia_pedro.gd (1 nos, fisica) desligado
+MEDIR_FPS AB  21/23  -96.14 ms  (6.6 -> 17.9 FPS)  gpu 69.3->41.3  proc 3.64->4.17  fis 134.79->0.46  CPU: todos os scripts com _physics_process desligados
+MEDIR_FPS AB  22/23  +37.92 ms  (6.7 -> 5.3 FPS)  gpu 60.8->72.7  proc 3.75->4.70  fis 132.57->173.32  fisica: servidor 3D inativo
+MEDIR_FPS AB  23/23  -76.00 ms  (7.6 -> 18.0 FPS)  gpu 49.1->41.6  proc 3.87->0.53  fis 118.37->0.15  jogo inteiro com processamento desligado (so desenha)
+MEDIR_FPS A/B gpu em igreja rumo 90: 72 alternancias
+MEDIR_FPS AB   1/72   -8.91 ms  (11.1 -> 12.3 FPS)  gpu 79.6->70.9  proc 0.60->0.59  fis 0.71->0.65  render: MSAA 3D desligado (hoje 2x)
+MEDIR_FPS AB   2/72   -9.08 ms  (11.1 -> 12.4 FPS)  gpu 79.7->70.7  proc 0.67->0.62  fis 0.80->0.73  render: escala 3D 0,77 bilinear
+MEDIR_FPS AB   3/72  -13.43 ms  (11.2 -> 13.1 FPS)  gpu 79.5->66.3  proc 0.69->0.75  fis 0.83->0.83  render: escala 3D 0,67 bilinear
+MEDIR_FPS AB   4/72  -17.58 ms  (11.1 -> 13.8 FPS)  gpu 79.7->61.8  proc 0.64->0.68  fis 0.76->0.70  render: escala 3D 0,50 bilinear
+MEDIR_FPS AB   5/72   -5.91 ms  (11.1 -> 11.9 FPS)  gpu 79.8->73.8  proc 0.64->0.65  fis 0.77->0.72  render: FSR1 0,77
+MEDIR_FPS AB   6/72   -9.37 ms  (11.1 -> 12.4 FPS)  gpu 79.7->70.5  proc 0.70->0.68  fis 0.85->0.73  render: FSR1 0,67
+MEDIR_FPS AB   7/72   -8.00 ms  (11.1 -> 12.2 FPS)  gpu 79.8->72.0  proc 0.72->0.69  fis 0.86->0.70  render: sem MSAA + FXAA
+MEDIR_FPS AB   8/72   -3.06 ms  (11.0 -> 11.4 FPS)  gpu 80.2->77.4  proc 0.71->0.67  fis 0.87->0.81  render: mesh_lod_threshold 4 px (hoje 1)
+MEDIR_FPS AB   9/72   -4.41 ms  (11.0 -> 11.6 FPS)  gpu 80.3->76.3  proc 0.66->0.56  fis 0.83->0.63  render: mesh_lod_threshold 8 px
+MEDIR_FPS AB  10/72   -4.43 ms  (11.1 -> 11.7 FPS)  gpu 79.9->75.6  proc 0.66->0.57  fis 0.79->0.62  render: mesh_lod_threshold 16 px
+MEDIR_FPS AB  11/72   -0.33 ms  (11.1 -> 11.1 FPS)  gpu 79.8->79.6  proc 0.65->0.57  fis 0.76->0.66  camera: far 600 (hoje 2800)
+MEDIR_FPS AB  12/72  -10.40 ms  (11.2 -> 12.7 FPS)  gpu 78.9->68.4  proc 0.57->0.58  fis 0.66->0.61  mata: TODAS as distancias de corte x 0.70 (280->196 u, sub-bosque 85->59 u)
+MEDIR_FPS AB  13/72  -21.38 ms  (11.3 -> 15.0 FPS)  gpu 78.0->56.7  proc 0.57->0.57  fis 0.67->0.52  mata: TODAS as distancias de corte x 0.50 (280->140 u, sub-bosque 85->42 u)
+MEDIR_FPS AB  14/72  -27.32 ms  (11.3 -> 16.3 FPS)  gpu 78.3->50.9  proc 0.62->0.63  fis 0.75->0.54  mata: TODAS as distancias de corte x 0.35 (280->98 u, sub-bosque 85->29 u)
+MEDIR_FPS AB  15/72   -0.20 ms  (11.3 -> 11.3 FPS)  gpu 78.0->77.7  proc 0.67->0.64  fis 0.79->0.75  mata: so o sub-bosque a 50 u (hoje 85)
+MEDIR_FPS AB  16/72   -0.31 ms  (11.3 -> 11.4 FPS)  gpu 77.9->77.9  proc 0.71->0.68  fis 0.84->0.82  mata: so o sub-bosque a 30 u
+MEDIR_FPS AB  17/72   -1.18 ms  (11.3 -> 11.4 FPS)  gpu 78.5->77.2  proc 0.67->0.58  fis 0.80->0.67  mata: lod_bias 0,25 nos blocos (hoje 0,65)
+MEDIR_FPS AB  18/72  -13.37 ms  (11.2 -> 13.2 FPS)  gpu 78.5->66.4  proc 0.62->0.73  fis 0.75->0.72  sombra: sol/lua sem sombra
+MEDIR_FPS AB  19/72   -3.61 ms  (11.3 -> 11.8 FPS)  gpu 78.0->74.4  proc 0.72->0.70  fis 0.87->0.84  sombra: distancia maxima 60 u
+MEDIR_FPS AB  20/72   -4.46 ms  (11.3 -> 11.9 FPS)  gpu 78.1->73.6  proc 0.78->0.66  fis 0.94->0.77  sombra: distancia maxima 30 u
+MEDIR_FPS AB  21/72   -2.59 ms  (11.3 -> 11.7 FPS)  gpu 78.0->75.3  proc 0.79->0.57  fis 0.91->0.64  sombra: 2 cascatas (PSSM2)
+MEDIR_FPS AB  22/72   -2.03 ms  (11.4 -> 11.6 FPS)  gpu 77.6->75.8  proc 0.75->0.64  fis 0.85->0.74  sombra: atlas direcional 2048 (hoje 4096)
+MEDIR_FPS AB  23/72   +0.18 ms  (11.2 -> 11.2 FPS)  gpu 78.3->78.6  proc 0.73->0.63  fis 0.86->0.71  sombra: filtro duro (hoje qualidade 2)
+MEDIR_FPS AB  24/72   -0.63 ms  (11.1 -> 11.2 FPS)  gpu 78.8->78.4  proc 0.70->0.68  fis 0.88->0.85  sombra: vegetacao (MultiMesh) sem projetar
+MEDIR_FPS AB  25/72  -11.79 ms  (11.2 -> 13.0 FPS)  gpu 78.2->67.8  proc 0.63->0.63  fis 0.79->0.60  sombra: malhas individuais sem projetar
+MEDIR_FPS AB  26/72   -6.39 ms  (11.3 -> 12.2 FPS)  gpu 77.7->71.6  proc 0.60->0.70  fis 0.72->0.79  luzes locais (omni/spot) escondidas
+MEDIR_FPS AB  27/72   -0.43 ms  (11.4 -> 11.4 FPS)  gpu 77.5->77.0  proc 0.69->0.74  fis 0.84->0.94  luzes locais sem sombra
+MEDIR_FPS AB  28/72   -0.50 ms  (11.4 -> 11.4 FPS)  gpu 77.6->77.1  proc 0.73->0.69  fis 0.90->0.78  ambiente: fog_enabled desligado
+MEDIR_FPS AB  29/72   -0.94 ms  (11.4 -> 11.6 FPS)  gpu 77.2->76.3  proc 0.67->0.64  fis 0.91->1.00  ambiente: fundo cor solida (sem shader de ceu, sem radiancia)
+MEDIR_FPS AB  30/72   +0.76 ms  (11.5 -> 11.4 FPS)  gpu 76.5->77.1  proc 0.67->0.57  fis 0.91->0.67  ambiente: nevoa sem perspectiva aerea (nao le a radiancia)
+MEDIR_FPS AB  31/72   -0.36 ms  (11.6 -> 11.6 FPS)  gpu 76.4->76.0  proc 0.63->0.78  fis 0.78->1.02  ambiente: reflexo desligado (reflected_light_source)
+MEDIR_FPS AB  32/72   +1.75 ms  (11.5 -> 11.3 FPS)  gpu 76.6->79.7  proc 0.61->0.62  fis 0.71->0.79  ceu: process_mode INCREMENTAL (hoje 3 = tempo real)
+MEDIR_FPS AB  33/72  +14.43 ms  (11.5 -> 9.9 FPS)  gpu 76.8->80.0  proc 0.59->0.61  fis 0.65->0.87  ceu: process_mode QUALITY (so refaz quando muda)
+MEDIR_FPS AB  34/72   -2.70 ms  (11.5 -> 11.8 FPS)  gpu 77.0->77.0  proc 0.61->0.70  fis 0.67->0.81  ceu: INCREMENTAL + radiancia 128
+MEDIR_FPS AB  35/72  -37.38 ms  (11.5 -> 20.1 FPS)  gpu 76.8->40.1  proc 0.66->0.65  fis 0.76->0.52  cena: toda a vegetacao em MultiMesh escondida
+MEDIR_FPS AB  36/72  -32.65 ms  (11.5 -> 18.4 FPS)  gpu 76.6->47.5  proc 0.66->0.66  fis 0.83->0.52  cena: todas as malhas individuais escondidas (sobra a vegetacao)
+MEDIR_FPS AB  37/72   -1.70 ms  (11.5 -> 11.7 FPS)  gpu 76.7->75.3  proc 0.71->0.60  fis 0.90->0.81  cena: malhas com esqueleto (skin) escondidas
+MEDIR_FPS AB  38/72   -6.03 ms  (11.5 -> 12.4 FPS)  gpu 76.5->71.3  proc 0.72->0.68  fis 0.94->0.77  cena: todas as pecas GLB individuais do catalogo escondidas
+MEDIR_FPS AB  39/72   -2.11 ms  (11.5 -> 11.8 FPS)  gpu 76.5->74.4  proc 0.64->0.67  fis 0.84->0.67  cena: pecas GLB com corte a 120 u (visibility_range_end)
+MEDIR_FPS AB  40/72   -3.84 ms  (11.5 -> 12.1 FPS)  gpu 76.4->73.2  proc 0.67->0.69  fis 0.83->0.81  cena: pecas GLB com corte a 60 u
+MEDIR_FPS AB  41/72   -0.53 ms  (11.6 -> 11.6 FPS)  gpu 76.1->75.9  proc 0.66->0.58  fis 0.79->0.73  peca: Galinha (25 x 3885 tri) escondida
+MEDIR_FPS AB  42/72   -0.91 ms  (11.6 -> 11.7 FPS)  gpu 76.1->75.6  proc 0.60->0.71  fis 0.71->0.71  peca: Filo (2 x 14760 tri) escondida
+MEDIR_FPS AB  43/72   +0.42 ms  (11.6 -> 11.5 FPS)  gpu 76.1->76.3  proc 0.69->0.74  fis 0.82->0.84  peca: Pintinho (7 x 3653 tri) escondida
+MEDIR_FPS AB  44/72   +0.14 ms  (11.6 -> 11.6 FPS)  gpu 75.9->75.9  proc 0.69->0.64  fis 0.77->0.73  peca: Gato Malhado (4 x 5599 tri) escondida
+MEDIR_FPS AB  45/72   -0.09 ms  (11.6 -> 11.7 FPS)  gpu 75.8->75.6  proc 0.67->0.68  fis 0.72->0.78  peca: Mangueira (1 x 20453 tri) escondida
+MEDIR_FPS AB  46/72   +0.54 ms  (11.6 -> 11.6 FPS)  gpu 75.9->76.2  proc 0.69->0.69  fis 0.74->0.72  mata: grupo 'Sub-bosque' (156 blocos) escondido
+MEDIR_FPS AB  47/72   -3.23 ms  (11.6 -> 12.0 FPS)  gpu 76.2->73.0  proc 0.68->0.79  fis 0.80->1.02  mata: grupo 'Mata_ jequitiba' (74 blocos) escondido
+MEDIR_FPS AB  48/72   +0.31 ms  (11.6 -> 11.5 FPS)  gpu 76.2->76.7  proc 0.66->0.67  fis 0.78->0.80  mata: grupo 'Paisagismo_ bananeira_leve 230' (9 blocos) escondido
+MEDIR_FPS AB  49/72   -5.25 ms  (11.6 -> 12.4 FPS)  gpu 76.0->70.8  proc 0.65->0.66  fis 0.73->0.70  mata: grupo 'Mata_ jatoba' (87 blocos) escondido
+MEDIR_FPS AB  50/72   -3.32 ms  (11.6 -> 12.1 FPS)  gpu 76.2->72.8  proc 0.69->0.64  fis 0.77->0.80  mata: grupo 'Mata_ jenipapeiro' (35 blocos) escondido
+MEDIR_FPS AB  51/72   -1.40 ms  (11.6 -> 11.7 FPS)  gpu 76.5->75.0  proc 0.69->0.60  fis 0.79->0.72  mata: grupo 'Mata_ embauba' (108 blocos) escondido
+MEDIR_FPS AB  52/72   -0.25 ms  (11.6 -> 11.6 FPS)  gpu 76.4->76.0  proc 0.69->0.75  fis 0.78->0.86  mata: grupo 'Mata_ ipe_amarelo' (41 blocos) escondido
+MEDIR_FPS AB  53/72   -0.69 ms  (11.5 -> 11.6 FPS)  gpu 76.5->75.9  proc 0.73->0.75  fis 0.83->0.95  mata: grupo 'Mata_ massaranduba' (42 blocos) escondido
+MEDIR_FPS AB  54/72   -1.21 ms  (11.5 -> 11.7 FPS)  gpu 76.5->75.5  proc 0.71->0.61  fis 0.81->0.73  shader: malhas com leito_mar.gdshader escondidas
+MEDIR_FPS AB  55/72   -2.36 ms  (11.6 -> 11.9 FPS)  gpu 76.0->73.7  proc 0.62->0.68  fis 0.73->0.76  shader: malhas com agua_mar.gdshader escondidas
+MEDIR_FPS AB  56/72   -2.75 ms  (11.6 -> 12.0 FPS)  gpu 75.9->73.7  proc 0.63->0.67  fis 0.74->0.77  shader: malhas com terreno.gdshader escondidas
+MEDIR_FPS AB  57/72   -0.87 ms  (11.6 -> 11.7 FPS)  gpu 76.3->75.7  proc 0.63->0.67  fis 0.71->0.80  shader: malhas com areia_praia.gdshader escondidas
+MEDIR_FPS AB  58/72   -0.42 ms  (11.6 -> 11.6 FPS)  gpu 76.3->75.8  proc 0.62->0.68  fis 0.71->0.88  shader: malhas com leito_rio.gdshader escondidas
+MEDIR_FPS AB  59/72   -0.18 ms  (11.6 -> 11.6 FPS)  gpu 76.2->76.0  proc 0.67->0.64  fis 0.84->0.76  shader: malhas com agua_rio.gdshader escondidas
+MEDIR_FPS AB  60/72   -0.26 ms  (11.6 -> 11.6 FPS)  gpu 76.2->76.1  proc 0.67->0.63  fis 0.86->0.79  shader: malhas com foz_rio.gdshader escondidas
+MEDIR_FPS AB  61/72   -2.31 ms  (11.6 -> 11.9 FPS)  gpu 76.1->74.1  proc 0.60->0.60  fis 0.70->0.61  shader: malhas com estrada_acostamento.gdshader escondidas
+MEDIR_FPS AB  62/72   +0.53 ms  (11.6 -> 11.5 FPS)  gpu 76.1->76.6  proc 0.58->0.57  fis 0.63->0.65  shader: malhas com cruzamento.gdshader escondidas
+MEDIR_FPS AB  63/72   +1.34 ms  (11.5 -> 11.4 FPS)  gpu 76.5->77.6  proc 0.61->0.72  fis 0.67->0.88  shader: malhas com (shader embutido) escondidas
+MEDIR_FPS AB  64/72   -4.18 ms  (11.6 -> 12.1 FPS)  gpu 76.4->80.4  proc 0.60->0.61  fis 0.70->0.70  HUD: todas as CanvasLayer escondidas
+MEDIR_FPS AB  65/72   -4.43 ms  (11.6 -> 12.2 FPS)  gpu 76.3->80.0  proc 0.56->0.68  fis 0.69->0.76  SubViewports: atualizacao desligada
+MEDIR_FPS AB  66/72   -0.27 ms  (11.5 -> 11.5 FPS)  gpu 76.6->76.4  proc 0.58->0.62  fis 0.71->0.72  Label3D escondidos
+MEDIR_FPS AB  67/72   -0.23 ms  (11.5 -> 11.6 FPS)  gpu 76.4->76.6  proc 0.58->0.72  fis 0.68->0.87  particulas 3D escondidas
+MEDIR_FPS AB  68/72  -14.38 ms  (11.6 -> 13.9 FPS)  gpu 76.4->62.5  proc 0.58->0.79  fis 0.67->0.79  PACOTE A (so config): sem MSAA + FXAA + sombra 60 u + atlas 2048
+MEDIR_FPS AB  69/72  -35.22 ms  (11.5 -> 19.4 FPS)  gpu 76.6->49.6  proc 0.64->0.60  fis 0.73->0.42  PACOTE B: A + minimapa parado + distancias da mata x 0,5
+MEDIR_FPS AB  70/72  -42.68 ms  (11.5 -> 22.7 FPS)  gpu 76.5->41.9  proc 0.63->0.57  fis 0.71->0.39  PACOTE C: B + pecas com corte 120 u + LOD 4 px + FSR1 0,77
+MEDIR_FPS AB  71/72  -50.55 ms  (11.5 -> 27.6 FPS)  gpu 76.6->34.3  proc 0.64->0.61  fis 0.77->0.34  PACOTE D (agressivo): A + minimapa parado + mata x 0,35 + pecas 120 u + LOD 8 px + FSR1 0,67
+MEDIR_FPS AB  72/72   +0.91 ms  (11.4 -> 11.3 FPS)  gpu 77.2->78.3  proc 0.69->0.85  fis 0.80->1.02  render: FSR2 0,67 (com TAA proprio)
+MEDIR_FPS hora  6.0: 11.2 FPS gpu 78.8 ms, 27 luzes locais
+MEDIR_FPS hora  9.0: 11.3 FPS gpu 78.5 ms, 15 luzes locais
+MEDIR_FPS hora 12.0: 11.4 FPS gpu 76.1 ms, 15 luzes locais
+MEDIR_FPS hora 15.0: 11.4 FPS gpu 76.0 ms, 15 luzes locais
+MEDIR_FPS hora 17.5: 11.7 FPS gpu 75.8 ms, 15 luzes locais
+MEDIR_FPS hora 19.0: 13.7 FPS gpu 65.3 ms, 22 luzes locais
+MEDIR_FPS hora 21.0: 13.3 FPS gpu 65.8 ms, 22 luzes locais
+MEDIR_FPS hora  0.0: 13.3 FPS gpu 65.7 ms, 22 luzes locais
+MEDIR_FPS com V-Sync: 10.9 FPS (mediana 88.7 ms, p95 105.9 ms)
+MEDIR_FPS passeio: 12.5 FPS medio, p95 130.8 ms, max 354.0 ms, 979 quadros > 50 ms
+MEDIR_FPS_FIM
+ERROR: 2 RID allocations of type 'N10RendererRD14TextureStorage7TextureE' were leaked at exit.

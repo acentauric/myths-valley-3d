@@ -1,0 +1,42 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.312 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce GTX 1660 Ti with Max-Q Design
+
+MEDIR_FPS: remendo da grade da costa (so em memoria): ok
+DEPURACAO: começando em praca
+PROTOTYPE_READY: estilo=tripo hora=07:45 moradores=22 user_dir=P:/w/MythsValleyPrototype3D
+MEDIR_FPS: vale pronto em 33217 ms (jogo 33217 ms)
+MEDIR_FPS: censo pronto, 5842 nos
+MEDIR_FPS A/B gpu em lavoura rumo 90: 14 alternancias
+MEDIR_FPS AB   1/14  -11.05 ms  (10.6 -> 12.0 FPS)  gpu 81.2->72.1  proc 0.69->0.67  fis 0.57->0.53  sombra: sol/lua sem sombra
+MEDIR_FPS AB   2/14   -2.36 ms  (10.6 -> 10.8 FPS)  gpu 81.8->78.7  proc 0.67->0.64  fis 0.53->0.53  sombra: distancia maxima 60 u
+MEDIR_FPS AB   3/14   -3.53 ms  (10.6 -> 11.0 FPS)  gpu 81.4->77.7  proc 0.75->0.73  fis 0.62->0.60  sombra: distancia maxima 30 u
+MEDIR_FPS AB   4/14   -2.89 ms  (10.6 -> 11.0 FPS)  gpu 81.3->78.8  proc 0.82->0.65  fis 0.65->0.52  sombra: 2 cascatas (PSSM2)
+MEDIR_FPS AB   5/14   -2.07 ms  (10.5 -> 10.7 FPS)  gpu 82.0->80.4  proc 0.75->0.64  fis 0.60->0.54  sombra: atlas direcional 2048 (hoje 4096)
+MEDIR_FPS AB   6/14   -2.08 ms  (10.5 -> 10.7 FPS)  gpu 82.1->80.2  proc 0.76->0.64  fis 0.64->0.56  sombra: filtro duro (hoje qualidade 2)
+MEDIR_FPS AB   7/14   +0.09 ms  (10.6 -> 10.6 FPS)  gpu 81.7->81.8  proc 0.86->0.90  fis 0.70->0.76  sombra: vegetacao (MultiMesh) sem projetar
+MEDIR_FPS AB   8/14   -0.28 ms  (10.6 -> 10.6 FPS)  gpu 81.6->81.4  proc 0.86->0.70  fis 0.78->0.57  sombra: malhas dos INTERIORES sem projetar (222)
+MEDIR_FPS AB   9/14   -0.21 ms  (10.7 -> 10.7 FPS)  gpu 81.2->81.0  proc 0.77->0.70  fis 0.70->0.74  sombra: moradores, bichos e aves sem projetar (106)
+MEDIR_FPS AB  10/14   -0.95 ms  (10.7 -> 10.8 FPS)  gpu 81.0->80.1  proc 0.74->0.82  fis 0.59->0.67  sombra: pecas pequenas (< 2,5 u) sem projetar (239)
+MEDIR_FPS AB  11/14   -8.11 ms  (10.6 -> 11.6 FPS)  gpu 81.3->74.6  proc 0.76->0.79  fis 0.61->0.63  sombra: malhas individuais sem projetar
+MEDIR_FPS AB  12/14  -13.87 ms  (10.6 -> 12.4 FPS)  gpu 81.5->67.3  proc 0.78->0.88  fis 0.67->0.71  faces de tras: cull BACK nos 57 materiais da vegetacao em MultiMesh
+MEDIR_FPS AB  13/14   -2.17 ms  (10.5 -> 10.8 FPS)  gpu 81.6->79.9  proc 0.79->0.67  fis 0.70->0.64  faces de tras: cull BACK nos 221 materiais das malhas individuais
+MEDIR_FPS AB  14/14  -16.27 ms  (10.7 -> 12.9 FPS)  gpu 81.1->65.5  proc 0.76->0.77  fis 0.65->0.55  faces de tras: cull BACK em tudo (vegetacao + individuais)
+MEDIR_FPS: aplicado (so neste processo): ["passos3", "minimapa_6hz", "msaa0_fxaa", "sombra60", "atlas2048"]
+MEDIR_FPS vista pier               pior  13.8 FPS (rumo  90) gpu 67.2 ms cpu-rs 2.5 ms proc 2.18 ms fis 25.77 ms x3.0 draws 951 tri 5672515
+MEDIR_FPS vista praca              pior  12.7 FPS (rumo  45) gpu 71.7 ms cpu-rs 2.3 ms proc 3.25 ms fis 40.09 ms x3.0 draws 948 tri 6427499
+MEDIR_FPS vista igreja             pior  12.3 FPS (rumo  90) gpu 76.2 ms cpu-rs 2.7 ms proc 2.59 ms fis 18.46 ms x3.0 draws 1532 tri 6867340
+MEDIR_FPS vista venda              pior  13.5 FPS (rumo  90) gpu 69.5 ms cpu-rs 3.2 ms proc 2.46 ms fis 16.24 ms x3.0 draws 1181 tri 6030396
+MEDIR_FPS vista casa_de_taipa      pior  13.2 FPS (rumo  90) gpu 70.4 ms cpu-rs 3.3 ms proc 2.52 ms fis 13.62 ms x3.0 draws 1233 tri 6053607
+MEDIR_FPS vista lavoura            pior  11.9 FPS (rumo  90) gpu 77.3 ms cpu-rs 2.7 ms proc 2.35 ms fis 10.34 ms x3.0 draws 1355 tri 6151298
+MEDIR_FPS vista rocado             pior  13.0 FPS (rumo  90) gpu 70.8 ms cpu-rs 2.5 ms proc 2.25 ms fis 11.34 ms x3.0 draws 1257 tri 6168830
+MEDIR_FPS vista fogueira           pior  11.3 FPS (rumo  90) gpu 81.5 ms cpu-rs 3.1 ms proc 2.69 ms fis 14.68 ms x3.0 draws 1313 tri 6618062
+MEDIR_FPS vista mirante            pior  10.6 FPS (rumo 270) gpu 87.7 ms cpu-rs 2.9 ms proc 1.98 ms fis 8.21 ms x3.0 draws 1096 tri 7896589
+MEDIR_FPS vista cemiterio          pior  11.3 FPS (rumo  90) gpu 81.6 ms cpu-rs 2.2 ms proc 2.50 ms fis 13.47 ms x3.0 draws 891 tri 6609880
+MEDIR_FPS vista ponte_da_vila      pior  12.4 FPS (rumo  90) gpu 73.9 ms cpu-rs 2.2 ms proc 2.90 ms fis 10.57 ms x3.0 draws 863 tri 5676778
+MEDIR_FPS vista terreiro           pior  11.4 FPS (rumo   0) gpu 79.8 ms cpu-rs 2.7 ms proc 2.98 ms fis 13.97 ms x3.0 draws 811 tri 6395857
+MEDIR_FPS vista gameleira          pior  12.4 FPS (rumo  45) gpu 76.0 ms cpu-rs 2.9 ms proc 2.62 ms fis 27.91 ms x3.0 draws 773 tri 5701065
+MEDIR_FPS vista expansao           pior  11.7 FPS (rumo 135) gpu 76.7 ms cpu-rs 2.4 ms proc 2.18 ms fis 13.10 ms x3.0 draws 825 tri 5858215
+MEDIR_FPS vista portao_da_fazenda  pior  12.1 FPS (rumo 135) gpu 76.7 ms cpu-rs 3.5 ms proc 1.99 ms fis 11.69 ms x3.0 draws 1377 tri 6697370
+MEDIR_FPS vista casa_da_estrada    pior  12.8 FPS (rumo 135) gpu 75.4 ms cpu-rs 3.4 ms proc 2.20 ms fis 17.00 ms x3.0 draws 1374 tri 6588181
+MEDIR_FPS_FIM
+ERROR: 2 RID allocations of type 'N10RendererRD14TextureStorage7TextureE' were leaked at exit.
