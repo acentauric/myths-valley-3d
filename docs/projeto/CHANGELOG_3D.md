@@ -36,6 +36,16 @@
 - A escolha de idioma fica mais leve: botões menores, espaçamento equilibrado,
   modal mais alto, versão junto dele e um × discreto no canto para sair do jogo.
 - A escolha de idioma ganha folga vertical, e o aviso do rodapé fica centralizado.
+- O sobrevoo do menu volta a passar longe das árvores no estilo Tripo. A revisão
+  da foz tinha posto um mangue no vão por onde o voo cruza a fileira da orla, na
+  ida, e as folhas de um coqueiro a 1 m da câmera, na volta. O vão norte fica
+  livre (um mangue deixa de nascer ali) e a volta passa 9 m mais ao sul; a ida e
+  a curva da praça são as mesmas. Folga mínima: 6,12 m no Tripo e 5,74 m no
+  procedural.
+- No vale, o botão de FPS fica no alto do canto e acompanha o Tamanho do HUD;
+  os outros botões do canto continuam dentro do menu do Esc.
+- O portão `mapa_fluxo` mede a corrida em terra: do píer, correr de lado caía
+  na água e media o nado.
 
 - As trilhas do menu, do jogo, dos períodos e da mata mudam com fade de saída
   e entrada. Parar a música também reduz o ganho antes de encerrar; pedidos
