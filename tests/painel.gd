@@ -110,6 +110,37 @@ func _run() -> void:
 	# compra, venda e salvar — continuam passando com ela parada. Foi medido,
 	# não suposto.
 	_conferir(paused, "o painel não pausou o vale atrás dele")
+	# FECHAR DEVOLVE O RELÓGIO E O VALE, PELOS TRÊS CAMINHOS DE FECHAR.
+	#
+	# "De alguma forma que não identifiquei, eu consegui parar o relógio sem
+	# mexer nas configurações." Era abrir e fechar o J: o painel parava o relógio
+	# por conta própria, ANTES do dono das telas, que então guardava "já estava
+	# parado" e devolvia isso ao fechar. A pergunta de baixo, na seção 3, fecha
+	# mandando o J ao próprio painel e não via o defeito: no jogo o J passa
+	# primeiro pelo dono das telas (`telas_do_vale.gd`, `_input`).
+	#
+	# 1) o J de verdade, pelo dono das telas;
+	vale.telas.abrir("painel")
+	await _frames(2)
+	_conferir(not painel.aberto, "o J pelo dono das telas não fechou o painel")
+	_conferir(not dia.pausado, "abri e fechei o J e o relógio ficou parado")
+	_conferir(not paused, "abri e fechei o J e o vale ficou parado")
+	# 2) o × do painel, com o mouse (é o que a lista de missões mostra);
+	vale.hud.quests_requested.emit()
+	await _frames(2)
+	_conferir(painel.aberto and dia.pausado and paused, "o botão de missões do HUD não abriu o painel parando o vale")
+	var botao_fechar: Button = painel.find_child("Fechar", true, false)
+	_conferir(botao_fechar != null, "o painel não tem botão de fechar")
+	if botao_fechar != null:
+		botao_fechar.pressed.emit()
+		await _frames(2)
+		_conferir(not painel.aberto and vale.telas.aberta() == "", "o × não fechou o painel")
+		_conferir(not dia.pausado, "fechei pelo × e o relógio ficou parado")
+		_conferir(not paused, "fechei pelo × e o vale ficou parado")
+		_conferir(player.is_physics_processing(), "fechei pelo × e o jogador continuou parado")
+	# 3) o J dentro do painel é a pergunta da seção 3. Reabre para seguir.
+	vale.abrir_o_painel()
+	await _frames(2)
 	# --- A FORMA: ÍNDICE À ESQUERDA, PÁGINA À DIREITA ------------------------
 	#
 	# O painel passou a ter a cara do almanaque — "tente deixar o menu de missão
@@ -267,6 +298,7 @@ func _run() -> void:
 	_conferir(not painel.aberto, "o J não fechou o painel")
 	_conferir(player.is_physics_processing(), "fechou o painel e o jogador continuou parado")
 	_conferir(not dia.pausado, "fechou o painel e o relógio continuou parado")
+	_conferir(not paused, "fechou o painel e o vale continuou parado")
 
 	# --- 4. ABA DE LUGAR POR PROXIMIDADE ----------------------------------------
 	for qual in Bancadas.BANCADAS:

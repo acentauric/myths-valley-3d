@@ -101,7 +101,6 @@ var _aba: int = Aba.MISSOES
 var _cursor: int = 0
 ## O índice da ação que está pedindo confirmação, ou -1 (ver o 2D).
 var _confirmando: int = -1
-var _dia_pausado_antes := false
 ## O retorno da última ação do jogo ("Partida guardada..."), que fica na dica
 ## até o cursor andar. Salvar é ação em que nada muda na tela (ver o 2D).
 var _aviso := ""
@@ -148,8 +147,13 @@ func abrir(aba: int = Aba.MISSOES) -> void:
 	_confirmando = -1
 	_aviso = ""
 	visible = true
-	_dia_pausado_antes = Dia.pausado
-	Dia.pausado = true
+	# O RELÓGIO NÃO É DAQUI. Quem para o vale e o relógio atrás de qualquer tela
+	# é o dono das telas (`telas_do_vale.gd` e `Prototype._pause_valley`). Este
+	# painel também parava, e pelas duas mãos o relógio ficava parado para
+	# sempre: o painel parava primeiro, o dono das telas guardava "já estava
+	# parado", e ao fechar o painel devolvia "andando" e o dono, logo depois,
+	# "parado". "Consegui parar o relógio sem mexer nas configurações" — era
+	# abrir e fechar o J.
 	abriu.emit()
 	_redesenhar()
 
@@ -163,7 +167,6 @@ func fechar() -> void:
 		return
 	aberto = false
 	visible = false
-	Dia.pausado = _dia_pausado_antes
 	fechou.emit()
 
 
@@ -463,7 +466,9 @@ func _montar() -> void:
 	_botao_jogo = _botao_pequeno("JOGO", func(): _ir_para_o_jogo())
 	_botao_jogo.tooltip_text = "Salvar, voltar ao menu, sair e os ajustes de teste"
 	topo.add_child(_botao_jogo)
-	topo.add_child(_botao_pequeno("×", fechar))
+	var fechar_painel := _botao_pequeno("×", fechar)
+	fechar_painel.name = "Fechar"
+	topo.add_child(fechar_painel)
 	coluna.add_child(Identidade.divisor())
 
 	var lado_a_lado := HBoxContainer.new()

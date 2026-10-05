@@ -890,6 +890,10 @@ func _montar_moradores(spawn: Vector3) -> void:
 	add_child(painel)
 	painel.abriu.connect(_parar_o_jogador)
 	painel.fechou.connect(_soltar_o_jogador)
+	# O × e as ações que fecham o painel por dentro (menu, sair) não passam pelo
+	# dono das telas: sem este aviso, o vale ficava parado atrás de painel
+	# nenhum. Quando é o dono que fecha, ele ignora o aviso (`fechou_por_conta`).
+	painel.fechou.connect(func() -> void: telas.fechou_por_conta("painel"))
 	painel.pediu.connect(_ao_pedido_do_painel)
 	# Quem está lendo não perde vida: a peçonha espera o painel fechar (ver
 	# Vida.esta_lendo). Por método, que deixa de valer quando o vale sai.
