@@ -41,4 +41,19 @@ static func extrair(cena: Node) -> Dictionary:
 			"inicial": casa.posicao_inicial, "giro_inicial": casa.giro_inicial,
 			"lote_inicial": casa.posicao_lote_inicial,
 		}
+		resultado[nome]["alicerce"] = casa.ajustes_alicerce() if casa.has_method("ajustes_alicerce") else {}
+		# Peças autorais: depois de criadas no editor, só elas valem (apagar = sumir do jogo).
+		var pecas: Array = []
+		for filho in casa.get_children():
+			if filho.has_method("dados"):
+				pecas.append(filho.dados())
+		resultado[nome]["pecas"] = pecas
+		resultado[nome]["pecas_autorais"] = bool(casa.get("pecas_criadas"))
+		var terreiro := casa.get_node_or_null("Terreiro") as Decal
+		if terreiro != null:
+			# Relativo à casa: o jogo reaplica sobre a posição final (após assentar no terreno).
+			resultado[nome]["terreiro"] = {
+				"transform": terreiro.transform, "size": terreiro.size, "modulate": terreiro.modulate,
+				"visible": terreiro.visible,
+			}
 	return resultado
