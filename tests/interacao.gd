@@ -17,7 +17,9 @@ extends SceneTree
 ##   3. O PASSO SE CUMPRE NO E: ao lado do Pedro, no desembarque, nada fecha
 ##      sozinho; o E fecha, com a resposta dele.
 ##   4. A CONQUISTA: o passo cumprido escurece a tela e mostra "Missão
-##      concluída" com o nome do passo.
+##      concluída" com o nome do passo — DEPOIS da resposta de quem fala, com o
+##      relógio parado durante a fala e durante a festa, entrando devagar e
+##      ficando pelo menos cinco segundos.
 ##   5. A FILA DE UM MORADOR ABRE NO E: depois da chegada, ao lado do Tonho, a
 ##      fila dele não abre sozinha; o E a abre.
 ##   6. A VEZ DE FALAR TEM PRAZO: com alguém falando sem parar ao lado do
@@ -70,7 +72,7 @@ func _run() -> void:
 	var filo = vale._achar_morador("filo")
 	_conferir(filo != null, "o vale não tem a Dona Filó")
 	if filo != null:
-		jogador.teleportar(filo.global_position + Vector3(1.2, 0.1, 0.0), 0.0)
+		_ao_lado_de(jogador, filo, Vector3(1.2, 0.1, 0.0))
 		await _passos_de_fisica(10)
 		_conferir(tecla.perto() == filo, "ao lado da Dona Filó, o E não está nela (está em %s)" % str(tecla.perto()))
 		_apertar_e(tecla)
@@ -82,7 +84,7 @@ func _run() -> void:
 	# --- 3. O PASSO SE CUMPRE NO E -----------------------------------------------
 	_conferir(pedro.passo_em_curso() == "desembarque", "a chegada não começou pelo desembarque")
 	await _ate(func() -> bool: return float(pedro.get("_espera")) <= 0.0, 15.0)
-	jogador.teleportar(pedro.global_position + Vector3(1.0, 0.1, 0.6), 0.0)
+	_ao_lado_de(jogador, pedro, Vector3(1.0, 0.1, 0.6))
 	await _passos_de_fisica(60)
 	_conferir(pedro.passo_em_curso() == "desembarque", "ao lado do Pedro o desembarque fechou sozinho, sem o E")
 	_conferir(tecla.perto() == pedro, "ao lado do Pedro, o E não está nele")
@@ -91,28 +93,57 @@ func _run() -> void:
 	_conferir(_no_balao(pedro).contains("Bom Jesus dos Pobres"), "o E no Pedro não trouxe a resposta do desembarque: '%s'" % _no_balao(pedro))
 
 	# --- 4. A CONQUISTA ------------------------------------------------------------
-	var festejou := await _ate(func() -> bool: return conquista.ativa(), 6.0)
-	_conferir(festejou, "o desembarque cumprido não mostrou a tela da conquista")
+	# DEPOIS DA CONVERSA: o passo fechou no E, com a resposta do Pedro ainda no
+	# balão, e a festa espera ele acabar ("o efeito também só deve aparecer depois
+	# que terminar a interação com o NPC"). Enquanto ele fala, o relógio do vale
+	# fica parado ("o relógio deve parar quando o jogador estiver em uma interação
+	# de conversa com o NPC").
+	var dia_do_vale = root.get_node("/root/Dia")
+	_conferir(pedro.conversando() and dia_do_vale.segurado("fala:"),
+		"com o Pedro respondendo no balão, o relógio do vale não parou")
+	var por_cima := await _ate(func() -> bool: return conquista.ativa(), 2.0)
+	_conferir(not por_cima and conquista.esperando(),
+		"a conquista entrou por cima da resposta do Pedro, com ele ainda falando")
+	var festejou := await _ate(func() -> bool: return conquista.ativa(), 15.0)
+	_conferir(festejou, "acabada a resposta do Pedro, o desembarque cumprido não mostrou a tela da conquista")
 	if festejou:
+		var desde := Time.get_ticks_msec()
+		_conferir(not pedro.conversando(), "a conquista entrou com o Pedro ainda no balão")
+		_conferir(dia_do_vale.segurado("conquista"), "a festa da conquista não segurou o relógio do vale")
 		_conferir(str(conquista.mostrada.get("titulo", "")) == "As pernas de terra firme",
 			"a conquista mostra '%s', e o passo cumprido é 'As pernas de terra firme'" % str(conquista.mostrada.get("titulo", "")))
-		# A SOMBRA ENTRA EM SEGUNDOS DE RELÓGIO (`ENTRA`, 0,35), e não em quadros:
-		# sem tela, o quadro dura o que a máquina deixa, e vinte deles já foram
-		# 0,15 s — a sombra ainda a 0,26, subindo.
+		# SUAVE: a sombra sobe numa curva de segundos (`ENTRA`), e não num estalo —
+		# com um terço de segundo ela ainda mal começou. Medido em segundo de
+		# relógio, e não em quadros: sem tela, o quadro dura o que a máquina deixa.
 		var sombra: ColorRect = conquista.get("_sombra")
-		var escureceu: bool = sombra != null and await _ate(func() -> bool: return sombra.color.a > 0.3, 2.0)
+		await _ate(func() -> bool: return false, 0.3)
+		_conferir(sombra != null and sombra.color.a < 0.2,
+			"a sombra da conquista já estava em %.2f com um terço de segundo: a entrada é um estalo" % (sombra.color.a if sombra != null else -1.0))
+		var escureceu: bool = sombra != null and await _ate(func() -> bool: return sombra.color.a > 0.3, 3.0)
 		_conferir(escureceu, "a conquista não escureceu a tela (sombra %.2f)" % (sombra.color.a if sombra != null else -1.0))
 		_conferir(str(conquista.get("_titulo").text) == "MISSÃO CONCLUÍDA", "o título da conquista é '%s'" % str(conquista.get("_titulo").text))
-		_conferir(await _ate(func() -> bool: return not conquista.ativa(), 8.0), "a tela da conquista não sumiu sozinha")
+		# MAIS TEMPO NA TELA: "aumentar o tempo de efeito dela em tela".
+		_conferir(await _ate(func() -> bool: return not conquista.ativa(), 14.0), "a tela da conquista não sumiu sozinha")
+		var durou := (Time.get_ticks_msec() - desde) / 1000.0
+		_conferir(durou >= 5.0, "a conquista ficou %.1f s na tela, e o pedido é ela durar mais" % durou)
+		_conferir(not dia_do_vale.segurado("conquista"), "a festa acabou e o relógio continuou segurado por ela")
 
 	# --- 5. A FILA DE UM MORADOR ABRE NO E -----------------------------------------
 	pedro.missao = pedro.MISSOES.size()
 	pedro.set("_despedida_feita", true)
+	# A rede do Tonho é de madeira: a fila dele espera os machados do avô, na
+	# ponte (`prototype._ja_recebeu_o_machado`). Aqui a ponte já passou deles.
+	var da_ponte = vale._cadeias.get("pedro_ponte")
+	if da_ponte != null:
+		da_ponte.iniciado = true
+		for i in da_ponte.passos.size():
+			if str((da_ponte.passos[i] as Dictionary).get("id", "")) == "buscar_machado":
+				da_ponte.missao = i + 1
 	var tonho = vale._achar_morador("tonho")
 	var fila = vale._cadeias.get("tonho")
 	_conferir(fila != null, "o Tonho não tem fila de pedidos")
 	if fila != null:
-		jogador.teleportar(tonho.global_position + Vector3(1.0, 0.1, 0.6), 0.0)
+		_ao_lado_de(jogador, tonho, Vector3(1.0, 0.1, 0.6))
 		await _ate(func() -> bool: return false, 2.0)
 		_conferir(not fila.iniciado, "ao lado do Tonho, a fila dele abriu sozinha, sem o E")
 		_conferir(tecla.perto() == tonho, "ao lado do Tonho, o E não está nele")
@@ -139,6 +170,15 @@ func _run() -> void:
 		_conferir(anunciou and fila.missao == antes, "com alguém falando sem parar, o passo não se anunciou em 12 s: a vez não tem prazo")
 		await _fechar_a_fala()
 	_fechar()
+
+
+## AO LADO DE QUEM SE FALA, VIRADO PARA ELE: o E vai para o que está na frente do
+## corpo (`foco_do_e.gd`), e no píer o cordel pendurado fica a dois passos do
+## Tonho. Quem quer conversar se vira para a pessoa.
+func _ao_lado_de(jogador, morador, desvio: Vector3) -> void:
+	var onde: Vector3 = morador.global_position + desvio
+	var para_ele: Vector3 = morador.global_position - onde
+	jogador.teleportar(onde, atan2(para_ele.x, para_ele.z))
 
 
 ## O que está no balão de quem fala.
@@ -168,7 +208,7 @@ func _fechar_a_fala() -> void:
 func _fechar() -> void:
 	print("")
 	if falhas == 0:
-		print("INTERACAO_OK: a partida nova zera o caderno da anterior; o E num morador sem missão o faz dizer a fala inteira; o passo que manda falar com alguém fecha no E, e não ao chegar perto; o passo cumprido escurece a tela e mostra a conquista com o nome dele, que some sozinha; a fila de um morador abre no E, e não sozinha; e com alguém falando sem parar o passo se anuncia mesmo assim")
+		print("INTERACAO_OK: a partida nova zera o caderno da anterior; o E num morador sem missão o faz dizer a fala inteira; o passo que manda falar com alguém fecha no E, e não ao chegar perto; o relógio para enquanto ele responde; a conquista espera a resposta acabar, entra devagar, escurece a tela com o nome do passo, segura o relógio, fica mais de cinco segundos e some sozinha; a fila de um morador abre no E, e não sozinha; e com alguém falando sem parar o passo se anuncia mesmo assim")
 	else:
 		print("interacao: %d falha(s)" % falhas)
 	quit(1 if falhas > 0 else 0)

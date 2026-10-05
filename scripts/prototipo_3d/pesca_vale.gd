@@ -34,6 +34,7 @@ extends Node
 const Atalhos = preload("res://scripts/prototipo_3d/atalhos.gd")
 const IdiomaMenu = preload("res://scripts/prototipo_3d/idioma_menu.gd")
 const Vestimenta3D = preload("res://scripts/prototipo_3d/vestimenta_3d.gd")
+const FocoDoE = preload("res://scripts/prototipo_3d/foco_do_e.gd")
 const TEXTOS := "res://data/pesca.json"
 const VARA := "vara_de_pescar"
 
@@ -71,6 +72,23 @@ func configurar(world, player, hud) -> void:
 	_textos = lido if lido is Dictionary else {}
 	_montar_a_boia()
 	Pesca.fisgou.connect(_ao_fisgar)
+	add_to_group(FocoDoE.GRUPO)
+
+
+## O QUE O E FARIA AQUI, para o foco (`foco_do_e.gd`): recolher a linha (que
+## leva o E sempre, como o que está aberto) ou lançar na água à frente, com a
+## vara na mão. À frente quer dizer na frente do corpo: o morador do lado, no
+## píer, não toma o lance de quem está virado para o mar.
+func alvo_do_e() -> Dictionary:
+	if _player == null or not _player.is_physics_processing():
+		return {}
+	if Pesca.pescando:
+		return {"ponto": _boia.global_position if _boia != null and _boia.is_inside_tree() else _player.global_position, "vies": 100.0}
+	if Inventario.na_mao() == VARA:
+		var agua := agua_a_frente()
+		if agua.is_finite():
+			return {"ponto": agua}
+	return {}
 
 
 func _texto(chave: String) -> String:
@@ -168,6 +186,8 @@ func _unhandled_key_input(event: InputEvent) -> void:
 	if not (event is InputEventKey and event.pressed and not event.echo):
 		return
 	if event.physical_keycode != Atalhos.tecla("interagir") or not _player.is_physics_processing():
+		return
+	if not FocoDoE.e_dele(self):
 		return
 	if Pesca.pescando:
 		recolher()

@@ -89,8 +89,14 @@ func _run() -> void:
 		_conferir(colecao.tem("cordeis", "peso_falso"), "o cordel pego não entrou na coleção")
 		_conferir(jogo.dinheiro == reis + int(colecao.dados("cordeis", "peso_falso").get("valor", 0)), "o cordel não pagou o troco")
 		_conferir(_no_chao(achados, "cordel", "peso_falso") == null, "o cordel pego continuou no chão")
-		# O cordel achado abre no papel (#21); guardar devolve o vale.
+		# O cordel achado abre no papel (#21); guardar devolve o vale. O PRIMEIRO
+		# vem antes com o aviso do que é um cordel (`aviso_da_primeira_vez.gd`):
+		# fechado o aviso, o papel abre.
 		await _frames(2)
+		var aviso = vale.get("aviso_da_primeira_vez")
+		if aviso != null and aviso.aberto():
+			aviso.fechar()
+			await _frames(3)
 		_conferir(root.get_node("/root/Folheto").aberto, "o cordel pego não abriu no papel")
 		vale.telas.fechar_tudo()
 		await _frames(2)

@@ -84,9 +84,12 @@ triângulos. Colisão e navegação não mudam (os triângulos são os mesmos).
 - **Terreiros:** `terreiro_casa.tscn` usa `terreiro_varrido_v1.png` (terra batida com máscara oval
   irregular, sem sulco de carro de boi); o terreiro por polígono (`_terreiro_material`) usa a mesma
   terra, ladrilho e tinta do shader.
-- **Lavoura:** `lavoura_vale._terra` deu lugar a três materiais compartilhados (bruto, seco,
-  molhado) com `terra_arada_v1`, pelo UV da caixa (os sulcos giram com o campo), com a tinta de
-  cada estado dividida pela média da textura.
+- **Lavoura:** `lavoura_vale` usa materiais compartilhados, um por tinta. O leito arado (seco e
+  molhado) é `terra_arada_v1` pelo UV do leito (os sulcos giram com o campo), com a tinta de cada
+  estado dividida pela média da textura; o leito tem relevo — três camalhões —, e os sulcos da
+  imagem caem em cima dos sulcos da malha (`SULCO_DA_IMAGEM`, `PRIMEIRO_SULCO`). O leito bruto e a
+  terra batida do campo, por baixo dos leitos e até o cercado rasteiro, são
+  `terra_batida_varrida_v1` no ladrilho do chão do vale (4 u, pelo chão do mundo).
 - **Passos:** `surface_at` consulta o mapa depois das regras antigas: lama (> 0,6), areia (> 0,5),
   terra (> 0,5). A rua continua "terra" antes de tudo, como o portão `mapa_fluxo` espera.
 

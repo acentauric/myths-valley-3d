@@ -17,6 +17,9 @@ extends SceneTree
 ##   5. O MORADOR SEGUE A MALHA: posto atrás de uma casa, ele a contorna pelo
 ##      caminho dela e chega SEM EMPACAR — em linha reta ele empurrava a parede
 ##      e só saía pelo desvio de quem bate, que é o que a malha veio aposentar.
+##   6. O RIO SE ATRAVESSA PELA PONTE: nenhum caminho molha o pé no leito, e o da
+##      Dona Candinha à Dona Zefa — o que o Pedro conduz na chegada — passa pela
+##      ponte do rio central. "Faça eles irem atravessando a ponte."
 
 var falhas := 0
 
@@ -62,6 +65,18 @@ func _run() -> void:
 	# --- 2. HÁ CAMINHO, E ELE CHEGA ----------------------------------------------
 	var pares := [["Casa da estrada", "Cruzeiro"], ["PierPiso", "Gameleira"], ["Casa de taipa", "Terreiro"],
 		["Cemitério", "Igreja"], ["Lavoura", "Poço"], ["Casa de Carro Quebrado", "Bar"]]
+	# O TRAJETO DA CHAVE: da Dona Candinha, na praça, à Dona Zefa — o que o Pedro
+	# conduz na chegada. Do ponto da praça o caminho já roçava a ponte; de onde a
+	# Candinha fica, sem o leito fora da malha, ele molhava o pé ao lado dela.
+	var candinha = vale._achar_morador("candinha")
+	var zefa = vale._achar_morador("zefa")
+	_conferir(candinha != null and zefa != null, "o vale não tem a Dona Candinha ou a Dona Zefa")
+	if candinha != null and zefa != null:
+		# Numa cópia: as âncoras são do vale, e o portão não escreve nelas.
+		a = a.duplicate()
+		a["Dona Candinha"] = candinha.global_position
+		a["Dona Zefa"] = zefa.global_position
+		pares.append(["Dona Candinha", "Dona Zefa"])
 	var caminhos := {}
 	for par in pares:
 		var de: Vector3 = world.ground_position(a[par[0]] + Vector3(0, 0, 0), 0.0) if par[0] != "PierPiso" else a[par[0]]
@@ -87,6 +102,7 @@ func _run() -> void:
 		troncos.append(Vector3(p.x, p.y, float(tronco.get("radius", 0.3))))
 	for nome in caminhos:
 		var caminho: PackedVector3Array = caminhos[nome]
+		var no_rio := false
 		for k in range(1, caminho.size()):
 			var de: Vector3 = caminho[k - 1]
 			var para: Vector3 = caminho[k]
@@ -95,17 +111,43 @@ func _run() -> void:
 			for i in passos + 1:
 				var ponto := de.lerp(para, float(i) / float(passos))
 				_conferir(ponto.y > agua - 0.05, "o caminho %s desce ao fundo do mar em %s" % [nome, str(ponto)])
+				# 6. O LEITO DO RIO: dentro da faixa d'água e na altura dela é pé
+				# molhado; em cima do tabuleiro da ponte, não.
+				var lamina: float = world._region.river_water_level_at(ponto)
+				if not no_rio and is_finite(lamina) and ponto.y < lamina + 0.6:
+					no_rio = true
+					_conferir(false, "o caminho %s atravessa o rio a pé em (%.1f, %.1f), e não pela ponte" % [nome, ponto.x, ponto.z])
 				for t in troncos:
 					if Vector2(t.x, t.y).distance_to(Vector2(ponto.x, ponto.z)) < t.z - 0.05:
 						_conferir(false, "o caminho %s atravessa um tronco da mata em %s" % [nome, str(Vector2(t.x, t.y))])
 		var espaco: PhysicsDirectSpaceState3D = world.get_world_3d().direct_space_state
+		# O QUE SE PERGUNTA É O FIXO — casa, cerca, pedra. Morador anda: a Dona Zefa
+		# na porta dela e o Seu Benedito no terreiro estão no caminho de quem vai lá.
+		var andam: Array[RID] = []
+		for corpo in vale.moradores + [vale.get("pedro"), vale.player]:
+			if corpo is CollisionObject3D:
+				andam.append((corpo as CollisionObject3D).get_rid())
 		for k in range(1, caminho.size()):
-			var raio := PhysicsRayQueryParameters3D.create(caminho[k - 1] + Vector3.UP * 0.9, caminho[k] + Vector3.UP * 0.9, 1)
+			var raio := PhysicsRayQueryParameters3D.create(caminho[k - 1] + Vector3.UP * 0.9, caminho[k] + Vector3.UP * 0.9, 1, andam)
 			var batida := espaco.intersect_ray(raio)
 			if not batida.is_empty():
 				var corpo = batida.get("collider")
 				_conferir(false, "o caminho %s atravessa %s" % [nome, str(corpo.get_path()) if corpo is Node else str(corpo)])
 				break
+
+	# --- 6. DA DONA CANDINHA À DONA ZEFA, PELA PONTE DO RIO CENTRAL --------------------
+	var da_praca: PackedVector3Array = caminhos.get("Dona Candinha → Dona Zefa", PackedVector3Array())
+	_conferir(da_praca.size() >= 2, "não há caminho da Dona Candinha à Dona Zefa")
+	var ponte: Vector3 = a.get("Ponte do rio central", Vector3.INF)
+	_conferir(ponte.is_finite(), "o vale não tem a ponte do rio central")
+	if ponte.is_finite() and da_praca.size() >= 2:
+		var mais_perto := INF
+		for k in range(1, da_praca.size()):
+			var passos := maxi(1, int(da_praca[k - 1].distance_to(da_praca[k]) / 0.5))
+			for i in passos + 1:
+				mais_perto = minf(mais_perto, _plano(da_praca[k - 1].lerp(da_praca[k], float(i) / float(passos)), ponte))
+		_conferir(mais_perto < 1.5,
+			"da Dona Candinha à Dona Zefa o caminho passa a %.1f da ponte do rio central: o Pedro não leva o jogador pela ponte" % mais_perto)
 
 	# --- 4. NA IGREJA, PELA PORTA ----------------------------------------------------
 	var sala = vale.interiores.sala_de("igreja")
@@ -162,7 +204,7 @@ func _ate(condicao: Callable, segundos: float) -> bool:
 func _fechar() -> void:
 	print("")
 	if falhas == 0:
-		print("NAVEGACAO_OK: a malha fica pronta depois de o vale montar; há caminho entre os postos e os marcos da festa e ele chega; não desce ao mar, não atravessa casa nem tronco; da praça ao altar passa-se pela porta; e o morador contorna a casa que em linha reta o prendia")
+		print("NAVEGACAO_OK: a malha fica pronta depois de o vale montar; há caminho entre os postos e os marcos da festa e ele chega; não desce ao mar, não atravessa casa, tronco nem rio a pé; da Dona Candinha à Dona Zefa passa pela ponte do rio central; da praça ao altar passa-se pela porta; e o morador contorna a casa que em linha reta o prendia")
 	else:
 		print("navegacao: %d falha(s)" % falhas)
 	quit(1 if falhas > 0 else 0)

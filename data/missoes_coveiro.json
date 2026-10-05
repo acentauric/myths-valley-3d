@@ -1,5 +1,5 @@
 {
-  "observacao": "A MISSÃO DO CEMITÉRIO, trazida do jogo 2D (data/dialogos/arraial.json, passos coveiro_ver / coveiro_foice / coveiro_limpar) e AUMENTADA NO VALE, a pedido de quem jogou: mais capim (oito pés), o mato que levanta laje (coveiro_mato: embaúba nova e tronco caído, contados pelo grupo 'mato_do_cemiterio' de recursos_3d.json), o conserto das três lajes tortas com tábua e pedra levadas ao Damião (coveiro_reparo) e o cercado, que é obra do J (coveiro_cercado, obra 'cemiterio_cercado' de construcoes/obras.json). As lajes tortas e o cercado são do cemiterio_vale.gd. É a primeira cadeia do vale que NÃO é do Pedro: o dono dela é o Damião, o zelador que o intendente nomeou sem dar ferramenta nenhuma. O formato é o mesmo de missoes_guia.json — 'lugar' é nome de contrato do autoload Lugares, 'raio' é em unidades (1 u = 4 m) — porque quem conduz é o mesmo código. TRADUÇÃO: os três passos do 2D estão só em português, com inglês e espanhol declarados pendentes em cada um (são do Ramon); os passos novos e o arremate nascem nos três idiomas.",
+  "observacao": "A MISSÃO DO CEMITÉRIO, trazida do jogo 2D (data/dialogos/arraial.json, passos coveiro_ver / coveiro_foice / coveiro_limpar) e AUMENTADA NO VALE, a pedido de quem jogou: mais capim (oito pés), o mato que levanta laje (coveiro_mato: embaúba nova e tronco caído, contados pelo grupo 'mato_do_cemiterio' de recursos_3d.json), o conserto das três lajes tortas com tábua e pedra levadas ao Damião (coveiro_reparo) e o cercado, que é obra do J (coveiro_cercado, obra 'cemiterio_cercado' de construcoes/obras.json). As lajes tortas e o cercado são do cemiterio_vale.gd. É a primeira cadeia do vale que NÃO é do Pedro: o dono dela é o Damião, o zelador que o intendente nomeou sem dar ferramenta nenhuma — por isso ele não dá machado: a fila espera o que o Pedro busca em casa na missão da ponte (data/missoes_ponte.json, 'buscar_machado'; `prototype._ja_recebeu_o_machado`). O formato é o mesmo de missoes_guia.json — 'lugar' é nome de contrato do autoload Lugares, 'raio' é em unidades (1 u = 4 m) — porque quem conduz é o mesmo código. TRADUÇÃO: os três passos do 2D estão só em português, com inglês e espanhol declarados pendentes em cada um (são do Ramon); os passos novos e o arremate nascem nos três idiomas.",
   "dono": "damiao",
   "nome": "O cemitério esquecido",
   "nome_en": "The forgotten cemetery",
@@ -29,7 +29,6 @@
       "raio": 8.0,
       "audio": "",
       "texto": "Eu tenho a lâmina da foice do meu sogro, enferrujada mas inteira. O que eu não tenho é cabo. Me traga duas achas de madeira boa — cabo de foice racha se for de pau mole, e racha sempre na hora errada. Põe o machado na mão, que de mão vazia não sai acha.",
-      "entrega": { "item": "machado", "quantidade": 1 },
       "meta": { "tipo": "juntar", "item": "lenha", "quantos": 2 },
       "traducao": "pendente"
     },
@@ -62,7 +61,6 @@
       "texto": "Agora dá pra ver o resto do estrago. Capim é o de menos: olha aquelas embaúbas nascendo no meio das covas — embaúba pega em qualquer fresta, e raiz de embaúba levanta laje. E os troncos que a trovoada de janeiro derrubou por cima dos mortos. Machado o senhor tem. Dizem que lenha de cemitério ninguém queima em casa; pra serviço de cemitério, serve.",
       "texto_en": "Now you can see the rest of the damage. The grass is the least of it: look at those embaúbas sprouting between the graves — an embaúba takes hold in any crack, and an embaúba root lifts a slab. And the trunks the January storm brought down over the dead. You've got the axe. They say nobody burns cemetery wood at home; for cemetery work, it'll do.",
       "texto_es": "Ahora se ve el resto del destrozo. La maleza es lo de menos: mire esas embaúbas brotando entre las tumbas — la embaúba prende en cualquier grieta, y raíz de embaúba levanta lápida. Y los troncos que la tormenta de enero tumbó encima de los muertos. Hacha usted tiene. Dicen que leña de cementerio nadie la quema en casa; para trabajo de cementerio, sirve.",
-      "entrega": { "item": "machado", "quantidade": 1 },
       "meta": { "tipo": "derrubar", "alvo": "mato_do_cemiterio", "quantos": 7 }
     },
     {

@@ -30,6 +30,11 @@ signal narrou(texto: String)
 ## A RECOMPENSA DE UM PASSO DA CHEGADA, já dita ("Recebido de Tonho: 1 peixe").
 ## A chegada antiga não pagava nada, e por isso este sinal não existia.
 signal pagou(texto: String)
+## A ferramenta que um passo da chegada entregou, com o número da barra.
+signal entregou(texto: String)
+## NA CONDUÇÃO, ELE PAROU PORQUE O JOGADOR FICOU PARA TRÁS (verdadeiro), ou voltou
+## a andar, chegou, ou parou de conduzir (falso). O HUD põe o aviso de voltar.
+signal esperando_quem_ficou(esperando: bool)
 
 const CadeiaDeMissoes = preload("res://scripts/prototipo_3d/cadeia_de_missoes.gd")
 const ARQUIVO_MISSOES := "res://data/missoes_guia.json"
@@ -56,6 +61,11 @@ const ESPERA_FORA := ["casa"]
 const CONDUZ_ATE := 2.4
 const ESPERA_QUEM_FICA := 6.5
 const VOLTA_A_ANDAR := 4.0
+## AS CASAS ELE CONDUZ ATÉ A PORTA, do lado de fora: a herdada, onde ele não
+## entra, e as de quem mora — a dele, na ida aos machados do avô, e a da Dona
+## Zefa. A âncora de uma casa é o meio dela, e conduzir até lá era levar o
+## jogador para dentro da casa dos outros atrás dele.
+const CONDUZ_ATE_A_PORTA := ["casa", "casa_pedro", "casa_zefa"]
 ## E NO PASSO COM `fica` — o desembarque e a primeira corrida — ele fica onde
 ## está, na ponta da prancha, olhando o jogador.
 
@@ -84,6 +94,11 @@ var _anoiteceu_hoje := false
 var _corpo: Array = []
 ## Parado à espera do jogador que ficou para trás na condução.
 var _esperando_quem_ficou := false
+## O AVISO DE VOLTAR já está na tela? E o último quadro de física em que ele
+## conduziu: passo que fecha, tutorial que acaba ou fila que muda tiram a
+## condução sem passar por `_conduzir`, e o aviso não pode ficar órfão.
+var _avisou_quem_ficou := false
+var _quadro_da_conducao := -1
 ## O jogador cansou na caminhada e ainda não ouviu a explicação. Guardado
 ## porque o vigor volta depressa — parado, 20 por segundo —, e a fala pode
 ## estar ocupada no instante em que ele cai.
@@ -133,6 +148,7 @@ func _ready() -> void:
 		func(texto: String, alvo: Vector3, indice: int, total: int) -> void:
 			missao_mudou.emit(texto, alvo, indice, total))
 	_cadeia.pagou.connect(func(texto: String) -> void: pagou.emit(texto))
+	_cadeia.entregou.connect(func(texto: String) -> void: entregou.emit(texto))
 	add_child(_cadeia)
 
 
@@ -289,6 +305,10 @@ func _conduzir(delta: float, cadeia: Node = null) -> void:
 		_esperando_quem_ficou = true
 	var falta := destino - global_position
 	falta.y = 0.0
+	# O AVISO SÓ NO MEIO DO CAMINHO: chegado, o que o passo pede é perto dele (quem
+	# ele apresenta, a porta da casa), e quem anda por ali está fazendo o passo.
+	_quadro_da_conducao = Engine.get_physics_frames()
+	_avisar_quem_ficou(_esperando_quem_ficou and falta.length() > CONDUZ_ATE)
 	if _esperando_quem_ficou or falta.length() <= CONDUZ_ATE:
 		_mover(Vector3.ZERO, ANDAR, delta)
 		_olhar_para(onde_esta, delta)
@@ -320,16 +340,28 @@ func _pedir_passagem(rumo: Vector3) -> void:
 			corpo.dar_passagem(empurrao)
 
 
+func _avisar_quem_ficou(sim: bool) -> void:
+	if sim == _avisou_quem_ficou:
+		return
+	_avisou_quem_ficou = sim
+	esperando_quem_ficou.emit(sim)
+
+
+## Sem condução há mais de dois quadros de física, o aviso sai.
+func _process(_delta: float) -> void:
+	if _avisou_quem_ficou and Engine.get_physics_frames() - _quadro_da_conducao > 2:
+		_avisar_quem_ficou(false)
+
+
 ## PARA ONDE ELE CONDUZ: quem o passo apresenta, ou o lugar do passo — e, sendo
-## o lugar um cômodo em que ele não entra (a casa herdada), a porta dela, do
-## lado de fora.
+## o lugar uma casa (CONDUZ_ATE_A_PORTA), a porta dela, do lado de fora.
 func _destino_da_conducao(cadeia: Node = null) -> Vector3:
 	var quem: Node = cadeia if cadeia != null else _cadeia
 	var destino: Vector3 = quem.posicao_do_passo(quem.missao)
 	var interiores := get_tree().get_first_node_in_group("interiores")
 	if interiores != null:
 		var sala_do_destino: String = interiores.contem(destino)
-		if sala_do_destino in ESPERA_FORA:
+		if sala_do_destino in ESPERA_FORA or sala_do_destino in CONDUZ_ATE_A_PORTA:
 			var espera: Vector3 = interiores.sala_de(sala_do_destino).lugar_de_esperar_fora()
 			return terreno.ground_position(espera, 0.05) if terreno != null else espera
 	return destino
@@ -381,10 +413,14 @@ func _ver_se_explica_o_corpo() -> void:
 		explicar_o_corpo(_cansou_na_caminhada)
 
 
-## As três barras na caixa de fala longa; a última fala muda com o cansaço.
+## As três barras na caixa de fala longa; a última fala muda com o cansaço. COM
+## A VOZ DELE em cada linha ("audio" no `corpo` do missoes_guia.json, gerado por
+## tools/elevenlabs/gerar-falas-do-guia.ps1): "na explicação do pedro sobre a
+## barra de stamina e similares, crie os audios para ele narrar".
 func explicar_o_corpo(cansado: bool) -> void:
 	_cadeia._levados[LEMBRANCA_DO_CORPO] = true
 	var linhas: Array = []
+	var vozes: Array = []
 	for fala in _corpo:
 		if not (fala is Dictionary):
 			continue
@@ -392,7 +428,8 @@ func explicar_o_corpo(cansado: bool) -> void:
 		if quando != "" and quando != ("cansado" if cansado else "descansado"):
 			continue
 		linhas.append(str(IdiomaMenu.campo(fala, "texto", "")))
-	Dialogo.falar(str(dados.get("nome", "Pedro")), linhas)
+		vozes.append(str((fala as Dictionary).get("audio", "")))
+	Dialogo.falar(str(dados.get("nome", "Pedro")), linhas, vozes)
 
 
 ## Retomar uma partida salva é da cadeia; esta é a janela para ela, como as

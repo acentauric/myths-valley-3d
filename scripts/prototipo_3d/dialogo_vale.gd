@@ -44,6 +44,11 @@ signal abriu(quem: String)
 
 const IdiomaMenu = preload("res://scripts/prototipo_3d/idioma_menu.gd")
 const TEXTOS := "res://data/dialogo.json"
+## A VOZ DE CADA LINHA, quando quem fala manda (`falar(nome, falas, vozes)`): o
+## arquivo em assets/audio/vozes/, sem extensão. "Na explicação do pedro sobre a
+## barra de stamina e similares, crie os audios para ele narrar." A linha que
+## passa no E cala a voz dela e começa a da seguinte.
+const PASTA_VOZES := "res://assets/audio/vozes/"
 ## O quadro em que a caixa é desenhada, o mesmo da tela do 2D.
 const DESENHADA_PARA := Vector2(640, 360)
 
@@ -87,6 +92,9 @@ var _textos: Dictionary = {}
 
 var _modo: int = Modo.FALA
 var _falas: Array = []
+## A voz de cada linha (ver PASTA_VOZES), na ordem das falas; "" é linha muda.
+var _vozes: Array = []
+var _voz: AudioStreamPlayer
 var _indice: int = 0
 var _escolha: bool = true
 ## O jogador já escolheu um lado? Enquanto for `false`, o E não responde nada.
@@ -108,6 +116,10 @@ func _ready() -> void:
 	_textos = lido if lido is Dictionary else {}
 	_montar()
 	_painel.visible = false
+	_voz = AudioStreamPlayer.new()
+	_voz.name = "Voz"
+	_voz.bus = Audio.GERAL
+	add_child(_voz)
 
 
 ## Verdadeiro enquanto a caixa está aberta ou acabou de fechar. Quem lê a tecla
@@ -117,16 +129,25 @@ func ocupado() -> bool:
 
 
 ## Mostra as falas em sequência. Se já houver conversa aberta, espera a vez.
-func falar(nome: String, falas: Array) -> void:
+## `vozes`, quando vem, é a voz de cada linha (ver PASTA_VOZES).
+func falar(nome: String, falas: Array, vozes: Array = []) -> void:
 	if falas.is_empty():
 		return
 	while ativo:
 		await terminou
 	_abrir(nome, Modo.FALA)
 	_falas = falas
+	_vozes = vozes
 	_indice = 0
 	_mostrar_fala()
 	await terminou
+
+
+## A voz que está tocando agora, ou "" (para o portão).
+func voz_tocando() -> String:
+	if _voz == null or not _voz.playing or _voz.stream == null:
+		return ""
+	return _voz.stream.resource_path.get_file().get_basename()
 
 
 ## Pergunta de sim ou não. Esquerda escolhe Sim, direita escolhe Não.
@@ -135,6 +156,7 @@ func perguntar(nome: String, pergunta: String) -> bool:
 		await terminou
 	_abrir(nome, Modo.PERGUNTA)
 	_falas = [pergunta]
+	_vozes = []
 	_indice = 0
 	# NASCE SEM ESCOLHA FEITA. `_escolha` continua em "Sim" só como valor de
 	# partida do cursor; quem manda é `_escolheu`, e ele começa falso — sem um
@@ -175,6 +197,9 @@ func _abrir(nome: String, modo: int) -> void:
 
 func _fechar() -> void:
 	_painel.visible = false
+	if _voz != null:
+		_voz.stop()
+	_vozes = []
 	ativo = false
 	quem_fala = ""
 	_fechou_no_quadro = Engine.get_process_frames()
@@ -242,6 +267,7 @@ func _escrito(chave: String) -> String:
 
 func _mostrar_fala() -> void:
 	_texto.text = str(_falas[_indice])
+	_tocar_a_voz()
 	# Cada linha nova ganha o seu respiro. Ver `CARENCIA_DA_LINHA`.
 	_aceita_depois_de = maxf(_aceita_depois_de,
 		Time.get_ticks_msec() / 1000.0 + CARENCIA_DA_LINHA)
@@ -253,6 +279,20 @@ func _mostrar_fala() -> void:
 		# de a outra fechar, e "seguir" é verdade quando fecha e quando emenda.
 		var ultima := _indice == _falas.size() - 1
 		_rodape.text = _escrito("seguir") if ultima else _escrito("continuar")
+
+
+## A voz da linha da vez, no canal de vozes do AJUSTAR; a da linha de antes cala.
+func _tocar_a_voz() -> void:
+	if _voz == null:
+		return
+	_voz.stop()
+	var nome := str(_vozes[_indice]) if _indice < _vozes.size() else ""
+	var caminho := PASTA_VOZES + nome + ".mp3"
+	if nome == "" or not ResourceLoader.exists(caminho):
+		return
+	_voz.stream = load(caminho)
+	_voz.volume_db = Audio.volume_vozes_db()
+	_voz.play()
 
 
 ## A PERGUNTA NÃO NASCE COM RESPOSTA ESCOLHIDA.

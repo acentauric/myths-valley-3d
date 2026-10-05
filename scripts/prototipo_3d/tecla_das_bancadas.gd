@@ -19,6 +19,7 @@ const DicaTecla = preload("res://scripts/prototipo_3d/dica_tecla.gd")
 const Atalhos = preload("res://scripts/prototipo_3d/atalhos.gd")
 const BancadasVale = preload("res://scripts/prototipo_3d/bancadas_vale.gd")
 const PainelVale = preload("res://scripts/prototipo_3d/painel_vale.gd")
+const FocoDoE = preload("res://scripts/prototipo_3d/foco_do_e.gd")
 
 ## Os lugares do E: a bancada (`BancadasVale.OBRAS`/`BANCADAS`), a aba que abre e
 ## o rótulo da dica.
@@ -49,6 +50,14 @@ func configurar(world, jogador: Node3D, hud, abrir: Callable, livre: Callable) -
 	_abrir = abrir
 	_livre = livre
 	_dica = DicaTecla.criar(hud.map_layer(), Atalhos.letra("interagir"), "")
+	add_to_group(FocoDoE.GRUPO)
+
+
+## O QUE O E FARIA AQUI, para o foco (`foco_do_e.gd`): abrir a aba da bancada.
+func alvo_do_e() -> Dictionary:
+	if _perto == "" or _world == null:
+		return {}
+	return {"ponto": BancadasVale.ponto_da_provisoria(_world, _perto)}
 
 
 ## O lugar ao alcance do jogador agora: "oficina", "canteiro", "cozinha" ou "".
@@ -69,7 +78,7 @@ func _process(_delta: float) -> void:
 			if d <= BancadasVale.raio(qual) and d < menor:
 				menor = d
 				_perto = qual
-	if _perto == "":
+	if _perto == "" or not FocoDoE.e_dele(self):
 		_dica.visible = false
 		return
 	var onde: Vector3 = BancadasVale.ponto_da_provisoria(_world, _perto)
@@ -82,7 +91,7 @@ func _unhandled_key_input(event: InputEvent) -> void:
 	if not (event is InputEventKey and event.pressed and not event.echo \
 			and event.physical_keycode == Atalhos.tecla("interagir")):
 		return
-	if Dialogo.ocupado() or not _jogador.is_physics_processing():
+	if Dialogo.ocupado() or not _jogador.is_physics_processing() or not FocoDoE.e_dele(self):
 		return
 	get_viewport().set_input_as_handled()
 	usar(_perto)

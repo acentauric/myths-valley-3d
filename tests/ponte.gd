@@ -14,7 +14,8 @@ extends SceneTree
 ##      E no Pedro não a abre; acabada, o primeiro E abre a ponte, e o mirante não
 ##      abre enquanto ela não acabar.
 ##   4. VER E CONTAR: chegar ao vau fecha o primeiro passo; o E no Pedro fecha o
-##      segundo, com a resposta dele no balão.
+##      segundo, com a resposta dele no balão. OS MACHADOS DO AVÔ: chegar com ele
+##      à porta da casa dele fecha o terceiro, e a lenha entrega o machado.
 ##   5. A LENHA CONTA O QUE JÁ VIROU TÁBUA: a conta sai das receitas — trinta e
 ##      seis, como a fala diz —; trinta lenhas não fecham, e três tábuas a mais sim.
 ##      E SEM FÔLEGO PARA BATER, a mungunzá da mãe do Pedro vem, uma vez só.
@@ -134,6 +135,14 @@ func _run() -> void:
 	tecla.usar(pedro)
 	_conferir(await _ate(func() -> bool: return ponte.missao >= 2, 8.0), "o E no Pedro não fechou o passo de contar o que viu")
 	_conferir(_no_balao(pedro).contains("Cercada"), "o Pedro não respondeu sobre a cerca: '%s'" % _no_balao(pedro))
+	# Os machados do avô: o Pedro vai na frente até a porta dele.
+	await _ate(func() -> bool: return ponte.espera <= 0.0, 12.0)
+	_conferir(str(ponte.passo_atual().get("id", "")) == "buscar_machado", "depois de contar não vieram os machados do avô: '%s'" % str(ponte.passo_atual().get("id", "")))
+	_conferir(not inv.tem("machado"), "o machado chegou antes de o Pedro buscá-lo em casa")
+	jogador.teleportar(pedro._destino_da_conducao(ponte) + Vector3(0, 0.4, 0), 0.0)
+	_conferir(await _ate(func() -> bool: return ponte.missao >= 3, 8.0), "chegar à porta da casa do Pedro não fechou os machados do avô")
+	await _ate(func() -> bool: return ponte.espera <= 0.0, 12.0)
+	_conferir(inv.tem("machado"), "a lenha da ponte anunciou e o machado do avô não chegou")
 
 	# --- 5. A LENHA CONTA O QUE JÁ VIROU TÁBUA -------------------------------------------------
 	await _ate(func() -> bool: return ponte.espera <= 0.0, 12.0)
@@ -164,9 +173,9 @@ func _run() -> void:
 	var assados: int = inv.quantidade("peixe_assado")
 	inv.adicionar("lenha", 30)
 	await _quadros(8)
-	_conferir(ponte.missao == 2, "trinta lenhas fecharam o passo dos trinta e seis")
+	_conferir(ponte.missao == 3, "trinta lenhas fecharam o passo dos trinta e seis")
 	inv.adicionar("tabua", 3)
-	_conferir(await _ate(func() -> bool: return ponte.missao >= 3, 8.0),
+	_conferir(await _ate(func() -> bool: return ponte.missao >= 4, 8.0),
 		"trinta lenhas e três tábuas — seis lenhas serradas — não fecharam o passo: a tábua não conta como lenha")
 	_conferir(inv.quantidade("peixe_assado") == assados + 2, "a lenha não pagou os dois peixes assados")
 
@@ -177,9 +186,9 @@ func _run() -> void:
 	var beijus: int = inv.quantidade("beiju")
 	inv.adicionar("tabua", 9)
 	await _quadros(8)
-	_conferir(ponte.missao == 3, "doze tábuas sem as cordas fecharam o passo de serrar")
+	_conferir(ponte.missao == 4, "doze tábuas sem as cordas fecharam o passo de serrar")
 	inv.adicionar("corda", 4)
-	_conferir(await _ate(func() -> bool: return ponte.missao >= 4, 8.0), "doze tábuas e quatro cordas não fecharam o passo de serrar")
+	_conferir(await _ate(func() -> bool: return ponte.missao >= 5, 8.0), "doze tábuas e quatro cordas não fecharam o passo de serrar")
 	_conferir(inv.quantidade("beiju") == beijus + 3, "serrar não pagou os três beijus")
 
 	# --- 7. A OBRA TIRA A CERCA ------------------------------------------------------------
@@ -193,7 +202,7 @@ func _run() -> void:
 	var cocadas: int = inv.quantidade("cocada")
 	_conferir(obras.executar("ponte", "ponte_levantar"), "a obra da ponte não saiu: %s" % str(obras.impedimento("ponte", "ponte_levantar")))
 	_conferir(await _ate(func() -> bool: return not ponte_do_rio.interditada(), 3.0), "a obra feita não tirou a cerca da ponte")
-	_conferir(await _ate(func() -> bool: return ponte.missao >= 5, 8.0), "a obra feita não fechou o passo da ponte")
+	_conferir(await _ate(func() -> bool: return ponte.missao >= 6, 8.0), "a obra feita não fechou o passo da ponte")
 	_conferir(inv.quantidade("pirao") == piroes + 2 and inv.quantidade("cocada") == cocadas + 2,
 		"a ponte não pagou os dois pirões e as duas cocadas")
 	var feitas: Dictionary = (obras.feitas as Dictionary).duplicate(true)

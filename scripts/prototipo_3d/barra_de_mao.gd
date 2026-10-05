@@ -19,6 +19,7 @@ extends Control
 ## talento sem ícone.
 
 const Atalhos = preload("res://scripts/prototipo_3d/atalhos.gd")
+const FocoDoE = preload("res://scripts/prototipo_3d/foco_do_e.gd")
 
 const LARGURA := 52.0
 const ALTURA := 52.0
@@ -234,8 +235,10 @@ func _unhandled_key_input(event: InputEvent) -> void:
 			get_viewport().set_input_as_handled()
 			return
 
-	# O E COME O QUE ESTÁ NA MÃO, e é o último da fila do E. Ver `_comer_da_mao`.
-	if event.physical_keycode == Atalhos.tecla("interagir") and _corpo_de_pe() and _comer_da_mao():
+	# O E COME O QUE ESTÁ NA MÃO, e é o último da fila do E: só quando o foco não
+	# deu a tecla a ninguém (`foco_do_e.gd`). Ver `_comer_da_mao`.
+	if event.physical_keycode == Atalhos.tecla("interagir") and _corpo_de_pe() \
+			and not FocoDoE.alguem(self) and _comer_da_mao():
 		get_viewport().set_input_as_handled()
 
 

@@ -23,6 +23,17 @@ const DicaTecla = preload("res://scripts/prototipo_3d/dica_tecla.gd")
 const Atalhos = preload("res://scripts/prototipo_3d/atalhos.gd")
 const Almanaque = preload("res://scripts/prototipo_3d/almanaque.gd")
 const IdiomaMenu = preload("res://scripts/prototipo_3d/idioma_menu.gd")
+const FocoDoE = preload("res://scripts/prototipo_3d/foco_do_e.gd")
+
+## O jogador conheceu uma espécie pela primeira vez, e ela entrou no almanaque.
+## O vale mostra o aviso da primeira árvore (`aviso_da_primeira_vez.gd`).
+signal conheceu(especie: String)
+## A FICHA DA ÁRVORE DESCONTA NA CONTA DO FOCO (`foco_do_e.gd`): árvore está em
+## toda parte, e só ganha de coisa posta de propósito — o cordel, o morador — se
+## estiver bem mais perto. A ficha aberta e o golpe em curso levam o E sempre
+## (VIES_DO_QUE_ESTA_ABERTO): o E deles é passar a página e parar.
+const VIES_DA_FICHA := -1.0
+const VIES_DO_QUE_ESTA_ABERTO := 100.0
 const DADOS := "res://data/arvores_3d.json"
 const QUADRA := 16.0
 ## Distância (no chão) para a dica aparecer e para a ficha fechar sozinha.
@@ -120,6 +131,7 @@ func configurar(world: Node3D, jogador: Node3D, hud, hud_layer: Control) -> void
 		_por_quadra[quadra].append(_pontos.size())
 		_pontos.append({"especie": especie, "pos": pos})
 	_dica = DicaTecla.criar(hud.map_layer(), Atalhos.letra("interagir"), "Sobre a árvore")
+	add_to_group(FocoDoE.GRUPO)
 	_criar_balao_vida(hud.map_layer())
 	_stamina = float(_jogador.call("vigor_atual"))
 	_jogador.connect("vigor_mudou", Callable(self, "_ao_vigor_mudar"))
@@ -152,6 +164,10 @@ func _process(_delta: float) -> void:
 		return
 	if _aberta >= 0 and _distancia(_aberta) > ALCANCE_FECHAR:
 		_fechar()
+	# O E É DE OUTRO (`foco_do_e.gd`): a dica daqui se apaga.
+	if not FocoDoE.e_dele(self):
+		_dica.visible = false
+		return
 	if _corte_vale_a_tecla():
 		var arvore: Dictionary = _cortaveis[_cortavel_perto]
 		DicaTecla.mostrar_em(_dica, camera, (arvore["pos"] as Vector3) + Vector3(0, ALTURA_DICA, 0), _texto_do_corte(_cortavel_perto))
@@ -178,7 +194,7 @@ func _unhandled_key_input(event: InputEvent) -> void:
 	# COM O CORPO PARADO, O E NÃO VALE PARA O MUNDO, como nos achados, na pesca
 	# e na luta: no escuro da queda, o golpe no coqueiro da porta saía sem
 	# ninguém de pé para dar.
-	if not _jogador.is_physics_processing():
+	if not _jogador.is_physics_processing() or not FocoDoE.e_dele(self):
 		return
 	if _aberta >= 0:
 		var paginas: Array = _fichas[_pontos[_aberta]["especie"]].get("paginas", [])
@@ -215,6 +231,26 @@ func _unhandled_key_input(event: InputEvent) -> void:
 			return
 		_mostrar(_perto, 0)
 		get_viewport().set_input_as_handled()
+		conheceu.emit(String(_pontos[_perto]["especie"]))
+
+
+## O QUE O E FARIA AQUI, para o foco (`foco_do_e.gd`), na ordem do
+## `_unhandled_key_input`: a ficha aberta e o golpe em curso (que levam o E
+## sempre), a fibra, o corte, e a ficha da espécie que o almanaque ainda não tem.
+func alvo_do_e() -> Dictionary:
+	if _jogador == null or not _jogador.is_physics_processing():
+		return {}
+	if _aberta >= 0:
+		return {"ponto": _pontos[_aberta]["pos"], "vies": VIES_DO_QUE_ESTA_ABERTO}
+	if _em_golpe >= 0 and _em_golpe < _cortaveis.size():
+		return {"ponto": _cortaveis[_em_golpe]["pos"], "vies": VIES_DO_QUE_ESTA_ABERTO}
+	if _fibra_perto >= 0 and _cortavel_perto < 0:
+		return {"ponto": _cortaveis[_fibra_perto]["pos"]}
+	if _corte_vale_a_tecla() and not bool(_cortaveis[_cortavel_perto]["cortado"]):
+		return {"ponto": _cortaveis[_cortavel_perto]["pos"]}
+	if _perto >= 0 and not Almanaque.conhece(String(_pontos[_perto]["especie"])):
+		return {"ponto": _pontos[_perto]["pos"], "vies": VIES_DA_FICHA}
+	return {}
 
 
 ## COM O MACHADO NA MÃO, A ÁRVORE AO ALCANCE É DO CORTE, e não da ficha — a

@@ -14,13 +14,16 @@ extends Node
 ## perguntadas uma a uma; nenhuma usando, o morador conversa (`conversar`).
 ##
 ## Mesmo molde das bancadas (`tecla_das_bancadas.gd`): a dica da tecla em cima
-## de quem está ao alcance, e o E no `_unhandled_key_input`. O `Prototype` o põe
-## DEPOIS dos outros que ouvem o E, e por isso ele recebe a tecla primeiro: com
-## alguém ao alcance, conversar vem antes de cortar a árvore ou comer da mão.
+## de quem está ao alcance, e o E no `_unhandled_key_input`. QUEM LEVA O E É O
+## FOCO (`foco_do_e.gd`): o morador concorre com o cordel, a árvore e o resto
+## pelo que está à frente do jogador e mais perto. Ele chegou a vir por último na
+## árvore de nós para receber a tecla antes de todos — "conversar vem antes de
+## cortar a árvore" —, e com alguém a dois passos o cordel aos pés não se pegava.
 
 const DicaTecla = preload("res://scripts/prototipo_3d/dica_tecla.gd")
 const Atalhos = preload("res://scripts/prototipo_3d/atalhos.gd")
 const CadeiaDeMissoes = preload("res://scripts/prototipo_3d/cadeia_de_missoes.gd")
+const FocoDoE = preload("res://scripts/prototipo_3d/foco_do_e.gd")
 
 ## De quão perto se conversa, no chão.
 const ALCANCE := 2.8
@@ -43,25 +46,43 @@ func configurar(jogador: Node3D, hud, quem_mora: Callable, livre: Callable) -> v
 	_quem_mora = quem_mora
 	_livre = livre
 	_dica = DicaTecla.criar(hud.map_layer(), Atalhos.letra("interagir"), "")
+	add_to_group(FocoDoE.GRUPO)
 
 
-## Quem está ao alcance da conversa agora, ou null.
+## Quem leva o E da conversa agora, ou null: ao alcance E com o foco.
 func perto() -> Node3D:
 	return _perto
+
+
+## O QUE O E FARIA AQUI, para o foco (`foco_do_e.gd`): conversar com quem está
+## ao alcance.
+func alvo_do_e() -> Dictionary:
+	var quem := _ao_alcance()
+	return {} if quem == null else {"ponto": quem.global_position}
+
+
+## Quem está ao alcance da conversa, com o jogador em jogo e o E livre.
+func _ao_alcance() -> Node3D:
+	if _jogador == null:
+		return null
+	var camera := get_viewport().get_camera_3d()
+	var em_jogo: bool = camera != null and camera == _jogador.get("camera")
+	if em_jogo and _jogador.is_physics_processing() and not Dialogo.ocupado() \
+			and (not _livre.is_valid() or bool(_livre.call())):
+		return _mais_perto()
+	return null
 
 
 func _process(_delta: float) -> void:
 	if _jogador == null or _dica == null:
 		return
-	_perto = null
-	var camera := get_viewport().get_camera_3d()
-	var em_jogo: bool = camera != null and camera == _jogador.get("camera")
-	if em_jogo and _jogador.is_physics_processing() and not Dialogo.ocupado() \
-			and (not _livre.is_valid() or bool(_livre.call())):
-		_perto = _mais_perto()
+	_perto = _ao_alcance()
+	if _perto != null and not FocoDoE.e_dele(self):
+		_perto = null
 	if _perto == null:
 		_dica.visible = false
 		return
+	var camera := get_viewport().get_camera_3d()
 	var altura := float(_perto.get("altura")) if _perto.get("altura") != null else 1.75
 	DicaTecla.mostrar_em(_dica, camera, _perto.global_position + Vector3.UP * (altura + ACIMA_DA_CABECA), tr(_rotulo(_perto)))
 
@@ -110,7 +131,7 @@ func _unhandled_key_input(event: InputEvent) -> void:
 	if not (event is InputEventKey and event.pressed and not event.echo \
 			and event.physical_keycode == Atalhos.tecla("interagir")):
 		return
-	if Dialogo.ocupado() or not _jogador.is_physics_processing():
+	if Dialogo.ocupado() or not _jogador.is_physics_processing() or not FocoDoE.e_dele(self):
 		return
 	get_viewport().set_input_as_handled()
 	usar(_perto)

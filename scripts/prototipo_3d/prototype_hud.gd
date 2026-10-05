@@ -565,6 +565,68 @@ func set_notice(value: String) -> void:
 		_notice_panel.offset_right = half
 
 
+## O AVISO DE QUEM FICOU PARA TRÁS na condução: "o Pedro está esperando você".
+## "Quando a missão tiver que seguir um NPC, como o Pedro no inicio, e o
+## jogador se afastar ao ponto do NPC parar, deve aparecer um aviso em tela
+## informando para se reaproximar do NPC." Fica no alto, abaixo do relógio,
+## enquanto o guia espera (`guia_pedro.esperando_quem_ficou`), e some quando o
+## jogador volta. É painel próprio, e não o aviso do rodapé: o rodapé troca a
+## cada coisa que acontece — o que se ganhou, o que se recusou —, e este tem de
+## durar o tempo que a espera durar. Texto vazio esconde.
+var _espera_panel: PanelContainer
+var _espera_label: Label
+var _espera_tween: Tween
+
+
+func set_aviso_de_espera(texto: String) -> void:
+	if _espera_panel == null:
+		_criar_aviso_de_espera()
+	if _espera_tween != null:
+		_espera_tween.kill()
+	_espera_tween = _espera_panel.create_tween()
+	if texto.is_empty():
+		_espera_tween.tween_property(_espera_panel, "modulate:a", 0.0, 0.35)
+		_espera_tween.tween_callback(func() -> void: _espera_panel.visible = false)
+		return
+	_espera_label.text = texto
+	_espera_panel.visible = true
+	_espera_tween.tween_property(_espera_panel, "modulate:a", 1.0, 0.35)
+
+
+## O texto do aviso de espera na tela agora, ou "" (para o portão).
+func aviso_de_espera() -> String:
+	return _espera_label.text if _espera_panel != null and _espera_panel.visible else ""
+
+
+func _criar_aviso_de_espera() -> void:
+	_espera_panel = PanelContainer.new()
+	_espera_panel.name = "AvisoDeEspera"
+	_espera_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var estilo := StyleBoxFlat.new()
+	estilo.bg_color = Color(0.055, 0.085, 0.075, 0.9)
+	estilo.set_corner_radius_all(10)
+	estilo.set_border_width_all(1)
+	estilo.border_color = Color(GOLD, 0.7)
+	estilo.content_margin_left = 20.0
+	estilo.content_margin_right = 20.0
+	estilo.content_margin_top = 8.0
+	estilo.content_margin_bottom = 9.0
+	_espera_panel.add_theme_stylebox_override("panel", estilo)
+	_espera_label = _label("", 15, INK)
+	_espera_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_espera_panel.add_child(_espera_label)
+	_root.add_child(_espera_panel)
+	# No meio, abaixo do relógio (18 a 72) e das três barras do corpo embaixo
+	# dele (a do vigor vai até 146), com um respiro, e crescendo para os dois
+	# lados com o texto.
+	_espera_panel.anchor_left = 0.5
+	_espera_panel.anchor_right = 0.5
+	_espera_panel.offset_top = 154.0
+	_espera_panel.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	_espera_panel.modulate.a = 0.0
+	_espera_panel.visible = false
+
+
 ## Painel de informações à esquerda, abaixo do título: casas e lápides do cemitério.
 ## A altura acompanha o texto.
 ## Quem abriu o painel (lápides, árvores); a casa clicada abre sem dono. Cada módulo

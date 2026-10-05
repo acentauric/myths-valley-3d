@@ -19,6 +19,7 @@ const TEXTOS := "res://data/casa.json"
 const IdiomaMenu = preload("res://scripts/prototipo_3d/idioma_menu.gd")
 const DicaTecla = preload("res://scripts/prototipo_3d/dica_tecla.gd")
 const Atalhos = preload("res://scripts/prototipo_3d/atalhos.gd")
+const FocoDoE = preload("res://scripts/prototipo_3d/foco_do_e.gd")
 
 ## De quão perto se alcança a cama e o baú, no chão.
 const ALCANCE := 1.7
@@ -54,6 +55,7 @@ func configurar(jogador: Node3D, hud, interiores, noite) -> void:
 	var lido = JSON.parse_string(FileAccess.get_file_as_string(TEXTOS))
 	_textos = lido if lido is Dictionary else {}
 	_dica = DicaTecla.criar(hud.map_layer(), Atalhos.letra("interagir"), "")
+	add_to_group(FocoDoE.GRUPO)
 	_por_a_comida_da_casa()
 
 
@@ -77,10 +79,18 @@ func _process(_delta: float) -> void:
 	if sala != null and em_jogo and not _ocupado and not Dialogo.ativo and _interiores.dentro() == "casa" \
 			and not (_noite != null and _noite.virando_a_noite()):
 		_perto = _mais_perto(sala, _jogador.global_position)
-	if _perto == "":
+	if _perto == "" or not FocoDoE.e_dele(self):
 		_dica.visible = false
 		return
 	DicaTecla.mostrar_em(_dica, camera, _ponto(sala, _perto) + Vector3.UP * ALTURA_DA_DICA, _acao(_perto))
+
+
+## O QUE O E FARIA AQUI, para o foco (`foco_do_e.gd`): a cama ou o baú.
+func alvo_do_e() -> Dictionary:
+	var sala := quarto()
+	if _perto == "" or _ocupado or sala == null:
+		return {}
+	return {"ponto": _ponto(sala, _perto)}
 
 
 func _ponto(sala: Node3D, qual: String) -> Vector3:
@@ -112,7 +122,7 @@ func _unhandled_key_input(event: InputEvent) -> void:
 	# COM O CORPO PARADO, O E NÃO VALE PARA O MUNDO, como nos marcos: este nó
 	# ouve no _unhandled_key_input, ANTES das telas que ouvem no
 	# _unhandled_input (o cartão do amanhecer, o folheto).
-	if Dialogo.ocupado() or not _jogador.is_physics_processing():
+	if Dialogo.ocupado() or not _jogador.is_physics_processing() or not FocoDoE.e_dele(self):
 		return
 	get_viewport().set_input_as_handled()
 	usar(_perto)

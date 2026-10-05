@@ -21,10 +21,10 @@ extends SceneTree
 ##      corrida; tocar o Shift parado não fecha.
 ##   5. O PEDRO VAI NA FRENTE: depois da corrida vem o bom-dia ao Tonho; na
 ##      chave ele anda do píer rumo à Dona Candinha, e para à espera do
-##      jogador que ficou para trás.
+##      jogador que ficou para trás — e a tela avisa para voltar, até ele voltar.
 ##   6. O CORPO, UMA VEZ: com o vigor baixo na caminhada, o Pedro explica as três
-##      barras na caixa de fala, com a fala de quem cansou; de novo cansado, não
-##      repete — e a lembrança vai no save.
+##      barras na caixa de fala, com a fala de quem cansou e na voz dele, linha a
+##      linha; de novo cansado, não repete — e a lembrança vai no save.
 ##   7. A PORTA ESPERA A CHAVE: a casa herdada está trancada até a Dona Zefa dar
 ##      a chave, e aberta depois; o baú tem a enxada, o balde e a maniva.
 ##   8. O SAVEIRO LARGA: no dia seguinte, o barco não está mais no píer.
@@ -147,6 +147,13 @@ func _run() -> void:
 		var parado_em: Vector3 = pedro.global_position
 		await _passos_de_fisica(60)
 		_conferir(_no_chao(pedro.global_position, parado_em) < 0.3, "com o jogador para trás, o Pedro não parou para esperar")
+		# E A TELA DIZ QUE ELE PAROU: "deve aparecer um aviso em tela informando para
+		# se reaproximar do NPC". Voltando para perto, o aviso sai.
+		_conferir(str(vale.hud.aviso_de_espera()).contains("esperando"),
+			"o Pedro parou à espera de quem ficou para trás e a tela não avisou: '%s'" % str(vale.hud.aviso_de_espera()))
+		jogador.teleportar(pedro.global_position + Vector3(1.0, 0.1, 1.0), 0.0)
+		_conferir(await _ate(func() -> bool: return str(vale.hud.aviso_de_espera()) == "", 3.0),
+			"o jogador voltou para perto do Pedro e o aviso de voltar continuou na tela")
 
 	# --- 6. O CORPO, UMA VEZ -------------------------------------------------------------
 	_conferir(not pedro.lembrancas().has(pedro.LEMBRANCA_DO_CORPO), "o Pedro explicou o corpo antes de o jogador cansar")
@@ -161,6 +168,15 @@ func _run() -> void:
 		_conferir(falas.size() == 4, "a explicação do corpo tem %d fala(s), e são quatro: o respiro, a vida, o fôlego e o vigor" % falas.size())
 		_conferir(juntas.contains("vida") and juntas.contains("fôlego") and juntas.contains("vigor"), "a explicação do corpo não fala da vida, do fôlego e do vigor")
 		_conferir(juntas.contains("gastou agora"), "cansado, o Pedro não usou a fala de quem cansou")
+		# NA VOZ DELE: "na explicação do pedro sobre a barra de stamina e
+		# similares, crie os audios para ele narrar". A primeira linha toca ao abrir,
+		# e cada linha do corpo tem a narração dela.
+		_conferir(dialogo.voz_tocando() == "pedro_corpo_respiro",
+			"a explicação do corpo abriu sem a voz do Pedro (tocando: '%s')" % dialogo.voz_tocando())
+		for fala in pedro.get("_corpo"):
+			var audio := str((fala as Dictionary).get("audio", ""))
+			_conferir(audio != "" and ResourceLoader.exists("res://assets/audio/vozes/%s.mp3" % audio),
+				"a linha do corpo '%s…' não tem a narração do Pedro ('%s')" % [str((fala as Dictionary).get("texto", "")).left(30), audio])
 	await _fechar_a_fala()
 	_conferir(pedro.lembrancas().has(pedro.LEMBRANCA_DO_CORPO), "a explicação do corpo não ficou na lembrança que vai no save")
 	jogador.definir_vigor(jogador.vigor_maximo() * 0.2)

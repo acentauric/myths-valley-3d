@@ -418,8 +418,11 @@ const EN := {
 	"%s agora na %s. %s passou para a %s.": "%s is now on %s. %s moved to %s.",
 	"%s agora na %s.": "%s is now on %s.",
 	"As teclas voltaram ao padrão.": "Keys are back to default.",
-	"Machado recebido. Aperte %s para pô-lo na mão.": "Axe received. Press %s to hold it.",
-	"Machado recebido. Arraste-o da mochila para a barra de mão.": "Axe received. Drag it from the backpack to the hand bar.",
+	# A ferramenta que a missão entrega fica na barra (CadeiaDeMissoes._por_na_barra).
+	"Recebido: %s. Aperte %s para usar.": "Received: %s. Press %s to use it.",
+	"Recebido: %s, na mochila. Arraste para a barra de mão (%s abre a mochila).": "Received: %s, in the backpack. Drag it to the hand bar (%s opens the backpack).",
+	# O aviso de quem ficou para trás na condução (prototype_hud.set_aviso_de_espera).
+	"%s está esperando você: volte para perto para seguir.": "%s is waiting for you: head back to keep going.",
 	# A atualização pelo site (abertura, embaixo da versão).
 	"Nova versão: Build %d · Atualizar": "New version: Build %d · Update",
 	"Nova versão: Build %d · Baixar no site": "New version: Build %d · Download from the site",
@@ -826,8 +829,9 @@ const ES := {
 	"%s agora na %s. %s passou para a %s.": "%s ahora en la %s. %s pasó a la %s.",
 	"%s agora na %s.": "%s ahora en la %s.",
 	"As teclas voltaram ao padrão.": "Las teclas volvieron a los valores de fábrica.",
-	"Machado recebido. Aperte %s para pô-lo na mão.": "Hacha recibida. Pulsa %s para tomarla en la mano.",
-	"Machado recebido. Arraste-o da mochila para a barra de mão.": "Hacha recibida. Arrástrala de la mochila a la barra de mano.",
+	"Recebido: %s. Aperte %s para usar.": "Recibido: %s. Pulsa %s para usar.",
+	"Recebido: %s, na mochila. Arraste para a barra de mão (%s abre a mochila).": "Recibido: %s, en la mochila. Arrastra a la barra de mano (%s abre la mochila).",
+	"%s está esperando você: volte para perto para seguir.": "%s te está esperando: vuelve cerca para seguir.",
 	# A atualização pelo site (abertura, embaixo da versão).
 	"Nova versão: Build %d · Atualizar": "Nueva versión: Build %d · Actualizar",
 	"Nova versão: Build %d · Baixar no site": "Nueva versión: Build %d · Descargar del sitio",

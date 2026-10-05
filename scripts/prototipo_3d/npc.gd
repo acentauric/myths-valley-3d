@@ -601,9 +601,13 @@ func _atualizar_interacao(delta: float) -> void:
 		if _balao_tempo <= 0.0:
 			balao.esconder()
 			nome_label.visible = true
+			_soltar_o_relogio()
 	if jogador == null:
 		return
 	var distancia := jogador.global_position.distance_to(global_position)
+	# Quem se afastou no meio da fala saiu da conversa: o dia volta a correr.
+	if _segura_o_relogio and distancia > RAIO_CONVERSA:
+		_soltar_o_relogio()
 	if distancia < RAIO_SAUDACAO and (_ultima_saudacao_ms < 0 or Time.get_ticks_msec() - _ultima_saudacao_ms > intervalo_saudacao_ms) \
 			and (_eh_mudo() or pode_falar()):
 		if tem_missao():
@@ -657,6 +661,39 @@ func _tomar_palavra(segundos: float) -> void:
 
 func _exit_tree() -> void:
 	_falando.erase(self)
+	_soltar_o_relogio()
+
+
+## O RELÓGIO PARA NA CONVERSA (`Dia.segurar`): a fala da missão (`narrar`) e a
+## conversa do E (`conversar`) seguram o dia enquanto o balão está no ar, com o
+## jogador ao alcance dela. A SAUDAÇÃO DE QUEM PASSA NÃO SEGURA: atravessar a
+## praça cheia pararia o dia a cada cumprimento, e cumprimento não é conversa.
+var _segura_o_relogio := false
+
+
+func _segurar_o_relogio() -> void:
+	if jogador == null or jogador.global_position.distance_to(global_position) > RAIO_CONVERSA:
+		return
+	_segura_o_relogio = true
+	# Com prazo: o do balão e um respiro (ver `Dia.segurar`).
+	Dia.segurar(_motivo_do_relogio(), _balao_tempo + 1.0)
+
+
+func _soltar_o_relogio() -> void:
+	if not _segura_o_relogio:
+		return
+	_segura_o_relogio = false
+	Dia.soltar(_motivo_do_relogio())
+
+
+## "fala:" e quem: é o prefixo que a festa da missão cumprida espera passar.
+func _motivo_do_relogio() -> String:
+	return "fala:%d" % get_instance_id()
+
+
+## Está no meio de uma conversa com o jogador (o balão que segura o relógio)?
+func conversando() -> bool:
+	return _segura_o_relogio
 
 
 ## Cumprimenta o jogador: balão com a fala e voz do ElevenLabs por proximidade. Quem
@@ -669,6 +706,7 @@ func saudar() -> void:
 	var texto := _escolher_a_fala()
 	# O balão leva a fala enxuta; a voz e o aviso do HUD (`saudou`) levam a inteira.
 	mostrar_balao(balao_curto(texto), maxf(5.0, voz.stream.get_length() + 1.5) if voz.stream != null else 7.0)
+	_soltar_o_relogio()
 	_falar_com_voz_e_gesto()
 	saudou.emit(self, texto)
 
@@ -680,9 +718,15 @@ func saudar() -> void:
 ## balão, e não na caixa de fala longa: a caixa é do que o jogador precisa ler
 ## antes de seguir (`dialogo_vale.gd`), e conversa de passagem não é isso.
 func conversar() -> void:
+	# QUEM NÃO FALA ACENA, como na saudação (`_eh_mudo`): sem balão vazio, sem o
+	# aviso "Nome: " no HUD, e sem segurar o relógio por uma fala que não há.
+	if _eh_mudo():
+		_acenar_mudo()
+		return
 	_ultima_saudacao_ms = Time.get_ticks_msec()
 	var texto := _escolher_a_fala()
 	mostrar_balao(texto, maxf(7.0, voz.stream.get_length() + 2.0) if voz.stream != null else 9.0)
+	_segurar_o_relogio()
 	_falar_com_voz_e_gesto()
 	saudou.emit(self, texto)
 
@@ -765,6 +809,7 @@ func mostrar_balao(texto: String, segundos: float) -> void:
 ## não há. É ela que o `_tomar_palavra` usa para ninguém falar por cima.
 func narrar(nome_audio: String, texto: String) -> void:
 	mostrar_balao(texto, 8.0)
+	_segurar_o_relogio()
 	var caminho := PASTA_VOZES + nome_audio + ".mp3"
 	var duracao := 4.0
 	if nome_audio != "" and ResourceLoader.exists(caminho):
