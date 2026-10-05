@@ -20,7 +20,15 @@ const MUSICAS_PERIODO := {
 }
 ## Trilha de tensão da mata fechada, por cima do período.
 const MUSICA_MATA := "res://assets/audio/musica/musica_mata.mp3"
-const NARRACAO_ABERTURA := "res://assets/audio/narracao/boas_vindas.mp3"
+## Travessia (introdução): música própria e a narração em trechos, um por legenda
+## (tools/elevenlabs/gerar-travessia.ps1 e alinhar_travessia.py).
+const MUSICA_TRAVESSIA := "res://assets/audio/musica/tema_travessia.mp3"
+const PASTA_TRAVESSIA := "res://assets/audio/narracao/travessia/"
+## A música fica por baixo da voz durante a travessia.
+const ABAFO_TRAVESSIA := 0.45
+## Troca de trecho: o atual some em FADE_TRECHO e o próximo entra depois de ESPERA_TRECHO.
+const FADE_TRECHO := 0.35
+const ESPERA_TRECHO := 0.3
 const AMBIENTE_MAR := "res://assets/audio/ambiente/mare_mansa.ogg"
 const AMBIENTE_AVES := "res://assets/audio/ambiente/aves_reconcavo.ogg"
 const VOLUME_MUSICA := -10.0
@@ -91,7 +99,15 @@ var _ganho_musica: float = 1.0:
 	set(valor):
 		_ganho_musica = valor
 		if is_instance_valid(_musica):
-			_musica.volume_db = _volume_db(VOLUME_MUSICA, _ef("musica", volume_musica) * _ganho_musica)
+			_musica.volume_db = _volume_db(VOLUME_MUSICA, _ef("musica", volume_musica) * _ganho_musica * _abafo_musica)
+## Fator da música por baixo da narração da travessia (1 fora dela).
+var _abafo_musica: float = 1.0:
+	set(valor):
+		_abafo_musica = valor
+		_ganho_musica = _ganho_musica
+## Cada troca de trecho ganha um número: uma troca mais nova cancela a anterior em espera.
+var _trecho_geracao := 0
+var _trecho_fade: Tween
 
 
 func _ready() -> void:
@@ -340,15 +356,72 @@ func testar_efeito_menu(nome: String = "menu_confirma") -> void:
 
 
 ## Narração não bloqueia a abertura nem a entrada no mundo.
-func narrar_abertura() -> void:
-	var fluxo := _carregar(NARRACAO_ABERTURA)
-	if fluxo != null:
-		_narracao.stream = fluxo
-		_narracao.play()
-
-
 func parar_narracao() -> void:
+	_trecho_geracao += 1
+	if _trecho_fade and _trecho_fade.is_valid():
+		_trecho_fade.kill()
 	_narracao.stop()
+
+
+## Começa a travessia: a música nova entra cruzando com a do menu e fica por baixo da voz.
+func iniciar_travessia() -> void:
+	_abafo_musica = ABAFO_TRAVESSIA
+	tocar_musica(MUSICA_TRAVESSIA, true)
+
+
+## Fim da travessia: a voz some suave e a música volta ao volume cheio; voltando ao menu,
+## a trilha do menu entra de novo.
+func encerrar_travessia(voltar_ao_menu: bool) -> void:
+	_sumir_narracao()
+	create_tween().tween_property(self, "_abafo_musica", 1.0, FADE_SAIDA)
+	if voltar_ao_menu:
+		tocar_musica(obter_caminho_musica_menu(), true)
+
+
+func trecho_travessia(indice: int) -> String:
+	return PASTA_TRAVESSIA + "trecho_%02d.mp3" % (indice + 1)
+
+
+## Toca o trecho `indice` da travessia. Se outro trecho ainda soa, ele some em FADE_TRECHO
+## e o novo só entra depois de ESPERA_TRECHO: pular nunca encavala duas falas. Devolve
+## quanto falta, em segundos, até o fim do novo trecho (0 sem o arquivo).
+func tocar_trecho_travessia(indice: int) -> float:
+	var fluxo := _carregar(trecho_travessia(indice))
+	if fluxo == null:
+		return 0.0
+	_trecho_geracao += 1
+	var minha := _trecho_geracao
+	var atraso := 0.0
+	if _narracao.playing:
+		atraso = FADE_TRECHO + ESPERA_TRECHO
+		_sumir_narracao()
+	_entrar_trecho.call_deferred(fluxo, atraso, minha)
+	return atraso + fluxo.get_length()
+
+
+func _entrar_trecho(fluxo: AudioStream, atraso: float, geracao: int) -> void:
+	if atraso > 0.0:
+		await get_tree().create_timer(atraso).timeout
+	if geracao != _trecho_geracao:
+		return
+	# O fim do fade do trecho anterior não pode parar o novo.
+	if _trecho_fade and _trecho_fade.is_valid():
+		_trecho_fade.kill()
+	_narracao.stop()
+	_narracao.volume_db = _volume_db(VOLUME_NARRACAO, _ef("narracao", volume_narracao))
+	_narracao.stream = fluxo
+	_narracao.play()
+
+
+## A narração que soa some em FADE_TRECHO e para.
+func _sumir_narracao() -> void:
+	if _trecho_fade and _trecho_fade.is_valid():
+		_trecho_fade.kill()
+	if not _narracao.playing:
+		return
+	_trecho_fade = create_tween()
+	_trecho_fade.tween_property(_narracao, "volume_db", -60.0, FADE_TRECHO)
+	_trecho_fade.tween_callback(_narracao.stop)
 
 
 func efeito(nome: String) -> void:

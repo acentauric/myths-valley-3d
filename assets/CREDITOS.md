@@ -15,6 +15,8 @@ menu e nos painéis internos. Não há dependência de fontes ou de recursos rem
 | Pasta | O que tem |
 |-------|-----------|
 | `audio/narracao/` | Narração de abertura, voz **BDM · Nelson Silvestre · Narrador** — a voz do narrador do próprio projeto |
+| `audio/narracao/travessia/` | Narração da travessia (introdução), um trecho por legenda: ElevenLabs Text to Speech (Eleven v3), voz **BDM · Nelson Silvestre · Narrador**, cortada pelos tempos do Whisper da OpenAI (`tools/elevenlabs/gerar-travessia.ps1`, `alinhar_travessia.py`) |
+| `audio/musica/tema_travessia.mp3` | Tema da travessia, 90 s instrumental, ElevenLabs Music (`tools/elevenlabs/gerar-travessia.ps1`) |
 | `audio/musica/` | Trilha do roçado, 45s em loop |
 | `audio/efeitos/` | arar, regar, colher, pegar, dormir |
 

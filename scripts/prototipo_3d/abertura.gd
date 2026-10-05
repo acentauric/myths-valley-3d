@@ -95,6 +95,8 @@ var map_help_tip: Control
 var line_index := -1
 var elapsed := 0.0
 var line_time := 0.0
+## Respiro depois de cada trecho da narração antes da legenda seguinte.
+const PAUSA_ENTRE_TRECHOS := 0.8
 var starting := false
 var flyover_active := true
 var menu_font_option := 0
@@ -307,7 +309,9 @@ func _tique_de_foco() -> void:
 
 func _iniciar_som_do_menu() -> void:
 	_som_liberado = true
-	Audio.tocar_musica(Audio.obter_caminho_musica_menu())
+	# Com a travessia já em curso, a música dela continua.
+	if line_index < 0:
+		Audio.tocar_musica(Audio.obter_caminho_musica_menu())
 	Audio.iniciar_ambiente_menu()
 	Atualizacao.verificar()
 
@@ -927,10 +931,14 @@ func _button(text: String, callback: Callable) -> Button:
 	return button
 
 func _home() -> void:
+	# Saindo da travessia, a voz some suave e a trilha do menu volta.
+	if line_index >= 0:
+		Audio.encerrar_travessia(true)
+	else:
+		Audio.parar_narracao()
 	line_index = -1
 	camera.projection = Camera3D.PROJECTION_PERSPECTIVE
 	camera.fov = 55
-	Audio.parar_narracao()
 	_clear()
 	_marca()
 	_placa("JOGAR", _vagas).grab_focus()
@@ -1797,7 +1805,7 @@ func _intro() -> void:
 		acoes.add_child(botao)
 	line_bar = fio_base
 	line_bar.value = 1.0
-	Audio.narrar_abertura()
+	Audio.iniciar_travessia()
 	lines = IdiomaMenu.campo(dialog_data, "travessia", [])
 	line_index = -1
 	_next_line()
@@ -1820,7 +1828,10 @@ func _next_line() -> void:
 		return
 	caption.text = str(lines[line_index])
 	chapter.text = ["A partida", "A travessia", "A chegada"][mini(line_index / 3, 2)]
-	line_time = maxf(6.0, caption.text.length() * 0.065)
+	# Cada legenda tem o seu trecho de narração (o mesmo em todos os idiomas: a voz é
+	# em português). A legenda dura o trecho e um respiro; sem o áudio, o tempo de leitura.
+	var restante := Audio.tocar_trecho_travessia(line_index)
+	line_time = restante + PAUSA_ENTRE_TRECHOS if restante > 0.0 else maxf(6.0, caption.text.length() * 0.065)
 	line_total = line_time
 	line_bar.value = 1.0
 
@@ -1829,7 +1840,8 @@ func _start_game() -> void:
 		return
 	starting = true
 	set_process(false)
-	Audio.parar_narracao()
+	# PULAR no meio de uma fala: ela some suave em vez de cortar.
+	Audio.encerrar_travessia(false)
 	# A tela de carregamento é montada ainda no idioma do menu; os textos já vêm
 	# traduzidos e não mudam quando o locale volta ao português do jogo.
 	var loading := _show_loading()
