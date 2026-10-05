@@ -196,7 +196,15 @@ foreach ($l in (Git-Linhas @("status", "--porcelain=v1", "-uall", "--no-renames"
 	if (Test-Path -LiteralPath (Join-Path $raiz $caminho) -PathType Leaf) { $sujos.Add($caminho) } else { $atual.Remove($caminho) }
 }
 if ($sujos.Count -gt 0) {
-	$hashes = @($sujos | & git -c core.quotepath=false hash-object --stdin-paths)
+	# Os caminhos vão como ARGUMENTOS, e não pelo pipe para o `--stdin-paths`: no
+	# Windows PowerShell 5.1 o pipe para programa nativo põe um BOM na frente do
+	# primeiro caminho, e o git procurava "﻿AGENTS.md" e parava o runner com
+	# qualquer arquivo modificado. Em lotes, para a linha de comando caber.
+	$hashes = New-Object Collections.Generic.List[string]
+	for ($i = 0; $i -lt $sujos.Count; $i += 100) {
+		$lote = @($sujos.GetRange($i, [Math]::Min(100, $sujos.Count - $i)))
+		foreach ($h in @(& git -c core.quotepath=false hash-object -- $lote)) { $hashes.Add([string]$h) }
+	}
 	for ($i = 0; $i -lt $sujos.Count; $i++) { $atual[$sujos[$i]] = $hashes[$i] }
 }
 $atual["project.godot"] = Hash-Projeto $linhasProjeto
@@ -480,7 +488,11 @@ function Iniciar-Portao([string]$nome) {
 	try {
 		$argumentos = @{
 			FilePath = $Godot; PassThru = $true; WorkingDirectory = $Projeto
-			ArgumentList = @("--headless", "--path", $Projeto, "--script", "res://tests/$nome.gd")
+			# `--path .`, e não o caminho inteiro: o diretório de trabalho já é o
+			# projeto, e no Windows PowerShell 5.1 o -ArgumentList não põe aspas em
+			# argumento com espaço — "Mitys Valley 3D" chegava partido, e o Godot
+			# saía com 1 antes de qualquer portão.
+			ArgumentList = @("--headless", "--path", ".", "--script", "res://tests/$nome.gd")
 			RedirectStandardOutput = $log; RedirectStandardError = "$log.err"
 		}
 		if ($noWindows) { $argumentos["WindowStyle"] = "Hidden" }
