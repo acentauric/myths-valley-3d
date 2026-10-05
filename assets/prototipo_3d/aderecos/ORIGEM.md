@@ -132,3 +132,91 @@ pago no momento da geração (ver `assets/CREDITOS.md`).
 SHA-256 do GLB: `af094d331a0f66c5c09852c3434a7d98a41f54c3d3ef0813f202d9f7c0d7b5da`.
 
 <!-- lote-2026-10-05:fim -->
+
+<!-- lote-2026-10-05_level_design:inicio -->
+
+## Level design de 05/10/2026: os varais e o que falta aos quintais
+
+Gerados por texto no Tripo Studio em 05/10/2026 (Modelo HD H3.1, textura 8K
+desligada, 55 créditos) e passados pela Retopologia (Quad, Malha Smart, 40
+créditos) com alvo de 1.200 a 2.500 faces. Os que têm rig passaram pelo
+pre_rig_check e pelo rig do Studio (20 créditos): Mixamo para gente e o do
+tipo do bicho para os outros (quadrúpede, ave, aquático, serpente), com as
+animações prontas do Studio aplicadas uma de cada vez e exportadas juntas no
+GLB. Tudo pela ponte do Playwright MCP com a extensão do Chrome, com
+`tools/tripo/lote_studio.js` e `tools/tripo/lote_producao.js`.
+Cópia para o projeto por `sincronizar_downloads.py` (originais em
+`.assets-raw/tripo/`, fora do Git). Tarefas, projetos e prompts completos em
+`tools/tripo/lote_2026-10-05_level_design.json`. Uso comercial: plano pago no
+momento da geração (ver `assets/CREDITOS.md`).
+
+| Arquivo | O que é (prompt) | Tarefa Tripo | Triângulos | Textura | Rig | MB |
+| --- | --- | --- | ---: | --- | --- | ---: |
+| `chiqueiro_tripo.glb` | A small rustic pig pen with a low fence of wooden stakes and a small thatched shelter. | `186b3935-cc92-4237-a73a-ad7dbdfd49d7` | 5.305 | 1K | — | 2,9 |
+| `cocho_tripo.glb` | A long rustic wooden feeding trough carved from a log. | `a0db09f3-cea0-45db-9c37-58043d89f9e5` | 2.273 | 1K | — | 1,9 |
+| `galinheiro_tripo.glb` | A small rustic chicken coop made of woven sticks and wattle with a thatched roof and a little ramp. | `80f365e6-8d2c-4a97-a275-707a686b974d` | 5.455 | 1K | — | 3,1 |
+| `varal_bambu_tripo.glb` | A rural clothesline made of two bamboo poles and a rope with white and colorful clothes and a sheet hanging to dry. | `d5365e5c-836a-40f8-9ef7-9d0964017eff` | 2.963 | 1K | — | 2,7 |
+| `varal_estacas_tripo.glb` | A rural clothesline with three wooden forked stakes and a long rope with shirts, a skirt and towels hanging to dry. | `0bcb19d4-d3ae-459c-a451-0f3f0b89df6d` | 2.942 | 1K | — | 2,8 |
+
+SHA-256 de cada GLB no arquivo do lote (`sha256`).
+
+<!-- lote-2026-10-05_level_design:fim -->
+
+<!-- lote-2026-10-05_moradores:inicio -->
+
+## Moradores de 05/10/2026: ofícios e casas a mais: os varais e o que falta aos quintais
+
+Gerados por texto no Tripo Studio em 05/10/2026 (Modelo HD H3.1, textura 8K
+desligada, 55 créditos) e passados pela Retopologia (Quad, Malha Smart, 40
+créditos) com alvo de 1.500 a 2.500 faces. Os que têm rig passaram pelo
+pre_rig_check e pelo rig do Studio (20 créditos): Mixamo para gente e o do
+tipo do bicho para os outros (quadrúpede, ave, aquático, serpente), com as
+animações prontas do Studio aplicadas uma de cada vez e exportadas juntas no
+GLB. Tudo pela ponte do Playwright MCP com a extensão do Chrome, com
+`tools/tripo/lote_studio.js` e `tools/tripo/lote_producao.js`.
+Cópia para o projeto por `sincronizar_downloads.py` (originais em
+`.assets-raw/tripo/`, fora do Git). Tarefas, projetos e prompts completos em
+`tools/tripo/lote_2026-10-05_moradores.json`. Uso comercial: plano pago no
+momento da geração (ver `assets/CREDITOS.md`).
+
+| Arquivo | O que é (prompt) | Tarefa Tripo | Triângulos | Textura | Rig | MB |
+| --- | --- | --- | ---: | --- | --- | ---: |
+| `canoa_em_obra_tripo.glb` | A dugout canoe under construction resting on two wooden trestles, half-carved log with adze marks, wood shavings and a few carpenter tools beside it. | `72b99cda-2b82-4d84-8339-08d06d6061a4` | 4.837 | 1K | — | 2,3 |
+| `lavadouro_pedra_tripo.glb` | A large flat grey riverbank washing stone (pedra de lavar roupa) slightly tilted, worn smooth, with a wet folded white cloth and a small wooden soap box on it. | `72936a22-20c4-4790-8baa-cee578857a1e` | 3.004 | 1K | — | 1,6 |
+
+SHA-256 de cada GLB no arquivo do lote (`sha256`).
+
+<!-- lote-2026-10-05_moradores:fim -->
+
+<!-- lote-2026-10-05_paisagismo:inicio -->
+
+## Paisagismo de 05/10/2026, segunda leva: os varais e o que falta aos quintais
+
+Gerados por texto no Tripo Studio em 05/10/2026 (Modelo HD H3.1, textura 8K
+desligada, 55 créditos) e passados pela Retopologia (Quad, Malha Smart, 40
+créditos) com alvo de 1.200 a 3.000 faces. Os que têm rig passaram pelo
+pre_rig_check e pelo rig do Studio (20 créditos): Mixamo para gente e o do
+tipo do bicho para os outros (quadrúpede, ave, aquático, serpente), com as
+animações prontas do Studio aplicadas uma de cada vez e exportadas juntas no
+GLB. Tudo pela ponte do Playwright MCP com a extensão do Chrome, com
+`tools/tripo/lote_studio.js` e `tools/tripo/lote_producao.js`.
+Cópia para o projeto por `sincronizar_downloads.py` (originais em
+`.assets-raw/tripo/`, fora do Git). Tarefas, projetos e prompts completos em
+`tools/tripo/lote_2026-10-05_paisagismo.json`. Uso comercial: plano pago no
+momento da geração (ver `assets/CREDITOS.md`).
+
+| Arquivo | O que é (prompt) | Tarefa Tripo | Triângulos | Textura | Rig | MB |
+| --- | --- | --- | ---: | --- | --- | ---: |
+| `barraca_feira_tripo.glb` | A small rustic market stall (barraca de feira) with a wooden table, a cloth awning on four poles, baskets of fruit, cassava and dried fish on the table. | `3a0cb715-dbe7-4868-ac47-47018ebbfa8a` | 6.114 | 1K | — | 2,8 |
+| `carro_de_boi_tripo.glb` | A traditional Brazilian ox cart (carro de boi) with two big solid wooden disc wheels, a long wooden shaft and a flat wooden bed with side stakes, no animals. | `3c987ae9-d1bb-4383-9052-4bdaf6338300` | 5.503 | 1K | — | 2,8 |
+| `cerca_varas_tripo.glb` | A straight section of rustic rural fence made of thin crooked wooden sticks and poles tied with vines, about three meters long. | `36625c9a-663c-47c2-93d5-24200a94a5a3` | 2.029 | 1K | — | 2,7 |
+| `estaleiro_fumo_tripo.glb` | A wooden rack for drying tobacco leaves (estaleiro de fumo): a frame of poles with rows of large brown and golden tobacco leaves hanging to dry, under a simple thatched roof. | `47b60ab1-00dd-46bc-b880-ca87e6edac64` | 5.180 | 1K | — | 2,9 |
+| `forno_barro_tripo.glb` | An outdoor dome-shaped clay bread oven (forno de barro) on a low base of stones and clay, with a small arched opening and some firewood beside it. | `dc5d63b9-f651-4bb1-8032-84acec9f0036` | 3.874 | 1K | — | 2,2 |
+| `monjolo_tripo.glb` | A Brazilian monjolo, a water-powered wooden pounding machine: a long wooden beam pivoting on a frame, a trough at one end and a heavy pestle at the other end above a wooden mortar, under a small thatched roof. | `a0a416c3-f45b-436a-8180-6666f6cf1f7e` | 6.074 | 1K | — | 2,8 |
+| `penedo_lapa_tripo.glb` | A large weathered granite rock outcrop (penedo) of the Atlantic forest with a shallow cave opening (lapa) at its base, moss and ferns in the cracks, roots of fig trees gripping the rock, dark shadowed hollow, about six meters tall. | `0f4b80a9-d61f-4163-a0cf-5817a66bedaa` | 5.411 | 1K | — | 2,4 |
+| `porteira_tripo.glb` | A rustic wooden farm gate (porteira) with diagonal brace, hung between two thick rough wooden posts. | `47578c14-3021-4350-bf8b-1a94d9dcb1fc` | 2.952 | 1K | — | 2,5 |
+| `sacos_farinha_tripo.glb` | A small pile of four burlap sacks full of manioc flour (farinha), tied at the top, stacked against each other. | `a3a60ee3-7ce1-4cf7-9e5b-239ba4ba8528` | 2.899 | 1K | — | 2,3 |
+
+SHA-256 de cada GLB no arquivo do lote (`sha256`).
+
+<!-- lote-2026-10-05_paisagismo:fim -->

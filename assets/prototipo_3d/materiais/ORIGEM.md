@@ -38,3 +38,29 @@ usa a mesma projecao do terreno, enquanto o UV da terra acompanha o da estrada;
 assim, as bordas coincidem com os materiais vizinhos. Uma variacao organica no
 limite da mistura evita uma linha reta entre os dois terrenos. O piso de mata usa
 ladrilhos maiores para ampliar visualmente as folhas e os tufos.
+
+## Chão em camadas (OpenAI gpt-image-2, 05/10/2026)
+
+Nove texturas, uma por camada do shader do terreno (`terreno.gdshader`, ver
+`docs/mundo/SOLO_E_FRANJAS.md`): `grama_baixa`, `capim_seco`, `folhico_mata`,
+`terra_batida_varrida`, `barro_vermelho`, `pedrisco`, `areia_restinga`, `lama_mangue`
+e `terra_arada`, todas `<id>_v1.png`, 1024x1024, contínuas, com a **altura no canal
+alfa** (o shader mistura as camadas por ela).
+
+- **Geração:** OpenAI `gpt-image-2`, 1024x1024, qualidade `high`, por
+  `tools/openai/gerar-texturas-chao.ps1` e `tools/openai/texturas_chao.json`, que guardam
+  o preâmbulo e o prompt de cada uma (sem negação, AMBIENTACAO §8, regra 5). Dez
+  imagens no total: as nove mais o semi-realista da grama baixa, do A/B abaixo.
+  Custo estimado, teto: dez imagens a US$ 0,167 (o painel do OpenAI tem o real).
+- **A/B da grama baixa:** semi-realista contra pintado à mão. O semi-realista virava ruído
+  fino e oliva a poucos metros; o pintado, o mesmo acabamento dos modelos do Tripo, mantém
+  trevo, tufo e terra legíveis, e foi o escolhido para as nove.
+- **Pós-processo:** `tools/materiais/preparar_textura_chao.py` recorta e reduz, achata a
+  baixa frequência, torna contínua (rola meia imagem e esconde a costura com máscara
+  ruidosa), grava a altura no alfa e gera uma prévia 3x3 para revisão. Brutos em
+  `.assets-raw/openai/texturas_chao/` (fora do Git).
+- **Derivada:** `terreiro_varrido_v1.png` (a terra batida varrida com máscara oval de borda
+  irregular) é o decalque do terreiro das casas (`terreiro_casa.tscn`); sai do mesmo script.
+- **Mantidas:** `grama_terra_mata_v1.png`, `chao_praca_v1.png`, `terra_batida_v1.png`,
+  `estrada_terra_ocre_v1.png` e `areia_praia_v1.png` seguem no projeto (a cena da orla e a
+  estrada apontam para elas); só o chão do terreno passou às novas.

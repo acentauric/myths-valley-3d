@@ -79,3 +79,41 @@ momento da geração (ver `assets/CREDITOS.md`).
 | `quirino_tripo.glb` | Mestre Quirino, a weathered middle-aged sailboat master (mestre de saveiro) from Bahia in 1887, standing in T-pose with arms straight out: short gray beard, sun-darkened mixed-race skin, wide straw hat, loose white cotton shirt with rolled sleeves, faded blue cotton trousers rolled to the calf, rope belt, barefoot, strong calm build, full body character. | `5280d475-a738-4496-8ac9-9ee7557fe93f` | 14.509 | 1K | 4,3 |
 
 <!-- lote-2026-10-03b:fim -->
+
+<!-- lote-2026-10-05_level_design:inicio -->
+
+## Level design de 05/10/2026: os moradores sem fala e quem faltava no arraial
+
+Gerados por texto no Tripo Studio em 05/10/2026 (Modelo HD H3.1, textura 8K
+desligada, 55 créditos) e passados pela Retopologia (Quad, Malha Smart, 40
+créditos) com alvo de 6.000 faces. Os que têm rig passaram pelo
+pre_rig_check e pelo rig do Studio (20 créditos): Mixamo para gente e o do
+tipo do bicho para os outros (quadrúpede, ave, aquático, serpente), com as
+animações prontas do Studio aplicadas uma de cada vez e exportadas juntas no
+GLB. Tudo pela ponte do Playwright MCP com a extensão do Chrome, com
+`tools/tripo/lote_studio.js` e `tools/tripo/lote_producao.js`.
+Cópia para o projeto por `sincronizar_downloads.py` (originais em
+`.assets-raw/tripo/`, fora do Git). Tarefas, projetos e prompts completos em
+`tools/tripo/lote_2026-10-05_level_design.json`. Uso comercial: plano pago no
+momento da geração (ver `assets/CREDITOS.md`).
+
+| Arquivo | O que é (prompt) | Tarefa Tripo | Triângulos | Textura | Rig | MB |
+| --- | --- | --- | ---: | --- | --- | ---: |
+| `beata_tripo.glb` | An elderly devout village woman (beata) from Bahia in 1887, long dark skirt, white long-sleeved blouse, black lace veil over her hair, dark shawl, wooden rosary. Standing in a T-pose with arms straight out to the sides, full body character. | `76acc844-41b7-404b-886d-92a1ad990ab3` | 11.351 | 1K | Mixamo, 13 clipes | 5,8 |
+| `carpinteiro_tripo.glb` | A village carpenter from Bahia in 1887, strong man, leather apron over a beige shirt with rolled sleeves, brown trousers, straw hat, sandals. Standing in a T-pose with arms straight out to the sides, full body character. | `30f40c8b-e5ae-4c84-8a69-0329d93b519e` | 10.787 | 1K | Mixamo, 13 clipes | 5,8 |
+| `guarda_tripo.glb` | A 19th-century Brazilian provincial police guard from Bahia in 1887, young man in a navy blue tunic with brass buttons and red trim, white trousers, black leather belt, kepi cap, black boots, empty hands, no weapons. Standing in a T-pose with arms straight out to the sides, full body character. | `4acb7965-e1e7-43b1-8ede-723cacb44778` | 10.976 | 1K | Mixamo, 12 clipes | 5,4 |
+| `lavadeira_tripo.glb` | A washerwoman (lavadeira) from rural Bahia in 1887, Afro-Brazilian woman, white head wrap, white blouse, long full patterned skirt, barefoot. Standing in a T-pose with arms straight out to the sides, full body character. | `18e2b461-1a05-45dd-8895-0d8f92d30f15` | 10.913 | 1K | Mixamo, 13 clipes | 5,7 |
+| `marisqueira_tripo.glb` | A shellfish gatherer woman (marisqueira) from Bahia in 1887, Afro-Brazilian, colorful head wrap, simple white blouse, knee-length rolled-up patterned skirt, barefoot. Standing in a T-pose with arms straight out to the sides, full body character. | `b2b8655b-52b5-4b00-8314-4068cf4fd4d4` | 10.741 | 1K | Mixamo, 13 clipes | 5,6 |
+| `menina_tripo.glb` | A barefoot village girl about nine years old from Bahia in 1887, simple yellow floral dress, braided hair with a red ribbon. Standing in a T-pose with arms straight out to the sides, full body character. | `2f0838c2-388e-4296-a286-1090f7a186f7` | 10.999 | 1K | Mixamo, 13 clipes | 5,7 |
+| `menino_tripo.glb` | A barefoot village boy about ten years old from Bahia in 1887, short brown trousers held by a rope, loose white shirt, small straw hat. Standing in a T-pose with arms straight out to the sides, full body character. | `09eaef54-a52f-4320-8e78-6de9e714c925` | 11.142 | 1K | Mixamo, 13 clipes | 5,3 |
+| `mercador_tripo.glb` | A 19th-century Brazilian traveling merchant (mascate) from Bahia, middle-aged man with a thick mustache, cream linen jacket over a white shirt, brown trousers, wide-brimmed straw hat, leather satchel strap across the chest, leather boots. Standing in a T-pose with arms straight out to the sides, full body character. | `18393728-f26b-4ae2-a01c-4109a6345039` | 11.438 | 1K | Mixamo, 13 clipes | 6,1 |
+| `mestre_saveiro_tripo.glb` | An old sailing boat captain (mestre de saveiro) from the Bay of All Saints in 1887, weathered tanned man with a short grey beard, faded striped shirt, rolled trousers, cloth cap, barefoot. Standing in a T-pose with arms straight out to the sides, full body character. | `6aae0b1d-861e-4924-9b26-b29e2461814f` | 11.108 | 1K | Mixamo, 13 clipes | 5,3 |
+| `padre_tripo.glb` | A 19th-century Brazilian Catholic village priest (padre), kind middle-aged man with short grey hair, long black cassock buttoned to the feet, white clerical collar, wooden rosary at the waist, simple leather shoes, standing in a T-pose with arms straight out to the sides, full body character. | `aadc680d-854e-43cb-a204-786718ac5b1c` | 10.302 | 1K | Mixamo, 13 clipes | 5,3 |
+| `pescador_tripo.glb` | A young Afro-Brazilian fisherman from the Reconcavo of Bahia in 1887, rolled-up white cotton trousers, open faded blue shirt, frayed straw hat, rope belt, barefoot. Standing in a T-pose with arms straight out to the sides, full body character. | `9bb56fea-61c3-4af3-a28a-5d21fd636b55` | 11.424 | 1K | Mixamo, 13 clipes | 5,6 |
+| `quituteira_tripo.glb` | A Bahian street food seller woman (baiana de tabuleiro) in 1887, white turban, white lace blouse, long wide white skirt, colorful bead necklaces, barefoot. Standing in a T-pose with arms straight out to the sides, full body character. | `4b8faa6f-95b7-4901-ae21-7f2aafd32d1e` | 10.889 | 1K | Mixamo, 12 clipes | 5,3 |
+| `rendeira_tripo.glb` | A bobbin lace maker (rendeira) from Bahia in 1887, middle-aged woman with hair in a bun, light blue dress with a white lace collar, white apron, simple shoes. Standing in a T-pose with arms straight out to the sides, full body character. | `b978125a-81e1-4245-b500-6de7bbdeab71` | 11.059 | 1K | Mixamo, 12 clipes | 5,2 |
+| `sacristao_tripo.glb` | An elderly village church sacristan from Bahia in 1887, thin old man with white hair and round spectacles, black waistcoat over a white long-sleeved shirt, dark trousers, simple sandals. Standing in a T-pose with arms straight out to the sides, full body character. | `ec943cdb-cee0-40ba-81da-79813a878df3` | 10.864 | 1K | Mixamo, 13 clipes | 5,3 |
+
+SHA-256 de cada GLB no arquivo do lote (`sha256`).
+
+<!-- lote-2026-10-05_level_design:fim -->

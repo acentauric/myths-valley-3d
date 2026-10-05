@@ -1,0 +1,113 @@
+{
+ "observacao": "Lote de 05/10/2026 (moradores): os objetos do ofício dos moradores novos (trouxa de roupa, tabuleiro, vassoura de piaçava), a pedra de lavar da beira do rio, a canoa em obra do carpinteiro e quatro casas a mais para variar o arraial (taipa rosa, taipa verde, casa de alpendre e meia-água). Mesmo pipeline do lote de level design (tools/tripo/lote_producao.js).",
+ "tarefas": {
+  "trouxa_roupa": {
+   "pasta": "itens",
+   "faces": 1200,
+   "tex": 1024,
+   "rig": "nenhum",
+   "tpose": false,
+   "prompt": "A bundle of laundry (trouxa de roupa) wrapped in a white cotton sheet tied with a knot on top, round and soft, carried on the head by washerwomen. Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no text.",
+   "tarefa": "630e42bc-b101-421f-b130-0e255f890b95",
+   "projeto": "bdb90e92-9a11-4987-bb9f-89cef4f8b380",
+   "exportacao": "50809a74-349d-43cd-8cde-568e5794f426",
+   "sha256": "a4346db840b9ec7f1b4335778a9383c33b65e0988e610ce3fb1aad78c03a7d9a"
+  },
+  "tabuleiro": {
+   "pasta": "itens",
+   "faces": 1500,
+   "tex": 1024,
+   "rig": "nenhum",
+   "tpose": false,
+   "prompt": "A round wooden food tray (tabuleiro de baiana) with Bahian snacks: acaraje fritters, cocadas, small cakes and a white cloth, seen slightly from above. Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no text.",
+   "tarefa": "b9a0730b-823a-43c8-aa5e-3b7d78db1d16",
+   "projeto": "db7d481c-86ae-4469-b231-f32689ff2304",
+   "exportacao": "c34bc80c-cc74-4270-94e0-8d21b166c1a5",
+   "sha256": "334ea39120b3155daeb1d77695700ffd54a0ea455c48f2fae9b0dde5bac44773"
+  },
+  "vassoura_piacava": {
+   "pasta": "itens",
+   "faces": 1000,
+   "tex": 1024,
+   "rig": "nenhum",
+   "tpose": false,
+   "prompt": "A rustic broom made of a long thin wooden stick with a thick bundle of brown piassava palm fibers tied at the end. Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no text.",
+   "tarefa": "76b91cf0-b218-46df-a120-e0dcf504060c",
+   "projeto": "eed7f4f7-5e71-4042-bff7-8b8308ef4b65",
+   "exportacao": "c952f7bf-cb2f-47a4-b9d5-6993a3e35a6e",
+   "sha256": "48d8b9cdc6e621f3e3e6632020ccdeb4f8ff65f91dda6cb69d38d6ecf7c0b846"
+  },
+  "lavadouro_pedra": {
+   "pasta": "aderecos",
+   "faces": 1500,
+   "tex": 1024,
+   "rig": "nenhum",
+   "tpose": false,
+   "prompt": "A large flat grey riverbank washing stone (pedra de lavar roupa) slightly tilted, worn smooth, with a wet folded white cloth and a small wooden soap box on it. Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no text.",
+   "tarefa": "72936a22-20c4-4790-8baa-cee578857a1e",
+   "projeto": "cc8cab23-d6f3-42a9-989f-7ded1d795af6",
+   "exportacao": "6392a20e-b066-4d7e-9d3c-d6214a723d7b",
+   "sha256": "1819fc332ef14be2f53f9f232dc5fd244052135b19413c0b811e1800c6915e66"
+  },
+  "canoa_em_obra": {
+   "pasta": "aderecos",
+   "faces": 2500,
+   "tex": 1024,
+   "rig": "nenhum",
+   "tpose": false,
+   "prompt": "A dugout canoe under construction resting on two wooden trestles, half-carved log with adze marks, wood shavings and a few carpenter tools beside it. Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no text.",
+   "tarefa": "72b99cda-2b82-4d84-8339-08d06d6061a4",
+   "projeto": "ad32ef13-a21d-4692-8cc5-1fcfedc9f689",
+   "exportacao": "4b46ec09-95ea-4491-93aa-2ddb598338cf",
+   "sha256": "6770cdb16f41c81bb565e76ecf2859dc204d1c631ec3d60d4804d1bfd1b1630e"
+  },
+  "casa_taipa_rosa": {
+   "pasta": "construcoes",
+   "faces": 5000,
+   "tex": 2048,
+   "rig": "nenhum",
+   "tpose": false,
+   "prompt": "A small rural wattle-and-daub (taipa) house painted faded pink lime wash with a dark green wooden door and two small windows, red clay tile roof, patches of exposed clay and wooden frame. Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no text.",
+   "tarefa": "5249c595-0bc5-47c9-a80d-44fadd6d846d",
+   "projeto": "b2ba0c4c-0738-4b0e-ba25-82684fcecc0b",
+   "exportacao": "e0a6c530-1a1e-4d01-9f43-63073f45f63b",
+   "sha256": "3149136a56e4bfb2d3c4d0fc710230584a2a0760fc8d2b70313357554aada633"
+  },
+  "casa_taipa_verde": {
+   "pasta": "construcoes",
+   "faces": 5000,
+   "tex": 2048,
+   "rig": "nenhum",
+   "tpose": false,
+   "prompt": "A small rural wattle-and-daub (taipa) house painted pale green lime wash with a brown wooden door and window shutters, low red clay tile roof with a short eave, worn plaster at the base. Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no text.",
+   "tarefa": "c7ed4ffc-35cf-4269-9de4-fc75d6e6cdc4",
+   "projeto": "204edaaf-5725-4cdb-a0a2-2e31bb0cca4a",
+   "exportacao": "3f61feeb-cd2a-4bd0-83b5-5b64874e5736",
+   "sha256": "7f18dc6ef406be560ee35d182b3a73dbc854154b0495607d64e24547637254e6"
+  },
+  "casa_varanda": {
+   "pasta": "construcoes",
+   "faces": 5000,
+   "tex": 2048,
+   "rig": "nenhum",
+   "tpose": false,
+   "prompt": "A small rural house with whitewashed adobe walls and a front porch (alpendre) under the extended clay tile roof supported by four rough wooden posts, a wooden bench on the porch, blue door. Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no text.",
+   "tarefa": "36dd845a-d2dc-478e-a27f-a285467fc75a",
+   "projeto": "e45058fd-3532-4620-a551-cfd5e17e61cb",
+   "exportacao": "9a745a05-7727-4d21-b888-b312d6d777a0",
+   "sha256": "e15dbd60b420a93a3398cd7c442d74815ba44b72c374704e3c6dd4bc45d6c6cd"
+  },
+  "casa_meia_agua": {
+   "pasta": "construcoes",
+   "faces": 5000,
+   "tex": 2048,
+   "rig": "nenhum",
+   "tpose": false,
+   "prompt": "A very small poor rural house with a single sloped lean-to clay tile roof (meia-agua), rough clay walls partly whitewashed, a narrow wooden door and one small window. Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no text.",
+   "tarefa": "5da44fb8-003b-4e8c-9ddc-dc76b26f4648",
+   "projeto": "7339b117-b795-4ead-9544-782d802b1f1b",
+   "exportacao": "0837b9f0-fd13-44a4-a0cd-b16fb93a5d5e",
+   "sha256": "a246834d5dd5f46c9dc861800a0e856f6e6cc89c6376cf9aaf687ac27f5d6998"
+  }
+ }
+}

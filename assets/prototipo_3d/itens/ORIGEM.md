@@ -70,3 +70,92 @@ prompt em `tools/tripo/lote_2026-10-04.json`.
 Uso comercial: plano pago no momento da geração (ver `assets/CREDITOS.md`).
 
 <!-- lote-2026-10-04:fim -->
+
+<!-- lote-2026-10-05-itens:inicio -->
+
+## Itens de mão refeitos (05/10/2026)
+
+A enxada, o balde, a vara de pescar, a picareta e a mandioca do lote de 26/09
+foram refeitos: a enxada tinha a lâmina do tamanho do cabo, o balde não tinha
+alça, a vara vinha com linha, bóia e anzol modelados (a linha agora é desenhada
+pelo jogo, da ponta da vara até a bóia), a picareta era um machado de dois
+gumes e a "mandioca" era o chapéu (o prompt do chapéu foi colado por engano).
+Gerados por texto no Tripo Studio (Modelo HD H3.1, textura 8K desligada, 55
+créditos) e passados pela Retopologia (Quad, Malha Smart, 40 créditos);
+exportados em GLB com textura 1K. Tarefas, prompts e a enxada alternativa em
+`tools/tripo/lote_2026-10-05_fauna_itens.json`. **A enxada que entrou no jogo é a
+segunda tentativa (`enxada_alt`, cabo reto e lâmina larga de pá), que ficou
+melhor que a primeira (lâmina achatada em V);** o GLB é o mesmo arquivo copiado
+por cima de `enxada_tripo.glb`. Estes arquivos substituem as linhas de 26/09
+acima. As medidas do catálogo e a pegada de cada um na mão (`NA_MAO` em
+`vestimenta_3d.gd`) foram refeitas com `tools/prototipo_3d/fotos_da_mao.gd`.
+Uso comercial: plano pago no momento da geração (ver `assets/CREDITOS.md`).
+
+| Arquivo | O que é (prompt) | Triângulos | Textura | MB |
+| --- | --- | ---: | --- | ---: |
+| `enxada_tripo.glb` | A simple garden hoe tool: one long thin straight wooden pole. and a small flat iron plate blade fixed perpendicular at the end of the pole. The pole is about six times longer than the blade is wide. Worn wood. dark iron. Stylized hand-painted 3D game asset. 19th-century rural Bahia. Brazil (1887). warm colors. clean readable silhouette. soft even lighting. single isolated object. no ground plane. no background. no text. | 2.300 | 1K | 2,3 |
+| `balde_tripo.glb` | A wooden water bucket made of vertical wooden staves bound with two iron hoops. with a thin arched iron wire handle over the top. standing upright. empty. Stylized hand-painted 3D game asset. 19th-century rural Bahia. Brazil (1887). warm colors. clean readable silhouette. soft even lighting. single isolated object. no ground plane. no background. no text. | 3.004 | 1K | 2,3 |
+| `vara_pescar_tripo.glb` | A simple long thin bamboo fishing pole. perfectly straight. with natural bamboo nodes. slightly thicker at the base. no fishing line. no float. no reel. Stylized hand-painted 3D game asset. 19th-century rural Bahia. Brazil (1887). warm colors. clean readable silhouette. soft even lighting. single isolated object. no ground plane. no background. no text. | 1.758 | 1K | 2,0 |
+| `picareta_tripo.glb` | A pickaxe (picareta) with a straight wooden handle and a curved iron head mounted at a right angle: a pointed spike on one side and a narrow flat chisel blade on the other side. Stylized hand-painted 3D game asset. 19th-century rural Bahia. Brazil (1887). warm colors. clean readable silhouette. soft even lighting. single isolated object. no ground plane. no background. no text. | 2.211 | 1K | 1,6 |
+| `mandioca_tripo.glb` | A bundle of three freshly harvested cassava roots (mandioca). long tapered brown tubers with rough bark-like skin and a little soil. tied together with a fiber string. Stylized hand-painted 3D game asset. 19th-century rural Bahia. Brazil (1887). warm colors. clean readable silhouette. soft even lighting. single isolated object. no ground plane. no background. no text. | 2.226 | 1K | 2,3 |
+
+SHA-256 dos GLBs:
+- `enxada_tripo.glb`: `41b45c4bb873b2ceb59788069da027cc91817ed77c41befa8b9afc17534fec41`
+- `balde_tripo.glb`: `51633fd314914bfc946995fc7dc7741aecb399dcb6a222043d65e08c9ca4353c`
+- `vara_pescar_tripo.glb`: `00ed872e0ca07503c4cb5dd5ff007f4dc06c7b98ca2af136013393c1b9750cd0`
+- `picareta_tripo.glb`: `b1a2e7b813a57a1bf47c6f18282edf9455955d88932c876fcd99ab20fc6127d6`
+- `mandioca_tripo.glb`: `d6e96b708270ac96d19c22e74613459b67469dc2bab9999736848f52dd3f52fb`
+
+<!-- lote-2026-10-05-itens:fim -->
+
+<!-- lote-2026-10-05_moradores:inicio -->
+
+## Moradores de 05/10/2026: ofícios e casas a mais: itens
+
+Gerados por texto no Tripo Studio em 05/10/2026 (Modelo HD H3.1, textura 8K
+desligada, 55 créditos) e passados pela Retopologia (Quad, Malha Smart, 40
+créditos) com alvo de 1.000 a 1.500 faces. Os que têm rig passaram pelo
+pre_rig_check e pelo rig do Studio (20 créditos): Mixamo para gente e o do
+tipo do bicho para os outros (quadrúpede, ave, aquático, serpente), com as
+animações prontas do Studio aplicadas uma de cada vez e exportadas juntas no
+GLB. Tudo pela ponte do Playwright MCP com a extensão do Chrome, com
+`tools/tripo/lote_studio.js` e `tools/tripo/lote_producao.js`.
+Cópia para o projeto por `sincronizar_downloads.py` (originais em
+`.assets-raw/tripo/`, fora do Git). Tarefas, projetos e prompts completos em
+`tools/tripo/lote_2026-10-05_moradores.json`. Uso comercial: plano pago no
+momento da geração (ver `assets/CREDITOS.md`).
+
+| Arquivo | O que é (prompt) | Tarefa Tripo | Triângulos | Textura | Rig | MB |
+| --- | --- | --- | ---: | --- | --- | ---: |
+| `tabuleiro_tripo.glb` | A round wooden food tray (tabuleiro de baiana) with Bahian snacks: acaraje fritters, cocadas, small cakes and a white cloth, seen slightly from above. | `b9a0730b-823a-43c8-aa5e-3b7d78db1d16` | 3.009 | 1K | — | 2,5 |
+| `trouxa_roupa_tripo.glb` | A bundle of laundry (trouxa de roupa) wrapped in a white cotton sheet tied with a knot on top, round and soft, carried on the head by washerwomen. | `630e42bc-b101-421f-b130-0e255f890b95` | 2.330 | 1K | — | 1,9 |
+| `vassoura_piacava_tripo.glb` | A rustic broom made of a long thin wooden stick with a thick bundle of brown piassava palm fibers tied at the end. | `76b91cf0-b218-46df-a120-e0dcf504060c` | 1.872 | 1K | — | 2,6 |
+
+SHA-256 de cada GLB no arquivo do lote (`sha256`).
+
+<!-- lote-2026-10-05_moradores:fim -->
+
+<!-- lote-2026-10-05_paisagismo:inicio -->
+
+## Paisagismo de 05/10/2026, segunda leva: itens
+
+Gerados por texto no Tripo Studio em 05/10/2026 (Modelo HD H3.1, textura 8K
+desligada, 55 créditos) e passados pela Retopologia (Quad, Malha Smart, 40
+créditos) com alvo de 1.200 faces. Os que têm rig passaram pelo
+pre_rig_check e pelo rig do Studio (20 créditos): Mixamo para gente e o do
+tipo do bicho para os outros (quadrúpede, ave, aquático, serpente), com as
+animações prontas do Studio aplicadas uma de cada vez e exportadas juntas no
+GLB. Tudo pela ponte do Playwright MCP com a extensão do Chrome, com
+`tools/tripo/lote_studio.js` e `tools/tripo/lote_producao.js`.
+Cópia para o projeto por `sincronizar_downloads.py` (originais em
+`.assets-raw/tripo/`, fora do Git). Tarefas, projetos e prompts completos em
+`tools/tripo/lote_2026-10-05_paisagismo.json`. Uso comercial: plano pago no
+momento da geração (ver `assets/CREDITOS.md`).
+
+| Arquivo | O que é (prompt) | Tarefa Tripo | Triângulos | Textura | Rig | MB |
+| --- | --- | --- | ---: | --- | --- | ---: |
+| `rolo_fumo_tripo.glb` | A big roll of Bahian rope tobacco (fumo de corda), a thick dark brown twisted tobacco rope coiled into a round bundle. | `d4981225-4649-4d35-b5a8-11b7253dbaed` | 2.268 | 1K | — | 2,8 |
+
+SHA-256 de cada GLB no arquivo do lote (`sha256`).
+
+<!-- lote-2026-10-05_paisagismo:fim -->

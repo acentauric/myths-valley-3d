@@ -38,7 +38,8 @@ concede uso comercial a planos pagos; conferir as condições vigentes antes de
 publicar. Cada `ORIGEM.md` guarda a tarefa Tripo, contagem de triângulos e a
 redução aplicada. Texturas de chão (`materiais/terra_batida_v1.png`,
 `chao_praca_v1.png`, `areia_praia_v1.png`, `base_arvore_v1.png`) são procedurais,
-geradas por script do projeto.
+geradas por script do projeto; `grama_terra_mata_v1.png` e `estrada_terra_ocre_v1.png` não:
+foram geradas pela ferramenta integrada de imagem (`materiais/ORIGEM.md`).
 
 ### Lote Tripo e vozes do protótipo 3D (26/09/2026)
 
@@ -98,11 +99,40 @@ publicar.
 | `assets/prototipo_3d/itens/luvas_de_couro_tripo.glb` | a luva de couro do encaixe das Mãos, Tripo Studio (texto → 3D + Malha Smart) | `itens/ORIGEM.md` e `tools/tripo/lote_2026-10-04.json` |
 | `assets/sprites/itens/luvas_de_couro.png` | o ícone de 32 px das luvas na mochila, PixelLab (Pixflux, no estilo dos itens do 2D) | `tools/pixellab/gerar-luvas.ps1` e `assets/sprites/cofre/REGISTRO.tsv` |
 
+### Texturas do chão do vale (05/10/2026)
+
+| Arquivos | O que são | Registro |
+| --- | --- | --- |
+| `assets/prototipo_3d/materiais/{grama_baixa,capim_seco,folhico_mata,terra_batida_varrida,barro_vermelho,pedrisco,areia_restinga,lama_mangue,terra_arada}_v1.png` e `terreiro_varrido_v1.png` | as nove camadas do chão em shader (grama, capim seco, folhiço, terra batida, barro, pedrisco, areia de restinga, lama de mangue, terra arada) e o decalque do terreiro derivado da terra batida, OpenAI `gpt-image-2`, pós-processadas (contínuas, com a altura no alfa) | `materiais/ORIGEM.md`, `tools/openai/texturas_chao.json` e `docs/mundo/SOLO_E_FRANJAS.md` |
+
 ### O saveiro da chegada (05/10/2026)
 
 | Arquivos | O que são | Registro |
 | --- | --- | --- |
 | `assets/prototipo_3d/aderecos/saveiro_tripo.glb` | o saveiro do mestre Quirino, em que o jogador chega ao vale, Tripo Studio (texto → 3D + Malha Smart) | `aderecos/ORIGEM.md` e `tools/tripo/lote_2026-10-05.json` |
+
+<!-- level-design-2026-10-05:inicio -->
+
+### O level design do vale (05/10/2026)
+
+Lotes gerados na noite de 05/10/2026 pela ponte do Playwright MCP com a extensão do Chrome
+(`tools/tripo/lote_studio.js` e `tools/tripo/lote_producao.js`): 125 gerações (55 créditos),
+158 retopologias Malha Smart (40) e 42 rigs (20) — 14.035 créditos, conferidos no extrato
+da carteira do Studio; animações prontas e exportações não custaram crédito. Uso comercial:
+plano pago no momento da geração.
+
+| Arquivos | O que são | Registro |
+| --- | --- | --- |
+| `assets/prototipo_3d/personagens/{beata,carpinteiro,guarda,lavadeira,marisqueira,menina,menino,mercador,mestre_saveiro,padre,pescador,quituteira,rendeira,sacristao}_tripo.glb` | os moradores sem fala do arraial e quem faltava (vigário, vendeiro, guarda, sacristão, beata, pescador, marisqueira, lavadeira, rendeira, quituteira, carpinteiro, crianças, saveirista), Tripo Studio (texto → 3D em pose T, Malha Smart, rig Mixamo e animações prontas) | `personagens/ORIGEM.md` e `tools/tripo/lote_2026-10-05_level_design.json` |
+| `assets/prototipo_3d/animais/{bode,boi,cabra,cachorro_caramelo,cachorro_deitado,cachorro_malhado,caititu,capivara,cavalo,filhote_caramelo,galinha,galinha_dangola,galo,garca,gato_amarelo,gato_malhado,gato_preto,jararaca,jumento,leitao,onca_pintada,onca_preta,pato,pavao,pavao_leque,pavoa,peru,pintinho,porco,tatu,urubu}_tripo.glb` | os bichos de quintal, da mata e do rio, Tripo Studio (texto → 3D, Malha Smart; quadrúpedes com o rig do Studio e o andar pronto, aves paradas animadas pelo jogo) | `animais/ORIGEM.md` e `tools/tripo/lote_2026-10-05_fauna_itens.json` e `tools/tripo/lote_2026-10-05_level_design.json` |
+| `assets/prototipo_3d/peixes/{acara,baiacu,budiao,cavala,garoupa,moreia,piaba,raia,raia_pintada,robalo,sardinha,sargentinho,sororoca,tainha,traira,tubarao,xareu}_tripo.glb` | os peixes, as raias e o tubarão, Tripo Studio (texto → 3D, Malha Smart; nadam por shader) | `peixes/ORIGEM.md` e `tools/tripo/lote_2026-10-05_fauna_itens.json` e `tools/tripo/lote_2026-10-05_level_design.json` |
+| `assets/prototipo_3d/arvores/{abobora_rasteira,algodoeiro_praia,angico,bromelia,canteiro_couve,cedro,gameleira,goiabeira,heliconia,jatoba,jequitiba,latada_maracuja,licurizeiro,mamoeiro,massaranduba,pe_de_fumo,pe_de_mandioca,pe_de_milho,pe_de_pimenta,quiabeiro,samambaia,sapucaia,taboa,touceira_bambu,touceira_cana}_tripo.glb` | a flora do paisagismo por zonas, as espécies da mata atlântica e a gameleira, Tripo Studio (texto → 3D, Malha Smart) | `arvores/ORIGEM.md` e `tools/tripo/lote_2026-10-05_level_design.json` e `tools/tripo/lote_2026-10-05_paisagismo.json` |
+| `assets/prototipo_3d/arvores/{aroeira_leve,aroeira_longe,bananeira_leve,bananeira_longe,cajueiro_leve,cajueiro_longe,castanhola_leve,castanhola_longe,clusia_leve,coqueiro_leve,coqueiro_longe,dendezeiro_leve,dendezeiro_longe,embauba_longe,ingazeiro_leve,ingazeiro_longe,ipe_amarelo_leve,ipe_roxo_leve,jaqueira_leve,jaqueira_longe,jenipapeiro_leve,jenipapeiro_longe,mangue_leve,mangue_longe,mangueira_leve,mangueira_longe,mata_alta_longe,mata_larga_longe,pau_brasil_leve,piacava_leve,piacava_longe,pitangueira_leve}_tripo.glb` | as versões leves e de longe das árvores que já existiam, refeitas pela Retopologia do Tripo Studio sobre o projeto original de cada uma | `arvores/ORIGEM.md` e `tools/tripo/lote_2026-10-05_lod.json` |
+| `assets/prototipo_3d/construcoes/{cadeia,casa_farinha,casa_meia_agua,casa_palha,casa_paroquial,casa_pescador,casa_taipa_azul,casa_taipa_ocre,casa_taipa_rosa,casa_taipa_verde,casa_varanda,sobrado}_tripo.glb` | as casas novas dos moradores e a casa de farinha, Tripo Studio (texto → 3D, Malha Smart, textura 2K) | `construcoes/ORIGEM.md` e `tools/tripo/lote_2026-10-05_level_design.json` e `tools/tripo/lote_2026-10-05_moradores.json` |
+| `assets/prototipo_3d/aderecos/{barraca_feira,canoa_em_obra,carro_de_boi,cerca_varas,chiqueiro,cocho,estaleiro_fumo,forno_barro,galinheiro,lavadouro_pedra,monjolo,penedo_lapa,porteira,sacos_farinha,varal_bambu,varal_estacas}_tripo.glb` | varais, quintal, roça e trabalho (galinheiro, chiqueiro, cocho, pedra de lavar, canoa em obra, cerca de varas, porteira, carro de boi, monjolo, forno de barro, estaleiro de fumo, sacos de farinha, barraca de feira) e o penedo com lapa das onças, Tripo Studio | `aderecos/ORIGEM.md` e `tools/tripo/lote_2026-10-05_level_design.json` e `tools/tripo/lote_2026-10-05_moradores.json` e `tools/tripo/lote_2026-10-05_paisagismo.json` |
+| `assets/prototipo_3d/itens/{balde,enxada,mandioca,picareta,rolo_fumo,tabuleiro,trouxa_roupa,vara_pescar,vassoura_piacava}_tripo.glb` | objetos de ofício e itens de mão (trouxa de roupa, tabuleiro, vassoura de piaçava, rolo de fumo, e a enxada, o balde, a vara, a picareta e a mandioca refeitos), Tripo Studio | `itens/ORIGEM.md` e `tools/tripo/lote_2026-10-05_fauna_itens.json` e `tools/tripo/lote_2026-10-05_moradores.json` e `tools/tripo/lote_2026-10-05_paisagismo.json` |
+
+<!-- level-design-2026-10-05:fim -->
 
 ### Capas dos cordéis (03/10/2026)
 

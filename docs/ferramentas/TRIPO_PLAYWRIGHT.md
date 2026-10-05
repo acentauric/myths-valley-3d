@@ -42,3 +42,36 @@ consultado pelo Tripo CLI/MCP.
 
 Mais detalhes operacionais estão em
 [`tools/tripo-studio/README.md`](../../tools/tripo-studio/README.md).
+
+## Produção em lote, do prompt ao GLB (05/10/2026)
+
+`tools/tripo/lote_producao.js`, injetado depois de `lote_studio.js` na aba logada
+(pela ponte do Playwright MCP, com `browser_run_code_unsafe` e o código num
+arquivo dentro de `.playwright-mcp/`), leva cada item `{key, prompt, faces, tex,
+tpose, rig}` por geração (55 créditos), retopologia Malha Smart (40), rig (20,
+quando pedido) com as animações prontas uma de cada vez (grátis) e exportação
+(grátis). O estado fica no localStorage (`mv-producao`): rodar de novo continua
+de onde parou, e uma recarga da página só pede reinjetar. O que se aprendeu na
+noite de 05/10, com 157 peças:
+
+- **O saldo de verdade** está em `wm-billing/wallet` (`__mv.saldo()`) e o extrato
+  em `wm-billing/records?limit=100&offset=N`. O número do cabeçalho do Studio não
+  se atualiza com chamadas feitas por fora: mostrava 39.150 quando a carteira
+  tinha 14.135. `produzir` não começa uma geração sem saldo para a retopologia.
+- **O download pelo clique falha** quando o Chrome deixa o arquivo "Não
+  confirmado". `__mv.links()` devolve as URLs assinadas: salve-as com o `filename`
+  do `browser_evaluate` e baixe com `tools/tripo/baixar_links.py`; depois
+  `sincronizar_downloads.py` (com `--chaves` ou `--exceto`; ele não troca mais um
+  GLB do projeto por um download mais velho) e `registrar_lote.py` para o
+  `ORIGEM.md` de cada pasta.
+- **O `pre_rig_check` é só conselho**: a beata de saia longa veio "não rigável"
+  e o rig Mixamo forçado saiu bom. Com o tipo dito no item (`biped`,
+  `quadruped`), rigamos assim mesmo; com `auto`, o Studio escolhe o tipo
+  (quadrúpede, ave, aquático, serpente). O quadrúpede só tem o `walk`, e em
+  alguns modelos ele sai torto: o jogo anda com as pernas do código
+  (`animador_bicho.gd`).
+- **Versões leves e de longe** de uma árvore pronta saem por retopologia sobre o
+  projeto original (`__mv.reaproveitar`, 40 créditos), com a mesma forma e
+  textura; dois itens do mesmo projeto nunca no mesmo lote.
+- **Clipes a mais** num personagem já rigado custam zero: `reanimar` com o
+  preset e uma exportação nova.

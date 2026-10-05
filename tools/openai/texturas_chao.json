@@ -1,0 +1,25 @@
+{
+  "observacao": "AS TEXTURAS DE CHÃO do vale (docs/mundo/SOLO_E_FRANJAS.md): uma imagem por camada do shader do terreno, gerada no OpenAI pelo tools/openai/gerar-texturas-chao.ps1. GERAÇÃO PAGA — só com pedido explícito, e o custo estimado aparece antes (-Estimar). Os brutos caem em .assets-raw/openai/texturas_chao/ (fora do Git); o tools/materiais/preparar_textura_chao.py os achata, torna contínuos, grava a altura no alfa e os leva para assets/prototipo_3d/materiais/<id>_v1.png. Os prompts não usam negação (AMBIENTACAO §8, regra 5). O A/B da grama baixa (05/10/2026) escolheu o preâmbulo pintado à mão, o mesmo acabamento dos modelos do Tripo: o semi-realista virava ruído fino e oliva a poucos metros; o pintado mantém trevo, tufo e terra legíveis. O semi-realista fica como -SemiRealista, para comparar de novo.",
+  "modelo": "gpt-image-2",
+  "tamanho": "1024x1024",
+  "qualidade": "high",
+  "preco_estimado_usd": {
+    "observacao": "Por imagem de 1024x1024, teto conservador (o preço de 1024x1536 em high, conferido em 03/10/2026). A cobrança de verdade é a do painel do OpenAI.",
+    "low": 0.011,
+    "medium": 0.042,
+    "high": 0.167
+  },
+  "preambulo_semi_realista": "Seamless tileable square ground texture for a 3D game, seen straight down from directly above, the material fills the whole frame edge to edge with even density, soft diffuse overcast daylight, semi-realistic hand-painted finish, muted warm natural colors of the Recôncavo Baiano coast, Bahia, Brazil, 1887, about 3 by 3 meters of ground. Subject:",
+  "preambulo": "Seamless tileable square ground texture for a 3D game, seen straight down from directly above, the material fills the whole frame edge to edge with even density, soft diffuse overcast daylight, stylized hand-painted game art with visible painterly brush strokes and simplified shapes, muted warm natural colors of the Recôncavo Baiano coast, Bahia, Brazil, 1887, about 3 by 3 meters of ground. Subject:",
+  "texturas": {
+    "grama_baixa": "short dense tropical lawn grass of a coastal village, low Paspalum blades in fresh and deep greens with yellow-green tips, small clover-like herbs, tiny white wildflowers, specks of reddish-brown soil",
+    "capim_seco": "dry-season pasture, sparse straw-yellow and ochre grass tufts, thin dry stems lying in many directions, pale sandy orange soil between tufts, small twigs and seed heads",
+    "folhico_mata": "Atlantic rainforest floor, dense fallen leaves in brown, ochre, rust and dark wine tones over dark humus, thin twigs, round seeds and pods, tiny green seedlings and fern sprouts, moist",
+    "terra_batida_varrida": "swept packed-earth village yard, smooth compacted light ochre-brown earth, soft curved broom marks, chicken scratches and small bird footprints, scattered pebbles, dry leaves and straw bits",
+    "barro_vermelho": "eroded hillside of red-orange laterite clay, compact surface with fine branching rills, small dark ironstone pebbles, darker damp patches, sparse thin grass blades",
+    "pedrisco": "coarse gravel of angular rust-brown and dark ironstone pebbles mixed with pale quartz stones and coarse orange sand, compacted fine soil between stones, tiny weeds",
+    "areia_restinga": "coastal restinga sand, pale beige-gold quartz sand with soft wind ripples, wiry grass tufts, creeping beach morning-glory vines with small round leaves and pink flowers, bits of dry coconut frond and coir",
+    "lama_mangue": "mangrove mudflat, dark grey-brown wet silty mud with glossy damp sheen, many small crab burrows with mud pellets, bird tracks, yellow and green mangrove leaves, red mangrove propagules, shell fragments",
+    "terra_arada": "freshly hoed cassava garden soil, dark chocolate-brown crumbly earth in straight parallel low ridges running vertically, small clods, small stones and dry straw"
+  }
+}

@@ -5,7 +5,9 @@ cópia mais recente `<chave>_tripo (n).glb`) em Downloads, guarda o original em
 `.assets-raw/tripo/<pasta>/` e copia para `assets/prototipo_3d/<caminho do
 catálogo>`. Não sobrescreve um GLB do projeto mais novo que o download.
 
-Uso: python sincronizar_downloads.py [pasta_downloads]
+Uso: python sincronizar_downloads.py [pasta_downloads] [--chaves a,b] [--exceto c,d]
+  --chaves  só estas chaves do catálogo (o lote da vez);
+  --exceto  pula estas (um GLB que ainda vai ser medido por alguém antes de trocar).
 """
 import os, re, shutil, sys, glob, hashlib
 
@@ -41,10 +43,23 @@ def sha(caminho):
     return h.hexdigest()
 
 
+def _lista(opcao, args):
+    if opcao in args:
+        i = args.index(opcao)
+        valor = args[i + 1] if i + 1 < len(args) else ""
+        del args[i:i + 2]
+        return {c.strip() for c in valor.split(",") if c.strip()}
+    return None
+
+
 def main():
-    downloads = sys.argv[1] if len(sys.argv) > 1 else os.path.join(os.path.expanduser("~"), "Downloads")
+    args = sys.argv[1:]
+    so, exceto = _lista("--chaves", args), _lista("--exceto", args) or set()
+    downloads = args[0] if args else os.path.join(os.path.expanduser("~"), "Downloads")
     copiados, faltando = [], []
     for chave, caminho in catalogo().items():
+        if (so is not None and chave not in so) or chave in exceto:
+            continue
         origem = candidato(downloads, os.path.splitext(os.path.basename(caminho))[0])
         if origem is None:
             faltando.append(chave)
@@ -53,7 +68,9 @@ def main():
         bruto = os.path.join(RAW, os.path.dirname(caminho), os.path.basename(caminho))
         os.makedirs(os.path.dirname(destino), exist_ok=True)
         os.makedirs(os.path.dirname(bruto), exist_ok=True)
-        if os.path.exists(destino) and os.path.getsize(destino) == os.path.getsize(origem) and os.path.getmtime(destino) >= os.path.getmtime(origem):
+        # O GLB do projeto mais novo que o download fica: um download antigo esquecido em
+        # Downloads (de outro lote) não pode desfazer a versão que está no Git.
+        if os.path.exists(destino) and os.path.getmtime(destino) >= os.path.getmtime(origem):
             continue
         shutil.copy2(origem, bruto)
         shutil.copy2(origem, destino)

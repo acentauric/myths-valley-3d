@@ -1,0 +1,247 @@
+{
+ "observacao": "Lote de 05/10/2026 (fauna e itens de mão do level design): o tubarão de verdade no lugar dos prismas, o caititu no lugar da caixa cinza, o cachorro deitado e o pavão de leque aberto para as trocas de pose, a jararaca, a garça, o bode, o boi, o cavalo, o urubu do céu, a capivara e o tatu; e os itens de mão refeitos (enxada com lâmina pequena e cabo longo, balde de alça de arame, vara de bambu, picareta de verdade e a mandioca, que era um chapéu). Mesmo pipeline do lote de level design (tools/tripo/lote_producao.js).",
+ "tarefas": {
+  "tubarao": {
+   "pasta": "peixes",
+   "faces": 3000,
+   "tex": 1024,
+   "rig": "auto",
+   "tpose": false,
+   "prompt": "A bull shark (tubarao cabeca-chata) with a stout grey body, blunt rounded snout, tall triangular dorsal fin, pale white belly, swimming pose seen from the side, body straight and horizontal, full body. Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no text.",
+   "tarefa": "b04c793e-ac1f-43ed-88d8-0c6cdd28c72f",
+   "projeto": "dfb4b04e-f259-45b2-b24e-521d1fdde886",
+   "exportacao": "2b279f5c-574e-44c3-a1ed-ca9c43beca6f",
+   "rig_feito": "aquatic",
+   "animacoes": [
+    "march"
+   ],
+   "sha256": "eb24c15369b12adcc17a9ed0432b6b2a63f008b32ca57b00efc16ad62d34d44e"
+  },
+  "caititu": {
+   "pasta": "animais",
+   "faces": 3000,
+   "tex": 1024,
+   "rig": "auto",
+   "tpose": false,
+   "prompt": "A collared peccary (caititu), a small wild pig of the Brazilian Atlantic forest with coarse bristly dark grey-brown fur, a pale whitish collar band around the neck, short legs and a long snout. Standing on all four legs, neutral pose, legs straight, mouth closed, full body, head and tail clearly separated from the body. Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no text.",
+   "tarefa": "5b2f039a-fa83-481a-b61d-37c72fdbc13c",
+   "projeto": "ea93eee4-b9d3-4eb0-9c92-55a8b8d9f29e",
+   "exportacao": "5456cc24-89a5-496f-953c-6a2fa522cea4",
+   "rig_feito": "quadruped",
+   "animacoes": [
+    "walk"
+   ],
+   "sha256": "d7ba1d895ec8ba18d8ffadac97e1a748378b95ac247fc2cbda668bf218ba9497"
+  },
+  "cachorro_deitado": {
+   "pasta": "animais",
+   "faces": 2500,
+   "tex": 1024,
+   "rig": "nenhum",
+   "tpose": false,
+   "prompt": "A medium-sized Brazilian caramelo mutt village dog with a short tan-orange coat and lighter cream chest, lying down on its belly resting, head resting on its front paws, tail curled beside the body. Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no text.",
+   "tarefa": "afdbbc9a-3132-43b3-b1d1-889f5b866b92",
+   "projeto": "560b33b7-45b5-4568-a8fb-723fefc30796",
+   "exportacao": "b57d72be-88e8-403e-831f-9721f54add4c",
+   "sha256": "21be31f5d1d8dc51b6a8ab6adc3e6088092ac76ac7a9894d4a4dacefadd170e7"
+  },
+  "pavao_leque": {
+   "pasta": "animais",
+   "faces": 3000,
+   "tex": 1024,
+   "rig": "nenhum",
+   "tpose": false,
+   "prompt": "A male Indian peacock displaying, its long tail fully fanned out behind it in a large upright semicircle of green and bronze eye-spotted feathers, iridescent blue neck and crest, standing, front three-quarter view. Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no text.",
+   "tarefa": "1850af54-6c0e-4969-a67c-31e45caab661",
+   "projeto": "ccc84f1d-dd8b-4675-9706-e99c8bea4f40",
+   "exportacao": "001bb8b6-f572-4af5-a9aa-1026fb77f61b",
+   "sha256": "495fe8b0ca38525ef08265344389da09f6467e0035cf39088ef76a64ad461e20"
+  },
+  "jararaca": {
+   "pasta": "animais",
+   "faces": 1500,
+   "tex": 1024,
+   "rig": "auto",
+   "tpose": false,
+   "prompt": "A jararaca pit viper snake (Bothrops jararaca) with a slender brown body covered in dark triangular markings, triangular head, lying stretched in a gentle S curve. Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no text.",
+   "tarefa": "31fa7149-a037-4bef-b6c6-3dca6e1d7c96",
+   "projeto": "9b3a3bba-98cc-49e4-99f5-71f9864cebd2",
+   "exportacao": "1b3a0752-50b2-4bc2-b016-1b7bd979e0c6",
+   "rig_feito": "serpentine",
+   "animacoes": [
+    "march"
+   ],
+   "sha256": "7e7847c041516c5aecbd12e27abc98739c41922c4ed2cd4acc68cda15b9d47e2"
+  },
+  "garca": {
+   "pasta": "animais",
+   "faces": 2000,
+   "tex": 1024,
+   "rig": "nenhum",
+   "tpose": false,
+   "prompt": "A great white egret (garca-branca) standing on long thin black legs, long S-shaped white neck, yellow beak, all white plumage, full body. Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no text.",
+   "tarefa": "f6537356-3c37-48c6-8396-4154030e5136",
+   "projeto": "b558972d-fee3-46ce-894b-10539d757abf",
+   "exportacao": "130a694e-a139-4319-a14e-5de8e3b3ce01",
+   "sha256": "944319c9c1d0764b2cecec84a53496b268f5b3403a3e1651d848fab8d48a2b0e"
+  },
+  "bode": {
+   "pasta": "animais",
+   "faces": 3000,
+   "tex": 1024,
+   "rig": "auto",
+   "tpose": false,
+   "prompt": "A Brazilian billy goat (bode) with long backward-curved horns, shaggy black and brown coat and a long beard. Standing on all four legs, neutral pose, legs straight, mouth closed, full body, head and tail clearly separated from the body. Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no text.",
+   "tarefa": "5f4fd8f7-c0c9-468e-824a-0e2c03499b59",
+   "projeto": "813fb0f3-ef0f-4f31-be88-85df07c024c5",
+   "exportacao": "da184952-79c9-4f8b-9682-1bcac61d1d09",
+   "rig_feito": "quadruped",
+   "animacoes": [
+    "walk"
+   ],
+   "sha256": "80a6dcd7371dc02c68518ed768398226f76b516d0e901e1d965f6567afcc4212"
+  },
+  "boi": {
+   "pasta": "animais",
+   "faces": 3000,
+   "tex": 1024,
+   "rig": "auto",
+   "tpose": false,
+   "prompt": "A Brazilian zebu ox (boi) with a white-grey coat, a large hump over the shoulders, long drooping ears, loose skin under the neck and short horns. Standing on all four legs, neutral pose, legs straight, mouth closed, full body, head and tail clearly separated from the body. Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no text.",
+   "tarefa": "364c6d34-b814-4d14-a199-857964da6849",
+   "projeto": "980e0d52-79e9-4092-96f8-bd42a8e177d1",
+   "exportacao": "e39f3559-b2d0-4d98-a0d5-5ada29d44afa",
+   "rig_feito": "quadruped",
+   "animacoes": [
+    "walk"
+   ],
+   "sha256": "a259d73703d0ba387e3996445e9324b890faeeb4f5e253c14c93cd19e75d7e6a"
+  },
+  "cavalo": {
+   "pasta": "animais",
+   "faces": 3000,
+   "tex": 1024,
+   "rig": "auto",
+   "tpose": false,
+   "prompt": "A small brown Brazilian country horse with a dark mane and tail and a simple worn leather saddle and bridle. Standing on all four legs, neutral pose, legs straight, mouth closed, full body, head and tail clearly separated from the body. Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no text.",
+   "tarefa": "c97399a1-cf1c-43ae-8ae1-879c4ea14abf",
+   "projeto": "7c5413c1-aec0-4889-9642-2f98620acecf",
+   "exportacao": "bcecb6c1-b34c-49c2-8d14-3fdeb3eaff0b",
+   "rig_feito": "quadruped",
+   "animacoes": [
+    "walk"
+   ],
+   "sha256": "fc10b11700d543b2a94576b3ca9d35f377af95248d0be70e42c5ffa508ec5b60"
+  },
+  "urubu": {
+   "pasta": "animais",
+   "faces": 1500,
+   "tex": 1024,
+   "rig": "nenhum",
+   "tpose": false,
+   "prompt": "A black vulture (urubu) in flight with its broad black wings spread wide and flat, short tail, grey bare head, seen from below and slightly from the side. Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no text.",
+   "tarefa": "42067c33-441e-48d3-81c6-8b83957a946b",
+   "projeto": "6e01bd2d-acc2-433a-b536-f46a22fee512",
+   "exportacao": "bd229e9d-5a69-4768-a4f2-d9da74c8b649",
+   "sha256": "8ac2f4d63034d46c9061d8814ad806952c61a8b7aae1eced2f86355c4db1f201"
+  },
+  "capivara": {
+   "pasta": "animais",
+   "faces": 2500,
+   "tex": 1024,
+   "rig": "auto",
+   "tpose": false,
+   "prompt": "A capybara (capivara), a large brown rodent with a heavy barrel-shaped body, blunt square head, small ears and no tail. Standing on all four legs, neutral pose, legs straight, mouth closed, full body, head and tail clearly separated from the body. Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no text.",
+   "tarefa": "31448063-847a-4647-b741-0810c4dd124b",
+   "projeto": "617096bf-29d9-42bc-8989-c7744b6ef32c",
+   "exportacao": "4a4367b5-13d2-46be-a95e-48065a3bd0e9",
+   "rig_feito": "quadruped",
+   "animacoes": [
+    "walk"
+   ],
+   "sha256": "a450fb70ee6a2239c431f9228a1c1e81822dc8f5812b1635f4a98509bc25950b"
+  },
+  "tatu": {
+   "pasta": "animais",
+   "faces": 2000,
+   "tex": 1024,
+   "rig": "auto",
+   "tpose": false,
+   "prompt": "A nine-banded armadillo (tatu) with a grey-brown armored shell with bands, small pointed head with upright ears and a long tapered tail. Standing on all four legs, neutral pose, legs straight, mouth closed, full body, head and tail clearly separated from the body. Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no text.",
+   "tarefa": "3153418b-18b2-4681-938f-a5b4aeb15187",
+   "projeto": "1e6cac8f-0dac-4fdb-a875-84bf9135dc08",
+   "exportacao": "b03d8ed9-ccae-4808-be37-571d19b2e8f4",
+   "rig_feito": "quadruped",
+   "animacoes": [
+    "walk"
+   ],
+   "sha256": "2f588c5b8b6241455fd1b7ae96ec6128f7bd19d03e78806732f81fb6c23cb4c9"
+  },
+  "enxada": {
+   "pasta": "itens",
+   "faces": 1200,
+   "tex": 1024,
+   "rig": "nenhum",
+   "tpose": false,
+   "prompt": "A farming hoe (enxada) lying flat: a long straight smooth wooden handle about 1.3 meters long, and at one end a small flat rectangular iron blade only about 20 centimeters wide attached at a right angle to the handle. The blade is tiny compared with the long handle, like a real garden hoe. Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no text.",
+   "tarefa": "5cb912b5-54db-43e0-9b6b-80716a56c879",
+   "projeto": "aff5c1f2-824a-44ce-b216-92aa7f3a3cd4",
+   "exportacao": "7a413e6e-f354-4d3d-b8ba-d331aa87325e"
+  },
+  "enxada_alt": {
+   "pasta": "itens",
+   "faces": 1200,
+   "tex": 1024,
+   "rig": "nenhum",
+   "tpose": false,
+   "prompt": "A simple garden hoe tool: one long thin straight wooden pole, and a small flat iron plate blade fixed perpendicular at the end of the pole. The pole is about six times longer than the blade is wide. Worn wood, dark iron. Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no text.",
+   "tarefa": "eb2598bf-bed3-4625-8b27-ceea4cbe1335",
+   "projeto": "40dc65c4-27e8-410c-b915-38ee55b5a48a",
+   "exportacao": "9f926007-da7c-4e46-b3d9-f3b2061a6ae0"
+  },
+  "balde": {
+   "pasta": "itens",
+   "faces": 1500,
+   "tex": 1024,
+   "rig": "nenhum",
+   "tpose": false,
+   "prompt": "A wooden water bucket made of vertical wooden staves bound with two iron hoops, with a thin arched iron wire handle over the top, standing upright, empty. Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no text.",
+   "tarefa": "a7dd70c9-5036-4a0f-aaaf-32ff642023ab",
+   "projeto": "336198d4-d344-44be-bc19-91dfe9c686a5",
+   "exportacao": "74f49ca6-6b0a-46b6-9d3d-8db75ae399aa"
+  },
+  "vara_pescar": {
+   "pasta": "itens",
+   "faces": 800,
+   "tex": 1024,
+   "rig": "nenhum",
+   "tpose": false,
+   "prompt": "A simple long thin bamboo fishing pole, perfectly straight, with natural bamboo nodes, slightly thicker at the base, no fishing line, no float, no reel. Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no text.",
+   "tarefa": "e6134c8a-4021-48aa-bdd0-5232de6b660f",
+   "projeto": "f1f5cff4-32c2-4f8b-977d-70fb6fefcf03",
+   "exportacao": "d9c80e79-bf17-48f5-9dff-dfcb00193b27"
+  },
+  "picareta": {
+   "pasta": "itens",
+   "faces": 1200,
+   "tex": 1024,
+   "rig": "nenhum",
+   "tpose": false,
+   "prompt": "A pickaxe (picareta) with a straight wooden handle and a curved iron head mounted at a right angle: a pointed spike on one side and a narrow flat chisel blade on the other side. Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no text.",
+   "tarefa": "03817778-b58e-45c8-89cf-350cb487c410",
+   "projeto": "11eb8806-a587-4624-be66-6c69efd71b46",
+   "exportacao": "d6457450-d7a6-48aa-b000-65f9cb543e4e"
+  },
+  "mandioca": {
+   "pasta": "itens",
+   "faces": 1200,
+   "tex": 1024,
+   "rig": "nenhum",
+   "tpose": false,
+   "prompt": "A bundle of three freshly harvested cassava roots (mandioca), long tapered brown tubers with rough bark-like skin and a little soil, tied together with a fiber string. Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no text.",
+   "tarefa": "da55cdc7-381f-4e68-88d8-1049e6715228",
+   "projeto": "f02b49be-8a44-46c1-92d7-14308ea983bd",
+   "exportacao": "bde49345-8b26-47e2-8690-c61cdbfadacc"
+  }
+ }
+}
