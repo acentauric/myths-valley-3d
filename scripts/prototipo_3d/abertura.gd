@@ -91,6 +91,7 @@ var map_corner_nodes: Array[Control] = []
 ## Deslize/zoom gradual até um ponto de interesse (lista do painel ou marcador).
 var map_tween: Tween
 var map_help_button: Button
+var map_help_tip: Control
 var line_index := -1
 var elapsed := 0.0
 var line_time := 0.0
@@ -934,7 +935,7 @@ func _home() -> void:
 	_marca()
 	_placa("JOGAR", _vagas).grab_focus()
 	_placa("EXPLORAR", _explorar)
-	_placa("PERSONAGENS", _abrir_personagens)
+	_placa("MODELOS", _abrir_personagens)
 	_placa("SOBRE", _credits)
 	_placa("SAIR", _confirm_exit, true)
 	if not history_entries.is_empty():
@@ -1061,7 +1062,7 @@ func _open_map() -> void:
 	panel.offset_right = 476
 	panel.offset_top = 32
 	panel.offset_bottom = 32
-	_modal_header("Mapa do Vale", func() -> void: map_help_button.button_pressed = false,
+	_modal_header("Mapa do Vale", func() -> void: _mostrar_info_mapa(false),
 		"%s · %s" % [$Cenario.get_region_title(), tr("1 unidade = %s m") % _formatar_escala($Cenario.get_meters_per_unit())])
 	_label("N ↑ · roda: zoom · arrastar: mover", 14)
 	var points_title := _label("Pontos de interesse", 16)
@@ -1085,25 +1086,36 @@ func _open_map() -> void:
 			Audio.efeito("ui_confirmar")
 			_focus_map_marker(destination, true))
 		points.add_child(button)
-	# O mapa ocupa a tela toda: as informações ficam ocultas e o "?" do canto (abaixo de
-	# HOME, som, relógio, mapa e tela cheia) as mostra.
-	panel.visible = false
+	# O mapa abre com o painel de informações à vista. O × do painel o esconde e deixa
+	# um "?" no canto esquerdo, onde ele estava, que o traz de volta.
 	map_icon.definir(true)
 	var layer := panel.get_parent()
 	var help_icon: Control = HudIcon.new().configurar("ajuda")
-	var help_parts := BotaoCanto.criar(layer, 6, help_icon)
-	var help_button: Button = help_parts[0]
-	map_help_button = help_button
+	var help_parts := BotaoCanto.criar(layer, 0, help_icon)
+	map_help_button = help_parts[0]
 	var help_hint: Label = help_parts[1]
-	help_button.toggle_mode = true
 	help_hint.text = tr("Mostrar informações")
-	help_button.toggled.connect(func(active: bool) -> void:
+	var help_corner := map_help_button.get_parent() as Control
+	var help_tip := help_hint.get_parent() as Control
+	# Do canto direito (coluna) para o esquerdo, fora da coluna que a escala refaz.
+	help_corner.remove_from_group(BotaoCanto.GRUPO)
+	var lado := help_corner.offset_right - help_corner.offset_left
+	help_corner.anchor_left = 0.0
+	help_corner.anchor_right = 0.0
+	help_corner.offset_left = BotaoCanto.MARGEM
+	help_corner.offset_right = BotaoCanto.MARGEM + lado
+	help_tip.anchor_left = 0.0
+	help_tip.anchor_right = 0.0
+	help_tip.grow_horizontal = Control.GROW_DIRECTION_END
+	help_tip.offset_left = BotaoCanto.MARGEM + lado + 10.0
+	help_tip.offset_right = help_tip.offset_left
+	map_help_button.pressed.connect(func() -> void:
 		Audio.efeito("ui_confirmar")
-		panel.visible = active
-		help_icon.definir(active)
-		help_hint.text = tr("Ocultar informações") if active else tr("Mostrar informações"))
-	map_corner_nodes.append(help_button.get_parent())
-	map_corner_nodes.append(help_hint.get_parent())
+		_mostrar_info_mapa(true))
+	map_help_tip = help_tip
+	map_corner_nodes.append(help_corner)
+	map_corner_nodes.append(help_tip)
+	_mostrar_info_mapa(true)
 	var frame: Rect2 = $Cenario.get_map_frame()
 	var center := frame.get_center()
 	map_target = Vector3(center.x, 0, center.y)
@@ -1127,6 +1139,16 @@ func _open_map() -> void:
 	camera_target = map_target
 	camera.look_at(map_target, Vector3(0, 0, -1))
 	_create_map_markers()
+
+
+## Painel "Mapa do Vale" à vista, ou escondido com o "?" no lugar dele.
+func _mostrar_info_mapa(visivel: bool) -> void:
+	panel.visible = visivel
+	if is_instance_valid(map_help_button):
+		map_help_button.get_parent().visible = not visivel
+	# A dica do "?" não pode ficar presa na tela quando ele some.
+	if visivel and is_instance_valid(map_help_tip):
+		map_help_tip.visible = false
 
 
 func _create_map_markers() -> void:

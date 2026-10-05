@@ -1,6 +1,7 @@
 extends RefCounted
 ## AJUSTAR: monta o conteúdo do modal de ajustes (cabeçalho com ×, abas Geral / Sons do
-## vale / Cenário, duas colunas de campos com "?" de ajuda) dentro de um VBoxContainer.
+## vale / Cenário / Atalhos, duas colunas de campos com "?" de ajuda) dentro de um
+## VBoxContainer.
 ## O menu usa no painel central; o jogo usa num modal próprio, com o vale pausado, e
 ## esconde o que só vale para o menu (idioma, trilha, paisagem sonora, cenário e fonte).
 
@@ -22,8 +23,10 @@ signal estilo_mudou
 signal fonte_menu_mudou(opcao: int)
 signal cenario_menu_mudou(sobrevoo: bool)
 
-const TAMANHO := Vector2(860, 680)
-const ABAS := ["Geral", "Sons do vale", "Cenário"]
+## Mesma altura dos outros modais do menu; só a largura varia. Abas que passam da altura
+## rolam por dentro.
+const TAMANHO := Vector2(900, 600)
+const ABAS := ["Geral", "Sons do vale", "Cenário", "Atalhos"]
 ## Altura de cada campo e do controle dentro dele (seleção ou volume).
 const ALTURA_CAMPO := 66.0
 const ALTURA_CONTROLE := 36.0
@@ -112,8 +115,10 @@ func construir(content: VBoxContainer, camada: Node, nova_aba: int = 0) -> void:
 	match aba:
 		1: _aba_sons(esquerda, direita)
 		2: _aba_cenario(esquerda, direita)
+		3: _aba_atalhos(esquerda, direita)
 		_: _aba_geral(esquerda, direita)
-	if aba != 2:
+	# Os volumes moram em Geral e em Sons do vale.
+	if aba in [0, 1]:
 		_restaurar_volumes()
 	ativa.grab_focus()
 
@@ -161,18 +166,6 @@ func _aba_geral(esquerda: VBoxContainer, direita: VBoxContainer) -> void:
 	# A CÂMERA DO MOUSE. Só muda o modo com que o jogo ABRE; a tecla da câmera
 	# continua alternando na hora, como sempre fez.
 	_escolha("Câmera do mouse", CameraMouse.ROTULOS, CameraMouse.modo(), CameraMouse.definir, CameraMouse.PADRAO)
-	_secao("Atalhos")
-	# Só as letras livres: W/A/S/D andam e navegam as telas (`Atalhos.RESERVADAS`).
-	var codigos: Array = Atalhos.letras_livres()
-	var letras: Array = []
-	for codigo in codigos:
-		letras.append(OS.get_keycode_string(codigo))
-	for acao: String in Atalhos.DEFINICOES:
-		_escolha(Atalhos.rotulo(acao), letras, codigos.find(Atalhos.tecla(acao)), func(i: int) -> void:
-			Atalhos.definir(acao, int(codigos[i]))
-			Atalhos.aplicar()
-			# Reconstrói a aba: numa troca (swap) a linha da outra ação também muda.
-			_reconstruir(0), codigos.find(int(Atalhos.DEFINICOES[acao]["padrao"])))
 	_pai = direita
 	_secao("Volume")
 	_volume("Música", Audio.volume_musica, Audio.definir_volume_musica, "musica")
@@ -180,6 +173,27 @@ func _aba_geral(esquerda: VBoxContainer, direita: VBoxContainer) -> void:
 	_volume("Falas dos personagens", Audio.volume_vozes, Audio.definir_volume_vozes, "vozes")
 	_volume("Efeitos e passos", Audio.volume_efeitos, Audio.definir_volume_efeitos, "efeitos")
 	_volume("Ambiente", Audio.volume_ambiente, Audio.definir_volume_ambiente, "ambiente")
+
+
+## Atalhos: as teclas de cada ação, divididas nas duas colunas.
+func _aba_atalhos(esquerda: VBoxContainer, direita: VBoxContainer) -> void:
+	# Só as letras livres: W/A/S/D andam e navegam as telas (`Atalhos.RESERVADAS`).
+	var codigos: Array = Atalhos.letras_livres()
+	var letras: Array = []
+	for codigo in codigos:
+		letras.append(OS.get_keycode_string(codigo))
+	var acoes: Array = Atalhos.DEFINICOES.keys()
+	var metade := ceili(acoes.size() / 2.0)
+	for indice in acoes.size():
+		var acao: String = acoes[indice]
+		_pai = esquerda if indice < metade else direita
+		if indice == 0 or indice == metade:
+			_secao("Atalhos" if indice == 0 else " ")
+		_escolha(Atalhos.rotulo(acao), letras, codigos.find(Atalhos.tecla(acao)), func(i: int) -> void:
+			Atalhos.definir(acao, int(codigos[i]))
+			Atalhos.aplicar()
+			# Reconstrói a aba: numa troca (swap) a linha da outra ação também muda.
+			_reconstruir(3), codigos.find(int(Atalhos.DEFINICOES[acao]["padrao"])))
 
 
 ## Sons: à esquerda as escolhas sonoras do menu (no jogo, só o som dos botões), à direita
@@ -513,7 +527,7 @@ func _abrir_ajuda(titulo: String) -> void:
 	_ajuda.add_child(sombra)
 	var caixa := PanelContainer.new()
 	caixa.add_theme_stylebox_override("panel", TemaMenu.estilo_painel())
-	caixa.custom_minimum_size = Vector2(520, 0)
+	caixa.custom_minimum_size = Vector2(640, 0)
 	caixa.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
 	caixa.grow_horizontal = Control.GROW_DIRECTION_BOTH
 	caixa.grow_vertical = Control.GROW_DIRECTION_BOTH
@@ -525,8 +539,8 @@ func _abrir_ajuda(titulo: String) -> void:
 	var corpo := Label.new()
 	corpo.text = AjudaMenu.texto(titulo, IdiomaMenu.indice())
 	corpo.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	corpo.custom_minimum_size.x = 464
-	corpo.add_theme_font_size_override("font_size", 17)
+	corpo.custom_minimum_size.x = 584
+	corpo.add_theme_font_size_override("font_size", 18)
 	coluna.add_child(corpo)
 	fechar.grab_focus()
 

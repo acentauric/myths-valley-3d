@@ -142,6 +142,8 @@ static func criar(fonte: String = "") -> Theme:
 		"hover_pressed": [LACA_PRESSED, Identidade.OURO, 1],
 		"focus": [Color(0, 0, 0, 0), Color(0.89, 0.77, 0.50, 0.9), 1],
 	})
+	# Em ícone (×, lápis, disquete) o foco por fora da borda virava um contorno duplo.
+	(theme.get_stylebox("focus", "BotaoIcone") as StyleBoxFlat).set_expand_margin_all(0)
 	theme.set_type_variation("BotaoAjuda", "Button")
 	_button_styles(theme, "BotaoAjuda", {
 		"normal": [LACA_NORMAL, BORDA_SUAVE, 1],

@@ -31,6 +31,17 @@
   cada item começando pela ideia central em dourado.
 - As dicas (tooltip) seguem a identidade dos botões do canto; o "Por trás do
   vale" ganha o link do site e letra menor; sai a mancha atrás do almanaque.
+- PERSONAGENS vira MODELOS, no tamanho dos outros modais: Pedro abre a lista e o
+  viajante do Tripo a fecha; a prévia tem tamanho fixo, escala comum (cada morador
+  na sua altura), moldura, luz de cima e sombra nos pés, e gira, aproxima, move e
+  centraliza com o mouse. A ficha tem linhas fixas, e restaurar e concluir a
+  edição ficam no cabeçalho.
+- O MAPA do menu abre com o painel do Mapa do Vale à vista; fechado, um "?" no
+  canto esquerdo o traz de volta.
+- AJUSTAR fica na altura dos outros modais, os atalhos ganham aba própria e a
+  ajuda do "?" fica maior. O foco dos botões de ícone perde o contorno duplo.
+- O histórico do jogo ganha os dias 29/09, 30/09 e 01/10 e mais itens por dia,
+  tirados do git log.
 - A escolha de idioma ganha folga vertical, e o aviso do rodapé fica centralizado.
 
 - As trilhas do menu, do jogo, dos períodos e da mata mudam com fade de saída

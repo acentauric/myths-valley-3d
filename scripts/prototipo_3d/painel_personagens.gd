@@ -1,13 +1,15 @@
 extends Control
-## PERSONAGENS: painel do menu com os moradores do vale e as peças do catálogo, no
-## mesmo formato nas duas abas: cartões paginados com filtro por nome e, ao escolher
-## um cartão, a ficha (prévia 3D à esquerda, dados à direita, navegação entre fichas).
-## Clicar na aba de novo volta aos cartões.
-## A navegação fica no rodapé do modal. No cabeçalho, ao lado do ×: EDITAR (lápis) abre os campos da ficha (morador: nome,
-## altura, volume da voz, postos e falas; peça: medida, afundar e tronco), salvos na hora
-## em ajustes_conteudo.gd; GRAVAR (disquete, só pelo editor) funde esses ajustes nos
-## arquivos do projeto e fica dourado enquanto houver ajuste não gravado. Fechar com
-## ajuste pendente pede confirmação.
+## MODELOS: painel do menu com os moradores do vale e as peças do catálogo, no mesmo
+## formato nas duas abas: cartões paginados com filtro por nome e, ao escolher um cartão,
+## a ficha (prévia 3D à esquerda, dados em linhas fixas à direita, navegação no rodapé,
+## também pelas setas do teclado). Clicar na aba de novo volta aos cartões.
+## A prévia tem tamanho fixo e uma escala comum entre os moradores (a altura de cada um
+## aparece), luz de cima e sombra no chão; arrastar gira, a roda aproxima, o botão
+## direito move e o duplo clique (ou o botão do canto) centraliza.
+## No cabeçalho, à esquerda do ×: RESTAURAR (só na edição), EDITAR (lápis; vira ✓ para
+## concluir) e GRAVAR (disquete, só pelo editor), que funde os ajustes nos arquivos do
+## projeto e fica dourado enquanto houver ajuste não gravado. Fechar com ajuste
+## pendente pede confirmação.
 ## O anfitrião (abertura.gd) adiciona o painel à camada do menu, chama abrir(tema) e,
 ## para fechar por Esc, clique fora ou HOME, chama pedir_fechar(); o painel emite
 ## `fechado` quando pode fechar, e quem hospeda libera o nó.
@@ -23,17 +25,22 @@ const CARTOES_POR_PAGINA := 12
 ## Pode fechar: o anfitrião volta à Home e libera o painel.
 signal fechado
 
-const TAMANHO := Vector2(860, 680)
+## Mesma altura dos outros modais do menu (histórico, créditos); só a largura é maior.
+const TAMANHO := Vector2(940, 600)
+## Prévia 3D: tamanho fixo para todo modelo.
+const PREVIA := Vector2(320, 340)
+## Altura de referência que enquadra os moradores: cada um aparece na sua altura.
+const ALTURA_QUADRO := 2.0
 const CAMINHO_NPCS := "res://data/npcs_3d.json"
 const PASTA_VOZES := "res://assets/audio/vozes/"
 const DOURADO := Color("e2c47f")
 const COR_DETALHE := Color(0.78, 0.79, 0.72)
 ## Setas de navegação, compactas e juntas do "N / M" (as mesmas do histórico).
 const SETA := Vector2(44, 32)
-## Personagem animado que o jogo usa para o jogador enquanto o viajante do Tripo não tem rig.
-const MODELO_JOGADOR := "res://assets/prototipo_3d/personagem/medieval_character_animated.glb"
 ## Ordem e rótulo dos períodos dos postos (chaves de npcs_3d.json).
 const PERIODOS := [["manha", "manhã"], ["tarde", "tarde"], ["entardecer", "entardecer"], ["noite", "noite"], ["madrugada", "madrugada"]]
+## Falas mostradas na ficha (linhas reservadas mesmo para quem tem menos).
+const FALAS_NA_FICHA := 3
 
 ## Aba aberta: 0 = MORADORES, 1 = ASSETS.
 var aba := 0
@@ -50,13 +57,14 @@ var _textos: Dictionary
 ## Filtro por nome (minúsculas), aplicado aos cartões da aba aberta.
 var filtro := ""
 var _campo_filtro: LineEdit
-## Viajante, Pedro e os moradores (dicionários de npcs_3d.json).
+## Pedro, os moradores e, por fim, o viajante (dicionários de npcs_3d.json).
 var _pessoas: Array = []
 var _botoes_abas: Array[Button] = []
 var _lista: VBoxContainer
 var _rolagem: ScrollContainer
 ## Rodapé do modal: a navegação (páginas de cartões ou fichas) fica sempre embaixo.
 var _rodape: HBoxContainer
+var _botao_restaurar: Button
 var _botao_editar: Button
 var _icone_editar: HudIcon
 var _botao_gravar: Button
@@ -68,8 +76,14 @@ var _desde_conferencia := 0.0
 var _voz: AudioStreamPlayer
 ## Botão ▶ da fala que está tocando (vira ❚❚ e para no segundo clique).
 var _fala_tocando: Button
-## Pivô da prévia 3D: girar com o mouse gira o modelo em torno do próprio centro.
+## Prévia 3D: pivô (gira o modelo), câmera e o enquadramento atual e o inicial.
 var _preview_pivo: Node3D
+var _camera: Camera3D
+var _alvo := Vector3.ZERO
+var _alvo_inicial := Vector3.ZERO
+var _distancia := 1.0
+var _distancia_inicial := 1.0
+var _elevacao := 0.06
 ## Âncoras do vale montado atrás do menu (destinos possíveis dos postos).
 var _ancoras: Array[String] = []
 
@@ -106,7 +120,7 @@ func abrir(tema: Theme) -> void:
 	var coluna := VBoxContainer.new()
 	coluna.add_theme_constant_override("separation", 10)
 	caixa.add_child(coluna)
-	var fechar := PainelAjustes.cabecalho(coluna, tr("Personagens"), pedir_fechar,
+	var fechar := PainelAjustes.cabecalho(coluna, tr("Modelos"), pedir_fechar,
 		tr("Moradores e peças do vale, com falas e medidas."))
 	_botoes_do_cabecalho(fechar)
 	var abas := HBoxContainer.new()
@@ -152,7 +166,7 @@ func abrir(tema: Theme) -> void:
 	fechar.grab_focus()
 
 
-## EDITAR e GRAVAR entram à esquerda do ×, no mesmo formato dele.
+## RESTAURAR, EDITAR e GRAVAR entram à esquerda do ×, no mesmo formato dele.
 func _botoes_do_cabecalho(fechar: Button) -> void:
 	var linha := fechar.get_parent() as HBoxContainer
 	linha.add_theme_constant_override("separation", 8)
@@ -162,6 +176,12 @@ func _botoes_do_cabecalho(fechar: Button) -> void:
 	_aviso_gravado.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	linha.add_child(_aviso_gravado)
 	linha.move_child(_aviso_gravado, fechar.get_index())
+	_botao_restaurar = _botao_icone(HudIcon.new().configurar("restaurar"))
+	(_botao_restaurar.get_child(0) as HudIcon).definir(true)
+	_botao_restaurar.tooltip_text = tr("Restaurar o padrão")
+	_botao_restaurar.pressed.connect(_restaurar_selecionado)
+	linha.add_child(_botao_restaurar)
+	linha.move_child(_botao_restaurar, fechar.get_index())
 	_icone_editar = HudIcon.new().configurar("editar")
 	_botao_editar = _botao_icone(_icone_editar)
 	_botao_editar.pressed.connect(func() -> void:
@@ -193,6 +213,15 @@ func _botao_icone(icone: Control) -> Button:
 	return botao
 
 
+func _restaurar_selecionado() -> void:
+	if aba == 0:
+		AjustesConteudo.restaurar_morador(selecionado)
+	else:
+		AjustesConteudo.restaurar_peca(selecionado)
+	Audio.efeito("ui_voltar")
+	_reconstruir_lista()
+
+
 func _gravar() -> bool:
 	var feitos := AjustesConteudo.gravar_no_projeto()
 	Audio.efeito("ui_confirmar")
@@ -205,11 +234,14 @@ func _gravar() -> bool:
 	return not AjustesConteudo.tem_pendencias()
 
 
-## Estado dos botões do cabeçalho: EDITAR só numa ficha editável (o viajante não é),
-## dourado com a edição aberta; GRAVAR dourado (borda e ícone) com ajuste pendente.
+## Estado dos botões do cabeçalho: EDITAR só numa ficha editável (o viajante não é) e,
+## com a edição aberta, vira ✓ (concluir) e mostra RESTAURAR ao lado; GRAVAR fica
+## dourado (borda e ícone) com ajuste pendente.
 func _atualizar_cabecalho() -> void:
 	_botao_editar.visible = not selecionado.is_empty() and selecionado != "viajante"
-	_icone_editar.definir(editando)
+	_botao_restaurar.visible = editando and _botao_editar.visible
+	_icone_editar.configurar("concluir" if editando else "editar")
+	_icone_editar.queue_redraw()
 	_botao_editar.tooltip_text = tr("Fechar a edição") if editando else tr("Editar")
 	if _botao_gravar == null:
 		return
@@ -326,7 +358,7 @@ func _fechar_confirmacao() -> void:
 	_confirmacao = null
 
 
-## O viajante (você) primeiro, depois o Pedro (guia) e os moradores.
+## Pedro (guia) primeiro, depois os moradores e, por fim, o viajante (você).
 func _carregar_pessoas() -> void:
 	_pessoas = []
 	var dados = JSON.parse_string(FileAccess.get_file_as_string(CAMINHO_NPCS))
@@ -338,7 +370,7 @@ func _carregar_pessoas() -> void:
 			if morador is Dictionary:
 				_pessoas.append(morador)
 	var viajante: Dictionary = CatalogoAssets.PECAS.get("viajante", {})
-	_pessoas.push_front({
+	_pessoas.append({
 		"id": "viajante",
 		"nome": tr("Viajante (você)"),
 		"altura": float(viajante.get("altura", 1.78)),
@@ -381,6 +413,8 @@ func _reconstruir_lista() -> void:
 	_rolagem.scroll_vertical = 0
 	_preview_modelo = null
 	_preview_viewport = null
+	_preview_pivo = null
+	_camera = null
 	_carregar_pessoas()
 	# Na ficha o filtro some; a edição pode passar da altura e rola.
 	_campo_filtro.visible = selecionado.is_empty()
@@ -453,8 +487,8 @@ func _abrir(chave: String) -> void:
 
 
 ## Ficha, igual nas duas abas: título dourado (com • se há ajuste), prévia 3D à esquerda
-## e dados à direita; com a edição aberta, os campos ocupam a largura toda. Embaixo, a
-## navegação entre as fichas da aba.
+## e dados à direita em linhas fixas; com a edição aberta, os campos ocupam a largura toda.
+## Embaixo, a navegação entre as fichas da aba.
 func _montar_ficha() -> void:
 	var itens := _itens()
 	var posicao := itens.map(func(item: Array) -> String: return item[0]).find(selecionado)
@@ -475,14 +509,14 @@ func _montar_ficha() -> void:
 	else:
 		var ficha := HBoxContainer.new()
 		ficha.name = "Ficha"
-		ficha.add_theme_constant_override("separation", 18)
+		ficha.add_theme_constant_override("separation", 22)
 		_lista.add_child(ficha)
 		var altura := float(pessoa.get("altura", 1.7)) if aba == 0 else 0.0
 		_montar_previa(ficha, selecionado, altura)
 		var detalhes := VBoxContainer.new()
 		detalhes.name = "Detalhes"
 		detalhes.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		detalhes.add_theme_constant_override("separation", 8)
+		detalhes.add_theme_constant_override("separation", 10)
 		ficha.add_child(detalhes)
 		var principal := _lista
 		_lista = detalhes
@@ -499,47 +533,75 @@ func _montar_ficha() -> void:
 			_reconstruir_lista())
 
 
-## Morador: altura e voz, postos por período (ou a nota) e todas as falas com ▶.
+## Linhas fixas "rótulo · valor": as mesmas para todo morador (ou toda peça), com "—"
+## onde não há dado, para nada mudar de lugar entre uma ficha e outra.
+func _linhas(linhas: Array) -> void:
+	var grade := GridContainer.new()
+	grade.name = "Linhas"
+	grade.columns = 2
+	grade.add_theme_constant_override("h_separation", 14)
+	grade.add_theme_constant_override("v_separation", 4)
+	_lista.add_child(grade)
+	for linha: Array in linhas:
+		var rotulo := Label.new()
+		rotulo.text = str(linha[0])
+		rotulo.custom_minimum_size.x = 96
+		rotulo.add_theme_font_size_override("font_size", 13)
+		rotulo.add_theme_color_override("font_color", Color(DOURADO, 0.8))
+		grade.add_child(rotulo)
+		var valor := Label.new()
+		valor.text = str(linha[1]) if not str(linha[1]).is_empty() else "—"
+		valor.tooltip_text = valor.text
+		valor.mouse_filter = Control.MOUSE_FILTER_PASS
+		valor.clip_text = true
+		valor.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+		valor.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		valor.add_theme_font_size_override("font_size", 13)
+		valor.add_theme_color_override("font_color", COR_DETALHE)
+		grade.add_child(valor)
+
+
+## Morador: altura, voz, os cinco períodos, nota e três falas com ▶ (vagas reservadas).
 func _dados_morador(pessoa: Dictionary) -> void:
 	var id := str(pessoa.get("id", ""))
 	var voz: Dictionary = pessoa.get("voz", {})
-	_detalhe("%s m · %s" % [_numero(float(pessoa.get("altura", 1.7))), tr("voz %s") % voz.get("nome", "—")])
 	var postos: Dictionary = pessoa.get("postos", {})
-	var linhas := PackedStringArray()
+	var linhas: Array = [
+		[tr("Altura"), "%s m" % _numero(float(pessoa.get("altura", 1.7)))],
+		[tr("Voz"), str(voz.get("nome", ""))],
+	]
 	for periodo: Array in PERIODOS:
-		if postos.has(periodo[0]):
-			linhas.append("%s · %s" % [tr(String(periodo[1])), tr(str(postos[periodo[0]][0]))])
-	if not linhas.is_empty():
-		_detalhe("\n".join(linhas))
-	elif id == "pedro":
-		_detalhe(tr("Sem posto fixo: acompanha o viajante pelo vale."))
-	if pessoa.has("nota"):
-		_detalhe(str(pessoa.nota))
-	for fala in pessoa.get("falas", []):
-		if fala is Dictionary:
-			_linha_fala(fala)
+		linhas.append([tr(String(periodo[1])).capitalize(), tr(str(postos[periodo[0]][0])) if postos.has(periodo[0]) else ""])
+	var nota := str(pessoa.get("nota", ""))
+	if nota.is_empty() and postos.is_empty() and id == "pedro":
+		nota = tr("Sem posto fixo: acompanha o viajante pelo vale.")
+	linhas.append([tr("Nota"), nota])
+	_linhas(linhas)
+	var falas: Array = pessoa.get("falas", [])
+	for i in FALAS_NA_FICHA:
+		_linha_fala(falas[i] if i < falas.size() and falas[i] is Dictionary else {})
 
 
-## Peça: o arquivo do modelo e a medida com as marcações do catálogo.
+## Peça: arquivo, medida, tronco, afundar, piso e as marcações do catálogo.
 func _dados_peca(spec: Dictionary) -> void:
-	_detalhe(str(spec.get("tripo", "")).get_file())
-	var partes := PackedStringArray()
+	var medida := ""
 	if spec.has("altura"):
-		partes.append(tr("altura %s u") % _numero(float(spec["altura"])))
+		medida = tr("altura %s u") % _numero(float(spec["altura"]))
 	elif spec.has("largura"):
-		partes.append(tr("largura %s u") % _numero(float(spec["largura"])))
-	if spec.has("tronco"):
-		partes.append(tr("tronco %s") % _numero(float(spec["tronco"])))
+		medida = tr("largura %s u") % _numero(float(spec["largura"]))
+	var marcacoes := PackedStringArray()
 	if spec.get("caixa", false):
-		partes.append(tr("caixa"))
+		marcacoes.append(tr("caixa"))
 	if spec.has("girar"):
-		partes.append(tr("girar"))
-	if spec.has("afundar"):
-		partes.append(tr("afundar %s") % _numero(float(spec["afundar"])))
-	if spec.has("piso"):
-		partes.append(tr("piso %s") % _numero(float(spec["piso"])))
-	if not partes.is_empty():
-		_detalhe(" · ".join(partes))
+		marcacoes.append(tr("girar"))
+	_linhas([
+		[tr("Arquivo"), str(spec.get("tripo", "")).get_file()],
+		[tr("Medida"), medida],
+		[tr("Tronco"), _numero(float(spec["tronco"])) if spec.has("tronco") else ""],
+		[tr("Afundar"), _numero(float(spec["afundar"])) if spec.has("afundar") else ""],
+		[tr("Piso"), _numero(float(spec["piso"])) if spec.has("piso") else ""],
+		[tr("Marcações"), " · ".join(marcacoes)],
+	])
 
 
 ## Setas pequenas e o "N / M" juntos no centro do rodapé, como no histórico.
@@ -583,13 +645,14 @@ func _texto(chave: String) -> String:
 
 
 ## Mundo 3D isolado: reutiliza o catálogo, sem adicionar moradores ao vale. O fundo é um
-## padrão de azulejo desenhado atrás do 3D (transparente); arrastar com o mouse gira o
-## modelo. Moradores são enquadrados pela altura: todos do mesmo tamanho e no mesmo lugar.
+## padrão de azulejo desenhado atrás do 3D (transparente), com moldura; a luz vem de
+## cima e a sombra é um disco no chão, centrado nos pés. Moradores usam uma altura de
+## referência comum (ALTURA_QUADRO): cada um aparece no seu tamanho, no mesmo quadro.
 func _montar_previa(pai: Control, chave: String, altura: float = 0) -> void:
 	var fundo := Control.new()
 	fundo.name = "FundoPrevia"
-	fundo.custom_minimum_size = Vector2(230, 260)
-	fundo.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	fundo.custom_minimum_size = PREVIA
+	fundo.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 	fundo.clip_contents = true
 	fundo.draw.connect(_desenhar_fundo_previa.bind(fundo))
 	pai.add_child(fundo)
@@ -597,13 +660,12 @@ func _montar_previa(pai: Control, chave: String, altura: float = 0) -> void:
 	suporte.name = "Previa3D"
 	suporte.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	suporte.stretch = true
-	suporte.tooltip_text = tr("Arraste para girar")
-	suporte.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	suporte.tooltip_text = tr("Arrastar: girar · roda: zoom · botão direito: mover · duplo clique: centralizar")
 	suporte.gui_input.connect(_girar_previa)
 	fundo.add_child(suporte)
 	var viewport := SubViewport.new()
 	_preview_viewport = viewport
-	viewport.size = Vector2i(230, 260)
+	viewport.size = Vector2i(PREVIA)
 	viewport.own_world_3d = true
 	viewport.transparent_bg = true
 	viewport.render_target_update_mode = SubViewport.UPDATE_ONCE
@@ -615,29 +677,19 @@ func _montar_previa(pai: Control, chave: String, altura: float = 0) -> void:
 	luz_ambiente.background_mode = Environment.BG_CLEAR_COLOR
 	luz_ambiente.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
 	luz_ambiente.ambient_light_color = Color.WHITE
-	luz_ambiente.ambient_light_energy = 0.7
+	luz_ambiente.ambient_light_energy = 0.75
 	ambiente.environment = luz_ambiente
 	mundo.add_child(ambiente)
+	# Luz de cima, quase a pino, com um leve ângulo para dar volume ao rosto.
 	var luz := DirectionalLight3D.new()
-	luz.rotation_degrees = Vector3(-35, -25, 0)
-	luz.light_energy = 1.5
+	luz.rotation_degrees = Vector3(-72, -15, 0)
+	luz.light_energy = 1.35
 	mundo.add_child(luz)
 	_preview_pivo = Node3D.new()
 	mundo.add_child(_preview_pivo)
 	var modelo: Node3D
 	var dimensao := Vector3(1, maxf(altura, 1.7), 1)
-	if Estilo.tripo() and chave == "viajante" and not _viajante_animado():
-		# Como no jogo (player_controller): sem rig no viajante do Tripo, entra o
-		# personagem animado do jogador, na altura do viajante.
-		modelo = (load(MODELO_JOGADOR) as PackedScene).instantiate() as Node3D
-		_preview_pivo.add_child(modelo)
-		var limites := CatalogoAssets.limites(modelo)
-		if limites.size.y > 0.001:
-			var fator := altura / limites.size.y
-			modelo.scale *= fator
-			modelo.position = -Vector3(limites.get_center().x, limites.position.y, limites.get_center().z) * fator
-			dimensao = limites.size * fator
-	elif Estilo.tripo():
+	if Estilo.tripo():
 		var escala := altura / float(AjustesConteudo.peca(chave).get("altura", altura)) if altura > 0 else 1.0
 		modelo = CatalogoAssets.instanciar(chave, _preview_pivo, Vector3.ZERO, escala)
 		if modelo != null:
@@ -663,45 +715,99 @@ func _montar_previa(pai: Control, chave: String, altura: float = 0) -> void:
 				tocador.advance(0.2)
 				tocador.pause()
 				break
-	var camera := Camera3D.new()
-	camera.fov = 35
-	mundo.add_child(camera)
-	# Gente: pela altura (braços abertos não afastam a câmera). Peças: pela maior medida.
-	var distancia := dimensao.y * 1.95 if altura > 0 else maxf(maxf(dimensao.x, dimensao.y), dimensao.z) * 2.3
-	var centro := Vector3(0, dimensao.y * 0.5, 0)
-	camera.position = centro + Vector3(distancia * 0.15, distancia * 0.06, distancia)
-	camera.look_at(centro)
-	camera.current = true
+	# Sombra concêntrica: disco com gradiente radial, logo acima do chão, sob o modelo.
+	var raio := 0.42 if altura > 0 else maxf(dimensao.x, dimensao.z) * 0.6
+	var disco := MeshInstance3D.new()
+	var plano := PlaneMesh.new()
+	plano.size = Vector2.ONE * raio * 2.0
+	disco.mesh = plano
+	var gradiente := Gradient.new()
+	gradiente.set_color(0, Color(0, 0, 0, 0.55))
+	gradiente.set_color(1, Color(0, 0, 0, 0))
+	var textura := GradientTexture2D.new()
+	textura.gradient = gradiente
+	textura.fill = GradientTexture2D.FILL_RADIAL
+	textura.fill_from = Vector2(0.5, 0.5)
+	textura.fill_to = Vector2(0.5, 0.0)
+	var material_sombra := StandardMaterial3D.new()
+	material_sombra.albedo_texture = textura
+	material_sombra.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	material_sombra.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	disco.material_override = material_sombra
+	disco.position.y = 0.005
+	mundo.add_child(disco)
+	_camera = Camera3D.new()
+	_camera.fov = 35
+	mundo.add_child(_camera)
+	# Moradores: quadro da altura de referência (cada um no seu tamanho). Peças: pela
+	# maior medida, como antes.
+	var quadro := ALTURA_QUADRO if altura > 0 else maxf(maxf(dimensao.x, dimensao.y), dimensao.z)
+	_distancia_inicial = quadro * (1.95 if altura > 0 else 2.3)
+	_alvo_inicial = Vector3(0, quadro * 0.5 if altura > 0 else dimensao.y * 0.5, 0)
+	_centralizar_previa()
 
 
-## O viajante do Tripo só vale com rig e clipes (a mesma regra do player_controller).
-func _viajante_animado() -> bool:
-	var cena := CatalogoAssets.cena("viajante") if CatalogoAssets.tem_tripo("viajante") else null
-	if cena == null:
-		return false
-	var amostra := cena.instantiate()
-	var animado := not amostra.find_children("*", "AnimationPlayer", true, false).is_empty()
-	amostra.free()
-	return animado
-
-
-## Arrastar com o botão esquerdo gira o modelo; a prévia redesenha um quadro por passo.
-func _girar_previa(evento: InputEvent) -> void:
-	var movimento := evento as InputEventMouseMotion
-	if movimento == null or not (movimento.button_mask & MOUSE_BUTTON_MASK_LEFT) or _preview_pivo == null:
+## Volta a prévia ao enquadramento inicial (duplo clique ou botão do canto).
+func _centralizar_previa() -> void:
+	if _preview_pivo == null:
 		return
-	_preview_pivo.rotate_y(movimento.relative.x * 0.012)
+	_preview_pivo.rotation = Vector3.ZERO
+	_alvo = _alvo_inicial
+	_distancia = _distancia_inicial
+	_elevacao = 0.06
+	_aplicar_camera()
+
+
+func _aplicar_camera() -> void:
+	if _camera == null:
+		return
+	var direcao := Vector3(0.15, _elevacao, 1.0).normalized()
+	_camera.position = _alvo + direcao * _distancia
+	_camera.look_at(_alvo)
 	_preview_viewport.render_target_update_mode = SubViewport.UPDATE_ONCE
 
 
-## Fundo da prévia: laca com treliça de azulejo (losangos cobalto e pontos de ouro), uma
-## sombra no chão e um fio dourado em volta.
+## Controles da prévia: arrastar com o esquerdo gira o modelo (horizontal) e inclina a
+## câmera (vertical); a roda aproxima e afasta; o botão direito ou o do meio movem o
+## enquadramento; o duplo clique centraliza.
+func _girar_previa(evento: InputEvent) -> void:
+	if _preview_pivo == null:
+		return
+	var botao := evento as InputEventMouseButton
+	if botao != null and botao.pressed:
+		if botao.double_click and botao.button_index == MOUSE_BUTTON_LEFT:
+			_centralizar_previa()
+		elif botao.button_index in [MOUSE_BUTTON_WHEEL_UP, MOUSE_BUTTON_WHEEL_DOWN]:
+			var fator := 0.9 if botao.button_index == MOUSE_BUTTON_WHEEL_UP else 1.1
+			_distancia = clampf(_distancia * fator, _distancia_inicial * 0.35, _distancia_inicial * 2.5)
+			_aplicar_camera()
+		accept_event()
+		return
+	var movimento := evento as InputEventMouseMotion
+	if movimento == null:
+		return
+	if movimento.button_mask & MOUSE_BUTTON_MASK_LEFT:
+		_preview_pivo.rotate_y(movimento.relative.x * 0.012)
+		_elevacao = clampf(_elevacao + movimento.relative.y * 0.006, -0.25, 1.2)
+		_aplicar_camera()
+	elif movimento.button_mask & (MOUSE_BUTTON_MASK_RIGHT | MOUSE_BUTTON_MASK_MIDDLE):
+		var passo := _distancia * 0.0022
+		_alvo += (-_camera.global_basis.x * movimento.relative.x + _camera.global_basis.y * movimento.relative.y) * passo
+		_aplicar_camera()
+
+
+## Fundo da prévia: laca com luz de cima, treliça de azulejo (losangos cobalto e pontos de
+## ouro) e uma moldura de dois fios dourados com losangos nos cantos.
 func _desenhar_fundo_previa(fundo: Control) -> void:
 	var area := Rect2(Vector2.ZERO, fundo.size)
 	fundo.draw_rect(area, Color("0f1d16"))
+	# Luz de cima: faixas suaves que clareiam o alto do quadro.
+	for i in 6:
+		var altura := area.size.y * (0.55 - i * 0.08)
+		fundo.draw_rect(Rect2(0, 0, area.size.x, altura), Color(1, 0.95, 0.8, 0.018))
 	var passo := 26.0
-	var cobalto := Color(0.29, 0.43, 0.75, 0.16)
-	var ouro := Color(DOURADO, 0.16)
+	var cobalto := Color(0.29, 0.43, 0.75, 0.15)
+	var ouro := Color(DOURADO, 0.15)
 	var y := 0.0
 	var linha := 0
 	while y <= area.size.y + passo:
@@ -713,22 +819,23 @@ func _desenhar_fundo_previa(fundo: Control) -> void:
 			x += passo
 		y += passo * 0.5
 		linha += 1
-	var chao := Vector2(area.size.x * 0.5, area.size.y * 0.86)
-	var sombra := PackedVector2Array()
-	for i in 32:
-		var a := TAU * i / 32.0
-		sombra.append(chao + Vector2(cos(a) * area.size.x * 0.3, sin(a) * 9.0))
-	fundo.draw_colored_polygon(sombra, Color(0, 0, 0, 0.32))
-	fundo.draw_rect(area.grow(-0.5), Color(DOURADO, 0.3), false, 1.0)
+	fundo.draw_rect(area.grow(-0.5), Color(DOURADO, 0.55), false, 1.0)
+	fundo.draw_rect(area.grow(-5.5), Color(DOURADO, 0.22), false, 1.0)
+	for canto in [Vector2(0, 0), Vector2(area.size.x, 0), Vector2(0, area.size.y), area.size]:
+		var c := (canto as Vector2) + ((area.size * 0.5 - canto) as Vector2).sign() * 5.5
+		fundo.draw_colored_polygon(PackedVector2Array([c + Vector2(0, -4), c + Vector2(4, 0), c + Vector2(0, 4), c + Vector2(-4, 0)]), DOURADO)
 
 
 ## Uma fala: ▶ (toca assets/audio/vozes/<audio>.mp3) e o texto ao lado, em até duas
-## linhas (o inteiro fica na dica).
+## linhas (o inteiro fica na dica). Sem fala, a vaga fica reservada e vazia.
 func _linha_fala(fala: Dictionary) -> void:
 	var linha := HBoxContainer.new()
 	linha.name = "Fala"
+	linha.custom_minimum_size.y = 40
 	linha.add_theme_constant_override("separation", 10)
 	_lista.add_child(linha, true)
+	if fala.is_empty():
+		return
 	var icone: HudIcon = HudIcon.new().configurar("tocar")
 	var tocar := Button.new()
 	tocar.set_meta("icone", icone)
@@ -769,7 +876,7 @@ func _linha_fala(fala: Dictionary) -> void:
 	texto.max_lines_visible = 2
 	texto.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	texto.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	texto.add_theme_font_size_override("font_size", 15)
+	texto.add_theme_font_size_override("font_size", 13)
 	linha.add_child(texto)
 
 
@@ -861,7 +968,6 @@ func _editor_morador(pessoa: Dictionary) -> void:
 		var i := indice
 		texto.text_changed.connect(func(novo: String) -> void: AjustesConteudo.definir_fala(id, i, novo))
 		_campo(caixa, tr("Fala %d (balão)") % (indice + 1), texto)
-	_botao_restaurar(caixa, func() -> void: AjustesConteudo.restaurar_morador(id))
 
 
 ## Campos de uma peça: a medida que normaliza o modelo, afundar e tronco.
@@ -876,7 +982,6 @@ func _editor_peca(chave: String, spec: Dictionary) -> void:
 	if spec.has("tronco"):
 		_campo(caixa, tr("Tronco (raio, u)"), _numero_editavel(float(spec["tronco"]), 0.05, 3.0, 0.01,
 			func(v: float) -> void: AjustesConteudo.definir_peca(chave, "tronco", v)))
-	_botao_restaurar(caixa, func() -> void: AjustesConteudo.restaurar_peca(chave))
 
 
 func _caixa_editor() -> VBoxContainer:
@@ -919,18 +1024,6 @@ func _numero_editavel(valor: float, minimo: float, maximo: float, passo: float, 
 	return campo
 
 
-func _botao_restaurar(caixa: VBoxContainer, restaurar: Callable) -> void:
-	var botao := Button.new()
-	botao.text = tr("Restaurar o padrão")
-	botao.size_flags_horizontal = Control.SIZE_SHRINK_END
-	botao.pressed.connect(func() -> void:
-		restaurar.call()
-		Audio.efeito("ui_voltar")
-		_carregar_pessoas()
-		_reconstruir_lista())
-	caixa.add_child(botao)
-
-
 ## Título dourado da ficha.
 func _titulo_bloco(texto: String, tamanho: int) -> void:
 	var rotulo := Label.new()
@@ -941,7 +1034,7 @@ func _titulo_bloco(texto: String, tamanho: int) -> void:
 	_lista.add_child(rotulo)
 
 
-## Linha secundária esmaecida (dados, postos, avisos).
+## Linha secundária esmaecida (avisos).
 func _detalhe(texto: String) -> void:
 	var rotulo := Label.new()
 	rotulo.text = texto

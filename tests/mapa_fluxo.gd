@@ -64,8 +64,8 @@ func _run() -> void:
 	await _frames(2)
 	# Aba Geral: cinco volumes à direita; idioma, tempo, hora inicial, pausa e teclas à esquerda.
 	_assert(_count_controls(opening.content, "HSlider") == 5, "ajustes de volume")
-	# Idioma, tempo, hora, pausa e teclas + os seis atalhos remapeáveis.
-	_assert(_count_controls(opening.content, "OptionButton") >= 11, "seletores de jogo, tempo, teclas e atalhos")
+	# Idioma, tempo, hora, pausa, teclas e câmera; os atalhos têm a aba própria.
+	_assert(_count_controls(opening.content, "OptionButton") >= 6, "seletores de jogo, tempo, teclas e câmera")
 	await _capture("ajustes")
 	opening._home()
 	opening._credits()

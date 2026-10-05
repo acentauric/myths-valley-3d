@@ -1,5 +1,5 @@
 extends SceneTree
-## Painel PERSONAGENS: as duas abas abrem em cartões e cada cartão abre a ficha no mesmo
+## Painel MODELOS: as duas abas abrem em cartões e cada cartão abre a ficha no mesmo
 ## formato (prévia 3D e dados, todas as falas, sem filtro); EDITAR e GRAVAR ficam no
 ## cabeçalho; edita um morador (altura, posto, fala) e uma peça (medida), confere que os
 ## ajustes chegam aos dados do jogo, que fechar com ajuste pendente pede confirmação e
@@ -26,7 +26,7 @@ func _run() -> void:
 	# MORADORES abre em cartões, como ASSETS.
 	var cartoes: GridContainer = painel._lista.get_node("GradeMoradores")
 	_assert(cartoes.columns == 4 and cartoes.get_child_count() == painel._pessoas.size(), "moradores em cartões")
-	_assert(str(cartoes.get_child(0).name) == "Morador_viajante" and str(cartoes.get_child(1).name) == "Morador_pedro", "o viajante é o primeiro cartão, depois o Pedro")
+	_assert(str(cartoes.get_child(0).name) == "Morador_pedro" and str(cartoes.get_child(cartoes.get_child_count() - 1).name) == "Morador_viajante", "Pedro abre os cartões e o viajante fecha")
 	_assert(painel._campo_filtro.visible and not painel._botao_editar.visible, "nos cartões há filtro e não há EDITAR")
 	for botao in painel.find_children("*", "Button", true, false):
 		_assert(not (botao.text in ["FECHAR", "GRAVAR NO PROJETO", "Voltar ao catálogo"]), "sem botões antigos no corpo: %s" % botao.text)
@@ -53,6 +53,10 @@ func _run() -> void:
 		_assert(texto.max_lines_visible == 2 and texto.get_visible_line_count() <= 2, "fala em até duas linhas")
 	_assert(painel._rodape.find_children("Navegacao", "", true, false).size() == 1 and painel._lista.find_children("Navegacao", "", true, false).is_empty(), "só a navegação entre fichas, no rodapé")
 	_assert(painel._lista.find_child("FundoPrevia", true, false) != null and painel._preview_viewport.transparent_bg, "prévia sobre o fundo de azulejo")
+	var fundo_pedro: Control = painel._lista.find_child("FundoPrevia", true, false)
+	var tamanho_previa := fundo_pedro.size
+	var linhas_pedro := (painel._lista.find_child("Linhas", true, false) as GridContainer).get_child_count()
+	var posicao_falas: float = falas[0].global_position.y
 	# O ▶ vira ❚❚ e o segundo clique para a fala.
 	var tocar := falas[0].get_child(0) as Button
 	if not tocar.disabled:
@@ -67,6 +71,24 @@ func _run() -> void:
 	arrasto.relative = Vector2(40, 0)
 	painel._girar_previa(arrasto)
 	_assert(not is_equal_approx(painel._preview_pivo.rotation.y, giro_antes), "arrastar gira o modelo")
+	var roda := InputEventMouseButton.new()
+	roda.button_index = MOUSE_BUTTON_WHEEL_UP
+	roda.pressed = true
+	var distancia_antes: float = painel._distancia
+	painel._girar_previa(roda)
+	_assert(painel._distancia < distancia_antes, "a roda aproxima")
+	var mover := InputEventMouseMotion.new()
+	mover.button_mask = MOUSE_BUTTON_MASK_RIGHT
+	mover.relative = Vector2(30, 10)
+	var alvo_antes: Vector3 = painel._alvo
+	painel._girar_previa(mover)
+	_assert(not painel._alvo.is_equal_approx(alvo_antes), "o botão direito move o enquadramento")
+	var duplo := InputEventMouseButton.new()
+	duplo.button_index = MOUSE_BUTTON_LEFT
+	duplo.pressed = true
+	duplo.double_click = true
+	painel._girar_previa(duplo)
+	_assert(is_equal_approx(painel._distancia, painel._distancia_inicial) and painel._alvo.is_equal_approx(painel._alvo_inicial) and is_zero_approx(painel._preview_pivo.rotation.y), "duplo clique centraliza")
 	_assert(painel._rolagem.get_global_rect().encloses(painel._lista.get_global_rect()), "ficha cabe sem rolagem")
 	await _capturar("morador")
 	var direita := InputEventKey.new()
@@ -76,10 +98,17 @@ func _run() -> void:
 	await _frames(3)
 	_assert(painel._lista.get_meta("ficha") == "benedito", "a seta → vai para o Benedito")
 	_assert(painel._preview_modelo.name.begins_with("Benedito"), "prévia acompanha o morador")
+	# A ficha não muda de forma entre moradores: mesma prévia, mesmas linhas e falas no lugar.
+	await _frames(2)
+	var fundo_benedito: Control = painel._lista.find_child("FundoPrevia", true, false)
+	_assert(fundo_benedito.size.is_equal_approx(tamanho_previa), "a prévia tem o mesmo tamanho para todos")
+	_assert((painel._lista.find_child("Linhas", true, false) as GridContainer).get_child_count() == linhas_pedro, "as mesmas linhas para todos")
+	var falas_benedito: Array = painel._lista.find_children("Fala*", "HBoxContainer", true, false)
+	_assert(falas_benedito.size() == 3 and is_equal_approx(falas_benedito[0].global_position.y, posicao_falas), "as falas ficam no mesmo lugar")
 	# Edita o Benedito pelo EDITAR do cabeçalho.
 	painel._botao_editar.pressed.emit()
 	await _frames(2)
-	_assert(painel.editando and painel._icone_editar.ativo, "EDITAR abre a edição e fica dourado")
+	_assert(painel.editando and painel._icone_editar.tipo == "concluir" and painel._botao_restaurar.visible, "EDITAR vira concluir e mostra RESTAURAR")
 	var spins: Array = painel._lista.find_children("*", "SpinBox", true, false)
 	var opcoes: Array = painel._lista.find_children("*", "OptionButton", true, false)
 	print("PAINEL: %d campos numéricos, %d seletores de lugar" % [spins.size(), opcoes.size()])

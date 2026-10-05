@@ -1,6 +1,6 @@
 extends Control
 ## Ícones vetoriais dos botões de canto do HUD, no mesmo traço do som e do relógio:
-## "casa" (HOME), "ajustes" (engrenagem), "restaurar" (seta circular), "mapa", "ajuda" (?), "tela_cheia" (cantos para fora em janela, para dentro em tela cheia), "fechar" (×), "salvar" (disquete), "editar" (lápis), "tocar" (play), "pausar", "externo" (link que sai do jogo), "camera" (anel dourado quando travada), "velocidade" (setas conforme
+## "casa" (HOME), "ajustes" (engrenagem), "restaurar" (seta circular), "mapa", "ajuda" (?), "tela_cheia" (cantos para fora em janela, para dentro em tela cheia), "fechar" (×), "salvar" (disquete), "editar" (lápis), "tocar" (play), "pausar", "concluir" (✓), "externo" (link que sai do jogo), "camera" (anel dourado quando travada), "velocidade" (setas conforme
 ## a Passagem do tempo, 0–3) e "estilo" (cubo para Tripo, chaves para Procedural).
 
 var tipo := "casa"
@@ -78,6 +78,9 @@ func _draw() -> void:
 			var cor_editar := ouro if ativo else tinta
 			draw_polyline(PackedVector2Array([Vector2(15, 5), Vector2(19, 9), Vector2(9, 19), Vector2(5, 19), Vector2(5, 15), Vector2(15, 5)]), cor_editar, 1.7, true)
 			draw_line(Vector2(12.5, 7.5), Vector2(16.5, 11.5), cor_editar, 1.5, true)
+		"concluir":
+			# ✓: fecha a edição.
+			draw_polyline(PackedVector2Array([Vector2(5, 12.5), Vector2(10, 17.5), Vector2(19, 7)]), ouro, 2.0, true)
 		"pausar":
 			draw_rect(Rect2(7, 5.5, 3.5, 13), ouro if ativo else tinta, true)
 			draw_rect(Rect2(13.5, 5.5, 3.5, 13), ouro if ativo else tinta, true)
