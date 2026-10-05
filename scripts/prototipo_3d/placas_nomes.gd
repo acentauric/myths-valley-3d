@@ -49,6 +49,8 @@ func _process(_delta: float) -> void:
 func _criar(camada: Control, nome: String) -> PanelContainer:
 	var placa := PanelContainer.new()
 	placa.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	# Nome flutuante pertence ao mundo; qualquer painel do HUD deve cobri-lo.
+	placa.z_index = -1
 	placa.visible = false
 	var estilo := StyleBoxFlat.new()
 	estilo.bg_color = FUNDO

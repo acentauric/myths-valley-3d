@@ -54,7 +54,8 @@ const RAIO_CHEGADA := 6.0
 const PERIODOS := {"madrugada": "Madrugada", "manha": "Manhã", "tarde": "Tarde", "entardecer": "Entardecer", "noite": "Noite"}
 
 @onready var player = $Jogador
-@onready var hud = $HUD
+@onready var hud: Variant = $HUD
+@onready var hud_layer: Control = $HUD/PrototypeHUD
 @onready var world = $Cenario
 var ambiente: AmbienteVale
 ## A MISSÃO EM CURSO DO VALE MUDOU, venha ela de quem vier.
@@ -194,9 +195,7 @@ func _enter_tree() -> void:
 	_bind("mover_baixo", [KEY_S, KEY_DOWN], true)
 	_bind("mover_esquerda", [KEY_A, KEY_LEFT], true)
 	_bind("mover_direita", [KEY_D, KEY_RIGHT], true)
-	# O ZOOM SAIU DA RODA, que agora troca o item da mão como no 2D (#2). Fica
-	# no mais e no menos — as duas fileiras, e o igual junto do mais, porque
-	# em ABNT2 e US o mais mora no shift do igual — e no Ctrl+roda.
+	# O zoom também pode ser controlado pelo teclado, além da roda do mouse.
 	_bind("mv_zoom_in", [KEY_EQUAL, KEY_PLUS, KEY_KP_ADD], true)
 	_bind("mv_zoom_out", [KEY_MINUS, KEY_KP_SUBTRACT], true)
 	# O ALMANAQUE DAS PLANTAS pela tabela de atalhos, e não numa letra fixa.
@@ -266,27 +265,26 @@ func _ready() -> void:
 	player.spawn_position = spawn
 	player.global_position = spawn
 	player.configure_click_world(world)
-	player.capture_changed.connect(hud.set_captured)
-	player.camera_lock_changed.connect(hud.set_camera_locked)
+	player.capture_changed.connect(Callable(hud, "set_captured"))
+	player.camera_lock_changed.connect(Callable(hud, "set_camera_locked"))
 	player.animation_requested.connect(_on_animation_requested)
-	player.navigation_status.connect(hud.set_notice)
-	hud.camera_lock_requested.connect(player.set_camera_locked)
+	player.navigation_status.connect(Callable(hud, "set_notice"))
+	hud.connect("camera_lock_requested", Callable(player, "set_camera_locked"))
 	world.house_interacted.connect(func(properties: Dictionary): hud.show_house_info(world.format_house_properties(properties)))
-	world.house_interaction_cleared.connect(hud.clear_house_info)
-	hud.house_info_close_requested.connect(_fechar_info_aberta)
-	hud.menu_prompt_requested.connect(_ask_return_to_menu)
-	hud.menu_requested.connect(_return_to_menu)
-	hud.menu_cancelled.connect(_on_menu_cancelled)
+	world.house_interaction_cleared.connect(Callable(hud, "clear_house_info"))
+	hud.connect("house_info_close_requested", Callable(self, "_fechar_info_aberta"))
+	hud.connect("menu_prompt_requested", Callable(self, "_ask_return_to_menu"))
+	hud.connect("menu_requested", Callable(self, "_return_to_menu"))
+	hud.connect("menu_cancelled", Callable(self, "_on_menu_cancelled"))
 	mapa = MapaJogo.new()
 	mapa.name = "Mapa"
 	add_child(mapa)
-	hud.map_requested.connect(_toggle_map)
-	hud.quests_requested.connect(func() -> void:
-		hud.set_controls_open(false)
+	hud.connect("map_requested", Callable(self, "_toggle_map"))
+	hud.connect("quests_requested", func() -> void:
 		abrir_o_painel(PainelVale.Aba.MISSOES))
-	hud.settings_requested.connect(_open_settings)
-	hud.settings_closed.connect(_on_menu_cancelled)
-	hud.style_changed.connect(func() -> void:
+	hud.connect("settings_requested", Callable(self, "_open_settings"))
+	hud.connect("settings_closed", Callable(self, "_on_menu_cancelled"))
+	hud.connect("style_changed", func() -> void:
 		# Novo estilo visual: reconstrói o vale inteiro, com a tela de carregamento.
 		get_tree().paused = false
 		# Os ajustes tinham parado o relógio; ele volta como estava antes de abri-los.
@@ -295,7 +293,7 @@ func _ready() -> void:
 		# Trocar o estilo RECARREGA o vale, e o vale recarregado lê a vaga:
 		# sem salvar aqui, o jogador voltaria ao último save.
 		Partida.salvar()
-		var barra := TelaCarregamento.mostrar(hud.map_layer(), TemaMenu.criar(), tr("Trocando o estilo do vale…"))
+		var barra := TelaCarregamento.mostrar(hud_layer, TemaMenu.criar(), tr("Trocando o estilo do vale…"))
 		TelaCarregamento.trocar_cena(get_tree(), scene_file_path, barra))
 	# O E NA BANCADA DA OFICINA E NA FOGUEIRA (tecla_das_bancadas.gd). Entra antes
 	# de todo mundo que ouve o E: quem entra depois o recebe primeiro, e a árvore,
@@ -308,11 +306,11 @@ func _ready() -> void:
 	lapides = Lapides.new()
 	lapides.name = "Lapides"
 	add_child(lapides)
-	lapides.configurar(world, player, hud)
+	lapides.configurar(world, player, hud, hud_layer)
 	var arvores := ArvoresInfo.new()
 	arvores.name = "ArvoresInfo"
 	add_child(arvores)
-	arvores.configurar(world, player, hud)
+	arvores.configurar(world, player, hud, hud_layer)
 	_arvores_info = arvores
 	# ONDE BATER: os troncos e lajedos que respondem à ferramenta. Vem depois
 	# das árvores porque usa o mesmo alcance e a mesma dica, e quem estiver
@@ -320,7 +318,7 @@ func _ready() -> void:
 	var recursos := Recursos3D.new()
 	recursos.name = "Recursos3D"
 	add_child(recursos)
-	recursos.configurar(world, player, hud)
+	recursos.configurar(world, player, hud, hud_layer)
 	recursos.recusado.connect(func(motivo: String) -> void: hud.set_notice(motivo))
 	recursos.derrubado.connect(_ao_derrubar)
 	_recursos = recursos
@@ -336,6 +334,7 @@ func _ready() -> void:
 	telas = TelasDoVale.new()
 	telas.name = "TelasDoVale"
 	add_child(telas)
+	hud.controls_requested.connect(func() -> void: telas.abrir("controles"))
 	telas.registrar("mochila",
 		func(e: InputEvent) -> bool: return e.is_action_pressed("mv_mochila"),
 		func() -> bool: return Mochila.aberta,
@@ -542,6 +541,8 @@ func _ready() -> void:
 	tela_controles.voltar_pedido.connect(func() -> void: telas.abrir("menu_pausa"))
 	tela_controles.teclas_mudaram.connect(hud._update_control_mode)
 	telas.tela_mudou.connect(func(_nome: String, aberta: bool) -> void:
+		if _nome == "controles":
+			hud.set_controls_screen_open(aberta)
 		if aberta:
 			_pause_valley()
 		else:
@@ -742,6 +743,8 @@ func _ready() -> void:
 	# `estado_para_salvar`.
 	Salvamento.registrar_mundo(self)
 	var retomou_partida := _retomar_a_partida()
+	Energia.registrar_vigor(player)
+	hud.configurar_folego(player)
 	_ligar_os_acontecimentos_das_frentes()
 	_conferir_o_relogio_parado()
 	# DOIS FÔLEGOS: o vigor do corpo (a barra verde da corrida e do golpe) e a
@@ -1098,6 +1101,7 @@ func _montar_moradores(spawn: Vector3) -> void:
 		pedro.global_position = world.ground_position(spawn + lado, 0.05)
 		pedro.saudou.connect(_on_saudacao)
 		pedro.missao_mudou.connect(func(t: String, a: Vector3, i: int, n: int) -> void:
+			hud.set_mission_pages(pedro.paginas_do_hud())
 			missao_do_vale_mudou.emit(t, a, i, n))
 		# OS ALVOS DE TRABALHO, para o marcador apontar o tronco e não a casa.
 		pedro.recursos = _recursos
@@ -1160,7 +1164,7 @@ func _montar_moradores(spawn: Vector3) -> void:
 	luta.name = "Luta"
 	add_child(luta)
 	luta.configurar(world, player, hud)
-	achados.configurar(world, player, hud, luta)
+	achados.configurar(world, player, hud, luta, hud_layer)
 	achados.achou.connect(_ao_achar)
 	# O painel da tecla J (painel_vale.gd), por cima do HUD.
 	painel = PainelVale.new()
@@ -1186,7 +1190,7 @@ func _montar_moradores(spawn: Vector3) -> void:
 	# acompanhada no caderno, sozinho (`Minimapa._alvo_do_caderno`).
 	var minimapa := Minimapa.new()
 	minimapa.name = "Minimapa"
-	hud.map_layer().add_child(minimapa)
+	hud_layer.add_child(minimapa)
 	minimapa.configurar(player, pedro, hud)
 	_mostrar_a_acompanhada()
 
@@ -1446,7 +1450,7 @@ func _toggle_map() -> void:
 		# se navega — e não devolvia nada depois. É o mesmo defeito que o menu
 		# tinha, no lugar de que ninguém desconfia.
 		player.set_captured(false)
-		mapa.abrir(world, player, hud.map_layer())
+		mapa.abrir(world, player, hud_layer)
 	else:
 		mapa.fechar()
 		_camera_da_preferencia()
@@ -2020,6 +2024,7 @@ func _lendo() -> bool:
 
 
 func _exit_tree() -> void:
+	Energia.desregistrar_vigor(player)
 	if Vida.esta_lendo == Callable(self, "_lendo"):
 		Vida.esta_lendo = Callable()
 	if Mochila.abrir_documento == Callable(self, "_ler_documento"):
@@ -2176,6 +2181,7 @@ func _pendurar_cadeia(morador: Node3D, arquivo: String, perto: float, chave: Str
 		cadeia.free()
 		return null
 	cadeia.missao_mudou.connect(func(t: String, a: Vector3, i: int, n: int) -> void:
+		hud.set_mission_pages(cadeia.paginas_do_hud())
 		missao_do_vale_mudou.emit(t, a, i, n))
 	# A RECOMPENSA DO PASSO (#48) é dita no HUD, como no 2D.
 	cadeia.pagou.connect(func(texto: String) -> void: hud.set_notice(texto))

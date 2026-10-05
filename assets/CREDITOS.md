@@ -130,3 +130,12 @@ As fontes Cinzel e Cormorant Garamond acompanham os textos OFL em
 `assets/fonts/miva.ttf` é uma fonte original criada pela equipe; em
 03/10/2026, o responsável confirmou que seus direitos pertencem ao projeto.
 Ícones reutilizados da interface e catálogo foram produzidos no PixelLab.
+
+### Tubarao e protagonista animado (04/10/2026)
+
+| Arquivo | Fonte | Creditos Studio | Registro |
+| --- | --- | ---: | --- |
+| `assets/prototipo_3d/mar/tubarao_tripo.glb` | Tripo Studio, modelo original do tubarao-touro, malha Quad e rig de criatura | 105 | `assets/prototipo_3d/mar/ORIGEM.md` |
+| `assets/prototipo_3d/personagens/viajante_tripo.glb` | Tripo Studio, modelo preexistente `modelo 3d de personagem` com rig Mixamo e 13 animacoes | 20 | `assets/prototipo_3d/personagens/ORIGEM.md` |
+
+Total consumido: 125 creditos Studio, autorizado pelo responsavel.

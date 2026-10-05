@@ -142,12 +142,14 @@ func _run() -> void:
 	_conferir(comecou, "o caititu não armou o segundo bote")
 	var folego_antes: float = energia.atual
 	_conferir(luta.gingar(), "quem aprendeu a ginga não gingou")
+	# Mede a cobrança antes de o vigor começar a se recuperar por descanso.
+	var gasto_na_ginga: float = folego_antes - energia.atual
 	var vida_na_ginga: float = vida.atual
 	await _fisica(int(Engine.physics_ticks_per_second * 0.8))
 	_conferir(esquivas[0] == 1, "a ginga no aviso não contou como esquiva (%d)" % esquivas[0])
 	_conferir(vida.atual == vida_na_ginga, "gingou no aviso e a mordida entrou mesmo assim")
-	_conferir(is_equal_approx(folego_antes - energia.atual, energia.custo("bater", regra.folego_da_ginga())),
-		"a ginga gastou %s de fôlego" % str(folego_antes - energia.atual))
+	_conferir(is_equal_approx(gasto_na_ginga, energia.custo("bater", regra.folego_da_ginga())),
+		"a ginga gastou %s de vigor" % str(gasto_na_ginga))
 
 	# --- 6. O GOLPE: de frente acerta, de costas erra --------------------------
 	bicho.set_physics_process(false)
@@ -181,7 +183,10 @@ func _run() -> void:
 	bicho.vida = 1000.0
 	luta.segurando = func() -> bool: return true
 	_conferir(luta.armar_a_luta(), "com facão na mão e bicho perto, o E não armou a luta")
-	await create_timer(regra.SEGURAR + 0.3).timeout
+	# O gesto segurado usa tempo de parede, também com --fixed-fps.
+	var ate_segurar := Time.get_ticks_msec() + int((regra.SEGURAR + 0.3) * 1000.0)
+	while Time.get_ticks_msec() < ate_segurar:
+		await process_frame
 	luta.segurando = func() -> bool: return false
 	_conferir(luta.armar_a_luta(), "o E não armou a luta pela segunda vez")
 	await _fisica(3)
@@ -191,7 +196,7 @@ func _run() -> void:
 	# --- 7. QUEM CAI, E A MATA QUE REPÕE ---------------------------------------
 	var abates_antes: int = regra.abatidos("caititu")
 	var carne_antes: int = inventario.quantidade("carne_de_caca")
-	energia.atual = 20.0
+	player.definir_vigor(20.0)
 	bicho.vida = 1.0
 	bicho.global_position = player.global_position + frente * 0.5
 	await luta.bater("golpe", "facao")

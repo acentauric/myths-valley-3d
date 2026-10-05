@@ -141,6 +141,7 @@ func _criar(tripo: bool) -> Node3D:
 ## por cima do costado de colisão e através do costado desenhado.
 static func _colisao_do_casco(visual: Node3D, raiz: Node3D) -> AnimatableBody3D:
 	var corpo := AnimatableBody3D.new()
+	corpo.add_to_group("embarcacao_piso")
 	corpo.name = "Colisão da canoa"
 	var malhas: Array = visual.find_children("*", "MeshInstance3D", true, false)
 	if visual is MeshInstance3D:

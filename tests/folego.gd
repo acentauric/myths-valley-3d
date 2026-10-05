@@ -152,27 +152,17 @@ func _run() -> void:
 	_conferir(desmaia.search(queda) != null,
 		"a queda não chama Energia.desmaiar(): cair deixou de ser a mesma noite do desmaio do 2D")
 
-	# --- 5. O HUD MOSTRA ------------------------------------------------------
+	# Energia representa o vigor no 3D; o fôlego azul pertence ao jogador.
 	var hud = load("res://scripts/prototipo_3d/prototype_hud.gd").new()
 	root.add_child(hud)
 	await process_frame
-	_conferir(hud.barra_folego != null and hud.barra_folego.visible, "o HUD não tem a barra de fôlego")
-	if hud.barra_folego != null:
-		energia.encher()
-		_conferir(is_equal_approx(hud.barra_folego.value, energia.atual), "de fôlego cheio, a barra não está cheia")
-		var cor_cheia: Color = hud._folego_preenchimento.bg_color
-		_conferir(not hud._folego_texto.text.contains("cansado"), "de fôlego cheio, o HUD já dizia cansado")
-		energia.atual = energia.maximo() * 0.5
-		energia.mudou.emit()
-		_conferir(is_equal_approx(hud.barra_folego.value, energia.atual),
-			"a barra mostra %s e o fôlego é %s" % [str(hud.barra_folego.value), str(energia.atual)])
-		energia.atual = energia.maximo() * 0.1
-		energia.mudou.emit()
-		_conferir(hud._folego_preenchimento.bg_color != cor_cheia, "cansado, a barra não mudou de cor")
-		_conferir(hud._folego_texto.text.contains("cansado"), "cansado, o HUD não diz cansado")
-		energia.encher()
-		_conferir(hud._folego_preenchimento.bg_color == cor_cheia, "descansado, a barra não voltou à cor do fôlego")
-		_conferir(not hud._folego_texto.text.contains("cansado"), "descansado, o HUD ainda diz cansado")
+	_conferir(hud.barra_stamina != null and hud.barra_stamina.visible, "o HUD não tem a barra de vigor")
+	energia.encher()
+	_conferir(is_equal_approx(hud.barra_stamina.value, energia.atual), "a barra não mostra o vigor cheio")
+	energia.atual = energia.maximo() * 0.5
+	energia.mudou.emit()
+	_conferir(is_equal_approx(hud.barra_stamina.value, energia.atual), "a barra não acompanha o gasto de vigor")
+	energia.encher()
 	hud.queue_free()
 
 	_fechar()

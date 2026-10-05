@@ -120,6 +120,15 @@ func _run() -> void:
 			"o passo '%s' não chegou a anunciar em %s s: alguém nunca solta a palavra (%s)"
 				% [id, str(SEGUNDOS_PARA_ANUNCIAR), _quem_fala(pedro, jogador)])
 		await _frames(2)
+		if indice == 0:
+			var hud = jogo.get("hud")
+			_conferir(hud._mission_pages.size() == total and hud._mission_next.visible,
+				"a missão não expôs as páginas no HUD")
+			if hud._mission_next.visible:
+				hud._mission_next.pressed.emit()
+				_conferir(pedro.missao == indice and hud._mission_step.text == "2 de %d" % total,
+					"consultar a próxima página alterou o progresso da missão")
+				hud._mission_previous.pressed.emit()
 
 		# A ferramenta prometida tem de estar na mão ANTES de o trabalho ser
 		# cobrado. É a regra 1 do tutorial do 2D.
@@ -298,8 +307,15 @@ func _juntar(item: String, quantos: int, id: String, inv, recursos, jogador, ene
 		energia.encher()
 		if not recursos.bater():
 			break
+		await _esperar_golpe(recursos)
 	_conferir(inv.quantidade(item) >= quantos,
 		"o passo '%s' pede %d de %s e só consegui juntar %d no vale" % [id, quantos, item, inv.quantidade(item)])
+
+
+func _esperar_golpe(recursos) -> void:
+	var limite := Time.get_ticks_msec() + 2500
+	while Time.get_ticks_msec() < limite and (str(recursos.get("_golpe_pendente")) != "" or bool(recursos.get("_golpe_animando"))):
+		await process_frame
 
 
 ## FAZ O ACONTECIMENTO ACONTECER pelo caminho do jogo, e não pelo

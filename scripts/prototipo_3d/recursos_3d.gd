@@ -33,6 +33,10 @@ const DADOS := "res://data/recursos_3d.json"
 ## Distância no chão para a dica aparecer e para o golpe valer.
 const ALCANCE := 3.2
 const ALTURA_DICA := 1.6
+const TEMPO_ATE_IMPACTO := 0.3
+const TEMPO_LIMITE_IMPACTO := 1.5
+const TEMPO_LIMITE_FIM_DO_GOLPE := 1.25
+const TEMPO_MAXIMO_DO_GOLPE := 5.0
 
 ## Um alvo derrubado. O `Missoes` e o guia escutam para contar o trabalho.
 signal derrubado(id: String, rende: String, quantidade: int)
@@ -43,6 +47,11 @@ var _world: Node3D
 var _jogador: Node3D
 var _hud
 var _dica: PanelContainer
+var _animador: Node
+var _golpe_pendente := ""
+var _golpe_animando := false
+var _timer_impacto: Timer
+var _timer_fim_golpe: Timer
 ## id → {"no", "pos", "ficha", "golpes_dados"}
 var _alvos: Dictionary = {}
 var _perto := ""
@@ -54,11 +63,26 @@ var _postos: Dictionary = {}
 var _caidos: Array[String] = []
 
 
-func configurar(world: Node3D, jogador: Node3D, hud) -> void:
+func configurar(world: Node3D, jogador: Node3D, hud, hud_layer: Control) -> void:
 	_world = world
 	_jogador = jogador
 	_hud = hud
-	_dica = DicaTecla.criar(hud.map_layer(), Atalhos.letra("interagir"), "Bater")
+	_dica = DicaTecla.criar(hud_layer, Atalhos.letra("interagir"), "Bater")
+	_animador = _jogador.get("animator") as Node
+	if _animador != null and _animador.has_signal("golpe_impacto"):
+		_animador.connect("golpe_impacto", Callable(self, "_ao_impacto_do_golpe"))
+	if _animador != null and _animador.has_signal("golpe_concluido"):
+		_animador.connect("golpe_concluido", Callable(self, "_ao_golpe_concluido"))
+	_timer_impacto = Timer.new()
+	_timer_impacto.name = "ImpactoDoGolpe"
+	_timer_impacto.one_shot = true
+	add_child(_timer_impacto)
+	_timer_impacto.timeout.connect(_ao_impacto_do_golpe)
+	_timer_fim_golpe = Timer.new()
+	_timer_fim_golpe.name = "FimDoGolpe"
+	_timer_fim_golpe.one_shot = true
+	add_child(_timer_fim_golpe)
+	_timer_fim_golpe.timeout.connect(_ao_golpe_concluido)
 	# OS ALVOS SÓ SOBEM COM O VALE PRONTO: eles se põem em lugares que o
 	# `Lugares` resolve, e o `Lugares` só conhece o vale depois do
 	# `world_builder._concluir`. Erguer antes é erguer no nada.
@@ -310,6 +334,8 @@ func _tem_ferramenta(id: String) -> bool:
 func bater() -> bool:
 	if _perto == "":
 		return false
+	if _golpe_pendente != "" or _golpe_animando:
+		return false
 	var alvo: Dictionary = _alvos[_perto]
 	var ficha: Dictionary = alvo["ficha"]
 	var ferramenta := str(ficha.get("ferramenta", ""))
@@ -333,13 +359,63 @@ func bater() -> bool:
 	# QUEM TRABALHA APRENDE, e o duro ensina mais (`Talentos.XP_POR_ACAO`): é por
 	# aqui que o golpe leva à teia que abre o alvo mais duro.
 	Talentos.ganhar("bater_duro" if dureza > 1.5 else "bater")
+	# Recursos recolhidos à mão não usam ferramenta nem animação de golpe.
+	# Resolva-os já para não manter a trava entre coletas próximas.
+	if ferramenta == "":
+		_aplicar_golpe(_perto)
+		return true
 
-	_golpear_com_o_corpo()
+	_iniciar_golpe(_perto)
+	return true
+
+
+func _iniciar_golpe(id: String) -> void:
+	_golpe_pendente = id
+	var animador := _animador
+	var animacao_iniciada := false
+	if animador != null and animador.has_method("play_chop"):
+		animacao_iniciada = not str(animador.call("play_chop", 1)).is_empty()
+	elif animador != null and animador.has_method("play_gesture"):
+		animacao_iniciada = not str(animador.call("play_gesture", GESTO_GOLPEAR)).is_empty()
+	_golpe_animando = animacao_iniciada and animador.has_signal("golpe_concluido")
+	if _golpe_animando:
+		_timer_fim_golpe.start(TEMPO_LIMITE_FIM_DO_GOLPE)
+	if animacao_iniciada and _jogador.has_method("travar_acao_de_golpe"):
+		_jogador.call("travar_acao_de_golpe", TEMPO_MAXIMO_DO_GOLPE, true)
+	# Os animadores do projeto emitem o impacto exatamente no meio do clipe.
+	# O timer cobre modelos sem esse sinal e evita que o golpe fique pendurado.
+	_timer_impacto.start(TEMPO_LIMITE_IMPACTO if animacao_iniciada and animador.has_signal("golpe_impacto") else TEMPO_ATE_IMPACTO)
+
+
+func _ao_impacto_do_golpe() -> void:
+	if _golpe_pendente.is_empty():
+		return
+	_timer_impacto.stop()
+	var id := _golpe_pendente
+	_golpe_pendente = ""
+	if not _alvos.has(id):
+		return
+	_aplicar_golpe(id)
+	if not _golpe_animando:
+		if _jogador.has_method("liberar_acao_de_golpe"):
+			_jogador.call("liberar_acao_de_golpe")
+
+
+func _ao_golpe_concluido() -> void:
+	if not _golpe_animando:
+		return
+	_timer_fim_golpe.stop()
+	_golpe_animando = false
+
+
+func _aplicar_golpe(id: String) -> void:
+	var alvo: Dictionary = _alvos[id]
+	var ficha: Dictionary = alvo["ficha"]
 	alvo["golpes_dados"] = int(alvo["golpes_dados"]) + 1
 	var faltam := int(ficha.get("golpes", 3)) - int(alvo["golpes_dados"])
 	if faltam > 0:
 		_sacudir(alvo["no"])
-		return true
+		return
 
 	# Caiu: some do mundo e vira material na mochila.
 	var rende := str(ficha.get("rende", ""))
@@ -363,14 +439,13 @@ func bater() -> bool:
 	for corpo in alvo.get("corpos", []):
 		if is_instance_valid(corpo):
 			corpo.queue_free()
-	var id := _perto
 	_alvos.erase(id)
 	if not _caidos.has(id):
 		_caidos.append(id)
-	_perto = ""
+	if _perto == id:
+		_perto = ""
 	_dica.visible = false
 	derrubado.emit(id, rende, quantos)
-	return true
 
 
 ## Um tranco na peça a cada golpe, para o jogador ver que acertou. Não é
@@ -418,24 +493,8 @@ func _unhandled_key_input(event: InputEvent) -> void:
 	get_viewport().set_input_as_handled()
 
 
-## O CORPO GOLPEIA, e o clipe já existia.
-##
-## O personagem tem nove gestos no GLB, e o de índice 6 é `chop` — "Golpear".
-## Ele estava ali desde o começo, acessível só por tecla de demonstração, e
-## nenhum trabalho o usava: bater era um número caindo sem ninguém se mexer.
-##
-## Em terceira pessoa o personagem já olha para onde a câmera olha, e quem bate
-## está de frente para o que bate — então não há para onde virá-lo. O que
-## faltava era só o gesto.
+## `chop` é o sétimo gesto do modelo com clipes autorados.
 const GESTO_GOLPEAR := 6
-
-
-func _golpear_com_o_corpo() -> void:
-	if not is_instance_valid(_jogador):
-		return
-	var animador = _jogador.animator
-	if animador != null and animador.has_method("play_gesture"):
-		animador.play_gesture(GESTO_GOLPEAR)
 
 
 ## ONDE ESTÁ O ALVO MAIS PERTO QUE RENDE ISTO, ou `Lugares.NENHUM`.

@@ -90,14 +90,14 @@ var _avisou_perto: Dictionary = {}
 var _fala := 0
 
 
-func configurar(world, player, hud, luta) -> void:
+func configurar(world, player, hud, luta, hud_layer: Control) -> void:
 	_world = world
 	_player = player
 	_hud = hud
 	_luta = luta
 	var lido = JSON.parse_string(FileAccess.get_file_as_string(TEXTOS))
 	_textos = lido if lido is Dictionary else {}
-	_dica = DicaTecla.criar(hud.map_layer(), Atalhos.letra("interagir"), _texto("dica_cordel"))
+	_dica = DicaTecla.criar(hud_layer, Atalhos.letra("interagir"), _texto("dica_cordel"))
 	_dica.visible = false
 	var mata := _ponto_da_mata()
 	if mata.is_finite():

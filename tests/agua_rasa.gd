@@ -41,9 +41,12 @@ func _run() -> void:
 	# deixaria de medir o que ela mede. O que se dá é TEMPO, que é o que o
 	# jogador também tem.
 	player.set("_run_toggled", true)
+	var folego_em_terra: float = player.folego_atual()
 	Input.action_press("mv_forward")
 	var velocidades: Array[float] = []
 	var quadros_nadando := 0
+	var folego_no_inicio_nado := -1.0
+	var vigor_no_inicio_nado := -1.0
 	var cabeca_fora := true
 	for frame in range(14000):
 		await physics_frame
@@ -51,6 +54,9 @@ func _run() -> void:
 			velocidades.append(Vector2(player.velocity.x, player.velocity.z).length())
 		if player.is_swimming():
 			quadros_nadando += 1
+			if quadros_nadando == 1:
+				folego_no_inicio_nado = player.folego_atual()
+				vigor_no_inicio_nado = player.vigor_atual()
 			if quadros_nadando > 60 and player.global_position.y + player.character_height < world.water_level() + 0.2:
 				cabeca_fora = false
 			if quadros_nadando > 240:
@@ -60,6 +66,9 @@ func _run() -> void:
 	print("AGUA_RASA: andou %.1f u · nadou %d quadros · velocidades %s · %s" % [andou, quadros_nadando, velocidades, mensagens])
 	_assert(not mensagens.has("De volta à terra firme."), "não cai nem volta à terra")
 	_assert(quadros_nadando > 240, "nada onde não dá pé")
+	_assert(folego_no_inicio_nado >= folego_em_terra - 0.2, "correr ou andar em terra gastou fôlego")
+	_assert(player.vigor_atual() < vigor_no_inicio_nado, "nadar na água funda não gastou vigor")
+	_assert(player.folego_atual() >= folego_no_inicio_nado - 0.2, "nadar com vigor gastou fôlego")
 	_assert(cabeca_fora, "nada com a cabeça fora d'água")
 	_assert(velocidades.size() > 2 and velocidades.back() < velocidades.front() * 0.8, "anda mais devagar na água")
 

@@ -19,8 +19,8 @@ extends SceneTree
 ##      "Som: ligado" responde o que o botão faz E em que pé está.
 ##   4. APERTAR UMA LINHA MUDA O ESTADO E O RÓTULO JUNTO. Menu que faz e não se
 ##      redesenha é menu mentindo sobre o que ele mesmo acabou de fazer.
-##   5. A COLUNA DE ÍCONES SUMIU DE VERDADE do HUD — senão a mudança seria só
-##      acrescentar um menu, e as duas coisas ficariam na tela.
+##   5. OS ATALHOS DA COLUNA DIREITA TÊM DICAS — o HEAD voltou a oferecê-los,
+##      e cada um deve explicar sua ação ao passar o mouse.
 ##   6. O MENU CABE NA JANELA, que é a pergunta da barra de mão.
 
 var falhas := 0
@@ -211,25 +211,38 @@ func _run() -> void:
 	_conferir(filetes > 0,
 		"não há separação entre as linhas de ajuste e as de saída: elas viram a mesma lista")
 
-	# --- 5. A COLUNA DE ÍCONES SUMIU DO HUD ----------------------------------
-	#
-	# Se ela continuasse lá, a mudança teria sido só acrescentar um menu — e o
-	# jogador ficaria com as duas coisas na tela, que é o contrário do pedido.
+	# --- 5. OS ATALHOS DO HUD TÊM DICAS --------------------------------------
+	# O commit 8413ae7 reintroduziu a coluna direita, incluindo missões.
+	# O menu continua completo; a coluna tem de explicar cada atalho ao mouse.
 	var hud = jogo.get("hud")
 	_conferir(hud != null, "não achei o HUD")
 	if hud != null:
-		var redondos := 0
-		for no in (hud as Node).find_children("*", "Button", true, false):
-			var botao := no as Button
-			# O FPS ganhou depois um painel proprio, com portao em
-			# hud_desempenho.gd; ele nao pertence a antiga coluna de menus.
-			if botao == hud._performance_button:
-				continue
-			# Os botões da coluna eram redondos e pequenos, sem texto.
-			if botao.text.strip_edges() == "" and botao.size.x <= 48.0 and botao.size.y <= 48.0:
-				redondos += 1
-		_conferir(redondos == 0,
-			"o HUD ainda tem %d botão(ões) redondo(s) sem rótulo: a coluna do canto não saiu" % redondos)
+		var atalhos = load("res://scripts/prototipo_3d/atalhos.gd")
+		var teclas_da_coluna := {4: "mapa", 5: "camera", 9: "painel"}
+		_conferir(hud._corner_nodes.size() == 20, "faltam atalhos ou dicas na coluna do HUD")
+		for i in range(0, hud._corner_nodes.size() - 1, 2):
+			var canto: Control = hud._corner_nodes[i]
+			var dica: Control = hud._corner_nodes[i + 1]
+			var botoes_canto: Array[Node] = canto.find_children("*", "Button", true, false)
+			var rotulos: Array[Node] = dica.find_children("*", "Label", true, false)
+			var marcas: Array[Node] = canto.find_children("TeclaDeAtalho", "Label", true, false)
+			var acao: String = str(teclas_da_coluna.get(i >> 1, ""))
+			if acao.is_empty():
+				_conferir(marcas.is_empty(), "botão sem tecla mostra atalho inexistente")
+			else:
+				_conferir(marcas.size() == 1, "botão de %s não mostra a tecla" % acao)
+				if marcas.size() == 1:
+					_conferir((marcas[0] as Label).text == atalhos.letra(acao),
+						"tecla de %s não corresponde ao atalho configurado" % acao)
+					_conferir((marcas[0] as Label).mouse_filter == Control.MOUSE_FILTER_IGNORE,
+						"a dica de %s captura o clique do botão" % acao)
+			_conferir(botoes_canto.size() == 1 and rotulos.size() == 1, "atalho perdeu botão ou rótulo")
+			if botoes_canto.size() == 1 and rotulos.size() == 1:
+				_conferir(not (rotulos[0] as Label).text.is_empty(), "atalho ficou sem descrição")
+				botoes_canto[0].mouse_entered.emit()
+				_conferir(dica.visible, "o mouse não revela a descrição do atalho")
+				botoes_canto[0].mouse_exited.emit()
+				_conferir(not dica.visible, "a descrição fica presa ao retirar o mouse")
 
 	# --- 6. CABE NA JANELA ---------------------------------------------------
 	var caixa := _achar(menu, "Caixa") as Control
@@ -399,6 +412,60 @@ func _run() -> void:
 	_conferir(not menu.aberto, "fechar tudo deixou o menu do Esc aberto")
 	_conferir(not paused, "fechar o menu do Esc deixou o vale parado")
 
+	# O ? abre a tela modal de Controles pelo gestor do vale.
+	hud.controls_requested.emit()
+	await _frames(2)
+	_conferir(hud.controls_open() and jogo.telas.aberta() == "controles" and jogo.tela_controles.aberta and paused,
+		"o ? não abriu Controles como modal pausado")
+	var caixa_controles := _achar(jogo.tela_controles, "Caixa") as Control
+	_conferir(caixa_controles != null, "o modal de Controles não tem caixa")
+	if caixa_controles != null:
+		var quadro_controles := caixa_controles.get_global_rect()
+		var janela_controles := caixa_controles.get_viewport_rect().size
+		_conferir(absf(quadro_controles.get_center().x - janela_controles.x * 0.5) < 2.0
+			and absf(quadro_controles.get_center().y - janela_controles.y * 0.5) < 2.0,
+			"Controles ainda aparece na lateral, fora do centro")
+	jogo.tela_controles.voltar_pedido.emit()
+	await _frames(2)
+	_conferir(not jogo.tela_controles.aberta and menu.aberto and paused,
+		"Voltar nos Controles não retornou ao menu do Esc")
+	jogo.telas.fechar_tudo()
+	await _frames(2)
+	_conferir(not hud.controls_open() and not paused,
+		"fechar Controles deixou o jogo travado")
+
+	jogo.telas.abrir("menu_pausa")
+	await _frames(2)
+	var controles_no_menu := _linha_com(_achar(menu, "Linhas") as VBoxContainer, "Controles")
+	_conferir(controles_no_menu >= 0, "o menu perdeu a linha de Controles")
+	if controles_no_menu >= 0:
+		menu._cursor = controles_no_menu
+		menu._fazer()
+		await _frames(2)
+		_conferir(hud.controls_open() and not menu.aberto and paused,
+			"a linha Controles do menu não abre o modal")
+		jogo.telas.fechar_tudo()
+		await _frames(2)
+		_conferir(not paused, "fechar Controles pelo gestor não retomou o jogo")
+
+	# A velocidade Parada vem das preferências; o relógio precisa retomá-la mesmo
+	# quando a opção de pausar pelo botão estiver bloqueada.
+	var dia_retomada = root.get_node("/root/Dia")
+	dia_retomada.definir_pausa_no_jogo(false)
+	dia_retomada.definir_velocidade(0)
+	dia_retomada.pausado = false
+	hud._update_clock_hint()
+	_conferir(hud._clock_hint.text.contains("Retomar"),
+		"o relógio parado não indica que o botão pode retomar o tempo")
+	hud._clock_button.pressed.emit()
+	_conferir(dia_retomada.velocidade == 2 and not dia_retomada.pausado,
+		"clicar no relógio não retomou a velocidade normal")
+	var hora_antes: float = dia_retomada.hora
+	await _frames(5)
+	_conferir(dia_retomada.hora > hora_antes, "o horário não avançou depois de clicar no relógio")
+	_conferir(not dia_retomada.pausado and not paused,
+		"o clique no relógio deixou a partida pausada")
+
 	_fechar()
 
 
@@ -424,7 +491,7 @@ func _achar(raiz: Node, nome: String) -> Node:
 func _fechar() -> void:
 	print("")
 	if falhas == 0:
-		print("MENU_PAUSA_OK: o Esc abre o menu com o vale parado; as linhas que eram a coluna de ícones estão lá com ícone E estado escrito, apertar uma troca as duas coisas junto, salvar devolve recado como no 2D, as duas saídas ficam embaixo em destaque, a coluna do canto saiu do HUD, e o menu cabe na janela")
+		print("MENU_PAUSA_OK: o Esc abre o menu com o vale parado; as linhas que eram a coluna de ícones estão lá com ícone E estado escrito, apertar uma troca as duas coisas junto, salvar devolve recado como no 2D, as duas saídas ficam embaixo em destaque, os atalhos do canto têm dicas, e o menu cabe na janela")
 	else:
 		print("menu do Esc: %d falha(s)" % falhas)
 	quit(1 if falhas > 0 else 0)

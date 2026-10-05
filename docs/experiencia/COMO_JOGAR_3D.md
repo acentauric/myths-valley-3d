@@ -8,6 +8,22 @@ Para depurar, `JOGAR_3D.cmd -Lugar igreja` começa o jogador direto num lugar do
 
 No Godot Project Manager, outra opção é importar **`project.godot`** e executar o projeto (F6 abre apenas a cena selecionada; F5 abre pela tela inicial). A raiz contém o jogo 3D independente, sem depender do projeto 2D.
 
+## Vida, fôlego e vigor
+
+As três barras abaixo do relógio mostram nome e valor atual/máximo. Vida é
+vermelha (verde com peçonha), fôlego é azul e vigor é verde. Corrida, salto,
+corte, trabalho e luta gastam vigor. O fôlego só diminui quando o personagem
+está nadando em água funda: são 5 pontos por segundo. Com 3 pontos de fôlego,
+um segundo de nado zera a barra e tira 2 de vida. Abaixo de 20% de fôlego,
+a barra fica âmbar e avisa que o corpo está cansado. Vigor baixo continua
+encurtando o passo pela regra de Energia.
+
+Andar em terra recupera 2,5 pontos de vigor e fôlego por segundo; parado no chão, sem
+golpe nem gesto, recupera 20 de vigor e 10 de fôlego por segundo. Comida repõe
+vigor; sono e desmaio também enchem o fôlego. Recuperar as reservas não cura
+a vida automaticamente. Carregar a partida devolve os valores guardados,
+sem cobrar esforço.
+
 ## Controles
 
 As letras marcadas com * são **remapeáveis** em AJUSTAR → Geral → Atalhos; o HUD e o painel mostram sempre a letra escolhida. W, A, S e D não entram na troca, porque andam e escolhem dentro das telas. A tecla de fábrica vem entre parênteses.
@@ -21,7 +37,7 @@ As letras marcadas com * são **remapeáveis** em AJUSTAR → Geral → Atalhos;
 | Espaço | Pular a partir do chão |
 | Mouse | Com a câmera solta, girar a câmera sem clicar; com a câmera travada, arrastar o cenário. O modo com que o jogo abre fica em AJUSTAR → Câmera do mouse |
 | Tab ou Câmera* (C) | Alternar entre câmera solta e travada |
-| Ctrl+rodinha, + e - | Aproximar ou afastar a câmera |
+| Rodinha, + e - | Aproximar ou afastar a câmera |
 | Observar* (F) | Olhar o personagem pela frente; de novo, volta |
 | Clique direito | Caminhar até o chão, casa ou morador apontado; duplo clique corre |
 | Clique esquerdo na casa | Abrir os dados da casa no balão e no painel, mesmo à distância; fora das casas, fecha |
@@ -34,7 +50,6 @@ As letras marcadas com * são **remapeáveis** em AJUSTAR → Geral → Atalhos;
 | Ler / interagir* (E) | Falar, ler, pegar, pescar, tocar obra. Perto de um bicho, golpe com a arma na mão (ou a meia-lua, de mão vazia, para quem aprendeu); **segurar** dá o golpe forte (ou a rasteira) |
 | Gingar* (V) | Sair do bote do bicho, para quem aprendeu a capoeira |
 | 1 a 9 e 0 | Pôr na mão o item daquele espaço da barra de mão (o 0 é o décimo) |
-| Rodinha | Passar a mão para o espaço seguinte (para baixo) ou o anterior (para cima), como no 2D |
 | Alt+1 a Alt+8 | Gestos: saudação, tchau, concordar, olhar ao redor, medo, braços cruzados, golpe, nado |
 | Avançar a hora* (T) | Adiantar o relógio do vale em uma hora |
 | Reiniciar* (R) | Voltar ao ponto inicial |

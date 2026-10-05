@@ -133,7 +133,7 @@ func _run() -> void:
 		energia.encher()
 		if recursos.bater():
 			golpes += 1
-		await _quadros(2)
+		await _esperar_golpe(recursos)
 	_conferir(golpes == 8 and not recursos._alvos.has("lapa_da_lombada"), "a lapa caiu em %d golpe(s), e são oito" % golpes)
 	_conferir(inv.quantidade("pedra") == pedras + 8, "a lapa não deu as oito pedras: %d" % (inv.quantidade("pedra") - pedras))
 	_conferir(await _ate(func() -> bool: return not lombada.trancada(), 2.0), "caída a lapa, o corredor da rampa continua fechado")
@@ -193,6 +193,12 @@ func _fechar() -> void:
 
 func _quadros(n: int) -> void:
 	for i in n:
+		await process_frame
+
+
+func _esperar_golpe(recursos) -> void:
+	var limite := Time.get_ticks_msec() + 2500
+	while Time.get_ticks_msec() < limite and (str(recursos.get("_golpe_pendente")) != "" or bool(recursos.get("_golpe_animando"))):
 		await process_frame
 
 

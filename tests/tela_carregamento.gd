@@ -93,7 +93,8 @@ func _montar(tela_script: GDScript, pai: Node, tema: Theme, hora: float) -> Cont
 
 
 func _esperar_cena(nome: String) -> void:
-	for i in range(3000):
+	var limite := Time.get_ticks_msec() + 30000
+	while Time.get_ticks_msec() < limite:
 		if current_scene != null and current_scene.name == nome:
 			break
 		await process_frame

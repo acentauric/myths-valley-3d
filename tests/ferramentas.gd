@@ -99,10 +99,7 @@ func _run() -> void:
 	# --- 2. SEM FERRAMENTA NÃO SE BATE ---------------------------------------
 	var recusas: Array[String] = []
 	recursos.recusado.connect(func(motivo: String) -> void: recusas.append(motivo))
-	# SEM FERRAMENTA MUDOU DE LUGAR. O vale passou a dar um machado de saída, e
-	# bater passou a exigir a ferramenta ENCAIXADA e não só carregada
-	# (`Recursos3D._tem_ferramenta`). Então "sem machado" não é mais mochila
-	# vazia: é encaixe vazio. Tira-se das duas para poder perguntar.
+	# Retira o machado inicial antes de medir a recusa sem ferramenta.
 	equipamento.desequipar("maos")
 	while inv.tem("machado"):
 		inv.consumir("machado", 1)
@@ -146,10 +143,9 @@ func _run() -> void:
 		inv.consumir("machado", 1)
 
 	# --- 3 e 4. COM A FERRAMENTA SE BATE, E CAI NO NÚMERO CERTO --------------
-	# NA MÃO, e não na mochila: é o que o vale cobra agora, e é o que a missão
-	# faz por quem recebe a ferramenta (`CadeiaDeMissoes.entregar`).
+	# Na mão ativa da barra, escolhida por número, como o jogador faz.
 	inv.adicionar("machado", 1)
-	for i in inv.espacos.size():
+	for i in inv.ESPACOS_MAO:
 		if str((inv.espacos[i] as Dictionary).get("id", "")) == "machado":
 			# O ENCAIXE DAS MÃOS É DAS LUVAS: "Armas são nos campos numerais."
 			# O machado não veste as Mãos, nem pedindo o encaixe; vai na barra.
@@ -168,13 +164,17 @@ func _run() -> void:
 
 	for i in range(golpes - 1):
 		_conferir(recursos.bater(), "o golpe %d não saiu" % (i + 1))
+		_conferir(not recursos._golpe_pendente.is_empty(), "a peça foi atingida antes do golpe começar")
 		_conferir(recursos.restantes("lenha") == troncos,
 			"o tronco caiu no golpe %d, antes da conta" % (i + 1))
+		await _esperar_golpe(recursos)
 
 	_conferir(energia.atual < folego_antes,
 		"bater não gastou fôlego: %s → %s" % [str(folego_antes), str(energia.atual)])
 
 	_conferir(recursos.bater(), "o golpe final não saiu")
+	_conferir(recursos.restantes("lenha") == troncos, "o tronco caiu antes do impacto do golpe final")
+	await _esperar_golpe(recursos)
 	_conferir(recursos.restantes("lenha") == troncos - 1,
 		"o tronco não caiu no golpe %d" % golpes)
 
@@ -459,6 +459,14 @@ func _fechar() -> void:
 func _frames(count: int) -> void:
 	for frame in range(count):
 		await process_frame
+
+
+func _esperar_golpe(recursos) -> void:
+	var limite := Time.get_ticks_msec() + 2000
+	while (not recursos._golpe_pendente.is_empty() or recursos._golpe_animando) and Time.get_ticks_msec() < limite:
+		await process_frame
+	_conferir(recursos._golpe_pendente.is_empty() and not recursos._golpe_animando,
+		"o golpe animado não chegou ao impacto e ao fim do clipe")
 
 
 func _mundo_pronto() -> void:

@@ -160,6 +160,7 @@ func gastar(acao: String, dureza: float = 1.0) -> bool:
 func dormir() -> void:
 	if is_instance_valid(_jogador_vigor):
 		repor(Progressao.recuperacao_ao_dormir)
+		_jogador_vigor.call("definir_folego", _jogador_vigor.call("folego_maximo"))
 		return
 	atual = minf(maximo(), atual + Progressao.recuperacao_ao_dormir)
 	mudou.emit()
@@ -168,6 +169,7 @@ func dormir() -> void:
 func desmaiar() -> void:
 	if is_instance_valid(_jogador_vigor):
 		repor(Progressao.recuperacao_ao_desmaiar)
+		_jogador_vigor.call("definir_folego", _jogador_vigor.call("folego_maximo"))
 		return
 	atual = minf(maximo(), atual + Progressao.recuperacao_ao_desmaiar)
 	mudou.emit()

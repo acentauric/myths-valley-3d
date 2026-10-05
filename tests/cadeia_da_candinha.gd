@@ -122,6 +122,11 @@ func _run() -> void:
 	await _frames(2)
 
 	# --- 2. ELA DÁ A FOICE AO PEDIR A CANA ----------------------------------
+	# A ferramenta recebida é usada pela barra, como no jogo.
+	for espaco in inv.ESPACOS_MAO:
+		if str(inv.espacos[espaco].get("id", "")) == "foice":
+			inv.selecionar(espaco)
+			break
 	_conferir(recursos._tem_ferramenta("foice"),
 		"a Dona Candinha pediu cana cortada e não deixou a foice à mão")
 
@@ -138,6 +143,7 @@ func _run() -> void:
 			energia.encher()
 			if recursos.bater():
 				bateu = true
+				await _ate(func() -> bool: return recursos._golpe_pendente.is_empty() and not recursos._golpe_animando, 2.0)
 			if inv.quantidade("cana") > antes_de_cortar:
 				break
 			await _frames(2)

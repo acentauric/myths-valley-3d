@@ -51,3 +51,13 @@ Os dois primeiros são montados por `scripts/prototipo_3d/mar.gd`, chamado pelo
 `geo_region_renderer.gd` quando o cenário tem o bloco `bathymetry`. O `mar.gd` também
 cria o chão do mar (o jogador entra andando e para com a água no peito, ver
 `player_controller.gd`) e as paredes invisíveis na borda do quadro.
+
+## Tubarao do mar (04/10/2026)
+
+`tubarao_tripo.glb` veio do Tripo Studio, projeto
+`91573721-79c4-4b4c-910b-e9815001a30d`, criado por texto para acompanhar a
+estetica semirrealista dos personagens. Modelo HD H3.1 (45 creditos), Smart
+Remesh Quad com 6.432 faces (40 creditos), Auto Rig de criatura (20 creditos),
+GLB com esqueleto e textura 1K (2,38 MB). O esqueleto traz `Tail_0` e `Tail_1`;
+o jogo oscila esses ossos no patrulhamento e na perseguicao. Original em
+`.assets-raw/tripo/tubarao_tripo.glb`.

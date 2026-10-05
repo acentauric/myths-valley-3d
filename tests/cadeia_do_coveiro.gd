@@ -240,11 +240,11 @@ func _run() -> void:
 		var entrega: Dictionary = passo.get("entrega", {})
 		if not entrega.is_empty():
 			var ferramenta := str(entrega.get("item", ""))
-			# À MÃO, e não na mochila. O vale passou a cobrar a ferramenta
-			# ENCAIXADA (`Recursos3D._tem_ferramenta`), e é o encaixe que a
-			# entrega do passo preenche; perguntar pela mochila reprovaria
-			# justamente a entrega que funciona. Pergunta-se à regra do jogo
-			# para a medida não poder divergir dela.
+			# A entrega vai para a barra; o jogador escolhe o número da ferramenta.
+			for espaco in inv.ESPACOS_MAO:
+				if str(inv.espacos[espaco].get("id", "")) == ferramenta:
+					inv.selecionar(espaco)
+					break
 			_conferir(recursos._tem_ferramenta(ferramenta),
 				"o passo '%s' cobra trabalho e não deixou %s à mão" % [id, ferramenta])
 
@@ -575,6 +575,7 @@ func _juntar(recursos, inv, energia, jogador, item: String, quantos: int, id: St
 		energia.encher()
 		if not recursos.bater():
 			break
+		await _ate(func() -> bool: return recursos._golpe_pendente.is_empty() and not recursos._golpe_animando, 2.0)
 	_conferir(inv.quantidade(item) >= quantos,
 		"o passo '%s' pede %d de %s e só juntei %d" % [id, quantos, item, inv.quantidade(item)])
 
@@ -593,6 +594,7 @@ func _derrubar(recursos, energia, jogador, peca: String, quantos: int, id: Strin
 		energia.encher()
 		if not recursos.bater():
 			break
+		await _ate(func() -> bool: return recursos._golpe_pendente.is_empty() and not recursos._golpe_animando, 2.0)
 	_conferir(recursos.derrubados(peca) >= quantos,
 		"o passo '%s' pede %d de %s e só derrubei %d"
 			% [id, quantos, peca, recursos.derrubados(peca)])
