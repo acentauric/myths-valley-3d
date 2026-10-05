@@ -304,8 +304,8 @@ acordar o jogador.
 
 | # | id | Título | Objetivo | Fecha quando | 3D |
 |---|---|---|---|---|---|
-| 1 | `fazenda_ida` | É hoje | Atravesse o rio com o Pedro até o portão da fazenda | chegou ao portão (o Pedro leva); o portão abre e a narração da chegada roda | falta (só o id em `missoes.gd`) |
-| 2 | `fazenda_chegada` | O pátio da fazenda | Atravesse o pátio até a escadaria do casarão | chegou ao pátio | falta |
+| 1 | `fazenda_ida` | É hoje | Atravesse o rio com o Pedro até o portão da fazenda | chegou ao portão (o Pedro leva); o portão abre e a narração da chegada roda | **pronta** (`missoes_fazenda.json`, `fazenda_vale.gd`: o dia vem na manhã seguinte à fé escolhida, com a ponte de pé; o Pedro vem à porta e conduz; a narração é `narracao_do_vale.gd`) |
+| 2 | `fazenda_chegada` | O pátio da fazenda | Atravesse o pátio até a escadaria do casarão | chegou ao pátio | **pronta** (`fazenda_chegada`: o arraial sentado nos banquinhos, as mesas cobertas e as cabras soltas; o fim é a fala do Pedro) |
 
 Sem recompensa: é a história começando. O 2D para aqui (fatia 6.1). O resto dos
 capítulos está só na prosa (`docs/enredo/` do 2D e `data/enredo/enredo.json`) e
@@ -329,8 +329,10 @@ não tem missão em nenhum dos dois jogos:
    lombada de pedra que o vale levantou entre a casa e a chapada.
 3. ~~A chapada~~ (1.4): **pronta** em 05/10/2026, no lugar que o autor revisou.
 4. ~~O canteiro~~ (3.1): **pronto** em 05/10/2026, antes do mirante como no 2D.
-5. **A jornada da fazenda** (4), que só pode abrir com 1 e com a fé (já
-   pronta).
+5. ~~A jornada da fazenda~~ (4): **pronta** em 05/10/2026, a fatia 6.1, do
+   outro lado do rio grande, com o portão baixo e a guarita do capítulo 6 (Tripo).
+   No vale o dia vem na manhã seguinte à fé escolhida e com a ponte de pé, sem
+   esperar todas as missões fechadas (regra aprovada pelo autor).
 6. ~~As armas, a capoeira e as metas~~ (3.9 a 3.11): **prontas** em 05/10/2026,
    menos a meta da onça, que espera a onça no vale.
 7. **O segundo tutorial** (2): pomar, curral e capataz pedem sistemas que o 3D

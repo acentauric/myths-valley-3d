@@ -93,6 +93,12 @@ const PECAS := {
 	"lapa": {"tripo": "aderecos/pedras_tripo.glb", "largura": 3.0, "caixa": true},
 	# A cabra do Seu Benedito, presa no alto da lombada (lote do Tripo de 05/10).
 	"cabra": {"tripo": "aderecos/cabra_tripo.glb", "largura": 1.3},
+	# A FAZENDA DO CONVITE (lotes do Tripo de 05/10): o casarão, de frente para +Z,
+	# com a escadaria; a guarita de pedra velha; e o portão baixo de ferro fino,
+	# que `fazenda_vale.gd` achata à altura do capítulo 6.
+	"casarao_fazenda": {"tripo": "construcoes/casarao_fazenda_tripo.glb", "largura": 16.0, "caixa": true},
+	"guarita_fazenda": {"tripo": "construcoes/guarita_fazenda_tripo.glb", "largura": 2.8, "caixa": true},
+	"portao_fazenda": {"tripo": "construcoes/portao_fazenda_tripo.glb", "largura": 5.0},
 	"pedras_praia": {"tripo": "aderecos/pedras_praia_tripo.glb", "largura": 9.0, "caixa": true},
 	"pedra_mare": {"tripo": "aderecos/pedra_mare_tripo.glb", "largura": 3.2},
 	"bote": {"tripo": "aderecos/bote_tripo.glb", "largura": 6.0},

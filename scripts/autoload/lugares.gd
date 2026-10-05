@@ -57,6 +57,11 @@ const DE_PARA := {
 	"lapa": "Lapa",
 	"cabra_do_alto": "Cabra do alto",
 	"lombada": "Lombada",
+	# A FAZENDA DO CONVITE, do outro lado do rio grande (`fazenda_vale.gd`,
+	# data/missoes_fazenda.json): o portão baixo e o pé da escadaria do casarão.
+	"portao_da_fazenda": "Portão da fazenda",
+	"patio_da_fazenda": "Pátio da fazenda",
+	"casarao": "Casarão",
 	"ponte_do_vau": "Ponte",
 	"poco": "Poço",
 	"mirante": "Mirante",
@@ -96,8 +101,6 @@ const DE_PARA := {
 const FALTAM_NO_VALE := {
 	"lagoa": "a lagoa a leste do Seu Benedito — Fase 2.5",
 	"curral": "o curral — Fase 7",
-	"portao_da_fazenda": "a fazenda, do outro lado do rio — Fase 2.5",
-	"patio_da_fazenda": "o pátio onde a recepção da 6.1 acontece, dentro da fazenda — Fase 2.5",
 }
 
 var _mundo: Node3D = null

@@ -1,0 +1,80 @@
+{
+  "observacao": "A JORNADA DA FAZENDA, fatia 6.1, A IDA (docs/projeto/MISSOES_DO_2D.md, 4; data/dialogos/fazenda.json e scripts/mundo/fazenda.gd do 2D). É enredo e é o que o jogo existe para contar. Quem fala é o PEDRO — a história é dele —, e a narração da chegada é a voz do mundo, sem nome. O DIA (`fazenda_vale.gd`): a manhã seguinte à fé escolhida, com a ponte de pé, a regra do vale aprovada pelo autor. A fila não abre no E: quem a começa é o dia. O Pedro vem à porta e diz o 'chamado' na caixa; conduz o jogador pela ponte até o portão (`conduz`); lá diz o 'ida_fim', o escuro sobe com a 'narracao' e os dois passam para dentro do pátio (a `cena` 'portao_se_abre'); conduz até a escadaria, e o 'chegada_fim' fecha a fatia (a `cena` 'chegou_ao_patio'). SEM RECOMPENSA: não é favor que se paga, é a história começando. O texto sai do capítulo 6 e não o contradiz em detalhe nenhum: o portão baixo de cinco metros, a guarita sem porta nem janela, os bodes no meio da gente, as mesas cobertas, os banquinhos. '{jogador}' saiu das falas: o vale ainda não tem o nome do jogador.",
+  "dono": "pedro",
+  "nome": "O convite",
+  "nome_en": "The invitation",
+  "nome_es": "La invitación",
+  "principal": true,
+  "passos": [
+    {
+      "id": "fazenda_ida",
+      "titulo": "É hoje",
+      "titulo_en": "It's today",
+      "titulo_es": "Es hoy",
+      "resumo": "Atravesse o rio com o Pedro até o portão da fazenda",
+      "resumo_en": "Cross the river with Pedro to the farm's gate",
+      "resumo_es": "Cruza el río con Pedro hasta el portón de la hacienda",
+      "lugar": "portao_da_fazenda",
+      "raio": 6.0,
+      "audio": "",
+      "conduz": true,
+      "cena": "portao_se_abre",
+      "texto": "Vem comigo: a fazenda é do outro lado do rio grande.",
+      "texto_en": "Come with me: the farm is across the big river.",
+      "texto_es": "Ven conmigo: la hacienda está del otro lado del río grande.",
+      "meta": {}
+    },
+    {
+      "id": "fazenda_chegada",
+      "titulo": "O pátio da fazenda",
+      "titulo_en": "The farm courtyard",
+      "titulo_es": "El patio de la hacienda",
+      "resumo": "Atravesse o pátio até a escadaria do casarão",
+      "resumo_en": "Cross the courtyard to the manor's staircase",
+      "resumo_es": "Cruza el patio hasta la escalinata de la casona",
+      "lugar": "patio_da_fazenda",
+      "raio": 5.0,
+      "audio": "",
+      "conduz": true,
+      "cena": "chegou_ao_patio",
+      "texto": "Tá todo mundo lá dentro, no descampado em frente à escadaria. Anda, que a gente já perdeu a metade. Vem por esse caminho de terra batida, que é onde a gente entra.",
+      "texto_en": "Everyone's inside, in the clearing in front of the staircase. Come on, we've already missed half of it. Come along this packed-earth path, that's where we go in.",
+      "texto_es": "Están todos adentro, en el descampado frente a la escalinata. Anda, que ya nos perdimos la mitad. Ven por este camino de tierra apisonada, que es por donde entramos.",
+      "meta": {}
+    }
+  ],
+  "chamado": [
+    {"texto": "Acorda, que é hoje.", "texto_en": "Wake up, it's today.", "texto_es": "Despierta, que es hoy."},
+    {"texto": "O convite — aquele papel do mural da praça, que você guardou na mochila. Hoje é o dia dele.", "texto_en": "The invitation — that paper from the square's board, the one you kept in your backpack. Today is its day.", "texto_es": "La invitación: ese papel del mural de la plaza, el que guardaste en la mochila. Hoy es su día."},
+    {"texto": "Saiu gente de madrugada. O Seu Benedito foi de charrete e levou a Dona Zefa e a Dona Filó; o Tonho desceu a pé pela estrada ainda no escuro.", "texto_en": "People left before dawn. Seu Benedito went by cart and took Dona Zefa and Dona Filó; Tonho walked down the road while it was still dark.", "texto_es": "Salió gente de madrugada. El señor Benedito fue en carreta y llevó a doña Zefa y a doña Filó; Tonho bajó a pie por el camino todavía a oscuras."},
+    {"texto": "Meus avós foram na frente, com o Seu Benedito. Eu fiquei esperando você.", "texto_en": "My grandparents went ahead, with Seu Benedito. I stayed to wait for you.", "texto_es": "Mis abuelos se adelantaron, con el señor Benedito. Yo me quedé esperándote."},
+    {"texto": "É do outro lado do rio grande. A gente passa na ponte do vau e pega a estrada de lá. Vem.", "texto_en": "It's across the big river. We cross the bridge at the ford and take the road on the other side. Come.", "texto_es": "Es del otro lado del río grande. Cruzamos el puente del vado y tomamos el camino de allá. Ven."}
+  ],
+  "ida_fim": [
+    {"texto": "É aqui. Olha isso.", "texto_en": "This is it. Look at that.", "texto_es": "Es aquí. Mira eso."},
+    {"texto": "Uns cinco metros de portão, e não chega a um de altura. Ferro fino, dá pra pular de perna aberta. Isso não guarda nada.", "texto_en": "Some five meters of gate, and not even one high. Thin iron, you could step over it with your legs apart. That guards nothing.", "texto_es": "Unos cinco metros de portón, y no llega a uno de alto. Hierro fino, se puede saltar con las piernas abiertas. Eso no guarda nada."},
+    {"texto": "E aquela guarita do lado, de pedra velha: sem porta, sem janela. Ninguém faz guarda aí há muito tempo.", "texto_en": "And that guardhouse beside it, of old stone: no door, no window. Nobody has kept guard there in a long time.", "texto_es": "Y esa garita al lado, de piedra vieja: sin puerta, sin ventana. Nadie hace guardia ahí hace mucho tiempo."},
+    {"texto": "A gente veio de tão longe pra ver um portão que qualquer um abre.", "texto_en": "We came all this way to see a gate anyone can open.", "texto_es": "Vinimos de tan lejos para ver un portón que cualquiera abre."}
+  ],
+  "narracao": [
+    {"texto": "Os portões abriram para um descampado de terra batida, e a terra ia até o pé de uma escadaria que não combinava com o portão.", "texto_en": "The gates opened onto a clearing of packed earth, and the earth ran up to the foot of a staircase that did not match the gate.", "texto_es": "Los portones se abrieron a un descampado de tierra apisonada, y la tierra llegaba hasta el pie de una escalinata que no combinaba con el portón."},
+    {"texto": "Bodes e cabras andavam no meio da gente, sem ninguém para tomar conta deles.", "texto_en": "Billy goats and nanny goats wandered among the people, with no one tending them.", "texto_es": "Chivos y cabras andaban entre la gente, sin nadie que los cuidara."},
+    {"texto": "Havia mesas compridas, cobertas, e banquinhos postos como quem espera muita gente sentada.", "texto_en": "There were long tables, covered, and little benches set out as if for a great many people to sit.", "texto_es": "Había mesas largas, cubiertas, y banquitos puestos como quien espera mucha gente sentada."},
+    {"texto": "As mulheres da fazenda vinham receber os convidados, uma para cada grupo que chegava. Eram bonitas, e as roupas estavam surradas do trabalho.", "texto_en": "The women of the farm came to receive the guests, one for each group that arrived. They were beautiful, and their clothes were worn from work.", "texto_es": "Las mujeres de la hacienda venían a recibir a los invitados, una para cada grupo que llegaba. Eran hermosas, y la ropa estaba gastada del trabajo."},
+    {"texto": "Quem olhasse o pulso e o tornozelo delas via a marca do ferro. Ninguém olhou.", "texto_en": "Whoever looked at their wrists and ankles would have seen the mark of the iron. No one looked.", "texto_es": "Quien les mirara la muñeca y el tobillo vería la marca del hierro. Nadie miró."},
+    {"texto": "Não havia capataz nenhum, nem senhor de engenho, nem quem dissesse de quem era aquilo. E não havia ninguém no arraial que achasse isso estranho.", "texto_en": "There was no overseer, no mill owner, no one to say whose place it was. And there was no one in the village who found that strange.", "texto_es": "No había capataz alguno, ni señor de ingenio, ni quien dijera de quién era aquello. Y no había nadie en el pueblo a quien eso le pareciera extraño."}
+  ],
+  "chegada_fim": [
+    {"texto": "Achei meus avós. Estão ali, sentados, com um banquinho cada um — deram banquinho pra todo mundo.", "texto_en": "I found my grandparents. They're over there, sitting, each on a little bench — they gave everyone a bench.", "texto_es": "Encontré a mis abuelos. Están allí, sentados, cada uno con su banquito; les dieron banquito a todos."},
+    {"texto": "Olha o tamanho da escadaria. E aquelas mesas cobertas, ali: eu nunca vi mesa daquele tamanho coberta desse jeito. Deve ser o banquete.", "texto_en": "Look at the size of that staircase. And those covered tables over there: I've never seen a table that size covered like that. Must be the banquet.", "texto_es": "Mira el tamaño de la escalinata. Y esas mesas cubiertas, allí: nunca vi una mesa de ese tamaño cubierta así. Debe ser el banquete."},
+    {"texto": "Mas repara uma coisa. Quem foi convidado é o arraial todo, e quem apareceu foi homem. Homem de roça e homem de mar, tudo grande.", "texto_en": "But notice something. The whole village was invited, and the ones who showed up were men. Field men and sea men, all of them big.", "texto_es": "Pero fíjate en una cosa. Al que invitaron fue a todo el pueblo, y los que vinieron fueron hombres. Hombres de la roza y hombres del mar, todos grandes."},
+    {"texto": "Parece menos festa e mais aquelas cheganças que a gente faz na praia, quando vai escolher quem puxa a rede.", "texto_en": "It looks less like a party and more like those gatherings we hold on the beach when we're choosing who pulls the net.", "texto_es": "Parece menos fiesta y más esas reuniones que hacemos en la playa cuando vamos a elegir quién tira de la red."},
+    {"texto": "Deve ser coisa minha. Senta aí e espera, que alguém vai falar.", "texto_en": "Must be just me. Sit down and wait, someone is going to speak.", "texto_es": "Debe ser cosa mía. Siéntate y espera, que alguien va a hablar."}
+  ],
+  "arremate": {
+    "narra": false,
+    "texto": "O arraial inteiro no pátio da fazenda, esperando alguém falar.",
+    "texto_en": "The whole village in the farm courtyard, waiting for someone to speak.",
+    "texto_es": "Todo el pueblo en el patio de la hacienda, esperando que alguien hable."
+  }
+}

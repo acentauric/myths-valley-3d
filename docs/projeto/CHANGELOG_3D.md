@@ -2,6 +2,16 @@
 
 ## Em desenvolvimento — 05/10/2026
 
+- A jornada da fazenda, a fatia 6.1 do 2D: do outro lado do rio grande, na ponta
+  da Rua Principal, a fazenda do convite — o portão baixo de ferro fino e a
+  guarita de pedra velha do capítulo 6, o pátio de terra batida e o casarão
+  (modelos novos do Tripo). Na manhã seguinte à fé escolhida, com a ponte de pé,
+  o arraial está sentado no pátio e o Pedro vem à porta: "acorda, que é hoje".
+  Ele conduz o jogador pela ponte até o portão; lá fala do portão que não guarda
+  nada, o escuro sobe e a voz do mundo narra a chegada (o E passa a frase), e os
+  dois estão dentro. No pé da escadaria, a fala dele fecha a fatia; no dia
+  seguinte o arraial volta para casa. Depois do tutorial o Pedro passa a
+  conduzir quando a fila dele pede (`conduz`). Portão novo: `fazenda`.
 - A lapa e a cabra, a frente do ofício do 2D: entre a casa e a chapada, uma
   lombada de pedra com a rampa trancada pela lapa que a chuva rolou. Depois da
   lenha da ponte, o E no Pedro manda rachá-la com a picareta — oito golpes, oito

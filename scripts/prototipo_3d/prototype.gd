@@ -46,6 +46,8 @@ const NavegacaoVale = preload("res://scripts/prototipo_3d/navegacao_vale.gd")
 const CemiterioVale = preload("res://scripts/prototipo_3d/cemiterio_vale.gd")
 const PonteVale = preload("res://scripts/prototipo_3d/ponte_vale.gd")
 const LombadaVale = preload("res://scripts/prototipo_3d/lombada_vale.gd")
+const FazendaVale = preload("res://scripts/prototipo_3d/fazenda_vale.gd")
+const NarracaoDoVale = preload("res://scripts/prototipo_3d/narracao_do_vale.gd")
 const MENU_SCENE := "res://scenes/prototipo_3d/abertura.tscn"
 ## Raio de terra firme em volta do ponto de chegada.
 const RAIO_CHEGADA := 6.0
@@ -133,6 +135,10 @@ var cemiterio: Node3D
 var ponte_do_rio: Node3D
 ## A lombada de pedra, a lapa e a cabra da frente do ofício (`lombada_vale.gd`).
 var lombada: Node3D
+## A fazenda do convite e o dia dela (`fazenda_vale.gd`).
+var fazenda: Node3D
+## A voz do mundo, sem nome, sobre o escuro (`narracao_do_vale.gd`).
+var narracao: CanvasLayer
 ## As plaquinhas de nome dos moradores; somem com tela aberta (placas_nomes.gd).
 var placas
 ## O personagem em 3D na mochila, ao lado dos encaixes (boneco_da_mochila.gd).
@@ -698,6 +704,12 @@ func _ready() -> void:
 	lombada.name = "Lombada"
 	add_child(lombada)
 	lombada.configurar(world, _cadeias.get("pedro_lombada"), _recursos)
+	# A FAZENDA DO CONVITE, do outro lado do rio grande, e o dia dela: a manhã
+	# seguinte à fé escolhida, com a ponte de pé (data/missoes_fazenda.json).
+	fazenda = FazendaVale.new()
+	fazenda.name = "Fazenda"
+	add_child(fazenda)
+	fazenda.configurar(world, self)
 	interiores.entrou.connect(_ao_mudar_de_lado.unbind(1))
 	interiores.saiu.connect(_ao_mudar_de_lado.unbind(1))
 	# O E NOS MORADORES (tecla_dos_moradores.gd): conversar, cumprir o passo que
@@ -722,6 +734,9 @@ func _ready() -> void:
 	luz_dourada = LuzDourada.new()
 	luz_dourada.name = "LuzDourada"
 	add_child(luz_dourada)
+	narracao = NarracaoDoVale.new()
+	narracao.name = "NarracaoDoVale"
+	add_child(narracao)
 	# A PARTIDA SALVA entra depois de o vale estar montado — moradores, Pedro,
 	# luta —, porque o estado do mundo aponta para eles. Ver Partida e
 	# `estado_para_salvar`.
@@ -884,6 +899,9 @@ func _pendurar_as_frentes_do_2d() -> void:
 			if frente != null:
 				frente.depois_de = func() -> bool: return pedro.terminou_o_tutorial()
 		_pendurar_cadeia(pedro, "res://data/missoes_metas.json", 0.0, "pedro_metas")
+		# A JORNADA DA FAZENDA (data/missoes_fazenda.json): não abre no E; quem a
+		# começa é o dia dela (`fazenda_vale.gd`).
+		_pendurar_cadeia(pedro, "res://data/missoes_fazenda.json", 0.0, "pedro_fazenda")
 		var bichos = JSON.parse_string(FileAccess.get_file_as_string("res://data/colecionaveis/bichos.json"))
 		if bichos is Dictionary:
 			var caititu: Dictionary = ((bichos as Dictionary).get("bichos", {}) as Dictionary).get("caititu", {})
@@ -2128,7 +2146,8 @@ func _achar_morador(quem: String) -> Node3D:
 
 
 ## AS CENAS DOS PASSOS (`cena` no dado da missão, `CadeiaDeMissoes.cena`): a luz
-## dourada da chegada à chapada, a cabra que desce da lombada.
+## dourada da chegada à chapada, a cabra que desce da lombada, o portão da fazenda
+## e o pé da escadaria.
 func _tocar_a_cena(nome: String) -> void:
 	match nome:
 		"luz_dourada":
@@ -2137,6 +2156,12 @@ func _tocar_a_cena(nome: String) -> void:
 		"cabra_desce":
 			if lombada != null:
 				lombada.a_cabra_desce()
+		"portao_se_abre":
+			if fazenda != null:
+				fazenda.o_portao_se_abre()
+		"chegou_ao_patio":
+			if fazenda != null:
+				fazenda.chegou_ao_patio()
 
 
 func _pendurar_cadeia(morador: Node3D, arquivo: String, perto: float, chave: String = "") -> Node:

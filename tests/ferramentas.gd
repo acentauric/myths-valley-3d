@@ -230,7 +230,7 @@ func _run() -> void:
 	var entregues_pelo_guia: Array[String] = []
 	for nome in ["missoes_guia", "missoes_coveiro", "missoes_filo", "missoes_zefa",
 			"missoes_tonho", "missoes_candinha", "missoes_arraial", "missoes_roca", "missoes_carroca",
-			"missoes_armas", "missoes_oficio", "missoes_capoeira", "missoes_metas", "missoes_ponte", "missoes_chapada", "missoes_lombada"]:
+			"missoes_armas", "missoes_oficio", "missoes_capoeira", "missoes_metas", "missoes_ponte", "missoes_chapada", "missoes_lombada", "missoes_fazenda"]:
 		var texto := FileAccess.get_file_as_string("res://data/%s.json" % nome)
 		_conferir(texto != "", "não consegui ler %s.json" % nome)
 		var dado = JSON.parse_string(texto)

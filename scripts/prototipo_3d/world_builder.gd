@@ -18,6 +18,7 @@ const CoqueiroCortado = preload("res://scripts/prototipo_3d/coqueiro_cortado.gd"
 const MAP_CATALOG := "res://data/mapas/regioes.json"
 const ComposicaoVale = preload("res://scripts/prototipo_3d/composicao_vale.gd")
 const LombadaVale = preload("res://scripts/prototipo_3d/lombada_vale.gd")
+const FazendaVale = preload("res://scripts/prototipo_3d/fazenda_vale.gd")
 const TERREIRO_CASA := preload("res://scenes/prototipo_3d/terreiro_casa.tscn")
 const CASA_TAIPA_CAL_TEXTURE := preload("res://assets/prototipo_3d/materiais/cal_taipa_envelhecida_v1.png")
 const TELHA_COLONIAL_TEXTURE := preload("res://assets/prototipo_3d/materiais/telha_colonial_envelhecida_v1.png")
@@ -82,14 +83,18 @@ const VAO_NORTE_DO_SOBREVOO_M := Vector3(294, 0, -50)
 var _fogo_do_terreiro: Node3D
 
 ## AS CLAREIRAS DOS LUGARES NOVOS DAS FRENTES DO 2D, em unidades: a lombada da lapa
-## (o alto e o corredor da rampa) e a chapada do Seu Benedito (o alto e a beira de
-## frente para o rio). Os dois caíam no meio da mata — onze a catorze troncos a
+## (o alto e o corredor da rampa), a chapada do Seu Benedito (o alto e a beira de
+## frente para o rio) e a fazenda do convite. Os três caíam no meio da mata — onze a catorze troncos a
 ## menos de 12 u —, e tronco atravessando pedra é o que se vê primeiro.
 func _clareiras_das_frentes() -> Array[Vector2]:
 	var lombada := Vector2(LombadaVale.CENTRO_M.x, LombadaVale.CENTRO_M.z) / _meters_per_unit
 	var chapada := Vector2(CHAPADA_DO_BENEDITO_M.x, CHAPADA_DO_BENEDITO_M.z) / _meters_per_unit
-	return [lombada + Vector2(2.0, 0.0), lombada + Vector2(LombadaVale.PE_DA_RAMPA, 0.0),
+	var lista: Array[Vector2] = [lombada + Vector2(2.0, 0.0), lombada + Vector2(LombadaVale.PE_DA_RAMPA, 0.0),
 		chapada, chapada + Vector2(1.0, -11.0)]
+	# E A FAZENDA: o portão e a guarita, o pátio e o casarão (`FazendaVale.CLAREIRAS_M`).
+	for ponto: Vector2 in FazendaVale.CLAREIRAS_M:
+		lista.append(ponto / _meters_per_unit)
+	return lista
 
 
 ## Lote (posição e giro) de cada construção nomeada, decidido por _loteamento().
@@ -1585,6 +1590,13 @@ func _build_farm() -> void:
 	ancoras["Lombada"] = lombada
 	ancoras["Cabra do alto"] = lombada + Vector3(0.0, LombadaVale.ALTO.y, 0.0)
 	ancoras["Lapa"] = ground_position(lombada + Vector3(LombadaVale.PE_DA_RAMPA + LombadaVale.ANTES_DA_LAPA, 0.0, 0.0))
+	# A FAZENDA DO CONVITE (`Lugares` "portao_da_fazenda" e "patio_da_fazenda",
+	# `fazenda_vale.gd`): do outro lado do rio grande, na ponta da Rua Principal,
+	# logo depois da ponte — revisada pelo autor. O pátio é o pé da escadaria do
+	# casarão, que é onde o 2D fecha o passo.
+	ancoras["Portão da fazenda"] = ground_position(_u(FazendaVale.PORTAO_M))
+	ancoras["Pátio da fazenda"] = ground_position(_u(FazendaVale.PATIO_M))
+	ancoras["Casarão"] = ground_position(_u(FazendaVale.CASARAO_M))
 	ancoras["Lavoura"] = ground_position(_na_casa("Casa de taipa", LAVOURA_NA_CASA))
 	ancoras["LavouraFrente"] = ancoras.get("Casa de taipaFrente", Vector3.BACK)
 	var canteiro := ground_position(_na_casa("Casa de taipa", CANTEIRO_NA_CASA))

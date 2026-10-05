@@ -1,14 +1,22 @@
 {
-  "observacao": "Lote de 05/10/2026 (tarde): a fazenda do convite e a cabra da lombada, para as missões do 2D que ainda faltavam (docs/projeto/MISSOES_DO_2D.md, 1.5 e 4: picareta, cabra, fazenda_ida, fazenda_chegada). Pedido do usuário: \"Gere no Tripo\". Tripo Studio pela ponte do Playwright MCP com a extensão do Chrome, com tools/tripo/lote_studio.js: Modelo HD H3.1 com a textura 8K desligada (55 créditos cada) e Retopologia Malha Smart em quads (40 créditos cada), 285 créditos ao todo; exportação GLB, baixada pelo link assinado de operation/download_with_name (o link vence em minutos: pedir na hora de baixar). Os ids de tarefa e de exportação ficaram no histórico de cada projeto no Studio; aqui vai o projeto. Medidas no Godot, normalizadas (o maior eixo perto de 1): o portão 0,98 x 0,65 x 0,21, de frente para +Z; o casarão 0,98 x 0,42 x 0,69, com a escadaria na frente; a cabra 0,29 x 0,85 x 0,98, comprida em Z e de cabeça para +Z.",
+  "observacao": "Lote de 05/10/2026 (tarde): a fazenda do convite e a cabra da lombada, para as missões do 2D que ainda faltavam (docs/projeto/MISSOES_DO_2D.md, 1.5 e 4: picareta, cabra, fazenda_ida, fazenda_chegada). Pedido do usuário: \"Gere no Tripo\". Tripo Studio pela ponte do Playwright MCP com a extensão do Chrome, com tools/tripo/lote_studio.js: Modelo HD H3.1 com a textura 8K desligada (55 créditos cada) e Retopologia Malha Smart em quads (40 créditos cada), 285 créditos ao todo; exportação GLB, baixada pelo link assinado de operation/download_with_name (o link vence em minutos: pedir na hora de baixar). Os ids de tarefa e de exportação ficaram no histórico de cada projeto no Studio; aqui vai o projeto. Medidas no Godot, normalizadas (o maior eixo perto de 1): o portão 0,98 x 0,65 x 0,21, de frente para +Z; o casarão 0,98 x 0,42 x 0,69, com a escadaria na frente; a cabra 0,29 x 0,85 x 0,98, comprida em Z e de cabeça para +Z. SEGUNDA RODADA, no mesmo dia: o portão da primeira saiu alto, entre pilares altos, e o capítulo 6 o quer baixo — \"uns cinco metros de portão e não chega a um de altura\" —, com a guarita de pedra velha ao lado, sem porta nem janela (o pedido tinha sido escrito antes de ler o capítulo). O usuário escolheu gerar de novo: o portão baixo e a guarita, 190 créditos (2 x 95). O gerador fez o portão novo da altura de um homem e meio também (0,98 x 0,59 x 0,24, normalizado); `fazenda_vale.gd` o achata à altura do capítulo (1,1). O portão alto da primeira rodada ficou fora do projeto (.assets-raw/tripo/gerados/portao_fazenda_alto_tripo.glb). A guarita tem uma boca aberta, sem folha de porta, num dos lados: fica virada para a mata.",
   "tarefas": {
     "portao_fazenda": {
-      "projeto": "971d6477-e56e-4010-a5d2-38f1dbb47d99",
+      "tarefa": "b285cf61-42c6-4152-82a0-f8da463bf3b7",
+      "projeto": "43e26289-ad28-47b8-acb4-6f99584136d5",
+      "retopologia": "0a0e20be-548e-4e38-9726-bee8cf06c8ee",
+      "exportacao": "bcb75b96-7d2d-4517-9554-08ec24ecc56f",
       "pasta": "construcoes",
-      "faces": 5000,
+      "faces": 3000,
       "textura": "2k",
-      "triangulos": 9314,
-      "sha256": "ab82bae93eb73736adb64565708bb0ca0b8a384e9b1d5332541a491c41e4df3c",
-      "prompt": "The main entrance gate of an old 19th-century sugar-cane plantation in the Reconcavo Baiano, Bahia, Brazil: two tall square whitewashed masonry pillars with weathered peeling plaster and stone caps, a wide closed double gate of dark wrought-iron bars with simple scrollwork between them, and a short stretch of low whitewashed wall on each side. Stylized hand-painted 3D game asset, rural Bahia, Brazil (1887), warm colors, quietly ominous, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no people, no text."
+      "triangulos": 6006,
+      "sha256": "6e42b6209c92d91632866faec6d419343616b5be67808b5aeb82ff1584b7c82c",
+      "prompt": "A very low and wide entrance gate of an old 19th-century plantation in the Reconcavo Baiano, Bahia, Brazil: a five-meter-wide gate of thin dark wrought-iron bars, less than one meter tall, so low a man could step over it, hung between two short weathered stone posts barely taller than the gate, no walls attached. Modest and slightly absurd, it guards nothing. Stylized hand-painted 3D game asset, rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no people, no text.",
+      "substitui": {
+        "projeto": "971d6477-e56e-4010-a5d2-38f1dbb47d99",
+        "sha256": "ab82bae93eb73736adb64565708bb0ca0b8a384e9b1d5332541a491c41e4df3c",
+        "porque": "alto demais para o capítulo 6"
+      }
     },
     "casarao_fazenda": {
       "projeto": "f7755c16-5f04-48a7-b56b-003b0e6b0bd2",
@@ -27,6 +35,18 @@
       "triangulos": 7244,
       "sha256": "88830e92ae7abc69321e388ada30ebeaa5668591da5c591615a111592931525f",
       "prompt": "A brown and white backyard goat from rural Bahia, Brazil, standing on all four legs in a calm relaxed pose, short curved horns, a small beard, floppy ears, lean body, head slightly raised and turned to one side. Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated animal, no ground plane, no background, no people, no text."
+    },
+    "guarita_fazenda": {
+      "tarefa": "4ec85ad1-f19b-4c8b-806f-8e4e559df38d",
+      "projeto": "bfbacc17-b1e5-4b8c-82f4-a3cd0f6a364f",
+      "retopologia": "1f46f982-d763-4c98-85bd-ce268c9c0d2c",
+      "exportacao": "d5093292-8519-4f93-a9c7-95e7347a5459",
+      "pasta": "construcoes",
+      "faces": 3000,
+      "textura": "1k",
+      "triangulos": 6373,
+      "sha256": "6eb7e633ba112906b7d5a034c6c291072c41765c79c460d496ba787ddd8b9ffd",
+      "prompt": "A small blind guardhouse of old weathered stone blocks from a 19th-century plantation in the Reconcavo Baiano, Bahia, Brazil: a squat square stone hut with no door and no window at all, solid walls on every side, a low pyramidal roof of old clay tiles with patches of moss, abandoned for a long time. Stylized hand-painted 3D game asset, rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated building, no ground plane, no background, no people, no text."
     }
   }
 }
