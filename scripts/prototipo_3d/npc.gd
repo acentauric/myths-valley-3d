@@ -25,6 +25,9 @@ const RODA_DA_FESTA := {"cruzeiro": 2.6, "terreiro": 2.5, "gameleira": 3.2}
 const VISTA := 70.0
 const VELOCIDADE := 1.35
 const RAIO_SAUDACAO := 3.4
+## O grupo das cadeias de missões (`CadeiaDeMissoes.GRUPO`), pelo nome: o
+## preload daquele script aqui faria os dois se carregarem um ao outro.
+const GRUPO_DAS_CADEIAS := &"cadeias_de_missoes"
 const RAIO_BALAO := 6.0
 const INTERVALO_SAUDACAO_MS := 45000
 ## Duas falas não se atropelam: quem está a menos disto de alguém que ainda fala espera
@@ -520,7 +523,25 @@ func _atualizar_interacao(delta: float) -> void:
 		return
 	var distancia := jogador.global_position.distance_to(global_position)
 	if distancia < RAIO_SAUDACAO and (_ultima_saudacao_ms < 0 or Time.get_ticks_msec() - _ultima_saudacao_ms > intervalo_saudacao_ms) and pode_falar():
-		saudar()
+		if tem_missao():
+			# Quem tem missão com o jogador fala a missão, e não o cumprimento. A
+			# saudação se dá por feita: sem isso, ela sairia no quadro seguinte ao
+			# fim da fala da missão.
+			_ultima_saudacao_ms = Time.get_ticks_msec()
+		else:
+			saudar()
+
+
+## O MORADOR TEM MISSÃO COM O JOGADOR AGORA? Pergunta a toda cadeia viva — a dele
+## e a dos outros, que podem mandar o jogador até ele. Ver
+## `CadeiaDeMissoes.envolve`.
+func tem_missao() -> bool:
+	if not is_inside_tree():
+		return false
+	for cadeia in get_tree().get_nodes_in_group(GRUPO_DAS_CADEIAS):
+		if cadeia.has_method("envolve") and bool(cadeia.envolve(self)):
+			return true
+	return false
 
 
 ## Ninguém por perto está no meio de uma fala (Pedro incluído).
@@ -568,7 +589,8 @@ func saudar() -> void:
 		texto = String(IdiomaMenu.campo(fala, "texto", ""))
 		var caminho := PASTA_VOZES + String(fala.get("audio", "")) + ".mp3"
 		voz.stream = load(caminho) if ResourceLoader.exists(caminho) else null
-	mostrar_balao(texto, maxf(5.0, voz.stream.get_length() + 1.5) if voz.stream != null else 7.0)
+	# O balão leva a fala enxuta; a voz e o aviso do HUD (`saudou`) levam a inteira.
+	mostrar_balao(balao_curto(texto), maxf(5.0, voz.stream.get_length() + 1.5) if voz.stream != null else 7.0)
 	_tomar_palavra(voz.stream.get_length() if voz.stream != null else 4.0)
 	if voz.stream != null:
 		voz.stop()
@@ -577,6 +599,39 @@ func saudar() -> void:
 		var chave := "gesto_tripo" if animador.has_method("is_using_authored_clips") else "gesto_saudacao"
 		animador.play_gesture(int(dados.get(chave, 0)))
 	saudou.emit(self, texto)
+
+
+## O BALÃO DA SAUDAÇÃO É CURTO; a fala continua inteira.
+##
+## "Os textos das falas de aproximação apresentados no balão também estão
+## grandes. Podemos deixar a fala dele por extenso, mas enxugar o balão. Isso se
+## aplica somente às falas por aproximação." Eram de 60 a 130 letras num balão
+## que se lê de passagem. Fica a primeira frase — a de pelo menos
+## FRASE_MINIMA letras, para "Opa!" não ficar sozinho —, e frase mais longa que
+## BALAO_CURTO é cortada na última palavra que cabe, com reticências. Vale nos
+## três idiomas, porque é feito sobre o texto já traduzido.
+##
+## Só a saudação passa por aqui: a fala de missão (`narrar`) é instrução e sai
+## inteira no balão.
+const BALAO_CURTO := 60
+const FRASE_MINIMA := 12
+
+static func balao_curto(texto: String) -> String:
+	var limpo := texto.strip_edges()
+	var frase := limpo
+	for i in limpo.length():
+		if i + 1 < FRASE_MINIMA or not ".!?…".contains(limpo[i]):
+			continue
+		if i + 1 == limpo.length() or limpo[i + 1] == " ":
+			frase = limpo.substr(0, i + 1)
+			break
+	if frase.length() <= BALAO_CURTO:
+		return frase
+	var corte := frase.substr(0, BALAO_CURTO - 1)
+	var espaco := corte.rfind(" ")
+	if espaco > 0:
+		corte = corte.substr(0, espaco)
+	return corte.rstrip(" ,;:—-") + "…"
 
 
 func mostrar_balao(texto: String, segundos: float) -> void:

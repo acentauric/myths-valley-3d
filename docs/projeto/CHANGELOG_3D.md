@@ -1,5 +1,19 @@
 # Histórico de mudanças — Myths' Valley 3D
 
+## Em desenvolvimento — 05/10/2026
+
+- Morador com missão não cumprimenta mais ao chegar perto: fala só a missão.
+  O Tonho, no bom-dia da chegada, respondia a missão e logo depois soltava a
+  saudação de passagem, e o jogador não sabia qual das duas valia. Vale para o
+  dono da missão, para quem ela manda procurar e para quem vai abrir uma ao
+  chegar perto.
+- O balão da saudação de aproximação fica curto: a primeira frase, com no
+  máximo 60 letras. A voz e o aviso do HUD continuam com a fala inteira, e as
+  falas de missão continuam inteiras no balão. Portão novo: `saudacao`.
+- `docs/projeto/MISSOES_DO_2D.md` reúne todas as missões do jogo 2D, em ordem,
+  com objetivo, gatilho, recompensa e a situação de cada uma no 3D: a base para
+  trazer o que falta.
+
 ## Em desenvolvimento — 04/10/2026
 
 - A chegada do Pedro deixa de ser visita guiada: onze passos em dois dias, cada

@@ -79,8 +79,13 @@ Quebrado, Casa da estrada…) mais um deslocamento. `npc.gd` (`MoradorNPC`)
 caminha entre os postos, olha para quem chega e, a 3,4 unidades, cumprimenta
 uma vez a cada 45 s. Cada morador tem até **três falas** (`falas` em
 `npcs_3d.json`) e alterna entre elas a cada encontro, começando numa ao acaso;
-o balão mostra o `texto` e a voz lê o `tts` (o mesmo texto com marcações de
-interpretação do `eleven_v3`, como `[sighs]` e `[whispers]`). Os áudios ficam em
+a voz lê o `tts` (o mesmo texto com marcações de interpretação do
+`eleven_v3`, como `[sighs]` e `[whispers]`), o aviso do HUD mostra o `texto`
+inteiro e o balão só a primeira frase, com no máximo 60 letras
+(`MoradorNPC.balao_curto`). **Quem tem missão com o jogador não cumprimenta:**
+o dono de uma fila que está andando ou que vai abrir ao chegar perto, e quem o
+passo de agora manda procurar, falam a missão e só ela
+(`CadeiaDeMissoes.envolve`). Os áudios ficam em
 `assets/audio/vozes/<id>_fala_<n>.mp3` e saem de
 `tools/elevenlabs/gerar-falas-moradores.ps1`. Uma voz por pessoa: Manoel Lopes
 (Benedito), Edna (Zefa), Matheus Energetic (Cosme), Matheus Santos (Tonho),

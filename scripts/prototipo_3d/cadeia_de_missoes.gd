@@ -68,6 +68,9 @@ signal pagou(texto: String)
 signal visitou(lugar: String)
 
 const IdiomaMenu = preload("res://scripts/prototipo_3d/idioma_menu.gd")
+## Toda cadeia viva entra neste grupo: é por ele que um morador pergunta se tem
+## missão com o jogador antes de cumprimentar (`npc.gd`, `tem_missao`).
+const GRUPO := &"cadeias_de_missoes"
 
 ## Quem fala. Precisa de `narrar(audio, texto)`.
 var dono: Node3D = null
@@ -167,6 +170,42 @@ func carregar(caminho: String) -> bool:
 	arremate = dado.get("arremate", {}).duplicate()
 	arremate["texto"] = str(IdiomaMenu.campo(arremate, "texto"))
 	return not passos.is_empty()
+
+
+func _ready() -> void:
+	add_to_group(GRUPO)
+
+
+## ESTE MORADOR ESTÁ NESTA MISSÃO AGORA?
+##
+## "Quando encostar no NPC com missão, o NPC não [deve] falar a fala de
+## aproximação. Isso tá deixando o jogador confuso." O morador cumprimentava a
+## três metros e meio sem saber de missão nenhuma, e a fala da missão saía logo
+## depois, na mesma boca: o Tonho dizia "passa aqui de tarde" e em seguida
+## respondia o bom-dia da chegada. Quem tem missão com o jogador fala a missão,
+## e só ela.
+##
+## Está na missão quem é DONO dela e ela anda, ou vai abrir ao chegar perto;
+## quem tem o arremate ainda por dizer; e quem é o destinatário do passo de
+## agora ("levar" e "falar", `a_quem`) — o Tonho do bom-dia, que a fila é do
+## Pedro. Fila que ainda espera outra coisa (`depois_de`) ou congelada
+## (`so_enquanto`) não conta: dali não sai fala nenhuma, e o morador pode
+## cumprimentar.
+func envolve(morador: Node) -> bool:
+	if morador == null or (so_enquanto.is_valid() and not bool(so_enquanto.call())):
+		return false
+	if morador == dono:
+		if not iniciado:
+			return comeca_perto_de > 0.0 and (not depois_de.is_valid() or bool(depois_de.call()))
+		if not acabou():
+			return true
+		return not despedida_feita and bool(arremate.get("narra", true)) \
+			and not str(arremate.get("texto", "")).is_empty()
+	if not iniciado or acabou():
+		return false
+	var quem := str((passo_atual().get("meta", {}) as Dictionary).get("a_quem", ""))
+	var dados = morador.get("dados")
+	return quem != "" and dados is Dictionary and str((dados as Dictionary).get("id", "")) == quem
 
 
 ## Começa a conduzir, com uma folga antes do primeiro anúncio.
