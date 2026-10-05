@@ -233,20 +233,6 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 
 
-func _unhandled_input(event: InputEvent) -> void:
-	if not event is InputEventMouseButton or not event.pressed or event.ctrl_pressed:
-		return
-	if get_tree().paused or Mochila.aberta or Dialogo.ocupado() or not _corpo_de_pe():
-		return
-	if event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
-		Inventario.selecionar(Inventario.proximo_da_mao())
-	elif event.button_index == MOUSE_BUTTON_WHEEL_UP:
-		Inventario.selecionar(Inventario.anterior_da_mao())
-	else:
-		return
-	get_viewport().set_input_as_handled()
-
-
 ## O CORPO DO JOGADOR ESTÁ DE PÉ? No escuro da queda (e no susto do tubarão) ele
 ## está parado, e o E que o mundo não pega — achados, pesca, luta, recursos,
 ## árvores e lápides perguntam pelo corpo — caía aqui e comia: desacordado não

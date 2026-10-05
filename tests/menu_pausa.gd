@@ -261,6 +261,71 @@ func _run() -> void:
 	_conferir(not menu.aberto, "fechar tudo deixou o menu do Esc aberto")
 	_conferir(not paused, "fechar o menu do Esc deixou o vale parado")
 
+	# O ? abre Controles como tela modal, com a mesma pausa e saída das Missões.
+	hud.controls_requested.emit()
+	await _frames(2)
+	_conferir(hud.controls_open() and jogo.telas.aberta() == "controles" and paused,
+		"o ? não abriu Controles como modal pausado")
+	var caixa_controles := _achar(hud, "CaixaControles") as Control
+	_conferir(caixa_controles != null, "o modal de Controles não tem caixa")
+	if caixa_controles != null:
+		var quadro_controles := caixa_controles.get_global_rect()
+		var janela_controles := caixa_controles.get_viewport_rect().size
+		_conferir(absf(quadro_controles.get_center().x - janela_controles.x * 0.5) < 2.0
+			and absf(quadro_controles.get_center().y - janela_controles.y * 0.5) < 2.0,
+			"Controles ainda aparece na lateral, fora do centro")
+	var fechar_controles := _achar(hud, "FecharControles") as Button
+	_conferir(fechar_controles != null, "Controles não tem botão de fechar")
+	if fechar_controles != null:
+		fechar_controles.pressed.emit()
+	await _frames(2)
+	_conferir(not hud.controls_open() and not paused,
+		"fechar Controles deixou o jogo travado")
+
+	jogo.telas.abrir("menu_pausa")
+	await _frames(2)
+	var controles_no_menu := _linha_com(_achar(menu, "Linhas") as VBoxContainer, "Controles")
+	_conferir(controles_no_menu >= 0, "o menu perdeu a linha de Controles")
+	if controles_no_menu >= 0:
+		menu._cursor = controles_no_menu
+		menu._fazer()
+		await _frames(2)
+		_conferir(hud.controls_open() and not menu.aberto and paused,
+			"a linha Controles do menu não abre o modal")
+		jogo.telas.fechar_tudo()
+		await _frames(2)
+		_conferir(not paused, "fechar Controles pelo gestor não retomou o jogo")
+
+	# A velocidade Parada vem das preferências; o relógio precisa retomá-la mesmo
+	# quando a opção de pausar pelo botão estiver bloqueada.
+	var dia = root.get_node("/root/Dia")
+	dia.definir_pausa_no_jogo(false)
+	dia.definir_velocidade(0)
+	dia.pausado = false
+	hud._update_clock_hint()
+	_conferir(hud._clock_hint.text.contains("Retomar"),
+		"o relógio parado não indica que o botão pode retomar o tempo")
+	hud._clock_button.pressed.emit()
+	_conferir(dia.velocidade == 2 and not dia.pausado,
+		"clicar no relógio não retomou a velocidade normal")
+	var hora_antes: float = dia.hora
+	await _frames(5)
+	_conferir(dia.hora > hora_antes, "o horário não avançou depois de clicar no relógio")
+	dia.definir_velocidade(0)
+	jogo.telas.abrir("menu_pausa")
+	await _frames(2)
+	var i_relogio := _linha_com(_achar(menu, "Linhas") as VBoxContainer, "Relógio:")
+	_conferir(i_relogio >= 0, "o menu perdeu a linha do relógio")
+	if i_relogio >= 0:
+		menu._cursor = i_relogio
+		menu._fazer()
+		_conferir(dia.velocidade == 2 and not jogo._relogio_pausado_antes,
+			"a linha do relógio não retomou o tempo parado")
+	jogo.telas.fechar_tudo()
+	await _frames(2)
+	_conferir(not dia.pausado and not paused,
+		"o relógio continuou pausado depois de fechar o menu")
+
 	_fechar()
 
 

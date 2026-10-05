@@ -121,6 +121,9 @@ func _run() -> void:
 	_conferir(not paused, "o vale continuou pausado depois do respawn")
 	_conferir(not root.get_node("/root/Dialogo").ativo and hud._house_info_panel.visible,
 		"a explicação da queda não apareceu no painel com fechar")
+	for placa in vale.placas._placas.values():
+		_conferir((placa as Control).z_index < hud._house_info_panel.z_index,
+			"a plaquinha de NPC pode cobrir a explicação da queda")
 	var fechar: Array[Node] = hud._house_info_panel.find_children("*", "Button", true, false)
 	_conferir(fechar.size() == 1, "o aviso da queda não tem botão de fechar")
 	if fechar.size() == 1:

@@ -46,6 +46,10 @@ func _run() -> void:
 		"o painel não acompanha uma janela menor")
 	hud.set_controls_open(true)
 	_conferir(not painel.visible, "o painel cobre os controles")
+	if "--capture" in OS.get_cmdline_user_args() and DisplayServer.get_name() != "headless":
+		await RenderingServer.frame_post_draw
+		DirAccess.make_dir_recursive_absolute("res://scratch/controles")
+		root.get_texture().get_image().save_png("res://scratch/controles/modal.png")
 	hud.set_controls_open(false)
 	_conferir(painel.visible, "o painel não retorna depois dos controles")
 	hud.set_map_open(true)

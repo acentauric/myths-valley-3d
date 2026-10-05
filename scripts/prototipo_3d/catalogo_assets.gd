@@ -86,6 +86,7 @@ const PECAS := {
 	"damiao": {"tripo": "personagens/damiao_tripo.glb", "altura": 1.74},
 	"candinha": {"tripo": "personagens/candinha_tripo.glb", "altura": 1.62},
 	"viajante": {"tripo": "personagens/viajante_tripo.glb", "altura": 1.78},
+	"tubarao": {"tripo": "mar/tubarao_tripo.glb", "largura": 2.6},
 	# Itens de mão (os mesmos do 2D)
 	"machado": {"tripo": "itens/machado_tripo.glb", "altura": 0.85},
 	"enxada": {"tripo": "itens/enxada_tripo.glb", "altura": 1.4},

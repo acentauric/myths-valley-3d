@@ -36,6 +36,11 @@ var _submerso := false
 var _proximo_ataque := 0.0
 var _checagem_mare := 0.0
 var _espuma: GPUParticles3D
+var _modelo_tripo: Node3D
+var _esqueleto: Skeleton3D
+var _ossos_cauda: Array[int] = []
+var _eixos_cauda: Array[Vector3] = []
+var _tempo_cauda := 0.0
 var _tela: CanvasLayer
 var _flash: ColorRect
 var _vinheta: TextureRect
@@ -65,6 +70,7 @@ func configurar(world, player, aviso: Callable) -> void:
 func _physics_process(delta: float) -> void:
 	if not _ativo or _atacando:
 		return
+	_animar_cauda(delta)
 	var agora := Time.get_ticks_msec() / 1000.0
 	_checagem_mare -= delta
 	if _checagem_mare <= 0.0:
@@ -228,6 +234,35 @@ func _lamina(ponto: Vector3) -> float:
 
 ## Barbatana rente à superfície, corpo achatado como sombra e uma caudal discreta.
 func _montar_visual() -> void:
+	if Estilo.tripo() and CatalogoAssets.tem_tripo("tubarao"):
+		var cena := CatalogoAssets.cena("tubarao")
+		if cena != null:
+			_modelo_tripo = cena.instantiate() as Node3D
+			add_child(_modelo_tripo)
+			var limites := CatalogoAssets.limites(_modelo_tripo)
+			var comprimento := maxf(limites.size.x, limites.size.z)
+			var escala := 2.6 / maxf(comprimento, 0.001)
+			_modelo_tripo.scale *= escala
+			_modelo_tripo.rotation.y = PI * 0.5
+			_modelo_tripo.position = -(limites.get_center() * escala).rotated(Vector3.UP, PI * 0.5) + Vector3(0.0, -0.25, 0.0)
+			var esqueletos := _modelo_tripo.find_children("*", "Skeleton3D", true, false)
+			if not esqueletos.is_empty():
+				_esqueleto = esqueletos[0] as Skeleton3D
+				for nome_osso in ["Tail_0", "Tail_1"]:
+					for i in _esqueleto.get_bone_count():
+						if String(_esqueleto.get_bone_name(i)).ends_with(nome_osso):
+							_ossos_cauda.append(i)
+							_eixos_cauda.append((_esqueleto.get_bone_global_rest(i).basis.inverse() * Vector3.UP).normalized())
+							break
+			var animacoes := _modelo_tripo.find_children("*", "AnimationPlayer", true, false)
+			if not animacoes.is_empty():
+				var player := animacoes[0] as AnimationPlayer
+				for nome in player.get_animation_list():
+					if "swim" in String(nome).to_lower() or "nadar" in String(nome).to_lower():
+						player.get_animation(nome).loop_mode = Animation.LOOP_LINEAR
+						player.play(nome)
+						break
+			return
 	var pele := StandardMaterial3D.new()
 	pele.albedo_color = Color("39444e")
 	pele.roughness = 0.55
@@ -271,6 +306,16 @@ func _montar_visual() -> void:
 	corpo.scale = Vector3(0.35, 0.12, 1.3)
 	corpo.position = Vector3(0.0, -0.3, 0.3)
 	add_child(corpo)
+
+
+func _animar_cauda(delta: float) -> void:
+	if _esqueleto == null or _ossos_cauda.is_empty():
+		return
+	_tempo_cauda += delta
+	for j in _ossos_cauda.size():
+		var fase := _tempo_cauda * 4.2 - float(j) * 0.65
+		var amplitude := 0.20 if j == 0 else 0.38
+		_esqueleto.set_bone_pose_rotation(_ossos_cauda[j], Quaternion(_eixos_cauda[j], sin(fase) * amplitude))
 
 
 ## Rastro leve de espuma atrás da barbatana, rente à superfície.

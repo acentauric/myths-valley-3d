@@ -64,9 +64,39 @@ func _run() -> void:
 	_conferir(jogador.vigor_atual() == 0.0 and is_equal_approx(jogador.folego_atual(), 1.0) and vida.atual == saude,
 		"ao esgotar vigor no meio do nado, só o tempo restante deve consumir fôlego")
 	jogador._atualizar_vigor(1.0, false)
-	_conferir(jogador.folego_atual() == 0.0 and is_equal_approx(vida.atual, saude - 4.0),
-		"nadar sem vigor deve consumir fôlego e só o excedente deve atingir a vida")
+	_conferir(jogador.folego_atual() == 0.0 and is_equal_approx(vida.atual, saude),
+		"o fôlego zerado feriu antes de dois segundos completos")
+	jogador._atualizar_vigor(1.2, false)
+	_conferir(is_equal_approx(vida.atual, saude - 1.0),
+		"após dois segundos sem fôlego deve entrar um ponto de dano")
+	jogador._atualizar_vigor(2.0, false)
+	_conferir(is_equal_approx(vida.atual, saude - 3.0),
+		"após quatro segundos sem fôlego devem entrar mais dois pontos de dano")
+	jogador._atualizar_vigor(2.0, false)
+	_conferir(is_equal_approx(vida.atual, saude - 6.0),
+		"após seis segundos sem fôlego devem entrar mais três pontos de dano")
 	_conferir(hud.barra_folego.value == 0.0 and hud.barra_vida.value == vida.atual, "o HUD não acompanhou o nado")
+	jogador.velocity = Vector3.ZERO
+	jogador._atualizar_vigor(1.0, false)
+	_conferir(is_equal_approx(jogador.vigor_atual(), 20.0) and is_equal_approx(jogador.folego_atual(), 10.0)
+		and is_equal_approx(vida.atual, saude - 6.0),
+		"parar na água não recuperou vigor e fôlego ou continuou ferindo")
+	jogador.definir_vigor(0.0)
+	jogador.definir_folego(0.0)
+	jogador.velocity = Vector3(1, 0, 0)
+	jogador._atualizar_vigor(1.9, false)
+	_conferir(is_equal_approx(vida.atual, saude - 6.0),
+		"recuperar o fôlego não reiniciou o tempo até o primeiro dano")
+	jogador._atualizar_vigor(0.1, false)
+	_conferir(is_equal_approx(vida.atual, saude - 7.0),
+		"ao zerar o fôlego de novo, o dano deve recomeçar em um ponto")
+	jogador.definir_vigor(40.0)
+	jogador.definir_folego(50.0)
+	jogador.velocity = Vector3(1, 0, 0)
+	jogador._atualizar_vigor(1.0, true)
+	_conferir(is_equal_approx(jogador.vigor_atual(), 30.0) and jogador.folego_atual() > 50.0,
+		"nado rápido não gastou mais vigor que o nado normal")
+	jogador.definir_folego(0.0)
 	jogador.set("_nadando", false)
 	_conferir(hud.barra_vida.value == vida.atual and hud._vida_texto.text.begins_with("Vida "), "a barra de vida perdeu valor ou descrição")
 	_conferir(hud._folego_texto.text.contains("cansado"), "o HUD não avisa sobre pouco fôlego")

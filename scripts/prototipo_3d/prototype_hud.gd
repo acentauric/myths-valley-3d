@@ -55,6 +55,8 @@ signal settings_closed
 signal style_changed
 signal camera_lock_requested(locked: bool)
 signal house_info_close_requested
+signal controls_requested
+signal controls_closed
 
 const INK := Color("e8e4d7")
 const MUTED := Color("aebaae")
@@ -91,10 +93,13 @@ var _mission_previous: Button
 var _mission_next: Button
 var _mission_close: Button
 var _control_mode_label: Label
-var _controls_panel: Panel
+var _controls_overlay: Control
+var _controls_panel: PanelContainer
 var _help_icon	# hud_icon.gd
 var _camera_lock_button: Button
 var _clock_hint: Label
+var _clock_button: Button
+var _clock_icon
 var _house_info_panel: Panel
 var _house_info_label: Label
 var _house_info_heading: Label
@@ -175,28 +180,58 @@ func _ready() -> void:
 	_house_info_panel.add_child(close_house_info)
 	close_house_info.pressed.connect(func(): house_info_close_requested.emit())
 
-	# Controles: painel à esquerda, embaixo, como o das casas; começa oculto e abre
-	# pelo "?" da coluna do canto.
-	_controls_panel = _panel(Color(0.055, 0.085, 0.075, 0.92))
-	_root.add_child(_controls_panel)
-	_controls_panel.visible = false
-	var controls_heading := _label("CONTROLES", 13, GOLD)
-	_controls_panel.add_child(controls_heading)
-	controls_heading.position = Vector2(16, 10)
-	controls_heading.size = Vector2(270, 24)
-	_control_mode_label = _label("", 14, INK)
-	_control_mode_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_controls_panel.add_child(_control_mode_label)
-	_control_mode_label.position = Vector2(16, 38)
-	_control_mode_label.size = Vector2(HEADING_WIDTH - 32, 0)
+	# A mesma apresentação modal das telas do vale: fundo escurecido, caixa ao
+	# centro e conteúdo rolável para janelas menores.
+	_controls_overlay = Control.new()
+	_controls_overlay.name = "ModalControles"
+	_controls_overlay.process_mode = Node.PROCESS_MODE_ALWAYS
+	_controls_overlay.z_index = 100
+	_controls_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_controls_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
+	_root.add_child(_controls_overlay)
+	_controls_overlay.visible = false
+	var shade := ColorRect.new()
+	shade.color = Color(0.02, 0.03, 0.03, 0.72)
+	shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	shade.mouse_filter = Control.MOUSE_FILTER_STOP
+	_controls_overlay.add_child(shade)
+	_controls_panel = PanelContainer.new()
+	_controls_panel.name = "CaixaControles"
+	var controls_style := StyleBoxFlat.new()
+	controls_style.bg_color = Color(0.055, 0.085, 0.075, 0.97)
+	controls_style.border_color = GOLD
+	controls_style.set_border_width_all(1)
+	controls_style.set_corner_radius_all(10)
+	controls_style.set_content_margin_all(18)
+	_controls_panel.add_theme_stylebox_override("panel", controls_style)
+	_controls_overlay.add_child(_controls_panel)
+	var controls_column := VBoxContainer.new()
+	controls_column.add_theme_constant_override("separation", 12)
+	_controls_panel.add_child(controls_column)
+	var controls_top := HBoxContainer.new()
+	controls_column.add_child(controls_top)
+	var controls_heading := _label("CONTROLES", 19, GOLD)
+	controls_heading.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_TITULO, 500, 2))
+	controls_heading.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	controls_top.add_child(controls_heading)
 	var close_controls := Button.new()
+	close_controls.name = "FecharControles"
 	close_controls.text = "×"
 	close_controls.tooltip_text = "Fechar controles"
-	close_controls.position = Vector2(HEADING_WIDTH - 41, 7)
-	close_controls.size = Vector2(32, 28)
+	close_controls.custom_minimum_size = Vector2(32, 28)
 	close_controls.focus_mode = Control.FOCUS_NONE
-	_controls_panel.add_child(close_controls)
+	controls_top.add_child(close_controls)
 	close_controls.pressed.connect(func(): set_controls_open(false))
+	var controls_scroll := ScrollContainer.new()
+	controls_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	controls_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	controls_column.add_child(controls_scroll)
+	_control_mode_label = _label("", 17, INK)
+	_control_mode_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_control_mode_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	controls_scroll.add_child(_control_mode_label)
+	_layout_controls_modal()
+	get_viewport().size_changed.connect(_layout_controls_modal)
 
 	_notice_panel = _panel(Color(0.055, 0.085, 0.075, 0.82))
 	_notice_panel.name = "Aviso"
@@ -254,10 +289,15 @@ func _ready() -> void:
 	_root.add_child(barra)
 	_barra = barra
 
-	# O ALMANAQUE por cima de tudo: é tela cheia, e tela cheia cobre.
+	# Como o painel de Missões, o almanaque tem camada própria acima do HUD.
+	# O minimapa e as plaquinhas entram depois na raiz, mas ficam sob a cortina.
+	var almanaque_layer := CanvasLayer.new()
+	almanaque_layer.name = "CamadaAlmanaque"
+	almanaque_layer.layer = 25
+	add_child(almanaque_layer)
 	var almanaque := Almanaque.new()
 	almanaque.name = "Almanaque"
-	_root.add_child(almanaque)
+	almanaque_layer.add_child(almanaque)
 	_almanaque = almanaque
 
 	_update_control_mode()
@@ -579,15 +619,18 @@ func _update_control_mode() -> void:
 		"%s: painel (missões, cartas, venda, jogo)  ·  %s: almanaque (plantas, cordéis, sinais, bichos)" % [Atalhos.letra("painel"), Atalhos.letra("almanaque")],
 		mode,
 		"Tab ou %s: alterna a câmera  ·  Esc: menu" % Atalhos.letra("camera"),
-		"Rodinha: item da mão  ·  Ctrl+rodinha ou +/-: zoom  ·  %s: avança a hora" % Atalhos.letra("hora"),
+		"Rodinha: zoom  ·  1 a 0: item da mão  ·  %s: avança a hora" % Atalhos.letra("hora"),
 		"%s: reinicia  ·  %s: mapa · minimapa em AJUSTAR" % [Atalhos.letra("reiniciar"), Atalhos.letra("mapa")],
 	])
-	var text_height := _text_height(_control_mode_label)
-	_control_mode_label.size.y = text_height
-	var height := 38.0 + text_height + 16.0
-	var screen := get_viewport().get_visible_rect().size if is_inside_tree() else Vector2(1280, 720)
-	_controls_panel.size = Vector2(HEADING_WIDTH, height)
-	_controls_panel.position = Vector2(18, screen.y - height - 18.0)
+
+
+func _layout_controls_modal() -> void:
+	if not is_instance_valid(_controls_panel):
+		return
+	var screen := get_viewport().get_visible_rect().size
+	var dimensions := Vector2(minf(900.0, screen.x - 48.0), minf(520.0, screen.y - 48.0))
+	_controls_panel.position = (screen - dimensions) * 0.5
+	_controls_panel.size = dimensions
 
 
 ## Altura do texto de um rótulo com quebra de linha, contando o espaço entre linhas.
@@ -597,17 +640,21 @@ func _text_height(label: Label) -> float:
 
 
 func controls_open() -> bool:
-	return is_instance_valid(_controls_panel) and _controls_panel.visible
+	return is_instance_valid(_controls_overlay) and _controls_overlay.visible
 
 
-## "?" do canto: mostra ou esconde o painel de controles (o "?" fica dourado aberto).
+## Modal de controles; o dono das telas do vale cuida da pausa e do Esc.
 func set_controls_open(open: bool) -> void:
-	_controls_panel.visible = open
+	if controls_open() == open:
+		return
+	_controls_overlay.visible = open
 	if is_instance_valid(_help_icon):
 		_help_icon.definir(open)
 	_sync_performance_panel()
 	if open:
 		_update_control_mode()
+	else:
+		controls_closed.emit()
 
 
 func _update_telemetry() -> void:
@@ -629,8 +676,15 @@ func _update_telemetry() -> void:
 func _update_clock_hint() -> void:
 	if not is_instance_valid(_clock_hint):
 		return
-	if Dia.pausa_no_jogo:
-		_clock_hint.text = "%s · %s" % [Dia.texto_hora(), "Retomar" if Dia.pausado else "Pausar"]
+	var andando: bool = not Dia.pausado and Dia.velocidade > 0
+	if is_instance_valid(_clock_icon):
+		_clock_icon.set_running(andando)
+	if is_instance_valid(_clock_button):
+		_clock_button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND if not andando or Dia.pausa_no_jogo else Control.CURSOR_ARROW
+	if not andando:
+		_clock_hint.text = "%s · Retomar" % Dia.texto_hora()
+	elif Dia.pausa_no_jogo:
+		_clock_hint.text = "%s · Pausar" % Dia.texto_hora()
 	else:
 		_clock_hint.text = Dia.texto_hora()
 
@@ -681,20 +735,26 @@ func _create_corner_buttons() -> void:
 
 	top += BotaoCanto.ESPACO
 	var clock_icon := ClockIcon.new()
-	clock_icon.set_running(not Dia.pausado)
 	var clock: Array = BotaoCanto.criar(_root, top, clock_icon)
+	_clock_icon = clock_icon
+	_clock_button = clock[0]
 	clock_icon.position = Vector2(6, 6)
 	clock_icon.size = Vector2(28, 28)
 	_clock_hint = clock[1]
 	_corner_setup(clock[0], func() -> void:
-		if not Dia.pausa_no_jogo:
+		if Dia.velocidade == 0:
+			Dia.definir_velocidade(2)
+			Dia.pausado = false
+		elif Dia.pausado:
+			Dia.pausado = false
+		elif Dia.pausa_no_jogo:
+			Dia.pausado = true
+		else:
 			Audio.efeito("ui_trava")
 			return
 		Audio.efeito("ui_confirmar")
-		Dia.pausado = not Dia.pausado
-		clock_icon.set_running(not Dia.pausado)
-		_update_clock_hint(), false)
-	(clock[0] as Button).mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND if Dia.pausa_no_jogo else Control.CURSOR_ARROW
+		_update_telemetry(), false)
+	_update_clock_hint()
 	Dia.hora_mudou.connect(_update_clock_hint.unbind(1))
 
 	top += BotaoCanto.ESPACO
@@ -739,7 +799,7 @@ func _create_corner_buttons() -> void:
 	_help_icon = HudIcon.new().configurar("ajuda")
 	var help: Array = BotaoCanto.criar(_root, top, _help_icon)
 	(help[1] as Label).text = "Controles"
-	_corner_setup(help[0], func() -> void: set_controls_open(not controls_open()))
+	_corner_setup(help[0], func() -> void: controls_requested.emit())
 
 	top += BotaoCanto.ESPACO
 	var quest_icon: Control = HudIcon.new().configurar("missoes")

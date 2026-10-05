@@ -116,10 +116,9 @@ func _criar(tripo: bool) -> Node3D:
 		# vêm com o comprimento em Z; o giro os deita no eixo X, como o casco procedural.
 		var modelo := CatalogoAssets.instanciar(chave, raiz, Vector3(0, -CALADO_TRIPO, 0), 1.0, PI * 0.5)
 		if modelo != null:
-			# Caixa pelo tamanho real do modelo (medido deitado no eixo X pelo giro):
-			# do fundo até a borda, sem a proa alta.
+			# O piso segue a escala real do casco e fica acima da linha d'água.
 			var limites: AABB = modelo.get_meta("limites")
-			raiz.add_child(_colisao(Vector3(limites.size.z * 0.9, limites.size.y * 0.4, limites.size.x * 0.85), -CALADO_TRIPO))
+			raiz.add_child(_colisao(Vector3(limites.size.z * 0.9, limites.size.y * 0.4, limites.size.x * 0.85), -0.10))
 			# O calado decide quando a maré baixa encalha a canoa (unidades).
 			raiz.set_meta("calado", CALADO_TRIPO)
 			return raiz
@@ -129,10 +128,7 @@ func _criar(tripo: bool) -> Node3D:
 	return raiz
 
 
-## Casco oco (comprimento, altura, boca), que acompanha o balanço: fundo interno, dois
-## costados e as duas pontas. Ninguém atravessa a canoa, e quem pula a borda fica
-## dentro dela, no fundo, e não em cima.
-const ESPESSURA_CASCO := 0.12
+## Fundo interno com rampas rasas para a proa, a popa e os costados.
 ## Altura do fundo interno, em fração da altura do casco a partir da quilha.
 const FUNDO_INTERNO := 0.35
 
@@ -140,19 +136,32 @@ const FUNDO_INTERNO := 0.35
 static func _colisao(tamanho: Vector3, fundo: float) -> AnimatableBody3D:
 	var corpo := AnimatableBody3D.new()
 	corpo.name = "Colisão da canoa"
+	corpo.add_to_group("embarcacao_piso")
 	var piso := fundo + tamanho.y * FUNDO_INTERNO
 	var topo := fundo + tamanho.y
-	var parede := topo - piso
-	var e := ESPESSURA_CASCO
-	# Fundo interno (e o casco abaixo dele, maciço).
+	var borda := minf(topo, piso + 0.28)
 	_peca(corpo, Vector3(tamanho.x, piso - fundo, tamanho.z), Vector3(0.0, (fundo + piso) * 0.5, 0.0))
-	# Costados, ao longo do comprimento.
+	var comprimento_rampa := minf(0.95, tamanho.x * 0.24)
+	var largura_rampa := minf(0.45, tamanho.z * 0.34)
 	for lado in [-1.0, 1.0]:
-		_peca(corpo, Vector3(tamanho.x, parede, e), Vector3(0.0, piso + parede * 0.5, lado * (tamanho.z - e) * 0.5))
-	# Proa e popa, fechando as pontas.
-	for lado in [-1.0, 1.0]:
-		_peca(corpo, Vector3(e, parede, tamanho.z), Vector3(lado * (tamanho.x - e) * 0.5, piso + parede * 0.5, 0.0))
+		_rampa(corpo, true, lado, tamanho.x * 0.5 - comprimento_rampa, tamanho.x * 0.5, tamanho.z, fundo, piso, borda)
+		_rampa(corpo, false, lado, tamanho.z * 0.5 - largura_rampa, tamanho.z * 0.5, tamanho.x, fundo, piso, borda)
 	return corpo
+
+
+static func _rampa(corpo: Node3D, no_comprimento: bool, lado: float, inicio: float, fim: float, transversal: float, fundo: float, piso: float, borda: float) -> void:
+	var forma := ConvexPolygonShape3D.new()
+	var pontos := PackedVector3Array()
+	for distancia in [inicio, fim]:
+		var altura := piso if distancia == inicio else borda
+		for cruzado in [-transversal * 0.5, transversal * 0.5]:
+			var eixo: float = lado * distancia
+			pontos.append(Vector3(eixo, fundo, cruzado) if no_comprimento else Vector3(cruzado, fundo, eixo))
+			pontos.append(Vector3(eixo, altura, cruzado) if no_comprimento else Vector3(cruzado, altura, eixo))
+	forma.points = pontos
+	var colisao := CollisionShape3D.new()
+	colisao.shape = forma
+	corpo.add_child(colisao)
 
 
 static func _peca(corpo: Node3D, tamanho: Vector3, centro: Vector3) -> void:

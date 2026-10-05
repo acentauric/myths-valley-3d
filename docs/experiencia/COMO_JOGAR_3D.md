@@ -37,7 +37,7 @@ As letras marcadas com * são **remapeáveis** em AJUSTAR → Geral → Atalhos;
 | Espaço | Pular a partir do chão |
 | Mouse | Com a câmera solta, girar a câmera sem clicar; com a câmera travada, arrastar o cenário. O modo com que o jogo abre fica em AJUSTAR → Câmera do mouse |
 | Tab ou Câmera* (C) | Alternar entre câmera solta e travada |
-| Ctrl+rodinha, + e - | Aproximar ou afastar a câmera |
+| Rodinha, + e - | Aproximar ou afastar a câmera |
 | Observar* (F) | Olhar o personagem pela frente; de novo, volta |
 | Clique direito | Caminhar até o chão, casa ou morador apontado; duplo clique corre |
 | Clique esquerdo na casa | Abrir os dados da casa no balão e no painel, mesmo à distância; fora das casas, fecha |
@@ -50,7 +50,6 @@ As letras marcadas com * são **remapeáveis** em AJUSTAR → Geral → Atalhos;
 | Ler / interagir* (E) | Falar, ler, pegar, pescar, tocar obra. Perto de um bicho, golpe com a arma na mão (ou a meia-lua, de mão vazia, para quem aprendeu); **segurar** dá o golpe forte (ou a rasteira) |
 | Gingar* (V) | Sair do bote do bicho, para quem aprendeu a capoeira |
 | 1 a 9 e 0 | Pôr na mão o item daquele espaço da barra de mão (o 0 é o décimo) |
-| Rodinha | Passar a mão para o espaço seguinte (para baixo) ou o anterior (para cima), como no 2D |
 | Alt+1 a Alt+8 | Gestos: saudação, tchau, concordar, olhar ao redor, medo, braços cruzados, golpe, nado |
 | Avançar a hora* (T) | Adiantar o relógio do vale em uma hora |
 | Reiniciar* (R) | Voltar ao ponto inicial |

@@ -128,9 +128,7 @@ func _enter_tree() -> void:
 	_bind("mover_baixo", [KEY_S, KEY_DOWN], true)
 	_bind("mover_esquerda", [KEY_A, KEY_LEFT], true)
 	_bind("mover_direita", [KEY_D, KEY_RIGHT], true)
-	# O ZOOM SAIU DA RODA, que agora troca o item da mão como no 2D (#2). Fica
-	# no mais e no menos — as duas fileiras, e o igual junto do mais, porque
-	# em ABNT2 e US o mais mora no shift do igual — e no Ctrl+roda.
+	# O zoom também pode ser controlado pelo teclado, além da roda do mouse.
 	_bind("mv_zoom_in", [KEY_EQUAL, KEY_PLUS, KEY_KP_ADD], true)
 	_bind("mv_zoom_out", [KEY_MINUS, KEY_KP_SUBTRACT], true)
 	# O ALMANAQUE DAS PLANTAS pela tabela de atalhos, e não numa letra fixa.
@@ -192,7 +190,6 @@ func _ready() -> void:
 	add_child(mapa)
 	hud.connect("map_requested", Callable(self, "_toggle_map"))
 	hud.connect("quests_requested", func() -> void:
-		hud.set_controls_open(false)
 		abrir_o_painel(PainelVale.Aba.MISSOES))
 	hud.connect("settings_requested", Callable(self, "_open_settings"))
 	hud.connect("settings_closed", Callable(self, "_on_menu_cancelled"))
@@ -238,6 +235,8 @@ func _ready() -> void:
 	telas = TelasDoVale.new()
 	telas.name = "TelasDoVale"
 	add_child(telas)
+	hud.controls_requested.connect(func() -> void: telas.abrir("controles"))
+	hud.controls_closed.connect(func() -> void: telas.fechou_por_conta("controles"))
 	telas.registrar("mochila",
 		func(e: InputEvent) -> bool: return e.is_action_pressed("mv_mochila"),
 		func() -> bool: return Mochila.aberta,
@@ -273,6 +272,11 @@ func _ready() -> void:
 		func() -> bool: return painel != null and painel.aberto,
 		_abrir_painel_cru,
 		func() -> void: if painel != null: painel.fechar())
+	telas.registrar("controles",
+		func(_e: InputEvent) -> bool: return false,
+		func() -> bool: return hud.controls_open(),
+		func() -> void: hud.set_controls_open(true),
+		func() -> void: hud.set_controls_open(false))
 	# O MENU DO ESC reúne os atalhos que também ficam na coluna do HUD.
 	#
 	# As mesmas ações também aparecem em linhas com rótulos e estado escrito;
@@ -292,7 +296,7 @@ func _ready() -> void:
 		{"rotulo": "Ajustes", "icone": "ajustes", "fecha": true,
 			"fazer": func() -> void: _open_settings()},
 		{"rotulo": "Controles", "icone": "ajuda", "fecha": true,
-			"fazer": func() -> void: hud.set_controls_open(not hud.controls_open())},
+			"fazer": func() -> void: telas.abrir("controles")},
 		# SALVAR COMO NO 2D: devolve recado, porque dá certo e a tela fica igual,
 		# e ação sem retorno é a que se aperta três vezes. As três respostas são
 		# as do painel do J, que já as trouxe de lá — sem vaga não salva, salvou
@@ -307,16 +311,22 @@ func _ready() -> void:
 		{"rotulo": func() -> String: return "Som: %s" % ("ligado" if Audio.som_ativo else "desligado"),
 			"icone": "som",
 			"fazer": func() -> void: Audio.definir_som_ativo(not Audio.som_ativo)},
-		{"rotulo": func() -> String: return "Relógio: %s" % ("andando" if not Dia.pausado else "parado"),
+		{"rotulo": func() -> String: return "Relógio: %s" % ("andando" if Dia.velocidade > 0 and not _relogio_pausado_antes else "parado"),
 			"icone": "relogio",
 			"fazer": func() -> void:
-				if not Dia.pausa_no_jogo:
+				if Dia.velocidade == 0:
+					Dia.definir_velocidade(2)
+					_relogio_pausado_antes = false
+				elif _relogio_pausado_antes:
+					_relogio_pausado_antes = false
+				elif Dia.pausa_no_jogo:
+					_relogio_pausado_antes = true
+				else:
 					Audio.efeito("ui_trava")
 					return
 				Audio.efeito("ui_confirmar")
-				# O relógio fica como o jogador deixou, e não como o menu o
-				# achou: é ele que o dono das telas vai devolver ao fechar.
-				_relogio_pausado_antes = not _relogio_pausado_antes},
+				# O dono das telas devolve este estado ao fechar o menu.
+				},
 		{"rotulo": func() -> String: return "Velocidade do tempo: %s" % Dia.ROTULOS_VELOCIDADE[Dia.velocidade],
 			"icone": "velocidade",
 			"fazer": func() -> void:

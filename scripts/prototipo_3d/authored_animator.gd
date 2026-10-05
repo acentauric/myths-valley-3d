@@ -6,6 +6,7 @@ const MOTION_CLIPS := {
 	"walk": "walk",
 	"run": "run",
 	"swim": "swim",
+	"subir_escadas": "run_upstairs",
 }
 
 const GESTURES := [
@@ -87,8 +88,10 @@ func update_motion(speed: float, _delta: float) -> void:
 		for role in ["walk", "run"]:
 			_passada[role] = _medir_passada(role)
 	if _swimming and _clips.has("swim"):
-		# Parado, bate as pernas devagar para se manter na superfície.
-		_play_motion("swim", clampf(0.45 + speed / 2.4, 0.45, 1.6))
+		if speed <= 0.2 and _clips.has(MOTION_CLIPS["subir_escadas"]):
+			_play_motion("subir_escadas", 1.0)
+		else:
+			_play_motion("swim", clampf(0.45 + speed / 2.4, 0.45, 1.6))
 	elif speed > _limite_da_corrida():
 		_play_motion("run", _escala_da_passada("run", speed, 2.7))
 	elif speed > 0.2:

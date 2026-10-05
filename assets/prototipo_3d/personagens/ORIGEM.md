@@ -23,7 +23,7 @@ antigos continuam no histórico do Git.
 | `filo_tripo.glb` | Dona Filo, an older Afro-Brazilian woman from Bahia in 1887, standing in T-pose with arms straight out: gray hair in a bun, long cotton dress with apron, shawl over the shoulders, full body character. | `ad015ccd-dd29-483f-b0c9-967b3e2cd1b0` | 14.760 | 2K | 7.5 |
 | `pedro_tripo.glb` | Pedro, a young Afro-Brazilian fisherman about 25 years old from Bahia in 1887, standing in T-pose with arms straight out: straw hat, open rough cotton shirt, rolled linen trousers, barefoot, friendly face, full body character. | `c8a8039c-39c1-457f-bcf1-88d24589a941` | 14.400 | 2K | 4.4 |
 | `tonho_tripo.glb` | Tonho, a middle-aged fisherman from Bahia in 1887, standing in T-pose with arms straight out: weathered tanned face, cotton shirt, rolled trousers, fishing net over his shoulder, full body character. | `b2bbbd6e-9ff5-49c5-b54b-c948eb266c0c` | 14.576 | 2K | 9.0 |
-| `viajante_tripo.glb` | The traveler, a young man from Salvador in 1887 arriving in the countryside, standing in T-pose with arms straight out: short dark hair, dark wool jacket, white shirt, brown trousers, leather boots, small leather satchel, full body character. | `134c732b-480e-44c3-ae2d-e5657e122ad9` | 14.461 | 2K | 7.6 |
+| `viajante_tripo.glb` | The traveler, a young man from Salvador in 1887 arriving in the countryside, standing in T-pose with arms straight out: short dark hair, dark wool jacket, white shirt, brown trousers, leather boots, small leather satchel, full body character. | `134c732b-480e-44c3-ae2d-e5657e122ad9` | 14.461 | 1K | 5.35 |
 | `zefa_tripo.glb` | Dona Zefa, an elderly Black woman herbalist from Bahia in 1887, standing in T-pose with arms straight out: white head wrap, long cotton skirt, shawl, bead necklace, full body character. | `1f74f39d-7d84-4ccf-8743-7551022a3daa` | 14.970 | 2K | 7.6 |
 
 Uso comercial: plano Max no momento da geração (ver `assets/CREDITOS.md`).
@@ -45,7 +45,7 @@ sete clipes de predefinição (idle, walk, run, greet_01, agree, look_around,
 wave_goodbye_02), exportados em GLB com animação no lugar e textura **1K** (3,9 a
 4,7 MB). Feito pela aba logada do Studio com a extensão do Playwright, usando
 `__mv.animar()` de `tools/tripo/lote_studio.js`; originais em
-`.assets-raw/tripo/personagens/<id>_tripo_animado.glb`. Só o viajante segue sem rig.
+`.assets-raw/tripo/personagens/<id>_tripo_animado.glb`. O viajante recebeu rig e animacoes em 04/10/2026 (ver abaixo).
 
 ## Pedro nada (27/09/2026)
 
@@ -53,3 +53,14 @@ Mesmo projeto do Pedro (`c8a8039c-…`): retarget da predefinição `preset:bipe
 (sem custo) e nova exportação com os oito clipes (idle, walk, run, greet_01, agree,
 look_around, wave_goodbye_02, swim), textura 1K, 4,5 MB, por `__mv.animar()` de
 `tools/tripo/lote_studio.js`. Original em `.assets-raw/tripo/personagens/pedro_tripo_nado.glb`.
+
+## Viajante animado (04/10/2026)
+
+`viajante_tripo.glb` e a exportacao animada do projeto Tripo
+`134c732b-480e-44c3-ae2d-e5657e122ad9` ("modelo 3d de personagem"). Auto Rig
+humanoide Mixamo: 20 creditos. Treze predefinicoes sem debito adicional: `idle`,
+`walk`, `run`, `greet_01`, `agree`, `look_around`, `wave_goodbye_02`, `chop`,
+`afraid`, `fold_arms`, `swim`, `jump_down` e `run_upstairs`. O ultimo atende ao
+nado parado sob o nome de acao `subir_escadas`. Exportacao GLB com animacoes no
+lugar, esqueleto e textura 1K (5,35 MB). Original em
+`.assets-raw/tripo/viajante_tripo_animado.glb`.
