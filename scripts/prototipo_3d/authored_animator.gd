@@ -54,11 +54,34 @@ func configure(model_root: Node) -> bool:
 		var base := _nome_base(String(real))
 		if not _clips.has(base):
 			_clips[base] = String(real)
+	_congelar_altura_da_pose_de_escada()
 	for clip: String in MOTION_CLIPS.values():
 		if _clips.has(clip):
 			animation_player.get_animation(_clips[clip]).loop_mode = Animation.LOOP_LINEAR
 	_play_motion("idle", 1.0)
 	return true
+
+
+## O clipe de escada tem movimento vertical no osso Hips, próprio de subir um degrau.
+## No nado parado mantemos o balanço dos membros, mas nivelamos esse deslocamento para
+## que a animação não tire o personagem da água ao longo do ciclo.
+func _congelar_altura_da_pose_de_escada() -> void:
+	var clip: String = _clips.get(MOTION_CLIPS["subir_escadas"], "")
+	if clip.is_empty():
+		return
+	var animation := animation_player.get_animation(clip)
+	for track in animation.get_track_count():
+		if animation.track_get_type(track) != Animation.TYPE_POSITION_3D:
+			continue
+		if not String(animation.track_get_path(track)).to_lower().contains("hips"):
+			continue
+		if animation.track_get_key_count(track) == 0:
+			continue
+		var altura_base: float = (animation.track_get_key_value(track, 0) as Vector3).y
+		for key in animation.track_get_key_count(track):
+			var posicao: Vector3 = animation.track_get_key_value(track, key)
+			posicao.y = altura_base
+			animation.track_set_key_value(track, key, posicao)
 
 
 func _process(_delta: float) -> void:

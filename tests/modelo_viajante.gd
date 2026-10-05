@@ -24,6 +24,19 @@ func _run() -> void:
 	var clipes: Dictionary = animador.get("_clips")
 	for nome in ["idle", "walk", "run", "swim", "run_upstairs", "chop", "jump_down", "greet_01", "wave_goodbye_02", "agree", "look_around", "afraid", "fold_arms"]:
 		_conferir(clipes.has(nome), "clipe ausente: " + nome)
+	var escada: Animation = animador.animation_player.get_animation(clipes["run_upstairs"])
+	var quadris_nivelados := false
+	for faixa in escada.get_track_count():
+		if escada.track_get_type(faixa) != Animation.TYPE_POSITION_3D or not String(escada.track_get_path(faixa)).to_lower().contains("hips"):
+			continue
+		quadris_nivelados = true
+		var pose_inicial: Vector3 = escada.track_get_key_value(faixa, 0)
+		var altura := pose_inicial.y
+		for chave in escada.track_get_key_count(faixa):
+			var pose: Vector3 = escada.track_get_key_value(faixa, chave)
+			_conferir(is_equal_approx(pose.y, altura),
+				"o clipe de escada elevou os quadris no nado parado")
+	_conferir(quadris_nivelados, "a trilha vertical dos quadris do clipe de escada não foi encontrada")
 	animador.set_swimming(true)
 	animador.update_motion(0.0, 0.0)
 	_conferir(String(animador.get_current_animation()).begins_with("run_upstairs"), "nado parado usa escada")
