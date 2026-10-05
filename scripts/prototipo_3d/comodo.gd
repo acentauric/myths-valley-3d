@@ -281,6 +281,7 @@ func _montar_porta() -> void:
 	escuro.material_override = breu
 	escuro.position = Vector3(porta_x, altura_da_porta * 0.5, PAREDE + fundo_da_porta + 0.03)
 	add_child(escuro)
+	_porta_aberta = escuro
 	# AS CORTINAS DA CÂMERA, nas duas pontas do vão: o braço da câmera
 	# atravessava a porta aberta, e com o jogador lá dentro a câmera ia parar do
 	# lado de fora — de onde só se via o escuro da porta. Ou, numa porta funda,
@@ -320,6 +321,29 @@ func _montar_porta() -> void:
 		var alto := Vector2(borda_do_alicerce - 0.25, -altura_da_soleira)
 		var baixo := Vector2(borda_do_alicerce + maxf(degrau_de_fora * 3.0, 0.8), -altura_da_soleira - degrau_de_fora)
 		_rampa("RampaDoAdro", largura + PAREDE * 2.0 + 1.0, alto, baixo + (baixo - alto).normalized() * 0.3, 0.0)
+
+
+## A PORTA TRANCADA: a casa herdada fica fechada até a Dona Zefa dar a chave
+## (`prototype._acertar_a_porta_da_casa`). Trancada, um corpo fecha o vão do
+## lado de fora, e o escuro da porta aberta sai — por fora volta a porta pintada
+## do modelo. Destrancada, o corpo sai da física.
+var _porta_aberta: MeshInstance3D
+var _tranca: Node3D
+
+
+func trancar(sim: bool) -> void:
+	if _tranca == null:
+		if not sim:
+			return
+		_tranca = _caixa(Vector3(largura_da_porta + 0.3, altura_da_porta, 0.3),
+			Vector3(porta_x, altura_da_porta * 0.5, PAREDE + fundo_da_porta + 0.15), null, true, "PortaTrancada")
+	_tranca.process_mode = Node.PROCESS_MODE_INHERIT if sim else Node.PROCESS_MODE_DISABLED
+	if _porta_aberta != null:
+		_porta_aberta.visible = not sim
+
+
+func trancada() -> bool:
+	return _tranca != null and _tranca.process_mode != Node.PROCESS_MODE_DISABLED
 
 
 func _cortina(nome: String, z: float) -> StaticBody3D:

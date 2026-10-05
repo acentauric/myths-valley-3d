@@ -58,6 +58,14 @@ func _run() -> void:
 	if interiores == null or jogador == null:
 		_fechar()
 		return
+	# O PEDRO SEGUE O JOGADOR DESDE O COMEÇO, num passo em que ele segue (a roça),
+	# como seguia na partida antiga: no desembarque da partida nova ele fica na
+	# ponta da prancha. Posto para seguir só na hora de entrar junto, no
+	# procedural ele empacava diante da escadaria da igreja e o desvio o levava
+	# pela fachada: não achava a porta em 14 s (05/10/2026).
+	var guia = vale.get("pedro")
+	if guia != null:
+		guia.ir_ao_passo("roca")
 
 	# --- 1. DENTRO DA IGREJA ---------------------------------------------------
 	var sala: Node3D = interiores.sala_de("igreja")

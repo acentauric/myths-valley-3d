@@ -46,31 +46,72 @@ primeira frase, o Tonho já contava a dívida do armazém.
    depois que o Pedro termina a chegada, como as do arraial e a da fé já
    faziam — é a ordem do 2D ("depois que o Pedro termina de ensinar a
    sobreviver"). Quem o Pedro apresenta não atropela a apresentação.
+8. **O Pedro conduz e apresenta** (05/10/2026): "no inicio sempre é o Pedro
+   que conduz e orienta, temos que partir do principio que o jogador não
+   conhece o lugar e nenhum NPC, ou seja, o Pedro que vai apresentar." Até a
+   porta da casa, ele vai NA FRENTE (`conduz`) até quem o passo apresenta, no
+   passo do jogador, e espera quem fica para trás. O fio das perguntas (regra
+   3) continua: a chave ainda está com quem a Dona Candinha diz — mas é o
+   Pedro quem leva até ela.
 
 ## A chegada (Pedro, `missoes_guia.json`)
 
-Dois dias. O primeiro é a casa do finado; o segundo, a roça e o convite.
+Dois dias, e a ordem do 2D (`docs/projeto/MISSOES_DO_2D.md`) onde ela é a
+mesma coisa: chegar, andar, ser levado à casa, entrar, pegar as ferramentas do
+finado e abrir a primeira leira. Do 3D ficam os pedidos do arraial — a chave
+que se pergunta, o fogo, o poço em mutirão, a janta, a noite e o convite.
+
+**Começa em cima do saveiro.** A partida nova põe o jogador no convés do
+saveiro do mestre Quirino, atracado no píer (`saveiro_vale.gd`), olhando o
+tabuado; o Pedro espera na ponta da prancha e saúda. O barco fica atracado o
+primeiro dia inteiro — sem o mestre no píer e sem a aba de compra, que são do
+dia 14 — e larga quando o dia vira.
 
 | # | Passo | Quem pede | O que se faz | Ensina | Paga |
 |---|---|---|---|---|---|
-| 1 | Quem chega, cumprimenta | o costume (Pedro) | dar bom-dia ao Tonho no píer | andar até alguém | o Tonho: 1 peixe |
-| 2 | Quem guardou a chave | o Pedro não sabe | perguntar à Dona Candinha, na praça | o marcador que segue a pessoa | a Candinha: 1 garapa |
-| 3 | A chave com a Dona Zefa | a Candinha manda | buscar a chave com a Dona Zefa | a pergunta que leva à pergunta | a Zefa: 1 cocada |
-| 4 | Fogo na casa fechada | a Zefa ("casa fechada junta frio") | juntar 4 lenhas | o machado na barra de mão (1–0), o E no tronco | a avó do Pedro: 1 beiju |
-| 5 | A boca do poço | a Zefa, no poço | tirar 3 pedras do lajedo do poço | a picareta | — |
-| 6 | Corda nova | o poço | torcer 1 corda na bancada | a bancada da oficina (J) | — |
-| 7 | Mutirão no poço | a Zefa, com o Cosme | a obra "Corda nova no poço" | a aba de obras (J); o mutirão | a Zefa: o balde do finado e 1 cocada |
-| 8 | A primeira janta | a fome | assar o peixe do Tonho na fogueira | a cozinha (J no fogo do terreiro) | — |
-| 9 | A primeira noite | o escuro | dormir na cama da casa | a cama que vira o dia | a avó do Pedro: 1 mungunzá e 4 manivas |
-| 10 | A roça do finado | a terra parada (o Cosme capinava para o tio) | arar, plantar e regar uma leira | a lavoura, a semente na mão, o balde | o Cosme: 1 beiju |
-| 11 | O papel sem assinatura | o convite que chegou a cada casa | ler o convite (F na mochila) | ler documento | — |
+| 1 | As pernas de terra firme | o Pedro, no píer | descer do saveiro pela prancha até ele | andar (WASD ou setas) | — |
+| 2 | Pressa de quem chega | o Pedro | correr um trecho | o Shift, que alterna correr e andar | — |
+| 3 | Quem chega, cumprimenta | o costume (Pedro conduz) | dar bom-dia ao Tonho, no píer | quem é quem: o Pedro apresenta | o Tonho: 1 peixe |
+| 4 | Quem guardou a chave | o Pedro não sabe (e conduz) | perguntar à Dona Candinha, na praça | o marcador que segue a pessoa | a Candinha: 1 garapa |
+| 5 | A chave com a Dona Zefa | a Candinha manda (o Pedro conduz) | buscar a chave com a Dona Zefa | a pergunta que leva à pergunta | a Zefa: 1 cocada |
+| 6 | A porta que ninguém abriu | a chave na mão (o Pedro conduz) | entrar na casa do finado | a casa é sua: a porta espera a chave | — |
+| 7 | As ferramentas do finado | o baú | pegar a enxada, o balde e a maniva | o baú da casa (E), a mochila; o J das obras | — |
+| 8 | A roça do finado | a terra parada (o Cosme capinava para o tio) | arar, plantar e regar uma leira | a lavoura, a ferramenta na mão | o Cosme: 1 beiju |
+| 9 | Fogo na casa fechada | a Zefa ("casa fechada junta frio") | juntar 4 lenhas | o machado na barra de mão (1–0), o E no tronco | a avó do Pedro: 1 beiju |
+| 10 | A boca do poço | a Zefa, no poço | tirar 3 pedras do lajedo do poço | a picareta | — |
+| 11 | Corda nova | o poço | torcer 1 corda na bancada | a bancada da oficina (J) | — |
+| 12 | Mutirão no poço | a Zefa, com o Cosme | a obra "Corda nova no poço" | a aba de obras (J); o mutirão | a Zefa: 2 cocadas |
+| 13 | A primeira janta | a fome | assar o peixe do Tonho na fogueira | a cozinha (J no fogo do terreiro) | — |
+| 14 | A primeira noite | o escuro | dormir na cama da casa | a cama que vira o dia | a avó do Pedro: 1 mungunzá |
+| 15 | O papel sem assinatura | o convite que chegou a cada casa | ler o convite (F na mochila) | ler documento | — |
 
 O arremate é o gancho do capítulo 6: o convite não tem assinatura, vem da
 fazenda que ninguém nunca viu o dono, e os avós do Pedro já decidiram ir. O
 Pedro volta ao píer, e o arraial abre: as cadeias dos moradores, a do mirante
 e a da fé.
 
-O passo 7 é o primeiro mutirão do jogo: a Dona Zefa e o Cosme vão ao poço e
+**O corpo, explicado uma vez.** "Durante esse processo, o jogador vai ficar
+cansado pela baixa do vigor e o Pedro deve introduzir o que é o vigor, o que é
+a stamina e o que é a vida." Na caminhada em que o Pedro conduz (os passos 3
+a 6), na primeira vez que o vigor cai a 30%, ele explica as três barras na
+caixa de fala longa,
+que segura o vale até o jogador ler: a vida (a vermelha), o fôlego (a do meio,
+a reserva do dia — é a "stamina" do pedido) e o vigor (a de baixo, o fôlego
+curto da corrida, do pulo e do golpe). Quem chega à porta sem ter cansado ouve
+o mesmo lá, com a última fala no tempo de quem ainda não sentiu. As falas são
+o `corpo` do `missoes_guia.json`, nos três idiomas.
+
+**A porta espera a chave.** Durante a chegada, a casa do finado fica trancada
+até a Dona Zefa dar a chave (`Comodo.trancar`, acertado pelo
+`prototype._acertar_a_porta_da_casa`): por fora, a porta pintada do modelo, e
+um corpo no vão. Nunca tranca com o jogador lá dentro.
+
+**As ferramentas do finado estão no baú**, como no 2D: a enxada, o balde e o
+punhado de maniva (`CasaDoJogador.DO_FINADO`), com os dois beijus da avó do
+Pedro. A enxada deixou de vir da mão do Pedro, e a roça veio para o primeiro
+dia, antes do fogo, que é onde o 2D a põe.
+
+O passo 12 é o primeiro mutirão do jogo: a Dona Zefa e o Cosme vão ao poço e
 ficam lá enquanto a obra não sai. A obra é pequena e nova (`poco_corda`, uma
 corda e três pedras), e não a "Roldana e cacimba no poço" do arraial
 (`arraial_poco`), que continua sendo a obra de rendimento de depois.
@@ -108,6 +149,8 @@ enfeite: quem vem ajudar traz o que tem, e o HUD diz quem trouxe o quê.
 
 | Campo no passo | O que faz |
 |---|---|
+| `conduz` | o dono vai na frente, até quem o passo apresenta ou o lugar dele, e espera quem fica para trás (`guia_pedro.gd`) |
+| `fica` | o dono fica onde está, olhando o jogador (o Pedro na ponta da prancha, no desembarque e na corrida) |
 | `quem_paga` | o morador que paga a recompensa; o HUD diz "Recebido de Tonho" |
 | `entrega` como lista | mais de uma coisa na mesma fala (a enxada E a maniva) |
 | `meta.eventos` | o passo fecha quando TODOS os acontecimentos da lista aconteceram (arar, plantar, regar), com a conta no HUD |
@@ -124,6 +167,8 @@ para todos estes, avisados a todas as cadeias, inclusive a do Pedro:
 | `arou`, `plantou`, `regou`, `colheu` | a lavoura do vale |
 | `dormiu` | a cama (a noite que vira pela porta da cama) |
 | `leu:<documento>` | a mochila (F em cima do papel) |
+| `correu` | o vale, depois de 1,2 s correndo de verdade (Shift e o corpo andando depressa) |
+| `entrou:<cômodo>` | os interiores, quando o jogador entra no cômodo (`entrou:casa`) |
 | `abriu_arraial`, `adotou_fe` | como antes |
 
 E duas portas que faltavam: a receita aceita uma LISTA de passos que a
@@ -132,11 +177,19 @@ ensinam (o peixe na brasa abre na pesca do 2D e na janta do vale), e a
 
 ## Os portões
 
+- `tests/chegada.gd` joga o começo como o jogador: nasce de pé no convés, o
+  Pedro espera na ponta da prancha, andar para a frente desce pela prancha ao
+  tabuado, correr com o Shift fecha a corrida (e tocá-lo parado não), o Pedro
+  anda até o Tonho e espera quem fica para trás, explica o corpo uma vez com o
+  vigor baixo, a casa espera a chave com as ferramentas no baú, e o saveiro
+  larga no dia seguinte.
 - `tests/cadeia_das_missoes.gd` joga a chegada inteira pelo caminho do jogo:
-  ao lado de quem se fala, a bancada, a obra, a cozinha, a lavoura pela
-  ferramenta na mão, a cama e o papel lido. Nenhum passo fecha por
-  `registrar_evento` chamado de fora: o acontecimento tem de chegar pelo fio
-  que o vale ligou.
+  ao lado de quem se fala, a corrida pelo Shift, a porta da casa, o baú, a
+  bancada, a obra, a cozinha, a lavoura pela ferramenta na mão, a cama e o
+  papel lido. Nenhum passo fecha por `registrar_evento` chamado de fora: o
+  acontecimento tem de chegar pelo fio que o vale ligou.
+- `tests/saveiro.gd` cobra o saveiro atracado sozinho no dia da chegada, sem o
+  mestre e sem a compra.
 - `tests/pedidos_do_arraial.gd` cobra quem paga, a roça do Cosme, o mutirão da
   carroça (chamar, trazer ao chegar uma vez só, dispensar) e o save de antes da
   chegada nova.
@@ -150,19 +203,28 @@ ensinam (o peixe na brasa abre na pesca do 2D e na janta do vale), e a
 ## O save de antes
 
 A chegada nova guarda o id do passo e a memória dela (encontros,
-acontecimentos, mutirão). O save das Builds #7 e #8 só tinha o índice na lista
-velha de nove passos: quem tinha acabado continua acabado, e quem estava no
-meio volta ao passo novo que faz o mesmo papel (`Prototype.CHEGADA_ANTIGA_PARA_NOVA`).
+acontecimentos, mutirão, e a explicação do corpo). O save das Builds #7 e #8
+só tinha o índice na lista velha de nove passos: quem tinha acabado continua
+acabado, e quem estava no meio volta ao passo novo que faz o mesmo papel
+(`Prototype.CHEGADA_ANTIGA_PARA_NOVA`).
+
+A ordem de 05/10/2026 pôs a roça antes do fogo, e o save guarda o id: quem
+salvou no fogo, no poço, na janta ou na noite volta ao mesmo passo, com a casa
+e a roça dadas por passadas. A enxada era do Pedro, no passo da roça; quem
+volta sem ela a acha no baú (`Prototype._conferir_a_enxada_do_finado`).
 
 ## O que fica para a arte (próximo pedido)
 
 Nada aqui depende de arte para funcionar; o que segue é o que a deixaria
 inteira, e é geração paga — espera autorização:
 
-- **Vozes do Pedro** para os passos 3 a 11, e as respostas do Tonho, da
+- **Vozes do Pedro** para os passos da chegada, e as respostas do Tonho, da
   Candinha, da Zefa, do Cosme, da Filó e do Benedito (ElevenLabs, as vozes de
-  cada um em `VALE_VIVO_3D.md`). Os passos 1 e 2 reaproveitam `pedro_pier` e
-  `pedro_praca`, porque a fala nova começa com a frase gravada.
+  cada um em `VALE_VIVO_3D.md`). O bom-dia e a chave deixaram de usar
+  `pedro_pier` e `pedro_praca`: a fala nova, a do Pedro que conduz, não começa
+  mais pela frase gravada.
+- **A prancha** do saveiro ao píer, como peça do Tripo: hoje é uma rampa
+  invisível (o estilo Tripo não leva peça procedural).
 - **A carroça** do Seu Benedito em dois estados, quebrada e consertada, para a
   obra mudar o terreiro dele (Tripo, `modelos-3d`).
 - **A roldana com corda nova** no poço, para o mutirão do passo 7 se ver.

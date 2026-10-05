@@ -45,11 +45,49 @@ const CORRER := 5.2
 ## entra junto.
 const ESPERA_FORA := ["casa"]
 
+## O PEDRO VAI NA FRENTE. "O Pedro deve conduzir o jogador até a casa dele. [...]
+## no inicio sempre é o Pedro que conduz e orienta, temos que partir do
+## principio que o jogador não conhece o lugar e nenhum NPC, ou seja, o Pedro
+## que vai apresentar." No passo com `conduz` ele anda pela malha até quem o
+## passo apresenta (ou até o lugar dele) e para a CONDUZ_ATE dele; o jogador vai
+## atrás. Ficando o jogador a mais de ESPERA_QUEM_FICA, ele para e espera,
+## virado para ele, e só volta a andar com o jogador a VOLTA_A_ANDAR. Anda no
+## passo do jogador: correndo se ele corre.
+const CONDUZ_ATE := 2.4
+const ESPERA_QUEM_FICA := 6.5
+const VOLTA_A_ANDAR := 4.0
+## E NO PASSO COM `fica` — o desembarque e a primeira corrida — ele fica onde
+## está, na ponta da prancha, olhando o jogador.
+
+## O CORPO, EXPLICADO UMA VEZ. "Durante esse processo, o jogador vai ficar
+## cansado pela baixa do vigor e o Pedro deve introduzir o que é o vigor, o que
+## é a stamina e o que é a vida." Na caminhada em que ele conduz (os passos com
+## `conduz`), na primeira vez que o vigor baixa de LIMIAR_DO_CORPO, o Pedro
+## explica as três barras na caixa de fala longa, que segura o vale até o
+## jogador ler (as falas são o `corpo` do `missoes_guia.json`). Quem chega à
+## porta da casa (PASSO_DA_PORTA) sem ter cansado ouve a mesma explicação lá,
+## com a última fala no tempo de quem ainda não sentiu. Uma vez por partida: a
+## lembrança vai no save, com as da cadeia (`lembrancas`).
+const LIMIAR_DO_CORPO := 0.3
+const LEMBRANCA_DO_CORPO := "explicou:corpo"
+const PASSO_DA_PORTA := "casa"
+const PASSO_DO_BAU := "pegar"
+## Mais que ESPERA_QUEM_FICA: quem cansou e parou fica a essa distância dele.
+const PERTO_PARA_EXPLICAR := 8.0
+
 ## Criada no `_init`, e não no `_ready`, de propósito: o `Prototype` escreve
 ## `pedro.recursos` e o save escreve `pedro.missao`, e propriedade que cai no
 ## vazio porque a cadeia ainda não existe é defeito calado.
 var _cadeia := CadeiaDeMissoes.new()
 var _anoiteceu_hoje := false
+## As falas do corpo (`corpo` no `missoes_guia.json`), lidas no `_init`.
+var _corpo: Array = []
+## Parado à espera do jogador que ficou para trás na condução.
+var _esperando_quem_ficou := false
+## O jogador cansou na caminhada e ainda não ouviu a explicação. Guardado
+## porque o vigor volta depressa — parado, 20 por segundo —, e a fala pode
+## estar ocupada no instante em que ele cai.
+var _cansou_na_caminhada := false
 
 
 ## --- as janelas para dentro da cadeia -------------------------------------
@@ -82,6 +120,9 @@ func _init() -> void:
 	_cadeia.name = "CadeiaDeMissoes"
 	_cadeia.dono = self
 	_cadeia.carregar(ARQUIVO_MISSOES)
+	var lido = JSON.parse_string(FileAccess.get_file_as_string(ARQUIVO_MISSOES))
+	if lido is Dictionary and lido.get("corpo", []) is Array:
+		_corpo = lido.get("corpo", [])
 
 
 func _ready() -> void:
@@ -107,6 +148,12 @@ func terminou_o_tutorial() -> bool:
 ## primeira leira (`roca`).
 func passou(id: String) -> bool:
 	return _cadeia.passou(id)
+
+
+## O passo em curso o segura parado (`fica`)? É o desembarque: a carga de uma
+## partida salva no convés o devolve à ponta da prancha, e não ao lado do jogador.
+func fica_no_passo() -> bool:
+	return _cadeia.iniciado and bool(_cadeia.passo_atual().get("fica", false))
 
 
 ## O id do passo em curso, ou "" — é o que vai no save, para a partida voltar ao
@@ -162,6 +209,22 @@ func _physics_process(delta: float) -> void:
 		_atualizar_animacao(delta)
 		_atualizar_interacao(delta)
 		return
+	_ver_se_explica_o_corpo()
+	# NA CHEGADA ELE VAI NA FRENTE, ou fica na ponta da prancha (ver CONDUZ_ATE).
+	var passo := _cadeia.passo_atual() if _cadeia.iniciado else {}
+	if bool(passo.get("fica", false)):
+		_mover(Vector3.ZERO, ANDAR, delta)
+		_olhar_para(jogador.global_position, delta)
+		_atualizar_animacao(delta)
+		_atualizar_interacao(delta)
+		_verificar_anoitecer()
+		return
+	if bool(passo.get("conduz", false)):
+		_conduzir(delta)
+		_atualizar_animacao(delta)
+		_atualizar_interacao(delta)
+		_verificar_anoitecer()
+		return
 	# O PEDRO ENTRA JUNTO. Com o jogador dentro da igreja e ele fora (ou o
 	# contrário), seguir em linha reta era empurrar a parede: o caminho passa
 	# pela porta, ponto a ponto (`Interiores.passagem`), e só depois volta a
@@ -199,6 +262,93 @@ func _physics_process(delta: float) -> void:
 	_atualizar_animacao(delta)
 	_atualizar_interacao(delta)
 	_verificar_anoitecer()
+
+
+## UM PULSO DA CONDUÇÃO (ver CONDUZ_ATE): pela malha até o destino do passo, no
+## passo do jogador; parado, virado para ele, quando chegou ou quando ele ficou
+## para trás.
+func _conduzir(delta: float) -> void:
+	var destino := _destino_da_conducao()
+	var onde_esta: Vector3 = jogador.global_position
+	var do_jogador := Vector2(onde_esta.x - global_position.x, onde_esta.z - global_position.z).length()
+	if _esperando_quem_ficou:
+		_esperando_quem_ficou = do_jogador > VOLTA_A_ANDAR
+	elif do_jogador > ESPERA_QUEM_FICA:
+		_esperando_quem_ficou = true
+	var falta := destino - global_position
+	falta.y = 0.0
+	if _esperando_quem_ficou or falta.length() <= CONDUZ_ATE:
+		_mover(Vector3.ZERO, ANDAR, delta)
+		_olhar_para(onde_esta, delta)
+		return
+	var ponto := _ponto_do_caminho(destino, delta)
+	var rumo := ponto - global_position
+	rumo.y = 0.0
+	var correndo := jogador.has_method("is_running") and bool(jogador.call("is_running"))
+	_mover(rumo.normalized() if rumo.length() > 0.05 else Vector3.ZERO, CORRER if correndo else ANDAR, delta)
+
+
+## PARA ONDE ELE CONDUZ: quem o passo apresenta, ou o lugar do passo — e, sendo
+## o lugar um cômodo em que ele não entra (a casa herdada), a porta dela, do
+## lado de fora.
+func _destino_da_conducao() -> Vector3:
+	var destino := _cadeia.posicao_do_passo(_cadeia.missao)
+	var interiores := get_tree().get_first_node_in_group("interiores")
+	if interiores != null:
+		var sala_do_destino: String = interiores.contem(destino)
+		if sala_do_destino in ESPERA_FORA:
+			var espera: Vector3 = interiores.sala_de(sala_do_destino).lugar_de_esperar_fora()
+			return terreno.ground_position(espera, 0.05) if terreno != null else espera
+	return destino
+
+
+func _chegou_ao_destino() -> bool:
+	var falta := _destino_da_conducao() - global_position
+	falta.y = 0.0
+	return falta.length() <= CONDUZ_ATE + 0.5
+
+
+## O vigor do jogador, de 0 a 1 (ver `player_controller.vigor_atual`).
+func _fracao_do_vigor() -> float:
+	if jogador == null or not jogador.has_method("vigor_atual"):
+		return 1.0
+	return float(jogador.call("vigor_atual")) / maxf(float(jogador.call("vigor_maximo")), 1.0)
+
+
+## A HORA DE EXPLICAR O CORPO (ver LIMIAR_DO_CORPO): cansado na caminhada, ou
+## na porta da casa sem ter cansado. Só com a palavra livre e o jogador perto.
+func _ver_se_explica_o_corpo() -> void:
+	if _corpo.is_empty() or not _cadeia.iniciado or bool(_cadeia._levados.get(LEMBRANCA_DO_CORPO, false)):
+		return
+	var passo := _cadeia.passo_atual()
+	# SÓ NA CONDUÇÃO, com ele andando junto. No desembarque ele fica na prancha,
+	# e quem corre para o mar e volta cansado não está na caminhada com ele.
+	if bool(passo.get("conduz", false)) and _fracao_do_vigor() <= LIMIAR_DO_CORPO:
+		_cansou_na_caminhada = true
+	if Dialogo.ocupado() or not _palavra_livre():
+		return
+	if jogador.global_position.distance_to(global_position) > PERTO_PARA_EXPLICAR:
+		return
+	# Na porta, ou já com o jogador lá dentro, no passo do baú. Depois dele, não:
+	# quem passou da casa sem ouvir é partida de antes desta chegada.
+	var id := str(passo.get("id", ""))
+	var na_porta := (id == PASSO_DA_PORTA and _chegou_ao_destino()) or id == PASSO_DO_BAU
+	if _cansou_na_caminhada or na_porta:
+		explicar_o_corpo(_cansou_na_caminhada)
+
+
+## As três barras na caixa de fala longa; a última fala muda com o cansaço.
+func explicar_o_corpo(cansado: bool) -> void:
+	_cadeia._levados[LEMBRANCA_DO_CORPO] = true
+	var linhas: Array = []
+	for fala in _corpo:
+		if not (fala is Dictionary):
+			continue
+		var quando := str((fala as Dictionary).get("quando", ""))
+		if quando != "" and quando != ("cansado" if cansado else "descansado"):
+			continue
+		linhas.append(str(IdiomaMenu.campo(fala, "texto", "")))
+	Dialogo.falar(str(dados.get("nome", "Pedro")), linhas)
 
 
 ## Retomar uma partida salva é da cadeia; esta é a janela para ela, como as

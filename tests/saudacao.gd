@@ -78,9 +78,13 @@ func _run() -> void:
 	_conferir(encurtadas > 0, "nenhuma saudação foi encurtada: a regra do balão não está valendo")
 
 	# --- 2. QUEM TEM MISSÃO NÃO CUMPRIMENTA ----------------------------------
+	# O bom-dia ao Tonho é o terceiro passo da chegada, depois do desembarque e
+	# da primeira corrida: o portão vai direto a ele.
 	pedro.saudar()
+	_conferir(pedro.ir_ao_passo("bom_dia"), "a chegada não tem o bom-dia ao Tonho")
+	var no_bom_dia: int = int(pedro.missao)
 	pedro._espera = 0.05
-	var anunciou := await _ate(func() -> bool: return int(pedro.missao) == 0 and float(pedro._espera) <= 0.0,
+	var anunciou := await _ate(func() -> bool: return int(pedro.missao) == no_bom_dia and float(pedro._espera) <= 0.0,
 		SEGUNDOS_PARA_ANUNCIAR)
 	_conferir(anunciou, "o bom-dia ao Tonho não chegou a anunciar")
 	_conferir(tonho.tem_missao(),
@@ -93,7 +97,7 @@ func _run() -> void:
 	tonho.saudou.connect(func(_quem, texto: String) -> void: do_tonho.append(texto))
 	tonho.set("_ultima_saudacao_ms", -1)
 	jogador.teleportar(tonho.global_position + Vector3(1.0, 0.0, 0.8), 0.0)
-	var fechou := await _ate(func() -> bool: return int(pedro.missao) >= 1, SEGUNDOS_PARA_SAUDAR + 4.0)
+	var fechou := await _ate(func() -> bool: return int(pedro.missao) > no_bom_dia, SEGUNDOS_PARA_SAUDAR + 4.0)
 	_conferir(fechou, "ao lado do Tonho o bom-dia não fechou")
 	await _ate(func() -> bool: return false, 1.5)
 	_conferir(do_tonho.is_empty(),

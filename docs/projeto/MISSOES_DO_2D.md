@@ -93,14 +93,21 @@ encerrar, abre o arraial e a jornada.
 
 | # | id | Título | Objetivo | Fecha quando | Paga | 3D |
 |---|---|---|---|---|---|---|
-| 1 | `andar` | As pernas de terra firme | Ande com WASD ou as setas | andou 56 px | — | adaptada (a chegada começa no bom-dia ao Tonho) |
-| 2 | `subir` | Do cais até a cerca | Siga o Pedro do píer até o seu roçado | chegou à horta; o Pedro vai na frente e abre a porteira | — | adaptada |
-| 3 | `pegar` | As ferramentas do finado | Abra o baú na varanda e pegue a enxada, o balde e as manivas | as três na mochila (checklist) | — | adaptada (a chave da casa vira a cadeia da Candinha e da Zefa) |
+| 1 | `andar` | As pernas de terra firme | Ande com WASD ou as setas | andou 56 px | — | **pronta** (`desembarque` e `correr`, `missoes_guia.json`: começa em cima do saveiro, no píer, e o Shift ensina a correr) |
+| 2 | `subir` | Do cais até a cerca | Siga o Pedro do píer até o seu roçado | chegou à horta; o Pedro vai na frente e abre a porteira | — | **pronta** (o Pedro conduz o bom-dia, a chave e a porta: `conduz` em `missoes_guia.json`) |
+| 3 | `pegar` | As ferramentas do finado | Abra o baú na varanda e pegue a enxada, o balde e as manivas | as três na mochila (checklist) | — | **pronta** (`pegar`: o baú da casa tem a enxada, o balde e a maniva) |
 | 4 | `roca` | A primeira roça | Abra, plante e molhe — na ordem que quiser | arar, plantar e regar (checklist sem ordem) | 2 beijus | **pronta** (`roca`, `missoes_guia.json`) |
-| 5 | `casa` | A porta que ninguém abriu | Entre na casa, o Pedro já está lá dentro | entrou na casa | — | adaptada (casa herdada, `casa.gd`) |
+| 5 | `casa` | A porta que ninguém abriu | Entre na casa, o Pedro já está lá dentro | entrou na casa | — | **pronta** (`casa`: a porta espera a chave da Dona Zefa) |
 
 A fala `frentes` vem logo depois da casa e explica o Tab. Até ela, a casa está
 trancada ("Primeiro a terra, senão a gente dorme sem comer").
+
+**No 3D (05/10/2026)** a chegada segue esta ordem, com duas diferenças. O baú
+mora DENTRO da casa (`casa_do_jogador.gd`), então a porta vem antes dele —
+`casa` → `pegar` → `roca` —, e a casa fica trancada até a chave, que o Pedro
+leva o jogador a buscar com a Dona Candinha e a Dona Zefa (os pedidos do 3D
+que ficaram). E antes do `subir` o jogador desce de um saveiro: começa em cima
+dele, no píer. Ver [CHEGADA_E_MUTIROES.md](../mundo/CHEGADA_E_MUTIROES.md).
 
 ### 1.2 Frente da colheita
 

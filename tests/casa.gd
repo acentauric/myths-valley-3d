@@ -78,6 +78,12 @@ func _run() -> void:
 		_fechar()
 		return
 	var world = vale.world
+	# A CHAVE JÁ DADA: na partida nova a casa espera a chave da Dona Zefa
+	# (`tests/chegada.gd`); aqui se mede a casa aberta, como o jogador a acha.
+	var pedro = vale.get("pedro")
+	if pedro != null:
+		pedro.ir_ao_passo("roca")
+		vale._acertar_a_porta_da_casa()
 
 	# --- 1. DENTRO DA CASA -----------------------------------------------------
 	var sala: Node3D = interiores.sala_de("casa")

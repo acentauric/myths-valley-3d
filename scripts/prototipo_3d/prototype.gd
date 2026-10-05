@@ -670,8 +670,10 @@ func _ready() -> void:
 	achados.espalhar()
 	var lugar_pedido := _comecar_no_lugar_pedido()
 	if not retomou_partida and not lugar_pedido:
-		var direcao_para_praia: Vector3 = world.ancoras.get("Pier", spawn) - spawn
-		player.iniciar_de_frente(direcao_para_praia)
+		_chegar_pelo_saveiro(spawn)
+	_acertar_a_porta_da_casa()
+	if pedro != null:
+		pedro.missao_mudou.connect(func(_t: String, _a: Vector3, _i: int, _n: int) -> void: _acertar_a_porta_da_casa())
 	_atualizar_relogio()
 	print("PROTOTYPE_READY: estilo=%s hora=%s moradores=%d user_dir=%s" % [Estilo.modo, Dia.texto_hora(), moradores.size(), OS.get_user_data_dir()])
 	_pedir_os_retratos()
@@ -685,8 +687,60 @@ func _ao_mudar_de_lado() -> void:
 		ambiente.abafado = 1.0 if qual != "" else 0.0
 	if qual != "":
 		hud.set_region_title(interiores.nome_de(qual))
+		# ENTRAR É ACONTECIMENTO: a chegada espera o jogador entrar na casa
+		# herdada (o passo `casa`, "entrou:casa").
+		_avisar_as_cadeias("entrou:" + qual)
 	else:
 		hud.set_region_title(world.get_region_title())
+
+
+## A CASA HERDADA FICA TRANCADA ATÉ A CHAVE. Na chegada quem guarda a chave é a
+## Dona Zefa (o passo `chave_zefa`), e a porta só abre depois dela: "o Pedro deve
+## conduzir o jogador até a casa dele", e quem chega antes não acha a casa
+## aberta. Fora da chegada — tutorial acabado, ou nem começado — a porta é livre,
+## e nunca tranca com o jogador lá dentro.
+func _acertar_a_porta_da_casa() -> void:
+	var sala = interiores.sala_de("casa") if interiores != null else null
+	if sala == null or not sala.has_method("trancar"):
+		return
+	var na_chegada: bool = pedro != null and bool(pedro.get("_iniciado")) and not pedro.terminou_o_tutorial()
+	var trancada: bool = na_chegada and not pedro.passou("chave_zefa") and not sala.contem(player.global_position)
+	sala.trancar(trancada)
+
+
+## A CHEGADA PELO SAVEIRO, na partida nova: o jogador no convés, olhando o píer;
+## o Pedro na ponta da prancha, que saúda e começa a conduzir. Sem saveiro (o
+## vale sem âncora do píer), a chegada antiga, em terra, de frente para a praia.
+func _chegar_pelo_saveiro(spawn: Vector3) -> void:
+	var no_conves: Vector3 = saveiro.ponto_do_conves() if saveiro != null and saveiro.na_chegada() else Vector3.INF
+	if not no_conves.is_finite():
+		var direcao_para_praia: Vector3 = world.ancoras.get("Pier", spawn) - spawn
+		player.iniciar_de_frente(direcao_para_praia)
+		return
+	# De costas para a câmera, olhando o píer: à frente estão o Pedro e o arraial.
+	var rumo: Vector3 = saveiro.rumo_do_pier()
+	player.teleportar(no_conves, atan2(rumo.x, rumo.z))
+	if pedro != null:
+		pedro.global_position = saveiro.lugar_do_pedro()
+		pedro.velocity = Vector3.ZERO
+		pedro.saudar()
+	_acertar_a_porta_da_casa()
+
+
+## AS FERRAMENTAS DO FINADO NUMA PARTIDA DE ANTES DO BAÚ. A enxada vinha do
+## Pedro, no passo da roça; agora está no baú da casa (`casa_do_jogador`), e a
+## roça vem antes da lenha. Quem salvou no meio da chegada antiga volta com o
+## passo do baú dado por passado, sem ter recebido a enxada: ela vai para o
+## baú.
+func _conferir_a_enxada_do_finado() -> void:
+	if pedro == null or casa == null or not pedro.passou("pegar"):
+		return
+	if Inventario.tem("enxada") or Equipamento.em_uso("enxada"):
+		return
+	for monte in casa.bau:
+		if str((monte as Dictionary).get("id", "")) == "enxada":
+			return
+	casa.bau.append({"id": "enxada", "qtd": 1})
 
 
 ## AS FILAS DA FÉ (#52), as missões do 2D trazidas para os marcos do vale.
@@ -957,7 +1011,34 @@ func _process(_delta: float) -> void:
 		if not _visited.has(landmark_id) and player.global_position.distance_to(destination) < 7.0:
 			_visited[landmark_id] = true
 			hud.set_notice("Você chegou: %s  ·  %d/%d pontos explorados" % [landmark_name, _visited.size(), world.landmarks.size()])
+	_ver_se_correu(_delta)
+	# A porta da casa acompanha a chegada também a cada meio segundo: o passo
+	# muda por sinal, mas a carga, o atalho de depuração e quem põe o passo à
+	# mão não passam por ele.
+	_conferir_a_porta_em -= _delta
+	if _conferir_a_porta_em <= 0.0:
+		_conferir_a_porta_em = 0.5
+		_acertar_a_porta_da_casa()
 	_atualizar_relogio()
+
+
+## A PRIMEIRA CORRIDA (o passo `correr` da chegada): o jogador correu um trecho
+## de verdade, e não só tocou o Shift parado. Avisado uma vez por carga; a cadeia
+## guarda na memória dela, que vai no save.
+const CORREU_DEPOIS_DE := 1.2
+var _correndo_ha := 0.0
+var _correu_avisado := false
+var _conferir_a_porta_em := 0.0
+
+
+func _ver_se_correu(delta: float) -> void:
+	if _correu_avisado:
+		return
+	var depressa: bool = player.is_running() and Vector2(player.velocity.x, player.velocity.z).length() > player.walk_speed + 0.5
+	_correndo_ha = _correndo_ha + delta if depressa else 0.0
+	if _correndo_ha >= CORREU_DEPOIS_DE:
+		_correu_avisado = true
+		_avisar_as_cadeias("correu")
 
 
 func _atualizar_relogio() -> void:
@@ -1615,6 +1696,9 @@ func restaurar_do_save(estado: Dictionary) -> void:
 		# Durante o tutorial ele volta ao lado do jogador; depois dele, no posto dele.
 		if pedro.terminou_o_tutorial():
 			pedro.ir_ao_posto_agora()
+		elif pedro.fica_no_passo() and saveiro != null and saveiro.na_chegada() and saveiro.lugar_do_pedro().is_finite():
+			# Salvo no convés, antes de descer: ele volta à ponta da prancha.
+			pedro.global_position = saveiro.lugar_do_pedro()
 		else:
 			pedro.global_position = world.ground_position(player.global_position + Vector3(-1.6, 0, 1.4), 0.05)
 	var luta := get_node_or_null("Luta")
@@ -1622,6 +1706,7 @@ func restaurar_do_save(estado: Dictionary) -> void:
 		luta.restaurar_mortes(estado.get("mortes", []))
 	if casa != null and estado.has("casa"):
 		casa.restaurar(estado["casa"])
+	_conferir_a_enxada_do_finado()
 	if lavoura != null and estado.has("lavoura"):
 		lavoura.restaurar(estado["lavoura"])
 	# As lajes e o cercado acompanham a fila e a obra que acabaram de voltar.

@@ -125,7 +125,9 @@ func _run() -> void:
 			continue
 		var item := str(meta.get("item", ""))
 		var onde: Vector3 = lugares.ponto(str(passo.get("lugar", "")))
-		if onde == lugares.NENHUM:
+		# O passo de vários itens da chegada (as ferramentas do finado) pega do baú
+		# da casa: não há alvo a alcançar.
+		if onde == lugares.NENHUM or item == "":
 			continue
 		# O QUE SAI DA BANCADA não cai de alvo nenhum: a corda da chegada se torce na
 		# oficina (docs/mundo/CHEGADA_E_MUTIROES.md). Para ele, o alvo é a bancada, e

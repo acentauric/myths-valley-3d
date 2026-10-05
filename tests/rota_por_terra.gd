@@ -83,6 +83,9 @@ func _run() -> void:
 			em_terra = mundo.ground_position(tentativa)
 			break
 	_conferir(em_terra != pier, "não achei terra firme a 22 u do píer para pôr o Pedro")
+	# Um passo em que ele SEGUE o jogador (a roça): no desembarque da partida nova
+	# ele fica na ponta da prancha, e na condução vai na frente.
+	pedro.ir_ao_passo("roca")
 	pedro.global_position = em_terra
 	await _frames(3)
 

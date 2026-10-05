@@ -213,8 +213,15 @@ func _run() -> void:
 	var moram_no_vale: Array[String] = []
 	for morador in current_scene.get("moradores"):
 		moram_no_vale.append(str((morador.dados as Dictionary).get("id", "")))
+	# O GUIA TAMBÉM: o desembarque manda o jogador até o Pedro, e o vale o acha
+	# pelo id (`prototype._achar_morador`), embora ele não seja dos moradores.
+	if current_scene.get("pedro") != null:
+		moram_no_vale.append("pedro")
 
 	var metas_que_o_vale_sabe := ["juntar", "derrubar", "levar", "falar", "evento", "obra"]
+	# O BAÚ DA CASA também dá: as ferramentas do finado — a enxada, o balde e a
+	# maniva — esperam lá o passo da chegada que manda pegá-las, como no 2D.
+	var do_bau: Dictionary = load("res://scripts/prototipo_3d/casa_do_jogador.gd").DO_FINADO
 	var passos_com_meta := 0
 	# AS FILAS VÊM DEPOIS DA CHEGADA (`depois_de`, docs/mundo/CHEGADA_E_MUTIROES.md):
 	# o que o Pedro entregou — o machado, a picareta, a enxada — já está na mão de
@@ -278,8 +285,15 @@ func _run() -> void:
 						var pedido := str(bruto)
 						_conferir(Catalogo.ITENS.has(pedido),
 							"o passo '%s' pede '%s', que não está no catálogo" % [qual_passo, pedido])
+						if do_bau.has(pedido):
+							# Pegou do baú: dali em diante está na mão, como o que o
+							# Pedro entrega.
+							entregues.append(pedido)
+							if nome == "missoes_guia":
+								entregues_pelo_guia.append(pedido)
+							continue
 						_conferir(_da_no_vale(pedido, ferramenta_de_rende),
-							"o passo '%s' pede '%s', que nenhum alvo posto no vale rende e a bancada não faz"
+							"o passo '%s' pede '%s', que nenhum alvo posto no vale rende, a bancada não faz e o baú não tem"
 								% [qual_passo, pedido])
 						# A FERRAMENTA SÓ SE COBRA DE QUEM CAI DE ALVO: o que sai da
 						# bancada sai de material, e o material já foi perguntado.
@@ -347,11 +361,15 @@ func _run() -> void:
 ## Meta de evento que ninguém avisa é passo que nunca fecha. Os nomes fixos são os
 ## que o vale liga um a um; os de prefixo levam o id do que aconteceu, e o id tem
 ## de existir — "cozinhou:farinha" pede uma receita da cozinha chamada farinha.
-const EVENTOS_FIXOS := ["abriu_arraial", "adotou_fe", "arou", "plantou", "regou", "colheu", "dormiu"]
+const EVENTOS_FIXOS := ["abriu_arraial", "adotou_fe", "arou", "plantou", "regou", "colheu", "dormiu", "correu"]
 
 func _o_vale_avisa(evento: String) -> bool:
 	if evento in EVENTOS_FIXOS:
 		return true
+	# ENTRAR NUM CÔMODO (a casa herdada, na chegada): o cômodo tem de existir.
+	if evento.begins_with("entrou:"):
+		var interiores = current_scene.get("interiores")
+		return interiores != null and interiores.sala_de(evento.trim_prefix("entrou:")) != null
 	if evento.begins_with("cozinhou:"):
 		return not (root.get_node("/root/Cozinha").dados(evento.trim_prefix("cozinhou:")) as Dictionary).is_empty()
 	if evento.begins_with("fabricou:"):

@@ -89,6 +89,9 @@ const PECAS := {
 	"pedras_praia": {"tripo": "aderecos/pedras_praia_tripo.glb", "largura": 9.0, "caixa": true},
 	"pedra_mare": {"tripo": "aderecos/pedra_mare_tripo.glb", "largura": 3.2},
 	"bote": {"tripo": "aderecos/bote_tripo.glb", "largura": 6.0},
+	# O saveiro do mestre Quirino, o barco da chegada (lote de 05/10/2026). O
+	# comprimento é o X do modelo; a vela vai da metade para a popa (o -X).
+	"saveiro": {"tripo": "aderecos/saveiro_tripo.glb", "largura": 9.0},
 	"canoa_amarela": {"tripo": "aderecos/canoa_amarela_tripo.glb", "largura": 4.6},
 	"canoa": {"tripo": "aderecos/canoa_tripo.glb", "largura": 5.6},
 	# Personagens

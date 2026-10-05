@@ -2,6 +2,35 @@
 
 ## Em desenvolvimento — 05/10/2026
 
+- O jogo começa em cima do saveiro do mestre Quirino, atracado no píer: um
+  modelo novo do Tripo (lote de 05/10, `aderecos/saveiro_tripo.glb`), que
+  assenta carregado e desce ao tabuado por uma prancha. O barco fica o primeiro
+  dia inteiro, sem o mestre e sem a compra, e larga quando o dia vira. O corpo
+  do casco agora acompanha o barco ao atracar; antes ficava 0,38 acima do
+  desenho, e isso valia também para o barco do dia 14.
+- A chegada segue a ordem do 2D (`docs/projeto/MISSOES_DO_2D.md`): descer do
+  saveiro andando (WASD ou setas), correr um trecho com o Shift, e o Pedro vai
+  NA FRENTE e apresenta o Tonho, a Dona Candinha e a Dona Zefa, que dá a chave.
+  A casa fica trancada até a chave; dentro, o baú tem as ferramentas do finado
+  (a enxada, o balde e a maniva), e a primeira roça vem no primeiro dia, antes
+  do fogo, do poço, da janta, da noite e do convite. Quinze passos.
+- Na primeira vez que o vigor cai a 30% na caminhada em que o Pedro conduz,
+  ele explica as três barras — a vida, o fôlego e o vigor — numa fala longa;
+  quem chega à porta sem cansar ouve o mesmo lá. Uma vez por partida, e vai no
+  save.
+- O save de antes desta ordem volta ao mesmo passo, e quem volta sem a enxada
+  a acha no baú. Portão novo: `chegada`; `cadeia_das_missoes`, `saveiro`,
+  `ferramentas`, `pedidos_do_arraial`, `passagem`, `casa`, `navegacao`,
+  `interiores`, `rota_por_terra`, `saudacao`, `mapa_fluxo`, `painel` e
+  `alcance_dos_alvos` ajustados.
+- A bateria nova (`testar.ps1`, só os portões afetados, em paralelo) roda no
+  Windows PowerShell 5.1: o caminho do projeto com espaço e a lista de arquivos
+  modificados quebravam todos os portões antes de começar.
+- O MCP do Godot tem guia (`docs/ferramentas/GODOT_MCP.md`): o `godot-editor`,
+  servidor do addon que o Ramon trouxe, edita cenas e scripts com o editor
+  aberto; o `godot` abre o editor, roda o jogo e lê a saída sem editor. Cada um
+  registra os dois no seu Claude Code, com o comando do seu sistema.
+
 - Abrir e fechar o painel (J) não para mais o relógio. O painel parava o
   relógio por conta própria antes do dono das telas, que então guardava "já
   estava parado" e devolvia isso ao fechar. Fechar pelo × também devolve o vale,

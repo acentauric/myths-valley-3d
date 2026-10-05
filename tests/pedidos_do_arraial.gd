@@ -64,7 +64,10 @@ func _run() -> void:
 
 	# --- 1. QUEM PAGA ------------------------------------------------------------
 	var chegada = pedro.get("_cadeia")
-	var bom_dia: Dictionary = pedro.MISSOES[0]
+	var bom_dia: Dictionary = {}
+	for passo in pedro.MISSOES:
+		if str((passo as Dictionary).get("id", "")) == "bom_dia":
+			bom_dia = passo
 	_conferir(str(bom_dia.get("quem_paga", "")) == "tonho" and chegada._quem_paga(bom_dia) == _nome(moradores["tonho"]),
 		"o peixe do bom-dia é do Tonho, e o HUD diria 'Recebido de %s'" % chegada._quem_paga(bom_dia))
 

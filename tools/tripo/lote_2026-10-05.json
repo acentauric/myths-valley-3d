@@ -1,0 +1,15 @@
+{
+  "observacao": "Lote de 05/10/2026: o saveiro do mestre Quirino, em que o jogador chega ao vale (\"O jogador tem que começar com o boneco posicionado em cima de um saveiro, no pier. Para isso pode usar o Tripo para gerar o saveiro.\"). Tripo Studio pela ponte do Playwright MCP com a extensão do Chrome, com tools/tripo/lote_studio.js: Modelo HD H3.1 com a textura 8K desligada (55 créditos) e Retopologia Malha Smart em quads com alvo de 6.000 faces (40 créditos), exportação GLB com textura 2K (a classe das construções de destaque). Saiu com 10.862 triângulos, 0,98 de comprimento no X (normalizado), o casco com o convés a 0,12 da quilha e a vela da metade para a popa.",
+  "tarefas": {
+    "saveiro": {
+      "tarefa": "6d24dbc5-9fbf-458d-8a23-7bf3f7395985",
+      "projeto": "7726cd4d-47a4-45a2-b7a4-0e8e31f77ebf",
+      "exportacao": "789c2612-c4c3-4f2e-8c51-9bcdf2059663",
+      "pasta": "aderecos",
+      "faces": 6000,
+      "textura": "2k",
+      "sha256": "af094d331a0f66c5c09852c3434a7d98a41f54c3d3ef0813f202d9f7c0d7b5da",
+      "prompt": "A traditional Brazilian saveiro, a wooden cargo sailboat from the Reconcavo Baiano in Bahia, about twelve meters long, seen from the side: broad round-bellied wooden hull painted dark blue with a white and red stripe along the gunwale, a wide flat open wooden deck with low rails, one tall wooden mast slightly leaning forward carrying a large raised tan canvas sail, a quadrilateral lug sail with a wooden gaff and boom, a long wooden tiller at the stern, a few burlap sacks and stacked clay roof tiles near the bow, leaving most of the deck clear. Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated object, no water, no ground plane, no background, no people, no text."
+    }
+  }
+}

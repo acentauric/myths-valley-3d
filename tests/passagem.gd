@@ -55,6 +55,10 @@ func _run() -> void:
 	_conferir(not pedro.terminou_o_tutorial(), "a partida nova começa com o tutorial já terminado")
 
 	# --- 1. O PEDRO NÃO ENTRA NA CASA ------------------------------------------
+	# Depois da casa aberta (a roça): o Pedro, que até ali conduziu, de volta a
+	# seguir o jogador — e esperando do lado de fora quando ele entra em casa.
+	_conferir(pedro.ir_ao_passo("roca"), "a chegada não tem o passo da roça")
+	vale._acertar_a_porta_da_casa()
 	jogador.teleportar(sala.lugar_de_acordar(), 0.0)
 	pedro.global_position = sala.soleira_de_fora() + (sala.soleira_de_fora() - sala.soleira_de_dentro()).normalized() * 2.5
 	await _passos(240)

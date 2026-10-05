@@ -21,6 +21,13 @@ extends Node
 ## agrado para quem entrega tudo na mesma viagem — uma missão no caderno, aberta
 ## no começo de cada estação e riscada na entrega (ou encerrada, se o saveiro
 ## partiu sem ela).
+##
+## A CHEGADA É NELE. "O jogador tem que começar com o boneco posicionado em
+## cima de um saveiro, no pier. [...] No fim do primeiro dia, o saveiro
+## obviamente some do mapa." No primeiro dia do jogo o barco está atracado — foi
+## nele que o jogador veio —, sem o mestre no píer e sem a aba de compra; a
+## partida nova põe o jogador no convés (`ponto_do_conves`) e o Pedro na ponta
+## da prancha (`lugar_do_pedro`), e quando o dia vira o saveiro larga.
 
 const IdiomaMenu = preload("res://scripts/prototipo_3d/idioma_menu.gd")
 const CatalogoAssets = preload("res://scripts/prototipo_3d/catalogo_assets.gd")
@@ -34,6 +41,25 @@ const PERTO := 4.5
 ## lado; daí para fora é água — o mestre fica nele, a 1,2.
 const LUGAR_DO_BARCO := Vector3(-3.3, 0.0, 0.5)
 const CALADO := 0.32
+## O SAVEIRO DO TRIPO ASSENTA CARREGADO, mais fundo que o bote. Medido com raios
+## (05/10/2026): com o calado do bote, o convés ficava 0,6 acima do tabuado e a
+## borda 0,95, e descer do barco era pular de um muro; assim o convés fica um
+## palmo acima, e a quilha some no fundo raso do píer.
+const CALADO_DO_SAVEIRO := 0.6
+## O PRIMEIRO DIA DO JOGO (`Relogio.dia_absoluto`), o da chegada.
+const DIA_DA_CHEGADA := 1
+## ONDE O JOGADOR NASCE E DESCE: na proa, que a vela vai do mastro (no meio do
+## casco) para a popa; a esta fração do comprimento, do meio rumo à proa.
+const DESCIDA_NA_PROA := 0.16
+## A PRANCHA: uma rampa invisível do convés, por cima da borda, até o tabuado —
+## o estilo Tripo não leva peça procedural, e sem ela a borda era parede de um
+## lado e degrau de meio corpo do outro, com o vão d'água no meio.
+const LARGURA_DA_PRANCHA := 1.3
+const ESPESSURA_DA_PRANCHA := 0.12
+## Quanto a prancha corre por cima do tabuado, além da borda do casco.
+const PRANCHA_ALEM_DA_BORDA := 1.4
+## O Pedro espera um passo além da ponta da prancha, já no tabuado.
+const PEDRO_ALEM_DA_PRANCHA := 1.1
 
 signal chegou
 signal partiu
@@ -54,6 +80,17 @@ var comprador: Node3D
 var barco: Node3D
 ## A cadeia que ensina (a do Seu Benedito): a encomenda só volta depois dela.
 var cadeia: Node
+## A prancha da chegada, filha do barco: some com ele, e só existe no dia dela.
+var prancha: StaticBody3D
+
+## A chegada, medida na montagem: o ponto do convés onde o jogador nasce, o
+## rumo do píer visto dali, e o lugar do Pedro no tabuado. INF sem barco.
+var _no_conves := Vector3.INF
+var _rumo_do_pier := Vector3.ZERO
+var _do_pedro := Vector3.INF
+## A malha do casco no referencial do barco, de três em três vértices, para medir
+## o convés sem a física — que só enxerga o casco depois do primeiro passo dela.
+var _faces_do_casco := PackedVector3Array()
 
 var _presente := false
 ## O dia (absoluto) da última visita, e o que ele já levou nela.
@@ -117,7 +154,14 @@ func _ao_mudar_a_hora(_hora: float) -> void:
 
 func _ao_comecar_o_dia(_d: int, _e: int, _a: int) -> void:
 	_ver_se_chegou(true)
+	# O dia que vira é o fim da chegada: o saveiro larga, com ou sem o mestre.
+	_ver_o_barco()
 	_atualizar_a_encomenda()
+
+
+## O DIA DA CHEGADA: o saveiro que trouxe o jogador está no píer.
+func na_chegada() -> bool:
+	return Relogio.dia_absoluto() == DIA_DA_CHEGADA
 
 
 ## CHEGA E PARTE pelo relógio: no dia dele, da hora de chegar à de partir.
@@ -126,6 +170,8 @@ func _ao_comecar_o_dia(_d: int, _e: int, _a: int) -> void:
 func _ver_se_chegou(avisar: bool) -> void:
 	var agora := _no_dia_e_na_hora()
 	if agora == _presente:
+		# O mestre não mudou, mas o dia pode ter mudado (a chegada acabou).
+		_ver_o_barco()
 		return
 	_presente = agora
 	if agora:
@@ -143,25 +189,42 @@ func _ver_se_chegou(avisar: bool) -> void:
 	_atualizar_a_encomenda()
 
 
-## Ele e o barco aparecem e somem juntos. Escondido, ele não anda, não fala e
-## não recebe entrega (`CadeiaDeMissoes._tentar_encontro` não entrega a quem não
-## está), e o barco sai da física.
+## O mestre aparece e some no dia dele. Escondido, ele não anda, não fala e não
+## recebe entrega (`CadeiaDeMissoes._tentar_encontro` não entrega a quem não
+## está).
 func _mostrar(sim: bool) -> void:
 	if comprador != null:
 		comprador.visible = sim
 		comprador.process_mode = Node.PROCESS_MODE_INHERIT if sim else Node.PROCESS_MODE_DISABLED
 		if sim and comprador.has_method("ir_ao_posto_agora"):
 			comprador.ir_ao_posto_agora()
-	if barco != null:
-		barco.visible = sim
-		barco.process_mode = Node.PROCESS_MODE_INHERIT if sim else Node.PROCESS_MODE_DISABLED
-		if sim and _mundo != null and _mundo.has_method("water_level") and is_finite(_mundo.water_level()):
-			barco.global_position.y = _mundo.water_level()
+	_ver_o_barco()
 
 
-## O SAVEIRO ATRACADO do lado do píer, alinhado com ele: o bote de toldo do
-## catálogo (é o barco de carga que o vale já tem), ou, no procedural, o casco de
-## tábuas das canoas. Com a colisão do próprio casco, como as canoas.
+## O BARCO está atracado com o mestre no píer, e no dia da chegada sem ele.
+## Fora disso, escondido e fora da física. A prancha só vale no dia da chegada:
+## no dia do mestre, com a maré noutro ponto, a ponta dela não acharia o tabuado.
+func _ver_o_barco() -> void:
+	if barco == null:
+		return
+	var atracado := _presente or na_chegada()
+	var atracando := atracado and not barco.visible
+	barco.visible = atracado
+	barco.process_mode = Node.PROCESS_MODE_INHERIT if atracado else Node.PROCESS_MODE_DISABLED
+	# Assenta na água de agora AO ATRACAR, e só então: atracado, ele não sobe e
+	# desce com a maré a cada hora, e a ponta da prancha não sai do tabuado.
+	if atracando and _mundo != null and _mundo.has_method("water_level") and is_finite(_mundo.water_level()):
+		barco.global_position.y = _mundo.water_level()
+	if atracado and na_chegada():
+		_montar_a_prancha()
+	if prancha != null:
+		prancha.process_mode = Node.PROCESS_MODE_INHERIT if na_chegada() else Node.PROCESS_MODE_DISABLED
+
+
+## O SAVEIRO ATRACADO do lado do píer, alinhado com ele: o saveiro do catálogo;
+## sem ele, o bote de toldo (o barco de carga que o vale já tinha); no
+## procedural, o casco de tábuas das canoas. Com a colisão do próprio casco, como
+## as canoas.
 func _montar_o_barco() -> void:
 	if _mundo == null or not ("ancoras" in _mundo) or not _mundo.ancoras.has("PierPiso"):
 		return
@@ -172,17 +235,163 @@ func _montar_o_barco() -> void:
 	barco.name = "SaveiroAtracado"
 	_mundo.add_child(barco)
 	barco.global_position = piso + LUGAR_DO_BARCO.rotated(Vector3.UP, giro)
-	# O comprimento do casco fica ao longo do píer (o X da canoa é o comprimento).
+	# O comprimento do casco fica ao longo do píer (o X da canoa é o comprimento),
+	# e o píer fica do lado -Z do barco.
 	barco.rotation.y = giro - PI * 0.5
 	var casco: Node3D = null
-	if Estilo.tripo() and CatalogoAssets.tem_tripo("bote"):
+	if Estilo.tripo() and CatalogoAssets.tem_tripo("saveiro"):
+		# O comprimento do saveiro é o X do modelo, com a proa no +X: ela aponta
+		# mar adentro, e a vela fica do lado da terra.
+		casco = CatalogoAssets.instanciar("saveiro", barco, Vector3(0.0, -CALADO_DO_SAVEIRO, 0.0), 1.0, 0.0)
+	elif Estilo.tripo() and CatalogoAssets.tem_tripo("bote"):
 		casco = CatalogoAssets.instanciar("bote", barco, Vector3(0.0, -CALADO, 0.0), 1.0, PI * 0.5)
 	if casco == null:
 		casco = Canoas._casco_procedural()
 		barco.add_child(casco)
-	barco.add_child(Canoas._colisao_do_casco(casco, barco))
+	# O CORPO DO CASCO ACOMPANHA O BARCO NA HORA. O das canoas sincroniza com a
+	# física (`sync_to_physics`), que é o certo para quem balança a cada quadro;
+	# o barco atracado só desce à água ao atracar, e o corpo sincronizado
+	# desfazia esse movimento: ficava 0,38 acima do desenho, e o jogador do
+	# convés nascia dentro do casco.
+	var corpo := Canoas._colisao_do_casco(casco, barco)
+	corpo.sync_to_physics = false
+	barco.add_child(corpo)
+	_guardar_as_faces(casco)
 	barco.visible = false
 	barco.process_mode = Node.PROCESS_MODE_DISABLED
+
+
+# --- a chegada ---------------------------------------------------------------------
+
+## Onde o jogador nasce na partida nova: no convés, na proa, um pouco para o
+## lado do píer. INF se não há barco.
+func ponto_do_conves() -> Vector3:
+	return _no_conves
+
+
+## Para onde o píer fica, visto do convés: é para lá que o jogador olha ao chegar.
+func rumo_do_pier() -> Vector3:
+	return _rumo_do_pier
+
+
+## Onde o Pedro espera a chegada: no tabuado, um passo além da ponta da prancha.
+func lugar_do_pedro() -> Vector3:
+	return _do_pedro
+
+
+func _guardar_as_faces(casco: Node3D) -> void:
+	_faces_do_casco = PackedVector3Array()
+	var malhas: Array = casco.find_children("*", "MeshInstance3D", true, false)
+	if casco is MeshInstance3D:
+		malhas.push_front(casco)
+	var para_o_barco := barco.global_transform.affine_inverse()
+	for no in malhas:
+		var malha := no as MeshInstance3D
+		if malha.mesh == null:
+			continue
+		var transformacao := para_o_barco * malha.global_transform
+		for vertice in malha.mesh.get_faces():
+			_faces_do_casco.append(transformacao * vertice)
+
+
+## AS ALTURAS DO CASCO na vertical de (x, z), no referencial do barco: a mais
+## alta abaixo de `teto` — acima dele é mastro, verga e vela. -INF fora do casco.
+func _altura_do_casco(x: float, z: float, teto: float) -> float:
+	var melhor := -INF
+	for i in range(0, _faces_do_casco.size() - 2, 3):
+		var a := _faces_do_casco[i]
+		var b := _faces_do_casco[i + 1]
+		var c := _faces_do_casco[i + 2]
+		if x < minf(a.x, minf(b.x, c.x)) or x > maxf(a.x, maxf(b.x, c.x)) \
+				or z < minf(a.z, minf(b.z, c.z)) or z > maxf(a.z, maxf(b.z, c.z)):
+			continue
+		var d := (b.z - c.z) * (a.x - c.x) + (c.x - b.x) * (a.z - c.z)
+		if absf(d) < 1e-9:
+			continue
+		var u := ((b.z - c.z) * (x - c.x) + (c.x - b.x) * (z - c.z)) / d
+		var v := ((c.z - a.z) * (x - c.x) + (a.x - c.x) * (z - c.z)) / d
+		if u < 0.0 or v < 0.0 or u + v > 1.0:
+			continue
+		var y := u * a.y + v * b.y + (1.0 - u - v) * c.y
+		if y < teto and y > melhor:
+			melhor = y
+	return melhor
+
+
+## O tabuado na vertical de um ponto do mundo, pela física (o píer está nela
+## desde a montagem do vale); sem tabuado ali, a âncora do piso.
+func _tabuado_em(ponto: Vector3) -> float:
+	var piso: Vector3 = _mundo.ancoras["PierPiso"]
+	var raio := PhysicsRayQueryParameters3D.create(Vector3(ponto.x, piso.y + 2.0, ponto.z), Vector3(ponto.x, piso.y - 2.0, ponto.z), 1)
+	var achado := _mundo.get_world_3d().direct_space_state.intersect_ray(raio)
+	if achado.is_empty() or (is_finite(_mundo.water_level()) and achado["position"].y < _mundo.water_level()):
+		return piso.y
+	return achado["position"].y
+
+
+## A PRANCHA DA CHEGADA, e os pontos dela. Medida na malha do casco: da proa,
+## no meio do comprimento que a vela não ocupa, o convés; rumo ao píer, a borda
+## e o alto dela; além da borda, o tabuado. Duas tábuas invisíveis — do convés
+## ao alto da borda, e de lá ao tabuado —, filhas do barco.
+func _montar_a_prancha() -> void:
+	if barco == null or _faces_do_casco.is_empty() or prancha != null:
+		return
+	var menor := Vector3.INF
+	var maior := -Vector3.INF
+	for vertice in _faces_do_casco:
+		menor = menor.min(vertice)
+		maior = maior.max(vertice)
+	var comprimento := maior.x - menor.x
+	var x := (menor.x + maior.x) * 0.5 + comprimento * DESCIDA_NA_PROA
+	var teto := menor.y + comprimento * 0.2
+	# A BORDA do lado do píer (o -Z do barco), de um em um palmo.
+	var borda := 0.0
+	var z := 0.0
+	while z > menor.z - 0.1:
+		if not is_finite(_altura_do_casco(x, z, teto)):
+			break
+		borda = z
+		z -= 0.1
+	if borda > -0.3:
+		return
+	var no_conves := Vector3(x, _altura_do_casco(x, borda * 0.35, teto), borda * 0.35)
+	var de := Vector3(x, _altura_do_casco(x, borda * 0.55, teto), borda * 0.55)
+	var alto := de.y
+	var w := borda * 0.75
+	while w >= borda:
+		alto = maxf(alto, _altura_do_casco(x, w, teto))
+		w -= 0.05
+	if not is_finite(no_conves.y) or not is_finite(de.y):
+		return
+	var sobre_a_borda := Vector3(x, alto + 0.04, borda - 0.05)
+	var para_o_mundo := barco.global_transform
+	var ponta_no_mundo := para_o_mundo * Vector3(x, 0.0, borda - PRANCHA_ALEM_DA_BORDA)
+	ponta_no_mundo.y = _tabuado_em(ponta_no_mundo)
+	var ponta := para_o_mundo.affine_inverse() * ponta_no_mundo
+	prancha = StaticBody3D.new()
+	prancha.name = "PranchaDaChegada"
+	barco.add_child(prancha)
+	prancha.add_child(_tabua(de, sobre_a_borda))
+	prancha.add_child(_tabua(sobre_a_borda, ponta))
+	_no_conves = para_o_mundo * no_conves + Vector3.UP * 0.05
+	var rumo := para_o_mundo.basis * Vector3(0.0, 0.0, -1.0)
+	rumo.y = 0.0
+	_rumo_do_pier = rumo.normalized()
+	_do_pedro = ponta_no_mundo + _rumo_do_pier * PEDRO_ALEM_DA_PRANCHA
+	_do_pedro.y = _tabuado_em(_do_pedro) + 0.05
+
+
+## Uma tábua invisível com o lado de cima na linha de `de` a `ate` (no
+## referencial do barco).
+func _tabua(de: Vector3, ate: Vector3) -> CollisionShape3D:
+	var eixo := ate - de
+	var forma := BoxShape3D.new()
+	forma.size = Vector3(LARGURA_DA_PRANCHA, ESPESSURA_DA_PRANCHA, eixo.length())
+	var colisao := CollisionShape3D.new()
+	colisao.shape = forma
+	var base := Basis.looking_at(eixo.normalized(), Vector3.UP)
+	colisao.transform = Transform3D(base, (de + ate) * 0.5 - base.y * ESPESSURA_DA_PRANCHA * 0.5)
+	return colisao
 
 
 # --- a compra ---------------------------------------------------------------------

@@ -20,10 +20,12 @@ extends SceneTree
 ##
 ## A CHEGADA PEDE DE TUDO (docs/mundo/CHEGADA_E_MUTIROES.md)
 ##
-## Deixou de ser "vá até" e "junte N": o bom-dia ao Tonho, a pergunta à Dona
-## Candinha, a corda torcida na bancada, o mutirão do poço, a janta, a cama, a
-## leira e o convite lido. Cada meta se cumpre aqui PELO CAMINHO DO JOGO: ao lado
-## de quem se fala, `Oficina.fabricar`, `Obras.executar`, `Cozinha.cozinhar`, a
+## Deixou de ser "vá até" e "junte N": a descida do saveiro até o Pedro, a
+## primeira corrida, o bom-dia ao Tonho, a pergunta à Dona Candinha, a casa
+## aberta e as ferramentas do baú, a leira, a corda torcida na bancada, o
+## mutirão do poço, a janta, a cama e o convite lido. Cada meta se cumpre aqui PELO CAMINHO DO JOGO: ao lado
+## de quem se fala, a corrida pelo Shift, a porta da casa, o baú,
+## `Oficina.fabricar`, `Obras.executar`, `Cozinha.cozinhar`, a
 ## lavoura pela ferramenta na mão, a cama pela `Queda`, o papel pela leitura da
 ## mochila. O que o portão não faz é chamar `registrar_evento`: o acontecimento
 ## tem de chegar à cadeia pelo fio que o vale ligou, ou o passo não fecha.
@@ -115,8 +117,8 @@ func _run() -> void:
 		var anunciou := await _ate(func() -> bool: return pedro._espera <= 0.0,
 			SEGUNDOS_PARA_ANUNCIAR)
 		_conferir(anunciou,
-			"o passo '%s' não chegou a anunciar em %s s: alguém nunca solta a palavra"
-				% [id, str(SEGUNDOS_PARA_ANUNCIAR)])
+			"o passo '%s' não chegou a anunciar em %s s: alguém nunca solta a palavra (%s)"
+				% [id, str(SEGUNDOS_PARA_ANUNCIAR), _quem_fala(pedro, jogador)])
 		await _frames(2)
 
 		# A ferramenta prometida tem de estar na mão ANTES de o trabalho ser
@@ -230,6 +232,21 @@ func _run() -> void:
 	_fechar()
 
 
+## QUEM SEGURA A PALAVRA agora, a que distância do jogador e por quanto tempo
+## ainda (`npc._falando`): é o que se precisa saber quando um passo não anuncia.
+func _quem_fala(pedro, jogador) -> String:
+	var agora := Time.get_ticks_msec()
+	var partes: Array[String] = []
+	for quem in pedro._falando:
+		if is_instance_valid(quem) and int(pedro._falando[quem]) > agora:
+			partes.append("%s a %.1f u, mais %.1f s" % [str(quem.name),
+				(quem as Node3D).global_position.distance_to(jogador.global_position),
+				(int(pedro._falando[quem]) - agora) / 1000.0])
+	if not pedro.pode_falar():
+		partes.append("o Pedro não pode falar")
+	return ", ".join(partes) if not partes.is_empty() else "ninguém fala; a espera do passo é %.2f" % float(pedro._espera)
+
+
 ## Os acontecimentos da meta, como a cadeia os lê (`eventos`, ou o `evento` só).
 ## Lido aqui, e não pelo script da cadeia: `preload` dele num `--script` compila
 ## antes dos autoloads e fica quebrado no cache.
@@ -246,9 +263,18 @@ static func _carga(meta: Dictionary) -> Dictionary:
 
 
 ## JUNTA O ITEM PELO CAMINHO DO JOGO: o que cai de alvo, batendo; o que sai da
-## bancada (corda, tábua), juntando a lenha e fabricando, como o J faz.
+## bancada (corda, tábua), juntando a lenha e fabricando, como o J faz; o que
+## está no baú da casa (as ferramentas do finado), tirando de lá, como a tela
+## do baú faz.
 func _juntar(item: String, quantos: int, id: String, inv, recursos, jogador, energia) -> void:
 	var oficina := root.get_node("/root/Oficina")
+	var casa = current_scene.get("casa")
+	if casa != null:
+		for monte in casa.bau.duplicate():
+			if inv.quantidade(item) >= quantos or str(monte.get("id", "")) != item:
+				continue
+			if inv.adicionar(item, int(monte.get("qtd", 1))):
+				casa.bau.erase(monte)
 	var tentativas := 0
 	while inv.quantidade(item) < quantos and tentativas < 60:
 		tentativas += 1
@@ -285,6 +311,38 @@ func _acontecer(evento: String, id: String, jogo, jogador, inv, energia, dialogo
 			"o passo '%s' pede %s no fogo, e a cozinha recusou: %s" % [id, receita, cozinha.impedimento(receita)])
 	elif evento == "dormiu":
 		jogo.noite.dormir_na_cama()
+	elif evento == "correu":
+		# O Shift e a frente, de onde o desembarque deixou o jogador (ao lado do
+		# Pedro, no píer) rumo à praça, pelo tabuado: o vale conta o trecho
+		# corrido (`prototype._ver_se_correu`). Posto no ponto da praça e virado
+		# para o +Z, o corpo não fechava o trecho em 6 s (05/10/2026); o tabuado
+		# rumo à praça é o mesmo chão que o portão da chegada corre.
+		# Um passo e meio à frente do Pedro, já no rumo, como no portão da
+		# chegada: saindo colado nele, o trecho não fechava (05/10/2026).
+		var guia = jogo.get("pedro")
+		var de: Vector3 = guia.global_position if guia != null else jogador.global_position
+		var praca: Vector3 = jogo.world.ancoras.get("Praça", de)
+		var rumo: Vector3 = praca - de
+		rumo.y = 0.0
+		rumo = rumo.normalized() if rumo.length() > 0.1 else Vector3.FORWARD
+		jogador.teleportar(de + rumo * 1.5 + Vector3.UP * 0.3, atan2(rumo.x, rumo.z))
+		await _frames(2)
+		jogador.set("_run_toggled", true)
+		Input.action_press("mv_forward")
+		await _ate(func() -> bool: return jogo.get("_correu_avisado") == true, 6.0)
+		Input.action_release("mv_forward")
+		# A corrida passa por gente no píer, e cada um cumprimenta quem passa: o
+		# passo seguinte só se anuncia com a palavra livre, e o teto dele é de quem
+		# chega calado. Espera-se as falas da corrida acabarem, como o jogador.
+		if guia != null:
+			await _ate(func() -> bool: return not guia.fala_perto_de(jogador.global_position), 20.0)
+	elif evento.begins_with("entrou:"):
+		# Entra pela porta: do lado de dentro da soleira, o vale vê quem entrou.
+		var sala = jogo.interiores.sala_de(evento.trim_prefix("entrou:"))
+		_conferir(sala != null, "o passo '%s' espera entrar em '%s', e o vale não tem esse cômodo" % [id, evento])
+		if sala != null:
+			jogador.teleportar(sala.soleira_de_dentro(), 0.0)
+			await _frames(10)
 	elif evento in ["arou", "plantou", "regou"]:
 		var lavoura = jogo.lavoura
 		var leito := Vector2i(0, 0)
@@ -325,7 +383,7 @@ static func _por_na_mao(inv, item: String) -> bool:
 func _fechar() -> void:
 	print("")
 	if falhas == 0:
-		print("CADEIA_OK: a chegada joga do bom-dia ao convite — falar, perguntar, juntar, torcer corda, o mutirão do poço, a janta, a cama, a leira e o papel lido —, cada passo entrega a ferramenta antes de cobrar, fecha pelo fio do vale e entra no caderno DO VALE com a conta e a linha de andamento dele")
+		print("CADEIA_OK: a chegada joga do desembarque ao convite — descer do saveiro, correr, falar, perguntar, entrar na casa, pegar do baú, juntar, torcer corda, o mutirão do poço, a janta, a cama, a leira e o papel lido —, cada passo entrega a ferramenta antes de cobrar, fecha pelo fio do vale e entra no caderno DO VALE com a conta e a linha de andamento dele")
 	else:
 		print("cadeia: %d falha(s)" % falhas)
 	quit(1 if falhas > 0 else 0)
@@ -335,11 +393,17 @@ func _fechar() -> void:
 ##
 ## O teto é de relógio porque o que se espera aqui — fala acabar, passo virar —
 ## é medido em relógio pelo próprio jogo. Ver o cabeçalho.
+##
+## A CAIXA DE FALA LONGA SE FECHA AQUI: a explicação do corpo (o Pedro, na porta
+## da casa) segura o vale até o jogador ler, e o portão lê depressa.
 func _ate(condicao: Callable, segundos: float) -> bool:
+	var dialogo := root.get_node("/root/Dialogo")
 	var limite := Time.get_ticks_msec() + int(segundos * 1000.0)
 	while Time.get_ticks_msec() < limite:
 		if condicao.call():
 			return true
+		if dialogo.ativo:
+			dialogo._fechar()
 		await process_frame
 	return condicao.call()
 

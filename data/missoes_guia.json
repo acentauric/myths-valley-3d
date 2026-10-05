@@ -1,5 +1,5 @@
 {
-  "observacao": "A CHEGADA que o Pedro conduz: dois dias, e cada passo nasce de alguém — o Tonho, a Dona Candinha, a Dona Zefa, o Cosme, a casa do finado que precisa de fogo. O resumo diz a intenção, e não a coordenada; o marcador segue a pessoa. A ferramenta chega na mesma fala que pede o trabalho, e quem pede paga com o que tem em casa (quem_paga), que é a ponte do fôlego até a cozinha abrir. Desenho, regras e o que fica para a arte em docs/mundo/CHEGADA_E_MUTIROES.md. O campo 'lugar' é NOME DE CONTRATO do autoload Lugares. 'raio' é em unidades (1 u = 4 m). 'audio' é o arquivo em assets/audio/vozes/, sem extensão; vazio quer dizer que o Pedro fala só no balão — os passos 1 e 2 reaproveitam pedro_pier e pedro_praca porque a fala começa com a frase gravada. O passo 'janta' ensina o peixe na brasa e o 'mutirao_poco' ensina a obra do poço (porta 'missao' das receitas). Todo texto que o jogador lê existe nos três idiomas (pt-BR, en, es).",
+  "observacao": "A CHEGADA que o Pedro conduz: começa em cima do saveiro do mestre Quirino, no píer, com o andar e o correr; o Pedro vai NA FRENTE (`conduz`) e apresenta quem o jogador ainda não conhece — o Tonho, a Dona Candinha e a Dona Zefa, que guarda a chave; na casa, o caminho do 2D (entrar, as ferramentas do baú, a primeira roça); depois o fogo, o poço em mutirão, a janta, a primeira noite e o convite. Na primeira vez que o vigor baixa na caminhada, o Pedro explica a vida, o fôlego e o vigor (`corpo`). Cada passo nasce de alguém; o resumo diz a intenção, e não a coordenada; o marcador segue a pessoa; quem pede paga com o que tem em casa (quem_paga). Desenho em docs/mundo/CHEGADA_E_MUTIROES.md. O campo 'lugar' é NOME DE CONTRATO do autoload Lugares. 'raio' é em unidades (1 u = 4 m). 'audio' é o arquivo em assets/audio/vozes/, sem extensão; vazio quer dizer que o Pedro fala só no balão.",
   "dono": "pedro",
   "nome": "Chegada ao arraial",
   "nome_en": "Arrival in the village",
@@ -7,19 +7,63 @@
   "principal": true,
   "passos": [
     {
+      "id": "desembarque",
+      "titulo": "As pernas de terra firme",
+      "titulo_en": "Firm-land legs",
+      "titulo_es": "Piernas de tierra firme",
+      "resumo": "Desça do saveiro até o Pedro, no píer",
+      "resumo_en": "Step off the saveiro to Pedro, on the pier",
+      "resumo_es": "Baja del saveiro hasta Pedro, en el muelle",
+      "lugar": "pier",
+      "raio": 7,
+      "audio": "",
+      "fica": true,
+      "texto": "Desce do saveiro e vem pra terra firme, que a perna ainda tá do mar. Anda com W, A, S e D — ou as setas, se preferir. Eu te espero aqui no píer.",
+      "texto_en": "Step off the saveiro onto firm ground — your legs are still at sea. Walk with W, A, S and D, or the arrow keys if you prefer. I'll wait for you here on the pier.",
+      "texto_es": "Baja del saveiro a tierra firme, que las piernas todavía están en el mar. Camina con W, A, S y D, o con las flechas si prefieres. Te espero aquí en el muelle.",
+      "meta": {
+        "tipo": "falar",
+        "a_quem": "pedro",
+        "raio": 3,
+        "resposta": "Isso: o corpo respondeu, e depois de meio dia em pé num saveiro já é alguma coisa. O mestre Quirino larga amanhã cedo; você fica. Bem-vindo a Bom Jesus dos Pobres.",
+        "resposta_en": "There: your body answered, and after half a day standing on a saveiro that's something. Master Quirino sails off early tomorrow; you stay. Welcome to Bom Jesus dos Pobres.",
+        "resposta_es": "Eso: el cuerpo respondió, y después de medio día de pie en un saveiro ya es algo. El maestro Quirino zarpa mañana temprano; tú te quedas. Bienvenido a Bom Jesus dos Pobres."
+      }
+    },
+    {
+      "id": "correr",
+      "titulo": "Pressa de quem chega",
+      "titulo_en": "In a hurry",
+      "titulo_es": "Prisa de quien llega",
+      "resumo": "Toque Shift e corra um trecho",
+      "resumo_en": "Tap Shift and run a stretch",
+      "resumo_es": "Pulsa Shift y corre un tramo",
+      "lugar": "pier",
+      "raio": 7,
+      "audio": "",
+      "fica": true,
+      "texto": "Se precisar de pressa, toca o Shift: o corpo corre, e outro toque volta ao passo. Corre um trecho aí, pra ver. Mas repara: correr cansa, e cansado o corpo não obedece.",
+      "texto_en": "If you're in a hurry, tap Shift: your body runs, and another tap brings it back to a walk. Run a stretch there, to see. But mind: running tires you, and a tired body won't obey.",
+      "texto_es": "Si tienes prisa, pulsa Shift: el cuerpo corre, y otro toque lo devuelve al paso. Corre un tramo ahí, para ver. Pero ojo: correr cansa, y cansado el cuerpo no obedece.",
+      "meta": {
+        "tipo": "evento",
+        "evento": "correu"
+      }
+    },
+    {
       "id": "bom_dia",
       "titulo": "Quem chega, cumprimenta",
       "titulo_en": "Whoever arrives, says hello",
       "titulo_es": "Quien llega, saluda",
-      "resumo": "Dê bom-dia ao Tonho no píer",
-      "resumo_en": "Say good morning to Tonho on the pier",
-      "resumo_es": "Dale los buenos días a Tonho en el muelle",
+      "resumo": "Cumprimente o Tonho, que o Pedro apresenta",
+      "resumo_en": "Greet Tonho, whom Pedro introduces",
+      "resumo_es": "Saluda a Tonho, que Pedro te presenta",
       "lugar": "pier",
-      "raio": 7.0,
-      "audio": "pedro_pier",
-      "texto": "Você chegou por aqui mesmo, pelo píer. Olha a maré: ela conta história. E olha o Tonho na ponta, remendando rede desde a madrugada. Aqui quem chega cumprimenta: pescador lembra de quem passou reto, e não esquece.",
-      "texto_en": "This is where you arrived — the pier. Look at the tide: it tells stories. And look at Tonho at the far end, mending nets since before dawn. Here, whoever arrives says hello: a fisherman remembers who walked past him, and never forgets.",
-      "texto_es": "Llegaste justo por aquí, por el muelle. Mira la marea: cuenta historias. Y mira a Tonho en la punta, remendando la red desde la madrugada. Aquí quien llega saluda: un pescador se acuerda de quien pasó de largo, y no lo olvida.",
+      "raio": 7,
+      "audio": "",
+      "texto": "Agora vem comigo, que eu te apresento a quem tá no píer. Aquele remendando rede desde a madrugada é o Tonho, pescador como eu. Aqui quem chega cumprimenta: pescador lembra de quem passou reto.",
+      "texto_en": "Now come with me, I'll introduce you to whoever's on the pier. The one mending nets since before dawn is Tonho, a fisherman like me. Here, whoever arrives says good morning: fishermen remember who walked past.",
+      "texto_es": "Ahora ven conmigo, que te presento a quien está en el muelle. El que remienda redes desde la madrugada es Tonho, pescador como yo. Aquí quien llega saluda: el pescador se acuerda de quien pasó de largo.",
       "meta": {
         "tipo": "falar",
         "a_quem": "tonho",
@@ -29,22 +73,25 @@
         "resposta_es": "Buenos días, muchacho. ¿Así que tú eres el sobrino del difunto? Me pagaba el pescado con harina y nunca se atrasó un día. Toma este: es el primero de la casa nueva. Ásalo al fuego por la noche."
       },
       "quem_paga": "tonho",
-      "recompensa": { "peixe": 1 }
+      "recompensa": {
+        "peixe": 1
+      },
+      "conduz": true
     },
     {
       "id": "chave",
       "titulo": "Quem guardou a chave",
       "titulo_en": "Who kept the key",
       "titulo_es": "Quién guardó la llave",
-      "resumo": "Pergunte à Dona Candinha pela chave",
-      "resumo_en": "Ask Dona Candinha about the key",
-      "resumo_es": "Pregúntale a doña Candinha por la llave",
+      "resumo": "Siga o Pedro até a Dona Candinha e pergunte pela chave",
+      "resumo_en": "Follow Pedro to Dona Candinha and ask about the key",
+      "resumo_es": "Sigue a Pedro hasta doña Candinha y pregunta por la llave",
       "lugar": "praca",
-      "raio": 9.0,
-      "audio": "pedro_praca",
-      "texto": "Agora vem comigo até a praça. É ali que a vila começa. A chave da casa do seu tio eu não sei com quem ficou: depois do enterro, cada um levou uma coisa. Quem sabe é a Dona Candinha — tudo o que acontece neste arraial passa pela garapa dela.",
-      "texto_en": "Now come with me to the square. That is where the village begins. I don't know who kept the key to your uncle's house: after the burial, everyone took something. Dona Candinha will know — everything that happens in this village passes by her sugarcane-juice stall.",
-      "texto_es": "Ahora ven conmigo hasta la plaza. Ahí es donde empieza el pueblo. La llave de la casa de tu tío no sé con quién quedó: después del entierro, cada uno se llevó algo. Quien sabe es doña Candinha: todo lo que pasa en este pueblo pasa por su jugo de caña.",
+      "raio": 9,
+      "audio": "",
+      "texto": "Agora a casa do seu tio. A chave eu não sei com quem ficou: depois do enterro, cada um levou uma coisa. Vem comigo até a praça, que eu vou na frente. Quem sabe de tudo é a Dona Candinha, a da garapa — tudo o que acontece no arraial passa por ela.",
+      "texto_en": "Now your uncle's house. I don't know who kept the key: after the funeral, everyone took something. Come with me to the square, I'll lead the way. The one who knows everything is Dona Candinha, the sugarcane-juice lady — everything that happens in the village goes through her.",
+      "texto_es": "Ahora la casa de tu tío. No sé con quién quedó la llave: después del entierro, cada uno se llevó algo. Ven conmigo hasta la plaza, que yo voy delante. Quien sabe de todo es doña Candinha, la del jugo de caña: todo lo que pasa en el pueblo pasa por ella.",
       "meta": {
         "tipo": "falar",
         "a_quem": "candinha",
@@ -54,22 +101,25 @@
         "resposta_es": "¿La llave? Se la quedó doña Zefa, que lavó el cuerpo y cerró la puerta. Pero siéntate aquí primero: nadie sube esa cuesta con la garganta seca mientras yo esté. Hoy el jugo de caña corre por cuenta de la casa."
       },
       "quem_paga": "candinha",
-      "recompensa": { "garapa": 1 }
+      "recompensa": {
+        "garapa": 1
+      },
+      "conduz": true
     },
     {
       "id": "chave_zefa",
       "titulo": "A chave com a Dona Zefa",
       "titulo_en": "The key with Dona Zefa",
       "titulo_es": "La llave con doña Zefa",
-      "resumo": "Busque a chave com a Dona Zefa",
-      "resumo_en": "Get the key from Dona Zefa",
-      "resumo_es": "Busca la llave con doña Zefa",
+      "resumo": "Siga o Pedro até a Dona Zefa e busque a chave",
+      "resumo_en": "Follow Pedro to Dona Zefa and get the key",
+      "resumo_es": "Sigue a Pedro hasta doña Zefa y busca la llave",
       "lugar": "casa_da_zefa",
-      "raio": 8.0,
+      "raio": 8,
       "audio": "",
-      "texto": "A Dona Zefa mora colada na casa do seu tio. É benzedeira: o povo vai nela antes de ir no padre, e o padre sabe e não diz nada. Fala com jeito, que ela repara em tudo.",
-      "texto_en": "Dona Zefa lives right next to your uncle's house. She's a healer: people go to her before they go to the priest, and the priest knows it and says nothing. Speak gently — she notices everything.",
-      "texto_es": "Doña Zefa vive pegada a la casa de tu tío. Es curandera: la gente va con ella antes de ir con el cura, y el cura lo sabe y no dice nada. Háblale con tacto, que ella se fija en todo.",
+      "texto": "A Dona Zefa mora colada na casa do seu tio, lá em cima. Vem que eu te levo. É benzedeira: o povo vai nela antes de ir no padre, e o padre sabe e não diz nada. Fala com jeito, que ela repara em tudo.",
+      "texto_en": "Dona Zefa lives right next to your uncle's house, up the hill. Come, I'll take you. She's a folk healer: people go to her before the priest, and the priest knows and says nothing. Speak kindly, she notices everything.",
+      "texto_es": "Doña Zefa vive pegada a la casa de tu tío, allá arriba. Ven, que te llevo. Es curandera: la gente va a ella antes que al cura, y el cura lo sabe y no dice nada. Habla con tino, que ella se fija en todo.",
       "meta": {
         "tipo": "falar",
         "a_quem": "zefa",
@@ -79,110 +129,53 @@
         "resposta_es": "Aquí está la llave. Cerré esa puerta y me quedé rezando para que se abriera para alguien de su sangre. Abre la casa, airéala, y enciende el fuego antes de la noche: casa cerrada junta frío. Y pasa por el pozo, que voy a necesitar un brazo joven."
       },
       "quem_paga": "zefa",
-      "recompensa": { "cocada": 1 }
+      "recompensa": {
+        "cocada": 1
+      },
+      "conduz": true
     },
     {
-      "id": "lenha",
-      "titulo": "Fogo na casa fechada",
-      "titulo_en": "Fire in the closed house",
-      "titulo_es": "Fuego en la casa cerrada",
-      "resumo": "Junte lenha para o fogo da casa",
-      "resumo_en": "Gather firewood for the house fire",
-      "resumo_es": "Junta leña para el fuego de la casa",
+      "id": "casa",
+      "titulo": "A porta que ninguém abriu",
+      "titulo_en": "The door no one opened",
+      "titulo_es": "La puerta que nadie abrió",
+      "resumo": "Abra a casa do seu tio e entre",
+      "resumo_en": "Open your uncle's house and go in",
+      "resumo_es": "Abre la casa de tu tío y entra",
       "lugar": "casa_de_taipa",
-      "raio": 7.0,
+      "raio": 8,
       "audio": "",
-      "texto": "Toma o machado do seu tio — tava encostado do lado da porta, do jeito que ele deixava. O número dele na barra põe o machado na mão. Tem tronco caído aqui do lado: encosta e aperta E. Junta um tanto a mais, que lenha também vira corda na bancada.",
-      "texto_en": "Take your uncle's axe — it was leaning by the door, the way he always left it. Its number on the bar puts the axe in your hand. There's a fallen trunk right here: walk up to it and press E. Gather a bit extra — firewood also becomes rope at the workbench.",
-      "texto_es": "Toma el hacha de tu tío: estaba apoyada al lado de la puerta, como él la dejaba. Su número en la barra te pone el hacha en la mano. Hay un tronco caído aquí al lado: acércate y aprieta E. Junta un poco más, que la leña también se vuelve cuerda en el banco.",
-      "entrega": { "item": "machado", "quantidade": 1 },
-      "meta": { "tipo": "juntar", "item": "lenha", "quantos": 4 },
-      "recompensa": { "beiju": 1 }
+      "conduz": true,
+      "texto": "Chegamos. Daqui da cerca pra dentro é seu. A chave tá com você: abre a porta e entra. Eu fico aqui fora, que dentro é seu.",
+      "texto_en": "Here we are. From this fence inward, it's yours. You have the key: open the door and go in. I'll stay out here — inside is yours.",
+      "texto_es": "Llegamos. De esta cerca para adentro es tuyo. La llave la tienes tú: abre la puerta y entra. Yo me quedo aquí afuera, que adentro es tuyo.",
+      "meta": {
+        "tipo": "evento",
+        "evento": "entrou:casa"
+      }
     },
     {
-      "id": "pedra_do_poco",
-      "titulo": "A boca do poço",
-      "titulo_en": "The mouth of the well",
-      "titulo_es": "La boca del pozo",
-      "resumo": "Tire pedra para calçar o poço",
-      "resumo_en": "Break stone to shore up the well",
-      "resumo_es": "Saca piedra para calzar el pozo",
-      "lugar": "poco",
-      "raio": 8.0,
-      "audio": "",
-      "texto": "O beiju é da minha avó, que soube que você chegou. Agora o poço: a corda partiu, e a boca tá esfarelando — balde que cai leva pedra junto. Toma a picareta, que também era do seu tio. Tem lajedo ali do lado do poço; pedra pra calçar a boca sai dele.",
-      "texto_en": "The beiju is from my grandmother — she heard you arrived. Now the well: the rope snapped, and the mouth is crumbling — a bucket that falls takes stone with it. Take the pickaxe, it was your uncle's too. There's a slab of rock right by the well; the stone to shore up the mouth comes from it.",
-      "texto_es": "El beiju es de mi abuela, que se enteró de que llegaste. Ahora el pozo: la cuerda se rompió y la boca se desmorona; balde que cae arrastra piedra. Toma el pico, que también era de tu tío. Hay una laja al lado del pozo: de ahí sale la piedra para calzar la boca.",
-      "entrega": { "item": "picareta", "quantidade": 1 },
-      "meta": { "tipo": "juntar", "item": "pedra", "quantos": 3 }
-    },
-    {
-      "id": "corda",
-      "titulo": "Corda nova",
-      "titulo_en": "New rope",
-      "titulo_es": "Cuerda nueva",
-      "resumo": "Torça uma corda na bancada",
-      "resumo_en": "Twist a rope at the workbench",
-      "resumo_es": "Tuerce una cuerda en el banco",
-      "lugar": "oficina",
-      "raio": 6.0,
-      "audio": "",
-      "texto": "Agora a corda. A bancada do seu tio fica na beira do roçado: é ali que lenha vira tábua e vira corda. Encosta nela e aperta E pra torcer uma — três lenhas dão uma corda.",
-      "texto_en": "Now the rope. Your uncle's workbench is at the edge of the field: that's where firewood becomes plank and becomes rope. Walk up to it and press E to twist one — three pieces of firewood make a rope.",
-      "texto_es": "Ahora la cuerda. El banco de tu tío está a la orilla del sembrado: ahí la leña se vuelve tabla y se vuelve cuerda. Acércate y pulsa E para torcer una: tres leñas dan una cuerda.",
-      "meta": { "tipo": "juntar", "item": "corda", "quantos": 1 }
-    },
-    {
-      "id": "mutirao_poco",
-      "titulo": "Mutirão no poço",
-      "titulo_en": "All hands at the well",
-      "titulo_es": "Manos a la obra en el pozo",
-      "resumo": "Conserte o poço com a Dona Zefa",
-      "resumo_en": "Fix the well with Dona Zefa",
-      "resumo_es": "Arregla el pozo con doña Zefa",
-      "lugar": "poco",
-      "raio": 8.0,
-      "audio": "",
-      "texto": "Pedra e corda na mão: é mutirão. Aqui obra de todo mundo se faz junto — a Dona Zefa já chamou o neto. Chega no poço, abre o J na aba de obras e conserta a boca.",
-      "texto_en": "Stone and rope in hand: that's a work party. Here, what belongs to everyone gets built together — Dona Zefa has already called her grandson. Get to the well, open J on the works tab and fix the mouth.",
-      "texto_es": "Piedra y cuerda en la mano: es trabajo en común. Aquí la obra de todos se hace juntos; doña Zefa ya llamó a su nieto. Llega al pozo, abre la J en la pestaña de obras y arregla la boca.",
-      "meta": { "tipo": "obra", "construcao": "poco", "obra": "poco_corda" },
-      "mutirao": { "zefa": {}, "cosme": {} },
-      "quem_paga": "zefa",
-      "recompensa": { "balde": 1, "cocada": 1 }
-    },
-    {
-      "id": "janta",
-      "titulo": "A primeira janta",
-      "titulo_en": "The first supper",
-      "titulo_es": "La primera cena",
-      "resumo": "Asse o peixe do Tonho na fogueira",
-      "resumo_en": "Roast Tonho's fish on the fire",
-      "resumo_es": "Asa el pescado de Tonho en la fogata",
-      "lugar": "fogueira",
-      "raio": 6.0,
-      "audio": "",
-      "texto": "O balde que a Dona Zefa te deu era do seu tio: com ele se rega a roça amanhã. Agora a janta, que o peixe do Tonho tá esperando. A fogueira do terreiro é o fogão da casa por enquanto: encosta, aperta E e asse — peixe na brasa pede uma lenha.",
-      "texto_en": "The bucket Dona Zefa gave you was your uncle's: tomorrow it waters the field. Now supper — Tonho's fish is waiting. The yard fire is the house stove for now: walk up to it, press E and roast — fish on the coals takes one piece of firewood.",
-      "texto_es": "El balde que te dio doña Zefa era de tu tío: con él se riega el sembrado mañana. Ahora la cena, que el pescado de Tonho está esperando. La fogata del patio es el fogón de la casa por ahora: acércate, pulsa E y ásalo; pescado a la brasa pide una leña.",
-      "meta": { "tipo": "evento", "evento": "cozinhou:peixe_assado" }
-    },
-    {
-      "id": "dormir",
-      "titulo": "A primeira noite",
-      "titulo_en": "The first night",
-      "titulo_es": "La primera noche",
-      "resumo": "Durma na cama do seu tio",
-      "resumo_en": "Sleep in your uncle's bed",
-      "resumo_es": "Duerme en la cama de tu tío",
+      "id": "pegar",
+      "titulo": "As ferramentas do finado",
+      "titulo_en": "The late man's tools",
+      "titulo_es": "Las herramientas del difunto",
+      "resumo": "Pegue no baú a enxada, o balde e a maniva",
+      "resumo_en": "Take the hoe, the bucket and the cassava cutting from the chest",
+      "resumo_es": "Toma del baúl la azada, el balde y el esqueje de yuca",
       "lugar": "casa_de_taipa",
-      "raio": 7.0,
+      "raio": 8,
       "audio": "",
-      "texto": "Agora come, e depois deita: o I abre a mochila, e o F come o que estiver marcado. A cama do seu tio é a de dentro, ao pé da parede. Amanhã cedo eu passo aqui — e o arraial inteiro já vai saber que tem gente na casa do finado.",
-      "texto_en": "Now eat, and then lie down: I opens the backpack, and F eats whatever is selected. Your uncle's bed is the one inside, against the wall. I'll come by early tomorrow — and the whole village will already know someone lives in the late man's house.",
-      "texto_es": "Ahora come, y después acuéstate: la I abre la mochila, y la F come lo que esté marcado. La cama de tu tío es la de adentro, al pie de la pared. Mañana temprano paso por aquí, y todo el pueblo ya va a saber que hay gente en la casa del difunto.",
-      "meta": { "tipo": "evento", "evento": "dormiu" },
-      "recompensa": { "mungunza": 1 }
+      "texto": "Cama, baú e o fogo lá fora: é o que tem, e basta pra começar. No baú ficou o que o seu tio usava na roça — a enxada, o balde e um punhado de maniva —, e minha avó deixou dois beijus. Chega no baú e aperta E. O resto da casa vai entrando conforme você levantar: perto dela, o J abre as obras.",
+      "texto_en": "A bed, a chest and the fire outside: that's what there is, and it's enough to start. In the chest is what your uncle used in the field — the hoe, the bucket and a handful of cassava cuttings — and my grandmother left two beijus. Go to the chest and press E. The rest of the house comes as you build it: near it, J opens the works.",
+      "texto_es": "Cama, baúl y el fuego afuera: es lo que hay, y basta para empezar. En el baúl quedó lo que tu tío usaba en el sembrado — la azada, el balde y un puñado de esquejes de yuca —, y mi abuela dejó dos beijus. Llega al baúl y pulsa E. El resto de la casa va entrando a medida que construyas: cerca de ella, la J abre las obras.",
+      "meta": {
+        "tipo": "juntar",
+        "itens": {
+          "enxada": 1,
+          "balde": 1,
+          "semente_mandioca": 1
+        }
+      }
     },
     {
       "id": "roca",
@@ -193,18 +186,163 @@
       "resumo_en": "Hoe, plant and water a bed",
       "resumo_es": "Abre, siembra y riega un surco",
       "lugar": "lavoura",
-      "raio": 8.0,
+      "raio": 8,
       "audio": "",
-      "texto": "Bom dia! O mungunzá foi minha avó que mandou de madrugada. Olha o Cosme ali: ele capinava a roça do seu tio, e não parou. Terra parada é terra que some. Toma a enxada e a maniva que meu avô separou: a enxada abre a leira, a maniva na mão planta, e o balde molha.",
-      "texto_en": "Good morning! The mungunzá — my grandmother sent it before dawn. Look at Cosme there: he used to work your uncle's field, and he never stopped. Idle land is land that disappears. Take the hoe and the cassava cuttings my grandfather set aside: the hoe opens the bed, the cutting in your hand plants it, and the bucket waters it.",
-      "texto_es": "¡Buenos días! El mungunzá lo mandó mi abuela de madrugada. Mira a Cosme ahí: trabajaba el sembrado de tu tío, y no paró. Tierra quieta es tierra que se pierde. Toma la azada y las estacas de yuca que separó mi abuelo: la azada abre el surco, la estaca en la mano siembra y el balde riega.",
-      "entrega": [
-        { "item": "enxada", "quantidade": 1 },
-        { "item": "semente_mandioca", "quantidade": 4 }
-      ],
-      "meta": { "tipo": "evento", "eventos": ["arou", "plantou", "regou"] },
+      "texto": "Agora a terra, que terra parada é terra que some. O Cosme, neto da Dona Zefa, capinava a roça do seu tio e não parou. Põe a enxada na mão e abre uma leira; a maniva na mão planta, e o balde molha — na ordem que quiser. Se perder o fio, o J guarda o que tá aberto.",
+      "texto_en": "Now the land, because idle land is land that disappears. Cosme, Dona Zefa's grandson, weeded your uncle's field and never stopped. Put the hoe in your hand and open a furrow; the cutting in your hand plants, and the bucket waters — in any order you like. If you lose track, J keeps what's open.",
+      "texto_es": "Ahora la tierra, que tierra parada es tierra que se pierde. Cosme, el nieto de doña Zefa, carpía el sembrado de tu tío y no paró. Pon la azada en la mano y abre un surco; el esqueje en la mano planta, y el balde riega, en el orden que quieras. Si pierdes el hilo, la J guarda lo que está abierto.",
+      "meta": {
+        "tipo": "evento",
+        "eventos": [
+          "arou",
+          "plantou",
+          "regou"
+        ]
+      },
       "quem_paga": "cosme",
-      "recompensa": { "beiju": 1 }
+      "recompensa": {
+        "beiju": 1
+      }
+    },
+    {
+      "id": "lenha",
+      "titulo": "Fogo na casa fechada",
+      "titulo_en": "Fire in the closed house",
+      "titulo_es": "Fuego en la casa cerrada",
+      "resumo": "Junte lenha para o fogo da casa",
+      "resumo_en": "Gather firewood for the house fire",
+      "resumo_es": "Junta leña para el fuego de la casa",
+      "lugar": "casa_de_taipa",
+      "raio": 7,
+      "audio": "",
+      "texto": "A Dona Zefa tem razão: casa fechada junta frio. Toma o machado do seu tio — tava encostado do lado da porta, do jeito que ele deixava. O número dele na barra põe o machado na mão. Tem tronco caído aqui perto: encosta e aperta E. Junta um tanto a mais, que lenha também vira corda na bancada.",
+      "texto_en": "Dona Zefa is right: a closed house gathers cold. Take your uncle's axe — it was leaning by the door, the way he left it. Its number on the bar puts the axe in your hand. There's a fallen trunk nearby: walk up and press E. Gather a bit extra, since firewood also becomes rope at the workbench.",
+      "texto_es": "Doña Zefa tiene razón: casa cerrada junta frío. Toma el hacha de tu tío: estaba apoyada al lado de la puerta, como él la dejaba. Su número en la barra pone el hacha en la mano. Hay un tronco caído aquí cerca: acércate y pulsa E. Junta un poco de más, que la leña también se vuelve cuerda en el banco.",
+      "entrega": {
+        "item": "machado",
+        "quantidade": 1
+      },
+      "meta": {
+        "tipo": "juntar",
+        "item": "lenha",
+        "quantos": 4
+      },
+      "recompensa": {
+        "beiju": 1
+      }
+    },
+    {
+      "id": "pedra_do_poco",
+      "titulo": "A boca do poço",
+      "titulo_en": "The mouth of the well",
+      "titulo_es": "La boca del pozo",
+      "resumo": "Tire pedra para calçar o poço",
+      "resumo_en": "Break stone to shore up the well",
+      "resumo_es": "Saca piedra para calzar el pozo",
+      "lugar": "poco",
+      "raio": 8,
+      "audio": "",
+      "texto": "O beiju é da minha avó, que soube que você chegou. Agora o poço: a corda partiu, e a boca tá esfarelando — balde que cai leva pedra junto. Toma a picareta, que também era do seu tio. Tem lajedo ali do lado do poço; pedra pra calçar a boca sai dele.",
+      "texto_en": "The beiju is from my grandmother — she heard you arrived. Now the well: the rope snapped, and the mouth is crumbling — a bucket that falls takes stone with it. Take the pickaxe, it was your uncle's too. There's a slab of rock right by the well; the stone to shore up the mouth comes from it.",
+      "texto_es": "El beiju es de mi abuela, que se enteró de que llegaste. Ahora el pozo: la cuerda se rompió y la boca se desmorona; balde que cae arrastra piedra. Toma el pico, que también era de tu tío. Hay una laja al lado del pozo: de ahí sale la piedra para calzar la boca.",
+      "entrega": {
+        "item": "picareta",
+        "quantidade": 1
+      },
+      "meta": {
+        "tipo": "juntar",
+        "item": "pedra",
+        "quantos": 3
+      }
+    },
+    {
+      "id": "corda",
+      "titulo": "Corda nova",
+      "titulo_en": "New rope",
+      "titulo_es": "Cuerda nueva",
+      "resumo": "Torça uma corda na bancada",
+      "resumo_en": "Twist a rope at the workbench",
+      "resumo_es": "Tuerce una cuerda en el banco",
+      "lugar": "oficina",
+      "raio": 6,
+      "audio": "",
+      "texto": "Agora a corda. A bancada do seu tio fica na beira do roçado: é ali que lenha vira tábua e vira corda. Encosta nela e aperta E pra torcer uma — três lenhas dão uma corda.",
+      "texto_en": "Now the rope. Your uncle's workbench is at the edge of the field: that's where firewood becomes plank and becomes rope. Walk up to it and press E to twist one — three pieces of firewood make a rope.",
+      "texto_es": "Ahora la cuerda. El banco de tu tío está a la orilla del sembrado: ahí la leña se vuelve tabla y se vuelve cuerda. Acércate y pulsa E para torcer una: tres leñas dan una cuerda.",
+      "meta": {
+        "tipo": "juntar",
+        "item": "corda",
+        "quantos": 1
+      }
+    },
+    {
+      "id": "mutirao_poco",
+      "titulo": "Mutirão no poço",
+      "titulo_en": "All hands at the well",
+      "titulo_es": "Manos a la obra en el pozo",
+      "resumo": "Conserte o poço com a Dona Zefa",
+      "resumo_en": "Fix the well with Dona Zefa",
+      "resumo_es": "Arregla el pozo con doña Zefa",
+      "lugar": "poco",
+      "raio": 8,
+      "audio": "",
+      "texto": "Pedra e corda na mão: é mutirão. Aqui obra de todo mundo se faz junto — a Dona Zefa já chamou o neto. Chega no poço, abre o J na aba de obras e conserta a boca.",
+      "texto_en": "Stone and rope in hand: that's a work party. Here, what belongs to everyone gets built together — Dona Zefa has already called her grandson. Get to the well, open J on the works tab and fix the mouth.",
+      "texto_es": "Piedra y cuerda en la mano: es trabajo en común. Aquí la obra de todos se hace juntos; doña Zefa ya llamó a su nieto. Llega al pozo, abre la J en la pestaña de obras y arregla la boca.",
+      "meta": {
+        "tipo": "obra",
+        "construcao": "poco",
+        "obra": "poco_corda"
+      },
+      "mutirao": {
+        "zefa": {},
+        "cosme": {}
+      },
+      "quem_paga": "zefa",
+      "recompensa": {
+        "cocada": 2
+      }
+    },
+    {
+      "id": "janta",
+      "titulo": "A primeira janta",
+      "titulo_en": "The first supper",
+      "titulo_es": "La primera cena",
+      "resumo": "Asse o peixe do Tonho na fogueira",
+      "resumo_en": "Roast Tonho's fish on the fire",
+      "resumo_es": "Asa el pescado de Tonho en la fogata",
+      "lugar": "fogueira",
+      "raio": 6,
+      "audio": "",
+      "texto": "Poço consertado: amanhã a roça tem água perto. Agora a janta, que o peixe do Tonho tá esperando. A fogueira do terreiro é o fogão da casa por enquanto: encosta, aperta E e asse — peixe na brasa pede uma lenha.",
+      "texto_en": "Well fixed: tomorrow the field has water nearby. Now supper — Tonho's fish is waiting. The yard fire is the house stove for now: walk up to it, press E and roast — fish on the coals takes one piece of firewood.",
+      "texto_es": "Pozo arreglado: mañana el sembrado tiene agua cerca. Ahora la cena, que el pescado de Tonho está esperando. La fogata del patio es el fogón de la casa por ahora: acércate, pulsa E y ásalo; pescado a la brasa pide una leña.",
+      "meta": {
+        "tipo": "evento",
+        "evento": "cozinhou:peixe_assado"
+      }
+    },
+    {
+      "id": "dormir",
+      "titulo": "A primeira noite",
+      "titulo_en": "The first night",
+      "titulo_es": "La primera noche",
+      "resumo": "Durma na cama do seu tio",
+      "resumo_en": "Sleep in your uncle's bed",
+      "resumo_es": "Duerme en la cama de tu tío",
+      "lugar": "casa_de_taipa",
+      "raio": 7,
+      "audio": "",
+      "texto": "Agora come, e depois deita: o I abre a mochila, e o F come o que estiver marcado. A cama do seu tio é a de dentro, ao pé da parede. Amanhã cedo eu passo aqui — e o arraial inteiro já vai saber que tem gente na casa do finado.",
+      "texto_en": "Now eat, and then lie down: I opens the backpack, and F eats whatever is selected. Your uncle's bed is the one inside, against the wall. I'll come by early tomorrow — and the whole village will already know someone lives in the late man's house.",
+      "texto_es": "Ahora come, y después acuéstate: la I abre la mochila, y la F come lo que esté marcado. La cama de tu tío es la de adentro, al pie de la pared. Mañana temprano paso por aquí, y todo el pueblo ya va a saber que hay gente en la casa del difunto.",
+      "meta": {
+        "tipo": "evento",
+        "evento": "dormiu"
+      },
+      "recompensa": {
+        "mungunza": 1
+      }
     },
     {
       "id": "convite",
@@ -215,18 +353,53 @@
       "resumo_en": "Read the invitation that arrived",
       "resumo_es": "Lee la invitación que llegó",
       "lugar": "casa_de_taipa",
-      "raio": 8.0,
+      "raio": 8,
       "audio": "",
-      "texto": "E isto chegou de manhã cedo, preso em cada porta do arraial — esse estava na sua. Lê você, que estudou na capital: eu leio devagar demais e o povo ri. Na mochila, F em cima do papel.",
-      "texto_en": "And this arrived early this morning, pinned to every door in the village — this one was on yours. You read it, you studied in the capital: I read too slowly and people laugh. In the backpack, F on the paper.",
-      "texto_es": "Y esto llegó temprano, clavado en cada puerta del pueblo; este estaba en la tuya. Léelo tú, que estudiaste en la capital: yo leo demasiado despacio y la gente se ríe. En la mochila, F sobre el papel.",
-      "entrega": { "item": "convite", "quantidade": 1 },
-      "meta": { "tipo": "evento", "evento": "leu:convite" }
+      "texto": "Bom dia! O mungunzá foi minha avó que mandou de madrugada. E isto chegou de manhã cedo, preso em cada porta do arraial — esse estava na sua. Lê você, que estudou na capital: eu leio devagar demais e o povo ri. Na mochila, F em cima do papel.",
+      "texto_en": "Good morning! The mungunzá was my grandmother, she sent it before dawn. And this arrived early this morning, pinned to every door in the village — this one was on yours. You read it, you studied in the capital: I read too slowly and people laugh. In the backpack, F on the paper.",
+      "texto_es": "¡Buenos días! El mungunzá lo mandó mi abuela de madrugada. Y esto llegó temprano, clavado en cada puerta del pueblo; este estaba en la tuya. Léelo tú, que estudiaste en la capital: yo leo demasiado despacio y la gente se ríe. En la mochila, F sobre el papel.",
+      "entrega": {
+        "item": "convite",
+        "quantidade": 1
+      },
+      "meta": {
+        "tipo": "evento",
+        "evento": "leu:convite"
+      }
     }
   ],
   "arremate": {
     "texto": "Só isso? \"Haverá um grande evento\" — e nem quem assina. É da fazenda do outro lado do rio, que ninguém nunca viu o dono. Meus avós já decidiram que vão, e eu vou junto. Até lá, cuide do que é seu: a roça cresce um palmo por dia regado. Eu volto pro píer — é lá que você me acha, e agora o arraial te conhece.",
     "texto_en": "That's all? \"There will be a great event\" — and not even a signature. It's from the farm across the river, whose owner nobody has ever seen. My grandparents have already decided to go, and I'm going with them. Until then, look after what's yours: the field grows a hand's width every watered day. I'm heading back to the pier — that's where you'll find me, and now the village knows you.",
     "texto_es": "¿Eso es todo? \"Habrá un gran evento\", y ni siquiera la firma. Es de la hacienda del otro lado del río, cuyo dueño nadie ha visto nunca. Mis abuelos ya decidieron ir, y yo voy con ellos. Hasta entonces, cuida lo tuyo: el sembrado crece un palmo por cada día regado. Vuelvo al muelle: ahí me encuentras, y ahora el pueblo te conoce."
-  }
+  },
+  "corpo": [
+    {
+      "texto": "Para um instante e respira. Olha as três barras lá em cima, que eu te explico.",
+      "texto_en": "Stop for a moment and breathe. Look at the three bars up there, I'll explain.",
+      "texto_es": "Para un momento y respira. Mira las tres barras de arriba, que te explico."
+    },
+    {
+      "texto": "A vermelha, a de cima, é a vida. Bicho e peçonha tiram dela. Se acabar, você apaga, e alguém te leva pra casa — acorda no outro dia.",
+      "texto_en": "The red one, on top, is your life. Animals and venom take from it. If it runs out, you black out and someone carries you home — you wake the next day.",
+      "texto_es": "La roja, la de arriba, es la vida. Los bichos y el veneno le quitan. Si se acaba, te desmayas y alguien te lleva a casa: despiertas al otro día."
+    },
+    {
+      "texto": "A do meio, só com o número, é o fôlego: a reserva do dia. Enxada, machado e picareta gastam dele, e só comida, cama e desmaio devolvem. No fim dele o corpo fica cansado, o passo encurta e não dá pra correr.",
+      "texto_en": "The middle one, with just the number, is your breath: the day's reserve. Hoe, axe and pickaxe spend it, and only food, bed and fainting give it back. When it runs low your body gets tired, your step shortens and you can't run.",
+      "texto_es": "La del medio, solo con el número, es el aliento: la reserva del día. La azada, el hacha y el pico lo gastan, y solo la comida, la cama y el desmayo lo devuelven. Al final de él el cuerpo se cansa, el paso se acorta y no se puede correr."
+    },
+    {
+      "quando": "cansado",
+      "texto": "E a de baixo é o vigor, o fôlego curto: correr, pular e bater gastam, e ele volta sozinho, parado ou andando. Foi ele que você gastou agora — por isso a perna pesou. Anda um pouco, que ele volta.",
+      "texto_en": "And the bottom one is your vigor, the short breath: running, jumping and striking spend it, and it comes back on its own, standing or walking. That's the one you just spent — that's why your legs got heavy. Walk a little and it comes back.",
+      "texto_es": "Y la de abajo es el vigor, el aliento corto: correr, saltar y golpear lo gastan, y vuelve solo, parado o caminando. Es el que acabas de gastar, por eso te pesó la pierna. Camina un poco, que vuelve."
+    },
+    {
+      "quando": "descansado",
+      "texto": "E a de baixo é o vigor, o fôlego curto: correr, pular e bater gastam, e ele volta sozinho, parado ou andando. Quando ele acaba, a corrida para, e é só andar um pouco que ele volta.",
+      "texto_en": "And the bottom one is your vigor, the short breath: running, jumping and striking spend it, and it comes back on its own, standing or walking. When it runs out, the running stops — just walk a little and it comes back.",
+      "texto_es": "Y la de abajo es el vigor, el aliento corto: correr, saltar y golpear lo gastan, y vuelve solo, parado o caminando. Cuando se acaba, la carrera para, y basta caminar un poco para que vuelva."
+    }
+  ]
 }

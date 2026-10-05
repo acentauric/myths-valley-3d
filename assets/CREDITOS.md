@@ -98,6 +98,12 @@ publicar.
 | `assets/prototipo_3d/itens/luvas_de_couro_tripo.glb` | a luva de couro do encaixe das Mãos, Tripo Studio (texto → 3D + Malha Smart) | `itens/ORIGEM.md` e `tools/tripo/lote_2026-10-04.json` |
 | `assets/sprites/itens/luvas_de_couro.png` | o ícone de 32 px das luvas na mochila, PixelLab (Pixflux, no estilo dos itens do 2D) | `tools/pixellab/gerar-luvas.ps1` e `assets/sprites/cofre/REGISTRO.tsv` |
 
+### O saveiro da chegada (05/10/2026)
+
+| Arquivos | O que são | Registro |
+| --- | --- | --- |
+| `assets/prototipo_3d/aderecos/saveiro_tripo.glb` | o saveiro do mestre Quirino, em que o jogador chega ao vale, Tripo Studio (texto → 3D + Malha Smart) | `aderecos/ORIGEM.md` e `tools/tripo/lote_2026-10-05.json` |
+
 ### Capas dos cordéis (03/10/2026)
 
 | Arquivos | O que são | Registro |

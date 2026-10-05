@@ -52,6 +52,12 @@ func _run() -> void:
 		_fechar()
 		return
 	var a: Dictionary = world.ancoras
+	# A CHAVE JÁ DADA: o caminho de dentro da casa herdada sai pela porta, e na
+	# partida nova ela espera a chave da Dona Zefa (`tests/chegada.gd`).
+	var pedro = vale.get("pedro")
+	if pedro != null:
+		pedro.ir_ao_passo("roca")
+		vale._acertar_a_porta_da_casa()
 
 	# --- 2. HÁ CAMINHO, E ELE CHEGA ----------------------------------------------
 	var pares := [["Casa da estrada", "Cruzeiro"], ["PierPiso", "Gameleira"], ["Casa de taipa", "Terreiro"],

@@ -110,3 +110,25 @@ momento da geração (ver `assets/CREDITOS.md`).
 | `tronco_caido_tripo.glb` | A single fallen tree trunk lying horizontally on the ground, thick weathered log about four meters long with rough cracked bark, a few short broken branch stubs, patches of moss and dry lichen, one end jagged where it snapped. | `a9f373e0-ee82-4659-a828-a6066ae7ad87` | 4.118 | 1K | 2,5 |
 
 <!-- lote-2026-10-03b:fim -->
+
+<!-- lote-2026-10-05:inicio -->
+
+## O saveiro do mestre Quirino (05/10/2026)
+
+Gerado por texto no Tripo Studio em 05/10/2026 (Modelo HD H3.1, textura 8K
+desligada, 55 créditos) e passado pela Retopologia (Quad, Malha Smart, 40
+créditos) com alvo de 6.000 faces; exportado em GLB com textura 2K, como as
+construções de destaque: é o barco em que o jogador chega ao vale, e a primeira
+coisa que ele vê de perto. Geração, retopologia e exportação pela ponte do
+Playwright MCP com a extensão do Chrome, com `tools/tripo/lote_studio.js`; o
+original fica em `.assets-raw/tripo/gerados/` (fora do Git). Tarefa, projeto e
+prompt completos em `tools/tripo/lote_2026-10-05.json`. Uso comercial: plano
+pago no momento da geração (ver `assets/CREDITOS.md`).
+
+| Arquivo | O que é (prompt) | Tarefa Tripo | Triângulos | Textura | MB |
+| --- | --- | --- | ---: | --- | ---: |
+| `saveiro_tripo.glb` | A traditional Brazilian saveiro, a wooden cargo sailboat from the Reconcavo Baiano in Bahia, about twelve meters long, seen from the side: broad round-bellied wooden hull painted dark blue with a white and red stripe along the gunwale, a wide flat open wooden deck with low rails, one tall wooden mast slightly leaning forward carrying a large raised tan canvas sail, a quadrilateral lug sail with a wooden gaff and boom, a long wooden tiller at the stern, a few burlap sacks and stacked clay roof tiles near the bow, leaving most of the deck clear. | `6d24dbc5-9fbf-458d-8a23-7bf3f7395985` | 10.862 | 2K | 8,3 |
+
+SHA-256 do GLB: `af094d331a0f66c5c09852c3434a7d98a41f54c3d3ef0813f202d9f7c0d7b5da`.
+
+<!-- lote-2026-10-05:fim -->

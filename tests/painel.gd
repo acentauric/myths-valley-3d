@@ -85,6 +85,10 @@ func _run() -> void:
 	var Bancadas = load("res://scripts/prototipo_3d/bancadas_vale.gd")
 
 	# --- 2. ABRIR PARA O JOGADOR, E NÃO O MUNDO --------------------------------
+	# LONGE DE TUDO: a partida nova nasce no convés do saveiro, dentro do raio
+	# da obra do trapiche; o painel se mede do ponto de chegada em terra.
+	player.reset_position()
+	await _frames(2)
 	dia.pausado = false
 	vale.abrir_o_painel()
 	await _frames(2)

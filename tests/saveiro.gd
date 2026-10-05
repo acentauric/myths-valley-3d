@@ -30,6 +30,9 @@ extends SceneTree
 ##      catálogo não tem o mestre, o corpo dele é a caixa provisória, e não o
 ##      boneco do procedural — nem no retrato do diário, que fica sem foto; com o
 ##      modelo no catálogo, é o modelo dele, com os clipes no animador autoral.
+##   9. NA CHEGADA, O SAVEIRO ESTÁ ATRACADO: no primeiro dia do jogo o barco está
+##      no píer — foi nele que o jogador veio —, sem o mestre e sem a aba de
+##      compra; no dia seguinte, larga.
 
 var falhas := 0
 var relogio
@@ -100,6 +103,13 @@ func _run() -> void:
 			var foto = estudio._montar_modelo("quirino", palco)
 			_conferir(foto == null, "no estilo Tripo, o retrato do mestre sem modelo sai do boneco do procedural")
 			palco.free()
+
+	# --- 9. NA CHEGADA, O SAVEIRO ESTÁ ATRACADO -------------------------------------
+	await _no_dia(1, 9.0)
+	_conferir(saveiro.na_chegada() and saveiro.barco.visible, "no primeiro dia do jogo, o da chegada, o saveiro não está no píer")
+	_conferir(not saveiro.presente() and not quirino.visible and not saveiro.perto(saveiro.barco.global_position), "na chegada o saveiro veio com o mestre no píer e a aba de compra aberta: a compra é só no dia dele")
+	await _no_dia(2, 9.0)
+	_conferir(not saveiro.barco.visible, "no dia seguinte ao da chegada, o saveiro continua no píer")
 
 	# --- 1. O MESTRE SÓ VEM NO DIA DELE --------------------------------------------
 	await _no_dia(10, 9.0)
@@ -308,7 +318,7 @@ func _ate(condicao: Callable, segundos: float) -> bool:
 func _fechar() -> void:
 	print("")
 	if falhas == 0:
-		print("SAVEIRO_OK: o mestre Quirino e o saveiro só estão no píer no dia 14, da manhã à tarde; a piaçava se tira no facão sem derrubar a palmeira, uma vez por estação; o Seu Benedito ensina, e a entrega espera o dia do mestre; perto dele o painel tem a aba do saveiro, que paga mais que a venda até o tanto que leva; a encomenda volta toda estação, dá o agrado e sai do caderno se o saveiro parte sem ela; o save lembra; a placa de nome some com ele; e no estilo Tripo ele é o modelo dele, com os clipes, ou, sem modelo, a caixa cinza")
+		print("SAVEIRO_OK: o mestre Quirino e o saveiro só estão no píer no dia 14, da manhã à tarde; a piaçava se tira no facão sem derrubar a palmeira, uma vez por estação; o Seu Benedito ensina, e a entrega espera o dia do mestre; perto dele o painel tem a aba do saveiro, que paga mais que a venda até o tanto que leva; a encomenda volta toda estação, dá o agrado e sai do caderno se o saveiro parte sem ela; o save lembra; a placa de nome some com ele; e no estilo Tripo ele é o modelo dele, com os clipes, ou, sem modelo, a caixa cinza; e no primeiro dia do jogo o saveiro está atracado sem o mestre, e larga no dia seguinte")
 	else:
 		print("saveiro: %d falha(s)" % falhas)
 	quit(1 if falhas > 0 else 0)

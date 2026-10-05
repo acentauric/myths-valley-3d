@@ -1,0 +1,261 @@
+extends SceneTree
+## Confere A CHEGADA PELO SAVEIRO, o começo do jogo jogado como o jogador joga.
+##
+##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/chegada.gd
+##
+## "O jogador tem que começar com o boneco posicionado em cima de um saveiro, no
+## pier. [...] No fim do primeiro dia, o saveiro obviamente some do mapa. Nesse
+## momento deve ser introduzido ao jogador como andar e correr. O Pedro deve
+## conduzir o jogador até a casa dele. [...] Durante esse processo, o jogador
+## vai ficar cansado pela baixa do vigor e o Pedro deve introduzir o que é o
+## vigor, o que é a stamina e o que é a vida." Oito perguntas:
+##
+##   1. NASCE NO CONVÉS: a partida nova põe o jogador em cima do saveiro
+##      atracado, de pé no convés, e não na água nem em terra.
+##   2. O PEDRO ESPERA NA PONTA DA PRANCHA: já saudou, a chegada começou pelo
+##      desembarque, e ele fica ali enquanto o jogador não desce.
+##   3. A PRANCHA LEVA AO TABUADO: andando para a frente, o corpo desce do convés
+##      ao píer, sem cair na água e sem empacar na borda — e falar com o Pedro
+##      fecha o desembarque.
+##   4. CORRER É UM PASSO: com o Shift, correr um trecho fecha o passo da
+##      corrida; tocar o Shift parado não fecha.
+##   5. O PEDRO VAI NA FRENTE: depois da corrida vem o bom-dia ao Tonho; na
+##      chave ele anda do píer rumo à Dona Candinha, e para à espera do
+##      jogador que ficou para trás.
+##   6. O CORPO, UMA VEZ: com o vigor baixo na caminhada, o Pedro explica as três
+##      barras na caixa de fala, com a fala de quem cansou; de novo cansado, não
+##      repete — e a lembrança vai no save.
+##   7. A PORTA ESPERA A CHAVE: a casa herdada está trancada até a Dona Zefa dar
+##      a chave, e aberta depois; o baú tem a enxada, o balde e a maniva.
+##   8. O SAVEIRO LARGA: no dia seguinte, o barco não está mais no píer.
+
+var falhas := 0
+var relogio
+var dia
+var dialogo
+
+
+func _initialize() -> void:
+	_run.call_deferred()
+
+
+func _conferir(ok: bool, rotulo: String) -> void:
+	if not ok:
+		push_error("CHEGADA_FALHOU: " + rotulo)
+		print("FALHA: ", rotulo)
+		falhas += 1
+
+
+func _run() -> void:
+	_conferir(change_scene_to_file("res://scenes/prototipo_3d/vale.tscn") == OK, "a cena do vale carrega")
+	await _quadros(4)
+	await _mundo_pronto()
+	await _quadros(8)
+	relogio = root.get_node("/root/Relogio")
+	dia = root.get_node("/root/Dia")
+	dialogo = root.get_node("/root/Dialogo")
+	var vale = current_scene
+	var jogador = vale.player
+	var mundo = vale.world
+	var pedro = vale.get("pedro")
+	var saveiro = vale.get("saveiro")
+	_conferir(pedro != null and saveiro != null, "o vale não tem o Pedro ou o saveiro")
+	if pedro == null or saveiro == null:
+		_fechar()
+		return
+
+	# --- 1. NASCE NO CONVÉS ----------------------------------------------------------
+	var no_conves: Vector3 = saveiro.ponto_do_conves()
+	_conferir(saveiro.na_chegada() and saveiro.barco.visible, "a partida nova não tem o saveiro atracado")
+	_conferir(no_conves.is_finite(), "o saveiro não mediu o ponto do convés")
+	if not no_conves.is_finite():
+		_fechar()
+		return
+	await _passos_de_fisica(40)
+	var no_barco: Vector3 = saveiro.barco.global_position
+	_conferir(Vector2(jogador.global_position.x - no_barco.x, jogador.global_position.z - no_barco.z).length() < 5.0,
+		"o jogador não nasceu em cima do saveiro: está a %.1f do barco" % Vector2(jogador.global_position.x - no_barco.x, jogador.global_position.z - no_barco.z).length())
+	_conferir(jogador.is_on_floor() and not jogador.is_swimming() and jogador.global_position.y > mundo.water_level(),
+		"o jogador não está de pé no convés (no chão: %s, nadando: %s, altura %.2f, água %.2f)" % [str(jogador.is_on_floor()), str(jogador.is_swimming()), jogador.global_position.y, mundo.water_level()])
+
+	# --- 2. O PEDRO ESPERA NA PONTA DA PRANCHA --------------------------------------
+	_conferir(bool(pedro.get("_iniciado")), "o Pedro não saudou a chegada: a cadeia não começou")
+	_conferir(pedro.passo_em_curso() == "desembarque", "a chegada não começou pelo desembarque (está em '%s')" % pedro.passo_em_curso())
+	var onde_espera: Vector3 = saveiro.lugar_do_pedro()
+	_conferir(Vector2(pedro.global_position.x - onde_espera.x, pedro.global_position.z - onde_espera.z).length() < 1.0,
+		"o Pedro não está na ponta da prancha")
+	await _ate(func() -> bool: return float(pedro.get("_espera")) <= 0.0, 15.0)
+	await _passos_de_fisica(60)
+	_conferir(Vector2(pedro.global_position.x - onde_espera.x, pedro.global_position.z - onde_espera.z).length() < 1.0,
+		"no desembarque o Pedro saiu da ponta da prancha atrás do jogador, que ainda está no barco")
+
+	# --- 3. A PRANCHA LEVA AO TABUADO -------------------------------------------------
+	var piso: Vector3 = mundo.ancoras["PierPiso"]
+	Input.action_press("mv_forward")
+	var desceu := await _ate(func() -> bool:
+		return jogador.global_position.distance_to(pedro.global_position) < 2.6 or pedro.passo_em_curso() != "desembarque", 12.0)
+	Input.action_release("mv_forward")
+	await _passos_de_fisica(10)
+	_conferir(desceu, "andando para a frente, o jogador não chegou ao Pedro pela prancha (está em %s, o Pedro em %s)" % [str(jogador.global_position), str(pedro.global_position)])
+	_conferir(not jogador.is_swimming() and jogador.global_position.y > mundo.water_level() and absf(jogador.global_position.y - piso.y) < 1.0,
+		"a descida não acabou no tabuado (altura %.2f, piso %.2f, nadando %s)" % [jogador.global_position.y, piso.y, str(jogador.is_swimming())])
+	_conferir(await _ate(func() -> bool: return pedro.passo_em_curso() != "desembarque", 10.0),
+		"ao lado do Pedro, o desembarque não fechou")
+
+	# --- 4. CORRER É UM PASSO --------------------------------------------------------
+	_conferir(pedro.passo_em_curso() == "correr", "depois do desembarque não vem a corrida (vem '%s')" % pedro.passo_em_curso())
+	await _ate(func() -> bool: return float(pedro.get("_espera")) <= 0.0, 15.0)
+	# Tocar o Shift parado não é correr.
+	_tocar_o_shift(jogador)
+	await _passos_de_fisica(90)
+	_conferir(pedro.passo_em_curso() == "correr", "tocar o Shift parado fechou o passo da corrida")
+	jogador.global_position = pedro.global_position + Vector3(0.0, 0.3, 0.0) + _rumo_livre(jogador, mundo) * 1.5
+	Input.action_press("mv_forward")
+	_conferir(await _ate(func() -> bool: return pedro.passo_em_curso() != "correr", 10.0),
+		"correndo com o Shift, o passo da corrida não fechou")
+	Input.action_release("mv_forward")
+	if jogador.is_running():
+		_tocar_o_shift(jogador)
+
+	# --- 5. O PEDRO VAI NA FRENTE -----------------------------------------------------
+	_conferir(pedro.passo_em_curso() == "bom_dia", "depois da corrida não vem o bom-dia ao Tonho (vem '%s')" % pedro.passo_em_curso())
+	# O Tonho está a dois passos da prancha: a condução se mede na da chave, que
+	# leva do píer à Dona Candinha, na praça.
+	var candinha = vale._achar_morador("candinha")
+	_conferir(candinha != null and pedro.ir_ao_passo("chave"), "a chegada não tem a chave com a Dona Candinha")
+	if candinha != null and pedro.passo_em_curso() == "chave":
+		pedro.retomar()
+		jogador.teleportar(pedro.global_position + Vector3(0.8, 0.1, 0.8), 0.0)
+		var antes: float = _no_chao(pedro.global_position, candinha.global_position)
+		# Junto do Pedro, ele anda: o jogador vai atrás, a dois passos.
+		var andou := false
+		for i in 16:
+			jogador.teleportar(pedro.global_position + Vector3(1.0, 0.1, 1.0), 0.0)
+			await _passos_de_fisica(15)
+			if _no_chao(pedro.global_position, candinha.global_position) < antes - 2.0:
+				andou = true
+				break
+		_conferir(andou, "na chave o Pedro não foi na frente até a Dona Candinha (estava a %.1f e ficou a %.1f)" % [antes, _no_chao(pedro.global_position, candinha.global_position)])
+		# Longe do jogador, ele espera.
+		jogador.teleportar(pedro.global_position + Vector3(14.0, 0.1, 0.0), 0.0)
+		await _passos_de_fisica(30)
+		var parado_em: Vector3 = pedro.global_position
+		await _passos_de_fisica(60)
+		_conferir(_no_chao(pedro.global_position, parado_em) < 0.3, "com o jogador para trás, o Pedro não parou para esperar")
+
+	# --- 6. O CORPO, UMA VEZ -------------------------------------------------------------
+	_conferir(not pedro.lembrancas().has(pedro.LEMBRANCA_DO_CORPO), "o Pedro explicou o corpo antes de o jogador cansar")
+	jogador.teleportar(pedro.global_position + Vector3(1.0, 0.1, 1.0), 0.0)
+	jogador.definir_vigor(jogador.vigor_maximo() * 0.2)
+	var explicou := await _ate(func() -> bool: return dialogo.ativo, 15.0)
+	_conferir(explicou, "com o vigor baixo na caminhada, o Pedro não explicou o corpo")
+	if explicou:
+		_conferir(str(dialogo.quem_fala) == str(root.get_node("/root/Jogo").nome_pedro), "a explicação do corpo não é na voz do Pedro (é '%s')" % str(dialogo.quem_fala))
+		var falas: Array = dialogo._falas
+		var juntas := " ".join(falas)
+		_conferir(falas.size() == 4, "a explicação do corpo tem %d fala(s), e são quatro: o respiro, a vida, o fôlego e o vigor" % falas.size())
+		_conferir(juntas.contains("vida") and juntas.contains("fôlego") and juntas.contains("vigor"), "a explicação do corpo não fala da vida, do fôlego e do vigor")
+		_conferir(juntas.contains("gastou agora"), "cansado, o Pedro não usou a fala de quem cansou")
+	await _fechar_a_fala()
+	_conferir(pedro.lembrancas().has(pedro.LEMBRANCA_DO_CORPO), "a explicação do corpo não ficou na lembrança que vai no save")
+	jogador.definir_vigor(jogador.vigor_maximo() * 0.2)
+	var repetiu := await _ate(func() -> bool: return dialogo.ativo, 4.0)
+	_conferir(not repetiu, "cansado de novo, o Pedro explicou o corpo outra vez")
+	await _fechar_a_fala()
+
+	# --- 7. A PORTA ESPERA A CHAVE ----------------------------------------------------------
+	var interiores = vale.get("interiores")
+	var sala = interiores.sala_de("casa") if interiores != null else null
+	_conferir(sala != null, "o vale não tem o cômodo da casa herdada")
+	if sala != null:
+		_conferir(sala.trancada(), "antes da chave da Dona Zefa, a casa herdada já está aberta")
+		pedro.ir_ao_passo("casa")
+		pedro.retomar()
+		await _quadros(3)
+		_conferir(not sala.trancada(), "com a chave dada, a casa herdada continua trancada")
+		var casa = vale.get("casa")
+		var tem := {}
+		for monte in casa.bau:
+			tem[str(monte.get("id", ""))] = int(monte.get("qtd", 0))
+		_conferir(tem.has("enxada") and tem.has("balde") and int(tem.get("semente_mandioca", 0)) >= 1, "o baú da casa não tem a enxada, o balde e a maniva do finado: %s" % str(tem))
+
+	# --- 8. O SAVEIRO LARGA ---------------------------------------------------------------------
+	relogio.dia = 2
+	dia.definir_hora(9.0)
+	await _quadros(5)
+	_conferir(not saveiro.barco.visible, "no dia seguinte, o saveiro continua no píer")
+	_fechar()
+
+
+## O rumo de quem está no tabuado para longe da água: do Pedro para a praça.
+func _rumo_livre(jogador, mundo) -> Vector3:
+	var praca: Vector3 = mundo.ancoras.get("Praça", jogador.global_position)
+	var rumo: Vector3 = praca - jogador.global_position
+	rumo.y = 0.0
+	if rumo.length() < 0.1:
+		return Vector3.FORWARD
+	rumo = rumo.normalized()
+	jogador.teleportar(jogador.global_position, atan2(rumo.x, rumo.z))
+	return rumo
+
+
+## O Shift, pelo caminho do jogo: a tecla da ação de correr.
+func _tocar_o_shift(jogador) -> void:
+	var tecla := InputEventKey.new()
+	tecla.keycode = KEY_SHIFT
+	tecla.physical_keycode = KEY_SHIFT
+	tecla.pressed = true
+	jogador._input(tecla)
+
+
+func _no_chao(a: Vector3, b: Vector3) -> float:
+	return Vector2(a.x - b.x, a.z - b.z).length()
+
+
+func _fechar_a_fala() -> void:
+	var ate := Time.get_ticks_msec() + 4000
+	while dialogo.ativo and Time.get_ticks_msec() < ate:
+		dialogo._fechar()
+		await process_frame
+	await _quadros(3)
+
+
+func _fechar() -> void:
+	Input.action_release("mv_forward")
+	print("")
+	if falhas == 0:
+		print("CHEGADA_OK: a partida nova nasce de pé no convés do saveiro; o Pedro espera na ponta da prancha e não sai dali; a prancha leva ao tabuado sem água nem borda, e falar com ele fecha o desembarque; correr com o Shift fecha a corrida, e tocá-lo parado não; na chave o Pedro vai na frente rumo à Dona Candinha e espera quem ficou para trás; com o vigor baixo ele explica a vida, o fôlego e o vigor uma vez só, e a lembrança vai no save; a casa espera a chave da Dona Zefa, com a enxada, o balde e a maniva no baú; e no dia seguinte o saveiro larga")
+	else:
+		print("chegada: %d falha(s)" % falhas)
+	quit(1 if falhas > 0 else 0)
+
+
+func _passos_de_fisica(n: int) -> void:
+	for i in n:
+		await physics_frame
+
+
+func _quadros(n: int) -> void:
+	for i in n:
+		await process_frame
+
+
+## Roda quadros até `condicao` valer, com teto em SEGUNDO REAL (as falas seguram
+## a palavra pelo relógio de parede, ver `cadeia_das_missoes.gd`).
+func _ate(condicao: Callable, segundos: float) -> bool:
+	var limite := Time.get_ticks_msec() + int(segundos * 1000.0)
+	while Time.get_ticks_msec() < limite:
+		if condicao.call():
+			return true
+		await process_frame
+	return condicao.call()
+
+
+func _mundo_pronto() -> void:
+	for i in 3000:
+		var mundo := get_first_node_in_group("mundo")
+		if mundo != null and mundo.construido:
+			break
+		await process_frame
+	await process_frame
+	await process_frame

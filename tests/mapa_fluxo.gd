@@ -120,8 +120,19 @@ func _run() -> void:
 	await _frames(3)
 	_assert(not game.mapa.aberto and game_trees.visibility_range_end == game_range, "LOD restaurado no passeio")
 	await _physics_frames(30)
+	# A PARTIDA NOVA NASCE NO CONVÉS DO SAVEIRO (`tests/chegada.gd`): apoiado é de
+	# pé no convés dele ou no terreno.
 	var ground: Vector3 = world.call("ground_position", player.global_position)
-	_assert(player.is_on_floor() and absf(player.global_position.y - ground.y) < 0.2, "personagem apoiado no terreno")
+	var saveiro = game.get("saveiro")
+	var no_conves: bool = saveiro != null and saveiro.na_chegada() and saveiro.ponto_do_conves().is_finite() \
+		and player.global_position.distance_to(saveiro.ponto_do_conves()) < 1.0
+	_assert(player.is_on_floor() and (no_conves or absf(player.global_position.y - ground.y) < 0.2), "personagem apoiado no terreno")
+	# O PASSEIO é o de quem já desceu: do ponto de chegada em terra, de frente
+	# para o píer, com o andar levando para dentro do vale — a partida de antes
+	# do saveiro. Do convés, andar desce a prancha e correr cruza o píer até a água.
+	player.reset_position()
+	player.iniciar_de_frente(world.ancoras.get("Pier", player.global_position) - player.global_position)
+	await _physics_frames(12)
 	await _capture("jogo")
 	var start_position: Vector3 = player.global_position
 	player.set_captured(true)
