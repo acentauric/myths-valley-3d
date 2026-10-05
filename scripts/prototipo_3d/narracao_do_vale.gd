@@ -9,8 +9,10 @@ extends CanvasLayer
 ## lida, e o escuro desce.
 ##
 ## Segura o jogo enquanto fala (`tocando`), como a caixa de fala: quem chama
-## espera `terminou`. O E, o espaço e o Enter passam a frase — quem já leu não
-## espera o relógio dela.
+## espera `terminou`. A tecla de interagir (E de fábrica, a do AJUSTAR), o
+## espaço e o Enter passam a frase — quem já leu não espera o relógio dela.
+
+const Atalhos = preload("res://scripts/prototipo_3d/atalhos.gd")
 
 signal terminou
 ## O escuro cobriu a tela: quem chama pode mudar o mundo por trás dele.
@@ -59,7 +61,7 @@ func _ready() -> void:
 	_fundo.visible = false
 
 
-## Passa a frase da vez (o E, o espaço, o Enter; e o portão).
+## Passa a frase da vez (a tecla de interagir, o espaço, o Enter; e o portão).
 func pular() -> void:
 	if _tocando:
 		_pular = true
@@ -69,7 +71,10 @@ func _unhandled_input(evento: InputEvent) -> void:
 	if not _tocando or not (evento is InputEventKey):
 		return
 	var tecla := evento as InputEventKey
-	if tecla.pressed and not tecla.echo and tecla.physical_keycode in [KEY_E, KEY_SPACE, KEY_ENTER, KEY_KP_ENTER]:
+	if not tecla.pressed or tecla.echo:
+		return
+	var codigo := tecla.physical_keycode
+	if codigo == Atalhos.tecla("interagir") or codigo in [KEY_SPACE, KEY_ENTER, KEY_KP_ENTER]:
 		get_viewport().set_input_as_handled()
 		pular()
 
