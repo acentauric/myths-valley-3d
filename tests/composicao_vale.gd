@@ -23,7 +23,9 @@ func _run() -> void:
 	_verificar(ruas.find_children("Rua*", "MeshInstance3D", true, false).size() == 8, "as oito ruas estão visíveis na referência")
 	ruas.free()
 	var casa := cena.get_node("Casas/Casa de taipa") as Node3D
-	_verificar(casa.get_child_count(true) == 0, "ler autoria não instancia GLBs no runtime")
+	# Filhos autorais (Terreiro, peças) são da cena; a prévia (Visual, alicerce) é
+	# interna e só nasce no editor.
+	_verificar(_internos(casa) == 0 and casa.get_node_or_null("Visual") == null, "ler autoria não instancia GLBs no runtime")
 	casa._mostrar_visual()
 	_verificar(casa.get_node_or_null("Visual") != null, "prévia usa modelo do catálogo")
 	casa.position += Vector3(0.7, 0.4, 0.8)
@@ -35,7 +37,8 @@ func _run() -> void:
 	var caminho := "user://composicao_teste.tscn"
 	_verificar(ResourceSaver.save(salvo, caminho) == OK, "edição fica salva")
 	var reaberta := salvo.instantiate()
-	_verificar(reaberta.get_node("Casas/Casa de taipa").get_child_count(true) == 0, "prévia não é incorporada ao salvar a autoria")
+	var casa_reaberta := reaberta.get_node("Casas/Casa de taipa")
+	_verificar(_internos(casa_reaberta) == 0 and casa_reaberta.get_node_or_null("Visual") == null, "prévia não é incorporada ao salvar a autoria")
 	reaberta.free()
 	cena.free()
 	var relido := Composicao.ler(caminho)
@@ -108,3 +111,7 @@ func _verificar(ok: bool, descricao: String) -> void:
 	if not ok:
 		falhas += 1
 		push_error("FALHOU: " + descricao)
+
+
+func _internos(no: Node) -> int:
+	return no.get_child_count(true) - no.get_child_count(false)

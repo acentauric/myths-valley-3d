@@ -75,7 +75,9 @@ func _mostrar_visual() -> void:
 
 
 func _raiz_editada() -> Node:
-	var raiz := get_tree().edited_scene_root if get_tree() != null else null
+	if not is_inside_tree():
+		return null
+	var raiz := get_tree().edited_scene_root
 	return raiz if raiz != null and raiz.is_ancestor_of(self) else null
 
 
