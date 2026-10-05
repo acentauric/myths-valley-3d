@@ -163,7 +163,9 @@ func _ready() -> void:
 	_mission_previous.pressed.connect(func() -> void: _change_mission_page(-1))
 	_mission_next = _mission_button("▶", "ProximaPagina")
 	_mission_next.pressed.connect(func() -> void: _change_mission_page(1))
-	_mission_close = _mission_button("×", "FecharMissao")
+	_mission_close = _mission_button("X para fechar", "FecharMissao")
+	_mission_close.size = Vector2(112, 26)
+	_mission_close.add_theme_font_size_override("font_size", 12)
 	_mission_close.pressed.connect(_close_mission_pages)
 	# A bússola/minimapa é acrescentada depois do HUD e, por isso, fica por cima
 	# dos controles no mesmo CanvasLayer. A página precisa continuar legível ali.
@@ -413,7 +415,7 @@ func _atualizar_vida() -> void:
 ## Cansado, o texto diz "cansado" além de mudar a cor. O cansaço já pesa no
 ## corpo — o passo cai para 62% e a corrida não responde —, e sem aviso quem
 ## joga pensa que o jogo travou (ver `Energia.cansou`).
-const COR_FOLEGO := Color(0.55, 0.78, 0.45)
+const COR_FOLEGO := Color("398fd2")
 const COR_FOLEGO_BAIXO := Color(0.9, 0.42, 0.34)
 const COR_VIGOR := Color("56ad67")
 const COR_MEDIDOR_BAIXO := Color("bd803e")
@@ -643,9 +645,17 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 
 
-func _close_mission_pages() -> void:
-	if _mission_page_index != _mission_pages.size() - 1:
+func _input(event: InputEvent) -> void:
+	if not (event is InputEventKey and event.pressed and not event.echo):
 		return
+	if _mission_pages.is_empty() or not is_instance_valid(_mission_step) or not _mission_step.visible:
+		return
+	if event.keycode == KEY_X or event.physical_keycode == KEY_X:
+		_close_mission_pages()
+		get_viewport().set_input_as_handled()
+
+
+func _close_mission_pages() -> void:
 	for control: Control in [_heading, _region_label, _mission_step, _objective_label,
 			_mission_previous, _mission_next, _mission_close]:
 		control.visible = false
@@ -785,17 +795,18 @@ func _fit_heading() -> void:
 	if not is_instance_valid(_heading):
 		return
 	var lines := maxi(1, _objective_label.get_line_count())
-	# 52 é onde a missão começa (ver `_montar`); com o nome da missão em cima,
-	# ela desce 22. 18 de respiro embaixo.
+	# 52 é onde o texto começa (ver `_montar`); com o nome da missão em cima,
+	# ele desce 22. A faixa de botões fica abaixo do texto, com respiro próprio.
 	var topo := 52.0 + (22.0 if _missao != "" else 0.0)
 	_objective_label.position.y = _heading.position.y + topo - 18.0
-	var altura := topo + lines * _objective_label.get_line_height() + 18.0
-	_objective_label.size.y = lines * _objective_label.get_line_height()
+	var altura_texto := lines * _objective_label.get_line_height()
+	_objective_label.size.y = altura_texto
+	var button_y := _objective_label.position.y + altura_texto + 10.0
+	var altura := button_y + 26.0 + 12.0 - _heading.position.y
 	_heading.size.y = altura
-	var button_y := _heading.position.y + altura - 34.0
 	_mission_previous.position = Vector2(33, button_y)
 	_mission_next.position = Vector2(73, button_y)
-	_mission_close.position = Vector2(HEADING_WIDTH - 24, button_y)
+	_mission_close.position = Vector2(_heading.position.x + HEADING_WIDTH - 33.0 - _mission_close.size.x, button_y)
 	if is_instance_valid(_house_info_panel):
 		_house_info_panel.position.y = 18.0 + altura + 12.0
 

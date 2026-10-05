@@ -595,9 +595,8 @@ func _animar_o_golpe(repeticoes: int = 2) -> bool:
 
 ## Reaproveita o mesmo golpe visual para interações com objetos do vale.
 func animar_golpe(repeticoes: int = 2) -> bool:
-	var animacao_completa := _animar_o_golpe(repeticoes)
-	Audio.efeito("machado")
-	return animacao_completa
+	# O som do corte é disparado por ArvoresInfo no impacto da animação.
+	return _animar_o_golpe(repeticoes)
 
 
 func _empurrar_o_corpo(deslocamento: Vector3, ida: float, volta: float) -> void:
