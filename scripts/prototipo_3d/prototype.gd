@@ -12,6 +12,7 @@ const TelaCarregamento = preload("res://scripts/prototipo_3d/tela_carregamento.g
 const TemaMenu = preload("res://scripts/prototipo_3d/tema_menu.gd")
 const MapaJogo = preload("res://scripts/prototipo_3d/mapa_jogo.gd")
 const Lapides = preload("res://scripts/prototipo_3d/lapides.gd")
+const TeclaDasBancadas = preload("res://scripts/prototipo_3d/tecla_das_bancadas.gd")
 const ArvoresInfo = preload("res://scripts/prototipo_3d/arvores_info.gd")
 const PlacasNomes = preload("res://scripts/prototipo_3d/placas_nomes.gd")
 const BonecoDaMochila = preload("res://scripts/prototipo_3d/boneco_da_mochila.gd")
@@ -133,6 +134,8 @@ var _machado_inicial_entregue := false
 var _barra_de_ferramentas_migrada := false
 var achados	# achados_vale.gd — cordéis, sinais e cartas no chão
 var pesca	# pesca_vale.gd — a vara na mão e o E na beira da água
+## O E na bancada da oficina e na fogueira (`tecla_das_bancadas.gd`).
+var tecla_das_bancadas: Node
 
 
 func _enter_tree() -> void:
@@ -273,6 +276,14 @@ func _ready() -> void:
 		Partida.salvar()
 		var barra := TelaCarregamento.mostrar(hud.map_layer(), TemaMenu.criar(), tr("Trocando o estilo do vale…"))
 		TelaCarregamento.trocar_cena(get_tree(), scene_file_path, barra))
+	# O E NA BANCADA DA OFICINA E NA FOGUEIRA (tecla_das_bancadas.gd). Entra antes
+	# de todo mundo que ouve o E: quem entra depois o recebe primeiro, e a árvore,
+	# o lajedo, a pesca e os achados têm alvo mais preciso que "estar perto".
+	tecla_das_bancadas = TeclaDasBancadas.new()
+	tecla_das_bancadas.name = "TeclaDasBancadas"
+	add_child(tecla_das_bancadas)
+	tecla_das_bancadas.configurar(world, player, hud, abrir_o_painel,
+		func() -> bool: return not _lendo() and (telas == null or telas.aberta() == ""))
 	lapides = Lapides.new()
 	lapides.name = "Lapides"
 	add_child(lapides)
@@ -890,6 +901,10 @@ func _montar_moradores(spawn: Vector3) -> void:
 	add_child(painel)
 	painel.abriu.connect(_parar_o_jogador)
 	painel.fechou.connect(_soltar_o_jogador)
+	# O × e as ações que fecham o painel por dentro (menu, sair) não passam pelo
+	# dono das telas: sem este aviso, o vale ficava parado atrás de painel
+	# nenhum. Quando é o dono que fecha, ele ignora o aviso (`fechou_por_conta`).
+	painel.fechou.connect(func() -> void: telas.fechou_por_conta("painel"))
 	painel.pediu.connect(_ao_pedido_do_painel)
 	# Quem está lendo não perde vida: a peçonha espera o painel fechar (ver
 	# Vida.esta_lendo). Por método, que deixa de valer quando o vale sai.

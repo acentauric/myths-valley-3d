@@ -354,6 +354,9 @@ const EN := {
 	# A casa herdada (#50): a tecla da cama e do baú, e o nome lá dentro.
 	"Dormir": "Sleep",
 	"Baú": "Chest",
+	# O E na bancada da oficina e na fogueira (tecla_das_bancadas.gd).
+	"Oficina": "Workshop",
+	"Cozinhar": "Cook",
 	"Sua casa": "Your house",
 	"Casa do Pedro": "Pedro's house",
 	"Casa da Dona Zefa": "Dona Zefa's house",
@@ -754,6 +757,9 @@ const ES := {
 	"Olhar": "Mirar",
 	"Dormir": "Dormir",
 	"Baú": "Baúl",
+	# O E na bancada da oficina e na fogueira (tecla_das_bancadas.gd).
+	"Oficina": "Taller",
+	"Cozinhar": "Cocinar",
 	"Sua casa": "Tu casa",
 	"Casa do Pedro": "Casa de Pedro",
 	"Casa da Dona Zefa": "Casa de Doña Zefa",
