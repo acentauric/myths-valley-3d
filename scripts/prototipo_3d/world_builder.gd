@@ -1532,6 +1532,9 @@ const LAVOURA_NA_CASA := Vector3(4.0, 0.0, 14.0)
 ## — que a casa passou a ocupar —, e com a casa aberta por dentro ele aparecia
 ## no meio da sala.
 const CANTEIRO_NA_CASA := Vector3(10.5, 0.0, 12.0)
+## A mesa do canteiro de obras, a do prumo, a partir do meio do roçado: junto
+## da bancada da oficina (-3, -9), atrás dela e da casa.
+const CANTEIRO_DE_OBRAS := Vector3(-3.0, 0.0, -12.0)
 
 
 func _build_farm() -> void:
@@ -1546,6 +1549,11 @@ func _build_farm() -> void:
 	# lajedo e a árvore mais perto ficam a mais de 5 m nos dois estilos, e o E
 	# perto dela é só da oficina (`tecla_das_bancadas.gd`).
 	ancoras["Oficina"] = ground_position(origin + Vector3(-3.0, 0.0, -9.0))
+	# A MESA DO CANTEIRO DE OBRAS, a do prumo, junto da do serrote ("a do lado,
+	# com a planta em cima, é outra coisa — é onde se decide obra", no 2D). Ao
+	# fundo, e não do lado: quem encosta na bancada pelo leste é dela, e o tronco
+	# e o lajedo mais perto ficam a dez passos daqui.
+	ancoras["Canteiro de obras"] = ground_position(origin + CANTEIRO_DE_OBRAS)
 	ancoras["Lavoura"] = ground_position(_na_casa("Casa de taipa", LAVOURA_NA_CASA))
 	ancoras["LavouraFrente"] = ancoras.get("Casa de taipaFrente", Vector3.BACK)
 	var canteiro := ground_position(_na_casa("Casa de taipa", CANTEIRO_NA_CASA))

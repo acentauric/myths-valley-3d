@@ -71,6 +71,9 @@ const DE_PARA := {
 	# #11): é ali que a lenha vira tábua e corda, e a chegada manda torcer a
 	# primeira corda nela. A construção de verdade é do Tripo (#27).
 	"oficina": "Oficina",
+	# O CANTEIRO DE OBRAS, a mesa do prumo ao lado da bancada (`bancadas_vale.gd`):
+	# onde se risca a obra antes de levantar, e ela sai mais barata.
+	"canteiro": "Canteiro de obras",
 	"pedras": "Pedras",
 	# As casas do Pedro e da Dona Zefa, abertas por dentro: o vale escolhe o lote
 	# de cada um (`WorldBuilder.casas_dos_moradores`).
@@ -86,7 +89,6 @@ const FALTAM_NO_VALE := {
 	"expansao": "a chapada de expansão — Fase 2.5",
 	"lapa": "a lapa e a rampa do morro — Fase 2.5",
 	"lagoa": "a lagoa a leste do Seu Benedito — Fase 2.5",
-	"canteiro": "o canteiro de obras — Fase 7",
 	"curral": "o curral — Fase 7",
 	"portao_da_fazenda": "a fazenda, do outro lado do rio — Fase 2.5",
 	"patio_da_fazenda": "o pátio onde a recepção da 6.1 acontece, dentro da fazenda — Fase 2.5",

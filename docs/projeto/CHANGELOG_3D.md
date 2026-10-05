@@ -2,6 +2,12 @@
 
 ## Em desenvolvimento — 05/10/2026
 
+- O canteiro de obras chega ao roçado: a mesa do prumo, ao lado da bancada da
+  oficina (provisória, a mesma mesa), onde o E abre a aba de obras dela. Antes
+  do mirante, como no 2D, o Pedro manda juntar oito tábuas e doze lenhas e
+  riscar a prancheta, que abate 10% de toda obra do mapa; o material do
+  mirante passa a ser a conta de hoje da obra (`juntar` com `da_obra`).
+  `cadeia_do_mirante`, `rocado` e `ferramentas` cobrem o canteiro.
 - A ponte do rio grande, a frente da trilha do 2D: o rio grande é o rio do
   norte do mapa, raso de dar pé, e a ponte da Rua Principal começa cercada nas
   duas cabeceiras — a cheia comeu os esteios do meio. Gente atravessa no vau, ao

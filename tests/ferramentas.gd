@@ -398,6 +398,9 @@ func _o_vale_avisa(evento: String) -> bool:
 ## O que a entrega cobra, na mesma leitura da `CadeiaDeMissoes`: `item` com
 ## `quantos` para uma coisa só, `itens` para várias.
 func _carga_do_passo(meta: Dictionary) -> Dictionary:
+	# O material de uma obra (`da_obra`): o do catálogo, sem abatimento.
+	if str(meta.get("da_obra", "")) != "":
+		return (root.get_node("/root/Obras").dados(str(meta["da_obra"])) as Dictionary).get("custo", {})
 	var varios: Dictionary = meta.get("itens", {})
 	if not varios.is_empty():
 		return varios

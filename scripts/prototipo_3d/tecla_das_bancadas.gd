@@ -24,6 +24,9 @@ const PainelVale = preload("res://scripts/prototipo_3d/painel_vale.gd")
 ## o rótulo da dica.
 const LUGARES := {
 	"oficina": {"aba": PainelVale.Aba.OFICINA, "rotulo": "Oficina"},
+	# A mesa do prumo abre a aba de obras dela ("Chegue no canteiro e aperte E.
+	# Abre a aba de obras daquela mesa", no 2D).
+	"canteiro": {"aba": PainelVale.Aba.OBRAS, "rotulo": "Canteiro"},
 	"cozinha": {"aba": PainelVale.Aba.COZINHA, "rotulo": "Cozinhar"},
 }
 ## A dica fica em cima da bancada, e não no pé dela.
@@ -48,7 +51,7 @@ func configurar(world, jogador: Node3D, hud, abrir: Callable, livre: Callable) -
 	_dica = DicaTecla.criar(hud.map_layer(), Atalhos.letra("interagir"), "")
 
 
-## O lugar ao alcance do jogador agora: "oficina", "cozinha" ou "".
+## O lugar ao alcance do jogador agora: "oficina", "canteiro", "cozinha" ou "".
 func perto() -> String:
 	return _perto
 

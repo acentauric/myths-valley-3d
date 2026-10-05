@@ -361,6 +361,7 @@ const EN := {
 	"Missão concluída": "Quest complete",
 	# O E na bancada da oficina e na fogueira (tecla_das_bancadas.gd).
 	"Oficina": "Workshop",
+	"Canteiro": "Site table",
 	"Cozinhar": "Cook",
 	"Sua casa": "Your house",
 	"Casa do Pedro": "Pedro's house",
@@ -769,6 +770,7 @@ const ES := {
 	"Missão concluída": "Misión cumplida",
 	# O E na bancada da oficina e na fogueira (tecla_das_bancadas.gd).
 	"Oficina": "Taller",
+	"Canteiro": "Mesa de obras",
 	"Cozinhar": "Cocinar",
 	"Sua casa": "Tu casa",
 	"Casa do Pedro": "Casa de Pedro",

@@ -1012,6 +1012,16 @@ func _morador(quem: String) -> Node3D:
 ## `itens` é a de várias, que é a rede do Tonho ("cinco cordas e três tábuas").
 ## Sem número é um, que é como estava antes de qualquer conta existir.
 static func _carga_da_meta(meta: Dictionary) -> Dictionary:
+	# O MATERIAL DE UMA OBRA PELA CONTA DE HOJE (`da_obra`): com a prancheta do
+	# canteiro, o mirante pede dezoito tábuas e não vinte. O passo que manda
+	# juntar cobra o que a obra vai cobrar — no 2D, "a conta de hoje".
+	var da_obra := str(meta.get("da_obra", ""))
+	if da_obra != "":
+		var custo := {}
+		var conta: Dictionary = Obras.custo(da_obra)
+		for qual in conta:
+			custo[str(qual)] = maxi(int(conta[qual]), 1)
+		return custo
 	var varios: Dictionary = meta.get("itens", {})
 	if not varios.is_empty():
 		var conta := {}

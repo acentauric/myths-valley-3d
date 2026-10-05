@@ -84,6 +84,8 @@ const PECAS := {
 	# maior e sólida, faz as vezes do banco de carpinteiro até a oficina ter
 	# construção própria (#27). Não é arte nova: é o mesmo GLB da `mesa`.
 	"bancada_oficina": {"tripo": "moveis/mesa_tripo.glb", "largura": 1.5, "caixa": true},
+	# A mesa do canteiro de obras é a mesma mesa: provisória, como a da oficina.
+	"bancada_canteiro": {"tripo": "moveis/mesa_tripo.glb", "largura": 1.5, "caixa": true},
 	"mandioca_canteiro": {"tripo": "aderecos/mandioca_canteiro_tripo.glb", "largura": 3.5},
 	"pedras": {"tripo": "aderecos/pedras_tripo.glb", "largura": 3.0, "caixa": true},
 	"pedras_praia": {"tripo": "aderecos/pedras_praia_tripo.glb", "largura": 9.0, "caixa": true},

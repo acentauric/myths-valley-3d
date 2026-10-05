@@ -81,6 +81,16 @@ func _run() -> void:
 	var no_meio: Vector3 = load("res://scripts/prototipo_3d/bancadas_vale.gd").ponto_da_provisoria(world, "oficina")
 	_conferir(not _corpos_em(espaco, no_meio + Vector3.UP * 0.4, 0.2).is_empty(),
 		"a bancada não tem corpo: o jogador passa por dentro dela")
+	# E A MESA DO CANTEIRO DE OBRAS, a do prumo, ao fundo da bancada: peça e corpo
+	# também, como a da oficina.
+	var mesa: Node3D = vale.get_node_or_null("Bancada_canteiro")
+	_conferir(mesa != null, "a mesa do canteiro de obras não está no vale")
+	var no_prumo: Vector3 = load("res://scripts/prototipo_3d/bancadas_vale.gd").ponto_da_provisoria(world, "canteiro")
+	if mesa != null:
+		if _estilo_do_portao() == "tripo":
+			_conferir(mesa.has_meta("limites"), "no estilo Tripo a mesa do canteiro é a caixa cinza, e não a peça do catálogo")
+		_conferir(not _corpos_em(espaco, no_prumo + Vector3.UP * 0.4, 0.2).is_empty(),
+			"a mesa do canteiro não tem corpo: o jogador passa por dentro dela")
 
 	# --- 3. O E NA BANCADA ABRE A OFICINA, E NA FOGUEIRA O FOGÃO ------------
 	await _ir(jogador, world, no_meio + Vector3(1.4, 0.0, 0.0))
@@ -90,6 +100,16 @@ func _run() -> void:
 	_conferir(painel.aberto, "o E na bancada não abriu o painel")
 	if painel.aberto:
 		_conferir(painel.aba() == painel.Aba.OFICINA, "o E na bancada abriu o painel na aba %d, e não na Oficina" % painel.aba())
+		vale.telas.abrir("painel")
+		await _quadros(3)
+	# O E NA MESA DO PRUMO abre a aba de obras dela, a do canteiro ("Chegue no
+	# canteiro e aperte E. Abre a aba de obras daquela mesa", no 2D).
+	await _ir(jogador, world, no_prumo + Vector3(0.0, 0.0, -1.3))
+	_conferir(tecla.perto() == "canteiro", "ao fundo da mesa do prumo, o E não é do canteiro: '%s'" % tecla.perto())
+	await _apertar_e()
+	_conferir(painel.aberto and painel.aba() == painel.Aba.OBRAS and str(painel.obra_em_foco) == "canteiro",
+		"o E na mesa do prumo não abriu a aba de obras do canteiro: aberto %s, aba %d, obra '%s'" % [str(painel.aberto), painel.aba(), str(painel.obra_em_foco)])
+	if painel.aberto:
 		vale.telas.abrir("painel")
 		await _quadros(3)
 	var fogo: Vector3 = world.ancoras.get("Fogueira", Vector3.INF)
@@ -148,7 +168,7 @@ func _apertar_e() -> void:
 func _fechar() -> void:
 	print("")
 	if falhas == 0:
-		print("ROCADO_OK (%s): as duas fogueiras e a bancada da oficina são sólidas, a bancada é peça e não caixa no Tripo, o E ao lado dela abre a Oficina com a dica em cima, o E na fogueira abre o fogão, e longe das duas o E não abre nada" % _estilo_do_portao())
+		print("ROCADO_OK (%s): as duas fogueiras, a bancada da oficina e a mesa do canteiro são sólidas e peças no Tripo, o E ao lado da bancada abre a Oficina com a dica em cima, o E na mesa do prumo abre as obras do canteiro, o E na fogueira abre o fogão, e longe das duas o E não abre nada" % _estilo_do_portao())
 	else:
 		print("rocado (%s): %d falha(s)" % [_estilo_do_portao(), falhas])
 	quit(1 if falhas > 0 else 0)

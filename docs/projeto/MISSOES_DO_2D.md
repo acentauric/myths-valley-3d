@@ -193,8 +193,8 @@ abaixo dizem quando cada uma começa.
 
 | # | id | Título | Objetivo | Fecha quando | Paga | 3D |
 |---|---|---|---|---|---|---|
-| 1 | `canteiro_material` | O prumo e o serrote | Junte 8 tábuas e 12 lenhas para o canteiro | o material na mochila | — | falta (a obra existe em `obras.json`) |
-| 2 | `canteiro_obra` | Riscar antes de levantar | No canteiro de obras, faça a prancheta (E) | obra `canteiro_prancheta` feita; abate 10% do mirante | 3 beijus | falta |
+| 1 | `canteiro_material` | O prumo e o serrote | Junte 8 tábuas e 12 lenhas para o canteiro | o material na mochila | — | **pronta** (`canteiro_material`, `missoes_arraial.json`: a mesa do prumo é provisória, ao lado da bancada da oficina) |
+| 2 | `canteiro_obra` | Riscar antes de levantar | No canteiro de obras, faça a prancheta (E) | obra `canteiro_prancheta` feita; abate 10% do mirante | 3 beijus | **pronta** (`canteiro_obra`: o E na mesa abre a aba de obras dela; o material do mirante passa a ser a conta de hoje, `da_obra`) |
 | 3 | `mirante_ver` | O que ninguém consertou | Suba a estrada do mirante e veja o que sobrou dele | chegou ao mirante | — | **pronta** (`missoes_arraial.json`) |
 | 4 | `mirante_material` | Tabuado, pedra e corda | Junte o material do mirante | a conta de hoje (20 tábuas, 12 pedras, 6 cordas, menos 10% com a prancheta) | — | **pronta** |
 | 5 | `mirante_obra` | De pé, outra vez | Levante o mirante (E) | obra `mirante_levantar` feita; vista do alto | 1.200 réis (vaquinha) e 1 pirão | **pronta** |
@@ -328,7 +328,7 @@ não tem missão em nenhum dos dois jogos:
 2. **A lapa e a cabra** (`picareta`, `cabra`, 1.5), que abrem a lombada e
    apresentam a Santa Casa.
 3. **A chapada** (1.4), que mostra a terra do Seu Benedito.
-4. **O canteiro** (3.1), que barateia o mirante já pronto.
+4. ~~O canteiro~~ (3.1): **pronto** em 05/10/2026, antes do mirante como no 2D.
 5. **A jornada da fazenda** (4), que só pode abrir com 1 e com a fé (já
    pronta).
 6. ~~As armas, a capoeira e as metas~~ (3.9 a 3.11): **prontas** em 05/10/2026,

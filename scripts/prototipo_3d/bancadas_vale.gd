@@ -43,6 +43,10 @@ const OBRAS := {
 	# oficina fica no 2D. Serra tábua e torce corda, e a aba de obras dela vale
 	# para melhorar a própria oficina, como lá.
 	"oficina": {"ancora": "Oficina", "raio": 3.0, "provisoria": true},
+	# O CANTEIRO DE OBRAS, provisório como a oficina e do lado dela: a mesa do
+	# prumo, onde se risca a obra (`canteiro_prancheta` abate o material de toda
+	# obra do mapa). A construção de verdade, com telheiro e guincho, é do Tripo.
+	"canteiro": {"ancora": "Canteiro de obras", "raio": 3.0, "provisoria": true},
 	"armazem": {"ancora": "Venda do Bar", "peca": "venda"},
 	"mirante": {"ancora": "Mirante", "raio": 8.0},
 	"poco": {"ancora": "Poço", "raio": 4.0},
@@ -62,7 +66,6 @@ const OBRAS := {
 }
 
 const FALTAM := {
-	"canteiro": "o canteiro, onde se decidem as obras e que abate o material delas, também é do roçado (#27)",
 	"oficio": "a casa de farinha, o engenho e a cabana de pesca são do roçado e do rio (#27)",
 	"forno_barro": "o forno do arraial ainda não foi posto no vale (#27)",
 	"monjolo": "o monjolo fica na beira do rio grande, e ninguém o pôs lá ainda (#23)",
