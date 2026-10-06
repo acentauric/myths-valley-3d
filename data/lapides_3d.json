@@ -1,5 +1,5 @@
 {
-  "_nota": "Uma lápide por túmulo do cemitério, na ordem em que o world_builder os posiciona (4 por fileira, 3 fileiras). Personagens fictícios de Bom Jesus dos Pobres. História em no máximo 3 linhas do painel (~115 caracteres).",
+  "_nota": "Uma lápide por túmulo do cemitério, na ordem em que o world_builder os posiciona (3 por fileira, 4 fileiras, de cima para baixo e do oeste para o leste: scripts/prototipo_3d/cemiterio_layout.gd). Personagens fictícios de Bom Jesus dos Pobres. História em no máximo 3 linhas do painel (~115 caracteres).",
   "lapides": [
     {
       "nome": "Maria das Dores Conceição",

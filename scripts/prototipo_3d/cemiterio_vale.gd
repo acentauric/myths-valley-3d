@@ -33,7 +33,8 @@ const PASSAGEM := 2.6
 const TAMANHO_DA_CERCA := 1.0
 const GROSSURA := 0.3
 ## AS LAJES TORTAS, pela ordem de `world_builder.tumulos` (a de data/lapides_3d.json):
-## uma em cada fileira. A ponta sobe o tanto que a laje inclina — doze graus.
+## espalhadas pelas fileiras do `CemiterioLayout` (a 1ª, a 3ª e a 4ª). A ponta sobe o
+## tanto que a laje inclina — doze graus.
 const TORTAS := [1, 6, 10]
 const INCLINACAO := 0.21
 const ERGUIDA := 0.17
@@ -117,8 +118,10 @@ func entrada() -> Dictionary:
 
 # --- as lajes ------------------------------------------------------------------
 
-## A ponta da laje no ar, uma para cada lado. O giro é no eixo CURTO da laje:
-## no Tripo ela é comprida em X, no procedural em Z — a pegada diz qual.
+## A ponta da laje no ar, uma para cada lado. O giro é no eixo CURTO da laje, no
+## espaço dela: no Tripo ela é comprida em X (o curto é o Z), no procedural em Z (o
+## curto é o X). Quem a pôs deixou o eixo na marca `eixo_curto` do nó: a pegada
+## está nos eixos do mundo, e a laje gira com a fileira.
 func _entortar(tortas: bool) -> void:
 	_tortas_agora = tortas
 	var vez := 0
@@ -131,7 +134,7 @@ func _entortar(tortas: bool) -> void:
 			tumulo.transform = base
 			continue
 		var pegada: Vector3 = _mundo.lapides_pegada[indice] if indice < _mundo.lapides_pegada.size() else Vector3(1, 0, 0.5)
-		var eixo := Vector3.BACK if pegada.x >= pegada.z else Vector3.RIGHT
+		var eixo: Vector3 = tumulo.get_meta("eixo_curto", Vector3.BACK if pegada.x >= pegada.z else Vector3.RIGHT)
 		var lado := 1.0 if vez % 2 == 0 else -1.0
 		vez += 1
 		tumulo.transform = Transform3D(base.basis * Basis(eixo, INCLINACAO * lado), base.origin + Vector3.UP * ERGUIDA)
