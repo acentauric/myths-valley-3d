@@ -106,6 +106,8 @@ var _cadeias: Dictionary = {}
 ## fechar — o relógio travado às 07:14 na live de 06/10. `Dia.pausado` agora é
 ## só a pausa que o jogador pediu; o HUD mostra quem segura (`Dia.segurado`).
 const MOTIVO_DA_TELA := "tela"
+## A camada das plaquinhas de nome (#103): abaixo dos balões (10) e do HUD (20).
+const CAMADA_DAS_PLACAS := 8
 var _telas_que_param := 0
 ## A pergunta da tecla de adiantar a hora, enquanto está aberta.
 var _pergunta_do_relogio = null
@@ -1163,7 +1165,20 @@ func _montar_moradores(spawn: Vector3) -> void:
 	placas = PlacasNomes.new()
 	placas.name = "PlacasNomes"
 	add_child(placas)
-	placas.configurar(player, hud.map_layer())
+	# AS PLAQUINHAS ABAIXO DOS BALÕES (#103): numa camada própria, sob a dos
+	# balões de fala (10) e a do HUD (20). No `map_layer` do HUD elas ficavam por
+	# cima do balão — "a camada do chat deve ser acima da camada do nome" —, e o
+	# HUD segue cobrindo as duas.
+	var camada_das_placas := CanvasLayer.new()
+	camada_das_placas.name = "CamadaDasPlacas"
+	camada_das_placas.layer = CAMADA_DAS_PLACAS
+	add_child(camada_das_placas)
+	var chao_das_placas := Control.new()
+	chao_das_placas.name = "Placas"
+	chao_das_placas.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	chao_das_placas.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	camada_das_placas.add_child(chao_das_placas)
+	placas.configurar(player, chao_das_placas)
 	# Seta da missão: cone e anel no mundo + chevron na borda da tela seguem o
 	# alvo DA MISSÃO ACOMPANHADA (ver `_mostrar_a_acompanhada`).
 	_seta = SetaMissao.new()

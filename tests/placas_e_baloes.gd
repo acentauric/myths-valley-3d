@@ -91,6 +91,14 @@ func _run() -> void:
 	await _quadros(2)
 	_conferir(candinha.balao.visible, "a conversa do E com a Dona Candinha não abriu balão")
 	_conferir(not tonho.balao.visible, "a conversa do E não calou a saudação do Tonho: dois balões")
+
+	# --- 4. O BALÃO POR CIMA DA PLAQUINHA (#103) ------------------------------------
+	# "A camada do chat deve ser acima da camada do nome do NPC": a plaquinha de um
+	# morador não pode cobrir o balão de outro — ela mora numa camada abaixo.
+	var camada_da_placa: CanvasLayer = placa.get_canvas_layer_node()
+	var camada_do_balao: CanvasLayer = tonho.balao.get_canvas_layer_node()
+	_conferir(camada_da_placa != null and camada_do_balao != null and camada_da_placa.layer < camada_do_balao.layer,
+		"a plaquinha (camada %s) não fica abaixo do balão (camada %s)" % [str(camada_da_placa.layer) if camada_da_placa != null else "?", str(camada_do_balao.layer) if camada_do_balao != null else "?"])
 	_fechar()
 
 

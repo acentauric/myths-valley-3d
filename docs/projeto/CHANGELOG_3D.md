@@ -246,6 +246,10 @@
   minimapa e por cima do "mão livre". Agora é uma caixa centrada de até 640
   px que quebra a linha e cresce para cima, na identidade do vale (laca,
   filete, Cormorant). Portão `tarefa_no_hud`, parte 5.
+- **O balão de fala fica por cima da plaquinha de nome (#103).** As plaquinhas
+  moravam no `map_layer` do HUD (camada 20), acima dos balões (10): a
+  plaquinha de um morador cobria o balão de outro. Elas vão para a camada
+  própria 8, abaixo dos balões e do HUD. Portão `placas_e_baloes`, parte 4.
 
 ## Em desenvolvimento — 05/10/2026
 
