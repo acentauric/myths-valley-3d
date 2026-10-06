@@ -51,11 +51,53 @@ var tamanho_texto := PADRAO_TAMANHO
 var tamanho_hud := PADRAO_TAMANHO
 var escala_texto := 1.0
 var escala_hud := 1.0
+## O MONITOR (#95): com mais de um, o jogador escolhe em qual o jogo abre
+## (AJUSTAR › Interface › Monitor) — antes só havia o F11 e arrastar a janela.
+## A escolha fica salva e a janela vai na hora, em tela cheia ou em janela. Sem
+## escolha, ou com uma tela que já não existe, é o monitor principal.
+var monitor := 0
+
+
+## Um item por tela ligada, na ordem do sistema: "Monitor 1 · 1920×1080".
+func monitores() -> Array[String]:
+	var lista: Array[String] = []
+	for i in maxi(1, DisplayServer.get_screen_count()):
+		var tamanho := DisplayServer.screen_get_size(i) if i < DisplayServer.get_screen_count() else Vector2i.ZERO
+		lista.append("Monitor %d · %d×%d" % [i + 1, tamanho.x, tamanho.y] if tamanho != Vector2i.ZERO else "Monitor %d" % (i + 1))
+	return lista
+
+
+## O monitor principal do sistema: o padrão, e o destino de uma escolha que já
+## não existe.
+static func monitor_padrao() -> int:
+	return clampi(DisplayServer.get_primary_screen(), 0, maxi(1, DisplayServer.get_screen_count()) - 1)
+
+
+## Monitor salvo; sem escolha, ou fora das telas ligadas, o principal.
+static func monitor_preferido() -> int:
+	var preferencias := ConfigFile.new()
+	if preferencias.load(ARQUIVO) == OK:
+		var salvo := int(preferencias.get_value("tela", "monitor", -1))
+		if salvo >= 0 and salvo < maxi(1, DisplayServer.get_screen_count()):
+			return salvo
+	return monitor_padrao()
+
+
+## Leva a janela ao monitor na hora e guarda a escolha para as próximas aberturas.
+func definir_monitor(indice: int) -> void:
+	monitor = clampi(indice, 0, maxi(1, DisplayServer.get_screen_count()) - 1)
+	var preferencias := ConfigFile.new()
+	preferencias.load(ARQUIVO)
+	preferencias.set_value("tela", "monitor", monitor)
+	if preferencias.save(ARQUIVO) != OK:
+		push_warning("Não foi possível salvar o monitor.")
+	_aplicar()
 
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	cheia = preferida()
+	monitor = monitor_preferido()
 	_aplicar()
 	cursor = cursor_preferido()
 	_aplicar_cursor()
@@ -204,6 +246,11 @@ func _aplicar() -> void:
 	# Sem janela de verdade (testes headless) só a preferência importa.
 	if DisplayServer.get_name() == "headless":
 		return
+	# O monitor escolhido (#95), antes do modo: em tela cheia a janela cobre a
+	# tela em que está, e em janela ela se mede pela área útil dela.
+	var alvo := clampi(monitor, 0, maxi(1, DisplayServer.get_screen_count()) - 1)
+	if DisplayServer.window_get_current_screen() != alvo:
+		DisplayServer.window_set_current_screen(alvo)
 	if cheia:
 		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN)
 		return
@@ -212,8 +259,7 @@ func _aplicar() -> void:
 	# maximizado; a janela tem de voltar ao tamanho dela.
 	if DisplayServer.window_get_mode() == DisplayServer.WINDOW_MODE_MAXIMIZED:
 		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)
-	var tela := DisplayServer.window_get_current_screen()
-	var area := DisplayServer.screen_get_usable_rect(tela)
+	var area := DisplayServer.screen_get_usable_rect(alvo)
 	var largura := minf(area.size.x * FRACAO_JANELA, area.size.y * FRACAO_JANELA * 16.0 / 9.0)
 	var tamanho := Vector2i(roundi(largura), roundi(largura * 9.0 / 16.0))
 	DisplayServer.window_set_size(tamanho)

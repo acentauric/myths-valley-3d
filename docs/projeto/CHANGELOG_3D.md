@@ -183,6 +183,12 @@
   primeira vez, como o do cordel (`data/avisos.json`, "agua_funda", nos três
   idiomas; `prototype._ao_mudar_o_nado`), com o vale parado; a marca vai ao
   save e carregar não o repete. Portão `avisos_da_primeira_vez`, partes 5 e 6.
+- **O jogador escolhe em que monitor o jogo abre (#95).** Com mais de um
+  monitor só havia o F11 e arrastar a janela. AJUSTAR › Interface › Monitor
+  lista um item por tela ("Monitor 1 · 1920×1080"); a escolha move a janela
+  na hora, em tela cheia ou em janela, e fica salva (`Tela.monitores`,
+  `definir_monitor`), com o padrão no monitor principal — uma tela que deixou
+  de existir volta a ele. Nos três idiomas, com ajuda no "?". Portão `tela`.
 
 ## Em desenvolvimento — 05/10/2026
 
