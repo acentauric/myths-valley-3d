@@ -33,6 +33,26 @@
   19 s, FPS dobrado (sombra, faces de trás, mata mais leve), mata pela metade com
   clareiras de árvore-destaque, minimapa pintado e estático, e o lobby em vídeo.
 
+## Em desenvolvimento — 06/10/2026
+
+- **A reserva do dia volta ao corpo (#82, fecha a #45).** Entre 04/10 e 06/10 a
+  `Energia` espelhava o vigor do jogador (`registrar_vigor`), e como o vigor volta
+  sozinho a comida, a cama e os talentos de reserva perderam a função — apontado
+  pelo autor depois do teste ao vivo de 05/10. Agora são três contas: a vida; a
+  reserva do dia, na barra do meio só com o número, que a enxada, o machado, a
+  picareta, a lavoura e a luta gastam e só comida, cama e desmaio devolvem (no fim
+  dela o passo encurta, a barra fica vermelha e diz "cansado", e a corrida não
+  responde); e o vigor, embaixo, da corrida, do salto e do golpe, que volta sozinho
+  (baixo, fica âmbar). Na água a barra do meio vira o fôlego do nado, azul: o nado
+  gasta o vigor primeiro e depois o fôlego, e sem fôlego a água tira da vida; ao
+  sair da água a barra volta à reserva (`nado_mudou`), e quem apaga acorda
+  respirando. O golpe na árvore paga o braço inteiro no vigor e bater × dureza na
+  reserva. O Pedro explica as quatro contas com as vozes já gravadas: a reserva e
+  o vigor voltaram do `529a648`, e a fala do nado ficou com o arquivo dela
+  (`pedro_corpo_nado`). Ajustes → Esforço continua valendo para a reserva. Manual
+  em `COMO_JOGAR_3D.md`. Portões: `reservas_do_corpo` (reescrito), `folego`,
+  `luta`, `casa`, `corte_das_arvores`, `lavoura`.
+
 ## Em desenvolvimento — 05/10/2026
 
 - O machado chega na ponte, como no 2D: o jogo novo não dá mais machado de

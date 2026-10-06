@@ -137,7 +137,6 @@ func configurar(world: Node3D, jogador: Node3D, hud, hud_layer: Control) -> void
 	_jogador.connect("vigor_mudou", Callable(self, "_ao_vigor_mudar"))
 	if not Relogio.dia_comecou.is_connected(_ao_dia_comecar):
 		Relogio.dia_comecou.connect(_ao_dia_comecar)
-	_atualizar_stamina_hud()
 	_animador = _jogador.get("animator") as Node
 	if _animador != null and _animador.has_signal("golpe_concluido"):
 		_animador.connect("golpe_concluido", Callable(self, "_ao_golpe_concluido"))
@@ -602,11 +601,9 @@ func _ao_golpe_concluido() -> void:
 	var arvore: Dictionary = _cortaveis[indice]
 	var madeira := madeira_de(String(arvore["especie"]))
 	var dureza := float(madeira.get("dureza", 1.0))
-	# No vale 3D, Energia.gastar também desconta do vigor do jogador. Dividir
-	# o custo total evita cobrar duas vezes e encerrar o corte antes do segundo impacto.
-	var custo_energia := Energia.custo("bater", dureza)
-	var custo_braco := maxf(Energia.custo("golpe") - custo_energia, 0.0)
-	if not bool(_jogador.call("gastar_vigor", custo_braco)):
+	# DUAS CONTAS (#82): o braço paga o golpe inteiro no vigor, que volta sozinho;
+	# a reserva do dia paga bater × dureza, que só a comida e a cama devolvem.
+	if not bool(_jogador.call("gastar_vigor", Energia.custo("golpe"))):
 		_parar_golpe(false)
 		return
 	_stamina = float(_jogador.call("vigor_atual"))
@@ -769,14 +766,10 @@ func _definir_ficha_cortada(pos: Vector3, cortado: bool) -> void:
 			ficha["cortado"] = cortado
 
 
+## A barra de vigor é do HUD, que ouve o jogador (`configurar_corpo`); aqui só
+## se guarda o número, para contar quantos golpes cabem no braço.
 func _ao_vigor_mudar(valor: float) -> void:
 	_stamina = valor
-	_atualizar_stamina_hud()
-
-
-func _atualizar_stamina_hud() -> void:
-	var maximo := maxf(1.0, float(_jogador.call("vigor_maximo")))
-	_hud.definir_stamina(100.0 * _stamina / maximo, str(IdiomaMenu.campo(_acoes.get("arvore", {}), "stamina")))
 
 
 func _criar_balao_vida(camada: Control) -> void:

@@ -54,10 +54,13 @@ const PESO_DO_CANSACO := 0.62
 signal cansou
 signal descansou
 
+## A RESERVA É UMA CONTA PRÓPRIA. Entre 04/10 e 06/10 ela espelhou o vigor do
+## corpo do 3D (`registrar_vigor`, `8413ae7`): como o vigor volta sozinho, a
+## comida, a cama e os talentos de reserva perderam a função. Decisão do autor
+## em 06/10 (#82): a reserva volta a ser a que sempre foi — gasta no trabalho e
+## na luta, devolvida só pela comida, pela cama e pelo desmaio. O vigor, o fôlego
+## curto da corrida e do golpe, mora no `player_controller`, na conta dele.
 var atual: float = Progressao.ENERGIA_MAXIMA_INICIAL
-## No vale 3D, o custo das ações usa o vigor do personagem. O 2D segue com
-## a reserva original quando não há personagem registrado.
-var _jogador_vigor: Node
 
 ## O estado do último aviso, para os sinais saírem só na VIRADA e não a cada
 ## machadada dada abaixo do limiar.
@@ -90,34 +93,7 @@ func maximo() -> float:
 
 
 func nome_recurso() -> String:
-	return "vigor" if is_instance_valid(_jogador_vigor) else "fôlego"
-
-
-func registrar_vigor(jogador: Node) -> void:
-	if is_instance_valid(_jogador_vigor) and _jogador_vigor.is_connected("vigor_mudou", _ao_vigor_mudar):
-		_jogador_vigor.disconnect("vigor_mudou", _ao_vigor_mudar)
-	_jogador_vigor = jogador
-	_jogador_vigor.connect("vigor_mudou", _ao_vigor_mudar)
-	# O save restaura Energia antes de o vale registrar o corpo. Na entrada,
-	# transfere esse valor para a reserva de vigor usada durante o passeio.
-	_jogador_vigor.call("definir_vigor", atual)
-	_ao_vigor_mudar(float(_jogador_vigor.call("vigor_atual")))
-
-
-func desregistrar_vigor(jogador: Node) -> void:
-	if _jogador_vigor != jogador:
-		return
-	if jogador.is_connected("vigor_mudou", _ao_vigor_mudar):
-		jogador.disconnect("vigor_mudou", _ao_vigor_mudar)
-	_jogador_vigor = null
-
-
-func _ao_vigor_mudar(valor: float) -> void:
-	var antes := atual
-	atual = valor
-	mudou.emit()
-	if antes > 0.0 and valor <= 0.0:
-		esgotou.emit()
+	return "fôlego"
 
 
 func fracao() -> float:
@@ -162,12 +138,8 @@ func _ler_custos() -> void:
 		custos[acao] = maxf(0.0, float(arquivo.get_value("custos", acao, CUSTOS[acao])))
 
 
-## Põe a reserva num valor exato. No vale 3D a reserva é o vigor do corpo
-## (`registrar_vigor`): escrever direto em `atual` seria desfeito no próximo gasto.
+## Põe a reserva num valor exato.
 func definir(valor: float) -> void:
-	if is_instance_valid(_jogador_vigor):
-		_jogador_vigor.call("definir_vigor", clampf(valor, 0.0, maximo()))
-		return
 	atual = clampf(valor, 0.0, maximo())
 	mudou.emit()
 
@@ -182,8 +154,6 @@ func gastar(acao: String, dureza: float = 1.0) -> bool:
 	var preco := custo(acao, dureza)
 	if preco <= 0.0:
 		return true
-	if is_instance_valid(_jogador_vigor):
-		return bool(_jogador_vigor.call("gastar_vigor", preco))
 	if atual < preco:
 		return false
 
@@ -197,42 +167,26 @@ func gastar(acao: String, dureza: float = 1.0) -> bool:
 
 ## Dormir devolve um VALOR FIXO, não uma fração. Ver Progressao.
 func dormir() -> void:
-	if is_instance_valid(_jogador_vigor):
-		repor(Progressao.recuperacao_ao_dormir)
-		_jogador_vigor.call("definir_folego", _jogador_vigor.call("folego_maximo"))
-		return
 	atual = minf(maximo(), atual + Progressao.recuperacao_ao_dormir)
 	mudou.emit()
 
 
 func desmaiar() -> void:
-	if is_instance_valid(_jogador_vigor):
-		repor(Progressao.recuperacao_ao_desmaiar)
-		_jogador_vigor.call("definir_folego", _jogador_vigor.call("folego_maximo"))
-		return
 	atual = minf(maximo(), atual + Progressao.recuperacao_ao_desmaiar)
 	mudou.emit()
 
 
 ## Comida e descanso curto entram aqui quando a cozinha existir.
 func repor(quanto: float) -> void:
-	if is_instance_valid(_jogador_vigor):
-		_jogador_vigor.call("repor_vigor", quanto)
-		return
 	atual = minf(maximo(), atual + quanto)
 	mudou.emit()
 
 
 func encher() -> void:
-	if is_instance_valid(_jogador_vigor):
-		_jogador_vigor.call("definir_vigor", maximo())
-		return
 	atual = maximo()
 	mudou.emit()
 
 
 func _ao_mudar_progressao() -> void:
-	if is_instance_valid(_jogador_vigor):
-		_jogador_vigor.call("definir_vigor", atual)
 	atual = minf(atual, maximo())
 	mudou.emit()

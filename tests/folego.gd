@@ -152,16 +152,22 @@ func _run() -> void:
 	_conferir(desmaia.search(queda) != null,
 		"a queda não chama Energia.desmaiar(): cair deixou de ser a mesma noite do desmaio do 2D")
 
-	# Energia representa o vigor no 3D; o fôlego azul pertence ao jogador.
+	# --- 5. O HUD MOSTRA (#3, #82) ---------------------------------------------
+	# A barra do meio é a reserva do dia: acompanha o `Energia` com ou sem jogador,
+	# só com o número, e no limiar diz "cansado" e muda de cor.
 	var hud = load("res://scripts/prototipo_3d/prototype_hud.gd").new()
 	root.add_child(hud)
 	await process_frame
-	_conferir(hud.barra_stamina != null and hud.barra_stamina.visible, "o HUD não tem a barra de vigor")
+	_conferir(hud.barra_folego != null and hud.barra_folego.visible, "o HUD não tem a barra da reserva")
 	energia.encher()
-	_conferir(is_equal_approx(hud.barra_stamina.value, energia.atual), "a barra não mostra o vigor cheio")
+	_conferir(is_equal_approx(hud.barra_folego.value, energia.atual), "a barra não mostra a reserva cheia")
+	_conferir(hud._folego_texto.text == str(roundi(energia.atual)),
+		"em terra a barra da reserva não mostra só o número: '%s'" % hud._folego_texto.text)
 	energia.definir(energia.maximo() * 0.5)
-	energia.mudou.emit()
-	_conferir(is_equal_approx(hud.barra_stamina.value, energia.atual), "a barra não acompanha o gasto de vigor")
+	_conferir(is_equal_approx(hud.barra_folego.value, energia.atual), "a barra não acompanha o gasto da reserva")
+	energia.definir(energia.maximo() * 0.1)
+	_conferir(hud._folego_texto.text.contains("cansado") and hud._folego_preenchimento.bg_color == hud.COR_RESERVA_BAIXA,
+		"no limiar a barra da reserva não diz 'cansado' nem muda de cor: '%s'" % hud._folego_texto.text)
 	energia.encher()
 	hud.queue_free()
 

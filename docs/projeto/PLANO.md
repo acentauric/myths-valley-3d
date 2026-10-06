@@ -91,9 +91,15 @@ O formato das partidas é preservado. Os portões de segurança cobrem caminhos
 perigosos, links, cabeçalhos conflitantes e a leitura de saves legítimos.
 A autenticidade da distribuição ainda depende do servidor HTTPS oficial.
 
-## Reservas do corpo em 04/10/2026
+## Reservas do corpo em 06/10/2026
 
-A decisão da #45 mantém três reservas: vigor para o esforço imediato, fôlego
-para o nado e vida para o dano. Corrida, salto e ações gastam só vigor; nadar
-consome fôlego por segundo e, depois que ele acaba, tira vida. O HUD e o guia
-descrevem os três, e `tests/reservas_do_corpo.gd` cobre os custos e a restauração.
+A #45 fechou pela #82, com a decisão do autor de 06/10: a reserva do dia
+(`Energia`) volta a ser conta própria. Vida para o dano; a reserva do dia no meio
+da tela, só com o número, gasta pela enxada, pelo machado, pela picareta, pela
+lavoura e pela luta, e devolvida só por comida, cama e desmaio (no fim dela o
+passo encurta e não se corre); vigor para o esforço imediato (corrida, salto,
+golpe), que volta sozinho; e, na água, a barra do meio vira o fôlego do nado,
+gasto depois do vigor, que sem ele tira vida. De 04/10 a 06/10 a reserva espelhou
+o vigor, e a comida perdeu o sentido. O HUD, o manual e o guia descrevem as
+quatro, e `tests/reservas_do_corpo.gd` cobre os custos, a troca da barra e a
+restauração.

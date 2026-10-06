@@ -781,13 +781,11 @@ func _ready() -> void:
 	# `estado_para_salvar`.
 	Salvamento.registrar_mundo(self)
 	var retomou_partida := _retomar_a_partida()
-	Energia.registrar_vigor(player)
-	hud.configurar_folego(player)
+	# TRÊS CONTAS (#82): a reserva do dia (o `Energia`, que o HUD ouve sozinho), o
+	# vigor do corpo e o fôlego do nado, estes dois lidos do jogador.
+	hud.configurar_corpo(player)
 	_ligar_os_acontecimentos_das_frentes()
 	_conferir_o_relogio_parado()
-	# DOIS FÔLEGOS: o vigor do corpo (a barra verde da corrida e do golpe) e a
-	# reserva do dia (o `Energia`), cada um na sua conta. Ver `vigor_maximo`.
-	_arvores_info._atualizar_stamina_hud()
 	Equipamento.migrar_ferramenta_das_maos()
 	if not _barra_de_ferramentas_migrada:
 		Inventario.trazer_ferramentas_para_a_mao()
@@ -2104,7 +2102,6 @@ func _lendo() -> bool:
 
 
 func _exit_tree() -> void:
-	Energia.desregistrar_vigor(player)
 	if Vida.esta_lendo == Callable(self, "_lendo"):
 		Vida.esta_lendo = Callable()
 	if Mochila.abrir_documento == Callable(self, "_ler_documento"):

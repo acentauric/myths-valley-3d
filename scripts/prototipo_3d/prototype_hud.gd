@@ -405,24 +405,40 @@ func _atualizar_vida() -> void:
 	_vida_preenchimento.bg_color = COR_VIDA_ENVENENADA if vida.envenenado_agora() else COR_VIDA
 
 
-## O FÔLEGO (#3), logo abaixo da vida e na mesma medida, com as cores do 2D
-## (`scripts/ui/hud.gd`): verde enquanto há fôlego, vermelho quando o corpo
-## está no fim. O número vem do `Energia` compartilhado, e o limiar é o dele
-## (`Energia.cansado()`), não um número daqui. O vigor, a barra verde da
-## corrida e do golpe, é outra conta (`_criar_barra_de_stamina`), e a
-## respiração do mergulho ainda não tem barra: nada a gasta por enquanto.
+## OS TRÊS MEDIDORES DO CORPO (#82), abaixo da vida e na mesma medida.
 ##
-## Cansado, o texto diz "cansado" além de mudar a cor. O cansaço já pesa no
-## corpo — o passo cai para 62% e a corrida não responde —, e sem aviso quem
-## joga pensa que o jogo travou (ver `Energia.cansou`).
+## A BARRA DO MEIO é a RESERVA DO DIA — o `Energia` compartilhado, o fôlego do
+## 2D: enxada, machado, picareta, lavoura e luta gastam dela, e só comida, cama
+## e desmaio devolvem. Mostra SÓ O NÚMERO, como o Pedro ensina ("a do meio, só
+## com o número"); abaixo do limiar do `Energia` fica vermelha e diz "cansado" —
+## o passo encurta e a corrida não responde (ver `Energia.cansou`), e sem o
+## aviso quem joga pensa que o jogo travou.
+##
+## NA ÁGUA a mesma barra vira o FÔLEGO DO NADO, azul ("a azul, a do meio, é o
+## fôlego: o ar de quem nada"): o ar do corpo, que o jogador guarda
+## (`folego_atual`). O nado gasta o vigor primeiro e depois o fôlego, e sem
+## fôlego a água tira da vida ("afogamento"). Ao sair da água a barra volta à
+## reserva (`nado_mudou`).
+##
+## A BARRA DE BAIXO é o VIGOR, o fôlego curto do corpo (`vigor_atual`): corrida,
+## pulo e golpe gastam, e ele volta sozinho. Baixo, fica âmbar — a palavra
+## "cansado" é da reserva.
+##
+## Entre 04/10 e 06/10 a reserva e o vigor foram UMA conta (`Energia.registrar_vigor`,
+## `8413ae7`): o vigor voltava sozinho e a comida perdeu o sentido. Decisão do
+## autor em 06/10: a reserva volta a ser a que sempre foi.
+const COR_RESERVA := Color("c9a24a")
+const COR_RESERVA_BAIXA := Color(0.9, 0.42, 0.34)
 const COR_FOLEGO := Color("398fd2")
-const COR_FOLEGO_BAIXO := Color(0.9, 0.42, 0.34)
 const COR_VIGOR := Color("56ad67")
 const COR_MEDIDOR_BAIXO := Color("bd803e")
 var barra_folego: ProgressBar
 var _folego_texto: Label
 var _folego_preenchimento: StyleBoxFlat
-var _jogador_folego: Node
+## O jogador: de quem vêm o vigor, o fôlego do nado e o aviso de que entrou na água.
+var _jogador_corpo: Node
+## Nadando, a barra do meio é o fôlego do nado; em terra, a reserva do dia.
+var _nadando := false
 
 
 func _criar_barra_de_folego() -> void:
@@ -449,26 +465,62 @@ func _criar_barra_de_folego() -> void:
 	_folego_texto.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_folego_texto.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	barra_folego.visible = true
+	# Em terra a barra é a reserva: ouve o `Energia` desde o nascimento, com ou
+	# sem jogador (o portão do fôlego instancia o HUD sozinho).
+	var energia := get_node_or_null("/root/Energia")
+	if energia != null:
+		energia.mudou.connect(_atualizar_folego)
+	_atualizar_folego()
 
 
-func configurar_folego(jogador: Node) -> void:
-	if is_instance_valid(_jogador_folego) and _jogador_folego.is_connected("folego_mudou", _atualizar_folego):
-		_jogador_folego.disconnect("folego_mudou", _atualizar_folego)
-	_jogador_folego = jogador
-	_jogador_folego.connect("folego_mudou", _atualizar_folego)
+## O HUD ouve o jogador: o vigor, o fôlego do nado, e a entrada e a saída da água.
+func configurar_corpo(jogador: Node) -> void:
+	if is_instance_valid(_jogador_corpo):
+		_desligar(_jogador_corpo, "vigor_mudou", _atualizar_vigor)
+		_desligar(_jogador_corpo, "folego_mudou", _atualizar_folego)
+		_desligar(_jogador_corpo, "nado_mudou", _ao_mudar_o_nado)
+	_jogador_corpo = jogador
+	jogador.connect("vigor_mudou", _atualizar_vigor)
+	jogador.connect("folego_mudou", _atualizar_folego)
+	jogador.connect("nado_mudou", _ao_mudar_o_nado)
+	_nadando = jogador.has_method("is_swimming") and bool(jogador.call("is_swimming"))
+	_atualizar_folego()
+	_atualizar_vigor()
+
+
+func _desligar(de: Node, sinal: String, para: Callable) -> void:
+	if de.is_connected(sinal, para):
+		de.disconnect(sinal, para)
+
+
+## Entrou na água, ou saiu dela: a barra do meio troca de conta.
+func _ao_mudar_o_nado(nadando: bool) -> void:
+	_nadando = nadando
 	_atualizar_folego()
 
 
 func _atualizar_folego(_valor: float = 0.0) -> void:
-	if not is_instance_valid(_jogador_folego) or barra_folego == null:
+	if barra_folego == null:
 		return
-	barra_folego.max_value = float(_jogador_folego.call("folego_maximo"))
-	barra_folego.value = float(_jogador_folego.call("folego_atual"))
-	_folego_texto.text = _texto_medidor("folego", barra_folego)
-	var baixo := barra_folego.value <= barra_folego.max_value * 0.2
-	_folego_preenchimento.bg_color = COR_MEDIDOR_BAIXO if baixo else COR_FOLEGO
-	if baixo:
-		_folego_texto.text += " · " + str(IdiomaMenu.campo(_textos_medidores, "afogamento"))
+	if _nadando and is_instance_valid(_jogador_corpo):
+		barra_folego.max_value = float(_jogador_corpo.call("folego_maximo"))
+		barra_folego.value = float(_jogador_corpo.call("folego_atual"))
+		_folego_texto.text = _texto_medidor("folego", barra_folego)
+		var baixo := barra_folego.value <= barra_folego.max_value * 0.2
+		_folego_preenchimento.bg_color = COR_MEDIDOR_BAIXO if baixo else COR_FOLEGO
+		if baixo:
+			_folego_texto.text += " · " + str(IdiomaMenu.campo(_textos_medidores, "afogamento"))
+		return
+	var energia := get_node_or_null("/root/Energia")
+	if energia == null:
+		return
+	barra_folego.max_value = energia.maximo()
+	barra_folego.value = energia.atual
+	var cansado: bool = energia.cansado()
+	_folego_texto.text = str(roundi(energia.atual))
+	if cansado:
+		_folego_texto.text += " · " + str(IdiomaMenu.campo(_textos_medidores, "cansado"))
+	_folego_preenchimento.bg_color = COR_RESERVA_BAIXA if cansado else COR_RESERVA
 
 
 func _criar_barra_de_stamina() -> void:
@@ -500,9 +552,6 @@ func _criar_barra_de_stamina() -> void:
 	_stamina_texto.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_stamina_texto.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_stamina_texto.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	var energia := get_node_or_null("/root/Energia")
-	if energia != null:
-		energia.mudou.connect(_atualizar_vigor)
 	_atualizar_vigor()
 
 
@@ -510,26 +559,16 @@ func _texto_medidor(chave: String, barra: ProgressBar) -> String:
 	return "%s %d/%d" % [IdiomaMenu.campo(_textos_medidores, chave), roundi(barra.value), roundi(barra.max_value)]
 
 
-func _atualizar_vigor() -> void:
-	var energia := get_node_or_null("/root/Energia")
-	if energia == null or barra_stamina == null:
-		return
-	barra_stamina.max_value = energia.maximo()
-	barra_stamina.value = energia.atual
-	_stamina_texto.text = _texto_medidor("vigor", barra_stamina)
-	var cansado := barra_stamina.value <= barra_stamina.max_value * 0.2
-	_stamina_preenchimento.bg_color = COR_MEDIDOR_BAIXO if cansado else COR_VIGOR
-	if cansado:
-		_stamina_texto.text += " · " + str(IdiomaMenu.campo(_textos_medidores, "cansado"))
-
-
-## Compatibility hook for resource actions that report their own temporary stamina.
-func definir_stamina(valor: float, rotulo: String) -> void:
+## O vigor vem do jogador; sem jogador (o HUD sozinho num portão), a barra fica cheia.
+func _atualizar_vigor(_valor: float = 0.0) -> void:
 	if barra_stamina == null:
 		return
-	barra_stamina.value = clampf(valor, 0.0, barra_stamina.max_value)
-	_stamina_texto.text = "%s %d%%" % [rotulo, roundi(barra_stamina.value)]
-	_stamina_preenchimento.bg_color = COR_MEDIDOR_BAIXO if barra_stamina.value <= barra_stamina.max_value * 0.2 else COR_VIGOR
+	if is_instance_valid(_jogador_corpo):
+		barra_stamina.max_value = float(_jogador_corpo.call("vigor_maximo"))
+		barra_stamina.value = float(_jogador_corpo.call("vigor_atual"))
+	_stamina_texto.text = _texto_medidor("vigor", barra_stamina)
+	var baixo := barra_stamina.value <= barra_stamina.max_value * 0.2
+	_stamina_preenchimento.bg_color = COR_MEDIDOR_BAIXO if baixo else COR_VIGOR
 
 
 func _process(delta: float) -> void:
