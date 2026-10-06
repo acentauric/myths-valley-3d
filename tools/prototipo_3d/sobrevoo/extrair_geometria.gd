@@ -160,6 +160,9 @@ func _extrair() -> void:
 	# Direto no autoload: definir() gravaria a escolha na preferencia do jogador.
 	var estilo_no := root.get_node("/root/Estilo")
 	estilo_no.set("modo", _estilo)
+	# O vale de fundo, e não o lobby em vídeo (05/10): sem ele a abertura solta o
+	# $Cenario antes de montar e `construido` nunca chega (`abertura.lobby_3d_pedido`).
+	(load("res://scripts/prototipo_3d/abertura.gd") as GDScript).set("lobby_3d_pedido", true)
 	var marco := Time.get_ticks_msec()
 	if change_scene_to_file(CENA) != OK:
 		push_error("EXTRAIR: a abertura nao carrega")

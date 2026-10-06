@@ -139,9 +139,16 @@ var _modo_camera := ""
 ## Falso enquanto a tela de carregamento cobre o menu: o foco que o _home() põe no
 ## JOGAR não toca o "tique" de passar por cima debaixo dela.
 var _som_liberado := false
+## O LOBBY 3D PEDIDO POR CÓDIGO: o mesmo `-- --lobby-3d`, para quem carrega a
+## abertura por script e não tem linha de comando — o extrator do sobrevoo
+## (`tools/prototipo_3d/sobrevoo/extrair_geometria.gd`, e os portões
+## `sobrevoo_livre*` que o estendem) monta o vale pela abertura e precisa do
+## vale de fundo; com o lobby em vídeo o `$Cenario` sai antes de montar, e ele
+## esperava o vale para sempre.
+static var lobby_3d_pedido := false
 
 func _enter_tree() -> void:
-	lobby_em_video = not ("--lobby-3d" in OS.get_cmdline_user_args()) \
+	lobby_em_video = not ("--lobby-3d" in OS.get_cmdline_user_args() or lobby_3d_pedido) \
 		and ResourceLoader.exists(VIDEO_LOBBY)
 	if lobby_em_video:
 		# O vale sai antes de entrar na árvore: o _ready do world_builder, que é a montagem

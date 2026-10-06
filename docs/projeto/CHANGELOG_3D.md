@@ -160,6 +160,12 @@
   são dois lances do tamanho das outras, no mesmo lugar. Portão novo
   `cercas_na_encosta`: cada lance do vale com as pontas a menos de 0,1 u do
   chão, e ao menos um em encosta de verdade.
+- **Os portões do sobrevoo voltam a montar o vale pela abertura.** Desde o lobby
+  em vídeo (05/10) a abertura solta o `$Cenario` antes de ele montar, a não ser
+  com `-- --lobby-3d`; o extrator do sobrevoo, que carrega a abertura e espera o
+  vale, esperava para sempre, e `sobrevoo_livre` e `sobrevoo_livre_procedural`
+  saíam pelo teto de 400 s. O extrator pede o lobby 3D por código antes de
+  carregar a cena (`abertura.lobby_3d_pedido`): os dois voltam a 42 s e 36 s.
 
 ## Em desenvolvimento — 05/10/2026
 
