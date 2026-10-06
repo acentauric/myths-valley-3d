@@ -1741,6 +1741,16 @@ func _erguer_ponte(point: Vector3, anchor: String) -> void:
 		if limites.size.z > limites.size.x:
 			ao_longo = Vector3(sin(bridge_yaw), 0.0, cos(bridge_yaw))
 	pontes[anchor] = {"centro": bridge, "ao_longo": ao_longo, "comprimento": comprimento, "largura": largura}
+	# A PONTE CAÍDA (#94), no mesmo vão: o modelo de pé fica escondido e sem
+	# tabuleiro até a obra `ponte_levantar`, e a caída aparece no lugar — quem
+	# troca é o `ponte_vale.gd`, pela obra. Sem o modelo do Tripo (o estilo
+	# procedural), a ponte é só a de pé, cercada.
+	if modelo != null and estilo_tripo():
+		var caida := CatalogoAssets.instanciar("ponte_caida", self, bridge, 1.0, bridge_yaw)
+		if caida != null:
+			caida.name = "PonteCaidaTripo"
+			caida.visible = false
+			pontes[anchor]["modelos"] = {"de_pe": modelo, "caida": caida}
 
 
 ## O RIO GRANDE NÃO TEM VAU (#81). Havia um, a oito unidades da ponte pela linha

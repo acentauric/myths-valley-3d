@@ -3,19 +3,21 @@ extends Node3D
 ##
 ## O rio grande é o rio do norte do mapa, fundo e com barranco na margem norte
 ## (#81, `GeoRegionRenderer` RIO GRANDE), e a ponte dele é a "Ponte" do KML,
-## onde a Rua Principal o cruza (`world_builder._erguer_ponte`). No 2D ela caiu;
-## no vale ela está de pé no modelo do Tripo, e não há arte de ponte caída.
-## Então o estrago é o que não se vê de longe — a cheia de fevereiro comeu os
-## esteios do meio —, e o que se vê é a CERCA nas duas cabeceiras, que o Pedro
-## e o Seu Benedito pregaram. Fora da ponte ninguém passa: a água dá nado e a
-## margem de lá não tem por onde subir; pela ponte, ninguém até a obra.
+## onde a Rua Principal o cruza (`world_builder._erguer_ponte`). No 2D ela caiu,
+## e desde o #94 (06/10) cai aqui também: até a obra o vão mostra o modelo
+## caído do Tripo — o vão do meio no chão, as tábuas quebradas — e o modelo de
+## pé fica escondido, com o tabuleiro desligado (`_mostrar_caida`). A CERCA
+## nas duas cabeceiras, que o Pedro e o Seu Benedito pregaram, continua: é ela
+## que diz "não passe" a quem vem pela estrada. Fora da ponte ninguém passa: a
+## água dá nado e a margem de lá não tem por onde subir; pela ponte, ninguém
+## até a obra.
 ##
 ## A obra `ponte_levantar` (obras.json, no J, ao pé da ponte) tira a cerca. Quem
 ## diz é o `Obras`, que vai no save: carregar uma partida de antes da obra põe a
 ## cerca de volta. É o trato do cercado do cemitério (`cemiterio_vale.gd`) ao
-## contrário — lá a obra levanta a cerca, aqui a derruba —, com o lance de cerca
-## feito do mesmo jeito: a cerca do catálogo esticada, com caixa de colisão, ou
-## a procedural. Nada de arte nova.
+## contrário — lá a obra levanta a cerca, aqui a derruba e põe a ponte de pé —,
+## com o lance de cerca feito do mesmo jeito: a cerca do catálogo esticada, com
+## caixa de colisão, ou a procedural.
 
 const CONSTRUCAO := "ponte"
 const OBRA := "ponte_levantar"
@@ -126,6 +128,7 @@ func _cercar() -> void:
 		var b: Vector3 = _mundo.ground_position(cabeceira + atravessado * meia_largura)
 		_cercas.append({"a": a, "b": b,
 			"no": CatalogoAssets.lance_de_cerca(self, a, b, tripo, TAMANHO_DA_CERCA, largura_do_lance, ALTURA, GROSSURA, "CercaDaPonte", "CercaColisao")})
+	_mostrar_caida(true)
 	_reassar()
 
 
@@ -136,8 +139,32 @@ func _descercar() -> void:
 			(cerca["no"] as Node).queue_free()
 	_cercas.clear()
 	_cercada = false
+	_mostrar_caida(false)
 	if havia:
 		_reassar()
+
+
+## A PONTE CAÍDA OU DE PÉ (#94): até a obra, o que se vê no vão é o modelo caído
+## do Tripo, e o de pé fica escondido com o tabuleiro desligado — ninguém anda
+## por ele, nem morador pela malha; feita a obra, a de pé volta inteira. Sem os
+## dois modelos (o estilo procedural), a ponte é a de sempre, só cercada.
+func _mostrar_caida(caida: bool) -> void:
+	var modelos: Dictionary = _ponte.get("modelos", {})
+	if modelos.is_empty():
+		return
+	var de_pe: Node3D = modelos.get("de_pe")
+	var a_caida: Node3D = modelos.get("caida")
+	if is_instance_valid(de_pe):
+		de_pe.visible = not caida
+		for forma in de_pe.find_children("*", "CollisionShape3D", true, false):
+			(forma as CollisionShape3D).disabled = caida
+	if is_instance_valid(a_caida):
+		a_caida.visible = caida
+
+
+## A ponte está caída (até a obra) ou de pé?
+func caida() -> bool:
+	return _cercada and not (_ponte.get("modelos", {}) as Dictionary).is_empty()
 
 
 ## O caminho dos moradores muda com a cerca: a malha se assa de novo.

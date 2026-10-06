@@ -205,6 +205,17 @@
   como já dado); `mapa_fluxo` confere o HOME com o vale de fundo e pede o
   lobby 3D por código, como os portões do sobrevoo. `navegacao` (PierPiso →
   Gameleira pela canoa do saveiro) já reprova na main `5dc6632`.
+- **A ponte do rio grande cai de verdade, e a obra a põe de pé (#94).** "O asset
+  não tá legal" (autor, 06/10): era o modelo de pé do Tripo com uma cerca nas
+  cabeceiras, sem arte de ponte caída. Dois modelos novos do Tripo Studio
+  (`tools/tripo/lote_2026-10-06_ponte.json`): a ponte de madeira do arraial de
+  pé, larga para o carro de boi, com esteios e aterros de pedra, e a mesma
+  ponte caída, com o vão do meio no chão. Até a obra `ponte_levantar` o vão
+  mostra a caída, e a de pé fica escondida com o tabuleiro desligado
+  (`ponte_vale._mostrar_caida`); feita a obra, a de pé volta inteira. A caída
+  não tem colisão nem laje da câmera. A cerca das cabeceiras continua.
+  Portão `ponte`: caída antes, de pé depois, e o raio no vão só bate no
+  tabuleiro da de pé.
 
 ## Em desenvolvimento — 05/10/2026
 

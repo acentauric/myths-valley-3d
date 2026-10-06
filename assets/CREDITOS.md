@@ -146,6 +146,14 @@ plano pago no momento da geração.
 
 <!-- level-design-2026-10-05:fim -->
 
+### A ponte do rio grande, caída e de pé (06/10/2026)
+
+Gerados no Tripo Studio pela ponte do Playwright MCP (ver `docs/ferramentas/TRIPO_PLAYWRIGHT.md`): Modelo HD H3.1 (55 créditos cada) e Retopologia Malha Smart (40 cada), 190 créditos ao todo, autorizados pelo autor em 06/10. Uso comercial: plano pago no momento da geração.
+
+| Arquivos | O que são | Registro |
+| --- | --- | --- |
+| `assets/prototipo_3d/construcoes/{ponte,ponte_caida}_tripo.glb` | a ponte de madeira do rio grande de pé (substitui a de 26/09) e a mesma ponte caída, que o vão mostra até a obra `ponte_levantar`, Tripo Studio (texto → 3D, Malha Smart, textura 2K) | `construcoes/ORIGEM.md` e `tools/tripo/lote_2026-10-06_ponte.json` |
+
 ### Capas dos cordéis (03/10/2026)
 
 | Arquivos | O que são | Registro |

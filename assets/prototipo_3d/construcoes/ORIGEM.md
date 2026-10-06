@@ -36,7 +36,7 @@ antigos continuam no histórico do Git.
 | `mirante_tripo.glb` | Wooden lookout platform (mirante) on a hill: raised plank deck on wooden posts, wooden railing, short stairs, rustic weathered wood. | `4e4d78cf-fe00-499e-8570-b29cdb47f9dd` | 12.388 | 2K | 8.3 |
 | `pier_tripo.glb` | Wooden fishing pier on stilts: weathered planks, wooden posts, a mooring post with rope, small dugout canoe tied at the end. | `3e7d72a4-e279-413e-b97a-a54dabd68ce6` | 11.747 | 2K | 8.6 |
 | `poco_tripo.glb` | Old rustic stone water well from a 19th-century Brazilian village as a stylized game prop: round low wall of rough gray fieldstones, two weathered wooden posts holding a small terracotta tile roof, wooden crossbar with a rope and a wooden bucket, isolated object, no ground plane, no text. | `b582fbdc-3dd1-4cf5-80bc-29c7fc57cbc2` | 4.132 | 1K | 3.2 |
-| `ponte_tripo.glb` | Rustic wooden footbridge over a creek: plank deck with a slight arch, wooden railings and posts, weathered gray-brown wood. | `660ad404-0371-4421-9ebf-67d15e293b40` | 11.914 | 2K | 8.8 |
+| `ponte_tripo.glb` (substituída em 06/10/2026, #94: ver o lote da ponte abaixo) | Rustic wooden footbridge over a creek: plank deck with a slight arch, wooden railings and posts, weathered gray-brown wood. | `660ad404-0371-4421-9ebf-67d15e293b40` | 11.914 | 2K | 8.8 |
 | `venda_tripo.glb` | Small 19th-century Brazilian village tavern and general store (venda): whitewashed plaster walls, terracotta tile roof, wide wooden double door, blue shutters, a wooden counter window, two barrels beside the door. | `e9bec55f-1004-44c0-a162-89d9a498f35a` | 11.287 | 2K | 8.3 |
 
 Uso comercial: plano Max no momento da geração (ver `assets/CREDITOS.md`).
@@ -136,3 +136,28 @@ momento da geração (ver `assets/CREDITOS.md`).
 SHA-256 de cada GLB no arquivo do lote (`sha256`).
 
 <!-- lote-2026-10-05_moradores:fim -->
+
+<!-- lote-2026-10-06_ponte:inicio -->
+
+## A ponte do rio grande, caída e de pé (06/10/2026, #94)
+
+"O asset não tá legal" (autor, na live de 05/10): a ponte do rio grande era o
+modelo de pé de 26/09 com uma cerca nas cabeceiras, sem arte de ponte caída.
+Dois modelos gerados por texto no Tripo Studio em 06/10/2026 (Modelo HD H3.1,
+textura 8K desligada, 55 créditos) e passados pela Retopologia (Quad, Malha
+Smart, 40 créditos) com alvo de 5.000 faces; exportados em GLB com textura 2K.
+Geração, retopologia e exportação pela ponte do Playwright MCP com a extensão
+do Chrome, com `tools/tripo/lote_studio.js` e `lote_producao.js`; os originais
+ficam em `.assets-raw/tripo/gerados/` (fora do Git). Tarefas, projetos e prompts
+completos em `tools/tripo/lote_2026-10-06_ponte.json`. No vale, a caída aparece
+até a obra `ponte_levantar` e a de pé depois (`ponte_vale.gd`). Uso comercial:
+plano pago no momento da geração (ver `assets/CREDITOS.md`).
+
+| Arquivo | O que é (prompt) | Tarefa Tripo | Triângulos | Textura | MB |
+| --- | --- | --- | ---: | --- | ---: |
+| `ponte_tripo.glb` | A sturdy rustic wooden bridge of a 19th-century Brazilian village crossing a river, long, straight and level: a flat deck of thick weathered planks wide enough for an ox cart, heavy log beams underneath resting on two pairs of timber piles, simple wooden railings with square posts on both sides, a low abutment of rough stone and packed earth at each end. | `e76c3d71-8835-4bae-9115-4829dcda630a` | 9.502 | 2K | 8,9 |
+| `ponte_caida_tripo.glb` | The same bridge collapsed in the middle: the central span fallen into a V shape with broken planks hanging down and a snapped log beam, the railings broken and leaning outward, loose boards on the remaining deck, the two end sections still standing level on their abutments. | `7e0bf083-223b-48c8-8392-6415da208398` | 10.129 | 2K | 9,6 |
+
+SHA-256 de cada GLB no arquivo do lote (`sha256`).
+
+<!-- lote-2026-10-06_ponte:fim -->

@@ -65,7 +65,16 @@ const PECAS := {
 	"venda": {"tripo": "construcoes/venda_tripo.glb", "largura": 8.0, "caixa": true, "camera": true},
 	"casa_pasto": {"tripo": "construcoes/casa_pasto_tripo.glb", "largura": 8.5, "caixa": true, "camera": true},
 	"pier": {"tripo": "construcoes/pier_tripo.glb", "largura": 12.0, "afundar": 2.9, "piso": 0.22},
-	"ponte": {"tripo": "construcoes/ponte_tripo.glb", "largura": 9.0, "afundar": 1.1, "piso": 0.2},
+	# A ponte de pé (#94, 06/10) veio comprida no Z: o giro a deita no X, como a
+	# antiga e a caída, para o vão seguir a estrada (`world_builder._erguer_ponte`).
+	# Medida em 06/10 (`scratch/diag/medir_ponte.gd`): o tabuleiro fica a 0,95 do
+	# fundo, com os esteios por baixo; afundado 0,75, ele fica a 0,2 da estrada.
+	"ponte": {"tripo": "construcoes/ponte_tripo.glb", "largura": 9.0, "afundar": 0.75, "piso": 0.2, "girar": [0, 90, 0]},
+	# A PONTE CAÍDA (#94): o mesmo vão, sem tabuleiro que se ande — nem colisão nem
+	# laje da câmera; a obra `ponte_levantar` a troca pela de pé (`ponte_vale.gd`).
+	# Medida em 06/10: os tabuleiros das pontas ficam a 1,9 do fundo, e o vão caído
+	# desce daí até o rio; afundada 1,7, as pontas ficam a 0,2 da estrada.
+	"ponte_caida": {"tripo": "construcoes/ponte_caida_tripo.glb", "largura": 9.0, "afundar": 1.7},
 	# O MIRANTE É UMA TORRE ABERTA, de quatro pernas com mão-francesa dos lados,
 	# o assoalho a 2,45 m e a escada na frente: em caixa única era um bloco de
 	# 3,3 × 3,6 × 4,6, e quem chegava à âncora (embaixo dele) nascia preso. Medido

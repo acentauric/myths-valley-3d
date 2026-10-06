@@ -8,7 +8,7 @@ extends SceneTree
 ##
 ##   1. O RIO GRANDE TEM VAU E PONTE: os dois nomes resolvem; o vau é água rasa a
 ##      poucos passos da ponte, e não em cima dela.
-##   2. A PONTE COMEÇA CERCADA: uma cerca em cada cabeceira, atravessada na
+##   2. A PONTE COMEÇA CERCADA, E CAÍDA (#94): uma cerca em cada cabeceira, atravessada na
 ##      estrada, e quem vem pela estrada bate nela.
 ##   3. A FRENTE ESPERA A CHEGADA E VEM ANTES DO MIRANTE: com a chegada em curso o
 ##      E no Pedro não a abre; acabada, o primeiro E abre a ponte, e o mirante não
@@ -90,8 +90,11 @@ func _run() -> void:
 		de_ca = na_ponte - ponta if float(regiao._lado_do_barranco(Vector2(na_ponte.x - ponta.x, na_ponte.z - ponta.z))) < 0.0 else na_ponte + ponta
 		de_ca = mundo.ground_position(de_ca, 0.4)
 
-	# --- 2. A PONTE COMEÇA CERCADA -------------------------------------------------------
+	# --- 2. A PONTE COMEÇA CERCADA, E CAÍDA (#94) ---------------------------------------------
 	var dados: Dictionary = ponte_do_rio.ponte()
+	var modelos: Dictionary = (mundo.pontes.get("Ponte", {}) as Dictionary).get("modelos", {})
+	if mundo.estilo_tripo():
+		_conferir(not modelos.is_empty(), "no estilo Tripo a ponte não tem os dois modelos, a caída e a de pé")
 	_conferir(ponte_do_rio.interditada(), "a ponte não começou cercada")
 	var cercas: Array = ponte_do_rio.cercas()
 	_conferir(cercas.size() == 2, "a ponte tem %d cerca(s), e são duas, uma em cada cabeceira" % cercas.size())
@@ -122,6 +125,14 @@ func _run() -> void:
 		var batida: Dictionary = vale.get_world_3d().direct_space_state.intersect_ray(consulta)
 		var na_cerca: bool = not batida.is_empty() and batida["collider"] is Node and ponte_do_rio.is_ancestor_of(batida["collider"])
 		_conferir(na_cerca, "quem vem pela estrada não bate na cerca da cabeceira: o raio %s" % ("não bateu em nada" if batida.is_empty() else "bateu em " + str(batida["collider"])))
+		# A PONTE CAÍDA (#94): até a obra o que há no vão é o modelo caído; o de pé
+		# fica escondido com o tabuleiro desligado, e um raio de cima para baixo no
+		# meio do vão não bate em tabuleiro nenhum.
+		if not modelos.is_empty():
+			_conferir(ponte_do_rio.caida() and (modelos["caida"] as Node3D).visible and not (modelos["de_pe"] as Node3D).visible,
+				"antes da obra a ponte não está caída (caída visível: %s, de pé visível: %s)" % [str((modelos["caida"] as Node3D).visible), str((modelos["de_pe"] as Node3D).visible)])
+			var no_vao: Dictionary = _tabuleiro(vale, centro)
+			_conferir(no_vao.is_empty(), "antes da obra ainda há tabuleiro no vão: o raio bateu em '%s'" % str(no_vao.get("collider")))
 
 	# --- 3. A FRENTE ESPERA A CHEGADA E VEM ANTES DO MIRANTE --------------------------------
 	await _perto_do_pedro()
@@ -214,6 +225,14 @@ func _run() -> void:
 	var cocadas: int = inv.quantidade("cocada")
 	_conferir(obras.executar("ponte", "ponte_levantar"), "a obra da ponte não saiu: %s" % str(obras.impedimento("ponte", "ponte_levantar")))
 	_conferir(await _ate(func() -> bool: return not ponte_do_rio.interditada(), 3.0), "a obra feita não tirou a cerca da ponte")
+	# E PÕE A PONTE DE PÉ (#94): o modelo de pé volta, com o tabuleiro.
+	if not modelos.is_empty() and not dados.is_empty():
+		_conferir(not ponte_do_rio.caida() and (modelos["de_pe"] as Node3D).visible and not (modelos["caida"] as Node3D).visible, "feita a obra, a ponte não ficou de pé")
+		await physics_frame
+		await physics_frame
+		var tabuleiro: Dictionary = _tabuleiro(vale, dados["centro"])
+		_conferir(not tabuleiro.is_empty() and (modelos["de_pe"] as Node).is_ancestor_of(tabuleiro["collider"]),
+			"feita a obra, o tabuleiro não voltou: o raio %s" % ("não bateu em nada" if tabuleiro.is_empty() else "bateu em " + str(tabuleiro["collider"])))
 	_conferir(await _ate(func() -> bool: return ponte.missao >= 6, 8.0), "a obra feita não fechou o passo da ponte")
 	_conferir(inv.quantidade("pirao") == piroes + 2 and inv.quantidade("cocada") == cocadas + 2,
 		"a ponte não pagou os dois pirões e as duas cocadas")
@@ -243,6 +262,13 @@ func _perto_do_pedro() -> void:
 func _no_balao(morador) -> String:
 	var rotulo = morador.balao.get("_texto")
 	return str(rotulo.text) if rotulo != null else ""
+
+
+## O que um raio de cima para baixo encontra no meio do vão da ponte, do alto
+## até pouco abaixo do tabuleiro (máscara do mundo): o tabuleiro de pé, ou nada.
+func _tabuleiro(vale, centro: Vector3) -> Dictionary:
+	var consulta := PhysicsRayQueryParameters3D.create(centro + Vector3.UP * 3.0, centro - Vector3.UP * 0.6, 1)
+	return vale.get_world_3d().direct_space_state.intersect_ray(consulta)
 
 
 func _fechar() -> void:

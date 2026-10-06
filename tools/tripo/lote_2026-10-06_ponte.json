@@ -1,0 +1,29 @@
+{
+ "observacao": "Lote de 06/10/2026 (#94): a ponte do rio grande caída e consertada. Na live de 05/10 o autor achou o asset da ponte ruim (o modelo de pé do Tripo com uma cerca nas cabeceiras). Tripo Studio pela ponte do Playwright MCP com tools/tripo/lote_studio.js + lote_producao.js: Modelo HD H3.1 (55 créditos) e Retopologia Malha Smart em quads (40), sem rig. As duas no mesmo vão: a obra `ponte_levantar` troca a caída pela consertada, e só a consertada tem o tabuleiro com colisão.",
+ "tarefas": {
+  "ponte": {
+   "pasta": "construcoes",
+   "faces": 5000,
+   "tex": 2048,
+   "rig": "nenhum",
+   "tpose": false,
+   "prompt": "A sturdy rustic wooden bridge of a 19th-century Brazilian village crossing a river, long, straight and level: a flat deck of thick weathered planks wide enough for an ox cart, heavy log beams underneath resting on two pairs of timber piles, simple wooden railings with square posts on both sides, a low abutment of rough stone and packed earth at each end, weathered gray-brown wood with moss stains, no water, no terrain, no people. Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no text.",
+   "tarefa": "e76c3d71-8835-4bae-9115-4829dcda630a",
+   "projeto": "bed9ed91-0f01-4052-889d-f9cd88728898",
+   "exportacao": "7820f3a2-eb21-4a50-b896-c473b5663623",
+   "sha256": "a89b20e8166752981e74ddf4c592077c463de32ed4eac697caa58321c87e8213"
+  },
+  "ponte_caida": {
+   "pasta": "construcoes",
+   "faces": 5000,
+   "tex": 2048,
+   "rig": "nenhum",
+   "tpose": false,
+   "prompt": "A sturdy rustic wooden bridge of a 19th-century Brazilian village that has collapsed in the middle: the central span fallen into a V shape with broken planks hanging down and a snapped log beam, the wooden railings broken and leaning outward, a few loose boards lying on the remaining deck, the two end sections still standing level on their low abutments of rough stone and packed earth, timber piles underneath, weathered gray-brown wood with moss stains, no water, no terrain, no people. Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no text.",
+   "tarefa": "7e0bf083-223b-48c8-8392-6415da208398",
+   "projeto": "0faeb7ab-a3ed-459d-91f0-f3ea321eba46",
+   "exportacao": "fd8ca90f-5c37-4724-bf03-5fd5e1b2b657",
+   "sha256": "208c9c2195664528c4a0ebdb1715b73cca2b4e10ac9946fc143f0753c05616b8"
+  }
+ }
+}
