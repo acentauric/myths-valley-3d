@@ -24,6 +24,7 @@ const Atalhos = preload("res://scripts/prototipo_3d/atalhos.gd")
 const Almanaque = preload("res://scripts/prototipo_3d/almanaque.gd")
 const IdiomaMenu = preload("res://scripts/prototipo_3d/idioma_menu.gd")
 const FocoDoE = preload("res://scripts/prototipo_3d/foco_do_e.gd")
+const SuavizadorDeTela = preload("res://scripts/prototipo_3d/suavizador_de_tela.gd")
 
 ## O jogador conheceu uma espécie pela primeira vez, e ela entrou no almanaque.
 ## O vale mostra o aviso da primeira árvore (`aviso_da_primeira_vez.gd`).
@@ -92,6 +93,8 @@ var _destino_do_golpe := Vector3.INF
 var _aproximando := false
 var _animador: Node
 var _balao_vida: PanelContainer
+## O peso da vida da árvore na tela (`suavizador_de_tela.gd`): desliza até o ponto.
+var _mola_da_vida := SuavizadorDeTela.new()
 var _nome_no_balao: Label
 var _vida_no_balao: ProgressBar
 var _vida_texto_no_balao: Label
@@ -843,9 +846,16 @@ func _atualizar_balao_vida(camera: Camera3D) -> void:
 	_vida_no_balao.max_value = total
 	_vida_no_balao.value = restante
 	_vida_texto_no_balao.text = "%d/%d" % [restante, total]
+	var acendeu_agora := not _balao_vida.visible
 	_balao_vida.visible = true
 	_balao_vida.reset_size()
-	_balao_vida.position = camera.unproject_position(topo) - Vector2(_balao_vida.size.x * 0.5, _balao_vida.size.y)
+	# COM PESO: o ponto projetado é o alvo de uma mola, e a vida desliza até ele.
+	var ancora := camera.unproject_position(topo)
+	if acendeu_agora:
+		_mola_da_vida.reiniciar(ancora)
+	var onde := _mola_da_vida.seguir(ancora, get_process_delta_time(), DicaTecla.TEMPO_DE_SEGUIR,
+		SuavizadorDeTela.VELOCIDADE_MAXIMA, SuavizadorDeTela.ZONA_MORTA, DicaTecla.CORREIA)
+	_balao_vida.position = (onde - Vector2(_balao_vida.size.x * 0.5, _balao_vida.size.y)).round()
 
 
 func _atualizar_acao_de_golpe() -> void:
