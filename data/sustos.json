@@ -1,0 +1,23 @@
+{
+  "observacao": "OS SUSTOS DA MATA (scripts/prototipo_3d/sustos_da_mata.gd): o que o jogador lê quando o mapa enlouquece (pegadas do Curupira, rastro_do_curupira.gd) e quando o norte volta. Nenhum texto nomeia quem deixou as pegadas: o nome só entra depois do encontro (regra dos sinais). O vulto da mata não fala: queda de mentira não tem mensagem.",
+  "avisos": {
+    "mapa_doido": {
+      "texto": "Um assobio fino vem de todo lado, e o mapa perde o norte. Não confie nele por um tempo.",
+      "texto_en": "A thin whistle comes from everywhere, and the map loses north. Don't trust it for a while.",
+      "texto_es": "Un silbido fino llega de todas partes y el mapa pierde el norte. No te fíes de él por un rato.",
+      "texto_zh": "一阵尖细的口哨声从四面八方传来，地图迷失了北方。暂时别相信它。"
+    },
+    "mapa_voltou": {
+      "texto": "O norte voltou ao lugar, como se nada tivesse acontecido.",
+      "texto_en": "North is back where it belongs, as if nothing had happened.",
+      "texto_es": "El norte volvió a su lugar, como si nada hubiera pasado.",
+      "texto_zh": "北方回到了原位，仿佛什么都没发生过。"
+    },
+    "sinal_anotado": {
+      "texto": "Anotado no caderno: pegadas ao contrário.",
+      "texto_en": "Noted in your notebook: footprints facing the wrong way.",
+      "texto_es": "Anotado en el cuaderno: huellas al revés.",
+      "texto_zh": "已记入笔记：反向的脚印。"
+    }
+  }
+}

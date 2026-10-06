@@ -50,8 +50,15 @@ uniform sampler2D mapa : source_color, filter_linear, repeat_disable;
 uniform vec2 centro_uv = vec2(0.5);
 uniform vec2 vista_uv = vec2(0.1);
 uniform vec4 fundo = vec4(0.055, 0.085, 0.075, 0.9);
+// O MAPA DOIDO (loucura_do_mapa.gd): `rotacao` gira a vista (rad) em torno do centro, com o lado da
+// foto em unidades (`tamanho`) para a vista não entortar. Zero é a vista de sempre, sem conta nenhuma.
+uniform float rotacao = 0.0;
+uniform vec2 tamanho = vec2(1.0);
 void fragment() {
-	vec2 p = centro_uv + (UV - vec2(0.5)) * vista_uv;
+	vec2 d = (UV - vec2(0.5)) * vista_uv;
+	vec2 m = d * tamanho;
+	m = vec2(cos(rotacao) * m.x - sin(rotacao) * m.y, sin(rotacao) * m.x + cos(rotacao) * m.y);
+	vec2 p = centro_uv + mix(d, m / tamanho, step(0.00001, abs(rotacao)));
 	vec3 foto = texture(mapa, clamp(p, vec2(0.0), vec2(1.0))).rgb;
 	vec2 dentro2 = step(vec2(0.0), p) * step(p, vec2(1.0));
 	float dentro = dentro2.x * dentro2.y;
@@ -76,6 +83,7 @@ var _tem_alvo := false
 var _mostrar := true
 var _suspenso := false
 var _releitura := 0.0
+var _loucura_no: Node
 
 
 func _ready() -> void:
@@ -202,7 +210,21 @@ func _seguir() -> void:
 	if _sem_mapa or _jogador == null:
 		return
 	var p := _jogador.global_position
-	_material.set_shader_parameter("centro_uv", centro_da_vista(p))
+	var centro_uv := centro_da_vista(p)
+	var louca := _loucura()
+	if louca != null:
+		# O MAPA DOIDO: a foto escorrega para um lugar errado e gira. Sem loucura os dois são zero.
+		var deriva: Vector2 = louca.deriva_do_mapa()
+		centro_uv += Vector2(deriva.x / _retangulo.size.x, deriva.y / _retangulo.size.y)
+		_material.set_shader_parameter("rotacao", louca.rotacao_do_mapa())
+	_material.set_shader_parameter("centro_uv", centro_uv)
+
+
+## O nó da loucura do mapa (`loucura_do_mapa.gd`), achado pelo grupo; null sem ele (cena sem sustos).
+func _loucura() -> Node:
+	if not is_instance_valid(_loucura_no):
+		_loucura_no = get_tree().get_first_node_in_group(&"loucura_do_mapa") if is_inside_tree() else null
+	return _loucura_no
 
 
 ## O ponto do mundo na foto, em fração dela (0..1 em x e em y; o topo é o -Z).
@@ -235,6 +257,7 @@ func _carregar_mapa() -> void:
 	_material.set_shader_parameter("mapa", textura)
 	# A vista é quadrada e cobre VISTA unidades nos dois lados.
 	_material.set_shader_parameter("vista_uv", Vector2(VISTA / _retangulo.size.x, VISTA / _retangulo.size.y))
+	_material.set_shader_parameter("tamanho", _retangulo.size)
 	_sem_mapa = false
 
 
@@ -257,7 +280,9 @@ func _desenhar() -> void:
 	var centro: Vector2 = _sobre.size * 0.5
 	# A altura do quadro cobre VISTA unidades do mundo.
 	var escala: float = _sobre.size.y / VISTA
-	if is_instance_valid(_pedro):
+	var louca := _loucura()
+	# O MAPA DOIDO: com a loucura pegada, o Pedro some da bússola (ele não está onde ela diz).
+	if is_instance_valid(_pedro) and not (louca != null and louca.pegou_nos_nomes()):
 		_sobre.draw_circle(_no_quadro(_pedro.global_position, centro, escala), 3.0, CLARO)
 	if _tem_alvo:
 		var a := _no_quadro(_alvo, centro, escala)
@@ -270,6 +295,9 @@ func _desenhar() -> void:
 	if visual != null:
 		var yaw := visual.global_rotation.y
 		direcao = Vector2(sin(yaw), cos(yaw))
+	# E o triângulo do jogador aponta para o lado errado (zero fora da loucura).
+	if louca != null and louca.erro_da_seta() != 0.0:
+		direcao = direcao.rotated(louca.erro_da_seta())
 	var pontos := PackedVector2Array([
 		centro + direcao * 9.0,
 		centro + direcao.rotated(2.6) * 7.0,
@@ -287,6 +315,10 @@ func _desenhar() -> void:
 func _no_quadro(pos: Vector3, centro: Vector2, escala: float) -> Vector2:
 	var fora := Vector2(pos.x - _jogador.global_position.x,
 		pos.z - _jogador.global_position.z) * escala
+	# O MAPA DOIDO: o que a bússola mostra pula de lugar pelo aro (zero fora da loucura).
+	var louca := _loucura()
+	if louca != null and louca.erro_da_seta() != 0.0:
+		fora = fora.rotated(louca.erro_da_seta())
 	var aro: float = minf(_sobre.size.x, _sobre.size.y) * 0.5 - MARGEM_DO_ARO
 	if fora.length() > aro:
 		fora = fora.normalized() * aro

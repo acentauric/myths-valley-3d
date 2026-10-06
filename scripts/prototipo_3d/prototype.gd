@@ -53,6 +53,7 @@ const PonteVale = preload("res://scripts/prototipo_3d/ponte_vale.gd")
 const LombadaVale = preload("res://scripts/prototipo_3d/lombada_vale.gd")
 const FazendaVale = preload("res://scripts/prototipo_3d/fazenda_vale.gd")
 const NarracaoDoVale = preload("res://scripts/prototipo_3d/narracao_do_vale.gd")
+const SustosDaMata = preload("res://scripts/prototipo_3d/sustos_da_mata.gd")
 const MENU_SCENE := "res://scenes/prototipo_3d/abertura.tscn"
 ## Raio de terra firme em volta do ponto de chegada.
 const RAIO_CHEGADA := 6.0
@@ -1259,6 +1260,9 @@ func _montar_moradores(spawn: Vector3) -> void:
 	hud_layer.add_child(minimapa)
 	minimapa.configurar(player, pedro, hud)
 	_mostrar_a_acompanhada()
+	# Os sustos da mata: o vulto que "fecha o jogo" e as pegadas do Curupira que enlouquecem o mapa.
+	# Depois do minimapa, do mapa e da seta, que ouvem a loucura (sustos_da_mata.gd).
+	SustosDaMata.montar(self)
 
 
 func _fechar_info_aberta() -> void:

@@ -39,6 +39,7 @@ var _chevron: ChevronMissao
 ## O peso do chevron, e o quanto ele está aceso (0 a 1).
 var _mola := SuavizadorDeTela.new()
 var _alfa := 0.0
+var _loucura_no: Node
 
 
 func _ready() -> void:
@@ -108,9 +109,22 @@ func alvo_atual() -> Variant:
 	return _alvo if _ativo else null
 
 
+## O nó da loucura do mapa (`loucura_do_mapa.gd`), achado pelo grupo; null sem ele.
+func _loucura() -> Node:
+	if not is_instance_valid(_loucura_no):
+		_loucura_no = get_tree().get_first_node_in_group(&"loucura_do_mapa") if is_inside_tree() else null
+	return _loucura_no
+
+
 func _process(delta: float) -> void:
 	if not _ativo:
 		return
+	# O MAPA DOIDO (loucura_do_mapa.gd): o cone flutua longe do alvo de verdade. Fora da loucura o
+	# desvio é zero, e a seta fica exatamente sobre o alvo.
+	var louca := _loucura()
+	if louca != null:
+		var desvio: Vector2 = louca.deriva_do_alvo()
+		global_position = _alvo + Vector3(desvio.x, 0.0, desvio.y)
 	_tempo += delta
 	# Cone flutua e gira devagar; o anel pulsa no chão.
 	_cone.position.y = ALTURA_CONE + sin(_tempo * 2.4) * BOB
@@ -143,6 +157,13 @@ func _atualizar_chevron(delta: float) -> void:
 		rumo = -rumo
 	if rumo.length_squared() < 1.0:
 		rumo = Vector2(0, 1)
+	# O MAPA DOIDO: o chevron aponta para o lado errado (erro zero fora da loucura).
+	var louca := _loucura()
+	var erro := 0.0
+	if louca != null:
+		erro = louca.erro_da_seta()
+		if erro != 0.0:
+			rumo = rumo.rotated(erro)
 	var na_tela := not atras and area.has_point(projecao)
 	var distancia := camera.global_position.distance_to(_alvo)
 	var some := na_tela and distancia < PERTO
@@ -153,6 +174,9 @@ func _atualizar_chevron(delta: float) -> void:
 			# Visível mas longe: paira sobre o ponto, apontando para baixo, para ele.
 			pos = projecao - Vector2(0, 46)
 			giro = PI * 0.5
+			if erro != 0.0:
+				giro += erro
+				pos += louca.deriva_na_tela(60.0)
 		else:
 			# Do centro rumo ao alvo até tocar a borda com a margem.
 			var meia := centro - Vector2(MARGEM_TELA, MARGEM_TELA)
