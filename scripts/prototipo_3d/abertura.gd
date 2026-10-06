@@ -10,12 +10,11 @@ const PainelAjustes = preload("res://scripts/prototipo_3d/painel_ajustes.gd")
 const PainelPersonagens = preload("res://scripts/prototipo_3d/painel_personagens.gd")
 const TelaCarregamento = preload("res://scripts/prototipo_3d/tela_carregamento.gd")
 const Identidade = preload("res://scripts/prototipo_3d/identidade.gd")
-## O LOBBY EM VÍDEO (build do Tripothon): o sobrevoo pintado do LTX em laço, no lugar do
+## O LOBBY EM VÍDEO: o sobrevoo pintado do LTX em laço, no lugar do
 ## vale 3D de fundo. O menu deixava a primeira carga em ~27 s só para montar o vale inteiro
-## por trás do voo, e depois o desenhava a cada quadro. Vale com a feature "tripothon" do
-## preset de exportação ou, para conferir no editor, com `-- --lobby-video`; sem o arquivo
-## do vídeo, o menu volta ao vale 3D. Nas telas de carregamento não há vídeo: a montagem
-## segura a thread principal e ele engasgava.
+## por trás do voo, e depois o desenhava a cada quadro. Vale em toda build e no editor
+## (F5); `-- --lobby-3d` volta ao vale 3D de fundo, e sem o arquivo do vídeo também.
+## Nas telas de carregamento não há vídeo: a montagem segura a thread principal e ele engasgava.
 const VIDEO_LOBBY := TelaCarregamento.VIDEO_SOBREVOO
 var lobby_em_video := false
 var _video_lobby: VideoStreamPlayer
@@ -142,7 +141,7 @@ var _modo_camera := ""
 var _som_liberado := false
 
 func _enter_tree() -> void:
-	lobby_em_video = (OS.has_feature("tripothon") or "--lobby-video" in OS.get_cmdline_user_args()) \
+	lobby_em_video = not ("--lobby-3d" in OS.get_cmdline_user_args()) \
 		and ResourceLoader.exists(VIDEO_LOBBY)
 	if lobby_em_video:
 		# O vale sai antes de entrar na árvore: o _ready do world_builder, que é a montagem
@@ -174,7 +173,7 @@ func _ready() -> void:
 	var history_data = JSON.parse_string(FileAccess.get_file_as_string("res://data/historico_3d.json"))
 	if history_data is Dictionary:
 		history_entries = _paginar_historico(history_data.get("entradas", []))
-		version_text = "v%s · Build #%d" % [str(history_data.get("versao_atual", "0.1.0-dev")), int(history_data.get("build_numero", 1))]
+		version_text = "v%s · Build #%d%s" % [str(history_data.get("versao_atual", "0.1.0-dev")), int(history_data.get("build_numero", 1)), "B" if OS.has_feature("tripothon") else ""]
 	var layer := CanvasLayer.new()
 	add_child(layer)
 	ajustes = PainelAjustes.new()
@@ -953,6 +952,7 @@ func _atualizar_oferta() -> void:
 		linha_atualizacao.text = tr("Edição Tripothon · atualização desativada")
 		linha_atualizacao.tooltip_text = ""
 		linha_atualizacao.disabled = true
+		linha_atualizacao.mouse_default_cursor_shape = Control.CURSOR_ARROW
 		return
 	var E := Atualizacao.Estado
 	var estado: int = Atualizacao.estado
@@ -974,6 +974,8 @@ func _atualizar_oferta() -> void:
 	linha_atualizacao.text = texto
 	linha_atualizacao.tooltip_text = Atualizacao.erro if estado == E.FALHOU else ""
 	linha_atualizacao.disabled = estado in [E.BAIXANDO, E.CONFERINDO, E.INSTALANDO]
+	# Sem clique, sem mãozinha: a seta diz que ali não há o que apertar.
+	linha_atualizacao.mouse_default_cursor_shape = Control.CURSOR_ARROW if linha_atualizacao.disabled else Control.CURSOR_POINTING_HAND
 
 
 func _acionar_atualizacao() -> void:
