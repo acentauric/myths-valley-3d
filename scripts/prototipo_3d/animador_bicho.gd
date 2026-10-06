@@ -32,6 +32,9 @@ extends Node
 const ACELERA_ATE := 2.2
 ## Abaixo disto (u/s) o bicho está parado.
 const PARADO_ABAIXO := 0.08
+## A pose de apoio do clipe de andar, no começo e no meio da passada: parado, o
+## clipe para a menos disto (s) de uma delas (#91).
+const APOIO := 0.05
 ## Respiração parado: amplitude da escala e o ritmo (rad/s).
 const RESPIRA := 0.014
 const RITMO_DA_RESPIRACAO := 2.3
@@ -324,9 +327,17 @@ func _process(delta: float) -> void:
 				_parado_no_quadro = false
 			animacao.speed_scale = clampf(relativa, 0.45, ACELERA_ATE)
 		elif not _parado_no_quadro:
-			# Congelado no quadro em que parou: a pata não volta ao ponto zero.
-			animacao.pause()
-			_parado_no_quadro = true
+			# TERMINA O PASSO ANTES DE PARAR (#91). Congelado no quadro em que
+			# parou, o bicho ficava com a pata no ar — "os bichos quadrúpedes
+			# ficaram assim". O clipe segue, no passo de andar, até a pose de
+			# apoio (o começo ou o meio da passada), e só então para.
+			var meia_passada: float = animacao.get_animation(_clipe).length * 0.5
+			var ate_o_apoio := fmod(animacao.current_animation_position, meia_passada)
+			if ate_o_apoio < APOIO or ate_o_apoio > meia_passada - APOIO:
+				animacao.pause()
+				_parado_no_quadro = true
+			else:
+				animacao.speed_scale = 1.0
 	elif not _pernas.is_empty():
 		# O clipe torto não toca: as pernas são do código, e o corpo sobe e desce
 		# duas vezes por passada, de leve.

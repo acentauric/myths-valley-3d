@@ -124,6 +124,11 @@
   a conversa do E ou a fala de missão — cala a saudação de quem passa por perto
   (`npc.calar`), e a saudação continua não entrando por cima de ninguém. Portão
   novo `placas_e_baloes`.
+- **O bicho de quatro patas para na pose de apoio (#91).** Parado, o quadrúpede
+  congelava no quadro em que o passo o pegou, com a pata no ar ("os bichos
+  ficaram assim", na live). Agora o clipe de andar segue até a pose de apoio — o
+  começo ou o meio da passada — e só então para (`animador_bicho`). Portão novo
+  `bicho_parado`. O cão caramelo, de pernas por código, não mudou.
 
 ## Em desenvolvimento — 05/10/2026
 
