@@ -137,7 +137,11 @@ var _resumo_mostrado := ""
 ## cumprimento emendava no outro: o passo nunca anunciava, e a meta dele nunca
 ## começava a contar. Foi a chave com a Dona Candinha que "não deu para
 ## interagir". Esperada a vez por este tanto, o passo anuncia mesmo assim.
-const ESPERA_MAXIMA_PELA_VEZ := 6.0
+## Oito segundos: o balão mais longo (`npc.LEITURA_MAXIMA`), para a resposta de
+## quem fala ser lida inteira antes do passo seguinte (#101). Os portões
+## `interacao` e `cadeia_das_missoes` cobram o anúncio em doze com alguém
+## falando sem parar, contando a folga do passo.
+const ESPERA_MAXIMA_PELA_VEZ := 8.0
 var _esperou_a_vez := 0.0
 ## O NOME DA MISSÃO INTEIRA ("O cemitério esquecido"), que é o que o diário
 ## lista e o HUD escreve em cima do objetivo — o passo é só onde ela está. Vem

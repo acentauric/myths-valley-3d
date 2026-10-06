@@ -233,6 +233,14 @@
   do HUD ganha uma linha de estado: "parado" pela pausa do jogador, ou quem o
   segura (fala, tela, conquista, narração), nos três idiomas. Portão
   `relogio`, parte 4.
+- **O balão dura o tempo de ler, e o Pedro espera a vez (#101).** Na live a
+  fala do Pedro cobriu a resposta da Dona Zefa, que sumiu antes de ser lida: o
+  balão de `narrar` durava 8 s fixos e o anúncio do passo seguinte esperava a
+  palavra no máximo 6 s. Agora todo balão dura o tempo de ler (4 s mais 0,05 s
+  por letra, até 8; `npc.tempo_de_leitura`), a palavra é de quem fala por esse
+  tempo, o anúncio espera até 8 s (`ESPERA_MAXIMA_PELA_VEZ`), e o E no Pedro
+  com alguém falando ao alcance entra na fila (`guia_pedro._repetir_quando_der`).
+  Portão `interacao`, parte 8.
 
 ## Em desenvolvimento — 05/10/2026
 

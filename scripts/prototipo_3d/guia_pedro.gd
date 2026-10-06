@@ -90,6 +90,9 @@ const PERTO_PARA_EXPLICAR := 8.0
 ## vazio porque a cadeia ainda não existe é defeito calado.
 var _cadeia := CadeiaDeMissoes.new()
 var _anoiteceu_hoje := false
+## A repetição do passo que o E pediu com alguém falando ao alcance (#101): sai
+## quando o balão do outro acaba, em vez de atropelar.
+var _repetir_quando_der := ""
 ## As falas do corpo (`corpo` no `missoes_guia.json`), lidas no `_init`.
 var _corpo: Array = []
 ## Parado à espera do jogador que ficou para trás na condução.
@@ -364,6 +367,10 @@ func _avisar_quem_ficou(sim: bool) -> void:
 func _process(_delta: float) -> void:
 	if _avisou_quem_ficou and Engine.get_physics_frames() - _quadro_da_conducao > 2:
 		_avisar_quem_ficou(false)
+	if _repetir_quando_der != "" and jogador != null and not fala_perto_de(jogador.global_position):
+		var texto := _repetir_quando_der
+		_repetir_quando_der = ""
+		narrar("", texto)
 
 
 ## PARA ONDE ELE CONDUZ: quem o passo apresenta, ou o lugar do passo — e, sendo
@@ -484,6 +491,11 @@ func conversar() -> void:
 		var texto := _cadeia.texto_do_passo()
 		if texto != "":
 			_ultima_saudacao_ms = Time.get_ticks_msec()
+			# Com alguém falando ao alcance do jogador, o Pedro espera a vez (#101):
+			# a repetição do passo entra quando o balão do outro acaba.
+			if fala_perto_de(jogador.global_position):
+				_repetir_quando_der = texto
+				return
 			narrar("", texto)
 			return
 	super()

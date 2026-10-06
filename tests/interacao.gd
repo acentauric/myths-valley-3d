@@ -27,6 +27,8 @@ extends SceneTree
 ##      jogador, o passo seguinte se anuncia mesmo assim.
 ##   7. O E EM QUEM NÃO FALA É ACENO: num morador novo, que não tem fala, o E não
 ##      abre balão vazio, não põe aviso no HUD e não segura o relógio.
+##   8. O BALÃO DURA O TEMPO DE LER (#101), e o E no Pedro com alguém falando ao
+##      alcance espera a vez: a repetição sai quando o outro cala.
 
 var falhas := 0
 var dialogo
@@ -207,6 +209,28 @@ func _run() -> void:
 		_conferir(not calado.conversando(), "o E em quem não fala segurou o relógio do vale por uma fala que não há")
 		_conferir(avisos[0] == 0, "o E em quem não fala pôs um aviso vazio no HUD")
 		calado.dados.erase("mudo")
+
+	# --- 8. O BALÃO DURA O TEMPO DE LER, E O PEDRO ESPERA A VEZ (#101) ---------------
+	# Na live a fala do Pedro cobriu a resposta da Dona Zefa, que sumiu antes de
+	# ser lida: o balão durava 8 s fixos e o E no Pedro não esperava ninguém.
+	tonho = vale._achar_morador("tonho")
+	if tonho != null and pedro != null and not pedro.terminou_o_tutorial():
+		var comprida := "Olha, moço: a maré de hoje enche cedo, e quem quer peixe tem que descer antes do sol — o saveiro do mestre Quirino não espera ninguém, e a rede molhada pesa o dobro, viu?"
+		_ao_lado_de(jogador, tonho, Vector3(1.2, 0.1, 0.0))
+		pedro.global_position = jogador.global_position + Vector3(0.0, 0.1, 1.2)
+		await _quadros(2)
+		tonho.narrar("", comprida)
+		var esperado: float = clampf(float(tonho.LEITURA_MINIMA) + float(tonho.LEITURA_POR_LETRA) * float(comprida.length()), float(tonho.LEITURA_MINIMA), float(tonho.LEITURA_MAXIMA))
+		_conferir(absf(float(tonho._balao_tempo) - esperado) < 0.01, "o balão de uma resposta de %d letras dura %.1f s, e não o tempo de ler (%.1f)" % [comprida.length(), float(tonho._balao_tempo), esperado])
+		_conferir(pedro.fala_perto_de(jogador.global_position), "com o Tonho falando ao lado, a palavra não está tomada")
+		pedro.conversar()
+		await _quadros(2)
+		_conferir(not pedro.balao.visible and str(pedro.get("_repetir_quando_der")) != "",
+			"o E no Pedro com o Tonho falando atropelou a resposta (balão %s, fila '%s')" % [str(pedro.balao.visible), str(pedro.get("_repetir_quando_der"))])
+		tonho.calar()
+		_conferir(await _ate(func() -> bool: return pedro.balao.visible, 3.0), "calado o Tonho, a repetição do Pedro não saiu da fila")
+		pedro.calar()
+		await _quadros(3)
 	_fechar()
 
 

@@ -730,7 +730,8 @@ func saudar() -> void:
 	_ultima_saudacao_ms = Time.get_ticks_msec()
 	var texto := _escolher_a_fala()
 	# O balão leva a fala enxuta; a voz e o aviso do HUD (`saudou`) levam a inteira.
-	mostrar_balao(balao_curto(texto), maxf(5.0, voz.stream.get_length() + 1.5) if voz.stream != null else 7.0)
+	var curto := balao_curto(texto)
+	mostrar_balao(curto, maxf(tempo_de_leitura(curto), (voz.stream.get_length() + 1.5) if voz.stream != null else 0.0))
 	_balao_de_saudacao = true
 	_soltar_o_relogio()
 	_falar_com_voz_e_gesto()
@@ -778,7 +779,7 @@ func conversar() -> void:
 	_ultima_saudacao_ms = Time.get_ticks_msec()
 	_calar_as_saudacoes()
 	var texto := _escolher_a_fala()
-	mostrar_balao(texto, maxf(7.0, voz.stream.get_length() + 2.0) if voz.stream != null else 9.0)
+	mostrar_balao(texto, maxf(tempo_de_leitura(texto), (voz.stream.get_length() + 2.0) if voz.stream != null else 0.0))
 	_balao_de_saudacao = false
 	_segurar_o_relogio()
 	_falar_com_voz_e_gesto()
@@ -843,6 +844,20 @@ static func balao_curto(texto: String) -> String:
 	return corte.rstrip(" ,;:—-") + "…"
 
 
+## QUANTO TEMPO UM BALÃO FICA (#101): o bastante para ler — quatro segundos e
+## mais cinco centésimos por letra, até oito (o teto que o anúncio do passo
+## seguinte espera, `cadeia_de_missoes.ESPERA_MAXIMA_PELA_VEZ`). Era um tempo
+## fixo para qualquer texto, e a resposta comprida da Dona Zefa sumia antes de
+## ser lida.
+const LEITURA_MINIMA := 4.0
+const LEITURA_POR_LETRA := 0.05
+const LEITURA_MAXIMA := 8.0
+
+
+static func tempo_de_leitura(texto: String) -> float:
+	return clampf(LEITURA_MINIMA + LEITURA_POR_LETRA * float(texto.length()), LEITURA_MINIMA, LEITURA_MAXIMA)
+
+
 func mostrar_balao(texto: String, segundos: float) -> void:
 	_balao_tempo = segundos
 	balao.mostrar(texto)
@@ -863,17 +878,21 @@ func mostrar_balao(texto: String, segundos: float) -> void:
 ## não há. É ela que o `_tomar_palavra` usa para ninguém falar por cima.
 func narrar(nome_audio: String, texto: String) -> void:
 	_calar_as_saudacoes()
-	mostrar_balao(texto, 8.0)
-	_balao_de_saudacao = false
-	_segurar_o_relogio()
 	var caminho := PASTA_VOZES + nome_audio + ".mp3"
-	var duracao := 4.0
-	if nome_audio != "" and ResourceLoader.exists(caminho):
+	var com_voz := nome_audio != "" and ResourceLoader.exists(caminho)
+	var duracao_da_voz := 0.0
+	if com_voz:
 		voz.stop()
 		voz.stream = load(caminho)
+		duracao_da_voz = voz.stream.get_length()
+	# O balão fica o tempo de ler, ou o da voz e um respiro (#101), e a palavra
+	# é dele esse tempo todo: ninguém anuncia por cima de uma resposta.
+	mostrar_balao(texto, maxf(tempo_de_leitura(texto), duracao_da_voz + 1.5))
+	_balao_de_saudacao = false
+	_segurar_o_relogio()
+	if com_voz:
 		voz.play()
-		duracao = voz.stream.get_length()
-	_tomar_palavra(duracao)
+	_tomar_palavra(_balao_tempo)
 	if animador != null and animador.has_method("play_gesture"):
 		# Autoral: 2 = concordar; procedural: 2 = apontar.
 		animador.play_gesture(2)
