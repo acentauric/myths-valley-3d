@@ -96,7 +96,8 @@ func _run() -> void:
 	_conferir(painel.layer > vale.hud.layer, "o painel ficou por baixo do HUD")
 	_conferir(not player.is_physics_processing(), "com o painel aberto o jogador continua andando")
 	_conferir(Input.mouse_mode != Input.MOUSE_MODE_CAPTURED, "com o painel aberto o cursor continua preso")
-	_conferir(dia.pausado, "com o painel aberto o relógio do vale continua andando")
+	# Desde a #100 as telas seguram o dia por motivo, e `Dia.pausado` é só a pausa do jogador: `parado()` junta os dois.
+	_conferir(dia.parado(), "com o painel aberto o relógio do vale continua andando")
 	# A ÁRVORE PARA ATRÁS DELE — e esta linha dizia o contrário.
 	#
 	# O painel nasceu parando só o relógio: o jogador para, o `Dia` para, a
@@ -127,19 +128,19 @@ func _run() -> void:
 	vale.telas.abrir("painel")
 	await _frames(2)
 	_conferir(not painel.aberto, "o J pelo dono das telas não fechou o painel")
-	_conferir(not dia.pausado, "abri e fechei o J e o relógio ficou parado")
+	_conferir(not dia.parado(), "abri e fechei o J e o relógio ficou parado")
 	_conferir(not paused, "abri e fechei o J e o vale ficou parado")
 	# 2) o × do painel, com o mouse (é o que a lista de missões mostra);
 	vale.hud.quests_requested.emit()
 	await _frames(2)
-	_conferir(painel.aberto and dia.pausado and paused, "o botão de missões do HUD não abriu o painel parando o vale")
+	_conferir(painel.aberto and dia.parado() and paused, "o botão de missões do HUD não abriu o painel parando o vale")
 	var botao_fechar: Button = painel.find_child("Fechar", true, false)
 	_conferir(botao_fechar != null, "o painel não tem botão de fechar")
 	if botao_fechar != null:
 		botao_fechar.pressed.emit()
 		await _frames(2)
 		_conferir(not painel.aberto and vale.telas.aberta() == "", "o × não fechou o painel")
-		_conferir(not dia.pausado, "fechei pelo × e o relógio ficou parado")
+		_conferir(not dia.parado(), "fechei pelo × e o relógio ficou parado")
 		_conferir(not paused, "fechei pelo × e o vale ficou parado")
 		_conferir(player.is_physics_processing(), "fechei pelo × e o jogador continuou parado")
 	# 3) o J dentro do painel é a pergunta da seção 3. Reabre para seguir.
@@ -302,7 +303,7 @@ func _run() -> void:
 	await _frames(2)
 	_conferir(not painel.aberto, "o J não fechou o painel")
 	_conferir(player.is_physics_processing(), "fechou o painel e o jogador continuou parado")
-	_conferir(not dia.pausado, "fechou o painel e o relógio continuou parado")
+	_conferir(not dia.parado(), "fechou o painel e o relógio continuou parado")
 	_conferir(not paused, "fechou o painel e o vale continuou parado")
 
 	# --- 4. ABA DE LUGAR POR PROXIMIDADE ----------------------------------------

@@ -99,7 +99,14 @@ var saveiro
 ## `guia_pedro.gd` e é salva pelo nome antigo (`pedro.missao`), que o save do
 ## vale já guardava antes de existir a segunda cadeia.
 var _cadeias: Dictionary = {}
-var _relogio_pausado_antes := false
+## AS TELAS SEGURAM O DIA POR MOTIVO, CONTADAS (#100): cada tela aberta por cima
+## de outra soma um, e o dia só volta quando a última fecha. Antes um booleano
+## guardava "estava pausado antes?", e duas telas aninhadas (a mochila por
+## cima de uma fala, o mapa por cima do J) deixavam `Dia.pausado` preso ao
+## fechar — o relógio travado às 07:14 na live de 06/10. `Dia.pausado` agora é
+## só a pausa que o jogador pediu; o HUD mostra quem segura (`Dia.segurado`).
+const MOTIVO_DA_TELA := "tela"
+var _telas_que_param := 0
 ## A pergunta da tecla de adiantar a hora, enquanto está aberta.
 var _pergunta_do_relogio = null
 ## OS MARCOS DE FÉ (#52): o cruzeiro, a igreja, a capela velha, o cemitério, o
@@ -270,7 +277,7 @@ func _ready() -> void:
 	# Partida nova conta conquista, com o relógio correndo e o registro dele em
 	# branco; a salva diz o que o jogador já fez com ele.
 	Dia.zerar_a_partida()
-	_relogio_pausado_antes = false
+	_telas_que_param = 0
 	# Vindo do menu, o relógio esperou a montagem na hora_inicial (abertura._start_game).
 	Dia.congelado_na_carga = false
 	var spawn: Vector3 = _ponto_de_chegada()
@@ -300,8 +307,9 @@ func _ready() -> void:
 	hud.connect("style_changed", func() -> void:
 		# Novo estilo visual: reconstrói o vale inteiro, com a tela de carregamento.
 		get_tree().paused = false
-		# Os ajustes tinham parado o relógio; ele volta como estava antes de abri-los.
-		Dia.pausado = _relogio_pausado_antes
+		# Os ajustes seguravam o dia; a tela solta, e o relógio fica como o jogador o deixou.
+		_telas_que_param = 0
+		Dia.soltar(MOTIVO_DA_TELA)
 		_saindo = true
 		# Trocar o estilo RECARREGA o vale, e o vale recarregado lê a vaga:
 		# sem salvar aqui, o jogador voltaria ao último save.
@@ -429,10 +437,9 @@ func _ready() -> void:
 			"fazer": func() -> void: Audio.definir_som_ativo(not Audio.som_ativo)},
 		# O RELÓGIO DIZ O QUE O JOGADOR ESCOLHEU, e não o que o menu fez.
 		#
-		# Com o menu aberto o `Dia` está SEMPRE parado — é o menu que o para —,
-		# e a linha lia `Dia.pausado`: dizia "parado" com o relógio andando, e
-		# apertá-la não mudava o texto. A escolha do jogador mora em
-		# `_relogio_pausado_antes`, que é o que o fechamento devolve ao `Dia`.
+		# Com o menu aberto o `Dia` está segurado pela tela (MOTIVO_DA_TELA), e
+		# `Dia.pausado` é só a escolha do jogador (#100): a linha lê e muda isso,
+		# e o fechamento do menu não mexe nele.
 		#
 		# PARAR PERGUNTA. Parar o relógio desliga as conquistas da partida dali
 		# em diante (`Dia.relogio_alterado`, que vai no save), e o menu abre uma
@@ -444,25 +451,25 @@ func _ready() -> void:
 		# (`Dia.registro_do_relogio`). Com a pausa bloqueada no AJUSTAR, a linha
 		# não para e diz por quê — e religar continua podendo.
 		{"rotulo": func() -> String:
-				var estado := tr("parado") if _relogio_pausado_antes else tr("andando")
+				var estado := tr("parado") if Dia.pausado else tr("andando")
 				if Dia.relogio_alterado:
 					return tr("Relógio: %s · sem conquistas") % estado
-				if not Dia.pausa_no_jogo and not _relogio_pausado_antes:
+				if not Dia.pausa_no_jogo and not Dia.pausado:
 					return tr("Relógio: %s · pausa bloqueada") % estado
 				return tr("Relógio: %s") % estado,
 			"icone": "relogio",
-			"ligado": func() -> bool: return not _relogio_pausado_antes,
+			"ligado": func() -> bool: return not Dia.pausado,
 			"confirmar": func() -> Dictionary:
-				if _relogio_pausado_antes or not Dia.pausa_no_jogo:
+				if Dia.pausado or not Dia.pausa_no_jogo:
 					return {}
 				return Dia.aviso_de_parar(),
 			"fazer": func():
-				if not _relogio_pausado_antes and not Dia.pausa_no_jogo:
+				if not Dia.pausado and not Dia.pausa_no_jogo:
 					Audio.efeito("ui_trava")
 					return tr("Pausar o relógio está bloqueado em AJUSTAR → Geral.")
 				Audio.efeito("ui_confirmar")
-				_relogio_pausado_antes = not _relogio_pausado_antes
-				if _relogio_pausado_antes:
+				Dia.pausado = not Dia.pausado
+				if Dia.pausado:
 					Dia.marcar_relogio_alterado()
 					Dia.registrar_no_relogio("parou", "menu")
 				else:
@@ -1551,16 +1558,25 @@ func _pause_valley() -> void:
 	# menu que não se clica — mas nada devolvia o modo depois. Quem jogava no
 	# modo livre voltava do menu no modo de arrastar, sem ter pedido.
 	player.set_captured(false)
-	_relogio_pausado_antes = Dia.pausado
-	Dia.pausado = true
+	_telas_que_param += 1
+	Dia.segurar(MOTIVO_DA_TELA)
 	get_tree().paused = true
+	# O HUD para com a árvore: o estado do relógio se atualiza aqui.
+	if is_instance_valid(hud):
+		hud.atualizar_estado_do_relogio()
 	_prender_o_calendario()
 
 
 ## Desfaz o `_pause_valley`, INCLUSIVE a câmera.
 func _retomar_o_vale() -> void:
+	# Fecha uma tela; com outra ainda aberta por baixo, o vale segue parado.
+	_telas_que_param = maxi(0, _telas_que_param - 1)
+	if _telas_que_param > 0:
+		return
 	get_tree().paused = false
-	Dia.pausado = _relogio_pausado_antes
+	Dia.soltar(MOTIVO_DA_TELA)
+	if is_instance_valid(hud):
+		hud.atualizar_estado_do_relogio()
 	_camera_da_preferencia()
 	_prender_o_calendario()
 
@@ -1884,10 +1900,9 @@ func estado_para_salvar() -> Dictionary:
 		# E O REGISTRO DO RELÓGIO: quando e como o jogador mexeu nele (ver
 		# `Dia.registro_do_relogio`). A marca diz se; o registro, quando.
 		"registro_do_relogio": Dia.registro_do_relogio.duplicate(true),
-		# O RELÓGIO PARADO PELO JOGADOR: carregar não o religa calado. Com uma
-		# tela aberta o `Dia` está parado pela tela, e a escolha do jogador é a
-		# que ela vai devolver ao fechar.
-		"pausado": _relogio_pausado_antes if get_tree().paused else Dia.pausado,
+		# O RELÓGIO PARADO PELO JOGADOR: carregar não o religa calado. As telas
+		# seguram o dia por motivo (#100), e `Dia.pausado` é só a escolha dele.
+		"pausado": Dia.pausado,
 		"barra_de_ferramentas_migrada": _barra_de_ferramentas_migrada,
 		"visitados": _visited.keys(),
 	}
@@ -1958,8 +1973,7 @@ func restaurar_do_save(estado: Dictionary) -> void:
 	Dia.relogio_alterado = bool(estado.get("relogio_alterado", false))
 	var registro = estado.get("registro_do_relogio", [])
 	Dia.registro_do_relogio = (registro as Array).duplicate(true) if registro is Array else []
-	_relogio_pausado_antes = bool(estado.get("pausado", false))
-	Dia.pausado = _relogio_pausado_antes or get_tree().paused
+	Dia.pausado = bool(estado.get("pausado", false))
 	_barra_de_ferramentas_migrada = bool(estado.get("barra_de_ferramentas_migrada", false))
 	_avisou_agua_funda = bool(estado.get("avisou_agua_funda", false))
 	if estado.has("hora"):
@@ -2141,7 +2155,8 @@ func _exit_tree() -> void:
 	if _fala_parou_o_vale:
 		_fala_parou_o_vale = false
 		get_tree().paused = false
-		Dia.pausado = _relogio_pausado_antes
+		_telas_que_param = 0
+		Dia.soltar(MOTIVO_DA_TELA)
 	# O save não fica segurando um vale que saiu da árvore. Hoje não quebraria
 	# (o Godot compara o objeto liberado igual a null, e o Salvamento pergunta
 	# `_mundo != null`), mas é essa a comparação de que ele deixa de depender.

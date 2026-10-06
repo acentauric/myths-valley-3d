@@ -223,6 +223,16 @@
   fio de ouro, a fala em Cormorant, o rodapé "[E] continuar" em Cinzel miúdo
   (`dialogo_vale._montar`). A API, a fila de falas e o quadro de 640×360 não
   mudaram.
+- **O relógio não fica preso atrás de telas aninhadas, e diz por que parou
+  (#100).** Na live de 06/10 o dia travou às 07:14. As telas guardavam "estava
+  pausado antes?" num booleano só, e a segunda tela aberta por cima da primeira
+  (a mochila sobre uma fala, o mapa sobre o J) devolvia "pausado" ao fechar.
+  Agora as telas seguram o dia por motivo, contadas (`prototype._pause_valley`
+  / `_retomar_o_vale`, `Dia.segurar("tela")`), e `Dia.pausado` é só a pausa
+  que o jogador pediu — o menu, o save e o restore leem isso direto. O relógio
+  do HUD ganha uma linha de estado: "parado" pela pausa do jogador, ou quem o
+  segura (fala, tela, conquista, narração), nos três idiomas. Portão
+  `relogio`, parte 4.
 
 ## Em desenvolvimento — 05/10/2026
 

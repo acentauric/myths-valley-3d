@@ -106,6 +106,11 @@ var _house_info_panel: Panel
 var _house_info_label: Label
 var _house_info_heading: Label
 var _clock_label: Label
+var _clock_panel: Panel
+var _clock_estado: Label
+## A altura do painel do relógio, e quanto cresce com a linha do estado.
+const ALTURA_DO_RELOGIO := 72
+const ALTURA_DO_ESTADO := 14
 var _menu_confirm = null	# caixa_de_pergunta.gd
 var _map_icon	# hud_icon.gd
 var _settings_icon	# hud_icon.gd
@@ -275,18 +280,29 @@ func _ready() -> void:
 	_notice_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 
 	# Relógio do vale: só a hora e o período do dia.
-	var clock_panel := _panel(Color(0.055, 0.085, 0.075, 0.82))
-	_root.add_child(clock_panel)
-	clock_panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP)
-	clock_panel.offset_left = -70
-	clock_panel.offset_right = 70
-	clock_panel.offset_top = 18
-	clock_panel.offset_bottom = 72
+	_clock_panel = _panel(Color(0.055, 0.085, 0.075, 0.82))
+	_root.add_child(_clock_panel)
+	_clock_panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP)
+	_clock_panel.offset_left = -70
+	_clock_panel.offset_right = 70
+	_clock_panel.offset_top = 18
+	_clock_panel.offset_bottom = ALTURA_DO_RELOGIO
 	_clock_label = _label("", 15, GOLD)
-	clock_panel.add_child(_clock_label)
+	_clock_panel.add_child(_clock_label)
 	_clock_label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_clock_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_clock_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	# O ESTADO DO RELÓGIO (#100): "parado" pela pausa do jogador, ou quem o
+	# segura — fala, tela, conquista, narração —, para o dia parado ter motivo
+	# na tela. Vazio com o dia andando.
+	_clock_estado = _label("", 10, Color(0.85, 0.7, 0.36, 0.95))
+	_clock_estado.name = "EstadoDoRelogio"
+	_clock_panel.add_child(_clock_estado)
+	_clock_estado.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
+	_clock_estado.offset_top = -16
+	_clock_estado.offset_bottom = -3
+	_clock_estado.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_clock_estado.visible = false
 
 	_criar_barra_de_vida()
 	_criar_barra_de_folego()
@@ -562,6 +578,45 @@ func _process(delta: float) -> void:
 	if _refresh_time >= 0.35:
 		_refresh_time = 0.0
 		_update_telemetry()
+		_update_clock_state()
+
+
+## O ESTADO DO RELÓGIO ao lado da hora (#100): a pausa do jogador, ou o motivo
+## que o segura; nada com o dia andando. Quem para a árvore (as telas) chama
+## `atualizar_estado_do_relogio` na hora, porque este `_process` para junto.
+func atualizar_estado_do_relogio() -> void:
+	_update_clock_state()
+
+
+func _update_clock_state() -> void:
+	if not is_instance_valid(_clock_estado):
+		return
+	var estado := ""
+	if Dia.pausado or Dia.velocidade == 0:
+		estado = tr("parado")
+	else:
+		var motivos: Array = Dia.motivos_da_segurada()
+		if not motivos.is_empty():
+			estado = texto_do_motivo(str(motivos[0]))
+	if estado != _clock_estado.text or _clock_estado.visible != (estado != ""):
+		_clock_estado.text = estado
+		_clock_estado.visible = estado != ""
+		if is_instance_valid(_clock_panel):
+			_clock_panel.offset_bottom = ALTURA_DO_RELOGIO + (ALTURA_DO_ESTADO if estado != "" else 0)
+		_update_clock_hint()
+
+
+## O motivo de `Dia.segurar` em palavra do jogador: "fala:tonho" é fala.
+func texto_do_motivo(motivo: String) -> String:
+	if motivo.begins_with("fala"):
+		return tr("fala")
+	if motivo.begins_with("tela"):
+		return tr("tela")
+	if motivo.begins_with("conquista"):
+		return tr("conquista")
+	if motivo.begins_with("narracao"):
+		return tr("narração")
+	return motivo
 
 
 func set_model_status(value: String) -> void:
@@ -800,7 +855,7 @@ func _update_telemetry() -> void:
 func _update_clock_hint() -> void:
 	if not is_instance_valid(_clock_hint):
 		return
-	var andando: bool = not Dia.pausado and Dia.velocidade > 0
+	var andando: bool = not Dia.pausado and Dia.velocidade > 0 and not Dia.segurado()
 	if is_instance_valid(_clock_icon):
 		_clock_icon.set_running(andando)
 	if is_instance_valid(_clock_button):

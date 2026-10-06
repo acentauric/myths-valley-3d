@@ -12,6 +12,9 @@ extends SceneTree
 ##   1. "PARADA" NO AJUSTAR PERGUNTA ANTES. Escolher abre a caixa que fala das
 ##      conquistas; "não" devolve o seletor ao que estava e não mexe em nada;
 ##      "sim" para o tempo, marca a partida e escreve no registro.
+##   4. DUAS TELAS ANINHADAS NÃO DEIXAM O DIA PRESO (#100): as telas seguram o dia
+##      por motivo, contadas; a pausa do jogador atravessa as telas; e o HUD diz
+##      "parado" ou "tela" ao lado da hora.
 ##   2. A TECLA DE ADIANTAR A HORA PERGUNTA NA PRIMEIRA VEZ, com o vale parado
 ##      atrás da caixa; "não" não adianta; "sim" adianta uma hora, marca e
 ##      registra. Com a partida já marcada, a tecla adianta sem perguntar, e o
@@ -138,6 +141,39 @@ func _run() -> void:
 	_conferir(dia.relogio_alterado, "a partida que começou em \"Parada\" não ficou marcada")
 	_conferir(dia.registro_do_relogio.size() == 1 and str(dia.registro_do_relogio[0].get("o_que", "")) == "comecou_parada",
 		"o registro da partida que começou parada diz %s" % str(dia.registro_do_relogio))
+
+	# --- 4. DUAS TELAS ANINHADAS NÃO DEIXAM O DIA PRESO (#100) --------------------
+	# Na live de 06/10 o relógio travou às 07:14: as telas guardavam "estava pausado
+	# antes?" num booleano só, e a segunda tela aberta por cima da primeira
+	# devolvia "pausado" ao fechar. Agora as telas seguram o dia por motivo,
+	# contadas, e `Dia.pausado` é só a pausa que o jogador pediu.
+	vale = current_scene
+	hud = vale.get("hud")
+	dia.velocidade = dia.VELOCIDADE_PADRAO
+	dia.pausado = false
+	vale._pause_valley()
+	vale._pause_valley()
+	_conferir(paused and dia.segurado("tela"), "com duas telas abertas o vale (%s) ou o dia (%s) não parou" % [str(paused), str(dia.segurado("tela"))])
+	vale._retomar_o_vale()
+	_conferir(paused and dia.segurado("tela"), "fechada a tela de cima, com a de baixo aberta, o vale (%s) ou o dia (%s) voltou a andar" % [str(paused), str(dia.segurado("tela"))])
+	vale._retomar_o_vale()
+	_conferir(not paused and not dia.segurado("tela") and not dia.pausado,
+		"fechadas as duas telas o dia ficou preso: vale parado %s, segurado %s, pausado %s" % [str(paused), str(dia.segurado("tela")), str(dia.pausado)])
+	# A pausa do jogador atravessa as telas inteira: abrir e fechar não a mexe.
+	dia.pausado = true
+	vale._pause_valley()
+	vale._retomar_o_vale()
+	_conferir(dia.pausado, "abrir e fechar uma tela religou o relógio que o jogador parou")
+	# O HUD DIZ POR QUÊ: "parado" pela pausa do jogador, "tela" pela tela.
+	var estado: Label = hud.get("_clock_estado")
+	_conferir(estado != null, "o HUD não tem o estado do relógio ao lado da hora")
+	if estado != null:
+		_conferir(await _ate(func() -> bool: return estado.visible and estado.text == tr("parado"), 2.0), "com o relógio parado pelo jogador o HUD não diz \"parado\" ('%s')" % estado.text)
+		dia.pausado = false
+		vale._pause_valley()
+		_conferir(await _ate(func() -> bool: return estado.visible and estado.text == tr("tela"), 2.0), "com uma tela aberta o HUD não diz \"tela\" ('%s')" % estado.text)
+		vale._retomar_o_vale()
+		_conferir(await _ate(func() -> bool: return not estado.visible, 2.0), "fechada a tela o estado do relógio não sumiu ('%s')" % estado.text)
 	_fechar()
 
 
@@ -178,3 +214,13 @@ func _mundo_pronto() -> void:
 		await process_frame
 	await process_frame
 	await process_frame
+
+
+## Roda quadros até `condicao` valer, com teto em segundo real.
+func _ate(condicao: Callable, segundos: float) -> bool:
+	var limite := Time.get_ticks_msec() + int(segundos * 1000.0)
+	while Time.get_ticks_msec() < limite:
+		if bool(condicao.call()):
+			return true
+		await process_frame
+	return bool(condicao.call())

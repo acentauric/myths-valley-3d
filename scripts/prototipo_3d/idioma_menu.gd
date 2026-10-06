@@ -399,6 +399,11 @@ const EN := {
 	"à mão": "by hand",
 	"andando": "running",
 	"parado": "stopped",
+	# O estado do relógio no HUD (#100).
+	"fala": "talk",
+	"tela": "screen",
+	"conquista": "quest",
+	"narração": "narration",
 	"Controles": "Controls",
 	"Teclas fixas": "Fixed keys",
 	"Restaurar padrão": "Restore defaults",
@@ -815,6 +820,11 @@ const ES := {
 	"à mão": "a mano",
 	"andando": "en marcha",
 	"parado": "detenido",
+	# O estado do relógio no HUD (#100).
+	"fala": "charla",
+	"tela": "pantalla",
+	"conquista": "logro",
+	"narração": "narración",
 	"Controles": "Controles",
 	"Teclas fixas": "Teclas fijas",
 	"Restaurar padrão": "Restaurar valores",

@@ -138,6 +138,19 @@ func soltar(motivo: String) -> void:
 	_segurado_por.erase(motivo)
 
 
+## Os motivos que seguram o relógio agora, sem os vencidos: o HUD mostra o
+## primeiro ao lado da hora (#100), para o jogador saber por que o dia parou.
+func motivos_da_segurada() -> Array:
+	segurado()
+	return _segurado_por.keys()
+
+
+## O dia está parado agora, por qualquer razão: a pausa do jogador, a velocidade
+## "parada" ou alguém segurando (#100). É o que os portões das telas cobram.
+func parado() -> bool:
+	return pausado or velocidade == 0 or segurado()
+
+
 ## Alguém segura o relógio agora? Com `prefixo`, só os motivos que começam por
 ## ele ("fala:" é a conversa de qualquer morador).
 func segurado(prefixo: String = "") -> bool:
