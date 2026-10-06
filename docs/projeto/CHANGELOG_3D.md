@@ -56,6 +56,208 @@
   da casa de taipa), a malha dos moradores contorna o alicerce da capelinha, e o
   saveiro atracado vira obstáculo. O lobby em vídeo vale em toda build e no editor;
   `-- --lobby-3d` (ou `abertura.lobby_3d_pedido` nos portões) volta ao vale 3D.
+- **A noite junta-se à main do dia** (a seção abaixo). Onde as duas fizeram a
+  mesma coisa, ficou uma só: a plaquinha tem as três vagas e a mola daqui e o
+  "só de perto" de lá (inteira até 6 u, some em 10); o balão só a 16 u, e o "um
+  balão por vez" é a fila de falas (`npc.calar()` passa por ela); o E das obras é
+  o daqui (raio do E por sítio, obra pedida, cursor), que já cobria o poço da #80;
+  o som do golpe é uma tabela só, a daqui, sem tocar duas vezes; o bicho para no
+  quadro de pé medido, e no começo ou no meio da passada quando não há medida
+  (#91); os catorze moradores ficam com as falas, os quatro idiomas e as vozes
+  daqui e com a fé e os assuntos da teia de lá (#85); a dica do E diz com quem se
+  fala (#97) por cima da arbitragem daqui; e o pedido do lobby 3D por código é um
+  só, que os dois lados tinham criado com o mesmo nome.
+
+## Em desenvolvimento — 06/10/2026 (madrugada e manhã, na main da equipe)
+
+- **A reserva do dia volta ao corpo (#82, fecha a #45).** Entre 04/10 e 06/10 a
+  `Energia` espelhava o vigor do jogador (`registrar_vigor`), e como o vigor volta
+  sozinho a comida, a cama e os talentos de reserva perderam a função — apontado
+  pelo autor depois do teste ao vivo de 05/10. Agora são três contas: a vida; a
+  reserva do dia, na barra do meio só com o número, que a enxada, o machado, a
+  picareta, a lavoura e a luta gastam e só comida, cama e desmaio devolvem (no fim
+  dela o passo encurta, a barra fica vermelha e diz "cansado", e a corrida não
+  responde); e o vigor, embaixo, da corrida, do salto e do golpe, que volta sozinho
+  (baixo, fica âmbar). Na água a barra do meio vira o fôlego do nado, azul: o nado
+  gasta o vigor primeiro e depois o fôlego, e sem fôlego a água tira da vida; ao
+  sair da água a barra volta à reserva (`nado_mudou`), e quem apaga acorda
+  respirando. O golpe na árvore paga o braço inteiro no vigor e bater × dureza na
+  reserva. O Pedro explica as quatro contas com as vozes já gravadas: a reserva e
+  o vigor voltaram do `529a648`, e a fala do nado ficou com o arquivo dela
+  (`pedro_corpo_nado`). Ajustes → Esforço continua valendo para a reserva. Manual
+  em `COMO_JOGAR_3D.md`. Portões: `reservas_do_corpo` (reescrito), `folego`,
+  `luta`, `casa`, `corte_das_arvores`, `lavoura`.
+- **O E no poço abre as obras do poço (#80).** No teste ao vivo de 05/10 a chegada
+  parou no mutirão: o passo fecha por uma obra que só se tocava pelo J, o resumo
+  não dizia a tecla e o poço não respondia ao E. Agora toda construção de
+  `BancadasVale.OBRAS` com obra disponível (poço, mirante, trapiche, carroça,
+  cercado do cemitério, ponte, armazém — a casa não, que tem E próprio) ganha a
+  dica "E · Obras" e abre o painel na aba de obras dela, como o canteiro
+  (`tecla_das_bancadas.gd`); sem obra disponível não há E. O resumo e a fala do
+  `mutirao_poco` dizem "E no poço (ou [J] › Obras)" nos três idiomas. Portão
+  novo `mutirao_do_poco`: da boca do poço à janta — picareta, pedras, corda, o
+  plano ensinado ao abrir, a Dona Zefa e o Cosme chamados à roda, o E entre os
+  dois, a obra tocada no painel, as cocadas; a falsificação sem o E reprova.
+- **O rio grande deixa de dar passagem fora da ponte (#81).** No 2D o rio tem
+  barranco e só se cruza pela ponte; no vale ele era raso de dar pé, com um vau ao
+  lado da ponte, e o jogador nada — a trava da jornada (a fazenda do convite é do
+  outro lado) não segurava. Decisão do autor: os dois. A calha do rio do norte é
+  funda (1,6 u: no meio não dá pé) e do lado de lá segue funda até a beira; a
+  margem de lá sobe 1,2 u acima do terreno numa face que começa na água, ao longo
+  do rio inteiro e da cabeceira até a moldura do mapa; a ponte assenta num aterro
+  dos dois lados, com o tabuleiro plano e a estrada chegando em rampa que se anda;
+  e sob o rio a estrada só afunda pelo lado de cá (pelo de lá seria rampa de
+  saída). O vau saiu dos lugares, do construtor e das falas: o passo de ver a
+  ponte fecha na cabeceira de cá, o Pedro conta que "a água dá nado e o barranco
+  do outro lado não tem por onde subir", e o caminho da fazenda é "pela ponte".
+  Fica em aberto a costa a norte da foz, que quem nadar pelo mar alcança (a guarda
+  ali é o tubarão). Portão novo `rio_grande`: a calha, a beira, a face do
+  barranco e o aterro medidos ao longo do rio inteiro, e três nados para lá com o
+  pulo apertado que não saem da água; `ponte` e `fazenda` ajustados.
+- **O alto da tela diz a tarefa, e não o texto da missão (#83).** Desde 04/10 o
+  HUD recebia as páginas com a fala inteira de todos os passos — inclusive os que
+  ainda não tinham aberto —, com setas para passar e um X para fechar; a fala
+  cobria a tarefa, e o X escondia o quadro inteiro. Agora o quadro mostra só o
+  nome da missão, o resumo do passo com a conta ("Tire pedra para calçar o poço
+  (2/3)") e o passo "n de N"; a fala fica no balão e no painel J. As páginas, as
+  setas, o X e o atalho `fechar_missao` saíram (`prototype_hud.gd`, `atalhos.gd`,
+  `COMO_JOGAR_3D.md`). Portão `tarefa_no_hud` no lugar do `paginas_missao`;
+  `cadeia_das_missoes` confere o resumo no alto da tela.
+- **O morador não salta no caminho longo quando a câmera vira (#84).** O padre
+  teleportava da igreja ao cemitério: a troca de posto a mais de 40 u é caminho
+  longo, e bastava um quadro com ele e o destino fora do enquadramento para ser
+  posto no lugar. Agora o salto espera o jogador a mais de 40 u e sem ver nem o
+  morador nem o destino por 4 s seguidos (`npc._encurtar_o_caminho`); até lá ele
+  anda. Portão novo `caminho_longo`: de costas e a vinte unidades o morador anda
+  sem saltar; longe e fora da vista ele salta só depois do tempo; e nunca para um
+  ponto à vista.
+- **A fogueira do terreiro volta ao modelo certo, e a chama apaga de dia (#86).**
+  Desde 04/10 (`8413ae7`) a peça `fogueira` do catálogo apontava a pilha de lenha
+  (`lenha_tripo.glb`), e o jogador via a pilha com a chama em cima; a chama de
+  partículas ardia o dia inteiro (na live, a fogueira acesa de manhã). O catálogo
+  volta a `fogueira_tripo.glb` (o anel de pedras e as toras, sem a chama rígida),
+  e a chama e as brasas seguem a noite com a luz (`luzes_epoca.gd`). Portão novo
+  `fogueira`.
+- **A gameleira do sambaqui assenta no chão (#87).** O monte e a árvore eram
+  postos por uma amostra do terreno, no centro, e com o chão novo de 05/10 a
+  encosta ali inclinou. O terreno em volta vira um platô na altura do centro
+  (`GeoRegionRenderer`, PLATÔ DA GAMELEIRA: plano até 7 u, voltando ao relevo em
+  mais 5). Portão novo `gameleira`: o anel em volta varia menos de 0,2 u, a borda
+  do monte não flutua, e o marco é o tronco.
+- **O aviso do primeiro cordel diz que ele é colecionável (#88).** O cartão já
+  contava o que é a literatura de cordel; agora diz também, nos três idiomas, que
+  no jogo ele é um colecionável, onde os folhetos estão espalhados e que o
+  almanaque mostra quantos faltam. O portão `avisos_da_primeira_vez` cobra.
+- **Cada golpe em pedra e galhada tem som (#89).** `recursos_3d._aplicar_golpe`
+  era mudo — `picareta.mp3` existia sem ninguém o chamar. Agora cada golpe toca o
+  som da ferramenta (picareta na pedra, a foice colhe, machado no resto, inclusive
+  a galhada partida na mão) e o último golpe do que cai toca a árvore caindo.
+  Portão novo `som_dos_golpes`.
+- **Plaquinhas de nome e balões só de perto, e um balão por vez (#90).** A
+  plaquinha aparecia a 22 u e o balão a 45; agora a plaquinha é inteira até 6 u,
+  esmaece até 10 e some, e o balão só aparece até 16 u. Quem fala com o jogador —
+  a conversa do E ou a fala de missão — cala a saudação de quem passa por perto
+  (`npc.calar`), e a saudação continua não entrando por cima de ninguém. Portão
+  novo `placas_e_baloes`.
+- **O bicho de quatro patas para na pose de apoio (#91).** Parado, o quadrúpede
+  congelava no quadro em que o passo o pegou, com a pata no ar ("os bichos
+  ficaram assim", na live). Agora o clipe de andar segue até a pose de apoio — o
+  começo ou o meio da passada — e só então para (`animador_bicho`). Portão novo
+  `bicho_parado`. O cão caramelo, de pernas por código, não mudou.
+- **O Pedro vem junto quando o jogador apaga (#92).** Na live o jogador apagou
+  nadando, acordou em casa, e o Pedro ficou no mar. Enquanto o tutorial dura, quem
+  apaga acorda com o Pedro esperando na porta, do lado de fora
+  (`queda._levar_para_casa`, `guia_pedro.vir_para_a_porta`), e a condução recomeça
+  dali. Portão novo `pedro_volta`.
+- **Os quinze moradores novos entram na teia social (#85).** A teia (P) lia uma
+  constante com os sete do 2D; agora `Afinidade.MORADORES` vem do `aldeoes.json`,
+  na ordem dele. Os quinze do vale — o mestre Quirino, o padre Anselmo, o
+  sacristão Zacarias, Sá Joaquina, Seu Nicolau, o guarda Aristides, Seu Jerônimo,
+  Dona Rosa, Sá Rita, Dona Estefânia, Dona Ambrósia, Seu Epifânio, Tonico,
+  Mariinha e Seu Ladislau — ganharam fé, gosto e desgosto, as reações ao presente,
+  a apresentação e dois assuntos por grau (`data/dialogos/aldeoes.json`), e os
+  catorze que eram mudos ganharam duas saudações nos três idiomas
+  (`data/npcs_3d.json`), sem voz gravada. Os retratos vêm do modelo 3D de cada um,
+  como os dos sete. O `aldeoes.json` segue só em português, na dívida declarada
+  (#6, #51). Portões `fe` (os sete primeiro, vinte e dois ao todo) e `interacao`
+  (o aceno se pergunta a um morador calado por um instante).
+- **Toda cerca do vale deita na encosta (#93).** Cada lance era posto reto, na
+  altura de uma amostra do terreno no centro dele, e na encosta uma ponta
+  flutuava e a outra se enterrava — "cercas desniveladas por todo o vale"
+  (autor, 06/10): 9 dos 32 lances do cemitério, as duas cabeceiras da ponte (a
+  pior ponta a 0,41 u) e 27 das 204 cercas de varas das roças (a pior a 0,47).
+  Agora todo lance vai de ponta a ponta no chão, com o eixo deitado pelo
+  desnível e a caixa de colisão junto (`CatalogoAssets.lance_de_cerca`, um
+  construtor só para o cercado do cemitério, as cercas da ponte e as do
+  quintal do roçado; `PaisagismoVale.plantar_cercas` para as de varas, em
+  MultiMesh). As duas cercas do quintal saíam no Tripo com 2,3 m de altura
+  (`_adereco("cerca", …, 2.0)`, em que o 2 era o comprimento da procedural):
+  são dois lances do tamanho das outras, no mesmo lugar. Portão novo
+  `cercas_na_encosta`: cada lance do vale com as pontas a menos de 0,1 u do
+  chão, e ao menos um em encosta de verdade.
+- **Os portões do sobrevoo voltam a montar o vale pela abertura.** Desde o lobby
+  em vídeo (05/10) a abertura solta o `$Cenario` antes de ele montar, a não ser
+  com `-- --lobby-3d`; o extrator do sobrevoo, que carrega a abertura e espera o
+  vale, esperava para sempre, e `sobrevoo_livre` e `sobrevoo_livre_procedural`
+  saíam pelo teto de 400 s. O extrator pede o lobby 3D por código antes de
+  carregar a cena (`abertura.lobby_3d_pedido`): os dois voltam a 42 s e 36 s.
+- **Ninguém mais sobe no altar da igreja (#98).** Na live o jogador subiu no
+  altar: a mesa tinha corpo, mas com 0,95 de altura o pulo (1,5 u) a vencia.
+  Por cima dela sobe uma guarda invisível e sólida até acima da cabeça
+  (`interior_igreja.gd`, "AltarGuarda"), sem barrar a câmera; o ponto da reza,
+  diante do altar, segue livre. Portão `interiores`, parte 4.
+- **A dica do E diz com quem se fala (#97).** O foco do E escolhe um morador
+  só, mas a dica dizia "Falar" sem dizer a quem — com um morador ao lado do
+  cordel, na live, o jogador não sabia para quem o E ia. Agora é "Falar com
+  Tonho" e "Entregar a Candinha", nos três idiomas
+  (`tecla_dos_moradores._dica_de`); o cordel, a lápide, a árvore, o alvo de
+  trabalho e as bancadas já diziam o alvo. Portão `foco_do_e`.
+- **O primeiro mergulho em água funda avisa que parar é boiar (#96).** Na live
+  ninguém sabia que parar na água é boiar e recupera o fôlego, e o jogador
+  quase se afogou. A primeira vez que o corpo entra no nado abre o cartão da
+  primeira vez, como o do cordel (`data/avisos.json`, "agua_funda", nos três
+  idiomas; `prototype._ao_mudar_o_nado`), com o vale parado; a marca vai ao
+  save e carregar não o repete. Portão `avisos_da_primeira_vez`, partes 5 e 6.
+- **O jogador escolhe em que monitor o jogo abre (#95).** Com mais de um
+  monitor só havia o F11 e arrastar a janela. AJUSTAR › Interface › Monitor
+  lista um item por tela ("Monitor 1 · 1920×1080"); a escolha move a janela
+  na hora, em tela cheia ou em janela, e fica salva (`Tela.monitores`,
+  `definir_monitor`), com o padrão no monitor principal — uma tela que deixou
+  de existir volta a ele. Nos três idiomas, com ajuda no "?". Portão `tela`.
+- **Os portões acompanham as decisões de 06/10.** Na bateria inteira (120),
+  sete reprovavam sem regressão do jogo: `chegada` cobrava quatro falas do
+  corpo (são cinco desde a #82, com o nado); `rotina_dos_moradores` cobrava
+  os catorze mudos e sem fé (falam e têm fé desde a #85; o mudo de controle é
+  o pescador calado por um instante); `festa_da_fe` cobrava a roda só com os
+  sete (os de agenda estão na teia com fé, mas não vêm à roda —
+  `npc._lugar_na_festa` reparte a roda só entre quem não tem agenda; e o
+  mestre Quirino, que só encosta no píer, fica sem fé no `aldeoes.json`);
+  `festa_da_fe` e `rotina_dos_moradores` cobravam o morador posto no lugar no
+  mesmo quadro, e desde a #84 o salto do caminho longo espera
+  `FORA_DA_VISTA_POR` segundos fora da vista (os portões esperam esse tanto,
+  como `caminho_longo`); `agua_rasa`, `tubarao` e `rio_grande` nadam, e o
+  cartão da água funda (#96) parava o vale no primeiro nado (o aviso conta
+  como já dado); `mapa_fluxo` confere o HOME com o vale de fundo e pede o
+  lobby 3D por código, como os portões do sobrevoo. `navegacao` (PierPiso →
+  Gameleira pela canoa do saveiro) já reprova na main `5dc6632`.
+- **A ponte do rio grande cai de verdade, e a obra a põe de pé (#94).** "O asset
+  não tá legal" (autor, 06/10): era o modelo de pé do Tripo com uma cerca nas
+  cabeceiras, sem arte de ponte caída. Dois modelos novos do Tripo Studio
+  (`tools/tripo/lote_2026-10-06_ponte.json`): a ponte de madeira do arraial de
+  pé, larga para o carro de boi, com esteios e aterros de pedra, e a mesma
+  ponte caída, com o vão do meio no chão. Até a obra `ponte_levantar` o vão
+  mostra a caída, e a de pé fica escondida com o tabuleiro desligado
+  (`ponte_vale._mostrar_caida`); feita a obra, a de pé volta inteira. A caída
+  não tem colisão nem laje da câmera. A cerca das cabeceiras continua.
+  Portão `ponte`: caída antes, de pé depois, e o raio no vão só bate no
+  tabuleiro da de pé.
+- **A caixa de fala veste a identidade do vale 3D.** Era o desenho da
+  `dialogo.tscn` do 2D — o marrom, a borda grossa, a letra do sistema —, e o
+  autor já tinha pedido que acompanhasse o jogo 3D. Agora é a laca com o
+  filete de ouro, como o balão de fala: o nome em Cinzel versalete dourado, o
+  fio de ouro, a fala em Cormorant, o rodapé "[E] continuar" em Cinzel miúdo
+  (`dialogo_vale._montar`). A API, a fila de falas e o quadro de 640×360 não
+  mudaram.
 
 ## Build #9 — 05/10/2026 (edição Tripothon)
 

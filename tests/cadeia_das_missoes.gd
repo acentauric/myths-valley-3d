@@ -121,14 +121,13 @@ func _run() -> void:
 				% [id, str(SEGUNDOS_PARA_ANUNCIAR), _quem_fala(pedro, jogador)])
 		await _frames(2)
 		if indice == 0:
+			# O ALTO DA TELA DIZ A TAREFA (#83): o resumo do passo, e não a fala.
 			var hud = jogo.get("hud")
-			_conferir(hud._mission_pages.size() == total and hud._mission_next.visible,
-				"a missão não expôs as páginas no HUD")
-			if hud._mission_next.visible:
-				hud._mission_next.pressed.emit()
-				_conferir(pedro.missao == indice and hud._mission_step.text == "2 de %d" % total,
-					"consultar a próxima página alterou o progresso da missão")
-				hud._mission_previous.pressed.emit()
+			var resumo: String = pedro._cadeia.resumo_do_passo(passo)
+			_conferir(hud._objective_label.text == resumo,
+				"o alto da tela não mostra a tarefa do primeiro passo: '%s' (esperava '%s')" % [hud._objective_label.text, resumo])
+			_conferir(hud._mission_step.text.begins_with("1 de "),
+				"o alto da tela não conta o passo: '%s'" % hud._mission_step.text)
 
 		# A ferramenta prometida tem de estar À MÃO DO JOGADOR ANTES de o trabalho
 		# ser cobrado. É a regra 1 do tutorial do 2D.

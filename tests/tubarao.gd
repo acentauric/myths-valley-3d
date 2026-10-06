@@ -26,6 +26,9 @@ func _run() -> void:
 	await _frames(6)
 	await _mundo_pronto()
 	var vale = current_scene
+	# O cartão da água funda (#96) para o vale no primeiro nado: aqui o nado é a
+	# prova, e o aviso conta como já dado.
+	vale._avisou_agua_funda = true
 	var world = vale.world
 	var player: CharacterBody3D = vale.player
 	var tubarao = vale.get_node_or_null("Tubarao")

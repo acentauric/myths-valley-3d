@@ -8,6 +8,8 @@ signal animation_requested(label: String)
 signal navigation_status(message: String)
 signal vigor_mudou(valor: float)
 signal folego_mudou(valor: float)
+## Entrou na água, ou saiu dela: o HUD troca a barra do meio (#82).
+signal nado_mudou(nadando: bool)
 
 const ClickNavigation = preload("res://scripts/prototipo_3d/click_navigation.gd")
 const TeclasMovimento = preload("res://scripts/prototipo_3d/teclas_movimento.gd")
@@ -195,6 +197,10 @@ var _tween_altura_nado: Tween
 var _land_check := 0.0
 var _run_toggled := false
 var _ran_since_toggle := false
+## O VIGOR, o fôlego curto do corpo (corrida, pulo, golpe; volta sozinho), e o
+## FÔLEGO DO NADO, o ar debaixo d'água. A reserva do dia é outra conta, o
+## `Energia` compartilhado (#82): o trabalho e a luta gastam dela, e só a comida,
+## a cama e o desmaio devolvem.
 var _vigor := VIGOR_MAXIMO
 var _folego := FOLEGO_MAXIMO
 var _timer_dano_sem_folego: Timer
@@ -617,7 +623,7 @@ func _physics_process(delta: float) -> void:
 
 func _input(event: InputEvent) -> void:
 	if event is InputEventKey and event.is_action_pressed("mv_run") and not event.echo:
-		_run_toggled = not _run_toggled and _vigor >= VIGOR_MINIMO_PARA_CORRER
+		_run_toggled = not _run_toggled and _vigor >= VIGOR_MINIMO_PARA_CORRER and not Energia.cansado()
 		_ran_since_toggle = false
 		navigation_status.emit("Modo corrida %s" % ("ativado" if _run_toggled else "desativado"))
 	if event is InputEventMouseMotion and _camera_locked and _camera_drag_pressed and Input.mouse_mode == Input.MOUSE_MODE_VISIBLE:
@@ -852,8 +858,7 @@ func _atualizar_nado() -> void:
 	var nadar := fundo > character_height * (ANDA_ATE if _nadando else NADA_A_PARTIR) and not _sobre_barco()
 	if nadar == _nadando:
 		return
-	_nadando = nadar
-	_atualizar_timer_dano_sem_folego()
+	_definir_nado(nadar)
 	if _nadando:
 		_cancel_walk()
 		_jumping = false
@@ -892,10 +897,21 @@ func is_swimming() -> bool:
 	return _nadando
 
 
+## Entra no nado ou sai dele, e avisa quem ouve: o HUD troca a barra do meio
+## entre a reserva do dia e o fôlego do nado (`nado_mudou`).
+func _definir_nado(nadar: bool) -> void:
+	if nadar == _nadando:
+		return
+	_nadando = nadar
+	_atualizar_timer_dano_sem_folego()
+	nado_mudou.emit(_nadando)
+
+
 ## O respawn acontece com a física parada; não espera um quadro para sair da pose de nado.
 func sair_do_nado_ao_renascer() -> void:
-	_nadando = false
-	_atualizar_timer_dano_sem_folego()
+	_definir_nado(false)
+	# Quem foi levado para casa acordou respirando: o ar do nado volta inteiro.
+	definir_folego(FOLEGO_MAXIMO)
 	if animator and animator.has_method("set_swimming"):
 		animator.set_swimming(false)
 	# A câmera suave relê a altura do pivô desta variável a cada quadro.
@@ -1226,8 +1242,11 @@ func get_current_animation() -> StringName:
 	return &"procedural"
 
 
+## Corre com vigor no corpo e a reserva do dia fora do fim: "no fim dele o corpo
+## fica cansado, o passo encurta e não dá pra correr" (`Energia.cansado`).
 func is_running() -> bool:
-	return _vigor >= VIGOR_MINIMO_PARA_CORRER and (_run_toggled or (_walk_run and not _walk_path.is_empty()))
+	return _vigor >= VIGOR_MINIMO_PARA_CORRER and not Energia.cansado() \
+		and (_run_toggled or (_walk_run and not _walk_path.is_empty()))
 
 
 func vigor_atual() -> float:

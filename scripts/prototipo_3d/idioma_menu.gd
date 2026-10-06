@@ -136,6 +136,7 @@ const EN := {
 	"Nomes dos personagens": "Character names",
 	# Cursor do mouse (04/10).
 	"Interface": "Interface",
+	"Monitor": "Monitor",
 	"Cursor do mouse": "Mouse cursor",
 	"Clássico": "Classic",
 	"Ouro polido": "Polished gold",
@@ -362,11 +363,14 @@ const EN := {
 	# (conquista_da_missao.gd).
 	"Falar": "Talk",
 	"Entregar": "Hand over",
+	"Falar com %s": "Talk to %s",
+	"Entregar a %s": "Hand over to %s",
 	"Missão concluída": "Quest complete",
 	# O E na bancada da oficina e na fogueira (tecla_das_bancadas.gd).
 	"Oficina": "Workshop",
 	"Canteiro": "Site table",
 	"Cozinhar": "Cook",
+	"Obras": "Works",
 	"Sua casa": "Your house",
 	"Casa do Pedro": "Pedro's house",
 	"Casa da Dona Zefa": "Dona Zefa's house",
@@ -557,6 +561,7 @@ const ES := {
 	"Nomes dos personagens": "Nombres de los personajes",
 	# Cursor do mouse (04/10).
 	"Interface": "Interfaz",
+	"Monitor": "Monitor",
 	"Cursor do mouse": "Cursor del ratón",
 	"Clássico": "Clásico",
 	"Ouro polido": "Oro pulido",
@@ -778,11 +783,14 @@ const ES := {
 	# (conquista_da_missao.gd).
 	"Falar": "Hablar",
 	"Entregar": "Dar",
+	"Falar com %s": "Hablar con %s",
+	"Entregar a %s": "Entregar a %s",
 	"Missão concluída": "Misión cumplida",
 	# O E na bancada da oficina e na fogueira (tecla_das_bancadas.gd).
 	"Oficina": "Taller",
 	"Canteiro": "Mesa de obras",
 	"Cozinhar": "Cocinar",
+	"Obras": "Obras",
 	"Sua casa": "Tu casa",
 	"Casa do Pedro": "Casa de Pedro",
 	"Casa da Dona Zefa": "Casa de Doña Zefa",

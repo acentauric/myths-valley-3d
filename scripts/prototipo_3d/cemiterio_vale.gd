@@ -32,6 +32,7 @@ const PASSAGEM := 2.6
 ## O tamanho da cerca do catálogo (1,15 de altura) e a grossura da colisão.
 const TAMANHO_DA_CERCA := 1.0
 const GROSSURA := 0.3
+const ALTURA := 1.2
 ## AS LAJES TORTAS, pela ordem de `world_builder.tumulos` (a de data/lapides_3d.json):
 ## espalhadas pelas fileiras do `CemiterioLayout` (a 1ª, a 3ª e a 4ª). A ponta sobe o
 ## tanto que a laje inclina — doze graus.
@@ -145,17 +146,20 @@ func _entortar(tortas: bool) -> void:
 func _levantar() -> void:
 	_desmontar()
 	_cercado_de_pe = true
-	var largura_do_lance := _largura_da_cerca()
+	var tripo: bool = _mundo.estilo_tripo()
+	var largura_do_lance: float = CatalogoAssets.largura_da_cerca(self, TAMANHO_DA_CERCA, LANCE) if tripo else LANCE
 	for trecho in _trechos():
 		var a: Vector3 = trecho[0]
 		var b: Vector3 = trecho[1]
 		var comprimento := Vector2(b.x - a.x, b.z - a.z).length()
 		var quantos := maxi(1, roundi(comprimento / LANCE))
 		for k in quantos:
-			var de := a.lerp(b, float(k) / float(quantos))
-			var ate := a.lerp(b, float(k + 1) / float(quantos))
-			_lances.append({"a": _mundo.ground_position(de), "b": _mundo.ground_position(ate),
-				"no": _lance(de, ate, largura_do_lance)})
+			# Cada lance de ponta a ponta no chão, deitado na encosta do outeiro
+			# (#93; `CatalogoAssets.lance_de_cerca`).
+			var de: Vector3 = _mundo.ground_position(a.lerp(b, float(k) / float(quantos)))
+			var ate: Vector3 = _mundo.ground_position(a.lerp(b, float(k + 1) / float(quantos)))
+			_lances.append({"a": de, "b": ate,
+				"no": CatalogoAssets.lance_de_cerca(self, de, ate, tripo, TAMANHO_DA_CERCA, largura_do_lance, ALTURA, GROSSURA, "Lance", "LanceColisao")})
 	# O caminho dos moradores muda: a malha se assa de novo, com o cercado.
 	var navegacao := get_tree().get_first_node_in_group("navegacao") if is_inside_tree() else null
 	if navegacao != null:
@@ -173,54 +177,6 @@ func _desmontar() -> void:
 		var navegacao := get_tree().get_first_node_in_group("navegacao") if is_inside_tree() else null
 		if navegacao != null:
 			navegacao.reassar()
-
-
-## Quanto mede um lance da cerca do catálogo no tamanho do cercado.
-func _largura_da_cerca() -> float:
-	if not _mundo.estilo_tripo():
-		return LANCE
-	var prova := CatalogoAssets.instanciar("cerca", self, Vector3.ZERO, TAMANHO_DA_CERCA)
-	if prova == null:
-		return LANCE
-	var largura: float = (prova.get_meta("limites") as AABB).size.x
-	remove_child(prova)
-	prova.free()
-	return maxf(largura, 0.1)
-
-
-## Um lance de `de` até `ate`: a cerca do catálogo esticada ao comprimento, com a
-## caixa de colisão dele; ou a cerca procedural, que traz a dela.
-func _lance(de: Vector3, ate: Vector3, largura_do_lance: float) -> Node3D:
-	var rumo := Vector3(ate.x - de.x, 0.0, ate.z - de.z)
-	var comprimento := rumo.length()
-	var yaw := atan2(-rumo.z, rumo.x)
-	var meio: Vector3 = _mundo.ground_position(de.lerp(ate, 0.5))
-	var lance := Node3D.new()
-	lance.name = "Lance"
-	add_child(lance)
-	if _mundo.estilo_tripo():
-		var cerca := CatalogoAssets.instanciar("cerca", lance, meio - Vector3(0, 0.06, 0), TAMANHO_DA_CERCA, yaw)
-		if cerca != null:
-			cerca.scale.x *= comprimento / largura_do_lance
-			var corpo := StaticBody3D.new()
-			corpo.name = "LanceColisao"
-			var forma := CollisionShape3D.new()
-			var caixa := BoxShape3D.new()
-			caixa.size = Vector3(comprimento, 1.2, GROSSURA)
-			forma.shape = caixa
-			corpo.add_child(forma)
-			lance.add_child(corpo)
-			corpo.global_position = meio + Vector3.UP * 0.6
-			corpo.rotation.y = yaw
-			return lance
-	# A cerca procedural começa na ponta e vai pelo +X dela; o espaçamento é o
-	# que faz os mourões fecharem o comprimento.
-	var mouroes := maxf(ceilf(comprimento / 1.65), 1.0)
-	var cerca_proc := FloraReconcavo.cerca(comprimento, comprimento / mouroes - 0.0001)
-	lance.add_child(cerca_proc)
-	cerca_proc.global_position = _mundo.ground_position(de) - Vector3(0, 0.04, 0)
-	cerca_proc.rotation.y = yaw
-	return lance
 
 
 ## OS TRECHOS DE CERCA: os quatro lados do quadrado em volta das covas, menos a

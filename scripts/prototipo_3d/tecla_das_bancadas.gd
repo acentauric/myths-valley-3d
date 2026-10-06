@@ -51,7 +51,10 @@ const LUGARES := {
 	"cozinha": {"aba": PainelVale.Aba.COZINHA, "rotulo": "Cozinhar"},
 }
 ## O que a dica dos sítios de obra diz, nos três idiomas. Os sítios são os de
-## `BancadasVale.OBRAS` que têm `raio_do_e`.
+## `BancadasVale.OBRAS` que têm `raio_do_e` — o poço da #80 ("Não tá interagindo. A
+## missão é consertar o poço", no teste ao vivo de 05/10), a ponte, o mirante, o
+## cemitério e a carroça. O trapiche, a casa e o armazém ficam sem E de propósito: no
+## trapiche o E seria do Tonho, parado ali, e a casa tem a porta, a cama e o baú.
 const ARQUIVO_DOS_ROTULOS := "res://data/dicas_do_e_nas_obras.json"
 ## A dica fica em cima da bancada, e não no pé dela.
 const ALTURA_DA_DICA := 1.3

@@ -87,6 +87,9 @@ func _run() -> void:
 	await _mundo_pronto()
 	await _frames(8)
 	vale = current_scene
+	# O cartão da água funda (#96) para o vale no primeiro nado: aqui o nado é a
+	# prova (a câmera sobre a água, e a maré que desce), e o aviso conta como já dado.
+	vale._avisou_agua_funda = true
 	world = vale.get("world")
 	jogador = vale.get("player")
 	interiores = vale.get("interiores")

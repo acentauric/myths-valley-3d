@@ -10,12 +10,14 @@ extends SceneTree
 ##
 ##   1. O ELENCO: os catorze estão no vale, com nome, ofício nos três idiomas, falantes (até
 ##      06/10/2026 eram mudos e sem falas: as falas deles são do portão `falas_dos_moradores`)
-##      e sem fé de festa; cada um tem casa, e a casa foi erguida (nenhum chama "Casa do arraial").
+##      e — desde a #85, na teia social — com fé; cada um tem casa, e a casa foi erguida
+##      (nenhum chama "Casa do arraial").
 ##   2. A AGENDA RESOLVE: todo lugar dela existe no cenário (inclusive "Casa/Varal"), e a
 ##      malha de navegação leva até 1,5 u de cada posto.
 ##   3. A HORA MANDA: de meia em meia hora das 24, cada um está no posto da entrada de
 ##      agora, e quem se recolhe está invisível e sem colisão.
-##   4. O SALTO DE HORA: o relógio pula seis horas com o jogador longe, e o morador já está
+##   4. O SALTO DE HORA: o relógio pula seis horas com o jogador longe e, passados os
+##      segundos do salto do caminho longo (#84: FORA_DA_VISTA_POR), o morador já está
 ##      no lugar da hora nova (a lavadeira, que leva uma tarde a pé até o varal).
 ##   5. O TRABALHO: parado no posto, o corpo toca o clipe do ofício e leva o que a agenda
 ##      manda (a vassoura do sacristão).
@@ -83,7 +85,8 @@ func _run() -> void:
 		_conferir(not bool(d.get("mudo", false)), "'%s' ainda é mudo, e agora tem fala (falas_dos_moradores.gd)" % id)
 		_conferir(not (d.get("falas", []) as Array).is_empty() and not (d.get("saudacoes", []) as Array).is_empty(),
 			"'%s' não tem as falas e as saudações que o tiraram do mudo" % id)
-		_conferir(afinidade.fe_de(id) == "", "'%s' não devia ter fé de festa" % id)
+		# Desde a #85 (06/10) os catorze estão na teia social, com a fé do `aldeoes.json`.
+		_conferir(afinidade.fe_de(id) != "", "'%s' não tem fé no aldeoes.json" % id)
 		var casa := str(d.get("casa", ""))
 		_conferir(casa != "" and not casa.begins_with("Casa do arraial 6") and casa != "Casa do arraial 8",
 			"'%s' mora na casa '%s', que é do Pedro ou da Zefa, ou não tem casa" % [id, casa])
@@ -175,8 +178,11 @@ func _run() -> void:
 	lavadeira.ir_ao_posto_agora()
 	await _passos(6)
 	var antes: Vector3 = lavadeira.global_position
+	# Com o jogador longe e fora da vista: o salto espera FORA_DA_VISTA_POR segundos
+	# de física (#84) antes de pôr o morador no lugar, como em `caminho_longo`.
+	jogador.teleportar(mundo.ground_position(mundo.ancoras["Gameleira"] + Vector3(0.0, 0.0, 6.5), 0.05), 0.0)
 	dia.definir_hora(13.0)
-	await _passos(12)
+	await _passos(int(float(lavadeira.FORA_DA_VISTA_POR) * 60.0) + 30)
 	var varal: Vector3 = lavadeira._lugar_da_entrada(lavadeira._entrada)
 	_conferir(str(lavadeira._agenda[lavadeira._entrada].get("acao", "")) == "estender", "às 13 h a lavadeira devia estar estendendo a roupa, e está em '%s'" % str(lavadeira._agenda[lavadeira._entrada].get("acao", "")))
 	var distancia := Vector2(lavadeira.global_position.x - varal.x, lavadeira.global_position.z - varal.z).length()
@@ -193,6 +199,8 @@ func _run() -> void:
 	_conferir(sacristao._levados.size() == 1, "o sacristão devia levar a vassoura na mão (leva %d coisas)" % sacristao._levados.size())
 
 	# --- 6. O MUDO NÃO FALA ---------------------------------------------------------
+	# Os catorze falam desde a #85: o mudo de controle é o pescador, calado lá no começo
+	# (o MUDO SINTÉTICO, antes da falsificação, que o faz falar de novo).
 	var pescador = por_id["pescador"]
 	var benedito = por_id["benedito"]
 	var avisos := [0]
@@ -210,6 +218,7 @@ func _run() -> void:
 	jogador.global_position = benedito.global_position + Vector3(1.0, 0.0, 0.0)
 	benedito.saudar()
 	_conferir(falou[0] == 1, "o Benedito, que não é mudo, devia ter falado (controle do portão)")
+	pescador.dados.erase("mudo")
 
 	# --- 7. A CASA É DELES, E O VARAL TAMBÉM -------------------------------------------
 	var com_varal := 0

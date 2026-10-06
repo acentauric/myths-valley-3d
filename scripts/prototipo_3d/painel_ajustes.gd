@@ -276,6 +276,7 @@ func _aba_cenario(esquerda: VBoxContainer, direita: VBoxContainer) -> void:
 	_escolha("Cursor do mouse", Tela.ROTULOS_CURSOR, Tela.cursor, Tela.definir_cursor, Tela.PADRAO_CURSOR)
 	_escolha("Tamanho do texto", Tela.ROTULOS_TAMANHO, Tela.tamanho_texto, Tela.definir_tamanho_texto, Tela.PADRAO_TAMANHO)
 	_escolha("Tamanho do HUD", Tela.ROTULOS_TAMANHO, Tela.tamanho_hud, Tela.definir_tamanho_hud, Tela.PADRAO_TAMANHO)
+	_escolha("Monitor", Tela.monitores(), Tela.monitor, Tela.definir_monitor, Tela.monitor_padrao())
 	if no_jogo:
 		return
 	_secao("Menu")

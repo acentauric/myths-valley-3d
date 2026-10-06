@@ -49,7 +49,21 @@ const ARQUIVO_DOS_MORADORES := "res://data/dialogos/aldeoes.json"
 ##
 ## O Pedro fica de fora: ele é o guia, tem sistema de fala próprio e a relação
 ## com ele é contada pelo tutorial, não medida em pontos.
-const MORADORES := ["benedito", "zefa", "cosme", "tonho", "filo", "candinha", "damiao"]
+##
+## A LISTA VEM DO ARQUIVO (#85), na ordem dele: os sete do 2D e, depois deles,
+## os quinze que o vale ganhou em 05/10 — o padre, o sacristão, a beata, o
+## mercador, o guarda, o pescador, a marisqueira, a lavadeira, a rendeira, a
+## quituteira, o carpinteiro, as duas crianças, o mestre Quirino e o saveirista.
+## Era uma constante com os sete, e os outros quinze não entravam na teia.
+var MORADORES: Array:
+	get:
+		if _moradores.is_empty():
+			var dados: Dictionary = Jogo.dados(ARQUIVO_DOS_MORADORES)
+			for id in dados:
+				if dados[id] is Dictionary and (dados[id] as Dictionary).has("nome"):
+					_moradores.append(str(id))
+		return _moradores
+var _moradores: Array = []
 
 ## Os graus, e o que cada um é na boca de quem mora aqui.
 ##

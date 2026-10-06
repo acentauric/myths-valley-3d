@@ -1025,9 +1025,22 @@ static func plantar_cercas(regiao: Node3D, itens: Array, receitas: Dictionary) -
 		var modelo: Dictionary = CatalogoAssets.malha(chave, 1.0)
 		if modelo.is_empty():
 			continue
+		var base: Transform3D = modelo.base
+		# Meia largura da malha ao longo do X dela, já no quadro do catálogo: as
+		# pontas do lance ficam a essa distância do ponto, pelo giro.
+		var meia: float = (base * (modelo.mesh as Mesh).get_aabb()).size.x * 0.5
 		var transforms: Array[Transform3D] = []
 		for item: Dictionary in cercas[chave]:
+			# Cada lance de ponta a ponta no chão, deitado na encosta (#93), e não
+			# reto na altura de uma amostra no centro.
 			var ponto: Vector2 = item["ponto"]
-			var chao: float = regiao.ground_height_at(Vector3(ponto.x, 0.0, ponto.y))
-			transforms.append(Transform3D(Basis.from_euler(Vector3(0.0, float(item["giro"]), 0.0)), Vector3(ponto.x, chao - 0.02, ponto.y)) * (modelo.base as Transform3D))
+			var giro := float(item["giro"])
+			var centro := Vector3(ponto.x, 0.0, ponto.y)
+			var rumo := Vector3(cos(giro), 0.0, -sin(giro)) * meia
+			var de: Vector3 = regiao.ground_position(centro - rumo)
+			var ate: Vector3 = regiao.ground_position(centro + rumo)
+			transforms.append(Transform3D(CatalogoAssets.base_do_lance(de, ate), de.lerp(ate, 0.5) - Vector3(0.0, 0.02, 0.0)) * base)
+		# O que foi plantado, para quem confere: o renderizador vazio dos portões
+		# não devolve as transformações do MultiMesh.
+		regiao.set_meta("cercas_" + String(chave), transforms)
 		regiao._multimesh_em_blocos("Paisagismo: " + String(chave), modelo.mesh, transforms, lod)

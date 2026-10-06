@@ -288,6 +288,7 @@ func _ready() -> void:
 	player.camera_lock_changed.connect(Callable(hud, "set_camera_locked"))
 	player.animation_requested.connect(_on_animation_requested)
 	player.navigation_status.connect(Callable(hud, "set_notice"))
+	player.nado_mudou.connect(_ao_mudar_o_nado)
 	hud.connect("camera_lock_requested", Callable(player, "set_camera_locked"))
 	world.house_interacted.connect(func(properties: Dictionary): hud.show_house_info(world.format_house_properties(properties)))
 	world.house_interaction_cleared.connect(Callable(hud, "clear_house_info"))
@@ -798,13 +799,11 @@ func _ready() -> void:
 	# `estado_para_salvar`.
 	Salvamento.registrar_mundo(self)
 	var retomou_partida := _retomar_a_partida()
-	Energia.registrar_vigor(player)
-	hud.configurar_folego(player)
+	# TRÊS CONTAS (#82): a reserva do dia (o `Energia`, que o HUD ouve sozinho), o
+	# vigor do corpo e o fôlego do nado, estes dois lidos do jogador.
+	hud.configurar_corpo(player)
 	_ligar_os_acontecimentos_das_frentes()
 	_conferir_o_relogio_parado()
-	# DOIS FÔLEGOS: o vigor do corpo (a barra verde da corrida e do golpe) e a
-	# reserva do dia (o `Energia`), cada um na sua conta. Ver `vigor_maximo`.
-	_arvores_info._atualizar_stamina_hud()
 	Equipamento.migrar_ferramenta_das_maos()
 	if not _barra_de_ferramentas_migrada:
 		Inventario.trazer_ferramentas_para_a_mao()
@@ -1160,7 +1159,6 @@ func _montar_moradores(spawn: Vector3) -> void:
 		pedro.global_position = world.ground_position(spawn + lado, 0.05)
 		pedro.saudou.connect(_on_saudacao)
 		pedro.missao_mudou.connect(func(t: String, a: Vector3, i: int, n: int) -> void:
-			hud.set_mission_pages(pedro.paginas_do_hud())
 			missao_do_vale_mudou.emit(t, a, i, n))
 		# OS ALVOS DE TRABALHO, para o marcador apontar o tronco e não a casa.
 		pedro.recursos = _recursos
@@ -1201,6 +1199,7 @@ func _montar_moradores(spawn: Vector3) -> void:
 	add_child(queda)
 	queda.configurar(world, player, hud)
 	queda.interiores = interiores
+	queda.guia = pedro
 	noite = queda
 	casa = CasaDoJogador.new()
 	casa.name = "CasaDoJogador"
@@ -1682,6 +1681,20 @@ func _ao_conhecer_a_arvore(_especie: String) -> void:
 		aviso_da_primeira_vez.mostrar("arvore")
 
 
+## O PRIMEIRO MERGULHO EM ÁGUA FUNDA (#96) vem com o aviso de que parar é boiar e
+## o fôlego volta — na live ninguém sabia, e o jogador quase se afogou; o Pedro
+## só explica o nado na caminhada do tutorial. Uma vez por partida: a marca vai
+## ao save (`avisou_agua_funda`).
+var _avisou_agua_funda := false
+
+
+func _ao_mudar_o_nado(nadando: bool) -> void:
+	if not nadando or _avisou_agua_funda or aviso_da_primeira_vez == null:
+		return
+	_avisou_agua_funda = true
+	aviso_da_primeira_vez.mostrar("agua_funda")
+
+
 ## O papel se guardou com o E ou o clique, por conta dele: o dono das telas
 ## precisa saber, para o vale voltar a andar. E quem veio do almanaque volta a
 ## ele — a não ser que tenha trocado de tela pela tecla, que já abriu outra.
@@ -1881,6 +1894,8 @@ func estado_para_salvar() -> Dictionary:
 		"jogador": [player.global_position.x, player.global_position.y, player.global_position.z],
 		"giro": player.visual.rotation.y,
 		"folego_oceano": player.folego_atual(),
+		# O aviso da água funda já dado (#96): carregar não o repete.
+		"avisou_agua_funda": _avisou_agua_funda,
 		"hora": Dia.hora,
 		"horas_decorridas": Dia.horas_decorridas,
 		# O jogador parou o relógio nesta partida: daqui em diante ela não conta
@@ -1966,6 +1981,7 @@ func restaurar_do_save(estado: Dictionary) -> void:
 	_relogio_pausado_antes = bool(estado.get("pausado", false))
 	Dia.pausado = _relogio_pausado_antes or get_tree().paused
 	_barra_de_ferramentas_migrada = bool(estado.get("barra_de_ferramentas_migrada", false))
+	_avisou_agua_funda = bool(estado.get("avisou_agua_funda", false))
 	if estado.has("hora"):
 		Dia.definir_hora(float(estado["hora"]))
 	_visited.clear()
@@ -2142,7 +2158,6 @@ func _lendo() -> bool:
 
 
 func _exit_tree() -> void:
-	Energia.desregistrar_vigor(player)
 	if Vida.esta_lendo == Callable(self, "_lendo"):
 		Vida.esta_lendo = Callable()
 	if Mochila.abrir_documento == Callable(self, "_ler_documento"):
@@ -2299,7 +2314,6 @@ func _pendurar_cadeia(morador: Node3D, arquivo: String, perto: float, chave: Str
 		cadeia.free()
 		return null
 	cadeia.missao_mudou.connect(func(t: String, a: Vector3, i: int, n: int) -> void:
-		hud.set_mission_pages(cadeia.paginas_do_hud())
 		missao_do_vale_mudou.emit(t, a, i, n))
 	# A RECOMPENSA DO PASSO (#48) é dita no HUD, como no 2D.
 	cadeia.pagou.connect(func(texto: String) -> void: hud.set_notice(texto))

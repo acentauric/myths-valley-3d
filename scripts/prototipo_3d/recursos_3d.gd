@@ -524,7 +524,8 @@ func _aplicar_golpe(id: String) -> void:
 	var ficha: Dictionary = alvo["ficha"]
 	alvo["golpes_dados"] = int(alvo["golpes_dados"]) + 1
 	var faltam := int(ficha.get("golpes", 3)) - int(alvo["golpes_dados"])
-	# O SOM É DO IMPACTO: cada golpe que acerta, e o que derruba também.
+	# O SOM É DO IMPACTO (#89): cada golpe que acerta, e o que derruba também — uma
+	# tabela só (`SONS_DO_GOLPE`, `SONS_DO_ULTIMO`), e a queda entra depois do golpe.
 	_tocar_o_golpe(ficha, faltam <= 0)
 	if faltam > 0:
 		_sacudir(alvo["no"])

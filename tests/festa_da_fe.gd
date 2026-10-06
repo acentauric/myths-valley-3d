@@ -8,7 +8,8 @@ extends SceneTree
 ##   1. FORA DA FESTA, À TARDE, todo morador está no posto de sempre.
 ##   2. NO DIA DA FESTA, DE MANHÃ, também: a festa é da tarde.
 ##   3. À VISTA DO JOGADOR, quem sai para a festa anda: não pula para o lugar.
-##   4. LONGE DOS OLHOS DELE, os quatro católicos já estão na roda do cruzeiro —
+##   4. LONGE DOS OLHOS DELE — passados os segundos do salto do caminho longo (#84:
+##      FORA_DA_VISTA_POR) —, os quatro católicos já estão na roda do cruzeiro —
 ##      cada um num lugar, em terra e em chão livre —, e o resto do arraial
 ##      segue no posto de sempre.
 ##   5. DE NOITE AINDA ESTÃO; NA MADRUGADA voltam para o posto de sempre.
@@ -49,20 +50,23 @@ func _run() -> void:
 	vale = current_scene
 	world = vale.world
 	jogador = vale.player
+	var com_agenda := {}
 	for morador in vale.moradores:
 		# Quem tem agenda (os moradores novos) não segue os cinco postos do dia: a jornada
-		# deles é o portão `rotina_dos_moradores`.
+		# deles é o portão `rotina_dos_moradores` — e desde a #85 eles estão na teia
+		# (`Afinidade.MORADORES`) com fé, sem vir à roda (`_da_roda`).
 		if morador.dados.has("agenda"):
+			com_agenda[str(morador.dados.get("id", ""))] = true
 			continue
 		por_id[str(morador.dados.get("id", ""))] = morador
 	for id in afinidade.MORADORES:
-		_conferir(por_id.has(id), "o morador '%s' não está no vale" % id)
+		_conferir(por_id.has(id) or com_agenda.has(id), "o morador '%s' não está no vale" % id)
 	if falhas > 0:
 		_fechar()
 		return
 	# Quem diz a hora é o portão, e não o tempo que passa enquanto ele roda.
 	dia.pausado = true
-	var catolicos: Array = afinidade.da_fe("catolica")
+	var catolicos: Array = _da_roda(afinidade.da_fe("catolica"))
 	_conferir(catolicos.size() == 4, "a festa do Bom Jesus devia juntar quatro católicos, e não %d" % catolicos.size())
 	var terreiro: Vector3 = world.ancoras["Terreiro"]
 	var gameleira: Vector3 = world.ancoras["Gameleira"]
@@ -126,6 +130,7 @@ func _run() -> void:
 	jogador.teleportar(perto_da_gameleira, 0.0)
 	await _quadros(8)
 	_longe_de(catolicos, perto_da_gameleira)
+	await _fora_da_vista()
 	var cruzeiro: Vector3 = world.ancoras["Cruzeiro"]
 	_na_roda(catolicos, cruzeiro, 2.2, 3.0, "do cruzeiro")
 	for id in por_id:
@@ -137,6 +142,7 @@ func _run() -> void:
 	for id in catolicos:
 		_conferir(por_id[id]._posto == "festa", "às nove da noite do Bom Jesus, '%s' deixou a festa" % id)
 	await _na_hora(2.0)
+	await _fora_da_vista()
 	for id in catolicos:
 		_no_posto_de_sempre(id, "madrugada", "na madrugada depois do Bom Jesus")
 		_conferir(_no_chao(por_id[id].global_position).distance_to(_no_chao(por_id[id]._alvo)) < 1.0,
@@ -145,9 +151,10 @@ func _run() -> void:
 	# --- 6. AS OUTRAS DUAS FESTAS ----------------------------------------------------
 	_no_dia_da_festa("candomble")
 	await _na_hora(15.0)
-	var do_candomble: Array = afinidade.da_fe("candomble")
+	var do_candomble: Array = _da_roda(afinidade.da_fe("candomble"))
 	_conferir(do_candomble.has("zefa") and do_candomble.has("cosme"), "a Dona Zefa e o Cosme não são do candomblé: %s" % str(do_candomble))
 	_longe_de(do_candomble, perto_da_gameleira)
+	await _fora_da_vista()
 	_na_roda(do_candomble, terreiro, 2.0, 4.0, "do terreiro")
 	var fogo: Vector3 = terreiro + world.ancoras["TerreiroFrente"]
 	for id in do_candomble:
@@ -160,9 +167,10 @@ func _run() -> void:
 	jogador.teleportar(no_cemiterio, 0.0)
 	_no_dia_da_festa("caboclo")
 	await _na_hora(15.0)
-	var do_caboclo: Array = afinidade.da_fe("caboclo")
+	var do_caboclo: Array = _da_roda(afinidade.da_fe("caboclo"))
 	_conferir(do_caboclo == ["tonho"], "a festa do Dois de Julho devia levar só o Tonho, e não %s" % str(do_caboclo))
 	_longe_de(do_caboclo, no_cemiterio)
+	await _fora_da_vista()
 	_na_roda(do_caboclo, gameleira, 2.6, 3.8, "da gameleira")
 	await _quadros(20)
 	var tonho = por_id["tonho"]
@@ -172,6 +180,19 @@ func _run() -> void:
 		if not do_caboclo.has(id):
 			_no_posto_de_sempre(id, "tarde", "no Dois de Julho, quem não é do caboclo")
 	_fechar()
+
+
+## O SALTO DO CAMINHO LONGO ESPERA (#84): longe do jogador e fora da vista por
+## FORA_DA_VISTA_POR segundos de física seguidos, e só então o morador é posto
+## no lugar. O portão espera esse tanto, em passos de física, como `caminho_longo`.
+func _fora_da_vista() -> void:
+	await _passos(int(float(por_id["benedito"].FORA_DA_VISTA_POR) * 60.0) + 30)
+
+
+## Quem da fé vem à roda: os moradores dos cinco postos. Os de agenda (os quinze
+## de 05/10, na teia desde a #85) têm fé, mas jornada própria, e não vêm.
+func _da_roda(ids: Array) -> Array:
+	return ids.filter(func(id) -> bool: return por_id.has(str(id)))
 
 
 ## O posto e o lugar de sempre para o período, sem festa nenhuma por cima. Quem

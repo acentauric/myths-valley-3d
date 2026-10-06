@@ -58,7 +58,8 @@ const PopupsDoMundo = preload("res://scripts/prototipo_3d/popups_do_mundo.gd")
 const FilaDeFalas = preload("res://scripts/prototipo_3d/fila_de_falas.gd")
 
 const LARGURA_MAX := 300.0
-const ALCANCE := 45.0
+## Só de perto (#90): era 45 u, e balões da praça inteira apareciam de longe.
+const ALCANCE := 16.0
 const MARGEM := 12.0
 ## Espaço livre no pé da tela (aviso do HUD).
 const RODAPE := 110.0
@@ -228,6 +229,12 @@ func retangulo() -> Rect2:
 	if not visible or not _painel.visible:
 		return Rect2()
 	return Rect2(_painel.global_position, _painel.size)
+
+
+## O balão está sendo visto: com fala, ao alcance e na frente da câmera. Longe
+## ou atrás, a raiz fica `visible` e só o painel se recolhe (`_posicionar`).
+func a_vista() -> bool:
+	return visible and _painel.visible
 
 
 func _process(delta: float) -> void:

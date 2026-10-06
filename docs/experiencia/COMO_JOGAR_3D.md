@@ -10,19 +10,25 @@ No Godot Project Manager, outra opção é importar **`project.godot`** e execut
 
 ## Vida, fôlego e vigor
 
-As três barras abaixo do relógio mostram nome e valor atual/máximo. Vida é
-vermelha (verde com peçonha), fôlego é azul e vigor é verde. Corrida, salto,
-corte, trabalho e luta gastam vigor. O fôlego só diminui quando o personagem
-está nadando em água funda: são 5 pontos por segundo. Com 3 pontos de fôlego,
-um segundo de nado zera a barra e tira 2 de vida. Abaixo de 20% de fôlego,
-a barra fica âmbar e avisa que o corpo está cansado. Vigor baixo continua
-encurtando o passo pela regra de Energia.
+As três barras abaixo do relógio são três contas. **Vida**, em cima, vermelha
+(verde com peçonha): bicho e peçonha tiram dela; zerada, o jogador apaga e acorda
+em casa no dia seguinte. **Fôlego**, no meio, só com o número: a reserva do dia,
+a `Energia` do 2D — enxada, machado, picareta, lavoura e luta gastam dela, e só
+comida, cama e desmaio devolvem (o sono devolve um valor fixo, ver `Progressao`).
+Abaixo de 20% a barra fica vermelha e diz "cansado": o passo cai para 62% e a
+corrida não responde até comer ou dormir. **Vigor**, embaixo, verde: o fôlego
+curto do corpo — a corrida (5/s), o salto (10) e o braço no golpe (50 por golpe)
+gastam dele, e ele volta sozinho: 2,5/s andando, 20/s parado. Baixo, a barra fica
+âmbar; zerado, a corrida para.
 
-Andar em terra recupera 2,5 pontos de vigor e fôlego por segundo; parado no chão, sem
-golpe nem gesto, recupera 20 de vigor e 10 de fôlego por segundo. Comida repõe
-vigor; sono e desmaio também enchem o fôlego. Recuperar as reservas não cura
-a vida automaticamente. Carregar a partida devolve os valores guardados,
-sem cobrar esforço.
+**Na água** a barra do meio vira o **fôlego do nado**, azul: nadando, o corpo gasta
+primeiro o vigor (5/s; 10/s no nado rápido) e, quando ele acaba, o fôlego (5/s);
+sem fôlego a água tira 20% da vida por segundo ("afogamento"). Parar de nadar ou
+achar chão recupera os dois (20 de vigor e 10 de fôlego por segundo). Quem apaga é
+levado para casa e acorda respirando. Ao sair da água a barra volta à reserva.
+Recuperar as reservas não cura a vida. Carregar a partida devolve os valores
+guardados, sem cobrar esforço. O Pedro explica as quatro contas na caixa de fala,
+na primeira caminhada (`corpo` em `data/missoes_guia.json`), com a voz dele.
 
 ## Controles
 
@@ -53,7 +59,6 @@ As letras marcadas com * são **remapeáveis** em AJUSTAR → Geral → Atalhos;
 | Alt+1 a Alt+8 | Gestos: saudação, tchau, concordar, olhar ao redor, medo, braços cruzados, golpe, nado |
 | Avançar a hora* (T) | Adiantar o relógio do vale em uma hora |
 | Reiniciar* (R) | Voltar ao ponto inicial |
-| Fechar o quadro da missão* (X) | Recolher o quadro da missão no alto da tela, depois de lido (as setas ◀ ▶ passam as páginas); ele volta sozinho no passo seguinte |
 
 **Telas** — só uma fica aberta por vez, e abrir outra fecha a que estava; enquanto uma tela está aberta, o vale para atrás dela. A mesma tecla ou o Esc fecham.
 

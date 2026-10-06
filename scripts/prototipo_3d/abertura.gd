@@ -23,6 +23,9 @@ var _video_lobby: VideoStreamPlayer
 ## cena: o `--lobby-3d` só existe na linha de comando, e o runner não passa argumento a
 ## portão. Sem isto o menu libera o vale na entrada, e quem espera o `mundo` fica
 ## girando até o teto. É de processo (`static`): fica ligada até o portão acabar.
+## É o mesmo `-- --lobby-3d` para quem carrega a abertura por script: o extrator do
+## sobrevoo (`tools/prototipo_3d/sobrevoo/extrair_geometria.gd`, e os portões
+## `sobrevoo_livre*` que o estendem), o `mapa_fluxo` e o `lobby_em_video`.
 static var lobby_3d_pedido := false
 const VISUAL_PREFERENCES := "user://preferencias_visuais.cfg"
 const FLYOVER_SECONDS := 72.0

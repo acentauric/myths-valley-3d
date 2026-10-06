@@ -1409,6 +1409,19 @@ func _adereco(chave: String, origin: Vector3, yaw: float = 0.0, size: float = 1.
 	return peca
 
 
+## O lance das cercas soltas do quintal do roçado, como o do cercado do cemitério.
+const LANCE_DO_QUINTAL := 2.0
+
+
+## UMA CERCA SOLTA DO QUINTAL (#93): dois lances ao longo do X, centrados em
+## `centro`, cada um de ponta a ponta no chão (`CatalogoAssets.lance_de_cerca`).
+func _cerca_do_quintal(centro: Vector3, tripo: bool, largura_do_lance: float) -> void:
+	for k in 2:
+		var de := ground_position(centro + Vector3((float(k) - 1.0) * LANCE_DO_QUINTAL, 0.0, 0.0))
+		var ate := ground_position(centro + Vector3(float(k) * LANCE_DO_QUINTAL, 0.0, 0.0))
+		CatalogoAssets.lance_de_cerca(self, de, ate, tripo, 1.0, largura_do_lance, 1.2, 0.3, "CercaDoQuintal", "CercaColisao")
+
+
 ## Caixa sólida na laje do túmulo: não se atravessa andando, mas dá para subir pulando.
 func _colisao_tumulo(chao: Vector3, pegada: Vector3) -> void:
 	var body := StaticBody3D.new()
@@ -1689,8 +1702,13 @@ func _build_farm() -> void:
 				crop.height = 0.54 + row * 0.09
 				crop.radial_segments = 5
 				_mesh(crop, ground_position(canteiro + Vector3(-2.3 + column * 0.75, 0, row * 1.35), 0.35), Color("8fa85e"))
-	_adereco("cerca", ground_position(origin + Vector3(-4, 0, 6)), 0.0, 2.0)
-	_adereco("cerca", ground_position(origin + Vector3(-4, 0, -3)), 0.0, 2.0)
+	# AS DUAS CERCAS DO QUINTAL, em lances deitados na encosta como toda cerca do
+	# vale (#93), e do tamanho das outras: por `_adereco("cerca", …, 2.0)` a do
+	# Tripo saía com 2,3 m de altura — o 2 era o comprimento da procedural.
+	var tripo := estilo_tripo()
+	var largura_do_lance := CatalogoAssets.largura_da_cerca(self, 1.0, LANCE_DO_QUINTAL) if tripo else LANCE_DO_QUINTAL
+	for recuo: float in [6.0, -3.0]:
+		_cerca_do_quintal(ground_position(origin + Vector3(-4.0, 0.0, recuo)), tripo, largura_do_lance)
 	_box(Vector3(0.85, 1.0, 0.85), ground_position(origin + Vector3(5.2, 0, 2), 0.5), WOOD, true)
 	_box(Vector3(0.95, 0.11, 0.95), ground_position(origin + Vector3(5.2, 0, 2), 1.0), Color("b1966c"))
 
@@ -1776,50 +1794,23 @@ func _erguer_ponte(point: Vector3, anchor: String) -> void:
 		if limites.size.z > limites.size.x:
 			ao_longo = Vector3(sin(bridge_yaw), 0.0, cos(bridge_yaw))
 	pontes[anchor] = {"centro": bridge, "ao_longo": ao_longo, "comprimento": comprimento, "largura": largura}
+	# A PONTE CAÍDA (#94), no mesmo vão: o modelo de pé fica escondido e sem
+	# tabuleiro até a obra `ponte_levantar`, e a caída aparece no lugar — quem
+	# troca é o `ponte_vale.gd`, pela obra. Sem o modelo do Tripo (o estilo
+	# procedural), a ponte é só a de pé, cercada.
+	if modelo != null and estilo_tripo():
+		var caida := CatalogoAssets.instanciar("ponte_caida", self, bridge, 1.0, bridge_yaw)
+		if caida != null:
+			caida.name = "PonteCaidaTripo"
+			caida.visible = false
+			pontes[anchor]["modelos"] = {"de_pe": modelo, "caida": caida}
 
 
-## O VAU DO RIO GRANDE (`Lugares` "vau"): o ponto do rio do norte a VAU_DA_PONTE
-## da ponte, pela linha dele — onde se atravessa a pé, com água na canela,
-## enquanto a ponte está cercada (`ponte_vale.gd`). Rio abaixo pela ordem dos
-## pontos; se a linha acaba antes, rio acima. Sem rio do norte, INF, e o nome não
-## resolve.
-const VAU_DA_PONTE := 8.0
-
-
-func _vau_ao_lado(ponte: Vector3) -> Vector3:
-	if _region == null:
-		return Vector3.INF
-	var alvo := Vector2(ponte.x, ponte.z)
-	var linha := PackedVector2Array()
-	var trecho := -1
-	var perto := Vector2.ZERO
-	var menor := INF
-	for river in _region._rivers:
-		if not _region._is_northern_river(river):
-			continue
-		var pontos: PackedVector2Array = river.points
-		for i in range(pontos.size() - 1):
-			var mais_perto := Geometry2D.get_closest_point_to_segment(alvo, pontos[i], pontos[i + 1])
-			if mais_perto.distance_to(alvo) < menor:
-				menor = mais_perto.distance_to(alvo)
-				linha = pontos
-				trecho = i
-				perto = mais_perto
-	if trecho < 0:
-		return Vector3.INF
-	for sentido in [1, -1]:
-		var falta := VAU_DA_PONTE
-		var de := perto
-		var i: int = trecho + 1 if sentido > 0 else trecho
-		while i >= 0 and i < linha.size():
-			var passo := de.distance_to(linha[i])
-			if passo >= falta:
-				var ali := de + (linha[i] - de).normalized() * falta
-				return ground_position(Vector3(ali.x, 0.0, ali.y))
-			falta -= passo
-			de = linha[i]
-			i += sentido
-	return Vector3.INF
+## O RIO GRANDE NÃO TEM VAU (#81). Havia um, a oito unidades da ponte pela linha
+## do rio, "onde se atravessa a pé, com água na canela, enquanto a ponte está
+## cercada". Com o jogador nadando, era a trava da jornada aberta: a fazenda do
+## convite fica do outro lado. Agora o rio é fundo e a margem norte é barranco
+## (`GeoRegionRenderer`, RIO GRANDE): fora da ponte ninguém passa, como no 2D.
 
 
 func _build_landmark_details() -> void:
@@ -1866,9 +1857,6 @@ func _build_landmark_details() -> void:
 			for side in [-1.8, 1.8]:
 				_box(Vector3(0.3, 1.5, 0.3), pier + Vector3(side, -0.75, offset), WOOD))
 	_erguer_ponte(_region.get_feature_center("Ponte", "poi"), "Ponte")
-	var vau := _vau_ao_lado(ancoras["Ponte"])
-	if vau.is_finite():
-		ancoras["Vau"] = vau
 	var central_bridge := _central_road_river_crossing()
 	if central_bridge.is_finite():
 		_erguer_ponte(central_bridge, "Ponte do rio central")

@@ -40,7 +40,14 @@ const PopupsDoMundo = preload("res://scripts/prototipo_3d/popups_do_mundo.gd")
 const FocoDoE = preload("res://scripts/prototipo_3d/foco_do_e.gd")
 
 const MAXIMO_DE_PLACAS := 3
-const DISTANCIA_MAXIMA := 16.0
+## SÓ DE PERTO (#90): inteira até PLACA_PERTO, esmaecendo até PLACA_LONGE, e nada
+## além — na live os nomes da praça inteira apareciam a vinte e duas unidades.
+const PLACA_PERTO := 6.0
+const PLACA_LONGE := 10.0
+## QUEM IMPORTA SE VÊ DE MAIS LONGE: o dono do E e quem a missão aponta levam a placa
+## inteira até aqui (o nome de quem se vai procurar tem de estar na tela, a seta o
+## aponta); só o resto da praça fica "só de perto".
+const DISTANCIA_DE_QUEM_IMPORTA := 16.0
 const ACIMA_DA_CABECA := 0.1
 const FUNDO := Color(0.055, 0.085, 0.075, 0.88)
 const OURO := Color("b49a60")
@@ -132,6 +139,8 @@ func _process(delta: float) -> void:
 	# A projeção da cabeça de todo morador à frente da câmera (a placa que apaga a segue
 	# até apagar), e, entre eles, quem pode levar uma placa agora.
 	var ancoras := {}
+	# Morador -> o quanto a distância deixa a placa dele acesa (1 perto, 0 em PLACA_LONGE).
+	var perto := {}
 	var candidatos: Array = []
 	for morador: Node3D in _placas.keys():
 		if not is_instance_valid(morador):
@@ -147,10 +156,16 @@ func _process(delta: float) -> void:
 			continue
 		var ancora := camera.unproject_position(topo)
 		ancoras[morador] = ancora
+		var distancia := morador.global_position.distance_to(_jogador.global_position)
+		# SÓ DE PERTO (#90): a placa esmaece de PLACA_PERTO a PLACA_LONGE, por cima do
+		# acender e apagar da vaga, e além de PLACA_LONGE nem disputa a vaga — menos a de
+		# quem importa (o dono do E, quem a missão aponta), inteira até
+		# DISTANCIA_DE_QUEM_IMPORTA.
+		var importa := morador == dono_do_e or morador == da_missao
+		perto[morador] = 1.0 if importa else 1.0 - smoothstep(PLACA_PERTO, PLACA_LONGE, distancia)
 		if not morador.nome_label.is_visible_in_tree():
 			continue
-		var distancia := morador.global_position.distance_to(_jogador.global_position)
-		if distancia >= DISTANCIA_MAXIMA:
+		if distancia >= (DISTANCIA_DE_QUEM_IMPORTA if importa else PLACA_LONGE):
 			continue
 		var tamanho: Vector2 = (_placas[morador] as PanelContainer).get_combined_minimum_size()
 		var caixa := Rect2(ancora - Vector2(tamanho.x * 0.5, tamanho.y), tamanho)
@@ -199,7 +214,7 @@ func _process(delta: float) -> void:
 			mola.reiniciar(ancoras[morador])
 		alfa = move_toward(alfa, quer, maxf(delta, 1.0 / 60.0) / SEGUNDOS_DO_FADE)
 		_alfa[morador] = alfa
-		placa.modulate.a = alfa
+		placa.modulate.a = alfa * float(perto.get(morador, 1.0))
 		placa.visible = alfa > 0.0
 		if placa.visible:
 			placa.reset_size()

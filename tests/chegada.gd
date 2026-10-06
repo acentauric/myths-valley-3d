@@ -189,7 +189,10 @@ func _run() -> void:
 		_conferir(str(dialogo.quem_fala) == str(root.get_node("/root/Jogo").nome_pedro), "a explicação do corpo não é na voz do Pedro (é '%s')" % str(dialogo.quem_fala))
 		var falas: Array = dialogo._falas
 		var juntas := " ".join(falas)
-		_conferir(falas.size() == 4, "a explicação do corpo tem %d fala(s), e são quatro: o respiro, a vida, o fôlego e o vigor" % falas.size())
+		# Cinco desde a #82: o respiro, a vida, o fôlego (a reserva do dia), o vigor
+		# e o nado — a fala nova de 06/10 sobre o fôlego na água ficou ("ele não
+		# deve ser removido").
+		_conferir(falas.size() == 5, "a explicação do corpo tem %d fala(s), e são cinco: o respiro, a vida, o fôlego, o vigor e o nado" % falas.size())
 		_conferir(juntas.contains("vida") and juntas.contains("fôlego") and juntas.contains("vigor"), "a explicação do corpo não fala da vida, do fôlego e do vigor")
 		_conferir(juntas.contains("gastou agora"), "cansado, o Pedro não usou a fala de quem cansou")
 		# NA VOZ DELE: "na explicação do pedro sobre a barra de stamina e

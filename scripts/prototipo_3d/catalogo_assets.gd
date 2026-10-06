@@ -66,7 +66,16 @@ const PECAS := {
 	"venda": {"tripo": "construcoes/venda_tripo.glb", "largura": 8.0, "caixa": true, "camera": true},
 	"casa_pasto": {"tripo": "construcoes/casa_pasto_tripo.glb", "largura": 8.5, "caixa": true, "camera": true},
 	"pier": {"tripo": "construcoes/pier_tripo.glb", "largura": 12.0, "afundar": 2.9, "piso": 0.22},
-	"ponte": {"tripo": "construcoes/ponte_tripo.glb", "largura": 9.0, "afundar": 1.1, "piso": 0.2},
+	# A ponte de pé (#94, 06/10) veio comprida no Z: o giro a deita no X, como a
+	# antiga e a caída, para o vão seguir a estrada (`world_builder._erguer_ponte`).
+	# Medida em 06/10 (`scratch/diag/medir_ponte.gd`): o tabuleiro fica a 0,95 do
+	# fundo, com os esteios por baixo; afundado 0,75, ele fica a 0,2 da estrada.
+	"ponte": {"tripo": "construcoes/ponte_tripo.glb", "largura": 9.0, "afundar": 0.75, "piso": 0.2, "girar": [0, 90, 0]},
+	# A PONTE CAÍDA (#94): o mesmo vão, sem tabuleiro que se ande — nem colisão nem
+	# laje da câmera; a obra `ponte_levantar` a troca pela de pé (`ponte_vale.gd`).
+	# Medida em 06/10: os tabuleiros das pontas ficam a 1,9 do fundo, e o vão caído
+	# desce daí até o rio; afundada 1,7, as pontas ficam a 0,2 da estrada.
+	"ponte_caida": {"tripo": "construcoes/ponte_caida_tripo.glb", "largura": 9.0, "afundar": 1.7},
 	# O MIRANTE É UMA TORRE ABERTA, de quatro pernas com mão-francesa dos lados,
 	# o assoalho a 2,45 m e a escada na frente: em caixa única era um bloco de
 	# 3,3 × 3,6 × 4,6, e quem chegava à âncora (embaixo dele) nascia preso. Medido
@@ -98,10 +107,12 @@ const PECAS := {
 	"banco": {"tripo": "aderecos/banco_tripo.glb", "altura": 1.0, "caixa": true},
 	"lampiao_poste": {"tripo": "aderecos/lampiao_poste_tripo.glb", "altura": 3.4, "tronco": 0.15},
 	"candeeiro": {"tripo": "aderecos/candeeiro_tripo.glb", "altura": 0.42},
-	# A pilha de toras não traz chama rígida nem aro de pedra; o fogo vem de partículas.
-	# Sólida: sem a caixa o corpo entrava no meio das toras acesas ("estou dentro
-	# da fogueira"). Cozinhar não depende de encostar nela (`BancadasVale`, raio).
-	"fogueira": {"tripo": "aderecos/lenha_tripo.glb", "largura": 1.6, "caixa": true},
+	# A FOGUEIRA DE VERDADE: o anel de pedras e as toras, sem a chama rígida (os
+	# 1.379 triângulos dela saíram no 8413ae7; o fogo vem de partículas). Entre
+	# 04/10 e 06/10 a peça apontava a pilha de lenha, e o jogador via a pilha
+	# com chama em cima (#86). Sólida: sem a caixa o corpo entrava no meio das
+	# toras acesas. Cozinhar não depende de encostar nela (`BancadasVale`, raio).
+	"fogueira": {"tripo": "aderecos/fogueira_tripo.glb", "largura": 1.6, "caixa": true},
 	# A BANCADA DA OFICINA, na beira do roçado: a mesa rústica do lote dos móveis,
 	# maior e sólida, faz as vezes do banco de carpinteiro até a oficina ter
 	# construção própria (#27). Não é arte nova: é o mesmo GLB da `mesa`.
@@ -684,6 +695,76 @@ static func colisao(chave: String, node: Node3D, parent: Node, origin: Vector3, 
 		return null
 	parent.add_child(body)
 	return body
+
+
+# --- as cercas -----------------------------------------------------------------
+
+## Quanto mede, em `tamanho`, um lance da cerca do catálogo — pela caixa de uma
+## prova posta e tirada. `senao` é a medida de quem não tem a cerca do catálogo.
+static func largura_da_cerca(parent: Node, tamanho: float, senao: float) -> float:
+	var prova := instanciar("cerca", parent, Vector3.ZERO, tamanho)
+	if prova == null:
+		return senao
+	var largura: float = (prova.get_meta("limites") as AABB).size.x
+	parent.remove_child(prova)
+	prova.free()
+	return maxf(largura, 0.1)
+
+
+## A BASE DE UM LANCE (#93): o X vai de `de` a `ate` — com o desnível entre as
+## pontas, para o lance deitar na encosta —, o Z é a normal horizontal dele e o
+## Y fica no plano vertical. Sem desnível é o giro `atan2(-rumo.z, rumo.x)` de
+## sempre.
+static func base_do_lance(de: Vector3, ate: Vector3) -> Basis:
+	var eixo := ate - de
+	var normal := eixo.cross(Vector3.UP)
+	if eixo.length_squared() < 0.000001 or normal.length_squared() < 0.000001:
+		return Basis()
+	eixo = eixo.normalized()
+	normal = normal.normalized()
+	return Basis(eixo, normal.cross(eixo), normal)
+
+
+## UM LANCE DE CERCA de `de` até `ate` — dois pontos no chão, de qualquer altura
+## — deitado na encosta: as duas pontas tocam o chão e a caixa de colisão vai
+## junto (#93). Antes o lance era reto, assentado por uma amostra do terreno no
+## centro, e na encosta uma ponta flutuava e a outra se enterrava. Com o
+## catálogo é a cerca do Tripo esticada ao comprimento, com a caixa `altura` ×
+## `grossura` chamada `nome_da_colisao`; sem ele, a cerca procedural, que traz
+## a colisão dela. `largura_do_lance` é a medida de `largura_da_cerca`.
+##
+## O nó entra no grupo "lances_de_cerca" com a meta "lance" = `nome`: é por ela
+## que se acham os lances, porque irmãos de mesmo nome o Godot renomeia
+## ("@Node3D@2038").
+static func lance_de_cerca(parent: Node, de: Vector3, ate: Vector3, tripo: bool, tamanho: float, largura_do_lance: float, altura: float, grossura: float, nome: String, nome_da_colisao: String) -> Node3D:
+	var lance := Node3D.new()
+	lance.name = nome
+	lance.set_meta("lance", nome)
+	lance.add_to_group("lances_de_cerca")
+	parent.add_child(lance)
+	lance.global_transform = Transform3D(base_do_lance(de, ate), de.lerp(ate, 0.5))
+	var comprimento := de.distance_to(ate)
+	if tripo:
+		var cerca := instanciar("cerca", lance, Vector3(0.0, -0.06, 0.0), tamanho)
+		if cerca != null:
+			cerca.scale.x *= comprimento / largura_do_lance
+			var corpo := StaticBody3D.new()
+			corpo.name = nome_da_colisao
+			var forma := CollisionShape3D.new()
+			var caixa := BoxShape3D.new()
+			caixa.size = Vector3(comprimento, altura, grossura)
+			forma.shape = caixa
+			corpo.add_child(forma)
+			lance.add_child(corpo)
+			corpo.position = Vector3(0.0, altura * 0.5, 0.0)
+			return lance
+	# A cerca procedural começa na ponta e vai pelo +X dela; o espaçamento é o
+	# que faz os mourões fecharem o comprimento.
+	var mouroes := maxf(ceilf(comprimento / 1.65), 1.0)
+	var cerca_proc := FloraReconcavo.cerca(comprimento, comprimento / mouroes - 0.0001)
+	lance.add_child(cerca_proc)
+	cerca_proc.position = Vector3(-comprimento * 0.5, -0.04, 0.0)
+	return lance
 
 
 ## A peça barra o braço da câmera? Pela chave "camera" do catálogo; sem ela,

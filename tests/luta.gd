@@ -197,7 +197,8 @@ func _run() -> void:
 	# --- 7. QUEM CAI, E A MATA QUE REPÕE ---------------------------------------
 	var abates_antes: int = regra.abatidos("caititu")
 	var carne_antes: int = inventario.quantidade("carne_de_caca")
-	player.definir_vigor(20.0)
+	# A luta cobra a reserva do dia (#82), e é nela que o caititu devolve.
+	energia.definir(20.0)
 	bicho.vida = 1.0
 	bicho.global_position = player.global_position + frente * 0.5
 	await luta.bater("golpe", "facao")

@@ -149,6 +149,20 @@ func _run() -> void:
 	_conferir(not sala.find_children("Altar_*", "", true, false).is_empty(), "a igreja não tem altar")
 	var velas := sala.find_children("Vela_*", "OmniLight3D", true, false).size()
 	_conferir(velas >= 2, "o altar tem %d vela(s) acesa(s)" % velas)
+	# NINGUÉM SOBE NO ALTAR (#98): por cima dele há guarda sólida até acima da
+	# cabeça — um raio de cima para baixo sobre a mesa bate bem acima dela —, e
+	# o ponto da reza, diante do altar, continua livre.
+	var estrado: float = float(sala.ALTURA_DO_PRESBITERIO)
+	var sobre_o_altar_local := Vector3(0.0, estrado + 3.0, -float(sala.comprimento) + 0.85)
+	var de_cima: Vector3 = sala.to_global(sobre_o_altar_local)
+	var ate_a_mesa: Vector3 = sala.to_global(sobre_o_altar_local - Vector3.UP * 3.0)
+	var sobre_o_altar := espaco.intersect_ray(PhysicsRayQueryParameters3D.create(de_cima, ate_a_mesa, 1))
+	var topo: float = float(sala.to_local(sobre_o_altar.get("position", ate_a_mesa)).y) - estrado
+	_conferir(not sobre_o_altar.is_empty() and topo >= 2.0,
+		"por cima do altar o primeiro sólido está a %.2f u do estrado: dá para subir nele" % topo)
+	var reza: Vector3 = sala.ponto_do_altar()
+	var na_reza := espaco.intersect_ray(PhysicsRayQueryParameters3D.create(reza + Vector3.UP * 2.5, reza + Vector3.UP * 0.3, 1))
+	_conferir(na_reza.is_empty(), "a guarda do altar cobre o ponto da reza (bateu em '%s')" % str(na_reza.get("collider")))
 	_conferir(not sala.find_children("LuzDeDentro", "ReflectionProbe", true, false).is_empty(),
 		"a igreja não tem a luz de dentro: as paredes sairiam claras como as de fora")
 

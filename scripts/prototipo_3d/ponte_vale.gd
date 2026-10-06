@@ -1,20 +1,23 @@
 extends Node3D
 ## A PONTE DO RIO GRANDE, QUE A FRENTE DA TRILHA LEVANTA (data/missoes_ponte.json).
 ##
-## O rio grande é o rio do norte do mapa, raso de dar pé, e a ponte dele é a
-## "Ponte" do KML, onde a Rua Principal o cruza (`world_builder._erguer_ponte`).
-## No 2D ela caiu; no vale ela está de pé no modelo do Tripo, e não há arte de
-## ponte caída. Então o estrago é o que não se vê de longe — a cheia de
-## fevereiro comeu os esteios do meio —, e o que se vê é a CERCA nas duas
-## cabeceiras, que o Pedro e o Seu Benedito pregaram. Gente atravessa no vau, ao
-## lado (`Lugares` "vau"); pela ponte, ninguém.
+## O rio grande é o rio do norte do mapa, fundo e com barranco na margem norte
+## (#81, `GeoRegionRenderer` RIO GRANDE), e a ponte dele é a "Ponte" do KML,
+## onde a Rua Principal o cruza (`world_builder._erguer_ponte`). No 2D ela caiu,
+## e desde o #94 (06/10) cai aqui também: até a obra o vão mostra o modelo
+## caído do Tripo — o vão do meio no chão, as tábuas quebradas — e o modelo de
+## pé fica escondido, com o tabuleiro desligado (`_mostrar_caida`). A CERCA
+## nas duas cabeceiras, que o Pedro e o Seu Benedito pregaram, continua: é ela
+## que diz "não passe" a quem vem pela estrada. Fora da ponte ninguém passa: a
+## água dá nado e a margem de lá não tem por onde subir; pela ponte, ninguém
+## até a obra.
 ##
 ## A obra `ponte_levantar` (obras.json, no J, ao pé da ponte) tira a cerca. Quem
 ## diz é o `Obras`, que vai no save: carregar uma partida de antes da obra põe a
 ## cerca de volta. É o trato do cercado do cemitério (`cemiterio_vale.gd`) ao
-## contrário — lá a obra levanta a cerca, aqui a derruba —, com o lance de cerca
-## feito do mesmo jeito: a cerca do catálogo esticada, com caixa de colisão, ou
-## a procedural. Nada de arte nova.
+## contrário — lá a obra levanta a cerca, aqui a derruba e põe a ponte de pé —,
+## com o lance de cerca feito do mesmo jeito: a cerca do catálogo esticada, com
+## caixa de colisão, ou a procedural.
 
 const CONSTRUCAO := "ponte"
 const OBRA := "ponte_levantar"
@@ -115,13 +118,17 @@ func _cercar() -> void:
 	var atravessado := Vector3(-ao_longo.z, 0.0, ao_longo.x)
 	var ate_a_cabeceira := float(_ponte["comprimento"]) * 0.5 + FORA_DA_CABECEIRA
 	var meia_largura := float(_ponte["largura"]) * 0.5 + SOBRA_DOS_LADOS
-	var largura_do_lance := _largura_da_cerca()
+	var tripo: bool = _mundo.estilo_tripo()
+	var largura_do_lance: float = CatalogoAssets.largura_da_cerca(self, TAMANHO_DA_CERCA, 1.0) if tripo else 1.0
 	for lado in [-1.0, 1.0]:
+		# De ponta a ponta no chão, deitada na encosta da cabeceira (#93;
+		# `CatalogoAssets.lance_de_cerca`).
 		var cabeceira: Vector3 = centro + ao_longo * ate_a_cabeceira * lado
-		var a: Vector3 = cabeceira - atravessado * meia_largura
-		var b: Vector3 = cabeceira + atravessado * meia_largura
-		_cercas.append({"a": _mundo.ground_position(a), "b": _mundo.ground_position(b),
-			"no": _lance(a, b, largura_do_lance)})
+		var a: Vector3 = _mundo.ground_position(cabeceira - atravessado * meia_largura)
+		var b: Vector3 = _mundo.ground_position(cabeceira + atravessado * meia_largura)
+		_cercas.append({"a": a, "b": b,
+			"no": CatalogoAssets.lance_de_cerca(self, a, b, tripo, TAMANHO_DA_CERCA, largura_do_lance, ALTURA, GROSSURA, "CercaDaPonte", "CercaColisao")})
+	_mostrar_caida(true)
 	_reassar()
 
 
@@ -132,8 +139,32 @@ func _descercar() -> void:
 			(cerca["no"] as Node).queue_free()
 	_cercas.clear()
 	_cercada = false
+	_mostrar_caida(false)
 	if havia:
 		_reassar()
+
+
+## A PONTE CAÍDA OU DE PÉ (#94): até a obra, o que se vê no vão é o modelo caído
+## do Tripo, e o de pé fica escondido com o tabuleiro desligado — ninguém anda
+## por ele, nem morador pela malha; feita a obra, a de pé volta inteira. Sem os
+## dois modelos (o estilo procedural), a ponte é a de sempre, só cercada.
+func _mostrar_caida(caida: bool) -> void:
+	var modelos: Dictionary = _ponte.get("modelos", {})
+	if modelos.is_empty():
+		return
+	var de_pe: Node3D = modelos.get("de_pe")
+	var a_caida: Node3D = modelos.get("caida")
+	if is_instance_valid(de_pe):
+		de_pe.visible = not caida
+		for forma in de_pe.find_children("*", "CollisionShape3D", true, false):
+			(forma as CollisionShape3D).disabled = caida
+	if is_instance_valid(a_caida):
+		a_caida.visible = caida
+
+
+## A ponte está caída (até a obra) ou de pé?
+func caida() -> bool:
+	return _cercada and not (_ponte.get("modelos", {}) as Dictionary).is_empty()
 
 
 ## O caminho dos moradores muda com a cerca: a malha se assa de novo.
@@ -143,47 +174,3 @@ func _reassar() -> void:
 		navegacao.reassar()
 
 
-## Quanto mede um lance da cerca do catálogo.
-func _largura_da_cerca() -> float:
-	if not _mundo.estilo_tripo():
-		return 1.0
-	var prova := CatalogoAssets.instanciar("cerca", self, Vector3.ZERO, TAMANHO_DA_CERCA)
-	if prova == null:
-		return 1.0
-	var largura: float = (prova.get_meta("limites") as AABB).size.x
-	remove_child(prova)
-	prova.free()
-	return maxf(largura, 0.1)
-
-
-## Um lance de `de` até `ate`: a cerca do catálogo esticada ao comprimento, com a
-## caixa de colisão dele; ou a cerca procedural, que traz a dela.
-func _lance(de: Vector3, ate: Vector3, largura_do_lance: float) -> Node3D:
-	var rumo := Vector3(ate.x - de.x, 0.0, ate.z - de.z)
-	var comprimento := rumo.length()
-	var yaw := atan2(-rumo.z, rumo.x)
-	var meio: Vector3 = _mundo.ground_position(de.lerp(ate, 0.5))
-	var lance := Node3D.new()
-	lance.name = "CercaDaPonte"
-	add_child(lance)
-	if _mundo.estilo_tripo():
-		var cerca := CatalogoAssets.instanciar("cerca", lance, meio - Vector3(0, 0.06, 0), TAMANHO_DA_CERCA, yaw)
-		if cerca != null:
-			cerca.scale.x *= comprimento / largura_do_lance
-			var corpo := StaticBody3D.new()
-			corpo.name = "CercaColisao"
-			var forma := CollisionShape3D.new()
-			var caixa := BoxShape3D.new()
-			caixa.size = Vector3(comprimento, ALTURA, GROSSURA)
-			forma.shape = caixa
-			corpo.add_child(forma)
-			lance.add_child(corpo)
-			corpo.global_position = meio + Vector3.UP * ALTURA * 0.5
-			corpo.rotation.y = yaw
-			return lance
-	var mouroes := maxf(ceilf(comprimento / 1.65), 1.0)
-	var cerca_proc := FloraReconcavo.cerca(comprimento, comprimento / mouroes - 0.0001)
-	lance.add_child(cerca_proc)
-	cerca_proc.global_position = _mundo.ground_position(de) - Vector3(0, 0.04, 0)
-	cerca_proc.rotation.y = yaw
-	return lance

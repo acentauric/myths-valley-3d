@@ -69,6 +69,14 @@ const PREFIXO_AGENDA := "agenda:"
 ## Mais longe que isto (u), a troca de posto é um caminho longo: fora da vista, o
 ## morador é posto no destino na hora marcada (`_encurtar_o_caminho`).
 const CAMINHO_LONGO := 40.0
+## O SALTO DO CAMINHO LONGO ESPERA (#84): o jogador longe (LONGE_PARA_SALTAR, u)
+## e sem ver nem o morador nem o destino por FORA_DA_VISTA_POR segundos seguidos.
+## O padre saltava da igreja ao cemitério porque bastava um quadro fora do
+## enquadramento — virar a câmera não é sumir.
+const FORA_DA_VISTA_POR := 4.0
+const LONGE_PARA_SALTAR := 40.0
+## Há quanto tempo (s) o jogador não vê o morador nem o destino do caminho longo.
+var _fora_da_vista := 0.0
 ## A malha de navegação é de 5 a 10 % mais longa que a reta.
 const FOLGA_DO_CAMINHO := 1.15
 ## Um salto de relógio maior que isto (horas) refaz o dia do morador (dormir, tecla T, save).
@@ -422,7 +430,7 @@ func _physics_process(delta: float) -> void:
 			and Vector2(_alvo.x - global_position.x, _alvo.z - global_position.z).length() > CAMINHO_LONGO)
 		_aplicar_entrada()
 	if _caminho_da_festa:
-		_encurtar_o_caminho()
+		_encurtar_o_caminho(delta)
 	if _recolhido:
 		# Dentro de casa: sem corpo nenhum até a hora de sair.
 		return
@@ -817,6 +825,22 @@ func _classe_da_saudacao() -> int:
 	return FilaDeFalas.Classe.PASSAGEM
 
 
+## RECOLHE O BALÃO E A VOZ NO MEIO DA FALA, e tira da fila o que ele ainda ia dizer
+## (`_calar_a_boca`). O "um balão por vez" da #90 — quem fala com o jogador, pelo E
+## ou pela missão, cala a saudação de quem passa — é a fila que garante
+## (`FilaDeFalas._passa_na_frente`: a CONVERSA e a NARRAÇÃO cortam a PASSAGEM); isto
+## é para quem precisa do morador calado já, como a pergunta do aceno (`interacao`).
+func calar() -> void:
+	_calar_a_boca()
+	_balao_tempo = 0.0
+	balao.esconder()
+	nome_label.visible = true
+	_falando.erase(self)
+	if voz.playing:
+		voz.stop()
+	_soltar_o_relogio()
+
+
 ## A CONVERSA DO E (`tecla_dos_moradores.gd`): chegou perto e apertou E, sem
 ## missão nenhuma com este morador — ele diz a fala INTEIRA no balão, com a voz
 ## e o gesto da saudação, como no 2D ("Converse com cada morador do arraial:
@@ -1191,11 +1215,29 @@ func _lugar_na_festa() -> Vector3:
 	if frente.length() > 0.01:
 		base = frente.normalized()
 		centro += base * 1.5
-	var da_fe: Array = Afinidade.da_fe(festa)
+	# Só quem segue os cinco postos vem à roda: os moradores com agenda (os quinze de
+	# 05/10, na teia desde a #85) têm fé, mas jornada própria — contá-los deixaria
+	# vão na roda.
+	var da_fe: Array = []
+	for id in Afinidade.da_fe(festa):
+		var outro: Node = _morador_do_vale(str(id))
+		if outro != null and not (outro.get("dados") as Dictionary).has("agenda"):
+			da_fe.append(str(id))
 	var vez := maxi(da_fe.find(str(dados.get("id", ""))), 0)
 	var direcao := base.rotated(Vector3.UP, TAU * (float(vez) + 0.5) / float(maxi(da_fe.size(), 1)))
 	var lugar := centro + direcao * float(RODA_DA_FESTA.get(marco, 2.6))
 	return _chao_de_verdade(terreno.ground_position(lugar, 0.0) if terreno != null else lugar)
+
+
+## O morador `id` do vale (grupo "moradores"), ou nulo.
+func _morador_do_vale(id: String) -> Node:
+	if not is_inside_tree():
+		return null
+	for outro in get_tree().get_nodes_in_group("moradores"):
+		var dele = outro.get("dados")
+		if dele is Dictionary and str((dele as Dictionary).get("id", "")) == id:
+			return outro
+	return null
 
 
 ## O CHÃO DE VERDADE no lugar da roda, e não só o do terreno: o monte de concha
@@ -1216,13 +1258,25 @@ func _chao_de_verdade(ponto: Vector3) -> Vector3:
 ## DO JOGADOR, ele chega pelo caminho de sempre — é posto no lugar dele, como na
 ## carga do jogo. Visto, anda o que se vê; e não aparece do nada no lugar para
 ## onde o jogador está olhando. A volta, à meia-noite, é igual.
-func _encurtar_o_caminho() -> void:
+##
+## E VIRAR A CÂMERA NÃO É SUMIR (#84). Bastava um quadro com o morador e o
+## destino fora do enquadramento para ele ser posto no lugar: o padre saltava
+## da igreja ao cemitério com o jogador a dois passos, de costas. O salto agora
+## espera o jogador longe (LONGE_PARA_SALTAR) e sem ver nem o morador nem o
+## destino por FORA_DA_VISTA_POR segundos seguidos; até lá, ele anda.
+func _encurtar_o_caminho(delta: float) -> void:
 	if _destino_avulso.is_finite():
 		return
 	if Vector2(_alvo.x - global_position.x, _alvo.z - global_position.z).length() < 1.0:
 		_caminho_da_festa = false
+		_fora_da_vista = 0.0
 		return
-	if _a_vista(global_position) or _a_vista(_alvo):
+	if _a_vista(global_position) or _a_vista(_alvo) \
+			or (jogador != null and jogador.global_position.distance_to(global_position) < LONGE_PARA_SALTAR):
+		_fora_da_vista = 0.0
+		return
+	_fora_da_vista += delta
+	if _fora_da_vista < FORA_DA_VISTA_POR:
 		return
 	# Na agenda, o morador sai antes para chegar na hora: fora da vista ele anda
 	# até a hora marcada e só então é posto no lugar, se ainda não chegou.
@@ -1236,6 +1290,7 @@ func _encurtar_o_caminho() -> void:
 	_parado = 0.0
 	_ponto_bloqueio = Vector3.INF
 	_caminho_da_festa = false
+	_fora_da_vista = 0.0
 
 
 ## O jogador vê este ponto? Perto dele e na frente da câmera.

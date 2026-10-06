@@ -59,6 +59,9 @@ var _player
 var _hud
 ## O cômodo da casa, quando há (ver `ponto_de_casa`).
 var interiores: Node
+## O Pedro (`guia_pedro.gd`): enquanto o tutorial dura, quem apaga acorda com ele
+## na porta (#92).
+var guia: Node3D
 var _virando_a_noite := false
 var _preto: ColorRect
 
@@ -98,6 +101,12 @@ func ponto_de_casa() -> Vector3:
 	var sala := _quarto()
 	if sala != null:
 		return sala.lugar_de_acordar()
+	return diante_da_porta()
+
+
+## Diante da porta da casa, do lado de fora, `folga` passos além do ponto de
+## acordar de quem não tem cômodo.
+func diante_da_porta(folga: float = 0.0) -> Vector3:
 	var ancoras: Dictionary = _world.ancoras
 	var casa: Vector3 = ancoras.get("Casa de taipa", Vector3.INF)
 	if not casa.is_finite():
@@ -105,7 +114,7 @@ func ponto_de_casa() -> Vector3:
 	var frente: Vector3 = ancoras.get("Casa de taipaFrente", Vector3.BACK)
 	frente.y = 0.0
 	frente = frente.normalized() if frente.length_squared() > 0.001 else Vector3.BACK
-	return _world.ground_position(casa + frente * (_raio_da_casa() + DIANTE_DA_PORTA), 0.05)
+	return _world.ground_position(casa + frente * (_raio_da_casa() + DIANTE_DA_PORTA + folga), 0.05)
 
 
 func _raio_da_casa() -> float:
@@ -214,6 +223,12 @@ func _levar_para_casa() -> void:
 	# chão, ela o traz para cá, e não para onde ele estava antes de cair.
 	if "_last_land" in _player:
 		_player._last_land = destino
+	# O PEDRO VEM JUNTO (#92): enquanto o tutorial dura, quem apagou nadando
+	# acordava em casa e ele ficava no mar. Ele espera na porta, do lado de
+	# fora, e a condução recomeça dali.
+	if guia != null and is_instance_valid(guia) and guia.has_method("vir_para_a_porta") \
+			and guia.has_method("terminou_o_tutorial") and not bool(guia.call("terminou_o_tutorial")):
+		guia.call("vir_para_a_porta", diante_da_porta(2.0))
 
 
 ## O QUE ESTÁ MARCADO PARA O DIA QUE COMEÇA, o mesmo do 2D

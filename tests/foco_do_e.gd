@@ -143,6 +143,15 @@ func _run() -> void:
 	_conferir(foco.dono() == moradores, "virado para o Tonho, o E é de '%s', e não dele" % _nome(foco.dono()))
 	_conferir(_dica_acesa(moradores) and _dicas_acesas() == 1,
 		"virado para o Tonho, a dica dele não é a única acesa (%d acesas)" % _dicas_acesas())
+	# A DICA DIZ O ALVO (#97): com o Tonho no foco, o rótulo aceso tem o nome dele,
+	# e os moldes têm tradução.
+	var acao: String = (moradores._dica.find_child("Acao", true, false) as Label).text
+	var nome_do_tonho := str((tonho.dados as Dictionary).get("nome", "Tonho"))
+	_conferir(acao.contains(nome_do_tonho) and (acao.begins_with("Falar") or acao.begins_with("Entregar")),
+		"virado para o Tonho, a dica do E não diz com quem se fala: '%s'" % acao)
+	var idioma = load("res://scripts/prototipo_3d/idioma_menu.gd")
+	for molde in ["Falar com %s", "Entregar a %s"]:
+		_conferir(idioma.EN.has(molde) and idioma.ES.has(molde), "a dica do E sem tradução: %s" % molde)
 
 	# --- 5. A BARRA DE MÃO COME SÓ SEM DONO --------------------------------------------
 	var inv = root.get_node("/root/Inventario")

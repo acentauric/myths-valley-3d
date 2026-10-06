@@ -579,5 +579,861 @@
       "O capim cresce mais depressa que homem nenhum corta. Eu sei disso há dois anos.",
       "Se achar uma cruz caída, não levante. Me chame, que tem jeito certo."
     ]
+  },
+  "quirino": {
+    "nome": "Mestre Quirino",
+    "fe": "",
+    "gosta": [
+      "farinha",
+      "cocada",
+      "corda"
+    ],
+    "desgosta": [
+      "ostra"
+    ],
+    "gostou": [
+      "Isso aqui tem lugar no porão. Obrigado.",
+      "Mercadoria boa é a que não precisa de conversa."
+    ],
+    "nao_gostou": [
+      "Ostra não viaja, moço. Chega em Salvador cheirando a maré morta.",
+      "Guarde pra quem come na hora."
+    ],
+    "agradeceu": [
+      "Obrigado. No dia catorze a gente acerta."
+    ],
+    "ja_ganhou": [
+      "Hoje já me deu. Guarde o resto pra vender."
+    ],
+    "assuntos": [
+      {
+        "id": "apresentacao",
+        "quando": "sempre",
+        "fala": [
+          "Mestre Quirino. O saveiro é meu, e o que o arraial colhe no mês vai comigo pra Salvador no dia catorze.",
+          "Trouxe você nessa mesma prancha. Lembro da cara de quem olha a terra pela primeira vez: metade medo, metade promessa.",
+          "Se tiver o que vender, me procure no dia. Fora dele eu sou vela e vento."
+        ]
+      },
+      {
+        "id": "afinidade_cidade",
+        "quando": "afinidade_2",
+        "fala": [
+          "Salvador engole gente, é verdade. Mas também devolve: eu mesmo vim de lá com dezoito anos e nunca mais quis morar em rua.",
+          "Quem vende pra mim vende bem. Eu pago o que a praça paga, menos o meu frete, e digo o frete na cara."
+        ]
+      },
+      {
+        "id": "afinidade_tio",
+        "quando": "afinidade_3",
+        "fala": [
+          "Seu tio me vendia farinha. Era de pouca conversa e de muito peso certo.",
+          "Na última viagem dele me disse: 'Quirino, se vier alguém do sangue, leve até o fim da prancha, que o resto a terra ensina.'",
+          "Eu levei. O resto é com você."
+        ]
+      }
+    ],
+    "reserva": [
+      "Vento virando. Fala rápido, que a maré não espera.",
+      "No dia catorze eu encosto. Hoje é só passagem."
+    ]
+  },
+  "padre": {
+    "nome": "Padre Anselmo",
+    "fe": "catolica",
+    "gosta": [
+      "cocada",
+      "beiju",
+      "lampiao"
+    ],
+    "desgosta": [
+      "garapa"
+    ],
+    "gostou": [
+      "Deus lhe pague. Isto vai pra mesa da sacristia, e de lá pra quem precisa.",
+      "Obrigado, meu filho. Doce assim só a Dona Zefa fazia."
+    ],
+    "nao_gostou": [
+      "Garapa, não. O sacristão já bebe pelos dois.",
+      "Guarde, guarde. Não é pra mim."
+    ],
+    "agradeceu": [
+      "Deus lhe pague."
+    ],
+    "ja_ganhou": [
+      "Hoje já recebi, meu filho. Caridade também cansa quem recebe."
+    ],
+    "assuntos": [
+      {
+        "id": "apresentacao",
+        "quando": "sempre",
+        "fala": [
+          "Padre Anselmo, da freguesia de Bom Jesus. Vim de Cachoeira faz onze anos, para um mês; fiquei.",
+          "A igreja tem missa aos domingos e a porta aberta nos outros dias. Entre quando quiser, mesmo sem saber rezar.",
+          "Seu tio sentava no último banco. Dizia que de perto do altar o Bom Jesus escutava demais."
+        ]
+      },
+      {
+        "id": "afinidade_sincretismo",
+        "quando": "afinidade_2",
+        "fala": [
+          "Você vai ouvir que aqui todo mundo é católico. É, e não é: a mesma mulher que acende vela ao Bom Jesus leva flor pra Iemanjá em fevereiro.",
+          "Eu aprendi a não perguntar. Deus tem ouvido maior que o meu."
+        ]
+      },
+      {
+        "id": "afinidade_sino",
+        "quando": "afinidade_3",
+        "fala": [
+          "O que me tira o sono não é o terreiro, é o mato. Tem noite em que o sino toca sozinho, e eu vou ver, e não tem ninguém.",
+          "Rezo, fecho a porta, e no outro dia o arraial acorda igual. Alguma coisa cuida disto aqui, e eu só tomo conta da minha parte."
+        ]
+      }
+    ],
+    "reserva": [
+      "Estou com a hóstia na mão. Depois da missa a gente conversa.",
+      "Entre, sente. O sino não toca por sua causa."
+    ]
+  },
+  "sacristao": {
+    "nome": "Sacristão Zacarias",
+    "fe": "catolica",
+    "gosta": [
+      "garapa",
+      "lampiao",
+      "corda"
+    ],
+    "desgosta": [
+      "pedra"
+    ],
+    "gostou": [
+      "Oxe, garapa! Que Deus te conserve.",
+      "Isto aqui tira a sede de quem puxa corda de sino."
+    ],
+    "nao_gostou": [
+      "Pedra eu tenho de sobra no adro, obrigado.",
+      "Fica com ela. Pra mim só pesa."
+    ],
+    "agradeceu": [
+      "Obrigado, viu. Vou rezar um Pai-Nosso por você."
+    ],
+    "ja_ganhou": [
+      "Hoje já me deu. Não quero que o padre pense que eu cobro."
+    ],
+    "assuntos": [
+      {
+        "id": "apresentacao",
+        "quando": "sempre",
+        "fala": [
+          "Zacarias, sacristão. Toco o sino, varro a igreja, apago as velas e sei de tudo o que acontece na praça — porque a praça passa pela porta.",
+          "O padre é bom homem, mas distraído: se não fosse eu, a missa das seis começava às sete.",
+          "Tem uma cadeira na sombra do adro que é minha. Ninguém senta, por respeito."
+        ]
+      },
+      {
+        "id": "afinidade_sino",
+        "quando": "afinidade_2",
+        "fala": [
+          "O sino da nossa igreja veio de Portugal, numa caixa, em mil oitocentos e vinte. Rachou na cheia de sessenta e canta torto desde então.",
+          "Eu gosto do torto. Sino certo é sino de cidade."
+        ]
+      },
+      {
+        "id": "afinidade_pedra",
+        "quando": "afinidade_3",
+        "fala": [
+          "Vou te contar uma coisa que o padre não sabe: a igreja tem uma pedra solta atrás do altar, e dentro dela tem um papel com nomes.",
+          "Não li. Mas o nome do seu tio está lá, isso eu vi."
+        ]
+      }
+    ],
+    "reserva": [
+      "Vou tocar o sino. Fala depois.",
+      "Tô varrendo o adro, não pise onde eu já varri."
+    ]
+  },
+  "beata": {
+    "nome": "Sá Joaquina",
+    "fe": "catolica",
+    "gosta": [
+      "cocada",
+      "beiju",
+      "cha_de_folha"
+    ],
+    "desgosta": [
+      "garapa"
+    ],
+    "gostou": [
+      "Ai, que doce. Deus te pague, menino.",
+      "Chá de folha, pra minha tosse. Quem te disse?"
+    ],
+    "nao_gostou": [
+      "Garapa não entra na minha boca desde a promessa.",
+      "Leve isso pro sacristão, que ele gosta."
+    ],
+    "agradeceu": [
+      "Deus te pague. Vai com Deus."
+    ],
+    "ja_ganhou": [
+      "Hoje já me deu, menino. Mais é soberba."
+    ],
+    "assuntos": [
+      {
+        "id": "apresentacao",
+        "quando": "sempre",
+        "fala": [
+          "Joaquina. Rezo o terço todo dia às seis, na frente da igreja, chova ou faça sol.",
+          "Não é por fé só, não. É que rezando eu vejo quem passa, e quem passa me conta.",
+          "Seu tio passava sem falar e tirava o chapéu. Era o jeito dele de rezar."
+        ]
+      },
+      {
+        "id": "afinidade_promessa",
+        "quando": "afinidade_2",
+        "fala": [
+          "Eu fiz uma promessa há trinta anos, e cumpro até hoje: nunca mais pisar na areia da praia. Foi lá que o mar levou meu marido.",
+          "Rezo de costas pro mar. Ele sabe por quê."
+        ]
+      },
+      {
+        "id": "afinidade_ver",
+        "quando": "afinidade_3",
+        "fala": [
+          "Você quer saber o que eu vejo? Vejo que a Dona Candinha tem conta com o Seu Nicolau, que o guarda dorme na porta, e que você olha pro mato como quem espera alguém.",
+          "Não se preocupe. Eu só conto pra quem reza comigo."
+        ]
+      }
+    ],
+    "reserva": [
+      "Tô no meio do terço. Espera a última ave-maria.",
+      "Senta aí e reza comigo, ou espera calado."
+    ]
+  },
+  "mercador": {
+    "nome": "Seu Nicolau",
+    "fe": "catolica",
+    "gosta": [
+      "corda",
+      "tabua",
+      "lampiao"
+    ],
+    "desgosta": [
+      "mandioca"
+    ],
+    "gostou": [
+      "Corda boa. Isto eu revendo em dois dias.",
+      "Tábua! Tava precisando pra prateleira."
+    ],
+    "nao_gostou": [
+      "Mandioca eu vendo, meu filho. Não compro.",
+      "Leve pra casa de farinha."
+    ],
+    "agradeceu": [
+      "Obrigado. Isso abate na conta."
+    ],
+    "ja_ganhou": [
+      "Hoje já me deu. Não vou abater duas vezes."
+    ],
+    "assuntos": [
+      {
+        "id": "apresentacao",
+        "quando": "sempre",
+        "fala": [
+          "Nicolau, da venda. Aqui tem de tudo o que o arraial não produz, e fiado pra quem tem terra.",
+          "Não me olhe assim. Fiado é o que segura este lugar de pé entre uma safra e outra.",
+          "O Tonho me deve, é verdade. E eu devo ao atacado de Salvador. Todo mundo deve a alguém."
+        ]
+      },
+      {
+        "id": "afinidade_livro",
+        "quando": "afinidade_2",
+        "fala": [
+          "Meu livro de fiado tem mais nome que o livro do padre. Quem paga em dia eu nem escrevo, só lembro.",
+          "Seu tio pagava em dia. Por isso você entra aqui com crédito que não ganhou."
+        ]
+      },
+      {
+        "id": "afinidade_venda",
+        "quando": "afinidade_3",
+        "fala": [
+          "A venda era do meu pai, e antes do pai dele. Três Nicolaus. O meu filho foi pra Salvador e não quer.",
+          "Se um dia eu fechar, o arraial compra onde? Pense nisso quando reclamar do meu preço."
+        ]
+      }
+    ],
+    "reserva": [
+      "Tô fechando a conta do mês. Volta mais tarde.",
+      "Fala rápido, que tem freguês."
+    ]
+  },
+  "guarda": {
+    "nome": "Guarda Aristides",
+    "fe": "catolica",
+    "gosta": [
+      "peixe_assado",
+      "garapa",
+      "cordel"
+    ],
+    "desgosta": [
+      "pedra"
+    ],
+    "gostou": [
+      "Peixe assado! Isso é pra guarda de verdade.",
+      "Um cordel! Eu leio na ronda, pra não dormir."
+    ],
+    "nao_gostou": [
+      "Pedra? Tá me chamando de quê?",
+      "Guarde. Não é pra mim."
+    ],
+    "agradeceu": [
+      "Obrigado. Hoje a ronda vai ser mais atenta."
+    ],
+    "ja_ganhou": [
+      "Hoje já, moço. Guarda não aceita duas vezes."
+    ],
+    "assuntos": [
+      {
+        "id": "apresentacao",
+        "quando": "sempre",
+        "fala": [
+          "Aristides, guarda do arraial. Sem arma, que o Intendente não manda, e sem precisão, que aqui ninguém rouba.",
+          "Meu serviço é saber quem chegou e quem saiu. Você chegou no saveiro do Quirino, de manhã.",
+          "Se alguém mexer com você, me chama. Eu grito alto."
+        ]
+      },
+      {
+        "id": "afinidade_noite",
+        "quando": "afinidade_2",
+        "fala": [
+          "De noite eu dou a volta na praça três vezes e durmo na porta da venda. Não é dormir, é escutar deitado.",
+          "Nunca peguei ninguém. Mas duas vezes ouvi passo no adro sem ninguém no adro."
+        ]
+      },
+      {
+        "id": "afinidade_pai",
+        "quando": "afinidade_3",
+        "fala": [
+          "Meu pai foi guarda antes de mim, e o dele, escravo do engenho que virou a fazenda do outro lado do rio.",
+          "Quando você for lá, olhe o chão perto do casarão. Tem coisa enterrada que não é tesouro."
+        ]
+      }
+    ],
+    "reserva": [
+      "Tô de ronda. Fala andando.",
+      "Espera eu terminar a volta da praça."
+    ]
+  },
+  "pescador": {
+    "nome": "Seu Jerônimo",
+    "fe": "caboclo",
+    "gosta": [
+      "corda",
+      "farinha",
+      "garapa"
+    ],
+    "desgosta": [
+      "peixe"
+    ],
+    "gostou": [
+      "Corda! Linha boa nasce de corda boa.",
+      "Farinha pra misturar com o peixe de hoje. Obrigado."
+    ],
+    "nao_gostou": [
+      "Peixe pra mim? Rapaz, eu sou pescador.",
+      "Leve pra Dona Filó, que ela faz pirão."
+    ],
+    "agradeceu": [
+      "Obrigado. Boa maré pra você."
+    ],
+    "ja_ganhou": [
+      "Hoje já. Pescador não aceita demais, que afunda a canoa."
+    ],
+    "assuntos": [
+      {
+        "id": "apresentacao",
+        "quando": "sempre",
+        "fala": [
+          "Jerônimo. Pesco de linha, da pedra, desde antes do Tonho nascer. Rede é pra quem tem pressa.",
+          "O mar aqui é raso e manso, mas mente: a maré vaza rápido e volta mais rápido.",
+          "Se for pescar, leve isca de ostra e paciência. O robalo vem no fim da tarde."
+        ]
+      },
+      {
+        "id": "afinidade_pedra",
+        "quando": "afinidade_2",
+        "fala": [
+          "A minha pedra fica na ponta da praia, perto da gameleira grande. Dali eu vejo o saveiro entrar e o padre sair.",
+          "Não pesco de sexta. Não me pergunte por quê, que eu não sei."
+        ]
+      },
+      {
+        "id": "afinidade_fundo",
+        "quando": "afinidade_3",
+        "fala": [
+          "Uma vez a linha prendeu em algo que não era pedra, e quando puxei veio um pedaço de madeira lavrada, com letra.",
+          "Guardei no telhado. Se você souber ler, eu te mostro."
+        ]
+      }
+    ],
+    "reserva": [
+      "O peixe tá beliscando. Fala baixo.",
+      "Espera a maré, que eu espero também."
+    ]
+  },
+  "marisqueira": {
+    "nome": "Dona Rosa",
+    "fe": "candomble",
+    "gosta": [
+      "farinha",
+      "cocada",
+      "cha_de_folha"
+    ],
+    "desgosta": [
+      "ostra"
+    ],
+    "gostou": [
+      "Farinha! Hoje tem moqueca de sururu.",
+      "Chá de folha pra minha coluna. Quem te ensinou a cuidar de velha?"
+    ],
+    "nao_gostou": [
+      "Ostra, pra mim? Você tá brincando com a marisqueira.",
+      "Leve, leve. Eu já tenho o balde cheio."
+    ],
+    "agradeceu": [
+      "Obrigada, meu filho. Axé."
+    ],
+    "ja_ganhou": [
+      "Hoje já me deu. Guarde pra amanhã, que amanhã eu também como."
+    ],
+    "assuntos": [
+      {
+        "id": "apresentacao",
+        "quando": "sempre",
+        "fala": [
+          "Rosa, marisqueira. Pego ostra e sururu na maré baixa, na lama do mangue, de manhã cedo.",
+          "Ostra eu tiro, não como. Quem tira sabe o que tem por baixo.",
+          "Se quiser aprender, venha às cinco com um balde e sem sapato."
+        ]
+      },
+      {
+        "id": "afinidade_mangue",
+        "quando": "afinidade_2",
+        "fala": [
+          "O mangue parece morto e é a coisa mais viva daqui: cada raiz é casa de alguma coisa.",
+          "Minha mãe dizia que o mangue é a cozinha de Iemanjá. A gente entra com licença e sai com o que ela deixa."
+        ]
+      },
+      {
+        "id": "afinidade_filha",
+        "quando": "afinidade_3",
+        "fala": [
+          "Tive uma filha que foi pra Salvador servir em casa de família. Escreve de ano em ano. Diz que tá bem.",
+          "Toda carta eu peço pro padre ler duas vezes. Na segunda eu escuto o que ela não escreveu."
+        ]
+      }
+    ],
+    "reserva": [
+      "A maré tá baixa, eu tô no mangue. Fala rápido.",
+      "Tô lavando o sururu. Depois a gente conversa."
+    ]
+  },
+  "lavadeira": {
+    "nome": "Sá Rita",
+    "fe": "candomble",
+    "gosta": [
+      "cocada",
+      "garapa",
+      "lenha"
+    ],
+    "desgosta": [
+      "pedra"
+    ],
+    "gostou": [
+      "Cocada! Vou comer escondida do meu homem.",
+      "Lenha seca pra ferver a roupa. Você entende de serviço."
+    ],
+    "nao_gostou": [
+      "Pedra? Eu bato roupa em pedra o dia inteiro.",
+      "Guarde isso, menino."
+    ],
+    "agradeceu": [
+      "Obrigada. Axé pra você."
+    ],
+    "ja_ganhou": [
+      "Hoje já me deu. Roupa lavada não precisa de dois sabões."
+    ],
+    "assuntos": [
+      {
+        "id": "apresentacao",
+        "quando": "sempre",
+        "fala": [
+          "Rita, lavadeira. Lavo roupa do padre, da venda e de quem paga, na beira do rio, onde a água corre limpa.",
+          "Roupa conta a vida de quem veste: eu sei quem suou, quem chorou e quem comeu demais.",
+          "A sua eu lavo de graça na primeira semana. Depois é farinha ou moeda."
+        ]
+      },
+      {
+        "id": "afinidade_rio",
+        "quando": "afinidade_2",
+        "fala": [
+          "O rio grande, lá pro norte, eu não lavo. A água é bonita, mas a roupa sai pesada e com cheiro de ferrugem.",
+          "Tem coisa naquela água que não é terra. Lavo no riacho, que é de Oxum."
+        ]
+      },
+      {
+        "id": "afinidade_cantar",
+        "quando": "afinidade_3",
+        "fala": [
+          "Lavando eu canto, e cantando eu lembro. Minha avó cantava em língua que ninguém mais sabe.",
+          "Se um dia você me ouvir cantando baixo, não chegue. É conversa com quem já foi."
+        ]
+      }
+    ],
+    "reserva": [
+      "Tô com a mão na água. Fala daí.",
+      "Espera eu torcer, que depois a gente fala."
+    ]
+  },
+  "rendeira": {
+    "nome": "Dona Estefânia",
+    "fe": "catolica",
+    "gosta": [
+      "cordel",
+      "cocada",
+      "lampiao"
+    ],
+    "desgosta": [
+      "lenha"
+    ],
+    "gostou": [
+      "Um cordel! Vou ler enquanto o bilro descansa.",
+      "Lampião! Agora eu rendo até de noite."
+    ],
+    "nao_gostou": [
+      "Lenha? Eu não cozinho, menino, eu rendo.",
+      "Leve pra Sá Rita."
+    ],
+    "agradeceu": [
+      "Obrigada, meu filho. Deus lhe dê olhos bons."
+    ],
+    "ja_ganhou": [
+      "Hoje já, meu filho. Guarde."
+    ],
+    "assuntos": [
+      {
+        "id": "apresentacao",
+        "quando": "sempre",
+        "fala": [
+          "Estefânia, rendeira. Faço renda de bilro na janela, e o que faço vai pra Salvador vestir noiva.",
+          "Renda é tempo: um palmo leva um dia, e ninguém paga o dia, só o palmo.",
+          "Seu tio me encomendou uma toalha e nunca buscou. Ainda está aqui, dobrada."
+        ]
+      },
+      {
+        "id": "afinidade_janela",
+        "quando": "afinidade_2",
+        "fala": [
+          "Da minha janela vejo a praça inteira sem ninguém me ver. Rendeira é espia sem querer.",
+          "Vi você chegar com o Pedro. Vi o Tonho rindo. Faz tempo que o Tonho não ria."
+        ]
+      },
+      {
+        "id": "afinidade_toalha",
+        "quando": "afinidade_3",
+        "fala": [
+          "A toalha do seu tio é sua, se quiser. Tem o nome dele na borda, em ponto cheio.",
+          "Ele pediu que fosse branca de todo. Disse que era pra mesa de alguém que ia chegar."
+        ]
+      }
+    ],
+    "reserva": [
+      "Não me faça perder o ponto. Fala depois.",
+      "Espera eu terminar a carreira."
+    ]
+  },
+  "quituteira": {
+    "nome": "Dona Ambrósia",
+    "fe": "candomble",
+    "gosta": [
+      "farinha",
+      "milho",
+      "ovo"
+    ],
+    "desgosta": [
+      "peixe_assado"
+    ],
+    "gostou": [
+      "Farinha fina! Hoje o beiju fica rendado.",
+      "Ovo! O bolo de milho agradece."
+    ],
+    "nao_gostou": [
+      "Peixe assado? Eu sou a que cozinha, meu filho.",
+      "Leve pro guarda, que ele come de tudo."
+    ],
+    "agradeceu": [
+      "Obrigada. Leva um beiju aí, vai."
+    ],
+    "ja_ganhou": [
+      "Hoje já, meu filho. Guarde."
+    ],
+    "assuntos": [
+      {
+        "id": "apresentacao",
+        "quando": "sempre",
+        "fala": [
+          "Ambrósia. Faço acarajé, beiju e cocada, e vendo no tabuleiro da praça à tarde.",
+          "O acarajé é de Iansã antes de ser meu. Por isso o primeiro do dia vai pro chão.",
+          "Se tiver fome e não tiver moeda, come e paga quando puder. Fome não espera safra."
+        ]
+      },
+      {
+        "id": "afinidade_tabuleiro",
+        "quando": "afinidade_2",
+        "fala": [
+          "Esse tabuleiro era da minha mãe, e o pano é o mesmo. O arraial inteiro já comeu dele.",
+          "A Mariinha é minha filha. Se ela te pedir cocada, diga que a mãe disse não."
+        ]
+      },
+      {
+        "id": "afinidade_chamado",
+        "quando": "afinidade_3",
+        "fala": [
+          "Eu fui feita no terreiro aos quinze anos. Minha mãe de santo dizia que eu tinha mão de fogo.",
+          "Mão de fogo é boa pra cozinha e ruim pra briga. Até hoje eu escolho a cozinha."
+        ]
+      }
+    ],
+    "reserva": [
+      "O dendê tá fervendo. Fala daí.",
+      "Espera o acarajé sair."
+    ]
+  },
+  "carpinteiro": {
+    "nome": "Seu Epifânio",
+    "fe": "caboclo",
+    "gosta": [
+      "tabua",
+      "madeira_de_coqueiro",
+      "corda"
+    ],
+    "desgosta": [
+      "cana"
+    ],
+    "gostou": [
+      "Tábua aplainada! Você sabe o que eu preciso.",
+      "Madeira de coqueiro é dura, mas faz remo que dura."
+    ],
+    "nao_gostou": [
+      "Cana? Eu não bebo e não planto.",
+      "Leve pra Dona Candinha."
+    ],
+    "agradeceu": [
+      "Obrigado. Precisando de canoa, me procure."
+    ],
+    "ja_ganhou": [
+      "Hoje já. Não gosto de dever."
+    ],
+    "assuntos": [
+      {
+        "id": "apresentacao",
+        "quando": "sempre",
+        "fala": [
+          "Epifânio, carpinteiro. Faço canoa, remo, porta e caixão — na ordem em que o arraial precisa.",
+          "Madeira boa pra canoa é a que o mato dá, e o mato só dá se a gente pede.",
+          "O Tonico é meu filho. Se ele te amolar, mande pra casa."
+        ]
+      },
+      {
+        "id": "afinidade_canoa",
+        "quando": "afinidade_2",
+        "fala": [
+          "Canoa de um pau só, cavada no fogo. Levo um mês em cada uma, e vendo pra quem tem rio.",
+          "A do Tonho fui eu que fiz, há dez anos. Ele não usa mais. Pergunte a ele por quê."
+        ]
+      },
+      {
+        "id": "afinidade_pedido",
+        "quando": "afinidade_3",
+        "fala": [
+          "Antes de derrubar uma árvore eu bato três vezes no tronco e espero. Se o mato responder, eu não corto.",
+          "Você ri. Seu tio também ria, até o dia em que a jaqueira dele caiu sozinha em cima do roçado."
+        ]
+      }
+    ],
+    "reserva": [
+      "Tô com o enxó na mão. Depois.",
+      "Espera eu acabar esta tábua."
+    ]
+  },
+  "menino": {
+    "nome": "Tonico",
+    "fe": "caboclo",
+    "gosta": [
+      "cocada",
+      "manga",
+      "cordel"
+    ],
+    "desgosta": [
+      "cha_de_folha"
+    ],
+    "gostou": [
+      "Cocada! Você é o melhor adulto do arraial.",
+      "Manga! Vou comer na árvore."
+    ],
+    "nao_gostou": [
+      "Chá? Eca. Isso é coisa de doente.",
+      "Dá pra Sá Joaquina, que ela tosse."
+    ],
+    "agradeceu": [
+      "Valeu! Amanhã eu te mostro o lagarto."
+    ],
+    "ja_ganhou": [
+      "Hoje já me deu. Minha mãe disse que não pode ser duas vezes."
+    ],
+    "assuntos": [
+      {
+        "id": "apresentacao",
+        "quando": "sempre",
+        "fala": [
+          "Eu sou o Tonico. Meu pai faz canoa e eu faço bagunça, ele diz.",
+          "Você é o que chegou de saveiro? Eu vi. Você quase caiu da prancha.",
+          "Sabe jogar bola de capim? Eu te ensino, mas não conta pra minha mãe que eu tô na praça."
+        ]
+      },
+      {
+        "id": "afinidade_mata",
+        "quando": "afinidade_2",
+        "fala": [
+          "Eu conheço um caminho na mata que ninguém conhece. Vai dar numa pedra grande com desenho.",
+          "Não vou te levar. Meu pai disse que quem leva gente lá fica com dívida."
+        ]
+      },
+      {
+        "id": "afinidade_medo",
+        "quando": "afinidade_3",
+        "fala": [
+          "Uma vez eu vi um homem alto na mata, parado, sem cara. Ele não andou, só olhou.",
+          "Eu corri. Meu pai disse que era o Caipora e que não se fala o nome dele à noite. Então eu só falo de dia."
+        ]
+      }
+    ],
+    "reserva": [
+      "Tô brincando! Depois!",
+      "Espera, que eu tô escondido."
+    ]
+  },
+  "menina": {
+    "nome": "Mariinha",
+    "fe": "candomble",
+    "gosta": [
+      "cocada",
+      "beiju",
+      "caju"
+    ],
+    "desgosta": [
+      "lenha"
+    ],
+    "gostou": [
+      "Cocada! Não conta pra minha mãe!",
+      "Caju! Vou fazer brinco com a castanha."
+    ],
+    "nao_gostou": [
+      "Lenha? Eu sou menina, não sou fogão.",
+      "Dá pro Tonico, que ele gosta de carregar coisa."
+    ],
+    "agradeceu": [
+      "Obrigada! Você é legal."
+    ],
+    "ja_ganhou": [
+      "Hoje já me deu. Minha mãe tá olhando."
+    ],
+    "assuntos": [
+      {
+        "id": "apresentacao",
+        "quando": "sempre",
+        "fala": [
+          "Eu sou a Mariinha. Minha mãe é a Dona Ambrósia, do tabuleiro.",
+          "Eu já sei fazer cocada, mas ela não deixa eu mexer no dendê.",
+          "Você fala engraçado. É de Salvador? Lá tem bonde de verdade?"
+        ]
+      },
+      {
+        "id": "afinidade_roda",
+        "quando": "afinidade_2",
+        "fala": [
+          "Eu sei dançar roda. A Dona Rosa me ensinou na praia, de noite, quando a maré tá cheia.",
+          "Se você quiser aprender, tem que bater palma primeiro. Quem não bate palma não entra."
+        ]
+      },
+      {
+        "id": "afinidade_sonho",
+        "quando": "afinidade_3",
+        "fala": [
+          "Eu sonhei que o rio grande tinha uma porta no fundo, e que atrás da porta tinha uma casa igual a essa aqui, só que de cabeça pra baixo.",
+          "Minha mãe disse pra não contar pra ninguém. Mas você não é ninguém, é o moço do saveiro."
+        ]
+      }
+    ],
+    "reserva": [
+      "Tô ajudando minha mãe! Depois!",
+      "Espera eu acabar de contar as cocadas."
+    ]
+  },
+  "mestre_saveiro": {
+    "nome": "Seu Ladislau",
+    "fe": "catolica",
+    "gosta": [
+      "corda",
+      "garapa",
+      "cordel"
+    ],
+    "desgosta": [
+      "ostra"
+    ],
+    "gostou": [
+      "Corda! Todo saveiro é feito de corda e teimosia.",
+      "Um cordel pra ler na calmaria. Obrigado."
+    ],
+    "nao_gostou": [
+      "Ostra a bordo? Nem morto. Estraga antes de Itaparica.",
+      "Leve, leve."
+    ],
+    "agradeceu": [
+      "Obrigado. Bons ventos."
+    ],
+    "ja_ganhou": [
+      "Hoje já me deu. Marinheiro não acumula, afunda."
+    ],
+    "assuntos": [
+      {
+        "id": "apresentacao",
+        "quando": "sempre",
+        "fala": [
+          "Ladislau, saveirista. Trinta anos de Recôncavo: Cachoeira, Maragogipe, Salvador e volta, com farinha pra lá e sal pra cá.",
+          "Hoje o saveiro é do Quirino, e eu sou tripulação. Mas quem conhece a baía de noite sou eu.",
+          "Se o vento virar enquanto você fala, eu paro de ouvir. Não é falta de educação, é profissão."
+        ]
+      },
+      {
+        "id": "afinidade_baia",
+        "quando": "afinidade_2",
+        "fala": [
+          "A Baía de Todos os Santos tem trezentas ilhas, e eu já dormi em cem. A melhor é a que não tem nome.",
+          "O seu tio navegou comigo uma vez. Enjoou do saveiro inteiro e no fim disse: 'Agora eu sei por que vocês não plantam.'"
+        ]
+      },
+      {
+        "id": "afinidade_luz",
+        "quando": "afinidade_3",
+        "fala": [
+          "Uma noite, voltando de Maragogipe, vi luz na água perto da foz do rio grande. Não era barco. Andava contra o vento.",
+          "O Quirino diz que foi cachaça. O Quirino não bebe, e também viu."
+        ]
+      }
+    ],
+    "reserva": [
+      "Tô amarrando o cabo. Fala andando.",
+      "Espera o vento assentar."
+    ]
   }
 }

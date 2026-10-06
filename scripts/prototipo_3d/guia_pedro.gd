@@ -170,8 +170,21 @@ func terminou_o_tutorial() -> bool:
 	return _cadeia.acabou() and _cadeia.despedida_feita
 
 
-func paginas_do_hud() -> Array[String]:
-	return _cadeia.paginas_do_hud()
+## POSTO NA PORTA DA CASA (#92), do lado de fora, quando o jogador acorda lá
+## dentro depois de apagar: nadando, ele ficava no mar. Enquanto o tutorial dura
+## ele acompanha, e a condução recomeça dali (`queda._levar_para_casa`).
+func vir_para_a_porta(ponto: Vector3) -> void:
+	if not ponto.is_finite():
+		return
+	global_position = ponto + Vector3(0.0, 0.05, 0.0)
+	velocity = Vector3.ZERO
+	_nadando = false
+	_preso = 0.0
+	_desvios = 0
+	_desvio_tempo = 0.0
+	_parado = 0.0
+	_ponto_bloqueio = Vector3.INF
+	_caminho_ate = Vector3.INF
 
 
 ## O passo de id `id` da chegada já fechou? A roça do Cosme abre depois da

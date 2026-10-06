@@ -69,7 +69,7 @@ func _run() -> void:
 	# --- 1. O LUGAR -----------------------------------------------------------------
 	var portao: Vector3 = lugares.ponto("portao_da_fazenda")
 	var patio: Vector3 = lugares.ponto("patio_da_fazenda")
-	var na_ponte: Vector3 = lugares.ponto("ponte_do_vau")
+	var na_ponte: Vector3 = lugares.ponto("ponte_do_rio_grande")
 	_conferir(portao.is_finite() and patio.is_finite(), "o portão (%s) ou o pátio (%s) da fazenda não resolve" % [str(portao), str(patio)])
 	if not portao.is_finite() or not patio.is_finite():
 		_fechar()

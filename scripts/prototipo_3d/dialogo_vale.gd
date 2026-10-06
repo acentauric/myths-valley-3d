@@ -13,8 +13,10 @@ extends CanvasLayer
 ## CÓPIA ADAPTADA, DECLARADA (regra 3 do plano), como o painel J. Vem do
 ## `scripts/ui/dialogo.gd` do 2D, e vieram iguais a API, a fila de falas, as
 ## duas travas (o E que não responde sem escolha feita e a carência do martelo)
-## e o desenho: o quadro de 640×360, a caixa no rodapé, as cores e os tamanhos
-## de letra da `dialogo.tscn`. O que mudou, e por quê:
+## e o quadro de 640×360 com a caixa no rodapé. O desenho, não: desde 06/10 a
+## caixa veste a identidade do vale 3D (`identidade.gd`), como o balão de fala —
+## a laca com o filete de ouro, o nome em Cinzel, a fala em Cormorant — e não
+## mais o marrom e as letras da `dialogo.tscn`. O que mudou, e por quê:
 ##
 ## - NÃO FECHA AS TELAS NEM PAUSA O RELÓGIO. No 2D a caixa chama
 ##   `Telas.fechar_todas()` e liga o `Relogio.pausado`. O vale não tem `Telas`,
@@ -43,6 +45,7 @@ signal terminou
 signal abriu(quem: String)
 
 const IdiomaMenu = preload("res://scripts/prototipo_3d/idioma_menu.gd")
+const Identidade = preload("res://scripts/prototipo_3d/identidade.gd")
 const TEXTOS := "res://data/dialogo.json"
 ## A VOZ DE CADA LINHA, quando quem fala manda (`falar(nome, falas, vozes)`): o
 ## arquivo em assets/audio/vozes/, sem extensão. "Na explicação do pedro sobre a
@@ -234,15 +237,21 @@ func _montar() -> void:
 	quadro.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(quadro)
 
+	# NA IDENTIDADE DO VALE 3D (06/10), e não mais no marrom do 2D: a laca
+	# verde-escura dos menus e do HUD com o filete de ouro, como o balão de fala
+	# (`balao_fala.gd`) — a caixa longa e o balão curto são a mesma voz.
 	var estilo := StyleBoxFlat.new()
-	estilo.content_margin_left = 9.0
-	estilo.content_margin_top = 5.0
-	estilo.content_margin_right = 9.0
-	estilo.content_margin_bottom = 5.0
-	estilo.bg_color = Color(0.09, 0.07, 0.05, 0.94)
-	estilo.set_border_width_all(2)
-	estilo.border_color = Color(0.79, 0.64, 0.35, 1)
-	estilo.set_corner_radius_all(3)
+	estilo.content_margin_left = 14.0
+	estilo.content_margin_top = 7.0
+	estilo.content_margin_right = 14.0
+	estilo.content_margin_bottom = 6.0
+	estilo.bg_color = Color(Identidade.LACA, 0.95)
+	estilo.set_border_width_all(1)
+	estilo.border_color = Color(Identidade.OURO, 0.8)
+	estilo.set_corner_radius_all(6)
+	estilo.shadow_color = Color(0, 0, 0, 0.35)
+	estilo.shadow_size = 6
+	estilo.shadow_offset = Vector2(0, 2)
 
 	_painel = PanelContainer.new()
 	_painel.name = "Painel"
@@ -262,23 +271,36 @@ func _montar() -> void:
 	caixa.add_theme_constant_override("separation", 4)
 	_painel.add_child(caixa)
 
-	_nome = _rotulo("Nome", Color(0.85, 0.7, 0.36, 1), 11)
+	# O nome em Cinzel versalete dourado, o fio de ouro, a fala em Cormorant e o
+	# rodapé em Cinzel miúdo — os mesmos traços do balão e dos títulos do menu.
+	_nome = _rotulo("Nome", Identidade.ROTULO, 11, Identidade.fonte(Identidade.FONTE_TITULO, 600, 2))
+	_nome.uppercase = true
 	caixa.add_child(_nome)
-	_texto = _rotulo("Texto", Color(0.93, 0.88, 0.76, 1), 11)
+	var fio := ColorRect.new()
+	fio.name = "Fio"
+	fio.color = Color(Identidade.OURO, 0.35)
+	fio.custom_minimum_size = Vector2(0, 1)
+	fio.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	caixa.add_child(fio)
+	_texto = _rotulo("Texto", Identidade.TEXTO, 13, Identidade.fonte(Identidade.FONTE_TEXTO, 600))
 	_texto.custom_minimum_size = Vector2(0, 30)
 	_texto.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_texto.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_texto.add_theme_constant_override("line_spacing", -1)
 	caixa.add_child(_texto)
-	_rodape = _rotulo("Rodape", Color(0.72, 0.64, 0.48, 1), 10)
+	_rodape = _rotulo("Rodape", Color(Identidade.ROTULO, 0.85), 9, Identidade.fonte(Identidade.FONTE_TITULO, 600, 1))
 	_rodape.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	caixa.add_child(_rodape)
 
 
-func _rotulo(nome: String, cor: Color, tamanho: int) -> Label:
+func _rotulo(nome: String, cor: Color, tamanho: int, fonte: Font) -> Label:
 	var etiqueta := Label.new()
 	etiqueta.name = nome
+	etiqueta.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	etiqueta.add_theme_font_override("font", fonte)
 	etiqueta.add_theme_color_override("font_color", cor)
 	etiqueta.add_theme_font_size_override("font_size", tamanho)
+	Identidade.sombra_texto(etiqueta)
 	return etiqueta
 
 

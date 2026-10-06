@@ -272,14 +272,6 @@ func texto_do_passo() -> String:
 	return str(passo.get("texto", "")) if not passo.is_empty() else ""
 
 
-## Páginas para leitura no HUD; consultar uma delas não avança a missão.
-func paginas_do_hud() -> Array[String]:
-	var paginas: Array[String] = []
-	for passo: Dictionary in passos:
-		paginas.append(_com_o_nome(str(passo.get("texto", ""))))
-	return paginas
-
-
 ## UM PULSO DA CADEIA. O morador chama isto do `_physics_process` dele.
 ##
 ## `palavra_livre` ficou de fora da conta: quem decide a vez de falar é a fila de

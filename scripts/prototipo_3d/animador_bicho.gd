@@ -697,11 +697,14 @@ func _mexer_as_pernas_paradas() -> void:
 
 
 ## O primeiro quadro de pé que o clipe cruzou desde o último quadro de processo, ou
-## -1 se ainda não cruzou nenhum. Sem quadro de pé conhecido (ou com o tocador já
-## parado), congela onde está.
+## -1 se ainda não cruzou nenhum. Com o tocador já parado, congela onde está.
+##
+## SEM QUADRO DE PÉ MEDIDO (a análise do clipe não achou as patas), a pose de apoio
+## é o começo ou o meio da passada (#91): o bicho termina o passo do mesmo jeito, em
+## vez de congelar com a pata no ar.
 func _quadro_de_pe_cruzado() -> float:
 	var agora := animacao.current_animation_position
-	if _quadros_de_pe.is_empty() or not animacao.is_playing():
+	if not animacao.is_playing():
 		return agora
 	var antes := _posicao_anterior
 	_posicao_anterior = agora
@@ -709,7 +712,10 @@ func _quadro_de_pe_cruzado() -> float:
 		return -1.0
 	var comprimento := animacao.get_animation(_clipe).length
 	var andou := fposmod(agora - antes, comprimento)
-	for quadro in _quadros_de_pe:
+	var de_pe := _quadros_de_pe
+	if de_pe.is_empty():
+		de_pe = PackedFloat32Array([0.0, comprimento * 0.5])
+	for quadro in de_pe:
 		if fposmod(quadro - antes, comprimento) <= andou:
 			return quadro
 	return -1.0

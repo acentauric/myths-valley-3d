@@ -123,6 +123,11 @@ const TEXTOS := {
 		"Size of the buttons in the corner of the screen, in the menu and in the valley: Home, settings, sound, clock, map and the rest.\n\nMedium is the default, more discreet size. Large brings back the old size, and Extra large makes clicking easier.\n\nThe change applies right away and is saved.",
 		"Tamaño de los botones de la esquina de la pantalla, en el menú y en el valle: Inicio, ajustes, sonido, reloj, mapa y los demás.\n\nMediano es el tamaño predeterminado, más discreto. Grande recupera el tamaño anterior, y Muy grande facilita el clic.\n\nEl cambio vale al momento y queda guardado.",
 	],
+	"Monitor": [
+		"Em qual monitor o jogo abre, com mais de um ligado. A lista tem um item por tela, na ordem do sistema, com o tamanho de cada uma.\n\nA janela vai para o monitor escolhido na hora, em tela cheia ou em janela, e a escolha fica salva para as próximas aberturas. O padrão é o monitor principal; uma tela que deixou de existir volta a ele.",
+		"Which monitor the game opens on, when more than one is connected. The list has one item per screen, in the system's order, with each one's size.\n\nThe window moves to the chosen monitor right away, in fullscreen or windowed mode, and the choice is saved for the next launches. The default is the primary monitor; a screen that no longer exists falls back to it.",
+		"En qué monitor se abre el juego, con más de uno conectado. La lista tiene un elemento por pantalla, en el orden del sistema, con el tamaño de cada una.\n\nLa ventana pasa al monitor elegido al momento, en pantalla completa o en ventana, y la elección queda guardada para las próximas aperturas. El predeterminado es el monitor principal; una pantalla que dejó de existir vuelve a él.",
+	],
 }
 
 

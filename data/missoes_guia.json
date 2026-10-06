@@ -301,9 +301,9 @@
       "lugar": "poco",
       "raio": 8,
       "audio": "",
-      "texto": "Pedra e corda na mão: é mutirão. Aqui obra de todo mundo se faz junto — a Dona Zefa já chamou o neto. Chega no poço, abre o J na aba de obras e conserta a boca.",
-      "texto_en": "Stone and rope in hand: that's a work party. Here, what belongs to everyone gets built together — Dona Zefa has already called her grandson. Get to the well, open J on the works tab and fix the mouth.",
-      "texto_es": "Piedra y cuerda en la mano: es trabajo en común. Aquí la obra de todos se hace juntos; doña Zefa ya llamó a su nieto. Llega al pozo, abre la J en la pestaña de obras y arregla la boca.",
+      "texto": "Pedra e corda na mão: é mutirão. Aqui obra de todo mundo se faz junto — a Dona Zefa já chamou o neto. Chega no poço e aperta E, que abre as obras dele (o J na aba de obras também serve), e conserta a boca.",
+      "texto_en": "Stone and rope in hand: that's a work party. Here, what belongs to everyone gets built together — Dona Zefa has already called her grandson. Get to the well and press E, which opens its works (J on the works tab does it too), and fix the mouth.",
+      "texto_es": "Piedra y cuerda en la mano: es trabajo en común. Aquí la obra de todos se hace juntos; doña Zefa ya llamó a su nieto. Llega al pozo y pulsa E, que abre sus obras (la J en la pestaña de obras también sirve), y arregla la boca.",
       "meta": {
         "tipo": "obra",
         "construcao": "poco",
@@ -400,31 +400,38 @@
       "audio": "pedro_corpo_vida",
       "tts": "A vermelha, a de cima, é a vida. [seriously] Bicho e peçonha tiram dela. Se acabar, você apaga, e alguém te leva pra casa — acorda no outro dia.",
       "texto": "A vermelha, a de cima, é a vida. Bicho e peçonha tiram dela. Se acabar, você apaga, e alguém te leva pra casa — acorda no outro dia.",
-      "texto_en": "The red one, on top, is your health. Animals and venom take from it. If it runs out, you black out and someone carries you home — you wake the next day.",
-      "texto_es": "La roja, la de arriba, es la salud. Los bichos y el veneno le quitan. Si se acaba, te desmayas y alguien te lleva a casa: despiertas al otro día."
+      "texto_en": "The red one, on top, is your life. Animals and venom take from it. If it runs out, you black out and someone carries you home — you wake the next day.",
+      "texto_es": "La roja, la de arriba, es la vida. Los bichos y el veneno le quitan. Si se acaba, te desmayas y alguien te lleva a casa: despiertas al otro día."
     },
     {
       "audio": "pedro_corpo_folego",
-      "tts": "A azul, a do meio, é o fôlego: o ar de quem nada. [seriously] Nadando, o corpo gasta primeiro o vigor; quando ele acaba, é o fôlego que vai, e sem fôlego a água tira da vida. [calmly] Parou de nadar, ou achou chão, ele volta sozinho.",
-      "texto": "A azul, a do meio, é o fôlego: o ar de quem nada. Nadando, o corpo gasta primeiro o vigor; quando ele acaba, é o fôlego que vai, e sem fôlego a água tira da vida. Parou de nadar, ou achou chão, ele volta sozinho.",
-      "texto_en": "The blue one, in the middle, is your breath: the air of whoever swims. Swimming, the body spends stamina first; when that runs out it is your breath that goes, and with no breath the water takes from your health. Stop swimming, or find your footing, and it comes back on its own.",
-      "texto_es": "La azul, la del medio, es el aliento: el aire de quien nada. Nadando, el cuerpo gasta primero la resistencia; cuando se acaba, es el aliento el que se va, y sin aliento el agua le quita a la salud. Dejas de nadar, o haces pie, y vuelve solo."
+      "tts": "A do meio, só com o número, é o fôlego: a reserva do dia. Enxada, machado e picareta gastam dele, e só comida, cama e desmaio devolvem. [thoughtfully] No fim dele o corpo fica cansado, o passo encurta e não dá pra correr.",
+      "texto": "A do meio, só com o número, é o fôlego: a reserva do dia. Enxada, machado e picareta gastam dele, e só comida, cama e desmaio devolvem. No fim dele o corpo fica cansado, o passo encurta e não dá pra correr.",
+      "texto_en": "The middle one, with just the number, is your breath: the day's reserve. Hoe, axe and pickaxe spend it, and only food, bed and fainting give it back. When it runs low your body gets tired, your step shortens and you can't run.",
+      "texto_es": "La del medio, solo con el número, es el aliento: la reserva del día. La azada, el hacha y el pico lo gastan, y solo la comida, la cama y el desmayo lo devuelven. Al final de él el cuerpo se cansa, el paso se acorta y no se puede correr."
     },
     {
       "quando": "cansado",
       "audio": "pedro_corpo_vigor_cansado",
-      "tts": "E a verde, a de baixo, é o vigor: correr, pular, bater e trabalhar gastam dele, e ele volta sozinho, parado ou andando. [laughs softly] Foi ele que você gastou agora — por isso a perna pesou. Anda um pouco, que ele volta.",
-      "texto": "E a verde, a de baixo, é o vigor: correr, pular, bater e trabalhar gastam dele, e ele volta sozinho, parado ou andando. Foi ele que você gastou agora — por isso a perna pesou. Anda um pouco, que ele volta.",
-      "texto_en": "And the green one, at the bottom, is your stamina: running, jumping, striking and working spend it, and it comes back on its own, standing or walking. That is the one you just spent — that is why your legs got heavy. Walk a little and it comes back.",
-      "texto_es": "Y la verde, la de abajo, es la resistencia: correr, saltar, golpear y trabajar la gastan, y vuelve sola, parado o caminando. Es la que acabas de gastar, por eso te pesó la pierna. Camina un poco, que vuelve."
+      "tts": "E a de baixo é o vigor, o fôlego curto: correr, pular e bater gastam, e ele volta sozinho, parado ou andando. [laughs softly] Foi ele que você gastou agora — por isso a perna pesou. Anda um pouco, que ele volta.",
+      "texto": "E a de baixo é o vigor, o fôlego curto: correr, pular e bater gastam, e ele volta sozinho, parado ou andando. Foi ele que você gastou agora — por isso a perna pesou. Anda um pouco, que ele volta.",
+      "texto_en": "And the bottom one is your vigor, the short breath: running, jumping and striking spend it, and it comes back on its own, standing or walking. That's the one you just spent — that's why your legs got heavy. Walk a little and it comes back.",
+      "texto_es": "Y la de abajo es el vigor, el aliento corto: correr, saltar y golpear lo gastan, y vuelve solo, parado o caminando. Es el que acabas de gastar, por eso te pesó la pierna. Camina un poco, que vuelve."
     },
     {
       "quando": "descansado",
       "audio": "pedro_corpo_vigor",
-      "tts": "E a verde, a de baixo, é o vigor: correr, pular, bater e trabalhar gastam dele, e ele volta sozinho, parado ou andando. [calmly] Quando ele acaba, a corrida para e o braço não bate; é só andar um pouco que ele volta, e comida devolve na hora.",
-      "texto": "E a verde, a de baixo, é o vigor: correr, pular, bater e trabalhar gastam dele, e ele volta sozinho, parado ou andando. Quando ele acaba, a corrida para e o braço não bate; é só andar um pouco que ele volta, e comida devolve na hora.",
-      "texto_en": "And the green one, at the bottom, is your stamina: running, jumping, striking and working spend it, and it comes back on its own, standing or walking. When it runs out, the running stops and your arm will not strike; just walk a little and it comes back, and food gives it back at once.",
-      "texto_es": "Y la verde, la de abajo, es la resistencia: correr, saltar, golpear y trabajar la gastan, y vuelve sola, parado o caminando. Cuando se acaba, la carrera para y el brazo no golpea; basta caminar un poco para que vuelva, y la comida la devuelve al instante."
+      "tts": "E a de baixo é o vigor, o fôlego curto: correr, pular e bater gastam, e ele volta sozinho, parado ou andando. [calmly] Quando ele acaba, a corrida para, e é só andar um pouco que ele volta.",
+      "texto": "E a de baixo é o vigor, o fôlego curto: correr, pular e bater gastam, e ele volta sozinho, parado ou andando. Quando ele acaba, a corrida para, e é só andar um pouco que ele volta.",
+      "texto_en": "And the bottom one is your vigor, the short breath: running, jumping and striking spend it, and it comes back on its own, standing or walking. When it runs out, the running stops — just walk a little and it comes back.",
+      "texto_es": "Y la de abajo es el vigor, el aliento corto: correr, saltar y golpear lo gastan, y vuelve solo, parado o caminando. Cuando se acaba, la carrera para, y basta caminar un poco para que vuelva."
+    },
+    {
+      "audio": "pedro_corpo_nado",
+      "tts": "A azul, a do meio, é o fôlego: o ar de quem nada. [seriously] Nadando, o corpo gasta primeiro o vigor; quando ele acaba, é o fôlego que vai, e sem fôlego a água tira da vida. [calmly] Parou de nadar, ou achou chão, ele volta sozinho.",
+      "texto": "A azul, a do meio, é o fôlego: o ar de quem nada. Nadando, o corpo gasta primeiro o vigor; quando ele acaba, é o fôlego que vai, e sem fôlego a água tira da vida. Parou de nadar, ou achou chão, ele volta sozinho.",
+      "texto_en": "The blue one, in the middle, is your breath: the air of whoever swims. Swimming, the body spends stamina first; when that runs out it is your breath that goes, and with no breath the water takes from your health. Stop swimming, or find your footing, and it comes back on its own.",
+      "texto_es": "La azul, la del medio, es el aliento: el aire de quien nada. Nadando, el cuerpo gasta primero la resistencia; cuando se acaba, es el aliento el que se va, y sin aliento el agua le quita a la salud. Dejas de nadar, o haces pie, y vuelve solo."
     }
   ]
 }

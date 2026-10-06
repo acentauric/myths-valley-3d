@@ -8,7 +8,7 @@ extends SceneTree
 ##
 ##   1. O RIO GRANDE TEM VAU E PONTE: os dois nomes resolvem; o vau é água rasa a
 ##      poucos passos da ponte, e não em cima dela.
-##   2. A PONTE COMEÇA CERCADA: uma cerca em cada cabeceira, atravessada na
+##   2. A PONTE COMEÇA CERCADA, E CAÍDA (#94): uma cerca em cada cabeceira, atravessada na
 ##      estrada, e quem vem pela estrada bate nela.
 ##   3. A FRENTE ESPERA A CHEGADA E VEM ANTES DO MIRANTE: com a chegada em curso o
 ##      E no Pedro não a abre; acabada, o primeiro E abre a ponte, e o mirante não
@@ -71,21 +71,30 @@ func _run() -> void:
 		_fechar()
 		return
 
-	# --- 1. O RIO GRANDE TEM VAU E PONTE -------------------------------------------------
-	var vau: Vector3 = lugares.ponto("vau")
-	var na_ponte: Vector3 = lugares.ponto("ponte_do_vau")
-	_conferir(vau.is_finite() and na_ponte.is_finite(), "o vau (%s) ou a ponte do vau (%s) não resolve no vale" % [str(vau), str(na_ponte)])
-	if not vau.is_finite() or not na_ponte.is_finite():
+	# --- 1. O RIO GRANDE TEM PONTE, E NÃO TEM VAU (#81) ----------------------------------
+	var na_ponte: Vector3 = lugares.ponto("ponte_do_rio_grande")
+	_conferir(na_ponte.is_finite(), "a ponte do rio grande não resolve no vale")
+	if not na_ponte.is_finite():
 		_fechar()
 		return
-	var do_vau_a_ponte := Vector2(vau.x - na_ponte.x, vau.z - na_ponte.z).length()
-	_conferir(do_vau_a_ponte > 3.0 and do_vau_a_ponte < 20.0,
-		"o vau está a %.1f u da ponte: é a passagem a pé AO LADO dela" % do_vau_a_ponte)
-	var lamina: float = mundo.water_depth_at(vau)
-	_conferir(lamina > 0.0 and lamina < 1.0, "o vau não é água rasa: lâmina de %.2f u" % lamina)
+	_conferir(not lugares.ponto("vau").is_finite(), "o vau ainda resolve: o rio grande não dá passagem fora da ponte")
+	var lamina: float = mundo.water_depth_at(na_ponte)
+	_conferir(lamina >= jogador.character_height * jogador.NADA_A_PARTIR,
+		"debaixo da ponte o rio dá pé: lâmina de %.2f u (o portão `rio_grande` mede o rio inteiro)" % lamina)
+	# A cabeceira do lado de cá, para chegar à ponte pela estrada.
+	var regiao = mundo.get("_region")
+	var ao_longo_dados: Dictionary = ponte_do_rio.ponte()
+	var de_ca: Vector3 = na_ponte
+	if not ao_longo_dados.is_empty():
+		var ponta: Vector3 = ao_longo_dados["ao_longo"] * (float(ao_longo_dados["comprimento"]) * 0.5 + 3.0)
+		de_ca = na_ponte - ponta if float(regiao._lado_do_barranco(Vector2(na_ponte.x - ponta.x, na_ponte.z - ponta.z))) < 0.0 else na_ponte + ponta
+		de_ca = mundo.ground_position(de_ca, 0.4)
 
-	# --- 2. A PONTE COMEÇA CERCADA -------------------------------------------------------
+	# --- 2. A PONTE COMEÇA CERCADA, E CAÍDA (#94) ---------------------------------------------
 	var dados: Dictionary = ponte_do_rio.ponte()
+	var modelos: Dictionary = (mundo.pontes.get("Ponte", {}) as Dictionary).get("modelos", {})
+	if mundo.estilo_tripo():
+		_conferir(not modelos.is_empty(), "no estilo Tripo a ponte não tem os dois modelos, a caída e a de pé")
 	_conferir(ponte_do_rio.interditada(), "a ponte não começou cercada")
 	var cercas: Array = ponte_do_rio.cercas()
 	_conferir(cercas.size() == 2, "a ponte tem %d cerca(s), e são duas, uma em cada cabeceira" % cercas.size())
@@ -104,12 +113,26 @@ func _run() -> void:
 		await physics_frame
 		await physics_frame
 		var cabeceira: Vector3 = centro + ao_longo * (float(dados["comprimento"]) * 0.5)
-		var de: Vector3 = mundo.ground_position(cabeceira + ao_longo * 2.5) + Vector3.UP * 0.6
-		var ate: Vector3 = mundo.ground_position(cabeceira - ao_longo * 1.5) + Vector3.UP * 0.6
+		# Na altura do peito de quem está na cabeceira: a ponte assenta num aterro
+		# (#81), e um raio que descesse ao chão de debaixo do tabuleiro — que é o
+		# rio — passaria por baixo da cerca.
+		var peito: float = mundo.ground_height_at(cabeceira) + 0.6
+		var de: Vector3 = cabeceira + ao_longo * 2.5
+		de.y = peito
+		var ate: Vector3 = cabeceira - ao_longo * 1.5
+		ate.y = peito
 		var consulta := PhysicsRayQueryParameters3D.create(de, ate)
 		var batida: Dictionary = vale.get_world_3d().direct_space_state.intersect_ray(consulta)
 		var na_cerca: bool = not batida.is_empty() and batida["collider"] is Node and ponte_do_rio.is_ancestor_of(batida["collider"])
 		_conferir(na_cerca, "quem vem pela estrada não bate na cerca da cabeceira: o raio %s" % ("não bateu em nada" if batida.is_empty() else "bateu em " + str(batida["collider"])))
+		# A PONTE CAÍDA (#94): até a obra o que há no vão é o modelo caído; o de pé
+		# fica escondido com o tabuleiro desligado, e um raio de cima para baixo no
+		# meio do vão não bate em tabuleiro nenhum.
+		if not modelos.is_empty():
+			_conferir(ponte_do_rio.caida() and (modelos["caida"] as Node3D).visible and not (modelos["de_pe"] as Node3D).visible,
+				"antes da obra a ponte não está caída (caída visível: %s, de pé visível: %s)" % [str((modelos["caida"] as Node3D).visible), str((modelos["de_pe"] as Node3D).visible)])
+			var no_vao: Dictionary = _tabuleiro(vale, centro)
+			_conferir(no_vao.is_empty(), "antes da obra ainda há tabuleiro no vão: o raio bateu em '%s'" % str(no_vao.get("collider")))
 
 	# --- 3. A FRENTE ESPERA A CHEGADA E VEM ANTES DO MIRANTE --------------------------------
 	await _perto_do_pedro()
@@ -128,8 +151,8 @@ func _run() -> void:
 	# --- 4. VER E CONTAR -----------------------------------------------------------------
 	await _ate(func() -> bool: return ponte.espera <= 0.0, 12.0)
 	_conferir(str(ponte.passo_atual().get("id", "")) == "ponte_caida", "a frente não começou por ver a ponte: '%s'" % str(ponte.passo_atual().get("id", "")))
-	jogador.teleportar(vau + Vector3(0, 0.4, 0), 0.0)
-	_conferir(await _ate(func() -> bool: return ponte.missao >= 1, 8.0), "chegar ao vau não fechou o passo de ver a ponte")
+	jogador.teleportar(de_ca, 0.0)
+	_conferir(await _ate(func() -> bool: return ponte.missao >= 1, 8.0), "chegar à cabeceira de cá não fechou o passo de ver a ponte")
 	await _ate(func() -> bool: return ponte.espera <= 0.0, 12.0)
 	await _perto_do_pedro()
 	tecla.usar(pedro)
@@ -202,6 +225,14 @@ func _run() -> void:
 	var cocadas: int = inv.quantidade("cocada")
 	_conferir(obras.executar("ponte", "ponte_levantar"), "a obra da ponte não saiu: %s" % str(obras.impedimento("ponte", "ponte_levantar")))
 	_conferir(await _ate(func() -> bool: return not ponte_do_rio.interditada(), 3.0), "a obra feita não tirou a cerca da ponte")
+	# E PÕE A PONTE DE PÉ (#94): o modelo de pé volta, com o tabuleiro.
+	if not modelos.is_empty() and not dados.is_empty():
+		_conferir(not ponte_do_rio.caida() and (modelos["de_pe"] as Node3D).visible and not (modelos["caida"] as Node3D).visible, "feita a obra, a ponte não ficou de pé")
+		await physics_frame
+		await physics_frame
+		var tabuleiro: Dictionary = _tabuleiro(vale, dados["centro"])
+		_conferir(not tabuleiro.is_empty() and (modelos["de_pe"] as Node).is_ancestor_of(tabuleiro["collider"]),
+			"feita a obra, o tabuleiro não voltou: o raio %s" % ("não bateu em nada" if tabuleiro.is_empty() else "bateu em " + str(tabuleiro["collider"])))
 	_conferir(await _ate(func() -> bool: return ponte.missao >= 6, 8.0), "a obra feita não fechou o passo da ponte")
 	_conferir(inv.quantidade("pirao") == piroes + 2 and inv.quantidade("cocada") == cocadas + 2,
 		"a ponte não pagou os dois pirões e as duas cocadas")
@@ -233,10 +264,17 @@ func _no_balao(morador) -> String:
 	return str(rotulo.text) if rotulo != null else ""
 
 
+## O que um raio de cima para baixo encontra no meio do vão da ponte, do alto
+## até pouco abaixo do tabuleiro (máscara do mundo): o tabuleiro de pé, ou nada.
+func _tabuleiro(vale, centro: Vector3) -> Dictionary:
+	var consulta := PhysicsRayQueryParameters3D.create(centro + Vector3.UP * 3.0, centro - Vector3.UP * 0.6, 1)
+	return vale.get_world_3d().direct_space_state.intersect_ray(consulta)
+
+
 func _fechar() -> void:
 	print("")
 	if falhas == 0:
-		print("PONTE_OK: o rio grande tem o vau ao lado da ponte, e a ponte começa cercada nas duas cabeceiras; a frente espera a chegada, abre no primeiro E do Pedro e segura o mirante; ver a ponte e contar ao Pedro fecham os dois primeiros passos; a lenha conta o que já virou tábua, na conta das receitas, e quem esgota nela ganha a mungunzá uma vez; serrar ensina o plano da obra e paga; a obra tira a cerca, e a partida de antes dela a põe de volta; e o fim no Pedro abre o mirante")
+		print("PONTE_OK: o rio grande não tem vau, só a ponte, que começa cercada nas duas cabeceiras; a frente espera a chegada, abre no primeiro E do Pedro e segura o mirante; ver a ponte e contar ao Pedro fecham os dois primeiros passos; a lenha conta o que já virou tábua, na conta das receitas, e quem esgota nela ganha a mungunzá uma vez; serrar ensina o plano da obra e paga; a obra tira a cerca, e a partida de antes dela a põe de volta; e o fim no Pedro abre o mirante")
 	else:
 		print("ponte: %d falha(s)" % falhas)
 	quit(1 if falhas > 0 else 0)
