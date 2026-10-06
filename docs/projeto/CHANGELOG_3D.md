@@ -241,6 +241,11 @@
   tempo, o anúncio espera até 8 s (`ESPERA_MAXIMA_PELA_VEZ`), e o E no Pedro
   com alguém falando ao alcance entra na fila (`guia_pedro._repetir_quando_der`).
   Portão `interacao`, parte 8.
+- **O aviso do rodapé vira uma caixa no meio, acima da barra de mão (#102).** A
+  fala do Pedro (`hud.set_notice`) era uma faixa de largura inteira, atrás do
+  minimapa e por cima do "mão livre". Agora é uma caixa centrada de até 640
+  px que quebra a linha e cresce para cima, na identidade do vale (laca,
+  filete, Cormorant). Portão `tarefa_no_hud`, parte 5.
 
 ## Em desenvolvimento — 05/10/2026
 

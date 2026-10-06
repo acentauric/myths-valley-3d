@@ -78,6 +78,24 @@ func _run() -> void:
 	_conferir(hud._objective_label.text == "Explore o vale" and not hud._quest_label.visible and hud._mission_step.text == "",
 		"sem missão o quadro ainda mostra nome ou conta: '%s' / '%s'" % [hud._quest_label.text, hud._mission_step.text])
 
+	# --- 5. O AVISO FICA NO MEIO, ACIMA DA BARRA, E QUEBRA A LINHA (#102) -------------
+	# A fala do Pedro no rodapé era uma faixa de largura inteira, atrás do minimapa.
+	var comprido := "Pedro: Agora come, e depois deita: o I abre a mochila, e o F come o que estiver marcado. A cama do seu tio é a de dentro, ao pé da parede. Amanhã cedo eu passo aqui — e o arraial inteiro já vai saber que tem gente na casa do finado."
+	hud.set_notice(comprido)
+	await process_frame
+	await process_frame
+	var aviso: Control = hud._notice_panel
+	var tela: Vector2 = hud.get_viewport().get_visible_rect().size
+	var barra_altura: float = float(load("res://scripts/prototipo_3d/barra_de_mao.gd").altura_ocupada())
+	_conferir(aviso.visible and aviso.size.x <= float(hud.LARGURA_DO_AVISO) + 1.0, "o aviso mede %.0f de largura; o máximo é %.0f" % [aviso.size.x, float(hud.LARGURA_DO_AVISO)])
+	_conferir(hud._notice_label.get_line_count() > 1, "a fala comprida do Pedro não quebrou a linha no aviso")
+	var centro_x: float = aviso.global_position.x + aviso.size.x * 0.5
+	_conferir(absf(centro_x - tela.x * 0.5) < 2.0, "o aviso não está no meio da tela (centro em %.0f de %.0f)" % [centro_x, tela.x])
+	var pe_do_aviso: float = aviso.global_position.y + aviso.size.y
+	_conferir(pe_do_aviso <= tela.y - barra_altura + 0.5, "o aviso desce até %.0f e a barra de mão começa em %.0f" % [pe_do_aviso, tela.y - barra_altura])
+	_conferir(aviso.global_position.x >= 300.0 or tela.x < 1000.0, "o aviso invade o minimapa (começa em %.0f)" % aviso.global_position.x)
+	hud.set_notice("")
+
 	print("")
 	if falhas == 0:
 		print("TAREFA_NO_HUD_OK: o alto da tela diz o nome da missão, a tarefa com a conta e o passo; sem páginas, setas nem X; acima do minimapa e cabendo no quadro")

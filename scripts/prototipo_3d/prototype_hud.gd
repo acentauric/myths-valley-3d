@@ -90,7 +90,7 @@ var _speed_icon	# hud_icon.gd
 var _camera_icon	# hud_icon.gd
 var _camera_hint: Label
 var _notice_label: Label
-var _notice_panel: Panel
+var _notice_panel: PanelContainer
 var _objective_label: Label
 var _heading: Panel
 var _control_mode_label: Label
@@ -106,6 +106,8 @@ var _house_info_panel: Panel
 var _house_info_label: Label
 var _house_info_heading: Label
 var _clock_label: Label
+## A largura máxima do aviso do rodapé (#102): cabe entre o minimapa e os botões.
+const LARGURA_DO_AVISO := 640.0
 var _clock_panel: Panel
 var _clock_estado: Label
 ## A altura do painel do relógio, e quanto cresce com a linha do estado.
@@ -256,28 +258,44 @@ func _ready() -> void:
 	_layout_controls_modal()
 	get_viewport().size_changed.connect(_layout_controls_modal)
 
-	_notice_panel = _panel(Color(0.055, 0.085, 0.075, 0.82))
+	# O AVISO (#102): a fala do Pedro, o que se recebeu, o que se entregou. Era
+	# uma faixa de largura inteira no rodapé, atrás do minimapa e por cima do
+	# "mão livre" da barra. Agora é uma caixa no meio, acima da barra de mão, de
+	# até LARGURA_DO_AVISO, que quebra a linha e cresce para cima — na identidade
+	# do vale, como a caixa de fala: a laca, o filete de ouro, a Cormorant.
+	var estilo_do_aviso := StyleBoxFlat.new()
+	estilo_do_aviso.bg_color = Color(Identidade.LACA, 0.94)
+	estilo_do_aviso.border_color = Color(Identidade.OURO, 0.75)
+	estilo_do_aviso.set_border_width_all(1)
+	estilo_do_aviso.set_corner_radius_all(6)
+	estilo_do_aviso.content_margin_left = 14.0
+	estilo_do_aviso.content_margin_right = 14.0
+	estilo_do_aviso.content_margin_top = 6.0
+	estilo_do_aviso.content_margin_bottom = 6.0
+	estilo_do_aviso.shadow_color = Color(0, 0, 0, 0.35)
+	estilo_do_aviso.shadow_size = 5
+	_notice_panel = PanelContainer.new()
 	_notice_panel.name = "Aviso"
+	_notice_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_notice_panel.add_theme_stylebox_override("panel", estilo_do_aviso)
 	_root.add_child(_notice_panel)
-	_notice_panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER_BOTTOM)
-	_notice_panel.offset_left = -285
-	_notice_panel.offset_right = 285
-	# ACIMA DA BARRA DE MÃO, e a medida vem dela. O aviso ficava a 31–64 px do
-	# rodapé, que é exatamente onde a barra desenha — e a barra entra depois no
-	# HUD, então o cobria. Ver `BarraDeMao.altura_ocupada`.
+	# ACIMA DA BARRA DE MÃO, e a medida vem dela (`BarraDeMao.altura_ocupada`);
+	# ancorada no rodapé e crescendo para cima conforme o texto.
 	var acima := BarraDeMao.altura_ocupada()
-	_notice_panel.offset_top = -acima - 33.0
-	_notice_panel.offset_bottom = -acima
+	_notice_panel.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
+	_notice_panel.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	_notice_panel.grow_vertical = Control.GROW_DIRECTION_BEGIN
+	_notice_panel.offset_left = -LARGURA_DO_AVISO * 0.5
+	_notice_panel.offset_right = LARGURA_DO_AVISO * 0.5
+	_notice_panel.offset_top = -acima - 8.0 - 30.0
+	_notice_panel.offset_bottom = -acima - 8.0
 	_notice_panel.visible = not _notice.is_empty()
-	_notice_label = _label(_notice, 14, GOLD)
-	_root.add_child(_notice_label)
-	_notice_label.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
-	_notice_label.offset_left = 30
-	_notice_label.offset_right = -30
-	# Junto com o painel dele, acima da barra.
-	_notice_label.offset_top = -acima - 29.0
-	_notice_label.offset_bottom = -acima - 4.0
+	_notice_label = _label(_notice, 16, Identidade.TEXTO)
+	_notice_label.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_TEXTO, 600))
+	_notice_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_notice_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_notice_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_notice_panel.add_child(_notice_label)
 
 	# Relógio do vale: só a hora e o período do dia.
 	_clock_panel = _panel(Color(0.055, 0.085, 0.075, 0.82))
@@ -639,8 +657,10 @@ func set_notice(value: String) -> void:
 	if is_instance_valid(_notice_label):
 		_notice_label.text = value
 		_notice_panel.visible = not value.is_empty()
+		# A caixa se mede pelo texto: curta para um aviso curto, até a largura
+		# máxima para a fala do Pedro, que então quebra a linha e cresce para cima.
 		var font := _notice_label.get_theme_font("font")
-		var half := font.get_string_size(value, HORIZONTAL_ALIGNMENT_LEFT, -1, 14).x * 0.5 + 24.0
+		var half := minf(font.get_string_size(value, HORIZONTAL_ALIGNMENT_LEFT, -1, 16).x * 0.5 + 30.0, LARGURA_DO_AVISO * 0.5)
 		_notice_panel.offset_left = -half
 		_notice_panel.offset_right = half
 
