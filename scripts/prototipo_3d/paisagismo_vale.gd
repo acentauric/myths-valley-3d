@@ -1030,6 +1030,7 @@ static func plantar_cercas(regiao: Node3D, itens: Array, receitas: Dictionary) -
 		# pontas do lance ficam a essa distância do ponto, pelo giro.
 		var meia: float = (base * (modelo.mesh as Mesh).get_aabb()).size.x * 0.5
 		var transforms: Array[Transform3D] = []
+		var lances: Array[Transform3D] = []
 		for item: Dictionary in cercas[chave]:
 			# Cada lance de ponta a ponta no chão, deitado na encosta (#93), e não
 			# reto na altura de uma amostra no centro.
@@ -1039,8 +1040,31 @@ static func plantar_cercas(regiao: Node3D, itens: Array, receitas: Dictionary) -
 			var rumo := Vector3(cos(giro), 0.0, -sin(giro)) * meia
 			var de: Vector3 = regiao.ground_position(centro - rumo)
 			var ate: Vector3 = regiao.ground_position(centro + rumo)
-			transforms.append(Transform3D(CatalogoAssets.base_do_lance(de, ate), de.lerp(ate, 0.5) - Vector3(0.0, 0.02, 0.0)) * base)
+			var lance := Transform3D(CatalogoAssets.base_do_lance(de, ate), de.lerp(ate, 0.5) - Vector3(0.0, 0.02, 0.0))
+			lances.append(lance)
+			transforms.append(lance * base)
 		# O que foi plantado, para quem confere: o renderizador vazio dos portões
 		# não devolve as transformações do MultiMesh.
 		regiao.set_meta("cercas_" + String(chave), transforms)
+		# CORPO EM CADA LANCE (#104): as cercas de varas nasceram sem colisão (os
+		# "adereços sem corpo") e o jogador as atravessava. Uma caixa por lance, na
+		# medida da malha, na camada das cercas (`Camadas.CERCA`): barra o corpo do
+		# jogador, não a câmera, e não entra na malha dos moradores (ver
+		# `camadas.gd`). A porteira continua passagem. O nome do nó não leva
+		# dois-pontos: o Godot o trocaria por sublinhado.
+		var caixa := base * (modelo.mesh as Mesh).get_aabb()
+		var corpos := Node3D.new()
+		corpos.name = "CorposDasCercas_" + String(chave)
+		regiao.add_child(corpos)
+		for lance: Transform3D in lances:
+			var corpo := StaticBody3D.new()
+			corpo.name = "CercaDeVarasColisao"
+			corpo.collision_layer = 1 << 3  # `Camadas.CERCA`
+			var forma := CollisionShape3D.new()
+			var formato := BoxShape3D.new()
+			formato.size = Vector3(caixa.size.x, caixa.size.y, maxf(caixa.size.z, 0.25))
+			forma.shape = formato
+			corpo.add_child(forma)
+			corpos.add_child(corpo)
+			corpo.transform = Transform3D(lance.basis, lance.origin + lance.basis.y * caixa.size.y * 0.5)
 		regiao._multimesh_em_blocos("Paisagismo: " + String(chave), modelo.mesh, transforms, lod)

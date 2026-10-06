@@ -250,6 +250,12 @@
   moravam no `map_layer` do HUD (camada 20), acima dos balões (10): a
   plaquinha de um morador cobria o balão de outro. Elas vão para a camada
   própria 8, abaixo dos balões e do HUD. Portão `placas_e_baloes`, parte 4.
+- **As cercas de varas das roças ganham corpo (#104).** As 204 cercas do
+  paisagismo nasceram sem colisão; agora cada lance tem a caixa dele, na
+  medida da malha, numa camada própria (`Camadas.CERCA`) que barra o jogador e
+  o clique (`PaisagismoVale.plantar_cercas`). A malha de navegação dos
+  moradores não a lê: cerca como obstáculo deles muda as rotas do vale inteiro
+  e fica para outro passo. Portão `cercas_na_encosta`, parte 6.
 
 ## Em desenvolvimento — 05/10/2026
 
