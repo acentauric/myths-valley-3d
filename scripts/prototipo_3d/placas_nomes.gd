@@ -5,7 +5,10 @@ extends Node
 ## Quirino fora do dia do saveiro: o rótulo dele continua `visible`, quem some é ele) e
 ## quando AJUSTAR → Cenário → Nomes dos personagens está em Ocultar.
 
-const DISTANCIA_MAXIMA := 22.0
+## SÓ DE PERTO (#90): inteira até PLACA_PERTO, esmaecendo até PLACA_LONGE, e nada
+## além — na live os nomes da praça inteira apareciam a vinte e duas unidades.
+const PLACA_PERTO := 6.0
+const PLACA_LONGE := 10.0
 const ACIMA_DA_CABECA := 0.1
 const FUNDO := Color(0.055, 0.085, 0.075, 0.88)
 const OURO := Color("b49a60")
@@ -40,11 +43,13 @@ func _process(_delta: float) -> void:
 			_placas.erase(morador)
 			continue
 		var topo := morador.global_position + Vector3(0, float(morador.get("altura")) + ACIMA_DA_CABECA, 0)
+		var distancia: float = morador.global_position.distance_to(_jogador.global_position) if _jogador != null else INF
 		var mostrar: bool = _permitido and em_jogo and Estilo.mostrar_nomes and morador.nome_label.is_visible_in_tree() \
-			and morador.global_position.distance_to(_jogador.global_position) < DISTANCIA_MAXIMA \
+			and distancia < PLACA_LONGE \
 			and not camera.is_position_behind(topo)
 		placa.visible = mostrar
 		if mostrar:
+			placa.modulate.a = 1.0 - smoothstep(PLACA_PERTO, PLACA_LONGE, distancia)
 			placa.reset_size()
 			placa.position = camera.unproject_position(topo) - Vector2(placa.size.x * 0.5, placa.size.y)
 

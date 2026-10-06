@@ -118,6 +118,12 @@
   som da ferramenta (picareta na pedra, a foice colhe, machado no resto, inclusive
   a galhada partida na mão) e o último golpe do que cai toca a árvore caindo.
   Portão novo `som_dos_golpes`.
+- **Plaquinhas de nome e balões só de perto, e um balão por vez (#90).** A
+  plaquinha aparecia a 22 u e o balão a 45; agora a plaquinha é inteira até 6 u,
+  esmaece até 10 e some, e o balão só aparece até 16 u. Quem fala com o jogador —
+  a conversa do E ou a fala de missão — cala a saudação de quem passa por perto
+  (`npc.calar`), e a saudação continua não entrando por cima de ninguém. Portão
+  novo `placas_e_baloes`.
 
 ## Em desenvolvimento — 05/10/2026
 

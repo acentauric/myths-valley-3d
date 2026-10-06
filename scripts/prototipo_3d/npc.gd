@@ -731,9 +731,36 @@ func saudar() -> void:
 	var texto := _escolher_a_fala()
 	# O balão leva a fala enxuta; a voz e o aviso do HUD (`saudou`) levam a inteira.
 	mostrar_balao(balao_curto(texto), maxf(5.0, voz.stream.get_length() + 1.5) if voz.stream != null else 7.0)
+	_balao_de_saudacao = true
 	_soltar_o_relogio()
 	_falar_com_voz_e_gesto()
 	saudou.emit(self, texto)
+
+
+## UM BALÃO POR VEZ (#90): quem fala com o jogador — pelo E ou pela missão — cala
+## a saudação de quem passa por perto; a saudação, por sua vez, não entra por
+## cima de ninguém (`pode_falar`). Na live dois balões saíam ao mesmo tempo.
+var _balao_de_saudacao := false
+
+
+func _calar_as_saudacoes() -> void:
+	for outro in _falando.keys():
+		if outro == self or not is_instance_valid(outro):
+			continue
+		if bool(outro.get("_balao_de_saudacao")) and (outro as Node3D).global_position.distance_to(global_position) < RAIO_CONVERSA:
+			outro.calar()
+
+
+## Recolhe o balão e a voz no meio da fala.
+func calar() -> void:
+	_balao_tempo = 0.0
+	_balao_de_saudacao = false
+	balao.esconder()
+	nome_label.visible = true
+	_falando.erase(self)
+	if voz.playing:
+		voz.stop()
+	_soltar_o_relogio()
 
 
 ## A CONVERSA DO E (`tecla_dos_moradores.gd`): chegou perto e apertou E, sem
@@ -749,8 +776,10 @@ func conversar() -> void:
 		_acenar_mudo()
 		return
 	_ultima_saudacao_ms = Time.get_ticks_msec()
+	_calar_as_saudacoes()
 	var texto := _escolher_a_fala()
 	mostrar_balao(texto, maxf(7.0, voz.stream.get_length() + 2.0) if voz.stream != null else 9.0)
+	_balao_de_saudacao = false
 	_segurar_o_relogio()
 	_falar_com_voz_e_gesto()
 	saudou.emit(self, texto)
@@ -833,7 +862,9 @@ func mostrar_balao(texto: String, segundos: float) -> void:
 ## A duração vem do próprio áudio quando há áudio, e são quatro segundos quando
 ## não há. É ela que o `_tomar_palavra` usa para ninguém falar por cima.
 func narrar(nome_audio: String, texto: String) -> void:
+	_calar_as_saudacoes()
 	mostrar_balao(texto, 8.0)
+	_balao_de_saudacao = false
 	_segurar_o_relogio()
 	var caminho := PASTA_VOZES + nome_audio + ".mp3"
 	var duracao := 4.0
