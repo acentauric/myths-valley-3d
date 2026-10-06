@@ -121,6 +121,15 @@ const BARRANCO_DESCIDA := 4.0
 ## O aterro da ponte some aos poucos entre 70 % disto e isto, de distância da ponte:
 ## somado à descida da faixa, é o que deixa a estrada em rampa que se anda.
 const ATERRO_DA_PONTE := 12.0
+## O PLATÔ DA GAMELEIRA (#87): o sambaqui e a árvore assentam numa amostra só do
+## terreno, no centro (`world_builder._build_gameleira`), e com o chão novo de
+## 05/10 a encosta ali inclinou — a árvore apareceu desnivelada. O terreno em
+## volta vira um platô na altura do centro: plano até PLATO_RAIO e voltando ao
+## relevo em mais PLATO_BORDA. O ponto é o `GAMELEIRA_M` do construtor, em
+## metros, e o nivelamento entra em `ground_height_at` como o barranco.
+const PLATO_DA_GAMELEIRA_M := Vector2(-300.0, 560.0)
+const PLATO_RAIO := 7.0
+const PLATO_BORDA := 5.0
 enum BankProfile { FLAT, RIVER, BEACH, MOUTH }
 
 var landmarks: Array[Dictionary] = []
@@ -135,6 +144,10 @@ var _rio_grande: Dictionary = {}
 var _linha_do_barranco := PackedVector2Array()
 var _limites_do_barranco := Rect2()
 var _ponte_do_rio_grande := Vector2.INF
+## O platô da gameleira (ver PLATÔ DA GAMELEIRA): o centro em unidades e a altura
+## dele, medida na primeira pergunta.
+var _plato_centro := Vector2.INF
+var _plato_altura := NAN
 var _background_kind := "land"
 ## Bloco "bathymetry" do cenário: com ele, o mar ganha fundo real e água transparente.
 var _bathymetry: Dictionary = {}
@@ -385,6 +398,8 @@ func build_region(kml_json_path: String, scenario_json_path: String) -> void:
 	_prepare_mouth_extensions()
 	# Depois da foz: a largura do rio do norte já é a final.
 	_marcar_o_rio_grande()
+	_plato_centro = PLATO_DA_GAMELEIRA_M / _meters_per_unit
+	_plato_altura = NAN
 	_ler_clareiras_da_mata(String(scenario.get("vegetation", {}).get("clearings_file", "")))
 	_montar_mapa_de_solo()
 	if not terrain_only:
@@ -715,7 +730,20 @@ func _river_shore_weight(point: Vector2) -> float:
 
 func ground_height_at(position: Vector3) -> float:
 	var point := Vector2(position.x, position.z)
-	return _terrain_height_at(position) - _riverbed_lowering(point) + _barranco(point)
+	return _terrain_height_at(position) - _riverbed_lowering(point) + _barranco(point) + _plato(point)
+
+
+## O quanto o platô da gameleira levanta ou abaixa o chão em `point` (0 fora dele).
+func _plato(point: Vector2) -> float:
+	if not _plato_centro.is_finite():
+		return 0.0
+	var distancia := point.distance_to(_plato_centro)
+	if distancia >= PLATO_RAIO + PLATO_BORDA:
+		return 0.0
+	if is_nan(_plato_altura):
+		_plato_altura = _terrain_height_at(Vector3(_plato_centro.x, 0.0, _plato_centro.y))
+	var aqui := _terrain_height_at(Vector3(point.x, 0.0, point.y))
+	return (_plato_altura - aqui) * (1.0 - smoothstep(PLATO_RAIO, PLATO_RAIO + PLATO_BORDA, distancia))
 
 
 ## A altura da água usa o relevo sem o corte da calha; o fundo fica abaixo dela.

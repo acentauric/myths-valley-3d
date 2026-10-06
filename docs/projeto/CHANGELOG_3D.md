@@ -103,6 +103,12 @@
   volta a `fogueira_tripo.glb` (o anel de pedras e as toras, sem a chama rígida),
   e a chama e as brasas seguem a noite com a luz (`luzes_epoca.gd`). Portão novo
   `fogueira`.
+- **A gameleira do sambaqui assenta no chão (#87).** O monte e a árvore eram
+  postos por uma amostra do terreno, no centro, e com o chão novo de 05/10 a
+  encosta ali inclinou. O terreno em volta vira um platô na altura do centro
+  (`GeoRegionRenderer`, PLATÔ DA GAMELEIRA: plano até 7 u, voltando ao relevo em
+  mais 5). Portão novo `gameleira`: o anel em volta varia menos de 0,2 u, a borda
+  do monte não flutua, e o marco é o tronco.
 - **O aviso do primeiro cordel diz que ele é colecionável (#88).** O cartão já
   contava o que é a literatura de cordel; agora diz também, nos três idiomas, que
   no jogo ele é um colecionável, onde os folhetos estão espalhados e que o
