@@ -55,6 +55,22 @@ No estilo Tripo cada luz tem o modelo correspondente do catálogo
 (`lampiao_poste`, `candeeiro`, `fogueira`); no procedural, as peças de
 `flora_reconcavo.gd`.
 
+## A maré
+
+A baía tem maré de 2,4 m (0,6 unidades), e **ela vem ligada**: AJUSTAR → Cenário → Maré começa em
+"Ciclo do lugar" (semidiurno, período de 12 h de jogo). A preamar cai às 07:00 e às 19:00 (o jogo abre
+com a água cheia e o saveiro atraca na prancha dessa altura), a baixa-mar às 13:00 e à 01:00: no ritmo
+Normal o mar desce mais de um metro em 90 s, a praia seca e a lama aparece. `mare.gd` (autoload) só
+guarda o deslocamento (`nivel_offset()`, 0 na preamar a -0,6 na baixa-mar) e quem o lê o segue: o plano
+do mar e a barreira da água da câmera (grupo `mare_superficie`), os shaders de areia, leito e água
+(`mare_offset_m`, `turbidez`), `water_level()`, `water_depth_at()` e `fundo_exposto()` do
+`world_builder.gd` (daí o chão dos pés virar "lama", a espuma da água rasa, o nado e a câmera), as
+canoas (encalham), o tubarão e os cardumes. A escolha em AJUSTAR grava `escolhida=true`: sem essa marca
+o `modo=0` das preferências de antes é lido como o padrão antigo e passa para o ciclo do lugar; quem
+escolheu "Sem maré" continua sem. Sem tela (`--headless`, os portões) o padrão é "Sem maré", porque os
+portões da água medem contra um nível fixo; `MV_MARE_MODO=1` força a maré nos portões, e
+`tests/mare_ligada.gd` prova o padrão, a migração, a curva e o vale seguindo.
+
 ## Som do lugar
 
 `ambiente_vale.gd` mantém dois loops de mata (dia: aves e insetos; noite:
@@ -92,6 +108,14 @@ passo de agora manda procurar, falam a missão e só ela
 Lucinda (Filó), Raquel (Candinha) e Matheus Clear (Damião, também nas três
 broncas do cemitério, `damiao_bronca_1..3.mp3`); o Pedro segue com Weverton.
 
+**Os catorze moradores de jornada** (05/10/2026), que eram mudos, falam desde 06/10/2026, com o
+balão nos quatro idiomas e a voz em português (`audio` de cada fala; quem ainda espera crédito
+declara `voz_pendente`): cada um tem `saudacoes` (o cumprimento de quem chega perto)
+e de 6 a 10 `falas` (a conversa do E), e quem fica na rua à noite tem também `saudacoes_noite` e
+`falas_noite`, que somam às de sempre à noite (`falas_dos_moradores.gd`). Quem tem `saudacoes`
+cumprimenta delas e guarda as `falas` para o E; quem só tem `falas` (os sete de antes, o Pedro)
+segue como acima. Ver "A voz dos catorze" em [MORADORES.md](MORADORES.md).
+
 O balão (`balao_fala.gd`) escolhe a cada quadro entre cinco lugares em volta da
 cabeça de quem fala e fica no que menos cobre quem fala, o jogador e os painéis
 do HUD, com a ponta sempre para a cabeça.
@@ -104,6 +128,18 @@ túmulo mais próximo e abre a história no painel da esquerda. Quem sobe numa l
 ouve o Damião, cada vez mais bravo (voz ElevenLabs "Matheus Clear", estabilidade
 0,5 → 0,35 → 0,2); na terceira ele derruba o jogador para o corredor entre as
 fileiras. Só reclama se estiver no cemitério (30 u); 90 s sem subir, ele esquece.
+
+**As doze covas** ficam no desenho de `cemiterio_layout.gd` (fonte única; o `world_builder`
+as põe, o `lapides.gd` tira dele o vão por onde o Damião cruza uma fileira): quatro fileiras
+de três lajes no sentido leste-oeste, todas com a cabeceira (a cruz) a OESTE e os pés a leste
+(a laje do Tripo já vem assim; a procedural gira um quarto de volta), vão de 0,9 u ou mais
+entre lajes e corredor de 1,3 u entre fileiras, cada uma com até 4 cm de desvio e 3 graus de
+guinada (sorteio por índice, o mesmo em toda montagem). O corredor do meio fica na altura da
+porta da capelinha, que olha para ele. A base de cada laje sai dos quatro cantos da pegada,
+pela mesma fórmula do chão, um pouco afundada (a malha do chão fica até 8 cm abaixo dela), sem
+inclinar a laje: quem a inclina é o conserto do Damião, e ela volta reta. As posições foram
+achadas contra tudo o que mora ali (capim, embaúbas, pedras, galhadas, postos do Damião, do
+padre e do sacristão): mexeu em um, rode `tests/lapides_no_chao.gd`.
 
 **Pedro** (`guia_pedro.gd`) não tem posto durante a chegada: acompanha o
 jogador (anda a 3 u/s, corre se ficar para trás) e a conduz pelos pedidos dos
@@ -201,6 +237,58 @@ chega a 280 u. O extrator do sobrevoo não vê as copas (só o que `_multimesh_e
 recebe, e elas não passam por ali). No estilo procedural a copa funciona igual (a caixa da
 malha dá a forma). Portão: `tests/lod_vegetacao.gd`.
 
+### Casas, árvores nomeadas e adereços de longe
+
+O vale monta 491 peças do catálogo (2,0 M de triângulos), e 341 delas — 31 construções de
+10 mil triângulos, 64 árvores nomeadas de 10 a 20 mil, 217 adereços e 29 plantas de roça —
+eram desenhadas inteiras a qualquer distância, do mirante ao fim da baía.
+`CatalogoAssets.instanciar` agora termina em
+`dar_alcance`: cada peça de `construcoes/`, `casas/`, `arvores/` e `aderecos/` ganha um
+`visibility_range_end` que CRESCE COM O TAMANHO dela (uma peça de 22 vezes a sua dimensão
+maior ocupa sempre os mesmos pixels ao sumir), limitado por classe: a construção e a árvore
+nomeada de 22 x (100 a 260 e 70 a 260 u), o adereço de 30 x (60 a 200 u: os pequenos somem
+entre 60 e 90 u e DESVANECEM em 8 u), a roça e o canteiro de 50 a 90 u. Tabela e razões em
+`catalogo_assets.gd`. Ficam de fora o que anda ou se leva na mão (gente, bicho, peixe,
+barco, item), a mobília, que mora dentro de cômodo, e o píer, a ponte, o mirante e os
+barcos (uma peça só cada, vistos de todo o vale): `SEM_ALCANCE`, cada um com o motivo.
+
+**A troca** (medida com a GPU, `tools/prototipo_3d/medir_lod_das_pecas.gd --modo=troca`): o
+MODELO DESVANECE (`FADE_SELF`) de `end` até `end` + a margem (15 u: a casa de taipa, de 143 u,
+some aos 158; a mangueira, de 177 u, aos 192; o pote, de 60 u e margem 8, aos 68), e o
+SUBSTITUTO aparece em `end`, seco e SEM margem, por baixo do modelo que ainda se vê. A troca
+seca com margem dos dois lados, a da mata (`copas_distantes.gd`, que segue assim), deixa um
+BURACO (`--modo=estado`): com `FADE_DISABLED` e margem o renderizador faz histerese, e a peça
+que nasce (o vale que monta, o jogo que carrega) com a câmera DENTRO da faixa `end ± margem`
+não tem estado nenhum — a casa que nasce a 150 u do corte de 143 u desenhava 0 triângulos até
+a câmera passar dos 165 u. Sem histerese o que se vê só depende da distância de agora. (A copa
+da mata tem o mesmo desenho e, em princípio, o mesmo defeito, num bloco de árvores que nasce
+com a câmera na faixa de 20 u dele: não foi medida nem mexida neste pacote.)
+
+**O que se ganha** (`--modo=vale`, o vale montado com a GPU e sem os cortes, em ABBA numa
+máquina parada, GTX 1660 Ti a 720 p): os triângulos desenhados caem de 2,61 M para 2,17 M da
+praça de pé (-17%), de 3,06 M para 1,68 M do mirante olhando a vila (-45%), de 2,24 M para
+1,74 M do píer (-22%) e de 2,62 M para 1,20 M da baía a 300 u (-54%); as chamadas de desenho
+caem de 2 a 10 (o substituto é uma só). O TEMPO de GPU não muda de forma mensurável (de 14 a
+33 ms conforme o ponto, igual com e sem, e igual ao do vale sem o desvanecer): o quadro desta
+máquina não gasta nos vértices das peças de longe. O ganho é de triângulos e de memória, e
+pesa mais em GPU fraca ou em tela grande.
+
+**O substituto** (`pecas_distantes.gd`) é o que o vale mostra depois disso, até 1.200 u (o mesmo
+`FIM` das copas da mata): para a CASA, uma caixa de parede e um telhado de duas águas de 14
+triângulos, nas cores e nas proporções medidas no GLB (`tools/prototipo_3d/medir_cores_das_casas.py`
+imprime a tabela `CASAS`); para a ÁRVORE NOMEADA, a copa low-poly da mata na cor da espécie.
+Não faz sombra (o sol só sombreia até 70 u) e é FILHO do modelo, e um MultiMeshInstance3D, de
+propósito: anda com a casa quando o prédio é assentado, some e encolhe com a árvore cortada e
+crescendo, e nada que mede a casca atrás de `MeshInstance3D` (os raios do cômodo, o toco do
+corte, o extrator do sobrevoo) o enxerga. O cômodo liga e desliga a sombra de tudo sob a casca
+(`Comodo.por_dentro`) e mexe na do substituto das casas que têm cômodo: sem efeito a mais de 150 u.
+
+No mapa alto (câmera ortográfica a 3.000 u: o mapa grande, o do menu, a foto do minimapa) o
+gancho de `GeoRegionRenderer._atualizar_lod_da_camera` tira o corte das peças e esconde os
+substitutos, como faz com a mata. No estilo procedural nada disso existe (as construções já são
+caixas): nenhum substituto nasce. Portões: `tests/lod_das_pecas.gd` (e `_procedural`);
+`CatalogoAssets.alcance_ligado = false` devolve o vale de antes.
+
 ## Paisagismo do arraial (zonas de uma espécie só)
 
 A mata (`_build_forest`) não entra na vila, e o arraial tinha 78% das células a mais de 9 u de
@@ -230,6 +318,39 @@ jenipapo). A repetição é melhor que a mistura: a pureza das zonas fica acima 
 - **Só no estilo Tripo.** O procedural segue sem pomar. Fichas novas (goiabeira, mamoeiro, bambu) em
   `data/arvores_3d.json`. Portão: `tests/paisagismo.gd` (`--falsificar=reservas|sorteio|semente|voo|vazio`).
 
+## Casas por dentro (toda casa abre)
+
+Só a igreja, a casa herdada e as do Pedro e da Zefa tinham tabela fixa (`Interiores.CONSTRUCOES`). Todas
+as outras moradias e a venda moram em `data/interiores_casas.json`, e o casarão da fazenda também:
+
+- `modelos`: onde fica a porta PINTADA de cada GLB (`porta_x` do meio para a direita de quem olha de frente,
+  largura, altura). A porta não existe na malha; foi lida nas fachadas com régua de 0,5 m
+  (`tools/prototipo_3d/` guarda o método; a palhoça do pescador não tem porta pintada: o vão escuro cobre a rede).
+  `medida` troca a que os raios medem onde a casca engana (a venda e o restaurante têm a porta numa alcova maciça),
+  `pe_direito_max` baixa o forro das casas de telhado alto.
+- `casas`: de cada cômodo, o lote (`ancora`), o nome do HUD nos três idiomas e o perfil. As do arraial que
+  o vale deu ao Pedro e à Zefa saem sozinhas da lista.
+- `perfis`: cal, barra e piso de quem mora, e a lista de móveis. Cada móvel pede lugares (`["esq", 0.4]`: a parede
+  e a fração dela) e fica no primeiro que cabe, sem tomar o vão da porta (`InteriorCasa._moveis_do_perfil`).
+
+Os cômodos de dados se montam DE PERTO (`Interiores.garantir`, ronda de 0,25 s: a 32 u da porta) e somem do desenho
+além de 46 u. Montados todos de uma vez seriam +1 milhão de triângulos e 80 luzes atrás das paredes. Quem põe o
+jogador lá dentro sem passar pela porta (um portão) pede `garantir` antes; e quem chega de uma vez ao pé de uma casa
+ainda por montar (o save, um pulo no mapa) fica parado até o cômodo estar de pé (`Interiores.segura_o_jogador`), em vez de
+expulso pela caixa inteira que ainda cobre a casa. Casca que mede pouco por dentro
+(palhoça, capelinha, casa de carro quebrado) leva parede fina (0,15): a sala não sai da casca. O Pedro espera
+fora dos cômodos pequenos (`Interiores.espera_fora`). Portão: `tests/casas_por_dentro.gd`
+(`--falsificar=sem_moveis|eager|porta_fechada|sem_freio`).
+
+O CASARÃO (`interior_casarao.gd`): o piso de dentro está 0,78 acima do chão, na plataforma do pórtico; a escada de
+pedra de fora é uma rampa de colisão que passa rente às quinas dos degraus, com a plataforma e as balaustradas; por
+dentro é um salão só, com a escada para o andar de cima de cenário (o andar de cima não abre).
+
+As duas capelas (a velha e a do cemitério) abrem como as casas, com oratório e bancos. A CASA DE FARINHA é galpão aberto
+(`"tipo": "galpao"`, `Interiores._abrir_galpao`): não tem porta, tira a caixa de colisão que cobria a pegada inteira e
+põe no lugar só as `caixas` do JSON (as três paredes, o forno com o tacho e os dois pilares da frente), de modo que se
+anda por dentro e a parede do fundo segura.
+
 ## Onde mexer
 
 | Quero… | Arquivo |
@@ -241,6 +362,9 @@ jenipapo). A repetição é melhor que a mistura: a pureza das zonas fica acima 
 | missões do Pedro | `guia_pedro.gd::MISSOES` |
 | paletas do humanoide procedural | `personagem_procedural.gd::PALETAS` |
 | catálogo de GLBs do Tripo | `catalogo_assets.gd::PECAS` |
+| a mobília, a porta ou o nome de uma casa por dentro | `data/interiores_casas.json` (e rode `tests/casas_por_dentro.gd`) |
+| até onde cada peça do cenário se vê, e a casa/copa de longe | `catalogo_assets.gd::dar_alcance` + `pecas_distantes.gd` |
+| onde ficam as doze lajes do cemitério | `cemiterio_layout.gd` (e rode `tests/lapides_no_chao.gd`) |
 | pomares, roças e mata ciliar do arraial | `scenes/prototipo_3d/paisagismo_vale.tscn` + `data/paisagismo/receitas.json` |
 | gesto que cada morador faz ao cumprimentar | `npcs_3d.json` (`gesto_saudacao` no procedural, `gesto_tripo` com rig) |
 | trazer peças novas do Tripo | `docs/arte/ASSETS_TRIPO.md` → "Do download ao jogo" |

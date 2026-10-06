@@ -1,5 +1,62 @@
 # Histórico de mudanças — Myths' Valley 3D
 
+## Em desenvolvimento — 06/10/2026 (playtest da Build 9B)
+
+- **As missões voltam a fechar, e um portão joga todas do começo ao fim.** A
+  bateria cheia da main tinha 12 portões vermelhos depois da junção do ramo de
+  desempenho. As filas de colheita (Zefa, coveiro, pedra do poço, corte) caíam
+  porque `max_physics_steps_per_frame=3` faz o tempo de jogo andar mais devagar que
+  o relógio com quadro acima de 50 ms; agora são 5 passos (tempo real até 12 FPS) e
+  os portões esperam em segundos de jogo (`tests/fixtures/relogio_de_jogo.gd`).
+  `tests/missoes_do_comeco_ao_fim.gd` joga uma partida só pelos controles do
+  jogador (anda, aperta E depois de perguntar ao foco, obras pelo E e pelo J,
+  mochila, teia, luta, pesca), as 22 filas e 85 passos; só roda no `-Tudo` ou por
+  nome, com teto de 4 h. `tests/missoes_elos.gd` confere os elos estáticos.
+- **O E chega ao poço.** Os sítios de obra (poço, ponte, mirante, cemitério,
+  carroça) respondem ao E e abrem o painel nas obras daquele sítio; o J abre direto
+  em Obras quando o passo é de obra. Entre moradores, leva o E quem a missão manda
+  procurar; quem tem fila trancada diz "volte depois de ..." nos três idiomas.
+- **As falas esperam a vez.** Uma fila só (`fila_de_falas.gd`) para balões, caixa
+  de fala, narração, voz do marco e festa de missão: cada fala segura a vez pelo
+  tempo da voz ou da leitura; cumprimento de quem passa não entra por cima. O Pedro
+  ganha falas de depois do tutorial e deixa de se apresentar de novo; a ferramenta
+  da missão não some no save nem com a mochila cheia.
+- **Pedras:** quebrável é pequena (pedras soltas aos pés das rochas, mesmo
+  rendimento); as rochas grandes viram cenário, sem E. O golpe ganha som
+  (marretada, pedra quebrando, foice, ostra, galho), gerado no ElevenLabs.
+- **Câmera e corpo:** a câmera nunca fica a menos de 1,25 m do corpo (sobe por cima
+  da cabeça quando a parede encurta o braço), fica acima da água de agora (com a
+  maré) e atravessa as portas sem estalo; o corpo deixa de prender nas bordas de rua,
+  de ponte e de areia. Portões `camera_resiliente` e `colisoes_de_passeio`.
+- **Bichos:** a onça corre a 4 u/s e mata em duas mordidas quem não corre (quem
+  corre escapa), o tubarão alcança quem foge a nado e some na baixa-mar, a cabra anda
+  em vez de deslizar, e os bichos deixam de esticar parados e na pausa.
+- **Popups:** no máximo três placas de nome (duas com balão no ar), com mola na
+  tela em vez de colar na cabeça; o balão só troca de canto depois de 0,9 s e a fala
+  longa passa em páginas de duas linhas.
+- **Maré e música:** a maré vem ligada de fábrica (quem nunca escolheu passa a vê-la)
+  e o relógio diz se a água enche ou vaza; cada período do dia tem a sua trilha.
+- **Moradores:** os catorze que só acenavam falam (cumprimentos, conversa e falas
+  da noite), e toda fala de `data/npcs_3d.json` tem pt, en, es e zh. Vozes geradas em
+  português: Pedro depois do tutorial, padre, sacristão, beata, mercador, guarda e
+  parte do pescador; as outras 104 falas de nove moradores ficam em `voz_pendente`
+  até a chave do ElevenLabs ter crédito.
+- **Casas por dentro:** as moradias, as capelas, a venda, a casa de farinha e o
+  casarão da fazenda abrem, mobiliados para quem mora (`data/interiores_casas.json`);
+  o casarão se sobe pela escadaria de pedra até o salão. O cômodo se monta de perto e
+  some do desenho de longe.
+- **De longe:** casas, árvores nomeadas e adereços viram caixa e copa baratas, sem
+  buraco na troca (até -54% de triângulos); as doze lápides ficam alinhadas e
+  assentadas no chão.
+- **Sustos da mata:** um vulto aparece no fundo da mata; olhado, some; de costas,
+  ele avança, o jogo salva em silêncio e fecha como se travasse. As pegadas do
+  Curupira, viradas para trás, enlouquecem o mapa, a bússola e a seta da missão por
+  um minuto. AJUSTAR → Sustos desliga os dois.
+- **Ajustes:** o clique contorna as casas (as duas lenhas da ponte saíram da fresta
+  da casa de taipa), a malha dos moradores contorna o alicerce da capelinha, e o
+  saveiro atracado vira obstáculo. O lobby em vídeo vale em toda build e no editor;
+  `-- --lobby-3d` (ou `abertura.lobby_3d_pedido` nos portões) volta ao vale 3D.
+
 ## Build #9 — 05/10/2026 (edição Tripothon)
 
 - **Build especial do concurso, estática.** Novo preset de exportação "Windows
