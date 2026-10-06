@@ -279,6 +279,27 @@
   próprios, gerados por imagem (`assets/sprites/icones/`, `tools/openai/
   gerar-icones.ps1` e `promover_icones.gd`, que recorta cada um pela forma).
   Portões `painel` e `pedidos_do_arraial`.
+- **Os bichos andam com as quatro pernas do código, e nada estica (#109).** Na
+  live, "o bicho fica esticando e voltando em um movimento vertical" e "todos os
+  bichos parecem que mancam". A respiração escalava o POSE inteiro em Y, pernas
+  inclusive, e o clipe de andar do Tripo só mexia os ossos que o auto-rig
+  batizou — e ele batiza errado em quase todo modelo (perna sem nome ficava
+  dura; pescoço chamado de perna subia e descia). Agora o clipe não toca em
+  quadrúpede nenhum: as pernas são achadas pela PELE do GLB (o osso que move
+  os vértices baixos da malha é pé, e a perna sobe dele até o tronco, sem ler
+  nome), uma em cada canto — e a sonda dos pesos mostrou que em três rigs o
+  auto-rig deu uma cadeia só para as duas patas de uma ponta (trás do cão
+  caramelo e do bode, frente do filhote): essa é a perna do meio e balança as
+  duas juntas, até um rig refeito; o andar é de quatro tempos, com a cadência pelo
+  comprimento da perna e o passo da espécie; a respiração alarga só o peito (X e
+  Z), a cabeça acena e o rabo balança por osso, e abaixar (a espreita da onça)
+  desce o corpo dobrando os joelhos (`animador_bicho`). Cada criatura da mata
+  tem os números dela em `data/criaturas_3d.json` (vida, dano, passo, faro,
+  mordida, o que cai, corpo, modelo e vista, com o nome nos três idiomas), que
+  `criatura_vale.gd` lê uma vez; os bichos de quintal seguem com passo e
+  corrida em `bichos_de_casa.json`. Portões `bicho_parado` (reescrito: as
+  pernas de cada espécie, uma por canto, rabo fora, mesma força em todas,
+  repouso parado, nada escala), `onca`, `luta`, `idiomas`, `bichos_de_casa`.
 
 ## Em desenvolvimento — 05/10/2026
 

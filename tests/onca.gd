@@ -274,12 +274,15 @@ func _run() -> void:
 	_conferir(not preta.olhos_acesos() or not preta.ativa(), "os olhos da preta continuam acesos de dia")
 	dia.definir_hora(10.0)
 
-	# --- 9. O PASSO É DE CÓDIGO NOS TRÊS DE CLIPE TORTO ---------------------------
-	var Animador = load("res://scripts/prototipo_3d/animador_bicho.gd")
-	for chave in ["onca_pintada", "onca_preta", "cachorro_caramelo"]:
-		_conferir(chave in Animador.CLIPE_QUEBRADO, "%s saiu da lista de clipe torto" % chave)
-	_conferir(pintada._animador.tem_pernas() and not pintada._animador.tem_clipe(), "a onça pintada não anda com as pernas do código")
-	_conferir(preta._animador.tem_pernas() and not preta._animador.tem_clipe(), "a onça preta não anda com as pernas do código")
+	# --- 9. O PASSO É DE CÓDIGO, COM AS QUATRO PERNAS ACHADAS PELA PELE DO GLB (#109) ----
+	for onca_de_teste in [pintada, preta]:
+		var quem: String = str(onca_de_teste.chave_do_modelo())
+		_conferir(onca_de_teste._animador.tem_pernas() and not onca_de_teste._animador.tem_clipe(), "a %s não anda com as pernas do código" % quem)
+		var cantos: Dictionary = {}
+		for perna in onca_de_teste._animador.pernas():
+			cantos[str(perna["canto"])] = true
+		_conferir(cantos.size() == 4 and onca_de_teste._animador.pernas().size() == 4,
+			"a %s não tem quatro pernas, uma em cada canto (o rabo não é perna): %s" % [quem, str(cantos.keys())])
 
 	# --- 8b. O PROCEDURAL: A CAIXA ----------------------------------------------
 	root.get_node("/root/Estilo").modo = "procedural"

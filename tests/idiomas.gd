@@ -73,6 +73,8 @@ const TRADUZIDOS := {
 	# O saveiro do mestre Quirino: a cadeia do Seu Benedito que o ensina, e o que o
 	# saveiro diz — a chegada, a encomenda da estação e a aba dele no painel.
 	"res://data/missoes_saveiro.json": ["texto", "resumo", "nome", "titulo", "resposta"],
+	# As criaturas da mata (#109): o nome que o HUD diz ao derrubar.
+	"res://data/criaturas_3d.json": ["nome"],
 	"res://data/saveiro.json": ["chegou", "partiu", "encomenda_titulo", "encomenda_texto", "encomenda_linha", "agrado",
 		"painel_titulo", "painel_linha", "painel_dica", "painel_rodape", "ja_levou", "nao_tem"],
 }

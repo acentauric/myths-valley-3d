@@ -1,0 +1,35 @@
+{
+	"_sobre": "AS CRIATURAS DA MATA do vale 3D (#109): o que cada espécie tem de seu, um bloco por bicho, como bichos_de_casa.json para os de quintal. Os números de cada espécie são os do 2D, verbatim (Criatura.ESPECIES de lá): 'vida' e 'dano' em pontos; 'passo', 'fareja', 'desiste', 'mordida' e 'salto' em PIXELS do 2D, convertidos para unidades do vale por criatura_vale.u_por_px; 'entre_mordidas', 'bote' (duração), 'folego' e 'volta' (dias até a mata repor) em segundos ou dias; 'bote_acerta' é a fração do bote em que a boca fecha; 'cai' e 'quantos_caem' o que fica no chão. 'corpo' é a caixa do procedural em unidades (largura, altura, comprimento; o comprimento aponta para a frente, +Z). 'modelo' é a chave do catálogo (Tripo); a onça tem um por pelagem. 'vista' só existe no 3D e já está em unidades: até onde enxerga de dia e de noite, o cone em graus, a coleira ('desiste' do jogador, 'territorio' do ninho), quanto tempo espreita antes da carga e o raio da ronda. 'nome' é o que o HUD diz ao derrubar, nos três idiomas. Ver scripts/prototipo_3d/criatura_vale.gd.",
+	"especies": {
+		"caititu": {
+			"nome": "Caititu", "nome_en": "Collared peccary", "nome_es": "Pecarí de collar",
+			"vida": 12.0, "dano": 4.0, "passo": 46.0,
+			"fareja": 96.0, "desiste": 176.0, "mordida": 14.0, "entre_mordidas": 0.6,
+			"cai": "carne_de_caca", "quantos_caem": 1, "volta": 3, "folego": 4.0,
+			"bote": 0.75, "bote_acerta": 0.55, "salto": 6.0,
+			"corpo": [0.45, 0.45, 0.9],
+			"modelo": "caititu"
+		},
+		"onca": {
+			"nome": "Onça", "nome_en": "Jaguar", "nome_es": "Jaguar",
+			"vida": 36.0, "dano": 8.0, "passo": 72.0,
+			"fareja": 128.0, "desiste": 224.0, "mordida": 18.0, "entre_mordidas": 0.9,
+			"cai": "couro_de_onca", "quantos_caem": 1, "volta": 5, "folego": 12.0,
+			"bote": 0.7, "bote_acerta": 0.6, "salto": 18.0,
+			"corpo": [0.55, 0.7, 1.5],
+			"modelo": {"pintada": "onca_pintada", "preta": "onca_preta"},
+			"vista": {"alcance": 16.0, "alcance_noite": 10.0, "cone": 140.0, "desiste": 26.0,
+				"territorio": 34.0, "espreita": 2.0, "ronda": 9.0}
+		},
+		"jararaca": {
+			"nome": "Jararaca", "nome_en": "Jararaca pit viper", "nome_es": "Yarará",
+			"vida": 8.0, "dano": 2.0, "passo": 30.0,
+			"fareja": 56.0, "desiste": 112.0, "mordida": 12.0, "entre_mordidas": 1.0,
+			"cai": "banha_de_jararaca", "quantos_caem": 1, "volta": 4,
+			"bote": 0.55, "bote_acerta": 0.6, "salto": 10.0,
+			"peconha": {"dura": 12.0, "por_segundo": 0.5},
+			"corpo": [0.16, 0.12, 1.1],
+			"modelo": "jararaca"
+		}
+	}
+}
