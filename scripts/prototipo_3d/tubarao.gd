@@ -16,9 +16,13 @@ extends Node3D
 const LAMINA_FUNDA := 1.8
 const LAMINA_PERSEGUE := 1.6
 const LAMINA_MINIMA := 1.0
-## Velocidades (u/s): o nado do jogador é ~1,5 (correndo 3,0) — dá para escapar no raso.
-const VELOCIDADE_PATRULHA := 1.1
-const VELOCIDADE_PERSEGUICAO := 2.3
+## Velocidades (u/s): o nado do jogador é ~1,5 (correndo 3,0), e o tubarão passa dos
+## dois — quem nada no fundo não foge dele. Escapar é voltar para o RASO: ele não
+## persegue quem está em lâmina de `LAMINA_PERSEGUE` ou menos, nem entra onde
+## a lâmina é menor que `LAMINA_MINIMA`. A patrulha (2,0) já é mais rápida que o
+## nado normal do jogador (1,5).
+const VELOCIDADE_PATRULHA := 2.0
+const VELOCIDADE_PERSEGUICAO := 4.4
 const RAIO_PERCEPCAO := 55.0
 const RAIO_ATAQUE := 0.9
 const COOLDOWN_ATAQUE := 25.0
@@ -34,7 +38,7 @@ const Cardume = preload("res://scripts/prototipo_3d/cardume.gd")
 ## arrancada (u/s) e quanto dura no máximo, e a distância do bote no peixe.
 const INTERVALO_CACA := Vector2(45.0, 90.0)
 const ALCANCE_CACA := 40.0
-const VELOCIDADE_CACA := 2.8
+const VELOCIDADE_CACA := 5.0
 const DURACAO_CACA := 10.0
 const RAIO_BOTE_PEIXE := 1.0
 ## O corpo do Tripo: a ponta da barbatana fica este tanto acima da água.
@@ -61,6 +65,13 @@ var _esqueleto: Skeleton3D
 var _ossos_cauda: Array[int] = []
 var _eixos_cauda: Array[Vector3] = []
 var _tempo_cauda := 0.0
+## O relógio do tubarão, em segundos de JOGO (a soma do delta de física): a caça, o
+## cooldown do ataque e o prazo da presa paravam de contar com o jogo pausado? Não —
+## contavam em relógio de parede, e andavam com a pausa. Agora param.
+var _tempo := 0.0
+## O quanto a cauda bate mais depressa que na patrulha: acompanha a velocidade.
+var _ritmo := 1.0
+var _repousos_cauda: Array[Quaternion] = []
 var _tela: CanvasLayer
 var _proxima_caca := 0.0
 var _caca_ate := 0.0
@@ -92,14 +103,15 @@ func configurar(world, player, aviso: Callable) -> void:
 	_ativo = true
 	add_to_group("predadores")
 	_rng.seed = 2611
-	_proxima_caca = Time.get_ticks_msec() / 1000.0 + _rng.randf_range(INTERVALO_CACA.x, INTERVALO_CACA.y)
+	_proxima_caca = _tempo + _rng.randf_range(INTERVALO_CACA.x, INTERVALO_CACA.y)
 
 
 func _physics_process(delta: float) -> void:
+	_tempo += delta
 	if not _ativo or _atacando:
 		return
 	_animar_cauda(delta)
-	var agora := Time.get_ticks_msec() / 1000.0
+	var agora := _tempo
 	_checagem_mare -= delta
 	if _checagem_mare <= 0.0:
 		_checagem_mare = 0.7
@@ -156,6 +168,7 @@ func _physics_process(delta: float) -> void:
 	if _espuma:
 		_espuma.emitting = true
 		_espuma.amount_ratio = 1.0 if perseguindo or cacando else 0.5
+	_ritmo = clampf(velocidade / VELOCIDADE_PATRULHA, 1.0, 3.0)
 	if _nado != null:
 		_nado.speed_scale = velocidade / VELOCIDADE_PATRULHA
 
@@ -284,7 +297,7 @@ func _texto_do_susto() -> String:
 func _encerrar_ataque() -> void:
 	_tela.visible = false
 	_atacando = false
-	_proximo_ataque = Time.get_ticks_msec() / 1000.0 + COOLDOWN_ATAQUE
+	_proximo_ataque = _tempo + COOLDOWN_ATAQUE
 
 
 ## Primeiro ponto bem fundo varrendo do píer mar adentro, abrindo em leque. A planície
@@ -364,6 +377,7 @@ func _montar_visual() -> void:
 					for i in _esqueleto.get_bone_count():
 						if String(_esqueleto.get_bone_name(i)).ends_with(nome_osso):
 							_ossos_cauda.append(i)
+							_repousos_cauda.append(_esqueleto.get_bone_rest(i).basis.orthonormalized().get_rotation_quaternion())
 							_eixos_cauda.append((_esqueleto.get_bone_global_rest(i).basis.inverse() * Vector3.UP).normalized())
 							break
 			var animacoes := _modelo_tripo.find_children("*", "AnimationPlayer", true, false)
@@ -432,11 +446,14 @@ func _montar_prismas() -> void:
 func _animar_cauda(delta: float) -> void:
 	if _esqueleto == null or _ossos_cauda.is_empty():
 		return
-	_tempo_cauda += delta
+	# A cauda bate no ritmo da velocidade (patrulha, perseguição, arrancada) e balança
+	# EM CIMA do repouso do osso — o osso da cauda nasce torto uns 31 graus, e pôr a
+	# rotação absoluta o endireitava a cada quadro.
+	_tempo_cauda += delta * _ritmo
 	for j in _ossos_cauda.size():
 		var fase := _tempo_cauda * 4.2 - float(j) * 0.65
 		var amplitude := 0.20 if j == 0 else 0.38
-		_esqueleto.set_bone_pose_rotation(_ossos_cauda[j], Quaternion(_eixos_cauda[j], sin(fase) * amplitude))
+		_esqueleto.set_bone_pose_rotation(_ossos_cauda[j], _repousos_cauda[j] * Quaternion(_eixos_cauda[j], sin(fase) * amplitude))
 
 
 ## Rastro leve de espuma atrás da barbatana, rente à superfície.

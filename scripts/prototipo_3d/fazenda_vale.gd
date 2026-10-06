@@ -55,6 +55,9 @@ const PASSO := 0.7
 ## De quanto em quanto se confere o dia (a partida que volta do save).
 const CONFERIR_A_CADA := 0.5
 const ARQUIVO := "res://data/missoes_fazenda.json"
+## As cabras andam com as pernas (o clipe de andar, na velocidade do chão), e não
+## escorregam: `cabra_de_cena.gd`.
+const CabraDeCena = preload("res://scripts/prototipo_3d/cabra_de_cena.gd")
 
 var _mundo
 var _vale
@@ -67,6 +70,7 @@ var _altura_do_portao := 0.0
 var _festa: Node3D = null
 var _cabras: Array[Node3D] = []
 var _proximo_passeio: Array[float] = []
+var _passeios: Array[Tween] = []
 var _dia_montado := false
 var _em_cena := false
 var _conferir_em := 0.0
@@ -124,6 +128,9 @@ func marcar_o_dia() -> void:
 	if _cadeia == null or dia_marcado():
 		return
 	_cadeia.registrar_evento("dia_da_fazenda")
+	# O CARTÃO DO AMANHECER ("hoje é o dia da fazenda", `queda._lembretes_do_dia`) lê a
+	# `Jornada`, e ninguém a marcava no 3D: o cartão nunca aparecia.
+	Jornada.marcar()
 	acertar()
 
 
@@ -346,10 +353,13 @@ func _montar_a_festa() -> void:
 	for lugar: Vector3 in _lugares_nos_bancos():
 		CatalogoAssets.instanciar("banco", _festa, lugar + Vector3(0, 0, 0.55), 0.6, 0.0)
 	for i in CABRAS:
-		var cabra := CatalogoAssets.instanciar("cabra", _festa, _ponto_no_patio(), 1.0, _rng.randf() * TAU)
-		if cabra != null:
-			_cabras.append(cabra)
-			_proximo_passeio.append(_rng.randf() * PAUSA)
+		var cabra: Node3D = CabraDeCena.new()
+		_festa.add_child(cabra)
+		cabra.global_position = _ponto_no_patio()
+		cabra.rotation.y = _rng.randf() * TAU
+		_cabras.append(cabra)
+		_proximo_passeio.append(_rng.randf() * PAUSA)
+		_passeios.append(null)
 
 
 func _ponto_no_patio() -> Vector3:
@@ -366,13 +376,20 @@ func _passear_as_cabras(delta: float) -> void:
 		if _proximo_passeio[i] > 0.0:
 			continue
 		_proximo_passeio[i] = PAUSA + _rng.randf() * PAUSA
+		# Ainda no passeio de antes: espera o próximo.
+		if _passeios[i] != null and _passeios[i].is_running():
+			continue
 		var destino := _ponto_no_patio()
 		var rumo := destino - cabra.global_position
 		rumo.y = 0.0
 		var andando := create_tween()
 		if rumo.length() > 0.05:
+			andando.tween_callback(CabraDeCena.parar_se_for.bind(cabra))
 			andando.tween_property(cabra, "rotation:y", atan2(rumo.x, rumo.z), 0.3)
+		andando.tween_callback(CabraDeCena.andar_se_for.bind(cabra, PASSO))
 		andando.tween_property(cabra, "global_position", destino, maxf(rumo.length() / PASSO, 0.3))
+		andando.tween_callback(CabraDeCena.parar_se_for.bind(cabra))
+		_passeios[i] = andando
 
 
 func _corpo(tamanho: Vector3, onde: Vector3, nome: String) -> StaticBody3D:

@@ -23,6 +23,9 @@ uniform float envergadura = 1.0;
 uniform float comprimento = 1.0;
 uniform float amplitude = 0.12;
 uniform float batida = 2.6;
+// O tempo do nado, em segundos de JOGO: quem monta o cardume o avanca a cada quadro (cardume.gd).
+// Com o TIME do motor (que nao pausa) o peixe seguia remando no lugar com o jogo pausado: a posicao parava, a cauda nao.
+uniform float tempo = 0.0;
 
 void vertex() {
 	vec3 c = (canonica * vec4(VERTEX, 1.0)).xyz;
@@ -33,8 +36,8 @@ void vertex() {
 	float t = clamp(c.z / max(comprimento, 0.001) + 0.5, 0.0, 1.0);
 	// Deitada (ritmo ~0) só a borda ondula devagar; no voo a asa bate inteira.
 	float voo = clamp(ritmo, 0.0, 1.0);
-	float bater = sin(TIME * batida * max(ritmo, 0.35) + fase - t * 2.4);
-	float borda = sin(TIME * 1.7 + fase + t * 9.0) * 0.25;
+	float bater = sin(tempo * batida * max(ritmo, 0.35) + fase - t * 2.4);
+	float borda = sin(tempo * 1.7 + fase + t * 9.0) * 0.25;
 	float desloca = mix(borda * smoothstep(0.75, 1.0, x), bater * pow(x, 1.5), voo);
 	c.y += desloca * amplitude * envergadura * (1.0 + INSTANCE_CUSTOM.z * 0.4);
 	VERTEX = (canonica_inv * vec4(c, 1.0)).xyz;

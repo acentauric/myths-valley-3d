@@ -132,6 +132,17 @@ var _buffer := PackedFloat32Array()
 ## os cardumes da espécie.
 static var _corpos: Dictionary = {}
 
+## O RELÓGIO DO NADO, em segundos de JOGO, que os três shaders de peixe leem no lugar do
+## TIME do motor: o TIME não pausa, e com o vale pausado os peixes e as raias
+## seguiam batendo cauda e asa no lugar. Quem avança o relógio é o `_process` de
+## qualquer cardume — o primeiro de cada quadro —, e nó processado pela árvore para de
+## ser chamado quando ela pausa.
+static var _relogio_do_nado := 0.0
+static var _quadro_do_relogio := -1
+## O que o relógio dá a volta em (s): o TIME do motor também dá, e a fase do rabear
+## não se perde com a precisão do float.
+const VOLTA_DO_RELOGIO := 3600.0
+
 
 ## O cardume antigo do píer: `ancora` no nível da água; `fundo` é a lâmina d'água ali.
 func montar(ancora: Vector3, nivel: float, fundo: float, tripo: bool) -> void:
@@ -246,6 +257,23 @@ func rumo(i: int) -> float:
 
 func velocidade(i: int) -> Vector3:
 	return _vel[i]
+
+
+func _process(delta: float) -> void:
+	avancar_o_relogio(delta)
+
+
+## Avança o relógio do nado e o põe em todo material de peixe, uma vez por quadro.
+static func avancar_o_relogio(delta: float) -> void:
+	var quadro := Engine.get_process_frames()
+	if quadro == _quadro_do_relogio:
+		return
+	_quadro_do_relogio = quadro
+	_relogio_do_nado = fposmod(_relogio_do_nado + delta, VOLTA_DO_RELOGIO)
+	for corpo: Dictionary in _corpos.values():
+		var material := corpo.get("material") as ShaderMaterial
+		if material != null:
+			material.set_shader_parameter("tempo", _relogio_do_nado)
 
 
 func _physics_process(delta: float) -> void:
@@ -830,6 +858,7 @@ func _parametros_do_nado(material: ShaderMaterial, canonica: Transform3D, compri
 	material.set_shader_parameter("comprimento", comprimento)
 	material.set_shader_parameter("amplitude", float(_esp["onda"]))
 	material.set_shader_parameter("batida", float(_esp["batida"]))
+	material.set_shader_parameter("tempo", _relogio_do_nado)
 	if String(_esp["forma"]) == "raia":
 		material.set_shader_parameter("envergadura", comprimento)
 	if material.shader == SILHUETA:

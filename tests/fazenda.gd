@@ -4,7 +4,8 @@ extends SceneTree
 ##
 ##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/fazenda.gd
 ##
-## Oito perguntas:
+## Oito perguntas (e as cabras da festa, que andam com o clipe de andar, no ritmo do chão —
+## antes eram uma malha parada que escorregava):
 ##
 ##   1. O LUGAR: o portão e o pátio resolvem do outro lado do rio grande, o portão
 ##      é baixo como no capítulo 6, está fechado, e nenhum tronco atravessa a
@@ -20,6 +21,8 @@ extends SceneTree
 ##   7. A VOLTA PARA CASA: na manhã seguinte o arraial sai do pátio.
 ##   8. O SAVE: a partida que volta tem o dia marcado, o portão aberto e a fila
 ##      acabada.
+
+const RelogioDeJogo = preload("res://tests/fixtures/relogio_de_jogo.gd")
 
 var falhas := 0
 var vale
@@ -89,6 +92,8 @@ func _run() -> void:
 	relogio.dia_comecou.emit(2, 0, 1)
 	await _quadros(5)
 	_conferir(not fazenda.dia_marcado(), "a manhã marcou o dia da fazenda com a ponte por fazer e a fé por escolher")
+	var jornada_do_dia = root.get_node("/root/Jornada")
+	_conferir(not jornada_do_dia.marcada(), "a Jornada foi marcada antes de o dia da fazenda chegar")
 	ponte.iniciado = true
 	ponte.missao = ponte.passos.size()
 	ponte.despedida_feita = true
@@ -97,12 +102,20 @@ func _run() -> void:
 	relogio.dia_comecou.emit(3, 0, 1)
 	_conferir(await _ate(func() -> bool: return fazenda.dia_marcado() and jornada.iniciado, 4.0),
 		"com a ponte de pé e a fé escolhida, a manhã seguinte não marcou o dia da fazenda")
+	# O CARTÃO DO AMANHECER lê a `Jornada` (`queda._lembretes_do_dia`), e ninguém a marcava no 3D:
+	# "hoje é o dia da fazenda" nunca aparecia. A manhã que marca o dia marca também a Jornada.
+	_conferir(jornada_do_dia.marcada() and jornada_do_dia.hoje(),
+		"a manhã marcou o dia da fazenda e deixou a Jornada sem marcar: o cartão do amanhecer não lembra dela")
+	var lembretes_de_hoje: Array = vale.get_node("Queda")._lembretes_do_dia()
+	_conferir(lembretes_de_hoje.size() == 1 and str(lembretes_de_hoje[0]).strip_edges() != "",
+		"no dia da fazenda o cartão do amanhecer não traz o lembrete: %s" % str(lembretes_de_hoje))
 	await _quadros(4)
 	var sentados := 0
 	for morador in vale.moradores:
 		if morador.is_visible_in_tree() and Vector2(morador.global_position.x - patio.x, morador.global_position.z - patio.z).length() < 14.0:
 			sentados += 1
 	_conferir(sentados >= 4, "só %d morador(es) estão no pátio da fazenda no dia dela" % sentados)
+	await _as_cabras_andam_com_as_pernas(fazenda)
 	var interiores = vale.get("interiores")
 	var porta: Vector3 = interiores.sala_de("casa").lugar_de_esperar_fora()
 	_conferir(Vector2(pedro.global_position.x - porta.x, pedro.global_position.z - porta.z).length() < 3.0, "o Pedro não veio à porta de casa")
@@ -171,6 +184,41 @@ func _run() -> void:
 	await _ate(func() -> bool: return false, 0.8)
 	_conferir(fazenda.dia_marcado() and fazenda.portao_aberto() and jornada.acabou(), "a partida que volta esqueceu o dia da fazenda")
 	_fechar()
+
+
+## As três cabras da festa: cada uma tem o clipe de andar, e quando passeiam (o Tween as leva) o
+## clipe toca no ritmo do chão (0,7 u/s); paradas, ele congela. Em segundos de JOGO.
+func _as_cabras_andam_com_as_pernas(fazenda) -> void:
+	var cabras: Array = fazenda.get("_cabras")
+	_conferir(cabras.size() == int(fazenda.CABRAS), "a festa devia ter %d cabras, tem %d" % [fazenda.CABRAS, cabras.size()])
+	for cabra in cabras:
+		_conferir(is_instance_valid(cabra) and cabra.has_method("animador") and cabra.animador().tem_clipe(),
+			"uma cabra da festa não tem o clipe de andar (é a malha parada do adereço, que escorrega?)")
+	var relogio := RelogioDeJogo.new()
+	root.add_child(relogio)
+	var visto := {"andaram": 0, "sem_clipe": 0, "ritmo": 0.0, "seguidos": 0}
+	await relogio.ate(func() -> bool: return _cabras_passearam(cabras, visto), 40.0)
+	_conferir(visto["andaram"] >= 30, "nenhuma cabra da festa saiu a passeio com o clipe tocando em 40 s de jogo: %s" % str(visto))
+	_conferir(visto["sem_clipe"] == 0, "houve quadro em que uma cabra da festa andava sem o clipe tocando: %s" % str(visto))
+	_conferir(float(visto["ritmo"]) > 0.3, "o clipe da cabra da festa toca devagar demais: %.2fx" % float(visto["ritmo"]))
+	relogio.queue_free()
+
+
+## Um quadro dos passeios: conta as cabras andando com o clipe tocando e as que andam sem ele.
+func _cabras_passearam(cabras: Array, visto: Dictionary) -> bool:
+	for cabra in cabras:
+		if is_instance_valid(cabra) and cabra.has_method("andando") and cabra.andando():
+			var an = cabra.animador()
+			if an.animacao != null and an.animacao.is_playing() and an.animacao.speed_scale > 0.3:
+				visto["andaram"] += 1
+				visto["seguidos"] = 0
+				visto["ritmo"] = maxf(float(visto["ritmo"]), an.animacao.speed_scale)
+			else:
+				# Um quadro sem o clipe é o `_process` do animador respondendo ao `andar`; quatro seguidos, não.
+				visto["seguidos"] += 1
+				if visto["seguidos"] > 3:
+					visto["sem_clipe"] += 1
+	return visto["andaram"] >= 30
 
 
 func _indice(cadeia, id: String) -> int:

@@ -48,18 +48,29 @@ signal morreu(criatura)
 ## Viu o jogador e começou a caçar (só quem tem `VISTA`).
 signal avistou(criatura)
 
-## Os números do 2D, verbatim (`Criatura.ESPECIES`). Distâncias e passo em
-## pixels; tempos em segundos. `corpo` e `desenho_y` do 2D ficaram de fora: são
-## da folha de sprite, e aqui o corpo é `CORPO`.
+## Os números do 2D, verbatim (`Criatura.ESPECIES`), menos os da ONÇA, que desde
+## 06/10/2026 são do 3D: ela é o perigo da mata, e o jogador a achou lenta e
+## fraca. Distâncias e passo em pixels; tempos em segundos. `corpo` e `desenho_y`
+## do 2D ficaram de fora: são da folha de sprite, e aqui o corpo é `CORPO`.
+##
+## A ONÇA, NÚMERO POR NÚMERO. Mata em DUAS mordidas quem não corre, e escapa quem
+## corre:
+##   - `passo` 120 px = 4,06 u/s: quase o dobro do passo do jogador (2,1) e abaixo
+##     da carreira dele (5,2) — quem anda é alcançado; quem corre se afasta 1,1 u
+##     por segundo e ela desiste.
+##   - `dano` 16 e `dano_da_vida` 0,55: a mordida tira o maior entre os dois, e
+##     dois golpes de 55 % passam de 100 % para qualquer vida cheia (30 de início,
+##     mais 10 por talento de vigor), com ou sem gibão (que tira 1 de cada golpe).
+##   - `passeio` 0,4: ronda o penedo a 1,6 u/s, e não a 2.
 const ESPECIES := {
 	"caititu": {"nome": "Caititu", "vida": 12.0, "dano": 4.0, "passo": 46.0,
 		"fareja": 96.0, "desiste": 176.0, "mordida": 14.0, "entre_mordidas": 0.6,
 		"cai": "carne_de_caca", "quantos_caem": 1, "volta": 3, "folego": 4.0,
 		"bote": 0.75, "bote_acerta": 0.55, "salto": 6.0},
-	"onca": {"nome": "Onça", "vida": 36.0, "dano": 8.0, "passo": 72.0,
-		"fareja": 128.0, "desiste": 224.0, "mordida": 18.0, "entre_mordidas": 0.9,
+	"onca": {"nome": "Onça", "vida": 36.0, "dano": 16.0, "passo": 120.0,
+		"fareja": 128.0, "desiste": 224.0, "mordida": 18.0, "entre_mordidas": 0.8,
 		"cai": "couro_de_onca", "quantos_caem": 1, "volta": 5, "folego": 12.0,
-		"bote": 0.7, "bote_acerta": 0.6, "salto": 18.0},
+		"bote": 0.7, "bote_acerta": 0.6, "salto": 18.0, "dano_da_vida": 0.55, "passeio": 0.4},
 	"jararaca": {"nome": "Jararaca", "vida": 8.0, "dano": 2.0, "passo": 30.0,
 		"fareja": 56.0, "desiste": 112.0, "mordida": 12.0, "entre_mordidas": 1.0,
 		"cai": "banha_de_jararaca", "quantos_caem": 1, "volta": 4,
@@ -88,8 +99,8 @@ const MODELOS := {
 ## (`desiste`, do jogador; `territorio`, do ninho), quanto tempo espreita antes
 ## da carga e o raio da ronda.
 const VISTA := {
-	"onca": {"alcance": 16.0, "alcance_noite": 10.0, "cone": 140.0, "desiste": 26.0,
-		"territorio": 34.0, "espreita": 2.0, "ronda": 9.0},
+	"onca": {"alcance": 16.0, "alcance_noite": 10.0, "cone": 140.0, "desiste": 36.0,
+		"territorio": 48.0, "espreita": 1.5, "ronda": 9.0},
 }
 ## De quanto em quanto tempo ela olha (s): o raio de física não é de graça.
 const OLHAR_A_CADA := 0.25
@@ -102,10 +113,11 @@ const PERDE_DE_VISTA := 3.0
 const CEGA_NA_VOLTA := 6.0
 ## Espreitando: o corpo abaixa até esta fração e o passo cai para esta outra.
 const ESPREITA_ABAIXA := 0.85
-const ESPREITA_PASSO := 0.45
+const ESPREITA_PASSO := 0.55
 ## Depois do bote ela se afasta um pouco antes da próxima carga (s, fração do passo).
-const RECUO := 1.1
-const RECUO_PASSO := 0.6
+## Curto de propósito: a segunda mordida vem um instante depois da primeira.
+const RECUO := 0.5
+const RECUO_PASSO := 0.5
 ## Até onde (u) é "chegou ao ninho" na volta.
 const CHEGOU_AO_NINHO := 2.0
 const COR_DOS_OLHOS := Color(1.0, 0.86, 0.32)
@@ -123,8 +135,6 @@ const CHEGOU := 4.0
 const RAIO_DO_NINHO := 64.0
 const PARADA_MINIMA := 3.0
 const PARADA_MAXIMA := 12.0
-## O corpo abaixa até esta fração da altura enquanto arma o bote.
-const ABAIXA := 0.72
 
 const COR_DO_CORPO := Color(0.52, 0.53, 0.52)
 const COR_DO_AVISO := Color(1.0, 0.62, 0.18)
@@ -675,8 +685,9 @@ func _pastar(delta: float, raio: float = -1.0) -> void:
 		_parar(delta)
 		return
 	var rumo := _plano(_destino - global_position).normalized()
-	velocity.x = rumo.x * _u("passo") * 0.5
-	velocity.z = rumo.z * _u("passo") * 0.5
+	var passeio := float(dados().get("passeio", 0.5))
+	velocity.x = rumo.x * _u("passo") * passeio
+	velocity.z = rumo.z * _u("passo") * passeio
 	var antes := global_position
 	_mover(delta)
 	_virar(rumo)
@@ -707,15 +718,16 @@ func _seguir_o_bote(delta: float) -> void:
 		_mover(delta)
 	else:
 		_parar(delta)
-	# Aceso e abaixado até a boca fechar; dali em diante, apagado e de pé.
+	# Aceso até a boca fechar; dali em diante, apagado. O corpo arma, pula e assenta
+	# pela pose (`Animador.bote`), e não pela escala do corpo, que esticava e achatava.
 	_acender(t < acerta)
-	var altura := lerpf(1.0, ABAIXA, clampf(t / 0.3, 0.0, 1.0)) if t < acerta else 1.0
-	_corpo.scale.y = altura
+	_animador.bote(minf(t, 1.0))
 	if not _bote_mordeu and t >= acerta:
 		_bote_mordeu = true
 		_morder()
 	if t >= 1.0:
 		_no_bote = -1.0
+		_animador.bote(-1.0)
 		_desde_a_mordida = 0.0
 		if tem_vista() and cacando:
 			estado = "recua"
@@ -725,8 +737,8 @@ func _seguir_o_bote(delta: float) -> void:
 func _parar_o_bote() -> void:
 	_no_bote = -1.0
 	_acender(false)
-	if _corpo != null:
-		_corpo.scale.y = 1.0
+	if _animador != null:
+		_animador.bote(-1.0)
 
 
 func _morder() -> void:
@@ -743,6 +755,11 @@ func _morder() -> void:
 	if Vida.respirando():
 		return
 	var dano := maxf(1.0, float(dados().get("dano", 0.0)) - Equipamento.bonus("defesa"))
+	# A onça mata em duas mordidas: o golpe é também uma fração da vida cheia, e
+	# com talento de vigor (mais vida) continua sendo dois.
+	var fracao := float(dados().get("dano_da_vida", 0.0))
+	if fracao > 0.0:
+		dano = maxf(dano, Vida.maximo() * fracao - Equipamento.bonus("defesa"))
 	Vida.ferir(dano)
 	mordeu.emit(dano)
 	var peconha: Dictionary = dados().get("peconha", {})

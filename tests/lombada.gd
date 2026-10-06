@@ -15,9 +15,13 @@ extends SceneTree
 ##      abre.
 ##   4. A LAPA: com a picareta na mão, oito golpes a racham, dão as oito pedras e
 ##      abrem o corredor; o passo fecha pela passagem e paga os dois beijus.
-##   5. A CABRA: chegar lá em cima fecha o passo, e ela desce e vai embora.
+##   5. A CABRA: chegar lá em cima fecha o passo, e ela desce e vai embora — ANDANDO,
+##      com o clipe de andar da cabra do rig no ritmo do chão (antes era uma malha parada
+##      que escorregava rampa abaixo).
 ##   6. A VOLTA: o E no Pedro fecha a frente, com a Santa Casa na fala.
 ##   7. O SAVE: a partida que volta tem a lapa caída e a cabra em casa.
+
+const RelogioDeJogo = preload("res://tests/fixtures/relogio_de_jogo.gd")
 
 var falhas := 0
 var vale
@@ -144,9 +148,21 @@ func _run() -> void:
 	await _ate(func() -> bool: return frente.espera <= 0.0, 12.0)
 	_conferir(str(frente.passo_atual().get("id", "")) == "cabra", "depois da lapa não veio a cabra")
 	_conferir(lombada.cabra().is_finite() and lombada.cabra().y > alto.y - 0.6, "a cabra não está lá em cima: %s" % str(lombada.cabra()))
+	var cabra_de_cena = lombada._cabra
+	_conferir(cabra_de_cena != null and cabra_de_cena.has_method("animador") and cabra_de_cena.animador().tem_clipe(),
+		"a cabra da lombada não tem o clipe de andar (é a malha parada do adereço, que escorrega?)")
 	jogador.teleportar(alto + Vector3(0.6, 0.2, 0.4), 0.0)
 	_conferir(await _ate(func() -> bool: return frente.missao >= 2, 8.0), "chegar perto da cabra lá em cima não fechou o passo")
-	_conferir(await _ate(func() -> bool: return lombada.a_cabra_ja_desceu(), 20.0), "a cabra não desceu e foi embora")
+	# A descida, em segundos de JOGO: enquanto o corpo sai do lugar o clipe toca, no ritmo do chão
+	# (2,4 u/s); parada, não. Quem a leva é um Tween, e o animador só sabe de `andar` e `parar`.
+	var relogio := RelogioDeJogo.new()
+	root.add_child(relogio)
+	var visto := {"andou_com_pernas": false, "ritmo": 0.0, "andou_sem_clipe": false, "seguidos": 0}
+	var desceu: bool = await relogio.ate(func() -> bool: return _vigiar_a_descida(visto), 30.0)
+	_conferir(desceu, "a cabra não desceu e foi embora")
+	_conferir(visto["andou_com_pernas"], "a cabra desceu a rampa sem mexer as pernas (escorregando): %s" % str(visto))
+	_conferir(not visto["andou_sem_clipe"], "houve quadro em que a cabra andava sem o clipe tocando: %s" % str(visto))
+	_conferir(float(visto["ritmo"]) > 0.5, "o clipe da cabra na descida toca a %.2fx, devagar demais para 2,4 u/s" % float(visto["ritmo"]))
 
 	# --- 6. A VOLTA -------------------------------------------------------------------------
 	await _ate(func() -> bool: return frente.espera <= 0.0, 12.0)
@@ -163,6 +179,26 @@ func _run() -> void:
 	_conferir(not lombada.trancada(), "a partida que volta fechou o corredor de novo: a lapa reapareceu")
 	_conferir(not lombada.cabra().is_finite(), "a partida que volta pôs a cabra lá em cima de novo")
 	_fechar()
+
+
+## Um quadro da descida: se a cabra está andando (o animador tem velocidade), o clipe toca? Devolve
+## se ela já desceu.
+func _vigiar_a_descida(visto: Dictionary) -> bool:
+	var cabra = vale.get("lombada")._cabra if vale.get("lombada") != null else null
+	if is_instance_valid(cabra) and cabra.has_method("andando") and cabra.andando():
+		var an = cabra.animador()
+		var tocando: bool = an.animacao != null and an.animacao.is_playing()
+		if tocando and an.animacao.speed_scale > 0.3:
+			visto["andou_com_pernas"] = true
+			visto["seguidos"] = 0
+			visto["ritmo"] = maxf(float(visto["ritmo"]), an.animacao.speed_scale)
+		else:
+			# O animador põe o clipe a tocar no quadro seguinte ao `andar`: um quadro sem ele é
+			# o tempo do Tween chamar e do `_process` responder; quatro seguidos, não.
+			visto["seguidos"] += 1
+			if visto["seguidos"] > 3:
+				visto["andou_sem_clipe"] = true
+	return vale.get("lombada").a_cabra_ja_desceu()
 
 
 func _indice(cadeia, id: String) -> int:

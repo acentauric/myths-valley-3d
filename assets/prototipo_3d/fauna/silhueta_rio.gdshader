@@ -20,6 +20,9 @@ uniform mat4 canonica_inv;
 uniform float comprimento = 1.0;
 uniform float amplitude = 0.08;
 uniform float batida = 10.0;
+// O tempo do nado, em segundos de JOGO: quem monta o cardume o avanca a cada quadro (cardume.gd).
+// Com o TIME do motor (que nao pausa) o peixe seguia remando no lugar com o jogo pausado: a posicao parava, a cauda nao.
+uniform float tempo = 0.0;
 uniform float ondas = 0.9;
 
 varying float fora_dagua;
@@ -30,7 +33,7 @@ void vertex() {
 	float ritmo = max(INSTANCE_CUSTOM.y, 0.2);
 	float t = clamp(c.z / max(comprimento, 0.001) + 0.5, 0.0, 1.0);
 	float peso = 0.08 + t * t;
-	float onda = sin(TIME * batida * ritmo + fase - t * ondas * 6.2831853);
+	float onda = sin(tempo * batida * ritmo + fase - t * ondas * 6.2831853);
 	float forca = amplitude * (1.0 + INSTANCE_CUSTOM.z * 0.6);
 	c.x += onda * forca * comprimento * peso;
 	VERTEX = (canonica_inv * vec4(c, 1.0)).xyz;
