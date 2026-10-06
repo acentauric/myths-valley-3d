@@ -189,6 +189,22 @@
   na hora, em tela cheia ou em janela, e fica salva (`Tela.monitores`,
   `definir_monitor`), com o padrão no monitor principal — uma tela que deixou
   de existir volta a ele. Nos três idiomas, com ajuda no "?". Portão `tela`.
+- **Os portões acompanham as decisões de 06/10.** Na bateria inteira (120),
+  sete reprovavam sem regressão do jogo: `chegada` cobrava quatro falas do
+  corpo (são cinco desde a #82, com o nado); `rotina_dos_moradores` cobrava
+  os catorze mudos e sem fé (falam e têm fé desde a #85; o mudo de controle é
+  o pescador calado por um instante); `festa_da_fe` cobrava a roda só com os
+  sete (os de agenda estão na teia com fé, mas não vêm à roda —
+  `npc._lugar_na_festa` reparte a roda só entre quem não tem agenda; e o
+  mestre Quirino, que só encosta no píer, fica sem fé no `aldeoes.json`);
+  `festa_da_fe` e `rotina_dos_moradores` cobravam o morador posto no lugar no
+  mesmo quadro, e desde a #84 o salto do caminho longo espera
+  `FORA_DA_VISTA_POR` segundos fora da vista (os portões esperam esse tanto,
+  como `caminho_longo`); `agua_rasa`, `tubarao` e `rio_grande` nadam, e o
+  cartão da água funda (#96) parava o vale no primeiro nado (o aviso conta
+  como já dado); `mapa_fluxo` confere o HOME com o vale de fundo e pede o
+  lobby 3D por código, como os portões do sobrevoo. `navegacao` (PierPiso →
+  Gameleira pela canoa do saveiro) já reprova na main `5dc6632`.
 
 ## Em desenvolvimento — 05/10/2026
 

@@ -910,11 +910,29 @@ func _lugar_na_festa() -> Vector3:
 	if frente.length() > 0.01:
 		base = frente.normalized()
 		centro += base * 1.5
-	var da_fe: Array = Afinidade.da_fe(festa)
+	# Só quem segue os cinco postos vem à roda: os moradores com agenda (os quinze de
+	# 05/10, na teia desde a #85) têm fé, mas jornada própria — contá-los deixaria
+	# vão na roda.
+	var da_fe: Array = []
+	for id in Afinidade.da_fe(festa):
+		var outro: Node = _morador_do_vale(str(id))
+		if outro != null and not (outro.get("dados") as Dictionary).has("agenda"):
+			da_fe.append(str(id))
 	var vez := maxi(da_fe.find(str(dados.get("id", ""))), 0)
 	var direcao := base.rotated(Vector3.UP, TAU * (float(vez) + 0.5) / float(maxi(da_fe.size(), 1)))
 	var lugar := centro + direcao * float(RODA_DA_FESTA.get(marco, 2.6))
 	return _chao_de_verdade(terreno.ground_position(lugar, 0.0) if terreno != null else lugar)
+
+
+## O morador `id` do vale (grupo "moradores"), ou nulo.
+func _morador_do_vale(id: String) -> Node:
+	if not is_inside_tree():
+		return null
+	for outro in get_tree().get_nodes_in_group("moradores"):
+		var dele = outro.get("dados")
+		if dele is Dictionary and str((dele as Dictionary).get("id", "")) == id:
+			return outro
+	return null
 
 
 ## O CHÃO DE VERDADE no lugar da roda, e não só o do terreno: o monte de concha

@@ -50,6 +50,9 @@ func _run() -> void:
 	await _mundo_pronto()
 	await _quadros(8)
 	var vale = current_scene
+	# O cartão da água funda (#96) para o vale no primeiro nado: aqui o nado é a
+	# prova, e o aviso conta como já dado.
+	vale._avisou_agua_funda = true
 	var jogador = vale.player
 	var mundo = vale.world
 	var lugares = root.get_node("/root/Lugares")

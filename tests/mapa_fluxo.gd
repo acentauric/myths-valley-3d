@@ -6,6 +6,9 @@ func _initialize() -> void:
 
 
 func _run() -> void:
+	# O lobby 3D (o `-- --lobby-3d` por código): desde o lobby em vídeo (05/10) a
+	# abertura solta o vale de fundo, e este portão confere o HOME com ele.
+	(load("res://scripts/prototipo_3d/abertura.gd") as GDScript).set("lobby_3d_pedido", true)
 	_assert(change_scene_to_file("res://scenes/prototipo_3d/abertura.tscn") == OK, "abertura carrega")
 	await _frames(4)
 	await _mundo_pronto()
