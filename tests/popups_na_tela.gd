@@ -885,6 +885,15 @@ func _montar_a_roda(aqui: Vector3) -> void:
 		morador.global_position = onde
 		roda.append(morador)
 		pontos.append(onde)
+	# O vale tem mais moradores que postos na roda, e desde que os catorze mudos ganharam falas quem sobra solto
+	# cumprimenta quem passa e anda para o posto do entardecer: o balão dele e a placa que ele leva consigo trocavam
+	# a terceira placa de dono no meio da medida. Quem sobra vai para longe, calado e parado.
+	for j in range(RODA.size(), livres.size()):
+		var sobra = livres[j]
+		sobra.set("_ultima_saudacao_ms", Time.get_ticks_msec())
+		sobra.set("intervalo_saudacao_ms", 100000000)
+		sobra.global_position = vale.world.ground_position(aqui + Vector3(0.0, 0.0, -80.0 - 4.0 * float(j)), 0.1)
+		sobra.process_mode = Node.PROCESS_MODE_DISABLED
 
 
 func _fixar(morador: Node3D, onde: Vector3) -> void:
