@@ -2,6 +2,19 @@ extends SceneTree
 ## O jogador entra no mar andando ao lado do píer: afunda aos poucos no fundo da
 ## batimetria, anda mais devagar, passa a nadar onde não dá pé (cabeça de fora, sem
 ## afundar), e depois volta nadando e andando até a areia, sem pular.
+##
+## E A CÂMERA, a cada quadro da travessia, na ida (atrás do jogador, em terra e depois
+## sobre o raso) e na volta (atrás dele, sobre o mar): fica acima da água de onde está
+## e não chega ao corpo (`tests/camera_resiliente.gd` varre as poses; este mede a
+## caminhada de verdade).
+
+## Quanto a câmera fica acima da água, no mínimo (a garantia é 0,35).
+const CAMERA_ACIMA_DA_AGUA := 0.30
+## A menor distância da câmera ao pivô (a garantia é 1,25).
+const BRACO_MINIMO := 1.2
+
+var menor_folga := INF
+var menor_braco := INF
 
 
 func _initialize() -> void:
@@ -50,6 +63,7 @@ func _run() -> void:
 	var cabeca_fora := true
 	for frame in range(14000):
 		await physics_frame
+		_medir_a_camera(world, player)
 		if frame % 120 == 60 and not player.is_swimming():
 			velocidades.append(Vector2(player.velocity.x, player.velocity.z).length())
 		if player.is_swimming():
@@ -79,6 +93,7 @@ func _run() -> void:
 	# Mesma razão do teto de cima: a volta é a pé, e a pé leva mais tempo.
 	for frame in range(16000):
 		await physics_frame
+		_medir_a_camera(world, player)
 		if frame % 600 == 0:
 			print("VOLTA %d pos %s vel %s nadando %s chao %s parede %s fundo %.2f" % [frame, player.global_position, player.velocity, player.is_swimming(), player.is_on_floor(), player.is_on_wall(), world.water_depth_at(player.global_position)])
 		if player.is_on_floor() and world.is_on_land(player.global_position):
@@ -88,8 +103,21 @@ func _run() -> void:
 	print("AGUA_RASA: volta à terra %s · nadando %s · %s" % [em_terra, player.is_swimming(), player.global_position])
 	_assert(em_terra, "sai da água andando até a terra, sem pular")
 	_assert(not player.is_swimming(), "para de nadar em terra")
+	print("AGUA_RASA: câmera: folga mínima sobre a água %+.2f m, braço mínimo %.2f m" % [menor_folga, menor_braco])
+	_assert(is_finite(menor_folga), "a câmera nunca esteve sobre a água na travessia: o portão não mediu nada")
+	_assert(menor_folga >= CAMERA_ACIMA_DA_AGUA, "a câmera chegou a %+.2f m da água na travessia (mínimo %.2f)" % [menor_folga, CAMERA_ACIMA_DA_AGUA])
+	_assert(menor_braco >= BRACO_MINIMO, "a câmera chegou a %.2f m do pivô na travessia (mínimo %.2f): dentro do personagem" % [menor_braco, BRACO_MINIMO])
 	print("AGUA_RASA_OK")
 	quit()
+
+
+## A câmera deste quadro: a folga sobre a água de onde ela está (só sobre água) e o braço.
+func _medir_a_camera(world, player) -> void:
+	var camera: Camera3D = player.get("camera")
+	var onde: Vector3 = camera.global_position
+	if world.water_depth_at(onde) > 0.0:
+		menor_folga = minf(menor_folga, onde.y - world.water_level_at(onde))
+	menor_braco = minf(menor_braco, onde.distance_to((player.get("camera_pivot") as Node3D).global_position))
 
 
 func _assert(condition: bool, label: String) -> void:

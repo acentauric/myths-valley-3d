@@ -541,9 +541,24 @@ func _cobertura() -> void:
 
 # --- 4. A CÂMERA NÃO SALTA ----------------------------------------------------------
 
+## As poses da câmera em que cada cena é percorrida: (inclinação, distância). A de
+## sempre — atrás e um pouco acima, a 8 m — nunca aperta o braço; a de baixo e de
+## perto (a câmera sob o horizonte, a 3 m) o encosta no chão e nas paredes.
+const POSES_DA_CAMERA := [Vector2(-0.19, 8.0), Vector2(0.2, 3.0)]
+
+var _pose: Vector2 = POSES_DA_CAMERA[0]
+
+
 func _camera() -> void:
 	print("")
 	print("4. a câmera (saltos acima de %.0f m/s fora de geometria da câmera; dentro dela no máximo %.1f s)" % [SALTO, DENTRO_MAXIMO])
+	for pose in POSES_DA_CAMERA:
+		_pose = pose
+		print("  pose: inclinação %+.2f, distância %.1f" % [pose.x, pose.y])
+		await _camera_na_pose()
+
+
+func _camera_na_pose() -> void:
 	var cruz: Vector3 = world.ancoras.get("Cruzeiro", Vector3.INF)
 	var igreja: Vector3 = world.ancoras.get("Igreja", Vector3.INF)
 	_conferir(cruz.is_finite() and igreja.is_finite(), "o vale não tem âncora do cruzeiro ou da igreja")
@@ -598,8 +613,8 @@ func _camera() -> void:
 func _encaixar(onde: Vector3, yaw: float) -> void:
 	player.global_position = onde
 	player._yaw = yaw
-	player._pitch = -0.19
-	player._distance = 8.0
+	player._pitch = _pose.x
+	player._distance = _pose.y
 	player._apply_camera()
 	if player.has_method("_encaixar_a_camera"):
 		player._encaixar_a_camera()
@@ -609,7 +624,8 @@ func _encaixar(onde: Vector3, yaw: float) -> void:
 
 ## Anda `quadros` quadros chamando `passo(i, dt)` antes de cada um, e mede a
 ## distância da câmera ao pivô a cada quadro.
-func _seguir(rotulo: String, quadros: int, passo: Callable) -> void:
+func _seguir(rotulo_puro: String, quadros: int, passo: Callable) -> void:
+	var rotulo := "%s [%+.2f, %.0f m]" % [rotulo_puro, _pose.x, _pose.y]
 	var camera: Camera3D = player.camera
 	var pivo: Node3D = player.camera_pivot
 	var espaco: PhysicsDirectSpaceState3D = player.get_world_3d().direct_space_state

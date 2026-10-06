@@ -76,6 +76,8 @@ const CONSTRUCOES := {
 const CAMADA_DE_MEDIR := 1 << 19
 ## Quanto a parede do cômodo fica para dentro da casca do modelo.
 const FOLGA := 0.1
+## Quanto além da porta quem já está dentro continua dentro (m).
+const FOLGA_DE_SAIR := 0.25
 
 var _mundo: Node3D
 var _jogador: Node3D
@@ -141,9 +143,23 @@ func passagem(de: Vector3, para: Vector3) -> Vector3:
 
 
 func _process(_delta: float) -> void:
+	atualizar_agora()
+
+
+## Em que cômodo o jogador está, de uma vez, sem esperar o quadro: quem põe o
+## corpo noutro lugar (`teleportar`) pergunta antes de encaixar a câmera, e ela
+## não mede o lugar novo com as paredes do lugar velho.
+##
+## QUEM JÁ ESTÁ DENTRO FICA DENTRO um palmo além da porta (`FOLGA_DE_SAIR`): o
+## corpo parado na soleira, ou o passo que vai e volta, não pode trocar a câmera
+## de cima pela de passeio, e de volta, a cada quadro.
+func atualizar_agora() -> void:
 	if _jogador == null:
 		return
 	var agora := contem(_jogador.global_position)
+	if agora == "" and _dentro != "" and sala_de(_dentro) != null \
+			and bool((sala_de(_dentro) as Node3D).call("contem", _jogador.global_position, FOLGA_DE_SAIR)):
+		agora = _dentro
 	if agora == _dentro:
 		return
 	var antes := _dentro

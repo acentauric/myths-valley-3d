@@ -25,7 +25,16 @@ extends SceneTree
 ##  10. CHEGAR ÀS TRÊS NÃO É PASSAR DAS DUAS: pôr a hora lá de uma vez (carregar
 ##      uma partida) não desmaia ninguém.
 
+## O relógio de JOGO dos portões (`tests/fixtures/relogio_de_jogo.gd`): a bateria cheia
+## roda sete Godots na mesma máquina, o quadro passa de 100 ms, e o jogo (que corta o
+## delta e anda 3 a 5 passos de física por quadro) anda mais devagar que a parede. As
+## esperas que contam o relógio de parede reprovavam "andando para a porta, não entrei
+## em casa" e "a câmera de cima está a 1.34 do chão" na base de 05/10 — era o jogo
+## ainda no meio do caminho e do tween de 0,3 s da câmera.
+const RelogioDeJogo = preload("res://tests/fixtures/relogio_de_jogo.gd")
+
 var falhas := 0
+var relogio_de_jogo
 var vale
 var jogador
 var interiores
@@ -68,6 +77,9 @@ func _run() -> void:
 	await _frames(4)
 	await _mundo_pronto()
 	await _frames(8)
+	relogio_de_jogo = RelogioDeJogo.new()
+	root.add_child(relogio_de_jogo)
+	relogio_de_jogo.ficar_lento()
 	vale = current_scene
 	jogador = vale.get("player")
 	interiores = vale.get("interiores")
@@ -137,6 +149,9 @@ func _run() -> void:
 	_conferir(titulo == str(interiores.nome_de("casa")).to_upper(), "dentro de casa o HUD diz '%s'" % titulo)
 	_conferir(jogador.esta_de_cima(), "dentro de casa a câmera não subiu")
 	var camera: Camera3D = jogador.get("camera")
+	# A câmera de cima sobe em trânsito (0,3 s de jogo) e fica por cima do teto, que
+	# some para ela: espera-se o trânsito, em segundos de JOGO.
+	await _ate(func() -> bool: return sala.to_local(camera.global_position).y > sala.pe_direito, 3.0)
 	_conferir(sala.to_local(camera.global_position).y > sala.pe_direito,
 		"a câmera de cima está a %.2f do chão, abaixo do teto (%.2f)" % [sala.to_local(camera.global_position).y, sala.pe_direito])
 	_conferir(_so_sombra(sala.get("_teto")) and _so_sombra(sala.get("casca")),
@@ -323,10 +338,10 @@ func _run() -> void:
 func _usar_a_cama(respostas: Array) -> void:
 	var fila := respostas.duplicate()
 	casa.usar("cama")
-	var ate := Time.get_ticks_msec() + 6000
-	while not dialogo.ativo and Time.get_ticks_msec() < ate:
+	var ate: float = relogio_de_jogo.agora() + 6.0
+	while not dialogo.ativo and relogio_de_jogo.agora() < ate:
 		await process_frame
-	while dialogo.ativo and Time.get_ticks_msec() < ate:
+	while dialogo.ativo and relogio_de_jogo.agora() < ate:
 		if dialogo._modo == dialogo.Modo.PERGUNTA:
 			dialogo._escolha = bool(fila.pop_front()) if not fila.is_empty() else false
 			dialogo._escolheu = true
@@ -367,19 +382,13 @@ func _fechar() -> void:
 	quit(1 if falhas > 0 else 0)
 
 
+## Espera `condicao` por até `segundos` de JOGO (e não de parede).
 func _ate(condicao: Callable, segundos: float) -> bool:
-	var ate := Time.get_ticks_msec() + int(segundos * 1000.0)
-	while Time.get_ticks_msec() < ate:
-		if bool(condicao.call()):
-			return true
-		await process_frame
-	return bool(condicao.call())
+	return await relogio_de_jogo.ate(condicao, segundos)
 
 
 func _segundos(quanto: float) -> void:
-	var ate := Time.get_ticks_msec() + int(quanto * 1000.0)
-	while Time.get_ticks_msec() < ate:
-		await process_frame
+	await relogio_de_jogo.esperar(quanto)
 
 
 func _quadros_de_fisica(quantos: int) -> void:

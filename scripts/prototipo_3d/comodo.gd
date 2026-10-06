@@ -143,11 +143,13 @@ func _montar_dentro() -> void:
 	pass
 
 
-## O cômodo contém este ponto do mundo? Com folga de meio palmo nas paredes.
-func contem(ponto: Vector3) -> bool:
+## O cômodo contém este ponto do mundo? Com folga de meio palmo nas paredes, e
+## `mais` além dela: quem JÁ está dentro fica dentro um pouco além da porta
+## (`Interiores`), e o corpo parado na soleira não troca de lado a cada quadro.
+func contem(ponto: Vector3, mais: float = 0.0) -> bool:
 	var local := to_local(ponto)
-	return absf(local.x) <= largura * 0.5 + 0.15 and local.z <= 0.15 \
-		and local.z >= -comprimento - 0.15 and local.y >= -0.6 and local.y <= pe_direito + 0.4
+	return absf(local.x) <= largura * 0.5 + 0.15 + mais and local.z <= 0.15 + mais \
+		and local.z >= -comprimento - 0.15 - mais and local.y >= -0.6 - mais and local.y <= pe_direito + 0.4 + mais
 
 
 ## O ponto de passagem por dentro da porta, e o de fora dela, no chão.
@@ -366,7 +368,10 @@ func _cortina(nome: String, z: float) -> StaticBody3D:
 func camera_do_lado_de_dentro(dentro: bool) -> void:
 	if _cortina_de_dentro == null:
 		return
-	_cortina_de_dentro.collision_layer = Mar.CAMADA_CAMERA_AGUA if dentro else 0
+	# A câmera de cima já fica por cima das paredes e do vão (`camera_de_cima`): a
+	# cortina de dentro só serve ao cômodo de câmera de passeio. Nele, ao contrário,
+	# ela cortava o braço colado às costas de quem acabava de entrar.
+	_cortina_de_dentro.collision_layer = Mar.CAMADA_CAMERA_AGUA if dentro and not camera_de_cima else 0
 	_cortina_de_fora.collision_layer = 0 if dentro else Mar.CAMADA_CAMERA_AGUA
 	por_dentro(dentro)
 

@@ -79,6 +79,30 @@ const ATRASO_VOLTA := 10.0
 const ATRASO_MAXIMO := 0.6
 ## A câmera de cima entra e sai do cômodo em tanto tempo (s).
 const DE_CIMA_TRANSICAO := 0.3
+## A CÂMERA RESILIENTE: o que a câmera NUNCA faz, venha o que vier do cenário
+## (parede, porta, teleporte, maré). Duas garantias, e nenhuma depende de o
+## `SpringArm3D` ter visto o obstáculo — o corte dele IGNORA o que já cobre a
+## esfera no ponto de partida (o motor ignora a sobreposição inicial), e foi
+## assim que a água do mar, que a câmera "não podia" atravessar, e a quina da
+## porta, que o braço "não podia" atravessar, deixaram de barrar:
+##
+##   1. NUNCA DENTRO DO PERSONAGEM: o braço não fica menor que `braco_minimo`. Parede
+##      atrás do jogador não aproxima a câmera, SOBE-A: a câmera passa por cima
+##      da cabeça, numa inclinação mais alta, até achar um braço livre
+##      (`_elevacao_que_liberta`), com mola criticamente amortecida.
+##   2. NUNCA DEBAIXO D'ÁGUA: sobre o mar ou o rio, a câmera fica pelo menos
+##      `camera_acima_da_agua` acima da água DAQUI E AGORA (`water_level_at`: com
+##      a maré), segura pela conta e não pela física.
+const BRACO_MINIMO := 1.25
+const CAMERA_ACIMA_DA_AGUA := 0.35
+## A elevação é procurada de tanto em tanto (rad), até a vertical, quando o braço
+## livre fica a menos que isto acima do mínimo.
+const ELEVACAO_PASSO := 0.12
+const BRACO_FOLGA_DA_ELEVACAO := 0.15
+## A mola da elevação: sobe depressa (a parede já está em cima), desce devagar
+## (para a câmera não sanfonar numa quina). Segundos até quase chegar.
+const ELEVACAO_TEMPO_SOBE := 0.07
+const ELEVACAO_TEMPO_DESCE := 0.35
 ## O clipe "swim" deita o corpo na altura da raiz (os pés): nadando, o modelo sobe esta
 ## fração da altura para as costas ficarem na linha d'água.
 const MODELO_ACIMA_NADANDO := 0.44
@@ -123,6 +147,19 @@ var _transicao_de_cima: Tween
 ## O braço está voltando de um obstáculo (sai devagar) ou só seguindo o zoom.
 var _voltando_de_obstaculo := false
 var _tick_do_encaixe := -1
+## O braço mínimo e a folga sobre a água: `var`, e não `const`, para o portão
+## (`tests/camera_resiliente.gd`) poder desligá-los e ver a câmera falhar.
+var braco_minimo := BRACO_MINIMO
+var camera_acima_da_agua := CAMERA_ACIMA_DA_AGUA
+## Sobe a borda de face torta (ver `_subir_degrau`): `var` para o portão desligar e ver o corpo parar nela.
+var sobe_borda_torta := true
+## Quanto a câmera subiu além da inclinação do jogador para não entrar no corpo
+## (rad, >= 0), a velocidade dessa subida, e a pergunta que mede o braço livre.
+var _elevacao_extra := 0.0
+var _elevacao_vel := 0.0
+var _consulta_camera: PhysicsShapeQueryParameters3D
+## A volta do pivô ao subir ou descer da água: um tween só, o novo mata o velho.
+var _tween_pivo: Tween
 var _click_world: Node3D
 var _navigator = ClickNavigation.new()
 var _walk_path := PackedVector3Array()
@@ -251,6 +288,12 @@ func _ready() -> void:
 	spring.collision_mask = Camadas.CAMERA
 	spring.add_excluded_object(get_rid())
 	camera_pivot.add_child(spring)
+	# A MESMA pergunta do braço, feita por nós a cada quadro (`_braco_livre`): o
+	# `SpringArm3D` mede na física, com um tick de idade, e só na inclinação em que está.
+	_consulta_camera = PhysicsShapeQueryParameters3D.new()
+	_consulta_camera.shape = camera_shape
+	_consulta_camera.collision_mask = Camadas.CAMERA
+	_consulta_camera.exclude = [get_rid()]
 	# O braço só MEDE: a ponta dele é um nó vazio, e a câmera é filha do pivô,
 	# posta por `_posicionar_camera` no comprimento que se vê.
 	var ponta := Node3D.new()
@@ -697,6 +740,7 @@ func camera_de_cima(ativa: bool, corpos_do_comodo: Array[RID] = []) -> void:
 			_atravessa.append(corpo)
 	else:
 		ate = _antes_de_cima
+	_atualizar_exclusao_da_camera()
 	# A CÂMERA SOBE E DESCE EM TRÂNSITO, e não de um quadro para o outro; o
 	# modo (`esta_de_cima`) muda na hora.
 	if _transicao_de_cima != null and _transicao_de_cima.is_valid():
@@ -709,6 +753,15 @@ func camera_de_cima(ativa: bool, corpos_do_comodo: Array[RID] = []) -> void:
 
 func esta_de_cima() -> bool:
 	return _de_cima
+
+
+## Quem o braço da câmera atravessa: o próprio corpo e, de cima, as paredes do cômodo.
+func _atualizar_exclusao_da_camera() -> void:
+	if _consulta_camera == null:
+		return
+	var excluidos: Array[RID] = [get_rid()]
+	excluidos.append_array(_atravessa)
+	_consulta_camera.exclude = excluidos
 
 
 ## PERDER O FOCO SOLTA O MOUSE, MAS NÃO TROCA O MODO.
@@ -809,7 +862,10 @@ func _atualizar_nado() -> void:
 		animator.set_swimming(_nadando)
 	# A altura do pivô é variável (a câmera suave a lê a cada quadro); o corpo sobe na água
 	# só nadando em movimento (`_atualizar_altura_visual_nado`).
-	create_tween().tween_property(self, "_altura_do_pivo", PIVO_CAMERA_NADANDO if _nadando else PIVO_CAMERA, 0.35)
+	if _tween_pivo != null and _tween_pivo.is_valid():
+		_tween_pivo.kill()
+	_tween_pivo = create_tween()
+	_tween_pivo.tween_property(self, "_altura_do_pivo", PIVO_CAMERA_NADANDO if _nadando else PIVO_CAMERA, 0.35)
 
 
 func _atualizar_altura_visual_nado() -> void:
@@ -910,14 +966,34 @@ func _empurrar_quem_barra(direcao: Vector3) -> void:
 
 ## Bordas baixas (a areia da praia saindo da água, meio-fio, rampa do píer) viram
 ## parede para o CharacterBody3D: se o que barra o passo cabe em DEGRAU, sobe nele.
+##
+## A BORDA TORTA TAMBÉM É DEGRAU. O corte antigo só subia onde a parede era quase
+## vertical (`normal.y <= 0.3`), e a borda da faixa de rua, o pé da cabeceira da ponte
+## e a areia da orla têm a face inclinada entre 47 e 65 graus — mais íngreme que os 46
+## do chão (`floor_max_angle`), e menos que a parede: o corpo não a pisava, não a
+## subia, e parava ali, de frente, com o chão do outro lado 11 a 22 cm mais alto
+## (`tests/colisoes_de_passeio.gd` achou quatro). Agora sobe também essas, desde que
+## seja só uma borda: a 0,6 m dali o chão não passa de DEGRAU acima dos pés — o que
+## deixa a ladeira íngreme de verdade (0,62 m ou mais em 0,6 m) como parede.
 func _subir_degrau(direcao: Vector3) -> void:
-	if _nadando or not is_on_wall() or direcao.length_squared() < 0.01 or get_wall_normal().y > 0.3:
+	if _nadando or not is_on_wall() or direcao.length_squared() < 0.01:
 		return
 	var passo := Vector3(direcao.x, 0.0, direcao.z).normalized() * 0.2
 	var em_cima := global_transform.translated(Vector3.UP * DEGRAU)
 	if test_move(global_transform, Vector3.UP * DEGRAU) or test_move(em_cima, passo):
 		return
+	if get_wall_normal().y > 0.3 and not (sobe_borda_torta and _so_uma_borda(passo.normalized())):
+		return
 	global_position += Vector3.UP * DEGRAU + passo
+
+
+## O chão, 0,6 m adiante de `rumo`, não passa de DEGRAU acima dos pés?
+func _so_uma_borda(rumo: Vector3) -> bool:
+	var de := global_position + rumo * 0.6 + Vector3.UP * (DEGRAU + 0.6)
+	var raio := PhysicsRayQueryParameters3D.create(de, de + Vector3.DOWN * 2.0, collision_mask)
+	raio.exclude = [get_rid()]
+	var bateu := get_world_3d().direct_space_state.intersect_ray(raio)
+	return not bateu.is_empty() and float(bateu["position"].y) <= global_position.y + DEGRAU + 0.02
 
 
 func _back_to_land() -> void:
@@ -954,6 +1030,11 @@ func teleportar(destino: Vector3, rumo: float) -> void:
 	_jump_buffer_remaining = 0.0
 	visual.rotation.y = rumo
 	_yaw = rumo + PI
+	# O cômodo do lugar novo decide, AGORA, se a câmera é a de cima: encaixar a
+	# câmera antes disso a media com as paredes (e o modo) do lugar de onde o corpo saiu.
+	var interiores := get_tree().get_first_node_in_group("interiores") if is_inside_tree() else null
+	if interiores != null and interiores.has_method("atualizar_agora"):
+		interiores.atualizar_agora()
 	# Dentro da casa a câmera continua de cima (ver `camera_de_cima`).
 	_pitch = DE_CIMA_INCLINACAO if _de_cima else -0.19
 	inspecting = false
@@ -1289,6 +1370,8 @@ func _encaixar_a_camera() -> void:
 	_encaixe_restante = 3
 	_atraso_y = 0.0
 	_y_anterior = NAN
+	_elevacao_extra = 0.0
+	_elevacao_vel = 0.0
 
 
 ## A CÂMERA NO COMPRIMENTO QUE SE VÊ (ver `BRACO_ENTRA`). No `_process`, e não
@@ -1308,7 +1391,27 @@ func _posicionar_camera(delta: float) -> void:
 		_atraso_y *= exp(-ATRASO_VOLTA * delta)
 	_y_anterior = y
 	camera_pivot.position.y = _altura_do_pivo + _atraso_y
-	var alvo := spring.get_hit_length()
+	# O BRAÇO LIVRE, medido agora, na inclinação em que a câmera está: a do jogador
+	# mais a elevação que a parede pediu. Se ele não chega ao mínimo, a câmera sobe
+	# por cima da cabeça em vez de encolher até ela (`_elevacao_que_liberta`).
+	var comprimento := _distance
+	var livre := _braco_livre(_pitch, comprimento)
+	var elevar := 0.0
+	if livre < braco_minimo + BRACO_FOLGA_DA_ELEVACAO:
+		elevar = _elevacao_que_liberta(_pitch, comprimento)
+	if _encaixe_restante > 0:
+		_elevacao_extra = elevar
+		_elevacao_vel = 0.0
+	else:
+		var mola := _amortecer(_elevacao_extra, elevar, _elevacao_vel, ELEVACAO_TEMPO_SOBE if elevar > _elevacao_extra else ELEVACAO_TEMPO_DESCE, delta)
+		_elevacao_extra = maxf(mola.x, 0.0)
+		_elevacao_vel = mola.y
+	var inclinacao := maxf(_pitch - _elevacao_extra, -PI * 0.5)
+	if _elevacao_extra > 0.001:
+		livre = _braco_livre(inclinacao, comprimento)
+	# NUNCA MENOR QUE O MÍNIMO: a câmera pode atravessar uma parede por um instante,
+	# o que ela não faz é entrar no corpo.
+	var alvo := maxf(livre, braco_minimo)
 	var barrado := alvo < spring.spring_length - 0.05
 	# Enquanto uma parede encurta o braço, a saída dela é a devagar, mesmo depois
 	# de ele ter parado de encurtar: quem para rente a uma quina e depois anda
@@ -1332,7 +1435,68 @@ func _posicionar_camera(delta: float) -> void:
 		_braco = lerpf(_braco, alvo, 1.0 - exp(-(BRACO_SAI if _voltando_de_obstaculo else BRACO_ZOOM) * delta))
 		if not barrado and alvo - _braco < 0.05:
 			_voltando_de_obstaculo = false
+	# NUNCA DEBAIXO D'ÁGUA, pela conta (ver `_inclinacao_acima_da_agua`).
+	spring.rotation.x = _inclinacao_acima_da_agua(inclinacao, _braco)
 	camera.transform = spring.transform * Transform3D(Basis(), Vector3(0.0, 0.0, _braco))
+
+
+## Até onde o braço chega, em `comprimento`, na inclinação `pitch` e no giro de agora,
+## a partir do pivô: o mesmo corte com esfera do `SpringArm3D`, feito ao vivo.
+func _braco_livre(pitch: float, comprimento: float) -> float:
+	if _consulta_camera == null:
+		return comprimento
+	var origem := camera_pivot.global_position
+	_consulta_camera.transform = Transform3D(Basis(), origem)
+	_consulta_camera.motion = camera_pivot.global_basis * (Basis(Vector3.RIGHT, pitch) * Vector3.BACK) * comprimento
+	var r := get_world_3d().direct_space_state.cast_motion(_consulta_camera)
+	return comprimento * float(r[0]) if r.size() >= 2 else comprimento
+
+
+## O MENOR AUMENTO DE INCLINAÇÃO (rad, >= 0) com que o braço livre passa do mínimo:
+## a câmera olha mais de cima, até a vertical. Se nenhuma chega lá (o vão de uma
+## porta baixa), a que mais liberta.
+func _elevacao_que_liberta(pitch: float, comprimento: float) -> float:
+	var melhor := 0.0
+	var melhor_braco := -1.0
+	var elevacao := 0.0
+	while pitch - elevacao > -PI * 0.5:
+		elevacao = minf(elevacao + ELEVACAO_PASSO, pitch + PI * 0.5)
+		var livre := _braco_livre(pitch - elevacao, comprimento)
+		if livre >= braco_minimo + BRACO_FOLGA_DA_ELEVACAO:
+			return elevacao
+		if livre > melhor_braco:
+			melhor_braco = livre
+			melhor = elevacao
+	return melhor
+
+
+## A MOLA CRITICAMENTE AMORTECIDA (a `SmoothDamp` clássica): leva `atual` a `alvo`
+## em cerca de `tempo` segundos, sem passar do alvo. Devolve (valor, velocidade).
+func _amortecer(atual: float, alvo: float, velocidade: float, tempo: float, delta: float) -> Vector2:
+	var omega := 2.0 / maxf(tempo, 0.0001)
+	var x := omega * delta
+	var freio := 1.0 / (1.0 + x + 0.48 * x * x + 0.235 * x * x * x)
+	var mudanca := atual - alvo
+	var impulso := (velocidade + omega * mudanca) * delta
+	return Vector2(alvo + (mudanca + impulso) * freio, (velocidade - omega * impulso) * freio)
+
+
+## A inclinação mais alta (mais perto da horizontal) que mantém a câmera, a `braco`
+## do pivô, `camera_acima_da_agua` acima da água de onde ela ficaria: o nível
+## DAQUI E AGORA (`water_level_at`: o mar com a maré, ou o rio). Sobre terra não
+## faz nada — o chão barra o braço —, e só sobe a câmera, nunca a desce.
+func _inclinacao_acima_da_agua(pitch: float, braco: float) -> float:
+	if _click_world == null or not _click_world.has_method("water_depth_at"):
+		return pitch
+	var pivo := camera_pivot.global_position
+	var horizontal := Vector3(sin(_yaw), 0.0, cos(_yaw))
+	for volta in 2:
+		var onde := pivo + horizontal * (braco * cos(pitch))
+		if _click_world.water_depth_at(onde) <= 0.0:
+			return pitch
+		var minimo: float = _click_world.water_level_at(onde) + camera_acima_da_agua
+		pitch = minf(pitch, asin(clampf((pivo.y - minimo) / maxf(braco, 0.01), -1.0, 1.0)))
+	return pitch
 
 
 ## A câmera está no modo de arrastar? Quem pergunta é quem vai pausar o jogo e
