@@ -4,6 +4,9 @@
   "nome": "A capoeira do Cosme",
   "nome_en": "Cosme's capoeira",
   "nome_es": "La capoeira de Cosme",
+  "trancada": "Capoeira é roda de quem segue o candomblé. Volte depois de cumprir a mesa da folha no terreiro.",
+  "trancada_en": "Capoeira is the circle of those who follow candomblé. Come back after you complete the leaf table at the terreiro.",
+  "trancada_es": "La capoeira es rueda de quien sigue el candomblé. Vuelve después de cumplir la mesa de la hoja en el terreiro.",
   "principal": false,
   "passos": [
     {

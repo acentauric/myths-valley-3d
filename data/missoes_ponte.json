@@ -4,6 +4,9 @@
   "nome": "A ponte do rio grande",
   "nome_en": "The bridge over the big river",
   "nome_es": "El puente del río grande",
+  "trancada": "A ponte vem depois da chegada. Acabe primeiro a lida de hoje comigo, e aí eu lhe mostro o que o rio levou.",
+  "trancada_en": "The bridge comes after your arrival. Finish today's work with me first, and then I'll show you what the river took.",
+  "trancada_es": "El puente viene después de la llegada. Termina primero la faena de hoy conmigo, y entonces te muestro lo que se llevó el río.",
   "principal": true,
   "passos": [
     {
@@ -121,9 +124,9 @@
       "titulo": "De pé outra vez",
       "titulo_en": "Standing again",
       "titulo_es": "En pie otra vez",
-      "resumo": "Levante a ponte: [J] › Obras, ao pé dela",
-      "resumo_en": "Raise the bridge: [J] › Works, at its foot",
-      "resumo_es": "Levanta el puente: [J] › Obras, al pie de él",
+      "resumo": "Levante a ponte: [E] ou [J] › Obras, ao pé dela",
+      "resumo_en": "Raise the bridge: [E] or [J] › Works, at its foot",
+      "resumo_es": "Levanta el puente: [E] o [J] › Obras, al pie de él",
       "lugar": "ponte_do_vau",
       "raio": 9,
       "audio": "",

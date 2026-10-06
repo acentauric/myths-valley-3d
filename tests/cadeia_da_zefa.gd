@@ -63,6 +63,7 @@ extends SceneTree
 ## ainda passa).
 
 const RelogioDeJogo = preload("res://tests/fixtures/relogio_de_jogo.gd")
+const Jogada = preload("res://tests/fixtures/jogada.gd")
 
 var falhas := 0
 var relogio: Node
@@ -298,6 +299,31 @@ func _run() -> void:
 	_conferir(voltou, "voltei à Dona Zefa e o passo não fechou")
 	print("  %-16s %s" % ["zefa_conversa", "fechou" if voltou else "PRESO"])
 
+	# --- 7b. O ÚLTIMO PASSO: ENCONTRAR OS DOIS NO PÍER (`zefa_saveiro`) ----
+	#
+	# Nenhum portão chegava a ele: o último que se conferia era `zefa_conversa`, e o passo do píer
+	# (a visita de 8 u, com a cocada e o pirão de recompensa) nunca era jogado. Joga-se aqui com o
+	# jogador ANDANDO até lá, pelo controle dele (`tests/fixtures/jogada.gd`), e não posto no píer.
+	var no_pier: int = cadeia.missao
+	_conferir(no_pier == cadeia.passos.size() - 1 and str(cadeia.passos[no_pier].get("id", "")) == "zefa_saveiro",
+		"depois da conversa o passo devia ser o do píer (zefa_saveiro), e é o %d" % (no_pier + 1))
+	var anunciou4 := await _ate(func() -> bool: return cadeia.espera <= 0.0, SEGUNDOS_PARA_ANUNCIAR)
+	_conferir(anunciou4, "o passo do píer não chegou a anunciar")
+	await _frames(5)
+	_conferir(cadeia.missao == no_pier, "o passo do píer fechou com o jogador ainda ao lado da Dona Zefa")
+	var cocadas_antes: int = inv.quantidade("cocada")
+	var piroes_antes: int = inv.quantidade("pirao")
+	var maos := Jogada.new(self, jogo, relogio, func(t: String) -> void: _conferir(false, t), func(t: String) -> void: print(t))
+	var chegou_ao_pier: bool = await maos.ir_ate(lugares.ponto("pier"), 0.0, false, 60.0, 6.0)
+	_conferir(chegou_ao_pier, "o jogador não conseguiu andar até o píer")
+	var fechou_o_pier := await _ate(func() -> bool: return cadeia.missao > no_pier, SEGUNDOS_POR_PASSO)
+	_conferir(fechou_o_pier, "chegar ao píer não fechou o último passo da Dona Zefa")
+	print("  %-16s %s" % ["zefa_saveiro", "fechou" if fechou_o_pier else "PRESO"])
+	_conferir(cadeia.acabou(), "o último passo fechou e a fila da Dona Zefa não acabou")
+	_conferir(inv.quantidade("cocada") >= cocadas_antes + 3 and inv.quantidade("pirao") >= piroes_antes + 1,
+		"a recompensa do píer (3 cocadas e 1 pirão) não chegou: cocada %d -> %d, pirão %d -> %d"
+			% [cocadas_antes, inv.quantidade("cocada"), piroes_antes, inv.quantidade("pirao")])
+
 	# --- 8. A CADEIA SOBREVIVE A RECARREGAR --------------------------------
 	var guardado: Dictionary = jogo.estado_para_salvar()
 	var guardadas: Dictionary = guardado.get("cadeias", {})
@@ -331,7 +357,7 @@ func _falar_com(morador) -> void:
 func _fechar() -> void:
 	print("")
 	if falhas == 0:
-		print("ZEFA_OK: a fila é da Dona Zefa, é de enredo, tem os quatro passos e todos apontam lugar que o vale resolve; ela dá a foice e a serra tem moita de erva que cai de foice e rende maço; quatro maços NÃO fecham a entrega de cinco nem comem erva, e cinco fecham tirando os cinco; o passo que pede o Cosme não fecha ao lado de quem mandou, fecha ao chegar nele e quem responde é ele; voltar a ela fecha a conversa; e recarregar não manda subir a serra nem conversar de novo")
+		print("ZEFA_OK: a fila é da Dona Zefa, é de enredo, tem os quatro passos e todos apontam lugar que o vale resolve; ela dá a foice e a serra tem moita de erva que cai de foice e rende maço; quatro maços NÃO fecham a entrega de cinco nem comem erva, e cinco fecham tirando os cinco; o passo que pede o Cosme não fecha ao lado de quem mandou, fecha ao chegar nele e quem responde é ele; voltar a ela fecha a conversa; o último passo (o píer) fecha com o jogador chegando lá a pé, e paga a cocada e o pirão; e recarregar não manda subir a serra nem conversar de novo")
 	else:
 		print("zefa: %d falha(s)" % falhas)
 	quit(1 if falhas > 0 else 0)

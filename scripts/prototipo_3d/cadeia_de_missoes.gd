@@ -160,6 +160,9 @@ static var _avisos: Dictionary = {}
 ## lista e o HUD escreve em cima do objetivo — o passo é só onde ela está. Vem
 ## do campo `nome` do arquivo, nos três idiomas.
 var nome_da_missao := ""
+## O QUE O DONO DIZ NO E ENQUANTO A FILA ESTÁ TRANCADA (`dica_da_trancada`): o que fazer antes,
+## "volte depois de ...", nos três idiomas (`trancada`, `trancada_en`, `trancada_es`).
+var trancada_texto := ""
 
 
 ## Lê os passos do arquivo, já no idioma escolhido.
@@ -198,6 +201,7 @@ func carregar(caminho: String) -> bool:
 	chave = str(dado.get("dono", ""))
 	principal = bool(dado.get("principal", false))
 	nome_da_missao = str(IdiomaMenu.campo(dado, "nome", ""))
+	trancada_texto = str(IdiomaMenu.campo(dado, "trancada", ""))
 	arremate = dado.get("arremate", {}).duplicate()
 	arremate["texto"] = str(IdiomaMenu.campo(arremate, "texto"))
 	return not passos.is_empty()
@@ -1545,3 +1549,26 @@ static func obra_que_se_pede(arvore: SceneTree, construcao: String) -> String:
 			if obra != "":
 				return obra
 	return ""
+
+
+## A FILA ESTÁ TRANCADA? Ainda não abriu e espera outra coisa (`depois_de`) ou outra fé
+## (`so_enquanto`). É o caso do Damião antes do machado, do Tonho, da carroça do Seu
+## Benedito, da lombada do Pedro e de quem só abre depois do tutorial.
+func esta_trancada() -> bool:
+	if iniciado or comeca_perto_de <= 0.0:
+		return false
+	return (depois_de.is_valid() and not bool(depois_de.call())) \
+		or (so_enquanto.is_valid() and not bool(so_enquanto.call()))
+
+
+## A FILA ANDA AGORA? Abriu e ainda não acabou.
+func em_andamento() -> bool:
+	return iniciado and not acabou()
+
+
+## O QUE O DONO DIZ QUANDO O JOGADOR O PROCURA E A FILA ESTÁ TRANCADA: o que fazer
+## antes, na língua do jogo, ou "" quando a fila não está trancada ou o arquivo não
+## escreveu o aviso (`trancada`). "Só conversa de passagem" deixava o jogador sem saber
+## o que lhe faltava.
+func dica_da_trancada() -> String:
+	return trancada_texto if esta_trancada() else ""

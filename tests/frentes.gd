@@ -22,6 +22,8 @@ extends SceneTree
 ##      no anúncio, três esquivas fazem a lição, e ela fecha voltando ao Cosme.
 ##   8. A META: dez caititus abrem a do gibão sozinha, e o E no Pedro paga.
 ##   9. A CONTA SOBREVIVE A RECARREGAR: o save leva quantas vezes já aconteceu.
+##  10. A CAPOEIRA ATÉ O FIM: a meia-lua volta ao Cosme, a rasteira (duas tonteadas, mungunzá) e a
+##      volta final fecham a fila.
 
 var falhas := 0
 var vale
@@ -192,6 +194,34 @@ func _run() -> void:
 	_conferir(capoeira.missao == 2, "recarregar no meio da conta: três meias-luas fecharam o passo das quatro")
 	luta.acertou.emit("meia_lua", "caititu", false, false)
 	_conferir(await _ate(func() -> bool: return capoeira.missao >= 3, 8.0), "a quarta meia-lua, depois de recarregar, não fechou o passo: o save esqueceu a conta")
+
+	# --- 10. A CAPOEIRA ATÉ O FIM ---------------------------------------------------------
+	# A meia-lua volta ao Cosme, a rasteira (duas tonteadas) e a volta final: os três últimos passos
+	# da fila não eram jogados por nenhum portão, e a recompensa deles (mungunzá) nunca se via paga.
+	await _ate(func() -> bool: return capoeira.espera <= 0.0, 12.0)
+	_conferir(str(capoeira.passo_atual().get("id", "")) == "capoeira_meia_lua_volta",
+		"depois das quatro meias-luas o passo devia ser o de voltar ao Cosme: é '%s'" % str(capoeira.passo_atual().get("id", "")))
+	jogador.teleportar(cosme.global_position + Vector3(1.0, 0.1, 0.6), 0.0)
+	await _quadros(5)
+	tecla.usar(cosme)
+	_conferir(await _ate(func() -> bool: return capoeira.missao >= 4, 8.0), "voltar ao Cosme (E) não fechou a lição da meia-lua")
+	await _ate(func() -> bool: return capoeira.espera <= 0.0, 12.0)
+	_conferir(str(capoeira.passo_atual().get("id", "")) == "capoeira_rasteira", "depois da meia-lua o passo devia ser a rasteira")
+	_conferir(luta.sabe("rasteira"), "o anúncio da lição da rasteira não ensinou a rasteira")
+	var mungunzas_antes: int = inv.quantidade("mungunza")
+	# Tonteou = o golpe que deixa o bicho tonto (`Luta.acertou` com `tonteou`), como a rasteira faz.
+	luta.acertou.emit("rasteira", "caititu", false, true)
+	await _quadros(3)
+	_conferir(capoeira.missao == 4, "uma tonteada fechou o passo das duas")
+	luta.acertou.emit("rasteira", "caititu", false, true)
+	_conferir(await _ate(func() -> bool: return capoeira.missao >= 5, 8.0), "duas tonteadas não fecharam a lição da rasteira")
+	_conferir(inv.quantidade("mungunza") >= mungunzas_antes + 2, "a lição da rasteira não pagou os dois mungunzás (%d -> %d)" % [mungunzas_antes, inv.quantidade("mungunza")])
+	await _ate(func() -> bool: return capoeira.espera <= 0.0, 12.0)
+	_conferir(str(capoeira.passo_atual().get("id", "")) == "capoeira_rasteira_volta", "depois da rasteira o passo devia ser o último, de voltar ao Cosme")
+	jogador.teleportar(cosme.global_position + Vector3(1.0, 0.1, 0.6), 0.0)
+	await _quadros(5)
+	tecla.usar(cosme)
+	_conferir(await _ate(func() -> bool: return capoeira.acabou(), 8.0), "o E no Cosme não fechou a capoeira: o último passo não acaba")
 	_fechar()
 
 

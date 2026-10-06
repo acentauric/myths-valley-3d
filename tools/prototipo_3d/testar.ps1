@@ -83,7 +83,20 @@ $REGUAS = @("ordem_da_visita")
 
 # O `agua_rasa` atravessa o bracinho de mar a pé, com 14000 + 16000 quadros de
 # física: perto de 500 s de relógio. Cortar o teto faz o portão TRAVAR sem medir.
-$TETO_DO_PORTAO = @{ "agua_rasa" = 700 }
+#
+# O `missoes_do_comeco_ao_fim` joga as 22 filas, do desembarque à fazenda, com os controles
+# do jogador (andar atrás do Pedro, cortar árvore, E, J, dormir, lutar): o jogo anda perto de
+# 1 segundo de jogo por segundo de relógio e a partida inteira passa de uma hora de jogo (de uma
+# hora e meia a duas, medido, com a máquina livre) — e a bateria cheia a deixa mais lenta: com o
+# quadro em 130 ms o jogo anda a 0,4 do relógio. O teto é de quatro horas: o portão se mata sozinho
+# no primeiro passo que não fecha (ver `tests/missoes_do_comeco_ao_fim.gd`), e o teto só pega o
+# que trava de verdade.
+$TETO_DO_PORTAO = @{ "agua_rasa" = 700; "missoes_do_comeco_ao_fim" = 14400 }
+
+# OS PESADOS SÓ ENTRAM NA BATERIA COMPLETA (-Tudo) ou pedidos pelo nome (-Teste). A impressão digital
+# deles abrange o jogo inteiro (`res://data/` por prefixo, todos os scripts do vale): rodariam a cada
+# mudança, e meia hora por commit ensina a pular o runner. Antes de fechar build, -Tudo os roda.
+$SO_NO_TUDO = @("missoes_do_comeco_ao_fim")
 
 function Ler-Log([string]$arquivo) {
 	if (-not (Test-Path -LiteralPath $arquivo)) { return "" }
@@ -382,6 +395,7 @@ $porCache = 0
 $motivos = @{}
 $impressoes = @{}
 $analisados = $todosPortoes
+if (-not $Tudo) { $analisados = @($todosPortoes | Where-Object { $SO_NO_TUDO -notcontains $_ }) }
 if ($pedidos.Count -gt 0) { $analisados = $pedidos }
 foreach ($nome in $analisados) {
 	$fecho = Fecho ($raizesComuns + @("tests/$nome.gd"))
@@ -589,3 +603,4 @@ if ($reprovados.Count -gt 0) {
 }
 Write-Host ("os " + $fila.Count + " portoes rodados passaram em " + $minutos + " min (" + $reaproveitados + " reaproveitados)")
 Write-Host ("reguas fora da bateria (rode a mao): " + ($REGUAS -join ", "))
+Write-Host ("pesados que so rodam com -Tudo ou pelo nome (-Teste): " + ($SO_NO_TUDO -join ", "))

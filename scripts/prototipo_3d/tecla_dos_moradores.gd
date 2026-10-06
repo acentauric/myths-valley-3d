@@ -63,7 +63,18 @@ func perto() -> Node3D:
 ## ao alcance.
 func alvo_do_e() -> Dictionary:
 	var quem := _ao_alcance()
-	return {} if quem == null else {"ponto": quem.global_position}
+	if quem == null:
+		return {}
+	# QUEM O PASSO MANDA PROCURAR LEVA O E COM FOLGA, como o sítio de obra que a missão pede: o jogador
+	# parado de frente para ele, a dois passos, perdia a tecla para o toco de lenha ao lado do Damião e
+	# para o canteiro do roçado ao lado do Cosme ("não consegui interagir"). O viés é a DISTÂNCIA até ele,
+	# e a conta dele fica só com o rumo — a mesma regra de `TeclaDasBancadas.vies_da_obra_pedida`. Assim a
+	# pessoa vence o toco e o canteiro que estão ao lado dela, a não ser que o jogador esteja virado para
+	# eles e de costas para ela; e, de frente para o sítio de obra que a missão pede, com o Pedro ao lado e
+	# o passo dele aberto, o sítio vence (um viés fixo de 2,5 u, que foi o primeiro conserto, deixava o
+	# Pedro ganhar do mirante: `tests/obras_com_e.gd` reprovou).
+	var longe :=Vector2(quem.global_position.x - _jogador.global_position.x, quem.global_position.z - _jogador.global_position.z).length()
+	return {"ponto": quem.global_position, "vies": longe if _acao_das_filas(quem) == ACAO_PEDIDA else 0.0}
 
 
 ## Quem está ao alcance da conversa, com o jogador em jogo e o E livre.

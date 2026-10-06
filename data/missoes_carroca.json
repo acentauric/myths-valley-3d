@@ -4,6 +4,9 @@
   "nome": "A carroça do avô",
   "nome_en": "Grandfather's cart",
   "nome_es": "La carreta del abuelo",
+  "trancada": "A carroça espera. Volte depois de trabalhar a piaçava do saveiro e de ter o machado que o Pedro lhe dá na ponte.",
+  "trancada_en": "The cart can wait. Come back after you've worked the piassava for the saveiro and have the axe Pedro gives you at the bridge.",
+  "trancada_es": "La carreta espera. Vuelve cuando hayas trabajado la piasava del saveiro y tengas el hacha que Pedro te da en el puente.",
   "principal": false,
   "passos": [
     {
