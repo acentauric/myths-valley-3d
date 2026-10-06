@@ -10,16 +10,25 @@ const MUSICA_MENU_3 := "res://assets/audio/musica/tema_menu_2.mp3"
 const MUSICA_MENU_4 := "res://assets/audio/musica/tema_reconcavo.ogg"
 const MUSICA_MENU := MUSICA_MENU_4
 const MUSICA_ROCADO := "res://assets/audio/musica/tema_rocado.mp3"
-## Trilha do jogo por período do dia (entardecer segue a tarde; madrugada, a noite).
+## Trilha do jogo por período do dia: uma para cada um dos CINCO que o relógio anuncia no HUD.
+## Até a Build 9B eram três (o entardecer repetia a tarde e a madrugada, a noite), e o jogador
+## via o HUD virar "Entardecer" e "Madrugada" sem a música mudar ("senti falta da mudança de
+## trilha entre os períodos do dia"): `tools/elevenlabs/gerar-musicas-periodos.ps1`.
 const MUSICAS_PERIODO := {
 	"manha": "res://assets/audio/musica/musica_manha.mp3",
 	"tarde": "res://assets/audio/musica/musica_tarde.mp3",
-	"entardecer": "res://assets/audio/musica/musica_tarde.mp3",
+	"entardecer": "res://assets/audio/musica/musica_entardecer.mp3",
 	"noite": "res://assets/audio/musica/musica_noite.mp3",
-	"madrugada": "res://assets/audio/musica/musica_noite.mp3",
+	"madrugada": "res://assets/audio/musica/musica_madrugada.mp3",
 }
+## Sem o arquivo do período (um clone que ainda não importou as trilhas novas), vale a do vizinho.
+const PERIODO_VIZINHO := {"entardecer": "tarde", "madrugada": "noite"}
 ## Trilha de tensão da mata fechada, por cima do período.
 const MUSICA_MATA := "res://assets/audio/musica/musica_mata.mp3"
+## Os apelidos que o código do jogo usa para os sons de interface (`efeito("ui_hover")`), e os nomes
+## de interface: tocam no tocador de interface e têm a variante _madeira (AJUSTAR → Sons).
+const ALIASES_DE_EFEITO := {"ui_confirmar": "menu_confirma", "ui_hover": "menu_mover", "ui_voltar": "menu_voltar", "ui_trava": "menu_trava"}
+const SONS_DE_INTERFACE := ["menu_mover", "menu_confirma", "menu_voltar", "menu_trava", "menu_negado"]
 ## Travessia (introdução): música própria e a narração em trechos, um por legenda
 ## (tools/elevenlabs/gerar-travessia.ps1 e alinhar_travessia.py).
 const MUSICA_TRAVESSIA := "res://assets/audio/musica/tema_travessia.mp3"
@@ -151,6 +160,10 @@ func obter_caminho_musica_menu() -> String:
 func definir_musica_menu(opcao: int) -> void:
 	musica_menu_opcao = clampi(opcao, 1, 4)
 	_salvar_preferencias()
+	# Com o vale aberto a música é a do DIA, e escolher a trilha do menu só guarda a escolha para
+	# a próxima vez no menu: tocá-la aqui desligaria a troca por período para o resto da partida.
+	if _musica_do_jogo:
+		return
 	tocar_musica(obter_caminho_musica_menu())
 
 
@@ -282,9 +295,19 @@ func tocar_musica_mata(ligar: bool) -> void:
 	_cruzar_musica(alvo, 2.5)
 
 
-## Trilha do período atual; sem o arquivo novo, vale a trilha original do roçado.
+## A trilha que o jogador ouve (ou para a qual a fusão está indo): o caminho do arquivo, ou ""
+## com a música parada. É o que os portões e a depuração perguntam.
+func musica_atual() -> String:
+	return _caminho_musica
+
+
+## Trilha do período atual; sem o arquivo dele vale a do período vizinho e, sem nenhuma, a
+## trilha original do roçado.
 func _musica_do_periodo() -> String:
-	var caminho: String = MUSICAS_PERIODO.get(Dia.periodo(), MUSICA_ROCADO)
+	var periodo := Dia.periodo()
+	var caminho: String = MUSICAS_PERIODO.get(periodo, MUSICA_ROCADO)
+	if not ResourceLoader.exists(caminho) and PERIODO_VIZINHO.has(periodo):
+		caminho = MUSICAS_PERIODO[PERIODO_VIZINHO[periodo]]
 	return caminho if ResourceLoader.exists(caminho) else MUSICA_ROCADO
 
 
@@ -425,26 +448,38 @@ func _sumir_narracao() -> void:
 
 
 func efeito(nome: String) -> void:
-	var aliases := {"ui_confirmar": "menu_confirma", "ui_hover": "menu_mover", "ui_voltar": "menu_voltar", "ui_trava": "menu_trava"}
-	var nome_base: String = aliases.get(nome, nome)
-	var menu := nome_base in ["menu_mover", "menu_confirma", "menu_voltar", "menu_trava"]
+	var nome_base: String = ALIASES_DE_EFEITO.get(nome, nome)
+	# Os sons de interface saem pelo tocador de interface (e ganham a variante _madeira): o "não pode"
+	# da mochila (`menu_negado`) é um deles, para não cortar o golpe que acabou de soar.
+	var menu := nome_base in SONS_DE_INTERFACE
 	if nome_base == "menu_mover":
 		var agora := Time.get_ticks_msec()
 		if agora - _ultimo_movimento_ms < 65:
 			return
 		_ultimo_movimento_ms = agora
-	var arquivo := nome_base
-	if menu and efeitos_menu_opcao == 2:
-		arquivo += "_madeira"
-	if not ResourceLoader.exists(PASTA_EFEITOS + arquivo + ".mp3"):
-		arquivo = "menu_mover" if nome_base == "menu_voltar" else nome_base
-	var fluxo := _carregar(PASTA_EFEITOS + arquivo + ".mp3")
+	var caminho := arquivo_do_efeito(nome)
+	# Sem arquivo nenhum, o `_carregar` avisa (uma vez) qual faltou.
+	var fluxo := _carregar(caminho if caminho != "" else PASTA_EFEITOS + nome_base + ".mp3")
 	if fluxo == null:
 		return
 	var tocador := _interface if menu else _efeitos
 	tocador.stream = fluxo
 	tocador.pitch_scale = 1.0
 	tocador.play()
+
+
+## O arquivo que `efeito(nome)` toca, ou "" se nenhum existe: o apelido resolvido, a variante _madeira
+## dos sons de interface (AJUSTAR → Sons) e, sem ela, o de reserva (o "voltar" cai no "mover"). É a
+## resposta que o portão `sons_do_jogo` cobra de cada `Audio.efeito("...")` escrito nos scripts.
+func arquivo_do_efeito(nome: String) -> String:
+	var nome_base: String = ALIASES_DE_EFEITO.get(nome, nome)
+	var arquivo := nome_base
+	if nome_base in SONS_DE_INTERFACE and efeitos_menu_opcao == 2:
+		arquivo += "_madeira"
+	if not ResourceLoader.exists(PASTA_EFEITOS + arquivo + ".mp3"):
+		arquivo = "menu_mover" if nome_base == "menu_voltar" else nome_base
+	var caminho := PASTA_EFEITOS + arquivo + ".mp3"
+	return caminho if ResourceLoader.exists(caminho) else ""
 
 
 ## Passo no chão dado (grama, terra, areia, madeira, agua, agua_funda, lama, poca).

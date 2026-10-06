@@ -87,6 +87,8 @@ publicar.
 | `assets/prototipo_3d/arvores/{mangue,piacava,ingazeiro,clusia,pitangueira,jenipapeiro,sub_bosque}_tripo.glb` | 7 espécies da vegetação local de Saubara (manguezal, restinga, beira de rio), Tripo Studio | `arvores/ORIGEM.md` |
 | `assets/audio/musica/musica_{manha,tarde,noite,mata}.mp3` | músicas por período do dia e da mata fechada, ElevenLabs Music (instrumental) | `tools/elevenlabs/gerar-musicas-periodos.ps1` |
 | `assets/audio/{efeitos,ambiente}/…` (bem-te-vi, sussurros da mata, passos v2, lama, poça, tubarão) | efeitos novos do ElevenLabs Sound Effects | `tools/elevenlabs/gerar-sons-vale.ps1` |
+| `assets/audio/musica/musica_{entardecer,madrugada}.mp3` | as duas trilhas que faltavam aos cinco períodos do relógio (entardecer: balada de fim de tarde; madrugada: ambiente escuro de pré-alvorada), 75 s, ElevenLabs Music (instrumental), 06/10/2026 | `tools/elevenlabs/gerar-musicas-periodos.ps1` |
+| `assets/audio/efeitos/{marretada_pedra,pedra_quebra,foice_capim,catar_ostra,galho_quebra,menu_negado,fantasma_sussurro,fantasma_avanco,curupira_assobio,mapa_doido}.mp3` | os efeitos que o jogo pedia e não tinha: golpes de trabalho (pedra, foice, ostra, galho), o "não pode" da mochila e os quatro sons dos sustos da mata, ElevenLabs Sound Effects, 06/10/2026 | `tools/elevenlabs/gerar-sons-que-faltam.ps1` |
 
 ### Lote da casa e dos marcos (03/10/2026)
 

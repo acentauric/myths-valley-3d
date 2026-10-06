@@ -266,7 +266,7 @@ func _aba_cenario(esquerda: VBoxContainer, direita: VBoxContainer) -> void:
 		preferencias.set_value("interface", "minimapa", i == 0)
 		if preferencias.save(PREFERENCIAS_VISUAIS) != OK:
 			push_warning("Não foi possível salvar a preferência do minimapa."), 0)
-	_escolha("Maré", ["Sem maré", "Ciclo do lugar", "Ciclo lento", "Rápida (ver acontecer)"], Mare.modo, Mare.definir_modo, 0)
+	_escolha("Maré", ["Sem maré", "Ciclo do lugar", "Ciclo lento", "Rápida (ver acontecer)"], Mare.modo, Mare.definir_modo, Mare.MODO_PADRAO)
 	_pai = direita
 	_secao("Interface")
 	_escolha("Cursor do mouse", Tela.ROTULOS_CURSOR, Tela.cursor, Tela.definir_cursor, Tela.PADRAO_CURSOR)

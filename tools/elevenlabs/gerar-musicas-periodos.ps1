@@ -1,5 +1,6 @@
 ﻿# Musicas do vale 3D por periodo do dia, geradas no ElevenLabs (music_v2):
-# manha, tarde, noite e a trilha de tensao da mata fechada.
+# manha, tarde, entardecer, noite, madrugada e a trilha de tensao da mata fechada (cada periodo do
+# relogio tem a sua: o HUD anuncia os cinco, e a musica tem de mudar com eles).
 #
 #     .\tools\elevenlabs\gerar-musicas-periodos.ps1 [-Forcar]
 #
@@ -20,6 +21,8 @@ $musicas = @(
     @{ n = "musica_manha"; d = "gentle Brazilian acoustic guitar and viola caipira duet, bright and hopeful sunrise mood by the sea, soft flute, folk, calm, no percussion" },
     @{ n = "musica_tarde"; d = "warm lazy afternoon Brazilian folk, acoustic guitar, soft hand percussion, unhurried, coastal village" },
     @{ n = "musica_noite"; d = "quiet nocturnal Brazilian lullaby, sparse acoustic guitar notes, soft strings, mysterious calm night" },
+    @{ n = "musica_entardecer"; d = "golden hour sunset by the bay, slow nostalgic Brazilian folk ballad, warm acoustic guitar under a bittersweet viola caipira melody, soft cello, unhurried, coastal village at dusk, no percussion" },
+    @{ n = "musica_madrugada"; d = "deep pre-dawn stillness, hushed ambient score, slow evolving soft pads and a low cello drone, faint distant bell-like harmonics, cold misty air, empty and lonely, no guitar melody, no percussion" },
     @{ n = "musica_mata";  d = "tense mysterious forest ambience score, low drones, distant ritual drums, sparse eerie flute, Brazilian folklore horror, subtle" }
 )
 

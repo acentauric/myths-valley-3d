@@ -73,6 +73,8 @@ func _run() -> void:
 	var dia := root.get_node("Dia")
 	dia.set("pausado", true)
 	dia.call("definir_hora", float(args.get("hora", "9")))
+	# O mapa é uma FOTO fixa: sempre na preamar, e não na maré do momento (ela vem ligada).
+	root.get_node("Mare").set("modo", 0)
 	# Só o terreno e o que é fixo: HUD, balões e telas, gente, bicho e marcas ficam de fora.
 	for camada in game.find_children("*", "CanvasLayer", true, false):
 		(camada as CanvasLayer).visible = false

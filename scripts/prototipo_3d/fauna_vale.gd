@@ -21,6 +21,7 @@ extends Node3D
 ## Nunca é filho do nó Canoas: tests/canoas.gd trata todo filho dele como canoa.
 
 const Cardume = preload("res://scripts/prototipo_3d/cardume.gd")
+const Mar = preload("res://scripts/prototipo_3d/mar.gd")
 
 ## Alcance do susto (u): quem nada, quem está fora d'água, o predador e o xaréu.
 const PERIGO_NADANDO := 3.0
@@ -122,8 +123,17 @@ func _nivel() -> float:
 	return float(_world.water_level())
 
 
+## Lâmina d'água (unidades) para ONDE OS CARDUMES MORAM: a do mar na PREAMAR, e não a da maré do
+## instante em que o vale se monta. Com a maré ligada, partir às 12:00 monta o vale 2,4 m abaixo da
+## cheia, e as rotas dos xaréus e os pontos dos cardumes (lâmina mínima de 0,3 a 0,35 u) sumiriam
+## em metade das horas de partida. Cada cardume some e volta sozinho quando a água baixa e sobe
+## (`cardume.gd`). Fora do mar (rio, terra) vale a lâmina de agora, que não tem maré.
 func _lamina(ponto: Vector3) -> float:
-	return float(_world.water_depth_at(ponto))
+	var agora := float(_world.water_depth_at(ponto))
+	var cheia := Mar.lamina_em(Vector2(ponto.x, ponto.z))
+	if is_nan(cheia) or cheia <= 0.0:
+		return agora
+	return maxf(agora, cheia / Mare.METROS_POR_UNIDADE)
 
 
 func _no_mar(ponto: Vector3) -> bool:

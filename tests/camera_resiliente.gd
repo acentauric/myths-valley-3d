@@ -262,6 +262,9 @@ func _orla() -> void:
 	var dia = root.get_node("/root/Dia")
 	dia.pausado = true
 	mare.modo = 0
+	# O deslocamento da maré só zera no próximo quadro do `Mare`: sem esperar, a varredura abaixo mede a
+	# água do nível de antes (com a maré ligada à força, `MV_MARE_MODO=1`, rasa demais para a funda).
+	await relogio.esperar(0.3)
 	var seguinte: Vector3 = world.ancoras["PierDirecao"]
 	var lado := Vector3(-seguinte.z, 0.0, seguinte.x) * 6.0
 	var inicio: Vector3 = world.ancoras["PierPiso"] - seguinte * 10.0 + lado
@@ -319,7 +322,9 @@ func _orla() -> void:
 		dia.pausado = false
 		return
 	mare.modo = 1
-	dia.definir_hora(6.0)
+	# A baixa-mar vem seis horas depois da preamar (a hora da preamar é do `Mare`: o jogo abre com a
+	# água cheia, às 07:00), e não numa hora escrita aqui.
+	dia.definir_hora(mare.fase_da_preamar_h + 6.0)
 	await relogio.esperar(0.8)
 	var nivel_baixo: float = world.water_level()
 	print("  maré: o mar desceu de %.2f para %.2f" % [nivel, nivel_baixo])
