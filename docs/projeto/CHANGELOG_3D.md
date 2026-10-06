@@ -88,6 +88,14 @@
   setas, o X e o atalho `fechar_missao` saíram (`prototype_hud.gd`, `atalhos.gd`,
   `COMO_JOGAR_3D.md`). Portão `tarefa_no_hud` no lugar do `paginas_missao`;
   `cadeia_das_missoes` confere o resumo no alto da tela.
+- **O morador não salta no caminho longo quando a câmera vira (#84).** O padre
+  teleportava da igreja ao cemitério: a troca de posto a mais de 40 u é caminho
+  longo, e bastava um quadro com ele e o destino fora do enquadramento para ser
+  posto no lugar. Agora o salto espera o jogador a mais de 40 u e sem ver nem o
+  morador nem o destino por 4 s seguidos (`npc._encurtar_o_caminho`); até lá ele
+  anda. Portão novo `caminho_longo`: de costas e a vinte unidades o morador anda
+  sem saltar; longe e fora da vista ele salta só depois do tempo; e nunca para um
+  ponto à vista.
 
 ## Em desenvolvimento — 05/10/2026
 
