@@ -18,6 +18,10 @@ extends SceneTree
 ##   3. A PRIMEIRA ÁRVORE AVISA: o E na primeira espécie abre a ficha e o aviso
 ##      do almanaque.
 ##   4. A SEGUNDA NÃO: outra espécie abre só a ficha.
+##   5. O PRIMEIRO MERGULHO AVISA (#96): o corpo entrando no nado abre o cartão
+##      da água funda — parar é boiar, e o fôlego volta —, com o vale parado.
+##   6. O SEGUNDO NÃO, E O SAVE LEMBRA: sair e voltar ao nado não repete o
+##      cartão, e `estado_para_salvar` guarda a marca.
 
 const CORDEIS := ["peso_falso", "vendeu_a_chuva"]
 
@@ -134,6 +138,27 @@ func _run() -> void:
 			await _quadros(6)
 			_conferir(not aviso.aberto(), "a segunda espécie conhecida abriu o aviso de novo")
 		await _guardar_tudo()
+
+	# --- 5. O PRIMEIRO MERGULHO AVISA (#96) -----------------------------------------------
+	var jogador = vale.player
+	jogador._definir_nado(true)
+	_conferir(await _ate(func() -> bool: return aviso.aberto(), 2.0), "o primeiro nado em água funda não abriu o aviso")
+	if aviso.aberto():
+		var dito_na_agua: String = aviso.texto()
+		_conferir(aviso.qual == "agua_funda", "o aviso do primeiro nado é o de '%s'" % aviso.qual)
+		_conferir(dito_na_agua.contains("boiar") and dito_na_agua.contains("fôlego"),
+			"o aviso da água funda não diz que parar é boiar e que o fôlego volta: '%s'" % dito_na_agua)
+		_conferir(paused and dia.pausado, "com o aviso da água funda aberto, o vale (%s) ou o relógio (%s) seguiu andando" % [str(paused), str(dia.pausado)])
+	await _guardar_tudo()
+	# --- 6. O SEGUNDO NÃO, E O SAVE LEMBRA ---------------------------------------------------
+	jogador._definir_nado(false)
+	await _quadros(2)
+	jogador._definir_nado(true)
+	await _quadros(6)
+	_conferir(not aviso.aberto(), "o segundo nado abriu o aviso de novo")
+	_conferir(bool(vale.estado_para_salvar().get("avisou_agua_funda", false)), "o save não guarda que o aviso da água funda já foi dado")
+	jogador._definir_nado(false)
+	await _guardar_tudo()
 	_fechar()
 
 

@@ -177,6 +177,12 @@
   Tonho" e "Entregar a Candinha", nos três idiomas
   (`tecla_dos_moradores._dica_de`); o cordel, a lápide, a árvore, o alvo de
   trabalho e as bancadas já diziam o alvo. Portão `foco_do_e`.
+- **O primeiro mergulho em água funda avisa que parar é boiar (#96).** Na live
+  ninguém sabia que parar na água é boiar e recupera o fôlego, e o jogador
+  quase se afogou. A primeira vez que o corpo entra no nado abre o cartão da
+  primeira vez, como o do cordel (`data/avisos.json`, "agua_funda", nos três
+  idiomas; `prototype._ao_mudar_o_nado`), com o vale parado; a marca vai ao
+  save e carregar não o repete. Portão `avisos_da_primeira_vez`, partes 5 e 6.
 
 ## Em desenvolvimento — 05/10/2026
 

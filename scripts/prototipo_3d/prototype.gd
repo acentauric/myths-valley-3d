@@ -281,6 +281,7 @@ func _ready() -> void:
 	player.camera_lock_changed.connect(Callable(hud, "set_camera_locked"))
 	player.animation_requested.connect(_on_animation_requested)
 	player.navigation_status.connect(Callable(hud, "set_notice"))
+	player.nado_mudou.connect(_ao_mudar_o_nado)
 	hud.connect("camera_lock_requested", Callable(player, "set_camera_locked"))
 	world.house_interacted.connect(func(properties: Dictionary): hud.show_house_info(world.format_house_properties(properties)))
 	world.house_interaction_cleared.connect(Callable(hud, "clear_house_info"))
@@ -1660,6 +1661,20 @@ func _ao_conhecer_a_arvore(_especie: String) -> void:
 		aviso_da_primeira_vez.mostrar("arvore")
 
 
+## O PRIMEIRO MERGULHO EM ÁGUA FUNDA (#96) vem com o aviso de que parar é boiar e
+## o fôlego volta — na live ninguém sabia, e o jogador quase se afogou; o Pedro
+## só explica o nado na caminhada do tutorial. Uma vez por partida: a marca vai
+## ao save (`avisou_agua_funda`).
+var _avisou_agua_funda := false
+
+
+func _ao_mudar_o_nado(nadando: bool) -> void:
+	if not nadando or _avisou_agua_funda or aviso_da_primeira_vez == null:
+		return
+	_avisou_agua_funda = true
+	aviso_da_primeira_vez.mostrar("agua_funda")
+
+
 ## O papel se guardou com o E ou o clique, por conta dele: o dono das telas
 ## precisa saber, para o vale voltar a andar. E quem veio do almanaque volta a
 ## ele — a não ser que tenha trocado de tela pela tecla, que já abriu outra.
@@ -1859,6 +1874,8 @@ func estado_para_salvar() -> Dictionary:
 		"jogador": [player.global_position.x, player.global_position.y, player.global_position.z],
 		"giro": player.visual.rotation.y,
 		"folego_oceano": player.folego_atual(),
+		# O aviso da água funda já dado (#96): carregar não o repete.
+		"avisou_agua_funda": _avisou_agua_funda,
 		"hora": Dia.hora,
 		"horas_decorridas": Dia.horas_decorridas,
 		# O jogador parou o relógio nesta partida: daqui em diante ela não conta
@@ -1944,6 +1961,7 @@ func restaurar_do_save(estado: Dictionary) -> void:
 	_relogio_pausado_antes = bool(estado.get("pausado", false))
 	Dia.pausado = _relogio_pausado_antes or get_tree().paused
 	_barra_de_ferramentas_migrada = bool(estado.get("barra_de_ferramentas_migrada", false))
+	_avisou_agua_funda = bool(estado.get("avisou_agua_funda", false))
 	if estado.has("hora"):
 		Dia.definir_hora(float(estado["hora"]))
 	_visited.clear()
