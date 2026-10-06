@@ -171,6 +171,12 @@
   Por cima dela sobe uma guarda invisível e sólida até acima da cabeça
   (`interior_igreja.gd`, "AltarGuarda"), sem barrar a câmera; o ponto da reza,
   diante do altar, segue livre. Portão `interiores`, parte 4.
+- **A dica do E diz com quem se fala (#97).** O foco do E escolhe um morador
+  só, mas a dica dizia "Falar" sem dizer a quem — com um morador ao lado do
+  cordel, na live, o jogador não sabia para quem o E ia. Agora é "Falar com
+  Tonho" e "Entregar a Candinha", nos três idiomas
+  (`tecla_dos_moradores._dica_de`); o cordel, a lápide, a árvore, o alvo de
+  trabalho e as bancadas já diziam o alvo. Portão `foco_do_e`.
 
 ## Em desenvolvimento — 05/10/2026
 

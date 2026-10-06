@@ -84,7 +84,7 @@ func _process(_delta: float) -> void:
 		return
 	var camera := get_viewport().get_camera_3d()
 	var altura := float(_perto.get("altura")) if _perto.get("altura") != null else 1.75
-	DicaTecla.mostrar_em(_dica, camera, _perto.global_position + Vector3.UP * (altura + ACIMA_DA_CABECA), tr(_rotulo(_perto)))
+	DicaTecla.mostrar_em(_dica, camera, _perto.global_position + Vector3.UP * (altura + ACIMA_DA_CABECA), _dica_de(_perto))
 
 
 ## O mais perto ao alcance, preferindo quem fala: os moradores mudos (só acenam, sem
@@ -117,12 +117,30 @@ func _mais_perto() -> Node3D:
 	return melhor if melhor != null else melhor_mudo
 
 
-## "Entregar" quando a conversa entrega o que um passo pede; "Falar", senão.
+## "Entregar a %s" quando a conversa entrega o que um passo pede; "Falar com %s",
+## senão — o molde, que é o que se traduz; o nome entra em `_dica_de`.
 func _rotulo(morador: Node3D) -> String:
+	var entrega := false
 	for cadeia in get_tree().get_nodes_in_group(CadeiaDeMissoes.GRUPO):
 		if cadeia.has_method("o_que_o_e_faz") and cadeia.o_que_o_e_faz(morador) == "entregar":
-			return "Entregar"
-	return "Falar"
+			entrega = true
+			break
+	if _nome_de(morador) == "":
+		return "Entregar" if entrega else "Falar"
+	return "Entregar a %s" if entrega else "Falar com %s"
+
+
+## A DICA DIZ O ALVO (#97): "Falar com Tonho", "Entregar a Candinha". O foco do E
+## escolhe um morador só, e a dica dizia "Falar" sem dizer a quem — com um
+## morador ao lado do cordel, na live, o jogador não sabia para quem o E ia.
+func _dica_de(morador: Node3D) -> String:
+	var molde := tr(_rotulo(morador))
+	return molde % _nome_de(morador) if molde.contains("%s") else molde
+
+
+func _nome_de(morador: Node3D) -> String:
+	var dados = morador.get("dados")
+	return str((dados as Dictionary).get("nome", "")) if dados is Dictionary else ""
 
 
 func _unhandled_key_input(event: InputEvent) -> void:

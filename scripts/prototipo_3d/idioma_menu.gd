@@ -359,6 +359,8 @@ const EN := {
 	"Falar": "Talk",
 	"Entregar": "Hand over",
 	"Missão concluída": "Quest complete",
+	"Falar com %s": "Talk to %s",
+	"Entregar a %s": "Hand over to %s",
 	# O E na bancada da oficina e na fogueira (tecla_das_bancadas.gd).
 	"Oficina": "Workshop",
 	"Canteiro": "Site table",
@@ -774,6 +776,8 @@ const ES := {
 	"Entregar": "Dar",
 	"Missão concluída": "Misión cumplida",
 	# O E na bancada da oficina e na fogueira (tecla_das_bancadas.gd).
+	"Falar com %s": "Hablar con %s",
+	"Entregar a %s": "Entregar a %s",
 	"Oficina": "Taller",
 	"Canteiro": "Mesa de obras",
 	"Cozinhar": "Cocinar",
