@@ -559,6 +559,76 @@ static func colisao(chave: String, node: Node3D, parent: Node, origin: Vector3, 
 	return body
 
 
+# --- as cercas -----------------------------------------------------------------
+
+## Quanto mede, em `tamanho`, um lance da cerca do catálogo — pela caixa de uma
+## prova posta e tirada. `senao` é a medida de quem não tem a cerca do catálogo.
+static func largura_da_cerca(parent: Node, tamanho: float, senao: float) -> float:
+	var prova := instanciar("cerca", parent, Vector3.ZERO, tamanho)
+	if prova == null:
+		return senao
+	var largura: float = (prova.get_meta("limites") as AABB).size.x
+	parent.remove_child(prova)
+	prova.free()
+	return maxf(largura, 0.1)
+
+
+## A BASE DE UM LANCE (#93): o X vai de `de` a `ate` — com o desnível entre as
+## pontas, para o lance deitar na encosta —, o Z é a normal horizontal dele e o
+## Y fica no plano vertical. Sem desnível é o giro `atan2(-rumo.z, rumo.x)` de
+## sempre.
+static func base_do_lance(de: Vector3, ate: Vector3) -> Basis:
+	var eixo := ate - de
+	var normal := eixo.cross(Vector3.UP)
+	if eixo.length_squared() < 0.000001 or normal.length_squared() < 0.000001:
+		return Basis()
+	eixo = eixo.normalized()
+	normal = normal.normalized()
+	return Basis(eixo, normal.cross(eixo), normal)
+
+
+## UM LANCE DE CERCA de `de` até `ate` — dois pontos no chão, de qualquer altura
+## — deitado na encosta: as duas pontas tocam o chão e a caixa de colisão vai
+## junto (#93). Antes o lance era reto, assentado por uma amostra do terreno no
+## centro, e na encosta uma ponta flutuava e a outra se enterrava. Com o
+## catálogo é a cerca do Tripo esticada ao comprimento, com a caixa `altura` ×
+## `grossura` chamada `nome_da_colisao`; sem ele, a cerca procedural, que traz
+## a colisão dela. `largura_do_lance` é a medida de `largura_da_cerca`.
+##
+## O nó entra no grupo "lances_de_cerca" com a meta "lance" = `nome`: é por ela
+## que se acham os lances, porque irmãos de mesmo nome o Godot renomeia
+## ("@Node3D@2038").
+static func lance_de_cerca(parent: Node, de: Vector3, ate: Vector3, tripo: bool, tamanho: float, largura_do_lance: float, altura: float, grossura: float, nome: String, nome_da_colisao: String) -> Node3D:
+	var lance := Node3D.new()
+	lance.name = nome
+	lance.set_meta("lance", nome)
+	lance.add_to_group("lances_de_cerca")
+	parent.add_child(lance)
+	lance.global_transform = Transform3D(base_do_lance(de, ate), de.lerp(ate, 0.5))
+	var comprimento := de.distance_to(ate)
+	if tripo:
+		var cerca := instanciar("cerca", lance, Vector3(0.0, -0.06, 0.0), tamanho)
+		if cerca != null:
+			cerca.scale.x *= comprimento / largura_do_lance
+			var corpo := StaticBody3D.new()
+			corpo.name = nome_da_colisao
+			var forma := CollisionShape3D.new()
+			var caixa := BoxShape3D.new()
+			caixa.size = Vector3(comprimento, altura, grossura)
+			forma.shape = caixa
+			corpo.add_child(forma)
+			lance.add_child(corpo)
+			corpo.position = Vector3(0.0, altura * 0.5, 0.0)
+			return lance
+	# A cerca procedural começa na ponta e vai pelo +X dela; o espaçamento é o
+	# que faz os mourões fecharem o comprimento.
+	var mouroes := maxf(ceilf(comprimento / 1.65), 1.0)
+	var cerca_proc := FloraReconcavo.cerca(comprimento, comprimento / mouroes - 0.0001)
+	lance.add_child(cerca_proc)
+	cerca_proc.position = Vector3(-comprimento * 0.5, -0.04, 0.0)
+	return lance
+
+
 ## A peça barra o braço da câmera? Pela chave "camera" do catálogo; sem ela,
 ## barra o que é construção ("caixa" num GLB de `construcoes/` ou `casas/`),
 ## para a casa nova do lote entrar barrando sem ninguém lembrar dela.

@@ -116,13 +116,16 @@ func _cercar() -> void:
 	var atravessado := Vector3(-ao_longo.z, 0.0, ao_longo.x)
 	var ate_a_cabeceira := float(_ponte["comprimento"]) * 0.5 + FORA_DA_CABECEIRA
 	var meia_largura := float(_ponte["largura"]) * 0.5 + SOBRA_DOS_LADOS
-	var largura_do_lance := _largura_da_cerca()
+	var tripo: bool = _mundo.estilo_tripo()
+	var largura_do_lance: float = CatalogoAssets.largura_da_cerca(self, TAMANHO_DA_CERCA, 1.0) if tripo else 1.0
 	for lado in [-1.0, 1.0]:
+		# De ponta a ponta no chão, deitada na encosta da cabeceira (#93;
+		# `CatalogoAssets.lance_de_cerca`).
 		var cabeceira: Vector3 = centro + ao_longo * ate_a_cabeceira * lado
-		var a: Vector3 = cabeceira - atravessado * meia_largura
-		var b: Vector3 = cabeceira + atravessado * meia_largura
-		_cercas.append({"a": _mundo.ground_position(a), "b": _mundo.ground_position(b),
-			"no": _lance(a, b, largura_do_lance)})
+		var a: Vector3 = _mundo.ground_position(cabeceira - atravessado * meia_largura)
+		var b: Vector3 = _mundo.ground_position(cabeceira + atravessado * meia_largura)
+		_cercas.append({"a": a, "b": b,
+			"no": CatalogoAssets.lance_de_cerca(self, a, b, tripo, TAMANHO_DA_CERCA, largura_do_lance, ALTURA, GROSSURA, "CercaDaPonte", "CercaColisao")})
 	_reassar()
 
 
@@ -144,47 +147,3 @@ func _reassar() -> void:
 		navegacao.reassar()
 
 
-## Quanto mede um lance da cerca do catálogo.
-func _largura_da_cerca() -> float:
-	if not _mundo.estilo_tripo():
-		return 1.0
-	var prova := CatalogoAssets.instanciar("cerca", self, Vector3.ZERO, TAMANHO_DA_CERCA)
-	if prova == null:
-		return 1.0
-	var largura: float = (prova.get_meta("limites") as AABB).size.x
-	remove_child(prova)
-	prova.free()
-	return maxf(largura, 0.1)
-
-
-## Um lance de `de` até `ate`: a cerca do catálogo esticada ao comprimento, com a
-## caixa de colisão dele; ou a cerca procedural, que traz a dela.
-func _lance(de: Vector3, ate: Vector3, largura_do_lance: float) -> Node3D:
-	var rumo := Vector3(ate.x - de.x, 0.0, ate.z - de.z)
-	var comprimento := rumo.length()
-	var yaw := atan2(-rumo.z, rumo.x)
-	var meio: Vector3 = _mundo.ground_position(de.lerp(ate, 0.5))
-	var lance := Node3D.new()
-	lance.name = "CercaDaPonte"
-	add_child(lance)
-	if _mundo.estilo_tripo():
-		var cerca := CatalogoAssets.instanciar("cerca", lance, meio - Vector3(0, 0.06, 0), TAMANHO_DA_CERCA, yaw)
-		if cerca != null:
-			cerca.scale.x *= comprimento / largura_do_lance
-			var corpo := StaticBody3D.new()
-			corpo.name = "CercaColisao"
-			var forma := CollisionShape3D.new()
-			var caixa := BoxShape3D.new()
-			caixa.size = Vector3(comprimento, ALTURA, GROSSURA)
-			forma.shape = caixa
-			corpo.add_child(forma)
-			lance.add_child(corpo)
-			corpo.global_position = meio + Vector3.UP * ALTURA * 0.5
-			corpo.rotation.y = yaw
-			return lance
-	var mouroes := maxf(ceilf(comprimento / 1.65), 1.0)
-	var cerca_proc := FloraReconcavo.cerca(comprimento, comprimento / mouroes - 0.0001)
-	lance.add_child(cerca_proc)
-	cerca_proc.global_position = _mundo.ground_position(de) - Vector3(0, 0.04, 0)
-	cerca_proc.rotation.y = yaw
-	return lance

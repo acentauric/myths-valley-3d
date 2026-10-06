@@ -146,6 +146,20 @@
   como os dos sete. O `aldeoes.json` segue só em português, na dívida declarada
   (#6, #51). Portões `fe` (os sete primeiro, vinte e dois ao todo) e `interacao`
   (o aceno se pergunta a um morador calado por um instante).
+- **Toda cerca do vale deita na encosta (#93).** Cada lance era posto reto, na
+  altura de uma amostra do terreno no centro dele, e na encosta uma ponta
+  flutuava e a outra se enterrava — "cercas desniveladas por todo o vale"
+  (autor, 06/10): 9 dos 32 lances do cemitério, as duas cabeceiras da ponte (a
+  pior ponta a 0,41 u) e 27 das 204 cercas de varas das roças (a pior a 0,47).
+  Agora todo lance vai de ponta a ponta no chão, com o eixo deitado pelo
+  desnível e a caixa de colisão junto (`CatalogoAssets.lance_de_cerca`, um
+  construtor só para o cercado do cemitério, as cercas da ponte e as do
+  quintal do roçado; `PaisagismoVale.plantar_cercas` para as de varas, em
+  MultiMesh). As duas cercas do quintal saíam no Tripo com 2,3 m de altura
+  (`_adereco("cerca", …, 2.0)`, em que o 2 era o comprimento da procedural):
+  são dois lances do tamanho das outras, no mesmo lugar. Portão novo
+  `cercas_na_encosta`: cada lance do vale com as pontas a menos de 0,1 u do
+  chão, e ao menos um em encosta de verdade.
 
 ## Em desenvolvimento — 05/10/2026
 

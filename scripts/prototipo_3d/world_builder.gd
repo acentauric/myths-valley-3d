@@ -1408,6 +1408,19 @@ func _adereco(chave: String, origin: Vector3, yaw: float = 0.0, size: float = 1.
 	return peca
 
 
+## O lance das cercas soltas do quintal do roçado, como o do cercado do cemitério.
+const LANCE_DO_QUINTAL := 2.0
+
+
+## UMA CERCA SOLTA DO QUINTAL (#93): dois lances ao longo do X, centrados em
+## `centro`, cada um de ponta a ponta no chão (`CatalogoAssets.lance_de_cerca`).
+func _cerca_do_quintal(centro: Vector3, tripo: bool, largura_do_lance: float) -> void:
+	for k in 2:
+		var de := ground_position(centro + Vector3((float(k) - 1.0) * LANCE_DO_QUINTAL, 0.0, 0.0))
+		var ate := ground_position(centro + Vector3(float(k) * LANCE_DO_QUINTAL, 0.0, 0.0))
+		CatalogoAssets.lance_de_cerca(self, de, ate, tripo, 1.0, largura_do_lance, 1.2, 0.3, "CercaDoQuintal", "CercaColisao")
+
+
 ## Caixa sólida na laje do túmulo: não se atravessa andando, mas dá para subir pulando.
 func _colisao_tumulo(chao: Vector3, pegada: Vector3) -> void:
 	var body := StaticBody3D.new()
@@ -1636,8 +1649,13 @@ func _build_farm() -> void:
 				crop.height = 0.54 + row * 0.09
 				crop.radial_segments = 5
 				_mesh(crop, ground_position(canteiro + Vector3(-2.3 + column * 0.75, 0, row * 1.35), 0.35), Color("8fa85e"))
-	_adereco("cerca", ground_position(origin + Vector3(-4, 0, 6)), 0.0, 2.0)
-	_adereco("cerca", ground_position(origin + Vector3(-4, 0, -3)), 0.0, 2.0)
+	# AS DUAS CERCAS DO QUINTAL, em lances deitados na encosta como toda cerca do
+	# vale (#93), e do tamanho das outras: por `_adereco("cerca", …, 2.0)` a do
+	# Tripo saía com 2,3 m de altura — o 2 era o comprimento da procedural.
+	var tripo := estilo_tripo()
+	var largura_do_lance := CatalogoAssets.largura_da_cerca(self, 1.0, LANCE_DO_QUINTAL) if tripo else LANCE_DO_QUINTAL
+	for recuo: float in [6.0, -3.0]:
+		_cerca_do_quintal(ground_position(origin + Vector3(-4.0, 0.0, recuo)), tripo, largura_do_lance)
 	_box(Vector3(0.85, 1.0, 0.85), ground_position(origin + Vector3(5.2, 0, 2), 0.5), WOOD, true)
 	_box(Vector3(0.95, 0.11, 0.95), ground_position(origin + Vector3(5.2, 0, 2), 1.0), Color("b1966c"))
 
