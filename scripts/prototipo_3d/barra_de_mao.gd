@@ -309,7 +309,20 @@ func _comer_da_mao() -> bool:
 	var id := Inventario.na_mao()
 	if not Cozinha.e_comida(id):
 		return false
+	# ACIMA DO TETO, PERGUNTA (#105): o que a comida repõe além do máximo da
+	# reserva vai fora. A caixa pergunta, e só o "sim" come — o item fica na mão
+	# até lá. Pedido do autor, duas vezes.
+	var sobra: float = Energia.atual + Cozinha.reposicao(id) - Energia.maximo()
+	if sobra > 0.5:
+		_perguntar_e_comer(id, sobra)
+		return true
 	return Cozinha.comer(id)
+
+
+func _perguntar_e_comer(id: String, sobra: float) -> void:
+	var sim: bool = await Dialogo.perguntar("", tr("Comer agora joga fora %d de fôlego. Comer assim mesmo?") % roundi(sobra))
+	if sim and Inventario.na_mao() == id:
+		Cozinha.comer(id)
 
 
 ## Clique num espaço da barra: põe na mão, e no que já está na mão, come.

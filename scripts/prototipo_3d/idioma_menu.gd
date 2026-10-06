@@ -360,6 +360,8 @@ const EN := {
 	"Falar": "Talk",
 	"Entregar": "Hand over",
 	"Falar com %s": "Talk to %s",
+	# O E na comida acima do teto da reserva (#105).
+	"Comer agora joga fora %d de fôlego. Comer assim mesmo?": "Eating now wastes %d breath. Eat anyway?",
 	"Entregar a %s": "Hand over to %s",
 	"Missão concluída": "Quest complete",
 	# O E na bancada da oficina e na fogueira (tecla_das_bancadas.gd).
@@ -782,6 +784,8 @@ const ES := {
 	"Falar": "Hablar",
 	"Entregar": "Dar",
 	"Falar com %s": "Hablar con %s",
+	# O E na comida acima do teto da reserva (#105).
+	"Comer agora joga fora %d de fôlego. Comer assim mesmo?": "Comer ahora tira %d de aliento. ¿Comer igual?",
 	"Entregar a %s": "Entregar a %s",
 	"Missão concluída": "Misión cumplida",
 	# O E na bancada da oficina e na fogueira (tecla_das_bancadas.gd).

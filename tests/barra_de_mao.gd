@@ -200,7 +200,7 @@ func _run() -> void:
 		_conferir(Inv.na_mao() == "pirao", "não consegui pôr o pirão na mão")
 		# Abre espaço no fôlego para o pirão ter o que repor: cheio, comer não
 		# mudaria número nenhum e a pergunta não valeria nada.
-		energia.repor(-30.0)
+		energia.repor(-80.0)
 		var antes_folego: float = energia.atual
 		var antes_conta: int = Inv.quantidade("pirao")
 		_conferir(barra._comer_da_mao(), "a mão recusou comer o pirão, que é comida")
@@ -268,7 +268,7 @@ func _run() -> void:
 			_conferir(alvo9 != "", "não achei um tronco ao alcance para a pergunta do corpo parado")
 			if alvo9 != "":
 				_por_o_pirao_na_mao()
-				energia.repor(-30.0)
+				energia.repor(-80.0)
 				var golpes9 := int(recursos._alvos[alvo9]["golpes_dados"])
 				var pirao9: int = Inv.quantidade("pirao")
 				# "BATER FOI TENTADO" é golpe dado OU recusa dita ("Precisa de
@@ -344,13 +344,49 @@ func _run() -> void:
 			_conferir(Inv.selecionado == mao, "com '%s' aberto, o número trocou a mão" % nome)
 			# O pirão volta à mão, para a pergunta do E não depender da de cima.
 			_por_o_pirao_na_mao()
-			energia.repor(-30.0)
+			energia.repor(-80.0)
 			var pirao10: int = Inv.quantidade("pirao")
 			_tecla_de_interagir()
 			await _frames(3)
 			_conferir(Inv.quantidade("pirao") == pirao10, "com '%s' aberto, o E comeu o pirão da mão" % nome)
 			telas.fechar_tudo()
 			await _frames(3)
+
+	# --- A COMIDA ACIMA DO TETO PERGUNTA (#105) -------------------------------------------
+	# Com a reserva cheia, o E na comida abre a pergunta da caixa de fala — o que
+	# passa do teto vai fora —; "não" deixa o item na mão, "sim" come. (O pirão
+	# repõe 62: as outras partes abrem 80 de espaço para comer sem pergunta.)
+	var dialogo = root.get_node("/root/Dialogo")
+	Inv.adicionar("pirao", 1)
+	var espaco_cheio := -1
+	for i in Inv.ESPACOS_MAO:
+		if str((Inv.espacos[i] as Dictionary).get("id", "")) == "pirao":
+			espaco_cheio = i
+	_conferir(espaco_cheio >= 0, "(#105) o pirão não está num espaço de mão")
+	if espaco_cheio >= 0:
+		Inv.selecionar(espaco_cheio)
+		await _frames(2)
+		energia.encher()
+		var conta: int = Inv.quantidade("pirao")
+		_conferir(barra._comer_da_mao(), "com a reserva cheia a mão recusou o E na comida")
+		await _frames(2)
+		_conferir(dialogo.ativo and dialogo._modo == dialogo.Modo.PERGUNTA and str(dialogo._falas[0]).contains("joga fora"),
+			"com a reserva cheia o E na comida não perguntou se joga a reposição fora (ativo %s: '%s')" % [str(dialogo.ativo), str(dialogo._falas[0]) if dialogo._falas.size() > 0 else ""])
+		_conferir(Inv.quantidade("pirao") == conta, "a pergunta ainda no ar e o pirão já foi comido")
+		dialogo._escolha = false
+		dialogo._escolheu = true
+		dialogo._fechar()
+		await _frames(3)
+		_conferir(Inv.quantidade("pirao") == conta, "respondi não e o pirão foi comido")
+		_conferir(barra._comer_da_mao(), "(#105) a mão recusou o segundo E na comida")
+		await _frames(2)
+		dialogo._escolha = true
+		dialogo._escolheu = true
+		dialogo._fechar()
+		await _frames(3)
+		_conferir(Inv.quantidade("pirao") == conta - 1, "respondi sim e o pirão não foi comido")
+		_conferir(energia.atual <= energia.maximo() + 0.01, "comer acima do teto passou do máximo (%.1f de %.1f)" % [energia.atual, energia.maximo()])
+		await _frames(3)
 
 	_fechar()
 

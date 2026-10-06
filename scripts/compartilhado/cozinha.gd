@@ -270,6 +270,15 @@ func servir(id: String, folego: float) -> void:
 
 
 ## Come de fato. Quem chama já perguntou ao jogador se era isso mesmo.
+## QUANTO A COMIDA REPÕE na reserva, com o talento da panela (#105): a mão
+## pergunta antes de comer quando isso passa do teto e vai fora.
+func reposicao(id: String) -> float:
+	var dados_do_item := Catalogo.dados(id)
+	# Prato, e não fruta: o talento é `rendimento_da_panela` (ver `comer`).
+	var da_panela := RECEITAS.has(id)
+	return float(dados_do_item.get("folego", 20.0)) * (1.0 + (Talentos.bonus("rendimento_da_panela") if da_panela else 0.0))
+
+
 func comer(id: String) -> bool:
 	if not e_comida(id) or not Inventario.consumir(id, 1):
 		return false
@@ -282,9 +291,7 @@ func comer(id: String) -> bool:
 	# a fruta do pé render mais. A pergunta é feita à lista de receitas, e não a
 	# uma marca no item: assim comida nova nasce com a regra certa sem ninguém
 	# se lembrar de marcá-la.
-	var da_panela := RECEITAS.has(id)
-	Energia.repor(float(dados_do_item.get("folego", 20.0))
-		* (1.0 + (Talentos.bonus("rendimento_da_panela") if da_panela else 0.0)))
+	Energia.repor(reposicao(id))
 	# O REMÉDIO: o que tem `vida` devolve vida, e o que corta peçonha, corta.
 	# Ver o chá de folha, acima.
 	Vida.curar(float(dados_do_item.get("vida", 0.0)))

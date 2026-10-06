@@ -256,6 +256,12 @@
   o clique (`PaisagismoVale.plantar_cercas`). A malha de navegação dos
   moradores não a lê: cerca como obstáculo deles muda as rotas do vale inteiro
   e fica para outro passo. Portão `cercas_na_encosta`, parte 6.
+- **O E na comida come, e pergunta quando a reposição iria fora (#105).** Pedido
+  antigo do autor que nunca tinha entrado: `Cozinha.comer` consumia sempre e o
+  que passava do teto da reserva se perdia calado. Agora, acima do teto, a
+  caixa de fala pergunta "Comer agora joga fora X de fôlego. Comer assim
+  mesmo?" (Sim/Não, três idiomas; `barra_de_mao._comer_da_mao`,
+  `Cozinha.reposicao`); "não" deixa o item na mão. Portão `barra_de_mao`.
 
 ## Em desenvolvimento — 05/10/2026
 
