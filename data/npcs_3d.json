@@ -552,7 +552,18 @@
       "oficio_en": "parish priest",
       "oficio_es": "cura de la parroquia",
       "altura": 1.72,
-      "mudo": true,
+      "falas": [
+        {
+          "texto": "Deus o abençoe. Entre quando quiser, mesmo sem saber rezar.",
+          "texto_en": "God bless you. Come in whenever you like, even if you don't know how to pray.",
+          "texto_es": "Dios lo bendiga. Entre cuando quiera, aunque no sepa rezar."
+        },
+        {
+          "texto": "Seu tio sentava no último banco. Dizia que de perto do altar o Bom Jesus escutava demais.",
+          "texto_en": "Your uncle sat in the last pew. He said that near the altar the Good Jesus heard too much.",
+          "texto_es": "Su tío se sentaba en el último banco. Decía que cerca del altar el Buen Jesús oía demasiado."
+        }
+      ],
       "casa": "Casa do arraial 7",
       "recolhe": true,
       "gesto_saudacao": 0,
@@ -689,7 +700,18 @@
       "oficio_en": "church sexton",
       "oficio_es": "sacristán de la iglesia",
       "altura": 1.62,
-      "mudo": true,
+      "falas": [
+        {
+          "texto": "Zacarias, sacristão. Sei de tudo o que passa na praça, porque a praça passa pela porta da igreja.",
+          "texto_en": "Zacarias, the sexton. I know everything that goes on in the square, because the square goes past the church door.",
+          "texto_es": "Zacarías, el sacristán. Sé todo lo que pasa en la plaza, porque la plaza pasa por la puerta de la iglesia."
+        },
+        {
+          "texto": "Se não fosse eu, a missa das seis começava às sete.",
+          "texto_en": "If it weren't for me, the six o'clock mass would start at seven.",
+          "texto_es": "Si no fuera por mí, la misa de las seis empezaría a las siete."
+        }
+      ],
       "casa": "Casa do arraial 1",
       "recolhe": true,
       "gesto_saudacao": 0,
@@ -807,7 +829,18 @@
       "oficio_en": "devout parishioner",
       "oficio_es": "beata del pueblo",
       "altura": 1.55,
-      "mudo": true,
+      "falas": [
+        {
+          "texto": "Rezo o terço todo dia às seis, chova ou faça sol. Rezando eu vejo quem passa.",
+          "texto_en": "I pray the rosary every day at six, rain or shine. Praying, I see who goes by.",
+          "texto_es": "Rezo el rosario todos los días a las seis, llueva o haga sol. Rezando veo quién pasa."
+        },
+        {
+          "texto": "Seu tio passava sem falar e tirava o chapéu. Era o jeito dele de rezar.",
+          "texto_en": "Your uncle went by without a word and took off his hat. That was his way of praying.",
+          "texto_es": "Su tío pasaba sin hablar y se quitaba el sombrero. Era su manera de rezar."
+        }
+      ],
       "casa": "Casa do arraial 1",
       "recolhe": true,
       "gesto_saudacao": 0,
@@ -945,7 +978,18 @@
       "oficio_en": "storekeeper",
       "oficio_es": "dueño de la venta",
       "altura": 1.72,
-      "mudo": true,
+      "falas": [
+        {
+          "texto": "Nicolau, da venda. Aqui tem de tudo o que o arraial não produz, e fiado pra quem tem terra.",
+          "texto_en": "Nicolau, from the store. Here there's everything the village doesn't make, and credit for whoever owns land.",
+          "texto_es": "Nicolau, de la venta. Aquí hay de todo lo que el caserío no produce, y fiado para quien tiene tierra."
+        },
+        {
+          "texto": "Todo mundo deve a alguém. O Tonho me deve, e eu devo ao atacado de Salvador.",
+          "texto_en": "Everyone owes someone. Tonho owes me, and I owe the wholesaler in Salvador.",
+          "texto_es": "Todo el mundo le debe a alguien. Tonho me debe a mí, y yo le debo al mayorista de Salvador."
+        }
+      ],
       "casa": "Venda do Bar",
       "recolhe": true,
       "gesto_saudacao": 0,
@@ -1063,7 +1107,18 @@
       "oficio_en": "village watchman (unarmed)",
       "oficio_es": "guardia de la villa (sin arma)",
       "altura": 1.74,
-      "mudo": true,
+      "falas": [
+        {
+          "texto": "Aristides, guarda do arraial. Sem arma, que o Intendente não manda, e sem precisão, que aqui ninguém rouba.",
+          "texto_en": "Aristides, the village guard. No weapon, since the Intendant sends none, and no need, since nobody steals here.",
+          "texto_es": "Aristides, guardia del caserío. Sin arma, que el Intendente no manda, y sin necesidad, que aquí nadie roba."
+        },
+        {
+          "texto": "Você chegou no saveiro do Quirino, de manhã. Meu serviço é saber quem chegou.",
+          "texto_en": "You came on Quirino's boat, in the morning. My job is knowing who arrived.",
+          "texto_es": "Usted llegó en el saveiro de Quirino, por la mañana. Mi trabajo es saber quién llegó."
+        }
+      ],
       "casa": "Casa do guarda",
       "recolhe": true,
       "gesto_saudacao": 0,
@@ -1192,7 +1247,18 @@
       "oficio_en": "line fisherman",
       "oficio_es": "pescador de caña",
       "altura": 1.73,
-      "mudo": true,
+      "falas": [
+        {
+          "texto": "Jerônimo. Pesco de linha, da pedra, desde antes do Tonho nascer. Rede é pra quem tem pressa.",
+          "texto_en": "Jerônimo. I fish with a line, from the rock, since before Tonho was born. Nets are for people in a hurry.",
+          "texto_es": "Jerónimo. Pesco con línea, desde la piedra, desde antes de que naciera Tonho. La red es para quien tiene prisa."
+        },
+        {
+          "texto": "O mar aqui é raso e manso, mas mente: a maré vaza rápido e volta mais rápido.",
+          "texto_en": "The sea here is shallow and gentle, but it lies: the tide goes out fast and comes back faster.",
+          "texto_es": "El mar aquí es bajo y manso, pero miente: la marea baja rápido y vuelve más rápido."
+        }
+      ],
       "casa": "Casa do pescador",
       "recolhe": true,
       "gesto_saudacao": 0,
@@ -1290,7 +1356,18 @@
       "oficio_en": "shellfish gatherer",
       "oficio_es": "marisquera",
       "altura": 1.6,
-      "mudo": true,
+      "falas": [
+        {
+          "texto": "Rosa, marisqueira. Pego ostra e sururu na lama do mangue, de manhã cedo.",
+          "texto_en": "Rosa, the shellfish gatherer. I pick oysters and sururu in the mangrove mud, early in the morning.",
+          "texto_es": "Rosa, mariscadora. Saco ostras y sururu del barro del manglar, de madrugada."
+        },
+        {
+          "texto": "Se quiser aprender, venha às cinco com um balde e sem sapato.",
+          "texto_en": "If you want to learn, come at five with a bucket and no shoes.",
+          "texto_es": "Si quiere aprender, venga a las cinco con un balde y sin zapatos."
+        }
+      ],
       "casa": "Casa da marisqueira",
       "recolhe": true,
       "gesto_saudacao": 0,
@@ -1389,7 +1466,18 @@
       "oficio_en": "laundress",
       "oficio_es": "lavandera",
       "altura": 1.6,
-      "mudo": true,
+      "falas": [
+        {
+          "texto": "Rita, lavadeira. Roupa conta a vida de quem veste: eu sei quem suou, quem chorou e quem comeu demais.",
+          "texto_en": "Rita, the washerwoman. Clothes tell the life of whoever wears them: I know who sweated, who cried and who ate too much.",
+          "texto_es": "Rita, lavandera. La ropa cuenta la vida de quien la viste: yo sé quién sudó, quién lloró y quién comió de más."
+        },
+        {
+          "texto": "A sua eu lavo de graça na primeira semana. Depois é farinha ou moeda.",
+          "texto_en": "Yours I'll wash for free the first week. After that it's flour or coin.",
+          "texto_es": "La suya la lavo gratis la primera semana. Después es harina o moneda."
+        }
+      ],
       "casa": "Casa da lavadeira",
       "recolhe": true,
       "gesto_saudacao": 0,
@@ -1509,7 +1597,18 @@
       "oficio_en": "lacemaker",
       "oficio_es": "encajera",
       "altura": 1.58,
-      "mudo": true,
+      "falas": [
+        {
+          "texto": "Estefânia, rendeira. Renda é tempo: um palmo leva um dia, e ninguém paga o dia, só o palmo.",
+          "texto_en": "Estefânia, the lacemaker. Lace is time: a hand's width takes a day, and nobody pays for the day, only for the width.",
+          "texto_es": "Estefanía, encajera. El encaje es tiempo: un palmo lleva un día, y nadie paga el día, solo el palmo."
+        },
+        {
+          "texto": "Seu tio me encomendou uma toalha e nunca buscou. Ainda está aqui, dobrada.",
+          "texto_en": "Your uncle ordered a tablecloth from me and never came for it. It's still here, folded.",
+          "texto_es": "Su tío me encargó un mantel y nunca lo buscó. Todavía está aquí, doblado."
+        }
+      ],
       "casa": "Casa da rendeira",
       "recolhe": true,
       "gesto_saudacao": 0,
@@ -1617,7 +1716,18 @@
       "oficio_en": "street cook, sells acarajé and beiju",
       "oficio_es": "cocinera ambulante, vende acarajé y beiju",
       "altura": 1.62,
-      "mudo": true,
+      "falas": [
+        {
+          "texto": "Ambrósia. Faço acarajé, beiju e cocada, e vendo no tabuleiro da praça à tarde.",
+          "texto_en": "Ambrósia. I make acarajé, beiju and cocada, and sell them from the tray in the square in the afternoon.",
+          "texto_es": "Ambrosia. Hago acarajé, beiju y cocada, y los vendo en la bandeja de la plaza por la tarde."
+        },
+        {
+          "texto": "Se tiver fome e não tiver moeda, come e paga quando puder. Fome não espera safra.",
+          "texto_en": "If you're hungry and have no coin, eat and pay when you can. Hunger doesn't wait for the harvest.",
+          "texto_es": "Si tiene hambre y no tiene moneda, coma y pague cuando pueda. El hambre no espera la cosecha."
+        }
+      ],
       "casa": "Casa da quituteira",
       "recolhe": true,
       "gesto_saudacao": 0,
@@ -1706,7 +1816,18 @@
       "oficio_en": "canoe carpenter",
       "oficio_es": "carpintero de canoas",
       "altura": 1.76,
-      "mudo": true,
+      "falas": [
+        {
+          "texto": "Epifânio, carpinteiro. Faço canoa, remo, porta e caixão — na ordem em que o arraial precisa.",
+          "texto_en": "Epifânio, the carpenter. I make canoes, oars, doors and coffins — in the order the village needs them.",
+          "texto_es": "Epifanio, carpintero. Hago canoas, remos, puertas y ataúdes, en el orden en que el caserío los necesita."
+        },
+        {
+          "texto": "Madeira boa pra canoa é a que o mato dá, e o mato só dá se a gente pede.",
+          "texto_en": "Good wood for a canoe is what the forest gives, and the forest only gives if you ask.",
+          "texto_es": "La madera buena para canoa es la que da el monte, y el monte solo da si uno pide."
+        }
+      ],
       "casa": "Casa do carpinteiro",
       "recolhe": true,
       "gesto_saudacao": 0,
@@ -1803,7 +1924,18 @@
       "oficio_en": "boy, the carpenter's son",
       "oficio_es": "niño, hijo del carpintero",
       "altura": 1.3,
-      "mudo": true,
+      "falas": [
+        {
+          "texto": "Eu sou o Tonico. Meu pai faz canoa e eu faço bagunça, ele diz.",
+          "texto_en": "I'm Tonico. My father makes canoes and I make a mess, he says.",
+          "texto_es": "Yo soy Tonico. Mi padre hace canoas y yo hago desorden, dice él."
+        },
+        {
+          "texto": "Você é o que chegou de saveiro? Eu vi. Você quase caiu da prancha.",
+          "texto_en": "You're the one who came by boat? I saw. You almost fell off the plank.",
+          "texto_es": "¿Usted es el que llegó en saveiro? Yo lo vi. Casi se cae de la tabla."
+        }
+      ],
       "casa": "Casa do carpinteiro",
       "recolhe": true,
       "velocidade": 1.9,
@@ -1921,7 +2053,18 @@
       "oficio_en": "girl, the street cook's daughter",
       "oficio_es": "niña, hija de la cocinera",
       "altura": 1.24,
-      "mudo": true,
+      "falas": [
+        {
+          "texto": "Eu sou a Mariinha. Minha mãe é a Dona Ambrósia, do tabuleiro.",
+          "texto_en": "I'm Mariinha. My mother is Dona Ambrósia, with the tray.",
+          "texto_es": "Yo soy Mariinha. Mi madre es doña Ambrosia, la de la bandeja."
+        },
+        {
+          "texto": "Você fala engraçado. É de Salvador? Lá tem bonde de verdade?",
+          "texto_en": "You talk funny. Are you from Salvador? Do they really have streetcars there?",
+          "texto_es": "Usted habla raro. ¿Es de Salvador? ¿Allá hay tranvía de verdad?"
+        }
+      ],
       "casa": "Casa da quituteira",
       "recolhe": true,
       "velocidade": 1.9,
@@ -2039,7 +2182,18 @@
       "oficio_en": "saveiro sailor of the Recôncavo",
       "oficio_es": "marinero de saveiro del Recôncavo",
       "altura": 1.7,
-      "mudo": true,
+      "falas": [
+        {
+          "texto": "Ladislau, saveirista. Trinta anos de Recôncavo, com farinha pra lá e sal pra cá.",
+          "texto_en": "Ladislau, boatman. Thirty years on the Recôncavo, flour going out and salt coming back.",
+          "texto_es": "Ladislau, saveirista. Treinta años de Recôncavo, con harina para allá y sal para acá."
+        },
+        {
+          "texto": "Se o vento virar enquanto você fala, eu paro de ouvir. Não é falta de educação, é profissão.",
+          "texto_en": "If the wind turns while you're talking, I stop listening. It isn't rudeness, it's the trade.",
+          "texto_es": "Si el viento cambia mientras usted habla, dejo de escuchar. No es mala educación, es el oficio."
+        }
+      ],
       "casa": "Casa do arraial 4",
       "recolhe": true,
       "gesto_saudacao": 0,

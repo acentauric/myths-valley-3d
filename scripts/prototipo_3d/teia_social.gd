@@ -246,14 +246,15 @@ func _montar_coluna() -> void:
 		linha.add_theme_color_override("font_color",
 			Identidade.CREME if escolhido else COR_TEXTO)
 		linha.add_theme_color_override("font_hover_color", Identidade.CREME)
+		# O recuo do texto segue o que de fato vai à esquerda dele — a folha 2D
+		# ou o medalhão de quem não tem folha —, e não a existência do .png.
+		var cara := _retrato_de(id, LADO_DO_RETRATO)
 		for estado in ["normal", "hover", "pressed"]:
 			linha.add_theme_stylebox_override(estado,
-				_estilo_da_linha(escolhido, estado != "normal",
-					ResourceLoader.exists(PASTA_DOS_RETRATOS + id + ".png")))
+				_estilo_da_linha(escolhido, estado != "normal", cara != null))
 		linha.pressed.connect(func() -> void:
 			_quem = id
 			_encher())
-		var cara := _retrato_de(id, LADO_DO_RETRATO)
 		if cara != null:
 			cara.position = Vector2(RECUO_DO_RETRATO, (ALTURA_DA_LINHA - LADO_DO_RETRATO) * 0.5)
 			linha.add_child(cara)
@@ -688,10 +689,10 @@ func _retrato_de(id: String, lado: float) -> TextureRect:
 	# O DESENHO 2D é a reserva, até a foto sair.
 	var caminho := PASTA_DOS_RETRATOS + id + ".png"
 	if not ResourceLoader.exists(caminho):
-		return null
+		return _medalhao(id, lado)
 	var folha: Texture2D = load(caminho)
 	if folha == null:
-		return null
+		return _medalhao(id, lado)
 	var quadro := AtlasTexture.new()
 	quadro.atlas = folha
 	# O QUADRO É QUADRADO, e a conta é pela LARGURA. As folhas têm quatro
@@ -709,6 +710,34 @@ func _retrato_de(id: String, lado: float) -> TextureRect:
 	moldura.custom_minimum_size = Vector2(lado, lado)
 	moldura.size = Vector2(lado, lado)
 	# O clique é da linha inteira: retrato que engole clique é meia linha morta.
+	moldura.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	return moldura
+
+
+## O MEDALHÃO de quem ainda não foi fotografado (#85): os quinze moradores do vale
+## não têm folha 2D — nunca estiveram no 2D —, e sem placa de vídeo o estúdio não
+## tira a foto. Um disco na laca com o filete de ouro, para a linha não ficar sem
+## rosto; com a foto, ele some.
+func _medalhao(id: String, lado: float) -> TextureRect:
+	var cores := Gradient.new()
+	cores.set_color(0, Color(Identidade.OURO, 0.9))
+	cores.set_color(1, Color(Identidade.LACA, 0.0))
+	cores.add_point(0.72, Color(Identidade.LACA, 1.0))
+	var disco := GradientTexture2D.new()
+	disco.gradient = cores
+	disco.fill = GradientTexture2D.FILL_RADIAL
+	disco.fill_from = Vector2(0.5, 0.5)
+	disco.fill_to = Vector2(0.5, 1.0)
+	disco.width = 64
+	disco.height = 64
+	var moldura := TextureRect.new()
+	moldura.name = "Retrato_" + id
+	moldura.texture = disco
+	moldura.set_meta("medalhao", true)
+	moldura.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	moldura.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	moldura.custom_minimum_size = Vector2(lado, lado)
+	moldura.size = Vector2(lado, lado)
 	moldura.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	return moldura
 

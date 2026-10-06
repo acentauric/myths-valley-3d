@@ -77,8 +77,9 @@ func _run() -> void:
 	# O `aldeoes.json` veio do 2D junto com a `Afinidade`, porque sem ele ela
 	# não sabe de quem é cada gosto — e aí o presente vira um número sem
 	# história.
-	_conferir(afinidade.MORADORES.size() == 7,
-		"não são sete moradores: %d" % afinidade.MORADORES.size())
+	# Os sete do 2D vêm primeiro, e depois deles os quinze do vale (#85).
+	_conferir(afinidade.MORADORES.size() == 22 and afinidade.MORADORES.slice(0, 7) == ["benedito", "zefa", "cosme", "tonho", "filo", "candinha", "damiao"],
+		"os moradores da afinidade não são os sete do 2D seguidos dos quinze do vale: %s" % str(afinidade.MORADORES))
 	var dados: Dictionary = jogo.dados(afinidade.ARQUIVO_DOS_MORADORES)
 	_conferir(not dados.is_empty(),
 		"o aldeoes.json não foi lido: a afinidade fica sem saber de quem é cada gosto")

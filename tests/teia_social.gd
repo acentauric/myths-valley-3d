@@ -167,8 +167,11 @@ func _run() -> void:
 	for bruto in afinidade.MORADORES:
 		var quem := str(bruto)
 		var achou := coluna.find_children("Retrato_" + quem, "TextureRect", true, false)
+		# A foto do modelo 3D (com placa de vídeo), a folha 2D dos sete do 2D, ou o
+		# medalhão de quem ainda não foi fotografado (#85): sem nenhum dos três a
+		# linha fica sem rosto.
 		_conferir(not achou.is_empty(),
-			"o morador '%s' está na lista sem retrato: falta copiar assets/sprites/%s_sheet.png"
+			"o morador '%s' está na lista sem retrato: nem foto do modelo, nem assets/sprites/%s_sheet.png, nem o medalhão"
 				% [quem, quem])
 		if achou.is_empty():
 			continue

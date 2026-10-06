@@ -134,6 +134,18 @@
   apaga acorda com o Pedro esperando na porta, do lado de fora
   (`queda._levar_para_casa`, `guia_pedro.vir_para_a_porta`), e a condução recomeça
   dali. Portão novo `pedro_volta`.
+- **Os quinze moradores novos entram na teia social (#85).** A teia (P) lia uma
+  constante com os sete do 2D; agora `Afinidade.MORADORES` vem do `aldeoes.json`,
+  na ordem dele. Os quinze do vale — o mestre Quirino, o padre Anselmo, o
+  sacristão Zacarias, Sá Joaquina, Seu Nicolau, o guarda Aristides, Seu Jerônimo,
+  Dona Rosa, Sá Rita, Dona Estefânia, Dona Ambrósia, Seu Epifânio, Tonico,
+  Mariinha e Seu Ladislau — ganharam fé, gosto e desgosto, as reações ao presente,
+  a apresentação e dois assuntos por grau (`data/dialogos/aldeoes.json`), e os
+  catorze que eram mudos ganharam duas saudações nos três idiomas
+  (`data/npcs_3d.json`), sem voz gravada. Os retratos vêm do modelo 3D de cada um,
+  como os dos sete. O `aldeoes.json` segue só em português, na dívida declarada
+  (#6, #51). Portões `fe` (os sete primeiro, vinte e dois ao todo) e `interacao`
+  (o aceno se pergunta a um morador calado por um instante).
 
 ## Em desenvolvimento — 05/10/2026
 

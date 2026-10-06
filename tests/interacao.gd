@@ -179,17 +179,23 @@ func _run() -> void:
 		await _fechar_a_fala()
 
 	# --- 7. O E EM QUEM NÃO FALA É ACENO ---------------------------------------------
-	# Os moradores novos têm jornada e ofício, e nenhuma fala (`npc._eh_mudo`). A
+	# Os moradores novos tinham jornada e ofício, e nenhuma fala (`npc._eh_mudo`). A
 	# conversa do E neles abria um balão sem texto, punha "Nome: " no HUD e segurava
-	# o relógio por dez segundos de uma fala que não havia.
+	# o relógio por dez segundos de uma fala que não havia. Desde a #85 todos falam:
+	# a pergunta do aceno cala um deles por um instante.
+	# Um morador SEM FILA DE MISSÃO: no Benedito, na Zefa ou no Tonho o E abre a
+	# fala da missão, que não é o aceno.
 	var calado = null
-	for morador in vale.moradores:
-		if morador.has_method("eh_mudo") and morador.eh_mudo() and morador.is_visible_in_tree() \
-				and not morador.esta_recolhido():
+	for id in ["guarda", "lavadeira", "rendeira", "pescador", "marisqueira", "sacristao", "beata", "quituteira", "carpinteiro"]:
+		var morador = vale._achar_morador(id)
+		if morador != null and morador.is_visible_in_tree() and not morador.esta_recolhido():
 			calado = morador
 			break
-	_conferir(calado != null, "o vale não tem morador que não fala, de corpo presente, para a pergunta do aceno")
+	_conferir(calado != null, "o vale não tem morador de corpo presente para a pergunta do aceno")
 	if calado != null:
+		# Sem balão nem relógio de uma fala anterior: a pergunta é só sobre o aceno.
+		calado.calar()
+		calado.dados["mudo"] = true
 		var avisos := [0]
 		calado.saudou.connect(func(_quem, _texto: String) -> void: avisos[0] += 1)
 		# Ao lado dele: a trava do relógio só pega com o jogador ao alcance da conversa.
@@ -200,6 +206,7 @@ func _run() -> void:
 		_conferir(float(calado._balao_tempo) <= 0.0, "o E em quem não fala (%s) abriu um balão sem texto" % str(calado.dados.get("id", "")))
 		_conferir(not calado.conversando(), "o E em quem não fala segurou o relógio do vale por uma fala que não há")
 		_conferir(avisos[0] == 0, "o E em quem não fala pôs um aviso vazio no HUD")
+		calado.dados.erase("mudo")
 	_fechar()
 
 
