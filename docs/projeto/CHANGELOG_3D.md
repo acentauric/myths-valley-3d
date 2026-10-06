@@ -107,6 +107,11 @@
   contava o que é a literatura de cordel; agora diz também, nos três idiomas, que
   no jogo ele é um colecionável, onde os folhetos estão espalhados e que o
   almanaque mostra quantos faltam. O portão `avisos_da_primeira_vez` cobra.
+- **Cada golpe em pedra e galhada tem som (#89).** `recursos_3d._aplicar_golpe`
+  era mudo — `picareta.mp3` existia sem ninguém o chamar. Agora cada golpe toca o
+  som da ferramenta (picareta na pedra, a foice colhe, machado no resto, inclusive
+  a galhada partida na mão) e o último golpe do que cai toca a árvore caindo.
+  Portão novo `som_dos_golpes`.
 
 ## Em desenvolvimento — 05/10/2026
 

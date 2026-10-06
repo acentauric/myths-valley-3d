@@ -420,6 +420,10 @@ func _aplicar_golpe(id: String) -> void:
 	var ficha: Dictionary = alvo["ficha"]
 	alvo["golpes_dados"] = int(alvo["golpes_dados"]) + 1
 	var faltam := int(ficha.get("golpes", 3)) - int(alvo["golpes_dados"])
+	# CADA GOLPE TEM SOM (#89): o da ferramenta, e no último golpe do que cai, a
+	# árvore caindo. Eram golpes mudos — `picareta.mp3` existia sem ninguém o
+	# chamar, e na live faltou som ao partir a galhada e o lajedo.
+	Audio.efeito("arvore_cai" if faltam <= 0 and bool(ficha.get("cai", false)) else _som_do_golpe(ficha))
 	if faltam > 0:
 		_sacudir(alvo["no"])
 		return
@@ -459,6 +463,17 @@ func _aplicar_golpe(id: String) -> void:
 		_perto = ""
 	_dica.visible = false
 	derrubado.emit(id, rende, quantos)
+
+
+## O som do golpe num alvo: picareta na pedra; a foice colhe; o resto — a lenha,
+## a galhada partida na mão, a árvore que cai — é o machado na madeira.
+func _som_do_golpe(ficha: Dictionary) -> String:
+	var ferramenta := str(ficha.get("ferramenta", ""))
+	if ferramenta == "picareta" or str(ficha.get("rende", "")) == "pedra":
+		return "picareta"
+	if ferramenta == "foice":
+		return "colher"
+	return "machado"
 
 
 ## O ALVO QUE SE REFAZ ENQUANTO O JOGADOR NÃO TEM A FERRAMENTA (`"renova_sem"`).
