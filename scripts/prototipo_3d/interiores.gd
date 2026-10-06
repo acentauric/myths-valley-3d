@@ -39,6 +39,24 @@ extends Node3D
 ##
 ## O que este nó NÃO faz: esvaziar o modelo, ou esconder pedaço dele. A casca
 ## fica inteira, e o cômodo cabe nela.
+##
+##
+## TODA CASA ABRE, E POR DADOS
+##
+## "Todas as casas devem ter acesso interno e móveis." As quatro primeiras (a igreja,
+## a casa herdada, a do Pedro, a da Zefa) têm a tabela fixa abaixo; todas as outras —
+## as casas do arraial, a venda, o restaurante, as dos moradores, o casarão da
+## fazenda — moram em `data/interiores_casas.json`: de cada GLB, onde fica a porta
+## pintada; de cada casa, o lote, o nome nos três idiomas e o perfil de quem mora; de
+## cada perfil, as cores e os móveis.
+##
+## Essas abrem DE PERTO, e não no carregamento: vinte e tantos cômodos, com os móveis,
+## as luzes e a sonda de reflexo de cada um, custariam mais de um milhão de triângulos
+## e oitenta luzes desenhados atrás das paredes a toda hora (a conta de 05/10). Então
+## o cômodo só se monta quando o jogador chega a `CRIA_ATE` da porta, e some do
+## desenho (`visible`) além de `ESCONDE_ALEM` — com histerese, para quem anda na
+## divisa não ver a sala piscar. Quem precisa dele já (o portão, o save) pede
+## `garantir`.
 
 signal entrou(qual: String)
 signal saiu(qual: String)
@@ -46,6 +64,24 @@ signal saiu(qual: String)
 const Comodo = preload("res://scripts/prototipo_3d/comodo.gd")
 const InteriorIgreja = preload("res://scripts/prototipo_3d/interior_igreja.gd")
 const InteriorCasa = preload("res://scripts/prototipo_3d/interior_casa.gd")
+const InteriorCasarao = preload("res://scripts/prototipo_3d/interior_casarao.gd")
+const IdiomaMenu = preload("res://scripts/prototipo_3d/idioma_menu.gd")
+const Camadas = preload("res://scripts/prototipo_3d/camadas.gd")
+
+## As casas por dados (ver acima).
+const ARQUIVO_DAS_CASAS := "res://data/interiores_casas.json"
+## Até onde o jogador está da porta (u, no chão) para o cômodo se montar, e além de quanto
+## ele some do desenho.
+const CRIA_ATE := 32.0
+const ESCONDE_ALEM := 46.0
+## De quanto em quanto tempo se confere a distância (s), e quanto o jogador pode andar
+## de uma vez (um pulo no mapa, o save) antes de se conferir já.
+const RONDA := 0.25
+const PULO := 12.0
+## Quão perto do lote o jogador chega de uma vez para o cômodo se montar com ele parado (u).
+const LOTE_COLADO := 6.0
+## O que uma montagem diz a quem a pediu.
+enum { MONTOU, ADIAR, FALHOU }
 
 ## As construções que se abrem:
 ##
@@ -81,21 +117,121 @@ const FOLGA_DE_SAIR := 0.25
 
 var _mundo: Node3D
 var _jogador: Node3D
-## qual -> {"sala": Node3D, "nome": String}
+## qual -> {"sala": Node3D, "nome": String, "ancora": String, "preguicosa": bool}
 var _construcoes: Dictionary = {}
 var _dentro := ""
+## O arquivo das casas por dados, e a tabela inteira (as de tabela fixa e as dele).
+var _dados: Dictionary = {}
+var _tabela: Dictionary = {}
+## As que ainda não se montaram, a que se monta agora (uma por vez) e as que já tentaram.
+var _pendentes: Array[String] = []
+var _montando := ""
+## Os galpões abertos (a casa de farinha): qual -> o corpo com as caixas dele.
+var _galpoes: Dictionary = {}
+var _ronda_em := 0.0
+var _onde_da_ronda := Vector3.INF
+## O jogador que chega de uma vez ao pé de uma casa ainda não montada espera o cômodo (`_montar_de_perto`).
+## Só o portão que falsifica (`--falsificar=sem_freio`) o desliga.
+var segura_o_jogador := true
 
 
-## Monta os cômodos. É uma corrotina: a medida espera dois quadros de física
-## para a colisão provisória valer — quem precisa do cômodo pronto (o save que
+## Monta os cômodos de tabela fixa. É uma corrotina: a medida espera dois quadros de
+## física para a colisão provisória valer — quem precisa do cômodo pronto (o save que
 ## põe o jogador lá dentro) espera com `await`. Os corpos dos moradores entram
-## na luz de dentro depois, quando eles existirem (`marcar_os_corpos`).
+## na luz de dentro depois, quando eles existirem (`marcar_os_corpos`). As casas por
+## dados ficam para quando o jogador chegar perto (`garantir`).
 func configurar(mundo: Node3D, jogador: Node3D) -> void:
 	_mundo = mundo
 	_jogador = jogador
 	add_to_group("interiores")
+	_ler_as_casas()
 	for qual in CONSTRUCOES:
 		await _abrir(qual)
+	if Estilo.tripo():
+		for qual in _tabela:
+			if not CONSTRUCOES.has(qual) and not _construcoes.has(qual):
+				_pendentes.append(str(qual))
+
+
+## A tabela inteira: as quatro fixas e as do arquivo, menos as que o vale deu a outro
+## (a casa do arraial que virou a do Pedro ou a da Zefa é delas, e não uma casa a mais).
+func _ler_as_casas() -> void:
+	_tabela = CONSTRUCOES.duplicate(true)
+	_dados = {}
+	var texto := FileAccess.get_file_as_string(ARQUIVO_DAS_CASAS)
+	var lido = JSON.parse_string(texto) if texto != "" else null
+	if not (lido is Dictionary):
+		push_warning("Interiores: não li %s; só as quatro casas de tabela abrem." % ARQUIVO_DAS_CASAS)
+		return
+	_dados = lido
+	var tomadas := {}
+	for qual in CONSTRUCOES:
+		var lote := _ancora_de(str(qual), CONSTRUCOES[qual])
+		if lote != "":
+			tomadas[lote] = true
+	for qual in _dados.get("casas", {}):
+		var casa: Dictionary = (_dados["casas"][qual] as Dictionary).duplicate(true)
+		if tomadas.has(str(casa.get("ancora", ""))):
+			continue
+		casa["preguicosa"] = true
+		_tabela[str(qual)] = casa
+
+
+## O lote (o nome da âncora) de uma construção da tabela.
+func _ancora_de(_qual: String, dado: Dictionary) -> String:
+	if dado.has("morador"):
+		var casas = _mundo.get("casas_dos_moradores") if _mundo != null else null
+		return str(casas.get(str(dado["morador"]), "")) if casas is Dictionary else ""
+	return str(dado.get("ancora", ""))
+
+
+## Todas as construções que abrem (montadas ou não), e as que já estão montadas.
+func todas() -> Array:
+	return _tabela.keys()
+
+
+func quais() -> Array:
+	return _construcoes.keys()
+
+
+## O CÔMODO PRONTO, JÁ: monta o de `qual` se ainda não está de pé, e diz se está. Uma
+## montagem por vez — quem chega no meio da de outro espera a vez.
+func garantir(qual: String) -> bool:
+	if _construcoes.has(qual) or _galpoes.has(qual):
+		return true
+	if not _tabela.has(qual) or _mundo == null:
+		return false
+	while _montando != "":
+		await get_tree().process_frame
+		if _construcoes.has(qual) or _galpoes.has(qual):
+			return true
+	_montando = qual
+	var resultado: int = await _abrir(qual)
+	if resultado == MONTOU:
+		# Os corpos do cômodo só entram no espaço de física no passo seguinte: quem põe o
+		# jogador lá dentro logo que `garantir` volta (o save, o portão) cairia pelo piso.
+		await get_tree().physics_frame
+		await get_tree().physics_frame
+	_montando = ""
+	if resultado != ADIAR:
+		_pendentes.erase(qual)
+	return _construcoes.has(qual) or _galpoes.has(qual)
+
+
+## O PEDRO NÃO ENTRA nos cômodos pequenos das casas por dados: como na casa herdada
+## (`guia_pedro.gd`, `ESPERA_FORA`), a quatro passos e meio do jogador o lugar dele seria o
+## vão da porta, e o jogador não sairia. Espera do lado de fora, de lado para a porta
+## (`Comodo.lugar_de_esperar_fora`). Nos largos (o casarão) ele entra junto. As quatro de
+## tabela fixa seguem a regra que já tinham.
+func espera_fora(qual: String) -> bool:
+	var sala := sala_de(qual)
+	return sala != null and not CONSTRUCOES.has(qual) and float(sala.largura) * float(sala.comprimento) < 60.0
+
+
+## Monta todos os que faltam (o portão que confere cada casa).
+func garantir_todas() -> void:
+	for qual in _pendentes.duplicate():
+		await garantir(qual)
 
 
 ## Em que construção o jogador está, ou "".
@@ -108,7 +244,11 @@ func sala_de(qual: String) -> Node3D:
 
 
 func nome_de(qual: String) -> String:
-	return tr(str(CONSTRUCOES.get(qual, {}).get("nome", "")))
+	var dado: Dictionary = _tabela.get(qual, CONSTRUCOES.get(qual, {}))
+	# As casas por dados trazem o nome nos três idiomas; as de tabela fixa, no `tr`.
+	if dado.has("nome_en"):
+		return str(IdiomaMenu.campo(dado, "nome", ""))
+	return tr(str(dado.get("nome", "")))
 
 
 ## Em que cômodo este ponto do mundo está, ou "".
@@ -142,8 +282,66 @@ func passagem(de: Vector3, para: Vector3) -> Vector3:
 	return para
 
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
 	atualizar_agora()
+	_ronda_em -= delta
+	if _jogador != null and (_ronda_em <= 0.0 or not _onde_da_ronda.is_finite()):
+		_conferir_a_ronda()
+
+
+func _conferir_a_ronda() -> void:
+	_ronda_em = RONDA
+	_onde_da_ronda = _jogador.global_position
+	_ronda()
+
+
+## A RONDA DOS CÔMODOS DE PERTO: manda montar o que o jogador alcançou, e esconde o que
+## ele deixou longe (a sala escondida continua lá, com a física e o que tem dentro: só
+## deixa de ser desenhada, com as luzes). Nunca esconde a sala em que ele está.
+func _ronda() -> void:
+	if _mundo == null or not is_inside_tree():
+		return
+	var onde: Vector3 = _jogador.global_position
+	if _montando == "":
+		var mais_perto := ""
+		var menor := CRIA_ATE
+		for qual in _pendentes:
+			var distancia := _distancia_do_lote(str(qual), onde)
+			if distancia <= menor:
+				menor = distancia
+				mais_perto = str(qual)
+		if mais_perto != "":
+			_montar_de_perto(mais_perto, segura_o_jogador and menor < LOTE_COLADO)
+	for qual in _construcoes:
+		if not bool(_construcoes[qual].get("preguicosa", false)):
+			continue
+		var sala: Node3D = _construcoes[qual]["sala"]
+		var longe := Vector2(sala.global_position.x - onde.x, sala.global_position.z - onde.z).length()
+		if sala.visible and longe > ESCONDE_ALEM and qual != _dentro:
+			sala.visible = false
+		elif not sala.visible and longe < CRIA_ATE:
+			sala.visible = true
+
+
+## Monta o cômodo de `qual` porque o jogador chegou. Se chegou de uma vez ao pé da casa (o save que o
+## põe dentro dela, um pulo no mapa), ele pode estar DENTRO da caixa inteira que ainda cobre a casa:
+## fica parado até o cômodo estar de pé, e só então volta a andar: lá dentro, e não expulso pela caixa.
+func _montar_de_perto(qual: String, segurar_o_jogador: bool) -> void:
+	var andava: bool = segurar_o_jogador and _jogador.is_physics_processing()
+	if andava:
+		_jogador.set_physics_process(false)
+	await garantir(qual)
+	if andava and is_instance_valid(_jogador):
+		_jogador.set_physics_process(true)
+
+
+## A distância, no chão, do ponto até o lote do cômodo (INF se o lote não existe).
+func _distancia_do_lote(qual: String, ponto: Vector3) -> float:
+	var lote := _ancora_de(qual, _tabela.get(qual, {}))
+	if lote == "" or not ("ancoras" in _mundo) or not _mundo.ancoras.has(lote):
+		return INF
+	var base: Vector3 = _mundo.ancoras[lote]
+	return Vector2(base.x - ponto.x, base.z - ponto.z).length()
 
 
 ## Em que cômodo o jogador está, de uma vez, sem esperar o quadro: quem põe o
@@ -156,6 +354,9 @@ func _process(_delta: float) -> void:
 func atualizar_agora() -> void:
 	if _jogador == null:
 		return
+	# Um pulo (o `teleportar`, o save): a ronda dos cômodos de perto não espera o próximo quadro.
+	if not _pendentes.is_empty() and _onde_da_ronda.is_finite() and _jogador.global_position.distance_to(_onde_da_ronda) > PULO:
+		_conferir_a_ronda()
 	var agora := contem(_jogador.global_position)
 	if agora == "" and _dentro != "" and sala_de(_dentro) != null \
 			and bool((sala_de(_dentro) as Node3D).call("contem", _jogador.global_position, FOLGA_DE_SAIR)):
@@ -180,18 +381,31 @@ func atualizar_agora() -> void:
 
 # --- montar um cômodo -----------------------------------------------------------
 
-func _abrir(qual: String) -> void:
-	var dado: Dictionary = CONSTRUCOES[qual]
-	var ancora := str(dado.get("ancora", ""))
-	if dado.has("morador"):
-		var casas = _mundo.get("casas_dos_moradores") if _mundo != null else null
-		ancora = str(casas.get(str(dado["morador"]), "")) if casas is Dictionary else ""
+## A porta que a construção declara, a de fábrica quando ninguém a leu, e o resto do que
+## o modelo do GLB traz (a medida que se sobrepõe à da casca, a altura do forro).
+const PORTA_DE_FABRICA := {"porta_x": 0.92, "largura_da_porta": 1.05, "altura_da_porta": 2.15, "sonda": 1.6}
+## A parede fina das cascas que medem pouco por dentro (a palhoça, a capelinha), para a
+## sala não ficar menor que um quarto de gente: abaixo de tanto de largura ou de
+## comprimento úteis, com a parede inteira, a de 0,4 passa a 0,15.
+const PAREDE_FINA := 0.15
+const PEQUENA_LARGURA := 3.7
+const PEQUENO_COMPRIMENTO := 3.2
+
+
+## Monta o cômodo de `qual` na casca dele. Devolve MONTOU, ADIAR (a casa ainda não subiu
+## no vale: tenta de novo) ou FALHOU (a casca não mediu: não tenta mais).
+func _abrir(qual: String) -> int:
+	var dado: Dictionary = _tabela[qual]
+	var ancora := _ancora_de(qual, dado)
 	if ancora == "":
-		return
+		return FALHOU
 	if _mundo == null or not ("ancoras" in _mundo) or not _mundo.ancoras.has(ancora):
-		return
+		return FALHOU
+	var preguicosa := bool(dado.get("preguicosa", false))
 	var base: Vector3 = _mundo.ancoras[ancora]
 	var frente := _frente(ancora)
+	if str(dado.get("tipo", "")) == "galpao":
+		return _abrir_galpao(qual, dado, ancora, base, frente)
 	var chao: float = _mundo.ground_height_at(base)
 	var centro := Vector3(base.x, chao, base.z)
 	var construcoes = _mundo.get("construcoes")
@@ -199,40 +413,51 @@ func _abrir(qual: String) -> void:
 	var modelo: Node3D = lote.get("modelo") if is_instance_valid(lote.get("modelo")) else null
 	if modelo == null and qual == "igreja":
 		modelo = _mundo.get_node_or_null(ancora.capitalize() + "Tripo")
-	var malhas := _malhas_da_casca(modelo, centro, frente, dado["meio_lote"])
+	if modelo == null and preguicosa:
+		# A casa ainda não subiu (o casarão sobe depois dos cômodos).
+		return ADIAR
+	dado = _com_a_porta_do_modelo(dado, lote, modelo)
+	if dado.has("deslocar_z"):
+		centro += frente * float(dado["deslocar_z"])
+	var malhas := _malhas_da_casca(modelo, centro, frente, dado.get("meio_lote", Vector2(3.4, 3.2)))
 	if malhas.is_empty():
-		return
+		return ADIAR if preguicosa else FALHOU
 	var caixa_inteira: Node = lote.get("colisao") if is_instance_valid(lote.get("colisao")) else null
 	if caixa_inteira == null and modelo != null and qual == "igreja":
 		caixa_inteira = _mundo.get_node_or_null(str(dado.get("colisao", "")))
 	var medida: Dictionary = await _medir(malhas, centro, frente, caixa_inteira, dado)
 	if medida.is_empty():
-		return
+		return FALHOU
+	var sala := _nova_sala(qual, dado)
+	if sala == null:
+		return FALHOU
 	_tirar_a_colisao_inteira(caixa_inteira, modelo, centro, frente, medida)
 	if modelo != null:
 		_casca_so_por_fora(modelo)
 
-	var sala: Node3D = null
-	match qual:
-		"igreja":
-			sala = InteriorIgreja.new()
-		"casa", "casa_pedro", "casa_zefa":
-			sala = InteriorCasa.new()
-			sala.perfil = str(dado.get("perfil", "herdada"))
-	if sala == null:
-		return
 	# A parede do cômodo fica FOLGA para dentro da casca; a da frente, rente
 	# ao lado de dentro da porta. A origem do cômodo é o meio da fachada, por
-	# dentro, e o cômodo corre para trás (-Z), longe da fachada.
-	var meia_largura: float = float(medida["lado"]) - FOLGA - Comodo.PAREDE
-	var ate_a_frente: float = float(medida["frente"]) - FOLGA - Comodo.PAREDE
-	var ate_o_fundo: float = float(medida["fundo"]) - FOLGA - Comodo.PAREDE
+	# dentro, e o cômodo corre para trás (-Z), longe da fachada. Casca que mede pouco
+	# leva parede fina (só as casas por dados: as quatro de tabela ficam como estavam).
+	var espessura := Comodo.PAREDE
+	var meia_largura: float = float(medida["lado"]) - FOLGA - espessura
+	var ate_a_frente: float = float(medida["frente"]) - FOLGA - espessura
+	var ate_o_fundo: float = float(medida["fundo"]) - FOLGA - espessura
+	if not CONSTRUCOES.has(qual) and (meia_largura * 2.0 < PEQUENA_LARGURA or ate_a_frente + ate_o_fundo < PEQUENO_COMPRIMENTO):
+		espessura = PAREDE_FINA
+		meia_largura = float(medida["lado"]) - FOLGA - espessura
+		ate_a_frente = float(medida["frente"]) - FOLGA - espessura
+		ate_o_fundo = float(medida["fundo"]) - FOLGA - espessura
 	var chao_da_nave: float = float(medida["chao"])
+	var pe_direito: float = float(medida["teto"]) - chao_da_nave - 0.25
+	if dado.has("pe_direito_max"):
+		pe_direito = minf(pe_direito, float(dado["pe_direito_max"]))
 	sala.configurar({
+		"parede": espessura,
 		"largura": meia_largura * 2.0,
 		"comprimento": ate_a_frente + ate_o_fundo,
-		"pe_direito": float(medida["teto"]) - chao_da_nave - 0.25,
-		"fundo_da_porta": float(medida["fachada"]) - (ate_a_frente + Comodo.PAREDE),
+		"pe_direito": pe_direito,
+		"fundo_da_porta": float(medida["fachada"]) - (ate_a_frente + espessura),
 		"soleira": chao_da_nave - float(medida["soleira"]),
 		"degrau_de_fora": float(medida["soleira"]) - float(medida["terreno"]),
 		"borda": float(medida["borda"]) - ate_a_frente,
@@ -247,7 +472,94 @@ func _abrir(qual: String) -> void:
 	add_child(sala)
 	sala.global_transform = Transform3D(Basis.looking_at(-frente, Vector3.UP),
 		centro + frente * ate_a_frente + Vector3.UP * chao_da_nave)
-	_construcoes[qual] = {"sala": sala, "nome": str(dado["nome"])}
+	_construcoes[qual] = {"sala": sala, "nome": str(dado["nome"]), "ancora": ancora, "preguicosa": preguicosa}
+	return MONTOU
+
+
+## O cômodo vazio de `qual`: a nave da igreja, a casa de função (a herdada, a do Pedro, a da
+## Zefa), o casarão, ou a casa de perfil por dados.
+func _nova_sala(qual: String, dado: Dictionary) -> Node3D:
+	match qual:
+		"igreja":
+			return InteriorIgreja.new()
+		"casa", "casa_pedro", "casa_zefa":
+			var casa := InteriorCasa.new()
+			casa.perfil = str(dado.get("perfil", "herdada"))
+			return casa
+	var perfis: Dictionary = _dados.get("perfis", {})
+	var nome_do_perfil := str(dado.get("perfil", ""))
+	if not perfis.has(nome_do_perfil):
+		push_warning("Interiores: '%s' pede o perfil '%s', que não está em %s." % [qual, nome_do_perfil, ARQUIVO_DAS_CASAS])
+		return null
+	var sala: Node3D = InteriorCasarao.new() if str(dado.get("tipo", "casa")) == "casarao" else InteriorCasa.new()
+	sala.perfil = nome_do_perfil
+	sala.dados_do_perfil = perfis[nome_do_perfil]
+	sala.pegadas_das_pecas = _dados.get("pecas", {})
+	return sala
+
+
+## UM GALPÃO ABERTO, a casa de farinha: três paredes, o forno e os bancos, e a frente
+## aberta. O modelo não tem cômodo para medir, e a caixa inteira que o catálogo põe nele
+## fecha o que o desenho deixa aberto: ela sai, e entram as caixas de `caixas` (do
+## arquivo, no referencial do modelo: x para a direita de quem olha de frente, z para a
+## frente, o chão no pé do modelo), nas medidas que a planta do GLB mostra.
+func _abrir_galpao(qual: String, dado: Dictionary, ancora: String, base: Vector3, frente: Vector3) -> int:
+	var construcoes = _mundo.get("construcoes")
+	var lote: Dictionary = construcoes.get(ancora, {}) if construcoes is Dictionary else {}
+	var modelo: Node3D = lote.get("modelo") if is_instance_valid(lote.get("modelo")) else null
+	if modelo == null:
+		return ADIAR
+	var caixa_inteira: Node = lote.get("colisao") if is_instance_valid(lote.get("colisao")) else null
+	if caixa_inteira != null:
+		caixa_inteira.queue_free()
+	var corpo := StaticBody3D.new()
+	corpo.name = "Galpao_" + qual
+	corpo.collision_layer = Camadas.MUNDO_E_CAMERA
+	add_child(corpo)
+	var direita := Vector3.UP.cross(frente).normalized()
+	var giro := atan2(frente.x, frente.z)
+	for caixa: Dictionary in dado.get("caixas", []):
+		var tamanho := Vector3(float(caixa["tam"][0]), float(caixa["tam"][1]), float(caixa["tam"][2]))
+		var forma := CollisionShape3D.new()
+		var formato := BoxShape3D.new()
+		formato.size = tamanho
+		forma.shape = formato
+		corpo.add_child(forma)
+		forma.global_position = base + direita * float(caixa["x"]) + frente * float(caixa["z"]) + Vector3.UP * (tamanho.y * 0.5)
+		forma.global_rotation.y = giro
+	_galpoes[qual] = corpo
+	return MONTOU
+
+
+## A construção com a porta do modelo dela: os campos que ela não traz, vêm de `modelos`
+## (a chave do GLB que o vale pôs no lote, ou a do nome do nó) e, por fim, da porta de fábrica.
+func _com_a_porta_do_modelo(dado: Dictionary, lote: Dictionary, modelo: Node3D) -> Dictionary:
+	var completo := dado.duplicate(true)
+	var chave := str(lote.get("chave", ""))
+	if chave == "" and modelo != null:
+		chave = _chave_do_modelo(modelo)
+	if chave == "":
+		chave = str(dado.get("modelo", ""))
+	var do_modelo: Dictionary = (_dados.get("modelos", {}) as Dictionary).get(chave, {})
+	for campo in do_modelo:
+		if not completo.has(campo):
+			completo[campo] = do_modelo[campo]
+	if not completo.has("porta_x") and do_modelo.is_empty():
+		push_warning("Interiores: a porta do modelo '%s' não foi lida em %s; vale a da casa de taipa." % [chave, ARQUIVO_DAS_CASAS])
+	for campo in PORTA_DE_FABRICA:
+		if not completo.has(campo):
+			completo[campo] = PORTA_DE_FABRICA[campo]
+	return completo
+
+
+## A chave do catálogo de um modelo posto pelo `CatalogoAssets.instanciar`, pelo nome do nó
+## ("Casa Taipa AzulTripo" -> "casa_taipa_azul"): para o lote que não a guardou.
+func _chave_do_modelo(modelo: Node3D) -> String:
+	var nome := str(modelo.name)
+	var fim := nome.find("Tripo")
+	if fim <= 0:
+		return ""
+	return nome.substr(0, fim).strip_edges().to_snake_case()
 
 
 func _frente(ancora: String) -> Vector3:
@@ -325,6 +637,9 @@ func _medir(malhas: Array, centro: Vector3, frente: Vector3, caixa_inteira: Node
 	for x in [-0.5, 0.0, 0.5]:
 		frente_por_dentro = minf(frente_por_dentro, _distancia(espaco, meio_1 + na_porta + lado * x, frente))
 	medida["frente"] = frente_por_dentro
+	# O que o modelo diz que a malha não deixa medir (a venda, o restaurante: a porta
+	# é uma alcova maciça, e raio deitado bate nela): o resto da medida parte disto.
+	_sobrepor(medida, dado)
 	# A face de fora da fachada, na porta, vinda de longe na direção do centro.
 	var de_fora := meio_1 + na_porta + frente * 30.0
 	var na_fachada := _raio(espaco, de_fora, meio_1 + na_porta)
@@ -388,11 +703,21 @@ func _medir(malhas: Array, centro: Vector3, frente: Vector3, caixa_inteira: Node
 		if estorvo.is_finite():
 			medida["livre"] = minf(float(medida["livre"]), (estorvo - de).dot(frente) + 0.05)
 	corpo.queue_free()
+	_sobrepor(medida, dado)
+	# Do centro à parede da frente pode ser pouco (a venda e o restaurante têm o meio da
+	# casca colado na fachada): o que não pode é a casca não medir.
 	for chave in ["lado", "frente", "fundo"]:
-		if not is_finite(float(medida[chave])) or float(medida[chave]) < 1.5:
+		if not is_finite(float(medida[chave])) or float(medida[chave]) < (0.9 if chave == "frente" else 1.5):
 			push_warning("Interiores: a casca da construção não mediu '%s' (%s); o cômodo não foi montado." % [chave, str(medida[chave])])
 			return {}
 	return medida
+
+
+## Troca da medida o que o modelo traz medido à mão (`medida` do `data/interiores_casas.json`).
+func _sobrepor(medida: Dictionary, dado: Dictionary) -> void:
+	var fixa: Dictionary = dado.get("medida", {})
+	for campo in fixa:
+		medida[campo] = float(fixa[campo])
 
 
 func _raio(espaco: PhysicsDirectSpaceState3D, de: Vector3, para: Vector3) -> Vector3:

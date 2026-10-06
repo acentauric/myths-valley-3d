@@ -80,6 +80,18 @@ var _obras_mostradas := ""
 ## A construção do painel de obras que é esta casa (`BancadasVale.OBRAS`).
 const CONSTRUCAO := "casa"
 
+## O PERFIL POR DADOS. As quatro casas de tabela fixa (a herdada, a do Pedro, a da
+## Zefa) têm os móveis escritos em função, acima; todas as outras moram em
+## `data/interiores_casas.json` (`Interiores`): este é o `perfis[nome]` de quem mora
+## — as cores, o piso, as janelas e a lista de móveis, que `_moveis_do_perfil` põe —
+## e `pegadas_das_pecas` é o `pecas` do mesmo arquivo. Vazio nas três de função.
+var dados_do_perfil: Dictionary = {}
+var pegadas_das_pecas: Dictionary = {}
+## O que o perfil já pôs, por chave da peça: a peça de cima (a lamparina na mesa) a acha aqui.
+var _postas: Dictionary = {}
+## Encosto de um móvel na parede, em m (para a colisão dele não entrar nela).
+const RECUO := 0.04
+
 
 func _init() -> void:
 	camera_de_cima = true
@@ -123,14 +135,23 @@ func giro_de_acordar() -> float:
 # --- a casca da casa ---------------------------------------------------------------
 
 func _parede() -> Material:
+	if not dados_do_perfil.is_empty():
+		return _cal(Color(str(dados_do_perfil.get("cal", "ece2cc"))))
 	return _cal(CAIS.get(perfil, CAIS["herdada"]))
 
 
 func _cor_da_barra() -> Color:
+	if not dados_do_perfil.is_empty():
+		return Color(str(dados_do_perfil.get("barra", "9a6e4c")))
 	return BARRAS.get(perfil, BARRO)
 
 
 func _piso() -> Material:
+	match str(dados_do_perfil.get("piso", "terra")):
+		"lajota":
+			return _lajota()
+		"tabua":
+			return _tabua(Color("a47a4f"))
 	return _terra_batida()
 
 
@@ -162,8 +183,29 @@ func _montar_telha_va() -> void:
 
 ## A JANELA da fachada, à esquerda da porta, onde a casca tem a dela pintada.
 func _montar_janela() -> void:
-	var x := -largura * 0.5 + maxf(0.75, (porta_x - largura_da_porta * 0.5 + largura * 0.5) * 0.45)
-	_janela(Vector3(x, minf(1.55, pe_direito - 0.8), -0.04), Vector3(0, 0, -1), 0.85, 0.95)
+	var paredes: Array = dados_do_perfil.get("janelas", ["frente"]) if not dados_do_perfil.is_empty() else ["frente"]
+	for parede_da_janela in paredes:
+		_janela_na(str(parede_da_janela))
+
+
+## Uma janela na parede `onde` ("frente", "esq", "dir" ou "fundo"). Na fachada, do lado
+## da porta que tem mais parede (e nenhuma, se nenhum tem um metro).
+func _janela_na(onde: String) -> void:
+	var y := minf(1.55, pe_direito - 0.8)
+	match onde:
+		"frente":
+			var a_esquerda := (porta_x - largura_da_porta * 0.5) + largura * 0.5
+			var a_direita := largura * 0.5 - (porta_x + largura_da_porta * 0.5)
+			if a_esquerda >= a_direita and a_esquerda >= 1.0:
+				_janela(Vector3(-largura * 0.5 + maxf(0.75, a_esquerda * 0.45), y, -0.04), Vector3(0, 0, -1), 0.85, 0.95)
+			elif a_direita >= 1.0:
+				_janela(Vector3(largura * 0.5 - maxf(0.75, a_direita * 0.45), y, -0.04), Vector3(0, 0, -1), 0.85, 0.95)
+		"esq":
+			_janela(Vector3(-largura * 0.5 + 0.04, y, -comprimento * 0.5), Vector3(1, 0, 0), 0.85, 0.95)
+		"dir":
+			_janela(Vector3(largura * 0.5 - 0.04, y, -comprimento * 0.5), Vector3(-1, 0, 0), 0.85, 0.95)
+		"fundo":
+			_janela(Vector3(0.0, y, -comprimento + 0.04), Vector3(0, 0, 1), 0.85, 0.95)
 
 
 # --- os móveis ------------------------------------------------------------------
@@ -171,13 +213,16 @@ func _montar_janela() -> void:
 func _montar_moveis() -> void:
 	_reservar_a_passagem()
 	var antes := get_children()
-	match perfil:
-		"pescador":
-			_moveis_do_pescador()
-		"rezadeira":
-			_moveis_da_rezadeira()
-		_:
-			_moveis_da_herdada()
+	if not dados_do_perfil.is_empty():
+		_moveis_do_perfil()
+	else:
+		match perfil:
+			"pescador":
+				_moveis_do_pescador()
+			"rezadeira":
+				_moveis_da_rezadeira()
+			_:
+				_moveis_da_herdada()
 	_nos_dos_moveis.clear()
 	for filho in get_children():
 		if not antes.has(filho):
@@ -213,9 +258,23 @@ func _reservar_a_passagem() -> void:
 	var direita := porta_x + largura_da_porta * 0.5 + FOLGA_DA_PORTA
 	_reservado.append(Rect2(esquerda, -ENTRADA, direita - esquerda, ENTRADA))
 	var fundo := -maxf(ENTRADA, comprimento - FUNDO_DA_DORMIDA)
-	var meio := minf(esquerda, 0.0) - 0.35
 	if fundo < -ENTRADA:
-		_reservado.append(Rect2(meio, fundo, direita - meio, -ENTRADA - fundo))
+		# O meio da sala segue do vão para o lado em que a sala é mais larga: a porta
+		# na metade direita (a casa de taipa) o leva para a esquerda, e a porta na
+		# esquerda (a casa azul, a de meia-água), para a direita.
+		if porta_x >= 0.0:
+			var meio := minf(esquerda, 0.0) - 0.35
+			_reservado.append(Rect2(meio, fundo, direita - meio, -ENTRADA - fundo))
+		else:
+			var meio_direito := maxf(direita, 0.0) + 0.35
+			_reservado.append(Rect2(esquerda, fundo, meio_direito - esquerda, -ENTRADA - fundo))
+	# Nas casas por dados, o caminho reto da porta para dentro fica livre até 2,7 m (ou quase
+	# o fundo, nas pequenas): quem entra anda em linha reta até o meio da sala sem esbarrar
+	# na cama do canto do fundo, que a faixa de cima deixava ao alcance da porta.
+	if not dados_do_perfil.is_empty():
+		var ate := minf(2.7, comprimento - 0.3)
+		if ate > ENTRADA:
+			_reservado.append(Rect2(esquerda, -ate, direita - esquerda, ate - ENTRADA))
 
 
 ## O chão que o móvel ocupa, em x e z do cômodo, com o giro dele (de quarto em
@@ -235,6 +294,11 @@ func _cabe(pegada: Rect2, na_parede: bool) -> bool:
 		return false
 	if na_parede:
 		var vao := Rect2(porta_x - largura_da_porta * 0.5, -ENTRADA, largura_da_porta, ENTRADA)
+		if not dados_do_perfil.is_empty():
+			# Nas casas por dados, a peça de parede também não entra no corredor do corpo: a largura
+			# do vão, da fachada até o fundo da faixa livre (a prateleira à altura da cabeça de quem
+			# entra de lado, junto da parede, era o que o corpo achava a dois metros da porta).
+			vao = Rect2(porta_x - largura_da_porta * 0.5 - 0.1, -minf(2.75, comprimento), largura_da_porta + 0.2, minf(2.75, comprimento))
 		return not pegada.intersects(vao)
 	for livre in _reservado:
 		if pegada.intersects(livre):
@@ -372,10 +436,10 @@ func _moveis_da_herdada() -> void:
 	_cama = _ultimo if _ultimo.is_finite() else cantos[0][0]
 	# O BAÚ ao lado dela, no fundo, do lado da sala; ou ao pé dela, na parede.
 	var lado := 1.0 if _cama.x < 0.0 else -1.0
-	var parede := -largura * 0.5 if lado > 0.0 else largura * 0.5
+	var da_parede := -largura * 0.5 if lado > 0.0 else largura * 0.5
 	_por("bau", [
 		[Vector3(_cama.x + lado * (CAMA.x * 0.5 + 0.2 + BAU.x * 0.5), 0.0, -comprimento + BAU.z * 0.5 + 0.05), 0.0],
-		[Vector3(parede + lado * (BAU.z * 0.5 + 0.05), 0.0, _cama.z + CAMA.z * 0.5 + 0.1 + BAU.x * 0.5), PI * 0.5],
+		[Vector3(da_parede + lado * (BAU.z * 0.5 + 0.05), 0.0, _cama.z + CAMA.z * 0.5 + 0.1 + BAU.x * 0.5), PI * 0.5],
 	], BAU, true)
 	_bau = _ultimo if _ultimo.is_finite() else _cama
 	# A ÁGUA, à esquerda da entrada: o pote no chão, a moringa do lado.
@@ -510,6 +574,109 @@ func _moveis_da_rezadeira() -> void:
 			[Vector3(-largura * 0.5 + 0.3, 0.0, -0.3 - 0.45 * float(i)), 0.4 * float(i)],
 			[Vector3(direita - 0.3, 0.0, -comprimento + 1.5 + 0.45 * float(i)), 0.4 * float(i)],
 		], 0.35 + 0.05 * float(i), Vector3(0.4, 0.4, 0.4))
+
+
+## OS MÓVEIS DE UM PERFIL POR DADOS (`dados_do_perfil["moveis"]`): cada item, na ordem,
+## no primeiro lugar que cabe — o que não cabe em nenhum fica de fora, e a porta
+## nunca fecha (`_por`). Os campos de cada item:
+##
+##   peca     a chave do catálogo
+##   em       os lugares, na ordem em que se tenta: ["fundo"|"esq"|"dir"|"frente", t], a
+##            parede e a fração dela (0 a 1; `_lugares_do_pedido` ainda desliza pela
+##            parede, se aquele ponto não cabe), ou ["meio", tx, tz], solto na sala
+##   medida   [x, y, z] da pegada; sem ela, a de `pecas`
+##   giro     giro a mais, em radianos
+##   y        a altura, para o que fica na parede (de 0,9 para cima não toma chão)
+##   uso      sem o modelo, a caixa cinza provisória no lugar
+##   como     "miudeza": peça pequena de chão (o pote, o cesto), com o `tamanho` do catálogo
+##   sobre    a chave (ou as chaves) da peça que a carrega: a lamparina na mesa
+##   vela     a energia da chama que a peça leva consigo
+func _moveis_do_perfil() -> void:
+	_postas.clear()
+	for item: Dictionary in dados_do_perfil.get("moveis", []):
+		var chave := str(item["peca"])
+		var medida := _medida_do_item(item)
+		var peca: Node3D = null
+		if item.has("sobre"):
+			peca = _por_cima(item, chave)
+		else:
+			var lugares := _lugares_do_pedido(item.get("em", []), medida, float(item.get("giro", 0.0)), float(item.get("y", 0.0)))
+			if str(item.get("como", "")) == "miudeza":
+				peca = _por_peca(chave, lugares, float(item.get("tamanho", 0.4)), medida)
+			else:
+				peca = _por(chave, lugares, medida, bool(item.get("uso", false)))
+			if peca != null and item.has("vela"):
+				var caixa := caixa_no_comodo(peca)
+				_vela("Chama", caixa.get_center(), 2.6, float(item["vela"]))
+		if peca != null:
+			_postas[chave] = peca
+
+
+func _medida_do_item(item: Dictionary) -> Vector3:
+	var m: Array = item.get("medida", pegadas_das_pecas.get(str(item["peca"]), [0.4, 0.4, 0.4]))
+	return Vector3(float(m[0]), float(m[1]), float(m[2]))
+
+
+## A peça de cima: no topo da última peça posta de `sobre` (a lamparina na mesa, no
+## baú ou no barril, o que houver). Sem nenhuma delas, fica de fora.
+func _por_cima(item: Dictionary, chave: String) -> Node3D:
+	var alvos = item["sobre"]
+	for alvo in (alvos if alvos is Array else [alvos]):
+		var base: Node3D = _postas.get(str(alvo))
+		if base == null or not is_instance_valid(base):
+			continue
+		var caixa := caixa_no_comodo(base)
+		var onde := Vector3(caixa.get_center().x, caixa.end.y, caixa.get_center().z)
+		var peca := _peca(chave, onde, float(item.get("giro", 0.0)), float(item.get("tamanho", 0.4)))
+		if peca != null and item.has("vela"):
+			_vela("Lamparina", onde + Vector3(0, 0.45, 0.05), maxf(largura, comprimento) * 0.85, float(item["vela"]))
+		return peca
+	return null
+
+
+## OS LUGARES de um pedido `em` ([onde, giro] de cada um, na ordem): a peça encostada na
+## parede que se pediu, de costas para ela, na fração `t` dela — e, atrás dessa, os
+## pontos vizinhos da mesma parede, de cinco em cinco por cento, para quem não coube
+## onde se queria (a porta, outro móvel) achar o canto mais perto. Parede esquerda e
+## direita: `t` vai da fachada ao fundo; fundo e fachada: da esquerda para a direita.
+func _lugares_do_pedido(em: Array, medida: Vector3, extra: float, y: float) -> Array:
+	var lugares: Array = []
+	for lugar: Array in em:
+		var da_parede := str(lugar[0])
+		var giro := extra
+		match da_parede:
+			"frente":
+				giro += PI
+			"esq":
+				giro += PI * 0.5
+			"dir":
+				giro -= PI * 0.5
+		var de_lado := absf(sin(giro)) > 0.7
+		var ex := medida.z if de_lado else medida.x
+		var ez := medida.x if de_lado else medida.z
+		var x_min := -largura * 0.5 + ex * 0.5 + RECUO
+		var x_max := largura * 0.5 - ex * 0.5 - RECUO
+		var z_perto := -ez * 0.5 - RECUO
+		var z_longe := -comprimento + ez * 0.5 + RECUO
+		if da_parede == "meio":
+			lugares.append([Vector3(lerpf(x_min, x_max, float(lugar[1])), y, lerpf(z_perto, z_longe, float(lugar[2]))), giro])
+			continue
+		var t0 := float(lugar[1])
+		for passo in 21:
+			for sinal in ([1.0] if passo == 0 else [1.0, -1.0]):
+				var t: float = t0 + sinal * 0.05 * float(passo)
+				if t < 0.0 or t > 1.0:
+					continue
+				match da_parede:
+					"fundo":
+						lugares.append([Vector3(lerpf(x_min, x_max, t), y, z_longe), giro])
+					"frente":
+						lugares.append([Vector3(lerpf(x_min, x_max, t), y, z_perto), giro])
+					"esq":
+						lugares.append([Vector3(x_min, y, lerpf(z_perto, z_longe, t)), giro])
+					"dir":
+						lugares.append([Vector3(x_max, y, lerpf(z_perto, z_longe, t)), giro])
+	return lugares
 
 
 ## Um MÓVEL da casa: o modelo do catálogo, na largura pedida, ou — para os que

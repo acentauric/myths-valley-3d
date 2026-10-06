@@ -61,6 +61,14 @@ const ESPERA_FORA := ["casa"]
 const CONDUZ_ATE := 2.4
 const ESPERA_QUEM_FICA := 6.5
 const VOLTA_A_ANDAR := 4.0
+## NÃO FICA ATOLADO NO MEIO DO CAMINHO. A malha pode mandar por um corpo que ela não conhecia (uma peça
+## nova da cena, a casca de um prédio): o Pedro anda contra ele sem sair do lugar, o jogador espera atrás
+## ("o Pedro está esperando você") e o tutorial para ali para sempre — a partida jogada do zero ficou 600 s
+## de jogo parada na rua da praça. Depois de DESATOLA_APOS segundos de passo sem sair do lugar, ele salta
+## para o ponto livre do caminho mais adiante (o primeiro de DESATOLA_PULOS que não tem corpo em cima).
+const DESATOLA_APOS := 10.0
+const DESATOLA_PULOS := [6.0, 10.0, 14.0, 20.0]
+var _atolado_s := 0.0
 ## AS CASAS ELE CONDUZ ATÉ A PORTA, do lado de fora: a herdada, onde ele não
 ## entra, e as de quem mora — a dele, na ida aos machados do avô, e a da Dona
 ## Zefa. A âncora de uma casa é o meio dela, e conduzir até lá era levar o
@@ -265,7 +273,7 @@ func _physics_process(delta: float) -> void:
 	var interiores := get_tree().get_first_node_in_group("interiores")
 	if interiores != null:
 		var sala_do_jogador: String = interiores.contem(onde_esta)
-		if sala_do_jogador in ESPERA_FORA:
+		if sala_do_jogador in ESPERA_FORA or interiores.espera_fora(sala_do_jogador):
 			# Na casa ele não entra: espera de lado para a porta, do lado de fora
 			# — e, se já estava dentro, sai pela porta primeiro.
 			var sala = interiores.sala_de(sala_do_jogador)
@@ -312,6 +320,7 @@ func _conduzir(delta: float, cadeia: Node = null) -> void:
 	_quadro_da_conducao = Engine.get_physics_frames()
 	_avisar_quem_ficou(_esperando_quem_ficou and falta.length() > CONDUZ_ATE)
 	if _esperando_quem_ficou or falta.length() <= CONDUZ_ATE:
+		_atolado_s = 0.0
 		_mover(Vector3.ZERO, ANDAR, delta)
 		_olhar_para(onde_esta, delta)
 		return
@@ -321,6 +330,51 @@ func _conduzir(delta: float, cadeia: Node = null) -> void:
 	var correndo := jogador.has_method("is_running") and bool(jogador.call("is_running"))
 	_mover(rumo.normalized() if rumo.length() > 0.05 else Vector3.ZERO, CORRER if correndo else ANDAR, delta)
 	_pedir_passagem(rumo)
+	var andou := Vector2(get_real_velocity().x, get_real_velocity().z).length()
+	if rumo.length() > 0.05 and andou < ANDAR * 0.25:
+		_atolado_s += delta
+		if _atolado_s >= DESATOLA_APOS:
+			_atolado_s = 0.0
+			_saltar_para_o_caminho_livre()
+	else:
+		_atolado_s = maxf(_atolado_s - delta * 2.0, 0.0)
+
+
+## Salta para o primeiro ponto do caminho, a pelo menos DESATOLA_PULOS[i] unidades de caminho adiante, que
+## não tem corpo em cima (uma esfera de 0,45 u na camada 1). Sem caminho ou sem ponto livre, fica onde está.
+func _saltar_para_o_caminho_livre() -> void:
+	if _caminho.size() < 2:
+		return
+	var espaco := get_world_3d().direct_space_state
+	for pulo in DESATOLA_PULOS:
+		var andado := 0.0
+		var anterior := global_position
+		for i in range(maxi(_ponto_da_vez, 0), _caminho.size()):
+			var ponto: Vector3 = _caminho[i]
+			andado += Vector2(ponto.x - anterior.x, ponto.z - anterior.z).length()
+			anterior = ponto
+			if andado < float(pulo):
+				continue
+			var esfera := SphereShape3D.new()
+			esfera.radius = 0.45
+			var pergunta := PhysicsShapeQueryParameters3D.new()
+			pergunta.shape = esfera
+			pergunta.transform = Transform3D(Basis.IDENTITY, ponto + Vector3(0.0, 0.9, 0.0))
+			pergunta.collision_mask = 1
+			pergunta.exclude = [get_rid()]
+			if espaco.intersect_shape(pergunta, 1).is_empty():
+				push_warning("GuiaPedro: atolado em %s, saltou para %s do caminho (a malha passa por um corpo que ela não conhecia)" % [str(global_position), str(ponto)])
+				global_position = ponto + Vector3(0.0, 0.05, 0.0)
+				velocity = Vector3.ZERO
+				_ponto_da_vez = i
+				_refazer_em = 0.0
+				_preso = 0.0
+				_desvios = 0
+				_desvio_tempo = 0.0
+				_lado_desvio = 0.0
+				_ponto_bloqueio = Vector3.INF
+				return
+			break
 
 
 ## QUEM BARRA A CONDUÇÃO DÁ PASSAGEM, como dá ao jogador
@@ -363,7 +417,7 @@ func _destino_da_conducao(cadeia: Node = null) -> Vector3:
 	var interiores := get_tree().get_first_node_in_group("interiores")
 	if interiores != null:
 		var sala_do_destino: String = interiores.contem(destino)
-		if sala_do_destino in ESPERA_FORA or sala_do_destino in CONDUZ_ATE_A_PORTA:
+		if sala_do_destino in ESPERA_FORA or sala_do_destino in CONDUZ_ATE_A_PORTA or interiores.espera_fora(sala_do_destino):
 			var espera: Vector3 = interiores.sala_de(sala_do_destino).lugar_de_esperar_fora()
 			return terreno.ground_position(espera, 0.05) if terreno != null else espera
 	return destino
@@ -508,6 +562,14 @@ func _escolher_a_fala() -> Dictionary:
 		"texto": String(IdiomaMenu.campo(fala, "texto", "")),
 		"voz": _voz_do_arquivo(String(fala.get("audio", ""))),
 	}
+
+
+## OS AVISOS DE FILA TRANCADA DO PEDRO SAEM UMA VEZ CADA (`npc._fila_que_avisa`). Ele tem muitas filas
+## que esperam alguma coisa (a chapada, o mirante, a fé, a lapa, as de depois do tutorial) e as
+## `falas_depois` dele: o aviso a cada E tomava a conversa dele para sempre, e o jogador que só queria
+## trocar uma palavra ouvia "A chapada vai esperar" de novo. Dito uma vez, ele volta às falas.
+func _repete_o_aviso() -> bool:
+	return false
 
 
 ## A FALA DO PEDRO VAI PARA O AVISO DO HUD (`narrou`) quando ela entra no ar, e

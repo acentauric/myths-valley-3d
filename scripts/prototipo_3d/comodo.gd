@@ -35,6 +35,9 @@ const Camadas = preload("res://scripts/prototipo_3d/camadas.gd")
 const CAMADA_DO_COMODO := 1 << 10
 const CAMADA_DOS_CORPOS := 1 << 11
 
+## A espessura da parede de fábrica. A de cada cômodo é `parede`: a casca que mede
+## pouco por dentro (a palhoça, a capelinha) leva parede fina, para a sala não
+## sair de dentro dela nem ficar menor que um quarto de gente (ver `configurar`).
 const PAREDE := 0.4
 
 const CAL := Color("efe8d8")
@@ -42,6 +45,8 @@ const MADEIRA := Color("5b3a22")
 const MADEIRA_CLARA := Color("8a5f3a")
 const PEDRA := Color("cfc6b2")
 
+## A espessura da parede deste cômodo (`parede` em `configurar`).
+var parede := PAREDE
 ## As medidas do cômodo, por dentro (ver `configurar`).
 var largura := 4.6
 var comprimento := 7.8
@@ -99,13 +104,14 @@ var _moveis: Array[Dictionary] = []
 ## chão sem estorvo na frente da porta; e a porta: porta_x, largura_da_porta e
 ## altura_da_porta. Chamar antes de entrar na árvore.
 func configurar(medidas: Dictionary) -> void:
+	parede = clampf(float(medidas.get("parede", PAREDE)), 0.12, PAREDE)
 	largura = maxf(float(medidas.get("largura", largura)), 3.0)
 	comprimento = maxf(float(medidas.get("comprimento", comprimento)), _comprimento_minimo())
 	pe_direito = clampf(float(medidas.get("pe_direito", pe_direito)), _pe_direito_minimo(), 6.6)
 	fundo_da_porta = maxf(float(medidas.get("fundo_da_porta", fundo_da_porta)), 0.0)
 	altura_da_soleira = maxf(float(medidas.get("soleira", altura_da_soleira)), 0.0)
 	degrau_de_fora = clampf(float(medidas.get("degrau_de_fora", 0.0)), 0.0, 1.2)
-	borda_do_alicerce = maxf(float(medidas.get("borda", 0.0)), PAREDE + fundo_da_porta)
+	borda_do_alicerce = maxf(float(medidas.get("borda", 0.0)), parede + fundo_da_porta)
 	afastamento_de_fora = clampf(float(medidas.get("livre", 3.0)) - 0.6, 0.7, 1.6)
 	largura_da_porta = clampf(float(medidas.get("largura_da_porta", largura_da_porta)), 0.8, 2.0)
 	altura_da_porta = clampf(float(medidas.get("altura_da_porta", altura_da_porta)), 1.9, pe_direito)
@@ -158,7 +164,7 @@ func soleira_de_dentro() -> Vector3:
 
 
 func soleira_de_fora() -> Vector3:
-	return to_global(Vector3(porta_x, -altura_da_soleira + 0.05, PAREDE + fundo_da_porta + afastamento_de_fora))
+	return to_global(Vector3(porta_x, -altura_da_soleira + 0.05, parede + fundo_da_porta + afastamento_de_fora))
 
 
 ## UM LUGAR DE ESPERAR DO LADO DE FORA: diante da fachada, do lado da porta que
@@ -167,7 +173,7 @@ func soleira_de_fora() -> Vector3:
 func lugar_de_esperar_fora() -> Vector3:
 	var lado := -1.0 if porta_x >= 0.0 else 1.0
 	var x := clampf(porta_x + lado * (largura_da_porta * 0.5 + 0.9), -largura * 0.5 - 0.6, largura * 0.5 + 0.6)
-	return to_global(Vector3(x, -altura_da_soleira + 0.05, PAREDE + fundo_da_porta + afastamento_de_fora + 0.9))
+	return to_global(Vector3(x, -altura_da_soleira + 0.05, parede + fundo_da_porta + afastamento_de_fora + 0.9))
 
 
 ## NO CORREDOR DA PORTA: alinhado com o vão, entre um pouco antes da soleira de
@@ -176,7 +182,7 @@ func lugar_de_esperar_fora() -> Vector3:
 func no_vao(ponto: Vector3) -> bool:
 	var local := to_local(ponto)
 	return absf(local.x - porta_x) <= largura_da_porta * 0.5 and local.z >= -1.4 \
-		and local.z <= PAREDE + fundo_da_porta + afastamento_de_fora + 0.5
+		and local.z <= parede + fundo_da_porta + afastamento_de_fora + 0.5
 
 
 # --- a casca: chão, paredes, forro --------------------------------------------
@@ -184,16 +190,16 @@ func no_vao(ponto: Vector3) -> bool:
 func _montar_casca() -> void:
 	var meio_z := -comprimento * 0.5
 	_montar_chao()
-	var lado_x := largura * 0.5 + PAREDE * 0.5
+	var lado_x := largura * 0.5 + parede * 0.5
 	for lado in [-1.0, 1.0]:
-		_caixa(Vector3(PAREDE, pe_direito, comprimento + PAREDE), Vector3(lado * lado_x, pe_direito * 0.5, meio_z - PAREDE * 0.5),
+		_caixa(Vector3(parede, pe_direito, comprimento + parede), Vector3(lado * lado_x, pe_direito * 0.5, meio_z - parede * 0.5),
 			_parede(), true, "Parede")
 		_barra_da_parede(lado)
-	_caixa(Vector3(largura + PAREDE * 2.0, pe_direito, PAREDE), Vector3(0, pe_direito * 0.5, -comprimento - PAREDE * 0.5),
+	_caixa(Vector3(largura + parede * 2.0, pe_direito, parede), Vector3(0, pe_direito * 0.5, -comprimento - parede * 0.5),
 		_parede(), true, "Fundos")
 	_barra_do_fundo()
 	# O forro, e as vigas por baixo dele, de lado a lado.
-	_teto.append(_caixa(Vector3(largura + PAREDE * 2.0, 0.2, comprimento + PAREDE * 2.0), Vector3(0, pe_direito + 0.1, meio_z),
+	_teto.append(_caixa(Vector3(largura + parede * 2.0, 0.2, comprimento + parede * 2.0), Vector3(0, pe_direito + 0.1, meio_z),
 		_forro(), not camera_de_cima, "Forro"))
 	var viga := 0.9
 	while viga < comprimento - 0.3:
@@ -245,18 +251,18 @@ func _forro() -> Material:
 ## fora, a rampa leva do chão à soleira.
 func _montar_porta() -> void:
 	var meia := largura_da_porta * 0.5
-	var borda := (largura + PAREDE * 2.0) * 0.5
+	var borda := (largura + parede * 2.0) * 0.5
 	for lado in [-1.0, 1.0]:
 		# Do lado do vão até a quina da fachada.
 		var junto_da_porta: float = porta_x + lado * meia
 		var trecho: float = borda - lado * junto_da_porta
-		_caixa(Vector3(trecho, pe_direito, PAREDE), Vector3(junto_da_porta + lado * trecho * 0.5, pe_direito * 0.5, PAREDE * 0.5),
+		_caixa(Vector3(trecho, pe_direito, parede), Vector3(junto_da_porta + lado * trecho * 0.5, pe_direito * 0.5, parede * 0.5),
 			_parede(), true, "Fachada")
 		var por_dentro: float = largura * 0.5 - lado * junto_da_porta
 		if por_dentro > 0.05:
 			_barra_da_fachada(por_dentro, junto_da_porta + lado * por_dentro * 0.5)
 		# O batente, e a folha aberta encostada na parede de dentro.
-		_caixa(Vector3(0.12, altura_da_porta, PAREDE + 0.04), Vector3(junto_da_porta + lado * 0.06, altura_da_porta * 0.5, PAREDE * 0.5),
+		_caixa(Vector3(0.12, altura_da_porta, parede + 0.04), Vector3(junto_da_porta + lado * 0.06, altura_da_porta * 0.5, parede * 0.5),
 			_cor(MADEIRA), false, "Batente")
 		var folha := minf(meia, maxf(por_dentro - 0.15, 0.2))
 		_caixa(Vector3(folha, altura_da_porta - 0.05, 0.06), Vector3(junto_da_porta + lado * (folha * 0.5 + 0.12), altura_da_porta * 0.5, -0.06),
@@ -265,11 +271,11 @@ func _montar_porta() -> void:
 		# dentro da parede do modelo.
 		if fundo_da_porta > 0.05:
 			_caixa(Vector3(0.2, altura_da_porta, fundo_da_porta + 0.1),
-				Vector3(junto_da_porta + lado * 0.1, altura_da_porta * 0.5, PAREDE + fundo_da_porta * 0.5), null, true, "Umbral")
+				Vector3(junto_da_porta + lado * 0.1, altura_da_porta * 0.5, parede + fundo_da_porta * 0.5), null, true, "Umbral")
 	var verga := pe_direito - altura_da_porta
 	if verga > 0.02:
-		_caixa(Vector3(largura_da_porta, verga, PAREDE), Vector3(porta_x, altura_da_porta + verga * 0.5, PAREDE * 0.5), _parede(), true, "Verga")
-	_caixa(Vector3(largura_da_porta + 0.24, 0.14, PAREDE + 0.04), Vector3(porta_x, altura_da_porta + 0.07, PAREDE * 0.5), _cor(MADEIRA), false, "Batente")
+		_caixa(Vector3(largura_da_porta, verga, parede), Vector3(porta_x, altura_da_porta + verga * 0.5, parede * 0.5), _parede(), true, "Verga")
+	_caixa(Vector3(largura_da_porta + 0.24, 0.14, parede + 0.04), Vector3(porta_x, altura_da_porta + 0.07, parede * 0.5), _cor(MADEIRA), false, "Batente")
 	# O ESCURO DA PORTA ABERTA, de fora: por cima da porta pintada da fachada do
 	# modelo, um vão escuro do tamanho dela. De dentro ele não se vê (só a
 	# frente da placa desenha), e o vão mostra o lado de fora.
@@ -282,7 +288,7 @@ func _montar_porta() -> void:
 	breu.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	breu.albedo_color = Color(0.045, 0.035, 0.03)
 	escuro.material_override = breu
-	escuro.position = Vector3(porta_x, altura_da_porta * 0.5, PAREDE + fundo_da_porta + 0.03)
+	escuro.position = Vector3(porta_x, altura_da_porta * 0.5, parede + fundo_da_porta + 0.03)
 	add_child(escuro)
 	_porta_aberta = escuro
 	# AS CORTINAS DA CÂMERA, nas duas pontas do vão: o braço da câmera
@@ -292,28 +298,33 @@ func _montar_porta() -> void:
 	# do lado de quem a câmera segue (`camera_do_lado_de_dentro`); estão na
 	# camada que só a câmera enxerga (a mesma da superfície do mar), e ninguém
 	# tropeça nelas.
-	_cortina_de_dentro = _cortina("CortinaDeDentro", PAREDE * 0.5)
+	_cortina_de_dentro = _cortina("CortinaDeDentro", parede * 0.5)
 	_cortina_de_fora = _cortina("CortinaDeFora", escuro.position.z)
 	camera_do_lado_de_dentro(false)
-	# A SOLEIRA: o chão do cômodo atravessa a parede da frente, e uma rampa
-	# curta o liga ao patamar de FORA. Quase sempre é um degrau de poucos dedos;
-	# rampa, para o pé não tropeçar no batente.
-	_caixa(Vector3(largura_da_porta + 0.4, 0.3, PAREDE), Vector3(porta_x, -0.15, PAREDE * 0.5), null, true, "Soleira")
+	_montar_a_soleira()
+
+
+## A SOLEIRA: o chão do cômodo atravessa a parede da frente, e uma rampa
+## curta o liga ao patamar de FORA. Quase sempre é um degrau de poucos dedos;
+## rampa, para o pé não tropeçar no batente. O casarão, que tem escada de pedra
+## na porta, a refaz (`interior_casarao.gd`).
+func _montar_a_soleira() -> void:
+	_caixa(Vector3(largura_da_porta + 0.4, 0.3, parede), Vector3(porta_x, -0.15, parede * 0.5), null, true, "Soleira")
 	if rampa_da_porta_inteira and degrau_de_fora > 0.05 and altura_da_soleira > 0.03:
 		# Da soleira, no chão de dentro, até além da quina, por cima dela: o
 		# quanto ela vai além da quina é o que a deixa uns dedos acima da
 		# quina, e nunca abaixo.
-		var ate_a_quina := borda_do_alicerce - PAREDE
+		var ate_a_quina := borda_do_alicerce - parede
 		var alem := maxf(0.8, ate_a_quina * degrau_de_fora / altura_da_soleira + 0.3)
-		_rampa("RampaDaPorta", largura_da_porta + 1.2, Vector2(PAREDE, 0.0),
+		_rampa("RampaDaPorta", largura_da_porta + 1.2, Vector2(parede, 0.0),
 			Vector2(borda_do_alicerce + alem, -altura_da_soleira - degrau_de_fora))
 		return
 	if altura_da_soleira > 0.03:
 		var corrida := maxf(altura_da_soleira * 2.5, fundo_da_porta + 0.35)
-		_rampa("RampaDaSoleira", largura_da_porta + 0.4, Vector2(PAREDE, 0.0), Vector2(PAREDE + corrida, -altura_da_soleira))
+		_rampa("RampaDaSoleira", largura_da_porta + 0.4, Vector2(parede, 0.0), Vector2(parede + corrida, -altura_da_soleira))
 	else:
 		_caixa(Vector3(largura_da_porta + 0.4, 0.3, fundo_da_porta + 0.3),
-			Vector3(porta_x, -0.15, PAREDE + (fundo_da_porta + 0.3) * 0.5), null, true, "Soleira")
+			Vector3(porta_x, -0.15, parede + (fundo_da_porta + 0.3) * 0.5), null, true, "Soleira")
 	# A RAMPA DO ALICERCE, por cima da quina dele. Quando a construção fica num
 	# alicerce um palmo acima do chão, a quina travava o corpo, que a encostava
 	# de viés — alta demais para chão, baixa demais para degrau. A rampa vai de
@@ -323,7 +334,7 @@ func _montar_porta() -> void:
 	if degrau_de_fora > 0.05:
 		var alto := Vector2(borda_do_alicerce - 0.25, -altura_da_soleira)
 		var baixo := Vector2(borda_do_alicerce + maxf(degrau_de_fora * 3.0, 0.8), -altura_da_soleira - degrau_de_fora)
-		_rampa("RampaDoAdro", largura + PAREDE * 2.0 + 1.0, alto, baixo + (baixo - alto).normalized() * 0.3, 0.0)
+		_rampa("RampaDoAdro", largura + parede * 2.0 + 1.0, alto, baixo + (baixo - alto).normalized() * 0.3, 0.0)
 
 
 ## A PORTA TRANCADA: a casa herdada fica fechada até a Dona Zefa dar a chave
@@ -339,7 +350,7 @@ func trancar(sim: bool) -> void:
 		if not sim:
 			return
 		_tranca = _caixa(Vector3(largura_da_porta + 0.3, altura_da_porta, 0.3),
-			Vector3(porta_x, altura_da_porta * 0.5, PAREDE + fundo_da_porta + 0.15), null, true, "PortaTrancada")
+			Vector3(porta_x, altura_da_porta * 0.5, parede + fundo_da_porta + 0.15), null, true, "PortaTrancada")
 	_tranca.process_mode = Node.PROCESS_MODE_INHERIT if sim else Node.PROCESS_MODE_DISABLED
 	if _porta_aberta != null:
 		_porta_aberta.visible = not sim
@@ -458,7 +469,7 @@ func _procedural(chave: String) -> Node3D:
 func _montar_luz() -> void:
 	var sonda := ReflectionProbe.new()
 	sonda.name = "LuzDeDentro"
-	sonda.size = Vector3(largura + PAREDE * 2.0, pe_direito + 0.6, comprimento + PAREDE * 2.0)
+	sonda.size = Vector3(largura + parede * 2.0, pe_direito + 0.6, comprimento + parede * 2.0)
 	sonda.position = Vector3(0, pe_direito * 0.5, -comprimento * 0.5)
 	sonda.interior = true
 	sonda.box_projection = true

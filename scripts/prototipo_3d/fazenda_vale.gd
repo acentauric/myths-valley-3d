@@ -320,7 +320,16 @@ func _levantar() -> void:
 	# O CASARÃO, de frente para o portão, com a escadaria.
 	var casarao := CatalogoAssets.instanciar("casarao_fazenda", self, _casarao, 1.0, 0.0)
 	if casarao != null:
-		CatalogoAssets.colisao("casarao_fazenda", casarao, self, _casarao, 1.0, 0.0)
+		var corpo := CatalogoAssets.colisao("casarao_fazenda", casarao, self, _casarao, 1.0, 0.0)
+		# REGISTRADO COMO AS OUTRAS CONSTRUÇÕES do vale (`world.construcoes` e a frente
+		# em `ancoras`): é por aí que o `Interiores` o acha e abre por dentro, quando o
+		# jogador chega perto — a caixa inteira sai e entram as paredes, a porta e a
+		# escadaria de pedra (`interior_casarao.gd`). A frente é a +Z, na direção do portão.
+		var construcoes = _mundo.get("construcoes")
+		if construcoes is Dictionary:
+			construcoes["Casarão"] = {"modelo": casarao, "colisao": corpo, "chave": "casarao_fazenda"}
+		if not _mundo.ancoras.has("CasarãoFrente"):
+			_mundo.ancoras["CasarãoFrente"] = Vector3.BACK
 	# O DESCAMPADO DE TERRA BATIDA, do portão ao pé da escadaria.
 	var regiao = _mundo.get("_region")
 	if regiao != null and _mundo.has_method("_terreiro_material"):
