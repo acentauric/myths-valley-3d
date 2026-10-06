@@ -32,6 +32,16 @@ extends Node3D
 ## cercado do cemitério (`cemiterio_vale.gd`) — pede `reassar()`. A malha velha
 ## vale até a nova entrar no mapa, e quem pede durante uma assada ganha outra
 ## logo depois, com o que mudou nesse meio tempo.
+##
+## A PRIMEIRA ASSADA ESPERA O `_ready` DO VALE ACABAR (`_primeira_assada`): a malha era
+## assada no meio dele, antes de o saveiro, o cercado da ponte e o resto nascerem, e a
+## segunda assada que as obras da ponte pediam era um acaso — entre uma e outra a malha
+## já estava "pronta" e não conhecia o barco atracado, que o morador (o Pedro, na ponta
+## da prancha, no primeiro minuto do jogo) atravessava. Uma assada só, com tudo.
+##
+## O CASCO DO SAVEIRO ATRACADO é obstáculo declarado (`_casco_do_saveiro`), e não o que a
+## malha acha do triângulo dele: o convés do casco virava chão ligado ao píer pela
+## prancha, e o contorno simplificado da malha raspava a quina do barco.
 
 signal pronta
 
@@ -67,6 +77,9 @@ var _agua := -INF
 var _sonda := Vector3.INF
 var _assando := false
 var _de_novo := false
+## Verdadeiro entre `configurar` e a primeira assada, que espera o `_ready` do vale
+## acabar: quem pede `reassar()` nesse intervalo não precisa de assada própria.
+var _adiada := false
 ## Quantas malhas já entraram no mapa: a primeira, e uma a cada `reassar`.
 var versao := 0
 
@@ -95,12 +108,20 @@ func configurar(mundo, raiz: Node) -> void:
 	var mapa: RID = get_world_3d().navigation_map
 	NavigationServer3D.map_set_cell_size(mapa, CELULA)
 	NavigationServer3D.map_set_cell_height(mapa, ALTURA_DA_CELULA)
+	# Adiada: o `_ready` do vale ainda cria o saveiro, o cercado da ponte e o cemitério.
+	_adiada = true
+	_primeira_assada.call_deferred()
+
+
+## A primeira assada, depois de o `_ready` que chamou `configurar` terminar de montar o vale.
+func _primeira_assada() -> void:
+	_adiada = false
 	_assar()
 
 
 ## O VALE MUDOU: assa de novo. Durante uma assada, fica pedida a próxima.
 func reassar() -> void:
-	if _malha == null:
+	if _malha == null or _adiada:
 		return
 	if _assando:
 		_de_novo = true
@@ -115,7 +136,24 @@ func _assar() -> void:
 	NavigationServer3D.parse_source_geometry_data(_malha, fonte, _raiz)
 	_troncos_da_mata(fonte, _malha.filter_baking_aabb)
 	_leito_dos_rios(fonte, _malha.filter_baking_aabb)
+	_casco_do_saveiro(fonte)
 	NavigationServer3D.bake_from_source_geometry_data_async(_malha, fonte, _ao_assar)
+
+
+## O CASCO DO SAVEIRO ATRACADO como obstáculo: o retângulo dele (`SaveiroVale.pegada_do_casco`),
+## do fundo da quilha até além da borda. SEM "carve", como os troncos: o buraco cresce do raio
+## do agente, e o caminho não raspa o casco. O mesmo obstáculo come o convés e o pedaço da
+## prancha que ficam dentro dele. Barco fora do píer: nada.
+func _casco_do_saveiro(fonte: NavigationMeshSourceGeometryData3D) -> void:
+	if not is_inside_tree():
+		return
+	var saveiro := get_tree().get_first_node_in_group("saveiro")
+	if saveiro == null or not saveiro.has_method("pegada_do_casco"):
+		return
+	var pegada: Dictionary = saveiro.pegada_do_casco()
+	if pegada.is_empty():
+		return
+	fonte.add_projected_obstruction(pegada["contorno"], float(pegada["elevacao"]), float(pegada["altura"]), false)
 
 
 func esta_pronta() -> bool:
