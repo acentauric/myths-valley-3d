@@ -35,6 +35,30 @@ func _run() -> void:
 	var tela_dia := _montar(tela_script, camada, tema, -1.0)
 	_assert(tela_dia.get_meta("noite") == false, "sem hora: relógio ao meio-dia dá a capa de dia")
 	tela_dia.free()
+
+	# 1b. Vídeo de fundo: mudo, em laço, entre a capa e o logotipo; sem o arquivo, só a capa.
+	for video in [tela_script.VIDEO_SOBREVOO]:
+		_assert(ResourceLoader.exists(video), "o vídeo existe: " + video)
+		var barra_video: ProgressBar = tela_script.mostrar(camada, tema, "teste", 12.0, video)
+		var tela_video: Control = barra_video.get_meta("tela")
+		var caixa := tela_video.get_node_or_null("Video") as Control
+		_assert(caixa != null, "a tela traz o vídeo " + video)
+		var player := caixa.get_node("Player") as VideoStreamPlayer
+		_assert(player.stream != null and player.loop, "o vídeo toca em laço")
+		_assert(player.volume_db <= -80.0, "o vídeo é mudo (-80 dB)")
+		_assert(caixa.clip_contents, "o vídeo é cortado na borda da tela")
+		var capa_indice := tela_video.get_node("Capa").get_index()
+		_assert(caixa.get_index() == capa_indice + 1, "o vídeo fica logo acima da capa")
+		_assert(tela_video.get_node("Marca").get_index() > caixa.get_index(), "o logotipo fica acima do vídeo")
+		tela_video.free()
+	var barra_sem: ProgressBar = tela_script.mostrar(camada, tema, "teste", 12.0, "res://assets/nao_existe.ogv")
+	var tela_sem: Control = barra_sem.get_meta("tela")
+	_assert(tela_sem.get_node_or_null("Video") == null and tela_sem.get_node_or_null("Capa") != null, "sem o arquivo do vídeo, fica só a capa")
+	tela_sem.free()
+	var barra_estatica: ProgressBar = tela_script.mostrar(camada, tema, "teste", 12.0)
+	var tela_estatica: Control = barra_estatica.get_meta("tela")
+	_assert(tela_estatica.get_node_or_null("Video") == null, "sem pedir vídeo, a tela segue estática")
+	tela_estatica.free()
 	camada.free()
 
 	# 2. Congelado na carga o relógio não anda; solto, volta a andar.
@@ -64,9 +88,14 @@ func _run() -> void:
 	await _esperar_cena("Vale3D")
 	_assert(absf(dia.hora - 17.5) < 0.1, "chegou às 17h30 (chegou às %.2f h)" % dia.hora)
 	_assert(not dia.congelado_na_carga, "relógio solto depois da montagem")
-	# A tela da entrada some no fade; só então a da saída pode ser procurada.
-	await create_timer(1.0).timeout
+	# A tela só sai quando o `_ready` do vale termina (carga_concluida, teto de 15 s), com
+	# 3 quadros de aquecimento e o fade; só então a da saída pode ser procurada.
+	_assert(current_scene.has_signal("carga_concluida"), "o vale avisa o fim da carga")
+	var limite_tela := Time.get_ticks_msec() + 25000
+	while root.find_child("TelaCarregamento", true, false) != null and Time.get_ticks_msec() < limite_tela:
+		await process_frame
 	_assert(root.find_child("TelaCarregamento", true, false) == null, "tela da entrada sumiu")
+	_assert(current_scene.carga_ok, "a tela só saiu com a carga do vale concluída")
 
 	# 4. Voltar ao menu às 21 h mostra a capa da noite.
 	dia.definir_hora(21.0)
@@ -78,7 +107,7 @@ func _run() -> void:
 
 	dia.hora_inicial = hora_inicial_antes
 	dia.velocidade = velocidade_antes
-	print("TELA_CARREGAMENTO_OK: %d horas avulsas, relógio na carga, entrada às 17h30 e saída às 21 h" % casos.size())
+	print("TELA_CARREGAMENTO_OK: %d horas avulsas, relógio na carga, entrada às 17h30, saída às 21 h e vídeo de fundo" % casos.size())
 	await create_timer(0.6).timeout
 	for child in root.get_node("Audio").get_children():
 		if child is AudioStreamPlayer:

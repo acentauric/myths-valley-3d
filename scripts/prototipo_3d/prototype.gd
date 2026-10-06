@@ -75,6 +75,11 @@ var ambiente: AmbienteVale
 ## o jogador acabou de ouvir, e é a resposta certa para "o que eu estou
 ## fazendo agora".
 signal missao_do_vale_mudou(texto: String, alvo: Vector3, indice: int, total: int)
+## O `_ready` inteiro terminou (moradores, bichos, telas, partida salva). A tela de
+## carregamento espera por ele depois de o mundo ficar pronto; `carga_ok` cobre quem
+## chega depois do aviso.
+signal carga_concluida
+var carga_ok := false
 
 var pedro: GuiaPedro
 var moradores: Array[MoradorNPC] = []
@@ -800,6 +805,8 @@ func _ready() -> void:
 	_atualizar_relogio()
 	print("PROTOTYPE_READY: estilo=%s hora=%s moradores=%d user_dir=%s" % [Estilo.modo, Dia.texto_hora(), moradores.size(), OS.get_user_data_dir()])
 	_pedir_os_retratos()
+	carga_ok = true
+	carga_concluida.emit()
 
 
 ## Entrou ou saiu de uma construção: o som de fora abafa e o HUD diz onde se

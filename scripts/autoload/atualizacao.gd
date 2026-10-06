@@ -21,6 +21,11 @@ extends Node
 ## gravável. No editor, nos testes ou numa pasta protegida, a oferta vira "baixar
 ## no site" e abre a página de download.
 ##
+## EDIÇÃO ESTÁTICA: a build do concurso Tripothon (preset "Windows Tripothon", feature
+## `tripothon`) é fixa para o evento. Nela nada consulta o site, baixa ou instala: o
+## estado fica PARADO para sempre e a abertura mostra a linha desativada
+## (`edicao_estatica()`).
+##
 ## NADA DE REDE SEM PEDIDO: a consulta só parte quando a abertura chama
 ## `verificar()`, uma vez por sessão, e só numa build exportada (ou com
 ## `--atualizacao-url=` dado à mão). No editor e na bateria de testes, que abrem
@@ -47,12 +52,17 @@ var manifesto: Dictionary = {}
 var progresso := 0.0
 var erro := ""
 
+## Só para o portão (tests/atualizacao.gd): finge a feature `tripothon` sem exportar.
+static var forcar_estatica := false
+
 var _http: HTTPRequest
 var _trabalho: Thread
 var _redirecionamentos := 0
 
 
 func _ready() -> void:
+	if edicao_estatica():
+		return
 	if _instalavel():
 		limpar_restos(OS.get_executable_path())
 	# `-- --atualizar-agora`: verifica, baixa e instala sem clique, e sai dizendo como
@@ -66,7 +76,7 @@ func _ready() -> void:
 ## Pergunta ao site pela build mais nova. Uma vez por sessão; sem rede, fica quieto.
 ## `--atualizacao-url=<url>` (argumento depois de `--`) troca o manifesto, para testar.
 func verificar() -> void:
-	if estado != Estado.PARADO or not (OS.has_feature("template") or _url_do_manifesto() != MANIFESTO):
+	if edicao_estatica() or estado != Estado.PARADO or not (OS.has_feature("template") or _url_do_manifesto() != MANIFESTO):
 		return
 	estado = Estado.VERIFICANDO
 	_http = HTTPRequest.new()
@@ -101,12 +111,12 @@ func build_nova() -> int:
 
 ## Instala sozinho? Se não, a oferta leva à página de download.
 func instala_sozinho() -> bool:
-	return _instalavel() and pasta_gravavel(OS.get_executable_path().get_base_dir())
+	return not edicao_estatica() and _instalavel() and pasta_gravavel(OS.get_executable_path().get_base_dir())
 
 
 ## O que o botão do rodapé faz: baixar e instalar, ou abrir o site.
 func atualizar() -> void:
-	if estado not in [Estado.DISPONIVEL, Estado.FALHOU]:
+	if edicao_estatica() or estado not in [Estado.DISPONIVEL, Estado.FALHOU]:
 		return
 	if not instala_sozinho():
 		OS.shell_open(pagina_de_download())
@@ -272,6 +282,11 @@ func _url_do_manifesto() -> String:
 		if argumento.begins_with("--atualizacao-url="):
 			return argumento.trim_prefix("--atualizacao-url=")
 	return MANIFESTO
+
+
+## A build do evento não se atualiza: o preset "Windows Tripothon" traz a feature.
+static func edicao_estatica() -> bool:
+	return forcar_estatica or OS.has_feature("tripothon")
 
 
 static func _instalavel() -> bool:

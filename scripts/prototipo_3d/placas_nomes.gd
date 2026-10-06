@@ -25,6 +25,9 @@ func configurar(jogador: Node3D, camada: Control) -> void:
 		if morador.get("nome_label") != null:
 			morador.nome_label.modulate.a = 0.0
 			morador.nome_label.outline_modulate.a = 0.0
+			# Sem camada nenhuma a câmera não o enfileira (com alfa zero ele ainda entrava
+			# na passada transparente); `visible` fica como está, que é o sinal de "sem balão".
+			morador.nome_label.layers = 0
 
 
 func _process(_delta: float) -> void:

@@ -11,7 +11,12 @@ const ACIMA_DA_AGUA := 0.02
 const LAMINA_MINIMA := 0.04
 
 var mundo: Node3D
+## Atualiza a cada `intervalo` ticks de física (o morador usa 4; o jogador, 1), com a `fase`
+## da instância para os moradores não atualizarem todos no mesmo tick.
+var intervalo := 1
+var fase := 0
 var _dono: CharacterBody3D
+var _tique := 0
 
 
 func _ready() -> void:
@@ -67,6 +72,9 @@ func _ready() -> void:
 
 
 func _physics_process(_delta: float) -> void:
+	_tique += 1
+	if intervalo > 1 and (_tique + fase) % intervalo != 0:
+		return
 	if _dono == null or mundo == null or not mundo.has_method("water_level"):
 		emitting = false
 		return

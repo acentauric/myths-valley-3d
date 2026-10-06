@@ -2720,8 +2720,10 @@
   ],
   "vegetation": {
     "seed": 1887,
-    "tree_count": 6234,
-    "clearing_m": 8.0
+    "tree_count": 3117,
+    "draw_count": 6234,
+    "clearing_m": 8.0,
+    "clearings_file": "res://data/mapas/clareiras_da_mata.json"
   },
   "bathymetry": {
     "data": "res://data/mapas/bom_jesus_dos_pobres_batimetria.bin",

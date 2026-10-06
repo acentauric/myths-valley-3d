@@ -1,0 +1,126 @@
+﻿
+======== A/B ab_cpu  (vista: {"alternancias": 23, "lugar": "praca", "rumo_graus": 270, "scripts_congelados": false}) ========
+  como jogado : 5.2 fps  193.23 ms | gpu 87.402 subgpu 30.441 cpu-rs 1.947 | proc 3.683 fis 159.667 srv 3.965 x8.0 cauda 25.913 | draws 924 tri 4656409
+  base inicial: 7.1 fps  141.83 ms | gpu 59.856 subgpu 25.814 cpu-rs 1.864 | proc 3.673 fis 126.258 srv 3.325 x7.91 cauda 8.573 | draws 937 tri 4682267
+  base final  : 8.2 fps  121.21 ms | gpu 48.315 subgpu 16.061 cpu-rs 1.858 | proc 3.895 fis 106.918 srv 2.581 x6.69 cauda 7.819 | draws 954 tri 4754838
+   +111.71 ms |   5.9-> 17.1 fps | gpu  85.5-> 41.9 | proc  3.47-> 3.50 | fis 142.43-> 40.96 x8.0->3.6 | tri  4.78M-> 4.75M | draws   958->  955 | n=1     script: fauna_vale.gd (1 nos, fisica) desligado
+   +106.41 ms |   6.4-> 19.6 fps | gpu  62.6-> 37.0 | proc  3.90-> 0.88 | fis 140.74->  0.38 x7.8->3.0 | tri  4.72M-> 4.71M | draws   940->  936 | n=307   CPU: TODOS os _process/_physics_process de script desligados
+    +96.14 ms |   6.6-> 17.9 fps | gpu  69.3-> 41.3 | proc  3.64-> 4.17 | fis 134.79->  0.46 x8.0->3.3 | tri  4.77M-> 4.76M | draws   956->  950 | n=136   CPU: todos os scripts com _physics_process desligados
+    +91.69 ms |   6.4-> 15.7 fps | gpu  63.7-> 44.1 | proc  4.19-> 3.50 | fis 137.43-> 44.10 x7.5->3.9 | tri  4.75M-> 4.74M | draws   953->  951 | n=22    script: bicho_de_casa.gd (22 nos, fisica) desligado
+    +76.00 ms |   7.6-> 18.0 fps | gpu  49.1-> 41.6 | proc  3.87-> 0.53 | fis 118.37->  0.15 x7.2->3.3 | tri  4.75M-> 4.75M | draws   954->  951 | n=1     jogo inteiro com processamento desligado (so desenha)
+    +73.41 ms |   6.7-> 13.2 fps | gpu  63.5-> 42.1 | proc  3.61-> 3.87 | fis 131.75-> 59.81 x8.0->4.5 | tri  4.73M-> 4.73M | draws   948->  947 | n=22    script: npc.gd (22 nos, fisica) desligado
+    +26.74 ms |   5.5->  6.4 fps | gpu  78.0-> 59.7 | proc  3.81-> 3.48 | fis 156.72->140.57 x8.0->8.0 | tri  4.79M-> 4.79M | draws   966->  968 | n=1     script: luta_vale.gd (1 nos, fisica) desligado
+    +21.13 ms |   5.3->  5.9 fps | gpu  54.9-> 51.4 | proc  4.15-> 3.54 | fis 176.63->156.84 x8.0->8.0 | tri  4.72M-> 4.71M | draws   948->  943 | n=24    script: espuma_agua.gd (24 nos, fisica) desligado
+    +17.54 ms |   6.1->  6.8 fps | gpu  70.0-> 69.6 | proc  4.63-> 2.26 | fis 147.63->134.01 x7.5->8.0 | tri  4.76M-> 4.76M | draws   958->  954 | n=10    script: bando_de_chao.gd (10 nos) desligado
+    +16.62 ms |   5.2->  5.7 fps | gpu  60.5-> 56.5 | proc  4.22-> 3.71 | fis 178.74->163.16 x8.0->8.0 | tri  4.73M-> 4.73M | draws   948->  947 | n=25    script: authored_animator.gd (25 nos) desligado
+    +12.59 ms |   5.3->  5.7 fps | gpu  68.6-> 82.4 | proc  3.95-> 3.42 | fis 169.40->161.66 x8.0->8.0 | tri  4.79M-> 4.79M | draws   968->  966 | n=1     script: vida.gd (1 nos, fisica) desligado
+    +12.16 ms |   5.8->  6.2 fps | gpu  71.8-> 79.0 | proc  3.62-> 3.45 | fis 153.01->141.51 x8.0->8.0 | tri  4.73M-> 4.74M | draws   948->  951 | n=37    script: cardume.gd (37 nos, fisica) desligado
+    +10.49 ms |   6.8->  7.3 fps | gpu  68.7-> 57.7 | proc  3.84-> 2.80 | fis 125.52->118.83 x7.8->7.7 | tri  4.70M-> 4.68M | draws   938->  938 | n=50    animacao: AnimationPlayers parados
+     +5.03 ms |   6.3->  6.5 fps | gpu  81.0-> 68.2 | proc  3.62-> 3.61 | fis 139.31->128.65 x8.0->8.0 | tri  4.76M-> 4.76M | draws   954->  956 | n=1     script: tubarao.gd (1 nos, fisica) desligado
+     +2.68 ms |   6.6->  6.7 fps | gpu  75.4-> 59.3 | proc  3.65-> 3.54 | fis 136.28->129.80 x8.0->8.0 | tri  4.77M-> 4.77M | draws   956->  957 | n=1     script: guia_pedro.gd (1 nos, fisica) desligado
+     +2.44 ms |   6.2->  6.2 fps | gpu  58.3-> 71.3 | proc  3.46-> 3.57 | fis 148.26->141.97 x8.0->8.0 | tri  4.73M-> 4.73M | draws   948->  945 | n=23    script: balao_fala.gd (23 nos) desligado
+     -5.60 ms |   6.8->  6.5 fps | gpu  59.5-> 62.2 | proc  3.59-> 4.31 | fis 129.36->139.88 x8.0->7.8 | tri  4.74M-> 4.73M | draws   950->  949 | n=22    script: cadeia_de_missoes.gd (22 nos, fisica) desligado
+     -7.20 ms |   6.8->  6.5 fps | gpu  66.4-> 50.9 | proc  3.80-> 4.05 | fis 127.15->141.84 x7.9->8.0 | tri  4.69M-> 4.67M | draws   936->  929 | n=1     relogio do dia PARADO (a base e com ele andando, como no jogo)
+     -7.47 ms |   5.8->  5.6 fps | gpu  62.7-> 78.5 | proc  3.84-> 3.52 | fis 153.68->154.05 x8.0->8.0 | tri  4.77M-> 4.77M | draws   966->  964 | n=1     script: canoas.gd (1 nos, fisica) desligado
+    -10.83 ms |   5.9->  5.5 fps | gpu  72.1-> 56.9 | proc  3.88-> 3.63 | fis 149.24->166.22 x7.9->8.0 | tri  4.72M-> 4.72M | draws   942->  942 | n=74    script: animador_bicho.gd (74 nos) desligado
+    -12.78 ms |   6.3->  5.9 fps | gpu  73.8-> 82.5 | proc  4.03-> 4.36 | fis 137.38->145.79 x8.0->8.0 | tri  4.77M-> 4.76M | draws   960->  957 | n=2     script: criatura_vale.gd (2 nos, fisica) desligado
+    -18.56 ms |   6.7->  6.0 fps | gpu  63.2-> 69.7 | proc  3.82-> 3.55 | fis 130.93->149.80 x8.0->7.7 | tri  4.77M-> 4.76M | draws   962->  954 | n=1     script: player_controller.gd (1 nos, fisica) desligado
+    -37.92 ms |   6.7->  5.3 fps | gpu  60.8-> 72.7 | proc  3.75-> 4.70 | fis 132.57->173.32 x7.9->8.0 | tri  4.76M-> 4.74M | draws   956->  953 | n=1     fisica: servidor 3D inativo
+
+======== A/B ab_gpu  (vista: {"alternancias": 72, "lugar": "igreja", "rumo_graus": 90, "scripts_congelados": true}) ========
+  como jogado : 10.4 fps  96.54 ms | gpu 82.845 subgpu 8.411 cpu-rs 4.04 | proc 2.643 fis 48.381 srv 2.064 x5.75 cauda 43.447 | draws 1938 tri 8224982
+  base inicial: 11.1 fps  89.74 ms | gpu 79.227 subgpu 8.414 cpu-rs 3.248 | proc 0.614 fis 0.724 srv 0.066 x5.35 cauda 88.337 | draws 1919 tri 8184600
+  base final  : 11.4 fps  87.92 ms | gpu 77.584 subgpu 8.214 cpu-rs 4.037 | proc 0.7 fis 0.729 srv 0.069 x5.28 cauda 86.424 | draws 2177 tri 8354938
+    +50.55 ms |  11.5-> 27.6 fps | gpu  76.6-> 34.3 | proc  0.64-> 0.61 | fis   0.77->  0.34 x5.2->2.2 | tri  8.35M-> 3.39M | draws  2177-> 1428 | n=11    PACOTE D (agressivo): A + minimapa parado + mata x 0,35 + pecas 120 u + LOD 8 px + FSR1 0,67
+    +42.68 ms |  11.5-> 22.7 fps | gpu  76.5-> 41.9 | proc  0.63-> 0.57 | fis   0.71->  0.39 x5.2->2.7 | tri  8.35M-> 3.76M | draws  2174-> 1432 | n=11    PACOTE C: B + pecas com corte 120 u + LOD 4 px + FSR1 0,77
+    +37.38 ms |  11.5-> 20.1 fps | gpu  76.8-> 40.1 | proc  0.66-> 0.65 | fis   0.76->  0.52 x5.2->3.0 | tri  8.33M-> 5.61M | draws  2156-> 1599 | n=1864  cena: toda a vegetacao em MultiMesh escondida
+    +35.22 ms |  11.5-> 19.4 fps | gpu  76.6-> 49.6 | proc  0.64-> 0.60 | fis   0.73->  0.42 x5.2->3.1 | tri  8.32M-> 4.03M | draws  2152-> 1444 | n=7     PACOTE B: A + minimapa parado + distancias da mata x 0,5
+    +32.65 ms |  11.5-> 18.4 fps | gpu  76.6-> 47.5 | proc  0.66-> 0.66 | fis   0.83->  0.52 x5.2->3.2 | tri  8.31M-> 2.75M | draws  2137->  707 | n=833   cena: todas as malhas individuais escondidas (sobra a vegetacao)
+    +27.32 ms |  11.3-> 16.3 fps | gpu  78.3-> 50.9 | proc  0.62-> 0.63 | fis   0.74->  0.54 x5.3->3.7 | tri  8.35M-> 6.51M | draws  2175-> 2142 | n=2     mata: TODAS as distancias de corte x 0.35 (280->98 u, sub-bosque 85->29 u)
+    +21.38 ms |  11.3-> 15.0 fps | gpu  78.0-> 56.7 | proc  0.57-> 0.57 | fis   0.67->  0.52 x5.3->4.0 | tri  8.36M-> 6.84M | draws  2176-> 2148 | n=2     mata: TODAS as distancias de corte x 0.50 (280->140 u, sub-bosque 85->42 u)
+    +17.58 ms |  11.1-> 13.8 fps | gpu  79.7-> 61.8 | proc  0.64-> 0.68 | fis   0.76->  0.70 x5.4->4.4 | tri  8.47M-> 8.47M | draws  2158-> 2158 | n=1     render: escala 3D 0,50 bilinear
+    +14.38 ms |  11.6-> 13.9 fps | gpu  76.4-> 62.5 | proc  0.58-> 0.79 | fis   0.67->  0.79 x5.2->4.3 | tri  8.30M-> 6.51M | draws  2134-> 1788 | n=4     PACOTE A (so config): sem MSAA + FXAA + sombra 60 u + atlas 2048
+    +13.43 ms |  11.2-> 13.1 fps | gpu  79.5-> 66.3 | proc  0.69-> 0.75 | fis   0.83->  0.83 x5.4->4.5 | tri  8.47M-> 8.47M | draws  2158-> 2158 | n=1     render: escala 3D 0,67 bilinear
+    +13.37 ms |  11.2-> 13.2 fps | gpu  78.5-> 66.4 | proc  0.62-> 0.73 | fis   0.75->  0.72 x5.3->4.5 | tri  8.35M-> 4.61M | draws  2175-> 1166 | n=5     sombra: sol/lua sem sombra
+    +11.79 ms |  11.2-> 13.0 fps | gpu  78.2-> 67.8 | proc  0.63-> 0.63 | fis   0.79->  0.60 x5.3->4.6 | tri  8.35M-> 4.63M | draws  2175-> 1172 | n=833   sombra: malhas individuais sem projetar
+    +10.40 ms |  11.2-> 12.7 fps | gpu  78.9-> 68.3 | proc  0.57-> 0.57 | fis   0.66->  0.61 x5.3->4.8 | tri  8.42M-> 7.59M | draws  2167-> 2165 | n=2     mata: TODAS as distancias de corte x 0.70 (280->196 u, sub-bosque 85->59 u)
+     +9.37 ms |  11.1-> 12.4 fps | gpu  79.7-> 70.5 | proc  0.70-> 0.68 | fis   0.85->  0.73 x5.4->4.8 | tri  8.47M-> 8.47M | draws  2158-> 2158 | n=2     render: FSR1 0,67
+     +9.08 ms |  11.1-> 12.4 fps | gpu  79.7-> 70.7 | proc  0.67-> 0.62 | fis   0.80->  0.73 x5.4->4.9 | tri  8.47M-> 8.47M | draws  2158-> 2158 | n=1     render: escala 3D 0,77 bilinear
+     +8.91 ms |  11.1-> 12.3 fps | gpu  79.6-> 70.9 | proc  0.60-> 0.59 | fis   0.71->  0.65 x5.4->4.8 | tri  8.33M-> 8.47M | draws  2038-> 2158 | n=1     render: MSAA 3D desligado (hoje 2x)
+     +8.00 ms |  11.1-> 12.2 fps | gpu  79.8-> 72.0 | proc  0.72-> 0.69 | fis   0.86->  0.70 x5.4->4.9 | tri  8.47M-> 8.47M | draws  2158-> 2158 | n=2     render: sem MSAA + FXAA
+     +6.39 ms |  11.3-> 12.2 fps | gpu  77.7-> 71.6 | proc  0.60-> 0.70 | fis   0.71->  0.79 x5.3->4.9 | tri  8.35M-> 8.35M | draws  2176-> 2176 | n=27    luzes locais (omni/spot) escondidas
+     +6.03 ms |  11.5-> 12.4 fps | gpu  76.5-> 71.3 | proc  0.72-> 0.68 | fis   0.94->  0.77 x5.2->4.8 | tri  8.31M-> 6.65M | draws  2136-> 1878 | n=218   cena: todas as pecas GLB individuais do catalogo escondidas
+     +5.91 ms |  11.1-> 11.9 fps | gpu  79.8-> 73.8 | proc  0.64-> 0.65 | fis   0.77->  0.72 x5.4->5.0 | tri  8.47M-> 8.47M | draws  2158-> 2158 | n=2     render: FSR1 0,77
+     +5.25 ms |  11.6-> 12.4 fps | gpu  76.0-> 70.8 | proc  0.65-> 0.66 | fis   0.73->  0.70 x5.2->4.8 | tri  8.30M-> 7.76M | draws  2134-> 2119 | n=87    mata: grupo 'Mata_ jatoba' (87 blocos) escondido
+     +4.46 ms |  11.3-> 11.9 fps | gpu  78.1-> 73.6 | proc  0.78-> 0.66 | fis   0.94->  0.77 x5.3->5.0 | tri  8.35M-> 6.33M | draws  2175-> 1749 | n=5     sombra: distancia maxima 30 u
+     +4.43 ms |  11.1-> 11.7 fps | gpu  79.9-> 75.6 | proc  0.66-> 0.57 | fis   0.79->  0.62 x5.4->5.1 | tri  8.47M-> 7.76M | draws  2158-> 2168 | n=1     render: mesh_lod_threshold 16 px
+     +4.43 ms |  11.6-> 12.2 fps | gpu  76.3-> 80.0 | proc  0.56-> 0.68 | fis   0.69->  0.76 x5.2->5.0 | tri  8.30M-> 7.29M | draws  2133-> 1780 | n=3     SubViewports: atualizacao desligada
+     +4.41 ms |  11.0-> 11.6 fps | gpu  80.3-> 76.3 | proc  0.66-> 0.56 | fis   0.83->  0.63 x5.5->5.2 | tri  8.47M-> 8.02M | draws  2158-> 2160 | n=1     render: mesh_lod_threshold 8 px
+     +4.18 ms |  11.6-> 12.1 fps | gpu  76.4-> 80.4 | proc  0.60-> 0.61 | fis   0.70->  0.69 x5.2->5.0 | tri  8.30M-> 7.28M | draws  2133-> 1636 | n=39    HUD: todas as CanvasLayer escondidas
+     +3.84 ms |  11.5-> 12.1 fps | gpu  76.4-> 73.2 | proc  0.67-> 0.69 | fis   0.83->  0.81 x5.2->5.0 | tri  8.31M-> 7.23M | draws  2134-> 1980 | n=224   cena: pecas GLB com corte a 60 u
+     +3.61 ms |  11.3-> 11.8 fps | gpu  78.0-> 74.4 | proc  0.72-> 0.70 | fis   0.87->  0.84 x5.3->5.1 | tri  8.35M-> 6.56M | draws  2175-> 1827 | n=5     sombra: distancia maxima 60 u
+     +3.32 ms |  11.6-> 12.1 fps | gpu  76.2-> 72.8 | proc  0.69-> 0.64 | fis   0.77->  0.80 x5.2->5.0 | tri  8.30M-> 8.26M | draws  2133-> 2125 | n=35    mata: grupo 'Mata_ jenipapeiro' (35 blocos) escondido
+     +3.23 ms |  11.6-> 12.0 fps | gpu  76.2-> 73.0 | proc  0.68-> 0.79 | fis   0.80->  1.02 x5.2->5.0 | tri  8.30M-> 8.28M | draws  2134-> 2119 | n=74    mata: grupo 'Mata_ jequitiba' (74 blocos) escondido
+     +3.06 ms |  11.0-> 11.4 fps | gpu  80.2-> 77.4 | proc  0.71-> 0.67 | fis   0.87->  0.81 x5.4->5.2 | tri  8.47M-> 8.18M | draws  2158-> 2156 | n=1     render: mesh_lod_threshold 4 px (hoje 1)
+     +2.75 ms |  11.6-> 12.0 fps | gpu  75.9-> 73.7 | proc  0.63-> 0.67 | fis   0.74->  0.77 x5.1->5.0 | tri  8.30M-> 7.26M | draws  2133-> 2125 | n=1     shader: malhas com terreno.gdshader escondidas
+     +2.70 ms |  11.5-> 11.8 fps | gpu  77.0-> 77.0 | proc  0.61-> 0.70 | fis   0.67->  0.81 x5.2->5.1 | tri  8.35M-> 8.35M | draws  2176-> 2176 | n=2     ceu: INCREMENTAL + radiancia 128
+     +2.59 ms |  11.3-> 11.7 fps | gpu  78.0-> 75.3 | proc  0.79-> 0.56 | fis   0.91->  0.64 x5.3->5.1 | tri  8.35M-> 7.06M | draws  2175-> 1905 | n=5     sombra: 2 cascatas (PSSM2)
+     +2.36 ms |  11.6-> 11.9 fps | gpu  76.0-> 73.7 | proc  0.62-> 0.68 | fis   0.73->  0.76 x5.1->4.9 | tri  8.30M-> 8.30M | draws  2133-> 2131 | n=1     shader: malhas com agua_mar.gdshader escondidas
+     +2.31 ms |  11.6-> 11.9 fps | gpu  76.1-> 74.1 | proc  0.60-> 0.60 | fis   0.70->  0.61 x5.2->5.0 | tri  8.30M-> 8.14M | draws  2133-> 2091 | n=8     shader: malhas com estrada_acostamento.gdshader escondidas
+     +2.11 ms |  11.5-> 11.8 fps | gpu  76.5-> 74.4 | proc  0.64-> 0.67 | fis   0.84->  0.67 x5.2->5.1 | tri  8.31M-> 7.87M | draws  2136-> 2084 | n=224   cena: pecas GLB com corte a 120 u (visibility_range_end)
+     +2.03 ms |  11.4-> 11.6 fps | gpu  77.6-> 75.8 | proc  0.75-> 0.64 | fis   0.85->  0.74 x5.2->5.2 | tri  8.35M-> 8.35M | draws  2175-> 2176 | n=1     sombra: atlas direcional 2048 (hoje 4096)
+     +1.70 ms |  11.5-> 11.7 fps | gpu  76.7-> 75.3 | proc  0.71-> 0.60 | fis   0.90->  0.81 x5.2->5.1 | tri  8.31M-> 7.95M | draws  2136-> 2070 | n=51    cena: malhas com esqueleto (skin) escondidas
+     +1.40 ms |  11.6-> 11.7 fps | gpu  76.5-> 75.0 | proc  0.69-> 0.60 | fis   0.79->  0.72 x5.2->5.2 | tri  8.30M-> 8.26M | draws  2132-> 2114 | n=108   mata: grupo 'Mata_ embauba' (108 blocos) escondido
+     +1.21 ms |  11.5-> 11.7 fps | gpu  76.5-> 75.5 | proc  0.71-> 0.61 | fis   0.81->  0.73 x5.2->5.1 | tri  8.30M-> 7.99M | draws  2133-> 2128 | n=2     shader: malhas com leito_mar.gdshader escondidas
+     +1.18 ms |  11.3-> 11.4 fps | gpu  78.5-> 77.2 | proc  0.67-> 0.58 | fis   0.80->  0.67 x5.3->5.3 | tri  8.35M-> 8.31M | draws  2175-> 2173 | n=1056  mata: lod_bias 0,25 nos blocos (hoje 0,65)
+     +0.94 ms |  11.4-> 11.6 fps | gpu  77.2-> 76.3 | proc  0.67-> 0.64 | fis   0.91->  1.00 x5.2->5.2 | tri  8.35M-> 8.35M | draws  2176-> 2176 | n=1     ambiente: fundo cor solida (sem shader de ceu, sem radiancia)
+     +0.91 ms |  11.6-> 11.7 fps | gpu  76.1-> 75.6 | proc  0.60-> 0.71 | fis   0.71->  0.71 x5.2->5.2 | tri  8.30M-> 8.29M | draws  2131-> 2130 | n=1     peca: Filo (2 x 14760 tri) escondida
+     +0.87 ms |  11.6-> 11.7 fps | gpu  76.3-> 75.7 | proc  0.63-> 0.67 | fis   0.71->  0.80 x5.2->5.2 | tri  8.30M-> 8.23M | draws  2133-> 2120 | n=2     shader: malhas com areia_praia.gdshader escondidas
+     +0.69 ms |  11.5-> 11.6 fps | gpu  76.5-> 75.9 | proc  0.73-> 0.75 | fis   0.83->  0.95 x5.2->5.2 | tri  8.30M-> 8.29M | draws  2132-> 2128 | n=42    mata: grupo 'Mata_ massaranduba' (42 blocos) escondido
+     +0.63 ms |  11.1-> 11.2 fps | gpu  78.8-> 78.4 | proc  0.70-> 0.68 | fis   0.88->  0.85 x5.4->5.4 | tri  8.35M-> 8.35M | draws  2175-> 2175 | n=1864  sombra: vegetacao (MultiMesh) sem projetar
+     +0.53 ms |  11.6-> 11.6 fps | gpu  76.1-> 75.9 | proc  0.66-> 0.58 | fis   0.79->  0.73 x5.2->5.2 | tri  8.30M-> 8.30M | draws  2131-> 2131 | n=25    peca: Galinha (25 x 3885 tri) escondida
+     +0.50 ms |  11.4-> 11.4 fps | gpu  77.6-> 77.1 | proc  0.73-> 0.69 | fis   0.90->  0.78 x5.3->5.2 | tri  8.35M-> 8.35M | draws  2176-> 2176 | n=1     ambiente: fog_enabled desligado
+     +0.43 ms |  11.4-> 11.4 fps | gpu  77.5-> 77.0 | proc  0.69-> 0.74 | fis   0.84->  0.94 x5.3->5.3 | tri  8.35M-> 8.35M | draws  2176-> 2176 | n=27    luzes locais sem sombra
+     +0.42 ms |  11.6-> 11.6 fps | gpu  76.3-> 75.8 | proc  0.62-> 0.68 | fis   0.71->  0.88 x5.2->5.2 | tri  8.30M-> 8.21M | draws  2133-> 2122 | n=4     shader: malhas com leito_rio.gdshader escondidas
+     +0.36 ms |  11.6-> 11.6 fps | gpu  76.4-> 76.0 | proc  0.63-> 0.78 | fis   0.78->  1.01 x5.2->5.2 | tri  8.35M-> 8.35M | draws  2176-> 2176 | n=1     ambiente: reflexo desligado (reflected_light_source)
+     +0.33 ms |  11.1-> 11.1 fps | gpu  79.8-> 79.6 | proc  0.65-> 0.57 | fis   0.76->  0.66 x5.4->5.4 | tri  8.47M-> 8.47M | draws  2158-> 2176 | n=1     camera: far 600 (hoje 2800)
+     +0.31 ms |  11.3-> 11.4 fps | gpu  77.9-> 77.9 | proc  0.71-> 0.68 | fis   0.84->  0.82 x5.3->5.3 | tri  8.35M-> 8.35M | draws  2175-> 2175 | n=156   mata: so o sub-bosque a 30 u
+     +0.27 ms |  11.5-> 11.5 fps | gpu  76.6-> 76.4 | proc  0.58-> 0.62 | fis   0.71->  0.72 x5.2->5.2 | tri  8.30M-> 8.30M | draws  2132-> 2112 | n=46    Label3D escondidos
+     +0.26 ms |  11.6-> 11.6 fps | gpu  76.2-> 76.1 | proc  0.67-> 0.63 | fis   0.86->  0.79 x5.2->5.2 | tri  8.30M-> 8.30M | draws  2133-> 2133 | n=2     shader: malhas com foz_rio.gdshader escondidas
+     +0.25 ms |  11.6-> 11.6 fps | gpu  76.4-> 76.0 | proc  0.69-> 0.75 | fis   0.78->  0.86 x5.2->5.2 | tri  8.30M-> 8.26M | draws  2132-> 2132 | n=41    mata: grupo 'Mata_ ipe_amarelo' (41 blocos) escondido
+     +0.23 ms |  11.5-> 11.6 fps | gpu  76.4-> 76.6 | proc  0.58-> 0.72 | fis   0.68->  0.87 x5.2->5.2 | tri  8.30M-> 8.30M | draws  2133-> 2131 | n=43    particulas 3D escondidas
+     +0.20 ms |  11.3-> 11.3 fps | gpu  78.0-> 77.7 | proc  0.67-> 0.64 | fis   0.79->  0.75 x5.3->5.3 | tri  8.35M-> 8.35M | draws  2175-> 2175 | n=156   mata: so o sub-bosque a 50 u (hoje 85)
+     +0.18 ms |  11.6-> 11.6 fps | gpu  76.2-> 76.0 | proc  0.67-> 0.64 | fis   0.84->  0.76 x5.2->5.2 | tri  8.30M-> 8.28M | draws  2133-> 2132 | n=2     shader: malhas com agua_rio.gdshader escondidas
+     +0.09 ms |  11.6-> 11.7 fps | gpu  75.8-> 75.6 | proc  0.67-> 0.68 | fis   0.72->  0.78 x5.1->5.1 | tri  8.30M-> 8.26M | draws  2131-> 2133 | n=1     peca: Mangueira (1 x 20453 tri) escondida
+     -0.14 ms |  11.6-> 11.6 fps | gpu  75.9-> 75.9 | proc  0.69-> 0.64 | fis   0.77->  0.73 x5.1->5.2 | tri  8.30M-> 8.30M | draws  2131-> 2131 | n=4     peca: Gato Malhado (4 x 5599 tri) escondida
+     -0.18 ms |  11.2-> 11.2 fps | gpu  78.3-> 78.6 | proc  0.73-> 0.63 | fis   0.86->  0.71 x5.3->5.4 | tri  8.35M-> 8.35M | draws  2175-> 2175 | n=1     sombra: filtro duro (hoje qualidade 2)
+     -0.31 ms |  11.6-> 11.5 fps | gpu  76.2-> 76.7 | proc  0.66-> 0.67 | fis   0.78->  0.80 x5.2->5.2 | tri  8.30M-> 8.30M | draws  2134-> 2132 | n=9     mata: grupo 'Paisagismo_ bananeira_leve 230' (9 blocos) escondido
+     -0.42 ms |  11.6-> 11.5 fps | gpu  76.1-> 76.3 | proc  0.69-> 0.74 | fis   0.82->  0.84 x5.2->5.2 | tri  8.30M-> 8.30M | draws  2131-> 2131 | n=7     peca: Pintinho (7 x 3653 tri) escondida
+     -0.53 ms |  11.6-> 11.5 fps | gpu  76.1-> 76.6 | proc  0.58-> 0.57 | fis   0.63->  0.65 x5.2->5.2 | tri  8.30M-> 8.30M | draws  2132-> 2110 | n=7     shader: malhas com cruzamento.gdshader escondidas
+     -0.54 ms |  11.6-> 11.6 fps | gpu  75.9-> 76.2 | proc  0.69-> 0.69 | fis   0.74->  0.72 x5.2->5.2 | tri  8.30M-> 8.30M | draws  2134-> 2131 | n=156   mata: grupo 'Sub-bosque' (156 blocos) escondido
+     -0.76 ms |  11.5-> 11.4 fps | gpu  76.5-> 77.1 | proc  0.67-> 0.57 | fis   0.91->  0.67 x5.2->5.3 | tri  8.35M-> 8.35M | draws  2176-> 2176 | n=1     ambiente: nevoa sem perspectiva aerea (nao le a radiancia)
+     -0.91 ms |  11.4-> 11.3 fps | gpu  77.2-> 78.3 | proc  0.69-> 0.85 | fis   0.80->  1.02 x5.3->5.3 | tri  8.35M-> 8.35M | draws  2177-> 2196 | n=2     render: FSR2 0,67 (com TAA proprio)
+     -1.34 ms |  11.5-> 11.4 fps | gpu  76.5-> 77.6 | proc  0.61-> 0.72 | fis   0.67->  0.88 x5.2->5.2 | tri  8.30M-> 8.30M | draws  2132-> 1942 | n=53    shader: malhas com (shader embutido) escondidas
+     -1.75 ms |  11.5-> 11.3 fps | gpu  76.6-> 79.7 | proc  0.61-> 0.62 | fis   0.71->  0.79 x5.2->5.3 | tri  8.35M-> 8.35M | draws  2176-> 2176 | n=1     ceu: process_mode INCREMENTAL (hoje 3 = tempo real)
+    -14.43 ms |  11.5->  9.9 fps | gpu  76.8-> 80.0 | proc  0.59-> 0.61 | fis   0.65->  0.87 x5.2->6.1 | tri  8.35M-> 8.35M | draws  2176-> 2176 | n=1     ceu: process_mode QUALITY (so refaz quando muda)
+
+======== HORAS ========
+   6.0h    11.2 fps  gpu   78.8  proc 2.76  fis 34.90 x5.35  luzes 27  tri 8.760.540 draws 2463
+   9.0h    11.3 fps  gpu   78.5  proc 2.04  fis 34.54 x5.29  luzes 15  tri 8.266.064 draws 2135
+  12.0h    11.4 fps  gpu   76.1  proc 1.91  fis 28.10 x5.22  luzes 15  tri 7.364.603 draws 1859
+  15.0h    11.4 fps  gpu   76.0  proc 2.21  fis 35.99 x5.22  luzes 15  tri 7.377.286 draws 1724
+  17.5h    11.7 fps  gpu   75.8  proc 2.45  fis 41.11 x5.17  luzes 15  tri 7.456.301 draws 1783
+  19.0h    13.7 fps  gpu   65.3  proc 2.45  fis 37.95 x4.52  luzes 22  tri 4.602.198 draws 1173
+  21.0h    13.3 fps  gpu   65.8  proc 2.29  fis 35.43 x4.5  luzes 22  tri 4.588.000 draws 1174
+   0.0h    13.3 fps  gpu   65.7  proc 1.91  fis 29.21 x4.48  luzes 22  tri 4.572.263 draws 1172
+  COM V-SYNC: 10.9 fps  mediana 88.68 ms  p95 105.86 ms  max 106.22 ms
+
+======== PASSEIO ========
+   {"fisica_passos_por_quadro": 4.72, "fisica_scripts_ms": 29.968, "fps_medio": 12.5, "marcos": [{"de": "pier", "distancia_u": 86.0, "para": "praca", "quadro": 0}, {"de": "praca", "distancia_u": 109.3, "para": "igreja", "quadro": 93}, {"de": "igreja", "distancia_u": 70.9, "para": "venda", "quadro": 230}, {"de": "venda", "distancia_u": 93.2, "para": "casa_de_taipa", "quadro": 365}, {"de": "casa_de_taipa", "distancia_u": 14.6, "para": "lavoura", "quadro": 498}, {"de": "lavoura", "distancia_u": 14.6, "para": "rocado", "quadro": 528}, {"de": "rocado", "distancia_u": 370.3, "para": "mirante", "quadro": 551}], "max_ms": 354.016998291016, "mediana_ms": 80.0559997558594, "monitores": {"buffers_mb": 136.6, "fisica_corpos_ativos": 16.0, "fisica_ilhas": 16.0, "fisica_pares": 486.0, "memoria_estatica_mb": 470.4, "nos": 5966.0, "nos_orfaos": 0.0, "objetos": 14697.0, "recursos": 1960.0, "tempo_fisica_max_ms": 7.7, "tempo_navegacao_ms": 0.01, "tempo_process_max_ms": 54.8, "texturas_mb": 1625.0, "video_mb": 1826.5}, "p95_ms": 130.819000244141, "p99_ms": 187.016998291016, "process_scripts_ms": 2.719, "quadros": 1055, "quadros_acima_de_100ms": 94, "quadros_acima_de_33ms": 1054, "quadros_acima_de_50ms": 979, "rs_cpu_ms": 1.89, "rs_gpu_ms": 64.134, "segundos": 84.6}
+
+======== GPU (nvidia-smi: usada MiB, total, uso %, temp, W, clock) ========
+  vale pronto            t=    59s  3133, 6144, 65, 63, 16.68, 345  | godot video 1822.5 MB (tex 1624.1, buf 134.1)
+  inicio do A/B cpu      t=    66s  3133, 6144, 72, 63, 11.73, 300  | godot video 1816.7 MB (tex 1619.4, buf 133.0)
+  fim do A/B cpu         t=   172s  3133, 6144, 50, 65, 9.55, 300  | godot video 1816.8 MB (tex 1619.4, buf 133.2)
+  inicio do A/B gpu      t=   180s  3135, 6144, 70, 66, 12.88, 1140  | godot video 1816.9 MB (tex 1619.4, buf 133.2)
+  fim do A/B gpu         t=   549s  3399, 6144, 100, 67, 12.79, 1140  | godot video 1820.1 MB (tex 1619.4, buf 135.8)

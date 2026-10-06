@@ -1,0 +1,46 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.312 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce GTX 1660 Ti with Max-Q Design
+
+DEPURACAO: começando em praca
+PROTOTYPE_READY: estilo=tripo hora=07:46 moradores=22 user_dir=P:/w/MythsValleyPrototype3D
+MEDIR_FPS: vale pronto em 48106 ms (jogo 48106 ms)
+MEDIR_FPS: censo pronto, 5846 nos
+MEDIR_FPS vista pier               pior  10.2 FPS (rumo  45) gpu 77.0 ms cpu-rs 2.3 ms proc 3.26 ms fis 77.77 ms x5.6 draws 1267 tri 7880214
+MEDIR_FPS vista praca              pior   5.3 FPS (rumo 270) gpu 39.2 ms cpu-rs 1.7 ms proc 3.49 ms fis 178.22 ms x8.0 draws 950 tri 4697901
+MEDIR_FPS vista igreja             pior  10.1 FPS (rumo  90) gpu 87.8 ms cpu-rs 3.2 ms proc 2.25 ms fis 39.27 ms x5.9 draws 1944 tri 8931638
+MEDIR_FPS vista venda              pior  10.9 FPS (rumo  90) gpu 82.2 ms cpu-rs 3.6 ms proc 2.68 ms fis 27.39 ms x5.5 draws 1903 tri 8422862
+MEDIR_FPS vista casa_de_taipa      pior  10.5 FPS (rumo 135) gpu 79.5 ms cpu-rs 3.6 ms proc 2.53 ms fis 34.72 ms x5.5 draws 1865 tri 8123573
+MEDIR_FPS vista lavoura            pior   9.8 FPS (rumo  90) gpu 88.5 ms cpu-rs 2.7 ms proc 3.12 ms fis 24.55 ms x6.1 draws 1701 tri 7711716
+MEDIR_FPS vista rocado             pior  10.7 FPS (rumo 135) gpu 78.6 ms cpu-rs 3.4 ms proc 2.74 ms fis 24.77 ms x5.5 draws 1870 tri 8159657
+MEDIR_FPS vista fogueira           pior   9.5 FPS (rumo  90) gpu 93.4 ms cpu-rs 3.4 ms proc 2.84 ms fis 48.34 ms x6.3 draws 1611 tri 8084241
+MEDIR_FPS vista mirante            pior   9.1 FPS (rumo 270) gpu 96.6 ms cpu-rs 3.0 ms proc 2.33 ms fis 16.35 ms x6.6 draws 1133 tri 8593784
+MEDIR_FPS vista cemiterio          pior   9.6 FPS (rumo  90) gpu 92.8 ms cpu-rs 2.1 ms proc 2.87 ms fis 23.88 ms x6.3 draws 1036 tri 7683198
+MEDIR_FPS vista ponte_da_vila      pior  10.3 FPS (rumo  45) gpu 85.7 ms cpu-rs 1.8 ms proc 2.65 ms fis 19.68 ms x5.8 draws 835 tri 6741257
+MEDIR_FPS vista terreiro           pior   9.5 FPS (rumo   0) gpu 90.0 ms cpu-rs 2.2 ms proc 2.28 ms fis 24.71 ms x6.3 draws 1090 tri 7586367
+MEDIR_FPS vista gameleira          pior  10.3 FPS (rumo  45) gpu 86.1 ms cpu-rs 2.3 ms proc 2.24 ms fis 43.34 ms x5.8 draws 917 tri 7390109
+MEDIR_FPS vista expansao           pior  10.0 FPS (rumo 135) gpu 87.0 ms cpu-rs 2.4 ms proc 2.42 ms fis 22.76 ms x6.0 draws 1072 tri 7135646
+MEDIR_FPS vista portao_da_fazenda  pior  10.1 FPS (rumo 135) gpu 86.9 ms cpu-rs 3.2 ms proc 2.12 ms fis 22.04 ms x5.9 draws 1625 tri 7922114
+MEDIR_FPS vista casa_da_estrada    pior   6.0 FPS (rumo 135) gpu 88.6 ms cpu-rs 1.8 ms proc 3.46 ms fis 145.55 ms x8.0 draws 942 tri 7264231
+MEDIR_FPS A/B em praca rumo 270: 138 alternancias
+MEDIR_FPS AB   1/138   -1.00 ms  (6.3 -> 6.3 FPS)  gpu 63.3->36.4  proc 3.56->3.48  fis 144.75->146.99  render: MSAA 3D desligado (hoje 2x)
+MEDIR_FPS AB   2/138   +6.13 ms  (5.3 -> 5.1 FPS)  gpu 56.5->82.4  proc 3.84->3.59  fis 176.61->171.88  render: MSAA 3D 4x (comparacao)
+MEDIR_FPS AB   3/138  +12.16 ms  (5.2 -> 4.9 FPS)  gpu 67.8->36.1  proc 3.84->4.07  fis 178.05->189.99  render: escala 3D 0,77 bilinear
+MEDIR_FPS AB   4/138  +48.37 ms  (5.6 -> 4.4 FPS)  gpu 82.4->41.0  proc 3.58->4.09  fis 164.86->215.05  render: escala 3D 0,67 bilinear
+MEDIR_FPS AB   5/138  -25.76 ms  (6.2 -> 7.4 FPS)  gpu 78.5->30.2  proc 3.71->3.45  fis 145.05->123.81  render: escala 3D 0,50 bilinear
+MEDIR_FPS AB   6/138   -9.82 ms  (6.2 -> 6.6 FPS)  gpu 65.7->59.0  proc 3.71->3.69  fis 145.31->132.04  render: FSR1 0,77
+MEDIR_FPS AB   7/138  -18.50 ms  (6.0 -> 6.8 FPS)  gpu 57.0->55.0  proc 4.12->3.82  fis 151.17->134.03  render: FSR1 0,67
+MEDIR_FPS AB   8/138  +20.00 ms  (6.4 -> 5.7 FPS)  gpu 55.1->76.7  proc 4.57->4.07  fis 143.05->161.46  render: FXAA ligado (custo do FXAA)
+MEDIR_FPS AB   9/138   +6.12 ms  (6.3 -> 6.1 FPS)  gpu 66.1->79.2  proc 4.01->4.20  fis 142.66->138.85  render: sem MSAA + FXAA
+MEDIR_FPS AB  10/138   -3.04 ms  (6.2 -> 6.3 FPS)  gpu 71.6->67.1  proc 3.65->3.54  fis 141.41->146.65  render: mesh_lod_threshold 4 px (hoje 1)
+MEDIR_FPS AB  11/138   -0.24 ms  (6.5 -> 6.5 FPS)  gpu 66.6->48.9  proc 3.79->4.08  fis 136.06->138.51  render: mesh_lod_threshold 8 px
+MEDIR_FPS AB  12/138   -6.02 ms  (6.1 -> 6.3 FPS)  gpu 67.0->63.0  proc 3.64->3.54  fis 147.89->141.62  camera: far 600 (hoje 2800)
+MEDIR_FPS AB  13/138   -7.26 ms  (5.7 -> 5.9 FPS)  gpu 65.1->72.5  proc 3.99->3.90  fis 159.77->152.86  camera: far 300
+MEDIR_FPS AB  14/138  -18.66 ms  (5.9 -> 6.6 FPS)  gpu 66.8->68.3  proc 4.06->3.35  fis 154.06->135.43  sombra: sol/lua sem sombra
+MEDIR_FPS AB  15/138   -5.04 ms  (5.9 -> 6.1 FPS)  gpu 69.6->75.7  proc 3.84->4.00  fis 154.19->142.75  sombra: distancia maxima 60 u
+MEDIR_FPS AB  16/138   +4.98 ms  (5.6 -> 5.5 FPS)  gpu 76.7->91.6  proc 3.83->3.65  fis 157.02->153.80  sombra: distancia maxima 30 u
+MEDIR_FPS AB  17/138   +1.16 ms  (5.7 -> 5.7 FPS)  gpu 83.4->80.2  proc 3.66->3.59  fis 153.31->150.10  sombra: 2 cascatas (PSSM2)
+MEDIR_FPS AB  18/138  -10.08 ms  (6.0 -> 6.3 FPS)  gpu 68.1->59.8  proc 3.95->3.55  fis 152.78->146.68  sombra: ortogonal (1 cascata)
+MEDIR_FPS AB  19/138  -11.21 ms  (6.1 -> 6.6 FPS)  gpu 52.9->70.4  proc 3.94->3.76  fis 148.20->138.09  sombra: atlas direcional 2048 (hoje 4096)
+MEDIR_FPS AB  20/138  +59.05 ms  (6.4 -> 4.6 FPS)  gpu 48.2->69.5  proc 3.82->5.33  fis 143.60->198.41  sombra: filtro duro (hoje qualidade 2)
+MEDIR_FPS AB  21/138  -16.93 ms  (5.9 -> 6.5 FPS)  gpu 49.0->55.5  proc 4.07->3.58  fis 155.96->139.58  sombra: vegetacao (MultiMesh) sem projetar
+MEDIR_FPS AB  22/138  -22.16 ms  (5.7 -> 6.5 FPS)  gpu 57.8->64.7  proc 4.18->3.70  fis 161.72->139.06  sombra: malhas individuais sem projetar

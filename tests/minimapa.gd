@@ -18,10 +18,15 @@ extends SceneTree
 ## que o shader apaga — o jogador perderia a seta exatamente quando mais precisa
 ## dela, longe do alvo. Por isso o limite virou redondo, e é a pergunta 5.
 ##
-## Sete perguntas:
+## DESDE QUE O MINIMAPA VIROU FOTO (desempenho de 05/10): ele não desenha mais o vale
+## numa segunda câmera. A vista é uma textura recortada por shader, e o que segue o
+## jogador é o centro dela. As perguntas 2 e 8 cobram isso.
+##
+## Oito perguntas:
 ##
 ##   1. A BÚSSOLA ESTÁ NO HUD, quadrada, e dentro da janela.
-##   2. ELA É REDONDA: a vista tem máscara, e o aro tem raio de meio lado.
+##   2. ELA É REDONDA: a vista (um retângulo com shader, sem SubViewport) tem
+##      máscara, e o aro tem raio de meio lado.
 ##   3. SEM MISSÃO EM FOCO, não há losango de alvo.
 ##   4. COM MISSÃO EM FOCO, há losango, e ele cai do lado certo do jogador.
 ##   5. ALVO LONGE ENCOSTA NO ARO, e fica DENTRO do círculo — não na quina.
@@ -29,6 +34,8 @@ extends SceneTree
 ##      aponta. É o que separa "aponta a missão" de "aponta quem falou".
 ##   7. MISSÃO CUMPRIDA LIMPA O ALVO: bússola que aponta o que já foi feito
 ##      manda o jogador andar à toa.
+##   8. SEM SEGUNDO RENDER, E A FOTO SEGUE O JOGADOR: o minimapa não cria
+##      SubViewport, e o centro da textura acompanha onde o jogador está.
 
 var falhas := 0
 
@@ -79,9 +86,9 @@ func _run() -> void:
 	# Duas metades, e as duas têm de estar: a MÁSCARA apaga o mundo fora do
 	# círculo, e o ARO é a moldura. Só a moldura redonda com a vista quadrada
 	# deixaria o mapa vazando por baixo do aro.
-	var vista: SubViewportContainer = null
-	for no in bussola.find_children("*", "SubViewportContainer", true, false):
-		vista = no as SubViewportContainer
+	var vista: ColorRect = null
+	for no in bussola.find_children("*", "ColorRect", true, false):
+		vista = no as ColorRect
 	_conferir(vista != null, "a bússola não tem a vista do mundo")
 	if vista != null:
 		_conferir(vista.material is ShaderMaterial,
@@ -155,13 +162,36 @@ func _run() -> void:
 	_conferir(not bussola._tem_alvo,
 		"cumpri as duas missões e a bússola continuou apontando o lugar de uma delas")
 
+	# --- 8. SEM SEGUNDO RENDER, E A FOTO SEGUE O JOGADOR ---------------------
+	#
+	# O custo que a foto tirou foi o de um SubViewport no mesmo mundo, desenhando o
+	# vale de novo todo quadro. Se alguém trouxer um de volta, este portão acusa.
+	_conferir(bussola.find_children("*", "SubViewport", true, false).is_empty(),
+		"o minimapa criou um SubViewport: o vale voltaria a ser desenhado duas vezes por quadro")
+	_conferir(not bussola._sem_mapa,
+		"o minimapa não achou a foto do mapa (rode tools/prototipo_3d/capturar_minimapa.gd)")
+	if not bussola._sem_mapa:
+		var antes: Vector2 = bussola._material.get_shader_parameter("centro_uv")
+		var ponto: Vector3 = jogador.global_position
+		_conferir(antes.is_equal_approx(bussola.centro_da_vista(ponto)),
+			"o centro da textura está em %s e o jogador em %s deveria dar %s"
+				% [str(antes), str(ponto), str(bussola.centro_da_vista(ponto))])
+		# Um passo de 20 u a leste: o centro anda a leste na foto (u maior), e v não muda.
+		jogador.global_position = ponto + Vector3(20.0, 0.0, 0.0)
+		await _frames(4)
+		var depois: Vector2 = bussola._material.get_shader_parameter("centro_uv")
+		_conferir(bussola.visible, "o minimapa está escondido com a câmera do jogador ativa")
+		_conferir(depois.x > antes.x + 0.001 and absf(depois.y - antes.y) < 0.001,
+			"o jogador andou 20 u a leste e o centro foi de %s para %s" % [str(antes), str(depois)])
+		jogador.global_position = ponto
+
 	_fechar()
 
 
 func _fechar() -> void:
 	print("")
 	if falhas == 0:
-		print("MINIMAPA_OK: a bússola está no HUD, é quadrada e cabe na janela; a vista tem máscara redonda e o aro fecha o círculo; sem missão em foco não aponta nada; com missão em foco o losango cai do lado certo; alvo longe encosta no aro e fica dentro do círculo em vez da quina; fixar outra missão vira o marcador; e missão cumprida limpa o alvo")
+		print("MINIMAPA_OK: a bússola está no HUD, é quadrada e cabe na janela; a vista (textura com shader, sem SubViewport) tem máscara redonda e o aro fecha o círculo; sem missão em foco não aponta nada; com missão em foco o losango cai do lado certo; alvo longe encosta no aro e fica dentro do círculo em vez da quina; fixar outra missão vira o marcador; missão cumprida limpa o alvo; e o centro da foto acompanha o jogador sem segundo render")
 	else:
 		print("minimapa: %d falha(s)" % falhas)
 	quit(1 if falhas > 0 else 0)

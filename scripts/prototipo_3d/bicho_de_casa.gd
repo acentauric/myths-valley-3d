@@ -48,6 +48,9 @@ const TRAVADO_POR := 0.6
 const DESVIA_POR := 5.0
 ## O porco procura fruta até esta distância do chiqueiro.
 const FRUTA_ATE := 40.0
+## Sem fruteira no raio, o porco só procura de novo depois disto (s): world.arvores()
+## monta ~6.300 dicionários a cada chamada, e repetir isso por decisão custava 10–20 ms.
+const REPROCURA_FRUTA := 30.0
 const FRUTEIRAS := ["mangueira", "jaqueira", "mangueira_leve", "jaqueira_leve"]
 ## Lâmina (u) a partir da qual o bicho não pisa: o riacho, que o rio mais fundo
 ## não passa de 0,24, ele atravessa; o mar, não.
@@ -95,6 +98,7 @@ var _caminho_ate := Vector3.INF
 var _refazer_em := 0.0
 var _rng := RandomNumberGenerator.new()
 var _fruta := Vector3.INF
+var _fruta_procurada_em := -INF   ## quando procurou e não achou (s, relógio do jogo)
 var _travado := 0.0
 var _lugar := Vector3.INF
 var _longe_em := 0.0
@@ -309,8 +313,11 @@ func _perigo_para_o_gato() -> Vector3:
 func _rotina_do_porco(_delta: float) -> void:
 	var chiqueiro := lugar_de_casa()
 	if Dia.periodo() == "tarde":
-		if not _fruta.is_finite():
+		var agora := Time.get_ticks_msec() * 0.001
+		if not _fruta.is_finite() and agora - _fruta_procurada_em >= REPROCURA_FRUTA:
 			_fruta = _fruteira_perto(chiqueiro)
+			if not _fruta.is_finite():
+				_fruta_procurada_em = agora
 		if _fruta.is_finite():
 			# FUÇA debaixo da fruteira: anda devagar, para e mete o focinho.
 			_rondar(_fruta, 3.0, 0.6, true)

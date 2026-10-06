@@ -1,0 +1,445 @@
+﻿
+======== CONFIG ========
+  application/run/max_fps: 0
+  debanding: False
+  display/window/vsync/vsync_mode: 1
+  fisica_hz: 60
+  janela_px: [1920, 1080]
+  max_fps: 0
+  max_passos_fisica_por_quadro: 8
+  mesh_lod_threshold: 1.0
+  modo_janela: 3
+  msaa_3d: 1
+  occlusion_culling: False
+  physics/3d/physics_engine: DEFAULT
+  physics/common/max_physics_steps_per_frame: 8
+  physics/common/physics_ticks_per_second: 60
+  positional_shadow_atlas: 4096
+  rendering/anti_aliasing/quality/msaa_3d: 1
+  rendering/driver/threads/thread_model: 1
+  rendering/environment/glow/upscale_mode: 1
+  rendering/environment/ssao/quality: 2
+  rendering/global_illumination/gi/use_half_resolution: false
+  rendering/lights_and_shadows/directional_shadow/16_bits: true
+  rendering/lights_and_shadows/directional_shadow/size: 4096
+  rendering/lights_and_shadows/directional_shadow/soft_shadow_filter_quality: 2
+  rendering/lights_and_shadows/positional_shadow/atlas_size: 4096
+  rendering/lights_and_shadows/positional_shadow/soft_shadow_filter_quality: 2
+  rendering/limits/cluster_builder/max_clustered_elements: 512
+  rendering/mesh_lod/lod_change/threshold_pixels: 1.0
+  rendering/occlusion_culling/use_occlusion_culling: false
+  rendering/reflections/sky_reflections/ggx_samples: 32
+  rendering/reflections/sky_reflections/roughness_layers: 8
+  rendering/rendering_device/pipeline_cache/enable: true
+  rendering/scaling_3d/mode: 0
+  rendering/scaling_3d/scale: 1.0
+  rendering/shading/overrides/force_vertex_shading: false
+  rendering/textures/default_filters/anisotropic_filtering_level: 2
+  rendering/textures/vram_compression/import_s3tc_bptc: false
+  scaling_3d_mode: 0
+  scaling_3d_scale: 1.0
+  screen_space_aa: 0
+  taa: False
+  viewport_px: [1920, 1080]
+  vsync: 0
+  ambiente: {"adjustment_enabled": "false", "ambient_light_energy": "0.60000002384186", "ambient_light_source": "2", "background_mode": "0", "fog_aerial_perspective": "0.0", "fog_density": "0.00999999977648", "fog_enabled": "false", "fog_mode": "0", "fog_sky_affect": "1.0", "glow_enabled": "false", "reflected_light_source": "0", "sdfgi_enabled": "false", "ssao_enabled": "false", "ssil_enabled": "false", "ssr_enabled": "false", "tonemap_mode": "2", "volumetric_fog_enabled": "false"}
+  camera: {'far': 2800.0, 'fov': 58.0, 'near': 0.0799999982118607, 'projecao': 0}
+  subviewports:
+     {"cameras_3d": 1, "caminho": "/root/Mochila/@PanelContainer@4/@VBoxContainer@5/@HBoxContainer@11/@VBoxContainer@64/BonecoDaMochila/Palco", "disable_3d": false, "mesmo_mundo_da_tela": false, "msaa_3d": 2, "own_world_3d": true, "px": [216, 304], "transparente": true, "update_mode": 0, "visivel_pai": "false"}
+     {"cameras_3d": 1, "caminho": "/root/Vale3D/HUD/PrototypeHUD/Minimapa/@SubViewportContainer@1759/@SubViewport@1760", "disable_3d": false, "mesmo_mundo_da_tela": true, "msaa_3d": 0, "own_world_3d": false, "px": [170, 170], "transparente": false, "update_mode": 4, "visivel_pai": "true"}
+     {"cameras_3d": 1, "caminho": "/root/Vale3D/Retratos3D/Estudio_candinha", "disable_3d": false, "mesmo_mundo_da_tela": false, "msaa_3d": 2, "own_world_3d": true, "px": [256, 256], "transparente": true, "update_mode": 4, "visivel_pai": "?"}
+  montagem_ms: 48106
+  jogo_pronto_ms: 48106
+  estabilizado_ms: 52166
+  relogio: {'pausado_ao_chegar': False, 'segundos_por_hora': 10.0, 'velocidade': 3}
+  avisos: []
+
+======== CENSO ========
+  nos: 5.846
+  malhas_distintas: 499
+  mesh_instances_visiveis: 735
+  mesh_instances_com_sombra: 758
+  mesh_instances_com_visibility_range: 72
+  mesh_instances_com_skin: 52
+  tri_em_mesh_instances: 2.937.800
+  tri_em_mesh_instances_com_skin: 479.809
+  esqueletos: 52
+  ossos: 2.415
+  animation_players: 51
+  animation_players_tocando: 34
+  faces_trimesh: 274.026
+  areas_monitorando: 0
+  label3d: 46
+  audio_tocando: 9
+  controles: 762
+  controles_visiveis: 119
+  formas_de_colisao: {'BoxShape3D': 253, 'CapsuleShape3D': 46, 'ConcavePolygonShape3D': 26, 'ConvexPolygonShape3D': 1, 'CylinderShape3D': 110, 'HeightMapShape3D': 1, 'WorldBoundaryShape3D': 5}
+  corpos: {'AnimatableBody3D': 8, 'CharacterBody3D': 49, 'StaticBody3D': 354}
+  monitores: {'buffers_mb': 134.8, 'fisica_corpos_ativos': 33.0, 'fisica_ilhas': 33.0, 'fisica_pares': 511.0, 'memoria_estatica_mb': 406.8, 'nos': 5943.0, 'nos_orfaos': 0.0, 'objetos': 14463.0, 'recursos': 1942.0, 'tempo_fisica_max_ms': 29.88, 'tempo_navegacao_ms': 0.0, 'tempo_process_max_ms': 185.98, 'texturas_mb': 1624.4, 'video_mb': 1824.2}
+  por_classe (top 40): MultiMeshInstance3D=1864, Node3D=999, MeshInstance3D=834, CollisionShape3D=442, StaticBody3D=354, Label=244, Node=173, PanelContainer=96, Control=94, Panel=86, TextureRect=84, Skeleton3D=52, AnimationPlayer=51, VBoxContainer=51, CharacterBody3D=49, Label3D=46, CanvasLayer=39, HBoxContainer=32, Button=31, GPUParticles3D=29, AudioStreamPlayer3D=27, Decal=23, OmniLight3D=22, Area3D=21, ColorRect=16, AudioStreamPlayer=10, ScrollContainer=9, AnimatableBody3D=8, DirectionalLight3D=8, NinePatchRect=6, BoneAttachment3D=5, Camera3D=5, SpotLight3D=5, ProgressBar=4, ReflectionProbe=4, Timer=4, VSeparator=4, SubViewport=3, WorldEnvironment=3, GridContainer=2
+  process por script:
+        74  res://scripts/prototipo_3d/animador_bicho.gd
+        25  res://scripts/prototipo_3d/authored_animator.gd
+        23  res://scripts/prototipo_3d/balao_fala.gd
+        10  res://scripts/prototipo_3d/bando_de_chao.gd
+         3  res://scripts/prototipo_3d/interior_casa.gd
+         1  res://addons/godot_mcp/runtime/mcp_runtime.gd
+         1  res://scripts/autoload/atualizacao.gd
+         1  res://scripts/autoload/dia.gd
+         1  res://scripts/autoload/mare.gd
+         1  res://scripts/compartilhado/relogio.gd
+         1  res://scripts/prototipo_3d/achados_vale.gd
+         1  res://scripts/prototipo_3d/ambiente_vale.gd
+         1  res://scripts/prototipo_3d/arvores_info.gd
+         1  res://scripts/prototipo_3d/bichos_de_casa.gd
+         1  res://scripts/prototipo_3d/boneco_da_mochila.gd
+         1  res://scripts/prototipo_3d/casa_do_jogador.gd
+         1  res://scripts/prototipo_3d/cemiterio_vale.gd
+         1  res://scripts/prototipo_3d/conquista_da_missao.gd
+         1  res://scripts/prototipo_3d/dialogo_vale.gd
+         1  res://scripts/prototipo_3d/fazenda_vale.gd
+         1  res://scripts/prototipo_3d/geo_region_renderer.gd
+         1  res://scripts/prototipo_3d/interior_igreja.gd
+         1  res://scripts/prototipo_3d/interiores.gd
+         1  res://scripts/prototipo_3d/lapides.gd
+         1  res://scripts/prototipo_3d/lavoura_vale.gd
+         1  res://scripts/prototipo_3d/lombada_vale.gd
+         1  res://scripts/prototipo_3d/luta_vale.gd
+         1  res://scripts/prototipo_3d/luzes_epoca.gd
+         1  res://scripts/prototipo_3d/mapa_jogo.gd
+         1  res://scripts/prototipo_3d/marcos_da_fe.gd
+         1  res://scripts/prototipo_3d/minimapa.gd
+         1  res://scripts/prototipo_3d/pegadas.gd
+         1  res://scripts/prototipo_3d/pesca_vale.gd
+         1  res://scripts/prototipo_3d/placas_nomes.gd
+         1  res://scripts/prototipo_3d/player_controller.gd
+         1  res://scripts/prototipo_3d/ponte_vale.gd
+         1  res://scripts/prototipo_3d/prototype.gd
+         1  res://scripts/prototipo_3d/prototype_hud.gd
+         1  res://scripts/prototipo_3d/recursos_3d.gd
+         1  res://scripts/prototipo_3d/saveiro_vale.gd
+         1  res://scripts/prototipo_3d/seta_missao.gd
+         1  res://scripts/prototipo_3d/tecla_das_bancadas.gd
+         1  res://scripts/prototipo_3d/tecla_dos_moradores.gd
+  physics por script:
+        37  res://scripts/prototipo_3d/cardume.gd
+        24  res://scripts/prototipo_3d/espuma_agua.gd
+        22  res://scripts/prototipo_3d/bicho_de_casa.gd
+        22  res://scripts/prototipo_3d/cadeia_de_missoes.gd
+        22  res://scripts/prototipo_3d/npc.gd
+         2  res://scripts/prototipo_3d/criatura_vale.gd
+         1  res://scripts/compartilhado/vida.gd
+         1  res://scripts/prototipo_3d/canoas.gd
+         1  res://scripts/prototipo_3d/fauna_vale.gd
+         1  res://scripts/prototipo_3d/guia_pedro.gd
+         1  res://scripts/prototipo_3d/luta_vale.gd
+         1  res://scripts/prototipo_3d/player_controller.gd
+         1  res://scripts/prototipo_3d/tubarao.gd
+  interno por classe: {'AnimationPlayer': 34, 'AudioStreamPlayer': 4, 'AudioStreamPlayer3D': 5, 'GPUParticles3D': 29, 'RayCast3D': 1, 'Skeleton3D': 52, 'SpringArm3D': 1}
+
+======== LUZES ========
+   {"blend_splits": false, "caminho": "/root/Vale3D/Retratos3D/Estudio_candinha/@Node3D@1913/@DirectionalLight3D@1919", "classe": "DirectionalLight3D", "dist_max": 100.0, "energia": 0.850000023841858, "modo_sombra": 2, "sombra": false, "visivel": true}
+   {"blend_splits": false, "caminho": "/root/Vale3D/Retratos3D/Estudio_candinha/@Node3D@1913/@DirectionalLight3D@1918", "classe": "DirectionalLight3D", "dist_max": 100.0, "energia": 0.379999995231628, "modo_sombra": 2, "sombra": false, "visivel": true}
+   {"blend_splits": false, "caminho": "/root/Vale3D/Retratos3D/Estudio_candinha/@Node3D@1913/@DirectionalLight3D@1917", "classe": "DirectionalLight3D", "dist_max": 100.0, "energia": 1.25, "modo_sombra": 2, "sombra": false, "visivel": true}
+   {"alcance": 2.82946586608887, "caminho": "/root/Vale3D/Interiores/Interior_casa_zefa/Lampiao", "classe": "OmniLight3D", "energia": 0.75, "fade": false, "sombra": false, "visivel": true}
+   {"alcance": 3.01809692382813, "caminho": "/root/Vale3D/Interiores/Interior_casa_zefa/Lamparina_1", "classe": "OmniLight3D", "energia": 0.793931365013123, "fade": false, "sombra": false, "visivel": true}
+   {"alcance": 2.59999990463257, "caminho": "/root/Vale3D/Interiores/Interior_casa_zefa/LuzDoOratorio_0", "classe": "OmniLight3D", "energia": 0.430860161781311, "fade": false, "sombra": false, "visivel": true}
+   {"alcance": 5.28166961669922, "caminho": "/root/Vale3D/Interiores/Interior_casa_zefa/LuzDaJanela", "classe": "SpotLight3D", "energia": 2.59999990463257, "fade": false, "sombra": false, "visivel": true}
+   {"alcance": 2.82719707489014, "caminho": "/root/Vale3D/Interiores/Interior_casa_pedro/Lampiao", "classe": "OmniLight3D", "energia": 0.75, "fade": false, "sombra": false, "visivel": true}
+   {"alcance": 3.39263653755188, "caminho": "/root/Vale3D/Interiores/Interior_casa_pedro/Lamparina_0", "classe": "OmniLight3D", "energia": 0.930860161781311, "fade": false, "sombra": false, "visivel": true}
+   {"alcance": 5.27743434906006, "caminho": "/root/Vale3D/Interiores/Interior_casa_pedro/LuzDaJanela", "classe": "SpotLight3D", "energia": 2.59999990463257, "fade": false, "sombra": false, "visivel": true}
+   {"alcance": 2.91959953308105, "caminho": "/root/Vale3D/Interiores/Interior_casa/Lampiao", "classe": "OmniLight3D", "energia": 0.75, "fade": false, "sombra": false, "visivel": true}
+   {"alcance": 3.5035195350647, "caminho": "/root/Vale3D/Interiores/Interior_casa/Lamparina_0", "classe": "OmniLight3D", "energia": 1.03086018562317, "fade": false, "sombra": false, "visivel": true}
+   {"alcance": 5.4499192237854, "caminho": "/root/Vale3D/Interiores/Interior_casa/LuzDaJanela", "classe": "SpotLight3D", "energia": 2.59999990463257, "fade": false, "sombra": false, "visivel": true}
+   {"alcance": 5.59056663513184, "caminho": "/root/Vale3D/Interiores/Interior_igreja/Lampiao", "classe": "OmniLight3D", "energia": 0.75, "fade": false, "sombra": false, "visivel": true}
+   {"alcance": 6.44750881195068, "caminho": "/root/Vale3D/Interiores/Interior_igreja/@SpotLight3D@897", "classe": "SpotLight3D", "energia": 2.59999990463257, "fade": false, "sombra": false, "visivel": true}
+   {"alcance": 6.44750881195068, "caminho": "/root/Vale3D/Interiores/Interior_igreja/LuzDaJanela", "classe": "SpotLight3D", "energia": 2.59999990463257, "fade": false, "sombra": false, "visivel": true}
+   {"alcance": 4.47245359420776, "caminho": "/root/Vale3D/Interiores/Interior_igreja/Vela_1", "classe": "OmniLight3D", "energia": 1.19393134117126, "fade": false, "sombra": false, "visivel": true}
+   {"alcance": 4.47245359420776, "caminho": "/root/Vale3D/Interiores/Interior_igreja/Vela_0", "classe": "OmniLight3D", "energia": 1.2308601140976, "fade": false, "sombra": false, "visivel": true}
+   {"alcance": 9.0, "caminho": "/root/Vale3D/Cenario/LuzesDeEpoca/@OmniLight3D@779", "classe": "OmniLight3D", "energia": 0.0, "fade": false, "sombra": false, "visivel": false}
+   {"alcance": 9.0, "caminho": "/root/Vale3D/Cenario/LuzesDeEpoca/@OmniLight3D@778", "classe": "OmniLight3D", "energia": 0.0, "fade": false, "sombra": false, "visivel": false}
+   {"alcance": 4.5, "caminho": "/root/Vale3D/Cenario/LuzesDeEpoca/@OmniLight3D@773", "classe": "OmniLight3D", "energia": 0.0, "fade": false, "sombra": false, "visivel": false}
+   {"alcance": 4.5, "caminho": "/root/Vale3D/Cenario/LuzesDeEpoca/@OmniLight3D@770", "classe": "OmniLight3D", "energia": 0.0, "fade": false, "sombra": false, "visivel": false}
+   {"alcance": 4.5, "caminho": "/root/Vale3D/Cenario/LuzesDeEpoca/@OmniLight3D@767", "classe": "OmniLight3D", "energia": 0.0, "fade": false, "sombra": false, "visivel": false}
+   {"alcance": 3.5, "caminho": "/root/Vale3D/Cenario/LuzesDeEpoca/@OmniLight3D@765", "classe": "OmniLight3D", "energia": 0.0, "fade": false, "sombra": false, "visivel": false}
+   {"alcance": 7.5, "caminho": "/root/Vale3D/Cenario/LuzesDeEpoca/@OmniLight3D@762", "classe": "OmniLight3D", "energia": 0.0, "fade": false, "sombra": false, "visivel": false}
+   {"alcance": 3.5, "caminho": "/root/Vale3D/Cenario/LuzesDeEpoca/@OmniLight3D@758", "classe": "OmniLight3D", "energia": 0.0, "fade": false, "sombra": false, "visivel": false}
+   {"alcance": 4.5, "caminho": "/root/Vale3D/Cenario/LuzesDeEpoca/@OmniLight3D@755", "classe": "OmniLight3D", "energia": 0.0, "fade": false, "sombra": false, "visivel": false}
+   {"alcance": 7.5, "caminho": "/root/Vale3D/Cenario/LuzesDeEpoca/@OmniLight3D@753", "classe": "OmniLight3D", "energia": 0.0, "fade": false, "sombra": false, "visivel": false}
+   {"alcance": 7.5, "caminho": "/root/Vale3D/Cenario/LuzesDeEpoca/@OmniLight3D@748", "classe": "OmniLight3D", "energia": 0.0, "fade": false, "sombra": false, "visivel": false}
+   {"alcance": 7.5, "caminho": "/root/Vale3D/Cenario/LuzesDeEpoca/@OmniLight3D@743", "classe": "OmniLight3D", "energia": 0.0, "fade": false, "sombra": false, "visivel": false}
+   {"blend_splits": false, "caminho": "/root/Vale3D/Cenario/Lua", "classe": "DirectionalLight3D", "dist_max": 100.0, "energia": 0.0, "modo_sombra": 2, "sombra": false, "visivel": false}
+   {"blend_splits": false, "caminho": "/root/Vale3D/Cenario/Sol", "classe": "DirectionalLight3D", "dist_max": 180.0, "energia": 1.14999997615814, "modo_sombra": 2, "sombra": true, "visivel": true}
+   {"blend_splits": false, "caminho": "/root/Mochila/@PanelContainer@4/@VBoxContainer@5/@HBoxContainer@11/@VBoxContainer@64/BonecoDaMochila/Palco/Mundo/@DirectionalLight3D@1262", "classe": "DirectionalLight3D", "dist_max": 100.0, "energia": 0.800000011920929, "modo_sombra": 2, "sombra": false, "visivel": true}
+   {"blend_splits": false, "caminho": "/root/Mochila/@PanelContainer@4/@VBoxContainer@5/@HBoxContainer@11/@VBoxContainer@64/BonecoDaMochila/Palco/Mundo/@DirectionalLight3D@1261", "classe": "DirectionalLight3D", "dist_max": 100.0, "energia": 0.400000005960464, "modo_sombra": 2, "sombra": false, "visivel": true}
+   {"blend_splits": false, "caminho": "/root/Mochila/@PanelContainer@4/@VBoxContainer@5/@HBoxContainer@11/@VBoxContainer@64/BonecoDaMochila/Palco/Mundo/@DirectionalLight3D@1260", "classe": "DirectionalLight3D", "dist_max": 100.0, "energia": 1.20000004768372, "modo_sombra": 2, "sombra": false, "visivel": true}
+
+======== MAIORES MALHAS (tri x instancias) ========
+       174.384 =     9.688 x 18   /root/Vale3D/Cenario/@Node3D@509/tripo_node_8be39db8-0749-4754-b077-68ae2074a678
+       137.500 =   137.500 x 1    /root/Vale3D/Cenario/bom_jesus_dos_pobres/Fundo do mar
+       130.644 =   130.644 x 1    /root/Vale3D/Cenario/bom_jesus_dos_pobres/Terra
+       122.112 =     3.816 x 32   /root/Vale3D/Lombada/@Node3D@1804/tripo_node_dd9dbd6e-7e73-4161-9188-ae0b2b0c3584
+       102.265 =    20.453 x 5    /root/Vale3D/Cenario/@Node3D@524/tripo_node_abe689bd-9eb4-4fdd-8b09-d3447072f725
+        97.125 =     3.885 x 25   andoCasaDoCarpinteiro/Galinha2/Pose/GalinhaTripo/galinha_tripo/tripo_node_e708c1a5-c07b-4492-b979-99777d3121bb
+        79.401 =    11.343 x 7    /root/Vale3D/Cenario/@Node3D@690/tripo_node_1a6a166c-c665-4442-8d7c-2e7c94591cc4
+        61.680 =    15.420 x 4    /root/Vale3D/Cenario/@Node3D@530/tripo_node_1fafb40d-486f-4b54-81cb-0556e9e99fb9
+        59.012 =    14.753 x 4    /root/Vale3D/Cenario/@Node3D@457/tripo_node_a365e1b7-c4de-47f2-9f76-21dbe96041fd
+        55.003 =     4.231 x 13   /root/Vale3D/Interiores/Interior_casa_pedro/PoteTripo/tripo_node_cadb6594-b90b-498a-bb48-de1f5f6cd291
+        51.840 =     4.320 x 12   /root/Vale3D/Cenario/@Node3D@629/tripo_node_7e364e54-34bf-4753-9ab9-97767be096ac
+        49.770 =     2.370 x 21   /root/Vale3D/Cenario/@Node3D@1179/tripo_node_ac7492e1-3c9d-4e8e-89ef-d66d12b875ec
+        45.042 =    15.014 x 3    /root/Vale3D/Cenario/@Node3D@521/tripo_node_02088195-581c-44b2-8acb-956e4832cb03
+        44.040 =    14.680 x 3    /root/Vale3D/Cenario/@Node3D@703/tripo_node_c555017f-f0a9-4acb-adf7-e1c390110f53
+        43.640 =     5.455 x 8    /root/Vale3D/Cenario/@Node3D@685/tripo_node_c381d20a-63a6-4d28-8a89-0b24085d8108
+        38.920 =     4.865 x 8    /root/Vale3D/Cenario/@Node3D@1256/tripo_node_78bce9f7-4097-4562-ba44-f13a3c52586a
+        37.431 =    12.477 x 3    /root/Vale3D/Cenario/@Node3D@351/tripo_node_a411570a-eaa6-4a7a-a3e8-f712362de9af
+        34.776 =     3.864 x 9    /root/Vale3D/Interiores/Interior_casa_zefa/CandeeiroTripo/tripo_node_848c7c92-2056-4751-b30d-79b724212361
+        32.976 =     4.122 x 8    /root/Vale3D/Cenario/@Node3D@684/tripo_node_1765aab7-d122-4e78-9b29-0ffbaa657a72
+        32.128 =     4.016 x 8    /root/Vale3D/Interiores/Interior_igreja/@Node3D@913/tripo_node_1bf40edf-745c-4b12-81d4-ccd9b07b2c6e
+        30.836 =    15.418 x 2    /root/Vale3D/Cenario/@Node3D@512/tripo_node_f20da46f-824f-4c10-9bda-2dbb42071033
+        30.296 =    15.148 x 2    /root/Vale3D/Cenario/@Node3D@515/tripo_node_6b9c6818-ab7d-453d-976e-6b935654bc7e
+        29.432 =    14.716 x 2    /root/Vale3D/Cenario/@Node3D@534/tripo_node_f11b6d63-ef27-4b0b-8276-bc1b90381f9a
+        28.922 =    14.461 x 2    /root/Vale3D/Jogador/Visual/viajante_tripo/Armature/Skeleton3D/tripo_node_f1b49c50-7028-4d81-a187-4f3b48b6a1fd
+        28.436 =    14.218 x 2    ale3D/MoradorCandinha/Visual/CandinhaTripo/Armature/Skeleton3D/tripo_node_34c7a6c0-f11b-4a69-ba01-2c9cab4f89ae
+        25.571 =     3.653 x 7    andoCasaDoPescador/Pintinho6/Pose/PintinhoTripo/pintinho_tripo/tripo_node_3688b919-d8ad-4e0d-8358-2895cc979402
+        23.982 =     3.997 x 6    /root/Vale3D/Cenario/@Node3D@1191/tripo_node_b9a2cbb8-3d35-4c3a-abb0-0d75a8da6adc
+        23.828 =    11.914 x 2    /root/Vale3D/Cenario/@Node3D@591/tripo_node_43c59be5-7c8d-4c9f-909e-953fde962990
+        23.256 =     2.907 x 8    /root/Vale3D/Cenario/@Node3D@1200/tripo_node_b1ef4bb9-68b9-4844-aadd-9b1b507de9cf
+        22.396 =     5.599 x 4    /Pose/Gato MalhadoTripo/gato_malhado_tripo/Armature/Skeleton3D/tripo_node_0ce9902a-ed92-47af-ad54-17260ffa3034
+        20.804 =    10.402 x 2    /root/Vale3D/Cenario/@Node3D@407/tripo_node_dd212b6a-faa5-4ef2-8431-cd8aa0f8e103
+        18.432 =    18.432 x 1    /root/Vale3D/Cenario/bom_jesus_dos_pobres/Fundo do mar distante
+        17.778 =     2.963 x 6    /root/Vale3D/Cenario/@Node3D@1210/tripo_node_ecabbb34-5d20-436b-a43f-5c00a963a7f4
+        17.778 =     2.963 x 6    /root/Vale3D/Cenario/@Node3D@675/tripo_node_5c61eafd-1c36-469f-93c3-338e628dbfa2
+        17.772 =     5.924 x 3    /root/Vale3D/Cenario/@Node3D@725/tripo_node_d6aa0bbb-27b1-4072-9fc0-a45e93d07017
+        17.652 =     2.942 x 6    /root/Vale3D/Cenario/@Node3D@683/tripo_node_2170a21e-6a37-4547-8585-bcdf19a571ce
+        17.545 =     3.509 x 5    alinhaDangola4/Pose/Galinha DangolaTripo/galinha_dangola_tripo/tripo_node_d5e89711-a636-4c43-8cc0-10531e7a0b66
+        17.319 =    17.319 x 1    /root/Vale3D/Fazenda/Casarao FazendaTripo/tripo_node_a160def4-a3e3-421e-9a17-f51492bf3cb7
+        16.698 =     5.566 x 3    terBody3D@1679/Pose/Cachorro CarameloTripo/Armature/Skeleton3D/tripo_node_24d08381-b801-4222-a41a-e5ae51f6fa96
+        15.978 =    15.978 x 1    /root/Vale3D/Cenario/Pau BrasilTripo/tripo_node_3e2a33aa-2933-4e90-8240-cbd915f0ccda
+
+======== LODs DAS MAIORES ========
+  niveis=0  tri=    9.688  /root/Vale3D/Cenario/@Node3D@509/tripo_node_8be39db8-0749-4754-b077-68ae2074a678
+  niveis=0  tri=  130.644  /root/Vale3D/Cenario/bom_jesus_dos_pobres/Terra
+  niveis=2  tri=    3.816  /root/Vale3D/Lombada/@Node3D@1804/tripo_node_dd9dbd6e-7e73-4161-9188-ae0b2b0c3584
+  niveis=2  tri=   20.453  /root/Vale3D/Cenario/@Node3D@524/tripo_node_abe689bd-9eb4-4fdd-8b09-d3447072f725
+  niveis=1  tri=    3.885  Carpinteiro/Galinha2/Pose/GalinhaTripo/galinha_tripo/tripo_node_e708c1a5-c07b-4492-b979-99777d3121bb
+  niveis=1  tri=   11.343  /root/Vale3D/Cenario/@Node3D@690/tripo_node_1a6a166c-c665-4442-8d7c-2e7c94591cc4
+  niveis=1  tri=   15.420  /root/Vale3D/Cenario/@Node3D@530/tripo_node_1fafb40d-486f-4b54-81cb-0556e9e99fb9
+  niveis=2  tri=   14.753  /root/Vale3D/Cenario/@Node3D@457/tripo_node_a365e1b7-c4de-47f2-9f76-21dbe96041fd
+  niveis=1  tri=    4.231  root/Vale3D/Interiores/Interior_casa_pedro/PoteTripo/tripo_node_cadb6594-b90b-498a-bb48-de1f5f6cd291
+  niveis=0  tri=    4.320  /root/Vale3D/Cenario/@Node3D@629/tripo_node_7e364e54-34bf-4753-9ab9-97767be096ac
+  niveis=0  tri=    2.370  /root/Vale3D/Cenario/@Node3D@1179/tripo_node_ac7492e1-3c9d-4e8e-89ef-d66d12b875ec
+  niveis=1  tri=   15.014  /root/Vale3D/Cenario/@Node3D@521/tripo_node_02088195-581c-44b2-8acb-956e4832cb03
+  niveis=1  tri=   14.680  /root/Vale3D/Cenario/@Node3D@703/tripo_node_c555017f-f0a9-4acb-adf7-e1c390110f53
+  niveis=0  tri=    5.455  /root/Vale3D/Cenario/@Node3D@685/tripo_node_c381d20a-63a6-4d28-8a89-0b24085d8108
+  niveis=1  tri=    4.865  /root/Vale3D/Cenario/@Node3D@1256/tripo_node_78bce9f7-4097-4562-ba44-f13a3c52586a
+  niveis=2  tri=   12.477  /root/Vale3D/Cenario/@Node3D@351/tripo_node_a411570a-eaa6-4a7a-a3e8-f712362de9af
+  niveis=1  tri=    3.864  /Vale3D/Interiores/Interior_casa_zefa/CandeeiroTripo/tripo_node_848c7c92-2056-4751-b30d-79b724212361
+  niveis=1  tri=    4.122  /root/Vale3D/Cenario/@Node3D@684/tripo_node_1765aab7-d122-4e78-9b29-0ffbaa657a72
+  niveis=1  tri=    4.016  /root/Vale3D/Interiores/Interior_igreja/@Node3D@913/tripo_node_1bf40edf-745c-4b12-81d4-ccd9b07b2c6e
+  niveis=0  tri=   15.418  /root/Vale3D/Cenario/@Node3D@512/tripo_node_f20da46f-824f-4c10-9bda-2dbb42071033
+  niveis=0  tri=   15.148  /root/Vale3D/Cenario/@Node3D@515/tripo_node_6b9c6818-ab7d-453d-976e-6b935654bc7e
+  niveis=1  tri=   14.716  /root/Vale3D/Cenario/@Node3D@534/tripo_node_f11b6d63-ef27-4b0b-8276-bc1b90381f9a
+  niveis=2  tri=   14.461  3D/Jogador/Visual/viajante_tripo/Armature/Skeleton3D/tripo_node_f1b49c50-7028-4d81-a187-4f3b48b6a1fd
+  niveis=2  tri=   14.218  dorCandinha/Visual/CandinhaTripo/Armature/Skeleton3D/tripo_node_34c7a6c0-f11b-4a69-ba01-2c9cab4f89ae
+  niveis=1  tri=    3.653  Pescador/Pintinho6/Pose/PintinhoTripo/pintinho_tripo/tripo_node_3688b919-d8ad-4e0d-8358-2895cc979402
+  niveis=2  tri=    3.997  /root/Vale3D/Cenario/@Node3D@1191/tripo_node_b9a2cbb8-3d35-4c3a-abb0-0d75a8da6adc
+  niveis=1  tri=   11.914  /root/Vale3D/Cenario/@Node3D@591/tripo_node_43c59be5-7c8d-4c9f-909e-953fde962990
+  niveis=1  tri=    2.907  /root/Vale3D/Cenario/@Node3D@1200/tripo_node_b1ef4bb9-68b9-4844-aadd-9b1b507de9cf
+  niveis=2  tri=    5.599   MalhadoTripo/gato_malhado_tripo/Armature/Skeleton3D/tripo_node_0ce9902a-ed92-47af-ad54-17260ffa3034
+
+======== GLB INSTANCIADOS (catalogo) ========
+  total tri (soma tri x instancias): 1.370.170  em 219 instancias de 142 chaves
+        97.125 =     3.885 x 25   Galinha
+        28.436 =    14.218 x 2    Candinha
+        25.571 =     3.653 x 7    Pintinho
+        22.396 =     5.599 x 4    Gato Malhado
+        20.453 =    20.453 x 1    Mangueira
+        19.320 =     3.864 x 5    Candeeiro
+        17.545 =     3.509 x 5    Galinha Dangola
+        17.319 =    17.319 x 1    Casarao Fazenda
+        16.924 =     4.231 x 4    Pote
+        16.698 =     5.566 x 3    Cachorro Caramelo
+        15.978 =    15.978 x 1    Pau Brasil
+        15.720 =     5.240 x 3    Cachorro Malhado
+        15.420 =    15.420 x 1    Cajueiro
+        15.418 =    15.418 x 1    Ipe Roxo
+        15.148 =    15.148 x 1    Ipe Amarelo
+        15.119 =    15.119 x 1    Benedito
+        15.014 =    15.014 x 1    Dendezeiro
+        14.970 =    14.970 x 1    Zefa
+        14.881 =    14.881 x 1    Damiao
+        14.760 =    14.760 x 1    Filo
+        14.753 =    14.753 x 1    Bananeira
+        14.736 =     3.684 x 4    Pato
+        14.716 =    14.716 x 1    Coqueiro
+        14.680 =    14.680 x 1    Jaqueira
+        14.576 =    14.576 x 1    Tonho
+        14.509 =    14.509 x 1    Quirino
+        14.400 =    14.400 x 1    Pedro
+        14.399 =    14.399 x 1    Cosme
+        14.063 =    14.063 x 1    Rendeira
+        13.898 =    13.898 x 1    Quituteira
+        13.332 =    13.332 x 1    Igreja
+        13.243 =    13.243 x 1    Lavadeira
+        12.777 =    12.777 x 1    Marisqueira
+        12.477 =    12.477 x 1    Casa Carro Quebrado
+        12.388 =    12.388 x 1    Mirante
+        12.326 =    12.326 x 1    Capelinha
+        12.120 =     4.040 x 3    Pavoa
+        11.914 =    11.914 x 1    Ponte
+        11.850 =     3.950 x 3    Cerca
+        11.784 =     5.892 x 2    Bote
+        11.775 =    11.775 x 1    Capela
+        11.747 =    11.747 x 1    Pier
+        11.654 =    11.654 x 1    Casa Pasto
+        11.646 =    11.646 x 1    Gameleira
+        11.628 =     5.814 x 2    Cabra Solta
+        11.592 =     3.864 x 3    Canoa
+        11.438 =    11.438 x 1    Mercador
+        11.426 =     5.713 x 2    Gato Preto
+        11.424 =    11.424 x 1    Pescador
+        11.360 =     5.680 x 2    Gato Amarelo
+        11.351 =    11.351 x 1    Beata
+        11.343 =    11.343 x 1    Casa Taipa
+        11.314 =     5.657 x 2    Cama
+        11.287 =    11.287 x 1    Venda
+        11.280 =     3.760 x 3    Galo
+        11.142 =    11.142 x 1    Menino
+        11.132 =     5.566 x 2    Porco
+        11.108 =    11.108 x 1    Mestre Saveiro
+        10.999 =    10.999 x 1    Menina
+        10.976 =    10.976 x 1    Guarda
+
+======== MULTIMESH POR GRUPO ========
+  total: 17.601 instancias, 46.731.199 tri LOD0, 1864 blocos
+     15.077.492 tri |   2026 inst x   7442 |  156 blocos | vis 0-85 | lod_bias 0.65 | lods 1 | sup 1 | sombra 0 | StandardMaterial3D transp=0 cull=2 | Sub-bosque
+      2.743.553 tri |    983 inst x   2791 |   74 blocos | vis 0-280 | lod_bias 0.65 | lods 1 | sup 1 | sombra 0 | StandardMaterial3D transp=0 cull=2 | Mata_ jequitiba
+      2.719.099 tri |    521 inst x   5219 |    9 blocos | vis 0-230 | lod_bias 0.65 | lods 1 | sup 1 | sombra 0 | StandardMaterial3D transp=0 cull=2 | Paisagismo_ bananeira_leve 230
+      2.579.049 tri |   1199 inst x   2151 |   87 blocos | vis 0-280 | lod_bias 0.65 | lods 0 | sup 1 | sombra 0 | StandardMaterial3D transp=0 cull=2 | Mata_ jatoba
+      2.176.020 tri |    385 inst x   5652 |   35 blocos | vis 0-280 | lod_bias 0.65 | lods 1 | sup 1 | sombra 0 | StandardMaterial3D transp=0 cull=2 | Mata_ jenipapeiro
+      2.121.508 tri |    716 inst x   2963 |  108 blocos | vis 0-280 | lod_bias 0.65 | lods 1 | sup 1 | sombra 0 | StandardMaterial3D transp=0 cull=2 | Mata_ embauba
+      1.829.512 tri |    326 inst x   5612 |   41 blocos | vis 0-280 | lod_bias 0.65 | lods 0 | sup 1 | sombra 0 | StandardMaterial3D transp=0 cull=2 | Mata_ ipe_amarelo
+      1.432.052 tri |    508 inst x   2819 |   42 blocos | vis 0-280 | lod_bias 0.65 | lods 1 | sup 1 | sombra 0 | StandardMaterial3D transp=0 cull=2 | Mata_ massaranduba
+      1.362.218 tri |    242 inst x   5629 |   35 blocos | vis 0-280 | lod_bias 0.65 | lods 1 | sup 1 | sombra 0 | StandardMaterial3D transp=0 cull=2 | Mata_ pau_brasil
+      1.256.175 tri |    225 inst x   5583 |   39 blocos | vis 0-280 | lod_bias 0.65 | lods 0 | sup 1 | sombra 0 | StandardMaterial3D transp=0 cull=2 | Mata_ dendezeiro
+      1.048.152 tri |    476 inst x   2202 |   27 blocos | vis 0-280 | lod_bias 0.65 | lods 0 | sup 1 | sombra 0 | StandardMaterial3D transp=0 cull=2 | Mata_ angico
+        901.795 tri |    265 inst x   3403 |   43 blocos | vis 0-280 | lod_bias 0.65 | lods 0 | sup 1 | sombra 0 | StandardMaterial3D transp=0 cull=2 | Mata_ aroeira
+        823.859 tri |    331 inst x   2489 |   30 blocos | vis 0-280 | lod_bias 0.65 | lods 0 | sup 1 | sombra 0 | StandardMaterial3D transp=0 cull=2 | Mata_ mata_alta
+        705.256 tri |    398 inst x   1772 |   11 blocos | vis 0-120 | lod_bias 0.65 | lods 0 | sup 1 | sombra 0 | StandardMaterial3D transp=0 cull=2 | Paisagismo_ pe_de_mandioca 120
+        695.727 tri |    305 inst x   2492 |   37 blocos | vis 0-120 | lod_bias 1.00 | lods 1 | sup 1 | sombra 0 | ShaderMaterial transp=-1 cull=-1 | Peixes
+        629.416 tri |    116 inst x   5426 |   16 blocos | vis 0-280 | lod_bias 0.65 | lods 1 | sup 1 | sombra 0 | StandardMaterial3D transp=0 cull=2 | Mata_ ingazeiro
+        614.686 tri |     34 inst x  18079 |    6 blocos | vis 0-230 | lod_bias 0.65 | lods 1 | sup 1 | sombra 0 | StandardMaterial3D transp=0 cull=2 | Manguezal
+        568.150 tri |    110 inst x   5165 |    8 blocos | vis 0-280 | lod_bias 0.65 | lods 0 | sup 1 | sombra 0 | StandardMaterial3D transp=0 cull=2 | Mata_ clusia
+        566.283 tri |    283 inst x   2001 |    4 blocos | vis 0-120 | lod_bias 0.65 | lods 0 | sup 1 | sombra 0 | StandardMaterial3D transp=0 cull=2 | Paisagismo_ pe_de_milho 120
+        514.694 tri |     67 inst x   7682 |   11 blocos | vis 0-230 | lod_bias 0.65 | lods 1 | sup 1 | sombra 0 | StandardMaterial3D transp=0 cull=2 | Paisagismo_ goiabeira 230
+        465.980 tri |    115 inst x   4052 |   25 blocos | vis 0-280 | lod_bias 0.65 | lods 0 | sup 1 | sombra 0 | StandardMaterial3D transp=0 cull=2 | Mata_ jaqueira
+        422.150 tri |     25 inst x  16886 |   13 blocos | vis 0-230 | lod_bias 0.65 | lods 1 | sup 1 | sombra 0 | StandardMaterial3D transp=0 cull=2 | Ingazeiros do rio
+        397.740 tri |    105 inst x   3788 |   10 blocos | vis 0-230 | lod_bias 0.65 | lods 0 | sup 1 | sombra 0 | StandardMaterial3D transp=0 cull=2 | Paisagismo_ pitangueira_leve 230
+        389.004 tri |     66 inst x   5894 |    9 blocos | vis 0-280 | lod_bias 0.65 | lods 0 | sup 1 | sombra 0 | StandardMaterial3D transp=0 cull=2 | Mata_ piacava
+        387.539 tri |    191 inst x   2029 |   16 blocos | vis 0-110 | lod_bias 0.65 | lods 0 | sup 1 | sombra 0 | StandardMaterial3D transp=0 cull=2 | Paisagismo_ cerca_varas
+        386.100 tri |    225 inst x   1716 |   39 blocos | vis 280-600 | lod_bias 1.00 | lods 0 | sup 1 | sombra 0 | StandardMaterial3D transp=0 cull=2 | Copa distante, modelo_ Mata_ dendezeiro
+        385.618 tri |    166 inst x   2323 |    5 blocos | vis 0-120 | lod_bias 0.65 | lods 1 | sup 1 | sombra 0 | StandardMaterial3D transp=0 cull=2 | Paisagismo_ pe_de_fumo 120
+        372.096 tri |    128 inst x   2907 |   36 blocos | vis 0-90 | lod_bias 0.65 | lods 1 | sup 1 | sombra 0 | StandardMaterial3D transp=0 cull=2 | Paisagismo_ capim 90
+        323.752 tri |     22 inst x  14716 |   12 blocos | vis 0-250 | lod_bias 0.65 | lods 1 | sup 1 | sombra 0 | StandardMaterial3D transp=0 cull=2 | Coqueiros da orla
+        254.350 tri |     50 inst x   5087 |   14 blocos | vis 0-230 | lod_bias 0.65 | lods 1 | sup 1 | sombra 0 | StandardMaterial3D transp=0 cull=2 | Paisagismo_ mamoeiro 230
+        208.104 tri |    116 inst x   1794 |   16 blocos | vis 280-600 | lod_bias 1.00 | lods 0 | sup 1 | sombra 0 | StandardMaterial3D transp=0 cull=2 | Copa distante, modelo_ Mata_ ingazeiro
+        200.988 tri |     36 inst x   5583 |    6 blocos | vis 0-230 | lod_bias 0.65 | lods 0 | sup 1 | sombra 0 | StandardMaterial3D transp=0 cull=2 | Paisagismo_ dendezeiro_leve 230
+        191.862 tri |     66 inst x   2907 |    4 blocos | vis 0-230 | lod_bias 0.65 | lods 1 | sup 1 | sombra 0 | StandardMaterial3D transp=0 cull=2 | Paisagismo_ capim 230
+        162.840 tri |     10 inst x  16284 |    6 blocos | vis 0-200 | lod_bias 0.65 | lods 2 | sup 1 | sombra 0 | StandardMaterial3D transp=0 cull=2 | Restinga da orla_ castanhola
+        153.244 tri |     26 inst x   5894 |    5 blocos | vis 0-230 | lod_bias 0.65 | lods 0 | sup 1 | sombra 0 | StandardMaterial3D transp=0 cull=2 | Paisagismo_ piacava_leve 230
+        141.750 tri |     25 inst x   5670 |    8 blocos | vis 0-230 | lod_bias 0.65 | lods 0 | sup 1 | sombra 0 | StandardMaterial3D transp=0 cull=2 | Paisagismo_ cajueiro_leve 230
+        124.740 tri |     22 inst x   5670 |    4 blocos | vis 0-280 | lod_bias 0.65 | lods 0 | sup 1 | sombra 0 | StandardMaterial3D transp=0 cull=2 | Mata_ cajueiro
+        105.798 tri |     66 inst x   1603 |    9 blocos | vis 280-600 | lod_bias 1.00 | lods 0 | sup 1 | sombra 0 | StandardMaterial3D transp=0 cull=2 | Copa distante, modelo_ Mata_ piacava
+        104.544 tri |     27 inst x   3872 |    7 blocos | vis 0-230 | lod_bias 0.65 | lods 0 | sup 1 | sombra 0 | StandardMaterial3D transp=0 cull=2 | Paisagismo_ mangueira_leve 230
+        101.736 tri |     18 inst x   5652 |    4 blocos | vis 0-230 | lod_bias 0.65 | lods 1 | sup 1 | sombra 0 | StandardMaterial3D transp=0 cull=2 | Paisagismo_ jenipapeiro_leve 230
+         76.736 tri |   1199 inst x     64 |   87 blocos | vis 280-1200 | lod_bias 1.00 | lods 0 | sup 1 | sombra 0 | ShaderMaterial transp=-1 cull=-1 | Copa distante_ Mata_ jatoba
+         65.724 tri |      6 inst x  10954 |    4 blocos | vis 0-200 | lod_bias 0.65 | lods 1 | sup 1 | sombra 0 | StandardMaterial3D transp=0 cull=2 | Restinga da orla_ clusia
+         64.832 tri |     16 inst x   4052 |    4 blocos | vis 0-230 | lod_bias 0.65 | lods 0 | sup 1 | sombra 0 | StandardMaterial3D transp=0 cull=2 | Paisagismo_ jaqueira_leve 230
+         63.168 tri |      4 inst x  15792 |    4 blocos | vis 0-200 | lod_bias 0.65 | lods 1 | sup 1 | sombra 0 | StandardMaterial3D transp=0 cull=2 | Restinga da orla_ piacava
+         62.912 tri |    983 inst x     64 |   74 blocos | vis 280-1200 | lod_bias 1.00 | lods 0 | sup 1 | sombra 0 | ShaderMaterial transp=-1 cull=-1 | Copa distante_ Mata_ jequitiba
+         59.686 tri |     11 inst x   5426 |    3 blocos | vis 0-230 | lod_bias 0.65 | lods 1 | sup 1 | sombra 0 | StandardMaterial3D transp=0 cull=2 | Paisagismo_ ingazeiro_leve 230
+         50.352 tri |     16 inst x   3147 |    4 blocos | vis 0-120 | lod_bias 0.65 | lods 1 | sup 1 | sombra 0 | StandardMaterial3D transp=0 cull=2 | Paisagismo_ heliconia 120
+         49.244 tri |     13 inst x   3788 |    4 blocos | vis 0-280 | lod_bias 0.65 | lods 0 | sup 1 | sombra 0 | StandardMaterial3D transp=0 cull=2 | Mata_ pitangueira
+         47.328 tri |     34 inst x   1392 |    6 blocos | vis 230-600 | lod_bias 1.00 | lods 0 | sup 1 | sombra 0 | StandardMaterial3D transp=0 cull=2 | Copa distante, modelo_ Manguezal
+         45.824 tri |    716 inst x     64 |  108 blocos | vis 280-1200 | lod_bias 1.00 | lods 0 | sup 1 | sombra 0 | ShaderMaterial transp=-1 cull=-1 | Copa distante_ Mata_ embauba
+         44.850 tri |     25 inst x   1794 |   13 blocos | vis 230-600 | lod_bias 1.00 | lods 0 | sup 1 | sombra 0 | StandardMaterial3D transp=0 cull=2 | Copa distante, modelo_ Ingazeiros do rio
+         38.268 tri |     18 inst x   2126 |    4 blocos | vis 0-120 | lod_bias 0.65 | lods 0 | sup 1 | sombra 0 | StandardMaterial3D transp=0 cull=2 | Paisagismo_ samambaia 120
+         37.433 tri |     11 inst x   3403 |    4 blocos | vis 0-230 | lod_bias 0.65 | lods 0 | sup 1 | sombra 0 | StandardMaterial3D transp=0 cull=2 | Paisagismo_ aroeira_leve 230
+         36.564 tri |     22 inst x   1662 |   12 blocos | vis 250-600 | lod_bias 1.00 | lods 1 | sup 1 | sombra 0 | StandardMaterial3D transp=0 cull=2 | Copa distante, modelo_ Coqueiros da orla
+         32.512 tri |    508 inst x     64 |   42 blocos | vis 280-1200 | lod_bias 1.00 | lods 0 | sup 1 | sombra 0 | ShaderMaterial transp=-1 cull=-1 | Copa distante_ Mata_ massaranduba
+         30.464 tri |    476 inst x     64 |   27 blocos | vis 280-1200 | lod_bias 1.00 | lods 0 | sup 1 | sombra 0 | ShaderMaterial transp=-1 cull=-1 | Copa distante_ Mata_ angico
+         29.960 tri |     10 inst x   2996 |    4 blocos | vis 0-90 | lod_bias 0.65 | lods 0 | sup 1 | sombra 0 | StandardMaterial3D transp=0 cull=2 | Paisagismo_ touceira_cana 90
+         24.640 tri |    385 inst x     64 |   35 blocos | vis 280-1200 | lod_bias 1.00 | lods 0 | sup 1 | sombra 0 | ShaderMaterial transp=-1 cull=-1 | Copa distante_ Mata_ jenipapeiro
+         22.190 tri |     10 inst x   2219 |    7 blocos | vis 0-90 | lod_bias 0.65 | lods 1 | sup 1 | sombra 0 | StandardMaterial3D transp=0 cull=2 | Paisagismo_ bromelia 90
+         21.884 tri |      4 inst x   5471 |    1 blocos | vis 0-120 | lod_bias 0.65 | lods 0 | sup 1 | sombra 0 | StandardMaterial3D transp=0 cull=2 | Paisagismo_ touceira_bambu 120
+         21.184 tri |    331 inst x     64 |   30 blocos | vis 280-1200 | lod_bias 1.00 | lods 0 | sup 1 | sombra 0 | ShaderMaterial transp=-1 cull=-1 | Copa distante_ Mata_ mata_alta
+         20.864 tri |    326 inst x     64 |   41 blocos | vis 280-1200 | lod_bias 1.00 | lods 0 | sup 1 | sombra 0 | ShaderMaterial transp=-1 cull=-1 | Copa distante_ Mata_ ipe_amarelo
+         17.008 tri |      8 inst x   2126 |    6 blocos | vis 0-90 | lod_bias 0.65 | lods 0 | sup 1 | sombra 0 | StandardMaterial3D transp=0 cull=2 | Paisagismo_ samambaia 90
+         16.960 tri |    265 inst x     64 |   43 blocos | vis 280-1200 | lod_bias 1.00 | lods 0 | sup 1 | sombra 0 | ShaderMaterial transp=-1 cull=-1 | Copa distante_ Mata_ aroeira
+         15.488 tri |    242 inst x     64 |   35 blocos | vis 280-1200 | lod_bias 1.00 | lods 0 | sup 1 | sombra 0 | ShaderMaterial transp=-1 cull=-1 | Copa distante_ Mata_ pau_brasil
+         14.850 tri |     10 inst x   1485 |    6 blocos | vis 200-600 | lod_bias 1.00 | lods 1 | sup 1 | sombra 0 | StandardMaterial3D transp=0 cull=2 | Copa distante, modelo_ Restinga da orla_ castanhola
+         14.400 tri |    225 inst x     64 |   39 blocos | vis 600-1200 | lod_bias 1.00 | lods 0 | sup 1 | sombra 0 | ShaderMaterial transp=-1 cull=-1 | Copa distante_ Mata_ dendezeiro
+         10.330 tri |      2 inst x   5165 |    2 blocos | vis 0-230 | lod_bias 0.65 | lods 0 | sup 1 | sombra 0 | StandardMaterial3D transp=0 cull=2 | Paisagismo_ clusia_leve 230
+          9.441 tri |      3 inst x   3147 |    2 blocos | vis 0-90 | lod_bias 0.65 | lods 1 | sup 1 | sombra 0 | StandardMaterial3D transp=0 cull=2 | Paisagismo_ heliconia 90
+          7.424 tri |    116 inst x     64 |   16 blocos | vis 600-1200 | lod_bias 1.00 | lods 0 | sup 1 | sombra 0 | ShaderMaterial transp=-1 cull=-1 | Copa distante_ Mata_ ingazeiro
+          7.360 tri |    115 inst x     64 |   25 blocos | vis 280-1200 | lod_bias 1.00 | lods 0 | sup 1 | sombra 0 | ShaderMaterial transp=-1 cull=-1 | Copa distante_ Mata_ jaqueira
+          7.040 tri |    110 inst x     64 |    8 blocos | vis 280-1200 | lod_bias 1.00 | lods 0 | sup 1 | sombra 0 | ShaderMaterial transp=-1 cull=-1 | Copa distante_ Mata_ clusia
+          6.412 tri |      4 inst x   1603 |    4 blocos | vis 200-600 | lod_bias 1.00 | lods 0 | sup 1 | sombra 0 | StandardMaterial3D transp=0 cull=2 | Copa distante, modelo_ Restinga da orla_ piacava
+          4.224 tri |     66 inst x     64 |    9 blocos | vis 600-1200 | lod_bias 1.00 | lods 0 | sup 1 | sombra 0 | ShaderMaterial transp=-1 cull=-1 | Copa distante_ Mata_ piacava
+          2.176 tri |     34 inst x     64 |    6 blocos | vis 600-1200 | lod_bias 1.00 | lods 0 | sup 1 | sombra 0 | ShaderMaterial transp=-1 cull=-1 | Copa distante_ Manguezal
+          1.600 tri |     25 inst x     64 |   13 blocos | vis 600-1200 | lod_bias 1.00 | lods 0 | sup 1 | sombra 0 | ShaderMaterial transp=-1 cull=-1 | Copa distante_ Ingazeiros do rio
+          1.408 tri |     22 inst x     64 |   12 blocos | vis 600-1200 | lod_bias 1.00 | lods 0 | sup 1 | sombra 0 | ShaderMaterial transp=-1 cull=-1 | Copa distante_ Coqueiros da orla
+          1.408 tri |     22 inst x     64 |    4 blocos | vis 280-1200 | lod_bias 1.00 | lods 0 | sup 1 | sombra 0 | ShaderMaterial transp=-1 cull=-1 | Copa distante_ Mata_ cajueiro
+            832 tri |     13 inst x     64 |    4 blocos | vis 280-1200 | lod_bias 1.00 | lods 0 | sup 1 | sombra 0 | ShaderMaterial transp=-1 cull=-1 | Copa distante_ Mata_ pitangueira
+            640 tri |     10 inst x     64 |    6 blocos | vis 600-1200 | lod_bias 1.00 | lods 0 | sup 1 | sombra 0 | ShaderMaterial transp=-1 cull=-1 | Copa distante_ Restinga da orla_ castanhola
+            384 tri |      6 inst x     64 |    4 blocos | vis 200-1200 | lod_bias 1.00 | lods 0 | sup 1 | sombra 0 | ShaderMaterial transp=-1 cull=-1 | Copa distante_ Restinga da orla_ clusia
+            256 tri |      4 inst x     64 |    4 blocos | vis 600-1200 | lod_bias 1.00 | lods 0 | sup 1 | sombra 0 | ShaderMaterial transp=-1 cull=-1 | Copa distante_ Restinga da orla_ piacava
+            212 tri |    106 inst x      2 |   15 blocos | vis 0-0 | lod_bias 1.00 | lods -1 | sup 1 | sombra 0 | StandardMaterial3D transp=2 cull=0 | Pé das árvores (areia)
+             96 tri |     48 inst x      2 |   16 blocos | vis 0-0 | lod_bias 1.00 | lods -1 | sup 1 | sombra 0 | StandardMaterial3D transp=2 cull=0 | Pé das árvores (grama)
+
+======== CANVAS LAYERS ========
+   {"caminho": "/root/Vale3D/NarracaoDoVale", "layer": 10, "script": "res://scripts/prototipo_3d/narracao_do_vale.gd", "visivel": true}
+   {"caminho": "/root/Vale3D/LuzDourada", "layer": 8, "script": "res://scripts/prototipo_3d/luz_dourada.gd", "visivel": true}
+   {"caminho": "/root/Vale3D/ConquistaDaMissao", "layer": 9, "script": "res://scripts/prototipo_3d/conquista_da_missao.gd", "visivel": true}
+   {"caminho": "/root/Vale3D/Painel", "layer": 25, "script": "res://scripts/prototipo_3d/painel_vale.gd", "visivel": false}
+   {"caminho": "/root/Vale3D/Queda/TelaDaQueda", "layer": 30, "script": "", "visivel": true}
+   {"caminho": "/root/Vale3D/Tubarao/TelaTubarao", "layer": 96, "script": "", "visivel": false}
+   {"caminho": "/root/Vale3D/MoradorPedro/@CanvasLayer@1602", "layer": 10, "script": "", "visivel": true}
+   {"caminho": "/root/Vale3D/MoradorMestre Saveiro/@CanvasLayer@1591", "layer": 10, "script": "", "visivel": true}
+   {"caminho": "/root/Vale3D/MoradorMenina/@CanvasLayer@1580", "layer": 10, "script": "", "visivel": true}
+   {"caminho": "/root/Vale3D/MoradorMenino/@CanvasLayer@1569", "layer": 10, "script": "", "visivel": true}
+   {"caminho": "/root/Vale3D/MoradorCarpinteiro/@CanvasLayer@1558", "layer": 10, "script": "", "visivel": true}
+   {"caminho": "/root/Vale3D/MoradorQuituteira/@CanvasLayer@1546", "layer": 10, "script": "", "visivel": true}
+   {"caminho": "/root/Vale3D/MoradorRendeira/@CanvasLayer@1535", "layer": 10, "script": "", "visivel": true}
+   {"caminho": "/root/Vale3D/MoradorLavadeira/@CanvasLayer@1523", "layer": 10, "script": "", "visivel": true}
+   {"caminho": "/root/Vale3D/MoradorMarisqueira/@CanvasLayer@1511", "layer": 10, "script": "", "visivel": true}
+   {"caminho": "/root/Vale3D/MoradorPescador/@CanvasLayer@1499", "layer": 10, "script": "", "visivel": true}
+   {"caminho": "/root/Vale3D/MoradorGuarda/@CanvasLayer@1488", "layer": 10, "script": "", "visivel": true}
+   {"caminho": "/root/Vale3D/MoradorMercador/@CanvasLayer@1477", "layer": 10, "script": "", "visivel": true}
+   {"caminho": "/root/Vale3D/MoradorBeata/@CanvasLayer@1465", "layer": 10, "script": "", "visivel": true}
+   {"caminho": "/root/Vale3D/MoradorSacristao/@CanvasLayer@1454", "layer": 10, "script": "", "visivel": true}
+   {"caminho": "/root/Vale3D/MoradorPadre/@CanvasLayer@1443", "layer": 10, "script": "", "visivel": true}
+   {"caminho": "/root/Vale3D/MoradorQuirino/@CanvasLayer@1432", "layer": 10, "script": "", "visivel": true}
+   {"caminho": "/root/Vale3D/MoradorDamiao/@CanvasLayer@1421", "layer": 10, "script": "", "visivel": true}
+   {"caminho": "/root/Vale3D/MoradorCandinha/@CanvasLayer@1410", "layer": 10, "script": "", "visivel": true}
+   {"caminho": "/root/Vale3D/MoradorFilo/@CanvasLayer@1399", "layer": 10, "script": "", "visivel": true}
+   {"caminho": "/root/Vale3D/MoradorTonho/@CanvasLayer@1388", "layer": 10, "script": "", "visivel": true}
+   {"caminho": "/root/Vale3D/MoradorCosme/@CanvasLayer@1377", "layer": 10, "script": "", "visivel": true}
+   {"caminho": "/root/Vale3D/MoradorZefa/@CanvasLayer@1366", "layer": 10, "script": "", "visivel": true}
+   {"caminho": "/root/Vale3D/MoradorBenedito/@CanvasLayer@1355", "layer": 10, "script": "", "visivel": true}
+   {"caminho": "/root/Vale3D/TelaControles", "layer": 27, "script": "res://scripts/prototipo_3d/tela_controles.gd", "visivel": false}
+   {"caminho": "/root/Vale3D/TeiaSocial", "layer": 26, "script": "res://scripts/prototipo_3d/teia_social.gd", "visivel": false}
+   {"caminho": "/root/Vale3D/TeiaTalentos", "layer": 26, "script": "res://scripts/prototipo_3d/teia_talentos.gd", "visivel": false}
+   {"caminho": "/root/Vale3D/MenuPausa", "layer": 27, "script": "res://scripts/prototipo_3d/menu_pausa.gd", "visivel": false}
+   {"caminho": "/root/Vale3D/HUD", "layer": 20, "script": "res://scripts/prototipo_3d/prototype_hud.gd", "visivel": true}
+   {"caminho": "/root/Vale3D/HUD/CamadaAlmanaque", "layer": 25, "script": "", "visivel": true}
+   {"caminho": "/root/Amanhecer", "layer": 31, "script": "res://scripts/ui/amanhecer.gd", "visivel": false}
+   {"caminho": "/root/Folheto", "layer": 25, "script": "res://scripts/ui/folheto.gd", "visivel": false}
+   {"caminho": "/root/Dialogo", "layer": 25, "script": "res://scripts/prototipo_3d/dialogo_vale.gd", "visivel": true}
+   {"caminho": "/root/Mochila", "layer": 25, "script": "res://scripts/ui/mochila.gd", "visivel": false}
+
+======== GPU (nvidia-smi: usada MiB, total, uso %, temp, W, clock) ========
+  vale pronto            t=    57s  3133, 6144, 72, 62, 11.13, 1050  | godot video 1824.2 MB (tex 1624.4, buf 134.8)
+  inicio das vistas      t=    57s  3133, 6144, 33, 62, 12.61, 1140  | godot video 1824.2 MB (tex 1624.4, buf 134.8)
+  fim das vistas         t=   268s  3139, 6144, 55, 66, 12.23, 900  | godot video 1818.8 MB (tex 1619.7, buf 134.2)
+  inicio do A/B          t=   273s  3139, 6144, 68, 66, 12.34, 915  | godot video 1818.8 MB (tex 1619.7, buf 134.2)

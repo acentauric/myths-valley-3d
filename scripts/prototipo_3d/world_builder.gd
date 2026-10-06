@@ -236,16 +236,34 @@ func is_walkable_point(world_position: Vector3) -> bool:
 	return _region != null and _region.is_walkable_point(world_position)
 
 
+## O CACHE de `arvores()`: eram 3 mil dicionários novos a cada chamada, e os bandos
+## de chão e o porco chamam várias vezes. A lista se refaz sozinha quando o número
+## de árvores muda (a mata, a orla e o paisagismo plantam aos poucos) e é
+## invalidada a cada corte, crescimento e restauração, que mexem na árvore.
+var _cache_das_arvores: Array[Dictionary] = []
+var _cache_das_arvores_valido := false
+var _cache_das_arvores_nomeadas := -1
+var _cache_das_arvores_troncos := -1
+
+
 ## Terra firme do mapa (fora do mar, passarelas e píer).
 ## Todas as árvores do vale (plantadas e da mata/orla): espécie, posição no chão e raio
-## aproximado do tronco.
+## aproximado do tronco. É a lista do cache: quem chama só LÊ a lista e os itens
+## dela, não os altera.
 func arvores() -> Array[Dictionary]:
+	var troncos: int = _region._tree_trunks.size() if _region else 0
+	if _cache_das_arvores_valido and _cache_das_arvores_nomeadas == _arvores_nomeadas.size() and _cache_das_arvores_troncos == troncos:
+		return _cache_das_arvores
 	var lista: Array[Dictionary] = _arvores_nomeadas.duplicate()
 	if _region:
 		for tronco: Dictionary in _region._tree_trunks:
 			var ponto: Vector2 = tronco["point"]
 			lista.append({"especie": String(tronco.get("especie", "")), "pos": Vector3(ponto.x, float(tronco["ground"]), ponto.y), "raio": float(tronco["radius"])})
-	return lista
+	_cache_das_arvores = lista
+	_cache_das_arvores_nomeadas = _arvores_nomeadas.size()
+	_cache_das_arvores_troncos = troncos
+	_cache_das_arvores_valido = true
+	return _cache_das_arvores
 
 
 ## CORTA A ÁRVORE que tem o pé neste ponto — qualquer espécie, plantada à mão
@@ -259,6 +277,7 @@ func arvores() -> Array[Dictionary]:
 ## `cair_para` é o lado para onde ela tomba (`CoqueiroCortado.derrubar`), longe
 ## de quem cortou; vazio, ela some sem cair, como na carga.
 func cortar_arvore(posicao: Vector3, deixar_toco: bool = true, cair_para: Vector3 = Vector3.ZERO) -> bool:
+	_cache_das_arvores_valido = false
 	var indice := _indice_da_nomeada(posicao, false)
 	if indice < 0:
 		return _region.cortar_arvore(posicao, deixar_toco, cair_para) if _region != null else false
@@ -297,6 +316,7 @@ func cortar_arvore(posicao: Vector3, deixar_toco: bool = true, cair_para: Vector
 ## dois estilos vale também para o que cresce. Sem colisão até ficar adulta:
 ## muda não barra ninguém, e a colisão da adulta não cabe na nova.
 func crescer_arvore(posicao: Vector3, escala: float) -> bool:
+	_cache_das_arvores_valido = false
 	var indice := _indice_da_nomeada(posicao, true)
 	if indice < 0:
 		return _region.crescer_arvore(posicao, escala) if _region != null else false
@@ -328,6 +348,7 @@ func crescer_arvore(posicao: Vector3, escala: float) -> bool:
 ## A ÁRVORE VOLTA A SER ADULTA: o tamanho de antes do corte, a colisão de volta
 ## e o toco (se ainda houver) fora.
 func restaurar_arvore(posicao: Vector3) -> bool:
+	_cache_das_arvores_valido = false
 	var indice := _indice_da_nomeada(posicao, true)
 	if indice < 0:
 		return _region.restaurar_arvore(posicao) if _region != null else false
@@ -782,6 +803,7 @@ func _construir_vila() -> void:
 	_build_marcos_de_fe()
 	await _etapa(0.94, "Assentando as pedras")
 	_build_pedras()
+	_build_clareiras_da_mata()
 	await _etapa(0.95, "Fundeando as canoas")
 	_build_canoas()
 	await _etapa(0.97, "Acendendo os lampiões")
@@ -1952,6 +1974,61 @@ func _build_pedras() -> void:
 		var pos := Vector3(ponto.x, water_level() - lamina - 0.05, ponto.z)
 		CatalogoAssets.instanciar("pedra_mare", self, pos, rng.randf_range(0.7, 1.2), rng.randf_range(0.0, TAU))
 		postas += 1
+
+
+## AS CLAREIRAS-DESTAQUE DA MATA: a metade das árvores que saiu da mata deu lugar
+## a clareiras isoladas (`GeoRegionRenderer.clareiras_da_mata`, planejadas em
+## data/mapas/clareiras_da_mata.json), e cada uma é um destaque: UMA árvore de
+## espécie diferente no centro, no modelo cheio do catálogo (cortável, com a
+## colisão do tronco), ou, em duas delas, uma casa de taipa isolada com o
+## terreiro, e pedras em volta, com colisão. A trilha de terra até a rua e o chão
+## de cada uma já foram pintados no mapa de solo pela região. Só no estilo Tripo:
+## as peças são os GLBs dele (o procedural é só comparação).
+const CASA_DA_CLAREIRA_TERREIRO := 1.6
+
+
+func _build_clareiras_da_mata() -> void:
+	if not estilo_tripo() or _region == null:
+		return
+	for clareira: Dictionary in _region.clareiras_da_mata:
+		var centro: Vector2 = clareira["centro"]
+		var casa := String(clareira.get("casa", ""))
+		if casa != "" and CatalogoAssets.tem_tripo(casa):
+			_casa_isolada_da_clareira(casa, centro, float(clareira["giro"]))
+		elif String(clareira["especie"]) != "" and CatalogoAssets.tem_tripo(String(clareira["especie"])):
+			# Posição exata: o JSON já escolheu o chão (e a mata não plantou nada ali).
+			_arvore(String(clareira["especie"]), Vector3(centro.x, 0.0, centro.y), float(clareira["escala"]), float(clareira["giro"]), true)
+		for pedra: Dictionary in clareira["pedras"]:
+			var chave := String(pedra["tipo"])
+			if not CatalogoAssets.tem_tripo(chave):
+				continue
+			var chao := ground_position(Vector3(centro.x + float(pedra["dx"]), 0.0, centro.y + float(pedra["dz"])))
+			var tamanho := float(pedra["escala"])
+			var modelo := CatalogoAssets.instanciar(chave, self, chao, tamanho, float(pedra["giro"]))
+			if modelo != null:
+				CatalogoAssets.colisao(chave, modelo, self, chao, tamanho, float(pedra["giro"]))
+
+
+## A casa de taipa do meio de uma clareira, de porta para a trilha: como a
+## capelinha do cemitério, assentada no alicerce e com o terreiro de chão batido
+## drapeado no terreno. Sem ficha de morador nem cômodo de dentro: é cenário.
+func _casa_isolada_da_clareira(chave: String, centro: Vector2, yaw: float) -> void:
+	var chao := ground_position(Vector3(centro.x, 0.0, centro.y))
+	var modelo := CatalogoAssets.instanciar(chave, self, chao, 1.0, yaw)
+	if modelo == null:
+		return
+	var limites: AABB = modelo.get_meta("limites")
+	var assentada := _support_house(chao, Vector2(limites.size.x, limites.size.z), yaw, chave)
+	modelo.position.y += assentada.y - chao.y
+	CatalogoAssets.colisao(chave, modelo, self, assentada, 1.0, yaw)
+	# O terreiro: a pegada da casa mais uma beirada, no giro dela.
+	var meio := Vector2(limites.size.x, limites.size.z) * 0.5 + Vector2.ONE * CASA_DA_CLAREIRA_TERREIRO
+	var cantos := PackedVector2Array()
+	for canto in [Vector2(-1, -1), Vector2(1, -1), Vector2(1, 1), Vector2(-1, 1)]:
+		cantos.append(centro + (canto * meio).rotated(-yaw))
+	_region._add_polygon("Terreiro da clareira", cantos, 0.03, Color("958d79"), false, _terreiro_material())
+	# Lote tomado: o que se planta depois não nasce dentro dela.
+	_house_sites.append({"position": assentada, "radius": maxf(limites.size.x, limites.size.z) * 0.5 + 2.0})
 
 
 ## Canoas fundeadas no raso diante da vila (canoas.gd), só com o mar de fundo real.

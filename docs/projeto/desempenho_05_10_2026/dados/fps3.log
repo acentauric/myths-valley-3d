@@ -1,0 +1,20 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.312 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce GTX 1660 Ti with Max-Q Design
+
+MEDIR_FPS: remendo da grade da costa (so em memoria): ok
+DEPURACAO: começando em praca
+PROTOTYPE_READY: estilo=tripo hora=07:48 moradores=22 user_dir=P:/w/MythsValleyPrototype3D
+MEDIR_FPS: vale pronto em 31831 ms (jogo 31831 ms)
+MEDIR_FPS: censo pronto, 5846 nos
+MEDIR_FPS vista pier               pior   6.0 FPS (rumo  90) gpu 111.4 ms cpu-rs 4.7 ms proc 5.30 ms fis 135.32 ms x6.5 draws 1305 tri 8311501
+MEDIR_FPS vista praca              pior   6.5 FPS (rumo   0) gpu 86.9 ms cpu-rs 3.1 ms proc 4.75 ms fis 127.33 ms x8.0 draws 1457 tri 7831406
+MEDIR_FPS vista igreja             pior   7.1 FPS (rumo  45) gpu 96.9 ms cpu-rs 6.7 ms proc 6.40 ms fis 108.93 ms x6.9 draws 1803 tri 7297354
+MEDIR_FPS vista casa_da_estrada    pior   9.5 FPS (rumo  90) gpu 80.2 ms cpu-rs 2.6 ms proc 5.09 ms fis 82.27 ms x6.0 draws 1115 tri 7590742
+MEDIR_FPS vista fogueira           pior   9.6 FPS (rumo  90) gpu 92.3 ms cpu-rs 3.2 ms proc 2.25 ms fis 24.77 ms x6.2 draws 1607 tri 7894482
+MEDIR_FPS vista gameleira          pior  10.4 FPS (rumo  45) gpu 84.9 ms cpu-rs 2.4 ms proc 2.43 ms fis 46.32 ms x5.7 draws 915 tri 7162786
+MEDIR_FPS A/B gpu em igreja rumo 90: 3 alternancias
+MEDIR_FPS AB   1/3  -12.02 ms  (10.5 -> 12.0 FPS)  gpu 85.0->73.1  proc 0.69->0.71  fis 0.73->0.70  faces de tras: cull BACK nos 57 materiais da vegetacao em MultiMesh
+MEDIR_FPS AB   2/3   -3.71 ms  (10.5 -> 11.0 FPS)  gpu 84.7->81.5  proc 0.70->0.86  fis 0.73->0.90  faces de tras: cull BACK nos 221 materiais das malhas individuais
+MEDIR_FPS AB   3/3  -16.65 ms  (10.4 -> 12.6 FPS)  gpu 85.2->69.1  proc 0.67->0.68  fis 0.75->0.65  faces de tras: cull BACK em tudo (vegetacao + individuais)
+MEDIR_FPS_FIM
+ERROR: 2 RID allocations of type 'N10RendererRD14TextureStorage7TextureE' were leaked at exit.

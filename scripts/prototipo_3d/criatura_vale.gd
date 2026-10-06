@@ -157,6 +157,10 @@ var _empurrao: Vector3 = Vector3.ZERO
 var _freio: float = 0.0
 var _piscar: float = 0.0
 var _morrendo: float = -1.0
+## Soneca de quem está longe do jogador (ver `_physics_process`).
+const DISTANCIA_DE_SONECA := 120.0
+const DECIDE_LONGE := 0.25
+var _soneca := 0.0
 var _aceso: bool = false
 var _rng := RandomNumberGenerator.new()
 
@@ -425,6 +429,20 @@ func _physics_process(delta: float) -> void:
 	if _alvo == null or vida <= 0.0:
 		return
 	_desde_a_mordida += delta
+	var distancia := _plano(_alvo.global_position - global_position).length()
+	# Longe demais do jogador (ninguém vê), sem caçar, sem bote, sem empurrão: não anda
+	# nem pasta. Só decide a cada 0,25 s se algo mudou, e não chama `_mover` (física
+	# de corpo que custava até 1,5 ms por tick).
+	if not cacando and _no_bote < 0.0 and _empurrao.length() <= 0.5 * u_por_px \
+			and distancia > DISTANCIA_DE_SONECA:
+		_soneca += delta
+		_animador.velocidade = 0.0
+		if _soneca < DECIDE_LONGE:
+			return
+		_olhar_ou_farejar(_soneca, distancia)
+		_soneca = 0.0
+		return
+	_soneca = 0.0
 	if _empurrao.length() > 0.5 * u_por_px:
 		velocity.x = _empurrao.x
 		velocity.z = _empurrao.z
@@ -432,11 +450,7 @@ func _physics_process(delta: float) -> void:
 		_empurrao = _empurrao.move_toward(Vector3.ZERO, _freio * delta)
 	# O FARO CORRE EM TODO QUADRO, antes do tonto e do bote (ver o 2D). Quem
 	# tem vista olha, e o faro entra no olhar (`enxerga`).
-	var distancia := _plano(_alvo.global_position - global_position).length()
-	if tem_vista():
-		_olhar(delta)
-	else:
-		_farejar(distancia)
+	_olhar_ou_farejar(delta, distancia)
 	if tonto():
 		_parar(delta)
 		_corpo.rotation.z = sin(_relogio * 18.0) * 0.14
@@ -451,6 +465,13 @@ func _physics_process(delta: float) -> void:
 		_cacar(delta, distancia)
 	else:
 		_pastar(delta)
+
+
+func _olhar_ou_farejar(delta: float, distancia: float) -> void:
+	if tem_vista():
+		_olhar(delta)
+	else:
+		_farejar(distancia)
 
 
 ## Jogador que o mundo travou não se fareja: caça de cutscene é injustiça. No

@@ -1,11 +1,15 @@
 extends Control
-## Minimapa do canto inferior esquerdo: um SubViewport (mesmo mundo do vale, sem mundo
-## próprio) com câmera ortográfica de topo seguindo o jogador. Por cima, um desenho
+## Minimapa do canto inferior esquerdo: uma FOTO do vale visto de cima
+## (assets/prototipo_3d/identidade/minimapa/mapa_vale.png, tirada por
+## tools/prototipo_3d/capturar_minimapa.gd), recortada em volta do jogador por um
+## shader. Antes era um SubViewport no mesmo mundo do vale, com câmera ortográfica:
+## o vale era desenhado DUAS vezes por quadro (7 a 12 ms de GPU) só para encher um
+## círculo de 170 px. Agora o quadro só desliza o UV da textura. Por cima, um desenho
 ## leve: triângulo dourado do jogador (gira com o modelo), ponto claro do Pedro e
 ## losango âmbar do alvo da missão (fora da vista, encosta na borda). A preferência
 ## "interface/minimapa" (AJUSTAR → Cenário) mostra ou esconde e é relida de tempos em
 ## tempos; com outra câmera ativa (mapa grande) ou o painel CONTROLES aberto no mesmo
-## canto, ele se recolhe sozinho.
+## canto, ele se recolhe sozinho. Sem a foto (nunca capturada), ele some sem erro.
 
 ## REDONDO COMO BÚSSOLA, por pedido do autor: a vista era um retângulo de
 ## 210x150 com cantos arredondados, e em jogo de mapa grande a bússola redonda
@@ -21,10 +25,10 @@ const MARGEM_DO_ARO := 9.0
 const BORDA := 3.0
 ## Lado vertical da vista, em unidades do mundo (~55 u = 220 m).
 const VISTA := 55.0
-## A câmera ortográfica preserva o enquadramento nesta altura. A 200 u, a
-## restinga atingia o corte de LOD antes mesmo de aparecer no minimapa.
-## 100 u ainda ficam acima do relevo do vale e mantêm as copas na vista pequena.
-const ALTURA_CAMERA := 100.0
+## A foto e o retângulo do mundo que ela cobre (origem_x, origem_z, largura, altura
+## em unidades). Os dois saem juntos da ferramenta de captura.
+const MAPA := "res://assets/prototipo_3d/identidade/minimapa/mapa_vale.png"
+const MAPA_DADOS := "res://assets/prototipo_3d/identidade/minimapa/mapa_vale.json"
 const PREFERENCIAS := "user://preferencias_visuais.cfg"
 const FUNDO := Color(0.055, 0.085, 0.075, 0.9)
 const OURO := Color("b49a60")
@@ -32,25 +36,41 @@ const DOURADO := Color("d6ba78")
 const CLARO := Color("f5e3b3")
 const AMBAR := Color("e2a93b")
 
-## O recorte redondo da vista, aplicado ao SubViewportContainer.
+## A VISTA REDONDA: amostra a foto em volta de `centro_uv` e apaga o que cai fora do
+## círculo.
 ##
 ## `COLOR.a` em vez de `discard`: a transparência deixa o fundo da moldura
 ## aparecer na quina, e o `smoothstep` tira o serrado do contorno. O raio é 0.5
-## em UV — o container é quadrado, então 0.5 é a borda.
-const MASCARA_REDONDA := """
+## em UV — o quadro é quadrado, então 0.5 é a borda. Fora da foto, a cor `fundo`
+## (o mundo acaba ali). A foto é lida sempre e a mistura é por `step`, porque
+## amostrar dentro de um `if` por pixel é pedir derivada indefinida.
+const VISTA_REDONDA := """
 shader_type canvas_item;
+uniform sampler2D mapa : source_color, filter_linear, repeat_disable;
+uniform vec2 centro_uv = vec2(0.5);
+uniform vec2 vista_uv = vec2(0.1);
+uniform vec4 fundo = vec4(0.055, 0.085, 0.075, 0.9);
 void fragment() {
+	vec2 p = centro_uv + (UV - vec2(0.5)) * vista_uv;
+	vec3 foto = texture(mapa, clamp(p, vec2(0.0), vec2(1.0))).rgb;
+	vec2 dentro2 = step(vec2(0.0), p) * step(p, vec2(1.0));
+	float dentro = dentro2.x * dentro2.y;
+	vec4 cor = mix(fundo, vec4(foto, 1.0), dentro);
 	float r = length(UV - vec2(0.5));
-	COLOR.a *= 1.0 - smoothstep(0.47, 0.5, r);
+	cor.a *= 1.0 - smoothstep(0.47, 0.5, r);
+	COLOR = cor;
 }
 """
 
 var _jogador: Node3D
 var _pedro: Node3D
 var _hud	# prototype_hud.gd (para recolher com o painel CONTROLES aberto)
-var _viewport: SubViewport
-var _camera: Camera3D
+var _vista: ColorRect
+var _material: ShaderMaterial
 var _sobre: Control
+## Retângulo do mundo coberto pela foto: position é a origem (x, z).
+var _retangulo := Rect2()
+var _sem_mapa := true
 var _alvo := Vector3.ZERO
 var _tem_alvo := false
 var _mostrar := true
@@ -77,33 +97,21 @@ func _ready() -> void:
 	moldura.add_theme_stylebox_override("panel", estilo)
 	add_child(moldura)
 	moldura.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	var quadro := SubViewportContainer.new()
-	quadro.stretch = true
-	quadro.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	add_child(quadro)
-	quadro.position = Vector2(BORDA, BORDA)
-	quadro.size = Vector2(LARGURA - BORDA * 2.0, ALTURA - BORDA * 2.0)
+	_vista = ColorRect.new()
+	_vista.name = "Vista"
+	_vista.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(_vista)
+	_vista.position = Vector2(BORDA, BORDA)
+	_vista.size = Vector2(LARGURA - BORDA * 2.0, ALTURA - BORDA * 2.0)
 	# A MÁSCARA REDONDA. O aro é desenho de moldura e não corta nada: quem corta
-	# a vista do mundo é este shader, que apaga o que cai fora do círculo. A
-	# borda é suavizada em poucos pixels para o recorte não ficar serrado.
-	var recorte := ShaderMaterial.new()
+	# a vista do mundo é este shader, que apaga o que cai fora do círculo.
+	_material = ShaderMaterial.new()
 	var redondo := Shader.new()
-	redondo.code = MASCARA_REDONDA
-	recorte.shader = redondo
-	quadro.material = recorte
-	_viewport = SubViewport.new()
-	# Sem mundo próprio: o SubViewport enxerga o mesmo World3D do vale.
-	_viewport.own_world_3d = false
-	# A câmera do minimapa não pode virar o ouvido 3D do jogo.
-	_viewport.audio_listener_enable_3d = false
-	_viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS
-	quadro.add_child(_viewport)
-	_camera = Camera3D.new()
-	_camera.projection = Camera3D.PROJECTION_ORTHOGONAL
-	_camera.size = VISTA
-	_camera.far = 400.0
-	_camera.rotation_degrees = Vector3(-90, 0, 0)
-	_viewport.add_child(_camera)
+	redondo.code = VISTA_REDONDA
+	_material.shader = redondo
+	_material.set_shader_parameter("fundo", FUNDO)
+	_vista.material = _material
+	_carregar_mapa()
 	_sobre = Control.new()
 	_sobre.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(_sobre)
@@ -119,11 +127,6 @@ func configurar(jogador: Node3D, pedro: Node3D = null, hud = null) -> void:
 	_jogador = jogador
 	_pedro = pedro
 	_hud = hud
-	# De 200 u de altura o nevoeiro do vale apagaria tudo: esta câmera fica sem névoa.
-	var ambiente: Environment = get_viewport().world_3d.environment
-	if ambiente != null:
-		_camera.environment = ambiente.duplicate() as Environment
-		_camera.environment.fog_enabled = false
 	_seguir()
 
 
@@ -133,15 +136,13 @@ func _process(delta: float) -> void:
 		# O painel AJUSTAR só grava a preferência; o minimapa a relê a cada segundo.
 		_releitura = 0.0
 		aplicar_visibilidade()
-	if _jogador == null:
+	if _jogador == null or _sem_mapa:
 		visible = false
 		return
 	# Com o mapa grande (ou qualquer outra câmera) ativo, o minimapa se recolhe.
 	var camera_do_jogo: bool = get_viewport().get_camera_3d() == _jogador.get("camera")
 	var controles_abertos: bool = _hud != null and _hud.controls_open()
 	visible = _mostrar and not _suspenso and camera_do_jogo and not controles_abertos
-	# Escondido, o SubViewport para de renderizar (o vale não é desenhado duas vezes à toa).
-	_viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS if visible else SubViewport.UPDATE_DISABLED
 	if not visible:
 		return
 	_seguir()
@@ -195,16 +196,66 @@ func limpar_alvo() -> void:
 	_tem_alvo = false
 
 
+## Desliza a vista: o centro da textura é o jogador, em fração da foto. É só isto
+## que muda por quadro; a foto fica parada na placa de vídeo.
 func _seguir() -> void:
-	# Filho direto do SubViewport: a posição já é em coordenadas do mundo.
-	_camera.position = _jogador.global_position + Vector3(0, ALTURA_CAMERA, 0)
+	if _sem_mapa or _jogador == null:
+		return
+	var p := _jogador.global_position
+	_material.set_shader_parameter("centro_uv", centro_da_vista(p))
+
+
+## O ponto do mundo na foto, em fração dela (0..1 em x e em y; o topo é o -Z).
+func centro_da_vista(p: Vector3) -> Vector2:
+	return Vector2((p.x - _retangulo.position.x) / _retangulo.size.x,
+		(p.z - _retangulo.position.y) / _retangulo.size.y)
+
+
+## A foto e o seu retângulo. A foto vem do recurso importado; se o editor ainda não
+## importou (captura recém-feita), cai para o PNG cru. Sem foto ou sem o JSON, o
+## minimapa fica escondido: uma bússola sem mapa seria só um círculo vazio.
+func _carregar_mapa() -> void:
+	_sem_mapa = true
+	if not FileAccess.file_exists(MAPA_DADOS):
+		return
+	var dados = JSON.parse_string(FileAccess.get_file_as_string(MAPA_DADOS))
+	if not (dados is Dictionary) or float(dados.get("largura", 0.0)) <= 0.0 or float(dados.get("altura", 0.0)) <= 0.0:
+		return
+	var textura: Texture2D = null
+	if _importada():
+		textura = load(MAPA) as Texture2D
+	if textura == null and FileAccess.file_exists(MAPA):
+		var imagem := Image.load_from_file(ProjectSettings.globalize_path(MAPA))
+		if imagem != null and not imagem.is_empty():
+			textura = ImageTexture.create_from_image(imagem)
+	if textura == null:
+		return
+	_retangulo = Rect2(float(dados.get("origem_x", 0.0)), float(dados.get("origem_z", 0.0)),
+		float(dados["largura"]), float(dados["altura"]))
+	_material.set_shader_parameter("mapa", textura)
+	# A vista é quadrada e cobre VISTA unidades nos dois lados.
+	_material.set_shader_parameter("vista_uv", Vector2(VISTA / _retangulo.size.x, VISTA / _retangulo.size.y))
+	_sem_mapa = false
+
+
+## Já existe a textura importada? No jogo exportado sempre (o pacote só leva ela); no
+## editor, a foto recém-capturada só é importada quando a janela do editor ganha
+## foco, e carregar antes disso só enche o log de erro.
+func _importada() -> bool:
+	if OS.has_feature("template"):
+		return true
+	var importacao := ConfigFile.new()
+	if importacao.load(MAPA + ".import") != OK:
+		return ResourceLoader.exists(MAPA)
+	var destino := String(importacao.get_value("remap", "path", ""))
+	return destino != "" and FileAccess.file_exists(destino)
 
 
 func _desenhar() -> void:
 	if _jogador == null:
 		return
 	var centro: Vector2 = _sobre.size * 0.5
-	# KEEP_HEIGHT: a altura do quadro cobre VISTA unidades do mundo.
+	# A altura do quadro cobre VISTA unidades do mundo.
 	var escala: float = _sobre.size.y / VISTA
 	if is_instance_valid(_pedro):
 		_sobre.draw_circle(_no_quadro(_pedro.global_position, centro, escala), 3.0, CLARO)
@@ -212,8 +263,8 @@ func _desenhar() -> void:
 		var a := _no_quadro(_alvo, centro, escala)
 		var losango := PackedVector2Array([a + Vector2(0, -6), a + Vector2(5, 0), a + Vector2(0, 6), a + Vector2(-5, 0)])
 		_sobre.draw_colored_polygon(losango, AMBAR)
-	# Triângulo do jogador: a frente do modelo é o +Z do nó `visual`, e a câmera de topo
-	# põe o norte (-Z) para cima, então a direção na tela é (sin yaw, cos yaw).
+	# Triângulo do jogador: a frente do modelo é o +Z do nó `visual`, e o topo da foto
+	# é o norte (-Z), então a direção na tela é (sin yaw, cos yaw).
 	var direcao := Vector2(0, 1)
 	var visual := _jogador.get("visual") as Node3D
 	if visual != null:

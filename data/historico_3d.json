@@ -1,7 +1,37 @@
 {
  "versao_atual": "0.1.0-dev",
- "build_numero": 8,
+ "build_numero": 9,
  "entradas": [
+  {
+   "data": "05/10/2026",
+   "estado": "EM DESENVOLVIMENTO",
+   "estado_en": "IN DEVELOPMENT",
+   "estado_es": "EN DESARROLLO",
+   "titulo": "Edição Tripothon",
+   "titulo_en": "Tripothon Edition",
+   "titulo_es": "Edición Tripothon",
+   "mudancas": [
+    "*Carga* sem o congelamento de 19 s.",
+    "*FPS dobrado*: sombra enxuta e sem faces de trás.",
+    "*Mata* pela metade, com clareiras de árvore-destaque.",
+    "*Minimapa* pintado e estático.",
+    "*Lobby* em vídeo: o menu não monta mais o vale 3D."
+   ],
+   "mudancas_en": [
+    "*Loading* without the 19 s freeze.",
+    "*Doubled FPS*: lean shadows and no back faces.",
+    "*Forest* cut in half, with clearings for landmark trees.",
+    "*Minimap* painted and static.",
+    "*Video lobby*: the menu no longer builds the 3D valley."
+   ],
+   "mudancas_es": [
+    "*Carga* sin el congelamiento de 19 s.",
+    "*FPS duplicados*: sombra reducida y sin caras traseras.",
+    "*Bosque* a la mitad, con claros para árboles destacados.",
+    "*Minimapa* pintado y estático.",
+    "*Lobby* en vídeo: el menú ya no monta el valle 3D."
+   ]
+  },
   {
    "data": "04/10/2026",
    "estado": "EM DESENVOLVIMENTO",

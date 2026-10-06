@@ -356,7 +356,17 @@ const PECAS := {
 	# --- lote 05/10 level design: fim ---
 }
 
+## Peças finas e abertas (pano, vela, corda, fita, rede, varal, cerca) que precisam
+## das DUAS faces: o plano some visto de trás se o descarte de costas for ligado.
+const DUAS_FACES := [
+	"varal", "varal_bambu", "varal_estacas", "trouxa_roupa", "mastro_pano",
+	"fitas_gameleira", "saveiro", "rede", "rede_de_pesca", "corda",
+	"cerca", "cerca_varas", "barraca_feira", "ervas_secando",
+]
+
 static var _cenas: Dictionary = {}
+## Materiais já tratados por `_descartar_costas` (instance_id -> true): um só ajuste por material.
+static var _materiais_tratados: Dictionary = {}
 static var _malhas: Dictionary = {}
 static var faltando: Array[String] = []
 
@@ -390,8 +400,40 @@ static func cena(chave: String) -> PackedScene:
 		_cenas[chave] = null
 		return null
 	var scene := load(path) as PackedScene
+	if scene != null and not DUAS_FACES.has(chave):
+		_descartar_costas(scene)
 	_cenas[chave] = scene
 	return scene
+
+
+## Os GLBs do Tripo vêm com doubleSided, que o importador vira CULL_DISABLED: cada
+## triângulo de costas era rasterizado à toa em todas as passadas (profundidade, cor e
+## cascatas de sombra; medido de -14 a -18 ms). O ajuste vai NO PRÓPRIO material, que é
+## compartilhado por todas as instâncias da cena e pela malha que `malha()` entrega ao
+## MultiMesh da mata e do paisagismo. Material com transparência fica como está.
+static func _descartar_costas(scene: PackedScene) -> void:
+	var raiz := scene.instantiate()
+	for filho in raiz.find_children("*", "MeshInstance3D", true, false):
+		var instancia := filho as MeshInstance3D
+		if instancia.mesh == null:
+			continue
+		for s in instancia.mesh.get_surface_count():
+			_tratar_material(instancia.get_surface_override_material(s))
+			_tratar_material(instancia.mesh.surface_get_material(s))
+		_tratar_material(instancia.material_override)
+	raiz.free()
+
+
+static func _tratar_material(material: Material) -> void:
+	var base := material as BaseMaterial3D
+	if base == null:
+		return
+	var id := base.get_instance_id()
+	if _materiais_tratados.has(id):
+		return
+	_materiais_tratados[id] = true
+	if base.cull_mode == BaseMaterial3D.CULL_DISABLED and base.transparency == BaseMaterial3D.TRANSPARENCY_DISABLED:
+		base.cull_mode = BaseMaterial3D.CULL_BACK
 
 
 ## Instancia o modelo do Tripo com a base no chão em `origin`, normalizado pela medida
