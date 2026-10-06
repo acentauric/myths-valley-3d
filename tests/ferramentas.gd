@@ -485,8 +485,12 @@ func _frames(count: int) -> void:
 		await process_frame
 
 
+## O golpe do `Recursos3D` leva 1,5 s de JOGO, e o jogo anda mais devagar que a parede
+## quando o quadro passa de 50 ms (`max_physics_steps_per_frame`, project.godot): a
+## janela de 2 s de relógio reprovava na bateria cheia, num portão que passa sozinho.
+## A espera sai assim que o golpe acaba; o teto só pega o golpe que não acaba nunca.
 func _esperar_golpe(recursos) -> void:
-	var limite := Time.get_ticks_msec() + 2000
+	var limite := Time.get_ticks_msec() + 40000
 	while (not recursos._golpe_pendente.is_empty() or recursos._golpe_animando) and Time.get_ticks_msec() < limite:
 		await process_frame
 	_conferir(recursos._golpe_pendente.is_empty() and not recursos._golpe_animando,

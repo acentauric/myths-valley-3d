@@ -22,6 +22,30 @@ extends Node
 ## barra de mão não existia. A barra chegou (teclas 1 a 0, como no 2D; os
 ## gestos ficaram no Alt), e a simplificação virou defeito: com o machado na
 ## mão, o capim da foice se cortava. Ver `_tem_ferramenta`.
+##
+##
+## PEDRA PEQUENA SE QUEBRA, PEDRA GRANDE É CENÁRIO.
+##
+## "Algumas pedras que são quebráveis estão grandes demais, precisam ficar
+## pequenas; precisamos de pedras quebráveis pequenas e grandes não quebráveis."
+## O lajedo do poço era a peça `pedras` em tamanho 2,2 — 6,6 de largura por 4,1 de
+## altura, mais alto que o jogador — e quebrava e sumia no último golpe. A regra
+## agora é do motor: a ficha que rende pedra só vira alvo se o desenho posto cabe na
+## mão (`pedra_pequena`: até 1,25 de largura e 0,8 de altura). O que passa disso fica
+## no mundo como CENÁRIO — com corpo, sem E, sem golpe — e mora na seção "fixas" do
+## JSON (`_fixas`). A ficha que rende pedra, é grande e não tem a razão escrita
+## (`grande_de_proposito`) é rebaixada a cenário, com aviso (`rebaixados`), e o
+## `tests/pedras.gd` reprova. A exceção é a lapa da lombada: é a pedra da missão.
+##
+##
+## O GOLPE TEM SOM.
+##
+## Pedra, tronco, capim e ostra batiam em silêncio, e o `picareta.mp3` estava
+## órfão. Cada impacto toca o som da ferramenta pelo `Audio` (`SONS_DO_GOLPE`), e o
+## último golpe do alvo que cai toca o dele (`SONS_DO_ULTIMO`). As tabelas já
+## esperam os nomes que o gerador de efeitos vai dar (`marretada_pedra`,
+## `pedra_quebra`, `foice_capim`...): o que existe na pasta toca, e o que ainda não
+## existe cai no som que já há — no dia em que o arquivo chegar, toca sem mexer em código.
 
 const DicaTecla = preload("res://scripts/prototipo_3d/dica_tecla.gd")
 const Atalhos = preload("res://scripts/prototipo_3d/atalhos.gd")
@@ -39,10 +63,41 @@ const TEMPO_LIMITE_IMPACTO := 1.5
 const TEMPO_LIMITE_FIM_DO_GOLPE := 1.25
 const TEMPO_MAXIMO_DO_GOLPE := 5.0
 
+## PEDRA QUE SE QUEBRA CABE NA MÃO: até esta largura e esta altura, em unidades (o
+## jogador tem 1,75), medidas no desenho posto. Ver `pedra_pequena`.
+const PEDRA_MAX_LARGURA := 1.25
+const PEDRA_MAX_ALTURA := 0.8
+
+## OS SONS DO GOLPE, do mais certo ao que existe hoje: o primeiro da lista que está na
+## pasta é o que toca. A chave é "ferramenta/rende", ou só "ferramenta" (a mão é "");
+## `SONS_DO_ULTIMO` é o do último golpe do alvo, e sem arquivo ele soa como os outros.
+## Os nomes à frente de cada lista (`marretada_pedra`, `foice_capim`, `catar_ostra`,
+## `galho_quebra`, `pedra_quebra`) ainda não têm arquivo: quem espera está em
+## `sons_que_faltam`. A ficha pode mandar o seu: `"som"` e `"som_do_ultimo"`.
+const PASTA_DOS_SONS := "res://assets/audio/efeitos/"
+const SONS_DO_GOLPE := {
+	"picareta": ["marretada_pedra", "picareta"],
+	"machado": ["machado"],
+	"foice": ["foice_capim", "colher"],
+	"/ostra": ["catar_ostra", "pegar"],
+	"/lenha": ["galho_quebra", "pegar"],
+	"": ["pegar"],
+}
+const SONS_DO_ULTIMO := {
+	"picareta/pedra": ["pedra_quebra"],
+	"machado/cai": ["arvore_cai"],
+}
+## O som da queda entra depois do golpe, e não por cima dele: o `Audio.efeito` toca
+## num tocador só, e o segundo som corta o primeiro.
+const QUEDA_DEPOIS_DO_GOLPE_S := 0.35
+
 ## Um alvo derrubado. O `Missoes` e o guia escutam para contar o trabalho.
 signal derrubado(id: String, rende: String, quantidade: int)
 ## Bateu e não deu: sem ferramenta, ou sem fôlego. O HUD conta ao jogador.
 signal recusado(motivo: String)
+## Um impacto que soou: o nome do arquivo de `assets/audio/efeitos` (sem o .mp3) e se
+## foi o último golpe do alvo. Quem quer saber o que tocou — o portão — escuta aqui.
+signal golpe_sonoro(nome: String, ultimo: bool)
 
 var _world: Node3D
 var _jogador: Node3D
@@ -62,6 +117,11 @@ var _perto := ""
 var _postos: Dictionary = {}
 ## Os ids dos alvos que já caíram nesta partida, para o save. Ver `caidos`.
 var _caidos: Array[String] = []
+## As pedras grandes: cenário, com corpo e sem E. id → {"no", "corpos", "ficha", "rebaixada"}.
+var _fixas: Dictionary = {}
+## As fichas que rendem pedra, são grandes e não têm razão escrita: o motor as pôs de
+## cenário, com aviso. Fica vazio quando os dados estão em ordem (`tests/pedras.gd`).
+var rebaixados: Array[String] = []
 
 
 func configurar(world: Node3D, jogador: Node3D, hud, hud_layer: Control) -> void:
@@ -127,6 +187,19 @@ func _erguer() -> void:
 		if no == null:
 			continue
 
+		# PEDRA GRANDE NÃO É ALVO. A ficha que rende pedra só vira alvo se o desenho cabe
+		# na mão (`pedra_pequena`) ou se traz a razão escrita (`grande_de_proposito`, a
+		# lapa da missão). Sem uma coisa nem outra o motor a põe de cenário e avisa: o
+		# dado errado não pode voltar a pôr um lajedo de seis metros diante do poço.
+		var limites_do_no: AABB = no.get_meta("limites", AABB())
+		if str(ficha.get("rende", "")) == "pedra" and str(ficha.get("grande_de_proposito", "")) == "" \
+				and not pedra_pequena(limites_do_no):
+			push_warning("Recursos: '%s' rende pedra e mede %.1f x %.1f x %.1f u: grande demais para quebrar, fica de cenário." % [id, limites_do_no.size.x, limites_do_no.size.y, limites_do_no.size.z])
+			rebaixados.append(id)
+			_fixas[id] = {"no": no, "corpos": _por_a_colisao(str(ficha.get("peca", "")), no, pos, float(ficha.get("tamanho", 1.0)), giro),
+				"ficha": ficha, "rebaixada": true}
+			continue
+
 		# A COLISÃO É UM NÓ SEPARADO, e é preciso guardá-la.
 		#
 		# `CatalogoAssets.colisao` não põe a forma dentro da peça: ela cria um
@@ -137,12 +210,7 @@ func _erguer() -> void:
 		#
 		# Quais filhos do mundo nasceram desta chamada só se sabe olhando antes
 		# e depois — então é o que se faz.
-		var antes := _world.get_child_count()
-		CatalogoAssets.colisao(str(ficha.get("peca", "")), no, _world, pos,
-			float(ficha.get("tamanho", 1.0)), giro)
-		var corpos: Array[Node] = []
-		for i in range(antes, _world.get_child_count()):
-			corpos.append(_world.get_child(i))
+		var corpos := _por_a_colisao(str(ficha.get("peca", "")), no, pos, float(ficha.get("tamanho", 1.0)), giro)
 
 		# A MEIA-PEGADA: o quanto este alvo empurra o jogador para longe do
 		# próprio centro. É o que o alcance do golpe soma, para "encoste e
@@ -166,6 +234,42 @@ func _erguer() -> void:
 			_postos[grupo] = int(_postos.get(grupo, 0)) + 1
 		_alvos[id] = {"no": no, "pos": pos, "ficha": ficha, "golpes_dados": 0,
 			"corpos": corpos, "meia_pegada": meia}
+
+	# AS PEDRAS GRANDES, de cenário: o desenho e o corpo de sempre, sem ser alvo.
+	_erguer_as_fixas(dado.get("fixas", []))
+
+
+## A seção "fixas" do JSON: as pedras grandes, de cenário. O mesmo lugar, o mesmo
+## tamanho e o corpo de sempre — mas não entram em `_alvos`: não respondem ao E, não
+## aparecem na dica, não votam no foco e não apanham.
+func _erguer_as_fixas(lista: Array) -> void:
+	for ficha: Dictionary in lista:
+		var base: Vector3 = Lugares.ponto(str(ficha.get("lugar", "")))
+		if base == Lugares.NENHUM:
+			continue
+		var desvio: Array = ficha.get("desvio", [0.0, 0.0])
+		var pos: Vector3 = _world.ground_position(base + Vector3(float(desvio[0]), 0.0, float(desvio[1])))
+		var giro := deg_to_rad(float(ficha.get("giro", 0.0)))
+		var peca := str(ficha.get("peca", ""))
+		var tamanho := float(ficha.get("tamanho", 1.0))
+		var no := CatalogoAssets.instanciar(peca, _world, pos, tamanho, giro)
+		if no == null:
+			continue
+		_fixas[str(ficha.get("id", ""))] = {"no": no, "corpos": _por_a_colisao(peca, no, pos, tamanho, giro),
+			"ficha": ficha, "rebaixada": false}
+
+
+## Põe a colisão da peça no mundo e devolve os corpos que nasceram (os filhos novos do
+## mundo), que é o que se guarda para liberar junto com o visual. Ver o comentário em
+## `_erguer`: `CatalogoAssets.colisao` cria um nó irmão, e quais nasceram desta chamada
+## só se sabe olhando antes e depois.
+func _por_a_colisao(peca: String, no: Node3D, pos: Vector3, tamanho: float, giro: float) -> Array[Node]:
+	var antes := _world.get_child_count()
+	CatalogoAssets.colisao(peca, no, _world, pos, tamanho, giro)
+	var corpos: Array[Node] = []
+	for i in range(antes, _world.get_child_count()):
+		corpos.append(_world.get_child(i))
+	return corpos
 
 
 func _process(_delta: float) -> void:
@@ -420,6 +524,8 @@ func _aplicar_golpe(id: String) -> void:
 	var ficha: Dictionary = alvo["ficha"]
 	alvo["golpes_dados"] = int(alvo["golpes_dados"]) + 1
 	var faltam := int(ficha.get("golpes", 3)) - int(alvo["golpes_dados"])
+	# O SOM É DO IMPACTO: cada golpe que acerta, e o que derruba também.
+	_tocar_o_golpe(ficha, faltam <= 0)
 	if faltam > 0:
 		_sacudir(alvo["no"])
 		return
@@ -473,6 +579,73 @@ func _aplicar_golpe(id: String) -> void:
 func _renova(ficha: Dictionary) -> bool:
 	var sem := str(ficha.get("renova_sem", ""))
 	return sem != "" and not _carrega(sem) and Equipamento.da_familia_em_uso(sem) == ""
+
+
+## A PEDRA CABE NA MÃO? Pela medida do desenho posto (`limites` de
+## `CatalogoAssets.instanciar`): a largura é o maior lado do chão.
+static func pedra_pequena(limites: AABB) -> bool:
+	return maxf(limites.size.x, limites.size.z) <= PEDRA_MAX_LARGURA and limites.size.y <= PEDRA_MAX_ALTURA
+
+
+## O SOM DO IMPACTO: o da ferramenta no alvo e, no último golpe, o da queda — que entra
+## depois, e não por cima. Cada som que toca avisa em `golpe_sonoro`.
+func _tocar_o_golpe(ficha: Dictionary, ultimo: bool) -> void:
+	var golpe := som_do_golpe(ficha, false)
+	if golpe != "":
+		Audio.efeito(golpe)
+		golpe_sonoro.emit(golpe, ultimo)
+	if not ultimo:
+		return
+	var fim := som_do_golpe(ficha, true)
+	if fim == "":
+		return
+	if golpe == "":
+		_tocar_a_queda(fim)
+	else:
+		get_tree().create_timer(QUEDA_DEPOIS_DO_GOLPE_S).timeout.connect(_tocar_a_queda.bind(fim))
+
+
+func _tocar_a_queda(nome: String) -> void:
+	Audio.efeito(nome)
+	golpe_sonoro.emit(nome, true)
+
+
+## O som do golpe desta ficha: o primeiro candidato que existe na pasta, ou "" (o último
+## golpe sem som próprio soa como os outros).
+static func som_do_golpe(ficha: Dictionary, ultimo: bool) -> String:
+	for nome in _sons_candidatos(ficha, ultimo):
+		if ResourceLoader.exists(PASTA_DOS_SONS + str(nome) + ".mp3"):
+			return str(nome)
+	return ""
+
+
+static func _sons_candidatos(ficha: Dictionary, ultimo: bool) -> Array:
+	var do_dado = ficha.get("som_do_ultimo" if ultimo else "som", null)
+	if do_dado is String and do_dado != "":
+		return [do_dado]
+	if do_dado is Array:
+		return do_dado
+	var ferramenta := str(ficha.get("ferramenta", ""))
+	var tabela: Dictionary = SONS_DO_ULTIMO if ultimo else SONS_DO_GOLPE
+	var chaves: Array[String] = ["%s/%s" % [ferramenta, str(ficha.get("rende", ""))], ferramenta]
+	if ultimo and bool(ficha.get("cai", false)):
+		chaves.insert(0, "%s/cai" % ferramenta)
+	for chave in chaves:
+		if tabela.has(chave):
+			return tabela[chave]
+	return []
+
+
+## Os nomes que as tabelas esperam e a pasta ainda não tem: o que falta o gerador de
+## efeitos fazer. Cada um passa a tocar sozinho no dia em que o arquivo existir.
+static func sons_que_faltam() -> Array:
+	var faltam: Array = []
+	for tabela: Dictionary in [SONS_DO_GOLPE, SONS_DO_ULTIMO]:
+		for chave in tabela:
+			for nome in tabela[chave]:
+				if not ResourceLoader.exists(PASTA_DOS_SONS + str(nome) + ".mp3") and not faltam.has(nome):
+					faltam.append(nome)
+	return faltam
 
 
 ## Um tranco na peça a cada golpe, para o jogador ver que acertou. Não é

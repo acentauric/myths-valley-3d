@@ -63,13 +63,27 @@ extends SceneTree
 ##      (no estilo Tripo, o modelo do catálogo); e a capelinha de taipa do
 ##      catálogo no lugar da capela colonial reduzida.
 ##
-## A espera é em SEGUNDO REAL, e não em quadro, pela razão escrita no
+## A espera é em SEGUNDO, e não em quadro, pela razão escrita no
 ## `cadeia_das_missoes.gd`: o cadeado da fala do jogo é de relógio de parede, e
-## em headless os quadros voam.
+## em headless os quadros voam. E o segundo é o DO JOGO (`tests/fixtures/
+## relogio_de_jogo.gd`), e não o da parede: com a física limitada a 3 passos por
+## quadro (`project.godot`) o jogo anda mais devagar que a parede quando o quadro
+## passa de 50 ms, e na bateria cheia passa. O golpe da foice leva 1,5 s de jogo
+## e este portão o esperava em 2,0 s de relógio: o mesmo portão que passa sozinho
+## reprovava com "o passo 'coveiro_limpar' pede 8 de capim e só derrubei 0" — e o
+## resto da lista ("o cercado não subiu", "recarregar fez o capim renascer") era
+## cascata do passo que não fechou. Com `MV_QUADRO_LENTO_MS=150` no ambiente o
+## portão roda como na bateria no pior; com `MV_FALSIFICAR=parede` ele volta a
+## esperar em parede, e então TEM de reprovar.
+
+const RelogioDeJogo = preload("res://tests/fixtures/relogio_de_jogo.gd")
 
 var falhas := 0
+var relogio: Node
 const SEGUNDOS_POR_PASSO := 15.0
 const SEGUNDOS_PARA_ANUNCIAR := 12.0
+## O golpe inteiro: o impacto cai em 1,5 s de jogo; o resto é folga.
+const SEGUNDOS_DO_GOLPE := 6.0
 ## A malha nova dos moradores, depois do cercado: assar leva uns dois segundos.
 const SEGUNDOS_PARA_A_MALHA := 25.0
 const PASSOS := 6
@@ -90,11 +104,14 @@ func _conferir(ok: bool, rotulo: String) -> void:
 
 
 func _run() -> void:
+	relogio = RelogioDeJogo.new()
+	root.add_child(relogio)
 	_conferir(change_scene_to_file("res://scenes/prototipo_3d/vale.tscn") == OK,
 		"a cena do vale carrega")
 	await _frames(4)
 	await _mundo_pronto()
 	await _frames(3)
+	relogio.ficar_lento()
 
 	var jogo := current_scene
 	var jogador = jogo.get("player")
@@ -601,7 +618,7 @@ func _juntar(recursos, inv, energia, jogador, item: String, quantos: int, id: St
 		energia.encher()
 		if not recursos.bater():
 			break
-		await _ate(func() -> bool: return recursos._golpe_pendente.is_empty() and not recursos._golpe_animando, 2.0)
+		await _ate(func() -> bool: return relogio.golpe_acabou(recursos), relogio.janela(SEGUNDOS_DO_GOLPE, 2.0))
 	_conferir(inv.quantidade(item) >= quantos,
 		"o passo '%s' pede %d de %s e só juntei %d" % [id, quantos, item, inv.quantidade(item)])
 
@@ -620,7 +637,7 @@ func _derrubar(recursos, energia, jogador, peca: String, quantos: int, id: Strin
 		energia.encher()
 		if not recursos.bater():
 			break
-		await _ate(func() -> bool: return recursos._golpe_pendente.is_empty() and not recursos._golpe_animando, 2.0)
+		await _ate(func() -> bool: return relogio.golpe_acabou(recursos), relogio.janela(SEGUNDOS_DO_GOLPE, 2.0))
 	_conferir(recursos.derrubados(peca) >= quantos,
 		"o passo '%s' pede %d de %s e só derrubei %d"
 			% [id, quantos, peca, recursos.derrubados(peca)])
@@ -670,13 +687,10 @@ func _fechar() -> void:
 	quit(1 if falhas > 0 else 0)
 
 
+## Espera `condicao` por até `segundos` DE JOGO (ver o cabeçalho): nunca menos, em
+## parede, que os segundos de relógio que este portão esperava antes.
 func _ate(condicao: Callable, segundos: float) -> bool:
-	var limite := Time.get_ticks_msec() + int(segundos * 1000.0)
-	while Time.get_ticks_msec() < limite:
-		if condicao.call():
-			return true
-		await process_frame
-	return condicao.call()
+	return await relogio.ate(condicao, segundos)
 
 
 func _frames(count: int) -> void:

@@ -112,6 +112,12 @@ const PECAS := {
 	# A lapa da lombada é a mesma pedra, com nome próprio: a meta "derrubar" da
 	# missão conta só ela (`recursos_3d.derrubados`).
 	"lapa": {"tripo": "aderecos/pedras_tripo.glb", "largura": 3.0, "caixa": true, "camera": true},
+	# A PEDRA SOLTA, a que se quebra: o mesmo monte de pedras, mas pequeno (tamanho de
+	# 0,3 a 0,4, do tornozelo ao joelho do jogador) e solto no chão. Pedra quebrável
+	# cabe na mão (`Recursos3D.pedra_pequena`); as grandes, de cenário, são `pedras`.
+	# Sem "camera": o braço da câmera não pode saltar ao passar por uma pedra de meio
+	# metro. Nenhum modelo novo: é o GLB de `pedras`.
+	"pedra_solta": {"tripo": "aderecos/pedras_tripo.glb", "largura": 3.0, "caixa": true, "camera": false},
 	# A cabra do Seu Benedito, presa no alto da lombada (lote do Tripo de 05/10).
 	"cabra": {"tripo": "aderecos/cabra_tripo.glb", "largura": 1.3},
 	# A FAZENDA DO CONVITE (lotes do Tripo de 05/10): o casarão, de frente para +Z,
