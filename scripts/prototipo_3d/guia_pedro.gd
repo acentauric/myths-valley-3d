@@ -103,6 +103,8 @@ var _quadro_da_conducao := -1
 ## porque o vigor volta depressa — parado, 20 por segundo —, e a fala pode
 ## estar ocupada no instante em que ele cai.
 var _cansou_na_caminhada := false
+## A próxima das falas de depois do tutorial (`falas_depois` no npcs_3d.json).
+var _proxima_fala_depois := -1
 
 
 ## --- as janelas para dentro da cadeia -------------------------------------
@@ -401,7 +403,10 @@ func _ver_se_explica_o_corpo() -> void:
 	# e quem corre para o mar e volta cansado não está na caminhada com ele.
 	if bool(passo.get("conduz", false)) and _fracao_do_vigor() <= LIMIAR_DO_CORPO:
 		_cansou_na_caminhada = true
-	if Dialogo.ocupado() or not _palavra_livre():
+	# A CAIXA NÃO ESPERA O BALÃO: ela para o vale, e a fala que estiver no ar fica
+	# suspensa até a caixa fechar (`fila_de_falas.gd`). Espera só outra caixa e a
+	# narração do mundo.
+	if Dialogo.ocupado() or _narracao_na_tela():
 		return
 	if jogador.global_position.distance_to(global_position) > PERTO_PARA_EXPLICAR:
 		return
@@ -462,40 +467,81 @@ func saudar() -> void:
 ## O E NO PEDRO (`tecla_dos_moradores.gd`), quando nenhuma fila usa a conversa:
 ## antes da chegada, é a saudação que a abre; durante ela, ele repete o que fazer
 ## agora — quem se perdeu pergunta ao Pedro. Depois do tutorial, é a conversa de
-## qualquer morador.
+## qualquer morador, com as falas de quem já conhece o jogador (`_escolher_a_fala`).
+##
+## O E nele com ele falando passa a fala (`npc.conversar`), e não a recomeça.
 func conversar() -> void:
 	if not _cadeia.iniciado:
 		saudar()
 		return
 	if not terminou_o_tutorial() and not _cadeia.acabou():
+		var fila := _fila()
+		if fila != null and fila.falando(self):
+			fila.pular()
+			return
 		var texto := _cadeia.texto_do_passo()
 		if texto != "":
 			_ultima_saudacao_ms = Time.get_ticks_msec()
-			narrar("", texto)
+			# O passo repetido sai como o anúncio dele: fechado o passo, cala junto.
+			narrar("", texto, {"classe": FilaDeFalas.Classe.CONVERSA, "no_lugar": true,
+				"origem": _cadeia._origem_do_anuncio(_cadeia.passo_atual())})
 			return
 	super()
 
 
-## O mesmo `narrar` da base, mais o `narrou` — que é o que põe a fala do Pedro
-## no aviso do HUD. A parte comum subiu para o `npc.gd` quando o Damião ganhou
-## fila de missões; o que sobrou aqui é o sinal, que é do guia.
-func narrar(nome_audio: String, texto: String) -> void:
-	super(nome_audio, texto)
-	narrou.emit(texto)
+## AS FALAS DE DEPOIS DO TUTORIAL. "Opa! É você o moço da capital?" era a fala
+## dele para sempre: o E no Pedro, acabada a chegada, caía na conversa de qualquer
+## morador, e as falas dele (`falas`, no npcs_3d.json) são as do primeiro
+## encontro no píer — ele se apresentava de novo a cada conversa. Depois do
+## tutorial ele fala como quem já conhece o jogador: o peixe, a maré, a praça de
+## noite, o arraial (`falas_depois`, nos três idiomas), alternando como as dos
+## outros moradores.
+func _escolher_a_fala() -> Dictionary:
+	var depois: Array = dados.get("falas_depois", [])
+	if not terminou_o_tutorial() or depois.is_empty():
+		return super()
+	if _proxima_fala_depois < 0:
+		_proxima_fala_depois = randi() % depois.size()
+	var fala: Dictionary = depois[_proxima_fala_depois % depois.size()]
+	_proxima_fala_depois += 1
+	return {
+		"texto": String(IdiomaMenu.campo(fala, "texto", "")),
+		"voz": _voz_do_arquivo(String(fala.get("audio", ""))),
+	}
 
 
+## A FALA DO PEDRO VAI PARA O AVISO DO HUD (`narrou`) quando ela entra no ar, e
+## não quando é pedida: com a fila de falas ela pode esperar a vez, e o aviso
+## tem de dizer o que está no balão.
+func _comecar_a_fala(fala: Dictionary) -> void:
+	super(fala)
+	if bool(fala.get("narrada", false)):
+		narrou.emit(str(fala.get("inteira", fala.get("texto", ""))))
+
+
+## O AVISO DO ENTARDECER, com a voz dele (`anoitecer` no npcs_3d.json, nos três
+## idiomas: texto de jogador não mora em constante).
 func _verificar_anoitecer() -> void:
 	var periodo := Dia.periodo()
 	if periodo == "entardecer" and not _anoiteceu_hoje and _cadeia.espera <= 0.0 and _palavra_livre():
 		_anoiteceu_hoje = true
-		narrar("pedro_anoitecer", "Daqui a pouco escurece. Quando terminar, volte pra cama. Apagar no chão não descansa igual.")
+		var aviso: Dictionary = dados.get("anoitecer", {})
+		var texto := String(IdiomaMenu.campo(aviso, "texto", ""))
+		if texto != "":
+			narrar(String(aviso.get("audio", "")), texto, {"classe": FilaDeFalas.Classe.MISSAO, "origem": "anoitecer"})
 	elif periodo == "manha":
 		_anoiteceu_hoje = false
 
 
-## Pedro só narra quando nem ele nem o jogador estão ao alcance de outra fala.
+## Pedro só narra quando a vez de falar está livre (`npc.pode_falar`).
 func _palavra_livre() -> bool:
 	return pode_falar() and not fala_perto_de(jogador.global_position)
+
+
+## A narração do mundo está na tela (a fila de falas diz)? A caixa espera por ela.
+func _narracao_na_tela() -> bool:
+	var fila := _fila()
+	return fila != null and bool(fila.segura_a_caixa())
 
 
 ## ONDE O PASSO ACONTECE, resolvido pelo NOME e não pela âncora.

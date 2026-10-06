@@ -1,0 +1,13 @@
+{
+  "observacao": "O QUE O MORADOR FICA DEVENDO QUANDO A MOCHILA ESTÁ CHEIA (scripts/prototipo_3d/cadeia_de_missoes.gd, _dar): a ferramenta que o passo entrega, a recompensa que ele paga e o que o mutirão traz não somem mais em silêncio — ficam guardados com quem deu, o HUD diz que falta espaço, e entram sozinhos quando um espaço abre. Em 'mochila_cheia' o primeiro %s é o que ficou ('1 picareta') e o segundo, quem guarda ('Pedro'); em 'recebido_depois' o primeiro %s é quem deu e o segundo, o que entrou.",
+  "mochila_cheia": {
+    "texto": "Mochila cheia — %s fica com %s até você abrir um espaço.",
+    "texto_en": "Bag full — %s stays with %s until you free up a slot.",
+    "texto_es": "Mochila llena — %s se queda con %s hasta que liberes un espacio."
+  },
+  "recebido_depois": {
+    "texto": "Recebido de %s: %s, que esperava espaço na mochila.",
+    "texto_en": "Received from %s: %s, which was waiting for room in your bag.",
+    "texto_es": "Recibido de %s: %s, que esperaba espacio en la mochila."
+  }
+}

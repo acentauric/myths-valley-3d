@@ -29,7 +29,58 @@
         "tts": "[excited] Chegou, homem! O mestre do saveiro jurou que trazia você hoje. Pedro, pescador, às suas ordens. [curious] A baía foi boa com você?",
         "audio": "pedro_saudacao_3"
       }
-    ]
+    ],
+    "observacao_falas_depois": "DEPOIS DO TUTORIAL o E no Pedro não repete o primeiro encontro do píer ('falas', acima): ele fala como quem já conhece o jogador, alternando estas (guia_pedro._escolher_a_fala). Sem voz ainda: o balão basta, e gerar a voz é decisão de crédito.",
+    "falas_depois": [
+      {
+        "texto": "Ê, meu amigo! A maré hoje tá mansa, boa pra rede. Se quiser aprender a pescar de vara, é só chegar no píer.",
+        "texto_en": "Hey, my friend! The tide is gentle today, good for the net. If you want to learn line fishing, just come by the pier.",
+        "texto_es": "¡Eh, amigo mío! La marea hoy está mansa, buena para la red. Si quieres aprender a pescar con caña, solo ven al muelle.",
+        "audio": ""
+      },
+      {
+        "texto": "Já se acostumou com o arraial? Aqui o povo repara em tudo, mas quem trabalha direito logo vira de casa.",
+        "texto_en": "Getting used to the village yet? Folks here notice everything, but whoever works honestly soon becomes family.",
+        "texto_es": "¿Ya te acostumbraste al caserío? Aquí la gente se fija en todo, pero quien trabaja bien pronto es de casa.",
+        "audio": ""
+      },
+      {
+        "texto": "De tardinha a praça enche. Tem garapa da Dona Candinha e prosa até o lampião acender.",
+        "texto_en": "Come late afternoon the square fills up. There's Dona Candinha's cane juice and talk until the lamps are lit.",
+        "texto_es": "Al caer la tarde la plaza se llena. Hay guarapo de doña Candinha y charla hasta que encienden el farol.",
+        "audio": ""
+      },
+      {
+        "texto": "O Tonho jura que o peixe grande só morde de madrugada. Eu acho é que ele gosta de acordar cedo pra contar vantagem.",
+        "texto_en": "Tonho swears the big fish only bite before dawn. I reckon he just likes getting up early to brag about it.",
+        "texto_es": "Tonho jura que el pez grande solo pica de madrugada. Yo creo que le gusta madrugar para presumir.",
+        "audio": ""
+      },
+      {
+        "texto": "Cuidado na beira da baía quando a água escurece. Tem tubarão que entra atrás dos cardumes.",
+        "texto_en": "Careful at the edge of the bay when the water darkens. Sharks sometimes come in after the shoals.",
+        "texto_es": "Cuidado en la bahía cuando el agua se oscurece. A veces entran tiburones detrás de los cardúmenes.",
+        "audio": ""
+      },
+      {
+        "texto": "Dia catorze o saveiro do mestre Quirino encosta no píer. Quem tem piaçava pra vender não perde a viagem.",
+        "texto_en": "On the fourteenth, Quirino's saveiro docks at the pier. Anyone with piassava to sell won't waste the trip.",
+        "texto_es": "El catorce, el saveiro de Quirino atraca en el muelle. Quien tenga piasava para vender no pierde el viaje.",
+        "audio": ""
+      },
+      {
+        "texto": "Se cansar, descansa. Ninguém aqui corre atrás do sol, que ele volta todo dia do mesmo jeito.",
+        "texto_en": "If you get tired, rest. Nobody here chases the sun; it comes back every day just the same.",
+        "texto_es": "Si te cansas, descansa. Aquí nadie corre detrás del sol, que vuelve todos los días igual.",
+        "audio": ""
+      }
+    ],
+    "anoitecer": {
+      "texto": "Daqui a pouco escurece. Quando terminar, volte pra cama. Apagar no chão não descansa igual.",
+      "texto_en": "It'll be dark soon. When you're done, head back to bed. Passing out on the ground isn't the same rest.",
+      "texto_es": "Pronto oscurece. Cuando termines, vuelve a la cama. Caer rendido en el suelo no descansa igual.",
+      "audio": "pedro_anoitecer"
+    }
   },
   "moradores": [
     {

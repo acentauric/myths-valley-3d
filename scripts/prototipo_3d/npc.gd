@@ -9,6 +9,7 @@ const IdiomaMenu = preload("res://scripts/prototipo_3d/idioma_menu.gd")
 const BalaoFala = preload("res://scripts/prototipo_3d/balao_fala.gd")
 const EspumaAgua = preload("res://scripts/prototipo_3d/espuma_agua.gd")
 const Vestimenta3D = preload("res://scripts/prototipo_3d/vestimenta_3d.gd")
+const FilaDeFalas = preload("res://scripts/prototipo_3d/fila_de_falas.gd")
 
 signal saudou(morador: MoradorNPC, texto: String)
 
@@ -31,11 +32,12 @@ const RAIO_SAUDACAO := 3.4
 const GRUPO_DAS_CADEIAS := &"cadeias_de_missoes"
 const RAIO_BALAO := 6.0
 const INTERVALO_SAUDACAO_MS := 45000
-## Duas falas não se atropelam: quem está a menos disto de alguém que ainda fala espera
-## a vez (a fila é quem chegou primeiro a pedir a palavra). Perto do alcance audível
-## da voz (max_distance = 30) para ninguém ouvir duas vozes ao mesmo tempo.
+## Até onde a conversa segura o relógio (`_segurar_o_relogio`) e, sem a fila de
+## falas no vale (um portão que monta um morador só), o raio da palavra antiga.
+## No vale quem decide a vez é a fila (`fila_de_falas.gd`): uma fala de cada vez.
 const RAIO_CONVERSA := 18.0
-## Folga entre o fim de uma fala e o começo da seguinte, em segundos.
+## Folga entre o fim de uma fala e o começo da seguinte, em segundos (a palavra
+## antiga, sem fila; com ela, `FilaDeFalas.RESPIRO`).
 const PAUSA_ENTRE_FALAS := 0.6
 ## O cinza das peças provisórias (a oficina, o caititu, os móveis de uso).
 const CINZA_PROVISORIO := Color(0.52, 0.53, 0.52)
@@ -99,8 +101,14 @@ const NA_CABECA_DO_MORADOR := {
 	"cesto": {"metros": 0.45, "acima": 0.1, "frente": 0.0},
 }
 
-## Até quando (ms) cada morador que está falando segura a palavra.
+## Até quando (ms) cada morador que está falando segura a palavra. Com a fila no
+## vale é só espelho de quem está no ar (o portão da chegada lê para dizer quem
+## não soltou a palavra); sem ela, é a palavra antiga.
 static var _falando: Dictionary = {}
+
+## A FALA DESTE MORADOR NO AR AGORA (o pedido que a fila deu a vez), ou {}.
+var _fala_no_ar: Dictionary = {}
+var _fila_do_vale: Node = null
 
 var dados: Dictionary = {}
 var ancoras: Dictionary = {}
@@ -613,27 +621,45 @@ func _atualizar_animacao(delta: float) -> void:
 
 
 func _atualizar_interacao(delta: float) -> void:
-	if _balao_tempo > 0.0:
+	# Sem a fila no vale, o balão conta o próprio tempo; com ela, quem conta é a
+	# fila, em relógio de parede (`_tique_da_fala`).
+	if _balao_tempo > 0.0 and _fila() == null:
 		_balao_tempo -= delta
 		if _balao_tempo <= 0.0:
-			balao.esconder()
-			nome_label.visible = true
-			_soltar_o_relogio()
+			_parar_a_fala(_fala_no_ar, false)
 	if jogador == null:
 		return
 	var distancia := jogador.global_position.distance_to(global_position)
 	# Quem se afastou no meio da fala saiu da conversa: o dia volta a correr.
 	if _segura_o_relogio and distancia > RAIO_CONVERSA:
 		_soltar_o_relogio()
-	if distancia < RAIO_SAUDACAO and (_ultima_saudacao_ms < 0 or Time.get_ticks_msec() - _ultima_saudacao_ms > intervalo_saudacao_ms) \
-			and (_eh_mudo() or pode_falar()):
-		if tem_missao():
+	if distancia < RAIO_SAUDACAO and (_ultima_saudacao_ms < 0 or Time.get_ticks_msec() - _ultima_saudacao_ms > intervalo_saudacao_ms):
+		if _eh_mudo():
+			saudar()
+		elif not pode_falar():
+			# A VEZ ESTÁ COM ALGO QUE IMPORTA (a fala da missão, a resposta de
+			# alguém, a festa): o cumprimento não espera na fila, cai — e o encontro
+			# conta como feito, para não emendar no fim da fala que ele esperava.
+			# Atrás de outro cumprimento, não: esse acaba logo, e aí ele sai.
+			if not _so_cumprimento_no_ar():
+				_ultima_saudacao_ms = Time.get_ticks_msec()
+		elif tem_missao():
 			# Quem tem missão com o jogador fala a missão, e não o cumprimento. A
 			# saudação se dá por feita: sem isso, ela sairia no quadro seguinte ao
 			# fim da fala da missão.
 			_ultima_saudacao_ms = Time.get_ticks_msec()
 		else:
 			saudar()
+
+
+## Só um cumprimento de outro morador no ar, e ninguém esperando a vez?
+func _so_cumprimento_no_ar() -> bool:
+	var fila := _fila()
+	if fila == null:
+		return true
+	var no_ar: Dictionary = fila.atual()
+	return fila.esperando() == 0 and not no_ar.is_empty() \
+		and int(no_ar.get("classe", -1)) == FilaDeFalas.Classe.PASSAGEM
 
 
 ## O MORADOR TEM MISSÃO COM O JOGADOR AGORA? Pergunta a toda cadeia viva — a dele
@@ -648,8 +674,12 @@ func tem_missao() -> bool:
 	return false
 
 
-## Ninguém por perto está no meio de uma fala (Pedro incluído).
+## A VEZ DE FALAR ESTÁ LIVRE? No vale, é a fila: ninguém no ar e ninguém
+## esperando (`FilaDeFalas.livre`). Sem ela, ninguém por perto no meio de uma fala.
 func pode_falar() -> bool:
+	var fila := _fila()
+	if fila != null:
+		return fila.livre()
 	var agora := Time.get_ticks_msec()
 	for outro in _falando.keys():
 		if not is_instance_valid(outro) or int(_falando[outro]) <= agora:
@@ -659,9 +689,11 @@ func pode_falar() -> bool:
 	return true
 
 
-## Alguém (fora este) ainda fala ao alcance de `ponto`: o Pedro usa com a posição do
-## jogador para não narrar por cima de uma fala que o jogador está ouvindo.
+## Alguém (fora este) está falando ao alcance de `ponto`.
 func fala_perto_de(ponto: Vector3) -> bool:
+	var fila := _fila()
+	if fila != null:
+		return fila.alguem_alem_de(self, ponto, RAIO_CONVERSA)
 	var agora := Time.get_ticks_msec()
 	for outro in _falando.keys():
 		if not is_instance_valid(outro) or int(_falando[outro]) <= agora:
@@ -671,14 +703,31 @@ func fala_perto_de(ponto: Vector3) -> bool:
 	return false
 
 
-## Marca que este morador segura a palavra por `segundos` (mais a folga).
+## SEGURA A PALAVRA por `segundos` (mais a folga): a bronca do coveiro estica o
+## balão dele pelo tempo da voz dela (`lapides.gd`). Na fila, estica a fala dele
+## que está no ar.
 func _tomar_palavra(segundos: float) -> void:
 	_falando[self] = Time.get_ticks_msec() + int((segundos + PAUSA_ENTRE_FALAS) * 1000.0)
+	var fila := _fila()
+	if fila != null:
+		fila.estender(self, segundos + PAUSA_ENTRE_FALAS)
 
 
 func _exit_tree() -> void:
+	var fila := _fila()
+	if fila != null:
+		fila.calar_falante(self)
 	_falando.erase(self)
 	_soltar_o_relogio()
+
+
+## A fila de falas do vale, ou null (portão que monta um morador só).
+func _fila() -> Node:
+	if _fila_do_vale != null and is_instance_valid(_fila_do_vale) and _fila_do_vale.is_inside_tree() \
+			and _fila_do_vale.is_in_group(FilaDeFalas.GRUPO):
+		return _fila_do_vale
+	_fila_do_vale = FilaDeFalas.da(self)
+	return _fila_do_vale
 
 
 ## O RELÓGIO PARA NA CONVERSA (`Dia.segurar`): a fala da missão (`narrar`) e a
@@ -715,17 +764,36 @@ func conversando() -> bool:
 
 ## Cumprimenta o jogador: balão com a fala e voz do ElevenLabs por proximidade. Quem
 ## tem "falas" (até três) alterna entre elas a cada encontro; sem elas, usa "fala".
+##
+## O CUMPRIMENTO ENTRA NA FILA DE FALAS como o de quem passa (`Classe.PASSAGEM`):
+## quem o chama pela proximidade (`_atualizar_interacao`) já perguntou se a vez
+## está livre. Chamado direto — o Pedro na chegada, um portão —, ele entra já:
+## corta a fala com tempo que estiver no ar, e não fala por cima dela.
 func saudar() -> void:
 	if _eh_mudo():
 		_acenar_mudo()
 		return
 	_ultima_saudacao_ms = Time.get_ticks_msec()
-	var texto := _escolher_a_fala()
+	var escolhida := _escolher_a_fala()
+	var texto := str(escolhida.get("texto", ""))
+	if texto.strip_edges() == "":
+		return
+	var fluxo = escolhida.get("voz")
 	# O balão leva a fala enxuta; a voz e o aviso do HUD (`saudou`) levam a inteira.
-	mostrar_balao(balao_curto(texto), maxf(5.0, voz.stream.get_length() + 1.5) if voz.stream != null else 7.0)
-	_soltar_o_relogio()
-	_falar_com_voz_e_gesto()
-	saudou.emit(self, texto)
+	var curto := balao_curto(texto)
+	_pedir_fala({
+		"texto": curto, "inteira": texto, "voz": fluxo,
+		"classe": _classe_da_saudacao(), "agora": true,
+		"segundos": FilaDeFalas.duracao(curto, _tempo_da_voz(fluxo)),
+		"aviso": true, "gesto": _gesto_de_saudacao(),
+	})
+
+
+## O cumprimento de quem passa — também o do Pedro na chegada, que é chamado
+## direto (`agora`) e por isso não cai; e que a resposta do E de outro morador, ou
+## a narração do mundo, pode cortar.
+func _classe_da_saudacao() -> int:
+	return FilaDeFalas.Classe.PASSAGEM
 
 
 ## A CONVERSA DO E (`tecla_dos_moradores.gd`): chegou perto e apertou E, sem
@@ -734,43 +802,69 @@ func saudar() -> void:
 ## chegue perto e aperte E"). A de passagem, ao chegar perto, é a curta. No
 ## balão, e não na caixa de fala longa: a caixa é do que o jogador precisa ler
 ## antes de seguir (`dialogo_vale.gd`), e conversa de passagem não é isso.
+##
+## NA FILA DE FALAS: a resposta espera quem está falando terminar — só o
+## cumprimento de quem passa cede a ela. O E em quem JÁ ESTÁ FALANDO passa a fala
+## dele (quem leu não espera o relógio do balão); o segundo E em quem tem a
+## resposta na fila a faz passar na frente.
 func conversar() -> void:
 	# QUEM NÃO FALA ACENA, como na saudação (`_eh_mudo`): sem balão vazio, sem o
 	# aviso "Nome: " no HUD, e sem segurar o relógio por uma fala que não há.
 	if _eh_mudo():
 		_acenar_mudo()
 		return
+	var fila := _fila()
+	if fila != null:
+		if fila.falando(self) and int(fila.atual().get("classe", -1)) != FilaDeFalas.Classe.PASSAGEM:
+			fila.pular()
+			return
+		if fila.pendente(self) and fila.apressar(self):
+			return
 	_ultima_saudacao_ms = Time.get_ticks_msec()
-	var texto := _escolher_a_fala()
-	mostrar_balao(texto, maxf(7.0, voz.stream.get_length() + 2.0) if voz.stream != null else 9.0)
-	_segurar_o_relogio()
-	_falar_com_voz_e_gesto()
-	saudou.emit(self, texto)
+	var escolhida := _escolher_a_fala()
+	var texto := str(escolhida.get("texto", ""))
+	if texto.strip_edges() == "":
+		return
+	var fluxo = escolhida.get("voz")
+	_pedir_fala({
+		"texto": texto, "inteira": texto, "voz": fluxo,
+		"classe": FilaDeFalas.Classe.CONVERSA, "no_lugar": true,
+		"segura": true, "aviso": true, "gesto": _gesto_de_saudacao(),
+	})
 
 
 ## A próxima das "falas" (até três, alternando a cada encontro), na língua do
-## jogo, com a voz dela posta; sem "falas", a "fala".
-func _escolher_a_fala() -> String:
+## jogo, e a voz dela: {"texto": String, "voz": AudioStream ou null}. Sem
+## "falas", a "fala". A VOZ NÃO É POSTA AQUI: a fala ainda vai pedir a vez, e
+## trocar o `stream` de quem está falando cortaria a voz que está no ar.
+func _escolher_a_fala() -> Dictionary:
 	var texto := String(dados.get("fala", ""))
+	var fluxo: AudioStream = voz.stream if voz != null else null
 	var falas: Array = dados.get("falas", [])
 	if not falas.is_empty():
 		var fala: Dictionary = falas[_proxima_fala % falas.size()]
 		_proxima_fala += 1
 		# Na língua do jogo, quando a fala a tem (texto_en, texto_es).
 		texto = String(IdiomaMenu.campo(fala, "texto", ""))
-		var caminho := PASTA_VOZES + String(fala.get("audio", "")) + ".mp3"
-		voz.stream = load(caminho) if ResourceLoader.exists(caminho) else null
-	return texto
+		fluxo = _voz_do_arquivo(String(fala.get("audio", "")))
+	return {"texto": texto, "voz": fluxo}
 
 
-func _falar_com_voz_e_gesto() -> void:
-	_tomar_palavra(voz.stream.get_length() if voz.stream != null else 4.0)
-	if voz.stream != null:
-		voz.stop()
-		voz.play()
-	if animador != null and animador.has_method("play_gesture"):
-		var chave := "gesto_tripo" if animador.has_method("is_using_authored_clips") else "gesto_saudacao"
-		animador.play_gesture(int(dados.get(chave, 0)))
+## A voz de assets/audio/vozes/<nome>.mp3, ou null.
+static func _voz_do_arquivo(nome: String) -> AudioStream:
+	var caminho := PASTA_VOZES + nome + ".mp3"
+	return load(caminho) as AudioStream if nome != "" and ResourceLoader.exists(caminho) else null
+
+
+static func _tempo_da_voz(fluxo) -> float:
+	return (fluxo as AudioStream).get_length() if fluxo is AudioStream else 0.0
+
+
+func _gesto_de_saudacao() -> int:
+	if animador == null:
+		return 0
+	var chave := "gesto_tripo" if animador.has_method("is_using_authored_clips") else "gesto_saudacao"
+	return int(dados.get(chave, 0))
 
 
 ## O BALÃO DA SAUDAÇÃO É CURTO; a fala continua inteira.
@@ -806,15 +900,19 @@ static func balao_curto(texto: String) -> String:
 	return corte.rstrip(" ,;:—-") + "…"
 
 
+## MOSTRA ESTE TEXTO NO BALÃO, AGORA, por `segundos` (a bronca do coveiro,
+## `lapides.gd`, que pergunta antes se a vez está livre). Entra já: corta a fala
+## com tempo que estiver no ar, e não fala por cima dela. Texto vazio cala.
 func mostrar_balao(texto: String, segundos: float) -> void:
-	_balao_tempo = segundos
-	balao.mostrar(texto)
-	# O balão já traz o nome; o rótulo 3D volta quando a fala termina.
-	nome_label.visible = texto == ""
+	if texto == "":
+		_calar_a_boca()
+		return
+	_pedir_fala({"texto": texto, "segundos": maxf(segundos, 0.1),
+		"classe": FilaDeFalas.Classe.CONVERSA, "agora": true})
 
 
-## NARRA UMA FALA: balão, voz do ElevenLabs quando o arquivo existe, e a palavra
-## tomada pelo tempo que ela durar.
+## NARRA UMA FALA: balão, voz do ElevenLabs quando o arquivo existe, pelo tempo
+## da voz ou de ler o texto (`FilaDeFalas.duracao`), na vez dela.
 ##
 ## Nasceu dentro do `guia_pedro.gd`, porque o Pedro era o único morador que
 ## falava fora da saudação. Subiu para cá quando o Damião ganhou fila de
@@ -822,22 +920,135 @@ func mostrar_balao(texto: String, segundos: float) -> void:
 ## morador sem `narrar` conduziria a missão em silêncio — o passo avançaria e o
 ## jogador não saberia por quê.
 ##
-## A duração vem do próprio áudio quando há áudio, e são quatro segundos quando
-## não há. É ela que o `_tomar_palavra` usa para ninguém falar por cima.
-func narrar(nome_audio: String, texto: String) -> void:
-	mostrar_balao(texto, 8.0)
-	_segurar_o_relogio()
-	var caminho := PASTA_VOZES + nome_audio + ".mp3"
-	var duracao := 4.0
-	if nome_audio != "" and ResourceLoader.exists(caminho):
-		voz.stop()
-		voz.stream = load(caminho)
-		voz.play()
-		duracao = voz.stream.get_length()
-	_tomar_palavra(duracao)
-	if animador != null and animador.has_method("play_gesture"):
+## `pedido` diz à fila de falas quem é esta fala (`classe`: o anúncio do passo é
+## MISSAO, a resposta do E é CONVERSA; `origem`, para o passo que fecha calar o
+## próprio anúncio; `no_lugar`, para quem fala trocar a fala pela resposta) e
+## quem quer saber quando ela começa e acaba (`ao_comecar`, `ao_terminar`).
+func narrar(nome_audio: String, texto: String, pedido: Dictionary = {}) -> void:
+	if texto.strip_edges() == "":
+		# Nada a dizer: quem esperava o fim (o arremate) fica sabendo já.
+		if pedido.get("ao_terminar") is Callable and (pedido["ao_terminar"] as Callable).is_valid():
+			(pedido["ao_terminar"] as Callable).call()
+		return
+	var fala := {
+		"texto": texto, "inteira": texto, "voz": _voz_do_arquivo(nome_audio),
+		"classe": int(pedido.get("classe", FilaDeFalas.Classe.MISSAO)),
+		"origem": str(pedido.get("origem", "")),
+		"no_lugar": bool(pedido.get("no_lugar", false)),
 		# Autoral: 2 = concordar; procedural: 2 = apontar.
-		animador.play_gesture(2)
+		"segura": true, "gesto": 2, "narrada": true,
+	}
+	for gancho in ["ao_comecar", "ao_terminar"]:
+		if pedido.get(gancho) is Callable:
+			fala[gancho] = pedido[gancho]
+	_pedir_fala(fala)
+
+
+## PEDE A VEZ À FILA DE FALAS (`fila_de_falas.gd`) e diz a ela como este morador
+## fala: o balão, a voz, o relógio e o gesto começam em `_comecar_a_fala` e
+## acabam em `_parar_a_fala`. Sem a fila (um portão que monta um morador só),
+## fala na hora, como sempre falou.
+func _pedir_fala(fala: Dictionary) -> void:
+	fala["falante"] = self
+	if not fala.has("segundos"):
+		fala["segundos"] = FilaDeFalas.duracao(str(fala.get("texto", "")), _tempo_da_voz(fala.get("voz")))
+	fala["comecar"] = _comecar_a_fala
+	fala["parar"] = _parar_a_fala
+	fala["suspender"] = _suspender_a_fala
+	fala["tique"] = _tique_da_fala
+	var fila := _fila()
+	if fila != null:
+		var id: int = fila.pedir(fala)
+		if id > 0 and not fila.falando(self) and bool(fala.get("aviso", false)):
+			# NA FILA, ESPERANDO A VEZ: o aceno diz ao jogador que o E chegou.
+			_acenar()
+		return
+	if not _fala_no_ar.is_empty():
+		_parar_a_fala(_fala_no_ar, true)
+	_comecar_a_fala(fala)
+	for gancho in ["ao_comecar", "ao_terminar"]:
+		if fala.get(gancho) is Callable and (fala[gancho] as Callable).is_valid():
+			(fala[gancho] as Callable).call()
+
+
+## GANHOU A VEZ: balão, voz, relógio, gesto e o aviso do HUD (`saudou`), tudo
+## agora — e não na hora do pedido, para o aviso dizer o que está no balão.
+func _comecar_a_fala(fala: Dictionary) -> void:
+	if not _fala_no_ar.is_empty() and _fala_no_ar.get("id") != fala.get("id"):
+		_parar_a_fala(_fala_no_ar, true)
+	_fala_no_ar = fala
+	_balao_tempo = float(fala.get("segundos", FilaDeFalas.MINIMO))
+	balao.mostrar(str(fala.get("texto", "")))
+	# O balão já traz o nome; o rótulo 3D volta quando a fala termina.
+	nome_label.visible = false
+	var fluxo = fala.get("voz")
+	if fluxo is AudioStream:
+		voz.stop()
+		voz.stream = fluxo
+		voz.stream_paused = false
+		voz.play()
+	_falando[self] = Time.get_ticks_msec() + int((_balao_tempo + PAUSA_ENTRE_FALAS) * 1000.0)
+	if bool(fala.get("segura", false)):
+		_segurar_o_relogio()
+	else:
+		# A SAUDAÇÃO DE QUEM PASSA NÃO SEGURA o relógio (ver `_segurar_o_relogio`).
+		_soltar_o_relogio()
+	if fala.has("gesto") and animador != null and animador.has_method("play_gesture"):
+		animador.play_gesture(int(fala["gesto"]))
+	if bool(fala.get("aviso", false)):
+		saudou.emit(self, str(fala.get("inteira", fala.get("texto", ""))))
+
+
+## PERDEU A VEZ: dita até o fim, cortada ou calada. O balão some, a voz cala.
+func _parar_a_fala(fala: Dictionary, _cortada: bool) -> void:
+	if _fala_no_ar.is_empty() or _fala_no_ar.get("id") != fala.get("id"):
+		return
+	_fala_no_ar = {}
+	_balao_tempo = 0.0
+	balao.esconder()
+	nome_label.visible = true
+	if fala.get("voz") is AudioStream:
+		voz.stop()
+		voz.stream_paused = false
+	_falando.erase(self)
+	_soltar_o_relogio()
+
+
+## A CAIXA DE FALA OU UMA TELA COBRIU O VALE: a fala espera escondida, com a voz
+## pausada, e volta de onde parou.
+func _suspender_a_fala(fala: Dictionary, sim: bool) -> void:
+	if _fala_no_ar.get("id") != fala.get("id"):
+		return
+	balao.visible = not sim and str(fala.get("texto", "")) != ""
+	if fala.get("voz") is AudioStream:
+		voz.stream_paused = sim
+	if not sim and bool(fala.get("segura", false)):
+		_segurar_o_relogio()
+
+
+## O tempo que falta da fala no ar, a cada quadro (em relógio de parede).
+func _tique_da_fala(resta: float) -> void:
+	_balao_tempo = resta
+	_falando[self] = Time.get_ticks_msec() + int((resta + PAUSA_ENTRE_FALAS) * 1000.0)
+
+
+## Cala o que este morador estiver dizendo ou esperando dizer.
+func _calar_a_boca() -> void:
+	var fila := _fila()
+	if fila != null:
+		fila.calar_falante(self)
+	if not _fala_no_ar.is_empty():
+		_parar_a_fala(_fala_no_ar, true)
+
+
+## Fala deste morador no ar agora?
+func falando_agora() -> bool:
+	return not _fala_no_ar.is_empty()
+
+
+func _acenar() -> void:
+	if animador != null and animador.has_method("play_gesture"):
+		animador.play_gesture(_gesto_de_saudacao())
 
 
 ## O POSTO DE AGORA, com a festa por cima. No dia da festa da fé do morador
@@ -1202,6 +1413,8 @@ func _recolher(dentro: bool) -> void:
 		collision_layer = 0
 		collision_mask = 0
 		velocity = Vector3.ZERO
+		# Quem entra em casa no meio da fala para de falar: a vez volta à fila.
+		_calar_a_boca()
 		balao.esconder()
 	elif _camadas_de_fora.x >= 0:
 		collision_layer = _camadas_de_fora.x

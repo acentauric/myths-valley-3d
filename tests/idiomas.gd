@@ -75,6 +75,12 @@ const TRADUZIDOS := {
 	"res://data/missoes_saveiro.json": ["texto", "resumo", "nome", "titulo", "resposta"],
 	"res://data/saveiro.json": ["chegou", "partiu", "encomenda_titulo", "encomenda_texto", "encomenda_linha", "agrado",
 		"painel_titulo", "painel_linha", "painel_dica", "painel_rodape", "ja_levou", "nao_tem"],
+	# O que a dica do E diz em cima do poço, da ponte, do mirante, do cemitério e da
+	# carroça (tecla_das_bancadas.gd).
+	"res://data/dicas_do_e_nas_obras.json": ["rotulo"],
+	# O aviso da mochila cheia: o que o morador fica devendo e o que entrou depois
+	# (cadeia_de_missoes.gd, `_dar`).
+	"res://data/entregas_pendentes.json": ["texto"],
 }
 
 ## O QUE AINDA NÃO ESTÁ NOS TRÊS, e por quê. Esvaziar esta lista é o trabalho;
