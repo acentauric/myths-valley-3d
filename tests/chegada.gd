@@ -180,7 +180,27 @@ func _run() -> void:
 			var audio := str((fala as Dictionary).get("audio", ""))
 			_conferir(audio != "" and ResourceLoader.exists("res://assets/audio/vozes/%s.mp3" % audio),
 				"a linha do corpo '%s…' não tem a narração do Pedro ('%s')" % [str((fala as Dictionary).get("texto", "")).left(30), audio])
+	if explicou:
+		# A TELA ESCURECE E A BARRA DA VEZ ACENDE (#106): no respiro tudo apagado;
+		# cada linha seguinte acende a barra de que fala e apaga as outras; fechada
+		# a caixa, o véu some e o HUD volta inteiro.
+		var hud_do_vale = vale.hud
+		_conferir(hud_do_vale.destacando() and hud_do_vale._veu_do_destaque != null and hud_do_vale._veu_do_destaque.visible, "a explicação do corpo não escureceu a tela")
+		_conferir(hud_do_vale.barra_destacada() == "", "no respiro já havia uma barra acesa ('%s')" % hud_do_vale.barra_destacada())
+		var barras := {"Vida": hud_do_vale.barra_vida, "Folego": hud_do_vale.barra_folego, "Stamina": hud_do_vale.barra_stamina}
+		while dialogo._indice < dialogo._falas.size() - 1:
+			dialogo._indice += 1
+			dialogo._mostrar_fala()
+			await process_frame
+			var voz := str(dialogo._vozes[dialogo._indice]) if dialogo._indice < dialogo._vozes.size() else ""
+			var esperada := str(vale.BARRA_DA_VOZ.get(voz, "?"))
+			_conferir(hud_do_vale.barra_destacada() == esperada, "na linha '%s' a barra acesa é '%s', e devia ser '%s'" % [voz, hud_do_vale.barra_destacada(), esperada])
+			for nome in barras:
+				var acesa: bool = (barras[nome] as CanvasItem).modulate == Color.WHITE
+				_conferir(acesa == (nome == esperada), "na linha '%s' a barra %s está %s" % [voz, nome, "acesa" if acesa else "apagada"])
 	await _fechar_a_fala()
+	_conferir(not vale.hud.destacando() and (vale.hud._veu_do_destaque == null or not vale.hud._veu_do_destaque.visible) and vale.hud.barra_vida.modulate == Color.WHITE,
+		"fechada a explicação, a tela continuou escura ou o HUD apagado")
 	_conferir(pedro.lembrancas().has(pedro.LEMBRANCA_DO_CORPO), "a explicação do corpo não ficou na lembrança que vai no save")
 	jogador.definir_vigor(jogador.vigor_maximo() * 0.2)
 	var repetiu := await _ate(func() -> bool: return dialogo.ativo, 4.0)

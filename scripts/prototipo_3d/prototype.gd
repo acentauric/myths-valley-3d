@@ -374,6 +374,7 @@ func _ready() -> void:
 	# abre por tecla, é o mundo que fala. Ver `_ao_abrir_a_fala`.
 	Dialogo.abriu.connect(_ao_abrir_a_fala)
 	Dialogo.terminou.connect(_ao_calar_a_fala)
+	Dialogo.linha_mudou.connect(_ao_mudar_a_linha_da_fala)
 	telas.ocupado = func() -> bool: return Dialogo.ocupado() or Amanhecer.aberto \
 		or (aviso_da_primeira_vez != null and aviso_da_primeira_vez.aberto())
 	# O FOLHETO (#21) é tela, mas quem o abre é o mundo: o cordel achado, ou o
@@ -1642,7 +1643,27 @@ func _acertar_as_placas() -> void:
 ## E CALOU. Falas encadeadas abrem na linha seguinte do mesmo `await`, então o
 ## vale espera o fim do quadro antes de voltar a andar: se outra fala já abriu,
 ## ele continua parado, sem soltar e prender o cursor entre uma e outra.
+## A BARRA DA VEZ NA EXPLICAÇÃO DO CORPO (#106): cada linha do Pedro acende a
+## barra de que fala e apaga o resto — a vida, o fôlego (a do meio, também no
+## nado), o vigor; no respiro, tudo escuro. Linha de outra fala não mexe.
+const BARRA_DA_VOZ := {
+	"pedro_corpo_respiro": "",
+	"pedro_corpo_vida": "Vida",
+	"pedro_corpo_folego": "Folego",
+	"pedro_corpo_nado": "Folego",
+	"pedro_corpo_vigor": "Stamina",
+	"pedro_corpo_vigor_cansado": "Stamina",
+}
+
+
+func _ao_mudar_a_linha_da_fala(voz: String) -> void:
+	if BARRA_DA_VOZ.has(voz) and hud != null:
+		hud.destacar_barra(str(BARRA_DA_VOZ[voz]))
+
+
 func _ao_calar_a_fala() -> void:
+	if hud != null:
+		hud.apagar_destaque()
 	_retomar_se_a_fala_acabou.call_deferred()
 
 
@@ -2166,6 +2187,8 @@ func _exit_tree() -> void:
 		Dialogo.abriu.disconnect(_ao_abrir_a_fala)
 	if Dialogo.terminou.is_connected(_ao_calar_a_fala):
 		Dialogo.terminou.disconnect(_ao_calar_a_fala)
+	if Dialogo.linha_mudou.is_connected(_ao_mudar_a_linha_da_fala):
+		Dialogo.linha_mudou.disconnect(_ao_mudar_a_linha_da_fala)
 	Dialogo.calar()
 	if _fala_parou_o_vale:
 		_fala_parou_o_vale = false

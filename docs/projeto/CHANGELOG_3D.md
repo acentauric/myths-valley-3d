@@ -262,6 +262,14 @@
   caixa de fala pergunta "Comer agora joga fora X de fôlego. Comer assim
   mesmo?" (Sim/Não, três idiomas; `barra_de_mao._comer_da_mao`,
   `Cozinha.reposicao`); "não" deixa o item na mão. Portão `barra_de_mao`.
+- **A explicação das barras escurece a tela e acende a barra da vez (#106).**
+  Quando o Pedro explica o corpo, um véu escuro entra entre o mundo e a caixa
+  de fala (camada 5) e o HUD apaga tudo menos a barra de que ele fala — a vida,
+  a do meio (fôlego e nado), o vigor; no respiro, tudo escuro. A caixa de fala
+  avisa a linha da vez (`Dialogo.linha_mudou`, com a voz), o vale mapeia a voz
+  à barra (`prototype.BARRA_DA_VOZ`) e o HUD acende e apaga
+  (`destacar_barra`, `apagar_destaque`); ao fechar a caixa tudo volta. Portão
+  `chegada`, parte 6.
 
 ## Em desenvolvimento — 05/10/2026
 

@@ -773,6 +773,58 @@ func set_objective(value: String, missao: String = "") -> void:
 ## no painel J, que é onde se lê.
 
 
+## O DESTAQUE DE UMA BARRA (#106): quando o Pedro explica o corpo, a tela
+## escurece — um véu entre o mundo e a caixa de fala, na camada CAMADA_DO_VEU —
+## e o HUD apaga tudo menos a barra da vez ("Vida", "Folego", "Stamina"; vazio
+## apaga tudo, que é o respiro). `apagar_destaque` devolve tudo.
+const CAMADA_DO_VEU := 5
+const APAGADO := Color(0.3, 0.3, 0.3, 1.0)
+var _veu_do_destaque: CanvasLayer
+var _destacada := ""
+var _destacando := false
+
+
+func destacar_barra(nome: String) -> void:
+	if _veu_do_destaque == null:
+		_veu_do_destaque = CanvasLayer.new()
+		_veu_do_destaque.name = "VeuDoDestaque"
+		_veu_do_destaque.layer = CAMADA_DO_VEU
+		var escuro := ColorRect.new()
+		escuro.name = "Escuro"
+		escuro.color = Color(0.0, 0.0, 0.0, 0.68)
+		escuro.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		escuro.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		_veu_do_destaque.add_child(escuro)
+		add_child(_veu_do_destaque)
+	_veu_do_destaque.visible = true
+	_destacando = true
+	_destacada = nome
+	for filho in _root.get_children():
+		if filho is CanvasItem:
+			(filho as CanvasItem).modulate = Color.WHITE if String(filho.name) == nome else APAGADO
+
+
+func apagar_destaque() -> void:
+	if not _destacando:
+		return
+	_destacando = false
+	_destacada = ""
+	if _veu_do_destaque != null:
+		_veu_do_destaque.visible = false
+	for filho in _root.get_children():
+		if filho is CanvasItem:
+			(filho as CanvasItem).modulate = Color.WHITE
+
+
+## A barra acesa agora ("" com tudo apagado, ou sem destaque).
+func barra_destacada() -> String:
+	return _destacada
+
+
+func destacando() -> bool:
+	return _destacando
+
+
 func set_clock(value: String) -> void:
 	if is_instance_valid(_clock_label):
 		_clock_label.text = value

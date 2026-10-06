@@ -43,6 +43,9 @@ signal terminou
 ## Quem abriu a boca, pelo nome que a caixa mostra. No vale é o sinal que para
 ## o vale atrás da caixa.
 signal abriu(quem: String)
+## A linha da vez mudou, com o nome da voz dela (vazio sem voz): é por aqui
+## que o vale acende a barra de que o Pedro fala (#106).
+signal linha_mudou(voz: String)
 
 const IdiomaMenu = preload("res://scripts/prototipo_3d/idioma_menu.gd")
 const Identidade = preload("res://scripts/prototipo_3d/identidade.gd")
@@ -290,6 +293,7 @@ func _escrito(chave: String) -> String:
 func _mostrar_fala() -> void:
 	_texto.text = str(_falas[_indice])
 	_tocar_a_voz()
+	linha_mudou.emit(str(_vozes[_indice]) if _indice < _vozes.size() else "")
 	# Cada linha nova ganha o seu respiro. Ver `CARENCIA_DA_LINHA`.
 	_aceita_depois_de = maxf(_aceita_depois_de,
 		Time.get_ticks_msec() / 1000.0 + CARENCIA_DA_LINHA)
