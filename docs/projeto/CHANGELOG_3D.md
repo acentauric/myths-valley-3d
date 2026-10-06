@@ -129,6 +129,11 @@
   ficaram assim", na live). Agora o clipe de andar segue até a pose de apoio — o
   começo ou o meio da passada — e só então para (`animador_bicho`). Portão novo
   `bicho_parado`. O cão caramelo, de pernas por código, não mudou.
+- **O Pedro vem junto quando o jogador apaga (#92).** Na live o jogador apagou
+  nadando, acordou em casa, e o Pedro ficou no mar. Enquanto o tutorial dura, quem
+  apaga acorda com o Pedro esperando na porta, do lado de fora
+  (`queda._levar_para_casa`, `guia_pedro.vir_para_a_porta`), e a condução recomeça
+  dali. Portão novo `pedro_volta`.
 
 ## Em desenvolvimento — 05/10/2026
 

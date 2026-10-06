@@ -1181,6 +1181,7 @@ func _montar_moradores(spawn: Vector3) -> void:
 	add_child(queda)
 	queda.configurar(world, player, hud)
 	queda.interiores = interiores
+	queda.guia = pedro
 	noite = queda
 	casa = CasaDoJogador.new()
 	casa.name = "CasaDoJogador"
