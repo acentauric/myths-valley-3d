@@ -216,6 +216,13 @@
   não tem colisão nem laje da câmera. A cerca das cabeceiras continua.
   Portão `ponte`: caída antes, de pé depois, e o raio no vão só bate no
   tabuleiro da de pé.
+- **A caixa de fala veste a identidade do vale 3D.** Era o desenho da
+  `dialogo.tscn` do 2D — o marrom, a borda grossa, a letra do sistema —, e o
+  autor já tinha pedido que acompanhasse o jogo 3D. Agora é a laca com o
+  filete de ouro, como o balão de fala: o nome em Cinzel versalete dourado, o
+  fio de ouro, a fala em Cormorant, o rodapé "[E] continuar" em Cinzel miúdo
+  (`dialogo_vale._montar`). A API, a fila de falas e o quadro de 640×360 não
+  mudaram.
 
 ## Em desenvolvimento — 05/10/2026
 
