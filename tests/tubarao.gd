@@ -7,6 +7,14 @@ extends SceneTree
 ## e quem foge a nado no fundo é ALCANÇADO. Escapar é voltar para o raso (a lâmina de
 ## perseguição). A cauda bate no ritmo da velocidade, sobre o repouso do osso, e o
 ## relógio dele é o do jogo: com o jogo pausado nada conta.
+##
+## E A MARÉ TIRA O TUBARÃO ("na maré baixa ele some"): o portão roda com o mar na preamar, e a maré vem
+## ligada no jogo. No fim, com a maré ligada, ele está à mostra na preamar, SOME na baixa-mar (a lâmina no
+## centro do pesqueiro cai uns 0,6 u, e a regra de antes só o tirava abaixo de 1,3 u: ele ficava), volta
+## com a cheia, e o pesqueiro é o mesmo em qualquer maré (a escolha mede a água da preamar).
+
+
+var relogio: Node
 
 
 func _initialize() -> void:
@@ -127,6 +135,38 @@ func _run() -> void:
 	print("TUBARAO: depois do ataque em %s · lâmina %.2f · nadando %s" % [player.global_position, lamina_depois, player.is_swimming()])
 	_assert(not player.is_swimming() and lamina_depois < 0.8, "jogador volta à terra firme")
 	_assert(tubarao.get("_atacando") == false, "susto termina")
+
+	# --- A MARÉ TIRA O TUBARÃO -------------------------------------------------------
+	# `load()` depois de o vale subir: um `preload` aqui compila antes dos autoloads (AGENTS.md).
+	relogio = load("res://tests/fixtures/relogio_de_jogo.gd").new()
+	root.add_child(relogio)
+	var mare := root.get_node("/root/Mare")
+	var dia := root.get_node("/root/Dia")
+	mare.modo = 1
+	dia.pausado = true
+	var preamar_h: float = float(mare.fase_da_preamar_h)
+	dia.definir_hora(preamar_h)
+	await relogio.esperar(2.0)
+	_assert(tubarao.get("_submerso") == false and tubarao.visible,
+		"na preamar o tubarão não está à mostra (lâmina no centro %.2f u)" % world.water_depth_at(tubarao.get("_centro")))
+	var centro_da_cheia: Vector3 = tubarao.get("_centro")
+	var lamina_da_cheia: float = world.water_depth_at(centro_da_cheia)
+	dia.definir_hora(fposmod(preamar_h + 6.0, 24.0))
+	await relogio.esperar(2.0)
+	var lamina_da_baixa: float = world.water_depth_at(centro_da_cheia)
+	print("TUBARAO: lâmina no centro do pesqueiro %.2f u na preamar, %.2f u na baixa-mar" % [lamina_da_cheia, lamina_da_baixa])
+	_assert(lamina_da_cheia - lamina_da_baixa > 0.5, "a maré não baixou a água sobre o pesqueiro (%.2f → %.2f u)" % [lamina_da_cheia, lamina_da_baixa])
+	_assert(tubarao.get("_submerso") == true and not tubarao.visible,
+		"na baixa-mar (lâmina de %.2f u no centro) o tubarão continua à mostra: some com menos de %.2f u" % [lamina_da_baixa, tubarao.LAMINA_FUNDA + tubarao.FOLGA_DA_SAIDA])
+	# O pesqueiro não depende da hora em que o vale se monta: escolhido na baixa-mar, cai no mesmo lugar.
+	tubarao._procurar_pesqueiro()
+	var centro_da_baixa: Vector3 = tubarao.get("_centro")
+	_assert(Vector2(centro_da_baixa.x - centro_da_cheia.x, centro_da_baixa.z - centro_da_cheia.z).length() < 0.01,
+		"o pesqueiro mudou de lugar com a maré: %s na preamar, %s na baixa-mar" % [str(centro_da_cheia), str(centro_da_baixa)])
+	dia.definir_hora(preamar_h)
+	await relogio.esperar(2.0)
+	_assert(tubarao.get("_submerso") == false and tubarao.visible, "com a cheia de volta o tubarão não voltou")
+	mare.modo = 0
 	print("TUBARAO_OK")
 	quit()
 

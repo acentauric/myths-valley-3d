@@ -50,12 +50,10 @@ const ANCORAS := ["Praça", "Igreja", "Cruzeiro", "PierPiso", "Casa de taipa", "
 ## "pai/avô/nome") e a que distância (m) do ponto, em coordenadas do mundo. Cada uma é
 ## defeito de OUTRO arquivo, e o portão a lista para quem a corrigir.
 const EXCECOES := [
-	{"corpo": "Vale3D/Cenario/@StaticBody3D@", "perto": Vector3(30.7, 15.2, -122.8), "raio": 3.0,
-		"razao": "o caminho da malha (Praça → Casa de taipa) passa por dentro do alicerce da capelinha (1,07 m de altura, 0,35 m maior que a capela de cada lado), que a malha não corta; o jogador contorna, o morador prende (navegacao_vale.gd)"},
+	{"corpo": "PierTripo/", "perto": Vector3(85.2, -0.5, -5.6), "raio": 3.0,
+		"razao": "o caminho da malha (Cruzeiro → PierPiso) sobe ao píer pela BORDA NORTE do tabuado, por cima de uma viga rente à água, 0,5 u acima do leito: a malha (células de 0,2 u de altura) acha o degrau de 0,5 passável e o corpo (degrau de 0,4) não sobe; o jogador sobe pela cabeceira (conferido na seção 5) (navegacao_vale.gd)"},
 	{"corpo": "Vale3D/Cenario/@StaticBody3D@", "perto": Vector3(7.0, 4.0, -8.8), "raio": 9.0,
 		"razao": "só no estilo procedural: o caminho da malha até o MEIO da Casa de Carro Quebrado (a âncora) passa pela parede dela, que a malha não corta"},
-	{"corpo": "PierTripo/", "perto": Vector3(85.0, -0.5, -5.7), "raio": 3.0,
-		"razao": "o caminho da malha (Cruzeiro → PierPiso) vai por baixo do tabuado do píer, na água rasa, em vez de subir pela cabeceira; o jogador sobe pela cabeceira (conferido na seção 5) (navegacao_vale.gd)"},
 ]
 ## Quantos presos reprovam o portão. Zero: qualquer ponto onde o corpo não anda é um
 ## defeito, ou está em `EXCECOES` com a razão.

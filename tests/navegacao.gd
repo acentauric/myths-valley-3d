@@ -28,6 +28,13 @@ extends SceneTree
 ##      manda o morador ao convés não o põe lá, e quando o barco larga ele deixa de
 ##      pesar na malha (camada zero, e a malha se assa de novo).
 ##
+##   8. A MALHA É DO CHÃO QUE A CHEIA NÃO COBRE. A maré vem ligada e a malha se assa uma vez: o portão MONTA
+##      O VALE COM A MARÉ LIGADA (às 9 h o mar já desceu uns 0,18 u da preamar), e nenhum polígono da malha pode
+##      ficar abaixo da preamar — assada com a água do instante, ela guardava a faixa de areia que a cheia cobre,
+##      e na cheia o Pedro e os moradores seguiam um caminho que entra no mar.
+##   9. O ALICERCE DA CAPELINHA TEM FOLGA: a malha o trata como obstáculo com margem (`alicerces()`), e não
+##      passa rente à quina dele (`tests/colisoes_de_passeio.gd` anda o caminho e não tem mais a exceção).
+##
 ## AS ESPERAS SÃO EM SEGUNDOS DE JOGO, E NÃO DE PAREDE (`tests/fixtures/relogio_de_jogo.gd`):
 ## com a física limitada a 3 passos por quadro, o jogo anda mais devagar que a parede
 ## com o quadro acima de 50 ms, e na bateria cheia ele passa. `MV_QUADRO_LENTO_MS=150`
@@ -53,11 +60,16 @@ func _conferir(ok: bool, rotulo: String) -> void:
 func _run() -> void:
 	relogio_jogo = RelogioDeJogo.new()
 	root.add_child(relogio_jogo)
+	# A MARÉ LIGADA DESDE A PARTIDA (pergunta 8): o vale se monta e a malha se assa com o mar abaixo da preamar.
+	# A hora fica a da partida — os moradores estão nos postos da manhã, de onde os caminhos abaixo saem.
+	var mare := root.get_node("/root/Mare")
+	mare.modo = 1
 	_conferir(change_scene_to_file("res://scenes/prototipo_3d/vale.tscn") == OK, "a cena do vale carrega")
 	await _frames(4)
 	await _mundo_pronto()
 	await _frames(8)
 	relogio_jogo.ficar_lento()
+	_conferir(float(mare.nivel_offset()) < -0.1, "o portão devia montar o vale com o mar abaixo da preamar, e ele está %.2f u dela" % float(mare.nivel_offset()))
 	var vale = current_scene
 	var world = vale.world
 	var navegacao = vale.get("navegacao")
@@ -226,6 +238,41 @@ func _run() -> void:
 
 	# --- 7. O CASCO DO SAVEIRO ATRACADO É OBSTÁCULO, E NÃO CHÃO ------------------------
 	await _casco_do_saveiro(vale, navegacao)
+
+	# --- 8. A MALHA É DO CHÃO QUE A CHEIA NÃO COBRE ------------------------------------
+	var preamar: float = float(world._region.water_level())
+	var malha: NavigationMesh = navegacao._regiao.navigation_mesh
+	var vertices := malha.get_vertices()
+	var abaixo := 0
+	var mais_baixo := INF
+	for i in malha.get_polygon_count():
+		var poligono := malha.get_polygon(i)
+		var meio := Vector3.ZERO
+		for indice in poligono:
+			meio += vertices[indice]
+		meio /= float(poligono.size())
+		if meio.y < preamar + 0.05 - 0.001:
+			abaixo += 1
+			mais_baixo = minf(mais_baixo, meio.y)
+	print("NAVEGACAO: %d polígonos na malha, preamar %.2f, nenhum abaixo dela: %s" % [malha.get_polygon_count(), preamar, str(abaixo == 0)])
+	_conferir(malha.get_polygon_count() > 0, "a malha está vazia")
+	_conferir(abaixo == 0, "%d polígono(s) da malha ficam abaixo da preamar (%.2f; o mais baixo a %.2f): assada na baixa-mar, a malha guardou o chão que a cheia cobre" % [abaixo, preamar, mais_baixo])
+
+	# --- 9. O ALICERCE DA CAPELINHA TEM FOLGA ------------------------------------------
+	var capela := world.get_node_or_null("CapelinhaColisao") as Node3D
+	_conferir(capela != null, "o vale não tem a capelinha")
+	var alicerces: Array[Dictionary] = navegacao.alicerces()
+	var da_capela := ""
+	if capela != null:
+		for alicerce in alicerces:
+			var contorno: PackedVector2Array = PackedVector2Array()
+			for v in (alicerce["contorno"] as PackedVector3Array):
+				contorno.append(Vector2(v.x, v.z))
+			if Geometry2D.is_point_in_polygon(Vector2(capela.global_position.x, capela.global_position.z), contorno):
+				da_capela = str(alicerce["nome"])
+	print("NAVEGACAO: %d alicerce(s) com folga na malha; o da capelinha: %s" % [alicerces.size(), da_capela if da_capela != "" else "NÃO ACHADO"])
+	_conferir(da_capela != "", "o alicerce da capelinha não é obstáculo com folga na malha dos moradores (%d alicerce(s) achados)" % alicerces.size())
+	mare.modo = 0
 	_fechar()
 
 
@@ -309,7 +356,7 @@ func _ate(condicao: Callable, segundos: float) -> bool:
 func _fechar() -> void:
 	print("")
 	if falhas == 0:
-		print("NAVEGACAO_OK: a malha fica pronta depois de o vale montar; há caminho entre os postos e os marcos da festa e ele chega; não desce ao mar, não atravessa casa, tronco nem rio a pé; da Dona Candinha à Dona Zefa passa pela ponte do rio central; da praça ao altar passa-se pela porta; e o morador contorna a casa que em linha reta o prendia")
+		print("NAVEGACAO_OK: a malha fica pronta depois de o vale montar; há caminho entre os postos e os marcos da festa e ele chega; não desce ao mar, não atravessa casa, tronco nem rio a pé; da Dona Candinha à Dona Zefa passa pela ponte do rio central; da praça ao altar passa-se pela porta; o morador contorna a casa que em linha reta o prendia; e, montada na baixa-mar, a malha é só do chão que a cheia não cobre")
 	else:
 		print("navegacao: %d falha(s)" % falhas)
 	quit(1 if falhas > 0 else 0)

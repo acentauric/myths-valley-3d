@@ -4,6 +4,21 @@ extends RefCounted
 const CELL_SIZE := 2.5
 const OBSTACLE_CLEARANCE := 0.55
 const MAX_SNAP_CELLS := 8
+## A CASA É UM BLOCO PARA QUEM ANDA POR FORA DELA. As paredes, as portas e os móveis moram nos
+## interiores (`Interiores/Interior_*`), e o `AlvoCasaN` é uma `Area3D`: nada disso é filho direto do
+## mundo, e a grade tinha a casa inteira por chão livre. A célula "mais perto" de um destino colado
+## numa casa (o tronco do quintal da casa de taipa) caía DENTRO dela, junto da porta trancada, e o
+## corpo ia bater na parede: "Caminho bloqueado", e quem clica não chega ao tronco. A pegada de cada
+## casa (`house_bounds`, a caixa que o `world_builder` registra no grupo `interactive_house`) entra
+## na grade como obstáculo — menos para a casa em que o trajeto COMEÇA ou ACABA: quem está dentro dela
+## (a pegada, mais `HOUSE_INSIDE_MARGIN`) e quem clica na casa, que vai ao ponto da porta
+## (`world_builder.get_house_destination`: a `HOUSE_DOOR_MARGIN` da pegada, no meio de um lado).
+## Um destino só PERTO da casa — o pé de cana a 1,3 u da parede — não a solta: cortaria a sala.
+const HOUSE_GROUP := "interactive_house"
+const HOUSE_INSIDE_MARGIN := 0.5
+## O `margin` do `get_house_destination`: se mudar lá, muda aqui.
+const HOUSE_DOOR_MARGIN := 1.2
+const HOUSE_DOOR_SLACK := 0.3
 
 var _world: Node3D
 var _grid := AStarGrid2D.new()
@@ -26,7 +41,7 @@ func find_path(start: Vector3, destination: Vector3) -> PackedVector3Array:
 		return PackedVector3Array()
 	if not _built:
 		_build_grid()
-	_refresh_obstacles()
+	_refresh_obstacles(start, destination)
 	var first := _nearest_open(_cell_at(start))
 	var last := _nearest_open(_cell_at(destination))
 	if not _inside(first) or not _inside(last):
@@ -64,7 +79,7 @@ func _build_grid() -> void:
 	_built = true
 
 
-func _refresh_obstacles() -> void:
+func _refresh_obstacles(start: Vector3 = Vector3.INF, destination: Vector3 = Vector3.INF) -> void:
 	for cell in _obstacle_cells:
 		_grid.set_point_solid(cell, false)
 	_obstacle_cells.clear()
@@ -72,6 +87,44 @@ func _refresh_obstacles() -> void:
 	for child in _world.get_children():
 		if child.has_method("is_walkable_point"):
 			_mark_obstacles_in(child)
+	_mark_houses(start, destination)
+
+
+## As casas fora do caminho entram na grade pela pegada inteira (ver `HOUSE_GROUP`).
+func _mark_houses(start: Vector3, destination: Vector3) -> void:
+	if not _world.is_inside_tree():
+		return
+	for node in _world.get_tree().get_nodes_in_group(HOUSE_GROUP):
+		if node is not Node3D or not node.has_meta("house_bounds"):
+			continue
+		var house := node as Node3D
+		var bounds: Vector3 = house.get_meta("house_bounds")
+		var half_x := bounds.x * 0.5
+		var half_z := bounds.z * 0.5
+		if _inside_house(house, half_x, half_z, start) or _inside_house(house, half_x, half_z, destination) \
+				or _is_house_door_point(house, half_x, half_z, destination):
+			continue
+		var basis := house.global_transform.basis
+		var extent_x := absf(basis.x.x) * half_x + absf(basis.z.x) * half_z
+		var extent_z := absf(basis.x.z) * half_x + absf(basis.z.z) * half_z
+		_mark_rectangle(house.global_position, extent_x, extent_z)
+
+
+func _inside_house(house: Node3D, half_x: float, half_z: float, point: Vector3) -> bool:
+	if not point.is_finite():
+		return false
+	var local := house.to_local(point)
+	return absf(local.x) <= half_x + HOUSE_INSIDE_MARGIN and absf(local.z) <= half_z + HOUSE_INSIDE_MARGIN
+
+
+## O ponto que o clique numa casa escolhe: no meio de um dos quatro lados, a `HOUSE_DOOR_MARGIN` da pegada.
+func _is_house_door_point(house: Node3D, half_x: float, half_z: float, point: Vector3) -> bool:
+	if not point.is_finite():
+		return false
+	var local := house.to_local(point)
+	var on_z_side := absf(local.x) < HOUSE_DOOR_SLACK and absf(absf(local.z) - (half_z + HOUSE_DOOR_MARGIN)) < HOUSE_DOOR_SLACK
+	var on_x_side := absf(local.z) < HOUSE_DOOR_SLACK and absf(absf(local.x) - (half_x + HOUSE_DOOR_MARGIN)) < HOUSE_DOOR_SLACK
+	return on_z_side or on_x_side
 
 
 func _mark_obstacles_in(parent: Node) -> void:

@@ -16,6 +16,14 @@ extends Node3D
 const LAMINA_FUNDA := 1.8
 const LAMINA_PERSEGUE := 1.6
 const LAMINA_MINIMA := 1.0
+## A MARÉ TIRA O TUBARÃO: o pesqueiro é escolhido pela água da PREAMAR (`_lamina_na_cheia`, a mesma em qualquer
+## hora de partida), e a lâmina no centro dele acompanha o mar. Com a regra de antes (sumir só abaixo de
+## LAMINA_FUNDA - 0,5, 1,3 u) ele ficava na baixa-mar: o centro do pesqueiro mede 2,15 u na preamar e 1,55 na
+## baixa-mar (medido em 06/10/2026), e 1,55 passa de 1,3. Agora ele some quando a lâmina no centro cai abaixo de
+## LAMINA_FUNDA mais a folga de `FOLGA_DA_SAIDA` (1,95 u) e só volta quando ela passa de LAMINA_FUNDA mais
+## `FOLGA_DA_VOLTA` (2,1 u, a mesma folga com que o pesqueiro é escolhido).
+const FOLGA_DA_SAIDA := 0.15
+const FOLGA_DA_VOLTA := 0.3
 ## Velocidades (u/s): o nado do jogador é ~1,5 (correndo 3,0), e o tubarão passa dos
 ## dois — quem nada no fundo não foge dele. Escapar é voltar para o RASO: ele não
 ## persegue quem está em lâmina de `LAMINA_PERSEGUE` ou menos, nem entra onde
@@ -117,10 +125,10 @@ func _physics_process(delta: float) -> void:
 		_checagem_mare = 0.7
 		# Maré baixa: sem lâmina funda no pesqueiro, ele afunda e some até a água voltar.
 		var fundo := _lamina(_centro)
-		if _submerso and fundo >= LAMINA_FUNDA:
+		if _submerso and fundo >= LAMINA_FUNDA + FOLGA_DA_VOLTA:
 			_submerso = false
 			visible = true
-		elif not _submerso and fundo < LAMINA_FUNDA - 0.5:
+		elif not _submerso and fundo < LAMINA_FUNDA + FOLGA_DA_SAIDA:
 			_submerso = true
 			visible = false
 	if _submerso:
@@ -317,7 +325,7 @@ func _procurar_pesqueiro() -> bool:
 		for graus in [0.0, 20.0, -20.0, 40.0, -40.0, 60.0, -60.0]:
 			var direcao := mar.rotated(Vector3.UP, deg_to_rad(graus))
 			var ponto := pier + direcao * float(raio)
-			if _lamina(ponto) >= LAMINA_FUNDA + 0.3:
+			if _lamina_na_cheia(ponto) >= LAMINA_FUNDA + 0.3:
 				_centro = ponto + direcao * 4.0
 				_centro.y = _nivel()
 				_eixo_a = direcao
@@ -332,7 +340,7 @@ func _ajustar_elipse() -> void:
 	for _tentativa in 8:
 		var cabe := true
 		for k in 12:
-			if _lamina(_ponto_elipse(TAU * float(k) / 12.0)) < LAMINA_PERSEGUE - 0.2:
+			if _lamina_na_cheia(_ponto_elipse(TAU * float(k) / 12.0)) < LAMINA_PERSEGUE - 0.2:
 				cabe = false
 				break
 		if cabe:
@@ -353,6 +361,12 @@ func _nivel() -> float:
 
 func _lamina(ponto: Vector3) -> float:
 	return float(_world.water_depth_at(ponto))
+
+
+## A lâmina no ponto NA PREAMAR (o deslocamento da maré, que vai de 0 a -0,6 u, sai da conta): onde o pesqueiro
+## fica não pode depender da hora em que o vale se montou.
+func _lamina_na_cheia(ponto: Vector3) -> float:
+	return _lamina(ponto) - float(Mare.nivel_offset())
 
 
 ## Estilo Tripo: o GLB inteiro debaixo d'água, só a barbatana de fora, nadando com

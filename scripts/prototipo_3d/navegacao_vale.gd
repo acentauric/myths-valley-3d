@@ -93,7 +93,7 @@ func configurar(mundo, raiz: Node) -> void:
 	var area := _area()
 	if not area.has_volume():
 		return
-	_agua = float(mundo.water_level()) if mundo.has_method("water_level") else -INF
+	_agua = _nivel_da_preamar()
 	_sonda = mundo.ancoras.get("Praça", Vector3.INF)
 	_malha = NavigationMesh.new()
 	_malha.cell_size = CELULA
@@ -111,6 +111,19 @@ func configurar(mundo, raiz: Node) -> void:
 	# Adiada: o `_ready` do vale ainda cria o saveiro, o cercado da ponte e o cemitério.
 	_adiada = true
 	_primeira_assada.call_deferred()
+
+
+## O MAR NA PREAMAR, e não o do instante. A malha se assa uma vez e o mar sobe e desce (a maré vem ligada): assada
+## com a água do instante, na baixa-mar ela guardava a faixa de areia que a cheia cobre, e na cheia o Pedro e
+## os moradores seguiam um caminho que entra no mar. Com o nível da preamar a malha é só do chão que nunca molha,
+## seja a hora em que o vale se monta — `tests/navegacao.gd` monta o vale na baixa-mar e confere.
+func _nivel_da_preamar() -> float:
+	var regiao = _mundo.get("_region")
+	if regiao != null and regiao.has_method("water_level"):
+		var nivel := float(regiao.water_level())
+		if is_finite(nivel):
+			return nivel
+	return float(_mundo.water_level()) if _mundo.has_method("water_level") else -INF
 
 
 ## A primeira assada, depois de o `_ready` que chamou `configurar` terminar de montar o vale.
@@ -137,6 +150,7 @@ func _assar() -> void:
 	_troncos_da_mata(fonte, _malha.filter_baking_aabb)
 	_leito_dos_rios(fonte, _malha.filter_baking_aabb)
 	_casco_do_saveiro(fonte)
+	_alicerces(fonte)
 	NavigationServer3D.bake_from_source_geometry_data_async(_malha, fonte, _ao_assar)
 
 
@@ -154,6 +168,48 @@ func _casco_do_saveiro(fonte: NavigationMeshSourceGeometryData3D) -> void:
 	if pegada.is_empty():
 		return
 	fonte.add_projected_obstruction(pegada["contorno"], float(pegada["elevacao"]), float(pegada["altura"]), false)
+
+
+## OS ALICERCES — plataforma baixa debaixo de uma construção (o da capelinha: 1,07 de altura, 0,35 maior que
+## ela de cada lado) — são obstáculo com FOLGA. A parede de um alicerce passa do degrau do agente (`DEGRAU`) e a
+## malha o contorna rente, e o contorno simplificado da malha (o `edge_max_error` do Recast, 0,26 m aqui) cortava
+## a quina dele: o caminho da praça à casa de taipa raspava a esquina e o corpo, mais largo que o agente, prendia
+## (`tests/colisoes_de_passeio.gd`, que o conferia andando e carregava isto como exceção). Cada alicerce entra na
+## fonte da malha como obstáculo projetado, com a pegada aberta em `FOLGA_DO_ALICERCE` de cada lado; sem "carve"
+## o buraco ainda cresce do raio do agente, e o caminho passa a uns 0,55 da parede. Alicerce = corpo de caixa,
+## direto no mundo, mais alto que o degrau e mais baixo que o agente, com 3 u ou mais de lado.
+const FOLGA_DO_ALICERCE := 0.35
+const LADO_MINIMO_DO_ALICERCE := 3.0
+
+
+func _alicerces(fonte: NavigationMeshSourceGeometryData3D) -> void:
+	for alicerce in alicerces():
+		fonte.add_projected_obstruction(alicerce["contorno"], float(alicerce["base"]) - 0.2, float(alicerce["altura"]) + 0.4, false)
+
+
+## Os alicerces do mundo: {"nome", "contorno" (a pegada com folga, no chão), "base", "altura"}.
+func alicerces() -> Array[Dictionary]:
+	var achados: Array[Dictionary] = []
+	if _mundo == null:
+		return achados
+	for corpo in _mundo.get_children():
+		if corpo is not StaticBody3D or ((corpo as StaticBody3D).collision_layer & 1) == 0:
+			continue
+		for filho in corpo.get_children():
+			if filho is not CollisionShape3D or (filho as CollisionShape3D).disabled or (filho as CollisionShape3D).shape is not BoxShape3D:
+				continue
+			var caixa: Vector3 = ((filho as CollisionShape3D).shape as BoxShape3D).size
+			if caixa.y < DEGRAU + 0.1 or caixa.y > ALTURA - 0.2 or minf(caixa.x, caixa.z) < LADO_MINIMO_DO_ALICERCE:
+				continue
+			var t: Transform3D = (filho as CollisionShape3D).global_transform
+			var metade := Vector2(caixa.x * 0.5 + FOLGA_DO_ALICERCE, caixa.z * 0.5 + FOLGA_DO_ALICERCE)
+			var contorno := PackedVector3Array()
+			for sinal in [Vector2(-1.0, -1.0), Vector2(1.0, -1.0), Vector2(1.0, 1.0), Vector2(-1.0, 1.0)]:
+				var canto: Vector3 = t * Vector3(sinal.x * metade.x / maxf(t.basis.x.length(), 0.0001), 0.0, sinal.y * metade.y / maxf(t.basis.z.length(), 0.0001))
+				canto.y = 0.0
+				contorno.append(canto)
+			achados.append({"nome": str(corpo.name), "contorno": contorno, "base": t.origin.y - caixa.y * 0.5, "altura": caixa.y})
+	return achados
 
 
 func esta_pronta() -> bool:

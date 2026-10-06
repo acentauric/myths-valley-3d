@@ -237,7 +237,69 @@ func _run() -> void:
 		_conferir(corpo is MultiMeshInstance3D and corpo.material_override is ShaderMaterial, "o cardume '%s' não é um MultiMesh com o nado" % c.name)
 		if corpo is MultiMeshInstance3D:
 			_conferir(corpo.visibility_range_end > 0.0 and corpo.visibility_range_end <= 160.0, "o cardume '%s' se vê de longe demais" % c.name)
+
+	# --- 9. A MARÉ -------------------------------------------------------------------
+	await _mare(vale, mundo, fauna, todos)
 	_fechar()
+
+
+## 9. COM A MARÉ LIGADA. Tudo acima mede o mar na preamar, fixo. A maré vem ligada no jogo, e este é o que vale com
+## ela: na PREAMAR e na BAIXA-MAR, depois de os cardumes nadarem três segundos, todo peixe À MOSTRA (o cardume
+## visível, o peixe nem escondido nem saltando) está dentro d'água — do leito de agora à superfície de agora, nunca
+## acima da lâmina que baixou nem abaixo do fundo que subiu (o bando de raias de voo salta por projeto e fica fora
+## da conta, como o salto de qualquer peixe); na baixa-mar os cardumes da água
+## rasa SOMEM (o centro do bando sem lâmina), e voltam na cheia. Um portão que só media a preamar deixava o peixe do
+## mar de fora sem prova nenhuma de que acompanhava a maré.
+func _mare(vale: Node, mundo: Node, fauna: Node, todos: Array) -> void:
+	var mare := root.get_node("/root/Mare")
+	var dia := root.get_node("/root/Dia")
+	mare.modo = 1
+	dia.pausado = true
+	var preamar_h: float = float(mare.fase_da_preamar_h)
+	var sumidos_na_cheia := 0
+	var sumidos_na_baixa := 0
+	for fase in [["preamar", preamar_h], ["baixa-mar", fposmod(preamar_h + 6.0, 24.0)]]:
+		dia.definir_hora(float(fase[1]))
+		await _quadros(6)
+		var nivel: float = float(mare.nivel_offset())
+		_conferir((absf(nivel) < 0.01) if str(fase[0]) == "preamar" else (nivel < -0.5), "[%s] o portão não achou a maré (%.2f u)" % [fase[0], nivel])
+		for passo in 90:
+			for c in todos:
+				c.atualizar(1.0 / 30.0)
+		var conferidos := 0
+		var raias := 0
+		var sumidos := 0
+		var pior_acima := -INF
+		var pior_abaixo := INF
+		var superficie: float = mundo.water_level()
+		for c in todos:
+			if c.agua_doce:
+				continue
+			var mm = c.get("_mm")
+			if mm != null and not mm.visible:
+				sumidos += 1
+				continue
+			for i in c.quantidade():
+				if not c.vivo(i) or c._salto[i] > 0.0:
+					continue
+				var p: Vector3 = c.posicao(i)
+				var leito := superficie - float(mundo.water_depth_at(p))
+				conferidos += 1
+				if c.especie == "raia_pintada":
+					raias += 1
+				pior_acima = maxf(pior_acima, p.y - superficie)
+				pior_abaixo = minf(pior_abaixo, p.y - leito)
+				_conferir(p.y <= superficie + 0.01, "[%s] o %s %d está acima da água (y %.3f, superfície %.3f)" % [fase[0], c.especie, i, p.y, superficie])
+				_conferir(p.y >= leito - 0.02, "[%s] o %s %d está abaixo do leito (y %.3f, leito %.3f)" % [fase[0], c.especie, i, p.y, leito])
+		print("FAUNA: [%s] mar a %.2f u da preamar: %d peixes à mostra (%d raias) na água, %d cardume(s) sumidos; mais alto %.3f acima da superfície, mais fundo %.3f acima do leito" % [fase[0], float(mare.nivel_offset()), conferidos, raias, sumidos, pior_acima, pior_abaixo])
+		# Na baixa-mar quase todo cardume some (a baía rasa fica sem lâmina): o que resta é pouco, mas não é nada.
+		_conferir(conferidos > (50 if str(fase[0]) == "preamar" else 5), "[%s] conferi só %d peixes à mostra" % [fase[0], conferidos])
+		if str(fase[0]) == "preamar":
+			sumidos_na_cheia = sumidos
+		else:
+			sumidos_na_baixa = sumidos
+	_conferir(sumidos_na_baixa > sumidos_na_cheia, "na baixa-mar não sumiu cardume nenhum da água rasa (%d sumidos na cheia, %d na baixa-mar)" % [sumidos_na_cheia, sumidos_na_baixa])
+	mare.modo = 0
 
 
 func _distancia_media(c, ponto: Vector3) -> float:
@@ -253,7 +315,7 @@ func _distancia_media(c, ponto: Vector3) -> float:
 func _fechar() -> void:
 	print("")
 	if falhas == 0:
-		print("FAUNA_DO_MAR_OK (%s): toda canoa tem cardume e nenhum é filho dela; os peixes do rio estão na água doce; nenhum peixe passa do leito nem sai da água sem saltar; o cardume foge de quem nada e não de quem está fora d'água; nadam de cabeça para a frente; o tubarão é predador, tem o corpo do estilo e, forçado, come um peixe; o aviso do susto está nos três idiomas fora do código; e há espécies diferentes e raias em bando" % _estilo_do_portao())
+		print("FAUNA_DO_MAR_OK (%s): toda canoa tem cardume e nenhum é filho dela; os peixes do rio estão na água doce; nenhum peixe passa do leito nem sai da água sem saltar; o cardume foge de quem nada e não de quem está fora d'água; nadam de cabeça para a frente; o tubarão é predador, tem o corpo do estilo e, forçado, come um peixe; o aviso do susto está nos três idiomas fora do código; há espécies diferentes e raias em bando; e, com a maré ligada, na preamar e na baixa-mar todo peixe à mostra está dentro d'água e os cardumes da água rasa somem na baixa-mar" % _estilo_do_portao())
 	else:
 		print("fauna_do_mar (%s): %d falha(s)" % [_estilo_do_portao(), falhas])
 	quit(1 if falhas > 0 else 0)

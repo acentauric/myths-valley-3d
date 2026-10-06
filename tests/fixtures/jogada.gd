@@ -330,7 +330,12 @@ func ir_ate(destino: Vector3, ideal: float = 1.9, olhar: bool = true, teto_s: fl
 	var total := comprimento(caminho)
 	if teleporte and total > DISTANCIA_DO_TELEPORTE + 1.0:
 		var onde := ponto_a(caminho, DISTANCIA_DO_TELEPORTE)
-		jogador.teleportar(onde["ponto"], float(onde["giro"]))
+		# O ponto é interpolado em linha reta entre dois pontos do caminho (a grade do clique tem células de 2,5 u),
+		# e num morro a reta passa ABAIXO do chão: o jogador nascia enterrado na terra, não andava, e a fase empacava
+		# (a da Zefa, em 06/10/2026, a 0,9 u sob o chão, no desvio em volta da casa). O ponto sobe para a superfície.
+		var do_teleporte: Vector3 = onde["ponto"]
+		do_teleporte.y = maxf(do_teleporte.y, superficie(do_teleporte, do_teleporte.y).y)
+		jogador.teleportar(do_teleporte, float(onde["giro"]))
 		await quadros(3)
 		total = DISTANCIA_DO_TELEPORTE
 	# O teto cresce com o que falta andar (o tutorial anda o vale inteiro, de ponta a ponta): nunca menos
@@ -360,9 +365,13 @@ func ir_ate(destino: Vector3, ideal: float = 1.9, olhar: bool = true, teto_s: fl
 		await desempacar(destino, "a caminhada parou antes do fim")
 	if _de_longe(destino) > basta:
 		await guiar_ate(destino, maxf(basta - 0.5, 0.6), 14.0)
-	if _de_longe(destino) > basta + 0.3 and _de_longe(destino) <= 8.0:
+	if _de_longe(destino) > basta + 0.3 and _de_longe(destino) <= 8.0 and not _e_alvo_de_trabalho(destino):
 		# PRESO EM UM CANTO A POUCOS METROS DO ALVO (a malha do clique deixa o corpo numa fresta entre as paredes
 		# da casa, e as setas não tiram dali): último recurso, o jogador é posto no ponto de pisar ao lado do alvo.
+		# NÃO PARA ALVO DE TRABALHO (tronco, pedra, capim, ostra): esses o jogador alcança de verdade — os dois
+		# troncos do roçado ficavam num canto de paredes atrás da casa de taipa, o atalho os escondia, e agora
+		# eles estão em chão aberto e `tests/alcance_dos_alvos.gd` cobra o clique de todos. Alvo que não se
+		# alcança sem atalho volta como "não deu", e o jogador escolhe outro.
 		var livres := chegadas(destino, ideal, jogador.global_position, maxf(maximo, ideal + 3.0), 1)
 		if not livres.is_empty():
 			atalho("preso num canto a menos de 8 u do alvo (a malha do clique acaba numa fresta entre paredes): posto no ponto de pisar ao lado dele")
@@ -377,6 +386,18 @@ func ir_ate(destino: Vector3, ideal: float = 1.9, olhar: bool = true, teto_s: fl
 		virar_para(destino)
 	await quadros(2)
 	return true
+
+
+## `ponto` é o de um alvo de trabalho do vale (`Recursos3D`)? O alvo de trabalho não tem o atalho do canto.
+func _e_alvo_de_trabalho(ponto: Vector3) -> bool:
+	var recursos = vale.get_node_or_null("Recursos3D")
+	if recursos == null:
+		return false
+	for id in recursos._alvos:
+		var onde: Vector3 = recursos._alvos[id]["pos"]
+		if Vector2(onde.x - ponto.x, onde.z - ponto.z).length() < 0.05:
+			return true
+	return false
 
 
 ## Empacou: dá um passo de lado (alternando a mão) e um à frente, virado para `alvo`, e diz em quê bateu.
