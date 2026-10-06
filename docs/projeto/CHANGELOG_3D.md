@@ -166,6 +166,11 @@
   vale, esperava para sempre, e `sobrevoo_livre` e `sobrevoo_livre_procedural`
   saíam pelo teto de 400 s. O extrator pede o lobby 3D por código antes de
   carregar a cena (`abertura.lobby_3d_pedido`): os dois voltam a 42 s e 36 s.
+- **Ninguém mais sobe no altar da igreja (#98).** Na live o jogador subiu no
+  altar: a mesa tinha corpo, mas com 0,95 de altura o pulo (1,5 u) a vencia.
+  Por cima dela sobe uma guarda invisível e sólida até acima da cabeça
+  (`interior_igreja.gd`, "AltarGuarda"), sem barrar a câmera; o ponto da reza,
+  diante do altar, segue livre. Portão `interiores`, parte 4.
 
 ## Em desenvolvimento — 05/10/2026
 

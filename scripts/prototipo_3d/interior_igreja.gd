@@ -134,6 +134,11 @@ func _montar_presbiterio() -> void:
 	var chao := ALTURA_DO_PRESBITERIO
 	var largura_do_altar := minf(2.4, largura * 0.42)
 	_caixa(Vector3(largura_do_altar, 0.95, 0.8), Vector3(0, chao + 0.475, altar_z), _cal(), true, "Altar", false)
+	# NINGUÉM SOBE NO ALTAR (#98): a mesa tem corpo, mas com 0,95 de altura o pulo
+	# (1,5 u) a vencia e o jogador ficava de pé na toalha, na live. Por cima dela
+	# sobe uma guarda invisível e sólida até acima da cabeça, da largura da
+	# toalha; o ponto da reza, diante do altar, fica fora dela.
+	_caixa(Vector3(largura_do_altar + 0.14, 1.6, 0.92), Vector3(0, chao + 1.8, altar_z), null, true, "AltarGuarda", false)
 	_caixa(Vector3(largura_do_altar + 0.14, 0.05, 0.92), Vector3(0, chao + 0.975, altar_z), _cor(Color("f6f2e8")), false, "Toalha")
 	_caixa(Vector3(largura_do_altar + 0.14, 0.3, 0.02), Vector3(0, chao + 0.82, altar_z + 0.46), _cor(Color("f6f2e8")), false, "Toalha")
 	_caixa(Vector3(largura_do_altar - 0.3, 0.6, 0.03), Vector3(0, chao + 0.36, altar_z + 0.415), _cor(VERMELHO), false, "Frontal")
