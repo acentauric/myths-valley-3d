@@ -44,11 +44,11 @@ const DE_PARA := {
 	"casa_de_pasto": "Restaurante",
 	"pier": "Pier",
 	"ponte_da_vila": "Ponte",
-	# O RIO GRANDE é o rio do norte do mapa, raso de dar pé, e a ponte dele é a
-	# "Ponte" do KML, onde a Rua Principal o cruza: cercada até a primeira obra do
-	# jogo (`ponte_vale.gd`, data/missoes_ponte.json). O vau é a passagem a pé ao
-	# lado dela (`world_builder._vau_ao_lado`).
-	"vau": "Vau",
+	# O RIO GRANDE é o rio do norte do mapa, fundo e com barranco na margem norte
+	# (#81), e a ponte dele é a "Ponte" do KML, onde a Rua Principal o cruza:
+	# cercada até a primeira obra do jogo (`ponte_vale.gd`, data/missoes_ponte.json).
+	# Fora dela ninguém passa; o vau que havia ao lado acabou.
+	"ponte_do_rio_grande": "Ponte",
 	# A CHAPADA DO SEU BENEDITO, a terra alta para lá da Dona Zefa, de frente para o
 	# rio grande (data/missoes_chapada.json, `world_builder._build_farm`).
 	"expansao": "Chapada",
@@ -62,7 +62,6 @@ const DE_PARA := {
 	"portao_da_fazenda": "Portão da fazenda",
 	"patio_da_fazenda": "Pátio da fazenda",
 	"casarao": "Casarão",
-	"ponte_do_vau": "Ponte",
 	"poco": "Poço",
 	"mirante": "Mirante",
 	"cemiterio": "Cemitério",

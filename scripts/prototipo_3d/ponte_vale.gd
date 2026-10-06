@@ -1,13 +1,14 @@
 extends Node3D
 ## A PONTE DO RIO GRANDE, QUE A FRENTE DA TRILHA LEVANTA (data/missoes_ponte.json).
 ##
-## O rio grande é o rio do norte do mapa, raso de dar pé, e a ponte dele é a
-## "Ponte" do KML, onde a Rua Principal o cruza (`world_builder._erguer_ponte`).
-## No 2D ela caiu; no vale ela está de pé no modelo do Tripo, e não há arte de
-## ponte caída. Então o estrago é o que não se vê de longe — a cheia de
-## fevereiro comeu os esteios do meio —, e o que se vê é a CERCA nas duas
-## cabeceiras, que o Pedro e o Seu Benedito pregaram. Gente atravessa no vau, ao
-## lado (`Lugares` "vau"); pela ponte, ninguém.
+## O rio grande é o rio do norte do mapa, fundo e com barranco na margem norte
+## (#81, `GeoRegionRenderer` RIO GRANDE), e a ponte dele é a "Ponte" do KML,
+## onde a Rua Principal o cruza (`world_builder._erguer_ponte`). No 2D ela caiu;
+## no vale ela está de pé no modelo do Tripo, e não há arte de ponte caída.
+## Então o estrago é o que não se vê de longe — a cheia de fevereiro comeu os
+## esteios do meio —, e o que se vê é a CERCA nas duas cabeceiras, que o Pedro
+## e o Seu Benedito pregaram. Fora da ponte ninguém passa: a água dá nado e a
+## margem de lá não tem por onde subir; pela ponte, ninguém até a obra.
 ##
 ## A obra `ponte_levantar` (obras.json, no J, ao pé da ponte) tira a cerca. Quem
 ## diz é o `Obras`, que vai no save: carregar uma partida de antes da obra põe a

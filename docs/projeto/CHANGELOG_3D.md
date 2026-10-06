@@ -63,6 +63,22 @@
   novo `mutirao_do_poco`: da boca do poço à janta — picareta, pedras, corda, o
   plano ensinado ao abrir, a Dona Zefa e o Cosme chamados à roda, o E entre os
   dois, a obra tocada no painel, as cocadas; a falsificação sem o E reprova.
+- **O rio grande deixa de dar passagem fora da ponte (#81).** No 2D o rio tem
+  barranco e só se cruza pela ponte; no vale ele era raso de dar pé, com um vau ao
+  lado da ponte, e o jogador nada — a trava da jornada (a fazenda do convite é do
+  outro lado) não segurava. Decisão do autor: os dois. A calha do rio do norte é
+  funda (1,6 u: no meio não dá pé) e do lado de lá segue funda até a beira; a
+  margem de lá sobe 1,2 u acima do terreno numa face que começa na água, ao longo
+  do rio inteiro e da cabeceira até a moldura do mapa; a ponte assenta num aterro
+  dos dois lados, com o tabuleiro plano e a estrada chegando em rampa que se anda;
+  e sob o rio a estrada só afunda pelo lado de cá (pelo de lá seria rampa de
+  saída). O vau saiu dos lugares, do construtor e das falas: o passo de ver a
+  ponte fecha na cabeceira de cá, o Pedro conta que "a água dá nado e o barranco
+  do outro lado não tem por onde subir", e o caminho da fazenda é "pela ponte".
+  Fica em aberto a costa a norte da foz, que quem nadar pelo mar alcança (a guarda
+  ali é o tubarão). Portão novo `rio_grande`: a calha, a beira, a face do
+  barranco e o aterro medidos ao longo do rio inteiro, e três nados para lá com o
+  pulo apertado que não saem da água; `ponte` e `fazenda` ajustados.
 
 ## Em desenvolvimento — 05/10/2026
 

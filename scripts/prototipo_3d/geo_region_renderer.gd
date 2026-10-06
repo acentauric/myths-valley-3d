@@ -86,6 +86,41 @@ const RIVER_BED_SAND_OFFSET := 0.06
 const RIVER_TERRAIN_CELL_SIZE := 0.8
 const RIVER_BANK_RISE := 0.07
 const BEACH_BERM_RISE := 0.08
+## O RIO GRANDE (#81): o rio do norte, que a Rua Principal cruza na "Ponte" do
+## KML. No 2D ele tem barranco e só se cruza pela ponte; aqui ele era raso de
+## dar pé, havia um vau ao lado da ponte, e o jogador nada. Decisão do autor em
+## 06/10: fundo E barranco na margem norte, e o vau acabou.
+##   - A CALHA é funda (RIO_GRANDE_PROFUNDIDADE): no meio não dá pé, e do lado
+##     norte ela segue funda até a beira, sem a subida suave do lado sul. Quem
+##     nada chega à beira norte sem achar chão.
+##   - O BARRANCO: a margem norte sobe BARRANCO_ALTURA acima do terreno, numa
+##     face que começa na beira d'água (BARRANCO_SUBIDA) e volta ao terreno
+##     BARRANCO_LARGURA para dentro. Da calha ao alto são mais de dois corpos de
+##     parede, acima do ângulo de chão do corpo e do que o degrau sobe; nadando
+##     não se pula. A linha do barranco é a do rio, da foz (leste) à cabeceira
+##     (oeste), com o lado de lá à DIREITA, e segue da cabeceira até a moldura
+##     do mapa para não sobrar passagem a pé pela ponta.
+##   - A PONTE ASSENTA NUM ATERRO (ATERRO_DA_PONTE): perto dela o chão sobe dos
+##     DOIS lados, e o tabuleiro fica plano entre as cabeceiras. Barranco só de
+##     um lado deixaria um degrau na ponta sul; barranco que sumisse junto à
+##     ponte deixaria a beira norte na altura da água bem debaixo dela.
+##   - A ESTRADA sob o rio afunda só pelo lado sul (`_road_height_under_rivers`):
+##     pelo norte ela subiria em rampa até o barranco, por baixo do tabuleiro, e
+##     rampa é saída.
+## O que fica em aberto: a costa a norte da foz, que quem nadar pelo mar
+## alcança — a guarda ali é o tubarão.
+const RIO_GRANDE_PROFUNDIDADE := 1.6
+const BARRANCO_ALTURA := 1.2
+## Na ponta, da cabeceira à moldura, não há calha funda por baixo: o barranco
+## sozinho tem de passar do pulo do corpo (1,5 u) e dos 60 graus.
+const BARRANCO_ALTURA_DA_PONTA := 2.6
+const BARRANCO_SUBIDA := 0.6
+## A faixa levantada, e a descida suave para o terreno nos últimos BARRANCO_DESCIDA.
+const BARRANCO_LARGURA := 7.5
+const BARRANCO_DESCIDA := 4.0
+## O aterro da ponte some aos poucos entre 70 % disto e isto, de distância da ponte:
+## somado à descida da faixa, é o que deixa a estrada em rampa que se anda.
+const ATERRO_DA_PONTE := 12.0
 enum BankProfile { FLAT, RIVER, BEACH, MOUTH }
 
 var landmarks: Array[Dictionary] = []
@@ -94,6 +129,12 @@ var _features: Array[Dictionary] = []
 var _projection: Dictionary = {}
 var _bounds := Rect2()
 var _map_frame := Rect2()
+## O rio grande (ver RIO GRANDE), a linha do barranco dele — da foz à cabeceira e
+## daí à moldura —, a caixa que a contém com a faixa, e o centro da ponte.
+var _rio_grande: Dictionary = {}
+var _linha_do_barranco := PackedVector2Array()
+var _limites_do_barranco := Rect2()
+var _ponte_do_rio_grande := Vector2.INF
 var _background_kind := "land"
 ## Bloco "bathymetry" do cenário: com ele, o mar ganha fundo real e água transparente.
 var _bathymetry: Dictionary = {}
@@ -342,6 +383,8 @@ func build_region(kml_json_path: String, scenario_json_path: String) -> void:
 					_rivers.append({"name": String(feature.get("name", "")), "points": points, "width": river_width, "bounds": _points_bounds(points).grow(river_width * 0.5)})
 	_curve_roads()
 	_prepare_mouth_extensions()
+	# Depois da foz: a largura do rio do norte já é a final.
+	_marcar_o_rio_grande()
 	_ler_clareiras_da_mata(String(scenario.get("vegetation", {}).get("clearings_file", "")))
 	_montar_mapa_de_solo()
 	if not terrain_only:
@@ -544,7 +587,11 @@ func _riverbed_profile(point: Vector2) -> float:
 			continue
 		var distance := _distance_to_line(point, river.points)
 		var shape := 1.0 - smoothstep(width * 0.25, width * 0.58, distance)
-		deepest = maxf(deepest, RIVER_BED_DEPTH * shape)
+		# No rio grande, do lado do barranco, a calha segue funda até a beira
+		# d'água: não há onde pôr o pé antes da parede (ver RIO GRANDE).
+		if bool(river.get("grande", false)) and _lado_do_barranco(point) > 0.0:
+			shape = 1.0 - smoothstep(width * 0.5 - 0.2, width * 0.5 + 0.1, distance)
+		deepest = maxf(deepest, float(river.get("profundidade", RIVER_BED_DEPTH)) * shape)
 	for mouth in _mouth_extensions:
 		if not (mouth.bounds as Rect2).has_point(point):
 			continue
@@ -558,6 +605,99 @@ func _riverbed_profile(point: Vector2) -> float:
 func _riverbed_lowering(point: Vector2) -> float:
 	var depth := _riverbed_profile(point)
 	return depth if depth > 0.0 and _land.size() >= 3 and Geometry2D.is_point_in_polygon(point, _land) else 0.0
+
+
+## A profundidade de calha do rio que passa por `point`: a do rio grande é
+## outra, e a faixa de areia da margem mede o afundamento da foz a partir dela.
+func _profundidade_de_referencia(point: Vector2) -> float:
+	var referencia := RIVER_BED_DEPTH
+	for river in _rivers:
+		if (river.bounds as Rect2).has_point(point):
+			referencia = maxf(referencia, float(river.get("profundidade", RIVER_BED_DEPTH)))
+	return referencia
+
+
+## Marca o rio do norte como o RIO GRANDE e traça a linha do barranco dele.
+func _marcar_o_rio_grande() -> void:
+	_rio_grande = {}
+	_linha_do_barranco = PackedVector2Array()
+	_limites_do_barranco = Rect2()
+	_ponte_do_rio_grande = Vector2.INF
+	for river in _rivers:
+		if _is_northern_river(river):
+			_rio_grande = river
+	if _rio_grande.is_empty():
+		return
+	_rio_grande["grande"] = true
+	_rio_grande["profundidade"] = RIO_GRANDE_PROFUNDIDADE
+	var pontos: PackedVector2Array = (_rio_grande.points as PackedVector2Array).duplicate()
+	# Da foz à cabeceira: a foz é a ponta mais a leste, e o lado de lá fica à
+	# direita de quem anda assim.
+	if pontos[0].x < pontos[pontos.size() - 1].x:
+		pontos.reverse()
+	_linha_do_barranco = pontos
+	# Da cabeceira à moldura, reto para o norte, com folga para lá dela.
+	var cabeceira := pontos[pontos.size() - 1]
+	_linha_do_barranco.append(Vector2(cabeceira.x, minf(cabeceira.y, _map_frame.position.y) - 20.0))
+	_limites_do_barranco = _points_bounds(_linha_do_barranco).grow(float(_rio_grande.width) * 0.5 + BARRANCO_LARGURA + 1.0)
+	var ponte := get_feature_center("Ponte", "poi")
+	if ponte != Vector3.ZERO:
+		_ponte_do_rio_grande = Vector2(ponte.x, ponte.z)
+
+
+## A distância de `point` à linha do barranco, com sinal: positiva do lado de lá
+## (à direita da linha, da foz à cabeceira), negativa do lado do vale.
+func _lado_do_barranco(point: Vector2) -> float:
+	return _lado_e_trecho(point).x
+
+
+## O lado (x, como acima) e o trecho da linha mais perto de `point` (y, índice do
+## segmento). O último trecho é a ponta, da cabeceira à moldura, sem rio por baixo.
+func _lado_e_trecho(point: Vector2) -> Vector2:
+	var linha := _linha_do_barranco
+	if linha.size() < 2:
+		return Vector2(-INF, -1.0)
+	var menor := INF
+	var sinal := -1.0
+	var trecho := -1
+	for i in range(linha.size() - 1):
+		var segmento := linha[i + 1] - linha[i]
+		if segmento.length_squared() < 0.000001:
+			continue
+		var t := clampf((point - linha[i]).dot(segmento) / segmento.length_squared(), 0.0, 1.0)
+		var d := point.distance_to(linha[i] + segmento * t)
+		if d < menor:
+			menor = d
+			trecho = i
+			sinal = 1.0 if segmento.cross(point - linha[i]) > 0.0 else -1.0
+	return Vector2(menor * sinal, float(trecho))
+
+
+## O quanto o barranco levanta o chão em `point` (0 fora dele). Do lado de lá, ao
+## longo da linha inteira; do lado de cá, só o aterro da ponte. Ver RIO GRANDE.
+func _barranco(point: Vector2) -> float:
+	if _rio_grande.is_empty() or not _limites_do_barranco.has_point(point):
+		return 0.0
+	var meia := float(_rio_grande.width) * 0.5
+	var lado_e_trecho := _lado_e_trecho(point)
+	var lado := lado_e_trecho.x
+	var dentro := absf(lado) - meia
+	if dentro <= 0.0 or dentro >= BARRANCO_LARGURA:
+		return 0.0
+	var peso := 1.0
+	if lado < 0.0:
+		if not _ponte_do_rio_grande.is_finite():
+			return 0.0
+		peso = 1.0 - smoothstep(ATERRO_DA_PONTE * 0.7, ATERRO_DA_PONTE, point.distance_to(_ponte_do_rio_grande))
+		if peso <= 0.0:
+			return 0.0
+	if _land.size() >= 3 and not Geometry2D.is_point_in_polygon(point, _land):
+		return 0.0
+	var na_ponta := int(lado_e_trecho.y) >= (_rio_grande.points as PackedVector2Array).size() - 1
+	var altura := BARRANCO_ALTURA_DA_PONTA if na_ponta else BARRANCO_ALTURA
+	var subida := smoothstep(0.0, BARRANCO_SUBIDA, dentro)
+	var descida := 1.0 - smoothstep(BARRANCO_LARGURA - BARRANCO_DESCIDA, BARRANCO_LARGURA, dentro)
+	return altura * subida * descida * peso
 
 
 ## A areia elevada da margem afunda antes de alcançar o mar, sem um degrau
@@ -574,7 +714,8 @@ func _river_shore_weight(point: Vector2) -> float:
 
 
 func ground_height_at(position: Vector3) -> float:
-	return _terrain_height_at(position) - _riverbed_lowering(Vector2(position.x, position.z))
+	var point := Vector2(position.x, position.z)
+	return _terrain_height_at(position) - _riverbed_lowering(point) + _barranco(point)
 
 
 ## A altura da água usa o relevo sem o corte da calha; o fundo fica abaixo dela.
@@ -1532,6 +1673,10 @@ func _road_height_under_rivers(point: Vector2, height: float) -> float:
 		var bounds: Rect2 = river.bounds
 		if not bounds.has_point(point):
 			continue
+		# Do lado do barranco a estrada não afunda: em rampa da calha ao alto,
+		# por baixo do tabuleiro, ela seria a saída da água (ver RIO GRANDE).
+		if bool(river.get("grande", false)) and _lado_do_barranco(point) > 0.0:
+			continue
 		var inner_radius := float(river.width) * 0.5 + 0.5
 		var outer_radius := float(river.width) * 0.5 + _units(12.0, 3.0) - 0.2
 		var distance := _distance_to_line(point, river.points)
@@ -1659,9 +1804,11 @@ func _add_ribbon(label: String, points: PackedVector2Array, width: float, y: flo
 			if bank_profile == BankProfile.RIVER or bank_profile == BankProfile.MOUTH:
 				var river_depth := _riverbed_profile(ponta)
 				# O afundamento da foz age na borda externa; sob a correnteza a
-				# areia continua por cima do terreno e da grama sobreposta.
-				var submerged_bank := (RIVER_BED_DEPTH - river_depth) * (1.0 - shore_weight) * smoothstep(0.15, 0.8, bank_fraction)
-				terrain_height = _terrain_height_at(position) - river_depth - submerged_bank
+				# areia continua por cima do terreno e da grama sobreposta. A
+				# referência é a calha do rio dali (a do rio grande é mais funda),
+				# e a areia sobe o barranco junto com o chão.
+				var submerged_bank := (_profundidade_de_referencia(ponta) - river_depth) * (1.0 - shore_weight) * smoothstep(0.15, 0.8, bank_fraction)
+				terrain_height = _terrain_height_at(position) - river_depth - submerged_bank + _barranco(ponta)
 				if bank_profile == BankProfile.MOUTH and not Geometry2D.is_point_in_polygon(ponta, _land):
 					var sea_depth := Mar.lamina_em(ponta)
 					if not is_nan(sea_depth):
