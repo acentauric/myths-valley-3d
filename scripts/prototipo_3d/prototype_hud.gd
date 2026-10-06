@@ -93,11 +93,6 @@ var _notice_label: Label
 var _notice_panel: Panel
 var _objective_label: Label
 var _heading: Panel
-var _mission_pages: Array[String] = []
-var _mission_page_index := 0
-var _mission_previous: Button
-var _mission_next: Button
-var _mission_close: Button
 var _control_mode_label: Label
 var _controls_overlay: Control
 var _controls_panel: PanelContainer
@@ -159,18 +154,9 @@ func _ready() -> void:
 	_objective_label = _label(_objective, 17, INK)
 	_objective_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_place(_objective_label, Vector2(33, 52), Vector2(HEADING_WIDTH - 50, 42))
-	_mission_previous = _mission_button("◀", "PaginaAnterior")
-	_mission_previous.pressed.connect(func() -> void: _change_mission_page(-1))
-	_mission_next = _mission_button("▶", "ProximaPagina")
-	_mission_next.pressed.connect(func() -> void: _change_mission_page(1))
-	_mission_close = _mission_button("%s para fechar" % Atalhos.letra("fechar_missao"), "FecharMissao")
-	_mission_close.size = Vector2(112, 26)
-	_mission_close.add_theme_font_size_override("font_size", 12)
-	_mission_close.pressed.connect(_close_mission_pages)
 	# A bússola/minimapa é acrescentada depois do HUD e, por isso, fica por cima
-	# dos controles no mesmo CanvasLayer. A página precisa continuar legível ali.
-	for control: Control in [_heading, _region_label, _mission_step, _objective_label,
-			_mission_previous, _mission_next, _mission_close]:
+	# dos controles no mesmo CanvasLayer. A tarefa precisa continuar legível ali.
+	for control: Control in [_heading, _region_label, _mission_step, _objective_label, _quest_label]:
 		control.z_index = 100
 
 	# A COLUNA DE ÍCONES DO CANTO SAIU.
@@ -704,81 +690,12 @@ func set_objective(value: String, missao: String = "") -> void:
 		_fit_heading()
 
 
-func set_mission_pages(pages: Array[String]) -> void:
-	_mission_pages = pages
-	_mission_page_index = 0
-	if not _mission_pages.is_empty():
-		_show_mission_page()
-
-
-func _change_mission_page(direction: int) -> void:
-	_mission_page_index = clampi(_mission_page_index + direction, 0, _mission_pages.size() - 1)
-	_show_mission_page()
-
-
-func _show_mission_page() -> void:
-	if _mission_pages.is_empty():
-		return
-	_heading.visible = true
-	_region_label.visible = true
-	_mission_step.visible = true
-	_objective_label.visible = true
-	_objective_label.text = _mission_pages[_mission_page_index]
-	_mission_step.text = "%d de %d" % [_mission_page_index + 1, _mission_pages.size()]
-	_mission_previous.visible = _mission_pages.size() > 1
-	_mission_previous.disabled = _mission_page_index == 0
-	_mission_next.visible = _mission_page_index < _mission_pages.size() - 1
-	_mission_next.disabled = _mission_page_index >= _mission_pages.size() - 1
-	_mission_close.visible = _mission_page_index == _mission_pages.size() - 1
-	# Reescrito a cada página: a letra pode ter mudado no AJUSTAR com o vale aberto.
-	_mission_close.text = "%s para fechar" % Atalhos.letra("fechar_missao")
-	_fit_heading()
-
-
-func _unhandled_key_input(event: InputEvent) -> void:
-	if not (event is InputEventKey and event.pressed and not event.echo):
-		return
-	if _mission_pages.size() <= 1 or not is_instance_valid(_mission_step) or not _mission_step.visible:
-		return
-	if event.keycode == KEY_LEFT:
-		_change_mission_page(-1)
-		get_viewport().set_input_as_handled()
-	elif event.keycode == KEY_RIGHT:
-		_change_mission_page(1)
-		get_viewport().set_input_as_handled()
-
-
-func _input(event: InputEvent) -> void:
-	if not (event is InputEventKey and event.pressed and not event.echo):
-		return
-	if _mission_pages.is_empty() or not is_instance_valid(_mission_step) or not _mission_step.visible:
-		return
-	# A letra vem da tabela (`atalhos.gd`): o HUD ouve antes do vale, e uma letra
-	# escrita aqui à mão comeria o atalho que o jogador pusesse nela no AJUSTAR.
-	var fechar := Atalhos.tecla("fechar_missao")
-	if event.keycode == fechar or event.physical_keycode == fechar:
-		_close_mission_pages()
-		get_viewport().set_input_as_handled()
-
-
-func _close_mission_pages() -> void:
-	for control: Control in [_heading, _region_label, _mission_step, _objective_label,
-			_mission_previous, _mission_next, _mission_close]:
-		control.visible = false
-
-
-func _mission_button(symbol: String, node_name: String) -> Button:
-	var button := Button.new()
-	button.name = node_name
-	button.text = symbol
-	button.focus_mode = Control.FOCUS_NONE
-	button.mouse_filter = Control.MOUSE_FILTER_STOP
-	button.add_theme_font_size_override("font_size", 15)
-	button.add_theme_color_override("font_color", GOLD)
-	button.size = Vector2(32, 26)
-	button.visible = false
-	_root.add_child(button)
-	return button
+## O ALTO DA TELA DIZ A TAREFA (#83), e só ela: o nome da missão, o resumo do
+## passo com a conta e "n de N" (`set_objective`, `set_mission_step`). Entre
+## 04/10 e 06/10 ele recebia as PÁGINAS com a fala inteira de todos os passos —
+## inclusive os que ainda não tinham aberto —, com setas e um X para fechar; a
+## fala cobria a tarefa, e o X escondia o quadro inteiro. A fala fica no balão e
+## no painel J, que é onde se lê.
 
 
 func set_clock(value: String) -> void:
@@ -902,17 +819,13 @@ func _fit_heading() -> void:
 		return
 	var lines := maxi(1, _objective_label.get_line_count())
 	# 52 é onde o texto começa (ver `_montar`); com o nome da missão em cima,
-	# ele desce 22. A faixa de botões fica abaixo do texto, com respiro próprio.
+	# ele desce 22. 18 de respiro embaixo.
 	var topo := 52.0 + (22.0 if _missao != "" else 0.0)
 	_objective_label.position.y = _heading.position.y + topo - 18.0
 	var altura_texto := lines * _objective_label.get_line_height()
 	_objective_label.size.y = altura_texto
-	var button_y := _objective_label.position.y + altura_texto + 10.0
-	var altura := button_y + 26.0 + 12.0 - _heading.position.y
+	var altura := topo + altura_texto + 18.0
 	_heading.size.y = altura
-	_mission_previous.position = Vector2(33, button_y)
-	_mission_next.position = Vector2(73, button_y)
-	_mission_close.position = Vector2(_heading.position.x + HEADING_WIDTH - 33.0 - _mission_close.size.x, button_y)
 	if is_instance_valid(_house_info_panel):
 		_house_info_panel.position.y = 18.0 + altura + 12.0
 
@@ -1277,12 +1190,3 @@ func set_mission_step(indice: int, total: int, finished := false) -> void:
 	if not is_instance_valid(_mission_step):
 		return
 	_mission_step.text = "" if total <= 0 or indice <= 0 or indice > total else "%d de %d" % [indice, total]
-	if _mission_pages.is_empty():
-		return
-	if finished:
-		for control: Control in [_mission_previous, _mission_next, _mission_close]:
-			control.visible = false
-		return
-	if total == _mission_pages.size() and indice > 0:
-		_mission_page_index = clampi(indice - 1, 0, _mission_pages.size() - 1)
-		_show_mission_page()

@@ -79,6 +79,15 @@
   ali é o tubarão). Portão novo `rio_grande`: a calha, a beira, a face do
   barranco e o aterro medidos ao longo do rio inteiro, e três nados para lá com o
   pulo apertado que não saem da água; `ponte` e `fazenda` ajustados.
+- **O alto da tela diz a tarefa, e não o texto da missão (#83).** Desde 04/10 o
+  HUD recebia as páginas com a fala inteira de todos os passos — inclusive os que
+  ainda não tinham aberto —, com setas para passar e um X para fechar; a fala
+  cobria a tarefa, e o X escondia o quadro inteiro. Agora o quadro mostra só o
+  nome da missão, o resumo do passo com a conta ("Tire pedra para calçar o poço
+  (2/3)") e o passo "n de N"; a fala fica no balão e no painel J. As páginas, as
+  setas, o X e o atalho `fechar_missao` saíram (`prototype_hud.gd`, `atalhos.gd`,
+  `COMO_JOGAR_3D.md`). Portão `tarefa_no_hud` no lugar do `paginas_missao`;
+  `cadeia_das_missoes` confere o resumo no alto da tela.
 
 ## Em desenvolvimento — 05/10/2026
 

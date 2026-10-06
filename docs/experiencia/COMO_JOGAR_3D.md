@@ -59,7 +59,6 @@ As letras marcadas com * são **remapeáveis** em AJUSTAR → Geral → Atalhos;
 | Alt+1 a Alt+8 | Gestos: saudação, tchau, concordar, olhar ao redor, medo, braços cruzados, golpe, nado |
 | Avançar a hora* (T) | Adiantar o relógio do vale em uma hora |
 | Reiniciar* (R) | Voltar ao ponto inicial |
-| Fechar o quadro da missão* (X) | Recolher o quadro da missão no alto da tela, depois de lido (as setas ◀ ▶ passam as páginas); ele volta sozinho no passo seguinte |
 
 **Telas** — só uma fica aberta por vez, e abrir outra fecha a que estava; enquanto uma tela está aberta, o vale para atrás dela. A mesma tecla ou o Esc fecham.
 

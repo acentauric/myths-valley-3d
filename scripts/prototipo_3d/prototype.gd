@@ -1141,7 +1141,6 @@ func _montar_moradores(spawn: Vector3) -> void:
 		pedro.global_position = world.ground_position(spawn + lado, 0.05)
 		pedro.saudou.connect(_on_saudacao)
 		pedro.missao_mudou.connect(func(t: String, a: Vector3, i: int, n: int) -> void:
-			hud.set_mission_pages(pedro.paginas_do_hud())
 			missao_do_vale_mudou.emit(t, a, i, n))
 		# OS ALVOS DE TRABALHO, para o marcador apontar o tronco e não a casa.
 		pedro.recursos = _recursos
@@ -2258,7 +2257,6 @@ func _pendurar_cadeia(morador: Node3D, arquivo: String, perto: float, chave: Str
 		cadeia.free()
 		return null
 	cadeia.missao_mudou.connect(func(t: String, a: Vector3, i: int, n: int) -> void:
-		hud.set_mission_pages(cadeia.paginas_do_hud())
 		missao_do_vale_mudou.emit(t, a, i, n))
 	# A RECOMPENSA DO PASSO (#48) é dita no HUD, como no 2D.
 	cadeia.pagou.connect(func(texto: String) -> void: hud.set_notice(texto))
