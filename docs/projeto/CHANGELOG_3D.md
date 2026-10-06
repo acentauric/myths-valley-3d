@@ -52,6 +52,17 @@
   (`pedro_corpo_nado`). Ajustes → Esforço continua valendo para a reserva. Manual
   em `COMO_JOGAR_3D.md`. Portões: `reservas_do_corpo` (reescrito), `folego`,
   `luta`, `casa`, `corte_das_arvores`, `lavoura`.
+- **O E no poço abre as obras do poço (#80).** No teste ao vivo de 05/10 a chegada
+  parou no mutirão: o passo fecha por uma obra que só se tocava pelo J, o resumo
+  não dizia a tecla e o poço não respondia ao E. Agora toda construção de
+  `BancadasVale.OBRAS` com obra disponível (poço, mirante, trapiche, carroça,
+  cercado do cemitério, ponte, armazém — a casa não, que tem E próprio) ganha a
+  dica "E · Obras" e abre o painel na aba de obras dela, como o canteiro
+  (`tecla_das_bancadas.gd`); sem obra disponível não há E. O resumo e a fala do
+  `mutirao_poco` dizem "E no poço (ou [J] › Obras)" nos três idiomas. Portão
+  novo `mutirao_do_poco`: da boca do poço à janta — picareta, pedras, corda, o
+  plano ensinado ao abrir, a Dona Zefa e o Cosme chamados à roda, o E entre os
+  dois, a obra tocada no painel, as cocadas; a falsificação sem o E reprova.
 
 ## Em desenvolvimento — 05/10/2026
 
