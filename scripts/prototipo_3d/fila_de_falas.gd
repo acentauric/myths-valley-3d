@@ -66,6 +66,9 @@ enum Classe { CONVERSA, MISSAO, NARRACAO, PASSAGEM }
 
 ## O TEMPO DE UMA FALA: o da voz ou o de ler, o que for maior.
 const LETRAS_POR_SEGUNDO := 15.0
+## Um ideograma (o texto em chinês) carrega o que umas duas letras e meia e se lê mais devagar: sem este peso, uma
+## fala de 50 ideogramas ganhava 3,3 s e sumia do balão antes de o jogador lê-la.
+const LETRAS_POR_IDEOGRAMA := 2.5
 const MINIMO := 2.5
 ## Entre o fim de uma fala e o começo da seguinte.
 const RESPIRO := 0.4
@@ -127,7 +130,17 @@ static func da(no: Node) -> Node:
 
 ## Quanto uma fala segura a vez: a voz ou a leitura, nunca menos que MINIMO.
 static func duracao(texto: String, voz: float = 0.0) -> float:
-	return maxf(maxf(voz, texto.strip_edges().length() / LETRAS_POR_SEGUNDO), MINIMO)
+	return maxf(maxf(voz, tempo_de_leitura(texto)), MINIMO)
+
+
+## O tempo de ler o texto: letras por segundo, com cada ideograma (U+4E00 a U+9FFF) valendo `LETRAS_POR_IDEOGRAMA`.
+static func tempo_de_leitura(texto: String) -> float:
+	var limpo := texto.strip_edges()
+	var letras := 0.0
+	for i in limpo.length():
+		var c := limpo.unicode_at(i)
+		letras += LETRAS_POR_IDEOGRAMA if c >= 0x4E00 and c <= 0x9FFF else 1.0
+	return letras / LETRAS_POR_SEGUNDO
 
 
 ## PEDE A VEZ. Devolve o id do pedido, ou 0 quando o cumprimento foi descartado.

@@ -65,6 +65,8 @@ const TRADUZIDOS := {
 	# O "titulo" fica de fora da cobrança, e não da tradução: "Cama" é a mesma
 	# palavra em espanhol, e a regra da cópia reprovaria o certo.
 	"res://data/casa.json": ["texto", "pergunta"],
+	# O nome de cada casa por dentro, o que o HUD diz ao entrar (`interiores.gd`).
+	"res://data/interiores_casas.json": ["nome"],
 	# E a lavoura (#8): o que a tecla diz no leito e os recados do gesto.
 	"res://data/lavoura.json": ["texto"],
 	# A missão do cemitério: os três passos do 2D declaram a pendência um a um,
@@ -81,13 +83,21 @@ const TRADUZIDOS := {
 	# O aviso da mochila cheia: o que o morador fica devendo e o que entrou depois
 	# (cadeia_de_missoes.gd, `_dar`).
 	"res://data/entregas_pendentes.json": ["texto"],
+	# As falas dos moradores e do Pedro (saudações, conversa, as de noite, as de depois do tutorial e o aviso do
+	# entardecer): TODAS nos quatro idiomas do menu — o chinês também (`TAMBEM_EM_CHINES`). A voz é só em
+	# português; quem cobra o chinês de verdade (ideogramas, nunca cópia) e a voz é tests/vozes_dos_moradores.gd.
+	"res://data/npcs_3d.json": ["texto"],
+	# Os sustos da mata: o aviso de quando o mapa enlouquece, o de quando o norte volta e o do sinal anotado.
+	"res://data/sustos.json": ["texto"],
 }
+
+## Os arquivos que também nascem em chinês (`campo_zh`): o jogo tem quatro idiomas no menu, e o chinês cai no
+## inglês onde falta. Aqui só entra o que já nasceu inteiro nos quatro; o resto segue em `_en` e `_es`.
+const TAMBEM_EM_CHINES := ["res://data/npcs_3d.json", "res://data/sustos.json"]
 
 ## O QUE AINDA NÃO ESTÁ NOS TRÊS, e por quê. Esvaziar esta lista é o trabalho;
 ## deixá-la sem razão escrita é como ela vira lista de tudo.
 const FALTAM_TRADUCAO := {
-	"res://data/npcs_3d.json":
-		"as 21 falas dos sete moradores mais as do Pedro. Cada uma tem 'texto' e 'tts', e o tts leva marcação de interpretação do eleven_v3 — traduzir os dois pede a voz de cada idioma, que é decisão de áudio e não de texto",
 	"res://data/arvores_3d.json":
 		"as fichas de árvore do painel; nome popular e nome científico, e o popular muda de região antes de mudar de língua",
 	"res://data/lapides_3d.json":
@@ -121,6 +131,8 @@ const FALTAM_TRADUCAO := {
 }
 
 const SUFIXOS := ["_en", "_es"]
+## Os sufixos cobrados no arquivo que está sendo varrido (`SUFIXOS`, mais "_zh" em `TAMBEM_EM_CHINES`).
+var _sufixos: Array = SUFIXOS
 
 
 func _initialize() -> void:
@@ -149,6 +161,7 @@ func _run() -> void:
 		_conferir(dado != null, "%s não é JSON válido" % caminho)
 		if dado == null:
 			continue
+		_sufixos = SUFIXOS + ["_zh"] if TAMBEM_EM_CHINES.has(caminho) else SUFIXOS
 		conferidos += _varrer(dado, TRADUZIDOS[caminho], caminho.get_file())
 
 	_conferir(conferidos > 0, "não achei um só campo traduzível: a varredura não está pegando")
@@ -203,7 +216,7 @@ func _varrer(no, campos: Array, onde: String) -> int:
 			continue
 		achados += 1
 		var quem := str(no.get("id", no.get("data", "?")))
-		for sufixo in SUFIXOS:
+		for sufixo in _sufixos:
 			var traduzido := str(no.get(campo + sufixo, ""))
 			_conferir(traduzido != "",
 				"%s, '%s': falta o campo %s%s" % [onde, quem, campo, sufixo])

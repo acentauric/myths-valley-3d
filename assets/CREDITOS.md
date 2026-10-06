@@ -58,7 +58,8 @@ foram geradas pela ferramenta integrada de imagem (`materiais/ORIGEM.md`).
 | Arquivos | O que são | Registro |
 | --- | --- | --- |
 | `assets/prototipo_3d/{arvores,construcoes,casas,aderecos,personagens,itens}/*_tripo.glb` | 68 modelos do Tripo Studio (texto → 3D, retopologia Malha Smart) | `ORIGEM.md` de cada pasta e `tools/tripo/lote_2026-09-26.json` |
-| `assets/audio/vozes/*.mp3` | saudações dos moradores e narrações do Pedro, ElevenLabs Text to Speech (Eleven v3), vozes da biblioteca em português do Brasil: Weverton (Pedro), Borges (Benedito), Katiuscia (Zefa), Matheus – Energetic and Dynamic (Cosme), Matheus Santos (Tonho), Ana Alice (Filó), Ana Dias (Candinha), Matheus – Clear, Calm and Confident (Damião) | `docs/mundo/VALE_VIVO_3D.md` |
+| `assets/audio/vozes/*.mp3` | saudações dos moradores e narrações do Pedro, ElevenLabs Text to Speech (Eleven v3), vozes da biblioteca em português do Brasil: Weverton (Pedro), Manoel Lopes (Benedito), Edna (Zefa), Matheus – Energetic and Dynamic (Cosme), Matheus Santos (Tonho), Lucinda (Filó), Raquel (Candinha), Matheus – Clear, Calm and Confident (Damião) | `docs/mundo/VALE_VIVO_3D.md` |
+| `assets/audio/vozes/{padre,sacristao,beata,mercador,guarda,pescador,marisqueira,lavadeira,rendeira,quituteira,carpinteiro,menino,menina,mestre_saveiro}_{saudacao,fala,saudacao_noite,fala_noite}_<n>.mp3` e `assets/audio/vozes/pedro_depois_<n>.mp3` | as saudações, as conversas e as falas de noite dos catorze moradores novos e as sete falas do Pedro depois do tutorial, geradas em 06/10/2026 no ElevenLabs Text to Speech (Eleven v3), só em português; o texto em inglês, espanhol e chinês aparece no balão e a voz segue em português. Cada um com a sua voz: padre = Borges, beata = Katiuscia, marisqueira = Ana Dias e lavadeira = Ana Alice (biblioteca, português do Brasil); sacristão = River, mercador = Chris, guarda = Brian, pescador = Will, rendeira = Lily, quituteira = Jessica, carpinteiro = Eric, menino = Liam, menina = Laura e mestre do saveiro = Charlie (vozes premade do ElevenLabs); o Pedro segue com Weverton | `data/npcs_3d.json` (`voz` de cada morador) e `tools/elevenlabs/gerar-falas-moradores.ps1` |
 | `assets/audio/ambiente/{mata_dia,mata_noite,riacho,fogueira}.mp3` | loops de 24 s gerados no ElevenLabs Sound Effects | `docs/mundo/VALE_VIVO_3D.md` |
 | `assets/audio/efeitos/{corrida_*,passo_agua_funda,passo_nado}.mp3` | corrida por tipo de chão, passo na água funda e braçada, ElevenLabs Sound Effects (27/09/2026) | `tools/elevenlabs/gerar-efeitos-3d.ps1` |
 
@@ -68,6 +69,11 @@ são produzidos com ElevenLabs Text to Speech.
 Em 03/10/2026, o responsável confirmou que as falas e vozes do jogo foram
 produzidas pela equipe de forma generativa para o projeto. Os nomes acima
 registram as vozes utilizadas na geração dos áudios.
+
+Em 06/10/2026, o responsável autorizou gastar crédito do ElevenLabs para gerar as vozes dos
+moradores, só em português. O teto de crédito da chave de API acabou no meio do lote: o que falta
+gerar fica declarado em `voz_pendente` no `data/npcs_3d.json` (e cobrado por
+`tests/vozes_dos_moradores.gd`), e as linhas deste registro valem para o lote inteiro.
 
 ### Dados geográficos do protótipo 3D
 

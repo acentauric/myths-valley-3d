@@ -237,16 +237,24 @@ func _run() -> void:
 		await _fechar_a_fala()
 
 	# --- 7. O E EM QUEM NÃO FALA É ACENO ---------------------------------------------
-	# Os moradores novos têm jornada e ofício, e nenhuma fala (`npc._eh_mudo`). A
+	# Os moradores novos tinham jornada e ofício, e nenhuma fala (`npc._eh_mudo`). A
 	# conversa do E neles abria um balão sem texto, punha "Nome: " no HUD e segurava
-	# o relógio por dez segundos de uma fala que não havia.
+	# o relógio por dez segundos de uma fala que não havia. Desde 06/10/2026 os catorze
+	# falam (`falas_dos_moradores.gd`) e ninguém é mudo: o MECANISMO segue coberto por um
+	# mudo sintético — um deles, de corpo presente, é calado aqui (`dados["mudo"]`).
 	var calado = null
 	for morador in vale.moradores:
 		if morador.has_method("eh_mudo") and morador.eh_mudo() and morador.is_visible_in_tree() \
 				and not morador.esta_recolhido():
 			calado = morador
 			break
-	_conferir(calado != null, "o vale não tem morador que não fala, de corpo presente, para a pergunta do aceno")
+	if calado == null:
+		for morador in vale.moradores:
+			if morador.dados.has("agenda") and morador.is_visible_in_tree() and not morador.esta_recolhido():
+				calado = morador
+				calado.dados["mudo"] = true
+				break
+	_conferir(calado != null, "o vale não tem morador de jornada, de corpo presente, para a pergunta do aceno")
 	if calado != null:
 		var avisos := [0]
 		calado.saudou.connect(func(_quem, _texto: String) -> void: avisos[0] += 1)

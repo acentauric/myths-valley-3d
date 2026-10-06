@@ -277,8 +277,8 @@ o script passa a usar `frame_coords` como o
 
 ## Os moradores novos e as jornadas (05/10/2026)
 
-Catorze moradores novos, **sem falas** e com jornada própria, cada um ligado a uma
-casa: Padre Anselmo, Sacristão Zacarias, Sá Joaquina (beata), Seu Nicolau
+Catorze moradores novos, com jornada própria (e, desde 06/10/2026, **com fala**: ver
+"A voz dos catorze", abaixo), cada um ligado a uma casa: Padre Anselmo, Sacristão Zacarias, Sá Joaquina (beata), Seu Nicolau
 (mercador, mora nos fundos da Venda do Bar), Guarda Aristides (sem arma, à noite
 com candeeiro), Seu Jerônimo (pescador), Dona Rosa (marisqueira), Sá Rita
 (lavadeira), Dona Estefânia (rendeira), Dona Ambrósia (quituteira), Seu Epifânio
@@ -302,7 +302,11 @@ cativo; todos têm ofício, nos três idiomas (`oficio`, `oficio_en`, `oficio_es
   tabuleiro, o candeeiro, o balde e a vara na mão ou na cabeça.
 - **Recolher**: quem `recolhe` some (invisível, sem colisão) na porta quando a ação
   é `recolhido`.
-- **Mudo**: acena parado; sem balão, sem voz, sem aviso no HUD, sem tomar a palavra.
+- **Mudo**: quem tem `"mudo": true` acena parado; sem balão, sem voz, sem aviso no HUD,
+  sem tomar a palavra. Hoje ninguém no vale é mudo — os catorze ganharam fala — e o
+  mecanismo fica para quem vier: o `mudo` exige um `mudo_motivo` escrito
+  (`tests/falas_dos_moradores.gd`), e o acenar segue coberto nos portões por um mudo
+  sintético.
 - **Casas**: oito lotes novos na composição (`tools/mapas/aplicar_casas_moradores.py`,
   plano medido por `planejar_casas_moradores.gd`), nenhum chamado "Casa do arraial".
   Um **varal em cada casa** (varal, bambu e estacas alternados), mais galinheiro,
@@ -310,3 +314,63 @@ cativo; todos têm ofício, nos três idiomas (`oficio`, `oficio_en`, `oficio_es
   carpinteiro e o lavadouro da lavadeira. A casa de farinha é posto de trabalho sem
   morador (fica a 270 u do oeste: a jornada de quem mora lá não cabe).
 - **Portão**: `tests/rotina_dos_moradores.gd` (`-- --falsificar-rotina` tem de reprovar).
+
+## A voz dos catorze (06/10/2026)
+
+"Crie as falas para os personagens que ainda não têm." Os catorze moradores novos deixaram de
+ser mudos. Cada um tem **saudações** (o cumprimento de quem chega perto: uma frase, de 12 a 60
+letras, que cabe inteira no balão curto) e **falas** (a conversa do E: uma ou duas frases, de 60
+a 140 letras), nos três idiomas, em `data/npcs_3d.json`. Quem fica na rua no escuro — o guarda, o
+dono da venda, o sacristão e o saveirista — tem também `saudacoes_noite` e `falas_noite`, que somam
+às de sempre das 18h48 à meia-noite (`scripts/prototipo_3d/falas_dos_moradores.gd`; a madrugada
+fica de fora, porque é quando o padre, o sacristão e a lavadeira abrem o dia). Os sete de antes e o
+Pedro seguem com as `falas` de sempre, a mesma lista no cumprimento e no E.
+
+Tudo passa pela fila de falas (`fila_de_falas.gd`), como a fala de qualquer morador. O texto existe
+nos **quatro** idiomas do menu — `texto`, `texto_en`, `texto_es` e `texto_zh`, com o chinês caindo no
+inglês onde faltar (`IdiomaMenu.campo`) — e a **voz é só em português**: cada morador tem a sua em
+`voz` ({id, nome, modelo}) e cada fala o `audio` dela, `<id>_<tipo>_<n>.mp3`, gerado no ElevenLabs por
+`tools/elevenlabs/gerar-falas-moradores.ps1` (o balão traz o idioma do jogo e a voz segue em
+português; a fila segura a vez pela duração dela). O teto de crédito da chave acabou no meio do lote
+de 06/10/2026: quem ainda espera áudio declara `voz_pendente` no `npcs_3d.json`, com a razão, e o
+gate reprova a marca que sobra depois do último áudio. Os gates são `tests/falas_dos_moradores.gd`
+(`-- --falsificar-falas`) e `tests/vozes_dos_moradores.gd` (`-- --falsificar-vozes`): os dois têm de reprovar.
+
+**Como se escreve uma fala nova:** português do Recôncavo de 1887, sem caricatura ("meu filho",
+"moço", "eita"; criança fala como criança, "painho", "mainha"); nada de mecânica, de nome do
+jogador nem de coisa que dependa do estado da partida, porque as falas rodam ao acaso; e pistas que
+apontam um lugar ou uma missão sem entregar o fim (a luz parada no mato, o convite sem assinatura,
+o poço que pede mutirão, o avô do Benedito que parou de ir). Inglês e espanhol são tradução de
+verdade, e o gate reprova cópia do português, com ou sem retoque.
+
+**Quem fala como quê:**
+
+- **Padre Anselmo** — manso e medido, fala baixo e escuta muito. Sabe da benzedeira e não diz:
+  "remédio vem da botica, do quintal, da reza; de Deus vêm os três". Não responde convite sem assinatura.
+- **Sacristão Zacarias** — o zelador das chaves, do sino e do chão: ranzinza, de piaçava na mão e
+  humor seco. Capina o cemitério à tarde, ao lado do Damião, "ele sem foice, eu sem juízo".
+- **Sá Joaquina** — beata que reza o terço três vezes ao dia e sabe de tudo que acontece. Cisma com
+  a luz no mato ("é alma pedindo reza"), disputa a praça com a Dona Candinha e defende o padre.
+- **Seu Nicolau** — dono da venda, pé no chão: fiado anotado no caderno, o que o arraial não faz vem
+  de Salvador no saveiro (e custa mais). Fala de preço sem tirar a razão de ninguém.
+- **Guarda Aristides** — vigia sem arma, de candeeiro: o intendente o nomeou e esqueceu. Não confia em
+  convite sem assinatura e, de noite, só roda até a última casa.
+- **Seu Jerônimo** — pescador de linha, de poucas palavras e muito céu: maré, vento e lua; sabe onde o
+  robalo e a traíra moram; viu barbatana na boca da barra.
+- **Dona Rosa** — marisqueira de mãos cortadas pela concha: a maré manda, o mangue é "a barriga da
+  terra", e vende a ostra na praça de cesto na cabeça.
+- **Sá Rita** — lavadeira que não conta o que escuta: lê a vida das pessoas na roupa (a camisa com terra
+  de roça, o lençol cheirando a arruda) e acha que o poço está pedindo mutirão.
+- **Dona Estefânia** — rendeira de vista cansada e dedo bom: bilro, pique e paciência; a renda boa vai
+  para Salvador; espera que Deus não veja o ponto torto da toalha do altar.
+- **Dona Ambrósia** — quituteira de pregão e dendê: o acarajé é comida de santo antes de ser comida de
+  rua, a fome não escolhe santo, e a rivalidade com a garapa da Candinha é daquelas em que uma guarda o
+  tabuleiro da outra.
+- **Seu Epifânio** — carpinteiro de canoa, de pouca conversa: tronco só, sem emenda, madeira de lei que
+  dura a vida inteira; lembra, sem dizer por quê, o avô do Benedito que parou de tirar pau do outro lado do rio.
+- **Tonico** — o menino do carpinteiro: pergunta se você já viu a onça, gaba a canoa do painho, jura que
+  não tem medo (só quando escurece) e não vai ao cemitério nem pagando.
+- **Mariinha** — a filha da quituteira: segredo de mindinho, o pavão da igreja, o gato Beiju e o eco do
+  poço; ajuda a contar o troco, "mas só até dez".
+- **Seu Ladislau** — saveirista da tripulação do Mestre Quirino: mar, vento e barra, a travessia até
+  Salvador, o dia catorze de cada estação; história de naufrágio sempre foi "mais longe do que diz".

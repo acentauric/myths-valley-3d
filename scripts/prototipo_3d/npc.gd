@@ -10,6 +10,7 @@ const BalaoFala = preload("res://scripts/prototipo_3d/balao_fala.gd")
 const EspumaAgua = preload("res://scripts/prototipo_3d/espuma_agua.gd")
 const Vestimenta3D = preload("res://scripts/prototipo_3d/vestimenta_3d.gd")
 const FilaDeFalas = preload("res://scripts/prototipo_3d/fila_de_falas.gd")
+const FalasDosMoradores = preload("res://scripts/prototipo_3d/falas_dos_moradores.gd")
 
 signal saudou(morador: MoradorNPC, texto: String)
 
@@ -130,6 +131,15 @@ var _balao_tempo := 0.0
 var _bob := 0.0
 var _velocidade_atual := 0.0
 var _proxima_fala := 0
+## A próxima das `saudacoes` (começa numa ao acaso, como as `falas`): -1 até a primeira.
+var _proxima_saudacao := -1
+## O humor (`falas_dos_moradores.gd`) da última saudação e da última conversa: quando muda, a
+## rotação recomeça pelas falas do humor novo.
+var _humor_da_saudacao := ""
+var _humor_da_conversa := ""
+## Os avisos de fila trancada que ele já deu, pelo nome da fila: quem não os repete (`_repete_o_aviso`)
+## diz cada um uma vez só. Fica na memória da sessão, e não no save: carregar a partida o deixa dizer de novo.
+var _avisos_dados := {}
 var _destino_avulso := Vector3.INF
 var _velocidade_avulsa := VELOCIDADE
 var _nadando := false
@@ -160,6 +170,16 @@ var _refazer_em := 0.0
 ## seguinte e raspar nela.
 const REFAZER_CAMINHO := 4.0
 const PONTO_ALCANCADO := 0.35
+## CAMINHO VAZIO: a malha acabou de mudar (reassou) e ainda não respondeu, ou o corpo está
+## num ponto que ela não cobre. Refaz em `REFAZER_SEM_CAMINHO`, e enquanto espera FICA
+## PARADO (`_esperando_a_malha`): andar reto até o destino era andar para dentro da água, do
+## casco do saveiro ou de uma parede por até `REFAZER_CAMINHO` segundos — o Pedro empacava
+## com o jogador atrás dele. Passados `ESPERA_SEM_CAMINHO` segundos de respostas vazias a
+## malha não tem mesmo o que dizer (mundo sem malha, destino em ilha) e ele volta ao reto.
+const REFAZER_SEM_CAMINHO := 0.3
+const ESPERA_SEM_CAMINHO := 2.5
+var _sem_caminho_s := 0.0
+var _esperando_a_malha := false
 ## DAR PASSAGEM: o passo para fora do caminho e quanto tempo se fica fora dele,
 ## o bastante para quem empurrou passar. Ver `dar_passagem`.
 const PASSAGEM_PASSO := 1.4
@@ -420,7 +440,8 @@ func _physics_process(delta: float) -> void:
 		# destino em linha reta.
 		var rumo := _ponto_do_caminho(destino, delta) - global_position
 		rumo.y = 0.0
-		direcao = rumo.normalized() if rumo.length() > 0.05 else deslocamento / distancia
+		if not _esperando_a_malha:
+			direcao = rumo.normalized() if rumo.length() > 0.05 else deslocamento / distancia
 	_mover(direcao, _velocidade_avulsa if _destino_avulso.is_finite() else _velocidade_de_passo(), delta)
 	if direcao == Vector3.ZERO and jogador != null and jogador.global_position.distance_to(global_position) < RAIO_BALAO \
 			and not _trabalhando():
@@ -774,7 +795,7 @@ func saudar() -> void:
 		_acenar_mudo()
 		return
 	_ultima_saudacao_ms = Time.get_ticks_msec()
-	var escolhida := _escolher_a_fala()
+	var escolhida := _escolher_a_saudacao()
 	var texto := str(escolhida.get("texto", ""))
 	if texto.strip_edges() == "":
 		return
@@ -821,7 +842,14 @@ func conversar() -> void:
 		if fila.pendente(self) and fila.apressar(self):
 			return
 	_ultima_saudacao_ms = Time.get_ticks_msec()
-	var escolhida := _escolher_a_fala()
+	# A FILA DELE ESTÁ TRANCADA: no lugar da conversa de passagem, ele diz o que fazer antes.
+	var trancada := _fila_que_avisa()
+	var escolhida: Dictionary
+	if trancada != null:
+		_avisos_dados[str(trancada.name)] = true
+		escolhida = {"texto": str(trancada.dica_da_trancada()), "voz": null}
+	else:
+		escolhida = _escolher_a_fala()
 	var texto := str(escolhida.get("texto", ""))
 	if texto.strip_edges() == "":
 		return
@@ -833,6 +861,52 @@ func conversar() -> void:
 	})
 
 
+## O QUE ESTE MORADOR DIZ QUANDO A FILA DELE AINDA ESPERA OUTRA COISA: "volte depois de ..."
+## (`trancada` no arquivo da fila, nos três idiomas), e não a conversa de passagem.
+##
+## Quem só abre depois do tutorial, do machado da ponte ou da piaçava ouvia a mesma conversa
+## de qualquer morador, e o jogador não sabia o que lhe faltava. Vale só quando o E não fez
+## mais nada com ele — a fila aberta, o passo que o procura e a entrega vêm antes
+## (`tecla_dos_moradores.usar`) — e só quando NENHUMA fila dele anda NEM PODE SER ABERTA pelo E
+## dele agora: com uma aberta, a conversa de passagem não esconde o que fazer (o objetivo está no
+## HUD); com uma por abrir, o E é dela, e não do aviso de outra que ainda espera. Com mais de uma
+## trancada (o Pedro), a primeira na ordem dos nós. Sem aviso escrito, "" e a conversa de sempre.
+func _dica_da_fila_trancada() -> String:
+	var fila := _fila_que_avisa()
+	return "" if fila == null else str(fila.dica_da_trancada())
+
+
+## A FILA TRANCADA DE QUE ELE FALA AGORA, ou null: a primeira dele, na ordem dos nós, que está
+## trancada, escreveu o aviso e ainda não foi avisada (quando ele não repete, `_repete_o_aviso`).
+##
+## É uma PERGUNTA, sem efeito: quem diz o aviso (`conversar`) é que o marca como dito.
+##
+## O PEDRO foi o caso que mostrou a segunda condição. Acabado o tutorial ele tem a ponte, as armas
+## e o ofício por abrir no E dele, e as da chapada, do mirante, da fé e da lapa trancadas: o aviso da
+## chapada ("volte depois de colher a primeira roça") tomava o E e escondia as falas de depois do
+## tutorial (`falas_depois`), que o `tests/saudacao.gd` cobra. Fila por abrir quer o E dela.
+func _fila_que_avisa() -> Node:
+	if not is_inside_tree():
+		return null
+	var avisa: Node = null
+	for cadeia in get_tree().get_nodes_in_group(GRUPO_DAS_CADEIAS):
+		if not cadeia.has_method("dica_da_trancada") or cadeia.get("dono") != self:
+			continue
+		if bool(cadeia.em_andamento()) or str(cadeia.o_que_o_e_faz(self)) == "abrir":
+			return null
+		if avisa == null and str(cadeia.dica_da_trancada()) != "" \
+				and (_repete_o_aviso() or not _avisos_dados.has(str(cadeia.name))):
+			avisa = cadeia
+	return avisa
+
+
+## O aviso de fila trancada se repete a cada E? Sim, para quem não tem outra coisa a dizer em seguida
+## (o Damião, o Tonho, a Dona Zefa: o jogador que volta sem o machado ouve de novo o que falta). Não,
+## para quem tem as falas dele (`GuiaPedro`): cada aviso sai uma vez, e depois ele volta a elas.
+func _repete_o_aviso() -> bool:
+	return true
+
+
 ## A próxima das "falas" (até três, alternando a cada encontro), na língua do
 ## jogo, e a voz dela: {"texto": String, "voz": AudioStream ou null}. Sem
 ## "falas", a "fala". A VOZ NÃO É POSTA AQUI: a fala ainda vai pedir a vez, e
@@ -840,7 +914,11 @@ func conversar() -> void:
 func _escolher_a_fala() -> Dictionary:
 	var texto := String(dados.get("fala", ""))
 	var fluxo: AudioStream = voz.stream if voz != null else null
-	var falas: Array = dados.get("falas", [])
+	var humor := _humor_da_fala()
+	var falas: Array = FalasDosMoradores.lista(dados, "falas", humor)
+	if humor != _humor_da_conversa:
+		_humor_da_conversa = humor
+		_proxima_fala = FalasDosMoradores.recomeco(dados, "falas", humor, _proxima_fala)
 	if not falas.is_empty():
 		var fala: Dictionary = falas[_proxima_fala % falas.size()]
 		_proxima_fala += 1
@@ -848,6 +926,34 @@ func _escolher_a_fala() -> Dictionary:
 		texto = String(IdiomaMenu.campo(fala, "texto", ""))
 		fluxo = _voz_do_arquivo(String(fala.get("audio", "")))
 	return {"texto": texto, "voz": fluxo}
+
+
+## O CUMPRIMENTO DE QUEM PASSA: o morador que tem `saudacoes` (os catorze que já foram
+## mudos) o diz delas — frase curta, que cabe inteira no balão —, e guarda as `falas`
+## para a conversa do E. Sem `saudacoes` (os sete antigos, o Pedro), o cumprimento sai
+## da mesma lista da conversa, como sempre. De noite somam as `saudacoes_noite`
+## (`falas_dos_moradores.gd`). Mesma devolução de `_escolher_a_fala`.
+func _escolher_a_saudacao() -> Dictionary:
+	var humor := _humor_da_fala()
+	var saudacoes := FalasDosMoradores.lista(dados, "saudacoes", humor)
+	if saudacoes.is_empty():
+		return _escolher_a_fala()
+	if _proxima_saudacao < 0:
+		_proxima_saudacao = randi() % saudacoes.size()
+	if humor != _humor_da_saudacao:
+		_humor_da_saudacao = humor
+		_proxima_saudacao = FalasDosMoradores.recomeco(dados, "saudacoes", humor, _proxima_saudacao)
+	var saudacao: Dictionary = saudacoes[_proxima_saudacao % saudacoes.size()]
+	_proxima_saudacao += 1
+	return {
+		"texto": String(IdiomaMenu.campo(saudacao, "texto", "")),
+		"voz": _voz_do_arquivo(String(saudacao.get("audio", ""))),
+	}
+
+
+## O humor da hora para escolher a fala: "noite" à noite, "" no resto (`falas_dos_moradores.gd`).
+func _humor_da_fala() -> String:
+	return FalasDosMoradores.humor_do_periodo(Dia.periodo())
 
 
 ## A voz de assets/audio/vozes/<nome>.mp3, ou null.
@@ -993,7 +1099,10 @@ func _comecar_a_fala(fala: Dictionary) -> void:
 	else:
 		# A SAUDAÇÃO DE QUEM PASSA NÃO SEGURA o relógio (ver `_segurar_o_relogio`).
 		_soltar_o_relogio()
-	if fala.has("gesto") and animador != null and animador.has_method("play_gesture"):
+	# QUEM TRABALHA CONTINUA TRABALHANDO ENQUANTO FALA: o gesto de saudação pisava no clipe do
+	# ofício (a vassoura, a renda, a rede) e o corpo ficava parado até o próximo posto. Os
+	# moradores novos, que agora falam, trabalham parados no posto (`_acenar_mudo` já fazia assim).
+	if fala.has("gesto") and animador != null and animador.has_method("play_gesture") and not _trabalhando():
 		animador.play_gesture(int(fala["gesto"]))
 	if bool(fala.get("aviso", false)):
 		saudou.emit(self, str(fala.get("inteira", fala.get("texto", ""))))
@@ -1141,16 +1250,23 @@ func _a_vista(ponto: Vector3) -> bool:
 ## muda, a cada `REFAZER_CAMINHO` segundos, e quando o corpo empaca. Sem malha
 ## — ela assa enquanto o vale começa —, ou sem caminho, é o próprio destino.
 func _ponto_do_caminho(destino: Vector3, delta: float) -> Vector3:
+	_esperando_a_malha = false
 	var navegacao := get_tree().get_first_node_in_group("navegacao")
 	if navegacao == null or not navegacao.esta_pronta():
 		return destino
 	_refazer_em -= delta
 	if _caminho_ate.distance_to(destino) > 0.3 or _refazer_em <= 0.0 or _preso > TEMPO_PRESO * 0.9:
+		if _caminho_ate.distance_to(destino) > 0.3:
+			_sem_caminho_s = 0.0
 		_caminho = navegacao.caminho(global_position, destino)
 		_ponto_da_vez = 1 if _caminho.size() > 1 else 0
 		_caminho_ate = destino
-		_refazer_em = REFAZER_CAMINHO
+		_refazer_em = REFAZER_CAMINHO if not _caminho.is_empty() else REFAZER_SEM_CAMINHO
+		if not _caminho.is_empty():
+			_sem_caminho_s = 0.0
 	if _caminho.is_empty():
+		_sem_caminho_s += delta
+		_esperando_a_malha = _sem_caminho_s < ESPERA_SEM_CAMINHO
 		return destino
 	while _ponto_da_vez < _caminho.size() - 1 \
 			and Vector2(_caminho[_ponto_da_vez].x - global_position.x, _caminho[_ponto_da_vez].z - global_position.z).length() < PONTO_ALCANCADO:
@@ -1445,6 +1561,10 @@ func _andar_longe(delta: float) -> bool:
 		return true
 	var rumo := _ponto_do_caminho(_alvo, delta) - global_position
 	rumo.y = 0.0
+	if _esperando_a_malha:
+		# A malha ainda não respondeu: parado, e não reto por cima da água.
+		_velocidade_atual = 0.0
+		return true
 	var direcao := rumo.normalized() if rumo.length() > 0.05 else falta.normalized()
 	global_position += direcao * _velocidade_de_passo() * delta
 	var chao: float = terreno.ground_height_at(global_position)
