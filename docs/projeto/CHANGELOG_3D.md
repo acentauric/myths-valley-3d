@@ -96,6 +96,13 @@
   anda. Portão novo `caminho_longo`: de costas e a vinte unidades o morador anda
   sem saltar; longe e fora da vista ele salta só depois do tempo; e nunca para um
   ponto à vista.
+- **A fogueira do terreiro volta ao modelo certo, e a chama apaga de dia (#86).**
+  Desde 04/10 (`8413ae7`) a peça `fogueira` do catálogo apontava a pilha de lenha
+  (`lenha_tripo.glb`), e o jogador via a pilha com a chama em cima; a chama de
+  partículas ardia o dia inteiro (na live, a fogueira acesa de manhã). O catálogo
+  volta a `fogueira_tripo.glb` (o anel de pedras e as toras, sem a chama rígida),
+  e a chama e as brasas seguem a noite com a luz (`luzes_epoca.gd`). Portão novo
+  `fogueira`.
 
 ## Em desenvolvimento — 05/10/2026
 

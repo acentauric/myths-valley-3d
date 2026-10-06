@@ -97,10 +97,12 @@ const PECAS := {
 	"banco": {"tripo": "aderecos/banco_tripo.glb", "altura": 1.0, "caixa": true},
 	"lampiao_poste": {"tripo": "aderecos/lampiao_poste_tripo.glb", "altura": 3.4, "tronco": 0.15},
 	"candeeiro": {"tripo": "aderecos/candeeiro_tripo.glb", "altura": 0.42},
-	# A pilha de toras não traz chama rígida nem aro de pedra; o fogo vem de partículas.
-	# Sólida: sem a caixa o corpo entrava no meio das toras acesas ("estou dentro
-	# da fogueira"). Cozinhar não depende de encostar nela (`BancadasVale`, raio).
-	"fogueira": {"tripo": "aderecos/lenha_tripo.glb", "largura": 1.6, "caixa": true},
+	# A FOGUEIRA DE VERDADE: o anel de pedras e as toras, sem a chama rígida (os
+	# 1.379 triângulos dela saíram no 8413ae7; o fogo vem de partículas). Entre
+	# 04/10 e 06/10 a peça apontava a pilha de lenha, e o jogador via a pilha
+	# com chama em cima (#86). Sólida: sem a caixa o corpo entrava no meio das
+	# toras acesas. Cozinhar não depende de encostar nela (`BancadasVale`, raio).
+	"fogueira": {"tripo": "aderecos/fogueira_tripo.glb", "largura": 1.6, "caixa": true},
 	# A BANCADA DA OFICINA, na beira do roçado: a mesa rústica do lote dos móveis,
 	# maior e sólida, faz as vezes do banco de carpinteiro até a oficina ter
 	# construção própria (#27). Não é arte nova: é o mesmo GLB da `mesa`.

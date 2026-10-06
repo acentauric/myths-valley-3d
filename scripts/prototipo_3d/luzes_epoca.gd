@@ -10,6 +10,8 @@ const COR_FOGO := Color("ff8a3c")
 const COR_VELA := Color("ffcf8a")
 
 var _chamas: Array[Dictionary] = []
+## A chama e as brasas da fogueira: partículas que seguem a noite como a luz (#86).
+var _particulas: Array[GPUParticles3D] = []
 var _acesas := false
 var _intensidade := 0.0
 var _tempo := 0.0
@@ -80,6 +82,7 @@ func _particulas_fogueira(posicao: Vector3) -> void:
 	chama.material = material
 	particulas.draw_pass_1 = chama
 	add_child(particulas)
+	_particulas.append(particulas)
 	var brasas := GPUParticles3D.new()
 	brasas.name = "BrasasDaFogueira"
 	brasas.position = posicao + Vector3(0.0, 0.32, 0.0)
@@ -108,6 +111,7 @@ func _particulas_fogueira(posicao: Vector3) -> void:
 	ponto.material = material
 	brasas.draw_pass_1 = ponto
 	add_child(brasas)
+	_particulas.append(brasas)
 
 
 ## Janela iluminada por dentro: um quadrado emissivo quente sem luz projetada.
@@ -169,6 +173,10 @@ func aplicar_hora(_hora: float) -> void:
 	var alvo := 1.0 - smoothstep(0.25, 0.6, Dia.luz_do_dia())
 	_intensidade = alvo
 	_acesas = alvo > 0.02
+	# A chama da fogueira apaga de dia com a luz (#86): só a luz seguia a noite,
+	# e de manhã a fogueira do terreiro continuava ardendo.
+	for particulas in _particulas:
+		particulas.emitting = _acesas
 	_atualizar(0.0)
 
 
