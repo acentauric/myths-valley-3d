@@ -70,6 +70,13 @@ func _run() -> void:
 			bom_dia = passo
 	_conferir(str(bom_dia.get("quem_paga", "")) == "tonho" and chegada._quem_paga(bom_dia) == _nome(moradores["tonho"]),
 		"o peixe do bom-dia é do Tonho, e o HUD diria 'Recebido de %s'" % chegada._quem_paga(bom_dia))
+	# AS MISSÕES PAGAM XP (#107): o passo diz quanto, e o HUD o conta.
+	_conferir(int((bom_dia.get("recompensa", {}) as Dictionary).get("xp", 0)) > 0 and chegada._texto_da_recompensa(bom_dia).contains("XP"),
+		"o bom-dia não paga XP, ou o HUD não o diz: '%s'" % chegada._texto_da_recompensa(bom_dia))
+	var talentos_do_vale = root.get_node("/root/Talentos")
+	var xp_antes: float = float(talentos_do_vale.xp)
+	talentos_do_vale.ganhar_pontos(10.0)
+	_conferir(float(talentos_do_vale.xp) >= xp_antes + 10.0, "ganhar XP de missão não somou na teia de talentos (%.0f → %.0f)" % [xp_antes, float(talentos_do_vale.xp)])
 
 	# --- 2. O SAVE DE ANTES DA CHEGADA NOVA --------------------------------------
 	var total: int = pedro.MISSOES.size()

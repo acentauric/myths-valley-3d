@@ -88,6 +88,7 @@
         }
       },
       "recompensa": {
+        "xp": 10,
         "peixe_assado": 2
       }
     },
@@ -113,6 +114,7 @@
         }
       },
       "recompensa": {
+        "xp": 10,
         "beiju": 3
       }
     },
@@ -136,6 +138,7 @@
         "obra": "ponte_levantar"
       },
       "recompensa": {
+        "xp": 10,
         "pirao": 2,
         "cocada": 2
       }

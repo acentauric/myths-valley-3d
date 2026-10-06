@@ -28,7 +28,7 @@
         "resposta_en": "It was my father's: peccary hide, tanned in angico bark. No animal bites through it. Now it's yours.",
         "resposta_es": "Era de mi padre: cuero de pecarí, curtido en corteza de angico. Ningún bicho muerde a través de él. Ahora es tuyo."
       },
-      "recompensa": {"gibao_de_couro": 1}
+      "recompensa": {"xp": 10, "gibao_de_couro": 1}
     }
   ],
   "arremate": {

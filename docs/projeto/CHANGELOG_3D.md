@@ -270,6 +270,15 @@
   à barra (`prototype.BARRA_DA_VOZ`) e o HUD acende e apaga
   (`destacar_barra`, `apagar_destaque`); ao fechar a caixa tudo volta. Portão
   `chegada`, parte 6.
+- **As missões pagam XP, e o diário mostra a recompensa em ícones (#107).**
+  Decisão do autor em 06/10: todo passo com recompensa paga 10 de XP
+  (`recompensa.xp` nos `missoes_*.json`, pela teia de talentos:
+  `Talentos.ganhar_pontos`), e o HUD o diz ("Recebido de Tonho: 1 peixe, 10
+  XP"). No diário do J a página da missão ganha a linha RECOMPENSA: os itens
+  com o ícone de cada um (o da barra de mão), os réis e o XP com ícones
+  próprios, gerados por imagem (`assets/sprites/icones/`, `tools/openai/
+  gerar-icones.ps1` e `promover_icones.gd`, que recorta cada um pela forma).
+  Portões `painel` e `pedidos_do_arraial`.
 
 ## Em desenvolvimento — 05/10/2026
 

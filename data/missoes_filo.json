@@ -27,7 +27,7 @@
       "audio": "",
       "texto": "Eu já não desço aquela ladeira — minhas pernas param na terceira pedra. Leve pra ele. Eu fico olhando a estrada daqui, como sempre, e hoje pelo menos vou saber que ele comeu.",
       "entrega": { "item": "pirao", "quantidade": 1 },
-      "recompensa": { "cocada": 2 },
+      "recompensa": {"xp": 10,  "cocada": 2 },
       "meta": {
         "tipo": "levar",
         "item": "pirao",

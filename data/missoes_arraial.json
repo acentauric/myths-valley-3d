@@ -64,6 +64,7 @@
         "obra": "canteiro_prancheta"
       },
       "recompensa": {
+        "xp": 10,
         "beiju": 3
       }
     },
@@ -110,6 +111,7 @@
         "obra": "mirante_levantar"
       },
       "recompensa": {
+        "xp": 10,
         "reis": 1200,
         "pirao": 1
       }

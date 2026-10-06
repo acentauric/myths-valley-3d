@@ -56,7 +56,7 @@
       "mutirao": { "cosme": { "tabua": 12 }, "tonho": { "corda": 6 } },
       "roda": 4.2,
       "quem_paga": "benedito",
-      "recompensa": { "semente_milho": 6, "milho": 3 }
+      "recompensa": {"xp": 10,  "semente_milho": 6, "milho": 3 }
     }
   ],
   "arremate": {

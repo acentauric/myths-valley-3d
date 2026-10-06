@@ -16,7 +16,7 @@
       "audio": "",
       "texto": "Você lembra do que eu te falei, do chão e da troca? Pois é hoje que eu peço. Alecrim-do-campo, arruda brava, folha de mamona — não nasce aqui embaixo: precisa de ar seco e de sol de manhã, e isso só tem lá em cima, na serra. Sobe pela picada do mirante e procura onde a mata abre, que é na clareira que o sol bate. Na grota da nascente não adianta, que lá é sombra e água, e não se mete no fundo, que lá é do caititu. Cinco maços, e não arranque pela raiz: corte no meio do pé, que o que se arranca não volta e eu vou precisar no ano que vem também. Toma a foice, e vá com calma que eu não vou a lugar nenhum.",
       "entrega": { "item": "foice", "quantidade": 1 },
-      "recompensa": { "cocada": 2 },
+      "recompensa": {"xp": 10,  "cocada": 2 },
       "meta": {
         "tipo": "levar",
         "item": "erva_da_serra",
@@ -47,7 +47,7 @@
       "raio": 7.0,
       "audio": "",
       "texto": "Agora volte aqui. A conversa que eu te prometi é esta, e é melhor sentado.",
-      "recompensa": { "beiju": 2 },
+      "recompensa": {"xp": 10,  "beiju": 2 },
       "meta": {
         "tipo": "falar",
         "a_quem": "zefa",
@@ -65,7 +65,7 @@
       "raio": 8.0,
       "audio": "",
       "texto": "Amanhã tem saveiro pra Salvador. Me encontre no píer — e não se atrase, que saveiro não espera ninguém.",
-      "recompensa": { "cocada": 3, "pirao": 1 },
+      "recompensa": {"xp": 10,  "cocada": 3, "pirao": 1 },
       "meta": {}
     }
   ],

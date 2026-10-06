@@ -22,7 +22,7 @@
       "texto_es": "Esta caña era de mi padre; contigo pesca más que conmigo. Agua delante —el muelle, la playa, la orilla del río—, y la E lanza el sedal. Cuando la boya se hunde y se enciende, E otra vez, rápido, que el pez no espera. En el mar sale róbalo; en el río, traíra.",
       "entrega": {"item": "vara_de_pescar", "quantidade": 1},
       "meta": {"tipo": "contar", "evento": "pescou", "quantos": 2},
-      "recompensa": {"cocada": 1}
+      "recompensa": {"xp": 10, "cocada": 1}
     },
     {
       "id": "talentos",

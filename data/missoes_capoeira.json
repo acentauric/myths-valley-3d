@@ -62,7 +62,7 @@
       "texto_en": "Now the leg. With an empty hand, E becomes a meia-lua: the foot swings round and strikes from the side. Four on a wild animal, and your foot learns the way by itself.",
       "texto_es": "Ahora la pierna. Con la mano vacía, la E se vuelve media luna: el pie gira y golpea de lado. Cuatro a un bicho del monte, y el pie aprende el camino solo.",
       "meta": {"tipo": "contar", "evento": "acertou:meia_lua", "quantos": 4},
-      "recompensa": {"cocada": 2}
+      "recompensa": {"xp": 10, "cocada": 2}
     },
     {
       "id": "capoeira_meia_lua_volta",
@@ -103,7 +103,7 @@
       "texto_en": "The rasteira doesn't hurt: it knocks the sense out. Hold E with an empty hand and release it low to the ground — the animal gets dazed, and you decide the rest. Two.",
       "texto_es": "La rasteira no lastima: derriba el juicio. Mantén la E con la mano vacía y suelta a ras del suelo: el bicho queda atontado, y lo demás lo decides tú. Dos.",
       "meta": {"tipo": "contar", "evento": "tonteou", "quantos": 2},
-      "recompensa": {"mungunza": 2}
+      "recompensa": {"xp": 10, "mungunza": 2}
     },
     {
       "id": "capoeira_rasteira_volta",

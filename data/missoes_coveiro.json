@@ -43,7 +43,7 @@
       "audio": "",
       "texto": "Pronto. Essa é a minha, e essa aqui é a sua — duas achas dão dois cabos, e eu não ia fazer uma só e ficar com ela. Agora desce comigo aquele capim. Corta rente: capim cortado pela metade volta em três semanas, e volta mais forte.",
       "entrega": { "item": "foice", "quantidade": 1 },
-      "recompensa": { "reis": 800 },
+      "recompensa": {"xp": 10,  "reis": 800 },
       "meta": { "tipo": "derrubar", "alvo": "capim", "quantos": 8 },
       "traducao": "pendente"
     },
@@ -102,7 +102,7 @@
       "texto_en": "One thing left, and it's the one that holds the rest together. Goats graze on top of the graves, and pigs root — a loose pig has rooted up two already. A fence of round poles all around, lashed with rope, with the way in on the road side. The work is done in the J menu, on the works tab, right here at the cemetery. Poles you have; rope comes from the workshop.",
       "texto_es": "Falta una cosa, y es la que sostiene las demás. Las cabras pastan encima de las tumbas, y el cerdo hoza — un cerdo suelto ya hozó dos. Una cerca de palos redondos alrededor, atada con cuerda, con la entrada del lado de la calle. La obra se hace en la J, en la pestaña de obras, aquí mismo en el cementerio. Palos usted tiene; la cuerda sale del taller.",
       "meta": { "tipo": "obra", "construcao": "cemiterio", "obra": "cemiterio_cercado" },
-      "recompensa": { "reis": 1000 }
+      "recompensa": {"xp": 10,  "reis": 1000 }
     }
   ],
   "arremate": {

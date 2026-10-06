@@ -37,7 +37,7 @@
       "texto_en": "A peccary warns before it bites: it stops, lowers its head, and its body lightens. That's when you step out of the way — and then you strike. Three blows of the machete bring one down. There's a herd in the palm woods and at the foot of the quarry.",
       "texto_es": "El pecarí avisa antes de morder: se para, baja la cabeza y el cuerpo se le aclara. En ese momento se sale del frente, y después se pega. Tres golpes de machete derriban uno. Hay manada en el monte de las palmeras y al pie de la cantera.",
       "meta": {"tipo": "evento", "evento": "derrubou:caititu"},
-      "recompensa": {"peixe_assado": 2}
+      "recompensa": {"xp": 10, "peixe_assado": 2}
     },
     {
       "id": "armas_forte",
@@ -55,7 +55,7 @@
       "texto_en": "A quick blow tires the animal; a heavy one brings it down. Hold E, let your arm gather strength and release it on the animal. Three of those, and your arm has learned.",
       "texto_es": "El golpe ligero cansa al bicho; el de peso lo derriba. Mantén la E, deja que el brazo junte fuerza y suelta encima de él. Tres de esos, y el brazo aprendió.",
       "meta": {"tipo": "contar", "evento": "acertou:golpe_forte", "quantos": 3},
-      "recompensa": {"pirao": 2}
+      "recompensa": {"xp": 10, "pirao": 2}
     }
   ],
   "arremate": {

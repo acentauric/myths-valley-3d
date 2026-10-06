@@ -386,7 +386,12 @@ func que_abrem(ferramenta: String, nivel: int) -> Array[String]:
 
 
 func ganhar(acao: String, vezes: float = 1.0) -> void:
-	var quanto: float = float(XP_POR_ACAO.get(acao, 0)) * vezes
+	ganhar_pontos(float(XP_POR_ACAO.get(acao, 0)) * vezes)
+
+
+## Soma `quanto` de XP direto, sem passar pela tabela: a recompensa de um passo
+## de missão diz o número (`recompensa.xp`, #107).
+func ganhar_pontos(quanto: float) -> void:
 	if quanto <= 0.0:
 		return
 	xp += quanto

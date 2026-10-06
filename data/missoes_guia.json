@@ -74,6 +74,7 @@
       },
       "quem_paga": "tonho",
       "recompensa": {
+        "xp": 10,
         "peixe": 1
       },
       "conduz": true
@@ -102,6 +103,7 @@
       },
       "quem_paga": "candinha",
       "recompensa": {
+        "xp": 10,
         "garapa": 1
       },
       "conduz": true
@@ -130,6 +132,7 @@
       },
       "quem_paga": "zefa",
       "recompensa": {
+        "xp": 10,
         "cocada": 1
       },
       "conduz": true
@@ -220,6 +223,7 @@
       },
       "quem_paga": "cosme",
       "recompensa": {
+        "xp": 10,
         "beiju": 1
       }
     },
@@ -243,6 +247,7 @@
         "quantos": 4
       },
       "recompensa": {
+        "xp": 10,
         "beiju": 1
       }
     },
@@ -315,6 +320,7 @@
       },
       "quem_paga": "zefa",
       "recompensa": {
+        "xp": 10,
         "cocada": 2
       }
     },
@@ -356,6 +362,7 @@
         "evento": "dormiu"
       },
       "recompensa": {
+        "xp": 10,
         "mungunza": 1
       }
     },

@@ -18,7 +18,7 @@
       "raio": 11.0,
       "audio": "",
       "texto": "Senta aí. Olha a água e não fala nada por um minuto. Viu? Ali na curva ela corre mais escura — é fundo, e peixe grande dorme no fundo de dia. Quando a maré está enchendo o peixe entra com ela; quando está vazando, ele encosta na pedra e espera. Meu pai me ensinou a ler maré aos nove: é a única herança que não deu pra penhorar.",
-      "recompensa": { "pirao": 1 },
+      "recompensa": {"xp": 10,  "pirao": 1 },
       "meta": {}
     },
     {
@@ -28,7 +28,7 @@
       "raio": 9.0,
       "audio": "",
       "texto": "Agora eu vou te pedir uma coisa, e não é peixe — peixe eu pego. Minha rede ficou do outro lado do rio numa noite de março, e desde então eu pesco de linha, um por um: dá pra comer, não dá pra pagar o armazém. Rede não se compra aqui, se faz. Você tem a bancada na beira do roçado: torce cinco cordas lá e traz. Traz três tábuas também, que a bancada onde eu amarrava apodreceu.",
-      "recompensa": { "pirao": 2, "cocada": 1 },
+      "recompensa": {"xp": 10,  "pirao": 2, "cocada": 1 },
       "meta": {
         "tipo": "levar",
         "itens": { "corda": 5, "tabua": 3 },
@@ -47,7 +47,7 @@
       "raio": 11.0,
       "audio": "",
       "texto": "Uma coisa, antes de você ir — e eu falo porque você merece ouvir de mim, não do armazém. Mil e novecentos. É o que eu devo lá, e eu sei de cabeça: acordo sabendo. Com a rede eu pago. Vai levar umas semanas, mas pago, e eu prefiro assim.",
-      "recompensa": { "peixe_assado": 2 },
+      "recompensa": {"xp": 10,  "peixe_assado": 2 },
       "meta": {}
     },
     {
@@ -69,7 +69,7 @@
       "raio": 8.0,
       "audio": "",
       "texto": "Zerou. Eu passei lá e o homem virou o livro pra eu ver — dois anos naquela página, e agora é só papel velho. Volte ao pontal, que eu quero te entregar uma coisa na mão.",
-      "recompensa": { "pirao": 2, "cocada": 2 },
+      "recompensa": {"xp": 10,  "pirao": 2, "cocada": 2 },
       "meta": {
         "tipo": "falar",
         "a_quem": "tonho",

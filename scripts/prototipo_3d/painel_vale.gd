@@ -829,6 +829,33 @@ func _desenhar_oficina() -> void:
 ## aqui.
 ##
 ##
+## OS ÍCONES DA RECOMPENSA (#107): os réis e o XP não são itens do catálogo;
+## os desenhos deles vêm de `assets/sprites/icones/` (gerados por imagem, ver o
+## ORIGEM.md de lá). Os itens usam o ícone do catálogo, o mesmo da barra de mão.
+const ICONE_DOS_REIS := "res://assets/sprites/icones/reis.png"
+const ICONE_DO_XP := "res://assets/sprites/icones/xp.png"
+
+
+func _icone_da_recompensa(chave: String) -> Texture2D:
+	match chave:
+		"reis":
+			return load(ICONE_DOS_REIS) as Texture2D if ResourceLoader.exists(ICONE_DOS_REIS) else null
+		"xp":
+			return load(ICONE_DO_XP) as Texture2D if ResourceLoader.exists(ICONE_DO_XP) else null
+		_:
+			return Catalogo.icone(chave)
+
+
+func _nome_da_recompensa(chave: String, quanto: int) -> String:
+	match chave:
+		"reis":
+			return tr("%d réis") % quanto
+		"xp":
+			return "%d XP" % quanto
+		_:
+			return "×%d  %s" % [quanto, str(Catalogo.ITENS.get(chave, {}).get("nome", chave))]
+
+
 ## O DIÁRIO, COMO NO WITCHER
 ##
 ## "No MENU J, de missões, eu tô clicando para trocar a missão de resumo, mas
@@ -980,6 +1007,35 @@ func _desenhar_o_diario(missao: Dictionary) -> void:
 		barra.add_theme_stylebox_override("background", fundo)
 		barra.add_theme_stylebox_override("fill", cheio)
 		_detalhe.add_child(barra)
+
+	# A RECOMPENSA DO PASSO (#107), em ícones: os itens com o ícone de cada um, os
+	# réis e o XP com os deles (`assets/sprites/icones/`), e a conta ao lado.
+	var recompensa: Dictionary = missao.get("recompensa", {})
+	if not recompensa.is_empty():
+		var titulo_da_recompensa := _texto_do_diario("RECOMPENSA", 13, Identidade.OURO)
+		titulo_da_recompensa.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_TEXTO, 600))
+		_detalhe.add_child(titulo_da_recompensa)
+		var linha_da_recompensa := HBoxContainer.new()
+		linha_da_recompensa.name = "Recompensa"
+		linha_da_recompensa.add_theme_constant_override("separation", 16)
+		_detalhe.add_child(linha_da_recompensa)
+		for chave in recompensa:
+			var item := HBoxContainer.new()
+			item.add_theme_constant_override("separation", 6)
+			var icone := _icone_da_recompensa(str(chave))
+			if icone != null:
+				var figura := TextureRect.new()
+				figura.name = "Icone_" + str(chave)
+				figura.texture = icone
+				figura.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+				figura.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+				figura.custom_minimum_size = Vector2(28, 28)
+				figura.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS if str(chave) in ["reis", "xp"] else CanvasItem.TEXTURE_FILTER_NEAREST
+				item.add_child(figura)
+			var conta := _texto_do_diario(_nome_da_recompensa(str(chave), int(recompensa[chave])), 15, COR_TEXTO)
+			conta.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+			item.add_child(conta)
+			linha_da_recompensa.add_child(item)
 
 	# ACOMPANHAR, o botão do Witcher. Acompanhada, ele diz que é e não faz nada.
 	var respiro := Control.new()

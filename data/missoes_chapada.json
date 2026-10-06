@@ -22,7 +22,7 @@
       "texto_en": "Now that you've pulled something out of the ground with your own hands, there's something I want to show you. It's just for looking — it isn't yours, let that be clear. Going west from your house, past Dona Zefa's land, there's Seu Benedito's plateau, facing the big river. He's old and his children all went off to Salvador; he goes around saying he'd sell, if someone wanted it. But land is taken by its border: to reach his, you need to have Zefa's first. Go and measure it with your eyes, then come back and tell me.",
       "texto_es": "Ahora que ya sacaste algo de la tierra con tus propias manos, hay una cosa que quiero mostrarte. Es solo para mirar; no es tuya, que quede claro. Saliendo de tu casa hacia el poniente, después de la tierra de doña Zefa, está la meseta del señor Benedito, frente al río grande. Él está viejo y los hijos se fueron todos a Salvador; anda diciendo que la vende, si aparece quien la quiera. Pero la tierra se toma por la linde: para llegar a la suya, necesitas tener antes la de Zefa. Ve a medirla con los ojos, y después vuelve a contarme.",
       "meta": {},
-      "recompensa": {"garapa": 1, "cocada": 1}
+      "recompensa": {"xp": 10, "garapa": 1, "cocada": 1}
     },
     {
       "id": "chapada_volta",

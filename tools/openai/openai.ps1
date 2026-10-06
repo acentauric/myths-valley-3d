@@ -16,7 +16,8 @@ function New-OpenAIImagem {
         [Parameter(Mandatory)][string] $Destino,
         [string] $Modelo = "gpt-image-2",
         [string] $Tamanho = "1024x1536",
-        [string] $Qualidade = "medium"
+        [string] $Qualidade = "medium",
+        [switch] $Transparente
     )
     $corpo = @{
         model         = $Modelo
@@ -25,7 +26,10 @@ function New-OpenAIImagem {
         quality       = $Qualidade
         n             = 1
         output_format = "png"
-    } | ConvertTo-Json -Depth 3
+    }
+    # Fundo transparente (os icones do HUD, #107): o PNG sai sem fundo.
+    if ($Transparente) { $corpo.background = "transparent" }
+    $corpo = $corpo | ConvertTo-Json -Depth 3
     $cabecalho = @{ "Authorization" = "Bearer " + (Get-Chave 'OPENAI_API_KEY'); "Content-Type" = "application/json" }
     _GarantirPastaDe $Destino
     # O corpo vai como bytes UTF-8, como no cliente do ElevenLabs: a descricao

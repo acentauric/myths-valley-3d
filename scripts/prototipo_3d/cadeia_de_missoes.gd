@@ -496,6 +496,8 @@ func _registrar_no_caderno(passo: Dictionary) -> void:
 		"resumo": resumo_do_passo(passo),
 		"passo": missao + 1,
 		"passos": passos.size(),
+		# O que o passo paga, para o diário mostrar em ícones (#107).
+		"recompensa": (passo.get("recompensa", {}) as Dictionary).duplicate(),
 		"feitos": _feitos(),
 	})
 	var alvo := posicao_do_passo(missao)
@@ -740,6 +742,10 @@ func _pagar(passo: Dictionary) -> void:
 		var quanto := int(recompensa[chave])
 		if str(chave) == "reis":
 			Jogo.dinheiro += quanto
+		elif str(chave) == "xp":
+			# As missões pagam XP (#107, decisão do autor em 06/10): pela teia de
+			# talentos, como as obras e o trabalho.
+			Talentos.ganhar_pontos(float(quanto))
 		elif Catalogo.existe(str(chave)):
 			Inventario.adicionar(str(chave), quanto)
 	pagou.emit(tr("Recebido de %s: %s") % [_quem_paga(passo), _texto_da_recompensa(passo)])
@@ -760,6 +766,8 @@ func _texto_da_recompensa(passo: Dictionary) -> String:
 		var quanto := int(recompensa[chave])
 		if str(chave) == "reis":
 			partes.append(tr("%d réis") % quanto)
+		elif str(chave) == "xp":
+			partes.append("%d XP" % quanto)
 		else:
 			partes.append("%d %s" % [quanto, _nome_do_item(str(chave)).to_lower()])
 	return ", ".join(partes)

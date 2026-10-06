@@ -277,8 +277,15 @@ func _run() -> void:
 	await _frames(2)
 	_conferir(str(vale.hud.get("_objective")) == "Outro passo",
 		"acompanhei 'Outro passo' no diário e o HUD diz '%s'" % str(vale.hud.get("_objective")))
+	# A RECOMPENSA EM ÍCONES (#107): o diário da missão escolhida mostra o que o
+	# passo paga — réis, XP e item, cada um com o ícone.
+	caderno.descrever("teste_do_painel", {"recompensa": {"reis": 12, "xp": 10, "peixe": 1}})
 	painel.escolher(0)
 	await _frames(2)
+	_conferir(painel.find_children("Recompensa", "HBoxContainer", true, false).size() == 1, "o diário não mostra a linha da recompensa")
+	for icone in ["Icone_reis", "Icone_xp", "Icone_peixe"]:
+		var figuras := painel.find_children(icone, "TextureRect", true, false)
+		_conferir(figuras.size() == 1 and (figuras[0] as TextureRect).texture != null, "a recompensa no diário não tem o ícone %s" % icone)
 	var acompanhar: Button = null
 	for no in painel.find_children("Acompanhar", "Button", true, false):
 		acompanhar = no as Button
