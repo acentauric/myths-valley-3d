@@ -63,6 +63,8 @@ func _run() -> void:
 		_conferir(dito.contains("Nordeste") and dito.contains("xilogravura") and dito.contains("verso"),
 			"o aviso do cordel não conta o que é um cordel para quem não é do Nordeste: '%s'" % dito)
 		_conferir(dito.contains("Almanaque (L)"), "o aviso do cordel não diz que ele fica no almanaque, na tecla dele: '%s'" % dito)
+		# O papel no jogo (#88): colecionável, com outros pelo vale e a conta no almanaque.
+		_conferir(dito.contains("colecion") and dito.contains("faltam"), "o aviso do cordel não diz que ele é um colecionável nem que o almanaque conta os que faltam: '%s'" % dito)
 		_conferir(paused and dia.pausado, "com o aviso aberto, o vale (%s) ou o relógio (%s) seguiu andando" % [str(paused), str(dia.pausado)])
 		# NADA DO HUD POR CIMA DO CARTÃO: ele mora acima do HUD, como a caixa de
 		# fala e o folheto, e as plaquinhas de nome dos moradores se recolhem.

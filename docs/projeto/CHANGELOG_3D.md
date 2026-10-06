@@ -103,6 +103,10 @@
   volta a `fogueira_tripo.glb` (o anel de pedras e as toras, sem a chama rígida),
   e a chama e as brasas seguem a noite com a luz (`luzes_epoca.gd`). Portão novo
   `fogueira`.
+- **O aviso do primeiro cordel diz que ele é colecionável (#88).** O cartão já
+  contava o que é a literatura de cordel; agora diz também, nos três idiomas, que
+  no jogo ele é um colecionável, onde os folhetos estão espalhados e que o
+  almanaque mostra quantos faltam. O portão `avisos_da_primeira_vez` cobra.
 
 ## Em desenvolvimento — 05/10/2026
 
