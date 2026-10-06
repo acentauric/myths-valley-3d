@@ -20,6 +20,10 @@ extends SceneTree
 ##      VEZ SÓ. O `executar` do 2D não paga (só o `conceder` paga), e o vale
 ##      paga no painel; se o 2D consertar e os dois pagarem, isto reprova, e a
 ##      linha do vale sai (ver `painel_vale.pagar_o_que_a_obra_da`).
+##   6. O PEDIDO DO E VALE SÓ PARA ELE: quem pede um sítio pelo E
+##      (`abrir_o_painel(OBRAS, "poco")`) recebe as obras DELE, mesmo com outro mais
+##      perto pela regra do J; o pedido não passa para o J que vem depois; e o
+##      painel aberto pedindo uma obra já tem o cursor nela, e não na primeira.
 
 var falhas := 0
 var obras
@@ -131,6 +135,16 @@ func _run() -> void:
 	_conferir(receitas.a_venda().has("mobilia_rede"), "o balcão não vende o plano da rede")
 	_conferir(receitas.comprar("mobilia_rede"), "não consegui comprar o plano da rede")
 	_conferir(obras.disponiveis("casa").has("mobilia_rede"), "com o plano comprado, a rede não entrou na lista da casa")
+	# O CURSOR CAI NA OBRA PEDIDA (a que a missão manda fazer), e não na primeira da
+	# lista: o painel abre na aba de obras e o E seguinte já toca a obra certa.
+	var da_casa: Array = obras.disponiveis("casa")
+	_conferir(da_casa.size() >= 2, "a casa tem só %d obra(s) à mão: a prova do cursor não se monta" % da_casa.size())
+	if da_casa.size() >= 2:
+		var ultima := str(da_casa[da_casa.size() - 1])
+		painel.abrir(painel.Aba.OBRAS, ultima)
+		_conferir(painel.aba() == painel.Aba.OBRAS and painel._cursor == da_casa.size() - 1,
+			"aberto o painel pedindo '%s' (a última de %d), o cursor ficou em %d" % [ultima, da_casa.size(), painel._cursor])
+		painel.fechar()
 
 	# No balcão da Venda do Bar: a obra do armazém junto com a venda.
 	var balcao: Vector3 = world.ancoras["Venda do Bar"] + world.ancoras.get("Venda do BarFrente", Vector3.BACK) * (Bancadas.raio("venda") - 1.0)
@@ -144,13 +158,33 @@ func _run() -> void:
 	_conferir(painel.abas_validas().has(painel.Aba.OBRAS) and painel.abas_validas().has(painel.Aba.VENDA),
 		"no balcão as abas são %s, e são obras e venda" % str(painel.abas_validas()))
 	painel.fechar()
+
+	# --- 6. O PEDIDO DO E VALE SÓ PARA ELE --------------------------------------
+	# No balcão a obra mais perto é a do armazém; o E do poço pede o poço, e recebe.
+	var telas = vale.telas
+	telas.fechar_tudo()
+	await _frames(2)
+	vale.abrir_o_painel(painel.Aba.OBRAS, "poco")
+	await _frames(2)
+	_conferir(painel.aberto and painel.aba() == painel.Aba.OBRAS and painel.obra_em_foco == "poco",
+		"pedido o poço pelo E, o painel abriu na aba %d com a obra em foco '%s'" % [painel.aba(), painel.obra_em_foco])
+	telas.fechar_tudo()
+	await _frames(2)
+	# O J que vem depois não herda o pedido: a obra em foco volta a ser a mais perto,
+	# e sem missão pedindo obra a aba é o diário.
+	telas.abrir("painel")
+	await _frames(2)
+	_conferir(painel.aberto and painel.obra_em_foco == "armazem" and painel.aba() == painel.Aba.MISSOES,
+		"o J depois do E abriu na aba %d com a obra em foco '%s': herdou o pedido do E" % [painel.aba(), painel.obra_em_foco])
+	telas.fechar_tudo()
+	await _frames(2)
 	_fechar()
 
 
 func _fechar() -> void:
 	print("")
 	if falhas == 0:
-		print("OBRAS_OK: toda construção do catálogo tem lugar ou razão; a aba de obras aparece na casa, no armazém, no mirante, no poço e no píer, e some longe; o plano vem antes do material, o de começo nasce sabido e o do balcão se compra; sem material a obra diz o que falta; a obra feita consome, some da lista, diz que ficou pronta e paga o ganho no corpo uma vez só")
+		print("OBRAS_OK: toda construção do catálogo tem lugar ou razão; a aba de obras aparece na casa, no armazém, no mirante, no poço e no píer, e some longe; o plano vem antes do material, o de começo nasce sabido e o do balcão se compra; sem material a obra diz o que falta; a obra feita consome, some da lista, diz que ficou pronta e paga o ganho no corpo uma vez só; o E que pede um sítio recebe as obras dele, o painel aberto pedindo uma obra já tem o cursor nela, e o pedido não passa para o J")
 	else:
 		print("obras: %d falha(s)" % falhas)
 	quit(1 if falhas > 0 else 0)

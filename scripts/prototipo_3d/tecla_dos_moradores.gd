@@ -29,6 +29,11 @@ const FocoDoE = preload("res://scripts/prototipo_3d/foco_do_e.gd")
 const ALCANCE := 2.8
 ## A dica fica acima da cabeça de quem está ao alcance.
 const ACIMA_DA_CABECA := 0.45
+## O que as filas de missão dizem que o E faz com um morador, pelo valor (menor
+## vale mais): é a primeira pergunta de quem leva a conversa (`escolher_entre`).
+const ACAO_PEDIDA := 0
+const ACAO_QUE_ABRE := 1
+const ACAO_NENHUMA := 2
 
 var _jogador: Node3D
 ## Os moradores e o Pedro, perguntados ao vale a cada quadro (o mestre Quirino
@@ -87,16 +92,18 @@ func _process(_delta: float) -> void:
 	DicaTecla.mostrar_em(_dica, camera, _perto.global_position + Vector3.UP * (altura + ACIMA_DA_CABECA), tr(_rotulo(_perto)))
 
 
-## O mais perto ao alcance, preferindo quem fala: os moradores mudos (só acenam, sem
-## conversa) levam o E apenas quando ninguém que fala está perto. Sem isso o saveirista
-## parado no píer tomava o E do Pedro no desembarque.
+## QUEM LEVA A CONVERSA ENTRE OS QUE ESTÃO AO ALCANCE: primeiro o que as filas de
+## missão dizem que o E faz com cada um, e SÓ DEPOIS a distância (`escolher_entre`).
+##
+## Era o mais perto, e o mais perto não é quem a missão manda procurar. No píer o
+## Pedro e o Tonho ficam a dois passos um do outro de propósito, e o Pedro segue o
+## jogador: com ele a um passo, o passo "fale com o Tonho" abria a conversa do
+## Pedro, que só repetia o passo — e quem apertava o E de novo apertava de novo no
+## Pedro. O mesmo valia para o Cosme ao lado da Dona Zefa e para o Seu Benedito.
 func _mais_perto() -> Node3D:
-	var melhor: Node3D = null
-	var menor := ALCANCE
-	var melhor_mudo: Node3D = null
-	var menor_mudo := ALCANCE
 	if not _quem_mora.is_valid():
 		return null
+	var candidatos: Array = []
 	for no in _quem_mora.call():
 		var morador := no as Node3D
 		if morador == null or not is_instance_valid(morador) or not morador.is_visible_in_tree() \
@@ -106,15 +113,58 @@ func _mais_perto() -> Node3D:
 		if absf(falta.y) > 2.0:
 			continue
 		falta.y = 0.0
-		var mudo: bool = morador.has_method("eh_mudo") and bool(morador.call("eh_mudo"))
-		if mudo:
-			if falta.length() <= menor_mudo:
-				menor_mudo = falta.length()
-				melhor_mudo = morador
-		elif falta.length() <= menor:
-			menor = falta.length()
-			melhor = morador
-	return melhor if melhor != null else melhor_mudo
+		if falta.length() > ALCANCE:
+			continue
+		candidatos.append({
+			"no": morador,
+			"acao": _acao_das_filas(morador),
+			"mudo": morador.has_method("eh_mudo") and bool(morador.call("eh_mudo")),
+			"distancia": falta.length(),
+		})
+	var escolhido := escolher_entre(candidatos)
+	return null if escolhido < 0 else candidatos[escolhido]["no"] as Node3D
+
+
+## O QUE O E FARIA COM ESTE MORADOR segundo as filas, pelo valor: `ACAO_PEDIDA`
+## quando o passo de agora manda entregar-lhe algo ou falar com ele, `ACAO_QUE_ABRE`
+## quando o E abre uma fila dele, e `ACAO_NENHUMA` quando é só conversa.
+func _acao_das_filas(morador: Node3D) -> int:
+	var acao := ACAO_NENHUMA
+	for cadeia in get_tree().get_nodes_in_group(CadeiaDeMissoes.GRUPO):
+		if not cadeia.has_method("o_que_o_e_faz"):
+			continue
+		match str(cadeia.o_que_o_e_faz(morador)):
+			"entregar", "falar":
+				return ACAO_PEDIDA
+			"abrir":
+				acao = ACAO_QUE_ABRE
+	return acao
+
+
+## A REGRA DA ESCOLHA, sem mundo: cada candidato é {"acao", "mudo", "distancia"},
+## e o índice do que leva o E sai de três perguntas, nesta ordem —
+##
+##   1. o que as filas dizem (pedido pelo passo > abre uma fila > nada);
+##   2. quem fala antes de quem só acena: o saveirista parado no píer, que é mudo,
+##      não toma o E de quem tem fala — a não ser que o passo mande procurar
+##      justamente ele, e então a pergunta 1 já decidiu;
+##   3. o mais perto.
+##
+## -1 sem candidato. Pública para o portão conferir a ordem sem montar o vale.
+func escolher_entre(candidatos: Array) -> int:
+	var melhor := -1
+	for i in candidatos.size():
+		if melhor < 0 or _vem_antes(candidatos[i], candidatos[melhor]):
+			melhor = i
+	return melhor
+
+
+static func _vem_antes(a: Dictionary, b: Dictionary) -> bool:
+	if int(a["acao"]) != int(b["acao"]):
+		return int(a["acao"]) < int(b["acao"])
+	if bool(a["mudo"]) != bool(b["mudo"]):
+		return not bool(a["mudo"])
+	return float(a["distancia"]) < float(b["distancia"])
 
 
 ## "Entregar" quando a conversa entrega o que um passo pede; "Falar", senão.

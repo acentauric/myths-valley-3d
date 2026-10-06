@@ -53,6 +53,17 @@ extends Node
 ## O QUE FICA DE FORA: a luta (com bicho perto o E é golpe, antes de tudo), o
 ## ferrar da pesca (o peixe mordendo não espera) e as telas (o E delas é delas).
 ## A barra de mão come o que está na mão só quando ninguém leva o E (`alguem`).
+##
+##
+## A DICA NÃO FICA ONDE O E NÃO VALE
+##
+## "O botão de interagir com o E está sendo sobreposto." As dicas moram no HUD
+## (camada 20), POR CIMA da caixa de fala, da voz do mundo e da festa da missão
+## (camadas 10 e 9), e cada fonte só mexe na dela no `_process` — que PARA com o
+## vale parado. A dica acesa no instante em que uma tela ou a fala abria ficava
+## congelada onde estava, por cima do que se abriu. Este nó, que roda mesmo com o
+## vale parado e depois de todas as fontes, apaga as dicas de quem não é o dono
+## do E, e apaga todas enquanto algo cobre o vale.
 
 const GRUPO := "fontes_do_e"
 ## O quanto pesa o rumo, em unidades somadas à distância: PESO_DO_RUMO × (1 −
@@ -61,14 +72,50 @@ const PESO_DO_RUMO := 1.5
 ## Abaixo disto o alvo está colado no corpo, e o rumo não conta.
 const COLADO := 0.3
 
+## Quem cobre o vale SEM parar a árvore — a festa da missão, a voz do mundo —,
+## respondido de fora pelo vale. A árvore parada (as telas, a fala longa) este nó
+## já sabe sozinho.
+var coberto: Callable = Callable()
+
 var _jogador: Node3D
 var _quadro := -1
 var _dono: Object = null
 
 
+func _init() -> void:
+	# Roda com o vale parado, e depois das fontes (a prioridade maior roda por
+	# último): o que elas deixaram aceso ele apaga no mesmo quadro.
+	process_mode = Node.PROCESS_MODE_ALWAYS
+	process_priority = 100
+
+
 func configurar(jogador: Node3D) -> void:
 	_jogador = jogador
 	add_to_group("foco_do_e")
+
+
+func _process(_delta: float) -> void:
+	if not is_inside_tree():
+		return
+	var dono_agora: Object = null if _coberto() else dono()
+	for fonte in get_tree().get_nodes_in_group(GRUPO):
+		if fonte == dono_agora:
+			continue
+		var dica = fonte.get("_dica")
+		if dica is Control and (dica as Control).visible:
+			(dica as Control).visible = false
+
+
+## Algo está por cima do vale agora: a árvore parada, a fala longa aberta (pelo
+## caminho do nó, e não pelo nome: o portão que carrega este arquivo sozinho não
+## enxerga o autoload), ou o que o vale diz em `coberto`.
+func _coberto() -> bool:
+	if get_tree().paused:
+		return true
+	var fala := get_node_or_null("/root/Dialogo")
+	if fala != null and fala.has_method("ocupado") and bool(fala.call("ocupado")):
+		return true
+	return coberto.is_valid() and bool(coberto.call())
 
 
 ## Quem leva o E neste quadro, ou null.

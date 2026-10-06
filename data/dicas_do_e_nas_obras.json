@@ -1,0 +1,28 @@
+{
+  "observacao": "O QUE A DICA DO E DIZ EM CIMA DE CADA SÍTIO DE OBRA que responde à tecla (scripts/prototipo_3d/tecla_das_bancadas.gd; os sítios são os de BancadasVale.OBRAS que têm raio_do_e). 'Não consegui interagir com o poço, logo essa missão quebrou': o poço só abria no J, e a tecla de tudo o mais não fazia nada ali. Cada rótulo existe nos três idiomas (rotulo, rotulo_en, rotulo_es).",
+  "poco": {
+    "rotulo": "Consertar o poço",
+    "rotulo_en": "Fix the well",
+    "rotulo_es": "Arreglar el pozo"
+  },
+  "ponte": {
+    "rotulo": "Levantar a ponte",
+    "rotulo_en": "Raise the bridge",
+    "rotulo_es": "Levantar el puente"
+  },
+  "mirante": {
+    "rotulo": "Consertar o mirante",
+    "rotulo_en": "Fix the lookout",
+    "rotulo_es": "Arreglar el mirador"
+  },
+  "cemiterio": {
+    "rotulo": "Cercar o cemitério",
+    "rotulo_en": "Fence the cemetery",
+    "rotulo_es": "Cercar el cementerio"
+  },
+  "carroca": {
+    "rotulo": "Recuperar a carroça",
+    "rotulo_en": "Restore the cart",
+    "rotulo_es": "Reparar la carreta"
+  }
+}

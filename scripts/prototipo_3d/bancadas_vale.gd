@@ -12,6 +12,18 @@ extends RefCounted
 ## O QUE O VALE AINDA NÃO TEM mora em `FALTAM`, com a razão, no mesmo trato do
 ## `FALTAM_NO_VALE` do `Lugares`: dívida declarada, e não aba que some sem
 ## ninguém saber por quê. Quando o lugar existir, ele sai de lá e entra aqui.
+##
+## O E TAMBÉM TOCA OBRA (`raio_do_e`): "não consegui interagir com o poço, logo
+## essa missão quebrou". As obras do arraial só abriam no J, e o poço — onde o
+## Pedro, a Dona Zefa e o Cosme ficam em volta — respondia ao E com a conversa de
+## quem estivesse mais perto. O sítio que tem `raio_do_e` acende a dica da tecla e
+## abre a aba de obras dele (`tecla_das_bancadas.gd`), e esse raio é MENOR que o
+## do J, que é o do lugar inteiro (o cemitério vale o outeiro todo no J, e a dica
+## acesa no outeiro todo brigaria com as lápides).
+##
+## NÃO ENTRAM o trapiche, a casa e o armazém: o ponto do trapiche é onde o Tonho
+## fica parado (o E dele seria engolido), a casa e o armazém têm a porta e o
+## balcão, e a oficina e o canteiro já respondem ao E como bancada.
 
 const FOLGA := 3.0
 
@@ -48,21 +60,31 @@ const OBRAS := {
 	# obra do mapa). A construção de verdade, com telheiro e guincho, é do Tripo.
 	"canteiro": {"ancora": "Canteiro de obras", "raio": 3.0, "provisoria": true},
 	"armazem": {"ancora": "Venda do Bar", "peca": "venda"},
-	"mirante": {"ancora": "Mirante", "raio": 8.0},
-	"poco": {"ancora": "Poço", "raio": 4.0},
+	# O E do mirante cobre a plataforma de seis passos e a volta dela (a âncora é
+	# o centro, e ninguém fica em cima do centro).
+	"mirante": {"ancora": "Mirante", "raio": 8.0, "raio_do_e": 5.5},
+	# O E do poço: a âncora é o poço, de cilindro de 0,8 — o chão livre começa a
+	# dois passos dele, e o anel de moradores do mutirão fica a 2,4.
+	"poco": {"ancora": "Poço", "raio": 4.0, "raio_do_e": 3.5},
 	"trapiche": {"ancora": "PierPiso", "raio": 6.0},
 	# A CARROÇA DO SEU BENEDITO, que dá nome à casa dele ("do carro quebrado"):
 	# a obra do arraial "Recuperar a carroça" se toca no terreiro dele, e é o
 	# fim do mutirão da carroça (data/missoes_carroca.json). O modelo da
-	# carroça, quebrada e consertada, é do Tripo (#29).
-	"carroca": {"ancora": "Casa de Carro Quebrado", "peca": "casa_carro_quebrado"},
+	# carroça, quebrada e consertada, é do Tripo (#29). O E vale da parede para
+	# fora: a casa tem cinco passos de largura, e o chão livre começa a três da
+	# âncora, que é o centro dela.
+	"carroca": {"ancora": "Casa de Carro Quebrado", "peca": "casa_carro_quebrado", "raio_do_e": 5.0},
 	# O CERCADO DO CEMITÉRIO, o fim da missão do Damião: a aba vale no outeiro
-	# inteiro, de dentro do cercado que vai subir (`cemiterio_vale.gd`).
-	"cemiterio": {"ancora": "Cemitério", "raio": 12.0},
+	# inteiro, de dentro do cercado que vai subir (`cemiterio_vale.gd`). O E vale
+	# do centro das covas até seis passos: dentro da cerca, que fica a oito e
+	# meio, mas não no outeiro todo, onde as lápides têm o E delas.
+	"cemiterio": {"ancora": "Cemitério", "raio": 12.0, "raio_do_e": 6.0},
 	# A PONTE DO RIO GRANDE, cercada até a obra (`ponte_vale.gd`,
 	# data/missoes_ponte.json): a aba vale nas duas cabeceiras, do lado de fora
-	# da cerca.
-	"ponte": {"ancora": "Ponte", "raio": 9.0, "nome": "ponte do rio grande"},
+	# da cerca. A âncora é o meio da ponte, e a cerca fica a quase cinco passos
+	# dele (metade dos nove da ponte, mais a folga), então o E precisa passar
+	# disso para valer do lado de fora dela.
+	"ponte": {"ancora": "Ponte", "raio": 9.0, "raio_do_e": 7.5, "nome": "ponte do rio grande"},
 }
 
 const FALTAM := {
@@ -91,6 +113,20 @@ static func raio(qual: String) -> float:
 		return float(bancada["raio"])
 	var peca: Dictionary = CatalogoAssets.PECAS.get(str(bancada.get("peca", "")), {})
 	return float(peca.get("largura", 6.0)) * 0.5 + FOLGA
+
+
+## Os sítios de obra que respondem ao E (`raio_do_e`), na ordem de `OBRAS`.
+static func com_e() -> Array[String]:
+	var lista: Array[String] = []
+	for qual in OBRAS:
+		if (OBRAS[qual] as Dictionary).has("raio_do_e"):
+			lista.append(str(qual))
+	return lista
+
+
+## De quão perto o E toca a obra deste sítio; 0 se o E não responde ali.
+static func raio_do_e(qual: String) -> float:
+	return float(_bancada(qual).get("raio_do_e", 0.0))
 
 
 ## Quão longe (no chão) o ponto está da bancada; INF se ela não existe no vale.
