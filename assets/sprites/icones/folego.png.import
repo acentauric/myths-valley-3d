@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bkwgc3vxolmxw"
-path="res://.godot/imported/xp.png-f064c8bcaaf0bbbb6333b4c163167544.ctex"
+uid="uid://dhxchyxan5m80"
+path="res://.godot/imported/folego.png-822169b8d55901a63fe49ad8fd74b9e3.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/icones/xp.png"
-dest_files=["res://.godot/imported/xp.png-f064c8bcaaf0bbbb6333b4c163167544.ctex"]
+source_file="res://assets/sprites/icones/folego.png"
+dest_files=["res://.godot/imported/folego.png-822169b8d55901a63fe49ad8fd74b9e3.ctex"]
 
 [params]
 

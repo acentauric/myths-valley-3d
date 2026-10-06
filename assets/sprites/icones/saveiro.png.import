@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bkwgc3vxolmxw"
-path="res://.godot/imported/xp.png-f064c8bcaaf0bbbb6333b4c163167544.ctex"
+uid="uid://djna0y3p407ax"
+path="res://.godot/imported/saveiro.png-3aea7e82bb8bb7159318c61df43bf57c.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/icones/xp.png"
-dest_files=["res://.godot/imported/xp.png-f064c8bcaaf0bbbb6333b4c163167544.ctex"]
+source_file="res://assets/sprites/icones/saveiro.png"
+dest_files=["res://.godot/imported/saveiro.png-3aea7e82bb8bb7159318c61df43bf57c.ctex"]
 
 [params]
 

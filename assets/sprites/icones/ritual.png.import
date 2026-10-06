@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bkwgc3vxolmxw"
-path="res://.godot/imported/xp.png-f064c8bcaaf0bbbb6333b4c163167544.ctex"
+uid="uid://mo3sr8jrwrtu"
+path="res://.godot/imported/ritual.png-2ae50b4472ca7f2562b2f88968cc88a2.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/icones/xp.png"
-dest_files=["res://.godot/imported/xp.png-f064c8bcaaf0bbbb6333b4c163167544.ctex"]
+source_file="res://assets/sprites/icones/ritual.png"
+dest_files=["res://.godot/imported/ritual.png-2ae50b4472ca7f2562b2f88968cc88a2.ctex"]
 
 [params]
 

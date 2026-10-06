@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bkwgc3vxolmxw"
-path="res://.godot/imported/xp.png-f064c8bcaaf0bbbb6333b4c163167544.ctex"
+uid="uid://b14xa2iy46sh8"
+path="res://.godot/imported/pacto.png-8d79aa21ffbadd58fd25fd0e8bdd7cce.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/icones/xp.png"
-dest_files=["res://.godot/imported/xp.png-f064c8bcaaf0bbbb6333b4c163167544.ctex"]
+source_file="res://assets/sprites/icones/pacto.png"
+dest_files=["res://.godot/imported/pacto.png-8d79aa21ffbadd58fd25fd0e8bdd7cce.ctex"]
 
 [params]
 

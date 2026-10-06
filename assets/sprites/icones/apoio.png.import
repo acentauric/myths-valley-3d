@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bkwgc3vxolmxw"
-path="res://.godot/imported/xp.png-f064c8bcaaf0bbbb6333b4c163167544.ctex"
+uid="uid://du6i0d202y2ai"
+path="res://.godot/imported/apoio.png-f60effcaec339d739afbbbea8cf40e90.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/icones/xp.png"
-dest_files=["res://.godot/imported/xp.png-f064c8bcaaf0bbbb6333b4c163167544.ctex"]
+source_file="res://assets/sprites/icones/apoio.png"
+dest_files=["res://.godot/imported/apoio.png-f60effcaec339d739afbbbea8cf40e90.ctex"]
 
 [params]
 

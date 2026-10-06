@@ -7,10 +7,9 @@ extends SceneTree
 ##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tools/openai/promover_icones.gd
 ##
 ## O FUNDO SAI POR GEOMETRIA: o modelo pinta um fundo mesmo pedindo transparência,
-## e o ícone tem a forma que o prompt pediu — o losango de azulejo do XP, o
-## distintivo quadrado arredondado dos réis. A máscara de cada forma (MASCARAS,
-## no quadro de 1024) deixa o fundo transparente e as bordas pintadas. Ícone
-## novo sem máscara sai inteiro, como veio.
+## e a máscara deixa o fundo de fora transparente, preservando as formas: losango
+## no XP e quadrado arredondado nos distintivos. As medidas ficam em MASCARAS,
+## no quadro original de 1024. Ícone sem máscara sai inteiro, como veio.
 ##
 ## Só promove o que já foi conferido: apague de `.assets-raw/openai/icones/` o
 ## ícone que não presta antes de rodar.
@@ -22,6 +21,12 @@ const LADO := 96
 const MASCARAS := {
 	"xp": {"forma": "losango", "centro": Vector2(512, 512), "meio": 430.0},
 	"reis": {"forma": "quadrado", "centro": Vector2(512, 512), "meio": 420.0, "raio": 90.0},
+	"obra": {"forma": "quadrado", "centro": Vector2(512, 512), "meio": 470.0, "raio": 100.0},
+	"folego": {"forma": "quadrado", "centro": Vector2(512, 512), "meio": 470.0, "raio": 100.0},
+	"saveiro": {"forma": "quadrado", "centro": Vector2(512, 512), "meio": 470.0, "raio": 100.0},
+	"pacto": {"forma": "quadrado", "centro": Vector2(512, 512), "meio": 470.0, "raio": 100.0},
+	"apoio": {"forma": "quadrado", "centro": Vector2(512, 512), "meio": 470.0, "raio": 100.0},
+	"ritual": {"forma": "quadrado", "centro": Vector2(512, 512), "meio": 470.0, "raio": 100.0},
 }
 
 

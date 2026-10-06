@@ -154,11 +154,12 @@ Gerados no Tripo Studio pela ponte do Playwright MCP (ver `docs/ferramentas/TRIP
 | --- | --- | --- |
 | `assets/prototipo_3d/construcoes/{ponte,ponte_caida}_tripo.glb` | a ponte de madeira do rio grande de pé (substitui a de 26/09) e a mesma ponte caída, que o vão mostra até a obra `ponte_levantar`, Tripo Studio (texto → 3D, Malha Smart, textura 2K) | `construcoes/ORIGEM.md` e `tools/tripo/lote_2026-10-06_ponte.json` |
 
-### Ícones de réis e XP (06/10/2026)
+### Ícones de réis e XP e distintivos do painel (06/10/2026)
 
 | Arquivos | O que são | Registro |
 | --- | --- | --- |
 | `assets/sprites/icones/{reis,xp}.png` | os ícones da recompensa no diário do J, OpenAI `gpt-image-1` (recortados por forma e reduzidos a 96 px pelo `promover_icones.gd`) | `sprites/icones/ORIGEM.md` e `tools/openai/icones.json` |
+| `assets/sprites/icones/{obra,folego,saveiro,pacto,apoio,ritual}.png` | os seis distintivos do painel do J (#108): as abas de Obras e Saveiro, o fôlego em Ajustes e as três naturezas de carta, OpenAI `gpt-image-1`, mesmo lote e mesmo recorte (quadrado arredondado, 96 px) | `sprites/icones/ORIGEM.md` e `tools/openai/icones.json` |
 
 ### Capas dos cordéis (03/10/2026)
 

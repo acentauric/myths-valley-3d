@@ -300,6 +300,18 @@
   corrida em `bichos_de_casa.json`. Portões `bicho_parado` (reescrito: as
   pernas de cada espécie, uma por canto, rabo fora, mesma força em todas,
   repouso parado, nada escala), `onca`, `luta`, `idiomas`, `bichos_de_casa`.
+- **As abas do J ganham distintivos (#108, primeira fatia).** Obras e Saveiro
+  na coluna de abas, o fôlego máximo em Ajustes e os cabeçalhos das três
+  naturezas de carta (pacto, apoio, ritual) ganham um distintivo de 22 px na
+  identidade do vale (`painel_vale._icone_distintivo`): seis ícones gerados
+  por imagem no mesmo lote dos réis e do XP (`gpt-image-1`, autorizado pelo
+  autor em 06/10; prompts em `tools/openai/icones.json`, recortados em
+  quadrado arredondado e reduzidos a 96 px pelo `promover_icones.gd`;
+  `sprites/icones/ORIGEM.md` e `assets/CREDITOS.md`). Os ícones de
+  interface passam a importar sem compressão (Lossless, sem mipmaps), como
+  manda o `AGENTS.md`. O layout das linhas com ícone do item, ingredientes
+  com "×n" e a tecla da ação, em todas as abas, fica para a próxima fatia da
+  #108. Portão `painel`.
 
 ## Em desenvolvimento — 05/10/2026
 

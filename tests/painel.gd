@@ -174,6 +174,40 @@ func _run() -> void:
 		_conferir(so_missoes or coluna.get_child_count() > 1,
 			"há mais de uma aba válida e a coluna mostra só %d" % coluna.get_child_count())
 
+	# OS SEIS DISTINTIVOS DO PAINEL (#108): abas, fôlego e naturezas de carta.
+	for distintivo in ["obra", "folego", "saveiro", "pacto", "apoio", "ritual"]:
+		var figura: TextureRect = painel._icone_distintivo(distintivo)
+		_conferir(figura.texture != null and figura.texture.get_width() == 96
+				and figura.texture.get_height() == 96,
+			"o distintivo '%s' não carregou em 96×96" % distintivo)
+		figura.free()
+	var obra_anterior: String = painel.obra_em_foco
+	var saveiro_anterior: Node = painel.saveiro
+	var saveiro_de_teste := Node.new()
+	painel.obra_em_foco = "oficina"
+	painel.saveiro = saveiro_de_teste
+	painel._montar_abas()
+	for distintivo in ["obra", "saveiro"]:
+		var figuras := painel.find_children("Icone_" + distintivo, "TextureRect", true, false)
+		_conferir(figuras.size() == 1 and (figuras[0] as TextureRect).texture != null,
+			"a aba de %s não exibe o distintivo" % distintivo)
+	painel.obra_em_foco = obra_anterior
+	painel.saveiro = saveiro_anterior
+	saveiro_de_teste.free()
+	for distintivo in ["pacto", "apoio", "ritual"]:
+		painel._adicionar_linha(distintivo.to_upper(), Color.WHITE, true, distintivo)
+		var figuras := painel.find_children("Icone_" + distintivo, "TextureRect", true, false)
+		_conferir(figuras.size() == 1 and (figuras[0] as TextureRect).texture != null,
+			"o cabeçalho da natureza '%s' não exibe o distintivo" % distintivo)
+	var aba_anterior: int = painel.aba()
+	painel._aba = painel.Aba.AJUSTES
+	painel._redesenhar()
+	var folego := painel.find_children("Icone_folego", "TextureRect", true, false)
+	_conferir(folego.size() == 1 and (folego[0] as TextureRect).texture != null,
+		"o ajuste de fôlego máximo não exibe o distintivo")
+	painel._aba = aba_anterior
+	painel._redesenhar()
+
 	var caixa := painel.find_children("Caixa", "", true, false)
 	_conferir(not caixa.is_empty(), "não achei a caixa do painel")
 	if not caixa.is_empty():
@@ -384,7 +418,7 @@ func _fechar() -> void:
 	_devolver_os_saves_de_verdade()
 	print("")
 	if falhas == 0:
-		print("PAINEL_OK: o J é do painel; abrir para o jogador, o relógio e o vale inteiro, por cima do HUD e dentro da janela, com as abas em coluna como no almanaque; Tab, E e J funcionam dentro; a venda aparece no balcão e compra e vende pelo preço; a aba do jogo é sozinha, salva a vaga e pede o segundo E para sair")
+		print("PAINEL_OK: o J é do painel; abrir para o jogador, o relógio e o vale inteiro, por cima do HUD e dentro da janela, com abas em coluna e distintivos de obra, fôlego, saveiro e cartas; Tab, E e J funcionam dentro; a venda aparece no balcão e compra e vende pelo preço; a aba do jogo é sozinha, salva a vaga e pede o segundo E para sair")
 	else:
 		print("painel: %d falha(s)" % falhas)
 	quit(1 if falhas > 0 else 0)
