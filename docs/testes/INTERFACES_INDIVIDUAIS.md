@@ -77,3 +77,17 @@ foram inspecionadas: menu/vagas a 65%, créditos a 80%, histórico/ajustes
 ampliados até o limite da janela. A execução gráfica não apresentou erro
 de script; os avisos já conhecidos de texturas permanecem no encerramento.
 A revisão do folheto e de todas as combinações globais ainda impede fechar #140.
+
+### 07/10/2026: papel do cordel (#140, parcial)
+
+O 32º componente é o folheto: capa, versos, assinatura, preço e teclas ficam
+na mesma tábua transformada. O fundo permanece cobrindo a janela; os limites
+usam o papel e sua sombra, permitindo ampliar até a borda sem cortar leitura.
+O desenho continua medido em 1280×720 e centrado na área lógica da janela.
+
+`escala_do_folheto` confere 65%, 100% e 150% solicitado, duas dimensões de
+janela, transformação comum e fechamento por Esc: verde em 7 s. O mutante
+`--sem-texto` deixa os versos pela metade e reprova seis verificações.
+`folheto` integrado passa em 41 s, incluindo coleta, leitura e troca de tela.
+Três capturas reais a 65%, padrão e máximo útil foram conferidas em
+`scratch/escala-folheto/`. A revisão geral da #140 continua aberta.

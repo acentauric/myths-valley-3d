@@ -25,7 +25,7 @@ extends Node
 signal modo_mudou(cheia: bool)
 signal componentes_mudaram
 
-const COMPONENTES := ["missao", "relogio", "vida", "folego", "vigor", "minimapa", "mao", "fala", "nomes", "interacao", "avisos", "mochila", "caderneta", "almanaque", "talentos", "social", "pausa", "dialogo", "atalhos", "mapa", "controles", "apoios", "ajuda", "menu", "historico", "ajustes", "vagas", "sobre", "travessia", "modelos", "pergunta"]
+const COMPONENTES := ["missao", "relogio", "vida", "folego", "vigor", "minimapa", "mao", "fala", "nomes", "interacao", "avisos", "mochila", "caderneta", "almanaque", "talentos", "social", "pausa", "dialogo", "atalhos", "mapa", "controles", "apoios", "ajuda", "menu", "historico", "ajustes", "vagas", "sobre", "travessia", "modelos", "pergunta", "folheto"]
 const ESCALAS_COMPONENTE := [0.65, 0.8, 1.0, 1.15, 1.3, 1.5]
 const PADRAO_COMPONENTE := 2
 var tamanhos_componentes: Dictionary = {}
@@ -83,8 +83,9 @@ func vincular_componente(controle: Control, chave: String, ancora := Vector2.ZER
 		if bool(atual.get_meta("limitar_interface")) and atual.size.x > 0.0 and atual.size.y > 0.0:
 			var janela := atual.get_viewport_rect().size
 			var pivo := atual.get_global_transform() * atual.pivot_offset
-			var antes := atual.pivot_offset
-			var depois := atual.size - antes
+			var limites: Rect2 = atual.get_meta("limites_interface", Rect2(Vector2.ZERO, atual.size))
+			var antes := atual.pivot_offset - limites.position
+			var depois := limites.end - atual.pivot_offset
 			if antes.x > 0.0: fator = minf(fator, maxf(0.1, (pivo.x - 14.0) / antes.x))
 			if antes.y > 0.0: fator = minf(fator, maxf(0.1, (pivo.y - 14.0) / antes.y))
 			if depois.x > 0.0: fator = minf(fator, maxf(0.1, (janela.x - pivo.x - 14.0) / depois.x))

@@ -513,3 +513,7 @@ e perguntas recebem ajustes independentes. Painéis reutilizados trocam de
 preferência sem acumular conexões e respeitam sua posição na janela.
 Quatro gates verdes, mutante com duas falhas e cinco capturas conferidas;
 detalhes em `docs/testes/INTERFACES_INDIVIDUAIS.md`. A issue permanece aberta.
+
+O folheto soma o 32º componente: escala conjunta de papel, texto e capa,
+limite pela área útil e fundo em tela inteira. Gate leve e leitura integrada
+verdes, mutante com seis falhas e três capturas conferidas; #140 segue aberta.

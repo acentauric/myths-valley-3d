@@ -65,7 +65,7 @@ func _run() -> void:
 		"o folheto está na camada %d e o HUD na %d: o HUD desenha por cima do papel" % [folheto.layer, vale.hud.layer])
 	var papel: Rect2 = folheto.get_script().get_script_constant_map()["PAPEL_EM"]
 	var tela: Vector2 = vale.get_viewport().get_visible_rect().size
-	var na_tela: Rect2 = folheto.transform * papel
+	var na_tela: Rect2 = folheto._tabua.get_global_transform_with_canvas() * papel
 	_conferir(Rect2(Vector2.ZERO, tela).encloses(na_tela),
 		"o papel sai da janela: %s numa tela de %s" % [str(na_tela), str(tela)])
 	_conferir(na_tela.size.x >= tela.x * 0.6,

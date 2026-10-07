@@ -6,6 +6,11 @@ O teste passa a cobrar Candinha, Filo, Tonho, Zefa, arraial e recursos, incluind
 
 ## Em desenvolvimento — 07/10/2026 (experimento Jev)
 
+- #140 (parcial): o folheto recebe escala própria como 32º componente.
+  Papel, capa e textos acompanham o ajuste, limitados pela área de leitura;
+  o fundo continua inteiro. Leitura integrada e escala verdes, mutante
+  reprovado e três vistas reais conferidas.
+
 - #140 (parcial): 31 componentes com escala individual, incluindo oito
   telas do lobby e confirmação. O painel reutilizado segue a preferência
   atual sem acumular eventos e respeita o espaço até as bordas da janela.

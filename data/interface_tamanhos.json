@@ -120,6 +120,7 @@
     "texto_es": "Ayuda de los ajustes"
   },
   "menu": {"texto": "Menu principal", "texto_en": "Main menu", "texto_es": "Menú principal"},
+  "folheto": {"texto": "Folheto de cordel", "texto_en": "Cordel booklet", "texto_es": "Folleto de cordel"},
   "historico": {"texto": "Histórico de versões", "texto_en": "Version history", "texto_es": "Historial de versiones"},
   "ajustes": {"texto": "Painel de ajustes", "texto_en": "Settings panel", "texto_es": "Panel de configuración"},
   "vagas": {"texto": "Vagas e nome da partida", "texto_en": "Save slots and player name", "texto_es": "Partidas guardadas y nombre"},

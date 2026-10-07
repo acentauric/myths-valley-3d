@@ -142,10 +142,17 @@ func _montar() -> void:
 	add_child(fundo)
 
 	_tabua = Control.new()
-	_tabua.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_tabua.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
+	_tabua.offset_left = -TELA.x * 0.5
+	_tabua.offset_right = TELA.x * 0.5
+	_tabua.offset_top = -TELA.y * 0.5
+	_tabua.offset_bottom = TELA.y * 0.5
+	# O barbante atravessa a janela; papel, sombra e texto são os limites úteis.
+	_tabua.set_meta("limites_interface", Rect2(220, 55, 849, 624))
 	_tabua.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_tabua.draw.connect(_desenhar)
 	add_child(_tabua)
+	Tela.vincular_componente(_tabua, "folheto", Vector2(0.5, 0.5))
 
 	var capa := _pagina(true)
 	var direita := _pagina(false)
@@ -156,7 +163,7 @@ func _montar() -> void:
 	_titulo.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	_titulo.position = capa.position
 	_titulo.size = Vector2(capa.size.x, ALTURA_DO_TITULO)
-	add_child(_titulo)
+	_tabua.add_child(_titulo)
 
 	_capa = TextureRect.new()
 	_capa.name = "Capa"
@@ -165,24 +172,24 @@ func _montar() -> void:
 	_capa.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_capa.position = _capa_em().position
 	_capa.size = _capa_em().size
-	add_child(_capa)
+	_tabua.add_child(_capa)
 
 	_autor = _rotulo(Identidade.fonte(Identidade.FONTE_ITALICO, 500), 19, COR_TINTA_FRACA, HORIZONTAL_ALIGNMENT_CENTER)
 	_autor.position = Vector2(capa.position.x, capa.end.y - 50.0)
 	_autor.size = Vector2(capa.size.x, 24)
-	add_child(_autor)
+	_tabua.add_child(_autor)
 
 	_preco = _rotulo(Identidade.fonte(Identidade.FONTE_TEXTO, 600), 17, COR_TINTA_FRACA, HORIZONTAL_ALIGNMENT_CENTER)
 	_preco.position = Vector2(capa.position.x, capa.end.y - 26.0)
 	_preco.size = Vector2(capa.size.x, 22)
-	add_child(_preco)
+	_tabua.add_child(_preco)
 
 	# VERSOS: a estrofe inteira de uma vez, que é o ponto desta tela.
 	_versos = _rotulo(Identidade.fonte(Identidade.FONTE_TEXTO, 600), 26, COR_TINTA, HORIZONTAL_ALIGNMENT_LEFT)
 	_versos.add_theme_constant_override("line_spacing", 6)
 	_versos.position = Vector2(direita.position.x + 6.0, direita.position.y + 22.0)
 	_versos.size = Vector2(direita.size.x - 6.0, 300)
-	add_child(_versos)
+	_tabua.add_child(_versos)
 
 	# A nota fica no pé da segunda página, no corpo miúdo em que se imprimia o
 	# que não era verso: de onde vem a história e o que ela esconde.
@@ -190,13 +197,13 @@ func _montar() -> void:
 	_nota.add_theme_constant_override("line_spacing", 2)
 	_nota.position = Vector2(direita.position.x + 6.0, direita.end.y - 196.0)
 	_nota.size = Vector2(direita.size.x - 6.0, 156)
-	add_child(_nota)
+	_tabua.add_child(_nota)
 
 	# As teclas no pé da segunda página, nas letras de ação da Crônica, em tinta.
 	_teclas = _rotulo(Identidade.fonte(Identidade.FONTE_TITULO, 600, 1), 14, COR_TINTA_FRACA, HORIZONTAL_ALIGNMENT_RIGHT)
 	_teclas.position = Vector2(direita.position.x, direita.end.y - 26.0)
 	_teclas.size = Vector2(direita.size.x, 22)
-	add_child(_teclas)
+	_tabua.add_child(_teclas)
 
 
 ## A mancha de tipo de cada página: metade do papel, menos margem e fenda.
