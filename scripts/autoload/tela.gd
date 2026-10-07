@@ -25,7 +25,7 @@ extends Node
 signal modo_mudou(cheia: bool)
 signal componentes_mudaram
 
-const COMPONENTES := ["missao", "relogio", "vida", "folego", "vigor", "minimapa", "mao", "fala", "nomes", "interacao", "avisos", "mochila", "caderneta", "almanaque", "talentos", "social", "pausa", "dialogo", "atalhos", "mapa", "controles", "apoios", "ajuda"]
+const COMPONENTES := ["missao", "relogio", "vida", "folego", "vigor", "minimapa", "mao", "fala", "nomes", "interacao", "avisos", "mochila", "caderneta", "almanaque", "talentos", "social", "pausa", "dialogo", "atalhos", "mapa", "controles", "apoios", "ajuda", "menu", "historico", "ajustes", "vagas", "sobre", "travessia", "modelos", "pergunta"]
 const ESCALAS_COMPONENTE := [0.65, 0.8, 1.0, 1.15, 1.3, 1.5]
 const PADRAO_COMPONENTE := 2
 var tamanhos_componentes: Dictionary = {}
@@ -66,20 +66,33 @@ func restaurar_componentes() -> void:
 ## Escala texto, ícones e área clicável juntos. O pivô preserva o canto/centro
 ## escolhido; o limite da janela impede ampliar um painel para fora da tela.
 func vincular_componente(controle: Control, chave: String, ancora := Vector2.ZERO, limitar := true) -> void:
+	controle.set_meta("componente_interface", chave)
+	controle.set_meta("ancora_interface", ancora)
+	controle.set_meta("limitar_interface", limitar)
+	if controle.has_meta("aplicar_interface"):
+		var existente: Callable = controle.get_meta("aplicar_interface")
+		existente.call_deferred()
+		return
 	var referencia: WeakRef = weakref(controle)
 	var aplicar := func() -> void:
 		var atual := referencia.get_ref() as Control
 		if atual == null or not atual.is_inside_tree():
 			return
-		var fator := escala_componente(chave)
-		if limitar and atual.size.x > 0.0 and atual.size.y > 0.0:
-			var util := atual.get_viewport_rect().size - Vector2(28, 28)
-			fator = minf(fator, minf(util.x / atual.size.x, util.y / atual.size.y))
-		atual.pivot_offset = atual.size * ancora
+		var fator := escala_componente(str(atual.get_meta("componente_interface")))
+		atual.pivot_offset = atual.size * (atual.get_meta("ancora_interface") as Vector2)
+		if bool(atual.get_meta("limitar_interface")) and atual.size.x > 0.0 and atual.size.y > 0.0:
+			var janela := atual.get_viewport_rect().size
+			var pivo := atual.get_global_transform() * atual.pivot_offset
+			var antes := atual.pivot_offset
+			var depois := atual.size - antes
+			if antes.x > 0.0: fator = minf(fator, maxf(0.1, (pivo.x - 14.0) / antes.x))
+			if antes.y > 0.0: fator = minf(fator, maxf(0.1, (pivo.y - 14.0) / antes.y))
+			if depois.x > 0.0: fator = minf(fator, maxf(0.1, (janela.x - pivo.x - 14.0) / depois.x))
+			if depois.y > 0.0: fator = minf(fator, maxf(0.1, (janela.y - pivo.y - 14.0) / depois.y))
 		atual.scale = Vector2.ONE * fator
 		# A moldura é irmã do painel: acompanha também mudanças só de escala.
 		atual.item_rect_changed.emit()
-	controle.set_meta("componente_interface", chave)
+	controle.set_meta("aplicar_interface", aplicar)
 	controle.resized.connect(aplicar)
 	componentes_mudaram.connect(aplicar)
 	controle.tree_exiting.connect(func() -> void:

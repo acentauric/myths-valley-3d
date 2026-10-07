@@ -505,3 +505,11 @@ proporcionais ao GLB, preservando o tabuleiro e as juntas.
 sem obstáculos reproduz a travada no corrimão. Detalhes e evidências em
 `docs/testes/CERCAS_E_CIRCULACAO.md`. Encerrar #125 e #142; a bateria completa
 exigida pela #99 continua pendente.
+
+### 07/10/2026: escalas do lobby (#140, parcial)
+
+Menu, histórico, ajustes, vagas/nome, créditos, legenda da travessia, galeria
+e perguntas recebem ajustes independentes. Painéis reutilizados trocam de
+preferência sem acumular conexões e respeitam sua posição na janela.
+Quatro gates verdes, mutante com duas falhas e cinco capturas conferidas;
+detalhes em `docs/testes/INTERFACES_INDIVIDUAIS.md`. A issue permanece aberta.

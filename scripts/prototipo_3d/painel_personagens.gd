@@ -116,6 +116,7 @@ func abrir(tema: Theme) -> void:
 	caixa.grow_horizontal = Control.GROW_DIRECTION_BOTH
 	caixa.grow_vertical = Control.GROW_DIRECTION_BOTH
 	add_child(caixa)
+	Tela.vincular_componente(caixa, "modelos", Vector2(0.5, 0.5))
 	Identidade.emoldurar(caixa)
 	var coluna := VBoxContainer.new()
 	coluna.add_theme_constant_override("separation", 10)
@@ -318,6 +319,7 @@ func _confirmar_saida() -> void:
 	caixa.grow_horizontal = Control.GROW_DIRECTION_BOTH
 	caixa.grow_vertical = Control.GROW_DIRECTION_BOTH
 	_confirmacao.add_child(caixa)
+	Tela.vincular_componente(caixa, "pergunta", Vector2(0.5, 0.5))
 	var coluna := VBoxContainer.new()
 	coluna.add_theme_constant_override("separation", 14)
 	caixa.add_child(coluna)

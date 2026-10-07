@@ -783,9 +783,10 @@ func _place_panel(centered: bool) -> void:
 	panel.offset_right = 220 if centered else 476
 	panel.offset_top = -320 if centered else 32
 	panel.offset_bottom = 320 if centered else 672
+	Tela.vincular_componente(panel, "menu", Vector2(0.5, 0.5) if centered else Vector2.ZERO)
 
 ## Modal centrado de tamanho fixo (histórico, ajustes): não muda entre páginas.
-func _place_modal(modal_size: Vector2) -> void:
+func _place_modal(modal_size: Vector2, componente := "menu") -> void:
 	_place_panel(true)
 	_decoracao_modo("modal")
 	modal_open = true
@@ -794,6 +795,7 @@ func _place_modal(modal_size: Vector2) -> void:
 	panel.offset_right = modal_size.x * 0.5
 	panel.offset_top = -modal_size.y * 0.5
 	panel.offset_bottom = modal_size.y * 0.5
+	Tela.vincular_componente(panel, componente, Vector2(0.5, 0.5))
 
 func _menu_theme() -> Theme:
 	return TemaMenu.criar(MENU_FONTS[menu_font_option])
@@ -1395,7 +1397,7 @@ func _change_history(step: int) -> void:
 func _render_history() -> void:
 	_clear()
 	# Resumos em uma linha, até dez por página, sem área de rolagem.
-	_place_modal(HISTORY_SIZE)
+	_place_modal(HISTORY_SIZE, "historico")
 	history_open = true
 	var entry: Dictionary = history_entries[history_index]
 	# Sem foco em botão: as teclas ← → ficam livres para trocar de página.
@@ -1473,6 +1475,7 @@ func _seta_historico(passo: int, dica: String, desativada: bool) -> Button:
 
 func _confirm_exit() -> void:
 	_clear()
+	Tela.vincular_componente(panel, "pergunta", Vector2.ZERO)
 	_marca()
 	var pergunta := Label.new()
 	pergunta.text = "Sair do jogo?"
@@ -1498,7 +1501,7 @@ func _confirm_exit() -> void:
 ## AJUSTAR (painel_ajustes.gd) no modal central. `tab`: Geral, Sons do vale ou Cenário.
 func _options(tab: int = 0) -> void:
 	_clear()
-	_place_modal(PainelAjustes.TAMANHO)
+	_place_modal(PainelAjustes.TAMANHO, "ajustes")
 	options_open = true
 	ajustes_icon.definir(true)
 	ajustes.tema = panel.theme
@@ -1552,7 +1555,7 @@ var _confirmando_ponto := ""
 
 func _vagas() -> void:
 	_clear()
-	_place_modal(HISTORY_SIZE)
+	_place_modal(HISTORY_SIZE, "vagas")
 	_confirmando_vaga = 0
 	_modal_header("Vagas", _home, "Três partidas, cada uma inteira. Escolha onde jogar.")
 	var primeiro: Button = null
@@ -1799,7 +1802,7 @@ func _abrir_vaga(slot: int, nova: bool, nome: String = "") -> void:
 ## começa nem limpa a partida; só a confirmação restaura o estado de fábrica.
 func _pedir_nome(slot: int) -> void:
 	_clear()
-	_place_modal(Vector2(560, 310))
+	_place_modal(Vector2(560, 310), "vagas")
 	var dados: Dictionary = Jogo.dados("res://data/nome_jogador.json")
 	_modal_header(str(IdiomaMenu.campo(dados, "titulo")), _vagas)
 	_label(str(IdiomaMenu.campo(dados, "ajuda")), 15)
@@ -1860,7 +1863,7 @@ func _close_help() -> void:
 
 func _credits() -> void:
 	_clear()
-	_place_modal(HISTORY_SIZE)
+	_place_modal(HISTORY_SIZE, "sobre")
 	var home := _modal_header("Por trás do vale", _home, "Quem faz o vale e de onde ele vem.")
 	_highlighted("O vale nasceu do encontro entre paisagens, memórias e histórias brasileiras. Entre casas, caminhos e mata, cada lugar convida a uma descoberta.")
 	_highlighted("Música, narração e efeitos acompanham a travessia e dão voz aos lugares e personagens. Esta é uma primeira visita a esse mundo. Obrigado por caminhar conosco enquanto a jornada cresce.")
@@ -1984,6 +1987,7 @@ func _place_legenda() -> void:
 	panel.offset_right = 450.0
 	panel.offset_top = -218.0
 	panel.offset_bottom = -30.0
+	Tela.vincular_componente(panel, "travessia", Vector2(0.5, 1.0))
 
 func _next_line() -> void:
 	line_index += 1

@@ -6,6 +6,11 @@ O teste passa a cobrar Candinha, Filo, Tonho, Zefa, arraial e recursos, incluind
 
 ## Em desenvolvimento — 07/10/2026 (experimento Jev)
 
+- #140 (parcial): 31 componentes com escala individual, incluindo oito
+  telas do lobby e confirmação. O painel reutilizado segue a preferência
+  atual sem acumular eventos e respeita o espaço até as bordas da janela.
+  Quatro gates verdes, falsificação reprovada e cinco capturas conferidas.
+
 - #149 (parcial): passeio e corrida usam referência própria da espécie,
   separada da passada medida no clipe. Bichos de casa animam o movimento
   efetivo após colisões; aves acompanham o último passo até seu destino.

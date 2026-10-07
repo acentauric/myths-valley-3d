@@ -60,3 +60,20 @@ ampliado, ancoragem, moldura e clique real no último atalho. Verde em 3 s;
 o catálogo contém 775 campos em 45 arquivos. Capturas gráficas em
 `scratch/interfaces-secundarias/`: controles a 65% e apoios a 150%.
 A #140 continua aberta para a revisão das demais telas e combinações globais.
+
+### 07/10/2026: telas do lobby e confirmações (#140)
+
+O catálogo passa a 31 componentes, com menu, histórico, ajustes, vagas/nome,
+créditos, legenda da travessia, galeria e perguntas. O painel reutilizado do
+lobby consulta a chave da tela atual e mantém uma única conexão de escala.
+O limite considera o pivô e a posição: ampliar um painel no canto respeita
+o espaço restante, assim como ampliar um modal central.
+
+`interfaces_do_lobby` alterna seis telas em 1280×720 e 1920×1080; zero falhas
+em 5 s. `--sem-revincular` reproduz duas falhas ao fazer o histórico herdar
+a escala pequena do menu. Regressões de interfaces individuais, secundárias
+e idiomas verdes (783 campos). Cinco capturas em `scratch/interfaces-lobby/`
+foram inspecionadas: menu/vagas a 65%, créditos a 80%, histórico/ajustes
+ampliados até o limite da janela. A execução gráfica não apresentou erro
+de script; os avisos já conhecidos de texturas permanecem no encerramento.
+A revisão do folheto e de todas as combinações globais ainda impede fechar #140.

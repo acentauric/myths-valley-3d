@@ -62,6 +62,7 @@ func _montar(dados: Dictionary) -> void:
 	painel.grow_horizontal = Control.GROW_DIRECTION_BOTH
 	painel.grow_vertical = Control.GROW_DIRECTION_BOTH
 	tela.add_child(painel)
+	Tela.vincular_componente(painel, "pergunta", Vector2(0.5, 0.5))
 	var coluna := VBoxContainer.new()
 	coluna.add_theme_constant_override("separation", 14)
 	painel.add_child(coluna)
