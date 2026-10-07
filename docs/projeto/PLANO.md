@@ -38,6 +38,10 @@ Todas as cadeias de missões do diretório de dados e os recursos declaram cober
 
 ## Próxima tarefa
 
+#137 foi verificada por carga_e_fala e smoke_opening: a saudação e a fila
+esperam a cena pronta e o fim da transição. A fila anterior reprova os dois
+intervalos de bloqueio. A cobertura de idiomas pendente continua separada.
+
 #134 foi verificada com dica_requisito_e_mao, barra_de_mao, matriz_dos_baloes
 e idiomas. O rótulo persistente da mão de #120 foi retirado; os demais
 critérios de reorganização do HUD nessa issue permanecem abertos.

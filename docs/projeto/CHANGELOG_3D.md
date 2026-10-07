@@ -6,6 +6,11 @@ O teste passa a cobrar Candinha, Filo, Tonho, Zefa, arraial e recursos, incluind
 
 ## Em desenvolvimento — 07/10/2026 (experimento Jev)
 
+- **Pedro espera a cena e a transição (#137).** A saudação aguarda `carga_ok`
+  e a retirada da tela de carregamento, incluindo o fade. A fila bloqueia
+  novas falas nesse intervalo. Carga e abertura passaram; carregar a fila
+  anterior reproduz duas falhas de início antecipado.
+
 - **O E separa alvo e requisito em duas linhas (#134).** A largura se adapta
   à janela e mantém a tecla centralizada; requisitos maiores quebram por
   palavras. A frase de ferramenta necessária passa pelo idioma escolhido.

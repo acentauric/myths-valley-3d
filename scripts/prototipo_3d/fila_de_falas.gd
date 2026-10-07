@@ -327,6 +327,13 @@ func _bloqueada() -> bool:
 		return true
 	if get_tree().paused:
 		return true
+	# O mundo construído ainda pode estar povoando ou aquecendo shaders.
+	var cena := get_tree().current_scene
+	if cena != null and cena.has_signal("carga_concluida") and not bool(cena.get("carga_ok")):
+		return true
+	# Inclui o fade final: ouvir a fala exige já enxergar o vale.
+	if not get_tree().get_nodes_in_group("telas_de_carregamento").is_empty():
+		return true
 	var dialogo := get_node_or_null("/root/Dialogo")
 	return dialogo != null and bool(dialogo.get("ativo"))
 

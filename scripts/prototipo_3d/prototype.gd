@@ -869,8 +869,16 @@ func _chegar_pelo_saveiro(spawn: Vector3) -> void:
 	if pedro != null:
 		pedro.global_position = saveiro.lugar_do_pedro()
 		pedro.velocity = Vector3.ZERO
-		pedro.saudar()
+		_saudar_quando_pronto.call_deferred()
 	_acertar_a_porta_da_casa()
+
+
+## Posicionar no convés não inicia voz ou contagem do tutorial sob a carga.
+func _saudar_quando_pronto() -> void:
+	while is_inside_tree() and (not carga_ok or not get_tree().get_nodes_in_group("telas_de_carregamento").is_empty()):
+		await get_tree().process_frame
+	if is_inside_tree() and is_instance_valid(pedro):
+		pedro.saudar()
 
 
 ## AS FERRAMENTAS DO FINADO NUMA PARTIDA DE ANTES DO BAÚ. A enxada vinha do

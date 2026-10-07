@@ -57,6 +57,7 @@ static func mostrar(pai: Node, tema: Theme, mensagem: String, hora: float = -1.0
 	var noite: bool = Dia.eh_noite_em(Dia.hora if hora < 0.0 else hora)
 	var screen := mostrar_capa(pai, tema, noite)
 	screen.name = "TelaCarregamento"
+	screen.add_to_group("telas_de_carregamento")
 	_video(screen, video)
 	_almanaque(screen, noite)
 	var textos := _situacao(screen, mensagem)
