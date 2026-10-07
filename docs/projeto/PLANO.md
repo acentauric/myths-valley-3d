@@ -5,6 +5,10 @@ raiz. O jogo 2D segue sua própria linha em `acentauric/myths-valley`.
 
 ## O que já roda
 
+A #162 está concluída (07/10/2026): depois dos troncos caídos, a missão
+de madeira aponta árvores elegíveis. O E informa o corte em curso,
+permitindo esperar sua conclusão. Portões e coleta real conferidos.
+
 A #56 está concluída (07/10/2026): vaga nova pede o nome antes da
 travessia. Confirmação aplica o nome após a restauração de fábrica;
 cancelar não inicia a partida. O save já guarda esse campo e as falas

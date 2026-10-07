@@ -6,6 +6,13 @@ O teste passa a cobrar Candinha, Filo, Tonho, Zefa, arraial e recursos, incluind
 
 ## Em desenvolvimento — 07/10/2026 (experimento Jev)
 
+- **O marcador de madeira continua após esgotar os troncos (#162).**
+  Passa a apontar a árvore acessível mais próxima, respeitando produto,
+  proteção, talento e aço. A oferta informa o corte em andamento para
+  evitar cancelá-lo com outro E. Portões de alvo e corte passaram;
+  o código anterior reprova. A campanha real passou de 21 para 25/36
+  lenhas pelos controles normais, sem alterar inventário ou progresso.
+
 - **A partida começa pelo nome do viajante (#56).** Vaga nova pergunta
   o nome antes de iniciar; cancelar ou deixar vazio preserva a partida.
   O save guarda e restaura o nome. Travessia, caixa de diálogo e balões

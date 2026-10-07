@@ -136,6 +136,8 @@ func configurar(world: Node3D, jogador: Node3D, hud, hud_layer: Control) -> void
 	_dica = DicaTecla.criar(hud.map_layer(), Atalhos.letra("interagir"), "Sobre a árvore")
 	_dica.set_meta("interacao_arvore", true)
 	add_to_group(FocoDoE.GRUPO)
+	add_to_group("arvores_do_vale")
+	set_meta("recurso_arvore", true)
 	_criar_balao_vida(hud.map_layer())
 	_stamina = float(_jogador.call("vigor_atual"))
 	_jogador.connect("vigor_mudou", Callable(self, "_ao_vigor_mudar"))
@@ -246,7 +248,7 @@ func alvo_do_e() -> Dictionary:
 	if _aberta >= 0:
 		return {"ponto": _pontos[_aberta]["pos"], "vies": VIES_DO_QUE_ESTA_ABERTO}
 	if _em_golpe >= 0 and _em_golpe < _cortaveis.size():
-		return {"ponto": _cortaveis[_em_golpe]["pos"], "vies": VIES_DO_QUE_ESTA_ABERTO}
+		return {"ponto": _cortaveis[_em_golpe]["pos"], "vies": VIES_DO_QUE_ESTA_ABERTO, "em_trabalho": true}
 	if _fibra_perto >= 0 and _cortavel_perto < 0:
 		return {"ponto": _cortaveis[_fibra_perto]["pos"]}
 	if _corte_vale_a_tecla() and not bool(_cortaveis[_cortavel_perto]["cortado"]):
@@ -471,6 +473,28 @@ func madeira_de(especie: String) -> Dictionary:
 		if da_especie.has(campo):
 			molde[campo] = da_especie[campo]
 	return molde
+
+
+## Alternativa aos troncos caídos esgotados: só madeira acessível ao machado
+## e ao talento atuais, sem apontar tocos, espécies protegidas ou outro produto.
+func mais_perto_que_rende(item: String, de: Vector3) -> Vector3:
+	var melhor := Vector3.INF
+	var menor := INF
+	for arvore: Dictionary in _cortaveis:
+		var especie := str(arvore.get("especie", ""))
+		if bool(arvore.get("cortado", false)) or _nao_se_corta.has(especie):
+			continue
+		var madeira := madeira_de(especie)
+		if str(madeira.get("rende", "lenha")) != item or Progressao.nivel("machado") < int(madeira.get("nivel", 1)):
+			continue
+		if bool(madeira.get("aco", false)) and Catalogo.grau(Equipamento.da_familia_em_uso("machado")) < 2:
+			continue
+		var pos: Vector3 = arvore["pos"]
+		var distancia := Vector2(de.x, de.z).distance_squared_to(Vector2(pos.x, pos.z))
+		if distancia < menor:
+			menor = distancia
+			melhor = pos
+	return melhor
 
 
 func _golpes_da(indice: int) -> int:

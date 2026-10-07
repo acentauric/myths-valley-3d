@@ -1089,6 +1089,10 @@ func posicao_do_passo(indice: int) -> Vector3:
 					for qual in carga:
 						if _tem_para_a_meta(meta, str(qual)) < int(carga[qual]):
 							perto = recursos.mais_perto_que_rende(str(qual), de)
+							if perto == Lugares.NENHUM and jogador != null:
+								var arvores := jogador.get_tree().get_first_node_in_group("arvores_do_vale")
+								if arvores != null:
+									perto = arvores.mais_perto_que_rende(str(qual), de)
 							break
 			"levar", "falar":
 				var quem := _morador(str(meta.get("a_quem", "")))
