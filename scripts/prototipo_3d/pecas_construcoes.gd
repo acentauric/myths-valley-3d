@@ -16,7 +16,8 @@ const POR_CASA := {
 		{"id": "Bananeira 2", "tipo": "arvore", "chave": "bananeira", "desloc": Vector3(-1.6, 0, -5.9), "giro": -2.08, "tamanho": 0.9},
 		{"id": "Bananeira 3", "tipo": "arvore", "chave": "bananeira", "desloc": Vector3(0.4, 0, -4.9), "giro": 0.52, "tamanho": 0.9},
 		{"id": "Bananeira 4", "tipo": "arvore", "chave": "bananeira", "desloc": Vector3(-4.6, 0, -3.0), "giro": -5.98, "tamanho": 0.9},
-		{"id": "Varal", "tipo": "adereco", "chave": "varal", "desloc": Vector3(-4.9, 0, 1.4), "giro": 0.35},
+		# A casa herdada acaba de ser aberta; o varal não é parte da malha Tripo.
+		# Nenhuma roupa estendida nesta residência (#158).
 		{"id": "Lenha", "tipo": "adereco", "chave": "lenha", "desloc": Vector3(3.6, 0, -0.4)},
 		{"id": "Pote", "tipo": "adereco", "chave": "pote", "desloc": Vector3(2.4, 0, 2.9)},
 		{"id": "Machado", "tipo": "item", "chave": "machado", "desloc": Vector3(3.9, 0.55, 0.6), "giro": 0.9, "no_chao": false},

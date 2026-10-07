@@ -6,6 +6,12 @@ O teste passa a cobrar Candinha, Filo, Tonho, Zefa, arraial e recursos, incluind
 
 ## Em desenvolvimento — 07/10/2026 (experimento Jev)
 
+- #158 (parcial): casa do viajante sem roupas estendidas. Varal independente
+  desativado na composição autoral e retirado da tabela padrão; malha, escala,
+  entrada e colisão da casa preservadas, assim como 19 outros varais.
+  `casa_sem_varal` verde (3 s), composição verde (35 s); reativação do adereço
+  reprova. Novo modelo Tripo não foi gerado nem o ticket encerrado.
+
 - #163: fontes de material respeitam nível e grau de ferramenta. A nova
   consulta estrita evita mandar o testador à pedra impossível. Regressão
   `alvo_material_acessivel` verde (2 s), alcance (57 s) e ofício (42 s);

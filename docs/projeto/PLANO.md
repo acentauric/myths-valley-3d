@@ -5,6 +5,13 @@ raiz. O jogo 2D segue sua própria linha em `acentauric/myths-valley`.
 
 ## O que já roda
 
+A #158 tem o ajuste imediato de composição: o varal é um adereço independente,
+não pertence à malha da casa Tripo. A casa herdada o omite no padrão e na cena
+autoral, preservando o identificador e os 19 varais das outras casas. Portões
+de composição e regressão passaram; reativá-lo reprova. Não foi gerado um
+novo GLB. A criação de um novo modelo solicitada no ticket continua pendente
+de um lote com custo aprovado, conforme AGENTS.md.
+
 A #163 está concluída (07/10/2026): a seleção de matéria-prima prefere uma
 fonte compatível com habilidade e grau da ferramenta carregada. A consulta
 estrita não aponta uma coleta impossível; o marcador humano conserva o

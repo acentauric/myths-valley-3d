@@ -59,6 +59,8 @@ tamanho = 0.9
 
 [node name="Varal" type="Node3D" parent="Casas/Casa de taipa" unique_id=18224002]
 transform = Transform3D(0.9393727, 0, 0.3428978, 0, 1, 0, -0.3428978, 0, 0.9393727, -4.9000015, 0.18665552, 1.3999939)
+visible = false
+editor_description = "Casa recém-aberta do viajante: sem roupas estendidas (#158). Nó preservado para manter o identificador autoral."
 script = ExtResource("4_8bxw0")
 id = "Varal"
 chave = "varal"
