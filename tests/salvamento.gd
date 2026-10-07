@@ -75,6 +75,7 @@ const FORA_DO_SAVE := {
 	# `O_QUE_GUARDAR` ou em `SALVOS_A_MAO`, e a mochila não está em nenhum dos
 	# dois. Este aqui percorre TODOS, e por isso é ele que faz a pergunta.
 	"Mochila": {
+		"letra_de_fechar": "consulta ao atalho configurado no projeto, sem estado de partida; a preferência tem arquivo próprio e o Callable é reinstalado ao abrir o vale",
 		"aberta": "estado de tela aberta, não de partida: carregar com ela salva abriria a mochila por cima do vale recém-carregado",
 		"abrir_documento": "é a PERGUNTA sobre a interface, não estado de partida — mesma costura de `Vida.esta_lendo`: quem responde é o projeto, e salvar um Callable seria salvar um pedaço de código de uma execução para outra",
 		"alguem_fala": "idem: quem responde é o projeto. No 2D é o `Dialogo`, pelo `Telas._ready`; no vale ninguém responde, e Callable inválido vale por 'ninguém fala'",
@@ -197,6 +198,7 @@ func _run() -> void:
 	# dentro de um dicionário dele. Mais fundo que isso não se procura — aninhar
 	# sem limite seria a declaração deixando de significar alguma coisa.
 	var do_vale: Dictionary = vale.estado_para_salvar()
+	luta.coleta.deixar("carne_de_caca", 2, igreja + Vector3(0.8, 0, 0))
 	for nome in DO_MUNDO:
 		for campo in DO_MUNDO[nome]:
 			var achou: bool = do_vale.has(campo)
@@ -220,6 +222,8 @@ func _run() -> void:
 		return
 	player = vale.player
 	luta = vale.get_node_or_null("Luta")
+	_conferir(luta.coleta.caidos.size() == 1 and luta.coleta.caidos[0].quantidade == 2,
+		"o espólio no chão não voltou do arquivo de save")
 
 	# CONTINUAR NÃO REFAZ A FALA. O Pedro reanunciava o passo ao voltar, e quem
 	# tivesse salvado no primeiro ouvia a abertura do jogo de novo — a partida
@@ -411,6 +415,12 @@ func _conferir_as_vagas() -> void:
 	(abertura.content.get_node("Vaga2") as Button).pressed.emit()
 	await _frames(2)
 	_conferir(salvamento.slot_atual == 2, "tocar na vaga vazia não escolheu a vaga 2")
+	var nome := abertura.content.find_child("NomeJogador", true, false) as LineEdit
+	_conferir(nome != null and abertura.line_index < 0, "a vaga nova não perguntou o nome antes da travessia")
+	if nome != null:
+		nome.text = "Viajante do portão"
+		(abertura.content.find_child("ComecarPartida", true, false) as Button).pressed.emit()
+		await _frames(2)
 	_conferir(abertura.line_index >= 0, "tocar na vaga vazia não abriu a travessia da partida nova")
 	root.get_node("/root/Audio").parar_narracao()
 

@@ -29,7 +29,7 @@ extends Node
 ## O QUE O VALE AINDA NÃO TEM, e a luta não espera: a mão se escolhe pela
 ## mochila (#2) e pelas teclas (#4); até lá, só quem pôs a arma na mão por
 ## código luta de facão — de mão vazia, luta quem aprendeu a capoeira. O que o
-## bicho deixa vai direto para a mochila, porque o vale não tem coleta no chão.
+## bicho deixa fica no chão e no save, até ser recolhido com E (#67).
 
 const Criatura = preload("res://scripts/prototipo_3d/criatura_vale.gd")
 const Atalhos = preload("res://scripts/prototipo_3d/atalhos.gd")
@@ -122,12 +122,18 @@ var _textos: Dictionary = {}
 var _repouso_do_corpo: Vector3 = Vector3.ZERO
 var _conferir_em: float = 0.0
 var _musica_da_caca := false
+var coleta: Node3D
 
 
-func configurar(world, player, hud) -> void:
+func configurar(world, player, hud, camada: Control = null) -> void:
 	_world = world
 	_player = player
 	_hud = hud
+	if camada != null:
+		coleta = preload("res://scripts/prototipo_3d/coleta_no_chao.gd").new()
+		coleta.name = "Coleta"
+		add_child(coleta)
+		coleta.configurar(world, player, hud, camada)
 	add_to_group(FocoDoE.GRUPO)
 	_repouso_do_corpo = player.visual.position
 	u_por_px = float(player.walk_speed) / Criatura.PASSO_DO_JOGADOR_2D
@@ -549,8 +555,9 @@ func acertar(golpe: String, mao: String) -> bool:
 		if caiu:
 			Talentos.ganhar("abate")
 			Energia.repor(respira)
-			if deixa != "" and Inventario.adicionar(deixa, quantos):
-				_avisar(_texto("levou") % [nome, Catalogo.nome(deixa)])
+			if deixa != "" and coleta != null and coleta.deixar(deixa, quantos, onde):
+				var textos: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://data/coleta_no_chao.json"))
+				_avisar(str(IdiomaMenu.campo(textos.caiu, "texto")) % [nome, Catalogo.nome(deixa)])
 			else:
 				_avisar(_texto("caiu") % nome)
 	return true

@@ -1239,7 +1239,7 @@ func _montar_moradores(spawn: Vector3) -> void:
 	var luta := LutaVale.new()
 	luta.name = "Luta"
 	add_child(luta)
-	luta.configurar(world, player, hud)
+	luta.configurar(world, player, hud, hud_layer)
 	achados.configurar(world, player, hud, luta, hud_layer)
 	achados.achou.connect(_ao_achar)
 	# O painel da tecla J (painel_vale.gd), por cima do HUD.
@@ -1967,6 +1967,8 @@ func estado_para_salvar() -> Dictionary:
 	var luta := get_node_or_null("Luta")
 	if luta != null:
 		estado["mortes"] = luta.mortes.duplicate(true)
+		if luta.coleta != null:
+			estado["coleta_no_chao"] = luta.coleta.estado_para_salvar()
 	# O BAÚ DA CASA, como no 2D (`travas.bau_da_casa`).
 	if casa != null:
 		estado["casa"] = casa.estado_para_salvar()
@@ -2055,6 +2057,8 @@ func restaurar_do_save(estado: Dictionary) -> void:
 	var luta := get_node_or_null("Luta")
 	if luta != null:
 		luta.restaurar_mortes(estado.get("mortes", []))
+		if luta.coleta != null:
+			luta.coleta.restaurar(estado.get("coleta_no_chao", []))
 	if casa != null and estado.has("casa"):
 		casa.restaurar(estado["casa"])
 	_conferir_a_enxada_do_finado()

@@ -6,6 +6,14 @@ O teste passa a cobrar Candinha, Filo, Tonho, Zefa, arraial e recursos, incluind
 
 ## Em desenvolvimento — 07/10/2026 (experimento Jev)
 
+- **A caça deixa espólio no chão (#67).** Recolher com E usa o mesmo
+  árbitro das outras interações. A gravura do item identifica a coleta,
+  que permanece no save até ser recolhida; mochila cheia preserva a
+  recompensa. Combate, coleta, idiomas e save passaram. Desligar a
+  recepção de E provoca cinco reprovações. Captura conferida em
+  scratch/coleta/antes-do-e.png. O teste de save também acompanha o
+  formulário de nome e declara o atalho da mochila como preferência.
+
 - **O calendário muda a atmosfera do vale (#17).** Materiais das árvores
   Tripo e folhagens procedurais existentes acompanham as quatro estações,
   sem trocar texturas nem acumular tinta. A luz solar e os volumes de aves

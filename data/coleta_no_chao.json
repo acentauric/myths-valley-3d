@@ -1,0 +1,6 @@
+{
+  "pegar": {"texto": "Recolher", "texto_en": "Pick up", "texto_es": "Recoger"},
+  "cheia": {"texto": "Mochila cheia. O item continua no chão.", "texto_en": "Backpack full. The item remains on the ground.", "texto_es": "Mochila llena. El objeto sigue en el suelo."},
+  "recebeu": {"texto": "Recolhido: %d × %s.", "texto_en": "Picked up: %d × %s.", "texto_es": "Recogido: %d × %s."},
+  "caiu": {"texto": "%s caiu. Recolha %s com E.", "texto_en": "%s fell. Pick up %s with E.", "texto_es": "%s cayó. Recoge %s con E."}
+}

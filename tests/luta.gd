@@ -204,7 +204,8 @@ func _run() -> void:
 	await luta.bater("golpe", "facao")
 	_conferir(bicho.morto(), "o golpe final não derrubou o caititu")
 	_conferir(regra.abatidos("caititu") == abates_antes + 1, "o abate não foi contado")
-	_conferir(inventario.quantidade("carne_de_caca") == carne_antes + 1, "a carne de caça não foi para a mochila")
+	_conferir(inventario.quantidade("carne_de_caca") == carne_antes, "a carne foi para a mochila sem coleta")
+	_conferir(luta.coleta != null and luta.coleta.caidos.size() == 1, "a carne não ficou no chão")
 	_conferir(is_equal_approx(energia.atual, 20.0 - energia.custo("bater", regra.folego("golpe")) + float(caititu["folego"])),
 		"derrubar não devolveu o fôlego do caititu: %s" % str(energia.atual))
 	bicho.set_physics_process(true)

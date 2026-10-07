@@ -5,6 +5,11 @@ raiz. O jogo 2D segue sua própria linha em `acentauric/myths-valley`.
 
 ## O que já roda
 
+A #67 está concluída (07/10/2026): espólio de combate fica no chão,
+com a gravura do item e uma oferta de E. Permanece no save até ser
+recolhido; mochila cheia não o apaga. Alcance, foco, repetição, combate
+e reabertura do arquivo de save estão conferidos.
+
 A #17 está concluída (07/10/2026): a virada do calendário altera a tinta
 da mata, o tom da luz solar e a mistura de aves e insetos. As variações
 são discretas, próprias do vale tropical; texturas e modelos permanecem.
