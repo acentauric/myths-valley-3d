@@ -5,6 +5,12 @@ raiz. O jogo 2D segue sua própria linha em `acentauric/myths-valley`.
 
 ## O que já roda
 
+A rota de entrada/saída usa as soleiras alinhadas quando cruza um cômodo,
+sem forçar porta trancada. A navegação também reserva a inclinação dos
+troncos à altura do corpo. Igreja nos dois sentidos e navegação passam;
+mutantes reproduzem umbral e tronco da orla. A quina da ponte central e
+a revisão completa seguem pendentes. Ver [ROTAS_PORTAS_E_TRONCOS.md](../testes/ROTAS_PORTAS_E_TRONCOS.md).
+
 As cercas repetidas ganham corpos com as transformações do desenho na
 camada de mundo (#125). Navegação e encosta passam; a Candinha alcança
 Zefa andando com colisões. A revisão permanece aberta porque o passeio

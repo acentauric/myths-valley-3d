@@ -6,6 +6,12 @@ O teste passa a cobrar Candinha, Filo, Tonho, Zefa, arraial e recursos, incluind
 
 ## Em desenvolvimento — 07/10/2026 (experimento Jev)
 
+- #99/#125/#150 (parcial): caminhos atravessam cômodos pelas soleiras;
+  portas trancadas não recebem travessia forçada. A reserva de troncos
+  inclui sua inclinação à altura do agente. Navegação e igreja nos dois
+  sentidos passam; mutantes restauram os bloqueios no umbral e na orla.
+  A ponte central ainda impede concluir a revisão global.
+
 - #159 concluída: além da chegada real da V21, o botão Teste automático do
   menu abriu uma partida nova em perfil separado. F8 encerrou o filho normal
   com `user_stop`, 19 decisões, 33,2 s de jogo, custo zero, código Godot 0 e

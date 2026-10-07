@@ -183,6 +183,7 @@ func _run() -> void:
 			var batida := espaco.intersect_ray(raio)
 			if not batida.is_empty():
 				var corpo = batida.get("collider")
+				print("NAVEGACAO_CONTATO: ", nome, " em ", batida.get("position"), " corpo ", corpo.global_transform if corpo is Node3D else corpo)
 				_conferir(false, "o caminho %s atravessa %s" % [nome, str(corpo.get_path()) if corpo is Node else str(corpo)])
 				break
 

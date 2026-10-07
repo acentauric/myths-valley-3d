@@ -251,9 +251,41 @@ func esta_pronta() -> bool:
 
 
 ## O caminho de `de` até `para` pela malha, ou vazio sem malha.
+## Entre cômodos, chega pela soleira e cruza o vão alinhado. Cortar a quina
+## do umbral prendia a cápsula da igreja com a passagem central livre.
 func caminho(de: Vector3, para: Vector3) -> PackedVector3Array:
 	if not _pronta:
 		return PackedVector3Array()
+	var interiores: Node = _raiz.get("interiores")
+	if interiores == null:
+		return _caminho_na_malha(de, para)
+	var saida: String = interiores.contem(de)
+	var entrada: String = interiores.contem(para)
+	if saida == entrada:
+		return _caminho_na_malha(de, para)
+	var sala_saida: Node3D = interiores.sala_de(saida)
+	var sala_entrada: Node3D = interiores.sala_de(entrada)
+	# Uma porta fechada não ganha um trecho que a atravesse à força.
+	if (sala_saida != null and sala_saida.trancada()) or (sala_entrada != null and sala_entrada.trancada()):
+		return _caminho_na_malha(de, para)
+	var pontos := PackedVector3Array()
+	var inicio := de
+	var fim := para
+	if sala_saida != null:
+		pontos.append_array(_caminho_na_malha(de, sala_saida.soleira_de_dentro()))
+		inicio = sala_saida.soleira_de_fora()
+		pontos.append(inicio)
+	if sala_entrada != null:
+		fim = sala_entrada.soleira_de_fora()
+	pontos.append_array(_caminho_na_malha(inicio, fim))
+	if sala_entrada != null:
+		pontos.append(sala_entrada.soleira_de_dentro())
+		pontos.append_array(_caminho_na_malha(sala_entrada.soleira_de_dentro(), para))
+	return pontos
+
+
+## Segmento livre calculado pela malha, preservando o raio das portas.
+func _caminho_na_malha(de: Vector3, para: Vector3) -> PackedVector3Array:
 	return NavigationServer3D.map_get_path(get_world_3d().navigation_map, de, para, true)
 
 
@@ -301,10 +333,25 @@ func _troncos_da_mata(fonte: NavigationMeshSourceGeometryData3D, area: AABB) -> 
 		# deixava a rota atravessar a borda do corpo físico (#99/#150).
 		var raio_fisico: float = regiao.raio_fisico_do_tronco(tronco)
 		var raio := maxf(raio_fisico, 0.2) / cos(PI / 8.0)
+		# O cilindro físico acompanha a inclinação do tronco. Um octógono só
+		# no pé deixava a parte à altura do corpo atravessar o caminho (orla,
+		# tronco com eixo Y = 0,75). Reserva a projeção até a altura do agente,
+		# incluindo seu degrau; a copa alta não vira parede de navegação.
+		var base_eixo: Vector3 = regiao.base_do_tronco(tronco)
+		var alto_eixo: Vector3 = tronco.get("alto_tronco", base_eixo + Vector3.UP)
+		var eixo := (alto_eixo - base_eixo).normalized()
+		if eixo.y < 0.1:
+			eixo = Vector3.UP
+		var trecho := minf(float(tronco.get("height", ALTURA)), (ALTURA + DEGRAU) / eixo.y)
+		var deslocamento := Vector2(eixo.x, eixo.z) * trecho
+		var pegada := PackedVector2Array()
+		for ponta in [Vector2.ZERO, deslocamento]:
+			for k in 8:
+				var angulo := TAU * float(k) / 8.0
+				pegada.append(ponto + ponta + Vector2(cos(angulo), sin(angulo)) * raio)
 		var contorno := PackedVector3Array()
-		for k in 8:
-			var angulo := TAU * float(k) / 8.0
-			contorno.append(Vector3(ponto.x + cos(angulo) * raio, 0.0, ponto.y + sin(angulo) * raio))
+		for vertice in Geometry2D.convex_hull(pegada):
+			contorno.append(Vector3(vertice.x, 0.0, vertice.y))
 		# O PÉ DO TRONCO é o chão do vale ali, e não o "ground" da lista, que nem
 		# todo tronco traz: sem ele o octógono ficava embaixo da terra.
 		var pe: float = _mundo.ground_height_at(Vector3(ponto.x, 0.0, ponto.y))
