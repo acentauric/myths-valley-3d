@@ -87,16 +87,47 @@ func _congelar_altura_da_pose_de_escada() -> void:
 			animation.track_set_key_value(track, key, posicao)
 
 
+## O GOLPE DENTRO DO CLIPE (#112, a sonda da mão de 06/10): `chop_001` dura
+## 6,63 s, mas o golpe é só a primeira metade — a mão sobe aos 21 %, bate aos
+## 32 % e volta ao repouso aos 50 %; da metade ao fim o corpo fica parado. O
+## impacto saía aos 50 % (depois de a mão já estar em repouso) e o corpo ficava
+## travado os 6,63 s inteiros (3,5 s na velocidade do golpe): o golpe parecia
+## lento e fora do tempo, e quem apertava E de novo era cobrado sem ver nada.
+## Agora o impacto sai onde a mão bate, e o golpe termina onde ela volta.
+const IMPACTO_DO_GOLPE := 0.325
+const FIM_DO_GOLPE := 0.5
+
+
 func _process(_delta: float) -> void:
-	if not chop_ativo() or _chop_impacto_emitido:
+	if not chop_ativo():
 		return
 	var clip := String(_clips.get("chop", ""))
 	if clip.is_empty():
 		return
 	var duracao := animation_player.get_animation(clip).length
-	if duracao > 0.0 and animation_player.current_animation_position >= duracao * 0.5:
+	if duracao <= 0.0:
+		return
+	var posicao := animation_player.current_animation_position
+	if not _chop_impacto_emitido and posicao >= duracao * IMPACTO_DO_GOLPE:
 		_chop_impacto_emitido = true
 		golpe_impacto.emit()
+	if posicao >= duracao * FIM_DO_GOLPE:
+		_concluir_o_golpe(clip)
+
+
+## O golpe acabou (a mão voltou ao repouso): avisa, e repete do começo se ainda
+## há repetições, senão volta ao idle.
+func _concluir_o_golpe(clip: String) -> void:
+	golpe_concluido.emit()
+	if _chop_repetitions_left > 1:
+		_chop_repetitions_left -= 1
+		_chop_impacto_emitido = false
+		animation_player.play(clip, 0.08)
+		animation_player.seek(0.0, true)
+		return
+	_chop_repetitions_left = 0
+	_gesture_active = false
+	_play_motion("idle", 1.0)
 
 
 func update_motion(speed: float, _delta: float) -> void:
@@ -148,6 +179,21 @@ func play_gesture(index: int) -> String:
 	return label
 
 
+## A velocidade do clipe de golpe, e quanto um golpe dura (s) do `play_chop` à
+## mão de volta ao repouso (FIM_DO_GOLPE) — 0 sem clipe. Quem trava o corpo pelo
+## golpe (`recursos_3d`) pergunta, em vez de chutar um teto (#112).
+const VELOCIDADE_DO_GOLPE := 1.875
+
+
+func duracao_do_golpe() -> float:
+	if animation_player == null:
+		return 0.0
+	var clip: String = _clips.get("chop", "")
+	if clip.is_empty():
+		return 0.0
+	return animation_player.get_animation(clip).length * FIM_DO_GOLPE / VELOCIDADE_DO_GOLPE
+
+
 func play_chop(repeticoes: int = 2) -> String:
 	if animation_player == null:
 		return ""
@@ -160,7 +206,7 @@ func play_chop(repeticoes: int = 2) -> String:
 	_chop_impacto_emitido = false
 	_jump_active = false
 	_current_motion = ""
-	animation_player.speed_scale = 1.875
+	animation_player.speed_scale = VELOCIDADE_DO_GOLPE
 	animation_player.play(clip, 0.18)
 	return "Golpear"
 

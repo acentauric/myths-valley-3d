@@ -22,6 +22,20 @@ extends Node
 ## barra de mão não existia. A barra chegou (teclas 1 a 0, como no 2D; os
 ## gestos ficaram no Alt), e a simplificação virou defeito: com o machado na
 ## mão, o capim da foice se cortava. Ver `_tem_ferramenta`.
+##
+##
+## A COBRANÇA SAI NO IMPACTO, E NÃO NO APERTO (#112).
+##
+## "Aperto E várias vezes e consome a stamina várias vezes. Mas só acontece uma
+## animação e o item não vai parar no inventário até que a animação termine."
+## A reserva era cobrada no E, e o golpe acontecia no impacto do clipe; o clipe
+## que o corpo ainda andando cortava não dava impacto, o alvo só sofria o golpe
+## por um temporizador de 1,5 s, a trava caía a 1,25 s e o E seguinte
+## reiniciava o clipe no meio. Agora o E só confere se há com que pagar
+## (`bater`); a cobrança e o golpe saem juntos, no impacto
+## (`_ao_impacto_do_golpe`); a trava dura o clipe inteiro; e um clipe que morre
+## solta a trava sem cobrar nem bater (`_cancelar_golpe`). O E durante o golpe
+## não faz nada. Portão `golpe_repetido`.
 
 const DicaTecla = preload("res://scripts/prototipo_3d/dica_tecla.gd")
 const Atalhos = preload("res://scripts/prototipo_3d/atalhos.gd")
@@ -51,6 +65,8 @@ var _dica: PanelContainer
 var _animador: Node
 var _golpe_pendente := ""
 var _golpe_animando := false
+## Quadros seguidos com o golpe pendente e o clipe parado: o clipe morreu.
+var _quadros_sem_clipe := 0
 var _timer_impacto: Timer
 var _timer_fim_golpe: Timer
 ## id → {"no", "pos", "ficha", "golpes_dados"}
@@ -79,7 +95,7 @@ func configurar(world: Node3D, jogador: Node3D, hud, hud_layer: Control) -> void
 	_timer_impacto.name = "ImpactoDoGolpe"
 	_timer_impacto.one_shot = true
 	add_child(_timer_impacto)
-	_timer_impacto.timeout.connect(_ao_impacto_do_golpe)
+	_timer_impacto.timeout.connect(_ao_impacto_sem_sinal)
 	_timer_fim_golpe = Timer.new()
 	_timer_fim_golpe.name = "FimDoGolpe"
 	_timer_fim_golpe.one_shot = true
@@ -169,6 +185,16 @@ func _erguer() -> void:
 
 
 func _process(_delta: float) -> void:
+	# O CLIPE MORREU NO CAMINHO (o corpo se mexeu: `update_motion` corta o gesto)
+	# e o impacto não vai vir: solta a trava já, sem cobrar (#112). Dois quadros
+	# de folga para o `play` entrar.
+	if _golpe_pendente != "" and _golpe_animando and _animador != null and _animador.has_method("chop_ativo"):
+		if bool(_animador.call("chop_ativo")):
+			_quadros_sem_clipe = 0
+		else:
+			_quadros_sem_clipe += 1
+			if _quadros_sem_clipe > 2:
+				_cancelar_golpe()
 	if _jogador == null or _dica == null:
 		return
 	var antes := _perto
@@ -360,19 +386,30 @@ func bater() -> bool:
 		recusado.emit(impede)
 		return false
 	var dureza := _dureza(ficha)
+	if not Energia.aguenta("bater", dureza):
+		recusado.emit("Sem %s para bater." % Energia.nome_recurso())
+		return false
+	# Recursos recolhidos à mão não usam ferramenta nem animação de golpe:
+	# cobram e resolvem já, para não manter a trava entre coletas próximas.
+	if ferramenta == "":
+		if not _cobrar(dureza):
+			return false
+		_aplicar_golpe(_perto)
+		return true
+	# COM FERRAMENTA A COBRANÇA SAI NO IMPACTO (#112), junto com o golpe: ver
+	# `_ao_impacto_do_golpe`. Aqui só se conferiu que há com que pagar.
+	_iniciar_golpe(_perto)
+	return true
+
+
+## COBRA UM GOLPE: a reserva (bater × dureza) e o que o trabalho ensina. QUEM
+## TRABALHA APRENDE, e o duro ensina mais (`Talentos.XP_POR_ACAO`): é por aqui
+## que o golpe leva à teia que abre o alvo mais duro.
+func _cobrar(dureza: float) -> bool:
 	if not Energia.gastar("bater", dureza):
 		recusado.emit("Sem %s para bater." % Energia.nome_recurso())
 		return false
-	# QUEM TRABALHA APRENDE, e o duro ensina mais (`Talentos.XP_POR_ACAO`): é por
-	# aqui que o golpe leva à teia que abre o alvo mais duro.
 	Talentos.ganhar("bater_duro" if dureza > 1.5 else "bater")
-	# Recursos recolhidos à mão não usam ferramenta nem animação de golpe.
-	# Resolva-os já para não manter a trava entre coletas próximas.
-	if ferramenta == "":
-		_aplicar_golpe(_perto)
-		return true
-
-	_iniciar_golpe(_perto)
 	return true
 
 
@@ -385,15 +422,29 @@ func _iniciar_golpe(id: String) -> void:
 	elif animador != null and animador.has_method("play_gesture"):
 		animacao_iniciada = not str(animador.call("play_gesture", GESTO_GOLPEAR)).is_empty()
 	_golpe_animando = animacao_iniciada and animador.has_signal("golpe_concluido")
+	# A TRAVA DURA O CLIPE INTEIRO (#112): a 1,25 s fixo ela caía antes de o
+	# clipe acabar, e o E seguinte reiniciava o golpe no meio — "só acontece uma
+	# animação". O animador diz quanto o clipe dura; sem ele, o teto antigo.
+	var duracao := 0.0
+	if animacao_iniciada and animador.has_method("duracao_do_golpe"):
+		duracao = float(animador.call("duracao_do_golpe"))
 	if _golpe_animando:
-		_timer_fim_golpe.start(TEMPO_LIMITE_FIM_DO_GOLPE)
+		_timer_fim_golpe.start(duracao + 0.25 if duracao > 0.0 else TEMPO_LIMITE_FIM_DO_GOLPE)
 	if animacao_iniciada and _jogador.has_method("travar_acao_de_golpe"):
 		_jogador.call("travar_acao_de_golpe", TEMPO_MAXIMO_DO_GOLPE, true)
-	# Os animadores do projeto emitem o impacto exatamente no meio do clipe.
-	# O timer cobre modelos sem esse sinal e evita que o golpe fique pendurado.
-	_timer_impacto.start(TEMPO_LIMITE_IMPACTO if animacao_iniciada and animador.has_signal("golpe_impacto") else TEMPO_ATE_IMPACTO)
+	_quadros_sem_clipe = 0
+	# Os animadores do projeto emitem o impacto onde a mão bate, antes de o golpe
+	# acabar. O timer cobre modelos sem esse sinal (`_ao_impacto_sem_sinal`) e,
+	# nos que o têm, é o teto para um impacto que não veio.
+	if animacao_iniciada and animador.has_signal("golpe_impacto"):
+		_timer_impacto.start(duracao + 0.3 if duracao > 0.0 else TEMPO_LIMITE_IMPACTO)
+	else:
+		_timer_impacto.start(TEMPO_ATE_IMPACTO)
 
 
+## O IMPACTO: a ferramenta encontrou o alvo. É AQUI que a reserva é cobrada
+## (#112) — cobrança e golpe no mesmo instante, e nunca uma sem o outro. Sem com
+## que pagar (a reserva acabou entre o aperto e o impacto), o golpe não sai.
 func _ao_impacto_do_golpe() -> void:
 	if _golpe_pendente.is_empty():
 		return
@@ -402,10 +453,33 @@ func _ao_impacto_do_golpe() -> void:
 	_golpe_pendente = ""
 	if not _alvos.has(id):
 		return
-	_aplicar_golpe(id)
+	if _cobrar(_dureza(_alvos[id]["ficha"])):
+		_aplicar_golpe(id)
 	if not _golpe_animando:
 		if _jogador.has_method("liberar_acao_de_golpe"):
 			_jogador.call("liberar_acao_de_golpe")
+
+
+## O TEMPORIZADOR DO IMPACTO venceu. Em animador sem o sinal, é o impacto (o
+## gesto do procedural). Em animador com o sinal, o impacto NÃO VEIO: o clipe
+## morreu no caminho, e o golpe é cancelado sem cobrar nem bater (#112) — era o
+## golpe fantasma de 1,5 s, pago no aperto e sem golpe à vista.
+func _ao_impacto_sem_sinal() -> void:
+	if _golpe_animando and _animador != null and _animador.has_signal("golpe_impacto"):
+		_cancelar_golpe()
+		return
+	_ao_impacto_do_golpe()
+
+
+## O GOLPE NÃO ACONTECEU: solta a trava sem cobrar nem bater.
+func _cancelar_golpe() -> void:
+	_timer_impacto.stop()
+	_timer_fim_golpe.stop()
+	_golpe_pendente = ""
+	_golpe_animando = false
+	_quadros_sem_clipe = 0
+	if _jogador != null and _jogador.has_method("liberar_acao_de_golpe"):
+		_jogador.call("liberar_acao_de_golpe")
 
 
 func _ao_golpe_concluido() -> void:

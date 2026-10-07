@@ -350,6 +350,24 @@
   Pedro ficou no salão redondo…". Cenas em `fazenda_vale` e `prototype`; o
   plano em `MISSOES_DO_2D.md`. Portões `fazenda` (as partes 6b e 6c) e
   `idiomas`.
+- **Apertar E repetidas vezes num coletável cobra só o golpe que acontece
+  (#112).** "Consome a stamina várias vezes, mas só acontece uma animação e o
+  item não vai parar no inventário até que a animação termine." A reserva era
+  cobrada no aperto do E, o golpe acontecia no impacto do clipe, e o clipe de
+  golpe do personagem (`chop_001`, 6,63 s) tem o golpe só na primeira metade —
+  a mão bate aos 32 % e volta ao repouso aos 50 %; o animador emitia o impacto
+  aos 50 %, com a mão já parada, e travava o corpo os 3,5 s inteiros; a trava do
+  recurso caía a 1,25 s e o E seguinte era cobrado sem reiniciar o clipe. Agora
+  o impacto sai onde a mão bate e o golpe termina onde ela volta
+  (`authored_animator`: IMPACTO_DO_GOLPE, FIM_DO_GOLPE, `duracao_do_golpe`);
+  em `recursos_3d` o E só confere se há com que pagar, a cobrança e o golpe
+  saem juntos no impacto, a trava dura o clipe inteiro e um clipe que morre
+  (o corpo se mexeu) solta a trava sem cobrar nem bater; o E durante o golpe não
+  faz nada. Na árvore, o E repetido não interrompe mais o corte (ligava e
+  desligava o machado sem a árvore sentir golpe). Portão novo `golpe_repetido`:
+  o E a cada 0,15 s no lajedo, cada cobrança no instante de um golpe com impacto
+  de animação, a conta fechando; e na árvore o corte avança e cada golpe custa o
+  seu.
 
 ## Em desenvolvimento — 05/10/2026
 
