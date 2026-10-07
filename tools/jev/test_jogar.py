@@ -12,6 +12,17 @@ from jogar import MAX_BODY, MAX_TOKENS, PRICE, ProgressGuard, Session, game_refe
 
 
 class SpendingTests(unittest.TestCase):
+    def test_work_materials_follow_observed_discount_without_mutating_game_step(self):
+        step = {"id": "mirante_material", "meta": {"tipo": "juntar", "da_obra": "mirante_levantar"}}
+        state = {"objective": {"id": "pedro_mirante_material"},
+                 "mission_chains": [{"started": True, "main": True, "current_step": step}],
+                 "work_costs": {"mirante_levantar": {"tabua": 18, "pedra": 11, "corda": 6}}}
+        task = current_task(state, {})
+        self.assertEqual(task["step"]["meta"].get("itens"), {"tabua": 18, "pedra": 11, "corda": 6})
+        self.assertNotIn("itens", step["meta"])
+        task["step"]["meta"]["itens"]["tabua"] = 999
+        self.assertEqual(state["work_costs"]["mirante_levantar"]["tabua"], 18)
+
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
@@ -164,6 +175,8 @@ class SpendingTests(unittest.TestCase):
                  "npcs": [{"id": "candinha", "node": "MoradorCandinha", "name": "Dona Candinha", "distance": 7.7}]}
         task = current_task(state, {"follow_pedro": "follow", "approach_MoradorCandinha": "approach"})
         self.assertEqual(task["actions_matching_the_current_requirement"], ["approach_MoradorCandinha"])
+        state["interaction_target"] = "MoradorCandinha"
+        self.assertEqual(current_task(state, {"interact": "E", "follow_pedro": "follow"})["actions_matching_the_current_requirement"], ["interact"])
 
     def test_run_requirement_is_distinguished_from_future_NPC_missions(self):
         state = {"objective": {"id": "pedro_correr"}, "mission_chains": [{"started": True, "main": True,

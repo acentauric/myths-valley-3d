@@ -30,8 +30,9 @@ class JogadorAutomatico:
                            "goal": [state.get("objective", {}).get("id"), state.get("objective", {}).get("feito")],
                            "target": state.get("interaction_target"),
                            "hand": state.get("inventory", {}).get("in_hand"),
+                           "resource_work": state.get("resource_work", {}),
                            "items": self._inventory(state), "screen": state.get("screen"),
-                           "panel": state.get("panel", {}), "ui": state.get("inventory_screen", {})},
+                           "panel": {k: state.get("panel", {}).get(k) for k in ("tab", "cursor", "allowed_tabs")}, "ui": state.get("inventory_screen", {})},
                           sort_keys=True)
 
     def _explore(self, state, actions, select):
@@ -52,6 +53,23 @@ class JogadorAutomatico:
                     return select(action, "Exploração: testar uma seleção/aba ainda não experimentada")
             return select("close_screen", "Exploração: voltar ao mundo")
         self.screen_probes = 0
+        # A route can cross a collider missing from the navigation mesh. Probe
+        # a physically clear direction before retrying another distant route.
+        failed = state.get("current_task", {}).get("last_action_failed", [])
+        if self.last_action in failed or getattr(self, "route_failed", False):
+            marker = state.get("objective", {}).get("alvo", [])
+            if self.last_action.startswith("gather_"):
+                marker = state.get("resource_targets", {}).get(self.last_action[7:], marker)
+            def escape_rank(action):
+                point = state.get("directions", {}).get(action[5:], {}).get("walk_endpoint", [])
+                distance = sum((point[i] - marker[i]) ** 2 for i in (0, 2)) if len(point) == len(marker) == 3 else float("inf")
+                return (distance, tried[(self.region, "escape", action)], action)
+            for action in sorted((a for a in actions if a.startswith("walk_")), key=escape_rank):
+                direction = state.get("directions", {}).get(action[5:], {})
+                if (not direction.get("blocked", True) and direction.get("walk_endpoint_walkable") is True
+                        and tried[(self.region, "escape", action)] < 2):
+                    tried[(self.region, "escape", action)] += 1
+                    return select(action, "Sondar passagem fisicamente livre apos colisao da rota")
         target = state.get("interaction_target", "")
         if target and fresh("interact"):
             return select("interact", "Exploração: experimentar a interação atual com a ferramenta selecionada")
@@ -132,6 +150,7 @@ class JogadorAutomatico:
             self.__dict__.setdefault(key, value)
         context = self._context(state)
         self.region = json.dumps([round(v / 12) for v in state.get("position", [])])
+        self.route_failed = bool(task.get("last_action_failed")) and self.last_action.startswith(("approach_", "explore_", "gather_", "objective", "follow_pedro"))
         now = float(state.get("seconds", time.monotonic()))
         # Texto/alvo podem mudar sem cumprir uma etapa: conta somente meta,
         # quantidade feita, inventário e obras construídas como progresso.
@@ -139,7 +158,7 @@ class JogadorAutomatico:
         if obj.get("id"):
             self.last_valid_objective = obj.copy()
         signature = json.dumps([obj.get("id"), obj.get("feito"), self._inventory(state),
-                                state.get("built_works", {})], sort_keys=True)
+                                state.get("built_works", {}), state.get("resource_work", {})], sort_keys=True)
         if signature != self.progress_signature:
             self.progress_signature = signature
             self.last_progress_time = now
@@ -153,12 +172,29 @@ class JogadorAutomatico:
             self.last_goal = (goal, progress)
         observation = json.dumps({k: state.get(k) for k in
                                   ("position", "objective", "screen", "inventory", "inventory_screen",
-                                   "interaction_target", "home_interaction")}, sort_keys=True)
+                                   "interaction_target", "home_interaction", "resource_work")}, sort_keys=True)
         self.repeated_observations = self.repeated_observations + 1 if observation == self.last_observation else 0
         self.last_observation = observation
 
         def select(action, reason):
             if action in actions:
+                marker = (state.get("objective", {}).get("alvo", []) if action == "objective" else
+                          state.get("world_map", {}).get(action[8:], []) if action.startswith("explore_") else [])
+                if action == "follow_pedro":
+                    marker = next((n.get("position", []) for n in state.get("npcs", [])
+                                   if n.get("node") == "MoradorPedro" or n.get("name") == "Pedro"), state.get("pedro", {}).get("position", []))
+                position = state.get("position", [])
+                if action.startswith("gather_"):
+                    marker = state.get("resource_targets", {}).get(action[7:], [])
+                if action.startswith("walk_") and self.route_failed and len(position) == 3:
+                    counter = ("route_escape", goal)
+                    self.attempts[counter] += 1
+                    self.escape_leg = {"action": action, "origin": position.copy(), "goal": goal,
+                                       "limit": min(24, 8 * self.attempts[counter]),
+                                       "target": getattr(self, "navigation_leg", {}).get("target", state.get("objective", {}).get("alvo", []))}
+                if len(marker) == len(position) == 3:
+                    self.navigation_leg = {"goal": goal, "action": action, "target": marker,
+                                           "distance": sum((position[i] - marker[i]) ** 2 for i in (0, 2)) ** 0.5}
                 self.reason = reason
                 self.attempts[action] += 1
                 self.last_action = action
@@ -168,7 +204,7 @@ class JogadorAutomatico:
                 work = task.get("step", {}).get("meta", {}).get("eventos", [])
                 delay = self.work_delay if action in ("interact", "work_E") and any(
                     e in work for e in ("arou", "plantou", "regou")) else self.action_delay
-                if action.startswith(("walk_", "run_", "approach_", "explore_")) or action in ("objective", "follow_pedro", "wait"):
+                if action.startswith(("walk_", "run_", "approach_", "explore_", "gather_")) or action in ("objective", "follow_pedro", "wait"):
                     delay = 0.0
                 time.sleep(delay)
                 return action
@@ -180,6 +216,8 @@ class JogadorAutomatico:
         for action, description in actions.items():
             if description == "Click PULAR":
                 return select(action, "Pular introdução e iniciar a campanha")
+        if "name_player" in actions:
+            return select("name_player", "Preencher o nome visivel da partida de teste e confirmar Enter")
         buttons = [a for a in actions if a.startswith("button_")]
         if buttons:
             return select(buttons[0], "Avançar a abertura em partida nova")
@@ -187,39 +225,189 @@ class JogadorAutomatico:
             if action in actions:
                 return select(action, "Responder ou avançar a fala atual")
 
+        pending_main = [m for m in state.get("journal", {}).get("ativas", []) if m.get("principal")]
+        # Uma etapa concluída sai da lista e a próxima entra no fim. A ordem
+        # de inserção não deve trocar a cadeia do guia pela missão de outro NPC.
+        main_mission = next((m for m in pending_main if m.get("dono") == "pedro"), next(iter(pending_main), {}))
+        next_guide_chain = any(c.get("key") == "pedro" and c.get("main") and not c.get("started") and not c.get("completed") and not c.get("locked", False) for c in state.get("mission_chains", []))
+        if not any(m.get("dono") == "pedro" for m in pending_main) and next_guide_chain and not state.get("screen"):
+            probe = ("next_guide_chain", tuple(c.get("name") for c in state.get("mission_chains", []) if c.get("completed")))
+            if self.attempts[probe] < 3:
+                if state.get("interaction_target") in ("Pedro", "MoradorPedro") and "interact" in actions:
+                    self.attempts[probe] += 1
+                    return select("interact", "Perguntar ao guia pela proxima cadeia liberada da historia")
+                if "follow_pedro" in actions:
+                    return select("follow_pedro", "Voltar ao guia para descobrir a proxima cadeia liberada")
+        if main_mission and state.get("objective", {}).get("id") != main_mission.get("id"):
+            # A sondagem pode mudar o foco: retomar a principal pela seleção
+            # visível da caderneta, sem alterar seu estado diretamente.
+            if not state.get("screen"):
+                return select("inspect_journal", "Retomar pela caderneta a missao principal ainda pendente")
+            panel = state.get("panel", {})
+            if not panel or 0 not in panel.get("allowed_tabs", [0]):
+                return select("close_screen", "Voltar a caderneta para acompanhar a historia principal")
+            if panel.get("tab") != 0:
+                return select("screen_tab", "Voltar a aba Missoes antes de selecionar a historia principal")
+            entries = panel.get("entries", [])
+            index = next((i for i, entry in enumerate(entries) if isinstance(entry, dict) and entry.get("id") == main_mission.get("id")), None)
+            if index is None:
+                return select("close_screen", "A missao principal nao aparece nesta lista; reler a caderneta")
+            cursor = int(panel.get("cursor", 0))
+            return select("confirm_screen" if cursor == index else "screen_down" if cursor < index else "screen_up",
+                          "Acompanhar pela interface a missao principal: " + main_mission.get("id", ""))
+
+        escape = getattr(self, "escape_leg", {})
+        if escape and not state.get("screen"):
+            position = state.get("position", [])
+            direction = state.get("directions", {}).get(escape["action"][5:], {})
+            moved = sum((position[i] - escape["origin"][i]) ** 2 for i in (0, 2)) ** 0.5 if len(position) == 3 else 8
+            marker = escape.get("target", state.get("objective", {}).get("alvo", []))
+            arrived = len(marker) == len(position) == 3 and sum((position[i] - marker[i]) ** 2 for i in (0, 2)) <= 9
+            limit = escape.get("limit", 8)
+            if limit >= 24 and len(marker) == len(position) == 3:
+                # Após regressões repetidas da rota, cada passo físico volta
+                # a escolher a direção livre que aproxima do alvo observado.
+                directions = state.get("directions", {})
+                clear = [a for a in actions if a.startswith("walk_")
+                         and not directions.get(a[5:], {}).get("blocked", True)
+                         and directions.get(a[5:], {}).get("walk_endpoint_walkable") is True]
+                def remaining(a):
+                    point = directions[a[5:]].get("walk_endpoint", [])
+                    return sum((point[i] - marker[i]) ** 2 for i in (0, 2)) if len(point) == 3 else float("inf")
+                if clear:
+                    best = min(clear, key=remaining)
+                    if remaining(best) < sum((position[i] - marker[i]) ** 2 for i in (0, 2)):
+                        escape["action"] = best
+                        direction = directions[best[5:]]
+            if (escape.get("goal") == goal and moved < limit and not arrived and not task.get("last_action_failed")
+                    and escape["action"] in actions and not direction.get("blocked", True)
+                    and direction.get("walk_endpoint_walkable") is True):
+                return select(escape["action"], "Continuar o contorno livre antes de recalcular a rota que colidiu")
+            self.escape_leg = {}
+            if moved >= limit or arrived:
+                self.recovery = False
+                self.last_progress_time = now
+
         resource_meta = task.get("step", {}).get("meta", {})
+        material_budget = Counter(resource_meta.get("itens", {}))
+        owned = self._inventory(state)
+        for recipes in state.get("crafting", {}).values():
+            for recipe in recipes:
+                missing = max(0, material_budget.get(recipe.get("id"), 0) - owned.get(recipe.get("id"), 0))
+                data = recipe.get("requirements", {})
+                produced = max(1, int(data.get("rende", 1)))
+                batches = (missing + produced - 1) // produced
+                for item, quantity in data.get("custo", {}).items():
+                    if item in ("lenha", "pedra"):
+                        material_budget[item] += batches * quantity
         resource_item = resource_meta.get("item")
-        if resource_meta.get("tipo") == "juntar" and resource_item in ("lenha", "pedra") and self._inventory(state).get(resource_item, 0) < resource_meta.get("quantos", 1):
+        if not resource_item:
+            resource_item = next((item for item, qty in material_budget.items()
+                                  if item in ("lenha", "pedra") and self._inventory(state).get(item, 0) < qty), None)
+        resource_quantity = material_budget.get(resource_item, resource_meta.get("quantos", state.get("objective", {}).get("total", 1)))
+        if any(c.get("target", {}).get("em_trabalho") for c in state.get("interaction_candidates", [])) and "wait" in actions:
+            return select("wait", "Esperar o trabalho em andamento concluir antes de executar outro golpe")
+        if getattr(self, "food_recovery", False) and state.get("energy", 100) >= 15:
+            self.food_recovery = False
+            if state.get("inventory_screen"):
+                return select("close_screen", "Folego recuperado: fechar mochila e retomar o trabalho")
+        if state.get("energy", 100) < 15:
+            food_ids = state.get("inventory", {}).get("food_items", [r.get("id") for r in state.get("crafting", {}).get("Cozinha", [])])
+            slots = state.get("inventory", {}).get("slots", [])
+            food_slot = next((i for i, slot in enumerate(slots) if slot.get("id") in food_ids and slot.get("qtd", 0) > 0), None)
+            if food_slot is not None:
+                self.food_recovery = True
+                if not state.get("screen"):
+                    return select("inspect_inventory", "Folego baixo: abrir mochila para comer antes de continuar o trabalho")
+                ui = state.get("inventory_screen", {})
+                if not ui or ui.get("chest"):
+                    return select("close_screen", "Fechar outra interface para acessar a comida da mochila")
+                cursor = int(ui.get("cursor", 0))
+                if cursor == food_slot:
+                    return select("screen_use", "Comer com F a comida selecionada e recuperar folego")
+                if cursor >= len(slots):
+                    return select("screen_left", "Voltar dos encaixes aos itens da mochila")
+                if cursor // 10 != food_slot // 10:
+                    return select("screen_down" if cursor // 10 < food_slot // 10 else "screen_up", "Selecionar fileira da comida")
+                return select("screen_right" if cursor < food_slot else "screen_left", "Selecionar comida para recuperar folego")
+        if resource_meta.get("tipo") == "juntar" and resource_item in ("lenha", "pedra") and self._inventory(state).get(resource_item, 0) < resource_quantity:
             hand = state.get("inventory", {})
-            if resource_item == "pedra" and hand.get("in_hand") != "picareta":
+            required_tool = "picareta" if resource_item == "pedra" else ("machado" if any(slot.get("id") == "machado" for slot in hand.get("slots", [])[:10]) else None)
+            if required_tool and hand.get("in_hand") != required_tool:
                 for index, slot in enumerate(hand.get("slots", [])[:10]):
-                    if slot.get("id", slot.get("item")) == "picareta" and "hand_%d" % index in actions:
-                        return select("hand_%d" % index, "Equipar picareta antes de qualquer tentativa no recurso")
-            marker = state.get("objective", {}).get("alvo", [])
+                    if slot.get("id", slot.get("item")) == required_tool and "hand_%d" % index in actions:
+                        return select("hand_%d" % index, "Equipar a ferramenta disponivel antes de qualquer tentativa no recurso")
+            marker = state.get("resource_targets", {}).get(resource_item, state.get("objective", {}).get("alvo", []))
             for candidate in state.get("interaction_candidates", []):
                 point = candidate.get("target", {}).get("ponto", [])
-                if candidate.get("source") != "Recursos3D" or len(point) != 3 or len(marker) != 3:
+                source = candidate.get("source", "")
+                if not (source == "Recursos3D" or resource_item == "lenha" and candidate.get("kind") == "tree") or len(point) != 3 or len(marker) != 3:
                     continue
                 if sum((point[i] - marker[i]) ** 2 for i in (0, 2)) >= 4:
                     continue
-                action = ("work_E" if resource_item == "pedra" and "work_E" in actions else "interact") if state.get("interaction_target") == "Recursos3D" else "face_Recursos3D"
+                action = ("work_E" if (resource_item == "pedra" or hand.get("in_hand") == "machado") and "work_E" in actions else "interact") if state.get("interaction_target") == source else "face_" + source
                 if action in actions and self.coverage[(context, action)] < 3 and not task.get("last_action_failed"):
                     return select(action, "Priorizar o recurso exigido antes de explorar conversas ou interfaces")
+            if (not state.get("screen") and "gather_" + resource_item in actions
+                    and not task.get("last_action_failed")):
+                action = "gather_" + resource_item
+                leg = getattr(self, "navigation_leg", {})
+                position = state.get("position", [])
+                stalled = (goal, resource_item, "gather_stalled")
+                if len(position) == len(marker) == 3:
+                    distance = sum((position[i] - marker[i]) ** 2 for i in (0, 2)) ** 0.5
+                    if self.last_action == action and leg.get("target") == marker:
+                        self.attempts[stalled] = self.attempts[stalled] + 1 if distance >= leg.get("distance", distance) - 0.5 else 0
+                    else:
+                        self.attempts[stalled] = 0
+                    if self.attempts[stalled] >= 2:
+                        self.route_failed = True
+                        return self._explore(state, actions, select)
+                return select("gather_" + resource_item, "Agrupar material direto e custo das receitas antes de viajar a oficina")
         # Repetir a mesma interação sem efeito também abre exploração, mesmo
         # que o relógio ou um NPC tenham mudado de posição.
         meta_now = task.get("step", {}).get("meta", {})
+        npc_now = task.get("required_npc", {})
+        if (meta_now.get("tipo") in ("falar", "levar") and state.get("interaction_target")
+                and state.get("interaction_target") in (npc_now.get("node"), npc_now.get("name"))
+                and not npc_now.get("speaking") and "interact" in actions
+                and self.coverage[(context, "interact")] < 3):
+            return select("interact", "Falar com o destinatario real ao alcance em vez de continuar aproximando")
+        if (state.get("pedro", {}).get("conducting") and not state.get("pedro", {}).get("guide_destination_reached")
+                and "follow_pedro" in actions and not task.get("last_action_failed")):
+            return select("follow_pedro", "Concluir a caminhada guiada ativa mesmo com outra missao selecionada na caderneta")
         wanted = meta_now.get("item")
+        if not wanted:
+            recipe_ids = {r.get("id") for recipes in state.get("crafting", {}).values() for r in recipes}
+            wanted = next((item for item, qty in meta_now.get("itens", {}).items() if item in recipe_ids and self._inventory(state).get(item, 0) < qty), None)
+        craft_event = str(meta_now.get("evento", ""))
+        requires_cooking_event = craft_event.startswith("cozinhou:")
+        if requires_cooking_event:
+            wanted = craft_event.split(":", 1)[1]
+        if state.get("interior") == "casa" and not state.get("screen"):
+            outside_goals = {"pedro_roca", "pedro_lenha", "pedro_pedra_do_poco", "pedro_corda", "pedro_poco"}
+            if not task.get("step") or state.get("objective", {}).get("id") in outside_goals or any(
+                    recipe.get("id") == wanted for recipes in state.get("crafting", {}).values() for recipe in recipes):
+                if "exit_home" in actions:
+                    return select("exit_home", "Sair pela soleira real antes de buscar o objetivo externo")
         missing_recipe = next(((station, recipe) for station, recipes in state.get("crafting", {}).items()
                                for recipe in recipes if recipe.get("id") == wanted and
-                               self._inventory(state).get(wanted, 0) < meta_now.get("quantos", 1)), None)
+                               (requires_cooking_event or self._inventory(state).get(wanted, 0) < meta_now.get("itens", {}).get(wanted, meta_now.get("quantos", 1)))), None)
         if missing_recipe:
             station, recipe = missing_recipe
+            anchor = {"Cozinha": "Fogueira"}.get(station, station)
             if not recipe.get("impediment"):
                 panel = state.get("panel", {})
                 tab = {"Oficina": 3, "Cozinha": 4}.get(station)
                 if panel and tab is not None:
                     if panel.get("tab") != tab:
-                        return select("screen_tab", "Procurar a aba da receita necessária")
+                        probe = (state.get("objective", {}).get("id"), station, "tab_probe")
+                        allowed = panel.get("allowed_tabs")
+                        if (allowed is not None and tab not in allowed) or self.attempts[probe] >= 8:
+                            self.attempts[probe] = 0
+                            return select("close_screen", "A receita nao esta nesta interface; fechar e reaproximar a bancada")
+                        self.attempts[probe] += 1
+                        return select("screen_tab", "Procurar a aba da receita necessaria")
                     recipes = state.get("crafting", {}).get(station, [])
                     index = next(i for i, r in enumerate(recipes) if r.get("id") == wanted)
                     cursor = int(panel.get("cursor", 0))
@@ -228,14 +416,60 @@ class JogadorAutomatico:
                     return select("screen_down" if cursor < index else "screen_up", "Selecionar a receita exigida")
                 if not state.get("screen"):
                     pos = state.get("position", [])
-                    point = state.get("world_map", {}).get(station, [])
+                    point = state.get("world_map", {}).get(anchor, [])
                     if len(pos) == len(point) == 3 and sum((pos[i] - point[i]) ** 2 for i in (0, 2)) <= 9:
                         return select("inspect_journal", "Abrir as receitas ao alcance da bancada")
-                    if "explore_" + station in actions and self.coverage[(context, "explore_" + station)] < 2:
-                        return select("explore_" + station, "Ir diretamente à bancada que produz " + wanted)
+                    if "explore_" + anchor in actions and self.coverage[(context, "explore_" + anchor)] < 2:
+                        return select("explore_" + anchor, "Ir diretamente à bancada que produz " + wanted)
         required_npc = task.get("required_npc", {})
         if required_npc.get("speaking") and required_npc.get("distance", 999) < 4 and not state.get("pedro", {}).get("conducting"):
             return select("wait", "Aguardar a fala atual terminar antes de iniciar outra conversa")
+        if not task.get("step") and not state.get("screen"):
+            pedro = state.get("pedro", {})
+            if pedro.get("speaking") and pedro.get("distance", 999) < 4:
+                return select("wait", "Ouvir o guia antes de pedir o proximo trabalho")
+            if state.get("interaction_target") in ("MoradorPedro", "Pedro") and self.coverage[(context, "interact")] < 2:
+                return select("interact", "Pedir ao guia a proxima cadeia depois de terminar a anterior")
+            if "follow_pedro" in actions and self.coverage[(context, "follow_pedro")] < 2:
+                return select("follow_pedro", "Procurar o guia para iniciar a proxima cadeia da historia")
+        work_meta = task.get("step", {}).get("meta", {})
+        if work_meta.get("tipo") == "obra" and state.get("panel"):
+            panel = state["panel"]
+            if 2 not in panel.get("allowed_tabs", []):
+                return select("close_screen", "As obras nao estao disponiveis nesta posicao")
+            if panel.get("tab") != 2:
+                return select("screen_tab", "Abrir a aba de obras disponivel neste local")
+            entries = panel.get("entries", [])
+            wanted_work = work_meta.get("obra")
+            if panel.get("construction") != work_meta.get("construcao") or wanted_work not in entries:
+                return select("close_screen", "A obra exigida nao aparece nesta lista; nao executar outra obra ao acaso")
+            index = entries.index(wanted_work)
+            cursor = int(panel.get("cursor", 0))
+            if cursor == index:
+                return select("confirm_screen", "Executar pela interface a obra exigida: " + wanted_work)
+            return select("screen_down" if cursor < index else "screen_up", "Selecionar a obra exigida")
+        if task.get("step", {}).get("meta", {}).get("tipo") == "obra" and not state.get("screen"):
+            marker = state.get("objective", {}).get("alvo", [])
+            position = state.get("position", [])
+            if len(marker) == len(position) == 3 and not task.get("last_action_failed"):
+                distance = sum((position[i] - marker[i]) ** 2 for i in (0, 2)) ** 0.5
+                if distance > min(3, float(task.get("step", {}).get("raio", 3))):
+                    leg = getattr(self, "navigation_leg", {})
+                    counter = (goal, "work_route_stalled")
+                    if leg.get("goal") == goal and self.last_action == "objective":
+                        self.attempts[counter] = self.attempts[counter] + 1 if distance >= leg.get("distance", distance) - 0.5 else 0
+                    if self.attempts[counter] < 3:
+                        return select("objective", "Viajar ate a obra antes de sondar interfaces fora do seu alcance")
+                else:
+                    return select("inspect_journal", "Inspecionar as obras depois de chegar ao local certo")
+        leg = getattr(self, "navigation_leg", {})
+        position = state.get("position", [])
+        marker = leg.get("target", [])
+        if (not state.get("screen") and leg.get("goal") == goal and self.last_action == leg.get("action")
+                and not task.get("last_action_failed") and len(position) == len(marker) == 3):
+            distance = sum((position[i] - marker[i]) ** 2 for i in (0, 2)) ** 0.5
+            if 3 < distance < leg["distance"] - 0.5:
+                return select(leg["action"], "Continuar a rota que aproxima do alvo; viagem longa ainda nao e bloqueio")
         direct_now = [a for a in task.get("actions_matching_the_current_requirement", [])
                       if a in actions and a not in task.get("last_action_failed", [])]
         if direct_now and self.coverage[(context, direct_now[0])] < 3:
@@ -269,6 +503,19 @@ class JogadorAutomatico:
         if state.get("screen"):
             ui = state.get("inventory_screen", {})
             chest = ui.get("chest", [])
+            read_event = str(meta.get("evento", ""))
+            if ui and read_event.startswith("leu:"):
+                document = read_event.split(":", 1)[1]
+                index = next((i for i, slot in enumerate(slots) if slot.get("id") == document), None)
+                if index is not None:
+                    cursor = int(ui.get("cursor", 0))
+                    if cursor == index:
+                        return select("screen_use", "Ler com F o documento exigido pela missao")
+                    if cursor >= len(slots):
+                        return select("screen_left", "Voltar dos encaixes para a mochila")
+                    if cursor // 10 != index // 10:
+                        return select("screen_down" if cursor // 10 < index // 10 else "screen_up", "Chegar a fileira do documento")
+                    return select("screen_right" if cursor < index else "screen_left", "Selecionar o documento exigido")
             needed = meta.get("itens", {})
             missing = [item for item, qty in needed.items() if items[item] < qty]
             if chest and missing:
@@ -297,8 +544,8 @@ class JogadorAutomatico:
         # Metas de recurso usam item/quantos; não são a lista de ferramentas
         # do baú (itens). O marcador vivo aponta o galho que pode ser coletado.
         resource_item = meta.get("item")
-        if meta.get("tipo") == "juntar" and resource_item in ("lenha", "pedra") and items[resource_item] < meta.get("quantos", 1):
-            tool = "picareta" if resource_item == "pedra" else None
+        if meta.get("tipo") == "juntar" and resource_item in ("lenha", "pedra") and items[resource_item] < meta.get("quantos", state.get("objective", {}).get("total", 1)):
+            tool = "picareta" if resource_item == "pedra" else ("machado" if any(slot.get("id") == "machado" for slot in slots[:10]) else None)
             if tool and inv.get("in_hand") != tool:
                 for index, slot in enumerate(slots[:10]):
                     if slot.get("id", slot.get("item")) == tool:
@@ -317,15 +564,22 @@ class JogadorAutomatico:
                     return select("face_Recursos3D", "Priorizar o recurso indicado em vez da conversa com Pedro")
             if task.get("last_action_failed"):
                 choices = [a for a in actions if a.startswith("walk_") and a not in task.get("last_action_failed", []) and
+                           not state.get("directions", {}).get(a[5:], {}).get("blocked", False) and
                            state.get("directions", {}).get(a[5:], {}).get("walk_endpoint_walkable") is not False]
                 if choices:
                     return select(min(choices, key=lambda a: self.attempts[a]), "Contornar o obstáculo até o galho seco")
             return select("objective", "Seguir o marcador do recurso até alcançar sua interação")
         if task.get("last_action_failed"):
             choices = [a for a in actions if a.startswith("walk_") and a not in task.get("last_action_failed", []) and
+                           not state.get("directions", {}).get(a[5:], {}).get("blocked", False) and
                        state.get("directions", {}).get(a[5:], {}).get("walk_endpoint_walkable") is not False]
             if choices:
-                action = min(choices, key=lambda a: self.attempts[a])
+                marker = state.get("objective", {}).get("alvo", [])
+                def toward_goal(action):
+                    point = state.get("directions", {}).get(action[5:], {}).get("walk_endpoint", [])
+                    distance = sum((point[i] - marker[i]) ** 2 for i in (0, 2)) if len(point) == len(marker) == 3 else float("inf")
+                    return (distance, self.attempts[action], action)
+                action = min(choices, key=toward_goal)
                 return select(action, "Sair do bloqueio por outra direção")
         direct = task.get("actions_matching_the_current_requirement", [])
         if direct:
@@ -350,7 +604,8 @@ class JogadorAutomatico:
             if "face_Lavoura" in actions:
                 return select("face_Lavoura", "Orientar o corpo para a leira")
             return select("explore_Lavoura", "Chegar à lavoura para trabalhar") or select("objective", "Chegar ao ponto da missão")
-        if meta.get("tipo") == "juntar" and any(items[k] < v for k, v in meta.get("itens", {}).items()):
+        if (meta.get("tipo") == "juntar" and step.get("lugar") == "casa_de_taipa"
+                and any(items[k] < v for k, v in meta.get("itens", {}).items())):
             if state.get("interior") == "casa":
                 if state.get("home_interaction") == "bau" and target != "CasaDoJogador" and "face_CasaDoJogador" in actions:
                     return select("face_CasaDoJogador", "Orientar a interacao para o bau em vez de conversar com outro personagem")

@@ -25,6 +25,33 @@ var achados: Array = []
 var jogada
 var amostras_movimento: Array = []
 var amostrar_em := 0
+var fontes_de_material: Dictionary = {}
+
+
+func _ponto_de_material(item: String) -> Vector3:
+	var jogador: Node3D = current_scene.get("player")
+	var de := jogador.global_position
+	var anterior: Dictionary = fontes_de_material.get(item, {})
+	if not anterior.is_empty() and is_instance_valid(anterior.fonte):
+		var ainda: Vector3 = _material_acessivel(anterior.fonte, item, anterior.ponto)
+		if ainda.is_finite() and ainda.distance_to(anterior.ponto) < 0.05:
+			return anterior.ponto
+		de = anterior.ponto
+	for fonte in [current_scene.get_node_or_null("Recursos3D"), get_first_node_in_group("arvores_do_vale")]:
+		if fonte == null:
+			continue
+		var ponto: Vector3 = _material_acessivel(fonte, item, de)
+		if ponto.is_finite():
+			fontes_de_material[item] = {"fonte": fonte, "ponto": ponto}
+			return ponto
+	fontes_de_material.erase(item)
+	return Vector3.INF
+
+
+func _material_acessivel(fonte: Node, item: String, de: Vector3) -> Vector3:
+	if fonte.has_method("mais_perto_que_cede"):
+		return fonte.mais_perto_que_cede(item, de)
+	return fonte.mais_perto_que_rende(item, de)
 
 
 func _initialize() -> void:
@@ -219,6 +246,12 @@ func _estado() -> Dictionary:
 	estado["journal"] = _json_seguro(root.get_node("CadernoDoVale").estado())
 	var inventario := root.get_node("Inventario")
 	estado["inventory"] = {"slots": inventario.espacos.duplicate(true), "selected": inventario.selecionado, "in_hand": inventario.na_mao()}
+	estado.inventory["food_items"] = []
+	var catalogo_itens = load("res://scripts/compartilhado/catalogo.gd")
+	for espaco: Dictionary in inventario.espacos:
+		var id := str(espaco.get("id", ""))
+		if root.get_node("Cozinha").e_comida(id) and float(catalogo_itens.dados(id).get("folego", 0.0)) > 0.0:
+			estado.inventory.food_items.append(id)
 	var relogio := root.get_node("Relogio")
 	estado["clock"] = {"day": relogio.dia, "season": relogio.estacao, "year": relogio.ano, "time": relogio.texto(), "paused": relogio.pausado}
 	estado["interior"] = current_scene.get("interiores").dentro()
@@ -235,13 +268,33 @@ func _estado() -> Dictionary:
 	estado["built_works"] = _json_seguro(root.get_node("Obras").feitas)
 	estado["money"] = root.get_node("Jogo").dinheiro
 	estado["interaction_candidates"] = []
+	estado["resource_work"] = {}
+	var recursos_observados := current_scene.get_node_or_null("Recursos3D")
+	if recursos_observados != null:
+		var alvos: Dictionary = recursos_observados.get("_alvos")
+		for id in alvos:
+			var golpes := int(alvos[id].get("golpes_dados", 0))
+			if golpes > 0:
+				estado.resource_work[str(id)] = golpes
+	estado["resource_targets"] = {}
+	for item in ["lenha", "pedra"]:
+		var ponto_material := _ponto_de_material(item)
+		if ponto_material.is_finite():
+			estado.resource_targets[item] = _vetor(ponto_material)
 	for fonte in get_nodes_in_group("fontes_do_e"):
 		var oferta: Dictionary = fonte.alvo_do_e()
 		if not oferta.is_empty():
-			estado.interaction_candidates.append({"source": str(fonte.name), "target": _json_seguro(oferta), "path": str(fonte.get_path())})
+			if fonte == recursos_observados:
+				oferta["em_trabalho"] = bool(fonte.get("_golpe_animando")) or str(fonte.get("_golpe_pendente")) != ""
+			estado.interaction_candidates.append({"source": str(fonte.name), "kind": "tree" if fonte.has_meta("recurso_arvore") else "", "target": _json_seguro(oferta), "path": str(fonte.get_path())})
 	estado["mission_chains"] = []
+	estado["work_costs"] = {}
 	for cadeia in get_nodes_in_group("cadeias_de_missoes"):
+		var obra_exigida := str(cadeia.passo_atual().get("meta", {}).get("da_obra", ""))
+		if obra_exigida != "":
+			estado.work_costs[obra_exigida] = _json_seguro(root.get_node("Obras").custo(obra_exigida))
 		estado.mission_chains.append({"key": cadeia.chave, "name": cadeia.nome_da_missao, "main": cadeia.principal,
+			"locked": cadeia.esta_trancada(),
 			"started": cadeia.iniciado, "completed": cadeia.acabou(), "step": cadeia.missao, "total": cadeia.total(),
 			"current_step": _json_seguro(cadeia.passo_atual()), "events_and_deliveries": _json_seguro(cadeia.get("_levados")),
 			"locked_advice": cadeia.trancada_texto})
@@ -263,7 +316,9 @@ func _estado() -> Dictionary:
 		estado["inventory_screen"] = {"cursor": mochila.get("_cursor"), "held_slot": mochila.get("_pego"), "chest": _json_seguro(mochila.get("_bau")), "chest_cursor_base": mochila._primeiro_do_bau(), "confirmation": mochila.get("_confirmar")}
 	var painel: Node = current_scene.get("painel")
 	if painel.aberto:
-		estado["panel"] = {"tab": painel.aba(), "cursor": painel.get("_cursor"), "rows": _json_seguro(painel.get("_linhas")), "advice": painel.get("_dica").text}
+		estado["panel"] = {"tab": painel.aba(), "allowed_tabs": painel.abas_validas(), "cursor": painel.get("_cursor"),
+			"entries": _json_seguro(painel._lista_atual()), "construction": painel.obra_em_foco,
+			"rows": _json_seguro(painel.get("_linhas")), "advice": painel.get("_dica").text}
 	var pedro: Node3D = current_scene.get("pedro")
 	if is_instance_valid(pedro):
 		estado["pedro"] = {"speaking": pedro.has_method("falando_agora") and pedro.falando_agora(), "distance": snappedf(jogador.global_position.distance_to(pedro.global_position), 0.1),
@@ -343,6 +398,10 @@ func _acoes(estado: Dictionary) -> Dictionary:
 	catalogo.clear()
 	var opcoes: Dictionary = {}
 	if not _no_vale():
+		var nome_pendente := current_scene.find_child("NomeJogador", true, false) as LineEdit
+		if nome_pendente != null and nome_pendente.is_visible_in_tree():
+			catalogo["name_player"] = nome_pendente
+			return {"name_player": "Type a deterministic test name into the visible player name field and press Enter"}
 		# Safe menu allowlist: never expose quit, delete, update or settings.
 		for botao in current_scene.find_children("*", "BaseButton", true, false):
 			if not botao.is_visible_in_tree() or botao.disabled:
@@ -386,6 +445,10 @@ func _acoes(estado: Dictionary) -> Dictionary:
 	if ponto is Vector3 and ponto.is_finite() and ponto != Vector3.ZERO:
 		catalogo["objective"] = ponto
 		opcoes["objective"] = "Walk toward current mission marker for up to 15 seconds"
+	for item in estado.get("resource_targets", {}):
+		var posicao: Array = estado.resource_targets[item]
+		catalogo["gather_" + str(item)] = Vector3(posicao[0], posicao[1], posicao[2])
+		opcoes["gather_" + str(item)] = "Walk toward an eligible source of %s; harvest separately using normal E" % str(item)
 	var moradores: Array = current_scene.get("moradores")
 	for npc in moradores:
 		if not is_instance_valid(npc) or npc == pedro:
@@ -404,6 +467,9 @@ func _acoes(estado: Dictionary) -> Dictionary:
 		if not sala.trancada() and str(estado.get("interior", "")) != "casa":
 			catalogo["enter_home"] = sala
 			opcoes["enter_home"] = "Walk to the actual exterior doorway, then cross its inside threshold using W; door is unlocked"
+		elif str(estado.get("interior", "")) == "casa":
+			catalogo["exit_home"] = sala
+			opcoes["exit_home"] = "Walk to the inside threshold, then cross the exterior doorway using W"
 		for mobilia in ["bed", "chest"]:
 			var id: String = "approach_" + str(mobilia)
 			catalogo[id] = sala.ponto_da_cama() if mobilia == "bed" else sala.ponto_do_bau()
@@ -452,17 +518,31 @@ func _executar(escolha: String) -> String:
 		await _esperar(1.0)
 		return "button_clicked"
 	match escolha:
-		"enter_home":
-			var sala: Node3D = catalogo.get("enter_home")
+		"name_player":
+			var campo: LineEdit = catalogo.get(escolha)
+			if not is_instance_valid(campo) or not campo.is_visible_in_tree():
+				return "name_field_no_longer_visible"
+			campo.grab_focus()
+			if campo.text.is_empty():
+				for letra in "Viajante de teste":
+					var evento := InputEventKey.new()
+					evento.unicode = letra.unicode_at(0)
+					evento.pressed = true
+					Input.parse_input_event(evento)
+					await process_frame
+			await _tecla(KEY_ENTER)
+			return "test_name_typed_and_submitted"
+		"enter_home", "exit_home":
+			var sala: Node3D = catalogo.get(escolha)
 			if sala == null or sala.trancada():
 				return "home_door_locked_or_unavailable"
-			var fora: Vector3 = sala.soleira_de_fora()
+			var fora: Vector3 = sala.soleira_de_dentro() if escolha == "exit_home" else sala.soleira_de_fora()
 			var jogador: Node3D = current_scene.get("player")
 			if Vector2(jogador.global_position.x - fora.x, jogador.global_position.z - fora.z).length() > 0.6:
-				var chegada := await _caminhar(fora, false, true)
+				var chegada := await _caminhar(fora, false, true, escolha == "exit_home")
 				if chegada != "arrived":
 					return chegada
-			return await _caminhar(sala.soleira_de_dentro(), false, true)
+			return await _caminhar(sala.soleira_de_fora() if escolha == "exit_home" else sala.soleira_de_dentro(), false, true, true)
 		"dialogue_next", "interact", "confirm_screen":
 			await _tecla(KEY_E)
 			return "E_pressed"
@@ -543,7 +623,7 @@ func _amostrar_movimento(forcar: bool = false) -> void:
 	amostrar_em = Time.get_ticks_msec() + 500
 
 
-func _caminhar(alvo, seguir: bool, exato: bool = false) -> String:
+func _caminhar(alvo, seguir: bool, exato: bool = false, passagem_da_porta: bool = false) -> String:
 	var jogador: Node3D = current_scene.get("player")
 	jogador._cancel_walk()
 	if bool(jogador.get("_run_toggled")):
@@ -597,7 +677,7 @@ func _caminhar(alvo, seguir: bool, exato: bool = false) -> String:
 				_pressionar(KEY_W, false)
 				return "no_walkable_approach"
 			if not destino.is_finite() or novo.distance_to(destino) > 1.5:
-				trajeto = jogada.caminho_ate(novo)
+				trajeto = PackedVector3Array() if passagem_da_porta else jogada.caminho_ate(novo)
 				if trajeto.is_empty() and jogador.global_position.distance_to(ponto) > 14.0:
 					_pressionar(KEY_W, false)
 					return "no_navigation_path"
@@ -672,10 +752,10 @@ func _guia_chegou(pedro: Node3D) -> bool:
 	return Vector2(destino.x - pedro.global_position.x, destino.z - pedro.global_position.z).length() <= 2.9
 
 
-func _conferir_chegada(alvo, ponto: Vector3, seguir: bool) -> String:
+func _conferir_chegada(alvo, ponto: Vector3, _seguir: bool) -> String:
 	jogada.virar_para(ponto)
 	await process_frame
-	if not alvo is Node3D or seguir:
+	if not alvo is Node3D:
 		return "arrived"
 	var dono: Object = current_scene.get("foco_do_e").dono()
 	if dono != null and dono.has_method("perto") and dono.perto() == alvo:

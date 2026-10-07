@@ -6,6 +6,15 @@ O teste passa a cobrar Candinha, Filo, Tonho, Zefa, arraial e recursos, incluind
 
 ## Em desenvolvimento — 07/10/2026 (experimento Jev)
 
+- #159 (parcial): o robô observa custos reais, agrega ingredientes antes de
+  viajar à bancada e mantém o alvo de material acessível. Seleciona a obra
+  exigida, detecta viagens sem aproximação e tenta contornos físicos;
+  acompanha dano parcial, espera golpes, come pela mochila e retoma o guia.
+  Perfil isolado pode ser retomado por opção explícita. 78 testes Python
+  verdes, sondas Godot de nome, guia, fonte e F8 verdes; falsificações de
+  custo, contorno e alvo do E reprovam. V13 coleta pedra e madeira para o
+  Mirante; campanha ainda não concluída. Nenhuma API paga ou teleporte.
+
 - #64: B remapeável abre apoios e talentos ativos, com escolha explícita e
   uso uma vez por dia. Interface na moldura do vale, PT/EN/ES, teclado/mouse;
   pausa e câmera passam pelo gerenciador comum. Atalhos verde (3 s), uso

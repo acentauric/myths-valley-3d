@@ -48,6 +48,17 @@ Exigências disponíveis têm prioridade por até três tentativas por contexto,
 evitando abandonar uma caminhada guiada longa só porque passaram 30 segundos.
 Não há escolha aleatória.
 
+As fontes de lenha e pedra permanecem estáveis durante a aproximação e mudam
+quando esgotadas ou inacessíveis ao nível/ferramenta atuais. O planejamento soma
+material direto e ingredientes das receitas faltantes, com o rendimento real
+de cada receita e o custo vigente da obra. Não fabrica outra obra só porque
+ela ocupa a primeira linha da lista. Duas viagens sem aproximação disparam
+contornos físicos limitados; viagens longas que aproximam do alvo continuam.
+Golpes em andamento e dano parcial contam como trabalho, evitando interromper
+um corte para explorar outra interface. Fôlego baixo leva à comida disponível
+na mochila por sua seleção normal e F. Novas cadeias liberadas são perguntadas
+ao Pedro depois da anterior; o diário retoma a missão principal pelo painel.
+
 Receitas reconhecidas no estado observado são selecionadas pela exigência
 atual, em sua bancada e aba correspondentes. Falta de ações disponíveis não
 autoriza inventar comandos: se o jogo só oferece aguardar, a sessão registra
@@ -73,6 +84,11 @@ O lançador informa a pasta dos relatórios em `tools/temp/jev/`; `--output`
 permite escolher outra. `eventos.jsonl` registra observações, escolhas e
 resultados, e as capturas documentam o que foi exibido. Esse teste exploratório
 complementa os portões automatizados do projeto.
+
+`--profile tools/temp/meu-perfil-de-teste` retoma explicitamente um perfil
+isolado já usado, mantendo a saída de relatório nova. Sem essa opção, cada
+execução conserva a partida nova em seu próprio perfil. Não use o perfil de
+saves pessoais do Godot para uma sessão automatizada.
 
 `relatorio.md` é atualizado a cada 30 segundos e novamente no encerramento.
 Inclui frequência e duração das ações, posições antes/depois, deslocamento,

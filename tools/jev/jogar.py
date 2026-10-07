@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import copy
 import importlib
 import json
 import os
@@ -52,8 +53,10 @@ def current_task(state, actions):
     active = [c for c in state.get("mission_chains", []) if c.get("started") and not c.get("completed")]
     chain = next((c for c in active if objective.get("id", "").endswith("_" + c.get("current_step", {}).get("id", "?"))),
                  next((c for c in active if c.get("main")), {}))
-    step = chain.get("current_step", {})
+    step = copy.deepcopy(chain.get("current_step", {}))
     meta = step.get("meta", {})
+    if meta.get("da_obra") in state.get("work_costs", {}):
+        meta["itens"] = copy.deepcopy(state["work_costs"][meta["da_obra"]])
     recipient = meta.get("a_quem", "")
     npc = next((n for n in state.get("npcs", []) if n.get("id") == recipient), {})
     if recipient == "pedro":
@@ -63,7 +66,7 @@ def current_task(state, actions):
         direct = [a for a in actions if a.startswith("run_") and
                   state.get("directions", {}).get(a.removeprefix("run_"), {}).get("run_endpoint_walkable") is not False]
     elif meta.get("tipo") in ("falar", "levar") and npc:
-        if state.get("interaction_target") == npc.get("name") and "interact" in actions:
+        if state.get("interaction_target") and state.get("interaction_target") in (npc.get("name"), npc.get("node")) and "interact" in actions:
             direct = ["interact"]
         elif recipient == "pedro" and "follow_pedro" in actions:
             direct = ["follow_pedro"]
@@ -523,6 +526,7 @@ def main():
     parser.add_argument("--headless", action="store_true")
     parser.add_argument("--godot", default=r"C:\Tools\Godot\Godot_v4.7.2-stable_win64_console.exe")
     parser.add_argument("--output", type=Path)
+    parser.add_argument("--profile", type=Path, help="Reuse an explicitly selected isolated playtest profile; report output remains new.")
     args = parser.parse_args()
     if args.seconds < 0 or args.calls < 0 or args.idle_seconds < 0 or not Decimal("0") < Decimal(args.budget) <= Decimal("0.50"):
         parser.error("Tempo/chamadas/inatividade devem ser nao negativos; teto de US$ 0,50 por sessao.")
@@ -548,8 +552,8 @@ def main():
     threading.Thread(target=server.serve_forever, daemon=True).start()
     environment = os.environ.copy()
     # Isolated user://, as in the project's test runner. No personal saves/preferences.
-    profile = directory / "perfil"
-    profile.mkdir()
+    profile = args.profile or directory / "perfil"
+    profile.mkdir(parents=True, exist_ok=args.profile is not None)
     for name in ("APPDATA", "XDG_DATA_HOME", "XDG_CONFIG_HOME"):
         environment[name] = str(profile.resolve())
     for name in list(environment):

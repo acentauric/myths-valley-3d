@@ -10,6 +10,314 @@ from relatorio import generate
 
 
 class PlayerTests(unittest.TestCase):
+    def test_partial_resource_hits_renew_work_without_mission_or_inventory_change(self):
+        bot = self.player()
+        state = self.state()
+        state["inventory"]["in_hand"] = "picareta"
+        state["objective"]["alvo"] = [1, 0, 1]
+        state.update(interaction_target="Recursos3D", interaction_candidates=[{"source": "Recursos3D", "target": {"ponto": [1, 0, 1]}}])
+        task = {"step": {"meta": {"tipo": "juntar", "item": "pedra", "quantos": 11}}}
+        for hit in range(8):
+            state["resource_work"] = {"lajedo": hit}
+            self.assertEqual(bot.choose(state, {"work_E": "hit", "objective": "route", "wait": "wait"}, task), "work_E")
+        state["interaction_candidates"][0]["target"]["em_trabalho"] = True
+        self.assertEqual(bot.choose(state, {"work_E": "hit", "wait": "wait"}, task), "wait")
+
+    def test_repeated_physical_contour_turns_toward_source_instead_of_overshooting(self):
+        bot = self.player()
+        state = self.state()
+        goal = state["objective"]["id"]
+        state["position"] = [0, 0, -10]
+        state["directions"] = {
+            "backward": {"blocked": False, "walk_endpoint_walkable": True, "walk_endpoint": [0, 0, -15]},
+            "right": {"blocked": False, "walk_endpoint_walkable": True, "walk_endpoint": [5, 0, -10]}}
+        bot.escape_leg = {"goal": goal, "origin": [0, 0, 0], "action": "walk_backward", "limit": 24, "target": [10, 0, -10]}
+        self.assertEqual(bot.choose(state, {"walk_backward": "S", "walk_right": "D", "wait": "wait"}, {}), "walk_right")
+
+    def test_gather_route_oscillation_falls_back_to_normal_clear_direction(self):
+        bot = self.player()
+        state = self.state()
+        state["resource_targets"] = {"lenha": [40, 0, 0]}
+        state["directions"] = {"right": {"blocked": False, "walk_endpoint_walkable": True, "walk_endpoint": [5, 0, 0]}}
+        task = {"step": {"meta": {"tipo": "juntar", "itens": {"lenha": 12}}}}
+        actions = {"gather_lenha": "route", "walk_right": "move", "wait": "wait"}
+        self.assertEqual(bot.choose(state, actions, task), "gather_lenha")
+        state["position"] = [-1, 0, 0]
+        self.assertEqual(bot.choose(state, actions, task), "gather_lenha")
+        state["position"] = [-2, 0, 0]
+        self.assertEqual(bot.choose(state, actions, task), "walk_right")
+        self.assertEqual(bot.escape_leg["target"], [40, 0, 0])
+
+    def test_group_raw_material_for_direct_requirement_and_observed_recipe_yield(self):
+        state = self.state()
+        state.update(resource_targets={"lenha": [20, 0, 0]}, world_map={"Oficina": [0, 0, 0]},
+                     crafting={"Oficina": [{"id": "tabua", "requirements": {"rende": 2, "custo": {"lenha": 3}}}]})
+        state["inventory"]["slots"] = [{"id": "lenha", "qtd": 20}, {"id": "tabua", "qtd": 2}]
+        task = {"step": {"meta": {"tipo": "juntar", "itens": {"tabua": 8, "lenha": 12}}}}
+        actions = {"gather_lenha": "route", "inspect_journal": "recipes", "wait": "wait"}
+        self.assertEqual(self.player().choose(state, actions, task), "gather_lenha")
+        state["inventory"]["slots"][0]["qtd"] = 21
+        self.assertEqual(self.player().choose(state, actions, task), "inspect_journal")
+
+    def test_repeated_route_failure_extends_bounded_physical_contour(self):
+        bot = self.player()
+        state = self.state()
+        state["objective"]["alvo"] = [40, 0, 0]
+        state["directions"] = {"right": {"blocked": False, "walk_endpoint_walkable": True, "walk_endpoint": [5, 0, 0]}}
+        actions = {"walk_right": "move", "objective": "route", "wait": "wait"}
+        task = {"last_action_failed": ["objective"]}
+        bot.last_action = "objective"
+        bot.choose(state, actions, task)
+        bot.escape_leg = {}
+        bot.last_action = "objective"
+        bot.choose(state, actions, task)
+        self.assertEqual(bot.escape_leg.get("limit"), 16)
+        state["position"] = [9, 0, 0]
+        self.assertEqual(bot.choose(state, actions, {}), "walk_right")
+        state["position"] = [39, 0, 0]
+        bot.choose(state, actions, {})
+        self.assertFalse(bot.escape_leg)
+
+    def test_compound_materials_without_nearby_resource_dont_seek_home_chest(self):
+        state = self.state()
+        task = {"step": {"lugar": "oficina", "meta": {"tipo": "juntar", "itens": {"lenha": 12, "tabua": 8}}}}
+        bot = self.player()
+        actions = {"enter_home": "door", "objective": "tree route", "wait": "wait"}
+        self.assertEqual(bot.choose(state, actions, task), "objective")
+
+    def test_compound_material_requirement_prioritizes_missing_raw_wood(self):
+        state = self.state()
+        state["inventory"]["in_hand"] = "machado"
+        state["objective"]["alvo"] = [1, 0, 1]
+        state.update(interaction_target="Pedro", interaction_candidates=[{"source": "ArvoresInfo", "kind": "tree", "target": {"ponto": [1, 0, 1]}}])
+        task = {"step": {"meta": {"tipo": "juntar", "itens": {"lenha": 12, "tabua": 8}}}}
+        self.assertEqual(self.player().choose(state, {"face_ArvoresInfo": "turn", "interact": "talk", "objective": "route"}, task), "face_ArvoresInfo")
+
+    def test_completed_guide_chain_probes_next_unlocked_story_through_conversation(self):
+        state = self.state()
+        state.update(interaction_target="Pedro", mission_chains=[{"key": "pedro", "name": "mirante", "main": True, "started": False, "completed": False, "locked": False}])
+        state["journal"] = {"ativas": [{"id": "zefa", "principal": True, "dono": "zefa"}]}
+        bot = self.player()
+        self.assertEqual(bot.choose(state, {"interact": "E", "follow_pedro": "route"}, {}), "interact")
+        state["mission_chains"][0]["locked"] = True
+        self.assertNotEqual(bot.choose(state, {"interact": "E", "follow_pedro": "route", "wait": "wait"}, {}), "follow_pedro")
+
+    def test_collision_escape_prefers_clear_direction_toward_objective(self):
+        bot = self.player()
+        bot.last_action = "objective"
+        state = self.state()
+        state["objective"]["alvo"] = [10, 0, 0]
+        state["directions"] = {"left": {"blocked": False, "walk_endpoint_walkable": True, "walk_endpoint": [-5, 0, 0]}, "right": {"blocked": False, "walk_endpoint_walkable": True, "walk_endpoint": [5, 0, 0]}}
+        self.assertEqual(bot.choose(state, {"walk_left": "A", "walk_right": "D", "objective": "route"}, {"last_action_failed": ["objective"]}), "walk_right")
+        self.assertEqual(bot.escape_leg["action"], "walk_right")
+
+    def test_exhausted_worker_eats_real_food_using_inventory_controls(self):
+        state = self.state()
+        state["energy"] = 1
+        state["inventory"].update(slots=[{}, {"id": "beiju", "qtd": 2}], food_items=["beiju"])
+        actions = {"inspect_inventory": "I", "work_E": "E", "screen_right": "D", "screen_use": "F"}
+        bot = self.player()
+        self.assertEqual(bot.choose(state, actions, {}), "inspect_inventory")
+        state.update(screen="mochila", inventory_screen={"cursor": 0, "chest": []})
+        self.assertEqual(bot.choose(state, actions, {}), "screen_right")
+        state["inventory_screen"]["cursor"] = 1
+        self.assertEqual(bot.choose(state, actions, {}), "screen_use")
+        state["energy"] = 25
+        actions["close_screen"] = "Esc"
+        self.assertEqual(bot.choose(state, actions, {}), "close_screen")
+
+    def test_new_player_name_is_confirmed_before_opening_buttons(self):
+        self.assertEqual(self.player().choose(self.state(), {"name_player": "type", "button_0": "Continue"}, {}), "name_player")
+
+    def test_other_main_quest_does_not_replace_first_pending_story_chain(self):
+        state = self.state()
+        state["objective"].update(id="zefa_ervas", principal=True)
+        state["journal"] = {"ativas": [{"id": "ponte_lenha", "principal": True}, {"id": "zefa_ervas", "principal": True}]}
+        self.assertEqual(self.player().choose(state, {"inspect_journal": "J", "objective": "route"}, {}), "inspect_journal")
+
+    def test_new_guide_step_appended_after_other_main_quest_keeps_campaign_focus(self):
+        state = self.state()
+        state["objective"].update(id="zefa_ervas", principal=True)
+        state["journal"] = {"ativas": [{"id": "zefa_ervas", "principal": True, "dono": "zefa"}, {"id": "pedro_tabuas", "principal": True, "dono": "pedro"}]}
+        self.assertEqual(self.player().choose(state, {"inspect_journal": "J", "objective": "route"}, {}), "inspect_journal")
+
+    def test_tree_resource_is_worked_using_normal_controls_after_finite_logs_run_out(self):
+        bot = self.player()
+        state = self.state()
+        state["inventory"]["in_hand"] = "machado"
+        state["objective"]["alvo"] = [1, 0, 1]
+        state.update(interaction_target="Pedro", interaction_candidates=[{"source": "ArvoresInfo", "kind": "tree", "target": {"ponto": [1, 0, 1]}}])
+        actions = {"face_ArvoresInfo": "turn", "work_E": "E", "interact": "talk", "objective": "route"}
+        task = {"step": {"meta": {"tipo": "juntar", "item": "lenha", "quantos": 36}}}
+        self.assertEqual(bot.choose(state, actions, task), "face_ArvoresInfo")
+        state["interaction_target"] = "ArvoresInfo"
+        self.assertEqual(bot.choose(state, actions, task), "work_E")
+        state["interaction_candidates"][0]["target"]["em_trabalho"] = True
+        actions["wait"] = "wait"
+        self.assertEqual(bot.choose(state, actions, task), "wait")
+
+    def test_exploration_restores_main_story_focus_through_journal_controls(self):
+        bot = self.player()
+        state = self.state()
+        state["objective"]["principal"] = False
+        state["journal"] = {"ativas": [{"id": "ponte_lenha", "principal": True}, {"id": "facao", "principal": False}]}
+        actions = {"inspect_journal": "J", "screen_tab": "Tab", "screen_up": "W", "confirm_screen": "E", "objective": "route"}
+        self.assertEqual(bot.choose(state, actions, {}), "inspect_journal")
+        state.update(screen="painel", panel={"tab": 3, "allowed_tabs": [0, 3], "cursor": 0})
+        self.assertEqual(bot.choose(state, actions, {}), "screen_tab")
+        state["panel"].update(tab=0, cursor=1, entries=state["journal"]["ativas"])
+        self.assertEqual(bot.choose(state, actions, {}), "screen_up")
+        state["panel"]["cursor"] = 0
+        self.assertEqual(bot.choose(state, actions, {}), "confirm_screen")
+
+    def test_active_guided_walk_is_not_abandoned_after_journal_focus_changed(self):
+        bot = self.player()
+        state = self.state()
+        state["pedro"] = {"conducting": True, "guide_destination_reached": False}
+        task = {"step": {"meta": {"tipo": "juntar", "item": "facao", "quantos": 1}}}
+        self.assertEqual(bot.choose(state, {"follow_pedro": "guide", "objective": "workshop"}, task), "follow_pedro")
+
+    def test_failed_route_probes_clear_physical_direction_before_distant_target(self):
+        bot = self.player()
+        state = self.state()
+        state.update(seconds=100, directions={
+            "forward": {"blocked": True, "walk_endpoint_walkable": True},
+            "left": {"blocked": False, "walk_endpoint_walkable": True}},
+            world_map={"Oficina": [100, 0, 0]})
+        bot.choose(state, {"objective": "walk"}, {})
+        task = {"last_action_failed": ["objective"]}
+        self.assertEqual(bot.choose(state, {"walk_forward": "W", "walk_left": "A", "explore_Oficina": "route"}, task), "walk_left")
+        state["position"][0] += 3
+        self.assertEqual(bot.choose(state, {"walk_left": "A", "objective": "route"}, {}), "walk_left")
+        state["directions"]["left"]["blocked"] = True
+        self.assertNotEqual(bot.choose(state, {"walk_left": "A", "objective": "route", "wait": "wait"}, {}), "walk_left")
+
+    def test_multiple_material_requirements_pick_missing_live_recipe(self):
+        bot = self.player()
+        state = self.state()
+        state.update(screen="painel", panel={"tab": 3, "cursor": 0},
+                     crafting={"Oficina": [{"id": "tabua", "impediment": ""}, {"id": "corda", "impediment": ""}]})
+        state["inventory"]["slots"].append({"id": "tabua", "qtd": 12})
+        task = {"step": {"meta": {"tipo": "juntar", "itens": {"tabua": 12, "corda": 4}}}}
+        self.assertEqual(bot.choose(state, {"screen_down": "S", "close_screen": "Esc"}, task), "screen_down")
+
+    def test_wood_uses_live_total_and_equips_existing_axe(self):
+        bot = self.player()
+        state = self.state()
+        state["objective"]["total"] = 36
+        state["inventory"]["slots"] += [{"id": "lenha", "qtd": 4}, {"id": "machado", "qtd": 1}]
+        task = {"step": {"meta": {"tipo": "juntar", "item": "lenha", "equivale": {"tabua": 12, "corda": 4}}}}
+        self.assertEqual(bot.choose(state, {"hand_3": "equip", "objective": "walk"}, task), "hand_3")
+    def test_after_completed_chain_leaves_home_before_asking_guide(self):
+        bot = self.player()
+        state = self.state()
+        state.update(interior="casa", objective={})
+        self.assertEqual(bot.choose(state, {"exit_home": "door", "follow_pedro": "guide"}, {"step": {}}), "exit_home")
+
+    def test_no_active_step_asks_actual_guide_instead_of_random_inventory(self):
+        bot = self.player()
+        state = self.state()
+        state.update(objective={}, interaction_target="MoradorPedro")
+        self.assertEqual(bot.choose(state, {"interact": "E", "inspect_inventory": "I"}, {"step": {}}), "interact")
+    def test_reads_required_document_through_inventory_cursor_and_F(self):
+        bot = self.player()
+        state = self.state()
+        state.update(screen="mochila", inventory_screen={"cursor": 0})
+        state["inventory"]["slots"] = [{"id": "peixe", "qtd": 1}, {"id": "convite", "qtd": 1}]
+        task = {"step": {"meta": {"tipo": "evento", "evento": "leu:convite"}}}
+        actions = {"screen_right": "D", "screen_use": "F", "close_screen": "Esc"}
+        self.assertEqual(bot.choose(state, actions, task), "screen_right")
+        state["inventory_screen"]["cursor"] = 1
+        self.assertEqual(bot.choose(state, actions, task), "screen_use")
+    def test_cooking_goes_to_actual_fire_anchor(self):
+        bot = self.player()
+        state = self.state()
+        state.update(crafting={"Cozinha": [{"id": "peixe_assado", "impediment": ""}]},
+                     world_map={"Fogueira": [30, 0, 0]})
+        task = {"step": {"meta": {"tipo": "evento", "evento": "cozinhou:peixe_assado"}}}
+        self.assertEqual(bot.choose(state, {"explore_Fogueira": "walk", "objective": "walk"}, task), "explore_Fogueira")
+    def test_cooking_event_uses_recipe_even_with_an_existing_dish(self):
+        bot = self.player()
+        state = self.state()
+        state.update(screen="painel", panel={"tab": 4, "cursor": 0},
+                     crafting={"Cozinha": [{"id": "peixe_assado", "impediment": ""}]})
+        state["inventory"]["slots"].append({"id": "peixe_assado", "qtd": 1})
+        task = {"step": {"meta": {"tipo": "evento", "evento": "cozinhou:peixe_assado"}}}
+        self.assertEqual(bot.choose(state, {"confirm_screen": "E", "close_screen": "Esc"}, task), "confirm_screen")
+    def test_building_selects_required_work_by_live_entries(self):
+        bot = self.player()
+        state = self.state()
+        state.update(screen="painel", panel={"tab": 2, "allowed_tabs": [0, 2], "construction": "poco",
+                                            "entries": ["outra_obra", "poco_corda"], "cursor": 0})
+        task = {"step": {"meta": {"tipo": "obra", "construcao": "poco", "obra": "poco_corda"}}}
+        actions = {"confirm_screen": "E", "screen_down": "S", "close_screen": "Escape"}
+        self.assertEqual(bot.choose(state, actions, task), "screen_down")
+        state["panel"]["cursor"] = 1
+        self.assertEqual(bot.choose(state, actions, task), "confirm_screen")
+
+    def test_building_never_confirms_unrelated_or_absent_work(self):
+        bot = self.player()
+        state = self.state()
+        state.update(screen="painel", panel={"tab": 2, "allowed_tabs": [0, 2], "construction": "ponte",
+                                            "entries": ["outra_obra"], "cursor": 0})
+        task = {"step": {"meta": {"tipo": "obra", "construcao": "poco", "obra": "poco_corda"}}}
+        self.assertEqual(bot.choose(state, {"confirm_screen": "E", "close_screen": "Escape"}, task), "close_screen")
+    def test_distant_work_is_not_replaced_by_unrelated_interface_probes(self):
+        bot = self.player()
+        state = self.state()
+        state["objective"]["alvo"] = [200, 0, 0]
+        task = {"step": {"meta": {"tipo": "obra"}, "raio": 8}}
+        bot.choose(state, {"objective": "walk", "inspect_inventory": "inspect"}, task)
+        state["seconds"] = 80
+        self.assertEqual(bot.choose(state, {"objective": "walk", "inspect_inventory": "inspect"},
+                                    task), "objective")
+    def test_long_trip_keeps_route_when_distance_decreases(self):
+        bot = self.player()
+        state = self.state()
+        state["objective"]["alvo"] = [200, 0, 0]
+        actions = {"objective": "walk", "inspect_inventory": "inspect", "wait": "wait"}
+        bot.choose(state, actions, {})
+        state.update(seconds=45, position=[30, 0, 0])
+        self.assertEqual(bot.choose(state, actions, {}), "objective")
+
+    def test_unmoving_long_trip_still_recovers(self):
+        bot = self.player()
+        state = self.state()
+        state["objective"]["alvo"] = [200, 0, 0]
+        actions = {"objective": "walk", "inspect_inventory": "inspect", "wait": "wait"}
+        bot.choose(state, actions, {})
+        state["seconds"] = 45
+        self.assertNotEqual(bot.choose(state, actions, {}), "objective")
+    def test_inside_home_exits_before_external_crafting(self):
+        bot = self.player()
+        state = self.state()
+        state.update(interior="casa", crafting={"Oficina": [{"id": "corda", "impediment": ""}]})
+        self.assertEqual(bot.choose(state, {"exit_home": "door", "explore_Oficina": "walk"},
+                                    {"step": {"meta": {"item": "corda", "quantos": 1}}}), "exit_home")
+    def test_recipe_tab_absent_closes_instead_of_looping(self):
+        bot = self.player()
+        state = self.state()
+        state.update(screen="painel", panel={"tab": 0, "allowed_tabs": [0]},
+                     crafting={"Oficina": [{"id": "corda", "impediment": ""}]})
+        task = {"step": {"meta": {"item": "corda", "quantos": 1}}}
+        self.assertEqual(bot.choose(state, {"screen_tab": "tab", "close_screen": "close"}, task), "close_screen")
+
+    def test_old_bridge_tab_search_has_finite_limit(self):
+        bot = self.player()
+        state = self.state()
+        state.update(screen="painel", panel={"tab": 0},
+                     crafting={"Oficina": [{"id": "corda", "impediment": ""}]})
+        task = {"step": {"meta": {"item": "corda", "quantos": 1}}}
+        results = [bot.choose(state, {"screen_tab": "tab", "close_screen": "close"}, task) for _ in range(9)]
+        self.assertEqual(results[-1], "close_screen")
+
+    def test_rebuilt_panel_node_names_do_not_reset_coverage(self):
+        bot = self.player()
+        state = self.state()
+        state["panel"] = {"tab": 0, "cursor": 0, "rows": ["@Button@1"]}
+        signature = bot._context(state)
+        state["panel"]["rows"] = ["@Button@2"]
+        self.assertEqual(bot._context(state), signature)
     def player(self):
         bot = JogadorAutomatico()
         bot.action_delay = bot.work_delay = 0
@@ -118,7 +426,7 @@ class PlayerTests(unittest.TestCase):
         bot = self.player()
         state = self.state()
         state.update(interior="casa", home_interaction="bau", interaction_target="Pedro")
-        task = {"step": {"meta": {"tipo": "juntar", "itens": {"enxada": 1}}}}
+        task = {"step": {"lugar": "casa_de_taipa", "meta": {"tipo": "juntar", "itens": {"enxada": 1}}}}
         self.assertEqual(bot.choose(state, {"interact": "Pedro", "face_CasaDoJogador": "chest", "wait": "wait"}, task), "face_CasaDoJogador")
 
     def test_waits_for_active_speech_instead_of_repeated_approach(self):
