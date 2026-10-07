@@ -180,3 +180,12 @@ A #147 fica concluída: os seis acessos laterais incluem Mapa no lobby em
 vídeo; clicar solicita a carga do cenário e abre seus pontos de interesse.
 A abertura inicial continua sem montar o vale. Lobby e mapa_fluxo verdes;
 remover o acesso em memória reprova, e três resoluções preservam os botões.
+
+## Caramelo e pontos de ronda em 07/10/2026
+
+A #153 está concluída: latido espacial por aproximação, intervalo com
+variação, prioridade de fala e canais de volume/mute. WAV CC0 com origem
+e hash em assets/audio/animais/ORIGEM.md. Latido e bichos nos dois estilos
+passaram; falsificadores reproduzem repetição e ponto inválido de ronda.
+A ronda também evita a alternativa dentro de casa quando todas as amostras
+aleatórias são recusadas (#149 parcial; auditoria visual geral permanece).

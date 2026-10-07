@@ -6,6 +6,15 @@ O teste passa a cobrar Candinha, Filo, Tonho, Zefa, arraial e recursos, incluind
 
 ## Em desenvolvimento — 07/10/2026 (experimento Jev)
 
+- **Caramelo late ao reencontrar o jogador (#153).** Som mono espacial,
+  atenuado pela distância, com intervalo mínimo e pequenas variações.
+  Cede a diálogo, narração, pausa e carregamento; respeita efeitos/mute.
+  Fonte CC0 de Brandon Morris registrada com hash e licença. Latido e
+  bichos Tripo/procedural passaram; falsificadores detectam repetição.
+  O teste de bichos revelou centro de ronda dentro da casa: agora amostras
+  recusadas usam posição segura ou busca determinística, nunca o centro
+  inválido. O mutante do quintal reprova essa regra (#149 parcial).
+
 - **Mapa volta ao lobby em vídeo (#147).** O acesso lateral solicita o vale
   sob a tela de carregamento e abre diretamente o mapa; o cenário permanece
   ausente na abertura inicial. Os seis atalhos não se sobrepõem nem cortam

@@ -111,6 +111,15 @@ func _run() -> void:
 	_conferir(_aves_da_casa(gerente, "Ponte do rio central", "pato").size() >= 3, "faltam os patos no riacho")
 	_conferir(_aves_da_casa(gerente, "Igreja", "pavao").size() == 1 and _aves_da_casa(gerente, "Igreja", "pavoa").size() >= 3, "o adro da Igreja não tem o pavão e as pavoas")
 	# O porco fica longe da praça, e a onça-preta não é de casa: o chiqueiro do Benedito.
+	var gatos_do_quintal := _da_casa(gerente, "Casa da rendeira", "gato_malhado")
+	if not gatos_do_quintal.is_empty():
+		var gato_do_quintal = gatos_do_quintal[0]
+		var caixa_da_rendeira := _caixa_de_casa("Casa da rendeira")
+		if caixa_da_rendeira != null:
+			var fallback: Vector3 = gato_do_quintal._ponto_em_volta(caixa_da_rendeira.global_position, 0.0)
+			if "--falsificar-quintal" in OS.get_cmdline_user_args():
+				fallback = caixa_da_rendeira.global_position
+			_conferir(fallback.is_finite() and not _dentro_de_casa(fallback, 0.0), "a ronda sem amostras livres devolve um ponto dentro de casa")
 	for porco in _da_casa(gerente, "Casa de Carro Quebrado", "porco"):
 		_conferir(_plano(porco.global_position - world.ancoras.get("Praça", Vector3.ZERO)).length() > 8.0, "o porco está na praça")
 

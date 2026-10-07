@@ -147,6 +147,8 @@ func _ready() -> void:
 	add_child(_animador)
 	_animador.configurar(_pose, _de_pe, false, chave, float(especie.get("passo", 1.0)))
 	_velocidade = float(especie.get("passo", 1.0))
+	if chave == "cachorro_caramelo" and rotina == "cao":
+		add_child(preload("res://scripts/prototipo_3d/latido_caramelo.gd").new())
 
 
 func _caixa() -> Vector3:
@@ -188,7 +190,7 @@ func _physics_process(delta: float) -> void:
 			return
 		_decidir(0.25)
 		_longe_em = 0.25
-		if _alvo.is_finite():
+		if _alvo.is_finite() and _ponto_seguro(_alvo):
 			global_position = _alvo
 		velocity = Vector3.ZERO
 		_animador.velocidade = 0.0
@@ -343,7 +345,7 @@ func _fruteira_perto(de: Vector3) -> Vector3:
 func _rondar(centro: Vector3, raio: float, fracao_do_passo: float, fuca: bool = false) -> void:
 	_levantar()
 	_velocidade = float(especie.get("passo", 1.0)) * fracao_do_passo
-	if not _alvo.is_finite() or _plano(_alvo - centro).length() > raio + 0.5:
+	if not _alvo.is_finite() or not _ponto_seguro(_alvo) or _plano(_alvo - centro).length() > raio + 0.5:
 		_alvo = _ponto_em_volta(centro, raio)
 	if _plano(_alvo - global_position).length() <= CHEGOU:
 		fazendo = "fuca" if fuca else "parado"
@@ -359,9 +361,23 @@ func _rondar(centro: Vector3, raio: float, fracao_do_passo: float, fuca: bool = 
 func _ponto_em_volta(centro: Vector3, raio: float) -> Vector3:
 	for i in 12:
 		var p := centro + Vector3(_rng.randf_range(-raio, raio), 0.0, _rng.randf_range(-raio, raio))
-		if world.is_on_land(p) and world.is_walkable_point(p) and not _dentro_de_casa(p):
+		if _ponto_seguro(p):
 			return world.ground_position(p, 0.02)
-	return world.ground_position(centro, 0.02)
+	# Um quintal estreito pode rejeitar todas as amostras. O centro da ronda
+	# não é necessariamente chão livre: pode cair dentro da própria casa.
+	for p in [global_position, lugar_de_casa()]:
+		if _ponto_seguro(p):
+			return world.ground_position(p, 0.02)
+	for distancia in range(1, 9):
+		for direcao in 8:
+			var p := centro + Vector3.RIGHT.rotated(Vector3.UP, direcao * TAU / 8.0) * distancia
+			if _ponto_seguro(p):
+				return world.ground_position(p, 0.02)
+	return Vector3.INF
+
+
+func _ponto_seguro(p: Vector3) -> bool:
+	return p.is_finite() and world.is_on_land(p) and world.is_walkable_point(p) and not _dentro_de_casa(p)
 
 
 func _dentro_de_casa(p: Vector3) -> bool:

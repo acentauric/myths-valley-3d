@@ -197,3 +197,9 @@ As fontes Cinzel e Cormorant Garamond acompanham os textos OFL em
 | `assets/prototipo_3d/personagens/viajante_tripo.glb` | Tripo Studio, modelo preexistente `modelo 3d de personagem` com rig Mixamo e 13 animacoes | 20 | `assets/prototipo_3d/personagens/ORIGEM.md` |
 
 Total consumido: 125 creditos Studio, autorizado pelo responsavel.
+
+### Latido do Caramelo (07/10/2026)
+
+`audio/animais/caramelo_latido.wav`: **Dog barking mono**, Brandon Morris
+(HaelDB), sob CC0 1.0. [Fonte](https://opengameart.org/content/dog-barking-mono).
+Arquivo original sem alteração; detalhes e hash em `audio/animais/ORIGEM.md`.
