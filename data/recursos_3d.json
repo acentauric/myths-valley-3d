@@ -244,7 +244,7 @@
       "quantidade": 2
     },
     {
-      "observacao": "A GALHADA SECA DO TERREIRO, para o fogo da primeira noite (missoes_guia.json, passo lenha). UM MONTE SÓ, onde o tronco caído da casa sempre esteve: três montes atrás da casa caíam dentro do pomar de quintal que o paisagismo planta ali, e depois das bananeiras ficavam a 2,6 u da bancada da oficina, tirando o E dela (tests/rocado.gd). Galho seco se quebra NA MÃO, sem machado, que o machado só chega na missão da ponte (missoes_ponte.json, buscar_machado). E O MONTE SE REFAZ ENQUANTO O JOGADOR NÃO CARREGA MACHADO (renova_sem, Recursos3D._renova): a chegada pede quatro lenhas — três para a corda do poço e uma para o peixe da janta —, e quem gastasse a lenha contada em outra coisa ficava sem ter onde buscar mais, com a janta por assar. Com o machado na mochila o monte rende a última vez e some: daí em diante a lenha é do machado.",
+      "observacao": "A GALHADA SECA DO TERREIRO, para o fogo da primeira noite (missoes_guia.json, passo lenha). UM MONTE SÓ, onde o tronco caído da casa sempre esteve: três montes atrás da casa caíam dentro do pomar de quintal que o paisagismo planta ali, e depois das bananeiras ficavam a 2,6 u da bancada da oficina, tirando o E dela (tests/rocado.gd). Galho seco se quebra NA MÃO, sem machado, que o machado só chega na missão da ponte (missoes_ponte.json, buscar_machado). E O MONTE SE REFAZ ENQUANTO O JOGADOR NÃO CARREGA MACHADO (renova_sem, Recursos3D._renova): a chegada pede quatro lenhas — três para a corda do poço e uma para o peixe da janta —, e quem gastasse a lenha contada em outra coisa ficava sem ter onde buscar mais, com a janta por assar. Com o machado na mochila o monte rende a última vez e some: daí em diante a lenha é do machado. E ACABA DE QUALQUER JEITO NA QUINTA COLETA (vezes; playtest de 07/10: a pilha de galho seco fora da casa tem que expirar depois de algumas coletas): dez lenhas, mais que o dobro do que a chegada pede.",
       "id": "lenha_casa_taipa",
       "nome": "Galho seco",
       "nome_en": "Dry branches",
@@ -255,6 +255,7 @@
       "tamanho": 0.9,
       "ferramenta": "",
       "renova_sem": "machado",
+      "vezes": 5,
       "golpes": 2,
       "rende": "lenha",
       "quantidade": 2

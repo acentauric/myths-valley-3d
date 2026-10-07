@@ -161,10 +161,10 @@ func colher(celula: Vector2i) -> Dictionary:
 		_leitos[celula]["dias"] = 0
 		_leitos[celula]["regados"] = 0
 	else:
-		_leitos[celula]["cultura"] = ""
-		_leitos[celula]["estagio"] = 0
-		_leitos[celula]["dias"] = 0
-		_leitos[celula]["regados"] = 0
+		# COLHIDO, O LEITO VOLTA A CHÃO BRUTO (playtest de 07/10: "sempre depois de
+		# colher, o jogador tem que arar a terra novamente"). A mandioca arrancada leva o
+		# leito junto: a enxada abre outro, como no primeiro dia.
+		_leitos.erase(celula)
 	mudou.emit(celula)
 	# "Mão de pomar" só vale para fruteira; "Folha de Ossain", para toda colheita.
 	var rende := int(dados["rendimento"])

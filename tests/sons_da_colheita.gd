@@ -202,6 +202,13 @@ func _existe(nome: String) -> bool:
 ## Põe o jogador no alvo (o `_mais_perto` do `Recursos3D` o devolve de cima dele).
 func _ir(jogador, recursos, id: String) -> void:
 	jogador.global_position = recursos._alvos[id]["pos"]
+	# O CARTÃO DA PRIMEIRA VEZ (a árvore do almanaque, ao cortar a embaúba) para a árvore
+	# inteira, e o alvo perto não se refaz com o vale parado: fecha, como o jogador faria.
+	var aviso = current_scene.get("aviso_da_primeira_vez")
+	for i in 6:
+		if aviso != null and aviso.aberto():
+			aviso.fechar()
+		await process_frame
 	await _frames(4)
 	_conferir(recursos._perto == id, "de cima de '%s', o alvo perto é '%s'" % [id, recursos._perto])
 

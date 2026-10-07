@@ -43,6 +43,10 @@ const DE_PARA := {
 	"bar": "Bar",
 	"casa_de_pasto": "Restaurante",
 	"pier": "Pier",
+	# A PISTA DA CORRIDA da chegada e a AREIA ao lado do píer (07/10): o passo "correr"
+	# aponta a pista, e o Tonho espera a chegada na areia (`world_builder`, o píer).
+	"corrida": "Corrida",
+	"areia": "Areia",
 	"ponte_da_vila": "Ponte",
 	# O RIO GRANDE é o rio do norte do mapa, fundo e com barranco na margem norte
 	# (#81), e a ponte dele é a "Ponte" do KML, onde a Rua Principal o cruza:

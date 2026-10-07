@@ -612,8 +612,11 @@ func _aplicar_golpe(id: String) -> void:
 	# um item de id vazio na mochila do jogador a cada pé cortado.
 	if rende != "":
 		Inventario.adicionar(rende, quantos)
-	# O MONTE QUE SE REFAZ rende e fica: nem some, nem entra nos caídos do save.
-	if _renova(ficha):
+	# O MONTE QUE SE REFAZ rende e fica: nem some, nem entra nos caídos do save —
+	# até a conta de `vezes` (07/10): a galhada do terreiro rende cinco vezes e acaba.
+	alvo["rendeu"] = int(alvo.get("rendeu", 0)) + 1
+	var vezes := int(ficha.get("vezes", 0))
+	if _renova(ficha) and (vezes <= 0 or int(alvo["rendeu"]) < vezes):
 		alvo["golpes_dados"] = 0
 		_sacudir(alvo["no"])
 		derrubado.emit(id, rende, quantos)

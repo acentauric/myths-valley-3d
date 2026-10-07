@@ -59,8 +59,18 @@ const ESPERA_FORA := ["casa"]
 ## virado para ele, e só volta a andar com o jogador a VOLTA_A_ANDAR. Anda no
 ## passo do jogador: correndo se ele corre.
 const CONDUZ_ATE := 2.4
-const ESPERA_QUEM_FICA := 6.5
-const VOLTA_A_ANDAR := 4.0
+const ESPERA_QUEM_FICA := 5.5
+const VOLTA_A_ANDAR := 3.0
+## OS MARCOS DA ESTRADA (playtest de 07/10: "depois de falar na praça, o Pedro tá
+## saindo correndo sem esperar o jogador; o ideal é ter alguns marcos ao longo da
+## estrada onde o Pedro espera o jogador chegar"). A cada MARCO unidades andadas
+## desde a última espera ele para, vira-se para o jogador e espera que ele chegue a
+## CHEGOU_AO_MARCO; e não dá um passo enquanto o jogador não pode andar (a caixa de
+## fala aberta, o corpo parado): era assim que ele ganhava a dianteira na praça.
+const MARCO := 11.0
+const CHEGOU_AO_MARCO := 3.0
+var _andado_desde_o_marco := 0.0
+var _no_marco := false
 ## NÃO FICA ATOLADO NO MEIO DO CAMINHO. A malha pode mandar por um corpo que ela não conhecia (uma peça
 ## nova da cena, a casca de um prédio): o Pedro anda contra ele sem sair do lugar, o jogador espera atrás
 ## ("o Pedro está esperando você") e o tutorial para ali para sempre — a partida jogada do zero ficou 600 s
@@ -328,20 +338,37 @@ func _conduzir(delta: float, cadeia: Node = null) -> void:
 		_esperando_quem_ficou = true
 	var falta := destino - global_position
 	falta.y = 0.0
+	# O JOGADOR NÃO PODE ANDAR (a caixa de fala aberta, o corpo parado): ele espera.
+	var jogador_preso: bool = not jogador.is_physics_processing() or Dialogo.ocupado()
+	# O MARCO: andou um trecho, para e espera o jogador chegar perto — a não ser que o
+	# destino já esteja logo ali.
+	if _no_marco:
+		if do_jogador <= CHEGOU_AO_MARCO:
+			_no_marco = false
+			_andado_desde_o_marco = 0.0
+	elif _andado_desde_o_marco >= MARCO and falta.length() > CONDUZ_ATE + MARCO * 0.5 and do_jogador > CHEGOU_AO_MARCO:
+		_no_marco = true
 	# O AVISO SÓ NO MEIO DO CAMINHO: chegado, o que o passo pede é perto dele (quem
 	# ele apresenta, a porta da casa), e quem anda por ali está fazendo o passo.
 	_quadro_da_conducao = Engine.get_physics_frames()
-	_avisar_quem_ficou(_esperando_quem_ficou and falta.length() > CONDUZ_ATE)
-	if _esperando_quem_ficou or falta.length() <= CONDUZ_ATE:
+	_avisar_quem_ficou((_esperando_quem_ficou or _no_marco) and not jogador_preso and falta.length() > CONDUZ_ATE)
+	if _esperando_quem_ficou or _no_marco or jogador_preso or falta.length() <= CONDUZ_ATE:
 		_atolado_s = 0.0
 		_mover(Vector3.ZERO, ANDAR, delta)
 		_olhar_para(onde_esta, delta)
+		if falta.length() <= CONDUZ_ATE:
+			_andado_desde_o_marco = 0.0
 		return
 	var ponto := _ponto_do_caminho(destino, delta)
 	var rumo := ponto - global_position
 	rumo.y = 0.0
-	var correndo := jogador.has_method("is_running") and bool(jogador.call("is_running"))
+	# CORRE SÓ SE O JOGADOR CORRE DE FATO (o passo trocado para a corrida, parado,
+	# fazia o Pedro disparar enquanto o jogador ainda lia a caixa).
+	var depressa: float = Vector2(jogador.velocity.x, jogador.velocity.z).length() if "velocity" in jogador else 0.0
+	var correndo := jogador.has_method("is_running") and bool(jogador.call("is_running")) and depressa > ANDAR * 1.2
+	var antes_de_andar := global_position
 	_mover(rumo.normalized() if rumo.length() > 0.05 else Vector3.ZERO, CORRER if correndo else ANDAR, delta)
+	_andado_desde_o_marco += Vector2(global_position.x - antes_de_andar.x, global_position.z - antes_de_andar.z).length()
 	_pedir_passagem(rumo)
 	var andou := Vector2(get_real_velocity().x, get_real_velocity().z).length()
 	if rumo.length() > 0.05 and andou < ANDAR * 0.25:

@@ -171,7 +171,9 @@ func _run() -> void:
 		_conferir(await _ate(func() -> bool: return estado.visible and estado.text == tr("parado"), 2.0), "com o relógio parado pelo jogador o HUD não diz \"parado\" ('%s')" % estado.text)
 		dia.pausado = false
 		vale._pause_valley()
-		_conferir(await _ate(func() -> bool: return estado.visible and estado.text == tr("tela"), 2.0), "com uma tela aberta o HUD não diz \"tela\" ('%s')" % estado.text)
+		# Só a pausa do jogador tem rótulo (07/10): a tela segura o dia, e o HUD não escreve "tela".
+		_conferir(await _ate(func() -> bool: return not estado.visible, 2.0), "com uma tela aberta, e o relógio andando por fora dela, o HUD escreveu um motivo ('%s'): só \"parado\" tem rótulo" % estado.text)
+		_conferir(dia.segurado("tela"), "a tela aberta não segura o dia")
 		vale._retomar_o_vale()
 		_conferir(await _ate(func() -> bool: return not estado.visible, 2.0), "fechada a tela o estado do relógio não sumiu ('%s')" % estado.text)
 	_fechar()

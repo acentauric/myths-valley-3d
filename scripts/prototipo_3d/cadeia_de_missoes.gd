@@ -928,7 +928,12 @@ func avancar() -> void:
 		if bool(fechando.get("xp_de_fe", false)):
 			Fe.ganhar("missao")
 			Talentos.ganhar("missao")
-		CadernoDoVale.concluir(_id_no_caderno(fechando))
+		# A FESTA SÓ NO ÚLTIMO PASSO (07/10), com o nome da missão inteira em vez do
+		# passo: "Chegada ao arraial", e não "A chave com a Dona Zefa".
+		var ultimo := missao + 1 >= passos.size()
+		CadernoDoVale.concluir(_id_no_caderno(fechando),
+			{"titulo": nome_da_missao if nome_da_missao != "" else _titulo_do_passo(fechando), "missao": "",
+				"quem": _nome_do_dono()} if ultimo else null)
 		if str(fechando.get("cena", "")) != "":
 			cena.emit(str(fechando["cena"]))
 	missao += 1

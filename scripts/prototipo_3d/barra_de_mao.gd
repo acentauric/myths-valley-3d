@@ -40,6 +40,8 @@ func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	# Continua ouvindo com o jogo pausado: é ela que fecha a mochila.
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	# A COMIDA NA MÃO VOTA NO FOCO DO E (ver `alvo_do_e`).
+	add_to_group(FocoDoE.GRUPO)
 	# A BARRA OCUPA A TELA INTEIRA e põe a fila onde quer, em vez de tentar ser
 	# uma faixa no rodapé.
 	#
@@ -239,12 +241,40 @@ func _unhandled_key_input(event: InputEvent) -> void:
 			get_viewport().set_input_as_handled()
 			return
 
-	# O E COME O QUE ESTÁ NA MÃO — ou LÊ, se é papel (#113) —, e é o último da
-	# fila do E: só quando o foco não deu a tecla a ninguém (`foco_do_e.gd`). Ver
-	# `_comer_da_mao` e `_ler_da_mao`.
+	# O E COME O QUE ESTÁ NA MÃO — ou LÊ, se é papel (#113) — quando o foco do E é
+	# da barra (`alvo_do_e`): com comida ou papel na mão, ela vota, e vence tudo
+	# menos a conversa com quem está ao alcance. Ver `_comer_da_mao` e `_ler_da_mao`.
 	if event.physical_keycode == Atalhos.tecla("interagir") and _corpo_de_pe() \
-			and not FocoDoE.alguem(self) and (_comer_da_mao() or _ler_da_mao()):
+			and FocoDoE.e_dele(self) and (_comer_da_mao() or _ler_da_mao()):
 		get_viewport().set_input_as_handled()
+
+
+## O QUE O E FARIA AQUI, para o foco (`foco_do_e.gd`): comer a comida (ou ler o
+## papel) que está na mão.
+##
+## "Ao tentar usar o botão E para consumir o consumível, não consegui, precisei
+## clicar com o mouse" (playtest de 07/10). A barra era a última da fila do E e só
+## comia quando ninguém mais levava a tecla — e no vale quase sempre alguém leva: o
+## leito da lavoura sob os pés, a árvore do lado, a bancada, o toco. Comida na mão é
+## escolha do jogador (ele a pôs ali pelo número), então a barra entra no foco com
+## viés e vence o que está em volta — menos a CONVERSA: com gente ao alcance o E é
+## de quem fala (`tecla_dos_moradores`), que para comer basta dar um passo.
+const VIES_DA_MAO := 1.0
+
+
+func alvo_do_e() -> Dictionary:
+	var id := Inventario.na_mao()
+	if id == "" or not (Cozinha.e_comida(id) or Catalogo.tipo(id) == "documento") or not _corpo_de_pe():
+		return {}
+	if not is_inside_tree():
+		return {}
+	var jogador := get_tree().get_first_node_in_group("map_player")
+	if jogador == null:
+		return {}
+	for fonte in get_tree().get_nodes_in_group(FocoDoE.GRUPO):
+		if fonte != self and fonte.has_method("perto") and fonte.has_method("escolher_entre") and fonte.perto() != null:
+			return {}
+	return {"ponto": (jogador as Node3D).global_position, "vies": VIES_DA_MAO}
 
 
 ## O CORPO DO JOGADOR ESTÁ DE PÉ? No escuro da queda (e no susto do tubarão) ele

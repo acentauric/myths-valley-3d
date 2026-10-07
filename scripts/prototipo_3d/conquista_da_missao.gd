@@ -91,13 +91,15 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	_montar()
 	_raiz.visible = false
-	if not CadernoDoVale.concluiu.is_connected(_ao_concluir):
-		CadernoDoVale.concluiu.connect(_ao_concluir)
+	# SÓ A MISSÃO INTEIRA FESTEJA (07/10): o caderno avisa em `festeja`, com os
+	# dados da missão, e não em `concluiu`, que é de cada passo.
+	if not CadernoDoVale.festeja.is_connected(_ao_festejar):
+		CadernoDoVale.festeja.connect(_ao_festejar)
 
 
 func _exit_tree() -> void:
-	if CadernoDoVale.concluiu.is_connected(_ao_concluir):
-		CadernoDoVale.concluiu.disconnect(_ao_concluir)
+	if CadernoDoVale.festeja.is_connected(_ao_festejar):
+		CadernoDoVale.festeja.disconnect(_ao_festejar)
 	Dia.soltar(MOTIVO)
 
 
@@ -111,10 +113,10 @@ func esperando() -> bool:
 	return not _mostrando and not _fila.is_empty()
 
 
-func _ao_concluir(_id: String) -> void:
+func _ao_festejar(dados: Dictionary) -> void:
 	# Só entra na fila: quem decide a hora é a fila de falas (ou, sem ela, o
 	# `_process`, que espera a conversa).
-	_fila.append(CadernoDoVale.ultima_concluida.duplicate(true))
+	_fila.append(dados.duplicate(true))
 	var falas := FilaDeFalas.da(self)
 	if falas != null:
 		falas.pedir({
@@ -145,6 +147,12 @@ func _recolher(_fala: Dictionary, sim: bool) -> void:
 			_animacao.pause()
 		else:
 			_animacao.play()
+	# Recolhida, a festa não segura o relógio: quem a cobriu segura por si. De
+	# volta, segura o que lhe falta — com prazo.
+	if sim:
+		Dia.soltar(MOTIVO)
+	elif _mostrando:
+		Dia.segurar(MOTIVO, maxf(ENTRA + FICA + SAI - _tempo, 0.5) + 3.0)
 
 
 ## A vez acabou sem a festa acabar (o vale saiu): ela some.
@@ -196,7 +204,9 @@ func _process(delta: float) -> void:
 ## entre uma festa e outra pode ter começado uma conversa.
 func _mostrar() -> void:
 	_mostrando = true
-	Dia.segurar(MOTIVO)
+	# COM PRAZO: a festa dura o que dura, e um relógio que ficasse preso nela
+	# (07/10: "o relógio parou sozinho em 07:17") se solta sozinho um respiro depois.
+	Dia.segurar(MOTIVO, ENTRA + FICA + SAI + 3.0)
 	mostrada = _fila.pop_front()
 	var passo := str(mostrada.get("titulo", ""))
 	var de_quem := str(mostrada.get("missao", ""))

@@ -229,13 +229,14 @@ func _run() -> void:
 		_conferir(not barra._comer_da_mao(), "a mão comeu a picareta")
 		_conferir(Inv.tem("picareta"), "a picareta desapareceu da mochila")
 
-	# --- 8. O E DA MÃO É O ÚLTIMO DA FILA ------------------------------------
+	# --- 8. COMIDA NA MÃO, O E COME — mesmo com um tronco ao alcance (07/10) ---------
 	#
-	# Perto de um tronco o E golpeia; perto de uma árvore lê a ficha. Comer é o
-	# que sobra, e sobra por ORDEM DE ÁRVORE: a barra mora dentro do HUD, que
-	# entra no vale antes dos nós do mundo, e o Godot entrega o evento de baixo
-	# para cima. Ordem de árvore é coisa que muda quando alguém acrescenta um nó,
-	# então aqui se mede a precedência de verdade.
+	# Era o contrário: a barra era a última da fila do E e só comia quando ninguém mais
+	# levava a tecla, e no vale quase sempre alguém leva (o leito, a árvore, o toco) — "ao
+	# tentar usar o E para consumir o consumível, não consegui, precisei clicar com o
+	# mouse". Agora a comida na mão vota no foco do E (`BarraDeMao.alvo_do_e`) e vence o
+	# tronco; só a conversa com quem está ao alcance passa na frente. Com a ferramenta na
+	# mão, o tronco segue levando o E (parte 9).
 	var recursos := current_scene.get_node_or_null("Recursos3D")
 	var jogador = current_scene.get("player")
 	if recursos != null and jogador != null and not recursos._alvos.is_empty():
@@ -249,11 +250,22 @@ func _run() -> void:
 				if str((Inv.espacos[i] as Dictionary).get("id", "")) == "pirao":
 					Inv.selecionar(i)
 			await _frames(2)
+			energia.repor(-80.0)
+			var foco8 = get_first_node_in_group("foco_do_e")
+			_conferir(foco8 == null or foco8.dono() == barra, "com o pirão na mão ao lado do tronco, o E é de %s, e não da barra" % (str(foco8.dono()) if foco8 != null else "?"))
 			var pirao_antes: int = Inv.quantidade("pirao")
+			var golpes8: int = 0
+			for id8 in recursos._alvos:
+				golpes8 += int(recursos._alvos[id8]["golpes_dados"])
 			_tecla_de_interagir()
 			await _frames(3)
-			_conferir(Inv.quantidade("pirao") == pirao_antes,
-				"com um tronco ao alcance, o E comeu o pirão em vez de golpear: a fila do E inverteu")
+			_conferir(Inv.quantidade("pirao") == pirao_antes - 1,
+				"com o pirão na mão ao lado do tronco, o E não comeu (tinha %d, ficou %d)" % [pirao_antes, Inv.quantidade("pirao")])
+			var golpes8_depois: int = 0
+			for id8 in recursos._alvos:
+				golpes8_depois += int(recursos._alvos[id8]["golpes_dados"])
+			_conferir(golpes8_depois == golpes8, "com o pirão na mão, o E golpeou o tronco")
+			Inv.selecionar(Inv.MAO_LIVRE)
 
 	# --- 9. COM O CORPO PARADO, O E NÃO VALE PARA O MUNDO NEM PARA A MÃO -----
 	#

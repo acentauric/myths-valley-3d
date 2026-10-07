@@ -123,6 +123,17 @@ func _run() -> void:
 				"sem machado, a galhada da casa rendeu %d lenha(s) e parou: o passo pede %d, mais a folga" % [inv.quantidade("lenha") - antes, pede_na_lenha])
 			_conferir(recursos._alvos.has(galhada) and not recursos.caidos().has(galhada),
 				"sem machado, a galhada sumiu depois de render: não há outra lenha antes da ponte")
+			# E ACABA NA QUINTA COLETA (07/10: "a pilha de galho seco tem que expirar depois de algumas
+			# coletas"): cinco levas, dez lenhas — mais que o dobro do que a chegada pede —, e some.
+			var vezes := int(ficha.get("vezes", 0))
+			_conferir(vezes == 5, "a galhada da casa não tem a conta de coletas (vezes %d, e são 5)" % vezes)
+			while recursos._alvos.has(galhada) and levas < 8:
+				for golpe in int(ficha.get("golpes", 1)):
+					energia.encher()
+					recursos.bater()
+				levas += 1
+			_conferir(levas == 5 and not recursos._alvos.has(galhada) and recursos.caidos().has(galhada),
+				"a galhada devia acabar na quinta coleta: %d leva(s), ainda posta %s, caída %s" % [levas, str(recursos._alvos.has(galhada)), str(recursos.caidos().has(galhada))])
 
 	# --- 4. A PONTE TRAZ O MACHADO --------------------------------------------------------
 	var ids: Array[String] = []

@@ -2,6 +2,24 @@
 
 ## Em desenvolvimento — 06/10/2026 (playtest da Build 9B)
 
+- **Playtest de 07/10, primeira fatia.** Colhido, o leito volta a chão bruto e a
+  enxada abre outro. Com comida (ou papel) na mão o E come (ou lê): a barra de mão
+  vota no foco do E e vence o leito, a árvore e o toco — só a conversa com quem está
+  ao alcance passa na frente. Ao lado da hora só "parado" tem rótulo: os motivos
+  (fala, tela, festa, narração) estão na tela por si, e a palavra ficava sob a barra
+  da vida. A festa de missão cumprida só vem no fim da missão inteira, com o nome dela
+  ("Chegada ao arraial"), e não a cada passo. A galhada seca do terreiro rende cinco
+  vezes e acaba. Acabado o tutorial, a ponte do rio grande abre sozinha e o Pedro a
+  anuncia na despedida — antes nenhuma missão abria. E o relógio não fica preso: a
+  festa segura com prazo e solta quando se recolhe, e um motivo sem prazo que dure
+  mais de 150 s se solta sozinho, avisando no console.
+- **Playtest de 07/10, segunda fatia: a chegada.** A seta da corrida aponta uma pista
+  em terra, estrada adentro, e não o Tonho. Na chegada o Tonho espera na areia, ao
+  lado do píer, e volta à rotina quando a chegada passa da casa. O Pedro espera nos
+  marcos da estrada: a cada onze passos andados para e vira-se até o jogador chegar
+  a três; não anda enquanto o jogador está preso na caixa de fala; e só corre se o
+  jogador corre de fato.
+
 - **Toda a lista de missões do 2D está no vale** (docs/projeto/MISSOES_DO_2D.md).
   O segundo tutorial (#160, `missoes_quintal.json`) abre sozinho na sexta colheita,
   como no 2D: o pomar entrega duas mudas de bananeira e uma de mangueira e

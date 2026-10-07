@@ -612,13 +612,13 @@ func atualizar_estado_do_relogio() -> void:
 func _update_clock_state() -> void:
 	if not is_instance_valid(_clock_estado):
 		return
+	# SÓ A PAUSA DO JOGADOR TEM RÓTULO (07/10). Os motivos que seguram o relógio —
+	# a fala, a tela, a festa, a narração — estão na tela por si: escrever "fala"
+	# ao lado da hora era ruído, e a barra da vida cobria a palavra. Quem quiser o
+	# motivo ainda o tem em `Dia.motivos_da_segurada` e em `texto_do_motivo`.
 	var estado := ""
 	if Dia.pausado or Dia.velocidade == 0:
 		estado = tr("parado")
-	else:
-		var motivos: Array = Dia.motivos_da_segurada()
-		if not motivos.is_empty():
-			estado = texto_do_motivo(str(motivos[0]))
 	if estado != _clock_estado.text or _clock_estado.visible != (estado != ""):
 		_clock_estado.text = estado
 		_clock_estado.visible = estado != ""

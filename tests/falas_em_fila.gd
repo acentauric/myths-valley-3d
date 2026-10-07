@@ -211,7 +211,8 @@ func _run() -> void:
 	if conquista != null:
 		var caderno = root.get_node("/root/CadernoDoVale")
 		caderno.abrir_missao("portao_festa", "A festa que cede a vez", "portao", false, "Uma missão do portão.")
-		caderno.concluir("portao_festa")
+		# A festa só vem pedida (07/10: a missão inteira festeja, o passo do meio não); o portão a pede.
+		caderno.concluir("portao_festa", true)
 		var festejou := await _ate(func() -> bool: return conquista.ativa(), 6.0)
 		_conferir(festejou, "a missão cumprida não festejou com a vez livre")
 		if festejou:

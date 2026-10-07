@@ -895,6 +895,36 @@ func _chegar_pelo_saveiro(spawn: Vector3) -> void:
 		pedro.velocity = Vector3.ZERO
 		pedro.saudar()
 	_acertar_a_porta_da_casa()
+	_tonho_para_a_areia()
+
+
+## O TONHO ESPERA A CHEGADA NA AREIA (playtest de 07/10: "no início do jogo, talvez
+## faça mais sentido o Tonho estar na areia da praia para não ficar com o píer muito
+## poluído"): na partida nova ele sai do tabuado para a areia ao lado do píer
+## (`ancoras["Areia"]`), onde o Pedro leva o jogador para o bom-dia, e volta à rotina
+## dele quando a chegada passa da casa (ou acaba) — `_acertar_o_tonho_da_chegada`.
+var _tonho_na_areia := false
+
+
+func _tonho_para_a_areia() -> void:
+	var tonho := _achar_morador("tonho")
+	var areia: Vector3 = world.ancoras.get("Areia", Vector3.INF)
+	if tonho == null or not areia.is_finite() or not tonho.has_method("ir_ate"):
+		return
+	tonho.global_position = areia + Vector3(0.0, 0.05, 0.0)
+	tonho.velocity = Vector3.ZERO
+	tonho.ir_ate(areia)
+	_tonho_na_areia = true
+
+
+func _acertar_o_tonho_da_chegada() -> void:
+	if not _tonho_na_areia:
+		return
+	if pedro == null or pedro.terminou_o_tutorial() or pedro.passou("casa"):
+		_tonho_na_areia = false
+		var tonho := _achar_morador("tonho")
+		if tonho != null and tonho.has_method("liberar"):
+			tonho.liberar()
 
 
 ## AS FERRAMENTAS DO FINADO NUMA PARTIDA DE ANTES DO BAÚ. A enxada vinha do
@@ -1057,6 +1087,19 @@ func _conferir_o_socorro() -> void:
 	Dialogo.falar(str(pedro.dados.get("nome", "Pedro")) if pedro != null else "Pedro", linhas)
 	Inventario.adicionar("mungunza", CUIAS_DE_MUNGUNZA)
 	Audio.efeito("pegar")
+
+
+## A PONTE ABRE SOZINHA QUANDO O TUTORIAL ACABA (07/10: "depois que conclui as 16
+## atividades iniciais, não abriu nenhuma outra missão"). É o enredo — a trava da
+## jornada da fazenda —, e no 2D o enredo entra na frente da lista sem esperar E.
+## O Pedro está ao lado do jogador na despedida, e anuncia o passo ali mesmo. As
+## frentes de ofício dele (as armas, o ofício, a lombada) seguem abrindo no E.
+func _conferir_a_ponte() -> void:
+	var da_ponte = _cadeias.get("pedro_ponte")
+	if da_ponte == null or da_ponte.iniciado or pedro == null:
+		return
+	if pedro.terminou_o_tutorial():
+		da_ponte.comecar(2.0)
 
 
 ## O SEGUNDO TUTORIAL ABRE SOZINHO NA SEXTA COLHEITA, como no 2D (`tutorial.gd` de lá):
@@ -1402,6 +1445,8 @@ func _process(_delta: float) -> void:
 		_acertar_a_porta_da_casa()
 		_conferir_as_metas()
 		_conferir_o_quintal()
+		_conferir_a_ponte()
+		_acertar_o_tonho_da_chegada()
 	# O SOCORRO A CADA QUADRO, e não a cada meio segundo: com o corpo de três
 	# barras quem cansa é o vigor, que volta sozinho a vinte por segundo — em meio
 	# segundo o braço que não aguentava bater já aguenta, e a panela nunca vinha.

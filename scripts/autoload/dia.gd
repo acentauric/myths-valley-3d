@@ -103,6 +103,14 @@ var congelado_na_carga := false
 ## vai para o registro do relógio; isto é o tempo de ler, e não custa nada nem
 ## vai para o save.
 var _segurado_por: Dictionary = {}
+## Desde quando cada motivo segura (ms de relógio de parede), para o teto abaixo.
+var _segurado_desde: Dictionary = {}
+## O TETO DE UMA SEGURADA SEM PRAZO, em segundos de parede (07/10: "o relógio parou
+## sozinho em 07:17"). A narração mais longa do vale fica abaixo de um minuto; um
+## motivo que passa disto é um `soltar` que não veio, e o dia não pode ficar preso
+## por ele: solta, e avisa no console. Com a árvore parada (uma tela, o menu) não
+## vale: ali o relógio para de propósito, pelo tempo que o jogador quiser.
+const TETO_DA_SEGURADA := 150.0
 var _periodo := ""
 
 
@@ -132,10 +140,13 @@ func _process(delta: float) -> void:
 ## Sem prazo (zero), vale até o `soltar`.
 func segurar(motivo: String, prazo: float = 0.0) -> void:
 	_segurado_por[motivo] = Time.get_ticks_msec() + int(prazo * 1000.0) if prazo > 0.0 else 0
+	if not _segurado_desde.has(motivo):
+		_segurado_desde[motivo] = Time.get_ticks_msec()
 
 
 func soltar(motivo: String) -> void:
 	_segurado_por.erase(motivo)
+	_segurado_desde.erase(motivo)
 
 
 ## Os motivos que seguram o relógio agora, sem os vencidos: o HUD mostra o
@@ -155,11 +166,18 @@ func parado() -> bool:
 ## ele ("fala:" é a conversa de qualquer morador).
 func segurado(prefixo: String = "") -> bool:
 	var agora := Time.get_ticks_msec()
+	var arvore_parada := is_inside_tree() and get_tree().paused
 	var achou := false
 	for motivo: String in _segurado_por.keys():
 		var prazo := int(_segurado_por[motivo])
 		if prazo > 0 and prazo <= agora:
 			_segurado_por.erase(motivo)
+			_segurado_desde.erase(motivo)
+		elif prazo == 0 and not arvore_parada \
+				and agora - int(_segurado_desde.get(motivo, agora)) > int(TETO_DA_SEGURADA * 1000.0):
+			push_warning("Dia: o motivo '%s' segurava o relógio há mais de %.0f s sem soltar; solto." % [motivo, TETO_DA_SEGURADA])
+			_segurado_por.erase(motivo)
+			_segurado_desde.erase(motivo)
 		elif prefixo == "" or motivo.begins_with(prefixo):
 			achou = true
 	return achou
@@ -268,6 +286,7 @@ func zerar_a_partida() -> void:
 	registro_do_relogio = []
 	pausado = false
 	_segurado_por.clear()
+	_segurado_desde.clear()
 
 
 ## Escreve uma mudança no registro do relógio (ver `registro_do_relogio`).

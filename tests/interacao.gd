@@ -68,7 +68,9 @@ func _run() -> void:
 	var partida = root.get_node("/root/Partida")
 	caderno.abrir_missao("pedro_chave", "Quem guardou a chave", "pedro", true, "A partida apagada.")
 	caderno.abrir_missao("pedro_bom_dia", "Quem chega, cumprimenta", "pedro", true, "")
-	caderno.concluir("pedro_bom_dia")
+	# A festa só vem pedida (07/10: a missão inteira festeja, o passo do meio não); aqui o que
+	# se mede é a HORA dela, então o portão a pede com os dados do passo.
+	caderno.concluir("pedro_bom_dia", true)
 	caderno.fixar("pedro_chave")
 	partida.comecar(1, true)
 	_conferir(caderno.ativas.is_empty() and caderno.cumpridas.is_empty() and caderno.foco == "",
@@ -130,6 +132,7 @@ func _run() -> void:
 	_conferir(pedro.passo_em_curso() == "desembarque", "ao lado do Pedro o desembarque fechou sozinho, sem o E")
 	_conferir(tecla.perto() == pedro, "ao lado do Pedro, o E não está nele")
 	_apertar_e(tecla)
+	caderno.festeja.emit({"id": "pedro_desembarque", "titulo": "As pernas de terra firme", "missao": "Chegada ao arraial", "quem": "Pedro"})
 	# A resposta é dele, na vez dele: quem ainda falava (a Dona Filó) termina antes.
 	var respondeu := await _ate(func() -> bool: return _no_balao(pedro).contains("Bom Jesus dos Pobres"), 30.0)
 	_conferir(respondeu, "o E no Pedro não trouxe a resposta do desembarque: '%s'" % _no_balao(pedro))

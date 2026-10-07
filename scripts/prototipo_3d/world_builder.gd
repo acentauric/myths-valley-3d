@@ -1855,6 +1855,18 @@ func _build_landmark_details() -> void:
 	ancoras["PierPiso"] = Vector3(pier_base.x, pier_floor_top, pier_base.z)
 	ancoras["PierDirecao"] = pier_direction
 	ancoras["PierLado"] = Vector3(cos(pier_yaw), 0.0, -sin(pier_yaw))
+	# A PISTA DA CORRIDA E A AREIA (playtest de 07/10). O passo "correr" da chegada
+	# apontava o píer, e o marcador caía em cima do Tonho — "isso tá confuso para o
+	# jogador": a seta agora aponta um ponto em terra, estrada adentro, a uns doze
+	# passos da cabeça do píer ("corra até ali"). E na chegada o Tonho espera na
+	# AREIA, ao lado do píer, para o tabuado não ficar cheio (ele volta à rotina
+	# dele depois): o primeiro ponto em terra firme, de um lado ou do outro.
+	var para_a_terra := -pier_direction
+	var cabeca: Vector3 = pier_origin + para_a_terra * 8.5
+	ancoras["Corrida"] = _ponto_em_terra([cabeca + para_a_terra * 12.0, cabeca + para_a_terra * 8.0, cabeca + para_a_terra * 5.0], cabeca)
+	var lado: Vector3 = ancoras["PierLado"]
+	ancoras["Areia"] = _ponto_em_terra([cabeca + para_a_terra * 3.0 + lado * 4.5, cabeca + para_a_terra * 3.0 - lado * 4.5,
+		cabeca + para_a_terra * 5.0 + lado * 3.0, cabeca + para_a_terra * 5.0 - lado * 3.0], ancoras["Corrida"])
 	_construcao("pier", pier_origin, pier_yaw, func():
 		_box(Vector3(4.5, 0.2, 17), pier + Vector3(0, -0.1, 0), Color("85684b"), true)
 		for offset in [-7.0, 0.0, 7.0]:
@@ -2129,6 +2141,14 @@ func _build_pecas() -> void:
 			var item_position: Vector3 = item[1]
 			item_position.y = maxf(item_position.y, ground_height_at(item_position))
 			CatalogoAssets.instanciar(String(item[0]), self, item_position, 1.0, float(item[2]))
+
+
+## O primeiro dos `candidatos` que é terra firme, no chão; sem nenhum, `senao` no chão.
+func _ponto_em_terra(candidatos: Array, senao: Vector3) -> Vector3:
+	for ponto: Vector3 in candidatos:
+		if is_on_land(ponto):
+			return ground_position(ponto, 0.0)
+	return ground_position(senao, 0.0)
 
 
 func _posicao_no_pier(lateral: float, longitudinal: float) -> Vector3:
