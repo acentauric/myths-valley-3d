@@ -76,6 +76,8 @@ func _run() -> void:
 	_conferir(na_tela.size.x >= tela.x * 0.8,
 		"a caixa tem %.0f px numa tela de %.0f: abriu no tamanho do 2D" % [na_tela.size.x, tela.x])
 	_conferir(na_tela.end.y >= tela.y * 0.9, "a caixa não está no rodapé (acaba em %.0f de %.0f)" % [na_tela.end.y, tela.y])
+	_conferir(dialogo.transform.get_scale().x <= 1.05,
+		"a caixa é ampliada %.2f vezes: é o quadro do 2D esticado, e a letra serrilha" % dialogo.transform.get_scale().x)
 	dialogo._fechar()
 	await _frames(3)
 

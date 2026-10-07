@@ -1945,22 +1945,18 @@ func _ao_derrubar(_id: String, rende: String, quantidade: int) -> void:
 
 ## A MOCHILA NA CAMADA E NO TAMANHO DO VALE (#2).
 ##
-## Ela é tela do 2D, desenhada para os 640×360 de lá (`mochila.gd`, espaço de
-## 28 px). No vale de 1280×720 abria com metade do tamanho, na camada 15 — por
-## baixo do HUD, que é a 20, desenhava por cima dela e ficava com os cliques.
-## O arquivo é compartilhado e não se mexe nele daqui: o vale acerta a CAMADA
-## dela. Escala em volta do centro da tela, porque os filhos dela se ancoram
-## na tela inteira e o painel fica no meio. O mouse continua certo: a camada
-## leva o clique de volta à coordenada dela.
-##
-## A 90% do encaixe, e não a 100%: o painel dela mede 647 px, já passa dos
-## 640 de lá, e em 2× saía 7 px de cada lado da janela. A 1,8× cada espaço
-## fica com 50 px, ao lado dos 52 da barra de mão.
-## O quadro em que as telas do 2D são desenhadas: a janela inteira de lá.
-const QUADRO_DO_2D := Vector2(640, 360)
-## E a tela do vale, onde as telas redesenhadas em alta são medidas (o folheto).
+## Ela é tela do 2D (`mochila.gd`), e no vale abria na camada 15 — por baixo do
+## HUD, que é a 20, desenhava por cima dela e ficava com os cliques. O arquivo do
+## 2D não se mexe daqui: o vale acerta a CAMADA dela e, desde 07/10, a desenha
+## pela `mochila_vale.gd`, que estende o arquivo do 2D com as medidas da tela do
+## vale (1280×720) e a identidade dos menus dele. Até então ela era desenhada
+## nos 640×360 de lá e ampliada 1,8× — e a letra saía serrilhada. Escala em volta
+## do centro da tela, e só quando a janela não é a do vale, porque os filhos
+## dela se ancoram na tela inteira e o painel fica no meio. O mouse continua
+## certo: a camada leva o clique de volta à coordenada dela.
+## A tela do vale, em que as telas que vieram do 2D são desenhadas: a caixa de
+## fala, a mochila, o cartão do amanhecer e o folheto.
 const TELA_DO_VALE := Vector2(1280, 720)
-const MOCHILA_FOLGA := 0.9
 ## A camada das telas do vale (a do painel J); só uma abre por vez.
 const CAMADA_DAS_TELAS := 25
 ## O cartão do amanhecer (#21), acima da tela preta da queda (30, `queda.gd`):
@@ -1970,7 +1966,7 @@ const CAMADA_DO_AMANHECER := 31
 
 func _ajustar_a_mochila() -> void:
 	var tela := get_viewport().get_visible_rect().size
-	var escala := minf(tela.x / QUADRO_DO_2D.x, tela.y / QUADRO_DO_2D.y) * MOCHILA_FOLGA
+	var escala := minf(tela.x / TELA_DO_VALE.x, tela.y / TELA_DO_VALE.y)
 	Mochila.layer = CAMADA_DAS_TELAS
 	Mochila.transform = Transform2D(0.0, Vector2(escala, escala), 0.0, tela * 0.5 * (1.0 - escala))
 
@@ -1981,28 +1977,22 @@ func _ajustar_as_telas_do_2d() -> void:
 	_ajustar_a_mochila()
 	# A fala longa (#21) fica na camada das telas: por cima do HUD, e nenhuma
 	# tela fica aberta com ela (ver `_ao_abrir_a_fala`).
-	_no_quadro_do_2d(Dialogo, CAMADA_DAS_TELAS)
+	# TODAS NA TELA DO VALE (07/10): a caixa de fala e o cartão do amanhecer eram
+	# desenhados no quadro de 640×360 do 2D e ampliados duas vezes — "a qualidade
+	# tá muito serrilhada". Cada um passou a ter o dobro das medidas de lá
+	# (`dialogo_vale.gd`, `amanhecer_vale.gd`), como o folheto desde 06/10.
+	_na_tela_do_vale(Dialogo, CAMADA_DAS_TELAS)
 	_na_tela_do_vale(Folheto, CAMADA_DAS_TELAS)
-	_no_quadro_do_2d(Amanhecer, CAMADA_DO_AMANHECER)
+	_na_tela_do_vale(Amanhecer, CAMADA_DO_AMANHECER)
 
 
-## UMA TELA DESENHADA NO QUADRO DE 640×360 DO 2D, inteira na janela.
-##
-## Diferente da mochila: estas desenham a partir do canto do quadro (a caixa
-## de fala ancora no rodapé DELE, e não no da janela), então a escala parte do
-## canto, e a sobra da janela que não é 16:9 fica dividida dos dois lados.
-func _no_quadro_do_2d(camada: CanvasLayer, numero: int) -> void:
-	var tela := get_viewport().get_visible_rect().size
-	var escala := minf(tela.x / QUADRO_DO_2D.x, tela.y / QUADRO_DO_2D.y)
-	camada.layer = numero
-	camada.transform = Transform2D(0.0, Vector2(escala, escala), 0.0,
-		(tela - QUADRO_DO_2D * escala) * 0.5)
-
-
-## UMA TELA REDESENHADA NA TELA DO VALE (1280×720), inteira na janela: o
-## folheto, que veio do 2D no quadro de 640×360 e era ampliado duas vezes — a
-## letra borrava. Agora ele é medido na tela do vale, e a escala só existe se a
-## janela não for a do vale.
+## UMA TELA DESENHADA NA TELA DO VALE (1280×720), inteira na janela: o folheto,
+## a caixa de fala e o cartão do amanhecer, que vieram do 2D no quadro de
+## 640×360 e eram ampliados duas vezes — a letra borrava. Medidos na tela do
+## vale, a escala só existe se a janela não for a do vale. Estas desenham a
+## partir do canto da tela (a caixa de fala ancora no rodapé DELA), então a
+## escala parte do canto, e a sobra da janela que não é 16:9 fica dividida dos
+## dois lados.
 func _na_tela_do_vale(camada: CanvasLayer, numero: int) -> void:
 	var tela := get_viewport().get_visible_rect().size
 	var escala := minf(tela.x / TELA_DO_VALE.x, tela.y / TELA_DO_VALE.y)

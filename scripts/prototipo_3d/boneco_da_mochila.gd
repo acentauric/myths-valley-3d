@@ -6,12 +6,12 @@ extends Control
 ## itens equipados, igual nos jogos de RPG. Assim ele pode ver as alterações
 ## conforme vai equipando."
 ##
-## A mochila é tela do 2D (`scripts/ui/mochila.gd`), e o vale não mexe nela: o
-## boneco entra nela daqui (`montar`), no alto da coluna dos efeitos — logo à
-## direita dos encaixes, com o que faz efeito no corpo embaixo dele, como a
-## ficha do personagem nos RPGs. Ao lado, e não numa coluna nova: a mochila já
-## passava dos 640 de largura do quadro do 2D, e uma coluna a mais a cortava
-## nas bordas da tela. Ele é um palco à parte — um SubViewport com mundo, luz e câmera
+## A mochila é tela do 2D (`scripts/ui/mochila.gd`; no vale, a `mochila_vale.gd`
+## a estende só no desenho), e a regra dela não se mexe daqui: o boneco entra
+## nela daqui (`montar`), no alto da coluna dos efeitos — logo à direita dos
+## encaixes, com o que faz efeito no corpo embaixo dele, como a ficha do
+## personagem nos RPGs. Ao lado, e não numa coluna nova: uma coluna a mais não
+## cabia na largura da tela. Ele é um palco à parte — um SubViewport com mundo, luz e câmera
 ## próprios — com o mesmo corpo do jogador (a mesma cena, o mesmo transform e
 ## os mesmos materiais de dois lados) parado no idle, e veste pelo mesmo
 ## caminho do jogador (`Vestimenta3D`): o boneco nunca mostra o que o corpo no
@@ -26,19 +26,23 @@ extends Control
 const Vestimenta3D = preload("res://scripts/prototipo_3d/vestimenta_3d.gd")
 const AuthoredAnimator = preload("res://scripts/prototipo_3d/authored_animator.gd")
 
-## O tamanho no quadro de 640×360 da mochila: da altura da coluna dos cinco
-## encaixes (5 × 28 + 4 × 3).
-const LARGURA := 108.0
-const ALTURA := 152.0
-## O palco renderiza no dobro: a mochila é escalada 1,8× no vale, e o boneco
-## não pode sair borrado.
+## O tamanho na tela do vale (1280×720, desde 07/10 — `mochila_vale.gd`): um
+## pouco menos que a coluna dos cinco encaixes (5 × 52 + 4 × 6 = 284), para a
+## coluna dos efeitos, com ele em cima, caber na altura da tela com o corpo
+## cheio de efeitos.
+const LARGURA := 192.0
+const ALTURA := 270.0
+## O palco renderiza no dobro: o boneco não pode sair borrado quando a janela é
+## maior que a tela do vale.
 const RESOLUCAO := 2
 ## Três quartos, como nos RPGs: o corpo quase de frente, com o lado da mão
 ## direita à vista.
 const GIRO_INICIAL := -0.45
-const GIRO_POR_PIXEL := 0.012
+## Meia volta em uns 240 px de arrasto (o boneco tem 192 de largura).
+const GIRO_POR_PIXEL := 0.0065
 const CAMPO := 28.0
-const COR_DA_MOLDURA := Color(0.5, 0.42, 0.28)
+## O filete de ouro dos painéis do vale, translúcido.
+const COR_DA_MOLDURA := Color(0.91, 0.77, 0.42, 0.45)
 
 var palco: SubViewport
 ## O pivô que gira (o "visual" do jogador), com o modelo dentro.
@@ -92,10 +96,10 @@ func montar(mochila, jogador) -> void:
 	moldura.set_anchors_preset(Control.PRESET_FULL_RECT)
 	moldura.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var estilo := StyleBoxFlat.new()
-	estilo.bg_color = Color(0.06, 0.05, 0.04, 0.55)
+	estilo.bg_color = Color(0.03, 0.05, 0.045, 0.6)
 	estilo.border_color = COR_DA_MOLDURA
 	estilo.set_border_width_all(1)
-	estilo.set_corner_radius_all(2)
+	estilo.set_corner_radius_all(4)
 	moldura.add_theme_stylebox_override("panel", estilo)
 	add_child(moldura)
 

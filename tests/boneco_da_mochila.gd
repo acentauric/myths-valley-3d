@@ -72,7 +72,7 @@ func _run() -> void:
 		"o boneco não está logo à direita dos encaixes (boneco em %s, encaixes em %s)" % [str(dele), str(deles)])
 	_conferir(dele.position.y < deles.end.y and dele.end.y > deles.position.y, "o boneco não está na altura dos encaixes")
 	_conferir(dele.size.x >= 80.0 and dele.size.y >= 120.0, "o boneco é pequeno demais: %s" % str(dele.size))
-	var painel: Control = mochila.get_child(1)
+	var painel: Control = mochila.get_node("Painel")
 	var na_tela: Rect2 = mochila.transform * painel.get_global_rect()
 	var tela := root.get_visible_rect()
 	_conferir(tela.encloses(na_tela), "com o boneco, a mochila não cabe na tela: %s em %s" % [str(na_tela), str(tela)])

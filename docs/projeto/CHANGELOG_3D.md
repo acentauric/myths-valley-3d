@@ -13,6 +13,16 @@
   anuncia na despedida — antes nenhuma missão abria. E o relógio não fica preso: a
   festa segura com prazo e solta quando se recolhe, e um motivo sem prazo que dure
   mais de 150 s se solta sozinho, avisando no console.
+- **Playtest de 07/10, terceira fatia: as telas.** A caixa de fala, a mochila e o
+  cartão do amanhecer eram desenhados no quadro de 640×360 do 2D e ampliados duas
+  vezes — a letra saía serrilhada. Passam a ser desenhados na tela do vale
+  (1280×720), com o dobro das medidas de lá. A mochila e o cartão continuam sendo
+  os arquivos do 2D: o vale os ESTENDE só no desenho (`mochila_vale.gd` e
+  `amanhecer_vale.gd`, os autoloads `Mochila` e `Amanhecer`; regra 3 do
+  HISTORICO — a regra fica no 2D). E a mochila entra na identidade dos menus do
+  vale: a laca verde-escura, o filete e a talha de ouro, o título em Cinzel e o
+  texto em Cormorant, como o painel do J e o menu das obras; o espaço dela tem os
+  52 px da barra de mão, e o boneco acompanha.
 - **Playtest de 07/10, segunda fatia: a chegada.** A seta da corrida aponta uma pista
   em terra, estrada adentro, e não o Tonho. Na chegada o Tonho espera na areia, ao
   lado do píer, e volta à rotina quando a chegada passou do bom-dia e ninguém está
