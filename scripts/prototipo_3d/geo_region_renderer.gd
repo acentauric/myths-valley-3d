@@ -602,6 +602,8 @@ func _riverbed_profile(point: Vector2) -> float:
 			continue
 		var distance := _distance_to_line(point, river.points)
 		var shape := 1.0 - smoothstep(width * 0.25, width * 0.58, distance)
+		if bool(river.get("grande", false)):
+			shape = lerpf(shape, 1.0 - smoothstep(width * 0.15, width * 0.5 + 4.0, distance), _peso_retorno_de_ca(point))
 		# No rio grande, do lado do barranco, a calha segue funda até a beira
 		# d'água: não há onde pôr o pé antes da parede (ver RIO GRANDE).
 		if bool(river.get("grande", false)) and _lado_do_barranco(point) > 0.0:
@@ -711,8 +713,23 @@ func _barranco(point: Vector2) -> float:
 	var na_ponta := int(lado_e_trecho.y) >= (_rio_grande.points as PackedVector2Array).size() - 1
 	var altura := BARRANCO_ALTURA_DA_PONTA if na_ponta else BARRANCO_ALTURA
 	var subida := smoothstep(0.0, BARRANCO_SUBIDA, dentro)
+	subida = lerpf(subida, smoothstep(0.0, 3.5, dentro), _peso_retorno_de_ca(point))
 	var descida := 1.0 - smoothstep(BARRANCO_LARGURA - BARRANCO_DESCIDA, BARRANCO_LARGURA, dentro)
 	return altura * subida * descida * peso
+
+
+## Só ao lado da ponte, na margem do vale: mantém cabeceira, cerca e
+## barranco oposto, permitindo voltar da água depois de cair.
+func _peso_retorno_de_ca(point: Vector2) -> float:
+	if not _ponte_do_rio_grande.is_finite() or point.distance_to(_ponte_do_rio_grande) >= ATERRO_DA_PONTE:
+		return 0.0
+	var lado_e_trecho := _lado_e_trecho(point)
+	if lado_e_trecho.x >= 0.0:
+		return 0.0
+	var trecho := clampi(int(lado_e_trecho.y), 0, _linha_do_barranco.size() - 2)
+	var ao_longo := (_linha_do_barranco[trecho + 1] - _linha_do_barranco[trecho]).normalized()
+	var lateral := absf((point - _ponte_do_rio_grande).dot(ao_longo))
+	return smoothstep(2.5, 4.0, lateral) * (1.0 - smoothstep(ATERRO_DA_PONTE * 0.7, ATERRO_DA_PONTE, point.distance_to(_ponte_do_rio_grande)))
 
 
 ## A areia elevada da margem afunda antes de alcançar o mar, sem um degrau

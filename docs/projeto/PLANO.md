@@ -5,6 +5,10 @@ raiz. O jogo 2D segue sua própria linha em `acentauric/myths-valley`.
 
 ## O que já roda
 
+O retorno da água pela margem do vale junto à ponte está corrigido (#161,
+07/10/2026). A flutuação acompanha a altura local do rio. Isso não substitui
+o lote de pedras da #116 nem libera a travessia pelo barranco oposto.
+
 A direção visual é Tripo. Conforme a decisão de 29/09, reconciliada na #46
 em 07/10/2026, assets novos entram no catálogo sem exigir arte procedural nova.
 O procedural permanece como legado funcional, com seus testes e fallback,

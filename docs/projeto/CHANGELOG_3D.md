@@ -6,6 +6,12 @@ O teste passa a cobrar Candinha, Filo, Tonho, Zefa, arraial e recursos, incluind
 
 ## Em desenvolvimento — 07/10/2026 (experimento Jev)
 
+- **Quem cai no rio pode voltar ao vale (#161).** A flutuação usa a
+  lâmina de água local, e a lateral da margem junto à ponte permite o
+  retorno. Cabeceiras e barranco oposto continuam impedindo a travessia.
+  Rio grande, nado parado e colisões passaram; a fixture reprova antes
+  da correção. O jogador automático também saiu do rio sem teleporte.
+
 - **A primeira leira informa o próximo gesto (#146).** Etapas marcadas,
   ferramenta e tecla atuais, item ausente e alvo coerente com a ação
   restante. Repetir arar explica plantar/regar; atividade sem progresso

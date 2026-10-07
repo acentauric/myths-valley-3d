@@ -577,7 +577,10 @@ func _physics_process(delta: float) -> void:
 		# Nadando em movimento, o clipe deita e o modelo sobe um pouco. Parado,
 		# o corpo fica na água até o pescoço e a animação de escada não o ergue.
 		var submersao := SUBMERSO_NADANDO if _visual_nado_elevado else SUBMERSO_NADO_PARADO
-		var altura_nado: float = _click_world.water_level() - character_height * submersao
+		# O rio acompanha o relevo: o mar pode ficar vários metros abaixo
+		# dele e empurraria o nadador contra o fundo.
+		var lamina: float = _click_world.water_level_at(global_position) if _click_world.has_method("water_level_at") else _click_world.water_level()
+		var altura_nado: float = lamina - character_height * submersao
 		velocity.y = clampf((altura_nado - global_position.y) * 5.0, -3.0, 3.0)
 		# Roçando o fundo, não empurra contra ele (o fundo virava parede e prendia).
 		if is_on_floor():

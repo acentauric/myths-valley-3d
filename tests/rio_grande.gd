@@ -153,6 +153,22 @@ func _run() -> void:
 			_conferir(absf(chao - anterior) <= RAMPA_QUE_SE_ANDA + 0.01, "a %.0f u da cabeceira de cá a estrada sobe %.2f numa unidade" % [s, absf(chao - anterior)])
 			anterior = chao
 			s += 1.0
+		# Cair junto à ponte não pode aprisionar na margem do vale. A fixture
+		# posiciona o corpo na água; a saída usa somente o controle de andar.
+		var caiu: Vector3 = centro + para_ca * (meia - 0.4) + Vector3(-para_ca.z, 0.0, para_ca.x) * 4.5
+		var agua_de_ca: float = mundo.water_level_at(caiu)
+		var perfil := " centro=" + str(centro) + " rumo=" + str(para_ca) + " meia=" + str(meia) + " partida=" + str(caiu)
+		for distancia: float in [0.0, 0.5, 1.0, 2.0, 3.0, 4.0, 6.0]:
+			var amostra: Vector3 = caiu + para_ca * distancia
+			perfil += " [%s: lado=%s chao=%s agua=%s]" % [distancia, regiao._lado_do_barranco(Vector2(amostra.x, amostra.z)), mundo.ground_height_at(amostra), mundo.water_level_at(amostra)]
+		jogador.teleportar(Vector3(caiu.x, agua_de_ca + 0.2, caiu.z), atan2(para_ca.x, para_ca.z))
+		await _passos_de_fisica(10)
+		Input.action_press("mv_forward")
+		await _passos_de_fisica(540)
+		Input.action_release("mv_forward")
+		var saiu: Vector2 = Vector2(jogador.global_position.x, jogador.global_position.z)
+		_conferir(regiao._lado_do_barranco(saiu) < -meia - 3.0 and not jogador.is_swimming(),
+			"caiu junto à ponte e não voltou pela margem do vale: " + str(jogador.global_position) + perfil)
 		# --- 6. SOB A PONTE a beira de lá não é rampa.
 		var de_la: Vector3 = b if lado_a < 0.0 else a
 		var para_la := -para_ca
@@ -223,7 +239,7 @@ func _fechar() -> void:
 	Input.action_release("mv_animation_9")
 	print("")
 	if falhas == 0:
-		print("RIO_GRANDE_OK: o vau acabou; o rio grande é fundo no meio e raso só na beira de cá; a margem de lá é barranco acima da água, com face de mais de 60 graus, do mar à moldura; a ponte assenta num aterro plano com rampa que se anda, sem rampa pelo lado de lá; e nadando para lá, com o pulo, o corpo não sai da água")
+		print("RIO_GRANDE_OK: o vau acabou; o rio grande é fundo no meio e raso só na beira de cá; a margem de lá é barranco acima da água, com face de mais de 60 graus, do mar à moldura; a ponte assenta num aterro plano com rampa que se anda, sem rampa pelo lado de lá; e nadando para lá, com o pulo, o corpo não sai da água; cair junto à ponte permite retornar pela margem do vale")
 	else:
 		print("rio_grande: %d falha(s)" % falhas)
 	quit(1 if falhas > 0 else 0)
