@@ -159,6 +159,7 @@ const O_QUE_GUARDAR := {
 	"Equipamento": ["vestido"],
 	"Talentos": ["nivel", "xp", "pontos", "destravados"],
 	"Obras": ["feitas"],
+	"Terras": ["posses"],
 	"Terrenos": ["trabalho", "divida_do_tonho", "tonho_com_rede"],
 	"Povoado": ["pericia", "sobra"],
 	"Colecao": ["achados"],

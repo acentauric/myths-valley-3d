@@ -47,6 +47,7 @@ var _dica: PanelContainer
 ## Quem está ao alcance agora, ou null.
 var _perto: Node3D = null
 var _perguntando_presente := false
+var _perguntando_terra := false
 
 
 func configurar(jogador: Node3D, hud, quem_mora: Callable, livre: Callable) -> void:
@@ -231,7 +232,7 @@ func _unhandled_key_input(event: InputEvent) -> void:
 ## com ele — o pirão da Dona Filó levado ao Tonho —, e só depois abrir a fila
 ## dele, que de outro modo tomaria a conversa.
 func usar(morador: Node3D) -> void:
-	if morador == null or _perguntando_presente or _fala_ativa(morador):
+	if morador == null or _perguntando_presente or _perguntando_terra or _fala_ativa(morador):
 		return
 	_dica.visible = false
 	var cadeias := get_tree().get_nodes_in_group(CadeiaDeMissoes.GRUPO)
@@ -256,9 +257,33 @@ func usar(morador: Node3D) -> void:
 		else:
 			_resposta_social(morador, "ja_deu")
 		return
+	var terra := Terras.oferta(id)
+	if terra != "":
+		_registrar_conversa(morador)
+		_oferecer_terra(morador, terra)
+		return
 	if morador.has_method("conversar"):
 		morador.conversar()
 		_registrar_conversa(morador)
+
+
+func _oferecer_terra(morador: Node3D, terra: String) -> void:
+	var vizinho := Terras.vizinho_que_falta(terra)
+	if vizinho != "":
+		morador.mostrar_balao(Terras.texto("sem_divisa") % Terras.nome(vizinho), 6.0)
+		return
+	var custo := Terras.preco(terra)
+	if Jogo.dinheiro < custo:
+		morador.mostrar_balao(Terras.texto("sem_dinheiro") % [custo, custo - Jogo.dinheiro], 6.0)
+		return
+	_perguntando_terra = true
+	var sim: bool = await Dialogo.perguntar(_nome_de(morador), Terras.texto("pergunta") % [Terras.nome(terra), custo])
+	_perguntando_terra = false
+	# A confirmação não compra se o preço mudou enquanto se aguardava a vez.
+	if not sim or not is_instance_valid(morador) or not morador.is_inside_tree() or Terras.preco(terra) != custo:
+		return
+	if Terras.comprar(terra):
+		morador.mostrar_balao(Terras.texto("comprou"), 6.0)
 
 
 func _fala_ativa(morador: Node3D) -> bool:

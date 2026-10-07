@@ -1,0 +1,23 @@
+{
+  "observacao": "#9: compra e posse por lote, sem tilemap. Preços e vizinhança de GeradorMundo.TERRENOS/VIZINHOS do 2D (62c0f14b). Os contornos são cadastrais por âncora real: roçado acompanha a grade 6x4 de 1.2u; Zefa e chapada adaptam as áreas 12x16 e 14x16 em escala de 2u, sem deslocar casas, cercas, rio ou KML. Revisão geográfica ampla permanece #22. Só depois de conhecer a chapada; missões e presentes têm prioridade sobre a oferta.",
+  "lotes": {
+    "rocado": {"nome": "Seu roçado", "nome_en": "Your field", "nome_es": "Tu parcela", "dono": "", "ancora": "Lavoura", "tamanho": [7.2, 4.8], "preco": 0, "vizinhos": []},
+    "terreno_zefa": {"nome": "Terra da Dona Zefa", "nome_en": "Dona Zefa's land", "nome_es": "Tierra de doña Zefa", "dono": "zefa", "ancora": "Casa da Zefa", "tamanho": [24, 32], "preco": 1800, "vizinhos": ["rocado"]},
+    "terreno_benedito": {"nome": "Chapada do Seu Benedito", "nome_en": "Seu Benedito's plateau", "nome_es": "Meseta del señor Benedito", "dono": "benedito", "ancora": "Chapada", "tamanho": [28, 32], "preco": 2600, "vizinhos": ["terreno_zefa"]}
+  },
+  "pergunta": "Comprar %s por %d réis? A casa e a rotina de quem mora continuam.",
+  "pergunta_en": "Buy %s for %d réis? The residents keep their homes and routines.",
+  "pergunta_es": "¿Comprar %s por %d réis? Los residentes conservan sus casas y rutinas.",
+  "comprou": "A terra agora é sua. Confira a divisa verde no mapa.",
+  "comprou_en": "The land is now yours. Check its green boundary on the map.",
+  "comprou_es": "La tierra ahora es tuya. Mira su linde verde en el mapa.",
+  "sem_divisa": "Primeiro você precisa ter %s, que faz divisa com esta terra.",
+  "sem_divisa_en": "First you need to own %s, which borders this land.",
+  "sem_divisa_es": "Primero necesitas tener %s, que linda con esta tierra.",
+  "sem_dinheiro": "Esta terra custa %d réis. Faltam %d.",
+  "sem_dinheiro_en": "This land costs %d réis. You need %d more.",
+  "sem_dinheiro_es": "Esta tierra cuesta %d réis. Te faltan %d.",
+  "sua": "Sua terra",
+  "sua_en": "Your land",
+  "sua_es": "Tu tierra"
+}

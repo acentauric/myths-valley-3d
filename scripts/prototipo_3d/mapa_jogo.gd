@@ -54,6 +54,9 @@ func abrir(world: Node3D, jogador: Node3D, pai_ui: Control) -> void:
 	_marcadores_raiz.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	pai_ui.add_child(_marcadores_raiz)
 	pai_ui.move_child(_marcadores_raiz, 0)
+	var divisas = load("res://scripts/prototipo_3d/divisas_no_mapa.gd").new()
+	_marcadores_raiz.add_child(divisas)
+	divisas.configurar(world, _camera)
 	for landmark: Dictionary in world.landmarks:
 		_marcador(String(landmark["name"]), landmark["position"])
 	for area: Dictionary in world.areas:

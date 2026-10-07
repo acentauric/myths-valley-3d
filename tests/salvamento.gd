@@ -440,7 +440,12 @@ func _conferir_cobertura() -> void:
 		var sistema := root.get_node_or_null("/root/" + nome)
 		if sistema == null:
 			continue
-		var guardados: Array = DO_MUNDO.get(nome, [])
+		var guardados: Array = DO_MUNDO.get(nome, []).duplicate()
+		# Provedores 3D também podem usar a tabela declarativa do Salvamento.
+		# Cobrar isso não exige fingir que posse é um campo do mundo gráfico.
+		for salvo in root.get_node("Salvamento").O_QUE_GUARDAR.get(nome, []):
+			if not guardados.has(salvo):
+				guardados.append(salvo)
 		var fora: Dictionary = FORA_DO_SAVE.get(nome, {})
 		for p in sistema.get_property_list():
 			if not (int(p["usage"]) & PROPERTY_USAGE_SCRIPT_VARIABLE):
