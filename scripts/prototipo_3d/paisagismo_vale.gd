@@ -798,7 +798,8 @@ static func aderecos(wb: Node, zonas: Array, receitas: Dictionary, reservas: Dic
 		if not carro.is_empty() and receita == String(carro.get("receita", "")) and area > area_do_carro:
 			area_do_carro = area
 			zona_do_carro = nome
-		# A CERCA DE VARAS em volta da roça, com a porteira onde a roça chega mais perto da rua.
+		# Entrada livre onde a roça chega à rua. A porteira decorativa não
+		# abre e ficava isolada entre lances removidos pelas reservas (#152).
 		if not cerca.is_empty() and (cerca.get("receitas", []) as Array).has(receita):
 			var amostras := _amostras_do_perimetro(poligono, float(cerca.get("passo", 3.0)))
 			var portao := -1
@@ -819,9 +820,6 @@ static func aderecos(wb: Node, zonas: Array, receitas: Dictionary, reservas: Dic
 				var meio := (a + b) * 0.5
 				var giro := atan2(-direcao.y, direcao.x)
 				if i == portao:
-					saida.append(_item(String(porteira.get("chave", "porteira")), meio, giro, nome, 1.8, true))
-					continue
-				if portao >= 0 and (i == (portao + 1) % n or i == (portao + n - 1) % n):
 					continue
 				if bloqueado(reservas, regras, meio, float(cerca.get("folga", 0.6))) != "":
 					continue

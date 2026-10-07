@@ -6,6 +6,11 @@ O teste passa a cobrar Candinha, Filo, Tonho, Zefa, arraial e recursos, incluind
 
 ## Em desenvolvimento — 07/10/2026 (experimento Jev)
 
+- **A entrada da roça fica livre (#152).** Sai a porteira decorativa
+  imóvel que aparecia isolada perto do cemitério. Um lance fica aberto
+  e os vizinhos permanecem. Entrada real e cercas na encosta passaram;
+  reintroduzir a peça reprova. Captura do cemitério conferida.
+
 - **Quem cai no rio pode voltar ao vale (#161).** A flutuação usa a
   lâmina de água local, e a lateral da margem junto à ponte permite o
   retorno. Cabeceiras e barranco oposto continuam impedindo a travessia.
