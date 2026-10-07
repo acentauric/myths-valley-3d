@@ -116,6 +116,10 @@ var _modo := MODO_OFICIO
 var _textos_da_fe: Dictionary = {}
 ## id do nó → o painel dele na tela, para pintar o foco sem redesenhar tudo.
 var _caixinhas: Dictionary = {}
+var _rolagem: ScrollContainer
+var _espaco_da_arvore: Control
+var _zoom := 1.0
+var _arrastando := false
 
 
 func _ready() -> void:
@@ -196,12 +200,19 @@ func _montar() -> void:
 	# A ÁRVORE ROLA NOS DOIS EIXOS: uma raiz larga não cabe, e cortar o fio de
 	# uma exigência é esconder justamente o que a teia serve para mostrar.
 	var rolagem := ScrollContainer.new()
+	_rolagem = rolagem
 	rolagem.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	rolagem.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	direita.add_child(rolagem)
+	_espaco_da_arvore = Control.new()
+	_espaco_da_arvore.name = "EspacoDaArvore"
+	rolagem.add_child(_espaco_da_arvore)
 	_tela_da_arvore = Control.new()
 	_tela_da_arvore.name = "Arvore"
-	rolagem.add_child(_tela_da_arvore)
+	_espaco_da_arvore.add_child(_tela_da_arvore)
+	_tela_da_arvore.minimum_size_changed.connect(_dimensionar_zoom)
+	var navegacao: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://data/navegacao_teia.json"))
+	rolagem.tooltip_text = str(IdiomaMenu.campo(navegacao, "ajuda"))
 
 	_ficha = VBoxContainer.new()
 	_ficha.name = "Ficha"
@@ -694,3 +705,39 @@ func _unhandled_key_input(event: InputEvent) -> void:
 			else:
 				return
 	get_viewport().set_input_as_handled()
+
+
+## A escala pertence só à árvore; ficha, rodapé e teclas conservam o tamanho.
+func _dimensionar_zoom() -> void:
+	_tela_da_arvore.scale = Vector2.ONE * _zoom
+	_tela_da_arvore.size = _tela_da_arvore.custom_minimum_size
+	_espaco_da_arvore.custom_minimum_size = _tela_da_arvore.custom_minimum_size * _zoom
+
+func _input(event: InputEvent) -> void:
+	if not aberta:
+		_arrastando = false
+		return
+	if event is InputEventMouseButton:
+		if event.button_index == MOUSE_BUTTON_MIDDLE and not event.pressed:
+			_arrastando = false
+			return
+		var cursor: Vector2 = _rolagem.get_global_transform_with_canvas().affine_inverse() * event.position
+		if not Rect2(Vector2.ZERO, _rolagem.size).has_point(cursor):
+			return
+		if event.button_index == MOUSE_BUTTON_MIDDLE:
+			_arrastando = event.pressed
+			get_viewport().set_input_as_handled()
+		elif event.pressed and event.button_index in [MOUSE_BUTTON_WHEEL_UP, MOUSE_BUTTON_WHEEL_DOWN]:
+			var foco := (cursor + Vector2(_rolagem.scroll_horizontal, _rolagem.scroll_vertical)) / _zoom
+			_zoom = clampf(_zoom * (1.15 if event.button_index == MOUSE_BUTTON_WHEEL_UP else 1.0 / 1.15), 0.65, 1.8)
+			_dimensionar_zoom()
+			get_viewport().set_input_as_handled()
+			await get_tree().process_frame
+			if is_instance_valid(_rolagem):
+				_rolagem.scroll_horizontal = roundi(foco.x * _zoom - cursor.x)
+				_rolagem.scroll_vertical = roundi(foco.y * _zoom - cursor.y)
+	elif event is InputEventMouseMotion and _arrastando:
+		var movimento := _rolagem.get_global_transform_with_canvas().affine_inverse().basis_xform(event.relative)
+		_rolagem.scroll_horizontal -= roundi(movimento.x)
+		_rolagem.scroll_vertical -= roundi(movimento.y)
+		get_viewport().set_input_as_handled()

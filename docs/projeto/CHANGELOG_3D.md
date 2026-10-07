@@ -6,6 +6,13 @@ O teste passa a cobrar Candinha, Filo, Tonho, Zefa, arraial e recursos, incluind
 
 ## Em desenvolvimento — 07/10/2026 (experimento Jev)
 
+- **A teia de habilidades amplia e arrasta (#20).** Roda entre 65% e
+  180%, botão central para percorrer; a área de clique acompanha a escala
+  mesmo quando a interface inteira está redimensionada. Ficha e rodapé
+  conservam o tamanho. K, Tab, L, P, arrasto, limites e seleção pelo mouse
+  passaram, junto das teias e do almanaque. Desligar o mouse provoca cinco
+  reprovações. Captura ampliada conferida em scratch/teia.
+
 - **Pedidos compostos também indicam a matéria-prima (#162/#146).**
   Se o primeiro item faltante exige fabricação e não tem ponto de coleta,
   o marcador continua procurando os demais materiais faltantes. O Mirante

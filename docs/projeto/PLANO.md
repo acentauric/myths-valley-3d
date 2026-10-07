@@ -5,6 +5,12 @@ raiz. O jogo 2D segue sua própria linha em `acentauric/myths-valley`.
 
 ## O que já roda
 
+A #20 está concluída (07/10/2026): K abre habilidades com zoom pela roda,
+arrasto pelo botão central e Tab para ofício/fé; L abre a coleção no
+almanaque e P abre moradores com afinidade. A escala da árvore não altera
+ficha ou rodapé, e os cliques acompanham a transformação. As quatro telas
+e os controles reais foram conferidos.
+
 A #67 está concluída (07/10/2026): espólio de combate fica no chão,
 com a gravura do item e uma oferta de E. Permanece no save até ser
 recolhido; mochila cheia não o apaga. Alcance, foco, repetição, combate
