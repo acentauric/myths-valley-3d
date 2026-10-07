@@ -1,5 +1,5 @@
 {
-  "observacao": "A JORNADA DA FAZENDA, fatia 6.1, A IDA (docs/projeto/MISSOES_DO_2D.md, 4; data/dialogos/fazenda.json e scripts/mundo/fazenda.gd do 2D). É enredo e é o que o jogo existe para contar. Quem fala é o PEDRO — a história é dele —, e a narração da chegada é a voz do mundo, sem nome. O DIA (`fazenda_vale.gd`): a manhã seguinte à fé escolhida, com a ponte de pé, a regra do vale aprovada pelo autor. A fila não abre no E: quem a começa é o dia. O Pedro vem à porta e diz o 'chamado' na caixa; conduz o jogador pela ponte até o portão (`conduz`); lá diz o 'ida_fim', o escuro sobe com a 'narracao' e os dois passam para dentro do pátio (a `cena` 'portao_se_abre'); conduz até a escadaria, e o 'chegada_fim' fecha a fatia (a `cena` 'chegou_ao_patio'). SEM RECOMPENSA: não é favor que se paga, é a história começando. O texto sai do capítulo 6 e não o contradiz em detalhe nenhum: o portão baixo de cinco metros, a guarita sem porta nem janela, os bodes no meio da gente, as mesas cobertas, os banquinhos. '{jogador}' saiu das falas: o vale ainda não tem o nome do jogador.",
+  "observacao": "A JORNADA DA FAZENDA, fatia 6.1, A IDA (docs/projeto/MISSOES_DO_2D.md, 4; data/dialogos/fazenda.json e scripts/mundo/fazenda.gd do 2D). É enredo e é o que o jogo existe para contar. Quem fala é o PEDRO — a história é dele —, e a narração da chegada é a voz do mundo, sem nome. O DIA (`fazenda_vale.gd`): a manhã seguinte à fé escolhida, com a ponte de pé, a regra do vale aprovada pelo autor. A fila não abre no E: quem a começa é o dia. O Pedro vem à porta e diz o 'chamado' na caixa; conduz o jogador pela ponte até o portão (`conduz`); lá diz o 'ida_fim', o escuro sobe com a 'narracao' e os dois passam para dentro do pátio (a `cena` 'portao_se_abre'); conduz até a escadaria, e o 'chegada_fim' fecha a fatia (a `cena` 'chegou_ao_patio'). SEM RECOMPENSA: não é favor que se paga, é a história começando. O texto sai do capítulo 6 e não o contradiz em detalhe nenhum: o portão baixo de cinco metros, a guarita sem porta nem janela, os bodes no meio da gente, as mesas cobertas, os banquinhos. '{jogador}' saiu das falas: o vale ainda não tem o nome do jogador. A FATIA 6.2, O CHAMADO (#114, 06/10/2026), segue no fim da fila: 'fazenda_chamado' fecha no pátio e toca a cena 'chamado_aos_corajosos' (a voz do mundo conta o 'silencio', a 'anfitria' diz o 'chamado_aos_corajosos', a voz conta 'de_pe' e o Pedro diz 'pedro_vai'); 'fazenda_porta_estreita' fecha ao falar com o Pedro e toca 'porta_estreita' (a 'subida', o 'desafio' da 'moca', o 'cerco', o 'so_um' da anfitriã, a 'porta' e o 'pedro_fica'). É o fim do capítulo 6: o salão ainda não é cômodo, a voz do mundo o conta, e a sedução fica nas falas (P1 do plano do 2D). O capítulo 7 é a próxima fatia.",
   "dono": "pedro",
   "nome": "O convite",
   "nome_en": "The invitation",
@@ -41,7 +41,96 @@
       "texto_en": "Everyone's inside, in the clearing in front of the staircase. Come on, we've already missed half of it. Come along this packed-earth path, that's where we go in.",
       "texto_es": "Están todos adentro, en el descampado frente a la escalinata. Anda, que ya nos perdimos la mitad. Ven por este camino de tierra apisonada, que es por donde entramos.",
       "meta": {}
+    },
+    {
+      "id": "fazenda_chamado",
+      "titulo": "O chamado aos corajosos",
+      "titulo_en": "The call to the brave",
+      "titulo_es": "El llamado a los valientes",
+      "resumo": "Sente-se com o Pedro e espere quem vai falar",
+      "resumo_en": "Sit with Pedro and wait for whoever is going to speak",
+      "resumo_es": "Siéntate con Pedro y espera a quien va a hablar",
+      "lugar": "patio_da_fazenda",
+      "raio": 7.0,
+      "audio": "",
+      "cena": "chamado_aos_corajosos",
+      "texto": "Senta aí comigo. Ninguém come antes de alguém falar — e alguém vai falar.",
+      "texto_en": "Sit here with me. Nobody eats before someone speaks, and someone is going to speak.",
+      "texto_es": "Siéntate aquí conmigo. Nadie come antes de que alguien hable, y alguien va a hablar.",
+      "meta": {}
+    },
+    {
+      "id": "fazenda_porta_estreita",
+      "titulo": "A porta estreita",
+      "titulo_en": "The narrow door",
+      "titulo_es": "La puerta estrecha",
+      "resumo": "Fale com o Pedro (E) e suba a escadaria com ele",
+      "resumo_en": "Talk to Pedro (E) and climb the staircase with him",
+      "resumo_es": "Habla con Pedro (E) y sube la escalinata con él",
+      "lugar": "patio_da_fazenda",
+      "raio": 7.0,
+      "audio": "",
+      "cena": "porta_estreita",
+      "texto": "Somos seis, comigo. Elas vão na frente, pela escadaria. Me chama quando estiver pronto, que a gente sobe junto.",
+      "texto_en": "Six of us, counting me. They go ahead, up the staircase. Call me when you're ready, and we go up together.",
+      "texto_es": "Somos seis, conmigo. Ellas van adelante, por la escalinata. Avísame cuando estés listo, y subimos juntos.",
+      "meta": {
+        "tipo": "falar",
+        "a_quem": "pedro",
+        "raio": 3,
+        "resposta": "Então vamos. Lá dentro, fica perto de mim.",
+        "resposta_en": "Then let's go. Inside, stay close to me.",
+        "resposta_es": "Entonces vamos. Allá adentro, quédate cerca de mí."
+      }
     }
+  ],
+  "anfitria": {"nome": "A anfitriã mais velha", "nome_en": "The elder hostess", "nome_es": "La anfitriona mayor"},
+  "moca": {"nome": "A moça da fazenda", "nome_en": "The young woman of the farm", "nome_es": "La joven de la hacienda"},
+  "silencio": [
+    {"texto": "De repente fez-se silêncio, e só o vento se ouviu. Os bodes e as cabras tinham sumido do pátio, e nenhuma ave cantava.", "texto_en": "Suddenly there was silence, and only the wind could be heard. The goats had vanished from the courtyard, and no bird sang.", "texto_es": "De pronto se hizo silencio, y solo se oyó el viento. Los chivos y las cabras habían desaparecido del patio, y ningún ave cantaba."},
+    {"texto": "No alto da escadaria apareceram duas mulheres: a moça que recebera cada grupo no portão, e uma senhora bonita, em quem só o tempo tinha deixado marcas.", "texto_en": "At the top of the staircase two women appeared: the young woman who had received each group at the gate, and a beautiful lady on whom only time had left its marks.", "texto_es": "En lo alto de la escalinata aparecieron dos mujeres: la joven que había recibido a cada grupo en el portón, y una señora hermosa, en quien solo el tiempo había dejado marcas."},
+    {"texto": "Atrás delas, as portas da casa não tinham nada de grande. Eram passagens para um lugar que parecia abandonado, sem porta nem janela inteira.", "texto_en": "Behind them, the doors of the house had nothing grand about them. They were passages into a place that looked abandoned, with no door or window left whole.", "texto_es": "Detrás de ellas, las puertas de la casa no tenían nada de grandioso. Eran pasajes a un lugar que parecía abandonado, sin puerta ni ventana enteras."}
+  ],
+  "chamado_aos_corajosos": [
+    {"texto": "Bem-vindos. É bom dizer bem-vindos a vocês: hoje é um bom dia, e ter vocês aqui é bom.", "texto_en": "Welcome. It is good to say welcome to you: today is a good day, and having you here is good.", "texto_es": "Bienvenidos. Es bueno decirles bienvenidos: hoy es un buen día, y tenerlos aquí es bueno."},
+    {"texto": "Todo mundo está perguntando por que chamamos. Somos as vizinhas que mantêm os portões fechados e não aparecem muito. Algumas coisas mudaram, e a partir de hoje esperamos mais visitas.", "texto_en": "Everyone is asking why we called. We are the neighbors who keep the gates shut and don't show ourselves much. Some things have changed, and from today on we expect more visits.", "texto_es": "Todos se preguntan por qué los llamamos. Somos las vecinas que mantienen los portones cerrados y no se dejan ver mucho. Algunas cosas cambiaron, y desde hoy esperamos más visitas."},
+    {"texto": "Chamamos vocês para se divertirem: uma boa manhã e um dia único. Todos foram convidados — mas agora venham só os homens mais corajosos.", "texto_en": "We called you to enjoy yourselves: a good morning and a day like no other. Everyone was invited; but now, let only the bravest men come.", "texto_es": "Los llamamos para que se diviertan: una buena mañana y un día único. Todos fueron invitados; pero ahora, que vengan solo los hombres más valientes."},
+    {"texto": "Faremos algumas atividades que vão precisar de atitude e coragem. Venham, e entrem em nossa casa, se acreditam que estão aptos para isso.", "texto_en": "We will do some activities that will take nerve and courage. Come, and enter our house, if you believe you are fit for it.", "texto_es": "Haremos algunas actividades que van a necesitar actitud y coraje. Vengan, y entren en nuestra casa, si creen que están aptos para ello."}
+  ],
+  "de_pe": [
+    {"texto": "Os homens mais fortes do arraial se levantaram na hora, prontos. Os outros ficaram sentados, cheios de perguntas.", "texto_en": "The strongest men of the village stood up at once, ready. The others stayed seated, full of questions.", "texto_es": "Los hombres más fuertes del pueblo se levantaron al instante, listos. Los demás se quedaron sentados, llenos de preguntas."},
+    {"texto": "O Pedro não quis ficar para trás.", "texto_en": "Pedro would not be left behind.", "texto_es": "Pedro no quiso quedarse atrás."}
+  ],
+  "pedro_vai": [
+    {"texto": "Eu vou.", "texto_en": "I'm going.", "texto_es": "Yo voy."},
+    {"texto": "Eu sei: não sou grande nem forte como eles. Mas não vou ficar sentado olhando.", "texto_en": "I know: I'm not big or strong like them. But I'm not going to sit here watching.", "texto_es": "Ya sé: no soy grande ni fuerte como ellos. Pero no voy a quedarme sentado mirando."},
+    {"texto": "Vem comigo. Eu não entro naquela casa sozinho.", "texto_en": "Come with me. I'm not going into that house alone.", "texto_es": "Ven conmigo. Yo no entro en esa casa solo."}
+  ],
+  "subida": [
+    {"texto": "As duas levaram os seis pela escadaria, para dentro da casa. Lá fora virou festa: música e comida para quem ficou. Lá dentro, sala após sala, tudo ia ficando mais quieto.", "texto_en": "The two women led the six up the staircase and into the house. Outside it turned into a party: music and food for those who stayed. Inside, room after room, everything grew quieter.", "texto_es": "Las dos llevaron a los seis por la escalinata, al interior de la casa. Afuera se volvió fiesta: música y comida para los que se quedaron. Adentro, sala tras sala, todo se iba quedando más quieto."},
+    {"texto": "Pararam o grupo num pequeno salão redondo, vazio. A mais nova foi quem falou.", "texto_en": "They stopped the group in a small round hall, empty. It was the younger one who spoke.", "texto_es": "Detuvieron al grupo en un pequeño salón redondo, vacío. Fue la más joven quien habló."}
+  ],
+  "desafio": [
+    {"texto": "Vocês estão aqui para marcar a nossa vida e a de vocês. Vieram se divertir, e nos dar o que têm de melhor.", "texto_en": "You are here to mark our lives and yours. You came to enjoy yourselves, and to give us the best you have.", "texto_es": "Están aquí para marcar nuestra vida y la de ustedes. Vinieron a divertirse, y a darnos lo mejor que tienen."},
+    {"texto": "Queremos sua força, seu calor, seus braços. Precisamos de vocês. Queremos que sejam nossos.", "texto_en": "We want your strength, your warmth, your arms. We need you. We want you to be ours.", "texto_es": "Queremos su fuerza, su calor, sus brazos. Los necesitamos. Queremos que sean nuestros."}
+  ],
+  "cerco": [
+    {"texto": "Outras mulheres da casa entraram no salão, o dobro deles, uma atenção para cada um. O Pedro quase não foi notado; ainda assim, duas pararam ao lado dele.", "texto_en": "Other women of the house came into the hall, twice their number, an attention for each man. Pedro was hardly noticed; even so, two of them stopped at his side.", "texto_es": "Otras mujeres de la casa entraron en el salón, el doble que ellos, una atención para cada uno. A Pedro casi no lo notaron; aun así, dos se detuvieron a su lado."},
+    {"texto": "Quando todos já estavam à vontade, a mais velha interrompeu, e o silêncio voltou.", "texto_en": "When everyone was at ease, the elder one interrupted, and the silence returned.", "texto_es": "Cuando todos ya estaban a gusto, la mayor interrumpió, y el silencio volvió."}
+  ],
+  "so_um": [
+    {"texto": "Está bom? Estão gostando? Que bom. Mas só um vai poder seguir em frente.", "texto_en": "Is it good? Are you enjoying it? Good. But only one will be able to go on.", "texto_es": "¿Está bien? ¿Les gusta? Qué bien. Pero solo uno va a poder seguir adelante."},
+    {"texto": "Só um. É só um que pode ter uma para si. Só o que aceitar vai poder ficar.", "texto_en": "Only one. Only one may have one for himself. Only the one who accepts will be able to stay.", "texto_es": "Solo uno. Es solo uno el que puede tener una para sí. Solo el que acepte va a poder quedarse."}
+  ],
+  "porta": [
+    {"texto": "As mulheres saíram pelas quatro portas por onde tinham entrado. Sobrou uma, fechada: estreita, de passar um por vez.", "texto_en": "The women left through the four doors they had come in by. One remained, shut: narrow, wide enough for one at a time.", "texto_es": "Las mujeres salieron por las cuatro puertas por donde habían entrado. Quedó una, cerrada: estrecha, de pasar de uno en uno."},
+    {"texto": "De trás dela vinham sons que ninguém queria entender: gemidos, como de quem sofre. A mais nova disse que não era preciso temer. Ali esperava apenas outra mulher, a mais velha de todas, a matriarca daquela casa.", "texto_en": "From behind it came sounds no one wanted to understand: moans, like someone suffering. The younger one said there was no need to fear. Only another woman waited there, the eldest of them all, the matriarch of that house.", "texto_es": "De detrás de ella venían sonidos que nadie quería entender: gemidos, como de quien sufre. La más joven dijo que no había que temer. Allí esperaba solo otra mujer, la mayor de todas, la matriarca de aquella casa."},
+    {"texto": "Não disse mais nada. Os homens recuaram e voltaram pelos corredores, resmungando. Um a um. Cinco.", "texto_en": "She said nothing more. The men drew back and went down the corridors the way they had come, grumbling. One by one. Five.", "texto_es": "No dijo nada más. Los hombres retrocedieron y volvieron por los pasillos, refunfuñando. Uno a uno. Cinco."}
+  ],
+  "pedro_fica": [
+    {"texto": "Eu fico.", "texto_en": "I'm staying.", "texto_es": "Yo me quedo."},
+    {"texto": "Que mal pode ter em abrir uma porta? E ela sorriu pra mim — você viu?", "texto_en": "What harm can there be in opening a door? And she smiled at me. Did you see?", "texto_es": "¿Qué mal puede haber en abrir una puerta? Y ella me sonrió. ¿Viste?"},
+    {"texto": "Fica aqui fora, junto da porta. Se eu demorar, me chama.", "texto_en": "Stay out here, by the door. If I take too long, call me.", "texto_es": "Quédate aquí afuera, junto a la puerta. Si tardo, llámame."}
   ],
   "chamado": [
     {"texto": "Acorda, que é hoje.", "texto_en": "Wake up, it's today.", "texto_es": "Despierta, que es hoy."},
@@ -73,8 +162,8 @@
   ],
   "arremate": {
     "narra": false,
-    "texto": "O arraial inteiro no pátio da fazenda, esperando alguém falar.",
-    "texto_en": "The whole village in the farm courtyard, waiting for someone to speak.",
-    "texto_es": "Todo el pueblo en el patio de la hacienda, esperando que alguien hable."
+    "texto": "Só o Pedro ficou no salão redondo, de braço erguido diante da porta estreita. E você, ao lado dele.",
+    "texto_en": "Only Pedro stayed in the round hall, his arm raised before the narrow door. And you, at his side.",
+    "texto_es": "Solo Pedro se quedó en el salón redondo, con el brazo en alto frente a la puerta estrecha. Y tú, a su lado."
   }
 }

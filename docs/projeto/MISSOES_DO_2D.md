@@ -306,13 +306,13 @@ acordar o jogador.
 |---|---|---|---|---|---|
 | 1 | `fazenda_ida` | É hoje | Atravesse o rio com o Pedro até o portão da fazenda | chegou ao portão (o Pedro leva); o portão abre e a narração da chegada roda | **pronta** (`missoes_fazenda.json`, `fazenda_vale.gd`: o dia vem na manhã seguinte à fé escolhida, com a ponte de pé; o Pedro vem à porta e conduz; a narração é `narracao_do_vale.gd`) |
 | 2 | `fazenda_chegada` | O pátio da fazenda | Atravesse o pátio até a escadaria do casarão | chegou ao pátio | **pronta** (`fazenda_chegada`: o arraial sentado nos banquinhos, as mesas cobertas e as cabras soltas; o fim é a fala do Pedro) |
+| 3 | `fazenda_chamado` | O chamado aos corajosos | Sente-se com o Pedro e espere quem vai falar | no pátio, fecha sozinho; a cena: o silêncio, as duas mulheres na escadaria, a fala da anfitriã mais velha, os homens de pé e o Pedro que vai | **pronta só no 3D** (#114, 06/10/2026; fatia 6.2 do plano do 2D, momento `discurso`) |
+| 4 | `fazenda_porta_estreita` | A porta estreita | Fale com o Pedro e suba a escadaria com ele | falar com o Pedro; a cena: a subida, o salão redondo, a fala da moça, o cerco, o "só um" da anfitriã, a porta de onde vêm os gemidos, os cinco que voltam e o Pedro que fica | **pronta só no 3D** (#114; momento `desafio`; o salão ainda não é cômodo — a voz do mundo o conta — e a sedução fica nas falas, P1) |
 
-Sem recompensa: é a história começando. O 2D para aqui (fatia 6.1). O resto dos
-capítulos está só na prosa (`docs/enredo/` do 2D e `data/enredo/enredo.json`) e
-não tem missão em nenhum dos dois jogos:
+Sem recompensa: é a história começando. O 2D para na fatia 6.1; o 3D fecha o
+capítulo 6 com a 6.2. O resto está só na prosa (`docs/enredo/` do 2D e
+`data/enredo/enredo.json`) e não tem missão em nenhum dos dois jogos:
 
-- **Capítulo 6, Um Convite ao Acaso:** o chamado aos corajosos (a anfitriã mais
-  velha), o salão circular e a porta estreita.
 - **Capítulo 7, O Revoar das Asas Negras:** o quarto sem janelas, as miragens e a
   mão estendida, a fuga pelos corredores, o revoar da coruja (a Matinta Pereira),
   o abrigo nas ruínas do palacete, o relato das escravas, o escudo e a lança de

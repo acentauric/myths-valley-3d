@@ -2299,8 +2299,8 @@ func _achar_morador(quem: String) -> Node3D:
 
 
 ## AS CENAS DOS PASSOS (`cena` no dado da missão, `CadeiaDeMissoes.cena`): a luz
-## dourada da chegada à chapada, a cabra que desce da lombada, o portão da fazenda
-## e o pé da escadaria.
+## dourada da chegada à chapada, a cabra que desce da lombada, o portão da fazenda,
+## o pé da escadaria, o chamado aos corajosos e a porta estreita (#114).
 func _tocar_a_cena(nome: String) -> void:
 	match nome:
 		"luz_dourada":
@@ -2315,6 +2315,12 @@ func _tocar_a_cena(nome: String) -> void:
 		"chegou_ao_patio":
 			if fazenda != null:
 				fazenda.chegou_ao_patio()
+		"chamado_aos_corajosos":
+			if fazenda != null:
+				fazenda.o_chamado_aos_corajosos()
+		"porta_estreita":
+			if fazenda != null:
+				fazenda.a_porta_estreita()
 
 
 func _pendurar_cadeia(morador: Node3D, arquivo: String, perto: float, chave: String = "") -> Node:

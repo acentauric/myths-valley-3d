@@ -336,6 +336,20 @@
   `prototype.gd` liga: a caixa de fala com as linhas de `documentos.json` e o
   aviso "leu:<id>" às cadeias), depois de o mundo não ter ficado com a tecla; e
   o rótulo da mão diz "E lê". Portão `barra_de_mao`.
+- **A série da fazenda ganha o fim do capítulo 6 (#114, fatia 6.2 do plano
+  do 2D).** "Devem ser adicionadas mais missões ao fim da série." Depois do
+  pátio, dois passos novos em `missoes_fazenda.json`, nos três idiomas, tirados
+  do capítulo 6 (`docs/enredo/capitulo-06.md`) sem contradizê-lo: "O chamado aos
+  corajosos" (no pátio, fecha sozinho: a voz do mundo conta o silêncio e as duas
+  mulheres na escadaria, a anfitriã mais velha chama os homens corajosos, a voz
+  conta os que se levantam, e o Pedro vai — e chama o jogador, P3) e "A porta
+  estreita" (falar com o Pedro fecha: a subida, o salão redondo, a fala da moça,
+  o cerco, o "só um" da anfitriã, a porta de onde vêm os gemidos, os cinco que
+  voltam, e o Pedro que fica). O salão ainda não é cômodo — a voz do mundo o
+  conta, com o escuro —, e a sedução fica nas falas (P1). O arremate muda: "Só o
+  Pedro ficou no salão redondo…". Cenas em `fazenda_vale` e `prototype`; o
+  plano em `MISSOES_DO_2D.md`. Portões `fazenda` (as partes 6b e 6c) e
+  `idiomas`.
 
 ## Em desenvolvimento — 05/10/2026
 
