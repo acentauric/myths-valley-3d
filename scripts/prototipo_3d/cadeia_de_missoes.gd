@@ -39,6 +39,8 @@ extends Node
 ##
 ##   juntar    conta item na mochila (lenha, pedra)
 ##   derrubar  conta ALVOS DE TRABALHO que caíram, por peça
+##   (`visitar` aceita `horas: [de, ate]`, a janela do relógio do vale em que chegar
+##   conta — a roda na praia de noite, a maré das cinco; ver `_na_hora`.)
 ##
 ## (Vieram outros depois — levar, falar, evento, obra —, e com a fé, #52, mais
 ## dois: `visitar`, que risca cada lugar de uma lista ao chegar perto dele — os
@@ -1376,6 +1378,11 @@ func _encontrar(passo: Dictionary, quem: Node3D) -> void:
 ## (`visitou`), para contar o que se vê dali.
 func _tentar_visita(passo: Dictionary, meta: Dictionary) -> void:
 	var id := str(passo.get("id", ""))
+	# A HORA DO PASSO (07/10, docs/projeto/MISSOES_SECUNDARIAS.md, fase 3): a roda na praia é de
+	# noite, a maré das cinco é de madrugada, a vigília do sino vira a meia-noite. Fora da janela,
+	# chegar não risca o lugar.
+	if not _na_hora(meta):
+		return
 	for lugar in _lugares_da_meta(meta):
 		var chave_da_visita := _chave_da_visita(id, str(lugar))
 		if bool(_levados.get(chave_da_visita, false)):
@@ -1407,6 +1414,20 @@ func _tentar_oferenda(passo: Dictionary, meta: Dictionary) -> void:
 	var resposta := str(meta.get("resposta", ""))
 	if resposta != "":
 		_falar("", resposta, FilaDeFalas.Classe.CONVERSA, "resposta:%d:%s" % [get_instance_id(), id])
+
+
+## A JANELA DE HORAS DA META, `"horas": [de, ate]` no relógio do vale (`Dia.hora`, 0 a 24): sem
+## ela, qualquer hora serve; com ela, só dentro — e a janela pode virar a meia-noite ([20, 5]).
+func _na_hora(meta: Dictionary) -> bool:
+	var horas: Array = meta.get("horas", [])
+	if horas.size() < 2:
+		return true
+	var agora := float(Dia.hora)
+	var de := float(horas[0])
+	var ate := float(horas[1])
+	if de <= ate:
+		return agora >= de and agora < ate
+	return agora >= de or agora < ate
 
 
 ## Os lugares da meta que o vale tem. Lugar que ainda não existe some da conta,

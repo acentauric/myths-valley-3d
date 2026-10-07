@@ -59,5 +59,25 @@
       "Debajo, un escudo que el agua borró a medias: una rueda de ingenio y, encima, algo que ya no se lee.",
       "El dibujo recuerda algo. El sello rojo de la invitación — el que no tiene escudo alguno."
     ]
+  },
+  "carta_da_rosa": {
+    "nome": "Carta da filha da Dona Rosa",
+    "nome_en": "Letter from Dona Rosa's daughter",
+    "nome_es": "Carta de la hija de Doña Rosa",
+    "linhas": [
+      "Letra redonda, de quem aprendeu a escrever depois de grande. Salvador, sem data.",
+      "\"Minha mãe, estou bem. A casa é boa, a família é boa, a comida não falta. Não se preocupe comigo. Reze pelo padre, que lê isto pra senhora.\"",
+      "Nada sobre o domingo. Nada sobre o bonde."
+    ],
+    "linhas_en": [
+      "Round handwriting, of someone who learned to write as an adult. Salvador, undated.",
+      "\"Mother, I am well. The house is good, the family is good, there is no lack of food. Don't worry about me. Pray for the priest, who reads this to you.\"",
+      "Nothing about Sunday. Nothing about the streetcar."
+    ],
+    "linhas_es": [
+      "Letra redonda, de quien aprendió a escribir de grande. Salvador, sin fecha.",
+      "\"Madre mía, estoy bien. La casa es buena, la familia es buena, la comida no falta. No se preocupe por mí. Rece por el cura, que le lee esto.\"",
+      "Nada sobre el domingo. Nada sobre el tranvía."
+    ]
   }
 }

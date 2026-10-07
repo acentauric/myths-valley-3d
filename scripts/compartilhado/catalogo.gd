@@ -408,6 +408,15 @@ const ITENS := {
 		"icone": "toalha_de_renda",
 		"empilhavel": false,
 	},
+	## A carta da filha da Dona Rosa (fase 3): vai ao padre e volta, e se lê.
+	"carta_da_rosa": {
+		"nome": "Carta da filha da Dona Rosa",
+		"tipo": "documento",
+		"resumo": "Letra redonda, de Salvador, sem data.",
+		"icone": "carta",
+		"leitura": "carta_da_rosa",
+		"empilhavel": false,
+	},
 	## OS RITUAIS PREPARADOS, que são o que o oratório produz.
 	##
 	## Tipo próprio (`ritual`) e não `comida`: os dois se consomem da mochila e

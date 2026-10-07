@@ -1,0 +1,147 @@
+{
+  "observacao": "A MARÉ DAS CINCO E A CARTA DA FILHA (fase 3 de docs/projeto/MISSOES_SECUNDARIAS.md, 07/10/2026): os dois ganchos da Dona Rosa em aldeoes.json ('venha às cinco com um balde e sem sapato'; 'toda carta eu peço pro padre ler duas vezes. Na segunda eu escuto o que ela não escreveu'). A maré é um 'visitar' de madrugada nas pedras e as ostras se juntam; a carta (documento novo, carta_da_rosa, texto em data/documentos.json) vai ao padre e volta. Abre com o favor da farinha feito e a Rosa 'Gente boa'.",
+  "dono": "marisqueira",
+  "nome": "A maré das cinco",
+  "nome_en": "The five o'clock tide",
+  "nome_es": "La marea de las cinco",
+  "trancada": "A maré das cinco é pra quem eu conheço, e a carta mais ainda. Passe mais vezes, meu filho.",
+  "trancada_en": "The five o'clock tide is for people I know, and the letter even more so. Come by more often, my son.",
+  "trancada_es": "La marea de las cinco es para quien conozco, y la carta más todavía. Pasa más veces, hijo mío.",
+  "principal": false,
+  "passos": [
+    {
+      "id": "mare_das_cinco",
+      "titulo": "Às cinco, sem sapato",
+      "titulo_en": "At five, barefoot",
+      "titulo_es": "A las cinco, descalzo",
+      "resumo": "Vá às pedras da maré de madrugada (das 5 às 7h30)",
+      "resumo_en": "Go to the tide rocks at dawn (5 am to 7:30 am)",
+      "resumo_es": "Ve a las piedras de la marea de madrugada (de 5 a 7:30)",
+      "lugar": "pedras",
+      "raio": 10,
+      "audio": "",
+      "texto": "Venha às cinco, com um balde e sem sapato. A maré baixa mostra o que a cheia esconde. Nas pedras da ponta da praia, antes de o sol esquentar.",
+      "texto_en": "Come at five, with a bucket and no shoes. The low tide shows what the high tide hides. On the rocks at the end of the beach, before the sun gets hot.",
+      "texto_es": "Ven a las cinco, con un balde y sin zapatos. La marea baja muestra lo que la alta esconde. En las piedras de la punta de la playa, antes de que el sol caliente.",
+      "recompensa": {
+        "xp": 10
+      },
+      "meta": {
+        "tipo": "visitar",
+        "lugares": [
+          "pedras"
+        ],
+        "raio": 10,
+        "horas": [
+          5,
+          7.5
+        ]
+      }
+    },
+    {
+      "id": "mare_ostras",
+      "titulo": "O que tem por baixo",
+      "titulo_en": "What lies beneath",
+      "titulo_es": "Lo que hay debajo",
+      "resumo": "Cate quatro ostras",
+      "resumo_en": "Gather four oysters",
+      "resumo_es": "Recoge cuatro ostras",
+      "lugar": "pedras",
+      "raio": 10,
+      "audio": "",
+      "texto": "Agora tire. Com licença, que o mangue é cozinha de Iemanjá. Quatro ostras, e você já sabe o que tem por baixo delas.",
+      "texto_en": "Now gather. With permission, since the mangrove is Iemanjá's kitchen. Four oysters, and you'll know what lies beneath them.",
+      "texto_es": "Ahora saca. Con permiso, que el manglar es cocina de Iemanjá. Cuatro ostras, y ya sabrás lo que hay debajo de ellas.",
+      "recompensa": {
+        "xp": 10
+      },
+      "meta": {
+        "tipo": "juntar",
+        "item": "ostra",
+        "quantos": 4
+      }
+    },
+    {
+      "id": "mare_carta",
+      "titulo": "A carta da filha",
+      "titulo_en": "The daughter's letter",
+      "titulo_es": "La carta de la hija",
+      "resumo": "Pegue a carta com a Dona Rosa",
+      "resumo_en": "Get the letter from Dona Rosa",
+      "resumo_es": "Recoge la carta con Doña Rosa",
+      "lugar": "casa_da_marisqueira",
+      "raio": 6,
+      "audio": "",
+      "texto": "Você aprendeu. Agora um favor que não é de lama: chegou carta da minha filha, de Salvador. Eu não leio. Leve ao padre e peça que leia duas vezes — e volte me dizer a segunda.",
+      "texto_en": "You learned. Now a favor that isn't about mud: a letter came from my daughter, in Salvador. I can't read. Take it to the priest and ask him to read it twice — and come back and tell me the second time.",
+      "texto_es": "Aprendiste. Ahora un favor que no es de barro: llegó carta de mi hija, de Salvador. Yo no leo. Llévala al cura y pídele que la lea dos veces — y vuelve a decirme la segunda.",
+      "entrega": {
+        "item": "carta_da_rosa",
+        "quantidade": 1
+      },
+      "recompensa": {
+        "xp": 10
+      },
+      "meta": {}
+    },
+    {
+      "id": "carta_ao_padre",
+      "titulo": "Duas vezes",
+      "titulo_en": "Twice",
+      "titulo_es": "Dos veces",
+      "resumo": "Leve a carta ao Padre Anselmo",
+      "resumo_en": "Take the letter to Father Anselmo",
+      "resumo_es": "Lleva la carta al Padre Anselmo",
+      "lugar": "casa_do_padre",
+      "raio": 6,
+      "audio": "",
+      "texto": "O padre lê a carta da Dona Rosa. Duas vezes, como ela pediu.",
+      "texto_en": "The priest reads Dona Rosa's letter. Twice, as she asked.",
+      "texto_es": "El cura lee la carta de Doña Rosa. Dos veces, como ella pidió.",
+      "recompensa": {
+        "xp": 10
+      },
+      "meta": {
+        "tipo": "falar",
+        "a_quem": "padre",
+        "raio": 3.4,
+        "resposta": "A carta da Rosa. Deixe ver. 'Minha mãe, estou bem. A casa é boa, a família é boa, a comida não falta.' E de novo, mais devagar: 'estou bem'... 'não falta'. Ela não fala do domingo, meu filho. Nem do bonde, que ela adorava. Diga à Rosa que a filha está bem — e que não escreveu sobre o domingo.",
+        "resposta_en": "Rosa's letter. Let me see. 'Mother, I am well. The house is good, the family is good, there is no lack of food.' And again, slower: 'I am well'... 'no lack'. She doesn't mention Sunday, my son. Nor the streetcar, which she loved. Tell Rosa her daughter is well — and that she didn't write about Sunday.",
+        "resposta_es": "La carta de Rosa. Déjame ver. 'Madre mía, estoy bien. La casa es buena, la familia es buena, la comida no falta.' Y otra vez, más despacio: 'estoy bien'... 'no falta'. No habla del domingo, hijo mío. Ni del tranvía, que tanto le gustaba. Dile a Rosa que la hija está bien — y que no escribió sobre el domingo."
+      }
+    },
+    {
+      "id": "carta_de_volta",
+      "titulo": "O que ela não escreveu",
+      "titulo_en": "What she didn't write",
+      "titulo_es": "Lo que ella no escribió",
+      "resumo": "Volte à Dona Rosa com a segunda leitura",
+      "resumo_en": "Go back to Dona Rosa with the second reading",
+      "resumo_es": "Vuelve a Doña Rosa con la segunda lectura",
+      "lugar": "casa_da_marisqueira",
+      "raio": 6,
+      "audio": "",
+      "texto": "Diga à Dona Rosa o que o padre leu na segunda vez.",
+      "texto_en": "Tell Dona Rosa what the priest read the second time.",
+      "texto_es": "Dile a Doña Rosa lo que el cura leyó la segunda vez.",
+      "recompensa": {
+        "xp": 15,
+        "ostra": 3
+      },
+      "meta": {
+        "tipo": "falar",
+        "a_quem": "marisqueira",
+        "raio": 3.4,
+        "resposta": "Não escreveu do domingo. Então não tem domingo. Casa de família não dá folga, e ela não quer que eu saiba. Obrigada, meu filho. Na próxima maré, as ostras são suas — e a carta de resposta, você escreve.",
+        "resposta_en": "She didn't write about Sunday. So there is no Sunday. A household gives no day off, and she doesn't want me to know. Thank you, my son. Next tide, the oysters are yours — and the reply, you'll write.",
+        "resposta_es": "No escribió del domingo. Entonces no hay domingo. Una casa de familia no da descanso, y ella no quiere que yo lo sepa. Gracias, hijo mío. En la próxima marea, las ostras son tuyas — y la carta de respuesta, la escribes tú."
+      }
+    }
+  ],
+  "arremate": {
+    "texto": "Você catou ostra na lama às cinco, sem sapato, e levou a carta da filha da Dona Rosa ao padre. Ele leu duas vezes. Na segunda, a Dona Rosa escutou o que a filha não escreveu.",
+    "texto_en": "You gathered oysters in the mud at five, barefoot, and took Dona Rosa's daughter's letter to the priest. He read it twice. The second time, Dona Rosa heard what her daughter didn't write.",
+    "texto_es": "Recogiste ostras en el barro a las cinco, descalzo, y llevaste la carta de la hija de Doña Rosa al cura. Él la leyó dos veces. La segunda, Doña Rosa escuchó lo que la hija no escribió.",
+    "narra": false
+  }
+}

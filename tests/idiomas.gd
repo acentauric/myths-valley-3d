@@ -76,6 +76,16 @@ const TRADUZIDOS := {
 	"res://data/missoes_sacristao_pedra.json": ["texto", "resumo", "nome", "titulo", "resposta", "trancada"],
 	"res://data/missoes_pescador_madeira.json": ["texto", "resumo", "nome", "titulo", "resposta", "trancada"],
 	"res://data/missoes_mestre_saveiro_luz.json": ["texto", "resumo", "nome", "titulo", "resposta", "trancada"],
+	# E as nove pontes entre moradores e missões de ação (fase 3).
+	"res://data/missoes_menina_roda.json": ["texto", "resumo", "nome", "titulo", "resposta", "trancada"],
+	"res://data/missoes_guarda_ronda.json": ["texto", "resumo", "nome", "titulo", "resposta", "trancada"],
+	"res://data/missoes_padre_sino.json": ["texto", "resumo", "nome", "titulo", "resposta", "trancada"],
+	"res://data/missoes_marisqueira_mare.json": ["texto", "resumo", "nome", "titulo", "resposta", "trancada"],
+	"res://data/missoes_carpinteiro_canoa.json": ["texto", "resumo", "nome", "titulo", "resposta", "trancada"],
+	"res://data/missoes_mercador_fiado.json": ["texto", "resumo", "nome", "titulo", "resposta", "trancada"],
+	"res://data/missoes_menino_caminho.json": ["texto", "resumo", "nome", "titulo", "resposta", "trancada"],
+	"res://data/missoes_beata_promessa.json": ["texto", "resumo", "nome", "titulo", "resposta", "trancada"],
+	"res://data/missoes_lavadeira_rio.json": ["texto", "resumo", "nome", "titulo", "resposta", "trancada"],
 	"res://data/documentos.json": ["nome", "linhas"],
 	"res://data/historico_3d.json": ["titulo", "estado"],
 	# A fé (#52): o que os marcos dizem.

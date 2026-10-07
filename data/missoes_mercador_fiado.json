@@ -1,0 +1,93 @@
+{
+  "observacao": "O LIVRO DE FIADO (fase 3 de docs/projeto/MISSOES_SECUNDARIAS.md, 07/10/2026): a ponte entre a venda e o Tonho, dos ganchos de aldeoes.json ('O Tonho me deve, é verdade'; 'Meu livro de fiado tem mais nome que o livro do padre') e da fila do Tonho (a dívida do armazém). Pagar a conta do Tonho em peixe e ir dizer a ele. Abre com o favor das tábuas feito e o Nicolau 'Gente boa'.",
+  "dono": "mercador",
+  "nome": "O livro de fiado",
+  "nome_en": "The credit book",
+  "nome_es": "El libro de fiado",
+  "trancada": "O livro de fiado eu abro pra quem já tem nome nele, moço. Compre, converse, volte.",
+  "trancada_en": "I open the credit book for those who already have a name in it, young man. Buy, talk, come back.",
+  "trancada_es": "El libro de fiado lo abro para quien ya tiene nombre en él, muchacho. Compra, conversa, vuelve.",
+  "principal": false,
+  "passos": [
+    {
+      "id": "fiado_livro",
+      "titulo": "O nome do Tonho",
+      "titulo_en": "Tonho's name",
+      "titulo_es": "El nombre de Tonho",
+      "resumo": "Veja o livro de fiado com o Seu Nicolau",
+      "resumo_en": "See the credit book with Seu Nicolau",
+      "resumo_es": "Mira el libro de fiado con el Señor Nicolau",
+      "lugar": "bar",
+      "raio": 6,
+      "audio": "",
+      "texto": "Olhe o livro. Este nome aqui, três linhas: o Tonho. Deve desde março — farinha, sal e querosene, do mês em que a rede ficou no rio. Eu não cobro pescador em maré ruim. Mas a conta não some. Três peixes bons e eu risco o nome. Se você quiser pagar por ele, é problema seu e do Tonho.",
+      "texto_en": "Look at the book. This name here, three lines: Tonho. In debt since March — flour, salt and kerosene, from the month the net stayed in the river. I don't collect from a fisherman in a bad tide. But the debt doesn't vanish. Three good fish and I cross the name out. If you want to pay for him, that's between you and Tonho.",
+      "texto_es": "Mira el libro. Este nombre aquí, tres líneas: Tonho. Debe desde marzo — harina, sal y queroseno, del mes en que la red se quedó en el río. No le cobro a un pescador en marea mala. Pero la cuenta no desaparece. Tres buenos pescados y tacho el nombre. Si quieres pagar por él, es asunto tuyo y de Tonho.",
+      "recompensa": {
+        "xp": 10
+      },
+      "meta": {}
+    },
+    {
+      "id": "fiado_peixes",
+      "titulo": "Três peixes pela conta",
+      "titulo_en": "Three fish for the account",
+      "titulo_es": "Tres pescados por la cuenta",
+      "resumo": "Leve três peixes ao Seu Nicolau pela conta do Tonho",
+      "resumo_en": "Take three fish to Seu Nicolau for Tonho's account",
+      "resumo_es": "Lleva tres pescados al Señor Nicolau por la cuenta de Tonho",
+      "lugar": "bar",
+      "raio": 6,
+      "audio": "",
+      "texto": "Três peixes bons, e o nome do Tonho sai do livro.",
+      "texto_en": "Three good fish, and Tonho's name comes out of the book.",
+      "texto_es": "Tres buenos pescados, y el nombre de Tonho sale del libro.",
+      "recompensa": {
+        "xp": 10
+      },
+      "meta": {
+        "tipo": "levar",
+        "item": "peixe",
+        "quantos": 3,
+        "a_quem": "mercador",
+        "raio": 3.4,
+        "resposta": "Três peixes. Risco o nome. Pronto — o Tonho não deve mais nada a mim. Deve a você, mas isso o livro não escreve. Vá contar a ele antes que a Sá Joaquina conte.",
+        "resposta_en": "Three fish. I cross the name out. There — Tonho owes me nothing now. He owes you, but the book doesn't write that. Go tell him before Sá Joaquina does.",
+        "resposta_es": "Tres pescados. Tacho el nombre. Listo — Tonho ya no me debe nada. Te debe a ti, pero eso el libro no lo escribe. Ve a contárselo antes de que Sá Joaquina lo haga."
+      }
+    },
+    {
+      "id": "fiado_tonho",
+      "titulo": "A conta paga",
+      "titulo_en": "The account settled",
+      "titulo_es": "La cuenta pagada",
+      "resumo": "Diga ao Tonho que a conta está paga",
+      "resumo_en": "Tell Tonho the account is settled",
+      "resumo_es": "Dile a Tonho que la cuenta está pagada",
+      "lugar": "pier",
+      "raio": 10,
+      "audio": "",
+      "texto": "Conte ao Tonho que o nome dele saiu do livro do Nicolau.",
+      "texto_en": "Tell Tonho his name is out of Nicolau's book.",
+      "texto_es": "Cuéntale a Tonho que su nombre salió del libro de Nicolau.",
+      "recompensa": {
+        "xp": 15,
+        "peixe": 1
+      },
+      "meta": {
+        "tipo": "falar",
+        "a_quem": "tonho",
+        "raio": 3.4,
+        "resposta": "Você pagou o Nicolau por mim? Sem me perguntar? ... É. Meu pai faria o mesmo, e eu ia ficar com raiva dele também. Agora eu devo a você, e isso eu pago: na primeira maré boa, o primeiro peixe é seu. Não discuta.",
+        "resposta_en": "You paid Nicolau for me? Without asking? ... Yes. My father would've done the same, and I'd have been angry at him too. Now I owe you, and that I pay: on the first good tide, the first fish is yours. Don't argue.",
+        "resposta_es": "¿Le pagaste a Nicolau por mí? ¿Sin preguntarme? ... Sí. Mi padre habría hecho lo mismo, y yo también me habría enojado con él. Ahora te debo a ti, y eso lo pago: en la primera marea buena, el primer pescado es tuyo. No discutas."
+      }
+    }
+  ],
+  "arremate": {
+    "texto": "A conta do Tonho no livro do Nicolau está riscada — paga em peixe, por você. O Tonho agora deve a você, e disse que isso ele paga.",
+    "texto_en": "Tonho's account in Nicolau's book is crossed out — paid in fish, by you. Tonho now owes you, and said that debt he pays.",
+    "texto_es": "La cuenta de Tonho en el libro de Nicolau está tachada — pagada en pescado, por ti. Tonho ahora te debe a ti, y dijo que eso sí lo paga.",
+    "narra": false
+  }
+}

@@ -113,31 +113,29 @@ algo que já existe onde couber:
    rio grande (a foz) → `falar` com o Quirino no dia do saveiro → arremate: a luz
    parou onde a Senhora da Boa Viagem afundou.
 
-## Fase 3 — as pontes entre moradores e as missões de ação (a fazer)
+## Fase 3 — as pontes entre moradores e as missões de ação (07/10/2026, feita)
 
-Pedem um pouco de mecânica nova, cada uma pequena e declarada:
+Uma mecânica nova, declarada: **a hora no `visitar`** (`"horas": [de, ate]`, o
+relógio do vale; a janela pode virar a meia-noite, `CadeiaDeMissoes._na_hora`).
+Nove filas, todas depois do favor do morador e com ele "Gente boa" (a do Tonico,
+"Amigo"):
 
-- **Hora no `visitar`** (`"horas": [19, 23]`): a roda na praia (Mariinha e Rosa,
-  maré cheia de noite), a ronda do guarda (três voltas na praça de noite), a
-  vigília do sino (igreja de madrugada; toca o fantasma da mata), a maré das
-  cinco (Rosa; `juntar ostra` entre 5 e 7 h).
-- **A canoa do Tonho** (Epifânio ↔ Tonho): `falar` com o Tonho ("por que não
-  usa"), levar madeira e corda, e a canoa dele volta à água (uma obra pequena,
-  `obra` em sítio novo ao lado da casa da estrada).
-- **O livro de fiado** (Nicolau ↔ Tonho e Candinha): quitar a conta dos dois
-  (`levar` réis ou peixe) e o Nicolau abre mercadoria nova na venda.
-- **A carta da filha** (Rosa ↔ padre): `carta_da_rosa` (documento) vai ao padre
-  e volta com a resposta; `leu:`.
-- **O caminho do Tonico** (grau 3): `visitar` a Lapa pela trilha da mata, com a
-  "dívida" que o pai fala — uma noite sem dormir (`evento dormiu` negado) ou um
-  presente ao Caipora.
-- **A promessa de Sá Joaquina**: `oferendar` na areia o que o mar devolve, em
-  nome dela (ela nunca pisa na praia).
-- **A água do rio grande** (Sá Rita): `visitar` a ponte com ela e `falar` — o
-  que não é terra na água, gancho da fazenda.
-- **O que está enterrado perto do casarão** (Aristides, depois da jornada da
-  fazenda): `visitar` o casarão e `falar` — memória do engenho; pede cuidado no
-  tom e revisão do autor antes de entrar.
+| fila | morador | o que se faz | gancho |
+|---|---|---|---|
+| `menina_roda` A roda na praia | Mariinha, Rosa | a areia das 19 às 23; falar com a Rosa | "quem não bate palma não entra" |
+| `guarda_ronda` A ronda da noite | Aristides | praça, igreja e venda depois das 20; o passo no adro | "duas vezes ouvi passo no adro" |
+| `padre_sino` O sino que toca sozinho | Anselmo | a igreja da meia-noite às 5 | "alguma coisa cuida disto aqui" |
+| `marisqueira_mare` A maré das cinco | Rosa, padre | as pedras das 5 às 7h30; 4 ostras; a carta da filha ao padre e de volta (`carta_da_rosa`) | "na segunda eu escuto o que ela não escreveu" |
+| `carpinteiro_canoa` A canoa do Tonho | Epifânio, Tonho | perguntar ao Tonho; 2 madeiras e 2 cordas; voltar ao Tonho | "canoa que volta sem gente não se põe na água" |
+| `mercador_fiado` O livro de fiado | Nicolau, Tonho | 3 peixes pela conta do Tonho; dizer a ele | "o Tonho me deve, é verdade" |
+| `menino_caminho` O caminho do Tonico | Tonico | a lapa pela lombada; a dívida, um cordel | "quem leva gente lá fica com dívida" |
+| `beata_promessa` A promessa de Sá Joaquina | Sá Joaquina | uma ostra na areia, por oferenda | "nunca mais pisar na areia" |
+| `lavadeira_rio` A água do rio grande | Sá Rita | a ponte do rio grande; a cor da água | "tem coisa naquela água que não é terra" |
+
+Ficou para a fase 4, por pedir sistema ou revisão do autor: a canoa do Tonho de
+volta à água como obra visível, o fiado abrindo mercadoria na venda, e o que está
+enterrado perto do casarão (Aristides, depois da jornada da fazenda; memória do
+engenho, tom a revisar).
 
 ## Fase 4 — o que pede sistema (a decidir com o autor)
 

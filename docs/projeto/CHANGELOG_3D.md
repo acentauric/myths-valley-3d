@@ -23,6 +23,18 @@
   cada quatro golpes, e a dica conta o trabalho ("Lajedo 12/96"); a seta de "junte
   pedras" não aponta a pedra grande a quem só tem a picareta de ferro. As árvores já
   seguiam a regra (madeira branca, de lei e dura, com nível e aço).
+- **As missões secundárias dos moradores, fase 3: as pontes entre moradores e as
+  missões de ação** (docs/projeto/MISSOES_SECUNDARIAS.md). Nove filas, abertas pelo
+  favor feito e a afinidade (a do Tonico pede "Amigo"): a roda na praia (Mariinha e a
+  Dona Rosa, de noite), a ronda do guarda (três lugares da praça depois das oito), a
+  vigília do sino (a igreja de madrugada), a maré das cinco e a carta da filha da Dona
+  Rosa (que o padre lê duas vezes; documento novo `carta_da_rosa`), a canoa do Tonho
+  (o carpinteiro a conserta com a madeira que o jogador leva), o livro de fiado (a conta
+  do Tonho paga em peixe), o caminho do Tonico até a lapa (a dívida é um cordel), a
+  promessa de Sá Joaquina (uma ostra na areia, por oferenda) e a água do rio grande.
+  Mecânica nova, uma só: `"horas": [de, ate]` na meta `visitar` — a janela do relógio
+  do vale em que chegar conta, e pode virar a meia-noite. O `missoes_elos` conta 52
+  arquivos e 154 passos.
 - **As missões secundárias dos moradores, fase 2: os quatro arcos de enredo**
   (docs/projeto/MISSOES_SECUNDARIAS.md). Abrem com o favor do morador feito e ele
   "Gente boa". A toalha do tio (a rendeira a entrega na janela; posta na mesa da casa

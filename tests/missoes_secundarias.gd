@@ -20,6 +20,8 @@ extends SceneTree
 ##      sobe o favor (Afinidade.POR_FAVOR).
 ##   5. SEM FAVOR NÃO HÁ SALTO: antes de fechar, a afinidade só tinha o que o portão
 ##      pôs — o favor é dado uma vez, no fim.
+##   7. A HORA DO PASSO (fase 3): a roda na praia é de noite — na areia às 15 h, o
+##      lugar não se risca; às 21 h, risca.
 ##   6. OS ARCOS SEGUEM O FAVOR (fase 2): a toalha do tio só abre com o favor da rendeira
 ##      feito e ela "Gente boa" (grau 2); a pedra do altar fica trancada enquanto o favor
 ##      do sacristão não foi feito. Aberta, a toalha vem na janela (entrega) e a oferenda
@@ -197,6 +199,35 @@ func _run() -> void:
 				var ofereceu := await _ate(func() -> bool: return bool(da_toalha.acabou()), SEGUNDOS_POR_PASSO)
 				_conferir(ofereceu, "na casa de taipa com a toalha na mochila, a oferenda da mesa não fechou o arco")
 				_conferir(not inv.tem("toalha_de_renda"), "a toalha ficou na mochila depois de posta na mesa")
+
+	# --- 7. A HORA DO PASSO (a roda na praia) --------------------------------------------
+	var da_roda = vale._cadeias.get("menina_roda")
+	_conferir(da_roda != null, "a roda na praia não está pendurada")
+	if da_roda != null:
+		var dia = root.get_node("/root/Dia")
+		var hora_guardada: float = dia.hora
+		var passo_da_praia := -1
+		for i in da_roda.passos.size():
+			if str((da_roda.passos[i] as Dictionary).get("id", "")) == "roda_na_praia":
+				passo_da_praia = i
+		_conferir(passo_da_praia >= 0, "a roda não tem o passo da praia")
+		if passo_da_praia >= 0:
+			var meta: Dictionary = (da_roda.passos[passo_da_praia] as Dictionary).get("meta", {})
+			_conferir((meta.get("horas", []) as Array).size() == 2, "o passo da praia não tem a janela de horas")
+			da_roda.iniciado = true
+			da_roda.missao = passo_da_praia
+			da_roda.espera = 0.0
+			var lugares_do_vale = root.get_node("/root/Lugares")
+			var areia: Vector3 = lugares_do_vale.ponto("areia")
+			dia.hora = 15.0
+			jogador.teleportar(areia + Vector3(0.5, 0.0, 0.5), 0.0)
+			await _frames(6)
+			_conferir(da_roda.falta_a_meta(da_roda.passos[passo_da_praia]), "às 15 h, na areia, a roda da noite riscou o lugar")
+			dia.hora = 21.0
+			jogador.teleportar(areia + Vector3(0.5, 0.0, -0.5), 0.0)
+			var riscou := await _ate(func() -> bool: return not da_roda.falta_a_meta(da_roda.passos[passo_da_praia]), 6.0)
+			_conferir(riscou, "às 21 h, na areia, a roda da noite não riscou o lugar")
+			dia.hora = hora_guardada
 	_fechar()
 
 

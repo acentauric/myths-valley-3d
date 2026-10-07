@@ -47,6 +47,9 @@ const FONTES_FORA_DA_TABELA := {
 	# ali os dá (`revoar_vale._pegar_as_armas`, #31).
 	"lanca_de_safira": "os destroços da torre da capela (revoar_vale.gd)",
 	"escudo_de_safira": "os destroços da torre da capela (revoar_vale.gd)",
+	# Os dez cordéis estão no chão do vale, perto do lugar de cada um, e o E os recolhe
+	# (achados_vale.gd, tests/cartas.gd): é o que o Tonico pede na dívida do caminho (fase 3).
+	"cordel": "os cordéis no chão do vale (achados_vale.gd)",
 }
 
 var falhas := 0
@@ -115,7 +118,7 @@ func _ler_os_arquivos() -> void:
 		if dado is Dictionary:
 			arquivos.append({"nome": nome, "dado": dado})
 	# 25 desde 07/10: as 19 filas, as 3 da fé, a meta da onça (#117), o segundo tutorial (#160) e o capítulo 7 (#31).
-	_conferir(arquivos.size() == 43, "são %d arquivos de missão, e eram 43 (as 19 filas, as 3 da fé, a meta da onça, o segundo tutorial, o capítulo 7, os 14 favores dos moradores e os 4 arcos deles): conferir a lista do portão" % arquivos.size())
+	_conferir(arquivos.size() == 52, "são %d arquivos de missão, e eram 52 (as 19 filas, as 3 da fé, a meta da onça, o segundo tutorial, o capítulo 7, os 14 favores dos moradores, os 4 arcos e as 9 pontes da fase 3): conferir a lista do portão" % arquivos.size())
 
 
 ## As filas VIVAS do vale: a do tutorial (do Pedro) e as penduradas (`vale._cadeias`). O motor lê
@@ -138,8 +141,8 @@ func _ligar_as_filas_vivas() -> void:
 		total += ((arquivo["dado"] as Dictionary).get("passos", []) as Array).size()
 	# 100 desde 07/10: os cinco passos do segundo tutorial (#160) e os sete do capítulo 7 (#31) sobre os 88 de 06/10;
 	# 114 com os catorze favores dos moradores (docs/projeto/MISSOES_SECUNDARIAS.md, fase 1), um passo cada;
-	# 125 com os quatro arcos de enredo deles (fase 2: 2 + 3 + 3 + 3 passos).
-	_conferir(total == 125, "são %d passos, e eram 125: conferir a lista do portão (e os que o jogo toca, em `missoes_do_comeco_ao_fim`)" % total)
+	# 125 com os quatro arcos de enredo deles (fase 2: 2 + 3 + 3 + 3 passos); 154 com as nove pontes da fase 3 (29 passos).
+	_conferir(total == 154, "são %d passos, e eram 154: conferir a lista do portão (e os que o jogo toca, em `missoes_do_comeco_ao_fim`)" % total)
 
 
 ## O TEXTO DO CÓDIGO DO VALE, de onde se conta quem emite cada acontecimento. Menos o motor da fila

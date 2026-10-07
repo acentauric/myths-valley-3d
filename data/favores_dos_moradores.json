@@ -112,6 +112,69 @@
       "chave": "ladislau_luz",
       "grau": 2,
       "depois": "ladislau_favor"
+    },
+    {
+      "dono": "menina",
+      "arquivo": "res://data/missoes_menina_roda.json",
+      "chave": "menina_roda",
+      "grau": 2,
+      "depois": "menina_favor"
+    },
+    {
+      "dono": "guarda",
+      "arquivo": "res://data/missoes_guarda_ronda.json",
+      "chave": "guarda_ronda",
+      "grau": 2,
+      "depois": "guarda_favor"
+    },
+    {
+      "dono": "padre",
+      "arquivo": "res://data/missoes_padre_sino.json",
+      "chave": "padre_sino",
+      "grau": 2,
+      "depois": "padre_favor"
+    },
+    {
+      "dono": "marisqueira",
+      "arquivo": "res://data/missoes_marisqueira_mare.json",
+      "chave": "marisqueira_mare",
+      "grau": 2,
+      "depois": "marisqueira_favor"
+    },
+    {
+      "dono": "carpinteiro",
+      "arquivo": "res://data/missoes_carpinteiro_canoa.json",
+      "chave": "carpinteiro_canoa",
+      "grau": 2,
+      "depois": "carpinteiro_favor"
+    },
+    {
+      "dono": "mercador",
+      "arquivo": "res://data/missoes_mercador_fiado.json",
+      "chave": "mercador_fiado",
+      "grau": 2,
+      "depois": "mercador_favor"
+    },
+    {
+      "dono": "menino",
+      "arquivo": "res://data/missoes_menino_caminho.json",
+      "chave": "menino_caminho",
+      "grau": 3,
+      "depois": "menino_favor"
+    },
+    {
+      "dono": "beata",
+      "arquivo": "res://data/missoes_beata_promessa.json",
+      "chave": "beata_promessa",
+      "grau": 2,
+      "depois": "beata_favor"
+    },
+    {
+      "dono": "lavadeira",
+      "arquivo": "res://data/missoes_lavadeira_rio.json",
+      "chave": "lavadeira_rio",
+      "grau": 2,
+      "depois": "lavadeira_favor"
     }
   ]
 }

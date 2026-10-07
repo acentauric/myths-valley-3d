@@ -1,0 +1,93 @@
+{
+  "observacao": "A PROMESSA DE SÁ JOAQUINA (fase 3 de docs/projeto/MISSOES_SECUNDARIAS.md, 07/10/2026): o gancho da beata em aldeoes.json ('Eu fiz uma promessa há trinta anos, e cumpro até hoje: nunca mais pisar na areia da praia. Foi lá que o mar levou meu marido. Rezo de costas pro mar'). Levar à areia, em nome dela, o que o mar devolve — uma ostra — por oferenda, e voltar. Abre com o favor do chá feito e ela 'Gente boa'.",
+  "dono": "beata",
+  "nome": "A promessa de Sá Joaquina",
+  "nome_en": "Sá Joaquina's vow",
+  "nome_es": "La promesa de Sá Joaquina",
+  "trancada": "Da minha promessa eu falo baixo, e só com quem reza comigo há tempo. Volte mais vezes, meu filho.",
+  "trancada_en": "Of my vow I speak softly, and only with those who've prayed with me for a while. Come back more often, my son.",
+  "trancada_es": "De mi promesa hablo bajo, y solo con quien reza conmigo desde hace tiempo. Vuelve más veces, hijo mío.",
+  "principal": false,
+  "passos": [
+    {
+      "id": "promessa_contada",
+      "titulo": "Trinta anos de costas",
+      "titulo_en": "Thirty years turned away",
+      "titulo_es": "Treinta años de espaldas",
+      "resumo": "Ouça a promessa de Sá Joaquina",
+      "resumo_en": "Hear Sá Joaquina's vow",
+      "resumo_es": "Escucha la promesa de Sá Joaquina",
+      "lugar": "casa_da_beata",
+      "raio": 6,
+      "audio": "",
+      "texto": "Eu fiz uma promessa há trinta anos, e cumpro até hoje: nunca mais pisar na areia. Foi lá que o mar levou o meu marido. Mas ele gostava de ostra, e todo ano eu mandava uma pra beira d'água por alguém. Este ano não tem ninguém. Leve uma por mim, meu filho — deixe na areia, onde a onda chega. Não precisa rezar. Eu rezo daqui.",
+      "texto_en": "I made a vow thirty years ago, and I keep it to this day: never again to step on the sand. That's where the sea took my husband. But he loved oysters, and every year I sent one to the water's edge through someone. This year there's no one. Take one for me, my son — leave it on the sand, where the wave reaches. No need to pray. I pray from here.",
+      "texto_es": "Hice una promesa hace treinta años, y la cumplo hasta hoy: nunca más pisar la arena. Fue allí donde el mar se llevó a mi marido. Pero a él le gustaban las ostras, y todos los años mandaba una a la orilla con alguien. Este año no hay nadie. Lleva una por mí, hijo mío — déjala en la arena, donde llega la ola. No hace falta rezar. Yo rezo desde aquí.",
+      "recompensa": {
+        "xp": 10
+      },
+      "meta": {}
+    },
+    {
+      "id": "promessa_ostra",
+      "titulo": "A ostra na beira",
+      "titulo_en": "The oyster at the edge",
+      "titulo_es": "La ostra en la orilla",
+      "resumo": "Deixe uma ostra na areia da praia",
+      "resumo_en": "Leave an oyster on the beach sand",
+      "resumo_es": "Deja una ostra en la arena de la playa",
+      "lugar": "areia",
+      "raio": 8,
+      "audio": "",
+      "texto": "Uma ostra na areia, onde a onda chega. Em nome dela.",
+      "texto_en": "An oyster on the sand, where the wave reaches. In her name.",
+      "texto_es": "Una ostra en la arena, donde llega la ola. En su nombre.",
+      "recompensa": {
+        "xp": 10
+      },
+      "meta": {
+        "tipo": "oferendar",
+        "item": "ostra",
+        "quantos": 1,
+        "lugar": "areia",
+        "raio": 8,
+        "resposta": "A ostra fica na areia molhada. A onda seguinte a cobre e descobre. A terceira a leva.",
+        "resposta_en": "The oyster stays on the wet sand. The next wave covers and uncovers it. The third takes it.",
+        "resposta_es": "La ostra queda en la arena mojada. La ola siguiente la cubre y la descubre. La tercera se la lleva."
+      }
+    },
+    {
+      "id": "promessa_rezada",
+      "titulo": "De costas pro mar",
+      "titulo_en": "Back to the sea",
+      "titulo_es": "De espaldas al mar",
+      "resumo": "Volte a Sá Joaquina",
+      "resumo_en": "Go back to Sá Joaquina",
+      "resumo_es": "Vuelve a Sá Joaquina",
+      "lugar": "casa_da_beata",
+      "raio": 6,
+      "audio": "",
+      "texto": "Diga a Sá Joaquina que a ostra foi.",
+      "texto_en": "Tell Sá Joaquina the oyster went.",
+      "texto_es": "Dile a Sá Joaquina que la ostra se fue.",
+      "recompensa": {
+        "xp": 15,
+        "beiju": 2
+      },
+      "meta": {
+        "tipo": "falar",
+        "a_quem": "beata",
+        "raio": 3.4,
+        "resposta": "A onda levou? Na terceira? Era assim que ele contava as ondas pra entrar no mar. Deus lhe pague, meu filho. Hoje eu rezei o terço de costas pro mar, como sempre — mas pela primeira vez em trinta anos eu olhei por cima do ombro.",
+        "resposta_en": "The wave took it? On the third? That's how he used to count the waves before going into the sea. God repay you, my son. Today I prayed the rosary with my back to the sea, as always — but for the first time in thirty years I looked over my shoulder.",
+        "resposta_es": "¿La ola se la llevó? ¿En la tercera? Así contaba él las olas para entrar al mar. Dios te lo pague, hijo mío. Hoy recé el rosario de espaldas al mar, como siempre — pero por primera vez en treinta años miré por encima del hombro."
+      }
+    }
+  ],
+  "arremate": {
+    "texto": "Você pisou a areia que Sá Joaquina não pisa há trinta anos e deixou na beira uma ostra, em nome dela. Ela rezou de costas pro mar. O mar sabe por quê.",
+    "texto_en": "You stepped on the sand Sá Joaquina hasn't stepped on in thirty years and left an oyster at the water's edge, in her name. She prayed with her back to the sea. The sea knows why.",
+    "texto_es": "Pisaste la arena que Sá Joaquina no pisa desde hace treinta años y dejaste en la orilla una ostra, en su nombre. Ella rezó de espaldas al mar. El mar sabe por qué.",
+    "narra": false
+  }
+}

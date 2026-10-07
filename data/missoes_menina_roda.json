@@ -1,0 +1,93 @@
+{
+  "observacao": "A RODA NA PRAIA (fase 3 de docs/projeto/MISSOES_SECUNDARIAS.md, 07/10/2026): o gancho da Mariinha em aldeoes.json ('Eu sei dançar roda. A Dona Rosa me ensinou na praia, de noite, quando a maré tá cheia. Se você quiser aprender, tem que bater palma primeiro'). A primeira fila com HORA no passo: 'horas' na meta 'visitar' — chegar à areia de dia não risca. Abre com o favor do milho feito e a Mariinha 'Gente boa'.",
+  "dono": "menina",
+  "nome": "A roda na praia",
+  "nome_en": "The circle dance on the beach",
+  "nome_es": "La rueda en la playa",
+  "trancada": "A roda é pra quem já bateu palma comigo muitas vezes. Volta quando a gente for amigo de verdade.",
+  "trancada_en": "The circle dance is for those who've clapped with me many times. Come back when we're real friends.",
+  "trancada_es": "La rueda es para quien ya aplaudió conmigo muchas veces. Vuelve cuando seamos amigos de verdad.",
+  "principal": false,
+  "passos": [
+    {
+      "id": "roda_palmas",
+      "titulo": "Bater palma",
+      "titulo_en": "Clapping first",
+      "titulo_es": "Aplaudir primero",
+      "resumo": "Ouça a Mariinha sobre a roda",
+      "resumo_en": "Hear Mariinha about the circle dance",
+      "resumo_es": "Escucha a Mariinha sobre la rueda",
+      "lugar": "casa_da_quituteira",
+      "raio": 6,
+      "audio": "",
+      "texto": "Você quer aprender a roda? Então escuta: é na praia, de noite, quando a maré tá cheia. A Dona Rosa puxa o canto. Quem não bate palma não entra — e quem chega de dia não acha ninguém.",
+      "texto_en": "You want to learn the circle dance? Then listen: it's on the beach, at night, when the tide is high. Dona Rosa leads the song. Whoever doesn't clap doesn't get in — and whoever comes by day finds no one.",
+      "texto_es": "¿Quieres aprender la rueda? Entonces escucha: es en la playa, de noche, cuando la marea está alta. Doña Rosa lleva el canto. Quien no aplaude no entra — y quien llega de día no encuentra a nadie.",
+      "recompensa": {
+        "xp": 10
+      },
+      "meta": {}
+    },
+    {
+      "id": "roda_na_praia",
+      "titulo": "A praia de noite",
+      "titulo_en": "The beach at night",
+      "titulo_es": "La playa de noche",
+      "resumo": "Vá à areia da praia de noite (das 19 às 23)",
+      "resumo_en": "Go to the beach sand at night (7 pm to 11 pm)",
+      "resumo_es": "Ve a la arena de la playa de noche (de 19 a 23)",
+      "lugar": "areia",
+      "raio": 10,
+      "audio": "",
+      "texto": "A roda é na areia, depois que escurece e antes da meia-noite.",
+      "texto_en": "The circle dance is on the sand, after dark and before midnight.",
+      "texto_es": "La rueda es en la arena, después de oscurecer y antes de medianoche.",
+      "recompensa": {
+        "xp": 10
+      },
+      "meta": {
+        "tipo": "visitar",
+        "lugares": [
+          "areia"
+        ],
+        "raio": 10,
+        "horas": [
+          19,
+          23
+        ]
+      }
+    },
+    {
+      "id": "roda_com_rosa",
+      "titulo": "O canto da Dona Rosa",
+      "titulo_en": "Dona Rosa's song",
+      "titulo_es": "El canto de Doña Rosa",
+      "resumo": "Fale com a Dona Rosa sobre a roda",
+      "resumo_en": "Talk to Dona Rosa about the circle dance",
+      "resumo_es": "Habla con Doña Rosa sobre la rueda",
+      "lugar": "casa_da_marisqueira",
+      "raio": 6,
+      "audio": "",
+      "texto": "A Dona Rosa puxou o canto. Vá agradecer a ela.",
+      "texto_en": "Dona Rosa led the song. Go and thank her.",
+      "texto_es": "Doña Rosa llevó el canto. Ve a agradecerle.",
+      "recompensa": {
+        "xp": 15
+      },
+      "meta": {
+        "tipo": "falar",
+        "a_quem": "marisqueira",
+        "raio": 3.4,
+        "resposta": "Você bateu palma certo e entrou torto, como todo mundo na primeira vez. A roda é de Iemanjá antes de ser nossa: por isso é na maré cheia. Volte na próxima — a Mariinha disse que você quase acertou o passo.",
+        "resposta_en": "You clapped right and stepped in crooked, like everyone the first time. The circle belongs to Iemanjá before it's ours: that's why it's at high tide. Come back next time — Mariinha said you almost got the step.",
+        "resposta_es": "Aplaudiste bien y entraste torcido, como todos la primera vez. La rueda es de Iemanjá antes de ser nuestra: por eso es con marea alta. Vuelve la próxima — Mariinha dijo que casi acertaste el paso."
+      }
+    }
+  ],
+  "arremate": {
+    "texto": "Você bateu palma, entrou na roda e a Dona Rosa puxou o canto. A maré estava cheia, e a Mariinha dançou melhor que você.",
+    "texto_en": "You clapped, joined the circle and Dona Rosa led the song. The tide was high, and Mariinha danced better than you.",
+    "texto_es": "Aplaudiste, entraste en la rueda y Doña Rosa llevó el canto. La marea estaba alta, y Mariinha bailó mejor que tú.",
+    "narra": false
+  }
+}

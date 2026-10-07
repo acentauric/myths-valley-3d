@@ -1,0 +1,101 @@
+{
+  "observacao": "A CANOA DO TONHO (fase 3 de docs/projeto/MISSOES_SECUNDARIAS.md, 07/10/2026): a ponte entre o carpinteiro e o Tonho, dos ganchos de aldeoes.json ('A do Tonho fui eu que fiz, há dez anos. Ele não usa mais. Pergunte a ele por quê') e da fila do Tonho ('minha rede ficou do outro lado do rio numa noite de março'). Falar com o Tonho, levar madeira e corda ao Epifânio, e voltar ao Tonho. Abre com o favor da madeira feito e o Epifânio 'Gente boa'.",
+  "dono": "carpinteiro",
+  "nome": "A canoa do Tonho",
+  "nome_en": "Tonho's canoe",
+  "nome_es": "La canoa de Tonho",
+  "trancada": "Da canoa do Tonho eu falo com quem já me trouxe madeira e já me conhece. Volte.",
+  "trancada_en": "About Tonho's canoe I talk to those who've brought me wood and already know me. Come back.",
+  "trancada_es": "De la canoa de Tonho hablo con quien ya me trajo madera y ya me conoce. Vuelve.",
+  "principal": false,
+  "passos": [
+    {
+      "id": "canoa_pergunta",
+      "titulo": "Por que o Tonho não rema",
+      "titulo_en": "Why Tonho doesn't row",
+      "titulo_es": "Por qué Tonho no rema",
+      "resumo": "Pergunte ao Tonho pela canoa",
+      "resumo_en": "Ask Tonho about the canoe",
+      "resumo_es": "Pregúntale a Tonho por la canoa",
+      "lugar": "pier",
+      "raio": 10,
+      "audio": "",
+      "texto": "A canoa do Tonho fui eu que fiz, há dez anos, de um pau só. Está virada atrás da casa dele, apodrecendo. Pergunte a ele por quê — a mim ele não diz.",
+      "texto_en": "Tonho's canoe was my work, ten years ago, from a single trunk. It's lying upturned behind his house, rotting. Ask him why — he won't tell me.",
+      "texto_es": "La canoa de Tonho la hice yo, hace diez años, de un solo tronco. Está volcada detrás de su casa, pudriéndose. Pregúntale por qué — a mí no me lo dice.",
+      "recompensa": {
+        "xp": 10
+      },
+      "meta": {
+        "tipo": "falar",
+        "a_quem": "tonho",
+        "raio": 3.4,
+        "resposta": "A canoa? Foi do meu pai antes de ser minha. Numa noite de março ela voltou sozinha, sem ele e sem a rede — a rede ficou do outro lado do rio, eu já contei. Desde então eu pesco da pedra. Canoa que volta sem gente não se põe na água de novo. Mas se o Epifânio quiser consertar, eu não impeço.",
+        "resposta_en": "The canoe? It was my father's before it was mine. One night in March it came back alone, without him and without the net — the net stayed on the other side of the river, I've told you. Since then I fish from the rock. A canoe that comes back without its man doesn't go in the water again. But if Epifânio wants to fix it, I won't stop him.",
+        "resposta_es": "¿La canoa? Fue de mi padre antes de ser mía. Una noche de marzo volvió sola, sin él y sin la red — la red se quedó del otro lado del río, ya te lo conté. Desde entonces pesco desde la piedra. Canoa que vuelve sin gente no se pone en el agua otra vez. Pero si Epifânio quiere arreglarla, no lo impido."
+      }
+    },
+    {
+      "id": "canoa_madeira",
+      "titulo": "Bancos e amarra",
+      "titulo_en": "Seats and lashing",
+      "titulo_es": "Bancos y amarre",
+      "resumo": "Leve duas madeiras de coqueiro e duas cordas ao Seu Epifânio",
+      "resumo_en": "Take two coconut-palm logs and two ropes to Seu Epifânio",
+      "resumo_es": "Lleva dos maderas de cocotero y dos cuerdas al Señor Epifânio",
+      "lugar": "casa_do_carpinteiro",
+      "raio": 6,
+      "audio": "",
+      "texto": "Ele não impede. Então eu conserto. Bancos novos de coqueiro e amarra nova: duas madeiras e duas cordas, e eu faço o resto de graça — o Tonho não vai saber que foi de graça.",
+      "texto_en": "He won't stop us. Then I'll fix it. New coconut-palm seats and new lashing: two logs and two ropes, and I'll do the rest for free — Tonho won't know it was free.",
+      "texto_es": "Él no lo impide. Entonces la arreglo. Bancos nuevos de cocotero y amarre nuevo: dos maderas y dos cuerdas, y el resto lo hago gratis — Tonho no va a saber que fue gratis.",
+      "recompensa": {
+        "xp": 10
+      },
+      "meta": {
+        "tipo": "levar",
+        "itens": {
+          "madeira_de_coqueiro": 2,
+          "corda": 2
+        },
+        "a_quem": "carpinteiro",
+        "raio": 3.4,
+        "resposta": "Madeira e corda. Bati três vezes no casco antes de mexer, e ele respondeu oco — mas inteiro. Em dois dias ela está de pé. Vá dizer ao Tonho. Diga que foi você que pagou.",
+        "resposta_en": "Wood and rope. I knocked three times on the hull before touching it, and it answered hollow — but whole. In two days it'll be standing. Go tell Tonho. Say you were the one who paid.",
+        "resposta_es": "Madera y cuerda. Golpeé tres veces el casco antes de tocarlo, y respondió hueco — pero entero. En dos días está de pie. Ve a decírselo a Tonho. Di que fuiste tú quien pagó."
+      }
+    },
+    {
+      "id": "canoa_tonho",
+      "titulo": "A canoa de pé",
+      "titulo_en": "The canoe standing",
+      "titulo_es": "La canoa de pie",
+      "resumo": "Diga ao Tonho que a canoa está consertada",
+      "resumo_en": "Tell Tonho the canoe is fixed",
+      "resumo_es": "Dile a Tonho que la canoa está arreglada",
+      "lugar": "pier",
+      "raio": 10,
+      "audio": "",
+      "texto": "A canoa está consertada. Vá dizer ao Tonho.",
+      "texto_en": "The canoe is fixed. Go tell Tonho.",
+      "texto_es": "La canoa está arreglada. Ve a decírselo a Tonho.",
+      "recompensa": {
+        "xp": 15
+      },
+      "meta": {
+        "tipo": "falar",
+        "a_quem": "tonho",
+        "raio": 3.4,
+        "resposta": "Consertou? Com bancos de coqueiro, o Epifânio... Olha, eu ia dizer obrigado e ficar quieto, que é o meu jeito. Não prometo pôr na água. Mas um dia, se a maré estiver certa e você estiver junto, a gente vê. Obrigado.",
+        "resposta_en": "He fixed it? With coconut-palm seats, Epifânio... Look, I was going to say thanks and keep quiet, which is my way. I don't promise to put it in the water. But one day, if the tide is right and you're along, we'll see. Thank you.",
+        "resposta_es": "¿La arregló? Con bancos de cocotero, Epifânio... Mira, iba a decir gracias y quedarme callado, que es mi modo. No prometo ponerla en el agua. Pero un día, si la marea está bien y tú estás conmigo, veremos. Gracias."
+      }
+    }
+  ],
+  "arremate": {
+    "texto": "A canoa do Tonho tem bancos novos e corda nova. Ele não prometeu pôr na água. Mas agradeceu — e o Tonho agradecer é quase remar.",
+    "texto_en": "Tonho's canoe has new seats and new rope. He didn't promise to put it in the water. But he said thank you — and Tonho saying thank you is almost rowing.",
+    "texto_es": "La canoa de Tonho tiene bancos nuevos y cuerda nueva. Él no prometió ponerla en el agua. Pero agradeció — y que Tonho agradezca es casi remar.",
+    "narra": false
+  }
+}
