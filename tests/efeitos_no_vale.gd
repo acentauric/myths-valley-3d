@@ -61,6 +61,9 @@ func _run() -> void:
 				await RenderingServer.frame_post_draw
 				root.get_texture().get_image().save_png("res://tools/temp/efeito-%s-%s.png" % [interior, int(hora)])
 			await create_timer(3.0).timeout
+			if interior and DisplayServer.get_name() != "headless":
+				await RenderingServer.frame_post_draw
+				root.get_texture().get_image().save_png("res://tools/temp/parede-interna-%s.png" % int(hora))
 			conferir(not vale.conquista.ativa() and not vale.conquista.esperando(),
 				"efeitos consecutivos acumulam ou persistem")
 	vale.player.teleportar(sala.ponto_da_cama(), 0.0)

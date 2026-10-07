@@ -103,6 +103,24 @@ func _run() -> void:
 	if sala == null:
 		_fechar()
 		return
+	# #136: verifica as paredes realmente montadas, não só a fábrica de material.
+	if _estilo_do_portao() == "tripo":
+		var paredes_texturizadas := 0
+		var paredes = sala.find_children("Parede_*", "Node3D", true, false)
+		paredes.append_array(sala.find_children("Fundos_*", "Node3D", true, false))
+		paredes.append_array(sala.find_children("Fachada_*", "Node3D", true, false))
+		for parede in paredes:
+			for malha in parede.find_children("*", "MeshInstance3D", true, false):
+				var material = malha.material_override
+				if "--falsificar-cal" in OS.get_cmdline_user_args() and material is StandardMaterial3D:
+					material.albedo_texture = null
+				_conferir(material is StandardMaterial3D and material.albedo_texture != null,
+					"parede interna continua sem textura de cal")
+				if material is StandardMaterial3D:
+					_conferir(material.uv1_world_triplanar and material.uv1_triplanar,
+						"textura de parede depende dos UVs esticados da caixa")
+					paredes_texturizadas += 1
+		_conferir(paredes_texturizadas >= 3, "faltam paredes internas texturizadas")
 	var centro: Vector3 = world.ancoras["Casa de taipa"]
 	var frente: Vector3 = sala.global_basis.z.normalized()
 	var meio: Vector3 = sala.to_global(Vector3(0, 0, -sala.comprimento * 0.5))

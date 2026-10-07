@@ -38,6 +38,10 @@ Todas as cadeias de missões do diretório de dados e os recursos declaram cober
 
 ## Próxima tarefa
 
+#136 foi verificada em casa, casa_procedural e efeitos_no_vale, com captura
+diurna/noturna e falsificação da textura. O material reutiliza a cal
+envelhecida existente; não houve geração paga de asset.
+
 #137 foi verificada por carga_e_fala e smoke_opening: a saudação e a fila
 esperam a cena pronta e o fim da transição. A fila anterior reprova os dois
 intervalos de bloqueio. A cobertura de idiomas pendente continua separada.

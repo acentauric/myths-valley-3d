@@ -6,6 +6,13 @@ O teste passa a cobrar Candinha, Filo, Tonho, Zefa, arraial e recursos, incluind
 
 ## Em desenvolvimento — 07/10/2026 (experimento Jev)
 
+- **Paredes internas recebem cal envelhecida (#136).** O estilo Tripo usa
+  a textura já catalogada, com projeção triplanar no mundo e acabamento
+  fosco. Portas, colisões e o legado procedural preservam sua geometria.
+  Casa, casa_procedural e efeitos_no_vale passaram; capturas às 9h e 20h
+  mostram a textura sem esticar nas faces. Remover a textura em memória
+  reprova cinco paredes no teste de casa.
+
 - **Pedro espera a cena e a transição (#137).** A saudação aguarda `carga_ok`
   e a retirada da tela de carregamento, incluindo o fade. A fila bloqueia
   novas falas nesse intervalo. Carga e abertura passaram; carregar a fila

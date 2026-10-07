@@ -135,6 +135,19 @@ func giro_de_acordar() -> float:
 # --- a casca da casa ---------------------------------------------------------------
 
 func _parede() -> Material:
+	var cor := Color(str(dados_do_perfil.get("cal", "ece2cc"))) if not dados_do_perfil.is_empty() else Color(CAIS.get(perfil, CAIS["herdada"]))
+	if Estilo.tripo():
+		# A arquitetura usa a mesma cal envelhecida já presente nas fachadas.
+		# Projeção mundial conserva a escala entre paredes de medidas diferentes.
+		var material := StandardMaterial3D.new()
+		material.albedo_texture = load("res://assets/prototipo_3d/materiais/cal_taipa_envelhecida_v1.png")
+		material.albedo_color = cor
+		material.roughness = 0.94
+		material.uv1_triplanar = true
+		material.uv1_world_triplanar = true
+		material.uv1_scale = Vector3.ONE * 0.45
+		material.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+		return material
 	if not dados_do_perfil.is_empty():
 		return _cal(Color(str(dados_do_perfil.get("cal", "ece2cc"))))
 	return _cal(CAIS.get(perfil, CAIS["herdada"]))
