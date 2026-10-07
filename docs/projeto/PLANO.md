@@ -517,3 +517,11 @@ detalhes em `docs/testes/INTERFACES_INDIVIDUAIS.md`. A issue permanece aberta.
 O folheto soma o 32º componente: escala conjunta de papel, texto e capa,
 limite pela área útil e fundo em tela inteira. Gate leve e leitura integrada
 verdes, mutante com seis falhas e três capturas conferidas; #140 segue aberta.
+
+### 07/10/2026: missões nas âncoras presentes (#1, concluída)
+
+A auditoria confirma dados, 16 passos de chegada, grupos de missão, diário,
+acompanhamento e integração do HUD/bússola. O mecanismo nativo segue a decisão
+posterior do autor de substituir o checklist do 2D. Cadeia, painel, regras,
+tarefa e idiomas verdes; V21 complementa com navegação real até o fim da chegada.
+Evidências e limites em `docs/testes/MISSOES_NAS_ANCORAS.md`.

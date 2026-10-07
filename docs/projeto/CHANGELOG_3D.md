@@ -6,6 +6,11 @@ O teste passa a cobrar Candinha, Filo, Tonho, Zefa, arraial e recursos, incluind
 
 ## Em desenvolvimento — 07/10/2026 (experimento Jev)
 
+- #1 concluída por auditoria: 16 passos em dados, enredo/dia a dia, diário
+  e acompanhamento integrados ao HUD e à bússola. A decisão posterior do
+  autor pelo mecanismo nativo substitui o checklist antigo; cinco gates
+  verdes e a chegada real V21 documentados em `MISSOES_NAS_ANCORAS.md`.
+
 - #140 (parcial): o folheto recebe escala própria como 32º componente.
   Papel, capa e textos acompanham o ajuste, limitados pela área de leitura;
   o fundo continua inteiro. Leitura integrada e escala verdes, mutante
