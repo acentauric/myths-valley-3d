@@ -534,10 +534,13 @@ func alvo_do_e() -> Dictionary:
 func mais_perto():
 	var aqui: Vector3 = _player.global_position
 	var melhor = null
-	var melhor_d := ALCANCE
+	var melhor_d := INF
 	for achado in no_chao:
 		var d := _plano(achado["ponto"] - aqui)
-		if d <= melhor_d:
+		var alcance := ALCANCE
+		if str(achado.get("tipo", "")) == "cordel":
+			alcance *= 1.0 + maxf(0.0, Talentos.bonus("faro_de_cordel"))
+		if d <= alcance and d <= melhor_d:
 			melhor = achado
 			melhor_d = d
 	return melhor

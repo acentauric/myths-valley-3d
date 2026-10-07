@@ -6,6 +6,16 @@ O teste passa a cobrar Candinha, Filo, Tonho, Zefa, arraial e recursos, incluind
 
 ## Em desenvolvimento — 07/10/2026 (experimento Jev)
 
+- #18 (parcial): inventário dos quinze contratos do 2D e das 32 perguntas
+  de contexto 3D; regras de afinidade, receita, foco e fração portadas.
+  Cordel passa pela confirmação nativa de presente. Passo, lenha extra,
+  alcance de cordel e vista no topo da Lombada têm consumidores reais;
+  cansaço, corte recusado, cartas e colisão da câmera permanecem preservados.
+  Baseline anterior reprova três usos; mutantes dirigidos também reprovam.
+  Auditoria estrita acusa cinco consumidores e permanece fora da bateria,
+  sem allowlist. Favor depende da compra de terra #9/#22; #160 foi reaberta
+  após constatar ausência de produção/tutorial equivalentes no HEAD.
+
 - #33 concluída: a prévia geográfica foi instanciada e renderizada com o
   editor ativo; menu 3D e vale geram uma única terra no runtime. Dois gates
   complementam a verificação de recursos; mutante sem composição reprova.

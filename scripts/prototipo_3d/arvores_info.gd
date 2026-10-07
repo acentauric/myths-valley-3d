@@ -652,6 +652,8 @@ func _ao_golpe_concluido() -> void:
 			arvore["escala"] = 0.0
 			var rende := str(madeira.get("rende", "lenha"))
 			var quantos := int(madeira.get("quantidade", 1))
+			if rende == "lenha":
+				quantos += maxi(0, int(Talentos.bonus("lenha_a_mais")))
 			if rende != "" and quantos > 0 and not Inventario.adicionar(rende, quantos):
 				_hud.set_notice(str(IdiomaMenu.campo(_acoes.get("arvore", {}), "inventario_cheio")))
 			Audio.efeito("arvore_cai")

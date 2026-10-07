@@ -167,6 +167,26 @@ func _run() -> void:
 		and _texto_social().contains("Já ganhou alguma coisa hoje"),
 		"o presente ruim no piso não consumiu/marcou o dia na tela P")
 
+	# O cordel é documento no catálogo, mas presente apreciado por quatro
+	# moradores. A antiga lista de tipos do portão 2D o recusava (#18/#13).
+	morador.dados = {"id": "guarda", "nome": "Damião"}
+	afinidade.restaurar({})
+	_mao("cordel")
+	tecla.usar(morador)
+	await _quadros()
+	_conferir(dialogo.ativo, "o cordel na mão não abriu a pergunta nativa")
+	if dialogo.ativo:
+		await _responder(false)
+	_conferir(inventario.quantidade("cordel") == 2 and afinidade.de("guarda") == 0,
+		"recusar o cordel consumiu item ou mudou afinidade")
+	tecla.usar(morador)
+	if dialogo.ativo:
+		await _responder(true)
+	_conferir(inventario.quantidade("cordel") == 1 and afinidade.de("guarda") == afinidade.POR_PRESENTE_BOM,
+		"o cordel confirmado não aplicou o gosto e consumo de um presente")
+	_mao("enxada")
+	_conferir(not tecla._item_de_presente("enxada"), "a ferramenta virou presente automaticamente")
+
 	var textos: Dictionary = root.get_node("Jogo").dados("res://data/afinidade_interacao_3d.json")
 	for chave in ["pergunta", "bom", "ruim", "qualquer", "ja_deu", "item_mudou"]:
 		for sufixo in ["", "_en", "_es"]:

@@ -12,6 +12,7 @@ signal folego_mudou(valor: float)
 signal nado_mudou(nadando: bool)
 
 const ClickNavigation = preload("res://scripts/prototipo_3d/click_navigation.gd")
+const AltoDaLombada = preload("res://scripts/prototipo_3d/lombada_vale.gd")
 const TeclasMovimento = preload("res://scripts/prototipo_3d/teclas_movimento.gd")
 const Mar = preload("res://scripts/prototipo_3d/mar.gd")
 const Camadas = preload("res://scripts/prototipo_3d/camadas.gd")
@@ -513,6 +514,11 @@ func _update_house_hover() -> void:
 		_click_world.set_hovered_house(null)
 		Input.set_default_cursor_shape(Input.CURSOR_ARROW)
 
+## Talento e fé ativa entram juntos; cansaço continua encurtando o passo.
+func multiplicador_do_passo() -> float:
+	return (1.0 + maxf(0.0, Talentos.bonus("passo"))) * Energia.passo()
+
+
 func _physics_process(delta: float) -> void:
 	_update_house_hover()
 	if _acao_golpe_restante > 0.0:
@@ -572,7 +578,7 @@ func _physics_process(delta: float) -> void:
 		speed *= lerpf(1.0, VELOCIDADE_NA_AGUA, clampf(profundidade / (character_height * NADA_A_PARTIR), 0.0, 1.0))
 	# Energia acompanha o vigor do corpo. Abaixo de um quinto do teto,
 	# a regra de cansaço encurta o passo para 62%.
-	speed *= Energia.passo()
+	speed *= multiplicador_do_passo()
 	if _knockback_remaining > 0.0:
 		# Empurrão (ex.: o coveiro): o impulso manda até o fim, sem controle do jogador.
 		_knockback_remaining -= delta
@@ -1451,10 +1457,25 @@ func _definir_vigor(valor: float) -> void:
 	vigor_mudou.emit(_vigor)
 
 
+## A vista se abre no topo físico da Lombada. A distância escolhida pelo
+## jogador continua intacta; a esfera do braço ainda limita esta referência.
+func distancia_da_vista() -> float:
+	if _click_world == null or not is_inside_tree():
+		return _distance
+	var ancoras: Dictionary = _click_world.get("ancoras")
+	if not ancoras.has("Cabra do alto"):
+		return _distance
+	var topo: Vector3 = ancoras["Cabra do alto"]
+	var aqui := global_position
+	if absf(aqui.x - topo.x) > AltoDaLombada.ALTO.x * 0.5 or absf(aqui.z - topo.z) > AltoDaLombada.ALTO.z * 0.5 or absf(aqui.y - topo.y) > 0.6:
+		return _distance
+	return _distance * (1.0 + maxf(0.0, Talentos.bonus("vista_do_alto")))
+
+
 func _apply_camera() -> void:
 	camera_pivot.rotation.y = _yaw
 	spring.rotation.x = _pitch
-	spring.spring_length = _distance
+	spring.spring_length = distancia_da_vista()
 
 
 ## A CÂMERA VAI DIRETO ao ponto que o braço medir, nos próximos ticks: depois
@@ -1475,7 +1496,7 @@ func _posicionar_camera(delta: float) -> void:
 	if camera == null or spring == null:
 		return
 	if _obstaculos_auto != null:
-		_obstaculos_auto.atualizar(_camera_modo == 2, global_position, _distance, delta)
+		_obstaculos_auto.atualizar(_camera_modo == 2, global_position, distancia_da_vista(), delta)
 	_acompanhar_camera(delta)
 	_apply_camera()
 	# O atraso vertical: o corpo subiu `dy` desde o quadro passado, e o pivô
@@ -1491,7 +1512,7 @@ func _posicionar_camera(delta: float) -> void:
 	# O BRAÇO LIVRE, medido agora, na inclinação em que a câmera está: a do jogador
 	# mais a elevação que a parede pediu. Se ele não chega ao mínimo, a câmera sobe
 	# por cima da cabeça em vez de encolher até ela (`_elevacao_que_liberta`).
-	var comprimento := _distance
+	var comprimento := distancia_da_vista()
 	var livre := _braco_livre(_pitch, comprimento)
 	var elevar := 0.0
 	if livre < braco_minimo + BRACO_FOLGA_DA_ELEVACAO:

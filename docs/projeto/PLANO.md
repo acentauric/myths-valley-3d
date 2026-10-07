@@ -5,6 +5,15 @@ raiz. O jogo 2D segue sua própria linha em `acentauric/myths-valley`.
 
 ## O que já roda
 
+A #18 tem inventário dos quinze contratos do 2D e das 32 perguntas de
+contexto 3D em [PORTOES_2D_3D.md](../testes/PORTOES_2D_3D.md). Quatorze
+gates passam; a auditoria estrita de talentos continua reprovando os cinco
+consumidores ausentes, fora da bateria e sem exceções. Passo, lenha, faro
+de cordel e vista no topo da Lombada chegam às ações nativas. Favor conserva
+seu significado histórico de desconto da terra (#9/#22); produção e frações
+dos trabalhadores dependem da #160, reaberta por ausência no HEAD. A #18
+permanece aberta, sem afirmar equivalência completa dos quinze contratos.
+
 A #149 avança parcialmente: passeio não recebe galope por um clipe de
 passada curta, e bichos/aves animam o deslocamento efetivo após colisão ou
 chegada. A caça mantém velocidades e referência de ronda própria. Ritmo,
