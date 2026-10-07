@@ -91,11 +91,11 @@ func _montar() -> void:
 		# O NÚMERO DA TECLA no canto, pequeno. Sem ele a barra é bonita e muda:
 		# o jogador vê dez quadrados e não sabe que são teclas.
 		var numero := Label.new()
+		numero.name = "TeclaDeAtalho"
 		numero.text = "0" if i == 9 else str(i + 1)
-		numero.add_theme_font_size_override("font_size", 11)
-		numero.add_theme_color_override("font_color", APAGADO)
-		numero.position = Vector2(5.0, 2.0)
-		numero.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		preload("res://scripts/prototipo_3d/botao_canto.gd").estilizar_tecla(numero)
+		numero.position = Vector2(4.0, -9.0)
+		numero.z_index = 3
 		espaco.add_child(numero)
 
 		# O que está no espaço: a inicial do item enquanto não há ícone, e a

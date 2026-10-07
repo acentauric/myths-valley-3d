@@ -6,6 +6,13 @@ O teste passa a cobrar Candinha, Filo, Tonho, Zefa, arraial e recursos, incluind
 
 ## Em desenvolvimento — 07/10/2026 (experimento Jev)
 
+- **Atalhos recebem plaquetas próprias (#122).** Letras laterais e números
+  da mão usam creme opaco, tinta escura e borda dourada; ficam fora dos
+  ícones e ignoram o mouse. A coluna reaplica a escala da plaqueta sem mudar
+  o botão. Plaquetas, barra, atalhos e reservas passaram; sobrepor a tecla
+  ao ícone em memória reprova nove verificações. Capturas no vale preservam
+  leitura de dia/noite.
+
 - **O testador reconhece porta, mapa e baú (#159; partes de #146/#154).**
   Segue waypoints perto de obstáculos, atravessa as soleiras com W, responde
   a colisão após dois segundos, fecha mapa por Escape e confere o dono do E.

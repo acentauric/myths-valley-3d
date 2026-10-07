@@ -127,6 +127,10 @@ static func _geometria(canto: PanelContainer, e: float) -> void:
 	var visivel := ICONE_VISIVEL * e
 	icone.scale = Vector2.ONE * (visivel / icone.size.x)
 	icone.position = Vector2.ONE * (interno - visivel) * 0.5
+	var tecla := botao.get_node_or_null("TeclaDeAtalho") as Label
+	if tecla:
+		tecla.scale = Vector2.ONE * e
+		tecla.position = Vector2(-20 * e, 0)
 	var dica := canto.get_meta("dica") as Control
 	dica.offset_right = -MARGEM - lado - 10.0
 	dica.offset_left = dica.offset_right
@@ -139,12 +143,27 @@ static func marcar_atalho(botao: Button, tecla: String) -> Label:
 	var marca := Label.new()
 	marca.name = "TeclaDeAtalho"
 	marca.text = tecla
-	marca.position = Vector2(2, 1)
-	marca.add_theme_font_size_override("font_size", 11)
-	marca.add_theme_color_override("font_color", Identidade.OURO)
-	marca.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.95))
-	marca.add_theme_constant_override("shadow_offset_x", 1)
-	marca.add_theme_constant_override("shadow_offset_y", 1)
-	marca.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	estilizar_tecla(marca)
+	marca.scale = Vector2.ONE * escala()
+	marca.position = Vector2(-20 * escala(), 0)
 	botao.add_child(marca)
 	return marca
+
+
+## Plaqueta de tecla comum aos atalhos e números da mão.
+static func estilizar_tecla(marca: Label) -> void:
+	var fundo := StyleBoxFlat.new()
+	fundo.bg_color = Color("f3e5bb")
+	fundo.border_color = Color("806734")
+	fundo.set_border_width_all(1)
+	fundo.set_corner_radius_all(3)
+	fundo.content_margin_left = 3
+	fundo.content_margin_right = 3
+	marca.add_theme_stylebox_override("normal", fundo)
+	marca.add_theme_font_override("font", Identidade.fonte_numeros(600))
+	marca.add_theme_font_size_override("font_size", 10)
+	marca.add_theme_color_override("font_color", Color("1a241f"))
+	marca.custom_minimum_size = Vector2(16, 14)
+	marca.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	marca.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	marca.mouse_filter = Control.MOUSE_FILTER_IGNORE

@@ -38,6 +38,10 @@ Todas as cadeias de missões do diretório de dados e os recursos declaram cober
 
 ## Próxima tarefa
 
+#122 tem plaquetas comuns para os atalhos e a mão, com contraste mínimo 7:1,
+sem cobrir ícones nem ampliar a área do botão. Plaquetas, barra, atalhos e
+reservas passaram; a falsificação de sobreposição reprova nove verificações.
+
 A fatia de navegação/telemetria de #159 tem 44 testes Python e portão de mapa,
 com sessão real chegando à etapa 10/16 após porta, baú e lavoura. A campanha
 sem limite continua em perfil isolado. #159/#146/#154 permanecem abertas
