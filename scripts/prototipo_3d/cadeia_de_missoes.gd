@@ -1068,6 +1068,14 @@ func posicao_do_passo(indice: int) -> Vector3:
 		return Vector3.ZERO
 	var passo: Dictionary = passos[indice]
 	var meta: Dictionary = passo.get("meta", {})
+	# Entrar numa casa pede a passagem da porta, e nao o centro da casca.
+	var evento_da_entrada := str(meta.get("evento", ""))
+	if evento_da_entrada.begins_with("entrou:") and is_inside_tree():
+		var interiores := get_tree().get_first_node_in_group("interiores")
+		if interiores != null:
+			var sala: Node3D = interiores.sala_de(evento_da_entrada.trim_prefix("entrou:"))
+			if sala != null:
+				return sala.soleira_de_fora()
 	var chave_alvo := "%d:%s" % [indice, JSON.stringify(meta)]
 	if chave_alvo != _chave_do_alvo_material:
 		_chave_do_alvo_material = chave_alvo

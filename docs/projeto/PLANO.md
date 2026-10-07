@@ -5,6 +5,13 @@ raiz. O jogo 2D segue sua própria linha em `acentauric/myths-valley`.
 
 ## O que já roda
 
+A #154 aponta o passo de entrada à soleira externa real, em vez do centro
+da casa; Pedro espera ao lado da passagem. Os portões casa, casa_procedural
+e missões passam. O mutante que restaura o alvo na parede reprova, e a
+captura `scratch/casa154/porta.png` confirma o marcador diante da porta.
+As travessias automáticas por controles normais já constam na campanha
+V17, incluindo a saída aos 423,80 s; o replanejamento segue na #159.
+
 A #108 recebe ícones nas abas/linhas do J, Cormorant e ingredientes ×n
 por receita, apagados individualmente quando faltam; a seleção mostra a
 tecla de interação configurada. Clique sobre o custo chega à receita e

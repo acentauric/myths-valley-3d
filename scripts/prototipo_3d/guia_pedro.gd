@@ -429,6 +429,12 @@ func _destino_da_conducao(cadeia: Node = null) -> Vector3:
 	var destino: Vector3 = quem.posicao_do_passo(quem.missao)
 	var interiores := get_tree().get_first_node_in_group("interiores")
 	if interiores != null:
+		var evento := str(quem.passo_atual().get("meta", {}).get("evento", ""))
+		if evento.begins_with("entrou:"):
+			var sala: Node3D = interiores.sala_de(evento.trim_prefix("entrou:"))
+			if sala != null:
+				var espera: Vector3 = sala.lugar_de_esperar_fora()
+				return terreno.ground_position(espera, 0.05) if terreno != null else espera
 		var sala_do_destino: String = interiores.contem(destino)
 		if sala_do_destino in ESPERA_FORA or sala_do_destino in CONDUZ_ATE_A_PORTA or interiores.espera_fora(sala_do_destino):
 			var espera: Vector3 = interiores.sala_de(sala_do_destino).lugar_de_esperar_fora()

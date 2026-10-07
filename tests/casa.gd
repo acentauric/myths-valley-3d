@@ -99,6 +99,16 @@ func _run() -> void:
 
 	# --- 1. DENTRO DA CASA -----------------------------------------------------
 	var sala: Node3D = interiores.sala_de("casa")
+	var cadeia: Node = vale.pedro._cadeia
+	var entrada: Vector3 = cadeia.posicao_do_passo(5)
+	if "--alvo-na-parede" in OS.get_cmdline_user_args():
+		entrada = world.ancoras["Casa de taipa"]
+	_conferir(entrada.distance_to(sala.soleira_de_fora()) < 0.05, "marcador da entrada aponta a soleira real")
+	var passo_anterior: int = cadeia.missao
+	cadeia.missao = 5
+	var espera_pedro: Vector3 = vale.pedro._destino_da_conducao(cadeia)
+	cadeia.missao = passo_anterior
+	_conferir(Vector2(espera_pedro.x - entrada.x, espera_pedro.z - entrada.z).length() > 0.6, "Pedro espera ao lado sem bloquear a porta")
 	_conferir(sala != null, "a casa herdada não tem cômodo")
 	if sala == null:
 		_fechar()

@@ -6,6 +6,11 @@ O teste passa a cobrar Candinha, Filo, Tonho, Zefa, arraial e recursos, incluind
 
 ## Em desenvolvimento — 07/10/2026 (experimento Jev)
 
+- #154: o marcador da entrada usa a soleira externa do cômodo, sem apontar
+  à janela ou ao centro da casa. Pedro mantém sua espera ao lado da porta.
+  Casa nos dois estilos e missões passam; alvo na parede produz a falha
+  esperada. Captura do marcador real conferida, sem erro de script.
+
 - #159 (parcial): após o chamado da fazenda na cama, o testador sai pela
   soleira antes de acompanhar Pedro. Na V17, a saída por movimento normal
   concluiu aos 423,80 s, e a condução seguiu fora da casa. 85 testes Python
