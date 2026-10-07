@@ -1098,6 +1098,9 @@ func narrar(nome_audio: String, texto: String, pedido: Dictionary = {}) -> void:
 ## acabam em `_parar_a_fala`. Sem a fila (um portão que monta um morador só),
 ## fala na hora, como sempre falou.
 func _pedir_fala(fala: Dictionary) -> void:
+	for campo in ["texto", "inteira"]:
+		if fala.has(campo):
+			fala[campo] = Jogo.texto(str(fala[campo]))
 	fala["falante"] = self
 	if not fala.has("segundos"):
 		fala["segundos"] = FilaDeFalas.duracao(str(fala.get("texto", "")), _tempo_da_voz(fala.get("voz")))

@@ -5,6 +5,11 @@ raiz. O jogo 2D segue sua própria linha em `acentauric/myths-valley`.
 
 ## O que já roda
 
+A #56 está concluída (07/10/2026): vaga nova pede o nome antes da
+travessia. Confirmação aplica o nome após a restauração de fábrica;
+cancelar não inicia a partida. O save já guarda esse campo e as falas
+resolvem `{jogador}` na apresentação, na caixa e nos balões.
+
 A #13 está concluída (07/10/2026): presentes e conversas alteram a
 afinidade e os sete moradores originais reagem ao vínculo na conversa
 cotidiana, alternando com suas falas gravadas. As respostas sociais novas

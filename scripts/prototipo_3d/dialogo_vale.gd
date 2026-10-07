@@ -26,7 +26,7 @@ extends CanvasLayer
 ##   `terminou` (`prototype._ao_abrir_a_fala`), do mesmo jeito que para atrás
 ##   das telas.
 ## - SEM `pedir_texto`. O modo de digitar nome usa o `TemaIntro`, que é o tema
-##   do menu do 2D e não atravessou, e o vale não pede nome digitado.
+##   do menu do 2D e não atravessou. O nome é pedido na abertura do vale.
 ## - A CENA VIROU CÓDIGO. A `dialogo.tscn` aponta para o script por caminho do
 ##   outro projeto; os nós são os mesmos, montados em `_montar`.
 ## - O RODAPÉ MORA EM `data/dialogo.json`, com as palavras do 2D: texto de
@@ -143,7 +143,7 @@ func falar(nome: String, falas: Array, vozes: Array = []) -> void:
 		return
 	await _esperar_a_vez()
 	_abrir(nome, Modo.FALA)
-	_falas = falas
+	_falas = Jogo.falas(falas)
 	_vozes = vozes
 	_indice = 0
 	_mostrar_fala()
@@ -161,7 +161,7 @@ func voz_tocando() -> String:
 func perguntar(nome: String, pergunta: String) -> bool:
 	await _esperar_a_vez()
 	_abrir(nome, Modo.PERGUNTA)
-	_falas = [pergunta]
+	_falas = [Jogo.texto(pergunta)]
 	_vozes = []
 	_indice = 0
 	# NASCE SEM ESCOLHA FEITA. `_escolha` continua em "Sim" só como valor de

@@ -1,0 +1,14 @@
+{
+  "titulo": "Como você se chama?",
+  "titulo_en": "What is your name?",
+  "titulo_es": "¿Cómo te llamas?",
+  "ajuda": "Este é o nome que o povo do vale vai conhecer. Você pode voltar sem começar a partida.",
+  "ajuda_en": "This is the name the people of the valley will know. You can go back without starting the game.",
+  "ajuda_es": "Este es el nombre que conocerá la gente del valle. Puedes volver sin empezar la partida.",
+  "campo": "Seu nome",
+  "campo_en": "Your name",
+  "campo_es": "Tu nombre",
+  "erro": "Digite um nome para continuar.",
+  "erro_en": "Enter a name to continue.",
+  "erro_es": "Escribe un nombre para continuar."
+}

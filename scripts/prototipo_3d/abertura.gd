@@ -1783,12 +1783,52 @@ func _restaurar_o_ponto(slot: int, ponto: Dictionary, botao: Button) -> void:
 
 ## Vaga nova: a partida começa do zero ali, pela travessia. Vaga ocupada: o
 ## vale abre e carrega o que ela guarda (ver `prototype._retomar_a_partida`).
-func _abrir_vaga(slot: int, nova: bool) -> void:
+func _abrir_vaga(slot: int, nova: bool, nome: String = "") -> void:
+	if nova and nome.strip_edges() == "":
+		_pedir_nome(slot)
+		return
 	Partida.comecar(slot, nova)
 	if nova:
+		Jogo.nome_jogador = nome.strip_edges().left(Partida.NOME_MAXIMO)
 		_intro()
 	else:
 		_start_game()
+
+
+## O nome de quem joga é distinto do nome editável da vaga. Cancelar não
+## começa nem limpa a partida; só a confirmação restaura o estado de fábrica.
+func _pedir_nome(slot: int) -> void:
+	_clear()
+	_place_modal(Vector2(560, 310))
+	var dados: Dictionary = Jogo.dados("res://data/nome_jogador.json")
+	_modal_header(str(IdiomaMenu.campo(dados, "titulo")), _vagas)
+	_label(str(IdiomaMenu.campo(dados, "ajuda")), 15)
+	var campo := LineEdit.new()
+	campo.name = "NomeJogador"
+	campo.placeholder_text = str(IdiomaMenu.campo(dados, "campo"))
+	campo.max_length = Partida.NOME_MAXIMO
+	campo.custom_minimum_size.y = 44
+	content.add_child(campo)
+	var erro := _label(str(IdiomaMenu.campo(dados, "erro")), 14)
+	erro.hide()
+	var feito := [false]
+	var confirmar := func() -> void:
+		if feito[0]: return
+		var nome := campo.text.strip_edges()
+		if nome == "":
+			erro.show()
+			campo.grab_focus()
+			return
+		feito[0] = true
+		_abrir_vaga(slot, true, nome)
+	var botao := _button("COMEÇAR AQUI", confirmar)
+	botao.name = "ComecarPartida"
+	campo.text_submitted.connect(func(_texto: String) -> void: confirmar.call())
+	campo.gui_input.connect(func(evento: InputEvent) -> void:
+		if evento.is_action_pressed("ui_cancel"):
+			campo.accept_event()
+			_vagas())
+	campo.grab_focus()
 
 
 ## EXPLORAR é o passeio livre: sem vaga, não grava nada e não apaga nada.
@@ -1950,7 +1990,7 @@ func _next_line() -> void:
 	if line_index >= lines.size():
 		_start_game()
 		return
-	caption.text = str(lines[line_index])
+	caption.text = Jogo.texto(str(lines[line_index]))
 	chapter.text = ["A partida", "A travessia", "A chegada"][mini(line_index / 3, 2)]
 	# Cada legenda tem o seu trecho de narração (o mesmo em todos os idiomas: a voz é
 	# em português). A legenda dura o trecho e um respiro; sem o áudio, o tempo de leitura.

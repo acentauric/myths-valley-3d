@@ -6,6 +6,12 @@ O teste passa a cobrar Candinha, Filo, Tonho, Zefa, arraial e recursos, incluind
 
 ## Em desenvolvimento — 07/10/2026 (experimento Jev)
 
+- **A partida começa pelo nome do viajante (#56).** Vaga nova pergunta
+  o nome antes de iniciar; cancelar ou deixar vazio preserva a partida.
+  O save guarda e restaura o nome. Travessia, caixa de diálogo e balões
+  substituem `{jogador}`. Nome, escolha e idiomas passaram; retirar a
+  pergunta reprova. Captura do formulário conferida.
+
 - **Os sete moradores reconhecem o vínculo (#13).** A conversa pelo E
   alterna respostas de conhecido ou amigo com a prosa e as vozes originais,
   nos três idiomas. Missões e avisos mantêm prioridade; presentes e
