@@ -110,6 +110,8 @@ var _house_info_panel: Panel
 var _house_info_label: Label
 var _house_info_heading: Label
 var _clock_label: Label
+var _clock_panel: Panel
+var _icones_medidores: Dictionary = {}
 var _menu_confirm = null	# caixa_de_pergunta.gd
 var _map_icon	# hud_icon.gd
 var _settings_icon	# hud_icon.gd
@@ -283,6 +285,8 @@ func _ready() -> void:
 
 	# Relógio do vale: só a hora e o período do dia.
 	var clock_panel := _panel(Color(0.055, 0.085, 0.075, 0.82))
+	_clock_panel = clock_panel
+	clock_panel.name = "RelogioCompacto"
 	_root.add_child(clock_panel)
 	clock_panel.add_to_group("obstaculos_do_hud")
 	clock_panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP)
@@ -290,15 +294,30 @@ func _ready() -> void:
 	clock_panel.offset_right = 70
 	clock_panel.offset_top = 18
 	clock_panel.offset_bottom = 72
-	_clock_label = _label("", 15, GOLD)
+	_clock_label = _label("", 12, GOLD)
 	clock_panel.add_child(_clock_label)
 	_clock_label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_clock_label.offset_left = 26
+	var mostrador := ClockIcon.new()
+	clock_panel.add_child(mostrador)
+	mostrador.position = Vector2(7, 14)
+	mostrador.size = Vector2(20, 20)
+	mostrador.set_running(true)
 	_clock_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_clock_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 
 	_criar_barra_de_vida()
 	_criar_barra_de_folego()
 	_criar_barra_de_stamina()
+	for dado in [[barra_vida, "vida"], [barra_folego, "reserva"], [barra_stamina, "vigor"]]:
+		var icone = HudIcon.new().configurar(dado[1])
+		dado[0].add_child(icone)
+		icone.position = Vector2(2, 0)
+		icone.scale = Vector2.ONE * 0.75
+		icone.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		_icones_medidores[dado[1]] = icone
+	_layout_medidores()
+	get_viewport().size_changed.connect(_layout_medidores)
 
 	# A BARRA DE MÃO ENTRA POR ÚLTIMO, e é o conserto de "não dá pra ver".
 	#
@@ -515,6 +534,7 @@ func _atualizar_folego(_valor: float = 0.0) -> void:
 		return
 	barra_folego.max_value = energia.maximo()
 	barra_folego.value = energia.atual
+	barra_folego.tooltip_text = str(IdiomaMenu.campo(_textos_medidores, "reserva"))
 	var cansado: bool = energia.cansado()
 	_folego_texto.text = str(roundi(energia.atual))
 	if cansado:
@@ -555,8 +575,29 @@ func _criar_barra_de_stamina() -> void:
 	_atualizar_vigor()
 
 
+func _layout_medidores() -> void:
+	if not is_instance_valid(_clock_panel) or not is_instance_valid(barra_stamina):
+		return
+	var largura := _root.size.x
+	# Missao termina em 378; atalhos comecam a 78 da borda direita.
+	var inicio := clampf(largura * 0.5 - 105.0, 390.0, maxf(390.0, largura - 310.0))
+	_clock_panel.set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT)
+	_clock_panel.position = Vector2(inicio, 18)
+	_clock_panel.size = Vector2(100, 52)
+	var indice := 0
+	for barra: ProgressBar in [barra_vida, barra_folego, barra_stamina]:
+		barra.set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT)
+		barra.position = Vector2(inicio + 108, 18 + indice * 20)
+		barra.size = Vector2(160, 18)
+		indice += 1
+	for texto: Label in [_vida_texto, _folego_texto, _stamina_texto]:
+		texto.offset_left = 22
+		texto.add_theme_font_size_override("font_size", 10)
+
+
 func _texto_medidor(chave: String, barra: ProgressBar) -> String:
-	return "%s %d/%d" % [IdiomaMenu.campo(_textos_medidores, chave), roundi(barra.value), roundi(barra.max_value)]
+	barra.tooltip_text = str(IdiomaMenu.campo(_textos_medidores, chave))
+	return "%d/%d" % [roundi(barra.value), roundi(barra.max_value)]
 
 
 ## O vigor vem do jogador; sem jogador (o HUD sozinho num portão), a barra fica cheia.

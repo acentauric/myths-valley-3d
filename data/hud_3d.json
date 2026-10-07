@@ -1,10 +1,23 @@
 {
   "medidores": {
-    "vida": "Vida", "vida_en": "Health", "vida_es": "Salud",
-    "vigor": "Vigor", "vigor_en": "Stamina", "vigor_es": "Resistencia",
-    "folego": "Fôlego", "folego_en": "Breath", "folego_es": "Aliento",
-    "cansado": "cansado", "cansado_en": "tired", "cansado_es": "agotado",
-    "afogamento": "afogamento", "afogamento_en": "drowning", "afogamento_es": "ahogamiento"
+    "vida": "Vida",
+    "vida_en": "Health",
+    "vida_es": "Salud",
+    "vigor": "Vigor",
+    "vigor_en": "Stamina",
+    "vigor_es": "Resistencia",
+    "folego": "Fôlego",
+    "folego_en": "Breath",
+    "folego_es": "Aliento",
+    "cansado": "cansado",
+    "cansado_en": "tired",
+    "cansado_es": "agotado",
+    "afogamento": "afogamento",
+    "afogamento_en": "drowning",
+    "afogamento_es": "ahogamiento",
+    "reserva": "Reserva do dia",
+    "reserva_en": "Daily energy",
+    "reserva_es": "Reserva del día"
   },
   "botao_missoes": {
     "rotulo": "Missões e objetivos",
@@ -12,8 +25,12 @@
     "rotulo_es": "Misiones y objetivos"
   },
   "mare": {
-    "enchente": "maré enchendo", "enchente_en": "tide rising", "enchente_es": "marea subiendo",
-    "vazante": "maré vazando", "vazante_en": "tide falling", "vazante_es": "marea bajando",
+    "enchente": "maré enchendo",
+    "enchente_en": "tide rising",
+    "enchente_es": "marea subiendo",
+    "vazante": "maré vazando",
+    "vazante_en": "tide falling",
+    "vazante_es": "marea bajando",
     "dica_enchente": "A água está subindo rumo à preamar: a praia vai sumindo e o mar fundo volta.",
     "dica_enchente_en": "The water is rising toward high tide: the beach is disappearing and the deep sea is coming back.",
     "dica_enchente_es": "El agua sube hacia la pleamar: la playa va desapareciendo y vuelve el mar hondo.",

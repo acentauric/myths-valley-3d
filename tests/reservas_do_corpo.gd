@@ -109,14 +109,14 @@ func _run() -> void:
 	_conferir(hud._stamina_preenchimento.bg_color == hud.COR_MEDIDOR_BAIXO and not hud._stamina_texto.text.contains("cansado"),
 		"vigor baixo não ficou âmbar, ou roubou a palavra da reserva: '%s'" % hud._stamina_texto.text)
 	jogador.definir_vigor(100.0)
-	_conferir(hud._stamina_preenchimento.bg_color == hud.COR_VIGOR and hud._stamina_texto.text.begins_with("Vigor "),
+	_conferir(hud._stamina_preenchimento.bg_color == hud.COR_VIGOR and hud._stamina_texto.text == "100/100",
 		"a barra de vigor não voltou ao verde com o nome: '%s'" % hud._stamina_texto.text)
 
 	# --- 2. NA ÁGUA, A BARRA DO MEIO VIRA O FÔLEGO DO NADO --------------------
 	var reserva_antes: float = energia.atual
 	jogador._definir_nado(true)
 	_conferir(jogador.is_swimming(), "o corpo não entrou no nado")
-	_conferir(hud.barra_folego.value == 100.0 and hud._folego_texto.text.begins_with("Fôlego ")
+	_conferir(hud.barra_folego.value == 100.0 and hud._folego_texto.text == "100/100"
 		and hud._folego_preenchimento.bg_color == hud.COR_FOLEGO,
 		"nadando, a barra do meio não virou o fôlego do nado: '%s'" % hud._folego_texto.text)
 	var timer_afogamento: Timer = jogador.get_node("DanoSemFolego")
@@ -180,7 +180,7 @@ func _run() -> void:
 	_conferir(jogador.folego_atual() == jogador.folego_maximo(), "quem acordou em casa não voltou respirando")
 	_conferir(is_equal_approx(hud.barra_folego.value, energia.atual) and hud._folego_texto.text == str(roundi(energia.atual)),
 		"fora da água a barra do meio não voltou à reserva: '%s'" % hud._folego_texto.text)
-	_conferir(hud.barra_vida.value == vida.atual and hud._vida_texto.text.begins_with("Vida "), "a barra de vida perdeu valor ou descrição")
+	_conferir(hud.barra_vida.value == vida.atual and hud._vida_texto.text.contains("/"), "a barra de vida perdeu valor ou descrição")
 	var vigor: float = jogador.vigor_atual()
 	var saude_antes: float = vida.atual
 	var reserva: float = energia.atual
@@ -235,15 +235,15 @@ func _conferir_apresentacao(hud, jogador) -> void:
 		hud._atualizar_vida()
 		hud._atualizar_vigor()
 		hud._ao_mudar_o_nado(false)
-		_conferir(hud._vida_texto.text.begins_with(rotulos[indice][0] + " "), "a vida perdeu o nome traduzido: '%s'" % hud._vida_texto.text)
-		_conferir(hud._stamina_texto.text.begins_with(rotulos[indice][1] + " "), "o vigor perdeu o nome traduzido: '%s'" % hud._stamina_texto.text)
+		_conferir(hud.barra_vida.tooltip_text == rotulos[indice][0] and hud._vida_texto.text.contains("/"), "a vida perdeu o nome traduzido: '%s'" % hud._vida_texto.text)
+		_conferir(hud.barra_stamina.tooltip_text == rotulos[indice][1] and hud._stamina_texto.text.contains("/"), "o vigor perdeu o nome traduzido: '%s'" % hud._stamina_texto.text)
 		_conferir(hud._folego_texto.text.is_valid_int(), "em terra a barra do meio tem mais que o número: '%s'" % hud._folego_texto.text)
 		hud._ao_mudar_o_nado(true)
-		_conferir(hud._folego_texto.text.begins_with(rotulos[indice][2] + " "), "nadando, a barra do meio não diz o fôlego traduzido: '%s'" % hud._folego_texto.text)
+		_conferir(hud.barra_folego.tooltip_text == rotulos[indice][2] and hud._folego_texto.text.contains("/"), "nadando, a barra do meio não diz o fôlego traduzido: '%s'" % hud._folego_texto.text)
 		var textos: Array[Label] = [hud._vida_texto, hud._folego_texto, hud._stamina_texto]
 		for texto in textos:
 			var fonte: Font = texto.get_theme_font("font")
-			_conferir(fonte.get_string_size(texto.text, HORIZONTAL_ALIGNMENT_LEFT, -1, 11).x <= 220.0, "descrição não cabe na barra: '%s'" % texto.text)
+			_conferir(fonte.get_string_size(texto.text, HORIZONTAL_ALIGNMENT_LEFT, -1, 10).x <= 138.0, "descrição não cabe na barra: '%s'" % texto.text)
 		hud._ao_mudar_o_nado(false)
 	idioma.definir(0)
 	hud._atualizar_vida()
@@ -257,10 +257,20 @@ func _conferir_apresentacao(hud, jogador) -> void:
 	for tamanho in [Vector2i(1280, 720), Vector2i(800, 600)]:
 		root.size = tamanho
 		await process_frame
+		if "--falsificar-layout" in OS.get_cmdline_user_args():
+			hud._clock_panel.size = Vector2(140, 54)
+			hud.barra_vida.position.x = hud._clock_panel.position.x
+		var relogio: Rect2 = hud._clock_panel.get_global_rect()
+		_conferir(relogio.size.x < 140 and relogio.size.y < 54, "relogio nao foi compactado")
+		_conferir(not relogio.intersects(hud._heading.get_global_rect()), "relogio cobre a missao")
+		_conferir(hud._icones_medidores.size() == 3, "faltam os tres icones do corpo")
 		var anterior := Rect2()
 		for barra: ProgressBar in [hud.barra_vida, hud.barra_folego, hud.barra_stamina]:
 			var quadro := barra.get_global_rect()
-			_conferir(Rect2(Vector2.ZERO, Vector2(tamanho)).encloses(quadro), "medidor saiu da janela")
+			_conferir(quadro.position.x >= relogio.end.x and not quadro.intersects(hud._heading.get_global_rect()), "recursos nao ficam a direita do relogio sem cobrir missao")
+			# O projeto usa canvas_items: os retângulos estão no viewport lógico,
+			# que é escalado para a janela física solicitada acima.
+			_conferir(root.get_visible_rect().encloses(quadro), "medidor saiu da janela")
 			_conferir(barra.mouse_filter == Control.MOUSE_FILTER_IGNORE, "medidor captura cliques do mundo")
 			if anterior.size != Vector2.ZERO:
 				_conferir(quadro.position.x == anterior.position.x and quadro.size == anterior.size and quadro.position.y >= anterior.end.y, "medidores não ficam alinhados e separados")

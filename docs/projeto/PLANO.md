@@ -38,6 +38,11 @@ Todas as cadeias de missões do diretório de dados e os recursos declaram cober
 
 ## Próxima tarefa
 
+#131 foi verificada em reservas_do_corpo, folego, matriz_dos_baloes e idiomas,
+mais capturas de dia/noite. Os ícones substituem nomes persistentes nos
+medidores; números e avisos continuam. A escala individual de #140 e a
+revisão das falas antigas do tutorial continuam tarefas próprias.
+
 #136 foi verificada em casa, casa_procedural e efeitos_no_vale, com captura
 diurna/noturna e falsificação da textura. O material reutiliza a cal
 envelhecida existente; não houve geração paga de asset.

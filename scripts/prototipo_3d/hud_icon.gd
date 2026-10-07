@@ -22,6 +22,19 @@ func _draw() -> void:
 	var tinta := Color(0.93, 0.96, 0.92)
 	var ouro := Color("e2c47f")
 	match tipo:
+		"vida":
+			# Coração: dois lobos e ponta, legível sem depender de fonte.
+			draw_circle(Vector2(8, 8), 4.5, tinta)
+			draw_circle(Vector2(16, 8), 4.5, tinta)
+			draw_colored_polygon(PackedVector2Array([Vector2(3.5, 9), Vector2(20.5, 9), Vector2(12, 21)]), tinta)
+		"reserva":
+			# Bateria: reserva diária que não retorna sozinha.
+			draw_rect(Rect2(4, 7, 16, 12), tinta, false, 1.8)
+			draw_rect(Rect2(9, 4, 6, 3), tinta)
+			draw_rect(Rect2(7, 10, 10, 6), tinta)
+		"vigor":
+			# Raio: esforço curto que se recupera.
+			draw_colored_polygon(PackedVector2Array([Vector2(14, 2), Vector2(5, 13), Vector2(11, 13), Vector2(9, 22), Vector2(20, 10), Vector2(14, 10)]), tinta)
 		"externo":
 			# Link externo: caixa aberta no canto e seta saindo para fora.
 			var ouro_link := ouro if not ativo else Color("f5e3b3")

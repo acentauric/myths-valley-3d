@@ -6,6 +6,14 @@ O teste passa a cobrar Candinha, Filo, Tonho, Zefa, arraial e recursos, incluind
 
 ## Em desenvolvimento — 07/10/2026 (experimento Jev)
 
+- **Relógio e corpo ficam compactos (#131).** O relógio tem mostrador e
+  painel de 100 × 52; os três medidores de 160 × 18 ficam à direita, com
+  coração, bateria e raio. Os números permanecem, assim como cores de
+  veneno, cansaço e esforço, troca pelo fôlego do nado e alertas traduzidos.
+  A posição considera missão e atalhos. Reservas, fôlego, matriz e idiomas
+  passaram; capturas claras/escuras foram conferidas e o layout antigo
+  injetado em memória reprova dez verificações de tamanho e posição.
+
 - **Paredes internas recebem cal envelhecida (#136).** O estilo Tripo usa
   a textura já catalogada, com projeção triplanar no mundo e acabamento
   fosco. Portas, colisões e o legado procedural preservam sua geometria.
