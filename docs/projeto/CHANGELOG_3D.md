@@ -6,6 +6,10 @@ O teste passa a cobrar Candinha, Filo, Tonho, Zefa, arraial e recursos, incluind
 
 ## Em desenvolvimento — 07/10/2026 (experimento Jev)
 
+- #33 concluída: a prévia geográfica foi instanciada e renderizada com o
+  editor ativo; menu 3D e vale geram uma única terra no runtime. Dois gates
+  complementam a verificação de recursos; mutante sem composição reprova.
+
 - #1 concluída por auditoria: 16 passos em dados, enredo/dia a dia, diário
   e acompanhamento integrados ao HUD e à bússola. A decisão posterior do
   autor pelo mecanismo nativo substitui o checklist antigo; cinco gates

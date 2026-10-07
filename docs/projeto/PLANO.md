@@ -525,3 +525,10 @@ acompanhamento e integração do HUD/bússola. O mecanismo nativo segue a decis�
 posterior do autor de substituir o checklist do 2D. Cadeia, painel, regras,
 tarefa e idiomas verdes; V21 complementa com navegação real até o fim da chegada.
 Evidências e limites em `docs/testes/MISSOES_NAS_ANCORAS.md`.
+
+### 07/10/2026: prévia geográfica comprovada (#33, concluída)
+
+Host e composição carregam uma malha persistida sob editor_hint real, com
+captura renderizada. No runtime, menu 3D e vale geram somente uma terra e
+removem o host. Gates verdes e mutante sem prévia reprovado; comando de
+atualização e limites documentados em `docs/testes/TERRENO_NO_EDITOR.md`.
