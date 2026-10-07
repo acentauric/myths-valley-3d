@@ -6,6 +6,12 @@ O teste passa a cobrar Candinha, Filo, Tonho, Zefa, arraial e recursos, incluind
 
 ## Em desenvolvimento — 07/10/2026 (experimento Jev)
 
+- #53: `licoes_de_luta` verifica as filas vivas do Pedro e Cosme, o ensino
+  no anúncio, a prática pelos sinais de combate, fé/mesa da folha e a meta
+  de caititus. Verde em 48 s; `--sem-licao` reprova os quatro golpes, sem
+  erro de script. A implementação já existia; o contexto da issue estava
+  desatualizado. A mecânica dos golpes continua coberta por `luta`.
+
 - #71: decisão de manter os 39 símbolos PixelLab já existentes para a teia,
   encerrando a condição provisória. Origem explicitada nos créditos e decisão
   em `ASSETS_TRIPO.md`; a identidade visual do 3D continua na apresentação da

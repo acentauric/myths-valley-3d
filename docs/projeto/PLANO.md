@@ -5,6 +5,12 @@ raiz. O jogo 2D segue sua própria linha em `acentauric/myths-valley`.
 
 ## O que já roda
 
+A #53 está concluída (07/10/2026): o novo portão das filas reais comprova
+Pedro/golpe forte, Cosme/ginga/meia-lua/rasteira, mesa da folha e fé como
+pré-condições e suspensão ao migrar de fé. Os sinais de Luta cumprem as quatro
+práticas e a conta de dez caititus abre a meta do Pedro. Retirar `ensina` do
+anúncio reprova as quatro lições; não foi necessária nova implementação.
+
 A #71 está concluída (07/10/2026): os 39 ícones PixelLab existentes permanecem
 na teia, com origem documentada. A identidade do 3D fica em molduras, conexões,
 tipografia e ficha. Não há lote novo de arte ou consumo de créditos; o portão
