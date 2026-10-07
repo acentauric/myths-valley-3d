@@ -5,6 +5,14 @@ raiz. O jogo 2D segue sua própria linha em `acentauric/myths-valley`.
 
 ## O que já roda
 
+A #164 recebe os limites da fazenda, piso contínuo e juntas curtas da ponte,
+leitura de navegação sem corrimãos e nado pela lâmina local. A rota física
+isolada chega ao portão; retirar juntas reproduz queda, restaurar limites
+antigos reprova sete verificações. Rio grande, colisões e ponte passam;
+a fixture da ponte aguarda naturalmente o fim da fala conforme #121.
+Ainda falta a chegada na campanha V19, portanto #164/#159 permanecem abertas.
+Evidência em [NAVEGACAO_FAZENDA.md](../testes/NAVEGACAO_FAZENDA.md).
+
 A #154 aponta o passo de entrada à soleira externa real, em vez do centro
 da casa; Pedro espera ao lado da passagem. Os portões casa, casa_procedural
 e missões passam. O mutante que restaura o alvo na parede reprova, e a

@@ -614,6 +614,44 @@ static func modo_mapa(arvore: SceneTree, mapa: bool) -> void:
 	PecasDistantes.modo_mapa(arvore, mapa)
 
 
+## Piso medido no GLB: centro a 0,31 u sobre a origem, útil por 7 × 1 u.
+## A malha preserva corrimãos e estacas; esta sola une as tábuas e suaviza
+## apenas as duas juntas de 0,3 u com o chão, sem passagem ao lado da ponte.
+static func _apoiar_tabuleiro(node: Node3D, parent: Node, origin: Vector3, bounds: AABB, yaw: float) -> void:
+	var fator := maxf(bounds.size.x, bounds.size.z) / 9.0
+	var alto := 1.06 * fator - float(AjustesConteudo.peca("ponte").get("afundar", 0.75))
+	var metade := 3.5 * fator
+	var fim := 4.8 * fator
+	node.set_meta("piso_do_tabuleiro", origin.y + alto)
+	var eixo := Vector3(cos(yaw), 0, -sin(yaw)) if bounds.size.x >= bounds.size.z else Vector3(sin(yaw), 0, cos(yaw))
+	var corpo := StaticBody3D.new()
+	corpo.name = "TabuleiroContinuo"
+	node.add_child(corpo)
+	corpo.global_transform = Transform3D(Basis(eixo, Vector3.UP, eixo.cross(Vector3.UP)), origin + Vector3.UP * (alto - 0.1 * fator))
+	var forma := CollisionShape3D.new()
+	var caixa := BoxShape3D.new()
+	caixa.size = Vector3(7, 0.2, 1) * fator
+	forma.shape = caixa
+	corpo.add_child(forma)
+	if not parent.has_method("ground_height_at"):
+		return
+	for sinal: float in [-1.0, 1.0]:
+		var ponta: Vector3 = origin + eixo * sinal * fim
+		var piso := float(parent.ground_height_at(ponta)) + 0.07 * fator
+		var pontos := PackedVector3Array()
+		for x: float in [metade, fim]:
+			var y := 0.1 * fator if x == metade else piso - corpo.global_position.y
+			for z: float in [-0.5 * fator, 0.5 * fator]:
+				pontos.append(Vector3(x * sinal, y, z))
+				pontos.append(Vector3(x * sinal, y - 0.2 * fator, z))
+		var rampa := CollisionShape3D.new()
+		rampa.name = "JuntaDaCabeceira"
+		var cunha := ConvexPolygonShape3D.new()
+		cunha.points = pontos
+		rampa.shape = cunha
+		corpo.add_child(rampa)
+
+
 ## Colisão simples para um modelo instanciado por `instanciar`: cilindro no tronco ou caixa.
 ## Devolve o corpo criado (null quando a peça não leva corpo próprio), para quem
 ## precisa achá-lo depois — o cômodo de dentro tira a caixa inteira da casa.
@@ -649,6 +687,8 @@ static func colisao(chave: String, node: Node3D, parent: Node, origin: Vector3, 
 		# A superfície caminhável acompanha a malha importada da ponte e do píer.
 		for child in node.find_children("*", "MeshInstance3D", true, false):
 			(child as MeshInstance3D).create_trimesh_collision()
+		if chave == "ponte":
+			_apoiar_tabuleiro(node, parent, origin, bounds, yaw)
 		_laje_da_camera(chave, spec, bounds, parent, origin, yaw)
 		return null
 	var body := StaticBody3D.new()

@@ -66,7 +66,10 @@ const LUGARES := ["Praça", "Igreja", "Cruzeiro", "PierPiso", "Casa de taipa", "
 	# As casas dos moradores novos e os lugares da jornada deles.
 	"Casa do arraial 1", "Casa do arraial 4", "Casa do arraial 7", "Casa do guarda", "Casa do pescador",
 	"Casa da marisqueira", "Casa da lavadeira", "Casa da rendeira", "Casa da quituteira", "Casa do carpinteiro",
-	"Casa de farinha", "Rio 2", "Ponte do rio central"]
+	"Casa de farinha", "Rio 2", "Ponte do rio central",
+	# O convite conduz além da área dos postos do arraial. Sem estas âncoras,
+	# a malha projetava o Pedro de volta para a borda sul antes do portão.
+	"Portão da fazenda", "Pátio da fazenda", "Casarão"]
 
 var _mundo
 var _raiz: Node
@@ -151,7 +154,38 @@ func _assar() -> void:
 	_leito_dos_rios(fonte, _malha.filter_baking_aabb)
 	_casco_do_saveiro(fonte)
 	_alicerces(fonte)
+	_corrimaos_das_pontes(fonte)
 	NavigationServer3D.bake_from_source_geometry_data_async(_malha, fonte, _ao_assar)
+
+
+## O corrimão importado não é piso. Remover suas faces da fonte evita
+## que a simplificação ligue um caminho sobre ele ao tabuleiro. A geometria
+## de colisão e o modelo permanecem completos; somente a leitura da malha muda.
+func _corrimaos_das_pontes(fonte: NavigationMeshSourceGeometryData3D) -> void:
+	var vertices := fonte.get_vertices()
+	var indices := fonte.get_indices()
+	var filtrados := PackedInt32Array()
+	for i in range(0, indices.size(), 3):
+		var meio := Vector3.ZERO
+		var alto := -INF
+		for j in 3:
+			var v := indices[i + j] * 3
+			meio += Vector3(vertices[v], vertices[v + 1], vertices[v + 2]) / 3.0
+			alto = maxf(alto, vertices[v + 1])
+		var corrimao := false
+		for ponte in _mundo.pontes.values():
+			var centro: Vector3 = ponte.centro
+			var modelo: Node3D = (ponte.get("modelos", {}) as Dictionary).get("de_pe")
+			var piso := float(modelo.get_meta("piso_do_tabuleiro", centro.y + 0.31)) if modelo != null else centro.y + 0.31
+			var eixo: Vector3 = ponte.ao_longo
+			var lado := Vector3(-eixo.z, 0, eixo.x)
+			var relativo := meio - centro
+			if alto > piso + 0.09 and absf(relativo.dot(eixo)) < float(ponte.comprimento) * 0.5 + 0.3 and absf(relativo.dot(lado)) < float(ponte.largura) * 0.5 + 0.3:
+				corrimao = true
+				break
+		if not corrimao:
+			filtrados.append_array(indices.slice(i, i + 3))
+	fonte.set_indices(filtrados)
 
 
 ## O CASCO DO SAVEIRO ATRACADO como obstáculo: o retângulo dele (`SaveiroVale.pegada_do_casco`),
@@ -302,15 +336,16 @@ const CORTAR_O_LEITO := false
 
 
 func _leito_dos_rios(fonte: NavigationMeshSourceGeometryData3D, area: AABB) -> void:
-	# Decisão de 06/10: atravessar o rio a pé vale. Com o rio grande fundo e a ponte caída, tirar o leito da malha
-	# deixava o Pedro sem caminho até a Dona Zefa no tutorial. O corte fica desligado; a função segue para quem o religar.
-	if not CORTAR_O_LEITO:
-		return
+	# Os rios rasos podem ser atravessados a pé no tutorial. O rio grande
+	# exige a ponte, depois da obra; não pode oferecer seu fundo como atalho.
 	var regiao = _mundo.get("_region")
 	if regiao == null:
 		return
 	var caixa := Rect2(area.position.x, area.position.z, area.size.x, area.size.z)
 	for rio in regiao._rivers:
+		# Os rios rasos continuam atravessáveis, preservando o tutorial.
+		if not CORTAR_O_LEITO and not bool(rio.get("grande", false)):
+			continue
 		if not (rio.bounds as Rect2).intersects(caixa):
 			continue
 		var pontos: PackedVector2Array = rio.points

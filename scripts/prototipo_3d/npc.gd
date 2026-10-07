@@ -470,7 +470,8 @@ func _mover(direcao: Vector3, velocidade: float, delta: float) -> void:
 	velocity.x = move_toward(velocity.x, direcao.x * velocidade, 12.0 * delta)
 	velocity.z = move_toward(velocity.z, direcao.z * velocidade, 12.0 * delta)
 	if _nadando:
-		var altura_nado: float = terreno.water_level() - altura * SUBMERSO_NADANDO
+		var lamina: float = terreno.water_level_at(global_position) if terreno.has_method("water_level_at") else terreno.water_level()
+		var altura_nado: float = lamina - altura * SUBMERSO_NADANDO
 		velocity.y = clampf((altura_nado - global_position.y) * 5.0, -3.0, 3.0)
 		if is_on_floor():
 			velocity.y = maxf(velocity.y, 0.0)
@@ -515,7 +516,10 @@ func _subir_degrau(direcao: Vector3) -> void:
 func _atualizar_nado() -> void:
 	if terreno == null or not terreno.has_method("water_depth_at"):
 		return
-	var nadar: bool = terreno.water_depth_at(global_position) > altura * (ANDA_ATE if _nadando else NADA_A_PARTIR)
+	# A profundidade do leito não submerge quem anda no tabuleiro. O nado
+	# usa a lâmina local em relação aos pés do corpo, inclusive no rio elevado.
+	var agua: float = terreno.water_level_at(global_position) if terreno.has_method("water_level_at") else terreno.water_level()
+	var nadar: bool = is_finite(agua) and agua - global_position.y > altura * (ANDA_ATE if _nadando else NADA_A_PARTIR)
 	if nadar == _nadando:
 		return
 	_nadando = nadar
@@ -580,7 +584,19 @@ func _por_terra(direcao: Vector3) -> Vector3:
 
 ## O passo cairia em água funda demais para andar?
 func _fundo(ponto: Vector3) -> bool:
-	return terreno.water_depth_at(ponto) > altura * NADA_A_PARTIR
+	if terreno.water_depth_at(ponto) <= altura * NADA_A_PARTIR:
+		return false
+	# A lâmina mede o leito, mas a ponte tem piso acima dele. Desviar só pela
+	# profundidade fazia o guia sair do tabuleiro e cair junto ao barranco.
+	if terreno.has_method("water_level_at") and is_inside_tree():
+		var agua := float(terreno.water_level_at(ponto))
+		if is_finite(agua):
+			var pergunta := PhysicsRayQueryParameters3D.create(ponto + Vector3.UP * 2.0, ponto + Vector3.DOWN, 1)
+			pergunta.exclude = [get_rid()]
+			var piso: Dictionary = get_world_3d().direct_space_state.intersect_ray(pergunta)
+			if not piso.is_empty() and (piso.position as Vector3).y > agua + 0.1:
+				return false
+	return true
 
 
 ## O quanto à frente o NPC olha antes de pisar. Um corpo e meio: perto o

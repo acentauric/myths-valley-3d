@@ -6,6 +6,14 @@ O teste passa a cobrar Candinha, Filo, Tonho, Zefa, arraial e recursos, incluind
 
 ## Em desenvolvimento — 07/10/2026 (experimento Jev)
 
+- #164/#159 (parcial): a malha inclui a fazenda e o catálogo mantém apoio
+  contínuo nas tábuas da ponte com juntas curtas. Corrimãos não viram piso
+  de navegação; NPCs reconhecem apoio seco e a lâmina do rio elevado.
+  Rota física isolada chega ao portão; mutantes de limites e juntas falham.
+  Rio grande e colisões passam. A fixture da ponte espera a fala natural
+  (#121), eliminando uma cascata também reproduzida no HEAD. Campanha real
+  ainda precisa confirmar a chegada; nenhum progresso foi injetado.
+
 - #154: o marcador da entrada usa a soleira externa do cômodo, sem apontar
   à janela ou ao centro da casa. Pedro mantém sua espera ao lado da porta.
   Casa nos dois estilos e missões passam; alvo na parede produz a falha

@@ -257,6 +257,10 @@ func _run() -> void:
 func _perto_do_pedro() -> void:
 	jogador.teleportar(pedro.global_position + Vector3(1.0, 0.1, 0.6), 0.0)
 	await _quadros(5)
+	# Desde #121, fala ativa não oferece um novo E de conversar. A fixture
+	# aguarda a duração real; mudar a missão não apaga a fala anterior.
+	_conferir(await _ate(func() -> bool: return not pedro.falando_agora(), 60.0),
+		"a fala anterior termina naturalmente antes do próximo E no Pedro")
 
 
 func _no_balao(morador) -> String:
