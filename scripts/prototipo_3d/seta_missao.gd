@@ -21,8 +21,11 @@ const CORREIA := 130.0
 const TEMPO_DO_GIRO := 0.09
 const SEGUNDOS_DO_FADE := 0.18
 ## Altura (u) do cone acima do alvo e amplitude do sobe-e-desce.
-const ALTURA_CONE := 3.0
-const BOB := 0.3
+const ALTURA_CONE := 1.8
+const BOB := 0.12
+## Chegar recolhe a orientação; a margem maior para sair evita piscar.
+const RAIO_CHEGADA := 2.4
+const RAIO_SAIDA := 3.2
 ## Margem (px) da borda da tela onde o chevron se prende.
 const MARGEM_TELA := 28.0
 ## Alvo visível na tela e mais perto que isto (u): o chevron some (o cone basta).
@@ -32,6 +35,8 @@ const MEIO_CHEVRON := 24.0
 
 var _alvo := Vector3.ZERO
 var _ativo := false
+var _chegou := false
+var _jogador: Node3D
 var _tempo := 0.0
 var _cone: MeshInstance3D
 var _anel: MeshInstance3D
@@ -48,17 +53,20 @@ func _ready() -> void:
 	# Um só material para cone e anel: emissivo suave para ler de longe e à noite,
 	# translúcido para não esconder o lugar que ele marca.
 	var material := StandardMaterial3D.new()
-	material.albedo_color = Color(COR.r, COR.g, COR.b, 0.75)
+	material.albedo_color = Color(COR.r, COR.g, COR.b, 0.45)
 	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	material.emission_enabled = true
 	material.emission = COR
-	material.emission_energy_multiplier = 1.1
+	material.emission_energy_multiplier = 0.3
 	material.cull_mode = BaseMaterial3D.CULL_DISABLED
 	var cone_malha := CylinderMesh.new()
 	# Raio em cima e zero embaixo: cone de ponta-cabeça, apontando o chão do alvo.
-	cone_malha.top_radius = 0.55
+	cone_malha.top_radius = 0.24
 	cone_malha.bottom_radius = 0.0
-	cone_malha.height = 1.1
+	cone_malha.height = 0.55
+	# Sem tampa: a câmera interna nunca vê um disco sólido do cone.
+	cone_malha.cap_top = false
+	cone_malha.cap_bottom = false
 	cone_malha.material = material
 	_cone = MeshInstance3D.new()
 	_cone.name = "Cone"
@@ -67,8 +75,8 @@ func _ready() -> void:
 	_cone.position = Vector3(0, ALTURA_CONE, 0)
 	add_child(_cone)
 	var anel_malha := TorusMesh.new()
-	anel_malha.inner_radius = 1.15
-	anel_malha.outer_radius = 1.45
+	anel_malha.inner_radius = 0.45
+	anel_malha.outer_radius = 0.6
 	anel_malha.material = material
 	_anel = MeshInstance3D.new()
 	_anel.name = "Anel"
@@ -89,10 +97,14 @@ func configurar(camada: Control) -> void:
 
 ## Passa a marcar `pos` (o texto já aparece no objetivo do HUD; fica só de registro).
 func definir_alvo(pos: Vector3, _texto: String) -> void:
+	if not pos.is_equal_approx(_alvo):
+		_chegou = false
 	_alvo = pos
 	global_position = pos
 	_ativo = true
 	visible = true
+	if is_instance_valid(_cone):
+		_sincronizar_chegada()
 
 
 ## Missão acabou (ou não há alvo): marcador e chevron somem.
@@ -119,6 +131,7 @@ func _loucura() -> Node:
 func _process(delta: float) -> void:
 	if not _ativo:
 		return
+	_sincronizar_chegada()
 	# O MAPA DOIDO (loucura_do_mapa.gd): o cone flutua longe do alvo de verdade. Fora da loucura o
 	# desvio é zero, e a seta fica exatamente sobre o alvo.
 	var louca := _loucura()
@@ -132,6 +145,24 @@ func _process(delta: float) -> void:
 	var pulso := 0.85 + 0.25 * sin(_tempo * 3.2)
 	_anel.scale = Vector3(pulso, 0.18, pulso)
 	_atualizar_chevron(delta)
+
+
+## O destino lógico continua disponível ao mapa, às placas e ao testador.
+## Só a orientação de deslocamento some: chegar não completa a missão.
+func _sincronizar_chegada() -> void:
+	if not is_instance_valid(_jogador):
+		_jogador = get_tree().get_first_node_in_group("map_player") as Node3D
+	if is_instance_valid(_jogador):
+		var distancia := Vector2(_jogador.global_position.x - _alvo.x,
+			_jogador.global_position.z - _alvo.z).length()
+		if distancia <= RAIO_CHEGADA:
+			_chegou = true
+		elif distancia >= RAIO_SAIDA:
+			_chegou = false
+	var interiores := get_tree().get_first_node_in_group("interiores")
+	var dentro := interiores != null and str(interiores.call("dentro")) != ""
+	_cone.visible = not _chegou and not dentro
+	_anel.visible = not _chegou and not dentro
 
 
 ## Fora do campo de visão, o chevron prende na borda apontando o rumo; na tela e
@@ -166,7 +197,7 @@ func _atualizar_chevron(delta: float) -> void:
 			rumo = rumo.rotated(erro)
 	var na_tela := not atras and area.has_point(projecao)
 	var distancia := camera.global_position.distance_to(_alvo)
-	var some := na_tela and distancia < PERTO
+	var some := _chegou or (na_tela and distancia < PERTO)
 	var pos := _mola.posicao
 	var giro := _chevron.rotation
 	if not some:

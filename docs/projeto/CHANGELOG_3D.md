@@ -6,6 +6,16 @@ O teste passa a cobrar Candinha, Filo, Tonho, Zefa, arraial e recursos, incluind
 
 ## Em desenvolvimento — 07/10/2026 (experimento Jev)
 
+- **A conclusão fica em um cartão e a orientação recolhe na chegada (#130,
+  #135, #144).** A conquista dura 2,7 segundos em 420 × 145 pixels da área-base,
+  com emblema pequeno, sem sombra global, véu ou mistura aditiva. Continua
+  esperando a fila e cedendo a conversa. O cone perde as tampas sólidas,
+  diminui, e cone/anel somem dentro de cômodos. Chegar a 2,4 unidades recolhe
+  a orientação; sair além de 3,2 a recupera, sem piscar na borda ou concluir
+  a missão. Alvos novos continuam orientando. Conquista, fila, chegada e
+  efeitos no vale passaram; as capturas diurnas/noturnas preservam o cenário.
+  Reintroduzir mistura aditiva reprova; a seta anterior reprova três regras.
+
 - **Nomes, fala e E obedecem à mesma matriz (#121, #124, #127, #132).**
   Uma pessoa falando não oferece nova conversa; o avanço do Dialogo continua
   disponível. O E identifica seu dono sem repetir a plaquinha. Árvores ocultam

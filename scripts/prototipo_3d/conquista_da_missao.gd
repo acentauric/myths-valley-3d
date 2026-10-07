@@ -1,48 +1,6 @@
 extends CanvasLayer
-## A CONQUISTA DA MISSÃO: toda missão cumprida escurece a tela e festeja.
-##
-## "Sempre que concluir uma missão, deve aparecer uma animação na tela,
-## sombreando toda a tela e dando um destaque para a animação. O intuito é
-## demonstrar que o jogador conquistou a conclusão daquela missão."
-##
-## Ouve o caderno do vale (`CadernoDoVale.concluiu`), que é por onde passa toda
-## missão cumprida — os passos de cada fila, a encomenda do saveiro —, e mostra
-## a última (`ultima_concluida`): a sombra sobre a tela inteira, o emblema que
-## cresce girando, "Missão concluída", o nome do passo e a missão de que ele é.
-## Não segura o mouse: dura o tempo dela e some sozinha. Várias de uma vez entram
-## em fila.
-##
-##
-## MAIS SUAVE, MAIS TEMPO, E DEPOIS DA CONVERSA
-##
-## "A animação de missão concluída está boa, mas deve ser mais suave, quase que
-## com efeito de embranquecimento e esvaimento. A transição está muito abrupta.
-## Aumentar o tempo de efeito dela em tela é uma excelente solução. Caso ela
-## conclua em uma interação com NPC, o efeito também só deve aparecer depois que
-## terminar a interação com o NPC."
-##
-## Ela entrava em 0,35 s, com o emblema saltando por cima do tamanho
-## (TRANS_BACK), ficava 1,9 s e saía em meio segundo: um estalo. Agora a sombra
-## sobe devagar e uma luz clara se abre do meio, atrás do emblema — o
-## embranquecer —; o emblema cresce sem salto e os nomes entram um depois do
-## outro; tudo fica mais de três segundos; e no fim a luz clareia a tela inteira
-## um pouco mais e tudo se desfaz nela — o esvair. Cada fase é uma conta só,
-## numa curva suave (`_entrar`, `_esvair`).
-##
-## E A FESTA ESPERA A VEZ: o passo que fecha no E fecha enquanto o morador ainda
-## responde no balão, e a festa por cima da resposta escondia o que ele dizia.
-## No vale a vez é da FILA DE FALAS (`fila_de_falas.gd`): a festa pede a vez como
-## uma fala da missão, entra quando a fala do ar acaba e segura a vez enquanto
-## dura — ninguém fala por cima dela. A conversa que o jogador pede com o E e a
-## narração do mundo passam na frente: a festa se recolhe (o emblema some, a
-## animação para) e volta de onde estava. Sem fila (um portão de peça só), é a
-## regra antiga, `_pode_festejar`. Enquanto festeja, o relógio do vale fica
-## segurado (`Dia.segurar`).
-
-## A festa entrou na tela, e saiu dela. O vale recolhe as plaquinhas de nome dos
-## moradores enquanto ela dura (`prototype._acertar_as_placas`): elas são do HUD,
-## que desenha por cima desta camada, e o nome de quem acabou de falar com o
-## jogador — parado bem na frente dele — caía em cima do emblema.
+## Conquista compacta: confirma o passo sem cobrir ou clarear o mundo.
+## Preserva a fila de falas, a pausa do relogio e a retomada apos conversa.
 signal comecou
 signal acabou
 
@@ -51,12 +9,12 @@ const FONTE_DO_TITULO := "res://assets/fonts/Cinzel-Variavel.ttf"
 const FONTE_DO_NOME := "res://assets/fonts/CormorantGaramond-Variavel.ttf"
 const OURO := Color(0.96, 0.78, 0.36)
 ## Quanto a sombra escurece, e quanto o véu claro cobre no auge do esvair.
-const SOMBRA := 0.5
-const VEU := 0.32
+const SOMBRA := 0.0
+const VEU := 0.0
 ## Os tempos de cada fase, em segundos.
-const ENTRA := 1.4
-const FICA := 3.2
-const SAI := 1.8
+const ENTRA := 0.4
+const FICA := 1.8
+const SAI := 0.5
 ## Depois de a última conversa acabar, o respiro antes de a festa entrar.
 const RESPIRO := 0.5
 ## O motivo com que ela segura o relógio.
@@ -232,33 +190,32 @@ func _terminar() -> void:
 		falas.soltar(era)
 
 
-## A ENTRADA, de 0 a 1: a sombra sobe numa curva suave; a luz se abre do meio; o
-## emblema cresce sem saltar e endireita; os nomes entram um depois do outro.
+## Entrada suave do cartao e do emblema pequeno.
 func _entrar(p: float) -> void:
+	_raiz.modulate.a = _suave(p)
 	_sombra.color.a = SOMBRA * _suave(p)
 	_veu.color.a = 0.0
-	_clarao.modulate.a = 0.8 * _suave(minf(p * 1.25, 1.0))
+	_clarao.modulate.a = 0.12 * _suave(minf(p * 1.25, 1.0))
 	_clarao_escala = lerpf(0.55, 1.0, _suave(p))
 	_clarao.scale = Vector2.ONE * _clarao_escala
 	var do_emblema := _suave(clampf((p - 0.1) / 0.8, 0.0, 1.0))
 	_emblema.modulate.a = do_emblema
-	_emblema.scale = Vector2.ONE * lerpf(0.7, 1.0, do_emblema)
+	_emblema.scale = Vector2.ONE * 0.2 * lerpf(0.9, 1.0, do_emblema)
 	_emblema.rotation = lerpf(-0.25, 0.0, do_emblema)
 	var rotulos: Array[Label] = [_titulo, _nome, _missao]
 	for i in rotulos.size():
 		rotulos[i].modulate.a = _suave(clampf((p - 0.3 - 0.15 * i) / 0.45, 0.0, 1.0))
 
 
-## O ESVAIR, de 0 a 1: primeiro a luz clareia a tela inteira (o véu claro sobe e
-## o clarão cresce), e o emblema e os nomes vão se desfazendo nela; depois a
-## claridade baixa junto com a sombra, e não sobra nada.
+## Saida sem aumentar a luz ou a area do cartao.
 func _esvair(p: float) -> void:
+	_raiz.modulate.a = 1.0 - _suave(p)
 	var clareia := _suave(minf(p / 0.45, 1.0))
 	var apaga := _suave(clampf((p - 0.45) / 0.55, 0.0, 1.0))
 	_veu.color.a = VEU * clareia * (1.0 - apaga)
-	_clarao.modulate.a = lerpf(0.8, 1.0, clareia) * (1.0 - apaga)
-	_clarao_escala = lerpf(1.0, 1.7, _suave(p))
-	_emblema.scale = Vector2.ONE * lerpf(1.0, 1.3, _suave(p))
+	_clarao.modulate.a = lerpf(0.12, 0.1, clareia) * (1.0 - apaga)
+	_clarao_escala = lerpf(1.0, 1.05, _suave(p))
+	_emblema.scale = Vector2.ONE * 0.2 * lerpf(1.0, 1.05, _suave(p))
 	_emblema.modulate.a = 1.0 - _suave(minf(p / 0.75, 1.0))
 	for rotulo: Label in [_titulo, _nome, _missao]:
 		rotulo.modulate.a = 1.0 - _suave(minf(p / 0.6, 1.0))
@@ -276,21 +233,34 @@ func _montar() -> void:
 	_raiz.name = "Conquista"
 	_raiz.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(_raiz)
-	_raiz.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_raiz.set_anchors_preset(Control.PRESET_CENTER_TOP)
+	_raiz.offset_left = -210.0
+	_raiz.offset_right = 210.0
+	_raiz.offset_top = 160.0
+	_raiz.offset_bottom = 305.0
+	_raiz.clip_contents = true
+	var painel := Panel.new()
+	painel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var estilo := StyleBoxFlat.new()
+	estilo.bg_color = Color(0.04, 0.075, 0.065, 0.94)
+	estilo.border_color = OURO.darkened(0.2)
+	estilo.set_border_width_all(1)
+	estilo.set_corner_radius_all(10)
+	painel.add_theme_stylebox_override("panel", estilo)
+	_raiz.add_child(painel)
+	painel.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_sombra = ColorRect.new()
 	_sombra.name = "Sombra"
 	_sombra.color = Color(0.02, 0.015, 0.01, 0.0)
 	_sombra.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_raiz.add_child(_sombra)
 	_sombra.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	# O VÉU CLARO, que só aparece no esvair: a tela inteira embranquece um pouco.
 	_veu = ColorRect.new()
 	_veu.name = "Veu"
 	_veu.color = Color(1.0, 0.97, 0.9, 0.0)
 	_veu.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_raiz.add_child(_veu)
 	_veu.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	# O CLARÃO atrás do emblema: uma luz morna, redonda, que se soma à tela.
 	var gradiente := Gradient.new()
 	gradiente.set_color(0, Color(1.0, 0.97, 0.88, 0.9))
 	gradiente.set_color(1, Color(1.0, 0.92, 0.75, 0.0))
@@ -309,17 +279,15 @@ func _montar() -> void:
 	_clarao.stretch_mode = TextureRect.STRETCH_SCALE
 	_clarao.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var somar := CanvasItemMaterial.new()
-	somar.blend_mode = CanvasItemMaterial.BLEND_MODE_ADD
+	somar.blend_mode = CanvasItemMaterial.BLEND_MODE_MIX
 	_clarao.material = somar
 	_raiz.add_child(_clarao)
-	# No meio do emblema, que fica no alto da coluna (220 do emblema mais os três
-	# nomes, uns 370 ao todo): 75 acima do meio da tela.
 	_clarao.set_anchors_preset(Control.PRESET_CENTER)
-	_clarao.offset_left = -460.0
-	_clarao.offset_right = 460.0
-	_clarao.offset_top = -535.0
-	_clarao.offset_bottom = 385.0
-	_clarao.pivot_offset = Vector2(460.0, 460.0)
+	_clarao.offset_left = -60.0
+	_clarao.offset_right = 60.0
+	_clarao.offset_top = -115.0
+	_clarao.offset_bottom = 5.0
+	_clarao.pivot_offset = Vector2(60.0, 60.0)
 	_clarao.modulate.a = 0.0
 	var meio := CenterContainer.new()
 	meio.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -327,33 +295,36 @@ func _montar() -> void:
 	meio.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	var coluna := VBoxContainer.new()
 	coluna.alignment = BoxContainer.ALIGNMENT_CENTER
-	coluna.add_theme_constant_override("separation", 10)
+	coluna.custom_minimum_size.x = 390.0
+	coluna.add_theme_constant_override("separation", 3)
 	coluna.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	meio.add_child(coluna)
 	var lugar_do_emblema := Control.new()
-	lugar_do_emblema.custom_minimum_size = Vector2(220, 220)
+	lugar_do_emblema.custom_minimum_size = Vector2(390, 42)
 	lugar_do_emblema.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	coluna.add_child(lugar_do_emblema)
 	_emblema = Emblema.new()
 	_emblema.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_emblema.position = Vector2(110, 110)
+	_emblema.position = Vector2(195, 21)
 	lugar_do_emblema.add_child(_emblema)
-	_titulo = _rotulo(FONTE_DO_TITULO, 40, OURO)
+	_titulo = _rotulo(FONTE_DO_TITULO, 16, OURO)
 	coluna.add_child(_titulo)
-	_nome = _rotulo(FONTE_DO_NOME, 30, Color(0.98, 0.95, 0.88))
+	_nome = _rotulo(FONTE_DO_NOME, 20, Color(0.98, 0.95, 0.88))
 	coluna.add_child(_nome)
-	_missao = _rotulo(FONTE_DO_NOME, 20, Color(0.85, 0.8, 0.7))
+	_missao = _rotulo(FONTE_DO_NOME, 12, Color(0.85, 0.8, 0.7))
 	coluna.add_child(_missao)
 
 
 func _rotulo(fonte: String, tamanho: int, cor: Color) -> Label:
 	var rotulo := Label.new()
 	rotulo.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	rotulo.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	rotulo.max_lines_visible = 2
 	rotulo.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	rotulo.add_theme_font_size_override("font_size", tamanho)
 	rotulo.add_theme_color_override("font_color", cor)
 	rotulo.add_theme_color_override("font_outline_color", Color(0.08, 0.05, 0.02, 0.9))
-	rotulo.add_theme_constant_override("outline_size", 6)
+	rotulo.add_theme_constant_override("outline_size", 2)
 	if ResourceLoader.exists(fonte):
 		rotulo.add_theme_font_override("font", load(fonte))
 	return rotulo

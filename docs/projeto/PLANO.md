@@ -38,6 +38,11 @@ Todas as cadeias de missões do diretório de dados e os recursos declaram cober
 
 ## Próxima tarefa
 
+#130, #135 e #144 foram verificadas por conquista_compacta, falas_em_fila,
+marcador_na_chegada e efeitos_no_vale, com capturas do vale em exterior e
+interior de dia/noite. A orientação mantém o destino lógico após a chegada,
+sem concluir antecipadamente tarefas de arar, plantar ou regar.
+
 Em 07/10/2026, #133, #143 e #157 foram verificadas com avisos_com_prazo,
 falas_em_fila, mochila e boneco_da_mochila: prazo de recebimentos, fim da
 duplicação de Pedro e ocultação do HUD durante mochila/baú. A matriz da #132
