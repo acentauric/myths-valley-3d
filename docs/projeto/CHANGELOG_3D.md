@@ -6,6 +6,14 @@ O teste passa a cobrar Candinha, Filo, Tonho, Zefa, arraial e recursos, incluind
 
 ## Em desenvolvimento — 07/10/2026 (experimento Jev)
 
+- **O E separa alvo e requisito em duas linhas (#134).** A largura se adapta
+  à janela e mantém a tecla centralizada; requisitos maiores quebram por
+  palavras. A frase de ferramenta necessária passa pelo idioma escolhido.
+  O nome persistente acima da barra de mão sai (#120, parcial): o slot mantém
+  seu destaque e mostra o nome ao passar o mouse, limpando tooltip de vazio.
+  Dica, barra, matriz e idiomas passaram; a versão anterior reprova as
+  verificações de linha, tamanho, rótulo e tooltip.
+
 - **A conclusão fica em um cartão e a orientação recolhe na chegada (#130,
   #135, #144).** A conquista dura 2,7 segundos em 420 × 145 pixels da área-base,
   com emblema pequeno, sem sombra global, véu ou mistura aditiva. Continua

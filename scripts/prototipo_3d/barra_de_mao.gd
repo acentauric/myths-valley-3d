@@ -131,6 +131,7 @@ func _montar() -> void:
 	# estou segurando?" sem o jogador ter de decorar ícone.
 	_rotulo_do_item = Label.new()
 	_rotulo_do_item.name = "NaMao"
+	_rotulo_do_item.visible = false # #120: ícone e seleção bastam; nome fica no hover.
 	_rotulo_do_item.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_rotulo_do_item.add_theme_font_size_override("font_size", 14)
 	_rotulo_do_item.add_theme_color_override("font_color", BORDA_NA_MAO)
@@ -164,11 +165,13 @@ func _repintar() -> void:
 		if id == "":
 			conteudo.text = ""
 			icone.texture = null
+			espaco.tooltip_text = ""
 			continue
 
 		var textura := Catalogo.icone(id)
 		icone.texture = textura
 		var nome := str(Catalogo.ITENS.get(id, {}).get("nome", id))
+		espaco.tooltip_text = tr(Jogo.texto(nome))
 		# Com ícone, o texto é só a quantidade; sem ícone, a inicial faz as
 		# vezes dele — é o que o 2D faz com nó de talento sem arte.
 		if textura != null:
@@ -181,6 +184,7 @@ func _repintar() -> void:
 			conteudo.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 
 	_rotulo_do_item.text = _nome_na_mao()
+	_rotulo_do_item.visible = false
 
 
 func _nome_na_mao() -> String:

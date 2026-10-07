@@ -49,6 +49,7 @@ static func criar(pai: Control, tecla_texto: String, acao: String) -> PanelConta
 	linha.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	dica.add_child(linha)
 	var tecla := PanelContainer.new()
+	tecla.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	var estilo_tecla := StyleBoxFlat.new()
 	estilo_tecla.bg_color = PAPEL
 	estilo_tecla.set_corner_radius_all(4)
@@ -70,7 +71,9 @@ static func criar(pai: Control, tecla_texto: String, acao: String) -> PanelConta
 	texto.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_TEXTO, 600))
 	texto.add_theme_font_size_override("font_size", 17)
 	texto.add_theme_color_override("font_color", Identidade.TEXTO)
+	texto.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	linha.add_child(texto)
+	_preparar_texto(dica, acao)
 	return dica
 
 
@@ -91,7 +94,7 @@ static func mostrar_em(dica: PanelContainer, camera: Camera3D, ponto: Vector3, a
 		dica.visible = false
 		return
 	if acao != "":
-		(dica.find_child("Acao", true, false) as Label).text = acao
+		_preparar_texto(dica, acao)
 	var estava_acesa := dica.visible
 	dica.visible = true
 	dica.reset_size()
@@ -114,6 +117,32 @@ static func mostrar_em(dica: PanelContainer, camera: Camera3D, ponto: Vector3, a
 	var sobe := empurrao.seguir(alvo_do_empurrao, dica.get_process_delta_time(), TEMPO_DO_EMPURRAO,
 		SuavizadorDeTela.VELOCIDADE_MAXIMA, 0.0, CORREIA_DO_EMPURRAO)
 	dica.position = (Vector2(caixa.position.x, caixa.position.y + sobe.y) - origem).round()
+
+
+## Alvo primeiro, requisito depois, independentemente do idioma. Não quebra
+## nomes procurando palavras traduzidas; as fontes já separam as partes com ·.
+static func _texto_em_linhas(acao: String) -> String:
+	var partes := acao.split(" · ", true, 1)
+	if partes.size() < 2:
+		return acao
+	var requisito := partes[1].strip_edges()
+	if requisito != "":
+		requisito = requisito.substr(0, 1).to_upper() + requisito.substr(1)
+	return partes[0].strip_edges() + "\n" + requisito
+
+
+static func _preparar_texto(dica: PanelContainer, acao: String) -> void:
+	var texto := dica.find_child("Acao", true, false) as Label
+	texto.text = _texto_em_linhas(acao)
+	var largura := 24.0
+	var fonte := texto.get_theme_font("font")
+	var tamanho := texto.get_theme_font_size("font_size")
+	for linha in texto.text.split("\n"):
+		largura = maxf(largura, fonte.get_string_size(linha, HORIZONTAL_ALIGNMENT_LEFT, -1, tamanho).x + 2.0)
+	# A dica simples mantém largura natural; requisitos longos ganham mais linhas
+	# em janelas menores, em vez de cortar o E ou ocupar a largura toda da tela.
+	var limite := minf(280.0, maxf(120.0, dica.get_viewport_rect().size.x * 0.4))
+	texto.custom_minimum_size.x = minf(largura, limite)
 
 
 ## A mola desta dica, guardada nela mesma (as nove fontes do E continuam como eram).

@@ -356,7 +356,7 @@ func _o_que_falta(ficha: Dictionary) -> String:
 				return tr("selecione %s (%s)") % [_nome_do_item(na_barra), Inventario.rotulo_do_espaco(indice)]
 		if _carrega(ferramenta):
 			return tr("ponha na mão: %s") % _nome_do_item(ferramenta)
-		return "precisa de %s" % _nome_do_item(ferramenta)
+		return tr("precisa de %s") % _nome_do_item(ferramenta)
 	var impede := _o_que_impede(ficha, false)
 	if impede != "":
 		return impede

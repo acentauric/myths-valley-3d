@@ -38,6 +38,10 @@ Todas as cadeias de missões do diretório de dados e os recursos declaram cober
 
 ## Próxima tarefa
 
+#134 foi verificada com dica_requisito_e_mao, barra_de_mao, matriz_dos_baloes
+e idiomas. O rótulo persistente da mão de #120 foi retirado; os demais
+critérios de reorganização do HUD nessa issue permanecem abertos.
+
 #130, #135 e #144 foram verificadas por conquista_compacta, falas_em_fila,
 marcador_na_chegada e efeitos_no_vale, com capturas do vale em exterior e
 interior de dia/noite. A orientação mantém o destino lógico após a chegada,

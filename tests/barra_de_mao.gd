@@ -158,6 +158,8 @@ func _run() -> void:
 	if na_mao != null:
 		_conferir(na_mao.text.to_lower().contains("picareta"),
 			"a mão diz '%s' com a picareta selecionada" % na_mao.text)
+		_conferir(not na_mao.visible, "nome do item ainda aparece persistentemente (#120)")
+	_conferir(primeiro.tooltip_text != "", "o item perdeu identificação ao passar o mouse (#120)")
 
 	# --- 6. O AVISO NÃO FICA ATRÁS DELA --------------------------------------
 	#
