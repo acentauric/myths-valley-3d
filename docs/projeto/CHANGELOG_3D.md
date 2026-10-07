@@ -6,6 +6,11 @@ O teste passa a cobrar Candinha, Filo, Tonho, Zefa, arraial e recursos, incluind
 
 ## Em desenvolvimento — 07/10/2026 (experimento Jev)
 
+- #155/#37: liberar explicitamente o elenco completo não é revogado por
+  uma atualização manual do calendário. Visitas continuam obedecendo ao
+  dia; recalcular não oculta Cosme/Filó/Damião por orçamento. Apresentação
+  passa em 36 s; reabrir o orçamento reproduz uma falha.
+
 - #78: galeria existente passa navegação, edição de moradores/peças, voz,
   prévia e pendências. Seis imagens gráficas conferidas; retirar a prévia
   reprova. #34 recebe capturas opcionais e resolução efetiva no benchmark;

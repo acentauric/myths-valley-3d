@@ -13,6 +13,8 @@ O orçamento gradual de #155 respeita a presença de visitas no calendário.
 Quirino chega/parte no dia 14 sem placa fantasma, e a entrega prioritária
 não é bloqueada por uma saudação. Saveiro, apresentação e balões passam;
 forçar a visita fora do dia reproduz duas falhas.
+Liberar o elenco completo também persiste ao recalcular a visita, sem
+revogar a ausência de Quirino fora do calendário. Gate e mutante conferidos.
 
 A #138 tem acabamento irregular na extremidade marítima da areia, com
 prova gráfica e passagem/maré preservadas. A foz mantém emendas e impede

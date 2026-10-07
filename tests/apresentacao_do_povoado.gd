@@ -108,5 +108,13 @@ func _run() -> void:
 	vale.pedro.missao = 6
 	diretor.atualizar()
 	conferir(int(diretor.contagem().moradores.ativos) > int(inicial.moradores.ativos), "progresso também apresenta o povoado")
+	diretor.liberar_todos()
+	vale.player.global_position += Vector3(500, 0, 500)
+	if "--reabrir-orcamento" in OS.get_cmdline_user_args():
+		diretor._todos_liberados = false
+	diretor.atualizar()
+	var cosme: Node = vale._achar_morador("cosme")
+	conferir(cosme.get_meta("presenca_liberada", false), "liberar todos permanece válido ao recalcular visita")
+	conferir(not visitante.visible, "liberar todos mantém calendário da visita")
 	print("APRESENTACAO: %d falhas" % falhas)
 	quit(0 if falhas == 0 else 1)

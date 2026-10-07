@@ -11,6 +11,7 @@ var _vale: Node
 var _conferir := 0.0
 var _vistos: Dictionary = {}
 var _ocultos: Dictionary = {}
+var _todos_liberados := false
 
 func configurar(vale: Node) -> void:
 	_vale = vale
@@ -25,6 +26,9 @@ func _process(delta: float) -> void:
 
 func atualizar() -> void:
 	if _vale == null or _vale.player == null:
+		return
+	if _todos_liberados:
+		_liberar_presencas()
 		return
 	var fase := int(segundos / INTERVALO)
 	if _vale.pedro != null and _vale.pedro.missao >= 6:
@@ -99,7 +103,11 @@ func _definir(ator: Node3D, sim: bool, suave: bool) -> void:
 			entrada.tween_property(malha, "transparency", 0.0, 0.8)
 
 func liberar_todos() -> void:
+	_todos_liberados = true
 	set_process(false)
+	_liberar_presencas()
+
+func _liberar_presencas() -> void:
 	for grupo in ["moradores", "bichos_de_casa", "bandos_de_chao"]:
 		for ator in get_tree().get_nodes_in_group(grupo):
 			_definir(ator, bool(ator.get_meta("presenca_do_calendario", true)), false)
