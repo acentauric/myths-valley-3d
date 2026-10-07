@@ -307,6 +307,8 @@ func _estado() -> Dictionary:
 			"locked_advice": cadeia.trancada_texto})
 	var fazenda: Node = current_scene.get("fazenda")
 	var cadeia_fazenda: Node = fazenda.get("_cadeia") if fazenda != null else null
+	estado["farm"] = {"awaiting_morning": fazenda != null and fazenda.pronta() and not fazenda.dia_marcado(),
+		"day_marked": fazenda != null and fazenda.dia_marcado()}
 	estado["implemented_story_completed"] = cadeia_fazenda != null and cadeia_fazenda.acabou()
 	estado["npcs"] = []
 	for npc in current_scene.get("moradores"):

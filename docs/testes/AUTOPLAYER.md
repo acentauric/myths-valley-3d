@@ -58,6 +58,11 @@ Golpes em andamento e dano parcial contam como trabalho, evitando interromper
 um corte para explorar outra interface. Fôlego baixo leva à comida disponível
 na mochila por sua seleção normal e F. Novas cadeias liberadas são perguntadas
 ao Pedro depois da anterior; o diário retoma a missão principal pelo painel.
+Sem comida e com fôlego baixo, volta pela porta, aproxima a cama e confirma
+o descanso pelo E e pela pergunta normal. A observação da fazenda distingue
+uma cadeia que aguarda a manhã seguinte de outra que abre conversando com
+Pedro: após encerrar a cadeia de fé, o testador dorme para alcançar o dia do
+convite, mesmo que ainda tenha fôlego. Não chama a função de mudar o dia.
 
 Receitas reconhecidas no estado observado são selecionadas pela exigência
 atual, em sua bancada e aba correspondentes. Falta de ações disponíveis não
@@ -118,6 +123,22 @@ da causa nem prova de que todos os sistemas foram testados.
 Relacionados: #159 (testador), #118 (ponte), #146 (orientações) e #154 (acesso à porta).
 
 ## Evidência de 07/10/2026
+
+Na retomada V16, a coleta/fabricação e o painel de obras concluíram o Mirante;
+as três visitas, conversas e escolha no marco concluíram A fé do arraial.
+A tentativa de abrir O convite pelo E revelou uma regra faltante na política:
+essa jornada começa na manhã seguinte à fé, pelo dia do jogo.
+
+A V17 retomou o mesmo perfil salvo em D, sem editar a partida. Aos 114,76 s
+aproximou a cama, aos 117,88 s pressionou E e aos 119,03 s confirmou Sim.
+Aos 124,29 s o estado nativo passou de dia 25 para 26, fôlego 27,8 → 77,8
+e `farm.day_marked=true`. Relatório e JSONL:
+`D:/MythsValleyPlaytestRuns/robo-campanha-retomada-v17/`.
+84 testes Python passam; remover a regra da manhã provoca uma falha e nenhum
+erro, reproduzindo a escolha indevida de procurar Pedro. A regressão de
+fôlego baixo também cobra porta → cama → E e preserva inventário/energia.
+A campanha continua: este descanso e os capítulos anteriores não provam
+conclusão de `fazenda_chegada`; #159 permanece aberta.
 
 Uma sessão de 300 segundos desde o jogo pronto, em perfil novo e sem API,
 registrou 67 decisões, entrada pela soleira, retirada de balde/enxada/maniva

@@ -257,6 +257,19 @@ class JogadorAutomatico:
         # Uma etapa concluída sai da lista e a próxima entra no fim. A ordem
         # de inserção não deve trocar a cadeia do guia pela missão de outro NPC.
         main_mission = next((m for m in pending_main if m.get("dono") == "pedro"), next(iter(pending_main), {}))
+        if state.get("farm", {}).get("awaiting_morning") and not any(m.get("dono") == "pedro" for m in pending_main):
+            if state.get("screen"):
+                return select("close_screen", "Convite aguarda outra manha: fechar interface antes de dormir")
+            if state.get("interior") == "casa":
+                if state.get("home_interaction") == "cama":
+                    if state.get("interaction_target") == "CasaDoJogador":
+                        return select("interact", "Dormir pela cama para chegar ao dia do convite")
+                    if "face_CasaDoJogador" in actions:
+                        return select("face_CasaDoJogador", "Dar foco ao E da cama para esperar o dia do convite")
+                if "approach_bed" in actions:
+                    return select("approach_bed", "Convite aguarda outra manha: chegar a cama")
+            elif "enter_home" in actions:
+                return select("enter_home", "Convite aguarda outra manha: voltar pela porta para dormir")
         next_guide_chain = any(c.get("key") == "pedro" and c.get("main") and not c.get("started") and not c.get("completed") and not c.get("locked", False) for c in state.get("mission_chains", []))
         if not any(m.get("dono") == "pedro" for m in pending_main) and next_guide_chain and not state.get("screen"):
             probe = ("next_guide_chain", tuple(c.get("name") for c in state.get("mission_chains", []) if c.get("completed")))
@@ -358,6 +371,18 @@ class JogadorAutomatico:
                 if cursor // 10 != food_slot // 10:
                     return select("screen_down" if cursor // 10 < food_slot // 10 else "screen_up", "Selecionar fileira da comida")
                 return select("screen_right" if cursor < food_slot else "screen_left", "Selecionar comida para recuperar folego")
+            if state.get("screen"):
+                return select("close_screen", "Sem comida: fechar interface antes de buscar descanso")
+            if state.get("interior") == "casa":
+                if state.get("home_interaction") == "cama":
+                    if state.get("interaction_target") == "CasaDoJogador":
+                        return select("interact", "Folego baixo e sem comida: pedir descanso na cama pelo E")
+                    if "face_CasaDoJogador" in actions:
+                        return select("face_CasaDoJogador", "Dar foco ao E da cama antes de descansar")
+                if "approach_bed" in actions:
+                    return select("approach_bed", "Chegar a cama para recuperar folego sem comida")
+            elif "enter_home" in actions:
+                return select("enter_home", "Folego baixo e sem comida: voltar pela porta para descansar")
         if resource_meta.get("tipo") == "juntar" and resource_item in ("lenha", "pedra") and self._inventory(state).get(resource_item, 0) < resource_quantity:
             hand = state.get("inventory", {})
             required_tool = "picareta" if resource_item == "pedra" else ("machado" if any(slot.get("id") == "machado" for slot in hand.get("slots", [])[:10]) else None)

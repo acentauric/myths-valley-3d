@@ -10,6 +10,35 @@ from relatorio import generate
 
 
 class PlayerTests(unittest.TestCase):
+    def test_invitation_waits_for_morning_using_bed_without_low_energy(self):
+        bot, state = self.player(), self.state()
+        state.update(energy=80, interior="", farm={"awaiting_morning": True}, journal={"ativas": []},
+                     mission_chains=[{"key": "pedro", "main": True, "locked": False, "started": False}])
+        actions = {"enter_home": "door", "approach_bed": "bed", "follow_pedro": "guide", "interact": "E", "wait": "wait"}
+        self.assertEqual(bot.choose(state, actions, {}), "enter_home")
+        state.update(interior="casa", home_interaction="bau", interaction_target="CasaDoJogador")
+        self.assertEqual(bot.choose(state, actions, {}), "approach_bed")
+        state.update(home_interaction="cama")
+        self.assertEqual(bot.choose(state, actions, {}), "interact")
+        self.assertEqual(state["energy"], 80)
+        state["farm"]["awaiting_morning"] = False
+        state.update(interior="", interaction_target="Pedro")
+        self.assertEqual(bot.choose(state, actions, {}), "interact")
+
+    def test_exhausted_food_returns_through_door_then_bed_instead_of_futile_work(self):
+        bot = self.player()
+        state = self.state()
+        state.update(energy=3, interior="", inventory={"slots": [], "food_items": []})
+        task = {"step": {"meta": {"tipo": "juntar", "item": "lenha", "quantos": 54}}}
+        actions = {"enter_home": "door", "approach_bed": "bed", "work_E": "hit", "wait": "wait"}
+        self.assertEqual(bot.choose(state, actions, task), "enter_home")
+        state.update(interior="casa", home_interaction="bau", interaction_target="CasaDoJogador")
+        self.assertEqual(bot.choose(state, {**actions, "interact": "E"}, task), "approach_bed")
+        state.update(home_interaction="cama")
+        self.assertEqual(bot.choose(state, {**actions, "interact": "E"}, task), "interact")
+        self.assertEqual(state["energy"], 3)
+        self.assertEqual(state["inventory"]["slots"], [])
+
     def test_checkpoint_waits_for_work_to_finish_before_opening_pause(self):
         bot = self.player()
         state = self.state()

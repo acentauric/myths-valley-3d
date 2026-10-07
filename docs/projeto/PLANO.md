@@ -36,6 +36,13 @@ nominal. A fixture da Filó ativa a população para medir locomoção, não a
 apresentação gradual. Gate isolado verde em 63 s; bateria final pendente.
 
 A #159 continua em execução: fontes acessíveis estáveis, custo composto de
+receitas e recuperação pela cama sem comida. V16 concluiu Mirante e Fé;
+V17 dormiu pelo E/Sim e alcançou o dia do convite (25 → 26, fôlego 27,8 →
+77,8). A política observa o requisito de manhã da fazenda sem mudar o dia
+diretamente. 84 testes Python passam e retirar essa regra reprova; campanha
+até `fazenda_chegada` ainda em curso. Evidência em AUTOPLAYER.md.
+
+A fatia anterior de #159 inclui fontes acessíveis estáveis, custo composto de
 receitas, obra certa na interface, contornos físicos limitados, alimentação,
 documentos e retomada das cadeias do guia entram no testador. 78 testes Python
 verdes e quatro sondas Godot da ponte. A sessão V13 perdeu a coleta posterior

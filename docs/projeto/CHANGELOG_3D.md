@@ -6,6 +6,12 @@ O teste passa a cobrar Candinha, Filo, Tonho, Zefa, arraial e recursos, incluind
 
 ## Em desenvolvimento — 07/10/2026 (experimento Jev)
 
+- #159 (parcial): testador volta pela porta à cama quando falta comida e
+  fôlego; distingue o convite que aguarda outra manhã de uma conversa nova.
+  V16 concluiu Mirante/Fé e V17 usou E/Sim na cama: dia 25 → 26, fôlego
+  27,8 → 77,8, dia da fazenda marcado pela regra nativa. 84 testes Python
+  verdes; mutante sem a espera pela manhã falha. Campanha ainda em execução.
+
 - #108 (parcial): linhas do J mostram ícones do catálogo e custos como ícones
   com ×n, apagados por ingrediente insuficiente. A linha selecionada mostra
   a tecla de interação vigente. Cormorant, índices, texto dos botões e ações
