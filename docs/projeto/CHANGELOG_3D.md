@@ -6,6 +6,11 @@ O teste passa a cobrar Candinha, Filo, Tonho, Zefa, arraial e recursos, incluind
 
 ## Em desenvolvimento — 07/10/2026 (experimento Jev)
 
+- #125 (parcial): cada cerca em MultiMesh recebe corpo na mesma posição,
+  escala e inclinação, lido pela navegação. Candinha chega fisicamente à
+  Zefa; navegação e encosta passam. O passeio completo ainda reprova em
+  dois bloqueios que também aparecem no baseline sem cercas novas.
+
 - #142 (parcial): cercas preservam cantos e unem as extremidades reais,
   ajustadas ao relevo. Reserva também vale nas pontas; uma peça isolada
   entre obstáculos é removida. Quatro gates verdes, mutante do comprimento

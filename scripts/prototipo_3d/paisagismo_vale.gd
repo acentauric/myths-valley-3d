@@ -1057,3 +1057,4 @@ static func plantar_cercas(regiao: Node3D, itens: Array, receitas: Dictionary) -
 		# não devolve as transformações do MultiMesh.
 		regiao.set_meta("cercas_" + String(chave), transforms)
 		regiao._multimesh_em_blocos("Paisagismo: " + String(chave), modelo.mesh, transforms, lod)
+		CatalogoAssets.colisao_de_cercas_repetidas(regiao, String(chave), modelo, transforms)

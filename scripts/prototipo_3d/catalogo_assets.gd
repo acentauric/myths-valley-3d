@@ -757,6 +757,30 @@ static func largura_da_cerca(parent: Node, tamanho: float, senao: float) -> floa
 	return maxf(largura, 0.1)
 
 
+## Colisão das cercas em MultiMesh: mesma caixa e transformação do desenho.
+## Camada de mundo, sem câmera; a navegação lê estes corpos junto das casas.
+static func colisao_de_cercas_repetidas(parent: Node3D, chave: String,
+		modelo: Dictionary, transforms: Array[Transform3D]) -> void:
+	if modelo.is_empty() or transforms.is_empty():
+		return
+	var caixa: AABB = (modelo.base as Transform3D) * (modelo.mesh as Mesh).get_aabb()
+	var forma := BoxShape3D.new()
+	forma.size = Vector3(caixa.size.x, caixa.size.y, maxf(caixa.size.z, 0.12))
+	var corpo := StaticBody3D.new()
+	corpo.name = "CercasDaRoca_" + chave
+	corpo.set_meta("cerca_do_paisagismo", true)
+	corpo.collision_layer = Camadas.MUNDO
+	corpo.collision_mask = Camadas.MUNDO
+	parent.add_child(corpo)
+	var inversa: Transform3D = (modelo.base as Transform3D).affine_inverse()
+	for transformacao in transforms:
+		var colisao := CollisionShape3D.new()
+		colisao.shape = forma
+		corpo.add_child(colisao)
+		colisao.transform = transformacao * inversa * Transform3D(Basis(), caixa.get_center())
+	corpo.add_to_group("cercas_do_paisagismo")
+
+
 ## A BASE DE UM LANCE (#93): o X vai de `de` a `ate` — com o desnível entre as
 ## pontas, para o lance deitar na encosta —, o Z é a normal horizontal dele e o
 ## Y fica no plano vertical. Sem desnível é o giro `atan2(-rumo.z, rumo.x)` de

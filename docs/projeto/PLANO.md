@@ -5,6 +5,12 @@ raiz. O jogo 2D segue sua própria linha em `acentauric/myths-valley`.
 
 ## O que já roda
 
+As cercas repetidas ganham corpos com as transformações do desenho na
+camada de mundo (#125). Navegação e encosta passam; a Candinha alcança
+Zefa andando com colisões. A revisão permanece aberta porque o passeio
+completo ainda encontra dois bloqueios anteriores, reproduzidos sem as
+cercas novas. Evidência em [CERCAS_E_CIRCULACAO.md](../testes/CERCAS_E_CIRCULACAO.md).
+
 A #142 conserva os cantos dos terrenos e as extremidades dos lances de
 cerca: a malha se ajusta ao comprimento e ao desnível de cada trecho.
 Reservas valem em cinco pontos, e peças isoladas entre duas interrupções
