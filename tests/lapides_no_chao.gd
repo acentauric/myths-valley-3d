@@ -162,6 +162,8 @@ func _quantas() -> void:
 # --- 2. TODAS PARA O MESMO LADO -----------------------------------------------------
 
 func _para_o_mesmo_lado() -> void:
+	if "--cabeca-invertida" in OS.get_cmdline_user_args():
+		world.tumulos[0].rotate_y(PI)
 	print("")
 	print("2. todas para o mesmo lado")
 	var tolerancia := cos(0.12)

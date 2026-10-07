@@ -419,3 +419,9 @@ Portão `foco_da_narracao`: reserva, componente externo preservado, troca de foc
 A inspeção do cemitério encontrou erro de compilação em `estacoes_vale.gd` quando um script pré-carregava o catálogo. O registro de materiais passa a consultar a estação guardada por `aplicar`, sem depender de um identificador de autoload na compilação. Assim, modelos carregados depois recebem a estação vigente e repetir o registro preserva a cor original.
 
 `estacao_no_catalogo` pré-carrega o catálogo e confere registro tardio e cor sem deriva. A falsificação `--estacao-inicial` reprova. Regressões: `estacoes_do_vale`, `lapides_no_chao` e `lapides_no_chao_procedural`. O sucesso textual do antigo gate não foi aceito enquanto havia SCRIPT ERROR no log.
+
+### 07/10/2026: verificação das sepulturas (#123)
+
+O layout de `cemiterio_layout.gd`, já presente na main integrada, satisfaz a revisão: doze sepulturas preservam a ordem das histórias, cabeceiras para o mesmo lado, intervalos de passagem, corredor diante da capelinha e bases assentadas pelo terreno dos cantos. O portão consulta também a malha física real, a cápsula nos corredores e as reservas de moradores/recursos. As três lajes levantadas pela raiz continuam sendo trabalho intencional da missão do Damião, não defeito de colocação.
+
+`lapides_no_chao` (47 s) e `lapides_no_chao_procedural` (37 s) verdes. Nova falsificação `--cabeca-invertida` reprova a associação/orientação da primeira sepultura. Capturas reais no Tripo em `scratch/cemiterio123/visao-{0,1,2}.png`, entrada, proximidade e corredor da capela, conferidas visualmente. O log da repetição não contém SCRIPT ERROR. A arte específica da cerca permanece na #111; a #123 pode ser encerrada sem substituir o modelo existente.
