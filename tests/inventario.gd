@@ -17,9 +17,9 @@ extends SceneTree
 ##   2. A REGRA DE GUARDAR FUNCIONA: entra, empilha, conta e sai.
 ##   3. A MÃO LIVRE EXISTE, que é o estado de colher.
 ##   4. O CATÁLOGO VEIO INTEIRO, com os itens que a campanha cita pelo nome.
-##   5. ÍCONE AUSENTE NÃO DERRUBA NADA. As artes de 32px são do 2D e chegam
-##      com a mochila (Fase 6 do plano); até lá `icone()` devolve `null` e
-##      avisa, como o `CatalogoAssets` faz com peça Tripo não exportada.
+##   5. ÍCONE AUSENTE NÃO DERRUBA NADA. O catálogo integrado tem sprites;
+##      pedir uma arte inexistente ainda deve devolver `null` sem quebrar
+##      a mochila. A inicial do item continua disponível como fallback.
 
 var falhas := 0
 

@@ -20,12 +20,11 @@ extends CanvasLayer
 ##
 ## O cordel e a carta se leem numa folha por cima da tela, e essa folha é do
 ## projeto: no jogo 2D é o `Tela.ler_documento`, que escurece e passa página.
-## Este arquivo é compartilhado com o protótipo 3D, que não tem `Tela` — então
+## Este arquivo é usado pelo protótipo 3D; não acopla documentos a uma tela — então
 ## ele não pergunta a ninguém pelo nome, pergunta a quem foi apresentado.
 ##
-## Vazio quer dizer que este projeto ainda não sabe mostrar documento, e aí
-## clicar num cordel fecha a mochila e não faz mais nada. É melhor do que
-## estourar, e é o estado honesto de um vale que ainda não tem a folha.
+## Vazio é o fallback para uma cena que não apresentou um leitor. No vale,
+## `Prototype` conecta `_ler_documento`: cordéis abrem a folha existente.
 ##
 ## Mesma costura de `Vida.esta_lendo`. Ver `Telas._ready`.
 var abrir_documento: Callable = Callable()

@@ -104,7 +104,8 @@ luz, som ou moradores do 3D.
   tradução que é cópia do português; o que ainda falta fica declarado em
   `FALTAM_TRADUCAO`, com a razão escrita.
 - **Moradores e voz:** postos e falas em `data/npcs_3d.json`;
-  missões do Pedro em `guia_pedro.gd`; vozes pt-BR do ElevenLabs em
+  missões do Pedro em `data/missoes_guia.json`, executadas por
+  `cadeia_de_missoes.gd` e apresentadas por `guia_pedro.gd`; vozes pt-BR do ElevenLabs em
   `assets/audio/vozes/` (o texto longo fica no balão; a voz é só a
   saudação ou a narração curta).
 - **Sobrevoo do menu:** é um trajeto gravado (`data/sobrevoo_menu.json`) que contorna

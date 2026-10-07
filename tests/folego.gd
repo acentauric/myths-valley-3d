@@ -18,9 +18,9 @@ extends SceneTree
 ##   3. O CORPO SENTE. O `player_controller` multiplica a velocidade pelo
 ##      `Energia.passo()` — lido do fonte, porque medir velocidade de um corpo
 ##      que anda por física dá um teste que falha por pouco em máquina lenta.
-##   4. SÓ A LUTA GASTA FÔLEGO, e só a queda desmaia. No 2D quem cobra é a
-##      enxada, o machado, a picareta e a luta; o vale ainda não tem trabalho,
-##      e a luta chegou com a #14 — o golpe e a ginga cobram "bater" como lá, e
+##   4. LUTA E TRABALHO GASTAM FÔLEGO, e a queda desmaia. O vale tem
+##      enxada, machado, picareta e lavoura; seus portões cobram esses usos.
+##      A luta chegou com a #14 — golpe e ginga cobram "bater", e
 ##      o `tests/luta.gd` confere quanto. A QUEDA (`queda.gd`, #10) chama
 ##      `Energia.desmaiar()` como o `_apagar` do 2D, que devolve fôlego. Quem
 ##      mais passar a gastar ou a desmaiar reprova aqui, e o recado é o mesmo

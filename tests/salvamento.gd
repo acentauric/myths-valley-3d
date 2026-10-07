@@ -78,7 +78,7 @@ const FORA_DO_SAVE := {
 		"letra_de_fechar": "consulta ao atalho configurado no projeto, sem estado de partida; a preferência tem arquivo próprio e o Callable é reinstalado ao abrir o vale",
 		"aberta": "estado de tela aberta, não de partida: carregar com ela salva abriria a mochila por cima do vale recém-carregado",
 		"abrir_documento": "é a PERGUNTA sobre a interface, não estado de partida — mesma costura de `Vida.esta_lendo`: quem responde é o projeto, e salvar um Callable seria salvar um pedaço de código de uma execução para outra",
-		"alguem_fala": "idem: quem responde é o projeto. No 2D é o `Dialogo`, pelo `Telas._ready`; no vale ninguém responde, e Callable inválido vale por 'ninguém fala'",
+		"alguem_fala": "consulta de interface, não estado de partida: Dialogo existe no vale, mas esta costura ainda não é ligada (#72, acompanhada na composição de telas #140); Callable inválido vale por ninguém fala",
 	},
 }
 

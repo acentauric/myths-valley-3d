@@ -5,6 +5,11 @@ raiz. O jogo 2D segue sua própria linha em `acentauric/myths-valley`.
 
 ## O que já roda
 
+A revisão documental #72 acompanha o estado de 07/10/2026 em
+[BOARD_2026-10-07.md](BOARD_2026-10-07.md), incluindo as issues posteriores
+ao plano original. O [registro da revisão](REVISAO_DOCUMENTAL_72.md)
+distingue texto corrigido, história preservada e critérios de release pendentes.
+
 A #120 está concluída (07/10/2026): o HUD conserva missão, ação e medidores
 compactos, sem o rótulo persistente de mão livre. Na chegada, fala e aviso
 de espera passam pela matriz sem se cobrir. A composição real passou em

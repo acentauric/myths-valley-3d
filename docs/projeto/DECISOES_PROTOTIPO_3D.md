@@ -28,6 +28,13 @@
 > #7). Se algum deles precisar voltar para a jam, a decisão é do Ramon, e
 > o marco da issue muda junto — este documento não passa por cima do board.
 
+> **Estado em 07/10/2026 (#72):** plantio (#8) e save (#7) já estão
+> integrados. Os recortes de setembro abaixo são históricos. A lista de
+> pronto (§10) é uma lista de validação da entrega, não um placar de
+> implementação: teste em outra máquina (#38), campanha completa (#1/#159),
+> IA (#32), desempenho final (#43), revisão do autor (#41) e release
+> identificável (#39) ainda dependem de suas próprias evidências.
+
 Este documento se aplica ao **protótipo 3D da jam**. Não substitui o GDD completo nem autoriza remover funcionalidades da versão 2D. As escolhas expressas por Ramon são requisitos; os números reduzidos de conteúdo e a ordem de implementação são o recorte técnico proposto para cumprir o prazo.
 
 ### Registro do primeiro teste local — 23/09/2026
@@ -44,7 +51,7 @@ Impacto no plano: a estrutura `assets/`, `scenes/`, `scripts/` e `tools/` deste 
 
 ### Registro da integração de animações — 23/09/2026
 
-O segundo arquivo fornecido, `medieval+character+3d+model.glb`, reúne o personagem, o mesmo esqueleto de 65 ossos e 11 clipes exportados no Tripo. O protótipo passou a usar esse GLB. `idle`, `walk` e `run` são escolhidos automaticamente pela velocidade; oito gestos podem ser acionados pelas teclas 1–8 e são interrompidos quando o personagem volta a andar.
+O segundo arquivo fornecido, `medieval+character+3d+model.glb`, reúne o personagem, o mesmo esqueleto de 65 ossos e 11 clipes exportados no Tripo. O protótipo passou a usar esse GLB. `idle`, `walk` e `run` são escolhidos automaticamente pela velocidade; oito gestos podem ser acionados pelas teclas Alt+1–Alt+8 e são interrompidos quando o personagem volta a andar.
 
 O arquivo foi validado com animações no lugar, deixando deslocamento e colisões sob responsabilidade do `CharacterBody3D`. O teste integrado agora confere os nomes dos clipes e a troca entre gestos e locomoção, além das validações anteriores. O passo a passo de uso, reexportação e mapeamento está em [COMO_JOGAR_3D.md](../experiencia/COMO_JOGAR_3D.md).
 

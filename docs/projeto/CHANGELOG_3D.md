@@ -6,6 +6,12 @@ O teste passa a cobrar Candinha, Filo, Tonho, Zefa, arraial e recursos, incluind
 
 ## Em desenvolvimento — 07/10/2026 (experimento Jev)
 
+- **Docs: o guia acompanha o jogo atual (#72).** Abertura, save, mapa,
+  idiomas, rig, gestos, lavoura, espólio e comentários de interface revistos.
+  Custos e decisões antigos permanecem identificados como históricos;
+  a definição de pronto continua dependente das evidências de release.
+  O plano aponta para a fotografia completa do board em 07/10.
+
 - **A chegada mantém o HUD legível (#120).** Composição com missão, fala
   real e aviso de espera nos três idiomas: sem rótulo persistente de mão,
   sem duplicar a fala no rodapé e sem sobrepor espera e balão. Barra,

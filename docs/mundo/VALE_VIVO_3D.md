@@ -1,6 +1,7 @@
 # O vale vivo: estilos, dia e noite, moradores e som (protótipo 3D)
 
-Estado de 26/09/2026. Tudo aqui é da cena `scenes/prototipo_3d/vale.tscn` e do
+Estado revisado em 07/10/2026 (#72). As medições datadas abaixo preservam
+as condições e resultados de cada levantamento. Tudo aqui é da cena `scenes/prototipo_3d/vale.tscn` e do
 menu `abertura.tscn`; o 2D não muda.
 
 Este documento descreve o estado implementado. A direção aprovada para transformar
@@ -17,7 +18,7 @@ construído (autoload `Estilo`, salvo em `user://preferencias_visuais.cfg`):
 |---|---|---|
 | casas, árvores nomeadas, adereços, itens | GLBs do Tripo Studio (`CatalogoAssets`) | construtores de `world_builder.gd` e `flora_reconcavo.gd` |
 | mata e coqueiros da orla (`MultiMesh`) | malhas dos GLBs `mata_a`, `mata_b`, `embauba`, `dende` | espécies procedurais |
-| personagem e moradores | GLBs do Tripo (`personagens/`); sem rig ainda, aparecem em pose T. O jogador usa o GLB medieval animado até `viajante_tripo.glb` ter clipes | `PersonagemProcedural` (humanoide por código, com andar, corrida e 8 gestos) |
+| personagem e moradores | GLBs com rig em `personagens/`, controlados por `authored_animator.gd`; revisão de qualidade do viajante em #55 e dos animais em #149 | `PersonagemProcedural` (humanoide por código, com andar, corrida e 8 gestos), preservado como legado |
 | terreno, ruas, rios, mar, luz e som | iguais nos dois | iguais nos dois |
 
 O toggle existe para decidir a linha mestra olhando os dois no mesmo lugar; não
@@ -359,7 +360,7 @@ anda por dentro e a parede do fundo segura.
 | cores do céu por hora | `world_builder.gd::_aplicar_hora` |
 | onde ficam lampiões/candeeiros | `world_builder.gd::_build_luzes_epoca` |
 | postos e falas dos moradores | `data/npcs_3d.json` |
-| missões do Pedro | `guia_pedro.gd::MISSOES` |
+| missões do Pedro | `data/missoes_guia.json`, executadas por `cadeia_de_missoes.gd`; `guia_pedro.gd` apresenta o guia |
 | paletas do humanoide procedural | `personagem_procedural.gd::PALETAS` |
 | catálogo de GLBs do Tripo | `catalogo_assets.gd::PECAS` |
 | a mobília, a porta ou o nome de uma casa por dentro | `data/interiores_casas.json` (e rode `tests/casas_por_dentro.gd`) |

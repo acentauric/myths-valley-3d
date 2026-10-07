@@ -113,7 +113,11 @@ Consequências:
 
 ## Rig e animação dos personagens (em andamento)
 
-Os nove personagens do lote foram gerados em pose T, prontos para rig. No Studio:
+Os nove personagens do lote original foram gerados em pose T. Esse é o
+registro do processo de 26/09, não o estado atual dos moradores. Os GLBs
+integrados têm rig e clipes; a qualidade ainda é acompanhada em #55 e #149.
+Custos abaixo são observações históricas, não autorização para um novo lote.
+No Studio:
 
 | Passo | Onde | Custo observado |
 |---|---|---|
@@ -123,8 +127,7 @@ Os nove personagens do lote foram gerados em pose T, prontos para rig. No Studio
 
 Clipes pedidos para os moradores: `idle`, `walk`, `run`, `greet_01`, `agree`,
 `look_around`, `wave_goodbye_02` (o viajante leva também `chop`, `afraid`, `fold_arms`,
-`swim`). **Pedro** já tem rig e os sete clipes (projeto `c8a8039c-…`); falta exportar pela
-interface. **Pedro está pronto** (26/09): na tela Animar, clicar em cada predefinição
+`swim`). **Pedro foi exportado** (26/09, projeto `c8a8039c-…`): na tela Animar, clicar em cada predefinição
 (ocioso, caminhar, correr, cumprimentar_01, concordar, olhar_ao_redor, dar_tchau_02)
 e depois Exportar → Número de Animações → Selecionar tudo → Exportar; GLB com 65
 ossos e 8 clipes em `personagens/pedro_tripo.glb` (textura 1K). A chamada direta
@@ -134,10 +137,10 @@ Os clipes chegam com sufixo (`walk.001`); o Godot os importa como `walk_001`,
 `greet_01_002`. `authored_animator.gd` tira o sufixo de três dígitos, então não é
 preciso renomear nada.
 
-No jogo nada precisa mudar quando o GLB animado chegar: `npc.gd` usa
-`authored_animator.gd` sempre que o modelo tem `AnimationPlayer`, e o jogador só troca
-o personagem medieval pelo `viajante_tripo.glb` quando este tiver clipes. Até lá, no
-estilo Tripo os moradores aparecem em pose T, deslizando com um balanço leve.
+`npc.gd` usa `authored_animator.gd` quando o modelo tem `AnimationPlayer`.
+O viajante usa seu GLB animado; a pose T descrita nos registros do lote
+não é a apresentação prevista no jogo. A revisão da Beata (#139) removeu
+o deslocamento excessivo do quadril durante a caminhada.
 
 ## Orçamento por tipo de asset
 

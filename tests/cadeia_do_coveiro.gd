@@ -21,7 +21,8 @@ extends SceneTree
 ##
 ##   2. QUE A CADEIA ABRA SOZINHA AO CHEGAR PERTO. O Pedro abre no `saudar()`;
 ##      o Damião abre por proximidade, porque no 2D quem manda subir ao
-##      cemitério é a Dona Zefa, e ela ainda não tem fila no vale. Sem isso a
+##      cemitério é a Dona Zefa, que hoje tem `missoes_zefa.json`. A abertura
+##      por proximidade continua sendo conferida independentemente dela. Sem isso a
 ##      missão existiria e seria inalcançável, que é a pior forma de existir.
 ##
 ##   3. QUE O CAPIM SÓ CAIA DE FOICE, e que a foice venha ANTES de o corte ser

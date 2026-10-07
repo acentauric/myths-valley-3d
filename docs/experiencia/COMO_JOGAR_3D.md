@@ -10,7 +10,7 @@ No Godot Project Manager, outra opção é importar **`project.godot`** e execut
 
 ## Vida, fôlego e vigor
 
-As três barras abaixo do relógio são três contas. **Vida**, em cima, vermelha
+As três barras à direita do relógio são três contas. **Vida**, em cima, vermelha
 (verde com peçonha): bicho e peçonha tiram dela; zerada, o jogador apaga e acorda
 em casa no dia seguinte. **Fôlego**, no meio, só com o número: a reserva do dia,
 a `Energia` do 2D — enxada, machado, picareta, lavoura e luta gastam dela, e só
@@ -80,7 +80,7 @@ No estilo **Procedural** (AJUSTAR → Cenário e tempo) as teclas Alt+1 a Alt+8 
 
 **Missão concluída:** todo passo de missão cumprido escurece a tela por um instante e mostra o emblema, "Missão concluída", o nome do passo e de que missão ele é. Some sozinha, sem segurar o jogo.
 
-Parado, o personagem reproduz `idle`. Um gesto termina naturalmente e volta para `idle`; começar a andar interrompe o gesto. Explore a praça, a horta e a costa: o indicador acompanha os três pontos visitados.
+Parado, o personagem reproduz `idle`. Um gesto termina naturalmente e volta para `idle`; começar a andar interrompe o gesto. Explore a praça, a horta e a costa: o indicador acompanha os pontos explorados no vale.
 
 ## O que este teste entrega
 
@@ -91,7 +91,7 @@ Parado, o personagem reproduz `idle`. Um gesto termina naturalmente e volta para
 - Câmera em terceira pessoa com `SpringArm3D`, zoom e reação a obstáculos.
 - Vila de teste com casas, caminhos, horta, árvores, praia, iluminação e colisões.
 - Casa de Carro Quebrado gerada no Tripo, otimizada, escalada e com colisão simples.
-- Interface, reinício de posição e três pontos de exploração.
+- Interface, reinício de posição e doze pontos de exploração.
 
 As casas usam seus pontos geográficos como referência, mas a posição final é procurada em terra com espaço para a construção inteira, fora de todas as ruas e árvores. Árvores manuais que coincidiriam com uma casa são reposicionadas. A Casa da estrada também segue essa regra; sua coordenada KML continua sendo a referência inicial.
 
@@ -105,17 +105,29 @@ O **machado** chega na missão da ponte do rio grande: o Pedro leva você até a
 
 Uma vez por estação — o mês do calendário do vale, de 28 dias —, no **dia 14**, das 7h às 17h, o **saveiro do mestre Quirino** encosta no píer. O mestre fica de pé no tabuado, e perto dele o painel (J) ganha a aba **Saveiro**: ele compra o que se produziu no mês (piaçava, farinha, mandioca, milho, cana, peixe, robalo, traíra, ostra, lenha) por mais do que a venda paga, até o tanto que leva em cada viagem; W/S escolhem e E vende um. Quem conta isso é o **Seu Benedito**, depois do tutorial do Pedro: ele empresta o facão e pede dez feixes de piaçava para o mestre. Depois da missão dele, a encomenda de dez feixes volta ao caderno toda estação — entregue tudo na mesma viagem e o mestre dá um agrado; se o saveiro parte sem ela, ela sai do caderno.
 
-Com a **vara de pescar** na mão (vende no balcão) e a água à frente — o píer, a praia, a beira do rio —, E lança a linha; quando a bóia afunda e acende o "!", E de novo, rápido, ferra o peixe. No rio sai traíra, no mar sai robalo. Andar recolhe a linha. Na **fogueira do terreiro**, ao lado da Casa de taipa, o E abre o fogão, e na **bancada da oficina** (atrás da casa, na beira do roçado) o E abre a oficina, onde a lenha vira tábua e corda; o painel (J) perto delas abre as mesmas abas. Perto da Casa de taipa, do armazém (Venda do Bar), do mirante, do poço e do píer, o painel (J) ganha a aba de **obras** daquela construção: com o plano sabido e o material na mochila, E toca a obra, e o ganho dela vai para o corpo (fôlego, descanso). Os planos de começo já se sabem; outros se compram no balcão. A casa começa com o básico — cama, baú, o pote d'água e a lamparina — e cada obra de mobília feita põe o móvel dela no cômodo, no lugar que cabe sem tomar a porta: a mesa com o banco, o oratório, a estante, o canto da cozinha e a rede no lugar da cama. Toda obra feita dá XP e melhora um atributo do corpo. As obras de casca e de planta (a varanda, o sobrado, o quarto) ainda não mudam a casa por fora nem por dentro. Um **caititu** mora na mata fechada, longe da vila (por enquanto uma caixa cinza, até o modelo com rig chegar): fareja quem chega perto, **anuncia o bote** — acende em âmbar, abaixa e marca no chão até onde a mordida alcança — e só então morde. Derrubado, deixa a carne de caça na mochila e volta em três dias. Para lutar de facão, escolha-o na barra de mão (1–0 ou a rodinha): arma vai nos números, e o encaixe Mãos da mochila (I) é das luvas — as de couro vendem no balcão, e com elas a lida cansa menos. Pelo arraial há **cordéis** esquecidos — no balcão da venda, na capela velha, no bar, no cemitério, no mirante, na ponta do píer: chegue perto e aperte E para guardá-los no almanaque (L). O cordel achado abre no papel, para ler inteiro; E, Esc ou um clique o guardam. No almanaque, escolher de novo o cordel aberto o relê no papel. Na mata fechada, longe da vila, a Caipora deixa um **sinal**; depois de vê-lo aparecem ali as cartas dela. Pegar a carta de pacto abre a conversa dela na caixa de fala — o que ela dá, o que cobra — e a pergunta **Firmar?**: Sim firma ali mesmo, Não deixa a carta com você (o pacto também se firma e se desfaz no painel, aba Cartas). A **vida** já aparece: a barra logo abaixo do relógio, vermelha (verde-musgo com peçonha). Embaixo dela, o **fôlego**: verde, e vermelho com "cansado" quando o corpo está no fim — o passo encurta e não dá para correr até comer ou dormir. Quem cai acorda na porta da Casa de taipa às 6h do dia seguinte, inteiro: no escuro, o cartão do amanhecer diz o dia, a estação, o fôlego e o que está marcado (E pula a espera), e ao clarear alguém conta o que houve, na caixa de fala. A regra de mochila, missões, fé, receitas, luta, obras, venda, pesca, cartas e salvamento também já roda no vale, vinda do 2D, mas o jogador ainda não a vê: faltam as telas e os gatilhos. Os saves ficam no diretório de usuário `MythsValleyPrototype3D`, separados dos da versão 2D. Plantação, terrenos e a conversa por IA ainda não existem no 3D. O que falta, e em que ordem, está nas [issues com rótulo `3d`](https://github.com/acentauric/myths-valley-3d/issues?q=is%3Aissue+is%3Aopen+label%3A3d) e no [plano de migração](../projeto/MIGRACAO_2D_3D.md).
+Com a **vara de pescar** na mão (vende no balcão) e a água à frente — o píer, a praia, a beira do rio —, E lança a linha; quando a bóia afunda e acende o "!", E de novo, rápido, ferra o peixe. No rio sai traíra, no mar sai robalo. Andar recolhe a linha. Na **fogueira do terreiro**, ao lado da Casa de taipa, o E abre o fogão, e na **bancada da oficina** (atrás da casa, na beira do roçado) o E abre a oficina, onde a lenha vira tábua e corda; o painel (J) perto delas abre as mesmas abas. Perto da Casa de taipa, do armazém (Venda do Bar), do mirante, do poço e do píer, o painel (J) ganha a aba de **obras** daquela construção: com o plano sabido e o material na mochila, E toca a obra, e o ganho dela vai para o corpo (fôlego, descanso). Os planos de começo já se sabem; outros se compram no balcão. A casa começa com o básico — cama, baú, o pote d'água e a lamparina — e cada obra de mobília feita põe o móvel dela no cômodo, no lugar que cabe sem tomar a porta: a mesa com o banco, o oratório, a estante, o canto da cozinha e a rede no lugar da cama. Toda obra feita dá XP e melhora um atributo do corpo. As obras de casca e de planta (a varanda, o sobrado, o quarto) ainda não mudam a casa por fora nem por dentro. O **caititu** anuncia o bote antes de morder. Derrubado, deixa o espólio
+no chão: chegue perto e use E; ele fica ali e no save até ser recolhido.
+Armas entram pela barra de mão; o encaixe Mãos é para luvas. Cordéis
+achados com E entram no almanaque (L) e abrem a folha de leitura.
+Mochila, missões, fé, receitas, luta, obras, venda, pesca, cartas e
+salvamento têm interfaces e gatilhos no vale. A lavoura permite arar,
+plantar, regar e colher; o terreno já é editável. A conclusão integral
+da campanha ainda é acompanhada em #1 e #159, conversa por IA em #32,
+e regiões incompletas em #22–#30. Os saves ficam em
+`MythsValleyPrototype3D`, separados do 2D. O
+[board](https://github.com/acentauric/myths-valley-3d/issues) registra
+o trabalho restante.
+
 
 ## Como a animação funciona
 
 O fluxo é pequeno de propósito:
 
-1. `personagem.tscn` aponta para `medieval_character_animated.glb`.
+1. O catálogo escolhe o GLB do viajante com rig; o modelo medieval citado nos registros antigos foi a base inicial.
 2. O Godot transforma o GLB em uma cena com `Skeleton3D`, malha e `AnimationPlayer`.
 3. `player_controller.gd` instancia o modelo, normaliza a altura e envia a velocidade atual ao animador.
 4. `authored_animator.gd` escolhe `idle`, `walk` ou `run` e mistura as transições em 0,18 segundo.
-5. As teclas 1–8 pedem clipes de gesto; a barra de espaço inicia o salto e, no estilo Tripo, reproduz `pular_baixo` (`jump_down` no GLB). O salto continua até aterrissar, mesmo com movimento horizontal; os outros gestos são interrompidos pelo movimento.
+5. As teclas Alt+1–Alt+8 pedem clipes de gesto; a barra de espaço inicia o salto e, no estilo Tripo, reproduz `pular_baixo` (`jump_down` no GLB). O salto continua até aterrissar, mesmo com movimento horizontal; os outros gestos são interrompidos pelo movimento.
 
 Abra a cena importada pelo painel **FileSystem** do Godot e selecione `AnimationPlayer` para visualizar a lista e reproduzir os clipes no editor. O protótipo usa `AnimationPlayer` diretamente; um `AnimationTree` só será necessário quando houver combinações mais complexas, como ataque durante corrida ou camadas independentes para tronco e pernas.
 
@@ -135,7 +147,7 @@ Para repetir o resultado apresentado:
 
 O arquivo atual contém estes 12 clipes: `afraid`, `agree`, `chop`, `fold_arms`, `greet_01`, `idle`, `jump_down`, `look_around`, `run`, `swim`, `walk` e `wave_goodbye_02`.
 
-Para trocar quais gestos as teclas 1–8 e a barra de espaço chamam, edite somente a constante `GESTURES` em `scripts/prototipo_3d/authored_animator.gd`. Para nomes diferentes de parado/andar/correr, ajuste `MOTION_CLIPS` no mesmo arquivo. Assim o controlador de física e a câmera não precisam mudar.
+Para trocar quais gestos as teclas Alt+1–Alt+8 e a barra de espaço chamam, edite somente a constante `GESTURES` em `scripts/prototipo_3d/authored_animator.gd`. Para nomes diferentes de parado/andar/correr, ajuste `MOTION_CLIPS` no mesmo arquivo. Assim o controlador de física e a câmera não precisam mudar.
 
 ## Casa gerada no Tripo
 
@@ -170,7 +182,7 @@ Com o Godot 4.7.2 instalado no caminho usado pelo projeto:
 
 ```powershell
 & 'C:\Tools\Godot\Godot_v4.7.2-stable_win64_console.exe' `
-  --path 'C:\VIRTUALENVS\myths-valley\myths-valley-3D' `
+  --path '.' `
   --script 'res://tools/prototipo_3d/smoke_test.gd'
 ```
 

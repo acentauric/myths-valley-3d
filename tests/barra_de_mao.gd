@@ -132,8 +132,8 @@ func _run() -> void:
 	var icone := primeiro.get_node_or_null("Icone") as TextureRect
 	_conferir(conteudo != null and icone != null, "o espaço não tem rótulo nem ícone")
 	if conteudo != null and icone != null:
-		# Com ícone ou sem, alguma coisa tem de aparecer: a arte de 32px é do 2D
-		# e ainda não veio para cá, e aí a inicial do item faz as vezes dela.
+		# Os sprites estão integrados; se uma arte faltar, a inicial do item
+		# ainda precisa representar o espaço, sem deixá-lo vazio.
 		_conferir(icone.texture != null or conteudo.text != "",
 			"a picareta entrou na mochila e o espaço ficou vazio na tela")
 	Inv.adicionar("cana", 2)

@@ -26,9 +26,9 @@ extends Node
 ## Quando uma onça vê o jogador pela primeira vez, o HUD avisa; enquanto
 ## alguma caça, toca a música da mata.
 ##
-## O QUE O VALE AINDA NÃO TEM, e a luta não espera: a mão se escolhe pela
-## mochila (#2) e pelas teclas (#4); até lá, só quem pôs a arma na mão por
-## código luta de facão — de mão vazia, luta quem aprendeu a capoeira. O que o
+## A mão se escolhe pela barra (1–0) e consulta `Equipamento.no_encaixe`:
+## o jogador equipa a arma pela interface; de mão vazia, luta quem aprendeu
+## a capoeira. O que o
 ## bicho deixa fica no chão e no save, até ser recolhido com E (#67).
 
 const Criatura = preload("res://scripts/prototipo_3d/criatura_vale.gd")
