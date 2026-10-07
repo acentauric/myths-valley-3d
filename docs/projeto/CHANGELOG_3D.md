@@ -20,7 +20,8 @@
   pelo vale, com semente, longe das ruas, das casas e dos lugares da vila. As pedras
   grandes (os lajedos, as rochas e os matacões) deixam de ser cenário e viram alvo
   de dias: pedem a picareta de aço e o talento Mão de pedra, rendem duas pedras a
-  cada quatro golpes, e a dica conta o trabalho ("Lajedo 12/96"). As árvores já
+  cada quatro golpes, e a dica conta o trabalho ("Lajedo 12/96"); a seta de "junte
+  pedras" não aponta a pedra grande a quem só tem a picareta de ferro. As árvores já
   seguiam a regra (madeira branca, de lei e dura, com nível e aço).
 - **Playtest de 07/10, sexta fatia: a voz do arremate.** O Pedro narra, na voz dele, a
   fala de depois do convite lido (`pedro_convite_arremate`, gerada no ElevenLabs pela

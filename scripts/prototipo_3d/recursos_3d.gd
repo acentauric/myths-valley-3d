@@ -945,8 +945,11 @@ func mais_perto_que_rende(item: String, de: Vector3) -> Vector3:
 		if d.length() < menor:
 			menor = d.length()
 			melhor = _alvos[id]["pos"]
+		# O QUE CEDE: a ferramenta na mochila E do grau que o alvo pede, com o talento
+		# (07/10): a pedra grande rende pedra, mas só ao aço e ao talento — a seta de
+		# "junte três pedras" não pode apontar o lajedo a quem tem a picareta de ferro.
 		var ferramenta := str(ficha.get("ferramenta", ""))
-		if (ferramenta == "" or _carrega(ferramenta)) and d.length() < menor_que_cede:
+		if (ferramenta == "" or (_carrega(ferramenta) and _o_que_impede(ficha, false) == "")) and d.length() < menor_que_cede:
 			menor_que_cede = d.length()
 			cede = _alvos[id]["pos"]
 	return cede if cede != Lugares.NENHUM else melhor
