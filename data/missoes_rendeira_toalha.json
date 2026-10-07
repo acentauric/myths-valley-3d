@@ -1,0 +1,70 @@
+{
+  "observacao": "A TOALHA DO TIO (fase 2 de docs/projeto/MISSOES_SECUNDARIAS.md, 07/10/2026): o primeiro arco de enredo dos moradores do 3D, do gancho que a rendeira já tinha em data/dialogos/aldeoes.json ('Seu tio me encomendou uma toalha e nunca buscou... branca de todo... pra mesa de alguém que ia chegar'). Dois passos: ela entrega a toalha (item novo, toalha_de_renda) na janela, e o jogador a põe na mesa da casa de taipa (meta 'oferendar', a mesma das conchas da gameleira). Abre com o favor dela feito e a afinidade em 'Gente boa' (grau 2).",
+  "dono": "rendeira",
+  "nome": "A toalha do tio",
+  "nome_en": "The uncle's tablecloth",
+  "nome_es": "El mantel del tío",
+  "trancada": "A toalha é coisa de quem eu conheço de verdade, moço. Passe mais vezes, converse, e ela sai da gaveta.",
+  "trancada_en": "The tablecloth is for people I truly know, young man. Come by more often, talk a while, and it comes out of the drawer.",
+  "trancada_es": "El mantel es cosa de quien conozco de verdad, muchacho. Pasa más veces, conversa, y sale del cajón.",
+  "principal": false,
+  "passos": [
+    {
+      "id": "toalha_na_janela",
+      "titulo": "A toalha dobrada",
+      "titulo_en": "The folded tablecloth",
+      "titulo_es": "El mantel doblado",
+      "resumo": "Pegue a toalha com a Dona Estefânia",
+      "resumo_en": "Get the tablecloth from Dona Estefânia",
+      "resumo_es": "Recoge el mantel con Doña Estefânia",
+      "lugar": "casa_da_rendeira",
+      "raio": 6,
+      "audio": "",
+      "texto": "Chegue, que eu lhe mostro. Esta aqui. Seu tio me encomendou e nunca buscou — está dobrada desde então. Pediu branca de todo, com o nome dele na borda, em ponto cheio. Disse que era pra mesa de alguém que ia chegar. Leve. Ela é sua, e a mesa também.",
+      "texto_en": "Come close, let me show you. This one. Your uncle ordered it and never came for it — it's been folded ever since. He asked for it all white, with his name on the hem, in satin stitch. He said it was for the table of someone who was coming. Take it. It's yours, and so is the table.",
+      "texto_es": "Acércate, que te muestro. Esta. Tu tío me la encargó y nunca la buscó — está doblada desde entonces. La pidió blanca del todo, con su nombre en el borde, en punto lleno. Dijo que era para la mesa de alguien que iba a llegar. Llévala. Es tuya, y la mesa también.",
+      "entrega": {
+        "item": "toalha_de_renda",
+        "quantidade": 1
+      },
+      "recompensa": {
+        "xp": 10
+      },
+      "meta": {}
+    },
+    {
+      "id": "toalha_na_mesa",
+      "titulo": "A mesa da casa de taipa",
+      "titulo_en": "The mud-house table",
+      "titulo_es": "La mesa de la casa de adobe",
+      "resumo": "Ponha a toalha na mesa da casa de taipa",
+      "resumo_en": "Lay the tablecloth on the mud-house table",
+      "resumo_es": "Pon el mantel en la mesa de la casa de adobe",
+      "lugar": "casa_de_taipa",
+      "raio": 6,
+      "audio": "",
+      "texto": "Em casa, abra a toalha na mesa. É o que ele queria.",
+      "texto_en": "At home, spread the tablecloth on the table. It's what he wanted.",
+      "texto_es": "En casa, abre el mantel sobre la mesa. Es lo que él quería.",
+      "recompensa": {
+        "xp": 15
+      },
+      "meta": {
+        "tipo": "oferendar",
+        "item": "toalha_de_renda",
+        "quantos": 1,
+        "lugar": "casa_de_taipa",
+        "raio": 6,
+        "resposta": "A toalha aberta na mesa, branca de todo. Na borda, em ponto cheio, o nome dele. A casa ficou mais arrumada do que você.",
+        "resposta_en": "The tablecloth spread on the table, all white. On the hem, in satin stitch, his name. The house is now tidier than you are.",
+        "resposta_es": "El mantel abierto sobre la mesa, blanco del todo. En el borde, en punto lleno, su nombre. La casa quedó más ordenada que tú."
+      }
+    }
+  ],
+  "arremate": {
+    "texto": "A toalha branca de todo está na mesa da casa de taipa, com o nome dele na borda. Era pra mesa de alguém que ia chegar — e chegou.",
+    "texto_en": "The all-white tablecloth is on the table of the mud house, with his name on the hem. It was for the table of someone who was coming — and came.",
+    "texto_es": "El mantel blanco del todo está en la mesa de la casa de adobe, con su nombre en el borde. Era para la mesa de alguien que iba a llegar — y llegó.",
+    "narra": false
+  }
+}

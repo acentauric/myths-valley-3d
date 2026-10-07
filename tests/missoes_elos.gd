@@ -115,7 +115,7 @@ func _ler_os_arquivos() -> void:
 		if dado is Dictionary:
 			arquivos.append({"nome": nome, "dado": dado})
 	# 25 desde 07/10: as 19 filas, as 3 da fé, a meta da onça (#117), o segundo tutorial (#160) e o capítulo 7 (#31).
-	_conferir(arquivos.size() == 39, "são %d arquivos de missão, e eram 39 (as 19 filas, as 3 da fé, a meta da onça, o segundo tutorial, o capítulo 7 e os 14 favores dos moradores): conferir a lista do portão" % arquivos.size())
+	_conferir(arquivos.size() == 43, "são %d arquivos de missão, e eram 43 (as 19 filas, as 3 da fé, a meta da onça, o segundo tutorial, o capítulo 7, os 14 favores dos moradores e os 4 arcos deles): conferir a lista do portão" % arquivos.size())
 
 
 ## As filas VIVAS do vale: a do tutorial (do Pedro) e as penduradas (`vale._cadeias`). O motor lê
@@ -137,8 +137,9 @@ func _ligar_as_filas_vivas() -> void:
 	for arquivo in arquivos:
 		total += ((arquivo["dado"] as Dictionary).get("passos", []) as Array).size()
 	# 100 desde 07/10: os cinco passos do segundo tutorial (#160) e os sete do capítulo 7 (#31) sobre os 88 de 06/10;
-	# 114 com os catorze favores dos moradores (docs/projeto/MISSOES_SECUNDARIAS.md, fase 1), um passo cada.
-	_conferir(total == 114, "são %d passos, e eram 114: conferir a lista do portão (e os que o jogo toca, em `missoes_do_comeco_ao_fim`)" % total)
+	# 114 com os catorze favores dos moradores (docs/projeto/MISSOES_SECUNDARIAS.md, fase 1), um passo cada;
+	# 125 com os quatro arcos de enredo deles (fase 2: 2 + 3 + 3 + 3 passos).
+	_conferir(total == 125, "são %d passos, e eram 125: conferir a lista do portão (e os que o jogo toca, em `missoes_do_comeco_ao_fim`)" % total)
 
 
 ## O TEXTO DO CÓDIGO DO VALE, de onde se conta quem emite cada acontecimento. Menos o motor da fila

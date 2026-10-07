@@ -92,25 +92,26 @@ do Tonico.
 | `ladislau_favor` Corda para o saveiro | Ladislau | 3 cordas | xp, 2 peixes | a escota do traquete; a luz na água |
 | `padre_favor` Beiju para a sacristia | Anselmo | 2 beijus | xp | a mesa da sacristia; o último banco do tio |
 
-## Fase 2 — os quatro arcos de enredo (a fazer)
+## Fase 2 — os quatro arcos de enredo (07/10/2026, feita)
 
 Abrem com o favor feito e o grau 2 (Gente boa). Costuram o mistério do tio e da
 fazenda do convite. Itens novos, todos documentos ou um pano, com o ícone de
 algo que já existe onde couber:
 
-1. **A toalha do tio** (Estefânia). `toalha_de_renda` (item novo, ícone novo).
-   Buscar a toalha na janela dela → `oferendar` na mesa da casa de taipa
-   (`casa_de_taipa`) → arremate: "era pra mesa de alguém que ia chegar".
-2. **A pedra atrás do altar** (Zacarias). `falar` na igreja sem ninguém no adro
-   (um passo `visitar` igreja) → ele entrega `papel_dos_nomes` (documento,
-   ícone `carta`, texto em `data/documentos.json`) → `evento leu:papel_dos_nomes`
-   → arremate: o nome do tio está lá.
-3. **A madeira com letra** (Jerônimo). `falar` nas pedras → entrega
-   `tabua_lavrada` (documento, ícone `tabua`) → `leu:tabua_lavrada` → levar ao
-   padre, que lê o que falta (`falar` com o padre) → arremate liga à fazenda.
-4. **A luz na água** (Ladislau). `falar` no píer → `visitar` a ponte do rio
-   grande (a foz) → `falar` com o Quirino no dia do saveiro ("o Quirino não bebe,
-   e também viu") → arremate.
+1. **A toalha do tio** (`rendeira_toalha`, Estefânia). Ela entrega a
+   `toalha_de_renda` na janela (item novo, ícone novo) → `oferendar` na mesa da
+   casa de taipa → arremate: "era pra mesa de alguém que ia chegar — e chegou".
+2. **A pedra atrás do altar** (`sacristao_pedra`, Zacarias). Ele entrega o
+   `papel_dos_nomes` (documento, ícone `carta`, texto em `data/documentos.json`)
+   → `leu:papel_dos_nomes` em casa → `falar` com ele de novo → arremate: os nomes
+   são os que o convite chama; o do tio está riscado, o do jogador ainda não.
+3. **A madeira com letra** (`pescador_madeira`, Jerônimo). Ele entrega a
+   `tabua_lavrada` (documento, ícone `tabua`) → `leu:tabua_lavrada` → `falar` com
+   o padre, que lê: a proa da Senhora da Boa Viagem, o barco do engenho; o brasão
+   apagado é o que falta no selo do convite.
+4. **A luz na água** (`ladislau_luz`, Ladislau). Ele conta → `visitar` a ponte do
+   rio grande (a foz) → `falar` com o Quirino no dia do saveiro → arremate: a luz
+   parou onde a Senhora da Boa Viagem afundou.
 
 ## Fase 3 — as pontes entre moradores e as missões de ação (a fazer)
 

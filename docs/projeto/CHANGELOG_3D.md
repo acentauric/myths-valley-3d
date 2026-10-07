@@ -23,6 +23,16 @@
   cada quatro golpes, e a dica conta o trabalho ("Lajedo 12/96"); a seta de "junte
   pedras" não aponta a pedra grande a quem só tem a picareta de ferro. As árvores já
   seguiam a regra (madeira branca, de lei e dura, com nível e aço).
+- **As missões secundárias dos moradores, fase 2: os quatro arcos de enredo**
+  (docs/projeto/MISSOES_SECUNDARIAS.md). Abrem com o favor do morador feito e ele
+  "Gente boa". A toalha do tio (a rendeira a entrega na janela; posta na mesa da casa
+  de taipa, por oferenda), a pedra atrás do altar (o sacristão dá o papel com os
+  nomes que a fazenda chama — o do tio riscado), a madeira com letra (a proa da
+  Senhora da Boa Viagem, que o padre lê: o brasão apagado é o que falta no selo do
+  convite) e a luz na água (a foz do rio grande, e o Quirino confirma no dia do
+  saveiro). Itens novos: `toalha_de_renda` (ícone novo), e os documentos
+  `papel_dos_nomes` e `tabua_lavrada`, com texto em `data/documentos.json`. O
+  `missoes_elos` conta 43 arquivos e 125 passos.
 - **As missões secundárias dos moradores, fases 0 e 1** (docs/projeto/MISSOES_SECUNDARIAS.md).
   Catorze moradores do arraial só cumprimentavam e recebiam presente; cada um ganha
   um favor de um passo (`data/missoes_<morador>.json`, meta "levar", a recompensa em

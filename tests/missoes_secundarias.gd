@@ -20,6 +20,11 @@ extends SceneTree
 ##      sobe o favor (Afinidade.POR_FAVOR).
 ##   5. SEM FAVOR NÃO HÁ SALTO: antes de fechar, a afinidade só tinha o que o portão
 ##      pôs — o favor é dado uma vez, no fim.
+##   6. OS ARCOS SEGUEM O FAVOR (fase 2): a toalha do tio só abre com o favor da rendeira
+##      feito e ela "Gente boa" (grau 2); a pedra do altar fica trancada enquanto o favor
+##      do sacristão não foi feito. Aberta, a toalha vem na janela (entrega) e a oferenda
+##      na mesa da casa de taipa fecha a fila. E os papéis dos arcos se leem: estão no
+##      catálogo como documentos com texto em data/documentos.json.
 
 const TABELA := "res://data/favores_dos_moradores.json"
 const SO_NO_DIA_DO_SAVEIRO := ["quirino"]
@@ -157,6 +162,41 @@ func _run() -> void:
 	await _frames(3)
 	_conferir(afinidade.de("rendeira") == pontos_depois, "a afinidade continuou subindo depois do favor (%d → %d)" % [pontos_depois, afinidade.de("rendeira")])
 	print("  rendeira: %d → %d pontos (favor %d), grau %d" % [pontos_antes, pontos_depois, por_favor, afinidade.grau("rendeira")])
+
+	# --- 6. OS ARCOS SEGUEM O FAVOR ------------------------------------------------------
+	var da_pedra = vale._cadeias.get("sacristao_pedra")
+	_conferir(da_pedra != null, "o arco da pedra do altar não está pendurado")
+	if da_pedra != null:
+		afinidade.somar("sacristao", 40)
+		_conferir(da_pedra.esta_trancada(), "sem o favor da garapa feito, o arco da pedra do altar já abre")
+	var da_toalha = vale._cadeias.get("rendeira_toalha")
+	_conferir(da_toalha != null, "o arco da toalha não está pendurado")
+	if da_toalha != null:
+		_conferir(not da_toalha.esta_trancada(), "com o favor feito e a rendeira 'Gente boa', o arco da toalha continua trancado")
+		var catalogo = load("res://scripts/compartilhado/catalogo.gd")  # classe estática, não autoload
+		_conferir(catalogo.existe("toalha_de_renda") and catalogo.existe("papel_dos_nomes") and catalogo.existe("tabua_lavrada"),
+			"faltam itens dos arcos no catálogo")
+		_conferir(catalogo.tipo("papel_dos_nomes") == "documento" and catalogo.tipo("tabua_lavrada") == "documento", "os papéis dos arcos não são documentos: não se leem")
+		var documentos: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://data/documentos.json"))
+		_conferir(documentos.has("papel_dos_nomes") and documentos.has("tabua_lavrada"), "os papéis dos arcos não têm texto em data/documentos.json")
+		jogador.teleportar(rendeira.global_position + Vector3(1.2, 0.0, 1.0), 0.0)
+		await _frames(3)
+		tecla.usar(rendeira)
+		var abriu_a_toalha := await _ate(func() -> bool: return bool(da_toalha.iniciado), SEGUNDOS_PARA_ABRIR)
+		_conferir(abriu_a_toalha, "com o E na rendeira, o arco da toalha não abriu")
+		if abriu_a_toalha:
+			var com_a_toalha := await _ate(func() -> bool: return inv.tem("toalha_de_renda"), SEGUNDOS_PARA_ABRIR)
+			_conferir(com_a_toalha, "a rendeira não entregou a toalha ao abrir o arco")
+			await _ate(func() -> bool: return da_toalha.missao >= 1, SEGUNDOS_POR_PASSO)
+			_conferir(da_toalha.missao >= 1, "o passo da janela não fechou ao receber a toalha (missao %d)" % da_toalha.missao)
+			var lugares = root.get_node("/root/Lugares")
+			var mesa: Vector3 = lugares.ponto("casa_de_taipa")
+			_conferir(mesa.is_finite(), "a casa de taipa não resolve no Lugares")
+			if mesa.is_finite():
+				jogador.teleportar(mesa + Vector3(1.0, 0.0, 1.0), 0.0)
+				var ofereceu := await _ate(func() -> bool: return bool(da_toalha.acabou()), SEGUNDOS_POR_PASSO)
+				_conferir(ofereceu, "na casa de taipa com a toalha na mochila, a oferenda da mesa não fechou o arco")
+				_conferir(not inv.tem("toalha_de_renda"), "a toalha ficou na mochila depois de posta na mesa")
 	_fechar()
 
 

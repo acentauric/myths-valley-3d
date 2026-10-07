@@ -19,5 +19,45 @@
       "\"Todos están invitados. Vengan.\"",
       "No hay firma. Solo el sello: rojo, sin escudo."
     ]
+  },
+  "papel_dos_nomes": {
+    "nome": "Papel com nomes",
+    "nome_en": "Paper with names",
+    "nome_es": "Papel con nombres",
+    "linhas": [
+      "Um papel enrolado, amarelo, com a dobra da pedra ainda marcada. Uma lista, em letra miúda:",
+      "Anselmo. Zacarias. Joaquina. Benedito. Zefa. Nicolau. Cosme. Rosa. Jerônimo. Candinha. Rita. Estefânia. Ambrósia. Epifânio. Aristides. Ladislau. Filó. Damião. Tonho.",
+      "No fim, um nome a mais, com um risco por cima — o do seu tio. Embaixo do risco, uma data: o dia do grande evento do convite."
+    ],
+    "linhas_en": [
+      "A rolled-up paper, yellowed, still creased from the stone. A list, in tiny handwriting:",
+      "Anselmo. Zacarias. Joaquina. Benedito. Zefa. Nicolau. Cosme. Rosa. Jerônimo. Candinha. Rita. Estefânia. Ambrósia. Epifânio. Aristides. Ladislau. Filó. Damião. Tonho.",
+      "At the end, one more name, with a line struck through it — your uncle's. Below the line, a date: the day of the great event in the invitation."
+    ],
+    "linhas_es": [
+      "Un papel enrollado, amarillento, con el pliegue de la piedra aún marcado. Una lista, en letra menuda:",
+      "Anselmo. Zacarias. Joaquina. Benedito. Zefa. Nicolau. Cosme. Rosa. Jerônimo. Candinha. Rita. Estefânia. Ambrósia. Epifânio. Aristides. Ladislau. Filó. Damião. Tonho.",
+      "Al final, un nombre más, con una raya encima — el de tu tío. Debajo de la raya, una fecha: el día del gran evento de la invitación."
+    ]
+  },
+  "tabua_lavrada": {
+    "nome": "Madeira lavrada",
+    "nome_en": "Carved wood",
+    "nome_es": "Madera labrada",
+    "linhas": [
+      "Um pedaço de proa, lavrado a formão, comido de sal. As letras fundas que sobraram: \"...S. DA BOA VIAG...\"",
+      "Embaixo, um brasão que a água apagou pela metade: uma roda de engenho e, por cima, algo que já não se lê.",
+      "O desenho lembra alguma coisa. O selo vermelho do convite — o que não tem brasão nenhum."
+    ],
+    "linhas_en": [
+      "A piece of prow, chisel-carved, eaten by salt. The deep letters that remain: \"...S. DA BOA VIAG...\"",
+      "Below, a coat of arms the water half erased: a mill wheel and, above it, something no longer legible.",
+      "The design rings a bell. The red seal of the invitation — the one with no coat of arms at all."
+    ],
+    "linhas_es": [
+      "Un pedazo de proa, labrado a formón, comido por la sal. Las letras hondas que quedaron: \"...S. DA BOA VIAG...\"",
+      "Debajo, un escudo que el agua borró a medias: una rueda de ingenio y, encima, algo que ya no se lee.",
+      "El dibujo recuerda algo. El sello rojo de la invitación — el que no tiene escudo alguno."
+    ]
   }
 }

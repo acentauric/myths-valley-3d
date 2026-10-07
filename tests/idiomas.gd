@@ -71,6 +71,11 @@ const TRADUZIDOS := {
 	"res://data/missoes_menina.json": ["texto", "resumo", "nome", "titulo", "resposta", "trancada"],
 	"res://data/missoes_mestre_saveiro.json": ["texto", "resumo", "nome", "titulo", "resposta", "trancada"],
 	"res://data/missoes_padre.json": ["texto", "resumo", "nome", "titulo", "resposta", "trancada"],
+	# E os quatro arcos de enredo deles (fase 2).
+	"res://data/missoes_rendeira_toalha.json": ["texto", "resumo", "nome", "titulo", "resposta", "trancada"],
+	"res://data/missoes_sacristao_pedra.json": ["texto", "resumo", "nome", "titulo", "resposta", "trancada"],
+	"res://data/missoes_pescador_madeira.json": ["texto", "resumo", "nome", "titulo", "resposta", "trancada"],
+	"res://data/missoes_mestre_saveiro_luz.json": ["texto", "resumo", "nome", "titulo", "resposta", "trancada"],
 	"res://data/documentos.json": ["nome", "linhas"],
 	"res://data/historico_3d.json": ["titulo", "estado"],
 	# A fé (#52): o que os marcos dizem.

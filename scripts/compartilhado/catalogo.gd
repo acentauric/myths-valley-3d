@@ -381,6 +381,33 @@ const ITENS := {
 		"leitura": "convite_texto",
 		"empilhavel": false,
 	},
+	## OS PAPÉIS E O PANO DOS ARCOS DOS MORADORES (07/10, docs/projeto/MISSOES_SECUNDARIAS.md,
+	## fase 2): o papel da pedra do altar e a madeira lavrada da linha do pescador se LEEM
+	## (documentos, texto em data/documentos.json, ícones de coisas que já existem); a
+	## toalha do tio se põe na mesa da casa de taipa (oferenda).
+	"papel_dos_nomes": {
+		"nome": "Papel com nomes",
+		"tipo": "documento",
+		"resumo": "Enrolado, amarelo, com a dobra da pedra ainda marcada.",
+		"icone": "carta",
+		"leitura": "papel_dos_nomes",
+		"empilhavel": false,
+	},
+	"tabua_lavrada": {
+		"nome": "Madeira lavrada",
+		"tipo": "documento",
+		"resumo": "Um pedaço de proa com letras fundas, comidas de sal.",
+		"icone": "tabua",
+		"leitura": "tabua_lavrada",
+		"empilhavel": false,
+	},
+	"toalha_de_renda": {
+		"nome": "Toalha de renda",
+		"tipo": "material",
+		"resumo": "Branca de todo, com um nome na borda em ponto cheio.",
+		"icone": "toalha_de_renda",
+		"empilhavel": false,
+	},
 	## OS RITUAIS PREPARADOS, que são o que o oratório produz.
 	##
 	## Tipo próprio (`ritual`) e não `comida`: os dois se consomem da mochila e

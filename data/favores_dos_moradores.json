@@ -84,6 +84,34 @@
       "arquivo": "res://data/missoes_padre.json",
       "chave": "padre_favor",
       "grau": 1
+    },
+    {
+      "dono": "rendeira",
+      "arquivo": "res://data/missoes_rendeira_toalha.json",
+      "chave": "rendeira_toalha",
+      "grau": 2,
+      "depois": "rendeira_favor"
+    },
+    {
+      "dono": "sacristao",
+      "arquivo": "res://data/missoes_sacristao_pedra.json",
+      "chave": "sacristao_pedra",
+      "grau": 2,
+      "depois": "sacristao_favor"
+    },
+    {
+      "dono": "pescador",
+      "arquivo": "res://data/missoes_pescador_madeira.json",
+      "chave": "pescador_madeira",
+      "grau": 2,
+      "depois": "pescador_favor"
+    },
+    {
+      "dono": "mestre_saveiro",
+      "arquivo": "res://data/missoes_mestre_saveiro_luz.json",
+      "chave": "ladislau_luz",
+      "grau": 2,
+      "depois": "ladislau_favor"
     }
   ]
 }
