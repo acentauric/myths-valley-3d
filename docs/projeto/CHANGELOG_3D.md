@@ -6,6 +6,11 @@ O teste passa a cobrar Candinha, Filo, Tonho, Zefa, arraial e recursos, incluind
 
 ## Em desenvolvimento — 07/10/2026 (experimento Jev)
 
+- #159 (parcial): após o chamado da fazenda na cama, o testador sai pela
+  soleira antes de acompanhar Pedro. Na V17, a saída por movimento normal
+  concluiu aos 423,80 s, e a condução seguiu fora da casa. 85 testes Python
+  passam; mutante sem prioridade da porta falha. Jornada ainda em curso.
+
 - #159 (parcial): testador volta pela porta à cama quando falta comida e
   fôlego; distingue o convite que aguarda outra manhã de uma conversa nova.
   V16 concluiu Mirante/Fé e V17 usou E/Sim na cama: dia 25 → 26, fôlego

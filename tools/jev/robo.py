@@ -428,6 +428,8 @@ class JogadorAutomatico:
             return select("interact", "Falar com o destinatario real ao alcance em vez de continuar aproximando")
         if (state.get("pedro", {}).get("conducting") and not state.get("pedro", {}).get("guide_destination_reached")
                 and "follow_pedro" in actions and not task.get("last_action_failed")):
+            if state.get("interior") == "casa" and "exit_home" in actions:
+                return select("exit_home", "Sair pela porta antes de acompanhar o guia no mundo externo")
             return select("follow_pedro", "Concluir a caminhada guiada ativa mesmo com outra missao selecionada na caderneta")
         wanted = meta_now.get("item")
         if not wanted:

@@ -140,6 +140,13 @@ fôlego baixo também cobra porta → cama → E e preserva inventário/energia.
 A campanha continua: este descanso e os capítulos anteriores não provam
 conclusão de `fazenda_chegada`; #159 permanece aberta.
 
+O chamado após o sono expôs outra prioridade: seguir Pedro antes de sair
+do interior tentava atravessar a parede. A porta passa a preceder a caminhada
+guiada externa. Sem reiniciar V17, `exit_home` aos 419,60 s concluiu aos
+423,80 s fora da casa, em [65,4; 5,1; −208,7]; aos 475,83 s seguia Pedro
+em [122,7; 2; −263,5]. 85 testes Python passam; retirar essa prioridade
+reproduz uma falha sem erros. O capítulo da fazenda segue em andamento.
+
 Uma sessão de 300 segundos desde o jogo pronto, em perfil novo e sem API,
 registrou 67 decisões, entrada pela soleira, retirada de balde/enxada/maniva
 no baú e arar → plantar → regar, chegando à etapa da lenha (10/16).

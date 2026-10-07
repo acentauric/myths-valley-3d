@@ -10,6 +10,16 @@ from relatorio import generate
 
 
 class PlayerTests(unittest.TestCase):
+    def test_farm_guide_after_sleep_leaves_house_before_following(self):
+        bot, state = self.player(), self.state()
+        state.update(energy=77.8, interior="casa", objective={"id": "pedro_fazenda_ida"},
+                     pedro={"conducting": True, "guide_destination_reached": False})
+        task = {"step": {"conduz": True, "lugar": "portao_da_fazenda", "meta": {}}}
+        actions = {"exit_home": "door", "follow_pedro": "guide", "objective": "walk"}
+        self.assertEqual(bot.choose(state, actions, task), "exit_home")
+        state["interior"] = ""
+        self.assertEqual(bot.choose(state, actions, task), "follow_pedro")
+
     def test_invitation_waits_for_morning_using_bed_without_low_energy(self):
         bot, state = self.player(), self.state()
         state.update(energy=80, interior="", farm={"awaiting_morning": True}, journal={"ativas": []},

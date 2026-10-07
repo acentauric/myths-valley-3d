@@ -36,6 +36,12 @@ nominal. A fixture da Filó ativa a população para medir locomoção, não a
 apresentação gradual. Gate isolado verde em 63 s; bateria final pendente.
 
 A #159 continua em execução: fontes acessíveis estáveis, custo composto de
+receitas, cama e saída pela porta antes de seguir Pedro desde o interior.
+Na V17 a saída real ocorreu aos 423,80 s, e a condução à fazenda continuou
+fora da casa. 85 testes Python verdes; sem a prioridade da porta, a
+regressão falha. Campanha ainda sem conclusão de `fazenda_chegada`.
+
+A recuperação de #159 inclui fontes acessíveis estáveis, custo composto de
 receitas e recuperação pela cama sem comida. V16 concluiu Mirante e Fé;
 V17 dormiu pelo E/Sim e alcançou o dia do convite (25 → 26, fôlego 27,8 →
 77,8). A política observa o requisito de manhã da fazenda sem mudar o dia
