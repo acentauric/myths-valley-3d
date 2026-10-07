@@ -5,6 +5,15 @@ raiz. O jogo 2D segue sua própria linha em `acentauric/myths-valley`.
 
 ## O que já roda
 
+A #108 recebe ícones nas abas/linhas do J, Cormorant e ingredientes ×n
+por receita, apagados individualmente quando faltam; a seleção mostra a
+tecla de interação configurada. Clique sobre o custo chega à receita e
+consome a quantidade da regra. Painel, obras e oficio passam; o novo gate
+confere sete abas, limites e clique, e reprova quando os custos somem.
+Capturas: `scratch/painel-ingredientes/aba-*.png`. A issue continua aberta:
+Trabalho depende de #9, Saveiro precisa da conferência visual no mundo,
+e a piaçava não tem PNG próprio. Nenhuma arte foi gerada ou comprada.
+
 A #140 tem dezoito escalas individuais persistidas e restauração por componente
 ou geral. HUD e balões usam dimensões transformadas, com medidores reorganizados
 e avisos fora da missão ampliada. Independência, resolução/idioma, prioridade

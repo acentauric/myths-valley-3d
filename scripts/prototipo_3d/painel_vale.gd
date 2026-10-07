@@ -586,6 +586,11 @@ func _montar_abas() -> void:
 		linha.custom_minimum_size = Vector2(0, ALTURA_DA_LINHA + 4.0)
 		linha.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		linha.text = ("▾ " if aberta else "▸ ") + (texto_vagas("titulo") if qual == Aba.VAGAS else str(NOME_DA_ABA[qual]))
+		linha.icon = Catalogo.icone(["cordel", "carta", "tabua", "machado", "farinha", "corda", "enxada", "carta", "peixe", "carta"][qual])
+		linha.expand_icon = true
+		linha.add_theme_constant_override("icon_max_width", 24)
+		linha.add_theme_constant_override("h_separation", 8)
+		linha.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 		var conta := _conta_da_aba(qual)
 		if conta != "":
 			linha.text += "    " + conta
@@ -1308,6 +1313,7 @@ func _adicionar_linha(texto: String, cor: Color, cabecalho: bool = false) -> voi
 	# (`CadeiaDeMissoes._titulo_do_passo`). Os dois, porque um protege do outro.
 	botao.clip_text = true
 	botao.add_theme_font_size_override("font_size", LETRA_LINHA)
+	botao.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_TEXTO, 500))
 	botao.add_theme_color_override("font_color", cor)
 	botao.add_theme_color_override("font_hover_color", COR_CURSOR)
 	botao.add_theme_color_override("font_pressed_color", COR_CURSOR)
@@ -1318,6 +1324,99 @@ func _adicionar_linha(texto: String, cor: Color, cabecalho: bool = false) -> voi
 	_lista.add_child(botao)
 	_linhas.append(botao)
 	_escolhiveis.append(botao)
+	_decorar_linha(botao, indice)
+
+
+## O índice continua sendo o da regra, inclusive quando há cabeçalhos entre
+## as receitas. Os ícones não recebem o mouse: clicar no custo escolhe a linha.
+func _decorar_linha(botao: Button, indice: int) -> void:
+	var lista := _lista_atual()
+	if indice >= lista.size():
+		return
+	var item := "cordel"
+	var custo: Dictionary = {}
+	match _aba:
+		Aba.OFICINA:
+			item = str(lista[indice])
+			custo = Oficina.dados(item).get("custo", {})
+		Aba.COZINHA:
+			item = str(lista[indice])
+			custo = Cozinha.dados(item).get("custo", {})
+		Aba.OBRAS:
+			item = "tabua"
+			custo = Obras.custo(str(lista[indice]))
+		Aba.CARTAS:
+			item = "carta"
+			var dado: Dictionary = Cartas.dados(str(lista[indice]))
+			custo = dado.get("cobra", {}) if Cartas.natureza(str(lista[indice])) == "pacto" else dado.get("custo", {})
+		Aba.VENDA:
+			item = str(lista[indice])
+			if _receita_da_linha(item) != "": item = _receita_da_linha(item)
+		Aba.SAVEIRO:
+			item = str(lista[indice])
+		Aba.AJUSTES, Aba.VAGAS:
+			item = "carta"
+	var textura := _icone_da_linha(item)
+	botao.icon = textura
+	botao.expand_icon = true
+	botao.add_theme_constant_override("icon_max_width", 32)
+	botao.add_theme_constant_override("h_separation", 10)
+	botao.custom_minimum_size.y = 46
+	botao.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	botao.set_meta("item_visual", item)
+	if custo.is_empty() and indice != _cursor: return
+	var faixa := HBoxContainer.new()
+	faixa.name = "Ingredientes"
+	faixa.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	faixa.add_theme_constant_override("separation", 8)
+	faixa.set_anchors_preset(Control.PRESET_CENTER_RIGHT)
+	faixa.grow_horizontal = Control.GROW_DIRECTION_BEGIN
+	faixa.grow_vertical = Control.GROW_DIRECTION_BOTH
+	botao.add_child(faixa)
+	for id: String in custo:
+		var quantos := int(custo[id])
+		var tem := Inventario.quantidade(id) >= quantos
+		var grupo := HBoxContainer.new()
+		grupo.name = id
+		grupo.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		grupo.set_meta("suficiente", tem)
+		grupo.set_meta("pedido", quantos)
+		faixa.add_child(grupo)
+		var icone := TextureRect.new()
+		icone.texture = _icone_da_linha(id)
+		icone.custom_minimum_size = Vector2(24, 24)
+		icone.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		icone.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		icone.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		icone.modulate = Color.WHITE if tem else Color(0.5, 0.5, 0.5, 0.65)
+		grupo.add_child(icone)
+		var quantidade := _rotulo("×%d" % quantos, 17, COR_FIXADA if tem else COR_APAGADA)
+		quantidade.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_TEXTO, 500))
+		quantidade.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		grupo.add_child(quantidade)
+	if indice == _cursor:
+		var tecla := _rotulo("[%s]" % Atalhos.letra("interagir"), 16, COR_CURSOR)
+		tecla.name = "Acao"
+		tecla.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		faixa.add_child(tecla)
+	var largura := faixa.get_combined_minimum_size().x
+	faixa.offset_left = -largura - 12
+	faixa.offset_right = -12
+	faixa.offset_top = -14
+	faixa.offset_bottom = 14
+	for estado in ["normal", "hover", "pressed", "focus"]:
+		var estilo := botao.get_theme_stylebox(estado).duplicate() as StyleBoxFlat
+		estilo.content_margin_right = largura + 22
+		botao.add_theme_stylebox_override(estado, estilo)
+
+
+func _icone_da_linha(item: String) -> Texture2D:
+	var arquivo: String = str(Catalogo.dados(item).get("icone", ""))
+	if arquivo != "" and ResourceLoader.exists(Catalogo.PASTA + arquivo + ".png"):
+		return Catalogo.icone(item)
+	# A piaçava ainda não tem PNG próprio (#108/#41). A ausência fica explícita
+	# na documentação; o símbolo de catálogo evita uma célula invisível.
+	return Catalogo.icone("cordel")
 
 
 ## Campo de valor dos ajustes: ◀ rótulo valor ▶. O cursor conta as AÇÕES

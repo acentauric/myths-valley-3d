@@ -6,6 +6,13 @@ O teste passa a cobrar Candinha, Filo, Tonho, Zefa, arraial e recursos, incluind
 
 ## Em desenvolvimento — 07/10/2026 (experimento Jev)
 
+- #108 (parcial): linhas do J mostram ícones do catálogo e custos como ícones
+  com ×n, apagados por ingrediente insuficiente. A linha selecionada mostra
+  a tecla de interação vigente. Cormorant, índices, texto dos botões e ações
+  são preservados; os ícones deixam o clique passar. Oficina, Cozinha,
+  Cartas, Obras, Venda, Jogo e Vagas foram conferidos com captura; painel,
+  obras e oficio passaram. O mutante que apaga custos reprova o novo gate.
+  Trabalho continua dependente de #9; a piaçava ainda usa símbolo de catálogo.
 - #140 (parcial): dezoito componentes ganham tamanho independente, persistência
   e restauração individual/todos. Texto, ícones e área clicável acompanham a
   transformação. O HUD reorganiza medidores e avisos pela escala; a matriz
