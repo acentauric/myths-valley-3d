@@ -13,6 +13,17 @@
   anuncia na despedida — antes nenhuma missão abria. E o relógio não fica preso: a
   festa segura com prazo e solta quando se recolhe, e um motivo sem prazo que dure
   mais de 150 s se solta sozinho, avisando no console.
+- **Playtest de 07/10, quarta fatia: a vila e as cercas.** A travessia do rio
+  central volta à ponte grande de 26/09 (`ponte_grande`, o modelo de então
+  recuperado); o rio grande fica com a ponte pequena de pé e a caída da obra. As
+  cercas de varas das roças passam a ser traçadas em lances retos de canto a canto
+  sobre o contorno simplificado da roça, um palmo para fora dela — antes a cerca
+  era amostrada a passo constante pelo perímetro e cortava caminho nos cantos, por
+  dentro da roça e cruzando a da vizinha (nove cruzamentos entre a mandioca e o
+  milho do Poente); duas roças vizinhas dividem uma cerca só. A cerca sobe a 1,35
+  e o corpo dela a 1,9 — mais que o pulo: cerca que impede a passagem, e não um
+  degrau; cada roça cercada ganha a porteira (a do milho do Poente, longe de toda
+  rua, abre para o lado da praça). Portão novo `cercas`.
 - **Playtest de 07/10, terceira fatia: as telas.** A caixa de fala, a mochila e o
   cartão do amanhecer eram desenhados no quadro de 640×360 do 2D e ampliados duas
   vezes — a letra saía serrilhada. Passam a ser desenhados na tela do vale

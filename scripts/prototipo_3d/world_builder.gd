@@ -924,7 +924,7 @@ func _construcao(chave: String, origin: Vector3, yaw: float, procedural: Callabl
 				# O modelo Tripo tem o próprio tabuado e recebe colisão pela malha.
 				var pier_deck_top := piso_position.y + piso_size.y * 0.5
 				ancoras["PierPiso"] = Vector3(placed_origin.x, pier_deck_top, placed_origin.z)
-			elif chave != "ponte" and autoria.has("terreiro"):
+			elif not chave.begins_with("ponte") and autoria.has("terreiro"):
 				# Terreiro autoral (Decal editado em composicao_vale.tscn), relativo à casa assentada.
 				var dados: Dictionary = autoria["terreiro"]
 				if bool(dados.get("visible", true)):
@@ -934,7 +934,7 @@ func _construcao(chave: String, origin: Vector3, yaw: float, procedural: Callabl
 					decal.modulate = dados["modulate"]
 					add_child(decal)
 					decal.global_transform = Transform3D(Basis(Vector3.UP, yaw), placed_origin) * (dados["transform"] as Transform3D)
-			elif chave != "ponte":
+			elif not chave.begins_with("ponte"):
 				# Terreiro de chão batido drapeado no próprio terreno (acompanha o declive):
 				# uma caixa plana ficava flutuando do lado baixo do lote.
 				var meio := Vector2(piso_size.x, piso_size.z) * 0.5
@@ -1780,7 +1780,10 @@ func _erguer_ponte(point: Vector3, anchor: String) -> void:
 	bridge.y = _footprint_height(bridge, 5.5) + 0.1
 	ancoras[anchor] = bridge
 	var bridge_yaw := _road_yaw_at(bridge)
-	var modelo := _construcao("ponte", bridge, bridge_yaw, func():
+	# A PONTE GRANDE NA VILA (07/10): a travessia do rio central volta ao modelo de
+	# 26/09, maior; o rio grande fica com a ponte de pé e a caída da obra (#94).
+	var peca := "ponte_grande" if anchor == "Ponte do rio central" and CatalogoAssets.tem_tripo("ponte_grande") else "ponte"
+	var modelo := _construcao(peca, bridge, bridge_yaw, func():
 		_box(Vector3(11, 0.35, 6), bridge + Vector3(0, 0.22, 0), Color("987b57"), true, null, bridge_yaw)
 		for side in [-2.8, 2.8]:
 			var rail_offset := Vector3(0, 0.95, side).rotated(Vector3.UP, bridge_yaw)
@@ -1802,7 +1805,7 @@ func _erguer_ponte(point: Vector3, anchor: String) -> void:
 	# tabuleiro até a obra `ponte_levantar`, e a caída aparece no lugar — quem
 	# troca é o `ponte_vale.gd`, pela obra. Sem o modelo do Tripo (o estilo
 	# procedural), a ponte é só a de pé, cercada.
-	if modelo != null and estilo_tripo():
+	if modelo != null and estilo_tripo() and peca == "ponte":
 		var caida := CatalogoAssets.instanciar("ponte_caida", self, bridge, 1.0, bridge_yaw)
 		if caida != null:
 			caida.name = "PonteCaidaTripo"

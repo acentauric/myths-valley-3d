@@ -71,6 +71,11 @@ const PECAS := {
 	# Medida em 06/10 (`scratch/diag/medir_ponte.gd`): o tabuleiro fica a 0,95 do
 	# fundo, com os esteios por baixo; afundado 0,75, ele fica a 0,2 da estrada.
 	"ponte": {"tripo": "construcoes/ponte_tripo.glb", "largura": 9.0, "afundar": 0.75, "piso": 0.2, "girar": [0, 90, 0]},
+	# A PONTE GRANDE DA VILA (07/10: "na vila, pode colocar o modelo da ponte grande,
+	# como era antes; deixa a pequena somente para ir à mansão"): a ponte de madeira do
+	# lote de 26/09, que as duas travessias usaram até 06/10, de volta à do rio
+	# central, com as medidas de então. A do rio grande fica com a de pé e a caída (#94).
+	"ponte_grande": {"tripo": "construcoes/ponte_grande_tripo.glb", "largura": 9.0, "afundar": 1.1, "piso": 0.2},
 	# A PONTE CAÍDA (#94): o mesmo vão, sem tabuleiro que se ande — nem colisão nem
 	# laje da câmera; a obra `ponte_levantar` a troca pela de pé (`ponte_vale.gd`).
 	# Medida em 06/10: os tabuleiros das pontas ficam a 1,9 do fundo, e o vão caído
@@ -427,6 +432,7 @@ const TAMANHO_DA_CASA := 4.5
 const SEM_ALCANCE := {
 	"pier": "o primeiro que se vê da baía e o jogador anda nele: uma peça só",
 	"ponte": "o jogador anda nela e se vê da estrada: uma peça só",
+	"ponte_grande": "a ponte grande da vila, no rio central: uma peça só, como a ponte",
 	"ponte_caida": "a ponte caída no rio, que a obra põe de pé: uma peça só, como a ponte",
 	"mirante": "torre aberta vista de todo o vale: uma peça só, e uma caixa não a imita",
 	"saveiro": "o barco da chegada: anda pela baía, e some no horizonte se for cortado",
@@ -640,7 +646,7 @@ static func colisao(chave: String, node: Node3D, parent: Node, origin: Vector3, 
 	# chamava sem `yaw` (as pedras da praia, giradas ao acaso) tinha a caixa
 	# reta e o desenho torto.
 	yaw = node.rotation.y
-	if chave in ["ponte", "pier"]:
+	if chave in ["ponte", "ponte_grande", "pier"]:
 		# A superfície caminhável acompanha a malha importada da ponte e do píer.
 		for child in node.find_children("*", "MeshInstance3D", true, false):
 			(child as MeshInstance3D).create_trimesh_collision()
