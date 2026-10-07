@@ -11,14 +11,18 @@ extends SceneTree
 ##   1. SÃO CERCAS DE VERDADE: cada lance plantado mede ao menos ALTURA_MINIMA, e a caixa
 ##      de colisão dele ao menos CORPO_MINIMO — mais que o pulo do jogador: nem o passo
 ##      nem o pulo passam. Um corpo por lance, no lugar do lance.
-##   2. FORA DA RUA, DA CASA E DA ÁGUA: nenhuma ponta e nenhum meio a menos de RUA de uma
-##      rua, dentro da caixa de uma construção ou fora da terra.
+##   2. FORA DA RUA, DA CASA E DA ÁGUA: nenhuma ponta e nenhum meio EM CIMA de uma rua (ao
+##      lado é o normal: a cerca beira a estrada), dentro da caixa de uma construção ou fora
+##      da terra.
 ##   3. NO CHÃO: o meio do lance a menos de DESNIVEL do chão (as pontas o
 ##      cercas_na_encosta já cobra).
-##   4. NÃO SE CRUZAM: dois lances só se tocam nas pontas.
-##   5. ABRAÇAM A ROÇA: o meio de cada lance a menos de DA_BORDA do contorno da roça
-##      dele, e os cantos são cantos — ao menos CANTOS_FECHADOS das pontas têm outra ponta
-##      colada (a menos de PONTA).
+##   4. NÃO SE CRUZAM: dois lances só se cruzam junto das pontas (os cantos fecham com os
+##      dois lados estendidos meio corpo para fora, e por isso se cruzam ali).
+##   5. ABRAÇAM A ROÇA E ENCOSTAM: o meio de cada lance a menos de DA_BORDA do contorno da
+##      roça dele, e TODA PONTA encosta em outro lance (ponta com ponta, ou em cima do
+##      vizinho sobreposto) — salvo a que acaba na rua, na porteira, na água ou numa
+##      construção, que é onde a cerca de fato para. "É importante validar que o início de
+##      um asset de cerca esteja encostando no outro" (07/10).
 ##   6. UMA CERCA SÓ ENTRE ROÇAS VIZINHAS: nenhum lance de uma roça corre colado e
 ##      paralelo a um lance de outra.
 ##   7. HÁ BASTANTE: ao menos MINIMO lances, e uma porteira em cada roça cercada.
@@ -27,11 +31,17 @@ const CatalogoAssets := preload("res://scripts/prototipo_3d/catalogo_assets.gd")
 
 const ALTURA_MINIMA := 1.2
 const CORPO_MINIMO := 1.8
-const RUA := 2.0
 const DESNIVEL := 0.6
-const PONTA := 0.35
-const DA_BORDA := 2.8
-const CANTOS_FECHADOS := 0.85
+## Até onde da ponta um cruzamento é "na ponta": os lados estendem 0,5 para fora do canto.
+const CRUZA_NA_PONTA := 0.9
+const DA_BORDA := 3.4
+## Ponta encostada: a menos disto de outra ponta ou do corpo de outro lance.
+const ENCOSTO := 0.2
+## Até onde da rua, da porteira, da água e da casa uma ponta pode ficar solta.
+const SOLTA_NA_RUA := 1.5
+## A abertura da porteira: ela e os dois lances vizinhos (até um corpo e meio de lance do meio dela).
+const SOLTA_NA_PORTEIRA := 5.2
+const SOLTA_NA_CASA := 1.2
 const ENTRE_ROCAS := 2.0
 const MINIMO := 30
 
@@ -60,11 +70,13 @@ func _run() -> void:
 
 	var itens: Array = []
 	var porteiras := {}
+	var pontos_das_porteiras: Array[Vector2] = []
 	for item: Dictionary in mundo.paisagismo_aderecos:
 		if String(item["chave"]) == "cerca_varas":
 			itens.append(item)
 		elif String(item["chave"]) == "porteira":
 			porteiras[String(item["zona"])] = true
+			pontos_das_porteiras.append(item["ponto"])
 	var plantadas: Array = regiao.get_meta("cercas_cerca_varas", [])
 	_conferir(itens.size() >= MINIMO, "o plano tem %d lance(s) de cerca de varas, e são ao menos %d" % [itens.size(), MINIMO])
 	_conferir(plantadas.size() == itens.size(), "a região plantou %d lance(s) e o plano tem %d" % [plantadas.size(), itens.size()])
@@ -143,7 +155,7 @@ func _run() -> void:
 		for p: Vector3 in [de, meio, ate]:
 			d_rua = minf(d_rua, float(regiao._distancia_da_rua(Vector2(p.x, p.z))))
 		pior_rua = minf(pior_rua, d_rua)
-		if d_rua < RUA:
+		if d_rua < 0.0:
 			na_rua += 1
 		var dentro := false
 		for casa: Dictionary in casas:
@@ -161,7 +173,7 @@ func _run() -> void:
 		if desnivel > DESNIVEL:
 			no_ar += 1
 		lances.append({"zona": zona, "de": Vector2(de.x, de.z), "ate": Vector2(ate.x, ate.z), "meio": Vector2(meio.x, meio.z)})
-	_conferir(na_rua == 0, "%d lance(s) de cerca a menos de %.1f de uma rua (o pior: %.2f)" % [na_rua, RUA, pior_rua])
+	_conferir(na_rua == 0, "%d lance(s) de cerca em cima de uma rua (o pior: %.2f da beira)" % [na_rua, pior_rua])
 	_conferir(na_casa == 0, "%d lance(s) de cerca dentro de uma construção" % na_casa)
 	_conferir(na_agua == 0, "%d lance(s) de cerca com ponta na água" % na_agua)
 	_conferir(no_ar == 0, "%d lance(s) de cerca com o meio a mais de %.2f do chão (o pior: %.2f)" % [no_ar, DESNIVEL, pior_desnivel])
@@ -171,13 +183,19 @@ func _run() -> void:
 		for j in range(i + 1, lances.size()):
 			var a: Dictionary = lances[i]
 			var b: Dictionary = lances[j]
+			# Lances quase paralelos não se cruzam: encostam ou se sobrepõem (o vizinho do mesmo
+			# lado; a cerca dupla entre roças é a parte 6).
+			var rumo_a: Vector2 = ((a["ate"] as Vector2) - (a["de"] as Vector2)).normalized()
+			var rumo_b: Vector2 = ((b["ate"] as Vector2) - (b["de"] as Vector2)).normalized()
+			if absf(rumo_a.dot(rumo_b)) > 0.97:
+				continue
 			var cruza = Geometry2D.segment_intersects_segment(a["de"], a["ate"], b["de"], b["ate"])
 			if cruza == null:
 				continue
 			var ponto: Vector2 = cruza
 			var nas_pontas := false
 			for p: Vector2 in [a["de"], a["ate"], b["de"], b["ate"]]:
-				if p.distance_to(ponto) < PONTA:
+				if p.distance_to(ponto) < CRUZA_NA_PONTA:
 					nas_pontas = true
 			if nas_pontas:
 				continue
@@ -186,7 +204,7 @@ func _run() -> void:
 				exemplo = "%s %s × %s %s em %s" % [a["zona"], str(a["de"]), b["zona"], str(b["de"]), str(ponto)]
 	_conferir(cruzamentos == 0, "%d par(es) de lances de cerca se cruzam fora das pontas (%s)" % [cruzamentos, exemplo])
 
-	# --- 5. ABRAÇAM A ROÇA ---------------------------------------------------------------
+	# --- 5. ABRAÇAM A ROÇA E ENCOSTAM ------------------------------------------------------
 	var zonas := {}
 	var lido = JSON.parse_string(FileAccess.get_file_as_string("res://data/paisagismo/zonas_iniciais.json"))
 	var lista: Array = lido if lido is Array else (lido.get("zonas", []) if lido is Dictionary else [])
@@ -198,7 +216,9 @@ func _run() -> void:
 			zonas[String(zona["nome"])] = poligono
 	var longe_da_roca := 0
 	var pior_borda := 0.0
-	var pontas_soltas := 0
+	var soltas_sem_razao := 0
+	var soltas_com_razao := 0
+	var exemplo_solta := ""
 	for i in lances.size():
 		var lance: Dictionary = lances[i]
 		var poligono: PackedVector2Array = zonas.get(lance["zona"], PackedVector2Array())
@@ -210,18 +230,54 @@ func _run() -> void:
 			if d > DA_BORDA:
 				longe_da_roca += 1
 		for ponta: Vector2 in [lance["de"], lance["ate"]]:
-			var colada := false
+			# ENCOSTA: outra ponta colada, ou o corpo de outro lance passando por ela (o vizinho
+			# sobreposto, o lado do canto que atravessa).
+			var encostada := false
 			for j in lances.size():
 				if j == i:
 					continue
-				if ponta.distance_to(lances[j]["de"]) < PONTA or ponta.distance_to(lances[j]["ate"]) < PONTA:
-					colada = true
+				var outro: Dictionary = lances[j]
+				if ponta.distance_to(outro["de"]) < ENCOSTO or ponta.distance_to(outro["ate"]) < ENCOSTO \
+						or ponta.distance_to(Geometry2D.get_closest_point_to_segment(ponta, outro["de"], outro["ate"])) < ENCOSTO:
+					encostada = true
 					break
-			if not colada:
-				pontas_soltas += 1
+				# O CANTO: os dois lados se cruzam meio corpo depois do vértice — a ponta está
+				# "encostada" quando o lance dela atravessa outro lance logo ali.
+				var cruza_ali = Geometry2D.segment_intersects_segment(lance["de"], lance["ate"], outro["de"], outro["ate"])
+				if cruza_ali != null and ponta.distance_to(cruza_ali) < CRUZA_NA_PONTA:
+					encostada = true
+					break
+			if encostada:
+				continue
+			# SOLTA COM RAZÃO: a cerca para na rua, na porteira, na água ou numa construção.
+			var ponta_3d := Vector3(ponta.x, 0.0, ponta.y)
+			var razao := ""
+			if float(regiao._distancia_da_rua(ponta)) < SOLTA_NA_RUA:
+				razao = "rua"
+			elif not mundo.is_on_land(ponta_3d):
+				razao = "água"
+			else:
+				for porteira in pontos_das_porteiras:
+					if ponta.distance_to(porteira) < SOLTA_NA_PORTEIRA:
+						razao = "porteira"
+						break
+				if razao == "":
+					for casa: Dictionary in casas:
+						var local: Vector3 = (ponta_3d - Vector3((casa["centro"] as Vector3).x, 0.0, (casa["centro"] as Vector3).z)).rotated(Vector3.UP, -float(casa["giro"]))
+						if absf(local.x) < float((casa["meia"] as Vector2).x) + SOLTA_NA_CASA and absf(local.z) < float((casa["meia"] as Vector2).y) + SOLTA_NA_CASA:
+							razao = "casa"
+							break
+			if razao != "":
+				soltas_com_razao += 1
+			else:
+				soltas_sem_razao += 1
+				if exemplo_solta.length() < 900:
+					var da_porteira := INF
+					for porteira in pontos_das_porteiras:
+						da_porteira = minf(da_porteira, ponta.distance_to(porteira))
+					exemplo_solta += "%s em %s (porteira a %.2f, rua a %.2f); " % [lance["zona"], str(ponta), da_porteira, float(regiao._distancia_da_rua(ponta))]
 	_conferir(longe_da_roca == 0, "%d lance(s) de cerca a mais de %.1f da borda da roça deles (o pior: %.2f)" % [longe_da_roca, DA_BORDA, pior_borda])
-	var fechadas := 1.0 - float(pontas_soltas) / float(lances.size() * 2)
-	_conferir(fechadas >= CANTOS_FECHADOS, "só %.0f%% das pontas das cercas encontram outra ponta: cercado com buracos nos cantos" % (fechadas * 100.0))
+	_conferir(soltas_sem_razao == 0, "%d ponta(s) de cerca soltas no ar, sem encostar em outro lance e sem rua, porteira, água ou casa (ex.: %s)" % [soltas_sem_razao, exemplo_solta])
 
 	# --- 6. UMA CERCA SÓ ENTRE ROÇAS VIZINHAS ---------------------------------------------
 	var coladas := 0
@@ -247,13 +303,13 @@ func _run() -> void:
 		cercadas[lance["zona"]] = true
 	for zona in cercadas:
 		_conferir(porteiras.has(zona), "a roça cercada '%s' não tem porteira" % zona)
-	print("  %d lances em %d roças; a cerca mais baixa %.2f, o corpo mais baixo %.2f; rua mais perto %.2f; %.0f%% das pontas fechadas" % [lances.size(), cercadas.size(), menor_altura, menor_corpo, pior_rua, fechadas * 100.0])
+	print("  %d lances em %d roças; a cerca mais baixa %.2f, o corpo mais baixo %.2f; beira da rua mais perto %.2f; pontas soltas com razão (rua, porteira, água, casa): %d" % [lances.size(), cercadas.size(), menor_altura, menor_corpo, pior_rua, soltas_com_razao])
 	_fechar()
 
 
 func _fechar() -> void:
 	if falhas == 0:
-		print("CERCAS_OK: as cercas de varas das roças são cercas de verdade (em pé, com corpo que o pulo não passa, um corpo por lance), fora da rua, da casa e da água, no chão, sem se cruzar, abraçando a roça de canto a canto, uma só entre roças vizinhas, e cada roça cercada tem a porteira")
+		print("CERCAS_OK: as cercas de varas das roças são cercas de verdade (em pé, com corpo que o pulo não passa, um corpo por lance), fora de cima da rua, da casa e da água, no chão, sem se cruzar longe das pontas, abraçando a roça de canto a canto com toda ponta encostada em outro lance (ou parada na rua, na porteira, na água ou na casa), uma só entre roças vizinhas, e cada roça cercada tem a porteira")
 		quit(0)
 	else:
 		print("cercas: %d falha(s)" % falhas)

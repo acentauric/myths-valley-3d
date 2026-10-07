@@ -23,6 +23,17 @@
   cada quatro golpes, e a dica conta o trabalho ("Lajedo 12/96"); a seta de "junte
   pedras" não aponta a pedra grande a quem só tem a picareta de ferro. As árvores já
   seguiam a regra (madeira branca, de lei e dura, com nível e aço).
+- **As cercas das roças, segunda passada, pelas fotos do jogo** (07/10, à noite; "as
+  cercas continuam desalinhadas"). Fotografado de dentro do jogo, o cercado tinha
+  buracos ao longo da estrada e cunhas abertas nos cantos: as reservas das plantas
+  (a copa da árvore, o círculo do cemitério, a faixa da rua) derrubavam lances de
+  cerca — a roça do caminho da chapada ficava com 22 lances de 67. Agora um lance só
+  cai na água, EM CIMA da rua ou dentro de uma construção; cada lado estende meio
+  corpo para fora dos cantos, para os dois lados se cruzarem em vez de abrir a cunha;
+  os lances são do molde natural (até um décimo esticados, ou sobrepostos por igual);
+  a divisa entre duas roças fecha em T; e o portão `cercas` cobra que TODA ponta
+  encoste em outro lance — salvo a que para na rua, na porteira, na água ou numa
+  construção. 267 lances em pé, contra 173.
 - **As missões secundárias dos moradores, fase 3: as pontes entre moradores e as
   missões de ação** (docs/projeto/MISSOES_SECUNDARIAS.md). Nove filas, abertas pelo
   favor feito e a afinidade (a do Tonico pede "Amigo"): a roda na praia (Mariinha e a
