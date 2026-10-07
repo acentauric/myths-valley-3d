@@ -6,6 +6,11 @@ O teste passa a cobrar Candinha, Filo, Tonho, Zefa, arraial e recursos, incluind
 
 ## Em desenvolvimento — 07/10/2026 (experimento Jev)
 
+- #151: chão verde recebe mistura rotacionada também perto da câmera;
+  capim de forro varia de 60% a 95%; vegetação baixa acompanha a normal
+  do chão. A missão do cemitério conserva seus oito tufos altos. Cinco
+  gates verdes, mutante com seis falhas e três áreas conferidas visualmente.
+
 - #18 (parcial): inventário dos quinze contratos do 2D e das 32 perguntas
   de contexto 3D; regras de afinidade, receita, foco e fração portadas.
   Cordel passa pela confirmação nativa de presente. Passo, lenha extra,

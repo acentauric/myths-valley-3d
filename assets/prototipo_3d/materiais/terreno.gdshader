@@ -156,7 +156,8 @@ void fragment() {
 	// vem de uma segunda amostra girada e 4x maior, que desmancha a grade.
 	vec2 uv_g = xz / ladrilho_grama;
 	vec4 t_grama = textureGrad(tex_grama, uv_g, ddx / ladrilho_grama, ddy / ladrilho_grama);
-	float segunda = smoothstep(segunda_amostra.x, segunda_amostra.y, dist) * 0.5;
+	// Uma segunda orientação já de perto evita o tabuleiro repetido na subida.
+	float segunda = mix(0.3, 0.5, smoothstep(segunda_amostra.x, segunda_amostra.y, dist));
 	if (segunda > 0.0) {
 		mat2 giro = mat2(vec2(0.8, 0.6), vec2(-0.6, 0.8));
 		float l2 = ladrilho_grama * 4.0;

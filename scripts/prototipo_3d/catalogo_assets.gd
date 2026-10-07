@@ -511,6 +511,22 @@ static func _tratar_material(material: Material) -> void:
 
 ## Instancia o modelo do Tripo com a base no chão em `origin`, normalizado pela medida
 ## do catálogo (× size) e girado em `yaw`. Devolve null quando o GLB não existe.
+## Apoio das plantas baixas: orienta a base pelo relevo sem inclinar árvores.
+static func apoio_no_relevo(terreno: Node, ponto: Vector3) -> Transform3D:
+	var passo := 0.4
+	var dx: float = terreno.ground_height_at(ponto + Vector3.RIGHT * passo) - terreno.ground_height_at(ponto - Vector3.RIGHT * passo)
+	var dz: float = terreno.ground_height_at(ponto + Vector3.BACK * passo) - terreno.ground_height_at(ponto - Vector3.BACK * passo)
+	var normal := Vector3(-dx, 2.0 * passo, -dz).normalized()
+	var giro := Basis(Quaternion(Vector3.UP, normal))
+	return Transform3D(giro, Vector3(ponto.x, terreno.ground_height_at(ponto) - 0.06, ponto.z))
+
+
+static func assentar_planta(no: Node3D, terreno: Node, pe: Vector3) -> void:
+	var local := no.transform
+	local.origin -= pe
+	no.transform = apoio_no_relevo(terreno, pe) * local
+
+
 static func instanciar(chave: String, parent: Node, origin: Vector3, size: float = 1.0, yaw: float = 0.0) -> Node3D:
 	var scene := cena(chave)
 	if scene == null:

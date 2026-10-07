@@ -186,6 +186,8 @@ func _erguer() -> void:
 			float(ficha.get("tamanho", 1.0)), giro)
 		if no == null:
 			continue
+		if str(ficha.get("peca", "")) == "capim":
+			CatalogoAssets.assentar_planta(no, _world, pos)
 
 		# PEDRA GRANDE NÃO É ALVO. A ficha que rende pedra só vira alvo se o desenho cabe
 		# na mão (`pedra_pequena`) ou se traz a razão escrita (`grande_de_proposito`, a

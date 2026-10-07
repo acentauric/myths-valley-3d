@@ -5,6 +5,11 @@ raiz. O jogo 2D segue sua própria linha em `acentauric/myths-valley`.
 
 ## O que já roda
 
+A #151 reduz a repetição do chão verde, diminui o capim de forro e apoia
+a vegetação baixa na normal do relevo. A composição mantém densidades por
+ambiente e os tufos necessários ao cemitério. Cinco gates e a inspeção de
+três áreas sustentam [SOLO_E_CAPINS.md](../testes/SOLO_E_CAPINS.md).
+
 A #18 tem inventário dos quinze contratos do 2D e das 32 perguntas de
 contexto 3D em [PORTOES_2D_3D.md](../testes/PORTOES_2D_3D.md). Quatorze
 gates passam; a auditoria estrita de talentos continua reprovando os cinco

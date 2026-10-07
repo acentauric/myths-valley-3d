@@ -463,7 +463,8 @@ static func _forro(ctx: Dictionary, saida: Array[Dictionary]) -> void:
 				for m in n:
 					var sorteios := _sorteios(s + 313 * k + 17 * (m + 1), ju, jv)
 					var ponto := Vector2((float(ju) + ruido(s + 311 * k, ju, jv, 71 + m)) * celula, (float(jv) + ruido(s + 311 * k, ju, jv, 72 + m)) * celula)
-					_tentar(ctx, ponto, String(chave), sorteios, [0.8, 1.2], LOD_DO_FORRO, 0.0, false, saida, true)
+					var escala_do_forro: Array = [0.6, 0.95] if String(chave) == "capim" else [0.8, 1.2]
+					_tentar(ctx, ponto, String(chave), sorteios, escala_do_forro, LOD_DO_FORRO, 0.0, false, saida, true)
 
 
 # --- As reservas do mundo ----------------------------------------------------------
@@ -668,6 +669,9 @@ static func plantar(regiao: Node3D, plantas: Array, receitas: Dictionary) -> Dic
 				continue
 			var escala := float(planta["escala"])
 			var transformacao := Transform3D(Basis.from_euler(Vector3(0.0, float(planta["giro"]), 0.0)).scaled(Vector3.ONE * escala), Vector3(ponto.x, chao - regiao.ARVORE_AFUNDADA, ponto.y)) * base
+			if bool(planta.get("forro", false)) or especie == "capim":
+				var apoio := CatalogoAssets.apoio_no_relevo(regiao, Vector3(ponto.x, chao, ponto.y))
+				transformacao = apoio * Transform3D(Basis.from_euler(Vector3(0.0, float(planta["giro"]), 0.0)).scaled(Vector3.ONE * escala), Vector3.ZERO) * base
 			transforms.append(transformacao)
 			if bool(dados.get("tronco", false)):
 				regiao._tree_trunks.append({"point": ponto, "ground": chao, "height": minf(float(modelo.altura) * escala, 4.0),
