@@ -497,6 +497,10 @@ static func reservas_do_mundo(wb: Node, receitas: Dictionary) -> Dictionary:
 	for nome: String in wb.ancoras:
 		if nome.ends_with("Frente") or nome.ends_with("Direcao") or nome.ends_with("Lado"):
 			continue
+		# A PISTA DA CORRIDA E A AREIA (07/10) são pontos de passagem na praia, e não
+		# lugares: reservá-los tirava uma piaçabeira do píer, e o saveiro pede oito.
+		if nome in SEM_RESERVA:
+			continue
 		var ancora: Variant = wb.ancoras[nome]
 		if not ancora is Vector3:
 			continue
@@ -765,6 +769,10 @@ static func _area(poligono: PackedVector2Array) -> float:
 		var b := poligono[(i + 1) % poligono.size()]
 		soma += a.x * b.y - b.x * a.y
 	return soma * 0.5
+
+
+## Âncoras que não reservam chão: pontos de passagem, e não lugares (ver as reservas).
+const SEM_RESERVA := ["Corrida", "Areia"]
 
 
 static func _item(chave: String, ponto: Vector2, giro: float, zona: String, raio: float, corpo: bool) -> Dictionary:

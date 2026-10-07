@@ -15,10 +15,13 @@
   mais de 150 s se solta sozinho, avisando no console.
 - **Playtest de 07/10, segunda fatia: a chegada.** A seta da corrida aponta uma pista
   em terra, estrada adentro, e não o Tonho. Na chegada o Tonho espera na areia, ao
-  lado do píer, e volta à rotina quando a chegada passa da casa. O Pedro espera nos
-  marcos da estrada: a cada onze passos andados para e vira-se até o jogador chegar
-  a três; não anda enquanto o jogador está preso na caixa de fala; e só corre se o
-  jogador corre de fato.
+  lado do píer, e volta à rotina quando a chegada passou do bom-dia e ninguém está
+  olhando (o jogador a mais de catorze passos), ou quando a festa de uma fé o chama
+  à roda. O Pedro espera nos marcos da estrada: a cada onze passos andados para e
+  vira-se até o jogador chegar a três; não anda enquanto o jogador está preso na
+  caixa de fala; e só corre se o jogador corre de fato. A ponte do rio grande só se
+  anuncia com o Pedro ao lado do jogador, e a pista e a areia não reservam chão no
+  paisagismo — o píer segue com as oito piaçabeiras que o saveiro pede.
 
 - **Toda a lista de missões do 2D está no vale** (docs/projeto/MISSOES_DO_2D.md).
   O segundo tutorial (#160, `missoes_quintal.json`) abre sozinho na sexta colheita,

@@ -145,7 +145,8 @@ func _run() -> void:
 	# A PONTE ABRE SOZINHA com o tutorial acabado (07/10): é o enredo, e o Pedro a anuncia na
 	# despedida. Em curso no primeiro passo, antes do machado: o Damião segue trancado.
 	var da_ponte = vale._cadeias["pedro_ponte"]
-	_conferir(await relogio.ate(func() -> bool: return da_ponte.iniciado, 4.0), "acabado o tutorial, a ponte do rio grande não abriu sozinha")
+	jogador.teleportar(pedro.global_position + Vector3(1.4, 0.0, 0.6), -2.0)
+	_conferir(await relogio.ate(func() -> bool: return da_ponte.iniciado, 4.0), "acabado o tutorial, com o Pedro ao lado, a ponte do rio grande não abriu sozinha")
 	_conferir(not da_zefa.esta_trancada() and zefa._dica_da_fila_trancada() == "",
 		"acabado o tutorial, a Dona Zefa continua dizendo 'volte depois'")
 	var do_damiao = vale._cadeias["damiao"]

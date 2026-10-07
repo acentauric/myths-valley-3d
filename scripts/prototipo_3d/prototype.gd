@@ -917,14 +917,25 @@ func _tonho_para_a_areia() -> void:
 	_tonho_na_areia = true
 
 
+## Ele volta à rotina quando a chegada passou do bom-dia E ninguém está olhando (o
+## jogador a mais de LONGE_DO_TONHO), para não sair andando na cara de quem acabou de
+## cumprimentá-lo — ou na hora em que a festa de uma fé o chama à roda.
+const LONGE_DO_TONHO := 14.0
+
+
 func _acertar_o_tonho_da_chegada() -> void:
 	if not _tonho_na_areia:
 		return
-	if pedro == null or pedro.terminou_o_tutorial() or pedro.passou("casa"):
+	var tonho := _achar_morador("tonho")
+	if tonho == null or not tonho.has_method("liberar"):
 		_tonho_na_areia = false
-		var tonho := _achar_morador("tonho")
-		if tonho != null and tonho.has_method("liberar"):
-			tonho.liberar()
+		return
+	var na_festa: bool = str(tonho.get("_posto")) == "festa"
+	var passou_a_praia: bool = pedro == null or pedro.terminou_o_tutorial() or pedro.passou("bom_dia")
+	var longe: bool = player == null or player.global_position.distance_to(tonho.global_position) > LONGE_DO_TONHO
+	if na_festa or (passou_a_praia and longe):
+		_tonho_na_areia = false
+		tonho.liberar()
 
 
 ## AS FERRAMENTAS DO FINADO NUMA PARTIDA DE ANTES DO BAÚ. A enxada vinha do
@@ -1094,11 +1105,16 @@ func _conferir_o_socorro() -> void:
 ## jornada da fazenda —, e no 2D o enredo entra na frente da lista sem esperar E.
 ## O Pedro está ao lado do jogador na despedida, e anuncia o passo ali mesmo. As
 ## frentes de ofício dele (as armas, o ofício, a lombada) seguem abrindo no E.
+## E SÓ COM O PEDRO AO LADO (PERTO_PARA_A_PONTE): é ele quem anuncia, e anunciar de
+## longe seria um balão que ninguém vê. Na despedida ele está junto do jogador.
+const PERTO_PARA_A_PONTE := 8.0
+
+
 func _conferir_a_ponte() -> void:
 	var da_ponte = _cadeias.get("pedro_ponte")
-	if da_ponte == null or da_ponte.iniciado or pedro == null:
+	if da_ponte == null or da_ponte.iniciado or pedro == null or player == null:
 		return
-	if pedro.terminou_o_tutorial():
+	if pedro.terminou_o_tutorial() and player.global_position.distance_to(pedro.global_position) <= PERTO_PARA_A_PONTE:
 		da_ponte.comecar(2.0)
 
 

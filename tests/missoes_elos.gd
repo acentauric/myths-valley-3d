@@ -521,6 +521,13 @@ func _o_e_neste_passo(cadeia, indice: int, meta: Dictionary, quem, jogador, tecl
 		if e_o_tutorial and quem != vale.pedro:
 			# NO TUTORIAL O PEDRO SEGUE O JOGADOR, a um passo e meio atrás.
 			vale.pedro.global_position = ponto - Vector3(sin(giro), 0.0, cos(giro)) * 1.5
+		# O CARTÃO DA PRIMEIRA VEZ (a água funda de um teleporte, o cordel, a árvore) para a
+		# árvore inteira, e com ela parada o E não é de ninguém: fecha, como o jogador faria.
+		var aviso = vale.get("aviso_da_primeira_vez")
+		for i in 4:
+			if aviso != null and aviso.aberto():
+				aviso.fechar()
+			await jogada.quadros(1)
 		await jogada.quadros(3)
 		var o_que: String = cadeia.o_que_o_e_faz(quem)
 		var dono = jogada.dono_do_e()

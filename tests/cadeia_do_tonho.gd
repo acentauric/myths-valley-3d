@@ -135,6 +135,14 @@ func _run() -> void:
 	if guia != null:
 		guia.missao = guia.MISSOES.size()
 		guia.set("_despedida_feita", true)
+		# O TONHO VOLTA AO PÍER (07/10): na chegada ele espera na areia ao lado do píer, e só
+		# volta à rotina sem ninguém olhando. Acabado o tutorial, aqui ele já está no posto —
+		# que é onde lê a maré —, e o jogador ao lado dele.
+		current_scene.set("_tonho_na_areia", false)
+		tonho.liberar()
+		tonho.ir_ao_posto_agora()
+		jogador.global_position = tonho.global_position + Vector3(1.2, 0.0, 1.0)
+		await _frames(3)
 	# A REDE É DE MADEIRA, e a fila espera os machados do avô do Pedro, na ponte
 	# (`prototype._ja_recebeu_o_machado`): com a chegada feita e sem eles, o E
 	# ainda não abre; com a ponte passada deles, abre.
