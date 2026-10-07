@@ -388,3 +388,20 @@ memória reprova sete perguntas. Avisos longos agora quebram por largura
 e ajustam a altura; capturas em três resoluções conferidas, seis falhas
 no mutante sem quebra. O portão da cadeia aguarda a fala antes de usar E,
 conforme a prioridade #121 já aplicada.
+
+
+## 07/10/2026: livro de fiado do Tonho (#68)
+
+O livro usa o baú efetivamente montado no perfil da venda, com E a 1,7 u e
+foco compartilhado. Pergunta antes de lançar até 500 réis, limitados pelo
+dinheiro do jogador e pelo saldo. Sem dinheiro explica venda/espera; conta
+quitada orienta voltar ao pontal. Dívida inicial 1900, abatimento de 130 por
+dia somente depois da entrega real da rede; quinze dias quitam a conta.
+Saldo, rede, leitura e dia do último abatimento vão no save do vale.
+A etapa do livro exige leitura E quitação; chegar à venda ou ler não pode
+liberar a fala Zerou. Valores conferidos no 2D SHA62c0f14b, Terrenos/Mundo.
+Interface PT/EN/ES; a prosa autoral da cadeia conserva pendência #6.
+Portões fiado_tonho (limites, 14/15 dias, JSON, trava de missão) e
+livro_no_armazem (móvel real, foco E, Sim/Não e save completo), idiomas,
+missoes e salvamento. Mutante sem abatimento deve reprovar a conta.
+Captura scratch/fiado-tonho/pergunta.png e logs em D:/MythsValleyPlaytestRuns.

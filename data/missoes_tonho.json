@@ -1,5 +1,5 @@
 {
-  "observacao": "A REDE, A CONTA E A TERRA DO TONHO, trazida do jogo 2D (data/dialogos/arraial.json, passos pescador_ver / pescador_rede / tonho_divida / tonho_terra e os respectivos _fim). É A HISTÓRIA INTEIRA DE UM MORADOR, na ordem de lá, e a ordem é o sentido: a rede é o que paga o armazém ('Com rede eu tiro em uma manhã o que a linha me dá em cinco. Isso paga o armazém antes do inverno'), e a dívida paga é o que solta a terra ('Eu só não queria entregar terra devendo'). Importar a dívida sem a rede, como esta cadeia começou, era ficar com o fim sem o começo. É também a única cadeia do vale que ATRAVESSA o arraial: o píer, a oficina do roçado, o armazém, e o píer de novo. NO 2D A DÍVIDA SE PAGA no baú do livro de fiado ou pela rede ao longo de semanas; o vale não tem o livro nem a espera de semanas (#21), então o passo do armazém é A IDA, que é a instrução literal do objetivo de lá ('Entre no armazém'). CORDA E TÁBUA NASCEM SABIDAS na oficina, e o comentário do Oficina.RECEITAS já dizia que era por causa desta rede. O PASSO DA REDE APONTA O ROÇADO, e não a oficina: oficina está na lista FALTAM_NO_VALE do Lugares (a âncora é da Fase 7), e passo cujo lugar não resolve o correr PULA EM SILÊNCIO — apontá-la teria apagado o meio da cadeia sem ninguém saber. A bancada é provisória na beira do roçado, como diz o BancadasVale. AS AS RECOMPENSAS DO 2D VIERAM (#48), no campo 'recompensa' de cada passo, com os números do arraial.json de lá: o pirão do pontal, os pirões e a cocada da rede, os 2 peixes assados da dívida paga e os 2 pirões e 2 cocadas da terra. 'abre_em' é nota de leitura: quem decide onde a fila abre é o _pendurar_cadeia do Prototype. TRADUÇÃO: só em português neste primeiro momento; inglês e espanhol são do Ramon.",
+  "observacao": "A REDE, A CONTA E A TERRA DO TONHO, trazida do jogo 2D (data/dialogos/arraial.json, passos pescador_ver / pescador_rede / tonho_divida / tonho_terra e os respectivos _fim). É A HISTÓRIA INTEIRA DE UM MORADOR, na ordem de lá, e a ordem é o sentido: a rede é o que paga o armazém ('Com rede eu tiro em uma manhã o que a linha me dá em cinco. Isso paga o armazém antes do inverno'), e a dívida paga é o que solta a terra ('Eu só não queria entregar terra devendo'). Importar a dívida sem a rede, como esta cadeia começou, era ficar com o fim sem o começo. É também a única cadeia do vale que ATRAVESSA o arraial: o píer, a oficina do roçado, o armazém, e o píer de novo. NO 2D A DÍVIDA SE PAGA no baú do livro de fiado ou pela rede ao longo de semanas; o vale não tem o livro nem a espera de semanas (#21), então o passo do armazém é A IDA, que é a instrução literal do objetivo de lá ('Entre no armazém'). CORDA E TÁBUA NASCEM SABIDAS na oficina, e o comentário do Oficina.RECEITAS já dizia que era por causa desta rede. O PASSO DA REDE APONTA O ROÇADO, e não a oficina: oficina está na lista FALTAM_NO_VALE do Lugares (a âncora é da Fase 7), e passo cujo lugar não resolve o correr PULA EM SILÊNCIO — apontá-la teria apagado o meio da cadeia sem ninguém saber. A bancada é provisória na beira do roçado, como diz o BancadasVale. AS AS RECOMPENSAS DO 2D VIERAM (#48), no campo 'recompensa' de cada passo, com os números do arraial.json de lá: o pirão do pontal, os pirões e a cocada da rede, os 2 peixes assados da dívida paga e os 2 pirões e 2 cocadas da terra. 'abre_em' é nota de leitura: quem decide onde a fila abre é o _pendurar_cadeia do Prototype. TRADUÇÃO: só em português neste primeiro momento; inglês e espanhol são do Ramon. ATUALIZAÇÃO #68: o livro está no baú montado do armazém; a leitura e a quitação reais agora são obrigatórias. A rede abate 130 por dia e o livro aceita até 500 por confirmação, limitados pelo dinheiro e pelo saldo. A nota anterior sobre ausência do livro é histórica.",
   "dono": "tonho",
   "nome": "A dívida do Tonho",
   "nome_en": "Tonho's debt",
@@ -21,7 +21,9 @@
       "raio": 11.0,
       "audio": "",
       "texto": "Senta aí. Olha a água e não fala nada por um minuto. Viu? Ali na curva ela corre mais escura — é fundo, e peixe grande dorme no fundo de dia. Quando a maré está enchendo o peixe entra com ela; quando está vazando, ele encosta na pedra e espera. Meu pai me ensinou a ler maré aos nove: é a única herança que não deu pra penhorar.",
-      "recompensa": { "pirao": 1 },
+      "recompensa": {
+        "pirao": 1
+      },
       "meta": {}
     },
     {
@@ -31,10 +33,16 @@
       "raio": 9.0,
       "audio": "",
       "texto": "Agora eu vou te pedir uma coisa, e não é peixe — peixe eu pego. Minha rede ficou do outro lado do rio numa noite de março, e desde então eu pesco de linha, um por um: dá pra comer, não dá pra pagar o armazém. Rede não se compra aqui, se faz. Você tem a bancada na beira do roçado: torce cinco cordas lá e traz. Traz três tábuas também, que a bancada onde eu amarrava apodreceu.",
-      "recompensa": { "pirao": 2, "cocada": 1 },
+      "recompensa": {
+        "pirao": 2,
+        "cocada": 1
+      },
       "meta": {
         "tipo": "levar",
-        "itens": { "corda": 5, "tabua": 3 },
+        "itens": {
+          "corda": 5,
+          "tabua": 3
+        },
         "a_quem": "tonho",
         "raio": 3.4,
         "resposta": "Pronto. Deixa aí no chão mesmo. Olha — eu ia dizer obrigado e ficar quieto, que é o meu jeito, mas você merece a conta certa: com rede eu tiro em uma manhã o que a linha me dá em cinco, e isso paga o armazém antes do inverno. Agora vai, que eu tenho malha pra amarrar e o joelho não espera."
@@ -50,20 +58,28 @@
       "raio": 11.0,
       "audio": "",
       "texto": "Uma coisa, antes de você ir — e eu falo porque você merece ouvir de mim, não do armazém. Mil e novecentos. É o que eu devo lá, e eu sei de cabeça: acordo sabendo. Com a rede eu pago. Vai levar umas semanas, mas pago, e eu prefiro assim.",
-      "recompensa": { "peixe_assado": 2 },
+      "recompensa": {
+        "peixe_assado": 2
+      },
       "meta": {}
     },
     {
       "id": "tonho_livro",
       "titulo": "O livro de fiado",
-      "resumo": "Vá ao armazém ver o livro de fiado",
-      "resumo_en": "Go to the store to see the credit book",
-      "resumo_es": "Ve al almacén a ver el libro de fiado",
+      "resumo": "Leia o livro no baú do armazém e quite a dívida: pague ou espere a rede abater 130 réis por dia",
+      "resumo_en": "Read the store's credit book and settle the debt: pay or let the net pay off 130 réis per day",
+      "resumo_es": "Lee el libro del almacén y salda la deuda: paga o espera que la red descuente 130 réis por día",
       "lugar": "venda",
       "raio": 8.0,
       "audio": "",
       "texto": "Se você quiser apressar, o livro de fiado fica no baú do armazém e aceita o dinheiro de qualquer um. Não precisa me pedir licença. Entre lá e veja a página.",
-      "meta": {}
+      "meta": {
+        "tipo": "evento",
+        "eventos": [
+          "livro_tonho_lido",
+          "divida_tonho_quitada"
+        ]
+      }
     },
     {
       "id": "tonho_terra",
@@ -72,7 +88,10 @@
       "raio": 8.0,
       "audio": "",
       "texto": "Zerou. Eu passei lá e o homem virou o livro pra eu ver — dois anos naquela página, e agora é só papel velho. Volte ao pontal, que eu quero te entregar uma coisa na mão.",
-      "recompensa": { "pirao": 2, "cocada": 2 },
+      "recompensa": {
+        "pirao": 2,
+        "cocada": 2
+      },
       "meta": {
         "tipo": "falar",
         "a_quem": "tonho",

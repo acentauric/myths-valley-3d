@@ -137,6 +137,7 @@ var interiores
 ## A casa herdada por dentro: a cama e o baú (`casa_do_jogador.gd`), e a noite
 ## que vira por três portas (`queda.gd`).
 var casa: Node
+var fiado_tonho: Node
 var noite: Node
 ## A lavoura da casa, a fazenda do jogador (`lavoura_vale.gd`, #8).
 var lavoura: Node3D
@@ -636,6 +637,7 @@ func _ready() -> void:
 				roca.depois_de = func() -> bool: return pedro == null or pedro.passou("roca")
 		if fila != null:
 			fila.depois_de = depois_do_machado if quem in ["damiao", "tonho"] else depois_da_chegada
+	fiado_tonho.configurar(player, hud, interiores, _cadeias.get("tonho"))
 	# A PONTE DO RIO GRANDE (data/missoes_ponte.json), a frente da trilha do 2D:
 	# ver a ponte cercada, a lenha, as tábuas e a obra. É enredo — a fazenda do
 	# convite fica do outro lado do rio —, e por isso é a PRIMEIRA fila que o E
@@ -1232,6 +1234,9 @@ func _montar_moradores(spawn: Vector3) -> void:
 	casa.name = "CasaDoJogador"
 	add_child(casa)
 	casa.configurar(player, hud, interiores, queda)
+	fiado_tonho = load("res://scripts/prototipo_3d/fiado_tonho.gd").new()
+	fiado_tonho.name = "FiadoTonho"
+	add_child(fiado_tonho)
 	lavoura = LavouraVale.new()
 	lavoura.name = "Lavoura"
 	add_child(lavoura)
@@ -1990,6 +1995,8 @@ func estado_para_salvar() -> Dictionary:
 	# O BAÚ DA CASA, como no 2D (`travas.bau_da_casa`).
 	if casa != null:
 		estado["casa"] = casa.estado_para_salvar()
+	if fiado_tonho != null:
+		estado["fiado_tonho"] = fiado_tonho.estado_para_salvar()
 	# A LAVOURA inteira: cada leito é escolha do jogador, e nada se recalcula.
 	if lavoura != null:
 		estado["lavoura"] = lavoura.estado_para_salvar()
@@ -2082,6 +2089,8 @@ func restaurar_do_save(estado: Dictionary) -> void:
 			luta.coleta.restaurar(estado.get("coleta_no_chao", []))
 	if casa != null and estado.has("casa"):
 		casa.restaurar(estado["casa"])
+	if fiado_tonho != null:
+		fiado_tonho.restaurar(estado.get("fiado_tonho", {}))
 	_conferir_a_enxada_do_finado()
 	if lavoura != null and estado.has("lavoura"):
 		lavoura.restaurar(estado["lavoura"])

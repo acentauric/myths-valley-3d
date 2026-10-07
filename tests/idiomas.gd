@@ -33,6 +33,7 @@ var _pendentes := 0
 ## ARQUIVO → campos que o jogador lê. Só o que está aqui é cobrado; o que
 ## falta traduzir mora em `FALTAM_TRADUCAO`, embaixo.
 const TRADUZIDOS := {
+	"res://data/fiado_tonho.json": ["texto"],
 	"res://data/interface_tamanhos.json": ["texto"],
 	"res://data/camera_modos.json": ["livre", "arrastar", "automatica", "indicar"],
 	"res://data/apoios_vale.json": ["titulo", "ajuda", "fechar", "pronto", "usado", "vazio", "segundo_folego", "sucesso"],

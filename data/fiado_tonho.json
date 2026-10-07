@@ -1,0 +1,8 @@
+{
+  "acao": {"texto": "Livro de fiado", "texto_en": "Credit book", "texto_es": "Libro de fiado"},
+  "titulo": {"texto": "Livro do armazém", "texto_en": "Store credit book", "texto_es": "Libro del almacén"},
+  "quitada": {"texto": "A conta do Tonho está quitada. Volte ao pontal para falar com ele.", "texto_en": "Tonho's debt is paid. Return to the pier to speak with him.", "texto_es": "La deuda de Tonho está saldada. Vuelve al muelle para hablar con él."},
+  "sem_dinheiro": {"texto": "Tonho deve %d réis. Você está sem dinheiro. A rede abate 130 réis por dia; também pode vender sua produção e voltar para pagar.", "texto_en": "Tonho owes %d réis. You have no money. The net pays off 130 réis per day; you can also sell your produce and return to pay.", "texto_es": "Tonho debe %d réis. No tienes dinero. La red descuenta 130 réis por día; también puedes vender tu producción y volver a pagar."},
+  "pergunta": {"texto": "Tonho deve %d réis.\nLançar %d réis na conta do Tonho? Você tem %d réis.\nCom a rede entregue, a dívida diminui 130 réis por dia.", "texto_en": "Tonho owes %d réis.\nPay %d réis towards his debt? You have %d réis.\nAfter delivering the net, the debt decreases by 130 réis per day.", "texto_es": "Tonho debe %d réis.\n¿Pagar %d réis de su deuda? Tienes %d réis.\nTras entregar la red, la deuda disminuye 130 réis por día."},
+  "pago": {"texto": "Lançados %d réis na conta do Tonho. Restam %d réis.", "texto_en": "%d réis paid towards Tonho's debt. %d réis remain.", "texto_es": "%d réis pagados de la deuda de Tonho. Quedan %d réis."}
+}

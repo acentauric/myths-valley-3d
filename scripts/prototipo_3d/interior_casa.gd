@@ -117,6 +117,10 @@ func ponto_da_cama() -> Vector3:
 	return to_global(_cama + Vector3(0, CAMA.y, 0))
 
 
+func peca_do_perfil(chave: String) -> Node3D:
+	return _postas.get(chave)
+
+
 func ponto_do_bau() -> Vector3:
 	return to_global(_bau + Vector3(0, BAU.y, 0))
 
