@@ -1,0 +1,6 @@
+{
+  "livre": "Livre (o mouse gira)", "livre_en": "Free (mouse turns the camera)", "livre_es": "Libre (el ratón gira la cámara)",
+  "arrastar": "Arrastar (segure o botão)", "arrastar_en": "Drag (hold the button)", "arrastar_es": "Arrastrar (mantén el botón)",
+  "automatica": "Automática (acompanha o caminho)", "automatica_en": "Automatic (follows your path)", "automatica_es": "Automática (sigue el camino)",
+  "indicar": "Câmera: %s · %s alterna", "indicar_en": "Camera: %s · %s switches modes", "indicar_es": "Cámara: %s · %s cambia el modo"
+}

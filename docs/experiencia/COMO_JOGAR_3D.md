@@ -41,8 +41,8 @@ As letras marcadas com * são **remapeáveis** em AJUSTAR → Geral → Atalhos;
 | WASD / setas | Mover em relação à câmera e cancelar a caminhada automática (AJUSTAR → Geral escolhe WASD, setas ou os dois) |
 | Shift (um toque) | Ativar ou desativar a corrida; ela desliga sozinha quando o personagem para, e gasta vigor |
 | Espaço | Pular a partir do chão |
-| Mouse | Com a câmera solta, girar a câmera sem clicar; com a câmera travada, arrastar o cenário. O modo com que o jogo abre fica em AJUSTAR → Câmera do mouse |
-| Tab ou Câmera* (C) | Alternar entre câmera solta e travada |
+| Mouse | Livre: girar sem clicar. Arrastar: girar segurando o botão. Automática: acompanha o movimento, preservando clique e arraste manual. AJUSTAR → Câmera do mouse escolhe o modo inicial |
+| Câmera* (C) | Percorrer Livre → Arrastar → Automática, com preferência salva |
 | Rodinha, + e - | Aproximar ou afastar a câmera |
 | Observar* (F) | Olhar o personagem pela frente; de novo, volta |
 | Clique direito | Caminhar até o chão, casa ou morador apontado; duplo clique corre |

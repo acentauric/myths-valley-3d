@@ -2785,6 +2785,10 @@ func _atualizar_lod_da_camera() -> void:
 			de_longe.visible = not mapa
 
 
+func raio_fisico_do_tronco(tree: Dictionary) -> float:
+	var raio := float(tree.get("radius", 0.36))
+	return maxf(raio * 1.25, float(tree.get("raio_base", 0.0)) * 0.9) if tree.get("especie", "") == "coqueiro" else raio
+
 func _refresh_tree_collisions() -> void:
 	var player := get_tree().get_first_node_in_group("map_player") as Node3D
 	if player == null:
@@ -2805,10 +2809,9 @@ func _refresh_tree_collisions() -> void:
 		var body: StaticBody3D = slot.body
 		var shape: CylinderShape3D = slot.shape
 		shape.height = tree.height
-		var raio := float(tree.get("radius", 0.36))
 		# Os coqueiros ficam muito juntos na orla: uma pequena margem ao
 		# cilindro deixa a colisão acompanhar a malha.
-		shape.radius = maxf(raio * 1.25, float(tree.get("raio_base", 0.0)) * 0.9) if tree.get("especie", "") == "coqueiro" else raio
+		shape.radius = raio_fisico_do_tronco(tree)
 		var base_tronco: Vector3 = tree["base_tronco"]
 		var alto_tronco: Vector3 = tree["alto_tronco"]
 		var eixo_tronco := (alto_tronco - base_tronco).normalized()

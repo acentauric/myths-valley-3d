@@ -263,7 +263,10 @@ func _troncos_da_mata(fonte: NavigationMeshSourceGeometryData3D, area: AABB) -> 
 			ponto = Vector2(base.x, base.z)
 		# O octógono POR FORA do tronco: com o raio nos vértices ele ficava por
 		# dentro do círculo, e o caminho raspava no tronco pelo meio das arestas.
-		var raio := maxf(float(tronco.get("radius", 0.3)), 0.2) / cos(PI / 8.0)
+		# A colisão do coqueiro inclui sua base: usar apenas o raio nominal
+		# deixava a rota atravessar a borda do corpo físico (#99/#150).
+		var raio_fisico: float = regiao.raio_fisico_do_tronco(tronco)
+		var raio := maxf(raio_fisico, 0.2) / cos(PI / 8.0)
 		var contorno := PackedVector3Array()
 		for k in 8:
 			var angulo := TAU * float(k) / 8.0

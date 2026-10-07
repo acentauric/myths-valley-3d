@@ -5,6 +5,19 @@ raiz. O jogo 2D segue sua própria linha em `acentauric/myths-valley`.
 
 ## O que já roda
 
+A #126 ganha os três modos de câmera persistidos, giro suave por movimento,
+desvios com histerese e geometria de árvores próximas. Raízes sem ângulo livre
+desvanecem temporariamente, restauradas ao sair/trocar modo. Capturas de
+vegetação, casa, píer e guia conferidas; caminhada física por clique incluída.
+O gate passa em 51 s; retirar desvio ou visibilidade reprova as perguntas.
+Velas dos barcos também entram na proteção. Evidências e limites em
+[CAMERA_AUTOMATICA.md](../testes/CAMERA_AUTOMATICA.md).
+
+A #99 tem correção local de navegação: o raio físico da base dos coqueiros
+também entra na malha, evitando que a rota corte um corpo maior que o raio
+nominal. A fixture da Filó ativa a população para medir locomoção, não a
+apresentação gradual. Gate isolado verde em 63 s; bateria final pendente.
+
 A #159 continua em execução: fontes acessíveis estáveis, custo composto de
 receitas, obra certa na interface, contornos físicos limitados, alimentação,
 documentos e retomada das cadeias do guia entram no testador. 78 testes Python

@@ -822,7 +822,9 @@ func set_camera_locked(value: bool) -> void:
 		if is_instance_valid(_camera_icon):
 			_camera_icon.definir(value)
 		if is_instance_valid(_camera_hint):
-			_camera_hint.text = ("Câmera travada · %s ou Tab destrava" % Atalhos.letra("camera")) if value else ("Câmera livre · %s ou Esc trava" % Atalhos.letra("camera"))
+			var preferencia = load("res://scripts/prototipo_3d/camera_mouse.gd")
+			var textos: Dictionary = Jogo.dados("res://data/camera_modos.json")
+			_camera_hint.text = IdiomaMenu.campo(textos, "indicar") % [preferencia.rotulo(), Atalhos.letra("camera")]
 	_update_control_mode()
 
 
@@ -830,7 +832,8 @@ func set_camera_locked(value: bool) -> void:
 func _update_control_mode() -> void:
 	if not is_instance_valid(_control_mode_label):
 		return
-	var mode := "Câmera solta: mova o mouse para olhar" if _captured else "Câmera travada: arraste o cenário"
+	var preferencia = load("res://scripts/prototipo_3d/camera_mouse.gd")
+	var mode: String = preferencia.rotulo()
 	_control_mode_label.text = "\n".join([
 		"%s: mover" % TeclasMovimento.rotulo(),
 		"Shift: corrida (parar desliga)",

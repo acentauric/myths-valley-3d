@@ -220,6 +220,11 @@ func _run() -> void:
 			filo = morador
 	_conferir(filo != null, "a Filó não está no vale")
 	if filo != null:
+		# Esta pergunta mede a rota da Filó, não sua apresentação gradual (#155).
+		var apresentacao = current_scene.get("apresentacao_do_povoado")
+		if apresentacao != null:
+			apresentacao.liberar_todos()
+			apresentacao.set_process(false)
 		var casa: Vector3 = a["Casa da estrada"]
 		var frente: Vector3 = a.get("Casa da estradaFrente", Vector3.BACK)
 		var atras: Vector3 = world.ground_position(casa - frente * 6.5, 0.05)

@@ -6,6 +6,18 @@ O teste passa a cobrar Candinha, Filo, Tonho, Zefa, arraial e recursos, incluind
 
 ## Em desenvolvimento — 07/10/2026 (experimento Jev)
 
+- #126: C percorre Livre/Arrastar/Automática e salva a preferência. A câmera
+  acompanha o movimento suavemente, mantém o rumo das teclas durante o giro
+  e procura lados livres com histerese. Até oito árvores/barcos próximos
+  fornecem geometria reutilizada; o que encobre o corpo desvanece e volta
+  ao sair. Capturas conferidas no vale, gate de caminhada real verde em 51 s;
+  câmera/telas e cliques verdes. Falsificações de desvio/visibilidade reprovam.
+
+- #99 (parcial): navegação usa o mesmo raio físico dos coqueiros, incluindo
+  a base. Reproduziu passagem por tronco na versão anterior; gate verde
+  em 63 s após a correção. Fixture da Filó libera a população gradual.
+  O aceite da bateria inteira ainda está pendente.
+
 - #159 (parcial): JPEG 85% nas capturas contínuas, links também para PNG e
   checkpoints pelo menu normal a cada cinco minutos/lote de oito materiais,
   após golpes em curso. 82 testes Python verdes; remover checkpoints ou

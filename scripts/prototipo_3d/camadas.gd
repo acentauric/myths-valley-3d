@@ -21,6 +21,8 @@ const CLIQUE_CASA := 1 << 12
 ## O que barra o braço da câmera. É o mesmo bit que nasceu para a superfície da
 ## água (`Mar.CAMADA_CAMERA_AGUA`) e as cortinas da porta do cômodo.
 const CAMERA := 1 << 13
+## Malha próxima da vegetação, consultada somente pela câmera automática.
+const CAMERA_VEGETACAO := 1 << 15
 ## A medição temporária da casca de uma construção (`interiores.gd`).
 const MEDIR := 1 << 19
 

@@ -291,7 +291,7 @@ func _ready() -> void:
 	player.animation_requested.connect(_on_animation_requested)
 	player.navigation_status.connect(Callable(hud, "set_notice"))
 	player.nado_mudou.connect(_ao_mudar_o_nado)
-	hud.connect("camera_lock_requested", Callable(player, "set_camera_locked"))
+	hud.connect("camera_lock_requested", func(_travada: bool) -> void: player.alternar_camera())
 	world.house_interacted.connect(func(properties: Dictionary): hud.show_house_info(world.format_house_properties(properties)))
 	world.house_interaction_cleared.connect(Callable(hud, "clear_house_info"))
 	hud.connect("house_info_close_requested", Callable(self, "_fechar_info_aberta"))
@@ -491,14 +491,14 @@ func _ready() -> void:
 			"icone": "velocidade",
 			"fazer": func() -> void:
 				Dia.definir_velocidade(Dia.proxima_velocidade())},
-		{"rotulo": func() -> String: return "Câmera do mouse: %s" % ("arrastar" if CameraMouse.travada() else "livre"),
+		{"rotulo": func() -> String: return "Câmera do mouse: %s" % CameraMouse.rotulo(),
 			"icone": "camera",
 			"fazer": func() -> void:
 				# Troca A PREFERÊNCIA, e não a câmera de agora: com o menu aberto
 				# o cursor está solto de propósito, e é a preferência que o
 				# fechamento vai ler. Mexer na câmera aqui seria desfeito um
 				# quadro depois. Ver `_camera_da_preferencia`.
-				CameraMouse.definir(CameraMouse.LIVRE if CameraMouse.travada() else CameraMouse.ARRASTAR)},
+				CameraMouse.definir((CameraMouse.modo() + 1) % 3)},
 		# AS DUAS SAÍDAS, embaixo e em destaque. Sair do vale não é do mesmo tipo
 		# que trocar o volume, e a separação e a cor dizem isso antes de o texto
 		# ser lido.
@@ -588,7 +588,7 @@ func _ready() -> void:
 	# O VALE ABRE NO MODO DE CÂMERA ESCOLHIDO (AJUSTAR → Geral → Câmera do
 	# mouse). Era sempre livre, e quem preferia arrastar tinha de apertar a
 	# tecla da câmera toda vez que entrava.
-	player.set_camera_locked(CameraMouse.travada())
+	player.set_camera_modo(CameraMouse.modo())
 	hud.set_region_title(world.get_region_title())
 	if Estilo.procedural():
 		hud.set_model_status("Estilo procedural: personagem, casas e árvores por código")
@@ -1588,7 +1588,7 @@ func _open_settings() -> void:
 ## tela em diante e do próximo dia também. Antes o Tab mexia numa cópia que a
 ## tela seguinte sobrescrevia.
 func _camera_da_preferencia() -> void:
-	player.set_camera_locked(CameraMouse.travada())
+	player.set_camera_modo(CameraMouse.modo())
 
 func _pause_valley() -> void:
 	# LEMBRA O MODO DE CÂMERA ANTES DE SOLTAR O CURSOR.

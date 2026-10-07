@@ -176,7 +176,7 @@ func _aba_geral(esquerda: VBoxContainer, direita: VBoxContainer) -> void:
 	_escolha("Teclas de movimento", TeclasMovimento.ROTULOS, TeclasMovimento.modo(), TeclasMovimento.definir, TeclasMovimento.PADRAO)
 	# A CÂMERA DO MOUSE. Só muda o modo com que o jogo ABRE; a tecla da câmera
 	# continua alternando na hora, como sempre fez.
-	_escolha("Câmera do mouse", CameraMouse.ROTULOS, CameraMouse.modo(), CameraMouse.definir, CameraMouse.PADRAO)
+	_escolha("Câmera do mouse", CameraMouse.rotulos(), CameraMouse.modo(), CameraMouse.definir, CameraMouse.PADRAO)
 	_pai = direita
 	_secao("Volume")
 	_volume("Música", Audio.volume_musica, Audio.definir_volume_musica, "musica")

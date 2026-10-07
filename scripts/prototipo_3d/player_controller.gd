@@ -176,6 +176,12 @@ var _walk_run := false
 var _pending_interact_click := Vector2.INF
 var _pending_house_click := Vector2.INF
 var _camera_locked := false
+var _camera_modo := 0
+var _rumo_teclas_auto := NAN
+var _auto_desvio := 0.0
+var _auto_sondagem := 0.0
+var _auto_espera := 0.0
+var _obstaculos_auto: Node
 ## Soltamos o cursor porque a janela perdeu o foco? Se sim, ele volta a ser
 ## capturado quando o foco voltar — sem trocar o MODO escolhido pelo jogador.
 var _solto_pelo_foco := false
@@ -543,6 +549,15 @@ func _physics_process(delta: float) -> void:
 	if input_vector.length_squared() > 0.001:
 		_cancel_walk()
 	var direction: Vector3 = Basis(Vector3.UP, _yaw) * Vector3(input_vector.x, 0, input_vector.y)
+	# Ao acompanhar a passada, girar a câmera não gira também o rumo de uma
+	# tecla que continua segurada. Isso evita caminhar em círculos no automático.
+	if _camera_modo == 2:
+		if input_vector.length_squared() <= 0.001:
+			_rumo_teclas_auto = NAN
+		else:
+			if is_nan(_rumo_teclas_auto):
+				_rumo_teclas_auto = _yaw
+			direction = Basis(Vector3.UP, _rumo_teclas_auto) * Vector3(input_vector.x, 0, input_vector.y)
 	if input_vector.length_squared() <= 0.001 and not _walk_path.is_empty():
 		direction = _next_walk_direction()
 	var corrida_ativa := is_running() and direction.length_squared() > 0.01 and _acao_golpe_restante <= 0.0
@@ -656,7 +671,7 @@ func _input(event: InputEvent) -> void:
 		# apertava Esc procurando o menu caía no modo de arrastar sem saber por
 		# quê, e não tinha como adivinhar que voltava no Tab.
 		if event.is_action_pressed("mv_cursor"):
-			set_camera_locked(not _camera_locked)
+			alternar_camera()
 			get_viewport().set_input_as_handled()
 
 
@@ -818,6 +833,61 @@ func set_camera_locked(value: bool) -> void:
 		Input.set_default_cursor_shape(Input.CURSOR_ARROW)
 	capture_changed.emit(not value)
 	camera_lock_changed.emit(value)
+
+
+func set_camera_modo(modo: int) -> void:
+	_camera_modo = clampi(modo, 0, 2)
+	_rumo_teclas_auto = NAN
+	_auto_desvio = 0.0
+	_auto_sondagem = 0.0
+	_auto_espera = 0.0
+	if _obstaculos_auto == null:
+		_obstaculos_auto = load("res://scripts/prototipo_3d/obstaculos_camera.gd").new()
+		add_child(_obstaculos_auto)
+	set_camera_locked(_camera_modo != 0)
+
+
+func alternar_camera() -> void:
+	var preferencia = load("res://scripts/prototipo_3d/camera_mouse.gd")
+	var proximo := (_camera_modo + 1) % 3
+	preferencia.definir(proximo)
+	set_camera_modo(proximo)
+
+
+func _acompanhar_camera(delta: float) -> void:
+	if _camera_modo != 2 or _de_cima:
+		return
+	var andando := Vector2(velocity.x, velocity.z).length_squared() > 0.16
+	var rumo := atan2(-velocity.x, -velocity.z) if andando else _yaw - _auto_desvio
+	_auto_sondagem -= delta
+	_auto_espera = maxf(_auto_espera - delta, 0.0)
+	# Sonda de esfera compartilhada com o braço: testa lados, nunca teleporta
+	# a câmera para a posição livre. A mola existente continua cuidando de
+	# distância, elevação, paredes e água em todos os modos.
+	if _auto_sondagem <= 0.0:
+		_auto_sondagem = 0.3
+		var guardado := camera_pivot.rotation.y
+		camera_pivot.rotation.y = rumo
+		var central := _braco_livre(_pitch, _distance)
+		camera_pivot.rotation.y = rumo + _auto_desvio
+		var melhor := _braco_livre(_pitch, _distance)
+		var desvio := _auto_desvio
+		if melhor < _distance * 0.55:
+			for lado in [-0.5, 0.5, -1.0, 1.0, -1.5, 1.5, -2.0, 2.0, PI]:
+				camera_pivot.rotation.y = rumo + lado
+				var livre := _braco_livre(_pitch, _distance)
+				if livre > melhor + 0.6:
+					melhor = livre
+					desvio = lado
+			if not is_equal_approx(desvio, _auto_desvio):
+				_auto_desvio = desvio
+				_auto_espera = 1.5
+		elif central > _distance * 0.8 and _auto_espera <= 0.0:
+			_auto_desvio = move_toward(_auto_desvio, 0.0, 0.15)
+		camera_pivot.rotation.y = guardado
+	var diferenca := wrapf(rumo + _auto_desvio - _yaw, -PI, PI)
+	if absf(diferenca) > 0.02:
+		_yaw += clampf(diferenca * (1.0 - exp(-2.5 * delta)), -delta * 1.2, delta * 1.2)
 
 
 func _rotate_camera(relative: Vector2) -> void:
@@ -1404,6 +1474,9 @@ func _encaixar_a_camera() -> void:
 func _posicionar_camera(delta: float) -> void:
 	if camera == null or spring == null:
 		return
+	if _obstaculos_auto != null:
+		_obstaculos_auto.atualizar(_camera_modo == 2, global_position, _distance, delta)
+	_acompanhar_camera(delta)
 	_apply_camera()
 	# O atraso vertical: o corpo subiu `dy` desde o quadro passado, e o pivô
 	# fica para trás e alcança.
@@ -1462,6 +1535,8 @@ func _posicionar_camera(delta: float) -> void:
 	# NUNCA DEBAIXO D'ÁGUA, pela conta (ver `_inclinacao_acima_da_agua`).
 	spring.rotation.x = _inclinacao_acima_da_agua(inclinacao, _braco)
 	camera.transform = spring.transform * Transform3D(Basis(), Vector3(0.0, 0.0, _braco))
+	if _camera_modo == 2 and _obstaculos_auto != null:
+		_obstaculos_auto.mostrar_jogador(camera, camera_pivot.global_position, delta)
 
 
 ## Até onde o braço chega, em `comprimento`, na inclinação `pitch` e no giro de agora,
@@ -1472,7 +1547,11 @@ func _braco_livre(pitch: float, comprimento: float) -> float:
 	var origem := camera_pivot.global_position
 	_consulta_camera.transform = Transform3D(Basis(), origem)
 	_consulta_camera.motion = camera_pivot.global_basis * (Basis(Vector3.RIGHT, pitch) * Vector3.BACK) * comprimento
+	var mascara_guardada := _consulta_camera.collision_mask
+	if _camera_modo == 2:
+		_consulta_camera.collision_mask |= Camadas.MUNDO | Camadas.CAMERA_VEGETACAO
 	var r := get_world_3d().direct_space_state.cast_motion(_consulta_camera)
+	_consulta_camera.collision_mask = mascara_guardada
 	return comprimento * float(r[0]) if r.size() >= 2 else comprimento
 
 

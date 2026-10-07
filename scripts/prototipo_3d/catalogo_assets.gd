@@ -580,6 +580,8 @@ static func alcance_de(chave: String, tamanho: float) -> float:
 ## marca o modelo com a chave (`peca`), para os portões e as ferramentas.
 static func dar_alcance(chave: String, node: Node3D, _spec: Dictionary, bounds: AABB, escala: float) -> void:
 	node.set_meta("peca", chave)
+	if classe_de_alcance(chave) == "arvore" or chave in ["saveiro", "bote", "canoa", "canoa_amarela"]:
+		node.add_to_group("obstaculos_visuais_da_camera")
 	if not alcance_ligado or Engine.is_editor_hint():
 		return
 	var classe := classe_de_alcance(chave)
