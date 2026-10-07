@@ -187,7 +187,11 @@ func _nome_na_mao() -> String:
 	var id := Inventario.na_mao()
 	if id == "":
 		return "mão livre"
-	return str(Catalogo.ITENS.get(id, {}).get("nome", id))
+	var nome := str(Catalogo.ITENS.get(id, {}).get("nome", id))
+	# O papel na mão diz a tecla que o lê (#113).
+	if Catalogo.tipo(id) == "documento":
+		return "%s  ·  %s lê" % [nome, Atalhos.letra("interagir")]
+	return nome
 
 
 func _moldura(na_mao: bool) -> StyleBoxFlat:
@@ -235,10 +239,11 @@ func _unhandled_key_input(event: InputEvent) -> void:
 			get_viewport().set_input_as_handled()
 			return
 
-	# O E COME O QUE ESTÁ NA MÃO, e é o último da fila do E: só quando o foco não
-	# deu a tecla a ninguém (`foco_do_e.gd`). Ver `_comer_da_mao`.
+	# O E COME O QUE ESTÁ NA MÃO — ou LÊ, se é papel (#113) —, e é o último da
+	# fila do E: só quando o foco não deu a tecla a ninguém (`foco_do_e.gd`). Ver
+	# `_comer_da_mao` e `_ler_da_mao`.
 	if event.physical_keycode == Atalhos.tecla("interagir") and _corpo_de_pe() \
-			and not FocoDoE.alguem(self) and _comer_da_mao():
+			and not FocoDoE.alguem(self) and (_comer_da_mao() or _ler_da_mao()):
 		get_viewport().set_input_as_handled()
 
 
@@ -323,6 +328,24 @@ func _perguntar_e_comer(id: String, sobra: float) -> void:
 	var sim: bool = await Dialogo.perguntar("", tr("Comer agora joga fora %d de fôlego. Comer assim mesmo?") % roundi(sobra))
 	if sim and Inventario.na_mao() == id:
 		Cozinha.comer(id)
+
+
+## O E LÊ O PAPEL QUE ESTÁ NA MÃO (#113): "o convite que chega deve ser possível
+## acessar apertando E também; a mesma regra se aplica a qualquer coisa de
+## leitura que vai parar no inventário". Ler era só o F em cima do papel, na
+## mochila (`Mochila._ler`), para o convite não ser relido por tropeço perto do
+## mural; com o papel NA MÃO, o E é vontade, não tropeço. Quem lê é quem a
+## mochila chama (`Mochila.abrir_documento`, que o `prototype.gd` liga: a caixa
+## de fala com as linhas de `data/documentos.json`, e o aviso "leu:<id>" às
+## cadeias — é assim que o último passo da chegada fecha).
+func _ler_da_mao() -> bool:
+	var id := Inventario.na_mao()
+	if id == "" or Catalogo.tipo(id) != "documento":
+		return false
+	if not Mochila.abrir_documento.is_valid():
+		return false
+	Mochila.abrir_documento.call(id)
+	return true
 
 
 ## Clique num espaço da barra: põe na mão, e no que já está na mão, come.

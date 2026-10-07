@@ -23,6 +23,8 @@ extends SceneTree
 ##      outro jeito de um Control existir sem aparecer.
 ##   5. O QUE ENTRA NA MOCHILA APARECE NELA, e o que está na mão se destaca —
 ##      inclusive o machado, que o número põe na mão.
+##
+## E, depois, o que a mão faz com o E: come (7–10, #105), e LÊ o papel (#113).
 
 var falhas := 0
 var Inv: Node = null
@@ -388,13 +390,45 @@ func _run() -> void:
 		_conferir(energia.atual <= energia.maximo() + 0.01, "comer acima do teto passou do máximo (%.1f de %.1f)" % [energia.atual, energia.maximo()])
 		await _frames(3)
 
+	# --- O PAPEL NA MÃO SE LÊ COM O E (#113) ----------------------------------------------
+	# "O convite que chega deve ser possível acessar apertando E também." Ler era
+	# só o F na mochila; com o convite na mão, o E lê pelo mesmo caminho da
+	# mochila (`Mochila.abrir_documento`), aqui trocado por quem anota o id. E a
+	# ferramenta na mão não se lê.
+	var mochila = root.get_node("/root/Mochila")
+	var lidos: Array[String] = []
+	var leitor_antes: Callable = mochila.abrir_documento
+	mochila.abrir_documento = func(id: String) -> void: lidos.append(id)
+	if not Inv.tem("convite"):
+		Inv.adicionar("convite", 1)
+	var espaco_do_convite := -1
+	for i in Inv.ESPACOS_MAO:
+		if str((Inv.espacos[i] as Dictionary).get("id", "")) == "convite":
+			espaco_do_convite = i
+	_conferir(espaco_do_convite >= 0, "(#113) o convite não entrou num espaço da mão")
+	if espaco_do_convite >= 0:
+		Inv.selecionar(espaco_do_convite)
+		await _frames(2)
+		_conferir(Inv.na_mao() == "convite", "(#113) não consegui pôr o convite na mão")
+		var rotulo_da_mao := barra.get_node_or_null("NaMao") as Label
+		_conferir(rotulo_da_mao != null and rotulo_da_mao.text.to_lower().contains("lê"),
+			"(#113) com o convite na mão o rótulo não diz que o E lê: '%s'" % (rotulo_da_mao.text if rotulo_da_mao != null else ""))
+		_conferir(not barra._comer_da_mao(), "(#113) a mão comeu o convite")
+		_conferir(barra._ler_da_mao(), "(#113) a mão recusou ler o convite, que é papel")
+		await _frames(2)
+		_conferir(lidos == ["convite"], "(#113) o E no convite abriu '%s' em vez do convite" % str(lidos))
+		_conferir(Inv.tem("convite"), "(#113) ler gastou o convite")
+		_por_o_pirao_na_mao()
+		_conferir(not barra._ler_da_mao(), "(#113) a mão leu o pirão")
+	mochila.abrir_documento = leitor_antes
+
 	_fechar()
 
 
 func _fechar() -> void:
 	print("")
 	if falhas == 0:
-		print("BARRA_OK: a barra existe, tem tamanho, está no rodapé dentro da tela, tem os dez espaços, o que entra na mochila aparece nela, o que está na mão se come pela tecla e não se come quando é ferramenta, com um tronco ao alcance o E golpeia em vez de comer, com o corpo parado o E não bate nem come, e com tela aberta as teclas da mão são dela")
+		print("BARRA_OK: a barra existe, tem tamanho, está no rodapé dentro da tela, tem os dez espaços, o que entra na mochila aparece nela, o que está na mão se come pela tecla e não se come quando é ferramenta, com um tronco ao alcance o E golpeia em vez de comer, com o corpo parado o E não bate nem come, com tela aberta as teclas da mão são dela, e com o papel na mão o E lê")
 	else:
 		print("barra: %d falha(s)" % falhas)
 	quit(1 if falhas > 0 else 0)

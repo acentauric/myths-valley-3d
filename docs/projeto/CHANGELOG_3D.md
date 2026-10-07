@@ -330,6 +330,12 @@
   água, inclusive dos dois lados da ponte, e a correnteza para a foz. As pedras
   da margem íngreme (#116) esperam o lote do Tripo
   (`tools/tripo/lote_2026-10-06_pedras.json`, ~380 créditos, geração paga).
+- **O convite, e todo papel que vai para a mochila, abre com o E (#113).** Ler
+  era só o F em cima do papel, na mochila; com o papel na mão, o E lê
+  (`barra_de_mao._ler_da_mao`, pelo mesmo `Mochila.abrir_documento` que o
+  `prototype.gd` liga: a caixa de fala com as linhas de `documentos.json` e o
+  aviso "leu:<id>" às cadeias), depois de o mundo não ter ficado com a tecla; e
+  o rótulo da mão diz "E lê". Portão `barra_de_mao`.
 
 ## Em desenvolvimento — 05/10/2026
 
