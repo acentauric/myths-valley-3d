@@ -368,6 +368,14 @@
   o E a cada 0,15 s no lajedo, cada cobrança no instante de um golpe com impacto
   de animação, a conta fechando; e na árvore o corte avança e cada golpe custa o
   seu.
+- **Os portões das telas cobram o relógio parado pelo motivo, como a #100
+  manda.** Desde fd54ef1 as telas seguram o relógio por `Dia.segurar(motivo)`
+  e `Dia.pausado` é só a escolha do jogador; `painel` e `relogio` passaram a
+  perguntar `Dia.parado()`, mas `escolha`, `folheto` e
+  `avisos_da_primeira_vez` ainda liam a bandeira antiga e estavam vermelhos
+  na main (a bateria inteira de 06/10 à noite: 3 de 121). Os três perguntam
+  `parado()` onde a tela segura o relógio, e seguem lendo `pausado` onde a
+  pergunta é a pausa do jogador.
 
 ## Em desenvolvimento — 05/10/2026
 

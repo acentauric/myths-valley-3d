@@ -99,13 +99,14 @@ func _run() -> void:
 			await _frames(3)
 		_conferir(folheto.aberto, "o cordel achado não abriu no papel")
 		_conferir(paused, "o papel abriu com o vale andando atrás dele")
-		_conferir(dia.pausado, "o papel abriu com o relógio andando")
+		# O papel segura o relógio pelo motivo dele (#100): o que se cobra é `parado()`.
+		_conferir(dia.parado(), "o papel abriu com o relógio andando")
 		await _tecla(KEY_E)
 		await _frames(3)
 		_conferir(not folheto.aberto, "o E não guardou o papel")
 		_conferir(inventario.quantidade("banana") == bananas, "o E que guardou o papel comeu a banana da mão")
 		_conferir(not paused, "o papel guardado deixou o vale parado")
-		_conferir(not dia.pausado, "o papel guardado deixou o relógio parado")
+		_conferir(not dia.parado(), "o papel guardado deixou o relógio parado")
 		_conferir(relogio.pausado, "o papel guardado soltou o calendário: ele anda sozinho, fora do Dia")
 	# O Esc guarda. E avisa UMA vez que a tela fechou: o papel avisa por conta
 	# própria, e quando quem fecha é o dono das telas o aviso dele já saiu —

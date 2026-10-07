@@ -88,7 +88,8 @@ func _run() -> void:
 	_conferir(not mochila.aberta, "a fala abriu com a mochila aberta por cima dela")
 	_conferir(vale.telas.aberta() == "", "a fala abriu com a tela '%s' aberta" % vale.telas.aberta())
 	_conferir(paused, "a fala abriu com o vale andando atrás dela")
-	_conferir(dia.pausado, "a fala abriu com o relógio do vale andando")
+	# A fala segura o relógio pelo motivo dela (#100): o que se cobra é `parado()`.
+	_conferir(dia.parado(), "a fala abriu com o relógio do vale andando")
 	_conferir(relogio.pausado, "a mochila fechou para a fala e soltou o calendário: ele anda sozinho com o Dia parado")
 
 	# --- 3. A TECLA É DELA -----------------------------------------------------
@@ -116,7 +117,7 @@ func _run() -> void:
 	_conferir(not dialogo.ativo, "o Esc na última linha não fechou a fala")
 	_conferir(vale.telas.aberta() == "", "o Esc da fala abriu '%s'" % vale.telas.aberta())
 	_conferir(not paused, "a fala fechou e deixou o vale parado")
-	_conferir(not dia.pausado, "a fala fechou e deixou o relógio parado")
+	_conferir(not dia.parado(), "a fala fechou e deixou o relógio parado")
 	_conferir(relogio.pausado, "a fala fechou e soltou o calendário")
 	# Quem tinha pausado o relógio antes continua com ele pausado depois.
 	dia.pausado = true
