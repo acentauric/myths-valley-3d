@@ -6,6 +6,12 @@ O teste passa a cobrar Candinha, Filo, Tonho, Zefa, arraial e recursos, incluind
 
 ## Em desenvolvimento — 07/10/2026 (experimento Jev)
 
+- **O contrato de lugares cobra os nomes que prometeu (#54).** Os 18 alvos
+  dinâmicos ficam declarados com o sistema que os encontra; `curral` tem
+  razão concreta. Uma lista independente de 48 nomes e os JSON de missão
+  detectam omissões; retirar `porta` reprova, sem erro de script. O portão
+  espacial passou com 35 marcos resolvidos e 20 nomes sem âncora fixa.
+
 - **O povoado se apresenta em pequenos grupos (#155).** Quatro moradores
   essenciais preservados, opcionais por região/tempo/progresso, entrada
   de 0,8 s e repouso de movimento/rig/colisão fora de cena. O save guarda

@@ -5,6 +5,12 @@ raiz. O jogo 2D segue sua própria linha em `acentauric/myths-valley`.
 
 ## O que já roda
 
+A #54 está concluída (07/10/2026): 18 alvos dinâmicos do contrato ficam
+declarados com seu responsável, sem coordenadas fictícias. O novo portão
+confere 48 nomes por uma lista independente e todos os lugares usados nas
+missões locais; remover `porta` das duas tabelas reprova. O portão espacial
+também passou: 35 marcos resolvem e 20 nomes têm razão para não ser âncora.
+
 A #155 está concluída (07/10/2026): a apresentação inicial limita o elenco
 opcional por região, tempo e progresso, suspendendo corpo, rig e colisão
 fora de cena. Os quatro essenciais e donos de missões ativas continuam

@@ -1,10 +1,10 @@
 extends Node
 ## LUGARES: traduz NOME DE LUGAR em posição — o lado 3D da costura.
 ##
-## Mesmo contrato do `Lugares` do jogo 2D (`scripts/autoload/lugares.gd` na
-## raiz), com uma diferença só: lá `ponto()` devolve `Vector2`, aqui devolve
-## `Vector3`. Quem chama não vê a diferença, e é isso que deixa a campanha
-## escrita para o 2D rodar aqui sem reescrita.
+## Contrato local do 3D: marcos fixos devolvem Vector3; alvos dinâmicos ficam
+## declarados com seu responsável em FALTAM_NO_VALE. A campanha encontra
+## moradores, recursos e móveis nesses responsáveis, sem inventar âncoras.
+## tests/contrato_dos_lugares.gd cobra uma lista independente das tabelas.
 ##
 ## Ver docs/projeto/MIGRACAO_2D_3D.md, Fase 1.
 ##
@@ -93,13 +93,32 @@ const DE_PARA := {
 	"casa_da_zefa": "Casa da Zefa",
 }
 
-## Os nomes que a campanha do 2D usa e o vale ainda NÃO tem, com o que falta
-## para cada um. Não é lista de pendência solta: o portão a lê para cobrar que
-## ninguém aqui esteja escrito errado, e a Fase 2.5 esvazia esta lista movendo
-## linha por linha para `DE_PARA`.
+## Nomes conhecidos que não resolvem por âncora fixa: regiões ainda ausentes
+## e alvos dinâmicos resolvidos em outro sistema, com a razão de cada caso.
 const FALTAM_NO_VALE := {
 	"lagoa": "a lagoa a leste do Seu Benedito — Fase 2.5",
-	"curral": "o curral — Fase 7",
+	"curral": "o curral da fazenda ainda não tem âncora no vale (#25)",
+	# Estes nomes descrevem alvos móveis ou interiores, não marcos fixos.
+	# A campanha 3D os encontra nos responsáveis abaixo; Lugares não inventa
+	# uma coordenada estática para eles. Permanecem conhecidos pelo contrato.
+	"portao": "entrada dinâmica da casa; CasaDoJogador, ou portao_da_fazenda para o marco fixo",
+	"porta": "soleira dinâmica da casa corrente; CasaDoJogador e Interiores",
+	"cama": "móvel do interior atual; Interiores e CasaDoJogador",
+	"fogao": "móvel do interior atual; Interiores, Cozinha e BancadasVale",
+	"bau": "móvel do interior atual; CasaDoJogador e Mochila",
+	"bau_da_casa": "baú da casa herdada; CasaDoJogador, não uma âncora de cenário",
+	"comida_da_casa": "pilha do baú, que pode estar vazia; Inventario e CasaDoJogador",
+	"pedro": "morador móvel; CadeiaDeMissoes encontra o guia por id",
+	"quadro": "documento ou móvel do interior; AchadosVale e Interiores",
+	"machado": "ferramenta que pode ter sido recolhida; AchadosVale e Inventario",
+	"itens": "itens recolhíveis de um pedido; AchadosVale e ColetaNoChao",
+	"pedra": "recurso consumível; Recursos3D, enquanto pedras é o marco fixo",
+	"colheita": "leira pronta que depende do plantio; LavouraVale",
+	"erva_mais_perto": "vegetação elegível muda com a coleta; Recursos3D",
+	"mato_mais_perto": "vegetação elegível muda com o corte; Recursos3D e CemiterioVale",
+	"aldeao": "morador móvel escolhido pelo pedido; CadeiaDeMissoes",
+	"marco": "marco depende da fé escolhida; MarcosDaFe usa os nomes fixos de cada fé",
+	"bicho": "animal móvel e possivelmente abatido; LutaVale",
 }
 
 var _mundo: Node3D = null
