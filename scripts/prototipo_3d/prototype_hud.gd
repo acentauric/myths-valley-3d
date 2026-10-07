@@ -349,6 +349,9 @@ func _ready() -> void:
 
 	_agrupar_componente([_heading, _region_label, _mission_step, _quest_label, _objective_label], "missao", Vector2(18, 18))
 	_agrupar_componente([_notice_panel, _notice_label], "avisos", Vector2(_root.size.x * 0.5, _root.size.y - BarraDeMao.altura_ocupada()))
+	var foco = load("res://scripts/prototipo_3d/foco_da_narracao.gd").new()
+	foco.hud = self
+	_root.add_child(foco)
 	Tela.componentes_mudaram.connect(_layout_medidores)
 	Tela.componentes_mudaram.connect(_layout_notice)
 	get_viewport().size_changed.connect(_layout_notice)
@@ -1362,3 +1365,21 @@ func set_mission_step(indice: int, total: int, finished := false) -> void:
 	if not is_instance_valid(_mission_step):
 		return
 	_mission_step.text = "" if total <= 0 or indice <= 0 or indice > total else "%d de %d" % [indice, total]
+
+
+func componentes_da_narracao() -> Dictionary:
+	var partes := {
+		"missao": [_heading, _region_label, _mission_step, _quest_label, _objective_label],
+		"relogio": [_clock_panel], "vida": [barra_vida],
+		"folego": [barra_folego], "vigor": [barra_stamina],
+		"mao": [_barra], "avisos": [_notice_panel, _notice_label],
+		"espera": [_espera_panel],
+		"casa": [_house_info_panel], "desempenho": [_performance_panel],
+	}
+	for filho in _root.get_children():
+		if filho is Control and filho.get_script() == Minimapa:
+			partes["minimapa"] = [filho]
+	for i in _corner_nodes.size():
+		if _corner_nodes[i] is Control:
+			partes["atalho_%d" % i] = [_corner_nodes[i]]
+	return partes

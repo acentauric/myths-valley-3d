@@ -493,6 +493,7 @@ func explicar_o_corpo(cansado: bool) -> void:
 	_cadeia._levados[LEMBRANCA_DO_CORPO] = true
 	var linhas: Array = []
 	var vozes: Array = []
+	var interfaces: Array = []
 	for fala in _corpo:
 		if not (fala is Dictionary):
 			continue
@@ -501,7 +502,8 @@ func explicar_o_corpo(cansado: bool) -> void:
 			continue
 		linhas.append(str(IdiomaMenu.campo(fala, "texto", "")))
 		vozes.append(str((fala as Dictionary).get("audio", "")))
-	Dialogo.falar(str(dados.get("nome", "Pedro")), linhas, vozes)
+		interfaces.append(fala.get("interfaces", []))
+	Dialogo.falar(str(dados.get("nome", "Pedro")), linhas, vozes, interfaces)
 
 
 ## Retomar uma partida salva é da cadeia; esta é a janela para ela, como as

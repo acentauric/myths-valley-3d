@@ -405,3 +405,11 @@ Portões fiado_tonho (limites, 14/15 dias, JSON, trava de missão) e
 livro_no_armazem (móvel real, foco E, Sim/Não e save completo), idiomas,
 missoes e salvamento. Mutante sem abatimento deve reprovar a conta.
 Captura scratch/fiado-tonho/pergunta.png e logs em D:/MythsValleyPlaytestRuns.
+
+### 07/10/2026: foco durante a fala longa (#140, #132)
+
+A caixa longa reserva seu retângulo real, incluindo a transformação da camada e as escalas individuais. Componentes do HUD que o intersectam ficam transparentes durante a conversa; sua visibilidade original continua pertencendo ao dono do aviso, sem ressuscitar notificações expiradas. Missão e medidores fora da caixa permanecem. Plaquinhas do mundo cedem ao abrir a fala e voltam ao terminar.
+
+O tutorial do corpo declara `interfaces` em cada linha de `missoes_guia.json`. `Dialogo.falar` aceita essa lista paralela como quarto argumento opcional; a linha atual destaca somente o componente declarado, no retângulo renderizado. Perguntas e fechamento limpam esse foco. Nenhuma dedução depende de palavras da prosa regional.
+
+Portão `foco_da_narracao`: reserva, componente externo preservado, troca de foco, restauração da cor e aviso expirado. A falsificação `--sem-reserva` reprova uma asserção. `interface_individual`, `prioridade_dos_avisos` e `idiomas` acompanham. Captura real no armazém: `scratch/fiado-tonho/tutorial-foco.png`; a pergunta/pagamento do livro continuam com zero falhas. A #140 permanece aberta pelos componentes secundários ainda pendentes.

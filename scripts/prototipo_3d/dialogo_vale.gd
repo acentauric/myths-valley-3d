@@ -97,6 +97,7 @@ var _modo: int = Modo.FALA
 var _falas: Array = []
 ## A voz de cada linha (ver PASTA_VOZES), na ordem das falas; "" é linha muda.
 var _vozes: Array = []
+var _interfaces: Array = []
 var _voz: AudioStreamPlayer
 var _indice: int = 0
 var _escolha: bool = true
@@ -138,13 +139,14 @@ func ocupado() -> bool:
 ## ninguém — ela para o vale, e a fala que estava no ar fica suspensa, escondida,
 ## até a caixa fechar —, mas espera a narração do mundo, que cobre a tela
 ## inteira como ela.
-func falar(nome: String, falas: Array, vozes: Array = []) -> void:
+func falar(nome: String, falas: Array, vozes: Array = [], interfaces: Array = []) -> void:
 	if falas.is_empty():
 		return
 	await _esperar_a_vez()
 	_abrir(nome, Modo.FALA)
 	_falas = Jogo.falas(falas)
 	_vozes = vozes
+	_interfaces = interfaces
 	_indice = 0
 	_mostrar_fala()
 	await terminou
@@ -163,6 +165,7 @@ func perguntar(nome: String, pergunta: String) -> bool:
 	_abrir(nome, Modo.PERGUNTA)
 	_falas = [Jogo.texto(pergunta)]
 	_vozes = []
+	_interfaces = []
 	_indice = 0
 	# NASCE SEM ESCOLHA FEITA. `_escolha` continua em "Sim" só como valor de
 	# partida do cursor; quem manda é `_escolheu`, e ele começa falso — sem um
@@ -224,6 +227,7 @@ func _fechar() -> void:
 	if _voz != null:
 		_voz.stop()
 	_vozes = []
+	_interfaces = []
 	ativo = false
 	quem_fala = ""
 	_fechou_no_quadro = Engine.get_process_frames()
@@ -412,3 +416,9 @@ func _process(_delta: float) -> void:
 			_fechar()
 		else:
 			_mostrar_fala()
+
+
+func interfaces_em_foco() -> Array:
+	if not ativo or _indice >= _interfaces.size():
+		return []
+	return _interfaces[_indice] if _interfaces[_indice] is Array else []

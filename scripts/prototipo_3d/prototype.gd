@@ -1643,6 +1643,7 @@ func _ao_abrir_a_fala(_quem: String) -> void:
 		_toggle_map()
 	_pause_valley()
 	_fala_parou_o_vale = true
+	_acertar_as_placas()
 
 
 ## AS PLAQUINHAS DE NOME SÃO DO MUNDO, e somem com o que se põe na frente dele:
@@ -1659,7 +1660,7 @@ func _acertar_as_placas() -> void:
 		hud_layer.visible = not Mochila.aberta
 	if placas == null:
 		return
-	var coberto: bool = (telas != null and telas.aberta() != "") \
+	var coberto: bool = Dialogo.ativo or (telas != null and telas.aberta() != "") \
 		or (aviso_da_primeira_vez != null and aviso_da_primeira_vez.aberto()) \
 		or (conquista != null and conquista.ativa())
 	placas.permitir(not coberto)
@@ -1677,6 +1678,7 @@ func _retomar_se_a_fala_acabou() -> void:
 		return
 	_fala_parou_o_vale = false
 	_retomar_o_vale()
+	_acertar_as_placas()
 
 
 ## O CORDEL NO PAPEL (#21): o `Folheto`, inteiro, por cima do vale — desenhado
