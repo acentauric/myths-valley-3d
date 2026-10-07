@@ -6,6 +6,13 @@ O teste passa a cobrar Candinha, Filo, Tonho, Zefa, arraial e recursos, incluind
 
 ## Em desenvolvimento — 07/10/2026 (experimento Jev)
 
+- #159 concluída: além da chegada real da V21, o botão Teste automático do
+  menu abriu uma partida nova em perfil separado. F8 encerrou o filho normal
+  com `user_stop`, 19 decisões, 33,2 s de jogo, custo zero, código Godot 0 e
+  captura final. A espera do watchdog fica comprovada pela parada real.
+  Gates de rota/apoio e 87 testes Python verdes, falsificações reprovadas;
+  campanhas laterais e capítulos futuros permanecem fora dessa vitória.
+
 - #164 concluída / #159 parcial: V21 atravessa a ponte e chega ao pátio pela
   missão normal aos 483,44 s, posição (118,2; 3,6; -308,2), com
   `implemented_story_completed=true`, 110 decisões e custo zero. Aproximação

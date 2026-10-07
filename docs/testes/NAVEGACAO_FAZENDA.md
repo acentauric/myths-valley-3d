@@ -101,11 +101,29 @@ Godot 1: o watchdog encerrava o processo assim que `/event` detectava
 vitória, antes do envio de `/stop` e da captura final. A correção dá dez
 segundos para esse handshake e mantém teto para processo sem resposta.
 87 testes Python passam; remover a espera reprova uma verificação.
-A corrida corrigida ainda precisa de uma nova parada real para confirmar
-o código de saída e a captura final — não há captura de vitória nesta V21.
+A parada real por F8 da prova seguinte confirmou código Godot 0 e captura
+final, com o handshake corrigido; não há captura de vitória nesta V21.
 
 Todos os critérios da #164 possuem prova, inclusive chegada física real.
-A #159 mantém pendente uma prova específica do botão do menu e da parada
-F8; a vitória da história implementada não equivale a concluir as histórias
+A #159 também recebe a prova específica do botão do menu e da parada
+F8 descrita abaixo; a vitória da história implementada não equivale a concluir as histórias
 laterais nem os capítulos planejados além do pátio da fazenda.
+
+## Menu, perfil novo e F8 — #159
+
+A fixture temporária `tools/temp/menu_autoplay.gd` abriu o menu real,
+focou TESTE AUTOMÁTICO e acionou Enter por `Input.parse_input_event`.
+O botão iniciou o lançador normal, que criou uma partida nova em
+`tools/temp/jev/20261007-140638-bc8a48/perfil`; a campanha em D permaneceu
+separada. O log `D:/MythsValleyPlaytestRuns/menu-autoplay.log` confirmou
+“Teste automático iniciado em outra janela. F8 encerra a sessão.”
+
+A mensagem de tecla F8 foi enviada pela API do Windows à janela exata do
+Godot filho (PID 66780), enquanto o jogador automático estava ativo. Não
+houve chamada direta ao método de parada nem alteração de progresso.
+Resultado: **user_stop, 19 decisões, 33,2 s de jogo pronto, custo zero,
+código Godot 0**. Três JPEGs foram preservados, incluindo `quadro_0032.jpg`
+final, junto a relatório e logs. Nenhum SCRIPT/Parse/Compile Error no filho.
+O menu pai emitiu warnings de texturas na finalização, registrados no log;
+eles não afetaram a abertura, o isolamento ou a parada do testador.
 Não houve geração paga, alteração do progresso da campanha ou publicação.

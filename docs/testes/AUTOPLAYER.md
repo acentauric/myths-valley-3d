@@ -13,8 +13,9 @@ As sessões anteriores e os bloqueios corrigidos permanecem documentados;
 isso não declara concluídas as cadeias laterais nem capítulos futuros.
 Evidência e limites em [NAVEGACAO_FAZENDA.md](NAVEGACAO_FAZENDA.md).
 O relatório V21 preserva código Godot 1 da corrida de encerramento do watchdog,
-sem erros de script; a nova espera de dez segundos passa em regressão, mas
-a parada real ainda será verificada, junto ao botão do menu e F8.
+sem erros de script. A nova espera de dez segundos passa em regressão e foi
+confirmada na parada real por F8: botão do menu abriu perfil novo, 19 decisões,
+33,2 s de jogo pronto, `user_stop`, código Godot 0 e captura final.
 
 ## Como iniciar e encerrar
 

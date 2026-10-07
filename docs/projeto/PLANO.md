@@ -27,8 +27,8 @@ a fixture da ponte aguarda naturalmente o fim da fala conforme #121.
 V21 chegou fisicamente ao pátio aos 483,44 s e confirmou a história
 implementada concluída, com 110 ações locais e custo zero. A aproximação
 do testador respeita waypoints e exige apoio contínuo para seguir em reta.
-#159 segue aberta para verificar especificamente o botão do menu/F8 e o
-encerramento final após corrigir a corrida do watchdog; 87 testes Python passam.
+#159 também fecha: o botão real abriu perfil novo e F8 encerrou normalmente
+com captura final, código Godot 0 e custo zero; 87 testes Python passam.
 Evidência em [NAVEGACAO_FAZENDA.md](../testes/NAVEGACAO_FAZENDA.md).
 
 A #154 aponta o passo de entrada à soleira externa real, em vez do centro
@@ -68,18 +68,18 @@ também entra na malha, evitando que a rota corte um corpo maior que o raio
 nominal. A fixture da Filó ativa a população para medir locomoção, não a
 apresentação gradual. Gate isolado verde em 63 s; bateria final pendente.
 
-A #159 continua em execução: fontes acessíveis estáveis, custo composto de
+A #159 tem fontes acessíveis estáveis, custo composto de
 receitas, cama e saída pela porta antes de seguir Pedro desde o interior.
 Na V17 a saída real ocorreu aos 423,80 s, e a condução à fazenda continuou
 fora da casa. 85 testes Python verdes; sem a prioridade da porta, a
-regressão falha. Campanha ainda sem conclusão de `fazenda_chegada`.
+regressão falha. A chegada final foi confirmada depois na V21, acima.
 
 A recuperação de #159 inclui fontes acessíveis estáveis, custo composto de
 receitas e recuperação pela cama sem comida. V16 concluiu Mirante e Fé;
 V17 dormiu pelo E/Sim e alcançou o dia do convite (25 → 26, fôlego 27,8 →
 77,8). A política observa o requisito de manhã da fazenda sem mudar o dia
 diretamente. 84 testes Python passam e retirar essa regra reprova; campanha
-até `fazenda_chegada` ainda em curso. Evidência em AUTOPLAYER.md.
+até `fazenda_chegada` foi concluída na V21. Evidência em AUTOPLAYER.md.
 
 A fatia anterior de #159 inclui fontes acessíveis estáveis, custo composto de
 receitas, obra certa na interface, contornos físicos limitados, alimentação,
@@ -88,7 +88,7 @@ verdes e quatro sondas Godot da ponte. A sessão V13 perdeu a coleta posterior
 ao último save ao esgotar o disco. Capturas preservadas em outro volume,
 JPEG menor e checkpoints pela UI normal entram na retomada V15, sem injetar
 progresso. A fatia passa 82 testes Python e falsificações de checkpoint/JPEG.
-Isso não é prova de vitória nem encerra o ticket.
+Essa fatia isolada não provava vitória; a V21 confirmou o objetivo depois.
 
 A #64 fica concluída: B remapeável abre a escolha de apoios e talentos ativos,
 com uso diário pelas regras compartilhadas, teclado/mouse, pausa e restauração
