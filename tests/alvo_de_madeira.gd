@@ -51,6 +51,15 @@ func _run() -> void:
 	conferir(cadeia.posicao_do_passo(0) == Vector3(6, 0, 0), "missão aponta árvore em vez da oficina após esgotar troncos")
 	cadeia.passos[0]["meta"] = {"tipo": "juntar", "itens": {"tabua": 8, "lenha": 12}}
 	conferir(cadeia.posicao_do_passo(0) == Vector3(6, 0, 0), "pedido composto busca matéria-prima faltante mesmo após receita sem alvo")
+	jogador.global_position = Vector3(11, 0, 0)
+	for _quadro in range(8):
+		conferir(cadeia.posicao_do_passo(0) == Vector3(6, 0, 0), "contornar obstáculo não troca árvore escolhida a cada quadro")
+	arvores._cortaveis[5]["cortado"] = true
+	conferir(cadeia.posicao_do_passo(0) == Vector3(10, 0, 0), "fonte cortada troca marcador para outra árvore elegível")
+	arvores._cortaveis[5]["cortado"] = false
+	jogador.global_position = Vector3.ZERO
+	cadeia.passos.append({"id": "outra_lenha", "meta": {"tipo": "juntar", "item": "lenha", "quantos": 30}})
+	conferir(cadeia.posicao_do_passo(1) == Vector3(6, 0, 0), "novo objetivo escolhe fonte novamente perto do jogador")
 	arvores._jogador = jogador
 	jogador.set_physics_process(true)
 	arvores._em_golpe = 5

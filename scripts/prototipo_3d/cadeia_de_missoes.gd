@@ -1029,14 +1029,51 @@ func _acertar_o_caderno(passo: Dictionary) -> void:
 
 ## ONDE O MARCADOR APONTA.
 ##
-## Passo que pede trabalho aponta O ALVO MAIS PERTO, e não a âncora do lugar:
-## quem ouve "me traga duas achas" precisa de seta para onde há tronco, e não
-## para a casa de quem pediu. Sem alvo à vista, cai na âncora.
+## Passo que pede trabalho escolhe uma fonte próxima e mantém o destino até
+## ela se esgotar. Contornar obstáculos não troca a árvore a cada quadro.
+## Quem ouve "me traga duas achas" precisa de seta para onde há tronco;
+## sem fonte elegível, o marcador cai na âncora do lugar.
+var _chave_do_alvo_material := ""
+var _ponto_do_alvo_material := Vector3.INF
+var _fonte_do_alvo_material: Node = null
+var _item_do_alvo_material := ""
+
+
+func _alvo_material(qual: String, de: Vector3) -> Vector3:
+	# A fonte escolhida permanece durante o trajeto; só muda quando se esgota.
+	if qual == _item_do_alvo_material and is_instance_valid(_fonte_do_alvo_material) and _ponto_do_alvo_material.is_finite():
+		var ainda: Vector3 = _fonte_do_alvo_material.mais_perto_que_rende(qual, _ponto_do_alvo_material)
+		if ainda.is_finite() and ainda.distance_to(_ponto_do_alvo_material) < 0.05:
+			return _ponto_do_alvo_material
+		de = _ponto_do_alvo_material
+	var fontes: Array[Node] = [recursos]
+	if jogador != null:
+		var arvores := jogador.get_tree().get_first_node_in_group("arvores_do_vale")
+		if arvores != null:
+			fontes.append(arvores)
+	for fonte in fontes:
+		if fonte == null or not fonte.has_method("mais_perto_que_rende"):
+			continue
+		var ponto: Vector3 = fonte.mais_perto_que_rende(qual, de)
+		if ponto.is_finite():
+			_ponto_do_alvo_material = ponto
+			_fonte_do_alvo_material = fonte
+			_item_do_alvo_material = qual
+			return ponto
+	return Lugares.NENHUM
+
+
 func posicao_do_passo(indice: int) -> Vector3:
 	if indice < 0 or indice >= passos.size():
 		return Vector3.ZERO
 	var passo: Dictionary = passos[indice]
 	var meta: Dictionary = passo.get("meta", {})
+	var chave_alvo := "%d:%s" % [indice, JSON.stringify(meta)]
+	if chave_alvo != _chave_do_alvo_material:
+		_chave_do_alvo_material = chave_alvo
+		_ponto_do_alvo_material = Vector3.INF
+		_fonte_do_alvo_material = null
+		_item_do_alvo_material = ""
 	if str(meta.get("tipo", "")) == "evento" and passo.has("etapas") and is_inside_tree():
 		var lavoura := get_tree().get_first_node_in_group("lavoura")
 		if lavoura != null:
@@ -1088,11 +1125,7 @@ func posicao_do_passo(indice: int) -> Vector3:
 					var carga := _carga_da_meta(meta)
 					for qual in carga:
 						if _tem_para_a_meta(meta, str(qual)) < int(carga[qual]):
-							perto = recursos.mais_perto_que_rende(str(qual), de)
-							if perto == Lugares.NENHUM and jogador != null:
-								var arvores := jogador.get_tree().get_first_node_in_group("arvores_do_vale")
-								if arvores != null:
-									perto = arvores.mais_perto_que_rende(str(qual), de)
+							perto = _alvo_material(str(qual), de)
 							if perto != Lugares.NENHUM:
 								break
 			"levar", "falar":

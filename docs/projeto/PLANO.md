@@ -5,6 +5,10 @@ raiz. O jogo 2D segue sua própria linha em `acentauric/myths-valley`.
 
 ## O que já roda
 
+O alvo de madeira permanece estável durante a aproximação (#159/#162),
+troca quando a fonte se esgota e refaz a escolha quando muda o objetivo.
+A regressão contínua e a coleta real no autoplay conferem o comportamento.
+
 A #20 está concluída (07/10/2026): K abre habilidades com zoom pela roda,
 arrasto pelo botão central e Tab para ofício/fé; L abre a coleção no
 almanaque e P abre moradores com afinidade. A escala da árvore não altera

@@ -6,6 +6,12 @@ O teste passa a cobrar Candinha, Filo, Tonho, Zefa, arraial e recursos, incluind
 
 ## Em desenvolvimento — 07/10/2026 (experimento Jev)
 
+- **O alvo de material permanece durante o caminho (#159/#162).** Contornar
+  obstáculos deixa de trocar a árvore escolhida a cada quadro. Fonte
+  esgotada escolhe a próxima; novo objetivo refaz a escolha. O baseline
+  reprovou oito consultas consecutivas; a regressão passou com o cache.
+  A coleta real do autoplay confirmou o alvo estável e a troca após cortar.
+
 - **A teia de habilidades amplia e arrasta (#20).** Roda entre 65% e
   180%, botão central para percorrer; a área de clique acompanha a escala
   mesmo quando a interface inteira está redimensionada. Ficha e rodapé
