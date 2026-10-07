@@ -6,6 +6,13 @@ O teste passa a cobrar Candinha, Filo, Tonho, Zefa, arraial e recursos, incluind
 
 ## Em desenvolvimento — 07/10/2026 (experimento Jev)
 
+- **A primeira leira informa o próximo gesto (#146).** Etapas marcadas,
+  ferramenta e tecla atuais, item ausente e alvo coerente com a ação
+  restante. Repetir arar explica plantar/regar; atividade sem progresso
+  oferece ajuda sem presumir que estar parado seja estar perdido.
+  Recados longos quebram em linhas e o fundo acompanha sua altura.
+  Portões da lavoura, cadeia, avisos e idiomas verdes; mutantes reprovam.
+
 - **Beata caminha sem deslocamento indevido da raiz (#139).** Clipes locais
   estabilizam quadril, preservam passada e acompanham o relevo pela física.
   Locomoção, rotina e nado passaram; clipes originais reprovam o mutante.

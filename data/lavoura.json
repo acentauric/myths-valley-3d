@@ -1,4 +1,36 @@
 {
+	"orientacao": {
+		"abrir": {
+			"texto": "Na leira: [%s] %s, depois [%s] para arar.",
+			"texto_en": "At the bed: [%s] %s, then [%s] to till.",
+			"texto_es": "En el surco: [%s] %s, luego [%s] para arar."
+		},
+		"semear": {
+			"texto": "Na leira arada: [%s] %s, depois [%s] para plantar.",
+			"texto_en": "At the tilled bed: [%s] %s, then [%s] to plant.",
+			"texto_es": "En el surco arado: [%s] %s, luego [%s] para sembrar."
+		},
+		"molhar": {
+			"texto": "Na leira plantada: [%s] %s, depois [%s] para regar.",
+			"texto_en": "At the planted bed: [%s] %s, then [%s] to water.",
+			"texto_es": "En el surco sembrado: [%s] %s, luego [%s] para regar."
+		},
+		"falta": {
+			"texto": "Falta %s: busque no baú ou abra [%s] Mochila.",
+			"texto_en": "You need %s: check the chest or open [%s] Backpack.",
+			"texto_es": "Falta %s: busca en el cofre o abre [%s] Mochila."
+		},
+		"colher": {
+			"texto": "Guarde a ferramenta; na leira madura, [%s] para colher.",
+			"texto_en": "Put the tool away; at the ripe bed, [%s] to harvest.",
+			"texto_es": "Guarda la herramienta; en el surco maduro, [%s] para cosechar."
+		},
+		"esperar": {
+			"texto": "Leira plantada e regada. Espere o amanhecer.",
+			"texto_en": "Bed planted and watered. Wait for dawn.",
+			"texto_es": "Surco sembrado y regado. Espera al amanecer."
+		}
+	},
 	"_sobre": "O que se lê na lavoura da casa (#8): o que a tecla diz no leito e os recados do gesto que não cabe. Os recados são os do jogo 2D (Mundo._usar_no_rocado e Mundo._avisar_cansaco), verbatim; O %s de 'plantar' é a semente, o de 'colher' é a planta; 'colheita' leva a qualidade, a quantidade e o nome.",
 	"acoes": {
 		"arar": {"texto": "Arar", "texto_en": "Till", "texto_es": "Arar la tierra"},

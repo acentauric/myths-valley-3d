@@ -29,6 +29,11 @@ const DicaTecla = preload("res://scripts/prototipo_3d/dica_tecla.gd")
 const Atalhos = preload("res://scripts/prototipo_3d/atalhos.gd")
 const FocoDoE = preload("res://scripts/prototipo_3d/foco_do_e.gd")
 const TEXTOS := "res://data/lavoura.json"
+var _sem_progresso := 0.0
+var _tentativas_vazias := 0
+var _intervalo_ajuda := 0.0
+var _ultima_ajuda := ""
+var _ultimo_recado := ""
 
 ## A grade: colunas de lado a lado (X da casa), linhas para a frente (Z).
 const COLUNAS := 6
@@ -492,7 +497,7 @@ func _multimalha(nome: String, malha: Mesh, material: Material, onde: Array[Tran
 
 # --- a tecla -------------------------------------------------------------------------
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
 	if _jogador == null or _dica == null:
 		return
 	var camera := get_viewport().get_camera_3d()
@@ -500,6 +505,8 @@ func _process(_delta: float) -> void:
 	_perto = Vector2i(-1, -1)
 	if em_jogo and not Dialogo.ativo and no_campo(_jogador.global_position):
 		_perto = leito_da_vez()
+	_acompanhar_orientacao(delta, _perto, em_jogo and not Dialogo.ocupado()
+		and (Vector3(_jogador.get("velocity")).length() > 0.05 or Input.is_anything_pressed()))
 	if _perto == Vector2i(-1, -1) or not FocoDoE.e_dele(self):
 		_dica.visible = false
 		return
@@ -523,6 +530,10 @@ func leito_da_vez() -> Vector2i:
 ## O que a tecla diz no leito, pelo que está na mão.
 func acao(celula: Vector2i) -> String:
 	var mao := Inventario.na_mao()
+	if (mao == "enxada" and plantacao.arado(celula)) \
+			or (mao in DE_REGAR and (not plantacao.arado(celula) or plantacao.molhado(celula))) \
+			or (Catalogo.tipo(mao) == "semente" and (not plantacao.arado(celula) or plantacao.plantado(celula))):
+		return _texto("olhar") + "\n" + orientacao(celula)
 	if mao == "enxada":
 		return _texto("arar")
 	if mao in DE_REGAR:
@@ -577,6 +588,22 @@ func _gesto_no_leito(celula: Vector2i) -> void:
 func usar(celula: Vector2i) -> void:
 	if not na_grade(celula):
 		return
+	var antes := _estado_do_leito(celula)
+	_ultimo_recado = ""
+	_usar(celula)
+	if antes != _estado_do_leito(celula):
+		_retomou_progresso()
+	else:
+		_tentativas_vazias += 1
+		# Uma negativa já indica o próximo gesto; a ajuda temporizada não repete.
+		var ajuda := orientacao(celula)
+		if _hud != null:
+			var aviso := _ultimo_recado
+			_hud.set_notice(aviso + " " + ajuda if aviso != "" else ajuda)
+			_ultima_ajuda = str(_hud.get("_notice"))
+
+
+func _usar(celula: Vector2i) -> void:
 	var mao := Inventario.na_mao()
 	if mao == "enxada" or mao in DE_REGAR or Catalogo.tipo(mao) == "ferramenta":
 		if mao == "enxada" and not plantacao.arado(celula):
@@ -654,6 +681,85 @@ func usar(celula: Vector2i) -> void:
 	colheu.emit()
 
 
+func _estado_do_leito(celula: Vector2i) -> String:
+	return "%s:%s:%s:%s" % [plantacao.arado(celula), plantacao.cultura_em(celula),
+		plantacao.molhado(celula), plantacao.estagio(celula)]
+
+
+func alvo_da_etapa(evento: String, de: Vector3) -> Vector3:
+	var melhor := Vector3.INF
+	for y in LINHAS:
+		for x in COLUNAS:
+			var celula := Vector2i(x, y)
+			var serve: bool = (evento == "arou" and not plantacao.arado(celula)) \
+				or (evento == "plantou" and plantacao.arado(celula) and not plantacao.plantado(celula)) \
+				or (evento == "regou" and plantacao.plantado(celula) and not plantacao.molhado(celula))
+			var ponto := posicao_da(celula)
+			if serve and (not melhor.is_finite() or de.distance_squared_to(ponto) < de.distance_squared_to(melhor)):
+				melhor = ponto
+	return melhor
+
+
+## Ajuda pelo estado real, sem trocar ferramentas nem executar ações pelo jogador.
+func orientacao(celula: Vector2i) -> String:
+	var chave := "esperar"
+	var item := ""
+	if not plantacao.arado(celula):
+		chave = "abrir"
+		item = "enxada"
+	elif not plantacao.plantado(celula):
+		chave = "semear"
+		item = "semente_mandioca"
+		for espaco in Inventario.espacos:
+			if not espaco.is_empty() and Catalogo.tipo(str(espaco.get("id", ""))) == "semente":
+				item = str(espaco["id"])
+				break
+	elif not plantacao.molhado(celula) and not plantacao.maduro(celula):
+		chave = "molhar"
+		item = "balde"
+	elif plantacao.maduro(celula):
+		chave = "colher"
+	var dados: Dictionary = _textos.get("orientacao", {})
+	if item != "" and Inventario.quantidade(item) == 0:
+		return str(IdiomaMenu.campo(dados.get("falta", {}), "texto")) % [Catalogo.nome(item), Atalhos.letra("mochila")]
+	var comando := Atalhos.letra("mochila")
+	for i in Inventario.ESPACOS_MAO:
+		if not Inventario.vazio(i) and str(Inventario.espacos[i].get("id", "")) == item:
+			comando = Inventario.rotulo_do_espaco(i)
+			break
+	var texto := str(IdiomaMenu.campo(dados.get(chave, {}), "texto"))
+	return texto % [comando, Catalogo.nome(item), Atalhos.letra("interagir")] if item != "" \
+		else texto % Atalhos.letra("interagir") if chave == "colher" else texto
+
+
+func _retomou_progresso() -> void:
+	_sem_progresso = 0.0
+	_tentativas_vazias = 0
+	_intervalo_ajuda = 0.0
+	if _hud != null and _ultima_ajuda != "" and str(_hud.get("_notice")) == _ultima_ajuda:
+		_hud.set_notice("")
+	_ultima_ajuda = ""
+
+
+func _acompanhar_orientacao(delta: float, celula: Vector2i, tentando: bool) -> void:
+	_intervalo_ajuda = maxf(0.0, _intervalo_ajuda - delta)
+	if not na_grade(celula):
+		_sem_progresso = 0.0
+		return
+	# Só conta atividade no campo: ler uma fala ou ficar parado não é estar perdido.
+	if not tentando:
+		return
+	_sem_progresso += delta
+	if _intervalo_ajuda > 0.0 or (_sem_progresso < 25.0 and _tentativas_vazias < 3):
+		return
+	if _hud != null and str(_hud.get("_notice")) == "":
+		_ultima_ajuda = orientacao(celula)
+		_hud.set_notice(_ultima_ajuda, 7.0)
+		_intervalo_ajuda = 25.0
+		_tentativas_vazias = 0
+		_sem_progresso = 0.0
+
+
 func _nome_da_cultura(cultura: String) -> String:
 	var semente := Plantacao.semente_de(cultura)
 	var colheita := str(Plantacao.CULTURAS.get(cultura, {}).get("colheita", cultura))
@@ -670,6 +776,7 @@ func _avisar(chave: String, a = null, b = null, c = null) -> void:
 	var partes := [a, b, c].filter(func(p): return p != null)
 	if not partes.is_empty():
 		texto = texto % partes
+	_ultimo_recado = texto
 	if _hud != null and _hud.has_method("set_notice"):
 		_hud.set_notice(texto)
 

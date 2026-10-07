@@ -198,6 +198,26 @@
     },
     {
       "id": "roca",
+      "etapas": [
+        {
+          "evento": "arou",
+          "texto": "Arar",
+          "texto_en": "Till",
+          "texto_es": "Arar el surco"
+        },
+        {
+          "evento": "plantou",
+          "texto": "Plantar",
+          "texto_en": "Plant",
+          "texto_es": "Sembrar"
+        },
+        {
+          "evento": "regou",
+          "texto": "Regar",
+          "texto_en": "Water",
+          "texto_es": "Regar el surco"
+        }
+      ],
       "titulo": "A roça do finado",
       "titulo_en": "The late man's field",
       "titulo_es": "El sembrado del difunto",

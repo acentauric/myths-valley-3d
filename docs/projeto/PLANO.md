@@ -206,3 +206,17 @@ preservando pernas, velocidade e ajuste físico ao terreno. Portões de
 locomoção, rotina e nado verdes; o mutante original acusa 98 falhas.
 Capturas de três fases da passada e caminhadas no vale plano/inclinado
 foram conferidas em scratch/beata-locomocao e scratch/beata-no-vale.
+
+## Orientação da primeira leira em 07/10/2026
+
+A #146 fica concluída: as etapas arar/plantar/regar mostram marcas individuais,
+o E de gesto já cumprido aponta o próximo item e a tecla da barra vigente,
+e o marcador busca a leira apropriada à etapa restante. Recados negativos
+explicam como seguir, sem acumular texto; ajuda temporizada conta atividade
+no campo, não pausa de leitura, e respeita outras falas/avisos. Progresso
+retira apenas a ajuda de sua origem. Textos em PT/EN/ES. Orientacao_lavoura,
+lavoura, cadeia_das_missoes e idiomas passaram; apagar orientações em
+memória reprova sete perguntas. Avisos longos agora quebram por largura
+e ajustam a altura; capturas em três resoluções conferidas, seis falhas
+no mutante sem quebra. O portão da cadeia aguarda a fala antes de usar E,
+conforme a prioridade #121 já aplicada.

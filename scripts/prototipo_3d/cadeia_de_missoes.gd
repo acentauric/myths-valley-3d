@@ -489,6 +489,13 @@ func resumo_do_passo(passo: Dictionary) -> String:
 				tem += mini(int(carga[qual]), Inventario.quantidade(str(qual)))
 			conta = "%d/%d" % [tem, pede]
 	var frase := escrito if escrito != "" else gerado
+	var etapas: Array[String] = []
+	for etapa in passo.get("etapas", []):
+		if etapa is Dictionary:
+			etapas.append("%s %s" % ["✓" if aconteceu(str(etapa.get("evento", ""))) else "□",
+				str(IdiomaMenu.campo(etapa, "texto", ""))])
+	if not etapas.is_empty():
+		frase += "\n" + " · ".join(etapas)
 	if frase == "":
 		# Passo sem meta e sem resumo escrito: o título, que é curto.
 		frase = _titulo_do_passo(passo)
@@ -1030,6 +1037,16 @@ func posicao_do_passo(indice: int) -> Vector3:
 		return Vector3.ZERO
 	var passo: Dictionary = passos[indice]
 	var meta: Dictionary = passo.get("meta", {})
+	if str(meta.get("tipo", "")) == "evento" and passo.has("etapas") and is_inside_tree():
+		var lavoura := get_tree().get_first_node_in_group("lavoura")
+		if lavoura != null:
+			for evento in eventos_da_meta(meta):
+				if not aconteceu(evento):
+					var de: Vector3 = jogador.global_position if jogador != null else Vector3.ZERO
+					var ponto: Vector3 = lavoura.alvo_da_etapa(evento, de)
+					if ponto.is_finite():
+						return ponto
+					break
 	# PASSO DE VÁRIOS LUGARES — a escolha da fé, em qualquer um dos três marcos:
 	# o marcador aponta o mais perto.
 	if passo.has("lugares") and str(meta.get("tipo", "")) != "visitar":

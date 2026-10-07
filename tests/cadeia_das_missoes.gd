@@ -183,9 +183,10 @@ func _run() -> void:
 		# missão (J)." O HUD recebia a fala com o nome na frente.
 		var objetivo := str(current_scene.hud.get("_objective"))
 		var fala := str(passo.get("texto", ""))
-		_conferir(objetivo.length() <= LETRAS_DO_RESUMO,
+		_conferir(objetivo.split("\n")[0].length() <= LETRAS_DO_RESUMO,
 			"o objetivo do HUD no passo '%s' tem %d letras, e resumo é até %d: '%s'"
 				% [id, objetivo.length(), LETRAS_DO_RESUMO, objetivo])
+		_conferir(objetivo.length() <= 110, "resumo com etapas cresce além do espaço de leitura")
 		_conferir(fala.length() <= LETRAS_DO_RESUMO or not objetivo.contains(fala),
 			"o objetivo do HUD no passo '%s' é a fala inteira: '%s'" % [id, objetivo])
 		if caderno.tem(no_caderno):
@@ -210,6 +211,9 @@ func _run() -> void:
 					jogador.teleportar(quem.global_position + Vector3(1.0, 0.0, 0.6), 0.0)
 					# E O E: chegar perto não fecha o encontro; conversar fecha.
 					await _frames(2)
+					# O E cede à fala atual (#121): o jogador espera a fala terminar,
+					# em vez de tentar cumprir a missão durante o anúncio.
+					await _ate(func() -> bool: return not quem.falando_agora(), SEGUNDOS_PARA_ANUNCIAR)
 					jogo.get("tecla_dos_moradores").usar(quem)
 			"juntar":
 				for item in _carga(meta):

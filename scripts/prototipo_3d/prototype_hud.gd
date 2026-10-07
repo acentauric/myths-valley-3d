@@ -275,7 +275,8 @@ func _ready() -> void:
 	_notice_panel.visible = not _notice.is_empty()
 	_notice_label = _label(_notice, 14, GOLD)
 	_root.add_child(_notice_label)
-	_notice_label.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
+	_notice_label.set_anchors_and_offsets_preset(Control.PRESET_CENTER_BOTTOM)
+	_notice_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_notice_label.offset_left = 30
 	_notice_label.offset_right = -30
 	# Junto com o painel dele, acima da barra.
@@ -669,9 +670,19 @@ func set_notice(value: String, segundos: float = -1.0) -> void:
 		_notice_label.text = value
 		_notice_panel.visible = not value.is_empty()
 		var font := _notice_label.get_theme_font("font")
-		var half := font.get_string_size(value, HORIZONTAL_ALIGNMENT_LEFT, -1, 14).x * 0.5 + 24.0
+		var largura := maxf(160.0, _root.get_viewport_rect().size.x * 0.68)
+		var half := minf(largura, font.get_string_size(value, HORIZONTAL_ALIGNMENT_LEFT, -1, 14).x) * 0.5 + 24.0
 		_notice_panel.offset_left = -half
 		_notice_panel.offset_right = half
+		_notice_label.offset_left = -half + 24.0
+		_notice_label.offset_right = half - 24.0
+		var altura := maxf(25.0, _notice_label.get_minimum_size().y)
+		var acima := BarraDeMao.altura_ocupada()
+		_notice_label.size = Vector2(half * 2.0 - 48.0, altura)
+		_notice_label.offset_top = -acima - 4.0 - altura
+		_notice_label.offset_bottom = -acima - 4.0
+		_notice_panel.offset_top = -acima - altura - 8.0
+		_notice_panel.offset_bottom = -acima
 	if not value.is_empty() and is_inside_tree():
 		var prazo := segundos if segundos >= 0.0 else maxf(4.0, float(value.length()) / 15.0 + 1.0)
 		var revisao := _notice_revision
