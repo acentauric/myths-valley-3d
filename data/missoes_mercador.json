@@ -1,0 +1,48 @@
+{
+  "observacao": "O FAVOR DE SEU NICOLAU, DA VENDA (fase 1 de docs/projeto/MISSOES_SECUNDARIAS.md, 07/10/2026: \"criar missões secundárias para interação com esses NPCs\"). Uma fila curta, de um passo, só com mecânica que o vale já tem (a meta \"levar\" e itens com fonte), na voz que o morador já tinha em data/dialogos/aldeoes.json — 'Tábua! Tava precisando pra prateleira', o fiado e o lampião que a rendeira pede e nunca compra (é ele quem o dá, e a fila dela o pede). Trancada pela afinidade: abre quando o morador conhece o jogador (grau 1, \"Conhecido de vista\"; a tabela data/favores_dos_moradores.json diz o grau) e a chegada do Pedro acabou. Fechar a fila é o favor da afinidade (Afinidade.POR_FAVOR, cadeia_de_missoes._dar_o_favor).",
+  "dono": "mercador",
+  "nome": "A prateleira da venda",
+  "nome_en": "The shop shelf",
+  "nome_es": "El estante de la venta",
+  "trancada": "Fiado é pra quem tem terra, e pedido é pra quem eu conheço. Compre alguma coisa, converse, volte.",
+  "trancada_en": "Credit is for those who own land, and favors are for people I know. Buy something, talk a while, come back.",
+  "trancada_es": "El fiado es para quien tiene tierra, y los pedidos para quien conozco. Compra algo, conversa, vuelve.",
+  "principal": false,
+  "passos": [
+    {
+      "id": "mercador_tabuas",
+      "titulo": "A prateleira da venda",
+      "titulo_en": "The shop shelf",
+      "titulo_es": "El estante de la venta",
+      "resumo": "Leve duas tábuas ao Seu Nicolau",
+      "resumo_en": "Take two planks to Seu Nicolau",
+      "resumo_es": "Lleva dos tablas al Señor Nicolau",
+      "lugar": "bar",
+      "raio": 6,
+      "audio": "",
+      "texto": "Nicolau não pede fiado, cobra. Mas hoje peço: a prateleira do fundo cedeu com o peso do sal, e tábua boa só sai da sua bancada. Duas tábuas e eu abato na conta — e lhe dou um lampião, que a Estefânia vive pedindo e nunca compra.",
+      "texto_en": "Nicolau doesn't ask for credit, he collects it. But today I'm asking: the back shelf gave way under the weight of the salt, and good planks only come off your workbench. Two planks and I'll knock it off your account — and give you a lamp, the one Estefânia keeps asking for and never buys.",
+      "texto_es": "Nicolau no pide fiado, lo cobra. Pero hoy pido: el estante del fondo cedió con el peso de la sal, y tabla buena solo sale de tu banco. Dos tablas y te lo descuento de la cuenta — y te doy un farol, el que Estefânia vive pidiendo y nunca compra.",
+      "recompensa": {
+        "xp": 15,
+        "lampiao": 1
+      },
+      "meta": {
+        "tipo": "levar",
+        "item": "tabua",
+        "quantos": 2,
+        "a_quem": "mercador",
+        "raio": 3.4,
+        "resposta": "Tábua! Tava precisando pra prateleira. Toma o lampião, e isso abate na conta — na do seu tio, que está paga, e na sua, que ainda não começou.",
+        "resposta_en": "Planks! Just what the shelf needed. Take the lamp, and this comes off the account — your uncle's, which is settled, and yours, which hasn't started yet.",
+        "resposta_es": "¡Tablas! Me hacían falta para el estante. Toma el farol, y esto se descuenta de la cuenta — de la de tu tío, que está pagada, y de la tuya, que todavía no empezó."
+      }
+    }
+  ],
+  "arremate": {
+    "texto": "A prateleira do Nicolau está de pé, e o jogador saiu da venda com um lampião que não comprou.",
+    "texto_en": "Nicolau's shelf is standing again, and the player left the shop with a lamp he didn't buy.",
+    "texto_es": "El estante de Nicolau está en pie, y el jugador salió de la venta con un farol que no compró.",
+    "narra": false
+  }
+}

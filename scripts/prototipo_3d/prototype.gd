@@ -643,6 +643,11 @@ func _ready() -> void:
 				roca.depois_de = func() -> bool: return pedro == null or pedro.passou("roca")
 		if fila != null:
 			fila.depois_de = depois_do_machado if quem in ["damiao", "tonho"] else depois_da_chegada
+	# OS FAVORES DOS MORADORES (07/10, docs/projeto/MISSOES_SECUNDARIAS.md): as filas
+	# secundárias de cada morador do arraial, penduradas pela tabela e trancadas pela
+	# afinidade — abrem quando o morador conhece o jogador, e as que seguem outra, quando
+	# a de antes acabou.
+	_pendurar_as_secundarias(moradores, depois_da_chegada)
 	# A PONTE DO RIO GRANDE (data/missoes_ponte.json), a frente da trilha do 2D:
 	# ver a ponte cercada, a lenha, as tábuas e a obra. É enredo — a fazenda do
 	# convite fica do outro lado do rio —, e por isso é a PRIMEIRA fila que o E
@@ -2586,3 +2591,42 @@ func _pendurar_cadeia(morador: Node3D, arquivo: String, perto: float, chave: Str
 	morador.add_child(cadeia)
 	_cadeias[chave if chave != "" else str(morador.dados.get("id", ""))] = cadeia
 	return cadeia
+
+
+## A tabela dos favores dos moradores: dono, arquivo, chave, o grau de afinidade que abre
+## e a fila que tem de ter acabado antes (ver o arquivo).
+const FAVORES_DOS_MORADORES := "res://data/favores_dos_moradores.json"
+## A partir de quantos pontos de afinidade o morador avisa que o favor espera conhecer melhor
+## ("passe aqui mais vezes"): meio caminho até "Conhecido de vista" — umas conversas ou um
+## presente. Antes disso ele só conversa; o aviso sai uma vez (`aviso_repete`).
+const AFINIDADE_PARA_O_AVISO := 5
+
+
+func _pendurar_as_secundarias(moradores: Array, depois_da_chegada: Callable) -> void:
+	var tabela: Dictionary = Jogo.dados(FAVORES_DOS_MORADORES)
+	for entrada in tabela.get("filas", []):
+		var dono_id := str(entrada.get("dono", ""))
+		var morador: Node3D = null
+		for candidato in moradores:
+			if String(candidato.dados.get("id", "")) == dono_id:
+				morador = candidato
+				break
+		if morador == null:
+			continue
+		var chave := str(entrada.get("chave", dono_id + "_favor"))
+		var fila = _pendurar_cadeia(morador, str(entrada.get("arquivo", "")), 4.0, chave)
+		if fila == null:
+			continue
+		var grau := int(entrada.get("grau", 1))
+		var depois := str(entrada.get("depois", ""))
+		fila.aviso_repete = false
+		fila.avisa_a_trancada = func() -> bool: return Afinidade.de(dono_id) >= AFINIDADE_PARA_O_AVISO
+		fila.depois_de = func() -> bool:
+			if not bool(depois_da_chegada.call()):
+				return false
+			if Afinidade.grau(dono_id) < grau:
+				return false
+			if depois != "":
+				var anterior = _cadeias.get(depois)
+				return anterior != null and bool(anterior.acabou())
+			return true

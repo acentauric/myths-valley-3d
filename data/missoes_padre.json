@@ -1,0 +1,47 @@
+{
+  "observacao": "O FAVOR DE PADRE ANSELMO (fase 1 de docs/projeto/MISSOES_SECUNDARIAS.md, 07/10/2026: \"criar missões secundárias para interação com esses NPCs\"). Uma fila curta, de um passo, só com mecânica que o vale já tem (a meta \"levar\" e itens com fonte), na voz que o morador já tinha em data/dialogos/aldeoes.json — 'Deus lhe pague. Isto vai pra mesa da sacristia' (ele gosta de beiju) e o último banco onde o tio sentava. Trancada pela afinidade: abre quando o morador conhece o jogador (grau 1, \"Conhecido de vista\"; a tabela data/favores_dos_moradores.json diz o grau) e a chegada do Pedro acabou. Fechar a fila é o favor da afinidade (Afinidade.POR_FAVOR, cadeia_de_missoes._dar_o_favor).",
+  "dono": "padre",
+  "nome": "Beiju para a sacristia",
+  "nome_en": "Beiju for the sacristy",
+  "nome_es": "Beiju para la sacristía",
+  "trancada": "A porta da igreja está aberta mesmo pra quem não sabe rezar, meu filho. Entre, converse, e um dia eu lhe peço uma coisa.",
+  "trancada_en": "The church door is open even to those who don't know how to pray, my son. Come in, talk a while, and one day I'll ask you for something.",
+  "trancada_es": "La puerta de la iglesia está abierta incluso para quien no sabe rezar, hijo mío. Entra, conversa, y un día te pido algo.",
+  "principal": false,
+  "passos": [
+    {
+      "id": "padre_beiju",
+      "titulo": "Beiju para a sacristia",
+      "titulo_en": "Beiju for the sacristy",
+      "titulo_es": "Beiju para la sacristía",
+      "resumo": "Leve dois beijus ao Padre Anselmo",
+      "resumo_en": "Take two beijus to Father Anselmo",
+      "resumo_es": "Lleva dos beijus al Padre Anselmo",
+      "lugar": "casa_do_padre",
+      "raio": 6,
+      "audio": "",
+      "texto": "Anselmo, da freguesia. A mesa da sacristia recebe quem chega com fome depois da missa, e hoje está vazia. Dois beijus do seu fogão, meu filho, e o Bom Jesus escuta — de perto do altar, como o seu tio dizia, até demais.",
+      "texto_en": "Anselmo, of the parish. The sacristy table feeds whoever arrives hungry after Mass, and today it's bare. Two beijus from your stove, my son, and the Good Jesus listens — from close to the altar, as your uncle used to say, too well.",
+      "texto_es": "Anselmo, de la parroquia. La mesa de la sacristía recibe a quien llega con hambre después de la misa, y hoy está vacía. Dos beijus de tu fogón, hijo mío, y el Buen Jesús escucha — desde cerca del altar, como decía tu tío, hasta demasiado.",
+      "recompensa": {
+        "xp": 15
+      },
+      "meta": {
+        "tipo": "levar",
+        "item": "beiju",
+        "quantos": 2,
+        "a_quem": "padre",
+        "raio": 3.4,
+        "resposta": "Deus lhe pague. Isto vai pra mesa da sacristia, e de lá pra quem precisa. Seu tio sentava no último banco; o lugar continua vago, se quiser.",
+        "resposta_en": "God repay you. This goes to the sacristy table, and from there to whoever needs it. Your uncle sat in the last pew; the seat is still free, if you want it.",
+        "resposta_es": "Dios te lo pague. Esto va a la mesa de la sacristía, y de allí a quien lo necesita. Tu tío se sentaba en el último banco; el lugar sigue libre, si quieres."
+      }
+    }
+  ],
+  "arremate": {
+    "texto": "A mesa da sacristia tem beiju hoje, e o último banco da igreja ficou guardado para o jogador.",
+    "texto_en": "The sacristy table has beiju today, and the last pew in the church is kept for the player.",
+    "texto_es": "La mesa de la sacristía tiene beiju hoy, y el último banco de la iglesia quedó guardado para el jugador.",
+    "narra": false
+  }
+}

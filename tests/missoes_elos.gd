@@ -115,7 +115,7 @@ func _ler_os_arquivos() -> void:
 		if dado is Dictionary:
 			arquivos.append({"nome": nome, "dado": dado})
 	# 25 desde 07/10: as 19 filas, as 3 da fé, a meta da onça (#117), o segundo tutorial (#160) e o capítulo 7 (#31).
-	_conferir(arquivos.size() == 25, "são %d arquivos de missão, e eram 25 (as 19 filas, as 3 da fé, a meta da onça, o segundo tutorial e o capítulo 7): conferir a lista do portão" % arquivos.size())
+	_conferir(arquivos.size() == 39, "são %d arquivos de missão, e eram 39 (as 19 filas, as 3 da fé, a meta da onça, o segundo tutorial, o capítulo 7 e os 14 favores dos moradores): conferir a lista do portão" % arquivos.size())
 
 
 ## As filas VIVAS do vale: a do tutorial (do Pedro) e as penduradas (`vale._cadeias`). O motor lê
@@ -136,12 +136,20 @@ func _ligar_as_filas_vivas() -> void:
 	var total := 0
 	for arquivo in arquivos:
 		total += ((arquivo["dado"] as Dictionary).get("passos", []) as Array).size()
-	# 100 desde 07/10: os cinco passos do segundo tutorial (#160) e os sete do capítulo 7 (#31) sobre os 88 de 06/10.
-	_conferir(total == 100, "são %d passos, e eram 100: conferir a lista do portão (e os que o jogo toca, em `missoes_do_comeco_ao_fim`)" % total)
+	# 100 desde 07/10: os cinco passos do segundo tutorial (#160) e os sete do capítulo 7 (#31) sobre os 88 de 06/10;
+	# 114 com os catorze favores dos moradores (docs/projeto/MISSOES_SECUNDARIAS.md, fase 1), um passo cada.
+	_conferir(total == 114, "são %d passos, e eram 114: conferir a lista do portão (e os que o jogo toca, em `missoes_do_comeco_ao_fim`)" % total)
 
 
 ## O TEXTO DO CÓDIGO DO VALE, de onde se conta quem emite cada acontecimento. Menos o motor da fila
 ## e o do Pedro: eles LEEM o acontecimento, e não o emitem.
+func _total_de_passos() -> int:
+	var total := 0
+	for arquivo in arquivos:
+		total += ((arquivo["dado"] as Dictionary).get("passos", []) as Array).size()
+	return total
+
+
 func _ler_o_codigo() -> void:
 	for pasta in ["res://scripts/prototipo_3d", "res://scripts/compartilhado", "res://scripts/autoload", "res://scripts/ui"]:
 		for nome in DirAccess.get_files_at(pasta):
@@ -160,6 +168,10 @@ func _montar_as_fontes() -> void:
 		var rende := str((recursos._alvos[id]["ficha"] as Dictionary).get("rende", ""))
 		if rende != "":
 			_fonte(rende, "alvo de trabalho")
+	# AS ÁRVORES DO VALE (07/10): toda espécie se corta com o machado (tests/corte_das_arvores.gd),
+	# e a que "rende" algo além de lenha — o coqueiro, a madeira de coqueiro — é fonte dele.
+	var arvores = JSON.parse_string(FileAccess.get_file_as_string("res://data/arvores_3d.json"))
+	_fontes_das_arvores(arvores)
 	for id in root.get_node("/root/Oficina").RECEITAS:
 		_fonte(str(id), "bancada")
 	for id in root.get_node("/root/Cozinha").RECEITAS:
@@ -189,6 +201,18 @@ func _montar_as_fontes() -> void:
 						_fonte(str(item), "mutirão")
 	for item in FONTES_FORA_DA_TABELA:
 		_fonte(str(item), str(FONTES_FORA_DA_TABELA[item]))
+
+
+## Percorre o arquivo das árvores: todo dicionário com "rende" é uma espécie que rende o item ao cair.
+func _fontes_das_arvores(no) -> void:
+	if no is Dictionary:
+		if str((no as Dictionary).get("rende", "")) != "":
+			_fonte(str((no as Dictionary)["rende"]), "árvore do vale (machado)")
+		for chave in (no as Dictionary):
+			_fontes_das_arvores((no as Dictionary)[chave])
+	elif no is Array:
+		for item in (no as Array):
+			_fontes_das_arvores(item)
 
 
 func _fonte(item: String, de_onde: String) -> void:
@@ -528,6 +552,13 @@ func _o_e_neste_passo(cadeia, indice: int, meta: Dictionary, quem, jogador, tecl
 			if aviso != null and aviso.aberto():
 				aviso.fechar()
 			await jogada.quadros(1)
+		# O CÔMODO DA CASA AO LADO se monta quando o jogador chega de uma vez ao pé dela, e
+		# enquanto se monta o corpo fica parado (`interiores._montar_de_perto`); a tecla dos
+		# moradores não conversa com o corpo parado. Espera o corpo voltar, como o jogador
+		# esperaria (07/10: os favores dos moradores são pedidos nas casas deles).
+		var limite_da_fisica := Time.get_ticks_msec() + 4000
+		while not jogador.is_physics_processing() and Time.get_ticks_msec() < limite_da_fisica:
+			await jogada.quadros(1)
 		await jogada.quadros(3)
 		var o_que: String = cadeia.o_que_o_e_faz(quem)
 		var dono = jogada.dono_do_e()
@@ -563,7 +594,7 @@ func _o_e_neste_passo(cadeia, indice: int, meta: Dictionary, quem, jogador, tecl
 func _fechar() -> void:
 	print("")
 	if falhas == 0:
-		print("ELOS_OK: as 23 filas e os 88 passos se ligam — ids únicos, lugares que resolvem, gente que aparece, material com fonte, acontecimentos com emissor, obras com a tecla no resumo ([E] e [J] onde o E toca), aviso da fila trancada nos três idiomas, o E é da pessoa certa a cada período, e o controle acha caminho até cada lugar")
+		print("ELOS_OK: as %d filas e os %d passos se ligam — ids únicos, lugares que resolvem, gente que aparece, material com fonte, acontecimentos com emissor, obras com a tecla no resumo ([E] e [J] onde o E toca), aviso da fila trancada nos três idiomas, o E é da pessoa certa a cada período, e o controle acha caminho até cada lugar" % [arquivos.size(), _total_de_passos()])
 	else:
 		print("elos: %d falha(s)" % falhas)
 	quit(1 if falhas > 0 else 0)

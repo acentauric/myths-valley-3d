@@ -23,6 +23,17 @@
   cada quatro golpes, e a dica conta o trabalho ("Lajedo 12/96"); a seta de "junte
   pedras" não aponta a pedra grande a quem só tem a picareta de ferro. As árvores já
   seguiam a regra (madeira branca, de lei e dura, com nível e aço).
+- **As missões secundárias dos moradores, fases 0 e 1** (docs/projeto/MISSOES_SECUNDARIAS.md).
+  Catorze moradores do arraial só cumprimentavam e recebiam presente; cada um ganha
+  um favor de um passo (`data/missoes_<morador>.json`, meta "levar", a recompensa em
+  coisa que ele tem), na voz que já tinha em `aldeoes.json` — o lampião do Nicolau é
+  o da Estefânia, a cocada da Ambrósia é a do Tonico. As filas são penduradas pela
+  tabela `data/favores_dos_moradores.json` e trancadas pela afinidade: abrem quando o
+  morador conhece o jogador (grau 1) e a chegada acabou, com o aviso nos três idiomas —
+  que fica quieto até cinco pontos e sai uma vez, para não tomar a conversa do morador.
+  Fechar a fila de um morador da teia passa a dar o favor da afinidade (+25), que
+  ninguém dava. As casas dos moradores e a beira do rio entram no `Lugares`. Portão
+  novo `missoes_secundarias`; o `missoes_elos` conta 39 arquivos e 114 passos.
 - **Playtest de 07/10, sexta fatia: a voz do arremate.** O Pedro narra, na voz dele, a
   fala de depois do convite lido (`pedro_convite_arremate`, gerada no ElevenLabs pela
   ferramenta das falas do guia, com a leitura marcada para o v3).

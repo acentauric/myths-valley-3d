@@ -1,0 +1,48 @@
+{
+  "observacao": "O FAVOR DE MARIINHA, A MENINA (fase 1 de docs/projeto/MISSOES_SECUNDARIAS.md, 07/10/2026: \"criar missões secundárias para interação com esses NPCs\"). Uma fila curta, de um passo, só com mecânica que o vale já tem (a meta \"levar\" e itens com fonte), na voz que o morador já tinha em data/dialogos/aldeoes.json — a cocada que ela já sabe fazer sem mexer no dendê — de milho verde, porque o caju ainda não tem pé que dê fruto no vale —, o bonde de Salvador e a roda da praia, gancho da fase 3. Trancada pela afinidade: abre quando o morador conhece o jogador (grau 1, \"Conhecido de vista\"; a tabela data/favores_dos_moradores.json diz o grau) e a chegada do Pedro acabou. Fechar a fila é o favor da afinidade (Afinidade.POR_FAVOR, cadeia_de_missoes._dar_o_favor).",
+  "dono": "menina",
+  "nome": "Milho para a cocada",
+  "nome_en": "Corn for the cocada",
+  "nome_es": "Maíz para la cocada",
+  "trancada": "A mãe disse pra não falar com quem ela não conhece. Ela te conhece? Então volta quando conhecer.",
+  "trancada_en": "Mother said not to talk to people she doesn't know. Does she know you? Then come back when she does.",
+  "trancada_es": "Mi madre dijo que no hable con quien ella no conoce. ¿Ella te conoce? Entonces vuelve cuando te conozca.",
+  "principal": false,
+  "passos": [
+    {
+      "id": "menina_milho",
+      "titulo": "Milho para a cocada",
+      "titulo_en": "Corn for the cocada",
+      "titulo_es": "Maíz para la cocada",
+      "resumo": "Leve duas espigas de milho à Mariinha",
+      "resumo_en": "Take two ears of corn to Mariinha",
+      "resumo_es": "Lleva dos mazorcas de maíz a Mariinha",
+      "lugar": "casa_da_quituteira",
+      "raio": 6,
+      "audio": "",
+      "texto": "Eu já sei fazer cocada, mas a mãe não deixa eu mexer no dendê. Cocada de milho verde não leva dendê! Me traz duas espigas do seu roçado e eu faço uma pra você — e você me conta se em Salvador tem bonde de verdade.",
+      "texto_en": "I already know how to make cocada, but Mother won't let me touch the palm oil. Green-corn cocada doesn't need palm oil! Bring me two ears from your field and I'll make one for you — and you tell me if Salvador really has streetcars.",
+      "texto_es": "Yo ya sé hacer cocada, pero mi madre no me deja tocar el dendê. ¡La cocada de maíz tierno no lleva dendê! Tráeme dos mazorcas de tu roza y te hago una — y tú me cuentas si en Salvador hay tranvías de verdad.",
+      "recompensa": {
+        "xp": 15,
+        "cocada": 1
+      },
+      "meta": {
+        "tipo": "levar",
+        "item": "milho",
+        "quantos": 2,
+        "a_quem": "menina",
+        "raio": 3.4,
+        "resposta": "Milho! Agora espera que eu ralo e faço. Pronto — tá torta, mas é cocada. Se você quiser aprender a roda, tem que bater palma primeiro.",
+        "resposta_en": "Corn! Now wait while I grate it and make it. There — it's crooked, but it's cocada. If you want to learn the circle dance, you have to clap first.",
+        "resposta_es": "¡Maíz! Ahora espera que lo rallo y la hago. Listo — está torcida, pero es cocada. Si quieres aprender la rueda, tienes que aplaudir primero."
+      }
+    }
+  ],
+  "arremate": {
+    "texto": "A Mariinha fez a primeira cocada de milho sem dendê, e o jogador ganhou a torta — e um convite para a roda da praia.",
+    "texto_en": "Mariinha made her first green-corn cocada without palm oil, and the player got the crooked one — and an invitation to the circle dance on the beach.",
+    "texto_es": "Mariinha hizo su primera cocada de maíz sin dendê, y el jugador se llevó la torcida — y una invitación a la rueda de la playa.",
+    "narra": false
+  }
+}

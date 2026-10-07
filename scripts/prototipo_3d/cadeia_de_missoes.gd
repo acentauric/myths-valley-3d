@@ -256,6 +256,19 @@ func total() -> int:
 	return passos.size()
 
 
+## O FAVOR FEITO: a fila inteira de um morador fechou, e a afinidade dele dá o salto
+## (`Afinidade.POR_FAVOR`, +25 — de "Conhecido de vista" a "Gente boa"). Até 07/10 ninguém
+## chamava `fez_o_favor`: conversa e presente subiam a afinidade, e cumprir o pedido do
+## morador, que é o salto do 2D, não valia nada. Só para quem está na teia
+## (`Afinidade.MORADORES`, data/dialogos/aldeoes.json): o Pedro e as vozes da fé ficam fora.
+func _dar_o_favor() -> void:
+	if dono == null or not ("dados" in dono):
+		return
+	var id := str(dono.dados.get("id", ""))
+	if id != "" and Afinidade.MORADORES.has(id):
+		Afinidade.fez_o_favor(id)
+
+
 func acabou() -> bool:
 	return missao >= passos.size()
 
@@ -933,6 +946,10 @@ func avancar() -> void:
 		# A FESTA SÓ NO ÚLTIMO PASSO (07/10), com o nome da missão inteira em vez do
 		# passo: "Chegada ao arraial", e não "A chave com a Dona Zefa".
 		var ultimo := missao + 1 >= passos.size()
+		# O FAVOR DA AFINIDADE (07/10, docs/projeto/MISSOES_SECUNDARIAS.md): fechar a fila
+		# inteira de um morador da teia é o salto da afinidade, como no 2D.
+		if ultimo:
+			_dar_o_favor()
 		CadernoDoVale.concluir(_id_no_caderno(fechando),
 			{"titulo": nome_da_missao if nome_da_missao != "" else _titulo_do_passo(fechando), "missao": "",
 				"quem": _nome_do_dono()} if ultimo else null)
@@ -1113,6 +1130,15 @@ func posicao_do_passo(indice: int) -> Vector3:
 ## "o ideal é o Pedro ensinar a apertar E para iniciar as interações com os
 ## NPCs".
 var comeca_perto_de := 0.0
+## O AVISO DA TRANCADA SÓ SE DÁ QUANDO ISTO RESPONDER VERDADEIRO (07/10, os favores dos
+## moradores, docs/projeto/MISSOES_SECUNDARIAS.md). Uma fila trancada pela AFINIDADE não pode
+## tomar a conversa do morador no primeiro encontro: o aviso ("a gente mal se conhece") no
+## lugar da fala dele era o que o jogador ouvia sempre — e a conversa diária, que é o que sobe
+## a afinidade, nunca acontecia. Sem resposta, o aviso vale como antes (o Damião, o Tonho).
+var avisa_a_trancada: Callable = Callable()
+## O AVISO SE REPETE A CADA E? Sim para quem só tem isso a dizer (o Damião sem o machado); não
+## para a fila trancada pela afinidade, que avisa uma vez e devolve a conversa ao morador.
+var aviso_repete := true
 ## SÓ DEPOIS DE OUTRA COISA: a cadeia não abre enquanto isto responder falso.
 ## A do mirante espera o Pedro terminar o tutorial — no 2D as missões do
 ## arraial vêm "depois que o Pedro termina de ensinar a sobreviver".
@@ -1578,4 +1604,6 @@ func em_andamento() -> bool:
 ## escreveu o aviso (`trancada`). "Só conversa de passagem" deixava o jogador sem saber
 ## o que lhe faltava.
 func dica_da_trancada() -> String:
+	if avisa_a_trancada.is_valid() and not bool(avisa_a_trancada.call()):
+		return ""
 	return trancada_texto if esta_trancada() else ""

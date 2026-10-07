@@ -1,0 +1,48 @@
+{
+  "observacao": "O FAVOR DE SEU JERÔNIMO, O PESCADOR (fase 1 de docs/projeto/MISSOES_SECUNDARIAS.md, 07/10/2026: \"criar missões secundárias para interação com esses NPCs\"). Uma fila curta, de um passo, só com mecânica que o vale já tem (a meta \"levar\" e itens com fonte), na voz que o morador já tinha em data/dialogos/aldeoes.json — 'Corda! Linha boa nasce de corda boa', a pedra da ponta da praia e a madeira lavrada no telhado, gancho do arco da fase 2. Trancada pela afinidade: abre quando o morador conhece o jogador (grau 1, \"Conhecido de vista\"; a tabela data/favores_dos_moradores.json diz o grau) e a chegada do Pedro acabou. Fechar a fila é o favor da afinidade (Afinidade.POR_FAVOR, cadeia_de_missoes._dar_o_favor).",
+  "dono": "pescador",
+  "nome": "Corda para a linha",
+  "nome_en": "Rope for the line",
+  "nome_es": "Cuerda para el sedal",
+  "trancada": "Se o vento virar enquanto você fala, eu paro de ouvir. Hoje virou. Volte outro dia, moço, e fale da pedra, não do mar.",
+  "trancada_en": "If the wind turns while you're talking, I stop listening. Today it turned. Come back another day, young man, and talk from the rock, not from the sea.",
+  "trancada_es": "Si el viento cambia mientras hablas, dejo de escuchar. Hoy cambió. Vuelve otro día, muchacho, y habla desde la piedra, no desde el mar.",
+  "principal": false,
+  "passos": [
+    {
+      "id": "pescador_corda",
+      "titulo": "Corda para a linha",
+      "titulo_en": "Rope for the line",
+      "titulo_es": "Cuerda para el sedal",
+      "resumo": "Leve duas cordas ao Seu Jerônimo",
+      "resumo_en": "Take two ropes to Seu Jerônimo",
+      "resumo_es": "Lleva dos cuerdas al Señor Jerônimo",
+      "lugar": "casa_do_pescador",
+      "raio": 6,
+      "audio": "",
+      "texto": "Jerônimo pesca de linha, da pedra, e linha boa nasce de corda boa. A minha arrebentou num robalo — na quinta, que de sexta eu não pesco. Torça duas cordas na sua bancada e traga. Pago em peixe, que é a moeda que eu tenho.",
+      "texto_en": "Jerônimo fishes with a line, from the rock, and a good line is born of good rope. Mine snapped on a sea bass — on Thursday, since I don't fish on Fridays. Twist two ropes on your workbench and bring them. I pay in fish, the only coin I've got.",
+      "texto_es": "Jerônimo pesca con sedal, desde la piedra, y un buen sedal nace de una buena cuerda. La mía se rompió con un róbalo — el jueves, que los viernes no pesco. Tuerce dos cuerdas en tu banco y tráelas. Pago en pescado, que es la moneda que tengo.",
+      "recompensa": {
+        "xp": 15,
+        "robalo": 1
+      },
+      "meta": {
+        "tipo": "levar",
+        "item": "corda",
+        "quantos": 2,
+        "a_quem": "pescador",
+        "raio": 3.4,
+        "resposta": "Corda! Linha boa nasce de corda boa. Toma um robalo, do fim da tarde de ontem. E quando você souber ler o que a linha puxou do fundo, eu lhe mostro.",
+        "resposta_en": "Rope! A good line is born of good rope. Take a sea bass, from yesterday's late afternoon. And when you can read what the line pulled from the bottom, I'll show it to you.",
+        "resposta_es": "¡Cuerda! Un buen sedal nace de una buena cuerda. Toma un róbalo, del final de la tarde de ayer. Y cuando sepas leer lo que el sedal sacó del fondo, te lo muestro."
+      }
+    }
+  ],
+  "arremate": {
+    "texto": "O Seu Jerônimo pesca com linha nova, e guarda no telhado uma madeira com letra que ainda vai mostrar.",
+    "texto_en": "Seu Jerônimo fishes with a new line, and keeps on his roof a lettered piece of wood he has yet to show.",
+    "texto_es": "El Señor Jerônimo pesca con sedal nuevo, y guarda en el techo una madera con letras que todavía va a mostrar.",
+    "narra": false
+  }
+}

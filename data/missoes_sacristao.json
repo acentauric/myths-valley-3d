@@ -1,0 +1,47 @@
+{
+  "observacao": "O FAVOR DE ZACARIAS, O SACRISTÃO (fase 1 de docs/projeto/MISSOES_SECUNDARIAS.md, 07/10/2026: \"criar missões secundárias para interação com esses NPCs\"). Uma fila curta, de um passo, só com mecânica que o vale já tem (a meta \"levar\" e itens com fonte), na voz que o morador já tinha em data/dialogos/aldeoes.json — 'garganta de sacristão seca' (ele gosta de garapa) e a pedra solta atrás do altar, gancho do arco da fase 2. Trancada pela afinidade: abre quando o morador conhece o jogador (grau 1, \"Conhecido de vista\"; a tabela data/favores_dos_moradores.json diz o grau) e a chegada do Pedro acabou. Fechar a fila é o favor da afinidade (Afinidade.POR_FAVOR, cadeia_de_missoes._dar_o_favor).",
+  "dono": "sacristao",
+  "nome": "Garapa para o sino",
+  "nome_en": "Cane juice for the bell",
+  "nome_es": "Guarapo para la campana",
+  "trancada": "A cadeira na sombra do adro é minha, moço, e a conversa comprida também é pra quem eu conheço. Passe pela porta da igreja mais vezes.",
+  "trancada_en": "The chair in the shade of the churchyard is mine, young man, and long talk is for people I know. Pass by the church door more often.",
+  "trancada_es": "La silla a la sombra del atrio es mía, muchacho, y la charla larga también es para quien conozco. Pasa por la puerta de la iglesia más veces.",
+  "principal": false,
+  "passos": [
+    {
+      "id": "sacristao_garapa",
+      "titulo": "Garapa para o sino",
+      "titulo_en": "Cane juice for the bell",
+      "titulo_es": "Guarapo para la campana",
+      "resumo": "Leve duas garapas ao Sacristão Zacarias",
+      "resumo_en": "Take two cane juices to Sexton Zacarias",
+      "resumo_es": "Lleva dos guarapos al Sacristán Zacarias",
+      "lugar": "igreja",
+      "raio": 6,
+      "audio": "",
+      "texto": "Zacarias toca o sino às seis e às dezoito, e entre um e outro varre, apaga vela e escuta a praça. Garganta de sacristão seca, moço. Duas garapas — da Dona Candinha ou do seu fogão — e eu lhe toco o sino certo. E lhe conto uma coisa que o padre não sabe.",
+      "texto_en": "Zacarias rings the bell at six and at eighteen, and in between he sweeps, snuffs candles and listens to the square. A sexton's throat runs dry, young man. Two cane juices — from Dona Candinha or from your own stove — and I'll ring the bell right for you. And tell you something the priest doesn't know.",
+      "texto_es": "Zacarias toca la campana a las seis y a las dieciocho, y entre una y otra barre, apaga velas y escucha la plaza. La garganta de un sacristán se seca, muchacho. Dos guarapos — de Doña Candinha o de tu fogón — y te toco la campana bien. Y te cuento algo que el cura no sabe.",
+      "recompensa": {
+        "xp": 15
+      },
+      "meta": {
+        "tipo": "levar",
+        "item": "garapa",
+        "quantos": 2,
+        "a_quem": "sacristao",
+        "raio": 3.4,
+        "resposta": "Garapa! O padre diz que eu bebo pelos dois. Bebo mesmo, e toco melhor. Da pedra atrás do altar a gente fala outro dia, quando não tiver ninguém no adro.",
+        "resposta_en": "Cane juice! The priest says I drink for the both of us. I do, and I ring better for it. About the stone behind the altar we'll talk another day, when there's no one in the churchyard.",
+        "resposta_es": "¡Guarapo! El cura dice que bebo por los dos. Bebo, sí, y toco mejor. De la piedra detrás del altar hablamos otro día, cuando no haya nadie en el atrio."
+      }
+    }
+  ],
+  "arremate": {
+    "texto": "O sino do Zacarias toca certo hoje, e ele deve ao jogador uma história: a da pedra atrás do altar.",
+    "texto_en": "Zacarias's bell rings right today, and he owes the player a story: the one about the stone behind the altar.",
+    "texto_es": "La campana de Zacarias suena bien hoy, y él le debe al jugador una historia: la de la piedra detrás del altar.",
+    "narra": false
+  }
+}

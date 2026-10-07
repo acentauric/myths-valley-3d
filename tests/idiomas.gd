@@ -55,6 +55,22 @@ const TRADUZIDOS := {
 	"res://data/missoes_fazenda.json": ["texto", "resumo", "nome", "titulo", "resposta"],
 	"res://data/missoes_quintal.json": ["texto", "resumo", "nome", "titulo", "resposta"],
 	"res://data/missoes_revoar.json": ["texto", "resumo", "nome", "titulo", "resposta", "oferta", "pergunta"],
+	# Os favores dos moradores (docs/projeto/MISSOES_SECUNDARIAS.md, fase 1): nasceram nos três
+	# idiomas, com o aviso da fila trancada (que o missoes_elos cobra à parte).
+	"res://data/missoes_rendeira.json": ["texto", "resumo", "nome", "titulo", "resposta", "trancada"],
+	"res://data/missoes_sacristao.json": ["texto", "resumo", "nome", "titulo", "resposta", "trancada"],
+	"res://data/missoes_beata.json": ["texto", "resumo", "nome", "titulo", "resposta", "trancada"],
+	"res://data/missoes_mercador.json": ["texto", "resumo", "nome", "titulo", "resposta", "trancada"],
+	"res://data/missoes_guarda.json": ["texto", "resumo", "nome", "titulo", "resposta", "trancada"],
+	"res://data/missoes_pescador.json": ["texto", "resumo", "nome", "titulo", "resposta", "trancada"],
+	"res://data/missoes_marisqueira.json": ["texto", "resumo", "nome", "titulo", "resposta", "trancada"],
+	"res://data/missoes_lavadeira.json": ["texto", "resumo", "nome", "titulo", "resposta", "trancada"],
+	"res://data/missoes_quituteira.json": ["texto", "resumo", "nome", "titulo", "resposta", "trancada"],
+	"res://data/missoes_carpinteiro.json": ["texto", "resumo", "nome", "titulo", "resposta", "trancada"],
+	"res://data/missoes_menino.json": ["texto", "resumo", "nome", "titulo", "resposta", "trancada"],
+	"res://data/missoes_menina.json": ["texto", "resumo", "nome", "titulo", "resposta", "trancada"],
+	"res://data/missoes_mestre_saveiro.json": ["texto", "resumo", "nome", "titulo", "resposta", "trancada"],
+	"res://data/missoes_padre.json": ["texto", "resumo", "nome", "titulo", "resposta", "trancada"],
 	"res://data/documentos.json": ["nome", "linhas"],
 	"res://data/historico_3d.json": ["titulo", "estado"],
 	# A fé (#52): o que os marcos dizem.

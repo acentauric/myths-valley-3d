@@ -1,0 +1,48 @@
+{
+  "observacao": "O FAVOR DE SEU LADISLAU, O SAVEIRISTA (fase 1 de docs/projeto/MISSOES_SECUNDARIAS.md, 07/10/2026: \"criar missões secundárias para interação com esses NPCs\"). Uma fila curta, de um passo, só com mecânica que o vale já tem (a meta \"levar\" e itens com fonte), na voz que o morador já tinha em data/dialogos/aldeoes.json — trinta anos de Recôncavo (ele gosta de corda), o vento que vira e a luz na água perto da foz do rio grande, gancho do arco da fase 2. Trancada pela afinidade: abre quando o morador conhece o jogador (grau 1, \"Conhecido de vista\"; a tabela data/favores_dos_moradores.json diz o grau) e a chegada do Pedro acabou. Fechar a fila é o favor da afinidade (Afinidade.POR_FAVOR, cadeia_de_missoes._dar_o_favor).",
+  "dono": "mestre_saveiro",
+  "nome": "Corda para o saveiro",
+  "nome_en": "Rope for the sloop",
+  "nome_es": "Cuerda para el saveiro",
+  "trancada": "Trinta anos de Recôncavo me ensinaram a não pedir nada a quem acabou de descer da prancha. Volte quando tiver andado mais por aqui.",
+  "trancada_en": "Thirty years on the Recôncavo taught me not to ask anything of someone who just stepped off the plank. Come back when you've walked around here some more.",
+  "trancada_es": "Treinta años de Recôncavo me enseñaron a no pedirle nada a quien acaba de bajar de la plancha. Vuelve cuando hayas andado más por aquí.",
+  "principal": false,
+  "passos": [
+    {
+      "id": "ladislau_corda",
+      "titulo": "Corda para o saveiro",
+      "titulo_en": "Rope for the sloop",
+      "titulo_es": "Cuerda para el saveiro",
+      "resumo": "Leve três cordas ao Seu Ladislau",
+      "resumo_en": "Take three ropes to Seu Ladislau",
+      "resumo_es": "Lleva tres cuerdas al Señor Ladislau",
+      "lugar": "beira_do_rio",
+      "raio": 6,
+      "audio": "",
+      "texto": "Ladislau, tripulação do Quirino. Saveiro come corda como gente come farinha: a escota do traquete está no último fio. Três cordas da sua bancada e eu lhe pago com peixe da baía — e, se o vento deixar, com uma história de luz na água.",
+      "texto_en": "Ladislau, Quirino's crew. A sloop eats rope the way people eat flour: the foresail sheet is down to its last strand. Three ropes from your workbench and I'll pay you with fish from the bay — and, if the wind allows, with a story about a light on the water.",
+      "texto_es": "Ladislau, tripulación de Quirino. El saveiro come cuerda como la gente come harina: la escota del trinquete está en su último hilo. Tres cuerdas de tu banco y te pago con pescado de la bahía — y, si el viento lo permite, con una historia de una luz en el agua.",
+      "recompensa": {
+        "xp": 15,
+        "peixe": 2
+      },
+      "meta": {
+        "tipo": "levar",
+        "item": "corda",
+        "quantos": 3,
+        "a_quem": "mestre_saveiro",
+        "raio": 3.4,
+        "resposta": "Corda nova. Agora o traquete segura até Maragogipe. Toma o peixe. A luz na água fica pra quando o vento virar a favor — e ele vira, moço, ele vira.",
+        "resposta_en": "New rope. Now the foresail will hold all the way to Maragogipe. Take the fish. The light on the water waits for when the wind turns in our favor — and it turns, young man, it turns.",
+        "resposta_es": "Cuerda nueva. Ahora el trinquete aguanta hasta Maragogipe. Toma el pescado. La luz en el agua queda para cuando el viento cambie a favor — y cambia, muchacho, cambia."
+      }
+    }
+  ],
+  "arremate": {
+    "texto": "O traquete do saveiro tem escota nova, e o Seu Ladislau deve ao jogador a história da luz na água.",
+    "texto_en": "The sloop's foresail has a new sheet, and Seu Ladislau owes the player the story of the light on the water.",
+    "texto_es": "El trinquete del saveiro tiene escota nueva, y el Señor Ladislau le debe al jugador la historia de la luz en el agua.",
+    "narra": false
+  }
+}

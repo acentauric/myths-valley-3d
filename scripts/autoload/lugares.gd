@@ -104,6 +104,22 @@ const DE_PARA := {
 	"ruinas_do_palacete": "Ruínas do palacete",
 	"torre_da_capela": "Torre da capela",
 	"estatua_da_coruja": "Estátua da coruja",
+	# AS CASAS DOS MORADORES DO ARRAIAL E A BEIRA DO RIO (07/10, as missões secundárias,
+	# docs/projeto/MISSOES_SECUNDARIAS.md): onde cada favor é pedido. As casas são as
+	# âncoras que o world_builder assenta com o nome da casa de npcs_3d.json; o padre, o
+	# sacristão, a beata e o saveirista moram nas casas numeradas do arraial.
+	"casa_do_padre": "Casa do arraial 7",
+	"casa_do_sacristao": "Casa do arraial 1",
+	"casa_da_beata": "Casa do arraial 1",
+	"casa_do_ladislau": "Casa do arraial 4",
+	"casa_do_guarda": "Casa do guarda",
+	"casa_do_pescador": "Casa do pescador",
+	"casa_da_marisqueira": "Casa da marisqueira",
+	"casa_da_lavadeira": "Casa da lavadeira",
+	"casa_da_rendeira": "Casa da rendeira",
+	"casa_da_quituteira": "Casa da quituteira",
+	"casa_do_carpinteiro": "Casa do carpinteiro",
+	"beira_do_rio": "Rio 2",
 }
 
 ## Os nomes que a campanha do 2D usa e o vale ainda NÃO tem, com o que falta

@@ -1,0 +1,48 @@
+{
+  "observacao": "O FAVOR DE DONA ROSA, A MARISQUEIRA (fase 1 de docs/projeto/MISSOES_SECUNDARIAS.md, 07/10/2026: \"criar missões secundárias para interação com esses NPCs\"). Uma fila curta, de um passo, só com mecânica que o vale já tem (a meta \"levar\" e itens com fonte), na voz que o morador já tinha em data/dialogos/aldeoes.json — 'Farinha pra misturar com o peixe de hoje', o mangue que é a cozinha de Iemanjá e a maré das cinco, gancho da fase 3. Trancada pela afinidade: abre quando o morador conhece o jogador (grau 1, \"Conhecido de vista\"; a tabela data/favores_dos_moradores.json diz o grau) e a chegada do Pedro acabou. Fechar a fila é o favor da afinidade (Afinidade.POR_FAVOR, cadeia_de_missoes._dar_o_favor).",
+  "dono": "marisqueira",
+  "nome": "Farinha para o sururu",
+  "nome_en": "Flour for the mussels",
+  "nome_es": "Harina para el sururú",
+  "trancada": "Quem quer aprender vem às cinco, com balde e sem sapato. Antes disso, a gente se cumprimenta. Passe mais vezes, meu filho.",
+  "trancada_en": "Whoever wants to learn comes at five, with a bucket and no shoes. Before that, we greet each other. Come by more often, my son.",
+  "trancada_es": "Quien quiere aprender viene a las cinco, con balde y sin zapatos. Antes de eso, nos saludamos. Pasa más veces, hijo mío.",
+  "principal": false,
+  "passos": [
+    {
+      "id": "marisqueira_farinha",
+      "titulo": "Farinha para o sururu",
+      "titulo_en": "Flour for the mussels",
+      "titulo_es": "Harina para el sururú",
+      "resumo": "Leve duas farinhas à Dona Rosa",
+      "resumo_en": "Take two flours to Dona Rosa",
+      "resumo_es": "Lleva dos harinas a Doña Rosa",
+      "lugar": "casa_da_marisqueira",
+      "raio": 6,
+      "audio": "",
+      "texto": "Rosa tira ostra e sururu da lama, de manhã cedo. Sururu sem farinha é lama com gosto. Me traga duas cuias de farinha da sua casa e eu lhe dou três ostras da maré de hoje — e, um dia, lhe ensino o que tem por baixo delas.",
+      "texto_en": "Rosa pulls oysters and mussels out of the mud, early in the morning. Mussels without flour are mud with a taste. Bring me two gourds of flour from your house and I'll give you three oysters from today's tide — and, one day, teach you what lies beneath them.",
+      "texto_es": "Rosa saca ostras y sururú del barro, de madrugada. Sururú sin harina es barro con sabor. Tráeme dos cuencos de harina de tu casa y te doy tres ostras de la marea de hoy — y, un día, te enseño lo que hay debajo de ellas.",
+      "recompensa": {
+        "xp": 15,
+        "ostra": 3
+      },
+      "meta": {
+        "tipo": "levar",
+        "item": "farinha",
+        "quantos": 2,
+        "a_quem": "marisqueira",
+        "raio": 3.4,
+        "resposta": "Farinha pra misturar com o sururu de hoje. Obrigada, meu filho. Toma três ostras, tiradas com licença — o mangue é a cozinha de Iemanjá, e a gente entra pedindo.",
+        "resposta_en": "Flour to mix with today's mussels. Thank you, my son. Take three oysters, gathered with permission — the mangrove is Iemanjá's kitchen, and we enter asking.",
+        "resposta_es": "Harina para mezclar con el sururú de hoy. Gracias, hijo mío. Toma tres ostras, sacadas con permiso — el manglar es la cocina de Iemanjá, y uno entra pidiendo."
+      }
+    }
+  ],
+  "arremate": {
+    "texto": "A Dona Rosa comeu sururu com farinha, e o jogador saiu do mangue com três ostras e um convite para as cinco da manhã.",
+    "texto_en": "Dona Rosa ate her mussels with flour, and the player left the mangrove with three oysters and an invitation for five in the morning.",
+    "texto_es": "Doña Rosa comió sururú con harina, y el jugador salió del manglar con tres ostras y una invitación para las cinco de la mañana.",
+    "narra": false
+  }
+}
