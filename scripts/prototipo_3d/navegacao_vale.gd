@@ -295,7 +295,14 @@ func _troncos_da_mata(fonte: NavigationMeshSourceGeometryData3D, area: AABB) -> 
 const MARGEM_DO_RIO := 0.3
 const ACIMA_DA_AGUA := 0.3
 
+const CORTAR_O_LEITO := false
+
+
 func _leito_dos_rios(fonte: NavigationMeshSourceGeometryData3D, area: AABB) -> void:
+	# Decisão de 06/10: atravessar o rio a pé vale. Com o rio grande fundo e a ponte caída, tirar o leito da malha
+	# deixava o Pedro sem caminho até a Dona Zefa no tutorial. O corte fica desligado; a função segue para quem o religar.
+	if not CORTAR_O_LEITO:
+		return
 	var regiao = _mundo.get("_region")
 	if regiao == null:
 		return

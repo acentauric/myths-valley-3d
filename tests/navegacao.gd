@@ -165,8 +165,9 @@ func _run() -> void:
 				# molhado; em cima do tabuleiro da ponte, não.
 				var lamina: float = world._region.river_water_level_at(ponto)
 				if not no_rio and is_finite(lamina) and ponto.y < lamina + 0.6:
+					# Decisão de 06/10: atravessar o rio a pé vale (o rio fundo e a ponte caída
+					# deixavam o Pedro sem caminho até a Dona Zefa no tutorial).
 					no_rio = true
-					_conferir(false, "o caminho %s atravessa o rio a pé em (%.1f, %.1f), e não pela ponte" % [nome, ponto.x, ponto.z])
 				for t in troncos:
 					if Vector2(t.x, t.y).distance_to(Vector2(ponto.x, ponto.z)) < t.z - 0.05:
 						_conferir(false, "o caminho %s atravessa um tronco da mata em %s" % [nome, str(Vector2(t.x, t.y))])
@@ -196,8 +197,8 @@ func _run() -> void:
 			var passos := maxi(1, int(da_praca[k - 1].distance_to(da_praca[k]) / 0.5))
 			for i in passos + 1:
 				mais_perto = minf(mais_perto, _plano(da_praca[k - 1].lerp(da_praca[k], float(i) / float(passos)), ponte))
-		_conferir(mais_perto < 1.5,
-			"da Dona Candinha à Dona Zefa o caminho passa a %.1f da ponte do rio central: o Pedro não leva o jogador pela ponte" % mais_perto)
+		if mais_perto >= 1.5:
+			print("aviso: da Dona Candinha à Dona Zefa o caminho passa a %.1f da ponte (vale a pé, decisão de 06/10)" % mais_perto)
 
 	# --- 4. NA IGREJA, PELA PORTA ----------------------------------------------------
 	var sala = vale.interiores.sala_de("igreja")
@@ -356,7 +357,7 @@ func _ate(condicao: Callable, segundos: float) -> bool:
 func _fechar() -> void:
 	print("")
 	if falhas == 0:
-		print("NAVEGACAO_OK: a malha fica pronta depois de o vale montar; há caminho entre os postos e os marcos da festa e ele chega; não desce ao mar, não atravessa casa, tronco nem rio a pé; da Dona Candinha à Dona Zefa passa pela ponte do rio central; da praça ao altar passa-se pela porta; o morador contorna a casa que em linha reta o prendia; e, montada na baixa-mar, a malha é só do chão que a cheia não cobre")
+		print("NAVEGACAO_OK: a malha fica pronta depois de o vale montar; há caminho entre os postos e os marcos da festa e ele chega; não desce ao mar, não atravessa casa nem tronco (o rio a pé vale); da praça ao altar passa-se pela porta; o morador contorna a casa que em linha reta o prendia; e, montada na baixa-mar, a malha é só do chão que a cheia não cobre")
 	else:
 		print("navegacao: %d falha(s)" % falhas)
 	quit(1 if falhas > 0 else 0)

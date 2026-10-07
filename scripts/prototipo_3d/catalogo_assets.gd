@@ -427,6 +427,7 @@ const TAMANHO_DA_CASA := 4.5
 const SEM_ALCANCE := {
 	"pier": "o primeiro que se vê da baía e o jogador anda nele: uma peça só",
 	"ponte": "o jogador anda nela e se vê da estrada: uma peça só",
+	"ponte_caida": "a ponte caída no rio, que a obra põe de pé: uma peça só, como a ponte",
 	"mirante": "torre aberta vista de todo o vale: uma peça só, e uma caixa não a imita",
 	"saveiro": "o barco da chegada: anda pela baía, e some no horizonte se for cortado",
 	"bote": "o barco do saveiro: anda pela baía",
