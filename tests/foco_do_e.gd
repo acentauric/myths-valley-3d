@@ -164,6 +164,13 @@ func _run() -> void:
 	_apertar_e()
 	await _quadros(3)
 	_conferir(inv.quantidade("beiju") == beijus, "com o foco no Tonho, o E comeu o beiju da mão")
+	# #49: o E pode oferecer o alimento como presente, sem consumi-lo antes
+	# de uma confirmação. Recusamos a pergunta para continuar a prova de foco.
+	var dialogo = root.get_node("/root/Dialogo")
+	if dialogo.ocupado():
+		dialogo.calar()
+		await _quadros(3)
+	_conferir(inv.quantidade("beiju") == beijus, "recusar o presente conserva o beiju")
 
 	# --- 6. O MORADOR QUE O PASSO PEDE VENCE O MAIS PERTO ------------------------------
 	# No píer o Pedro e o Tonho ficam a dois passos um do outro, e o Pedro segue o

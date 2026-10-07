@@ -4,9 +4,9 @@ extends RefCounted
 
 const TEXTOS := {
 	"Idioma": [
-		"Idioma dos textos do menu: botões, ajustes, histórico, mapa, créditos e a legenda da travessia.\n\nPor enquanto só o menu é traduzido. Ao entrar no vale, o jogo segue em português, e a narração falada da travessia continua em português em todos os idiomas.",
-		"Language of the menu texts: buttons, settings, changelog, map, credits and the crossing captions.\n\nFor now only the menu is translated. Inside the valley the game stays in Portuguese, and the spoken narration of the crossing remains in Portuguese in every language.",
-		"Idioma de los textos del menú: botones, ajustes, historial, mapa, créditos y los subtítulos de la travesía.\n\nPor ahora solo se traduce el menú. Dentro del valle el juego sigue en portugués, y la narración hablada de la travesía se mantiene en portugués en todos los idiomas.",
+		"O idioma escolhido acompanha o menu e a partida. Textos ainda sem tradução aparecem em português; o chinês usa inglês quando disponível. A narração falada continua em português.",
+		"Your language choice applies to the menu and the game. Texts awaiting translation appear in Portuguese; Chinese uses English when available. Spoken narration remains in Portuguese.",
+		"El idioma elegido se mantiene en el menú y en la partida. Los textos pendientes aparecen en portugués; el chino usa inglés cuando está disponible. La narración hablada sigue en portugués.",
 	],
 	"Cenário do menu": [
 		"O que a câmera faz atrás do menu.\n\nParado: vista fixa da vila.\nSobrevoo: a câmera passeia devagar sobre o vale, num ciclo de cerca de 36 segundos.\n\nA escolha fica salva para as próximas vezes.",

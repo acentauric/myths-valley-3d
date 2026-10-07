@@ -24,6 +24,8 @@ const DicaTecla = preload("res://scripts/prototipo_3d/dica_tecla.gd")
 const Atalhos = preload("res://scripts/prototipo_3d/atalhos.gd")
 const CadeiaDeMissoes = preload("res://scripts/prototipo_3d/cadeia_de_missoes.gd")
 const FocoDoE = preload("res://scripts/prototipo_3d/foco_do_e.gd")
+const IdiomaMenu = preload("res://scripts/prototipo_3d/idioma_menu.gd")
+const TEXTOS_SOCIAIS := "res://data/afinidade_interacao_3d.json"
 
 ## De quão perto se conversa, no chão.
 const ALCANCE := 2.8
@@ -44,6 +46,7 @@ var _livre: Callable
 var _dica: PanelContainer
 ## Quem está ao alcance agora, ou null.
 var _perto: Node3D = null
+var _perguntando_presente := false
 
 
 func configurar(jogador: Node3D, hud, quem_mora: Callable, livre: Callable) -> void:
@@ -223,7 +226,7 @@ func _unhandled_key_input(event: InputEvent) -> void:
 ## com ele — o pirão da Dona Filó levado ao Tonho —, e só depois abrir a fila
 ## dele, que de outro modo tomaria a conversa.
 func usar(morador: Node3D) -> void:
-	if morador == null:
+	if morador == null or _perguntando_presente:
 		return
 	_dica.visible = false
 	var cadeias := get_tree().get_nodes_in_group(CadeiaDeMissoes.GRUPO)
@@ -232,9 +235,79 @@ func usar(morador: Node3D) -> void:
 			continue
 		var faz := str(cadeia.o_que_o_e_faz(morador))
 		if (faz == "falar" or faz == "entregar") and cadeia.interagir(morador):
+			_registrar_conversa(morador)
 			return
 	for cadeia in cadeias:
 		if cadeia.has_method("interagir") and cadeia.interagir(morador):
+			_registrar_conversa(morador)
 			return
+	# Missões têm precedência. Na conversa comum, item de presente na mão pede
+	# confirmação; ferramenta/equipamento continua sendo instrumento de trabalho.
+	var id := _id_social(morador)
+	var item := Inventario.na_mao()
+	if id != "" and _item_de_presente(item):
+		if Afinidade.pode_presentear(id):
+			_oferecer_presente(morador, id, item)
+		else:
+			_resposta_social(morador, "ja_deu")
+		return
 	if morador.has_method("conversar"):
 		morador.conversar()
+		_registrar_conversa(morador)
+
+
+func _id_social(morador: Node3D) -> String:
+	var dados = morador.get("dados")
+	var id := str(dados.get("id", "")) if dados is Dictionary else ""
+	return id if Afinidade.MORADORES.has(id) else ""
+
+
+func _registrar_conversa(morador: Node3D) -> void:
+	var id := _id_social(morador)
+	if id == "" or (morador.has_method("eh_mudo") and bool(morador.eh_mudo())):
+		return
+	var podia := Afinidade.pode_conversar(id)
+	var ganhou := Afinidade.conversou(id)
+	# No teto, os pontos não mudam, mas o selo diário da tela P muda.
+	if podia and ganhou == 0:
+		Afinidade.mudou.emit(id)
+
+
+func _item_de_presente(item: String) -> bool:
+	return item != "" and Catalogo.existe(item) \
+		and Catalogo.tipo(item) not in ["ferramenta", "equipamento"]
+
+
+func _texto_social(chave: String) -> String:
+	return str(IdiomaMenu.campo(Jogo.dados(TEXTOS_SOCIAIS), chave, ""))
+
+
+func _resposta_social(morador: Node3D, chave: String) -> void:
+	if morador.has_method("mostrar_balao"):
+		morador.mostrar_balao(_texto_social(chave), 5.0)
+
+
+func _oferecer_presente(morador: Node3D, id: String, item: String) -> void:
+	_perguntando_presente = true
+	var nome_item := Jogo.texto(Catalogo.nome(item))
+	var pergunta := _texto_social("pergunta") % [nome_item, _nome_de(morador)]
+	var sim: bool = await Dialogo.perguntar(_nome_de(morador), pergunta)
+	_perguntando_presente = false
+	# Não consumir uma coisa diferente depois de sair, trocar a mão ou perder o
+	# destinatário enquanto a confirmação aguardava a vez.
+	if not is_instance_valid(morador) or not morador.is_inside_tree():
+		return
+	if not sim:
+		return
+	if Inventario.na_mao() != item or Inventario.quantidade(item) < 1:
+		_resposta_social(morador, "item_mudou")
+		return
+	if not Afinidade.pode_presentear(id):
+		_resposta_social(morador, "ja_deu")
+		return
+	var juizo := Afinidade.juizo(id, item)
+	var mudou := Afinidade.presentear(id, item)
+	if not Afinidade.pode_presentear(id):
+		if mudou == 0:
+			Afinidade.mudou.emit(id)
+		_resposta_social(morador, juizo)

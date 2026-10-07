@@ -78,7 +78,16 @@ sistema sugere a opção, sem substituir uma escolha salva nem pular a confirma�
 A versão e a build identificam a entrada abaixo do modal. A talha SVG também
 emoldura o menu Jogar/Explorar e os painéis internos por meio da identidade comum.
 Chinês tem seleção e etapas do carregamento traduzidas, com fallback inglês
-declarado. A tradução integral do vale permanece no escopo de #51 e #6.
+declarado. A engenharia da #51 mantém o idioma escolhido durante a partida;
+os textos ainda pendentes têm fontes declaradas no portão de idiomas e usam
+português como fallback. A tradução integral permanece na #6. O suporte
+pt/en/es segue a decisão do autor de setembro; o prazo antigo da jam não
+condiciona mais essa correção do desenvolvimento atual.
+
+A interação social da #49 registra a conversa uma vez por dia. Presentes
+da mão pedem confirmação e aplicam gosto/desgosto, refletidos na tela P;
+missões e ferramentas de trabalho mantêm prioridade. Portões dirigidos de
+afinidade, idiomas, seleção, foco do E e abertura passaram em 07/10/2026.
 
 - [Histórico de mudanças](CHANGELOG_3D.md).
 - [Etapas e decisões anteriores](HISTORICO_DESENVOLVIMENTO_3D.md).

@@ -1,0 +1,21 @@
+{
+  "observacao": "Interação social #49. Os moldes novos existem nos três idiomas; nomes de itens reutilizam Catalogo.nome/Jogo.texto, cuja tradução geral pertence à engenharia de idioma #51.",
+  "pergunta": "Dar 1 %s para %s?",
+  "pergunta_en": "Give 1 %s to %s?",
+  "pergunta_es": "¿Dar 1 %s a %s?",
+  "bom": "Gostei do presente! Muito obrigado.",
+  "bom_en": "I like this gift! Thank you very much.",
+  "bom_es": "¡Me gustó el regalo! Muchas gracias.",
+  "ruim": "Obrigado, mas não gosto muito disso.",
+  "ruim_en": "Thank you, but I don't really like this.",
+  "ruim_es": "Gracias, pero esto no me gusta mucho.",
+  "qualquer": "Obrigado pelo presente.",
+  "qualquer_en": "Thank you for the gift.",
+  "qualquer_es": "Gracias por el regalo.",
+  "ja_deu": "Já recebi seu presente hoje. Volte amanhã.",
+  "ja_deu_en": "You've already given me a gift today. Come back tomorrow.",
+  "ja_deu_es": "Ya recibí tu regalo hoy. Vuelve mañana.",
+  "item_mudou": "O presente já não está na sua mão.",
+  "item_mudou_en": "The gift is no longer in your hand.",
+  "item_mudou_es": "El regalo ya no está en tu mano."
+}

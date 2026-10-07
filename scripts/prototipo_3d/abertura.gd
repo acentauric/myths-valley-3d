@@ -1948,14 +1948,13 @@ func _start_game() -> void:
 	set_process(false)
 	# PULAR no meio de uma fala: ela some suave em vez de cortar.
 	Audio.encerrar_travessia(false)
-	# A tela de carregamento é montada ainda no idioma do menu; os textos já vêm
-	# traduzidos e não mudam quando o locale volta ao português do jogo.
+	# A tela de carregamento e a partida seguem o idioma escolhido no menu.
 	var loading := _show_loading()
 	Dia.pausado = false
 	Dia.definir_hora(Dia.hora_inicial)
 	# prototype.gd solta o relógio quando o vale fica pronto.
 	Dia.congelado_na_carga = true
-	IdiomaMenu.restaurar_jogo()
+	IdiomaMenu.aplicar_jogo()
 	TelaCarregamento.trocar_cena(get_tree(), GAME_SCENE, loading)
 
 

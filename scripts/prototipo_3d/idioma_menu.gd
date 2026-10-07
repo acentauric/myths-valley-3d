@@ -2,8 +2,8 @@ extends RefCounted
 ## Idioma do menu: português, inglês, espanhol ou chinês (parcial, fallback inglês).
 ## Usa o TranslationServer do Godot
 ## com as frases em português como chave, então Label, Button e OptionButton se
-## traduzem sozinhos; textos compostos passam por tr(). Só o menu muda de idioma —
-## ao entrar no vale o locale volta ao português e o jogo segue como está.
+## traduzem sozinhos; textos compostos passam por tr(). A escolha acompanha
+## a entrada no vale. Textos ainda pendentes usam o português como fallback.
 ## Dados usam *_en / *_es; chinês aceita *_zh e usa *_en onde faltar.
 
 const ARQUIVO := "user://preferencias_visuais.cfg"
@@ -942,7 +942,12 @@ static func aplicar_menu() -> void:
 	TranslationServer.set_locale(LOCALES[atual])
 
 
-## O jogo ainda não tem tradução: ao sair do menu, tudo volta ao português.
+## Aplica a mesma escolha à partida, mantendo as traduções de controles comuns.
+static func aplicar_jogo() -> void:
+	aplicar_menu()
+
+
+## Limpa a tradução anterior antes de registrar outra. Não é a entrada no vale.
 static func restaurar_jogo() -> void:
 	if _traducao != null and TranslationServer.has_translation(_traducao):
 		TranslationServer.remove_translation(_traducao)

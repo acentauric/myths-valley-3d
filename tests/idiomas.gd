@@ -33,6 +33,7 @@ var _pendentes := 0
 ## ARQUIVO → campos que o jogador lê. Só o que está aqui é cobrado; o que
 ## falta traduzir mora em `FALTAM_TRADUCAO`, embaixo.
 const TRADUZIDOS := {
+	"res://data/afinidade_interacao_3d.json": ["pergunta", "bom", "ruim", "qualquer", "ja_deu", "item_mudou"],
 	"res://data/galeria_personagens.json": ["indisponivel"],
 	"res://data/selecao_idioma.json": ["titulo", "descricao", "aviso"],
 	# A chegada (docs/mundo/CHEGADA_E_MUTIROES.md) nasceu nos três idiomas inteira:
@@ -106,6 +107,20 @@ const TAMBEM_EM_CHINES := ["res://data/npcs_3d.json", "res://data/sustos.json"]
 ## O QUE AINDA NÃO ESTÁ NOS TRÊS, e por quê. Esvaziar esta lista é o trabalho;
 ## deixá-la sem razão escrita é como ela vira lista de tudo.
 const FALTAM_TRADUCAO := {
+	# Divida de interfaces identificada por fonte, sem fingir traducao integral.
+	"res://scripts/prototipo_3d/painel_vale.gd": "#51/#6: textos compostos desta interface ainda precisam sair do GDScript para JSON pt/en/es; a escolha de idioma persiste e o texto sem traducao usa o original",
+	"res://scripts/prototipo_3d/prototype_hud.gd": "#51/#6: textos compostos desta interface ainda precisam sair do GDScript para JSON pt/en/es; a escolha de idioma persiste e o texto sem traducao usa o original",
+	"res://scripts/prototipo_3d/barra_de_mao.gd": "#51/#6: textos compostos desta interface ainda precisam sair do GDScript para JSON pt/en/es; a escolha de idioma persiste e o texto sem traducao usa o original",
+	"res://scripts/prototipo_3d/dialogo_vale.gd": "#51/#6: textos compostos desta interface ainda precisam sair do GDScript para JSON pt/en/es; a escolha de idioma persiste e o texto sem traducao usa o original",
+	"res://scripts/prototipo_3d/mapa_jogo.gd": "#51/#6: textos compostos desta interface ainda precisam sair do GDScript para JSON pt/en/es; a escolha de idioma persiste e o texto sem traducao usa o original",
+	"res://scripts/prototipo_3d/minimapa.gd": "#51/#6: textos compostos desta interface ainda precisam sair do GDScript para JSON pt/en/es; a escolha de idioma persiste e o texto sem traducao usa o original",
+	"res://scripts/prototipo_3d/teia_social.gd": "#51/#6: textos compostos desta interface ainda precisam sair do GDScript para JSON pt/en/es; a escolha de idioma persiste e o texto sem traducao usa o original",
+	"res://scripts/prototipo_3d/teia_talentos.gd": "#51/#6: textos compostos desta interface ainda precisam sair do GDScript para JSON pt/en/es; a escolha de idioma persiste e o texto sem traducao usa o original",
+	"res://scripts/prototipo_3d/painel_personagens.gd": "#51/#6: textos compostos desta interface ainda precisam sair do GDScript para JSON pt/en/es; a escolha de idioma persiste e o texto sem traducao usa o original",
+	"res://scripts/prototipo_3d/painel_ajustes.gd": "#51/#6: textos compostos desta interface ainda precisam sair do GDScript para JSON pt/en/es; a escolha de idioma persiste e o texto sem traducao usa o original",
+	"res://scripts/prototipo_3d/popups_do_mundo.gd": "#51/#6: textos compostos desta interface ainda precisam sair do GDScript para JSON pt/en/es; a escolha de idioma persiste e o texto sem traducao usa o original",
+	"res://scripts/prototipo_3d/dica_tecla.gd": "#51/#6: textos compostos desta interface ainda precisam sair do GDScript para JSON pt/en/es; a escolha de idioma persiste e o texto sem traducao usa o original",
+	"res://scripts/ui/mochila.gd": "#51/#6: rotulos e descricoes compostos da mochila ainda aguardam catalogo JSON pt/en/es; texto original permanece como fallback",
 	"res://data/arvores_3d.json":
 		"as fichas de árvore do painel; nome popular e nome científico, e o popular muda de região antes de mudar de língua",
 	"res://data/lapides_3d.json":

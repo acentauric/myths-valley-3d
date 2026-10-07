@@ -6,6 +6,19 @@ O teste passa a cobrar Candinha, Filo, Tonho, Zefa, arraial e recursos, incluind
 
 ## Em desenvolvimento — 07/10/2026 (experimento Jev)
 
+- **O E registra a conversa diária e permite presentes confirmados (#49).**
+  Conversas comuns e de missão aumentam a afinidade uma vez por dia. A missão
+  tem prioridade; alimentos e outros presentes na mão pedem Sim/Não, com
+  gosto/desgosto e atualização da tela P. Ferramentas não são oferecidas.
+  O teste novo falha nos comportamentos ausentes e agora passa; o foco do E
+  continua passando após recusar a nova pergunta de presente na prova.
+
+- **O idioma escolhido acompanha a partida (#51).** A entrada mantém o locale
+  e as traduções de controles comuns. A ajuda informa o fallback português e
+  o fallback inglês para chinês. As fontes das interfaces ainda não migradas
+  estão declaradas em `FALTAM_TRADUCAO`; tradução integral continua na #6.
+  Seleção nos quatro idiomas, abertura e retorno passam nos testes.
+
 - **A regra de arte nova segue a decisão Tripo (#46).** O `AGENTS.md`, o plano
   e a composição autoral deixam de exigir um construtor procedural novo por
   asset. O legado funcional continua protegido; os critérios das cinco issues
