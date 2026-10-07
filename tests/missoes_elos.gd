@@ -75,6 +75,13 @@ func _run() -> void:
 	for i in range(8):
 		await process_frame
 	vale = current_scene
+	# Este portão cobre todas as filas e horários, não só o elenco inicial.
+	while vale.apresentacao_do_povoado == null:
+		await process_frame
+	vale.apresentacao_do_povoado.liberar_todos()
+	# O comprador sazonal só conversa na visita. Não o torne visível fora dela
+	# por ir_ao_posto_agora: aparência não desfaz PROCESS_MODE_DISABLED.
+	root.get_node("Relogio").dia = vale.saveiro.dia
 	relogio = RelogioDeJogo.new()
 	root.add_child(relogio)
 	relogio.ficar_lento()
@@ -213,6 +220,8 @@ func _todos_os_moradores() -> Array:
 	var todos: Array = [vale.pedro]
 	for morador in vale.moradores:
 		if morador != vale.pedro:
+			if str(morador.dados.get("id", "")) == "quirino" and not vale.saveiro._no_dia_e_na_hora():
+				continue
 			todos.append(morador)
 	return todos
 
@@ -469,6 +478,17 @@ func _donos_do_e_e_caminhos() -> void:
 
 ## O E no ponto onde o jogador chega ao `quem`, com este passo aberto: devolve "" se tudo bem, ou a queixa.
 func _o_e_neste_passo(cadeia, indice: int, meta: Dictionary, quem, jogador, tecla, inventario, e_o_tutorial: bool) -> String:
+	# A pergunta é a seleção da conversa depois de ler, não a duração da voz.
+	# Mudar o passo à mão disparava narrações novas durante os três quadros de
+	# consulta. Preserve o elenco e as filas; os outros portões jogam a fala.
+	var pausados: Array = []
+	for morador in _todos_os_moradores():
+		morador._calar_a_boca()
+		pausados.append([morador, morador.is_physics_processing(), true])
+		morador.set_physics_process(false)
+	for fila in get_nodes_in_group("cadeias_de_missoes"):
+		pausados.append([fila, fila.is_processing(), false])
+		fila.set_process(false)
 	var guardado := {"iniciado": cadeia.iniciado, "missao": cadeia.missao, "espera": cadeia.espera}
 	# O TUTORIAL JÁ ACABOU quando as outras filas pedem alguém (ele abre sozinho quando o jogador
 	# chega perto do Pedro, e o passo dele "fale com o Pedro" tomaria o E dele).
@@ -515,6 +535,14 @@ func _o_e_neste_passo(cadeia, indice: int, meta: Dictionary, quem, jogador, tecl
 		var o_que: String = cadeia.o_que_o_e_faz(quem)
 		var dono = jogada.dono_do_e()
 		var perto = tecla.perto()
+		if str(meta.get("a_quem", "")) == "tonho" and absf(float(root.get_node("Dia").hora) - 17.5) < 0.01:
+			var foco = get_first_node_in_group("foco_do_e")
+			for fonte in get_nodes_in_group("fontes_do_e"):
+				var oferta: Dictionary = fonte.alvo_do_e()
+				if not oferta.is_empty():
+					print("TONHO_17H30: %s conta=%.2f dono=%s perto=%s" % [fonte.name,
+						foco.conta_do_alvo(oferta, jogador.global_position, foco._frente()),
+						jogada.nome_de(dono), jogada.nome_de(perto)])
 		if o_que != "falar" and o_que != "entregar":
 			queixa = "a fila não diz que o E faz '%s' com %s (diz '%s')" % [meta.get("tipo", ""), jogada.nome_de(quem), o_que]
 		elif dono != tecla:
@@ -540,6 +568,11 @@ func _o_e_neste_passo(cadeia, indice: int, meta: Dictionary, quem, jogador, tecl
 	cadeia.missao = int(guardado["missao"])
 	cadeia.espera = float(guardado["espera"])
 	vale.pedro.global_position = posto_do_pedro
+	for estado in pausados:
+		if estado[2]:
+			estado[0].set_physics_process(bool(estado[1]))
+		else:
+			estado[0].set_process(bool(estado[1]))
 	return queixa
 
 

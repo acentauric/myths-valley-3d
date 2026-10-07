@@ -6,6 +6,14 @@ O teste passa a cobrar Candinha, Filo, Tonho, Zefa, arraial e recursos, incluind
 
 ## Em desenvolvimento — 07/10/2026 (experimento Jev)
 
+- #128: o E da conversa usa o alvo atual, sem depender de `_perto` do último
+  `_process`. `conversa_no_mesmo_quadro` passa antes do primeiro desenho e
+  depois de o alvo sair do alcance; `--alvo-atrasado` reprova. `missoes_elos`
+  passa sozinho (57 s) e com a regressão em paralelo (75 s), nas cinco horas.
+  A preparação libera o elenco, respeita a visita sazonal e interrompe falas
+  artificiais disparadas pela troca de passos. No Bar, conversa 0 versus
+  Achados 4,33; o erro era o cache do alvo, não discordância do foco.
+
 - **Docs: o guia acompanha o jogo atual (#72).** Abertura, save, mapa,
   idiomas, rig, gestos, lavoura, espólio e comentários de interface revistos.
   Custos e decisões antigos permanecem identificados como históricos;

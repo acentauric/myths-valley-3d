@@ -5,6 +5,13 @@ raiz. O jogo 2D segue sua própria linha em `acentauric/myths-valley`.
 
 ## O que já roda
 
+A #128 está concluída (07/10/2026): conversar consulta o morador ao alcance
+no mesmo quadro em que o foco escolhe o dono do E, inclusive antes de desenhar
+a dica. As 22 filas e 85 passos passaram nas cinco horas, isoladamente e em
+paralelo. O teste respeita o dia/horário de Quirino e a apresentação gradual.
+No Bar às 17h30, a conversa vence Achados (contas 0 e 4,33); bancada e venda
+não oferecem ação naquele ponto. A regressão reprova com o alvo atrasado.
+
 A revisão documental #72 acompanha o estado de 07/10/2026 em
 [BOARD_2026-10-07.md](BOARD_2026-10-07.md), incluindo as issues posteriores
 ao plano original. O [registro da revisão](REVISAO_DOCUMENTAL_72.md)

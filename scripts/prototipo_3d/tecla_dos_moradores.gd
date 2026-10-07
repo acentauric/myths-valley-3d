@@ -59,7 +59,9 @@ func configurar(jogador: Node3D, hud, quem_mora: Callable, livre: Callable) -> v
 
 ## Quem leva o E da conversa agora, ou null: ao alcance E com o foco.
 func perto() -> Node3D:
-	return _perto
+	# Input e consultas podem chegar antes do nosso _process neste quadro.
+	# O dono do E já foi escolhido pelo foco; não use o alvo desenhado ontem.
+	return _ao_alcance() if FocoDoE.e_dele(self) else null
 
 
 ## O QUE O E FARIA AQUI, para o foco (`foco_do_e.gd`): conversar com quem está
@@ -95,9 +97,7 @@ func _ao_alcance() -> Node3D:
 func _process(_delta: float) -> void:
 	if _jogador == null or _dica == null:
 		return
-	_perto = _ao_alcance()
-	if _perto != null and not FocoDoE.e_dele(self):
-		_perto = null
+	_perto = perto()
 	if _perto == null:
 		_dica.visible = false
 		return
@@ -212,15 +212,16 @@ func _nome_de(morador: Node3D) -> String:
 
 
 func _unhandled_key_input(event: InputEvent) -> void:
-	if _perto == null:
-		return
 	if not (event is InputEventKey and event.pressed and not event.echo \
 			and event.physical_keycode == Atalhos.tecla("interagir")):
+		return
+	var morador := perto()
+	if morador == null:
 		return
 	if Dialogo.ocupado() or not _jogador.is_physics_processing() or not FocoDoE.e_dele(self):
 		return
 	get_viewport().set_input_as_handled()
-	usar(_perto)
+	usar(morador)
 
 
 ## Conversa com `morador`: a primeira fila que usar a conversa a leva; nenhuma
