@@ -345,6 +345,12 @@ func _confirmar() -> void:
 			var pratos := Cozinha.receitas()
 			if _cursor >= pratos.size():
 				return
+			# SEM FOGO NÃO SE COZINHA (07/10): a fogueira pede lenha a cada tantos pratos.
+			var vale_da_fogueira = get_tree().current_scene
+			if vale_da_fogueira != null and vale_da_fogueira.has_method("fogueira_acesa") and not bool(vale_da_fogueira.fogueira_acesa()):
+				Audio.efeito("ui_trava")
+				_dica.text = str(vale_da_fogueira.texto_da_fogueira("apagou"))
+				return
 			if not Cozinha.cozinhar(str(pratos[_cursor])):
 				return
 		Aba.VENDA:
@@ -742,7 +748,15 @@ func _quantas_faltam(todas: Array) -> String:
 
 
 func _desenhar_cozinha() -> void:
-	_titulo.text = "Fogão      %s %d/%d" % [Energia.nome_recurso(), int(Energia.atual), int(Energia.maximo())]
+	# O FOGO DA FOGUEIRA no título (07/10): para quantos pratos ainda dá.
+	var vale_da_fogueira = get_tree().current_scene
+	var fogo := -1
+	if vale_da_fogueira != null and vale_da_fogueira.has_method("pratos_no_fogo"):
+		fogo = int(vale_da_fogueira.pratos_no_fogo())
+	var do_fogo := "" if fogo < 0 else ("   ·   " + (str(vale_da_fogueira.texto_da_fogueira("fogo_para")) % fogo if fogo > 0 else str(vale_da_fogueira.texto_da_fogueira("apagada"))))
+	_titulo.text = "Fogão%s      %s %d/%d" % [do_fogo, Energia.nome_recurso(), int(Energia.atual), int(Energia.maximo())]
+	if fogo == 0:
+		_adicionar_linha(str(vale_da_fogueira.texto_da_fogueira("apagou")), COR_APAGADA)
 	var pratos := Cozinha.receitas()
 	if pratos.is_empty():
 		_adicionar_linha("Você ainda não sabe cozinhar nada.", COR_APAGADA)

@@ -14,6 +14,9 @@ extends SceneTree
 ##      está apagada; às 22 h emitem, e a luz acende.
 ##   3. A CHAMA FICA EM CIMA DAS TORAS: nasce acima do chão da fogueira e abaixo
 ##      da altura de um corpo.
+##   4. A LENHA DA FOGUEIRA (07/10): o fogo dá para três pratos; o quarto não sai
+##      sem lenha; uma lenha posta pelo E na fogueira (com ela na mão) devolve três,
+##      até o teto; e o fogo vai no save.
 
 var falhas := 0
 
@@ -78,6 +81,60 @@ func _run() -> void:
 		var acima := chama.global_position.y - pe.y
 		_conferir(acima > 0.15 and acima < 1.0, "a chama nasce a %.2f u do chão da fogueira" % acima)
 		_conferir(Vector2(chama.global_position.x - pe.x, chama.global_position.z - pe.z).length() < 0.3, "a chama não está em cima da fogueira")
+
+	# --- 4. A LENHA DA FOGUEIRA (07/10) ----------------------------------------------
+	var inv = root.get_node("/root/Inventario")
+	var cozinha = root.get_node("/root/Cozinha")
+	var receitas = root.get_node("/root/Receitas")
+	var energia = root.get_node("/root/Energia")
+	var tecla = vale.get("tecla_das_bancadas")
+	_conferir(vale.fogueira_acesa() and int(vale.pratos_no_fogo()) == int(vale.PRATOS_POR_LENHA), "a fogueira não começa com fogo para três pratos (%d)" % int(vale.pratos_no_fogo()))
+	receitas.aprender("peixe_assado")
+	inv.adicionar("peixe", 6)
+	inv.adicionar("lenha", 8)
+	for i in int(vale.PRATOS_POR_LENHA):
+		energia.encher()
+		_conferir(cozinha.cozinhar("peixe_assado"), "o prato %d não saiu com fogo na fogueira" % (i + 1))
+		await _quadros(1)
+	_conferir(not vale.fogueira_acesa(), "três pratos não apagaram a fogueira (fogo %d)" % int(vale.pratos_no_fogo()))
+	# O PAINEL NÃO COZINHA SEM FOGO: o E na linha do prato recusa e explica.
+	var painel = vale.get("painel")
+	if painel != null:
+		vale.abrir_o_painel(painel.Aba.COZINHA)
+		await _quadros(2)
+		var peixes: int = inv.quantidade("peixe")
+		painel._cursor = 0
+		painel._confirmar()
+		await _quadros(2)
+		_conferir(inv.quantidade("peixe") == peixes, "o painel cozinhou com a fogueira apagada")
+		_conferir(str(painel._dica.text).contains("lenha"), "com a fogueira apagada o painel não pediu lenha ('%s')" % str(painel._dica.text))
+		painel.fechar()
+		await _quadros(2)
+	# A LENHA NA MÃO, O E NA FOGUEIRA: alimenta, e o fogão não abre.
+	var jogador = vale.player
+	for i in inv.ESPACOS_MAO:
+		if str((inv.espacos[i] as Dictionary).get("id", "")) == "lenha":
+			inv.selecionar(i)
+	_conferir(inv.na_mao() == "lenha", "não consegui pôr a lenha na mão")
+	var lenhas: int = inv.quantidade("lenha")
+	jogador.teleportar(pe + Vector3(1.2, 0.1, 0.0), -PI * 0.5)
+	await _quadros(3)
+	_conferir(str(tecla._rotulo("cozinha")).to_lower().contains("lenha"), "com a lenha na mão a dica da fogueira não diz que põe lenha ('%s')" % str(tecla._rotulo("cozinha")))
+	tecla.usar("cozinha")
+	await _quadros(2)
+	_conferir(int(vale.pratos_no_fogo()) == int(vale.PRATOS_POR_LENHA) and inv.quantidade("lenha") == lenhas - 1, "o E com a lenha na mão não alimentou a fogueira (fogo %d, lenha %d→%d)" % [int(vale.pratos_no_fogo()), lenhas, inv.quantidade("lenha")])
+	_conferir(painel == null or not bool(painel.get("aberto")), "o E com a lenha na mão abriu o fogão em vez de pôr a lenha")
+	tecla.usar("cozinha")
+	tecla.usar("cozinha")
+	await _quadros(2)
+	_conferir(int(vale.pratos_no_fogo()) == int(vale.FOGO_MAXIMO), "três lenhas não encheram a fogueira até o teto (%d)" % int(vale.pratos_no_fogo()))
+	var antes_do_teto: int = inv.quantidade("lenha")
+	tecla.usar("cozinha")
+	await _quadros(2)
+	_conferir(inv.quantidade("lenha") == antes_do_teto, "a fogueira cheia engoliu mais lenha")
+	inv.selecionar(inv.MAO_LIVRE)
+	var estado: Dictionary = vale.estado_para_salvar()
+	_conferir(int(estado.get("fogueira", -1)) == int(vale.FOGO_MAXIMO), "o save não leva o fogo da fogueira: %s" % str(estado.get("fogueira")))
 	_fechar()
 
 

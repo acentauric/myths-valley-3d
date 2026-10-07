@@ -13,6 +13,15 @@
   anuncia na despedida — antes nenhuma missão abria. E o relógio não fica preso: a
   festa segura com prazo e solta quando se recolhe, e um motivo sem prazo que dure
   mais de 150 s se solta sozinho, avisando no console.
+- **Playtest de 07/10, quinta fatia: a fogueira e as pedras.** A fogueira do terreiro
+  guarda fogo para três pratos; cada prato gasta um, e o E nela com a lenha na mão
+  devolve três, até nove — a aba do fogão diz quando apagou, e os recados moram em
+  `data/fogueira.json`, nos três idiomas. Quarenta pedras soltas nascem espalhadas
+  pelo vale, com semente, longe das ruas, das casas e dos lugares da vila. As pedras
+  grandes (os lajedos, as rochas e os matacões) deixam de ser cenário e viram alvo
+  de dias: pedem a picareta de aço e o talento Mão de pedra, rendem duas pedras a
+  cada quatro golpes, e a dica conta o trabalho ("Lajedo 12/96"). As árvores já
+  seguiam a regra (madeira branca, de lei e dura, com nível e aço).
 - **Playtest de 07/10, quarta fatia: a vila e as cercas.** A travessia do rio
   central volta à ponte grande de 26/09 (`ponte_grande`, o modelo de então
   recuperado); o rio grande fica com a ponte pequena de pé e a caída da obra. As

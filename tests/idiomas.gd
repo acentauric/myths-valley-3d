@@ -72,6 +72,8 @@ const TRADUZIDOS := {
 	"res://data/interiores_casas.json": ["nome"],
 	# E a lavoura (#8): o que a tecla diz no leito e os recados do gesto.
 	"res://data/lavoura.json": ["texto"],
+	# A lenha da fogueira (07/10): a dica do E, os recados do HUD e a aba do fogão.
+	"res://data/fogueira.json": ["texto"],
 	"res://data/quintal.json": ["texto"],
 	# A missão do cemitério: os três passos do 2D declaram a pendência um a um,
 	# e o mato, o conserto, o cercado e o arremate nasceram nos três idiomas.

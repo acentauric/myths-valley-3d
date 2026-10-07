@@ -131,7 +131,10 @@ var _perto := ""
 var _postos: Dictionary = {}
 ## Os ids dos alvos que já caíram nesta partida, para o save. Ver `caidos`.
 var _caidos: Array[String] = []
-## As pedras grandes: cenário, com corpo e sem E. id → {"no", "corpos", "ficha", "rebaixada"}.
+## A partir de quantos golpes a dica conta o trabalho ("Lajedo 12/96").
+const GOLPES_DE_TRABALHO_LONGO := 8
+## As pedras grandes de cenário (hoje só a ficha que o motor rebaixa por falta de razão):
+## id → {"no", "corpos", "ficha", "rebaixada"}.
 var _fixas: Dictionary = {}
 ## As fichas que rendem pedra, são grandes e não têm razão escrita: o motor as pôs de
 ## cenário, com aviso. Fica vazio quando os dados estão em ordem (`tests/pedras.gd`).
@@ -193,64 +196,178 @@ func _erguer() -> void:
 		var pos := base + Vector3(float(desvio[0]), 0.0, float(desvio[1]))
 		pos = _world.ground_position(pos)
 
-		var id := str(ficha.get("id", ""))
-		# "giro" (graus) vira a peça no chão: três troncos caídos não caem paralelos.
-		var giro := deg_to_rad(float(ficha.get("giro", 0.0)))
-		var no := CatalogoAssets.instanciar(str(ficha.get("peca", "")), _world, pos,
-			float(ficha.get("tamanho", 1.0)), giro)
-		if no == null:
-			continue
+		_erguer_alvo(ficha, pos)
 
-		# PEDRA GRANDE NÃO É ALVO. A ficha que rende pedra só vira alvo se o desenho cabe
-		# na mão (`pedra_pequena`) ou se traz a razão escrita (`grande_de_proposito`, a
-		# lapa da missão). Sem uma coisa nem outra o motor a põe de cenário e avisa: o
-		# dado errado não pode voltar a pôr um lajedo de seis metros diante do poço.
-		var limites_do_no: AABB = no.get_meta("limites", AABB())
-		if str(ficha.get("rende", "")) == "pedra" and str(ficha.get("grande_de_proposito", "")) == "" \
-				and not pedra_pequena(limites_do_no):
-			push_warning("Recursos: '%s' rende pedra e mede %.1f x %.1f x %.1f u: grande demais para quebrar, fica de cenário." % [id, limites_do_no.size.x, limites_do_no.size.y, limites_do_no.size.z])
-			rebaixados.append(id)
-			_fixas[id] = {"no": no, "corpos": _por_a_colisao(str(ficha.get("peca", "")), no, pos, float(ficha.get("tamanho", 1.0)), giro),
-				"ficha": ficha, "rebaixada": true}
-			continue
-
-		# A COLISÃO É UM NÓ SEPARADO, e é preciso guardá-la.
-		#
-		# `CatalogoAssets.colisao` não põe a forma dentro da peça: ela cria um
-		# `StaticBody3D` irmão, filho do mundo. Faz sentido para cenário, que
-		# nunca sai — mas alvo de trabalho SAI, e a primeira versão disto
-		# liberava só o visual. O tronco desaparecia e continuava barrando o
-		# caminho: colisão invisível no meio do roçado, que foi a queixa.
-		#
-		# Quais filhos do mundo nasceram desta chamada só se sabe olhando antes
-		# e depois — então é o que se faz.
-		var corpos := _por_a_colisao(str(ficha.get("peca", "")), no, pos, float(ficha.get("tamanho", 1.0)), giro)
-
-		# A MEIA-PEGADA: o quanto este alvo empurra o jogador para longe do
-		# próprio centro. É o que o alcance do golpe soma, para "encoste e
-		# aperte E" valer em peça de qualquer tamanho. Ver `_mais_perto`.
-		var meia := 0.0
-		for corpo in corpos:
-			for forma_no in (corpo as Node).get_children():
-				if not (forma_no is CollisionShape3D):
-					continue
-				var forma = (forma_no as CollisionShape3D).shape
-				if forma is BoxShape3D:
-					var caixa := (forma as BoxShape3D).size
-					meia = maxf(meia, maxf(caixa.x, caixa.z) * 0.5)
-				elif forma is CylinderShape3D:
-					meia = maxf(meia, (forma as CylinderShape3D).radius)
-
-		var peca := str(ficha.get("peca", ""))
-		_postos[peca] = int(_postos.get(peca, 0)) + 1
-		var grupo := str(ficha.get("grupo", ""))
-		if grupo != "":
-			_postos[grupo] = int(_postos.get(grupo, 0)) + 1
-		_alvos[id] = {"no": no, "pos": pos, "ficha": ficha, "golpes_dados": 0,
-			"corpos": corpos, "meia_pegada": meia}
+	# AS PEDRAS ESPALHADAS pelo vale (07/10), sorteadas com semente: ver `_espalhar`.
+	_espalhar(dado.get("espalhadas", []))
 
 	# AS PEDRAS GRANDES, de cenário: o desenho e o corpo de sempre, sem ser alvo.
 	_erguer_as_fixas(dado.get("fixas", []))
+
+
+## UM ALVO NO MUNDO, no ponto dado: a peça do catálogo, a colisão e a ficha em `_alvos`.
+## É o corpo do laço de `_erguer`, para as pedras espalhadas (`_espalhar`) nascerem pelo
+## mesmo caminho.
+func _erguer_alvo(ficha: Dictionary, pos: Vector3) -> void:
+	var id := str(ficha.get("id", ""))
+	# "giro" (graus) vira a peça no chão: três troncos caídos não caem paralelos.
+	var giro := deg_to_rad(float(ficha.get("giro", 0.0)))
+	var no := CatalogoAssets.instanciar(str(ficha.get("peca", "")), _world, pos,
+		float(ficha.get("tamanho", 1.0)), giro)
+	if no == null:
+		return
+
+	# PEDRA GRANDE NÃO É ALVO. A ficha que rende pedra só vira alvo se o desenho cabe
+	# na mão (`pedra_pequena`) ou se traz a razão escrita (`grande_de_proposito`, a
+	# lapa da missão). Sem uma coisa nem outra o motor a põe de cenário e avisa: o
+	# dado errado não pode voltar a pôr um lajedo de seis metros diante do poço.
+	var limites_do_no: AABB = no.get_meta("limites", AABB())
+	if str(ficha.get("rende", "")) == "pedra" and str(ficha.get("grande_de_proposito", "")) == "" \
+			and not pedra_pequena(limites_do_no):
+		push_warning("Recursos: '%s' rende pedra e mede %.1f x %.1f x %.1f u: grande demais para quebrar, fica de cenário." % [id, limites_do_no.size.x, limites_do_no.size.y, limites_do_no.size.z])
+		rebaixados.append(id)
+		_fixas[id] = {"no": no, "corpos": _por_a_colisao(str(ficha.get("peca", "")), no, pos, float(ficha.get("tamanho", 1.0)), giro),
+			"ficha": ficha, "rebaixada": true}
+		return
+
+	# A COLISÃO É UM NÓ SEPARADO, e é preciso guardá-la.
+	#
+	# `CatalogoAssets.colisao` não põe a forma dentro da peça: ela cria um
+	# `StaticBody3D` irmão, filho do mundo. Faz sentido para cenário, que
+	# nunca sai — mas alvo de trabalho SAI, e a primeira versão disto
+	# liberava só o visual. O tronco desaparecia e continuava barrando o
+	# caminho: colisão invisível no meio do roçado, que foi a queixa.
+	#
+	# Quais filhos do mundo nasceram desta chamada só se sabe olhando antes
+	# e depois — então é o que se faz.
+	var corpos := _por_a_colisao(str(ficha.get("peca", "")), no, pos, float(ficha.get("tamanho", 1.0)), giro)
+
+	# A MEIA-PEGADA: o quanto este alvo empurra o jogador para longe do
+	# próprio centro. É o que o alcance do golpe soma, para "encoste e
+	# aperte E" valer em peça de qualquer tamanho. Ver `_mais_perto`.
+	var meia := 0.0
+	for corpo in corpos:
+		for forma_no in (corpo as Node).get_children():
+			if not (forma_no is CollisionShape3D):
+				continue
+			var forma = (forma_no as CollisionShape3D).shape
+			if forma is BoxShape3D:
+				var caixa := (forma as BoxShape3D).size
+				meia = maxf(meia, maxf(caixa.x, caixa.z) * 0.5)
+			elif forma is CylinderShape3D:
+				meia = maxf(meia, (forma as CylinderShape3D).radius)
+
+	var peca := str(ficha.get("peca", ""))
+	_postos[peca] = int(_postos.get(peca, 0)) + 1
+	var grupo := str(ficha.get("grupo", ""))
+	if grupo != "":
+		_postos[grupo] = int(_postos.get(grupo, 0)) + 1
+	_alvos[id] = {"no": no, "pos": pos, "ficha": ficha, "golpes_dados": 0,
+		"corpos": corpos, "meia_pegada": meia}
+
+
+## AS PEDRAS ESPALHADAS PELO VALE (playtest de 07/10: "espalhe mais pedras pelo mapa, de
+## forma que tenha harmonia, logo não deve ter nas estradas e nem em pontos importantes
+## da vila"). Cada entrada de `espalhadas` sorteia `quantas` pedras soltas com uma
+## semente fixa — as mesmas a cada partida, que é o que o save dos caídos precisa — em
+## terra firme, fora da mata fechada e da água, longe das ruas, das âncoras (a praça, as
+## casas, o poço, a lavoura, a fazenda…), dos lotes, dos outros alvos e de qualquer corpo
+## de pé. Cada uma é um alvo como os da ficha, com o id numerado.
+const ESPALHADAS_TENTATIVAS_POR_PEDRA := 80
+const ESPALHADAS_VAO := Vector3(2.4, 1.2, 2.4)
+
+
+func _espalhar(lista: Array) -> void:
+	var regiao = _world.get("_region")
+	if regiao == null or lista.is_empty():
+		return
+	var terra: PackedVector2Array = regiao._land
+	if terra.size() < 3:
+		return
+	var caixa := Rect2(terra[0], Vector2.ZERO)
+	for v in terra:
+		caixa = caixa.expand(v)
+	for spec: Dictionary in lista:
+		var rng := RandomNumberGenerator.new()
+		rng.seed = int(spec.get("semente", 1))
+		var quantas := int(spec.get("quantas", 0))
+		var longe_da_rua := float(spec.get("longe_da_rua", 7.0))
+		var longe_das_ancoras := float(spec.get("longe_das_ancoras", 10.0))
+		var longe_dos_outros := float(spec.get("longe_de_outros", 4.0))
+		var tamanhos: Array = spec.get("tamanho", [0.3, 0.3]) if spec.get("tamanho") is Array else [float(spec.get("tamanho", 0.3)), float(spec.get("tamanho", 0.3))]
+		var postas := 0
+		var tentativas := 0
+		while postas < quantas and tentativas < quantas * ESPALHADAS_TENTATIVAS_POR_PEDRA:
+			tentativas += 1
+			var p := Vector3(rng.randf_range(caixa.position.x, caixa.end.x), 0.0, rng.randf_range(caixa.position.y, caixa.end.y))
+			var tamanho := rng.randf_range(float(tamanhos[0]), float(tamanhos[tamanhos.size() - 1]))
+			var giro := rng.randf_range(0.0, 360.0)
+			if not _world.is_on_land(p) or _world.na_mata_fechada(p):
+				continue
+			var chao: Vector3 = _world.ground_position(p)
+			if chao.y < _world.water_level_at(p) + 0.6:
+				continue
+			if regiao._distancia_da_rua(Vector2(p.x, p.z)) < longe_da_rua:
+				continue
+			if _perto_de_algo(chao, longe_das_ancoras, longe_dos_outros) or not _vao_livre(chao):
+				continue
+			var ficha: Dictionary = spec.duplicate(true)
+			for chave in ["quantas", "semente", "longe_da_rua", "longe_das_ancoras", "longe_de_outros"]:
+				ficha.erase(chave)
+			ficha["id"] = "%s_%02d" % [str(spec.get("id", "pedra_espalhada")), postas + 1]
+			ficha["tamanho"] = tamanho
+			ficha["giro"] = giro
+			_erguer_alvo(ficha, chao)
+			postas += 1
+		if postas < quantas:
+			push_warning("Recursos: só %d de %d '%s' couberam no vale (%d tentativas)." % [postas, quantas, str(spec.get("id", "")), tentativas])
+
+
+## Perto demais de uma âncora (as da frente e do rumo não contam: são direções), de um
+## lote ou de outro alvo?
+func _perto_de_algo(p: Vector3, das_ancoras: float, dos_outros: float) -> bool:
+	for nome in _world.ancoras:
+		var chave := String(nome)
+		if chave.ends_with("Frente") or chave.ends_with("Direcao") or chave.ends_with("Lado"):
+			continue
+		var a = _world.ancoras[nome]
+		if a is Vector3 and Vector2((a as Vector3).x - p.x, (a as Vector3).z - p.z).length() < das_ancoras:
+			return true
+	var lotes = _world.get("_lotes")
+	if lotes is Dictionary:
+		for nome in lotes:
+			var lote: Dictionary = lotes[nome]
+			var onde = lote.get("pos", Vector3.INF)
+			if onde is Vector3 and Vector2((onde as Vector3).x - p.x, (onde as Vector3).z - p.z).length() < das_ancoras:
+				return true
+	for id in _alvos:
+		var q: Vector3 = _alvos[id]["pos"]
+		if Vector2(q.x - p.x, q.z - p.z).length() < dos_outros:
+			return true
+	for id in _fixas:
+		var q: Vector3 = (_fixas[id]["no"] as Node3D).global_position
+		if Vector2(q.x - p.x, q.z - p.z).length() < dos_outros:
+			return true
+	return false
+
+
+## Nada de pé no vão da pedra: uma caixa acima do chão, que não toca o terreno.
+func _vao_livre(ponto: Vector3) -> bool:
+	if not is_inside_tree() or not (_world is Node3D):
+		return true
+	var espaco: PhysicsDirectSpaceState3D = (_world as Node3D).get_world_3d().direct_space_state
+	if espaco == null:
+		return true
+	var forma := BoxShape3D.new()
+	forma.size = ESPALHADAS_VAO
+	var pedido := PhysicsShapeQueryParameters3D.new()
+	pedido.shape = forma
+	pedido.transform = Transform3D(Basis.IDENTITY, ponto + Vector3.UP * (0.5 + ESPALHADAS_VAO.y * 0.5))
+	pedido.collision_mask = 0xFFFFFFFF
+	pedido.collide_with_areas = false
+	if _jogador is CollisionObject3D:
+		pedido.exclude = [(_jogador as CollisionObject3D).get_rid()]
+	return espaco.intersect_shape(pedido, 4).is_empty()
 
 
 ## A seção "fixas" do JSON: as pedras grandes, de cenário. O mesmo lugar, o mesmo
@@ -315,9 +432,14 @@ func _process(_delta: float) -> void:
 	# A dica diz o nome do alvo E o que falta para bater nele — a ferramenta
 	# que não está na mochila, ou o fôlego que acabou. Dica que só diz "E ·
 	# bater" manda o jogador apertar uma tecla que não vai fazer nada.
+	# A CONTA DO TRABALHO LONGO (07/10): a pedra grande diz os golpes dados e os que
+	# faltam — "quanto maior a pedra, maior o marcador".
+	var nome_na_dica := str(IdiomaMenu.campo(ficha, "nome"))
+	if int(ficha.get("golpes", 3)) >= GOLPES_DE_TRABALHO_LONGO:
+		nome_na_dica = "%s %d/%d" % [nome_na_dica, int(alvo["golpes_dados"]), int(ficha.get("golpes", 3))]
 	DicaTecla.mostrar_em(_dica, get_viewport().get_camera_3d(),
 		alvo["pos"] + Vector3(0.0, ALTURA_DICA, 0.0),
-		"%s · %s" % [str(IdiomaMenu.campo(ficha, "nome")), _o_que_falta(ficha)])
+		"%s · %s" % [nome_na_dica, _o_que_falta(ficha)])
 
 
 ## O alvo ao alcance, ou "" — o mais perto quando há mais de um.
@@ -600,6 +722,15 @@ func _aplicar_golpe(id: String) -> void:
 	# tabela só (`SONS_DO_GOLPE`, `SONS_DO_ULTIMO`), e a queda entra depois do golpe.
 	_tocar_o_golpe(ficha, faltam <= 0)
 	if faltam > 0:
+		# A PEDRA GRANDE RENDE AOS POUCOS (07/10): a cada `rende_a_cada` golpes, o que a
+		# ficha diz — dias de picareta até ela acabar, com a mochila enchendo no caminho.
+		var a_cada := int(ficha.get("rende_a_cada", 0))
+		var parcial := str(ficha.get("rende", ""))
+		if a_cada > 0 and parcial != "" and int(alvo["golpes_dados"]) % a_cada == 0 \
+				and Inventario.adicionar(parcial, int(ficha.get("quantidade", 1))):
+			if _hud != null and _hud.has_method("set_notice"):
+				_hud.set_notice("%s: +%d %s (%d/%d)" % [str(IdiomaMenu.campo(ficha, "nome")), int(ficha.get("quantidade", 1)),
+					Catalogo.nome(parcial).to_lower(), int(alvo["golpes_dados"]), int(ficha.get("golpes", 3))])
 		_sacudir(alvo["no"])
 		return
 

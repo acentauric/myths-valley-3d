@@ -1,5 +1,5 @@
 extends SceneTree
-## PEDRA QUE SE QUEBRA É PEQUENA; PEDRA GRANDE É CENÁRIO.
+## PEDRA QUE SE QUEBRA NA MÃO É PEQUENA; PEDRA GRANDE SE QUEBRA DEVAGAR, COM AÇO E TALENTO.
 ##
 ##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/pedras.gd
 ##
@@ -13,19 +13,24 @@ extends SceneTree
 ## quebravam na picareta e SUMIAM depois do último golpe. Além de feio, o pé do
 ## lajedo (a meia-pegada de 3,3) roubava o E de quem estava junto do poço.
 ##
-## A REGRA: pedra que rende pedra e se quebra cabe na mão — até 1,25 de largura e
-## 0,8 de altura, que vai da canela à coxa do jogador (1,75). As soltas postas medem
-## de 0,6 a 0,75. As grandes ficam no
-## mundo como CENÁRIO: com o corpo do tamanho do desenho, e sem E, sem golpe e sem
-## voto no foco do E. A única exceção é a lapa da lombada, que é a pedra da missão:
-## atravessada no pé da rampa, trava a subida até rachar.
+## A REGRA: pedra que rende pedra e se quebra na picareta de ferro cabe na mão — até
+## 1,25 de largura e 0,8 de altura, que vai da canela à coxa do jogador (1,75). As
+## soltas postas medem de 0,6 a 0,75. As GRANDES, desde 07/10 ("considere coletar pedra
+## das grandes pedras, com uma quantidade enorme e o marcador de coleta; picaretas
+## melhores e habilidades específicas"), são ALVO DE DIAS: com o corpo do tamanho do
+## desenho, pedem a picareta de aço e o talento Mão de pedra, rendem pedra a cada
+## tantos golpes (`rende_a_cada`) e a dica conta o trabalho ("Lajedo 12/96"). Toda
+## pedra grande que se quebra tem a razão escrita na ficha (`grande_de_proposito`); a
+## lapa da lombada é a da missão, atravessada no pé da rampa.
 ##
 ## Sete perguntas:
 ##
-##   1. TODA PEDRA QUE SE QUEBRA É PEQUENA, medida no modelo posto no vale, e a
-##      exceção é uma só, com a razão escrita na ficha.
-##   2. TODA PEDRA GRANDE É CENÁRIO: está no mundo, com corpo, e não é alvo.
-##   3. DO LADO DE UMA PEDRA GRANDE O E NÃO BATE: nem dica, nem golpe, nem voto.
+##   1. TODA PEDRA QUE SE QUEBRA NO FERRO É PEQUENA, medida no modelo posto no vale, e
+##      as exceções — a lapa e as pedras grandes — têm a razão escrita na ficha.
+##   2. TODA PEDRA GRANDE É ALVO DE DIAS: no mundo, com corpo do tamanho do desenho,
+##      dezenas de golpes, pedra a cada tantos, e pede o aço e o talento.
+##   3. SEM O AÇO E O TALENTO O E RECUSA e diz o que pede; com os dois, bate, e quatro
+##      golpes dão a primeira pedra sem a pedra grande sumir.
 ##   4. A PEDRA SOLTA NÃO BRIGA PELO E: a meia-pegada dela é pequena, e nenhuma
 ##      nasce dentro (ou encostada) numa pedra grande, onde ninguém a alcançaria.
 ##   5. AS PEDRAS DA MISSÃO SE COLHEM DE VERDADE: com a picareta na mão, golpe a
@@ -55,8 +60,10 @@ const GRANDE_DE_LARGURA := 2.0
 const RAIO_DO_CORPO := 0.28
 ## A razão da exceção tem de ser prosa, e não um "x".
 const RAZAO_MINIMA := 20
-## A ÚNICA pedra que se quebra sendo grande.
-const EXCECOES := ["lapa_da_lombada"]
+## As pedras grandes que se quebram, com razão escrita: a lapa da missão e as oito de
+## dias (07/10), na ordem do arquivo.
+const EXCECOES := ["lapa_da_lombada", "lajedo_poco", "lajedo_rocado", "rocha_mirante_a", "rocha_mirante_b",
+	"rocha_matacao_mirante", "rocha_capela_a", "rocha_capela_b", "rocha_matacao_capela"]
 ## Quanto cada sítio rendia de pedra antes (e quanto a missão ou o talento pedem).
 const RENDIMENTO_MINIMO := {"poco": 3, "rocado": 3, "mirante": 16, "capela_estrada": 16, "cemiterio": 6, "lapa": 8}
 ## Do lugar da missão à pedra solta mais perto: perto o bastante para o marcador não
@@ -138,73 +145,88 @@ func _run() -> void:
 	_conferir(excecoes == EXCECOES, "as pedras grandes que se quebram são %s, e só %s tem razão para isso" % [str(excecoes), str(EXCECOES)])
 	print("  %d pedras que se quebram, a maior (fora a exceção) com %.2f de largura e %.2f de altura" % [das_pedras.size() - excecoes.size(), maior.x, maior.y])
 
-	# --- 2. TODA PEDRA GRANDE É CENÁRIO ------------------------------------------------
+	# --- 2. TODA PEDRA GRANDE É ALVO DE DIAS ------------------------------------------
+	# (07/10) Eram cenário desde a 9B; agora se quebram devagar: a picareta de aço e o
+	# talento Mão de pedra, pedra a cada tantos golpes, e a dica contando o trabalho.
 	var fixas: Dictionary = recursos._fixas
-	_conferir(fixas.size() >= 8, "só %d pedra(s) grande(s) de cenário: as oito que eram quebráveis não ficaram" % fixas.size())
-	for id in fixas:
-		var fixa: Dictionary = fixas[id]
-		var no: Node3D = fixa["no"]
-		_conferir(is_instance_valid(no) and no.is_inside_tree(), "a pedra grande '%s' não está no mundo" % id)
-		if not is_instance_valid(no):
+	_conferir(fixas.is_empty(), "sobrou pedra grande de cenário sem razão escrita: %s" % str(fixas.keys()))
+	var grandes: Array[String] = []
+	for ficha: Dictionary in das_pedras:
+		var id := str(ficha.get("id", ""))
+		if str(ficha.get("peca", "")) != "pedras" or not recursos._alvos.has(id):
 			continue
+		grandes.append(id)
+		var alvo: Dictionary = recursos._alvos[id]
+		var no: Node3D = alvo["no"]
 		var limites: AABB = no.get_meta("limites")
 		_conferir(maxf(limites.size.x, limites.size.z) >= GRANDE_DE_LARGURA,
-			"'%s' é cenário e mede só %.2f de largura: pedra pequena devia ser solta, e quebrar" % [id, maxf(limites.size.x, limites.size.z)])
-		_conferir(not recursos._alvos.has(id), "a pedra grande '%s' é alvo de trabalho: se quebra" % id)
+			"'%s' é pedra grande e mede só %.2f de largura" % [id, maxf(limites.size.x, limites.size.z)])
+		_conferir(int(ficha.get("golpes", 0)) >= 36 and int(ficha.get("rende_a_cada", 0)) > 0,
+			"'%s' não é trabalho de dias: %d golpes, rende a cada %d" % [id, int(ficha.get("golpes", 0)), int(ficha.get("rende_a_cada", 0))])
+		_conferir(int(ficha.get("grau", 1)) >= 2 and int(ficha.get("nivel", 1)) >= 2, "'%s' não pede a picareta de aço e o talento" % id)
 		var com_caixa := false
-		for corpo in fixa["corpos"]:
+		for corpo in alvo["corpos"]:
 			for forma in (corpo as Node).get_children():
 				if forma is CollisionShape3D and (forma as CollisionShape3D).shape is BoxShape3D:
 					var caixa := ((forma as CollisionShape3D).shape as BoxShape3D).size
-					# O corpo é do tamanho do desenho: nem fantasma, nem parede de mais.
 					com_caixa = com_caixa or (caixa.x >= limites.size.x * 0.7 and caixa.z >= limites.size.z * 0.7 and caixa.x <= limites.size.x * 1.1)
 		_conferir(com_caixa, "a pedra grande '%s' não tem corpo do tamanho do desenho: o jogador atravessa" % id)
-		# Nenhum alvo é este nó.
-		for outro in recursos._alvos:
-			_conferir(recursos._alvos[outro]["no"] != no, "'%s' e '%s' são o mesmo modelo" % [id, outro])
+	_conferir(grandes.size() >= 8, "só %d pedra(s) grande(s) viraram alvo de dias, e eram 8" % grandes.size())
 
-	# --- 3. DO LADO DE UMA PEDRA GRANDE O E NÃO BATE -----------------------------------
+	# --- 3. A PEDRA GRANDE PEDE O AÇO E O TALENTO, E RENDE AOS POUCOS ------------------
+	var talentos := root.get_node("/root/Talentos")
+	var progressao := root.get_node("/root/Progressao")
 	_por_na_mao(inv, "picareta")
 	energia.encher()
 	var recusas: Array[String] = []
 	recursos.recusado.connect(func(motivo: String) -> void: recusas.append(motivo))
-	var provadas := 0
 	var corpo_solto: bool = jogador.is_physics_processing()
 	jogador.set_physics_process(false)
-	for id in fixas:
-		var fixa: Dictionary = fixas[id]
-		var no: Node3D = fixa["no"]
-		if not is_instance_valid(no):
-			continue
-		var limites: AABB = no.get_meta("limites")
-		var centro := _centro_dos_corpos(fixa)
-		# Das quatro faces, a que fica mais longe de qualquer alvo: ali, só a pedra
-		# grande está ao alcance, e ela é que não pode responder.
-		var melhor := Vector3.INF
-		var folga := -INF
-		for lado: Vector3 in [Vector3.RIGHT, Vector3.LEFT, Vector3.BACK, Vector3.FORWARD]:
-			var meia: float = (limites.size.x if absf(lado.x) > 0.5 else limites.size.z) * 0.5
-			var ponto: Vector3 = centro + lado * (meia + RAIO_DO_CORPO + 0.2)
-			var mais_perto := INF
-			for alvo in recursos._alvos:
-				var d: Vector3 = recursos._alvos[alvo]["pos"] - ponto
-				d.y = 0.0
-				mais_perto = minf(mais_perto, d.length() - float(recursos._alvos[alvo].get("meia_pegada", 0.0)))
-			if mais_perto > folga:
-				folga = mais_perto
-				melhor = ponto
-		if folga <= float(recursos.ALCANCE) + 0.1:
+	var provadas := 0
+	for id in grandes:
+		var alvo: Dictionary = recursos._alvos[id]
+		var limites: AABB = (alvo["no"] as Node3D).get_meta("limites")
+		var meia: float = float(alvo.get("meia_pegada", maxf(limites.size.x, limites.size.z) * 0.5))
+		jogador.global_position = (alvo["pos"] as Vector3) + Vector3(meia + RAIO_DO_CORPO + 0.2, 0.0, 0.0)
+		await _frames(3)
+		if recursos._mais_perto() != id:
 			continue
 		provadas += 1
-		jogador.global_position = melhor
-		await _frames(3)
 		recusas.clear()
-		_conferir(recursos._mais_perto() == "", "encostado na pedra grande '%s' o jogo oferece '%s'" % [id, recursos._mais_perto()])
-		_conferir(not recursos.bater(), "o golpe saiu na pedra grande '%s'" % id)
-		_conferir(recursos.alvo_do_e().is_empty(), "a pedra grande '%s' vota no foco do E" % id)
-		_conferir(recursos._golpe_pendente.is_empty(), "a pedra grande '%s' deixou um golpe pendente" % id)
+		var golpes_antes: int = int(alvo["golpes_dados"])
+		_conferir(not recursos.bater(), "com a picareta de ferro e sem o talento, o golpe saiu na pedra grande '%s'" % id)
+		_conferir(not recusas.is_empty() and (recusas[0].to_lower().contains("aço") or recusas[0].to_lower().contains("talento")),
+			"a pedra grande '%s' não disse o que pede (%s)" % [id, str(recusas)])
+		_conferir(int(alvo["golpes_dados"]) == golpes_antes, "a pedra grande '%s' contou golpe sem o aço" % id)
+	_conferir(provadas >= 4, "só provei o E em %d pedra(s) grande(s) de %d" % [provadas, grandes.size()])
+	# Com a picareta de aço e o talento Mão de pedra, bate — e a cada quatro golpes vem pedra.
+	talentos.pontos = maxi(int(talentos.pontos), 1)
+	if not talentos.destravar("mao_de_pedra") and progressao.nivel("picareta") < 2:
+		progressao.subir_ferramenta("picareta", 2)
+	_conferir(progressao.nivel("picareta") >= 2, "o talento Mão de pedra não subiu a picareta ao nível 2")
+	_por_na_mao(inv, "picareta_de_aco")
+	if recursos._alvos.has("lajedo_poco"):
+		var lajedo: Dictionary = recursos._alvos["lajedo_poco"]
+		var ficha_do_lajedo: Dictionary = lajedo["ficha"]
+		var limites_l: AABB = (lajedo["no"] as Node3D).get_meta("limites")
+		var meia_l: float = float(lajedo.get("meia_pegada", maxf(limites_l.size.x, limites_l.size.z) * 0.5))
+		jogador.global_position = (lajedo["pos"] as Vector3) + Vector3(meia_l + RAIO_DO_CORPO + 0.2, 0.0, 0.0)
+		await _frames(3)
+		if recursos._mais_perto() == "lajedo_poco":
+			var pedras_antes: int = inv.quantidade("pedra")
+			var a_cada := int(ficha_do_lajedo.get("rende_a_cada", 4))
+			for golpe in a_cada:
+				energia.encher()
+				_conferir(recursos.bater(), "com o aço e o talento, o golpe %d não saiu no lajedo" % (golpe + 1))
+				await relogio.ate(func() -> bool: return relogio.golpe_acabou(recursos), 6.0)
+			_conferir(inv.quantidade("pedra") == pedras_antes + int(ficha_do_lajedo.get("quantidade", 2)),
+				"quatro golpes no lajedo não deram a pedra parcial (%d → %d)" % [pedras_antes, inv.quantidade("pedra")])
+			_conferir(recursos._alvos.has("lajedo_poco") and int(lajedo["golpes_dados"]) == a_cada,
+				"o lajedo sumiu ou não contou os golpes (%d)" % int(lajedo["golpes_dados"]))
+		else:
+			_conferir(false, "encostado no lajedo do poço, o alvo perto é '%s'" % recursos._mais_perto())
+	inv.selecionar(inv.MAO_LIVRE)
 	jogador.set_physics_process(corpo_solto)
-	_conferir(provadas >= 4, "só provei o E em %d pedra(s) grande(s) de %d: as outras têm alvo ao alcance de todas as faces" % [provadas, fixas.size()])
 
 	# --- 4. A PEDRA SOLTA NÃO BRIGA PELO E, NEM NASCE DENTRO DA GRANDE ------------------
 	for ficha: Dictionary in das_pedras:
@@ -214,8 +236,8 @@ func _run() -> void:
 		var alvo: Dictionary = recursos._alvos[id]
 		_conferir(float(alvo["meia_pegada"]) <= 0.9, "'%s' tem meia-pegada de %.2f: empurra o E dos vizinhos" % [id, float(alvo["meia_pegada"])])
 		var onde: Vector3 = alvo["pos"]
-		for grande in fixas:
-			for corpo in fixas[grande]["corpos"]:
+		for grande in grandes:
+			for corpo in recursos._alvos[grande]["corpos"]:
 				for forma in (corpo as Node).get_children():
 					if not (forma is CollisionShape3D and (forma as CollisionShape3D).shape is BoxShape3D):
 						continue
@@ -228,7 +250,7 @@ func _run() -> void:
 	for sitio in ["poco", "rocado"]:
 		var aqui: Array = []
 		for ficha: Dictionary in das_pedras:
-			if str(ficha.get("lugar", "")) == sitio:
+			if str(ficha.get("lugar", "")) == sitio and not EXCECOES.has(str(ficha.get("id", ""))):
 				aqui.append(ficha)
 		var ponto_do_lugar: Vector3 = lugares.ponto(sitio)
 		_conferir(ponto_do_lugar != lugares.NENHUM and not aqui.is_empty(), "o sítio '%s' não tem pedra solta" % sitio)
@@ -265,7 +287,7 @@ func _run() -> void:
 		print("  %-8s %d pedra(s) soltas deram %d de pedra, a mais perto do lugar a %.1f u" % [sitio, aqui.size(), ganhou, distancia])
 	# A pedra grande do poço e a do roçado continuam lá depois de colhidas as soltas.
 	for id in ["lajedo_poco", "lajedo_rocado"]:
-		_conferir(fixas.has(id) and is_instance_valid(fixas[id]["no"]), "colhidas as pedras soltas, a pedra grande '%s' sumiu" % id)
+		_conferir(recursos._alvos.has(id) and is_instance_valid(recursos._alvos[id]["no"]), "colhidas as pedras soltas, a pedra grande '%s' sumiu" % id)
 
 	# --- 6. A CONTA DA PEDRA NÃO ENCOLHEU ------------------------------------------------
 	var soma := {}
@@ -311,7 +333,7 @@ func _centro_dos_corpos(fixa: Dictionary) -> Vector3:
 func _fechar() -> void:
 	print("")
 	if falhas == 0:
-		print("PEDRAS_OK: toda pedra que se quebra cabe na mão (até 1,25 × 0,8) e a lapa da missão é a única grande com razão escrita; as grandes ficam no mundo como cenário, com corpo do tamanho do desenho e sem E, golpe nem voto no foco; a pedra solta não briga pelo E nem nasce dentro da grande; as do poço e as do roçado quebram na picareta, dão a pedra da missão e ficam perto do lugar dela; cada sítio rende o que o lajedo rendia; e o motor rebaixa a cenário a ficha grande que rende pedra")
+		print("PEDRAS_OK: toda pedra que se quebra no ferro cabe na mão (até 1,25 × 0,8) e as grandes têm razão escrita; as oito grandes são alvo de dias, com corpo do tamanho do desenho, dezenas de golpes e pedra a cada quatro, que pedem a picareta de aço e o talento e recusam sem eles; a pedra solta não briga pelo E nem nasce dentro da grande; as do poço e as do roçado quebram na picareta, dão a pedra da missão e ficam perto do lugar dela; cada sítio rende o que rendia; e o motor rebaixa a cenário a ficha grande que rende pedra sem razão")
 	else:
 		print("pedras: %d falha(s)" % falhas)
 	quit(1 if falhas > 0 else 0)

@@ -200,8 +200,11 @@ func _existe(nome: String) -> bool:
 
 
 ## Põe o jogador no alvo (o `_mais_perto` do `Recursos3D` o devolve de cima dele).
+## Pelo `teleportar`, e não pelo `global_position`: do capim do cemitério (16 m acima)
+## para a ostra da maré, a regra do mar (`_last_land`, 2,5 m) devolvia o corpo ao
+## cemitério, e o alvo perto continuava o capim.
 func _ir(jogador, recursos, id: String) -> void:
-	jogador.global_position = recursos._alvos[id]["pos"]
+	jogador.teleportar(recursos._alvos[id]["pos"], 0.0)
 	# O CARTÃO DA PRIMEIRA VEZ (a árvore do almanaque, ao cortar a embaúba) para a árvore
 	# inteira, e o alvo perto não se refaz com o vale parado: fecha, como o jogador faria.
 	var aviso = current_scene.get("aviso_da_primeira_vez")

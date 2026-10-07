@@ -340,6 +340,8 @@ func _ready() -> void:
 	add_child(tecla_das_bancadas)
 	tecla_das_bancadas.configurar(world, player, hud, abrir_o_painel,
 		func() -> bool: return not _lendo() and (telas == null or telas.aberta() == ""))
+	# O E NA FOGUEIRA COM A LENHA NA MÃO a alimenta (07/10).
+	tecla_das_bancadas.alimentar = alimentar_a_fogueira
 	lapides = Lapides.new()
 	lapides.name = "Lapides"
 	add_child(lapides)
@@ -2135,6 +2137,8 @@ func estado_para_salvar() -> Dictionary:
 	# O NINHO: os ovos e o dia da postura (o galinheiro é o talento, que já vai).
 	if curral != null:
 		estado["curral"] = curral.estado_para_salvar()
+	# O FOGO DA FOGUEIRA: para quantos pratos ainda dá (07/10).
+	estado["fogueira"] = fogo_da_fogueira
 	return estado
 
 
@@ -2223,6 +2227,7 @@ func restaurar_do_save(estado: Dictionary) -> void:
 		lavoura.restaurar(estado["lavoura"])
 	if curral != null and estado.has("curral"):
 		curral.restaurar(estado["curral"])
+	fogo_da_fogueira = int(estado.get("fogueira", PRATOS_POR_LENHA))
 	# As lajes e o cercado acompanham a fila e a obra que acabaram de voltar.
 	if cemiterio != null:
 		cemiterio.acertar()
@@ -2422,6 +2427,58 @@ func _avisar_as_cadeias(evento: String) -> void:
 
 func _ao_cozinhar(id: String, _quantos: int) -> void:
 	_avisar_as_cadeias("cozinhou:" + id)
+	# CADA PRATO GASTA O FOGO (07/10).
+	fogo_da_fogueira = maxi(0, fogo_da_fogueira - 1)
+
+
+## A LENHA DA FOGUEIRA (playtest de 07/10: "para cozinhar na fogueira, considere
+## exigir recarregar ela com madeira a cada X comidas cozinhadas"). A fogueira do
+## terreiro guarda fogo para alguns pratos; cada prato cozido gasta um, e uma lenha
+## posta nela — o E na fogueira com a lenha na mão (`tecla_das_bancadas`) — devolve
+## PRATOS_POR_LENHA, até o teto. Começa com fogo para três: o Pedro a acendeu na
+## chegada, e a primeira janta não pede lenha a mais. Vai no save ("fogueira").
+const PRATOS_POR_LENHA := 3
+const FOGO_MAXIMO := 9
+var fogo_da_fogueira := PRATOS_POR_LENHA
+
+
+func fogueira_acesa() -> bool:
+	return fogo_da_fogueira > 0
+
+
+func pratos_no_fogo() -> int:
+	return fogo_da_fogueira
+
+
+## Põe uma lenha na fogueira. Devolve se pôs: sem lenha na mochila, ou com o fogo no
+## teto, não põe (e o HUD diz por quê).
+func alimentar_a_fogueira() -> bool:
+	if fogo_da_fogueira > FOGO_MAXIMO - PRATOS_POR_LENHA:
+		if hud != null:
+			hud.set_notice(texto_da_fogueira("cheia") % fogo_da_fogueira)
+		return false
+	if not Inventario.consumir("lenha", 1):
+		if hud != null:
+			hud.set_notice(texto_da_fogueira("sem_lenha"))
+		return false
+	fogo_da_fogueira += PRATOS_POR_LENHA
+	Audio.efeito("pegar")
+	if hud != null:
+		hud.set_notice(texto_da_fogueira("pos") % fogo_da_fogueira)
+	return true
+
+
+## Os recados da fogueira (data/fogueira.json), no idioma do menu: texto de jogador
+## não mora em constante (AGENTS.md). A dica do E e a aba do fogão leem daqui também.
+const TEXTOS_DA_FOGUEIRA := "res://data/fogueira.json"
+var _textos_da_fogueira: Dictionary = {}
+
+
+func texto_da_fogueira(chave: String) -> String:
+	if _textos_da_fogueira.is_empty():
+		var lido = JSON.parse_string(FileAccess.get_file_as_string(TEXTOS_DA_FOGUEIRA))
+		_textos_da_fogueira = lido if lido is Dictionary else {"vazio": true}
+	return str(IdiomaMenu.campo(_textos_da_fogueira.get(chave, {}), "texto", chave))
 
 
 func _ao_comer(id: String) -> void:
