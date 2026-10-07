@@ -80,6 +80,7 @@ var version_link: Button
 ## A oferta de atualização, embaixo da versão (some quando o jogo está em dia).
 var linha_atualizacao: Button
 var caption: Label
+var estado_testador: Label
 ## Quanto falta do trecho da travessia na tela (1 → 0), para o jogador saber quando passa.
 var line_bar: ProgressBar
 var line_total := 1.0
@@ -1028,9 +1029,16 @@ func _home() -> void:
 	_marca()
 	_placa("JOGAR", _vagas).grab_focus()
 	_placa("EXPLORAR", _explorar)
+	var teste := _placa("TESTE AUTOMÁTICO", _teste_automatico)
+	teste.tooltip_text = tr("O testador joga uma partida separada. F8 encerra a sessão.")
+	if not FileAccess.file_exists("res://tools/jev/jogar.py") or not FileAccess.file_exists("res://project.godot"):
+		teste.disabled = true
+		teste.tooltip_text = tr("Disponível no projeto de desenvolvimento com Python instalado.")
 	_placa("MODELOS", _abrir_personagens)
 	_placa("SOBRE", _credits)
 	_placa("SAIR", _confirm_exit, true)
+	estado_testador = _label("", 13)
+	estado_testador.hide()
 	if not history_entries.is_empty():
 		_create_version_link()
 	_set_home_corner(true)
@@ -1769,6 +1777,19 @@ func _abrir_vaga(slot: int, nova: bool) -> void:
 func _explorar() -> void:
 	Partida.comecar(0)
 	_start_game()
+
+
+## Testador local do projeto: a ponte abre seu próprio perfil, sem usar vagas
+## pessoais. O launcher automático escolhe JOGAR, não este botão, evitando recursão.
+func _teste_automatico() -> void:
+	var script := ProjectSettings.globalize_path("res://tools/jev/jogar.py")
+	var pid := OS.create_process("python", PackedStringArray([
+		script, "--robot", "--seconds", "0", "--godot", OS.get_executable_path()]))
+	if pid <= 0:
+		estado_testador.text = tr("Não foi possível iniciar o testador. Confira a instalação do Python.")
+	else:
+		estado_testador.text = tr("Teste automático iniciado em outra janela. F8 encerra a sessão.")
+	estado_testador.show()
 
 
 func _modal_header(title: String, action: Callable, subtitle: String = "", icon: String = "fechar") -> Button:

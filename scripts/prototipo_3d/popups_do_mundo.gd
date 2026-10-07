@@ -18,6 +18,7 @@ const GRUPO_PLACAS := "placas_de_nome"
 const GRUPO_DICAS := "dicas_de_tecla"
 const GRUPO_BALOES := "baloes_de_fala"
 const GRUPO_SETA := "seta_da_missao"
+const GRUPO_HUD := "obstaculos_do_hud"
 
 ## Painéis fixos do HUD que os popups do mundo evitam: bloco do título (esquerda),
 ## relógio (centro) e coluna de botões (direita, medida a partir da borda).
@@ -30,12 +31,14 @@ const OPACIDADE_MINIMA := 0.25
 
 
 ## Os painéis fixos do HUD, em coordenadas de tela, para uma janela de `tela`.
-static func paineis_do_hud(tela: Vector2) -> Array[Rect2]:
-	return [
+static func paineis_do_hud(tela: Vector2, no: Node = null) -> Array[Rect2]:
+	var paineis: Array[Rect2] = [
 		HUD_TITULO,
 		Rect2(tela.x * 0.5 + HUD_RELOGIO.position.x, 0, HUD_RELOGIO.size.x, HUD_RELOGIO.size.y),
 		Rect2(tela.x - HUD_COLUNA, 0, HUD_COLUNA, tela.y),
 	]
+	paineis.append_array(retangulos(no, GRUPO_HUD))
+	return paineis
 
 
 ## Os retângulos (em tela) dos Controls visíveis do `grupo`, menos `ignorar`.

@@ -6,6 +6,7 @@ import tempfile
 import time
 import unittest
 from unittest.mock import patch
+from urllib.error import HTTPError
 
 from jogar import MAX_BODY, MAX_TOKENS, PRICE, ProgressGuard, Session, game_reference, current_task
 
@@ -37,6 +38,25 @@ class SpendingTests(unittest.TestCase):
             self.session.decide({}, {"walk": "walk"})
             self.assertEqual(request.call_count, 1)
         self.assertEqual(self.session.cost, PRICE * MAX_TOKENS)
+
+    def test_context_error_retries_once_with_reserved_cost(self):
+        error = HTTPError("https://api.typesafe.ai/v1/systemone", 400, "Bad request", {},
+                          io.BytesIO(b'{"detail":{"error_type":"max_tokens_exceeded"}}'))
+        with patch("jogar.urlopen", side_effect=[error, self.response()]) as request, patch("jogar.time.sleep"):
+            self.assertEqual(self.session.decide({"position": [0, 0, 0]}, {"walk": "walk"})["choice"], "walk")
+            retry = json.loads(json.loads(request.call_args.args[0].data)["state"])
+        self.assertNotIn("mission_definitions", retry["game_reference"])
+        self.assertIn("current_task", retry)
+        self.assertEqual(self.session.calls, 2)
+        self.assertEqual(self.session.cost, PRICE * (MAX_TOKENS + 800))
+
+    def test_context_retry_cannot_exceed_budget(self):
+        self.session.budget = PRICE * MAX_TOKENS
+        error = HTTPError("https://api.typesafe.ai/v1/systemone", 400, "Bad request", {},
+                          io.BytesIO(b'{"error_type":"max_tokens_exceeded"}'))
+        with patch("jogar.urlopen", side_effect=error) as request:
+            self.assertEqual(self.session.decide({}, {"walk": "walk"})["stop"], "budget")
+        self.assertEqual(request.call_count, 1)
 
     def test_duration_and_calls_stop_before_api(self):
         self.session.game_started = time.monotonic() - 601
@@ -70,6 +90,18 @@ class SpendingTests(unittest.TestCase):
             self.assertEqual(self.session.decide({}, {"walk": "walk"})["stop"], "budget")
             request.assert_not_called()
 
+    def test_campaign_mode_keeps_recovery_hint_without_idle_stop(self):
+        self.session.progress = ProgressGuard(0)
+        state = {"seconds": 0, "position": [0, 0, 0]}
+        self.session.progress.observe(state)
+        state["seconds"] = 300
+        with patch("jogar.urlopen", return_value=self.response()) as request:
+            self.assertEqual(self.session.decide(state, {"walk": "walk"})["choice"], "walk")
+            sent = json.loads(request.call_args.args[0].data)
+            sent["state"] = json.loads(sent["state"])
+        self.assertTrue(sent["state"]["progress_watch"]["recovery_needed"])
+        self.assertIsNone(sent["state"]["progress_watch"]["stop_after_seconds"])
+
     def test_oversized_state_never_calls_api(self):
         with patch("jogar.urlopen") as request:
             result = self.session.decide({"text": "a" * MAX_BODY}, {"walk": "walk"})
@@ -89,6 +121,7 @@ class SpendingTests(unittest.TestCase):
         with patch("jogar.urlopen", return_value=self.response()) as request:
             self.session.decide(state, {"walk": "walk"})
         payload = json.loads(request.call_args.args[0].data)
+        payload["state"] = json.loads(payload["state"])
         context = payload["state"]
         self.assertEqual(context["mission_chains"], state["mission_chains"])
         self.assertEqual(context["inventory"], state["inventory"])

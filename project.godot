@@ -98,6 +98,6 @@ common/max_physics_steps_per_frame=5
 [rendering]
 
 renderer/rendering_method.mobile="gl_compatibility"
-anti_aliasing/quality/screen_space_aa=1
 lights_and_shadows/directional_shadow/size=2048
+anti_aliasing/quality/screen_space_aa=1
 mesh_lod/lod_change/threshold_pixels=4.0

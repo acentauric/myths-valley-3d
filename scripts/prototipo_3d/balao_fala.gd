@@ -322,16 +322,20 @@ func _posicionar(delta: float) -> void:
 	var no_jogador := get_tree().get_first_node_in_group("map_player") as Node3D
 	if no_jogador != null and no_jogador != alvo:
 		jogador = _retangulo_do_corpo(camera, no_jogador, 1.8)
-	var hud := PopupsDoMundo.paineis_do_hud(tela)
+	var hud := PopupsDoMundo.paineis_do_hud(tela, self)
 	var placas := PopupsDoMundo.retangulos(self, PopupsDoMundo.GRUPO_PLACAS)
 	var dicas := PopupsDoMundo.retangulos(self, PopupsDoMundo.GRUPO_DICAS)
 	var candidatos := _candidatos(tamanho, falante)
+	# Cada painel reserva seu retângulo real, inclusive barras e aviso do guia.
+	for obstaculo in hud:
+		candidatos.append(Vector2(obstaculo.position.x - tamanho.x - MARGEM, _cabeca_tela.y - tamanho.y))
+		candidatos.append(Vector2(obstaculo.end.x + MARGEM, _cabeca_tela.y - tamanho.y))
 	var notas: Array[float] = []
 	for indice in range(candidatos.size()):
 		var caixa := _dentro_da_tela(Rect2(candidatos[indice], tamanho), tela)
 		var nota := _cobertura(caixa, falante) * 3.0 + _cobertura(caixa, jogador) * 2.5
 		for painel in hud:
-			nota += _cobertura(caixa, painel) * 2.0
+			nota += _cobertura(caixa, painel) * 100.0
 		for placa in placas:
 			nota += _cobertura(caixa, placa) * 2.0
 		for dica in dicas:
@@ -363,6 +367,12 @@ func _posicionar(delta: float) -> void:
 	var caixa_final := _dentro_da_tela(Rect2(canto - Vector2(0.0, tamanho.y), tamanho), tela)
 	# DEIXA LUGAR PARA A DICA: a de outra coisa que cairia por cima fica por baixo dele.
 	caixa_final = _dentro_da_tela(PopupsDoMundo.afastar_de(caixa_final, dicas, FOLGA_DAS_DICAS), tela)
+	# A mola também pode atravessar o HUD ao trocar de canto. Durante essa
+	# travessia, use o destino livre para manter a fala legível.
+	for obstaculo in hud:
+		if caixa_final.intersects(obstaculo):
+			caixa_final = _dentro_da_tela(Rect2(candidatos[_escolha], tamanho), tela)
+			break
 	_painel.position = caixa_final.position.round()
 	_novo = false
 	_ponta.queue_redraw()

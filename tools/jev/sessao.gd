@@ -13,6 +13,7 @@ var chamadas := 0
 var custo := 0.0
 var rotulo: Label
 var acao_rotulo: Label
+var painel_observador: PanelContainer
 var textos: Dictionary
 var idioma
 var historico: Array = []
@@ -71,7 +72,7 @@ func _run() -> void:
 		if opcoes.is_empty():
 			await _esperar(0.5)
 			continue
-		acao_rotulo.text = _texto("aguardando")
+		acao_rotulo.text = _texto("aguardando_robot" if OS.get_environment("MV_JEV_ROBOT") == "1" else "aguardando")
 		var resposta: Dictionary = await _post("/decision", {"state": estado, "actions": opcoes})
 		if parar:
 			break
@@ -86,7 +87,7 @@ func _run() -> void:
 		chamadas = int(resposta.get("calls", 0))
 		custo = float(resposta.get("estimated_usd", 0.0))
 		ultima_acao = str(resposta.choice)
-		acao_rotulo.text = _texto("acao") % [ultima_acao, float(resposta.confidence) * 100.0]
+		acao_rotulo.text = _texto("acao_robot") % ultima_acao if OS.get_environment("MV_JEV_ROBOT") == "1" else _texto("acao") % [ultima_acao, float(resposta.confidence) * 100.0]
 		_atualizar_painel()
 		var antes: Dictionary = _estado()
 		var resultado: String = await _executar(ultima_acao)
@@ -101,7 +102,7 @@ func _run() -> void:
 			"objective_after": depois.get("objective", {}).get("id", "")})
 		if historico.size() > 24:
 			historico.pop_front()
-		await _esperar(2.0)
+		await _esperar(0.15 if OS.get_environment("MV_JEV_ROBOT") == "1" else 2.0)
 	var motivo := "duration" if duracao > 0 and inicio_jogo >= 0 and _segundos() >= duracao else (ultima_acao if parar else "user_stop")
 	await _post("/stop", {"reason": motivo})
 	_capturar()
@@ -119,22 +120,28 @@ func _montar_painel() -> void:
 	camada.process_mode = Node.PROCESS_MODE_ALWAYS
 	root.add_child(camada)
 	var painel := PanelContainer.new()
+	painel_observador = painel
+	painel.add_to_group("obstaculos_do_hud")
 	camada.add_child(painel)
 	painel.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)
-	painel.offset_left = -464
+	painel.offset_left = -294
 	painel.offset_right = -14
-	painel.offset_top = -240
-	painel.offset_bottom = -130
+	painel.offset_top = -128
+	painel.offset_bottom = -14
+	var margens := MarginContainer.new()
+	for lado in ["left", "right", "top", "bottom"]:
+		margens.add_theme_constant_override("margin_" + lado, 8)
+	painel.add_child(margens)
 	var caixa := VBoxContainer.new()
-	painel.add_child(caixa)
+	margens.add_child(caixa)
 	rotulo = Label.new()
 	rotulo.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	rotulo.add_theme_font_size_override("font_size", 14)
+	rotulo.add_theme_font_size_override("font_size", 12)
 	caixa.add_child(rotulo)
 	acao_rotulo = Label.new()
 	acao_rotulo.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	acao_rotulo.add_theme_font_size_override("font_size", 14)
-	acao_rotulo.text = _texto("aguardando")
+	acao_rotulo.add_theme_font_size_override("font_size", 12)
+	acao_rotulo.text = _texto("aguardando_robot" if OS.get_environment("MV_JEV_ROBOT") == "1" else "aguardando")
 	caixa.add_child(acao_rotulo)
 	var botao := Button.new()
 	botao.text = _texto("parar")
@@ -144,8 +151,13 @@ func _montar_painel() -> void:
 
 
 func _atualizar_painel() -> void:
-	var titulo := _texto("offline") if OS.get_environment("MV_JEV_OFFLINE") == "1" else _texto("titulo")
-	rotulo.text = _texto("estado") % [titulo, chamadas, custo, orcamento]
+	var titulo := _texto("sol") if OS.get_environment("MV_JEV_SOL") == "1" else (_texto("offline") if OS.get_environment("MV_JEV_OFFLINE") == "1" else _texto("titulo"))
+	if OS.get_environment("MV_JEV_ROBOT") == "1":
+		titulo = _texto("robot")
+	rotulo.text = _texto("estado_robot") % chamadas if OS.get_environment("MV_JEV_ROBOT") == "1" else _texto("estado") % [titulo, chamadas, custo, orcamento]
+	# Telas grandes e diálogos precisam de toda a área; F8 permanece ativo.
+	if _no_vale() and bool(current_scene.get("carga_ok")):
+		painel_observador.visible = current_scene.get("telas").aberta().is_empty() and not root.get_node("Dialogo").ativo
 
 
 func _segundos() -> int:
@@ -159,7 +171,7 @@ func _no_vale() -> bool:
 func _post(caminho: String, dados: Dictionary) -> Dictionary:
 	var http := HTTPRequest.new()
 	http.process_mode = Node.PROCESS_MODE_ALWAYS
-	http.timeout = 15.0
+	http.timeout = 190.0 if OS.get_environment("MV_JEV_SOL") == "1" else 15.0
 	root.add_child(http)
 	var erro := http.request(ponte + caminho, ["Content-Type: application/json", "Authorization: Bearer " + token], HTTPClient.METHOD_POST, JSON.stringify(dados))
 	if erro != OK:
@@ -234,8 +246,9 @@ func _estado() -> Dictionary:
 			estado.npcs.append({"node": str(npc.name), "id": npc.dados.get("id", ""), "name": npc.dados.get("nome", ""),
 				"position": _vetor(npc.global_position), "distance": snappedf(jogador.global_position.distance_to(npc.global_position), 0.1)})
 	var mochila := root.get_node("Mochila")
+	estado["home_interaction"] = current_scene.get("casa").perto()
 	if mochila.aberta:
-		estado["inventory_screen"] = {"cursor": mochila.get("_cursor"), "held_slot": mochila.get("_pego"), "chest": _json_seguro(mochila.get("_bau")), "confirmation": mochila.get("_confirmar")}
+		estado["inventory_screen"] = {"cursor": mochila.get("_cursor"), "held_slot": mochila.get("_pego"), "chest": _json_seguro(mochila.get("_bau")), "chest_cursor_base": mochila._primeiro_do_bau(), "confirmation": mochila.get("_confirmar")}
 	var painel: Node = current_scene.get("painel")
 	if painel.aberto:
 		estado["panel"] = {"tab": painel.aba(), "cursor": painel.get("_cursor"), "rows": _json_seguro(painel.get("_linhas")), "advice": painel.get("_dica").text}

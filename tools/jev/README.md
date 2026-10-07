@@ -1,5 +1,11 @@
 # Jev jogando o vale
 
+O modo local **Teste automático**, sem API, está documentado em
+[AUTOPLAYER.md](../../docs/testes/AUTOPLAYER.md). Inicie por `JOGAR_SOL.cmd`
+ou pelo botão do menu de desenvolvimento.
+O relatório `relatorio.md` na pasta da sessão registra tempos, movimentos,
+decisões e bloqueios; atualiza a cada 30 segundos e no encerramento.
+
 Experimento opt-in de exploração do jogo, separado dos portões determinísticos.
 O objetivo do agente é concluir a história **implementada**, até
 `fazenda_chegada`, não somente o tutorial. A chegada ao pátio é o limite atual
@@ -18,20 +24,28 @@ relatórios nem no Git. Não cole chaves em comandos. O endpoint fica restrito a
 
 ## Limites e interrupção
 
-- Máximo de US$ 0,10 estimados por execução, incluindo a abertura. `--budget`
-  pode reduzir esse teto. Não há limite padrão de tempo nem de chamadas;
+- Orçamento padrão de US$ 0,10 estimados por execução, incluindo a abertura.
+  `--budget 0.50` permite o teto de US$ 0,50 autorizado para tentar concluir a campanha.
+  Não há limite padrão de tempo nem de chamadas;
   `--seconds N` e `--calls N` acrescentam limites opcionais, com `0` para desativar.
   O modo offline exige `--seconds N` positivo, pois não consome orçamento.
 - Reservamos 64 mil tokens antes de cada chamada, a US$ 0,042 por milhão de
   tokens de entrada. Após resposta válida, a reserva vira o uso informado pela API.
-  Se o uso não puder ser confirmado, a reserva permanece. Não há retries automáticos.
+  Se o uso não puder ser confirmado, a reserva permanece. Há no máximo uma
+  tentativa adicional para limite de contexto e erros HTTP transitórios,
+  com nova reserva e verificação de orçamento. Timeouts não são repetidos.
+  O contexto é enviado como texto JSON compacto, mantendo os campos. Se ainda
+  exceder tokens, a recuperação omite somente o catálogo estático de missões
+  futuras; estado, requisitos e cadeias vivas permanecem disponíveis.
 - O teto é calculado localmente com a tarifa publicada, não um limite de cobrança
   imposto na conta TypeSafe. Mudança de preço exige atualizar `PRICE` antes de rodar.
 - Erros da API, respostas inválidas, scripts quebrados ou orçamento insuficiente
   encerram a sessão. Não há troca silenciosa por um bot local.
-- Sem novo objetivo, nova região, tela ou fala por 30 segundos, a ponte encerra
-  com `no_progress_30s`. Circular entre os mesmos pontos ou repetir a mesma fala
-  não renova esse tempo. Essa proteção continua ativa no teste por orçamento.
+- Sem novo objetivo, região, tela ou fala por 30 segundos, o contexto sinaliza
+  `recovery_needed` para o modelo tentar uma ação diferente. Por padrão isso
+  não encerra a partida: a meta é concluir a campanha dentro do orçamento.
+  `--idle-seconds 30` restaura a interrupção por falta de progresso quando desejada.
+  Circular entre os mesmos pontos ou repetir a mesma fala não conta como progresso.
 - Clique em **Parar sessão** ou aperte **F8**. Fechar a janela também encerra o processo.
   Uma chamada em andamento pode demorar até 12 segundos para terminar.
 
@@ -118,6 +132,14 @@ chamadas à API. Não demonstra a inteligência do Jev. Para a experiência real
 ```powershell
 .\JOGAR_JEV.cmd
 ```
+
+Para uma tentativa nova de concluir a campanha, com teto de US$ 0,50:
+
+```powershell
+python tools/jev/jogar.py --budget 0.50
+```
+
+Cada execução cria um perfil novo e começa do zero; não usa os saves pessoais.
 
 Referências: [API](https://docs.typesafe.ai/api),
 [modelos, entrada textual e tarifa](https://docs.typesafe.ai/models).

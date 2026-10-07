@@ -2,6 +2,41 @@
 
 ## Em desenvolvimento — 07/10/2026 (experimento Jev)
 
+- **O menu oferece Teste automático no projeto de desenvolvimento (#159).**
+  Abre uma partida isolada com o robô determinístico local; a documentação está
+  em `docs/testes/AUTOPLAYER.md`. Ações pontuais têm pausa de 0,7 segundo;
+  arar, plantar e regar, 1,4 segundo. A coleta de pedra seleciona a picareta
+  e prioriza o recurso indicado. O painel fica compacto no canto inferior
+  direito, informa seu retângulo aos balões e se esconde em telas e diálogos.
+  Falta de progresso abre exploração determinística com memória de tentativas
+  por contexto, seleção de receitas e visita aos alvos próximos. `relatorio.md`
+  reúne tempos, movimentos, decisões, resultados e capturas; atualiza durante
+  a sessão e no encerramento, sem confundir execução de tecla com avanço.
+
+- **O jogador local reconhece o baú e os itens reais do inventário (#118).**
+  `JOGAR_SOL.cmd` inicia o controle automático por regras, sem API, por dez
+  minutos quando solicitado; por padrão segue sem limite de tempo até concluir
+  a história implementada. Ajustes da política local são recarregados entre
+  ações sem reiniciar a partida. A regra do baú usa a interação `bau` da casa, os campos `id`/`qtd`
+  e o índice real da grade do baú para abrir e retirar as ferramentas pedidas.
+  Observações repetidas provocam uma tentativa de interação ou reposicionamento,
+  em vez de continuar aproximando indefinidamente. A execução acompanhada
+  continua sendo experimental; concluir a campanha ainda não foi demonstrado.
+  A coleta de lenha reconhece a meta `item`/`quantos`, segue o marcador vivo
+  e prioriza a interação do galho seco sobre conversas próximas; essa regra
+  foi recarregada durante a partida acompanhada, sem reiniciar o jogo.
+
+- **Balões de fala consideram as barras e o aviso do guia (#132).** Os controles
+  informam seus retângulos reais para escolher um espaço de fala fora do HUD.
+  A alteração vale na próxima abertura; a revisão completa das prioridades
+  permanece pendente.
+
+- **A tentativa de concluir a campanha usa até US$ 0,50.** O orçamento padrão
+  continua US$ 0,10; `--budget 0.50` aumenta o teto autorizado. Falta de progresso
+  por 30 segundos agora informa necessidade de recuperação ao Jev, sem encerrar
+  por padrão. `--idle-seconds` permite restaurar essa parada. O contexto reforça
+  que sucesso exige concluir a história implementada até `fazenda_chegada`.
+
 - **Jev joga uma sessão curta sob observação.** `JOGAR_JEV.cmd` abre o jogo em
   um perfil isolado; a ponte local envia observações textuais à TypeSafe e o
   modelo escolhe ações da abertura, caminhada, corrida, interação e telas.

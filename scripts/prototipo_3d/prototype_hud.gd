@@ -277,6 +277,7 @@ func _ready() -> void:
 	# Relógio do vale: só a hora e o período do dia.
 	var clock_panel := _panel(Color(0.055, 0.085, 0.075, 0.82))
 	_root.add_child(clock_panel)
+	clock_panel.add_to_group("obstaculos_do_hud")
 	clock_panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP)
 	clock_panel.offset_left = -70
 	clock_panel.offset_right = 70
@@ -366,6 +367,7 @@ func _criar_barra_de_vida() -> void:
 	_vida_preenchimento.set_corner_radius_all(6)
 	barra_vida.add_theme_stylebox_override("fill", _vida_preenchimento)
 	_root.add_child(barra_vida)
+	barra_vida.add_to_group("obstaculos_do_hud")
 	barra_vida.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP)
 	barra_vida.offset_left = -110
 	barra_vida.offset_right = 110
@@ -443,6 +445,7 @@ func _criar_barra_de_folego() -> void:
 	_folego_preenchimento.set_corner_radius_all(6)
 	barra_folego.add_theme_stylebox_override("fill", _folego_preenchimento)
 	_root.add_child(barra_folego)
+	barra_folego.add_to_group("obstaculos_do_hud")
 	barra_folego.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP)
 	barra_folego.offset_left = -110
 	barra_folego.offset_right = 110
@@ -531,6 +534,7 @@ func _criar_barra_de_stamina() -> void:
 	_stamina_preenchimento.set_corner_radius_all(6)
 	barra_stamina.add_theme_stylebox_override("fill", _stamina_preenchimento)
 	_root.add_child(barra_stamina)
+	barra_stamina.add_to_group("obstaculos_do_hud")
 	barra_stamina.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP)
 	barra_stamina.offset_left = -110
 	barra_stamina.offset_right = 110
@@ -644,6 +648,7 @@ func _criar_aviso_de_espera() -> void:
 	_espera_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_espera_panel.add_child(_espera_label)
 	_root.add_child(_espera_panel)
+	_espera_panel.add_to_group("obstaculos_do_hud")
 	# No meio, abaixo do relógio (18 a 72) e das três barras do corpo embaixo
 	# dele (a do vigor vai até 146), com um respiro, e crescendo para os dois
 	# lados com o texto.

@@ -19,7 +19,8 @@ Geração paga só ocorre quando solicitada explicitamente.
 gravada no relatório; só vai no cabeçalho de autenticação do endpoint oficial.
 O agente não precisa abrir o `.env` para executar o experimento autorizado.
 
-Cada execução limita o gasto estimado a US$ 0,10, pela tarifa publicada
+Cada execução limita o gasto estimado a US$ 0,10 por padrão, com teto
+configurável de US$ 0,50 por `--budget`, pela tarifa publicada
 configurada na ponte, sem limite padrão de tempo ou chamadas. `--seconds` e
 `--calls` acrescentam limites opcionais. `--offline --seconds 15` permite
 validar os controles sem usar a API ou crédito.
