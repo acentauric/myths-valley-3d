@@ -873,7 +873,7 @@ func conversar() -> void:
 		_avisos_dados[str(trancada.name)] = true
 		escolhida = {"texto": str(trancada.dica_da_trancada()), "voz": null}
 	else:
-		escolhida = _escolher_a_fala()
+		escolhida = _escolher_a_conversa()
 	var texto := str(escolhida.get("texto", ""))
 	if texto.strip_edges() == "":
 		return
@@ -935,6 +935,25 @@ func _repete_o_aviso() -> bool:
 ## jogo, e a voz dela: {"texto": String, "voz": AudioStream ou null}. Sem
 ## "falas", a "fala". A VOZ NÃO É POSTA AQUI: a fala ainda vai pedir a vez, e
 ## trocar o `stream` de quem está falando cortaria a voz que está no ar.
+var _alternar_relacao := false
+
+## Missões e avisos continuam antes desta conversa. A reação do vínculo
+## alterna com a prosa original, preservando suas vozes e a saudação.
+func _escolher_a_conversa() -> Dictionary:
+	var id := str(dados.get("id", ""))
+	var pontos := Afinidade.de(id)
+	var catalogo: Dictionary = Jogo.dados("res://data/dialogos/afinidade_3d.json")
+	var grau := "amigo" if pontos >= 60 else "conhecido" if pontos >= 10 else ""
+	var reacao: Dictionary = (catalogo.get(id, {}) as Dictionary).get(grau, {})
+	if not reacao.is_empty():
+		_alternar_relacao = not _alternar_relacao
+		if _alternar_relacao:
+			return {"texto": str(IdiomaMenu.campo(reacao, "texto", "")), "voz": null}
+	else:
+		_alternar_relacao = false
+	return _escolher_a_fala()
+
+
 func _escolher_a_fala() -> Dictionary:
 	var texto := String(dados.get("fala", ""))
 	var fluxo: AudioStream = voz.stream if voz != null else null

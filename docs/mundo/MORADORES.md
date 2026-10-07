@@ -8,6 +8,13 @@ conduz o tutorial.
 
 ## Quem existe
 
+No vale 3D, presentes e a primeira conversa de cada dia alteram afinidade.
+Na conversa cotidiana pelo E, os sete moradores abaixo alternam a prosa
+original com uma reação própria: conhecido a partir de 10 pontos, amigo
+a partir de 60. Missões e avisos vêm primeiro; saudações de passagem não
+mudam. O texto social está em `data/dialogos/afinidade_3d.json`, nos três
+idiomas. Não foi gerada voz nova: as falas gravadas continuam na rotação.
+
 | Quem | Onde fica | Casa | Terra em que vive | Como se ganha | Fé |
 |------|-----------|------|-------------------|----------------|----|
 | **Pedro** | acompanha o jogador | na praia, perto do píer | — | — | — |

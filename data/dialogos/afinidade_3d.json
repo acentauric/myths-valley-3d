@@ -1,0 +1,31 @@
+{
+  "observacao": "Reações do vínculo nas conversas cotidianas (#13), alternadas com as falas e vozes existentes. Conhecido começa em 10 pontos; amigo em 60. Texto nos três idiomas, sem geração de voz paga.",
+  "benedito": {
+    "conhecido": {"texto": "Já conheço seu passo. Como vai o roçado?", "texto_en": "I know your footsteps now. How is your field?", "texto_es": "Ya conozco tus pasos. ¿Cómo va tu campo?"},
+    "amigo": {"texto": "Chegue, que você é de confiança. Vamos olhar a roça juntos.", "texto_en": "Come closer, I trust you. Let's look at the field together.", "texto_es": "Acércate, confío en ti. Vamos a mirar el campo juntos."}
+  },
+  "zefa": {
+    "conhecido": {"texto": "Seu rosto já é de casa por aqui. Sente um pouco.", "texto_en": "Your face is familiar here now. Sit for a while.", "texto_es": "Tu cara ya es conocida por aquí. Siéntate un rato."},
+    "amigo": {"texto": "Entre, meu bem. Amigo não precisa esperar no terreiro.", "texto_en": "Come in, dear. A friend needn't wait in the yard.", "texto_es": "Entra, cariño. Un amigo no tiene que esperar en el patio."}
+  },
+  "cosme": {
+    "conhecido": {"texto": "Opa, já sei quem vem! Como está a lida hoje?", "texto_en": "Hey, I know who's coming! How is work today?", "texto_es": "¡Eh, ya sé quién viene! ¿Cómo va el trabajo hoy?"},
+    "amigo": {"texto": "Com você a prosa é boa. Depois da lida a gente descansa junto.", "texto_en": "I enjoy talking with you. After work we can rest together.", "texto_es": "Da gusto hablar contigo. Después del trabajo descansamos juntos."}
+  },
+  "tonho": {
+    "conhecido": {"texto": "Já reconheço você no cais. Veio saber da pesca?", "texto_en": "I recognize you at the dock now. Here to ask about fishing?", "texto_es": "Ya te reconozco en el muelle. ¿Vienes a preguntar por la pesca?"},
+    "amigo": {"texto": "Seu lugar aqui no cais está guardado. Chegue para a conversa.", "texto_en": "Your place at the dock is saved. Come and talk.", "texto_es": "Tu sitio en el muelle está guardado. Ven a conversar."}
+  },
+  "filo": {
+    "conhecido": {"texto": "Já não é visita estranha. Como vai sua casa?", "texto_en": "You're no stranger anymore. How is your home?", "texto_es": "Ya no eres una visita desconocida. ¿Cómo va tu casa?"},
+    "amigo": {"texto": "Para você sempre tem um lugar à mesa. Conte como foi o dia.", "texto_en": "There's always a place at the table for you. Tell me about your day.", "texto_es": "Para ti siempre hay sitio en la mesa. Cuéntame cómo fue el día."}
+  },
+  "candinha": {
+    "conhecido": {"texto": "Já sei quem gosta de parar para uma prosa. Como vai?", "texto_en": "I know who likes to stop for a chat now. How are you?", "texto_es": "Ya sé quién se detiene a conversar. ¿Cómo estás?"},
+    "amigo": {"texto": "Ainda bem que veio, amigo. Sente aqui e ponha a prosa em dia.", "texto_en": "I'm glad you came, friend. Sit here and catch up with me.", "texto_es": "Me alegra que hayas venido, amigo. Siéntate y conversemos."}
+  },
+  "damiao": {
+    "conhecido": {"texto": "Seu rosto já é conhecido entre estas covas. Pode chegar.", "texto_en": "Your face is familiar among these graves now. Come closer.", "texto_es": "Tu cara ya es conocida entre estas tumbas. Acércate."},
+    "amigo": {"texto": "Sua companhia faz bem até neste silêncio. Obrigado por voltar.", "texto_en": "Your company helps even in this silence. Thank you for coming back.", "texto_es": "Tu compañía hace bien incluso en este silencio. Gracias por volver."}
+  }
+}

@@ -5,6 +5,12 @@ raiz. O jogo 2D segue sua própria linha em `acentauric/myths-valley`.
 
 ## O que já roda
 
+A #13 está concluída (07/10/2026): presentes e conversas alteram a
+afinidade e os sete moradores originais reagem ao vínculo na conversa
+cotidiana, alternando com suas falas gravadas. As respostas sociais novas
+são texto em PT/EN/ES; novas vozes dependem do lote pago próprio da #59.
+Postos, saudações e prioridade das missões permanecem conferidos.
+
 A porteira decorativa isolada perto do cemitério foi removida (#152,
 07/10/2026). As roças mantêm entrada livre voltada à rua; a reorganização
 completa das cercas continua sendo a #142.

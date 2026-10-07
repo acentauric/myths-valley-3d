@@ -34,6 +34,7 @@ var _pendentes := 0
 ## falta traduzir mora em `FALTAM_TRADUCAO`, embaixo.
 const TRADUZIDOS := {
 	"res://data/afinidade_interacao_3d.json": ["pergunta", "bom", "ruim", "qualquer", "ja_deu", "item_mudou"],
+	"res://data/dialogos/afinidade_3d.json": ["texto"],
 	"res://data/galeria_personagens.json": ["indisponivel"],
 	"res://data/selecao_idioma.json": ["titulo", "descricao", "aviso"],
 	# A chegada (docs/mundo/CHEGADA_E_MUTIROES.md) nasceu nos três idiomas inteira:

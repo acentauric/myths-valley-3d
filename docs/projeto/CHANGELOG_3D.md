@@ -6,6 +6,13 @@ O teste passa a cobrar Candinha, Filo, Tonho, Zefa, arraial e recursos, incluind
 
 ## Em desenvolvimento — 07/10/2026 (experimento Jev)
 
+- **Os sete moradores reconhecem o vínculo (#13).** A conversa pelo E
+  alterna respostas de conhecido ou amigo com a prosa e as vozes originais,
+  nos três idiomas. Missões e avisos mantêm prioridade; presentes e
+  conversas continuam alterando afinidade com seus limites diários.
+  Afinidade, conversa, idiomas e rotina passaram; retirar a seleção
+  social provoca 252 reprovações no portão novo.
+
 - **A entrada da roça fica livre (#152).** Sai a porteira decorativa
   imóvel que aparecia isolada perto do cemitério. Um lance fica aberto
   e os vizinhos permanecem. Entrada real e cercas na encosta passaram;
