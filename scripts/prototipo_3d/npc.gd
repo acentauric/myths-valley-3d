@@ -169,6 +169,9 @@ var _caminho_da_festa := false
 ## O CAMINHO PELA MALHA (`navegacao_vale.gd`): os pontos até o destino, o da
 ## vez, para onde ele foi feito e quando refazer. Sem malha, anda-se reto.
 var _caminho: PackedVector3Array = PackedVector3Array()
+## O CAMINHO PELA ESTRADA (07/10): quem conduz o jogador (o Pedro) pede à malha o caminho que
+## vai pela rua e pela ponte (`Navegacao.caminho_pela_estrada`), e não o mais curto.
+var _prefere_a_estrada := false
 var _ponto_da_vez := 0
 var _caminho_ate := Vector3.INF
 var _refazer_em := 0.0
@@ -1313,7 +1316,8 @@ func _ponto_do_caminho(destino: Vector3, delta: float) -> Vector3:
 	if _caminho_ate.distance_to(destino) > 0.3 or _refazer_em <= 0.0 or _preso > TEMPO_PRESO * 0.9:
 		if _caminho_ate.distance_to(destino) > 0.3:
 			_sem_caminho_s = 0.0
-		_caminho = navegacao.caminho(global_position, destino)
+		_caminho = navegacao.caminho_pela_estrada(global_position, destino) if _prefere_a_estrada and navegacao.has_method("caminho_pela_estrada") \
+			else navegacao.caminho(global_position, destino)
 		_ponto_da_vez = 1 if _caminho.size() > 1 else 0
 		_caminho_ate = destino
 		_refazer_em = REFAZER_CAMINHO if not _caminho.is_empty() else REFAZER_SEM_CAMINHO

@@ -23,6 +23,18 @@
   cada quatro golpes, e a dica conta o trabalho ("Lajedo 12/96"); a seta de "junte
   pedras" não aponta a pedra grande a quem só tem a picareta de ferro. As árvores já
   seguiam a regra (madeira branca, de lei e dura, com nível e aço).
+- **O Pedro conduz pela estrada e pela ponte, e volta por quem ficou** (07/10, à noite:
+  "ao sair da praça, o Pedro tá correndo por trás da casa ao invés de pegar a estrada; o
+  mesmo na água do rio, ao invés de passar na ponte"; "o Pedro tem que andar já na
+  direção do jogador"). O caminho da condução passa a ser o da rua
+  (`Navegacao.caminho_pela_estrada`: as linhas das ruas da região viram um grafo ligado
+  nos cruzamentos, e o Pedro entra na rua pelo ponto mais perto e sai dela perto da
+  chegada — da praça à casa da Zefa, 87% do caminho na rua, contra 23% da malha; o rio só
+  pela ponte). E a linha do percurso é a régua da companhia: com o jogador à frente, ele
+  não espera ninguém; com o jogador para trás mais de cinco passos, ele VOLTA pelo caminho
+  até ele em vez de parar no meio da estrada; os marcos de parada saíram. E o HUD não
+  pisca mais "fale com Pedro: ele veio te esperar no píer" entre um passo e o seguinte da
+  mesma fila. Portão novo `pedro_pela_estrada`.
 - **As cercas das roças, segunda passada, pelas fotos do jogo** (07/10, à noite; "as
   cercas continuam desalinhadas"). Fotografado de dentro do jogo, o cercado tinha
   buracos ao longo da estrada e cunhas abertas nos cantos: as reservas das plantas

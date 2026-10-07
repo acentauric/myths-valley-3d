@@ -1310,7 +1310,7 @@ func _montar_moradores(spawn: Vector3) -> void:
 		pedro.entregou.connect(func(texto: String) -> void: hud.set_notice(texto))
 		# QUEM FICOU PARA TRÁS NA CONDUÇÃO vê, no alto da tela, o aviso de voltar.
 		pedro.esperando_quem_ficou.connect(func(esperando: bool) -> void:
-			hud.set_aviso_de_espera(tr("%s está esperando você: volte para perto para seguir.") % str(pedro.dados.get("nome", "Pedro")) if esperando else ""))
+			hud.set_aviso_de_espera(tr("%s voltou para te buscar: siga com ele.") % str(pedro.dados.get("nome", "Pedro")) if esperando else ""))
 	placas = PlacasNomes.new()
 	placas.name = "PlacasNomes"
 	add_child(placas)
@@ -1527,6 +1527,14 @@ func _on_missao_mudou(texto: String, _alvo: Vector3, indice: int, total: int) ->
 	_mostrar_a_acompanhada()
 
 
+## Alguma fila do vale abriu e ainda não acabou?
+func _alguma_fila_em_andamento() -> bool:
+	for cadeia in get_tree().get_nodes_in_group(CadeiaDeMissoes.GRUPO):
+		if cadeia.has_method("em_andamento") and bool(cadeia.em_andamento()):
+			return true
+	return false
+
+
 ## O HUD, A SETA E A BÚSSOLA SEGUEM A MISSÃO ACOMPANHADA.
 ##
 ## "No MENU J, de missões, eu tô clicando para trocar a missão de resumo, mas
@@ -1543,6 +1551,11 @@ func _mostrar_a_acompanhada() -> void:
 		return
 	var acompanhada: Dictionary = CadernoDoVale.atual()
 	if acompanhada.is_empty():
+		# ENTRE UM PASSO E O SEGUINTE da mesma fila o caderno fica um instante sem atual (o
+		# cumprido saiu, o próximo ainda não foi anunciado), e o HUD piscava "fale com Pedro:
+		# ele veio te esperar no píer" (07/10). Com uma fila andando, fica como está.
+		if _alguma_fila_em_andamento():
+			return
 		hud.set_objective(_objetivo_sem_missao)
 		hud.set_mission_step(0, 0)
 		_seta.limpar()

@@ -223,6 +223,225 @@ func caminho(de: Vector3, para: Vector3) -> PackedVector3Array:
 	return NavigationServer3D.map_get_path(get_world_3d().navigation_map, de, para, true)
 
 
+## O CAMINHO PELA ESTRADA (07/10: "ao sair da praça, o Pedro tá correndo por trás da casa ao
+## invés de pegar a estrada; na água do rio, ao invés de passar na ponte"). O caminho da malha
+## é o mais curto, e o mais curto corta por trás das casas e beira a água. Quem conduz o
+## jogador vai pela rua: da partida à rua mais perto pela malha, pela rua — as linhas das
+## ruas da região, ligadas nos cruzamentos, pelo caminho mais curto delas; a ponte é rua —
+## até o ponto da rua mais perto da chegada, e dali à chegada pela malha (a casa da Zefa fica a
+## quarenta e dois passos da rua mais perta, e a conta cabe nela). Longe de qualquer
+## rua (LONGE_DA_RUA), ou quando a volta pela rua passa de DESVIO_MAXIMO_PELA_RUA vezes a
+## reta da malha, vale o caminho da malha.
+const LONGE_DA_RUA := 45.0
+const DESVIO_MAXIMO_PELA_RUA := 2.2
+## Até onde do fim de uma rua ela se liga a outra (um cruzamento, um T).
+const LIGA_RUAS_ATE := 2.5
+var _grafo_das_ruas := {}
+
+
+func caminho_pela_estrada(de: Vector3, para: Vector3) -> PackedVector3Array:
+	var direto := caminho(de, para)
+	if direto.is_empty():
+		return direto
+	_montar_o_grafo_das_ruas()
+	if _grafo_das_ruas.is_empty():
+		return direto
+	# A ENTRADA E A SAÍDA DA RUA são o ponto mais perto de um TRECHO dela (os vértices são
+	# esparsos: o píer fica longe de todos), postos no grafo como nós de passagem ligados às
+	# duas pontas do trecho.
+	var entrada := _ponto_da_rua_mais_perto(Vector2(de.x, de.z))
+	var saida := _ponto_da_rua_mais_perto(Vector2(para.x, para.z))
+	if entrada.is_empty() or saida.is_empty():
+		return direto
+	if float(entrada["distancia"]) > LONGE_DA_RUA or float(saida["distancia"]) > LONGE_DA_RUA:
+		return direto
+	if (entrada["ponto"] as Vector2).distance_to(saida["ponto"]) < 1.0:
+		return direto
+	var nos: PackedVector2Array = (_grafo_das_ruas["nos"] as PackedVector2Array).duplicate()
+	var vizinhos: Array = []
+	for lista in (_grafo_das_ruas["vizinhos"] as Array):
+		vizinhos.append((lista as Array).duplicate())
+	var no_entrada := _por_no_grafo(nos, vizinhos, entrada)
+	var no_saida := _por_no_grafo(nos, vizinhos, saida)
+	var pela_rua := _dijkstra(nos, vizinhos, no_entrada, no_saida)
+	if pela_rua.size() < 2:
+		return direto
+	var pontos := PackedVector3Array()
+	var primeiro := _na_malha(nos[no_entrada], de.y)
+	var ultimo := _na_malha(nos[no_saida], para.y)
+	pontos.append_array(caminho(de, primeiro))
+	for i in pela_rua:
+		pontos.append(_na_malha(nos[i], de.y))
+	pontos.append_array(caminho(ultimo, para))
+	if _comprimento(pontos) > _comprimento(direto) * DESVIO_MAXIMO_PELA_RUA:
+		return direto
+	return pontos
+
+
+## O ponto da malha mais perto de um ponto da rua: a altura certa (a ponte, e não o leito
+## embaixo dela).
+func _na_malha(p: Vector2, altura: float) -> Vector3:
+	var chao: float = altura
+	if _mundo != null and _mundo.has_method("ground_height_at"):
+		chao = maxf(float(_mundo.ground_height_at(Vector3(p.x, 0.0, p.y))), altura - 6.0)
+	return NavigationServer3D.map_get_closest_point(get_world_3d().navigation_map, Vector3(p.x, chao + 0.5, p.y))
+
+
+static func _comprimento(pontos: PackedVector3Array) -> float:
+	var total := 0.0
+	for i in range(1, pontos.size()):
+		total += Vector2(pontos[i].x - pontos[i - 1].x, pontos[i].z - pontos[i - 1].z).length()
+	return total
+
+
+## As ruas da região viram um grafo: os pontos das linhas delas são os nós, os trechos
+## entre pontos seguidos são as arestas, e as ruas se ligam onde um ponto de uma cai a
+## LIGA_RUAS_ATE (ou meia largura) de um ponto ou de um trecho de outra.
+func _montar_o_grafo_das_ruas() -> void:
+	if not _grafo_das_ruas.is_empty() or _mundo == null:
+		return
+	var regiao = _mundo.get("_region")
+	if regiao == null or not ("_roads" in regiao):
+		return
+	var nos := PackedVector2Array()
+	var vizinhos: Array = []
+	var trechos: Array = []
+	var rua_do_no := PackedInt32Array()
+	var ruas: Array = regiao._roads
+	for r in ruas.size():
+		var pontos: PackedVector2Array = (ruas[r] as Dictionary)["points"]
+		var primeiro := nos.size()
+		for k in pontos.size():
+			nos.append(pontos[k])
+			vizinhos.append([])
+			rua_do_no.append(r)
+			if k > 0:
+				_ligar(vizinhos, primeiro + k - 1, primeiro + k)
+				trechos.append([primeiro + k - 1, primeiro + k])
+	# Os cruzamentos: um nó de uma rua perto de um nó de outra; a ponta de uma rua caindo no
+	# meio de um trecho de outra (o T) liga-se às duas pontas do trecho.
+	for i in nos.size():
+		for j in range(i + 1, nos.size()):
+			if rua_do_no[i] == rua_do_no[j]:
+				continue
+			var folga := maxf(LIGA_RUAS_ATE, maxf(float((ruas[rua_do_no[i]] as Dictionary).get("width", 3.0)), float((ruas[rua_do_no[j]] as Dictionary).get("width", 3.0))) * 0.5)
+			if nos[i].distance_to(nos[j]) <= folga:
+				_ligar(vizinhos, i, j)
+	for i in nos.size():
+		for r in ruas.size():
+			if r == rua_do_no[i]:
+				continue
+			var pontos: PackedVector2Array = (ruas[r] as Dictionary)["points"]
+			var folga := maxf(LIGA_RUAS_ATE, float((ruas[r] as Dictionary).get("width", 3.0)) * 0.5)
+			var base := 0
+			for rr in r:
+				base += ((ruas[rr] as Dictionary)["points"] as PackedVector2Array).size()
+			for k in range(pontos.size() - 1):
+				var proj := Geometry2D.get_closest_point_to_segment(nos[i], pontos[k], pontos[k + 1])
+				if nos[i].distance_to(proj) <= folga:
+					_ligar(vizinhos, i, base + k)
+					_ligar(vizinhos, i, base + k + 1)
+	# OS CRUZAMENTOS EM X: dois trechos de ruas diferentes que se cortam no meio ganham um nó no
+	# ponto do corte, ligado às quatro pontas — sem ele, a Rua da Praça e a Rua Principal só se
+	# falariam se um vértice de uma caísse em cima da outra.
+	var quantos_trechos := trechos.size()
+	for i in quantos_trechos:
+		for j in range(i + 1, quantos_trechos):
+			var ai := int(trechos[i][0])
+			var bi := int(trechos[i][1])
+			var aj := int(trechos[j][0])
+			var bj := int(trechos[j][1])
+			if rua_do_no[ai] == rua_do_no[aj]:
+				continue
+			var corte = Geometry2D.segment_intersects_segment(nos[ai], nos[bi], nos[aj], nos[bj])
+			if corte == null:
+				continue
+			var novo := nos.size()
+			nos.append(corte)
+			vizinhos.append([])
+			rua_do_no.append(rua_do_no[ai])
+			for ponta in [ai, bi, aj, bj]:
+				_ligar(vizinhos, novo, ponta)
+	_grafo_das_ruas = {"nos": nos, "vizinhos": vizinhos, "trechos": trechos}
+
+
+static func _ligar(vizinhos: Array, a: int, b: int) -> void:
+	if a == b:
+		return
+	if not (vizinhos[a] as Array).has(b):
+		(vizinhos[a] as Array).append(b)
+	if not (vizinhos[b] as Array).has(a):
+		(vizinhos[b] as Array).append(a)
+
+
+## O ponto de rua mais perto de `p`: {"ponto", "distancia", "a", "b"} — a projeção no trecho
+## entre os nós `a` e `b` —, ou {} sem ruas.
+func _ponto_da_rua_mais_perto(p: Vector2) -> Dictionary:
+	var nos: PackedVector2Array = _grafo_das_ruas["nos"]
+	var trechos: Array = _grafo_das_ruas["trechos"]
+	var melhor := {}
+	var menor := INF
+	for trecho in trechos:
+		var a := int(trecho[0])
+		var b := int(trecho[1])
+		var proj := Geometry2D.get_closest_point_to_segment(p, nos[a], nos[b])
+		var d := p.distance_to(proj)
+		if d < menor:
+			menor = d
+			melhor = {"ponto": proj, "distancia": d, "a": a, "b": b}
+	return melhor
+
+
+## Põe o ponto de passagem no grafo (uma cópia), ligado às duas pontas do trecho dele.
+static func _por_no_grafo(nos: PackedVector2Array, vizinhos: Array, passagem: Dictionary) -> int:
+	var i := nos.size()
+	nos.append(passagem["ponto"])
+	vizinhos.append([])
+	_ligar(vizinhos, i, int(passagem["a"]))
+	_ligar(vizinhos, i, int(passagem["b"]))
+	return i
+
+
+## O caminho mais curto pelo grafo das ruas (Dijkstra), como lista de nós; vazio sem ligação.
+static func _dijkstra(nos: PackedVector2Array, vizinhos: Array, de: int, para: int) -> Array:
+	var custo := PackedFloat32Array()
+	var anterior := PackedInt32Array()
+	var fechado := PackedByteArray()
+	custo.resize(nos.size())
+	anterior.resize(nos.size())
+	fechado.resize(nos.size())
+	for i in nos.size():
+		custo[i] = INF
+		anterior[i] = -1
+		fechado[i] = 0
+	custo[de] = 0.0
+	while true:
+		var atual := -1
+		var menor := INF
+		for i in nos.size():
+			if fechado[i] == 0 and custo[i] < menor:
+				menor = custo[i]
+				atual = i
+		if atual < 0:
+			break
+		if atual == para:
+			break
+		fechado[atual] = 1
+		for v in (vizinhos[atual] as Array):
+			var novo: float = custo[atual] + nos[atual].distance_to(nos[int(v)])
+			if novo < custo[int(v)]:
+				custo[int(v)] = novo
+				anterior[int(v)] = atual
+	if custo[para] == INF:
+		return []
+	var saida: Array = []
+	var i := para
+	while i >= 0:
+		saida.push_front(i)
+		i = anterior[i]
+	return saida
+
+
 ## A área por onde os moradores andam, com folga, do fundo da água para cima.
 func _area() -> AABB:
 	var ancoras: Dictionary = _mundo.ancoras

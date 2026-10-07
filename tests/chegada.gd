@@ -46,6 +46,9 @@ extends SceneTree
 
 const RelogioDeJogo = preload("res://tests/fixtures/relogio_de_jogo.gd")
 
+## A distância a que o Pedro considera o jogador de volta (`GuiaPedro.VOLTA_A_ANDAR`).
+const VOLTA_A_ANDAR_DO_PEDRO := 3.0
+
 var falhas := 0
 var relogio
 var dia
@@ -185,34 +188,44 @@ func _run() -> void:
 				andou = true
 				break
 		_conferir(andou, "na chave o Pedro não foi na frente até a Dona Candinha (estava a %.1f e ficou a %.1f)" % [antes, _no_chao(pedro.global_position, candinha.global_position)])
-		# OS MARCOS DA ESTRADA (07/10): com o jogador a quatro passos — perto, mas sem acompanhar de
-		# colado —, o Pedro anda um trecho e para num marco até o jogador chegar a três passos.
-		var marcou := false
-		var marco_limite := Time.get_ticks_msec() + 14000
-		while Time.get_ticks_msec() < marco_limite and not marcou:
+		# A LINHA DO PERCURSO (07/10, à noite): com o jogador a quatro passos atrás, o Pedro NÃO
+		# para (os marcos de antes paravam, e o jogador não entendia o que fazer): continua até a
+		# Dona Candinha.
+		var antes_da_linha: float = _no_chao(pedro.global_position, candinha.global_position)
+		for i in 8:
 			var para_a_candinha: Vector3 = candinha.global_position - pedro.global_position
 			para_a_candinha.y = 0.0
 			var atras: Vector3 = -para_a_candinha.normalized() * 4.0 if para_a_candinha.length() > 0.1 else Vector3(4.0, 0.0, 0.0)
 			jogador.teleportar(pedro.global_position + atras + Vector3(0.0, 0.1, 0.0), 0.0)
-			await _passos_de_fisica(6)
-			marcou = bool(pedro.get("_no_marco"))
-		_conferir(marcou, "o Pedro não parou num marco da estrada com o jogador a quatro passos")
-		if marcou:
-			var no_marco_em: Vector3 = pedro.global_position
-			await _passos_de_fisica(30)
-			_conferir(_no_chao(pedro.global_position, no_marco_em) < 0.3, "no marco, o Pedro não ficou esperando")
-			jogador.teleportar(pedro.global_position + Vector3(1.0, 0.1, 1.0), 0.0)
-			_conferir(await _ate(func() -> bool: return not bool(pedro.get("_no_marco")), 3.0), "com o jogador ao lado, o Pedro não saiu do marco")
-		# Longe do jogador, ele espera.
-		jogador.teleportar(pedro.global_position + Vector3(14.0, 0.1, 0.0), 0.0)
-		await _passos_de_fisica(30)
-		var parado_em: Vector3 = pedro.global_position
+			await _passos_de_fisica(8)
+		_conferir(_no_chao(pedro.global_position, candinha.global_position) < antes_da_linha - 1.0,
+			"com o jogador a quatro passos atrás, o Pedro parou no caminho (estava a %.1f da Candinha e ficou a %.1f)" % [antes_da_linha, _no_chao(pedro.global_position, candinha.global_position)])
+		# COM O JOGADOR À FRENTE, ele não espera ninguém: segue.
+		var a_frente: Vector3 = candinha.global_position - pedro.global_position
+		a_frente.y = 0.0
+		if a_frente.length() > 9.0:
+			jogador.teleportar(pedro.global_position + a_frente.normalized() * 7.0 + Vector3(0.0, 0.1, 0.0), 0.0)
+			var antes_da_frente: float = _no_chao(pedro.global_position, candinha.global_position)
+			await _passos_de_fisica(40)
+			_conferir(not bool(pedro.get("_esperando_quem_ficou")), "com o jogador à frente no caminho, o Pedro ficou 'esperando' quem ficou")
+			_conferir(_no_chao(pedro.global_position, candinha.global_position) < antes_da_frente - 1.0,
+				"com o jogador à frente, o Pedro parou (estava a %.1f da Candinha e ficou a %.1f)" % [antes_da_frente, _no_chao(pedro.global_position, candinha.global_position)])
+		# COM O JOGADOR PARA TRÁS, ele volta a buscá-lo em vez de ficar parado.
+		var para_tras: Vector3 = candinha.global_position - pedro.global_position
+		para_tras.y = 0.0
+		jogador.teleportar(pedro.global_position - para_tras.normalized() * 12.0 + Vector3(0.0, 0.1, 0.0), 0.0)
+		await _passos_de_fisica(20)
+		var longe_antes: float = _no_chao(pedro.global_position, jogador.global_position)
 		await _passos_de_fisica(60)
-		_conferir(_no_chao(pedro.global_position, parado_em) < 0.3, "com o jogador para trás, o Pedro não parou para esperar")
+		var longe_depois: float = _no_chao(pedro.global_position, jogador.global_position)
+		_conferir(bool(pedro.get("_esperando_quem_ficou")) or longe_depois < VOLTA_A_ANDAR_DO_PEDRO,
+			"com o jogador doze passos para trás, o Pedro não foi buscá-lo")
+		_conferir(longe_depois < longe_antes - 1.5 or longe_depois < VOLTA_A_ANDAR_DO_PEDRO,
+			"com o jogador para trás, o Pedro não veio na direção dele (estava a %.1f e ficou a %.1f)" % [longe_antes, longe_depois])
 		# E A TELA DIZ QUE ELE PAROU: "deve aparecer um aviso em tela informando para
 		# se reaproximar do NPC". Voltando para perto, o aviso sai.
-		_conferir(str(vale.hud.aviso_de_espera()).contains("esperando"),
-			"o Pedro parou à espera de quem ficou para trás e a tela não avisou: '%s'" % str(vale.hud.aviso_de_espera()))
+		_conferir(str(vale.hud.aviso_de_espera()).contains("buscar") or longe_depois < VOLTA_A_ANDAR_DO_PEDRO,
+			"o Pedro voltou por quem ficou para trás e a tela não avisou: '%s'" % str(vale.hud.aviso_de_espera()))
 		jogador.teleportar(pedro.global_position + Vector3(1.0, 0.1, 1.0), 0.0)
 		_conferir(await _ate(func() -> bool: return str(vale.hud.aviso_de_espera()) == "", 3.0),
 			"o jogador voltou para perto do Pedro e o aviso de voltar continuou na tela")
