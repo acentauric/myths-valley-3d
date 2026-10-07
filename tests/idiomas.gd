@@ -48,6 +48,7 @@ const TRADUZIDOS := {
 	"res://data/missoes_oficio.json": ["texto", "resumo", "nome", "titulo", "resposta"],
 	"res://data/missoes_capoeira.json": ["texto", "resumo", "nome", "titulo", "resposta"],
 	"res://data/missoes_metas.json": ["texto", "resumo", "nome", "titulo", "resposta"],
+	"res://data/missoes_metas_onca.json": ["texto", "resumo", "nome", "titulo", "resposta"],
 	"res://data/missoes_ponte.json": ["texto", "resumo", "nome", "titulo", "resposta"],
 	"res://data/missoes_chapada.json": ["texto", "resumo", "nome", "titulo", "resposta"],
 	"res://data/missoes_lombada.json": ["texto", "resumo", "nome", "titulo", "resposta"],

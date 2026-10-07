@@ -292,7 +292,7 @@ caçando. Lidas de `data/colecionaveis/bichos.json`.
 | id | Título | Objetivo | Conta | Quem paga | Paga | 3D |
 |---|---|---|---|---|---|---|
 | `meta_caititu` | O gibão do pai do Pedro | Fale com o Pedro | 10 caititus | Pedro | gibão de couro | **pronta** (`missoes_metas.json`, abre sozinha na conta) |
-| `meta_onca` | O patuá da Dona Zefa | Leve um couro de onça à Dona Zefa | 2 onças | Dona Zefa | patuá | falta escrever: a onça chegou ao vale em 05/10/2026 (`luta_vale.oncas`, a pintada e a preta, que largam `couro_de_onca`), e a meta ainda não está em `missoes_metas.json` |
+| `meta_onca` | O patuá da Dona Zefa | Leve um couro de onça à Dona Zefa | 2 onças | Dona Zefa | patuá | **pronta** (#117, 06/10/2026: `missoes_metas_onca.json`, pendurada na Dona Zefa; abre sozinha na conta do caderno, como a do caititu, e o couro levado a ela paga o patuá) |
 
 ---
 

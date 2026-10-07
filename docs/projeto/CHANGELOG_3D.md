@@ -436,6 +436,15 @@
   três idiomas, com o que mudou na build de desempenho: carga sem o congelamento de
   19 s, FPS dobrado (sombra, faces de trás, mata mais leve), mata pela metade com
   clareiras de árvore-destaque, minimapa pintado e estático, e o lobby em vídeo.
+- **A meta da onça: o patuá da Dona Zefa (#117).** Pela lista de missões do 2D
+  (`MISSOES_DO_2D.md`, 3.11), a segunda meta do caderno dos bichos estava por
+  escrever desde que a onça chegou ao vale. Agora `data/missoes_metas_onca.json`,
+  pendurada na Dona Zefa, abre sozinha quando a conta de abatidos de onça chega
+  à do caderno (`bichos.json`: duas), como a do caititu; o couro de onça levado
+  a ela fecha a meta e paga o patuá e o XP, nos três idiomas. As contas das
+  metas passam a ser lidas do caderno para toda espécie que tenha uma
+  (`prototype.CADEIA_DA_META`, `_conferir_as_metas`). Portões `frentes` (a
+  parte 8b) e `idiomas`.
 
 ## Em desenvolvimento — 05/10/2026
 

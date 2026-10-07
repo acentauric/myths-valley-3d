@@ -1,0 +1,42 @@
+{
+  "observacao": "A META DA ONÇA, do caderno dos bichos (docs/projeto/MISSOES_DO_2D.md, 3.11; data/colecionaveis/bichos.json, onca.meta): a segunda meta da parede da Guilda, a da Dona Zefa, que costura patuá para quem derruba duas. Abre sozinha quando a conta de abatidos chega (prototype._conferir_as_metas confere Luta.abatidos('onca') contra bichos.json), e fecha levando um couro de onça à Dona Zefa, que paga o patuá. A onça mora no penedo depois da pinguela (luta_vale.oncas: a pintada e a preta, que largam couro_de_onca). SEM VOZ: a Dona Zefa fala no balão.",
+  "dono": "zefa",
+  "nome": "O patuá da Dona Zefa",
+  "nome_en": "Dona Zefa's patuá",
+  "nome_es": "El patuá de doña Zefa",
+  "principal": false,
+  "passos": [
+    {
+      "id": "meta_onca",
+      "titulo": "Duas onças",
+      "titulo_en": "Two jaguars",
+      "titulo_es": "Dos jaguares",
+      "resumo": "Leve um couro de onça à Dona Zefa",
+      "resumo_en": "Take a jaguar hide to Dona Zefa",
+      "resumo_es": "Lleva un cuero de jaguar a doña Zefa",
+      "lugar": "casa_da_zefa",
+      "raio": 8.0,
+      "audio": "",
+      "texto": "Duas onças, menino? O penedo nunca ficou tanto tempo quieto. Me traz um couro, que eu costuro o teu patuá — com oração dentro, do jeito que a minha mãe costurava.",
+      "texto_en": "Two jaguars, child? The rock has never been quiet this long. Bring me a hide and I'll sew your patuá, with a prayer inside, the way my mother sewed them.",
+      "texto_es": "¿Dos jaguares, muchacho? El peñasco nunca estuvo tanto tiempo quieto. Tráeme un cuero, que te coso el patuá, con oración adentro, como lo cosía mi madre.",
+      "meta": {
+        "tipo": "levar",
+        "item": "couro_de_onca",
+        "quantos": 1,
+        "a_quem": "zefa",
+        "raio": 3.4,
+        "resposta": "Couro de onça de verdade, de roseta. Vem cá que eu fecho a costura: pendura no pescoço e não tira nem para dormir. Bicho nenhum chega perto de quem derruba duas — e agora tem a oração também.",
+        "resposta_en": "A real jaguar hide, with rosettes. Come here and I'll close the stitching: hang it around your neck and don't take it off even to sleep. No beast comes near someone who felled two — and now you have the prayer too.",
+        "resposta_es": "Cuero de jaguar de verdad, con rosetas. Ven acá que cierro la costura: cuélgalo al cuello y no te lo quites ni para dormir. Ningún bicho se acerca a quien derriba dos, y ahora tienes la oración también."
+      },
+      "recompensa": {"xp": 10, "patua": 1}
+    }
+  ],
+  "arremate": {
+    "texto": "Duas caíram, e o patuá da Dona Zefa está no seu pescoço.",
+    "texto_en": "Two are down, and Dona Zefa's patuá is around your neck.",
+    "texto_es": "Cayeron dos, y el patuá de doña Zefa está en tu cuello.",
+    "narra": false
+  }
+}

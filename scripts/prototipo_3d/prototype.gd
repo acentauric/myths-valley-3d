@@ -972,10 +972,21 @@ func _pendurar_as_frentes_do_2d() -> void:
 		# A JORNADA DA FAZENDA (data/missoes_fazenda.json): não abre no E; quem a
 		# começa é o dia dela (`fazenda_vale.gd`).
 		_pendurar_cadeia(pedro, "res://data/missoes_fazenda.json", 0.0, "pedro_fazenda")
-		var bichos = JSON.parse_string(FileAccess.get_file_as_string("res://data/colecionaveis/bichos.json"))
-		if bichos is Dictionary:
-			var caititu: Dictionary = ((bichos as Dictionary).get("bichos", {}) as Dictionary).get("caititu", {})
-			_caititus_da_meta = int((caititu.get("meta", {}) as Dictionary).get("conta", _caititus_da_meta))
+	# A META DA ONÇA é da Dona Zefa (data/missoes_metas_onca.json, #117): abre
+	# sozinha quando a conta de abatidos chega, como a dos caititus, e fecha
+	# levando o couro a ela.
+	var zefa := _achar_morador("zefa")
+	if zefa != null:
+		_pendurar_cadeia(zefa, "res://data/missoes_metas_onca.json", 0.0, "zefa_metas")
+	# AS CONTAS DAS METAS vêm do caderno dos bichos (`meta.conta` de cada
+	# espécie), e cada meta sabe a fila que a paga (CADEIA_DA_META).
+	var bichos = JSON.parse_string(FileAccess.get_file_as_string("res://data/colecionaveis/bichos.json"))
+	if bichos is Dictionary:
+		for especie in ((bichos as Dictionary).get("bichos", {}) as Dictionary):
+			var meta: Dictionary = (((bichos as Dictionary)["bichos"] as Dictionary)[especie] as Dictionary).get("meta", {})
+			var cadeia := str(CADEIA_DA_META.get(str(meta.get("missao", "")), ""))
+			if cadeia != "" and meta.has("conta"):
+				_metas_dos_bichos[str(especie)] = {"conta": int(meta["conta"]), "cadeia": cadeia}
 	var cosme := _achar_morador("cosme")
 	if cosme != null:
 		var capoeira = _pendurar_cadeia(cosme, "res://data/missoes_capoeira.json", 4.0, "cosme_capoeira")
@@ -987,7 +998,10 @@ func _pendurar_as_frentes_do_2d() -> void:
 
 
 ## Quantos caititus abrem a meta do gibão (`bichos.json`, a parede da Guilda).
-var _caititus_da_meta := 10
+## As metas do caderno dos bichos: espécie → {conta, cadeia}, lidas de
+## bichos.json em `_pendurar_as_frentes_do_2d` (#117).
+const CADEIA_DA_META := {"meta_caititu": "pedro_metas", "meta_onca": "zefa_metas"}
+var _metas_dos_bichos: Dictionary = {}
 
 
 ## A META ABRE SOZINHA: com a conta de caititus derrubados, o Pedro chama.
@@ -1023,9 +1037,11 @@ func _conferir_o_socorro() -> void:
 
 
 func _conferir_as_metas() -> void:
-	var metas = _cadeias.get("pedro_metas")
-	if metas != null and not metas.iniciado and Luta.abatidos("caititu") >= _caititus_da_meta:
-		metas.comecar(1.0)
+	for especie in _metas_dos_bichos:
+		var meta: Dictionary = _metas_dos_bichos[especie]
+		var fila = _cadeias.get(str(meta["cadeia"]))
+		if fila != null and not fila.iniciado and Luta.abatidos(str(especie)) >= int(meta["conta"]):
+			fila.comecar(1.0)
 
 
 ## OS ACONTECIMENTOS DAS FRENTES: o golpe que acertou, o bicho que caiu, o que
