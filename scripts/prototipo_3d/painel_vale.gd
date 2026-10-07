@@ -463,6 +463,7 @@ func _montar() -> void:
 	caixa.offset_top = -TAMANHO.y * 0.5
 	caixa.offset_bottom = TAMANHO.y * 0.5
 	add_child(caixa)
+	Tela.vincular_componente(caixa, "caderneta", Vector2(0.5, 0.5))
 	# A MOLDURA DE TALHA do resto do vale, como no almanaque. Painel com borda
 	# própria é painel que envelhece sozinho quando a identidade muda.
 	Identidade.emoldurar(caixa)

@@ -147,6 +147,7 @@ func _ready() -> void:
 	# passo à direita do rótulo. O painel encolheu junto — cabeçalho menor é
 	# mais vale à vista.
 	_heading = _panel(Color(0.055, 0.085, 0.075, 0.82))
+	_heading.add_to_group(PopupsDoMundo.GRUPO_HUD)
 	_place(_heading, Vector2(18, 18), Vector2(HEADING_WIDTH, 96))
 	_region_label = _label("REGIÃO INICIAL", 12, GOLD)
 	_place(_region_label, Vector2(33, 26), Vector2(HEADING_WIDTH - 130, 20))
@@ -346,6 +347,14 @@ func _ready() -> void:
 	almanaque_layer.add_child(almanaque)
 	_almanaque = almanaque
 
+	_agrupar_componente([_heading, _region_label, _mission_step, _quest_label, _objective_label], "missao", Vector2(18, 18))
+	_agrupar_componente([_notice_panel, _notice_label], "avisos", Vector2(_root.size.x * 0.5, _root.size.y - BarraDeMao.altura_ocupada()))
+	Tela.componentes_mudaram.connect(_layout_medidores)
+	Tela.componentes_mudaram.connect(_layout_notice)
+	get_viewport().size_changed.connect(_layout_notice)
+	Tela.vincular_componente(_clock_panel, "relogio")
+	for dado in [[barra_vida, "vida"], [barra_folego, "folego"], [barra_stamina, "vigor"]]:
+		Tela.vincular_componente(dado[0], dado[1])
 	_update_control_mode()
 	_update_telemetry()
 
@@ -576,20 +585,44 @@ func _criar_barra_de_stamina() -> void:
 	_atualizar_vigor()
 
 
+func _agrupar_componente(controles: Array, chave: String, pivo: Vector2) -> void:
+	var grupo := Control.new()
+	grupo.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_root.add_child(grupo)
+	grupo.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	for controle: Control in controles:
+		controle.reparent(grupo, false)
+	var aplicar := func() -> void:
+		grupo.pivot_offset = Vector2(_root.size.x * 0.5, _root.size.y - BarraDeMao.altura_ocupada()) if chave == "avisos" else pivo
+		grupo.scale = Vector2.ONE * Tela.escala_componente(chave)
+	Tela.componentes_mudaram.connect(aplicar)
+	grupo.resized.connect(aplicar)
+	aplicar.call()
+
+
 func _layout_medidores() -> void:
 	if not is_instance_valid(_clock_panel) or not is_instance_valid(barra_stamina):
 		return
 	var largura := _root.size.x
 	# Missao termina em 378; atalhos comecam a 78 da borda direita.
-	var inicio := clampf(largura * 0.5 - 105.0, 390.0, maxf(390.0, largura - 310.0))
+	var esquerda := 18.0 + HEADING_WIDTH * Tela.escala_componente("missao") + 12.0
+	var relogio := 100.0 * Tela.escala_componente("relogio")
+	var barras := 160.0 * maxf(Tela.escala_componente("vida"), maxf(Tela.escala_componente("folego"), Tela.escala_componente("vigor")))
+	var inicio := maxf(esquerda, (largura - relogio - barras - 8.0) * 0.5)
+	var topo := 18.0
+	if inicio + relogio + barras + 8.0 > largura - 90.0:
+		inicio = 18.0
+		topo = 18.0 + _heading.size.y * Tela.escala_componente("missao") + 12.0
 	_clock_panel.set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT)
-	_clock_panel.position = Vector2(inicio, 18)
+	_clock_panel.position = Vector2(inicio, topo)
 	_clock_panel.size = Vector2(100, 52)
 	var indice := 0
+	var altura := topo
 	for barra: ProgressBar in [barra_vida, barra_folego, barra_stamina]:
 		barra.set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT)
-		barra.position = Vector2(inicio + 108, 18 + indice * 20)
+		barra.position = Vector2(inicio + relogio + 8.0, altura)
 		barra.size = Vector2(160, 18)
+		altura += 18.0 * Tela.escala_componente(["vida", "folego", "vigor"][indice]) + 2.0
 		indice += 1
 	for texto: Label in [_vida_texto, _folego_texto, _stamina_texto]:
 		texto.offset_left = 22
@@ -632,6 +665,15 @@ func _sincronizar_prioridade_dos_avisos() -> void:
 	var permitido := not mapa_aberto and not controls_open()
 	var superiores := PopupsDoMundo.retangulos_dos_baloes(self)
 	superiores.append_array(PopupsDoMundo.retangulos(self, PopupsDoMundo.GRUPO_DICAS))
+	var essenciais := PopupsDoMundo.retangulos(self, PopupsDoMundo.GRUPO_HUD, null, PopupsDoMundo.PRIORIDADE_HUD)
+	if is_instance_valid(_espera_panel):
+		_espera_panel.position.y = 154.0
+		# O aviso segue abaixo dos componentes maiores, antes de disputar com
+		# as falas do mundo. Sua função permanece legível com uma missão ampliada.
+		for caixa in essenciais:
+			if caixa.intersects(_espera_panel.get_global_rect()):
+				_espera_panel.position.y = caixa.end.y + 12.0
+	superiores.append_array(essenciais)
 	if is_instance_valid(_notice_panel):
 		var livre := true
 		for caixa in superiores:
@@ -659,19 +701,13 @@ func set_telemetry(value: String) -> void:
 
 ## Avisos de recebimento e resultado têm prazo próprio. Repetir o mesmo aviso
 ## enquanto ele está no ar não reinicia o prazo; o prazo antigo nunca limpa outro.
-func set_notice(value: String, segundos: float = -1.0) -> void:
-	if value == _notice:
-		return
-	_notice_revision += 1
-	if _notice_expiry != null and _notice_expiry.is_valid():
-		_notice_expiry.kill()
-	_notice = value
+func _layout_notice() -> void:
 	if is_instance_valid(_notice_label):
-		_notice_label.text = value
-		_notice_panel.visible = not value.is_empty()
+		_notice_label.text = _notice
+		_notice_panel.visible = not _notice.is_empty()
 		var font := _notice_label.get_theme_font("font")
-		var largura := maxf(160.0, _root.get_viewport_rect().size.x * 0.68)
-		var half := minf(largura, font.get_string_size(value, HORIZONTAL_ALIGNMENT_LEFT, -1, 14).x) * 0.5 + 24.0
+		var largura := maxf(160.0, _root.get_viewport_rect().size.x * 0.68 / Tela.escala_componente("avisos"))
+		var half := minf(largura, font.get_string_size(_notice, HORIZONTAL_ALIGNMENT_LEFT, -1, _notice_label.get_theme_font_size("font_size")).x) * 0.5 + 24.0
 		_notice_panel.offset_left = -half
 		_notice_panel.offset_right = half
 		_notice_label.offset_left = -half + 24.0
@@ -683,6 +719,16 @@ func set_notice(value: String, segundos: float = -1.0) -> void:
 		_notice_label.offset_bottom = -acima - 4.0
 		_notice_panel.offset_top = -acima - altura - 8.0
 		_notice_panel.offset_bottom = -acima
+
+
+func set_notice(value: String, segundos: float = -1.0) -> void:
+	if value == _notice:
+		return
+	_notice_revision += 1
+	if _notice_expiry != null and _notice_expiry.is_valid():
+		_notice_expiry.kill()
+	_notice = value
+	_layout_notice()
 	if not value.is_empty() and is_inside_tree():
 		var prazo := segundos if segundos >= 0.0 else maxf(4.0, float(value.length()) / 15.0 + 1.0)
 		var revisao := _notice_revision
@@ -747,6 +793,7 @@ func _criar_aviso_de_espera() -> void:
 	_espera_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_espera_panel.add_child(_espera_label)
 	_root.add_child(_espera_panel)
+	Tela.vincular_componente(_espera_panel, "avisos", Vector2(0.5, 0))
 	_espera_panel.add_to_group("obstaculos_do_hud")
 	# No meio, abaixo do relógio (18 a 72) e das três barras do corpo embaixo
 	# dele (a do vigor vai até 146), com um respiro, e crescendo para os dois
@@ -950,7 +997,8 @@ func _fit_heading() -> void:
 	var altura := topo + altura_texto + 18.0
 	_heading.size.y = altura
 	if is_instance_valid(_house_info_panel):
-		_house_info_panel.position.y = 18.0 + altura + 12.0
+		_house_info_panel.position.y = 18.0 + altura * Tela.escala_componente("missao") + 12.0
+	_layout_medidores()
 
 
 ## Coluna de botões redondos: HOME, som e relógio na mesma posição do menu, depois

@@ -134,6 +134,7 @@ func _montar() -> void:
 	_caixa.offset_top = -TAMANHO.y * 0.5
 	_caixa.offset_bottom = TAMANHO.y * 0.5
 	add_child(_caixa)
+	Tela.vincular_componente(_caixa, "social", Vector2(0.5, 0.5))
 	Identidade.emoldurar(_caixa)
 
 	var coluna_geral := VBoxContainer.new()

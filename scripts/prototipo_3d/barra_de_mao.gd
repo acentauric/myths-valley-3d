@@ -63,6 +63,8 @@ func _montar() -> void:
 
 	var fila := HBoxContainer.new()
 	fila.name = "Fila"
+	fila.add_to_group("obstaculos_do_hud")
+	Tela.vincular_componente(fila, "mao", Vector2(0.5, 1))
 	fila.add_theme_constant_override("separation", int(VAO))
 	fila.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(fila)
@@ -282,7 +284,7 @@ func _abrir_ou_fechar_a_mochila() -> void:
 ## consertaria hoje e quebraria na próxima vez que a barra mudasse de altura.
 static func altura_ocupada() -> float:
 	# A fila, a margem de baixo e o rótulo do que está na mão, com folga.
-	return MARGEM_DE_BAIXO + ALTURA + 24.0 + 8.0
+	return MARGEM_DE_BAIXO + (ALTURA + 24.0 + 8.0) * Tela.escala_componente("mao")
 
 
 ## COMER O QUE ESTÁ NA MÃO, pela tecla de interagir.

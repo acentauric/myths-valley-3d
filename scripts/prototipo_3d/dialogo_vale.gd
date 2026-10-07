@@ -257,6 +257,7 @@ func _montar() -> void:
 	_painel.name = "Painel"
 	_painel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	quadro.add_child(_painel)
+	Tela.vincular_componente(_painel, "dialogo", Vector2(0.5, 1))
 	_painel.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
 	_painel.offset_left = 40.0
 	_painel.offset_top = -78.0

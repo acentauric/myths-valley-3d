@@ -182,7 +182,8 @@ func _process(delta: float) -> void:
 		if _nome_ja_identificado(morador) or not _visivel_para_camera(morador, camera):
 			_apagar_ja(morador)
 			continue
-		var tamanho: Vector2 = (_placas[morador] as PanelContainer).get_combined_minimum_size()
+		_placas[morador].scale = Vector2.ONE * Tela.escala_componente("nomes")
+		var tamanho: Vector2 = (_placas[morador] as PanelContainer).get_combined_minimum_size() * _placas[morador].scale
 		var caixa := Rect2(ancora - Vector2(tamanho.x * 0.5, tamanho.y), tamanho)
 		# A placa inteira na tela: cortada pela borda, ou meio sob o HUD, não é placa. (Com histerese: quem
 		# já tem a placa aguenta mais.)
@@ -237,7 +238,7 @@ func _process(delta: float) -> void:
 			placa.reset_size()
 			var onde := mola.seguir(ancoras[morador], delta, TEMPO_DE_SEGUIR,
 				SuavizadorDeTela.VELOCIDADE_MAXIMA, SuavizadorDeTela.ZONA_MORTA, CORREIA)
-			placa.position = (onde - Vector2(placa.size.x * 0.5, placa.size.y)).round()
+			placa.position = (onde - Vector2(placa.size.x * placa.scale.x * 0.5, placa.size.y * placa.scale.y)).round()
 
 
 ## QUEM LEVA UMA PLACA entre `candidatos` — cada um {"distancia", "rumo", "caixa",

@@ -23,6 +23,65 @@ extends Node
 ## original de cada um. No Médio (fator 1) nada é tocado.
 
 signal modo_mudou(cheia: bool)
+signal componentes_mudaram
+
+const COMPONENTES := ["missao", "relogio", "vida", "folego", "vigor", "minimapa", "mao", "fala", "nomes", "interacao", "avisos", "mochila", "caderneta", "almanaque", "talentos", "social", "pausa", "dialogo"]
+const ESCALAS_COMPONENTE := [0.65, 0.8, 1.0, 1.15, 1.3, 1.5]
+const PADRAO_COMPONENTE := 2
+var tamanhos_componentes: Dictionary = {}
+
+
+func tamanho_componente(chave: String) -> int:
+	return int(tamanhos_componentes.get(chave, PADRAO_COMPONENTE))
+
+
+func escala_componente(chave: String) -> float:
+	return float(ESCALAS_COMPONENTE[tamanho_componente(chave)])
+
+
+func definir_componente(chave: String, indice: int) -> void:
+	if chave not in COMPONENTES:
+		return
+	tamanhos_componentes[chave] = clampi(indice, 0, ESCALAS_COMPONENTE.size() - 1)
+	var preferencias := ConfigFile.new()
+	preferencias.load(ARQUIVO)
+	preferencias.set_value("componentes", chave, tamanhos_componentes[chave])
+	if preferencias.save(ARQUIVO) != OK:
+		push_warning("Não foi possível salvar a escala da interface.")
+	componentes_mudaram.emit()
+
+
+func restaurar_componentes() -> void:
+	var preferencias := ConfigFile.new()
+	preferencias.load(ARQUIVO)
+	tamanhos_componentes.clear()
+	if preferencias.has_section("componentes"):
+		preferencias.erase_section("componentes")
+	preferencias.save(ARQUIVO)
+	componentes_mudaram.emit()
+
+
+## Escala texto, ícones e área clicável juntos. O pivô preserva o canto/centro
+## escolhido; o limite da janela impede ampliar um painel para fora da tela.
+func vincular_componente(controle: Control, chave: String, ancora := Vector2.ZERO, limitar := true) -> void:
+	var referencia: WeakRef = weakref(controle)
+	var aplicar := func() -> void:
+		var atual := referencia.get_ref() as Control
+		if atual == null or not atual.is_inside_tree():
+			return
+		var fator := escala_componente(chave)
+		if limitar and atual.size.x > 0.0 and atual.size.y > 0.0:
+			var util := atual.get_viewport_rect().size - Vector2(28, 28)
+			fator = minf(fator, minf(util.x / atual.size.x, util.y / atual.size.y))
+		atual.pivot_offset = atual.size * ancora
+		atual.scale = Vector2.ONE * fator
+	controle.set_meta("componente_interface", chave)
+	controle.resized.connect(aplicar)
+	componentes_mudaram.connect(aplicar)
+	controle.tree_exiting.connect(func() -> void:
+		if componentes_mudaram.is_connected(aplicar):
+			componentes_mudaram.disconnect(aplicar))
+	aplicar.call_deferred()
 
 const ARQUIVO := "user://preferencias_visuais.cfg"
 const FRACAO_JANELA := 0.8
@@ -105,6 +164,10 @@ func _ready() -> void:
 	tamanho_hud = _tamanho_salvo("tamanho_hud")
 	escala_texto = float(ESCALAS_TEXTO[tamanho_texto])
 	escala_hud = float(ESCALAS_HUD[tamanho_hud])
+	var preferencias := ConfigFile.new()
+	preferencias.load(ARQUIVO)
+	for chave: String in COMPONENTES:
+		tamanhos_componentes[chave] = clampi(int(preferencias.get_value("componentes", chave, PADRAO_COMPONENTE)), 0, ESCALAS_COMPONENTE.size() - 1)
 	get_tree().node_added.connect(_texto_novo)
 
 

@@ -10,6 +10,12 @@ func conferir(ok: bool, texto: String) -> void:
 		print("FALHA: " + texto)
 func _run() -> void:
 	await process_frame
+	if "--componentes" in OS.get_cmdline_user_args():
+		var tela := root.get_node("Tela")
+		for chave: String in tela.COMPONENTES:
+			tela.definir_componente(chave, 5)
+		# Contraste proposital: relógio pequeno junto de medidores grandes.
+		tela.definir_componente("relogio", 0)
 	root.get_node("Estilo").modo = "tripo"
 	change_scene_to_file("res://scenes/prototipo_3d/vale.tscn")
 	await process_frame
@@ -56,11 +62,13 @@ func _run() -> void:
 		conferir(pedro.balao.visible and pedro.balao.retangulo().has_area(), "fala real permanece legível")
 		if hud._espera_panel.visible:
 			conferir(not hud._espera_panel.get_global_rect().intersects(pedro.balao.retangulo()), "aviso e fala não se cobrem")
+			conferir(not hud._espera_panel.get_global_rect().intersects(hud._heading.get_global_rect()), "aviso não cobre missão ampliada")
 		conferir(not hud._notice.contains(str(idioma.campo(passo, "texto"))), "sem repetição da fala no rodapé")
 		if DisplayServer.get_name() != "headless":
 			await RenderingServer.frame_post_draw
-			DirAccess.make_dir_recursive_absolute("res://scratch/composicao-hud")
-			root.get_texture().get_image().save_png("res://scratch/composicao-hud/idioma-%d.png" % i)
+			var pasta := "res://scratch/componentes-interface" if "--componentes" in OS.get_cmdline_user_args() else "res://scratch/composicao-hud"
+			DirAccess.make_dir_recursive_absolute(pasta)
+			root.get_texture().get_image().save_png(pasta + "/idioma-%d.png" % i)
 		pedro.balao.esconder()
 	idioma.definir(0)
 	print("COMPOSICAO_HUD: %d falhas" % falhas)

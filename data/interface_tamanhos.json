@@ -1,0 +1,102 @@
+{
+  "titulo": {
+    "texto": "Tamanho de cada interface",
+    "texto_en": "Individual interface sizes",
+    "texto_es": "Tamaño de cada interfaz"
+  },
+  "restaurar": {
+    "texto": "Restaurar todas as interfaces",
+    "texto_en": "Reset all interfaces",
+    "texto_es": "Restaurar todas las interfaces"
+  },
+  "missao": {
+    "texto": "Missão",
+    "texto_en": "Quest",
+    "texto_es": "Misión"
+  },
+  "relogio": {
+    "texto": "Relógio",
+    "texto_en": "Clock",
+    "texto_es": "Reloj"
+  },
+  "vida": {
+    "texto": "Vida",
+    "texto_en": "Health",
+    "texto_es": "Salud"
+  },
+  "folego": {
+    "texto": "Fôlego",
+    "texto_en": "Energy",
+    "texto_es": "Aliento"
+  },
+  "vigor": {
+    "texto": "Vigor",
+    "texto_en": "Stamina",
+    "texto_es": "Resistencia"
+  },
+  "minimapa": {
+    "texto": "Minimapa",
+    "texto_en": "Minimap",
+    "texto_es": "Mapa pequeño"
+  },
+  "mao": {
+    "texto": "Barra de mão",
+    "texto_en": "Quick slots",
+    "texto_es": "Barra de mano"
+  },
+  "fala": {
+    "texto": "Balões de fala",
+    "texto_en": "Speech bubbles",
+    "texto_es": "Bocadillos de diálogo"
+  },
+  "nomes": {
+    "texto": "Nomes dos moradores",
+    "texto_en": "Resident names",
+    "texto_es": "Nombres de habitantes"
+  },
+  "interacao": {
+    "texto": "Interação (E)",
+    "texto_en": "Interaction (E)",
+    "texto_es": "Interacción (E)"
+  },
+  "avisos": {
+    "texto": "Avisos",
+    "texto_en": "Notifications",
+    "texto_es": "Notificaciones"
+  },
+  "mochila": {
+    "texto": "Mochila e baú",
+    "texto_en": "Backpack and chest",
+    "texto_es": "Mochila y cofre"
+  },
+  "caderneta": {
+    "texto": "Caderneta",
+    "texto_en": "Journal",
+    "texto_es": "Cuaderno"
+  },
+  "almanaque": {
+    "texto": "Almanaque",
+    "texto_en": "Almanac",
+    "texto_es": "Libro del valle"
+  },
+  "talentos": {
+    "texto": "Talentos",
+    "texto_en": "Talents",
+    "texto_es": "Árbol de talentos"
+  },
+  "social": {
+    "texto": "Laços do povoado",
+    "texto_en": "Village relationships",
+    "texto_es": "Vínculos del pueblo"
+  },
+  "pausa": {
+    "texto": "Menu de pausa",
+    "texto_en": "Pause menu",
+    "texto_es": "Menú de pausa"
+  },
+  "dialogo": {
+    "texto": "Conversa e tutorial",
+    "texto_en": "Dialogue and tutorial",
+    "texto_es": "Conversación y tutorial"
+  }
+}

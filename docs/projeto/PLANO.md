@@ -5,6 +5,14 @@ raiz. O jogo 2D segue sua própria linha em `acentauric/myths-valley`.
 
 ## O que já roda
 
+A #140 tem dezoito escalas individuais persistidas e restauração por componente
+ou geral. HUD e balões usam dimensões transformadas, com medidores reorganizados
+e avisos fora da missão ampliada. Independência, resolução/idioma, prioridade
+e tarefa passaram; mutante sem escala acusa uma falha. Capturas da cena real
+a 150% foram conferidas nos três idiomas. A issue segue aberta até revisar
+as telas secundárias e as combinações com texto global; ver
+[INTERFACES_INDIVIDUAIS.md](../testes/INTERFACES_INDIVIDUAIS.md).
+
 A #126 ganha os três modos de câmera persistidos, giro suave por movimento,
 desvios com histerese e geometria de árvores próximas. Raízes sem ângulo livre
 desvanecem temporariamente, restauradas ao sair/trocar modo. Capturas de

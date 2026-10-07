@@ -261,6 +261,7 @@ func _montar() -> void:
 	estilo.set_content_margin_all(26)
 	painel.add_theme_stylebox_override("panel", estilo)
 	add_child(painel)
+	Tela.vincular_componente(painel, "almanaque", Vector2(0.5, 0.5))
 	painel.anchor_left = 0.5
 	painel.anchor_right = 0.5
 	painel.anchor_top = 0.5

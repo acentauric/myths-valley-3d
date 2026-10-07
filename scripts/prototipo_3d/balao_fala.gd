@@ -315,7 +315,8 @@ func _posicionar(delta: float) -> void:
 	# O rótulo com quebra só sabe a própria altura depois de ter largura: encolhe o
 	# painel ao mínimo atual a cada quadro para não herdar uma altura errada.
 	_painel.reset_size()
-	var tamanho := _painel.size
+	_painel.scale = Vector2.ONE * Tela.escala_componente("fala")
+	var tamanho := _painel.size * _painel.scale
 	_cabeca_tela = camera.unproject_position(cabeca)
 	var falante := _retangulo_do_corpo(camera, alvo, altura)
 	var jogador := Rect2()
@@ -427,7 +428,7 @@ func _retangulo_do_corpo(camera: Camera3D, corpo: Node3D, alto: float) -> Rect2:
 
 ## Ponta do balão: sai da borda mais perto da cabeça de quem fala e aponta para ela.
 func _desenhar_ponta() -> void:
-	var caixa := Rect2(_painel.position, _painel.size)
+	var caixa := Rect2(_painel.position, _painel.size * _painel.scale)
 	var alvo_ponta := _alvo_da_ponta
 	var base := Vector2(clampf(alvo_ponta.x, caixa.position.x + 16.0, caixa.end.x - 16.0), clampf(alvo_ponta.y, caixa.position.y + 12.0, caixa.end.y - 12.0))
 	var lado := Vector2.ZERO

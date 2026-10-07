@@ -98,6 +98,8 @@ static func mostrar_em(dica: PanelContainer, camera: Camera3D, ponto: Vector3, a
 	var estava_acesa := dica.visible
 	dica.visible = true
 	dica.reset_size()
+	dica.scale = Vector2.ONE * Tela.escala_componente("interacao")
+	var tamanho := dica.size * dica.scale
 	var ancora := camera.unproject_position(ponto)
 	var mola := _mola(dica)
 	if not estava_acesa:
@@ -106,7 +108,7 @@ static func mostrar_em(dica: PanelContainer, camera: Camera3D, ponto: Vector3, a
 		SuavizadorDeTela.VELOCIDADE_MAXIMA, SuavizadorDeTela.ZONA_MORTA, CORREIA)
 	# As placas estão em coordenadas de tela; a dica, nas do pai (o mesmo, na prática).
 	var origem := dica.global_position - dica.position if dica.is_inside_tree() else Vector2.ZERO
-	var caixa := Rect2((onde - Vector2(dica.size.x * 0.5, dica.size.y)).round() + origem, dica.size)
+	var caixa := Rect2((onde - Vector2(tamanho.x * 0.5, tamanho.y)).round() + origem, tamanho)
 	var afastada := PopupsDoMundo.afastar_de(caixa, PopupsDoMundo.retangulos(dica, PopupsDoMundo.GRUPO_PLACAS), FOLGA_DAS_PLACAS)
 	# O empurrão também tem peso: a placa que some (o morador começou a falar) não faz a dica
 	# despencar de uma vez, e a que chega não a faz saltar.

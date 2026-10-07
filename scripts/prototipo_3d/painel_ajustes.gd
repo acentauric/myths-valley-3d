@@ -277,6 +277,20 @@ func _aba_cenario(esquerda: VBoxContainer, direita: VBoxContainer) -> void:
 	_escolha("Tamanho do texto", Tela.ROTULOS_TAMANHO, Tela.tamanho_texto, Tela.definir_tamanho_texto, Tela.PADRAO_TAMANHO)
 	_escolha("Tamanho do HUD", Tela.ROTULOS_TAMANHO, Tela.tamanho_hud, Tela.definir_tamanho_hud, Tela.PADRAO_TAMANHO)
 	_escolha("Monitor", Tela.monitores(), Tela.monitor, Tela.definir_monitor, Tela.monitor_padrao())
+	var textos: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://data/interface_tamanhos.json"))
+	_secao(str(IdiomaMenu.campo(textos["titulo"], "texto")))
+	for chave: String in Tela.COMPONENTES:
+		var opcoes: Array = []
+		for fator: float in Tela.ESCALAS_COMPONENTE:
+			opcoes.append("%d%%" % roundi(fator * 100.0))
+		_escolha(str(IdiomaMenu.campo(textos[chave], "texto")), opcoes, Tela.tamanho_componente(chave),
+			func(i: int) -> void: Tela.definir_componente(chave, i), Tela.PADRAO_COMPONENTE)
+	var restaurar := Button.new()
+	restaurar.text = str(IdiomaMenu.campo(textos["restaurar"], "texto"))
+	_pai.add_child(restaurar)
+	restaurar.pressed.connect(func() -> void:
+		Tela.restaurar_componentes()
+		_reconstruir(2))
 	if no_jogo:
 		return
 	_secao("Menu")

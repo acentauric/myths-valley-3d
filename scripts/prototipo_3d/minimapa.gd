@@ -88,6 +88,7 @@ var _loucura_no: Node
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_to_group("obstaculos_do_hud")
 	set_anchors_preset(Control.PRESET_BOTTOM_LEFT)
 	offset_left = MARGEM
 	offset_right = MARGEM + LARGURA
@@ -126,6 +127,7 @@ func _ready() -> void:
 	_sobre.position = Vector2(BORDA, BORDA)
 	_sobre.size = Vector2(LARGURA - BORDA * 2.0, ALTURA - BORDA * 2.0)
 	_sobre.draw.connect(_desenhar)
+	Tela.vincular_componente(self, "minimapa", Vector2(0, 1))
 	aplicar_visibilidade()
 
 

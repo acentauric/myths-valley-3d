@@ -6,6 +6,13 @@ O teste passa a cobrar Candinha, Filo, Tonho, Zefa, arraial e recursos, incluind
 
 ## Em desenvolvimento — 07/10/2026 (experimento Jev)
 
+- #140 (parcial): dezoito componentes ganham tamanho independente, persistência
+  e restauração individual/todos. Texto, ícones e área clicável acompanham a
+  transformação. O HUD reorganiza medidores e avisos pela escala; a matriz
+  reserva os retângulos reais. Gates de independência, três resoluções/idiomas,
+  prioridade e tarefa verdes; mutante sem escala reprova. Composição real
+  com 150% conferida em PT/EN/ES. Falta auditar telas secundárias e texto global.
+
 - #126: C percorre Livre/Arrastar/Automática e salva a preferência. A câmera
   acompanha o movimento suavemente, mantém o rumo das teclas durante o giro
   e procura lados livres com histerese. Até oito árvores/barcos próximos
