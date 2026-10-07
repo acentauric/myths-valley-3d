@@ -6,6 +6,13 @@ O teste passa a cobrar Candinha, Filo, Tonho, Zefa, arraial e recursos, incluind
 
 ## Em desenvolvimento — 07/10/2026 (experimento Jev)
 
+- **A chegada mantém o HUD legível (#120).** Composição com missão, fala
+  real e aviso de espera nos três idiomas: sem rótulo persistente de mão,
+  sem duplicar a fala no rodapé e sem sobrepor espera e balão. Barra,
+  tarefa e prioridades passaram; forçar o rótulo reprova três vezes.
+  Capturas locais conferidas; o descarregamento gráfico ainda emite o
+  aviso de textura/RID acompanhado em #43.
+
 - **O contrato de lugares cobra os nomes que prometeu (#54).** Os 18 alvos
   dinâmicos ficam declarados com o sistema que os encontra; `curral` tem
   razão concreta. Uma lista independente de 48 nomes e os JSON de missão

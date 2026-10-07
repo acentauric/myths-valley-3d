@@ -5,6 +5,12 @@ raiz. O jogo 2D segue sua própria linha em `acentauric/myths-valley`.
 
 ## O que já roda
 
+A #120 está concluída (07/10/2026): o HUD conserva missão, ação e medidores
+compactos, sem o rótulo persistente de mão livre. Na chegada, fala e aviso
+de espera passam pela matriz sem se cobrir. A composição real passou em
+PT/EN/ES; forçar o rótulo reprova nos três idiomas. Capturas em
+`scratch/composicao-hud/` (evidência local).
+
 A #54 está concluída (07/10/2026): 18 alvos dinâmicos do contrato ficam
 declarados com seu responsável, sem coordenadas fictícias. O novo portão
 confere 48 nomes por uma lista independente e todos os lugares usados nas
