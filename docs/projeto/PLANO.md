@@ -5,6 +5,12 @@ raiz. O jogo 2D segue sua própria linha em `acentauric/myths-valley`.
 
 ## O que já roda
 
+A #64 fica concluída: B remapeável abre a escolha de apoios e talentos ativos,
+com uso diário pelas regras compartilhadas, teclado/mouse, pausa e restauração
+da câmera. Abrir não consome; usados ficam indisponíveis até o dia seguinte.
+Portões de atalhos, uso real, painel, idiomas e câmera verdes; permitir reuso
+reprova a condição de uso único. Nova interface nasce em PT/EN/ES.
+
 A #158 tem o ajuste imediato de composição: o varal é um adereço independente,
 não pertence à malha da casa Tripo. A casa herdada o omite no padrão e na cena
 autoral, preservando o identificador e os 19 varais das outras casas. Portões

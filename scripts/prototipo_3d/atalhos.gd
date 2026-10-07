@@ -18,6 +18,7 @@ const ARQUIVO := "user://controles.cfg"
 const RESERVADAS := [KEY_W, KEY_A, KEY_S, KEY_D]
 ## Rótulo (para o AJUSTAR) e letra de fábrica de cada ação.
 const DEFINICOES := {
+	"apoios": {"rotulo": "Apoios e talentos ativos", "padrao": KEY_B},
 	"interagir": {"rotulo": "Ler / interagir", "padrao": KEY_E},
 	"observar": {"rotulo": "Observar", "padrao": KEY_F},
 	"hora": {"rotulo": "Avançar a hora", "padrao": KEY_T},
@@ -109,6 +110,10 @@ static func letra(acao: String) -> String:
 
 ## Rótulo do AJUSTAR com a letra de fábrica entre parênteses: "Ler / interagir (E)".
 static func rotulo(acao: String) -> String:
+	if acao == "apoios":
+		var idioma = load("res://scripts/prototipo_3d/idioma_menu.gd")
+		var textos: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://data/apoios_vale.json"))
+		return "%s (%s)" % [idioma.campo(textos, "titulo"), OS.get_keycode_string(int(DEFINICOES[acao]["padrao"]))]
 	return "%s (%s)" % [TranslationServer.translate(String(DEFINICOES[acao]["rotulo"])), OS.get_keycode_string(int(DEFINICOES[acao]["padrao"]))]
 
 

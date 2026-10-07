@@ -744,7 +744,7 @@ func _desenhar_cozinha() -> void:
 ## As cartas, agrupadas pelo que são: cada natureza se usa de um jeito.
 const CABECALHO_DA_NATUREZA := {
 	"pacto": "PACTOS — um de cada vez, e ele cobra todo dia",
-	"apoio": "APOIOS — uma vez por dia, na tecla R",
+	"apoio": "APOIOS — uma vez por dia, na tecla %s",
 	"ritual": "RITUAIS — preparados no oratório, com o que você planta",
 }
 
@@ -757,7 +757,10 @@ func _desenhar_cartas() -> void:
 		var qual := Cartas.natureza(id)
 		if qual != natureza_atual:
 			natureza_atual = qual
-			_adicionar_linha(str(CABECALHO_DA_NATUREZA.get(qual, qual.to_upper())), COR_APAGADA, true)
+			var cabecalho := str(CABECALHO_DA_NATUREZA.get(qual, qual.to_upper()))
+			if qual == "apoio":
+				cabecalho = cabecalho % Atalhos.letra("apoios")
+			_adicionar_linha(cabecalho, COR_APAGADA, true)
 		var marca := "·"
 		var cor := COR_TEXTO
 		match qual:
@@ -796,7 +799,7 @@ func _desenhar_cartas() -> void:
 			_rodape.text = "[E] %s · [Tab] outra aba · [Esc] fechar" % (
 				"desfazer o pacto" if Cartas.pacto == escolhida else "firmar o pacto")
 		"apoio":
-			linhas.append("Pronta para usar no R." if Cartas.apoio_pronto(escolhida)
+			linhas.append(("Pronta para usar no %s." % Atalhos.letra("apoios")) if Cartas.apoio_pronto(escolhida)
 				else "Já usada hoje. Amanhã serve de novo.")
 			_rodape.text = "[Tab] outra aba · [Esc] fechar"
 		"ritual":

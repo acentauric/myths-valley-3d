@@ -1,7 +1,7 @@
 # Cartas: pactos, apoios e rituais
 
 A mecânica que o [GDD](../projeto/GDD.md) chama de central. Implementada em
-`scripts/autoload/cartas.gd`; o conteúdo vive em `data/cartas/cartas.json`.
+`scripts/compartilhado/cartas.gd`; o conteúdo vive em `data/cartas/cartas.json`.
 
 ## As três naturezas
 
@@ -11,7 +11,7 @@ se usa de um jeito e custa de um jeito — e é essa diferença que as faz valer
 | | pacto | apoio | ritual |
 |---|---|---|---|
 | **de quem** | do mito, no lugar dele | de morador próximo | de morador próximo, ou achado |
-| **como se usa** | firmado, vale enquanto estiver | tecla R, uma vez por dia | preparado e consumido |
+| **como se usa** | firmado, vale enquanto estiver | menu B, uma vez por dia | preparado e consumido |
 | **o que custa** | **cobra todo dia**, em item | nada | o que você planta |
 | **quantos ao mesmo tempo** | **um** | todos que tiver | os que couberem na mochila |
 
@@ -36,9 +36,14 @@ junto — senão acumular pacto seria só questão de trocar de carta.
 ### Apoio
 
 Carta de gente, não de mito, e por isso não cobra nada: é um favor guardado, uma
-reza que alguém ensinou, um jeito de fazer. Vale uma vez por dia, na tecla R, na
+reza que alguém ensinou, um jeito de fazer. Vale uma vez por dia, no menu B, na
 mesma gaveta do talento ativo — o jogador não deveria ter que lembrar de qual
 sistema saiu o que ele pode fazer hoje.
+
+No 3D, **B** abre a escolha entre cartas de apoio e talentos ativos. A tecla
+é remapeável em Ajustar; abrir ou fechar a lista não consome nada. Enter,
+interagir ou clique confirma o escolhido, que fica indisponível até o dia
+seguinte. O vale pausa e oculta o HUD externo enquanto essa tela está aberta.
 
 ### Ritual
 

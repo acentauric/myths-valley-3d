@@ -166,13 +166,13 @@ const NOS := {
 		"resumo": "Anda 8% mais rápido. O mapa cresceu; isto vale.",
 		"efeito": {"passo": 0.08},
 	},
-	## A única ATIVA até aqui: não vale sozinha, é acionada (tecla R). As outras
+	## A única ATIVA até aqui: não vale sozinha, é acionada pelo menu de apoios. As outras
 	## são passivas. Marcar as duas naturezas desde já é o que faz a árvore ter
 	## formato — e uma ativa que funciona vale mais que cinco que não fazem nada.
 	"segundo_folego": {
 		"raiz": "Atributos", "nome": "Segundo fôlego", "custo": 1,
 		"exige": ["pernas_de_andarilho"], "ativo": true,
-		"resumo": "Uma vez por dia, na tecla R: recupera 30 de fôlego na hora.",
+		"resumo": "Uma vez por dia, pelo menu de apoios (B de fábrica, remapeável): recupera 30 de fôlego na hora.",
 		"efeito": {},
 	},
 

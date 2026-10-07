@@ -30,6 +30,7 @@ const RESERVA := "user://reserva_do_teste_de_atalhos.cfg"
 const PASTA_DO_VALE := "res://scripts/prototipo_3d/"
 
 const TELAS := {
+	"apoios": KEY_B,
 	"mochila": KEY_I,
 	"painel": KEY_J,
 	"talentos": KEY_K,
@@ -126,6 +127,8 @@ func _run() -> void:
 	Atalhos._cache.clear()
 
 	# --- 5. A TROCA CHEGA AO INPUTMAP -----------------------------------------
+	_conferir(Atalhos.definir("apoios", KEY_O), "apoios aceita remapeamento para O")
+	_conferir(Atalhos.tecla("apoios") == KEY_O, "apoios responde à letra remapeada")
 	_conferir(Atalhos.definir("mapa", KEY_I), "o definir() recusou pôr o mapa no I, que é letra livre")
 	_conferir(Atalhos.tecla("mapa") == KEY_I, "o mapa não foi para o I")
 	_conferir(Atalhos.tecla("mochila") == KEY_M, "a mochila não herdou o M do mapa: as duas ficaram no I")

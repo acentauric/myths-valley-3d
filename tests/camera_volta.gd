@@ -64,6 +64,12 @@ func _run() -> void:
 	# portão valer para o futuro, e não só para os defeitos que o criaram.
 	var telas: Array = [
 		{
+			"nome": "apoios",
+			"abrir": func(): jogo.telas.abrir("apoios"),
+			"fechar": func(): jogo.telas.fechar_tudo(),
+			"pausa": true,
+		},
+		{
 			"nome": "mapa",
 			"abrir": func(): jogo._toggle_map(),
 			"fechar": func(): jogo._toggle_map(),
@@ -177,7 +183,7 @@ func _run() -> void:
 	# Aqui se abre uma, se abre OUTRA por cima, e se cobra que a primeira tenha
 	# fechado e que a câmera volte como estava no começo de tudo.
 	print("")
-	var com_tecla := ["mochila", "almanaque", "painel"]
+	var com_tecla := ["mochila", "almanaque", "painel", "apoios"]
 	for modo_travado in [false, true]:
 		for primeira in com_tecla:
 			for segunda in com_tecla:

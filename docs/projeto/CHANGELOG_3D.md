@@ -6,6 +6,13 @@ O teste passa a cobrar Candinha, Filo, Tonho, Zefa, arraial e recursos, incluind
 
 ## Em desenvolvimento — 07/10/2026 (experimento Jev)
 
+- #64: B remapeável abre apoios e talentos ativos, com escolha explícita e
+  uso uma vez por dia. Interface na moldura do vale, PT/EN/ES, teclado/mouse;
+  pausa e câmera passam pelo gerenciador comum. Atalhos verde (3 s), uso
+  verde (4 s), idiomas verde (5 s), painel verde (57 s), câmera com trocas
+  entre apoios e outras telas verde (50 s). Mutante de reuso acusa uma
+  falha sem erro de compilação. Instruções antigas do R foram atualizadas.
+
 - #158 (parcial): casa do viajante sem roupas estendidas. Varal independente
   desativado na composição autoral e retirado da tabela padrão; malha, escala,
   entrada e colisão da casa preservadas, assim como 19 outros varais.

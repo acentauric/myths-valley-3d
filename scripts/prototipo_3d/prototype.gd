@@ -356,6 +356,16 @@ func _ready() -> void:
 	telas = TelasDoVale.new()
 	telas.name = "TelasDoVale"
 	add_child(telas)
+	var apoios = load("res://scripts/prototipo_3d/apoios_vale.gd").new()
+	apoios.name = "Apoios"
+	add_child(apoios)
+	telas.registrar("apoios",
+		func(e: InputEvent) -> bool: return e is InputEventKey and e.pressed and e.keycode == Atalhos.tecla("apoios"),
+		func() -> bool: return apoios.aberta,
+		func() -> void: apoios.abrir(),
+		func() -> void: apoios.fechar_tela())
+	apoios.fechou.connect(func() -> void: telas.fechou_por_conta("apoios"))
+	apoios.usou.connect(func(texto: String) -> void: hud.set_notice(texto))
 	hud.controls_requested.connect(func() -> void: telas.abrir("controles"))
 	telas.registrar("mochila",
 		func(e: InputEvent) -> bool: return e.is_action_pressed("mv_mochila"),

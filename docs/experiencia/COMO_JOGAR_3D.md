@@ -48,6 +48,7 @@ As letras marcadas com * são **remapeáveis** em AJUSTAR → Geral → Atalhos;
 | Clique direito | Caminhar até o chão, casa ou morador apontado; duplo clique corre |
 | Clique esquerdo na casa | Abrir os dados da casa no balão e no painel, mesmo à distância; fora das casas, fecha |
 | Mapa* (M) | O vale visto de cima: o jogador para, o mundo continua. M ou Esc fecham; o minimapa liga em AJUSTAR |
+| Apoios* (B) | Escolher uma carta de apoio ou talento ativo; Enter, interagir ou clique usa o escolhido, uma vez por dia. Abrir a lista não consome nada |
 
 **Agir**
 
