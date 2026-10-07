@@ -43,6 +43,8 @@ static func material(color: Color, roughness: float = 0.95) -> StandardMaterial3
 		material.albedo_color = color
 		material.roughness = roughness
 		_materials[color] = material
+	if color.g > maxf(color.r, color.b) * 1.15:
+		preload("res://scripts/prototipo_3d/estacoes_vale.gd").registrar(_materials[color])
 	return _materials[color]
 
 

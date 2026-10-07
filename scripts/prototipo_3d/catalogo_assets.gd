@@ -472,7 +472,7 @@ static func cena(chave: String) -> PackedScene:
 		return null
 	var scene := load(path) as PackedScene
 	if scene != null and not DUAS_FACES.has(chave):
-		_descartar_costas(scene)
+		_descartar_costas(scene, path.contains("/arvores/"))
 	_cenas[chave] = scene
 	return scene
 
@@ -482,13 +482,15 @@ static func cena(chave: String) -> PackedScene:
 ## cascatas de sombra; medido de -14 a -18 ms). O ajuste vai NO PRÓPRIO material, que é
 ## compartilhado por todas as instâncias da cena e pela malha que `malha()` entrega ao
 ## MultiMesh da mata e do paisagismo. Material com transparência fica como está.
-static func _descartar_costas(scene: PackedScene) -> void:
+static func _descartar_costas(scene: PackedScene, vegetacao: bool = false) -> void:
 	var raiz := scene.instantiate()
 	for filho in raiz.find_children("*", "MeshInstance3D", true, false):
 		var instancia := filho as MeshInstance3D
 		if instancia.mesh == null:
 			continue
 		for s in instancia.mesh.get_surface_count():
+			if vegetacao:
+				preload("res://scripts/prototipo_3d/estacoes_vale.gd").registrar(instancia.get_active_material(s) as BaseMaterial3D)
 			_tratar_material(instancia.get_surface_override_material(s))
 			_tratar_material(instancia.mesh.surface_get_material(s))
 		_tratar_material(instancia.material_override)

@@ -745,6 +745,13 @@ func _build_lighting() -> void:
 	_environment = _ceu.ambiente
 	_aplicar_hora(Dia.hora)
 	Dia.hora_mudou.connect(_aplicar_hora)
+	Relogio.estacao_mudou.connect(_aplicar_estacao)
+	_aplicar_estacao(Relogio.estacao)
+
+
+func _aplicar_estacao(estacao: int) -> void:
+	preload("res://scripts/prototipo_3d/estacoes_vale.gd").aplicar(estacao)
+	_aplicar_hora(Dia.hora)
 
 
 ## O céu acompanha a hora (curvas de cor e de névoa em ceu_vale.gd), e as luzes de 1887 também.

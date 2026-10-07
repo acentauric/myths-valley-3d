@@ -8,6 +8,7 @@ extends Node3D
 ## Os loops de 24 s vieram do ElevenLabs Sound Effects (docs/sistemas/ESTRATEGIA_SONORA.md).
 
 const PASTA := "res://assets/audio/ambiente/"
+const Estacoes = preload("res://scripts/prototipo_3d/estacoes_vale.gd")
 const MATA_DIA := PASTA + "mata_dia.mp3"
 const MATA_NOITE := PASTA + "mata_noite.mp3"
 const AVES := PASTA + "aves_reconcavo.ogg"
@@ -50,6 +51,7 @@ func _ready() -> void:
 	_noite = _tocador(MATA_NOITE)
 	_aves = _tocador(AVES)
 	Dia.hora_mudou.connect(_aplicar)
+	Relogio.estacao_mudou.connect(_aplicar_estacao)
 	if Audio.has_signal("volumes_alterados"):
 		Audio.volumes_alterados.connect(_aplicar_volumes)
 	_aplicar(Dia.hora)
@@ -62,6 +64,10 @@ func _ready() -> void:
 
 
 func _aplicar_volumes() -> void:
+	_aplicar(Dia.hora)
+
+
+func _aplicar_estacao(_estacao: int) -> void:
 	_aplicar(Dia.hora)
 
 
@@ -153,11 +159,11 @@ func _aplicar(_hora: float) -> void:
 	var luz := Dia.luz_do_dia()
 	var mata := Audio.volume_camada_db("mata")
 	var parede := lerpf(1.0, PASSA_PELA_PAREDE, abafado)
-	_dia.volume_db = _mistura(mata + MATA_AJUSTE_DB, luz * _mata_fator * parede)
-	_noite.volume_db = _mistura(mata + 1.5 + MATA_AJUSTE_DB, (1.0 - luz) * _mata_fator * parede)
+	_dia.volume_db = _mistura(mata + MATA_AJUSTE_DB, luz * _mata_fator * parede * Estacoes.INSETOS[Relogio.estacao])
+	_noite.volume_db = _mistura(mata + 1.5 + MATA_AJUSTE_DB, (1.0 - luz) * _mata_fator * parede * Estacoes.INSETOS[Relogio.estacao])
 	# As aves cantam mais no alvorecer e no fim da tarde.
 	var horizonte := 1.0 - smoothstep(0.75, 1.0, luz)
-	_aves.volume_db = _mistura(Audio.volume_camada_db("aves") - 7.0, luz * (0.55 + 0.45 * horizonte) * parede)
+	_aves.volume_db = _mistura(Audio.volume_camada_db("aves") - 7.0, luz * (0.55 + 0.45 * horizonte) * parede * Estacoes.AVES[Relogio.estacao])
 	for fonte_info in _fontes:
 		var tocador: AudioStreamPlayer3D = fonte_info["tocador"]
 		var fator := (1.0 - luz) if bool(fonte_info["noturno"]) else 1.0

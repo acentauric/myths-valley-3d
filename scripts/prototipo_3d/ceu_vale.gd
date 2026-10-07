@@ -119,7 +119,7 @@ func aplicar(hora: float) -> void:
 		luz_solar = Vector3(luz_solar.x, 0.0, luz_solar.z).normalized() * cos(0.035) + Vector3(0.0, -0.035, 0.0)
 	sol.basis = Basis.looking_at(luz_solar, Vector3.UP if absf(luz_solar.y) < 0.99 else Vector3.FORWARD)
 	sol.light_energy = lerpf(0.0, 1.15, luz)
-	sol.light_color = Color("fff0d0").lerp(Color("ff9d5c"), horizonte * 0.85)
+	sol.light_color = Color("fff0d0").lerp(Color("ff9d5c"), horizonte * 0.85) * preload("res://scripts/prototipo_3d/estacoes_vale.gd").LUZ[Relogio.estacao]
 	sol.visible = luz > 0.02
 	# Lua alta, do lado oposto ao sol.
 	var horizontal := Vector3(-luz_solar.x, 0.0, -luz_solar.z).normalized()

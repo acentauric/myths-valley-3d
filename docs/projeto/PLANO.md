@@ -5,6 +5,12 @@ raiz. O jogo 2D segue sua própria linha em `acentauric/myths-valley`.
 
 ## O que já roda
 
+A #17 está concluída (07/10/2026): a virada do calendário altera a tinta
+da mata, o tom da luz solar e a mistura de aves e insetos. As variações
+são discretas, próprias do vale tropical; texturas e modelos permanecem.
+O portão percorre as quatro estações reais, verifica ausência de deriva
+nos materiais e reprova se a aplicação da estação for retirada.
+
 A #145 está concluída (07/10/2026): enxada com trajeto corrigido e efeito
 no contato com o solo, em vez de no começo do E. A preparação e o retorno
 são medidos em movimento; repetição e cancelamento preservam as regras.

@@ -6,6 +6,13 @@ O teste passa a cobrar Candinha, Filo, Tonho, Zefa, arraial e recursos, incluind
 
 ## Em desenvolvimento — 07/10/2026 (experimento Jev)
 
+- **O calendário muda a atmosfera do vale (#17).** Materiais das árvores
+  Tripo e folhagens procedurais existentes acompanham as quatro estações,
+  sem trocar texturas nem acumular tinta. A luz solar e os volumes de aves
+  e insetos variam junto com o calendário. Estações e céu passaram;
+  retirar a aplicação sazonal provoca nove reprovações. Capturas das
+  quatro estações conferidas em scratch/estacoes.
+
 - **A enxada ara no contato com o solo (#145).** O golpe reproduz a
   velocidade normal, conduz o cabo pelo lado do ombro e aplica a ação
   aos 45% do clipe. Repetir E não reinicia nem cobra novamente;
