@@ -1,5 +1,20 @@
 # Abertura e áudio compartilhados
 
+## Continuidade do Pedro no roteiro 3D (#65)
+
+O desembarque e a primeira corrida antecedem as apresentações: Tonho no píer,
+Candinha na praça e Zefa com a chave. Cada encontro espera a conversa; Pedro
+conduz o percurso. Depois vêm a entrada da casa, as ferramentas e a caderneta,
+que só é cumprida ao abrir o painel de missões. A primeira roça vem em seguida.
+A cabra pertence à frente da lombada, depois da chegada e da lenha da ponte:
+quebrar a lapa abre a passagem, aproximar-se da cabra dispara a descida e voltar
+ao Pedro fecha a história com a explicação da Santa Casa. São escolhas do 3D;
+`dialogos/pedro.json` não precisa reproduzir o roteiro do outro jogo.
+
+`continuidade_pedro` verifica ordem, interlocutores e o sinal da abertura real
+do painel. `lombada` joga os oito golpes, a passagem, a descida animada, a
+conversa final e a retomada do save. Remover a meta da caderneta reprova.
+
 ## Testar
 
 Execute `JOGAR_3D.cmd`. A abertura usa o vídeo do sobrevoo e só monta o

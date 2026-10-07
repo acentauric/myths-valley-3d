@@ -101,7 +101,9 @@ func _run() -> void:
 
 	# --- 3. A FRENTE ESPERA A LENHA DA PONTE --------------------------------------------
 	pedro.missao = pedro.MISSOES.size()
-	pedro.set("_despedida_feita", true)
+	# A despedida pertence à cadeia; set de uma propriedade antiga no NPC
+	# falhava silenciosamente e deixava o tutorial incompleto no fixture.
+	pedro._cadeia.despedida_feita = true
 	ponte.iniciado = true
 	ponte.missao = _indice(ponte, "ponte_lenha")
 	ponte.espera = 0.0
@@ -211,6 +213,10 @@ func _indice(cadeia, id: String) -> int:
 func _perto_do_pedro() -> void:
 	jogador.teleportar(pedro.global_position + Vector3(1.0, 0.1, 0.6), 0.0)
 	await _quadros(5)
+	# Conversar agora respeita a voz ativa. Headless faz cinco quadros antes
+	# de passar o prazo real da saudação; espere a boca liberar o E.
+	_conferir(await _ate(func() -> bool: return not pedro.falando_agora(), 30.0),
+		"Pedro terminou a fala antes da próxima interação")
 
 
 func _no_balao(morador) -> String:

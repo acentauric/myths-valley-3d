@@ -6,6 +6,13 @@ O teste passa a cobrar Candinha, Filo, Tonho, Zefa, arraial e recursos, incluind
 
 ## Em desenvolvimento — 07/10/2026 (experimento Jev)
 
+- #65: continuidade do Pedro documentada pelo roteiro do 3D. Novo portão
+  `continuidade_pedro` verde (42 s); remover a meta da caderneta reprova duas
+  condições sem erro de script. `lombada` verde (106 s) após corrigir a
+  preparação: despedida na cadeia, e espera real pela fala antes do próximo
+  E, preservando o bloqueio contra falas sobrepostas. A sequência física da
+  lapa, cabra, conversa e save foi conferida.
+
 - #53: `licoes_de_luta` verifica as filas vivas do Pedro e Cosme, o ensino
   no anúncio, a prática pelos sinais de combate, fé/mesa da folha e a meta
   de caititus. Verde em 48 s; `--sem-licao` reprova os quatro golpes, sem

@@ -5,6 +5,12 @@ raiz. O jogo 2D segue sua própria linha em `acentauric/myths-valley`.
 
 ## O que já roda
 
+A #65 está concluída (07/10/2026): o roteiro local das apresentações,
+caderneta e cabra está revisado em `ABERTURA_E_AUDIO_3D.md`. O portão novo
+confere ordem e a abertura real do painel (42 s); o da lombada confere
+passagem, descida e fechamento/save (106 s). A falsificação da caderneta
+reprova duas condições. A independência dos diálogos permanece declarada.
+
 A #53 está concluída (07/10/2026): o novo portão das filas reais comprova
 Pedro/golpe forte, Cosme/ginga/meia-lua/rasteira, mesa da folha e fé como
 pré-condições e suspensão ao migrar de fé. Os sinais de Luta cumprem as quatro
