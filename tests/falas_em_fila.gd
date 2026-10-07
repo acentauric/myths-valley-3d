@@ -130,6 +130,8 @@ func _run() -> void:
 		if pedro.balao.visible and _texto(pedro) == missao and not viu["pedro"]:
 			viu["pedro"] = true
 			ordem.append("pedro")
+			_conferir(not str(vale.hud.get("_notice")).contains(missao),
+				"a narração inteira do Pedro foi duplicada no rodapé (#157)")
 		if narracao.tocando() and narracao.frase() != "" and not viu["narracao"]:
 			viu["narracao"] = true
 			ordem.append("narracao")

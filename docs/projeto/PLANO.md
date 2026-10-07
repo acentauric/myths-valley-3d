@@ -38,6 +38,12 @@ Todas as cadeias de missões do diretório de dados e os recursos declaram cober
 
 ## Próxima tarefa
 
+Em 07/10/2026, #133, #143 e #157 foram verificadas com avisos_com_prazo,
+falas_em_fila, mochila e boneco_da_mochila: prazo de recebimentos, fim da
+duplicação de Pedro e ocultação do HUD durante mochila/baú. A matriz da #132
+já faz avisos cederem à fala e ao E; nomes concorrentes e oclusão permanecem
+na revisão integrada com #121, #124 e #127.
+
 O board é a fonte dos critérios de aceite:
 [issues do projeto](https://github.com/acentauric/myths-valley-3d/issues).
 Enquanto houver tarefa aberta no marco Jam 04/10, ela tem prioridade;

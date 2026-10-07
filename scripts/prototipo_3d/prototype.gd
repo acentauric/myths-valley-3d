@@ -1163,7 +1163,8 @@ func _montar_moradores(spawn: Vector3) -> void:
 		# OS ALVOS DE TRABALHO, para o marcador apontar o tronco e não a casa.
 		pedro.recursos = _recursos
 		pedro.ligar_moradores(_achar_morador)
-		pedro.narrou.connect(func(texto: String) -> void: hud.set_notice("Pedro: " + texto))
+		# A narração já aparece inteira no balão, com duração da leitura/voz e
+		# limpeza pela fila. Duplicá-la no rodapé deixava o recado após a fala.
 		# O QUE A CHEGADA PAGA é dito no HUD, como nas filas dos moradores.
 		pedro.pagou.connect(func(texto: String) -> void: hud.set_notice(texto))
 		pedro.entregou.connect(func(texto: String) -> void: hud.set_notice(texto))
@@ -1620,6 +1621,11 @@ func _ao_abrir_a_fala(_quem: String) -> void:
 ## aberto —, e quem devolvesse as placas por conta própria as acenderia por cima
 ## da que ficou.
 func _acertar_as_placas() -> void:
+	# Mochila e baú são autoloads em outra camada. Ocultar o ancestral do
+	# HUD recolhe também minimapa, atalhos, dicas e avisos sem reativar filhos
+	# expirados quando a tela fecha (#143).
+	if hud_layer != null:
+		hud_layer.visible = not Mochila.aberta
 	if placas == null:
 		return
 	var coberto: bool = (telas != null and telas.aberta() != "") \

@@ -6,6 +6,19 @@ O teste passa a cobrar Candinha, Filo, Tonho, Zefa, arraial e recursos, incluind
 
 ## Em desenvolvimento — 07/10/2026 (experimento Jev)
 
+- **Mochila e baú recolhem o HUD externo (#143).** Minimapa, atalhos, estado,
+  dicas e avisos somem pelo ancestral da interface; voltar não revive filhos
+  que expiraram. Os testes de mochila e de baú com boneco passaram.
+- **Recebimentos e falas não ficam presos no rodapé (#133, #157).** Avisos
+  expiram pelo tempo de leitura, no mínimo quatro segundos. Substituir cancela
+  o prazo anterior; repetir não o reinicia. Pedro fala somente no balão,
+  encerrado pela fila com seu áudio e pausas preservados. Os testes de prazo
+  e fila passaram; retirar a expiração em memória reprova o recebimento.
+- **Avisos contextuais cedem ao E e à fala (#132, parcial).** A matriz distingue
+  HUD essencial, interação, fala, aviso e nome. Um aviso só se recolhe se
+  competir pelo mesmo retângulo, e volta se ainda for válido. As regras de
+  redundância de nomes e de fala em andamento seguem em revisão.
+
 - **O E registra a conversa diária e permite presentes confirmados (#49).**
   Conversas comuns e de missão aumentam a afinidade uma vez por dia. A missão
   tem prioridade; alimentos e outros presentes na mão pedem Sim/Não, com

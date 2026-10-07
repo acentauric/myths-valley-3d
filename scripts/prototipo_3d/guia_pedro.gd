@@ -585,9 +585,9 @@ func _repete_o_aviso() -> bool:
 	return false
 
 
-## A FALA DO PEDRO VAI PARA O AVISO DO HUD (`narrou`) quando ela entra no ar, e
-## não quando é pedida: com a fila de falas ela pode esperar a vez, e o aviso
-## tem de dizer o que está no balão.
+## `narrou` avisa observadores quando a fala realmente entra no ar, não quando
+## é pedida. A interface usa o balão completo e seu prazo na fila; não duplica
+## esta narração em um aviso independente no rodapé.
 func _comecar_a_fala(fala: Dictionary) -> void:
 	super(fala)
 	if bool(fala.get("narrada", false)):

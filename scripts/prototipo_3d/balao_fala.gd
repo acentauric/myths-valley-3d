@@ -322,7 +322,7 @@ func _posicionar(delta: float) -> void:
 	var no_jogador := get_tree().get_first_node_in_group("map_player") as Node3D
 	if no_jogador != null and no_jogador != alvo:
 		jogador = _retangulo_do_corpo(camera, no_jogador, 1.8)
-	var hud := PopupsDoMundo.paineis_do_hud(tela, self)
+	var hud := PopupsDoMundo.paineis_do_hud(tela, self, PopupsDoMundo.PRIORIDADE_FALA)
 	var placas := PopupsDoMundo.retangulos(self, PopupsDoMundo.GRUPO_PLACAS)
 	var dicas := PopupsDoMundo.retangulos(self, PopupsDoMundo.GRUPO_DICAS)
 	var candidatos := _candidatos(tamanho, falante)

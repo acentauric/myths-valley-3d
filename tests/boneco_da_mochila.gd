@@ -158,6 +158,7 @@ func _run() -> void:
 	# --- 8. COM O BAÚ, O BONECO SAI ----------------------------------------------------
 	var guardado: Array = [{"id": "lenha", "qtd": 3}]
 	vale.telas.abrir_por("mochila", func() -> void: mochila.abrir_bau(guardado, 20, "Baú"))
+	_conferir(not vale.hud_layer.is_visible_in_tree(), "o baú deixa interfaces externas ao fundo")
 	await _segundos(0.4)
 	_conferir(mochila.aberta and not boneco.is_visible_in_tree(), "com o baú aberto, o boneco continua na mochila")
 	_conferir(boneco.palco.render_target_update_mode == SubViewport.UPDATE_DISABLED, "com o baú aberto, o palco do boneco renderiza")

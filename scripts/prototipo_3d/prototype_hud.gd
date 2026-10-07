@@ -34,6 +34,8 @@ const TeclasMovimento = preload("res://scripts/prototipo_3d/teclas_movimento.gd"
 const Atalhos = preload("res://scripts/prototipo_3d/atalhos.gd")
 const BarraDeMao = preload("res://scripts/prototipo_3d/barra_de_mao.gd")
 const Almanaque = preload("res://scripts/prototipo_3d/almanaque.gd")
+const PopupsDoMundo = preload("res://scripts/prototipo_3d/popups_do_mundo.gd")
+var _espera_texto_desejado := ""
 
 ## A barra de mão, para quem precisar escutar a mochila abrindo.
 var _barra: Control
@@ -68,6 +70,8 @@ const HEADING_WIDTH := 360.0
 var _model_status := "Preparando personagem…"
 var _telemetry := ""
 var _notice := ""
+var _notice_revision := 0
+var _notice_expiry: Tween
 var _objective := "Explore o vale e observe o personagem de todos os ângulos."
 var _captured := false
 var _camera_locked := false
@@ -120,6 +124,7 @@ var mapa_aberto := false
 
 func _ready() -> void:
 	layer = 20
+	process_priority = 30 # Depois de posicionar falas e dicas.
 	set_process_unhandled_key_input(true)
 	_root = get_node_or_null("PrototypeHUD") as Control
 	if _root == null:
@@ -253,6 +258,8 @@ func _ready() -> void:
 
 	_notice_panel = _panel(Color(0.055, 0.085, 0.075, 0.82))
 	_notice_panel.name = "Aviso"
+	_notice_panel.add_to_group(PopupsDoMundo.GRUPO_HUD)
+	_notice_panel.set_meta("popup_prioridade", PopupsDoMundo.PRIORIDADE_AVISO)
 	_root.add_child(_notice_panel)
 	_notice_panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER_BOTTOM)
 	_notice_panel.offset_left = -285
@@ -565,6 +572,7 @@ func _atualizar_vigor(_valor: float = 0.0) -> void:
 
 
 func _process(delta: float) -> void:
+	_sincronizar_prioridade_dos_avisos()
 	_refresh_time += delta
 	if _refresh_time >= 0.35:
 		_refresh_time = 0.0
@@ -574,6 +582,27 @@ func _process(delta: float) -> void:
 func set_model_status(value: String) -> void:
 	_model_status = value
 	_update_telemetry()
+
+
+## Avisos cedem apenas onde uma fala ou interação precisa do mesmo espaço.
+## A intenção vem do texto atual; fechar uma fala nunca revive aviso expirado.
+func _sincronizar_prioridade_dos_avisos() -> void:
+	var permitido := not mapa_aberto and not controls_open()
+	var superiores := PopupsDoMundo.retangulos_dos_baloes(self)
+	superiores.append_array(PopupsDoMundo.retangulos(self, PopupsDoMundo.GRUPO_DICAS))
+	if is_instance_valid(_notice_panel):
+		var livre := true
+		for caixa in superiores:
+			if caixa.intersects(_notice_panel.get_global_rect()):
+				livre = false
+		_notice_panel.visible = permitido and not _notice.is_empty() and livre
+		_notice_label.visible = _notice_panel.visible
+	if is_instance_valid(_espera_panel):
+		var livre := true
+		for caixa in superiores:
+			if caixa.intersects(_espera_panel.get_global_rect()):
+				livre = false
+		_espera_panel.visible = permitido and not _espera_texto_desejado.is_empty() and livre
 
 
 func set_region_title(value: String) -> void:
@@ -586,7 +615,14 @@ func set_telemetry(value: String) -> void:
 	_update_telemetry()
 
 
-func set_notice(value: String) -> void:
+## Avisos de recebimento e resultado têm prazo próprio. Repetir o mesmo aviso
+## enquanto ele está no ar não reinicia o prazo; o prazo antigo nunca limpa outro.
+func set_notice(value: String, segundos: float = -1.0) -> void:
+	if value == _notice:
+		return
+	_notice_revision += 1
+	if _notice_expiry != null and _notice_expiry.is_valid():
+		_notice_expiry.kill()
 	_notice = value
 	if is_instance_valid(_notice_label):
 		_notice_label.text = value
@@ -595,6 +631,15 @@ func set_notice(value: String) -> void:
 		var half := font.get_string_size(value, HORIZONTAL_ALIGNMENT_LEFT, -1, 14).x * 0.5 + 24.0
 		_notice_panel.offset_left = -half
 		_notice_panel.offset_right = half
+	if not value.is_empty() and is_inside_tree():
+		var prazo := segundos if segundos >= 0.0 else maxf(4.0, float(value.length()) / 15.0 + 1.0)
+		var revisao := _notice_revision
+		# Vinculado ao HUD: pausa junto do vale e é descartado ao sair da cena.
+		_notice_expiry = create_tween()
+		_notice_expiry.tween_interval(maxf(prazo, 0.1))
+		_notice_expiry.tween_callback(func() -> void:
+			if _notice_revision == revisao:
+				set_notice(""))
 
 
 ## O AVISO DE QUEM FICOU PARA TRÁS na condução: "o Pedro está esperando você".
@@ -611,6 +656,7 @@ var _espera_tween: Tween
 
 
 func set_aviso_de_espera(texto: String) -> void:
+	_espera_texto_desejado = texto
 	if _espera_panel == null:
 		_criar_aviso_de_espera()
 	if _espera_tween != null:
@@ -633,6 +679,7 @@ func aviso_de_espera() -> String:
 func _criar_aviso_de_espera() -> void:
 	_espera_panel = PanelContainer.new()
 	_espera_panel.name = "AvisoDeEspera"
+	_espera_panel.set_meta("popup_prioridade", PopupsDoMundo.PRIORIDADE_AVISO)
 	_espera_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var estilo := StyleBoxFlat.new()
 	estilo.bg_color = Color(0.055, 0.085, 0.075, 0.9)
