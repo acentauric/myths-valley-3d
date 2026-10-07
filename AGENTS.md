@@ -81,10 +81,11 @@ luz, som ou moradores do 3D.
   antes de gerar, como manda "Geração paga".
 
 - **Dois estilos, nunca misturados.** O autoload `Estilo` decide se o vale
-  inteiro é Tripo ou procedural. Peça nova = uma entrada em
-  `CatalogoAssets.PECAS` (`scripts/prototipo_3d/catalogo_assets.gd`) + o
-  construtor procedural equivalente em `world_builder.gd` ou
-  `flora_reconcavo.gd`. Nunca instancie um GLB do Tripo fora do catálogo nem
+  inteiro é Tripo ou procedural. Peça Tripo nova entra em
+  `CatalogoAssets.PECAS` (`scripts/prototipo_3d/catalogo_assets.gd`). Conforme
+  a decisão do autor de 29/09 em `COMPOSICAO_AUTORAL_3D.md`, não exige arte
+  procedural equivalente: preserve o legado funcional e seus testes, sem
+  ampliar sua produção de arte. Nunca instancie um GLB do Tripo fora do catálogo nem
   uma peça procedural dentro do estilo Tripo.
 - **O catálogo é a única fonte** de caminho, medida (`altura` ou `largura`),
   colisão (`tronco` ou `caixa`) e correções (`girar`, `afundar`, `piso`) de cada

@@ -257,4 +257,3 @@ func _varrer(no, campos: Array, onde: String) -> int:
 func _cognato_revisado(onde: String, quem: String, campo: String, sufixo: String, base: String) -> bool:
 	return onde == "recursos_3d.json" and campo == "nome" and sufixo == "_es" and base == "Tronco caído" and quem in [
 		"lenha_rocado_a", "lenha_rocado_b", "galhada_cemiterio_a", "galhada_cemiterio_b", "galhada_cemiterio_c"]
-

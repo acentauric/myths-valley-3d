@@ -6,6 +6,11 @@ O teste passa a cobrar Candinha, Filo, Tonho, Zefa, arraial e recursos, incluind
 
 ## Em desenvolvimento — 07/10/2026 (experimento Jev)
 
+- **A regra de arte nova segue a decisão Tripo (#46).** O `AGENTS.md`, o plano
+  e a composição autoral deixam de exigir um construtor procedural novo por
+  asset. O legado funcional continua protegido; os critérios das cinco issues
+  dependentes passam a distinguir essa compatibilidade da produção de arte.
+
 - **O menu oferece Teste automático no projeto de desenvolvimento (#159).**
   Abre uma partida isolada com o robô determinístico local; a documentação está
   em `docs/testes/AUTOPLAYER.md`. Ações pontuais têm pausa de 0,7 segundo;

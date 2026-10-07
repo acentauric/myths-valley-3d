@@ -87,6 +87,11 @@ necessários estiverem aprovados e a migração tiver portões de segurança.
 
 Até essa retirada acontecer:
 
+A resolução da #46 em 07/10/2026 aplica a decisão de 29/09 ao `AGENTS.md`,
+ao plano e aos critérios das issues #5, #17, #26, #27 e #29. Testar os sistemas
+que já existem nos dois estilos protege o legado; isso não obriga a criar uma
+segunda peça de arte para cada GLB novo.
+
 - o procedural continua sendo estado legado funcional, não uma frente de arte;
 - não se produz arte procedural nova para acompanhar cada asset Tripo;
 - não se remove o fallback em uma mudança incidental;

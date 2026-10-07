@@ -5,6 +5,11 @@ raiz. O jogo 2D segue sua própria linha em `acentauric/myths-valley`.
 
 ## O que já roda
 
+A direção visual é Tripo. Conforme a decisão de 29/09, reconciliada na #46
+em 07/10/2026, assets novos entram no catálogo sem exigir arte procedural nova.
+O procedural permanece como legado funcional, com seus testes e fallback,
+até uma migração própria autorizar sua retirada.
+
 Exploração do vale, moradores (que andam pela malha de navegação), missões em
 âncoras com recompensa (#48) e diário de missões acompanhadas, calendário (com
 o registro das mudanças no relógio), energia, vida, inventário, equipamento,
