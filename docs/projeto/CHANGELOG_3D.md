@@ -6,6 +6,13 @@ O teste passa a cobrar Candinha, Filo, Tonho, Zefa, arraial e recursos, incluind
 
 ## Em desenvolvimento — 07/10/2026 (experimento Jev)
 
+- #163: fontes de material respeitam nível e grau de ferramenta. A nova
+  consulta estrita evita mandar o testador à pedra impossível. Regressão
+  `alvo_material_acessivel` verde (2 s), alcance (57 s) e ofício (42 s);
+  retirar os requisitos reprova três condições, sem erro de script.
+  Coleta real V13: oito pedras pelo E aos ~609 s, após descer do Mirante
+  sem teleporte, material da missão 0/35 → 8/35. #159 continua em execução.
+
 - #65: continuidade do Pedro documentada pelo roteiro do 3D. Novo portão
   `continuidade_pedro` verde (42 s); remover a meta da caderneta reprova duas
   condições sem erro de script. `lombada` verde (106 s) após corrigir a

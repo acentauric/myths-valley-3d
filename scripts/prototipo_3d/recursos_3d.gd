@@ -409,9 +409,9 @@ static func _da_familia_no_grau(familia: String, grau: int) -> String:
 
 
 ## Tem na mochila alguma ferramenta desta família (a de ferro ou a de aço)?
-func _carrega(familia: String) -> bool:
+func _carrega(familia: String, grau_minimo: int = 1) -> bool:
 	for id in Catalogo.ITENS:
-		if Catalogo.familia(id) == familia and Inventario.tem(str(id)):
+		if Catalogo.familia(id) == familia and Inventario.tem(str(id)) and Catalogo.grau(str(id)) >= grau_minimo:
 			return true
 	return false
 
@@ -722,10 +722,20 @@ const GESTO_GOLPEAR := 6
 ## troncos", nas palavras de quem jogou.
 ##
 ## E MARCA O QUE O JOGADOR PODE BATER: o que se cata na mão, ou o da ferramenta
-## que ele carrega. A lenha da primeira noite sai da galhada seca, sem machado
+## que ele carrega, respeitando seu grau e o talento exigido pelo alvo.
+## A lenha da primeira noite sai da galhada seca, sem machado
 ## (o machado é da ponte); marcar o tronco caído mais perto, que pede machado,
 ## era mandá-lo bater no que não cede. Sem nenhum desses, vale o mais perto.
 func mais_perto_que_rende(item: String, de: Vector3) -> Vector3:
+	return _mais_perto_do_material(item, de, false)
+
+
+## O testador não deve navegar até uma fonte que ainda não consegue colher.
+func mais_perto_que_cede(item: String, de: Vector3) -> Vector3:
+	return _mais_perto_do_material(item, de, true)
+
+
+func _mais_perto_do_material(item: String, de: Vector3, estrito: bool) -> Vector3:
 	var melhor: Vector3 = Lugares.NENHUM
 	var menor := INF
 	var cede: Vector3 = Lugares.NENHUM
@@ -740,10 +750,11 @@ func mais_perto_que_rende(item: String, de: Vector3) -> Vector3:
 			menor = d.length()
 			melhor = _alvos[id]["pos"]
 		var ferramenta := str(ficha.get("ferramenta", ""))
-		if (ferramenta == "" or _carrega(ferramenta)) and d.length() < menor_que_cede:
+		var acessivel := ferramenta == "" or (Progressao.nivel(ferramenta) >= int(ficha.get("nivel", 1)) and _carrega(ferramenta, int(ficha.get("grau", 1))))
+		if acessivel and d.length() < menor_que_cede:
 			menor_que_cede = d.length()
 			cede = _alvos[id]["pos"]
-	return cede if cede != Lugares.NENHUM else melhor
+	return cede if cede != Lugares.NENHUM or estrito else melhor
 
 
 ## QUANTOS ALVOS DESTA PEÇA JÁ CAÍRAM.

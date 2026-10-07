@@ -5,6 +5,13 @@ raiz. O jogo 2D segue sua própria linha em `acentauric/myths-valley`.
 
 ## O que já roda
 
+A #163 está concluída (07/10/2026): a seleção de matéria-prima prefere uma
+fonte compatível com habilidade e grau da ferramenta carregada. A consulta
+estrita não aponta uma coleta impossível; o marcador humano conserva o
+fallback informativo. Portões de seleção, alcance e ofício passaram; retirar
+nível/grau reprova. No autoplay, oito pedras foram obtidas pelo E normal e a
+missão do Mirante avançou de 0/35 para 8/35. A campanha #159 segue aberta.
+
 A #65 está concluída (07/10/2026): o roteiro local das apresentações,
 caderneta e cabra está revisado em `ABERTURA_E_AUDIO_3D.md`. O portão novo
 confere ordem e a abertura real do painel (42 s); o da lombada confere
