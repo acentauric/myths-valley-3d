@@ -129,7 +129,8 @@ def generate(directory, live=True):
               "Analise etapas com muitas ações e poucos avanços, alternância repetida de movimentos e interações sem efeito. "
               "Cruze esses indícios com os frames e o JSONL antes de atribuir a causa ao jogo ou à política.", "",
               "[Eventos completos](eventos.jsonl) · [Saída do Godot](stdout.log) · [Erros do Godot](stderr.log)", ""]
-    for screenshot in sorted(directory.glob("quadro_*.png")):
+    screenshots = [*directory.glob("quadro_*.png"), *directory.glob("quadro_*.jpg")]
+    for screenshot in sorted(screenshots):
         lines.append(f"- [Captura {screenshot.stem}]({screenshot.name})")
     lines += ["", "## Linha do tempo de movimentos e decisões", "",
               "| Instante (s) | Ação | Duração (s) | Posição inicial → final | Distância | Objetivo | Resultado observado | Motivo da escolha |",

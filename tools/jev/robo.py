@@ -225,6 +225,34 @@ class JogadorAutomatico:
             if action in actions:
                 return select(action, "Responder ou avançar a fala atual")
 
+        # Checkpoint é feito pelo menu normal: Esc, escolher Salvar, E e Esc.
+        # O estado observado não é copiado para o save pelo testador.
+        materials = sum(self._inventory(state).get(item, 0) for item in ("lenha", "pedra", "tabua", "corda"))
+        if not hasattr(self, "checkpoint_time"):
+            self.checkpoint_time, self.checkpoint_materials = now - 300, materials
+        if getattr(self, "checkpoint_pending", False):
+            menu = state.get("pause_menu", {})
+            if state.get("screen") != "menu_pausa":
+                return select("inspect_pause", "Abrir pausa para salvar o progresso pelo menu normal") or select("close_screen", "Fechar outra tela antes do checkpoint")
+            if menu.get("notice"):
+                self.checkpoint_notice = menu["notice"]
+                self.checkpoint_pending = False
+                self.checkpoint_time, self.checkpoint_materials = now, materials
+                return select("close_screen", "Registrar a resposta de Salvar e retomar a campanha")
+            target = menu.get("save_index", -1)
+            cursor = menu.get("cursor", 0)
+            if target < 0:
+                self.checkpoint_pending = False
+                self.checkpoint_time = now
+                return select("close_screen", "Menu sem opção de salvar: registrar limitação e continuar")
+            if cursor != target:
+                return select("screen_down" if cursor < target else "screen_up", "Selecionar Salvar jogo no menu visível")
+            return select("confirm_screen", "Confirmar Salvar jogo com E, sem alterar o save diretamente")
+        work_in_progress = any(c.get("target", {}).get("em_trabalho") for c in state.get("interaction_candidates", []))
+        if not state.get("screen") and not work_in_progress and "inspect_pause" in actions and (now - self.checkpoint_time >= 300 or materials - self.checkpoint_materials >= 8):
+            self.checkpoint_pending = True
+            return select("inspect_pause", "Guardar checkpoint antes de continuar viagens e lotes de material")
+
         pending_main = [m for m in state.get("journal", {}).get("ativas", []) if m.get("principal")]
         # Uma etapa concluída sai da lista e a próxima entra no fim. A ordem
         # de inserção não deve trocar a cadeia do guia pela missão de outro NPC.

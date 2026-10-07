@@ -234,6 +234,13 @@ func _estado() -> Dictionary:
 	estado["movement_control"] = "WASD keyboard; navigation is used only to read route waypoints, never to issue click walking"
 	estado["directions"] = _direcoes(jogador)
 	estado["screen"] = current_scene.get("telas").aberta()
+	var pausa = current_scene.get("menu_pausa")
+	if pausa != null and pausa.aberto:
+		var salvar_indice := -1
+		for indice in pausa._itens.size():
+			if str(pausa._itens[indice].get("icone", "")) == "restaurar":
+				salvar_indice = indice
+		estado["pause_menu"] = {"cursor": pausa._cursor, "save_index": salvar_indice, "notice": pausa._aviso}
 	if bool(current_scene.get("mapa").get("aberto")):
 		estado["screen"] = "world_map"
 	if current_scene.get("aviso_da_primeira_vez").aberto():
@@ -434,6 +441,7 @@ func _acoes(estado: Dictionary) -> Dictionary:
 	var jogador: Node3D = current_scene.get("player")
 	if not jogador.is_physics_processing():
 		return {"wait": "Wait for the current narration/animation to release the controls"}
+	opcoes["inspect_pause"] = "Press Escape to open the normal pause menu, including Save game"
 	var pedro: Node3D = current_scene.get("pedro")
 	if is_instance_valid(pedro):
 		catalogo["follow_pedro"] = pedro
@@ -550,7 +558,7 @@ func _executar(escolha: String) -> String:
 			await _tecla(KEY_A if escolha == "answer_yes" else KEY_D)
 			await _tecla(KEY_E)
 			return "question_answered"
-		"close_screen":
+		"close_screen", "inspect_pause":
 			await _tecla(KEY_ESCAPE)
 			return "Escape_pressed"
 		"screen_tab":
@@ -820,5 +828,6 @@ func _capturar() -> void:
 		return
 	var imagem := root.get_texture().get_image()
 	if imagem != null and not imagem.is_empty():
-		imagem.save_png(pasta.path_join("quadro_%04d.png" % _segundos()))
+		# Evidência contínua em JPEG evita encher o disco numa campanha longa.
+		imagem.save_jpg(pasta.path_join("quadro_%04d.jpg" % _segundos()), 0.85)
 		ultima_captura = _segundos()

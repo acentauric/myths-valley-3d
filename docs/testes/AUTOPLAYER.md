@@ -85,6 +85,13 @@ permite escolher outra. `eventos.jsonl` registra observações, escolhas e
 resultados, e as capturas documentam o que foi exibido. Esse teste exploratório
 complementa os portões automatizados do projeto.
 
+Capturas contínuas usam JPEG com qualidade 85%; o relatório também reconhece
+as capturas PNG anteriores. O robô salva pelo menu normal após carregar, a
+cada cinco minutos ou depois de obter oito materiais. Espera golpes em curso,
+navega até Salvar, confirma e registra a resposta antes de voltar ao jogo.
+Falha ou interrupção retoma o último save disponível; observações posteriores
+ao save não são transformadas artificialmente em progresso.
+
 `--profile tools/temp/meu-perfil-de-teste` retoma explicitamente um perfil
 isolado já usado, mantendo a saída de relatório nova. Sem essa opção, cada
 execução conserva a partida nova em seu próprio perfil. Não use o perfil de

@@ -8,8 +8,11 @@ raiz. O jogo 2D segue sua própria linha em `acentauric/myths-valley`.
 A #159 continua em execução: fontes acessíveis estáveis, custo composto de
 receitas, obra certa na interface, contornos físicos limitados, alimentação,
 documentos e retomada das cadeias do guia entram no testador. 78 testes Python
-verdes e quatro sondas Godot da ponte; V13 já coletou a pedra do Mirante e
-trabalha na madeira. Isso não é prova de vitória nem encerra o ticket.
+verdes e quatro sondas Godot da ponte. A sessão V13 perdeu a coleta posterior
+ao último save ao esgotar o disco. Capturas preservadas em outro volume,
+JPEG menor e checkpoints pela UI normal entram na retomada V15, sem injetar
+progresso. A fatia passa 82 testes Python e falsificações de checkpoint/JPEG.
+Isso não é prova de vitória nem encerra o ticket.
 
 A #64 fica concluída: B remapeável abre a escolha de apoios e talentos ativos,
 com uso diário pelas regras compartilhadas, teclado/mouse, pausa e restauração

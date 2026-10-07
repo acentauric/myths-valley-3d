@@ -10,6 +10,44 @@ from relatorio import generate
 
 
 class PlayerTests(unittest.TestCase):
+    def test_checkpoint_waits_for_work_to_finish_before_opening_pause(self):
+        bot = self.player()
+        state = self.state()
+        bot.checkpoint_time, bot.checkpoint_materials = 0, 0
+        state["seconds"] = 301
+        state["interaction_candidates"] = [{"target": {"em_trabalho": True}}]
+        self.assertEqual(bot.choose(state, {"inspect_pause": "Esc", "wait": "wait"}, {}), "wait")
+        state["interaction_candidates"] = []
+        self.assertEqual(bot.choose(state, {"inspect_pause": "Esc", "wait": "wait"}, {}), "inspect_pause")
+
+    def test_checkpoint_uses_pause_cursor_confirm_and_observed_notice(self):
+        bot = self.player()
+        state = self.state()
+        bot.checkpoint_time, bot.checkpoint_materials = 0, 0
+        state["seconds"] = 301
+        self.assertEqual(bot.choose(state, {"inspect_pause": "Esc", "wait": "wait"}, {}), "inspect_pause")
+        state.update(screen="menu_pausa", pause_menu={"cursor": 0, "save_index": 4, "notice": ""})
+        ui = {"screen_down": "S", "screen_up": "W", "confirm_screen": "E", "close_screen": "Esc"}
+        self.assertEqual(bot.choose(state, ui, {}), "screen_down")
+        state["pause_menu"]["cursor"] = 4
+        self.assertEqual(bot.choose(state, ui, {}), "confirm_screen")
+        state["pause_menu"]["notice"] = "Partida guardada na vaga 1."
+        self.assertEqual(bot.choose(state, ui, {}), "close_screen")
+        self.assertEqual(bot.checkpoint_notice, state["pause_menu"]["notice"])
+        self.assertFalse(bot.checkpoint_pending)
+
+    def test_checkpoint_after_material_batch_does_not_repeat_each_frame(self):
+        bot = self.player()
+        state = self.state()
+        bot.checkpoint_time, bot.checkpoint_materials = state["seconds"], 0
+        state["inventory"]["slots"] = [{"id": "lenha", "qtd": 8}]
+        self.assertEqual(bot.choose(state, {"inspect_pause": "Esc", "wait": "wait"}, {}), "inspect_pause")
+        state.update(screen="menu_pausa", pause_menu={"cursor": 4, "save_index": 4, "notice": "Não consegui salvar."})
+        self.assertEqual(bot.choose(state, {"close_screen": "Esc"}, {}), "close_screen")
+        self.assertEqual(bot.checkpoint_notice, "Não consegui salvar.")
+        state.update(screen="")
+        self.assertEqual(bot.choose(state, {"inspect_pause": "Esc", "wait": "wait"}, {}), "wait")
+
     def test_partial_resource_hits_renew_work_without_mission_or_inventory_change(self):
         bot = self.player()
         state = self.state()
@@ -461,6 +499,16 @@ class PlayerTests(unittest.TestCase):
 
 
 class ReportTests(unittest.TestCase):
+    def test_report_links_compressed_frames_and_legacy_png(self):
+        with tempfile.TemporaryDirectory() as folder:
+            directory = Path(folder)
+            (directory / "eventos.jsonl").write_text("", encoding="utf-8")
+            for name in ("quadro_0001.png", "quadro_0031.jpg"):
+                (directory / name).write_bytes(b"frame")
+            report = generate(directory).read_text(encoding="utf-8")
+            self.assertIn("](quadro_0001.png)", report)
+            self.assertIn("](quadro_0031.jpg)", report)
+
     def test_report_distinguishes_key_execution_from_progress(self):
         with tempfile.TemporaryDirectory() as folder:
             directory = Path(folder)

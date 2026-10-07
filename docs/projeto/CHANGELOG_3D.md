@@ -6,6 +6,13 @@ O teste passa a cobrar Candinha, Filo, Tonho, Zefa, arraial e recursos, incluind
 
 ## Em desenvolvimento — 07/10/2026 (experimento Jev)
 
+- #159 (parcial): JPEG 85% nas capturas contínuas, links também para PNG e
+  checkpoints pelo menu normal a cada cinco minutos/lote de oito materiais,
+  após golpes em curso. 82 testes Python verdes; remover checkpoints ou
+  ignorar JPEG reprova. Save confirmado ao vivo na V15. V13 esgotou o disco
+  e perdeu coleta após o último save; evidências preservadas em outro volume,
+  campanha retomada sem reconstrução artificial de progresso.
+
 - #159 (parcial): o robô observa custos reais, agrega ingredientes antes de
   viajar à bancada e mantém o alvo de material acessível. Seleciona a obra
   exigida, detecta viagens sem aproximação e tenta contornos físicos;
