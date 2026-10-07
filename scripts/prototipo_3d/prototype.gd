@@ -85,6 +85,8 @@ var carga_ok := false
 
 var pedro: GuiaPedro
 var moradores: Array[MoradorNPC] = []
+var apresentacao_do_povoado: Node
+var _segundos_apresentacao := 0.0
 var _visited: Dictionary = {}
 var _step_time := 0.0
 var pegadas_no	# pegadas.gd — pool de marcas dos passos no chão
@@ -817,6 +819,11 @@ func _ready() -> void:
 	if not retomou_partida and not lugar_pedido:
 		_chegar_pelo_saveiro(spawn)
 	_acertar_a_porta_da_casa()
+	apresentacao_do_povoado = preload("res://scripts/prototipo_3d/apresentacao_do_povoado.gd").new()
+	apresentacao_do_povoado.name = "ApresentacaoDoPovoado"
+	add_child(apresentacao_do_povoado)
+	apresentacao_do_povoado.segundos = _segundos_apresentacao
+	apresentacao_do_povoado.configurar(self)
 	if pedro != null:
 		pedro.missao_mudou.connect(func(_t: String, _a: Vector3, _i: int, _n: int) -> void: _acertar_a_porta_da_casa())
 	_atualizar_relogio()
@@ -1925,6 +1932,7 @@ func estado_para_salvar() -> Dictionary:
 		"pausado": _relogio_pausado_antes if get_tree().paused else Dia.pausado,
 		"barra_de_ferramentas_migrada": _barra_de_ferramentas_migrada,
 		"visitados": _visited.keys(),
+		"segundos_apresentacao": apresentacao_do_povoado.segundos if apresentacao_do_povoado != null else _segundos_apresentacao,
 	}
 	# AS FILAS DOS OUTROS MORADORES, e os alvos que já caíram.
 	#
@@ -1979,6 +1987,9 @@ func estado_para_salvar() -> Dictionary:
 
 
 func restaurar_do_save(estado: Dictionary) -> void:
+	_segundos_apresentacao = maxf(0.0, float(estado.get("segundos_apresentacao", 0.0)))
+	if apresentacao_do_povoado != null:
+		apresentacao_do_povoado.segundos = _segundos_apresentacao
 	player.definir_folego(float(estado.get("folego_oceano", player.folego_maximo())))
 	var onde: Array = estado.get("jogador", [])
 	if onde.size() == 3:

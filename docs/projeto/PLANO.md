@@ -5,6 +5,13 @@ raiz. O jogo 2D segue sua própria linha em `acentauric/myths-valley`.
 
 ## O que já roda
 
+A #155 está concluída (07/10/2026): a apresentação inicial limita o elenco
+opcional por região, tempo e progresso, suspendendo corpo, rig e colisão
+fora de cena. Os quatro essenciais e donos de missões ativas continuam
+disponíveis. Tempo salvo, fade, retomada da rotina e dois estilos conferidos.
+A mesma vista da praça passou de 33,33 a 59,73 FPS médios; o p95 de ~55 ms
+continua pendente na #43. Condições em [POPULACAO_GRADUAL.md](../testes/POPULACAO_GRADUAL.md).
+
 O alvo de madeira permanece estável durante a aproximação (#159/#162),
 troca quando a fonte se esgota e refaz a escolha quando muda o objetivo.
 A regressão contínua e a coleta real no autoplay conferem o comportamento.

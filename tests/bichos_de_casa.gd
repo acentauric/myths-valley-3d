@@ -72,6 +72,11 @@ func _run() -> void:
 		_fechar()
 		return
 	await _frames(10)
+	# Este portão acompanha todas as espécies e horários; a chegada gradual
+	# tem seu próprio portão e não deve retirar os atores desta montagem.
+	while vale.apresentacao_do_povoado == null:
+		await process_frame
+	vale.apresentacao_do_povoado.liberar_todos()
 	dia.pausado = true
 	# O nível de detalhe é do teste: ele diz quem está perto. Longe da câmera o
 	# bicho não anda (nem cai pelo chão que a vila ainda não tem): todos longe, de

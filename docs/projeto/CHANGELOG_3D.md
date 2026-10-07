@@ -6,6 +6,14 @@ O teste passa a cobrar Candinha, Filo, Tonho, Zefa, arraial e recursos, incluind
 
 ## Em desenvolvimento — 07/10/2026 (experimento Jev)
 
+- **O povoado se apresenta em pequenos grupos (#155).** Quatro moradores
+  essenciais preservados, opcionais por região/tempo/progresso, entrada
+  de 0,8 s e repouso de movimento/rig/colisão fora de cena. O save guarda
+  o tempo; retomar não expõe quem se recolheu em casa. Apresentação, rotinas,
+  bichos dos dois estilos e save passaram. Liberar tudo reprova os três
+  limites. Mesma vista da praça: média 33,33→59,73 FPS, mediana 29,33→13,77 ms;
+  p95 52,78→54,88 ms, ainda há picos. Condições em POPULACAO_GRADUAL.md.
+
 - **O alvo de material permanece durante o caminho (#159/#162).** Contornar
   obstáculos deixa de trocar a árvore escolhida a cada quadro. Fonte
   esgotada escolhe a próxima; novo objetivo refaz a escolha. O baseline

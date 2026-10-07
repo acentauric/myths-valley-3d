@@ -166,11 +166,15 @@ func _conferir_a_distancia() -> void:
 		return
 	for bicho in bichos:
 		if is_instance_valid(bicho):
+			if not bool(bicho.get_meta("presenca_liberada", true)):
+				continue
 			bicho.perto = _perto(bicho.global_position, olho, bicho.perto)
 			bicho.visible = bicho.perto
 			bicho.fisica = _perto(bicho.global_position, olho, bicho.fisica, BichoDeCasa.FISICA_ATE)
 	for bando in bandos:
 		if is_instance_valid(bando):
+			if not bool(bando.get_meta("presenca_liberada", true)):
+				continue
 			bando.perto = _perto(bando.centro, olho, bando.perto)
 			bando.visible = bando.perto
 

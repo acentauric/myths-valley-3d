@@ -60,6 +60,11 @@ func _run() -> void:
 	await _mundo_pronto()
 	await _quadros(8)
 	var vale = current_scene
+	# A rotina completa exige o elenco inteiro, além da apresentação inicial
+	# conferida separadamente em apresentacao_do_povoado.
+	while vale.apresentacao_do_povoado == null:
+		await process_frame
+	vale.apresentacao_do_povoado.liberar_todos()
 	var mundo = vale.world
 	var jogador = vale.player
 	var dia = root.get_node("/root/Dia")
