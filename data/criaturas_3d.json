@@ -30,6 +30,7 @@
 			"peconha": {"dura": 12.0, "por_segundo": 0.5},
 			"corpo": [0.16, 0.12, 1.1],
 			"modelo": "jararaca"
-		}
-	}
+		},
+    "matinta": {"nome":"Matinta Pereira","nome_en":"The Matinta Pereira","nome_es":"La Matinta Pereira","vida":70,"dano":14,"passo":110,"fareja":420,"desiste":1400,"mordida":22,"entre_mordidas":1.1,"cai":"","quantos_caem":0,"volta":0,"unica":true,"folego":20,"bote":0.8,"bote_acerta":0.6,"salto":22,"corpo":[1.1,1,2],"modelo":"urubu","escala":2.4,"olhos":true,"_sobre":"A FERA DO CAPÍTULO 7 (#31): a Matinta Pereira em forma de coruja rasga-mortalha, nascida pelo revoar_vale quando a lança bate no escudo, e que cai uma vez só ('unica': não volta com os dias). Vida 70 contra a lança de safiras (dano 9; o forte, 16); dano 14 antes do escudo (defesa 4) e do gibão (1); passo 110 px = 3,7 u/s, entre o andar e a carreira do jogador; fareja 420 px = 14 u e desiste a 1400 = 47 u, para não largar as ruínas. Sem 'dano_da_vida': a mordida dela é a conta de sempre. O corpo é o urubu do catálogo em dobro e meio ('escala'), de olhos acesos ('olhos'), que é como se vê a fera de noite."}
+  }
 }

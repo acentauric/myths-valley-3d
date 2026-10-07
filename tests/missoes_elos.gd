@@ -39,7 +39,15 @@ const FOLGA_DA_GRADE := 3.0
 const SO_NO_DIA_DO_SAVEIRO := ["quirino"]
 ## De onde sai cada item que o portão não acha nas tabelas: o jogador o ganha sem a tabela dizer
 ## (o convite vem da missão, e o que mais?). Vazio é o certo: a lista só cresce com razão escrita.
-const FONTES_FORA_DA_TABELA := {}
+const FONTES_FORA_DA_TABELA := {
+	# O ovo sai do galinheiro do quintal, que não é alvo nem bancada: as galinhas botam todo dia e o E
+	# recolhe (`curral_vale.recolher`, #160).
+	"ovo": "o galinheiro do quintal (curral_vale.gd)",
+	# A lança e o escudo de safiras estão entre os destroços da torre da capela das ruínas, e o E
+	# ali os dá (`revoar_vale._pegar_as_armas`, #31).
+	"lanca_de_safira": "os destroços da torre da capela (revoar_vale.gd)",
+	"escudo_de_safira": "os destroços da torre da capela (revoar_vale.gd)",
+}
 
 var falhas := 0
 var vale
@@ -106,8 +114,8 @@ func _ler_os_arquivos() -> void:
 		_conferir(dado is Dictionary and (dado as Dictionary).get("passos") is Array, "%s não é uma fila com passos" % nome)
 		if dado is Dictionary:
 			arquivos.append({"nome": nome, "dado": dado})
-	# 23 desde 06/10: as 19 filas, as 3 da fé e a meta da onça (#117).
-	_conferir(arquivos.size() == 23, "são %d arquivos de missão, e eram 23 (as 19 filas, as 3 da fé e a meta da onça): conferir a lista do portão" % arquivos.size())
+	# 25 desde 07/10: as 19 filas, as 3 da fé, a meta da onça (#117), o segundo tutorial (#160) e o capítulo 7 (#31).
+	_conferir(arquivos.size() == 25, "são %d arquivos de missão, e eram 25 (as 19 filas, as 3 da fé, a meta da onça, o segundo tutorial e o capítulo 7): conferir a lista do portão" % arquivos.size())
 
 
 ## As filas VIVAS do vale: a do tutorial (do Pedro) e as penduradas (`vale._cadeias`). O motor lê
@@ -128,8 +136,8 @@ func _ligar_as_filas_vivas() -> void:
 	var total := 0
 	for arquivo in arquivos:
 		total += ((arquivo["dado"] as Dictionary).get("passos", []) as Array).size()
-	# 88 desde 06/10: os dois passos do fim do capítulo 6 (#114) e a meta da onça (#117).
-	_conferir(total == 88, "são %d passos, e eram 88: conferir a lista do portão (e os que o jogo toca, em `missoes_do_comeco_ao_fim`)" % total)
+	# 100 desde 07/10: os cinco passos do segundo tutorial (#160) e os sete do capítulo 7 (#31) sobre os 88 de 06/10.
+	_conferir(total == 100, "são %d passos, e eram 100: conferir a lista do portão (e os que o jogo toca, em `missoes_do_comeco_ao_fim`)" % total)
 
 
 ## O TEXTO DO CÓDIGO DO VALE, de onde se conta quem emite cada acontecimento. Menos o motor da fila

@@ -20,6 +20,7 @@ const MAP_CATALOG := "res://data/mapas/regioes.json"
 const ComposicaoVale = preload("res://scripts/prototipo_3d/composicao_vale.gd")
 const LombadaVale = preload("res://scripts/prototipo_3d/lombada_vale.gd")
 const FazendaVale = preload("res://scripts/prototipo_3d/fazenda_vale.gd")
+const RevoarVale = preload("res://scripts/prototipo_3d/revoar_vale.gd")
 const CemiterioLayout = preload("res://scripts/prototipo_3d/cemiterio_layout.gd")
 const TERREIRO_CASA := preload("res://scenes/prototipo_3d/terreiro_casa.tscn")
 const CASA_TAIPA_CAL_TEXTURE := preload("res://assets/prototipo_3d/materiais/cal_taipa_envelhecida_v1.png")
@@ -97,6 +98,9 @@ func _clareiras_das_frentes() -> Array[Vector2]:
 		chapada, chapada + Vector2(1.0, -11.0)]
 	# E A FAZENDA: o portão e a guarita, o pátio e o casarão (`FazendaVale.CLAREIRAS_M`).
 	for ponto: Vector2 in FazendaVale.CLAREIRAS_M:
+		lista.append(ponto / _meters_per_unit)
+	# E AS RUÍNAS DO PALACETE, a torre e a estátua do capítulo 7 (`RevoarVale.CLAREIRAS_M`, #31).
+	for ponto: Vector2 in RevoarVale.CLAREIRAS_M:
 		lista.append(ponto / _meters_per_unit)
 	return lista
 

@@ -53,6 +53,8 @@ const TRADUZIDOS := {
 	"res://data/missoes_chapada.json": ["texto", "resumo", "nome", "titulo", "resposta"],
 	"res://data/missoes_lombada.json": ["texto", "resumo", "nome", "titulo", "resposta"],
 	"res://data/missoes_fazenda.json": ["texto", "resumo", "nome", "titulo", "resposta"],
+	"res://data/missoes_quintal.json": ["texto", "resumo", "nome", "titulo", "resposta"],
+	"res://data/missoes_revoar.json": ["texto", "resumo", "nome", "titulo", "resposta", "oferta", "pergunta"],
 	"res://data/documentos.json": ["nome", "linhas"],
 	"res://data/historico_3d.json": ["titulo", "estado"],
 	# A fé (#52): o que os marcos dizem.
@@ -70,6 +72,7 @@ const TRADUZIDOS := {
 	"res://data/interiores_casas.json": ["nome"],
 	# E a lavoura (#8): o que a tecla diz no leito e os recados do gesto.
 	"res://data/lavoura.json": ["texto"],
+	"res://data/quintal.json": ["texto"],
 	# A missão do cemitério: os três passos do 2D declaram a pendência um a um,
 	# e o mato, o conserto, o cercado e o arremate nasceram nos três idiomas.
 	"res://data/missoes_coveiro.json": ["texto", "resumo", "nome", "titulo", "resposta"],

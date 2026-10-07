@@ -57,6 +57,12 @@ signal arou
 signal plantou
 signal regou
 signal colheu
+## Que cultura foi plantada: a fruteira do segundo tutorial (data/missoes_quintal.json, #160).
+signal plantou_cultura(cultura: String)
+
+## Quantas colheitas já se fizeram aqui: a sexta abre o segundo tutorial, como no 2D (#160).
+## Vai no save.
+var colheitas := 0
 
 var plantacao
 var _mundo
@@ -624,6 +630,7 @@ func usar(celula: Vector2i) -> void:
 			Audio.efeito("plantar")
 			Talentos.ganhar("plantar")
 			plantou.emit()
+			plantou_cultura.emit(cultura)
 		return
 	# Mão livre (ou com o que não é ferramenta nem semente): colhe.
 	if not plantacao.maduro(celula):
@@ -651,6 +658,7 @@ func usar(celula: Vector2i) -> void:
 	_avisar("colheita", qualidade, int(colhido["qtd"]), Catalogo.nome(str(colhido["id"])).to_lower())
 	Audio.efeito("colher")
 	Talentos.ganhar("colher")
+	colheitas += 1
 	colheu.emit()
 
 
@@ -677,10 +685,11 @@ func _avisar(chave: String, a = null, b = null, c = null) -> void:
 # --- o save ------------------------------------------------------------------------
 
 func estado_para_salvar() -> Dictionary:
-	return {"leitos": plantacao.leitos_para_salvar()}
+	return {"leitos": plantacao.leitos_para_salvar(), "colheitas": colheitas}
 
 
 func restaurar(estado: Dictionary) -> void:
+	colheitas = int(estado.get("colheitas", colheitas))
 	var leitos = estado.get("leitos", {})
 	plantacao.restaurar_leitos(leitos if leitos is Dictionary else {})
 	for celula in _leitos_3d:

@@ -252,7 +252,8 @@ func _montar() -> void:
 	# A caixa tem cabeça na frente: sem ela não teria frente, e o bote precisa
 	# de uma — é para ela que o jogador olha.
 	var chave := chave_do_modelo()
-	_modelo = Animador.vestir(chave, pose, tamanho, COR_DO_CORPO)
+	# A ESCALA da espécie ("escala", #31): a Matinta é o urubu do catálogo em dobro e meio.
+	_modelo = Animador.vestir(chave, pose, tamanho, COR_DO_CORPO, 0.0, float(dados().get("escala", 1.0)))
 	_animador = Animador.new()
 	_animador.name = "Animador"
 	add_child(_animador)
@@ -262,7 +263,8 @@ func _montar() -> void:
 	# de dia e de noite, e na onça-preta também.
 	_tinta_do_aviso = _tinta_por_cima(COR_DO_AVISO, 0.5)
 	_tinta_da_pancada = _tinta_por_cima(COR_DA_PANCADA, 0.6)
-	if pelagem == "preta":
+	# Os olhos acesos: a onça-preta, e a espécie que os pede ("olhos": a Matinta, de noite).
+	if pelagem == "preta" or bool(dados().get("olhos", false)):
 		_montar_os_olhos(tamanho)
 
 	# A MARCA NO CHÃO: do focinho até onde a mordida alcança, na largura do
@@ -396,6 +398,15 @@ func _morrer() -> void:
 
 func tonto() -> bool:
 	return _relogio < _tonto_ate
+
+
+## FICA TONTA DE FORA, sem pancada: o sinal do senhor da fazenda no embate do capítulo 7
+## (`revoar_vale.gd`, #31) — ela para, não caça e não morde por `segundos`.
+func tontear(segundos: float) -> void:
+	if vida <= 0.0 or segundos <= 0.0:
+		return
+	_tonto_ate = _relogio + segundos
+	_parar_o_bote()
 
 
 func no_bote() -> bool:

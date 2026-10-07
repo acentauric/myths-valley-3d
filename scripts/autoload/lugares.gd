@@ -91,6 +91,15 @@ const DE_PARA := {
 	# de cada um (`WorldBuilder.casas_dos_moradores`).
 	"casa_do_pedro": "Casa do Pedro",
 	"casa_da_zefa": "Casa da Zefa",
+	# O GALINHEIRO do quintal da casa de taipa (`curral_vale.gd`, #160): a âncora fica
+	# posta desde o começo, levantado ou não — o passo do curral aponta para lá.
+	"galinheiro": "Galinheiro",
+	"curral": "Galinheiro",
+	# AS RUÍNAS DO PALACETE, a torre da capela e a estátua da coruja, atrás do monte a
+	# oeste da fazenda (`revoar_vale.gd`, data/missoes_revoar.json, #31): o capítulo 7.
+	"ruinas_do_palacete": "Ruínas do palacete",
+	"torre_da_capela": "Torre da capela",
+	"estatua_da_coruja": "Estátua da coruja",
 }
 
 ## Os nomes que a campanha do 2D usa e o vale ainda NÃO tem, com o que falta
@@ -99,7 +108,6 @@ const DE_PARA := {
 ## linha por linha para `DE_PARA`.
 const FALTAM_NO_VALE := {
 	"lagoa": "a lagoa a leste do Seu Benedito — Fase 2.5",
-	"curral": "o curral — Fase 7",
 }
 
 var _mundo: Node3D = null

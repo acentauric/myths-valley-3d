@@ -1,0 +1,263 @@
+{
+  "observacao": "O CAPÍTULO 7, O REVOAR DAS ASAS NEGRAS (docs/enredo/capitulo-07.md; docs/projeto/MISSOES_DO_2D.md, 4; o plano do 2D, Fase 6, fatias 7.1 a 7.5; #31). A fila segue a da fazenda (data/missoes_fazenda.json): não abre no E — começa quando a porta estreita se fecha atrás do Pedro (`revoar_vale.gd`). Como no fim do capítulo 6, o quarto e os corredores são contados pela voz do mundo, com o escuro; o que é lugar de verdade são as ruínas do palacete, a torre da capela e a estátua, atrás do monte a oeste da fazenda. AS TROCAS da velha são perguntas de sim ou não (7.1): aceitar tira fôlego e dá o que ela oferece; recusar é o caminho; o Pedro estende a mão e é o jogador quem o puxa (P3: a história é dele). A fuga leva o arraial às ruínas (7.2), as escravas contam a história do senhor da fazenda, e o escudo e a lança de safiras estão entre os destroços da torre (7.3); bater a lança no escudo chama a fera, e o embate é luta de verdade (decisão do autor: a Matinta é criatura, `data/criaturas_3d.json`, e a lança é arma), com o espírito do senhor ao lado do jogador e o sinal dele (7.4); os dois viram pedra, e a anciã pede o escudo: deixar ou levar (7.5). P1: a sedução fica nas falas.",
+  "dono": "pedro",
+  "nome": "O revoar das asas negras",
+  "nome_en": "The flight of the black wings",
+  "nome_es": "El revoloteo de las alas negras",
+  "principal": true,
+  "passos": [
+    {
+      "id": "revoar_quarto",
+      "titulo": "O quarto sem janelas",
+      "titulo_en": "The windowless room",
+      "titulo_es": "El cuarto sin ventanas",
+      "resumo": "Passe a porta estreita com o Pedro",
+      "resumo_en": "Go through the narrow door with Pedro",
+      "resumo_es": "Cruza la puerta estrecha con Pedro",
+      "lugar": "patio_da_fazenda",
+      "raio": 9.0,
+      "audio": "",
+      "texto": "É só uma porta. Vem comigo, fica perto — e não toca em nada que eu não tocar.",
+      "texto_en": "It's just a door. Come with me, stay close — and don't touch anything I don't touch.",
+      "texto_es": "Es solo una puerta. Ven conmigo, quédate cerca, y no toques nada que yo no toque.",
+      "meta": {},
+      "cena": "o_quarto"
+    },
+    {
+      "id": "revoar_mao",
+      "titulo": "A mão do Pedro",
+      "titulo_en": "Pedro's hand",
+      "titulo_es": "La mano de Pedro",
+      "resumo": "Puxe o Pedro pela mão (E) antes que ele toque a velha",
+      "resumo_en": "Pull Pedro by the hand (E) before he touches the old woman",
+      "resumo_es": "Tira de Pedro por la mano (E) antes de que toque a la vieja",
+      "lugar": "patio_da_fazenda",
+      "raio": 9.0,
+      "audio": "",
+      "texto": "Ela tá estendendo a mão pra mim... É só tocar. Só tocar, e o fedor some, e a moça... Segura em mim. Me puxa — eu não tô conseguindo sozinho.",
+      "texto_en": "She's holding her hand out to me... Just a touch. One touch, and the stench is gone, and the girl... Hold on to me. Pull me — I can't do it on my own.",
+      "texto_es": "Me está tendiendo la mano... Es solo tocar. Solo tocar, y el hedor se va, y la muchacha... Agárrame. Tira de mí, que solo no lo consigo.",
+      "meta": {
+        "tipo": "falar",
+        "a_quem": "pedro",
+        "raio": 3.2,
+        "resposta": "Matinta Pereira... Era isso que a minha avó contava: a velha das trocas, que leva a vida de quem dá a mão. Ela já entendeu que eu não vou. Corre — pelos corredores, agora!",
+        "resposta_en": "Matinta Pereira... That's what my grandmother used to tell: the old woman of the trades, who takes the life of whoever gives her a hand. She already knows I won't. Run — through the corridors, now!",
+        "resposta_es": "Matinta Pereira... Eso era lo que contaba mi abuela: la vieja de los trueques, que se lleva la vida de quien le da la mano. Ya entendió que no voy. Corre, por los pasillos, ¡ahora!"
+      },
+      "cena": "a_fuga"
+    },
+    {
+      "id": "revoar_abrigo",
+      "titulo": "O abrigo nas ruínas",
+      "titulo_en": "Shelter in the ruins",
+      "titulo_es": "El refugio en las ruinas",
+      "resumo": "Fuja com o Pedro e o arraial até as ruínas do palacete",
+      "resumo_en": "Flee with Pedro and the villagers to the ruins of the palace",
+      "resumo_es": "Huye con Pedro y el poblado hasta las ruinas del palacete",
+      "lugar": "ruinas_do_palacete",
+      "raio": 7.0,
+      "audio": "",
+      "texto": "Pras ruínas do palacete, atrás do monte, pra oeste! Lá a coruja não enxerga. Todo mundo junto — agora!",
+      "texto_en": "To the ruins of the palace, behind the hill, to the west! The owl can't see us there. Everyone together — now!",
+      "texto_es": "¡A las ruinas del palacete, detrás del monte, hacia el oeste! Allí la lechuza no ve. Todos juntos, ¡ahora!",
+      "meta": {},
+      "conduz": true,
+      "cena": "o_relato"
+    },
+    {
+      "id": "revoar_armas",
+      "titulo": "Escudo e lança",
+      "titulo_en": "Shield and spear",
+      "titulo_es": "Escudo y lanza",
+      "resumo": "Suba a torre da capela e pegue o escudo e a lança (E)",
+      "resumo_en": "Climb the chapel tower and take the shield and the spear (E)",
+      "resumo_es": "Sube a la torre de la capilla y toma el escudo y la lanza (E)",
+      "lugar": "torre_da_capela",
+      "raio": 7.0,
+      "audio": "",
+      "texto": "Fui eu que acordei essa coisa, querendo ganhar alguma coisa naquela casa. Então sou eu que desfaço. A anciã falou da torre da capela, nos fundos: foi lá em cima que o senhor da fazenda lutou. Sobe pela rampa de pedra e procura, entre os destroços, o que brilha. O que achar, pega.",
+      "texto_en": "It was me who woke that thing, wanting to gain something in that house. So it's me who undoes it. The old woman spoke of the chapel tower at the back: it was up there that the master of the farm fought. Go up the stone ramp and look, among the rubble, for what shines. Whatever you find, take it.",
+      "texto_es": "Fui yo quien despertó esa cosa, queriendo ganar algo en aquella casa. Entonces soy yo quien lo deshace. La anciana habló de la torre de la capilla, al fondo: fue allá arriba donde luchó el señor de la hacienda. Sube por la rampa de piedra y busca, entre los escombros, lo que brilla. Lo que encuentres, tómalo.",
+      "meta": {"tipo": "juntar", "item": "lanca_de_safira", "quantos": 1}
+    },
+    {
+      "id": "revoar_chamado",
+      "titulo": "Chame a fera",
+      "titulo_en": "Call the beast",
+      "titulo_es": "Llama a la fiera",
+      "resumo": "No alto da torre, com a lança na mão e o escudo nas Mãos, bata uma no outro (E)",
+      "resumo_en": "Atop the tower, spear in hand and shield equipped, strike one on the other (E)",
+      "resumo_es": "En lo alto de la torre, con la lanza en la mano y el escudo puesto, golpea uno con otro (E)",
+      "lugar": "torre_da_capela",
+      "raio": 7.0,
+      "audio": "",
+      "texto": "Azul e ouro, com safiras do tamanho de um olho. Agora é chamar. Põe a lança na mão, veste o escudo nas Mãos pela mochila, e lá no alto bate uma no outro. Ela vai ouvir de onde estiver. Quando vier, desce — no chão, com o senhor do teu lado, é que se luta.",
+      "texto_en": "Blue and gold, with sapphires the size of an eye. Now we call her. Put the spear in your hand, wear the shield on your Hands from the pack, and up top strike one against the other. She'll hear it wherever she is. When she comes, come down — on the ground, with the master at your side, is where you fight.",
+      "texto_es": "Azul y oro, con zafiros del tamaño de un ojo. Ahora toca llamar. Pon la lanza en la mano, viste el escudo en las Manos desde la mochila, y allá arriba golpea uno con otro. Ella va a oír desde donde esté. Cuando venga, baja: en el suelo, con el señor a tu lado, es donde se lucha.",
+      "meta": {"tipo": "evento", "evento": "chamou_a_fera"},
+      "cena": "a_fera_vem"
+    },
+    {
+      "id": "revoar_embate",
+      "titulo": "O embate",
+      "titulo_en": "The clash",
+      "titulo_es": "El embate",
+      "resumo": "Derrube a Matinta com a lança de safiras",
+      "resumo_en": "Bring down the Matinta with the sapphire spear",
+      "resumo_es": "Derriba a la Matinta con la lanza de zafiros",
+      "lugar": "ruinas_do_palacete",
+      "raio": 40.0,
+      "audio": "",
+      "texto": "Olha a luz! Azul — é a cor do senhor da fazenda, o espírito dele tá contigo. Lança nela quando ela abaixar a cabeça pra morder; o escudo segura o bico. E quando ele avançar, é o sinal: bate com tudo.",
+      "texto_en": "Look at the light! Blue — it's the colour of the master of the farm, his spirit is with you. Spear her when she lowers her head to bite; the shield holds the beak. And when he moves forward, that's the signal: strike with everything.",
+      "texto_es": "¡Mira la luz! Azul: es el color del señor de la hacienda, su espíritu está contigo. Lánzale cuando baje la cabeza para morder; el escudo aguanta el pico. Y cuando él avance, es la señal: golpea con todo.",
+      "meta": {"tipo": "evento", "evento": "derrubou:matinta"},
+      "cena": "a_pedra"
+    },
+    {
+      "id": "revoar_libertacao",
+      "titulo": "A libertação",
+      "titulo_en": "The liberation",
+      "titulo_es": "La liberación",
+      "resumo": "Vá até a estátua da coruja e ouça a anciã (E)",
+      "resumo_en": "Go to the owl statue and hear the old woman (E)",
+      "resumo_es": "Ve hasta la estatua de la lechuza y escucha a la anciana (E)",
+      "lugar": "estatua_da_coruja",
+      "raio": 6.0,
+      "audio": "",
+      "texto": "Acabou... Ela virou pedra em cima dele, e ele embaixo dela, do jeito que a anciã contou. Ela quer te falar — vai até a estátua.",
+      "texto_en": "It's over... She turned to stone on top of him, and he beneath her, just as the old woman told it. She wants to speak to you — go to the statue.",
+      "texto_es": "Se acabó... Se volvió piedra encima de él, y él debajo de ella, como contó la anciana. Ella quiere hablarte: ve hasta la estatua.",
+      "meta": {"tipo": "evento", "evento": "libertou"},
+      "cena": "o_amanhecer"
+    }
+  ],
+  "arremate": {
+    "narra": false,
+    "texto": "O sol nasceu sobre as ruínas do palacete. As mulheres tomaram o rumo do quilombo; o arraial, o de casa. A coruja de pedra ficou.",
+    "texto_en": "The sun rose over the ruins of the palace. The women took the road to the quilombo; the villagers, the road home. The stone owl remained.",
+    "texto_es": "El sol salió sobre las ruinas del palacete. Las mujeres tomaron el rumbo del quilombo; el poblado, el de casa. La lechuza de piedra se quedó."
+  },
+  "velha": {"nome": "A mulher da cama", "nome_en": "The woman in the bed", "nome_es": "La mujer de la cama"},
+  "moca": {"nome": "A moça", "nome_en": "The young woman", "nome_es": "La muchacha"},
+  "ancia": {"nome": "A anciã", "nome_en": "The old woman", "nome_es": "La anciana"},
+  "quarto": [
+    {"texto": "A porta estreita se fechou atrás de vocês sem barulho nenhum. O quarto era redondo e sem janelas, fechado por cima como um iglu; dois castiçais de velas altas, e no meio uma grande cama de pilastras, coberta de panos brancos tricotados.", "texto_en": "The narrow door closed behind you without a sound. The room was round and windowless, closed overhead like an igloo; two candlesticks with tall candles, and in the middle a great four-poster bed, covered in white crocheted cloths.", "texto_es": "La puerta estrecha se cerró detrás de ustedes sin ruido alguno. El cuarto era redondo y sin ventanas, cerrado por arriba como un iglú; dos candelabros de velas altas, y en el medio una gran cama con pilares, cubierta de paños blancos tejidos."},
+    {"texto": "Nela, uma mulher deitada entre lençóis claros com detalhes de ouro e prata. De perto era muito velha, e estava doente: o fedor que vinha dela virava o estômago, e os lençóis amarelavam onde o corpo escorria.", "texto_en": "In it, a woman lay among pale sheets with gold and silver details. Up close she was very old, and ill: the stench that came from her turned the stomach, and the sheets yellowed where her body seeped.", "texto_es": "En ella, una mujer acostada entre sábanas claras con detalles de oro y plata. De cerca era muy vieja, y estaba enferma: el hedor que venía de ella revolvía el estómago, y las sábanas amarilleaban donde el cuerpo escurría."},
+    {"texto": "As duas mulheres puxaram o Pedro pelos braços até a beira da cama. A moça pediu só isto: que ele chegasse perto e tocasse a mão da velha. E então a velha olhou para VOCÊ — e estendeu a mão.", "texto_en": "The two women pulled Pedro by the arms to the edge of the bed. The young woman asked only this: that he come close and touch the old woman's hand. And then the old woman looked at YOU — and held out her hand.", "texto_es": "Las dos mujeres jalaron a Pedro de los brazos hasta el borde de la cama. La muchacha pidió solo esto: que se acercara y tocara la mano de la vieja. Y entonces la vieja te miró a TI, y tendió la mano."}
+  ],
+  "trocas": [
+    {
+      "oferta": "A mão se abriu por cima dos lençóis: moedas de ouro, mais do que uma safra rende. 'Toma a minha mão, menino, e é teu.'",
+      "oferta_en": "The hand opened over the sheets: gold coins, more than a harvest yields. 'Take my hand, child, and it's yours.'",
+      "oferta_es": "La mano se abrió sobre las sábanas: monedas de oro, más de lo que rinde una cosecha. 'Toma mi mano, niño, y es tuyo.'",
+      "pergunta": "Pegar a mão dela e levar o ouro? (1.200 réis — e ela leva o seu fôlego)",
+      "pergunta_en": "Take her hand and keep the gold? (1,200 réis — and she takes your breath)",
+      "pergunta_es": "¿Tomar su mano y llevarte el oro? (1.200 réis, y ella se lleva tu aliento)",
+      "reis": 1200
+    },
+    {
+      "oferta": "O fedor sumiu. A pele dela ficou lisa onde a tua mão passou — e a mão se abriu de novo: um colar de pedras verdes, de senhora de engenho. 'Vale uma casa. Só a mão.'",
+      "oferta_en": "The stench was gone. Her skin went smooth where your hand had passed — and the hand opened again: a necklace of green stones, a plantation lady's. 'Worth a house. Just the hand.'",
+      "oferta_es": "El hedor desapareció. Su piel quedó lisa donde pasó tu mano, y la mano se abrió de nuevo: un collar de piedras verdes, de señora de ingenio. 'Vale una casa. Solo la mano.'",
+      "pergunta": "Pegar a mão dela de novo pelo colar? (4.000 réis — e mais fôlego)",
+      "pergunta_en": "Take her hand again for the necklace? (4,000 réis — and more breath)",
+      "pergunta_es": "¿Tomar su mano otra vez por el collar? (4.000 réis, y más aliento)",
+      "reis": 4000
+    },
+    {
+      "oferta": "Agora ela não era velha. Era a moça da escadaria, a que sorriu para o Pedro a tarde inteira — e sorria para você. 'A última. Dá a mão, e eu sou tua.'",
+      "oferta_en": "Now she was not old. She was the girl from the staircase, the one who smiled at Pedro all afternoon — and she smiled at you. 'The last one. Give me your hand, and I'm yours.'",
+      "oferta_es": "Ahora no era vieja. Era la muchacha de la escalinata, la que le sonrió a Pedro toda la tarde, y te sonreía a ti. 'La última. Dame la mano, y soy tuya.'",
+      "pergunta": "Dar a mão à moça? (não há réis nisto — só o fôlego que ela leva)",
+      "pergunta_en": "Give the girl your hand? (there are no réis in this — only the breath she takes)",
+      "pergunta_es": "¿Darle la mano a la muchacha? (no hay réis en esto, solo el aliento que ella se lleva)",
+      "reis": 0
+    }
+  ],
+  "aceite": [
+    {"texto": "Você deu a mão. Foi como se o chão puxasse o ar do teu peito: as pernas tremeram, e ela, na cama, respirou fundo pela primeira vez — mais moça do que estava.", "texto_en": "You gave your hand. It was as if the floor pulled the air out of your chest: your legs shook, and she, in the bed, breathed deeply for the first time — younger than she had been.", "texto_es": "Diste la mano. Fue como si el suelo te sacara el aire del pecho: te temblaron las piernas, y ella, en la cama, respiró hondo por primera vez, más joven de lo que estaba."}
+  ],
+  "recusa": [
+    {"texto": "Você não deu a mão. A velha não insistiu: sorriu com os poucos dentes e virou o rosto para o Pedro.", "texto_en": "You did not give your hand. The old woman did not insist: she smiled with her few teeth and turned her face to Pedro.", "texto_es": "No diste la mano. La vieja no insistió: sonrió con los pocos dientes y volvió el rostro hacia Pedro."}
+  ],
+  "chao": [
+    {"texto": "Na terceira vez as pernas não aguentaram. Você caiu de joelhos ao lado da cama, com o fôlego de quem subiu a serra correndo, e as duas mulheres riram baixinho.", "texto_en": "The third time your legs gave out. You fell to your knees beside the bed, with the breath of someone who ran up the mountain, and the two women laughed softly.", "texto_es": "La tercera vez las piernas no aguantaron. Caíste de rodillas junto a la cama, con el aliento de quien subió la sierra corriendo, y las dos mujeres rieron bajito."}
+  ],
+  "miragens": [
+    {"texto": "Então ela se voltou para o Pedro e começou a mudar: uma mulher bonita, depois outra; ouro derramado nos lençóis; dinheiro em maços. Cada forma pedia a mesma coisa — a mão dele.", "texto_en": "Then she turned to Pedro and began to change: a beautiful woman, then another; gold spilled on the sheets; money in bundles. Every shape asked for the same thing — his hand.", "texto_es": "Entonces se volvió hacia Pedro y empezó a cambiar: una mujer hermosa, luego otra; oro derramado en las sábanas; dinero en fajos. Cada forma pedía lo mismo: su mano."},
+    {"texto": "O Pedro deu um passo para a cama, com o braço estendido. Era assim que ela se alimentava.", "texto_en": "Pedro took a step toward the bed, his arm outstretched. That was how she fed.", "texto_es": "Pedro dio un paso hacia la cama, con el brazo extendido. Así era como ella se alimentaba."}
+  ],
+  "fuga": [
+    {"texto": "A velha desfez a forma de gente e virou fumaça, esgueirando-se pela cama até a cabeceira — onde havia, entalhada na madeira, uma coruja: a rasga-mortalha.", "texto_en": "The old woman undid her human shape and turned to smoke, slithering over the bed to the headboard — where, carved in the wood, there was an owl: the shroud-ripper.", "texto_es": "La vieja deshizo su forma de gente y se volvió humo, deslizándose por la cama hasta la cabecera, donde había, tallada en la madera, una lechuza: la rasga-mortaja."},
+    {"texto": "Vocês correram pelos corredores escuros até a porta. Lá fora todo mundo ainda se divertia, sem ter visto nada. Os cinco que voltaram antes estavam lá, e nos olhos deles não havia lembrança nenhuma.", "texto_en": "You ran through the dark corridors to the door. Outside everyone was still enjoying themselves, having seen nothing. The five who had come back before were there, and in their eyes there was no memory at all.", "texto_es": "Corrieron por los pasillos oscuros hasta la puerta. Afuera todos seguían divirtiéndose, sin haber visto nada. Los cinco que volvieron antes estaban allí, y en sus ojos no había recuerdo alguno."},
+    {"texto": "Era o entardecer. O sol começava a se pôr, vermelho como sangue — vocês tinham passado o dia inteiro naquele quarto.", "texto_en": "It was dusk. The sun was beginning to set, red as blood — you had spent the whole day in that room.", "texto_es": "Era el atardecer. El sol empezaba a ponerse, rojo como la sangre: habían pasado el día entero en aquel cuarto."}
+  ],
+  "perdao": [
+    {"texto": "Perdão! Perdão pelo que eu pus na tua vida — eu não tinha escolha, nenhuma de nós tem!", "texto_en": "Forgive me! Forgive me for what I brought into your life — I had no choice, none of us has!", "texto_es": "¡Perdón! ¡Perdón por lo que puse en tu vida! Yo no tenía opción, ninguna de nosotras la tiene."}
+  ],
+  "revoar": [
+    {"texto": "As duas mulheres apareceram no alto da escadaria: a mais nova chorava, segura pelo braço pela mais velha, e gritou aquilo para o Pedro. Então veio o estrondo.", "texto_en": "The two women appeared at the top of the staircase: the younger one was crying, held by the arm by the elder, and she shouted that to Pedro. Then came the crash.", "texto_es": "Las dos mujeres aparecieron en lo alto de la escalinata: la más joven lloraba, sujeta del brazo por la mayor, y le gritó aquello a Pedro. Entonces vino el estruendo."},
+    {"texto": "Parte do casarão veio abaixo. De dentro saiu, batendo asas negras que se confundiam com a noite que chegava, uma coruja enorme — e o grito dela era pano rasgando.", "texto_en": "Part of the great house came down. From inside came, beating black wings that blurred into the arriving night, an enormous owl — and its cry was cloth tearing.", "texto_es": "Parte del caserón se vino abajo. De adentro salió, batiendo alas negras que se confundían con la noche que llegaba, una lechuza enorme, y su grito era tela rasgándose."},
+    {"texto": "Telhas e madeira choveram sobre o pátio. Os homens cobriram as famílias; a fera fez duas investidas contra o Pedro, que se desviou, e o fogo que subia do casarão a empurrou para a mata fechada.", "texto_en": "Tiles and timber rained on the courtyard. The men covered their families; the beast made two passes at Pedro, who dodged, and the fire rising from the great house drove it into the thick forest.", "texto_es": "Tejas y madera llovieron sobre el patio. Los hombres cubrieron a sus familias; la fiera hizo dos embestidas contra Pedro, que se desvió, y el fuego que subía del caserón la empujó hacia la selva cerrada."}
+  ],
+  "noite": [
+    {"texto": "A noite fechou enquanto vocês corriam. Depois do monte, escondidas dos olhos da coruja, estavam as ruínas de um palacete: muros sem telhado, colunas caídas, e nos fundos a torre de uma capela pequena.", "texto_en": "Night closed in as you ran. Beyond the hill, hidden from the owl's eyes, were the ruins of a palace: roofless walls, fallen columns, and at the back the tower of a small chapel.", "texto_es": "La noche cerró mientras corrían. Después del monte, escondidas de los ojos de la lechuza, estaban las ruinas de un palacete: muros sin techo, columnas caídas, y al fondo la torre de una capilla pequeña."},
+    {"texto": "Ali já não havia convidados nem escravas: eram todos gente escondida da mesma coisa. Uma anciã que vivia com as mulheres da fazenda veio sentar-se ao lado do Pedro.", "texto_en": "There were no more guests or slaves there: they were all people hiding from the same thing. An old woman who lived with the women of the farm came to sit beside Pedro.", "texto_es": "Allí ya no había invitados ni esclavas: eran todos gente escondida de lo mismo. Una anciana que vivía con las mujeres de la hacienda vino a sentarse junto a Pedro."}
+  ],
+  "relato": [
+    {"texto": "Estamos presas aqui há muitos anos. Lei de libertação nenhuma chegou a esta fazenda.", "texto_en": "We have been kept here for many years. No law of liberation ever reached this farm.", "texto_es": "Estamos presas aquí desde hace muchos años. Ninguna ley de libertad llegó a esta hacienda."},
+    {"texto": "Ninguém sabe como começou. As mais velhas contavam que ela é um ser maligno que consome a vitalidade dos homens. No princípio, só trocando: fumo, charuto, coisa pequena do dia a dia. Depois ficou gananciosa — e quem recusava a troca, ela desgraçava.", "texto_en": "No one knows how it began. The eldest told that she is an evil being who consumes the vitality of men. At first, only by trading: tobacco, cigars, small everyday things. Then she grew greedy — and whoever refused the trade, she ruined.", "texto_es": "Nadie sabe cómo empezó. Las más viejas contaban que ella es un ser maligno que consume la vitalidad de los hombres. Al principio, solo trocando: tabaco, puros, cosas pequeñas del día a día. Después se volvió codiciosa, y a quien rechazaba el trueque, lo desgraciaba."},
+    {"texto": "Consumiu todos os homens desta fazenda. Agora precisa de outros. Foi para isso que vocês foram convidados.", "texto_en": "She consumed every man on this farm. Now she needs others. That is what you were invited for.", "texto_es": "Consumió a todos los hombres de esta hacienda. Ahora necesita otros. Para eso fueron invitados ustedes."},
+    {"texto": "Viveu aqui um senhor valoroso. Foi ele quem lutou com ela por último, depois de ver os escravos dele morrerem. Perdeu o palacete que tinha levantado para a filha — estas pedras — e no fim cravou uma lança no peito da fera.", "texto_en": "A valiant master lived here. He was the last to fight her, after watching his slaves die. He lost the palace he had built for his daughter — these stones — and in the end drove a spear into the beast's chest.", "texto_es": "Vivió aquí un señor valeroso. Fue él quien luchó con ella por último, después de ver morir a sus esclavos. Perdió el palacete que había levantado para su hija, estas piedras, y al final clavó una lanza en el pecho de la fiera."},
+    {"texto": "A ferida a devolveu à forma frágil de mulher. Mas ele não teve mais forças e morreu aqui, no solar. Ela pulou a sacada, sumiu na mata, e quando se refez voltou — para prender e torturar as mulheres que sobraram. Nós.", "texto_en": "The wound returned her to the frail shape of a woman. But he had no strength left and died here, in the manor. She leapt from the balcony, vanished into the forest, and when she had recovered she came back — to imprison and torment the women who were left. Us.", "texto_es": "La herida la devolvió a la forma frágil de mujer. Pero él no tuvo más fuerzas y murió aquí, en el solar. Ella saltó el balcón, se perdió en la selva, y cuando se recompuso volvió, para encerrar y torturar a las mujeres que quedaron. Nosotras."}
+  ],
+  "senhor": [
+    {"texto": "O Pedro entendeu. Um homem que se aproxima dela lhe dá a força de se reerguer — e ele tinha se aproximado. A fera estava de pé por causa dele.", "texto_en": "Pedro understood. A man who comes near her gives her the strength to rise again — and he had come near. The beast was on its feet because of him.", "texto_es": "Pedro entendió. Un hombre que se le acerca le da la fuerza de levantarse de nuevo, y él se había acercado. La fiera estaba en pie por culpa suya."}
+  ],
+  "pedro_torre": [
+    {"texto": "Então sou eu que desfaço. A torre da capela, nos fundos — foi lá que ele lutou. Vem comigo até o pé dela.", "texto_en": "Then it's me who undoes it. The chapel tower, at the back — that's where he fought. Come with me to the foot of it.", "texto_es": "Entonces soy yo quien lo deshace. La torre de la capilla, al fondo: fue allí donde él luchó. Ven conmigo hasta el pie de ella."}
+  ],
+  "chamado": [
+    {"texto": "A lança bateu no escudo e o som correu a noite. Ao longe, um grito respondeu: pano rasgando. Depois o bater de asas, cada vez mais perto.", "texto_en": "The spear struck the shield and the sound ran through the night. Far off, a cry answered: cloth tearing. Then the beating of wings, closer and closer.", "texto_es": "La lanza golpeó el escudo y el sonido corrió por la noche. A lo lejos, un grito respondió: tela rasgándose. Después el batir de alas, cada vez más cerca."},
+    {"texto": "Quanto mais ela se aproximava, mais o escudo e a lança reluziam — uma luz azul que te envolvia como coisa boa. Lá de baixo gritaram: era a cor do senhor da fazenda. O espírito dele estava contigo.", "texto_en": "The closer she came, the brighter the shield and the spear shone — a blue light that wrapped around you like something good. From below they shouted: it was the colour of the master of the farm. His spirit was with you.", "texto_es": "Cuanto más se acercaba, más relucían el escudo y la lanza: una luz azul que te envolvía como cosa buena. Desde abajo gritaron: era el color del señor de la hacienda. Su espíritu estaba contigo."}
+  ],
+  "pedro_embate": [
+    {"texto": "Desce! Ela vai arrebentar a torre atrás de ti. No chão das ruínas, com ele do teu lado — lança quando ela abaixar a cabeça!", "texto_en": "Come down! She'll smash the tower behind you. On the ground of the ruins, with him at your side — spear her when she lowers her head!", "texto_es": "¡Baja! Va a reventar la torre detrás de ti. En el suelo de las ruinas, con él a tu lado: ¡lánzale cuando baje la cabeza!"}
+  ],
+  "pedra": [
+    {"texto": "A coruja se levantou para esmagar o senhor caído, e nesse instante a tua lança atravessou o crânio dela. A lança dele entrou pela boca e cravou o metal na garganta.", "texto_en": "The owl rose to crush the fallen master, and in that instant your spear went through its skull. His spear entered through the mouth and drove the metal into its throat.", "texto_es": "La lechuza se alzó para aplastar al señor caído, y en ese instante tu lanza le atravesó el cráneo. La lanza de él entró por la boca y clavó el metal en la garganta."},
+    {"texto": "Num último movimento a fera expeliu uma chama azul, misturada à aura do senhor, numa explosão que cobriu os dois — e os dois viraram pedra: a coruja caída sobre o homem.", "texto_en": "In one last movement the beast spewed a blue flame, mixed with the master's aura, in a blast that covered them both — and both turned to stone: the owl fallen upon the man.", "texto_es": "En un último movimiento la fiera expulsó una llama azul, mezclada con el aura del señor, en una explosión que cubrió a los dos, y los dos se volvieron piedra: la lechuza caída sobre el hombre."}
+  ],
+  "pedido": [
+    {"texto": "Você a derrubou, menino. Agora nos liberte: ponha o escudo de safiras ao lado da coruja, e deixe que a gente vá.", "texto_en": "You brought her down, child. Now set us free: place the sapphire shield beside the owl, and let us go.", "texto_es": "La derribaste, muchacho. Ahora libéranos: pon el escudo de zafiros al lado de la lechuza, y deja que nos vayamos."},
+    {"texto": "Há muito começaram a levantar um quilombo longe desta fazenda; é para lá que queremos ir. Tememos que ela volte, se alguém levar daqui um legado dela. O que ficar de pedra, fica.", "texto_en": "Long ago they began to raise a quilombo far from this farm; that is where we want to go. We fear she will return, if anyone carries a legacy of hers away from here. What turns to stone, stays.", "texto_es": "Hace mucho empezaron a levantar un quilombo lejos de esta hacienda; es allá adonde queremos ir. Tememos que vuelva, si alguien se lleva de aquí un legado suyo. Lo que se vuelve piedra, se queda."}
+  ],
+  "pergunta_escudo": {
+    "texto": "Deixar o escudo de safiras ao lado da coruja? (Sim: ele vira pedra aqui. Não: você o leva — e a conta dela vai junto)",
+    "texto_en": "Leave the sapphire shield beside the owl? (Yes: it turns to stone here. No: you take it — and her debt goes with you)",
+    "texto_es": "¿Dejar el escudo de zafiros al lado de la lechuza? (Sí: se vuelve piedra aquí. No: te lo llevas, y la cuenta de ella va contigo)"
+  },
+  "amanhecer": [
+    {"texto": "Você pôs o escudo ao lado da estátua, e ele virou pedra ali mesmo, preso ao resto. As mulheres cantaram. Cuidaram dos feridos, e o nascer do sol foi um começo para todos.", "texto_en": "You set the shield beside the statue, and it turned to stone right there, fixed to the rest. The women sang. They tended the wounded, and the sunrise was a beginning for everyone.", "texto_es": "Pusiste el escudo al lado de la estatua, y se volvió piedra allí mismo, pegado al resto. Las mujeres cantaron. Cuidaron a los heridos, y el amanecer fue un comienzo para todos."},
+    {"texto": "A moça se despediu do Pedro com um beijo no rosto; o lugar dela era com elas. Dois grupos tomaram dois rumos: as mulheres, o quilombo; o arraial, a casa.", "texto_en": "The girl said goodbye to Pedro with a kiss on the cheek; her place was with them. Two groups took two roads: the women, the quilombo; the villagers, home.", "texto_es": "La muchacha se despidió de Pedro con un beso en la mejilla; su lugar era con ellas. Dos grupos tomaron dos rumbos: las mujeres, el quilombo; el poblado, la casa."}
+  ],
+  "amanhecer_levado": [
+    {"texto": "Você ficou com o escudo. A anciã olhou para ele no teu braço e não disse nada; as mulheres cantaram mais baixo. Quem leva legado de Matinta leva também a conta dela — e ela cobra.", "texto_en": "You kept the shield. The old woman looked at it on your arm and said nothing; the women sang more quietly. Whoever carries a legacy of the Matinta carries her debt too — and she collects.", "texto_es": "Te quedaste con el escudo. La anciana lo miró en tu brazo y no dijo nada; las mujeres cantaron más bajo. Quien se lleva legado de Matinta se lleva también su cuenta, y ella cobra."},
+    {"texto": "A moça se despediu do Pedro com um beijo no rosto; o lugar dela era com elas. Dois grupos tomaram dois rumos: as mulheres, o quilombo; o arraial, a casa.", "texto_en": "The girl said goodbye to Pedro with a kiss on the cheek; her place was with them. Two groups took two roads: the women, the quilombo; the villagers, home.", "texto_es": "La muchacha se despidió de Pedro con un beso en la mejilla; su lugar era con ellas. Dos grupos tomaron dos rumbos: las mujeres, el quilombo; el poblado, la casa."}
+  ],
+  "dicas": {
+    "pegar": {"texto": "Pegar o escudo e a lança", "texto_en": "Take the shield and the spear", "texto_es": "Tomar el escudo y la lanza"},
+    "bater": {"texto": "Bater a lança no escudo", "texto_en": "Strike the spear on the shield", "texto_es": "Golpear la lanza en el escudo"},
+    "falar": {"texto": "Ouvir a anciã", "texto_en": "Hear the old woman", "texto_es": "Escuchar a la anciana"}
+  },
+  "recados": {
+    "achou": {"texto": "Entre os destroços: a lança e o escudo de safiras do senhor da fazenda.", "texto_en": "Among the rubble: the sapphire spear and shield of the master of the farm.", "texto_es": "Entre los escombros: la lanza y el escudo de zafiros del señor de la hacienda."},
+    "sem_lanca": {"texto": "Ponha a lança de safiras na mão (a barra de mão) para bater no escudo.", "texto_en": "Put the sapphire spear in your hand (the hand bar) to strike the shield.", "texto_es": "Pon la lanza de zafiros en la mano (la barra de mano) para golpear el escudo."},
+    "sem_escudo": {"texto": "Vista o escudo de safiras nas Mãos, pela mochila, antes de bater.", "texto_en": "Wear the sapphire shield on your Hands, from the pack, before striking.", "texto_es": "Viste el escudo de zafiros en las Manos, desde la mochila, antes de golpear."},
+    "troca": {"texto": "A troca: %d réis — e o fôlego que ela levou.", "texto_en": "The trade: %d réis — and the breath she took.", "texto_es": "El trueque: %d réis, y el aliento que ella se llevó."},
+    "sinal": {"texto": "O senhor avançou — é o sinal! A lança, agora!", "texto_en": "The master moved forward — that's the signal! The spear, now!", "texto_es": "El señor avanzó: ¡es la señal! ¡La lanza, ahora!"},
+    "escudo_ficou": {"texto": "O escudo de safiras virou pedra ao lado da coruja.", "texto_en": "The sapphire shield turned to stone beside the owl.", "texto_es": "El escudo de zafiros se volvió piedra al lado de la lechuza."}
+  }
+}

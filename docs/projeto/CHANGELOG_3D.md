@@ -2,6 +2,24 @@
 
 ## Em desenvolvimento — 06/10/2026 (playtest da Build 9B)
 
+- **Toda a lista de missões do 2D está no vale** (docs/projeto/MISSOES_DO_2D.md).
+  O segundo tutorial (#160, `missoes_quintal.json`) abre sozinho na sexta colheita,
+  como no 2D: o pomar entrega duas mudas de bananeira e uma de mangueira e
+  fecha com a fruteira plantada; o talento Curral (raiz Pastoreio) passa a levantar
+  o galinheiro no quintal da casa de taipa, com três galinhas que botam um ovo
+  cada por dia — o E no galinheiro recolhe (`curral_vale.gd`); e o capataz, que no
+  2D pedia a aba de trabalho dos terrenos, vira um dia de roçado combinado com o
+  Cosme, pago de manhã na mochila. O capítulo 7 (#31, `missoes_revoar.json`,
+  `revoar_vale.gd`) segue a porta estreita: o quarto sem janelas e as três trocas
+  da velha (aceitar tira fôlego e paga; recusar é o caminho), a mão do Pedro que o
+  jogador puxa, a fuga e o revoar, o abrigo nas ruínas do palacete — levantadas
+  atrás do monte a oeste da fazenda, com a torre da capela e a rampa de pedra —, o
+  relato das escravas, a lança e o escudo de safiras entre os destroços, a fera
+  chamada pela lança batida no escudo e o embate de verdade com a Matinta como
+  criatura (`criaturas_3d.json`), a luz azul, o espírito do senhor e o sinal dele,
+  a estátua que fica, e a escolha do escudo ao amanhecer. Portões `quintal` e
+  `revoar`; `missoes_elos` passa a contar 25 filas e 100 passos.
+
 - **As missões voltam a fechar, e um portão joga todas do começo ao fim.** A
   bateria cheia da main tinha 12 portões vermelhos depois da junção do ramo de
   desempenho. As filas de colheita (Zefa, coveiro, pedra do poço, corte) caíam

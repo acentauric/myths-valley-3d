@@ -165,8 +165,11 @@ const ITENS := {
 		"folego": 19.0, "icone": "caju", "empilhavel": true,
 	},
 	# --- do curral ------------------------------------------------------------
+	## O OVO das galinhas do quintal (`curral_vale.gd`, #160): botam todo dia, e o E
+	## no galinheiro recolhe.
 	"ovo": {
 		"nome": "Ovo", "tipo": "recurso", "icone": "ovo", "empilhavel": true,
+		"resumo": "Das galinhas do seu quintal. Botam todo dia; recolha de manhã, no galinheiro.",
 	},
 	"leite": {
 		"nome": "Leite de cabra", "tipo": "recurso", "icone": "leite", "empilhavel": true,
@@ -453,6 +456,28 @@ const ITENS := {
 		"efeito": {"eficiencia": -0.05},
 		"resumo": "Couro curtido de vaqueiro. Com as mãos guardadas, a lida cansa menos.",
 		"icone": "luvas_de_couro",
+		"empilhavel": false,
+	},
+	## A LANÇA E O ESCUDO DE SAFIRAS do capítulo 7 (data/missoes_revoar.json, #31): os
+	## do senhor da fazenda, achados entre os destroços da torre da capela das
+	## ruínas. A lança é a arma do embate com a Matinta — mais que o dobro do facão;
+	## o escudo vai nas Mãos e segura a mordida como quatro gibões. "Reluziam uma
+	## luminosidade azul cada vez mais intensa" perto da fera: é a luz do `revoar_vale`.
+	"lanca_de_safira": {
+		"nome": "Lança de safiras",
+		"tipo": "ferramenta",
+		"resumo": "Esculpida num material azul, com adornos de ouro e safiras. A lança do senhor da fazenda, que atravessou a fera uma vez.",
+		"icone": "lanca_de_safira",
+		"empilhavel": false,
+		"dano": 9.0,
+	},
+	"escudo_de_safira": {
+		"nome": "Escudo de safiras",
+		"tipo": "equipamento",
+		"encaixe": "maos",
+		"efeito": {"defesa": 4.0},
+		"resumo": "Forte, azul, com safiras grandes. No braço, a mordida da fera chega pela metade. Deixá-lo ao lado da coruja é o que as mulheres pedem.",
+		"icone": "escudo_de_safira",
 		"empilhavel": false,
 	},
 	"facao": {

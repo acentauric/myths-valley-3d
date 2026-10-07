@@ -52,6 +52,9 @@ const CemiterioVale = preload("res://scripts/prototipo_3d/cemiterio_vale.gd")
 const PonteVale = preload("res://scripts/prototipo_3d/ponte_vale.gd")
 const LombadaVale = preload("res://scripts/prototipo_3d/lombada_vale.gd")
 const FazendaVale = preload("res://scripts/prototipo_3d/fazenda_vale.gd")
+const CurralVale = preload("res://scripts/prototipo_3d/curral_vale.gd")
+const RevoarVale = preload("res://scripts/prototipo_3d/revoar_vale.gd")
+const Plantacao = preload("res://scripts/prototipo_3d/plantacao.gd")
 const NarracaoDoVale = preload("res://scripts/prototipo_3d/narracao_do_vale.gd")
 const SustosDaMata = preload("res://scripts/prototipo_3d/sustos_da_mata.gd")
 const MENU_SCENE := "res://scenes/prototipo_3d/abertura.tscn"
@@ -158,6 +161,10 @@ var ponte_do_rio: Node3D
 var lombada: Node3D
 ## A fazenda do convite e o dia dela (`fazenda_vale.gd`).
 var fazenda: Node3D
+## O curral do quintal: o galinheiro do talento Curral e os ovos (`curral_vale.gd`, #160).
+var curral: Node3D
+## O capítulo 7, o revoar das asas negras: as ruínas, a torre, a fera e a estátua (`revoar_vale.gd`, #31).
+var revoar: Node3D
 ## A voz do mundo, sem nome, sobre o escuro (`narracao_do_vale.gd`).
 var narracao: CanvasLayer
 ## As plaquinhas de nome dos moradores; somem com tela aberta (placas_nomes.gd).
@@ -718,6 +725,7 @@ func _ready() -> void:
 	lavoura.plantou.connect(_avisar_as_cadeias.bind("plantou"))
 	lavoura.regou.connect(_avisar_as_cadeias.bind("regou"))
 	lavoura.colheu.connect(_avisar_as_cadeias.bind("colheu"))
+	lavoura.plantou_cultura.connect(_ao_plantar)
 	noite.deitou.connect(_ao_deitar)
 	Mochila.abrir_documento = _ler_documento
 	Dia.periodo_mudou.connect(_on_periodo_mudou)
@@ -746,6 +754,12 @@ func _ready() -> void:
 	fazenda.name = "Fazenda"
 	add_child(fazenda)
 	fazenda.configurar(world, self)
+	# O CAPÍTULO 7 (#31): as ruínas do palacete atrás do monte, a torre da capela, a fera e
+	# a estátua; a fila segue a da fazenda (data/missoes_revoar.json).
+	revoar = RevoarVale.new()
+	revoar.name = "Revoar"
+	add_child(revoar)
+	revoar.configurar(world, self)
 	interiores.entrou.connect(_ao_mudar_de_lado.unbind(1))
 	interiores.saiu.connect(_ao_mudar_de_lado.unbind(1))
 	# O E NOS MORADORES (tecla_dos_moradores.gd): conversar, cumprir o passo que
@@ -972,6 +986,13 @@ func _pendurar_as_frentes_do_2d() -> void:
 		# A JORNADA DA FAZENDA (data/missoes_fazenda.json): não abre no E; quem a
 		# começa é o dia dela (`fazenda_vale.gd`).
 		_pendurar_cadeia(pedro, "res://data/missoes_fazenda.json", 0.0, "pedro_fazenda")
+		# O SEGUNDO TUTORIAL (data/missoes_quintal.json; MISSOES_DO_2D.md, 2; #160): o
+		# pomar, o curral e o capataz. Não abre no E: começa sozinho na sexta colheita,
+		# como no 2D (`_conferir_o_quintal`).
+		_pendurar_cadeia(pedro, "res://data/missoes_quintal.json", 0.0, "pedro_quintal")
+		# O CAPÍTULO 7 (data/missoes_revoar.json; #31): não abre no E; começa quando a
+		# porta estreita se fecha atrás do Pedro (`revoar_vale.gd`).
+		_pendurar_cadeia(pedro, "res://data/missoes_revoar.json", 0.0, "pedro_revoar")
 	# A META DA ONÇA é da Dona Zefa (data/missoes_metas_onca.json, #117): abre
 	# sozinha quando a conta de abatidos chega, como a dos caititus, e fecha
 	# levando o couro a ela.
@@ -1001,6 +1022,8 @@ func _pendurar_as_frentes_do_2d() -> void:
 ## As metas do caderno dos bichos: espécie → {conta, cadeia}, lidas de
 ## bichos.json em `_pendurar_as_frentes_do_2d` (#117).
 const CADEIA_DA_META := {"meta_caititu": "pedro_metas", "meta_onca": "zefa_metas"}
+## Quantas colheitas abrem o segundo tutorial (data/missoes_quintal.json): a sexta, como no 2D.
+const COLHEITAS_DO_QUINTAL := 6
 var _metas_dos_bichos: Dictionary = {}
 
 
@@ -1036,6 +1059,17 @@ func _conferir_o_socorro() -> void:
 	Audio.efeito("pegar")
 
 
+## O SEGUNDO TUTORIAL ABRE SOZINHO NA SEXTA COLHEITA, como no 2D (`tutorial.gd` de lá):
+## com o tutorial acabado, a fila do quintal começa e o Pedro chama (#160). Sem E e sem
+## aviso de fila trancada: ele dá cada aviso uma vez, e já tem o da chapada a dar.
+func _conferir_o_quintal() -> void:
+	var quintal = _cadeias.get("pedro_quintal")
+	if quintal == null or quintal.iniciado or pedro == null or lavoura == null:
+		return
+	if pedro.terminou_o_tutorial() and lavoura.colheitas >= COLHEITAS_DO_QUINTAL:
+		quintal.comecar(2.0)
+
+
 func _conferir_as_metas() -> void:
 	for especie in _metas_dos_bichos:
 		var meta: Dictionary = _metas_dos_bichos[especie]
@@ -1064,21 +1098,36 @@ func _ao_pescar(_peixe: String, quantos: int) -> void:
 		_avisar_as_cadeias("pescou")
 
 
+## PLANTOU, E O QUÊ: "plantou:bananeira", e "plantou:fruteira" para as culturas perenes —
+## o pomar do segundo tutorial fecha com qualquer fruteira (#160).
+func _ao_plantar(cultura: String) -> void:
+	_avisar_as_cadeias("plantou:" + cultura)
+	if bool((Plantacao.CULTURAS.get(cultura, {}) as Dictionary).get("perene", false)):
+		_avisar_as_cadeias("plantou:fruteira")
+
+
 ## Destravou um nó da teia: o `Talentos` só diz que mudou, e a carga do save
 ## também muda — por isso a conta começa DEPOIS da partida salva
 ## (`_ligar_os_acontecimentos_das_frentes`), e só a que cresce avisa.
 var _talentos_destravados := -1
+var _talentos_vistos: Array = []
 
 
 func _ao_mudar_os_talentos() -> void:
 	var agora: int = Talentos.destravados.size()
 	if _talentos_destravados >= 0 and agora > _talentos_destravados:
 		_avisar_as_cadeias("destravou_talento")
+		# E QUAL FOI (#160): "destravou:curral" fecha o passo do curral do segundo tutorial.
+		for no in Talentos.destravados:
+			if not _talentos_vistos.has(no):
+				_avisar_as_cadeias("destravou:" + str(no))
+	_talentos_vistos = Talentos.destravados.duplicate()
 	_talentos_destravados = agora
 
 
 func _ligar_os_acontecimentos_das_frentes() -> void:
 	_talentos_destravados = Talentos.destravados.size()
+	_talentos_vistos = Talentos.destravados.duplicate()
 	for ligado in [[Luta.acertou, _ao_acertar], [Luta.esquivou, _ao_esquivar],
 			[Pesca.terminou, _ao_pescar], [Talentos.mudou, _ao_mudar_os_talentos]]:
 		if not (ligado[0] as Signal).is_connected(ligado[1]):
@@ -1248,6 +1297,12 @@ func _montar_moradores(spawn: Vector3) -> void:
 	lavoura.name = "Lavoura"
 	add_child(lavoura)
 	lavoura.configurar(world, player, hud)
+	# O CURRAL DO QUINTAL (#160): o galinheiro que o talento Curral levanta, as três
+	# galinhas e os ovos de cada manhã.
+	curral = CurralVale.new()
+	curral.name = "Curral"
+	add_child(curral)
+	curral.configurar(world, self, player, hud)
 	# A pesca (pesca_vale.gd). Entra ANTES dos achados: com a vara na mão, o E
 	# ainda pega o cordel do píer. Ferrar o peixe escuta em `_input`, e esse
 	# vem antes de tudo — a janela é de três quartos de segundo.
@@ -1346,6 +1401,7 @@ func _process(_delta: float) -> void:
 		_conferir_a_porta_em = 0.5
 		_acertar_a_porta_da_casa()
 		_conferir_as_metas()
+		_conferir_o_quintal()
 	# O SOCORRO A CADA QUADRO, e não a cada meio segundo: com o corpo de três
 	# barras quem cansa é o vigor, que volta sozinho a vinte por segundo — em meio
 	# segundo o braço que não aguentava bater já aguenta, e a panela nunca vinha.
@@ -2025,6 +2081,9 @@ func estado_para_salvar() -> Dictionary:
 	# A LAVOURA inteira: cada leito é escolha do jogador, e nada se recalcula.
 	if lavoura != null:
 		estado["lavoura"] = lavoura.estado_para_salvar()
+	# O NINHO: os ovos e o dia da postura (o galinheiro é o talento, que já vai).
+	if curral != null:
+		estado["curral"] = curral.estado_para_salvar()
 	return estado
 
 
@@ -2111,6 +2170,8 @@ func restaurar_do_save(estado: Dictionary) -> void:
 	_conferir_a_enxada_do_finado()
 	if lavoura != null and estado.has("lavoura"):
 		lavoura.restaurar(estado["lavoura"])
+	if curral != null and estado.has("curral"):
+		curral.restaurar(estado["curral"])
 	# As lajes e o cercado acompanham a fila e a obra que acabaram de voltar.
 	if cemiterio != null:
 		cemiterio.acertar()
@@ -2375,6 +2436,25 @@ func _tocar_a_cena(nome: String) -> void:
 		"porta_estreita":
 			if fazenda != null:
 				fazenda.a_porta_estreita()
+		# O capítulo 7 (`revoar_vale.gd`, #31).
+		"o_quarto":
+			if revoar != null:
+				revoar.o_quarto()
+		"a_fuga":
+			if revoar != null:
+				revoar.a_fuga()
+		"o_relato":
+			if revoar != null:
+				revoar.o_relato()
+		"a_fera_vem":
+			if revoar != null:
+				revoar.a_fera_vem()
+		"a_pedra":
+			if revoar != null:
+				revoar.a_pedra()
+		"o_amanhecer":
+			if revoar != null:
+				revoar.o_amanhecer()
 
 
 func _pendurar_cadeia(morador: Node3D, arquivo: String, perto: float, chave: String = "") -> Node:

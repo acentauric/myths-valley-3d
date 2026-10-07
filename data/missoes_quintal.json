@@ -1,0 +1,111 @@
+{
+  "observacao": "O SEGUNDO TUTORIAL do 2D — montar uma fazenda (docs/projeto/MISSOES_DO_2D.md, 2; `tutorial.gd` de lá, `segundo_tutorial`): o pomar, o curral e o capataz, com as falas de `data/dialogos/pedro.json`. Abre SOZINHO na sexta colheita, como lá (`lavoura.colheitas`, `prototype._conferir_o_quintal`), com o tutorial acabado — sem E e sem aviso de fila trancada: o Pedro dá cada aviso uma vez e já tem o da chapada. ADAPTAÇÕES AO 3D (#160): o pomar usa as mudas que o catálogo já tem (bananeira e mangueira, culturas perenes da `Plantacao`), e o passo fecha quando uma fruteira é plantada ('plantou:fruteira', `lavoura_vale.plantou_cultura`). O curral é o talento Curral da raiz Pastoreio (tecla K), que agora levanta o galinheiro de verdade no quintal da casa de taipa, com três galinhas, e as galinhas botam todo dia: o E no galinheiro recolhe os ovos (`curral_vale.gd`). Quem já tinha o talento pula o passo. O capataz do 2D pedia a aba de trabalho dos terrenos, que o vale não tem: aqui a lição é a mesma — o braço que não é o seu — e o gesto é combinar um dia de roçado com o Cosme, o neto da Dona Zefa; o que ele fez chega de manhã, na mochila, pago por ele.",
+  "dono": "pedro",
+  "nome": "O quintal e o pomar",
+  "nome_en": "The yard and the orchard",
+  "nome_es": "El patio y el huerto",
+  "principal": false,
+  "passos": [
+    {
+      "id": "pomar",
+      "titulo": "Quem planta manga",
+      "titulo_en": "Whoever plants mango",
+      "titulo_es": "Quien siembra mango",
+      "resumo": "Plante uma muda de fruteira no seu roçado",
+      "resumo_en": "Plant a fruit-tree seedling in your field",
+      "resumo_es": "Siembra una muda de frutal en tu roza",
+      "lugar": "lavoura",
+      "raio": 8.0,
+      "audio": "",
+      "entrega": [
+        {"item": "muda_bananeira", "quantidade": 2},
+        {"item": "muda_mangueira", "quantidade": 1}
+      ],
+      "texto": "Você já colheu o bastante pra eu te falar de uma coisa que eu não falei no começo. Mandioca é comida de agora: você planta, espera, arranca, e o pé vai junto; todo ciclo é do zero. Pé de fruta não. Pé de fruta você planta UMA vez, cuida, e ele fica — dá fruta, descansa, dá de novo, enquanto você tiver vivo e ele também. Tome estas mudas: duas de banana, que é a que menos faz esperar, e uma de manga, que é a que mais. Plante como você planta mandioca: are, molhe, ponha a muda. Só que não conte os dias, que dá agonia. Meu avô dizia que quem planta manga não come manga — planta pro neto. Ele estava errado, mas não por muito.",
+      "texto_en": "You've harvested enough for me to tell you something I didn't say at the start. Cassava is food for now: you plant, wait, pull it up, and the plant goes with it; every cycle starts from zero. A fruit tree doesn't. A fruit tree you plant ONCE, you tend it, and it stays — it bears, rests, bears again, as long as you're alive and so is it. Take these seedlings: two banana, which makes you wait the least, and one mango, which makes you wait the most. Plant them like you plant cassava: till, water, set the seedling. Just don't count the days, it only brings anguish. My grandfather used to say whoever plants mango doesn't eat mango — he plants for the grandson. He was wrong, but not by much.",
+      "texto_es": "Ya cosechaste bastante como para que te hable de algo que no dije al principio. La mandioca es comida de ahora: siembras, esperas, arrancas, y la planta se va con ella; cada ciclo empieza de cero. El árbol frutal no. El frutal lo siembras UNA vez, lo cuidas, y se queda: da fruta, descansa, da de nuevo, mientras tú estés vivo y él también. Toma estas mudas: dos de banano, que es el que menos hace esperar, y una de mango, que es el que más. Siémbralas como siembras la mandioca: ara, moja, pon la muda. Solo que no cuentes los días, que da agonía. Mi abuelo decía que quien siembra mango no come mango: siembra para el nieto. Estaba equivocado, pero no por mucho.",
+      "meta": {"tipo": "evento", "evento": "plantou:fruteira"},
+      "recompensa": {"xp": 10, "beiju": 2}
+    },
+    {
+      "id": "curral_aprender",
+      "titulo": "O que o quintal dá",
+      "titulo_en": "What the yard gives",
+      "titulo_es": "Lo que da el patio",
+      "resumo": "Destrave o Curral na raiz Pastoreio (tecla K)",
+      "resumo_en": "Unlock the Pen in the Herding root (K key)",
+      "resumo_es": "Desbloquea el Corral en la raíz Pastoreo (tecla K)",
+      "lugar": "casa_de_taipa",
+      "raio": 12.0,
+      "audio": "",
+      "texto": "Pronto: daqui a muitos dias você passa pelo roçado e tem fruta onde não tinha nada. Agora o contrário do pé de fruta — uma coisa que rende amanhã. Só que bicho não é semente. Semente qualquer um enfia no chão; bicho você tem que SABER: de quanto em quanto tempo bota, o que come, onde dorme, o que faz quando adoece. Seu quintal tá vazio e vai continuar vazio até você aprender isso. Não adianta eu soltar galinha aí e te desejar sorte. Abre a lista de ofícios, aquela tecla K que eu te mostrei. Tem uma raiz chamada Pastoreio, e o primeiro galho dela é o Curral. Gasta um ponto ali. Quando gastar, nós dois levantamos o galinheiro e eu te trago as primeiras três.",
+      "texto_en": "There: many days from now you'll walk past the field and there'll be fruit where there was nothing. Now the opposite of a fruit tree — something that pays off tomorrow. Except an animal isn't a seed. Anyone can shove a seed in the ground; an animal you have to KNOW: how often it lays, what it eats, where it sleeps, what it does when it gets sick. Your yard is empty and will stay empty until you learn that. No use me letting chickens loose there and wishing you luck. Open the list of crafts, that K key I showed you. There's a root called Herding, and its first branch is the Pen. Spend a point there. Once you do, the two of us raise the coop and I bring you the first three.",
+      "texto_es": "Listo: dentro de muchos días pasas por la roza y hay fruta donde no había nada. Ahora lo contrario del frutal: algo que rinde mañana. Solo que un animal no es una semilla. Una semilla cualquiera la mete en la tierra; un animal tienes que SABERLO: cada cuánto pone, qué come, dónde duerme, qué hace cuando enferma. Tu patio está vacío y va a seguir vacío hasta que aprendas eso. No sirve de nada que yo suelte gallinas ahí y te desee suerte. Abre la lista de oficios, esa tecla K que te mostré. Hay una raíz llamada Pastoreo, y su primera rama es el Corral. Gasta un punto ahí. Cuando lo gastes, entre los dos levantamos el gallinero y te traigo las primeras tres.",
+      "meta": {"tipo": "evento", "evento": "destravou:curral"}
+    },
+    {
+      "id": "curral",
+      "titulo": "Os ovos do quintal",
+      "titulo_en": "The eggs in the yard",
+      "titulo_es": "Los huevos del patio",
+      "resumo": "Recolha 2 ovos no galinheiro (E)",
+      "resumo_en": "Collect 2 eggs at the coop (E)",
+      "resumo_es": "Recoge 2 huevos en el gallinero (E)",
+      "lugar": "galinheiro",
+      "raio": 8.0,
+      "audio": "",
+      "texto": "Olha lá o galinheiro de pé e as três dentro. Ponto de ofício gasto é ponto que vira coisa no chão — é assim que essa lista funciona, ela não é enfeite. Agora vai lá ver o que elas deixaram. Galinha bota todo dia: chegue perto do galinheiro e aperte E, o ovo tá ali. Não adianta ficar em cima do bicho apertando. Ele deu, acabou; volte amanhã.",
+      "texto_en": "Look, there's the coop standing and the three inside. A craft point spent is a point that turns into something on the ground — that's how that list works, it's not decoration. Now go see what they've left. A hen lays every day: come up to the coop and press E, the egg is right there. No use standing over the bird pressing. It gave, that's it; come back tomorrow.",
+      "texto_es": "Mira allá el gallinero de pie y las tres adentro. Punto de oficio gastado es punto que se vuelve cosa en el suelo: así funciona esa lista, no es adorno. Ahora ve a ver lo que dejaron. La gallina pone todos los días: acércate al gallinero y aprieta E, el huevo está ahí. No sirve quedarse encima del animal apretando. Dio, se acabó; vuelve mañana.",
+      "meta": {"tipo": "juntar", "item": "ovo", "quantos": 2},
+      "recompensa": {"xp": 10, "cocada": 2}
+    },
+    {
+      "id": "capataz",
+      "titulo": "O braço que não é o seu",
+      "titulo_en": "The arm that isn't yours",
+      "titulo_es": "El brazo que no es el tuyo",
+      "resumo": "Combine um dia de roçado com o Cosme",
+      "resumo_en": "Arrange a day's field work with Cosme",
+      "resumo_es": "Acuerda un día de roza con Cosme",
+      "lugar": "casa_da_zefa",
+      "raio": 8.0,
+      "audio": "",
+      "texto": "Viu? Fruteira é pra daqui a muito, bicho é pra amanhã. Fazenda boa tem os dois: um paga o dia de hoje e o outro paga o ano que vem. Última coisa, e essa é a mais difícil de aceitar pra quem veio de baixo. Uma hora a terra é mais do que o seu braço dá conta. Aí você para de trabalhar mais e começa a trabalhar melhor: braço de outro. Vai lá na casa da Dona Zefa e fala com o Cosme, o neto dela — braço novo, e precisando de serviço. Combina com ele um dia de roçado. Só não peça serviço de lombo a quem já passou dos setenta: o Seu Benedito e a Dona Zefa fazem muita coisa, mas não capinam mais.",
+      "texto_en": "See? A fruit tree is for much later, an animal is for tomorrow. A good farm has both: one pays for today and the other pays for next year. Last thing, and this one is the hardest to accept for someone who came up from the bottom. At some point the land is more than your arm can handle. That's when you stop working more and start working better: someone else's arm. Go to Dona Zefa's house and talk to Cosme, her grandson — a young arm, and in need of work. Arrange a day in the field with him. Just don't ask back-breaking work of anyone past seventy: Seu Benedito and Dona Zefa do plenty, but they don't hoe anymore.",
+      "texto_es": "¿Viste? El frutal es para dentro de mucho, el animal es para mañana. Una buena hacienda tiene los dos: uno paga el día de hoy y el otro paga el año que viene. Lo último, y esto es lo más difícil de aceptar para quien vino de abajo. En algún momento la tierra es más de lo que tu brazo aguanta. Ahí dejas de trabajar más y empiezas a trabajar mejor: brazo ajeno. Ve a la casa de doña Zefa y habla con Cosme, su nieto: brazo joven, y necesitado de trabajo. Acuerda con él un día de roza. Solo no le pidas trabajo de lomo a quien ya pasó de los setenta: don Benedito y doña Zefa hacen muchas cosas, pero ya no carpen.",
+      "meta": {
+        "tipo": "falar",
+        "a_quem": "cosme",
+        "raio": 3.4,
+        "resposta": "Um dia de roçado? Fechado. Amanhã, antes do sol, eu passo no teu roçado e deixo a enxada falar. O que eu tirar da terra eu deixo na tua porta — e você me paga com um prato, que pra isso serve vizinho.",
+        "resposta_en": "A day in the field? Done. Tomorrow, before the sun, I'll stop by your field and let the hoe do the talking. Whatever I pull from the earth I'll leave at your door — and you pay me with a plate, that's what neighbors are for.",
+        "resposta_es": "¿Un día de roza? Hecho. Mañana, antes del sol, paso por tu roza y dejo que la azada hable. Lo que saque de la tierra lo dejo en tu puerta, y tú me pagas con un plato, que para eso sirve el vecino."
+      }
+    },
+    {
+      "id": "capataz_manha",
+      "titulo": "A manhã do capataz",
+      "titulo_en": "The overseer's morning",
+      "titulo_es": "La mañana del capataz",
+      "resumo": "Durma: de manhã, o que o Cosme fez está na mochila",
+      "resumo_en": "Sleep: in the morning, what Cosme did is in your pack",
+      "resumo_es": "Duerme: por la mañana, lo que hizo Cosme está en la mochila",
+      "lugar": "casa_de_taipa",
+      "raio": 12.0,
+      "audio": "",
+      "texto": "Combinado está. Agora dorme, que quem trabalha pra você trabalha enquanto você tá longe — amanhã de manhã o que o Cosme fez tá na sua mochila. E guarde uma coisa: quem trabalha pra você tem nome. Use.",
+      "texto_en": "It's arranged. Now sleep, because whoever works for you works while you're away — tomorrow morning what Cosme did will be in your pack. And keep one thing in mind: whoever works for you has a name. Use it.",
+      "texto_es": "Acordado está. Ahora duerme, que quien trabaja para ti trabaja mientras estás lejos: mañana por la mañana lo que hizo Cosme está en tu mochila. Y guarda una cosa: quien trabaja para ti tiene nombre. Úsalo.",
+      "meta": {"tipo": "evento", "evento": "dormiu"},
+      "quem_paga": "cosme",
+      "recompensa": {"xp": 10, "mandioca": 4, "lenha": 2}
+    }
+  ],
+  "arremate": {
+    "texto": "Agora tem gente trabalhando enquanto você tá longe. É assim que fazenda vira fazenda.",
+    "texto_en": "Now there are people working while you're away. That's how a farm becomes a farm.",
+    "texto_es": "Ahora hay gente trabajando mientras estás lejos. Así es como una hacienda se vuelve hacienda.",
+    "narra": true
+  }
+}
