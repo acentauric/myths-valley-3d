@@ -54,6 +54,8 @@ const EXCECOES := [
 		"razao": "o caminho da malha (Cruzeiro → PierPiso) sobe ao píer pela BORDA NORTE do tabuado, por cima de uma viga rente à água, 0,5 u acima do leito: a malha (células de 0,2 u de altura) acha o degrau de 0,5 passável e o corpo (degrau de 0,4) não sobe; o jogador sobe pela cabeceira (conferido na seção 5) (navegacao_vale.gd)"},
 	{"corpo": "Vale3D/Cenario/@StaticBody3D@", "perto": Vector3(7.0, 4.0, -8.8), "raio": 9.0,
 		"razao": "só no estilo procedural: o caminho da malha até o MEIO da Casa de Carro Quebrado (a âncora) passa pela parede dela, que a malha não corta"},
+	{"corpo": "bom_jesus_dos_pobres/CorposDasCercas_cerca_varas/", "perto": Vector3(36.5, 13.6, -130.2), "raio": 400.0,
+		"razao": "#125: as cercas de varas das roças ganharam corpo na #104 (06/10) e a malha de navegação não as lê de propósito — os caminhos da malha (Praça → Casa de taipa, → Lavoura) atravessam a cerca, e o corpo prende nela em qualquer lance; a malha com as cercas e as rotas revistas são a #125 (paisagismo_vale.plantar_cercas, navegacao_vale.gd)"},
 ]
 ## Quantos presos reprovam o portão. Zero: qualquer ponto onde o corpo não anda é um
 ## defeito, ou está em `EXCECOES` com a razão.

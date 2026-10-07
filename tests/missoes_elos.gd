@@ -1,5 +1,5 @@
 extends SceneTree
-## OS ELOS DAS MISSÕES: cada passo das 22 filas tem para onde ir, a quem falar, de onde tirar o
+## OS ELOS DAS MISSÕES: cada passo das 23 filas tem para onde ir, a quem falar, de onde tirar o
 ## material, quem emita o acontecimento — e o E, do ponto onde o jogador chega, é de quem o passo manda.
 ##
 ##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/missoes_elos.gd
@@ -106,7 +106,8 @@ func _ler_os_arquivos() -> void:
 		_conferir(dado is Dictionary and (dado as Dictionary).get("passos") is Array, "%s não é uma fila com passos" % nome)
 		if dado is Dictionary:
 			arquivos.append({"nome": nome, "dado": dado})
-	_conferir(arquivos.size() == 22, "são %d arquivos de missão, e eram 22 (as 19 filas e as 3 da fé): conferir a lista do portão" % arquivos.size())
+	# 23 desde 06/10: as 19 filas, as 3 da fé e a meta da onça (#117).
+	_conferir(arquivos.size() == 23, "são %d arquivos de missão, e eram 23 (as 19 filas, as 3 da fé e a meta da onça): conferir a lista do portão" % arquivos.size())
 
 
 ## As filas VIVAS do vale: a do tutorial (do Pedro) e as penduradas (`vale._cadeias`). O motor lê
@@ -127,7 +128,8 @@ func _ligar_as_filas_vivas() -> void:
 	var total := 0
 	for arquivo in arquivos:
 		total += ((arquivo["dado"] as Dictionary).get("passos", []) as Array).size()
-	_conferir(total == 85, "são %d passos, e eram 85: conferir a lista do portão (e os que o jogo toca, em `missoes_do_comeco_ao_fim`)" % total)
+	# 88 desde 06/10: os dois passos do fim do capítulo 6 (#114) e a meta da onça (#117).
+	_conferir(total == 88, "são %d passos, e eram 88: conferir a lista do portão (e os que o jogo toca, em `missoes_do_comeco_ao_fim`)" % total)
 
 
 ## O TEXTO DO CÓDIGO DO VALE, de onde se conta quem emite cada acontecimento. Menos o motor da fila
@@ -546,7 +548,7 @@ func _o_e_neste_passo(cadeia, indice: int, meta: Dictionary, quem, jogador, tecl
 func _fechar() -> void:
 	print("")
 	if falhas == 0:
-		print("ELOS_OK: as 22 filas e os 85 passos se ligam — ids únicos, lugares que resolvem, gente que aparece, material com fonte, acontecimentos com emissor, obras com a tecla no resumo ([E] e [J] onde o E toca), aviso da fila trancada nos três idiomas, o E é da pessoa certa a cada período, e o controle acha caminho até cada lugar")
+		print("ELOS_OK: as 23 filas e os 88 passos se ligam — ids únicos, lugares que resolvem, gente que aparece, material com fonte, acontecimentos com emissor, obras com a tecla no resumo ([E] e [J] onde o E toca), aviso da fila trancada nos três idiomas, o E é da pessoa certa a cada período, e o controle acha caminho até cada lugar")
 	else:
 		print("elos: %d falha(s)" % falhas)
 	quit(1 if falhas > 0 else 0)

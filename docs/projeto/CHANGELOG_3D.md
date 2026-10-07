@@ -445,6 +445,13 @@
   metas passam a ser lidas do caderno para toda espécie que tenha uma
   (`prototype.CADEIA_DA_META`, `_conferir_as_metas`). Portões `frentes` (a
   parte 8b) e `idiomas`.
+- **Os portões da equipe acompanham as fatias de 06/10.** `missoes_elos` conta
+  23 filas e 88 passos (os dois do fim do capítulo 6, #114, e a meta da onça,
+  #117). `colisoes_de_passeio` lista como exceção, com a razão, o corpo que
+  prende nas cercas de varas das roças: as cercas ganharam corpo na #104 e a
+  malha de navegação não as lê de propósito — as rotas revistas são a #125. O
+  mesmo `missoes_elos` reprova na própria main da equipe, às 17h30, com o E ao
+  lado do Tonho (#128): não é da junção, e fica aberto.
 
 ## Em desenvolvimento — 05/10/2026
 
