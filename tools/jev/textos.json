@@ -1,0 +1,20 @@
+{
+  "titulo": "Jev jogando · teste por orçamento",
+  "titulo_en": "Jev playing · budget limited test",
+  "titulo_es": "Jev jugando · prueba por presupuesto",
+  "offline": "VALIDAÇÃO OFFLINE · sem chamadas à API",
+  "offline_en": "OFFLINE VALIDATION · no API calls",
+  "offline_es": "VALIDACIÓN SIN CONEXIÓN · sin llamadas a la API",
+  "aguardando": "Jev avaliando as ações…",
+  "aguardando_en": "Jev evaluating actions…",
+  "aguardando_es": "Jev evaluando acciones…",
+  "estado": "%s · %d chamadas · US$ %.6f estimados / US$ %.2f",
+  "estado_en": "%s · %d calls · US$ %.6f estimated / US$ %.2f",
+  "estado_es": "%s · %d llamadas · US$ %.6f estimados / US$ %.2f",
+  "parar": "Parar sessão (F8)",
+  "parar_en": "Stop session (F8)",
+  "parar_es": "Detener sesión (F8)",
+  "acao": "Ação: %s · confiança %.0f%%",
+  "acao_en": "Action: %s · confidence %.0f%%",
+  "acao_es": "Acción: %s · confianza %.0f%%"
+}

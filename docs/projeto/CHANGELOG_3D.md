@@ -1,5 +1,32 @@
 # Histórico de mudanças — Myths' Valley 3D
 
+## Em desenvolvimento — 07/10/2026 (experimento Jev)
+
+- **Jev joga uma sessão curta sob observação.** `JOGAR_JEV.cmd` abre o jogo em
+  um perfil isolado; a ponte local envia observações textuais à TypeSafe e o
+  modelo escolhe ações da abertura, caminhada, corrida, interação e telas.
+  Cada sessão limita o gasto a US$ 0,10 estimados, sem corte padrão de tempo
+  ou chamadas (esses limites são opcionais),
+  com interrupção por F8, relatório das decisões e capturas locais. O modo
+  `--offline` valida a integração sem API e fica identificado como tal.
+  Após o primeiro experimento, a ponte também interrompe ciclos sem progresso
+  por 30 segundos, antes de enviar outra chamada paga. A aproximação de um
+  morador verifica o alvo do E em vez de assumir que a chegada do caminho basta.
+  A retomada também revelou corrida sem deslocamento diante de um obstáculo:
+  agora o controle mede o movimento, informa bloqueio e oferece WASD nas
+  direções livres verificadas por raios curtos de colisão.
+  O objetivo do Jev passa a ser concluir a história implementada, até o pátio
+  da fazenda: as 22 definições de missões e 85 passos, requisitos das cadeias
+  vivas, diário, inventário, mapa, moradores, receitas e textos de telas entram
+  no contexto. Pedro informa condução, espera e destino; o controle continua
+  acompanhando-o após alcançá-lo. Mochila, ferramentas e telas ganham ações de
+  teclado. O relatório distingue o fim implementado do restante ainda pendente.
+  Todos os deslocamentos passam a usar WASD: a malha fornece a rota, mas não
+  comanda o clique. A aproximação curta do guia usa teclado para alcançar o
+  limiar que o faz voltar a conduzir, e o contexto separa a tarefa atual das
+  futuras, destaca falhas recentes e informa o destino previsto de cada direção.
+  O experimento não substitui os portões determinísticos nem cobre toda a campanha.
+
 ## Em desenvolvimento — 06/10/2026 (playtest da Build 9B)
 
 - **As missões voltam a fechar, e um portão joga todas do começo ao fim.** A
