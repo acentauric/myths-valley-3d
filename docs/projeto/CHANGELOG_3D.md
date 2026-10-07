@@ -6,6 +6,11 @@ O teste passa a cobrar Candinha, Filo, Tonho, Zefa, arraial e recursos, incluind
 
 ## Em desenvolvimento — 07/10/2026 (experimento Jev)
 
+- **Beata caminha sem deslocamento indevido da raiz (#139).** Clipes locais
+  estabilizam quadril, preservam passada e acompanham o relevo pela física.
+  Locomoção, rotina e nado passaram; clipes originais reprovam o mutante.
+  Caminhadas reais planas e inclinadas tiveram capturas conferidas.
+
 - **A vara decorativa deixa o centro do píer (#148).** A ferramenta de
   pesca fica no catálogo; peixe, pote, piso e navegação são conferidos
   na cena real. Todas as peças recebem metadata de origem para distinguir

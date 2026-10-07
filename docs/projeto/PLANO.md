@@ -197,3 +197,12 @@ e ferramenta de pesca, peixe, pote, piso e rotas permanecem. Pier_legivel
 e navegacao passaram, com captura conferida; recolocar a vara reprova.
 Toda instância de catálogo agora informa sua peça por metadata, inclusive
 itens sem LOD e instâncias cujo nome o Godot muda por duplicidade.
+
+## Caminhada da beata em 07/10/2026
+
+A #139 fica concluída: cópias locais dos clipes de locomoção
+removem a translação lateral da raiz e limitam sua oscilação a 2,5 cm,
+preservando pernas, velocidade e ajuste físico ao terreno. Portões de
+locomoção, rotina e nado verdes; o mutante original acusa 98 falhas.
+Capturas de três fases da passada e caminhadas no vale plano/inclinado
+foram conferidas em scratch/beata-locomocao e scratch/beata-no-vale.

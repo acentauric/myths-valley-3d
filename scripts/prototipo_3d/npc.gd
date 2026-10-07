@@ -371,7 +371,7 @@ func _montar_modelo() -> void:
 			# GLB com rig e clipes do Tripo (idle/walk/run + gestos): usa o animador autoral.
 			var autoral: Node = load("res://scripts/prototipo_3d/authored_animator.gd").new()
 			add_child(autoral)
-			autoral.configure(modelo)
+			autoral.configure(modelo, corpo == "beata")
 			animador = autoral
 		if modelo == null:
 			# NO ESTILO TRIPO, QUEM AINDA NÃO TEM MODELO É CAIXA CINZA, e não o boneco

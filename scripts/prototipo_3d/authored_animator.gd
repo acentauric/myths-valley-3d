@@ -45,7 +45,7 @@ var _medido := false
 var _trabalho := ""
 
 
-func configure(model_root: Node) -> bool:
+func configure(model_root: Node, estabilizar_raiz: bool = false) -> bool:
 	var players := model_root.find_children("*", "AnimationPlayer", true, false)
 	if players.is_empty():
 		push_warning("O modelo não contém AnimationPlayer; usando animação provisória.")
@@ -58,11 +58,45 @@ func configure(model_root: Node) -> bool:
 		if not _clips.has(base):
 			_clips[base] = String(real)
 	_congelar_altura_da_pose_de_escada()
+	if estabilizar_raiz:
+		_estabilizar_raiz_da_locomoção(model_root as Node3D)
 	for clip: String in MOTION_CLIPS.values():
 		if _clips.has(clip):
 			animation_player.get_animation(_clips[clip]).loop_mode = Animation.LOOP_LINEAR
 	_play_motion("idle", 1.0)
 	return true
+
+
+## A beata chega com Hips deslocado quase um metro no clipe de corrida.
+## A física conduz o corpo: cópias locais preservam as passadas e removem
+## esse deslocamento, limitando o balanço vertical a 2,5 cm no mundo.
+func _estabilizar_raiz_da_locomoção(modelo: Node3D) -> void:
+	if not _clips.has("idle"):
+		return
+	var parado := animation_player.get_animation(_clips["idle"])
+	var biblioteca := AnimationLibrary.new()
+	var limite := 0.025 / maxf(absf(modelo.scale.y), 0.001)
+	for role in ["walk", "run"]:
+		if not _clips.has(role):
+			continue
+		var copia := animation_player.get_animation(_clips[role]).duplicate() as Animation
+		for track in copia.get_track_count():
+			if copia.track_get_type(track) != Animation.TYPE_POSITION_3D or not String(copia.track_get_path(track)).to_lower().contains("hips"):
+				continue
+			var repouso := parado.find_track(copia.track_get_path(track), Animation.TYPE_POSITION_3D)
+			if repouso < 0 or parado.track_get_key_count(repouso) == 0 or copia.track_get_key_count(track) == 0:
+				continue
+			var base: Vector3 = parado.track_get_key_value(repouso, 0)
+			var media := 0.0
+			for key in copia.track_get_key_count(track):
+				media += (copia.track_get_key_value(track, key) as Vector3).y
+			media /= copia.track_get_key_count(track)
+			for key in copia.track_get_key_count(track):
+				var original: Vector3 = copia.track_get_key_value(track, key)
+				copia.track_set_key_value(track, key, Vector3(base.x, base.y + clampf(original.y - media, -limite, limite), base.z))
+		biblioteca.add_animation(role, copia)
+		_clips[role] = "locomocao/" + role
+	animation_player.add_animation_library("locomocao", biblioteca)
 
 
 ## O clipe de escada tem movimento vertical no osso Hips, próprio de subir um degrau.
