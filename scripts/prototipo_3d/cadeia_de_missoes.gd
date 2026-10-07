@@ -1093,7 +1093,8 @@ func posicao_do_passo(indice: int) -> Vector3:
 								var arvores := jogador.get_tree().get_first_node_in_group("arvores_do_vale")
 								if arvores != null:
 									perto = arvores.mais_perto_que_rende(str(qual), de)
-							break
+							if perto != Lugares.NENHUM:
+								break
 			"levar", "falar":
 				var quem := _morador(str(meta.get("a_quem", "")))
 				if quem != null:

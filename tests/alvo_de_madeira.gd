@@ -49,6 +49,8 @@ func _run() -> void:
 	var passos: Array[Dictionary] = [{"id": "ponte_lenha", "lugar": "oficina", "meta": {"tipo": "juntar", "item": "lenha", "quantos": 36}}]
 	cadeia.passos = passos
 	conferir(cadeia.posicao_do_passo(0) == Vector3(6, 0, 0), "missão aponta árvore em vez da oficina após esgotar troncos")
+	cadeia.passos[0]["meta"] = {"tipo": "juntar", "itens": {"tabua": 8, "lenha": 12}}
+	conferir(cadeia.posicao_do_passo(0) == Vector3(6, 0, 0), "pedido composto busca matéria-prima faltante mesmo após receita sem alvo")
 	arvores._jogador = jogador
 	jogador.set_physics_process(true)
 	arvores._em_golpe = 5

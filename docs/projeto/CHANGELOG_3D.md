@@ -6,6 +6,12 @@ O teste passa a cobrar Candinha, Filo, Tonho, Zefa, arraial e recursos, incluind
 
 ## Em desenvolvimento — 07/10/2026 (experimento Jev)
 
+- **Pedidos compostos também indicam a matéria-prima (#162/#146).**
+  Se o primeiro item faltante exige fabricação e não tem ponto de coleta,
+  o marcador continua procurando os demais materiais faltantes. O Mirante
+  deixa de apontar apenas a oficina quando faltam tábuas e lenha. O portão
+  de madeira cobre a combinação; a interrupção anterior reprova.
+
 - **A caça deixa espólio no chão (#67).** Recolher com E usa o mesmo
   árbitro das outras interações. A gravura do item identifica a coleta,
   que permanece no save até ser recolhida; mochila cheia preserva a
