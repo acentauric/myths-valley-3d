@@ -27,6 +27,11 @@ func _run() -> void:
 	diretor._vistos.clear()
 	diretor.segundos = 0
 	diretor.atualizar()
+	var visitante: Node3D = vale.saveiro.comprador
+	if "--visita-forcada" in OS.get_cmdline_user_args():
+		visitante.set_meta("presenca_do_calendario", true)
+		diretor.atualizar()
+	conferir(not visitante.visible, "apresentação respeita ausência do mestre fora do dia")
 	var sem := "--sem-orcamento" in OS.get_cmdline_user_args()
 	if sem:
 		diretor.liberar_todos()

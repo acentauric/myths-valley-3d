@@ -6,6 +6,19 @@ O teste passa a cobrar Candinha, Filo, Tonho, Zefa, arraial e recursos, incluind
 
 ## Em desenvolvimento — 07/10/2026 (experimento Jev)
 
+- #78: galeria existente passa navegação, edição de moradores/peças, voz,
+  prévia e pendências. Seis imagens gráficas conferidas; retirar a prévia
+  reprova. #34 recebe capturas opcionais e resolução efetiva no benchmark;
+  A/B/B/A mostra quedas de 56% a 85% nos triângulos em três câmeras.
+  A bateria final ainda precisa sustentar o encerramento do LOD.
+
+- #155/#132: apresentação gradual não sobrepõe o calendário do saveiro;
+  chegada/partida atualizam o orçamento de moradores imediatamente e as
+  placas de atores ocultos somem sem esperar o fade. Saveiro (48 s),
+  apresentação (39 s) e matriz de balões (12 s) passam; forçar a visita
+  fora do dia reproduz duas falhas. A guarda de saudação permite primeiro
+  a interação prioritária das cadeias (integrada junto da #160).
+
 - #138 (parcial): a extremidade da areia também se desfaz sobre o fundo
   do mar. Renderização real comprova o recorte; mutante reprova duas
   verificações. Travessia a pé/nado e maré passam. Emendas da foz seguem abertas.

@@ -163,7 +163,7 @@ func _process(delta: float) -> void:
 			_oclusao.erase(morador)
 			continue
 		var topo := morador.global_position + Vector3(0, float(morador.get("altura")) + ACIMA_DA_CABECA, 0)
-		if not liberado or camera.is_position_behind(topo):
+		if not liberado or not morador.is_visible_in_tree() or camera.is_position_behind(topo):
 			_apagar_ja(morador)
 			continue
 		var ancora := camera.unproject_position(topo)

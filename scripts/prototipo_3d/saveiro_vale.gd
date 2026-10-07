@@ -222,10 +222,15 @@ func _ver_se_chegou(avisar: bool) -> void:
 ## está).
 func _mostrar(sim: bool) -> void:
 	if comprador != null:
+		# O orçamento de apresentação não pode convocar uma visita fora do dia.
+		comprador.set_meta("presenca_do_calendario", sim)
 		comprador.visible = sim
 		comprador.process_mode = Node.PROCESS_MODE_INHERIT if sim else Node.PROCESS_MODE_DISABLED
 		if sim and comprador.has_method("ir_ao_posto_agora"):
 			comprador.ir_ao_posto_agora()
+		var vale := get_parent()
+		if vale != null and "apresentacao_do_povoado" in vale and vale.apresentacao_do_povoado != null:
+			vale.apresentacao_do_povoado.atualizar()
 	_ver_o_barco()
 
 

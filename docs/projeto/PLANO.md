@@ -5,6 +5,15 @@ raiz. O jogo 2D segue sua própria linha em `acentauric/myths-valley`.
 
 ## O que já roda
 
+A galeria #78 foi conferida por edição/navegação/voz reais e seis capturas.
+A medição A/B do LOD #34 reduz triângulos nas três câmeras da GTX 1660 Ti;
+o encerramento aguarda a bateria final: [GALERIA_E_LOD.md](../testes/GALERIA_E_LOD.md).
+
+O orçamento gradual de #155 respeita a presença de visitas no calendário.
+Quirino chega/parte no dia 14 sem placa fantasma, e a entrega prioritária
+não é bloqueada por uma saudação. Saveiro, apresentação e balões passam;
+forçar a visita fora do dia reproduz duas falhas.
+
 A #138 tem acabamento irregular na extremidade marítima da areia, com
 prova gráfica e passagem/maré preservadas. A foz mantém emendas e impede
 fechar a issue: [TRANSICAO_DA_COSTA.md](../testes/TRANSICAO_DA_COSTA.md).

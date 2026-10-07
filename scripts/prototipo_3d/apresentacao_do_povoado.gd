@@ -37,9 +37,14 @@ func _escolher(atores: Array[Node], limite: int, moradores: bool) -> void:
 	atores.sort_custom(func(a, b): return a.global_position.distance_squared_to(_vale.player.global_position) < b.global_position.distance_squared_to(_vale.player.global_position))
 	var apresentados := 0
 	for ator in atores:
-		var essencial := false
+		var visita := ator.has_meta("presenca_do_calendario")
+		if visita and not bool(ator.get_meta("presenca_do_calendario")):
+			if not _ocultos.has(ator.get_instance_id()):
+				_definir(ator, false, false)
+			continue
+		var essencial := visita
 		if moradores:
-			essencial = str(ator.dados.get("id", "")) in ESSENCIAIS or ator.falando_agora()
+			essencial = essencial or str(ator.dados.get("id", "")) in ESSENCIAIS or ator.falando_agora()
 			for filho in ator.get_children():
 				if filho.get_script() == load("res://scripts/prototipo_3d/cadeia_de_missoes.gd") and filho.iniciado and filho.missao < filho.passos.size():
 					essencial = true
@@ -97,7 +102,7 @@ func liberar_todos() -> void:
 	set_process(false)
 	for grupo in ["moradores", "bichos_de_casa", "bandos_de_chao"]:
 		for ator in get_tree().get_nodes_in_group(grupo):
-			_definir(ator, true, false)
+			_definir(ator, bool(ator.get_meta("presenca_do_calendario", true)), false)
 
 func contagem() -> Dictionary:
 	var resultado := {}
