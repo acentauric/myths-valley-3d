@@ -15,6 +15,7 @@ const Lapides = preload("res://scripts/prototipo_3d/lapides.gd")
 const TeclaDasBancadas = preload("res://scripts/prototipo_3d/tecla_das_bancadas.gd")
 const TeclaDosMoradores = preload("res://scripts/prototipo_3d/tecla_dos_moradores.gd")
 const FocoDoE = preload("res://scripts/prototipo_3d/foco_do_e.gd")
+const FilaDeFalas = preload("res://scripts/prototipo_3d/fila_de_falas.gd")
 const AvisoDaPrimeiraVez = preload("res://scripts/prototipo_3d/aviso_da_primeira_vez.gd")
 const CapaDeCordel = preload("res://scripts/prototipo_3d/capa_de_cordel.gd")
 const Almanaque = preload("res://scripts/prototipo_3d/almanaque.gd")
@@ -52,6 +53,7 @@ const PonteVale = preload("res://scripts/prototipo_3d/ponte_vale.gd")
 const LombadaVale = preload("res://scripts/prototipo_3d/lombada_vale.gd")
 const FazendaVale = preload("res://scripts/prototipo_3d/fazenda_vale.gd")
 const NarracaoDoVale = preload("res://scripts/prototipo_3d/narracao_do_vale.gd")
+const SustosDaMata = preload("res://scripts/prototipo_3d/sustos_da_mata.gd")
 const MENU_SCENE := "res://scenes/prototipo_3d/abertura.tscn"
 ## Raio de terra firme em volta do ponto de chegada.
 const RAIO_CHEGADA := 6.0
@@ -162,8 +164,11 @@ var narracao: CanvasLayer
 var placas
 ## O personagem em 3D na mochila, ao lado dos encaixes (boneco_da_mochila.gd).
 var boneco_da_mochila
-## A aba pedida no último `abrir_o_painel`, entregue à abertura crua.
-var _aba_pedida := 0
+## A aba pedida no último `abrir_o_painel`, entregue à abertura crua. -1 é o J,
+## que não pede aba nenhuma e deixa a abertura escolher (`_abrir_painel_cru`).
+var _aba_pedida := -1
+## O sítio de obra que o E pediu no último `abrir_o_painel`, ou "".
+var _obra_pedida := ""
 var _barra_de_ferramentas_migrada := false
 var achados	# achados_vale.gd — cordéis, sinais e cartas no chão
 var pesca	# pesca_vale.gd — a vara na mão e o E na beira da água
@@ -173,6 +178,8 @@ var tecla_das_bancadas: Node
 var tecla_dos_moradores: Node
 ## Quem leva o E entre tudo o que o aceita (`foco_do_e.gd`).
 var foco_do_e: Node
+## Uma fala de cada vez no vale (`fila_de_falas.gd`).
+var fila_de_falas: Node
 ## O cartão do primeiro cordel e da primeira árvore (`aviso_da_primeira_vez.gd`).
 var aviso_da_primeira_vez: CanvasLayer
 ## A tela da missão cumprida (`conquista_da_missao.gd`).
@@ -762,6 +769,10 @@ func _ready() -> void:
 	foco_do_e.name = "FocoDoE"
 	add_child(foco_do_e)
 	foco_do_e.configurar(player)
+	# A FESTA DA MISSÃO E A VOZ DO MUNDO cobrem o vale por baixo do HUD sem parar a
+	# árvore: as dicas do E se calam enquanto elas duram, como as plaquinhas.
+	foco_do_e.coberto = func() -> bool:
+		return (conquista != null and conquista.ativa()) or (narracao != null and narracao.tocando())
 	# O AVISO DA PRIMEIRA VEZ (aviso_da_primeira_vez.gd): o primeiro cordel e a
 	# primeira árvore dizem onde ficam guardados. É instrução, e segura o vale e o
 	# relógio como a caixa de fala.
@@ -787,6 +798,12 @@ func _ready() -> void:
 	narracao = NarracaoDoVale.new()
 	narracao.name = "NarracaoDoVale"
 	add_child(narracao)
+	# A FILA DE FALAS (fila_de_falas.gd): o balão de cada morador, a voz do marco,
+	# a narração e a festa da missão pedem a vez a ela, e só uma fala fica no ar.
+	# Antes da partida salva e da chegada pelo saveiro, onde o Pedro já saúda.
+	fila_de_falas = FilaDeFalas.new()
+	fila_de_falas.name = "FilaDeFalas"
+	add_child(fila_de_falas)
 	# A PARTIDA SALVA entra depois de o vale estar montado — moradores, Pedro,
 	# luta —, porque o estado do mundo aponta para eles. Ver Partida e
 	# `estado_para_salvar`.
@@ -1265,6 +1282,9 @@ func _montar_moradores(spawn: Vector3) -> void:
 	hud_layer.add_child(minimapa)
 	minimapa.configurar(player, pedro, hud)
 	_mostrar_a_acompanhada()
+	# Os sustos da mata: o vulto que "fecha o jogo" e as pegadas do Curupira que enlouquecem o mapa.
+	# Depois do minimapa, do mapa e da seta, que ouvem a loucura (sustos_da_mata.gd).
+	SustosDaMata.montar(self)
 
 
 func _fechar_info_aberta() -> void:
@@ -2110,25 +2130,43 @@ func _notification(what: int) -> void:
 # --- o painel -----------------------------------------------------------------
 
 ## Abre o painel com as abas do lugar onde o jogador está (bancadas_vale.gd).
-## Abre o painel com as abas do lugar onde o jogador está (bancadas_vale.gd).
 ##
 ## PEDE AO DONO DAS TELAS, e não abre por fora dele: é o dono que fecha a tela
 ## que estiver aberta, pausa o vale e guarda a câmera. Quem abrir direto pula
 ## tudo isso — e foi por aí que o almanaque apareceu atrás do painel.
-func abrir_o_painel(aba: int = 0) -> void:
+##
+## `obra` é o sítio de obra que o E pediu ("poco"): as obras dele, e não as do
+## sítio mais perto pela regra do J. O pedido vale só para esta abertura: o J que
+## vem depois não herda a aba nem o sítio de um E que o dono das telas recusou.
+func abrir_o_painel(aba: int = 0, obra: String = "") -> void:
 	_aba_pedida = aba
+	_obra_pedida = obra
 	if telas != null:
 		telas.abrir("painel")
+	_aba_pedida = -1
+	_obra_pedida = ""
 
 
 ## A abertura CRUA do painel, que é o que o dono das telas chama. Ninguém mais
 ## deve chamá-las: elas não pausam nada e não mexem na câmera.
+##
+## O J NÃO PEDE ABA, e abre em OBRAS quando a missão de agora manda tocar obra no
+## sítio onde o jogador está ("não consegui interagir com o poço": o J abria no
+## diário, e a aba de obras ficava a um Tab que ninguém sabia). Em qualquer outro
+## lugar abre no diário, como sempre.
 func _abrir_painel_cru() -> void:
 	if painel == null or _lendo() or mapa.aberto or _saindo:
 		return
 	BancadasVale.aplicar(painel, world, player.global_position)
-	painel.abrir(_aba_pedida)
-	_aba_pedida = 0
+	if _obra_pedida != "":
+		painel.obra_em_foco = _obra_pedida
+	var da_missao := ""
+	if painel.obra_em_foco != "":
+		da_missao = CadeiaDeMissoes.obra_que_se_pede(get_tree(), painel.obra_em_foco)
+	var aba := _aba_pedida
+	if aba < 0:
+		aba = PainelVale.Aba.OBRAS if da_missao != "" else PainelVale.Aba.MISSOES
+	painel.abrir(aba, da_missao if aba == PainelVale.Aba.OBRAS else "")
 
 
 ## COM UMA TELA ABERTA, O JOGADOR PARA — e SÓ isso.

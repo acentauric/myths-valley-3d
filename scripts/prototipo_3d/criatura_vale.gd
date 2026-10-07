@@ -94,10 +94,11 @@ const PERDE_DE_VISTA := 3.0
 const CEGA_NA_VOLTA := 6.0
 ## Espreitando: o corpo abaixa até esta fração e o passo cai para esta outra.
 const ESPREITA_ABAIXA := 0.85
-const ESPREITA_PASSO := 0.45
+const ESPREITA_PASSO := 0.55
 ## Depois do bote ela se afasta um pouco antes da próxima carga (s, fração do passo).
-const RECUO := 1.1
-const RECUO_PASSO := 0.6
+## Curto de propósito: a segunda mordida vem um instante depois da primeira.
+const RECUO := 0.5
+const RECUO_PASSO := 0.5
 ## Até onde (u) é "chegou ao ninho" na volta.
 const CHEGOU_AO_NINHO := 2.0
 const COR_DOS_OLHOS := Color(1.0, 0.86, 0.32)
@@ -115,8 +116,6 @@ const CHEGOU := 4.0
 const RAIO_DO_NINHO := 64.0
 const PARADA_MINIMA := 3.0
 const PARADA_MAXIMA := 12.0
-## O corpo abaixa até esta fração da altura enquanto arma o bote.
-const ABAIXA := 0.72
 
 const COR_DO_CORPO := Color(0.52, 0.53, 0.52)
 const COR_DO_AVISO := Color(1.0, 0.62, 0.18)
@@ -668,8 +667,9 @@ func _pastar(delta: float, raio: float = -1.0) -> void:
 		_parar(delta)
 		return
 	var rumo := _plano(_destino - global_position).normalized()
-	velocity.x = rumo.x * _u("passo") * 0.5
-	velocity.z = rumo.z * _u("passo") * 0.5
+	var passeio := float(dados().get("passeio", 0.5))
+	velocity.x = rumo.x * _u("passo") * passeio
+	velocity.z = rumo.z * _u("passo") * passeio
 	var antes := global_position
 	_mover(delta)
 	_virar(rumo)
@@ -700,15 +700,16 @@ func _seguir_o_bote(delta: float) -> void:
 		_mover(delta)
 	else:
 		_parar(delta)
-	# Aceso e abaixado até a boca fechar; dali em diante, apagado e de pé.
+	# Aceso até a boca fechar; dali em diante, apagado. O corpo arma, pula e assenta
+	# pela pose (`Animador.bote`), e não pela escala do corpo, que esticava e achatava.
 	_acender(t < acerta)
-	var altura := lerpf(1.0, ABAIXA, clampf(t / 0.3, 0.0, 1.0)) if t < acerta else 1.0
-	_corpo.scale.y = altura
+	_animador.bote(minf(t, 1.0))
 	if not _bote_mordeu and t >= acerta:
 		_bote_mordeu = true
 		_morder()
 	if t >= 1.0:
 		_no_bote = -1.0
+		_animador.bote(-1.0)
 		_desde_a_mordida = 0.0
 		if tem_vista() and cacando:
 			estado = "recua"
@@ -718,8 +719,8 @@ func _seguir_o_bote(delta: float) -> void:
 func _parar_o_bote() -> void:
 	_no_bote = -1.0
 	_acender(false)
-	if _corpo != null:
-		_corpo.scale.y = 1.0
+	if _animador != null:
+		_animador.bote(-1.0)
 
 
 func _morder() -> void:
@@ -736,6 +737,11 @@ func _morder() -> void:
 	if Vida.respirando():
 		return
 	var dano := maxf(1.0, float(dados().get("dano", 0.0)) - Equipamento.bonus("defesa"))
+	# A onça mata em duas mordidas: o golpe é também uma fração da vida cheia, e
+	# com talento de vigor (mais vida) continua sendo dois.
+	var fracao := float(dados().get("dano_da_vida", 0.0))
+	if fracao > 0.0:
+		dano = maxf(dano, Vida.maximo() * fracao - Equipamento.bonus("defesa"))
 	Vida.ferir(dano)
 	mordeu.emit(dano)
 	var peconha: Dictionary = dados().get("peconha", {})

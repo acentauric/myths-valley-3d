@@ -1,6 +1,6 @@
 # Estratégia sonora do vale
 
-A música alterna por período com transições de volume. A mata, o mar,
+A música alterna pelos cinco períodos do relógio (uma trilha para cada) com transições de volume. A mata, o mar,
 o riacho e a fogueira têm camadas próprias; falas e passos são eventos
 curtos, ligados ao morador ou ao chão que o personagem atravessa.
 

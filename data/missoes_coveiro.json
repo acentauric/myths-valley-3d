@@ -4,6 +4,9 @@
   "nome": "O cemitério esquecido",
   "nome_en": "The forgotten cemetery",
   "nome_es": "El cementerio olvidado",
+  "trancada": "Ainda não posso lhe pedir nada. Volte depois que o Pedro terminar de lhe ensinar e lhe entregar o machado, na casa dele.",
+  "trancada_en": "I can't ask anything of you yet. Come back after Pedro finishes teaching you and hands you the axe at his house.",
+  "trancada_es": "Todavía no puedo pedirte nada. Vuelve cuando Pedro termine de enseñarte y te entregue el hacha, en su casa.",
   "abre_em": "cemiterio",
   "passos": [
     {
@@ -92,9 +95,9 @@
       "titulo": "O cercado do cemitério",
       "titulo_en": "The cemetery fence",
       "titulo_es": "La cerca del cementerio",
-      "resumo": "Cerque o cemitério: [J] › Obras, no cemitério",
-      "resumo_en": "Fence the cemetery: [J] › Works, at the cemetery",
-      "resumo_es": "Cerca el cementerio: [J] › Obras, en el cementerio",
+      "resumo": "Cerque o cemitério: [E] ou [J] › Obras, no cemitério",
+      "resumo_en": "Fence the cemetery: [E] or [J] › Works, at the cemetery",
+      "resumo_es": "Cerca el cementerio: [E] o [J] › Obras, en el cementerio",
       "lugar": "cemiterio",
       "raio": 8.0,
       "audio": "",

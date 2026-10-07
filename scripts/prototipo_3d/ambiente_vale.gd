@@ -53,10 +53,37 @@ func _ready() -> void:
 	if Audio.has_signal("volumes_alterados"):
 		Audio.volumes_alterados.connect(_aplicar_volumes)
 	_aplicar(Dia.hora)
+	# A TENSÃO DA MATA É DESTE VALE, e não da partida anterior: um vale recarregado sem passar
+	# pelo menu (trocar o estilo visual) com a onça caçando deixaria a trilha da mata presa no
+	# autoload, e a música deixaria de seguir o dia. Desligada aqui, quem a liga de novo é
+	# `_processar_mata_fechada` (o jogador na mata) ou a luta (a onça caçando).
+	Audio.tocar_musica_mata(false)
+	_ligar_as_portas.call_deferred()
 
 
 func _aplicar_volumes() -> void:
 	_aplicar(Dia.hora)
+
+
+## AS PORTAS: quem entra numa construção (a igreja, as casas) abre a porta, e quem sai a fecha
+## atrás de si. Os sons existiam (`porta_abrir`, `porta_fechar`) e só a mochila usava um deles.
+## Ligado aqui, pelos sinais do `Interiores`, e não dentro dele.
+func _ligar_as_portas() -> void:
+	var interiores := get_tree().get_first_node_in_group("interiores")
+	if interiores == null or not interiores.has_signal("entrou"):
+		return
+	if not interiores.entrou.is_connected(_ao_entrar):
+		interiores.entrou.connect(_ao_entrar)
+	if not interiores.saiu.is_connected(_ao_sair):
+		interiores.saiu.connect(_ao_sair)
+
+
+func _ao_entrar(_qual: String) -> void:
+	Audio.efeito("porta_abrir")
+
+
+func _ao_sair(_qual: String) -> void:
+	Audio.efeito("porta_fechar")
 
 
 func _process(delta: float) -> void:

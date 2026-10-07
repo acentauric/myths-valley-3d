@@ -4,6 +4,9 @@
   "nome": "As armas do mato",
   "nome_en": "Weapons for the woods",
   "nome_es": "Las armas del monte",
+  "trancada": "As armas do mato ficam para depois da chegada. Acabe primeiro a lida de hoje comigo, que aí eu lhe mostro o facão.",
+  "trancada_en": "The bush weapons come after your arrival. Finish today's work with me first, and then I'll show you the machete.",
+  "trancada_es": "Las armas del monte vienen después de la llegada. Termina primero la faena de hoy conmigo, y entonces te muestro el machete.",
   "principal": false,
   "passos": [
     {

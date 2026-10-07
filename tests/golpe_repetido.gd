@@ -90,6 +90,7 @@ func _run() -> void:
 		var golpes: Array[int] = []
 		var ultima_energia := antes
 		var ultimos_golpes := golpes_antes
+		var caiu := false
 		var inicio := Time.get_ticks_msec()
 		var ultimo_e := -ENTRE_ES
 		var es := 0
@@ -104,13 +105,18 @@ func _run() -> void:
 			if Energia.atual < ultima_energia - 0.01:
 				quedas.append(t)
 			ultima_energia = Energia.atual
-			var agora := int(recursos._alvos[id]["golpes_dados"]) if recursos._alvos.has(id) else ultimos_golpes + 1
-			if agora != ultimos_golpes:
+			# A pedra que cai some de `_alvos` no último golpe: conta esse golpe uma vez.
+			if recursos._alvos.has(id):
+				var agora := int(recursos._alvos[id]["golpes_dados"])
+				if agora != ultimos_golpes:
+					golpes.append(t)
+					ultimos_golpes = agora
+			elif not caiu:
+				caiu = true
 				golpes.append(t)
-				ultimos_golpes = agora
 		_soltar_se_preciso()
 		var dados := golpes.size()
-		print("  lajedo: %d E, %d golpe(s) em %s ms, %d cobrança(s) em %s ms, %d impacto(s), caiu %.1f (custo %.1f por golpe)" % [es, dados, str(golpes), quedas.size(), str(quedas), _impactos, antes - Energia.atual, custo])
+		print("  pedra: %d E, %d golpe(s) em %s ms (caiu: %s), %d cobrança(s) em %s ms, %d impacto(s), caiu %.1f de reserva (custo %.1f por golpe)" % [es, dados, str(golpes), str(caiu), quedas.size(), str(quedas), _impactos, antes - Energia.atual, custo])
 		_conferir(dados >= 2, "o E a cada %d ms por %d ms rendeu só %d golpe(s)" % [ENTRE_ES, DURACAO_DA_PROVA, dados])
 		_conferir(quedas.size() == dados, "%d cobrança(s) para %d golpe(s): cobrança sem golpe (ou golpe de graça)" % [quedas.size(), dados])
 		for t_q in quedas:

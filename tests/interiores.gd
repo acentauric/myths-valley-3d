@@ -27,7 +27,12 @@ extends SceneTree
 ##   8. O PEDRO ENTRA JUNTO: do adro, com o jogador na nave, ele acha a porta
 ##      e entra — sem ficar indo e vindo no patamar.
 
+## O relógio de JOGO dos portões (`tests/fixtures/relogio_de_jogo.gd`): as esperas
+## abaixo são em segundos de jogo, e não de parede (a bateria cheia deixa o quadro lento).
+const RelogioDeJogo = preload("res://tests/fixtures/relogio_de_jogo.gd")
+
 var falhas := 0
+var relogio_de_jogo
 
 
 func _estilo_do_portao() -> String:
@@ -51,6 +56,9 @@ func _run() -> void:
 	await _frames(4)
 	await _mundo_pronto()
 	await _frames(8)
+	relogio_de_jogo = RelogioDeJogo.new()
+	root.add_child(relogio_de_jogo)
+	relogio_de_jogo.ficar_lento()
 	var vale = current_scene
 	var interiores = vale.get("interiores")
 	var jogador = vale.get("player")
@@ -206,19 +214,13 @@ func _fechar() -> void:
 	quit(1 if falhas > 0 else 0)
 
 
+## Espera `condicao` por até `segundos` de JOGO (e não de parede).
 func _ate(condicao: Callable, segundos: float) -> bool:
-	var ate := Time.get_ticks_msec() + int(segundos * 1000.0)
-	while Time.get_ticks_msec() < ate:
-		if bool(condicao.call()):
-			return true
-		await process_frame
-	return bool(condicao.call())
+	return await relogio_de_jogo.ate(condicao, segundos)
 
 
 func _segundos(quanto: float) -> void:
-	var ate := Time.get_ticks_msec() + int(quanto * 1000.0)
-	while Time.get_ticks_msec() < ate:
-		await process_frame
+	await relogio_de_jogo.esperar(quanto)
 
 
 func _quadros_de_fisica(quantos: int) -> void:

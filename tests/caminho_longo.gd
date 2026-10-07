@@ -88,9 +88,17 @@ func _run() -> void:
 	tonho.global_position = partida
 	tonho.velocity = Vector3.ZERO
 	_mandar_a_festa(tonho, gameleira)
+	# A 25 u ao sul a maré e o platô novo deixaram o ponto n'água (o jogador nadando, a câmera alta olhando o chão):
+	# escolhe o primeiro ponto seco a 25 u em volta da gameleira.
 	var de_frente: Vector3 = mundo.ground_position(gameleira + Vector3(0.0, 0.0, 25.0), 0.1)
+	for graus in [0.0, 45.0, -45.0, 90.0, -90.0, 135.0, -135.0, 180.0]:
+		var candidato: Vector3 = mundo.ground_position(gameleira + Vector3(0.0, 0.0, 25.0).rotated(Vector3.UP, deg_to_rad(graus)), 0.1)
+		if candidato.y > gameleira.y - 1.5:
+			de_frente = candidato
+			break
 	jogador.teleportar(de_frente, atan2(gameleira.x - de_frente.x, gameleira.z - de_frente.z))
-	await _passos_de_fisica(5)
+	# A câmera assenta com mola depois do teleporte (06/10): 5 passos não bastam para ela olhar a gameleira.
+	await _passos_de_fisica(45)
 	_conferir(tonho._a_vista(gameleira), "de frente para a gameleira a câmera não a vê: a prova não vale")
 	_conferir(jogador.global_position.distance_to(tonho.global_position) >= float(tonho.LONGE_PARA_SALTAR),
 		"de frente para a gameleira o jogador está perto do Tonho: a prova não vale")

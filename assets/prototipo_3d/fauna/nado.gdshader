@@ -28,6 +28,9 @@ uniform mat4 canonica_inv;
 uniform float comprimento = 1.0;
 uniform float amplitude = 0.08;
 uniform float batida = 10.0;
+// O tempo do nado, em segundos de JOGO: quem monta o cardume o avanca a cada quadro (cardume.gd).
+// Com o TIME do motor (que nao pausa) o peixe seguia remando no lugar com o jogo pausado: a posicao parava, a cauda nao.
+uniform float tempo = 0.0;
 // Quantas ondas cabem no corpo: perto de 1 é o nado de peixe de escama.
 uniform float ondas = 0.9;
 
@@ -38,7 +41,7 @@ void vertex() {
 	// 0 na ponta do focinho (-Z), 1 na ponta da cauda (+Z).
 	float t = clamp(c.z / max(comprimento, 0.001) + 0.5, 0.0, 1.0);
 	float peso = 0.08 + t * t;
-	float onda = sin(TIME * batida * ritmo + fase - t * ondas * 6.2831853);
+	float onda = sin(tempo * batida * ritmo + fase - t * ondas * 6.2831853);
 	float forca = amplitude * (1.0 + INSTANCE_CUSTOM.z * 0.6);
 	c.x += onda * forca * comprimento * peso;
 	// A cabeça gira um pouco contra o rabo, como no peixe de verdade.

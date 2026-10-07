@@ -2,18 +2,22 @@ extends SceneTree
 ## Confere O E NOS MORADORES e A CONQUISTA DA MISSÃO.
 ##
 ##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/interacao.gd
+##     ... -- --falsificar-fila        (o portão TEM de reprovar: o vale sem a fila de falas)
 ##
 ## "Quando fui falar com Dona Candinha para pegar a chave, não consegui
 ## interagir. Eu tinha deletado o save e abri um novo em cima do mesmo slot. [...]
 ## O ideal é o Pedro ensinar a apertar E para iniciar as interações com os NPCs,
 ## incluindo cumprir etapas de missões. Sempre que concluir uma missão, deve
 ## aparecer uma animação na tela, sombreando toda a tela e dando um destaque para
-## a animação." Sete perguntas:
+## a animação." E, do playtest da Build 9B: "as falas estão sendo sobrepostas, as
+## falas precisam esperar umas as outras terminarem" (fila_de_falas.gd). Sete
+## perguntas, e em todas elas nunca dois balões no ar ao mesmo tempo:
 ##
 ##   1. A PARTIDA NOVA ZERA O CADERNO: missões da partida anterior (ativas,
 ##      cumpridas e a acompanhada) não passam para a nova no mesmo slot.
 ##   2. O E NUM MORADOR SEM MISSÃO É CONVERSA: ao lado dele, a dica do E está
-##      nele, e o E o faz dizer a fala inteira, e não a curta da saudação.
+##      nele, e o E o faz dizer a fala inteira, e não a curta da saudação — NA
+##      VEZ DELE: com outro falando, o balão dele espera.
 ##   3. O PASSO SE CUMPRE NO E: ao lado do Pedro, no desembarque, nada fecha
 ##      sozinho; o E fecha, com a resposta dele.
 ##   4. A CONQUISTA: o passo cumprido escurece a tela e mostra "Missão
@@ -22,19 +26,32 @@ extends SceneTree
 ##      ficando pelo menos cinco segundos, com as plaquinhas de nome dos
 ##      moradores recolhidas enquanto dura.
 ##   5. A FILA DE UM MORADOR ABRE NO E: depois da chegada, ao lado do Tonho, a
-##      fila dele não abre sozinha; o E a abre.
-##   6. A VEZ DE FALAR TEM PRAZO: com alguém falando sem parar ao lado do
-##      jogador, o passo seguinte se anuncia mesmo assim.
+##      fila dele não abre sozinha; o E a abre, e ele diz o pedido na vez dele.
+##   6. A VEZ DE FALAR NÃO SE ATROPELA E TEM PRAZO: com alguém falando sem parar
+##      ao lado do jogador, o passo seguinte se anuncia na hora (o caderno, o
+##      objetivo), e a FALA dele espera — e sai no desempate da fila CORTANDO o
+##      balão de quem não para, e nunca por cima dele. (Até 06/10/2026 este item
+##      dizia o contrário: depois de seis segundos o passo falava por cima de quem
+##      estivesse falando, `ESPERA_MAXIMA_PELA_VEZ`. Era o atropelo de propósito.)
 ##   7. O E EM QUEM NÃO FALA É ACENO: num morador novo, que não tem fala, o E não
 ##      abre balão vazio, não põe aviso no HUD e não segura o relógio.
-##   8. O BALÃO DURA O TEMPO DE LER (#101), e o E no Pedro com alguém falando ao
-##      alcance espera a vez: a repetição sai quando o outro cala.
+
+## O desempate da fila de falas (`FilaDeFalas.ESPERA_MAXIMA`), e a folga da
+## máquina cheia.
+const ESPERA_MAXIMA := 16.0
+const FOLGA := 4.0
 
 var falhas := 0
+var falsificar := false
 var dialogo
+var vale
+## Quadros com dois balões no ar, e o primeiro deles.
+var _atropelos := 0
+var _primeiro_atropelo := ""
 
 
 func _initialize() -> void:
+	falsificar = OS.get_cmdline_user_args().has("--falsificar-fila")
 	_run.call_deferred()
 
 
@@ -62,15 +79,21 @@ func _run() -> void:
 	await _mundo_pronto()
 	await _quadros(8)
 	dialogo = root.get_node("/root/Dialogo")
-	var vale = current_scene
+	vale = current_scene
 	var jogador = vale.player
 	var pedro = vale.get("pedro")
 	var tecla = vale.get("tecla_dos_moradores")
 	var conquista = vale.get("conquista")
+	var fila_de_falas = vale.get("fila_de_falas")
 	_conferir(pedro != null and tecla != null and conquista != null, "o vale não tem o Pedro, o E dos moradores ou a tela da conquista")
-	if pedro == null or tecla == null or conquista == null:
+	_conferir(fila_de_falas != null, "o vale não tem a fila de falas (fila_de_falas.gd)")
+	if pedro == null or tecla == null or conquista == null or fila_de_falas == null:
 		_fechar()
 		return
+	if falsificar:
+		# O VALE SEM A FILA: cada boca fala na hora, como antes. Tem de reprovar.
+		fila_de_falas.remove_from_group("fila_de_falas")
+		print("  (falsificado: a fila de falas saiu do vale)")
 	root.get_node("/root/Dia").pausado = true
 
 	# --- 2. O E NUM MORADOR SEM MISSÃO É CONVERSA --------------------------------
@@ -80,10 +103,23 @@ func _run() -> void:
 		_ao_lado_de(jogador, filo, Vector3(1.2, 0.1, 0.0))
 		await _passos_de_fisica(10)
 		_conferir(tecla.perto() == filo, "ao lado da Dona Filó, o E não está nela (está em %s)" % str(tecla.perto()))
+		# NA VEZ DELA: com outro falando, o balão dela espera; com outro só
+		# cumprimentando (o Pedro, que acabou de saudar no píer), o E corta o
+		# cumprimento; sem ninguém, sai na hora. Nunca os dois balões juntos.
+		var no_ar := _quem_fala(fila_de_falas)
+		var era_cumprimento := int((fila_de_falas.atual() as Dictionary).get("classe", -1)) == 3
+		var outro = (fila_de_falas.atual() as Dictionary).get("falante")
 		_apertar_e(tecla)
 		await _quadros(2)
+		if no_ar != "" and no_ar != str(filo.name):
+			if era_cumprimento:
+				_conferir(filo.balao.visible and not (outro as Node).get("balao").visible,
+					"o E na Dona Filó não cortou o cumprimento de %s (balão dela %s, dele %s)" % [no_ar, str(filo.balao.visible), str((outro as Node).get("balao").visible)])
+			else:
+				_conferir(not filo.balao.visible, "o E na Dona Filó abriu o balão dela por cima da fala de %s" % no_ar)
+		var conversou := await _ate(func() -> bool: return filo._balao_tempo > 0.0 and _no_balao(filo) != "", 30.0)
 		var dita := _no_balao(filo)
-		_conferir(filo._balao_tempo > 0.0 and dita != "", "o E na Dona Filó não a fez conversar")
+		_conferir(conversou, "o E na Dona Filó não a fez conversar, nem na vez dela")
 		_conferir(dita.length() > 60, "a conversa do E é a fala curta da saudação, e não a inteira: '%s'" % dita)
 
 	# --- 3. O PASSO SE CUMPRE NO E -----------------------------------------------
@@ -94,8 +130,9 @@ func _run() -> void:
 	_conferir(pedro.passo_em_curso() == "desembarque", "ao lado do Pedro o desembarque fechou sozinho, sem o E")
 	_conferir(tecla.perto() == pedro, "ao lado do Pedro, o E não está nele")
 	_apertar_e(tecla)
-	await _quadros(2)
-	_conferir(_no_balao(pedro).contains("Bom Jesus dos Pobres"), "o E no Pedro não trouxe a resposta do desembarque: '%s'" % _no_balao(pedro))
+	# A resposta é dele, na vez dele: quem ainda falava (a Dona Filó) termina antes.
+	var respondeu := await _ate(func() -> bool: return _no_balao(pedro).contains("Bom Jesus dos Pobres"), 30.0)
+	_conferir(respondeu, "o E no Pedro não trouxe a resposta do desembarque: '%s'" % _no_balao(pedro))
 
 	# --- 4. A CONQUISTA ------------------------------------------------------------
 	# DEPOIS DA CONVERSA: o passo fechou no E, com a resposta do Pedro ainda no
@@ -159,32 +196,52 @@ func _run() -> void:
 		_conferir(tecla.perto() == tonho, "ao lado do Tonho, o E não está nele")
 		_apertar_e(tecla)
 		_conferir(fila.iniciado, "o E no Tonho, depois da chegada, não abriu a fila dele")
-		await _quadros(2)
-		_conferir(tonho._balao_tempo > 0.0 and _no_balao(tonho) != "", "o E abriu a fila do Tonho, mas ele não disse o pedido")
+		var pediu := await _ate(func() -> bool: return tonho._balao_tempo > 0.0 and _no_balao(tonho) != "", 30.0)
+		_conferir(pediu, "o E abriu a fila do Tonho, mas ele não disse o pedido, nem na vez dele")
 
-	# --- 6. A VEZ DE FALAR TEM PRAZO -------------------------------------------------
+	# --- 6. A VEZ DE FALAR NÃO SE ATROPELA E TEM PRAZO ---------------------------------
 	# A fila do Tonho anuncia de novo o passo em que está; com o Pedro falando sem
-	# parar ao lado do jogador, ela espera a vez — e anuncia mesmo assim.
+	# parar ao lado do jogador, o anúncio acontece na hora — o caderno, o objetivo —
+	# e a fala do Tonho espera a vez: sai no desempate, cortando o Pedro.
 	if fila != null and fila.iniciado:
+		await _vez_livre(fila_de_falas, 40.0)
 		var antes: int = fila.missao
 		pedro.global_position = jogador.global_position + Vector3(2.0, 0.1, 0.0)
+		pedro.narrar("", "Uma fala do Pedro que não acaba nunca, de quem segura a palavra sem largar.",
+			{"classe": 0})
+		await _quadros(2)
+		_conferir(pedro.balao.visible, "com a vez livre, o Pedro não começou a falar")
+		var pedida := Time.get_ticks_msec()
 		fila.espera = 0.05
-		var limite := Time.get_ticks_msec() + 12000
+		var limite := Time.get_ticks_msec() + int((ESPERA_MAXIMA + FOLGA + 4.0) * 1000.0)
 		var anunciou := false
+		var falou := false
+		var atropelou := false
 		while Time.get_ticks_msec() < limite:
 			pedro._tomar_palavra(30.0)
+			_contar_os_baloes()
 			if float(fila.espera) <= 0.0:
 				anunciou = true
+			if tonho.balao.visible:
+				falou = true
+				atropelou = pedro.balao.visible
 				break
 			await process_frame
-		_conferir(anunciou and fila.missao == antes, "com alguém falando sem parar, o passo não se anunciou em 12 s: a vez não tem prazo")
+		var esperou := (Time.get_ticks_msec() - pedida) / 1000.0
+		_conferir(anunciou and fila.missao == antes, "com alguém falando sem parar, o passo não se anunciou: o anúncio esperou a palavra")
+		_conferir(falou, "com o Pedro falando sem parar, a fala do Tonho não saiu em %.0f s: a vez não tem prazo" % (ESPERA_MAXIMA + FOLGA + 4.0))
+		if falou:
+			_conferir(not atropelou, "a fala do Tonho saiu com o balão do Pedro ainda aberto: por cima, e não cortando")
+			_conferir(esperou >= ESPERA_MAXIMA - 1.0,
+				"a fala do Tonho furou a vez em %.1f s: só o desempate (%.0f s) corta quem está falando" % [esperou, ESPERA_MAXIMA])
 		await _fechar_a_fala()
 
 	# --- 7. O E EM QUEM NÃO FALA É ACENO ---------------------------------------------
 	# Os moradores novos tinham jornada e ofício, e nenhuma fala (`npc._eh_mudo`). A
 	# conversa do E neles abria um balão sem texto, punha "Nome: " no HUD e segurava
-	# o relógio por dez segundos de uma fala que não havia. Desde a #85 todos falam:
-	# a pergunta do aceno cala um deles por um instante.
+	# o relógio por dez segundos de uma fala que não havia. Desde 06/10/2026 os catorze
+	# falam (a #85 e `falas_dos_moradores.gd`) e ninguém é mudo: o MECANISMO segue coberto
+	# por um mudo sintético — um deles, de corpo presente, calado aqui (`dados["mudo"]`).
 	# Um morador SEM FILA DE MISSÃO: no Benedito, na Zefa ou no Tonho o E abre a
 	# fala da missão, que não é o aceno.
 	var calado = null
@@ -193,7 +250,12 @@ func _run() -> void:
 		if morador != null and morador.is_visible_in_tree() and not morador.esta_recolhido():
 			calado = morador
 			break
-	_conferir(calado != null, "o vale não tem morador de corpo presente para a pergunta do aceno")
+	if calado == null:
+		for morador in vale.moradores:
+			if morador.dados.has("agenda") and morador.is_visible_in_tree() and not morador.esta_recolhido():
+				calado = morador
+				break
+	_conferir(calado != null, "o vale não tem morador de jornada, de corpo presente, para a pergunta do aceno")
 	if calado != null:
 		# Sem balão nem relógio de uma fala anterior: a pergunta é só sobre o aceno.
 		calado.calar()
@@ -209,28 +271,6 @@ func _run() -> void:
 		_conferir(not calado.conversando(), "o E em quem não fala segurou o relógio do vale por uma fala que não há")
 		_conferir(avisos[0] == 0, "o E em quem não fala pôs um aviso vazio no HUD")
 		calado.dados.erase("mudo")
-
-	# --- 8. O BALÃO DURA O TEMPO DE LER, E O PEDRO ESPERA A VEZ (#101) ---------------
-	# Na live a fala do Pedro cobriu a resposta da Dona Zefa, que sumiu antes de
-	# ser lida: o balão durava 8 s fixos e o E no Pedro não esperava ninguém.
-	tonho = vale._achar_morador("tonho")
-	if tonho != null and pedro != null and not pedro.terminou_o_tutorial():
-		var comprida := "Olha, moço: a maré de hoje enche cedo, e quem quer peixe tem que descer antes do sol — o saveiro do mestre Quirino não espera ninguém, e a rede molhada pesa o dobro, viu?"
-		_ao_lado_de(jogador, tonho, Vector3(1.2, 0.1, 0.0))
-		pedro.global_position = jogador.global_position + Vector3(0.0, 0.1, 1.2)
-		await _quadros(2)
-		tonho.narrar("", comprida)
-		var esperado: float = clampf(float(tonho.LEITURA_MINIMA) + float(tonho.LEITURA_POR_LETRA) * float(comprida.length()), float(tonho.LEITURA_MINIMA), float(tonho.LEITURA_MAXIMA))
-		_conferir(absf(float(tonho._balao_tempo) - esperado) < 0.01, "o balão de uma resposta de %d letras dura %.1f s, e não o tempo de ler (%.1f)" % [comprida.length(), float(tonho._balao_tempo), esperado])
-		_conferir(pedro.fala_perto_de(jogador.global_position), "com o Tonho falando ao lado, a palavra não está tomada")
-		pedro.conversar()
-		await _quadros(2)
-		_conferir(not pedro.balao.visible and str(pedro.get("_repetir_quando_der")) != "",
-			"o E no Pedro com o Tonho falando atropelou a resposta (balão %s, fila '%s')" % [str(pedro.balao.visible), str(pedro.get("_repetir_quando_der"))])
-		tonho.calar()
-		_conferir(await _ate(func() -> bool: return pedro.balao.visible, 3.0), "calado o Tonho, a repetição do Pedro não saiu da fila")
-		pedro.calar()
-		await _quadros(3)
 	_fechar()
 
 
@@ -268,12 +308,51 @@ func _fechar_a_fala() -> void:
 
 
 func _fechar() -> void:
+	_conferir(_atropelos == 0, "%d quadro(s) com duas falas no ar ao mesmo tempo; o primeiro: %s" % [_atropelos, _primeiro_atropelo])
 	print("")
 	if falhas == 0:
-		print("INTERACAO_OK: a partida nova zera o caderno da anterior; o E num morador sem missão o faz dizer a fala inteira; o passo que manda falar com alguém fecha no E, e não ao chegar perto; o relógio para enquanto ele responde; a conquista espera a resposta acabar, entra devagar, escurece a tela com o nome do passo, segura o relógio, fica mais de cinco segundos e some sozinha; a fila de um morador abre no E, e não sozinha; com alguém falando sem parar o passo se anuncia mesmo assim; e o E em quem não fala é só o aceno, sem balão vazio nem relógio parado")
+		print("INTERACAO_OK: a partida nova zera o caderno da anterior; o E num morador sem missão o faz dizer a fala inteira, na vez dele; o passo que manda falar com alguém fecha no E, e não ao chegar perto; o relógio para enquanto ele responde; a conquista espera a resposta acabar, entra devagar, escurece a tela com o nome do passo, segura o relógio, fica mais de cinco segundos e some sozinha; a fila de um morador abre no E, e não sozinha; com alguém falando sem parar o passo se anuncia na hora e a fala dele sai no desempate, cortando quem não para, nunca por cima; nunca dois balões no ar; e o E em quem não fala é só o aceno, sem balão vazio nem relógio parado")
 	else:
 		print("interacao: %d falha(s)" % falhas)
 	quit(1 if falhas > 0 else 0)
+
+
+## O nome de quem está no ar na fila de falas, ou "".
+func _quem_fala(fila_de_falas) -> String:
+	var no_ar: Dictionary = fila_de_falas.atual()
+	var quem = no_ar.get("falante")
+	return str(quem.name) if quem is Node and is_instance_valid(quem) else ""
+
+
+## NUNCA DOIS BALÕES NO AR, nem balão com a festa da missão por cima.
+func _contar_os_baloes() -> void:
+	if vale == null:
+		return
+	var no_ar: Array[String] = []
+	var todos: Array = vale.moradores.duplicate()
+	if vale.pedro != null:
+		todos.append(vale.pedro)
+	for morador in todos:
+		if is_instance_valid(morador) and morador.balao != null and morador.balao.visible:
+			no_ar.append(str(morador.name))
+	var conquista = vale.get("conquista")
+	if conquista != null and conquista.ativa():
+		no_ar.append("festa")
+	if no_ar.size() > 1:
+		_atropelos += 1
+		if _primeiro_atropelo == "":
+			_primeiro_atropelo = str(no_ar)
+
+
+## Espera a vez de falar ficar livre, lendo depressa (o E de quem já leu).
+func _vez_livre(fila_de_falas, segundos: float) -> void:
+	var limite := Time.get_ticks_msec() + int(segundos * 1000.0)
+	while Time.get_ticks_msec() < limite and not fila_de_falas.livre():
+		fila_de_falas.pular()
+		if dialogo.ativo:
+			dialogo._fechar()
+		await process_frame
+	await _quadros(2)
 
 
 func _passos_de_fisica(n: int) -> void:
@@ -286,10 +365,12 @@ func _quadros(n: int) -> void:
 		await process_frame
 
 
-## Roda quadros até `condicao` valer, com teto em SEGUNDO REAL.
+## Roda quadros até `condicao` valer, com teto em SEGUNDO REAL, contando os
+## balões no ar a cada quadro.
 func _ate(condicao: Callable, segundos: float) -> bool:
 	var limite := Time.get_ticks_msec() + int(segundos * 1000.0)
 	while Time.get_ticks_msec() < limite:
+		_contar_os_baloes()
 		if condicao.call():
 			return true
 		await process_frame

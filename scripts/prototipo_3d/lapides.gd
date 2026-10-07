@@ -29,9 +29,10 @@ const ALCANCE_COVEIRO := 30.0
 ## leva andando até o túmulo antes de desistir.
 const EMPURRAO := 4.5
 const TEMPO_MAX_IDA := 15.0
-## Meia distância entre colunas de túmulos (2,3 u no world_builder): o vão por onde o
-## coveiro passa entre as fileiras.
-const VAO_COLUNAS := 1.15
+## Meia distância entre duas covas da mesma fileira (`CemiterioLayout`): o vão por onde o
+## coveiro cruza a fileira para chegar ao corredor do outro lado.
+const CemiterioLayout = preload("res://scripts/prototipo_3d/cemiterio_layout.gd")
+const VAO_COLUNAS := CemiterioLayout.ESPACO_X * 0.5
 
 ## Morador que reclama (Damião, o zelador do cemitério); definido depois dos moradores.
 var coveiro: Node3D
@@ -197,7 +198,8 @@ func _falar(caminho: String) -> float:
 
 
 ## Lado (eixo Z, ±1) para onde o jogador cai: o do corredor mais perto dele. As
-## fileiras de túmulos têm 3 unidades entre si, então ele cai no corredor, não em
+## fileiras de lajes ficam a 2,3 u uma da outra e cada laje tem menos de 1 u de fundo,
+## então sobra um corredor de mais de 1,3 u de cada lado: ele cai no corredor, não em
 ## outra laje.
 func _lado_da_queda(chao: Vector3) -> float:
 	var lado := signf(_jogador.global_position.z - chao.z)

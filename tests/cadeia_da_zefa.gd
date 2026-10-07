@@ -46,10 +46,32 @@ extends SceneTree
 ##   7. FALAR UMA VEZ BASTA, e voltar a ela fecha o passo da conversa.
 ##   8. A CADEIA SOBREVIVE A RECARREGAR — mesma armadilha do pirão: depois do
 ##      encontro não sobra nada no mundo que prove que ele houve.
+##
+##
+## A ESPERA É EM SEGUNDOS DE JOGO, E NÃO DE PAREDE (`tests/fixtures/relogio_de_jogo.gd`).
+##
+## O golpe da foice leva 1,5 s de jogo, e este portão o esperava em 2,0 s de
+## relógio. Com a física limitada a 3 passos por quadro (`project.godot`), o jogo
+## anda mais devagar que a parede quando o quadro passa de 50 ms — e na bateria
+## cheia passa. Resultado: o mesmo portão que passa sozinho reprovava com "cortei a
+## moita e nenhum maço entrou na mochila" — e as três linhas seguintes, que são
+## cascata: o golpe atrasado caía DURANTE o passo das quatro ervas e completava os
+## cinco que a pergunta 3 queria ver faltando um. Com `MV_QUADRO_LENTO_MS=150` no
+## ambiente o portão roda como na bateria no pior; com `MV_QUADRO_LENTO_MS=300` e
+## `MV_FALSIFICAR=parede` ele volta a esperar em parede, e então TEM de reprovar com
+## essas quatro linhas (a moita é de um golpe só, e o laço dela tem folga: a 150 ms
+## ainda passa).
+
+const RelogioDeJogo = preload("res://tests/fixtures/relogio_de_jogo.gd")
+const Jogada = preload("res://tests/fixtures/jogada.gd")
 
 var falhas := 0
+var relogio: Node
 const SEGUNDOS_PARA_ANUNCIAR := 12.0
 const SEGUNDOS_POR_PASSO := 15.0
+## O golpe inteiro: o impacto cai em 1,5 s de jogo; o resto é folga, e o que se
+## cobra aqui é o maço na mochila, e não a pressa do braço.
+const SEGUNDOS_DO_GOLPE := 6.0
 ## Quantos maços a missão pede. Lido do dado e conferido contra isto: se o
 ## arquivo mudar o número, este portão não pode continuar medindo o antigo.
 const MACOS_DA_MISSAO := 5
@@ -67,11 +89,14 @@ func _conferir(ok: bool, rotulo: String) -> void:
 
 
 func _run() -> void:
+	relogio = RelogioDeJogo.new()
+	root.add_child(relogio)
 	_conferir(change_scene_to_file("res://scenes/prototipo_3d/vale.tscn") == OK,
 		"a cena do vale carrega")
 	await _frames(4)
 	await _mundo_pronto()
 	await _frames(3)
+	relogio.ficar_lento()
 
 	var jogo := current_scene
 	var jogador = jogo.get("player")
@@ -173,7 +198,7 @@ func _run() -> void:
 			energia.encher()
 			if recursos.bater():
 				bateu = true
-				await _ate(func() -> bool: return recursos._golpe_pendente.is_empty() and not recursos._golpe_animando, 2.0)
+				await _ate(func() -> bool: return relogio.golpe_acabou(recursos), relogio.janela(SEGUNDOS_DO_GOLPE, 2.0))
 			if inv.quantidade("erva_da_serra") > antes_de_cortar:
 				break
 			await _frames(2)
@@ -274,6 +299,31 @@ func _run() -> void:
 	_conferir(voltou, "voltei à Dona Zefa e o passo não fechou")
 	print("  %-16s %s" % ["zefa_conversa", "fechou" if voltou else "PRESO"])
 
+	# --- 7b. O ÚLTIMO PASSO: ENCONTRAR OS DOIS NO PÍER (`zefa_saveiro`) ----
+	#
+	# Nenhum portão chegava a ele: o último que se conferia era `zefa_conversa`, e o passo do píer
+	# (a visita de 8 u, com a cocada e o pirão de recompensa) nunca era jogado. Joga-se aqui com o
+	# jogador ANDANDO até lá, pelo controle dele (`tests/fixtures/jogada.gd`), e não posto no píer.
+	var no_pier: int = cadeia.missao
+	_conferir(no_pier == cadeia.passos.size() - 1 and str(cadeia.passos[no_pier].get("id", "")) == "zefa_saveiro",
+		"depois da conversa o passo devia ser o do píer (zefa_saveiro), e é o %d" % (no_pier + 1))
+	var anunciou4 := await _ate(func() -> bool: return cadeia.espera <= 0.0, SEGUNDOS_PARA_ANUNCIAR)
+	_conferir(anunciou4, "o passo do píer não chegou a anunciar")
+	await _frames(5)
+	_conferir(cadeia.missao == no_pier, "o passo do píer fechou com o jogador ainda ao lado da Dona Zefa")
+	var cocadas_antes: int = inv.quantidade("cocada")
+	var piroes_antes: int = inv.quantidade("pirao")
+	var maos := Jogada.new(self, jogo, relogio, func(t: String) -> void: _conferir(false, t), func(t: String) -> void: print(t))
+	var chegou_ao_pier: bool = await maos.ir_ate(lugares.ponto("pier"), 0.0, false, 60.0, 6.0)
+	_conferir(chegou_ao_pier, "o jogador não conseguiu andar até o píer")
+	var fechou_o_pier := await _ate(func() -> bool: return cadeia.missao > no_pier, SEGUNDOS_POR_PASSO)
+	_conferir(fechou_o_pier, "chegar ao píer não fechou o último passo da Dona Zefa")
+	print("  %-16s %s" % ["zefa_saveiro", "fechou" if fechou_o_pier else "PRESO"])
+	_conferir(cadeia.acabou(), "o último passo fechou e a fila da Dona Zefa não acabou")
+	_conferir(inv.quantidade("cocada") >= cocadas_antes + 3 and inv.quantidade("pirao") >= piroes_antes + 1,
+		"a recompensa do píer (3 cocadas e 1 pirão) não chegou: cocada %d -> %d, pirão %d -> %d"
+			% [cocadas_antes, inv.quantidade("cocada"), piroes_antes, inv.quantidade("pirao")])
+
 	# --- 8. A CADEIA SOBREVIVE A RECARREGAR --------------------------------
 	var guardado: Dictionary = jogo.estado_para_salvar()
 	var guardadas: Dictionary = guardado.get("cadeias", {})
@@ -307,19 +357,16 @@ func _falar_com(morador) -> void:
 func _fechar() -> void:
 	print("")
 	if falhas == 0:
-		print("ZEFA_OK: a fila é da Dona Zefa, é de enredo, tem os quatro passos e todos apontam lugar que o vale resolve; ela dá a foice e a serra tem moita de erva que cai de foice e rende maço; quatro maços NÃO fecham a entrega de cinco nem comem erva, e cinco fecham tirando os cinco; o passo que pede o Cosme não fecha ao lado de quem mandou, fecha ao chegar nele e quem responde é ele; voltar a ela fecha a conversa; e recarregar não manda subir a serra nem conversar de novo")
+		print("ZEFA_OK: a fila é da Dona Zefa, é de enredo, tem os quatro passos e todos apontam lugar que o vale resolve; ela dá a foice e a serra tem moita de erva que cai de foice e rende maço; quatro maços NÃO fecham a entrega de cinco nem comem erva, e cinco fecham tirando os cinco; o passo que pede o Cosme não fecha ao lado de quem mandou, fecha ao chegar nele e quem responde é ele; voltar a ela fecha a conversa; o último passo (o píer) fecha com o jogador chegando lá a pé, e paga a cocada e o pirão; e recarregar não manda subir a serra nem conversar de novo")
 	else:
 		print("zefa: %d falha(s)" % falhas)
 	quit(1 if falhas > 0 else 0)
 
 
+## Espera `condicao` por até `segundos` DE JOGO (ver o cabeçalho): nunca menos, em
+## parede, que os segundos de relógio que este portão esperava antes.
 func _ate(condicao: Callable, segundos: float) -> bool:
-	var limite := Time.get_ticks_msec() + int(segundos * 1000.0)
-	while Time.get_ticks_msec() < limite:
-		if condicao.call():
-			return true
-		await process_frame
-	return condicao.call()
+	return await relogio.ate(condicao, segundos)
 
 
 func _frames(count: int) -> void:

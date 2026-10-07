@@ -29,10 +29,28 @@ extends SceneTree
 ##      a chave, e aberta depois; o baú tem a enxada, o balde e a maniva.
 ##   8. O SAVEIRO LARGA: no dia seguinte, o barco não está mais no píer.
 
+##
+## O PORTÃO NÃO DEPENDE DE MÁQUINA FOLGADA. Na bateria cheia, com sete portões brigando pela
+## máquina, este reprovou sozinho: "na chave o Pedro não foi na frente até a Dona Candinha
+## (estava a 82.4 e ficou a 82.1)". Aquela falha não se reproduziu só com quadro lento, e o
+## que se fez foi tirar do portão as duas dependências que ele tinha:
+##
+##  - AS ESPERAS SÃO EM SEGUNDOS DE JOGO, E NÃO DE PAREDE (`tests/fixtures/relogio_de_jogo.gd`):
+##    com a física limitada a 3 passos por quadro (`project.godot`), o jogo anda mais devagar
+##    que a parede com o quadro acima de 50 ms, e na bateria cheia ele passa. O portão antigo,
+##    com `MV_QUADRO_LENTO_MS=300` no ambiente, reprova na corrida ("o passo da corrida não
+##    fechou"); este passa a 150 e a 300.
+##  - A CONDUÇÃO É PELA MALHA DE NAVEGAÇÃO, que se assa numa linha à parte: sem ela o Pedro anda
+##    reto do píer à praça e para na água. O passo da chave espera a malha pronta, como o jogador
+##    a espera nos minutos que leva até ele.
+
+const RelogioDeJogo = preload("res://tests/fixtures/relogio_de_jogo.gd")
+
 var falhas := 0
 var relogio
 var dia
 var dialogo
+var relogio_jogo: Node
 
 
 func _initialize() -> void:
@@ -47,10 +65,13 @@ func _conferir(ok: bool, rotulo: String) -> void:
 
 
 func _run() -> void:
+	relogio_jogo = RelogioDeJogo.new()
+	root.add_child(relogio_jogo)
 	_conferir(change_scene_to_file("res://scenes/prototipo_3d/vale.tscn") == OK, "a cena do vale carrega")
 	await _quadros(4)
 	await _mundo_pronto()
 	await _quadros(8)
+	relogio_jogo.ficar_lento()
 	relogio = root.get_node("/root/Relogio")
 	dia = root.get_node("/root/Dia")
 	dialogo = root.get_node("/root/Dialogo")
@@ -127,6 +148,9 @@ func _run() -> void:
 	# O Tonho está a dois passos da prancha: a condução se mede na da chave, que
 	# leva do píer à Dona Candinha, na praça.
 	var candinha = vale._achar_morador("candinha")
+	# A condução vai pela malha: sem ela o Pedro anda reto do píer à praça e para na água.
+	var navegacao = vale.get("navegacao")
+	_conferir(navegacao != null and await _ate(func() -> bool: return navegacao.esta_pronta(), 60.0), "a malha de navegação não ficou pronta: o Pedro não tem por onde conduzir")
 	_conferir(candinha != null and pedro.ir_ao_passo("chave"), "a chegada não tem a chave com a Dona Candinha")
 	if candinha != null and pedro.passo_em_curso() == "chave":
 		pedro.retomar()
@@ -294,15 +318,10 @@ func _quadros(n: int) -> void:
 		await process_frame
 
 
-## Roda quadros até `condicao` valer, com teto em SEGUNDO REAL (as falas seguram
-## a palavra pelo relógio de parede, ver `cadeia_das_missoes.gd`).
+## Roda quadros até `condicao` valer, com teto em SEGUNDOS DE JOGO (ver o cabeçalho):
+## nunca menos, em parede, que os segundos de relógio que este portão esperava antes.
 func _ate(condicao: Callable, segundos: float) -> bool:
-	var limite := Time.get_ticks_msec() + int(segundos * 1000.0)
-	while Time.get_ticks_msec() < limite:
-		if condicao.call():
-			return true
-		await process_frame
-	return condicao.call()
+	return await relogio_jogo.ate(condicao, segundos)
 
 
 func _mundo_pronto() -> void:

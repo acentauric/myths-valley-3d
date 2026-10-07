@@ -7,7 +7,8 @@ extends SceneTree
 ## "Não tá interagindo. A missão é consertar o poço." O passo `mutirao_poco`
 ## fecha por uma obra (`poco_corda`), que só se tocava pelo J; o resumo não
 ## dizia a tecla e o poço não respondia ao E. Agora a construção com obra
-## disponível ganha o E (`tecla_das_bancadas.gd`), e o resumo diz as duas.
+## disponível ganha o E (`tecla_das_bancadas.gd`: o sítio com `raio_do_e` e obra à
+## mão, ou pedida pela missão — `_tem_obra`), e o resumo diz as duas ([E] e [J]).
 ##
 ##   1. A BOCA DO POÇO: o passo entrega a picareta, e três pedras o fecham.
 ##   2. CORDA NOVA: uma corda fecha.
@@ -92,10 +93,11 @@ func _run() -> void:
 			and Vector2(destino.x - poco.x, destino.z - poco.z).length() <= float(cadeia.RAIO_DA_RODA) + 0.1,
 			"%s não foi chamado à roda do poço (destino %s)" % [quem, str(destino)])
 	var resumo: String = cadeia.resumo_do_passo(cadeia.passo_atual())
-	_conferir(resumo.contains("E no poço") and resumo.contains("[J]"), "o resumo do mutirão não diz o E e o J: '%s'" % resumo)
-	# O plano aprendido refaz a lista das construções com E no quadro seguinte.
-	_conferir(await _ate(func() -> bool: return (tecla.get("_lugares_do_e") as Dictionary).has("poco"), 3.0),
-		"com o plano da boca do poço aprendido, o poço não entrou nos lugares do E: %s" % str(tecla.get("_lugares_do_e").keys()))
+	_conferir(resumo.contains("[E]") and resumo.contains("[J]"), "o resumo do mutirão não diz o [E] e o [J]: '%s'" % resumo)
+	# Com o plano aprendido (e o passo pedindo a obra), o poço tem o que fazer no E
+	# (`tecla_das_bancadas._tem_obra`): é o que acende a dica e faz o E ser dele.
+	_conferir(await _ate(func() -> bool: return bool(tecla._tem_obra("poco")), 3.0),
+		"com o plano da boca do poço aprendido, o poço não tem obra no E (disponíveis: %s)" % str(obras.disponiveis("poco")))
 
 	# --- 4. O E NO POÇO ---------------------------------------------------------
 	# Entre os dois lugares da roda (ângulos 0,6 e 0,6 + π), de frente para o poço,
@@ -131,12 +133,13 @@ func _run() -> void:
 	_fechar()
 
 
-## SEM O E NO POÇO: a tecla das bancadas volta a conhecer só os lugares fixos.
+## SEM O E NO POÇO: a tecla das bancadas volta a conhecer só os lugares fixos — nenhum
+## sítio de obra tem o que fazer no E (`_tem_obra`).
 func _falsificar(vale, tecla) -> void:
 	var original: Script = tecla.get_script()
 	var quebrado := GDScript.new()
 	quebrado.source_code = original.source_code.replace(
-		"\t\tlugares[qual] = {\"aba\": PainelVale.Aba.OBRAS, \"rotulo\": ROTULO_DAS_OBRAS}", "\t\tpass")
+		"\treturn _a_missao_pede(qual) or not Obras.disponiveis(qual).is_empty()", "\treturn false")
 	_conferir(quebrado.source_code != original.source_code, "a falsificação não encontrou o E das obras")
 	_conferir(quebrado.reload() == OK, "a falsificação não compilou")
 	tecla.set_script(quebrado)

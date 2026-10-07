@@ -136,11 +136,15 @@ func ocupado() -> bool:
 
 ## Mostra as falas em sequência. Se já houver conversa aberta, espera a vez.
 ## `vozes`, quando vem, é a voz de cada linha (ver PASTA_VOZES).
+##
+## E A FILA DE FALAS DO VALE (`fila_de_falas.gd`): a caixa não espera o balão de
+## ninguém — ela para o vale, e a fala que estava no ar fica suspensa, escondida,
+## até a caixa fechar —, mas espera a narração do mundo, que cobre a tela
+## inteira como ela.
 func falar(nome: String, falas: Array, vozes: Array = []) -> void:
 	if falas.is_empty():
 		return
-	while ativo:
-		await terminou
+	await _esperar_a_vez()
 	_abrir(nome, Modo.FALA)
 	_falas = falas
 	_vozes = vozes
@@ -158,8 +162,7 @@ func voz_tocando() -> String:
 
 ## Pergunta de sim ou não. Esquerda escolhe Sim, direita escolhe Não.
 func perguntar(nome: String, pergunta: String) -> bool:
-	while ativo:
-		await terminou
+	await _esperar_a_vez()
 	_abrir(nome, Modo.PERGUNTA)
 	_falas = [pergunta]
 	_vozes = []
@@ -182,6 +185,24 @@ func calar() -> void:
 	while ativo:
 		_escolha = false
 		_fechar()
+
+
+## A VEZ DA CAIXA: nenhuma outra caixa aberta, e nenhuma narração do vale na tela
+## (a fila de falas diz, `segura_a_caixa`). Sem fila no vale, só a outra caixa.
+## Sem nada na frente, volta no mesmo quadro: quem chama lê a caixa já aberta.
+func _esperar_a_vez() -> void:
+	while ativo or _narracao_na_tela():
+		if ativo:
+			await terminou
+		else:
+			await get_tree().process_frame
+
+
+func _narracao_na_tela() -> bool:
+	if not is_inside_tree():
+		return false
+	var fila := get_tree().get_first_node_in_group("fila_de_falas")
+	return fila != null and bool(fila.call("segura_a_caixa"))
 
 
 func _abrir(nome: String, modo: int) -> void:

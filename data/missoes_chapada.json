@@ -4,6 +4,9 @@
   "nome": "A chapada do Seu Benedito",
   "nome_en": "Seu Benedito's plateau",
   "nome_es": "La meseta del señor Benedito",
+  "trancada": "A chapada vai esperar. Volte depois de colher a primeira roça, que sem colheita a conversa de terra fica no vazio.",
+  "trancada_en": "The plateau can wait. Come back after harvesting your first plot, because without a harvest the talk of land is empty.",
+  "trancada_es": "La meseta puede esperar. Vuelve después de cosechar tu primera parcela, que sin cosecha la charla de tierra queda vacía.",
   "principal": true,
   "passos": [
     {

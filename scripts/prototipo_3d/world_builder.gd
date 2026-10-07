@@ -20,6 +20,7 @@ const MAP_CATALOG := "res://data/mapas/regioes.json"
 const ComposicaoVale = preload("res://scripts/prototipo_3d/composicao_vale.gd")
 const LombadaVale = preload("res://scripts/prototipo_3d/lombada_vale.gd")
 const FazendaVale = preload("res://scripts/prototipo_3d/fazenda_vale.gd")
+const CemiterioLayout = preload("res://scripts/prototipo_3d/cemiterio_layout.gd")
 const TERREIRO_CASA := preload("res://scenes/prototipo_3d/terreiro_casa.tscn")
 const CASA_TAIPA_CAL_TEXTURE := preload("res://assets/prototipo_3d/materiais/cal_taipa_envelhecida_v1.png")
 const TELHA_COLONIAL_TEXTURE := preload("res://assets/prototipo_3d/materiais/telha_colonial_envelhecida_v1.png")
@@ -911,7 +912,7 @@ func _construcao(chave: String, origin: Vector3, yaw: float, procedural: Callabl
 			var corpo := CatalogoAssets.colisao(chave, node, self, placed_origin, size, yaw)
 			var quem := nome if nome != "" else ("Igreja" if chave == "igreja" else "")
 			if quem != "":
-				construcoes[quem] = {"modelo": node, "colisao": corpo}
+				construcoes[quem] = {"modelo": node, "colisao": corpo, "chave": chave}
 			var piso := float(CatalogoAssets.PECAS[chave].get("piso", 0.0))
 			var piso_size := Vector3(limites.size.x + 1.6, 0.16, limites.size.z + 1.6)
 			var piso_position := placed_origin + Vector3(0, piso + 0.08, 0)
@@ -1434,6 +1435,58 @@ func _colisao_tumulo(chao: Vector3, pegada: Vector3) -> void:
 	add_child(body)
 
 
+## AS DOZE COVAS DO CEMITÉRIO (data/lapides_3d.json, na ordem dela), no desenho de
+## `CemiterioLayout`: fileiras leste-oeste, cabeceira a oeste, o corredor do meio na
+## altura da porta da capelinha. Cada laje é assentada no TERRENO: a base sai do
+## canto mais baixo da pegada dela (os quatro cantos e o centro, pela mesma fórmula
+## do chão), um pouco afundada, e não da altura do centro, que deixava a ponta no ar.
+## Sem inclinar a laje: o conserto do Damião é que a inclina (`cemiterio_vale.gd`),
+## e a laje assentada tem de voltar reta.
+##
+## `lapides[i]` é o centro da laje no pé dela; `lapides_pegada[i]` a caixa dela nos
+## eixos do MUNDO (a que o corpo sólido e `lapides.gd` leem); `tumulos[i]` o nó, com
+## a marca `eixo_curto` (em volta de qual eixo da laje se levanta uma ponta).
+func _assentar_as_covas(cemetery: Vector3) -> void:
+	var tripo := estilo_tripo() and CatalogoAssets.tem_tripo("tumulo")
+	for index in range(CemiterioLayout.quantas()):
+		var lugar := CemiterioLayout.lugar(index)
+		var desvio: Vector2 = lugar["desvio"]
+		var giro := CemiterioLayout.giro_de_base(tripo) + float(lugar["giro"])
+		var tamanho := float(lugar["tamanho"])
+		var centro := ground_position(cemetery + Vector3(desvio.x, 0.0, desvio.y))
+		var tumulo := _adereco("tumulo", centro, giro, tamanho)
+		if tumulo == null:
+			push_warning("Não há túmulo para a cova %d." % index)
+			continue
+		# A laje no espaço dela (antes do giro): a do Tripo traz a caixa; a procedural
+		# é a pedra de 0,72 x 1,45 com a cruz, sempre a mesma.
+		var altura_da_laje := 0.15
+		var meio := Vector2(0.36, 0.725) * tamanho
+		if tumulo.has_meta("limites"):
+			var limites: AABB = tumulo.get_meta("limites")
+			meio = Vector2(limites.size.x, limites.size.z) * 0.5
+			altura_da_laje = limites.size.y * 0.62
+		# Os cantos da pegada no mundo, e a altura do terreno sob cada um.
+		var menor := INF
+		var maior := -INF
+		for ponto: Vector2 in [Vector2.ZERO, Vector2(-1, -1), Vector2(1, -1), Vector2(1, 1), Vector2(-1, 1)]:
+			var canto: Vector2 = (ponto * meio).rotated(-giro)
+			var chao := ground_height_at(Vector3(centro.x + canto.x, 0.0, centro.z + canto.y))
+			menor = minf(menor, chao)
+			maior = maxf(maior, chao)
+		var base := lerpf(menor, maior, CemiterioLayout.BASE_ENTRE_OS_CANTOS) - CemiterioLayout.AFUNDADA
+		tumulo.position.y += base - centro.y
+		centro.y = base
+		# A caixa nos eixos do mundo: a da laje girada.
+		var vira := Vector2(absf(cos(giro)), absf(sin(giro)))
+		var pegada := Vector3(meio.x * 2.0 * vira.x + meio.y * 2.0 * vira.y, altura_da_laje, meio.x * 2.0 * vira.y + meio.y * 2.0 * vira.x)
+		tumulo.set_meta("eixo_curto", CemiterioLayout.eixo_curto(tumulo.has_meta("limites")))
+		lapides.append(centro)
+		tumulos.append(tumulo)
+		_colisao_tumulo(centro, pegada)
+		lapides_pegada.append(pegada)
+
+
 ## A CAPELINHA DO CEMITÉRIO, onde o católico reza (`marcos_da_fe.gd`): na beira
 ## do outeiro do lado do mar, DE COSTAS PARA ELE — quem reza fica de frente para
 ## a porta e, por cima do telhado, vê a baía. Rezava-se no meio das covas, entre
@@ -1819,22 +1872,7 @@ func _build_landmark_details() -> void:
 				_box(Vector3(0.22, 1.45, 0.22), lookout + Vector3(x, 0.73, z), WOOD))
 	var cemetery: Vector3 = _region.get_feature_center("Cemitério", "poi")
 	ancoras["Cemitério"] = cemetery
-	for index in range(12):
-		var grave := ground_position(cemetery + Vector3((index % 4) * 2.3 - 3.45, 0, floorf(index / 4.0) * 3.0 - 3.0))
-		lapides.append(grave)
-		var tumulo := _adereco("tumulo", grave, 0.0, 0.9 + float(index % 3) * 0.08)
-		tumulos.append(tumulo)
-		# Pegada da laje (sem a cruz): a do modelo do Tripo ou a do túmulo procedural.
-		var pegada := Vector3(0.72, 0.15, 1.45)
-		if tumulo == null:
-			_box(Vector3(0.72, 0.15, 1.45), grave + Vector3(0, 0.08, 0), Color("a9a9a0"))
-			_box(Vector3(0.12, 0.9, 0.12), grave + Vector3(0, 0.6, -0.55), WOOD)
-			_box(Vector3(0.48, 0.12, 0.12), grave + Vector3(0, 0.72, -0.55), WOOD)
-		elif tumulo.has_meta("limites"):
-			var limites: AABB = tumulo.get_meta("limites")
-			pegada = Vector3(limites.size.x, limites.size.y * 0.62, limites.size.z)
-		_colisao_tumulo(grave, pegada)
-		lapides_pegada.append(pegada)
+	_assentar_as_covas(cemetery)
 	_capelinha_do_cemiterio(cemetery)
 	var stones: Vector3 = _region.get_feature_center("Pedras", "poi")
 	ancoras["Pedras"] = stones
@@ -1999,7 +2037,11 @@ func _build_clareiras_da_mata() -> void:
 
 ## A casa de taipa do meio de uma clareira, de porta para a trilha: como a
 ## capelinha do cemitério, assentada no alicerce e com o terreiro de chão batido
-## drapeado no terreno. Sem ficha de morador nem cômodo de dentro: é cenário.
+## drapeado no terreno. Sem ficha de morador, mas com cômodo de dentro como toda casa:
+## entra em `construcoes` e `ancoras` como "Casa da clareira N" (`Interiores`).
+var _casas_da_clareira := 0
+
+
 func _casa_isolada_da_clareira(chave: String, centro: Vector2, yaw: float) -> void:
 	var chao := ground_position(Vector3(centro.x, 0.0, centro.y))
 	var modelo := CatalogoAssets.instanciar(chave, self, chao, 1.0, yaw)
@@ -2008,7 +2050,12 @@ func _casa_isolada_da_clareira(chave: String, centro: Vector2, yaw: float) -> vo
 	var limites: AABB = modelo.get_meta("limites")
 	var assentada := _support_house(chao, Vector2(limites.size.x, limites.size.z), yaw, chave)
 	modelo.position.y += assentada.y - chao.y
-	CatalogoAssets.colisao(chave, modelo, self, assentada, 1.0, yaw)
+	var corpo := CatalogoAssets.colisao(chave, modelo, self, assentada, 1.0, yaw)
+	_casas_da_clareira += 1
+	var nome_da_casa := "Casa da clareira %d" % _casas_da_clareira
+	ancoras[nome_da_casa] = assentada
+	ancoras[nome_da_casa + "Frente"] = Vector3(sin(yaw), 0.0, cos(yaw))
+	construcoes[nome_da_casa] = {"modelo": modelo, "colisao": corpo, "chave": chave}
 	# O terreiro: a pegada da casa mais uma beirada, no giro dela.
 	var meio := Vector2(limites.size.x, limites.size.z) * 0.5 + Vector2.ONE * CASA_DA_CLAREIRA_TERREIRO
 	var cantos := PackedVector2Array()

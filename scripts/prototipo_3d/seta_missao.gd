@@ -4,8 +4,22 @@ extends Node3D
 ## invertido flutuando sobre o alvo e um anel raso pulsando no chão; na TELA, um
 ## chevron dourado preso à borda apontando o rumo quando o alvo sai do campo de
 ## visão da câmera. API: definir_alvo(pos, texto) e limpar().
+##
+## O chevron tem PESO (`suavizador_de_tela.gd`): desliza até o lugar dele em vez de colar
+## no ponto projetado a cada quadro, gira pelo caminho curto, e acende e apaga em vez de
+## piscar — o salto da borda da tela para cima do alvo, quando ele entra no campo de visão,
+## é um deslizar. `alvo_atual` diz o ponto aos que precisam saber (a placa de nome de
+## quem a missão aponta).
+
+const SuavizadorDeTela = preload("res://scripts/prototipo_3d/suavizador_de_tela.gd")
+const PopupsDoMundo = preload("res://scripts/prototipo_3d/popups_do_mundo.gd")
 
 const COR := Color("e2c47f")
+## O peso do chevron, o giro dele (s) e o quanto ele acende e apaga (s).
+const TEMPO_DE_SEGUIR := 0.22
+const CORREIA := 130.0
+const TEMPO_DO_GIRO := 0.09
+const SEGUNDOS_DO_FADE := 0.18
 ## Altura (u) do cone acima do alvo e amplitude do sobe-e-desce.
 const ALTURA_CONE := 3.0
 const BOB := 0.3
@@ -22,9 +36,14 @@ var _tempo := 0.0
 var _cone: MeshInstance3D
 var _anel: MeshInstance3D
 var _chevron: ChevronMissao
+## O peso do chevron, e o quanto ele está aceso (0 a 1).
+var _mola := SuavizadorDeTela.new()
+var _alfa := 0.0
+var _loucura_no: Node
 
 
 func _ready() -> void:
+	add_to_group(PopupsDoMundo.GRUPO_SETA)
 	visible = false
 	# Um só material para cone e anel: emissivo suave para ler de longe e à noite,
 	# translúcido para não esconder o lugar que ele marca.
@@ -80,29 +99,50 @@ func definir_alvo(pos: Vector3, _texto: String) -> void:
 func limpar() -> void:
 	_ativo = false
 	visible = false
+	_alfa = 0.0
 	if is_instance_valid(_chevron):
 		_chevron.visible = false
+
+
+## O ponto que a seta marca agora, ou null sem missão acompanhada.
+func alvo_atual() -> Variant:
+	return _alvo if _ativo else null
+
+
+## O nó da loucura do mapa (`loucura_do_mapa.gd`), achado pelo grupo; null sem ele.
+func _loucura() -> Node:
+	if not is_instance_valid(_loucura_no):
+		_loucura_no = get_tree().get_first_node_in_group(&"loucura_do_mapa") if is_inside_tree() else null
+	return _loucura_no
 
 
 func _process(delta: float) -> void:
 	if not _ativo:
 		return
+	# O MAPA DOIDO (loucura_do_mapa.gd): o cone flutua longe do alvo de verdade. Fora da loucura o
+	# desvio é zero, e a seta fica exatamente sobre o alvo.
+	var louca := _loucura()
+	if louca != null:
+		var desvio: Vector2 = louca.deriva_do_alvo()
+		global_position = _alvo + Vector3(desvio.x, 0.0, desvio.y)
 	_tempo += delta
 	# Cone flutua e gira devagar; o anel pulsa no chão.
 	_cone.position.y = ALTURA_CONE + sin(_tempo * 2.4) * BOB
 	_cone.rotation.y += delta * 1.6
 	var pulso := 0.85 + 0.25 * sin(_tempo * 3.2)
 	_anel.scale = Vector3(pulso, 0.18, pulso)
-	_atualizar_chevron()
+	_atualizar_chevron(delta)
 
 
 ## Fora do campo de visão, o chevron prende na borda apontando o rumo; na tela e
-## longe, flutua sobre o ponto apontando para baixo; na tela e perto, some.
-func _atualizar_chevron() -> void:
+## longe, flutua sobre o ponto apontando para baixo; na tela e perto, some. Em
+## todos os casos o lugar e o giro são alvos de uma mola, e o chevron acende e apaga.
+func _atualizar_chevron(delta: float) -> void:
 	if not is_instance_valid(_chevron):
 		return
 	var camera := get_viewport().get_camera_3d()
 	if camera == null:
+		_alfa = 0.0
 		_chevron.visible = false
 		return
 	var ponto := _alvo + Vector3(0, 1.2, 0)
@@ -117,23 +157,48 @@ func _atualizar_chevron() -> void:
 		rumo = -rumo
 	if rumo.length_squared() < 1.0:
 		rumo = Vector2(0, 1)
+	# O MAPA DOIDO: o chevron aponta para o lado errado (erro zero fora da loucura).
+	var louca := _loucura()
+	var erro := 0.0
+	if louca != null:
+		erro = louca.erro_da_seta()
+		if erro != 0.0:
+			rumo = rumo.rotated(erro)
 	var na_tela := not atras and area.has_point(projecao)
 	var distancia := camera.global_position.distance_to(_alvo)
-	if na_tela and distancia < PERTO:
-		_chevron.visible = false
+	var some := na_tela and distancia < PERTO
+	var pos := _mola.posicao
+	var giro := _chevron.rotation
+	if not some:
+		if na_tela:
+			# Visível mas longe: paira sobre o ponto, apontando para baixo, para ele.
+			pos = projecao - Vector2(0, 46)
+			giro = PI * 0.5
+			if erro != 0.0:
+				giro += erro
+				pos += louca.deriva_na_tela(60.0)
+		else:
+			# Do centro rumo ao alvo até tocar a borda com a margem.
+			var meia := centro - Vector2(MARGEM_TELA, MARGEM_TELA)
+			var fator := minf(meia.x / maxf(absf(rumo.x), 0.001), meia.y / maxf(absf(rumo.y), 0.001))
+			pos = centro + rumo * fator
+			giro = rumo.angle()
+	var quer := 0.0 if some else 1.0
+	if quer > 0.0 and _alfa <= 0.0:
+		# ACENDE NO LUGAR: o chevron que nasce não desliza de onde ficou da última vez.
+		_mola.reiniciar(pos)
+		_chevron.rotation = giro
+	_alfa = move_toward(_alfa, quer, maxf(delta, 1.0 / 60.0) / SEGUNDOS_DO_FADE)
+	_chevron.modulate.a = _alfa
+	_chevron.visible = _alfa > 0.0
+	if not _chevron.visible:
 		return
-	var pos: Vector2
-	if na_tela:
-		# Visível mas longe: paira sobre o ponto, apontando para baixo, para ele.
-		pos = projecao - Vector2(0, 46)
-		_chevron.rotation = PI * 0.5
+	if not some:
+		pos = _mola.seguir(pos, delta, TEMPO_DE_SEGUIR, SuavizadorDeTela.VELOCIDADE_MAXIMA,
+			SuavizadorDeTela.ZONA_MORTA, CORREIA)
+		_chevron.rotation = lerp_angle(_chevron.rotation, giro, 1.0 - exp(-delta / TEMPO_DO_GIRO))
 	else:
-		# Do centro rumo ao alvo até tocar a borda com a margem.
-		var meia := centro - Vector2(MARGEM_TELA, MARGEM_TELA)
-		var fator := minf(meia.x / maxf(absf(rumo.x), 0.001), meia.y / maxf(absf(rumo.y), 0.001))
-		pos = centro + rumo * fator
-		_chevron.rotation = rumo.angle()
-	_chevron.visible = true
+		pos = _mola.posicao
 	_chevron.position = pos - _chevron.pivot_offset
 	_chevron.pulso = 0.7 + 0.3 * (0.5 + 0.5 * sin(_tempo * 3.2))
 	_chevron.queue_redraw()

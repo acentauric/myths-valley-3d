@@ -1,5 +1,5 @@
 {
-  "observacao": "Moradores do arraial no protótipo 3D. Cada posto é [nome de âncora de world_builder.ancoras, deslocamento em unidades]. As falas são a primeira linha da apresentação em data/dialogos/aldeoes.json; a saudação em áudio (ElevenLabs, pt-BR) fica em assets/audio/vozes/<saudacao>.mp3. Pedro é o guia (scripts/prototipo_3d/guia_pedro.gd): acompanha o jogador durante o tutorial e, depois dele, vai para os postos dele (guia.postos). gesto_saudacao indexa os gestos do humanoide procedural; gesto_tripo, os clipes do GLB com rig (authored_animator.gd: 0 saudação, 1 tchau, 2 concordar, 3 olhar ao redor).",
+  "observacao": "Moradores do arraial no protótipo 3D. Cada posto é [nome de âncora de world_builder.ancoras, deslocamento em unidades]. As falas são a primeira linha da apresentação em data/dialogos/aldeoes.json; a saudação em áudio (ElevenLabs, pt-BR) fica em assets/audio/vozes/<saudacao>.mp3. Pedro é o guia (scripts/prototipo_3d/guia_pedro.gd): acompanha o jogador durante o tutorial e, depois dele, vai para os postos dele (guia.postos). gesto_saudacao indexa os gestos do humanoide procedural; gesto_tripo, os clipes do GLB com rig (authored_animator.gd: 0 saudação, 1 tchau, 2 concordar, 3 olhar ao redor). Toda fala (saudacoes, falas, saudacoes_noite, falas_noite e, no Pedro, falas_depois e anoitecer) tem texto, texto_en, texto_es e texto_zh no mesmo objeto, e o chinês cai no inglês onde faltar (IdiomaMenu.campo). A voz é só em português: audio é o nome de assets/audio/vozes/<audio>.mp3, <id>_<tipo>_<n>, gerado por tools/elevenlabs/gerar-falas-moradores.ps1 com a voz do morador; tts é o que a voz lê, com marcações do eleven_v3; audio vazio é fala sem voz; voz_pendente (com a razão) marca quem ainda espera áudio por falta de crédito, e o portão tests/vozes_dos_moradores.gd reprova a marca que sobrar.",
   "guia": {
     "id": "pedro",
     "nome": "Pedro",
@@ -16,20 +16,93 @@
     "falas": [
       {
         "texto": "Opa! É você o moço da capital, né? O sobrinho do finado. Me chamo Pedro, pescador aqui do arraial.",
+        "texto_en": "Hey there! You're the young man from the capital, right? The late man's nephew. I'm Pedro, a fisherman here in the village.",
+        "texto_es": "¡Opa! Tú eres el muchacho de la capital, ¿no? El sobrino del difunto. Me llamo Pedro, pescador aquí en el caserío.",
+        "texto_zh": "哟！你就是从省城来的小伙子吧？故去老爷子的侄子。我叫佩德罗，是这村里的渔夫。",
         "tts": "[cheerfully] Opa! É você o moço da capital, né? O sobrinho do finado. [warmly] Me chamo Pedro, pescador aqui do arraial.",
         "audio": "pedro_saudacao_1"
       },
       {
         "texto": "Eita, gente nova no píer! Só pode ser quem veio pela casa de taipa. Sou Pedro. Aqui todo mundo se conhece, e agora vão querer te conhecer.",
+        "texto_en": "Well, well, a new face on the pier! It can only be whoever came for the mud-and-wattle house. I'm Pedro. Everyone knows everyone here, and now they'll want to know you.",
+        "texto_es": "¡Caramba, gente nueva en el muelle! Solo puede ser quien vino por la casa de adobe. Soy Pedro. Aquí todos se conocen, y ahora van a querer conocerte.",
+        "texto_zh": "哎呀，码头上来了新面孔！准是冲着那间泥墙屋来的。我是佩德罗。这儿谁都认识谁，往后大伙儿也都想认识你。",
         "tts": "[surprised] Eita, gente nova no píer! Só pode ser quem veio pela casa de taipa. Sou Pedro. [laughs] Aqui todo mundo se conhece, e agora vão querer te conhecer.",
         "audio": "pedro_saudacao_2"
       },
       {
         "texto": "Chegou, homem! O mestre do saveiro jurou que trazia você hoje. Pedro, pescador, às suas ordens. A baía foi boa com você?",
+        "texto_en": "You made it, man! The saveiro master swore he'd bring you today. Pedro, fisherman, at your service. Was the bay kind to you?",
+        "texto_es": "¡Llegaste, hombre! El maestre del saveiro juró que te traía hoy. Pedro, pescador, a sus órdenes. ¿Fue buena contigo la bahía?",
+        "texto_zh": "你可算到啦！帆船的船长赌咒说今天准把你送来。我是佩德罗，渔夫一个，听你吩咐。这一路海湾待你还好吧？",
         "tts": "[excited] Chegou, homem! O mestre do saveiro jurou que trazia você hoje. Pedro, pescador, às suas ordens. [curious] A baía foi boa com você?",
         "audio": "pedro_saudacao_3"
       }
-    ]
+    ],
+    "observacao_falas_depois": "DEPOIS DO TUTORIAL o E no Pedro não repete o primeiro encontro do píer ('falas', acima): ele fala como quem já conhece o jogador, alternando estas (guia_pedro._escolher_a_fala). Com voz pt-BR (pedro_depois_<n>, gerada por tools/elevenlabs/gerar-falas-moradores.ps1); o balão traz o texto no idioma do jogo.",
+    "falas_depois": [
+      {
+        "texto": "Ê, meu amigo! A maré hoje tá mansa, boa pra rede. Se quiser aprender a pescar de vara, é só chegar no píer.",
+        "texto_en": "Hey, my friend! The tide is gentle today, good for the net. If you want to learn line fishing, just come by the pier.",
+        "texto_es": "¡Eh, amigo mío! La marea hoy está mansa, buena para la red. Si quieres aprender a pescar con caña, solo ven al muelle.",
+        "texto_zh": "嘿，朋友！今天潮水平缓，正适合撒网。想学用钓竿钓鱼的话，来码头找我就行。",
+        "tts": "[cheerfully] Ê, meu amigo! A maré hoje tá mansa, boa pra rede. Se quiser aprender a pescar de vara, é só chegar no píer.",
+        "audio": "pedro_depois_1"
+      },
+      {
+        "texto": "Já se acostumou com o arraial? Aqui o povo repara em tudo, mas quem trabalha direito logo vira de casa.",
+        "texto_en": "Getting used to the village yet? Folks here notice everything, but whoever works honestly soon becomes family.",
+        "texto_es": "¿Ya te acostumbraste al caserío? Aquí la gente se fija en todo, pero quien trabaja bien pronto es de casa.",
+        "texto_zh": "在村里住惯了吗？这儿的人什么都看在眼里，不过肯踏实干活的人，很快就成自家人了。",
+        "tts": "[warmly] Já se acostumou com o arraial? Aqui o povo repara em tudo, mas quem trabalha direito logo vira de casa.",
+        "audio": "pedro_depois_2"
+      },
+      {
+        "texto": "De tardinha a praça enche. Tem garapa da Dona Candinha e prosa até o lampião acender.",
+        "texto_en": "Come late afternoon the square fills up. There's Dona Candinha's cane juice and talk until the lamps are lit.",
+        "texto_es": "Al caer la tarde la plaza se llena. Hay guarapo de doña Candinha y charla hasta que encienden el farol.",
+        "texto_zh": "傍晚的广场可热闹了。有坎迪尼亚大妈的甘蔗汁，还能一直聊到灯笼点亮。",
+        "audio": "pedro_depois_3"
+      },
+      {
+        "texto": "O Tonho jura que o peixe grande só morde de madrugada. Eu acho é que ele gosta de acordar cedo pra contar vantagem.",
+        "texto_en": "Tonho swears the big fish only bite before dawn. I reckon he just likes getting up early to brag about it.",
+        "texto_es": "Tonho jura que el pez grande solo pica de madrugada. Yo creo que le gusta madrugar para presumir.",
+        "texto_zh": "通尼奥赌咒说大鱼只在凌晨上钩。依我看，他是爱起大早，好回来吹牛。",
+        "tts": "[mischievously] O Tonho jura que o peixe grande só morde de madrugada. Eu acho é que ele gosta de acordar cedo pra contar vantagem.",
+        "audio": "pedro_depois_4"
+      },
+      {
+        "texto": "Cuidado na beira da baía quando a água escurece. Tem tubarão que entra atrás dos cardumes.",
+        "texto_en": "Careful at the edge of the bay when the water darkens. Sharks sometimes come in after the shoals.",
+        "texto_es": "Cuidado en la bahía cuando el agua se oscurece. A veces entran tiburones detrás de los cardúmenes.",
+        "texto_zh": "海水发暗的时候，在海湾边上可得当心。有鲨鱼会追着鱼群游进来。",
+        "tts": "[calm] Cuidado na beira da baía quando a água escurece. Tem tubarão que entra atrás dos cardumes.",
+        "audio": "pedro_depois_5"
+      },
+      {
+        "texto": "Dia catorze o saveiro do mestre Quirino encosta no píer. Quem tem piaçava pra vender não perde a viagem.",
+        "texto_en": "On the fourteenth, Quirino's saveiro docks at the pier. Anyone with piassava to sell won't waste the trip.",
+        "texto_es": "El catorce, el saveiro de Quirino atraca en el muelle. Quien tenga piasava para vender no pierde el viaje.",
+        "texto_zh": "十四号那天，基里诺船长的帆船会靠上码头。有棕榈纤维要卖的人，可别错过这趟船。",
+        "audio": "pedro_depois_6"
+      },
+      {
+        "texto": "Se cansar, descansa. Ninguém aqui corre atrás do sol, que ele volta todo dia do mesmo jeito.",
+        "texto_en": "If you get tired, rest. Nobody here chases the sun; it comes back every day just the same.",
+        "texto_es": "Si te cansas, descansa. Aquí nadie corre detrás del sol, que vuelve todos los días igual.",
+        "texto_zh": "累了就歇着。这儿没人追着太阳跑，它天天都照样回来。",
+        "tts": "[warmly] Se cansar, descansa. Ninguém aqui corre atrás do sol, que ele volta todo dia do mesmo jeito.",
+        "audio": "pedro_depois_7"
+      }
+    ],
+    "anoitecer": {
+      "texto": "Daqui a pouco escurece. Quando terminar, volte pra cama. Apagar no chão não descansa igual.",
+      "texto_en": "It'll be dark soon. When you're done, head back to bed. Passing out on the ground isn't the same rest.",
+      "texto_es": "Pronto oscurece. Cuando termines, vuelve a la cama. Caer rendido en el suelo no descansa igual.",
+      "texto_zh": "天快黑了。忙完就回床上去吧，累倒在地上可歇不踏实。",
+      "audio": "pedro_anoitecer"
+    }
   },
   "moradores": [
     {
@@ -88,17 +161,26 @@
       "falas": [
         {
           "texto": "Ah, o moço da capital. Pode me chamar de Benedito, que aqui todo mundo chama assim.",
+          "texto_en": "Ah, the young man from the capital. You can call me Benedito, that's what everyone here calls me.",
+          "texto_es": "Ah, el muchacho de la capital. Puede llamarme Benedito, que aquí todos me llaman así.",
+          "texto_zh": "啊，省城来的小伙子。叫我贝内迪托就行，这儿的人都这么叫我。",
           "audio": "benedito_fala_1"
         },
         {
           "texto": "Quarenta e duas safras nessa chapada, meu filho. A terra cansa, e a gente também.",
-          "audio": "benedito_fala_2",
-          "tts": "[sighs] Quarenta e duas safras nessa chapada, meu filho. A terra cansa, e a gente também."
+          "texto_en": "Forty-two harvests on this plateau, my son. The land gets tired, and so do we.",
+          "texto_es": "Cuarenta y dos cosechas en esta meseta, hijo mío. La tierra se cansa, y nosotros también.",
+          "texto_zh": "在这片高地上种了四十二季庄稼了，孩子。地会乏，人也会乏。",
+          "tts": "[sighs] Quarenta e duas safras nessa chapada, meu filho. A terra cansa, e a gente também.",
+          "audio": "benedito_fala_2"
         },
         {
           "texto": "Meu avô cortava pau do outro lado do rio. Um dia parou de ir. Nunca disse por quê.",
-          "audio": "benedito_fala_3",
-          "tts": "Meu avô cortava pau do outro lado do rio. [pause] Um dia parou de ir. Nunca disse por quê."
+          "texto_en": "My grandfather used to cut timber on the other side of the river. One day he stopped going. He never said why.",
+          "texto_es": "Mi abuelo cortaba madera al otro lado del río. Un día dejó de ir. Nunca dijo por qué.",
+          "texto_zh": "我爷爷以前去河对岸砍木头。有一天他不去了，也从没说过为什么。",
+          "tts": "Meu avô cortava pau do outro lado do rio. [pause] Um dia parou de ir. Nunca disse por quê.",
+          "audio": "benedito_fala_3"
         }
       ]
     },
@@ -158,15 +240,24 @@
       "falas": [
         {
           "texto": "Chegou o da capital, né? O arraial todo já sabe. Se a febre pegar, é só vir aqui.",
-          "audio": "zefa_fala_1",
-          "tts": "[warmly] Chegou o da capital, né? O arraial todo já sabe. Se a febre pegar, é só vir aqui."
+          "texto_en": "So the one from the capital has arrived, huh? The whole village already knows. If a fever takes hold, just come here.",
+          "texto_es": "Llegó el de la capital, ¿no? Todo el caserío ya lo sabe. Si te agarra la fiebre, solo ven aquí.",
+          "texto_zh": "省城来的那位到了，是吧？全村都知道啦。要是发起烧来，只管上我这儿来。",
+          "tts": "[warmly] Chegou o da capital, né? O arraial todo já sabe. Se a febre pegar, é só vir aqui.",
+          "audio": "zefa_fala_1"
         },
         {
           "texto": "Esse chão era da minha mãe. Vender, eu não vendo. Mas prosa, eu dou.",
+          "texto_en": "This ground was my mother's. Sell it, I won't. But conversation, that I give.",
+          "texto_es": "Este suelo era de mi madre. Vender, no lo vendo. Pero conversación, eso sí doy.",
+          "texto_zh": "这块地是我娘留下的。卖，我是不卖的。不过闲话嘛，管够。",
           "audio": "zefa_fala_2"
         },
         {
           "texto": "Arruda, alecrim e um pouco de fé. O resto, meu filho, quem cura é Deus.",
+          "texto_en": "Rue, rosemary and a little faith. The rest, my son, is cured by God.",
+          "texto_es": "Ruda, romero y un poco de fe. Lo demás, hijo mío, lo cura Dios.",
+          "texto_zh": "芸香、迷迭香，再加一点信心。剩下的，孩子，就是老天爷来医了。",
           "audio": "zefa_fala_3"
         }
       ]
@@ -227,15 +318,24 @@
       "falas": [
         {
           "texto": "Opa! Sou neto da Dona Zefa. Precisando de braço, é só chamar.",
+          "texto_en": "Hey! I'm Dona Zefa's grandson. If you need a hand, just call.",
+          "texto_es": "¡Opa! Soy nieto de doña Zefa. Si necesitas un brazo, solo llama.",
+          "texto_zh": "嘿！我是泽法大妈的孙子。要是缺人手，喊我一声就行。",
           "audio": "cosme_fala_1"
         },
         {
           "texto": "Vó diz que Salvador engole a gente. Eu digo que ainda vou ver com meus olhos.",
-          "audio": "cosme_fala_2",
-          "tts": "[laughs] Vó diz que Salvador engole a gente. Eu digo que ainda vou ver com meus olhos."
+          "texto_en": "Grandma says Salvador swallows people whole. I say I'll still see it with my own eyes.",
+          "texto_es": "La abuela dice que Salvador se come a la gente. Yo digo que todavía voy a verlo con mis propios ojos.",
+          "texto_zh": "奶奶说萨尔瓦多那地方会把人吞掉。我偏说，我迟早要亲眼去瞧瞧。",
+          "tts": "[laughs] Vó diz que Salvador engole a gente. Eu digo que ainda vou ver com meus olhos.",
+          "audio": "cosme_fala_2"
         },
         {
           "texto": "Pego na enxada desde menino. Mão calejada não mente, não.",
+          "texto_en": "I've held a hoe since I was a boy. Calloused hands don't lie.",
+          "texto_es": "Agarro la azada desde niño. Mano callosa no miente.",
+          "texto_zh": "我从小就握锄头。手上的老茧可不会说谎。",
           "audio": "cosme_fala_3"
         }
       ]
@@ -296,16 +396,25 @@
       "falas": [
         {
           "texto": "Opa, tudo certo? Passa aqui de tarde, que a gente conversa com a rede no colo.",
+          "texto_en": "Hey, all good? Come by in the afternoon and we'll chat with the net on our laps.",
+          "texto_es": "Opa, ¿todo bien? Pásate por aquí por la tarde, que charlamos con la red en el regazo.",
+          "texto_zh": "哟，一切都好吧？下午来我这儿坐坐，咱们抱着渔网聊聊天。",
           "audio": "tonho_fala_1"
         },
         {
           "texto": "Tô devendo no armazém, todo mundo sabe. Mas mãe ficou boa, e isso não tem preço.",
+          "texto_en": "I owe money at the store, everyone knows. But Mom got better, and that's priceless.",
+          "texto_es": "Debo en el almacén, todo el mundo lo sabe. Pero mamá se curó, y eso no tiene precio.",
+          "texto_zh": "我在杂货铺欠着账，谁都知道。可我妈病好了，这可是花多少钱都换不来的。",
           "audio": "tonho_fala_2"
         },
         {
           "texto": "Vi uma luz parada no mato, de madrugada. Na altura do peito. Vaga-lume não era.",
-          "audio": "tonho_fala_3",
-          "tts": "[whispers] Vi uma luz parada no mato, de madrugada. Na altura do peito. Vaga-lume não era."
+          "texto_en": "I saw a light standing still in the woods before dawn. At chest height. It wasn't a firefly.",
+          "texto_es": "Vi una luz quieta en el monte, de madrugada. A la altura del pecho. Luciérnaga no era.",
+          "texto_zh": "凌晨我在林子里看见一团不动的光，就在齐胸的高度。那可不是萤火虫。",
+          "tts": "[whispers] Vi uma luz parada no mato, de madrugada. Na altura do peito. Vaga-lume não era.",
+          "audio": "tonho_fala_3"
         }
       ]
     },
@@ -365,16 +474,25 @@
       "falas": [
         {
           "texto": "Chega mais, meu filho. Daqui da porta eu vejo quem vem e quem vai pela estrada.",
-          "audio": "filo_fala_1",
-          "tts": "[warmly] Chega mais, meu filho. Daqui da porta eu vejo quem vem e quem vai pela estrada."
+          "texto_en": "Come closer, my son. From this door I see who comes and who goes along the road.",
+          "texto_es": "Acércate, hijo mío. Desde esta puerta veo quién viene y quién va por el camino.",
+          "texto_zh": "靠近些，孩子。从这扇门口，我能看见路上谁来谁往。",
+          "tts": "[warmly] Chega mais, meu filho. Daqui da porta eu vejo quem vem e quem vai pela estrada.",
+          "audio": "filo_fala_1"
         },
         {
           "texto": "O Tonho acha que a dívida valeu a pena. Eu acho que não. A gente briga por isso toda semana.",
-          "audio": "filo_fala_2",
-          "tts": "[sighs] O Tonho acha que a dívida valeu a pena. Eu acho que não. A gente briga por isso toda semana."
+          "texto_en": "Tonho thinks the debt was worth it. I don't. We fight about it every week.",
+          "texto_es": "Tonho cree que la deuda valió la pena. Yo creo que no. Peleamos por eso cada semana.",
+          "texto_zh": "通尼奥觉得那笔债欠得值，我觉得不值。为这事，我们每个礼拜都要吵上一回。",
+          "tts": "[sighs] O Tonho acha que a dívida valeu a pena. Eu acho que não. A gente briga por isso toda semana.",
+          "audio": "filo_fala_2"
         },
         {
           "texto": "Na minha idade a gente não corre mais atrás de nada. Espera, que a estrada traz.",
+          "texto_en": "At my age you no longer run after anything. You wait, and the road brings it.",
+          "texto_es": "A mi edad ya no se corre detrás de nada. Se espera, que el camino lo trae.",
+          "texto_zh": "到了我这个岁数，就不再追着什么跑了。等着吧，路自会把它送来。",
           "audio": "filo_fala_3"
         }
       ]
@@ -435,16 +553,25 @@
       "falas": [
         {
           "texto": "Garapa geladinha, moço? Vendo nessa praça desde antes de o senhor nascer.",
+          "texto_en": "Nice cold cane juice, young man? I've been selling in this square since before you were born.",
+          "texto_es": "¿Guarapo fresquito, muchacho? Vendo en esta plaza desde antes de que usted naciera.",
+          "texto_zh": "来碗冰凉的甘蔗汁吧，小伙子？我在这广场上卖了多少年，你还没出生呢。",
           "audio": "candinha_fala_1"
         },
         {
           "texto": "Quer saber das coisas do arraial? Senta aqui, que tudo passa por esta praça.",
+          "texto_en": "Want to know what goes on in the village? Sit down here, everything passes through this square.",
+          "texto_es": "¿Quieres saber las cosas del caserío? Siéntate aquí, que todo pasa por esta plaza.",
+          "texto_zh": "想打听村里的事儿？坐这儿吧，什么事都要打这个广场上过。",
           "audio": "candinha_fala_2"
         },
         {
           "texto": "Dizem que chegou convite da fazenda do outro lado do rio. Sem assinatura... sei não.",
-          "audio": "candinha_fala_3",
-          "tts": "[whispers] Dizem que chegou convite da fazenda do outro lado do rio. Sem assinatura... sei não."
+          "texto_en": "They say an invitation came from the farm across the river. No signature... I don't know.",
+          "texto_es": "Dicen que llegó una invitación de la hacienda al otro lado del río. Sin firma... no sé yo.",
+          "texto_zh": "听说河对岸的庄园送来了请帖。没有署名……我心里可不踏实。",
+          "tts": "[whispers] Dizem que chegou convite da fazenda do outro lado do rio. Sem assinatura... sei não.",
+          "audio": "candinha_fala_3"
         }
       ]
     },
@@ -504,14 +631,23 @@
       "falas": [
         {
           "texto": "Sou o zelador daqui. Quem sobe o morro, sobe por alguém. Fique à vontade.",
+          "texto_en": "I'm the caretaker here. Whoever climbs the hill climbs for someone. Make yourself at home.",
+          "texto_es": "Soy el cuidador de aquí. Quien sube el cerro, sube por alguien. Póngase cómodo.",
+          "texto_zh": "我是这儿的看守人。谁上这座山，都是为了某个人。别拘束。",
           "audio": "damiao_fala_1"
         },
         {
           "texto": "O intendente me deu um papel com meu nome e mais nada. Nem foice, nem enxada.",
+          "texto_en": "The intendant gave me a paper with my name and nothing more. No scythe, no hoe.",
+          "texto_es": "El intendente me dio un papel con mi nombre y nada más. Ni hoz, ni azada.",
+          "texto_zh": "镇长给了我一张写着我名字的纸，再没别的了。既没镰刀，也没锄头。",
           "audio": "damiao_fala_2"
         },
         {
           "texto": "Mato de cemitério só sai na foice. E quem limpa não leva nada pra casa.",
+          "texto_en": "Cemetery weeds only come out with a scythe. And whoever clears them takes nothing home.",
+          "texto_es": "El monte del cementerio solo sale con hoz. Y quien lo limpia no se lleva nada a casa.",
+          "texto_zh": "墓地里的杂草，只有镰刀才割得掉。而且干这活的人，什么也带不回家。",
           "audio": "damiao_fala_3"
         }
       ]
@@ -519,7 +655,7 @@
     {
       "id": "quirino",
       "nome": "Mestre Quirino",
-      "observacao": "O MESTRE DO SAVEIRO, comprador que encosta no píer UMA VEZ POR ESTAÇÃO, no dia 14 (data/saveiro.json; scripts/prototipo_3d/saveiro_vale.gd): fora desse dia ele não está no vale — escondido, não anda, não fala e não recebe entrega. É o mestre de saveiro que o Pedro diz ter trazido o jogador ('O mestre do saveiro jurou que trazia você hoje'). Fica de pé no píer, perto do saveiro atracado; todos os postos são o mesmo. Sem voz gravada (o balão basta) e, até o modelo dele chegar do Tripo, caixa cinza provisória no estilo Tripo (npc.gd._corpo_provisorio), que peça procedural não entra nele.",
+      "observacao": "O MESTRE DO SAVEIRO, comprador que encosta no píer UMA VEZ POR ESTAÇÃO, no dia 14 (data/saveiro.json; scripts/prototipo_3d/saveiro_vale.gd): fora desse dia ele não está no vale — escondido, não anda, não fala e não recebe entrega. É o mestre de saveiro que o Pedro diz ter trazido o jogador ('O mestre do saveiro jurou que trazia você hoje'). Fica de pé no píer, perto do saveiro atracado; todos os postos são o mesmo. Sem voz gerada (o balão basta) e, até o modelo dele chegar do Tripo, caixa cinza provisória no estilo Tripo (npc.gd._corpo_provisorio), que peça procedural não entra nele.",
       "altura": 1.7,
       "gesto_saudacao": 0,
       "gesto_tripo": 0,
@@ -529,18 +665,21 @@
           "texto": "Mestre Quirino, do saveiro. Encosto aqui no dia catorze de cada estação: o que o arraial produziu no mês, eu levo pra Salvador.",
           "texto_en": "Master Quirino, of the sailboat. I dock here on the fourteenth of every season: what the village produced that month, I take to Salvador.",
           "texto_es": "Maestro Quirino, del velero. Atraco aquí el día catorce de cada estación: lo que el pueblo produjo en el mes, me lo llevo a Salvador.",
+          "texto_zh": "我是帆船的基里诺船长。每个季节的十四号，我都会靠到这儿：村里这个月出产的东西，我都运去萨尔瓦多。",
           "audio": ""
         },
         {
           "texto": "Piaçava é o que Salvador mais gasta: vassoura, corda de navio, cobertura de casa. Fibra comprida e bem seca, que eu pago bem.",
           "texto_en": "Piassava is what Salvador uses up most: brooms, ship rope, roof thatch. Long, well-dried fiber, and I pay well.",
           "texto_es": "La piasava es lo que Salvador más gasta: escoba, soga de barco, techo de casa. Fibra larga y bien seca, que pago bien.",
+          "texto_zh": "萨尔瓦多最费的就是棕榈纤维：扫帚、船缆、房顶的盖草，样样都要。纤维要长、要晒得干透，我出的价钱不低。",
           "audio": ""
         },
         {
           "texto": "Fui eu que trouxe você da capital, lembra? O mar estava manso. Hoje também.",
           "texto_en": "I'm the one who brought you from the capital, remember? The sea was calm. It is today, too.",
           "texto_es": "Fui yo quien te trajo de la capital, ¿te acuerdas? El mar estaba manso. Hoy también.",
+          "texto_zh": "是我把你从省城带来的，记得吗？那天海面很平静，今天也一样。",
           "audio": ""
         }
       ]
@@ -552,22 +691,110 @@
       "oficio_en": "parish priest",
       "oficio_es": "cura de la parroquia",
       "altura": 1.72,
-      "falas": [
-        {
-          "texto": "Deus o abençoe. Entre quando quiser, mesmo sem saber rezar.",
-          "texto_en": "God bless you. Come in whenever you like, even if you don't know how to pray.",
-          "texto_es": "Dios lo bendiga. Entre cuando quiera, aunque no sepa rezar."
-        },
-        {
-          "texto": "Seu tio sentava no último banco. Dizia que de perto do altar o Bom Jesus escutava demais.",
-          "texto_en": "Your uncle sat in the last pew. He said that near the altar the Good Jesus heard too much.",
-          "texto_es": "Su tío se sentaba en el último banco. Decía que cerca del altar el Buen Jesús oía demasiado."
-        }
-      ],
       "casa": "Casa do arraial 7",
       "recolhe": true,
       "gesto_saudacao": 0,
       "gesto_tripo": 0,
+      "voz": {
+        "id": "9pDzHy2OpOgeXM8SeL0t",
+        "nome": "Borges",
+        "modelo": "eleven_v3"
+      },
+      "saudacoes": [
+        {
+          "texto": "A paz de Deus, meu filho.",
+          "texto_en": "God's peace be with you, my son.",
+          "texto_es": "La paz de Dios, hijo mío.",
+          "texto_zh": "愿上帝的平安与你同在，孩子。",
+          "audio": "padre_saudacao_1"
+        },
+        {
+          "texto": "Deus lhe abençoe e lhe guarde.",
+          "texto_en": "God bless you and keep you.",
+          "texto_es": "Que Dios te bendiga y te guarde.",
+          "texto_zh": "愿上帝祝福你，保守你。",
+          "audio": "padre_saudacao_2"
+        },
+        {
+          "texto": "Entre sem pressa, a casa é de todos.",
+          "texto_en": "Come in without hurry; the house is everyone's.",
+          "texto_es": "Entra sin prisa, la casa es de todos.",
+          "texto_zh": "不用着急，进来吧，这里是大家的家。",
+          "audio": "padre_saudacao_3"
+        },
+        {
+          "texto": "Que bom ver gente nova no arraial.",
+          "texto_en": "Good to see a new face in the village.",
+          "texto_es": "Qué bueno ver gente nueva en el caserío.",
+          "texto_zh": "村里来了新人，真好。",
+          "audio": "padre_saudacao_4"
+        }
+      ],
+      "falas": [
+        {
+          "texto": "Esta igreja tem mais de duzentos anos, meu filho. A cal descasca, mas a fé nunca precisou de reboco.",
+          "texto_en": "This church is over two hundred years old, my son. The whitewash peels, but faith never needed plaster.",
+          "texto_es": "Esta iglesia tiene más de doscientos años, hijo mío. La cal se descascara, pero la fe nunca necesitó revoque.",
+          "texto_zh": "这座教堂有两百多年了，孩子。石灰会剥落，可信仰从来不用抹灰。",
+          "audio": "padre_fala_1"
+        },
+        {
+          "texto": "O cemitério é da Santa Casa, e a Santa Casa mora longe. O mato, esse, mora aqui e cresce depressa.",
+          "texto_en": "The cemetery belongs to the Santa Casa, and the Santa Casa lives far away. The weeds live here and grow fast.",
+          "texto_es": "El cementerio es de la Santa Casa, y la Santa Casa vive lejos. La maleza vive aquí y crece rápido.",
+          "texto_zh": "墓地归仁慈堂管，可仁慈堂远在天边。野草倒是就住在这儿，长得还快。",
+          "audio": "padre_fala_2"
+        },
+        {
+          "texto": "Quando o sino toca ao entardecer, eu rezo a Ave-Maria no cruzeiro. Quem passa e para, reza comigo.",
+          "texto_en": "When the bell tolls at dusk I say the Hail Mary at the wayside cross. Whoever passes and stops prays with me.",
+          "texto_es": "Cuando la campana toca al atardecer, rezo el Ave María en el crucero. Quien pasa y se detiene, reza conmigo.",
+          "texto_zh": "傍晚钟声一响，我就在十字架前念圣母经。路过停下来的人，就和我一起念。",
+          "audio": "padre_fala_3"
+        },
+        {
+          "texto": "Cada um cuida da alma como aprendeu com os seus. Eu cuido da minha e rezo pela de todo mundo.",
+          "texto_en": "Each one tends the soul the way their people taught them. I tend mine and pray for everyone's.",
+          "texto_es": "Cada uno cuida el alma como aprendió de los suyos. Yo cuido la mía y rezo por la de todos.",
+          "texto_zh": "每个人照料灵魂的法子，都是跟自家人学的。我照料我自己的，也为所有人祈祷。",
+          "audio": "padre_fala_4"
+        },
+        {
+          "texto": "Remédio vem da botica, vem do quintal, vem da reza. De Deus vêm os três. É só o que eu digo.",
+          "texto_en": "Medicine comes from the apothecary, from the backyard, from prayer. All three come from God. That's all I say.",
+          "texto_es": "El remedio viene de la botica, del patio, del rezo. De Dios vienen los tres. Es todo lo que digo.",
+          "texto_zh": "药来自药铺，来自后院，也来自祈祷。三样都是上帝所赐。我只说这么多。",
+          "audio": "padre_fala_5"
+        },
+        {
+          "texto": "Batizei muita criança e enterrei muito velho nesta freguesia. A gente aprende a falar baixo e ouvir muito.",
+          "texto_en": "I have baptized many children and buried many elders in this parish. One learns to speak softly and listen much.",
+          "texto_es": "He bautizado a muchos niños y enterrado a muchos viejos en esta parroquia. Uno aprende a hablar bajo y a escuchar mucho.",
+          "texto_zh": "在这个教区，我给不少孩子施过洗，也送走了不少老人。人就这样学会了轻声说话、多听少讲。",
+          "audio": "padre_fala_6"
+        },
+        {
+          "texto": "Convite sem assinatura eu não respondo. Quem convida de verdade assina, meu filho, e dá a cara.",
+          "texto_en": "I don't answer an unsigned invitation. Whoever truly invites signs, my son, and shows their face.",
+          "texto_es": "No respondo a una invitación sin firma. Quien invita de verdad firma, hijo mío, y da la cara.",
+          "texto_zh": "没有署名的请帖，我是不回的。真心邀请的人会署上名字，孩子，会亮出自己的脸。",
+          "audio": "padre_fala_7"
+        },
+        {
+          "texto": "De manhã subo ao cemitério para benzer. Pouca gente sobe o morro, mas lá em cima também é freguesia.",
+          "texto_en": "In the morning I climb to the cemetery to bless it. Few people climb the hill, but up there is parish too.",
+          "texto_es": "Por la mañana subo al cementerio a bendecir. Poca gente sube el cerro, pero allá arriba también es parroquia.",
+          "texto_zh": "早晨我上墓地去祝福亡者。上山的人不多，可山上也是我的教区。",
+          "audio": "padre_fala_8"
+        },
+        {
+          "texto": "O pavão da igreja já estava aqui quando eu cheguei. Ninguém sabe de quem foi. Aprendi a não perguntar e a dar milho.",
+          "texto_en": "The church peacock was already here when I arrived. Nobody knows whose it was. I learned not to ask, and to give corn.",
+          "texto_es": "El pavo real de la iglesia ya estaba cuando llegué. Nadie sabe de quién fue. Aprendí a no preguntar y a dar maíz.",
+          "texto_zh": "我来的时候，教堂的孔雀就已经在这儿了，没人知道它原来是谁的。我学会了不多问，只管喂玉米。",
+          "audio": "padre_fala_9"
+        }
+      ],
       "postos": {
         "madrugada": [
           "Casa do arraial 7",
@@ -700,22 +927,126 @@
       "oficio_en": "church sexton",
       "oficio_es": "sacristán de la iglesia",
       "altura": 1.62,
-      "falas": [
-        {
-          "texto": "Zacarias, sacristão. Sei de tudo o que passa na praça, porque a praça passa pela porta da igreja.",
-          "texto_en": "Zacarias, the sexton. I know everything that goes on in the square, because the square goes past the church door.",
-          "texto_es": "Zacarías, el sacristán. Sé todo lo que pasa en la plaza, porque la plaza pasa por la puerta de la iglesia."
-        },
-        {
-          "texto": "Se não fosse eu, a missa das seis começava às sete.",
-          "texto_en": "If it weren't for me, the six o'clock mass would start at seven.",
-          "texto_es": "Si no fuera por mí, la misa de las seis empezaría a las siete."
-        }
-      ],
       "casa": "Casa do arraial 1",
       "recolhe": true,
       "gesto_saudacao": 0,
       "gesto_tripo": 0,
+      "voz": {
+        "id": "SAz9YHcvj6GT2YYXdXww",
+        "nome": "River",
+        "modelo": "eleven_v3"
+      },
+      "saudacoes": [
+        {
+          "texto": "Limpe os pés, moço, que acabei de varrer.",
+          "texto_en": "Wipe your feet, young man, I just swept.",
+          "texto_es": "Límpiate los pies, muchacho, que acabo de barrer.",
+          "texto_zh": "小伙子，先擦擦脚，我刚扫过地。",
+          "audio": "sacristao_saudacao_1"
+        },
+        {
+          "texto": "Igreja tem ouvido, moço. Fale baixo.",
+          "texto_en": "Churches have ears, young man. Speak softly.",
+          "texto_es": "Las iglesias tienen oídos, muchacho. Habla bajo.",
+          "texto_zh": "教堂里有耳朵听着呢，小伙子，小声点。",
+          "audio": "sacristao_saudacao_2"
+        },
+        {
+          "texto": "Não mexa nas velas, hein? Deus lhe guarde.",
+          "texto_en": "Don't touch the candles, eh? God keep you.",
+          "texto_es": "No toques las velas, ¿eh? Dios te guarde.",
+          "texto_zh": "蜡烛可别乱碰，听见没？上帝保佑你。",
+          "audio": "sacristao_saudacao_3"
+        },
+        {
+          "texto": "Veio rezar? A porta está aberta.",
+          "texto_en": "Here to pray? The door is open.",
+          "texto_es": "¿Vienes a rezar? La puerta está abierta.",
+          "texto_zh": "是来祈祷的吧？门开着呢。",
+          "audio": "sacristao_saudacao_4"
+        }
+      ],
+      "falas": [
+        {
+          "texto": "Varro a igreja com piaçava, que é fibra boa e dura anos. Mas a poeira, moço, a poeira volta toda manhã.",
+          "texto_en": "I sweep the church with piassava, good fiber that lasts years. But the dust, young man, the dust comes back every morning.",
+          "texto_es": "Barro la iglesia con piasava, buena fibra que dura años. Pero el polvo, muchacho, el polvo vuelve cada mañana.",
+          "texto_zh": "我用棕榈纤维的扫帚扫教堂，这纤维结实，能用好几年。可是灰尘啊，小伙子，灰尘每天早上都会回来。",
+          "audio": "sacristao_fala_1"
+        },
+        {
+          "texto": "Tenho a chave da igreja, a do sino e a da sacristia. Três chaves, e o padre ainda pergunta onde elas estão.",
+          "texto_en": "I keep the church key, the bell key and the vestry key. Three keys, and the priest still asks where they are.",
+          "texto_es": "Tengo la llave de la iglesia, la de la campana y la de la sacristía. Tres llaves, y el cura aún pregunta dónde están.",
+          "texto_zh": "教堂的钥匙、钟楼的钥匙、圣器室的钥匙，都在我这儿。三把钥匙，神父还老问我它们在哪儿。",
+          "audio": "sacristao_fala_2"
+        },
+        {
+          "texto": "O sino tem uma rachadura fina, mas ainda dá o recado. Quem escuta direito sabe se é missa ou é morte.",
+          "texto_en": "The bell has a thin crack, but it still delivers the message. Whoever listens well knows if it's Mass or a death.",
+          "texto_es": "La campana tiene una grieta fina, pero aún da el aviso. Quien escucha bien sabe si es misa o es muerte.",
+          "texto_zh": "钟上有一道细裂纹，可还能把话带到。听得仔细的人，一听就知道是做弥撒，还是死了人。",
+          "audio": "sacristao_fala_3"
+        },
+        {
+          "texto": "À tarde vou capinar o cemitério. O Damião capina também, só que sem foice. O mato ganha de nós dois.",
+          "texto_en": "In the afternoon I go weed the cemetery. Damião weeds too, only without a scythe. The weeds beat us both.",
+          "texto_es": "Por la tarde voy a desmalezar el cementerio. Damião también, solo que sin hoz. La maleza nos gana a los dos.",
+          "texto_zh": "下午我要去墓地除草。达米昂也在除，只是他连镰刀都没有。野草把我们俩都赢了。",
+          "tts": "[sighs] À tarde vou capinar o cemitério. O Damião capina também, só que sem foice. O mato ganha de nós dois.",
+          "audio": "sacristao_fala_4"
+        },
+        {
+          "texto": "O pavão da igreja come mais milho que muito cristão. E ainda reclama quando atrasa.",
+          "texto_en": "The church peacock eats more corn than many a Christian. And complains when it's late.",
+          "texto_es": "El pavo real de la iglesia come más maíz que muchos cristianos. Y protesta cuando se atrasa.",
+          "texto_zh": "教堂的孔雀吃的玉米，比不少教友还多。要是晚了点，它还要叫唤。",
+          "audio": "sacristao_fala_5"
+        },
+        {
+          "texto": "Vela de cera é cara. Eu apago as que sobram, e o padre finge que não vê.",
+          "texto_en": "Wax candles are expensive. I snuff out the spare ones, and the priest pretends not to see.",
+          "texto_es": "Las velas de cera son caras. Apago las que sobran, y el cura finge que no ve.",
+          "texto_zh": "蜡烛贵得很。我把用不完的吹灭，神父就装作没看见。",
+          "tts": "[mischievously] Vela de cera é cara. Eu apago as que sobram, e o padre finge que não vê.",
+          "audio": "sacristao_fala_6"
+        },
+        {
+          "texto": "Quando chove tem goteira bem em cima do padre. Ele diz que é bênção. Eu chamo de telha fora do lugar.",
+          "texto_en": "When it rains there's a leak right over the priest. He says it's a blessing. I call it a tile out of place.",
+          "texto_es": "Cuando llueve hay una gotera justo sobre el cura. Él dice que es bendición. Yo lo llamo teja fuera de lugar.",
+          "texto_zh": "下雨的时候，漏水正好滴在神父头上。他说那是祝福，我管它叫瓦片掉了位。",
+          "tts": "[sarcastic] Quando chove tem goteira bem em cima do padre. Ele diz que é bênção. Eu chamo de telha fora do lugar.",
+          "audio": "sacristao_fala_7"
+        },
+        {
+          "texto": "Divido a casa com a Sá Joaquina. Quando eu acordo, ela já rezou o terço duas vezes.",
+          "texto_en": "I share the house with Sá Joaquina. By the time I wake, she has already prayed the rosary twice.",
+          "texto_es": "Comparto la casa con Sá Joaquina. Cuando despierto, ella ya rezó el rosario dos veces.",
+          "texto_zh": "我和若阿金娜婆婆合住一间屋。我一睁眼，她已经念了两遍念珠了。",
+          "audio": "sacristao_fala_8"
+        }
+      ],
+      "saudacoes_noite": [
+        {
+          "texto": "Já vou trancar a porta, moço. Chegue cedo amanhã.",
+          "texto_en": "I'm about to lock the door, young man. Come early tomorrow.",
+          "texto_es": "Ya voy a cerrar la puerta, muchacho. Llega temprano mañana.",
+          "texto_zh": "我这就要锁门了，小伙子，明天早点来。",
+          "tts": "[calm] Já vou trancar a porta, moço. Chegue cedo amanhã.",
+          "audio": "sacristao_saudacao_noite_1"
+        }
+      ],
+      "falas_noite": [
+        {
+          "texto": "De noite a igreja respira diferente. Eu só vou tranquilo pra casa depois de conferir cada vela.",
+          "texto_en": "At night the church breathes differently. I only go home at ease after checking every candle.",
+          "texto_es": "De noche la iglesia respira distinto. Solo me voy tranquilo a casa después de revisar cada vela.",
+          "texto_zh": "夜里的教堂，呼吸都不一样。我得把每一支蜡烛都查看一遍，才能放心回家。",
+          "tts": "[whispers] De noite a igreja respira diferente. Eu só vou tranquilo pra casa depois de conferir cada vela.",
+          "audio": "sacristao_fala_noite_1"
+        }
+      ],
       "postos": {
         "madrugada": [
           "Casa do arraial 1",
@@ -829,22 +1160,107 @@
       "oficio_en": "devout parishioner",
       "oficio_es": "beata del pueblo",
       "altura": 1.55,
-      "falas": [
-        {
-          "texto": "Rezo o terço todo dia às seis, chova ou faça sol. Rezando eu vejo quem passa.",
-          "texto_en": "I pray the rosary every day at six, rain or shine. Praying, I see who goes by.",
-          "texto_es": "Rezo el rosario todos los días a las seis, llueva o haga sol. Rezando veo quién pasa."
-        },
-        {
-          "texto": "Seu tio passava sem falar e tirava o chapéu. Era o jeito dele de rezar.",
-          "texto_en": "Your uncle went by without a word and took off his hat. That was his way of praying.",
-          "texto_es": "Su tío pasaba sin hablar y se quitaba el sombrero. Era su manera de rezar."
-        }
-      ],
       "casa": "Casa do arraial 1",
       "recolhe": true,
       "gesto_saudacao": 0,
       "gesto_tripo": 0,
+      "voz": {
+        "id": "wXwzHFLHnXex5h3JPBXA",
+        "nome": "Katiuscia",
+        "modelo": "eleven_v3"
+      },
+      "saudacoes": [
+        {
+          "texto": "Louvado seja Nosso Senhor Jesus Cristo!",
+          "texto_en": "Praised be Our Lord Jesus Christ!",
+          "texto_es": "¡Alabado sea Nuestro Señor Jesucristo!",
+          "texto_zh": "赞美我们的主耶稣基督！",
+          "audio": "beata_saudacao_1"
+        },
+        {
+          "texto": "Deus lhe dê juízo e saúde, meu filho.",
+          "texto_en": "God grant you sense and health, my son.",
+          "texto_es": "Dios te dé juicio y salud, hijo mío.",
+          "texto_zh": "愿上帝赐你头脑清醒、身体健康，孩子。",
+          "audio": "beata_saudacao_2"
+        },
+        {
+          "texto": "Eita, quem é vivo sempre aparece!",
+          "texto_en": "Well, well, the living always show up!",
+          "texto_es": "¡Vaya, el que está vivo siempre aparece!",
+          "texto_zh": "哎哟，活着的人总有露面的时候！",
+          "tts": "[cheerfully] Eita, quem é vivo sempre aparece!",
+          "audio": "beata_saudacao_3"
+        },
+        {
+          "texto": "Chegue aqui, moço, que o terço pode esperar.",
+          "texto_en": "Come here, young man, the rosary can wait.",
+          "texto_es": "Ven aquí, muchacho, que el rosario puede esperar.",
+          "texto_zh": "过来，小伙子，念珠可以先等一等。",
+          "audio": "beata_saudacao_4"
+        }
+      ],
+      "falas": [
+        {
+          "texto": "Rezo o terço três vezes ao dia e mesmo assim sei de tudo que acontece no arraial. Deus dá o ouvido que a gente merece.",
+          "texto_en": "I pray the rosary three times a day and still I know everything that happens in the village. God gives the ears we deserve.",
+          "texto_es": "Rezo el rosario tres veces al día y aun así sé todo lo que pasa en el caserío. Dios da los oídos que uno merece.",
+          "texto_zh": "我一天念三遍念珠，村里发生的事我还是样样都知道。上帝给每个人什么样的耳朵，那是各人该得的。",
+          "audio": "beata_fala_1"
+        },
+        {
+          "texto": "Dona Candinha acha que a praça é dela. Mas o que passa pela praça passa primeiro por mim, na saída da missa.",
+          "texto_en": "Dona Candinha thinks the square is hers. But what passes through the square passes first through me, after Mass.",
+          "texto_es": "Doña Candinha cree que la plaza es suya. Pero lo que pasa por la plaza pasa primero por mí, a la salida de misa.",
+          "texto_zh": "坎迪尼亚大妈以为广场是她的。可是广场上的消息，在弥撒散场时早就先经过我这儿了。",
+          "audio": "beata_fala_2"
+        },
+        {
+          "texto": "Luz parada no mato, de madrugada? É alma pedindo reza, meu filho. Eu rezo, mas não vou lá perguntar o nome.",
+          "texto_en": "A light standing still in the woods before dawn? A soul asking for prayer, my son. I pray, but I won't go ask its name.",
+          "texto_es": "¿Una luz quieta en el monte, de madrugada? Es un alma pidiendo rezo, hijo mío. Rezo, pero no voy a preguntarle el nombre.",
+          "texto_zh": "凌晨林子里有一团不动的光？那是亡魂在求人为它祈祷，孩子。我会为它念经，可不会过去问它叫什么。",
+          "tts": "[whispers] Luz parada no mato, de madrugada? É alma pedindo reza, meu filho. Eu rezo, mas não vou lá perguntar o nome.",
+          "audio": "beata_fala_3"
+        },
+        {
+          "texto": "Olho o poço todo dia de manhã. Poço velho tem fundo que a gente não vê, e fundo sempre tem o que contar.",
+          "texto_en": "I look into the well every morning. An old well has a depth you can't see, and depths always have a story.",
+          "texto_es": "Miro el pozo todas las mañanas. Un pozo viejo tiene un fondo que no se ve, y los fondos siempre tienen algo que contar.",
+          "texto_zh": "我每天早上都去看一眼那口井。老井有看不见的深处，而深处总有故事可讲。",
+          "audio": "beata_fala_4"
+        },
+        {
+          "texto": "O Padre Anselmo é um santo. Só fala baixo demais, e quem tem o ouvido cansado como o meu perde a metade do sermão.",
+          "texto_en": "Padre Anselmo is a saint. He just speaks too softly, and ears as tired as mine lose half the sermon.",
+          "texto_es": "El padre Anselmo es un santo. Solo habla demasiado bajo, y unos oídos cansados como los míos pierden la mitad del sermón.",
+          "texto_zh": "安塞尔莫神父是个圣人，就是说话太轻了，像我这种耳朵不灵的，布道要漏掉一半。",
+          "audio": "beata_fala_5"
+        },
+        {
+          "texto": "Divido o teto com o Zacarias, que tem a chave de tudo e a paciência de nada.",
+          "texto_en": "I share a roof with Zacarias, who has the key to everything and the patience for nothing.",
+          "texto_es": "Comparto el techo con Zacarias, que tiene la llave de todo y la paciencia de nada.",
+          "texto_zh": "我和扎卡里亚斯同住一个屋檐下，他什么钥匙都有，就是一点耐心都没有。",
+          "tts": "[sighs] Divido o teto com o Zacarias, que tem a chave de tudo e a paciência de nada.",
+          "audio": "beata_fala_6"
+        },
+        {
+          "texto": "Quem vem de fora sempre acha que aqui não acontece nada. Mal sabe que a gente só conta o que acontece depois da missa.",
+          "texto_en": "Outsiders always think nothing happens here. They don't know we only tell what happens after Mass.",
+          "texto_es": "Los de afuera siempre creen que aquí no pasa nada. No saben que aquí solo se cuenta lo que pasa después de misa.",
+          "texto_zh": "外乡人总觉得这儿什么事也不发生。他们哪知道，我们只是等弥撒结束后才把事情说出来。",
+          "tts": "[mischievously] Quem vem de fora sempre acha que aqui não acontece nada. Mal sabe que a gente só conta o que acontece depois da missa.",
+          "audio": "beata_fala_7"
+        },
+        {
+          "texto": "No cruzeiro, ao fim da tarde, a gente reza por quem está no mar. Em Bom Jesus, todo mundo tem alguém lá.",
+          "texto_en": "At the wayside cross, at day's end, we pray for those at sea. In Bom Jesus, everyone has someone out there.",
+          "texto_es": "En el crucero, al final de la tarde, rezamos por quien está en el mar. En Bom Jesus todos tienen a alguien allá.",
+          "texto_zh": "傍晚在十字架前，我们为海上的人祈祷。在邦热苏斯，家家户户都有人在海上。",
+          "audio": "beata_fala_8"
+        }
+      ],
       "postos": {
         "madrugada": [
           "Casa do arraial 1",
@@ -978,22 +1394,126 @@
       "oficio_en": "storekeeper",
       "oficio_es": "dueño de la venta",
       "altura": 1.72,
-      "falas": [
-        {
-          "texto": "Nicolau, da venda. Aqui tem de tudo o que o arraial não produz, e fiado pra quem tem terra.",
-          "texto_en": "Nicolau, from the store. Here there's everything the village doesn't make, and credit for whoever owns land.",
-          "texto_es": "Nicolau, de la venta. Aquí hay de todo lo que el caserío no produce, y fiado para quien tiene tierra."
-        },
-        {
-          "texto": "Todo mundo deve a alguém. O Tonho me deve, e eu devo ao atacado de Salvador.",
-          "texto_en": "Everyone owes someone. Tonho owes me, and I owe the wholesaler in Salvador.",
-          "texto_es": "Todo el mundo le debe a alguien. Tonho me debe a mí, y yo le debo al mayorista de Salvador."
-        }
-      ],
       "casa": "Venda do Bar",
       "recolhe": true,
       "gesto_saudacao": 0,
       "gesto_tripo": 0,
+      "voz": {
+        "id": "iP95p4xoKVk53GoZ742B",
+        "nome": "Chris",
+        "modelo": "eleven_v3"
+      },
+      "saudacoes": [
+        {
+          "texto": "Entre, freguês, que a venda está aberta.",
+          "texto_en": "Come in, customer, the shop is open.",
+          "texto_es": "Pase, cliente, que la venta está abierta.",
+          "texto_zh": "进来吧，客人，铺子开着呢。",
+          "audio": "mercador_saudacao_1"
+        },
+        {
+          "texto": "Precisando de alguma coisa, é só pedir.",
+          "texto_en": "Need something? Just ask.",
+          "texto_es": "¿Necesitas algo? Solo pide.",
+          "texto_zh": "需要什么，开口就行。",
+          "audio": "mercador_saudacao_2"
+        },
+        {
+          "texto": "Pode olhar à vontade, olhar não cobra.",
+          "texto_en": "Look all you like, looking is free.",
+          "texto_es": "Mira cuanto quieras, mirar no cuesta.",
+          "texto_zh": "随便看，看是不要钱的。",
+          "audio": "mercador_saudacao_3"
+        },
+        {
+          "texto": "Que Deus lhe dê bons negócios, freguês!",
+          "texto_en": "May God send you good business, customer!",
+          "texto_es": "¡Que Dios te dé buenos negocios, cliente!",
+          "texto_zh": "愿上帝赐你生意兴隆，客人！",
+          "tts": "[cheerfully] Que Deus lhe dê bons negócios, freguês!",
+          "audio": "mercador_saudacao_4"
+        }
+      ],
+      "falas": [
+        {
+          "texto": "Fiado eu dou, mas anoto no caderno. Caderno não tem memória ruim, e eu também não.",
+          "texto_en": "I give credit, but I write it in the notebook. A notebook has no bad memory, and neither do I.",
+          "texto_es": "Fío, pero lo anoto en el cuaderno. Un cuaderno no tiene mala memoria, ni yo tampoco.",
+          "texto_zh": "赊账可以，不过我要记在账本上。账本不会忘事，我也不会。",
+          "tts": "[mischievously] Fiado eu dou, mas anoto no caderno. Caderno não tem memória ruim, e eu também não.",
+          "audio": "mercador_fala_1"
+        },
+        {
+          "texto": "Fiado de pescador é como maré: vai embora, mas volta. O Tonho que o diga.",
+          "texto_en": "A fisherman's credit is like the tide: it goes out, but it comes back. Ask Tonho.",
+          "texto_es": "El fiado de un pescador es como la marea: se va, pero vuelve. Pregúntale a Tonho.",
+          "texto_zh": "渔夫的赊账就像潮水：退下去了，还会涨回来。不信问通尼奥。",
+          "audio": "mercador_fala_2"
+        },
+        {
+          "texto": "O que o arraial não faz vem de Salvador no saveiro: ferro, corda, tábua serrada, sal. Por isso custa mais, moço.",
+          "texto_en": "What the village can't make comes from Salvador on the saveiro: iron, rope, sawn plank, salt. That's why it costs more, young man.",
+          "texto_es": "Lo que el caserío no hace llega de Salvador en el saveiro: hierro, soga, tabla aserrada, sal. Por eso cuesta más, muchacho.",
+          "texto_zh": "村里造不出来的东西，都靠帆船从萨尔瓦多运来：铁器、绳索、锯好的木板、盐。所以才贵些，小伙子。",
+          "audio": "mercador_fala_3"
+        },
+        {
+          "texto": "Farinha, milho e lenha eu compro barato, porque o arraial tem de sobra. É assim em todo canto: quem tem demais, vende por pouco.",
+          "texto_en": "Flour, corn and firewood I buy cheap, because the village has plenty. It's the same everywhere: whoever has too much sells for little.",
+          "texto_es": "La harina, el maíz y la leña los compro baratos, porque el caserío tiene de sobra. Es igual en todas partes: quien tiene demasiado, vende barato.",
+          "texto_zh": "木薯粉、玉米和柴火，我收得便宜，因为村里多得是。哪儿都这样：东西多得没处放的人，卖价就低。",
+          "audio": "mercador_fala_4"
+        },
+        {
+          "texto": "Em tempo de seca a farinha sobe de preço. Em tempo de chuva, é a lenha seca que vale ouro. Guarde um pouco de cada.",
+          "texto_en": "In dry spells flour gets pricey. In rainy spells dry firewood is worth gold. Keep a bit of each.",
+          "texto_es": "En tiempo de seca la harina sube de precio. En tiempo de lluvia la leña seca vale oro. Guarda un poco de cada una.",
+          "texto_zh": "旱季木薯粉涨价，雨季干柴比金子还贵。两样你都囤一点。",
+          "audio": "mercador_fala_5"
+        },
+        {
+          "texto": "O jumento lá dos fundos é mais velho que eu na venda. Carrega saco, carrega freguês bêbado e nunca pede aumento.",
+          "texto_en": "The donkey out back has been here longer than I have. He carries sacks, he carries drunk customers, and never asks for a raise.",
+          "texto_es": "El burro del fondo lleva más años que yo en la venta. Carga sacos, carga clientes borrachos y nunca pide aumento.",
+          "texto_zh": "后院那头驴，在铺子里的资格比我还老。它驮麻袋，也驮喝醉的客人，从来不要求加工钱。",
+          "tts": "[laughs] O jumento lá dos fundos é mais velho que eu na venda. Carrega saco, carrega freguês bêbado e nunca pede aumento.",
+          "audio": "mercador_fala_6"
+        },
+        {
+          "texto": "Esse gato amarelo é o único que cuida do estoque de verdade. Rato aqui tem medo dele, e eu, do prejuízo.",
+          "texto_en": "That yellow cat is the only one who truly minds the stock. Rats here fear him, and I fear the loss.",
+          "texto_es": "Ese gato amarillo es el único que cuida de verdad las existencias. Aquí las ratas le temen a él, y yo a la pérdida.",
+          "texto_zh": "这只黄猫是唯一真正看管存货的家伙。老鼠怕它，而我怕亏本。",
+          "audio": "mercador_fala_7"
+        },
+        {
+          "texto": "A notícia chega na venda antes de chegar na praça. Quem compra sal conta o que viu, quem compra pinga conta o que ouviu.",
+          "texto_en": "News reaches the shop before the square. Whoever buys salt tells what they saw, whoever buys cachaça tells what they heard.",
+          "texto_es": "La noticia llega a la venta antes que a la plaza. Quien compra sal cuenta lo que vio, quien compra aguardiente cuenta lo que oyó.",
+          "texto_zh": "消息总是先到铺子，再到广场。买盐的人讲他看见了什么，买烧酒的人讲他听说了什么。",
+          "audio": "mercador_fala_8"
+        }
+      ],
+      "saudacoes_noite": [
+        {
+          "texto": "Estou fechando, freguês, mas pra você abro um pouco.",
+          "texto_en": "I'm closing, customer, but I'll stay open a bit for you.",
+          "texto_es": "Estoy cerrando, cliente, pero por ti abro un poco más.",
+          "texto_zh": "我正要打烊呢，客人，不过为你，我可以再开一会儿。",
+          "tts": "[warmly] Estou fechando, freguês, mas pra você abro um pouco.",
+          "audio": "mercador_saudacao_noite_1"
+        }
+      ],
+      "falas_noite": [
+        {
+          "texto": "De noite eu confiro o caixa e o caderno. O caixa pesa pouco, o caderno pesa muito, e os dois me dão insônia.",
+          "texto_en": "At night I check the till and the notebook. The till weighs little, the notebook weighs a lot, and both give me insomnia.",
+          "texto_es": "De noche reviso la caja y el cuaderno. La caja pesa poco, el cuaderno pesa mucho, y los dos me quitan el sueño.",
+          "texto_zh": "夜里我要对钱箱和账本。钱箱轻飘飘，账本沉甸甸，两样都让我睡不着。",
+          "tts": "[sighs] De noite eu confiro o caixa e o caderno. O caixa pesa pouco, o caderno pesa muito, e os dois me dão insônia.",
+          "audio": "mercador_fala_noite_1"
+        }
+      ],
       "postos": {
         "madrugada": [
           "Bar",
@@ -1107,22 +1627,148 @@
       "oficio_en": "village watchman (unarmed)",
       "oficio_es": "guardia de la villa (sin arma)",
       "altura": 1.74,
-      "falas": [
-        {
-          "texto": "Aristides, guarda do arraial. Sem arma, que o Intendente não manda, e sem precisão, que aqui ninguém rouba.",
-          "texto_en": "Aristides, the village guard. No weapon, since the Intendant sends none, and no need, since nobody steals here.",
-          "texto_es": "Aristides, guardia del caserío. Sin arma, que el Intendente no manda, y sin necesidad, que aquí nadie roba."
-        },
-        {
-          "texto": "Você chegou no saveiro do Quirino, de manhã. Meu serviço é saber quem chegou.",
-          "texto_en": "You came on Quirino's boat, in the morning. My job is knowing who arrived.",
-          "texto_es": "Usted llegó en el saveiro de Quirino, por la mañana. Mi trabajo es saber quién llegó."
-        }
-      ],
       "casa": "Casa do guarda",
       "recolhe": true,
       "gesto_saudacao": 0,
       "gesto_tripo": 0,
+      "voz": {
+        "id": "nPczCjzI2devNBz1zQrb",
+        "nome": "Brian",
+        "modelo": "eleven_v3"
+      },
+      "saudacoes": [
+        {
+          "texto": "Tudo em ordem por aqui, moço.",
+          "texto_en": "All in order here, young man.",
+          "texto_es": "Todo en orden por aquí, muchacho.",
+          "texto_zh": "这儿一切太平，小伙子。",
+          "audio": "guarda_saudacao_1"
+        },
+        {
+          "texto": "Paz no arraial, graças a Deus.",
+          "texto_en": "Peace in the village, thank God.",
+          "texto_es": "Paz en el caserío, gracias a Dios.",
+          "texto_zh": "村里平安无事，感谢上帝。",
+          "audio": "guarda_saudacao_2"
+        },
+        {
+          "texto": "Aristides, guarda da vila, às ordens.",
+          "texto_en": "Aristides, village watchman, at your service.",
+          "texto_es": "Aristides, guardia de la villa, a sus órdenes.",
+          "texto_zh": "阿里斯蒂德斯，村里的守卫，听候吩咐。",
+          "audio": "guarda_saudacao_3"
+        },
+        {
+          "texto": "Com licença, moço: viu algo estranho?",
+          "texto_en": "Excuse me, young man: seen anything strange?",
+          "texto_es": "Con permiso, muchacho: ¿viste algo raro?",
+          "texto_zh": "劳驾问一句，小伙子：你看到什么可疑的事没有？",
+          "tts": "[curious] Com licença, moço: viu algo estranho?",
+          "audio": "guarda_saudacao_4"
+        }
+      ],
+      "falas": [
+        {
+          "texto": "Arma eu não carrego. O intendente diz que guarda de verdade vigia, não prende. Levo só o candeeiro e a cara de severo.",
+          "texto_en": "I carry no weapon. The intendant says a true watchman watches, he doesn't arrest. I carry only the lantern and a stern face.",
+          "texto_es": "Arma no cargo. El intendente dice que un guardia de verdad vigila, no arresta. Solo llevo el farol y una cara seria.",
+          "texto_zh": "我不带武器。镇长说，真正的守卫是看着的，不是抓人的。我只提一盏提灯，再板着一张严肃的脸。",
+          "audio": "guarda_fala_1"
+        },
+        {
+          "texto": "De dia fico na praça, à tarde na igreja, e de noite rodo de candeeiro na mão. Quem me vê sabe que alguém está de olho.",
+          "texto_en": "By day I'm in the square, in the afternoon at the church, and at night I walk with the lantern in hand. Whoever sees me knows someone is watching.",
+          "texto_es": "De día estoy en la plaza, por la tarde en la iglesia, y de noche hago la ronda con el farol en la mano. Quien me ve sabe que alguien vigila.",
+          "texto_zh": "白天我在广场，下午在教堂，夜里提着灯四处巡逻。谁看见我，就知道有人在盯着。",
+          "audio": "guarda_fala_2"
+        },
+        {
+          "texto": "Gente de madrugada na rua sem candeeiro eu paro e pergunto. Não é pra proibir, é pra saber quem vai se perder.",
+          "texto_en": "A person out at dawn without a lantern, I stop and ask. Not to forbid, but to know who might get lost.",
+          "texto_es": "A quien anda de madrugada sin farol, lo paro y le pregunto. No es para prohibir, es para saber quién se va a perder.",
+          "texto_zh": "凌晨在街上走又不提灯的人，我都会拦下来问问。不是要禁止什么，是想知道谁可能会迷路。",
+          "audio": "guarda_fala_3"
+        },
+        {
+          "texto": "O convite da fazenda do outro lado do rio não traz nome de quem convida. Em trinta anos de guarda, nunca vi coisa boa sem assinatura.",
+          "texto_en": "The invitation from the farm across the river carries no name of who invites. In thirty years as watchman I've never seen anything good without a signature.",
+          "texto_es": "La invitación de la hacienda al otro lado del río no trae el nombre de quien invita. En treinta años de guardia nunca vi nada bueno sin firma.",
+          "texto_zh": "河对岸庄园的请帖，上头没写邀请人的名字。我当了三十年守卫，没见过哪件好事是不署名的。",
+          "audio": "guarda_fala_4"
+        },
+        {
+          "texto": "O intendente me nomeou e esqueceu. Ordem eu tenho; salário, só a promessa. Mas o arraial dorme em paz, e isso paga.",
+          "texto_en": "The intendant appointed me and forgot me. Orders I have; wages, only the promise. But the village sleeps in peace, and that pays.",
+          "texto_es": "El intendente me nombró y se olvidó de mí. Órdenes tengo; sueldo, solo la promesa. Pero el caserío duerme en paz, y eso paga.",
+          "texto_zh": "镇长任命了我，转头就把我忘了。命令我有，薪水只有一句承诺。可村子睡得安稳，这就算是报酬了。",
+          "audio": "guarda_fala_5"
+        },
+        {
+          "texto": "A briga mais séria que apartei foi por causa de uma galinha. Os dois juravam que era deles. Era de um terceiro.",
+          "texto_en": "The most serious fight I ever broke up was over a hen. Both swore she was theirs. She belonged to a third.",
+          "texto_es": "La pelea más seria que aparté fue por una gallina. Los dos juraban que era suya. Era de un tercero.",
+          "texto_zh": "我劝开过的最严重的一场架，是为了一只母鸡。两个人都发誓说是自家的，其实是第三个人的。",
+          "audio": "guarda_fala_6"
+        },
+        {
+          "texto": "Se vir fumaça perto do mato, avisa. Fogo aqui anda mais depressa que eu, e olha que eu corro bem.",
+          "texto_en": "If you see smoke near the woods, tell me. Fire here runs faster than I do, and I run well.",
+          "texto_es": "Si ves humo cerca del monte, avísame. El fuego aquí corre más que yo, y mira que yo corro bien.",
+          "texto_zh": "要是看见林子边上冒烟，就告诉我。这儿的火比我跑得还快，要知道我跑得可不慢。",
+          "audio": "guarda_fala_7"
+        },
+        {
+          "texto": "O cachorro malhado lá de casa vigia melhor que eu. Late pra quem chega, e eu só pergunto o nome.",
+          "texto_en": "The spotted dog at my house watches better than I do. He barks at whoever arrives, and I only ask their name.",
+          "texto_es": "El perro manchado de mi casa vigila mejor que yo. Ladra a quien llega, y yo solo pregunto el nombre.",
+          "texto_zh": "我家那条花狗，看守得比我还强。有人来它就叫，我只会问一声名字。",
+          "audio": "guarda_fala_8"
+        },
+        {
+          "texto": "Quem anda de noite pela igreja ouve o vento nas telhas e jura que é gente. Já fui conferir mais de vinte vezes. Era vento.",
+          "texto_en": "Whoever walks by the church at night hears wind in the tiles and swears it's people. I've gone to check over twenty times. It was wind.",
+          "texto_es": "Quien anda de noche por la iglesia oye el viento en las tejas y jura que es gente. Fui a comprobar más de veinte veces. Era viento.",
+          "texto_zh": "夜里走过教堂的人，听见风吹瓦片，就赌咒说有人。我去查看过二十多回，每回都是风。",
+          "tts": "[calm] Quem anda de noite pela igreja ouve o vento nas telhas e jura que é gente. Já fui conferir mais de vinte vezes. Era vento.",
+          "audio": "guarda_fala_9"
+        }
+      ],
+      "saudacoes_noite": [
+        {
+          "texto": "Boa noite, moço, candeeiro aceso e arraial em paz.",
+          "texto_en": "Good night, young man, lantern lit and village at peace.",
+          "texto_es": "Buenas noches, muchacho, farol encendido y caserío en paz.",
+          "texto_zh": "晚上好，小伙子，提灯亮着，村子平安。",
+          "tts": "[calm] Boa noite, moço, candeeiro aceso e arraial em paz.",
+          "audio": "guarda_saudacao_noite_1"
+        },
+        {
+          "texto": "Anda tarde, moço? Eu faço a ronda. Vá com Deus.",
+          "texto_en": "Out late, young man? I'm on my rounds. Go with God.",
+          "texto_es": "¿Andas tarde, muchacho? Hago la ronda. Ve con Dios.",
+          "texto_zh": "这么晚还在外头？我在巡逻。一路平安。",
+          "tts": "[calm] Anda tarde, moço? Eu faço a ronda. Vá com Deus.",
+          "audio": "guarda_saudacao_noite_2"
+        }
+      ],
+      "falas_noite": [
+        {
+          "texto": "De noite o arraial fala baixo: o mar, os grilos, um cachorro longe. Quando tudo cala de repente, é aí que eu levanto o candeeiro.",
+          "texto_en": "At night the village speaks softly: the sea, the crickets, a dog far off. When everything goes quiet all at once, that's when I raise the lantern.",
+          "texto_es": "De noche el caserío habla bajo: el mar, los grillos, un perro lejos. Cuando todo calla de repente, ahí levanto el farol.",
+          "texto_zh": "夜里的村子说话很轻：海浪声、蟋蟀声、远处的一声狗叫。等一切突然安静下来，我就举起提灯。",
+          "tts": "[calm] De noite o arraial fala baixo: o mar, os grilos, um cachorro longe. Quando tudo cala de repente, é aí que eu levanto o candeeiro.",
+          "audio": "guarda_fala_noite_1"
+        },
+        {
+          "texto": "Dizem que tem luz parada no mato, na altura do peito. Minha ronda vai só até a última casa. Dali pra frente, é com Deus.",
+          "texto_en": "They say there's a light standing in the woods, at chest height. My round goes only to the last house. Beyond that, it's up to God.",
+          "texto_es": "Dicen que hay una luz quieta en el monte, a la altura del pecho. Mi ronda llega solo hasta la última casa. De ahí en adelante, es cosa de Dios.",
+          "texto_zh": "听说林子里有一团不动的光，就在齐胸的高度。我巡逻只到最后一户人家。再往前，就交给上帝了。",
+          "tts": "[whispers] Dizem que tem luz parada no mato, na altura do peito. Minha ronda vai só até a última casa. Dali pra frente, é com Deus.",
+          "audio": "guarda_fala_noite_2"
+        }
+      ],
       "postos": {
         "madrugada": [
           "Casa do guarda",
@@ -1247,22 +1893,105 @@
       "oficio_en": "line fisherman",
       "oficio_es": "pescador de caña",
       "altura": 1.73,
-      "falas": [
-        {
-          "texto": "Jerônimo. Pesco de linha, da pedra, desde antes do Tonho nascer. Rede é pra quem tem pressa.",
-          "texto_en": "Jerônimo. I fish with a line, from the rock, since before Tonho was born. Nets are for people in a hurry.",
-          "texto_es": "Jerónimo. Pesco con línea, desde la piedra, desde antes de que naciera Tonho. La red es para quien tiene prisa."
-        },
-        {
-          "texto": "O mar aqui é raso e manso, mas mente: a maré vaza rápido e volta mais rápido.",
-          "texto_en": "The sea here is shallow and gentle, but it lies: the tide goes out fast and comes back faster.",
-          "texto_es": "El mar aquí es bajo y manso, pero miente: la marea baja rápido y vuelve más rápido."
-        }
-      ],
       "casa": "Casa do pescador",
       "recolhe": true,
       "gesto_saudacao": 0,
       "gesto_tripo": 0,
+      "voz": {
+        "id": "bIHbv24MWmeRgasZH58o",
+        "nome": "Will",
+        "modelo": "eleven_v3"
+      },
+      "saudacoes": [
+        {
+          "texto": "Que a maré lhe seja boa, moço.",
+          "texto_en": "May the tide be kind to you, young man.",
+          "texto_es": "Que la marea te sea buena, muchacho.",
+          "texto_zh": "愿潮水待你好，小伙子。",
+          "audio": "pescador_saudacao_1"
+        },
+        {
+          "texto": "Shh... fale baixo, que o peixe escuta.",
+          "texto_en": "Shh... speak low, fish can hear.",
+          "texto_es": "Shh... habla bajo, que el pez escucha.",
+          "texto_zh": "嘘……小声点，鱼听得见。",
+          "tts": "[whispers] Shh... fale baixo, que o peixe escuta.",
+          "audio": "pescador_saudacao_2"
+        },
+        {
+          "texto": "Aí, moço! Já pescou hoje?",
+          "texto_en": "Hey there! Caught anything today?",
+          "texto_es": "Eh, muchacho, ¿ya pescaste hoy?",
+          "texto_zh": "嘿，小伙子！今天钓过鱼了吗？",
+          "audio": "pescador_saudacao_3"
+        },
+        {
+          "texto": "Vá com calma, que quem corre assusta o peixe.",
+          "texto_en": "Take it easy, a rushing man scares the fish.",
+          "texto_es": "Con calma, que quien corre asusta al pez.",
+          "texto_zh": "慢着点走，跑动的人会把鱼吓跑。",
+          "audio": "pescador_saudacao_4"
+        }
+      ],
+      "falas": [
+        {
+          "texto": "Pesco de linha, de um anzol só. Rede pega muito, mas linha pega o que a gente quer, e com paciência.",
+          "texto_en": "I fish with a line, a single hook. A net catches a lot, but a line catches what you want, with patience.",
+          "texto_es": "Pesco con línea, con un solo anzuelo. La red atrapa mucho, pero la línea atrapa lo que uno quiere, con paciencia.",
+          "texto_zh": "我用钓线钓鱼，只用一只鱼钩。渔网捞得多，可钓线能钓到你想要的那条，靠的是耐心。",
+          "audio": "pescador_fala_1"
+        },
+        {
+          "texto": "Robalo gosta de boca de rio, onde a água doce encontra a salgada. Traíra mora em água parada e não perdoa isca ruim.",
+          "texto_en": "Snook likes the river mouth, where fresh water meets salt. Trahira lives in still water and forgives no bad bait.",
+          "texto_es": "El robalo gusta de la boca del río, donde el agua dulce se encuentra con la salada. La traíra vive en agua quieta y no perdona mala carnada.",
+          "texto_zh": "海鲈爱待在河口，淡水和咸水交汇的地方。狼鱼住在死水里，饵不好它可不饶你。",
+          "audio": "pescador_fala_2"
+        },
+        {
+          "texto": "Maré de lua cheia puxa o peixe pra beira. Mas lua cheia clareia a água, e peixe esperto vê o anzol.",
+          "texto_en": "A full-moon tide pulls the fish to the shore. But a full moon lights the water, and a clever fish sees the hook.",
+          "texto_es": "La marea de luna llena empuja el pez a la orilla. Pero la luna llena aclara el agua, y el pez listo ve el anzuelo.",
+          "texto_zh": "满月的潮水会把鱼带到岸边。可满月也把水照亮了，机灵的鱼能看见鱼钩。",
+          "audio": "pescador_fala_3"
+        },
+        {
+          "texto": "O Tonho puxa rede no pontal, o Pedro joga vara no píer. Peixe grande sabe de quem desviar.",
+          "texto_en": "Tonho hauls the net at the point, Pedro casts a rod from the pier. A big fish knows who to dodge.",
+          "texto_es": "Tonho jala la red en la punta, Pedro lanza la caña desde el muelle. El pez grande sabe de quién esquivarse.",
+          "texto_zh": "通尼奥在岬角拉网，佩德罗在码头甩竿。大鱼知道该躲着谁。",
+          "audio": "pescador_fala_4"
+        },
+        {
+          "texto": "Semana passada vi barbatana na boca da barra. Tubarão entra atrás do cardume. Quando o mar escurece, eu volto pra terra.",
+          "texto_en": "Last week I saw a fin at the mouth of the bar. Sharks follow the shoals in. When the sea darkens, I head back to land.",
+          "texto_es": "La semana pasada vi una aleta en la boca de la barra. El tiburón entra detrás del cardumen. Cuando el mar se oscurece, vuelvo a tierra.",
+          "texto_zh": "上星期我在海口看见了鱼鳍。鲨鱼是追着鱼群进来的。海水一发暗，我就回岸上去。",
+          "audio": "pescador_fala_5"
+        },
+        {
+          "texto": "De tarde remendo anzol e linha em casa. Linha velha parte na hora errada, e a hora errada é sempre a do peixe grande.",
+          "texto_en": "In the afternoon I mend hooks and line at home. Old line snaps at the wrong time, and the wrong time is always the big fish's.",
+          "texto_es": "Por la tarde remiendo anzuelos y línea en casa. La línea vieja se corta a la hora equivocada, y la hora equivocada es siempre la del pez grande.",
+          "texto_zh": "下午我在家补鱼钩和钓线。旧线总在不该断的时候断，而不该断的时候，永远是大鱼上钩的时候。",
+          "audio": "pescador_fala_6"
+        },
+        {
+          "texto": "O céu avisa o tempo: vermelho de manhã, chuva de tarde. E vento sul traz frio e mar picado. Aprendi com meu pai, de olhar.",
+          "texto_en": "The sky warns of the weather: red in the morning, rain by afternoon. A south wind brings cold and a choppy sea. I learned from my father, by looking.",
+          "texto_es": "El cielo avisa el tiempo: rojo por la mañana, lluvia por la tarde. Y el viento sur trae frío y mar picado. Lo aprendí de mi padre, mirando.",
+          "texto_zh": "天会预告天气：早上发红，下午就下雨。南风带来寒意和碎浪。这些是我爹教我的，看着看着就学会了。",
+          "audio": "pescador_fala_7"
+        },
+        {
+          "texto": "Na praça, de tardinha, eu conto vantagem de peixe que não pesquei. Todo pescador faz isso. Quem diz que não, mente mais ainda.",
+          "texto_en": "In the square, late afternoon, I brag about fish I never caught. Every fisherman does. Whoever says he doesn't lies even more.",
+          "texto_es": "En la plaza, al caer la tarde, presumo de peces que no pesqué. Todo pescador lo hace. Quien dice que no, miente aún más.",
+          "texto_zh": "傍晚在广场上，我吹嘘没钓到过的鱼。哪个渔夫都这样。说自己不这样的，撒的谎更大。",
+          "tts": "[mischievously] Na praça, de tardinha, eu conto vantagem de peixe que não pesquei. Todo pescador faz isso. Quem diz que não, mente mais ainda.",
+          "audio": "pescador_fala_8"
+        }
+      ],
       "postos": {
         "madrugada": [
           "Casa do pescador",
@@ -1356,22 +2085,105 @@
       "oficio_en": "shellfish gatherer",
       "oficio_es": "marisquera",
       "altura": 1.6,
-      "falas": [
-        {
-          "texto": "Rosa, marisqueira. Pego ostra e sururu na lama do mangue, de manhã cedo.",
-          "texto_en": "Rosa, the shellfish gatherer. I pick oysters and sururu in the mangrove mud, early in the morning.",
-          "texto_es": "Rosa, mariscadora. Saco ostras y sururu del barro del manglar, de madrugada."
-        },
-        {
-          "texto": "Se quiser aprender, venha às cinco com um balde e sem sapato.",
-          "texto_en": "If you want to learn, come at five with a bucket and no shoes.",
-          "texto_es": "Si quiere aprender, venga a las cinco con un balde y sin zapatos."
-        }
-      ],
       "casa": "Casa da marisqueira",
       "recolhe": true,
       "gesto_saudacao": 0,
       "gesto_tripo": 0,
+      "voz": {
+        "id": "MZxV5lN3cv7hi1376O0m",
+        "nome": "Ana Dias",
+        "modelo": "eleven_v3"
+      },
+      "saudacoes": [
+        {
+          "texto": "Olha a ostra fresquinha, freguês!",
+          "texto_en": "Fresh oysters, customer!",
+          "texto_es": "¡Ostras frescas, cliente!",
+          "texto_zh": "新鲜的牡蛎，快来看呀，客人！",
+          "tts": "[cheerfully] Olha a ostra fresquinha, freguês!",
+          "audio": "marisqueira_saudacao_1"
+        },
+        {
+          "texto": "Chega mais, moço, que o cesto é farto.",
+          "texto_en": "Come closer, young man, the basket is full.",
+          "texto_es": "Acércate, muchacho, que el cesto está lleno.",
+          "texto_zh": "再靠近些，小伙子，我的篮子满得很。",
+          "audio": "marisqueira_saudacao_2"
+        },
+        {
+          "texto": "Deus lhe guie, meu filho.",
+          "texto_en": "God guide you, my son.",
+          "texto_es": "Dios te guíe, hijo mío.",
+          "texto_zh": "愿上帝指引你，孩子。",
+          "audio": "marisqueira_saudacao_3"
+        },
+        {
+          "texto": "Cuidado com o pé, que o mangue morde.",
+          "texto_en": "Mind your feet, the mangrove bites.",
+          "texto_es": "Cuidado con los pies, que el manglar muerde.",
+          "texto_zh": "当心脚下，红树林泥滩会咬人。",
+          "audio": "marisqueira_saudacao_4"
+        }
+      ],
+      "falas": [
+        {
+          "texto": "Mariscar é com a maré. Quando a água baixa, o mangue abre a mesa: ostra, siri, sururu. Quando sobe, a gente sai e agradece.",
+          "texto_en": "Gathering follows the tide. When the water drops, the mangrove sets the table: oysters, crab, mussels. When it rises, we leave and give thanks.",
+          "texto_es": "Mariscar es con la marea. Cuando el agua baja, el manglar pone la mesa: ostras, cangrejos, mejillones. Cuando sube, nos vamos y agradecemos.",
+          "texto_zh": "拾海货要看潮水。水退下去，红树林就摆开了餐桌：牡蛎、螃蟹、贻贝。水涨上来，我们就上岸，道一声谢。",
+          "audio": "marisqueira_fala_1"
+        },
+        {
+          "texto": "A ostra gruda na pedra e na raiz do mangue. Tem que bater com cuidado, que a concha corta mais que faca.",
+          "texto_en": "Oysters cling to the rocks and mangrove roots. You have to tap carefully; the shell cuts worse than a knife.",
+          "texto_es": "La ostra se pega a la piedra y a la raíz del manglar. Hay que golpear con cuidado, que la concha corta más que un cuchillo.",
+          "texto_zh": "牡蛎黏在石头和红树的根上。得小心地敲，贝壳比刀还割人。",
+          "audio": "marisqueira_fala_2"
+        },
+        {
+          "texto": "Minhas mãos são todas cicatriz. Cada risco é uma ostra que me ensinou a não ter pressa.",
+          "texto_en": "My hands are all scars. Each line is an oyster that taught me not to hurry.",
+          "texto_es": "Mis manos son todas cicatrices. Cada raya es una ostra que me enseñó a no tener prisa.",
+          "texto_zh": "我的手上满是伤疤。每一道，都是一只教我别着急的牡蛎。",
+          "audio": "marisqueira_fala_3"
+        },
+        {
+          "texto": "Maré de lua nova é a melhor: a água vai longe e mostra pedra que ninguém viu o mês inteiro.",
+          "texto_en": "A new-moon tide is the best: the water goes far out and shows rocks nobody saw all month.",
+          "texto_es": "La marea de luna nueva es la mejor: el agua se va lejos y muestra piedras que nadie vio en todo el mes.",
+          "texto_zh": "新月的潮水最好：水退得很远，露出整个月都没人见过的石头。",
+          "audio": "marisqueira_fala_4"
+        },
+        {
+          "texto": "Vendo na praça de cesto na cabeça. O peso não é nada, o difícil é aguentar freguês que quer pechinchar.",
+          "texto_en": "I sell in the square with the basket on my head. The weight is nothing; the hard part is putting up with customers who want to haggle.",
+          "texto_es": "Vendo en la plaza con el cesto en la cabeza. El peso no es nada; lo difícil es aguantar al cliente que quiere regatear.",
+          "texto_zh": "我顶着篮子去广场卖。重量不算什么，难的是应付那些爱讨价还价的客人。",
+          "audio": "marisqueira_fala_5"
+        },
+        {
+          "texto": "Meu avô dizia que o mangue é a barriga da terra. Quem cuida dele não passa fome, e quem estraga, passa.",
+          "texto_en": "My grandfather said the mangrove is the belly of the land. Whoever tends it doesn't go hungry, and whoever ruins it does.",
+          "texto_es": "Mi abuelo decía que el manglar es la barriga de la tierra. Quien lo cuida no pasa hambre, y quien lo daña, sí.",
+          "texto_zh": "我爷爷说，红树林是大地的肚子。照顾它的人不会挨饿，糟蹋它的人会。",
+          "audio": "marisqueira_fala_6"
+        },
+        {
+          "texto": "De tarde descanso em casa e deixo o gato preto vigiar minhas mãos. Dói tudo, mas é dor de quem trabalhou.",
+          "texto_en": "In the afternoon I rest at home and let the black cat watch over my hands. Everything aches, but it's the ache of honest work.",
+          "texto_es": "Por la tarde descanso en casa y dejo que el gato negro vigile mis manos. Todo duele, pero es dolor de quien trabajó.",
+          "texto_zh": "下午我在家歇着，让黑猫替我看着这双手。浑身都疼，可这是干过活的人的疼。",
+          "tts": "[sighs] De tarde descanso em casa e deixo o gato preto vigiar minhas mãos. Dói tudo, mas é dor de quem trabalhou.",
+          "audio": "marisqueira_fala_7"
+        },
+        {
+          "texto": "Siri bom a gente reconhece pelo peso. Leve é velho, pesado é cheio de carne. Fruta e bicho se parecem nisso.",
+          "texto_en": "A good crab you know by its weight. Light is old, heavy is full of meat. Fruit and creatures are alike in that.",
+          "texto_es": "Un buen cangrejo se reconoce por el peso. Liviano es viejo, pesado está lleno de carne. La fruta y los bichos se parecen en eso.",
+          "texto_zh": "好螃蟹掂一掂分量就知道。轻的是老蟹，沉的才满是肉。水果和活物在这点上很像。",
+          "audio": "marisqueira_fala_8"
+        }
+      ],
       "postos": {
         "madrugada": [
           "Casa da marisqueira",
@@ -1466,22 +2278,105 @@
       "oficio_en": "laundress",
       "oficio_es": "lavandera",
       "altura": 1.6,
-      "falas": [
-        {
-          "texto": "Rita, lavadeira. Roupa conta a vida de quem veste: eu sei quem suou, quem chorou e quem comeu demais.",
-          "texto_en": "Rita, the washerwoman. Clothes tell the life of whoever wears them: I know who sweated, who cried and who ate too much.",
-          "texto_es": "Rita, lavandera. La ropa cuenta la vida de quien la viste: yo sé quién sudó, quién lloró y quién comió de más."
-        },
-        {
-          "texto": "A sua eu lavo de graça na primeira semana. Depois é farinha ou moeda.",
-          "texto_en": "Yours I'll wash for free the first week. After that it's flour or coin.",
-          "texto_es": "La suya la lavo gratis la primera semana. Después es harina o moneda."
-        }
-      ],
       "casa": "Casa da lavadeira",
       "recolhe": true,
       "gesto_saudacao": 0,
       "gesto_tripo": 0,
+      "voz": {
+        "id": "ORgG8rwdAiMYRug8RJwR",
+        "nome": "Ana Alice",
+        "modelo": "eleven_v3"
+      },
+      "saudacoes": [
+        {
+          "texto": "Cuidado com a roupa no varal, moço!",
+          "texto_en": "Mind the wash on the line, young man!",
+          "texto_es": "¡Cuidado con la ropa en el tendedero, muchacho!",
+          "texto_zh": "当心晾衣绳上的衣裳，小伙子！",
+          "audio": "lavadeira_saudacao_1"
+        },
+        {
+          "texto": "Falando de você agorinha mesmo!",
+          "texto_en": "We were just talking about you!",
+          "texto_es": "¡Justo hablábamos de ti!",
+          "texto_zh": "我们刚好在说你呢！",
+          "tts": "[mischievously] Falando de você agorinha mesmo!",
+          "audio": "lavadeira_saudacao_2"
+        },
+        {
+          "texto": "Deus mande sol, que reza não seca roupa.",
+          "texto_en": "God send sun, prayer doesn't dry laundry.",
+          "texto_es": "Que Dios mande sol, que el rezo no seca la ropa.",
+          "texto_zh": "求上帝送个好太阳吧，光念经可晒不干衣裳。",
+          "audio": "lavadeira_saudacao_3"
+        },
+        {
+          "texto": "Venha, sente, que a prosa é de graça.",
+          "texto_en": "Come, sit, the chat is free.",
+          "texto_es": "Ven, siéntate, que la charla es gratis.",
+          "texto_zh": "来，坐下，聊天不要钱。",
+          "audio": "lavadeira_saudacao_4"
+        }
+      ],
+      "falas": [
+        {
+          "texto": "Lavo na pedra, perto da ponte, onde o rio corre limpo. Sabão de coco e muito braço: não tem segredo.",
+          "texto_en": "I wash on the rock by the bridge, where the river runs clean. Coconut soap and plenty of elbow grease: no secret.",
+          "texto_es": "Lavo en la piedra, junto al puente, donde el río corre limpio. Jabón de coco y mucho brazo: no hay secreto.",
+          "texto_zh": "我在桥边的石头上洗衣裳，那儿的河水清亮。椰子皂，加上一把好力气，没什么秘诀。",
+          "audio": "lavadeira_fala_1"
+        },
+        {
+          "texto": "Roupa conta a vida de quem veste. A camisa do Cosme vem sempre com terra de roça, a toalha da igreja, com cheiro de vela.",
+          "texto_en": "Clothes tell the life of who wears them. Cosme's shirt always comes with field dirt, the church cloth with a smell of candle.",
+          "texto_es": "La ropa cuenta la vida de quien la viste. La camisa de Cosme siempre trae tierra de sembrado, el paño de la iglesia, olor a vela.",
+          "texto_zh": "衣裳会讲穿它的人过的日子。科斯梅的衬衫总沾着田里的泥，教堂的桌布总带着蜡烛的味道。",
+          "audio": "lavadeira_fala_2"
+        },
+        {
+          "texto": "Os lençóis da Dona Zefa cheiram a arruda. Cheiram tão bem que a gente quase adoece só pra ser tratado por ela.",
+          "texto_en": "Dona Zefa's sheets smell of rue. So sweet that you almost fall ill just to be tended by her.",
+          "texto_es": "Las sábanas de doña Zefa huelen a ruda. Huelen tan bien que uno casi se enferma solo para que ella lo cuide.",
+          "texto_zh": "泽法大妈的床单有芸香味。香得叫人差点想生场病，好让她来治。",
+          "audio": "lavadeira_fala_3"
+        },
+        {
+          "texto": "Quarar é estender o linho na grama ao sol e molhar de novo. Fica branco que dói na vista. Branco de verdade só assim.",
+          "texto_en": "To bleach is to spread linen on the grass in the sun and wet it again. It turns white enough to hurt the eyes. Real white comes no other way.",
+          "texto_es": "Blanquear es tender el lino sobre el pasto al sol y mojarlo otra vez. Queda tan blanco que duele a la vista. El blanco de verdad sale solo así.",
+          "texto_zh": "“晒白”就是把亚麻布摊在草地上晒太阳，再洒水，再晒。白得晃眼。真正的白，只能这么来。",
+          "audio": "lavadeira_fala_4"
+        },
+        {
+          "texto": "Os patos da ponte já me conhecem. Comem o pão que sobra da minha merenda e não me deixam sozinha nem pra rezar.",
+          "texto_en": "The ducks by the bridge know me by now. They eat the bread left from my snack and won't leave me alone, not even to pray.",
+          "texto_es": "Los patos del puente ya me conocen. Comen el pan que sobra de mi merienda y no me dejan sola ni para rezar.",
+          "texto_zh": "桥边的鸭子都认得我了。它们吃我午饭剩下的面包，连我祷告的时候都不肯让我清静。",
+          "audio": "lavadeira_fala_5"
+        },
+        {
+          "texto": "Bato roupa na pedra e o vento traz a conversa de todo mundo. Eu não conto, mas escuto de graça.",
+          "texto_en": "I beat clothes on the stone and the wind brings everybody's talk. I don't tell, but I listen for free.",
+          "texto_es": "Golpeo la ropa en la piedra y el viento trae la charla de todos. Yo no cuento, pero escucho gratis.",
+          "texto_zh": "我在石头上捶衣裳，风把大家的闲话都送了过来。我不说出去，可白听一听嘛。",
+          "tts": "[mischievously] Bato roupa na pedra e o vento traz a conversa de todo mundo. Eu não conto, mas escuto de graça.",
+          "audio": "lavadeira_fala_6"
+        },
+        {
+          "texto": "De tarde, no poço, a gente troca novidade. O poço anda cansado, moço: a corda gasta, o balde pesa. Um mutirão resolvia.",
+          "texto_en": "In the afternoon at the well we swap news. The well is tired, young man: the rope is worn, the bucket heavy. A work party would fix it.",
+          "texto_es": "Por la tarde, en el pozo, intercambiamos novedades. El pozo anda cansado, muchacho: la soga gastada, el balde pesado. Una faena de vecinos lo arreglaría.",
+          "texto_zh": "下午在井边，我们互相交换新鲜事。可这口井也累了，小伙子：绳子磨损了，水桶也沉。大伙儿一起动手就能解决。",
+          "audio": "lavadeira_fala_7"
+        },
+        {
+          "texto": "Barra de vestido manchada de massapê é de quem andou na estrada depois da chuva. Massapê é teimoso: pede três lavadas.",
+          "texto_en": "A dress hem stained with black massapê clay belongs to someone who walked the road after rain. Massapê is stubborn: it takes three washes.",
+          "texto_es": "El borde de un vestido manchado de masapé es de quien anduvo el camino después de la lluvia. El masapé es terco: pide tres lavadas.",
+          "texto_zh": "裙摆上沾了黏土渍的，就是雨后走过大路的人。这种黏土可倔了，得洗上三遍。",
+          "audio": "lavadeira_fala_8"
+        }
+      ],
       "postos": {
         "madrugada": [
           "Casa da lavadeira",
@@ -1597,22 +2492,106 @@
       "oficio_en": "lacemaker",
       "oficio_es": "encajera",
       "altura": 1.58,
-      "falas": [
-        {
-          "texto": "Estefânia, rendeira. Renda é tempo: um palmo leva um dia, e ninguém paga o dia, só o palmo.",
-          "texto_en": "Estefânia, the lacemaker. Lace is time: a hand's width takes a day, and nobody pays for the day, only for the width.",
-          "texto_es": "Estefanía, encajera. El encaje es tiempo: un palmo lleva un día, y nadie paga el día, solo el palmo."
-        },
-        {
-          "texto": "Seu tio me encomendou uma toalha e nunca buscou. Ainda está aqui, dobrada.",
-          "texto_en": "Your uncle ordered a tablecloth from me and never came for it. It's still here, folded.",
-          "texto_es": "Su tío me encargó un mantel y nunca lo buscó. Todavía está aquí, doblado."
-        }
-      ],
       "casa": "Casa da rendeira",
       "recolhe": true,
       "gesto_saudacao": 0,
       "gesto_tripo": 0,
+      "voz": {
+        "id": "pFZP5JQG7iQjIQuC4Bku",
+        "nome": "Lily",
+        "modelo": "eleven_v3"
+      },
+      "saudacoes": [
+        {
+          "texto": "Fale baixinho, moço, que eu conto os bilros.",
+          "texto_en": "Speak softly, young man, I'm counting bobbins.",
+          "texto_es": "Habla bajito, muchacho, que estoy contando bolillos.",
+          "texto_zh": "小声点说话，小伙子，我正数着线梭呢。",
+          "tts": "[whispers] Fale baixinho, moço, que eu conto os bilros.",
+          "audio": "rendeira_saudacao_1"
+        },
+        {
+          "texto": "Que Deus lhe dê vista boa, meu filho.",
+          "texto_en": "May God give you good eyesight, my son.",
+          "texto_es": "Que Dios te dé buena vista, hijo mío.",
+          "texto_zh": "愿上帝赐你一双好眼睛，孩子。",
+          "audio": "rendeira_saudacao_2"
+        },
+        {
+          "texto": "Sente aí um minuto, a linha não foge.",
+          "texto_en": "Sit a minute, the thread won't run away.",
+          "texto_es": "Siéntate un minuto, el hilo no se escapa.",
+          "texto_zh": "坐一会儿吧，线又不会跑。",
+          "audio": "rendeira_saudacao_3"
+        },
+        {
+          "texto": "Olha só quem apareceu, e eu aqui no ponto!",
+          "texto_en": "Look who showed up, and me mid-stitch!",
+          "texto_es": "¡Mira quién apareció, y yo a medio punto!",
+          "texto_zh": "瞧瞧是谁来了，我这儿正织到关键处！",
+          "audio": "rendeira_saudacao_4"
+        }
+      ],
+      "falas": [
+        {
+          "texto": "Renda de bilro é paciência com música: o estalo dos bilros marca o ritmo. Um palmo leva dias, e eu rezo enquanto faço.",
+          "texto_en": "Bobbin lace is patience with music: the clicking of the bobbins keeps the rhythm. A span takes days, and I pray while I work.",
+          "texto_es": "El encaje de bolillos es paciencia con música: el chasquido de los bolillos marca el ritmo. Un palmo lleva días, y yo rezo mientras lo hago.",
+          "texto_zh": "梭编花边是带着音乐的耐心：线梭的啪嗒声打着拍子。一拃长的花边要织好几天，我边织边祈祷。",
+          "audio": "rendeira_fala_1"
+        },
+        {
+          "texto": "O desenho vem do pique, um papel furado que a gente prende com alfinete. O pique da minha avó eu uso até hoje.",
+          "texto_en": "The pattern comes from the pricking, a pierced paper we pin down. I still use my grandmother's pricking today.",
+          "texto_es": "El dibujo viene del picado, un papel perforado que se prende con alfileres. El picado de mi abuela lo uso hasta hoy.",
+          "texto_zh": "花样来自“花样纸”，一张扎了孔的纸，用别针固定。我奶奶那张花样纸，我到今天还在用。",
+          "audio": "rendeira_fala_2"
+        },
+        {
+          "texto": "A vista já não é a de antes, moço. Faço renda mais pelo dedo que pelo olho. O dedo não cansa.",
+          "texto_en": "My eyesight isn't what it was, young man. I make lace more by finger than by eye. Fingers don't tire.",
+          "texto_es": "La vista ya no es la de antes, muchacho. Hago encaje más con el dedo que con el ojo. El dedo no se cansa.",
+          "texto_zh": "我的眼力大不如前了，小伙子。现在织花边靠手指多过靠眼睛。手指可不会累。",
+          "audio": "rendeira_fala_3"
+        },
+        {
+          "texto": "Renda boa vai pra Salvador. Tem moça rica que paga caro e nem imagina quantos dias cabem num palmo.",
+          "texto_en": "Good lace goes to Salvador. Rich ladies pay dearly and never imagine how many days fit in a span.",
+          "texto_es": "El buen encaje va a Salvador. Hay señoritas ricas que pagan caro y no imaginan cuántos días caben en un palmo.",
+          "texto_zh": "好花边都送去萨尔瓦多。有些富家小姐肯出高价，却想不到一拃长的花边里装着多少个日子。",
+          "audio": "rendeira_fala_4"
+        },
+        {
+          "texto": "Todo dia, perto do meio-dia, vou ao poço com o balde. Ali descanso a vista e ouço as novidades que as outras trazem.",
+          "texto_en": "Every day near noon I go to the well with the bucket. There I rest my eyes and hear the news the others bring.",
+          "texto_es": "Todos los días, cerca del mediodía, voy al pozo con el balde. Allí descanso la vista y oigo las novedades que traen las otras.",
+          "texto_zh": "每天临近中午，我提着水桶去井边。在那儿让眼睛歇一歇，听别人带来的新鲜事。",
+          "audio": "rendeira_fala_5"
+        },
+        {
+          "texto": "Na praça eu conto os pontos da conversa: um aqui, um ali. Fofoca bem tecida vale mais que renda mal feita.",
+          "texto_en": "In the square I count the stitches of the talk: one here, one there. Well-woven gossip beats badly made lace.",
+          "texto_es": "En la plaza cuento los puntos de la charla: uno aquí, otro allá. El chisme bien tejido vale más que un encaje mal hecho.",
+          "texto_zh": "在广场上，我数着话里的针脚：这儿一针，那儿一针。织得漂亮的闲话，比织坏的花边更值钱。",
+          "audio": "rendeira_fala_6"
+        },
+        {
+          "texto": "Meu gato malhado dorme em cima da almofada. Já derrubou três bilros e nunca pediu desculpa.",
+          "texto_en": "My spotted cat sleeps on top of the pillow. He's knocked over three bobbins and never apologized.",
+          "texto_es": "Mi gato manchado duerme encima de la almohadilla. Ya tiró tres bolillos y nunca pidió disculpas.",
+          "texto_zh": "我的花斑猫睡在绣垫上。它已经碰掉了三只线梭，从来没道过歉。",
+          "tts": "[sarcastic] Meu gato malhado dorme em cima da almofada. Já derrubou três bilros e nunca pediu desculpa.",
+          "audio": "rendeira_fala_7"
+        },
+        {
+          "texto": "A toalha de renda do altar fui eu que fiz. Levou um ano. O padre diz que Deus vê cada ponto, e eu torço pra Ele não ver o torto.",
+          "texto_en": "I made the lace cloth for the altar. It took a year. The priest says God sees every stitch, and I hope He doesn't see the crooked one.",
+          "texto_es": "El mantel de encaje del altar lo hice yo. Llevó un año. El cura dice que Dios ve cada punto, y yo espero que no vea el torcido.",
+          "texto_zh": "祭坛上的花边桌布是我织的，花了整整一年。神父说上帝能看见每一针，我只盼着祂别看见那歪的一针。",
+          "tts": "[mischievously] A toalha de renda do altar fui eu que fiz. Levou um ano. O padre diz que Deus vê cada ponto, e eu torço pra Ele não ver o torto.",
+          "audio": "rendeira_fala_8"
+        }
+      ],
       "postos": {
         "madrugada": [
           "Casa da rendeira",
@@ -1716,22 +2695,107 @@
       "oficio_en": "street cook, sells acarajé and beiju",
       "oficio_es": "cocinera ambulante, vende acarajé y beiju",
       "altura": 1.62,
-      "falas": [
-        {
-          "texto": "Ambrósia. Faço acarajé, beiju e cocada, e vendo no tabuleiro da praça à tarde.",
-          "texto_en": "Ambrósia. I make acarajé, beiju and cocada, and sell them from the tray in the square in the afternoon.",
-          "texto_es": "Ambrosia. Hago acarajé, beiju y cocada, y los vendo en la bandeja de la plaza por la tarde."
-        },
-        {
-          "texto": "Se tiver fome e não tiver moeda, come e paga quando puder. Fome não espera safra.",
-          "texto_en": "If you're hungry and have no coin, eat and pay when you can. Hunger doesn't wait for the harvest.",
-          "texto_es": "Si tiene hambre y no tiene moneda, coma y pague cuando pueda. El hambre no espera la cosecha."
-        }
-      ],
       "casa": "Casa da quituteira",
       "recolhe": true,
       "gesto_saudacao": 0,
       "gesto_tripo": 0,
+      "voz": {
+        "id": "cgSgspJ2msm6clMCkdW9",
+        "nome": "Jessica",
+        "modelo": "eleven_v3"
+      },
+      "saudacoes": [
+        {
+          "texto": "Olha o acarajé quentinho, freguês!",
+          "texto_en": "Hot acarajé, customer!",
+          "texto_es": "¡Acarajé calentito, cliente!",
+          "texto_zh": "热乎乎的阿卡拉杰，来一份吧，客人！",
+          "tts": "[excited] Olha o acarajé quentinho, freguês!",
+          "audio": "quituteira_saudacao_1"
+        },
+        {
+          "texto": "Beiju fresquinho, tapioca na hora!",
+          "texto_en": "Fresh beiju, tapioca made on the spot!",
+          "texto_es": "¡Beiju fresquito, tapioca al momento!",
+          "texto_zh": "刚出锅的木薯饼，现做现卖！",
+          "tts": "[cheerfully] Beiju fresquinho, tapioca na hora!",
+          "audio": "quituteira_saudacao_2"
+        },
+        {
+          "texto": "Chega, meu rei, que o dendê tá no ponto!",
+          "texto_en": "Come on, dear, the palm oil is just right!",
+          "texto_es": "¡Ven, mi rey, que el dendé está en su punto!",
+          "texto_zh": "快来，亲爱的，红棕榈油烧得正好！",
+          "tts": "[cheerfully] Chega, meu rei, que o dendê tá no ponto!",
+          "audio": "quituteira_saudacao_3"
+        },
+        {
+          "texto": "Experimenta, moço, e depois me diz se eu minto.",
+          "texto_en": "Try it, young man, then tell me if I'm lying.",
+          "texto_es": "Pruébalo, muchacho, y luego dime si miento.",
+          "texto_zh": "尝尝看，小伙子，然后告诉我我有没有吹牛。",
+          "audio": "quituteira_saudacao_4"
+        }
+      ],
+      "falas": [
+        {
+          "texto": "O acarajé nasce do feijão-fradinho ralado e batido, frito em dendê bem quente. Feijão batido com raiva, moço, não cresce.",
+          "texto_en": "Acarajé is born of grated and beaten black-eyed peas, fried in very hot palm oil. Beans beaten in anger don't rise, young man.",
+          "texto_es": "El acarajé nace del frijol de ojo negro rallado y batido, frito en aceite de dendé bien caliente. El frijol batido con rabia, muchacho, no sube.",
+          "texto_zh": "阿卡拉杰是用磨碎打匀的黑眼豆，放进滚烫的红棕榈油里炸出来的。豆糊要是带着火气去打，小伙子，是发不起来的。",
+          "audio": "quituteira_fala_1"
+        },
+        {
+          "texto": "Acarajé é comida de santo antes de ser comida de rua. Quem faz com respeito vende melhor, e eu faço pelos dois.",
+          "texto_en": "Acarajé is food for the saints before it is street food. Whoever makes it with respect sells better, and I make it for both.",
+          "texto_es": "El acarajé es comida de santo antes de ser comida de calle. Quien lo hace con respeto vende mejor, y yo lo hago por los dos.",
+          "texto_zh": "阿卡拉杰先是敬神的食物，然后才是街头小吃。带着敬意做的人，生意也更好，我两样都为。",
+          "audio": "quituteira_fala_2"
+        },
+        {
+          "texto": "Vendo na praça de manhã e na porta da igreja depois do meio-dia. A fome não escolhe santo, e o freguês nem pergunta o meu.",
+          "texto_en": "I sell in the square in the morning and at the church door after noon. Hunger doesn't pick a saint, and the customer never asks about mine.",
+          "texto_es": "Vendo en la plaza por la mañana y en la puerta de la iglesia después del mediodía. El hambre no elige santo, y el cliente ni pregunta por el mío.",
+          "texto_zh": "早上我在广场卖，中午过后在教堂门口卖。饿起来不挑神，客人也从不问我拜的是哪位。",
+          "audio": "quituteira_fala_3"
+        },
+        {
+          "texto": "A Candinha vende garapa gelada, eu vendo comida quente. Brigamos pela esquina da praça, mas é ela que me guarda o tabuleiro.",
+          "texto_en": "Candinha sells cold cane juice, I sell hot food. We fight over the corner of the square, but she's the one who watches my tray.",
+          "texto_es": "Candinha vende guarapo helado, yo vendo comida caliente. Peleamos por la esquina de la plaza, pero es ella quien me cuida la bandeja.",
+          "texto_zh": "坎迪尼亚卖冰甘蔗汁，我卖热食。我们为广场的拐角吵过架，可替我看摊子的还是她。",
+          "audio": "quituteira_fala_4"
+        },
+        {
+          "texto": "Beiju é farinha de tapioca na chapa quente, enrolada com coco. Barato, e enche barriga de criança, que é o que importa.",
+          "texto_en": "Beiju is tapioca flour on a hot griddle, rolled with coconut. Cheap, and it fills a child's belly, which is what matters.",
+          "texto_es": "El beiju es harina de tapioca en plancha caliente, enrollada con coco. Barato, y llena la barriga de un niño, que es lo que importa.",
+          "texto_zh": "木薯饼就是把木薯粉倒在热铁板上烙熟，再卷上椰丝。便宜，还能填饱孩子的肚子，这才是要紧的。",
+          "audio": "quituteira_fala_5"
+        },
+        {
+          "texto": "Dendê vem de longe e sobe de preço toda estação. Se o azeite sobe, o acarajé sobe, e freguês resmunga como se a culpa fosse minha.",
+          "texto_en": "Palm oil comes from afar and gets dearer every season. If the oil goes up, the acarajé goes up, and customers grumble as if it were my fault.",
+          "texto_es": "El aceite de dendé viene de lejos y sube de precio cada estación. Si sube el aceite, sube el acarajé, y el cliente refunfuña como si fuera culpa mía.",
+          "texto_zh": "红棕榈油从远处运来，每个季节都涨价。油一涨，阿卡拉杰也得涨，客人就嘟嘟囔囔，好像怪我似的。",
+          "audio": "quituteira_fala_6"
+        },
+        {
+          "texto": "Minha Mariinha só quer saber de brincar. Saiu a mim: tem fogo no pé e boca que não para.",
+          "texto_en": "My Mariinha only wants to play. She takes after me: fire in her feet and a mouth that never stops.",
+          "texto_es": "Mi Mariinha solo quiere jugar. Salió a mí: fuego en los pies y una boca que no para.",
+          "texto_zh": "我家玛丽妮亚就知道玩。随我：脚底生风，嘴巴不停。",
+          "tts": "[laughs] Minha Mariinha só quer saber de brincar. Saiu a mim: tem fogo no pé e boca que não para.",
+          "audio": "quituteira_fala_7"
+        },
+        {
+          "texto": "Meu tabuleiro leva duas horas pra arrumar e dez minutos pra esvaziar. Quando esvazia cedo, a praça sabe que o dia foi bom.",
+          "texto_en": "My tray takes two hours to set up and ten minutes to empty. When it empties early, the square knows the day was good.",
+          "texto_es": "Mi bandeja tarda dos horas en armarse y diez minutos en vaciarse. Cuando se vacía temprano, la plaza sabe que el día fue bueno.",
+          "texto_zh": "我的摊子要花两个钟头摆好，十分钟就卖空。要是早早卖完，整个广场就知道今天是个好日子。",
+          "audio": "quituteira_fala_8"
+        }
+      ],
       "postos": {
         "madrugada": [
           "Casa da quituteira",
@@ -1816,22 +2880,103 @@
       "oficio_en": "canoe carpenter",
       "oficio_es": "carpintero de canoas",
       "altura": 1.76,
-      "falas": [
-        {
-          "texto": "Epifânio, carpinteiro. Faço canoa, remo, porta e caixão — na ordem em que o arraial precisa.",
-          "texto_en": "Epifânio, the carpenter. I make canoes, oars, doors and coffins — in the order the village needs them.",
-          "texto_es": "Epifanio, carpintero. Hago canoas, remos, puertas y ataúdes, en el orden en que el caserío los necesita."
-        },
-        {
-          "texto": "Madeira boa pra canoa é a que o mato dá, e o mato só dá se a gente pede.",
-          "texto_en": "Good wood for a canoe is what the forest gives, and the forest only gives if you ask.",
-          "texto_es": "La madera buena para canoa es la que da el monte, y el monte solo da si uno pide."
-        }
-      ],
       "casa": "Casa do carpinteiro",
       "recolhe": true,
       "gesto_saudacao": 0,
       "gesto_tripo": 0,
+      "voz": {
+        "id": "cjVigY5qzO86Huf0OWal",
+        "nome": "Eric",
+        "modelo": "eleven_v3"
+      },
+      "saudacoes": [
+        {
+          "texto": "Cuidado com o cavaco, moço, que voa.",
+          "texto_en": "Mind the wood chips, young man, they fly.",
+          "texto_es": "Cuidado con las astillas, muchacho, que vuelan.",
+          "texto_zh": "小心木屑，小伙子，它会飞溅。",
+          "audio": "carpinteiro_saudacao_1"
+        },
+        {
+          "texto": "Chegue sem medo, o machado só corta pau.",
+          "texto_en": "Come without fear, the axe only cuts wood.",
+          "texto_es": "Acércate sin miedo, el hacha solo corta madera.",
+          "texto_zh": "放心过来，斧头只砍木头。",
+          "audio": "carpinteiro_saudacao_2"
+        },
+        {
+          "texto": "Boa canoa começa em boa conversa, moço.",
+          "texto_en": "A good canoe starts with a good chat, young man.",
+          "texto_es": "Una buena canoa empieza con una buena charla, muchacho.",
+          "texto_zh": "好独木舟，是从一场好聊天开始的，小伙子。",
+          "audio": "carpinteiro_saudacao_3"
+        },
+        {
+          "texto": "Deus lhe dê braço forte e pau de lei.",
+          "texto_en": "May God give you a strong arm and hardwood.",
+          "texto_es": "Que Dios te dé brazo fuerte y madera de ley.",
+          "texto_zh": "愿上帝赐你一双有力的胳膊和上好的硬木。",
+          "audio": "carpinteiro_saudacao_4"
+        }
+      ],
+      "falas": [
+        {
+          "texto": "Canoa boa sai de um tronco só, sem emenda. A gente escolhe o pau pela casca, pelo som e até pelo cheiro.",
+          "texto_en": "A good canoe comes from a single trunk, no joint. You pick the log by its bark, its sound, even its smell.",
+          "texto_es": "Una buena canoa sale de un solo tronco, sin empalme. Se elige el palo por la corteza, por el sonido y hasta por el olor.",
+          "texto_zh": "好独木舟出自一整根树干，没有接缝。挑木头要看树皮、听声音，连气味也得闻。",
+          "audio": "carpinteiro_fala_1"
+        },
+        {
+          "texto": "Primeiro eu racho o pau no machado, depois afino com a enxó, e por fim o fogo ajuda a abrir o bojo. Canoa é paciência.",
+          "texto_en": "First I split the log with the axe, then trim with the adze, and in the end fire helps open the belly. A canoe is patience.",
+          "texto_es": "Primero hiendo el palo con el hacha, luego afino con la azuela, y al final el fuego ayuda a abrir el vientre. Una canoa es paciencia.",
+          "texto_zh": "先用斧头把木头劈开，再用锛子削薄，最后借火力把船腹撑开。造独木舟靠的是耐心。",
+          "audio": "carpinteiro_fala_2"
+        },
+        {
+          "texto": "Madeira de lei é dura de cortar, mas dura a vida inteira. Madeira mole corta fácil e apodrece no primeiro inverno.",
+          "texto_en": "Hardwood is hard to cut but lasts a lifetime. Softwood cuts easy and rots by the first winter.",
+          "texto_es": "La madera de ley es dura de cortar pero dura toda la vida. La madera blanda se corta fácil y se pudre en el primer invierno.",
+          "texto_zh": "硬木难砍，可是能用一辈子。软木好砍，头一个雨季就烂了。",
+          "audio": "carpinteiro_fala_3"
+        },
+        {
+          "texto": "O avô do Seu Benedito tirava madeira boa do outro lado do rio. Parou, e ninguém me conta por quê. Quem sabe, cala.",
+          "texto_en": "Seu Benedito's grandfather used to bring fine timber from across the river. He stopped, and nobody tells me why. Whoever knows, keeps quiet.",
+          "texto_es": "El abuelo de Seu Benedito sacaba buena madera del otro lado del río. Dejó de hacerlo, y nadie me dice por qué. Quien sabe, calla.",
+          "texto_zh": "贝内迪托大叔的爷爷以前从河对岸取好木料。后来不去了，也没人肯告诉我为什么。知道的人，都不吭声。",
+          "audio": "carpinteiro_fala_4"
+        },
+        {
+          "texto": "Estou fazendo uma canoa pra aguentar a baía grossa. Ela fica nos fundos de casa, esperando a maré e o resto da minha paciência.",
+          "texto_en": "I'm building a canoe to handle the rough bay. She sits behind my house, waiting for the tide and the rest of my patience.",
+          "texto_es": "Estoy haciendo una canoa para aguantar la bahía brava. Está en el fondo de mi casa, esperando la marea y lo que me queda de paciencia.",
+          "texto_zh": "我正造一条能经得住海湾大浪的独木舟。它停在屋后，等着潮水，也等着我最后那点耐心。",
+          "audio": "carpinteiro_fala_5"
+        },
+        {
+          "texto": "Meu Tonico quer ser mestre de canoa antes de saber segurar a enxó. Eu deixo ele tentar, mas fico de olho nos dedos.",
+          "texto_en": "My Tonico wants to be a canoe master before he can hold the adze. I let him try, but I watch his fingers.",
+          "texto_es": "Mi Tonico quiere ser maestro de canoas antes de saber sostener la azuela. Lo dejo intentar, pero vigilo sus dedos.",
+          "texto_zh": "我家托尼科还没学会握锛子，就想当造船师傅。我让他试，但眼睛一直盯着他的手指。",
+          "audio": "carpinteiro_fala_6"
+        },
+        {
+          "texto": "Canoa de pescador é leve e rápida. Canoa de carga é pesada e teimosa. Cada uma tem o seu tamanho de mar.",
+          "texto_en": "A fisherman's canoe is light and quick. A cargo canoe is heavy and stubborn. Each has its own size of sea.",
+          "texto_es": "La canoa de pescador es ligera y rápida. La de carga es pesada y terca. Cada una tiene su tamaño de mar.",
+          "texto_zh": "渔夫的独木舟轻快。载货的独木舟沉重又倔。各有各的海面可走。",
+          "audio": "carpinteiro_fala_7"
+        },
+        {
+          "texto": "Madeira verde empena, madeira seca racha. O segredo é saber o ponto, e o pau diz quando a gente aprende a escutar.",
+          "texto_en": "Green wood warps, dry wood cracks. The secret is knowing the point, and the log tells you when you learn to listen.",
+          "texto_es": "La madera verde se alabea, la seca se raja. El secreto es saber el punto, y el palo lo dice cuando uno aprende a escuchar.",
+          "texto_zh": "湿木头会翘，干木头会裂。诀窍是知道那个火候，而木头会在你学会倾听的时候告诉你。",
+          "audio": "carpinteiro_fala_8"
+        }
+      ],
       "postos": {
         "madrugada": [
           "Casa do carpinteiro",
@@ -1924,23 +3069,108 @@
       "oficio_en": "boy, the carpenter's son",
       "oficio_es": "niño, hijo del carpintero",
       "altura": 1.3,
-      "falas": [
-        {
-          "texto": "Eu sou o Tonico. Meu pai faz canoa e eu faço bagunça, ele diz.",
-          "texto_en": "I'm Tonico. My father makes canoes and I make a mess, he says.",
-          "texto_es": "Yo soy Tonico. Mi padre hace canoas y yo hago desorden, dice él."
-        },
-        {
-          "texto": "Você é o que chegou de saveiro? Eu vi. Você quase caiu da prancha.",
-          "texto_en": "You're the one who came by boat? I saw. You almost fell off the plank.",
-          "texto_es": "¿Usted es el que llegó en saveiro? Yo lo vi. Casi se cae de la tabla."
-        }
-      ],
       "casa": "Casa do carpinteiro",
       "recolhe": true,
       "velocidade": 1.9,
       "gesto_saudacao": 0,
       "gesto_tripo": 0,
+      "voz": {
+        "id": "TX3LPaxmHKxFdv7VOQHJ",
+        "nome": "Liam",
+        "modelo": "eleven_v3"
+      },
+      "saudacoes": [
+        {
+          "texto": "Oi, moço! Quer brincar de pega-pega?",
+          "texto_en": "Hi, mister! Wanna play tag?",
+          "texto_es": "¡Hola! ¿Quieres jugar a la lleva?",
+          "texto_zh": "你好呀，大哥哥！要不要玩捉人游戏？",
+          "tts": "[excited] Oi, moço! Quer brincar de pega-pega?",
+          "audio": "menino_saudacao_1"
+        },
+        {
+          "texto": "Ei, moço! Adivinha o que eu sei!",
+          "texto_en": "Hey! Guess what I know, mister!",
+          "texto_es": "¡Eh, señor! ¡Adivina qué sé!",
+          "texto_zh": "喂，大哥哥！猜猜我知道什么！",
+          "tts": "[excited] Ei, moço! Adivinha o que eu sei!",
+          "audio": "menino_saudacao_2"
+        },
+        {
+          "texto": "Moço! Vem cá, vem ver!",
+          "texto_en": "Mister! Come here, come see!",
+          "texto_es": "¡Señor! ¡Ven, ven a ver!",
+          "texto_zh": "大哥哥！快过来，快来看！",
+          "tts": "[excited] Moço! Vem cá, vem ver!",
+          "audio": "menino_saudacao_3"
+        },
+        {
+          "texto": "Já viu a onça? Eu ainda não!",
+          "texto_en": "Seen the jaguar yet? I haven't!",
+          "texto_es": "¿Ya viste al jaguar? ¡Yo todavía no!",
+          "texto_zh": "你见过美洲豹吗？我还没见过呢！",
+          "tts": "[curious] Já viu a onça? Eu ainda não!",
+          "audio": "menino_saudacao_4"
+        }
+      ],
+      "falas": [
+        {
+          "texto": "Painho tá fazendo uma canoa de um pau só, a maior do mundo! Ele diz que é pra pescar baleia.",
+          "texto_en": "Daddy's making a canoe from a single log, the biggest in the world! He says it's for catching whales.",
+          "texto_es": "¡Papi está haciendo una canoa de un solo palo, la más grande del mundo! Dice que es para pescar ballenas.",
+          "texto_zh": "爸爸在造一条用一整根木头做的独木舟，世界上最大的！他说是用来捕鲸鱼的。",
+          "tts": "[excited] Painho tá fazendo uma canoa de um pau só, a maior do mundo! Ele diz que é pra pescar baleia.",
+          "audio": "menino_fala_1"
+        },
+        {
+          "texto": "Mainha disse que na mata tem onça. Eu não tenho medo, não. Só tenho um pouquinho. Só quando escurece.",
+          "texto_en": "Mommy says there's a jaguar in the woods. I'm not scared, no. Just a little. Only when it gets dark.",
+          "texto_es": "Mamá dice que en el monte hay un jaguar. Yo no tengo miedo, no. Solo un poquito. Solo cuando oscurece.",
+          "texto_zh": "妈妈说林子里有美洲豹。我才不怕呢。就怕一点点。只有天黑的时候才怕。",
+          "tts": "[nervous] Mainha disse que na mata tem onça. Eu não tenho medo, não. Só tenho um pouquinho. Só quando escurece.",
+          "audio": "menino_fala_2"
+        },
+        {
+          "texto": "No cemitério eu não vou nem pagando. Dizem que lá em cima os mortos escutam tudo.",
+          "texto_en": "I wouldn't go to the cemetery even if you paid me. They say the dead up there hear everything.",
+          "texto_es": "Al cementerio no voy ni pagando. Dicen que allá arriba los muertos lo oyen todo.",
+          "texto_zh": "给我钱我也不去墓地。人家说山上的死人什么都听得见。",
+          "tts": "[whispers] No cemitério eu não vou nem pagando. Dizem que lá em cima os mortos escutam tudo.",
+          "audio": "menino_fala_3"
+        },
+        {
+          "texto": "Uma noite vi uma luz parada no mato, lá longe. Fechei a janela e fingi que dormia.",
+          "texto_en": "One night I saw a light standing still in the woods, far away. I shut the window and pretended to sleep.",
+          "texto_es": "Una noche vi una luz quieta en el monte, allá lejos. Cerré la ventana y fingí que dormía.",
+          "texto_zh": "有天晚上，我看见远处的林子里有一团不动的光。我关上窗，假装睡着了。",
+          "tts": "[whispers] Uma noite vi uma luz parada no mato, lá longe. Fechei a janela e fingi que dormia.",
+          "audio": "menino_fala_4"
+        },
+        {
+          "texto": "Eu corro mais que a Mariinha, mais que o cachorro e quase mais que o Pedro. Só não corro mais que mainha com a chinela.",
+          "texto_en": "I run faster than Mariinha, faster than the dog, and almost faster than Pedro. I just can't outrun Mommy with her sandal.",
+          "texto_es": "Corro más que Mariinha, más que el perro y casi más que Pedro. Solo no corro más que mamá con la chancla.",
+          "texto_zh": "我跑得比玛丽妮亚快，比狗快，差不多比佩德罗还快。就是跑不过拿着拖鞋的妈妈。",
+          "tts": "[excited] Eu corro mais que a Mariinha, mais que o cachorro e quase mais que o Pedro. Só não corro mais que mainha com a chinela.",
+          "audio": "menino_fala_5"
+        },
+        {
+          "texto": "O poço tem eco. Se você gritar o seu nome lá dentro, ele responde. Mas responde diferente, e isso dá arrepio.",
+          "texto_en": "The well has an echo. If you shout your name inside, it answers. But it answers different, and that gives me chills.",
+          "texto_es": "El pozo tiene eco. Si gritas tu nombre adentro, responde. Pero responde distinto, y eso da escalofríos.",
+          "texto_zh": "井里有回声。你要是对着里面喊自己的名字，它会回答。可它回答得不一样，让人起鸡皮疙瘩。",
+          "tts": "[whispers] O poço tem eco. Se você gritar o seu nome lá dentro, ele responde. Mas responde diferente, e isso dá arrepio.",
+          "audio": "menino_fala_6"
+        },
+        {
+          "texto": "Eu vou ser pescador, não, mestre de canoa, não, vou ser guarda! Aí eu mando todo mundo dormir cedo.",
+          "texto_en": "I'm gonna be a fisherman, no, a canoe master, no, a watchman! Then I'll send everybody to bed early.",
+          "texto_es": "¡Voy a ser pescador, no, maestro de canoas, no, guardia! Y así mando a todos a dormir temprano.",
+          "texto_zh": "我要当渔夫——不对，当造船师傅——也不对，我要当守卫！那样我就能让大家都早点睡觉。",
+          "tts": "[excited] Eu vou ser pescador, não, mestre de canoa, não, vou ser guarda! Aí eu mando todo mundo dormir cedo.",
+          "audio": "menino_fala_7"
+        }
+      ],
       "postos": {
         "madrugada": [
           "Casa do carpinteiro",
@@ -2053,23 +3283,105 @@
       "oficio_en": "girl, the street cook's daughter",
       "oficio_es": "niña, hija de la cocinera",
       "altura": 1.24,
-      "falas": [
-        {
-          "texto": "Eu sou a Mariinha. Minha mãe é a Dona Ambrósia, do tabuleiro.",
-          "texto_en": "I'm Mariinha. My mother is Dona Ambrósia, with the tray.",
-          "texto_es": "Yo soy Mariinha. Mi madre es doña Ambrosia, la de la bandeja."
-        },
-        {
-          "texto": "Você fala engraçado. É de Salvador? Lá tem bonde de verdade?",
-          "texto_en": "You talk funny. Are you from Salvador? Do they really have streetcars there?",
-          "texto_es": "Usted habla raro. ¿Es de Salvador? ¿Allá hay tranvía de verdad?"
-        }
-      ],
       "casa": "Casa da quituteira",
       "recolhe": true,
       "velocidade": 1.9,
       "gesto_saudacao": 0,
       "gesto_tripo": 0,
+      "voz": {
+        "id": "FGY2WhTYpPnrIDTdsKH5",
+        "nome": "Laura",
+        "modelo": "eleven_v3"
+      },
+      "saudacoes": [
+        {
+          "texto": "Oi, moço! Quer ver um segredo?",
+          "texto_en": "Hi, mister! Wanna see a secret?",
+          "texto_es": "¡Hola! ¿Quieres ver un secreto?",
+          "texto_zh": "你好呀，大哥哥！想看一个秘密吗？",
+          "tts": "[whispers] Oi, moço! Quer ver um segredo?",
+          "audio": "menina_saudacao_1"
+        },
+        {
+          "texto": "Psiu! Vem cá, mas não conta pra ninguém.",
+          "texto_en": "Psst! Come here, but don't tell anyone.",
+          "texto_es": "¡Psst! Ven acá, pero no le cuentes a nadie.",
+          "texto_zh": "嘘！过来，可别告诉任何人。",
+          "tts": "[whispers] Psiu! Vem cá, mas não conta pra ninguém.",
+          "audio": "menina_saudacao_2"
+        },
+        {
+          "texto": "Mainha faz o acarajé mais gostoso do mundo!",
+          "texto_en": "Mommy makes the tastiest acarajé in the world!",
+          "texto_es": "¡Mamá hace el acarajé más rico del mundo!",
+          "texto_zh": "我妈妈做的阿卡拉杰，是全世界最好吃的！",
+          "tts": "[excited] Mainha faz o acarajé mais gostoso do mundo!",
+          "audio": "menina_saudacao_3"
+        },
+        {
+          "texto": "Eu sou Mariinha, e você é o moço novo!",
+          "texto_en": "I'm Mariinha, and you're the new mister!",
+          "texto_es": "¡Yo soy Mariinha, y tú eres el señor nuevo!",
+          "texto_zh": "我是玛丽妮亚，你就是新来的大哥哥！",
+          "tts": "[cheerfully] Eu sou Mariinha, e você é o moço novo!",
+          "audio": "menina_saudacao_4"
+        }
+      ],
+      "falas": [
+        {
+          "texto": "Mainha vende acarajé na praça. Eu ajudo a contar o troco, mas só até dez, que depois eu me perco.",
+          "texto_en": "Mommy sells acarajé in the square. I help count the change, but only up to ten, then I get lost.",
+          "texto_es": "Mamá vende acarajé en la plaza. Yo ayudo a contar el cambio, pero solo hasta diez, que después me pierdo.",
+          "texto_zh": "妈妈在广场上卖阿卡拉杰。我帮着数找的零钱，可是只会数到十，再往后就乱了。",
+          "tts": "[cheerfully] Mainha vende acarajé na praça. Eu ajudo a contar o troco, mas só até dez, que depois eu me perco.",
+          "audio": "menina_fala_1"
+        },
+        {
+          "texto": "O pavão da igreja abre o rabo quando eu passo. Acho que ele gosta de mim, mas o sacristão diz que é só mau humor.",
+          "texto_en": "The church peacock spreads his tail when I pass. I think he likes me, but the sexton says it's just bad temper.",
+          "texto_es": "El pavo real de la iglesia abre la cola cuando paso. Creo que le gusto, pero el sacristán dice que es solo mal humor.",
+          "texto_zh": "我走过的时候，教堂的孔雀就开屏。我觉得它喜欢我，可是司事说那只是它在发脾气。",
+          "audio": "menina_fala_2"
+        },
+        {
+          "texto": "Nosso gato amarelo se chama Beiju. Come mais que eu e dorme mais que eu, e ninguém dá bronca nele.",
+          "texto_en": "Our yellow cat is named Beiju. He eats more than me and sleeps more than me, and nobody scolds him.",
+          "texto_es": "Nuestro gato amarillo se llama Beiju. Come más que yo y duerme más que yo, y nadie lo regaña.",
+          "texto_zh": "我们家的黄猫叫贝茹。它比我吃得多，也比我睡得多，却没人骂它。",
+          "audio": "menina_fala_3"
+        },
+        {
+          "texto": "No poço eu jogo uma pedrinha e escuto: plim. Fico imaginando quem mora lá no fundo, esperando a gente.",
+          "texto_en": "At the well I drop a little stone and listen: plink. I imagine who lives down at the bottom, waiting for us.",
+          "texto_es": "En el pozo tiro una piedrita y escucho: plin. Me imagino quién vive allá en el fondo, esperándonos.",
+          "texto_zh": "我往井里丢一颗小石子，听见“叮咚”一声。我就想，井底住着谁，在等着我们呢。",
+          "tts": "[curious] No poço eu jogo uma pedrinha e escuto: plim. Fico imaginando quem mora lá no fundo, esperando a gente.",
+          "audio": "menina_fala_4"
+        },
+        {
+          "texto": "Eu e o Tonico juramos segredo de mindinho. Mas ele é fraco: já me contou o dele duas vezes.",
+          "texto_en": "Tonico and I swore a pinky secret. But he's weak: he's told me his twice already.",
+          "texto_es": "Tonico y yo juramos un secreto con el meñique. Pero él es débil: ya me contó el suyo dos veces.",
+          "texto_zh": "我和托尼科拉钩发誓保守秘密。可他靠不住：他自己的秘密已经跟我说过两遍了。",
+          "tts": "[mischievously] Eu e o Tonico juramos segredo de mindinho. Mas ele é fraco: já me contou o dele duas vezes.",
+          "audio": "menina_fala_5"
+        },
+        {
+          "texto": "Mainha disse que, se eu for boazinha, ganho um beiju com coco no domingo. Estou sendo boazinha desde ontem.",
+          "texto_en": "Mommy said if I'm good I'll get a beiju with coconut on Sunday. I've been good since yesterday.",
+          "texto_es": "Mamá dijo que si me porto bien me da un beiju con coco el domingo. Me estoy portando bien desde ayer.",
+          "texto_zh": "妈妈说，只要我乖，礼拜天就有椰丝木薯饼吃。我从昨天起就一直很乖了。",
+          "audio": "menina_fala_6"
+        },
+        {
+          "texto": "Quando a Sá Rita estende lençol, eu me escondo atrás e finjo que sou fantasma. Ela finge que se assusta.",
+          "texto_en": "When Sá Rita hangs sheets, I hide behind them and pretend to be a ghost. She pretends to be scared.",
+          "texto_es": "Cuando Sá Rita tiende las sábanas, me escondo detrás y finjo que soy un fantasma. Ella finge que se asusta.",
+          "texto_zh": "丽塔婶晾床单的时候，我就躲在后面装鬼。她假装被吓一跳。",
+          "tts": "[mischievously] Quando a Sá Rita estende lençol, eu me escondo atrás e finjo que sou fantasma. Ela finge que se assusta.",
+          "audio": "menina_fala_7"
+        }
+      ],
       "postos": {
         "madrugada": [
           "Casa da quituteira",
@@ -2182,22 +3494,126 @@
       "oficio_en": "saveiro sailor of the Recôncavo",
       "oficio_es": "marinero de saveiro del Recôncavo",
       "altura": 1.7,
-      "falas": [
-        {
-          "texto": "Ladislau, saveirista. Trinta anos de Recôncavo, com farinha pra lá e sal pra cá.",
-          "texto_en": "Ladislau, boatman. Thirty years on the Recôncavo, flour going out and salt coming back.",
-          "texto_es": "Ladislau, saveirista. Treinta años de Recôncavo, con harina para allá y sal para acá."
-        },
-        {
-          "texto": "Se o vento virar enquanto você fala, eu paro de ouvir. Não é falta de educação, é profissão.",
-          "texto_en": "If the wind turns while you're talking, I stop listening. It isn't rudeness, it's the trade.",
-          "texto_es": "Si el viento cambia mientras usted habla, dejo de escuchar. No es mala educación, es el oficio."
-        }
-      ],
       "casa": "Casa do arraial 4",
       "recolhe": true,
       "gesto_saudacao": 0,
       "gesto_tripo": 0,
+      "voz": {
+        "id": "IKne3meq5aSn9XLyUdCD",
+        "nome": "Charlie",
+        "modelo": "eleven_v3"
+      },
+      "saudacoes": [
+        {
+          "texto": "Boa viagem, moço, por terra ou por mar.",
+          "texto_en": "Safe journey, young man, by land or sea.",
+          "texto_es": "Buen viaje, muchacho, por tierra o por mar.",
+          "texto_zh": "一路顺风，小伙子，不管走陆路还是走水路。",
+          "audio": "mestre_saveiro_saudacao_1"
+        },
+        {
+          "texto": "Vento bom, maré boa e Deus no leme!",
+          "texto_en": "Fair wind, good tide, and God at the helm!",
+          "texto_es": "¡Buen viento, buena marea y Dios al timón!",
+          "texto_zh": "好风、好潮，还有上帝掌舵！",
+          "tts": "[excited] Vento bom, maré boa e Deus no leme!",
+          "audio": "mestre_saveiro_saudacao_2"
+        },
+        {
+          "texto": "Ô de casa! Ou melhor, ô de terra firme!",
+          "texto_en": "Ahoy! Or rather, ahoy, firm land!",
+          "texto_es": "¡Ah de la casa, o mejor, de tierra firme!",
+          "texto_zh": "喂，屋里有人吗！哦不，该说，陆地上有人吗！",
+          "tts": "[cheerfully] Ô de casa! Ou melhor, ô de terra firme!",
+          "audio": "mestre_saveiro_saudacao_3"
+        },
+        {
+          "texto": "Chegou na hora, moço: a maré tá virando.",
+          "texto_en": "Right on time, young man: the tide is turning.",
+          "texto_es": "Llegaste a tiempo, muchacho: la marea está cambiando.",
+          "texto_zh": "你来得正是时候，小伙子：潮水要转向了。",
+          "audio": "mestre_saveiro_saudacao_4"
+        }
+      ],
+      "falas": [
+        {
+          "texto": "Sou da tripulação do Mestre Quirino. Ele manda no saveiro, eu mando nas cordas, e o vento manda em nós dois.",
+          "texto_en": "I'm on Master Quirino's crew. He commands the saveiro, I command the ropes, and the wind commands us both.",
+          "texto_es": "Soy de la tripulación del maestro Quirino. Él manda en el saveiro, yo mando en las sogas, y el viento manda en los dos.",
+          "texto_zh": "我是基里诺船长手下的水手。他管帆船，我管缆绳，而风管着我们两个。",
+          "audio": "mestre_saveiro_fala_1"
+        },
+        {
+          "texto": "A travessia até Salvador leva meio dia, com vento bom. Com vento ruim, leva o dia inteiro e mais uma reza.",
+          "texto_en": "The crossing to Salvador takes half a day with a fair wind. With a bad wind, it takes all day and one more prayer.",
+          "texto_es": "La travesía hasta Salvador lleva medio día con buen viento. Con mal viento, lleva todo el día y un rezo más.",
+          "texto_zh": "到萨尔瓦多的航程，顺风要半天。遇上逆风，就得一整天，外加一遍祈祷。",
+          "audio": "mestre_saveiro_fala_2"
+        },
+        {
+          "texto": "Saveiro bom carrega farinha, piaçava, peixe seco e gente com pressa. Só não carrega gente de má vontade: vira lastro.",
+          "texto_en": "A good saveiro carries flour, piassava, dried fish and people in a hurry. It just won't carry ill-willed folk: they turn to ballast.",
+          "texto_es": "Un buen saveiro carga harina, piasava, pescado seco y gente con prisa. Solo no carga gente de mala voluntad: se vuelve lastre.",
+          "texto_zh": "好帆船能装木薯粉、棕榈纤维、咸鱼干，还有赶时间的人。唯独装不了心不甘情不愿的人：那种人只能当压舱物。",
+          "audio": "mestre_saveiro_fala_3"
+        },
+        {
+          "texto": "Dia catorze de cada estação a gente encosta no píer. Quem tem carga pronta, eu levo. Quem perde a hora, espera a estação seguinte.",
+          "texto_en": "On the fourteenth of each season we dock at the pier. Whoever has cargo ready, I take it. Whoever misses the hour waits for the next season.",
+          "texto_es": "El día catorce de cada estación atracamos en el muelle. Quien tiene carga lista, la llevo. Quien pierde la hora, espera la estación siguiente.",
+          "texto_zh": "每个季节的十四号，我们会靠上码头。货备好的人，我就运走。错过时辰的人，就等下个季节。",
+          "audio": "mestre_saveiro_fala_4"
+        },
+        {
+          "texto": "A boca da barra tem banco de areia que muda de lugar. Quem não conhece, encalha. Eu conheço cada um pelo nome.",
+          "texto_en": "The mouth of the bar has sandbanks that shift. Whoever doesn't know them runs aground. I know each one by name.",
+          "texto_es": "La boca de la barra tiene bancos de arena que cambian de lugar. Quien no los conoce, encalla. Yo conozco cada uno por su nombre.",
+          "texto_zh": "海口有会挪地方的沙洲。不熟的人就会搁浅。每一道沙洲我都叫得出名字。",
+          "audio": "mestre_saveiro_fala_5"
+        },
+        {
+          "texto": "Já vi o Recôncavo todo da água: Santo Amaro, São Félix, Cachoeira. De longe tudo parece perto, até a saudade.",
+          "texto_en": "I've seen the whole Recôncavo from the water: Santo Amaro, São Félix, Cachoeira. From afar everything seems near, even longing.",
+          "texto_es": "He visto todo el Recôncavo desde el agua: Santo Amaro, São Félix, Cachoeira. De lejos todo parece cerca, hasta la añoranza.",
+          "texto_zh": "整个雷孔卡沃，我都从水上看过：圣阿马罗、圣费利克斯、卡舒埃拉。从远处看，什么都显得近，连思念也是。",
+          "audio": "mestre_saveiro_fala_6"
+        },
+        {
+          "texto": "Espero o dia catorze no rio, de linha na mão, só pra ninguém dizer que estou parado. Peixe pego, vendo; peixe perdido, culpo o vento.",
+          "texto_en": "I wait for the fourteenth by the river, line in hand, so nobody can say I'm idle. Fish caught, I sell; fish lost, I blame the wind.",
+          "texto_es": "Espero el día catorce junto al río, con la línea en la mano, para que nadie diga que estoy parado. Pez pescado, lo vendo; pez perdido, culpo al viento.",
+          "texto_zh": "我在河上等十四号，手里握着钓线，免得有人说我闲着。钓到的鱼，我就卖；跑掉的鱼，我就怪风。",
+          "tts": "[mischievously] Espero o dia catorze no rio, de linha na mão, só pra ninguém dizer que estou parado. Peixe pego, vendo; peixe perdido, culpo o vento.",
+          "audio": "mestre_saveiro_fala_7"
+        },
+        {
+          "texto": "No Bar, de tardinha, a prosa é de cachaça e de mar. Quem conta história de naufrágio sempre naufragou mais longe do que diz.",
+          "texto_en": "At the Bar, late afternoon, the talk is of cachaça and the sea. Whoever tells shipwreck stories always wrecked farther away than he says.",
+          "texto_es": "En el Bar, al caer la tarde, la charla es de aguardiente y de mar. Quien cuenta historias de naufragio siempre naufragó más lejos de lo que dice.",
+          "texto_zh": "傍晚在酒馆里，聊的是烧酒和大海。讲沉船故事的人，沉船的地方总比他说的更远。",
+          "audio": "mestre_saveiro_fala_8"
+        }
+      ],
+      "saudacoes_noite": [
+        {
+          "texto": "Boa noite, moço: a maré dorme, eu ainda não.",
+          "texto_en": "Good night, young man: the tide sleeps, I don't yet.",
+          "texto_es": "Buenas noches, muchacho: la marea duerme, yo todavía no.",
+          "texto_zh": "晚上好，小伙子：潮水睡了，我还没睡。",
+          "tts": "[calm] Boa noite, moço: a maré dorme, eu ainda não.",
+          "audio": "mestre_saveiro_saudacao_noite_1"
+        }
+      ],
+      "falas_noite": [
+        {
+          "texto": "De noite o mar tem outra voz. Quem navega aprende a ouvir, e quem ouve aprende a ter respeito.",
+          "texto_en": "At night the sea has another voice. Whoever sails learns to listen, and whoever listens learns respect.",
+          "texto_es": "De noche el mar tiene otra voz. Quien navega aprende a escuchar, y quien escucha aprende a respetar.",
+          "texto_zh": "夜里的大海是另一种声音。行船的人学会了倾听，倾听的人学会了敬畏。",
+          "tts": "[calm] De noite o mar tem outra voz. Quem navega aprende a ouvir, e quem ouve aprende a ter respeito.",
+          "audio": "mestre_saveiro_fala_noite_1"
+        }
+      ],
       "postos": {
         "madrugada": [
           "Casa do arraial 4",

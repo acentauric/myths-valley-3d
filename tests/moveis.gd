@@ -44,6 +44,9 @@ func _run() -> void:
 		return
 	await physics_frame
 	await physics_frame
+	# TODA CASA DO VALE, e não só as quatro de tabela fixa: as outras abrem de perto
+	# (`interiores.gd`), e aqui se montam todas para o portão conferir cada móvel delas.
+	await interiores.garantir_todas()
 
 	# --- A CASA DO JOGADOR COMEÇA COM O BÁSICO, E AS OBRAS PÕEM O RESTO --------
 	#
@@ -97,9 +100,10 @@ func _run() -> void:
 	#
 	# "Os móveis ficaram na porta para entrar na casa." Nenhum móvel de chão toma
 	# o vão da porta, da fachada até ENTRADA para dentro.
-	for qual in interiores.CONSTRUCOES:
+	for qual in interiores.quais():
 		var sala = interiores.sala_de(qual)
-		if sala == null or not str(qual).begins_with("casa"):
+		# Só as casas têm vão de entrada (`_reservado`); a igreja tem a nave inteira.
+		if sala == null or not ("_reservado" in sala):
 			continue
 		var vao := Rect2(sala.porta_x - sala.largura_da_porta * 0.5, -sala.ENTRADA, sala.largura_da_porta, sala.ENTRADA)
 		for movel: Dictionary in sala._moveis:
@@ -113,7 +117,7 @@ func _run() -> void:
 					caixa.position.x, caixa.end.x, caixa.position.z, caixa.end.z])
 
 	var conferidos := 0
-	for qual in interiores.CONSTRUCOES:
+	for qual in interiores.quais():
 		var sala = interiores.sala_de(qual)
 		if sala == null:
 			continue

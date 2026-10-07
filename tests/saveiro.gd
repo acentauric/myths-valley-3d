@@ -34,7 +34,25 @@ extends SceneTree
 ##      no píer — foi nele que o jogador veio —, sem o mestre e sem a aba de
 ##      compra; no dia seguinte, larga.
 
+##
+## AS ESPERAS SÃO EM SEGUNDOS DE JOGO, E NÃO DE PAREDE (`tests/fixtures/relogio_de_jogo.gd`):
+## com a física limitada a 3 passos por quadro (`project.godot`), o jogo anda mais devagar
+## que a parede com o quadro acima de 50 ms, e na bateria cheia ele passa — o balão do
+## cumprimento do mestre, que esconde a placa, dura segundos de jogo, e a janela de 15 s de
+## parede não o esperava. A conta da encomenda anda a cada 60 QUADROS (`saveiro_vale._process`),
+## e este portão conta quadros, e não segundos. `MV_QUADRO_LENTO_MS=150` no ambiente roda este
+## portão como na bateria no pior.
+
+const RelogioDeJogo = preload("res://tests/fixtures/relogio_de_jogo.gd")
+
+## A conta da encomenda anda a cada 60 quadros de processo: um pouco mais que isso basta.
+const QUADROS_DA_CONTA := 70
+
+## O teto, em segundos de jogo, para o mestre calar: a fala dele pode vir em páginas, uma atrás da outra.
+const SEGUNDOS_PARA_CALAR := 90.0
+
 var falhas := 0
+var relogio_jogo: Node
 var relogio
 var dia
 var inventario
@@ -56,10 +74,13 @@ func _conferir(ok: bool, rotulo: String) -> void:
 
 
 func _run() -> void:
+	relogio_jogo = RelogioDeJogo.new()
+	root.add_child(relogio_jogo)
 	_conferir(change_scene_to_file("res://scenes/prototipo_3d/vale.tscn") == OK, "a cena do vale carrega")
 	await _quadros(4)
 	await _mundo_pronto()
 	await _quadros(8)
+	relogio_jogo.ficar_lento()
 	relogio = root.get_node("/root/Relogio")
 	dia = root.get_node("/root/Dia")
 	inventario = root.get_node("/root/Inventario")
@@ -238,7 +259,8 @@ func _run() -> void:
 	# A conta da encomenda anda uma vez por segundo (saveiro_vale._process): o
 	# salto do dia 1 ao fim da tarde do 14 não passa pela partida dele.
 	await _no_dia(saveiro.dia, 18.0)
-	_conferir(await _ate(func() -> bool: return not caderno.tem(a_perdida), 4.0) and not caderno.cumprida(a_perdida), "a encomenda que o saveiro levou embora sem receber continua no caderno (ou entrou nas cumpridas)")
+	await _quadros(QUADROS_DA_CONTA)
+	_conferir(not caderno.tem(a_perdida) and not caderno.cumprida(a_perdida), "a encomenda que o saveiro levou embora sem receber continua no caderno (ou entrou nas cumpridas)")
 
 	# --- 6. A PARTIDA SALVA LEMBRA -------------------------------------------------------
 	var estado: Dictionary = vale.estado_para_salvar()
@@ -254,10 +276,47 @@ func _run() -> void:
 		var placa: Control = placas._placas[quirino]
 		await _no_dia(saveiro.dia, 9.0)
 		await _de_frente_para(jogador, quirino, mundo)
-		_conferir(await _ate(func() -> bool: return placa.visible, 15.0), "no dia do saveiro, de frente para o mestre, a placa com o nome dele não aparece")
+		# A placa se mede DEPOIS de ele calar: o balão esconde a placa (já traz o nome), e as falas do
+		# mestre — o cumprimento, a resposta do E — podem vir uma atrás da outra, em páginas.
+		var antes_de_calar: float = relogio_jogo.jogo_s
+		var calou := await _esperar_o_mestre_calar(quirino)
+		_conferir(calou, "o mestre não parou de falar em %d s de jogo: o balão dele continua no ar (%s)" % [int(SEGUNDOS_PARA_CALAR), _estado_da_placa(placas, quirino, jogador)])
+		print("  o mestre levou %.1f s de jogo para calar" % (relogio_jogo.jogo_s - antes_de_calar))
+		if not await _ate(func() -> bool: return placa.visible, 5.0):
+			_conferir(false, "no dia do saveiro, de frente para o mestre, calado, a placa com o nome dele não aparece (%s)" % _estado_da_placa(placas, quirino, jogador))
 		await _no_dia(saveiro.dia + 1, 9.0)
 		_conferir(not await _ate(func() -> bool: return placa.visible, 1.5), "fora do dia do saveiro, a placa com o nome do mestre flutua sobre o píer vazio")
 	_fechar()
+
+
+## Espera o balão do mestre ficar apagado por meio segundo seguido (30 quadros), com o teto de
+## `SEGUNDOS_PARA_CALAR`. Sem balão nenhum, já calou.
+func _esperar_o_mestre_calar(quirino: Node3D) -> bool:
+	var balao = quirino.get("balao")
+	if balao == null:
+		return true
+	var quietos := [0]
+	return await _ate(func() -> bool:
+		quietos[0] = 0 if balao.visible else quietos[0] + 1
+		return quietos[0] >= 30, SEGUNDOS_PARA_CALAR)
+
+
+## O que esconde a placa do mestre, para a mensagem de quando ela não aparece: cada condição
+## de `PlacasNomes._process`, e o balão e a caixa de fala que a tiram do ar.
+func _estado_da_placa(placas, quirino: Node3D, jogador) -> String:
+	var rotulo = quirino.get("nome_label")
+	var camera: Camera3D = jogador.get_viewport().get_camera_3d()
+	var topo: Vector3 = quirino.global_position + Vector3(0, float(quirino.get("altura")) + 0.1, 0)
+	var balao = quirino.get("balao")
+	var texto_do_balao := str(balao.get("_texto")).left(60) if balao != null else ""
+	return "mestre visível %s, rótulo %s, balão %s (%s), caixa de fala %s, árvore pausada %s, placas permitidas %s, câmera do jogador %s, nomes ligados %s, a %.1f m, atrás da câmera %s, hora %.2f" % [
+		str(quirino.visible), str(rotulo != null and rotulo.is_visible_in_tree()), str(balao != null and balao.visible), texto_do_balao, str(_dialogo_ativo()),
+		str(paused), str(placas._permitido), str(camera == jogador.get("camera")), str(root.get_node("/root/Estilo").mostrar_nomes),
+		quirino.global_position.distance_to(jogador.global_position), str(camera.is_position_behind(topo)), dia.hora]
+
+
+func _dialogo_ativo() -> bool:
+	return bool(root.get_node("/root/Dialogo").ativo)
 
 
 ## UM PASSO ATRÁS DO MESTRE, NO TABUADO DO PÍER, rumo à terra: de lado dele é
@@ -311,13 +370,10 @@ func _tecla_e() -> InputEventKey:
 	return e
 
 
+## Espera `condicao` por até `segundos` DE JOGO (ver o cabeçalho): nunca menos, em parede,
+## que os segundos de relógio que este portão esperava antes.
 func _ate(condicao: Callable, segundos: float) -> bool:
-	var limite := Time.get_ticks_msec() + int(segundos * 1000.0)
-	while Time.get_ticks_msec() < limite:
-		if condicao.call():
-			return true
-		await process_frame
-	return condicao.call()
+	return await relogio_jogo.ate(condicao, segundos)
 
 
 func _fechar() -> void:

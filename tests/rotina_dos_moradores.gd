@@ -8,9 +8,10 @@ extends SceneTree
 ## vinculado a uma casa; também padre, mercador, guarda e outros." E: "um varal novo para
 ## cada casa, posicionado inteligentemente". Sete perguntas:
 ##
-##   1. O ELENCO: os catorze estão no vale, com nome, ofício nos três idiomas, e — desde a
-##      #85 (06/10), na teia social — com duas saudações e fé; cada um tem casa, e a casa
-##      foi erguida (nenhum chama "Casa do arraial").
+##   1. O ELENCO: os catorze estão no vale, com nome, ofício nos três idiomas, falantes (até
+##      06/10/2026 eram mudos e sem falas: as falas deles são do portão `falas_dos_moradores`)
+##      e — desde a #85, na teia social — com fé; cada um tem casa, e a casa foi erguida
+##      (nenhum chama "Casa do arraial").
 ##   2. A AGENDA RESOLVE: todo lugar dela existe no cenário (inclusive "Casa/Varal"), e a
 ##      malha de navegação leva até 1,5 u de cada posto.
 ##   3. A HORA MANDA: de meia em meia hora das 24, cada um está no posto da entrada de
@@ -21,8 +22,8 @@ extends SceneTree
 ##   5. O TRABALHO: parado no posto, o corpo toca o clipe do ofício e leva o que a agenda
 ##      manda (a vassoura do sacristão).
 ##   6. O MUDO NÃO FALA: nem balão, nem aviso no HUD, nem toma a palavra dos vizinhos — e o
-##      de sempre, o Benedito, ainda fala. Como os catorze falam desde a #85, o mudo de
-##      controle é o pescador calado por um instante.
+##      de sempre, o Benedito, ainda fala. Hoje ninguém no vale é mudo, e o MECANISMO segue
+##      coberto por um mudo sintético: o portão cala o pescador na hora (`dados["mudo"]`).
 ##   7. A CASA É DELES, E O VARAL TAMBÉM: o Pedro e a Zefa ficam nas casas deles; toda casa
 ##      tem varal fora da faixa da porta, e as casas com galinha ou porco têm galinheiro e
 ##      chiqueiro no quintal.
@@ -81,10 +82,10 @@ func _run() -> void:
 		nomes[nome] = true
 		for campo in ["oficio", "oficio_en", "oficio_es"]:
 			_conferir(str(d.get(campo, "")) != "", "'%s' não tem o campo %s" % [id, campo])
-		# Desde a #85 (06/10) os catorze falam e têm fé — estão na teia social: duas
-		# saudações nos três idiomas, sem voz gravada, e a fé do `aldeoes.json`.
-		_conferir(not bool(d.get("mudo", false)), "'%s' ainda é mudo: desde a #85 os catorze falam" % id)
-		_conferir((d.get("falas", []) as Array).size() >= 2, "'%s' não tem as duas saudações" % id)
+		_conferir(not bool(d.get("mudo", false)), "'%s' ainda é mudo, e agora tem fala (falas_dos_moradores.gd)" % id)
+		_conferir(not (d.get("falas", []) as Array).is_empty() and not (d.get("saudacoes", []) as Array).is_empty(),
+			"'%s' não tem as falas e as saudações que o tiraram do mudo" % id)
+		# Desde a #85 (06/10) os catorze estão na teia social, com a fé do `aldeoes.json`.
 		_conferir(afinidade.fe_de(id) != "", "'%s' não tem fé no aldeoes.json" % id)
 		var casa := str(d.get("casa", ""))
 		_conferir(casa != "" and not casa.begins_with("Casa do arraial 6") and casa != "Casa do arraial 8",
@@ -106,6 +107,11 @@ func _run() -> void:
 	if not (por_id.has("lavadeira") and por_id.has("pescador") and por_id.has("benedito")):
 		_fechar()
 		return
+
+	# O MUDO SINTÉTICO: ninguém no vale é mudo desde que os catorze ganharam fala, e o mecanismo
+	# (`npc._eh_mudo`: acena, sem balão, sem aviso, sem tomar a palavra) continua valendo para
+	# quem vier a ter `"mudo": true`. O pescador é calado aqui, ANTES da falsificação.
+	por_id["pescador"].dados["mudo"] = true
 
 	# FALSIFICAÇÃO: a lavadeira ganha um lugar que o cenário não tem, o pescador volta a falar
 	# e o varal do guarda vai para a porta. O portão TEM de reprovar nos três.
@@ -193,9 +199,9 @@ func _run() -> void:
 	_conferir(sacristao._levados.size() == 1, "o sacristão devia levar a vassoura na mão (leva %d coisas)" % sacristao._levados.size())
 
 	# --- 6. O MUDO NÃO FALA ---------------------------------------------------------
-	# Os catorze falam desde a #85: o mudo de controle é o pescador calado por um instante.
+	# Os catorze falam desde a #85: o mudo de controle é o pescador, calado lá no começo
+	# (o MUDO SINTÉTICO, antes da falsificação, que o faz falar de novo).
 	var pescador = por_id["pescador"]
-	pescador.dados["mudo"] = true
 	var benedito = por_id["benedito"]
 	var avisos := [0]
 	pescador.saudou.connect(func(_m, _t) -> void: avisos[0] += 1)
@@ -319,7 +325,7 @@ func _mundo_pronto() -> void:
 func _fechar() -> void:
 	print("")
 	if falhas == 0:
-		print("ROTINA_DOS_MORADORES_OK: os catorze moradores novos moram numa casa erguida, mudos, com ofício nos três idiomas; todo lugar da agenda existe e a malha chega até ele; de meia em meia hora cada um está no posto da hora e quem se recolhe some; o relógio que pula seis horas deixa a lavadeira no varal; parado, o corpo toca o clipe do ofício e leva a vassoura (o sacristão); o mudo não fala e o Benedito fala; toda casa tem varal fora da faixa da porta, e galinheiro e chiqueiro onde há galinha e porco")
+		print("ROTINA_DOS_MORADORES_OK: os catorze moradores novos moram numa casa erguida, falantes, com ofício nos três idiomas; todo lugar da agenda existe e a malha chega até ele; de meia em meia hora cada um está no posto da hora e quem se recolhe some; o relógio que pula seis horas deixa a lavadeira no varal; parado, o corpo toca o clipe do ofício e leva a vassoura (o sacristão); quem é marcado mudo não fala (o pescador, sintético) e o Benedito fala; toda casa tem varal fora da faixa da porta, e galinheiro e chiqueiro onde há galinha e porco")
 	else:
 		print("rotina_dos_moradores: %d falha(s)" % falhas)
 	quit(1 if falhas > 0 else 0)

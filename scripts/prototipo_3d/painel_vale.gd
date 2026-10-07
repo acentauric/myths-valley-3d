@@ -147,12 +147,17 @@ func _ready() -> void:
 	Inventario.mudou.connect(_redesenhar)
 
 
-func abrir(aba: int = Aba.MISSOES) -> void:
+## `obra_pedida`: na aba de obras, o cursor já cai nesta obra — a que a missão
+## manda fazer — em vez de na primeira da lista. Com o poço, a ponte e o mirante
+## o cursor no lugar certo é a diferença entre "E, E" e procurar a obra com W/S.
+func abrir(aba: int = Aba.MISSOES, obra_pedida: String = "") -> void:
 	if aberto:
 		return
 	aberto = true
 	_aba = aba
 	_cursor = 0
+	if aba == Aba.OBRAS and obra_pedida != "":
+		_cursor = maxi(Obras.disponiveis(obra_em_foco).find(obra_pedida), 0)
 	_confirmando = -1
 	_aviso = ""
 	visible = true

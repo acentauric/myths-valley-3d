@@ -70,6 +70,12 @@ const ESPESSURA_DA_PRANCHA := 0.12
 const PRANCHA_ALEM_DA_BORDA := 1.4
 ## O Pedro espera um passo além da ponta da prancha, já no tabuado.
 const PEDRO_ALEM_DA_PRANCHA := 1.1
+## O CASCO ATRACADO É OBSTÁCULO NA MALHA DOS MORADORES: a pegada dele cresce desta
+## folga (m) por todos os lados — a malha ainda come o raio do agente, 0,2, e o corpo
+## do morador tem 0,28: quem o segura na quina é a colisão, e a colisão é o casco —,
+## e a faixa de altura vai do fundo da quilha até esta sobra acima da borda.
+const FOLGA_DO_CASCO_NA_MALHA := 0.4
+const SOBRA_ACIMA_DA_BORDA := 3.0
 
 signal chegou
 signal partiu
@@ -101,6 +107,18 @@ var _do_pedro := Vector3.INF
 ## A malha do casco no referencial do barco, de três em três vértices, para medir
 ## o convés sem a física — que só enxerga o casco depois do primeiro passo dela.
 var _faces_do_casco := PackedVector3Array()
+## O CASCO NA MALHA DOS MORADORES (`navegacao_vale.gd`): a pegada dele no referencial
+## do barco (planta, em metros do mundo) e a faixa de altura do casco, medidas uma vez
+## na montagem; mais o corpo do casco e a camada dele, para a malha só enxergar o
+## barco enquanto ele está no píer. Ver `pegada_do_casco`.
+var _pegada_do_casco := Rect2()
+var _faixa_do_casco := Vector2.ZERO
+var _corpo_do_casco: AnimatableBody3D
+var _camada_do_casco := 1
+var _camada_da_prancha := 1
+## O que a malha já sabe do barco (1 atracado, 2 com prancha): só pede para assar de
+## novo quando isto muda.
+var _na_malha := -1
 
 var _presente := false
 ## O dia (absoluto) da última visita, e o que ele já levou nela.
@@ -229,6 +247,46 @@ func _ver_o_barco() -> void:
 		_montar_a_prancha()
 	if prancha != null:
 		prancha.process_mode = Node.PROCESS_MODE_INHERIT if na_chegada() else Node.PROCESS_MODE_DISABLED
+	_dizer_a_malha(atracado)
+
+
+## O BARCO NA MALHA DOS MORADORES. Corpo desligado (`process_mode`) sai da física, mas
+## continua nó com camada na árvore, e a assada lê a árvore: o casco fora do píer virava
+## obstáculo fantasma, e a prancha, rampa. Camada zero esconde um e outro da malha. E
+## quando o barco atraca ou larga a malha se assa de novo, com a pegada do casco
+## (`pegada_do_casco`) de obstáculo — o morador contorna o barco em vez de empurrá-lo.
+func _dizer_a_malha(atracado: bool) -> void:
+	var com_prancha := prancha != null and na_chegada()
+	# Chamado a cada tique do relógio: só mexe quando o que a malha vê do barco muda.
+	var estado := (1 if atracado else 0) + (2 if com_prancha else 0)
+	if estado == _na_malha:
+		return
+	_na_malha = estado
+	if _corpo_do_casco != null:
+		_corpo_do_casco.collision_layer = _camada_do_casco if atracado else 0
+	if prancha != null:
+		prancha.collision_layer = _camada_da_prancha if com_prancha else 0
+	var navegacao := get_tree().get_first_node_in_group("navegacao") if is_inside_tree() else null
+	if navegacao != null:
+		navegacao.reassar()
+
+
+## A PEGADA DO CASCO ATRACADO para a malha dos moradores: o retângulo do casco no giro
+## do barco, crescido de `FOLGA_DO_CASCO_NA_MALHA` (os quatro cantos, no mundo), e a
+## faixa de altura (`elevacao` e `altura`, para o obstáculo projetado). Vazio com o
+## barco fora do píer. Mede só o que tem colisão (abaixo do teto: vela e mastro não
+## são parede).
+func pegada_do_casco() -> Dictionary:
+	if barco == null or not barco.visible or _pegada_do_casco.size == Vector2.ZERO:
+		return {}
+	var caixa := _pegada_do_casco.grow(FOLGA_DO_CASCO_NA_MALHA)
+	var cantos := PackedVector3Array()
+	for canto in [caixa.position, Vector2(caixa.end.x, caixa.position.y), caixa.end, Vector2(caixa.position.x, caixa.end.y)]:
+		var no_mundo := barco.global_transform * Vector3(canto.x, 0.0, canto.y)
+		cantos.append(Vector3(no_mundo.x, 0.0, no_mundo.z))
+	var fundo := barco.global_position.y + _faixa_do_casco.x - 0.5
+	return {"contorno": cantos, "elevacao": fundo,
+		"altura": barco.global_position.y + _faixa_do_casco.y + SOBRA_ACIMA_DA_BORDA - fundo}
 
 
 ## O SAVEIRO ATRACADO do lado do píer, alinhado com ele: o saveiro do catálogo;
@@ -275,7 +333,9 @@ func _montar_o_barco() -> void:
 		corpo.add_child(_mastro(limites))
 	corpo.sync_to_physics = false
 	barco.add_child(corpo)
-	_guardar_as_faces(casco)
+	_corpo_do_casco = corpo
+	_camada_do_casco = corpo.collision_layer
+	_guardar_as_faces(casco, teto)
 	barco.visible = false
 	barco.process_mode = Node.PROCESS_MODE_DISABLED
 
@@ -310,7 +370,7 @@ func lugar_do_pedro() -> Vector3:
 	return _do_pedro
 
 
-func _guardar_as_faces(casco: Node3D) -> void:
+func _guardar_as_faces(casco: Node3D, teto: float = INF) -> void:
 	_faces_do_casco = PackedVector3Array()
 	var malhas: Array = casco.find_children("*", "MeshInstance3D", true, false)
 	if casco is MeshInstance3D:
@@ -323,6 +383,27 @@ func _guardar_as_faces(casco: Node3D) -> void:
 		var transformacao := para_o_barco * malha.global_transform
 		for vertice in malha.mesh.get_faces():
 			_faces_do_casco.append(transformacao * vertice)
+	_medir_a_pegada(teto)
+
+
+## A PEGADA E A FAIXA DE ALTURA DO CASCO que tem colisão: os triângulos inteiros abaixo
+## do `teto`, a mesma regra de `Canoas._colisao_do_casco`. Uma vez só, na montagem.
+func _medir_a_pegada(teto: float) -> void:
+	var menor := Vector3.INF
+	var maior := -Vector3.INF
+	for i in range(0, _faces_do_casco.size() - 2, 3):
+		var a := _faces_do_casco[i]
+		var b := _faces_do_casco[i + 1]
+		var c := _faces_do_casco[i + 2]
+		if a.y > teto or b.y > teto or c.y > teto:
+			continue
+		menor = menor.min(a.min(b).min(c))
+		maior = maior.max(a.max(b).max(c))
+	if not menor.is_finite() or not maior.is_finite():
+		_pegada_do_casco = Rect2()
+		return
+	_pegada_do_casco = Rect2(menor.x, menor.z, maior.x - menor.x, maior.z - menor.z)
+	_faixa_do_casco = Vector2(menor.y, maior.y)
 
 
 ## AS ALTURAS DO CASCO na vertical de (x, z), no referencial do barco: a mais
@@ -401,6 +482,7 @@ func _montar_a_prancha() -> void:
 	var ponta := para_o_mundo.affine_inverse() * ponta_no_mundo
 	prancha = StaticBody3D.new()
 	prancha.name = "PranchaDaChegada"
+	_camada_da_prancha = prancha.collision_layer
 	barco.add_child(prancha)
 	prancha.add_child(_tabua(de, sobre_a_borda))
 	prancha.add_child(_tabua(sobre_a_borda, ponta))

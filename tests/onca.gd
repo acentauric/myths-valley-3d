@@ -21,18 +21,27 @@ extends SceneTree
 ##   7. A PRETA SÓ ANDA DO ENTARDECER À MADRUGADA, e de noite os olhos dela brilham.
 ##   8. O CORPO: no Tripo, o GLB da pelagem (sem caixa cinza); no procedural, a
 ##      caixa. O aviso e a pancada são `material_overlay`, a queda é `transparency`.
-##   9. O PASSO DAS ONÇAS é de código (o clipe do GLB vem torto): o animador as
-##      põe a andar com as pernas, e o cão caramelo também.
+##   9. O PASSO DAS ONÇAS é o clipe do GLB: o da pintada (torto, a girafa) é
+##      recentrado em volta do repouso, o da preta (saudável) fica como veio, e a
+##      perna dura da preta ganha balanço. Nada de perna de código no lugar do clipe.
+##  10. A ONÇA MATA EM DUAS MORDIDAS quem não corre, e perde quem corre: a mordida
+##      tira mais da metade da vida cheia (com 30, com 60 de vigor e com o gibão),
+##      quem fica parado ou anda é alcançado e cai na segunda mordida, quem corre
+##      não leva nenhuma e ela desiste. Numa ARENA PLANA longe do vale, com a física
+##      e a vida passadas à mão, em segundos de jogo e sem depender da máquina.
 ##
 ## FALSIFICAÇÃO: com `--falsificar-onca` a parede de teste perde a colisão, e o
 ## jogador de costas passa a ficar de frente — a pergunta da parede e a do cone
-## têm de FALHAR (o portão tem de sair vermelho).
+## têm de FALHAR (o portão tem de sair vermelho). Com `--falsificar-onca-mordida`
+## o jogador parado leva a mordida em ginga (a onça a gasta no vazio): as perguntas
+## da seção 10 sobre matar têm de FALHAR.
 
 const Atalhos = preload("res://scripts/prototipo_3d/atalhos.gd")
 
 var Criatura
 var falhas := 0
 var falsificar := false
+var falsificar_mordida := false
 var vida
 var relogio
 var dia
@@ -51,6 +60,7 @@ func _conferir(ok: bool, rotulo: String) -> void:
 
 func _run() -> void:
 	falsificar = "--falsificar-onca" in OS.get_cmdline_user_args()
+	falsificar_mordida = "--falsificar-onca-mordida" in OS.get_cmdline_user_args()
 	vida = root.get_node("/root/Vida")
 	relogio = root.get_node("/root/Relogio")
 	dia = root.get_node("/root/Dia")
@@ -188,7 +198,7 @@ func _run() -> void:
 			abaixou = true
 		if teste.cacando and root.get_node("/root/Audio").get("_mata_ativa") == true:
 			musica = true
-		if vida.atual < 12.0:
+		if vida.atual < vida.maximo() - 1.0:
 			vida.dormir()
 	print("ONCA: estados vistos %s em %.1f s" % [str(estados.keys()), t])
 	for estado in ["espreita", "carga", "bote", "recua"]:
@@ -215,10 +225,11 @@ func _run() -> void:
 	_conferir(teste.cega(), "a onça que desistiu não ficou cega")
 	teste.estado = "carga"
 	teste.cacando = true
-	teste.global_position = world.ground_position(onde + rumo * 40.0, 0.05)
-	player.global_position = world.ground_position(onde + rumo * 44.0, 0.1)
+	var coleira: float = Criatura.VISTA["onca"]["territorio"]
+	teste.global_position = world.ground_position(onde + rumo * (coleira + 6.0), 0.05)
+	player.global_position = world.ground_position(onde + rumo * (coleira + 10.0), 0.1)
 	await _fisica(8)
-	_conferir(teste.estado == "volta", "a onça a 40 u do ninho (coleira de %.0f) não voltou: %s" % [Criatura.VISTA["onca"]["territorio"], teste.estado])
+	_conferir(teste.estado == "volta", "a onça a %.0f u do ninho (coleira de %.0f) não voltou: %s" % [coleira + 6.0, coleira, teste.estado])
 
 	# --- 6. NÃO ENTRA NA ÁGUA ---------------------------------------------------
 	var margem := _margem(world)
@@ -274,15 +285,16 @@ func _run() -> void:
 	_conferir(not preta.olhos_acesos() or not preta.ativa(), "os olhos da preta continuam acesos de dia")
 	dia.definir_hora(10.0)
 
-	# --- 9. O PASSO É DE CÓDIGO, COM AS QUATRO PERNAS ACHADAS PELA PELE DO GLB (#109) ----
-	for onca_de_teste in [pintada, preta]:
-		var quem: String = str(onca_de_teste.chave_do_modelo())
-		_conferir(onca_de_teste._animador.tem_pernas() and not onca_de_teste._animador.tem_clipe(), "a %s não anda com as pernas do código" % quem)
-		var cantos: Dictionary = {}
-		for perna in onca_de_teste._animador.pernas():
-			cantos[str(perna["canto"])] = true
-		_conferir(cantos.size() == 4 and onca_de_teste._animador.pernas().size() == 4,
-			"a %s não tem quatro pernas, uma em cada canto (o rabo não é perna): %s" % [quem, str(cantos.keys())])
+	# --- 9. O PASSO É O CLIPE DO GLB -----------------------------------------------------
+	var Animador = load("res://scripts/prototipo_3d/animador_bicho.gd")
+	for chave in ["onca_pintada", "cachorro_caramelo"]:
+		_conferir(chave in Animador.CLIPE_TORTO, "%s saiu da lista de clipe torto" % chave)
+	_conferir(not "onca_preta" in Animador.CLIPE_TORTO, "a onça preta, de clipe saudável, entrou na lista de clipe torto")
+	for onca in [pintada, preta]:
+		_conferir(onca._animador.tem_clipe(), "a onça %s não anda com o clipe do GLB" % onca.pelagem)
+	_conferir(pintada._animador.clipe_recentrado(), "o clipe torto da onça pintada não foi recentrado")
+	_conferir(not preta._animador.clipe_recentrado(), "o clipe saudável da onça preta foi recentrado")
+	_conferir(preta._animador.pernas_paradas() >= 1, "a perna dura da onça preta não ganhou balanço (%d pernas paradas)" % preta._animador.pernas_paradas())
 
 	# --- 8b. O PROCEDURAL: A CAIXA ----------------------------------------------
 	root.get_node("/root/Estilo").modo = "procedural"
@@ -296,13 +308,151 @@ func _run() -> void:
 	luta.oncas.erase(caixa_onca)
 	caixa_onca.queue_free()
 
+	# --- 10. DUAS MORDIDAS MATAM QUEM NÃO CORRE, E QUEM CORRE ESCAPA --------------------
+	await _duas_mordidas(vale, luta, player)
+
 	_fechar()
+
+
+## A mordida da onça e a fuga, numa arena plana no ALTO do vale (a 800 u de altura: sem casa,
+## tronco, água nem colisão de ninguém — e DENTRO do quadro do mapa, porque as bordas dele
+## empurram para dentro quem as toca: com a arena a 8 km de lado, a onça era cuspida para o
+## meio do vale no primeiro passo) e com a física da onça e a vida do jogador passadas À MÃO,
+## quadro a quadro de 1/60 s: o resultado é o do jogo em segundos de JOGO, e não
+## depende de a máquina estar folgada. O jogador de mentira é um nó que o teste
+## empurra; quem morde é a onça de verdade, e quem apanha é a `Vida` de verdade.
+func _duas_mordidas(vale, luta, player) -> void:
+	var queda = vale.get_node_or_null("Queda")
+	if queda != null:
+		var ao_cair := Callable(queda, "_ao_cair")
+		if vida.caiu.is_connected(ao_cair):
+			# O teste derruba o jogador de propósito: a noite não pode virar por causa disso.
+			vida.caiu.disconnect(ao_cair)
+	var progressao = root.get_node("/root/Progressao")
+	var equipamento = root.get_node("/root/Equipamento")
+	var vida_de_antes: float = progressao.vida_maxima
+	var quedas := [0]
+	vida.caiu.connect(func() -> void: quedas[0] += 1)
+	var arena := Node3D.new()
+	arena.name = "ArenaDaOnca"
+	vale.add_child(arena)
+	arena.global_position = Vector3(0.0, 800.0, 0.0)
+	var chao := StaticBody3D.new()
+	var forma := CollisionShape3D.new()
+	var caixa := BoxShape3D.new()
+	caixa.size = Vector3(800.0, 2.0, 800.0)
+	forma.shape = caixa
+	chao.add_child(forma)
+	chao.collision_layer = 1
+	arena.add_child(chao)
+	chao.position = Vector3(0.0, -1.0, 0.0)
+	var jogador := Node3D.new()
+	jogador.name = "JogadorDeMentira"
+	arena.add_child(jogador)
+	jogador.set_physics_process(true)
+	await _fisica(3)
+	var u: float = luta.u_por_px
+	var dt := 1.0 / float(Engine.physics_ticks_per_second)
+
+	# 10a. A mordida, golpe a golpe: com 30 de vida, com 60 (vigor) e com o gibão.
+	var casos := [{"rotulo": "30 de vida", "vida": 30.0, "gibao": false},
+		{"rotulo": "60 de vida (vigor)", "vida": 60.0, "gibao": false},
+		{"rotulo": "30 de vida com o gibão", "vida": 30.0, "gibao": true}]
+	for caso in casos:
+		progressao.ajustar("vida_maxima", float(caso["vida"]))
+		if caso["gibao"]:
+			equipamento.vestido["corpo"] = "gibao_de_couro"
+		_zerar_a_vida()
+		quedas[0] = 0
+		var onca = _onca_da_arena(arena, jogador, u)
+		jogador.global_position = arena.global_position + Vector3(0.0, 0.0, 0.5)
+		if falsificar_mordida:
+			vida.livrar(600.0)
+		onca._morder()
+		var depois_da_primeira: float = vida.atual
+		_conferir(depois_da_primeira > 0.0 and depois_da_primeira < vida.maximo(),
+			"com %s a primeira mordida deixou %.1f de %.1f: devia ferir e não matar" % [caso["rotulo"], depois_da_primeira, vida.maximo()])
+		var esperou := 0.0
+		while vida.respirando() and esperou < 3.0:
+			vida._physics_process(dt)
+			esperou += dt
+		onca._morder()
+		_conferir(vida.atual <= 0.0 and quedas[0] == 1,
+			"com %s duas mordidas não bastaram: sobraram %.1f de %.1f (quedas %d)" % [caso["rotulo"], vida.atual, vida.maximo(), quedas[0]])
+		onca.queue_free()
+		equipamento.vestido.erase("corpo")
+	progressao.ajustar("vida_maxima", vida_de_antes)
+
+	# 10b. A caçada inteira, na arena: o jogador a 10 u, de frente para ela.
+	var parado := _cacada(arena, jogador, u, 0.0, 9.0, 10.0)
+	var andando := _cacada(arena, jogador, u, player.walk_speed, 18.0, 10.0)
+	var correndo := _cacada(arena, jogador, u, player.run_speed, 12.0, 10.0)
+	print("ONCA: parado %s · andando %s · correndo %s" % [str(parado), str(andando), str(correndo)])
+	_conferir(parado["mordidas"] == 2 and parado["caiu_em"] > 0.0 and parado["caiu_em"] <= 8.0,
+		"quem fica parado devia cair na segunda mordida em até 8 s: %s" % str(parado))
+	_conferir(andando["mordidas"] == 2 and andando["caiu_em"] > 0.0 and andando["caiu_em"] <= 16.0,
+		"quem anda (%.1f u/s) devia ser alcançado e cair na segunda mordida em até 16 s: %s" % [player.walk_speed, str(andando)])
+	_conferir(correndo["mordidas"] == 0 and correndo["caiu_em"] < 0.0 and not correndo["cacando"],
+		"quem corre (%.1f u/s) devia escapar sem mordida, e ela desistir: %s" % [player.run_speed, str(correndo)])
+	var passo := float(Criatura.ESPECIES["onca"]["passo"]) * u
+	_conferir(passo >= player.walk_speed * 1.5 and passo <= player.run_speed * 0.9,
+		"a onça (%.2f u/s) devia ser bem mais rápida que o passo (%.1f) e mais lenta que a carreira (%.1f)" % [passo, player.walk_speed, player.run_speed])
+
+	arena.queue_free()
+	vida._livre_por = 0.0
+	_zerar_a_vida()
+
+
+func _zerar_a_vida() -> void:
+	vida._livre_por = 0.0
+	vida.dormir()
+
+
+func _onca_da_arena(arena: Node3D, jogador: Node3D, u: float):
+	var bicho = Criatura.new()
+	bicho.especie = "onca"
+	bicho.pelagem = "pintada"
+	arena.add_child(bicho)
+	bicho.global_position = arena.global_position + Vector3(0.0, 0.05, 0.0)
+	bicho.configurar(null, jogador, u)
+	bicho.set_physics_process(false)
+	return bicho
+
+
+## Uma caçada: a onça na origem da arena, virada para +Z, e o jogador `distancia` u à frente,
+## andando para longe dela a `velocidade` (0 = parado) por `segundos` de jogo. Devolve quantas
+## mordidas entraram, em que segundo a vida zerou (-1 se não zerou) e como ela terminou.
+func _cacada(arena: Node3D, jogador: Node3D, u: float, velocidade: float, segundos: float, distancia: float) -> Dictionary:
+	_zerar_a_vida()
+	var onca = _onca_da_arena(arena, jogador, u)
+	jogador.global_position = arena.global_position + Vector3(0.0, 0.0, distancia)
+	if falsificar_mordida and velocidade == 0.0:
+		vida.livrar(600.0)
+	var dt := 1.0 / float(Engine.physics_ticks_per_second)
+	var mordidas := [0]
+	onca.mordeu.connect(func(_quanto: float) -> void: mordidas[0] += 1)
+	var t := 0.0
+	var caiu_em := -1.0
+	while t < segundos:
+		jogador.global_position.z += velocidade * dt
+		vida._physics_process(dt)
+		onca._physics_process(dt)
+		t += dt
+		if vida.atual <= 0.0:
+			# Quem zerou a vida CAIU: no jogo a queda leva o jogador embora e a onça deixa de morder.
+			caiu_em = t
+			break
+	var resultado := {"mordidas": mordidas[0], "caiu_em": snappedf(caiu_em, 0.01), "estado": onca.estado, "cacando": onca.cacando,
+		"distancia": snappedf(_plano(jogador.global_position - onca.global_position).length(), 0.1)}
+	onca.queue_free()
+	_zerar_a_vida()
+	return resultado
 
 
 func _fechar() -> void:
 	print("")
 	if falhas == 0:
-		print("ONCA_OK: duas onças em chão firme a mais de 120 u das casas, com penedo; veem com cone, linha livre e alcance (e de noite menos), farejam pelas costas, caçam em estados com aviso nos três idiomas, a coleira as manda de volta, não entram na água, a preta só anda do entardecer à madrugada com os olhos acesos, e o corpo é o GLB (ou a caixa) com aviso, pancada e queda por cima da malha")
+		print("ONCA_OK: duas onças em chão firme a mais de 120 u das casas, com penedo; veem com cone, linha livre e alcance (e de noite menos), farejam pelas costas, caçam em estados com aviso nos três idiomas, a coleira as manda de volta, não entram na água, a preta só anda do entardecer à madrugada com os olhos acesos, o corpo é o GLB (ou a caixa) com aviso, pancada e queda por cima da malha e o passo é o clipe do GLB; e duas mordidas matam quem fica parado ou anda, enquanto quem corre escapa")
 	else:
 		print("onca: %d falha(s)" % falhas)
 	quit(1 if falhas > 0 else 0)

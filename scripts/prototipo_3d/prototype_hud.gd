@@ -373,12 +373,15 @@ var barra_stamina: ProgressBar
 var _stamina_texto: Label
 var _stamina_preenchimento: StyleBoxFlat
 var _textos_medidores: Dictionary = {}
+## O indicador da maré ao lado do relógio (`hud_3d.json`, "mare"): diz se a água enche ou vaza, nos três idiomas.
+var _textos_mare: Dictionary = {}
 
 
 func _criar_barra_de_vida() -> void:
 	var dados = JSON.parse_string(FileAccess.get_file_as_string("res://data/hud_3d.json"))
 	if dados is Dictionary:
 		_textos_medidores = dados.get("medidores", {})
+		_textos_mare = dados.get("mare", {})
 	barra_vida = ProgressBar.new()
 	barra_vida.name = "Vida"
 	barra_vida.step = 0.01
@@ -932,12 +935,25 @@ func _update_clock_hint() -> void:
 		_clock_icon.set_running(andando)
 	if is_instance_valid(_clock_button):
 		_clock_button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND if not andando or Dia.pausa_no_jogo else Control.CURSOR_ARROW
+	var texto := Dia.texto_hora()
 	if not andando:
-		_clock_hint.text = "%s · Retomar" % Dia.texto_hora()
+		texto = "%s · Retomar" % texto
 	elif Dia.pausa_no_jogo:
-		_clock_hint.text = "%s · Pausar" % Dia.texto_hora()
-	else:
-		_clock_hint.text = Dia.texto_hora()
+		texto = "%s · Pausar" % texto
+	# A MARÉ, ao lado da hora: com ela ligada, a dica diz se a água sobe ou desce (e o que isso faz na praia).
+	var mare := _texto_da_mare("")
+	if mare != "":
+		texto += " · " + mare
+	_clock_hint.text = texto
+	if is_instance_valid(_clock_button):
+		_clock_button.tooltip_text = _texto_da_mare("dica_")
+
+
+## A frase curta da maré, enchente ou vazante (ou a dica longa, com `prefixo` "dica_"), no idioma do jogador; "" com a maré desligada.
+func _texto_da_mare(prefixo: String) -> String:
+	if Mare.modo == 0 or _textos_mare.is_empty():
+		return ""
+	return str(IdiomaMenu.campo(_textos_mare, prefixo + ("enchente" if Mare.enchente() else "vazante")))
 
 
 ## O painel do canto esquerdo cresce só o necessário para o objetivo caber.
@@ -1005,6 +1021,7 @@ func _create_corner_buttons() -> void:
 		_update_telemetry(), false)
 	_update_clock_hint()
 	Dia.hora_mudou.connect(_update_clock_hint.unbind(1))
+	Mare.mare_mudou.connect(_update_clock_hint.unbind(1))
 
 	top += 1
 	_map_icon = HudIcon.new().configurar("mapa")

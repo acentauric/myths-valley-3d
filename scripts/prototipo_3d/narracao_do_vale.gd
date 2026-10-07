@@ -13,6 +13,7 @@ extends CanvasLayer
 ## espaço e o Enter passam a frase — quem já leu não espera o relógio dela.
 
 const Atalhos = preload("res://scripts/prototipo_3d/atalhos.gd")
+const FilaDeFalas = preload("res://scripts/prototipo_3d/fila_de_falas.gd")
 
 signal terminou
 ## O escuro cobriu a tela: quem chama pode mudar o mundo por trás dele.
@@ -95,10 +96,25 @@ static func duracao(texto: String) -> float:
 
 
 ## Narra as frases, uma de cada vez, e emite `terminou`.
+##
+## NA VEZ DELA (`fila_de_falas.gd`): espera quem está falando no balão acabar —
+## e a festa da missão cumprida se recolhe para ela —, e ninguém fala enquanto
+## ela narra. A SEGUNDA NARRAÇÃO ESPERA A PRIMEIRA, em vez de sumir.
 func narrar(frases: Array) -> void:
-	if _tocando:
-		return
+	while _tocando:
+		await terminou
 	_tocando = true
+	var fila := FilaDeFalas.da(self)
+	var vez := 0
+	if fila != null:
+		var dada := [false]
+		vez = fila.pedir({
+			"falante": self, "texto": " ".join(frases),
+			"classe": FilaDeFalas.Classe.NARRACAO, "modal": true, "origem": "narracao",
+			"comecar": func(_fala: Dictionary) -> void: dada[0] = true,
+		})
+		while not dada[0] and is_inside_tree() and is_instance_valid(fila):
+			await get_tree().process_frame
 	# A narração é instrução do jogo: o dia não corre enquanto ela fala (`Dia.segurar`).
 	Dia.segurar("narracao")
 	_fundo.visible = true
@@ -128,6 +144,8 @@ func narrar(frases: Array) -> void:
 	_fundo.visible = false
 	_tocando = false
 	Dia.soltar("narracao")
+	if fila != null and is_instance_valid(fila) and vez > 0:
+		fila.soltar(vez)
 	terminou.emit()
 
 

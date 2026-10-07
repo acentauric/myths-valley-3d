@@ -4,6 +4,9 @@
   "nome": "O que a terra devolve",
   "nome_en": "What the land gives back",
   "nome_es": "Lo que la tierra devuelve",
+  "trancada": "Ainda não. Volte depois de plantar sua primeira roça com o Pedro, que eu quero ver o que a terra lhe devolve.",
+  "trancada_en": "Not yet. Come back after planting your first plot with Pedro, I want to see what the earth gives back to you.",
+  "trancada_es": "Todavía no. Vuelve después de plantar tu primera parcela con Pedro, que quiero ver lo que la tierra te devuelve.",
   "principal": false,
   "passos": [
     {

@@ -5,7 +5,8 @@ extends SceneTree
 ##
 ##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/fazenda.gd
 ##
-## Oito perguntas:
+## Oito perguntas (e as cabras da festa, que andam com o clipe de andar, no ritmo do chão —
+## antes eram uma malha parada que escorregava):
 ##
 ##   1. O LUGAR: o portão e o pátio resolvem do outro lado do rio grande, o portão
 ##      é baixo como no capítulo 6, está fechado, e nenhum tronco atravessa a
@@ -27,6 +28,8 @@ extends SceneTree
 ##   7. A VOLTA PARA CASA: na manhã seguinte o arraial sai do pátio.
 ##   8. O SAVE: a partida que volta tem o dia marcado, o portão aberto e a fila
 ##      acabada.
+
+const RelogioDeJogo = preload("res://tests/fixtures/relogio_de_jogo.gd")
 
 var falhas := 0
 var vale
@@ -96,6 +99,8 @@ func _run() -> void:
 	relogio.dia_comecou.emit(2, 0, 1)
 	await _quadros(5)
 	_conferir(not fazenda.dia_marcado(), "a manhã marcou o dia da fazenda com a ponte por fazer e a fé por escolher")
+	var jornada_do_dia = root.get_node("/root/Jornada")
+	_conferir(not jornada_do_dia.marcada(), "a Jornada foi marcada antes de o dia da fazenda chegar")
 	ponte.iniciado = true
 	ponte.missao = ponte.passos.size()
 	ponte.despedida_feita = true
@@ -104,12 +109,20 @@ func _run() -> void:
 	relogio.dia_comecou.emit(3, 0, 1)
 	_conferir(await _ate(func() -> bool: return fazenda.dia_marcado() and jornada.iniciado, 4.0),
 		"com a ponte de pé e a fé escolhida, a manhã seguinte não marcou o dia da fazenda")
+	# O CARTÃO DO AMANHECER lê a `Jornada` (`queda._lembretes_do_dia`), e ninguém a marcava no 3D:
+	# "hoje é o dia da fazenda" nunca aparecia. A manhã que marca o dia marca também a Jornada.
+	_conferir(jornada_do_dia.marcada() and jornada_do_dia.hoje(),
+		"a manhã marcou o dia da fazenda e deixou a Jornada sem marcar: o cartão do amanhecer não lembra dela")
+	var lembretes_de_hoje: Array = vale.get_node("Queda")._lembretes_do_dia()
+	_conferir(lembretes_de_hoje.size() == 1 and str(lembretes_de_hoje[0]).strip_edges() != "",
+		"no dia da fazenda o cartão do amanhecer não traz o lembrete: %s" % str(lembretes_de_hoje))
 	await _quadros(4)
 	var sentados := 0
 	for morador in vale.moradores:
 		if morador.is_visible_in_tree() and Vector2(morador.global_position.x - patio.x, morador.global_position.z - patio.z).length() < 14.0:
 			sentados += 1
 	_conferir(sentados >= 4, "só %d morador(es) estão no pátio da fazenda no dia dela" % sentados)
+	await _as_cabras_andam_com_as_pernas(fazenda)
 	var interiores = vale.get("interiores")
 	var porta: Vector3 = interiores.sala_de("casa").lugar_de_esperar_fora()
 	_conferir(Vector2(pedro.global_position.x - porta.x, pedro.global_position.z - porta.z).length() < 3.0, "o Pedro não veio à porta de casa")
@@ -186,7 +199,33 @@ func _run() -> void:
 	jogador.teleportar(pedro.global_position + Vector3(1.0, 0.0, 0.6), 0.0)
 	await _quadros(2)
 	vale.get("tecla_dos_moradores").usar(pedro)
-	_conferir(await _ate(func() -> bool: return jornada.acabou(), 8.0), "falar com o Pedro não fechou a porta estreita")
+	# UM AVISO DA PRIMEIRA VEZ pode abrir por cima (o da água funda, o da árvore):
+	# ele para o vale, e a fila só anda com ele fechado — como o jogador faria.
+	var aviso_6c = vale.get("aviso_da_primeira_vez")
+	var limite_6c := Time.get_ticks_msec() + 8000
+	while Time.get_ticks_msec() < limite_6c and not jornada.acabou():
+		if aviso_6c != null and aviso_6c.aberto():
+			print("  (6c) o aviso da primeira vez '%s' abriu depois do E no Pedro; fechado" % str(aviso_6c.qual))
+			aviso_6c.fechar()
+			await _quadros(3)
+		await process_frame
+	if not jornada.acabou():
+		_pausa("6c depois do E no Pedro (falhou)")
+		var amanhecer = root.get_node_or_null("/root/Amanhecer")
+		print("  [pausa] amanhecer visível=%s; dialogo quem=%s falas=%s; queda escuro=%s" % [str(amanhecer.get("visible") if amanhecer != null else "?"), str(dialogo.quem_fala), str(dialogo._falas), str(vale.get("queda").get("_preto").modulate.a if vale.get("queda") != null else "?")])
+		# Quem levou o E: o que cada fila do vale diz que o E faz no Pedro, e o passo da jornada.
+		var quem_leva: Array[String] = []
+		for cadeia in get_nodes_in_group(load("res://scripts/prototipo_3d/cadeia_de_missoes.gd").GRUPO):
+			var faz := str(cadeia.o_que_o_e_faz(pedro))
+			if faz != "":
+				quem_leva.append("%s=%s" % [str(cadeia.name), faz])
+		var fila = get_first_node_in_group(load("res://scripts/prototipo_3d/fila_de_falas.gd").GRUPO)
+		var no_ar := str(fila._atual.get("origem", "")) + "/" + str(fila._atual.get("classe", "")) + "/modal=" + str(fila._atual.get("modal", false)) if fila != null and not fila._atual.is_empty() else "(nada no ar)"
+		var na_fila: Array[String] = []
+		if fila != null:
+			for fala in fila._fila:
+				na_fila.append(str(fala.get("origem", "")) + "/" + str(fala.get("classe", "")))
+		_conferir(false, "falar com o Pedro não fechou a porta estreita (passo %s, missao %d, espera %.2f, levados %s, o_que_o_e_faz=%s, recebe=%s, pedro id=%s visível=%s, filas no E do Pedro: %s, dialogo %s, fala do Pedro %s, paused %s, fila no ar %s, fila esperando %s, cena %s)" % [str(jornada.passo_atual().get("id", "")), jornada.missao, jornada.espera, str(jornada._levados), str(jornada.o_que_o_e_faz(pedro)), str(jornada._recebe(jornada.passo_atual(), pedro)), str((pedro.get("dados") as Dictionary).get("id", "?")), str(pedro.is_visible_in_tree()), str(quem_leva), str(dialogo.ativo), str(pedro.balao.visible), str(paused), no_ar, str(na_fila), str(fazenda._em_cena)])
 	await _fechar_a_fala()
 	var vozes := 0
 	var falas := 0
@@ -222,6 +261,48 @@ func _run() -> void:
 	await _ate(func() -> bool: return false, 0.8)
 	_conferir(fazenda.dia_marcado() and fazenda.portao_aberto() and jornada.acabou(), "a partida que volta esqueceu o dia da fazenda")
 	_fechar()
+
+
+## As três cabras da festa: cada uma tem o clipe de andar, e quando passeiam (o Tween as leva) o
+## clipe toca no ritmo do chão (0,7 u/s); paradas, ele congela. Em segundos de JOGO.
+func _as_cabras_andam_com_as_pernas(fazenda) -> void:
+	var cabras: Array = fazenda.get("_cabras")
+	_conferir(cabras.size() == int(fazenda.CABRAS), "a festa devia ter %d cabras, tem %d" % [fazenda.CABRAS, cabras.size()])
+	for cabra in cabras:
+		_conferir(is_instance_valid(cabra) and cabra.has_method("animador") and cabra.animador().tem_clipe(),
+			"uma cabra da festa não tem o clipe de andar (é a malha parada do adereço, que escorrega?)")
+	var relogio := RelogioDeJogo.new()
+	root.add_child(relogio)
+	var visto := {"andaram": 0, "sem_clipe": 0, "ritmo": 0.0, "seguidos": 0}
+	await relogio.ate(func() -> bool: return _cabras_passearam(cabras, visto), 40.0)
+	_conferir(visto["andaram"] >= 30, "nenhuma cabra da festa saiu a passeio com o clipe tocando em 40 s de jogo: %s" % str(visto))
+	_conferir(visto["sem_clipe"] == 0, "houve quadro em que uma cabra da festa andava sem o clipe tocando: %s" % str(visto))
+	_conferir(float(visto["ritmo"]) > 0.3, "o clipe da cabra da festa toca devagar demais: %.2fx" % float(visto["ritmo"]))
+	relogio.queue_free()
+
+
+## Um quadro dos passeios: conta as cabras andando com o clipe tocando e as que andam sem ele.
+func _cabras_passearam(cabras: Array, visto: Dictionary) -> bool:
+	for cabra in cabras:
+		if is_instance_valid(cabra) and cabra.has_method("andando") and cabra.andando():
+			var an = cabra.animador()
+			if an.animacao != null and an.animacao.is_playing() and an.animacao.speed_scale > 0.3:
+				visto["andaram"] += 1
+				visto["seguidos"] = 0
+				visto["ritmo"] = maxf(float(visto["ritmo"]), an.animacao.speed_scale)
+			else:
+				# Um quadro sem o clipe é o `_process` do animador respondendo ao `andar`; quatro seguidos, não.
+				visto["seguidos"] += 1
+				if visto["seguidos"] > 3:
+					visto["sem_clipe"] += 1
+	return visto["andaram"] >= 30
+
+
+## Quem segura o vale neste instante (diagnóstico #114 pós-junção).
+func _pausa(rotulo: String) -> void:
+	var aviso = vale.get("aviso_da_primeira_vez")
+	var conquista = vale.get("conquista")
+	print("  [pausa] %s: paused=%s telas_que_param=%d fala_parou=%s telas='%s' aviso=%s festa=%s dialogo=%s narracao=%s Dia=%s" % [rotulo, str(paused), int(vale.get("_telas_que_param")), str(vale.get("_fala_parou_o_vale")), str(vale.telas.aberta()), str(aviso.aberto() if aviso != null else "?"), str(conquista.ativa() if conquista != null else "?"), str(dialogo.ativo), str(vale.get("narracao").tocando()), str(root.get_node("/root/Dia").motivos_da_segurada())])
 
 
 func _indice(cadeia, id: String) -> int:

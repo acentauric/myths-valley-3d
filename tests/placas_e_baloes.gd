@@ -52,11 +52,18 @@ func _run() -> void:
 		return
 
 	# --- 1. A PLAQUINHA SÓ DE PERTO -----------------------------------------------
+	# Para quem a missão NÃO aponta: quem ela aponta (e o dono do E) leva a placa
+	# inteira de mais longe (`placas_nomes.DISTANCIA_DE_QUEM_IMPORTA`, `popups_na_tela`).
+	var seta = vale.get_node_or_null("SetaMissao")
+	if seta != null and seta.has_method("limpar"):
+		seta.limpar()
 	var longe: float = float(placas.PLACA_LONGE)
 	var perto: float = float(placas.PLACA_PERTO)
 	for distancia: float in [longe + 2.0, perto - 1.0, (longe + perto) * 0.5]:
 		_pôr_o_jogador_a(jogador, mundo, tonho, distancia)
-		await _quadros(4)
+		# A placa que ganha a vaga ACENDE em `SEGUNDOS_DO_FADE` e desliza na mola
+		# (`placas_nomes.gd`): a espera é em segundo de relógio, com folga.
+		await _esperar(0.8)
 		if distancia > longe:
 			_conferir(not placa.visible, "a %.0f u a plaquinha do Tonho ainda aparece" % distancia)
 		elif distancia < perto:

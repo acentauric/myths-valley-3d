@@ -1,39 +1,74 @@
 # Histórico de mudanças — Myths' Valley 3D
 
-## Build #9 — 05/10/2026 (edição Tripothon)
+## Em desenvolvimento — 06/10/2026 (playtest da Build 9B)
 
-- **Build especial do concurso, estática.** Novo preset de exportação "Windows
-  Tripothon" (`export_presets.cfg`, cópia do "Windows Desktop" com a feature
-  `tripothon`, saída em `build/tripothon/MythsValley3D.exe`; o preset normal não
-  mudou). Com a feature, o `Atualizacao` nunca consulta o site, baixa nem instala
-  (`edicao_estatica()`), e a linha embaixo da versão no menu fica à vista,
-  desativada, dizendo "Edição Tripothon · atualização desativada" nos três idiomas.
-  Portão: `tests/atualizacao.gd` (finge a feature com `forcar_estatica`).
-- **O lobby da build do Tripothon é um vídeo, e não o vale 3D.** Com a feature
-  `tripothon` (ou `-- --lobby-video` no editor), a abertura tira o `Cenario` antes de
-  ele entrar na árvore e põe por trás do retábulo o sobrevoo pintado do LTX
-  (`assets/prototipo_3d/identidade/video/carregamento_sobrevoo.ogv`, 21 s, laço sem
-  emenda, Theora 1280×720, mudo). O menu deixa de montar o vale inteiro só para o voo
-  de fundo (a primeira carga levava ~27 s) e de desenhá-lo a cada quadro. Nesse modo o
-  botão do mapa do menu não nasce (não há vale para mostrar), e "Sobrevoo" desligado
-  em AJUSTAR para o vídeo no quadro. Sem a feature, o menu segue com o vale 3D, e os
-  portões rodam nele. As telas de carregamento ficam na capa estática: a montagem
-  segura a thread principal, e um vídeo ali engasgava. A cinemática de abertura gerada
-  no mesmo lote ficou só no site. Gerado com a API do LTX a partir das pinturas do
-  próprio projeto (`assets/CREDITOS.md`); `*.ogv` entra como binário no Git, sem LFS.
-- **A tela do JOGAR só sai quando o vale termina de verdade.** `prototype.gd` avisa
-  `carga_concluida` no fim do `_ready` (moradores, bichos, telas, partida salva); a
-  `tela_carregamento.gd` reserva o último décimo da barra para esse trecho, espera o
-  aviso com teto de 15 s e segura 3 quadros com o mundo visível por baixo da tela opaca
-  antes do fade, para os shaders compilarem escondidos. Não encurta a carga: troca
-  "terminou e congelou" por uma barra que fecha quando acabou (relatório C4/C5 de
-  `docs/projeto/DESEMPENHO_05_10_2026.md`).
-- Histórico do jogo: `build_numero` 9 e a entrada "Edição Tripothon" (05/10/2026) nos
-  três idiomas, com o que mudou na build de desempenho: carga sem o congelamento de
-  19 s, FPS dobrado (sombra, faces de trás, mata mais leve), mata pela metade com
-  clareiras de árvore-destaque, minimapa pintado e estático, e o lobby em vídeo.
+- **As missões voltam a fechar, e um portão joga todas do começo ao fim.** A
+  bateria cheia da main tinha 12 portões vermelhos depois da junção do ramo de
+  desempenho. As filas de colheita (Zefa, coveiro, pedra do poço, corte) caíam
+  porque `max_physics_steps_per_frame=3` faz o tempo de jogo andar mais devagar que
+  o relógio com quadro acima de 50 ms; agora são 5 passos (tempo real até 12 FPS) e
+  os portões esperam em segundos de jogo (`tests/fixtures/relogio_de_jogo.gd`).
+  `tests/missoes_do_comeco_ao_fim.gd` joga uma partida só pelos controles do
+  jogador (anda, aperta E depois de perguntar ao foco, obras pelo E e pelo J,
+  mochila, teia, luta, pesca), as 22 filas e 85 passos; só roda no `-Tudo` ou por
+  nome, com teto de 4 h. `tests/missoes_elos.gd` confere os elos estáticos.
+- **O E chega ao poço.** Os sítios de obra (poço, ponte, mirante, cemitério,
+  carroça) respondem ao E e abrem o painel nas obras daquele sítio; o J abre direto
+  em Obras quando o passo é de obra. Entre moradores, leva o E quem a missão manda
+  procurar; quem tem fila trancada diz "volte depois de ..." nos três idiomas.
+- **As falas esperam a vez.** Uma fila só (`fila_de_falas.gd`) para balões, caixa
+  de fala, narração, voz do marco e festa de missão: cada fala segura a vez pelo
+  tempo da voz ou da leitura; cumprimento de quem passa não entra por cima. O Pedro
+  ganha falas de depois do tutorial e deixa de se apresentar de novo; a ferramenta
+  da missão não some no save nem com a mochila cheia.
+- **Pedras:** quebrável é pequena (pedras soltas aos pés das rochas, mesmo
+  rendimento); as rochas grandes viram cenário, sem E. O golpe ganha som
+  (marretada, pedra quebrando, foice, ostra, galho), gerado no ElevenLabs.
+- **Câmera e corpo:** a câmera nunca fica a menos de 1,25 m do corpo (sobe por cima
+  da cabeça quando a parede encurta o braço), fica acima da água de agora (com a
+  maré) e atravessa as portas sem estalo; o corpo deixa de prender nas bordas de rua,
+  de ponte e de areia. Portões `camera_resiliente` e `colisoes_de_passeio`.
+- **Bichos:** a onça corre a 4 u/s e mata em duas mordidas quem não corre (quem
+  corre escapa), o tubarão alcança quem foge a nado e some na baixa-mar, a cabra anda
+  em vez de deslizar, e os bichos deixam de esticar parados e na pausa.
+- **Popups:** no máximo três placas de nome (duas com balão no ar), com mola na
+  tela em vez de colar na cabeça; o balão só troca de canto depois de 0,9 s e a fala
+  longa passa em páginas de duas linhas.
+- **Maré e música:** a maré vem ligada de fábrica (quem nunca escolheu passa a vê-la)
+  e o relógio diz se a água enche ou vaza; cada período do dia tem a sua trilha.
+- **Moradores:** os catorze que só acenavam falam (cumprimentos, conversa e falas
+  da noite), e toda fala de `data/npcs_3d.json` tem pt, en, es e zh. Vozes geradas em
+  português: Pedro depois do tutorial, padre, sacristão, beata, mercador, guarda e
+  parte do pescador; as outras 104 falas de nove moradores ficam em `voz_pendente`
+  até a chave do ElevenLabs ter crédito.
+- **Casas por dentro:** as moradias, as capelas, a venda, a casa de farinha e o
+  casarão da fazenda abrem, mobiliados para quem mora (`data/interiores_casas.json`);
+  o casarão se sobe pela escadaria de pedra até o salão. O cômodo se monta de perto e
+  some do desenho de longe.
+- **De longe:** casas, árvores nomeadas e adereços viram caixa e copa baratas, sem
+  buraco na troca (até -54% de triângulos); as doze lápides ficam alinhadas e
+  assentadas no chão.
+- **Sustos da mata:** um vulto aparece no fundo da mata; olhado, some; de costas,
+  ele avança, o jogo salva em silêncio e fecha como se travasse. As pegadas do
+  Curupira, viradas para trás, enlouquecem o mapa, a bússola e a seta da missão por
+  um minuto. AJUSTAR → Sustos desliga os dois.
+- **Ajustes:** o clique contorna as casas (as duas lenhas da ponte saíram da fresta
+  da casa de taipa), a malha dos moradores contorna o alicerce da capelinha, e o
+  saveiro atracado vira obstáculo. O lobby em vídeo vale em toda build e no editor;
+  `-- --lobby-3d` (ou `abertura.lobby_3d_pedido` nos portões) volta ao vale 3D.
+- **A noite junta-se à main do dia** (a seção abaixo). Onde as duas fizeram a
+  mesma coisa, ficou uma só: a plaquinha tem as três vagas e a mola daqui e o
+  "só de perto" de lá (inteira até 6 u, some em 10); o balão só a 16 u, e o "um
+  balão por vez" é a fila de falas (`npc.calar()` passa por ela); o E das obras é
+  o daqui (raio do E por sítio, obra pedida, cursor), que já cobria o poço da #80;
+  o som do golpe é uma tabela só, a daqui, sem tocar duas vezes; o bicho para no
+  quadro de pé medido, e no começo ou no meio da passada quando não há medida
+  (#91); os catorze moradores ficam com as falas, os quatro idiomas e as vozes
+  daqui e com a fé e os assuntos da teia de lá (#85); a dica do E diz com quem se
+  fala (#97) por cima da arbitragem daqui; e o pedido do lobby 3D por código é um
+  só, que os dois lados tinham criado com o mesmo nome.
 
-## Em desenvolvimento — 06/10/2026
+## Em desenvolvimento — 06/10/2026 (madrugada e manhã, na main da equipe)
 
 - **A reserva do dia volta ao corpo (#82, fecha a #45).** Entre 04/10 e 06/10 a
   `Energia` espelhava o vigor do jogador (`registrar_vigor`), e como o vigor volta
@@ -279,27 +314,19 @@
   próprios, gerados por imagem (`assets/sprites/icones/`, `tools/openai/
   gerar-icones.ps1` e `promover_icones.gd`, que recorta cada um pela forma).
   Portões `painel` e `pedidos_do_arraial`.
-- **Os bichos andam com as quatro pernas do código, e nada estica (#109).** Na
-  live, "o bicho fica esticando e voltando em um movimento vertical" e "todos os
-  bichos parecem que mancam". A respiração escalava o POSE inteiro em Y, pernas
-  inclusive, e o clipe de andar do Tripo só mexia os ossos que o auto-rig
-  batizou — e ele batiza errado em quase todo modelo (perna sem nome ficava
-  dura; pescoço chamado de perna subia e descia). Agora o clipe não toca em
-  quadrúpede nenhum: as pernas são achadas pela PELE do GLB (o osso que move
-  os vértices baixos da malha é pé, e a perna sobe dele até o tronco, sem ler
-  nome), uma em cada canto — e a sonda dos pesos mostrou que em três rigs o
-  auto-rig deu uma cadeia só para as duas patas de uma ponta (trás do cão
-  caramelo e do bode, frente do filhote): essa é a perna do meio e balança as
-  duas juntas, até um rig refeito; o andar é de quatro tempos, com a cadência pelo
-  comprimento da perna e o passo da espécie; a respiração alarga só o peito (X e
-  Z), a cabeça acena e o rabo balança por osso, e abaixar (a espreita da onça)
-  desce o corpo dobrando os joelhos (`animador_bicho`). Cada criatura da mata
-  tem os números dela em `data/criaturas_3d.json` (vida, dano, passo, faro,
-  mordida, o que cai, corpo, modelo e vista, com o nome nos três idiomas), que
-  `criatura_vale.gd` lê uma vez; os bichos de quintal seguem com passo e
-  corrida em `bichos_de_casa.json`. Portões `bicho_parado` (reescrito: as
-  pernas de cada espécie, uma por canto, rabo fora, mesma força em todas,
-  repouso parado, nada escala), `onca`, `luta`, `idiomas`, `bichos_de_casa`.
+- **Cada criatura da mata com os números dela, em dado e não em constante
+  (#109).** "Cada bicho deve ter seu próprio atributo de velocidade, dano etc."
+  Os números de cada espécie da mata moram em `data/criaturas_3d.json` (vida,
+  dano, passo, faro, mordida, o que cai, corpo, modelo e vista, com o nome nos
+  três idiomas), que `criatura_vale.gd` lê uma vez; os bichos de quintal seguem
+  com passo e corrida em `bichos_de_casa.json`. A onça leva os números do 3D
+  da noite de 06/10 (passo 120 px, dano 16 e `dano_da_vida` 0,55, coleira
+  36/48 u, espreita 1,5 s). O esticar e o mancar dos bichos (a outra metade da
+  #109) ficaram com a solução da equipe da mesma noite: o clipe do GLB
+  recentrado onde veio torto, a perna dura copiando a diagonal, a respiração
+  fora da altura (`animador_bicho`, portão `animais_animacao`); a busca de
+  pernas pela pele do GLB escrita de manhã saiu na junção das duas mains.
+  Portões `luta`, `onca`, `idiomas`, `bichos_de_casa`.
 - **As abas do J ganham distintivos (#108, primeira fatia).** Obras e Saveiro
   na coluna de abas, o fôlego máximo em Ajustes e os cabeçalhos das três
   naturezas de carta (pacto, apoio, ritual) ganham um distintivo de 22 px na
@@ -376,6 +403,39 @@
   na main (a bateria inteira de 06/10 à noite: 3 de 121). Os três perguntam
   `parado()` onde a tela segura o relógio, e seguem lendo `pausado` onde a
   pergunta é a pausa do jogador.
+
+## Build #9 — 05/10/2026 (edição Tripothon)
+
+- **Build especial do concurso, estática.** Novo preset de exportação "Windows
+  Tripothon" (`export_presets.cfg`, cópia do "Windows Desktop" com a feature
+  `tripothon`, saída em `build/tripothon/MythsValley3D.exe`; o preset normal não
+  mudou). Com a feature, o `Atualizacao` nunca consulta o site, baixa nem instala
+  (`edicao_estatica()`), e a linha embaixo da versão no menu fica à vista,
+  desativada, dizendo "Edição Tripothon · atualização desativada" nos três idiomas.
+  Portão: `tests/atualizacao.gd` (finge a feature com `forcar_estatica`).
+- **O lobby da build do Tripothon é um vídeo, e não o vale 3D.** Com a feature
+  `tripothon` (ou `-- --lobby-video` no editor), a abertura tira o `Cenario` antes de
+  ele entrar na árvore e põe por trás do retábulo o sobrevoo pintado do LTX
+  (`assets/prototipo_3d/identidade/video/carregamento_sobrevoo.ogv`, 21 s, laço sem
+  emenda, Theora 1280×720, mudo). O menu deixa de montar o vale inteiro só para o voo
+  de fundo (a primeira carga levava ~27 s) e de desenhá-lo a cada quadro. Nesse modo o
+  botão do mapa do menu não nasce (não há vale para mostrar), e "Sobrevoo" desligado
+  em AJUSTAR para o vídeo no quadro. Sem a feature, o menu segue com o vale 3D, e os
+  portões rodam nele. As telas de carregamento ficam na capa estática: a montagem
+  segura a thread principal, e um vídeo ali engasgava. A cinemática de abertura gerada
+  no mesmo lote ficou só no site. Gerado com a API do LTX a partir das pinturas do
+  próprio projeto (`assets/CREDITOS.md`); `*.ogv` entra como binário no Git, sem LFS.
+- **A tela do JOGAR só sai quando o vale termina de verdade.** `prototype.gd` avisa
+  `carga_concluida` no fim do `_ready` (moradores, bichos, telas, partida salva); a
+  `tela_carregamento.gd` reserva o último décimo da barra para esse trecho, espera o
+  aviso com teto de 15 s e segura 3 quadros com o mundo visível por baixo da tela opaca
+  antes do fade, para os shaders compilarem escondidos. Não encurta a carga: troca
+  "terminou e congelou" por uma barra que fecha quando acabou (relatório C4/C5 de
+  `docs/projeto/DESEMPENHO_05_10_2026.md`).
+- Histórico do jogo: `build_numero` 9 e a entrada "Edição Tripothon" (05/10/2026) nos
+  três idiomas, com o que mudou na build de desempenho: carga sem o congelamento de
+  19 s, FPS dobrado (sombra, faces de trás, mata mais leve), mata pela metade com
+  clareiras de árvore-destaque, minimapa pintado e estático, e o lobby em vídeo.
 
 ## Em desenvolvimento — 05/10/2026
 

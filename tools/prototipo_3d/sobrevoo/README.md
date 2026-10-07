@@ -8,6 +8,15 @@ Os portões `tests/sobrevoo_livre.gd` e `tests/sobrevoo_livre_procedural.gd` con
 trajeto gravado contra o vale de hoje. **Reprovaram depois de você plantar uma árvore
 ou mudar uma casa de lugar perto do voo: replaneje** com os passos abaixo.
 
+**O lobby do menu é o vídeo** (`abertura.gd`, `lobby_em_video`): a abertura libera o
+vale 3D de fundo antes de ele montar, e quem espera o `mundo` fica girando para sempre.
+O extrator liga `lobby_3d_pedido` (uma `static var` da abertura) antes de instanciar a
+cena, e falha na hora, com `FALHA:` na saída, se o menu abrir em vídeo mesmo assim. O
+`--lobby-3d` na linha de comando faz o mesmo para quem joga, mas o runner não passa
+argumento a portão; portão novo que meça o vale de fundo liga `lobby_3d_pedido` por
+`load("res://scripts/prototipo_3d/abertura.gd").set("lobby_3d_pedido", true)`, com `load` e
+não `preload` (a abertura cita autoload).
+
 ## Replanejar (uns 10 minutos)
 
 Rode a partir da raiz do projeto, no Git Bash. `S` é uma pasta de trabalho FORA do

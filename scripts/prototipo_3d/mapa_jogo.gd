@@ -18,6 +18,7 @@ var _tamanho_total := 0.0
 var _marcadores_raiz: Control
 var _marcadores: Array[Dictionary] = []
 var _voce: Label
+var _loucura_no: Node
 
 
 func _ready() -> void:
@@ -115,24 +116,53 @@ func _marcador(nome: String, posicao: Vector3) -> void:
 		_camera.size = minf(_camera.size, 420.0 / _world.get_meters_per_unit())
 		_limitar())
 	_marcadores_raiz.add_child(marcador)
-	_marcadores.append({"control": marcador, "posicao": posicao})
+	_marcadores.append({"control": marcador, "posicao": posicao, "nome": nome})
 
 
 func _atualizar() -> void:
-	_camera.global_position = _alvo + Vector3(0, ALTURA, 0)
-	_camera.look_at(_alvo, Vector3(0, 0, -1))
+	# O MAPA DOIDO (loucura_do_mapa.gd): o mapa escorrega e gira, o "Você" vira "???" e vagueia, e
+	# os nomes dos lugares trocam de dono. Fora da loucura: deriva zero, "cima" é o norte de sempre.
+	var louca := _loucura()
+	var deriva := Vector3.ZERO
+	var cima := Vector3(0, 0, -1)
+	var ordem: Array[int] = []
+	var perdido := false
+	if louca != null:
+		var escorrega: Vector2 = louca.deriva_do_mapa()
+		deriva = Vector3(escorrega.x, 0.0, escorrega.y) * (_camera.size / 330.0)
+		var giro: float = louca.rotacao_do_mapa()
+		cima = Vector3(sin(giro), 0.0, -cos(giro))
+		ordem = louca.ordem_dos_nomes(_marcadores.size())
+		perdido = louca.pegou_nos_nomes()
+	_camera.global_position = _alvo + deriva + Vector3(0, ALTURA, 0)
+	_camera.look_at(_alvo + deriva, cima)
 	var tela := get_viewport().get_visible_rect().size
-	for entrada: Dictionary in _marcadores:
+	for i in range(_marcadores.size()):
+		var entrada: Dictionary = _marcadores[i]
 		var marcador: Button = entrada["control"]
 		var ponto := _camera.unproject_position(entrada["posicao"])
 		marcador.position = ponto + Vector2(5, -13)
 		marcador.visible = Rect2(Vector2.ZERO, tela).has_point(ponto)
+		if not ordem.is_empty():
+			var texto := "● " + String(_marcadores[ordem[i]]["nome"])
+			if marcador.text != texto:
+				marcador.text = texto
 	if is_instance_valid(_voce) and is_instance_valid(_jogador):
 		var ponto := _camera.unproject_position(_jogador.global_position)
+		_voce.text = "▼ ???" if perdido else "▼ Você"
 		# Acima do ponto, para não cobrir o marcador de um lugar onde o jogador está.
 		_voce.reset_size()
 		_voce.position = ponto - Vector2(_voce.size.x * 0.5, _voce.size.y + 18.0)
+		if louca != null:
+			_voce.position += louca.deriva_na_tela(70.0)
 		_voce.visible = Rect2(Vector2.ZERO, tela).has_point(ponto)
+
+
+## O nó da loucura do mapa (`loucura_do_mapa.gd`), achado pelo grupo; null sem ele.
+func _loucura() -> Node:
+	if not is_instance_valid(_loucura_no):
+		_loucura_no = get_tree().get_first_node_in_group(&"loucura_do_mapa") if is_inside_tree() else null
+	return _loucura_no
 
 
 func _limitar() -> void:

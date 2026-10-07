@@ -32,6 +32,16 @@ extends Node3D
 ## cercado do cemitério (`cemiterio_vale.gd`) — pede `reassar()`. A malha velha
 ## vale até a nova entrar no mapa, e quem pede durante uma assada ganha outra
 ## logo depois, com o que mudou nesse meio tempo.
+##
+## A PRIMEIRA ASSADA ESPERA O `_ready` DO VALE ACABAR (`_primeira_assada`): a malha era
+## assada no meio dele, antes de o saveiro, o cercado da ponte e o resto nascerem, e a
+## segunda assada que as obras da ponte pediam era um acaso — entre uma e outra a malha
+## já estava "pronta" e não conhecia o barco atracado, que o morador (o Pedro, na ponta
+## da prancha, no primeiro minuto do jogo) atravessava. Uma assada só, com tudo.
+##
+## O CASCO DO SAVEIRO ATRACADO é obstáculo declarado (`_casco_do_saveiro`), e não o que a
+## malha acha do triângulo dele: o convés do casco virava chão ligado ao píer pela
+## prancha, e o contorno simplificado da malha raspava a quina do barco.
 
 signal pronta
 
@@ -67,6 +77,9 @@ var _agua := -INF
 var _sonda := Vector3.INF
 var _assando := false
 var _de_novo := false
+## Verdadeiro entre `configurar` e a primeira assada, que espera o `_ready` do vale
+## acabar: quem pede `reassar()` nesse intervalo não precisa de assada própria.
+var _adiada := false
 ## Quantas malhas já entraram no mapa: a primeira, e uma a cada `reassar`.
 var versao := 0
 
@@ -80,7 +93,7 @@ func configurar(mundo, raiz: Node) -> void:
 	var area := _area()
 	if not area.has_volume():
 		return
-	_agua = float(mundo.water_level()) if mundo.has_method("water_level") else -INF
+	_agua = _nivel_da_preamar()
 	_sonda = mundo.ancoras.get("Praça", Vector3.INF)
 	_malha = NavigationMesh.new()
 	_malha.cell_size = CELULA
@@ -95,12 +108,33 @@ func configurar(mundo, raiz: Node) -> void:
 	var mapa: RID = get_world_3d().navigation_map
 	NavigationServer3D.map_set_cell_size(mapa, CELULA)
 	NavigationServer3D.map_set_cell_height(mapa, ALTURA_DA_CELULA)
+	# Adiada: o `_ready` do vale ainda cria o saveiro, o cercado da ponte e o cemitério.
+	_adiada = true
+	_primeira_assada.call_deferred()
+
+
+## O MAR NA PREAMAR, e não o do instante. A malha se assa uma vez e o mar sobe e desce (a maré vem ligada): assada
+## com a água do instante, na baixa-mar ela guardava a faixa de areia que a cheia cobre, e na cheia o Pedro e
+## os moradores seguiam um caminho que entra no mar. Com o nível da preamar a malha é só do chão que nunca molha,
+## seja a hora em que o vale se monta — `tests/navegacao.gd` monta o vale na baixa-mar e confere.
+func _nivel_da_preamar() -> float:
+	var regiao = _mundo.get("_region")
+	if regiao != null and regiao.has_method("water_level"):
+		var nivel := float(regiao.water_level())
+		if is_finite(nivel):
+			return nivel
+	return float(_mundo.water_level()) if _mundo.has_method("water_level") else -INF
+
+
+## A primeira assada, depois de o `_ready` que chamou `configurar` terminar de montar o vale.
+func _primeira_assada() -> void:
+	_adiada = false
 	_assar()
 
 
 ## O VALE MUDOU: assa de novo. Durante uma assada, fica pedida a próxima.
 func reassar() -> void:
-	if _malha == null:
+	if _malha == null or _adiada:
 		return
 	if _assando:
 		_de_novo = true
@@ -115,7 +149,67 @@ func _assar() -> void:
 	NavigationServer3D.parse_source_geometry_data(_malha, fonte, _raiz)
 	_troncos_da_mata(fonte, _malha.filter_baking_aabb)
 	_leito_dos_rios(fonte, _malha.filter_baking_aabb)
+	_casco_do_saveiro(fonte)
+	_alicerces(fonte)
 	NavigationServer3D.bake_from_source_geometry_data_async(_malha, fonte, _ao_assar)
+
+
+## O CASCO DO SAVEIRO ATRACADO como obstáculo: o retângulo dele (`SaveiroVale.pegada_do_casco`),
+## do fundo da quilha até além da borda. SEM "carve", como os troncos: o buraco cresce do raio
+## do agente, e o caminho não raspa o casco. O mesmo obstáculo come o convés e o pedaço da
+## prancha que ficam dentro dele. Barco fora do píer: nada.
+func _casco_do_saveiro(fonte: NavigationMeshSourceGeometryData3D) -> void:
+	if not is_inside_tree():
+		return
+	var saveiro := get_tree().get_first_node_in_group("saveiro")
+	if saveiro == null or not saveiro.has_method("pegada_do_casco"):
+		return
+	var pegada: Dictionary = saveiro.pegada_do_casco()
+	if pegada.is_empty():
+		return
+	fonte.add_projected_obstruction(pegada["contorno"], float(pegada["elevacao"]), float(pegada["altura"]), false)
+
+
+## OS ALICERCES — plataforma baixa debaixo de uma construção (o da capelinha: 1,07 de altura, 0,35 maior que
+## ela de cada lado) — são obstáculo com FOLGA. A parede de um alicerce passa do degrau do agente (`DEGRAU`) e a
+## malha o contorna rente, e o contorno simplificado da malha (o `edge_max_error` do Recast, 0,26 m aqui) cortava
+## a quina dele: o caminho da praça à casa de taipa raspava a esquina e o corpo, mais largo que o agente, prendia
+## (`tests/colisoes_de_passeio.gd`, que o conferia andando e carregava isto como exceção). Cada alicerce entra na
+## fonte da malha como obstáculo projetado, com a pegada aberta em `FOLGA_DO_ALICERCE` de cada lado; sem "carve"
+## o buraco ainda cresce do raio do agente, e o caminho passa a uns 0,55 da parede. Alicerce = corpo de caixa,
+## direto no mundo, mais alto que o degrau e mais baixo que o agente, com 3 u ou mais de lado.
+const FOLGA_DO_ALICERCE := 0.35
+const LADO_MINIMO_DO_ALICERCE := 3.0
+
+
+func _alicerces(fonte: NavigationMeshSourceGeometryData3D) -> void:
+	for alicerce in alicerces():
+		fonte.add_projected_obstruction(alicerce["contorno"], float(alicerce["base"]) - 0.2, float(alicerce["altura"]) + 0.4, false)
+
+
+## Os alicerces do mundo: {"nome", "contorno" (a pegada com folga, no chão), "base", "altura"}.
+func alicerces() -> Array[Dictionary]:
+	var achados: Array[Dictionary] = []
+	if _mundo == null:
+		return achados
+	for corpo in _mundo.get_children():
+		if corpo is not StaticBody3D or ((corpo as StaticBody3D).collision_layer & 1) == 0:
+			continue
+		for filho in corpo.get_children():
+			if filho is not CollisionShape3D or (filho as CollisionShape3D).disabled or (filho as CollisionShape3D).shape is not BoxShape3D:
+				continue
+			var caixa: Vector3 = ((filho as CollisionShape3D).shape as BoxShape3D).size
+			if caixa.y < DEGRAU + 0.1 or caixa.y > ALTURA - 0.2 or minf(caixa.x, caixa.z) < LADO_MINIMO_DO_ALICERCE:
+				continue
+			var t: Transform3D = (filho as CollisionShape3D).global_transform
+			var metade := Vector2(caixa.x * 0.5 + FOLGA_DO_ALICERCE, caixa.z * 0.5 + FOLGA_DO_ALICERCE)
+			var contorno := PackedVector3Array()
+			for sinal in [Vector2(-1.0, -1.0), Vector2(1.0, -1.0), Vector2(1.0, 1.0), Vector2(-1.0, 1.0)]:
+				var canto: Vector3 = t * Vector3(sinal.x * metade.x / maxf(t.basis.x.length(), 0.0001), 0.0, sinal.y * metade.y / maxf(t.basis.z.length(), 0.0001))
+				canto.y = 0.0
+				contorno.append(canto)
+			achados.append({"nome": str(corpo.name), "contorno": contorno, "base": t.origin.y - caixa.y * 0.5, "altura": caixa.y})
+	return achados
 
 
 func esta_pronta() -> bool:
@@ -201,7 +295,14 @@ func _troncos_da_mata(fonte: NavigationMeshSourceGeometryData3D, area: AABB) -> 
 const MARGEM_DO_RIO := 0.3
 const ACIMA_DA_AGUA := 0.3
 
+const CORTAR_O_LEITO := false
+
+
 func _leito_dos_rios(fonte: NavigationMeshSourceGeometryData3D, area: AABB) -> void:
+	# Decisão de 06/10: atravessar o rio a pé vale. Com o rio grande fundo e a ponte caída, tirar o leito da malha
+	# deixava o Pedro sem caminho até a Dona Zefa no tutorial. O corte fica desligado; a função segue para quem o religar.
+	if not CORTAR_O_LEITO:
+		return
 	var regiao = _mundo.get("_region")
 	if regiao == null:
 		return

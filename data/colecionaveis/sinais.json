@@ -32,6 +32,33 @@
         "A pegada virada para trás é a assinatura da Caipora, que anda de costas para quem a segue.",
         "Ela não estava escondida. Ela estava olhando você contar até dez."
       ]
+    },
+
+    "pegadas_ao_contrario": {
+      "titulo": "Pegadas ao contrário",
+      "titulo_en": "Footprints the wrong way round",
+      "titulo_es": "Huellas al revés",
+      "onde": "bem no fundo da mata, longe de qualquer caminho",
+      "onde_en": "deep in the forest, far from any path",
+      "onde_es": "en lo más hondo del monte, lejos de cualquier camino",
+      "quando": "a qualquer hora, com a mata calada",
+      "quando_en": "at any hour, with the forest gone quiet",
+      "quando_es": "a cualquier hora, con el monte callado",
+      "sinal": [
+        "Pegadas de pé de criança, uma atrás da outra, no meio do mato fechado onde ninguém passa.",
+        "Os dedos apontam para trás: quem as deixou andou para um lado com os pés virados para o outro.",
+        "Um assobio fino, de lugar nenhum. E o mapa, que você sempre soube ler, já não sabia onde ficava o norte."
+      ],
+      "sinal_en": [
+        "A child's footprints, one after the other, deep in the thick brush where nobody goes.",
+        "The toes point backwards: whoever left them walked one way with their feet turned the other.",
+        "A thin whistle from nowhere. And the map, which you always knew how to read, no longer knew where north was."
+      ],
+      "sinal_es": [
+        "Huellas de pies de niño, una tras otra, en pleno monte cerrado donde nadie pasa.",
+        "Los dedos apuntan hacia atrás: quien las dejó caminó hacia un lado con los pies vueltos hacia el otro.",
+        "Un silbido fino, de ninguna parte. Y el mapa, que siempre supiste leer, ya no sabía dónde quedaba el norte."
+      ]
     }
   }
 }

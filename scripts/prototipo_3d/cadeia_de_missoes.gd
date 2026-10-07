@@ -75,9 +75,20 @@ signal cena(nome: String)
 
 const IdiomaMenu = preload("res://scripts/prototipo_3d/idioma_menu.gd")
 const Atalhos = preload("res://scripts/prototipo_3d/atalhos.gd")
+const FilaDeFalas = preload("res://scripts/prototipo_3d/fila_de_falas.gd")
 ## Toda cadeia viva entra neste grupo: é por ele que um morador pergunta se tem
 ## missão com o jogador antes de cumprimentar (`npc.gd`, `tem_missao`).
 const GRUPO := &"cadeias_de_missoes"
+## O QUE O MORADOR AINDA DEVE, guardado na memória da cadeia (`_levados`, que vai
+## no save): a ferramenta ou a recompensa que não coube na mochila cheia, como
+## "pendente:<item>:<quantos>:<n>". Ver `_dar`.
+const PENDENTE := "pendente:"
+## A ENTREGA DO PASSO JÁ FOI FEITA, por id: "entregou:<passo>". Ver `retomar`.
+const ENTREGOU := "entregou:"
+## De quanto em quanto tempo o que não coube tenta entrar na mochila de novo.
+const TENTAR_DE_NOVO := 1.0
+## Os avisos da mochila cheia, nos três idiomas.
+const AVISOS := "res://data/entregas_pendentes.json"
 
 ## Quem fala. Precisa de `narrar(audio, texto)`.
 var dono: Node3D = null
@@ -132,21 +143,26 @@ var espera := 0.0
 var despedida_feita := false
 ## O último resumo mandado ao HUD, para só reenviar quando ele muda.
 var _resumo_mostrado := ""
-## A VEZ DE FALAR TEM PRAZO. O anúncio espera a palavra livre — ninguém falando
-## a RAIO_CONVERSA do jogador —, e num lugar cheio (a praça, o píer) um
-## cumprimento emendava no outro: o passo nunca anunciava, e a meta dele nunca
-## começava a contar. Foi a chave com a Dona Candinha que "não deu para
-## interagir". Esperada a vez por este tanto, o passo anuncia mesmo assim.
-## Oito segundos: o balão mais longo (`npc.LEITURA_MAXIMA`), para a resposta de
-## quem fala ser lida inteira antes do passo seguinte (#101). Os portões
-## `interacao` e `cadeia_das_missoes` cobram o anúncio em doze com alguém
-## falando sem parar, contando a folga do passo.
-const ESPERA_MAXIMA_PELA_VEZ := 8.0
-var _esperou_a_vez := 0.0
+## O ANÚNCIO NÃO ESPERA A PALAVRA, E NÃO FALA POR CIMA. Ele esperava ninguém
+## falar perto, e num lugar cheio (a praça, o píer) um cumprimento emendava no
+## outro: o passo nunca anunciava ("não deu para interagir" com a Dona
+## Candinha). O remendo foi um prazo, `ESPERA_MAXIMA_PELA_VEZ`, seis segundos
+## depois dos quais o passo falava POR CIMA de quem estivesse falando — e as
+## falas se sobrepunham de propósito. Agora o anúncio acontece na hora — a
+## ferramenta, o caderno, o objetivo — e a FALA dele entra na fila de falas
+## (`fila_de_falas.gd`), que não deixa duas no ar e não deixa o cumprimento de
+## quem passa furar a vez.
+## O arremate já pedido à fila, que ainda não acabou de ser dito.
+var _arremate_pedido := false
+var _proxima_tentativa := 0.0
+static var _avisos: Dictionary = {}
 ## O NOME DA MISSÃO INTEIRA ("O cemitério esquecido"), que é o que o diário
 ## lista e o HUD escreve em cima do objetivo — o passo é só onde ela está. Vem
 ## do campo `nome` do arquivo, nos três idiomas.
 var nome_da_missao := ""
+## O QUE O DONO DIZ NO E ENQUANTO A FILA ESTÁ TRANCADA (`dica_da_trancada`): o que fazer antes,
+## "volte depois de ...", nos três idiomas (`trancada`, `trancada_en`, `trancada_es`).
+var trancada_texto := ""
 
 
 ## Lê os passos do arquivo, já no idioma escolhido.
@@ -185,6 +201,7 @@ func carregar(caminho: String) -> bool:
 	chave = str(dado.get("dono", ""))
 	principal = bool(dado.get("principal", false))
 	nome_da_missao = str(IdiomaMenu.campo(dado, "nome", ""))
+	trancada_texto = str(IdiomaMenu.campo(dado, "trancada", ""))
 	arremate = dado.get("arremate", {}).duplicate()
 	arremate["texto"] = str(IdiomaMenu.campo(arremate, "texto"))
 	return not passos.is_empty()
@@ -257,13 +274,11 @@ func texto_do_passo() -> String:
 
 ## UM PULSO DA CADEIA. O morador chama isto do `_physics_process` dele.
 ##
-## `palavra_livre` é a pergunta "posso falar agora?", e vem DE FORA porque
-## quem sabe respondê-la é o morador: ele conhece os outros que falam perto
-## dele e a posição do jogador. A cadeia só precisa saber se pode ou não.
-func correr(delta: float, palavra_livre: bool) -> void:
-	if acabou() and not despedida_feita and palavra_livre \
+## `palavra_livre` ficou de fora da conta: quem decide a vez de falar é a fila de
+## falas (ver `_arremate_pedido`). O parâmetro continua para quem o passa.
+func correr(delta: float, _palavra_livre: bool = true) -> void:
+	if acabou() and not despedida_feita and not _arremate_pedido \
 			and not str(arremate.get("texto", "")).is_empty():
-		despedida_feita = true
 		# ARREMATE QUE NÃO SE FALA. Por padrão o dono da cadeia diz a última
 		# frase, que é o certo quando ele está por perto — o Pedro termina o
 		# tutorial do lado do jogador.
@@ -274,7 +289,15 @@ func correr(delta: float, palavra_livre: bool) -> void:
 		# própria meta narra na boca dele, e o arremate é só a nota que fica no
 		# objetivo. `narra: false` no dado diz isso.
 		if bool(arremate.get("narra", true)):
-			_falar("", str(arremate["texto"]))
+			# A DESPEDIDA SE DÁ POR FEITA QUANDO ACABA DE SER DITA, e não quando é
+			# pedida: o Pedro só volta à vida de pescador depois de dizer a última
+			# frase do tutorial, e não com ela esperando a vez na fila.
+			_arremate_pedido = true
+			if not _falar("", str(arremate["texto"]), FilaDeFalas.Classe.MISSAO, "arremate:%d" % get_instance_id(),
+					{"ao_terminar": _arremate_dito}):
+				_arremate_dito()
+		else:
+			despedida_feita = true
 	if not iniciado or missao < 0 or missao >= passos.size():
 		return
 
@@ -288,14 +311,8 @@ func correr(delta: float, palavra_livre: bool) -> void:
 	if espera > 0.0:
 		espera -= delta
 		if espera <= 0.0:
-			if palavra_livre or _esperou_a_vez >= ESPERA_MAXIMA_PELA_VEZ:
-				_esperou_a_vez = 0.0
-				anunciar()
-			else:
-				# Alguém ainda fala por perto: tenta de novo daqui a pouco — mas
-				# não para sempre (ver ESPERA_MAXIMA_PELA_VEZ).
-				_esperou_a_vez += 0.25
-				espera = 0.25
+			espera = 0.0
+			anunciar()
 		return
 
 	var passo: Dictionary = passos[missao]
@@ -328,6 +345,13 @@ func correr(delta: float, palavra_livre: bool) -> void:
 ## O que o jogador precisa ao voltar é o OBJETIVO, não a fala: onde ir e o que
 ## falta. Isso é o caderno e o marcador, e os dois se põem aqui sem balão. A fala
 ## já aconteceu uma vez, e uma vez é o que ela vale.
+##
+## MAS A FERRAMENTA, SIM. O anúncio é quem entrega o que o passo promete (a
+## picareta do lajedo, o machado do avô, a foice, a vara), e salvar no respiro
+## entre um passo fechar e o seguinte anunciar dava uma partida em que o anúncio
+## nunca mais vinha: sem picareta, sem lajedo, sem o resto da chegada. Retomar
+## entrega o que o passo ainda deve — uma vez: a marca `ENTREGOU` vai no save, e
+## quem já recebeu e vendeu não ganha outra recarregando.
 func retomar() -> void:
 	# ZERO, E NÃO UM NÚMERO PEQUENO: o `correr` só anuncia quando `espera` VENCE,
 	# então espera que nasce zerada nunca chega ao anúncio.
@@ -335,21 +359,47 @@ func retomar() -> void:
 	if missao < 0 or missao >= passos.size():
 		return
 	var passo: Dictionary = passos[missao]
+	if not bool(_levados.get(_marca_da_entrega(passo), false)):
+		entregar(passo)
 	_registrar_no_caderno(passo)
 	_mostrar_o_resumo(passo)
 	_chamar_o_mutirao(passo)
 
 
-## Anuncia o passo em curso: entrega o que ele promete e fala.
-func anunciar() -> void:
+## Anuncia o passo em curso: entrega o que ele promete e fala. A entrega, o
+## caderno e o objetivo vêm NA HORA; a fala, na vez dela (`fila_de_falas.gd`).
+## `classe` é a da fala: o anúncio que o jogador pediu com o E (a fila que abre
+## na conversa) é resposta, e passa na frente dos anúncios.
+##
+## A ENTREGA VEM DEPOIS DE PEDIR A FALA, no mesmo quadro: com a vez livre a fala
+## entra já e põe o texto dela no aviso do HUD, e o aviso da entrega ("Recebido:
+## picareta. Aperte 3", ou o da mochila cheia) tem de ficar por cima dele.
+func anunciar(classe: int = FilaDeFalas.Classe.MISSAO, extra: Dictionary = {}) -> void:
 	var passo := passo_atual()
 	if passo.is_empty():
 		return
-	entregar(passo)
 	_registrar_no_caderno(passo)
-	_falar(str(passo.get("audio", "")), str(passo.get("texto", "")))
+	_falar(str(passo.get("audio", "")), str(passo.get("texto", "")), classe, _origem_do_anuncio(passo), extra)
+	entregar(passo)
 	_mostrar_o_resumo(passo)
 	_chamar_o_mutirao(passo)
+
+
+## DE ONDE VEM O ANÚNCIO DE UM PASSO, para a fila de falas: o passo que fecha cala
+## o próprio anúncio (`_calar_o_anuncio`), que não tem mais o que pedir.
+func _origem_do_anuncio(passo: Dictionary) -> String:
+	return "anuncio:%d:%s" % [get_instance_id(), str(passo.get("id", ""))]
+
+
+func _calar_o_anuncio(passo: Dictionary) -> void:
+	var fila := FilaDeFalas.da(self)
+	if fila != null and not passo.is_empty():
+		fila.calar(_origem_do_anuncio(passo))
+
+
+func _arremate_dito() -> void:
+	despedida_feita = true
+	_arremate_pedido = false
 
 
 ## O OBJETIVO DO HUD É O RESUMO, e não a fala.
@@ -523,9 +573,17 @@ func _nome_de(quem: String) -> String:
 		return quem
 	return str((no.dados as Dictionary).get("nome", quem))
 
-func _falar(audio: String, texto: String) -> void:
-	if dono != null and dono.has_method("narrar"):
-		dono.narrar(audio, texto)
+## A FALA DO DONO, NA FILA DE FALAS (`npc.narrar`, `voz_do_marco.narrar`):
+## `classe` e `origem` dizem à fila quem é ela, e `extra` leva o resto do pedido
+## (`no_lugar`, `ao_terminar`). Devolve se havia quem falasse.
+func _falar(audio: String, texto: String, classe: int = FilaDeFalas.Classe.MISSAO,
+		origem: String = "", extra: Dictionary = {}) -> bool:
+	if dono == null or not dono.has_method("narrar"):
+		return false
+	var pedido := {"classe": classe, "origem": origem}
+	pedido.merge(extra, true)
+	dono.narrar(audio, texto, pedido)
+	return true
 
 
 ## O nome de quem fala na frente da fala, que é como o HUD do vale já mostrava
@@ -558,12 +616,17 @@ func _nome_do_dono() -> String:
 ## dele na barra põe o machado na mão".
 ##
 ## Entrega uma vez só: o anúncio de cada passo acontece uma vez, e retomar o
-## passo não reanuncia.
+## passo não reanuncia (mas entrega o que faltou: ver `retomar`).
 ##
 ## UMA ENTREGA OU VÁRIAS: a primeira leira pede a enxada E a maniva na mesma
 ## fala. A PRIMEIRA ferramenta da lista é a que o HUD aponta na barra — a
 ## enxada, que é o primeiro gesto; a maniva vai para a mochila.
+##
+## COM A MOCHILA CHEIA a ferramenta não se perde: fica devendo (`_dar`), o HUD
+## diz que falta espaço, e ela entra sozinha quando abrir um. Antes ela sumia, e
+## o HUD não dizia nada — e passo sem a ferramenta que ele cobra é passo preso.
 func entregar(passo: Dictionary) -> void:
+	_levados[_marca_da_entrega(passo)] = true
 	# O GOLPE QUE O PASSO ENSINA (`ensina`), na mesma fala que o pede: o golpe
 	# forte, a ginga, a meia-lua e a rasteira do `Luta` só valem para quem os
 	# aprendeu, e no vale só a missão os ensina.
@@ -574,14 +637,74 @@ func entregar(passo: Dictionary) -> void:
 		var item := str(entrega.get("item", ""))
 		if item == "":
 			continue
-		# Não duplica um item já recebido ou vestido em uma partida salva.
-		if not Inventario.tem(item) and not _na_mao(item):
-			if not Inventario.adicionar(item, int(entrega.get("quantidade", 1))):
+		# Não duplica um item já recebido, vestido ou devido em uma partida salva.
+		if not Inventario.tem(item) and not _na_mao(item) and not _devendo(item):
+			if not _dar(item, int(entrega.get("quantidade", 1))):
 				continue
 		if apontar == "":
 			apontar = item if Catalogo.tipo(item) == "ferramenta" or Equipamento.e_equipamento(item) else ""
-	if apontar != "":
+	if apontar != "" and Inventario.tem(apontar):
 		_por_na_barra(apontar)
+
+
+## A marca de que a entrega deste passo já foi feita (ver `retomar`).
+static func _marca_da_entrega(passo: Dictionary) -> String:
+	return ENTREGOU + str(passo.get("id", ""))
+
+
+## DÁ O ITEM, OU FICA DEVENDO. Com a mochila cheia ele fica guardado na memória
+## da cadeia (vai no save), o HUD diz que falta espaço, e a cada TENTAR_DE_NOVO
+## ele tenta entrar (`_entregar_o_que_ficou`). Devolve se entrou agora.
+func _dar(item: String, quantidade: int, avisar := true) -> bool:
+	if Inventario.adicionar(item, quantidade):
+		return true
+	var n := 0
+	while _levados.has("%s%s:%d:%d" % [PENDENTE, item, quantidade, n]):
+		n += 1
+	_levados["%s%s:%d:%d" % [PENDENTE, item, quantidade, n]] = true
+	_proxima_tentativa = TENTAR_DE_NOVO
+	if avisar:
+		entregou.emit(_aviso("mochila_cheia") % ["%d %s" % [quantidade, _nome_do_item(item).to_lower()], _nome_do_dono()])
+	return false
+
+
+## Este item está guardado, esperando espaço na mochila?
+func _devendo(item: String) -> bool:
+	for chave in _levados:
+		if str(chave).begins_with(PENDENTE + item + ":"):
+			return true
+	return false
+
+
+## O QUE NÃO COUBE ENTRA QUANDO ABRE ESPAÇO, com o recado do que entrou; a
+## ferramenta vai para a barra, como na entrega.
+func _entregar_o_que_ficou() -> void:
+	for chave in _levados.keys():
+		var texto := str(chave)
+		if not texto.begins_with(PENDENTE):
+			continue
+		var partes := texto.trim_prefix(PENDENTE).split(":")
+		if partes.size() < 2 or not Catalogo.existe(partes[0]):
+			_levados.erase(chave)
+			continue
+		var item := partes[0]
+		var quantidade := maxi(int(partes[1]), 1)
+		if not Inventario.adicionar(item, quantidade):
+			return
+		_levados.erase(chave)
+		pagou.emit(_aviso("recebido_depois") % [_nome_do_dono(), "%d %s" % [quantidade, _nome_do_item(item).to_lower()]])
+		if Catalogo.tipo(item) == "ferramenta" or Equipamento.e_equipamento(item):
+			_por_na_barra(item)
+
+
+## O AVISO `chave` de data/entregas_pendentes.json, no idioma do jogo.
+static func _aviso(chave: String) -> String:
+	if _avisos.is_empty():
+		var lido = JSON.parse_string(FileAccess.get_file_as_string(AVISOS))
+		_avisos = lido if lido is Dictionary else {"_vazio": true}
+	var dado = _avisos.get(chave, {})
+	var texto := str(IdiomaMenu.campo(dado, "texto", "")) if dado is Dictionary else ""
+	return texto if texto.count("%s") == 2 else "%s · %s"
 
 
 ## As entregas do passo como lista, nas duas formas que o dado aceita: um objeto
@@ -734,21 +857,35 @@ func _eventos_feitos(meta: Dictionary) -> int:
 ##
 ## O HUD diz o que se ganhou (`pagou`), e o diário escreve ao lado do
 ## objetivo riscado (`_feitos`).
+##
+## O QUE NÃO COUBE NA MOCHILA fica devendo (`_dar`): o HUD diz "Recebido" só do
+## que entrou, e o resto entra quando abrir espaço.
 func _pagar(passo: Dictionary) -> void:
 	var recompensa: Dictionary = passo.get("recompensa", {})
 	if recompensa.is_empty():
 		return
+	var entrou: Array[String] = []
+	var ficou: Array[String] = []
 	for chave in recompensa:
 		var quanto := int(recompensa[chave])
 		if str(chave) == "reis":
 			Jogo.dinheiro += quanto
+			entrou.append(tr("%d réis") % quanto)
 		elif str(chave) == "xp":
 			# As missões pagam XP (#107, decisão do autor em 06/10): pela teia de
 			# talentos, como as obras e o trabalho.
 			Talentos.ganhar_pontos(float(quanto))
 		elif Catalogo.existe(str(chave)):
-			Inventario.adicionar(str(chave), quanto)
-	pagou.emit(tr("Recebido de %s: %s") % [_quem_paga(passo), _texto_da_recompensa(passo)])
+			var nome := "%d %s" % [quanto, _nome_do_item(str(chave)).to_lower()]
+			if _dar(str(chave), quanto, false):
+				entrou.append(nome)
+			else:
+				ficou.append(nome)
+	if not entrou.is_empty():
+		pagou.emit(tr("Recebido de %s: %s") % [_quem_paga(passo), ", ".join(entrou)])
+	# O aviso da mochila cheia por último: o HUD mostra o recado mais novo.
+	if not ficou.is_empty():
+		entregou.emit(_aviso("mochila_cheia") % [", ".join(ficou), _quem_paga(passo)])
 
 
 ## QUEM PAGA é quem pediu. O Pedro conduz a chegada, mas o peixe é do Tonho e a
@@ -780,6 +917,10 @@ func avancar() -> void:
 	# que está em curso e não o histórico inteiro.
 	var fechando := passo_atual()
 	if not fechando.is_empty():
+		# O ANÚNCIO DO PASSO QUE FECHOU NÃO TEM MAIS O QUE PEDIR: sai da fila de
+		# falas, ou do ar, se ainda estava lá. O jogador já fez o que ele dizia, e
+		# a fala inteira continua no caderno (J).
+		_calar_o_anuncio(fechando)
 		_pagar(fechando)
 		_dispensar_o_mutirao(fechando)
 		# MISSÃO DE FÉ RENDE NA FÉ ATIVA, e no ofício também, como no 2D
@@ -981,6 +1122,11 @@ var folga_inicial := 2.0
 func _physics_process(delta: float) -> void:
 	if dono == null or jogador == null:
 		return
+	# O QUE FICOU DEVENDO tenta entrar na mochila de tempos em tempos (`_dar`).
+	_proxima_tentativa -= delta
+	if _proxima_tentativa <= 0.0:
+		_proxima_tentativa = TENTAR_DE_NOVO
+		_entregar_o_que_ficou()
 	if not iniciado and depois_de.is_valid() and not bool(depois_de.call()):
 		return
 	if so_enquanto.is_valid() and not bool(so_enquanto.call()):
@@ -989,17 +1135,7 @@ func _physics_process(delta: float) -> void:
 	# falar com ele, e não começa a falar sozinho quando o jogador passa perto.
 	if comeca_perto_de > 0.0 and not iniciado:
 		return
-	correr(delta, _palavra_livre())
-
-
-## O morador pode falar agora? Nem ele nem o jogador podem estar ao alcance de
-## outra fala — é a regra do `npc.gd`, e quem a responde é o dono.
-func _palavra_livre() -> bool:
-	if dono.has_method("pode_falar") and not dono.pode_falar():
-		return false
-	if dono.has_method("fala_perto_de") and dono.fala_perto_de(jogador.global_position):
-		return false
-	return true
+	correr(delta)
 
 
 ## O MORADOR DE ID `quem`, ou null. Pergunta respondida de fora — ver
@@ -1110,20 +1246,23 @@ func _tentar_encontro(passo: Dictionary) -> void:
 ##     e diz o primeiro passo;
 ##   - quem o passo de agora manda procurar (`falar`), ou a quem levar alguma
 ##     coisa (`levar`, com tudo na mochila), recebe e responde.
+##
+## A RESPOSTA DO E É FALA, E ESPERA A VEZ (`fila_de_falas.gd`) como qualquer
+## outra — mas é a primeira da fila (`Classe.CONVERSA`), e quem foi procurado no
+## meio de uma fala dele troca essa fala pela resposta (`no_lugar`).
 func interagir(morador: Node3D) -> bool:
 	match o_que_o_e_faz(morador):
 		"abrir":
 			comecar(0.0)
-			anunciar()
+			anunciar(FilaDeFalas.Classe.CONVERSA, {"no_lugar": true})
 			return true
 		"falar", "entregar":
 			var passo := passo_atual()
-			# O PASSO QUE AINDA NÃO SE ANUNCIOU — a palavra estava ocupada — se
-			# cumpre do mesmo jeito: quem foi direto à pessoa recebe junto o que o
+			# O PASSO QUE AINDA NÃO SE ANUNCIOU — o respiro entre um passo e outro —
+			# se cumpre do mesmo jeito: quem foi direto à pessoa recebe junto o que o
 			# anúncio daria, a ferramenta e a linha no caderno, sem a fala.
 			if espera > 0.0:
 				espera = 0.0
-				_esperou_a_vez = 0.0
 				entregar(passo)
 				_registrar_no_caderno(passo)
 				_mostrar_o_resumo(passo)
@@ -1181,6 +1320,9 @@ func _recebe(passo: Dictionary, morador: Node3D) -> bool:
 
 ## O ENCONTRO: o que se leva sai da mochila, a memória guarda que aconteceu, e
 ## QUEM FALA NO FIM É QUEM RECEBE, e não quem pediu.
+##
+## O anúncio do passo cala antes: o jogador acabou de fazer o que ele pedia, e a
+## resposta não espera o fim de um pedido já cumprido.
 func _encontrar(passo: Dictionary, quem: Node3D) -> void:
 	var meta: Dictionary = passo.get("meta", {})
 	if str(meta.get("tipo", "")) == "levar":
@@ -1188,9 +1330,11 @@ func _encontrar(passo: Dictionary, quem: Node3D) -> void:
 		for qual in carga:
 			Inventario.consumir(str(qual), int(carga[qual]))
 	_levados[str(passo.get("id", ""))] = true
+	_calar_o_anuncio(passo)
 	var resposta := str(meta.get("resposta", ""))
 	if resposta != "" and quem.has_method("narrar"):
-		quem.narrar("", resposta)
+		quem.narrar("", resposta, {"classe": FilaDeFalas.Classe.CONVERSA, "no_lugar": true,
+			"origem": "resposta:%d:%s" % [get_instance_id(), str(passo.get("id", ""))]})
 
 
 # --- os lugares da fé (#52) -----------------------------------------------------
@@ -1226,9 +1370,10 @@ func _tentar_oferenda(passo: Dictionary, meta: Dictionary) -> void:
 	for qual in carga:
 		Inventario.consumir(str(qual), int(carga[qual]))
 	_levados[id] = true
+	_calar_o_anuncio(passo)
 	var resposta := str(meta.get("resposta", ""))
 	if resposta != "":
-		_falar("", resposta)
+		_falar("", resposta, FilaDeFalas.Classe.CONVERSA, "resposta:%d:%s" % [get_instance_id(), id])
 
 
 ## Os lugares da meta que o vale tem. Lugar que ainda não existe some da conta,
@@ -1343,10 +1488,18 @@ func _receber_o_mutirao(passo: Dictionary) -> void:
 			continue
 		_levados[chave_do_ajudante] = true
 		var partes: Array[String] = []
+		var ficou: Array[String] = []
 		for item in traz:
-			Inventario.adicionar(str(item), int(traz[item]))
-			partes.append("%d %s" % [int(traz[item]), _nome_do_item(str(item)).to_lower()])
-		pagou.emit(tr("Mutirão: %s trouxe %s") % [_nome_de(str(quem)), ", ".join(partes)])
+			var nome := "%d %s" % [int(traz[item]), _nome_do_item(str(item)).to_lower()]
+			# O que não coube fica devendo, como a recompensa (`_dar`).
+			if _dar(str(item), int(traz[item]), false):
+				partes.append(nome)
+			else:
+				ficou.append(nome)
+		if not partes.is_empty():
+			pagou.emit(tr("Mutirão: %s trouxe %s") % [_nome_de(str(quem)), ", ".join(partes)])
+		if not ficou.is_empty():
+			entregou.emit(_aviso("mochila_cheia") % [", ".join(ficou), _nome_de(str(quem))])
 
 
 ## O passo de id `id` já fechou? É o que a fé pergunta para saber se a Dona Zefa
@@ -1356,3 +1509,66 @@ func passou(id: String) -> bool:
 		if str((passos[i] as Dictionary).get("id", "")) == id:
 			return true
 	return false
+
+
+## A OBRA QUE O PASSO DE AGORA PEDE NESTA CONSTRUÇÃO, ou "".
+##
+## "Não consegui interagir com o poço, logo essa missão quebrou." O passo de obra
+## fecha no painel (`Obras.executar`), e nada no vale dizia ao jogador que o E, ou
+## o J, abria o painel ali. Quem quer saber se a missão manda tocar obra num sítio
+## — o E do sítio (`tecla_das_bancadas.gd`), o J que abre direto em Obras, a aba
+## que põe o cursor na obra — pergunta aqui.
+##
+## SÓ DEPOIS DO ANÚNCIO (`espera` zerada): é ele que ensina a planta da obra
+## (`Receitas.passo_abriu`), e antes disso a aba estaria vazia.
+func obra_pedida(construcao: String) -> String:
+	if not iniciado or acabou() or espera > 0.0:
+		return ""
+	if so_enquanto.is_valid() and not bool(so_enquanto.call()):
+		return ""
+	var meta: Dictionary = passo_atual().get("meta", {})
+	if str(meta.get("tipo", "")) != "obra" or str(meta.get("construcao", "")) != construcao:
+		return ""
+	var obra := str(meta.get("obra", ""))
+	return "" if Obras.ja_feita(construcao, obra) else obra
+
+
+## O passo de agora desta fila manda tocar obra nesta construção?
+func pede_obra(construcao: String) -> bool:
+	return obra_pedida(construcao) != ""
+
+
+## A obra que ALGUMA fila viva pede agora nesta construção, ou "" (todas as filas
+## estão no grupo `GRUPO`, a da chegada do Pedro também).
+static func obra_que_se_pede(arvore: SceneTree, construcao: String) -> String:
+	if arvore == null:
+		return ""
+	for cadeia in arvore.get_nodes_in_group(GRUPO):
+		if cadeia.has_method("obra_pedida"):
+			var obra := str(cadeia.obra_pedida(construcao))
+			if obra != "":
+				return obra
+	return ""
+
+
+## A FILA ESTÁ TRANCADA? Ainda não abriu e espera outra coisa (`depois_de`) ou outra fé
+## (`so_enquanto`). É o caso do Damião antes do machado, do Tonho, da carroça do Seu
+## Benedito, da lombada do Pedro e de quem só abre depois do tutorial.
+func esta_trancada() -> bool:
+	if iniciado or comeca_perto_de <= 0.0:
+		return false
+	return (depois_de.is_valid() and not bool(depois_de.call())) \
+		or (so_enquanto.is_valid() and not bool(so_enquanto.call()))
+
+
+## A FILA ANDA AGORA? Abriu e ainda não acabou.
+func em_andamento() -> bool:
+	return iniciado and not acabou()
+
+
+## O QUE O DONO DIZ QUANDO O JOGADOR O PROCURA E A FILA ESTÁ TRANCADA: o que fazer
+## antes, na língua do jogo, ou "" quando a fila não está trancada ou o arquivo não
+## escreveu o aviso (`trancada`). "Só conversa de passagem" deixava o jogador sem saber
+## o que lhe faltava.
+func dica_da_trancada() -> String:
+	return trancada_texto if esta_trancada() else ""

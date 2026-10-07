@@ -18,6 +18,15 @@ const Identidade = preload("res://scripts/prototipo_3d/identidade.gd")
 const VIDEO_LOBBY := TelaCarregamento.VIDEO_SOBREVOO
 var lobby_em_video := false
 var _video_lobby: VideoStreamPlayer
+## O PORTÃO QUE MEDE O VALE 3D DE FUNDO (o sobrevoo conferido contra as árvores e as
+## casas, o MAPA, a vegetação do HOME) pede o lobby 3D por aqui, ANTES de instanciar a
+## cena: o `--lobby-3d` só existe na linha de comando, e o runner não passa argumento a
+## portão. Sem isto o menu libera o vale na entrada, e quem espera o `mundo` fica
+## girando até o teto. É de processo (`static`): fica ligada até o portão acabar.
+## É o mesmo `-- --lobby-3d` para quem carrega a abertura por script: o extrator do
+## sobrevoo (`tools/prototipo_3d/sobrevoo/extrair_geometria.gd`, e os portões
+## `sobrevoo_livre*` que o estendem), o `mapa_fluxo` e o `lobby_em_video`.
+static var lobby_3d_pedido := false
 const VISUAL_PREFERENCES := "user://preferencias_visuais.cfg"
 const FLYOVER_SECONDS := 72.0
 ## Metros reais: a escala do mapa muda as unidades, mas nao a proximidade do voo.
@@ -139,16 +148,9 @@ var _modo_camera := ""
 ## Falso enquanto a tela de carregamento cobre o menu: o foco que o _home() põe no
 ## JOGAR não toca o "tique" de passar por cima debaixo dela.
 var _som_liberado := false
-## O LOBBY 3D PEDIDO POR CÓDIGO: o mesmo `-- --lobby-3d`, para quem carrega a
-## abertura por script e não tem linha de comando — o extrator do sobrevoo
-## (`tools/prototipo_3d/sobrevoo/extrair_geometria.gd`, e os portões
-## `sobrevoo_livre*` que o estendem) monta o vale pela abertura e precisa do
-## vale de fundo; com o lobby em vídeo o `$Cenario` sai antes de montar, e ele
-## esperava o vale para sempre.
-static var lobby_3d_pedido := false
 
 func _enter_tree() -> void:
-	lobby_em_video = not ("--lobby-3d" in OS.get_cmdline_user_args() or lobby_3d_pedido) \
+	lobby_em_video = not lobby_3d_pedido and not ("--lobby-3d" in OS.get_cmdline_user_args()) \
 		and ResourceLoader.exists(VIDEO_LOBBY)
 	if lobby_em_video:
 		# O vale sai antes de entrar na árvore: o _ready do world_builder, que é a montagem

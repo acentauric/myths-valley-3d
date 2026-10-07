@@ -10,5 +10,15 @@
     "rotulo": "Missões e objetivos",
     "rotulo_en": "Quests and objectives",
     "rotulo_es": "Misiones y objetivos"
+  },
+  "mare": {
+    "enchente": "maré enchendo", "enchente_en": "tide rising", "enchente_es": "marea subiendo",
+    "vazante": "maré vazando", "vazante_en": "tide falling", "vazante_es": "marea bajando",
+    "dica_enchente": "A água está subindo rumo à preamar: a praia vai sumindo e o mar fundo volta.",
+    "dica_enchente_en": "The water is rising toward high tide: the beach is disappearing and the deep sea is coming back.",
+    "dica_enchente_es": "El agua sube hacia la pleamar: la playa va desapareciendo y vuelve el mar hondo.",
+    "dica_vazante": "A água está descendo rumo à baixa-mar: a praia seca e a lama aparece.",
+    "dica_vazante_en": "The water is dropping toward low tide: the beach dries out and the mud shows.",
+    "dica_vazante_es": "El agua baja hacia la bajamar: la playa se seca y aparece el barro."
   }
 }

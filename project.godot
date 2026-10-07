@@ -94,7 +94,7 @@ texture={
 
 [physics]
 
-common/max_physics_steps_per_frame=3
+common/max_physics_steps_per_frame=5
 
 [rendering]
 

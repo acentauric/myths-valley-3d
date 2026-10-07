@@ -6,7 +6,7 @@ extends SceneTree
 ##
 ## "Ao tentar interagir com o cordel e tem um NPC próximo, ele foca somente na
 ## seleção do NPC e não consigo clicar no cordel. Imagino que o mesmo acontece
-## com outras coisas no jogo." Cinco perguntas, com a tecla de verdade (pela
+## com outras coisas no jogo." Sete perguntas, com a tecla de verdade (pela
 ## janela, `push_input`), e não chamando a fonte pela mão:
 ##
 ##   1. O CORDEL COM GENTE DO LADO: o cordel da ponta do píer, o Tonho a dois
@@ -21,6 +21,16 @@ extends SceneTree
 ##      de lado vence o de costas; o viés do que está aberto vence tudo.
 ##   5. A BARRA DE MÃO COME SÓ SEM DONO: com o foco em alguém, o E não come o que
 ##      está na mão.
+##   6. O MORADOR QUE O PASSO PEDE VENCE O MAIS PERTO: o passo manda falar com o
+##      Tonho, o Pedro está colado no jogador (e o Tonho a dois passos): o E da
+##      conversa é do Tonho, e é nele que o passo fecha. Sem passo pedindo ninguém,
+##      volta a valer o mais perto. A regra da ordem (o que a fila diz, quem fala
+##      antes de quem só acena, o mais perto) se confere sem mundo.
+##   7. A DICA NÃO FICA ONDE O E NÃO VALE: com a dica do Tonho acesa, o J abre a tela
+##      e o vale para — as fontes param com ele, e a dica ficava congelada por cima
+##      do que abriu —; nenhuma dica fica acesa com a tela aberta, e a do Tonho volta
+##      ao fechar. O mesmo quando algo cobre o vale sem parar a árvore (a festa da
+##      missão, a voz do mundo: `coberto`).
 
 const FocoDoE = preload("res://scripts/prototipo_3d/foco_do_e.gd")
 const CORDEL := "moleque_do_pier"
@@ -154,6 +164,94 @@ func _run() -> void:
 	_apertar_e()
 	await _quadros(3)
 	_conferir(inv.quantidade("beiju") == beijus, "com o foco no Tonho, o E comeu o beiju da mão")
+
+	# --- 6. O MORADOR QUE O PASSO PEDE VENCE O MAIS PERTO ------------------------------
+	# No píer o Pedro e o Tonho ficam a dois passos um do outro, e o Pedro segue o
+	# jogador. O passo do bom-dia manda falar com o Tonho; o Pedro está colado, atrás
+	# do jogador, e o Tonho a dois passos, na frente.
+	var pedro = vale.pedro
+	_conferir(pedro != null, "o vale não tem o Pedro")
+	if pedro == null:
+		tonho.liberar()
+		_fechar()
+		return
+	pedro.ir_ao_passo("bom_dia")
+	pedro.set("_iniciado", true)
+	pedro.set("_espera", 0.0)
+	var atras_do_jogador: Vector3 = onde_fico - de_lado_no_pier * 0.8 + Vector3.UP * 0.1
+	for vez in 2:
+		jogador.teleportar(onde_fico + Vector3.UP * 0.3, atan2(de_lado_no_pier.x, de_lado_no_pier.z))
+		pedro.global_position = atras_do_jogador
+		tonho.global_position = onde_o_tonho + Vector3.UP * 0.1
+		await _passos_de_fisica(8)
+	pedro.global_position = atras_do_jogador
+	tonho.global_position = onde_o_tonho + Vector3.UP * 0.1
+	await _quadros(3)
+	var ate_o_pedro := Vector2(pedro.global_position.x - jogador.global_position.x, pedro.global_position.z - jogador.global_position.z).length()
+	var ate_o_tonho := Vector2(tonho.global_position.x - jogador.global_position.x, tonho.global_position.z - jogador.global_position.z).length()
+	_conferir(ate_o_pedro < ate_o_tonho and ate_o_tonho < moradores.ALCANCE,
+		"o caso não se montou: o Pedro está a %.2f, o Tonho a %.2f (alcance %.2f)" % [ate_o_pedro, ate_o_tonho, moradores.ALCANCE])
+	_conferir(pedro._cadeia.o_que_o_e_faz(tonho) == "falar" and pedro._cadeia.o_que_o_e_faz(pedro) == "",
+		"o passo do bom-dia não pede o Tonho: pede '%s' e ao Pedro '%s'" % [pedro._cadeia.o_que_o_e_faz(tonho), pedro._cadeia.o_que_o_e_faz(pedro)])
+	_conferir(moradores.perto() == tonho,
+		"o passo manda falar com o Tonho, e o E ficou com '%s', que está mais perto" % _nome(moradores.perto()))
+	_conferir(foco.dono() == moradores and _dica_acesa(moradores) and _dicas_acesas() == 1,
+		"o foco não deixou só a dica da conversa acesa (dono: %s, %d dicas)" % [_nome(foco.dono()), _dicas_acesas()])
+	_apertar_e()
+	await _quadros(3)
+	_conferir(bool(pedro._cadeia._levados.get("bom_dia", false)),
+		"o E não cumpriu o passo do bom-dia: a conversa foi para quem está mais perto, e não para o Tonho")
+	# SEM PASSO PEDINDO NINGUÉM, o mais perto: o passo seguinte é correr.
+	pedro.ir_ao_passo("correr")
+	pedro.global_position = atras_do_jogador
+	tonho.global_position = onde_o_tonho + Vector3.UP * 0.1
+	jogador.teleportar(onde_fico + Vector3.UP * 0.3, atan2(de_lado_no_pier.x, de_lado_no_pier.z))
+	await _passos_de_fisica(8)
+	pedro.global_position = atras_do_jogador
+	tonho.global_position = onde_o_tonho + Vector3.UP * 0.1
+	await _quadros(3)
+	_conferir(moradores.perto() == pedro,
+		"sem passo pedindo ninguém, o E devia ficar com o mais perto (o Pedro), e ficou com '%s'" % _nome(moradores.perto()))
+	# A REGRA, sem mundo: a ordem é o que a fila diz, depois quem fala, depois a distância.
+	var pedido_mudo := {"acao": 0, "mudo": true, "distancia": 2.6}
+	var abre_fila := {"acao": 1, "mudo": false, "distancia": 2.0}
+	var conversa_perto := {"acao": 2, "mudo": false, "distancia": 0.5}
+	var aceno_colado := {"acao": 2, "mudo": true, "distancia": 0.3}
+	_conferir(moradores.escolher_entre([conversa_perto, pedido_mudo]) == 1,
+		"o que o passo pede (mesmo quem não fala) perdeu para quem está mais perto")
+	_conferir(moradores.escolher_entre([conversa_perto, abre_fila]) == 1, "quem abre uma fila perdeu para a conversa mais perto")
+	_conferir(moradores.escolher_entre([abre_fila, pedido_mudo]) == 1, "quem abre uma fila ganhou do que o passo pede")
+	_conferir(moradores.escolher_entre([aceno_colado, conversa_perto]) == 1, "quem só acena ganhou de quem fala, só por estar mais perto")
+	_conferir(moradores.escolher_entre([conversa_perto, {"acao": 2, "mudo": false, "distancia": 0.4}]) == 1, "entre iguais, o mais perto não ganhou")
+	_conferir(moradores.escolher_entre([]) == -1, "sem ninguém ao alcance a escolha não é -1")
+
+	# --- 7. A DICA NÃO FICA ONDE O E NÃO VALE ---------------------------------------------
+	pedro.global_position = atras_do_jogador
+	tonho.global_position = onde_o_tonho + Vector3.UP * 0.1
+	jogador.teleportar(onde_fico + Vector3.UP * 0.3, atan2(de_lado_no_pier.x, de_lado_no_pier.z))
+	await _passos_de_fisica(8)
+	pedro.global_position = atras_do_jogador
+	tonho.global_position = onde_o_tonho + Vector3.UP * 0.1
+	await _quadros(3)
+	_conferir(_dica_acesa(moradores) and _dicas_acesas() == 1, "a dica da conversa não acendeu para a prova (%d acesas)" % _dicas_acesas())
+	_apertar_tecla(KEY_J)
+	await _quadros(4)
+	_conferir(paused, "o J não abriu a tela e parou o vale")
+	_conferir(_dicas_acesas() == 0,
+		"com a tela aberta há %d dica(s) do E acesa(s), congeladas por cima dela (a árvore parada não roda as fontes)" % _dicas_acesas())
+	await _guardar_o_que_abriu(vale)
+	pedro.global_position = atras_do_jogador
+	tonho.global_position = onde_o_tonho + Vector3.UP * 0.1
+	await _quadros(4)
+	_conferir(not paused and _dica_acesa(moradores), "fechada a tela, a dica da conversa não voltou (pausado: %s)" % str(paused))
+	# O QUE COBRE O VALE SEM PARAR A ÁRVORE (a festa da missão, a voz do mundo) o vale diz em `coberto`.
+	var o_que_o_vale_diz: Callable = foco.coberto
+	foco.coberto = func() -> bool: return true
+	await _quadros(3)
+	_conferir(_dicas_acesas() == 0, "coberto o vale pela festa, ainda há %d dica(s) do E acesa(s)" % _dicas_acesas())
+	foco.coberto = o_que_o_vale_diz
+	await _quadros(3)
+	_conferir(_dica_acesa(moradores), "acabada a festa, a dica da conversa não voltou")
 	tonho.liberar()
 	_fechar()
 
@@ -197,10 +295,14 @@ func _dicas_acesas() -> int:
 ## O E pela janela, como o teclado: quem o recebe é decidido pelo jogo. O perfil
 ## do portão é novo, e o interagir está no E de fábrica.
 func _apertar_e() -> void:
+	_apertar_tecla(KEY_E)
+
+
+func _apertar_tecla(tecla: int) -> void:
 	for apertado in [true, false]:
 		var evento := InputEventKey.new()
-		evento.keycode = KEY_E
-		evento.physical_keycode = KEY_E
+		evento.keycode = tecla
+		evento.physical_keycode = tecla
 		evento.pressed = apertado
 		root.push_input(evento)
 
@@ -208,7 +310,7 @@ func _apertar_e() -> void:
 func _fechar() -> void:
 	print("")
 	if falhas == 0:
-		print("FOCO_DO_E_OK: toda fonte do E responde ao foco; a conta favorece a frente e o que está aberto; com o Tonho do lado, virado para o cordel, só a dica do cordel acende e o E o pega; virado para o Tonho, o E e a dica são dele; e com dono no foco a barra de mão não come")
+		print("FOCO_DO_E_OK: toda fonte do E responde ao foco; a conta favorece a frente e o que está aberto; com o Tonho do lado, virado para o cordel, só a dica do cordel acende e o E o pega; virado para o Tonho, o E e a dica são dele; com dono no foco a barra de mão não come; o morador que o passo pede vence o mais perto (o Tonho, com o Pedro colado), e sem passo pedindo vale o mais perto; e com a tela aberta ou a festa por cima nenhuma dica fica acesa")
 	else:
 		print("foco_do_e: %d falha(s)" % falhas)
 	quit(1 if falhas > 0 else 0)

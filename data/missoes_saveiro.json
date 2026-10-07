@@ -4,6 +4,9 @@
   "nome": "O saveiro da estação",
   "nome_en": "The season's sailboat",
   "nome_es": "El velero de la estación",
+  "trancada": "Agora não, moço. Volte depois de acabar a lida de chegada com o Pedro, que aí lhe conto do saveiro.",
+  "trancada_en": "Not now, son. Come back after you finish settling in with Pedro, then I'll tell you about the saveiro.",
+  "trancada_es": "Ahora no, joven. Vuelve cuando acabes la faena de llegada con Pedro, que entonces te cuento del saveiro.",
   "abre_em": "casa_carro_quebrado",
   "passos": [
     {

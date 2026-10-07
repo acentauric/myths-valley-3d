@@ -8,17 +8,29 @@ extends RefCounted
 ## visual do MythsValley 3D".
 
 const Identidade = preload("res://scripts/prototipo_3d/identidade.gd")
+const SuavizadorDeTela = preload("res://scripts/prototipo_3d/suavizador_de_tela.gd")
+const PopupsDoMundo = preload("res://scripts/prototipo_3d/popups_do_mundo.gd")
 
 const FUNDO := Color(Identidade.LACA, 0.94)
 const OURO := Color(Identidade.OURO, 0.7)
 const PAPEL := Identidade.CREME
 const TINTA := Color("2b2a22")
+## O PESO da dica (`suavizador_de_tela.gd`): ela desliza para o ponto em vez de
+## colar nele a cada quadro, e o tremor da câmera não a mexe.
+const TEMPO_DE_SEGUIR := 0.22
+const CORREIA := 110.0
+## Entre a dica e a placa de nome que ela sobe por cima, e o peso desse empurrão.
+const FOLGA_DAS_PLACAS := 3.0
+const TEMPO_DO_EMPURRAO := 0.12
+const CORREIA_DO_EMPURRAO := 400.0
 
 
 static func criar(pai: Control, tecla_texto: String, acao: String) -> PanelContainer:
 	var dica := PanelContainer.new()
 	dica.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	dica.visible = false
+	# Como a placa e o balão a acham: para não se cobrirem (`popups_do_mundo.gd`).
+	dica.add_to_group(PopupsDoMundo.GRUPO_DICAS)
 	var estilo := StyleBoxFlat.new()
 	estilo.bg_color = FUNDO
 	estilo.border_color = OURO
@@ -64,12 +76,61 @@ static func criar(pai: Control, tecla_texto: String, acao: String) -> PanelConta
 
 ## Mostra a dica sobre `ponto` (pela câmera do jogo) com o texto de ação dado; some se o
 ## ponto estiver atrás da câmera.
+##
+## COM PESO: o ponto projetado é o ALVO de uma mola (`suavizador_de_tela.gd`), e a dica
+## desliza até ele; o tremor de um ou dois pixels da câmera não a move. Uma dica que
+## acaba de acender aparece no lugar, sem deslizar de onde ficou da última vez. Quem
+## chama continua chamando todo quadro, com o ponto de verdade.
+##
+## SEM COBRIR NINGUÉM: a placa de nome de quem vai receber o E fica por baixo — a dica sobe
+## para cima dela (`popups_do_mundo.gd`). O empurrão é o que falta para não cobrir, calculado
+## depois da mola e com uma mola mais leve só dele: a placa que some (o morador começou a
+## falar) não derruba a dica de uma vez, e a que chega não a faz saltar.
 static func mostrar_em(dica: PanelContainer, camera: Camera3D, ponto: Vector3, acao: String = "") -> void:
 	if camera == null or camera.is_position_behind(ponto):
 		dica.visible = false
 		return
 	if acao != "":
 		(dica.find_child("Acao", true, false) as Label).text = acao
+	var estava_acesa := dica.visible
 	dica.visible = true
 	dica.reset_size()
-	dica.position = camera.unproject_position(ponto) - Vector2(dica.size.x * 0.5, dica.size.y)
+	var ancora := camera.unproject_position(ponto)
+	var mola := _mola(dica)
+	if not estava_acesa:
+		mola.reiniciar(ancora)
+	var onde := mola.seguir(ancora, dica.get_process_delta_time(), TEMPO_DE_SEGUIR,
+		SuavizadorDeTela.VELOCIDADE_MAXIMA, SuavizadorDeTela.ZONA_MORTA, CORREIA)
+	# As placas estão em coordenadas de tela; a dica, nas do pai (o mesmo, na prática).
+	var origem := dica.global_position - dica.position if dica.is_inside_tree() else Vector2.ZERO
+	var caixa := Rect2((onde - Vector2(dica.size.x * 0.5, dica.size.y)).round() + origem, dica.size)
+	var afastada := PopupsDoMundo.afastar_de(caixa, PopupsDoMundo.retangulos(dica, PopupsDoMundo.GRUPO_PLACAS), FOLGA_DAS_PLACAS)
+	# O empurrão também tem peso: a placa que some (o morador começou a falar) não faz a dica
+	# despencar de uma vez, e a que chega não a faz saltar.
+	var empurrao := _mola_do_empurrao(dica)
+	var alvo_do_empurrao := Vector2(0.0, afastada.position.y - caixa.position.y)
+	if not estava_acesa:
+		empurrao.reiniciar(alvo_do_empurrao)
+	var sobe := empurrao.seguir(alvo_do_empurrao, dica.get_process_delta_time(), TEMPO_DO_EMPURRAO,
+		SuavizadorDeTela.VELOCIDADE_MAXIMA, 0.0, CORREIA_DO_EMPURRAO)
+	dica.position = (Vector2(caixa.position.x, caixa.position.y + sobe.y) - origem).round()
+
+
+## A mola desta dica, guardada nela mesma (as nove fontes do E continuam como eram).
+static func _mola(dica: PanelContainer) -> SuavizadorDeTela:
+	return _guardada(dica, "mola")
+
+
+## A mola do empurrão por cima das placas.
+static func _mola_do_empurrao(dica: PanelContainer) -> SuavizadorDeTela:
+	return _guardada(dica, "mola_do_empurrao")
+
+
+static func _guardada(dica: PanelContainer, chave: String) -> SuavizadorDeTela:
+	if dica.has_meta(chave):
+		var guardada = dica.get_meta(chave)
+		if guardada is SuavizadorDeTela:
+			return guardada
+	var nova := SuavizadorDeTela.new()
+	dica.set_meta(chave, nova)
+	return nova

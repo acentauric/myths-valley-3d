@@ -1,13 +1,18 @@
 extends SceneTree
 
+## Teto de parede para a troca de cena (menu → vale → menu): o laço sai assim que ela acontece.
+const TETO_DA_TROCA_DE_CENA_MS := 120000
+
 
 func _initialize() -> void:
 	_run.call_deferred()
 
 
 func _run() -> void:
-	# O lobby 3D (o `-- --lobby-3d` por código): desde o lobby em vídeo (05/10) a
-	# abertura solta o vale de fundo, e este portão confere o HOME com ele.
+	# O LOBBY DO MENU É O VÍDEO, sem vale 3D de fundo (abertura.gd). Este portão mede
+	# justamente o vale de fundo — a vegetação do HOME, o MAPA, o retorno do jogo —,
+	# então pede o lobby 3D antes de instanciar a cena. `load` e não `preload`: a
+	# abertura cita autoload, que só existe depois do `_initialize` (AGENTS.md).
 	(load("res://scripts/prototipo_3d/abertura.gd") as GDScript).set("lobby_3d_pedido", true)
 	_assert(change_scene_to_file("res://scenes/prototipo_3d/abertura.tscn") == OK, "abertura carrega")
 	await _frames(4)
@@ -100,7 +105,9 @@ func _run() -> void:
 	await _capture("travessia")
 	opening._start_game()
 	# A entrada no vale carrega em segundo plano (tela de carregamento).
-	var limite_da_cena := Time.get_ticks_msec() + 30000
+	# Teto de parede, não prazo: o laço sai assim que a cena troca. A carga do vale leva uns 30 s com a
+	# máquina folgada, e na bateria cheia, com sete portões brigando por ela, passa disso.
+	var limite_da_cena := Time.get_ticks_msec() + TETO_DA_TROCA_DE_CENA_MS
 	while Time.get_ticks_msec() < limite_da_cena:
 		if current_scene != null and current_scene.name == "Vale3D":
 			break
@@ -217,7 +224,7 @@ func _run() -> void:
 	_assert(not hud.menu_confirm_open() and not paused, "cancelar volta ao passeio")
 	game._ask_return_to_menu()
 	hud._close_menu_confirm(true)
-	var limite_do_menu := Time.get_ticks_msec() + 30000
+	var limite_do_menu := Time.get_ticks_msec() + TETO_DA_TROCA_DE_CENA_MS
 	while Time.get_ticks_msec() < limite_do_menu:
 		if current_scene != null and current_scene.name == "Abertura":
 			break

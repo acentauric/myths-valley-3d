@@ -9,15 +9,23 @@ extends SceneTree
 ## fala dele por extenso, mas enxugar o balão. Isso se aplica somente às falas
 ## por aproximação." (05/10/2026)
 ##
-## Três perguntas:
+## Quatro perguntas:
 ##
 ##   1. O BALÃO DE TODA SAUDAÇÃO É CURTO, nos três idiomas: no máximo
-##      `BALAO_CURTO` letras, nunca vazio, e é o começo da fala inteira.
+##      `BALAO_CURTO` letras, nunca vazio, e é o começo da fala inteira — também
+##      nas falas do Pedro de depois do tutorial (`falas_depois`).
 ##   2. QUEM TEM MISSÃO NÃO CUMPRIMENTA. Na chegada, o primeiro passo do Pedro
 ##      manda dar bom-dia ao Tonho: ao lado dele, com a palavra livre, sai a
 ##      resposta da missão e nenhuma saudação.
 ##   3. QUEM NÃO TEM MISSÃO CUMPRIMENTA, com a fala inteira no aviso (`saudou`)
 ##      e o balão enxuto.
+##   4. O PEDRO DE DEPOIS DO TUTORIAL NÃO SE APRESENTA DE NOVO: "Opa! É você o
+##      moço da capital?" era a fala dele para sempre. Acabada a chegada, o E nele
+##      diz as falas de quem já conhece o jogador, nenhuma do primeiro encontro,
+##      e não sempre a mesma.
+##
+## A palavra livre se espera pela fila de falas (`fila_de_falas.gd`), lendo
+## depressa: a fala no ar se passa, como o E de quem já leu.
 
 var falhas := 0
 const SEGUNDOS_PARA_ANUNCIAR := 12.0
@@ -63,7 +71,7 @@ func _run() -> void:
 		var textos: Array = []
 		if str(dados.get("fala", "")) != "":
 			textos.append(str(dados["fala"]))
-		for fala in dados.get("falas", []):
+		for fala in (dados.get("falas", []) as Array) + (dados.get("falas_depois", []) as Array):
 			for chave in ["texto", "texto_en", "texto_es"]:
 				if str((fala as Dictionary).get(chave, "")) != "":
 					textos.append(str(fala[chave]))
@@ -90,7 +98,7 @@ func _run() -> void:
 	_conferir(tonho.tem_missao(),
 		"o passo da chegada manda falar com o Tonho, e ele se diz sem missão")
 	# A palavra livre, para a saudação PODER sair: é ela que o defeito usava.
-	var livre := await _ate(func() -> bool: return tonho.pode_falar() and not tonho.fala_perto_de(tonho.global_position),
+	var livre := await _palavra_livre(func() -> bool: return tonho.pode_falar() and not tonho.fala_perto_de(tonho.global_position),
 		SEGUNDOS_DE_PALAVRA)
 	_conferir(livre, "a palavra não ficou livre perto do Tonho")
 	var do_tonho: Array[String] = []
@@ -127,7 +135,7 @@ func _run() -> void:
 		sem_missao.set("_ultima_saudacao_ms", -1)
 		sem_missao.set("_proxima_fala", 0)
 		var nome := str(sem_missao.dados.get("id", "?"))
-		var palavra := await _ate(func() -> bool: return sem_missao.pode_falar(), SEGUNDOS_DE_PALAVRA)
+		var palavra := await _palavra_livre(func() -> bool: return sem_missao.pode_falar(), SEGUNDOS_DE_PALAVRA)
 		_conferir(palavra, "a palavra não ficou livre perto de %s" % nome)
 		jogador.teleportar(sem_missao.global_position + Vector3(1.0, 0.0, 0.8), 0.0)
 		var saudou := await _ate(func() -> bool: return not ditas.is_empty(), SEGUNDOS_PARA_SAUDAR)
@@ -139,13 +147,64 @@ func _run() -> void:
 			_conferir(no_balao == sem_missao.balao_curto(fala_longa) and no_balao.length() < fala_longa.length(),
 				"o balão de %s não ficou curto: '%s'" % [nome, no_balao])
 			print("  %-9s balão '%s' (fala de %d letras)" % [nome, no_balao, fala_longa.length()])
+
+	# --- 4. O PEDRO DE DEPOIS DO TUTORIAL NÃO SE APRESENTA DE NOVO --------------
+	var depois: Array = (pedro.dados as Dictionary).get("falas_depois", [])
+	_conferir(depois.size() >= 5 and depois.size() <= 8,
+		"o Pedro tem %d fala(s) de depois do tutorial, e são de cinco a oito" % depois.size())
+	var de_depois: Array[String] = []
+	for fala in depois:
+		var pt := str((fala as Dictionary).get("texto", ""))
+		de_depois.append(pt)
+		for chave in ["texto_en", "texto_es"]:
+			var traduzida := str((fala as Dictionary).get(chave, ""))
+			_conferir(traduzida != "" and traduzida != pt,
+				"a fala de depois do tutorial '%s…' não tem '%s' de verdade" % [pt.left(30), chave])
+			de_depois.append(traduzida)
+	var do_encontro: Array[String] = []
+	for fala in (pedro.dados as Dictionary).get("falas", []):
+		for chave in ["texto", "texto_en", "texto_es"]:
+			if str((fala as Dictionary).get(chave, "")) != "":
+				do_encontro.append(str(fala[chave]))
+	pedro.missao = pedro.MISSOES.size()
+	pedro.set("_despedida_feita", true)
+	_conferir(pedro.terminou_o_tutorial(), "não consegui dar a chegada do Pedro por acabada")
+	var do_pedro: Array[String] = []
+	pedro.saudou.connect(func(_quem, texto: String) -> void: do_pedro.append(texto))
+	for vez in 4:
+		await _palavra_livre(func() -> bool: return pedro.pode_falar(), SEGUNDOS_DE_PALAVRA)
+		# A conversa dele: as filas do Pedro abrem no E antes dela, e aqui só ela
+		# interessa (`GuiaPedro.conversar`).
+		pedro.conversar()
+		await _ate(func() -> bool: return do_pedro.size() > vez, 6.0)
+	_conferir(do_pedro.size() >= 4, "depois do tutorial, conversar com o Pedro não o fez falar (%d de 4)" % do_pedro.size())
+	var diferentes := {}
+	for dita in do_pedro:
+		diferentes[dita] = true
+		_conferir(not do_encontro.has(dita), "depois do tutorial o Pedro se apresentou de novo: '%s'" % dita)
+		_conferir(de_depois.has(dita), "depois do tutorial o Pedro disse '%s', que não é das falas de depois dele" % dita)
+	_conferir(diferentes.size() >= 2, "depois do tutorial o Pedro repete sempre a mesma fala: '%s'" % (do_pedro[0] if not do_pedro.is_empty() else ""))
 	_fechar()
+
+
+## ESPERA A PALAVRA LIVRE pela fila de falas, lendo depressa: a fala com tempo
+## que estiver no ar se passa (`FilaDeFalas.pular`), como o E de quem já leu.
+func _palavra_livre(condicao: Callable, segundos: float) -> bool:
+	var fila = current_scene.get("fila_de_falas")
+	var limite := Time.get_ticks_msec() + int(segundos * 1000.0)
+	while Time.get_ticks_msec() < limite:
+		if condicao.call():
+			return true
+		if fila != null:
+			fila.pular()
+		await process_frame
+	return condicao.call()
 
 
 func _fechar() -> void:
 	print("")
 	if falhas == 0:
-		print("SAUDACAO_OK: o balão de toda saudação é curto nos três idiomas e é o começo da fala; com o bom-dia da chegada em curso o Tonho responde a missão e não cumprimenta; e quem não tem missão cumprimenta com a fala inteira no aviso e o balão enxuto")
+		print("SAUDACAO_OK: o balão de toda saudação é curto nos três idiomas e é o começo da fala; com o bom-dia da chegada em curso o Tonho responde a missão e não cumprimenta; quem não tem missão cumprimenta com a fala inteira no aviso e o balão enxuto; e o Pedro de depois do tutorial conversa com as falas de quem já conhece o jogador, nos três idiomas, sem se apresentar de novo")
 	else:
 		print("saudacao: %d falha(s)" % falhas)
 	quit(1 if falhas > 0 else 0)

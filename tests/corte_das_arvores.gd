@@ -31,11 +31,26 @@ extends SceneTree
 ##   8. A MATA TAMBÉM CRESCE: a instância da MultiMesh encolhe a nada, ganha
 ##      toco, cresce do pé e volta inteira.
 ##   9. A PEDRA DURA E O MATACÃO: o talento da picareta, e a picareta de aço.
+##
+##
+## A ESPERA É EM SEGUNDOS DE JOGO, E NÃO DE PAREDE (`tests/fixtures/relogio_de_jogo.gd`).
+##
+## A copa que cai é um `Tween` de 1,5 s mais o tranco e a pausa, e o portão a
+## conferia aos 1,70 s de relógio — folga de 12%. Com a física limitada a 3 passos
+## por quadro (`project.godot`) o jogo anda mais devagar que a parede quando o
+## quadro passa de 50 ms, e na bateria cheia passa: "a copa não deitou: tombou só
+## 52 graus", num portão que passa sozinho. Agora os instantes da queda (0,75 s,
+## 1,70 s e 6,50 s) são do JOGO, que é de onde o tween os conta. Com
+## `MV_QUADRO_LENTO_MS=150` no ambiente o portão roda como na bateria no pior; com
+## `MV_FALSIFICAR=parede` ele volta a esperar em parede, e então TEM de reprovar.
 
 const DIAS_DO_ANO := 112
+const RelogioDeJogo = preload("res://tests/fixtures/relogio_de_jogo.gd")
 
 var falhas := 0
 var _xp_ganho := 0.0
+## O relógio de jogo do portão (o `relogio` abaixo é o calendário do jogo).
+var tempo: Node
 ## Os autoloads, pelo caminho: o portão compila antes de eles existirem.
 var energia
 var inventario
@@ -56,10 +71,13 @@ func _conferir(ok: bool, rotulo: String) -> void:
 
 
 func _run() -> void:
+	tempo = RelogioDeJogo.new()
+	root.add_child(tempo)
 	_conferir(change_scene_to_file("res://scenes/prototipo_3d/vale.tscn") == OK, "a cena do vale carrega")
 	await _quadros(4)
 	await _mundo_pronto()
 	await _quadros(8)
+	tempo.ficar_lento()
 	var vale = current_scene
 	var jogador = vale.player
 	var mundo = vale.world
@@ -118,11 +136,7 @@ func _run() -> void:
 	# espera é em SEGUNDO REAL: o golpe sai no fim do clipe do braço, e sem
 	# tela os quadros são curtos demais para contar por eles.
 	arvores._unhandled_key_input(e_de_interagir)
-	var desde := Time.get_ticks_msec()
-	while Time.get_ticks_msec() - desde < 8000:
-		await process_frame
-		if int(arvores._cortaveis[branca]["golpes"]) >= 1:
-			break
+	await tempo.ate(func() -> bool: return int(arvores._cortaveis[branca]["golpes"]) >= 1, 8.0)
 	_conferir(int(arvores._cortaveis[branca]["golpes"]) >= 1, "o E perto da mangueira, com o machado na mão, não deu golpe nenhum")
 	arvores._parar_golpe(true)
 	var cortou_em := await _golpear_ate_cair(arvores, jogador, branca)
@@ -153,22 +167,24 @@ func _run() -> void:
 		var pe_da_mangueira: Vector3 = arvores._cortaveis[branca]["pos"]
 		var de_quem_cortou: Vector3 = pe_da_mangueira - jogador.global_position
 		de_quem_cortou.y = 0.0
-		var desde_a_queda := Time.get_ticks_msec()
+		# OS INSTANTES SÃO DO JOGO: o tween da queda conta o delta de cada quadro, e o
+		# relógio de parede só serve enquanto o quadro é curto.
+		var desde_a_queda: float = tempo.agora()
 		# NO MEIO DO TOMBO ela está a caminho: nem de pé, nem já deitada. Árvore
 		# que some de pé e aparece deitada não caiu, foi trocada.
-		while Time.get_ticks_msec() - desde_a_queda < 750 and is_instance_valid(caindo):
+		while tempo.agora() - desde_a_queda < 0.75 and is_instance_valid(caindo):
 			await process_frame
 		if is_instance_valid(caindo):
 			var no_meio := rad_to_deg((caindo.basis * Vector3.UP).angle_to(Vector3.UP))
 			_conferir(no_meio > 3.0 and no_meio < 60.0, "no meio do tombo a copa está a %.0f graus: não está caindo, foi trocada" % no_meio)
-		while Time.get_ticks_msec() - desde_a_queda < 1700 and is_instance_valid(caindo):
+		while tempo.agora() - desde_a_queda < 1.7 and is_instance_valid(caindo):
 			await process_frame
 		_conferir(is_instance_valid(caindo), "a copa sumiu antes de acabar de cair")
 		if is_instance_valid(caindo):
 			var topo: Vector3 = caindo.basis * Vector3.UP
 			_conferir(rad_to_deg(topo.angle_to(Vector3.UP)) > 70.0, "a copa não deitou: tombou só %.0f graus" % rad_to_deg(topo.angle_to(Vector3.UP)))
 			_conferir(Vector3(topo.x, 0.0, topo.z).dot(de_quem_cortou) > 0.0, "a copa caiu para o lado de quem cortou")
-		while Time.get_ticks_msec() - desde_a_queda < 6500 and is_instance_valid(caindo):
+		while tempo.agora() - desde_a_queda < 6.5 and is_instance_valid(caindo):
 			await process_frame
 		_conferir(not is_instance_valid(caindo), "a copa caída não sumiu: continua deitada no chão")
 
@@ -469,10 +485,9 @@ func _golpear_ate_cair(arvores, jogador, indice: int) -> int:
 	return int(arvores._cortaveis[indice]["golpes"]) if bool(arvores._cortaveis[indice]["cortado"]) else 0
 
 
+## O golpe do `Recursos3D` até o fim: o impacto cai em 1,5 s de jogo; o resto é folga.
 func _esperar_golpe(recursos) -> void:
-	var limite := Time.get_ticks_msec() + 2500
-	while Time.get_ticks_msec() < limite and (str(recursos.get("_golpe_pendente")) != "" or bool(recursos.get("_golpe_animando"))):
-		await process_frame
+	await tempo.ate(func() -> bool: return tempo.golpe_acabou(recursos), tempo.janela(6.0, 2.5))
 
 
 func _encostar(recursos, jogador, id: String) -> void:

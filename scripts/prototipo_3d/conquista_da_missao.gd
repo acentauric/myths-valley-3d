@@ -29,11 +29,15 @@ extends CanvasLayer
 ## um pouco mais e tudo se desfaz nela — o esvair. Cada fase é uma conta só,
 ## numa curva suave (`_entrar`, `_esvair`).
 ##
-## E A FESTA ESPERA A VEZ (`_pode_festejar`): o passo que fecha no E fecha
-## enquanto o morador ainda responde no balão, e a festa por cima da resposta
-## escondia o que ele dizia. A fala no balão, a caixa de fala, a narração e as
-## telas abertas vêm antes; ela entra um respiro depois de a conversa acabar.
-## Enquanto festeja, o relógio do vale fica segurado (`Dia.segurar`).
+## E A FESTA ESPERA A VEZ: o passo que fecha no E fecha enquanto o morador ainda
+## responde no balão, e a festa por cima da resposta escondia o que ele dizia.
+## No vale a vez é da FILA DE FALAS (`fila_de_falas.gd`): a festa pede a vez como
+## uma fala da missão, entra quando a fala do ar acaba e segura a vez enquanto
+## dura — ninguém fala por cima dela. A conversa que o jogador pede com o E e a
+## narração do mundo passam na frente: a festa se recolhe (o emblema some, a
+## animação para) e volta de onde estava. Sem fila (um portão de peça só), é a
+## regra antiga, `_pode_festejar`. Enquanto festeja, o relógio do vale fica
+## segurado (`Dia.segurar`).
 
 ## A festa entrou na tela, e saiu dela. O vale recolhe as plaquinhas de nome dos
 ## moradores enquanto ela dura (`prototype._acertar_as_placas`): elas são do HUD,
@@ -42,6 +46,7 @@ extends CanvasLayer
 signal comecou
 signal acabou
 
+const FilaDeFalas = preload("res://scripts/prototipo_3d/fila_de_falas.gd")
 const FONTE_DO_TITULO := "res://assets/fonts/Cinzel-Variavel.ttf"
 const FONTE_DO_NOME := "res://assets/fonts/CormorantGaramond-Variavel.ttf"
 const OURO := Color(0.96, 0.78, 0.36)
@@ -75,6 +80,10 @@ var _livre_desde := -1
 var _animacao: Tween
 ## A última mostrada, para o portão perguntar.
 var mostrada: Dictionary = {}
+## A vez da festa no ar, na fila de falas (o id do pedido), ou 0.
+var _vez := 0
+## Recolhida para a conversa do E ou a narração (ver o cabeçalho).
+var _recolhida := false
 
 
 func _ready() -> void:
@@ -92,9 +101,9 @@ func _exit_tree() -> void:
 	Dia.soltar(MOTIVO)
 
 
-## Está festejando agora?
+## Está festejando agora, na tela? (Recolhida para uma conversa, não está.)
 func ativa() -> bool:
-	return _mostrando
+	return _mostrando and not _recolhida
 
 
 ## Há festa esperando a vez?
@@ -103,8 +112,48 @@ func esperando() -> bool:
 
 
 func _ao_concluir(_id: String) -> void:
-	# Só entra na fila: quem decide a hora é o `_process`, que espera a conversa.
+	# Só entra na fila: quem decide a hora é a fila de falas (ou, sem ela, o
+	# `_process`, que espera a conversa).
 	_fila.append(CadernoDoVale.ultima_concluida.duplicate(true))
+	var falas := FilaDeFalas.da(self)
+	if falas != null:
+		falas.pedir({
+			"falante": self, "texto": str(_fila.back().get("titulo", "")),
+			"classe": FilaDeFalas.Classe.MISSAO, "modal": true, "cede": true,
+			"comecar": _ganhou_a_vez, "suspender": _recolher, "parar": _perdeu_a_vez,
+		})
+
+
+## A FILA DE FALAS DEU A VEZ: festeja a primeira da fila.
+func _ganhou_a_vez(fala: Dictionary) -> void:
+	_vez = int(fala.get("id", 0))
+	if _fila.is_empty():
+		var falas := FilaDeFalas.da(self)
+		if falas != null:
+			falas.soltar(_vez)
+		return
+	_mostrar()
+
+
+## A conversa do E ou a narração passou na frente (ou uma tela parou o vale): a
+## festa se recolhe e para; quando a vez volta, ela segue de onde estava.
+func _recolher(_fala: Dictionary, sim: bool) -> void:
+	_recolhida = sim
+	_raiz.visible = _mostrando and not sim
+	if _animacao != null and _animacao.is_valid():
+		if sim:
+			_animacao.pause()
+		else:
+			_animacao.play()
+
+
+## A vez acabou sem a festa acabar (o vale saiu): ela some.
+func _perdeu_a_vez(_fala: Dictionary, cortada: bool) -> void:
+	if cortada and _mostrando:
+		_vez = 0
+		if _animacao != null:
+			_animacao.kill()
+		_terminar()
 
 
 ## NADA NA FRENTE DA FESTA: nenhuma tela parando o vale, a caixa de fala fechada,
@@ -121,11 +170,17 @@ func _pode_festejar() -> bool:
 
 func _process(delta: float) -> void:
 	if _mostrando:
+		if _recolhida:
+			return
 		_tempo += delta
 		(_emblema as Emblema).giro += delta * 0.45
 		_emblema.queue_redraw()
 		# A luz respira devagar enquanto a festa está na tela.
 		_clarao.scale = Vector2.ONE * _clarao_escala * (1.0 + 0.025 * sin(_tempo * 2.2))
+		return
+	# Com a fila de falas no vale, quem dá a hora é ela (`_ganhou_a_vez`).
+	if FilaDeFalas.da(self) != null:
+		_livre_desde = -1
 		return
 	if _fila.is_empty() or not _pode_festejar():
 		_livre_desde = -1
@@ -166,9 +221,15 @@ func _mostrar() -> void:
 
 func _terminar() -> void:
 	_mostrando = false
+	_recolhida = false
 	_raiz.visible = false
 	Dia.soltar(MOTIVO)
 	acabou.emit()
+	var falas := FilaDeFalas.da(self)
+	if falas != null and _vez > 0:
+		var era := _vez
+		_vez = 0
+		falas.soltar(era)
 
 
 ## A ENTRADA, de 0 a 1: a sombra sobe numa curva suave; a luz se abre do meio; o

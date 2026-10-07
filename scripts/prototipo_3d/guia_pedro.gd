@@ -61,6 +61,14 @@ const ESPERA_FORA := ["casa"]
 const CONDUZ_ATE := 2.4
 const ESPERA_QUEM_FICA := 6.5
 const VOLTA_A_ANDAR := 4.0
+## NÃO FICA ATOLADO NO MEIO DO CAMINHO. A malha pode mandar por um corpo que ela não conhecia (uma peça
+## nova da cena, a casca de um prédio): o Pedro anda contra ele sem sair do lugar, o jogador espera atrás
+## ("o Pedro está esperando você") e o tutorial para ali para sempre — a partida jogada do zero ficou 600 s
+## de jogo parada na rua da praça. Depois de DESATOLA_APOS segundos de passo sem sair do lugar, ele salta
+## para o ponto livre do caminho mais adiante (o primeiro de DESATOLA_PULOS que não tem corpo em cima).
+const DESATOLA_APOS := 10.0
+const DESATOLA_PULOS := [6.0, 10.0, 14.0, 20.0]
+var _atolado_s := 0.0
 ## AS CASAS ELE CONDUZ ATÉ A PORTA, do lado de fora: a herdada, onde ele não
 ## entra, e as de quem mora — a dele, na ida aos machados do avô, e a da Dona
 ## Zefa. A âncora de uma casa é o meio dela, e conduzir até lá era levar o
@@ -90,9 +98,6 @@ const PERTO_PARA_EXPLICAR := 8.0
 ## vazio porque a cadeia ainda não existe é defeito calado.
 var _cadeia := CadeiaDeMissoes.new()
 var _anoiteceu_hoje := false
-## A repetição do passo que o E pediu com alguém falando ao alcance (#101): sai
-## quando o balão do outro acaba, em vez de atropelar.
-var _repetir_quando_der := ""
 ## As falas do corpo (`corpo` no `missoes_guia.json`), lidas no `_init`.
 var _corpo: Array = []
 ## Parado à espera do jogador que ficou para trás na condução.
@@ -106,6 +111,8 @@ var _quadro_da_conducao := -1
 ## porque o vigor volta depressa — parado, 20 por segundo —, e a fala pode
 ## estar ocupada no instante em que ele cai.
 var _cansou_na_caminhada := false
+## A próxima das falas de depois do tutorial (`falas_depois` no npcs_3d.json).
+var _proxima_fala_depois := -1
 
 
 ## --- as janelas para dentro da cadeia -------------------------------------
@@ -279,7 +286,7 @@ func _physics_process(delta: float) -> void:
 	var interiores := get_tree().get_first_node_in_group("interiores")
 	if interiores != null:
 		var sala_do_jogador: String = interiores.contem(onde_esta)
-		if sala_do_jogador in ESPERA_FORA:
+		if sala_do_jogador in ESPERA_FORA or interiores.espera_fora(sala_do_jogador):
 			# Na casa ele não entra: espera de lado para a porta, do lado de fora
 			# — e, se já estava dentro, sai pela porta primeiro.
 			var sala = interiores.sala_de(sala_do_jogador)
@@ -326,6 +333,7 @@ func _conduzir(delta: float, cadeia: Node = null) -> void:
 	_quadro_da_conducao = Engine.get_physics_frames()
 	_avisar_quem_ficou(_esperando_quem_ficou and falta.length() > CONDUZ_ATE)
 	if _esperando_quem_ficou or falta.length() <= CONDUZ_ATE:
+		_atolado_s = 0.0
 		_mover(Vector3.ZERO, ANDAR, delta)
 		_olhar_para(onde_esta, delta)
 		return
@@ -335,6 +343,51 @@ func _conduzir(delta: float, cadeia: Node = null) -> void:
 	var correndo := jogador.has_method("is_running") and bool(jogador.call("is_running"))
 	_mover(rumo.normalized() if rumo.length() > 0.05 else Vector3.ZERO, CORRER if correndo else ANDAR, delta)
 	_pedir_passagem(rumo)
+	var andou := Vector2(get_real_velocity().x, get_real_velocity().z).length()
+	if rumo.length() > 0.05 and andou < ANDAR * 0.25:
+		_atolado_s += delta
+		if _atolado_s >= DESATOLA_APOS:
+			_atolado_s = 0.0
+			_saltar_para_o_caminho_livre()
+	else:
+		_atolado_s = maxf(_atolado_s - delta * 2.0, 0.0)
+
+
+## Salta para o primeiro ponto do caminho, a pelo menos DESATOLA_PULOS[i] unidades de caminho adiante, que
+## não tem corpo em cima (uma esfera de 0,45 u na camada 1). Sem caminho ou sem ponto livre, fica onde está.
+func _saltar_para_o_caminho_livre() -> void:
+	if _caminho.size() < 2:
+		return
+	var espaco := get_world_3d().direct_space_state
+	for pulo in DESATOLA_PULOS:
+		var andado := 0.0
+		var anterior := global_position
+		for i in range(maxi(_ponto_da_vez, 0), _caminho.size()):
+			var ponto: Vector3 = _caminho[i]
+			andado += Vector2(ponto.x - anterior.x, ponto.z - anterior.z).length()
+			anterior = ponto
+			if andado < float(pulo):
+				continue
+			var esfera := SphereShape3D.new()
+			esfera.radius = 0.45
+			var pergunta := PhysicsShapeQueryParameters3D.new()
+			pergunta.shape = esfera
+			pergunta.transform = Transform3D(Basis.IDENTITY, ponto + Vector3(0.0, 0.9, 0.0))
+			pergunta.collision_mask = 1
+			pergunta.exclude = [get_rid()]
+			if espaco.intersect_shape(pergunta, 1).is_empty():
+				push_warning("GuiaPedro: atolado em %s, saltou para %s do caminho (a malha passa por um corpo que ela não conhecia)" % [str(global_position), str(ponto)])
+				global_position = ponto + Vector3(0.0, 0.05, 0.0)
+				velocity = Vector3.ZERO
+				_ponto_da_vez = i
+				_refazer_em = 0.0
+				_preso = 0.0
+				_desvios = 0
+				_desvio_tempo = 0.0
+				_lado_desvio = 0.0
+				_ponto_bloqueio = Vector3.INF
+				return
+			break
 
 
 ## QUEM BARRA A CONDUÇÃO DÁ PASSAGEM, como dá ao jogador
@@ -367,10 +420,6 @@ func _avisar_quem_ficou(sim: bool) -> void:
 func _process(_delta: float) -> void:
 	if _avisou_quem_ficou and Engine.get_physics_frames() - _quadro_da_conducao > 2:
 		_avisar_quem_ficou(false)
-	if _repetir_quando_der != "" and jogador != null and not fala_perto_de(jogador.global_position):
-		var texto := _repetir_quando_der
-		_repetir_quando_der = ""
-		narrar("", texto)
 
 
 ## PARA ONDE ELE CONDUZ: quem o passo apresenta, ou o lugar do passo — e, sendo
@@ -381,7 +430,7 @@ func _destino_da_conducao(cadeia: Node = null) -> Vector3:
 	var interiores := get_tree().get_first_node_in_group("interiores")
 	if interiores != null:
 		var sala_do_destino: String = interiores.contem(destino)
-		if sala_do_destino in ESPERA_FORA or sala_do_destino in CONDUZ_ATE_A_PORTA:
+		if sala_do_destino in ESPERA_FORA or sala_do_destino in CONDUZ_ATE_A_PORTA or interiores.espera_fora(sala_do_destino):
 			var espera: Vector3 = interiores.sala_de(sala_do_destino).lugar_de_esperar_fora()
 			return terreno.ground_position(espera, 0.05) if terreno != null else espera
 	return destino
@@ -421,7 +470,10 @@ func _ver_se_explica_o_corpo() -> void:
 	# e quem corre para o mar e volta cansado não está na caminhada com ele.
 	if bool(passo.get("conduz", false)) and _fracao_do_vigor() <= LIMIAR_DO_CORPO:
 		_cansou_na_caminhada = true
-	if Dialogo.ocupado() or not _palavra_livre():
+	# A CAIXA NÃO ESPERA O BALÃO: ela para o vale, e a fala que estiver no ar fica
+	# suspensa até a caixa fechar (`fila_de_falas.gd`). Espera só outra caixa e a
+	# narração do mundo.
+	if Dialogo.ocupado() or _narracao_na_tela():
 		return
 	if jogador.global_position.distance_to(global_position) > PERTO_PARA_EXPLICAR:
 		return
@@ -482,45 +534,89 @@ func saudar() -> void:
 ## O E NO PEDRO (`tecla_dos_moradores.gd`), quando nenhuma fila usa a conversa:
 ## antes da chegada, é a saudação que a abre; durante ela, ele repete o que fazer
 ## agora — quem se perdeu pergunta ao Pedro. Depois do tutorial, é a conversa de
-## qualquer morador.
+## qualquer morador, com as falas de quem já conhece o jogador (`_escolher_a_fala`).
+##
+## O E nele com ele falando passa a fala (`npc.conversar`), e não a recomeça.
 func conversar() -> void:
 	if not _cadeia.iniciado:
 		saudar()
 		return
 	if not terminou_o_tutorial() and not _cadeia.acabou():
+		var fila := _fila()
+		if fila != null and fila.falando(self):
+			fila.pular()
+			return
 		var texto := _cadeia.texto_do_passo()
 		if texto != "":
 			_ultima_saudacao_ms = Time.get_ticks_msec()
-			# Com alguém falando ao alcance do jogador, o Pedro espera a vez (#101):
-			# a repetição do passo entra quando o balão do outro acaba.
-			if fala_perto_de(jogador.global_position):
-				_repetir_quando_der = texto
-				return
-			narrar("", texto)
+			# O passo repetido sai como o anúncio dele: fechado o passo, cala junto.
+			narrar("", texto, {"classe": FilaDeFalas.Classe.CONVERSA, "no_lugar": true,
+				"origem": _cadeia._origem_do_anuncio(_cadeia.passo_atual())})
 			return
 	super()
 
 
-## O mesmo `narrar` da base, mais o `narrou` — que é o que põe a fala do Pedro
-## no aviso do HUD. A parte comum subiu para o `npc.gd` quando o Damião ganhou
-## fila de missões; o que sobrou aqui é o sinal, que é do guia.
-func narrar(nome_audio: String, texto: String) -> void:
-	super(nome_audio, texto)
-	narrou.emit(texto)
+## AS FALAS DE DEPOIS DO TUTORIAL. "Opa! É você o moço da capital?" era a fala
+## dele para sempre: o E no Pedro, acabada a chegada, caía na conversa de qualquer
+## morador, e as falas dele (`falas`, no npcs_3d.json) são as do primeiro
+## encontro no píer — ele se apresentava de novo a cada conversa. Depois do
+## tutorial ele fala como quem já conhece o jogador: o peixe, a maré, a praça de
+## noite, o arraial (`falas_depois`, nos três idiomas), alternando como as dos
+## outros moradores.
+func _escolher_a_fala() -> Dictionary:
+	var depois: Array = dados.get("falas_depois", [])
+	if not terminou_o_tutorial() or depois.is_empty():
+		return super()
+	if _proxima_fala_depois < 0:
+		_proxima_fala_depois = randi() % depois.size()
+	var fala: Dictionary = depois[_proxima_fala_depois % depois.size()]
+	_proxima_fala_depois += 1
+	return {
+		"texto": String(IdiomaMenu.campo(fala, "texto", "")),
+		"voz": _voz_do_arquivo(String(fala.get("audio", ""))),
+	}
 
 
+## OS AVISOS DE FILA TRANCADA DO PEDRO SAEM UMA VEZ CADA (`npc._fila_que_avisa`). Ele tem muitas filas
+## que esperam alguma coisa (a chapada, o mirante, a fé, a lapa, as de depois do tutorial) e as
+## `falas_depois` dele: o aviso a cada E tomava a conversa dele para sempre, e o jogador que só queria
+## trocar uma palavra ouvia "A chapada vai esperar" de novo. Dito uma vez, ele volta às falas.
+func _repete_o_aviso() -> bool:
+	return false
+
+
+## A FALA DO PEDRO VAI PARA O AVISO DO HUD (`narrou`) quando ela entra no ar, e
+## não quando é pedida: com a fila de falas ela pode esperar a vez, e o aviso
+## tem de dizer o que está no balão.
+func _comecar_a_fala(fala: Dictionary) -> void:
+	super(fala)
+	if bool(fala.get("narrada", false)):
+		narrou.emit(str(fala.get("inteira", fala.get("texto", ""))))
+
+
+## O AVISO DO ENTARDECER, com a voz dele (`anoitecer` no npcs_3d.json, nos três
+## idiomas: texto de jogador não mora em constante).
 func _verificar_anoitecer() -> void:
 	var periodo := Dia.periodo()
 	if periodo == "entardecer" and not _anoiteceu_hoje and _cadeia.espera <= 0.0 and _palavra_livre():
 		_anoiteceu_hoje = true
-		narrar("pedro_anoitecer", "Daqui a pouco escurece. Quando terminar, volte pra cama. Apagar no chão não descansa igual.")
+		var aviso: Dictionary = dados.get("anoitecer", {})
+		var texto := String(IdiomaMenu.campo(aviso, "texto", ""))
+		if texto != "":
+			narrar(String(aviso.get("audio", "")), texto, {"classe": FilaDeFalas.Classe.MISSAO, "origem": "anoitecer"})
 	elif periodo == "manha":
 		_anoiteceu_hoje = false
 
 
-## Pedro só narra quando nem ele nem o jogador estão ao alcance de outra fala.
+## Pedro só narra quando a vez de falar está livre (`npc.pode_falar`).
 func _palavra_livre() -> bool:
 	return pode_falar() and not fala_perto_de(jogador.global_position)
+
+
+## A narração do mundo está na tela (a fila de falas diz)? A caixa espera por ela.
+func _narracao_na_tela() -> bool:
+	var fila := _fila()
+	return fila != null and bool(fila.segura_a_caixa())
 
 
 ## ONDE O PASSO ACONTECE, resolvido pelo NOME e não pela âncora.

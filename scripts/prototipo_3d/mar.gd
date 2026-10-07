@@ -10,12 +10,19 @@ const LEITO := preload("res://assets/prototipo_3d/mar/leito_mar.gdshader")
 const CELULAS_POR_VERTICE := 2
 ## Fundo além da grade: plano grosso que repete a borda da batimetria até o horizonte.
 const SUBDIVISOES_DISTANTE := 96
-## Camada física só da câmera: a superfície da água barra o braço da câmera (ela não
-## mergulha) e não é vista pelo jogador, pelos moradores nem pelos cliques.
+## Camada física só da câmera: a superfície da água barra o braço da câmera e não é
+## vista pelo jogador, pelos moradores nem pelos cliques.
+##
+## ELA NÃO É A GARANTIA de a câmera não mergulhar, só a primeira camada dela: o corte do
+## braço ignora o que já cobre a esfera ao sair do pivô, e o pivô de quem anda onde a água
+## passa do peito, ou nada parado, fica abaixo desta superfície. A garantia é a conta de
+## `player_controller.gd` (`_inclinacao_acima_da_agua`), que segue o nível DE AGORA
+## (`WorldBuilder.water_level_at`: o mar com a maré, ou o rio) — não esta constante.
 const CAMADA_CAMERA_AGUA := 1 << 13
 ## A camada de tudo o que tem corpo (`camadas.gd`, `MUNDO`).
 const CAMADA_MUNDO := 1
-## Folga entre a água e o ponto mais baixo que a câmera alcança.
+## Folga entre a água e esta superfície do braço (a da conta da câmera é maior:
+## `CAMERA_ACIMA_DA_AGUA`, no controlador do jogador).
 const FOLGA_CAMERA := 0.2
 
 static var _ruidos: Dictionary = {}

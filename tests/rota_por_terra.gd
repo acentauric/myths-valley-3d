@@ -18,6 +18,13 @@ extends SceneTree
 ##      seco e passa por acidente.
 ##   2. O PEDRO SE APROXIMA. Preferir terra não pode virar preferir não ir.
 ##   3. ELE NÃO NADA NO CAMINHO. É a queixa, medida.
+##
+## E COM A MARÉ ("a maré vem ligada"): a primeira passada é a do mar na preamar, fixo, como o portão
+## sempre mediu; depois vêm as outras duas, com a maré ligada — na PREAMAR (a água cobre mais) e na
+## BAIXA-MAR (a água some em volta do píer, e a premissa 1 vira "ele não nada" e só). O portão media a
+## premissa do mar fixo e reprovava com a maré ligada ("só 0 de 8 pontos com água" no meio da vazante); a
+## malha dos moradores se assava com a água do instante, e na baixa-mar guardava a areia que a cheia cobre
+## (navegacao_vale.gd, `_nivel_da_preamar`).
 
 var falhas := 0
 const QUADROS := 420
@@ -53,22 +60,45 @@ func _run() -> void:
 	if mundo == null or jogador == null or pedro == null:
 		_fechar()
 		return
-
-	# --- 1. O PÍER TEM ÁGUA EM VOLTA -----------------------------------------
 	var pier: Vector3 = lugares.ponto("pier")
 	_conferir(pier != lugares.NENHUM, "o vale não tem píer")
 	if pier == lugares.NENHUM:
 		_fechar()
 		return
 
+	# A PASSADA DE SEMPRE: o mar na preamar, fixo.
+	await _passada("mar fixo", true, mundo, jogador, pedro, pier)
+	# COM A MARÉ LIGADA: na preamar e na baixa-mar.
+	var mare := root.get_node("/root/Mare")
+	var dia := root.get_node("/root/Dia")
+	mare.modo = 1
+	dia.pausado = true
+	var preamar_h: float = float(mare.fase_da_preamar_h)
+	dia.definir_hora(preamar_h)
+	await _frames(6)
+	_conferir(absf(float(mare.nivel_offset())) < 0.01, "o portão não achou a preamar (%.2f u)" % float(mare.nivel_offset()))
+	await _passada("maré na preamar", true, mundo, jogador, pedro, pier)
+	dia.definir_hora(fposmod(preamar_h + 6.0, 24.0))
+	await _frames(6)
+	_conferir(float(mare.nivel_offset()) < -0.5, "o portão não achou a baixa-mar (%.2f u)" % float(mare.nivel_offset()))
+	await _passada("maré na baixa-mar", false, mundo, jogador, pedro, pier)
+	mare.modo = 0
+	_fechar()
+
+
+## Uma medição completa: o Pedro, do lado de terra, e o jogador na ponta do píer. `exigir_agua`: a premissa 1 (água
+## em volta do píer) vale — na baixa-mar a areia seca em volta e ela não pode ser cobrada.
+func _passada(nome: String, exigir_agua: bool, mundo: Node, jogador: Node, pedro: Node3D, pier: Vector3) -> void:
+	# --- 1. O PÍER TEM ÁGUA EM VOLTA -----------------------------------------
 	var molhados := 0
 	for i in 8:
 		var angulo := TAU * float(i) / 8.0
 		var ponto := pier + Vector3(cos(angulo), 0.0, sin(angulo)) * 6.0
 		if float(mundo.water_depth_at(ponto)) > 0.4:
 			molhados += 1
-	_conferir(molhados >= 2,
-		"só %d de 8 pontos em volta do píer têm água: o teste mediria caminho seco" % molhados)
+	if exigir_agua:
+		_conferir(molhados >= 2,
+			"[%s] só %d de 8 pontos em volta do píer têm água: o teste mediria caminho seco" % [nome, molhados])
 
 	# --- 2 e 3. ELE SE APROXIMA SEM NADAR ------------------------------------
 	#
@@ -82,7 +112,7 @@ func _run() -> void:
 		if float(mundo.water_depth_at(tentativa)) < 0.2:
 			em_terra = mundo.ground_position(tentativa)
 			break
-	_conferir(em_terra != pier, "não achei terra firme a 22 u do píer para pôr o Pedro")
+	_conferir(em_terra != pier, "[%s] não achei terra firme a 22 u do píer para pôr o Pedro" % nome)
 	# Um passo em que ele SEGUE o jogador (a roça): no desembarque da partida nova
 	# ele fica na ponta da prancha, e na condução vai na frente.
 	pedro.ir_ao_passo("roca")
@@ -102,16 +132,14 @@ func _run() -> void:
 
 	var distancia_final := _plano(pedro.global_position, jogador.global_position)
 	print("")
-	print("  distância %.1f → %.1f u   quadros nadando: %d   água mais funda: %.2f m"
-		% [distancia_inicial, distancia_final, nadou, fundura_maxima])
+	print("  [%s] água em volta: %d de 8   distância %.1f → %.1f u   quadros nadando: %d   água mais funda: %.2f m"
+		% [nome, molhados, distancia_inicial, distancia_final, nadou, fundura_maxima])
 
 	_conferir(distancia_final < distancia_inicial - 2.0,
-		"o Pedro não se aproximou: %.1f → %.1f. Preferir terra virou preferir não ir"
-			% [distancia_inicial, distancia_final])
+		"[%s] o Pedro não se aproximou: %.1f → %.1f. Preferir terra virou preferir não ir"
+			% [nome, distancia_inicial, distancia_final])
 	_conferir(nadou == 0,
-		"o Pedro passou %d quadro(s) nadando para chegar ao píer: é a queixa" % nadou)
-
-	_fechar()
+		"[%s] o Pedro passou %d quadro(s) nadando para chegar ao píer: é a queixa" % [nome, nadou])
 
 
 func _plano(a: Vector3, b: Vector3) -> float:
@@ -123,7 +151,7 @@ func _plano(a: Vector3, b: Vector3) -> float:
 func _fechar() -> void:
 	print("")
 	if falhas == 0:
-		print("ROTA_OK: com o jogador na ponta do píer e o Pedro do outro lado da água, ele se aproxima por terra e não nada")
+		print("ROTA_OK: com o jogador na ponta do píer e o Pedro do outro lado da água, ele se aproxima por terra e não nada — com o mar fixo e com a maré ligada, na preamar e na baixa-mar")
 	else:
 		print("rota: %d falha(s)" % falhas)
 	quit(1 if falhas > 0 else 0)

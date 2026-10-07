@@ -317,8 +317,13 @@ func _juntar(item: String, quantos: int, id: String, inv, recursos, jogador, ene
 		"o passo '%s' pede %d de %s e só consegui juntar %d no vale" % [id, quantos, item, inv.quantidade(item)])
 
 
+## O golpe do `Recursos3D` leva 1,5 s de JOGO, e o jogo anda mais devagar que a parede
+## quando o quadro passa de 50 ms (`max_physics_steps_per_frame`, project.godot): a
+## janela de 2,5 s de relógio reprovava na bateria cheia ("pede 3 de pedra e só consegui
+## juntar 0": o segundo golpe via o primeiro pendente e o laço desistia). A espera sai
+## assim que o golpe acaba; o teto só pega o golpe que não acaba nunca.
 func _esperar_golpe(recursos) -> void:
-	var limite := Time.get_ticks_msec() + 2500
+	var limite := Time.get_ticks_msec() + 40000
 	while Time.get_ticks_msec() < limite and (str(recursos.get("_golpe_pendente")) != "" or bool(recursos.get("_golpe_animando"))):
 		await process_frame
 
@@ -362,11 +367,11 @@ func _acontecer(evento: String, id: String, jogo, jogador, inv, energia, dialogo
 		Input.action_press("mv_forward")
 		await _ate(func() -> bool: return jogo.get("_correu_avisado") == true, 6.0)
 		Input.action_release("mv_forward")
-		# A corrida passa por gente no píer, e cada um cumprimenta quem passa: o
-		# passo seguinte só se anuncia com a palavra livre, e o teto dele é de quem
-		# chega calado. Espera-se as falas da corrida acabarem, como o jogador.
-		if guia != null:
-			await _ate(func() -> bool: return not guia.fala_perto_de(jogador.global_position), 20.0)
+		# A corrida passa por gente no píer, e cada um cumprimenta quem passa. O
+		# portão esperava essas falas acabarem, porque o passo seguinte só se
+		# anunciava com a palavra livre; agora o anúncio é na hora e a FALA dele
+		# entra na fila de falas (`fila_de_falas.gd`) — e cumprimento de quem
+		# passa não fura a vez de ninguém. Não há mais o que esperar.
 	elif evento.begins_with("entrou:"):
 		# Entra pela porta: do lado de dentro da soleira, o vale vê quem entrou.
 		var sala = jogo.interiores.sala_de(evento.trim_prefix("entrou:"))

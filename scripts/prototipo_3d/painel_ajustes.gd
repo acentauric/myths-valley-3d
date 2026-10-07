@@ -15,6 +15,7 @@ const Atalhos = preload("res://scripts/prototipo_3d/atalhos.gd")
 const CameraMouse = preload("res://scripts/prototipo_3d/camera_mouse.gd")
 const Identidade = preload("res://scripts/prototipo_3d/identidade.gd")
 const CaixaDePergunta = preload("res://scripts/prototipo_3d/caixa_de_pergunta.gd")
+const SustosDaMata = preload("res://scripts/prototipo_3d/sustos_da_mata.gd")
 
 ## × do cabeçalho (o anfitrião fecha o modal).
 signal fechar_pedido
@@ -266,7 +267,10 @@ func _aba_cenario(esquerda: VBoxContainer, direita: VBoxContainer) -> void:
 		preferencias.set_value("interface", "minimapa", i == 0)
 		if preferencias.save(PREFERENCIAS_VISUAIS) != OK:
 			push_warning("Não foi possível salvar a preferência do minimapa."), 0)
-	_escolha("Maré", ["Sem maré", "Ciclo do lugar", "Ciclo lento", "Rápida (ver acontecer)"], Mare.modo, Mare.definir_modo, 0)
+	_escolha("Maré", ["Sem maré", "Ciclo do lugar", "Ciclo lento", "Rápida (ver acontecer)"], Mare.modo, Mare.definir_modo, Mare.MODO_PADRAO)
+	# O vulto da mata e o rastro do Curupira (sustos_da_mata.gd): ligados, menos na edição Tripothon.
+	_escolha("Sustos", ["Ligados", "Desligados"], 0 if SustosDaMata.ligado() else 1,
+		func(i: int) -> void: SustosDaMata.definir_ligado(i == 0), 0 if SustosDaMata.padrao_de_fabrica() else 1)
 	_pai = direita
 	_secao("Interface")
 	_escolha("Cursor do mouse", Tela.ROTULOS_CURSOR, Tela.cursor, Tela.definir_cursor, Tela.PADRAO_CURSOR)

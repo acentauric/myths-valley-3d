@@ -2837,6 +2837,9 @@ func _atualizar_lod_da_camera() -> void:
 	if mapa == _camera_de_mapa:
 		return
 	_camera_de_mapa = mapa
+	# As casas, as árvores nomeadas e os adereços (`CatalogoAssets.dar_alcance`) seguem
+	# a mesma regra: no mapa alto aparecem de verdade, sem o corte e sem o substituto.
+	CatalogoAssets.modo_mapa(get_tree(), mapa)
 	for bloco in _blocos_vegetacao_lod:
 		var visual := bloco.visual as MultiMeshInstance3D
 		visual.visibility_range_end = 0.0 if mapa else float(bloco.distancia)

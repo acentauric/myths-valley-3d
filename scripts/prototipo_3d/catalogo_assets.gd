@@ -18,6 +18,7 @@ extends RefCounted
 const PASTA := "res://assets/prototipo_3d/"
 const Camadas = preload("res://scripts/prototipo_3d/camadas.gd")
 const CoqueiroCortado = preload("res://scripts/prototipo_3d/coqueiro_cortado.gd")
+const PecasDistantes = preload("res://scripts/prototipo_3d/pecas_distantes.gd")
 
 const PECAS := {
 	# Árvores nomeadas (perto do jogador)
@@ -123,6 +124,12 @@ const PECAS := {
 	# A lapa da lombada é a mesma pedra, com nome próprio: a meta "derrubar" da
 	# missão conta só ela (`recursos_3d.derrubados`).
 	"lapa": {"tripo": "aderecos/pedras_tripo.glb", "largura": 3.0, "caixa": true, "camera": true},
+	# A PEDRA SOLTA, a que se quebra: o mesmo monte de pedras, mas pequeno (tamanho de
+	# 0,3 a 0,4, do tornozelo ao joelho do jogador) e solto no chão. Pedra quebrável
+	# cabe na mão (`Recursos3D.pedra_pequena`); as grandes, de cenário, são `pedras`.
+	# Sem "camera": o braço da câmera não pode saltar ao passar por uma pedra de meio
+	# metro. Nenhum modelo novo: é o GLB de `pedras`.
+	"pedra_solta": {"tripo": "aderecos/pedras_tripo.glb", "largura": 3.0, "caixa": true, "camera": false},
 	# A cabra do Seu Benedito, presa no alto da lombada (lote do Tripo de 05/10).
 	"cabra": {"tripo": "aderecos/cabra_tripo.glb", "largura": 1.3},
 	# A FAZENDA DO CONVITE (lotes do Tripo de 05/10): o casarão, de frente para +Z,
@@ -375,6 +382,59 @@ const DUAS_FACES := [
 	"cerca", "cerca_varas", "barraca_feira", "ervas_secando",
 ]
 
+## O ALCANCE DAS PEÇAS DO CENÁRIO (`dar_alcance`, chamado ao fim de `instanciar`).
+##
+## ~300 peças do cenário (28 construções de 10 mil triângulos, 50 árvores de 10 a 20
+## mil, os adereços e os recursos) eram desenhadas inteiras a qualquer distância:
+## de longe uma casa tem 15 pixels e a árvore, 20. Cada peça agora some ao passar de
+## um ALCANCE que cresce com o tamanho dela (uma peça de `FATOR` vezes a sua
+## dimensão maior ocupa sempre os mesmos pixels ao sumir), limitado por classe:
+##
+##   construcao  a casa e o prédio (`construcoes/`, `casas/`): 22 x, de 100 a 260 u.
+##               A casa e a igreja ganham um substituto barato que entra onde o modelo
+##               começa a sumir e vai a 1.200 u (`pecas_distantes.gd`): nada some no horizonte;
+##   arvore      a nomeada (`arvores/` com `tronco`): 22 x, de 70 a 260 u, e a copa
+##               da mata no lugar dela;
+##   adereco     o que fica no chão (`aderecos/`): 30 x, de 60 a 200 u: os pequenos
+##               somem entre 60 e 90 u, e DESVANECEM (`FADE_SELF`) numa faixa de
+##               `MARGEM_DO_DESVANECER`, para não saltarem;
+##   planta      a roça e o canteiro (`arvores/` sem tronco): 30 x, de 50 a 90 u.
+##
+## Fora dela ficam o que anda (gente, bicho, peixe, barco), o que se leva na mão e a
+## mobília, que mora dentro de cômodo: ver `classe_de_alcance`. A SOMBRA não precisa
+## de corte próprio: o sol só sombreia até 70 u (`ceu_vale.gd`), e o alcance das
+## peças pequenas (60 a 90 u) já acaba onde a sombra acaba.
+##
+## O MODELO DESVANECE de `end` até `end` + a margem (medido com a GPU em
+## tools/prototipo_3d/medir_lod_das_pecas.gd --modo=troca): a casa de 143 u e margem 15
+## some aos 158 u, a árvore de 177 aos 192, e o pote de 60 (margem 8) aos 68. Casa e
+## árvore têm o substituto barato, que aparece em `end`, seco e por baixo do modelo que
+## ainda se vê: nada some sem o outro estar lá. A troca seca com margem dos dois lados
+## (a da mata) deixava um BURACO: a peça que nasce com a câmera dentro da margem não
+## desenhava nem o modelo nem o substituto (`medir_lod_das_pecas.gd --modo=estado`).
+##
+## `alcance_ligado` falso devolve o vale de antes (ferramentas de medida e portões).
+static var alcance_ligado := true
+const FATOR_DO_ALCANCE := {"construcao": 22.0, "arvore": 22.0, "adereco": 30.0, "planta": 30.0}
+const ALCANCE_MINIMO := {"construcao": 100.0, "arvore": 70.0, "adereco": 60.0, "planta": 50.0}
+const ALCANCE_MAXIMO := {"construcao": 260.0, "arvore": 260.0, "adereco": 200.0, "planta": 90.0}
+## A faixa em que o modelo desvanece, com substituto (casa e árvore) e sem ele.
+const MARGEM_DA_TROCA := 15.0
+const MARGEM_DO_DESVANECER := 8.0
+## A construção a partir de quanto (u, a dimensão maior) ganha o substituto.
+const TAMANHO_DA_CASA := 4.5
+## Peças do cenário que ficam inteiras a qualquer distância, e por quê.
+const SEM_ALCANCE := {
+	"pier": "o primeiro que se vê da baía e o jogador anda nele: uma peça só",
+	"ponte": "o jogador anda nela e se vê da estrada: uma peça só",
+	"ponte_caida": "a ponte caída no rio, que a obra põe de pé: uma peça só, como a ponte",
+	"mirante": "torre aberta vista de todo o vale: uma peça só, e uma caixa não a imita",
+	"saveiro": "o barco da chegada: anda pela baía, e some no horizonte se for cortado",
+	"bote": "o barco do saveiro: anda pela baía",
+	"canoa": "a canoa ancorada: anda com a maré",
+	"canoa_amarela": "a canoa ancorada: anda com a maré",
+}
+
 static var _cenas: Dictionary = {}
 ## Materiais já tratados por `_descartar_costas` (instance_id -> true): um só ajuste por material.
 static var _materiais_tratados: Dictionary = {}
@@ -476,7 +536,77 @@ static func instanciar(chave: String, parent: Node, origin: Vector3, size: float
 	var center := Vector3(bounds.get_center().x, bounds.position.y, bounds.get_center().z) * factor
 	node.position = origin - center.rotated(Vector3.UP, yaw) - Vector3(0, float(spec.get("afundar", 0.0)), 0)
 	node.set_meta("limites", AABB(bounds.position * factor, bounds.size * factor))
+	dar_alcance(chave, node, spec, bounds, factor)
 	return node
+
+
+## A CLASSE DE ALCANCE da peça ("construcao", "arvore", "adereco", "planta") ou ""
+## quando ela fica inteira a qualquer distância: o que anda ou se leva na mão
+## (`personagens/`, `animais/`, `peixes/`, `mar/`, `itens/`), a mobília (`moveis/`,
+## que mora dentro de cômodo) e as peças de `SEM_ALCANCE`.
+static func classe_de_alcance(chave: String) -> String:
+	if not PECAS.has(chave) or SEM_ALCANCE.has(chave):
+		return ""
+	var spec: Dictionary = PECAS[chave]
+	var arquivo := String(spec.get("tripo", ""))
+	if arquivo.begins_with("construcoes/") or arquivo.begins_with("casas/"):
+		return "construcao"
+	if arquivo.begins_with("arvores/"):
+		return "arvore" if spec.has("tronco") else "planta"
+	if arquivo.begins_with("aderecos/"):
+		return "adereco"
+	return ""
+
+
+## ATÉ ONDE (u) a peça se vê, pela classe e pelo tamanho dela (`tamanho`: a
+## dimensão maior, em u, já com a escala posta). O catálogo pode fixar à mão com
+## "alcance". 0 quando a peça não tem corte.
+static func alcance_de(chave: String, tamanho: float) -> float:
+	var classe := classe_de_alcance(chave)
+	if classe.is_empty():
+		return 0.0
+	var spec: Dictionary = PECAS[chave]
+	if spec.has("alcance"):
+		return float(spec["alcance"])
+	return clampf(tamanho * float(FATOR_DO_ALCANCE[classe]), float(ALCANCE_MINIMO[classe]), float(ALCANCE_MAXIMO[classe]))
+
+
+## Dá o alcance à peça recém-instanciada: o corte em cada malha do modelo, o
+## desvanecer nas que não têm substituto e, para a casa e a árvore nomeada, o
+## substituto barato que entra onde o modelo sai (`pecas_distantes.gd`). Também
+## marca o modelo com a chave (`peca`), para os portões e as ferramentas.
+static func dar_alcance(chave: String, node: Node3D, _spec: Dictionary, bounds: AABB, escala: float) -> void:
+	node.set_meta("peca", chave)
+	if not alcance_ligado or Engine.is_editor_hint():
+		return
+	var classe := classe_de_alcance(chave)
+	if classe.is_empty():
+		return
+	var tamanho := maxf(bounds.size.x, maxf(bounds.size.y, bounds.size.z)) * escala
+	var fim := alcance_de(chave, tamanho)
+	var longe: MultiMeshInstance3D = null
+	if classe == "construcao" and tamanho >= TAMANHO_DA_CASA:
+		longe = PecasDistantes.casa(chave, bounds, fim)
+	elif classe == "arvore":
+		longe = PecasDistantes.copa(chave, bounds, fim)
+	# O modelo SEMPRE desvanece (sem estado, sem histerese: ver `pecas_distantes.gd`): a
+	# peça pequena some e a casa e a árvore passam para o substituto, que já está por baixo.
+	var margem := MARGEM_DA_TROCA if longe != null else MARGEM_DO_DESVANECER
+	for geometria in PecasDistantes.geometrias_do_modelo(node):
+		geometria.set_meta("lod_fim", fim)
+		geometria.visibility_range_end = fim
+		geometria.visibility_range_end_margin = margem
+		geometria.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_SELF
+	if longe != null:
+		node.add_child(longe)
+	node.add_to_group(PecasDistantes.GRUPO)
+
+
+## O MAPA ALTO (câmera ortográfica a 3.000 u) tira o corte das peças e esconde os
+## substitutos; a volta ao passeio os repõe. Quem chama é o renderizador da região,
+## junto com o que ele faz com a mata (`GeoRegionRenderer._atualizar_lod_da_camera`).
+static func modo_mapa(arvore: SceneTree, mapa: bool) -> void:
+	PecasDistantes.modo_mapa(arvore, mapa)
 
 
 ## Colisão simples para um modelo instanciado por `instanciar`: cilindro no tronco ou caixa.

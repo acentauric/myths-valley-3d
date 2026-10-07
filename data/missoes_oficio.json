@@ -4,6 +4,9 @@
   "nome": "O ofício de quem fica",
   "nome_en": "The trade of those who stay",
   "nome_es": "El oficio de quien se queda",
+  "trancada": "O ofício de quem fica vem depois da chegada. Acabe primeiro a lida de hoje comigo, que aí eu lhe ensino a pesca.",
+  "trancada_en": "The trade of those who stay comes after your arrival. Finish today's work with me first, and then I'll teach you fishing.",
+  "trancada_es": "El oficio de quien se queda viene después de la llegada. Termina primero la faena de hoy conmigo, y entonces te enseño la pesca.",
   "principal": false,
   "passos": [
     {

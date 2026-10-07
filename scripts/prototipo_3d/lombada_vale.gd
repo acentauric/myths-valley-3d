@@ -52,6 +52,9 @@ const PASSO := 0.8
 const PASSO_DESCENDO := 2.4
 ## De quanto em quanto se confere a lapa e a fila (a partida que volta do save).
 const CONFERIR_A_CADA := 0.25
+## A cabra anda com as pernas: o clipe de andar da cabra do rig, na velocidade do
+## chão (`cabra_de_cena.gd`). Antes era um GLB parado que escorregava.
+const CabraDeCena = preload("res://scripts/prototipo_3d/cabra_de_cena.gd")
 
 var _mundo
 var _cadeia
@@ -63,6 +66,7 @@ var _trava: StaticBody3D = null
 var _cabra: Node3D = null
 var _descendo := false
 var _desceu := false
+var _passeio: Tween = null
 var _proximo_passeio := 0.0
 var _rng := RandomNumberGenerator.new()
 var _conferir_em := 0.0
@@ -106,7 +110,10 @@ func acertar() -> void:
 	var cabra_la_em_cima: bool = _cadeia == null or not _cadeia.passou("cabra")
 	if cabra_la_em_cima and _cabra == null and not _descendo:
 		_desceu = false
-		_cabra = CatalogoAssets.instanciar("cabra", self, Vector3(_centro.x, _topo, _centro.z), 1.0, _rng.randf() * TAU)
+		_cabra = CabraDeCena.new()
+		add_child(_cabra)
+		_cabra.global_position = Vector3(_centro.x, _topo, _centro.z)
+		_cabra.rotation.y = _rng.randf() * TAU
 		_proximo_passeio = 1.0
 	elif not cabra_la_em_cima and _cabra != null and not _descendo:
 		_cabra.queue_free()
@@ -139,9 +146,13 @@ func _process(delta: float) -> void:
 	if _proximo_passeio > 0.0:
 		return
 	_proximo_passeio = PAUSA + _rng.randf() * PAUSA
+	# Ainda no passeio de antes: espera o próximo (dois passeios juntos puxariam a cabra
+	# para dois lados, e o primeiro a chegar a poria parada com o outro andando).
+	if _passeio != null and _passeio.is_running():
+		return
 	# UM PASSEIO NO ALTO: um ponto ao acaso dentro da borda, de frente para ele.
 	var destino := Vector3(_centro.x + _rng.randf_range(-PASSEIO.x, PASSEIO.x), _topo, _centro.z + _rng.randf_range(-PASSEIO.y, PASSEIO.y))
-	_andar_ate(_cabra, [destino], PASSO)
+	_passeio = _andar_ate(_cabra, [destino], PASSO)
 
 
 ## A CABRA DESCE: rampa abaixo e embora, para o cercado do Seu Benedito, e some.
@@ -149,6 +160,8 @@ func a_cabra_desce() -> void:
 	if not is_instance_valid(_cabra) or _descendo:
 		return
 	_descendo = true
+	if _passeio != null and _passeio.is_valid():
+		_passeio.kill()
 	var caminho: Array = [
 		Vector3(_centro.x + ALTO.x * 0.5 - 0.6, _topo, _centro.z),
 		_no_chao(PE_DA_RAMPA, 0.0),
@@ -164,8 +177,9 @@ func a_cabra_desce() -> void:
 		_desceu = true)
 
 
-## Leva `quem` pelos pontos, de frente para onde vai (a cabra do Tripo olha
-## para +Z), no passo dado.
+## Leva `quem` pelos pontos, de frente para onde vai (a cabra olha para +Z), no passo
+## dado. A cabra PARA para virar e ANDA enquanto vai: o clipe de andar toca só no
+## trecho em que o corpo sai do lugar.
 func _andar_ate(quem: Node3D, pontos: Array, passo: float) -> Tween:
 	var andando := create_tween()
 	var de := quem.global_position
@@ -173,9 +187,12 @@ func _andar_ate(quem: Node3D, pontos: Array, passo: float) -> Tween:
 		var rumo := ponto - de
 		rumo.y = 0.0
 		if rumo.length() > 0.05:
+			andando.tween_callback(CabraDeCena.parar_se_for.bind(quem))
 			andando.tween_property(quem, "rotation:y", atan2(rumo.x, rumo.z), 0.25)
+		andando.tween_callback(CabraDeCena.andar_se_for.bind(quem, passo))
 		andando.tween_property(quem, "global_position", ponto, maxf((ponto - de).length() / passo, 0.2))
 		de = ponto
+	andando.tween_callback(CabraDeCena.parar_se_for.bind(quem))
 	return andando
 
 

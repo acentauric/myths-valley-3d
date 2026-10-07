@@ -4,6 +4,9 @@
   "nome": "A fé do arraial",
   "nome_en": "The faith of the village",
   "nome_es": "La fe del caserío",
+  "trancada": "A fé do arraial vem depois do mirante. Volte quando o mirante estiver de pé.",
+  "trancada_en": "The village's faith comes after the lookout. Come back once the lookout is standing.",
+  "trancada_es": "La fe del pueblo viene después del mirador. Vuelve cuando el mirador esté en pie.",
   "principal": true,
   "passos": [
     {

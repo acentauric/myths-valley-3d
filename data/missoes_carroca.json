@@ -4,6 +4,9 @@
   "nome": "A carroça do avô",
   "nome_en": "Grandfather's cart",
   "nome_es": "La carreta del abuelo",
+  "trancada": "A carroça espera. Volte depois de trabalhar a piaçava do saveiro e de ter o machado que o Pedro lhe dá na ponte.",
+  "trancada_en": "The cart can wait. Come back after you've worked the piassava for the saveiro and have the axe Pedro gives you at the bridge.",
+  "trancada_es": "La carreta espera. Vuelve cuando hayas trabajado la piasava del saveiro y tengas el hacha que Pedro te da en el puente.",
   "principal": false,
   "passos": [
     {
@@ -43,9 +46,9 @@
       "titulo": "Mutirão na carroça",
       "titulo_en": "All hands on the cart",
       "titulo_es": "Manos a la obra en la carreta",
-      "resumo": "Recupere a carroça com o mutirão",
-      "resumo_en": "Restore the cart with the work party",
-      "resumo_es": "Repara la carreta con los vecinos",
+      "resumo": "Recupere a carroça: [E] ou [J] › Obras, com o mutirão",
+      "resumo_en": "Restore the cart: [E] or [J] › Works, with the work party",
+      "resumo_es": "Repara la carreta: [E] o [J] › Obras, con los vecinos",
       "lugar": "casa_carro_quebrado",
       "raio": 8.0,
       "audio": "",

@@ -4,6 +4,9 @@
   "nome": "A lombada da lapa",
   "nome_en": "The ridge of the rock slab",
   "nome_es": "La loma de la laja",
+  "trancada": "Ainda não é a vez da lapa. Volte depois de juntar a lenha da ponte, que aí a gente fala da picareta.",
+  "trancada_en": "The ledge isn't up yet. Come back after you've gathered the bridge firewood, then we'll talk about the pickaxe.",
+  "trancada_es": "Todavía no es el turno de la peña. Vuelve cuando hayas juntado la leña del puente, que entonces hablamos del pico.",
   "principal": false,
   "passos": [
     {

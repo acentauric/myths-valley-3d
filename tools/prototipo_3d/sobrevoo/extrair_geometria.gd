@@ -160,8 +160,9 @@ func _extrair() -> void:
 	# Direto no autoload: definir() gravaria a escolha na preferencia do jogador.
 	var estilo_no := root.get_node("/root/Estilo")
 	estilo_no.set("modo", _estilo)
-	# O vale de fundo, e não o lobby em vídeo (05/10): sem ele a abertura solta o
-	# $Cenario antes de montar e `construido` nunca chega (`abertura.lobby_3d_pedido`).
+	# O LOBBY DO MENU É O VÍDEO, e a abertura libera o vale 3D na entrada: o voo só pode
+	# ser medido contra o vale se este script o pedir. `load` e não `preload`: a abertura
+	# cita autoload, e só depois de o `_initialize` ele está de pé (AGENTS.md).
 	(load("res://scripts/prototipo_3d/abertura.gd") as GDScript).set("lobby_3d_pedido", true)
 	var marco := Time.get_ticks_msec()
 	if change_scene_to_file(CENA) != OK:
@@ -169,8 +170,18 @@ func _extrair() -> void:
 		quit(1)
 		return
 	var mundo: Node3D = null
+	var lobby_conferido := false
 	while true:
 		await process_frame
+		if not lobby_conferido and current_scene != null:
+			lobby_conferido = true
+			# Sem o pedido o menu abre em vídeo e nunca monta o vale: falha já, dizendo por
+			# quê, em vez de girar até o teto de 400 s (o que a bateria base mostrou).
+			if bool(current_scene.get("lobby_em_video")):
+				push_error("EXTRAIR: o menu abriu com o lobby em vídeo, sem vale 3D para medir")
+				print("FALHA: o menu abriu com o lobby em vídeo, sem o vale 3D de fundo: o pedido de lobby 3D (abertura.lobby_3d_pedido) não pegou")
+				quit(1)
+				return
 		mundo = get_first_node_in_group("mundo") as Node3D
 		if mundo != null and bool(mundo.get("construido")):
 			break
