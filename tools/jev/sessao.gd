@@ -23,6 +23,8 @@ var ultima_captura := -1
 var ultima_acao := ""
 var achados: Array = []
 var jogada
+var amostras_movimento: Array = []
+var amostrar_em := 0
 
 
 func _initialize() -> void:
@@ -90,9 +92,13 @@ func _run() -> void:
 		acao_rotulo.text = _texto("acao_robot") % ultima_acao if OS.get_environment("MV_JEV_ROBOT") == "1" else _texto("acao") % [ultima_acao, float(resposta.confidence) * 100.0]
 		_atualizar_painel()
 		var antes: Dictionary = _estado()
+		amostras_movimento.clear()
+		amostrar_em = 0
+		_amostrar_movimento()
 		var resultado: String = await _executar(ultima_acao)
 		var depois: Dictionary = _estado()
-		var evento := {"action": ultima_acao, "result": resultado, "before": antes, "after": depois}
+		_amostrar_movimento(true)
+		var evento := {"action": ultima_acao, "result": resultado, "before": antes, "after": depois, "movement_samples": amostras_movimento.duplicate(true)}
 		var retorno: Dictionary = await _post("/event", evento)
 		if not str(retorno.get("stop", "")).is_empty():
 			ultima_acao = str(retorno.stop)
@@ -201,6 +207,8 @@ func _estado() -> Dictionary:
 	estado["movement_control"] = "WASD keyboard; navigation is used only to read route waypoints, never to issue click walking"
 	estado["directions"] = _direcoes(jogador)
 	estado["screen"] = current_scene.get("telas").aberta()
+	if bool(current_scene.get("mapa").get("aberto")):
+		estado["screen"] = "world_map"
 	if current_scene.get("aviso_da_primeira_vez").aberto():
 		estado["screen"] = "first_time_notice"
 	var dialogo := root.get_node("Dialogo")
@@ -243,10 +251,14 @@ func _estado() -> Dictionary:
 	estado["npcs"] = []
 	for npc in current_scene.get("moradores"):
 		if is_instance_valid(npc):
-			estado.npcs.append({"node": str(npc.name), "id": npc.dados.get("id", ""), "name": npc.dados.get("nome", ""),
+			estado.npcs.append({"speaking": npc.has_method("falando_agora") and npc.falando_agora(), "node": str(npc.name), "id": npc.dados.get("id", ""), "name": npc.dados.get("nome", ""),
 				"position": _vetor(npc.global_position), "distance": snappedf(jogador.global_position.distance_to(npc.global_position), 0.1)})
 	var mochila := root.get_node("Mochila")
 	estado["home_interaction"] = current_scene.get("casa").perto()
+	var sala_casa: Node3D = current_scene.get("casa").quarto()
+	if sala_casa != null:
+		estado["home_entry"] = {"outside": _vetor(sala_casa.soleira_de_fora()),
+			"inside": _vetor(sala_casa.soleira_de_dentro()), "locked": sala_casa.trancada()}
 	if mochila.aberta:
 		estado["inventory_screen"] = {"cursor": mochila.get("_cursor"), "held_slot": mochila.get("_pego"), "chest": _json_seguro(mochila.get("_bau")), "chest_cursor_base": mochila._primeiro_do_bau(), "confirmation": mochila.get("_confirmar")}
 	var painel: Node = current_scene.get("painel")
@@ -254,7 +266,7 @@ func _estado() -> Dictionary:
 		estado["panel"] = {"tab": painel.aba(), "cursor": painel.get("_cursor"), "rows": _json_seguro(painel.get("_linhas")), "advice": painel.get("_dica").text}
 	var pedro: Node3D = current_scene.get("pedro")
 	if is_instance_valid(pedro):
-		estado["pedro"] = {"distance": snappedf(jogador.global_position.distance_to(pedro.global_position), 0.1),
+		estado["pedro"] = {"speaking": pedro.has_method("falando_agora") and pedro.falando_agora(), "distance": snappedf(jogador.global_position.distance_to(pedro.global_position), 0.1),
 			"step": pedro.get("missao"), "text": pedro.texto_da_missao(), "position": _vetor(pedro.global_position)}
 		var cadeia: Node = pedro.get("_cadeia")
 		var outra: Node = pedro._outra_que_conduz()
@@ -352,6 +364,8 @@ func _acoes(estado: Dictionary) -> Dictionary:
 		else:
 			opcoes["dialogue_next"] = "Read the visible dialogue, then press E to advance"
 		return opcoes
+	if estado.get("screen", "") == "world_map":
+		return {"close_screen": "Press Escape to close the world map and release movement controls"}
 	if str(estado.get("screen", "")) != "" or paused:
 		return {"close_screen": "Press Escape to close the screen or dismiss the visible tutorial notice",
 			"confirm_screen": "Press E to confirm the visible selection or pick/move the selected inventory item",
@@ -387,6 +401,9 @@ func _acoes(estado: Dictionary) -> Dictionary:
 			opcoes[id] = "Turn to face the nearby E interaction source %s, then check interaction_target and use E" % str(oferta.source)
 	var sala: Node3D = current_scene.get("casa").quarto()
 	if sala != null:
+		if not sala.trancada() and str(estado.get("interior", "")) != "casa":
+			catalogo["enter_home"] = sala
+			opcoes["enter_home"] = "Walk to the actual exterior doorway, then cross its inside threshold using W; door is unlocked"
 		for mobilia in ["bed", "chest"]:
 			var id: String = "approach_" + str(mobilia)
 			catalogo[id] = sala.ponto_da_cama() if mobilia == "bed" else sala.ponto_do_bau()
@@ -435,6 +452,17 @@ func _executar(escolha: String) -> String:
 		await _esperar(1.0)
 		return "button_clicked"
 	match escolha:
+		"enter_home":
+			var sala: Node3D = catalogo.get("enter_home")
+			if sala == null or sala.trancada():
+				return "home_door_locked_or_unavailable"
+			var fora: Vector3 = sala.soleira_de_fora()
+			var jogador: Node3D = current_scene.get("player")
+			if Vector2(jogador.global_position.x - fora.x, jogador.global_position.z - fora.z).length() > 0.6:
+				var chegada := await _caminhar(fora, false, true)
+				if chegada != "arrived":
+					return chegada
+			return await _caminhar(sala.soleira_de_dentro(), false, true)
 		"dialogue_next", "interact", "confirm_screen":
 			await _tecla(KEY_E)
 			return "E_pressed"
@@ -507,7 +535,15 @@ func _executar(escolha: String) -> String:
 	return await _caminhar(catalogo[escolha], escolha == "follow_pedro")
 
 
-func _caminhar(alvo, seguir: bool) -> String:
+func _amostrar_movimento(forcar: bool = false) -> void:
+	if not _no_vale() or inicio_jogo < 0 or not bool(current_scene.get("carga_ok")) or (not forcar and Time.get_ticks_msec() < amostrar_em):
+		return
+	var jogador: Node3D = current_scene.get("player")
+	amostras_movimento.append({"seconds": (Time.get_ticks_msec() - inicio_jogo) / 1000.0, "position": _vetor(jogador.global_position)})
+	amostrar_em = Time.get_ticks_msec() + 500
+
+
+func _caminhar(alvo, seguir: bool, exato: bool = false) -> String:
 	var jogador: Node3D = current_scene.get("player")
 	jogador._cancel_walk()
 	if bool(jogador.get("_run_toggled")):
@@ -525,6 +561,7 @@ func _caminhar(alvo, seguir: bool) -> String:
 			_pressionar(KEY_W, false)
 			return "user_stop"
 		_atualizar_painel()
+		_amostrar_movimento()
 		if _segundos() - ultima_captura >= 30:
 			_capturar()
 		if duracao > 0 and inicio_jogo >= 0 and _segundos() >= duracao:
@@ -545,7 +582,7 @@ func _caminhar(alvo, seguir: bool) -> String:
 			recalcular = 0
 			continue
 		if Time.get_ticks_msec() >= recalcular:
-			if jogador.global_position.distance_to(ponto) < (2.6 if seguir else (1.2 if alvo is Node3D else 1.0)):
+			if Vector2(jogador.global_position.x - ponto.x, jogador.global_position.z - ponto.z).length() < (0.35 if exato else (2.6 if seguir else (1.2 if alvo is Node3D else 1.0))):
 				_pressionar(KEY_W, false)
 				jogador._cancel_walk()
 				if seguir and not _guia_chegou(alvo):
@@ -555,7 +592,7 @@ func _caminhar(alvo, seguir: bool) -> String:
 					await _esperar(0.2)
 					continue
 				return await _conferir_chegada(alvo, ponto, seguir)
-			var novo: Vector3 = jogada.chegada(ponto, 2.0 if seguir else 0.8, jogador.global_position)
+			var novo: Vector3 = ponto if exato else jogada.chegada(ponto, 2.0 if seguir else 0.8, jogador.global_position)
 			if not novo.is_finite():
 				_pressionar(KEY_W, false)
 				return "no_walkable_approach"
@@ -568,14 +605,14 @@ func _caminhar(alvo, seguir: bool) -> String:
 			recalcular = Time.get_ticks_msec() + 2000
 		# Read the route, but execute it through keyboard input and ordinary physics.
 		var rumo: Vector3 = ponto
-		if jogador.global_position.distance_to(ponto) > 5.0:
+		if not exato or jogador.global_position.distance_to(ponto) > 2.0:
 			while not trajeto.is_empty() and Vector2(trajeto[0].x - jogador.global_position.x, trajeto[0].z - jogador.global_position.z).length() < 0.7:
 				trajeto.remove_at(0)
 			if not trajeto.is_empty():
 				rumo = trajeto[0]
 		jogada.virar_para(rumo)
 		_pressionar(KEY_W, true)
-		if Time.get_ticks_msec() - ver_tempo > 6000:
+		if Time.get_ticks_msec() - ver_tempo > 2000:
 			if jogador.global_position.distance_to(ver_pos) < 0.3:
 				var achado := {"type": "possible_stuck", "position": _vetor(jogador.global_position), "action": ultima_acao}
 				achados.append(achado)
@@ -608,6 +645,7 @@ func _aproximar_guia(pedro: Node3D) -> bool:
 			break
 		if jogador.global_position.distance_to(pedro.global_position) <= 2.4:
 			break
+		_amostrar_movimento()
 		jogada.virar_para(pedro.global_position)
 		if Time.get_ticks_msec() >= verificar:
 			if jogador.global_position.distance_to(anterior) < 0.2:
@@ -689,6 +727,7 @@ func _esperar(segundos: float) -> void:
 			ultima_acao = "user_stop"
 			parar = true
 		_atualizar_painel()
+		_amostrar_movimento()
 		if duracao > 0 and inicio_jogo >= 0 and _segundos() >= duracao:
 			return
 		if inicio_jogo >= 0 and _segundos() - ultima_captura >= 30:

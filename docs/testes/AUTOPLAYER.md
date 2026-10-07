@@ -28,6 +28,12 @@ estruturadas; não depende de reconhecimento visual das capturas.
 As regras priorizam a exigência atual, selecionam a ferramenta necessária,
 seguem o marcador e tentam a interação do alvo. Conversas próximas não devem
 substituir um recurso pedido. Ações sem mudança observável acionam recuperação.
+O robô observa as soleiras externa e interna para atravessar a porta usando
+W. Mantém os waypoints também perto dos obstáculos; colisão sem deslocamento
+por dois segundos pede outra direção. Reconhece o mapa aberto e o fecha com
+Escape. Ao aproximar o baú, confirma que o E pertence à casa, sem iniciar uma
+conversa com Pedro por engano. Aguarda pessoas que já estão falando.
+
 O robô usa os controles normais de movimento e interação, sem teleportar,
 injetar itens ou alterar o progresso das missões.
 
@@ -37,7 +43,10 @@ próximas, orientação para outros alvos, trabalho com ferramentas, observaçã
 e interfaces. Registra a cobertura por região, alvo, mão e seleção da tela.
 Depois de esgotar a vizinhança, visita os lugares menos experimentados em ordem
 de proximidade. Telas têm um teto de oito sondagens por abertura. Mudança real
-de progresso devolve o controle às regras da missão. Não há escolha aleatória.
+de progresso devolve o controle às regras da missão e reinicia a cobertura.
+Exigências disponíveis têm prioridade por até três tentativas por contexto,
+evitando abandonar uma caminhada guiada longa só porque passaram 30 segundos.
+Não há escolha aleatória.
 
 Receitas reconhecidas no estado observado são selecionadas pela exigência
 atual, em sua bancada e aba correspondentes. Falta de ações disponíveis não
@@ -67,8 +76,11 @@ complementa os portões automatizados do projeto.
 
 `relatorio.md` é atualizado a cada 30 segundos e novamente no encerramento.
 Inclui frequência e duração das ações, posições antes/depois, deslocamento,
-etapas observadas, resultados sem avanço e links das capturas. As distâncias
-são deslocamentos entre observações, não o comprimento exato das curvas.
+etapas observadas, resultados sem avanço e links das capturas. Distingue o
+deslocamento início/fim do trajeto amostrado a cada 0,5 segundo, incluindo
+retornos e desvios. Registra também o tempo de decisão/apresentação. Nenhum
+dos dois cálculos mede cada frame da curva. A ausência temporária do objetivo
+durante uma fala não conta como conclusão de etapa.
 Para reconstruir o relatório de uma sessão existente:
 
 ```powershell
@@ -81,3 +93,13 @@ reportados e muitas ações sem avanço são indícios, não diagnóstico autom�
 da causa nem prova de que todos os sistemas foram testados.
 
 Relacionados: #159 (testador), #118 (ponte), #146 (orientações) e #154 (acesso à porta).
+
+## Evidência de 07/10/2026
+
+Uma sessão de 300 segundos desde o jogo pronto, em perfil novo e sem API,
+registrou 67 decisões, entrada pela soleira, retirada de balde/enxada/maniva
+no baú e arar → plantar → regar, chegando à etapa da lenha (10/16).
+`tools/temp/robo-navegacao-final/relatorio.md` contém a evidência local.
+Isso não demonstra coleta de lenha/pedra nem conclusão da campanha. As
+orientações ao jogador humano e o destrancamento da porta continuam sob
+#146/#154. Uma nova sessão sem limite usa o código final e registra a campanha.

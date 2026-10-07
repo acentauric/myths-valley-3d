@@ -27,7 +27,7 @@ class JogadorAutomatico:
     def _context(self, state):
         # Relógio e animações não tornam uma tentativa inútil uma novidade.
         return json.dumps({"zone": [round(v / 4) for v in state.get("position", [])],
-                           "goal": state.get("objective", {}).get("id"),
+                           "goal": [state.get("objective", {}).get("id"), state.get("objective", {}).get("feito")],
                            "target": state.get("interaction_target"),
                            "hand": state.get("inventory", {}).get("in_hand"),
                            "items": self._inventory(state), "screen": state.get("screen"),
@@ -105,18 +105,39 @@ class JogadorAutomatico:
         return select("wait", "Exploração: aguardar mudança no mundo após esgotar ações disponíveis") or select(next(iter(actions)), "Exploração: ação disponível")
 
     def choose(self, state, actions, task):
+        if not actions:
+            return None
+        choice = self._choose(state, actions, task)
+        if choice in actions:
+            return choice
+        # A regra contextual pode pedir algo que a ponte deixou de oferecer.
+        # Continuar com uma opção real; nunca encerrar a partida por essa lacuna.
+        def permitted(action, reason):
+            if action not in actions:
+                return None
+            self.reason = "Acao contextual indisponivel; " + reason
+            self.last_action = action
+            self.attempts[action] += 1
+            self.coverage[(self._context(state), action)] += 1
+            time.sleep(self.action_delay if action not in ("wait",) and not action.startswith(("walk_", "approach_", "explore_")) else 0)
+            return action
+        return self._explore(state, actions, permitted)
+
+    def _choose(self, state, actions, task):
         # Campos novos também aparecem quando a política é recarregada numa
         # sessão antiga, sem descartar sua memória.
         for key, value in {"coverage": Counter(), "visited": Counter(), "screen_probes": 0,
                            "previous_context": None, "progress_signature": None,
-                           "last_progress_time": 0.0, "recovery": False}.items():
+                           "last_progress_time": 0.0, "recovery": False, "last_valid_objective": {}}.items():
             self.__dict__.setdefault(key, value)
         context = self._context(state)
         self.region = json.dumps([round(v / 12) for v in state.get("position", [])])
         now = float(state.get("seconds", time.monotonic()))
         # Texto/alvo podem mudar sem cumprir uma etapa: conta somente meta,
         # quantidade feita, inventário e obras construídas como progresso.
-        obj = state.get("objective", {})
+        obj = state.get("objective", {}) or self.last_valid_objective
+        if obj.get("id"):
+            self.last_valid_objective = obj.copy()
         signature = json.dumps([obj.get("id"), obj.get("feito"), self._inventory(state),
                                 state.get("built_works", {})], sort_keys=True)
         if signature != self.progress_signature:
@@ -166,6 +187,24 @@ class JogadorAutomatico:
             if action in actions:
                 return select(action, "Responder ou avançar a fala atual")
 
+        resource_meta = task.get("step", {}).get("meta", {})
+        resource_item = resource_meta.get("item")
+        if resource_meta.get("tipo") == "juntar" and resource_item in ("lenha", "pedra") and self._inventory(state).get(resource_item, 0) < resource_meta.get("quantos", 1):
+            hand = state.get("inventory", {})
+            if resource_item == "pedra" and hand.get("in_hand") != "picareta":
+                for index, slot in enumerate(hand.get("slots", [])[:10]):
+                    if slot.get("id", slot.get("item")) == "picareta" and "hand_%d" % index in actions:
+                        return select("hand_%d" % index, "Equipar picareta antes de qualquer tentativa no recurso")
+            marker = state.get("objective", {}).get("alvo", [])
+            for candidate in state.get("interaction_candidates", []):
+                point = candidate.get("target", {}).get("ponto", [])
+                if candidate.get("source") != "Recursos3D" or len(point) != 3 or len(marker) != 3:
+                    continue
+                if sum((point[i] - marker[i]) ** 2 for i in (0, 2)) >= 4:
+                    continue
+                action = ("work_E" if resource_item == "pedra" and "work_E" in actions else "interact") if state.get("interaction_target") == "Recursos3D" else "face_Recursos3D"
+                if action in actions and self.coverage[(context, action)] < 3 and not task.get("last_action_failed"):
+                    return select(action, "Priorizar o recurso exigido antes de explorar conversas ou interfaces")
         # Repetir a mesma interação sem efeito também abre exploração, mesmo
         # que o relógio ou um NPC tenham mudado de posição.
         meta_now = task.get("step", {}).get("meta", {})
@@ -194,7 +233,14 @@ class JogadorAutomatico:
                         return select("inspect_journal", "Abrir as receitas ao alcance da bancada")
                     if "explore_" + station in actions and self.coverage[(context, "explore_" + station)] < 2:
                         return select("explore_" + station, "Ir diretamente à bancada que produz " + wanted)
-        if self.recovery or (self.last_action in ("interact", "work_E", "objective") and
+        required_npc = task.get("required_npc", {})
+        if required_npc.get("speaking") and required_npc.get("distance", 999) < 4 and not state.get("pedro", {}).get("conducting"):
+            return select("wait", "Aguardar a fala atual terminar antes de iniciar outra conversa")
+        direct_now = [a for a in task.get("actions_matching_the_current_requirement", [])
+                      if a in actions and a not in task.get("last_action_failed", [])]
+        if direct_now and self.coverage[(context, direct_now[0])] < 3:
+            return select(direct_now[0], "Cumprir a exigencia disponivel antes de explorar alternativas")
+        if (self.recovery and not state.get("interaction_target") == "Recursos3D") or (self.last_action in ("interact", "work_E", "objective") and
                              self.coverage[(context, self.last_action)] >= 3):
             self.recovery = True
             # As telas com requisitos conhecidos ainda usam a regra contextual.
@@ -270,20 +316,20 @@ class JogadorAutomatico:
                 if "face_Recursos3D" in actions:
                     return select("face_Recursos3D", "Priorizar o recurso indicado em vez da conversa com Pedro")
             if task.get("last_action_failed"):
-                choices = [a for a in actions if a.startswith("walk_") and
+                choices = [a for a in actions if a.startswith("walk_") and a not in task.get("last_action_failed", []) and
                            state.get("directions", {}).get(a[5:], {}).get("walk_endpoint_walkable") is not False]
                 if choices:
                     return select(min(choices, key=lambda a: self.attempts[a]), "Contornar o obstáculo até o galho seco")
             return select("objective", "Seguir o marcador do recurso até alcançar sua interação")
         if task.get("last_action_failed"):
-            choices = [a for a in actions if a.startswith("walk_") and
+            choices = [a for a in actions if a.startswith("walk_") and a not in task.get("last_action_failed", []) and
                        state.get("directions", {}).get(a[5:], {}).get("walk_endpoint_walkable") is not False]
             if choices:
                 action = min(choices, key=lambda a: self.attempts[a])
                 return select(action, "Sair do bloqueio por outra direção")
         direct = task.get("actions_matching_the_current_requirement", [])
         if direct:
-            return select(direct[0], "Cumprir a exigência atual da missão")
+            return select(next((a for a in direct if a in actions), "" ), "Cumprir a exigência atual da missão")
 
         events = meta.get("eventos", [meta.get("evento", "")])
         event = events[min(int(progress), len(events) - 1)] if events else ""
@@ -306,6 +352,8 @@ class JogadorAutomatico:
             return select("explore_Lavoura", "Chegar à lavoura para trabalhar") or select("objective", "Chegar ao ponto da missão")
         if meta.get("tipo") == "juntar" and any(items[k] < v for k, v in meta.get("itens", {}).items()):
             if state.get("interior") == "casa":
+                if state.get("home_interaction") == "bau" and target != "CasaDoJogador" and "face_CasaDoJogador" in actions:
+                    return select("face_CasaDoJogador", "Orientar a interacao para o bau em vez de conversar com outro personagem")
                 if state.get("home_interaction") == "bau" or "Baú" in str(actions.get("interact", "")) or "Bau" in target or ("home_interaction" not in state and target == "CasaDoJogador"):
                     return select("interact", "Abrir o baú pelas teclas normais")
                 if self.attempts["approach_chest"] >= 3:

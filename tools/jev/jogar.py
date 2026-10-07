@@ -72,7 +72,8 @@ def current_task(state, actions):
         elif "follow_pedro" in actions:
             direct = ["follow_pedro"]
     failures = {"possible_stuck_requires_review", "no_navigation_path", "no_walkable_approach",
-                "guide_keyboard_approach_blocked_choose_other_direction", "movement_blocked_no_displacement_try_other_direction"}
+                "guide_keyboard_approach_blocked_choose_other_direction", "movement_blocked_no_displacement_try_other_direction",
+                "approach_failed_E_targets_other_character", "home_door_locked_or_unavailable"}
     blocked = []
     history = state.get("recent_actions", [])
     if history and history[-1].get("result") in failures:

@@ -32,8 +32,10 @@ def generate(directory, live=True):
     source = directory / "eventos.jsonl"
     counts, durations, steps = Counter(), Counter(), {}
     rows, issues, movement = [], [], 0.0
+    sampled_movement, presentation_seconds = 0.0, 0.0
     stalled, stall_start, stall_goal, stall_count = [], None, "", 0
     previous_decision = None
+    last_objective = {}
     elapsed = 0.0
     complete = False
     stop = "em andamento" if live else "encerrado (consulte resumo.json)"
@@ -51,6 +53,7 @@ def generate(directory, live=True):
                 start = event.get("elapsed", 0)
             if kind == "decision":
                 previous_decision = event
+                presentation_seconds += max(0, float(event.get("latency_ms", 0))) / 1000
             if kind != "outcome":
                 continue
             before, after = event.get("before", {}), event.get("after", {})
@@ -62,8 +65,13 @@ def generate(directory, live=True):
                 durations[action] += duration
             moved = distance(before, after)
             movement += moved
-            old, new = before.get("objective", {}), after.get("objective", {})
-            progressed = (old.get("id"), old.get("feito")) != (new.get("id"), new.get("feito"))
+            samples = event.get("movement_samples", [])
+            sampled_movement += sum(distance(a, b) for a, b in zip(samples, samples[1:]))
+            old = before.get("objective", {}) or last_objective
+            new = after.get("objective", {})
+            progressed = bool(old.get("id") and new.get("id")) and (old.get("id"), old.get("feito")) != (new.get("id"), new.get("feito"))
+            if new.get("id"):
+                last_objective = new
             changed_items = inventory(before) != inventory(after)
             goal = old.get("id", new.get("id", "abertura"))
             entry = steps.setdefault(goal, {"start": event.get("elapsed", 0), "end": 0, "actions": 0, "progress": 0})
@@ -99,6 +107,8 @@ def generate(directory, live=True):
              f"Estado: **{cell(stop)}**. História implementada concluída: **{'sim' if complete else 'não demonstrado'}**.", "",
              f"Tempo registrado: {elapsed:.1f} s; desde o jogo pronto: {max(0, elapsed - start):.1f} s." if start is not None else f"Tempo registrado: {elapsed:.1f} s; carregamento sem marcador de início.",
              f"Ações: {sum(counts.values())}. Deslocamento acumulado entre observações: {movement:.2f} unidades.", "",
+             f"Trajeto amostrado durante movimentos: {sampled_movement:.2f} unidades; tempo de decisão/apresentação: {presentation_seconds:.2f} s.", "",
+             "O trajeto amostrado soma segmentos a cada meio segundo, incluindo desvios e retornos; não mede cada frame. "
              "O deslocamento soma distâncias entre início e fim das ações; não mede cada curva do trajeto. "
              "Tempos de ação vêm dos timestamps da decisão e do resultado, sem incluir a espera anterior da política. "
              "Execução de tecla, alteração de inventário e avanço de missão são resultados diferentes.", "",

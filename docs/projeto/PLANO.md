@@ -38,6 +38,11 @@ Todas as cadeias de missões do diretório de dados e os recursos declaram cober
 
 ## Próxima tarefa
 
+A fatia de navegação/telemetria de #159 tem 44 testes Python e portão de mapa,
+com sessão real chegando à etapa 10/16 após porta, baú e lavoura. A campanha
+sem limite continua em perfil isolado. #159/#146/#154 permanecem abertas
+até seus critérios completos, incluindo orientações ao jogador humano.
+
 #131 foi verificada em reservas_do_corpo, folego, matriz_dos_baloes e idiomas,
 mais capturas de dia/noite. Os ícones substituem nomes persistentes nos
 medidores; números e avisos continuam. A escala individual de #140 e a

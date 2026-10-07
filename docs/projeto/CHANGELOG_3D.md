@@ -6,6 +6,16 @@ O teste passa a cobrar Candinha, Filo, Tonho, Zefa, arraial e recursos, incluind
 
 ## Em desenvolvimento — 07/10/2026 (experimento Jev)
 
+- **O testador reconhece porta, mapa e baú (#159; partes de #146/#154).**
+  Segue waypoints perto de obstáculos, atravessa as soleiras com W, responde
+  a colisão após dois segundos, fecha mapa por Escape e confere o dono do E.
+  Progresso reinicia cobertura; a ausência do objetivo durante fala não é
+  avanço. O relatório inclui trajetos a cada meio segundo e tempo de decisão.
+  Os 44 testes Python passaram; a política anterior reprova quatro casos e
+  o portão de mapa distingue Escape de espera infinita. A partida real de
+  300 segundos chegou à lenha após porta, baú e lavoura; campanha completa e
+  orientação ao humano permanecem pendentes.
+
 - **Relógio e corpo ficam compactos (#131).** O relógio tem mostrador e
   painel de 100 × 52; os três medidores de 160 × 18 ficam à direita, com
   coração, bateria e raio. Os números permanecem, assim como cores de
