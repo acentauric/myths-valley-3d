@@ -27,6 +27,10 @@ pontos de restauração de cada uma. A
 existência de um sistema não significa que todos os seus gatilhos ou telas
 estejam concluídos.
 
+## Cobertura de idiomas concluída (#47, 07/10/2026)
+
+Todas as cadeias de missões do diretório de dados e os recursos declaram cobertura ou pendência no teste de idiomas. Verificação: 694 campos, 36 arquivos; falsificação reproduzível com `--falsificar-titulo`. Isto amplia a proteção; a tradução pendente de #6 e o idioma em jogo de #51 continuam separados.
+
 ## Próxima tarefa
 
 O board é a fonte dos critérios de aceite:

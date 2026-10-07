@@ -72,6 +72,14 @@ const TRADUZIDOS := {
 	# A missão do cemitério: os três passos do 2D declaram a pendência um a um,
 	# e o mato, o conserto, o cercado e o arremate nasceram nos três idiomas.
 	"res://data/missoes_coveiro.json": ["texto", "resumo", "nome", "titulo", "resposta"],
+	# As cadeias antigas também entram na varredura: uma entrada pendente
+	# continua declarada, sem desproteger o que já está traduzido no arquivo.
+	"res://data/missoes_arraial.json": ["texto", "resumo", "nome", "titulo", "resposta", "trancada"],
+	"res://data/missoes_candinha.json": ["texto", "resumo", "nome", "titulo", "resposta", "trancada"],
+	"res://data/missoes_filo.json": ["texto", "resumo", "nome", "titulo", "resposta", "trancada"],
+	"res://data/missoes_tonho.json": ["texto", "resumo", "nome", "titulo", "resposta", "trancada"],
+	"res://data/missoes_zefa.json": ["texto", "resumo", "nome", "titulo", "resposta", "trancada"],
+	"res://data/recursos_3d.json": ["nome"],
 	# O saveiro do mestre Quirino: a cadeia do Seu Benedito que o ensina, e o que o
 	# saveiro diz — a chegada, a encomenda da estação e a aba dele no painel.
 	"res://data/missoes_saveiro.json": ["texto", "resumo", "nome", "titulo", "resposta"],
@@ -150,6 +158,17 @@ func _run() -> void:
 	var conferidos := 0
 
 	_conferir(not TRADUZIDOS.is_empty(), "a lista de arquivos traduzidos está vazia")
+	# Não deixar cadeias novas invisíveis ao portão (#47).
+	for nome in DirAccess.get_files_at("res://data"):
+		if not nome.begins_with("missoes_") or not nome.ends_with(".json"):
+			continue
+		var caminho := "res://data/" + nome
+		_conferir(TRADUZIDOS.has(caminho) or FALTAM_TRADUCAO.has(caminho),
+			"a cadeia '%s' não declara cobertura nem pendência" % nome)
+		if TRADUZIDOS.has(caminho):
+			_conferir("titulo" in TRADUZIDOS[caminho], "a cadeia '%s' não cobra titulo" % nome)
+	_conferir(TRADUZIDOS.has("res://data/recursos_3d.json") or FALTAM_TRADUCAO.has("res://data/recursos_3d.json"),
+		"os recursos não declaram cobertura nem pendência")
 
 	for caminho in TRADUZIDOS:
 		var arquivo := FileAccess.open(caminho, FileAccess.READ)
@@ -161,6 +180,9 @@ func _run() -> void:
 		_conferir(dado != null, "%s não é JSON válido" % caminho)
 		if dado == null:
 			continue
+		# Falsificação reproduzível sem alterar o arquivo do jogador.
+		if caminho == "res://data/missoes_guia.json" and "--falsificar-titulo" in OS.get_cmdline_user_args():
+			dado.passos[0].erase("titulo_en")
 		_sufixos = SUFIXOS + ["_zh"] if TAMBEM_EM_CHINES.has(caminho) else SUFIXOS
 		conferidos += _varrer(dado, TRADUZIDOS[caminho], caminho.get_file())
 
@@ -221,10 +243,18 @@ func _varrer(no, campos: Array, onde: String) -> int:
 			_conferir(traduzido != "",
 				"%s, '%s': falta o campo %s%s" % [onde, quem, campo, sufixo])
 			if traduzido != "":
-				_conferir(traduzido != base,
+				_conferir(traduzido != base or _cognato_revisado(onde, quem, campo, sufixo, base),
 					"%s, '%s': %s%s é cópia do português — tradução faltando disfarçada de tradução"
 						% [onde, quem, campo, sufixo])
 
 	for chave in no:
 		achados += _varrer(no[chave], campos, onde)
 	return achados
+
+
+## Exceção estreita: "Tronco caído" tem a mesma grafia em português e espanhol.
+## Não libera cópias de outros campos, recursos ou idiomas.
+func _cognato_revisado(onde: String, quem: String, campo: String, sufixo: String, base: String) -> bool:
+	return onde == "recursos_3d.json" and campo == "nome" and sufixo == "_es" and base == "Tronco caído" and quem in [
+		"lenha_rocado_a", "lenha_rocado_b", "galhada_cemiterio_a", "galhada_cemiterio_b", "galhada_cemiterio_c"]
+

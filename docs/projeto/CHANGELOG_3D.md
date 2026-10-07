@@ -1,5 +1,9 @@
 # Histórico de mudanças — Myths' Valley 3D
 
+## 07/10/2026: cobertura das cadeias de idiomas (#47)
+
+O teste passa a cobrar Candinha, Filo, Tonho, Zefa, arraial e recursos, incluindo os títulos. Toda cadeia `missoes_*.json` precisa declarar cobertura ou pendência. A grafia espanhola de "Tronco caído" tem uma exceção restrita aos cinco recursos revisados. O portão verifica 694 campos; remover `titulo_en` em memória com `--falsificar-titulo` provoca a falha esperada sem alterar o conteúdo da partida. As 8 entradas e 15 arquivos pendentes continuam registrados.
+
 ## Em desenvolvimento — 07/10/2026 (experimento Jev)
 
 - **O menu oferece Teste automático no projeto de desenvolvimento (#159).**
