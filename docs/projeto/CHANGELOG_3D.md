@@ -6,6 +6,12 @@ O teste passa a cobrar Candinha, Filo, Tonho, Zefa, arraial e recursos, incluind
 
 ## Em desenvolvimento — 07/10/2026 (experimento Jev)
 
+- #142 (parcial): cercas preservam cantos e unem as extremidades reais,
+  ajustadas ao relevo. Reserva também vale nas pontas; uma peça isolada
+  entre obstáculos é removida. Quatro gates verdes, mutante do comprimento
+  reprovado e cinco capturas conferidas. Paisagismo passa a cobrar ausência
+  da porteira decorativa retirada na #152. Circulação completa segue #125.
+
 - #164/#159 (parcial): a malha inclui a fazenda e o catálogo mantém apoio
   contínuo nas tábuas da ponte com juntas curtas. Corrimãos não viram piso
   de navegação; NPCs reconhecem apoio seco e a lâmina do rio elevado.

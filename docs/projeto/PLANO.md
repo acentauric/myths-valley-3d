@@ -5,6 +5,14 @@ raiz. O jogo 2D segue sua própria linha em `acentauric/myths-valley`.
 
 ## O que já roda
 
+A #142 conserva os cantos dos terrenos e as extremidades dos lances de
+cerca: a malha se ajusta ao comprimento e ao desnível de cada trecho.
+Reservas valem em cinco pontos, e peças isoladas entre duas interrupções
+saem. Contorno, encosta, entrada da roça e paisagismo passam; encurtar um
+lance produz uma falha. Cinco vistas foram conferidas em
+`scratch/cercas142/`. A circulação física e sua navegação continuam na
+#125 antes de encerrar a revisão completa.
+
 A #164 recebe os limites da fazenda, piso contínuo e juntas curtas da ponte,
 leitura de navegação sem corrimãos e nado pela lâmina local. A rota física
 isolada chega ao portão; retirar juntas reproduz queda, restaurar limites

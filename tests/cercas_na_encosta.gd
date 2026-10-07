@@ -82,9 +82,11 @@ func _run() -> void:
 	var regiao: Node3D = mundo._region
 	var plantadas: Array = regiao.get_meta("cercas_cerca_varas", [])
 	var no_plano := 0
+	var lances_do_plano: Array[Dictionary] = []
 	for item: Dictionary in mundo.paisagismo_aderecos:
 		if String(item["chave"]) == "cerca_varas":
 			no_plano += 1
+			lances_do_plano.append(item)
 	_conferir(no_plano >= MINIMO_DE_CERCAS_DE_VARAS, "o plano tem %d cerca(s) de varas, e são ao menos %d" % [no_plano, MINIMO_DE_CERCAS_DE_VARAS])
 	_conferir(plantadas.size() == no_plano, "a região guarda %d cerca(s) de varas plantadas e o plano tem %d" % [plantadas.size(), no_plano])
 	var modelo: Dictionary = CatalogoAssets.malha("cerca_varas", 1.0)
@@ -99,15 +101,24 @@ func _run() -> void:
 			Vector3(caixa.end.x, caixa.position.y, caixa.get_center().z)]
 		var pior := 0.0
 		var tortas := 0
-		for bruto in plantadas:
-			var plantada: Transform3D = bruto
+		for indice in plantadas.size():
+			var plantada: Transform3D = plantadas[indice]
 			var lance: Transform3D = plantada * base.affine_inverse()
+			if indice == 0 and "--lance-curto" in OS.get_cmdline_user_args():
+				lance.basis.x *= 0.5
 			var folgas: Array[float] = []
 			var pes: Array[Vector3] = []
 			for ponta: Vector3 in pontas_locais:
 				var pe: Vector3 = lance * ponta
 				pes.append(pe)
 				folgas.append(pe.y - float(mundo.ground_height_at(pe)))
+			if indice < lances_do_plano.size():
+				var item: Dictionary = lances_do_plano[indice]
+				_conferir(item.has("de") and item.has("ate"), "o plano conserva as extremidades da cerca")
+				if item.has("de") and item.has("ate"):
+					_conferir(Vector2(pes[0].x, pes[0].z).distance_to(item.de) < FOLGA and
+						Vector2(pes[1].x, pes[1].z).distance_to(item.ate) < FOLGA,
+						"a malha %d une as extremidades reais do terreno" % indice)
 			_anotar_o_desnivel(pes[0], pes[1], mundo)
 			var folga := maxf(absf(folgas[0]), absf(folgas[1]))
 			pior = maxf(pior, folga)

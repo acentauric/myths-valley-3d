@@ -226,8 +226,9 @@ func _run() -> void:
 	for item in aderecos:
 		por_chave_do_adereco[item.chave] = int(por_chave_do_adereco.get(item.chave, 0)) + 1
 	print("adereços: %s" % str(por_chave_do_adereco))
-	for chave in ["cerca_varas", "porteira", "estaleiro_fumo", "carro_de_boi", "monjolo", "barraca_feira"]:
+	for chave in ["cerca_varas", "estaleiro_fumo", "carro_de_boi", "monjolo", "barraca_feira"]:
 		_conferir(int(por_chave_do_adereco.get(chave, 0)) >= (30 if chave == "cerca_varas" else 1), "faltam adereços: %s" % chave)
+	_conferir(int(por_chave_do_adereco.get("porteira", 0)) == 0, "uma porteira decorativa volta a bloquear a entrada (#152)")
 	_conferir(_igual_aderecos(plano["aderecos"], aderecos), "os adereços de uma remontagem não são os que o vale plantou")
 	var itens_de_corpo := 0
 	for item in aderecos:

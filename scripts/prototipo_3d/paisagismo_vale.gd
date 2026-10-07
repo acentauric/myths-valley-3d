@@ -726,16 +726,16 @@ static func com_circulos(reservas: Dictionary, itens: Array) -> Dictionary:
 ## Os pontos do contorno a cada `passo` de perímetro, do primeiro vértice em diante.
 static func _amostras_do_perimetro(poligono: PackedVector2Array, passo: float) -> PackedVector2Array:
 	var saida := PackedVector2Array()
-	var falta := 0.0
+	# Cada canto pertence ao limite: uma amostra nunca corta a esquina.
 	for i in poligono.size():
 		var a := poligono[i]
 		var b := poligono[(i + 1) % poligono.size()]
 		var comprimento := a.distance_to(b)
-		var andado := falta
-		while andado <= comprimento:
-			saida.append(a.lerp(b, andado / comprimento) if comprimento > 0.0001 else a)
-			andado += passo
-		falta = andado - comprimento
+		if comprimento < 0.01:
+			continue
+		var partes := maxi(1, ceili(comprimento / maxf(passo, 0.1)))
+		for j in partes:
+			saida.append(a.lerp(b, float(j) / partes))
 	return saida
 
 
@@ -811,19 +811,29 @@ static func aderecos(wb: Node, zonas: Array, receitas: Dictionary, reservas: Dic
 						menor = d
 						portao = i
 			var n := amostras.size()
+			var livres: Array[bool] = []
 			for i in n:
 				var a := amostras[i]
 				var b := amostras[(i + 1) % n]
+				var cabe := i != portao and a.distance_squared_to(b) >= 0.01
+				# A reserva vale para o lance inteiro, incluindo suas extremidades.
+				for fracao in [0.0, 0.25, 0.5, 0.75, 1.0]:
+					if bloqueado(reservas, regras, a.lerp(b, fracao), float(cerca.get("folga", 0.6))) != "":
+						cabe = false
+				livres.append(cabe)
+			for i in n:
+				# Uma vara entre duas reservas nao delimita terreno nenhum.
+				if not livres[i] or (not livres[(i - 1 + n) % n] and not livres[(i + 1) % n]):
+					continue
+				var a := amostras[i]
+				var b := amostras[(i + 1) % n]
 				var direcao := b - a
-				if direcao.length_squared() < 0.01:
-					continue
-				var meio := (a + b) * 0.5
-				var giro := atan2(-direcao.y, direcao.x)
-				if i == portao:
-					continue
-				if bloqueado(reservas, regras, meio, float(cerca.get("folga", 0.6))) != "":
-					continue
-				saida.append(_item(String(cerca.get("chave", "cerca_varas")), meio, giro, nome, 0.9, false))
+				var item := _item(String(cerca.get("chave", "cerca_varas")), (a + b) * 0.5,
+					atan2(-direcao.y, direcao.x), nome, 0.9, false)
+				item["de"] = a
+				item["ate"] = b
+				saida.append(item)
+
 		# O ESTALEIRO DE FUMO dentro da roça de fumo.
 		if not estaleiro.is_empty() and receita == String(estaleiro.get("receita", "")):
 			var raio := float(estaleiro.get("raio", 2.6))
@@ -1035,9 +1045,14 @@ static func plantar_cercas(regiao: Node3D, itens: Array, receitas: Dictionary) -
 			var giro := float(item["giro"])
 			var centro := Vector3(ponto.x, 0.0, ponto.y)
 			var rumo := Vector3(cos(giro), 0.0, -sin(giro)) * meia
-			var de: Vector3 = regiao.ground_position(centro - rumo)
-			var ate: Vector3 = regiao.ground_position(centro + rumo)
-			transforms.append(Transform3D(CatalogoAssets.base_do_lance(de, ate), de.lerp(ate, 0.5) - Vector3(0.0, 0.02, 0.0)) * base)
+			var inicio: Vector2 = item.get("de", Vector2((centro - rumo).x, (centro - rumo).z))
+			var fim: Vector2 = item.get("ate", Vector2((centro + rumo).x, (centro + rumo).z))
+			var de: Vector3 = regiao.ground_position(Vector3(inicio.x, 0.0, inicio.y))
+			var ate: Vector3 = regiao.ground_position(Vector3(fim.x, 0.0, fim.y))
+			var apoio := CatalogoAssets.base_do_lance(de, ate)
+			apoio.x *= de.distance_to(ate) / maxf(meia * 2.0, 0.01)
+			transforms.append(Transform3D(apoio, de.lerp(ate, 0.5) - Vector3(0.0, 0.02, 0.0)) * base)
+
 		# O que foi plantado, para quem confere: o renderizador vazio dos portões
 		# não devolve as transformações do MultiMesh.
 		regiao.set_meta("cercas_" + String(chave), transforms)
