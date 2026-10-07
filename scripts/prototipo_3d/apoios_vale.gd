@@ -12,6 +12,9 @@ var _entradas: Array[Dictionary] = []
 var _botoes: Array[Button] = []
 var _cursor := 0
 var _textos: Dictionary
+var _titulo: Label
+var _ajuda: Label
+var _fechar: Button
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -32,6 +35,7 @@ func _ready() -> void:
 	painel.anchor_top = 0.18
 	painel.anchor_bottom = 0.82
 	_raiz.add_child(painel)
+	Tela.vincular_componente(painel, "apoios", Vector2(0.5, 0.5))
 	var margem := MarginContainer.new()
 	for lado in ["left", "top", "right", "bottom"]:
 		margem.add_theme_constant_override("margin_" + lado, 20)
@@ -42,9 +46,11 @@ func _ready() -> void:
 	coluna.add_theme_font_size_override("font_size", 26)
 	margem.add_child(coluna)
 	var titulo := Label.new()
+	_titulo = titulo
 	titulo.text = _texto("titulo")
 	coluna.add_child(titulo)
 	var ajuda := Label.new()
+	_ajuda = ajuda
 	ajuda.text = _texto("ajuda")
 	ajuda.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	coluna.add_child(ajuda)
@@ -55,6 +61,7 @@ func _ready() -> void:
 	_lista.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	rolagem.add_child(_lista)
 	var fechar := Button.new()
+	_fechar = fechar
 	fechar.text = _texto("fechar")
 	fechar.pressed.connect(fechar_tela)
 	coluna.add_child(fechar)
@@ -64,6 +71,9 @@ func _texto(chave: String) -> String:
 	return Idioma.campo(_textos, chave)
 
 func abrir() -> void:
+	_titulo.text = _texto("titulo")
+	_ajuda.text = _texto("ajuda")
+	_fechar.text = _texto("fechar")
 	_entradas.clear()
 	_botoes.clear()
 	for filho in _lista.get_children():

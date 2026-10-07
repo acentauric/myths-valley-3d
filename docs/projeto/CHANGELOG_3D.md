@@ -2229,3 +2229,21 @@ A inspeção do cemitério encontrou erro de compilação em `estacoes_vale.gd` 
 O layout de `cemiterio_layout.gd`, já presente na main integrada, satisfaz a revisão: doze sepulturas preservam a ordem das histórias, cabeceiras para o mesmo lado, intervalos de passagem, corredor diante da capelinha e bases assentadas pelo terreno dos cantos. O portão consulta também a malha física real, a cápsula nos corredores e as reservas de moradores/recursos. As três lajes levantadas pela raiz continuam sendo trabalho intencional da missão do Damião, não defeito de colocação.
 
 `lapides_no_chao` (47 s) e `lapides_no_chao_procedural` (37 s) verdes. Nova falsificação `--cabeca-invertida` reprova a associação/orientação da primeira sepultura. Capturas reais no Tripo em `scratch/cemiterio123/visao-{0,1,2}.png`, entrada, proximidade e corredor da capela, conferidas visualmente. O log da repetição não contém SCRIPT ERROR. A arte específica da cerca permanece na #111; a #123 pode ser encerrada sem substituir o modelo existente.
+
+### 07/10/2026: controles, apoios, mapa e molduras (#140)
+
+As preferências individuais passam de 18 a 23 componentes: atalhos do canto,
+mapa, controles, cartas de apoio e ajuda. Os botões do canto respeitam a altura
+útil da janela, mesmo combinando escala global de HUD e individual a 150%.
+O mapa transforma os marcadores e o rótulo do viajante sem alterar o zoom do mundo.
+Moldura e sombra agora acompanham a posição, o pivô e a escala real da caixa;
+antes, a caixa encolhia e sua moldura permanecia com o tamanho original.
+Reabrir as cartas atualiza também título, instrução e botão no idioma corrente.
+
+`interfaces_secundarias` confere três resoluções e três idiomas, texto global
+ampliado, ancoragem, moldura e clique real no último atalho. Verde em 3 s;
+`--sem-escala` reprova duas verificações sem erro de script. Regressões
+`interface_individual`, `apoios_no_vale`, `atalhos` e `idiomas` verdes;
+o catálogo contém 775 campos em 45 arquivos. Capturas gráficas em
+`scratch/interfaces-secundarias/`: controles a 65% e apoios a 150%.
+A #140 continua aberta para a revisão das demais telas e combinações globais.

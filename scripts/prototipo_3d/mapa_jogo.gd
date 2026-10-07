@@ -60,6 +60,7 @@ func abrir(world: Node3D, jogador: Node3D, pai_ui: Control) -> void:
 		if area["name"] != "Praça":
 			_marcador(String(area["name"]), area["position"])
 	_voce = Label.new()
+	_voce.set_meta("componente_interface", "mapa")
 	_voce.text = "▼ Você"
 	_voce.add_theme_font_size_override("font_size", 15)
 	_voce.add_theme_color_override("font_color", Color("f5e3b3"))
@@ -116,6 +117,7 @@ func _marcador(nome: String, posicao: Vector3) -> void:
 		_camera.size = minf(_camera.size, 420.0 / _world.get_meters_per_unit())
 		_limitar())
 	_marcadores_raiz.add_child(marcador)
+	Tela.vincular_componente(marcador, "mapa")
 	_marcadores.append({"control": marcador, "posicao": posicao, "nome": nome})
 
 
@@ -141,7 +143,8 @@ func _atualizar() -> void:
 		var entrada: Dictionary = _marcadores[i]
 		var marcador: Button = entrada["control"]
 		var ponto := _camera.unproject_position(entrada["posicao"])
-		marcador.position = ponto + Vector2(5, -13)
+		var dimensao := marcador.size * marcador.scale
+		marcador.position = (ponto + Vector2(5, -13) * marcador.scale).clamp(Vector2(14, 14), (tela - dimensao - Vector2(14, 14)).max(Vector2(14, 14)))
 		marcador.visible = Rect2(Vector2.ZERO, tela).has_point(ponto)
 		if not ordem.is_empty():
 			var texto := "● " + String(_marcadores[ordem[i]]["nome"])
@@ -152,7 +155,9 @@ func _atualizar() -> void:
 		_voce.text = "▼ ???" if perdido else "▼ Você"
 		# Acima do ponto, para não cobrir o marcador de um lugar onde o jogador está.
 		_voce.reset_size()
-		_voce.position = ponto - Vector2(_voce.size.x * 0.5, _voce.size.y + 18.0)
+		_voce.scale = Vector2.ONE * Tela.escala_componente("mapa")
+		_voce.position = ponto - Vector2(_voce.size.x * 0.5, _voce.size.y + 18.0) * _voce.scale
+		_voce.position = _voce.position.clamp(Vector2(14, 14), (tela - _voce.size * _voce.scale - Vector2(14, 14)).max(Vector2(14, 14)))
 		if louca != null:
 			_voce.position += louca.deriva_na_tela(70.0)
 		_voce.visible = Rect2(Vector2.ZERO, tela).has_point(ponto)

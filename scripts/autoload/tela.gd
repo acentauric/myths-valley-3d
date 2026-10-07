@@ -25,7 +25,7 @@ extends Node
 signal modo_mudou(cheia: bool)
 signal componentes_mudaram
 
-const COMPONENTES := ["missao", "relogio", "vida", "folego", "vigor", "minimapa", "mao", "fala", "nomes", "interacao", "avisos", "mochila", "caderneta", "almanaque", "talentos", "social", "pausa", "dialogo"]
+const COMPONENTES := ["missao", "relogio", "vida", "folego", "vigor", "minimapa", "mao", "fala", "nomes", "interacao", "avisos", "mochila", "caderneta", "almanaque", "talentos", "social", "pausa", "dialogo", "atalhos", "mapa", "controles", "apoios", "ajuda"]
 const ESCALAS_COMPONENTE := [0.65, 0.8, 1.0, 1.15, 1.3, 1.5]
 const PADRAO_COMPONENTE := 2
 var tamanhos_componentes: Dictionary = {}
@@ -49,6 +49,7 @@ func definir_componente(chave: String, indice: int) -> void:
 	if preferencias.save(ARQUIVO) != OK:
 		push_warning("Não foi possível salvar a escala da interface.")
 	componentes_mudaram.emit()
+	load("res://scripts/prototipo_3d/botao_canto.gd").reaplicar(get_tree())
 
 
 func restaurar_componentes() -> void:
@@ -59,6 +60,7 @@ func restaurar_componentes() -> void:
 		preferencias.erase_section("componentes")
 	preferencias.save(ARQUIVO)
 	componentes_mudaram.emit()
+	load("res://scripts/prototipo_3d/botao_canto.gd").reaplicar(get_tree())
 
 
 ## Escala texto, ícones e área clicável juntos. O pivô preserva o canto/centro
@@ -75,6 +77,8 @@ func vincular_componente(controle: Control, chave: String, ancora := Vector2.ZER
 			fator = minf(fator, minf(util.x / atual.size.x, util.y / atual.size.y))
 		atual.pivot_offset = atual.size * ancora
 		atual.scale = Vector2.ONE * fator
+		# A moldura é irmã do painel: acompanha também mudanças só de escala.
+		atual.item_rect_changed.emit()
 	controle.set_meta("componente_interface", chave)
 	controle.resized.connect(aplicar)
 	componentes_mudaram.connect(aplicar)

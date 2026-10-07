@@ -262,10 +262,13 @@ static func emoldurar(caixa: Control) -> Array[Control]:
 	pai.add_child(moldura)
 	pai.move_child(moldura, indice + 1)
 	var seguir := func() -> void:
-		sombra.position = caixa.position
+		var origem := caixa.position + caixa.pivot_offset * (Vector2.ONE - caixa.scale)
+		sombra.position = origem
 		sombra.size = caixa.size
-		moldura.position = caixa.position - Vector2.ONE * CRESCIMENTO
+		sombra.scale = caixa.scale
+		moldura.position = origem - Vector2.ONE * CRESCIMENTO * caixa.scale
 		moldura.size = (caixa.size + Vector2.ONE * CRESCIMENTO * 2.0) / MOLDURA_ESCALA
+		moldura.scale = caixa.scale * MOLDURA_ESCALA
 		# A meta "sem_moldura" esconde a talha sem esconder a caixa (travessia).
 		var mostrar: bool = caixa.visible and not caixa.get_meta("sem_moldura", false)
 		sombra.visible = mostrar

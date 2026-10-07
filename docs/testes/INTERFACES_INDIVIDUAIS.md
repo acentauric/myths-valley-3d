@@ -42,3 +42,21 @@ A caixa longa reserva seu retângulo real, incluindo a transformação da camada
 O tutorial do corpo declara `interfaces` em cada linha de `missoes_guia.json`. `Dialogo.falar` aceita essa lista paralela como quarto argumento opcional; a linha atual destaca somente o componente declarado, no retângulo renderizado. Perguntas e fechamento limpam esse foco. Nenhuma dedução depende de palavras da prosa regional.
 
 Portão `foco_da_narracao`: reserva, componente externo preservado, troca de foco, restauração da cor e aviso expirado. A falsificação `--sem-reserva` reprova uma asserção. `interface_individual`, `prioridade_dos_avisos` e `idiomas` acompanham. Captura real no armazém: `scratch/fiado-tonho/tutorial-foco.png`; a pergunta/pagamento do livro continuam com zero falhas. A #140 permanece aberta pelos componentes secundários ainda pendentes.
+
+### 07/10/2026: controles, apoios, mapa e molduras (#140)
+
+As preferências individuais passam de 18 a 23 componentes: atalhos do canto,
+mapa, controles, cartas de apoio e ajuda. Os botões do canto respeitam a altura
+útil da janela, mesmo combinando escala global de HUD e individual a 150%.
+O mapa transforma os marcadores e o rótulo do viajante sem alterar o zoom do mundo.
+Moldura e sombra agora acompanham a posição, o pivô e a escala real da caixa;
+antes, a caixa encolhia e sua moldura permanecia com o tamanho original.
+Reabrir as cartas atualiza também título, instrução e botão no idioma corrente.
+
+`interfaces_secundarias` confere três resoluções e três idiomas, texto global
+ampliado, ancoragem, moldura e clique real no último atalho. Verde em 3 s;
+`--sem-escala` reprova duas verificações sem erro de script. Regressões
+`interface_individual`, `apoios_no_vale`, `atalhos` e `idiomas` verdes;
+o catálogo contém 775 campos em 45 arquivos. Capturas gráficas em
+`scratch/interfaces-secundarias/`: controles a 65% e apoios a 150%.
+A #140 continua aberta para a revisão das demais telas e combinações globais.

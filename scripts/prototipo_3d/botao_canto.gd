@@ -85,7 +85,8 @@ static func criar(pai: Node, posicao: int, icone: Control, lado_icone := 24.0) -
 	canto.set_meta("botao", botao)
 	canto.set_meta("icone", icone)
 	canto.add_to_group(GRUPO)
-	_geometria(canto, escala())
+	canto.set_meta("componente_interface", "atalhos")
+	reaplicar(pai.get_tree())
 	return [botao, rotulo]
 
 
@@ -93,7 +94,14 @@ static func criar(pai: Node, posicao: int, icone: Control, lado_icone := 24.0) -
 static func escala() -> float:
 	var arvore := Engine.get_main_loop() as SceneTree
 	var tela := arvore.root.get_node_or_null("Tela") if arvore else null
-	return float(tela.get("escala_hud")) if tela else 1.0
+	if tela == null:
+		return 1.0
+	var fator := float(tela.get("escala_hud")) * float(tela.escala_componente("atalhos"))
+	var ultima := 0
+	for canto in arvore.get_nodes_in_group(GRUPO):
+		ultima = maxi(ultima, int(canto.get_meta("posicao", 0)))
+	var altura: float = arvore.root.get_visible_rect().size.y
+	return minf(fator, maxf(0.4, (altura - TOPO - 28.0) / (ultima * ESPACO + LADO)))
 
 
 ## Altura ocupada por `n` botões da coluna (para quem posiciona algo logo abaixo dela).

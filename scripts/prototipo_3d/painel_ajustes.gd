@@ -636,6 +636,7 @@ func _abrir_ajuda(titulo: String) -> void:
 	caixa.grow_horizontal = Control.GROW_DIRECTION_BOTH
 	caixa.grow_vertical = Control.GROW_DIRECTION_BOTH
 	_ajuda.add_child(caixa)
+	Tela.vincular_componente(caixa, "ajuda", Vector2(0.5, 0.5))
 	var coluna := VBoxContainer.new()
 	coluna.add_theme_constant_override("separation", 14)
 	caixa.add_child(coluna)

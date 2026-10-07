@@ -86,6 +86,7 @@ func _montar() -> void:
 	caixa.grow_horizontal = Control.GROW_DIRECTION_BOTH
 	caixa.grow_vertical = Control.GROW_DIRECTION_BOTH
 	add_child(caixa)
+	Tela.vincular_componente(caixa, "controles", Vector2(0.5, 0.5))
 	Identidade.emoldurar(caixa)
 	_encaixar(caixa)
 	caixa.get_viewport().size_changed.connect(_encaixar.bind(caixa))

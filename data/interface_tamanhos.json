@@ -94,6 +94,31 @@
     "texto_en": "Pause menu",
     "texto_es": "Menú de pausa"
   },
+  "atalhos": {
+    "texto": "Atalhos laterais",
+    "texto_en": "Side shortcuts",
+    "texto_es": "Atajos laterales"
+  },
+  "mapa": {
+    "texto": "Marcadores do mapa",
+    "texto_en": "Map markers",
+    "texto_es": "Marcadores del mapa"
+  },
+  "controles": {
+    "texto": "Controles",
+    "texto_en": "Controls",
+    "texto_es": "Teclas de control"
+  },
+  "apoios": {
+    "texto": "Cartas e habilidades de apoio",
+    "texto_en": "Support cards and abilities",
+    "texto_es": "Cartas y habilidades de apoyo"
+  },
+  "ajuda": {
+    "texto": "Ajuda dos ajustes",
+    "texto_en": "Settings help",
+    "texto_es": "Ayuda de los ajustes"
+  },
   "dialogo": {
     "texto": "Conversa e tutorial",
     "texto_en": "Dialogue and tutorial",
