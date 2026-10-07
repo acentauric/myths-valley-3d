@@ -6,6 +6,16 @@ resultado. Seu objetivo é concluir a história implementada, atualmente até
 `fazenda_chegada`. Os capítulos posteriores ainda não são jogáveis. A política
 está em desenvolvimento; iniciar uma sessão não garante terminar a campanha.
 
+Em 07/10/2026, a campanha retomada V21 confirmou o término da história
+implementada no pátio da fazenda: 483,44 s nessa sessão, 110 decisões locais,
+custo zero, jogador (118,2; 3,6; -308,2), `implemented_story_completed=true`.
+As sessões anteriores e os bloqueios corrigidos permanecem documentados;
+isso não declara concluídas as cadeias laterais nem capítulos futuros.
+Evidência e limites em [NAVEGACAO_FAZENDA.md](NAVEGACAO_FAZENDA.md).
+O relatório V21 preserva código Godot 1 da corrida de encerramento do watchdog,
+sem erros de script; a nova espera de dez segundos passa em regressão, mas
+a parada real ainda será verificada, junto ao botão do menu e F8.
+
 ## Como iniciar e encerrar
 
 No menu inicial, escolha **Teste automático**, ao lado de Explorar, ou execute

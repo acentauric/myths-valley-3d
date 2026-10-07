@@ -23,6 +23,11 @@ MAX_TOKENS = 64_000  # Reserve a full context before each call, including failur
 MAX_BODY = 128_000  # Text/JSON game context, within the 64k model context.
 
 
+def pending_stop_requires_termination(reason, finished, elapsed):
+    """Let Godot send its final event/capture and quit before the watchdog kills it."""
+    return bool(reason) and not finished and elapsed >= 10.0
+
+
 def game_reference():
     """Explicit public game-data allowlist; never walk the repository or read secrets."""
     def compact(value):
@@ -577,14 +582,18 @@ def main():
         game = subprocess.Popen(command, cwd=PROJECT, env=environment, stdout=stdout, stderr=stderr)
         (directory / "pid.txt").write_text(str(game.pid), encoding="ascii")
         try:
+            stop_detected_at = None
             while game.poll() is None:
                 stderr.flush()
                 errors = (directory / "stderr.log").read_text(encoding="utf-8", errors="replace")
                 if any(marker in errors for marker in ("SCRIPT ERROR", "Parse Error", "Compile Error")):
                     session.stop_reason = "godot_script_error"
+                if session.stop_reason and stop_detected_at is None:
+                    stop_detected_at = time.monotonic()
                 if (args.seconds and session.game_started is not None and time.monotonic() - session.game_started > args.seconds + 20
                         or session.game_started is None and time.monotonic() - session.started > 300
-                        or session.stop_reason and not session.finished.is_set()):
+                        or pending_stop_requires_termination(session.stop_reason, session.finished.is_set(),
+                            time.monotonic() - stop_detected_at if stop_detected_at is not None else 0)):
                     session.stop_reason = session.stop_reason or "watchdog"
                     # Only this PID and its children; never kill an editor by image name.
                     subprocess.run(["taskkill", "/F", "/T", "/PID", str(game.pid)], capture_output=True)

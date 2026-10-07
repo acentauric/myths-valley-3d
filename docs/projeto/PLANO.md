@@ -19,12 +19,16 @@ lance produz uma falha. Cinco vistas foram conferidas em
 `scratch/cercas142/`. A circulação física e sua navegação continuam na
 #125 antes de encerrar a revisão completa.
 
-A #164 recebe os limites da fazenda, piso contínuo e juntas curtas da ponte,
+A #164 fecha com os limites da fazenda, piso contínuo e juntas curtas da ponte,
 leitura de navegação sem corrimãos e nado pela lâmina local. A rota física
 isolada chega ao portão; retirar juntas reproduz queda, restaurar limites
 antigos reprova sete verificações. Rio grande, colisões e ponte passam;
 a fixture da ponte aguarda naturalmente o fim da fala conforme #121.
-Ainda falta a chegada na campanha V19, portanto #164/#159 permanecem abertas.
+V21 chegou fisicamente ao pátio aos 483,44 s e confirmou a história
+implementada concluída, com 110 ações locais e custo zero. A aproximação
+do testador respeita waypoints e exige apoio contínuo para seguir em reta.
+#159 segue aberta para verificar especificamente o botão do menu/F8 e o
+encerramento final após corrigir a corrida do watchdog; 87 testes Python passam.
 Evidência em [NAVEGACAO_FAZENDA.md](../testes/NAVEGACAO_FAZENDA.md).
 
 A #154 aponta o passo de entrada à soleira externa real, em vez do centro

@@ -6,6 +6,15 @@ O teste passa a cobrar Candinha, Filo, Tonho, Zefa, arraial e recursos, incluind
 
 ## Em desenvolvimento — 07/10/2026 (experimento Jev)
 
+- #164 concluída / #159 parcial: V21 atravessa a ponte e chega ao pátio pela
+  missão normal aos 483,44 s, posição (118,2; 3,6; -308,2), com
+  `implemented_story_completed=true`, 110 decisões e custo zero. Aproximação
+  do guia mantém waypoints e só aceita reta com apoio físico contínuo.
+  Gate físico leve passa e mutante direto falha. O watchdog ganha prazo
+  para /stop/captura final; 87 testes Python passam e mutante sem prazo falha.
+  Menu/F8 e parada real do handshake corrigido ainda precisam de evidência
+  específica; isso não declara concluídas as cadeias laterais do vale.
+
 - #125 (parcial): cada cerca em MultiMesh recebe corpo na mesma posição,
   escala e inclinação, lido pela navegação. Candinha chega fisicamente à
   Zefa; navegação e encosta passam. O passeio completo ainda reprova em

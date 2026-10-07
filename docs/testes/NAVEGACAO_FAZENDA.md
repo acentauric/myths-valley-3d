@@ -59,6 +59,53 @@ nome `vau`; não houve `SCRIPT ERROR`, `Parse Error` ou `Compile Error`.
 
 ## Limite da evidência
 
-A chegada física foi confirmada na fixture. Ainda falta repetir a condução
-na campanha salva e observar `fazenda_chegada`; isso não encerra #164 nem #159.
+A chegada física foi confirmada na fixture. A V19 retomou o save, saiu do
+rio pela movimentação normal, voltou a Pedro e repetiu a condução. Aos
+447,95 s ambos estavam novamente na água, no lado oeste da ponte
+(jogador 113,4; 2; -259,6, Pedro 113,8; 2,3; -258,9). Após repetição sem
+avanço, a janela foi fechada normalmente; 63 ações, custo zero.
+
+A fixture iniciada na aproximação real (109; 3,2; -234,8), com
+`--aproximacao-campanha`, também atravessou: a diferença ocorre com os dois
+corpos na condução. O testador abandonava os waypoints ao ficar entre 2,6 e
+14 m de Pedro, aproximando em reta por dois segundos. Essa aproximação
+agora mantém os pontos da rota e interrompe quando não existe caminho longe
+demais. `tests/rota_do_guia.gd` passa; mutante que mira diretamente no guia
+reprova uma verificação. Os 85 testes Python continuam verdes.
+
+V20 confirmou a limitação da aproximação somente pela malha no píer: seu
+fim projetado ainda fica longe do guia. A janela foi fechada normalmente
+após 145 ações, sem custo. O fallback final verifica apoio físico em raios
+a cada 0,4 m da reta; piso contínuo permite aproximação, vazio mantém os
+waypoints. O gate testa ambos com corpos físicos, passando em dois segundos;
+o mutante direto continua reprovando. V21 observa essa versão no mesmo save,
+sem confirmar ainda causa única da queda na ponte.
+
+## Chegada real — V21
+
+A V21 completou `fazenda_chegada` aos **483,44 s** desde o lançamento
+(417,3 s de jogo pronto). Foram 110 decisões locais, custo US$ 0. O jogador
+terminou em **(118,2; 3,6; -308,2)**, Pedro em **(117,6; 3,6; -310,8)**,
+`conducting=false` e `implemented_story_completed=true`. O objetivo mudou
+para a cadeia lateral da Zefa. A travessia e a chegada ocorreram pela
+missão normal, sem editar posições ou progresso na campanha.
+
+Evidência preservada em
+`D:/MythsValleyPlaytestRuns/robo-campanha-retomada-v21/`: `eventos.jsonl`
+(último outcome), `resumo.json`, `relatorio.md`, stdout/stderr e capturas
+JPEG. Não há `SCRIPT ERROR`, `Parse Error` ou `Compile Error`; permanecem
+warnings de salvamento sobre autoloads legados Terrenos/Povoado ausentes.
+
+O lançador devolveu sucesso pelo objetivo, mas o resumo registrou código
+Godot 1: o watchdog encerrava o processo assim que `/event` detectava
+vitória, antes do envio de `/stop` e da captura final. A correção dá dez
+segundos para esse handshake e mantém teto para processo sem resposta.
+87 testes Python passam; remover a espera reprova uma verificação.
+A corrida corrigida ainda precisa de uma nova parada real para confirmar
+o código de saída e a captura final — não há captura de vitória nesta V21.
+
+Todos os critérios da #164 possuem prova, inclusive chegada física real.
+A #159 mantém pendente uma prova específica do botão do menu e da parada
+F8; a vitória da história implementada não equivale a concluir as histórias
+laterais nem os capítulos planejados além do pátio da fazenda.
 Não houve geração paga, alteração do progresso da campanha ou publicação.

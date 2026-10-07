@@ -73,7 +73,7 @@ func rodar() -> void:
 		conferir(pedro._nadando, "o corpo submerso entra em nado no rio elevado")
 		pedro._mover(Vector3.ZERO, 0.0, 1.0 / 60.0)
 		conferir(pedro.velocity.y > 0, "o nado procura a lâmina local, sem descer ao nível do mar")
-		pedro.global_position = Vector3(115.5, 4.1, -251.0)
+		pedro.global_position = Vector3(109.0, 3.2, -234.8) if "--aproximacao-campanha" in OS.get_cmdline_user_args() else Vector3(115.5, 4.1, -251.0)
 		pedro._atualizar_nado()
 		pedro.velocity = Vector3.ZERO
 		var destino: Vector3 = vale.world.ancoras["Portão da fazenda"]

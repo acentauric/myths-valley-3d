@@ -725,6 +725,10 @@ func _aproximar_guia(pedro: Node3D) -> bool:
 	var limite := Time.get_ticks_msec() + 2000
 	var verificar := Time.get_ticks_msec() + 500
 	var anterior: Vector3 = inicio
+	var recalcular := 0
+	var caminho := PackedVector3Array()
+	var leitura = load("res://tools/jev/rota_do_guia.gd")
+	var reta_apoiada := false
 	_pressionar(KEY_W, true)
 	while not parar and not paused and not root.get_node("Dialogo").ativo and Time.get_ticks_msec() < limite:
 		if Input.is_physical_key_pressed(KEY_F8):
@@ -736,7 +740,18 @@ func _aproximar_guia(pedro: Node3D) -> bool:
 		if jogador.global_position.distance_to(pedro.global_position) <= 2.4:
 			break
 		_amostrar_movimento()
-		jogada.virar_para(pedro.global_position)
+		if Time.get_ticks_msec() >= recalcular:
+			caminho = jogada.caminho_ate(pedro.global_position)
+			reta_apoiada = leitura.reta_apoiada(jogador.get_world_3d().direct_space_state,
+				jogador.global_position, pedro.global_position, [jogador.get_rid(), pedro.get_rid()])
+			recalcular = Time.get_ticks_msec() + 500
+		while caminho.size() > 1 and Vector2(caminho[0].x - jogador.global_position.x, caminho[0].z - jogador.global_position.z).length() < 0.35:
+			caminho.remove_at(0)
+		var rumo: Vector3 = leitura.rumo(jogador.global_position, pedro.global_position, caminho, reta_apoiada)
+		if not rumo.is_finite():
+			_pressionar(KEY_W, false)
+			return false
+		jogada.virar_para(rumo)
 		if Time.get_ticks_msec() >= verificar:
 			if jogador.global_position.distance_to(anterior) < 0.2:
 				_pressionar(KEY_D, true)
