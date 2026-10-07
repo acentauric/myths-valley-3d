@@ -5,6 +5,14 @@ raiz. O jogo 2D segue sua própria linha em `acentauric/myths-valley`.
 
 ## O que já roda
 
+A #149 avança parcialmente: passeio não recebe galope por um clipe de
+passada curta, e bichos/aves animam o deslocamento efetivo após colisão ou
+chegada. A caça mantém velocidades e referência de ronda própria. Ritmo,
+passeio das espécies, animações e bichos de casa passam; falsificadores
+restauram saltos/deslizamento. O inventário cobre 23 modelos; aves sem rig,
+bode e clipes de corrida ainda impedem encerrar a revisão artística.
+Ver [ANIMACOES_DOS_ANIMAIS.md](../testes/ANIMACOES_DOS_ANIMAIS.md).
+
 A rota de entrada/saída usa as soleiras alinhadas quando cruza um cômodo,
 sem forçar porta trancada. A navegação também reserva a inclinação dos
 troncos à altura do corpo. Igreja nos dois sentidos e navegação passam;

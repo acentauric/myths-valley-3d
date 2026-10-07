@@ -275,6 +275,8 @@ func _montar() -> void:
 	_animador.name = "Animador"
 	add_child(_animador)
 	_animador.configurar(pose, _modelo, false, chave, _u("passo"))
+	# `passo` na regra da luta é a carga; a ronda usa só uma fração dela.
+	_animador.velocidade_do_passo = _u("passo") * float(dados().get("passeio", 0.5))
 	_malhas = Animador.malhas(_modelo)
 	# O AVISO e a PANCADA por cima de qualquer malha, sem luz: o âmbar lê igual
 	# de dia e de noite, e na onça-preta também.

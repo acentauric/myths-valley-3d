@@ -6,6 +6,14 @@ O teste passa a cobrar Candinha, Filo, Tonho, Zefa, arraial e recursos, incluind
 
 ## Em desenvolvimento — 07/10/2026 (experimento Jev)
 
+- #149 (parcial): passeio e corrida usam referência própria da espécie,
+  separada da passada medida no clipe. Bichos de casa animam o movimento
+  efetivo após colisões; aves acompanham o último passo até seu destino.
+  A ronda da criatura continua distinta da carga, sem alterar a caça.
+  Ritmo, inventário de 23 modelos, animações e rotinas dos bichos passam;
+  mutantes reintroduzem os defeitos. Vídeo local e limites de aves, bode
+  e corrida constam em `ANIMACOES_DOS_ANIMAIS.md`; a issue permanece aberta.
+
 - #99/#125/#150 (parcial): caminhos atravessam cômodos pelas soleiras;
   portas trancadas não recebem travessia forçada. A reserva de troncos
   inclui sua inclinação à altura do agente. Navegação e igreja nos dois

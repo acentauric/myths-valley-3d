@@ -51,7 +51,8 @@ const PARADO_ABAIXO := 0.08
 ## Respiração parado: amplitude da escala e o ritmo (rad/s).
 const RESPIRA := 0.014
 const RITMO_DA_RESPIRACAO := 2.3
-## Inclinação máxima na corrida (rad), e a velocidade relativa em que começa.
+## Inclinação máxima na corrida (rad), e velocidade relativa ao passeio da
+## espécie em que começa — independentemente do tamanho da passada do clipe.
 const INCLINA_NA_CORRIDA := 0.09
 const CORRIDA_A_PARTIR := 1.35
 ## O galope: a partir de quanto a mais de `CORRIDA_A_PARTIR` ele chega ao máximo,
@@ -114,6 +115,9 @@ var ave := false
 var animacao: AnimationPlayer
 ## Passada de referência sem clipe, ou quando a medida falha (u/s a 1×).
 var passada := 1.0
+## O passo da espécie, separado da passada medida no clipe. Um clipe curto
+## acelera mesmo no passeio; isso não significa que o animal esteja correndo.
+var velocidade_do_passo := 1.0
 ## Velocidade de agora, posta por quem anda.
 var velocidade := 0.0
 ## Para onde a altura do corpo vai (1 de pé; 0,85 espreitando).
@@ -151,6 +155,7 @@ func configurar(nova_pose: Node3D, novo_modelo: Node3D, eh_ave: bool, chave: Str
 	modelo = novo_modelo
 	ave = eh_ave
 	passada = passada_padrao
+	velocidade_do_passo = maxf(passada_padrao, 0.05)
 	_fase = randf() * TAU
 	_olhar_em = randf_range(OLHA_A_CADA.x, OLHA_A_CADA.y)
 	if modelo == null:
@@ -359,12 +364,13 @@ func _process(delta: float) -> void:
 		_fase += delta * TAU * clampf(relativa, 0.5, 3.0) * (2.4 if ave else 1.6)
 		y = absf(sin(_fase)) * (0.035 if ave else 0.03)
 		ginga = sin(_fase) * (0.09 if ave else 0.03)
-	if andando and relativa > CORRIDA_A_PARTIR:
-		var corre := clampf((relativa - CORRIDA_A_PARTIR) / 0.8, 0.0, 1.0)
+	var relativa_ao_passo := velocidade / velocidade_do_passo
+	if andando and relativa_ao_passo > CORRIDA_A_PARTIR:
+		var corre := clampf((relativa_ao_passo - CORRIDA_A_PARTIR) / 0.8, 0.0, 1.0)
 		inclina = INCLINA_NA_CORRIDA * corre
 		if animacao != null:
 			# O GALOPE: o corpo sobe e desce duas vezes por ciclo do clipe.
-			var forca := clampf((relativa - CORRIDA_A_PARTIR) / GALOPE_ATE, 0.0, 1.0)
+			var forca := clampf((relativa_ao_passo - CORRIDA_A_PARTIR) / GALOPE_ATE, 0.0, 1.0)
 			_galope += delta * TAU * 2.0 * animacao.speed_scale / maxf(animacao.get_animation(_clipe).length, 0.1)
 			y += absf(sin(_galope)) * GALOPE_SOBE * forca
 			inclina += sin(_galope) * GALOPE_CABECEIA * forca

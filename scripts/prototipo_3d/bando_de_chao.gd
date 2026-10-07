@@ -453,7 +453,9 @@ func _andar(ave: Dictionary, delta: float) -> void:
 	novo.y = world.ground_height_at(novo)
 	no.global_position = novo
 	no.rotation.y = lerp_angle(no.rotation.y, atan2(falta.x, falta.z), minf(1.0, delta * 10.0))
-	animador.velocidade = float(ave["velocidade"])
+	# O último passo pode ser menor que a velocidade pedida: o ritmo acompanha
+	# o trajeto realmente percorrido, sem acelerar a chegada ao ponto de ciscar.
+	animador.velocidade = passo / maxf(delta, 0.0001)
 
 
 func _virar(no: Node3D, ponto: Vector3) -> void:

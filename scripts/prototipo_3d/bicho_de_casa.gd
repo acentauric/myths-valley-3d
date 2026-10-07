@@ -421,11 +421,13 @@ func _andar(delta: float) -> void:
 		global_position = antes
 		velocity = Vector3.ZERO
 		_alvo = _ponto_em_volta(lugar_de_casa(), 2.0)
-	var andou := Vector2(velocity.x, velocity.z).length()
+	# A colisão e a margem podem reduzir o passo. Animar a velocidade pedida
+	# faria o bicho marchar sem sair do lugar ou patinar ao deslizar pela parede.
+	var rumo_do_corpo := _plano(global_position - antes) / maxf(delta, 0.0001)
+	var andou := rumo_do_corpo.length()
 	_animador.velocidade = andou
 	if andou > 0.08:
 		_parado = 0.0
-		var rumo_do_corpo := Vector3(velocity.x, 0.0, velocity.z)
 		rotation.y = lerp_angle(rotation.y, atan2(rumo_do_corpo.x, rumo_do_corpo.z), minf(1.0, delta * 8.0))
 	else:
 		_parado += delta
@@ -437,6 +439,7 @@ func _andar(delta: float) -> void:
 ## chão do vale (`ground_position`), não pisa em água funda nem entra em casa, e
 ## atravessa banco e cerca — o que ninguém vê a mais de `FISICA_ATE` u.
 func _andar_livre(delta: float) -> void:
+	var antes := global_position
 	var direcao := Vector3.ZERO
 	if _alvo.is_finite():
 		var falta := _plano(_alvo - global_position)
@@ -461,11 +464,12 @@ func _andar_livre(delta: float) -> void:
 		if not livre:
 			velocity = Vector3.ZERO
 			_alvo = _ponto_em_volta(lugar_de_casa(), 2.0)
-	var andou := Vector2(velocity.x, velocity.z).length()
+	var deslocou := _plano(global_position - antes) / maxf(delta, 0.0001)
+	var andou := deslocou.length()
 	_animador.velocidade = andou
 	if andou > 0.08:
 		_parado = 0.0
-		rotation.y = lerp_angle(rotation.y, atan2(velocity.x, velocity.z), minf(1.0, delta * 8.0))
+		rotation.y = lerp_angle(rotation.y, atan2(deslocou.x, deslocou.z), minf(1.0, delta * 8.0))
 	else:
 		_parado += delta
 
