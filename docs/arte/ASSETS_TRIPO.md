@@ -197,3 +197,14 @@ Prazo de envio: 5 de outubro de 2026 (AoE), com demo jogável, gravação do
 passeio e prancha de assets; Demo Day em São Paulo em 17 de outubro (inscrição
 separada). Trilhas: Game + ferramenta Tripo. Detalhes em
 https://developers.tripo3d.ai/en/events/tripothon-s1.
+# Decisão dos ícones de talentos — 07/10/2026 (#71)
+
+A teia do 3D mantém os 39 ícones PixelLab já presentes em
+`assets/sprites/talentos/`. Não haverá uma nova geração de ícones nesta etapa:
+os desenhos identificam as mesmas habilidades, permanecem legíveis no tamanho
+de uso e evitam gastar créditos para substituir símbolos que já funcionam.
+A apresentação própria do 3D fica na moldura, tipografia, conexões, zoom e ficha
+da teia. Essa escolha encerra a condição provisória de "até haver arte própria";
+uma futura troca requer uma nova proposta visual. Origem em `assets/CREDITOS.md`.
+O portão `teia_talentos` verifica os desenhos reais de todos os nós e que os
+nomes não se sobrepõem a eles. A aprovação final da composição segue na #41.

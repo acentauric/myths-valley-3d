@@ -5,6 +5,11 @@ raiz. O jogo 2D segue sua própria linha em `acentauric/myths-valley`.
 
 ## O que já roda
 
+A #71 está concluída (07/10/2026): os 39 ícones PixelLab existentes permanecem
+na teia, com origem documentada. A identidade do 3D fica em molduras, conexões,
+tipografia e ficha. Não há lote novo de arte ou consumo de créditos; o portão
+confere os ícones de todos os nós. A composição final do autor segue na #41.
+
 A #128 está concluída (07/10/2026): conversar consulta o morador ao alcance
 no mesmo quadro em que o foco escolhe o dono do E, inclusive antes de desenhar
 a dica. As 22 filas e 85 passos passaram nas cinco horas, isoladamente e em

@@ -109,8 +109,8 @@ func _run() -> void:
 
 		# 3b. E TODO NÓ TRAZ O DESENHO DO 2D, com o nome fora de cima dele.
 		#
-		# Enquanto não há arte própria do 3D, a teia usa os ícones do jogo 2D
-		# (decisão do autor). Eles moram em `assets/sprites/talentos`, copiados
+		# A decisão #71 mantém os 39 ícones PixelLab na teia do 3D; não são
+		# substitutos provisórios. Eles moram em `assets/sprites/talentos`, copiados
 		# para o projeto do vale porque `res://` aqui é a pasta do protótipo e
 		# não enxerga a do 2D. Um ícone que não foi copiado some calado: o nó
 		# continua lá, só fica uma caixa de texto sem desenho.

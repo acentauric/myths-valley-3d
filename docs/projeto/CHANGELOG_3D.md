@@ -6,6 +6,11 @@ O teste passa a cobrar Candinha, Filo, Tonho, Zefa, arraial e recursos, incluind
 
 ## Em desenvolvimento — 07/10/2026 (experimento Jev)
 
+- #71: decisão de manter os 39 símbolos PixelLab já existentes para a teia,
+  encerrando a condição provisória. Origem explicitada nos créditos e decisão
+  em `ASSETS_TRIPO.md`; a identidade visual do 3D continua na apresentação da
+  teia. Não foi feita geração paga. Aprovação autoral final permanece na #41.
+
 - #128: o E da conversa usa o alvo atual, sem depender de `_perto` do último
   `_process`. `conversa_no_mesmo_quadro` passa antes do primeiro desenho e
   depois de o alvo sair do alcance; `--alvo-atrasado` reprova. `missoes_elos`

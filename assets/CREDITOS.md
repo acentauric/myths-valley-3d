@@ -188,6 +188,9 @@ As fontes Cinzel e Cormorant Garamond acompanham os textos OFL em
 `assets/fonts/miva.ttf` é uma fonte original criada pela equipe; em
 03/10/2026, o responsável confirmou que seus direitos pertencem ao projeto.
 Ícones reutilizados da interface e catálogo foram produzidos no PixelLab.
+Os 39 PNG de `assets/sprites/talentos/` também são produção PixelLab do projeto,
+reutilizada por decisão de 07/10/2026 (#71). A teia mantém esses símbolos;
+molduras, conexões e tipografia pertencem à apresentação do 3D.
 
 ### Tubarao e protagonista animado (04/10/2026)
 
