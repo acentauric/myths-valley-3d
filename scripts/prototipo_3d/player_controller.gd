@@ -435,6 +435,8 @@ func _atualizar_pose_machado(delta: float) -> void:
 	if _machado_pivo != null:
 		var estado := "golpe" if em_golpe else ("uso" if _uso_restante > 0.0 else ("parado" if parado else "andando"))
 		var alvo := Vestimenta3D.pose_de(_item_visualizado, estado)
+		if estado == "golpe" and animator != null and animator.has_method("fase_do_golpe"):
+			alvo = Vestimenta3D.pose_no_golpe(_item_visualizado, animator.fase_do_golpe())
 		if _pivo_posado != _machado_pivo:
 			_pivo_posado = _machado_pivo
 			_machado_angulo_lateral = deg_to_rad(alvo.x)

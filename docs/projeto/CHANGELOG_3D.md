@@ -6,6 +6,14 @@ O teste passa a cobrar Candinha, Filo, Tonho, Zefa, arraial e recursos, incluind
 
 ## Em desenvolvimento — 07/10/2026 (experimento Jev)
 
+- **A enxada ara no contato com o solo (#145).** O golpe reproduz a
+  velocidade normal, conduz o cabo pelo lado do ombro e aplica a ação
+  aos 45% do clipe. Repetir E não reinicia nem cobra novamente;
+  cancelar antes do contato preserva terra e energia. Medição em movimento
+  limita a intrusão a menos de 10% (antes, 30%). Gesto, itens, lavoura
+  e corte passaram; retirar o trajeto reprova. Folha de cinco poses e
+  três vistas conferida em scratch/enxada-depois/mao_enxada.png.
+
 - **O marcador de madeira continua após esgotar os troncos (#162).**
   Passa a apontar a árvore acessível mais próxima, respeitando produto,
   proteção, talento e aço. A oferta informa o corte em andamento para

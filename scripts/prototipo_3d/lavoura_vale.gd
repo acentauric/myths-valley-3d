@@ -34,6 +34,8 @@ var _tentativas_vazias := 0
 var _intervalo_ajuda := 0.0
 var _ultima_ajuda := ""
 var _ultimo_recado := ""
+var _leito_em_golpe := Vector2i(-1, -1)
+var _animador_do_golpe: Node
 
 ## A grade: colunas de lado a lado (X da casa), linhas para a frente (Z).
 const COLUNAS := 6
@@ -554,8 +556,8 @@ func _unhandled_key_input(event: InputEvent) -> void:
 	if Dialogo.ocupado() or not _jogador.is_physics_processing() or not FocoDoE.e_dele(self):
 		return
 	get_viewport().set_input_as_handled()
-	_gesto_no_leito(_perto)
-	usar(_perto)
+	if not _gesto_no_leito(_perto):
+		usar(_perto)
 
 
 ## O GESTO QUE ACOMPANHA O EFEITO (arar e regar): o corpo se vira para o leito, e
@@ -564,24 +566,57 @@ func _unhandled_key_input(event: InputEvent) -> void:
 ## efeito vai acontecer: a enxada num leito já arado, ou o balde num leito seco
 ## demais, não fazem gesto nenhum. Fica FORA de `usar()`, que os portões chamam
 ## aos montes: o gesto é da tecla.
-func _gesto_no_leito(celula: Vector2i) -> void:
+func _gesto_no_leito(celula: Vector2i) -> bool:
 	if not na_grade(celula) or _jogador == null:
-		return
+		return false
+	if is_instance_valid(_animador_do_golpe) and _animador_do_golpe.chop_ativo():
+		return true # E repetido não reinicia nem aplica o golpe antecipadamente.
+	_leito_em_golpe = Vector2i(-1, -1)
 	var mao := Inventario.na_mao()
 	var arar: bool = mao == "enxada" and not plantacao.arado(celula)
 	var regar: bool = mao in DE_REGAR and plantacao.arado(celula) and not plantacao.molhado(celula)
 	if not arar and not regar:
-		return
+		return false
+	if arar and not Energia.aguenta("arar"):
+		return false # usar() dá o aviso; o corpo não finge um trabalho impossível.
 	var visual := _jogador.get("visual") as Node3D
 	if visual != null:
 		var alvo := posicao_da(celula)
 		visual.rotation.y = atan2(alvo.x - _jogador.global_position.x, alvo.z - _jogador.global_position.z)
 	if arar:
 		var animador = _jogador.get("animator")
-		if animador != null and animador.has_method("play_chop") and animador.play_chop(1) != "":
+		if animador != null and animador.has_method("play_chop") and animador.play_chop(1, 1.0, 0.45) != "":
+			_animador_do_golpe = animador
+			_leito_em_golpe = celula
+			if not animador.golpe_impacto.is_connected(_aplicar_golpe_no_leito):
+				animador.golpe_impacto.connect(_aplicar_golpe_no_leito)
+			if not animador.golpe_cancelado.is_connected(_encerrar_golpe_no_leito):
+				animador.golpe_cancelado.connect(_encerrar_golpe_no_leito)
+			if not animador.golpe_concluido.is_connected(_encerrar_golpe_no_leito):
+				animador.golpe_concluido.connect(_encerrar_golpe_no_leito)
 			_jogador.call("travar_acao_de_golpe", 5.0, true)
+			return true
 	elif _jogador.has_method("usar_item_na_mao"):
 		_jogador.call("usar_item_na_mao", GESTO_DE_REGAR)
+	return false
+
+
+## O leito muda quando a lâmina toca o chão, uma única vez. Trocar de
+## ferramenta, interromper o clipe ou sair do alvo não cobra nem ara.
+func _aplicar_golpe_no_leito() -> void:
+	var celula := _leito_em_golpe
+	_leito_em_golpe = Vector2i(-1, -1)
+	if not na_grade(celula) or not is_instance_valid(_jogador):
+		return
+	if not _animador_do_golpe.chop_ativo() or Inventario.na_mao() != "enxada":
+		return
+	if _jogador.global_position.distance_to(posicao_da(celula)) > 1.7:
+		return
+	usar(celula)
+
+
+func _encerrar_golpe_no_leito() -> void:
+	_leito_em_golpe = Vector2i(-1, -1)
 
 
 ## O GESTO NO LEITO, pelo que está na mão — `Mundo._usar_no_rocado` do 2D.

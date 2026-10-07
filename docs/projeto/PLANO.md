@@ -5,6 +5,10 @@ raiz. O jogo 2D segue sua própria linha em `acentauric/myths-valley`.
 
 ## O que já roda
 
+A #145 está concluída (07/10/2026): enxada com trajeto corrigido e efeito
+no contato com o solo, em vez de no começo do E. A preparação e o retorno
+são medidos em movimento; repetição e cancelamento preservam as regras.
+
 A #162 está concluída (07/10/2026): depois dos troncos caídos, a missão
 de madeira aponta árvores elegíveis. O E informa o corte em curso,
 permitindo esperar sua conclusão. Portões e coleta real conferidos.

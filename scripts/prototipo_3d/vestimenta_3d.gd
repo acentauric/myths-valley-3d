@@ -161,6 +161,20 @@ static func pose_de(peca: String, estado: String) -> Vector2:
 	return parado
 
 
+## Ao erguer a enxada o cabo passa pelo lado do ombro, não pelo peito.
+## No contato e no retorno mantém o encaixe medido do golpe.
+static func pose_no_golpe(peca: String, fase: float) -> Vector2:
+	var pose := pose_de(peca, "golpe")
+	if peca == "enxada" and fase >= 0.0:
+		var levantar := smoothstep(0.06, 0.12, fase)
+		var alinhar := 1.0 - smoothstep(0.18, 0.25, fase)
+		pose.x -= 30.0 * levantar * alinhar
+		var descer := smoothstep(0.28, 0.33, fase)
+		var contato := 1.0 - smoothstep(0.39, 0.44, fase)
+		pose.x += 20.0 * descer * contato
+	return pose
+
+
 ## POSA A PEÇA em volta da pegada: `pose` é (giro, inclinação) em graus, no
 ## quadro do corpo (`visual`), como `pose_de` dá. A pendurada guarda a pose e se
 ## apruma sozinha a cada quadro do esqueleto.

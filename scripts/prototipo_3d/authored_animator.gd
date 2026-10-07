@@ -23,6 +23,7 @@ const GESTURES := [
 
 signal golpe_concluido
 signal golpe_impacto
+signal golpe_cancelado
 
 var animation_player: AnimationPlayer
 var _current_motion := ""
@@ -34,6 +35,7 @@ var _gesture_active := false
 var _jump_active := false
 var _chop_repetitions_left := 0
 var _chop_impacto_emitido := false
+var _chop_fase_impacto := 0.5
 ## Na água funda o movimento vira nado (clipe "swim" em laço, se o modelo tiver).
 var _swimming := false
 ## Velocidade de chão (unidades/s, escala 1) de cada clipe de passo, medida pelo pé de
@@ -128,7 +130,7 @@ func _process(_delta: float) -> void:
 	if clip.is_empty():
 		return
 	var duracao := animation_player.get_animation(clip).length
-	if duracao > 0.0 and animation_player.current_animation_position >= duracao * 0.5:
+	if duracao > 0.0 and animation_player.current_animation_position >= duracao * _chop_fase_impacto:
 		_chop_impacto_emitido = true
 		golpe_impacto.emit()
 
@@ -146,6 +148,8 @@ func update_motion(speed: float, _delta: float) -> void:
 	if _gesture_active:
 		if speed < 0.2 and not _swimming:
 			return
+		if _chop_repetitions_left > 0:
+			stop_chop()
 		_gesture_active = false
 
 	if not _medido:
@@ -182,7 +186,7 @@ func play_gesture(index: int) -> String:
 	return label
 
 
-func play_chop(repeticoes: int = 2) -> String:
+func play_chop(repeticoes: int = 2, ritmo: float = 1.875, fase_impacto: float = 0.5) -> String:
 	if animation_player == null:
 		return ""
 	var clip: String = _clips.get("chop", "")
@@ -192,9 +196,10 @@ func play_chop(repeticoes: int = 2) -> String:
 	_gesture_active = true
 	_chop_repetitions_left = maxi(repeticoes, 1)
 	_chop_impacto_emitido = false
+	_chop_fase_impacto = clampf(fase_impacto, 0.1, 0.9)
 	_jump_active = false
 	_current_motion = ""
-	animation_player.speed_scale = 1.875
+	animation_player.speed_scale = clampf(ritmo, 0.5, 3.0)
 	animation_player.play(clip, 0.18)
 	return "Golpear"
 
@@ -207,11 +212,19 @@ func chop_ativo() -> bool:
 	return _gesture_active and _chop_repetitions_left > 0 and animation_player != null and animation_player.current_animation == StringName(_clips.get("chop", ""))
 
 
+func fase_do_golpe() -> float:
+	if not chop_ativo():
+		return -1.0
+	var duracao := animation_player.get_animation(animation_player.current_animation).length
+	return animation_player.current_animation_position / maxf(duracao, 0.001)
+
+
 func stop_chop() -> void:
 	if _chop_repetitions_left <= 0:
 		return
 	_chop_repetitions_left = 0
 	_gesture_active = false
+	golpe_cancelado.emit()
 	_play_motion("idle", 1.0)
 
 
