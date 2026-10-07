@@ -312,6 +312,24 @@
   manda o `AGENTS.md`. O layout das linhas com ícone do item, ingredientes
   com "×n" e a tecla da ação, em todas as abas, fica para a próxima fatia da
   #108. Portão `painel`.
+- **Quem cai no rio grande volta pela margem de cá, e a água corre para o mar
+  (#115).** "Cai no rio e não consigo voltar para nenhum dos 2 lados." Com a
+  calha funda da #81 o leito subia 1,6 u em meio metro dos dois lados — 66
+  graus, acima do que o corpo sobe (46) — e quem caía nadava até a parede e
+  ficava, inclusive ao lado da ponte. Do lado de cá o leito agora sobe em rampa
+  que se anda (`GeoRegionRenderer._beira_de_ca`: fundo no meio, a nado até a
+  profundidade em que o corpo volta a andar, e dali à margem a menos de 40
+  graus), a água do rio grande se alarga para cobrir a rampa, e o aterro da
+  ponte vira um corredor: parede só sob o tabuleiro (a cabeceira de cá fica na
+  altura da de lá), rampa ao lado. A margem de lá não muda. E "a água subindo o
+  rio": o shader deslizava as ondas no sentido em que a faixa foi traçada, e o
+  rio grande do KML é traçado da foz à cabeceira; agora o sentido é o da foz
+  (`_sentido_da_correnteza`, `agua_rio.gdshader` ganha `sentido`), como as
+  peças da foz já faziam. Portão `rio_grande` (reescrito nas partes 2 e 7, com a
+  8 nova): a beira de cá a menos de 42 graus, sete nados para cá que saem da
+  água, inclusive dos dois lados da ponte, e a correnteza para a foz. As pedras
+  da margem íngreme (#116) esperam o lote do Tripo
+  (`tools/tripo/lote_2026-10-06_pedras.json`, ~380 créditos, geração paga).
 
 ## Em desenvolvimento — 05/10/2026
 

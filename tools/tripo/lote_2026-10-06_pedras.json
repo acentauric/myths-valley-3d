@@ -1,0 +1,38 @@
+{
+ "observacao": "Lote de 06/10/2026 (#116): as pedras da margem íngreme do rio grande. Pedido do autor no teste de 06/10: 'criar alguns assets de pedras diferentes para popular a beira do rio mais íngreme, pra justificar o desnível com mais fluidez visual'. GERAÇÃO PAGA, AINDA NÃO FEITA: este arquivo é o plano e os prompts; roda no Tripo Studio pela ponte do Playwright MCP (tools/tripo/lote_studio.js + lote_producao.js), com o autor presente, depois de aprovado o custo na conversa. Custo por modelo como no lote da ponte: Modelo HD (55 créditos) + Retopologia Malha Smart em quads (40) = 95; quatro modelos = ~380 créditos. Textura 1K (adereço). Quando os GLBs chegarem: `tarefa`, `projeto`, `exportacao` e `sha256` aqui, linha em assets/prototipo_3d/aderecos/ORIGEM.md e em assets/CREDITOS.md, entradas `pedra_barranco_a..d` em CatalogoAssets.PECAS (medida por tools/tripo/medir_glb.py, colisão `caixa`), e o construtor espalha as quatro pela face do barranco da margem norte (GeoRegionRenderer._barranco, lado de lá, de 0,3 a 2,0 u da beira d'água), com giro ao acaso e escala de 0,7 a 1,3, fora da calha e do aterro da ponte. Portões `rio_grande` e `colisoes_do_vale`.",
+ "estado": "aguardando aprovação do custo (~380 créditos)",
+ "tarefas": {
+  "pedra_barranco_a": {
+   "pasta": "aderecos",
+   "faces": 2500,
+   "tex": 1024,
+   "rig": "nenhum",
+   "tpose": false,
+   "prompt": "A cluster of three weathered river-bank boulders of dark gray-brown rock, rounded by water, half sunk into packed red-brown earth, with patches of green moss on the shaded sides and thin cracks, the largest about the height of a man's waist, no water, no plants other than moss, no people. Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no text."
+  },
+  "pedra_barranco_b": {
+   "pasta": "aderecos",
+   "faces": 2000,
+   "tex": 1024,
+   "rig": "nenhum",
+   "tpose": false,
+   "prompt": "A single large rounded sandstone boulder of a river bank, ochre and gray with darker water stains near the base, a little moss on one shaded side, slightly tilted as if settled into the slope, about chest high, no water, no people. Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no text."
+  },
+  "pedra_barranco_c": {
+   "pasta": "aderecos",
+   "faces": 2500,
+   "tex": 1024,
+   "rig": "nenhum",
+   "tpose": false,
+   "prompt": "A flat stratified rock slab jutting out of an earth bank, layered gray-brown stone with horizontal strata, its top mostly flat and dry, the front edge broken and sharp, a little red earth and a few dry grass tufts caught in the cracks, about knee high and two meters wide, no water, no people. Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no text."
+  },
+  "pedra_barranco_d": {
+   "pasta": "aderecos",
+   "faces": 2000,
+   "tex": 1024,
+   "rig": "nenhum",
+   "tpose": false,
+   "prompt": "A low pile of smooth river stones of mixed sizes, gray, ochre and dark brown, heaped against a small step of red-brown earth as if left by a flood, the bottom stones half buried in mud, about knee high, no water, no people. Stylized hand-painted 3D game asset, 19th-century rural Bahia, Brazil (1887), warm colors, clean readable silhouette, soft even lighting, single isolated object, no ground plane, no background, no text."
+  }
+ }
+}
