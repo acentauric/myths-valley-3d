@@ -6,6 +6,7 @@ const LUZ := [Color.WHITE, Color(1.02, 0.97, 0.90), Color(1.0, 0.95, 0.87), Colo
 const AVES := [1.0, 0.90, 0.80, 0.72]
 const INSETOS := [1.0, 1.15, 0.80, 0.60]
 static var _materiais: Dictionary = {}
+static var _estacao_atual := 0
 
 static func registrar(material: BaseMaterial3D) -> void:
 	if material == null:
@@ -13,9 +14,10 @@ static func registrar(material: BaseMaterial3D) -> void:
 	if not material.has_meta("cor_sem_estacao"):
 		material.set_meta("cor_sem_estacao", material.albedo_color)
 	_materiais[material.get_instance_id()] = weakref(material)
-	material.albedo_color = material.get_meta("cor_sem_estacao") * MATA[Relogio.estacao]
+	material.albedo_color = material.get_meta("cor_sem_estacao") * MATA[_estacao_atual]
 
 static func aplicar(estacao: int) -> void:
+	_estacao_atual = clampi(estacao, 0, 3)
 	for id in _materiais.keys():
 		var material: BaseMaterial3D = _materiais[id].get_ref()
 		if material == null:

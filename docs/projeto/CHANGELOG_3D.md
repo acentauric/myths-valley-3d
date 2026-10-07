@@ -2171,3 +2171,9 @@ A caixa longa reserva seu retângulo real, incluindo a transformação da camada
 O tutorial do corpo declara `interfaces` em cada linha de `missoes_guia.json`. `Dialogo.falar` aceita essa lista paralela como quarto argumento opcional; a linha atual destaca somente o componente declarado, no retângulo renderizado. Perguntas e fechamento limpam esse foco. Nenhuma dedução depende de palavras da prosa regional.
 
 Portão `foco_da_narracao`: reserva, componente externo preservado, troca de foco, restauração da cor e aviso expirado. A falsificação `--sem-reserva` reprova uma asserção. `interface_individual`, `prioridade_dos_avisos` e `idiomas` acompanham. Captura real no armazém: `scratch/fiado-tonho/tutorial-foco.png`; a pergunta/pagamento do livro continuam com zero falhas. A #140 permanece aberta pelos componentes secundários ainda pendentes.
+
+### 07/10/2026: catálogo antes dos autoloads (#17)
+
+A inspeção do cemitério encontrou erro de compilação em `estacoes_vale.gd` quando um script pré-carregava o catálogo. O registro de materiais passa a consultar a estação guardada por `aplicar`, sem depender de um identificador de autoload na compilação. Assim, modelos carregados depois recebem a estação vigente e repetir o registro preserva a cor original.
+
+`estacao_no_catalogo` pré-carrega o catálogo e confere registro tardio e cor sem deriva. A falsificação `--estacao-inicial` reprova. Regressões: `estacoes_do_vale`, `lapides_no_chao` e `lapides_no_chao_procedural`. O sucesso textual do antigo gate não foi aceito enquanto havia SCRIPT ERROR no log.
