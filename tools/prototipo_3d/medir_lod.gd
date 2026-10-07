@@ -57,6 +57,7 @@ func _run() -> void:
 	game.add_child(camera)
 	camera.current = true
 	print("BENCH_LOD blocos=", _blocos.size(), " subviewports_desligados=", minimapas, " centro_mata=", center)
+	print("BENCH_LOD_TELA janela=", DisplayServer.window_get_size(), " render=", root.get_texture().get_size())
 	await _compare("perto", camera, Vector3(center.x, height + 4.0, center.y + 23.0), Vector3(center.x, height + 4.0, center.y))
 	await _compare("acima", camera, Vector3(center.x, height + 55.0, center.y + 65.0), Vector3(center.x, height, center.y))
 	await _compare("longe", camera, Vector3(center.x, height + 110.0, center.y + 165.0), Vector3(center.x, height, center.y))
@@ -96,6 +97,10 @@ func _measure(label: String, lod_ativo: bool) -> Dictionary:
 	var segundos := float(Time.get_ticks_usec() - inicio) / 1000000.0
 	var resultado := {"fps": float(quadros) / segundos, "triangulos": triangulos / quadros, "draws": draw_calls / quadros}
 	print("BENCH_LOD %s %s fps=%.2f triangulos=%.0f draws=%.0f" % [label, "com" if lod_ativo else "sem", resultado.fps, resultado.triangulos, resultado.draws])
+	if "--capturar" in OS.get_cmdline_user_args():
+		await RenderingServer.frame_post_draw
+		DirAccess.make_dir_recursive_absolute("res://scratch/lod34")
+		root.get_texture().get_image().save_png("res://scratch/lod34/%s-%s.png" % [label, "com" if lod_ativo else "sem"])
 	return resultado
 
 

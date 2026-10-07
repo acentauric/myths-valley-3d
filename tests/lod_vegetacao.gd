@@ -22,6 +22,7 @@ func _run() -> void:
 	_verificar(visual != null, "bloco da vegetação foi criado")
 	_verificar(decalque != null and decalque.visibility_range_end == 0.0, "decalque no pé da árvore não recebe LOD")
 	if visual != null:
+		if "--sem-corte" in OS.get_cmdline_user_args(): visual.visibility_range_end = 0.0
 		_verificar(visual.visibility_range_end == 85.0, "passeio usa corte por distância")
 		_verificar(visual.lod_bias < 1.0, "LOD importado entra mais cedo")
 		_verificar(visual.visibility_range_fade_mode == GeometryInstance3D.VISIBILITY_RANGE_FADE_DISABLED, "corte sem custo de desvanecimento")

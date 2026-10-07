@@ -42,6 +42,8 @@ func _run() -> void:
 	# A ficha do Pedro: prévia real, dados à direita e as três falas, sem navegar entre falas.
 	painel._abrir("pedro")
 	await _frames(3)
+	if "--sem-previa" in OS.get_cmdline_user_args():
+		painel._preview_modelo = null
 	_assert(painel._lista.get_meta("ficha") == "pedro", "cartão abre a ficha")
 	_assert(painel._preview_modelo != null and not painel._preview_modelo.find_children("*", "MeshInstance3D", true, false).is_empty(), "prévia usa o modelo 3D real")
 	_assert(painel._preview_viewport.own_world_3d, "prévia não mistura luzes e objetos com o vale")
