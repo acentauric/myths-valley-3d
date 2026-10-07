@@ -868,7 +868,7 @@ static func _laje_da_camera(chave: String, spec: Dictionary, bounds: AABB, paren
 	laje.add_child(forma)
 	laje.position = origin + Vector3(0, float(spec.get("piso", 0.0)) - 0.1, 0)
 	laje.rotation.y = yaw
-	parent.add_child(laje)
+	parent.add_child(laje, true)
 
 
 ## Quanto a peça posta (`bounds`, de `instanciar`) é maior que a medida do

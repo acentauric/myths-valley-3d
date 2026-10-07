@@ -29,3 +29,23 @@ introduziu outros bloqueios, sem resolver a ponte.
 Logs: `D:/MythsValleyPlaytestRuns/passeio125-baseline.log` e
 `passeio-clearance2.log`. A #125 permanece aberta até o portão completo
 passar; a #142 conserva as capturas de cinco contornos em `scratch/cercas142`.
+
+## Conclusão em 07/10/2026
+
+As soleiras alinhadas da igreja e a projeção física dos troncos inclinados
+foram corrigidas na fatia `ca870ec`. A ponte ainda oferecia a quina do corrimão
+como passagem: retirar suas faces superiores não excluía a pegada da madeira.
+Os dois corrimãos agora entram como obstáculos proporcionais ao modelo;
+o tabuleiro, a geometria física importada e as juntas continuam intactos.
+As lajes recebem nomes legíveis, inclusive quando há duas pontes.
+
+`colisoes_de_passeio` passa em 87 s, `navegacao` em 57 s e
+`rota_da_fazenda` em 61 s, sem erro de script. O novo portão
+`travessia_da_ponte_central` anda as duas rotas que prendiam e cruza
+ambas as cabeceiras pelo eixo com a cápsula real; zero presos.
+`--sem-corrimaos` restaura o defeito em memória: o corrimão prende
+novamente o corpo, e o portão reprova. Não foi adicionada exceção para cerca.
+
+Com a prova física da Candinha, os limites reorganizados e as cinco capturas
+já conferidas, as #125 e #142 satisfazem seus critérios. A #99 ainda aguarda
+a execução da bateria inteira; a arte específica do cemitério é a #111.

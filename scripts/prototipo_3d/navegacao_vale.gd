@@ -155,7 +155,27 @@ func _assar() -> void:
 	_casco_do_saveiro(fonte)
 	_alicerces(fonte)
 	_corrimaos_das_pontes(fonte)
+	_obstaculos_das_pontes(fonte)
 	NavigationServer3D.bake_from_source_geometry_data_async(_malha, fonte, _ao_assar)
+
+
+## O tabuleiro fica livre; a pegada dos corrimãos não vira piso nem atalho
+## pela quina. O raio da malha dá a folga física ao lado da madeira.
+func _obstaculos_das_pontes(fonte: NavigationMeshSourceGeometryData3D) -> void:
+	for ponte in _mundo.pontes.values():
+		var modelo: Node3D = (ponte.get("modelos", {}) as Dictionary).get("de_pe")
+		if modelo == null or not modelo.visible or not modelo.has_meta("piso_do_tabuleiro"):
+			continue
+		var centro: Vector3 = ponte.centro
+		var eixo: Vector3 = ponte.ao_longo
+		var lado := Vector3(-eixo.z, 0, eixo.x)
+		var fator := float(ponte.comprimento) / 9.0
+		var piso := float(modelo.get_meta("piso_do_tabuleiro"))
+		for sinal: float in [-1.0, 1.0]:
+			var contorno := PackedVector3Array()
+			for canto in [Vector2(-4.5, 0.5), Vector2(4.5, 0.5), Vector2(4.5, 1.1), Vector2(-4.5, 1.1)]:
+				contorno.append(centro + (eixo * canto.x + lado * canto.y * sinal) * fator)
+			fonte.add_projected_obstruction(contorno, piso - 0.2, ALTURA + 0.4, false)
 
 
 ## O corrimão importado não é piso. Remover suas faces da fonte evita

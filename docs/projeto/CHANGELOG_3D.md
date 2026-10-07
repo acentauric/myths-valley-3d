@@ -2255,3 +2255,18 @@ ampliado, ancoragem, moldura e clique real no último atalho. Verde em 3 s;
 o catálogo contém 775 campos em 45 arquivos. Capturas gráficas em
 `scratch/interfaces-secundarias/`: controles a 65% e apoios a 150%.
 A #140 continua aberta para a revisão das demais telas e combinações globais.
+
+### 07/10/2026: cercas e rotas livres (#125, #142)
+
+As cercas do paisagismo têm corpo correspondente ao desenho e entram na
+malha; Candinha percorre a rota até Zefa. Os contornos respeitam esquinas,
+reservas e entradas, com apoio no relevo e cinco vistas reais conferidas.
+As últimas travadas na igreja e no corrimão central foram resolvidas sem
+retirar colisões nem criar exceções. Corrimãos entram como obstáculos
+proporcionais ao GLB, preservando o tabuleiro e as juntas.
+
+`colisoes_de_passeio` 87 s, `navegacao` 57 s e `rota_da_fazenda` 61 s verdes.
+`travessia_da_ponte_central` percorre rotas e ambas as cabeceiras; o mutante
+sem obstáculos reproduz a travada no corrimão. Detalhes e evidências em
+`docs/testes/CERCAS_E_CIRCULACAO.md`. Encerrar #125 e #142; a bateria completa
+exigida pela #99 continua pendente.
