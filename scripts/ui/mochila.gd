@@ -41,6 +41,8 @@ var abrir_documento: Callable = Callable()
 ## `Vida.esta_lendo` e da tecla da mão. Se uma quarta aparecer, ela merece uma
 ## casa só em vez de um `Callable` por arquivo.
 var alguem_fala: Callable = Callable()
+## A tela pergunta ao dono dos controles, sem conhecer a tabela do projeto.
+var letra_de_fechar: Callable = Callable()
 
 const COLUNAS := 10
 ## Espaço menor que antes: dez colunas de 34px não cabiam nos 640 da viewport
@@ -785,9 +787,13 @@ func _atualizar() -> void:
 	elif _pego >= 0:
 		_rodape.text = "[E] soltar aqui · [Esc] desistir"
 	else:
-		_rodape.text = "[setas] escolher · [E] arrumar · [F] vestir ou comer · [I] fechar"
+		_rodape.text = tr("[setas] escolher · [E] arrumar · [F] vestir ou comer · [%s] fechar") % _letra_de_fechar()
 		if _ultimo_clique >= 0 and _ultimo_clique == _cursor:
-			_rodape.text = "clique de novo para vestir ou comer · arraste para arrumar · [I] fechar"
+			_rodape.text = tr("clique de novo para vestir ou comer · arraste para arrumar · [%s] fechar") % _letra_de_fechar()
+
+
+func _letra_de_fechar() -> String:
+	return str(letra_de_fechar.call()) if letra_de_fechar.is_valid() else "I"
 
 
 ## Reza, bênção, comida, poção, pacto, oferenda: tudo que está fazendo efeito

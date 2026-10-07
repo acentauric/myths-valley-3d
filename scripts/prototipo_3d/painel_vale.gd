@@ -22,8 +22,7 @@ extends CanvasLayer
 ##   o painel aberto (ver criatura_vale.gd), e a peçonha não corre em quem lê.
 ## - A ABA DE TRABALHO NÃO EXISTE AINDA: ela é do `Terrenos` e do `Povoado`,
 ##   que não atravessaram (#9, #13).
-## - A ABA "JOGO" não pergunta a vaga: no vale ela foi escolhida na abertura
-##   (#7). E a porta dela é o botão JOGO do canto do painel, e não o Esc — no
+## - A ABA "JOGO" permite trocar a vaga com uma segunda confirmacao (#70). E a porta dela é o botão JOGO do canto do painel, e não o Esc — no
 ##   vale o Esc é da câmera. Continua fora do giro das setas, pela razão do 2D:
 ##   quem lê a checklist não pode encostar no botão de fechar o jogo.
 
@@ -34,6 +33,10 @@ signal pediu(acao: String)
 
 const Atalhos = preload("res://scripts/prototipo_3d/atalhos.gd")
 const Identidade = preload("res://scripts/prototipo_3d/identidade.gd")
+const IdiomaMenu = preload("res://scripts/prototipo_3d/idioma_menu.gd")
+const VAGAS_TEXTOS := "res://data/vagas_no_jogo.json"
+var _textos_vagas: Dictionary = {}
+
 const BancadasVale = preload("res://scripts/prototipo_3d/bancadas_vale.gd")
 
 const COR_TITULO := Color("d6ba78")
@@ -44,8 +47,8 @@ const COR_FIXADA := Color("9fd89a")
 const COR_FUNDO := Color(0.055, 0.085, 0.075, 0.96)
 const COR_BORDA := Color(0.84, 0.73, 0.47, 0.8)
 
-enum Aba { MISSOES, CARTAS, OBRAS, OFICINA, COZINHA, VENDA, TRABALHO, AJUSTES, SAVEIRO }
-const NOME_DA_ABA := ["Missões", "Cartas", "Obras", "Oficina", "Cozinha", "Venda", "Trabalho", "Jogo", "Saveiro"]
+enum Aba { MISSOES, CARTAS, OBRAS, OFICINA, COZINHA, VENDA, TRABALHO, AJUSTES, SAVEIRO, VAGAS }
+const NOME_DA_ABA := ["Missões", "Cartas", "Obras", "Oficina", "Cozinha", "Venda", "Trabalho", "Jogo", "Saveiro", "Vagas"]
 
 ## Maior que a do 2D desde que a aba de missões virou DIÁRIO, com a lista e a
 ## página da missão lado a lado: cabe em 1280×720 com folga de 100 e de 50.
@@ -83,6 +86,7 @@ const ACOES := [
 		"dica": "Guarda a partida e fecha o jogo."},
 	{"rotulo": "Destravar o boneco", "acao": "destravar",
 		"dica": "Tira você de onde estiver preso e põe na última terra firme por onde passou."},
+	{"rotulo": "Trocar de vaga", "acao": "vagas", "dica": ""},
 ]
 
 var aberto: bool = false
@@ -205,8 +209,8 @@ func _unhandled_input(evento: InputEvent) -> void:
 ## o jogador no lugar certo — menu com aba morta é menu que ensina a ignorar
 ## menu. A aba do jogo é sozinha: aberta, é a única da lista (ver o 2D).
 func abas_validas() -> Array:
-	if _aba == Aba.AJUSTES:
-		return [Aba.AJUSTES]
+	if _aba in [Aba.AJUSTES, Aba.VAGAS]:
+		return [_aba]
 	var lista: Array = [Aba.MISSOES]
 	if not Cartas.sabidas.is_empty():
 		lista.append(Aba.CARTAS)
@@ -247,6 +251,7 @@ func _lista_atual() -> Array:
 		Aba.COZINHA: return Cozinha.receitas()
 		Aba.VENDA: return o_que_o_balcao_tem()
 		Aba.SAVEIRO: return saveiro.o_que_compra() if saveiro != null else []
+		Aba.VAGAS: return range(1, Salvamento.QUANTOS_SLOTS + 1)
 		_: return ACOES + CAMPOS
 
 
@@ -354,6 +359,9 @@ func _confirmar() -> void:
 				return
 			if not fazer_a_acao(ACOES[_cursor]):
 				return
+		Aba.VAGAS:
+			_confirmar_vaga()
+			return
 		Aba.SAVEIRO:
 			# O MESTRE COMPRA UM, pelo preço dele; o porquê de não comprar vai
 			# para a linha de aviso.
@@ -411,6 +419,11 @@ func fazer_a_acao(acao: Dictionary) -> bool:
 	_confirmando = -1
 	var qual := str(acao.get("acao", ""))
 	match qual:
+		"vagas":
+			_aba = Aba.VAGAS
+			_cursor = 0
+			_redesenhar()
+			return true
 		"salvar":
 			# O aviso sai mesmo dando certo: salvar é ação em que nada muda na
 			# tela, e ação sem retorno é a que se aperta três vezes (ver o 2D).
@@ -571,7 +584,7 @@ func _montar_abas() -> void:
 		linha.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 		linha.custom_minimum_size = Vector2(0, ALTURA_DA_LINHA + 4.0)
 		linha.alignment = HORIZONTAL_ALIGNMENT_LEFT
-		linha.text = ("▾ " if aberta else "▸ ") + str(NOME_DA_ABA[qual])
+		linha.text = ("▾ " if aberta else "▸ ") + (texto_vagas("titulo") if qual == Aba.VAGAS else str(NOME_DA_ABA[qual]))
 		var conta := _conta_da_aba(qual)
 		if conta != "":
 			linha.text += "    " + conta
@@ -623,7 +636,7 @@ func _estilo_da_aba(aberta: bool, realce: bool) -> StyleBoxFlat:
 
 
 func _ir_para_o_jogo() -> void:
-	_aba = Aba.MISSOES if _aba == Aba.AJUSTES else Aba.AJUSTES
+	_aba = Aba.AJUSTES if _aba == Aba.VAGAS else (Aba.MISSOES if _aba == Aba.AJUSTES else Aba.AJUSTES)
 	_cursor = 0
 	_confirmando = -1
 	_aviso = ""
@@ -659,7 +672,7 @@ func _redesenhar() -> void:
 
 	_montar_abas()
 	_titulo.text = "Painel  ›  %s" % str(NOME_DA_ABA[_aba])
-	_botao_jogo.text = "‹ VOLTAR" if _aba == Aba.AJUSTES else "JOGO"
+	_botao_jogo.text = "‹ VOLTAR" if _aba in [Aba.AJUSTES, Aba.VAGAS] else "JOGO"
 	# O diário só existe na aba de missões; nela a lista estreita e a dica de
 	# baixo some, porque o diário é a dica, inteira.
 	var no_diario := _aba == Aba.MISSOES
@@ -679,6 +692,7 @@ func _redesenhar() -> void:
 		Aba.COZINHA: _desenhar_cozinha()
 		Aba.VENDA: _desenhar_venda()
 		Aba.SAVEIRO: _desenhar_saveiro()
+		Aba.VAGAS: _desenhar_vagas()
 		_: _desenhar_ajustes()
 
 	_rolar_ate_o_cursor()
@@ -1182,7 +1196,7 @@ func _desenhar_ajustes() -> void:
 	_adicionar_linha("", COR_TEXTO, true)
 	for i in ACOES.size():
 		var pedindo := _confirmando == i
-		var rotulo: String = str(ACOES[i]["rotulo"])
+		var rotulo: String = texto_vagas("acao") if ACOES[i]["acao"] == "vagas" else str(ACOES[i]["rotulo"])
 		if pedindo:
 			rotulo = "%s — aperte E de novo para confirmar" % rotulo
 		_adicionar_linha("» %s" % rotulo, COR_CURSOR if i == _cursor else (COR_FIXADA if pedindo else COR_TEXTO))
@@ -1205,8 +1219,51 @@ func _desenhar_ajustes() -> void:
 		_adicionar_campo(i)
 
 	var tudo: Array = ACOES + CAMPOS
-	_dica.text = _aviso if _aviso != "" else (str(tudo[_cursor]["dica"]) if _cursor < tudo.size() else "")
+	_dica.text = _aviso if _aviso != "" else (texto_vagas("dica_acao") if _cursor < ACOES.size() and ACOES[_cursor]["acao"] == "vagas" else (str(tudo[_cursor]["dica"]) if _cursor < tudo.size() else ""))
 	_rodape.text = "[W/S] escolher · [A/D] mudar o valor · [E] usar · [Esc] fechar"
+
+
+func texto_vagas(chave: String) -> String:
+	if _textos_vagas.is_empty():
+		var lido = JSON.parse_string(FileAccess.get_file_as_string(VAGAS_TEXTOS))
+		_textos_vagas = lido if lido is Dictionary else {}
+	return str(IdiomaMenu.campo(_textos_vagas.get(chave, {}), "texto", chave))
+
+
+func _rotulo_da_vaga(slot: int) -> String:
+	var nome := Partida.nome_da_vaga(slot) if Salvamento.existe_partida(slot) else texto_vagas("nova")
+	if nome.is_empty():
+		nome = str(Salvamento.ler(slot).get("Jogo", {}).get("nome_jogador", ""))
+	if nome.is_empty():
+		nome = texto_vagas("atual")
+	return texto_vagas("linha") % [slot, nome]
+
+
+func _desenhar_vagas() -> void:
+	_titulo.text = texto_vagas("titulo")
+	for i in Salvamento.QUANTOS_SLOTS:
+		var slot := i + 1
+		var rotulo := _rotulo_da_vaga(slot)
+		if slot == Salvamento.slot_atual:
+			rotulo += " (" + texto_vagas("atual") + ")"
+		_adicionar_linha(rotulo, COR_CURSOR if i == _cursor else COR_TEXTO)
+	_dica.text = _aviso if _aviso != "" else (texto_vagas("confirmar") % _rotulo_da_vaga(_cursor + 1) if _confirmando == _cursor else texto_vagas("dica_acao"))
+	_rodape.text = texto_vagas("rodape")
+
+
+func _confirmar_vaga() -> void:
+	var slot := _cursor + 1
+	if slot == Salvamento.slot_atual:
+		_aviso = texto_vagas("ja_atual")
+		_redesenhar()
+		return
+	if _confirmando != _cursor:
+		_confirmando = _cursor
+		_redesenhar()
+		return
+	# So emite apos a segunda confirmacao; o dono do mundo salva e troca.
+	fechar()
+	pediu.emit("vaga:%d" % slot)
 
 
 ## Há quanto tempo a partida foi guardada, em dia do Recôncavo (ver o 2D).

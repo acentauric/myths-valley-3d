@@ -160,3 +160,10 @@ gasto depois do vigor, que sem ele tira vida. De 04/10 a 06/10 a reserva espelho
 o vigor, e a comida perdeu o sentido. O HUD, o manual e o guia descrevem as
 quatro, e `tests/reservas_do_corpo.gd` cobre os custos, a troca da barra e a
 restauração.
+
+## Troca de vaga e teclas no jogo em 07/10/2026
+
+As #66 e #70 ficam concluídas: o rodapé da mochila usa o atalho vigente,
+e Jogo permite trocar de vaga mediante confirmação, salvando a origem e
+carregando o destino sem apagar os arquivos. Portões de mochila, painel,
+vagas e idiomas passaram; os mutantes reprovam sem tocar o perfil normal.

@@ -1,0 +1,57 @@
+{
+  "acao": {
+    "texto": "Trocar de vaga",
+    "texto_en": "Switch save slot",
+    "texto_es": "Cambiar de partida"
+  },
+  "dica_acao": {
+    "texto": "Salva a vaga atual e abre outra partida sem voltar ao menu.",
+    "texto_en": "Save the current slot and open another game without returning to the menu.",
+    "texto_es": "Guarda la partida actual y abre otra sin volver al menú."
+  },
+  "titulo": {
+    "texto": "Trocar de vaga",
+    "texto_en": "Switch save slot",
+    "texto_es": "Cambiar de partida"
+  },
+  "linha": {
+    "texto": "Vaga %d - %s",
+    "texto_en": "Slot %d - %s",
+    "texto_es": "Partida %d - %s"
+  },
+  "atual": {
+    "texto": "em uso",
+    "texto_en": "current",
+    "texto_es": "actual"
+  },
+  "nova": {
+    "texto": "partida nova",
+    "texto_en": "new game",
+    "texto_es": "partida nueva"
+  },
+  "confirmar": {
+    "texto": "Salvar esta partida e abrir %s? Aperte E de novo para confirmar.",
+    "texto_en": "Save this game and open %s? Press E again to confirm.",
+    "texto_es": "Guardar esta partida y abrir %s? Pulsa E otra vez para confirmar."
+  },
+  "rodape": {
+    "texto": "[W/S] escolher - [E] confirmar duas vezes - [Esc] cancelar",
+    "texto_en": "[W/S] select - [E] confirm twice - [Esc] cancel",
+    "texto_es": "[W/S] elegir - [E] confirmar dos veces - [Esc] cancelar"
+  },
+  "ja_atual": {
+    "texto": "Esta vaga já está em uso.",
+    "texto_en": "This slot is already in use.",
+    "texto_es": "Esta partida ya está en uso."
+  },
+  "save_failed": {
+    "texto": "Não foi possível salvar a partida atual. A vaga não foi trocada.",
+    "texto_en": "The current game could not be saved. The slot was not changed.",
+    "texto_es": "No se pudo guardar la partida actual. No se cambió de partida."
+  },
+  "load_failed": {
+    "texto": "Não foi possível ler esta vaga. A partida atual foi preservada.",
+    "texto_en": "This slot could not be read. The current game was preserved.",
+    "texto_es": "No se pudo leer esta partida. Se conservó la partida actual."
+  }
+}

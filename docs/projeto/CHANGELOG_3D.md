@@ -6,6 +6,13 @@ O teste passa a cobrar Candinha, Filo, Tonho, Zefa, arraial e recursos, incluind
 
 ## Em desenvolvimento — 07/10/2026 (experimento Jev)
 
+- **Mochila respeita remapeamento e Jogo troca de vaga (#66, #70).**
+  O rodapé consulta o atalho atual nos três idiomas. A seleção de vaga
+  pede confirmação, grava a partida atual e carrega o destino; cancelar
+  preserva a partida. Arquivo recusado e falha de gravação interrompem a troca.
+  Mochila, vagas, painel e idiomas passaram; ignorar remapeamento reprova
+  quatro verificações e retirar a confirmação reprova uma.
+
 - **Atalhos recebem plaquetas próprias (#122).** Letras laterais e números
   da mão usam creme opaco, tinta escura e borda dourada; ficam fora dos
   ícones e ignoram o mouse. A coluna reaplica a escala da plaqueta sem mudar

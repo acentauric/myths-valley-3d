@@ -710,6 +710,7 @@ func _ready() -> void:
 	lavoura.colheu.connect(_avisar_as_cadeias.bind("colheu"))
 	noite.deitou.connect(_ao_deitar)
 	Mochila.abrir_documento = _ler_documento
+	Mochila.letra_de_fechar = _letra_da_mochila
 	Dia.periodo_mudou.connect(_on_periodo_mudou)
 	# Os corpos de quem anda no vale entram na luz de dentro dos cômodos — agora
 	# que os moradores e o Pedro existem (ver `Interiores.marcar_os_corpos`).
@@ -2155,7 +2156,14 @@ func _soltar_o_jogador() -> void:
 	player.set_process_unhandled_input(true)
 
 
+func _letra_da_mochila() -> String:
+	return Atalhos.letra("mochila")
+
+
 func _ao_pedido_do_painel(acao: String) -> void:
+	if acao.begins_with("vaga:"):
+		_trocar_vaga(int(acao.trim_prefix("vaga:")))
+		return
 	match acao:
 		"menu":
 			_return_to_menu()
@@ -2166,6 +2174,24 @@ func _ao_pedido_do_painel(acao: String) -> void:
 			player._back_to_land()
 
 
+func _trocar_vaga(slot: int) -> void:
+	if slot < 1 or slot > Salvamento.QUANTOS_SLOTS or slot == Salvamento.slot_atual:
+		return
+	# Um arquivo recusado nao autoriza iniciar por cima da vaga de destino.
+	if Salvamento.existe_partida(slot) and Salvamento.ler(slot).is_empty():
+		hud.set_notice(painel.texto_vagas("load_failed"))
+		return
+	if Partida.tem_vaga() and not Partida.salvar():
+		hud.set_notice(painel.texto_vagas("save_failed"))
+		return
+	_saindo = true
+	_parar_o_jogador()
+	get_tree().paused = false
+	Partida.comecar(slot)
+	# A nova instancia aplica a vaga selecionada depois do carregamento normal.
+	get_tree().change_scene_to_file(scene_file_path)
+
+
 ## Alguma tela de leitura aberta? É o que a peçonha pergunta (Vida.esta_lendo).
 func _lendo() -> bool:
 	return painel != null and painel.aberto
@@ -2174,6 +2200,8 @@ func _lendo() -> bool:
 func _exit_tree() -> void:
 	if Vida.esta_lendo == Callable(self, "_lendo"):
 		Vida.esta_lendo = Callable()
+	if Mochila.letra_de_fechar == Callable(self, "_letra_da_mochila"):
+		Mochila.letra_de_fechar = Callable()
 	if Mochila.abrir_documento == Callable(self, "_ler_documento"):
 		Mochila.abrir_documento = Callable()
 	for ligado in [[Cozinha.cozinhou, _ao_cozinhar], [Cozinha.comeu, _ao_comer], [Oficina.fabricou, _ao_fabricar],
