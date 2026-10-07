@@ -6,6 +6,12 @@ O teste passa a cobrar Candinha, Filo, Tonho, Zefa, arraial e recursos, incluind
 
 ## Em desenvolvimento — 07/10/2026 (experimento Jev)
 
+- **A vara decorativa deixa o centro do píer (#148).** A ferramenta de
+  pesca fica no catálogo; peixe, pote, piso e navegação são conferidos
+  na cena real. Todas as peças recebem metadata de origem para distinguir
+  modelos repetidos. Pier_legivel e navegacao passaram, e reintroduzir
+  a vara reprova. Captura em scratch/pier-legivel/pier.png conferida.
+
 - **Caramelo late ao reencontrar o jogador (#153).** Som mono espacial,
   atenuado pela distância, com intervalo mínimo e pequenas variações.
   Cede a diálogo, narração, pausa e carregamento; respeita efeitos/mute.

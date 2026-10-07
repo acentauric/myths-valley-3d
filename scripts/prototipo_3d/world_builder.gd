@@ -2110,8 +2110,6 @@ func _build_pecas() -> void:
 		ancoras["Cruzeiro"] = ground_position(_na_casa("Igreja", Vector3(0, 0, 9.0)))
 	var farm: Vector3 = _region.get_feature_center("Fazenda", "area")
 	_adereco("carroca", ground_position(farm + Vector3(8.5, 0, -5.5)), -0.6)
-	var pier_direction: Vector3 = ancoras.get("PierDirecao", Vector3.FORWARD)
-	var pier_yaw := atan2(pier_direction.x, pier_direction.z)
 	_adereco("pote", _posicao_no_pier(-1.8, -3.0))
 	# Itens de mão espalhados como cenário (só no estilo Tripo, quando existirem).
 	if estilo_tripo():
@@ -2119,7 +2117,6 @@ func _build_pecas() -> void:
 			["enxada", farm + Vector3(5.6, 0.0, 1.2), 1.2],
 			["balde", ancoras["Poço"] + Vector3(1.3, 0, 0.4), 0.0],
 			["peixe", _posicao_no_pier(1.2, 2.0), 1.0],
-			["vara_pescar", _posicao_no_pier(0.0, 0.0), pier_yaw + 0.3],
 		]
 		for item in itens:
 			var item_position: Vector3 = item[1]

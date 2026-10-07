@@ -524,6 +524,7 @@ static func instanciar(chave: String, parent: Node, origin: Vector3, size: float
 		girado.add_child(node)
 		node = girado
 	node.name = chave.capitalize() + "Tripo"
+	node.set_meta("peca", chave)
 	parent.add_child(node)
 	var bounds := limites(node)
 	var factor := 1.0

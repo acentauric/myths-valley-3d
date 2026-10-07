@@ -189,3 +189,11 @@ e hash em assets/audio/animais/ORIGEM.md. Latido e bichos nos dois estilos
 passaram; falsificadores reproduzem repetição e ponto inválido de ronda.
 A ronda também evita a alternativa dentro de casa quando todas as amostras
 aleatórias são recusadas (#149 parcial; auditoria visual geral permanece).
+
+## Composição legível do píer em 07/10/2026
+
+A #148 está concluída: a vara decorativa central sai do píer. Catálogo
+e ferramenta de pesca, peixe, pote, piso e rotas permanecem. Pier_legivel
+e navegacao passaram, com captura conferida; recolocar a vara reprova.
+Toda instância de catálogo agora informa sua peça por metadata, inclusive
+itens sem LOD e instâncias cujo nome o Godot muda por duplicidade.
