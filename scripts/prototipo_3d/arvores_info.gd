@@ -134,6 +134,7 @@ func configurar(world: Node3D, jogador: Node3D, hud, hud_layer: Control) -> void
 		_por_quadra[quadra].append(_pontos.size())
 		_pontos.append({"especie": especie, "pos": pos})
 	_dica = DicaTecla.criar(hud.map_layer(), Atalhos.letra("interagir"), "Sobre a árvore")
+	_dica.set_meta("interacao_arvore", true)
 	add_to_group(FocoDoE.GRUPO)
 	_criar_balao_vida(hud.map_layer())
 	_stamina = float(_jogador.call("vigor_atual"))

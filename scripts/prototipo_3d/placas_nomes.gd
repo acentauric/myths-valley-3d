@@ -38,6 +38,12 @@ extends Node
 const SuavizadorDeTela = preload("res://scripts/prototipo_3d/suavizador_de_tela.gd")
 const PopupsDoMundo = preload("res://scripts/prototipo_3d/popups_do_mundo.gd")
 const FocoDoE = preload("res://scripts/prototipo_3d/foco_do_e.gd")
+const Camadas = preload("res://scripts/prototipo_3d/camadas.gd")
+## A árvore ganha espaço local; uma placa apagada precisa de mais folga para voltar.
+const FOLGA_ARVORE := 12.0
+const FOLGA_ARVORE_PARA_VOLTAR := 24.0
+const INTERVALO_OCLUSAO := 0.12
+const ESTABILIZAR_OCLUSAO := 0.18
 
 const MAXIMO_DE_PLACAS := 3
 ## SÓ DE PERTO (#90): inteira até PLACA_PERTO, esmaecendo até PLACA_LONGE, e nada
@@ -87,6 +93,7 @@ var _molas: Dictionary = {}
 var _alfa: Dictionary = {}
 ## Quem ganhou a vaga no quadro passado.
 var _vaga: Dictionary = {}
+var _oclusao: Dictionary = {}
 
 
 func _init() -> void:
@@ -117,6 +124,7 @@ func _process(delta: float) -> void:
 	var tela := get_viewport().get_visible_rect().size
 	var baloes: Array[Rect2] = []
 	var dicas: Array[Rect2] = []
+	var dicas_arvore: Array[Rect2] = []
 	# A coluna acima da placa de quem vai receber o E: é a da dica dele, e fica livre para ela.
 	var colunas: Array[Rect2] = []
 	var dono_do_e: Node3D = null
@@ -125,6 +133,9 @@ func _process(delta: float) -> void:
 	if liberado:
 		baloes = PopupsDoMundo.retangulos_dos_baloes(self)
 		dicas = PopupsDoMundo.retangulos(self, PopupsDoMundo.GRUPO_DICAS)
+		for dica: Node in get_tree().get_nodes_in_group(PopupsDoMundo.GRUPO_DICAS):
+			if dica is Control and dica.is_visible_in_tree() and bool(dica.get_meta("interacao_arvore", false)):
+				dicas_arvore.append((dica as Control).get_global_rect())
 		dono_do_e = _dono_do_e()
 		da_missao = _da_missao()
 		var coluna := _coluna_da_dica(camera, dono_do_e, dicas)
@@ -149,6 +160,7 @@ func _process(delta: float) -> void:
 			_molas.erase(morador)
 			_alfa.erase(morador)
 			_vaga.erase(morador)
+			_oclusao.erase(morador)
 			continue
 		var topo := morador.global_position + Vector3(0, float(morador.get("altura")) + ACIMA_DA_CABECA, 0)
 		if not liberado or camera.is_position_behind(topo):
@@ -167,11 +179,16 @@ func _process(delta: float) -> void:
 			continue
 		if distancia >= (DISTANCIA_DE_QUEM_IMPORTA if importa else PLACA_LONGE):
 			continue
+		if _nome_ja_identificado(morador) or not _visivel_para_camera(morador, camera):
+			_apagar_ja(morador)
+			continue
 		var tamanho: Vector2 = (_placas[morador] as PanelContainer).get_combined_minimum_size()
 		var caixa := Rect2(ancora - Vector2(tamanho.x * 0.5, tamanho.y), tamanho)
 		# A placa inteira na tela: cortada pela borda, ou meio sob o HUD, não é placa. (Com histerese: quem
 		# já tem a placa aguenta mais.)
 		var tinha := _vaga.has(morador)
+		if _concorre_com_arvore(caixa, dicas_arvore, tinha):
+			continue
 		var tolerancia := SOBREPOSTA_PARA_SAIR if tinha else SOBREPOSTA_PARA_ENTRAR
 		var area_util := util.grow(MARGEM_DE_QUEM_JA_TEM) if tinha else util
 		if not area_util.encloses(caixa) or _encosta_em_algum(caixa, paineis, tolerancia) or _encosta_em_algum(caixa, baloes, tolerancia):
@@ -276,6 +293,76 @@ func _encosta_em_algum(caixa: Rect2, outros: Array[Rect2], tolerancia: float) ->
 	for outro in outros:
 		if PopupsDoMundo.cobertura(caixa, outro) > tolerancia * caixa.get_area():
 			return true
+	return false
+
+
+## Identidade do alvo, não busca no texto traduzido: somente o nome redundante sai.
+func _nome_ja_identificado(morador: Node3D) -> bool:
+	for dica: Node in get_tree().get_nodes_in_group(PopupsDoMundo.GRUPO_DICAS):
+		if dica is Control and dica.is_visible_in_tree() and dica.has_meta("nome_identificado") and dica.get_meta("nome_identificado") == morador:
+			return true
+	return false
+
+
+static func _concorre_com_arvore(caixa: Rect2, dicas: Array[Rect2], tinha: bool) -> bool:
+	var folga := FOLGA_ARVORE if tinha else FOLGA_ARVORE_PARA_VOLTAR
+	for dica in dicas:
+		if caixa.intersects(dica.grow(folga)):
+			return true
+	return false
+
+
+## Cabeça e torso: pessoa parcialmente visível mantém nome; três amostras cobertas
+## o escondem. Áreas de interação, corpos dos moradores e folhagem marcada não são
+## paredes. A consulta é espaçada e exige estabilidade nas bordas dos obstáculos.
+func _visivel_para_camera(morador: Node3D, camera: Camera3D) -> bool:
+	var agora := Time.get_ticks_msec() / 1000.0
+	var estado: Dictionary = _oclusao.get(morador, {})
+	if not estado.is_empty() and agora < float(estado["proxima"]):
+		return bool(estado["visivel"])
+	var altura := float(morador.get("altura"))
+	var lado := camera.global_basis.x * 0.22
+	var base := morador.global_position
+	var pontos: Array[Vector3] = [base + Vector3.UP * altura * 0.9,
+		base + Vector3.UP * altura * 0.55 - lado,
+		base + Vector3.UP * altura * 0.55 + lado]
+	var excluir: Array[RID] = []
+	if _jogador is CollisionObject3D:
+		excluir.append((_jogador as CollisionObject3D).get_rid())
+	for outro in _placas.keys():
+		if is_instance_valid(outro) and outro is CollisionObject3D:
+			excluir.append((outro as CollisionObject3D).get_rid())
+	var visivel := false
+	for ponto in pontos:
+		if _raio_livre(camera, ponto, excluir):
+			visivel = true
+			break
+	if estado.is_empty():
+		estado = {"visivel": visivel, "candidato": visivel, "desde": agora}
+	elif bool(estado["candidato"]) != visivel:
+		estado["candidato"] = visivel
+		estado["desde"] = agora
+	elif agora - float(estado["desde"]) >= ESTABILIZAR_OCLUSAO:
+		estado["visivel"] = visivel
+	estado["proxima"] = agora + INTERVALO_OCLUSAO
+	_oclusao[morador] = estado
+	return bool(estado["visivel"])
+
+
+func _raio_livre(camera: Camera3D, ponto: Vector3, ignorados: Array[RID]) -> bool:
+	var excluir := ignorados.duplicate()
+	for _tentativa in 8:
+		var consulta := PhysicsRayQueryParameters3D.create(camera.global_position, ponto,
+			Camadas.MUNDO_E_CAMERA, excluir)
+		consulta.hit_from_inside = true
+		var achou := camera.get_world_3d().direct_space_state.intersect_ray(consulta)
+		if achou.is_empty():
+			return true
+		var corpo = achou.get("collider")
+		if corpo is Node and (corpo.is_in_group("folhagem") or bool(corpo.get_meta("nao_oculta_nomes", false))):
+			excluir.append(achou["rid"])
+			continue
+		return false
 	return false
 
 

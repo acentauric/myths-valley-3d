@@ -335,8 +335,10 @@ func _o_teto() -> void:
 	# Com um balão no ar são duas (o balão e o nome de quem fala já são dois popups de personagem).
 	var com_balao := _baloes_no_ar()
 	var esperadas := teto - (1 if com_balao > 0 else 0)
-	_conferir(_placas_ligadas() == esperadas or _baloes_no_ar() != com_balao,
-		"só %d placas ligadas com %d moradores à vista e %d balão(ões) no ar: o teto é de %d, e não de esconder tudo" % [_placas_ligadas(), elegiveis, com_balao, teto])
+	# #124/#127: rótulo redundante e moradores atrás de cenário não ocupam vagas;
+	# teto não obriga a mostrar nome oculto. A matriz sintética verifica os nomes úteis.
+	_conferir((_placas_ligadas() > 0 and _placas_ligadas() <= esperadas) or _baloes_no_ar() != com_balao,
+		"a roda ficou sem nomes úteis ou ultrapassou o teto após supressões contextuais")
 	print("  teto: %d moradores à vista, no máximo %d placas ligadas (teto %d)" % [elegiveis, maior, teto])
 
 
@@ -384,10 +386,26 @@ func _ninguem_cobre_ninguem(aqui: Vector3) -> void:
 	var dica_antes: Rect2 = teclas._dica.get_global_rect()
 	var atras: Node3D = roda[3]
 	var onde_estava_atras: Vector3 = pontos[3]
+	# Esta pessoa só disputa identificação na tela. Na profundidade livre ela
+	# pode ficar ao alcance: não deve disputar a conversa durante esta fixture.
+	var processo_de_atras := atras.process_mode
+	atras.process_mode = Node.PROCESS_MODE_DISABLED
 	var seta = vale.get_node_or_null("SetaMissao")
 	# A cabeça de quem está atrás aparece 8 px acima da placa do dono, sob a dica: o pé dele, pela câmera.
-	var ancora_de_tras := Vector2(placa_do_dono.get_global_rect().get_center().x, placa_do_dono.get_global_rect().position.y - 8.0)
-	_fixar(atras, _pe_pela_tela(atras, ancora_de_tras))
+	var ancora_de_tras := Vector2(dica_antes.get_center().x, dica_antes.end.y - 4.0)
+	# #127: o antigo ponto a 16 m ficava atrás de uma construção. Aqui se mede
+	# disputa na tela: escolha uma profundidade livre na mesma região projetada.
+	var montou_livre := false
+	for profundidade in [16.0, 14.0, 12.0, 10.0, 8.0, 6.0]:
+		var cabeca: Vector3 = camera.project_ray_origin(ancora_de_tras) + camera.project_ray_normal(ancora_de_tras) * profundidade
+		var pe: Vector3 = cabeca - Vector3.UP * (float(atras.get("altura")) + 0.1)
+		_fixar(atras, pe)
+		await _quadros(2)
+		placas._oclusao.erase(atras)
+		if placas._visivel_para_camera(atras, camera):
+			montou_livre = true
+			break
+	_conferir(montou_livre, "não encontrou posição visível para disputar nome e dica; cenário bloqueia a pessoa (#127)")
 	if seta != null:
 		seta.definir_alvo(atras.global_position, "")
 	await _esperar(2.0)
@@ -417,7 +435,7 @@ func _ninguem_cobre_ninguem(aqui: Vector3) -> void:
 		str(dono_visivel.visible), dono_visivel.modulate.a, str(dono_visivel.get_global_rect()), str(placa_de_tras.visible), placa_de_tras.modulate.a,
 		str(placa_de_tras.get_global_rect()), str(teclas._dica.get_global_rect()), _placas_ligadas(), placas.maximo]
 	_conferir(not (placa_de_tras.visible and placa_de_tras.modulate.a > 0.25), "com a dica de volta, a placa de quem está atrás, na coluna da dica, continuou na tela" + estado_das_placas)
-	_conferir(dono_visivel.visible and dono_visivel.modulate.a > 0.95, "com a dica de volta, o dono do E ficou sem a placa dele" + estado_das_placas)
+	_conferir(not dono_visivel.visible, "E já identifica o dono: a placa redundante voltou (#124)" + estado_das_placas)
 	_conferir(absf(teclas._dica.get_global_rect().position.y - dica_antes.position.y) <= 3.0, "a dica do E não voltou ao lugar de antes (y=%.0f, e era y=%.0f)%s" % [teclas._dica.get_global_rect().position.y, dica_antes.position.y, estado_das_placas])
 	var placa: Control = placas._placas[dele]
 	var cobriria_longe := false
@@ -427,16 +445,14 @@ func _ninguem_cobre_ninguem(aqui: Vector3) -> void:
 		await _esperar(2.0)
 		var da_placa: Rect2 = placa.get_global_rect()
 		var da_dica: Rect2 = teclas._dica.get_global_rect()
-		_conferir(placa.visible and placa.modulate.a > 0.95 and teclas._dica.visible,
-			"com a câmera a %.0f m, a placa (%s) ou a dica do E (%s) não está na tela" % [distancia, str(placa.visible), str(teclas._dica.visible)])
-		_conferir(not da_placa.intersects(da_dica), "com a câmera a %.0f m, a dica do E cobre a placa de nome (%s sobre %s)" % [distancia, str(da_dica), str(da_placa)])
-		_conferir(da_dica.end.y <= da_placa.position.y + 1.0, "a dica do E não sobe acima da placa (dica até y=%.0f, placa desde y=%.0f)" % [da_dica.end.y, da_placa.position.y])
+		_conferir(not placa.visible and teclas._dica.visible,
+			"com a câmera a %.0f m, a dica deve identificar o dono sem placa duplicada (#124)" % distancia)
 		# O que a dica faria SEM subir: a conta crua de antes (o ponto 0,45 m acima da cabeça).
 		var ponto := dele.global_position + Vector3.UP * (float(dele.get("altura")) + 0.45)
 		var crua := Rect2(camera.unproject_position(ponto) - Vector2(da_dica.size.x * 0.5, da_dica.size.y), da_dica.size)
 		if crua.intersects(da_placa):
 			cobriria_longe = true
-	_conferir(cobriria_longe or falsificar, "nenhuma das câmeras testadas faz a conta crua da dica cobrir a placa: o portão não exercita a regra")
+	# #124 substitui a regra antiga de empilhar nome do dono e dica: só a dica aparece.
 	jogador.set("_distance", 8.0)
 	jogador.call("_apply_camera")
 
@@ -448,8 +464,8 @@ func _ninguem_cobre_ninguem(aqui: Vector3) -> void:
 	_conferir(not placa.visible, "o morador está falando e a placa de nome dele continua na tela (balão com o nome)")
 	var do_balao: Rect2 = dele.balao.retangulo()
 	var da_dica: Rect2 = teclas._dica.get_global_rect()
-	_conferir(teclas._dica.visible and not do_balao.intersects(da_dica), "o balão (%s) cobre a dica do E (%s)" % [str(do_balao), str(da_dica)])
-	_conferir(do_balao.end.y <= da_dica.position.y + 1.0, "o balão não deixa lugar para a dica embaixo dele (balão até y=%.0f, dica desde y=%.0f)" % [do_balao.end.y, da_dica.position.y])
+	_conferir(not teclas._dica.visible or teclas.perto() != dele,
+		"a fala ativa ainda oferece E para iniciar outra conversa com o mesmo morador (#121)")
 	var sob_o_balao := 0
 	var ligadas := 0
 	for outro in placas._placas.values():
@@ -466,6 +482,7 @@ func _ninguem_cobre_ninguem(aqui: Vector3) -> void:
 	await _esperar(0.6)
 	_fixar(dele, posto_de_dele)
 	_fixar(atras, onde_estava_atras)
+	atras.process_mode = processo_de_atras
 	if seta != null:
 		seta.limpar()
 

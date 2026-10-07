@@ -103,6 +103,7 @@ func _process(_delta: float) -> void:
 		return
 	var camera := get_viewport().get_camera_3d()
 	var altura := float(_perto.get("altura")) if _perto.get("altura") != null else 1.75
+	_dica.set_meta("nome_identificado", _perto if _nome_de(_perto) != "" else null)
 	DicaTecla.mostrar_em(_dica, camera, _perto.global_position + Vector3.UP * (altura + ACIMA_DA_CABECA), _dica_de(_perto))
 
 
@@ -122,6 +123,9 @@ func _mais_perto() -> Node3D:
 		var morador := no as Node3D
 		if morador == null or not is_instance_valid(morador) or not morador.is_visible_in_tree() \
 				or not morador.can_process():
+			continue
+		# Nova conversa espera a fala acabar; o E da caixa Dialogo é dela (#121).
+		if _fala_ativa(morador):
 			continue
 		var falta := morador.global_position - _jogador.global_position
 		if absf(falta.y) > 2.0:
@@ -226,7 +230,7 @@ func _unhandled_key_input(event: InputEvent) -> void:
 ## com ele — o pirão da Dona Filó levado ao Tonho —, e só depois abrir a fila
 ## dele, que de outro modo tomaria a conversa.
 func usar(morador: Node3D) -> void:
-	if morador == null or _perguntando_presente:
+	if morador == null or _perguntando_presente or _fala_ativa(morador):
 		return
 	_dica.visible = false
 	var cadeias := get_tree().get_nodes_in_group(CadeiaDeMissoes.GRUPO)
@@ -254,6 +258,10 @@ func usar(morador: Node3D) -> void:
 	if morador.has_method("conversar"):
 		morador.conversar()
 		_registrar_conversa(morador)
+
+
+func _fala_ativa(morador: Node3D) -> bool:
+	return morador.has_method("falando_agora") and bool(morador.call("falando_agora"))
 
 
 func _id_social(morador: Node3D) -> String:

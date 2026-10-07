@@ -6,6 +6,15 @@ O teste passa a cobrar Candinha, Filo, Tonho, Zefa, arraial e recursos, incluind
 
 ## Em desenvolvimento — 07/10/2026 (experimento Jev)
 
+- **Nomes, fala e E obedecem à mesma matriz (#121, #124, #127, #132).**
+  Uma pessoa falando não oferece nova conversa; o avanço do Dialogo continua
+  disponível. O E identifica seu dono sem repetir a plaquinha. Árvores ocultam
+  somente nomes concorrentes na região da dica, com folga para voltar.
+  Três raios para cabeça e torso ocultam pessoas cobertas pelo cenário; uma
+  amostra livre preserva quem aparece parcialmente. Consultas espaçadas e
+  histerese estabilizam as bordas. Matriz, foco, placas, afinidade e popups
+  passaram; carregar o comportamento anterior reprova quatro regras centrais.
+
 - **Mochila e baú recolhem o HUD externo (#143).** Minimapa, atalhos, estado,
   dicas e avisos somem pelo ancestral da interface; voltar não revive filhos
   que expiraram. Os testes de mochila e de baú com boneco passaram.
@@ -14,10 +23,10 @@ O teste passa a cobrar Candinha, Filo, Tonho, Zefa, arraial e recursos, incluind
   o prazo anterior; repetir não o reinicia. Pedro fala somente no balão,
   encerrado pela fila com seu áudio e pausas preservados. Os testes de prazo
   e fila passaram; retirar a expiração em memória reprova o recebimento.
-- **Avisos contextuais cedem ao E e à fala (#132, parcial).** A matriz distingue
+- **Avisos contextuais cedem ao E e à fala (#132).** A matriz distingue
   HUD essencial, interação, fala, aviso e nome. Um aviso só se recolhe se
-  competir pelo mesmo retângulo, e volta se ainda for válido. As regras de
-  redundância de nomes e de fala em andamento seguem em revisão.
+  competir pelo mesmo retângulo, e volta se ainda for válido. A integração
+  com nomes, interação de árvore e fala em andamento está concluída.
 
 - **O E registra a conversa diária e permite presentes confirmados (#49).**
   Conversas comuns e de missão aumentam a afinidade uma vez por dia. A missão

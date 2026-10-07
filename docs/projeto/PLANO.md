@@ -41,8 +41,10 @@ Todas as cadeias de missões do diretório de dados e os recursos declaram cober
 Em 07/10/2026, #133, #143 e #157 foram verificadas com avisos_com_prazo,
 falas_em_fila, mochila e boneco_da_mochila: prazo de recebimentos, fim da
 duplicação de Pedro e ocultação do HUD durante mochila/baú. A matriz da #132
-já faz avisos cederem à fala e ao E; nomes concorrentes e oclusão permanecem
-na revisão integrada com #121, #124 e #127.
+já faz avisos cederem à fala e ao E. #121, #124, #127 e #132 foram verificadas
+com matriz_dos_baloes, foco_do_e, placas_e_baloes, afinidade_interacao_3d e
+popups_na_tela: fala ativa, nome redundante, região da árvore e oclusão.
+A matriz e seus limiares estão em docs/testes/PRIORIDADES_DOS_BALOES.md.
 
 O board é a fonte dos critérios de aceite:
 [issues do projeto](https://github.com/acentauric/myths-valley-3d/issues).
