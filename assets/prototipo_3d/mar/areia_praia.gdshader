@@ -18,6 +18,8 @@ uniform vec3 umida : source_color = vec3(0.62, 0.55, 0.42);
 uniform vec3 cor_leito : source_color = vec3(0.91, 0.82, 0.56);
 // Fração da faixa (a partir da terra) em que a areia se desfaz sobre o chão.
 uniform float franja = 0.2;
+// A extremidade submersa também se desfaz sobre o leito, sem uma régua clara.
+uniform float franja_mar = 0.16;
 // Deslocamento da maré em metros: 0 na preamar, até -2,4 na baixa-mar.
 uniform float mare_offset_m = 0.0;
 varying vec2 mundo;
@@ -60,6 +62,9 @@ void fragment() {
 	float borda = clamp(UV.x / max(franja, 0.001), 0.0, 1.0);
 	float manchas = ruido(mundo * 0.5);
 	float graos = ruido(mundo * 5.0);
-	ALPHA = borda * 1.35 + (manchas - 0.5) * 0.6 + (graos - 0.5) * 0.35 - 0.18;
+	float terra = borda * 1.35 + (manchas - 0.5) * 0.6 + (graos - 0.5) * 0.35 - 0.18;
+	float mar = (1.0 - UV.x) / max(franja_mar, 0.001) * 1.35;
+	mar += (manchas - 0.5) * 0.6 + (graos - 0.5) * 0.35 - 0.18;
+	ALPHA = min(terra, mar);
 	ALPHA_SCISSOR_THRESHOLD = 0.5;
 }

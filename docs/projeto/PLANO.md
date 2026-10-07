@@ -5,6 +5,18 @@ raiz. O jogo 2D segue sua própria linha em `acentauric/myths-valley`.
 
 ## O que já roda
 
+A #138 tem acabamento irregular na extremidade marítima da areia, com
+prova gráfica e passagem/maré preservadas. A foz mantém emendas e impede
+fechar a issue: [TRANSICAO_DA_COSTA.md](../testes/TRANSICAO_DA_COSTA.md).
+
+A #9 avança parcialmente com compra/posse nativas: Zefa/Benedito, preços
+históricos, confirmação pelo E, desconto de favor na terra e persistência
+por vaga. O mapa mostra contornos cadastrais por âncora; a vila não se move.
+Compra, afinidade, save, vagas e mapa passam; retirar o consumidor de favor
+reprova. Construção portátil G/E, validação de assentamento e revisão visual
+dos contornos continuam pendentes, portanto a issue permanece aberta.
+Ver [TERRAS_POR_POSICAO.md](../testes/TERRAS_POR_POSICAO.md).
+
 A #151 reduz a repetição do chão verde, diminui o capim de forro e apoia
 a vegetação baixa na normal do relevo. A composição mantém densidades por
 ambiente e os tufos necessários ao cemitério. Cinco gates e a inspeção de

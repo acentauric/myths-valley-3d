@@ -6,6 +6,18 @@ O teste passa a cobrar Candinha, Filo, Tonho, Zefa, arraial e recursos, incluind
 
 ## Em desenvolvimento — 07/10/2026 (experimento Jev)
 
+- #138 (parcial): a extremidade da areia também se desfaz sobre o fundo
+  do mar. Renderização real comprova o recorte; mutante reprova duas
+  verificações. Travessia a pé/nado e maré passam. Emendas da foz seguem abertas.
+
+- #9 (parcial): posse e compra com o dono pelo E após conhecer a chapada.
+  Confirmação, preços históricos, vizinhança Zefa/Benedito e desconto de
+  Gente fina preservam missões, presentes e moradores. Save/vagas levam
+  posse própria; o mapa recebe contornos cadastrais verdes/âmbar por âncora.
+  Cinco gates passam e retirar o consumo do bônus reproduz duas falhas.
+  Construção portátil e revisão visual/geográfica continuam pendentes;
+  #9/#22 permanecem abertas. Nenhum asset pago foi gerado.
+
 - #151: chão verde recebe mistura rotacionada também perto da câmera;
   capim de forro varia de 60% a 95%; vegetação baixa acompanha a normal
   do chão. A missão do cemitério conserva seus oito tufos altos. Cinco
