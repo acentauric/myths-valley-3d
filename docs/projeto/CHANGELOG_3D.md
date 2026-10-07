@@ -22,6 +22,9 @@
   de dias: pedem a picareta de aço e o talento Mão de pedra, rendem duas pedras a
   cada quatro golpes, e a dica conta o trabalho ("Lajedo 12/96"). As árvores já
   seguiam a regra (madeira branca, de lei e dura, com nível e aço).
+- **Playtest de 07/10, sexta fatia: a voz do arremate.** O Pedro narra, na voz dele, a
+  fala de depois do convite lido (`pedro_convite_arremate`, gerada no ElevenLabs pela
+  ferramenta das falas do guia, com a leitura marcada para o v3).
 - **Playtest de 07/10, quarta fatia: a vila e as cercas.** A travessia do rio
   central volta à ponte grande de 26/09 (`ponte_grande`, o modelo de então
   recuperado); o rio grande fica com a ponte pequena de pé e a caída da obra. As

@@ -242,6 +242,10 @@ func _run() -> void:
 			var audio := str((fala as Dictionary).get("audio", ""))
 			_conferir(audio != "" and ResourceLoader.exists("res://assets/audio/vozes/%s.mp3" % audio),
 				"a linha do corpo '%s…' não tem a narração do Pedro ('%s')" % [str((fala as Dictionary).get("texto", "")).left(30), audio])
+		# E O ARREMATE DA CHEGADA, depois do convite lido, na voz dele (07/10).
+		var audio_do_arremate := str((pedro._cadeia.arremate as Dictionary).get("audio", ""))
+		_conferir(audio_do_arremate != "" and ResourceLoader.exists("res://assets/audio/vozes/%s.mp3" % audio_do_arremate),
+			"o arremate da chegada não tem a narração do Pedro ('%s')" % audio_do_arremate)
 	if explicou:
 		# A TELA ESCURECE E A BARRA DA VEZ ACENDE (#106): no respiro tudo apagado;
 		# cada linha seguinte acende a barra de que fala e apaga as outras; fechada

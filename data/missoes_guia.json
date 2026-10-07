@@ -391,6 +391,8 @@
     }
   ],
   "arremate": {
+    "audio": "pedro_convite_arremate",
+    "tts": "[skeptical] Só isso? \"Haverá um grande evento\" — e nem quem assina. [thoughtful] É da fazenda do outro lado do rio, que ninguém nunca viu o dono. Meus avós já decidiram que vão, e eu vou junto. [warmly] Até lá, cuide do que é seu: a roça cresce um palmo por dia regado. Eu volto pro píer — é lá que você me acha, e agora o arraial te conhece.",
     "texto": "Só isso? \"Haverá um grande evento\" — e nem quem assina. É da fazenda do outro lado do rio, que ninguém nunca viu o dono. Meus avós já decidiram que vão, e eu vou junto. Até lá, cuide do que é seu: a roça cresce um palmo por dia regado. Eu volto pro píer — é lá que você me acha, e agora o arraial te conhece.",
     "texto_en": "That's all? \"There will be a great event\" — and not even a signature. It's from the farm across the river, whose owner nobody has ever seen. My grandparents have already decided to go, and I'm going with them. Until then, look after what's yours: the field grows a hand's width every watered day. I'm heading back to the pier — that's where you'll find me, and now the village knows you.",
     "texto_es": "¿Eso es todo? \"Habrá un gran evento\", y ni siquiera la firma. Es de la hacienda del otro lado del río, cuyo dueño nadie ha visto nunca. Mis abuelos ya decidieron ir, y yo voy con ellos. Hasta entonces, cuida lo tuyo: el sembrado crece un palmo por cada día regado. Vuelvo al muelle: ahí me encuentras, y ahora el pueblo te conoce."

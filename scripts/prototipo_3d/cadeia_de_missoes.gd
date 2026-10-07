@@ -293,7 +293,9 @@ func correr(delta: float, _palavra_livre: bool = true) -> void:
 			# pedida: o Pedro só volta à vida de pescador depois de dizer a última
 			# frase do tutorial, e não com ela esperando a vez na fila.
 			_arremate_pedido = true
-			if not _falar("", str(arremate["texto"]), FilaDeFalas.Classe.MISSAO, "arremate:%d" % get_instance_id(),
+			# COM A VOZ DELE, quando o arremate a tem ("audio", a da chegada: 07/10, "crie um
+			# áudio para o Pedro narrar a interação depois que o jogador lê o convite").
+			if not _falar(str(arremate.get("audio", "")), str(arremate["texto"]), FilaDeFalas.Classe.MISSAO, "arremate:%d" % get_instance_id(),
 					{"ao_terminar": _arremate_dito}):
 				_arremate_dito()
 		else:
