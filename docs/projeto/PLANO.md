@@ -173,3 +173,10 @@ vagas e idiomas passaram; os mutantes reprovam sem tocar o perfil normal.
 A #79 foi conferida pelo portão audio_fade: troca, cancelamento, ganho,
 volume e mute durante a transição. A implementação existente satisfaz
 o aceite; o mutante que reduz a duração a 10 ms reprova três verificações.
+
+## Mapa do lobby restaurado em 07/10/2026
+
+A #147 fica concluída: os seis acessos laterais incluem Mapa no lobby em
+vídeo; clicar solicita a carga do cenário e abre seus pontos de interesse.
+A abertura inicial continua sem montar o vale. Lobby e mapa_fluxo verdes;
+remover o acesso em memória reprova, e três resoluções preservam os botões.

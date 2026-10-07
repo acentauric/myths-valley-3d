@@ -27,6 +27,8 @@ var _video_lobby: VideoStreamPlayer
 ## sobrevoo (`tools/prototipo_3d/sobrevoo/extrair_geometria.gd`, e os portões
 ## `sobrevoo_livre*` que o estendem), o `mapa_fluxo` e o `lobby_em_video`.
 static var lobby_3d_pedido := false
+static var mapa_apos_carga := false
+var _mapa_solicitado := false
 const VISUAL_PREFERENCES := "user://preferencias_visuais.cfg"
 const FLYOVER_SECONDS := 72.0
 ## Metros reais: a escala do mapa muda as unidades, mas nao a proximidade do voo.
@@ -151,7 +153,10 @@ var _modo_camera := ""
 var _som_liberado := false
 
 func _enter_tree() -> void:
+	_mapa_solicitado = mapa_apos_carga
+	mapa_apos_carga = false
 	lobby_em_video = not lobby_3d_pedido and not ("--lobby-3d" in OS.get_cmdline_user_args()) \
+		and not _mapa_solicitado \
 		and ResourceLoader.exists(VIDEO_LOBBY)
 	if lobby_em_video:
 		# O vale sai antes de entrar na árvore: o _ready do world_builder, que é a montagem
@@ -215,9 +220,7 @@ func _ready() -> void:
 	_create_ajustes_button(layer)
 	_create_quick_mute(layer)
 	_create_clock(layer)
-	# Sem vale no lobby em vídeo não há mapa para abrir: o botão não nasce.
-	if not lobby_em_video:
-		_create_map_button(layer)
+	_create_map_button(layer)
 	_create_tela_button(layer)
 	if lobby_em_video:
 		_montar_video_do_lobby()
@@ -252,6 +255,14 @@ func _ready() -> void:
 			_preparar_entrada()
 			$Cenario.pronto.connect(_entrada, CONNECT_ONE_SHOT)
 	print("OPENING_READY: audio compartilhado e abertura 3D · estilo=%s" % Estilo.modo)
+	if _mapa_solicitado:
+		_abrir_mapa_apos_carga.call_deferred()
+
+
+func _abrir_mapa_apos_carga() -> void:
+	while not $Cenario.construido:
+		await get_tree().process_frame
+	_open_map()
 
 func _process(delta: float) -> void:
 	if lobby_em_video:
@@ -1152,6 +1163,13 @@ func _restore_flyover_view() -> void:
 
 
 func _open_map() -> void:
+	if lobby_em_video:
+		if starting:
+			return
+		starting = true
+		mapa_apos_carga = true
+		TelaCarregamento.trocar_cena(get_tree(), scene_file_path, _show_loading())
+		return
 	if not map_open:
 		_save_flyover_view()
 	_clear()

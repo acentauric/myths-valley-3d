@@ -6,6 +6,12 @@ O teste passa a cobrar Candinha, Filo, Tonho, Zefa, arraial e recursos, incluind
 
 ## Em desenvolvimento — 07/10/2026 (experimento Jev)
 
+- **Mapa volta ao lobby em vídeo (#147).** O acesso lateral solicita o vale
+  sob a tela de carregamento e abre diretamente o mapa; o cenário permanece
+  ausente na abertura inicial. Os seis atalhos não se sobrepõem nem cortam
+  em 800×600, 1280×720 e 1920×1080. Lobby e fluxo de mapa passaram;
+  apagar o ícone em memória reproduz a falha observada.
+
 - **Fades respeitam volume e mute durante a troca (#79).** Auditoria da
   implementação existente acrescida ao teste: alternar mute e volume no
   meio da transição preserva o ganho escolhido. Portão verde e mutante
