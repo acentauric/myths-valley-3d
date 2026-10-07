@@ -6,6 +6,11 @@ O teste passa a cobrar Candinha, Filo, Tonho, Zefa, arraial e recursos, incluind
 
 ## Em desenvolvimento — 07/10/2026 (experimento Jev)
 
+- **Fades respeitam volume e mute durante a troca (#79).** Auditoria da
+  implementação existente acrescida ao teste: alternar mute e volume no
+  meio da transição preserva o ganho escolhido. Portão verde e mutante
+  com duração insuficiente reprova três regras.
+
 - **Mochila respeita remapeamento e Jogo troca de vaga (#66, #70).**
   O rodapé consulta o atalho atual nos três idiomas. A seleção de vaga
   pede confirmação, grava a partida atual e carrega o destino; cancelar

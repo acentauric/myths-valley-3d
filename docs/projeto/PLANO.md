@@ -167,3 +167,9 @@ As #66 e #70 ficam concluídas: o rodapé da mochila usa o atalho vigente,
 e Jogo permite trocar de vaga mediante confirmação, salvando a origem e
 carregando o destino sem apagar os arquivos. Portões de mochila, painel,
 vagas e idiomas passaram; os mutantes reprovam sem tocar o perfil normal.
+
+## Transições de áudio verificadas em 07/10/2026
+
+A #79 foi conferida pelo portão audio_fade: troca, cancelamento, ganho,
+volume e mute durante a transição. A implementação existente satisfaz
+o aceite; o mutante que reduz a duração a 10 ms reprova três verificações.
