@@ -210,7 +210,9 @@ func _botao_icone(icone: Control) -> Button:
 	icone.size = Vector2(24, 24)
 	icone.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	botao.add_child(icone)
-	botao.mouse_entered.connect(func(): Audio.efeito("ui_hover"))
+	botao.mouse_entered.connect(func():
+		if not botao.disabled:
+			Audio.efeito("ui_hover"))
 	return botao
 
 
@@ -237,7 +239,8 @@ func _gravar() -> bool:
 
 ## Estado dos botões do cabeçalho: EDITAR só numa ficha editável (o viajante não é) e,
 ## com a edição aberta, vira ✓ (concluir) e mostra RESTAURAR ao lado; GRAVAR fica
-## dourado (borda e ícone) com ajuste pendente.
+## dourado (borda e ícone) com ajuste pendente e fica desativado e apagado, como a seta
+## da paginação, quando não há nada a gravar.
 func _atualizar_cabecalho() -> void:
 	_botao_editar.visible = not selecionado.is_empty() and selecionado != "viajante"
 	_botao_restaurar.visible = editando and _botao_editar.visible
@@ -249,6 +252,9 @@ func _atualizar_cabecalho() -> void:
 	var pendente := AjustesConteudo.tem_pendencias()
 	if _icone_gravar.ativo != pendente:
 		_icone_gravar.definir(pendente)
+	_botao_gravar.disabled = not pendente
+	_icone_gravar.modulate = Color.WHITE if pendente else Color(1, 1, 1, 0.3)
+	_botao_gravar.tooltip_text = tr("Gravar no projeto. Os ajustes valem na próxima montagem do vale.") if pendente else tr("Nada para gravar")
 	for estado in ["normal", "hover", "pressed", "focus"]:
 		if pendente:
 			var caixa := _botao_gravar.get_theme_stylebox(estado).duplicate() as StyleBoxFlat

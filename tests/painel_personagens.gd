@@ -113,6 +113,8 @@ func _run() -> void:
 	_assert((painel._lista.find_child("Linhas", true, false) as GridContainer).get_child_count() == linhas_pedro, "as mesmas linhas para todos")
 	var falas_benedito: Array = painel._lista.find_children("Fala*", "HBoxContainer", true, false)
 	_assert(falas_benedito.size() == 3 and is_equal_approx(falas_benedito[0].global_position.y, posicao_falas), "as falas ficam no mesmo lugar")
+	if painel._botao_gravar != null and not AjustesConteudo.tem_pendencias():
+		_assert(painel._botao_gravar.disabled and painel._botao_gravar.tooltip_text == painel.tr("Nada para gravar"), "GRAVAR desativado sem ajuste pendente")
 	# Edita o Benedito pelo EDITAR do cabeçalho.
 	painel._botao_editar.pressed.emit()
 	await _frames(2)
@@ -141,6 +143,7 @@ func _run() -> void:
 		# O destaque é conferido a cada 0,25 s.
 		await create_timer(0.5).timeout
 		_assert(painel._icone_gravar.ativo, "GRAVAR fica dourado com ajuste pendente")
+		_assert(not painel._botao_gravar.disabled, "GRAVAR ativo com ajuste pendente")
 		painel.pedir_fechar()
 		_assert(is_instance_valid(painel._confirmacao) and not fechou[0], "fechar com ajuste pendente pede confirmação")
 		await _capturar("confirmacao")

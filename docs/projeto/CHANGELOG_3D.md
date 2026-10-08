@@ -2,6 +2,11 @@
 
 ## Em desenvolvimento — 08/10/2026
 
+- **O Gravar do painel Modelos só fica ativo com ajuste pendente.** Sem nada a
+  gravar o disquete aparece apagado, sem hover, sem clique e fora do foco do
+  teclado, com a dica "Nada para gravar"; editar um campo o acende na hora e
+  gravar o apaga de novo (#172).
+
 - **As etapas da missão ganham marcadores que a fonte do jogo desenha.** "Arar,
   plantar, regar" saía com "□" e "✓", que caíam na fonte do sistema (pequenos,
   finos e fora da linha de base, como glifo quebrado). Agora a etapa feita é
