@@ -476,8 +476,37 @@ func madeira_de(especie: String) -> Dictionary:
 	return molde
 
 
+## O TAMANHO DA ÁRVORE (07/10: "tem árvores maiores, que consomem muita stamina e vigor, mas dão
+## o mesmo quantitativo que uma árvore pequena"): o raio do tronco sobre o de uma árvore comum
+## (RAIO_COMUM, a mediana do vale), entre TAMANHO_MINIMO e TAMANHO_MAXIMO. Os golpes e a lenha da
+## madeira crescem com ele — a lenha com o tamanho inteiro, os golpes com a raiz dele (e até
+## TAMANHO_MAXIMO_DOS_GOLPES, para o pau-brasil mais grosso caber no fôlego de um dia): a
+## embaúba fina cai em dois golpes e dá uma lenha; a mangueira grossa pede quatro e dá três;
+## o jequitibá de lei, cinco e sete.
+const RAIO_COMUM := 0.36
+const TAMANHO_MAXIMO_DOS_GOLPES := 1.6
+const TAMANHO_MINIMO := 0.6
+const TAMANHO_MAXIMO := 2.0
+
+
+func tamanho_da(indice: int) -> float:
+	return clampf(float(_cortaveis[indice].get("raio", RAIO_COMUM)) / RAIO_COMUM, TAMANHO_MINIMO, TAMANHO_MAXIMO)
+
+
+## Quantos golpes esta árvore pede: os da madeira dela, vezes o tamanho.
+func golpes_da(indice: int) -> int:
+	var base := maxi(int(madeira_de(String(_cortaveis[indice]["especie"])).get("golpes", 3)), 1)
+	return maxi(roundi(float(base) * sqrt(minf(tamanho_da(indice), TAMANHO_MAXIMO_DOS_GOLPES))), 1)
+
+
+## Quanto esta árvore rende ao cair: o da madeira dela, vezes o tamanho.
+func rendimento_da(indice: int) -> int:
+	var base := int(madeira_de(String(_cortaveis[indice]["especie"])).get("quantidade", 1))
+	return maxi(roundi(float(base) * tamanho_da(indice)), 1) if base > 0 else 0
+
+
 func _golpes_da(indice: int) -> int:
-	return maxi(int(madeira_de(String(_cortaveis[indice]["especie"])).get("golpes", 3)), 1)
+	return golpes_da(indice)
 
 
 ## O QUE IMPEDE O CORTE, dito ao jogador, ou "" quando dá para golpear.
@@ -630,7 +659,7 @@ func _ao_golpe_concluido() -> void:
 			arvore["dia_do_corte"] = Relogio.dia_absoluto()
 			arvore["escala"] = 0.0
 			var rende := str(madeira.get("rende", "lenha"))
-			var quantos := int(madeira.get("quantidade", 1))
+			var quantos := rendimento_da(indice)
 			if rende != "" and quantos > 0 and not Inventario.adicionar(rende, quantos):
 				_hud.set_notice(str(IdiomaMenu.campo(_acoes.get("arvore", {}), "inventario_cheio")))
 			Audio.efeito("arvore_cai")

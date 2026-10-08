@@ -940,6 +940,12 @@ func mais_perto_que_rende(item: String, de: Vector3) -> Vector3:
 		var ficha: Dictionary = _alvos[id]["ficha"]
 		if str(ficha.get("rende", "")) != item:
 			continue
+		# PEÇA DE MISSÃO NÃO É FONTE PARA A SETA DE NINGUÉM (07/10: "na missão da ponte do rio
+		# grande não deve mandar cortar as árvores do cemitério, só na missão do cemitério"): o
+		# mato do cemitério rende lenha, e a seta de "junte lenha" da ponte apontava a embaúba do
+		# Damião. O que tem grupo é de uma missão, e só ela o aponta (`mais_perto_da_peca`).
+		if str(ficha.get("grupo", "")) != "":
+			continue
 		var d: Vector3 = _alvos[id]["pos"] - de
 		d.y = 0.0
 		if d.length() < menor:

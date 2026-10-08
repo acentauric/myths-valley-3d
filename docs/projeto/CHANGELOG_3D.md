@@ -46,6 +46,17 @@
   foi reproduzido sem nexo"). As falas do píer só valiam até a chegada começar pela
   aproximação, mas o E nele voltava a elas entre o último passo e a despedida; desde que a
   chegada começou, o E no Pedro usa as falas de quem já conhece o jogador.
+- **A lenha da ponte não é a do cemitério, e a árvore grossa rende mais** (07/10: "na missão
+  da ponte do rio grande não deve mandar cortar as árvores do cemitério, só na missão do
+  cemitério"; "equilibre a quantidade de madeira: tem árvores maiores, que consomem muita
+  stamina e vigor, mas dão o mesmo quantitativo que uma árvore pequena"). A seta de "junte
+  lenha" apontava a embaúba do Damião, que rende lenha: o que é peça de missão (grupo) não
+  é fonte para a seta de ninguém. E a lenha de uma árvore é a da madeira dela vezes o
+  tamanho do tronco (0,6 a 2 vezes uma árvore comum), e os golpes crescem com a raiz do
+  tamanho (até 1,6×), para o pau-brasil mais grosso ainda caber no fôlego de um dia: a
+  embaúba fina cai em dois golpes e dá uma lenha, a mangueira grossa pede quatro e dá três.
+  Portões `cadeia_do_coveiro`
+  e `corte_das_arvores` conferem.
 - **As cenas do vale, pelos dados** (07/10, à noite: "implementar a mesma lógica de cutscene
   que fizemos no 2D: travando a tela e comandos do jogador e a própria engine conduzindo os
   personagens para uma interação com fala; explorar a vista, o cenário, aproximar dos
