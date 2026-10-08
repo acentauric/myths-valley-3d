@@ -10,6 +10,24 @@ from relatorio import generate
 
 
 class PlayerTests(unittest.TestCase):
+    def test_clock_controls_are_never_offered_or_chosen(self):
+        # O relógio é do jogador (#192): nem a tecla de adiantar a hora, nem botão de tempo.
+        bot, state = self.player(), self.state()
+        actions = {"inspect_time": "Press T", "button_2": "Click Relógio", "button_3": "Click Velocidade",
+                   "clock_toggle": "Click clock", "wait": "wait"}
+        for attempt in range(12):
+            choice = bot.choose(dict(state, seconds=attempt * 31), actions, {})
+            self.assertEqual(choice, "wait")
+        self.assertIsNone(bot.choose(state, {"inspect_time": "Press T"}, {}))
+
+    def test_exploration_never_probes_the_time_controls(self):
+        bot, state = self.player(), self.state()
+        actions = {"observe": "F", "inspect_journal": "J", "inspect_map": "M", "inspect_time": "T", "wait": "wait"}
+        seen = set()
+        for attempt in range(40):
+            seen.add(bot.choose(dict(state, seconds=attempt * 31, position=[attempt * 40, 0, 0]), actions, {}))
+        self.assertNotIn("inspect_time", seen)
+
     def test_farm_guide_after_sleep_leaves_house_before_following(self):
         bot, state = self.player(), self.state()
         state.update(energy=77.8, interior="casa", objective={"id": "pedro_fazenda_ida"},
@@ -564,6 +582,23 @@ class ReportTests(unittest.TestCase):
             self.assertIn("sem avanço de missão", report)
             self.assertIn("não demonstrado", report)
             self.assertIn("2.00", report)
+
+    def test_report_lists_clock_stops_with_last_action_and_capture(self):
+        with tempfile.TemporaryDirectory() as folder:
+            directory = Path(folder)
+            (directory / "eventos.jsonl").write_text("", encoding="utf-8")
+            clean = generate(directory).read_text(encoding="utf-8")
+            self.assertIn("## Relógio parado", clean)
+            self.assertIn("Nenhum relógio parado", clean)
+            stop = {"kind": "achado", "type": "relogio_parado", "elapsed": 391.5, "reason": "pausado", "action": "follow_pedro",
+                    "time": "06:00", "speed": 2, "held_by": [], "capture": "quadro_0391.jpg"}
+            (directory / "eventos.jsonl").write_text(json.dumps(stop) + chr(10), encoding="utf-8")
+            report = generate(directory).read_text(encoding="utf-8")
+            self.assertNotIn("Nenhum relógio parado", report)
+            self.assertIn("relógio parado às 06:00", report)
+            self.assertIn("Dia.pausado", report)
+            self.assertIn("Última ação: follow_pedro", report)
+            self.assertIn("](quadro_0391.jpg)", report)
 
     def test_dialogue_hiding_objective_does_not_report_a_completed_step(self):
         with tempfile.TemporaryDirectory() as folder:

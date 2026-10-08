@@ -26,6 +26,19 @@ var jogada
 var amostras_movimento: Array = []
 var amostrar_em := 0
 var fontes_de_material: Dictionary = {}
+## O VIGIA DO RELÓGIO (#192): o testador nunca pausa nem acelera o relógio, e se o
+## dia parar sem tela, fala ou motivo à vista o relatório registra o que houve.
+const RELOGIO_PARADO_APOS_MS := {"pausado": 2000, "velocidade_zero": 2000, "segurado": 45000, "hora_parada": 0}
+const RELOGIO_SEM_ANDAR_MS := 20000
+## Os controles do jogador que mexem no tempo; o robô não os clica nem os confirma.
+const NOMES_DO_RELOGIO := ["clock", "relogio", "relógio", "velocidade", "speed"]
+## Do menu de pausa, o robô só confirma a linha de Salvar jogo.
+const ICONES_LIVRES_NO_MENU := ["restaurar"]
+var relogio_motivo := ""
+var relogio_motivo_desde := 0
+var relogio_alertado := false
+var relogio_hora_vista := -1.0
+var relogio_hora_mudou_em := 0
 
 
 func _ponto_de_material(item: String) -> Vector3:
@@ -96,6 +109,7 @@ func _run() -> void:
 			jogada.teleporte = false
 			await _post("/ready", {})
 			_capturar()
+		_vigiar_o_relogio()
 		var estado := _estado()
 		var opcoes: Dictionary = _acoes(estado)
 		if opcoes.is_empty():
@@ -240,7 +254,8 @@ func _estado() -> Dictionary:
 		for indice in pausa._itens.size():
 			if str(pausa._itens[indice].get("icone", "")) == "restaurar":
 				salvar_indice = indice
-		estado["pause_menu"] = {"cursor": pausa._cursor, "save_index": salvar_indice, "notice": pausa._aviso}
+		estado["pause_menu"] = {"cursor": pausa._cursor, "save_index": salvar_indice, "notice": pausa._aviso,
+			"cursor_icon": _icone_da_linha_do_menu(pausa)}
 	if bool(current_scene.get("mapa").get("aberto")):
 		estado["screen"] = "world_map"
 	if current_scene.get("aviso_da_primeira_vez").aberto():
@@ -260,7 +275,9 @@ func _estado() -> Dictionary:
 		if root.get_node("Cozinha").e_comida(id) and float(catalogo_itens.dados(id).get("folego", 0.0)) > 0.0:
 			estado.inventory.food_items.append(id)
 	var relogio := root.get_node("Relogio")
-	estado["clock"] = {"day": relogio.dia, "season": relogio.estacao, "year": relogio.ano, "time": relogio.texto(), "paused": relogio.pausado}
+	var dia = _dia()
+	estado["clock"] = {"day": relogio.dia, "season": relogio.estacao, "year": relogio.ano, "time": relogio.texto(), "paused": relogio.pausado,
+		"player_paused": bool(dia.pausado), "speed": int(dia.velocidade), "held_by": dia.motivos_da_segurada()}
 	estado["interior"] = current_scene.get("interiores").dentro()
 	estado["world_map"] = _json_seguro(current_scene.get("world").ancoras)
 	estado["map_orientation_keys"] = "Keys ending Frente/Direcao/Lado are orientations, not travel destinations. Other entries are world positions."
@@ -413,7 +430,7 @@ func _acoes(estado: Dictionary) -> Dictionary:
 			return {"name_player": "Type a deterministic test name into the visible player name field and press Enter"}
 		# Safe menu allowlist: never expose quit, delete, update or settings.
 		for botao in current_scene.find_children("*", "BaseButton", true, false):
-			if not botao.is_visible_in_tree() or botao.disabled:
+			if not botao.is_visible_in_tree() or botao.disabled or _e_controle_do_relogio(botao):
 				continue
 			var permitido: bool = str(botao.name) in ["Idioma0", "Vaga1"]
 			var texto_botao := str(botao.get("text"))
@@ -435,11 +452,16 @@ func _acoes(estado: Dictionary) -> Dictionary:
 	if estado.get("screen", "") == "world_map":
 		return {"close_screen": "Press Escape to close the world map and release movement controls"}
 	if str(estado.get("screen", "")) != "" or paused:
-		return {"close_screen": "Press Escape to close the screen or dismiss the visible tutorial notice",
+		var da_tela := {"close_screen": "Press Escape to close the screen or dismiss the visible tutorial notice",
 			"confirm_screen": "Press E to confirm the visible selection or pick/move the selected inventory item",
 			"screen_tab": "Press Tab to inspect the next tab", "screen_up": "Press W to select the previous row",
 			"screen_down": "Press S to select the next row", "screen_left": "Press A to move left/decrease quantity",
 			"screen_right": "Press D to move right/increase quantity", "screen_use": "Press F to use/equip/eat the selected inventory item"}
+		# No menu de pausa o E só vale na linha de Salvar: as do relógio e da
+		# velocidade (e as de sair) não são do testador (#192).
+		if not _menu_de_pausa_permite_confirmar():
+			da_tela.erase("confirm_screen")
+		return da_tela
 	var jogador: Node3D = current_scene.get("player")
 	if not jogador.is_physics_processing():
 		return {"wait": "Wait for the current narration/animation to release the controls"}
@@ -500,7 +522,6 @@ func _acoes(estado: Dictionary) -> Dictionary:
 	opcoes["inspect_talents"] = "Press K to inspect talent tree"
 	opcoes["inspect_social"] = "Press P to inspect villagers"
 	opcoes["inspect_almanac"] = "Press L to inspect almanac"
-	opcoes["inspect_time"] = "Press T to inspect the time controls"
 	opcoes["observe"] = "Press F to observe the object in front"
 	opcoes["dodge"] = "Hold V briefly to dodge/ginga"
 	var inventario := root.get_node("Inventario")
@@ -524,9 +545,13 @@ func _executar(escolha: String) -> String:
 		var botao: BaseButton = catalogo.get(escolha)
 		if not is_instance_valid(botao) or not botao.is_visible_in_tree():
 			return "button_no_longer_visible"
+		if _e_controle_do_relogio(botao):
+			return "clock_control_not_allowed"
 		botao.pressed.emit()
 		await _esperar(1.0)
 		return "button_clicked"
+	if _acao_do_relogio(escolha):
+		return "clock_control_not_allowed"
 	match escolha:
 		"name_player":
 			var campo: LineEdit = catalogo.get(escolha)
@@ -554,6 +579,8 @@ func _executar(escolha: String) -> String:
 					return chegada
 			return await _caminhar(sala.soleira_de_fora() if escolha == "exit_home" else sala.soleira_de_dentro(), false, true, true)
 		"dialogue_next", "interact", "confirm_screen":
+			if escolha == "confirm_screen" and not _menu_de_pausa_permite_confirmar():
+				return "clock_or_other_menu_line_not_allowed"
 			await _tecla(KEY_E)
 			return "E_pressed"
 		"answer_yes", "answer_no":
@@ -576,8 +603,8 @@ func _executar(escolha: String) -> String:
 		"inspect_inventory":
 			await _tecla(KEY_I)
 			return "I_pressed"
-		"inspect_map", "inspect_talents", "inspect_social", "inspect_almanac", "inspect_time", "observe":
-			var teclas := {"inspect_map": KEY_M, "inspect_talents": KEY_K, "inspect_social": KEY_P, "inspect_almanac": KEY_L, "inspect_time": KEY_T, "observe": KEY_F}
+		"inspect_map", "inspect_talents", "inspect_social", "inspect_almanac", "observe":
+			var teclas := {"inspect_map": KEY_M, "inspect_talents": KEY_K, "inspect_social": KEY_P, "inspect_almanac": KEY_L, "observe": KEY_F}
 			await _tecla(int(teclas[escolha]))
 			return "inspection_key_pressed"
 		"work_E", "dodge":
@@ -651,6 +678,7 @@ func _caminhar(alvo, seguir: bool, exato: bool = false, passagem_da_porta: bool 
 			_pressionar(KEY_W, false)
 			return "user_stop"
 		_atualizar_painel()
+		_vigiar_o_relogio()
 		_amostrar_movimento()
 		if _segundos() - ultima_captura >= 30:
 			_capturar()
@@ -832,6 +860,7 @@ func _esperar(segundos: float) -> void:
 			ultima_acao = "user_stop"
 			parar = true
 		_atualizar_painel()
+		_vigiar_o_relogio()
 		_amostrar_movimento()
 		if duracao > 0 and inicio_jogo >= 0 and _segundos() >= duracao:
 			return
@@ -840,11 +869,133 @@ func _esperar(segundos: float) -> void:
 		await process_frame
 
 
-func _capturar() -> void:
+func _capturar() -> String:
 	if DisplayServer.get_name() == "headless":
-		return
+		return ""
 	var imagem := root.get_texture().get_image()
 	if imagem != null and not imagem.is_empty():
 		# Evidência contínua em JPEG evita encher o disco numa campanha longa.
-		imagem.save_jpg(pasta.path_join("quadro_%04d.jpg" % _segundos()), 0.85)
+		var nome := "quadro_%04d.jpg" % _segundos()
+		imagem.save_jpg(pasta.path_join(nome), 0.85)
 		ultima_captura = _segundos()
+		return nome
+	return ""
+
+
+# --- o relógio é do jogador (#192) ----------------------------------------------
+
+func _dia():
+	return root.get_node("Dia")
+
+
+## O relógio do jogo em milissegundos; o teste troca por um relógio dele.
+func _agora() -> int:
+	return Time.get_ticks_msec()
+
+
+## A ação aperta um controle de tempo do jogador (pausa, velocidade, hora)? Nenhuma
+## entra no catálogo; esta checagem é a segunda tranca, na hora de executar.
+func _acao_do_relogio(escolha: String) -> bool:
+	return escolha == "inspect_time" or escolha.begins_with("clock_") or escolha.begins_with("speed_") or escolha.begins_with("time_")
+
+
+## O botão é um controle do relógio do jogador? Pelo nome dele ou de quem o carrega
+## (`_clock_button`, a placa central do relógio, a velocidade): o testador não clica.
+func _e_controle_do_relogio(no: Node) -> bool:
+	var cena := current_scene
+	var hud = cena.get("hud") if cena != null else null
+	if hud != null:
+		for campo in ["_clock_button", "_clock_panel", "_clock_hint"]:
+			var controle = hud.get(campo)
+			if controle is Node and is_instance_valid(controle) and (no == controle or controle.is_ancestor_of(no)):
+				return true
+	var atual := no
+	while atual != null and atual != cena and atual != root:
+		var nome := str(atual.name).to_lower()
+		for marca in NOMES_DO_RELOGIO:
+			if nome.contains(marca):
+				return true
+		atual = atual.get_parent()
+	return false
+
+
+## O ícone da linha onde está o cursor do menu de pausa ("restaurar" é o Salvar jogo).
+func _icone_da_linha_do_menu(pausa) -> String:
+	var cursor := int(pausa._cursor)
+	if cursor < 0 or cursor >= pausa._itens.size():
+		return ""
+	return str(pausa._itens[cursor].get("icone", ""))
+
+
+## Com o menu de pausa aberto, o E só pode confirmar a linha de Salvar jogo. As do
+## relógio, da velocidade e de sair ficam com o jogador.
+func _menu_de_pausa_permite_confirmar() -> bool:
+	var pausa = current_scene.get("menu_pausa") if current_scene != null else null
+	if pausa == null or not bool(pausa.aberto):
+		return true
+	return _icone_da_linha_do_menu(pausa) in ICONES_LIVRES_NO_MENU
+
+
+## Tela, fala, mapa ou pergunta: o relógio parar ali é de propósito.
+func _ha_modal() -> bool:
+	if paused or root.get_node("Dialogo").ativo:
+		return true
+	var cena := current_scene
+	if not str(cena.get("telas").aberta()).is_empty() or bool(cena.get("mapa").get("aberto")):
+		return true
+	return cena.get("aviso_da_primeira_vez").aberto() or cena.get("_pergunta_do_relogio") != null
+
+
+## Por que o dia está parado agora, ou "" se anda (ou se parou de propósito).
+func _motivo_do_relogio_parado() -> String:
+	var agora := _agora()
+	var dia = _dia()
+	var hora := float(dia.hora)
+	if absf(hora - relogio_hora_vista) > 0.0001:
+		relogio_hora_vista = hora
+		relogio_hora_mudou_em = agora
+	if _ha_modal() or bool(dia.congelado_na_carga):
+		relogio_hora_mudou_em = agora
+		return ""
+	if bool(dia.pausado):
+		return "pausado"
+	if int(dia.velocidade) == 0:
+		return "velocidade_zero"
+	if dia.segurado():
+		relogio_hora_mudou_em = agora
+		return "segurado"
+	return "hora_parada" if agora - relogio_hora_mudou_em >= RELOGIO_SEM_ANDAR_MS else ""
+
+
+## Chamado a cada volta dos laços do testador. Registra UMA vez por parada, e rearma
+## quando o relógio volta a andar.
+func _vigiar_o_relogio() -> void:
+	if inicio_jogo < 0 or not _no_vale() or not bool(current_scene.get("carga_ok")):
+		return
+	var motivo := _motivo_do_relogio_parado()
+	if motivo.is_empty():
+		relogio_motivo = ""
+		relogio_alertado = false
+		return
+	var agora := _agora()
+	if motivo != relogio_motivo:
+		relogio_motivo = motivo
+		relogio_motivo_desde = agora
+		relogio_alertado = false
+	if relogio_alertado or agora - relogio_motivo_desde < int(RELOGIO_PARADO_APOS_MS[motivo]):
+		return
+	relogio_alertado = true
+	_registrar_relogio_parado(motivo)
+
+
+func _registrar_relogio_parado(motivo: String) -> void:
+	var dia = _dia()
+	var achado := {"type": "relogio_parado", "reason": motivo, "action": ultima_acao, "seconds": _segundos(),
+		"time": str(root.get_node("Relogio").texto()), "player_paused": bool(dia.pausado), "speed": int(dia.velocidade),
+		"held_by": dia.motivos_da_segurada(), "position": _vetor(current_scene.get("player").global_position),
+		"capture": _capturar()}
+	achados.append(achado)
+	if achados.size() > 6:
+		achados.pop_front()
+	print("JEV: relogio parado (%s) apos a acao %s" % [motivo, ultima_acao])
+	_post("/achado", achado)

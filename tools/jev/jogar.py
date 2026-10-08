@@ -46,7 +46,7 @@ def game_reference():
         "goal": "Finish the playable main story, not just Pedro's tutorial. Prioritize main chains, their prerequisites, survival and required work.",
         "implemented_story_endpoint": "Finish missoes_fazenda.json (fazenda_chegada). Chapters after the farm courtyard are not implemented in this build; never call this the complete planned game.",
         "story_prerequisites": "Tutorial, bridge rebuilt and a faith chosen; the farm day comes the following morning. Side chains supply tools/resources. Follow the live chains and journal for exact requirements.",
-        "controls": "WASD/arrow keys move; Shift toggles running; Space jumps; E interacts/works/advances dialogue; 1..9,0 toggle hand slots; I inventory; J mission/crafting/building panel; F uses/equips the selected inventory item; WASD navigate panels, E confirms/moves items, Tab switches tabs, Escape closes; M map; K talents; P social; L almanac; T time panel; V dodge.",
+        "controls": "WASD/arrow keys move; Shift toggles running; Space jumps; E interacts/works/advances dialogue; 1..9,0 toggle hand slots; I inventory; J mission/crafting/building panel; F uses/equips the selected inventory item; WASD navigate panels, E confirms/moves items, Tab switches tabs, Escape closes; M map; K talents; P social; L almanac; V dodge. The clock belongs to the player: never pause it, change its speed or advance the hour.",
         "guide_rules": "Pedro leads on a conducting step. He waits if you get over 6.5 units away and resumes below 4. Stay with him until guide_destination_reached, then approach the actual NPC/door. Do not alternate a far mission marker with Pedro while he is guiding. E on Pedro repeats his advice and does not complete talking to another NPC.",
         "mission_definitions": missions,
         "context_scope": "All mission definitions in data/missoes_*.json, live chains/requirements, journal, inventory, clock, map, NPCs, UI and current interaction. No images or hidden asset/source dumps. Each decision is stateless: use supplied history and completion state."}
@@ -497,6 +497,11 @@ def make_handler(session):
                     if session.progress.observe(data.get("after", {})):
                         session.stop_reason = f"no_progress_{session.progress.idle_seconds}s"
                         session.log("guard_stop", reason=session.stop_reason)
+                    result = session.status()
+                elif self.path == "/achado":
+                    # Achado do controlador do jogo (ex.: relógio parado, #192): vai para o
+                    # relatório com a última ação e a captura, sem decidir nada.
+                    session.log("achado", **{k: v for k, v in data.items() if k != "kind"})
                     result = session.status()
                 elif self.path == "/stop":
                     session.stop_reason = str(data.get("reason", "user_stop"))[:80]

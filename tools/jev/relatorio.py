@@ -14,6 +14,25 @@ def cell(value):
     return str(value).replace("|", "\\|").replace("\n", " ")
 
 
+CLOCK_REASONS = {
+    "pausado": "o relógio está pausado (Dia.pausado) sem tela aberta",
+    "velocidade_zero": "a velocidade do relógio está em Parada",
+    "segurado": "o relógio está seguro por um motivo há muito tempo",
+    "hora_parada": "a hora não andou, sem pausa nem motivo",
+}
+
+
+def clock_stop_line(stop):
+    """Uma linha do relatório para um relógio parado: a causa, a última ação e a captura."""
+    reason = str(stop.get("reason", "?"))
+    held = ", ".join(str(x) for x in stop.get("held_by", [])) or "—"
+    capture = str(stop.get("capture", ""))
+    link = f" [{capture}]({capture})" if capture else ""
+    return (f"- {float(stop.get('elapsed', 0)):.1f} s — relógio parado às {cell(stop.get('time', '?'))}: "
+            f"{cell(CLOCK_REASONS.get(reason, reason))} (motivo: {cell(reason)}; segurado por: {cell(held)}; "
+            f"velocidade: {cell(stop.get('speed', '?'))}). Última ação: {cell(stop.get('action', '?'))}.{link}")
+
+
 def distance(before, after):
     a, b = before.get("position", []), after.get("position", [])
     return math.dist(a, b) if len(a) == len(b) == 3 else 0.0
@@ -32,6 +51,7 @@ def generate(directory, live=True):
     source = directory / "eventos.jsonl"
     counts, durations, steps = Counter(), Counter(), {}
     rows, issues, movement = [], [], 0.0
+    clock_stops = []
     sampled_movement, presentation_seconds = 0.0, 0.0
     stalled, stall_start, stall_goal, stall_count = [], None, "", 0
     previous_decision = None
@@ -51,6 +71,8 @@ def generate(directory, live=True):
             kind = event.get("kind")
             if kind == "game_ready":
                 start = event.get("elapsed", 0)
+            if kind == "achado" and event.get("type") == "relogio_parado":
+                clock_stops.append(event)
             if kind == "decision":
                 previous_decision = event
                 presentation_seconds += max(0, float(event.get("latency_ms", 0))) / 1000
@@ -120,6 +142,9 @@ def generate(directory, live=True):
         lines.append(f"| {cell(action)} | {count} | {durations[action]:.2f} |")
     lines += ["", "## Bloqueios reportados pelo controlador", ""]
     lines += [f"- {at:.1f} s — {cell(goal)} / {cell(action)}: {cell(result)}" for at, goal, action, result in issues] or ["Nenhum bloqueio explícito registrado. Isso não prova ausência de problemas."]
+    lines += ["", "## Relógio parado", ""]
+    lines += [clock_stop_line(stop) for stop in clock_stops] or [
+        "Nenhum relógio parado sem tela, fala ou motivo à vista. O testador não pausa nem acelera o relógio."]
     if stall_start is not None and elapsed - stall_start >= 30:
         stalled.append((stall_goal, stall_start, elapsed, stall_count))
     lines += ["", "## Períodos sem progresso de missão, inventário ou obra", ""]

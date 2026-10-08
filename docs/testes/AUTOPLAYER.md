@@ -48,6 +48,16 @@ conversa com Pedro por engano. Aguarda pessoas que já estão falando.
 O robô usa os controles normais de movimento e interação, sem teleportar,
 injetar itens ou alterar o progresso das missões.
 
+**O relógio é do jogador (#192).** O testador nunca pausa, acelera nem adianta o
+relógio: a tecla de adiantar a hora (T) saiu do catálogo, os botões e a placa do
+relógio e da velocidade ficam fora dos cliques, e no menu de pausa o E só vale na
+linha de Salvar jogo (as do relógio, da velocidade e de sair não são dele). Um
+vigia no `sessao.gd` olha o dia a cada volta: sem tela, fala nem pergunta aberta,
+se o relógio fica pausado ou em Parada por dois segundos, seguro por um motivo por
+45 s, ou com a hora sem andar por 20 s, o relatório ganha uma linha em "Relógio
+parado" com a causa, a última ação, quem segurava e a captura. Cada parada é
+registrada uma vez e o vigia rearma quando o dia volta a andar.
+
 Após 30 segundos sem progresso de missão, inventário ou obra, ou tentativas
 repetidas no mesmo contexto, entra a exploração. Ela experimenta interações
 próximas, orientação para outros alvos, trabalho com ferramentas, observação

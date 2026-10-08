@@ -4,6 +4,21 @@ import json
 import time
 
 
+# O testador nunca mexe no relógio do jogador (#192): pausar, retomar, acelerar e
+# adiantar a hora são escolhas dele, e custam as conquistas da partida. Nada que
+# nomeie esses controles entra na escolha, mesmo que a ponte um dia os ofereça.
+ACOES_DO_RELOGIO = {"inspect_time"}
+MARCAS_DO_RELOGIO = ("clock", "relogio", "relógio", "velocidade", "speed", "avançar a hora", "advance the hour")
+
+
+def mexe_no_relogio(action, description=""):
+    """A ação aperta um controle de tempo do jogador (pausa, velocidade, hora)?"""
+    if action in ACOES_DO_RELOGIO or action.startswith(("clock_", "speed_", "time_")):
+        return True
+    text = str(description).lower()
+    return action.startswith("button_") and any(mark in text for mark in MARCAS_DO_RELOGIO)
+
+
 class JogadorAutomatico:
     def __init__(self):
         self.attempts = Counter()
@@ -78,7 +93,7 @@ class JogadorAutomatico:
                 return select(action, "Exploração: examinar outra interação ao alcance")
         if target and target not in {n.get("name") for n in state.get("npcs", [])} and target != "Pedro" and fresh("work_E"):
             return select("work_E", "Exploração: testar trabalho no alvo próximo")
-        for action in ("observe", "inspect_journal", "inspect_inventory", "inspect_map", "inspect_social", "inspect_almanac", "inspect_talents", "inspect_time"):
+        for action in ("observe", "inspect_journal", "inspect_inventory", "inspect_map", "inspect_social", "inspect_almanac", "inspect_talents"):
             # Inspeções ficam limitadas à região, independentemente da mão.
             key = (self.region, action)
             if action in actions and tried[key] < 1:
@@ -123,6 +138,8 @@ class JogadorAutomatico:
         return select("wait", "Exploração: aguardar mudança no mundo após esgotar ações disponíveis") or select(next(iter(actions)), "Exploração: ação disponível")
 
     def choose(self, state, actions, task):
+        # Lista de bloqueio do relógio (#192): fora do catálogo antes de qualquer regra.
+        actions = {a: d for a, d in actions.items() if not mexe_no_relogio(a, d)}
         if not actions:
             return None
         choice = self._choose(state, actions, task)
