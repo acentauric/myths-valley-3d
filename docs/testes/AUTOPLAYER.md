@@ -20,10 +20,19 @@ confirmada na parada real por F8: botão do menu abriu perfil novo, 19 decisões
 ## Como iniciar e encerrar
 
 No menu inicial, escolha **Testar**, ao lado de Explorar, ou execute
-`JOGAR_SOL.cmd`. O lançador abre outra janela com uma partida nova em perfil
+`JOGAR_SOL.cmd`. O lançador abre uma janela com uma partida nova em perfil
 isolado, preservando os saves do jogador. Requer o projeto de desenvolvimento,
 Python 3.10+ disponível como `python` e Godot. O botão fica desativado nas
 exportações que não contêm a ponte Python.
+
+**Fica uma janela só (#175).** Pelo botão Testar, o menu não se fecha ao disparar o
+`jogar.py`: espera a ponte criar o arquivo `user://testador_pronto.txt`, o que ela faz na
+primeira chamada autenticada do jogo da sessão (`--pronto`), e só então se fecha, com o
+áudio dele. Se o python sair antes disso, o menu continua aberto e mostra o erro. Ao
+encerrar a sessão (F8, tempo, janela fechada ou erro), o `jogar.py --voltar-ao-menu`
+reabre o menu com o perfil normal do jogador, para ele não ficar sem janela; o
+`JOGAR_SOL.cmd` e as execuções pela linha de comando não passam esse parâmetro e seguem
+fechando tudo.
 
 Não há limite padrão de tempo. F8 ou fechar a janela encerra a sessão;
 `JOGAR_SOL.cmd --seconds 600` limita uma execução a dez minutos. O robô local

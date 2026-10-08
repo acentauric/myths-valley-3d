@@ -2,6 +2,13 @@
 
 ## Em desenvolvimento — 08/10/2026
 
+- **Ao clicar em Testar, o menu se fecha quando a janela do testador abre, e volta quando a
+  sessão acaba.** Antes ficavam duas janelas do jogo, o dobro de memória e o áudio do menu
+  junto com a sessão. Agora o menu espera o sinal de que o jogo da sessão subiu e só então
+  se fecha; se o testador não iniciar, continua aberto e mostra o erro. Ao encerrar a
+  sessão (F8, tempo ou erro) o menu é reaberto com o perfil normal do jogador. Dica e avisos
+  foram atualizados em português, inglês e espanhol (#175).
+
 - **A sessão do testador abre no idioma que o jogador escolheu.** O botão Testar manda o
   idioma atual (português, English, Español ou 中文) para o `jogar.py --idioma`, que o
   grava no perfil isolado da sessão: menu, tela de carga, HUD, falas em texto e o painel

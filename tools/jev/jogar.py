@@ -36,6 +36,16 @@ def language_code(value):
     return code
 
 
+def reopen_menu(godot, project=PROJECT):
+    """Reabre o menu do jogo, com o perfil normal do jogador (#175).
+
+    O menu que abriu o testador se fechou quando a janela da sessão subiu; ao fim da sessão
+    (F8, tempo ou erro) o jogo volta ao menu, e o jogador não fica sem janela. O processo
+    herda o ambiente do lançador, não o do perfil isolado, e sobrevive a este script."""
+    flags = getattr(subprocess, "DETACHED_PROCESS", 0) | getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0)
+    return subprocess.Popen([str(godot), "--path", str(project)], cwd=project, creationflags=flags)
+
+
 def pending_stop_requires_termination(reason, finished, elapsed):
     """Let Godot send its final event/capture and quit before the watchdog kills it."""
     return bool(reason) and not finished and elapsed >= 10.0
@@ -155,8 +165,11 @@ def configuration() -> dict[str, str]:
 
 class Session:
     def __init__(self, directory: Path, config: dict, seconds=600, calls=300,
-                 budget="0.10", offline=False, idle_seconds=30, language=None):
+                 budget="0.10", offline=False, idle_seconds=30, language=None, ready_file=None):
         self.directory = directory
+        # A janela do jogo da sessão subiu? O menu que chamou o testador espera este arquivo (#175).
+        self.ready_file = Path(ready_file) if ready_file else None
+        self.window_up = False
         self.language = language_code(language)
         self.config = config
         self.seconds = seconds
@@ -200,6 +213,20 @@ class Session:
                 except OSError as error:
                     self.log("report_error", reason=type(error).__name__)
                 self.last_markdown = time.monotonic()
+
+    def mark_window_up(self):
+        """A primeira chamada autenticada do jogo prova que a janela da sessão abriu."""
+        with self.lock:
+            if self.window_up:
+                return
+            self.window_up = True
+            self.log("window_up")
+            if self.ready_file is not None:
+                try:
+                    self.ready_file.parent.mkdir(parents=True, exist_ok=True)
+                    self.ready_file.write_text("ok", encoding="ascii")
+                except OSError as error:
+                    self.log("window_up_error", reason=type(error).__name__)
 
     def status(self):
         elapsed = 0 if self.game_started is None else time.monotonic() - self.game_started
@@ -495,6 +522,7 @@ def make_handler(session):
             if self.headers.get("Authorization") != "Bearer " + session.token:
                 self.send_error(403)
                 return
+            session.mark_window_up()
             try:
                 length = int(self.headers.get("Content-Length", "0"))
                 if not 0 < length <= MAX_BODY:
@@ -555,6 +583,10 @@ def main():
     parser.add_argument("--output", type=Path)
     parser.add_argument("--idioma", help="Idioma da sessão (pt, en, es ou zh). O perfil é isolado e só o idioma atravessa; "
                         "sem o parâmetro vale o padrão do jogo.")
+    parser.add_argument("--pronto", type=Path,
+                        help="Arquivo criado quando a janela do jogo da sessão sobe; o menu que chamou o testador espera por ele para se fechar.")
+    parser.add_argument("--voltar-ao-menu", action="store_true",
+                        help="Ao encerrar a sessão, reabre o menu do jogo (se a janela do testador chegou a subir).")
     parser.add_argument("--profile", type=Path, help="Reuse an explicitly selected isolated playtest profile; report output remains new.")
     args = parser.parse_args()
     if args.seconds < 0 or args.calls < 0 or args.idle_seconds < 0 or not Decimal("0") < Decimal(args.budget) <= Decimal("0.50"):
@@ -576,7 +608,9 @@ def main():
         parser.error("Executavel do Godot nao encontrado.")
     directory = args.output or PROJECT / "tools/temp/jev" / (time.strftime("%Y%m%d-%H%M%S") + "-" + secrets.token_hex(3))
     directory.mkdir(parents=True, exist_ok=False)
-    session = Session(directory, config, args.seconds, args.calls, args.budget, args.offline, args.idle_seconds, language)
+    if args.pronto is not None:
+        args.pronto.unlink(missing_ok=True)  # sinal velho de outra sessão não vale
+    session = Session(directory, config, args.seconds, args.calls, args.budget, args.offline, args.idle_seconds, language, args.pronto)
     session.sol = args.sol
     if args.robot:
         from robo import JogadorAutomatico
@@ -639,6 +673,9 @@ def main():
     session.stop_reason = session.stop_reason or "window_closed"
     summary = session.report(game.returncode)
     print(f"Fim: {summary['stop']} | {session.calls} chamadas | US$ {session.cost:.6f}", flush=True)
+    if args.voltar_ao_menu and session.window_up:
+        # Só se o menu de origem chegou a se fechar (a janela do testador subiu): senão ele ainda está aberto.
+        reopen_menu(args.godot)
     return 0 if summary["stop"] == "implemented_story_completed" or (game.returncode == 0 and summary["stop"] in {"duration", "budget", "call_limit", "user_stop", "window_closed"}) else 1
 
 

@@ -8,7 +8,7 @@ import unittest
 from unittest.mock import patch
 from urllib.error import HTTPError
 
-from jogar import MAX_BODY, MAX_TOKENS, PRICE, ProgressGuard, Session, game_reference, current_task, language_code
+from jogar import MAX_BODY, MAX_TOKENS, PRICE, ProgressGuard, Session, game_reference, current_task, language_code, make_handler, reopen_menu
 
 
 class SpendingTests(unittest.TestCase):
@@ -47,6 +47,52 @@ class SpendingTests(unittest.TestCase):
             self.assertIsNone(session.language)
             report = generate(directory).read_text(encoding="utf-8")
             self.assertIn("padrão do jogo", report)
+
+    def test_menu_waits_for_the_first_authenticated_call_of_the_session_window(self):
+        # O menu só fecha depois de a janela do testador subir (#175): o arquivo nasce na primeira chamada do jogo.
+        import threading
+        import urllib.request
+        from http.server import ThreadingHTTPServer
+        with tempfile.TemporaryDirectory() as folder:
+            ready = Path(folder) / "pronto.txt"
+            session = Session(Path(folder), {}, ready_file=ready)
+            self.assertFalse(session.window_up)
+            self.assertFalse(ready.exists())
+            server = ThreadingHTTPServer(("127.0.0.1", 0), make_handler(session))
+            threading.Thread(target=server.serve_forever, daemon=True).start()
+            self.addCleanup(server.server_close)
+            self.addCleanup(server.shutdown)
+
+            def call(token):
+                request = urllib.request.Request(f"http://127.0.0.1:{server.server_port}/ready", data=b"{}", method="POST",
+                                                 headers={"Authorization": "Bearer " + token, "Content-Type": "application/json"})
+                try:
+                    return urllib.request.urlopen(request, timeout=5).status
+                except urllib.error.HTTPError as error:
+                    return error.code
+            self.assertEqual(call("errado"), 403)
+            self.assertFalse(ready.exists(), "chamada sem o token não prova que a janela subiu")
+            self.assertEqual(call(session.token), 200)
+            self.assertTrue(ready.exists())
+            self.assertTrue(session.window_up)
+            kinds = [json.loads(line)["kind"] for line in (Path(folder) / "eventos.jsonl").read_text(encoding="utf-8").splitlines()]
+            self.assertEqual(kinds.count("window_up"), 1)
+            call(session.token)
+            kinds = [json.loads(line)["kind"] for line in (Path(folder) / "eventos.jsonl").read_text(encoding="utf-8").splitlines()]
+            self.assertEqual(kinds.count("window_up"), 1)
+
+    def test_session_without_ready_file_still_works(self):
+        with tempfile.TemporaryDirectory() as folder:
+            session = Session(Path(folder), {})
+            session.mark_window_up()
+            self.assertTrue(session.window_up)
+
+    def test_menu_reopens_with_the_players_normal_profile(self):
+        with patch("jogar.subprocess.Popen") as popen:
+            reopen_menu("godot.exe", Path("proj"))
+        args, kwargs = popen.call_args
+        self.assertEqual(args[0], ["godot.exe", "--path", "proj"])
+        self.assertNotIn("env", kwargs)
 
     def test_finished_tutorial_guide_is_approached_like_a_resident(self):
         # Sem follow_pedro (o tutorial acabou), o destinatário Pedro vem pela aproximação (#191).
