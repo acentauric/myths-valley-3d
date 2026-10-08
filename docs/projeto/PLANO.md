@@ -75,8 +75,18 @@ A #141 avança pelo caso do ingazeiro: o GLB trazia a árvore numa laje de terra
 de 7 m por 5 m que aparecia como plataforma elevada no caminho. A laje saiu do
 próprio GLB (e dos dois leves), a altura do catálogo foi recalculada para manter
 o tamanho, e um portão cobra que nenhuma árvore tenha mais de 5 m² de base virada
-para baixo. Falta a conferência no jogo e o apoio de toda árvore no declive pelo
-pé do tronco, que hoje usa o chão do ponto de plantio.
+para baixo. A conferência no jogo (08/10) achou o que falta: sobra sob as raízes
+de um ingazeiro um cavaco de terra laranja de beiras vivas (resto da laje, dentro
+do raio que a ferramenta poupou), e o pé do tronco fica a até 0,5 u (aroeira) e
+0,7 u (ingazeiro) do chão do ponto de plantio nas encostas; as outras espécies
+ficam a menos de 0,3 u. A base reta do jatobá e da embaúba e as abas do cedro
+não foram tocadas.
+
+Os troncos que pareciam vazados (#156) eram dez malhas com o fuste virado para
+dentro; só elas voltam às duas faces, e a conferência com janela, de três ângulos,
+nas árvores ao redor da Zefa e nas duas da lista (ipê e pitangueira) mostra todos
+os troncos fechados. **#156 fechada** (08/10/2026). Ver
+[TRONCOS_DAS_ARVORES.md](../testes/TRONCOS_DAS_ARVORES.md).
 
 As cercas repetidas ganham corpos com as transformações do desenho na
 camada de mundo (#125). Navegação e encosta passam; a Candinha alcança

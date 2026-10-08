@@ -2,6 +2,15 @@
 
 ## Em desenvolvimento — 08/10/2026
 
+- **Os troncos das árvores se conferem de perto, e a #156 se fecha.** Com janela e sem
+  HUD, fotos de três ângulos do tronco mais perto da Zefa de cada espécie (jenipapeiro,
+  jequitibá, aroeira, embaúba, jatobá) e do ipê e da pitangueira, as duas da lista de
+  duas faces: todos os troncos aparecem inteiros, sem fenda nem parede interna. O sinal
+  da conta do portão `troncos_fechados` foi conferido (a frente é a ordem horária do
+  Godot, e a medida das íntegras, de 0 a 6%, só faz sentido assim). A conferência do
+  ingazeiro (#141) achou que ainda sobra sob as raízes um cavaco de terra laranja de
+  beiras vivas, e a #141 segue aberta.
+
 - **Os moradores viram para o rumo como o viajante.** O corpo do morador passa a girar
   com o teto angular do viajante (640°/s, sem salto de um quadro) e o passo espera o
   corpo se alinhar: de lado ou na meia-volta ele gira no lugar um instante e só então
