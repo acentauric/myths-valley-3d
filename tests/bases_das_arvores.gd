@@ -1,0 +1,161 @@
+extends SceneTree
+## Confere que NENHUMA ÁRVORE VEM EM CIMA DE UMA LAJE DE TERRA (#141).
+##
+##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/bases_das_arvores.gd
+##
+## "O ingazeiro junto ao caminho apresenta uma base de terra/vegetação elevada e
+## com bordas muito marcadas, parecendo uma peça colocada sobre o terreno." Era
+## isso mesmo: o GLB do ingazeiro (e as versões leve e de longe) nasceu do Tripo
+## de pé numa laje de terra de uns 7 m por 5 m e meio metro de espessura, com
+## fundo reto e beiras retas. Posta no vale, ela boiava no declive e aparecia
+## como plataforma no plano. A laje saiu do próprio GLB (`tools/tripo/
+## tirar_base_de_terra.py`; textura, UVs, materiais e escala ficaram) e a
+## `altura` do catálogo foi recalculada para a árvore seguir do tamanho que tinha.
+##
+## O que denuncia uma laje, e que uma raiz não tem: ÁREA VIRADA PARA BAIXO junto do
+## chão. O fundo reto da laje é um piso de dezenas de metros quadrados; as raízes e o
+## pé de uma árvore, mesmo largos, somam de 0 a 3,5 m². A medida: a soma da área dos
+## triângulos de base (centro abaixo de 0,7 m, normal com pelo menos 70% para baixo)
+## de cada árvore do catálogo, na altura do catálogo. Quem passa de `LIMITE` é laje,
+## salvo as sapopemas da gameleira, que se abrem em abas de 4 a 5 m de raio e estão
+## em `ABAS_DE_RAIZ`.
+##
+## FALSIFICAÇÃO: `-- --falsificar=limite` baixa o limite a 0,2 m² e deve reprovar em
+## toda árvore de raiz larga; `-- --falsificar=abas` tira a exceção da gameleira.
+
+const Catalogo = preload("res://scripts/prototipo_3d/catalogo_assets.gd")
+
+## Acima disto a base é uma laje (m²). O maior pé de árvore do catálogo (a mata
+## larga, de raiz tabular) soma 3,5; uma laje, mais de vinte.
+const LIMITE := 5.0
+## Até onde a base conta, do pé para cima (m), e quanto da normal tem de olhar para baixo.
+const ALTURA_DA_BASE := 0.7
+const VIRADA_PARA_BAIXO := 0.7
+const ABAS_DE_RAIZ := {
+	"gameleira": "sapopemas abertas em abas de 4 a 5 u de raio, de que o tronco sai (medido em 03/10/2026)",
+}
+
+var falhas := 0
+var falsificar := ""
+
+
+func _initialize() -> void:
+	for arg in OS.get_cmdline_user_args():
+		if arg.begins_with("--falsificar="):
+			falsificar = arg.substr("--falsificar=".length())
+	_run.call_deferred()
+
+
+func _conferir(ok: bool, rotulo: String) -> void:
+	if not ok:
+		push_error("BASES_FALHOU: " + rotulo)
+		print("FALHA: ", rotulo)
+		falhas += 1
+
+
+func _run() -> void:
+	var limite := 0.2 if falsificar == "limite" else LIMITE
+	var chaves: Array = []
+	for chave: String in Catalogo.PECAS:
+		var spec: Dictionary = Catalogo.PECAS[chave]
+		if not String(spec.get("tripo", "")).begins_with("arvores/") or not spec.has("altura"):
+			continue
+		# As árvores de tronco e as versões de longe delas; planta rasteira não tem laje.
+		if spec.has("tronco") or chave.ends_with("_longe"):
+			chaves.append(chave)
+	chaves.sort()
+	_conferir(chaves.size() >= 40, "o catálogo tem árvores (achei %d)" % chaves.size())
+
+	var medidas := 0
+	var maior := 0.0
+	var maior_chave := ""
+	for chave: String in chaves:
+		if not Catalogo.tem_tripo(chave):
+			continue
+		var area := _area_da_base(chave)
+		if area < 0.0:
+			_conferir(false, "'%s' não tem malha para medir" % chave)
+			continue
+		medidas += 1
+		var abas := ABAS_DE_RAIZ.has(chave) and falsificar != "abas"
+		if not abas and area > maior:
+			maior = area
+			maior_chave = chave
+		print("  %-20s base virada para baixo: %5.2f m²%s" % [chave, area, "  (abas de raiz)" if abas else ""])
+		if not abas:
+			_conferir(area <= limite, "'%s' tem %.2f m² de base virada para baixo (limite %.1f): vem em cima de uma laje de terra" % [chave, area, limite])
+	_conferir(medidas >= 40, "mediu só %d árvores" % medidas)
+	for chave: String in ABAS_DE_RAIZ:
+		_conferir(Catalogo.PECAS.has(chave), "'%s' está em ABAS_DE_RAIZ mas não existe no catálogo" % chave)
+
+	print("")
+	if falhas == 0:
+		print("BASES_OK: %d árvores sem laje de terra; a maior base mede %.2f m² (%s), limite %.1f" % [medidas, maior, maior_chave, limite])
+	else:
+		print("bases das árvores: %d falha(s)" % falhas)
+	quit(1 if falhas > 0 else 0)
+
+
+func _relativa(raiz: Node, no: Node3D) -> Transform3D:
+	var t := Transform3D.IDENTITY
+	var atual: Node = no
+	while atual != null and atual != raiz:
+		t = (atual as Node3D).transform * t
+		atual = atual.get_parent()
+	return t
+
+
+## A área (m²) dos triângulos de base virados para baixo, na altura do catálogo.
+## -1 sem malha.
+func _area_da_base(chave: String) -> float:
+	var altura := float(Catalogo.PECAS[chave]["altura"])
+	var cena: PackedScene = Catalogo.cena(chave)
+	if cena == null:
+		return -1.0
+	var raiz := cena.instantiate() as Node3D
+	var faces := PackedVector3Array()
+	for filho in raiz.find_children("*", "MeshInstance3D", true, false):
+		var instancia := filho as MeshInstance3D
+		if instancia.mesh == null:
+			continue
+		var t := _relativa(raiz, instancia)
+		for s in instancia.mesh.get_surface_count():
+			if instancia.mesh.surface_get_primitive_type(s) != Mesh.PRIMITIVE_TRIANGLES:
+				continue
+			var dados := instancia.mesh.surface_get_arrays(s)
+			var vertices: PackedVector3Array = dados[Mesh.ARRAY_VERTEX]
+			var indices := PackedInt32Array()
+			if dados[Mesh.ARRAY_INDEX] != null:
+				indices = dados[Mesh.ARRAY_INDEX]
+			if indices.is_empty():
+				for i in vertices.size():
+					faces.append(t * vertices[i])
+			else:
+				for i in indices.size():
+					faces.append(t * vertices[indices[i]])
+	raiz.free()
+	if faces.size() < 3:
+		return -1.0
+	var menor := INF
+	var maior := -INF
+	for v in faces:
+		menor = minf(menor, v.y)
+		maior = maxf(maior, v.y)
+	if maior - menor < 0.0001:
+		return -1.0
+	var escala := altura / (maior - menor)
+	var area := 0.0
+	for i in range(0, faces.size() - 2, 3):
+		var centro_y := (faces[i].y + faces[i + 1].y + faces[i + 2].y) / 3.0
+		if (centro_y - menor) * escala >= ALTURA_DA_BASE:
+			continue
+		var normal := (faces[i + 1] - faces[i]).cross(faces[i + 2] - faces[i])
+		var dobro := normal.length()
+		if dobro < 0.000001:
+			continue
+		# A normal por esta conta aponta para longe de quem vê o triângulo de frente
+		# (a ordem é horária no Godot); virado para baixo é a normal para CIMA.
+		if normal.y / dobro < VIRADA_PARA_BAIXO:
+			continue
+		area += dobro * 0.5 * escala * escala
+	return area

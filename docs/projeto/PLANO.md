@@ -61,6 +61,21 @@ troncos à altura do corpo. Igreja nos dois sentidos e navegação passam;
 mutantes reproduzem umbral e tronco da orla. A quina da ponte central e
 a revisão completa seguem pendentes. Ver [ROTAS_PORTAS_E_TRONCOS.md](../testes/ROTAS_PORTAS_E_TRONCOS.md).
 
+A #150 ganha a auditoria de todas as espécies contra a madeira desenhada: o
+raio do cilindro de 29 das 32 espécies de tronco fica a menos de 0,35 u do
+raio visível, nenhum cilindro cobre copa, e mangue, bambu e gameleira (raízes
+escoras, colmos, sapopemas) estão anotadas com a razão. Nenhum raio
+mudou; um portão sem vale guarda a fonte dos números. A passada a pé junto de
+bases e raízes fica para o jogo aberto. Ver
+[COLISAO_DAS_ARVORES.md](../testes/COLISAO_DAS_ARVORES.md).
+
+A #141 avança pelo caso do ingazeiro: o GLB trazia a árvore numa laje de terra
+de 7 m por 5 m que aparecia como plataforma elevada no caminho. A laje saiu do
+próprio GLB (e dos dois leves), a altura do catálogo foi recalculada para manter
+o tamanho, e um portão cobra que nenhuma árvore tenha mais de 5 m² de base virada
+para baixo. Falta a conferência no jogo e o apoio de toda árvore no declive pelo
+pé do tronco, que hoje usa o chão do ponto de plantio.
+
 As cercas repetidas ganham corpos com as transformações do desenho na
 camada de mundo (#125). Navegação e encosta passam; a Candinha alcança
 Zefa andando com colisões. A revisão permanece aberta porque o passeio
