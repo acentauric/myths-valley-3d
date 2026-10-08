@@ -52,11 +52,32 @@ que o mapa pinta (terra, areia, lama, pasto, copa) tem fronteira orgânica:
   esperando a suavização.
 - **Desvio de borda no shader** (`desvio_borda`, 1,4 u): o ponto lido no mapa é empurrado por dois
   ruídos de manchas de ~6 u, e toda fronteira serpenteia.
+- **Hash sem seno (a causa dos retângulos de borda reta).** O ruído do shader (`hash21`, em
+  `solo.gdshaderinc`, no `areia_praia` e no `leito_rio`) usava `fract(sin(dot(p, k)) * 43758)`.
+  Esse produto amplifica o erro de arredondamento da GPU: o mesmo canto de célula, lido de duas
+  células vizinhas, dava dois valores, e longe da origem do vale (x ou z de algumas centenas de
+  u) cada célula do ruído virava um retângulo de borda reta e canto vivo, na areia, na grama e no
+  recorte da praia. Foi isso (e não o mapa, que a suavização já tinha deixado liso, nem o ruído em si) que
+  mantinha os degraus pequenos na areia, na rua e na foz depois da suavização. O hash agora é `fract` de multiplicações e somas
+  (a de Hoskins, sem seno). O portão gráfico `validar_franja_da_areia.gd` pede o mesmo canto de
+  duas maneiras a 300 u da origem: com o hash novo diferem ~0,2% dos pixels (o `floor`), com o de
+  seno ~75% (`-- --hash-antigo` reprova).
+- **Desvio largo para as camadas largas** (`desvio_borda_larga`, 2,0 u): areia, lama, pasto e copa
+  leem o mapa com um desvio maior (ruído de ~5 u), porque a areia da costa vem de retas do KML e,
+  só com o desvio curto, ficava reta por 5 a 7 u seguidos. Terra e trilha, estreitas, ficam com os
+  1,4 u, para o traço não se partir.
+- **Areia da foz.** A faixa de areia em volta do traçado do rio (`mouth_sand_*`) tinha rampa de
+  0,75 u e distância reta de vértice a vértice: acabava em retas. Agora é cheia até 3,4 u, some
+  até 6,6 u e a distância leva um ruído de 1,3 u (#138).
 - **Prioridade.** A areia esconde o pasto pelo peso inteiro (`w_capim *= 1 - w_areia`), como já
   fazia com o folhiço e o barro.
 
 Sobre o custo: o mapa segue em primitivas de C++; a pintura faz o dobro de linhas e as copas, uma
-faixa por pixel de altura da mancha em vez de um retângulo, sem laço por pixel.
+faixa por pixel de altura da mancha em vez de um retângulo, sem laço por pixel. Medido (headless,
+`_montar_mapa_de_solo` mais `pintar_vida` com 3.938 árvores, quatro rodadas): a montagem foi de
+~240 para ~400 ms e a pintura da vida de ~50 para ~70 ms, uns 180 ms a mais numa carga do vale de
+dezenas de segundos. No quadro, o chão lê as mesmas camadas e os mesmos amostradores: o desvio
+largo soma quatro leituras de ruído por fragmento de chão.
 
 O portão `tests/mapa_de_solo.gd` mede o maior salto entre pixels vizinhos de cada camada suave
 (`degrau_maximo`: 1,0 é corte seco, ~0,3 é rampa de 4 u) e reprova acima de 0,6 (0,85 na trilha);
@@ -141,8 +162,12 @@ média medida da textura com a paleta da AMBIENTACAO §7. O script imprime as m�
   pasto na Fazenda; copa sob a mata; normais para cima e suaves; shader ligado ao mapa; `surface_at`.
   `-- --falsificar-solo` zera o mapa e o portão tem de reprovar.
 - `tools/prototipo_3d/fotografar_chao.gd` (precisa de janela: com `--headless` nenhum shader
-  compila): oito vistas fixas (praça, Rua Principal, beira do rio norte, foz, praia do píer, Mirante
-  olhando a vila, vila olhando o Mirante, lavoura). Erro de shader não derruba o jogo; procure
+  compila): doze vistas fixas (praça, Rua Principal, beira do rio norte, foz, foz de cima, costa de cima,
+  dendezal, dendezal de cima, praia do píer, Mirante olhando a vila, vila olhando o Mirante,
+  lavoura). `--hora=` e `--estacao=0..3` mudam a luz e a estação (e a maré acompanha a hora:
+  preamar às 7 h, baixa-mar perto das 13 h); `--esconder=Foz_do_rio,Rio` (`_` vale espaço, `nome*`
+  é prefixo, `~trecho` é substring) esconde malhas para descobrir de quem é uma emenda; `--fps=300`
+  mede o tempo de quadro de cada vista com o vsync desligado. Erro de shader não derruba o jogo; procure
   `SHADER ERROR` na saída.
 
 ## Fora desta entrega

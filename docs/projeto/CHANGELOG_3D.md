@@ -2,6 +2,19 @@
 
 ## Em desenvolvimento — 08/10/2026
 
+- **O chão e a praia perdem de vez os retângulos de borda reta.** Depois da suavização do mapa
+  ainda sobravam, na areia, na rua e junto da foz, retângulos pequenos de canto vivo, e a foz
+  tinha uma laje de areia clara de bordas retas no raso. Os retângulos eram o hash do ruído do
+  shader (`sin * 43758`), que longe da origem do vale dá dois valores ao mesmo canto de célula;
+  o hash novo não usa seno (chão, praia e leito do rio), a areia das camadas largas lê o mapa com
+  desvio maior, a faixa de areia em volta da foz ganhou rampa larga e ruído, e a laje da foz se
+  desfaz em manchas ao largo, sem mexer em malha, altura ou colisão. Conferido com o voo de
+  câmera antes e depois (praça, rua, foz, foz de cima, costa de cima, píer; 7, 9, 13 e 17 h, com
+  preamar e baixa-mar), com a montagem do mapa de solo medida (+~180 ms, em primitivas de C++) e
+  com os portões `mapa_de_solo` (também `--falsificar-quinas`), `clareiras_da_mata`, `agua_rasa`,
+  `mare_ligada` e `rio_grande`. O gráfico `validar_franja_da_areia.gd` ganhou a laje da foz e o
+  hash a 300 u da origem, cada um com a sua falsificação (#197, #138).
+
 - **Primeiros clipes do Mixamo nos moradores.** Seis animações do Mixamo entram
   redirecionadas para o esqueleto Tripo de cada um (`tools/prototipo_3d/mixamo/redirecionar.gd`,
   só rotações e o quadril, pé no chão, no lugar): o Pedro treina capoeira no posto quando o

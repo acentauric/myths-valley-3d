@@ -516,6 +516,11 @@ func build_region(kml_json_path: String, scenario_json_path: String) -> void:
 		bed_material.set_shader_parameter("areia", AREIA_TEXTURE)
 		bed_material.set_shader_parameter("fracao_canal", float(mouth.width) / total_width)
 		bed_material.set_shader_parameter("franja", 0.22)
+		# A laje de areia que desce sob o mar na foz some em manchas ao largo, na mesma
+		# distância da cauda da malha: sem isso ela acabava num retângulo claro no raso.
+		bed_material.set_shader_parameter("costa_ponto", mouth.costa - mouth.direcao * _units(4.0, 1.0))
+		bed_material.set_shader_parameter("costa_direcao", mouth.direcao)
+		bed_material.set_shader_parameter("costa_desfaz", _units(26.0, 6.5))
 		_add_ribbon("Ladeira da foz", mouth.points, total_width, RIVER_BED_SAND_OFFSET, Color.WHITE, true, bed_material, NAN, 6, 0.8, float(mouth.width) / total_width, null, false, false, false, NAN, false, BankProfile.MOUTH)
 	_add_river_mouths()
 	# A rua mais larga fica por cima nas sobreposições (as ramificações entram por baixo
@@ -1176,6 +1181,8 @@ func _terrain_texture_material() -> ShaderMaterial:
 	material.set_shader_parameter("variacao_grande", 0.1)
 	# As fronteiras das camadas do mapa serpenteiam até 1,4 u (#197).
 	material.set_shader_parameter("desvio_borda", 1.4)
+	# Areia, lama, pasto e copa (camadas largas): desvio de borda maior e de duas escalas.
+	material.set_shader_parameter("desvio_borda_larga", 2.0)
 	# O Mirante tem 45,6 u: o pedrisco cobre o topo, acima de 38.
 	material.set_shader_parameter("altura_pedrisco", 38.0)
 	# A copa é pintada antes de o bloco de árvores sumir (LOD_MATA + a margem, medidos
@@ -1186,8 +1193,11 @@ func _terrain_texture_material() -> ShaderMaterial:
 	material.set_shader_parameter("copa_ergue", 3.0)
 	material.set_shader_parameter("ergue_inicio", LOD_MATA - 60.0)
 	material.set_shader_parameter("ergue_cheio", LOD_MATA - 10.0)
-	material.set_shader_parameter("mouth_sand_inner", _units(16.0, 4.0))
-	material.set_shader_parameter("mouth_sand_outer", _units(19.0, 4.75))
+	# A faixa de areia da foz: cheia até 3,4 u do traçado do rio, some até 6,6 u, com a
+	# borda desviada por ruído até 1,3 u (rampa de 0,75 u e reta acabava em quinas, #197).
+	material.set_shader_parameter("mouth_sand_inner", _units(13.6, 3.4))
+	material.set_shader_parameter("mouth_sand_outer", _units(26.4, 6.6))
+	material.set_shader_parameter("mouth_sand_desvio", _units(5.2, 1.3))
 	_ligar_mapa_de_solo(material)
 	return material
 
@@ -1701,7 +1711,9 @@ func _prepare_mouth_extensions() -> void:
 			var tail := _units(24.0, 6.0)
 			extension.append(point + direction * tail)
 			var width := float(river.width)
-			_mouth_extensions.append({"points": extension, "width": width, "bounds": _points_bounds(extension).grow(width * 0.5 + _units(12.0, 3.0))})
+			# `costa` e `direcao` dizem ao leito onde a laje sai da terra: dali para o mar a
+			# areia se desfaz em manchas (#138), em vez de acabar numa régua reta.
+			_mouth_extensions.append({"points": extension, "width": width, "costa": point, "direcao": direction, "bounds": _points_bounds(extension).grow(width * 0.5 + _units(12.0, 3.0))})
 
 
 func _is_northern_river(river: Dictionary) -> bool:
