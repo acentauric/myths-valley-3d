@@ -48,7 +48,7 @@ func _run() -> void:
 				_conferir(conteudo.get_child(conteudo.get_child_count() - 1) is ScrollContainer, "sem rodapé depois da lista (aba %d)" % aba)
 				var abas_botoes := (conteudo.get_child(2) as HBoxContainer).get_children()
 				var foco_ativa := (abas_botoes[aba] as Button).get_theme_stylebox("focus") as StyleBoxFlat
-				_conferir(foco_ativa != null and foco_ativa.expand_margin_left == 0.0, "o foco da aba ativa não ganha segunda moldura (aba %d)" % aba)
+				_conferir((abas_botoes[aba] as Button).has_theme_stylebox_override("focus") and foco_ativa != null and foco_ativa.expand_margin_left == 0.0 and foco_ativa.expand_margin_right == 0.0 and foco_ativa.expand_margin_top == 0.0 and foco_ativa.expand_margin_bottom == 0.0, "o foco da aba ativa não ganha segunda moldura (aba %d)" % aba)
 				for caixa in conteudo.find_children("*", "VBoxContainer", true, false):
 					if not is_equal_approx((caixa as Control).custom_minimum_size.y, PainelAjustes.ALTURA_CAMPO):
 						continue

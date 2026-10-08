@@ -405,6 +405,8 @@ func _carregar_pessoas() -> void:
 func _trocar_aba(nova: int) -> void:
 	# Voltar da ficha leva à página em que o cartão dela está, e não à que ficou aberta antes.
 	if not selecionado.is_empty() and nova == aba:
+		# A capacidade é a dos cartões: o filtro, escondido na ficha, volta a ocupar espaço.
+		_campo_filtro.visible = true
 		var posicao := _itens().map(func(item: Array) -> String: return item[0]).find(selecionado)
 		if posicao >= 0:
 			_paginas[aba] = floori(float(posicao) / _cartoes_por_pagina())
@@ -522,8 +524,7 @@ func _montar_cartoes() -> void:
 		cartao.name = ("Morador_" if aba == 0 else "Peca_") + chave
 		cartao.text = str(item[1]) + ("  •" if item[2] else "")
 		# O nome pode cortar no cartão: o tooltip o mostra inteiro, e a chave embaixo.
-		cartao.tooltip_text = str(item[1]) if str(item[1]) == chave else "%s
-%s" % [item[1], chave]
+		cartao.tooltip_text = str(item[1]) if str(item[1]) == chave else "%s\n%s" % [item[1], chave]
 		cartao.clip_text = true
 		cartao.add_theme_font_size_override("font_size", 14)
 		cartao.custom_minimum_size = Vector2(CARTAO_MIN.x, maxf(CARTAO_MIN.y, altura_cartao))

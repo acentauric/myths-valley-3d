@@ -190,6 +190,25 @@ func _run() -> void:
 	await _frames(2)
 	_assert(painel._lista.has_node("GradeAssets") and painel.selecionado.is_empty(), "clicar na aba volta aos cartões")
 	_assert(painel._lista.get_node("GradeAssets").has_node("Peca_mangueira"), "voltar da ficha leva à página do cartão dela")
+	# Um cartão cujo índice cai em páginas diferentes conforme o filtro (visível nos cartões,
+	# escondido na ficha) está ou não contado: voltar da ficha tem de usar a capacidade dos cartões.
+	var por_pagina_cartoes: int = capacidade.x * capacidade.y
+	painel._abrir("mangueira")
+	await _frames(3)
+	var por_pagina_ficha: int = painel._cartoes_por_pagina()
+	var chaves_aba: Array = painel._itens().map(func(item: Array) -> String: return item[0])
+	var indice_critico := -1
+	for indice in range(chaves_aba.size()):
+		if floori(float(indice) / por_pagina_cartoes) != floori(float(indice) / por_pagina_ficha):
+			indice_critico = indice
+			break
+	_assert(indice_critico >= 0, "há uma peça cujo índice muda de página com o filtro escondido")
+	if indice_critico >= 0:
+		painel._abrir(chaves_aba[indice_critico])
+		await _frames(3)
+		painel._trocar_aba(1)
+		await _frames(2)
+		_assert(painel._lista.get_node("GradeAssets").has_node("Peca_" + chaves_aba[indice_critico]), "voltar da ficha cai na página dos cartões, não na da ficha (%d)" % indice_critico)
 	# Restaurar volta ao padrão do projeto, e sem pendência o × fecha direto.
 	var antes := float(CatalogoAssets.PECAS["mangueira"]["altura"])
 	AjustesConteudo.restaurar_morador("benedito")
