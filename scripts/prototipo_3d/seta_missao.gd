@@ -2,8 +2,15 @@ class_name SetaMissao
 extends Node3D
 ## Marcador do alvo da missão atual, em duas partes: no MUNDO, um cone dourado
 ## invertido flutuando sobre o alvo e um anel raso pulsando no chão; na TELA, um
-## chevron dourado preso à borda apontando o rumo quando o alvo sai do campo de
+## chevron dourado apontando o rumo quando o alvo sai do campo de
 ## visão da câmera. API: definir_alvo(pos, texto) e limpar().
+##
+## O CHEVRON ORBITA O JOGADOR (#196). Fora da visão ele não gruda mais na borda da tela
+## (onde mora a interface: barras, relógio, missão, atalhos, minimapa, barra de mão): gira
+## numa elipse ao redor do personagem na tela, apontando o rumo do alvo, com raio
+## proporcional à altura da janela e ao tamanho do HUD de Ajustes. Se o ponto da órbita cair
+## sobre um painel do HUD (grupo `obstaculos_do_hud`), ele desliza pela elipse até sair, ou
+## diminui o raio (`lugar_livre`).
 ##
 ## O chevron tem PESO (`suavizador_de_tela.gd`): desliza até o lugar dele em vez de colar
 ## no ponto projetado a cada quadro, gira pelo caminho curto, e acende e apaga em vez de
@@ -26,8 +33,21 @@ const BOB := 0.12
 ## Chegar recolhe a orientação; a margem maior para sair evita piscar.
 const RAIO_CHEGADA := 2.4
 const RAIO_SAIDA := 3.2
-## Margem (px) da borda da tela onde o chevron se prende.
+## Margem (px) da borda da tela que o chevron nunca ultrapassa.
 const MARGEM_TELA := 28.0
+## O raio vertical da órbita, em fração da altura da tela (multiplicada pelo tamanho do HUD de
+## Ajustes e presa entre o mínimo e o máximo); o horizontal é ACHATAMENTO vezes maior.
+const FRACAO_DA_ORBITA := 0.20
+const FRACAO_MINIMA := 0.18
+const FRACAO_MAXIMA := 0.25
+const ACHATAMENTO := 1.5
+## Quanto da órbita sobra quando o raio inteiro está coberto, do maior ao menor.
+const FATORES_DA_ORBITA := [1.0, 0.8, 0.6, 0.4]
+## O passo (rad) do deslize pela elipse, e até onde ele vai antes de diminuir o raio.
+const PASSO_DO_DESLIZE := 0.0873
+const DESLIZE_PERTO := 1.5708
+## O lado (px) do quadrado que o chevron ocupa ao ser testado contra os painéis.
+const LADO_LIVRE := 40.0
 ## Alvo visível na tela e mais perto que isto (u): o chevron some (o cone basta).
 const PERTO := 25.0
 ## Meio lado (px) do Control do chevron (pivô no centro para girar).
@@ -182,10 +202,7 @@ func _atualizar_chevron(delta: float) -> void:
 	var tamanho: Vector2 = _chevron.get_viewport_rect().size
 	var area := Rect2(Vector2.ZERO, tamanho).grow(-MARGEM_TELA)
 	var centro := tamanho * 0.5
-	# Atrás da câmera o unproject espelha: inverte para apontar pelo lado certo.
-	var rumo := projecao - centro
-	if atras:
-		rumo = -rumo
+	var rumo := _rumo_na_tela(camera, projecao, atras, centro)
 	if rumo.length_squared() < 1.0:
 		rumo = Vector2(0, 1)
 	# O MAPA DOIDO: o chevron aponta para o lado errado (erro zero fora da loucura).
@@ -201,6 +218,7 @@ func _atualizar_chevron(delta: float) -> void:
 	var pos := _mola.posicao
 	var giro := _chevron.rotation
 	if not some:
+		var obstaculos := PopupsDoMundo.paineis_do_hud(tamanho, self)
 		if na_tela:
 			# Visível mas longe: paira sobre o ponto, apontando para baixo, para ele.
 			pos = projecao - Vector2(0, 46)
@@ -208,11 +226,12 @@ func _atualizar_chevron(delta: float) -> void:
 			if erro != 0.0:
 				giro += erro
 				pos += louca.deriva_na_tela(60.0)
+			# Sobre um painel do HUD ele se apaga: o cone sobre o alvo já o marca.
+			if _cobre(pos, obstaculos):
+				some = true
 		else:
-			# Do centro rumo ao alvo até tocar a borda com a margem.
-			var meia := centro - Vector2(MARGEM_TELA, MARGEM_TELA)
-			var fator := minf(meia.x / maxf(absf(rumo.x), 0.001), meia.y / maxf(absf(rumo.y), 0.001))
-			pos = centro + rumo * fator
+			# Fora da visão ORBITA O JOGADOR rumo ao alvo, fugindo dos painéis do HUD.
+			pos = lugar_livre(_centro_da_orbita(camera, area, centro), rumo, _raio_da_orbita(tamanho), obstaculos, area)
 			giro = rumo.angle()
 	var quer := 0.0 if some else 1.0
 	if quer > 0.0 and _alfa <= 0.0:
@@ -233,6 +252,74 @@ func _atualizar_chevron(delta: float) -> void:
 	_chevron.position = pos - _chevron.pivot_offset
 	_chevron.pulso = 0.7 + 0.3 * (0.5 + 0.5 * sin(_tempo * 3.2))
 	_chevron.queue_redraw()
+
+
+## O rumo do alvo na tela, a partir do jogador: o ponto 4 m adiante, na direção do alvo e na
+## altura do peito, projetado ao lado do peito. Sem jogador (ou com um dos pontos atrás da
+## câmera) vale a conta antiga: do centro da tela ao ponto projetado do alvo, que atrás da
+## câmera espelha e por isso se inverte.
+func _rumo_na_tela(camera: Camera3D, projecao: Vector2, atras: bool, centro: Vector2) -> Vector2:
+	var rumo := projecao - centro
+	if atras:
+		rumo = -rumo
+	if is_instance_valid(_jogador):
+		var peito := _jogador.global_position + Vector3.UP
+		var para := Vector3(_alvo.x - peito.x, 0.0, _alvo.z - peito.z)
+		if para.length() > 0.5:
+			var adiante := peito + para.normalized() * 4.0
+			if not camera.is_position_behind(peito) and not camera.is_position_behind(adiante):
+				var v := camera.unproject_position(adiante) - camera.unproject_position(peito)
+				if v.length_squared() > 4.0:
+					rumo = v
+	return rumo
+
+
+## Onde o jogador está na tela (o centro da órbita), preso à área útil; sem jogador, `padrao`.
+func _centro_da_orbita(camera: Camera3D, area: Rect2, padrao: Vector2) -> Vector2:
+	if is_instance_valid(_jogador):
+		var peito := _jogador.global_position + Vector3.UP
+		if not camera.is_position_behind(peito):
+			var p := camera.unproject_position(peito)
+			return Vector2(clampf(p.x, area.position.x, area.end.x), clampf(p.y, area.position.y, area.end.y))
+	return padrao
+
+
+## Os dois raios da elipse (px): proporcionais à altura da janela e ao tamanho do HUD de Ajustes.
+func _raio_da_orbita(tamanho: Vector2) -> Vector2:
+	var escala := 1.0
+	var tela: Node = get_node_or_null("/root/Tela") if is_inside_tree() else null
+	if tela != null:
+		escala = float(tela.get("escala_hud"))
+	var vertical := tamanho.y * clampf(FRACAO_DA_ORBITA * escala, FRACAO_MINIMA, FRACAO_MAXIMA)
+	return Vector2(vertical * ACHATAMENTO, vertical)
+
+
+## Algum painel cobre o quadrado do chevron em `p`?
+static func _cobre(p: Vector2, obstaculos: Array[Rect2]) -> bool:
+	var quadro := Rect2(p - Vector2.ONE * LADO_LIVRE * 0.5, Vector2.ONE * LADO_LIVRE)
+	for painel in obstaculos:
+		if painel.intersects(quadro):
+			return true
+	return false
+
+
+## O lugar do chevron na órbita: o ponto da elipse (centro `centro`, raios `raio`) na direção
+## `rumo`; se ele cair sobre um painel ou fora da `area`, desliza pela elipse para os dois lados
+## (até um quarto de volta), depois diminui o raio, e só então tenta a volta inteira.
+static func lugar_livre(centro: Vector2, rumo: Vector2, raio: Vector2, obstaculos: Array[Rect2], area: Rect2) -> Vector2:
+	var direcao := rumo.normalized() if rumo.length_squared() > 0.0001 else Vector2(0, 1)
+	var fase := atan2(direcao.y / raio.y, direcao.x / raio.x)
+	for limite in [DESLIZE_PERTO, PI]:
+		for fator: float in FATORES_DA_ORBITA:
+			var passos := int(limite / PASSO_DO_DESLIZE)
+			for passo in range(passos + 1):
+				for lado in ([1.0] if passo == 0 else [1.0, -1.0]):
+					var angulo: float = fase + lado * passo * PASSO_DO_DESLIZE
+					var p := centro + Vector2(cos(angulo) * raio.x, sin(angulo) * raio.y) * fator
+					if area.has_point(p) and not _cobre(p, obstaculos):
+						return p
+	var menor: float = FATORES_DA_ORBITA[FATORES_DA_ORBITA.size() - 1]
+	return centro + Vector2(cos(fase) * raio.x, sin(fase) * raio.y) * menor
 
 
 ## Chevron 2D desenhado à mão: seta apontando +X, girada pela rotação do Control.

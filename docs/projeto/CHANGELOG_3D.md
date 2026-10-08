@@ -2,6 +2,17 @@
 
 ## Em desenvolvimento — 08/10/2026
 
+- **A seta da missão orbita o jogador em vez de grudar na borda sobre o HUD.** Com o alvo
+  fora da visão, o chevron dourado ia para a borda da tela e ficava por cima das barras, do
+  relógio, da missão, dos atalhos e do minimapa. Agora gira numa elipse ao redor do
+  personagem na tela, apontando o rumo do alvo medido a partir do jogador, com raio de 18 a
+  25% da altura da janela (20% no HUD médio, e acompanha o tamanho do HUD de Ajustes). Se o
+  ponto da órbita cair sobre um painel do HUD (grupo `obstaculos_do_hud`, o painel de espera
+  incluído), ele desliza pela elipse até sair, ou diminui o raio; com o alvo à vista mas longe,
+  o chevron que paira sobre ele se apaga se for cair sobre um painel. A mola, o giro e o fade
+  de antes seguem iguais, então a volta para o cone sobre o alvo continua suave. O portão
+  `seta_em_orbita` confere órbita, raio, rumo e desvio de painel (#196).
+
 - **O relógio do topo vira o controle do tempo, e o bloco do topo se alinha.** A placa do
   relógio ganha duas colunas (o ícone centrado na vertical à esquerda, hora e período à
   direita, margens iguais) e passa a ter a mesma altura da pilha das três barras, 51 px
