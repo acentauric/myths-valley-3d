@@ -266,3 +266,17 @@ momento da geração (ver `assets/CREDITOS.md`).
 SHA-256 de cada GLB no arquivo do lote (`sha256`).
 
 <!-- lote-2026-10-05_paisagismo:fim -->
+
+## Ingazeiro sem a laje de terra (08/10/2026, #141)
+
+`ingazeiro_tripo.glb`, `ingazeiro_leve_tripo.glb` e `ingazeiro_longe_tripo.glb`
+vinham do Tripo com a árvore de pé numa laje de terra de uns 7 m por 5 m e meio
+metro de espessura, de fundo reto e beiras retas: posta no vale ela aparecia como
+uma plataforma pousada sobre o terreno. `tools/tripo/tirar_base_de_terra.py`
+(`--altura 7.5 --eixo=-1.35,0.05`, faixa 1,3 m e raio 0,95 m, em metros na escala do catálogo)
+tirou os triângulos que tocam a faixa de baixo e se afastam do eixo do tronco:
+1.026 de 16.886 no GLB principal, 539 de 5.426 no leve e 276 de 1.794 no de longe.
+Os vértices que sobram foram compactados; textura, UVs, normais e materiais ficaram
+como estavam, e nada foi regerado no Tripo. As alturas do catálogo foram recalculadas
+(7,03, 7,07 e 6,92) para a árvore seguir do tamanho que tinha. Os GLBs de antes estão
+no histórico do git.

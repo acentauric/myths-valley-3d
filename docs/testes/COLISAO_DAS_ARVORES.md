@@ -35,11 +35,11 @@ calibrado, e nenhum cilindro cobre copa — todos têm no máximo 3 m (o cajueir
 | cajueiro | 0,70 | 0,38 | tronco torto e baixo; o cilindro de 2,2 m foi calibrado no eixo medido |
 | jatobá | 0,45 | 0,17 | a mais folgada entre as de fuste único (+0,28), à beira do limite |
 | mangue | 0,60 | 0,17 no fuste | raízes escoras se abrem a 1,2–1,6 u; o cilindro cobre o miolo |
-| ingazeiro | 0,40 | 0,12–1,9 | vários fustes desde o pé, com base larga: ver #141 |
+| ingazeiro | 0,40 | 0,28 | media 0,12–1,9 antes de tirar a laje de terra que vinha no GLB (#141); agora é um fuste só |
 | touceira de bambu | 0,90 | 0,14 por colmo | os colmos se abrem a 1,3 u; o cilindro cobre o miolo |
 | gameleira | 1,2 × 1,3 | 3,3 nas sapopemas | o tronco liso mede 1,1–1,9 u acima das sapopemas (medida de 03/10); as sapopemas são abas baixas que se pisam |
 
-Mangue, ingazeiro, bambu e gameleira estão em `SEM_TRONCO_UNICO` no portão, com a razão (as três de fora da faixa e o ingazeiro, de vários fustes). O ipê-amarelo
+Mangue, bambu e gameleira estão em `SEM_TRONCO_UNICO` no portão, com a razão (as três de fora da faixa). O ipê-amarelo
 e a pitangueira, cuja medida sai estreita (0,03 e 0,13), são as de malha de
 costas da #156: o primeiro triângulo é o fundo da parede.
 
@@ -61,8 +61,8 @@ números, não a física):
 ## O que fica em aberto
 
 A passagem a pé do jogador e dos moradores junto de bases e raízes, e a
-coerência com a rota no jogo aberto, pedem o passeio: as bases largas (ingazeiro,
-mangue, bambu, sapopemas da gameleira) passam por cima dos cilindros por
+coerência com a rota no jogo aberto, pedem o passeio: as bases largas (mangue,
+bambu, sapopemas da gameleira) passam por cima dos cilindros por
 projeto, e se isso incomoda no jogo o caminho é cilindro maior só nelas, junto da
 reserva da malha de navegação. A oclusão da câmera é da #126, e a posição das
 árvores e das bases no terreno, da #141.

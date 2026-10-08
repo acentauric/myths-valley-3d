@@ -2460,8 +2460,9 @@ func _build_margens_do_rio(rng: RandomNumberGenerator) -> void:
 				var base := a + direcao * (proximo - percorrido)
 				var no_mangue := tem_mangue and _distance_to_line(base, _coast) < perto_do_mar
 				for lado in [-1.0, 1.0]:
-					# O modelo do ingazeiro inclui uma pedra de ate 4,8 u de raio
-					# na maior escala; mantenha a base inteira fora da agua.
+					# O modelo do ingazeiro trazia uma laje de terra de até 4,8 u de
+					# raio na maior escala, que pedia a base inteira fora da água; a
+					# laje saiu do GLB (#141) e o recuo ficou como composição da beira.
 					var recuo := rng.randf_range(0.8, 2.5) if no_mangue else rng.randf_range(5.2, 6.0)
 					var ponto: Vector2 = base + normal * float(lado) * (largura * 0.5 + recuo)
 					if not Geometry2D.is_point_in_polygon(ponto, _land) or _near_route(ponto, _units(5.0, 2.0)):

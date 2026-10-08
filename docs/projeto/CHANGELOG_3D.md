@@ -2,11 +2,26 @@
 
 ## Em desenvolvimento — 08/10/2026
 
+- **O ingazeiro deixa de vir pousado numa laje de terra.** O GLB do Tripo trazia a
+  árvore de pé numa laje de uns 7 m por 5 m e meio metro de espessura, de fundo
+  reto e beiras retas, que no vale aparecia como uma plataforma elevada à beira do
+  caminho e boiava no declive. A laje saiu dos três GLBs (principal, leve e de
+  longe) com `tools/tripo/tirar_base_de_terra.py`: 1.026 de 16.886 triângulos no
+  principal, e o tronco com o pé de raízes ficou. Textura, UVs, materiais e
+  escala não mudaram (a `altura` do catálogo foi recalculada para 7,03, 7,07 e
+  6,92, e a da receita do paisagismo para 7,07), e os GLBs conferem sem erro no
+  validador do glTF. Sem a laje, o tronco do ingazeiro leve e o de longe aparecem
+  de costas em 9% e 12% dos raios e entram na lista de duas faces da #156. Um
+  portão novo soma a área de base virada para baixo de cada árvore e reprova o que
+  passa de 5 m² (a laje tinha mais de vinte). Falta ver no jogo, no ingazeiro do
+  caminho da chegada, e o apoio de todas as árvores no declive pelo pé do tronco
+  (#141).
+
 - **A colisão das árvores é auditada espécie por espécie.** Um script lê cada
   GLB, atira raios horizontais no eixo do tronco e compara o raio da madeira com o
   cilindro do catálogo: 29 das 32 espécies de tronco ficam entre -0,21 e +0,32 u (o
   corpo do jogador soma 0,28), nenhum cilindro passa de 3 m, e as que não têm
-  fuste único (mangue, ingazeiro, bambu, gameleira) ficam anotadas com a razão.
+  fuste único (mangue, bambu, gameleira) ficam anotadas com a razão.
   Nenhum raio mudou. Um portão sem montar o vale cobra o teto de 3,5 m do
   cilindro, colisão em toda árvore de ficha e o paisagismo repetindo o raio e a
   altura do catálogo. A passada a pé junto de bases e raízes fica para o jogo

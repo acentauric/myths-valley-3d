@@ -43,7 +43,7 @@ const PECAS := {
 	# Mata local (28/09): manguezal, restinga e beira de rio de Saubara.
 	"mangue": {"tripo": "arvores/mangue_tripo.glb", "altura": 5.0, "tronco": 0.6},
 	"piacava": {"tripo": "arvores/piacava_tripo.glb", "altura": 5.5, "tronco": 0.45},
-	"ingazeiro": {"tripo": "arvores/ingazeiro_tripo.glb", "altura": 7.5, "tronco": 0.4},
+	"ingazeiro": {"tripo": "arvores/ingazeiro_tripo.glb", "altura": 7.03, "tronco": 0.4},
 	"clusia": {"tripo": "arvores/clusia_tripo.glb", "altura": 3.2, "tronco": 0.35},
 	"pitangueira": {"tripo": "arvores/pitangueira_tripo.glb", "altura": 3.0, "tronco": 0.25},
 	"jenipapeiro": {"tripo": "arvores/jenipapeiro_tripo.glb", "altura": 8.5, "tronco": 0.4},
@@ -353,7 +353,7 @@ const PECAS := {
 	"mangueira_leve": {"tripo": "arvores/mangueira_leve_tripo.glb", "altura": 7.2, "tronco": 0.55},
 	"jaqueira_leve": {"tripo": "arvores/jaqueira_leve_tripo.glb", "altura": 8.4, "tronco": 0.4},
 	"castanhola_leve": {"tripo": "arvores/castanhola_leve_tripo.glb", "altura": 6.0, "tronco": 0.45},
-	"ingazeiro_leve": {"tripo": "arvores/ingazeiro_leve_tripo.glb", "altura": 7.5, "tronco": 0.4},
+	"ingazeiro_leve": {"tripo": "arvores/ingazeiro_leve_tripo.glb", "altura": 7.07, "tronco": 0.4},
 	"mangue_leve": {"tripo": "arvores/mangue_leve_tripo.glb", "altura": 5.0, "tronco": 0.6},
 	"coqueiro_leve": {"tripo": "arvores/coqueiro_leve_tripo.glb", "altura": 9.5, "tronco": 0.24},
 	"dendezeiro_leve": {"tripo": "arvores/dendezeiro_leve_tripo.glb", "altura": 6.5, "tronco": 0.4},
@@ -363,7 +363,7 @@ const PECAS := {
 	"pau_brasil_leve": {"tripo": "arvores/pau_brasil_leve_tripo.glb", "altura": 5.6, "tronco": 0.38},
 	"coqueiro_longe": {"tripo": "arvores/coqueiro_longe_tripo.glb", "altura": 9.5},
 	"mangue_longe": {"tripo": "arvores/mangue_longe_tripo.glb", "altura": 5.0},
-	"ingazeiro_longe": {"tripo": "arvores/ingazeiro_longe_tripo.glb", "altura": 7.5},
+	"ingazeiro_longe": {"tripo": "arvores/ingazeiro_longe_tripo.glb", "altura": 6.92},
 	"castanhola_longe": {"tripo": "arvores/castanhola_longe_tripo.glb", "altura": 6.0},
 	"mata_alta_longe": {"tripo": "arvores/mata_alta_longe_tripo.glb", "altura": 11.0},
 	"mata_larga_longe": {"tripo": "arvores/mata_larga_longe_tripo.glb", "altura": 9.0},
@@ -393,7 +393,8 @@ const DUAS_FACES := [
 ## oco ou com fenda (o ipê do adro, a pitangueira do quintal de toda casa).
 ## `tests/troncos_fechados.gd` mede cada árvore de tronco: de cada raio horizontal
 ## que cruza o pé dela, a fração cujo primeiro triângulo é de costas. As espécies
-## íntegras dão de 0 a 6%; estas dão de 12% a 79%. Ficam com as duas faces, e as
+## íntegras dão de 0 a 6%; estas dão de 9% a 79% (o ingazeiro leve e o de longe só
+## aparecem aqui depois que a laje de terra saiu do GLB deles, #141). Ficam com as duas faces, e as
 ## normais do GLB acompanham o sentido dos triângulos, então a face de trás sai
 ## bem iluminada. As outras seguem com o descarte ligado: não é ajuste global, e a
 ## lista só cresce com a medida (o portão reprova árvore que passa do limite e
@@ -401,7 +402,7 @@ const DUAS_FACES := [
 const TRONCO_DE_COSTAS := [
 	"pitangueira", "pitangueira_leve", "ipe_amarelo", "licurizeiro",
 	"clusia_leve", "jenipapeiro_leve", "mangue_leve", "mangue_longe",
-	"castanhola_longe", "piacava_longe",
+	"castanhola_longe", "piacava_longe", "ingazeiro_leve", "ingazeiro_longe",
 ]
 
 

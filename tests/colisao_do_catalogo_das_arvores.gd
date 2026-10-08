@@ -14,8 +14,9 @@ extends SceneTree
 ## A medida que embasa os limites está em `tools/tripo/auditar_troncos.py raio`:
 ## o raio visível do tronco em cada GLB contra o `tronco` do catálogo. Das 32
 ## espécies com colisão, 29 ficam entre -0,21 e +0,32 (o corpo do jogador soma
-## 0,28 ao raio); mangue, bambu e gameleira (raízes escoras, colmos, sapopemas) e
-## o ingazeiro (vários fustes) estão em `SEM_TRONCO_UNICO` com a razão. Ver docs/testes/COLISAO_DAS_ARVORES.md.
+## 0,28 ao raio); mangue, bambu e gameleira (raízes escoras, colmos, sapopemas)
+## estão em `SEM_TRONCO_UNICO` com a razão. O ingazeiro também saía da faixa, por
+## causa da laje de terra do GLB (#141, `tests/bases_das_arvores.gd`); sem ela dá +0,12. Ver docs/testes/COLISAO_DAS_ARVORES.md.
 ##
 ##   1. A COPA NUNCA É SÓLIDA: o cilindro de toda árvore do catálogo tem no
 ##      máximo 3,5 m (`tronco_altura`, 3,0 se omitido), e o raio é o do tronco,
@@ -41,7 +42,6 @@ const TOLERANCIA_DA_FICHA := 0.3
 ## catálogo cobre o miolo e não a madeira toda. A razão fica ao lado.
 const SEM_TRONCO_UNICO := {
 	"gameleira": "sapopemas de 4 a 5 u de raio; o tronco liso mede 1,1 a 1,9 u acima delas, e o cilindro (1,2 x a escala) cobre o tronco",
-	"ingazeiro": "vários fustes desde o pé",
 	"mangue": "raízes escoras abertas em volta do fuste",
 	"touceira_bambu": "touceira de colmos, o raio cobre o miolo dela",
 }

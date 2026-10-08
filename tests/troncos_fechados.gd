@@ -15,13 +15,14 @@ extends SceneTree
 ## distância, em 10 alturas do pé até metade da árvore (no máximo 2,5 m) e 9
 ## afastamentos de até 1,3 raio do tronco, no eixo dele. Para cada raio que
 ## acerta a malha, olha o PRIMEIRO triângulo: de costas (a frente da parede
-## falta) ou de frente. As íntegras dão de 0 a 6%; as de costas, de 12% a 79%.
+## falta) ou de frente. As íntegras dão de 0 a 6%; as de costas, de 9% a 79%.
 ##
 ## O que se cobra, para cada árvore de tronco do catálogo:
 ##   · fração de costas acima do limite => está em `TRONCO_DE_COSTAS`, com as duas
-##     faces; íntegra (abaixo do limite) => NÃO está, e segue com o descarte de
+##     faces; quem está na lista passa do piso (um pouco abaixo do limite, para a
+##     fronteira não oscilar); íntegra e fora da lista segue com o descarte de
 ##     costas ligado (nada de duas faces global);
-##   · o material de cada superfície confere com isso (`cull_mode`).
+##   · o material de cada superfície confere com a lista (`cull_mode`).
 ##
 ## FALSIFICAÇÃO: `-- --falsificar=lista` esvazia a lista de quem tem as duas
 ## faces e `-- --falsificar=material` exige o descarte de costas em todas, como se
@@ -29,9 +30,12 @@ extends SceneTree
 
 const Catalogo = preload("res://scripts/prototipo_3d/catalogo_assets.gd")
 
-## Acima disto o tronco é de costas. As íntegras ficam em até 6%, as de costas
-## começam em 12%: o limite cai no meio.
+## Acima disto o tronco é de costas e a árvore TEM de ter as duas faces. As
+## íntegras ficam em até 6%, as de costas começam em 9%.
 const LIMITE := 0.09
+## Quem está em `TRONCO_DE_COSTAS` precisa passar disto: entre os dois, a medida
+## é de fronteira (o ingazeiro leve dá 8,8%) e as duas escolhas valem.
+const PISO := 0.07
 const DIRECOES := 16
 const ALTURAS := 10
 const AFASTAMENTOS := 9
@@ -81,14 +85,14 @@ func _run() -> void:
 		var na_lista := lista.has(chave)
 		if passa:
 			de_costas += 1
-		print("  %-20s acertos=%4d  de costas=%4.0f%%  %s" % [chave, medida["acertos"], fracao * 100.0, "duas faces" if na_lista else ""])
+		print("  %-20s acertos=%4d  de costas=%5.1f%%  %s" % [chave, medida["acertos"], fracao * 100.0, "duas faces" if na_lista else ""])
 		_conferir(int(medida["acertos"]) >= 100, "'%s' só tem %d raios acertando o tronco: a medida ficou vazia" % [chave, medida["acertos"]])
 		if passa:
 			_conferir(na_lista, "'%s' tem %.0f%% do tronco de costas e não tem as duas faces: aparece oco" % [chave, fracao * 100.0])
-		else:
-			_conferir(not na_lista, "'%s' está em TRONCO_DE_COSTAS com só %.0f%% de costas: o ajuste é à toa" % [chave, fracao * 100.0])
-		# O material do jogo confere com a medida.
-		var esperado := BaseMaterial3D.CULL_DISABLED if passa else BaseMaterial3D.CULL_BACK
+		elif na_lista:
+			_conferir(fracao > PISO, "'%s' está em TRONCO_DE_COSTAS com só %.1f%% de costas: o ajuste é à toa" % [chave, fracao * 100.0])
+		# O material do jogo confere com a lista (a medida decide a lista, acima).
+		var esperado := BaseMaterial3D.CULL_DISABLED if na_lista else BaseMaterial3D.CULL_BACK
 		if falsificar == "material":
 			esperado = BaseMaterial3D.CULL_BACK
 		for cull in _culls(chave):
