@@ -2,6 +2,14 @@
 
 ## Em desenvolvimento — 08/10/2026
 
+- **Restaurar volumes sobe para o cabeçalho de Ajustes, e a aba ativa tem uma moldura só.**
+  "Restaurar estes" e "Restaurar todos" (com o ↺) ficam à esquerda do ×, na altura dele, em
+  Geral e em Sons do vale; o rodapé deixou de existir e a lista ganha a altura, sem cortar
+  "Teclas de movimento" e "Ambiente". Nas outras abas o cabeçalho fica só com o ×, no mesmo
+  lugar. O aro de foco das abas perdeu a margem de expansão que o desenhava por fora da
+  borda: a ativa mostra uma moldura do tamanho das outras, e o foco por teclado continua
+  visível. O portão de Ajustes cobre posição, altura, ausência de rodapé e o foco (#166).
+
 - **Os cartões do painel Modelos preenchem o modal.** A grade deixa de ter 4 × 3 fixos:
   colunas e linhas saem do espaço que sobra à lista (6 × 5 no tamanho padrão, 30 por
   página; Assets cai de 21 para 10 páginas), os cartões esticam para ocupar a altura que

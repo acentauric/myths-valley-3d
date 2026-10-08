@@ -35,6 +35,20 @@ func _run() -> void:
 				root.add_child(conteudo)
 				var painel = PainelAjustes.new(no_jogo)
 				painel.construir(conteudo, root, aba)
+				# #166: os botões de restaurar volumes ficam no cabeçalho, antes do ×, só em Geral e Sons
+				# do vale; não há rodapé, e a aba ativa tem o foco sem a margem que fazia a moldura dupla.
+				var cabecalho := conteudo.get_child(0) as HBoxContainer
+				var fechar := cabecalho.get_child(cabecalho.get_child_count() - 1) as Button
+				var restaurar := cabecalho.get_children().filter(func(no: Node) -> bool: return str(no.name).begins_with("Restaurar"))
+				_conferir(restaurar.size() == (2 if aba in [0, 1] else 0), "restaurar no cabeçalho só nas abas com volumes (aba %d)" % aba)
+				if aba in [0, 1]:
+					_conferir(restaurar[0].get_index() < restaurar[1].get_index() and restaurar[1].get_index() == fechar.get_index() - 1,
+						"os dois restaurar ficam logo antes do × (aba %d)" % aba)
+					_conferir(is_equal_approx(restaurar[0].custom_minimum_size.y, fechar.custom_minimum_size.y), "restaurar na altura do × (aba %d)" % aba)
+				_conferir(conteudo.get_child(conteudo.get_child_count() - 1) is ScrollContainer, "sem rodapé depois da lista (aba %d)" % aba)
+				var abas_botoes := (conteudo.get_child(2) as HBoxContainer).get_children()
+				var foco_ativa := (abas_botoes[aba] as Button).get_theme_stylebox("focus") as StyleBoxFlat
+				_conferir(foco_ativa != null and foco_ativa.expand_margin_left == 0.0, "o foco da aba ativa não ganha segunda moldura (aba %d)" % aba)
 				for caixa in conteudo.find_children("*", "VBoxContainer", true, false):
 					if not is_equal_approx((caixa as Control).custom_minimum_size.y, PainelAjustes.ALTURA_CAMPO):
 						continue

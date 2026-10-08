@@ -82,7 +82,7 @@ func construir(content: VBoxContainer, camada: Node, nova_aba: int = 0) -> void:
 		content.remove_child(filho)
 		filho.queue_free()
 	content.add_theme_constant_override("separation", 10)
-	cabecalho(content, "Ajustes", func() -> void: fechar_pedido.emit(),
+	var fechar := cabecalho(content, "Ajustes", func() -> void: fechar_pedido.emit(),
 		"Tempo, sons e aparência do vale." if no_jogo else "Idioma, tempo, sons e aparência do vale.")
 	var abas := HBoxContainer.new()
 	abas.add_theme_constant_override("separation", 8)
@@ -95,6 +95,7 @@ func construir(content: VBoxContainer, camada: Node, nova_aba: int = 0) -> void:
 		botao.button_pressed = indice == aba
 		botao.custom_minimum_size.y = 40
 		botao.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		_foco_sem_aura(botao)
 		if indice == aba:
 			for cor in ["font_color", "font_pressed_color", "font_focus_color"]:
 				botao.add_theme_color_override(cor, Color("e2c47f"))
@@ -122,10 +123,23 @@ func construir(content: VBoxContainer, camada: Node, nova_aba: int = 0) -> void:
 		3: _aba_atalhos(esquerda, direita)
 		4: _aba_esforco(esquerda, direita)
 		_: _aba_geral(esquerda, direita)
-	# Os volumes moram em Geral e em Sons do vale.
+	# Os volumes moram em Geral e em Sons do vale; os botões de restaurar vão ao cabeçalho,
+	# à esquerda do ×, e nas outras abas o cabeçalho fica só com ele.
 	if aba in [0, 1]:
-		_restaurar_volumes()
+		_restaurar_volumes(fechar)
 	ativa.grab_focus()
+
+
+## O foco da aba é o aro do tema por cima da borda dela: com a aba ativa (que recebe o foco
+## ao abrir) eram duas molduras, e o botão parecia maior. Sem a margem de expansão o aro
+## cai sobre a própria borda: uma moldura só, do tamanho das outras abas, e o foco segue
+## visível. O estilo vem do tema que o botão herda quando já está na árvore.
+func _foco_sem_aura(botao: Button) -> void:
+	botao.ready.connect(func() -> void:
+		var foco := botao.get_theme_stylebox("focus").duplicate() as StyleBoxFlat
+		if foco:
+			foco.set_expand_margin_all(0)
+			botao.add_theme_stylebox_override("focus", foco))
 
 
 func ajuda_aberta() -> bool:
@@ -436,33 +450,30 @@ func _volume(titulo: String, valor: float, ao_mudar: Callable, canal: String) ->
 	_pai = anterior
 
 
-## Pé do modal, centralizado: "Restaurar estes" volta ao padrão só os volumes da aba
-## aberta; "Restaurar todos", os das duas abas. Nos dois, nada fica silenciado.
-func _restaurar_volumes() -> void:
-	var linha := HBoxContainer.new()
-	linha.alignment = BoxContainer.ALIGNMENT_CENTER
-	linha.add_theme_constant_override("separation", 12)
-	_content.add_child(linha)
+## Botões do cabeçalho, à esquerda do × e na altura dele: "Restaurar estes" volta ao padrão
+## só os volumes da aba aberta; "Restaurar todos", os das duas abas. Nos dois, nada fica
+## silenciado. Ações do painel moram no cabeçalho, ao lado do ×.
+func _restaurar_volumes(fechar: Button) -> void:
+	var linha := fechar.get_parent() as HBoxContainer
+	linha.add_theme_constant_override("separation", 8)
 	var desta_aba: Array = Audio.CAMADAS_AMBIENTE if aba == 1 else Audio.CANAIS_GERAIS
-	_botao_restaurar(linha, "Restaurar estes", desta_aba,
+	_botao_restaurar(fechar, "Restaurar estes", desta_aba,
 		"Sons do vale voltam ao padrão." if aba == 1 else "Música, narração, falas, efeitos e ambiente voltam ao padrão.")
-	_botao_restaurar(linha, "Restaurar todos", [], "Todos os volumes, das duas abas, voltam ao padrão.")
+	_botao_restaurar(fechar, "Restaurar todos", [], "Todos os volumes, das duas abas, voltam ao padrão.")
 
 
-## Botão curto com o alto-falante à esquerda, para ligar o gesto aos volumes.
-func _botao_restaurar(pai: Container, texto: String, canais: Array, dica: String) -> void:
+## Botão do cabeçalho com o ↺ à esquerda (o mesmo dos ajustes de cada linha), inserido
+## antes do ×.
+func _botao_restaurar(fechar: Button, texto: String, canais: Array, dica: String) -> void:
 	var botao := Button.new()
+	botao.name = "Restaurar" + ("Todos" if canais.is_empty() else "Estes")
 	botao.text = texto
 	botao.tooltip_text = tr(dica)
-	botao.custom_minimum_size = Vector2(200, ALTURA_CONTROLE)
-	# Espaço à esquerda para o ícone em todos os estados do botão.
-	for estado in ["normal", "hover", "pressed", "hover_pressed", "focus"]:
-		var caixa := (botao.get_theme_stylebox(estado) if tema == null else tema.get_stylebox(estado, "Button")).duplicate() as StyleBoxFlat
-		if caixa:
-			caixa.content_margin_left = 40
-			botao.add_theme_stylebox_override(estado, caixa)
-	var icone := AudioToggleIcon.new()
-	icone.position = Vector2(12, 6)
+	botao.custom_minimum_size = Vector2(0, ALTURA_CABECALHO)
+	botao.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	var icone: HudIcon = HudIcon.new().configurar("restaurar")
+	icone.definir(true)
+	icone.position = Vector2(10, (ALTURA_CABECALHO - 24.0) / 2.0)
 	icone.size = Vector2(24, 24)
 	icone.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	botao.add_child(icone)
@@ -471,7 +482,16 @@ func _botao_restaurar(pai: Container, texto: String, canais: Array, dica: String
 		Audio.efeito("ui_confirmar")
 		Audio.restaurar_padroes(canais)
 		_reconstruir(aba))
-	pai.add_child(botao)
+	# Espaço à esquerda para o ícone em todos os estados (o estilo vem do tema herdado).
+	botao.ready.connect(func() -> void:
+		for estado in ["normal", "hover", "pressed", "hover_pressed", "disabled", "focus"]:
+			var caixa := botao.get_theme_stylebox(estado).duplicate() as StyleBoxFlat
+			if caixa:
+				caixa.content_margin_left = 40
+				botao.add_theme_stylebox_override(estado, caixa))
+	var linha := fechar.get_parent()
+	linha.add_child(botao)
+	linha.move_child(botao, fechar.get_index())
 
 
 ## Seleção com o botão de voltar ao padrão (`padrao`, índice da opção de fábrica) no
