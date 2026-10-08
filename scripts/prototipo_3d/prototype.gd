@@ -16,6 +16,7 @@ const TeclaDasBancadas = preload("res://scripts/prototipo_3d/tecla_das_bancadas.
 const TeclaDosMoradores = preload("res://scripts/prototipo_3d/tecla_dos_moradores.gd")
 const FocoDoE = preload("res://scripts/prototipo_3d/foco_do_e.gd")
 const FilaDeFalas = preload("res://scripts/prototipo_3d/fila_de_falas.gd")
+const FalasDoViajante = preload("res://scripts/prototipo_3d/falas_do_viajante.gd")
 const AvisoDaPrimeiraVez = preload("res://scripts/prototipo_3d/aviso_da_primeira_vez.gd")
 const CapaDeCordel = preload("res://scripts/prototipo_3d/capa_de_cordel.gd")
 const Almanaque = preload("res://scripts/prototipo_3d/almanaque.gd")
@@ -190,6 +191,8 @@ var tecla_dos_moradores: Node
 var foco_do_e: Node
 ## Uma fala de cada vez no vale (`fila_de_falas.gd`).
 var fila_de_falas: Node
+## O viajante comenta o que acontece, só em voz e sem balão (`falas_do_viajante.gd`, #187).
+var viajante: Node
 ## O cartão do primeiro cordel e da primeira árvore (`aviso_da_primeira_vez.gd`).
 var aviso_da_primeira_vez: CanvasLayer
 ## A tela da missão cumprida (`conquista_da_missao.gd`).
@@ -840,6 +843,12 @@ func _ready() -> void:
 	fila_de_falas = FilaDeFalas.new()
 	fila_de_falas.name = "FilaDeFalas"
 	add_child(fila_de_falas)
+	# AS FALAS DO VIAJANTE (#187): ele deixa de ser mudo. Só voz, na vez que a fila dá a uma fala de
+	# passagem; antes da partida salva, que devolve o que ele já disse de uma vez só.
+	viajante = FalasDoViajante.new()
+	viajante.name = "FalasDoViajante"
+	add_child(viajante)
+	viajante.configurar(player, world, pedro, saveiro, interiores, lavoura, _recursos, noite)
 	# A PARTIDA SALVA entra depois de o vale estar montado — moradores, Pedro,
 	# luta —, porque o estado do mundo aponta para eles. Ver Partida e
 	# `estado_para_salvar`.
@@ -2188,6 +2197,9 @@ func estado_para_salvar() -> Dictionary:
 		estado["curral"] = curral.estado_para_salvar()
 	# O FOGO DA FOGUEIRA: para quantos pratos ainda dá (07/10).
 	estado["fogueira"] = fogo_da_fogueira
+	# O QUE O VIAJANTE JÁ DISSE DE UMA VEZ SÓ (#187).
+	if viajante != null:
+		estado["viajante"] = viajante.estado_para_salvar()
 	return estado
 
 
@@ -2284,6 +2296,8 @@ func restaurar_do_save(estado: Dictionary) -> void:
 	if curral != null and estado.has("curral"):
 		curral.restaurar(estado["curral"])
 	fogo_da_fogueira = int(estado.get("fogueira", PRATOS_POR_LENHA))
+	if viajante != null:
+		viajante.restaurar(estado.get("viajante", {}))
 	# As lajes e o cercado acompanham a fila e a obra que acabaram de voltar.
 	if cemiterio != null:
 		cemiterio.acertar()

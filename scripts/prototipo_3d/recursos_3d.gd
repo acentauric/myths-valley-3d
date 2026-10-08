@@ -107,6 +107,8 @@ const QUEDA_DEPOIS_DO_GOLPE_S := 0.35
 signal derrubado(id: String, rende: String, quantidade: int)
 ## Bateu e não deu: sem ferramenta, ou sem fôlego. O HUD conta ao jogador.
 signal recusado(motivo: String)
+## Bateu num alvo que pede uma ferramenta que o jogador não tem (nem na mão nem na mochila): o viajante comenta.
+signal sem_ferramenta(ferramenta: String)
 ## Um impacto que soou: o nome do arquivo de `assets/audio/efeitos` (sem o .mp3) e se
 ## foi o último golpe do alvo. Quem quer saber o que tocou — o portão — escuta aqui.
 signal golpe_sonoro(nome: String, ultimo: bool)
@@ -605,6 +607,7 @@ func bater() -> bool:
 			recusado.emit(tr("Ponha na mão: %s.") % _nome_do_item(ferramenta))
 		else:
 			recusado.emit("Precisa de %s." % _nome_do_item(ferramenta))
+			sem_ferramenta.emit(ferramenta)
 		return false
 	# A certa na mão e o alvo duro demais para ela, ou para quem a segura.
 	var impede := _o_que_impede(ficha, true)

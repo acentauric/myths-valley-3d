@@ -1,0 +1,192 @@
+{
+  "observacao": "AS FALAS DO VIAJANTE (#187): o personagem do jogador comenta o que acontece, SÓ EM VOZ e sem balão, para si mesmo. `falas` são os dez gatilhos (o `gatilho` é o nome que scripts/prototipo_3d/falas_do_viajante.gd pede); `sono` e `despertar` são as variações de ir dormir e de acordar, sorteadas sem repetir a anterior (`quando` marca a que só vale num contexto: `cansado`, `chuva`, `madrugada`, e tem a prioridade sobre as comuns). `uma_vez` guarda a fala no save; `intervalo` (segundos de relógio) deixa a fala voltar depois desse tempo. O texto em pt/en/es/zh fica aqui para a legenda de um dia e para o tests/idiomas.gd, mas NÃO aparece na tela. Voz pt-BR: viajante_<gatilho>, viajante_sono_<n>, viajante_despertar_<n> (tools/elevenlabs/gerar-falas-moradores.ps1 -Morador viajante). Sem o arquivo de voz a fala fica muda (e não conta como dita).",
+  "id": "viajante",
+  "nome": "Viajante",
+  "voz": {
+    "id": "TxGEqnHWrfWFTfGW9XjX",
+    "nome": "Josh",
+    "modelo": "eleven_v3"
+  },
+  "voz_pendente": "Os áudios viajante_* (#187) esperam a geração no ElevenLabs: a sessão que escreveu as falas não tinha a chave. Rode tools/elevenlabs/gerar-falas-moradores.ps1 -Morador viajante -Limite 1 numa máquina com a chave, OUÇA a voz (Josh é a escolha provisória: jovem, da cidade; troque o `voz` aqui e use -Forcar se não servir), rode o resto, importe os mp3 e tire esta marca (o portão reprova a que sobrar).",
+  "pausa": 20,
+  "falas": [
+    {
+      "gatilho": "desceu_do_saveiro",
+      "texto": "Então é aqui… o arraial do meu tio.",
+      "texto_en": "So this is it… my uncle's village.",
+      "texto_es": "Así que es aquí… el caserío de mi tío.",
+      "texto_zh": "原来就是这儿……我叔叔的村子。",
+      "tts": "[softly] Então é aqui… [warmly] o arraial do meu tio.",
+      "uma_vez": true,
+      "audio": "viajante_desceu_do_saveiro"
+    },
+    {
+      "gatilho": "cansou_correndo",
+      "texto": "Ufa… a capital não me preparou pra isso.",
+      "texto_en": "Phew… the capital never prepared me for this.",
+      "texto_es": "Uf… la capital no me preparó para esto.",
+      "texto_zh": "呼……城里可没教过我这个。",
+      "tts": "[exhales] Ufa… [laughs softly] a capital não me preparou pra isso.",
+      "uma_vez": true,
+      "audio": "viajante_cansou_correndo"
+    },
+    {
+      "gatilho": "entrou_no_mar",
+      "texto": "Água morna… nada a ver com o porto da cidade.",
+      "texto_en": "Warm water… nothing like the city harbor.",
+      "texto_es": "Agua tibia… nada que ver con el puerto de la ciudad.",
+      "texto_zh": "海水暖暖的……和城里的港口完全不一样。",
+      "tts": "[surprised] Água morna… [warmly] nada a ver com o porto da cidade.",
+      "uma_vez": true,
+      "audio": "viajante_entrou_no_mar"
+    },
+    {
+      "gatilho": "entrou_em_casa",
+      "texto": "Tanto pó… mas é minha agora.",
+      "texto_en": "So much dust… but it's mine now.",
+      "texto_es": "Cuánto polvo… pero ahora es mía.",
+      "texto_zh": "好多灰……不过现在这是我的了。",
+      "tts": "[sighs] Tanto pó… [warmly] mas é minha agora.",
+      "uma_vez": true,
+      "audio": "viajante_entrou_em_casa"
+    },
+    {
+      "gatilho": "primeira_noite",
+      "texto": "Escureceu rápido. Melhor achar o caminho de casa.",
+      "texto_en": "It got dark fast. Better find my way home.",
+      "texto_es": "Oscureció rápido. Mejor busco el camino a casa.",
+      "texto_zh": "天黑得真快。最好赶紧找路回家。",
+      "tts": "[uneasy] Escureceu rápido. [softly] Melhor achar o caminho de casa.",
+      "uma_vez": true,
+      "audio": "viajante_primeira_noite"
+    },
+    {
+      "gatilho": "mochila_cheia",
+      "texto": "Não cabe mais nada aqui.",
+      "texto_en": "There's no room for anything else.",
+      "texto_es": "Ya no cabe nada más aquí.",
+      "texto_zh": "再也装不下了。",
+      "tts": "[sighs] Não cabe mais nada aqui.",
+      "intervalo": 300,
+      "audio": "viajante_mochila_cheia"
+    },
+    {
+      "gatilho": "sem_ferramenta",
+      "texto": "Com a mão não vai dar. Preciso de ferramenta.",
+      "texto_en": "Bare hands won't do it. I need a tool.",
+      "texto_es": "Con las manos no se puede. Necesito una herramienta.",
+      "texto_zh": "光靠手可不行，我得有工具。",
+      "tts": "[muttering] Com a mão não vai dar. [thoughtful] Preciso de ferramenta.",
+      "intervalo": 240,
+      "audio": "viajante_sem_ferramenta"
+    },
+    {
+      "gatilho": "primeira_colheita",
+      "texto": "Olha só, nasceu mesmo!",
+      "texto_en": "Well, look at that, it actually grew!",
+      "texto_es": "¡Mira nomás, sí nació!",
+      "texto_zh": "哎呀，真的长出来了！",
+      "tts": "[excited] Olha só, [laughs] nasceu mesmo!",
+      "uma_vez": true,
+      "audio": "viajante_primeira_colheita"
+    },
+    {
+      "gatilho": "chuva_comecando",
+      "texto": "Lá vem chuva.",
+      "texto_en": "Here comes the rain.",
+      "texto_es": "Ahí viene la lluvia.",
+      "texto_zh": "要下雨了。",
+      "tts": "[looking up] Lá vem chuva.",
+      "audio": "viajante_chuva_comecando"
+    },
+    {
+      "gatilho": "perto_do_escuro",
+      "texto": "Esse lugar me dá um arrepio…",
+      "texto_en": "This place gives me the creeps…",
+      "texto_es": "Este lugar me da escalofríos…",
+      "texto_zh": "这地方让我起鸡皮疙瘩……",
+      "tts": "[whispers] Esse lugar me dá um arrepio…",
+      "intervalo": 600,
+      "audio": "viajante_perto_do_escuro"
+    }
+  ],
+  "sono": [
+    {
+      "texto": "Que dia… cama, me espera.",
+      "texto_en": "What a day… bed, wait for me.",
+      "texto_es": "Qué día… cama, espérame.",
+      "texto_zh": "好累的一天……床啊，等等我。",
+      "tts": "[sighs] Que dia… [yawns] cama, me espera.",
+      "audio": "viajante_sono_1"
+    },
+    {
+      "texto": "Os olhos já tão pesando.",
+      "texto_en": "My eyes are getting heavy.",
+      "texto_es": "Los ojos ya se me cierran.",
+      "texto_zh": "眼皮已经沉了。",
+      "tts": "[yawns] Os olhos já tão pesando.",
+      "audio": "viajante_sono_2"
+    },
+    {
+      "texto": "Amanhã tem mais. Agora é descansar.",
+      "texto_en": "There's more tomorrow. Time to rest now.",
+      "texto_es": "Mañana habrá más. Ahora toca descansar.",
+      "texto_zh": "明天还有的忙。现在该歇了。",
+      "tts": "[softly] Amanhã tem mais. [yawns] Agora é descansar.",
+      "audio": "viajante_sono_3"
+    },
+    {
+      "quando": "cansado",
+      "texto": "Não aguento nem mais um passo.",
+      "texto_en": "I can't take another step.",
+      "texto_es": "No aguanto ni un paso más.",
+      "texto_zh": "我一步也走不动了。",
+      "tts": "[exhausted] Não aguento nem mais um passo.",
+      "audio": "viajante_sono_4"
+    }
+  ],
+  "despertar": [
+    {
+      "texto": "Bom dia, arraial.",
+      "texto_en": "Good morning, village.",
+      "texto_es": "Buen día, caserío.",
+      "texto_zh": "早安，村子。",
+      "tts": "[stretches] [cheerfully] Bom dia, arraial.",
+      "audio": "viajante_despertar_1"
+    },
+    {
+      "texto": "Dormi feito pedra.",
+      "texto_en": "Slept like a rock.",
+      "texto_es": "Dormí como una piedra.",
+      "texto_zh": "睡得像块石头。",
+      "tts": "[yawns] Dormi feito pedra.",
+      "audio": "viajante_despertar_2"
+    },
+    {
+      "texto": "Mais um dia. Bora.",
+      "texto_en": "Another day. Let's go.",
+      "texto_es": "Otro día. Vamos.",
+      "texto_zh": "新的一天。走吧。",
+      "tts": "[stretches] Mais um dia. [cheerfully] Bora.",
+      "audio": "viajante_despertar_3"
+    },
+    {
+      "quando": "chuva",
+      "texto": "Acordei com a chuva no telhado.",
+      "texto_en": "Woke up to rain on the roof.",
+      "texto_es": "Desperté con la lluvia en el tejado.",
+      "texto_zh": "听着屋顶的雨声醒来了。",
+      "tts": "[softly] Acordei com a chuva no telhado.",
+      "audio": "viajante_despertar_4"
+    },
+    {
+      "quando": "madrugada",
+      "texto": "Ai… dormi pouco.",
+      "texto_en": "Ugh… I barely slept.",
+      "texto_es": "Ay… dormí poco.",
+      "texto_zh": "唉……没睡够。",
+      "tts": "[groans] Ai… [yawns] dormi pouco.",
+      "audio": "viajante_despertar_5"
+    }
+  ]
+}

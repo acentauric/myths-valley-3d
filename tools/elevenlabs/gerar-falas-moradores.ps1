@@ -14,6 +14,12 @@
 #   atencao          atencao         só o guia: a frase de quem a missão manda procurar e para ao ver o jogador (pedro_atencao_<n>; #198)
 #   situacoes        situacao        só o guia: os comentários situacionais da condução (pedro_situacao_<gatilho>; #179)
 #   anoitecer        (um só)         só o guia: o aviso do entardecer
+#   sono             sono            só o viajante (data/falas_viajante.json): ao deitar (viajante_sono_<n>; #187)
+#   despertar        despertar       só o viajante: ao acordar (viajante_despertar_<n>)
+#
+# O VIAJANTE (o personagem do jogador) mora em data/falas_viajante.json, e não no npcs_3d.json: o gerador o
+# trata como mais uma pessoa (-Morador viajante). As dez falas dos gatilhos estão na lista `falas` dele, com o
+# nome do áudio escrito em cada uma (viajante_<gatilho>).
 #
 # "tts" é o que a voz lê, com marcações de interpretação do v3 entre colchetes ([whispers],
 # [laughs]...); sem ele, lê o "texto" do balão. Só o português tem voz: texto_en, texto_es e
@@ -42,11 +48,14 @@ $bruto = Join-Path $env:TEMP "mv_falas_brutas"
 if (-not $SoContar) { New-Item -ItemType Directory -Force $bruto | Out-Null }
 
 # As listas do arquivo que têm voz (o "anoitecer" do guia é um objeto só, tratado à parte).
-$listas = @("falas", "saudacoes", "saudacoes_noite", "falas_noite", "falas_depois", "atencao", "situacoes")
+$listas = @("falas", "saudacoes", "saudacoes_noite", "falas_noite", "falas_depois", "atencao", "situacoes", "sono", "despertar")
 # Falhas seguidas que param a rodada: voz que não existe, crédito acabado e chave errada se repetem.
 $maximo_de_falhas_seguidas = 3
 
 $pessoas = @($dados.guia) + @($dados.moradores)
+# O viajante, do arquivo dele (o mesmo formato: `voz`, `voz_pendente` e as listas de fala).
+$arquivoViajante = Join-Path $raiz "data/falas_viajante.json"
+if (Test-Path $arquivoViajante) { $pessoas += (Get-Content $arquivoViajante -Raw -Encoding UTF8 | ConvertFrom-Json) }
 $feitas = 0
 $letras = 0
 $falhas = 0
