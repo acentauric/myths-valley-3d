@@ -2,6 +2,26 @@
 
 ## Em desenvolvimento — 08/10/2026
 
+- **Todo modal recolhe a interface do vale, e o texto para ler sai da Cormorant fina
+  (#199, parcial).** Arraial, Diário, Teia, Coleção, folheto, menu do Esc, Controles,
+  Apoios e Ajustes escondem missão, relógio, barras, atalhos, minimapa, dicas e avisos por
+  um ponto só (`Prototype.modal_aberto`, a regra da #143 generalizada); os Ajustes ganham
+  camada própria. A Identidade e o tema ganham quatro papéis de tipografia: título e
+  rótulo (Cinzel), leitura (a sans do HUD, em creme) e ênfase (Cormorant itálico). Em K ›
+  Fé, o nome de cada fé vira subtítulo de ouro, o corpo das regras vai para a sans em
+  linhas curtas, e o rodapé de teclas vira plaquetas. O cinza apagado de antes (abaixo de
+  4,5:1 sobre a laca) fica mais claro. Portão `modais_escondem_o_hud`. Falta conferir no
+  jogo em zh e nas fichas do Diário que ainda usam a Cormorant itálica.
+
+- **O Diário de missões cabe sem rolagem (#202, parcial).** Com uma aba só, a coluna das
+  abas some e a página ganha a largura; com várias, ela encolhe. A ficha vira duas
+  colunas (a voz de quem pediu em resumo à esquerda, os objetivos à direita, só eles
+  rolando se faltar altura) e um rodapé fixo com a recompensa e o botão "Acompanhar",
+  que nunca sai da caixa. A fala do Pedro aparece em até 200 letras, cortada em frase
+  inteira (`CadeiaDeMissoes.fala_curta`; o campo `diario` do passo, opcional, sobrescreve
+  com um resumo escrito à mão), em fonte de leitura. Portão `diario_sem_rolagem`. Falta
+  revisar à mão as falas mais longas e conferir a mesma regra nas outras abas.
+
 - **A dica do E ganha plaqueta grande, alvo em ouro e requisito em branco.** Em "Tronco
   caído / Ponha na mão: Machado" a plaqueta do E passa a ocupar a altura das duas linhas
   (quadrada, com a letra grande, o que o jogador procura de relance); o alvo vira título,

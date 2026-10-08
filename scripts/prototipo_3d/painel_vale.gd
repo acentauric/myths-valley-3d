@@ -63,7 +63,9 @@ const ICONES_DO_PAINEL := {
 ## página da missão lado a lado: cabe em 1280×720 com folga de 100 e de 50.
 const TAMANHO := Vector2(1080, 620)
 ## A largura da lista de missões, à esquerda do diário.
-const LARGURA_DA_LISTA_DE_MISSOES := 300.0
+const LARGURA_DA_LISTA_DE_MISSOES := 260.0
+## A coluna das abas, quando há mais de uma e o diário pede espaço (#202).
+const LARGURA_DAS_ABAS_NO_DIARIO := 170.0
 ## Largura da coluna das abas, à esquerda. A mesma proporção do almanaque.
 const LARGURA_DAS_ABAS := 230.0
 const ALTURA_DA_LINHA := 28.0
@@ -131,7 +133,11 @@ var _dica: Label
 ## o rosto de quem deu a missão, como o Witcher mostra o de quem a pediu.
 var retratos: Node = null
 ## O diário da aba de missões: a página da missão escolhida, à direita da lista.
-var _diario: ScrollContainer
+var _diario: VBoxContainer
+## O rodapé fixo da página da missão: a recompensa e o botão, fora de toda rolagem.
+var _acoes_do_diario: HBoxContainer
+## O fio entre as abas e a lista: some junto com a coluna quando há uma aba só.
+var _fio_das_abas: VSeparator
 var _detalhe: VBoxContainer
 var _rodape: Label
 var _linhas: Array = []
@@ -523,8 +529,8 @@ func _montar() -> void:
 	_abas_coluna.custom_minimum_size = Vector2(LARGURA_DAS_ABAS, 0)
 	lado_a_lado.add_child(_abas_coluna)
 
-	var fio := VSeparator.new()
-	lado_a_lado.add_child(fio)
+	_fio_das_abas = VSeparator.new()
+	lado_a_lado.add_child(_fio_das_abas)
 
 	# À DIREITA A PÁGINA: a lista da aba, e embaixo dela a dica do que está no
 	# cursor. É a mesma divisão do almanaque — índice de um lado, página do
@@ -553,18 +559,25 @@ func _montar() -> void:
 	corpo.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	pagina.add_child(corpo)
 	corpo.add_child(_rolagem)
-	_diario = ScrollContainer.new()
+	# A PÁGINA DA MISSÃO NÃO ROLA (#202): o corpo dela e, embaixo, o rodapé fixo
+	# com a recompensa e o botão ACOMPANHAR, que nunca sai da vista.
+	_diario = VBoxContainer.new()
 	_diario.name = "Diario"
+	_diario.add_theme_constant_override("separation", 8)
 	_diario.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_diario.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	_diario.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	_diario.visible = false
 	corpo.add_child(_diario)
 	_detalhe = VBoxContainer.new()
 	_detalhe.name = "Detalhe"
 	_detalhe.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_detalhe.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_detalhe.add_theme_constant_override("separation", 8)
 	_diario.add_child(_detalhe)
+	_acoes_do_diario = HBoxContainer.new()
+	_acoes_do_diario.name = "AcoesDoDiario"
+	_acoes_do_diario.add_theme_constant_override("separation", 16)
+	_diario.add_child(_acoes_do_diario)
 
 	_lista = VBoxContainer.new()
 	_lista.add_theme_constant_override("separation", 3)
@@ -733,8 +746,18 @@ func _redesenhar() -> void:
 	_dica.visible = not no_diario
 	_rolagem.size_flags_horizontal = Control.SIZE_FILL if no_diario else Control.SIZE_EXPAND_FILL
 	_rolagem.custom_minimum_size.x = LARGURA_DA_LISTA_DE_MISSOES if no_diario else 0.0
+	# SEM COLUNA VAZIA (#202): com uma aba só (Missões sozinha, ou os Ajustes e as
+	# vagas, que só têm a si mesmos) a coluna das abas some e a largura vai para a
+	# página. Com várias, ela encolhe no diário, que precisa do espaço.
+	var varias_abas := abas_validas().size() > 1
+	_abas_coluna.visible = varias_abas
+	_fio_das_abas.visible = varias_abas
+	_abas_coluna.custom_minimum_size.x = LARGURA_DAS_ABAS_NO_DIARIO if no_diario else LARGURA_DAS_ABAS
 	for filho in _detalhe.get_children():
 		_detalhe.remove_child(filho)
+		filho.queue_free()
+	for filho in _acoes_do_diario.get_children():
+		_acoes_do_diario.remove_child(filho)
 		filho.queue_free()
 
 	match _aba:
@@ -985,12 +1008,18 @@ func _nome_da_missao(missao: Dictionary) -> String:
 	return nome if nome != "" else str(missao.get("titulo", ""))
 
 
-## A PÁGINA DA MISSÃO ESCOLHIDA, à direita da lista.
+## A PÁGINA DA MISSÃO ESCOLHIDA, à direita da lista (#202).
 ##
-## O TEXTO COMPLETO MORA AQUI. O HUD mostra só o resumo ("Corte o capim com a
-## foice (2/4)"); a fala inteira de quem pediu — o porquê, o lugar, o tom — é
-## lida no diário. E os objetivos vêm como no Witcher: os cumpridos riscados em
-## cinza, o de agora aceso, com a barra quando há conta.
+## O HUD mostra só o resumo ("Corte o capim com a foice (2/4)"); a página traz a
+## voz de quem pediu, em RESUMO — a fala inteira continua no diálogo do jogo — e
+## os objetivos como no Witcher: os cumpridos riscados em cinza, o de agora aceso,
+## com a barra quando há conta.
+##
+## REGRA DO MODAL: QUASE NUNCA ROLA. A página ocupa a largura que a lista deixa e
+## se divide em duas colunas, a voz à esquerda e os objetivos à direita; a
+## recompensa e o botão ACOMPANHAR ficam num rodapé fixo da página, FORA de
+## qualquer rolagem, para o botão nunca aparecer cortado. Só a coluna dos
+## objetivos rola, e só quando a missão tem objetivos demais para a altura.
 func _desenhar_o_diario(missao: Dictionary) -> void:
 	var id := str(missao.get("id", ""))
 	var acompanhada := CadernoDoVale.acompanhada(id)
@@ -1016,20 +1045,22 @@ func _desenhar_o_diario(missao: Dictionary) -> void:
 		rosto.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		rosto.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 		rosto.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
-		rosto.custom_minimum_size = Vector2(72, 72)
+		rosto.custom_minimum_size = Vector2(64, 64)
 		moldura.add_child(rosto)
 		topo.add_child(moldura)
+	var titulos := VBoxContainer.new()
+	titulos.add_theme_constant_override("separation", 3)
+	titulos.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	titulos.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	topo.add_child(titulos)
 	var nome := Label.new()
 	nome.name = "NomeDaMissao"
 	nome.text = _nome_da_missao(missao)
 	nome.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	nome.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	nome.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	nome.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_TITULO, 600, 1))
-	nome.add_theme_font_size_override("font_size", 24)
-	nome.add_theme_color_override("font_color", Identidade.CREME)
-	Identidade.sombra_texto(nome)
-	topo.add_child(nome)
+	# Título decorativo (papel da tipografia, #199).
+	Identidade.papel_titulo(nome, 22)
+	titulos.add_child(nome)
 
 	var tipo := "◆ Enredo" if bool(missao.get("principal", false)) else "◇ Do dia a dia"
 	var quem := str(missao.get("quem", ""))
@@ -1039,38 +1070,64 @@ func _desenhar_o_diario(missao: Dictionary) -> void:
 	if passo > 0 and passos > 0:
 		linha_de_quem += "  ·  passo %d de %d" % [passo, passos]
 	var sub := _texto_do_diario(linha_de_quem, 15, Identidade.OURO)
-	sub.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_ITALICO, 400))
-	_detalhe.add_child(sub)
+	sub.name = "QuemDeu"
+	# Ênfase curta, a única em itálico da página.
+	sub.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_ITALICO, 500))
+	titulos.add_child(sub)
 
 	var filete := Identidade.filete_centrado(1.0)
 	filete.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_detalhe.add_child(filete)
 
-	# A FALA DE QUEM PEDIU, inteira. O caderno a guarda com o nome na frente
-	# ("Damião: O senhor subiu..."); aqui o nome já está em cima, e a fala vem
-	# como citação.
-	var fala := str(missao.get("texto", ""))
-	if quem != "" and fala.begins_with(quem + ": "):
-		fala = fala.substr(quem.length() + 2)
-	if fala != "":
-		var citacao := _texto_do_diario("“%s”" % fala, 17, COR_TEXTO)
-		citacao.name = "Fala"
-		citacao.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_ITALICO, 400))
-		_detalhe.add_child(citacao)
+	# DUAS COLUNAS: a voz de quem pediu, e os objetivos.
+	var colunas := HBoxContainer.new()
+	colunas.name = "Colunas"
+	colunas.add_theme_constant_override("separation", 22)
+	colunas.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_detalhe.add_child(colunas)
 
-	var objetivos := _texto_do_diario("OBJETIVOS", 13, Identidade.OURO)
-	objetivos.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_TEXTO, 600))
-	_detalhe.add_child(objetivos)
+	# A VOZ DE QUEM PEDIU, em resumo. O caderno a guarda com o nome na frente
+	# ("Damião: O senhor subiu..."); aqui o nome já está em cima, e a fala vem
+	# como citação, em fonte de leitura.
+	var fala := str(missao.get("fala_curta", ""))
+	if fala == "":
+		fala = CadeiaDeMissoes.fala_curta(_fala_sem_nome(str(missao.get("texto", "")), quem))
+	var esquerda := VBoxContainer.new()
+	esquerda.name = "ColunaDaFala"
+	esquerda.add_theme_constant_override("separation", 8)
+	esquerda.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	colunas.add_child(esquerda)
+	if fala != "":
+		var citacao := _texto_do_diario("“%s”" % fala, 17, Identidade.COR_LEITURA)
+		citacao.name = "Fala"
+		citacao.add_theme_constant_override("line_spacing", 4)
+		esquerda.add_child(citacao)
+
+	# OS OBJETIVOS: só esta coluna rola, e só se a missão tiver objetivos demais.
+	var rolagem_dos_objetivos := ScrollContainer.new()
+	rolagem_dos_objetivos.name = "ColunaDosObjetivos"
+	rolagem_dos_objetivos.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	rolagem_dos_objetivos.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	rolagem_dos_objetivos.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	colunas.add_child(rolagem_dos_objetivos)
+	var direita := VBoxContainer.new()
+	direita.add_theme_constant_override("separation", 6)
+	direita.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	rolagem_dos_objetivos.add_child(direita)
+	var objetivos := Identidade.papel_rotulo(Label.new(), 13)
+	objetivos.text = "OBJETIVOS"
+	direita.add_child(objetivos)
+	# Os cumpridos, apagados e em UMA linha cada: o jogador já sabe o que fez.
 	for feito in missao.get("feitos", []):
 		var riscado := _texto_do_diario("%s  %s" % [CadeiaDeMissoes.MARCA_FEITA, str(feito)], 15, COR_APAGADA)
 		riscado.name = "Feito"
-		_detalhe.add_child(riscado)
+		direita.add_child(riscado)
 	var agora := str(missao.get("resumo", ""))
 	if agora == "":
 		agora = str(missao.get("linha", missao.get("titulo", "")))
-	var objetivo := _texto_do_diario("◆  %s" % agora, 16, COR_CURSOR if acompanhada else COR_TEXTO)
+	var objetivo := _texto_do_diario("◆  %s" % agora, 17, COR_CURSOR if acompanhada else Identidade.COR_LEITURA)
 	objetivo.name = "ObjetivoDeAgora"
-	_detalhe.add_child(objetivo)
+	direita.add_child(objetivo)
 	var total := int(missao.get("total", 0))
 	if total > 0:
 		var barra := ProgressBar.new()
@@ -1089,19 +1146,23 @@ func _desenhar_o_diario(missao: Dictionary) -> void:
 		cheio.set_corner_radius_all(3)
 		barra.add_theme_stylebox_override("background", fundo)
 		barra.add_theme_stylebox_override("fill", cheio)
-		_detalhe.add_child(barra)
+		direita.add_child(barra)
 
-	# A RECOMPENSA DO PASSO (#107), em ícones: os itens com o ícone de cada um, os
-	# réis e o XP com os deles (`assets/sprites/icones/`), e a conta ao lado.
+	# O RODAPÉ DA PÁGINA, fixo: a recompensa do passo (#107), em ícones, e o botão.
 	var recompensa: Dictionary = missao.get("recompensa", {})
+	var bloco_da_recompensa := VBoxContainer.new()
+	bloco_da_recompensa.add_theme_constant_override("separation", 3)
+	bloco_da_recompensa.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	bloco_da_recompensa.size_flags_vertical = Control.SIZE_SHRINK_END
+	_acoes_do_diario.add_child(bloco_da_recompensa)
 	if not recompensa.is_empty():
-		var titulo_da_recompensa := _texto_do_diario("RECOMPENSA", 13, Identidade.OURO)
-		titulo_da_recompensa.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_TEXTO, 600))
-		_detalhe.add_child(titulo_da_recompensa)
+		var titulo_da_recompensa := Identidade.papel_rotulo(Label.new(), 13)
+		titulo_da_recompensa.text = "RECOMPENSA"
+		bloco_da_recompensa.add_child(titulo_da_recompensa)
 		var linha_da_recompensa := HBoxContainer.new()
 		linha_da_recompensa.name = "Recompensa"
 		linha_da_recompensa.add_theme_constant_override("separation", 16)
-		_detalhe.add_child(linha_da_recompensa)
+		bloco_da_recompensa.add_child(linha_da_recompensa)
 		for chave in recompensa:
 			var item := HBoxContainer.new()
 			item.add_theme_constant_override("separation", 6)
@@ -1112,26 +1173,25 @@ func _desenhar_o_diario(missao: Dictionary) -> void:
 				figura.texture = icone
 				figura.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 				figura.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-				figura.custom_minimum_size = Vector2(28, 28)
+				figura.custom_minimum_size = Vector2(26, 26)
 				figura.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS if str(chave) in ["reis", "xp"] else CanvasItem.TEXTURE_FILTER_NEAREST
 				item.add_child(figura)
 			var conta := _texto_do_diario(_nome_da_recompensa(str(chave), int(recompensa[chave])), 15, COR_TEXTO)
-			conta.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+			conta.autowrap_mode = TextServer.AUTOWRAP_OFF
+			conta.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 			item.add_child(conta)
 			linha_da_recompensa.add_child(item)
 
 	# ACOMPANHAR, o botão do Witcher. Acompanhada, ele diz que é e não faz nada.
-	var respiro := Control.new()
-	respiro.custom_minimum_size = Vector2(0, 6)
-	_detalhe.add_child(respiro)
 	var botao := Button.new()
 	botao.name = "Acompanhar"
 	botao.text = "◆  ACOMPANHANDO" if acompanhada else "ACOMPANHAR  [%s]" % Atalhos.letra("interagir")
 	botao.focus_mode = Control.FOCUS_NONE
 	botao.disabled = acompanhada
 	botao.mouse_default_cursor_shape = Control.CURSOR_ARROW if acompanhada else Control.CURSOR_POINTING_HAND
-	botao.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
-	botao.custom_minimum_size = Vector2(220, 38)
+	botao.size_flags_horizontal = Control.SIZE_SHRINK_END
+	botao.size_flags_vertical = Control.SIZE_SHRINK_END
+	botao.custom_minimum_size = Vector2(210, 38)
 	botao.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_TITULO, 600))
 	botao.add_theme_font_size_override("font_size", 15)
 	botao.add_theme_color_override("font_color", Identidade.CREME)
@@ -1146,17 +1206,23 @@ func _desenhar_o_diario(missao: Dictionary) -> void:
 	botao.pressed.connect(func() -> void:
 		CadernoDoVale.fixar(id)
 		Audio.efeito("menu_confirma"))
-	_detalhe.add_child(botao)
+	_acoes_do_diario.add_child(botao)
 
 
+## A fala sem o nome de quem pediu na frente ("Damião: O senhor subiu...").
+func _fala_sem_nome(fala: String, quem: String) -> String:
+	if quem != "" and fala.begins_with(quem + ": "):
+		return fala.substr(quem.length() + 2)
+	return fala
+
+
+## Texto do diário: a sans de leitura do HUD (papel de leitura, #199).
 func _texto_do_diario(texto: String, tamanho: int, cor: Color) -> Label:
 	var etiqueta := Label.new()
 	etiqueta.text = texto
 	etiqueta.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	etiqueta.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	etiqueta.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_TEXTO, 400))
-	etiqueta.add_theme_font_size_override("font_size", tamanho)
-	etiqueta.add_theme_color_override("font_color", cor)
+	Identidade.papel_leitura(etiqueta, tamanho, cor)
 	return etiqueta
 
 
@@ -1407,7 +1473,8 @@ func _quando_foi_salvo() -> String:
 func _adicionar_linha(texto: String, cor: Color, cabecalho: bool = false, distintivo: String = "") -> void:
 	if cabecalho:
 		if distintivo == "":
-			var etiqueta := _rotulo(texto, LETRA_DICA, cor)
+			# Cabeçalho de grupo: rótulo de seção, Cinzel menor em ouro (#199).
+			var etiqueta := Identidade.papel_rotulo(_rotulo(texto, LETRA_DICA, cor), LETRA_DICA)
 			_lista.add_child(etiqueta)
 			_linhas.append(etiqueta)
 		else:
@@ -1434,7 +1501,8 @@ func _adicionar_linha(texto: String, cor: Color, cabecalho: bool = false, distin
 	# (`CadeiaDeMissoes._titulo_do_passo`). Os dois, porque um protege do outro.
 	botao.clip_text = true
 	botao.add_theme_font_size_override("font_size", LETRA_LINHA)
-	botao.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_TEXTO, 500))
+	# Nome na lista: a sans de leitura do HUD (#199).
+	botao.add_theme_font_override("font", Identidade.fonte_do_hud())
 	botao.add_theme_color_override("font_color", cor)
 	botao.add_theme_color_override("font_hover_color", COR_CURSOR)
 	botao.add_theme_color_override("font_pressed_color", COR_CURSOR)
