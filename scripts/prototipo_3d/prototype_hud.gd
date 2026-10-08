@@ -149,8 +149,8 @@ func _ready() -> void:
 	# jogando. Saiu, e o que sobrou é o que o jogador precisa ler: onde ele
 	# está, o que ele tem de fazer, e quanto falta.
 	#
-	# A missão ganhou o espaço e o corpo: 17 px em vez de 15, com a linha do
-	# passo à direita do rótulo. O painel encolheu junto — cabeçalho menor é
+	# A missão ganhou o espaço e o corpo, com a linha do passo à direita do
+	# rótulo, na borda do painel (o objetivo depois voltou a 15 px, #176). O painel encolheu junto — cabeçalho menor é
 	# mais vale à vista.
 	_heading = _panel(Color(0.055, 0.085, 0.075, 0.82))
 	_heading.add_to_group(PopupsDoMundo.GRUPO_HUD)
@@ -159,17 +159,20 @@ func _ready() -> void:
 	_place(_region_label, Vector2(33, 26), Vector2(HEADING_WIDTH - 130, 20))
 	_mission_step = _label("", 12, GOLD)
 	_mission_step.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	_place(_mission_step, Vector2(HEADING_WIDTH - 108, 26), Vector2(92, 20))
+	# O contador encosta na mesma margem (15 px) que o rótulo da região tem à esquerda.
+	_place(_mission_step, Vector2(18 + HEADING_WIDTH - 15 - 92, 26), Vector2(92, 20))
 	_quest_label = _label("", 13, GOLD)
 	_quest_label.name = "MissaoAcompanhada"
 	_quest_label.clip_text = true
 	_quest_label.visible = false
-	_place(_quest_label, Vector2(33, 50), Vector2(HEADING_WIDTH - 50, 20))
-	_objective_label = _label(_objective, 17, INK)
+	_place(_quest_label, Vector2(33, 50), Vector2(HEADING_WIDTH - 30, 20))
+	# O objetivo era bem maior que o título dourado: 15 px, não 17 (#176). Com o
+	# painel em 80% por padrão, o texto na tela sai perto dos 12 px do título.
+	_objective_label = _label(_objective, 15, INK)
 	_objective_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	# As etapas da missão (#186) levam "●"/"○", que a fonte padrão não desenha.
 	_objective_label.add_theme_font_override("font", Identidade.fonte_do_hud())
-	_place(_objective_label, Vector2(33, 52), Vector2(HEADING_WIDTH - 50, 42))
+	_place(_objective_label, Vector2(33, 52), Vector2(HEADING_WIDTH - 30, 42))
 	# A bússola/minimapa é acrescentada depois do HUD e, por isso, fica por cima
 	# dos controles no mesmo CanvasLayer. A tarefa precisa continuar legível ali.
 	for control: Control in [_heading, _region_label, _mission_step, _objective_label, _quest_label]:
@@ -1114,12 +1117,12 @@ func _fit_heading() -> void:
 		return
 	var lines := maxi(1, _objective_label.get_line_count())
 	# 52 é onde o texto começa (ver `_montar`); com o nome da missão em cima,
-	# ele desce 22. 18 de respiro embaixo.
+	# ele desce 22. 14 de respiro embaixo: o painel abraça o texto.
 	var topo := 52.0 + (22.0 if _missao != "" else 0.0)
 	_objective_label.position.y = _heading.position.y + topo - 18.0
 	var altura_texto := lines * _objective_label.get_line_height()
 	_objective_label.size.y = altura_texto
-	var altura := topo + altura_texto + 18.0
+	var altura := topo + altura_texto + 14.0
 	_heading.size.y = altura
 	if is_instance_valid(_house_info_panel):
 		_house_info_panel.position.y = 18.0 + altura * Tela.escala_componente("missao") + 12.0

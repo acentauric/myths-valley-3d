@@ -2,6 +2,14 @@
 
 ## Em desenvolvimento — 08/10/2026
 
+- **O painel de missão nasce menor e abraça o texto.** Cada componente da interface
+  passa a ter o próprio tamanho padrão (`Tela.PADROES_COMPONENTE`, 100% para quem não
+  está na lista), e a Missão abre em 80%; o ↺ de Ajustes volta para esse valor, e quem
+  já gravou um tamanho mantém a escolha. O texto branco do objetivo desce de 17 para
+  15 px, o contador "N de M" encosta na borda direita do painel (estava a 34 px, não
+  15) e a sobra embaixo do objetivo cai de 18 para 14 px. O portão
+  `interface_individual` confere os padrões (#176).
+
 - **O marcador do jogador no minimapa se lê de relance.** O triângulo dourado, pequeno
   e da cor da areia, sumia no terreno claro e ao lado do losango da missão. Agora é uma
   seta (chevron com entalhe na base) cerca de 55% maior, dourado-claro, com contorno

@@ -27,12 +27,22 @@ signal componentes_mudaram
 
 const COMPONENTES := ["missao", "relogio", "vida", "folego", "vigor", "minimapa", "mao", "fala", "nomes", "interacao", "avisos", "mochila", "caderneta", "almanaque", "talentos", "social", "pausa", "dialogo", "atalhos", "mapa", "controles", "apoios", "ajuda", "menu", "historico", "ajustes", "vagas", "sobre", "travessia", "modelos", "pergunta", "folheto"]
 const ESCALAS_COMPONENTE := [0.65, 0.8, 1.0, 1.15, 1.3, 1.5]
+## Degrau de ESCALAS_COMPONENTE usado quando o jogador não escolheu nada (100%).
 const PADRAO_COMPONENTE := 2
+## Componentes cujo padrão é outro degrau: a missão nasce em 80% (#176).
+## Quem já gravou um tamanho para eles (inclusive 100%) mantém a escolha.
+const PADROES_COMPONENTE := {"missao": 1}
 var tamanhos_componentes: Dictionary = {}
 
 
+## O degrau de fábrica do componente: o do dicionário ou, sem entrada, o geral.
+## É o valor para onde o ↺ de Ajustes e o "Restaurar" voltam.
+func padrao_componente(chave: String) -> int:
+	return int(PADROES_COMPONENTE.get(chave, PADRAO_COMPONENTE))
+
+
 func tamanho_componente(chave: String) -> int:
-	return int(tamanhos_componentes.get(chave, PADRAO_COMPONENTE))
+	return int(tamanhos_componentes.get(chave, padrao_componente(chave)))
 
 
 func escala_componente(chave: String) -> float:
@@ -185,7 +195,7 @@ func _ready() -> void:
 	var preferencias := ConfigFile.new()
 	preferencias.load(ARQUIVO)
 	for chave: String in COMPONENTES:
-		tamanhos_componentes[chave] = clampi(int(preferencias.get_value("componentes", chave, PADRAO_COMPONENTE)), 0, ESCALAS_COMPONENTE.size() - 1)
+		tamanhos_componentes[chave] = clampi(int(preferencias.get_value("componentes", chave, padrao_componente(chave))), 0, ESCALAS_COMPONENTE.size() - 1)
 	get_tree().node_added.connect(_texto_novo)
 
 

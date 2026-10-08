@@ -267,7 +267,7 @@ func _aba_cenario(esquerda: VBoxContainer, direita: VBoxContainer) -> void:
 		for fator: float in Tela.ESCALAS_COMPONENTE:
 			opcoes.append("%d%%" % roundi(fator * 100.0))
 		_escolha(str(IdiomaMenu.campo(textos[chave], "texto")), opcoes, Tela.tamanho_componente(chave),
-			func(i: int) -> void: Tela.definir_componente(chave, i), Tela.PADRAO_COMPONENTE, "interface:" + chave)
+			func(i: int) -> void: Tela.definir_componente(chave, i), Tela.padrao_componente(chave), "interface:" + chave)
 	var restaurar := Button.new()
 	restaurar.text = str(IdiomaMenu.campo(textos["restaurar"], "texto"))
 	_pai.add_child(restaurar)
