@@ -2,6 +2,13 @@
 
 ## Em desenvolvimento — 08/10/2026
 
+- **O dendezal ganha chão próprio.** Os dendezeiros ficavam plantados na grama lisa: o
+  mapa de solo pulava o dendê (e o coqueiro) ao pintar o folhiço sob as copas. Agora o
+  dendê pinta a mancha de folhiço e palha caída com 3,5 a 6,5 u (peso 0,7, a borda é
+  rasgada pelo ruído do shader e deixa a grama aparecer entre os pés), o coqueiral da
+  orla segue de areia, e o forro do dendezal ganha capim entre as samambaias. Falta
+  medir o FPS e ver nas quatro estações (#195).
+
 - **Os varais dos quintais voltam à escala de gente.** Os três varais Tripo eram
   medidos pela largura da corda (3,6 a 4,2 u), e como os modelos são altos e estreitos
   as estacas chegavam a 3,5 u, passando da cabeça do viajante. Agora são medidos pela

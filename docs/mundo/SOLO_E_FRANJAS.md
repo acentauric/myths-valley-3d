@@ -22,7 +22,7 @@ por cima da terra e a pedra por cima da lama, em vez de um degradê de duas imag
 |---|---|---|
 | grama baixa | base | 4 u |
 | capim seco | pasto (Fazenda inteira, a vila ralo), em manchas | 5 u |
-| folhiço | sob a copa de cada árvore (menos o coqueiral) | 3,5 u |
+| folhiço | sob a copa de cada árvore (menos o coqueiral; o dendezal, mais ralo) | 3,5 u |
 | terra batida varrida | ruas, praça, cruzamentos, trilhas de pé | 4 u |
 | barro vermelho | declive; halo da rua em declive | 5 u |
 | pedrisco | declive forte; topo do Mirante | 3 u |
@@ -46,8 +46,8 @@ cúbico (rampas de 2 a 4 u, que o shader ainda recorta com ruído). Tudo vai num
   longo da costa; lama ao longo dos rios (núcleo 3,5 u, cauda de umidade 7 u); pasto na
   Fazenda (1,0) e na vila (0,35).
 - **Vida**, em `pintar_vida()`, chamada de `world_builder._build_bases_das_arvores` quando as
-  árvores e as casas já existem: a copa de cada árvore (mangue pela metade, coqueiro e dendê
-  não cobrem) e as trilhas de pé da porta de cada casa até a rua mais perto (1,2 u).
+  árvores e as casas já existem: a copa de cada árvore (mangue pela metade; o dendê, em mancha larga de 3,5 a 6,5 u com
+  peso 0,7, para a grama aparecer na borda; o coqueiro não cobre) e as trilhas de pé da porta de cada casa até a rua mais perto (1,2 u).
 - Sai sempre do KML, da composição e das casas do momento: mudou o mapa, o chão acompanha.
 
 ### Copa ao longe

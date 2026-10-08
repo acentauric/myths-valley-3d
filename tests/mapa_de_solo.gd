@@ -167,11 +167,21 @@ func _a_copa(mundo, solo) -> void:
 	var com_copa := 0
 	var coqueiros := 0
 	var coqueiros_com_copa := 0
+	var dendes := 0
+	var dendes_com_copa := 0
+	var regiao = mundo.get("_region")
 	for arvore: Dictionary in mundo.arvores():
 		var pe: Vector3 = arvore["pos"]
 		var peso: float = solo.peso(Camada.COPA, Vector2(pe.x, pe.z))
 		var especie := String(arvore.get("especie", ""))
-		if especie.contains("coqueiro") or especie.contains("dende"):
+		if especie.contains("dende"):
+			# O dendezal tem chão próprio (#195); o dendê da areia fica de areia.
+			if regiao != null and regiao.surface_at(pe) != "areia":
+				dendes += 1
+				if peso > 0.3:
+					dendes_com_copa += 1
+			continue
+		if especie.contains("coqueiro"):
 			coqueiros += 1
 			if peso > 0.3:
 				coqueiros_com_copa += 1
@@ -181,6 +191,8 @@ func _a_copa(mundo, solo) -> void:
 			com_copa += 1
 	_verificar(medidas > 1000, "o mundo plantou árvores de mata (%d)" % medidas)
 	_verificar(com_copa >= medidas * 0.9, "sob a árvore há copa em %d de %d pés" % [com_copa, medidas])
+	_verificar(dendes >= 20, "o mundo plantou dendezeiros fora da areia (%d)" % dendes)
+	_verificar(dendes_com_copa >= dendes * 0.9, "sob o dendezeiro há folhiço em %d de %d pés" % [dendes_com_copa, dendes])
 	_verificar(coqueiros == 0 or coqueiros_com_copa <= coqueiros * 0.5, "o coqueiral da orla segue de areia, sem folhiço (%d de %d)" % [coqueiros_com_copa, coqueiros])
 
 
