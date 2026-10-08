@@ -36,6 +36,15 @@ func _run() -> void:
 	var jogador = vale.player
 	var mundo = vale.world
 	root.get_node("/root/Dia").pausado = true
+	# A apresentação do povoado esconde e desliga os bichos longe do jogador (o animador
+	# vai junto, em PROCESS_MODE_DISABLED) até a visita chegar perto: sem liberar o elenco o
+	# bicho sorteado podia estar oculto, com o clipe pausado, e o parado nunca se media.
+	for i in 600:
+		if vale.apresentacao_do_povoado != null:
+			break
+		await process_frame
+	vale.apresentacao_do_povoado.liberar_todos()
+	await _quadros(2)
 	var bicho = null
 	var animador = null
 	for candidato in get_nodes_in_group("bichos_de_casa"):
