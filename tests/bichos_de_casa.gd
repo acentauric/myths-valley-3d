@@ -335,6 +335,13 @@ func _run() -> void:
 	_conferir(not Gerente._perto(Vector3(20.0, 0.0, 0.0), olho, false, BichoDeCasa.FISICA_ATE), "a 20 u quem andava sem física passa a andar com física (sem histerese)")
 	_conferir(Gerente._perto(Vector3(30.0, 0.0, 0.0), olho, true, BichoDeCasa.FISICA_ATE), "a 30 u quem andava com física passa a andar sem (sem histerese)")
 	_conferir(not Gerente._perto(Vector3(40.0, 0.0, 0.0), olho, true, BichoDeCasa.FISICA_ATE), "a 40 u o bicho ainda anda com física")
+	# O corte seco do bando só acontece depois que a ave mais distante do centro já
+	# sumiu pelo fade da malha (alcance + margem de 4 u): ninguém vê o bando piscar.
+	var BandoDeChao = load("res://scripts/prototipo_3d/bando_de_chao.gd")
+	for bando in gerente.bandos:
+		var corta_a: float = Gerente.ALCANCE + float(bando.raio) + Gerente.FOLGA_DO_BANDO + Gerente.HISTERESE
+		var ultima_some_a: float = BandoDeChao.ALCANCE + 4.0 + float(bando.raio) + 4.0
+		_conferir(corta_a > ultima_some_a, "o bando da %s é cortado (%.0f u) antes do fade da ave mais afastada acabar (%.0f u)" % [bando.casa, corta_a, ultima_some_a])
 
 	_fechar()
 

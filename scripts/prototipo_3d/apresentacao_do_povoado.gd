@@ -38,7 +38,8 @@ func atualizar() -> void:
 	_escolher(get_tree().get_nodes_in_group("bandos_de_chao"), 1 + fase, false)
 
 func _escolher(atores: Array[Node], limite: int, moradores: bool) -> void:
-	atores.sort_custom(func(a, b): return a.global_position.distance_squared_to(_vale.player.global_position) < b.global_position.distance_squared_to(_vale.player.global_position))
+	var jogador: Vector3 = _vale.player.global_position
+	atores.sort_custom(func(a, b): return onde_esta(a).distance_squared_to(jogador) < onde_esta(b).distance_squared_to(jogador))
 	var apresentados := 0
 	for ator in atores:
 		var visita := ator.has_meta("presenca_do_calendario")
@@ -53,7 +54,7 @@ func _escolher(atores: Array[Node], limite: int, moradores: bool) -> void:
 				if filho.get_script() == load("res://scripts/prototipo_3d/cadeia_de_missoes.gd") and filho.iniciado and filho.missao < filho.passos.size():
 					essencial = true
 		var id := ator.get_instance_id()
-		var distancia: float = ator.global_position.distance_to(_vale.player.global_position)
+		var distancia: float = onde_esta(ator).distance_to(jogador)
 		var conhecido := _vistos.has(id)
 		var perto := distancia < (SAIDA if conhecido else RAIO)
 		var mostrar := essencial or (perto and (conhecido or apresentados < limite))
@@ -66,6 +67,14 @@ func _escolher(atores: Array[Node], limite: int, moradores: bool) -> void:
 			_definir(ator, true, true)
 		elif not mostrar and not _ocultos.has(id):
 			_definir(ator, false, false)
+
+## Onde o ator está de verdade. O bando de aves é um nó parado na origem do vale
+## (as aves andam, cada uma com a sua posição): quem mede pelo nó acha que todo
+## bando mora no (0, 0, 0) e o faz entrar e sair de cena conforme o jogador passa
+## a 65 e 85 m da origem, longe do terreiro. O bando diz o centro dele (#193).
+static func onde_esta(ator: Node3D) -> Vector3:
+	var centro = ator.get("centro")
+	return centro if centro is Vector3 else ator.global_position
 
 func _definir(ator: Node3D, sim: bool, suave: bool) -> void:
 	var id := ator.get_instance_id()

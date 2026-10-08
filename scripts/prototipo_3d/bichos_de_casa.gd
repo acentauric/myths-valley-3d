@@ -19,7 +19,9 @@ extends Node3D
 ##
 ## NÍVEL DE DETALHE pela distância à câmera (`ALCANCE`): longe, o bicho some, não
 ## anda e fica onde estaria (ver `perto` nos dois scripts). Cada bicho tem a sua
-## histerese para não piscar na fronteira.
+## histerese para não piscar na fronteira. O corte do bando inteiro (`visible`)
+## nunca é visto: cada ave já some sozinha pelo `visibility_range` com fade
+## (`Animador.vestir`), e o corte só acontece depois (#193).
 
 const BichoDeCasa = preload("res://scripts/prototipo_3d/bicho_de_casa.gd")
 const BandoDeChao = preload("res://scripts/prototipo_3d/bando_de_chao.gd")
@@ -29,6 +31,9 @@ const ARQUIVO := "res://data/bichos_de_casa.json"
 ## Até onde (u) da câmera os bichos andam e se veem, e a folga da histerese.
 const ALCANCE := 80.0
 const HISTERESE := 8.0
+## Folga (u) do corte do bando além do raio do terreiro: a ave que foge ou voa
+## ao poleiro passa do raio, e o fade da malha (4 u) termina depois do alcance.
+const FOLGA_DO_BANDO := 6.0
 ## De quanto em quanto tempo (s) se confere a distância, e se procura o dono.
 const CONFERIR_A_CADA := 0.5
 const PROCURAR_O_DONO_A_CADA := 1.0
@@ -175,7 +180,10 @@ func _conferir_a_distancia() -> void:
 		if is_instance_valid(bando):
 			if not bool(bando.get_meta("presenca_liberada", true)):
 				continue
-			bando.perto = _perto(bando.centro, olho, bando.perto)
+			# O corte seco do bando só vale depois que a última ave já sumiu pelo
+			# fade da própria malha (80 m + margem, medido em 3D): o alcance do
+			# bando cresce com o raio do terreiro e a folga do voo ao poleiro.
+			bando.perto = _perto(bando.centro, olho, bando.perto, ALCANCE + float(bando.raio) + FOLGA_DO_BANDO)
 			bando.visible = bando.perto
 
 

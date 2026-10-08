@@ -42,6 +42,9 @@ func _run() -> void:
 	conferir(int(inicial.moradores.ativos) <= 6, "chegada: quatro essenciais e até dois outros moradores")
 	conferir(int(inicial.bichos_de_casa.ativos) <= 3, "chegada: até três quadrúpedes")
 	conferir(int(inicial.bandos_de_chao.ativos) <= 1, "chegada: até um bando")
+	# O bando de aves é medido pelo terreiro, e não pelo nó parado na origem (#193).
+	for bando in get_nodes_in_group("bandos_de_chao"):
+		conferir(diretor.onde_esta(bando).is_equal_approx(bando.centro), "o bando da %s é medido pelo centro do terreiro" % bando.casa)
 	for id in ["pedro", "tonho", "candinha", "zefa"]:
 		var ator: Node = vale.pedro if id == "pedro" else vale._achar_morador(id)
 		conferir(ator.is_physics_processing(), "essencial disponível: " + id)
