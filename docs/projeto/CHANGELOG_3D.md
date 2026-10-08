@@ -2,6 +2,15 @@
 
 ## Em desenvolvimento — 08/10/2026
 
+- **A fonte padrão da interface fica um pouco menor, e os Ajustes mostram mais itens por
+  coluna.** O Médio do Tamanho do texto passa a ter corpo 17 (era 19) e botões 14 (era 15);
+  Pequeno, Grande e Muito grande continuam multiplicando o novo padrão. Os tamanhos que o
+  painel de Ajustes fixava no código (rótulo, seção, título e subtítulo do cabeçalho, texto
+  e "?" da ajuda) viraram constantes do tema (`FONTE_ROTULO`, `FONTE_SECAO`...) e escalam
+  junto; os campos ficam 56 px de altura (era 66) e os controles 32 (era 36). As placas da
+  home mantêm os 15 de antes. O portão da tela cobra o padrão menor e proíbe número solto de
+  fonte no painel (#167).
+
 - **Restaurar volumes sobe para o cabeçalho de Ajustes, e a aba ativa tem uma moldura só.**
   "Restaurar estes" e "Restaurar todos" (com o ↺) ficam à esquerda do ×, na altura dele, em
   Geral e em Sons do vale; o rodapé deixou de existir e a lista ganha a altura, sem cortar

@@ -14,8 +14,19 @@ const BORDA_SUAVE := Color(0.706, 0.604, 0.376, 0.55)
 ## a altura é a que as telas usam no custom_minimum_size. As placas do retábulo da home
 ## (BotaoCronica) seguem as mesmas medidas. Em tela cheia a interface é
 ## esticada da referência 1280×720, então 15 e 44 já saem com 22 e 66 px em 1080p.
-const FONTE_BOTAO := 15
+const FONTE_BOTAO := 14
 const ALTURA_BOTAO := 44
+## As placas do retábulo da home ficam no tamanho de antes: só os botões comuns encolheram.
+const FONTE_PLACA := 15
+## Escala tipográfica do corpo e dos modais (#167). É o "Médio" do Tamanho do texto: o
+## Pequeno, o Grande e o Muito grande multiplicam estes valores, então nenhum painel precisa
+## de número solto. Em 1080p cada um sai 1,5 vez maior.
+const FONTE_CORPO := 17
+const FONTE_ROTULO := 15
+const FONTE_SECAO := 18
+const FONTE_TITULO_MODAL := 20
+const FONTE_SUBTITULO_MODAL := 15
+const FONTE_AJUDA_CAMPO := 12
 
 
 ## `fonte` vem da opção "Fonte do menu": "" é a Crônica (Cormorant no corpo e Cinzel
@@ -25,7 +36,7 @@ static func criar(fonte: String = "") -> Theme:
 	var cronica := fonte.is_empty()
 	if cronica:
 		theme.default_font = Identidade.fonte(Identidade.FONTE_TEXTO, 600)
-		theme.default_font_size = 19
+		theme.default_font_size = FONTE_CORPO
 	elif fonte != "padrao":
 		theme.default_font = load(fonte) as Font
 	_button_styles(theme, "Button", {
@@ -66,7 +77,7 @@ static func criar(fonte: String = "") -> Theme:
 		theme.set_font_size("font_size", "Button", FONTE_BOTAO)
 		for corpo in ["OptionButton", "PopupMenu", "LineEdit", "TextEdit", "SpinBox"]:
 			theme.set_font("font", corpo, theme.default_font)
-			theme.set_font_size("font_size", corpo, 19)
+			theme.set_font_size("font_size", corpo, FONTE_CORPO)
 	# Placas do retábulo (home e confirmação de sair): Cinzel maior, canto chanfrado
 	# e brilho dourado no foco — as rosas dos ventos entram por fora (abertura.gd).
 	theme.set_type_variation("BotaoCronica", "Button")
@@ -79,7 +90,7 @@ static func criar(fonte: String = "") -> Theme:
 		"focus": [Color(0, 0, 0, 0), Identidade.OURO, 2],
 	}, 16, 8, true)
 	theme.set_font("font", "BotaoCronica", Identidade.fonte(Identidade.FONTE_TITULO, 600, 3))
-	theme.set_font_size("font_size", "BotaoCronica", FONTE_BOTAO)
+	theme.set_font_size("font_size", "BotaoCronica", FONTE_PLACA)
 	theme.set_color("font_color", "BotaoCronica", Color(Identidade.CREME, 0.92))
 	theme.set_color("font_hover_color", "BotaoCronica", Color("fff8e6"))
 	theme.set_color("font_focus_color", "BotaoCronica", Color("fff8e6"))
@@ -95,7 +106,7 @@ static func criar(fonte: String = "") -> Theme:
 		"focus": [Color(0, 0, 0, 0), Color("f4c2ad"), 2],
 	}, 16, 8, true)
 	theme.set_font("font", "BotaoCronicaNegativo", Identidade.fonte(Identidade.FONTE_TITULO, 600, 3))
-	theme.set_font_size("font_size", "BotaoCronicaNegativo", FONTE_BOTAO)
+	theme.set_font_size("font_size", "BotaoCronicaNegativo", FONTE_PLACA)
 	theme.set_color("font_color", "BotaoCronicaNegativo", Color("f2d3c6"))
 	theme.set_color("font_hover_color", "BotaoCronicaNegativo", Color.WHITE)
 	theme.set_color("font_focus_color", "BotaoCronicaNegativo", Color.WHITE)

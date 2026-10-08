@@ -30,8 +30,8 @@ signal cenario_menu_mudou(sobrevoo: bool)
 const TAMANHO := Vector2(900, 600)
 const ABAS := ["Geral", "Sons do vale", "Cenário", "Atalhos", "Esforço"]
 ## Altura de cada campo e do controle dentro dele (seleção ou volume).
-const ALTURA_CAMPO := 66.0
-const ALTURA_CONTROLE := 36.0
+const ALTURA_CAMPO := 56.0
+const ALTURA_CONTROLE := 32.0
 ## Altura comum do cabeçalho dos modais (título + botão do canto).
 const ALTURA_CABECALHO := 44.0
 ## Distância (fração da barra) em que o volume encaixa na marca do padrão.
@@ -389,7 +389,7 @@ func _volume(titulo: String, valor: float, ao_mudar: Callable, canal: String) ->
 	mudo.custom_minimum_size = Vector2(ALTURA_CONTROLE, ALTURA_CONTROLE)
 	mudo.focus_mode = Control.FOCUS_NONE
 	var icone := AudioToggleIcon.new()
-	icone.position = Vector2(6, 6)
+	icone.position = Vector2((ALTURA_CONTROLE - 24.0) / 2.0, (ALTURA_CONTROLE - 24.0) / 2.0)
 	icone.size = Vector2(24, 24)
 	icone.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	mudo.add_child(icone)
@@ -558,7 +558,7 @@ func _botao_padrao(linha: Container) -> Button:
 	botao.focus_mode = Control.FOCUS_NONE
 	var icone = HudIcon.new().configurar("restaurar")
 	icone.name = "Icone"
-	icone.position = Vector2(6, 6)
+	icone.position = Vector2((ALTURA_CONTROLE - 24.0) / 2.0, (ALTURA_CONTROLE - 24.0) / 2.0)
 	icone.size = Vector2(24, 24)
 	icone.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	botao.add_child(icone)
@@ -587,7 +587,7 @@ func _abrir_campo() -> Container:
 
 ## Título de seção de uma coluna, com respiro antes dos campos.
 func _secao(titulo: String) -> void:
-	var rotulo := _texto(titulo, 20)
+	var rotulo := _texto(titulo, TemaMenu.FONTE_SECAO)
 	rotulo.add_theme_color_override("font_color", Color("e2c47f"))
 	_pai.add_child(rotulo)
 	var respiro := Control.new()
@@ -608,12 +608,12 @@ func _rotulo_do_campo(titulo: String, texto: String, chave_ajuda: String = "") -
 		ajuda.theme_type_variation = &"BotaoAjuda"
 		ajuda.custom_minimum_size = Vector2(24, 24)
 		ajuda.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-		ajuda.add_theme_font_size_override("font_size", 13)
+		ajuda.add_theme_font_size_override("font_size", TemaMenu.FONTE_AJUDA_CAMPO)
 		ajuda.pressed.connect(func() -> void:
 			Audio.efeito("ui_confirmar")
 			_abrir_ajuda(titulo, chave))
 		linha.add_child(ajuda)
-	var rotulo := _texto(texto, 16)
+	var rotulo := _texto(texto, TemaMenu.FONTE_ROTULO)
 	rotulo.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	linha.add_child(rotulo)
 	return rotulo
@@ -651,7 +651,7 @@ func _abrir_ajuda(titulo: String, chave: String) -> void:
 	corpo.text = AjudaMenu.texto(chave, IdiomaMenu.indice())
 	corpo.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	corpo.custom_minimum_size.x = 584
-	corpo.add_theme_font_size_override("font_size", 18)
+	corpo.add_theme_font_size_override("font_size", TemaMenu.FONTE_CORPO)
 	coluna.add_child(corpo)
 	fechar.grab_focus()
 
@@ -680,14 +680,14 @@ static func cabecalho(pai: Container, titulo: String, acao: Callable, subtitulo:
 	titulo_rotulo.text = titulo
 	titulo_rotulo.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	titulo_rotulo.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_TITULO, 600, 2))
-	titulo_rotulo.add_theme_font_size_override("font_size", 22)
+	titulo_rotulo.add_theme_font_size_override("font_size", TemaMenu.FONTE_TITULO_MODAL)
 	titulo_rotulo.add_theme_color_override("font_color", Identidade.CREME)
 	titulos.add_child(titulo_rotulo)
 	if not subtitulo.is_empty():
 		var descricao := Label.new()
 		descricao.text = subtitulo
 		descricao.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_ITALICO, 500))
-		descricao.add_theme_font_size_override("font_size", 17)
+		descricao.add_theme_font_size_override("font_size", TemaMenu.FONTE_SUBTITULO_MODAL)
 		descricao.add_theme_color_override("font_color", Color("c9b98f"))
 		titulos.add_child(descricao)
 	var botao := Button.new()
