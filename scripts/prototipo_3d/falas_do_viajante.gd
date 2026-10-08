@@ -279,10 +279,12 @@ func _vale_agora(gatilho: String) -> bool:
 
 ## A palavra está livre para o viajante? Nada em tela cheia, nenhuma caixa de fala, ninguém falando (a fila
 ## de falas diz: o Pedro, um morador, a narração), e o Pedro sem passo a anunciar.
-func _palavra_livre() -> bool:
+## O sono (`do_sono`) fala com o jogador já deitado: `queda.gd` desliga o physics_process dele logo depois do
+## aviso, e isso não pode calar a fala.
+func _palavra_livre(do_sono: bool = false) -> bool:
 	if not is_inside_tree() or get_tree().paused or Dialogo.ocupado():
 		return false
-	if _jogador != null and not _jogador.is_physics_processing():
+	if not do_sono and _jogador != null and not _jogador.is_physics_processing():
 		return false
 	var fila := FilaDeFalas.da(self)
 	if fila != null and not fila.livre():
@@ -310,7 +312,7 @@ func _dizer(pedido: Dictionary) -> bool:
 	var pausa := float(_dados.get("pausa", PAUSA_PADRAO))
 	if grupo == "" and agora - _ultima_ms < int(pausa * 1000.0):
 		return false
-	if not _palavra_livre():
+	if not _palavra_livre(grupo == "sono"):
 		return false
 	var fila := FilaDeFalas.da(self)
 	if fila == null:
@@ -478,9 +480,9 @@ func _ao_deitar(motivo: String) -> void:
 	if _caiu:
 		return
 	var contextos: Array = ["cansado"] if _deitou_cansado else []
-	var fala := sortear("sono", contextos)
-	if not fala.is_empty():
-		_dizer({"fala": fala, "grupo": "sono", "ate": Time.get_ticks_msec()})
+	# Pedido com validade, não fala direta: ao deitar na cama o diálogo "Dormir?" acabou de fechar e ainda
+	# conta como ocupado neste quadro; o pulso seguinte acha a palavra livre.
+	_pedir_variacao("sono", contextos, 3.0)
 
 
 ## A tela clareou, o dia é novo: ele acorda. A manhã em que o inverno começou ele diz que lá vem chuva; senão,

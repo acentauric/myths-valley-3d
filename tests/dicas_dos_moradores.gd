@@ -172,6 +172,17 @@ func _run() -> void:
 	var situacao_do_estado: String = d.situacao_de_estado()
 	var esperada: String = situacao_do_estado if situacao_do_estado != "" else "lenha"
 	_conferir(d._situacao_do_momento() == esperada, "parado no 2/36 da lenha devia pedir '%s', e pediu '%s'" % [esperada, d._situacao_do_momento()])
+	# A dica de estado em cooldown não esconde a do passo: cansado ou à noite, a lenha ainda recebe ajuda.
+	if situacao_do_estado != "":
+		var entrada_do_estado: Dictionary = (d._dados.get("situacoes", {}) as Dictionary).get(situacao_do_estado, {})
+		var assunto_do_estado := str(entrada_do_estado.get("assunto", situacao_do_estado))
+		var guardado_do_assunto = d._assunto_em.get(assunto_do_estado)
+		d._assunto_em[assunto_do_estado] = Time.get_ticks_msec()
+		_conferir(d._situacao_do_momento() == "lenha", "com a dica de estado em cooldown, o 2/36 da lenha devia cair para '%s'" % "lenha")
+		if guardado_do_assunto == null:
+			d._assunto_em.erase(assunto_do_estado)
+		else:
+			d._assunto_em[assunto_do_estado] = guardado_do_assunto
 	# O lado errado: afastando-se seis amostras seguidas, já longe do alvo.
 	d._sem_avanco_s = 0.0
 	d._fora_de_rumo = true

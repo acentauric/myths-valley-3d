@@ -2615,9 +2615,6 @@ func _ler_documento(id: String) -> void:
 	_avisar_as_cadeias("leu:" + id)
 
 
-## QUEM É O MORADOR DE TAL ID, respondido por esta casa, que é a que tem a lista.
-## A meta "levar" precisa disso para achar quem recebe; o mutirão, para chamar
-## quem ajuda; e a chegada do Pedro, para o bom-dia ao Tonho.
 ## O passo em curso da missão acompanhada (o dicionário do passo, com a `meta`), ou {}: é o que as dicas dos
 ## moradores leem para saber o que o jogador está tentando fazer.
 func _passo_da_acompanhada() -> Dictionary:
@@ -2634,6 +2631,9 @@ func _passo_da_acompanhada() -> Dictionary:
 	return {}
 
 
+## QUEM É O MORADOR DE TAL ID, respondido por esta casa, que é a que tem a lista.
+## A meta "levar" precisa disso para achar quem recebe; o mutirão, para chamar
+## quem ajuda; e a chegada do Pedro, para o bom-dia ao Tonho.
 func _achar_morador(quem: String) -> Node3D:
 	for outro in moradores:
 		if String(outro.dados.get("id", "")) == quem:

@@ -256,10 +256,19 @@ func _situacao_do_momento() -> String:
 	if _sem_avanco_s < _limite(SEM_AVANCO_S):
 		return ""
 	situacao = situacao_de_estado()
-	if situacao != "":
+	# A dica de estado (cansado, noite) já foi dada há pouco? Então cai para a do passo: quem está parado em
+	# lenha 2/36 e cansado não pode ficar sem a dica da lenha e do machado enquanto o estado durar.
+	if situacao != "" and not _em_cooldown_de_assunto(situacao):
 		return situacao
 	var passo: Dictionary = _passo_acompanhado.call() if _passo_acompanhado.is_valid() else {}
 	return situacao_do_passo(passo)
+
+
+## O assunto da situação foi dito há menos de POR_ASSUNTO_S? (A mesma conta do início da ajuda.)
+func _em_cooldown_de_assunto(situacao: String) -> bool:
+	var entrada: Dictionary = (_dados.get("situacoes", {}) as Dictionary).get(situacao, {})
+	var assunto := str(entrada.get("assunto", situacao))
+	return Time.get_ticks_msec() - int(_assunto_em.get(assunto, -1000000)) < int(_limite(POR_ASSUNTO_S) * 1000.0)
 
 
 func _zerar_as_contagens() -> void:
@@ -390,7 +399,7 @@ func _comecar(situacao: String) -> bool:
 		return false
 	var assunto := str(entrada.get("assunto", situacao))
 	var agora := Time.get_ticks_msec()
-	if agora - int(_assunto_em.get(assunto, -1000000)) < int(_limite(POR_ASSUNTO_S) * 1000.0):
+	if _em_cooldown_de_assunto(situacao):
 		return false
 	if agora - _ultima_dica_ms < int(_limite(ENTRE_DICAS_S) * 1000.0):
 		return false

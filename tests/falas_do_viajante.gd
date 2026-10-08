@@ -213,7 +213,10 @@ func _run() -> void:
 	v._ultima_do_grupo.clear()
 	await _palavra_livre(fila, SEGUNDOS_DE_PALAVRA)
 	v._ao_deitar("cama")
+	# Como em queda.gd: o jogador deitado perde o physics_process logo depois do aviso, e a fala sai assim mesmo.
+	jogador.set_physics_process(false)
 	var dormiu := await _ate(func() -> bool: return v._ultima_do_grupo.has("sono"), 6.0)
+	jogador.set_physics_process(true)
 	_conferir(dormiu, "deitar na cama não disse o sono")
 	v._ao_acordar()
 	_conferir(v._pedidos.has("despertar"), "acordar não pediu o despertar")
