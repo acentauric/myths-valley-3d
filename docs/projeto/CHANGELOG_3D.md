@@ -2,6 +2,24 @@
 
 ## Em desenvolvimento — 08/10/2026
 
+- **A plaquinha de nome não cai no rosto de ninguém e esmaece atrás de quem está mais perto
+  (#184).** Cada personagem à vista (os moradores e o jogador) projeta na tela uma caixa da
+  cabeça, do chapéu ao queixo, e outra do tronco, pela altura real do modelo (a malha mais alta,
+  até 12% acima do `altura` do dado, medida a cada 1,5 s). A placa que cairia sobre qualquer
+  cabeça (a do próprio dono com a câmera perto e baixa, a de quem está atrás de outro, o
+  viajante) sobe só o que falta para liberar o rosto, com 4 px de folga, empilhando sobre
+  várias; se isso pedir mais de 90 px (220 para o dono do E e o alvo da missão) ela não
+  aparece. A subida sobe na hora e só desce quando a folga passa de 8 px, e a mola da placa a
+  suaviza. Quando a placa de quem está mais longe da câmera (por mais de 0,6 m) passa na
+  frente do tronco de um personagem ou de um balão mais perto, ela esmaece, mais com mais
+  cobertura e mais diferença de distância, até 22% de alfa (60% para quem importa), em um
+  quarto de segundo, e volta quando ele sai da frente. O portão novo `placas_sem_rosto`
+  confere as contas puras e, no vale, com a câmera perto, média e longe: o rosto do dono, a
+  cabeça de outro posta sob a placa, a profundidade e o alfa de volta, a praça em cacho com o
+  alvo da missão, o morador falando e a câmera girando sem a vaga piscar; com
+  `MV_FALSIFICAR=rosto` (a placa de antes) ele reprova, e a placa de "Dona Zefa" cobria a
+  cabeça do viajante a 2,2 m. A dica do E e os balões, como âncoras, seguem como estavam.
+
 - **Primeiros clipes do Mixamo nos moradores.** Seis animações do Mixamo entram
   redirecionadas para o esqueleto Tripo de cada um (`tools/prototipo_3d/mixamo/redirecionar.gd`,
   só rotações e o quadril, pé no chão, no lugar): o Pedro treina capoeira no posto quando o
