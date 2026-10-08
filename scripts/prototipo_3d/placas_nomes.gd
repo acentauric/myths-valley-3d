@@ -74,6 +74,8 @@ const BONUS_DE_QUEM_JA_TEM := 3.0
 ## o morador respira) faziam a vaga trocar de mão a cada quadro, e a tela piscava.
 const SOBREPOSTA_PARA_ENTRAR := 0.15
 const SOBREPOSTA_PARA_SAIR := 0.45
+## Sob a dica do E (ou na coluna dela) a placa dos outros não tem tolerância: qualquer pedaço coberto a faz ceder.
+const SOBREPOSTA_DA_DICA := 0.0
 ## A placa mais perto da borda da tela que isto não aparece (cortada, ou sob o HUD); quem já tem a
 ## placa aguenta `MARGEM_DE_QUEM_JA_TEM` px a mais antes de perdê-la.
 const MARGEM_DA_TELA := 14.0
@@ -197,7 +199,12 @@ func _process(delta: float) -> void:
 		# A DICA DO E É DE QUEM VAI RECEBER O E, e sobe por cima da placa dele: a placa dos outros que ficaria
 		# sob a dica (alguém atrás dele na mesma linha da câmera) cede, em vez de empurrar a dica para longe
 		# do dono dela.
-		if morador != dono_do_e and (_encosta_em_algum(caixa, dicas, tolerancia) or _encosta_em_algum(caixa, colunas, tolerancia)):
+		#
+		# SEM HISTERESE AQUI: a dica do E é dona do lugar dela, e a placa que a cobre por pouco (menos que a
+		# tolerância de entrar) a empurraria para cima assim que acendesse de novo — e a dica não voltaria ao
+		# lugar de antes quando a placa de quem está atrás cede. Qualquer cobertura da dica, ou da coluna dela,
+		# faz a placa ceder.
+		if morador != dono_do_e and (_encosta_em_algum(caixa, dicas, SOBREPOSTA_DA_DICA) or _encosta_em_algum(caixa, colunas, SOBREPOSTA_DA_DICA)):
 			continue
 		var rumo := 0.0
 		var para_ele := morador.global_position - camera.global_position

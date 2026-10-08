@@ -107,6 +107,14 @@ func _run() -> void:
 		_fechar()
 		return
 	camera = jogador.get("camera")
+	# A apresentação do povoado esconde e desliga quem está longe do jogador até a visita
+	# chegar perto: sem liberar o elenco só uns cinco moradores sobravam à vista para a roda.
+	for i in 600:
+		if vale.apresentacao_do_povoado != null:
+			break
+		await process_frame
+	vale.apresentacao_do_povoado.liberar_todos()
+	await _quadros(4)
 	if falsificar:
 		placas.maximo = 99
 	_as_regras()
@@ -513,7 +521,10 @@ func _o_peso_das_placas() -> void:
 		var saida := {}
 		for morador in placas._placas.keys():
 			var placa: Control = placas._placas[morador]
-			if placa.visible and placa.modulate.a > 0.99:
+			# Só a placa que já acendeu por inteiro (a vaga cheia: `_alfa` 1). O `modulate.a` leva também o esmaecer
+			# da distância (de 6 a 10 m), e quando as vagas caem nos moradores de 7 a 9 m (os de perto atrás de uma
+			# casa ou sob a coluna da dica) nenhuma placa passava de 0,99 e a varredura não media nada.
+			if placa.visible and float(placas._alfa.get(morador, 0.0)) >= 1.0:
 				var topo: Vector3 = morador.global_position + Vector3(0, float(morador.get("altura")) + 0.1, 0)
 				saida[morador] = [placa.position, camera.unproject_position(topo) - Vector2(placa.size.x * 0.5, placa.size.y)]
 		return saida)
