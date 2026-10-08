@@ -453,6 +453,16 @@ func _feitos() -> Array:
 	return lista
 
 
+## OS MARCADORES DAS ETAPAS (#186): círculo cheio é etapa feita, vazado é etapa por
+## fazer. Eram "✓" e "□", e o HUD (fonte padrão) não desenhava nenhum dos dois, nem
+## a Cormorant o "✓": o símbolo caía na fonte de reserva do sistema, pequeno, fino e
+## fora da linha de base — parecia glifo quebrado. A Cormorant desenha "●" e "○", e
+## o HUD a leva como reserva (`Identidade.fonte_do_hud`), então o marcador sai de
+## uma fonte do jogo, na linha. Vale para toda missão com `etapas`, no HUD e no J.
+const MARCA_FEITA := "●"
+const MARCA_PENDENTE := "○"
+
+
 func resumo_do_passo(passo: Dictionary) -> String:
 	var meta: Dictionary = passo.get("meta", {})
 	var escrito := str(passo.get("resumo", "")).strip_edges()
@@ -509,7 +519,7 @@ func resumo_do_passo(passo: Dictionary) -> String:
 	var etapas: Array[String] = []
 	for etapa in passo.get("etapas", []):
 		if etapa is Dictionary:
-			etapas.append("%s %s" % ["✓" if aconteceu(str(etapa.get("evento", ""))) else "□",
+			etapas.append("%s %s" % [MARCA_FEITA if aconteceu(str(etapa.get("evento", ""))) else MARCA_PENDENTE,
 				str(IdiomaMenu.campo(etapa, "texto", ""))])
 	if not etapas.is_empty():
 		frase += "\n" + " · ".join(etapas)

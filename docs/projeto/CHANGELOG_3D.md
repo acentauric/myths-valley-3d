@@ -2,6 +2,14 @@
 
 ## Em desenvolvimento — 08/10/2026
 
+- **As etapas da missão ganham marcadores que a fonte do jogo desenha.** "Arar,
+  plantar, regar" saía com "□" e "✓", que caíam na fonte do sistema (pequenos,
+  finos e fora da linha de base, como glifo quebrado). Agora a etapa feita é
+  "●" e a por fazer é "○", no quadro da tarefa e no diário (J), para toda
+  missão com etapas; o HUD leva a Cormorant como fonte de reserva e o "✓" dos
+  passos já cumpridos no diário também virou "●". O contador "(0/3)" segue
+  junto (#186).
+
 - **O botão do menu que abre o testador automático passa a se chamar TESTAR.**
   Um verbo de uma palavra como JOGAR e EXPLORAR, que não enche mais a placa
   (TEST em inglês, PROBAR em espanhol); a ação e o aviso ao iniciar seguem os

@@ -44,7 +44,7 @@ func _run() -> void:
  equipar(inv, "semente_mandioca")
  equipar(inv, "enxada")
  lav.usar(leito)
- conferir(fila.resumo_do_passo(passo).contains("✓ Arar") and fila.resumo_do_passo(passo).contains("□ Plantar"), "resumo distingue as etapas")
+ conferir(fila.resumo_do_passo(passo).contains("● Arar") and fila.resumo_do_passo(passo).contains("○ Plantar"), "resumo distingue as etapas")
  lav.usar(leito)
  conferir(avisos._notice.contains("plantar") and not lav.acao(leito) == "Arar", "repetir arar orienta plantar, inclusive no E")
  var uma_vez := avisos._notice
@@ -59,7 +59,7 @@ func _run() -> void:
  conferir(lav.alvo_da_etapa("regou", lav.posicao_da(leito)).distance_to(lav.posicao_da(leito)) < 0.01, "marcador aponta a leira plantada ainda seca")
  equipar(inv, "balde")
  lav.usar(leito)
- conferir(fila.resumo_do_passo(passo).contains("✓ Regar") and lav.orientacao(leito).contains("amanhecer"), "regado orienta esperar")
+ conferir(fila.resumo_do_passo(passo).contains("● Regar") and lav.orientacao(leito).contains("amanhecer"), "regado orienta esperar")
  var b := Vector2i(2, 1)
  lav.plantacao.arar(b)
  inv.consumir("semente_mandioca", inv.quantidade("semente_mandioca"))

@@ -167,6 +167,8 @@ func _ready() -> void:
 	_place(_quest_label, Vector2(33, 50), Vector2(HEADING_WIDTH - 50, 20))
 	_objective_label = _label(_objective, 17, INK)
 	_objective_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	# As etapas da missão (#186) levam "●"/"○", que a fonte padrão não desenha.
+	_objective_label.add_theme_font_override("font", Identidade.fonte_do_hud())
 	_place(_objective_label, Vector2(33, 52), Vector2(HEADING_WIDTH - 50, 42))
 	# A bússola/minimapa é acrescentada depois do HUD e, por isso, fica por cima
 	# dos controles no mesmo CanvasLayer. A tarefa precisa continuar legível ali.

@@ -33,6 +33,7 @@ signal pediu(acao: String)
 
 const Atalhos = preload("res://scripts/prototipo_3d/atalhos.gd")
 const Identidade = preload("res://scripts/prototipo_3d/identidade.gd")
+const CadeiaDeMissoes = preload("res://scripts/prototipo_3d/cadeia_de_missoes.gd")
 const IdiomaMenu = preload("res://scripts/prototipo_3d/idioma_menu.gd")
 const VAGAS_TEXTOS := "res://data/vagas_no_jogo.json"
 var _textos_vagas: Dictionary = {}
@@ -1063,7 +1064,7 @@ func _desenhar_o_diario(missao: Dictionary) -> void:
 	objetivos.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_TEXTO, 600))
 	_detalhe.add_child(objetivos)
 	for feito in missao.get("feitos", []):
-		var riscado := _texto_do_diario("✓  %s" % str(feito), 15, COR_APAGADA)
+		var riscado := _texto_do_diario("%s  %s" % [CadeiaDeMissoes.MARCA_FEITA, str(feito)], 15, COR_APAGADA)
 		riscado.name = "Feito"
 		_detalhe.add_child(riscado)
 	var agora := str(missao.get("resumo", ""))

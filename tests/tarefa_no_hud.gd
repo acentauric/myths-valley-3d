@@ -96,9 +96,39 @@ func _run() -> void:
 	_conferir(aviso.global_position.x >= 300.0 or tela.x < 1000.0, "o aviso invade o minimapa (começa em %.0f)" % aviso.global_position.x)
 	hud.set_notice("")
 
+	# --- 6. OS MARCADORES DAS ETAPAS SÃO DESENHADOS PELO JOGO (#186) --------------------
+	# "□" e "✓" caíam na fonte do sistema: pequenos, finos e fora da linha de base,
+	# como glifo quebrado. Agora a etapa feita é "●", a por fazer é "○", e a fonte do
+	# objetivo (e a do diário) as desenha sem recorrer ao sistema.
+	var cadeia = load("res://scripts/prototipo_3d/cadeia_de_missoes.gd")
+	var fonte_do_objetivo: Font = hud._objective_label.get_theme_font("font")
+	var fonte_do_diario: Font = load("res://scripts/prototipo_3d/identidade.gd").fonte(load("res://scripts/prototipo_3d/identidade.gd").FONTE_TEXTO, 400)
+	for marca in [cadeia.MARCA_FEITA, cadeia.MARCA_PENDENTE]:
+		_conferir(fonte_do_objetivo.has_char(marca.unicode_at(0)), "a fonte do objetivo não desenha '%s'" % marca)
+		_conferir(fonte_do_diario.has_char(marca.unicode_at(0)), "a fonte do diário não desenha '%s'" % marca)
+	_conferir(cadeia.MARCA_FEITA != cadeia.MARCA_PENDENTE, "feita e por fazer têm o mesmo marcador")
+	var fontes_antigas := ["res://scripts/prototipo_3d/cadeia_de_missoes.gd", "res://scripts/prototipo_3d/painel_vale.gd"]
+	for caminho in fontes_antigas:
+		var codigo := FileAccess.get_file_as_string(caminho)
+		_conferir(not codigo.contains("else \"□\"") and not codigo.contains("\"✓  %s\""), "%s ainda monta marcador com □ ou ✓ da fonte do sistema" % caminho)
+	for arquivo in _json_em("res://data"):
+		var texto := FileAccess.get_file_as_string(arquivo)
+		if texto.contains("\"etapas\""):
+			_conferir(not texto.contains("□") and not texto.contains("✓"), "%s traz □ ou ✓ nas etapas" % arquivo)
+
 	print("")
 	if falhas == 0:
 		print("TAREFA_NO_HUD_OK: o alto da tela diz o nome da missão, a tarefa com a conta e o passo; sem páginas, setas nem X; acima do minimapa e cabendo no quadro")
 	else:
 		print("tarefa_no_hud: %d falha(s)" % falhas)
 	quit(1 if falhas > 0 else 0)
+
+
+func _json_em(pasta: String) -> Array[String]:
+	var achados: Array[String] = []
+	for nome in DirAccess.get_files_at(pasta):
+		if nome.ends_with(".json"):
+			achados.append(pasta + "/" + nome)
+	for sub in DirAccess.get_directories_at(pasta):
+		achados.append_array(_json_em(pasta + "/" + sub))
+	return achados

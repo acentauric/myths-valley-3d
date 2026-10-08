@@ -57,6 +57,17 @@ static func fonte(caminho: String, peso: int, espaco_letras: int = 0) -> FontVar
 	return variacao
 
 
+## A fonte padrão do HUD (a do Label sem tema) com a Cormorant de reserva. O que a
+## padrão não desenha — os círculos "●" e "○" das etapas da missão, #186 — sai da
+## Cormorant, que é do jogo, em vez de cair na fonte do sistema (pequena, fina e
+## fora da linha de base). O texto comum continua na fonte de sempre.
+static func fonte_do_hud() -> FontVariation:
+	var variacao := FontVariation.new()
+	variacao.base_font = ThemeDB.fallback_font
+	variacao.fallbacks = [load(FONTE_TEXTO) as Font]
+	return variacao
+
+
 ## A mesma talha SVG para painéis que desenham a moldura no próprio stylebox.
 static func estilo_moldura(margem_h: float = 40, margem_v: float = 40) -> StyleBoxTexture:
 	var estilo := StyleBoxTexture.new()
