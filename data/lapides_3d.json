@@ -61,5 +61,26 @@
       "datas": "? – 1874",
       "historia": "Chegou numa jangada sem vela, já sem vida. Ganhou flores e cruz como filho da terra."
     }
-  ]
+  ],
+  "broncas": [
+    {
+      "texto": "Ô, moço! Desce daí, que aí embaixo tem gente descansando.",
+      "texto_en": "Hey, mister! Get down from there, there are people resting down below.",
+      "texto_es": "¡Eh, joven! Bájese de ahí, que ahí abajo hay gente descansando.",
+      "audio": "res://assets/audio/vozes/damiao_bronca_1.mp3"
+    },
+    {
+      "texto": "Moço, eu já pedi! Em cima da cova, não! Respeite quem já foi!",
+      "texto_en": "Mister, I already asked! Not on top of the grave! Respect those who are gone!",
+      "texto_es": "¡Joven, ya se lo pedí! ¡Encima de la tumba, no! ¡Respete a los que ya se fueron!",
+      "audio": "res://assets/audio/vozes/damiao_bronca_2.mp3"
+    },
+    {
+      "texto": "Chega! Falei duas vezes! Desce daí agora!",
+      "texto_en": "Enough! I said it twice! Get down from there now!",
+      "texto_es": "¡Basta! ¡Lo dije dos veces! ¡Bájese de ahí ahora!",
+      "audio": "res://assets/audio/vozes/damiao_bronca_3.mp3"
+    }
+  ],
+  "_nota_broncas": "As broncas do coveiro (lapides.gd): quem sobe num túmulo com o Damião por perto ouve a 1, a 2 e a 3 (a 3 se repete, e ele derruba o jogador da laje). Texto nos três idiomas e o áudio de cada uma (08/10: estavam no código, só em português)."
 }

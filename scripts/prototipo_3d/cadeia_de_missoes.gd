@@ -66,6 +66,13 @@ extends Node
 signal missao_mudou(texto: String, alvo: Vector3, indice: int, total: int)
 ## Um passo fechou e pagou (ver `_pagar`): o texto diz de quem e o quê.
 signal pagou(texto: String)
+## A FALA SEM DONO (08/10): a resposta da oferenda descreve o que acontece no lugar dela — a onda
+## levando a ostra, a toalha aberta na mesa —, e o dono da fila está longe dali. Vai ao aviso do HUD,
+## sem nome e sem balão (o vale liga em `_pendurar_cadeia`).
+signal narrou(texto: String)
+## OS RÉIS NA ENTREGA (08/10): "reis" na carga de um passo `levar` é dinheiro (`Jogo.dinheiro`), e
+## não item da mochila — é como o jogador paga a dívida do Tonho ao Seu Nicolau.
+const REIS := "reis"
 ## UM PASSO DO MEIO DA MISSÃO FECHOU (07/10): o resumo dele, para o HUD marcar a tarefa
 ## cumprida — pulso, risco e sinete (`PrototypeHUD.tarefa_concluida`). O último passo não
 ## passa por aqui: ele é a festa da missão inteira (`CadernoDoVale.festeja`).
@@ -512,9 +519,12 @@ func resumo_do_passo(passo: Dictionary) -> String:
 			var pede := 0
 			for qual in carga:
 				var quantos := int(carga[qual])
-				var na_mochila := mini(quantos, Inventario.quantidade(str(qual)))
+				var na_mochila := mini(quantos, _quanto_tem(str(qual)))
 				var nome := _nome_do_item(str(qual)).to_lower()
-				itens.append("%s ×%d" % [nome, quantos] if quantos > 1 else nome)
+				if str(qual) == REIS:
+					itens.append("%d %s" % [quantos, nome])
+				else:
+					itens.append("%s ×%d" % [nome, quantos] if quantos > 1 else nome)
 				por_item.append("%s %d/%d" % [nome, na_mochila, quantos])
 				tem += na_mochila
 				pede += quantos
@@ -616,6 +626,8 @@ func _id_no_caderno(passo: Dictionary) -> String:
 
 
 func _nome_do_item(item: String) -> String:
+	if item == REIS:
+		return tr("réis")
 	return str(Catalogo.ITENS.get(item, {}).get("nome", item))
 
 
@@ -1073,7 +1085,7 @@ func _acertar_o_caderno(passo: Dictionary) -> void:
 				var pedidas := int(cobrada[qual])
 				if pedidas > 1:
 					partes.append("%d %s (tem %d)" % [pedidas, _nome_do_item(str(qual)),
-						mini(pedidas, Inventario.quantidade(str(qual)))])
+						mini(pedidas, _quanto_tem(str(qual)))])
 				else:
 					partes.append(_nome_do_item(str(qual)))
 			CadernoDoVale.andar(id, 1 if levou else 0, 1,
@@ -1385,9 +1397,14 @@ func _recebe(passo: Dictionary, morador: Node3D) -> bool:
 		if carga.is_empty():
 			return false
 		for qual in carga:
-			if Inventario.quantidade(str(qual)) < int(carga[qual]):
+			if _quanto_tem(str(qual)) < int(carga[qual]):
 				return false
 	return true
+
+
+## Quanto o jogador tem disto: réis na bolsa (`Jogo.dinheiro`), ou o item na mochila.
+func _quanto_tem(qual: String) -> int:
+	return int(Jogo.dinheiro) if qual == REIS else Inventario.quantidade(qual)
 
 
 ## O ENCONTRO: o que se leva sai da mochila, a memória guarda que aconteceu, e
@@ -1400,7 +1417,10 @@ func _encontrar(passo: Dictionary, quem: Node3D) -> void:
 	if str(meta.get("tipo", "")) == "levar":
 		var carga := _carga_da_meta(meta)
 		for qual in carga:
-			Inventario.consumir(str(qual), int(carga[qual]))
+			if str(qual) == REIS:
+				Jogo.dinheiro = maxi(0, int(Jogo.dinheiro) - int(carga[qual]))
+			else:
+				Inventario.consumir(str(qual), int(carga[qual]))
 	_levados[str(passo.get("id", ""))] = true
 	_calar_o_anuncio(passo)
 	var resposta := str(meta.get("resposta", ""))
@@ -1450,7 +1470,7 @@ func _tentar_oferenda(passo: Dictionary, meta: Dictionary) -> void:
 	_calar_o_anuncio(passo)
 	var resposta := str(meta.get("resposta", ""))
 	if resposta != "":
-		_falar("", resposta, FilaDeFalas.Classe.CONVERSA, "resposta:%d:%s" % [get_instance_id(), id])
+		narrou.emit(resposta)
 
 
 ## A JANELA DE HORAS DA META, `"horas": [de, ate]` no relógio do vale (`Dia.hora`, 0 a 24): sem

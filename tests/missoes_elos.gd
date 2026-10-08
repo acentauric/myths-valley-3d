@@ -291,6 +291,9 @@ func _dados_dos_passos() -> void:
 			if tipo == "juntar" or tipo == "levar" or tipo == "oferendar":
 				var carga := _carga(meta)
 				for item in carga:
+					# RÉIS NÃO SÃO ITEM (08/10): a entrega de réis paga com a bolsa (CadeiaDeMissoes.REIS).
+					if str(item) == "reis":
+						continue
 					_conferir(Catalogo.existe(str(item)), "%s: o item '%s' não existe no catálogo" % [onde, item])
 					_conferir(fontes.has(str(item)), "%s: ninguém dá '%s' ao jogador (sem alvo, bancada, entrega, baú, mutirão nem venda)" % [onde, item])
 			for peca in (meta.get("equivale", {}) as Dictionary):

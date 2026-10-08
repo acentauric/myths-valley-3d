@@ -2638,6 +2638,8 @@ func _pendurar_cadeia(morador: Node3D, arquivo: String, perto: float, chave: Str
 		missao_do_vale_mudou.emit(t, a, i, n))
 	# A RECOMPENSA DO PASSO (#48) é dita no HUD, como no 2D.
 	cadeia.pagou.connect(func(texto: String) -> void: hud.set_notice(texto))
+	# A RESPOSTA DA OFERENDA é narração, e não fala do dono (que está longe): só o aviso.
+	cadeia.narrou.connect(func(texto: String) -> void: hud.set_notice(texto))
 	# A TAREFA CUMPRIDA no meio da missão: o quadro pulsa, o risco desce, o sinete soa.
 	cadeia.passo_cumprido.connect(hud.tarefa_concluida)
 	# A FERRAMENTA ENTREGUE fica na barra, e o HUD diz o número que a põe na mão.

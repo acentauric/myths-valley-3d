@@ -18,7 +18,7 @@
 //   data/marcos_fe.json          a narração da visita aos marcos (a missão da fé)
 //   data/casa.json               a narração do desmaio
 //   data/documentos.json         os papéis que o jogador lê (sem voz)
-//   scripts/prototipo_3d/lapides.gd   as broncas do Damião (no código, com voz)
+//   data/lapides_3d.json         as broncas do Damião (com voz)
 //
 // Quem diz cada bloco de cena, e quando cada fila abre, está no código (fazenda_vale.gd,
 // revoar_vale.gd, prototype.gd): as tabelas CENAS e FILAS abaixo os transcrevem. Mudou o
@@ -453,18 +453,11 @@ NPCS.moradores.forEach((m, im) => {
     audio: s(f.audio), tts: s(f.tts), fonte: `data/npcs_3d.json › moradores[${im}] ${m.id} › ${chave}[${i}]`,
   }, campo(f, "texto")))));
 });
-(() => {
-  const t = lerTexto("scripts/prototipo_3d/lapides.gd");
-  const re = /\["([^"]+)",\s*"(res:\/\/assets\/audio\/vozes\/damiao_bronca_\d+\.mp3)"\]/g;
-  let x;
-  let i = 0;
-  while ((x = re.exec(t))) {
-    i += 1;
-    nova({ id: `lapides.bronca.${i}`, fase: "sempre", _chave: [90, 0, 0, i], quando: "Quando o jogador sobe num túmulo com o Damião por perto (1 → 2 → 3; a 3 se repete).",
-      personagem_id: "damiao", tipo: "Bronca (subir no túmulo)", gatilho: "Balão, aviso e voz; na terceira ele derruba o jogador da laje",
-      pt: x[1], audio: x[2], em_uso: "sim (só em português: o texto está no código)", fonte: `scripts/prototipo_3d/lapides.gd › BRONCAS[${i - 1}]` });
-  }
-})();
+(ler("data/lapides_3d.json").broncas || []).forEach((b, i) => nova(Object.assign({
+  id: `lapides.bronca.${i + 1}`, fase: "sempre", _chave: [90, 0, 0, i], quando: "Quando o jogador sobe num túmulo com o Damião por perto (1 → 2 → 3; a 3 se repete).",
+  personagem_id: "damiao", tipo: "Bronca (subir no túmulo)", gatilho: "Balão, aviso e voz; na terceira ele derruba o jogador da laje",
+  audio: s(b.audio), fonte: `data/lapides_3d.json › broncas[${i}]`,
+}, campo(b, "texto"))));
 (ler("data/casa.json").desmaio || []).forEach((f, i) => nova(Object.assign({
   id: `casa.desmaio.${i + 1}`, fase: "sempre", _chave: [91, 0, 0, i], quando: "Ao acordar depois de apagar sem fôlego (o desmaio).",
   personagem_id: "voce", tipo: "Narração do desmaio (sem voz)", gatilho: "Caixa de fala sem nome", fonte: `data/casa.json › desmaio[${i}]`,
@@ -708,6 +701,38 @@ if (MARCAR) {
   console.log(`marcadas como revisadas: ${linhas.length} falas`);
 }
 
+// O TEXTO DE CADA ÁUDIO GRAVADO (08/10: "se a correção impactar uma fala com áudio, sinalize").
+// docs/falas/audios_gravados.json guarda, por arquivo, o texto que a fala tinha quando a voz foi
+// gerada. Fala com áudio cujo texto mudou depois disso é "regravar": o áudio ainda diz a frase
+// antiga. `--fotografar-audios` grava o texto de hoje de todo áudio que existe — rodar depois de
+// regravar (os geradores de tools/elevenlabs leem o "tts" da fala, que já está atualizado).
+const ARQ_AUDIOS = path.join(PASTA, "audios_gravados.json");
+const FOTOGRAFAR = ARGS.includes("--fotografar-audios");
+const AUDIOS = fs.existsSync(ARQ_AUDIOS) ? JSON.parse(fs.readFileSync(ARQ_AUDIOS, "utf8")) : {};
+AUDIOS.audios = AUDIOS.audios || {};
+if (FOTOGRAFAR) {
+  for (const l of linhas) if (l.audio_existe === "sim") AUDIOS.audios[l.audio_arq] = { hash: l._hash, texto: l.pt };
+  AUDIOS._sobre = "O texto (em português) que cada fala tinha quando o áudio dela foi gravado, por arquivo. O gerador do documento das falas compara com o texto de hoje: diferente é 'regravar'. Atualize com --fotografar-audios depois de regravar.";
+  fs.writeFileSync(ARQ_AUDIOS, JSON.stringify({ _sobre: AUDIOS._sobre, audios: AUDIOS.audios }, null, 2) + "\n", "utf8");
+  console.log(`texto dos áudios gravados guardado: ${Object.keys(AUDIOS.audios).length} arquivos`);
+}
+const A_REGRAVAR = [];
+for (const l of linhas) {
+  l.audio_regravar = l.audio_existe === "sim" ? "não" : "—";
+  if (l.audio_existe !== "sim") continue;
+  const gravado = AUDIOS.audios[l.audio_arq];
+  if (!gravado) {
+    l.audio_regravar = "(o texto da gravação não foi guardado)";
+    continue;
+  }
+  if (gravado.hash !== l._hash) {
+    l.audio_regravar = "SIM: o texto mudou depois da gravação";
+    l._texto_gravado = s(gravado.texto);
+    l.alertas = (l.alertas ? l.alertas + " | " : "") + "áudio gravado com o texto antigo: regravar";
+    A_REGRAVAR.push(l);
+  }
+}
+
 // --- as saídas -------------------------------------------------------------------------
 
 const COLUNAS = [
@@ -721,6 +746,7 @@ const COLUNAS = [
   ["pt", "Texto (português)", 60, "texto", true], ["en", "Texto (inglês)", 48, "texto", true], ["es", "Texto (espanhol)", 48, "texto", true],
   ["zh", "Texto (chinês)", 26, "texto", true], ["letras", "Letras (pt)", 8, "texto", false], ["duracao", "Duração estimada (s)", 9, "texto", false],
   ["voz", "Voz (ElevenLabs)", 28, "audio", true], ["audio_arq", "Arquivo de áudio", 30, "audio", true], ["audio_existe", "Áudio gravado?", 10, "audio", false],
+  ["audio_regravar", "Áudio a regravar?", 18, "audio", true],
   ["tts", "Texto para o TTS (com as marcas de emoção)", 48, "audio", true], ["tts_confere", "O TTS confere com o texto?", 18, "audio", true],
   ["traducoes", "Traduções", 14, "checagem", true], ["origem", "Veio do 2D?", 16, "checagem", true], ["teclas", "Teclas citadas", 18, "checagem", true], ["alertas", "Alertas automáticos", 40, "checagem", true],
   ["historia", "Coerência com a história", 13, "analise", true], ["mecanica", "Coerência com a mecânica", 13, "analise", true],
@@ -745,6 +771,7 @@ function estiloDaCelula(chaveDaColuna, quebra, valor, linhaObj) {
   if (chaveDaColuna === "prioridade") { if (v === "alta") Object.assign(op, { negrito: true, cor: "B00020" }); if (v === "média") Object.assign(op, { negrito: true, cor: "B45F06" }); if (v === "baixa") op.cor = "38761D"; }
   if (chaveDaColuna === "audio_existe") op.fundo = v === "sim" ? "D9EAD3" : v === "não" ? "F4CCCC" : v === "sem áudio" ? "FCE5CD" : undefined;
   if (chaveDaColuna === "tts_confere" && v.startsWith("não")) op.fundo = "FCE5CD";
+  if (chaveDaColuna === "audio_regravar" && v.startsWith("SIM")) Object.assign(op, { fundo: "F4CCCC", negrito: true });
   if (chaveDaColuna === "alertas" && v) op.fundo = "FFF2CC";
   if (chaveDaColuna === "status") op.fundo = v === "aprovada" ? "D9EAD3" : v === "corrigir" ? "F4CCCC" : v === "corrigida" ? "CFE2F3" : undefined;
   Object.keys(op).forEach((k) => op[k] === undefined && delete op[k]);
@@ -777,7 +804,7 @@ const COLUNAS_PROBLEMAS = [
 ];
 const abaProblemas = aba("Problemas", COLUNAS_PROBLEMAS, comProblema, { listas: [{ coluna: COLUNAS_PROBLEMAS.findIndex((c) => c[0] === "status"), valores: STATUS }] });
 
-const comAlerta = linhas.filter((l) => l.alertas && !l._alerta_revisto && !s(l.em_uso).startsWith("não"));
+const comAlerta = linhas.filter((l) => ((l.alertas && !l._alerta_revisto) || s(l.audio_regravar).startsWith("SIM")) && !s(l.em_uso).startsWith("não"));
 const COLUNAS_ALERTAS = [
   ["id", "ID", 28, "ident", false], ["ordem", "Ordem", 7, "ident", false], ["personagem", "Personagem", 16, "quem", true],
   ["tipo", "Tipo", 18, "quem", true], ["missao", "Missão", 18, "contexto", true], ["passo", "Passo", 16, "contexto", true],
@@ -798,7 +825,7 @@ const personagens = [...porPersonagem.entries()].map(([id, ls]) => {
     nome: f.nome || id, id, oficio: f.oficio || "", voz: f.voz ? textoDaVoz(f.voz) : (id === "narrador" ? "BDM · Nelson Silvestre (só a abertura)" : "(sem voz definida)"),
     em_uso: emUso.length, faladas: faladas.length, letras: faladas.reduce((soma, l) => soma + l.letras, 0),
     minutos: Math.round(faladas.reduce((soma, l) => soma + Number(l.duracao || 0), 0) / 6) / 10,
-    gravadas: faladas.filter((l) => l.audio_existe === "sim").length, faltando: faladas.filter((l) => l.audio_existe === "não").length,
+    gravadas: faladas.filter((l) => l.audio_existe === "sim").length, faltando: faladas.filter((l) => l.audio_existe === "não").length, regravar: faladas.filter((l) => s(l.audio_regravar).startsWith("SIM")).length,
     sem_audio: faladas.filter((l) => l.audio_existe === "sem áudio").length,
     dois_d: ls.length - emUso.length, problemas: ls.filter((l) => l.problema).length,
     observacao: s(((ANALISE.personagens || {})[id] || {}).observacao),
@@ -808,7 +835,7 @@ const COLUNAS_PERSONAGENS = [
   ["nome", "Personagem", 24, "quem", true], ["id", "ID", 14, "quem", false], ["oficio", "Quem é", 26, "quem", true], ["voz", "Voz (ElevenLabs)", 36, "audio", true],
   ["em_uso", "Falas em uso", 9, "texto", false], ["faladas", "Faladas (pedem voz)", 10, "audio", false], ["letras", "Letras faladas (≈ créditos)", 12, "audio", false],
   ["minutos", "Minutos de voz (estim.)", 10, "audio", false], ["gravadas", "Com áudio gravado", 10, "audio", false],
-  ["faltando", "Áudio declarado e faltando", 11, "audio", false], ["sem_audio", "Sem áudio (precisam ser geradas)", 12, "audio", false],
+  ["faltando", "Áudio declarado e faltando", 11, "audio", false], ["regravar", "Áudio a regravar (texto mudou)", 11, "audio", false], ["sem_audio", "Sem áudio (precisam ser geradas)", 12, "audio", false],
   ["dois_d", "Herdadas do 2D (não tocam)", 11, "validacao", false], ["problemas", "Falas com problema", 10, "analise", false],
   ["observacao", "Observações", 60, "analise", true],
 ];
@@ -831,6 +858,13 @@ const COLUNAS_MISSOES = [
 const abaMissoes = aba("Missões (linha do tempo)", COLUNAS_MISSOES, missoes);
 
 const orfaos = AUDIOS_DE_VOZ.filter((a) => !AUDIOS_USADOS.has(a)).map((a) => ({ arquivo: `assets/audio/vozes/${a}.mp3`, observacao: "Nenhuma fala do jogo aponta para este arquivo." }));
+const COLUNAS_REGRAVAR = [
+  ["audio_arq", "Arquivo", 40, "audio", true], ["personagem", "Personagem", 18, "quem", true], ["voz", "Voz (ElevenLabs)", 30, "audio", true],
+  ["tipo", "Tipo", 18, "quem", true], ["_texto_gravado", "O que o áudio diz hoje (texto antigo)", 55, "texto", true],
+  ["pt", "Texto novo (português)", 55, "texto", true], ["tts", "Texto para o TTS (novo)", 55, "audio", true], ["id", "ID", 28, "ident", false],
+  ["fonte", "Onde editar", 36, "validacao", true],
+];
+const abaRegravar = aba("Áudios a regravar", COLUNAS_REGRAVAR, A_REGRAVAR);
 const abaOrfaos = aba("Áudios sem fala", [["arquivo", "Arquivo", 50, "audio", true], ["observacao", "Observação", 60, "analise", true]], orfaos);
 
 const LEGENDA = [
@@ -841,6 +875,7 @@ const LEGENDA = [
   ["Missão / Passo / Objetivo no HUD / Mecânica / Recompensa", "O contexto de mecânica: o passo em curso, o resumo que o HUD mostra, o que o passo pede de fato (itens, quantidades, quem, onde) e o que paga. É com isso que se confere a fala contra a mecânica."],
   ["Textos", "Português, inglês, espanhol e chinês (quando há). Letras e duração estimada (14 letras por segundo) servem ao orçamento de voz."],
   ["Voz / Arquivo / Áudio gravado? / TTS", "A voz do ElevenLabs de quem fala, o arquivo de áudio, se ele existe, o texto que vai ao TTS (com as marcas de emoção) e se ele bate com o texto de hoje. 'sem áudio' = fala que toca sem voz e precisaria ser gerada."],
+  ["Áudio a regravar?", "SIM quando o texto da fala mudou depois da gravação: o áudio ainda diz a frase antiga (docs/falas/audios_gravados.json guarda o texto de cada gravação). A aba 'Áudios a regravar' lista o texto antigo, o novo e o do TTS. Depois de regravar, rode o gerador com --fotografar-audios."],
   ["Alertas automáticos", "O que o gerador acha sozinho: tradução que falta, tecla citada fora da tabela, número no texto que não bate com a mecânica, hora do dia em fala que toca a qualquer hora, fala de recém-chegado que repete o jogo todo, áudio faltando ou desatualizado, marcador que impede áudio fixo, texto repetido."],
   ["Coerência com a história / com a mecânica", "A revisão: ok, atenção, problema; 'não revisada' é fala nova; 'revisar (o texto mudou)' é fala que mudou depois da revisão."],
   ["Problema / Correção / Prioridade / Observações", "O que a revisão encontrou, o que mudar e com que urgência (alta: quebra a história ou ensina errado; média: estranha ao jogador; baixa: polimento)."],
@@ -852,7 +887,7 @@ const LEGENDA = [
 ];
 const abaLegenda = aba("Legenda", [["coluna", "Coluna", 34, "ident", true], ["explicacao", "O que é", 110, "ident", true]], LEGENDA.map(([coluna, explicacao]) => ({ coluna, explicacao })), { filtro: false });
 
-const buf = escreverXlsx([abaFalas, abaProblemas, abaAlertas, abaPersonagens, abaMissoes, abaOrfaos, abaLegenda],
+const buf = escreverXlsx([abaFalas, abaProblemas, abaAlertas, abaRegravar, abaPersonagens, abaMissoes, abaOrfaos, abaLegenda],
   { estilos, titulo: "As falas de Myths' Valley 3D", autor: "tools/falas/gerar_documento_das_falas.js", aplicacao: "Myths' Valley — documento das falas", quando: new Date() });
 fs.writeFileSync(path.join(PASTA, "FALAS.xlsx"), buf);
 
@@ -873,5 +908,6 @@ if (DESPEJO) {
 
 const emUso = linhas.filter((l) => !s(l.em_uso).startsWith("não"));
 console.log(`falas: ${linhas.length} (${emUso.length} em uso no 3D, ${linhas.length - emUso.length} herdadas do 2D)`);
+console.log(`áudios a regravar (o texto mudou depois da gravação): ${A_REGRAVAR.length}`);
 console.log(`com alerta automático: ${comAlerta.length}; com problema apontado: ${comProblema.length}; áudios sem fala: ${orfaos.length}`);
 console.log(`escrito: docs/falas/FALAS.xlsx e docs/falas/FALAS.csv`);
