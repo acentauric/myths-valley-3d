@@ -1113,6 +1113,28 @@ func _alternancias() -> Array:
 	t.append(_t_prop("sombra: moradores, bichos e aves sem projetar (%d)" % mis_vivos.size(), mis_vivos, "cast_shadow", GeometryInstance3D.SHADOW_CASTING_SETTING_OFF))
 	t.append(_t_prop("sombra: pecas pequenas (< 2,5 u) sem projetar (%d)" % mis_pequenas.size(), mis_pequenas, "cast_shadow", GeometryInstance3D.SHADOW_CASTING_SETTING_OFF))
 	t.append(_t_prop("sombra: malhas individuais sem projetar", mis, "cast_shadow", GeometryInstance3D.SHADOW_CASTING_SETTING_OFF))
+	# ---- a casa herdada por dentro (#185): rodar com --ab_gpu_em=casa_de_taipa:135 --so=casa: ----
+	var sala_casa: Node = null
+	var interiores_no := _jogo.get_node_or_null("Interiores") if _jogo != null else null
+	if interiores_no != null and interiores_no.has_method("sala_de"):
+		sala_casa = interiores_no.call("sala_de", "casa")
+	if sala_casa != null:
+		var da_casca: Array = []
+		for no in Array(sala_casa.get("_teto")) + Array(sala_casa.get("casca")):
+			if is_instance_valid(no):
+				if no is GeometryInstance3D:
+					da_casca.append(no)
+				da_casca.append_array((no as Node).find_children("*", "GeometryInstance3D", true, false))
+		var luzes_casa: Array = sala_casa.find_children("*", "Light3D", true, false)
+		var sondas_casa: Array = sala_casa.find_children("*", "ReflectionProbe", true, false)
+		t.append(_t_prop("casa: casca e teto ESCONDIDOS (visible=false, em vez de so sombra)", da_casca, "visible", false))
+		t.append(_t_prop("casa: casca e teto sem projetar sombra (%d malhas)" % da_casca.size(), da_casca, "cast_shadow", GeometryInstance3D.SHADOW_CASTING_SETTING_OFF))
+		t.append(_t_prop("casa: luzes do comodo escondidas (%d)" % luzes_casa.size(), luzes_casa, "visible", false))
+		t.append(_t_prop("casa: sonda de reflexo escondida", sondas_casa, "visible", false))
+		t.append(_t_prop("casa: sombra do sol de volta a 70 u (antes do #185)", sois, "directional_shadow_max_distance", 70.0))
+		t.append(_t_prop("casa: sombra do sol a 12 u", sois, "directional_shadow_max_distance", 12.0))
+		t.append(_t_prop("casa: far da camera a 60 u", [cam], "far", 60.0))
+		t.append(_t_prop("casa: sol sem sombra", sois, "shadow_enabled", false))
 	# ---- faces de tras: todo GLB do Tripo vem doubleSided (cull desligado) ----
 	var mats_veg := {}
 	for mmi_c in mmis:

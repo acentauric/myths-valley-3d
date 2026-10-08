@@ -184,10 +184,16 @@ func _run() -> void:
 		"a câmera de cima está a %.2f do chão, abaixo do teto (%.2f)" % [sala.to_local(camera.global_position).y, sala.pe_direito])
 	_conferir(_so_sombra(sala.get("_teto")) and _so_sombra(sala.get("casca")),
 		"com o jogador dentro, o teto ou a casca continuam aparecendo para a câmera")
+	# A sombra do sol encurta com a câmera de cima (#185) e volta ao sair.
+	var sol: DirectionalLight3D = world.get("_ceu").sol
+	_conferir(is_equal_approx(sol.directional_shadow_max_distance, 24.0),
+		"dentro da casa a sombra do sol vai a %.1f u, e não a 24" % sol.directional_shadow_max_distance)
 	jogador.teleportar(world.ground_position(sala.soleira_de_fora() + frente * 1.5, 0.05), rumo + PI)
 	await _quadros_de_fisica(10)
 	_conferir(interiores.dentro() == "" and not jogador.esta_de_cima(), "saindo de casa, a câmera não voltou a ser a de passeio")
 	_conferir(not _so_sombra(sala.get("casca")), "saindo de casa, a casca continuou sumida")
+	_conferir(is_equal_approx(sol.directional_shadow_max_distance, 70.0),
+		"saindo de casa a sombra do sol ficou em %.1f u, e não nas 70 de sempre" % sol.directional_shadow_max_distance)
 
 	# --- 4. NADA DE FORA NA SALA -------------------------------------------------
 	var intrusos := []

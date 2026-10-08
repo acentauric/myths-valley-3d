@@ -37,6 +37,13 @@ const NEBLINA_PICO := 5.75
 const NEBLINA_FIM := 7.25
 const NEBLINA_INICIO := 3.5
 
+## Até onde o sol faz sombra (u, a partir da câmera): ao ar livre, 70; com o jogador num cômodo
+## de câmera de cima (a casa), 24. A câmera de cima só vê o cômodo e o chão colado nele (a uns
+## 9 u dela), e as sombras do vale inteiro que ela não vê eram redesenhadas todo quadro (#185);
+## o corte também afina o mapa de sombra, que passa a cobrir 24 u e não 70.
+const SOMBRA_AO_AR_LIVRE := 70.0
+const SOMBRA_DE_DENTRO := 24.0
+
 ## Paleta (AMBIENTACAO §7): cobalto suave de dia, sem ciano; azul-marinho à noite;
 ## latão e telha no entardecer.
 const ZENITE_DIA := Color("4b78b8")
@@ -91,7 +98,7 @@ func montar(pai: Node3D) -> void:
 	sol.shadow_enabled = true
 	# Até 70 u em duas cascatas: a sombra de perto continua nítida, e o sol deixa de
 	# redesenhar a vila inteira quatro vezes (docs/projeto/DESEMPENHO_05_10_2026.md, F3).
-	sol.directional_shadow_max_distance = 70.0
+	sol.directional_shadow_max_distance = SOMBRA_AO_AR_LIVRE
 	sol.directional_shadow_mode = DirectionalLight3D.SHADOW_PARALLEL_2_SPLITS
 	pai.add_child(sol)
 	lua = DirectionalLight3D.new()
@@ -100,6 +107,12 @@ func montar(pai: Node3D) -> void:
 	lua.shadow_enabled = false
 	pai.add_child(lua)
 	nos.assign([mundo, sol, lua])
+
+
+## O sol encurta a sombra enquanto o jogador está num cômodo de câmera de cima, e a estica ao sair.
+func sombra_de_dentro(dentro: bool) -> void:
+	if sol != null:
+		sol.directional_shadow_max_distance = SOMBRA_DE_DENTRO if dentro else SOMBRA_AO_AR_LIVRE
 
 
 ## Curvas de cor por hora: madrugada azul, alvorada rosada, meio-dia cobalto,

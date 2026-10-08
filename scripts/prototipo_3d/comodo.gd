@@ -97,6 +97,9 @@ var camera_de_cima := false
 ## raio, a tomava por parede e parava na porta.
 var rampa_da_porta_inteira := false
 var casca: Array = []
+## Se o teto e a casca estão só na sombra agora (`por_dentro`), e as malhas que ficaram assim.
+var _casca_so_na_sombra := false
+var _geometrias_da_casca: Array = []
 var _teto: Array[Node] = []
 ## Os corpos do cômodo (paredes, móveis): a câmera de cima não bate neles, e
 ## fica por cima da parede em vez de encolher até a cabeça do jogador.
@@ -446,17 +449,31 @@ func corpos_do_comodo() -> Array[RID]:
 ## O TETO SOME PARA A CÂMERA DE CIMA (ver `camera_de_cima`): o forro, as vigas
 ## e a casca da construção ficam só na sombra enquanto o jogador está dentro.
 ## Na construção sem câmera de cima, nada muda.
+##
+## SÓ MEXE QUANDO O ESTADO MUDA (#185). `Interiores` avisa TODAS as construções a cada
+## troca de lado, e cada aviso varria a casca inteira atrás das malhas (`find_children`)
+## para pôr nelas o modo que já tinham: na travessia da porta, a varredura de todas as
+## casas do vale caía num quadro só, e cada `cast_shadow` regravado refaz o registro da
+## malha no passe de sombra. Agora as malhas são achadas uma vez, na entrada, e quem já
+## está no estado pedido não faz nada.
 func por_dentro(dentro: bool) -> void:
-	if not camera_de_cima:
+	if not camera_de_cima or dentro == _casca_so_na_sombra:
 		return
+	_casca_so_na_sombra = dentro
+	if dentro:
+		_geometrias_da_casca.clear()
+		for no in _teto + casca:
+			if not is_instance_valid(no):
+				continue
+			if no is GeometryInstance3D:
+				_geometrias_da_casca.append(no)
+			_geometrias_da_casca.append_array((no as Node).find_children("*", "GeometryInstance3D", true, false))
 	var modo := GeometryInstance3D.SHADOW_CASTING_SETTING_SHADOWS_ONLY if dentro else GeometryInstance3D.SHADOW_CASTING_SETTING_ON
-	for no in _teto + casca:
-		if not is_instance_valid(no):
-			continue
-		var geometrias: Array = [no] if no is GeometryInstance3D else []
-		geometrias.append_array((no as Node).find_children("*", "GeometryInstance3D", true, false))
-		for geometria in geometrias:
+	for geometria in _geometrias_da_casca:
+		if is_instance_valid(geometria):
 			(geometria as GeometryInstance3D).cast_shadow = modo
+	if not dentro:
+		_geometrias_da_casca.clear()
 
 
 ## UMA RAMPA INVISÍVEL, para o corpo subir o que, como degrau, travaria: uma
