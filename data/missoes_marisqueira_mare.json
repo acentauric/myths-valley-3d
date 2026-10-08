@@ -95,9 +95,9 @@
       "lugar": "casa_do_padre",
       "raio": 6,
       "audio": "",
-      "texto": "O padre lê a carta da Dona Rosa. Duas vezes, como ela pediu.",
-      "texto_en": "The priest reads Dona Rosa's letter. Twice, as she asked.",
-      "texto_es": "El cura lee la carta de Doña Rosa. Dos veces, como ella pidió.",
+      "texto": "Leve ao padre. E que leia duas vezes, que eu pedi.",
+      "texto_en": "Take it to the priest. And have him read it twice, as I asked.",
+      "texto_es": "Llévasela al cura. Y que la lea dos veces, como te pedí.",
       "recompensa": {
         "xp": 10
       },
@@ -121,9 +121,9 @@
       "lugar": "casa_da_marisqueira",
       "raio": 6,
       "audio": "",
-      "texto": "Diga à Dona Rosa o que o padre leu na segunda vez.",
-      "texto_en": "Tell Dona Rosa what the priest read the second time.",
-      "texto_es": "Dile a Doña Rosa lo que el cura leyó la segunda vez.",
+      "texto": "Me diga o que o padre leu na segunda vez.",
+      "texto_en": "Tell me what the priest read the second time.",
+      "texto_es": "Dime lo que el cura leyó la segunda vez.",
       "recompensa": {
         "xp": 15,
         "ostra": 3

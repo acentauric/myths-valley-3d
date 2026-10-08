@@ -367,6 +367,10 @@ func _run() -> void:
 							"o passo '%s' manda levar e não diz o quê" % qual_passo)
 						for carga in cobrada:
 							var qual_carga := str(carga)
+							# RÉIS NÃO SÃO ITEM (08/10): a conta do Tonho se paga com a bolsa
+							# (`CadeiaDeMissoes.REIS`), e o vale paga réis em missões, no saveiro e na venda.
+							if qual_carga == "reis":
+								continue
 							_conferir(Catalogo.ITENS.has(qual_carga),
 								"o passo '%s' manda levar '%s', fora do catálogo" % [qual_passo, qual_carga])
 							# ENTREGADO OU QUE O VALE DÊ A QUEM TRABALHA. A Dona

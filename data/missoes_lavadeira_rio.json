@@ -64,9 +64,9 @@
       "lugar": "casa_da_lavadeira",
       "raio": 6,
       "audio": "",
-      "texto": "Conte a Sá Rita a cor da água.",
-      "texto_en": "Tell Sá Rita the color of the water.",
-      "texto_es": "Cuéntale a Sá Rita el color del agua.",
+      "texto": "Venha me contar a cor da água.",
+      "texto_en": "Come and tell me the color of the water.",
+      "texto_es": "Ven a contarme el color del agua.",
       "recompensa": {
         "xp": 15
       },
@@ -74,16 +74,16 @@
         "tipo": "falar",
         "a_quem": "lavadeira",
         "raio": 3.4,
-        "resposta": "Vermelha de ferrugem, não é? Vem da fazenda, do outro lado. Minha avó dizia que o engenho lavava mais que açúcar naquela água, e que o rio não esqueceu. Por isso eu lavo no riacho, que é de Oxum e não guarda rancor. A sua roupa, eu continuo lavando aqui.",
-        "resposta_en": "Red with rust, isn't it? It comes from the farm, on the other side. My grandmother said the sugar mill washed more than sugar in that water, and that the river hasn't forgotten. That's why I wash in the creek, which belongs to Oxum and holds no grudge. Your clothes, I keep washing here.",
-        "resposta_es": "Roja de herrumbre, ¿verdad? Viene de la hacienda, del otro lado. Mi abuela decía que el ingenio lavaba más que azúcar en esa agua, y que el río no lo olvidó. Por eso lavo en el arroyo, que es de Oxum y no guarda rencor. Tu ropa la sigo lavando aquí."
+        "resposta": "Viu? Pode ser o sol, pode ser o barro — eu vejo vermelho de ferrugem, e a roupa não mente. Vem da fazenda, do outro lado. Minha avó dizia que o engenho lavava mais que açúcar naquela água, e que o rio não esqueceu. Por isso eu lavo no riacho, que é de Oxum e não guarda rancor. A sua roupa, eu continuo lavando aqui.",
+        "resposta_en": "See? Could be the sun, could be the mud — I see rust red, and the clothes don't lie. It comes from the farm, on the other side. My grandmother said the sugar mill washed more than sugar in that water, and that the river hasn't forgotten. That's why I wash in the creek, which belongs to Oxum and holds no grudge. Your clothes, I keep washing here.",
+        "resposta_es": "¿Viste? Puede ser el sol, puede ser el barro — yo veo rojo de herrumbre, y la ropa no miente. Viene de la hacienda, del otro lado. Mi abuela decía que el ingenio lavaba más que azúcar en esa agua, y que el río no lo olvidó. Por eso lavo en el arroyo, que es de Oxum y no guarda rencor. Tu ropa la sigo lavando aquí."
       }
     }
   ],
   "arremate": {
-    "texto": "A água do rio grande desce avermelhada da fazenda, e a roupa que se lava nela sai com cheiro de ferrugem. Sá Rita lava no riacho de Oxum. Você viu por quê.",
-    "texto_en": "The water of the great river comes down reddish from the farm, and clothes washed in it smell of rust. Sá Rita washes in Oxum's creek. You saw why.",
-    "texto_es": "El agua del río grande baja rojiza desde la hacienda, y la ropa que se lava en ella sale con olor a herrumbre. Sá Rita lava en el arroyo de Oxum. Tú viste por qué.",
+    "texto": "Sá Rita vê ferrugem na água do rio grande, que desce da fazenda, e por isso lava no riacho de Oxum. Você olhou a água de cima da ponte e ouviu a história.",
+    "texto_en": "Sá Rita sees rust in the water of the great river, which comes down from the farm, and that's why she washes in Oxum's creek. You looked at the water from the bridge and heard the story.",
+    "texto_es": "Sá Rita ve herrumbre en el agua del río grande, que baja de la hacienda, y por eso lava en el arroyo de Oxum. Miraste el agua desde el puente y escuchaste la historia.",
     "narra": false
   }
 }

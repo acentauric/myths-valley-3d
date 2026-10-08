@@ -20,9 +20,9 @@
       "lugar": "casa_da_beata",
       "raio": 6,
       "audio": "",
-      "texto": "Joaquina reza às seis, chova ou faça sol, e a tosse reza junto. O Tonico me manda o chá de folha que ele não bebe. Faça um no seu fogão e traga, meu filho — e eu rezo um terço pelo seu tio, que passava sem falar e tirava o chapéu.",
-      "texto_en": "Joaquina prays at six, rain or shine, and the cough prays along. Tonico sends me the leaf tea he won't drink. Make one on your stove and bring it, my son — and I'll pray a rosary for your uncle, who passed without a word and tipped his hat.",
-      "texto_es": "Joaquina reza a las seis, llueva o haga sol, y la tos reza con ella. Tonico me manda el té de hoja que él no bebe. Haz uno en tu fogón y tráelo, hijo mío — y rezo un rosario por tu tío, que pasaba sin hablar y se quitaba el sombrero.",
+      "texto": "Eu rezo às seis, chova ou faça sol, e a tosse reza junto. Faça um chá de folha no seu fogão e traga, meu filho — e eu rezo um terço pelo seu tio, que passava sem falar e tirava o chapéu.",
+      "texto_en": "I pray at six, rain or shine, and the cough prays along. Make a leaf tea on your stove and bring it, my son — and I'll pray a rosary for your uncle, who passed without a word and tipped his hat.",
+      "texto_es": "Yo rezo a las seis, llueva o haga sol, y la tos reza conmigo. Haz un té de hoja en tu fogón y tráelo, hijo mío — y rezo un rosario por tu tío, que pasaba sin hablar y se quitaba el sombrero.",
       "recompensa": {
         "xp": 15,
         "beiju": 1

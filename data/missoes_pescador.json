@@ -20,9 +20,9 @@
       "lugar": "casa_do_pescador",
       "raio": 6,
       "audio": "",
-      "texto": "Jerônimo pesca de linha, da pedra, e linha boa nasce de corda boa. A minha arrebentou num robalo — na quinta, que de sexta eu não pesco. Torça duas cordas na sua bancada e traga. Pago em peixe, que é a moeda que eu tenho.",
-      "texto_en": "Jerônimo fishes with a line, from the rock, and a good line is born of good rope. Mine snapped on a sea bass — on Thursday, since I don't fish on Fridays. Twist two ropes on your workbench and bring them. I pay in fish, the only coin I've got.",
-      "texto_es": "Jerônimo pesca con sedal, desde la piedra, y un buen sedal nace de una buena cuerda. La mía se rompió con un róbalo — el jueves, que los viernes no pesco. Tuerce dos cuerdas en tu banco y tráelas. Pago en pescado, que es la moneda que tengo.",
+      "texto": "Eu pesco de linha, da pedra, e linha boa nasce de corda boa. A minha arrebentou num robalo — na quinta, que de sexta eu não pesco. Torça duas cordas na sua bancada e traga. Pago em peixe, que é a moeda que eu tenho.",
+      "texto_en": "I fish with a line, from the rock, and a good line is born of good rope. Mine snapped on a sea bass — on Thursday, since I don't fish on Fridays. Twist two ropes on your workbench and bring them. I pay in fish, the only coin I've got.",
+      "texto_es": "Yo pesco con sedal, desde la piedra, y un buen sedal nace de una buena cuerda. La mía se rompió con un róbalo — el jueves, que los viernes no pesco. Tuerce dos cuerdas en tu banco y tráelas. Pago en pescado, que es la moneda que tengo.",
       "recompensa": {
         "xp": 15,
         "robalo": 1

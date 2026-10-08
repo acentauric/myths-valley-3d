@@ -20,9 +20,9 @@
       "lugar": "casa_do_carpinteiro",
       "raio": 6,
       "audio": "",
-      "texto": "Epifânio faz canoa, remo, porta e caixão, nessa ordem. A canoa da vez pede corda pra amarrar o molde e madeira de coqueiro pros bancos. Duas madeiras e uma corda — e eu lhe pago em tábua, que você vai precisar.",
-      "texto_en": "Epifânio makes canoes, paddles, doors and coffins, in that order. This canoe needs rope to bind the mould and coconut-palm wood for the seats. Two logs and one rope — and I'll pay you in planks, which you're going to need.",
-      "texto_es": "Epifânio hace canoas, remos, puertas y ataúdes, en ese orden. La canoa de turno pide cuerda para atar el molde y madera de cocotero para los bancos. Dos maderas y una cuerda — y te pago en tablas, que vas a necesitar.",
+      "texto": "Eu faço canoa, remo, porta e caixão, nessa ordem. A canoa da vez pede corda pra amarrar o molde e madeira de coqueiro pros bancos. Duas madeiras e uma corda — e eu lhe pago em tábua, que você vai precisar.",
+      "texto_en": "I make canoes, paddles, doors and coffins, in that order. This canoe needs rope to bind the mould and coconut-palm wood for the seats. Two logs and one rope — and I'll pay you in planks, which you're going to need.",
+      "texto_es": "Yo hago canoas, remos, puertas y ataúdes, en ese orden. La canoa de turno pide cuerda para atar el molde y madera de cocotero para los bancos. Dos maderas y una cuerda — y te pago en tablas, que vas a necesitar.",
       "recompensa": {
         "xp": 15,
         "tabua": 3

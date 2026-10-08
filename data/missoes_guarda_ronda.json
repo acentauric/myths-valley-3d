@@ -70,9 +70,9 @@
       "lugar": "praca",
       "raio": 8,
       "audio": "",
-      "texto": "Acabou a ronda. Diga ao guarda o que ouviu.",
-      "texto_en": "The watch is over. Tell the guard what you heard.",
-      "texto_es": "Terminó la ronda. Dile al guardia lo que oíste.",
+      "texto": "Acabou a ronda. Me diga o que ouviu.",
+      "texto_en": "The watch is over. Tell me what you heard.",
+      "texto_es": "Terminó la ronda. Dime lo que oíste.",
       "recompensa": {
         "xp": 15
       },

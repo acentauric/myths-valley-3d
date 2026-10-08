@@ -73,6 +73,12 @@
   o pagamento e o dia do saveiro; o que joga tudo do começo ao fim põe na bolsa os réis que faltarem, como
   atalho anotado. Nenhuma dessas falas tinha voz gravada; a resposta nova do mestre Quirino toca sem
   voz, como as outras dele.
+- **As correções das falas, terceira leva: os favores e os arcos dos moradores.** Os nove favores que
+  abriam como narrador ("Zacarias toca o sino...") falam na primeira pessoa, e os anúncios curtos também
+  ("Me diga o que ouviu", dito pelo guarda). A Sá Rita diz o que ela vê na água do rio grande, sem pôr a
+  cor na boca do jogador; a pedra do papel e o selo do convite valem antes e depois do capítulo 7; o Tonico
+  manda à "pedra pintada", e não à lapa que o jogador já rachou; a roda da praia é de noite, antes da
+  meia-noite, sem a maré, que o passo não confere; e o mirante do Pedro ganha inglês e espanhol.
 - **O resumo do passo conta o material** (07–08/10: "na parte de levar tábuas e pedras ao
   Damião não informou o quantitativo; mesmo que o jogador já tenha no inventário, esse dado
   deve ser informado"; "a missão continuou indicando para construir a cerca como se eu

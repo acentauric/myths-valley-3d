@@ -102,6 +102,8 @@ const TRADUZIDOS := {
 	"res://data/missoes_zefa.json": ["texto", "resumo", "nome", "titulo", "resposta", "trancada"],
 	"res://data/missoes_candinha.json": ["texto", "resumo", "nome", "titulo", "resposta", "trancada"],
 	"res://data/missoes_tonho.json": ["texto", "resumo", "nome", "titulo", "resposta", "trancada"],
+	# E o mirante do Pedro (o povo, o canteiro e o conserto), cujas falas eram só português até 08/10.
+	"res://data/missoes_arraial.json": ["texto", "resumo", "nome", "titulo", "resposta", "trancada"],
 	# A casa herdada (#50): a pergunta da cama e as falas do desmaio das duas.
 	# O "titulo" fica de fora da cobrança, e não da tradução: "Cama" é a mesma
 	# palavra em espanhol, e a regra da cópia reprovaria o certo.
