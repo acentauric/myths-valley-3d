@@ -13,7 +13,7 @@
       "nome": "Weverton - Youthful, Energetic and Clear",
       "modelo": "eleven_v3"
     },
-    "voz_pendente": "Os áudios pedro_atencao_1 a 6 (#198) esperam a geração no ElevenLabs: rode tools/elevenlabs/gerar-falas-moradores.ps1 -Morador pedro numa máquina com a chave e tire esta marca (o portão reprova a que sobrar).",
+    "voz_pendente": "Os áudios pedro_atencao_1 a 6 (#198) e pedro_situacao_* (#179) esperam a geração no ElevenLabs: rode tools/elevenlabs/gerar-falas-moradores.ps1 -Morador pedro numa máquina com a chave e tire esta marca (o portão reprova a que sobrar).",
     "falas": [
       {
         "texto": "Opa! É você o moço da capital, né? O sobrinho do finado. Me chamo Pedro, pescador aqui do arraial.",
@@ -36,7 +36,7 @@
         "texto_en": "You made it, man! The saveiro master swore he'd bring you today. Pedro, fisherman, at your service. Was the bay kind to you?",
         "texto_es": "¡Llegaste, hombre! El maestre del saveiro juró que te traía hoy. Pedro, pescador, a sus órdenes. ¿Fue buena contigo la bahía?",
         "texto_zh": "你可算到啦！帆船的船长赌咒说今天准把你送来。我是佩德罗，渔夫一个，听你吩咐。这一路海湾待你还好吧？",
-        "tts": "[excited] Chegou, homem! O mestre do saveiro jurou que trazia você hoje. Pedro, pescador, às suas ordens. [curious] A baía foi boa com você?",
+        "tts": "[excited] Chegou, homem! O mestre do saveiro jurou que trazia você hoje. Pedro, pescador, às suas ordens. [cheerfully] A baía foi boa com você?",
         "audio": "pedro_saudacao_3"
       }
     ],
@@ -145,9 +145,110 @@
         "texto_en": "So, did you see what I told you about?",
         "texto_es": "¿Y entonces, viste lo que te dije?",
         "texto_zh": "怎么样，看到我说的地方了吗？",
-        "tts": "[curious] E aí, viu o que eu falei?",
+        "tts": "[cheerfully] E aí, viu o que eu falei?",
         "quando": "relato",
         "audio": "pedro_atencao_6"
+      }
+    ],
+    "observacao_situacoes": "AS FALAS SITUACIONAIS DO PEDRO NA CHEGADA (#179, guia_pedro._dizer_situacao): dez comentários curtos, cada um ligado a um gatilho do que acontece com o jogador enquanto o Pedro conduz o tutorial — `gatilho` é o nome que o código usa, e `intervalo` (segundos) deixa a fala repetir depois desse tempo; sem ele, sai uma vez por partida (a lembrança `disse:<gatilho>` vai no save). Respeitam a palavra livre (a narração, a caixa de fala e o balão de outro morador), não saem em sequência (pausa entre quaisquer duas) e ficam em silêncio depois do tutorial. Voz pt-BR (pedro_situacao_<gatilho>, gerada por tools/elevenlabs/gerar-falas-moradores.ps1).",
+    "situacoes": [
+      {
+        "gatilho": "ficou_atras",
+        "texto": "Ô, moço, vem cá! O arraial é por aqui.",
+        "texto_en": "Hey, young man, come here! The village is this way.",
+        "texto_es": "¡Ey, muchacho, ven acá! El caserío es por aquí.",
+        "texto_zh": "喂，小伙子，快过来！村子在这边。",
+        "tts": "[cheerfully] Ô, moço, vem cá! [warmly] O arraial é por aqui.",
+        "intervalo": 120,
+        "audio": "pedro_situacao_ficou_atras"
+      },
+      {
+        "gatilho": "parado",
+        "texto": "Pode olhar à vontade, moço, mas o dia não espera por ninguém.",
+        "texto_en": "Take your time looking around, young man, but the day waits for no one.",
+        "texto_es": "Puedes mirar a gusto, muchacho, pero el día no espera a nadie.",
+        "texto_zh": "尽管慢慢看，小伙子，不过天可不等人。",
+        "tts": "[warmly] Pode olhar à vontade, moço, mas o dia não espera por ninguém.",
+        "intervalo": 180,
+        "audio": "pedro_situacao_parado"
+      },
+      {
+        "gatilho": "nadou",
+        "texto": "Cuidado com a maré, que ela puxa mais do que parece.",
+        "texto_en": "Careful with the tide, it pulls harder than it looks.",
+        "texto_es": "Cuidado con la marea, que tira más de lo que parece.",
+        "texto_zh": "小心潮水，它的力气比看上去大得多。",
+        "tts": "[warmly] Cuidado com a maré, que ela puxa mais do que parece.",
+        "intervalo": 150,
+        "audio": "pedro_situacao_nadou"
+      },
+      {
+        "gatilho": "vigor_zerado",
+        "texto": "Devagar, que o corpo da capital ainda não pegou o ritmo daqui.",
+        "texto_en": "Easy now, a capital body hasn't caught the rhythm here yet.",
+        "texto_es": "Despacio, que el cuerpo de la capital aún no agarró el ritmo de aquí.",
+        "texto_zh": "慢点儿，省城来的身子还没跟上这儿的节奏。",
+        "tts": "[warmly] Devagar, que o corpo da capital ainda não pegou o ritmo daqui.",
+        "intervalo": 150,
+        "audio": "pedro_situacao_vigor_zerado"
+      },
+      {
+        "gatilho": "passagem",
+        "texto": "Com licença, deixa eu passar que eu mostro.",
+        "texto_en": "Excuse me, let me through and I'll show you.",
+        "texto_es": "Con permiso, déjame pasar que yo te enseño.",
+        "texto_zh": "劳驾，让我过去，我给你带路。",
+        "tts": "[cheerfully] Com licença, deixa eu passar que eu mostro.",
+        "intervalo": 90,
+        "audio": "pedro_situacao_passagem"
+      },
+      {
+        "gatilho": "primeiro_peixe",
+        "texto": "Isso aí guarda bem, peixe fresco não dura.",
+        "texto_en": "Keep that safe, fresh fish doesn't last.",
+        "texto_es": "Eso guárdalo bien, el pescado fresco no dura.",
+        "texto_zh": "这个收好，新鲜的鱼放不久。",
+        "tts": "[warmly] Isso aí guarda bem, peixe fresco não dura.",
+        "audio": "pedro_situacao_primeiro_peixe"
+      },
+      {
+        "gatilho": "lado_errado",
+        "texto": "Esse caminho vai dar no mangue. O nosso é pro outro lado.",
+        "texto_en": "That path leads to the mangrove. Ours is the other way.",
+        "texto_es": "Ese camino lleva al manglar. El nuestro es para el otro lado.",
+        "texto_zh": "这条路通到红树林，咱们要走的是另一边。",
+        "tts": "[cheerfully] Esse caminho vai dar no mangue. [warmly] O nosso é pro outro lado.",
+        "intervalo": 120,
+        "audio": "pedro_situacao_lado_errado"
+      },
+      {
+        "gatilho": "chegada_candinha",
+        "texto": "É aqui. Fala com jeito, que a Dona Candinha gosta de respeito.",
+        "texto_en": "This is the place. Speak kindly, Dona Candinha likes respect.",
+        "texto_es": "Es aquí. Habla con tacto, que a doña Candinha le gusta el respeto.",
+        "texto_zh": "到了。说话客气点，坎迪尼亚大妈讲究礼数。",
+        "tts": "[warmly] É aqui. Fala com jeito, que a Dona Candinha gosta de respeito.",
+        "audio": "pedro_situacao_chegada_candinha"
+      },
+      {
+        "gatilho": "tempo_virou",
+        "texto": "Vixe, o tempo passou ligeiro. Bora apressar o passo.",
+        "texto_en": "Oh my, time flew by. Let's pick up the pace.",
+        "texto_es": "¡Vaya, el tiempo pasó volando! Vamos a apurar el paso.",
+        "texto_zh": "哎呀，时间过得真快。咱们得加快脚步了。",
+        "tts": "[cheerfully] Vixe, o tempo passou ligeiro. Bora apressar o passo.",
+        "intervalo": 240,
+        "audio": "pedro_situacao_tempo_virou"
+      },
+      {
+        "gatilho": "outro_morador",
+        "texto": "Conversa à vontade, eu espero ali na frente.",
+        "texto_en": "Chat as long as you like, I'll wait up ahead.",
+        "texto_es": "Conversa a gusto, yo te espero allá adelante.",
+        "texto_zh": "你尽管跟人家聊，我在前头等你。",
+        "tts": "[cheerfully] Conversa à vontade, eu espero ali na frente.",
+        "intervalo": 120,
+        "audio": "pedro_situacao_outro_morador"
       }
     ],
     "anoitecer": {
@@ -1717,7 +1818,7 @@
           "texto_en": "Excuse me, young man: seen anything strange?",
           "texto_es": "Con permiso, muchacho: ¿viste algo raro?",
           "texto_zh": "劳驾问一句，小伙子：你看到什么可疑的事没有？",
-          "tts": "[curious] Com licença, moço: viu algo estranho?",
+          "tts": "[cheerfully] Com licença, moço: viu algo estranho?",
           "audio": "guarda_saudacao_4"
         }
       ],
@@ -3163,7 +3264,7 @@
           "texto_en": "Seen the jaguar yet? I haven't!",
           "texto_es": "¿Ya viste al jaguar? ¡Yo todavía no!",
           "texto_zh": "你见过美洲豹吗？我还没见过呢！",
-          "tts": "[curious] Já viu a onça? Eu ainda não!",
+          "tts": "[cheerfully] Já viu a onça? Eu ainda não!",
           "audio": "menino_saudacao_4"
         }
       ],
@@ -3409,7 +3510,7 @@
           "texto_en": "At the well I drop a little stone and listen: plink. I imagine who lives down at the bottom, waiting for us.",
           "texto_es": "En el pozo tiro una piedrita y escucho: plin. Me imagino quién vive allá en el fondo, esperándonos.",
           "texto_zh": "我往井里丢一颗小石子，听见“叮咚”一声。我就想，井底住着谁，在等着我们呢。",
-          "tts": "[curious] No poço eu jogo uma pedrinha e escuto: plim. Fico imaginando quem mora lá no fundo, esperando a gente.",
+          "tts": "[cheerfully] No poço eu jogo uma pedrinha e escuto: plim. Fico imaginando quem mora lá no fundo, esperando a gente.",
           "audio": "menina_fala_4"
         },
         {
