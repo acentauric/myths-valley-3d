@@ -10,6 +10,7 @@ const PainelAjustes = preload("res://scripts/prototipo_3d/painel_ajustes.gd")
 const PainelPersonagens = preload("res://scripts/prototipo_3d/painel_personagens.gd")
 const TelaCarregamento = preload("res://scripts/prototipo_3d/tela_carregamento.gd")
 const Identidade = preload("res://scripts/prototipo_3d/identidade.gd")
+const TestadorApoios = preload("res://scripts/prototipo_3d/testador_apoios.gd")
 ## O LOBBY EM VÍDEO: o sobrevoo pintado do LTX em laço, no lugar do
 ## vale 3D de fundo. O menu deixava a primeira carga em ~27 s só para montar o vale inteiro
 ## por trás do voo, e depois o desenhava a cada quadro. Vale em toda build e no editor
@@ -48,6 +49,7 @@ const TOLERANCIA_ANCORA_U := 0.05
 ## lerp antigo (7 m em média) cortava as curvas por dentro, em cima das árvores.
 const CHEGADA_SEGUNDOS := 2.0
 const HISTORY_SIZE := Vector2(640, 600)
+const TESTADOR_SIZE := Vector2(640, 660)
 const HISTORY_ROWS := 10
 ## Lista do histórico: fonte base (desce até o mínimo se a linha não couber) e respiro.
 const HISTORY_FONTE := 15
@@ -1044,7 +1046,7 @@ func _home() -> void:
 	_placa("EXPLORAR", _explorar)
 	var teste := _placa("TESTAR", _teste_automatico)
 	teste.tooltip_text = tr("O testador joga uma partida separada. F8 encerra a sessão.")
-	if not FileAccess.file_exists("res://tools/jev/jogar.py") or not FileAccess.file_exists("res://project.godot"):
+	if not TestadorApoios.ponte_instalada():
 		teste.disabled = true
 		teste.tooltip_text = tr("Disponível no projeto de desenvolvimento com Python instalado.")
 	_placa("MODELOS", _abrir_personagens)
@@ -1840,12 +1842,99 @@ func _explorar() -> void:
 	_start_game()
 
 
-## Testador local do projeto: a ponte abre seu próprio perfil, sem usar vagas
-## pessoais. O launcher automático escolhe JOGAR, não este botão, evitando recursão.
+## TESTAR abre o modal do testador: quem joga (o determinístico sempre; Jev e GPT quando a
+## ponte acha a chave e o serviço), o orçamento e a duração. Nada começa antes do INICIAR.
+## A ponte abre a própria janela com um perfil isolado, sem usar as vagas pessoais; o
+## lançador automático escolhe JOGAR, não este botão, evitando recursão.
 func _teste_automatico() -> void:
-	var script := ProjectSettings.globalize_path("res://tools/jev/jogar.py")
-	var pid := OS.create_process("python", PackedStringArray([
-		script, "--robot", "--seconds", "0", "--godot", OS.get_executable_path()]))
+	_modal_testador(TestadorApoios.detectar())
+
+
+## O desenho do modal, separado da detecção para o portão poder dar uma detecção pronta.
+func _modal_testador(deteccao: Dictionary) -> void:
+	_clear()
+	_place_modal(TESTADOR_SIZE)
+	var voltar := _modal_header("Testar o jogo", _home, "Escolha quem joga e quanto pode gastar.")
+	var apoios: Dictionary = deteccao["apoios"]
+	_apoio_linha("Determinístico", "Base, sempre ligado: o robô local escolhe pelas regras do jogo, sem custo.", apoios["deterministic"], true)
+	var jev := _apoio_linha("Jev (TypeSafe)", "Segundo nível: decide a continuidade quando o determinístico trava.", apoios["jev"], false)
+	var gpt := _apoio_linha("GPT (OpenAI)", "Terceiro nível: entra quando o Jev também não destrava.", apoios["gpt"], false)
+	var teto: float = float(deteccao["orcamento"]["teto"])
+	var orcamento := _campo_numerico("Orçamento (US$)", 0.01, teto, 0.01, float(deteccao["orcamento"]["padrao"]),
+		tr("Só vale com Jev ou GPT marcados. Teto autorizado: US$ %.2f.") % teto)
+	var duracao := _campo_numerico("Duração (minutos)", 0.0, 600.0, 1.0, 0.0, tr("Zero deixa a sessão sem limite de tempo."))
+	var pago := func() -> void:
+		var algum := jev.button_pressed or gpt.button_pressed
+		orcamento.editable = algum
+		orcamento.modulate.a = 1.0 if algum else 0.5
+	jev.toggled.connect(func(_ligado: bool) -> void: pago.call())
+	gpt.toggled.connect(func(_ligado: bool) -> void: pago.call())
+	pago.call()
+	var ultima := TestadorApoios.resumo_da_ultima(deteccao["ultima_sessao"])
+	if ultima != "":
+		var titulo := _label(tr("Última sessão"), 15)
+		titulo.add_theme_color_override("font_color", Color("e2c47f"))
+		var nota := _label(ultima, 16)
+		nota.add_theme_color_override("font_color", Color("c9b98f"))
+		content.add_child(TestadorApoios.barra(float(deteccao["ultima_sessao"].get("percentual", 0.0))))
+	if bool(deteccao["erro"]):
+		var aviso := _label(tr("Sem Python por perto: só o determinístico está disponível."), 15)
+		aviso.add_theme_color_override("font_color", Color("c9b98f"))
+	var iniciar := _button("INICIAR", func() -> void:
+		_iniciar_teste(jev.button_pressed, gpt.button_pressed, orcamento.value, int(duracao.value)))
+	iniciar.name = "IniciarTeste"
+	voltar.grab_focus()
+
+
+## Uma linha de apoio: botão de alternar e, embaixo, o papel dele ou, desligado, o motivo.
+## Devolve o botão. Indisponível fica desativado e explicado; o determinístico, ligado e fixo.
+func _apoio_linha(titulo: String, papel: String, apoio: Dictionary, fixo: bool) -> Button:
+	var botao := Button.new()
+	botao.toggle_mode = true
+	botao.custom_minimum_size.y = 44
+	botao.alignment = HORIZONTAL_ALIGNMENT_LEFT
+	var disponivel := bool(apoio["disponivel"])
+	botao.disabled = fixo or not disponivel
+	botao.button_pressed = fixo
+	botao.mouse_entered.connect(func() -> void: Audio.efeito("ui_hover"))
+	var atualizar := func() -> void:
+		var estado := tr("SEMPRE LIGADO") if fixo else (tr("LIGADO") if botao.button_pressed else (tr("DESLIGADO") if disponivel else tr("INDISPONÍVEL")))
+		botao.text = "%s  ·  %s" % [tr(titulo), estado]
+	botao.toggled.connect(func(_ligado: bool) -> void:
+		Audio.efeito("ui_confirmar")
+		atualizar.call())
+	atualizar.call()
+	content.add_child(botao)
+	var texto := tr(papel) if (disponivel or fixo) else TestadorApoios.motivo(str(apoio["motivo"]))
+	var nota := _label(texto, 15)
+	nota.add_theme_color_override("font_color", Color("c9b98f") if (disponivel or fixo) else Color("e39475"))
+	return botao
+
+
+func _campo_numerico(rotulo: String, minimo: float, maximo: float, passo: float, valor: float, ajuda: String) -> SpinBox:
+	var linha := HBoxContainer.new()
+	linha.add_theme_constant_override("separation", 12)
+	content.add_child(linha)
+	var nome := Label.new()
+	nome.text = tr(rotulo)
+	nome.add_theme_font_size_override("font_size", 17)
+	nome.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	linha.add_child(nome)
+	var campo := SpinBox.new()
+	campo.min_value = minimo
+	campo.max_value = maximo
+	campo.step = passo
+	campo.value = valor
+	campo.custom_minimum_size = Vector2(150, 36)
+	campo.tooltip_text = ajuda
+	linha.add_child(campo)
+	return campo
+
+
+## Dispara a ponte com o que o modal marcou e volta ao menu, que mostra o estado da partida.
+func _iniciar_teste(jev: bool, gpt: bool, orcamento: float, minutos: int) -> void:
+	var pid := OS.create_process("python", TestadorApoios.argumentos(jev, gpt, orcamento, minutos, OS.get_executable_path()))
+	_home()
 	if pid <= 0:
 		estado_testador.text = tr("Não foi possível iniciar o testador. Confira a instalação do Python.")
 	else:

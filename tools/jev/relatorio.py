@@ -10,6 +10,15 @@ import tempfile
 import time
 
 
+ESCADA_EVENTOS = {"escalation": "escalations", "escalation_result": "results", "escalation_denied": "denied",
+                  "stuck_signal": "signals", "local_recovery": "locals", "blocked_step": "blocked",
+                  "learned_pattern": "learned", "progress": "progress"}
+NIVEIS = {"deterministic": "Determinístico", "jev": "Jev", "gpt": "GPT"}
+SINAIS = {"sem_progresso_acoes": "ações sem progresso", "sem_progresso_tempo": "tempo sem progresso",
+          "laco_de_posicao": "laço de posição", "recusa_repetida": "recusa repetida",
+          "alvo_do_e_diferente": "E mirando outro alvo", "possivel_travamento": "possível travamento"}
+
+
 def cell(value):
     return str(value).replace("|", "\\|").replace("\n", " ")
 
@@ -40,6 +49,8 @@ def generate(directory, live=True):
     complete = False
     stop = "em andamento" if live else "encerrado (consulte resumo.json)"
     start = None
+    escada = {"escalations": [], "results": [], "denied": [], "signals": [], "locals": [], "blocked": None,
+              "learned": [], "progress": []}
     # Stream: don't retain repeated full world observations in memory.
     with source.open(encoding="utf-8") as stream:
         for line in stream:
@@ -54,6 +65,12 @@ def generate(directory, live=True):
             if kind == "decision":
                 previous_decision = event
                 presentation_seconds += max(0, float(event.get("latency_ms", 0))) / 1000
+            if kind in ESCADA_EVENTOS:
+                chave = ESCADA_EVENTOS[kind]
+                if chave == "blocked":
+                    escada["blocked"] = event
+                else:
+                    escada[chave].append(event)
             if kind != "outcome":
                 continue
             before, after = event.get("before", {}), event.get("after", {})
@@ -125,6 +142,7 @@ def generate(directory, live=True):
     lines += ["", "## Períodos sem progresso de missão, inventário ou obra", ""]
     lines += [f"- {cell(goal)}: {end - begin:.1f} s ({begin:.1f}–{end:.1f}), {count} ações sem mudança significativa."
               for goal, begin, end, count in stalled] or ["Nenhum intervalo registrado de pelo menos 30 segundos."]
+    lines += escada_linhas(escada, summary_path)
     lines += ["", "## Evidências e análise contínua", "",
               "Analise etapas com muitas ações e poucos avanços, alternância repetida de movimentos e interações sem efeito. "
               "Cruze esses indícios com os frames e o JSONL antes de atribuir a causa ao jogo ou à política.", "",
@@ -145,6 +163,97 @@ def generate(directory, live=True):
     finally:
         temporary.unlink(missing_ok=True)
     return output
+
+
+def segundos_texto(valor):
+    if valor is None:
+        return "—"
+    valor = int(valor)
+    return f"{valor // 60} min {valor % 60:02d} s" if valor >= 60 else f"{valor} s"
+
+
+def resultado_do_escalonamento(evento, resultados):
+    """Texto da última coluna: destravou, falhou ou o motivo de não ter plano."""
+    if not evento.get("plano"):
+        return "sem plano: " + cell(evento.get("motivo", ""))
+    seguinte = next((r for r in resultados if r.get("nivel") == evento.get("nivel")
+                     and r["elapsed"] >= evento["elapsed"]), None)
+    if seguinte is None:
+        return "sem resultado"
+    if seguinte.get("resultado") == "destravou":
+        return "destravou"
+    return "falhou: " + cell(seguinte.get("razao", ""))
+
+
+def escada_linhas(escada, summary_path):
+    """Escalonamentos, bloqueio, aprendizado e a curva de progresso até zerar."""
+    resumo = {}
+    if summary_path.exists():
+        try:
+            resumo = json.loads(summary_path.read_text(encoding="utf-8"))
+        except json.JSONDecodeError:
+            resumo = {}
+    saida = ["", "## Escada de decisão (determinístico → Jev → GPT)", ""]
+    apoios = (resumo.get("escada") or {}).get("apoios")
+    if apoios is not None:
+        saida.append("Apoios marcados: " + (", ".join(NIVEIS.get(a, a) for a in apoios) or "nenhum (só o determinístico)") + ".")
+    custo = resumo.get("cost_by_level_usd") or {}
+    if custo:
+        saida.append("Custo estimado por nível: " + "; ".join(f"{NIVEIS.get(n, n)} US$ {v:.6f}" for n, v in custo.items()) + ".")
+    saida.append("")
+    saida += ["| Instante (s) | Quem | Por quê | Passo | Plano | Custo (US$) | Resultado |", "|---:|---|---|---|---|---:|---|"]
+    for evento in escada["escalations"]:
+        porque = ", ".join(SINAIS.get(s.get("tipo"), s.get("tipo", "?")) + (f" ({s['detalhe']})" if s.get("detalhe") else "")
+                           for s in evento.get("sinais", [])) or "—"
+        saida.append(f"| {evento['elapsed']:.1f} | {NIVEIS.get(evento.get('nivel'), evento.get('nivel'))} | {cell(porque)} | "
+                     f"{cell(evento.get('passo'))} | {cell(' → '.join(evento.get('plano', [])) or '—')} | "
+                     f"{float(evento.get('custo_usd', 0)):.6f} | {resultado_do_escalonamento(evento, escada['results'])} |")
+    if not escada["escalations"]:
+        saida.append("| — | — | Nenhum escalonamento nesta sessão | — | — | 0.000000 | — |")
+    for negado in escada["denied"]:
+        saida.append(f"- {negado['elapsed']:.1f} s — {NIVEIS.get(negado.get('nivel'), negado.get('nivel'))} barrado: {cell(negado.get('motivo'))}")
+    if escada["locals"]:
+        saida += ["", f"Recuperações locais iniciadas: {len(escada['locals'])}."]
+    bloqueio = escada["blocked"]
+    saida += ["", "### Bloqueio", ""]
+    if bloqueio:
+        saida.append(f"Em {bloqueio['elapsed']:.1f} s o passo `{cell(bloqueio.get('passo'))}` esgotou os apoios marcados. "
+                     f"Posição {cell(bloqueio.get('posicao'))}; requisito {cell(bloqueio.get('requisito'))}; "
+                     f"na mão {cell(bloqueio.get('na_mao'))}; recusas {cell(bloqueio.get('recusas'))}. "
+                     "A captura final da sessão registra o que estava na tela.")
+    else:
+        saida.append("Nenhum passo esgotou os apoios.")
+    saida += ["", "### Aprendizado (sinal → plano que funcionou)", ""]
+    saida += [f"- {', '.join(SINAIS.get(x, x) for x in e.get('sinais', []))} → {NIVEIS.get(e.get('nivel'))}: "
+              f"{' → '.join(e.get('plano', []))} (passo {cell(e.get('passo'))}). Candidato a regra do determinístico."
+              for e in escada["learned"]] or ["Nenhum apoio destravou um passo nesta sessão."]
+    progresso = resumo.get("progresso") or {}
+    geral = progresso.get("progresso") or {}
+    saida += ["", "## Progresso até zerar o jogo", ""]
+    if geral.get("total"):
+        saida.append(f"**{geral['percentual']:.1f}%** da história implementada: {geral['feitos']} de {geral['total']} passos. "
+                     f"Capítulo: {cell(geral.get('capitulo'))} · {geral.get('capitulo_feitos', 0)}/{geral.get('capitulo_total', 0)}.")
+        ritmo = progresso.get("ritmo") or {}
+        if ritmo.get("acoes_por_passo") is not None:
+            saida.append(f"Ritmo: {ritmo['acoes_por_passo']} ações e {segundos_texto(ritmo['segundos_por_passo'])} por passo; "
+                         f"no ritmo atual faltam cerca de {ritmo['acoes_restantes']} ações ({segundos_texto(ritmo['segundos_restantes'])}).")
+        distante = progresso.get("mais_distante") or {}
+        saida.append(f"Ponto mais distante: {distante.get('feitos', 0)} passos ({distante.get('percentual', 0):.1f}%), "
+                     f"na ação {distante.get('acoes', 0)}, aos {segundos_texto(distante.get('segundos'))} de jogo, "
+                     f"em {cell(distante.get('capitulo'))}.")
+        saida += ["", "| Capítulo | Passos | Destravado por |", "|---|---:|---|"]
+        por_capitulo = progresso.get("destravado_por_capitulo") or {}
+        for marco in geral.get("marcos", []):
+            quem = ", ".join(f"{NIVEIS.get(n, n)} {q}" for n, q in (por_capitulo.get(marco["nome"]) or {}).items()) or "—"
+            saida.append(f"| {cell(marco['nome'])}{' ◀' if marco.get('atual') else ''} | {marco['feitos']}/{marco['total']} | {quem} |")
+    else:
+        saida.append("Sem cadeias de missão observadas nesta sessão.")
+    curva = escada["progress"]
+    if curva:
+        saida += ["", "Curva (progresso × ações):", "", "| Ação | Instante de jogo (s) | Progresso | Quem destravou |", "|---:|---:|---:|---|"]
+        saida += [f"| {e.get('acoes_totais', '—')} | {e.get('segundos', 0)} | {float(e.get('percentual', 0)):.1f}% | "
+                  f"{NIVEIS.get(e.get('destravou'), e.get('destravou'))} |" for e in curva]
+    return saida
 
 
 def alive(pid):

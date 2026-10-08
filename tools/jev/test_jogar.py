@@ -11,6 +11,11 @@ from urllib.error import HTTPError
 from jogar import MAX_BODY, MAX_TOKENS, PRICE, ProgressGuard, Session, game_reference, current_task
 
 
+# Nomes próprios e palavras que são a mesma nas três línguas: a cópia é a tradução certa.
+IGUAIS_NO_IDIOMA = {"nivel_jev_en", "nivel_jev_es", "nivel_gpt_en", "nivel_gpt_es", "capitulo_es",
+                    "parar_curto_es", "a_wait_es", "a_dodge_es", "a_run_es", "a_explore_es"}
+
+
 class SpendingTests(unittest.TestCase):
     def test_work_materials_follow_observed_discount_without_mutating_game_step(self):
         step = {"id": "mirante_material", "meta": {"tipo": "juntar", "da_obra": "mirante_levantar"}}
@@ -220,7 +225,8 @@ class SpendingTests(unittest.TestCase):
             placeholders = re.findall(r"%[.\d]*[sdf]", texts[key])
             for suffix in ("_en", "_es"):
                 self.assertTrue(texts[key + suffix])
-                self.assertNotEqual(texts[key], texts[key + suffix])
+                if (key + suffix) not in IGUAIS_NO_IDIOMA:
+                    self.assertNotEqual(texts[key], texts[key + suffix])
                 self.assertEqual(placeholders, re.findall(r"%[.\d]*[sdf]", texts[key + suffix]))
 
     def test_repeating_a_loop_stops_after_30_seconds(self):

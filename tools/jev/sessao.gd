@@ -2,6 +2,14 @@ extends SceneTree
 ## Opt-in playtest harness. Does not change the game's ordinary launch or tests.
 ## No secrets, teleports, mission mutation or injected inventory in this script.
 
+const PainelSessao = preload("res://tools/jev/painel_sessao.gd")
+const AcaoEmPalavras = preload("res://tools/jev/acao_em_palavras.gd")
+## Pedido de 07/10: no teste a câmera abre um pouco mais afastada (o `mv_zoom_out`), para quem
+## assiste ver o personagem, os moradores e o caminho. Cinco passos de 0,35 m sobre os 8 m
+## de fábrica. Só vale na sessão do testador: a preferência do jogador não muda.
+const PASSOS_DE_ZOOM := 5
+const DISTANCIA_DA_CAMERA := 8.0
+
 var ponte := ""
 var token := ""
 var pasta := ""
@@ -11,9 +19,15 @@ var inicio_jogo := -1
 var parar := false
 var chamadas := 0
 var custo := 0.0
-var rotulo: Label
-var acao_rotulo: Label
-var painel_observador: PanelContainer
+var painel_observador: PainelSessao
+## O que o painel mostra: a última decisão da ponte, as últimas quatro em palavras e se ainda
+## se espera a próxima.
+var aguardando := true
+var decisao_atual: Dictionary = {}
+var decisoes_recentes: Array = []
+var rotulos_botoes: Dictionary = {}
+var estado_recente: Dictionary = {}
+var reposicionar_em := 0
 var textos: Dictionary
 var idioma
 var historico: Array = []
@@ -96,12 +110,14 @@ func _run() -> void:
 			jogada.teleporte = false
 			await _post("/ready", {})
 			_capturar()
+		_afastar_camera()
 		var estado := _estado()
 		var opcoes: Dictionary = _acoes(estado)
 		if opcoes.is_empty():
 			await _esperar(0.5)
 			continue
-		acao_rotulo.text = _texto("aguardando_robot" if OS.get_environment("MV_JEV_ROBOT") == "1" else "aguardando")
+		aguardando = true
+		estado_recente = estado
 		var resposta: Dictionary = await _post("/decision", {"state": estado, "actions": opcoes})
 		if parar:
 			break
@@ -116,7 +132,7 @@ func _run() -> void:
 		chamadas = int(resposta.get("calls", 0))
 		custo = float(resposta.get("estimated_usd", 0.0))
 		ultima_acao = str(resposta.choice)
-		acao_rotulo.text = _texto("acao_robot") % ultima_acao if OS.get_environment("MV_JEV_ROBOT") == "1" else _texto("acao") % [ultima_acao, float(resposta.confidence) * 100.0]
+		_registrar_decisao(resposta, estado)
 		_atualizar_painel()
 		var antes: Dictionary = _estado()
 		amostras_movimento.clear()
@@ -136,6 +152,7 @@ func _run() -> void:
 		if historico.size() > 24:
 			historico.pop_front()
 		await _esperar(0.15 if OS.get_environment("MV_JEV_ROBOT") == "1" else 2.0)
+	_atualizar_painel()
 	var motivo := "duration" if duracao > 0 and inicio_jogo >= 0 and _segundos() >= duracao else (ultima_acao if parar else "user_stop")
 	await _post("/stop", {"reason": motivo})
 	_capturar()
@@ -146,51 +163,107 @@ func _texto(chave: String) -> String:
 	return idioma.campo(textos, chave)
 
 
+func _robo() -> bool:
+	return OS.get_environment("MV_JEV_ROBOT") == "1"
+
+
 func _montar_painel() -> void:
 	var camada := CanvasLayer.new()
 	camada.name = "JevObservador"
 	camada.layer = 110
 	camada.process_mode = Node.PROCESS_MODE_ALWAYS
 	root.add_child(camada)
-	var painel := PanelContainer.new()
+	var painel := PainelSessao.new()
 	painel_observador = painel
 	painel.add_to_group("obstaculos_do_hud")
 	camada.add_child(painel)
-	painel.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)
-	painel.offset_left = -294
-	painel.offset_right = -14
-	painel.offset_top = -128
-	painel.offset_bottom = -14
-	var margens := MarginContainer.new()
-	for lado in ["left", "right", "top", "bottom"]:
-		margens.add_theme_constant_override("margin_" + lado, 8)
-	painel.add_child(margens)
-	var caixa := VBoxContainer.new()
-	margens.add_child(caixa)
-	rotulo = Label.new()
-	rotulo.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	rotulo.add_theme_font_size_override("font_size", 12)
-	caixa.add_child(rotulo)
-	acao_rotulo = Label.new()
-	acao_rotulo.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	acao_rotulo.add_theme_font_size_override("font_size", 12)
-	acao_rotulo.text = _texto("aguardando_robot" if OS.get_environment("MV_JEV_ROBOT") == "1" else "aguardando")
-	caixa.add_child(acao_rotulo)
-	var botao := Button.new()
-	botao.text = _texto("parar")
-	botao.pressed.connect(func(): ultima_acao = "user_stop"; parar = true)
-	caixa.add_child(botao)
+	painel.montar(_texto)
+	painel.parar_pedido.connect(func() -> void:
+		ultima_acao = "user_stop"
+		parar = true)
 	_atualizar_painel()
 
 
+## O que a ponte decidiu, guardado para o painel: quem, por quê, a ação em palavras e as
+## últimas quatro. O nome técnico fica na dica do painel e no relatório.
+func _registrar_decisao(resposta: Dictionary, estado: Dictionary) -> void:
+	aguardando = false
+	var nivel := str(resposta.get("level", ""))
+	var palavras := AcaoEmPalavras.descrever(ultima_acao, estado, _texto, rotulos_botoes)
+	decisao_atual = {"nivel": nivel, "modo": str(resposta.get("mode", "normal")), "plano": resposta.get("plan"),
+		"motivo": str(resposta.get("rationale", "")), "sinais": resposta.get("signals", []),
+		"escalonamentos": int(resposta.get("escalations", 0)), "progresso": resposta.get("progress", {}),
+		"acao_texto": palavras, "acao_tecnica": ultima_acao}
+	decisoes_recentes.append({"nivel": nivel if nivel != "" else "jev", "texto": palavras})
+	while decisoes_recentes.size() > PainelSessao.MAX_DECISOES:
+		decisoes_recentes.pop_front()
+
+
+func _objetivo_atual() -> Dictionary:
+	var objetivo: Dictionary = estado_recente.get("objective", {})
+	if objetivo.is_empty():
+		return {}
+	return {"titulo": str(objetivo.get("titulo", "")), "feito": int(objetivo.get("feito", 0)), "total": int(objetivo.get("total", 0))}
+
+
 func _atualizar_painel() -> void:
-	var titulo := _texto("sol") if OS.get_environment("MV_JEV_SOL") == "1" else (_texto("offline") if OS.get_environment("MV_JEV_OFFLINE") == "1" else _texto("titulo"))
-	if OS.get_environment("MV_JEV_ROBOT") == "1":
-		titulo = _texto("robot")
-	rotulo.text = _texto("estado_robot") % chamadas if OS.get_environment("MV_JEV_ROBOT") == "1" else _texto("estado") % [titulo, chamadas, custo, orcamento]
+	if painel_observador == null:
+		return
+	var robo := _robo()
+	var d := decisao_atual
+	var progresso: Dictionary = d.get("progresso", {})
+	var titulo := _texto("titulo_teste") if robo else (_texto("sol") if OS.get_environment("MV_JEV_SOL") == "1" else (_texto("offline") if OS.get_environment("MV_JEV_OFFLINE") == "1" else _texto("titulo")))
+	var com_apoio := not OS.get_environment("MV_JEV_APOIOS").is_empty()
+	var gasto := _texto("sem_api")
+	if com_apoio:
+		gasto = _texto("ia") % [int(d.get("escalonamentos", 0)), custo, orcamento]
+	elif not robo:
+		gasto = ""
+	var espera := aguardando or d.is_empty()
+	painel_observador.mostrar({
+		"titulo": titulo,
+		"nivel": str(d.get("nivel", "")) if robo else "",
+		"modo": d.get("modo", "normal"), "plano": d.get("plano"),
+		"sub": _texto("subtitulo") % [chamadas, PainelSessao.duracao(_segundos())] if robo else _texto("estado") % [titulo, chamadas, custo, orcamento],
+		"acao": _texto("aguardando_robot" if robo else "aguardando") if espera else str(d.get("acao_texto", "")),
+		"acao_tecnica": str(d.get("acao_tecnica", "")),
+		"motivo": "" if espera else str(d.get("motivo", "")),
+		"objetivo": _objetivo_atual(), "progresso": progresso, "ritmo": progresso.get("pace", {}),
+		"sinais": d.get("sinais", []), "bloqueado": ultima_acao == "blocked_step",
+		"decisoes": decisoes_recentes, "gasto": gasto})
 	# Telas grandes e diálogos precisam de toda a área; F8 permanece ativo.
 	if _no_vale() and bool(current_scene.get("carga_ok")):
 		painel_observador.visible = current_scene.get("telas").aberta().is_empty() and not root.get_node("Dialogo").ativo
+	# Sem cobrir a barra de mão, o minimapa nem o resto do HUD: a cada meio segundo, no canto livre.
+	if Time.get_ticks_msec() >= reposicionar_em:
+		reposicionar_em = Time.get_ticks_msec() + 500
+		painel_observador.posicionar(_obstaculos_do_hud())
+
+
+## Os retângulos do HUD que o painel não pode cobrir (o grupo `obstaculos_do_hud`).
+func _obstaculos_do_hud() -> Array:
+	var itens: Array = []
+	for no in get_nodes_in_group("obstaculos_do_hud"):
+		if no == painel_observador or not (no is Control) or not (no as Control).is_visible_in_tree():
+			continue
+		var controle := no as Control
+		itens.append(controle.get_global_transform_with_canvas() * Rect2(Vector2.ZERO, controle.size))
+	return itens
+
+
+## A câmera do teste abre mais afastada. Só atua enquanto a distância está no padrão de 8 m
+## (inclusive depois de um reinício da câmera) e fora do cômodo visto de cima.
+func _afastar_camera() -> void:
+	if not _no_vale() or not bool(current_scene.get("carga_ok")):
+		return
+	var jogador = current_scene.get("player")
+	if jogador == null or bool(jogador.get("_de_cima")):
+		return
+	if absf(float(jogador.get("_distance")) - DISTANCIA_DA_CAMERA) > 0.01:
+		return
+	for _passo in PASSOS_DE_ZOOM:
+		jogador._aproximar_a_camera(false)
+	jogador._apply_camera()
 
 
 func _segundos() -> int:
@@ -204,7 +277,9 @@ func _no_vale() -> bool:
 func _post(caminho: String, dados: Dictionary) -> Dictionary:
 	var http := HTTPRequest.new()
 	http.process_mode = Node.PROCESS_MODE_ALWAYS
-	http.timeout = 190.0 if OS.get_environment("MV_JEV_SOL") == "1" else 15.0
+	# Com Jev/GPT marcados a ponte espera a resposta do serviço dentro do pedido.
+	var espera_do_apoio := 120.0 if not OS.get_environment("MV_JEV_APOIOS").is_empty() else 15.0
+	http.timeout = 190.0 if OS.get_environment("MV_JEV_SOL") == "1" else espera_do_apoio
 	root.add_child(http)
 	var erro := http.request(ponte + caminho, ["Content-Type: application/json", "Authorization: Bearer " + token], HTTPClient.METHOD_POST, JSON.stringify(dados))
 	if erro != OK:
@@ -405,6 +480,7 @@ func _textos_visiveis() -> Array:
 
 func _acoes(estado: Dictionary) -> Dictionary:
 	catalogo.clear()
+	rotulos_botoes.clear()
 	var opcoes: Dictionary = {}
 	if not _no_vale():
 		var nome_pendente := current_scene.find_child("NomeJogador", true, false) as LineEdit
@@ -421,6 +497,7 @@ func _acoes(estado: Dictionary) -> Dictionary:
 			if permitido:
 				var id := "button_%d" % catalogo.size()
 				catalogo[id] = botao
+				rotulos_botoes[id] = texto_botao if texto_botao != "" else str(botao.name)
 				opcoes[id] = "Click " + (texto_botao if texto_botao != "" else str(botao.name))
 		if opcoes.is_empty():
 			opcoes["wait"] = "Wait for loading or narration"
