@@ -1042,7 +1042,7 @@ func _home() -> void:
 	_marca()
 	_placa("JOGAR", _vagas).grab_focus()
 	_placa("EXPLORAR", _explorar)
-	var teste := _placa("TESTE AUTOMÁTICO", _teste_automatico)
+	var teste := _placa("TESTAR", _teste_automatico)
 	teste.tooltip_text = tr("O testador joga uma partida separada. F8 encerra a sessão.")
 	if not FileAccess.file_exists("res://tools/jev/jogar.py") or not FileAccess.file_exists("res://project.godot"):
 		teste.disabled = true

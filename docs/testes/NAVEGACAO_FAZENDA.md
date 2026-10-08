@@ -112,7 +112,7 @@ laterais nem os capítulos planejados além do pátio da fazenda.
 ## Menu, perfil novo e F8 — #159
 
 A fixture temporária `tools/temp/menu_autoplay.gd` abriu o menu real,
-focou TESTE AUTOMÁTICO e acionou Enter por `Input.parse_input_event`.
+focou o botão (então rotulado TESTE AUTOMÁTICO, hoje TESTAR) e acionou Enter por `Input.parse_input_event`.
 O botão iniciou o lançador normal, que criou uma partida nova em
 `tools/temp/jev/20261007-140638-bc8a48/perfil`; a campanha em D permaneceu
 separada. O log `D:/MythsValleyPlaytestRuns/menu-autoplay.log` confirmou

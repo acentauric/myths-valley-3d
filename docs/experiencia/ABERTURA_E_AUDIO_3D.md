@@ -20,7 +20,7 @@ conversa final e a retomada do save. Remover a meta da caderneta reprova.
 Execute `JOGAR_3D.cmd`. A abertura usa o vídeo do sobrevoo e só monta o
 cenário quando uma tela precisa dele. **JOGAR** escolhe uma das três vagas:
 nova partida pede nome e começa pela travessia; vaga ocupada retoma o save.
-**EXPLORAR** passeia sem salvar. **TESTE AUTOMÁTICO** inicia o testador local
+**EXPLORAR** passeia sem salvar. **TESTAR** inicia o testador local
 determinístico, com perfil separado e relatório; veja
 [AUTOPLAYER.md](../testes/AUTOPLAYER.md). **MODELOS** abre a galeria,
 **SOBRE** mostra créditos, **SAIR** pede confirmação. Os ícones laterais

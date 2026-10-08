@@ -19,7 +19,7 @@ confirmada na parada real por F8: botão do menu abriu perfil novo, 19 decisões
 
 ## Como iniciar e encerrar
 
-No menu inicial, escolha **Teste automático**, ao lado de Explorar, ou execute
+No menu inicial, escolha **Testar**, ao lado de Explorar, ou execute
 `JOGAR_SOL.cmd`. O lançador abre outra janela com uma partida nova em perfil
 isolado, preservando os saves do jogador. Requer o projeto de desenvolvimento,
 Python 3.10+ disponível como `python` e Godot. O botão fica desativado nas

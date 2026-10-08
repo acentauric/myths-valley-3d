@@ -2,6 +2,11 @@
 
 ## Em desenvolvimento — 08/10/2026
 
+- **O botão do menu que abre o testador automático passa a se chamar TESTAR.**
+  Um verbo de uma palavra como JOGAR e EXPLORAR, que não enche mais a placa
+  (TEST em inglês, PROBAR em espanhol); a ação e o aviso ao iniciar seguem os
+  mesmos, e os documentos do testador falam em "Testar" (#173).
+
 - **O × da tela de idioma fica um pouco mais evidente em repouso.** O fundo da
   placa sobe de 0,35 para 0,6 e a opacidade de 0,6 para 0,8 (efetivo perto de
   0,5, antes 0,21), legível sobre o céu claro e ainda mais discreto que os
