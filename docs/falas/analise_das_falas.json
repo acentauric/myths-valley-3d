@@ -3,136 +3,171 @@
   "revisao": {
     "data": "2026-10-08",
     "por": "Claude (revisão de texto e de dados)",
-    "escopo": "659 falas em uso no 3D, lidas na ordem da história; dados conferidos no jogo"
+    "escopo": "659 falas em uso no 3D, lidas na ordem da história; dados conferidos no jogo",
+    "correcoes": "08/10: as correções da análise aplicadas no jogo e aqui (status 'corrigida' ou 'aprovada'); as decisões assumidas estão em docs/falas/README.md"
   },
   "falas": {
     "abertura.travessia.5": {
-      "historia": "atenção",
-      "mecanica": "problema",
+      "historia": "ok",
+      "mecanica": "ok",
       "prioridade": "média",
       "problema": "A travessia faz o saveiro sair com a maré da madrugada, levar a manhã inteira e chegar ao meio-dia (trechos 5 a 7), mas a partida começa às 6h30 (Dia.INICIO_DO_DIA = 6,5). O jogador desce do saveiro de manhã cedo.",
       "correcao": "Trazer a travessia para a noite: \"O saveiro saiu da Rampa do Mercado com a maré da meia-noite, carregado de telha, sal e três passageiros.\" — e regravar o trecho 05.",
-      "observacao": "O Seu Ladislau diz que a travessia leva meio dia com vento bom: da meia-noite às 6h30 cabe."
+      "observacao": "O Seu Ladislau diz que a travessia leva meio dia com vento bom: da meia-noite às 6h30 cabe. | Corrigido em 08/10: a travessia atravessa a noite: 'a maré da meia-noite'. Tem voz gravada com o texto antigo (narracao/travessia/trecho_05.mp3; a narração é uma tomada só — tools/elevenlabs/gerar-travessia.ps1 -Narracao e o corte por alinhar_travessia.py): regravar — até lá a voz antiga toca com o texto novo.",
+      "status": "corrigida"
     },
     "abertura.travessia.6": {
-      "historia": "atenção",
-      "mecanica": "problema",
+      "historia": "ok",
+      "mecanica": "ok",
       "prioridade": "média",
       "problema": "\"levou a manhã inteira\" — o jogo começa às 6h30.",
-      "correcao": "\"A Baía de Todos os Santos é maior do que parece no mapa: levou a noite inteira para o outro lado virar mais que uma linha escura.\" — regravar o trecho 06."
+      "correcao": "\"A Baía de Todos os Santos é maior do que parece no mapa: levou a noite inteira para o outro lado virar mais que uma linha escura.\" — regravar o trecho 06.",
+      "status": "corrigida",
+      "observacao": "Corrigido em 08/10: 'levou a noite inteira'. Tem voz gravada com o texto antigo (narracao/travessia/trecho_06.mp3, na mesma tomada): regravar — até lá a voz antiga toca com o texto novo."
     },
     "abertura.travessia.7": {
-      "historia": "atenção",
-      "mecanica": "problema",
+      "historia": "ok",
+      "mecanica": "ok",
       "prioridade": "média",
       "problema": "\"Ao meio-dia o mestre apontou...\" — o jogador desembarca às 6h30.",
-      "correcao": "\"Com o dia clareando, o mestre apontou uma fresta de areia entre os coqueiros e disse o nome do lugar: Bom Jesus dos Pobres.\" — regravar o trecho 07."
+      "correcao": "\"Com o dia clareando, o mestre apontou uma fresta de areia entre os coqueiros e disse o nome do lugar: Bom Jesus dos Pobres.\" — regravar o trecho 07.",
+      "status": "corrigida",
+      "observacao": "Corrigido em 08/10: 'Com o dia clareando, o mestre apontou...'; o desembarque do Pedro também diz 'uma noite inteira em pé num saveiro'. Tem voz gravada com o texto antigo (narracao/travessia/trecho_07.mp3, na mesma tomada): regravar — até lá a voz antiga toca com o texto novo."
     },
     "missao.guia.corpo.6": {
       "historia": "ok",
-      "mecanica": "atenção",
+      "mecanica": "ok",
       "prioridade": "média",
       "problema": "A mesma palavra para dois recursos: \"fôlego\" é a reserva do dia (corpo.3, a barra do meio com o número) e aqui é o ar de quem nada (a barra do meio troca de papel na água). O jogador recém-ensinado confunde os dois.",
       "correcao": "Chamar o do nado de \"ar\": \"A azul, a do meio, é o ar de quem nada. Nadando, o corpo gasta primeiro o vigor; quando ele acaba, é o ar que vai, e sem ar a água tira da vida. Parou de nadar, ou achou chão, ele volta sozinho.\" — e o rótulo do HUD, se disser fôlego.",
-      "observacao": "Tem voz gravada (pedro_corpo_nado): regravar se mudar."
+      "observacao": "Tem voz gravada (pedro_corpo_nado): regravar se mudar. | Corrigido em 08/10: o do nado é o AR ('a azul, a do meio, é o ar de quem nada'), e o rótulo do HUD na água diz 'Ar' (data/hud_3d.json), como o aviso da água funda (data/avisos.json). Tem voz gravada com o texto antigo (pedro_corpo_nado): regravar — até lá a voz antiga toca com o texto novo.",
+      "status": "corrigida"
     },
     "missao.guia.pedra_do_poco.anuncio": {
       "historia": "ok",
-      "mecanica": "problema",
+      "mecanica": "ok",
       "prioridade": "alta",
       "problema": "\"Tem lajedo ali do lado do poço; pedra pra calçar a boca sai dele.\" O lajedo do poço (recursos_3d.json, lajedo_poco) pede a picareta de aço e o talento Mão de pedra nível 2, e leva 96 golpes. No dia 1 o jogador tem a picareta de ferro do tio e nenhum talento: o tutorial manda bater numa pedra que recusa. A pedra sai das pedras soltas.",
-      "correcao": "\"... Toma a picareta, que também era do seu tio. Tem pedra solta pelo chão em volta do poço e no caminho: com a picareta ela sai ligeiro. Lajedo grande, não — esse pede picareta de aço e braço treinado.\""
+      "correcao": "\"... Toma a picareta, que também era do seu tio. Tem pedra solta pelo chão em volta do poço e no caminho: com a picareta ela sai ligeiro. Lajedo grande, não — esse pede picareta de aço e braço treinado.\"",
+      "status": "corrigida",
+      "observacao": "Corrigido em 08/10: a pedra sai das pedras soltas ao lado do poço (pedra_poco e pedra_poco_2, dois golpes de picareta de ferro); o lajedo fica dito como coisa de picareta de aço e braço treinado."
     },
     "missao.guia.bom_dia.anuncio": {
-      "historia": "problema",
+      "historia": "ok",
       "mecanica": "ok",
       "prioridade": "média",
       "problema": "\"Aquele remendando rede desde a madrugada é o Tonho\" — o Tonho não tem rede: \"Minha rede ficou do outro lado do rio numa noite de março, e desde então eu pesco de linha\" (fila do Tonho, passo da rede). A rede nova é o pedido dele.",
-      "correcao": "\"Aquele de linha na mão desde a madrugada é o Tonho, pescador como eu.\""
+      "correcao": "\"Aquele de linha na mão desde a madrugada é o Tonho, pescador como eu.\"",
+      "status": "corrigida",
+      "observacao": "Corrigido em 08/10: 'Aquele de linha na mão desde a madrugada é o Tonho'."
     },
     "missao.roca.cozinhar.anuncio": {
       "historia": "ok",
-      "mecanica": "atenção",
+      "mecanica": "ok",
       "prioridade": "baixa",
       "problema": "\"o J na fogueira\" — a janta da chegada ensinou \"encosta, aperta E e asse\" na mesma fogueira (o E nela abre o fogão). Duas teclas para a mesma coisa em dois dias.",
-      "correcao": "\"O fogo do terreiro dá conta — encosta na fogueira e aperta E.\""
+      "correcao": "\"O fogo do terreiro dá conta — encosta na fogueira e aperta E.\"",
+      "status": "corrigida",
+      "observacao": "Corrigido em 08/10: 'encosta na fogueira e aperta E' (é a tecla da janta da chegada)."
     },
     "missao.ponte.buscar_machado.anuncio": {
-      "historia": "atenção",
+      "historia": "ok",
       "mecanica": "ok",
       "prioridade": "baixa",
       "problema": "\"A casa é aqui perto do píer\" — a casa do Pedro fica a uns 82 u (330 m) do píer, a caminho da praça.",
-      "correcao": "\"A casa é no caminho da praça — eu vou na frente.\""
+      "correcao": "\"A casa é no caminho da praça — eu vou na frente.\"",
+      "status": "corrigida",
+      "observacao": "Corrigido em 08/10: 'A casa é pra lá da igreja' — do píer, a igreja (85, −69) fica no caminho da casa do Pedro (70, −84); o resumo do passo diz o mesmo."
     },
     "missao.ponte.ponte.anuncio": {
       "historia": "ok",
-      "mecanica": "atenção",
+      "mecanica": "ok",
       "prioridade": "baixa",
       "problema": "Só ensina o J; o HUD diz \"[E] ou [J]\" e o E ao pé da ponte abre as obras dela.",
-      "correcao": "\"Chegue à cabeceira da ponte com tudo nas costas e aperte E — ou abra o J, na aba de obras: o conserto está lá.\""
+      "correcao": "\"Chegue à cabeceira da ponte com tudo nas costas e aperte E — ou abra o J, na aba de obras: o conserto está lá.\"",
+      "status": "corrigida",
+      "observacao": "Corrigido em 08/10: 'aperte E — ou abra o J, na aba de obras'."
     },
     "missao.ponte.ponte_de_pe.resposta": {
-      "historia": "atenção",
+      "historia": "ok",
       "mecanica": "ok",
       "prioridade": "baixa",
       "problema": "\"No que meus avós contam, foi assim que o povo chegou naquela fazenda: abrindo caminho\" — o arraial nunca foi à fazenda (\"ninguém nunca viu o dono\"); a ida pela mata, um ajudando o outro, é a do capítulo 6, que ainda vai acontecer.",
-      "correcao": "\"Meus avós dizem que caminho de fazenda velha se abre assim: um ajudando o outro.\""
+      "correcao": "\"Meus avós dizem que caminho de fazenda velha se abre assim: um ajudando o outro.\"",
+      "status": "corrigida",
+      "observacao": "Corrigido em 08/10: 'Meus avós dizem que caminho de fazenda velha se abre assim: um ajudando o outro.'"
     },
     "missao.ponte.socorro.2": {
-      "historia": "problema",
+      "historia": "ok",
       "mecanica": "ok",
       "prioridade": "média",
       "problema": "\"Minha mãe fez mungunzá\" — no 3D quem manda comida é a avó do Pedro (o beiju e o mungunzá da chegada; regra 5 de CHEGADA_E_MUTIROES.md). A mãe do Pedro não aparece em fala nenhuma.",
-      "correcao": "\"Minha avó fez mungunzá de manhã e mandou trazer a panela inteira. Milho branco, leite de coco e canela, da panela de ferro.\""
+      "correcao": "\"Minha avó fez mungunzá de manhã e mandou trazer a panela inteira. Milho branco, leite de coco e canela, da panela de ferro.\"",
+      "status": "corrigida",
+      "observacao": "Corrigido em 08/10: 'Minha avó fez mungunzá'."
     },
     "missao.ponte.socorro.5": {
       "historia": "ok",
-      "mecanica": "atenção",
+      "mecanica": "ok",
       "prioridade": "baixa",
       "problema": "\"Amanhã o corpo cobra o que você gastou\" — o mungunzá dá um dia de trabalho 30% mais barato (catalogo: efeito_dias 1, eficiência −0,30) e acaba; não há cobrança no dia seguinte.",
-      "correcao": "\"Só que é hoje, viu? Amanhã a força da panela acaba, e o corpo volta a pesar. Aqui as coisas sempre foram assim.\""
+      "correcao": "\"Só que é hoje, viu? Amanhã a força da panela acaba, e o corpo volta a pesar. Aqui as coisas sempre foram assim.\"",
+      "status": "corrigida",
+      "observacao": "Corrigido em 08/10: 'Amanhã a força da panela acaba, e o corpo volta a pesar. Mungunzá de vó dá o dia, não dá a semana.'"
     },
     "missao.filo.filo_pedido.anuncio": {
       "historia": "ok",
-      "mecanica": "atenção",
+      "mecanica": "ok",
       "prioridade": "baixa",
       "problema": "O passo é uma visita à casa da Dona Filó, mas a fila abre no E ao lado dela, na porta de casa: o passo fecha na hora, e o HUD mostra por um instante \"Vá até a casa da Dona Filó\" (coordenada, contra a regra 1 da escrita da chegada).",
-      "correcao": "Juntar os dois passos (o pedido já é o do pirão) ou trocar o resumo por \"Ouça o pedido da Dona Filó\"."
+      "correcao": "Juntar os dois passos (o pedido já é o do pirão) ou trocar o resumo por \"Ouça o pedido da Dona Filó\".",
+      "status": "corrigida",
+      "observacao": "Corrigido em 08/10: o resumo do passo é 'Ouça o pedido da Dona Filó' (e não uma coordenada); a fila inteira ganhou inglês e espanhol."
     },
     "missao.zefa.zefa_ervas.anuncio": {
-      "historia": "problema",
-      "mecanica": "atenção",
+      "historia": "ok",
+      "mecanica": "ok",
       "prioridade": "média",
       "problema": "\"Você lembra do que eu te falei, do chão e da troca?\" — essa conversa é um assunto do 2D (aldeoes.json), que o 3D não mostra; no 3D ela nunca falou de chão nem de troca. E \"Toma a foice\": o jogo só entrega a foice a quem não tem (CadeiaDeMissoes.entregar), e a Dona Candinha e o Damião também \"dão\" uma.",
-      "correcao": "\"Eu tenho um pedido, e é coisa de serra. Alecrim-do-campo, arruda brava... Cinco maços... Tem foice? Se não tiver, leve a minha, e vá com calma que eu não vou a lugar nenhum.\""
+      "correcao": "\"Eu tenho um pedido, e é coisa de serra. Alecrim-do-campo, arruda brava... Cinco maços... Tem foice? Se não tiver, leve a minha, e vá com calma que eu não vou a lugar nenhum.\"",
+      "status": "corrigida",
+      "observacao": "Corrigido em 08/10: 'Eu tenho um pedido, e é coisa de serra...' e 'Tem foice? Se não tiver, leve a minha' — sem a conversa do 2D; a resposta diz 'eu te devo uma conversa', que é a promessa que o passo da conversa cumpre."
     },
     "missao.zefa.zefa_conversa.resposta": {
-      "historia": "problema",
-      "mecanica": "problema",
+      "historia": "ok",
+      "mecanica": "ok",
       "prioridade": "alta",
       "problema": "\"Amanhã tem saveiro pra Salvador. Me encontre no píer.\" O saveiro só encosta no dia 14 de cada estação (saveiro.json), e o passo seguinte fecha ao chegar ao píer em qualquer dia, sem barco. E o Cosme não sai do vale: nada no código o tira, e ele continua na roça, na capoeira, no capataz do quintal e no mutirão da carroça.",
-      "correcao": "Decisão do autor. (a) O Cosme fica: a conversa o liberta e ele escolhe ficar (\"aquele chão ali não se planta sozinho\") — o passo do píer vira mandar a resposta ao primo pelo mestre Quirino, no dia 14. (b) O Cosme vai: o passo pede o píer no dia 14, com o saveiro atracado, e o jogo tira o Cosme do vale e passa as filas dele a outro morador."
+      "correcao": "Decisão do autor. (a) O Cosme fica: a conversa o liberta e ele escolhe ficar (\"aquele chão ali não se planta sozinho\") — o passo do píer vira mandar a resposta ao primo pelo mestre Quirino, no dia 14. (b) O Cosme vai: o passo pede o píer no dia 14, com o saveiro atracado, e o jogo tira o Cosme do vale e passa as filas dele a outro morador.",
+      "status": "corrigida",
+      "observacao": "Corrigido em 08/10: DECISÃO (assumida em 08/10, a confirmar com o autor): o Cosme fica. A Dona Zefa diz que vai deixar a escolha com ele, e manda ao píer no dia catorze, quando o mestre Quirino encosta."
     },
     "missao.zefa.zefa_saveiro.anuncio": {
-      "historia": "problema",
-      "mecanica": "problema",
+      "historia": "ok",
+      "mecanica": "ok",
       "prioridade": "alta",
       "problema": "\"Amanhã tem saveiro pra Salvador... saveiro não espera ninguém\" — o passo (visita ao píer) fecha a qualquer dia e hora, com ou sem saveiro. Ver a resposta da conversa.",
-      "correcao": "Conforme a decisão sobre o Cosme: \"No dia catorze o mestre Quirino encosta. Me encontre no píer nesse dia, de manhã.\" com o passo valendo só no dia 14, das 7 às 15h."
+      "correcao": "Conforme a decisão sobre o Cosme: \"No dia catorze o mestre Quirino encosta. Me encontre no píer nesse dia, de manhã.\" com o passo valendo só no dia 14, das 7 às 15h.",
+      "status": "corrigida",
+      "observacao": "Corrigido em 08/10: 'No dia catorze o mestre Quirino encosta o saveiro no píer. Vá lá nesse dia e fale com ele.' O passo virou falar com o mestre Quirino (só aparece no dia do saveiro), que responde: o Cosme lhe deu uma carta para o primo e ficou."
     },
     "missao.zefa.arremate": {
-      "historia": "problema",
-      "mecanica": "problema",
+      "historia": "ok",
+      "mecanica": "ok",
       "prioridade": "alta",
       "problema": "\"O Cosme foi no saveiro das seis, e foi leve.\" — não há saveiro das seis, e o Cosme fica no vale.",
-      "correcao": "Conforme a decisão sobre o Cosme."
+      "correcao": "Conforme a decisão sobre o Cosme.",
+      "status": "corrigida",
+      "observacao": "Corrigido em 08/10: 'O Cosme podia ir no saveiro do dia catorze, e ficou: agora é escolha dele.'"
     },
     "missao.candinha.candinha_cana.anuncio": {
       "historia": "ok",
-      "mecanica": "atenção",
+      "mecanica": "ok",
       "prioridade": "média",
       "problema": "\"toma a foice, que de mão não se corta cana\" — se o jogador já ganhou a foice da Dona Zefa (ou do Damião), o jogo não dá outra, e a fala promete uma que não vem. (A cana, essa, cresce mesmo no roçado do jogador: cana_rocado_a…f.)",
-      "correcao": "\"Corte seis canas da sua — e se não tiver foice, leve a minha, que de mão não se corta cana.\""
+      "correcao": "\"Corte seis canas da sua — e se não tiver foice, leve a minha, que de mão não se corta cana.\"",
+      "status": "corrigida",
+      "observacao": "Corrigido em 08/10: 'e se não tiver foice, leve a minha'; a fila ganhou inglês e espanhol."
     },
     "missao.saveiro.saveiro_piacava.anuncio": {
       "historia": "ok",
@@ -147,80 +182,103 @@
     },
     "missao.coveiro.coveiro_limpar.anuncio": {
       "historia": "ok",
-      "mecanica": "atenção",
+      "mecanica": "ok",
       "prioridade": "baixa",
       "problema": "\"essa aqui é a sua\" — se o jogador já tem foice (da Zefa ou da Candinha), o jogo não dá outra.",
-      "correcao": "Pode ficar: o Damião fez dois cabos. Se a foice não vier, trocar por \"essa aqui é a sua — foice nunca é demais em cemitério\" só quando o jogador ainda não tem uma."
+      "correcao": "Pode ficar: o Damião fez dois cabos. Se a foice não vier, trocar por \"essa aqui é a sua — foice nunca é demais em cemitério\" só quando o jogador ainda não tem uma.",
+      "status": "corrigida",
+      "observacao": "Corrigido em 08/10: 'e essa aqui é a sua, se você ainda não tem foice'; os três passos do 2D ganharam inglês e espanhol."
     },
     "missao.coveiro.coveiro_cercado.anuncio": {
       "historia": "ok",
-      "mecanica": "problema",
+      "mecanica": "ok",
       "prioridade": "alta",
       "problema": "\"Pau o senhor tem; corda sai da oficina.\" A obra pede 6 lenhas e 2 cordas, e cada corda gasta 3 lenhas: são 12 lenhas ao todo. Quem junta as 6 e depois torce as 2 cordas com elas fica sem lenha para a obra — a queixa do playtest de 08/10. (O HUD agora conta o material da mochila.)",
-      "correcao": "\"Um cercado de pau roliço em volta, amarrado de corda: seis paus e duas cordas. E corda também é lenha, três por corda — junte doze, que seis viram corda na oficina. A obra se toca aqui mesmo no cemitério: o E, ou o J na aba de obras.\""
+      "correcao": "\"Um cercado de pau roliço em volta, amarrado de corda: seis paus e duas cordas. E corda também é lenha, três por corda — junte doze, que seis viram corda na oficina. A obra se toca aqui mesmo no cemitério: o E, ou o J na aba de obras.\"",
+      "status": "corrigida",
+      "observacao": "Corrigido em 08/10: 'seis lenhas e duas cordas. E corda também é lenha, três por corda — junte doze lenhas, que seis viram corda na oficina. ... o E, ou o J na aba de obras.'",
+      "alerta_revisto": "as contas do texto explicam o custo da obra (seis lenhas e duas cordas): três lenhas por corda, doze lenhas ao todo, seis viram corda"
     },
     "missao.coveiro.arremate": {
-      "historia": "problema",
+      "historia": "ok",
       "mecanica": "ok",
       "prioridade": "média",
       "problema": "\"A irmandade do Bom Jesus mandou esses réis, que cemitério cercado é obrigação dela\" — o Padre Anselmo (\"O cemitério é da Santa Casa\") e o Pedro na lombada (\"a Santa Casa... é a irmandade que cuida do cemitério\") dizem outra irmandade.",
-      "correcao": "\"A Santa Casa mandou esses réis, que cemitério cercado é obrigação dela, e quem fez foi o senhor.\""
+      "correcao": "\"A Santa Casa mandou esses réis, que cemitério cercado é obrigação dela, e quem fez foi o senhor.\"",
+      "status": "corrigida",
+      "observacao": "Corrigido em 08/10: 'A Santa Casa mandou esses réis'."
     },
     "missao.tonho.tonho_livro.anuncio": {
-      "historia": "atenção",
-      "mecanica": "problema",
+      "historia": "ok",
+      "mecanica": "ok",
       "prioridade": "alta",
       "problema": "\"o livro de fiado fica no baú do armazém e aceita o dinheiro de qualquer um\" — o 3D não tem livro de fiado nem pagamento: o passo é só chegar à venda, e o seguinte diz que a dívida zerou. Os 1.900 réis somem sem ninguém pagar.",
-      "correcao": "(a) Dar ao passo um pagamento de verdade: levar 1.900 réis ao Seu Nicolau (meta levar, com os réis), ou (b) tirar a promessa: \"A rede paga. Volte daqui a uns dias, que eu te conto.\" com um passo de espera (dormir algumas noites)."
+      "correcao": "(a) Dar ao passo um pagamento de verdade: levar 1.900 réis ao Seu Nicolau (meta levar, com os réis), ou (b) tirar a promessa: \"A rede paga. Volte daqui a uns dias, que eu te conto.\" com um passo de espera (dormir algumas noites).",
+      "status": "corrigida",
+      "observacao": "Corrigido em 08/10: DECISÃO (assumida em 08/10): a conta se paga de verdade. O passo é levar 1.900 réis da bolsa ao Seu Nicolau (meta levar com 'reis', CadeiaDeMissoes.REIS), e ele responde riscando o nome."
     },
     "missao.tonho.tonho_terra.anuncio": {
-      "historia": "atenção",
-      "mecanica": "problema",
+      "historia": "ok",
+      "mecanica": "ok",
       "prioridade": "média",
       "problema": "\"Zerou. Eu passei lá e o homem virou o livro\" — ver o passo do livro: nada pagou a dívida. E \"o homem\": o dono da venda é o Seu Nicolau.",
-      "correcao": "Conforme o passo do livro; e \"o Seu Nicolau virou o livro pra eu ver\"."
+      "correcao": "Conforme o passo do livro; e \"o Seu Nicolau virou o livro pra eu ver\".",
+      "status": "corrigida",
+      "observacao": "Corrigido em 08/10: 'Zerou. O Seu Nicolau virou o livro pra eu ver... Eu sei que foi você.'"
     },
     "missao.tonho.tonho_terra.resposta": {
       "historia": "ok",
-      "mecanica": "atenção",
+      "mecanica": "ok",
       "prioridade": "média",
       "problema": "\"Aquele chão do outro lado da estrada é seu.\" — o 3D não tem terras (nada de terreno_tonho no código): a terra dada não muda nada no mundo.",
-      "correcao": "Decidir: trazer as terras do 2D (MORADORES.md) ou dar ao fim uma coisa que exista — a canoa, um canto do pontal para a rede do jogador."
+      "correcao": "Decidir: trazer as terras do 2D (MORADORES.md) ou dar ao fim uma coisa que exista — a canoa, um canto do pontal para a rede do jogador.",
+      "status": "corrigida",
+      "observacao": "Corrigido em 08/10: DECISÃO (assumida em 08/10): sem terras no vale, o fim é o primeiro peixe da rede nova, 'que é de quem fez a rede' — e a recompensa ganhou um robalo."
     },
     "missao.lombada.picareta.anuncio": {
-      "historia": "problema",
-      "mecanica": "atenção",
+      "historia": "ok",
+      "mecanica": "ok",
       "prioridade": "média",
       "problema": "\"Choveu forte na semana que você passou embarcado\" — a travessia é de uma noite. E \"entre a sua casa e a chapada\": a lombada fica a poente da chapada, depois dela (casa x 64, chapada x −6, lombada x −32).",
-      "correcao": "\"Olha lá, pro poente, depois da chapada: aquela lombada de pedra... Choveu forte na semana antes de você chegar...\""
+      "correcao": "\"Olha lá, pro poente, depois da chapada: aquela lombada de pedra... Choveu forte na semana antes de você chegar...\"",
+      "status": "corrigida",
+      "observacao": "Corrigido em 08/10: 'pro poente, depois da chapada' e 'na semana antes de você chegar'."
     },
     "missao.carroca.carroca_corda.anuncio": {
       "historia": "ok",
-      "mecanica": "problema",
+      "mecanica": "ok",
       "prioridade": "alta",
       "problema": "\"Pedra tem no lajedo do roçado e no do poço.\" Os lajedos pedem a picareta de aço e o talento Mão de pedra nível 2 (96 golpes cada): manda o jogador à pedra que recusa.",
-      "correcao": "\"... quatro de cada. Pedra solta tem no caminho e em volta do poço; lajedo, só se você já tiver a picareta de aço e o braço pra ela.\""
+      "correcao": "\"... quatro de cada. Pedra solta tem no caminho e em volta do poço; lajedo, só se você já tiver a picareta de aço e o braço pra ela.\"",
+      "status": "corrigida",
+      "observacao": "Corrigido em 08/10: 'Pedra solta tem pelo vale, fora da rua — na beira do roçado, no meio do mato; o lajedo, esse só cede à picareta de aço e a braço treinado.'"
     },
     "missao.chapada.chapada.anuncio": {
       "historia": "ok",
-      "mecanica": "atenção",
+      "mecanica": "ok",
       "prioridade": "média",
       "problema": "\"terra se toma pela divisa: pra chegar na dele, você precisa ter a da Zefa antes\" — o 3D não tem compra de terra: a conversa promete uma mecânica que não existe.",
-      "correcao": "Decidir com as terras (ver a fila do Tonho). Sem elas: \"... e o Seu Benedito anda dizendo que vende. Vá lá medir com os olhos — sonhar não custa.\""
+      "correcao": "Decidir com as terras (ver a fila do Tonho). Sem elas: \"... e o Seu Benedito anda dizendo que vende. Vá lá medir com os olhos — sonhar não custa.\"",
+      "status": "corrigida",
+      "observacao": "Corrigido em 08/10: sem a compra pela divisa: 'Vá lá medir com os olhos — sonhar não custa'."
     },
     "missao.chapada.chapada_volta.resposta": {
       "historia": "ok",
-      "mecanica": "atenção",
+      "mecanica": "ok",
       "prioridade": "baixa",
       "problema": "\"é conversa pra quando tiver dinheiro, e pra depois da terra da Zefa\" — mesma promessa de terras.",
-      "correcao": "Conforme a decisão sobre as terras."
+      "correcao": "Conforme a decisão sobre as terras.",
+      "status": "corrigida",
+      "observacao": "Corrigido em 08/10: 'Mas isso é pra quem tiver dinheiro, e dinheiro aqui chega devagar' — sem a terra da Zefa no caminho."
     },
     "missao.quintal.curral_aprender.anuncio": {
-      "historia": "atenção",
+      "historia": "ok",
       "mecanica": "ok",
       "prioridade": "baixa",
       "problema": "\"aquela tecla K que eu te mostrei\" — só é verdade se o jogador fez \"O ofício de quem fica\" antes; o quintal abre sozinho na sexta colheita, e o ofício é opcional.",
-      "correcao": "\"Abre a lista de ofícios, no K.\""
+      "correcao": "\"Abre a lista de ofícios, no K.\"",
+      "status": "corrigida",
+      "observacao": "Corrigido em 08/10: 'Abre a lista de ofícios, no K.'"
     },
     "missao.arraial.canteiro_obra.anuncio": {
       "historia": "ok",
@@ -228,53 +286,67 @@
       "alerta_revisto": "\"numa obra de quarenta tábuas é quatro tábuas\" é um exemplo de conta do desconto (10%), não o pedido"
     },
     "missao.fe.fe_zefa.anuncio": {
-      "historia": "atenção",
-      "mecanica": "problema",
+      "historia": "ok",
+      "mecanica": "ok",
       "prioridade": "média",
       "problema": "\"De manhã e de noite ela fica na casa de taipa\" — \"Casa de taipa\" é a casa do jogador; a Dona Zefa passa manhã, entardecer e noite na Casa da Zefa (npcs_3d.json), ao lado.",
-      "correcao": "\"De manhã e de noite ela fica na casa dela, ao lado da sua; de tarde, no poço.\""
+      "correcao": "\"De manhã e de noite ela fica na casa dela, ao lado da sua; de tarde, no poço.\"",
+      "status": "corrigida",
+      "observacao": "Corrigido em 08/10: 'na casa dela, ao lado da sua' (a Casa da Zefa fica a 19 u da casa de taipa)."
     },
     "missao.fazenda.cena.chamado.2": {
-      "historia": "problema",
+      "historia": "ok",
       "mecanica": "ok",
       "prioridade": "média",
       "problema": "\"aquele papel do mural da praça\" — o convite chegou \"preso em cada porta do arraial — esse estava na sua\" (o último passo da chegada).",
-      "correcao": "\"O convite — aquele papel que prenderam na sua porta, e que você guardou na mochila. Hoje é o dia dele.\""
+      "correcao": "\"O convite — aquele papel que prenderam na sua porta, e que você guardou na mochila. Hoje é o dia dele.\"",
+      "status": "corrigida",
+      "observacao": "Corrigido em 08/10: 'aquele papel que prenderam na sua porta'."
     },
     "missao.fazenda.cena.chegada_fim.3": {
-      "historia": "atenção",
+      "historia": "ok",
       "mecanica": "ok",
       "prioridade": "baixa",
       "problema": "\"quem apareceu foi homem\" — o próprio Pedro acabou de dizer que a Dona Zefa, a Dona Filó e a avó dele foram. O capítulo 6 diz que vieram \"muitos homens\".",
-      "correcao": "\"Quem foi convidado é o arraial todo, e quem mais apareceu foi homem.\""
+      "correcao": "\"Quem foi convidado é o arraial todo, e quem mais apareceu foi homem.\"",
+      "status": "corrigida",
+      "observacao": "Corrigido em 08/10: 'e quem mais apareceu foi homem'."
     },
     "missao.fazenda.fazenda_porta_estreita.anuncio": {
-      "historia": "problema",
+      "historia": "ok",
       "mecanica": "ok",
       "prioridade": "média",
       "problema": "\"Somos seis, comigo.\" — e o jogador vai junto: cinco voltam pelos corredores (cena da porta, \"Cinco.\") e ficam o Pedro e o jogador. São sete. O capítulo tem seis com o Pedro; o jogo soma o jogador.",
-      "correcao": "\"Somos seis, comigo — sete, com você. Elas vão na frente, pela escadaria...\""
+      "correcao": "\"Somos seis, comigo — sete, com você. Elas vão na frente, pela escadaria...\"",
+      "status": "corrigida",
+      "observacao": "Corrigido em 08/10: 'Somos seis, comigo — sete, com você.'"
     },
     "missao.fazenda.cena.subida.1": {
-      "historia": "problema",
+      "historia": "ok",
       "mecanica": "ok",
       "prioridade": "média",
       "problema": "\"As duas levaram os seis\" — ver o anúncio da porta estreita: são sete com o jogador.",
-      "correcao": "\"As duas levaram os sete pela escadaria, para dentro da casa...\""
+      "correcao": "\"As duas levaram os sete pela escadaria, para dentro da casa...\"",
+      "status": "corrigida",
+      "observacao": "Corrigido em 08/10: 'As duas levaram os sete'."
     },
     "missao.fazenda.cena.pedro_fica.3": {
-      "historia": "problema",
+      "historia": "ok",
       "mecanica": "ok",
       "prioridade": "média",
       "problema": "\"Fica aqui fora, junto da porta. Se eu demorar, me chama.\" — logo depois o Pedro diz \"Vem comigo\" (o quarto) e a porta \"se fechou atrás de vocês\": o jogador entra.",
-      "correcao": "\"Vem logo atrás de mim. Se eu travar, me puxa.\" (casa com o \"Me puxa\" do passo da mão)."
+      "correcao": "\"Vem logo atrás de mim. Se eu travar, me puxa.\" (casa com o \"Me puxa\" do passo da mão).",
+      "status": "corrigida",
+      "observacao": "Corrigido em 08/10: 'Vem logo atrás de mim. Se eu travar, me puxa.'"
     },
     "missao.revoar.cena.trocas.3.oferta": {
-      "historia": "atenção",
+      "historia": "ok",
       "mecanica": "ok",
       "prioridade": "baixa",
       "problema": "\"a que sorriu para o Pedro a tarde inteira\" — eles entraram na casa de manhã; o entardecer só chega na fuga (\"vocês tinham passado o dia inteiro naquele quarto\").",
-      "correcao": "\"a que sorriu para o Pedro a manhã inteira\""
+      "correcao": "\"a que sorriu para o Pedro a manhã inteira\"",
+      "status": "corrigida",
+      "observacao": "Corrigido em 08/10: 'a manhã inteira'."
     },
     "missao.revoar.cena.amanhecer.2": {
       "historia": "ok",
@@ -288,52 +360,66 @@
     },
     "missao.revoar.cena.amanhecer_levado.1": {
       "historia": "ok",
-      "mecanica": "atenção",
+      "mecanica": "ok",
       "prioridade": "baixa",
       "problema": "\"Quem leva legado de Matinta leva também a conta dela — e ela cobra.\" — levar o escudo só troca esta narração (revoar_vale: escudo_levado); nada cobra depois.",
-      "correcao": "Dar uma consequência (o escudo pesa no fôlego, a coruja de pedra racha numa noite) ou deixar a ameaça como lenda: \"... e dizem que ela cobra.\""
+      "correcao": "Dar uma consequência (o escudo pesa no fôlego, a coruja de pedra racha numa noite) ou deixar a ameaça como lenda: \"... e dizem que ela cobra.\"",
+      "status": "corrigida",
+      "observacao": "Corrigido em 08/10: 'e dizem que ela cobra' — a ameaça fica como lenda (levar o escudo não tem consequência no jogo)."
     },
     "missao.sacristao.sacristao_garapa.anuncio": {
-      "historia": "atenção",
+      "historia": "ok",
       "mecanica": "ok",
       "prioridade": "média",
       "problema": "Em terceira pessoa na boca do próprio sacristão: \"Zacarias toca o sino às seis e às dezoito...\" O anúncio do passo sai na voz e no balão do dono da fila; soa como narrador.",
-      "correcao": "\"Eu toco o sino às seis e às dezoito, e entre um e outro varro, apago vela e escuto a praça. Garganta de sacristão seca, moço...\""
+      "correcao": "\"Eu toco o sino às seis e às dezoito, e entre um e outro varro, apago vela e escuto a praça. Garganta de sacristão seca, moço...\"",
+      "status": "corrigida",
+      "observacao": "Corrigido em 08/10: na primeira pessoa: 'Eu toco o sino às seis e às dezoito...'."
     },
     "missao.beata.beata_cha.anuncio": {
-      "historia": "atenção",
+      "historia": "ok",
       "mecanica": "ok",
       "prioridade": "média",
       "problema": "Terceira pessoa: \"Joaquina reza às seis, chova ou faça sol...\" E \"O Tonico me manda o chá de folha que ele não bebe\" — estranho para um menino.",
-      "correcao": "\"Eu rezo às seis, chova ou faça sol, e a tosse reza junto. Faça um chá de folha no seu fogão e traga, meu filho...\""
+      "correcao": "\"Eu rezo às seis, chova ou faça sol, e a tosse reza junto. Faça um chá de folha no seu fogão e traga, meu filho...\"",
+      "status": "corrigida",
+      "observacao": "Corrigido em 08/10: na primeira pessoa, e sem o chá que o Tonico manda: 'Eu rezo às seis... Faça um chá de folha no seu fogão'."
     },
     "missao.mercador.mercador_tabuas.anuncio": {
-      "historia": "atenção",
+      "historia": "ok",
       "mecanica": "ok",
       "prioridade": "média",
       "problema": "Terceira pessoa: \"Nicolau não pede fiado, cobra.\"",
-      "correcao": "\"Eu não peço favor, eu cobro. Mas hoje peço: a prateleira do fundo cedeu...\""
+      "correcao": "\"Eu não peço favor, eu cobro. Mas hoje peço: a prateleira do fundo cedeu...\"",
+      "status": "corrigida",
+      "observacao": "Corrigido em 08/10: na primeira pessoa: 'Eu não peço favor, eu cobro.'"
     },
     "missao.guarda.guarda_peixe.anuncio": {
-      "historia": "atenção",
+      "historia": "ok",
       "mecanica": "ok",
       "prioridade": "média",
       "problema": "Terceira pessoa: \"Aristides dá três voltas na praça de noite...\"",
-      "correcao": "\"Eu dou três voltas na praça de noite e durmo na porta da venda — escutando, não dormindo...\""
+      "correcao": "\"Eu dou três voltas na praça de noite e durmo na porta da venda — escutando, não dormindo...\"",
+      "status": "corrigida",
+      "observacao": "Corrigido em 08/10: na primeira pessoa: 'Eu dou três voltas na praça de noite...'."
     },
     "missao.pescador.pescador_corda.anuncio": {
-      "historia": "atenção",
+      "historia": "ok",
       "mecanica": "ok",
       "prioridade": "média",
       "problema": "Terceira pessoa: \"Jerônimo pesca de linha, da pedra...\"",
-      "correcao": "\"Eu pesco de linha, da pedra, e linha boa nasce de corda boa...\""
+      "correcao": "\"Eu pesco de linha, da pedra, e linha boa nasce de corda boa...\"",
+      "status": "corrigida",
+      "observacao": "Corrigido em 08/10: na primeira pessoa: 'Eu pesco de linha, da pedra...'."
     },
     "missao.marisqueira.marisqueira_farinha.anuncio": {
-      "historia": "atenção",
+      "historia": "ok",
       "mecanica": "ok",
       "prioridade": "média",
       "problema": "Terceira pessoa: \"Rosa tira ostra e sururu da lama...\"",
-      "correcao": "\"Eu tiro ostra e sururu da lama, de manhã cedo. Sururu sem farinha é lama com gosto...\""
+      "correcao": "\"Eu tiro ostra e sururu da lama, de manhã cedo. Sururu sem farinha é lama com gosto...\"",
+      "status": "corrigida",
+      "observacao": "Corrigido em 08/10: na primeira pessoa: 'Eu tiro ostra e sururu da lama...'."
     },
     "missao.marisqueira.marisqueira_farinha.resposta": {
       "historia": "atenção",
@@ -342,193 +428,245 @@
       "observacao": "\"o mangue é a cozinha de Iemanjá\" (e o mesmo na maré das cinco e na roda da praia): conferir com o autor — no candomblé, lama e mangue costumam ser de Nanã, e Iemanjá é do mar. Pode ser escolha da comunidade da Dona Rosa."
     },
     "missao.lavadeira.lavadeira_lenha.anuncio": {
-      "historia": "atenção",
+      "historia": "ok",
       "mecanica": "ok",
       "prioridade": "média",
       "problema": "Terceira pessoa: \"Rita lava a roupa do padre e da venda...\"",
-      "correcao": "\"Eu lavo a roupa do padre e da venda na beira do riacho, e roupa de branco só sai branca fervida...\""
+      "correcao": "\"Eu lavo a roupa do padre e da venda na beira do riacho, e roupa de branco só sai branca fervida...\"",
+      "status": "corrigida",
+      "observacao": "Corrigido em 08/10: na primeira pessoa: 'Eu lavo a roupa do padre e da venda...'."
     },
     "missao.quituteira.quituteira_tabuleiro.anuncio": {
-      "historia": "atenção",
-      "mecanica": "atenção",
+      "historia": "ok",
+      "mecanica": "ok",
       "prioridade": "média",
       "problema": "Terceira pessoa: \"Ambrósia vende acarajé...\" E \"dois ovos do seu quintal\": ovo só vem do galinheiro do segundo tutorial (sexta colheita), e o favor abre no grau 1 — pode ficar semanas parado.",
-      "correcao": "\"Eu vendo acarajé, beiju e cocada no tabuleiro da praça... Três espigas e dois ovos, e a cocada é sua.\" (sem \"do seu quintal\"; ou pedir outra coisa até o galinheiro existir)."
+      "correcao": "\"Eu vendo acarajé, beiju e cocada no tabuleiro da praça... Três espigas e dois ovos, e a cocada é sua.\" (sem \"do seu quintal\"; ou pedir outra coisa até o galinheiro existir).",
+      "status": "corrigida",
+      "observacao": "Corrigido em 08/10: na primeira pessoa, e sem 'do seu quintal': 'Três espigas e dois ovos'."
     },
     "missao.carpinteiro.carpinteiro_madeira.anuncio": {
-      "historia": "atenção",
+      "historia": "ok",
       "mecanica": "ok",
       "prioridade": "média",
       "problema": "Terceira pessoa: \"Epifânio faz canoa, remo, porta e caixão...\"",
-      "correcao": "\"Eu faço canoa, remo, porta e caixão, nessa ordem...\""
+      "correcao": "\"Eu faço canoa, remo, porta e caixão, nessa ordem...\"",
+      "status": "corrigida",
+      "observacao": "Corrigido em 08/10: na primeira pessoa: 'Eu faço canoa, remo, porta e caixão...'."
     },
     "missao.guarda_ronda.ronda_passo_no_adro.anuncio": {
-      "historia": "atenção",
+      "historia": "ok",
       "mecanica": "ok",
       "prioridade": "baixa",
       "problema": "\"Acabou a ronda. Diga ao guarda o que ouviu.\" — dito pelo próprio guarda.",
-      "correcao": "\"Acabou a ronda. Me diga o que ouviu.\""
+      "correcao": "\"Acabou a ronda. Me diga o que ouviu.\"",
+      "status": "corrigida",
+      "observacao": "Corrigido em 08/10: 'Acabou a ronda. Me diga o que ouviu.'"
     },
     "missao.padre_sino.sino_contado.anuncio": {
-      "historia": "atenção",
+      "historia": "ok",
       "mecanica": "ok",
       "prioridade": "baixa",
       "problema": "\"Conte ao padre a sua madrugada.\" — dito pelo próprio padre.",
-      "correcao": "\"Me conte a sua madrugada, meu filho.\""
+      "correcao": "\"Me conte a sua madrugada, meu filho.\"",
+      "status": "corrigida",
+      "observacao": "Corrigido em 08/10: 'Me conte a sua madrugada, meu filho.'"
     },
     "missao.marisqueira_mare.carta_ao_padre.anuncio": {
-      "historia": "atenção",
+      "historia": "ok",
       "mecanica": "ok",
       "prioridade": "baixa",
       "problema": "\"O padre lê a carta da Dona Rosa. Duas vezes, como ela pediu.\" — dito pela própria Dona Rosa, como narração.",
-      "correcao": "\"Leve ao padre. Duas vezes, que eu pedi.\""
+      "correcao": "\"Leve ao padre. Duas vezes, que eu pedi.\"",
+      "status": "corrigida",
+      "observacao": "Corrigido em 08/10: 'Leve ao padre. E que leia duas vezes, que eu pedi.'"
     },
     "missao.marisqueira_mare.carta_de_volta.anuncio": {
-      "historia": "atenção",
+      "historia": "ok",
       "mecanica": "ok",
       "prioridade": "baixa",
       "problema": "\"Diga à Dona Rosa o que o padre leu na segunda vez.\" — dito pela própria Dona Rosa.",
-      "correcao": "\"Me diga o que o padre leu na segunda vez.\""
+      "correcao": "\"Me diga o que o padre leu na segunda vez.\"",
+      "status": "corrigida",
+      "observacao": "Corrigido em 08/10: 'Me diga o que o padre leu na segunda vez.'"
     },
     "missao.mercador_fiado.fiado_livro.anuncio": {
-      "historia": "problema",
-      "mecanica": "problema",
+      "historia": "ok",
+      "mecanica": "ok",
       "prioridade": "alta",
       "problema": "A dívida do Tonho é paga duas vezes, de dois jeitos. Na fila do Tonho, 1.900 réis no armazém, \"dois anos naquela página\", e ela zera; neste favor, \"Deve desde março\", três peixes e o Nicolau risca o nome. As duas filas abrem depois da chegada, em qualquer ordem.",
-      "correcao": "Escolher um caminho: o favor do Nicolau só abre enquanto a dívida do Tonho não zerou (e zerar por ele fecha a fila do Tonho), ou o favor muda de devedor (outro pescador)."
+      "correcao": "Escolher um caminho: o favor do Nicolau só abre enquanto a dívida do Tonho não zerou (e zerar por ele fecha a fila do Tonho), ou o favor muda de devedor (outro pescador).",
+      "status": "corrigida",
+      "observacao": "Corrigido em 08/10: DECISÃO (assumida em 08/10): o devedor do livro é o Damião, e não o Tonho (cuja conta se paga na fila dele). Os passos, as respostas e o arremate seguem: três peixes, o nome riscado, e o Damião avisado no cemitério."
     },
     "missao.mercador_fiado.fiado_tonho.anuncio": {
-      "historia": "atenção",
+      "historia": "ok",
       "mecanica": "ok",
       "prioridade": "baixa",
       "problema": "\"Conte ao Tonho que o nome dele saiu do livro do Nicolau.\" — dito pelo próprio Nicolau.",
-      "correcao": "\"Conte ao Tonho que o nome dele saiu do meu livro.\""
+      "correcao": "\"Conte ao Tonho que o nome dele saiu do meu livro.\"",
+      "status": "corrigida",
+      "observacao": "Corrigido em 08/10: 'Conte ao Damião que o nome dele saiu do meu livro.' (o passo manda ao cemitério; a resposta é do Damião)."
     },
     "missao.beata_promessa.promessa_ostra.anuncio": {
-      "historia": "atenção",
+      "historia": "ok",
       "mecanica": "ok",
       "prioridade": "baixa",
       "problema": "\"Uma ostra na areia, onde a onda chega. Em nome dela.\" — dito pela própria Sá Joaquina.",
-      "correcao": "\"Uma ostra na areia, onde a onda chega. Em meu nome.\""
+      "correcao": "\"Uma ostra na areia, onde a onda chega. Em meu nome.\"",
+      "status": "corrigida",
+      "observacao": "Corrigido em 08/10: 'Em meu nome.'"
     },
     "missao.beata_promessa.promessa_ostra.resposta": {
-      "historia": "problema",
-      "mecanica": "problema",
+      "historia": "ok",
+      "mecanica": "ok",
       "prioridade": "média",
       "problema": "A resposta da oferenda sai na boca do dono da fila, onde ele estiver (CadeiaDeMissoes._tentar_oferenda → _falar). Aqui a Sá Joaquina \"descreve\" a onda levando a ostra — e ela não pisa na areia há trinta anos.",
-      "correcao": "No código: a resposta da oferenda vira narração (a caixa sem nome), como a visita aos marcos. Ou no texto: tirar a resposta e deixar a descrição no passo seguinte, quando o jogador volta e conta."
+      "correcao": "No código: a resposta da oferenda vira narração (a caixa sem nome), como a visita aos marcos. Ou no texto: tirar a resposta e deixar a descrição no passo seguinte, quando o jogador volta e conta.",
+      "status": "corrigida",
+      "observacao": "Corrigido em 08/10: no código: a resposta da oferenda é aviso do HUD, sem nome nem balão (CadeiaDeMissoes.narrou), e não fala da Sá Joaquina de longe."
     },
     "missao.beata_promessa.promessa_rezada.anuncio": {
-      "historia": "atenção",
+      "historia": "ok",
       "mecanica": "ok",
       "prioridade": "baixa",
       "problema": "\"Diga a Sá Joaquina que a ostra foi.\" — dito pela própria Sá Joaquina.",
-      "correcao": "\"Venha me dizer se a ostra foi.\""
+      "correcao": "\"Venha me dizer se a ostra foi.\"",
+      "status": "corrigida",
+      "observacao": "Corrigido em 08/10: 'Venha me dizer se a ostra foi.'"
     },
     "missao.rendeira_toalha.toalha_na_mesa.resposta": {
-      "historia": "problema",
-      "mecanica": "problema",
+      "historia": "ok",
+      "mecanica": "ok",
       "prioridade": "média",
       "problema": "Resposta de oferenda dita pela Dona Estefânia de longe: ela descreve a toalha aberta na mesa da casa do jogador, onde não está.",
-      "correcao": "Como a da Sá Joaquina: tratar a resposta da oferenda como narração (sem nome)."
+      "correcao": "Como a da Sá Joaquina: tratar a resposta da oferenda como narração (sem nome).",
+      "status": "corrigida",
+      "observacao": "Corrigido em 08/10: no código: a resposta da oferenda é aviso do HUD, sem nome nem balão (CadeiaDeMissoes.narrou)."
     },
     "missao.sacristao_pedra.papel_de_volta.resposta": {
-      "historia": "atenção",
-      "mecanica": "atenção",
+      "historia": "ok",
+      "mecanica": "ok",
       "prioridade": "média",
       "problema": "\"E se alguém da fazenda perguntar pela pedra...\" — o favor abre no grau 2 a qualquer hora, inclusive depois do capítulo 7, quando a fazenda acabou e as mulheres foram para o quilombo.",
-      "correcao": "Abrir as pistas da fazenda (esta, a madeira com letra e a luz na água) só antes do dia do convite, ou escrever a variante de depois."
+      "correcao": "Abrir as pistas da fazenda (esta, a madeira com letra e a luz na água) só antes do dia do convite, ou escrever a variante de depois.",
+      "status": "corrigida",
+      "observacao": "Corrigido em 08/10: 'E se alguém perguntar pela pedra, ela nunca esteve solta.' — sem 'da fazenda', vale antes e depois do capítulo 7."
     },
     "missao.sacristao_pedra.arremate": {
-      "historia": "atenção",
+      "historia": "ok",
       "mecanica": "ok",
       "prioridade": "média",
       "problema": "\"O seu não está — ainda.\" — depois do capítulo 7 a ameaça não tem mais dono. Ver a resposta do mesmo passo.",
       "correcao": "Conforme o gatilho das pistas da fazenda.",
-      "observacao": "A lista do papel (documento papel_dos_nomes) tem dezenove moradores e não tem o Pedro, que é quem entra no quarto: conferir com o autor se é de propósito."
+      "observacao": "A lista do papel (documento papel_dos_nomes) tem dezenove moradores e não tem o Pedro, que é quem entra no quarto: conferir com o autor se é de propósito. | Corrigido em 08/10: 'O seu não está.' — sem o 'ainda', que não tem dono depois do capítulo 7.",
+      "status": "corrigida"
     },
     "missao.pescador_madeira.madeira_ao_padre.resposta": {
-      "historia": "atenção",
-      "mecanica": "atenção",
+      "historia": "ok",
+      "mecanica": "ok",
       "prioridade": "média",
       "problema": "\"Repare: é o que falta no selo do seu convite.\" — pista da fazenda sem gatilho de tempo (pode tocar depois do capítulo 7). O selo existe e bate: \"Só o selo — vermelho, sem brasão\" (documento do convite).",
-      "correcao": "Conforme o gatilho das pistas da fazenda."
+      "correcao": "Conforme o gatilho das pistas da fazenda.",
+      "status": "aprovada",
+      "observacao": "Revisto em 08/10: mantida: a pista continua verdadeira depois do capítulo 7 — o convite fica na mochila, e o selo dele continua sem brasão."
     },
     "missao.lavadeira_rio.rio_de_volta.anuncio": {
-      "historia": "atenção",
+      "historia": "ok",
       "mecanica": "ok",
       "prioridade": "baixa",
       "problema": "\"Conte a Sá Rita a cor da água.\" — dito pela própria Sá Rita.",
-      "correcao": "\"Venha me contar a cor da água.\""
+      "correcao": "\"Venha me contar a cor da água.\"",
+      "status": "corrigida",
+      "observacao": "Corrigido em 08/10: 'Venha me contar a cor da água.'"
     },
     "missao.lavadeira_rio.rio_de_volta.resposta": {
-      "historia": "atenção",
+      "historia": "ok",
       "mecanica": "ok",
       "prioridade": "baixa",
-      "observacao": "\"Vermelha de ferrugem, não é?\" — conferir no jogo se a água do rio grande aparece avermelhada; se não, o jogador \"viu\" o que não viu. Uma luz/cor na água perto da ponte fecharia a cena."
+      "observacao": "\"Vermelha de ferrugem, não é?\" — conferir no jogo se a água do rio grande aparece avermelhada; se não, o jogador \"viu\" o que não viu. Uma luz/cor na água perto da ponte fecharia a cena. | Corrigido em 08/10: ela diz o que vê, sem pôr na boca do jogador: 'Viu? Pode ser o sol, pode ser o barro — eu vejo vermelho de ferrugem, e a roupa não mente.' O arremate também ('Sá Rita vê ferrugem na água').",
+      "status": "corrigida"
     },
     "missao.menino_caminho.caminho_comeco.anuncio": {
-      "historia": "atenção",
+      "historia": "ok",
       "mecanica": "ok",
       "prioridade": "baixa",
       "problema": "\"a pedra grande com desenho — a lapa\" — na lombada, \"a lapa\" é a pedra que rolou e que o jogador rachou em oito na fila do Pedro. Duas lapas no mesmo lugar.",
-      "correcao": "\"... até a pedra grande com desenho — a pedra pintada.\""
+      "correcao": "\"... até a pedra grande com desenho — a pedra pintada.\"",
+      "status": "corrigida",
+      "observacao": "Corrigido em 08/10: 'a pedra pintada' (a lapa da lombada é a pedra que o jogador rachou); o resumo do passo seguinte também."
     },
     "missao.menina_roda.roda_palmas.anuncio": {
       "historia": "ok",
-      "mecanica": "atenção",
+      "mecanica": "ok",
       "prioridade": "baixa",
       "problema": "\"de noite, quando a maré tá cheia\" — o passo confere só a hora (depois que escurece, antes da meia-noite), não a maré; e nenhuma roda aparece na tela.",
-      "correcao": "Conferir a maré no passo (Mare) ou tirar a maré da fala: \"de noite, depois que escurece\"."
+      "correcao": "Conferir a maré no passo (Mare) ou tirar a maré da fala: \"de noite, depois que escurece\".",
+      "status": "corrigida",
+      "observacao": "Corrigido em 08/10: 'de noite, antes da meia-noite' (o passo confere a hora, das 19 às 23); a resposta da Dona Rosa e o arremate também saíram da maré. A roda ainda não aparece na tela."
     },
     "npc.benedito.falas.1": {
-      "historia": "atenção",
-      "mecanica": "atenção",
+      "historia": "ok",
+      "mecanica": "ok",
       "prioridade": "média",
       "problema": "\"Ah, o moço da capital. Pode me chamar de Benedito\" — apresentação de primeiro encontro numa lista de só três falas que alternam a cada conversa: ele se apresenta de novo a cada terceira vez, o jogo todo.",
-      "correcao": "Separar as falas de primeiro encontro (tocam uma vez, como as do Pedro) ou reescrever: \"Ô, moço da capital! Já tá com cara de daqui.\""
+      "correcao": "Separar as falas de primeiro encontro (tocam uma vez, como as do Pedro) ou reescrever: \"Ô, moço da capital! Já tá com cara de daqui.\"",
+      "status": "corrigida",
+      "observacao": "Corrigido em 08/10: 'Ô, moço da capital! Já tá com cara de daqui.' (não se apresenta de novo a cada três conversas). Tem voz gravada com o texto antigo (benedito_fala_1): regravar — até lá a voz antiga toca com o texto novo."
     },
     "npc.zefa.falas.1": {
-      "historia": "atenção",
-      "mecanica": "atenção",
+      "historia": "ok",
+      "mecanica": "ok",
       "prioridade": "média",
       "problema": "\"Chegou o da capital, né? O arraial todo já sabe.\" — primeiro encontro que repete o jogo todo (três falas só).",
-      "correcao": "Primeiro encontro separado, ou: \"Febre, quebranto, dor de dente: é só vir aqui, meu filho.\""
+      "correcao": "Primeiro encontro separado, ou: \"Febre, quebranto, dor de dente: é só vir aqui, meu filho.\"",
+      "status": "corrigida",
+      "observacao": "Corrigido em 08/10: 'Febre, quebranto, dor de dente: é só vir aqui, meu filho.' Tem voz gravada com o texto antigo (zefa_fala_1): regravar — até lá a voz antiga toca com o texto novo."
     },
     "npc.zefa.falas.2": {
-      "historia": "atenção",
-      "mecanica": "atenção",
+      "historia": "ok",
+      "mecanica": "ok",
       "prioridade": "baixa",
       "problema": "\"Esse chão era da minha mãe. Vender, eu não vendo.\" — conversa sobre a terra dela, que no 2D se ganhava pela série das ervas ou por compra (MORADORES.md); no 3D não há terras.",
-      "correcao": "Pode ficar como caracterização; decidir junto com as terras."
+      "correcao": "Pode ficar como caracterização; decidir junto com as terras.",
+      "status": "aprovada",
+      "observacao": "Revisto em 08/10: mantida: é a caracterização dela (o chão da mãe), e não promete compra de terra."
     },
     "npc.cosme.falas.1": {
-      "historia": "atenção",
-      "mecanica": "atenção",
+      "historia": "ok",
+      "mecanica": "ok",
       "prioridade": "baixa",
       "problema": "\"Opa! Sou neto da Dona Zefa.\" — apresentação que repete o jogo todo.",
-      "correcao": "Primeiro encontro separado, ou: \"Opa! Precisando de braço, é só chamar.\""
+      "correcao": "Primeiro encontro separado, ou: \"Opa! Precisando de braço, é só chamar.\"",
+      "status": "corrigida",
+      "observacao": "Corrigido em 08/10: 'Opa! Precisando de braço, é só chamar.' Tem voz gravada com o texto antigo (cosme_fala_1): regravar — até lá a voz antiga toca com o texto novo."
     },
     "npc.cosme.falas.2": {
-      "historia": "atenção",
+      "historia": "ok",
       "mecanica": "ok",
       "prioridade": "média",
       "problema": "\"Eu digo que ainda vou ver com meus olhos\" (Salvador) — depende da decisão sobre a partida do Cosme (fila da Zefa).",
-      "correcao": "Conforme a decisão sobre o Cosme."
+      "correcao": "Conforme a decisão sobre o Cosme.",
+      "status": "aprovada",
+      "observacao": "Revisto em 08/10: mantida: o Cosme fica por escolha (fila da Zefa) e ainda quer ver Salvador um dia — a fala casa com o fim."
     },
     "npc.tonho.falas.1": {
-      "historia": "problema",
+      "historia": "ok",
       "mecanica": "ok",
       "prioridade": "média",
       "problema": "\"a gente conversa com a rede no colo\" — o Tonho não tem rede até o jogador levar as cordas da fila dele.",
-      "correcao": "\"Passa aqui de tarde, que a gente conversa com a linha na mão.\""
+      "correcao": "\"Passa aqui de tarde, que a gente conversa com a linha na mão.\"",
+      "status": "corrigida",
+      "observacao": "Corrigido em 08/10: 'a gente conversa com a linha na mão'. Tem voz gravada com o texto antigo (tonho_fala_1): regravar — até lá a voz antiga toca com o texto novo."
     },
     "npc.tonho.falas.2": {
-      "historia": "atenção",
-      "mecanica": "atenção",
+      "historia": "ok",
+      "mecanica": "ok",
       "prioridade": "média",
       "problema": "\"Tô devendo no armazém, todo mundo sabe.\" — continua tocando depois de a dívida zerar (fila do Tonho, ou o favor do Nicolau). Conversa não muda com o que o jogador fez.",
-      "correcao": "Falas com condição (uma lista que vale até o evento, outra depois — como as falas_depois do Pedro), ou uma fala que não envelheça."
+      "correcao": "Falas com condição (uma lista que vale até o evento, outra depois — como as falas_depois do Pedro), ou uma fala que não envelheça.",
+      "status": "corrigida",
+      "observacao": "Corrigido em 08/10: fala que não envelhece: 'Mãe ficou boa daquela febre, e isso não tem preço. O resto a gente paga com peixe.' Tem voz gravada com o texto antigo (tonho_fala_2): regravar — até lá a voz antiga toca com o texto novo."
     },
     "npc.tonho.falas.3": {
       "historia": "ok",
@@ -536,53 +674,67 @@
       "alerta_revisto": "\"de madrugada\" conta um fato passado, não cumprimenta: toca bem a qualquer hora"
     },
     "npc.filo.falas.2": {
-      "historia": "atenção",
-      "mecanica": "atenção",
+      "historia": "ok",
+      "mecanica": "ok",
       "prioridade": "média",
       "problema": "\"O Tonho acha que a dívida valeu a pena... A gente briga por isso toda semana.\" — continua depois de a dívida zerar.",
-      "correcao": "Como a do Tonho: fala com condição."
+      "correcao": "Como a do Tonho: fala com condição.",
+      "status": "corrigida",
+      "observacao": "Corrigido em 08/10: 'O Tonho acha que tudo se paga com peixe. Eu acho que não.' Tem voz gravada com o texto antigo (filo_fala_2): regravar — até lá a voz antiga toca com o texto novo."
     },
     "npc.candinha.falas.1": {
-      "historia": "atenção",
+      "historia": "ok",
       "mecanica": "ok",
       "prioridade": "baixa",
       "problema": "\"Garapa geladinha\" — um arraial do Recôncavo em 1887 não tinha gelo.",
-      "correcao": "\"Garapa fresquinha, moço?\""
+      "correcao": "\"Garapa fresquinha, moço?\"",
+      "status": "corrigida",
+      "observacao": "Corrigido em 08/10: 'Garapa fresquinha'. Tem voz gravada com o texto antigo (candinha_fala_1): regravar — até lá a voz antiga toca com o texto novo."
     },
     "npc.candinha.falas.3": {
-      "historia": "problema",
-      "mecanica": "atenção",
+      "historia": "ok",
+      "mecanica": "ok",
       "prioridade": "média",
       "problema": "\"Dizem que chegou convite da fazenda\" — toca desde o dia 1, e o convite só chega na manhã do dia 2 (último passo da chegada); e continua depois da fazenda.",
-      "correcao": "Fala com condição (do convite lido até o dia da fazenda), ou trocar por uma fala que não date."
+      "correcao": "Fala com condição (do convite lido até o dia da fazenda), ou trocar por uma fala que não date.",
+      "status": "corrigida",
+      "observacao": "Corrigido em 08/10: fala que não data: 'Dizem que naquela fazenda do outro lado do rio ninguém nunca viu o dono.' Tem voz gravada com o texto antigo (candinha_fala_3): regravar — até lá a voz antiga toca com o texto novo."
     },
     "npc.damiao.falas.2": {
-      "historia": "atenção",
-      "mecanica": "atenção",
+      "historia": "ok",
+      "mecanica": "ok",
       "prioridade": "baixa",
       "problema": "\"Nem foice, nem enxada.\" — continua depois de o jogador encabar a foice dele.",
-      "correcao": "Fala com condição, ou: \"O intendente me deu um papel com meu nome, e o resto eu arrumei.\""
+      "correcao": "Fala com condição, ou: \"O intendente me deu um papel com meu nome, e o resto eu arrumei.\"",
+      "status": "corrigida",
+      "observacao": "Corrigido em 08/10: 'Zelador aqui se arruma com o que tem.' Tem voz gravada com o texto antigo (damiao_fala_2): regravar — até lá a voz antiga toca com o texto novo."
     },
     "npc.padre.saudacoes.4": {
-      "historia": "atenção",
+      "historia": "ok",
       "mecanica": "ok",
       "prioridade": "baixa",
       "problema": "\"Que bom ver gente nova no arraial.\" — saudação de recém-chegado que repete o jogo todo.",
-      "correcao": "\"Que bom ver o senhor por aqui.\""
+      "correcao": "\"Que bom ver o senhor por aqui.\"",
+      "status": "corrigida",
+      "observacao": "Corrigido em 08/10: 'Que bom ver o senhor por aqui.' Tem voz gravada com o texto antigo (padre_saudacao_4): regravar — até lá a voz antiga toca com o texto novo."
     },
     "npc.padre.falas.7": {
-      "historia": "problema",
-      "mecanica": "atenção",
+      "historia": "ok",
+      "mecanica": "ok",
       "prioridade": "média",
       "problema": "\"Convite sem assinatura eu não respondo.\" — toca antes de o convite chegar (dia 1) e depois da fazenda.",
-      "correcao": "Como a da Dona Candinha: fala com condição."
+      "correcao": "Como a da Dona Candinha: fala com condição.",
+      "status": "corrigida",
+      "observacao": "Corrigido em 08/10: fala que não data: 'Papel sem assinatura eu não respondo. Quem pede de verdade assina'. Tem voz gravada com o texto antigo (padre_fala_7): regravar — até lá a voz antiga toca com o texto novo."
     },
     "npc.sacristao.falas.4": {
-      "historia": "atenção",
-      "mecanica": "atenção",
+      "historia": "ok",
+      "mecanica": "ok",
       "prioridade": "baixa",
       "problema": "\"O Damião capina também, só que sem foice.\" — continua depois de a foice do Damião existir.",
-      "correcao": "Fala com condição, ou: \"O Damião capina também. O mato ganha de nós dois.\""
+      "correcao": "Fala com condição, ou: \"O Damião capina também. O mato ganha de nós dois.\"",
+      "status": "corrigida",
+      "observacao": "Corrigido em 08/10: 'À tarde ajudo o Damião no cemitério. Mato de cemitério nasce de novo toda semana' (a tarde dele é no cemitério). Tem voz gravada com o texto antigo (sacristao_fala_4): regravar — até lá a voz antiga toca com o texto novo."
     },
     "npc.guarda.falas.3": {
       "historia": "ok",
@@ -590,46 +742,58 @@
       "alerta_revisto": "\"de madrugada\" é um costume dele, não um cumprimento"
     },
     "npc.guarda.falas.4": {
-      "historia": "problema",
-      "mecanica": "atenção",
+      "historia": "ok",
+      "mecanica": "ok",
       "prioridade": "média",
       "problema": "\"O convite da fazenda... não traz nome de quem convida.\" — toca antes de o convite chegar e depois da fazenda.",
-      "correcao": "Fala com condição."
+      "correcao": "Fala com condição.",
+      "status": "corrigida",
+      "observacao": "Corrigido em 08/10: fala que não data: 'nunca vi coisa boa vir sem assinatura. Do outro lado do rio, então, nem se fala.' Tem voz gravada com o texto antigo (guarda_fala_4): regravar — até lá a voz antiga toca com o texto novo."
     },
     "npc.mercador.falas.2": {
-      "historia": "atenção",
-      "mecanica": "atenção",
+      "historia": "ok",
+      "mecanica": "ok",
       "prioridade": "baixa",
       "problema": "\"Fiado de pescador é como maré... O Tonho que o diga.\" — continua depois de a dívida do Tonho zerar.",
-      "correcao": "Fala com condição, ou sem o nome do Tonho."
+      "correcao": "Fala com condição, ou sem o nome do Tonho.",
+      "status": "corrigida",
+      "observacao": "Corrigido em 08/10: 'Pescador sabe disso melhor que eu.' (sem o Tonho). Tem voz gravada com o texto antigo (mercador_fala_2): regravar — até lá a voz antiga toca com o texto novo."
     },
     "npc.pescador.falas.4": {
-      "historia": "problema",
+      "historia": "ok",
       "mecanica": "ok",
       "prioridade": "baixa",
       "problema": "\"O Tonho puxa rede no pontal\" — sem rede até a fila dele.",
-      "correcao": "\"O Tonho pesca no pontal, o Pedro joga vara no píer.\""
+      "correcao": "\"O Tonho pesca no pontal, o Pedro joga vara no píer.\"",
+      "status": "corrigida",
+      "observacao": "Corrigido em 08/10: 'O Tonho pesca no pontal'. Tem voz gravada com o texto antigo (pescador_fala_4): regravar — até lá a voz antiga toca com o texto novo."
     },
     "npc.lavadeira.falas.7": {
-      "historia": "problema",
-      "mecanica": "problema",
+      "historia": "ok",
+      "mecanica": "ok",
       "prioridade": "média",
       "problema": "\"O poço anda cansado... Um mutirão resolvia.\" — o mutirão do poço é do dia 1 da chegada, antes de o jogador conhecer a Sá Rita: a fala nasce velha.",
-      "correcao": "\"De tarde, no poço, a gente troca novidade. Desde o mutirão a corda é nova e o balde sobe leve — a gente agradece ao senhor.\""
+      "correcao": "\"De tarde, no poço, a gente troca novidade. Desde o mutirão a corda é nova e o balde sobe leve — a gente agradece ao senhor.\"",
+      "status": "corrigida",
+      "observacao": "Corrigido em 08/10: 'No poço a gente troca novidade. Desde o mutirão a corda é nova e o balde sobe leve' (sem 'de tarde': a tarde dela é no varal). Tem voz gravada com o texto antigo (lavadeira_fala_7): regravar — até lá a voz antiga toca com o texto novo."
     },
     "npc.quituteira.falas.4": {
-      "historia": "atenção",
+      "historia": "ok",
       "mecanica": "ok",
       "prioridade": "baixa",
       "problema": "\"A Candinha vende garapa gelada\" — sem gelo em 1887 no arraial.",
-      "correcao": "\"A Candinha vende garapa, eu vendo comida quente.\""
+      "correcao": "\"A Candinha vende garapa, eu vendo comida quente.\"",
+      "status": "corrigida",
+      "observacao": "Corrigido em 08/10: 'A Candinha vende garapa'. Tem voz gravada com o texto antigo (quituteira_fala_4): regravar — até lá a voz antiga toca com o texto novo."
     },
     "npc.menina.saudacoes.4": {
-      "historia": "atenção",
+      "historia": "ok",
       "mecanica": "ok",
       "prioridade": "baixa",
       "problema": "\"Eu sou Mariinha, e você é o moço novo!\" — repete o jogo todo.",
-      "correcao": "\"Eu sou Mariinha! Lembra de mim?\""
+      "correcao": "\"Eu sou Mariinha! Lembra de mim?\"",
+      "status": "corrigida",
+      "observacao": "Corrigido em 08/10: 'Eu sou Mariinha! Lembra de mim?' Tem voz gravada com o texto antigo (menina_saudacao_4): regravar — até lá a voz antiga toca com o texto novo."
     },
     "npc.beata.falas.3": {
       "historia": "ok",
@@ -643,35 +807,106 @@
     },
     "lapides.bronca.1": {
       "historia": "ok",
-      "mecanica": "atenção",
+      "mecanica": "ok",
       "prioridade": "média",
       "problema": "As três broncas moram no código (lapides.gd, BRONCAS) e só em português: quem joga em inglês ou espanhol lê em português.",
-      "correcao": "Levar as broncas a um JSON com texto_en e texto_es, como as outras falas."
+      "correcao": "Levar as broncas a um JSON com texto_en e texto_es, como as outras falas.",
+      "status": "corrigida",
+      "observacao": "Corrigido em 08/10: no código: as broncas moram em data/lapides_3d.json, nos três idiomas; o português é o de antes, e o áudio continua valendo."
     },
     "lapides.bronca.2": {
       "historia": "ok",
-      "mecanica": "atenção",
+      "mecanica": "ok",
       "prioridade": "média",
       "problema": "Só português, no código (ver a bronca 1).",
-      "correcao": "Ver a bronca 1."
+      "correcao": "Ver a bronca 1.",
+      "status": "corrigida",
+      "observacao": "Corrigido em 08/10: ver a bronca 1."
     },
     "lapides.bronca.3": {
       "historia": "ok",
-      "mecanica": "atenção",
+      "mecanica": "ok",
       "prioridade": "média",
       "problema": "Só português, no código (ver a bronca 1).",
-      "correcao": "Ver a bronca 1."
+      "correcao": "Ver a bronca 1.",
+      "status": "corrigida",
+      "observacao": "Corrigido em 08/10: ver a bronca 1."
     },
     "documento.papel_dos_nomes.2": {
       "historia": "ok",
       "mecanica": "ok",
       "alerta_revisto": "nomes próprios não se traduzem",
       "observacao": "A lista não tem o Pedro nem as crianças; ver a observação do arremate da pedra atrás do altar."
+    },
+    "missao.guia.desembarque.resposta": {
+      "historia": "ok",
+      "mecanica": "ok",
+      "observacao": "Corrigido em 08/10: 'depois de uma noite inteira em pé num saveiro' — a travessia agora é de noite."
+    },
+    "missao.zefa.zefa_ervas.resposta": {
+      "historia": "ok",
+      "mecanica": "ok",
+      "observacao": "Corrigido em 08/10: 'E eu te devo uma conversa' — a conversa prometida era do 2D."
+    },
+    "missao.zefa.zefa_saveiro.resposta": {
+      "historia": "ok",
+      "mecanica": "ok",
+      "observacao": "08/10 — NOVA: o mestre Quirino conta o fim — o Cosme lhe deu uma carta para o primo e ficou. Sem voz: o Quirino não tem voz definida."
+    },
+    "missao.tonho.tonho_livro.resposta": {
+      "historia": "ok",
+      "mecanica": "ok",
+      "observacao": "08/10 — NOVA: o Seu Nicolau recebe os 1.900 réis e risca o nome do Tonho."
+    },
+    "missao.tonho.arremate": {
+      "historia": "ok",
+      "mecanica": "ok",
+      "observacao": "Corrigido em 08/10: 'a conta do armazém está paga — por você. O primeiro peixe da rede nova foi seu.'"
+    },
+    "missao.mercador_fiado.fiado_peixes.anuncio": {
+      "historia": "ok",
+      "mecanica": "ok",
+      "observacao": "Corrigido em 08/10: o devedor é o Damião."
+    },
+    "missao.mercador_fiado.fiado_peixes.resposta": {
+      "historia": "ok",
+      "mecanica": "ok",
+      "observacao": "Corrigido em 08/10: o devedor é o Damião."
+    },
+    "missao.mercador_fiado.fiado_tonho.resposta": {
+      "historia": "ok",
+      "mecanica": "ok",
+      "observacao": "Corrigido em 08/10: o Damião responde: 'eu passo o dia cuidando do nome de quem já foi, e fazia tempo que ninguém cuidava do meu'."
+    },
+    "missao.mercador_fiado.arremate": {
+      "historia": "ok",
+      "mecanica": "ok",
+      "observacao": "Corrigido em 08/10: o devedor é o Damião."
+    },
+    "missao.lavadeira_rio.arremate": {
+      "historia": "ok",
+      "mecanica": "ok",
+      "observacao": "Corrigido em 08/10: 'Sá Rita vê ferrugem na água do rio grande' — o jogador não é dado como quem viu."
+    },
+    "missao.menina_roda.roda_com_rosa.resposta": {
+      "historia": "ok",
+      "mecanica": "ok",
+      "observacao": "Corrigido em 08/10: sem 'por isso é na maré cheia'."
+    },
+    "missao.menina_roda.arremate": {
+      "historia": "ok",
+      "mecanica": "ok",
+      "observacao": "Corrigido em 08/10: sem a maré."
+    },
+    "missao.arraial.mirante_obra.anuncio": {
+      "historia": "ok",
+      "mecanica": "ok",
+      "observacao": "Corrigido em 08/10: ensina o E além do J, como a ponte; a fila do mirante ganhou inglês e espanhol."
     }
   },
   "personagens": {
     "quirino": {
-      "observacao": "Sem voz definida (npcs_3d.json): as 3 conversas e as 2 respostas de missão (o saveiro, a luz na água) tocam sem voz. Escolher uma voz de homem mais velho, de mar."
+      "observacao": "Sem voz definida (npcs_3d.json): as 3 conversas e as 3 respostas de missão (o saveiro, a luz na água e, desde 08/10, o fim da fila da Zefa) tocam sem voz. Escolher uma voz de homem mais velho, de mar."
     },
     "pedro": {
       "observacao": "Quatro áudios sem fala (pedro_capela, pedro_casa_pasto, pedro_pier, pedro_praca), de passos antigos da chegada. Os anúncios das filas dele não têm voz; têm voz só a explicação do corpo, o anoitecer e o arremate da chegada."
@@ -704,75 +939,75 @@
       "observacao": "A voz da Gameleira: sem voz."
     },
     "benedito": {
-      "observacao": "Só 3 falas, que são a conversa do E e o cumprimento ao chegar perto: a mesma fala volta a cada terceira conversa (os 14 novos têm 4 saudações e 7 a 9 conversas)."
+      "observacao": "Só 3 falas, que são a conversa do E e o cumprimento ao chegar perto: desde 08/10 nenhuma é apresentação de primeiro encontro."
     },
     "zefa": {
-      "observacao": "Só 3 falas (conversa e cumprimento). A fila dela está só em português."
+      "observacao": "Só 3 falas (conversa e cumprimento); a fila dela está nos três idiomas desde 08/10."
     },
     "cosme": {
-      "observacao": "Só 3 falas. A fila da Zefa diz que ele embarcou para Salvador, e ele não sai do vale."
+      "observacao": "Só 3 falas. Desde 08/10 a fila da Zefa termina com ele ficando no vale por escolha (decisão assumida, a confirmar com o autor)."
     },
     "tonho": {
-      "observacao": "Só 3 falas; duas dependem de estado (a dívida, a rede)."
+      "observacao": "Só 3 falas; desde 08/10 nenhuma depende da dívida ou da rede (a linha na mão, a mãe e o peixe, a luz no mato)."
     },
     "filo": {
       "observacao": "Só 3 falas."
     },
     "candinha": {
-      "observacao": "Só 3 falas; uma (o convite) toca antes de o convite existir."
+      "observacao": "Só 3 falas; desde 08/10 nenhuma data o convite."
     },
     "damiao": {
-      "observacao": "Só 3 falas, mais as 3 broncas da lápide (só português, no código)."
+      "observacao": "Só 3 falas, mais as 3 broncas da lápide (desde 08/10 em data/lapides_3d.json, nos três idiomas). É o devedor do livro do Nicolau."
     }
   },
   "missoes": {
     "guia": {
-      "observacao": "Os 16 anúncios não têm voz; têm a explicação do corpo e o arremate. O pedido da pedra do poço manda ao lajedo, que pede aço e talento."
+      "observacao": "Os 16 anúncios não têm voz; têm a explicação do corpo e o arremate. Corrigido em 08/10: a pedra do poço sai das pedras soltas, o Tonho é apresentado de linha na mão, o nado é o ar, e o desembarque fala de uma noite no saveiro."
     },
     "zefa": {
-      "observacao": "Só português (veio do 2D; inglês e espanhol pendentes do Ramon). O fim — o Cosme embarca no saveiro de amanhã — não acontece no mundo: o saveiro é do dia 14, e o Cosme fica. Decisão do autor."
+      "observacao": "Corrigido em 08/10: nos três idiomas; o Cosme fica (decisão assumida, a confirmar com o autor) — a conversa o liberta, e o último passo é falar com o mestre Quirino no dia do saveiro."
     },
     "tonho": {
-      "observacao": "Só português. O livro de fiado não existe no 3D (a dívida zera sem pagamento), a terra dada não existe no 3D, e o favor do Nicolau paga a mesma dívida de outro jeito."
+      "observacao": "Corrigido em 08/10: nos três idiomas; a conta se paga de verdade (1.900 réis ao Seu Nicolau) e o fim é o primeiro peixe da rede nova, sem terras (decisões assumidas, a confirmar com o autor)."
     },
     "mercador_fiado": {
-      "observacao": "Paga de novo a dívida que a fila do Tonho já zera: escolher um caminho."
+      "observacao": "Corrigido em 08/10: o devedor é o Damião, e a dívida do Tonho fica só na fila dele."
     },
     "filo": {
-      "observacao": "Só português."
+      "observacao": "Corrigido em 08/10: nos três idiomas, e o resumo do primeiro passo é o pedido, não a casa."
     },
     "candinha": {
-      "observacao": "Só português."
+      "observacao": "Corrigido em 08/10: nos três idiomas, e a foice só a quem não tem."
     },
     "coveiro": {
-      "observacao": "Os três primeiros passos só em português. A obra do cercado não diz que as cordas também gastam lenha (12 ao todo) — a queixa do playtest de 08/10."
+      "observacao": "Corrigido em 08/10: os três passos do 2D nos três idiomas; o cercado diz que são doze lenhas (seis viram as duas cordas); a Santa Casa paga."
     },
     "arraial": {
-      "observacao": "Quatro anúncios e o arremate só em português."
+      "observacao": "Corrigido em 08/10: os quatro anúncios e o arremate nos três idiomas; o conserto do mirante ensina o E além do J."
     },
     "carroca": {
-      "observacao": "Manda buscar pedra nos lajedos, que pedem aço e talento."
+      "observacao": "Corrigido em 08/10: a pedra vem das pedras soltas; o lajedo é coisa de aço e talento."
     },
     "chapada": {
-      "observacao": "Promete compra de terra pela divisa — o 3D não tem terras."
+      "observacao": "Corrigido em 08/10: sem promessa de compra de terra."
     },
     "sacristao_pedra": {
-      "observacao": "Pista da fazenda sem gatilho de tempo: pode tocar depois do capítulo 7."
+      "observacao": "Corrigido em 08/10: a resposta e o arremate valem antes e depois do capítulo 7."
     },
     "pescador_madeira": {
-      "observacao": "Pista da fazenda sem gatilho de tempo: pode tocar depois do capítulo 7."
+      "observacao": "Revisto em 08/10: a pista do selo continua verdadeira depois do capítulo 7; fica como está."
     },
     "mestre_saveiro_luz": {
       "observacao": "Pista da fazenda sem gatilho de tempo. O último passo depende do mestre Quirino, que só vem no dia 14 e não tem voz."
     },
     "fazenda": {
-      "observacao": "Fiel ao capítulo 6; o jogo soma o jogador ao grupo dos corajosos — conferir as contas (seis/sete) e o 'fica aqui fora' do Pedro. Cenas sem voz."
+      "observacao": "Fiel ao capítulo 6, com o jogador somado ao grupo: corrigido em 08/10 — sete com o jogador, o convite da porta, quem MAIS apareceu foi homem, e o Pedro chama o jogador para dentro. Cenas sem voz."
     },
     "revoar": {
-      "observacao": "Fiel ao capítulo 7, com o jogador no lugar do Pedro na luta (é o jogador quem bate a lança e derruba a coruja). Cenas sem voz."
+      "observacao": "Fiel ao capítulo 7, com o jogador no lugar do Pedro na luta. Corrigido em 08/10: a manhã na casa, e a conta da Matinta como coisa que se diz. Cenas sem voz."
     },
     "sacristao": {
-      "observacao": "Primeiro anúncio em terceira pessoa (o mesmo em beata, mercador, guarda, pescador, marisqueira, lavadeira, quituteira e carpinteiro)."
+      "observacao": "Corrigido em 08/10: o primeiro anúncio dos nove favores (sacristão, beata, mercador, guarda, pescador, marisqueira, lavadeira, quituteira e carpinteiro) na primeira pessoa."
     }
   },
   "revisadas": {
@@ -780,24 +1015,24 @@
     "abertura.travessia.2": "1567f9a001",
     "abertura.travessia.3": "f106b5f2b7",
     "abertura.travessia.4": "22688d10b6",
-    "abertura.travessia.5": "b6baec0c06",
-    "abertura.travessia.6": "0fdc08cf79",
-    "abertura.travessia.7": "736c432d6a",
+    "abertura.travessia.5": "d4b42f36b8",
+    "abertura.travessia.6": "8d3b34404c",
+    "abertura.travessia.7": "5d4187c049",
     "abertura.travessia.8": "c802b786d0",
     "abertura.travessia.9": "817209bd25",
     "npc.pedro.falas.1": "f635e5b795",
     "npc.pedro.falas.2": "f89465c78b",
     "npc.pedro.falas.3": "a01ec9ab06",
     "missao.guia.desembarque.anuncio": "c63e383bd9",
-    "missao.guia.desembarque.resposta": "f4c2e8cfa4",
+    "missao.guia.desembarque.resposta": "c1f02a535f",
     "missao.guia.correr.anuncio": "98afbbc6a3",
     "missao.guia.corpo.1": "343319fd1a",
     "missao.guia.corpo.2": "2162c7847a",
     "missao.guia.corpo.3": "3d19590b9f",
     "missao.guia.corpo.4": "5483b977d4",
     "missao.guia.corpo.5": "1cc863814b",
-    "missao.guia.corpo.6": "b1c6b88def",
-    "missao.guia.bom_dia.anuncio": "35b45dbd70",
+    "missao.guia.corpo.6": "d3663e5232",
+    "missao.guia.bom_dia.anuncio": "b67ba33d87",
     "missao.guia.bom_dia.resposta": "d6ff096919",
     "missao.guia.chave.anuncio": "d7b13816e5",
     "missao.guia.chave.resposta": "cfbfeb8a27",
@@ -808,7 +1043,7 @@
     "missao.guia.caderneta.anuncio": "037626dcfe",
     "missao.guia.roca.anuncio": "0603a517ca",
     "missao.guia.lenha.anuncio": "a3f2bbf58f",
-    "missao.guia.pedra_do_poco.anuncio": "13bec246aa",
+    "missao.guia.pedra_do_poco.anuncio": "8e6f884666",
     "missao.guia.corda.anuncio": "5921df7963",
     "missao.guia.mutirao_poco.anuncio": "2c8d098e2c",
     "npc.pedro.anoitecer": "b5bbe0a45b",
@@ -818,7 +1053,7 @@
     "missao.guia.arremate": "14d6d62f12",
     "missao.roca.trancada": "4ec41d4016",
     "missao.roca.colher.anuncio": "7dd04d348c",
-    "missao.roca.cozinhar.anuncio": "727222ee04",
+    "missao.roca.cozinhar.anuncio": "76d3953429",
     "missao.roca.pirao.anuncio": "bd9183caac",
     "missao.roca.pirao.resposta": "59de75c1be",
     "missao.roca.comer.anuncio": "84fde62751",
@@ -827,17 +1062,17 @@
     "missao.ponte.ponte_caida.anuncio": "7936b065bd",
     "missao.ponte.ponte_contar.anuncio": "86a7fca9c8",
     "missao.ponte.ponte_contar.resposta": "53f091cbbc",
-    "missao.ponte.buscar_machado.anuncio": "cca988167a",
+    "missao.ponte.buscar_machado.anuncio": "92e09e7dae",
     "missao.ponte.ponte_lenha.anuncio": "090d7a47af",
     "missao.ponte.socorro.1": "b31bb9b544",
-    "missao.ponte.socorro.2": "499b219982",
+    "missao.ponte.socorro.2": "af49f1c2ce",
     "missao.ponte.socorro.3": "ff12334df8",
     "missao.ponte.socorro.4": "b3446a0cbb",
-    "missao.ponte.socorro.5": "edfc7e8f0e",
+    "missao.ponte.socorro.5": "5b4ee193c9",
     "missao.ponte.tabuas.anuncio": "6d4a6e41d1",
-    "missao.ponte.ponte.anuncio": "f0c7726d64",
+    "missao.ponte.ponte.anuncio": "34148ef0ca",
     "missao.ponte.ponte_de_pe.anuncio": "8cbb2950ed",
-    "missao.ponte.ponte_de_pe.resposta": "6630058112",
+    "missao.ponte.ponte_de_pe.resposta": "0e2ec62d46",
     "missao.ponte.arremate": "9a20bde8fd",
     "missao.filo.trancada": "1a17f2da5e",
     "missao.filo.filo_pedido.anuncio": "79c636e5ef",
@@ -845,16 +1080,16 @@
     "missao.filo.filo_pirao.resposta": "c5a37058fb",
     "missao.filo.arremate": "2550869bf9",
     "missao.zefa.trancada": "4075ecdebb",
-    "missao.zefa.zefa_ervas.anuncio": "5e66f1e582",
-    "missao.zefa.zefa_ervas.resposta": "f91ac4b4f4",
+    "missao.zefa.zefa_ervas.anuncio": "a88448169b",
+    "missao.zefa.zefa_ervas.resposta": "5e94347b7e",
     "missao.zefa.zefa_cosme.anuncio": "f50099411d",
     "missao.zefa.zefa_cosme.resposta": "0b5ce83c3b",
     "missao.zefa.zefa_conversa.anuncio": "7b5dfdbe49",
-    "missao.zefa.zefa_conversa.resposta": "ef29708b1d",
-    "missao.zefa.zefa_saveiro.anuncio": "dcee02d56b",
-    "missao.zefa.arremate": "2988307b8b",
+    "missao.zefa.zefa_conversa.resposta": "a10c4160a3",
+    "missao.zefa.zefa_saveiro.anuncio": "5b5d44953d",
+    "missao.zefa.arremate": "9b263e06c9",
     "missao.candinha.trancada": "604545c907",
-    "missao.candinha.candinha_cana.anuncio": "40a9f9520c",
+    "missao.candinha.candinha_cana.anuncio": "1421742fa8",
     "missao.candinha.candinha_garapa.anuncio": "ee2817e031",
     "missao.candinha.candinha_garapa.resposta": "41fc121a1e",
     "missao.candinha.arremate": "b14fbbe076",
@@ -876,39 +1111,39 @@
     "missao.coveiro.trancada": "e4b3293157",
     "missao.coveiro.coveiro_ver.anuncio": "7f5f0969bd",
     "missao.coveiro.coveiro_cabo.anuncio": "9aa577afd9",
-    "missao.coveiro.coveiro_limpar.anuncio": "996f3ecd5d",
+    "missao.coveiro.coveiro_limpar.anuncio": "e7b7b6fb5f",
     "missao.coveiro.coveiro_mato.anuncio": "52ac3b5363",
     "missao.coveiro.coveiro_reparo.anuncio": "b1f1121303",
     "missao.coveiro.coveiro_reparo.resposta": "dc60a12054",
-    "missao.coveiro.coveiro_cercado.anuncio": "ecaae8992f",
-    "missao.coveiro.arremate": "755e71ecab",
+    "missao.coveiro.coveiro_cercado.anuncio": "e97efc5f27",
+    "missao.coveiro.arremate": "53b8f13add",
     "missao.tonho.trancada": "75d87f7a52",
     "missao.tonho.pescador_ver.anuncio": "656f2bb03d",
     "missao.tonho.pescador_rede.anuncio": "7ac56b48f9",
     "missao.tonho.pescador_rede.resposta": "17e378680d",
     "missao.tonho.tonho_divida.anuncio": "e8f5963867",
-    "missao.tonho.tonho_livro.anuncio": "06d802ba2c",
-    "missao.tonho.tonho_terra.anuncio": "498001cc7e",
-    "missao.tonho.tonho_terra.resposta": "79fbc426b3",
-    "missao.tonho.arremate": "3ad0ffd2a0",
+    "missao.tonho.tonho_livro.anuncio": "715351947a",
+    "missao.tonho.tonho_terra.anuncio": "4e6da58fad",
+    "missao.tonho.tonho_terra.resposta": "219af5febc",
+    "missao.tonho.arremate": "8863f6f372",
     "missao.lombada.trancada": "3a0ef1078a",
-    "missao.lombada.picareta.anuncio": "48074ec55b",
+    "missao.lombada.picareta.anuncio": "3fa095c34f",
     "missao.lombada.cabra.anuncio": "d81bc0f4e8",
     "missao.lombada.cabra_volta.anuncio": "7e2143ba9b",
     "missao.lombada.cabra_volta.resposta": "2c7926a247",
     "missao.lombada.arremate": "afa0fd6359",
     "missao.carroca.trancada": "54f6b55228",
     "missao.carroca.carroca_tabua.anuncio": "7c7f9de326",
-    "missao.carroca.carroca_corda.anuncio": "a7817458df",
+    "missao.carroca.carroca_corda.anuncio": "fbbf9874e7",
     "missao.carroca.carroca_mutirao.anuncio": "fdedd166f2",
     "missao.carroca.arremate": "2938ad3744",
     "missao.chapada.trancada": "43b781f743",
-    "missao.chapada.chapada.anuncio": "dd3084719b",
+    "missao.chapada.chapada.anuncio": "afbd408025",
     "missao.chapada.chapada_volta.anuncio": "5c50fa10ce",
-    "missao.chapada.chapada_volta.resposta": "13de781697",
+    "missao.chapada.chapada_volta.resposta": "b7cfaace4c",
     "missao.chapada.arremate": "50dd8d3544",
     "missao.quintal.pomar.anuncio": "81e9915f73",
-    "missao.quintal.curral_aprender.anuncio": "7756bb64ff",
+    "missao.quintal.curral_aprender.anuncio": "b679aabc2b",
     "missao.quintal.curral.anuncio": "60cb42b691",
     "missao.quintal.capataz.anuncio": "2a84403157",
     "missao.quintal.capataz.resposta": "a3de7988bc",
@@ -920,7 +1155,7 @@
     "missao.arraial.canteiro_obra.anuncio": "0eba05609a",
     "missao.arraial.mirante_ver.anuncio": "16691ec0e5",
     "missao.arraial.mirante_material.anuncio": "8a183bee17",
-    "missao.arraial.mirante_obra.anuncio": "fbd90f69b2",
+    "missao.arraial.mirante_obra.anuncio": "49b93aac7b",
     "missao.arraial.arremate": "5189bab5e8",
     "missao.metas.meta_caititu.anuncio": "39dcd4101c",
     "missao.metas.meta_caititu.resposta": "50881b4e2a",
@@ -929,7 +1164,7 @@
     "missao.metas_onca.meta_onca.resposta": "d5c0d9aec4",
     "missao.metas_onca.arremate": "9baf92efb0",
     "missao.fe.trancada": "1637e6fdc7",
-    "missao.fe.fe_zefa.anuncio": "cf197c6cb3",
+    "missao.fe.fe_zefa.anuncio": "10ccfbf574",
     "missao.fe.fe_zefa.resposta": "3fe8c88dde",
     "missao.fe.fe_marcos.anuncio": "180b1bf504",
     "fe.visita.cruzeiro.1": "4008774bc4",
@@ -966,7 +1201,7 @@
     "missao.capoeira.capoeira_rasteira_volta.resposta": "6c541adf21",
     "missao.capoeira.arremate": "99a62c15e4",
     "missao.fazenda.cena.chamado.1": "8e30b37de3",
-    "missao.fazenda.cena.chamado.2": "d6dc69c8c9",
+    "missao.fazenda.cena.chamado.2": "a590a23fe0",
     "missao.fazenda.cena.chamado.3": "205d1bfbbe",
     "missao.fazenda.cena.chamado.4": "e5a037f675",
     "missao.fazenda.cena.chamado.5": "5055127617",
@@ -984,7 +1219,7 @@
     "missao.fazenda.fazenda_chegada.anuncio": "9fee681756",
     "missao.fazenda.cena.chegada_fim.1": "21c2bd4de4",
     "missao.fazenda.cena.chegada_fim.2": "70780a13cf",
-    "missao.fazenda.cena.chegada_fim.3": "84b43915e8",
+    "missao.fazenda.cena.chegada_fim.3": "9dae4398ad",
     "missao.fazenda.cena.chegada_fim.4": "16672cdcc1",
     "missao.fazenda.cena.chegada_fim.5": "6b79ea779d",
     "missao.fazenda.fazenda_chamado.anuncio": "fbf76caeb9",
@@ -1000,9 +1235,9 @@
     "missao.fazenda.cena.pedro_vai.1": "6e58503ca6",
     "missao.fazenda.cena.pedro_vai.2": "0420ceb7a7",
     "missao.fazenda.cena.pedro_vai.3": "55717ea8e5",
-    "missao.fazenda.fazenda_porta_estreita.anuncio": "e864b42da6",
+    "missao.fazenda.fazenda_porta_estreita.anuncio": "0d661b1f67",
     "missao.fazenda.fazenda_porta_estreita.resposta": "3de28529cb",
-    "missao.fazenda.cena.subida.1": "e2ab4902b8",
+    "missao.fazenda.cena.subida.1": "43f7774267",
     "missao.fazenda.cena.subida.2": "8f6dd36bee",
     "missao.fazenda.cena.desafio.1": "83acffe7eb",
     "missao.fazenda.cena.desafio.2": "e84227f342",
@@ -1015,7 +1250,7 @@
     "missao.fazenda.cena.porta.3": "39fd329abf",
     "missao.fazenda.cena.pedro_fica.1": "84febee8d8",
     "missao.fazenda.cena.pedro_fica.2": "32358d0306",
-    "missao.fazenda.cena.pedro_fica.3": "9ae0e85b0d",
+    "missao.fazenda.cena.pedro_fica.3": "1a423d9df5",
     "missao.fazenda.arremate": "6631220b66",
     "missao.revoar.revoar_quarto.anuncio": "a2f01ace42",
     "missao.revoar.cena.quarto.1": "26a79fef07",
@@ -1025,7 +1260,7 @@
     "missao.revoar.cena.trocas.1.pergunta": "cf44bd8d02",
     "missao.revoar.cena.trocas.2.oferta": "73371502a2",
     "missao.revoar.cena.trocas.2.pergunta": "2c4326afe6",
-    "missao.revoar.cena.trocas.3.oferta": "2026e287f7",
+    "missao.revoar.cena.trocas.3.oferta": "068683f54e",
     "missao.revoar.cena.trocas.3.pergunta": "86ef17d77a",
     "missao.revoar.cena.aceite.1": "372879fb1b",
     "missao.revoar.cena.chao.1": "f21991eace",
@@ -1065,7 +1300,7 @@
     "missao.revoar.revoar_libertacao.anuncio": "a98e730db9",
     "missao.revoar.cena.amanhecer.1": "0d7afc7367",
     "missao.revoar.cena.amanhecer.2": "a6043fc023",
-    "missao.revoar.cena.amanhecer_levado.1": "f2bc80ee94",
+    "missao.revoar.cena.amanhecer_levado.1": "1f9d49b838",
     "missao.revoar.cena.amanhecer_levado.2": "a6043fc023",
     "missao.revoar.arremate": "752b14c283",
     "missao.rendeira.trancada": "0cd2698d46",
@@ -1073,39 +1308,39 @@
     "missao.rendeira.rendeira_lampiao.resposta": "dac04d8d04",
     "missao.rendeira.arremate": "7cd33fbddb",
     "missao.sacristao.trancada": "da2bb0d268",
-    "missao.sacristao.sacristao_garapa.anuncio": "39b9c7e2bb",
+    "missao.sacristao.sacristao_garapa.anuncio": "66fb2ca192",
     "missao.sacristao.sacristao_garapa.resposta": "43c0131d97",
     "missao.sacristao.arremate": "5993da5d40",
     "missao.beata.trancada": "d456f98a98",
-    "missao.beata.beata_cha.anuncio": "3b11022718",
+    "missao.beata.beata_cha.anuncio": "33c8f9871c",
     "missao.beata.beata_cha.resposta": "3e0846d587",
     "missao.beata.arremate": "7821c7186e",
     "missao.mercador.trancada": "405359b911",
-    "missao.mercador.mercador_tabuas.anuncio": "827de60e7f",
+    "missao.mercador.mercador_tabuas.anuncio": "3e3a24df29",
     "missao.mercador.mercador_tabuas.resposta": "c9974fcc30",
     "missao.mercador.arremate": "bc0ba3abdc",
     "missao.guarda.trancada": "adbbce9ce1",
-    "missao.guarda.guarda_peixe.anuncio": "9e3c81dea6",
+    "missao.guarda.guarda_peixe.anuncio": "035d9ae06d",
     "missao.guarda.guarda_peixe.resposta": "6e2cbe1a60",
     "missao.guarda.arremate": "b5d650cfd2",
     "missao.pescador.trancada": "81acd7b697",
-    "missao.pescador.pescador_corda.anuncio": "4a21dee397",
+    "missao.pescador.pescador_corda.anuncio": "e217775502",
     "missao.pescador.pescador_corda.resposta": "d010dbe9bd",
     "missao.pescador.arremate": "760b56210a",
     "missao.marisqueira.trancada": "fdbac2ff91",
-    "missao.marisqueira.marisqueira_farinha.anuncio": "34686cfb7d",
+    "missao.marisqueira.marisqueira_farinha.anuncio": "fb89264a08",
     "missao.marisqueira.marisqueira_farinha.resposta": "3c3745c799",
     "missao.marisqueira.arremate": "6d91085402",
     "missao.lavadeira.trancada": "f365dcf283",
-    "missao.lavadeira.lavadeira_lenha.anuncio": "26cad7c2b6",
+    "missao.lavadeira.lavadeira_lenha.anuncio": "cf05020853",
     "missao.lavadeira.lavadeira_lenha.resposta": "5c0a07925d",
     "missao.lavadeira.arremate": "ded9489e03",
     "missao.quituteira.trancada": "1aa3ec2566",
-    "missao.quituteira.quituteira_tabuleiro.anuncio": "573aed9962",
+    "missao.quituteira.quituteira_tabuleiro.anuncio": "5ac164b73f",
     "missao.quituteira.quituteira_tabuleiro.resposta": "10e408e1a3",
     "missao.quituteira.arremate": "a12c4aabf9",
     "missao.carpinteiro.trancada": "aadf44a317",
-    "missao.carpinteiro.carpinteiro_madeira.anuncio": "82d8c244ba",
+    "missao.carpinteiro.carpinteiro_madeira.anuncio": "034220e4ba",
     "missao.carpinteiro.carpinteiro_madeira.resposta": "b121eddd0a",
     "missao.carpinteiro.arremate": "e19f74f180",
     "missao.menino.trancada": "cfe474eda6",
@@ -1133,8 +1368,8 @@
     "missao.sacristao_pedra.papel_da_pedra.anuncio": "05cbc6e1e5",
     "missao.sacristao_pedra.papel_lido.anuncio": "0fe613f8bb",
     "missao.sacristao_pedra.papel_de_volta.anuncio": "2649029e9a",
-    "missao.sacristao_pedra.papel_de_volta.resposta": "1f6fdd9107",
-    "missao.sacristao_pedra.arremate": "3ca4edfa69",
+    "missao.sacristao_pedra.papel_de_volta.resposta": "d77fe6e8f6",
+    "missao.sacristao_pedra.arremate": "5ef7b55e33",
     "missao.pescador_madeira.trancada": "b0c8c9020a",
     "missao.pescador_madeira.madeira_do_telhado.anuncio": "422a005ebd",
     "missao.pescador_madeira.madeira_lida.anuncio": "71b93e56f1",
@@ -1148,30 +1383,30 @@
     "missao.mestre_saveiro_luz.luz_com_quirino.resposta": "60b647ab12",
     "missao.mestre_saveiro_luz.arremate": "0132999e26",
     "missao.menina_roda.trancada": "474ba207fd",
-    "missao.menina_roda.roda_palmas.anuncio": "2a1642c63b",
+    "missao.menina_roda.roda_palmas.anuncio": "98bc430be2",
     "missao.menina_roda.roda_na_praia.anuncio": "c0761226a2",
     "missao.menina_roda.roda_com_rosa.anuncio": "c6e14d967b",
-    "missao.menina_roda.roda_com_rosa.resposta": "c58e125a72",
-    "missao.menina_roda.arremate": "f2ec0b11a6",
+    "missao.menina_roda.roda_com_rosa.resposta": "7ee494e4e8",
+    "missao.menina_roda.arremate": "bec17b4561",
     "missao.guarda_ronda.trancada": "a041126cdb",
     "missao.guarda_ronda.ronda_convite.anuncio": "b7e8c62212",
     "missao.guarda_ronda.ronda_tres_voltas.anuncio": "ad89786577",
-    "missao.guarda_ronda.ronda_passo_no_adro.anuncio": "ac3998de54",
+    "missao.guarda_ronda.ronda_passo_no_adro.anuncio": "1996f60c98",
     "missao.guarda_ronda.ronda_passo_no_adro.resposta": "c7f97c05fe",
     "missao.guarda_ronda.arremate": "3f7d1ac0a0",
     "missao.padre_sino.trancada": "302cfe48d2",
     "missao.padre_sino.sino_insonia.anuncio": "7c756fabfb",
     "missao.padre_sino.sino_madrugada.anuncio": "6878fc636e",
-    "missao.padre_sino.sino_contado.anuncio": "2b14fd1978",
+    "missao.padre_sino.sino_contado.anuncio": "a1dfc92e0c",
     "missao.padre_sino.sino_contado.resposta": "cf36b23a36",
     "missao.padre_sino.arremate": "86dfbd2fe9",
     "missao.marisqueira_mare.trancada": "26a2c5c15a",
     "missao.marisqueira_mare.mare_das_cinco.anuncio": "4c0f2fe82f",
     "missao.marisqueira_mare.mare_ostras.anuncio": "e29b28ad37",
     "missao.marisqueira_mare.mare_carta.anuncio": "2a1a29d340",
-    "missao.marisqueira_mare.carta_ao_padre.anuncio": "c1a841d976",
+    "missao.marisqueira_mare.carta_ao_padre.anuncio": "16e407257c",
     "missao.marisqueira_mare.carta_ao_padre.resposta": "ea767628f8",
-    "missao.marisqueira_mare.carta_de_volta.anuncio": "276e948bb7",
+    "missao.marisqueira_mare.carta_de_volta.anuncio": "13ea4823dc",
     "missao.marisqueira_mare.carta_de_volta.resposta": "1394dabbd5",
     "missao.marisqueira_mare.arremate": "a0d3df542f",
     "missao.carpinteiro_canoa.trancada": "56bd3093db",
@@ -1183,31 +1418,31 @@
     "missao.carpinteiro_canoa.canoa_tonho.resposta": "180a6d8dd0",
     "missao.carpinteiro_canoa.arremate": "7690ee193f",
     "missao.mercador_fiado.trancada": "7f19353108",
-    "missao.mercador_fiado.fiado_livro.anuncio": "d14d7b0e04",
-    "missao.mercador_fiado.fiado_peixes.anuncio": "a2d5032537",
-    "missao.mercador_fiado.fiado_peixes.resposta": "0c8aca7e37",
-    "missao.mercador_fiado.fiado_tonho.anuncio": "462905b7d2",
-    "missao.mercador_fiado.fiado_tonho.resposta": "42d4d12669",
-    "missao.mercador_fiado.arremate": "e9c8af674f",
+    "missao.mercador_fiado.fiado_livro.anuncio": "f6e8477cdf",
+    "missao.mercador_fiado.fiado_peixes.anuncio": "b72611b263",
+    "missao.mercador_fiado.fiado_peixes.resposta": "14fa4a2036",
+    "missao.mercador_fiado.fiado_tonho.anuncio": "b317519285",
+    "missao.mercador_fiado.fiado_tonho.resposta": "29b45f5da9",
+    "missao.mercador_fiado.arremate": "7281122fa3",
     "missao.menino_caminho.trancada": "4a2ab2fe2a",
-    "missao.menino_caminho.caminho_comeco.anuncio": "8242171721",
+    "missao.menino_caminho.caminho_comeco.anuncio": "84aa5044cb",
     "missao.menino_caminho.caminho_lapa.anuncio": "f81298e389",
     "missao.menino_caminho.caminho_divida.anuncio": "4946c40dc0",
     "missao.menino_caminho.caminho_divida.resposta": "4499de1fb5",
     "missao.menino_caminho.arremate": "f53b6c8fff",
     "missao.beata_promessa.trancada": "b43870422f",
     "missao.beata_promessa.promessa_contada.anuncio": "b83969c32a",
-    "missao.beata_promessa.promessa_ostra.anuncio": "2f551d210c",
+    "missao.beata_promessa.promessa_ostra.anuncio": "c2aecc6e1f",
     "missao.beata_promessa.promessa_ostra.resposta": "22fbecbbed",
-    "missao.beata_promessa.promessa_rezada.anuncio": "61ec9b364e",
+    "missao.beata_promessa.promessa_rezada.anuncio": "b2450eff30",
     "missao.beata_promessa.promessa_rezada.resposta": "e23565817e",
     "missao.beata_promessa.arremate": "4321378197",
     "missao.lavadeira_rio.trancada": "d28e3cdffa",
     "missao.lavadeira_rio.rio_agua_pesada.anuncio": "f5079839b2",
     "missao.lavadeira_rio.rio_ponte.anuncio": "fe60df0ab5",
-    "missao.lavadeira_rio.rio_de_volta.anuncio": "ce2952a0c9",
-    "missao.lavadeira_rio.rio_de_volta.resposta": "0bec62e706",
-    "missao.lavadeira_rio.arremate": "6805ddba2b",
+    "missao.lavadeira_rio.rio_de_volta.anuncio": "32dbd93fa6",
+    "missao.lavadeira_rio.rio_de_volta.resposta": "f9efa471a4",
+    "missao.lavadeira_rio.arremate": "848a473c1d",
     "npc.pedro.falas_depois.1": "96301e6cc6",
     "npc.pedro.falas_depois.2": "4c80581b8a",
     "npc.pedro.falas_depois.3": "3c700cb86d",
@@ -1215,26 +1450,26 @@
     "npc.pedro.falas_depois.5": "9295db166b",
     "npc.pedro.falas_depois.6": "546a6af91b",
     "npc.pedro.falas_depois.7": "e0a17ea341",
-    "npc.benedito.falas.1": "d2db04085e",
+    "npc.benedito.falas.1": "5c6c9408e8",
     "npc.benedito.falas.2": "87351e16cf",
     "npc.benedito.falas.3": "c3efe3caf4",
-    "npc.zefa.falas.1": "a3057cccdf",
+    "npc.zefa.falas.1": "68156eee7e",
     "npc.zefa.falas.2": "3fdd12309f",
     "npc.zefa.falas.3": "49e7152646",
-    "npc.cosme.falas.1": "fd197b12f1",
+    "npc.cosme.falas.1": "60d0bb2530",
     "npc.cosme.falas.2": "348fbeb5ba",
     "npc.cosme.falas.3": "3028bc17bf",
-    "npc.tonho.falas.1": "222854e441",
-    "npc.tonho.falas.2": "688b806137",
+    "npc.tonho.falas.1": "f74b589d3e",
+    "npc.tonho.falas.2": "548b071d76",
     "npc.tonho.falas.3": "eed7584ba2",
     "npc.filo.falas.1": "5b07bf3d62",
-    "npc.filo.falas.2": "037c879980",
+    "npc.filo.falas.2": "6e0ca0379d",
     "npc.filo.falas.3": "59ae1f8fbb",
-    "npc.candinha.falas.1": "05c0699755",
+    "npc.candinha.falas.1": "f8424781ab",
     "npc.candinha.falas.2": "871cb4ae5f",
-    "npc.candinha.falas.3": "0a06d57c3b",
+    "npc.candinha.falas.3": "5a5101c881",
     "npc.damiao.falas.1": "59476a510b",
-    "npc.damiao.falas.2": "c255426028",
+    "npc.damiao.falas.2": "94d9dd87c4",
     "npc.damiao.falas.3": "ed10c218a0",
     "npc.quirino.falas.1": "77be746699",
     "npc.quirino.falas.2": "8aebddd08f",
@@ -1242,14 +1477,14 @@
     "npc.padre.saudacoes.1": "bee565dab9",
     "npc.padre.saudacoes.2": "05142bebca",
     "npc.padre.saudacoes.3": "ae10fadc0c",
-    "npc.padre.saudacoes.4": "af7c10c358",
+    "npc.padre.saudacoes.4": "612531c392",
     "npc.padre.falas.1": "757ffe2573",
     "npc.padre.falas.2": "a73c1832fd",
     "npc.padre.falas.3": "ed11c520d4",
     "npc.padre.falas.4": "d0cf8c73af",
     "npc.padre.falas.5": "db3b4542ed",
     "npc.padre.falas.6": "70878c5ada",
-    "npc.padre.falas.7": "6e8546e8cf",
+    "npc.padre.falas.7": "8911ccd468",
     "npc.padre.falas.8": "7e1936b0bf",
     "npc.padre.falas.9": "78f55b3192",
     "npc.sacristao.saudacoes.1": "0a455c52a6",
@@ -1260,7 +1495,7 @@
     "npc.sacristao.falas.1": "239f1978d0",
     "npc.sacristao.falas.2": "1cefad0ef9",
     "npc.sacristao.falas.3": "90fc39d013",
-    "npc.sacristao.falas.4": "48c095ede2",
+    "npc.sacristao.falas.4": "8f60c4131f",
     "npc.sacristao.falas.5": "92c5e40e04",
     "npc.sacristao.falas.6": "4d3e112f33",
     "npc.sacristao.falas.7": "5121870d04",
@@ -1284,7 +1519,7 @@
     "npc.mercador.saudacoes.4": "54d43575fe",
     "npc.mercador.saudacoes_noite.1": "de3815e720",
     "npc.mercador.falas.1": "b28a5dc455",
-    "npc.mercador.falas.2": "3dee0849f1",
+    "npc.mercador.falas.2": "f5fe40bdcb",
     "npc.mercador.falas.3": "a9600f143f",
     "npc.mercador.falas.4": "ed2e3f9d5a",
     "npc.mercador.falas.5": "606845c5e9",
@@ -1301,7 +1536,7 @@
     "npc.guarda.falas.1": "c8e15ca8f4",
     "npc.guarda.falas.2": "e49de24830",
     "npc.guarda.falas.3": "22bb802234",
-    "npc.guarda.falas.4": "6c623b78a1",
+    "npc.guarda.falas.4": "055a03e1b3",
     "npc.guarda.falas.5": "a70a79c18b",
     "npc.guarda.falas.6": "f61f8f4ab7",
     "npc.guarda.falas.7": "69dad185ca",
@@ -1316,7 +1551,7 @@
     "npc.pescador.falas.1": "4ce26fc9ab",
     "npc.pescador.falas.2": "9e5ae5603f",
     "npc.pescador.falas.3": "e3ad5f0898",
-    "npc.pescador.falas.4": "efab1b3d4d",
+    "npc.pescador.falas.4": "14505aec41",
     "npc.pescador.falas.5": "0b4738ac98",
     "npc.pescador.falas.6": "d581b16521",
     "npc.pescador.falas.7": "4bbb741cc7",
@@ -1343,7 +1578,7 @@
     "npc.lavadeira.falas.4": "43d7748311",
     "npc.lavadeira.falas.5": "9acde50fc6",
     "npc.lavadeira.falas.6": "e911ccf4d1",
-    "npc.lavadeira.falas.7": "d0f992c2b3",
+    "npc.lavadeira.falas.7": "39ea04aabd",
     "npc.lavadeira.falas.8": "145fd01f09",
     "npc.rendeira.saudacoes.1": "7d27fbb861",
     "npc.rendeira.saudacoes.2": "dcfd611f0f",
@@ -1364,7 +1599,7 @@
     "npc.quituteira.falas.1": "9f776fb988",
     "npc.quituteira.falas.2": "79319a7e3d",
     "npc.quituteira.falas.3": "12a1cd476e",
-    "npc.quituteira.falas.4": "8c6adfd33a",
+    "npc.quituteira.falas.4": "cccb88b8d6",
     "npc.quituteira.falas.5": "5bec6fa277",
     "npc.quituteira.falas.6": "adf0156c9b",
     "npc.quituteira.falas.7": "89e1a4b6c4",
@@ -1395,7 +1630,7 @@
     "npc.menina.saudacoes.1": "c085527260",
     "npc.menina.saudacoes.2": "769c4df2f5",
     "npc.menina.saudacoes.3": "4987971567",
-    "npc.menina.saudacoes.4": "cd77b920a4",
+    "npc.menina.saudacoes.4": "a799e39868",
     "npc.menina.falas.1": "476bb55108",
     "npc.menina.falas.2": "a6951ffa7f",
     "npc.menina.falas.3": "7f38949212",
@@ -2066,6 +2301,8 @@
     "2d.pedro.conversa_avulsa.5": "f0e98d653a",
     "2d.pedro.conversa_avulsa.6": "451d72e510",
     "2d.pedro.conversa_avulsa.7": "682ce474a0",
-    "2d.pedro.conversa_avulsa.8": "de4d0ecf43"
+    "2d.pedro.conversa_avulsa.8": "de4d0ecf43",
+    "missao.zefa.zefa_saveiro.resposta": "cab7be4045",
+    "missao.tonho.tonho_livro.resposta": "879fe79a54"
   }
 }

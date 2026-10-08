@@ -93,6 +93,13 @@
   Mariinha sem se apresentar de novo a cada conversa. Todas tinham voz gravada: o áudio continua apontado
   para o arquivo de antes (a voz antiga toca com o texto novo até a regravação), e o documento das falas as
   lista em "Áudios a regravar".
+- **O documento das falas depois das correções.** Cada fala apontada pela revisão ganhou o status
+  (83 corrigidas, 3 mantidas, 1 com o autor — o "mangue é a cozinha de Iemanjá" da Dona Rosa) e a
+  observação do que se fez, com o problema e a correção sugerida guardados como histórico; as falas que
+  mudaram foram relidas e marcadas como revisadas. O `docs/falas/README.md` conta as correções, as
+  decisões assumidas para o autor confirmar (o Cosme fica, o vale sem terras, a conta do Tonho paga em
+  réis, o Damião devedor do Nicolau), o que ainda é dele (as vozes do Quirino, das cenas e da fé; a roda e
+  a cor do rio que o mundo não mostra) e as 22 gravações a refazer, com o jeito de regravar só elas.
 - **O resumo do passo conta o material** (07–08/10: "na parte de levar tábuas e pedras ao
   Damião não informou o quantitativo; mesmo que o jogador já tenha no inventário, esse dado
   deve ser informado"; "a missão continuou indicando para construir a cerca como se eu
