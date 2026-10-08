@@ -126,7 +126,7 @@ func _unhandled_input(evento: InputEvent) -> void:
 	if not (evento is InputEventKey and evento.pressed and not evento.echo):
 		return
 	var tecla: int = (evento as InputEventKey).physical_keycode
-	if tecla == KEY_ESCAPE or tecla == KEY_Q:
+	if tecla == KEY_ESCAPE:
 		recusar()
 	elif tecla == Atalhos.tecla("interagir") or tecla == KEY_ENTER or tecla == KEY_KP_ENTER or tecla == KEY_SPACE:
 		aceitar()

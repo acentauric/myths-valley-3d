@@ -75,7 +75,6 @@ var _tarjas: CanvasLayer
 var _tarjas_quadro: Control
 var _assumidos: Array = []
 var _movidos: Array = []
-var _travados: Array = []
 var _fila: Array = []
 
 
@@ -187,12 +186,9 @@ func _segurar() -> void:
 		_vale._parar_o_jogador()
 	if jogador != null and "velocity" in jogador:
 		jogador.velocity = Vector3.ZERO
-	# O E DOS MORADORES E O FOCO DELE DORMEM: comando do jogador não entra na cena.
-	for chave in ["tecla_dos_moradores", "foco_do_e"]:
-		var no = _vale.get(chave)
-		if no is Node and (no as Node).is_processing():
-			(no as Node).set_process(false)
-			_travados.append(no)
+	# O E DOS MORADORES JÁ NÃO ENTRA: a tecla dos moradores e o foco do E olham a física do
+	# jogador, parada pela cena; desligá-los (08/10) deixava a dica do E acesa por cima de uma
+	# tela aberta no meio da cena, porque o foco é quem a apaga com o vale parado.
 	# A FILA QUE EMITIU A CENA ESPERA, se o passo seguinte ainda não foi anunciado.
 	if _cadeia != null and is_instance_valid(_cadeia) and "espera" in _cadeia and float(_cadeia.espera) > 0.0:
 		_espera_antes = float(_cadeia.espera)
@@ -216,10 +212,6 @@ func _soltar() -> void:
 	_fila_segura = false
 	_tarjas_a_vista_por(false)
 	await _devolver_a_camera()
-	for no in _travados:
-		if is_instance_valid(no):
-			(no as Node).set_process(true)
-	_travados.clear()
 	if is_instance_valid(_vale) and _vale.has_method("_soltar_o_jogador"):
 		_vale._soltar_o_jogador()
 	var nome := _nome

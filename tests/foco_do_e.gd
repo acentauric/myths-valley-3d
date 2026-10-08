@@ -55,6 +55,10 @@ func _run() -> void:
 	await _mundo_pronto()
 	await _quadros(8)
 	var vale = current_scene
+	# AS CENAS FICAM DESLIGADAS: este portão mede a mecânica do E (o passo do Tonho fecha com cena, e
+	# a cena pararia o jogador no meio da prova); a cena tem portão próprio.
+	if vale.get("cenas") != null:
+		vale.cenas.desligadas = true
 	var jogador = vale.player
 	var foco = vale.get("foco_do_e")
 	var achados = vale.get("achados")

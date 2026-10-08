@@ -67,7 +67,9 @@
   abrir não a começa na hora: abre a tela de aceite (`aceite_de_missao.gd`), com o vale
   parado — o nome da missão, quem pede, o que ele diz, o primeiro passo, quantos passos e a
   recompensa somada —, com Aceitar [E] e Agora não [Esc]; recusar não começa nada e o "!"
-  fica. Nos três idiomas. Portão novo `missao_a_vista`.
+  fica. Nos três idiomas. Portão novo `missao_a_vista`. E a cena (cena_vale.gd) não desliga
+  mais a tecla dos moradores nem o foco do E — o E já fica travado pela física do jogador
+  parada, e o foco apaga toda dica enquanto a cena toca.
 - **As cenas do vale, pelos dados** (07/10, à noite: "implementar a mesma lógica de cutscene
   que fizemos no 2D: travando a tela e comandos do jogador e a própria engine conduzindo os
   personagens para uma interação com fala; explorar a vista, o cenário, aproximar dos

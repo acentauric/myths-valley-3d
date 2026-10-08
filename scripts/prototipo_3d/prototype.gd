@@ -816,7 +816,9 @@ func _ready() -> void:
 	# A FESTA DA MISSÃO E A VOZ DO MUNDO cobrem o vale por baixo do HUD sem parar a
 	# árvore: as dicas do E se calam enquanto elas duram, como as plaquinhas.
 	foco_do_e.coberto = func() -> bool:
-		return (conquista != null and conquista.ativa()) or (narracao != null and narracao.tocando())
+		# E A CENA (cena_vale.gd): com ela tocando, nenhuma dica do E fica acesa.
+		var em_cena: bool = cenas != null and bool(cenas.em_cena())
+		return (conquista != null and conquista.ativa()) or (narracao != null and narracao.tocando()) or em_cena
 	# O AVISO DA PRIMEIRA VEZ (aviso_da_primeira_vez.gd): o primeiro cordel e a
 	# primeira árvore dizem onde ficam guardados. É instrução, e segura o vale e o
 	# relógio como a caixa de fala.
