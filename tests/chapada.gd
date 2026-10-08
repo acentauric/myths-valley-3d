@@ -17,6 +17,9 @@ extends SceneTree
 ## Onde a chapada foi posta, revisada pelo autor (unidades do vale).
 const ONDE := Vector2(-6.0, -268.0)
 
+const PovoadoLiberado = preload("res://tests/fixtures/povoado_liberado.gd")
+const ConversaDoE = preload("res://tests/fixtures/conversa_do_e.gd")
+
 var falhas := 0
 var vale
 var tecla
@@ -41,6 +44,8 @@ func _run() -> void:
 	await _mundo_pronto()
 	await _quadros(8)
 	vale = current_scene
+	# O povoado se apresenta aos poucos na chegada (#155): este portão fala com moradores de longe.
+	await PovoadoLiberado.todos(self, vale)
 	tecla = vale.get("tecla_dos_moradores")
 	jogador = vale.player
 	pedro = vale.get("pedro")
@@ -81,13 +86,13 @@ func _run() -> void:
 	ponte.missao = ponte.passos.size()
 	ponte.despedida_feita = true
 	await _perto_do_pedro()
-	tecla.usar(pedro)
+	await ConversaDoE.usar(tecla, pedro)
 	await _quadros(3)
 	_conferir(not chapada.iniciado, "a chapada abriu sem a primeira colheita")
 	roca.iniciado = true
 	roca.missao = _indice(roca, "colher") + 1
 	await _perto_do_pedro()
-	tecla.usar(pedro)
+	await ConversaDoE.usar(tecla, pedro)
 	_conferir(await _ate(func() -> bool: return chapada.iniciado, 4.0), "colhida a mandioca, o E no Pedro não abriu a chapada")
 
 	# --- 3. A CHEGADA É CENA ------------------------------------------------------
@@ -105,7 +110,7 @@ func _run() -> void:
 	# --- 4. A VOLTA ---------------------------------------------------------------
 	await _ate(func() -> bool: return chapada.espera <= 0.0, 12.0)
 	await _perto_do_pedro()
-	tecla.usar(pedro)
+	await ConversaDoE.usar(tecla, pedro)
 	_conferir(await _ate(func() -> bool: return chapada.acabou(), 8.0), "o E no Pedro não fechou a frente da chapada")
 	_conferir(_no_balao(pedro).contains("rio grande"), "o Pedro não falou da água: '%s'" % _no_balao(pedro))
 	_fechar()

@@ -27,6 +27,9 @@ extends SceneTree
 ##  10. A CAPOEIRA ATÉ O FIM: a meia-lua volta ao Cosme, a rasteira (duas tonteadas, mungunzá) e a
 ##      volta final fecham a fila.
 
+const PovoadoLiberado = preload("res://tests/fixtures/povoado_liberado.gd")
+const ConversaDoE = preload("res://tests/fixtures/conversa_do_e.gd")
+
 var falhas := 0
 var vale
 var tecla
@@ -49,6 +52,8 @@ func _run() -> void:
 	await _mundo_pronto()
 	await _quadros(8)
 	vale = current_scene
+	# O povoado se apresenta aos poucos na chegada (#155): este portão fala com moradores de longe.
+	await PovoadoLiberado.todos(self, vale)
 	tecla = vale.get("tecla_dos_moradores")
 	var jogador = vale.player
 	var pedro = vale.get("pedro")
@@ -76,7 +81,7 @@ func _run() -> void:
 	jogador.teleportar(pedro.global_position + Vector3(1.0, 0.1, 0.6), 0.0)
 	await _quadros(5)
 	for i in 3:
-		tecla.usar(pedro)
+		await ConversaDoE.usar(tecla, pedro)
 		await _quadros(3)
 	_conferir(not armas.iniciado and not oficio.iniciado, "com a chegada em curso, o E no Pedro abriu as armas ou o ofício")
 	pedro.missao = pedro.MISSOES.size()
@@ -84,7 +89,7 @@ func _run() -> void:
 	for i in 5:
 		jogador.teleportar(pedro.global_position + Vector3(1.0, 0.1, 0.6), 0.0)
 		await _quadros(3)
-		tecla.usar(pedro)
+		await ConversaDoE.usar(tecla, pedro)
 		await _ate(func() -> bool: return false, 0.3)
 	_conferir(armas.iniciado and oficio.iniciado, "acabada a chegada, o E no Pedro não abriu as frentes: armas %s, ofício %s" % [str(armas.iniciado), str(oficio.iniciado)])
 	await _ate(func() -> bool: return armas.espera <= 0.0 and oficio.espera <= 0.0, 12.0)
@@ -148,7 +153,7 @@ func _run() -> void:
 	# --- 7. A CAPOEIRA -------------------------------------------------------------------
 	jogador.teleportar(cosme.global_position + Vector3(1.0, 0.1, 0.6), 0.0)
 	await _quadros(5)
-	tecla.usar(cosme)
+	await ConversaDoE.usar(tecla, cosme)
 	await _quadros(3)
 	_conferir(not capoeira.iniciado, "a capoeira abriu sem o candomblé")
 	fe.adotar("candomble")
@@ -158,7 +163,7 @@ func _run() -> void:
 		mesa.missao = mesa.passos.size()
 	jogador.teleportar(cosme.global_position + Vector3(1.0, 0.1, 0.6), 0.0)
 	await _quadros(5)
-	tecla.usar(cosme)
+	await ConversaDoE.usar(tecla, cosme)
 	_conferir(await _ate(func() -> bool: return capoeira.iniciado, 6.0), "com o candomblé e a mesa da folha, o E no Cosme não abriu a capoeira")
 	_conferir(luta.sabe("ginga"), "a lição da ginga não ensinou a ginga")
 	for i in 3:
@@ -167,7 +172,7 @@ func _run() -> void:
 	await _ate(func() -> bool: return capoeira.espera <= 0.0, 12.0)
 	jogador.teleportar(cosme.global_position + Vector3(1.0, 0.1, 0.6), 0.0)
 	await _quadros(5)
-	tecla.usar(cosme)
+	await ConversaDoE.usar(tecla, cosme)
 	_conferir(await _ate(func() -> bool: return capoeira.missao >= 2, 8.0), "voltar ao Cosme (E) não fechou a lição da ginga")
 
 	# --- 8. A META -------------------------------------------------------------------------
@@ -177,7 +182,7 @@ func _run() -> void:
 	await _ate(func() -> bool: return metas.espera <= 0.0, 12.0)
 	jogador.teleportar(pedro.global_position + Vector3(1.0, 0.1, 0.6), 0.0)
 	await _quadros(5)
-	tecla.usar(pedro)
+	await ConversaDoE.usar(tecla, pedro)
 	_conferir(await _ate(func() -> bool: return metas.acabou(), 8.0), "o E no Pedro não fechou a meta do gibão")
 
 	# --- 8b. A META DA ONÇA (#117) -----------------------------------------------------
@@ -195,7 +200,7 @@ func _run() -> void:
 		for i in 3:
 			jogador.teleportar(zefa.global_position + Vector3(1.0, 0.1, 0.6), 0.0)
 			await _quadros(3)
-			tecla.usar(zefa)
+			await ConversaDoE.usar(tecla, zefa)
 			await _ate(func() -> bool: return metas_da_onca.acabou(), 2.0)
 			if metas_da_onca.acabou():
 				break
@@ -228,7 +233,7 @@ func _run() -> void:
 		"depois das quatro meias-luas o passo devia ser o de voltar ao Cosme: é '%s'" % str(capoeira.passo_atual().get("id", "")))
 	jogador.teleportar(cosme.global_position + Vector3(1.0, 0.1, 0.6), 0.0)
 	await _quadros(5)
-	tecla.usar(cosme)
+	await ConversaDoE.usar(tecla, cosme)
 	_conferir(await _ate(func() -> bool: return capoeira.missao >= 4, 8.0), "voltar ao Cosme (E) não fechou a lição da meia-lua")
 	await _ate(func() -> bool: return capoeira.espera <= 0.0, 12.0)
 	_conferir(str(capoeira.passo_atual().get("id", "")) == "capoeira_rasteira", "depois da meia-lua o passo devia ser a rasteira")
@@ -245,7 +250,7 @@ func _run() -> void:
 	_conferir(str(capoeira.passo_atual().get("id", "")) == "capoeira_rasteira_volta", "depois da rasteira o passo devia ser o último, de voltar ao Cosme")
 	jogador.teleportar(cosme.global_position + Vector3(1.0, 0.1, 0.6), 0.0)
 	await _quadros(5)
-	tecla.usar(cosme)
+	await ConversaDoE.usar(tecla, cosme)
 	_conferir(await _ate(func() -> bool: return capoeira.acabou(), 8.0), "o E no Cosme não fechou a capoeira: o último passo não acaba")
 	_fechar()
 

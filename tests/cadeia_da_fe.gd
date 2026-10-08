@@ -18,6 +18,9 @@ extends SceneTree
 ##   8. AS OSTRAS SE CATAM À MÃO, nas pedras da maré, e pagam o monte.
 ##   9. O SAVE LEVA AS FILAS DA FÉ.
 
+const PovoadoLiberado = preload("res://tests/fixtures/povoado_liberado.gd")
+const ConversaDoE = preload("res://tests/fixtures/conversa_do_e.gd")
+
 var falhas := 0
 var dialogo
 var vale
@@ -47,6 +50,8 @@ func _run() -> void:
 	await _mundo_pronto()
 	await _frames(8)
 	vale = current_scene
+	# O povoado se apresenta aos poucos na chegada (#155): este portão fala com moradores de longe.
+	await PovoadoLiberado.todos(self, vale)
 	marcos = vale.get("marcos")
 	jogador = vale.player
 	var cadeias: Dictionary = vale.get("_cadeias")
@@ -79,14 +84,14 @@ func _run() -> void:
 	vale.pedro.global_position = jogador.global_position + Vector3(1.5, 0, 0)
 	await _segundos(1.0)
 	_conferir(not fila.iniciado, "ao lado do Pedro, a fila da fé abriu sozinha, sem o E")
-	vale.tecla_dos_moradores.usar(vale.pedro)
+	await ConversaDoE.usar(vale.tecla_dos_moradores, vale.pedro)
 	var abriu := await _ate(func() -> bool: return fila.iniciado and fila.espera <= 0.0, 12.0)
 	_conferir(abriu, "com o mirante de pé a fila da fé não abriu e anunciou")
 	_conferir(root.get_node("/root/CadernoDoVale").tem("pedro_fe_zefa"), "o recado da Dona Zefa não entrou no diário")
 
 	# --- 2. A DONA ZEFA ------------------------------------------------------------
 	await _ir_a(zefa.global_position + Vector3(1.6, 0, 0))
-	vale.tecla_dos_moradores.usar(zefa)
+	await ConversaDoE.usar(vale.tecla_dos_moradores, zefa)
 	_conferir(await _ate(func() -> bool: return fila.missao == 1, 8.0), "o E na Dona Zefa não fechou o recado (passo %d)" % fila.missao)
 	_conferir(not bool(marcos.liberada.call()), "os marcos aceitam gente antes de a Dona Zefa mostrar as três")
 
@@ -108,7 +113,7 @@ func _run() -> void:
 	# --- 4. CONTAR À DONA ZEFA ---------------------------------------------------------
 	await _ate(func() -> bool: return fila.espera <= 0.0, 8.0, lidas)
 	await _ir_a(zefa.global_position + Vector3(1.6, 0, 0), lidas)
-	vale.tecla_dos_moradores.usar(zefa)
+	await ConversaDoE.usar(vale.tecla_dos_moradores, zefa)
 	_conferir(await _ate(func() -> bool: return fila.missao == 3, 8.0, lidas), "contar à Dona Zefa não fechou o passo (passo %d)" % fila.missao)
 	_conferir(bool(marcos.liberada.call()), "depois de a Dona Zefa contar como é, os marcos continuam travados")
 
@@ -140,7 +145,7 @@ func _run() -> void:
 	# --- a fila da Dona Zefa fecha ---------------------------------------------------
 	await _ate(func() -> bool: return fila.espera <= 0.0, 8.0, lidas)
 	await _ir_a(zefa.global_position + Vector3(1.6, 0, 0), lidas)
-	vale.tecla_dos_moradores.usar(zefa)
+	await ConversaDoE.usar(vale.tecla_dos_moradores, zefa)
 	_conferir(await _ate(func() -> bool: return fila.acabou(), 8.0, lidas), "o último passo da fila da fé não fechou com a Dona Zefa")
 
 	# --- 7. CONGELA AO TROCAR ----------------------------------------------------------

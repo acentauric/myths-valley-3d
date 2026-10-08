@@ -16,6 +16,8 @@ extends SceneTree
 ##   6. COSME E DAMIÃO leva a Dona Zefa e o Cosme para os lados do fogo do
 ##      terreiro; o DOIS DE JULHO leva o Tonho para cima do monte da gameleira.
 
+const PovoadoLiberado = preload("res://tests/fixtures/povoado_liberado.gd")
+
 var falhas := 0
 var vale
 var world
@@ -48,6 +50,8 @@ func _run() -> void:
 	await _mundo_pronto()
 	await _frames(8)
 	vale = current_scene
+	# O povoado se apresenta aos poucos na chegada (#155): este portão fala com moradores de longe.
+	await PovoadoLiberado.todos(self, vale)
 	world = vale.world
 	jogador = vale.player
 	var com_agenda := {}

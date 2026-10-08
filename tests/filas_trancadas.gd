@@ -38,6 +38,9 @@ const TRANCADAS := [
 	["tonho", "tonho"], ["benedito", "benedito_saveiro"], ["cosme", "cosme_roca"],
 ]
 
+const PovoadoLiberado = preload("res://tests/fixtures/povoado_liberado.gd")
+const ConversaDoE = preload("res://tests/fixtures/conversa_do_e.gd")
+
 var falhas := 0
 var relogio: Node
 const PASSOS_POR_SEGUNDO := 60
@@ -86,6 +89,8 @@ func _run() -> void:
 	relogio.ficar_lento()
 
 	var vale := current_scene
+	# O povoado se apresenta aos poucos na chegada (#155): este portão fala com moradores de longe.
+	await PovoadoLiberado.todos(self, vale)
 	var jogador = vale.get("player")
 	var pedro = vale.get("pedro")
 	var tecla = vale.get("tecla_dos_moradores")
@@ -114,10 +119,13 @@ func _run() -> void:
 		var aviso := str(cadeia.dica_da_trancada())
 		_conferir(aviso.strip_edges() != "", "a fila '%s' está trancada e não escreveu o aviso (`trancada` no arquivo dela)" % par[1])
 		fila.calar_falante(morador)
+		# E o anúncio do passo do Pedro, que ainda estiver no ar: a resposta do E espera a vez (não corta quem fala), e este
+		# portão é do que o morador da fila trancada diz, e não da vez do Pedro.
+		fila.calar_falante(pedro)
 		await _quadros(2)
 		jogador.teleportar(morador.global_position + Vector3(1.4, 0.0, 0.6), -2.0)
 		await _quadros(3)
-		tecla.usar(morador)
+		await ConversaDoE.usar(tecla, morador)
 		var falou: bool = await relogio.ate(func() -> bool:
 			return fila.falando(morador) and str(fila.atual().get("texto", "")) == aviso, 14.0)
 		_conferir(falou, "o E em '%s', de fila trancada, não disse '%s' (disse: '%s')" % [quem, aviso, str(fila.atual().get("texto", ""))])
@@ -161,7 +169,7 @@ func _run() -> void:
 	# E o E na Dona Zefa, destrancada, ABRE a fila dela (e não diz o aviso).
 	jogador.teleportar(zefa.global_position + Vector3(1.4, 0.0, 0.6), -2.0)
 	await _quadros(3)
-	tecla.usar(zefa)
+	await ConversaDoE.usar(tecla, zefa)
 	await _quadros(3)
 	_conferir(da_zefa.iniciado, "o E na Dona Zefa, com a fila destrancada, não a abriu")
 
@@ -210,14 +218,14 @@ func _run() -> void:
 		"com as outras filas feitas, o Pedro devia ter o aviso da chapada a dar, e tem '%s'" % pedro._dica_da_fila_trancada())
 	fila.calar_falante(pedro)
 	await _quadros(2)
-	tecla.usar(pedro)
+	await ConversaDoE.usar(tecla, pedro)
 	var avisou: bool = await relogio.ate(func() -> bool:
 		return fila.falando(pedro) and str(fila.atual().get("texto", "")) == aviso_da_chapada, 14.0)
 	_conferir(avisou, "o E no Pedro, sem fila por abrir nem andando, não disse o aviso da chapada (disse: '%s')" % str(fila.atual().get("texto", "")))
 	fila.calar_falante(pedro)
 	await _quadros(2)
 	_conferir(pedro._dica_da_fila_trancada() == "", "o Pedro já deu o aviso da chapada e ainda o tem a dar: ele o repete")
-	tecla.usar(pedro)
+	await ConversaDoE.usar(tecla, pedro)
 	var voltou_as_falas: bool = await relogio.ate(func() -> bool: return fila.falando(pedro), 14.0)
 	var dito_depois := str(fila.atual().get("texto", ""))
 	_conferir(voltou_as_falas and dito_depois != aviso_da_chapada and de_depois_do_pedro.has(dito_depois),

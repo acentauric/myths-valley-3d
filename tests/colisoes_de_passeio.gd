@@ -52,6 +52,12 @@ const ANCORAS := ["Praça", "Igreja", "Cruzeiro", "PierPiso", "Casa de taipa", "
 const EXCECOES := [
 	{"corpo": "PierTripo/", "perto": Vector3(85.2, -0.5, -5.6), "raio": 3.0,
 		"razao": "o caminho da malha (Cruzeiro → PierPiso) sobe ao píer pela BORDA NORTE do tabuado, por cima de uma viga rente à água, 0,5 u acima do leito: a malha (células de 0,2 u de altura) acha o degrau de 0,5 passável e o corpo (degrau de 0,4) não sobe; o jogador sobe pela cabeceira (conferido na seção 5) (navegacao_vale.gd)"},
+	{"corpo": "Interior_estrada/", "perto": Vector3(-5.0, 4.2, -10.8), "raio": 4.0,
+		"razao": "o caminho da malha até o MEIO da Casa da estrada (a âncora) atravessa a parede lateral dela: a colisão da casa agora cobre a parede visível inteira (#205, `comodo._montar_a_casca_de_fora`), e o corpo, que antes escorria pela folga entre a parede do cômodo e a do modelo, para na parede. Quem entra pelo vão é a seção 3 (a porta da estrada passa nas catorze passagens); a malha não sabe do vão e termina dentro da casa (`navegacao_vale.gd`)"},
+	{"corpo": "Cenario/bom_jesus_dos_pobres/Colisão Rua da Praça", "perto": Vector3(18.8, 2.0, 19.9), "raio": 2.5,
+		"razao": "saindo da porta do restaurante de viés (23 graus), o corpo encosta no pilar do alpendre, que a fachada de colisão agora acompanha coluna a coluna (#205, `comodo._montar_a_fachada_de_fora`), e a quina dele com o barranco da rua (`Colisão Rua da Praça`, face de 0,84 de normal) prende; as cinco passagens retas e a entrada de viés passam. A fachada do restaurante é revisão do autor da #205"},
+	{"corpo": "Interior_restaurante/FachadaFora", "perto": Vector3(18.8, 2.0, 19.9), "raio": 2.5,
+		"razao": "o mesmo preso, contado no pilar do alpendre em vez de no barranco (qual dos dois o corpo toca primeiro varia de uma rodada para outra): ver a exceção da `Colisão Rua da Praça` logo acima"},
 	{"corpo": "Vale3D/Cenario/@StaticBody3D@", "perto": Vector3(7.0, 4.0, -8.8), "raio": 9.0,
 		"razao": "só no estilo procedural: o caminho da malha até o MEIO da Casa de Carro Quebrado (a âncora) passa pela parede dela, que a malha não corta"},
 ]

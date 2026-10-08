@@ -34,6 +34,9 @@ extends SceneTree
 ##   6. O ARREMATE DESTA CADEIA NÃO É FALADO: quem fala no fim é o Tonho, pela
 ##      meta. O arremate é a nota que fica no objetivo.
 
+const PovoadoLiberado = preload("res://tests/fixtures/povoado_liberado.gd")
+const ConversaDoE = preload("res://tests/fixtures/conversa_do_e.gd")
+
 var falhas := 0
 const SEGUNDOS_PARA_ANUNCIAR := 12.0
 const SEGUNDOS_POR_PASSO := 15.0
@@ -58,6 +61,8 @@ func _run() -> void:
 	await _frames(3)
 
 	var jogo := current_scene
+	# O povoado se apresenta aos poucos na chegada (#155): este portão fala com moradores de longe.
+	await PovoadoLiberado.todos(self, jogo)
 	var jogador = jogo.get("player")
 	var inv := root.get_node("/root/Inventario")
 	_conferir(jogador != null, "não achei o jogador")
@@ -214,7 +219,7 @@ func _run() -> void:
 ## O E AO LADO DE QUEM SE FALA, pelo caminho do jogo (`tecla_dos_moradores.gd`):
 ## conversar, abrir a fila do morador, cumprir o passo que manda a ele.
 func _falar_com(morador) -> void:
-	current_scene.get("tecla_dos_moradores").usar(morador)
+	await ConversaDoE.usar(current_scene.get("tecla_dos_moradores"), morador)
 	await process_frame
 
 
