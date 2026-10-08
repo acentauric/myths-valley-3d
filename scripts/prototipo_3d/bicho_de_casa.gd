@@ -60,6 +60,11 @@ const AGUA_FUNDA := 0.3
 const FISICA_ATE := 26.0
 ## Longe da câmera (u), o bicho some e não anda: pula para onde estaria.
 const ALCANCE := 80.0
+## O corpo acompanha a encosta (#149: "também em rampa"): de quanto em quanto tempo (s) se
+## mede o chão, a que distância (u) à frente e atrás do bicho, e até onde ele inclina (rad).
+const ENCOSTA_A_CADA := 0.12
+const ENCOSTA_PASSO := 0.35
+const ENCOSTA_ATE := 0.45
 
 var dados: Dictionary = {}
 var especie: Dictionary = {}
@@ -103,6 +108,7 @@ var _travado := 0.0
 var _lugar := Vector3.INF
 var _longe_em := 0.0
 var _desvia_ate := -1.0
+var _encosta_em := 0.0
 
 
 func configurar(d: Dictionary, sp: Dictionary, nome_da_casa: String, mundo, alvo_jogador: Node3D) -> void:
@@ -197,6 +203,7 @@ func _physics_process(delta: float) -> void:
 		return
 	_decidir(delta)
 	_andar(delta)
+	_acompanhar_a_encosta(delta)
 
 
 func _decidir(delta: float) -> void:
@@ -431,6 +438,28 @@ func _andar(delta: float) -> void:
 		rotation.y = lerp_angle(rotation.y, atan2(rumo_do_corpo.x, rumo_do_corpo.z), minf(1.0, delta * 8.0))
 	else:
 		_parado += delta
+
+
+## O CORPO ACOMPANHA A ENCOSTA: a cápsula fica em pé, e o visual (a pose) inclina o focinho
+## para o morro ou para o vale, a mesma conta de quem sobe uma rampa. Mede-se a altura do
+## chão uns passos à frente e atrás, `ENCOSTA_A_CADA` segundos; o animador suaviza. Sem isto
+## o cão subia a rampa de corpo na horizontal, com as patas de trás no ar.
+func _acompanhar_a_encosta(delta: float) -> void:
+	_encosta_em -= delta
+	if _encosta_em > 0.0:
+		return
+	_encosta_em = ENCOSTA_A_CADA
+	var frente := Vector3(sin(rotation.y), 0.0, cos(rotation.y)) * ENCOSTA_PASSO
+	var adiante: float = world.ground_position(global_position + frente).y
+	var atras: float = world.ground_position(global_position - frente).y
+	_animador.inclinacao_do_chao = inclinacao_da_encosta(adiante, atras)
+
+
+## O quanto o focinho inclina (rad) com o chão em `altura_adiante` e `altura_atras`, a
+## `ENCOSTA_PASSO` de cada lado. Subindo (o chão mais alto adiante) o focinho sobe, que é
+## rotação NEGATIVA em X (o +Z do bicho desce com X positivo, como na corrida).
+static func inclinacao_da_encosta(altura_adiante: float, altura_atras: float) -> float:
+	return clampf(-atan2(altura_adiante - altura_atras, ENCOSTA_PASSO * 2.0), -ENCOSTA_ATE, ENCOSTA_ATE)
 
 
 ## ANDA SEM FÍSICA, para o bicho que a câmera vê de longe: o `move_and_slide`

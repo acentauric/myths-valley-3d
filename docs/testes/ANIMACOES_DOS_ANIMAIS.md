@@ -89,3 +89,44 @@ esta fatia não constitui revisão artística completa deles.
 
 Não houve geração paga, troca de GLB, alteração de progresso, HUD ou terreno.
 As capturas são locais; não foram anexadas ao GitHub. A #149 continua aberta.
+
+## O cachorro em pé (08/10/2026, segunda fatia)
+
+Relato do playtest de 07/10: o Caramelo acompanhava o Pedro nas patas de trás, com o
+corpo na vertical. A causa **não era** a física nem a inclinação do terreno (nada
+inclinava o corpo ao chão): o clipe do GLB balança o osso do ombro (`0_Right_Limb_0`,
+até 28 graus) e o do pescoço (`Head_0`, mais 28) como se fossem perna, e a frente
+inteira do cão pende deles. Recentrar o clipe só limitava cada osso a 20 graus; os dois
+somados erguiam o peito quase 35 graus e a pata da frente subia no ar, como quem pede
+esmola. A onça pintada tem o mesmo defeito (`0_Right_Limb_0`, `0_Right_Limb_1` e
+`Head_0`). Os outros 12 quadrúpedes não têm osso que leve a cabeça balançando.
+
+A conta foi feita fora do jogo, lendo o GLB (esqueleto, clipe e pesos da pele em Python),
+com a mesma recentragem do animador: o peito, na vista de lado, empina e baixa a cada
+passo; com ombro e pescoço no repouso o corpo fica firme, e a cabeça sai do lugar 4,5 %
+da altura no cão e 6,3 % na onça (antes 9,4 % e 13,9 %).
+
+O que mudou:
+
+- Todo osso que leva a cabeça e balança mais que 10 graus no clipe cru fica no repouso
+  (`PESCOCO_FIRME_ACIMA`); a coluna, que balança 3 a 7 graus, fica como está.
+- As patas da frente do cão, que o clipe então deixa duras (o clipe nunca as moveu: só o
+  ombro as carregava), entram na regra da perna parada. Como o rig tem uma única cadeia de
+  trás para as duas patas, as duas da frente copiam essa cadeia meio ciclo uma da outra
+  (contratempo; correlação medida de -0,91), e parado a defasagem se desfaz em 0,25 s.
+  A mediana da "perna do meio" agora ignora as pernas que quase não andam.
+- O corpo do bicho de casa inclina o focinho com a encosta (altura do chão 0,35 u à
+  frente e atrás, até 0,45 rad): na rampa o cão sobe e desce de corpo paralelo ao chão.
+
+Portões novos em `animais_animacao.gd` (4b, 5b, 5c): a cabeça do clipe pronto fica
+dentro de 8 % da altura (`--falsificar-pescoco` recentra sem firmar o pescoço e o portão
+reprova os dois modelos); as duas patas da frente passam de 10 % da altura por passo, em
+contratempo; a inclinação da encosta tem sinal e teto. **Não foram rodados** (ordem do
+autor: uma bateria só no fim da faixa); a verificação desta fatia foi a simulação
+acima.
+
+Pendentes: aprovação visual no jogo com o Caramelo seguindo o Pedro, na rampa e correndo; a
+onça pintada foi consertada pela mesma regra e conferida só na simulação; a onça-caçadora
+(`criatura_vale.gd`) ainda não inclina com a encosta; aves, bode e a corrida dos gatos
+seguem como acima. Pesquisa de Mesh2Motion e do rig do Tripo:
+[ANIMACAO_DE_ANIMAIS.md](../ferramentas/ANIMACAO_DE_ANIMAIS.md).

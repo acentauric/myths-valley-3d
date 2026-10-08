@@ -2,6 +2,14 @@
 
 ## Em desenvolvimento — 08/10/2026
 
+- **O cachorro anda nas quatro patas.** O Caramelo seguia o Pedro empinado nas patas de
+  trás: o clipe do GLB balançava o ombro e o pescoço como se fossem perna e a frente
+  inteira subia e descia (o mesmo na onça pintada). Agora esses ossos ficam no repouso,
+  as duas patas da frente andam em contratempo copiando a de trás e param juntas, e o
+  corpo do bicho de casa inclina o focinho com a rampa. A #149 segue aberta (aves, bode,
+  corrida dos gatos); pesquisa de Mesh2Motion e do rig do Tripo em
+  docs/ferramentas/ANIMACAO_DE_ANIMAIS.md.
+
 - **Todo campo de Ajustes tem o "?" de ajuda, e "Passos na água" ganha o ↺.** O campo
   era montado à mão, com um botão Ouvir que encurtava o seletor: agora é uma escolha
   como as vizinhas (Original ou Novos, ↺ volta a Original) e trocar a opção já toca a

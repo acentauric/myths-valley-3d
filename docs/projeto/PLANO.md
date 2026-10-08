@@ -49,6 +49,10 @@ chegada. A caça mantém velocidades e referência de ronda própria. Ritmo,
 passeio das espécies, animações e bichos de casa passam; falsificadores
 restauram saltos/deslizamento. O inventário cobre 23 modelos; aves sem rig,
 bode e clipes de corrida ainda impedem encerrar a revisão artística.
+Em 08/10 o cão caramelo e a onça pintada deixam de empinar (ombro e pescoço do clipe
+ficam no repouso, as patas da frente andam em contratempo) e o bicho de casa inclina
+com a rampa; faltam a aprovação visual e a bateria. Mesh2Motion e o rig do Tripo
+para aves e bode: [ANIMACAO_DE_ANIMAIS.md](../ferramentas/ANIMACAO_DE_ANIMAIS.md).
 Ver [ANIMACOES_DOS_ANIMAIS.md](../testes/ANIMACOES_DOS_ANIMAIS.md).
 
 A rota de entrada/saída usa as soleiras alinhadas quando cruza um cômodo,
