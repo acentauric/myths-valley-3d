@@ -79,6 +79,11 @@
   cor na boca do jogador; a pedra do papel e o selo do convite valem antes e depois do capítulo 7; o Tonico
   manda à "pedra pintada", e não à lapa que o jogador já rachou; a roda da praia é de noite, antes da
   meia-noite, sem a maré, que o passo não confere; e o mirante do Pedro ganha inglês e espanhol.
+- **As correções das falas, quarta leva: a fazenda e o revoar.** O convite estava preso na porta, e não
+  no mural; quem mais apareceu na fazenda foi homem (a Dona Zefa e a Dona Filó foram); são sete com o
+  jogador; o Pedro chama o jogador para dentro ("Vem logo atrás de mim. Se eu travar, me puxa."); a moça
+  sorriu para o Pedro a manhã inteira, que é quando eles entraram na casa;
+  e a conta da Matinta fica como coisa que se diz ("e dizem que ela cobra").
 - **O resumo do passo conta o material** (07–08/10: "na parte de levar tábuas e pedras ao
   Damião não informou o quantitativo; mesmo que o jogador já tenha no inventário, esse dado
   deve ser informado"; "a missão continuou indicando para construir a cerca como se eu

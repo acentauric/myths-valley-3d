@@ -167,9 +167,9 @@
       "reis": 4000
     },
     {
-      "oferta": "Agora ela não era velha. Era a moça da escadaria, a que sorriu para o Pedro a tarde inteira — e sorria para você. 'A última. Dá a mão, e eu sou tua.'",
-      "oferta_en": "Now she was not old. She was the girl from the staircase, the one who smiled at Pedro all afternoon — and she smiled at you. 'The last one. Give me your hand, and I'm yours.'",
-      "oferta_es": "Ahora no era vieja. Era la muchacha de la escalinata, la que le sonrió a Pedro toda la tarde, y te sonreía a ti. 'La última. Dame la mano, y soy tuya.'",
+      "oferta": "Agora ela não era velha. Era a moça da escadaria, a que sorriu para o Pedro a manhã inteira — e sorria para você. 'A última. Dá a mão, e eu sou tua.'",
+      "oferta_en": "Now she was not old. She was the girl from the staircase, the one who smiled at Pedro all morning — and she smiled at you. 'The last one. Give me your hand, and I'm yours.'",
+      "oferta_es": "Ahora no era vieja. Era la muchacha de la escalinata, la que le sonrió a Pedro toda la mañana, y te sonreía a ti. 'La última. Dame la mano, y soy tuya.'",
       "pergunta": "Dar a mão à moça? (não há réis nisto — só o fôlego que ela leva)",
       "pergunta_en": "Give the girl your hand? (there are no réis in this — only the breath she takes)",
       "pergunta_es": "¿Darle la mano a la muchacha? (no hay réis en esto, solo el aliento que ella se lleva)",
@@ -244,7 +244,7 @@
     {"texto": "A moça se despediu do Pedro com um beijo no rosto; o lugar dela era com elas. Dois grupos tomaram dois rumos: as mulheres, o quilombo; o arraial, a casa.", "texto_en": "The girl said goodbye to Pedro with a kiss on the cheek; her place was with them. Two groups took two roads: the women, the quilombo; the villagers, home.", "texto_es": "La muchacha se despidió de Pedro con un beso en la mejilla; su lugar era con ellas. Dos grupos tomaron dos rumbos: las mujeres, el quilombo; el poblado, la casa."}
   ],
   "amanhecer_levado": [
-    {"texto": "Você ficou com o escudo. A anciã olhou para ele no teu braço e não disse nada; as mulheres cantaram mais baixo. Quem leva legado de Matinta leva também a conta dela — e ela cobra.", "texto_en": "You kept the shield. The old woman looked at it on your arm and said nothing; the women sang more quietly. Whoever carries a legacy of the Matinta carries her debt too — and she collects.", "texto_es": "Te quedaste con el escudo. La anciana lo miró en tu brazo y no dijo nada; las mujeres cantaron más bajo. Quien se lleva legado de Matinta se lleva también su cuenta, y ella cobra."},
+    {"texto": "Você ficou com o escudo. A anciã olhou para ele no teu braço e não disse nada; as mulheres cantaram mais baixo. Quem leva legado de Matinta leva também a conta dela — e dizem que ela cobra.", "texto_en": "You kept the shield. The old woman looked at it on your arm and said nothing; the women sang more quietly. Whoever carries a legacy of the Matinta carries her debt too — and they say she collects.", "texto_es": "Te quedaste con el escudo. La anciana lo miró en tu brazo y no dijo nada; las mujeres cantaron más bajo. Quien se lleva legado de Matinta se lleva también su cuenta, y dicen que ella cobra."},
     {"texto": "A moça se despediu do Pedro com um beijo no rosto; o lugar dela era com elas. Dois grupos tomaram dois rumos: as mulheres, o quilombo; o arraial, a casa.", "texto_en": "The girl said goodbye to Pedro with a kiss on the cheek; her place was with them. Two groups took two roads: the women, the quilombo; the villagers, home.", "texto_es": "La muchacha se despidió de Pedro con un beso en la mejilla; su lugar era con ellas. Dos grupos tomaron dos rumbos: las mujeres, el quilombo; el poblado, la casa."}
   ],
   "dicas": {

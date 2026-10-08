@@ -71,9 +71,9 @@
       "raio": 7.0,
       "audio": "",
       "cena": "porta_estreita",
-      "texto": "Somos seis, comigo. Elas vão na frente, pela escadaria. Me chama quando estiver pronto, que a gente sobe junto.",
-      "texto_en": "Six of us, counting me. They go ahead, up the staircase. Call me when you're ready, and we go up together.",
-      "texto_es": "Somos seis, conmigo. Ellas van adelante, por la escalinata. Avísame cuando estés listo, y subimos juntos.",
+      "texto": "Somos seis, comigo — sete, com você. Elas vão na frente, pela escadaria. Me chama quando estiver pronto, que a gente sobe junto.",
+      "texto_en": "Six of us, counting me — seven, with you. They go ahead, up the staircase. Call me when you're ready, and we go up together.",
+      "texto_es": "Somos seis, conmigo — siete, contigo. Ellas van adelante, por la escalinata. Avísame cuando estés listo, y subimos juntos.",
       "meta": {
         "tipo": "falar",
         "a_quem": "pedro",
@@ -107,7 +107,7 @@
     {"texto": "Vem comigo. Eu não entro naquela casa sozinho.", "texto_en": "Come with me. I'm not going into that house alone.", "texto_es": "Ven conmigo. Yo no entro en esa casa solo."}
   ],
   "subida": [
-    {"texto": "As duas levaram os seis pela escadaria, para dentro da casa. Lá fora virou festa: música e comida para quem ficou. Lá dentro, sala após sala, tudo ia ficando mais quieto.", "texto_en": "The two women led the six up the staircase and into the house. Outside it turned into a party: music and food for those who stayed. Inside, room after room, everything grew quieter.", "texto_es": "Las dos llevaron a los seis por la escalinata, al interior de la casa. Afuera se volvió fiesta: música y comida para los que se quedaron. Adentro, sala tras sala, todo se iba quedando más quieto."},
+    {"texto": "As duas levaram os sete pela escadaria, para dentro da casa. Lá fora virou festa: música e comida para quem ficou. Lá dentro, sala após sala, tudo ia ficando mais quieto.", "texto_en": "The two women led the seven up the staircase and into the house. Outside it turned into a party: music and food for those who stayed. Inside, room after room, everything grew quieter.", "texto_es": "Las dos llevaron a los siete por la escalinata, al interior de la casa. Afuera se volvió fiesta: música y comida para los que se quedaron. Adentro, sala tras sala, todo se iba quedando más quieto."},
     {"texto": "Pararam o grupo num pequeno salão redondo, vazio. A mais nova foi quem falou.", "texto_en": "They stopped the group in a small round hall, empty. It was the younger one who spoke.", "texto_es": "Detuvieron al grupo en un pequeño salón redondo, vacío. Fue la más joven quien habló."}
   ],
   "desafio": [
@@ -130,11 +130,11 @@
   "pedro_fica": [
     {"texto": "Eu fico.", "texto_en": "I'm staying.", "texto_es": "Yo me quedo."},
     {"texto": "Que mal pode ter em abrir uma porta? E ela sorriu pra mim — você viu?", "texto_en": "What harm can there be in opening a door? And she smiled at me. Did you see?", "texto_es": "¿Qué mal puede haber en abrir una puerta? Y ella me sonrió. ¿Viste?"},
-    {"texto": "Fica aqui fora, junto da porta. Se eu demorar, me chama.", "texto_en": "Stay out here, by the door. If I take too long, call me.", "texto_es": "Quédate aquí afuera, junto a la puerta. Si tardo, llámame."}
+    {"texto": "Vem logo atrás de mim. Se eu travar, me puxa.", "texto_en": "Stay right behind me. If I freeze, pull me along.", "texto_es": "Ven justo detrás de mí. Si me trabo, tira de mí."}
   ],
   "chamado": [
     {"texto": "Acorda, que é hoje.", "texto_en": "Wake up, it's today.", "texto_es": "Despierta, que es hoy."},
-    {"texto": "O convite — aquele papel do mural da praça, que você guardou na mochila. Hoje é o dia dele.", "texto_en": "The invitation — that paper from the square's board, the one you kept in your backpack. Today is its day.", "texto_es": "La invitación: ese papel del mural de la plaza, el que guardaste en la mochila. Hoy es su día."},
+    {"texto": "O convite — aquele papel que prenderam na sua porta, e que você guardou na mochila. Hoje é o dia dele.", "texto_en": "The invitation — that paper they pinned to your door, the one you kept in your backpack. Today is its day.", "texto_es": "La invitación: ese papel que clavaron en tu puerta, el que guardaste en la mochila. Hoy es su día."},
     {"texto": "Saiu gente de madrugada. O Seu Benedito foi de charrete e levou a Dona Zefa e a Dona Filó; o Tonho desceu a pé pela estrada ainda no escuro.", "texto_en": "People left before dawn. Seu Benedito went by cart and took Dona Zefa and Dona Filó; Tonho walked down the road while it was still dark.", "texto_es": "Salió gente de madrugada. El señor Benedito fue en carreta y llevó a doña Zefa y a doña Filó; Tonho bajó a pie por el camino todavía a oscuras."},
     {"texto": "Meus avós foram na frente, com o Seu Benedito. Eu fiquei esperando você.", "texto_en": "My grandparents went ahead, with Seu Benedito. I stayed to wait for you.", "texto_es": "Mis abuelos se adelantaron, con el señor Benedito. Yo me quedé esperándote."},
     {"texto": "É do outro lado do rio grande. A gente passa pela ponte e pega a estrada de lá. Vem.", "texto_en": "It's across the big river. We cross the bridge and take the road on the other side. Come.", "texto_es": "Es del otro lado del río grande. Cruzamos el puente y tomamos el camino de allá. Ven."}
@@ -156,7 +156,7 @@
   "chegada_fim": [
     {"texto": "Achei meus avós. Estão ali, sentados, com um banquinho cada um — deram banquinho pra todo mundo.", "texto_en": "I found my grandparents. They're over there, sitting, each on a little bench — they gave everyone a bench.", "texto_es": "Encontré a mis abuelos. Están allí, sentados, cada uno con su banquito; les dieron banquito a todos."},
     {"texto": "Olha o tamanho da escadaria. E aquelas mesas cobertas, ali: eu nunca vi mesa daquele tamanho coberta desse jeito. Deve ser o banquete.", "texto_en": "Look at the size of that staircase. And those covered tables over there: I've never seen a table that size covered like that. Must be the banquet.", "texto_es": "Mira el tamaño de la escalinata. Y esas mesas cubiertas, allí: nunca vi una mesa de ese tamaño cubierta así. Debe ser el banquete."},
-    {"texto": "Mas repara uma coisa. Quem foi convidado é o arraial todo, e quem apareceu foi homem. Homem de roça e homem de mar, tudo grande.", "texto_en": "But notice something. The whole village was invited, and the ones who showed up were men. Field men and sea men, all of them big.", "texto_es": "Pero fíjate en una cosa. Al que invitaron fue a todo el pueblo, y los que vinieron fueron hombres. Hombres de la roza y hombres del mar, todos grandes."},
+    {"texto": "Mas repara uma coisa. Quem foi convidado é o arraial todo, e quem mais apareceu foi homem. Homem de roça e homem de mar, tudo grande.", "texto_en": "But notice something. The whole village was invited, and most of the ones who showed up were men. Field men and sea men, all of them big.", "texto_es": "Pero fíjate en una cosa. Al que invitaron fue a todo el pueblo, y los que más vinieron fueron hombres. Hombres de la roza y hombres del mar, todos grandes."},
     {"texto": "Parece menos festa e mais aquelas cheganças que a gente faz na praia, quando vai escolher quem puxa a rede.", "texto_en": "It looks less like a party and more like those gatherings we hold on the beach when we're choosing who pulls the net.", "texto_es": "Parece menos fiesta y más esas reuniones que hacemos en la playa cuando vamos a elegir quién tira de la red."},
     {"texto": "Deve ser coisa minha. Senta aí e espera, que alguém vai falar.", "texto_en": "Must be just me. Sit down and wait, someone is going to speak.", "texto_es": "Debe ser cosa mía. Siéntate y espera, que alguien va a hablar."}
   ],
