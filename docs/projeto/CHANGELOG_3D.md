@@ -12,6 +12,39 @@
   por uma pessoa (#187), e a frase de atenção do Pedro ainda não foi vista com o testador
   automático (#198).
 
+- **O chão e a praia perdem de vez os retângulos de borda reta.** Depois da suavização do mapa
+  ainda sobravam, na areia, na rua e junto da foz, retângulos pequenos de canto vivo, e a foz
+  tinha uma laje de areia clara de bordas retas no raso. Os retângulos eram o hash do ruído do
+  shader (`sin * 43758`), que longe da origem do vale dá dois valores ao mesmo canto de célula;
+  o hash novo não usa seno (chão, praia e leito do rio), a areia das camadas largas lê o mapa com
+  desvio maior, a faixa de areia em volta da foz ganhou rampa larga e ruído, e a laje da foz se
+  desfaz em manchas ao largo, sem mexer em malha, altura ou colisão. Conferido com o voo de
+  câmera antes e depois (praça, rua, foz, foz de cima, costa de cima, píer; 7, 9, 13 e 17 h, com
+  preamar e baixa-mar), com a montagem do mapa de solo medida (+~180 ms, em primitivas de C++) e
+  com os portões `mapa_de_solo` (também `--falsificar-quinas`), `clareiras_da_mata`, `agua_rasa`,
+  `mare_ligada` e `rio_grande`. O gráfico `validar_franja_da_areia.gd` ganhou a laje da foz e o
+  hash a 300 u da origem, cada um com a sua falsificação (#197, #138).
+
+- **Os pavões e os outros bichos de casa não aparecem nem somem de repente.** Um portão novo
+  (`aves_sem_piscar`) leva o jogador a pé e correndo pela estrada da igreja, de 110 u do adro até
+  colado nele e de volta, com a câmera atrás, à frente e longe, e registra quadro a quadro a
+  opacidade de cada ave e de cada bicho: ele achou os cães, gatos, porcos e cabras surgindo
+  opacos a ~71 u e sumindo a ~78 u (o corte era do gerente, a 72 u, e da apresentação do povoado,
+  que media pelo jogador e não pela câmera) e um pavão sumindo a 81 u. O bicho de quatro patas
+  passa a aparecer só quando a malha já está além do fade (84 u) e a apresentação só o tira quando
+  a câmera também está longe; o leque troca de modelo sem buraco. Com o corte de antes o portão
+  reprova (`--falsificar-corte`) (#193).
+
+- **O dendezal e os varais conferidos.** O dendezal foi fotografado de cima e rente ao chão nas
+  quatro estações (a mancha de folhiço aparece sob as palmas, de borda rasgada, sem cor estourada)
+  e o tempo de quadro nas duas vistas foi medido antes e depois com o vsync desligado (a máquina é
+  compartilhada e a placa oscila de estado: a variação entre rodadas, de 10 a 16 ms, é maior que a
+  diferença entre antes e depois, e o chão lê as mesmas camadas). Cachos e palha em malha seguem
+  sem modelo no catálogo: a palha seca é a do folhiço do chão (#195). Os três varais foram
+  postos lado a lado com o viajante (`tools/prototipo_3d/fotografar_varais.gd`): estacas de 1,9 u
+  contra 1,78 u dele, roupa na altura do peito, e `casa_sem_varal` e `rotina_dos_moradores`
+  seguem verdes (#194).
+
 - **Primeiros clipes do Mixamo nos moradores.** Seis animações do Mixamo entram
   redirecionadas para o esqueleto Tripo de cada um (`tools/prototipo_3d/mixamo/redirecionar.gd`,
   só rotações e o quadril, pé no chão, no lugar): o Pedro treina capoeira no posto quando o

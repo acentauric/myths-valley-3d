@@ -14,12 +14,20 @@ uniform sampler2D lama : source_color, filter_linear_mipmap_anisotropic, repeat_
 uniform float ladrilho_lama = 4.0;
 uniform vec3 tinta_lama : source_color = vec3(1.0);
 uniform float mistura_lama = 0.0;
+// Foz: a laje de areia que passa da costa para o mar se desfaz em manchas ao largo,
+// por `costa_desfaz` unidades a partir de `costa_ponto` no rumo `costa_direcao`
+// (0 desliga: o leito do rio e a cena da orla não usam).
+uniform vec2 costa_ponto = vec2(0.0);
+uniform vec2 costa_direcao = vec2(0.0, 1.0);
+uniform float costa_desfaz = 0.0;
 // A areia de rio é mais escura e fria que a de praia: tom da calha com a lama.
 uniform vec3 tom_calha_com_lama : source_color = vec3(0.7, 0.64, 0.54);
 varying vec2 mundo;
 
 float hash21(vec2 p) {
-	return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
+	vec3 p3 = fract(vec3(p.xyx) * 0.1031);
+	p3 += dot(p3, p3.yzx + 33.33);
+	return fract((p3.x + p3.y) * p3.z);
 }
 
 float ruido(vec2 p) {
@@ -67,6 +75,7 @@ void fragment() {
 	float borda = clamp(dentro_margem / max(franja, 0.001), 0.0, 1.0);
 	float manchas = ruido(mundo * 0.5);
 	float graos = ruido(mundo * 5.0);
-	ALPHA = borda * 1.35 + (manchas - 0.5) * 0.6 + (graos - 0.5) * 0.35 - 0.18;
+	float ao_largo = costa_desfaz > 0.0 ? clamp(dot(mundo - costa_ponto, costa_direcao) / costa_desfaz, 0.0, 1.0) : 0.0;
+	ALPHA = borda * 1.35 + (manchas - 0.5) * 0.6 + (graos - 0.5) * 0.35 - 0.18 - ao_largo * 1.7;
 	ALPHA_SCISSOR_THRESHOLD = 0.5;
 }

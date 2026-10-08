@@ -1,10 +1,16 @@
 // Peças comuns dos shaders de chão (terreno, acostamento das ruas, cruzamentos).
-// O hash e o ruído de valor são os mesmos que a praia, o leito do rio e a foz usam
-// cada um na sua cópia (areia_praia, leito_rio, foz_rio): mesma conta, mesmo
-// recorte, então a borda esfarelada de um casa com a do outro.
+// O hash e o ruído de valor são os mesmos que a praia e o leito do rio usam cada um na
+// sua cópia (areia_praia, leito_rio): mesma conta, mesmo recorte, então a borda
+// esfarelada de um casa com a do outro.
 
+// SEM sin(): o hash de seno de 43758 amplifica o erro de arredondamento da GPU (o mesmo
+// canto de célula, lido de duas células vizinhas, dava dois valores) e, longe da origem do
+// vale, cada célula do ruído virava um retângulo de borda reta no chão e na praia (#197,
+// #138). Esta conta só multiplica e soma, e o erro de um bit continua de um bit.
 float hash21(vec2 p) {
-	return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
+	vec3 p3 = fract(vec3(p.xyx) * 0.1031);
+	p3 += dot(p3, p3.yzx + 33.33);
+	return fract((p3.x + p3.y) * p3.z);
 }
 
 // Ruído de valor, de 0 a 1, interpolado com smoothstep.

@@ -39,6 +39,8 @@ func atualizar() -> void:
 
 func _escolher(atores: Array[Node], limite: int, moradores: bool) -> void:
 	var jogador: Vector3 = _vale.player.global_position
+	var camera := get_viewport().get_camera_3d() if is_inside_tree() else null
+	var olho: Vector3 = camera.global_position if camera != null else jogador
 	atores.sort_custom(func(a, b): return onde_esta(a).distance_squared_to(jogador) < onde_esta(b).distance_squared_to(jogador))
 	var apresentados := 0
 	for ator in atores:
@@ -56,6 +58,11 @@ func _escolher(atores: Array[Node], limite: int, moradores: bool) -> void:
 		var id := ator.get_instance_id()
 		var distancia: float = onde_esta(ator).distance_to(jogador)
 		var conhecido := _vistos.has(id)
+		# Quem já entrou em cena só sai quando a câmera TAMBÉM está longe: o fade das
+		# malhas (80 a 84 u) é medido dela, e com a câmera girada para a frente ou
+		# afastada ela chega a 25 u mais perto do ator que o jogador (#193).
+		if conhecido:
+			distancia = minf(distancia, onde_esta(ator).distance_to(olho))
 		var perto := distancia < (SAIDA + alcance_do_ator(ator) if conhecido else RAIO)
 		var mostrar := essencial or (perto and (conhecido or apresentados < limite))
 		if mostrar and not essencial:
@@ -68,12 +75,15 @@ func _escolher(atores: Array[Node], limite: int, moradores: bool) -> void:
 		elif not mostrar and not _ocultos.has(id):
 			_definir(ator, false, false)
 
-## Quanto (u) o ator se estende além do centro. O bando só some de vez depois que a
-## ave mais próxima do jogador já saiu do fade da malha (80 a 84 u): a saída seca
-## passa a contar o raio do terreiro e a folga do voo (#193).
+## Quanto (u) o ator se estende além do centro. O ator só some de vez depois que a
+## parte mais próxima dele já saiu do fade da malha (80 a 84 u): o bando conta o raio do
+## terreiro e a folga do voo, o bicho a folga do corpo (#193).
+const FOLGA_DO_CORPO := 2.0
+
+
 static func alcance_do_ator(ator: Node3D) -> float:
 	if not (ator.get("centro") is Vector3):
-		return 0.0
+		return FOLGA_DO_CORPO
 	return float(ator.get("raio")) + 6.0
 
 

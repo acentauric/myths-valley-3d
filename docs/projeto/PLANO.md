@@ -16,9 +16,10 @@ forçar a visita fora do dia reproduz duas falhas.
 Liberar o elenco completo também persiste ao recalcular a visita, sem
 revogar a ausência de Quirino fora do calendário. Gate e mutante conferidos.
 
-A #138 tem acabamento irregular na extremidade marítima da areia, com
-prova gráfica e passagem/maré preservadas. A foz mantém emendas e impede
-fechar a issue: [TRANSICAO_DA_COSTA.md](../testes/TRANSICAO_DA_COSTA.md).
+A #138 fechou: a extremidade marítima da areia se desfaz em manchas e a laje
+da foz também, os retângulos de borda reta do chão e da praia (o hash do
+ruído) saíram, com prova gráfica e passagem/maré preservadas:
+[TRANSICAO_DA_COSTA.md](../testes/TRANSICAO_DA_COSTA.md).
 
 A #9 avança parcialmente com compra/posse nativas: Zefa/Benedito, preços
 históricos, confirmação pelo E, desconto de favor na terra e persistência

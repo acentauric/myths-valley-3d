@@ -60,6 +60,7 @@ uniform vec2 solo_tamanho = vec2(1.0);
 // serpenteiam em vez de seguir a grade do mapa: nenhuma quina reta (#197). 0 liga o
 // mapa cru.
 uniform float desvio_borda = 0.0;
+uniform float desvio_borda_larga = 0.0;
 // 0 desliga barro e pedrisco do declive e do alto do morro.
 uniform float forca_declive = 0.0;
 // Altura (u) a partir da qual o topo do morro vira pedrisco.
@@ -87,8 +88,9 @@ uniform vec2 mouth_b;
 uniform vec2 mouth_c;
 uniform vec2 mouth_d;
 uniform vec2 mouth_e;
-uniform float mouth_sand_inner = 4.0;
-uniform float mouth_sand_outer = 4.75;
+uniform float mouth_sand_inner = 3.4;
+uniform float mouth_sand_outer = 6.6;
+uniform float mouth_sand_desvio = 1.3;
 
 varying vec3 mundo;
 varying vec3 normal_mundo;
@@ -136,11 +138,16 @@ void fragment() {
 		// O ponto lido no mapa é desviado por dois ruídos de manchas de ~6 u, para a
 		// fronteira de cada camada ondular em vez de ficar no degrau da grade de 1 px.
 		vec2 xz_solo = xz + (vec2(ruido2(xz / 6.0 + vec2(3.7, 9.1)), ruido2(xz / 6.0 + vec2(41.3, 17.9))) - 0.5) * 2.0 * desvio_borda;
+		// As camadas LARGAS (areia, lama, pasto, copa) leem o mapa com um desvio maior e de
+		// duas escalas (manchas de ~6 u e de ~1,6 u): a borda da areia da costa vem de retas do
+		// KML e, com só o desvio suave, ficava reta por 5 a 7 u seguidos (#197). Terra e trilha,
+		// estreitas, ficam com o desvio curto, para o traço não se partir.
+		vec2 xz_largo = xz + (vec2(ruido2(xz / 5.0 + vec2(7.9, 2.3)), ruido2(xz / 5.0 + vec2(29.1, 33.7))) - 0.5) * 2.0 * desvio_borda_larga;
 		s_terra = max(camada_solo(xz_solo, 0.0), camada_solo(xz_solo, 5.0));
-		s_areia = camada_solo(xz_solo, 1.0);
-		s_lama = camada_solo(xz_solo, 2.0);
-		s_pasto = camada_solo(xz_solo, 3.0);
-		s_copa = camada_solo(xz_solo, 4.0);
+		s_areia = camada_solo(xz_largo, 1.0);
+		s_lama = camada_solo(xz_largo, 2.0);
+		s_pasto = camada_solo(xz_largo, 3.0);
+		s_copa = camada_solo(xz_largo, 4.0);
 	}
 	// Declive: 1 - cos do ângulo. 11° = 0,018; 20° = 0,060; 22° = 0,073.
 	float declive = 1.0 - clamp(normal_mundo.y, 0.0, 1.0);
@@ -237,7 +244,11 @@ void fragment() {
 			min(distancia_segmento(xz, mouth_a, mouth_b), distancia_segmento(xz, mouth_b, mouth_c)),
 			min(distancia_segmento(xz, mouth_c, mouth_d), distancia_segmento(xz, mouth_d, mouth_e))
 		);
-		float sand_amount = 1.0 - smoothstep(mouth_sand_inner, mouth_sand_outer, distance_from_mouth);
+		// A borda da faixa de areia da foz serpenteia: a distância ao traçado (retas de vértice
+		// a vértice) ganha um ruído de manchas de ~3 u e a rampa é larga. Com rampa de 0,75 u e
+		// sem ruído a faixa acabava em retas e degraus em ângulo reto (#197).
+		float desvio_foz = (ruido2(xz / 3.0 + vec2(17.3, 5.9)) - 0.5) * 2.0 * mouth_sand_desvio;
+		float sand_amount = 1.0 - smoothstep(mouth_sand_inner, mouth_sand_outer, distance_from_mouth + desvio_foz);
 		vec3 sand = texture(sand_texture, xz / 5.0).rgb * vec3(0.92, 0.88, 0.8);
 		cor = mix(cor, sand, sand_amount);
 	}

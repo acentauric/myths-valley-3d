@@ -1,4 +1,4 @@
-# Transição da costa — #138, parcial
+# Transição da costa — #138
 
 ## Acabamento da extremidade da faixa
 
@@ -21,10 +21,31 @@ comparações da praia, píer e foz foram inspecionadas contra o baseline.
 Os roteiros de captura não substituem esses gates. Não há erro de script;
 avisos de texturas aparecem no encerramento das execuções gráficas.
 
-## Pendência que mantém a issue aberta
+## A foz (o que faltava para fechar a issue)
 
-Na foz ainda se veem emendas da composição entre leito do rio, faixa de
-areia e fundo do mar. A mudança de material reduz a borda da faixa, mas
-não comprova continuidade completa nesses encontros. Uma tentativa de
-encaixar toda a extremidade da praia na batimetria não demonstrou melhora
-visual e foi retirada. A revisão geométrica da foz continua necessária.
+Com a câmera de cima da foz e `fotografar_chao.gd --esconder=...`, cada emenda foi atribuída a uma
+malha, escondendo uma de cada vez:
+
+- **A laje clara no raso, de bordas retas, à saída do rio.** Era a "Ladeira da foz": a malha de areia
+  que continua o leito do rio por baixo do mar (para a colisão não subir na ponta) e acabava num
+  retângulo de areia sobre o fundo. Escondida, a foz abre limpa no mar. A malha, a altura e a colisão
+  não mudaram; o `leito_rio.gdshader` ganhou `costa_ponto`, `costa_direcao` e `costa_desfaz`, e a
+  areia passa a se desfazer em manchas por 26 u a partir de 4 u antes da costa, até sumir no mar.
+- **Os retângulos pequenos de borda reta na areia e na grama junto da foz, na rua e na praia.** Vinham
+  do hash do ruído (`sin * 43758`), que dá valores diferentes ao mesmo canto de célula longe da
+  origem do vale. O hash novo (sem seno) está em `solo.gdshaderinc`, `areia_praia` e `leito_rio`;
+  ver [SOLO_E_FRANJAS.md](../mundo/SOLO_E_FRANJAS.md).
+- **A faixa de areia em volta do rio** (`mouth_sand_*` do terreno) tinha rampa de 0,75 u e acabava em
+  retas: rampa larga e borda com ruído.
+
+Os gates novos moram em `validar_franja_da_areia.gd` (com janela): a laje da foz, renderizada pelo
+shader real, tem o miolo cheio em terra, nada de areia a 7 u da costa no mar e a transição em
+manchas (`-- --sem-desfaz` reprova nas duas últimas); e o hash, pedido de dois jeitos a 300 u da
+origem, só difere em ~0,2% dos pixels (`-- --hash-antigo`: ~75%, reprova). `--sem-franja` segue
+reprovando as duas verificações antigas.
+
+Verificação visual (`fotografar_chao.gd`): foz, foz de cima, praia do píer e costa de cima, às 7 h
+(preamar), 9 h, 13 h (baixa-mar) e 17 h; a praia, o píer e a foz não têm mais emenda reta entre o
+leito do rio, a faixa de areia e o fundo do mar. Na baixa-mar o fundo da baía fica à mostra, liso:
+é a maré do jogo, não uma linha. `agua_rasa`, `mare_ligada` e `rio_grande` passam: a navegação, a
+colisão e a entrada na água não mudaram (só o visual da areia).
