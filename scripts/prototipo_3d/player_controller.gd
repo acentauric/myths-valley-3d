@@ -193,6 +193,8 @@ var _navigator = ClickNavigation.new()
 var _walk_path := PackedVector3Array()
 var _walk_index := 0
 var _walk_destination := Vector3.INF
+var _walk_chegada := ARRIVAL_DISTANCE
+var _walk_ate_o_fim := false
 var _stuck_time := 0.0
 var _replan_attempts := 0
 var _hovered_house: Object
@@ -1287,21 +1289,40 @@ func _request_walk_at_cursor(mouse: Vector2, run_to_destination: bool = false) -
 
 ## Inicia o mesmo caminho usado pelo clique, para interações que precisam de
 ## uma aproximação antes de acontecer (como parar diante de um tronco).
-func caminhar_ate(destino: Vector3) -> bool:
+##
+## `chegada` é a que distância do último ponto o corpo dá o trajeto por feito (o de sempre para
+## 0,7 m: quem clica no chão para um pouco antes), e `ate_o_fim` leva o trajeto até o destino
+## mesmo quando a grade (células de 2,5 m) o põe numa célula barrada, onde ela acaba na célula
+## livre mais perto, longe dele — o que o golpe de braço (#208) não aceita: ele precisa chegar
+## à face do alvo.
+func caminhar_ate(destino: Vector3, chegada: float = ARRIVAL_DISTANCE, ate_o_fim: bool = false) -> bool:
 	if _click_world == null or not _click_world.is_walkable_point(destino):
 		return false
 	_cancel_walk()
-	var caminho: PackedVector3Array = _navigator.find_path(global_position, destino)
+	var caminho := _planejar_caminho(global_position, destino, ate_o_fim)
 	if caminho.is_empty():
 		return false
 	_walk_path = caminho
 	_walk_run = false
 	_walk_index = 0
 	_walk_destination = destino
+	_walk_chegada = chegada
+	_walk_ate_o_fim = ate_o_fim
 	_stuck_time = 0.0
 	_replan_attempts = 0
 	navigation_status.emit("Caminhando até o ponto selecionado. %s cancela o trajeto." % TeclasMovimento.rotulo())
 	return true
+
+
+## O trajeto da grade de `de` a `ate`; com `ate_o_fim`, acrescenta o próprio destino quando a grade
+## acabou longe dele.
+func _planejar_caminho(de: Vector3, ate: Vector3, ate_o_fim: bool) -> PackedVector3Array:
+	var caminho: PackedVector3Array = _navigator.find_path(de, ate)
+	if ate_o_fim and not caminho.is_empty():
+		var fim := caminho[caminho.size() - 1]
+		if Vector2(fim.x - ate.x, fim.z - ate.z).length() > ARRIVAL_DISTANCE:
+			caminho.append(_click_world.ground_position(ate, 0.08))
+	return caminho
 
 
 func caminhando_para(destino: Vector3) -> bool:
@@ -1324,7 +1345,7 @@ func _next_walk_direction() -> Vector3:
 	while _walk_index < _walk_path.size():
 		var waypoint := _walk_path[_walk_index]
 		var offset := Vector3(waypoint.x - global_position.x, 0, waypoint.z - global_position.z)
-		if offset.length() >= ARRIVAL_DISTANCE:
+		if offset.length() >= _walk_chegada:
 			return offset.normalized()
 		_walk_index += 1
 	_cancel_walk()
@@ -1346,7 +1367,7 @@ func _retry_walk() -> void:
 		_cancel_walk()
 		navigation_status.emit("Caminho bloqueado. Escolha outro destino.")
 		return
-	var path: PackedVector3Array = _navigator.find_path(global_position, _walk_destination)
+	var path := _planejar_caminho(global_position, _walk_destination, _walk_ate_o_fim)
 	if path.is_empty():
 		_cancel_walk()
 		navigation_status.emit("Caminho bloqueado. Escolha outro destino.")
@@ -1360,6 +1381,8 @@ func _cancel_walk() -> void:
 	_walk_run = false
 	_walk_index = 0
 	_walk_destination = Vector3.INF
+	_walk_chegada = ARRIVAL_DISTANCE
+	_walk_ate_o_fim = false
 	_stuck_time = 0.0
 	_replan_attempts = 0
 

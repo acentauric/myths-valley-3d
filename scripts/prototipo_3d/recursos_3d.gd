@@ -79,6 +79,9 @@ const ALCANCE_DO_GOLPE := 1.2
 ## A que distância da face o viajante para quando anda até o alvo: dentro do braço, sem
 ## encostar o ombro.
 const DISTANCIA_DE_GOLPE := 0.8
+## A que distância do ponto de golpe o trajeto se dá por feito: o de clicar no chão (0,7 m)
+## deixaria o corpo a 1,5 m da face, fora do braço.
+const CHEGADA_AO_GOLPE := 0.15
 ## Folga na conta de "parou perto o bastante" (o corpo para um pouco antes ou depois do
 ## ponto) e na do impacto (o corpo escorrega um pouco no quadro do golpe).
 const FOLGA_DO_PARAR := 0.3
@@ -734,7 +737,7 @@ func _aproximar(id: String) -> bool:
 		var destino := ponto_de_golpe(id, de_fora.rotated(Vector3.UP, angulo))
 		if not destino.is_finite():
 			continue
-		if bool(_jogador.call("caminhar_ate", destino)):
+		if bool(_jogador.call("caminhar_ate", destino, CHEGADA_AO_GOLPE, true)):
 			_aproximando_de = id
 			_destino_do_golpe = destino
 			return true
