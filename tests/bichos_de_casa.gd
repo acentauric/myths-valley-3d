@@ -339,20 +339,20 @@ func _run() -> void:
 	# próxima (centro - raio - folga do voo) ainda está além do fade da malha, e só é
 	# cortado depois que ela já sumiu. Usa a mesma regra do gerente, com a histerese.
 	var BandoDeChao = load("res://scripts/prototipo_3d/bando_de_chao.gd")
-	for bando in gerente.bandos:
-		var raio: float = float(bando.raio)
+	for um_bando in gerente.bandos:
+		var raio: float = float(um_bando.raio)
 		var alcance: float = Gerente.alcance_do_bando(raio)
 		var fim_do_fade: float = BandoDeChao.ALCANCE + Gerente.MARGEM_DO_FADE
 		var recuo: float = raio + Gerente.FOLGA_DO_BANDO
 		# Logo antes de aparecer, a ave mais próxima está a (distância - recuo) da câmera.
 		var aparece_a: float = alcance - Gerente.HISTERESE
-		_conferir(not Gerente._perto(Vector3(aparece_a + 0.01, 0.0, 0.0), olho, false, alcance), "o bando da %s ainda não aparece a %.0f u do centro" % [bando.casa, aparece_a])
-		_conferir(Gerente._perto(Vector3(aparece_a - 0.01, 0.0, 0.0), olho, false, alcance), "o bando da %s aparece logo aquém de %.0f u" % [bando.casa, aparece_a])
-		_conferir(aparece_a - recuo >= fim_do_fade, "o bando da %s aparece com a ave mais próxima a %.0f u, além do fim do fade (%.0f u)" % [bando.casa, aparece_a - recuo, fim_do_fade])
+		_conferir(not Gerente._perto(Vector3(aparece_a + 0.01, 0.0, 0.0), olho, false, alcance), "o bando da %s ainda não aparece a %.0f u do centro" % [um_bando.casa, aparece_a])
+		_conferir(Gerente._perto(Vector3(aparece_a - 0.01, 0.0, 0.0), olho, false, alcance), "o bando da %s aparece logo aquém de %.0f u" % [um_bando.casa, aparece_a])
+		_conferir(aparece_a - recuo >= fim_do_fade, "o bando da %s aparece com a ave mais próxima a %.0f u, além do fim do fade (%.0f u)" % [um_bando.casa, aparece_a - recuo, fim_do_fade])
 		# Quem já estava à vista só é cortado depois do fim do fade.
 		var corta_a: float = alcance + Gerente.HISTERESE
-		_conferir(Gerente._perto(Vector3(corta_a - 0.01, 0.0, 0.0), olho, true, alcance) and not Gerente._perto(Vector3(corta_a + 0.01, 0.0, 0.0), olho, true, alcance), "o bando da %s é cortado a %.0f u do centro" % [bando.casa, corta_a])
-		_conferir(corta_a - recuo >= fim_do_fade, "o bando da %s é cortado com a ave mais próxima a %.0f u, além do fim do fade (%.0f u)" % [bando.casa, corta_a - recuo, fim_do_fade])
+		_conferir(Gerente._perto(Vector3(corta_a - 0.01, 0.0, 0.0), olho, true, alcance) and not Gerente._perto(Vector3(corta_a + 0.01, 0.0, 0.0), olho, true, alcance), "o bando da %s é cortado a %.0f u do centro" % [um_bando.casa, corta_a])
+		_conferir(corta_a - recuo >= fim_do_fade, "o bando da %s é cortado com a ave mais próxima a %.0f u, além do fim do fade (%.0f u)" % [um_bando.casa, corta_a - recuo, fim_do_fade])
 
 	_fechar()
 
