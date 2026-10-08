@@ -18,6 +18,9 @@
       "raio": 9.0,
       "audio": "",
       "texto": "Você lembra do que eu te falei, do chão e da troca? Pois é hoje que eu peço. Alecrim-do-campo, arruda brava, folha de mamona — não nasce aqui embaixo: precisa de ar seco e de sol de manhã, e isso só tem lá em cima, na serra. Sobe pela picada do mirante e procura onde a mata abre, que é na clareira que o sol bate. Na grota da nascente não adianta, que lá é sombra e água, e não se mete no fundo, que lá é do caititu. Cinco maços, e não arranque pela raiz: corte no meio do pé, que o que se arranca não volta e eu vou precisar no ano que vem também. Toma a foice, e vá com calma que eu não vou a lugar nenhum.",
+      "diario": "Estas ervas só nascem lá em cima, onde o ar é seco e o sol bate cedo. Corte no meio do pé, que o que se arranca não volta, e vá com calma: eu não vou a lugar nenhum.",
+      "diario_en": "These herbs only grow up high, where the air is dry and the morning sun reaches. Cut them mid-stalk, since what you pull up doesn't come back, and take your time: I'm not going anywhere.",
+      "diario_es": "Estas hierbas solo nacen arriba, donde el aire es seco y el sol llega temprano. Córtalas a media planta, que lo que se arranca no vuelve, y ve con calma: yo no me voy a ningún lado.",
       "entrega": { "item": "foice", "quantidade": 1 },
       "recompensa": {"xp": 10,  "cocada": 2 },
       "meta": {

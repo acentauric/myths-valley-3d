@@ -34,6 +34,26 @@ extends Node
 ##
 ## O ponto da cabeça é o alvo de uma mola (`suavizador_de_tela.gd`): a placa desliza
 ## até ele, e o tremor de um pixel da câmera não a move.
+##
+##
+## NUNCA NO ROSTO, E ATRÁS DO QUE ESTÁ MAIS PERTO (#184)
+##
+## "A plaquinha de nome cai em cima do personagem: 'Dona Zefa' cobre o rosto e o chapéu
+## dela." A placa conhecia o HUD, o balão e a dica do E, mas não a silhueta de ninguém.
+## Agora cada personagem à vista (os moradores e o jogador) projeta duas caixas na tela,
+## a da CABEÇA (do chapéu ao queixo) e a do TRONCO, a partir da altura real do modelo (a
+## malha mais alta, e não só o `altura` do dado):
+##
+##   1. ROSTO: a placa que cairia sobre a cabeça de qualquer um (a do próprio dono, com a
+##      câmera perto e baixa, ou a de quem está atrás de outro) SOBE até ficar livre dela,
+##      só o que falta. Se para isso teria de subir mais que `SUBIDA_MAXIMA` (o dono do E e
+##      o alvo da missão aguentam `SUBIDA_MAXIMA_DE_QUEM_IMPORTA`) não há lugar bom, e ela não aparece.
+##      A subida tem histerese: sobe na hora, só desce quando a folga passa de `DESCE_SO_DEPOIS` px.
+##   2. PROFUNDIDADE: a placa de quem está MAIS LONGE da câmera que um personagem ou um balão
+##      (por mais que `PROFUNDIDADE_MINIMA`) e passa na frente dele fica transparente, tanto
+##      mais quanto maior a parte coberta e quanto maior a diferença de distância. Nunca
+##      some por isso: o piso é `ALFA_ATRAS` (`ALFA_ATRAS_DE_QUEM_IMPORTA` para o dono do E e o
+##      alvo da missão), e o alfa anda em `SEGUNDOS_DO_ALFA_ATRAS`, sem piscar.
 
 const SuavizadorDeTela = preload("res://scripts/prototipo_3d/suavizador_de_tela.gd")
 const PopupsDoMundo = preload("res://scripts/prototipo_3d/popups_do_mundo.gd")
@@ -46,6 +66,37 @@ const INTERVALO_OCLUSAO := 0.12
 const ESTABILIZAR_OCLUSAO := 0.18
 
 const MAXIMO_DE_PLACAS := 3
+## #184. As caixas de um personagem na tela (metros, a partir dos pés): a cabeça vai do queixo ao
+## alto do modelo (`FRACAO_DA_CABECA` da altura); o tronco, dali até `FRACAO_DO_TRONCO` da altura
+## abaixo do topo. As meias-larguras são em metros no plano da câmera.
+const FRACAO_DA_CABECA := 0.17
+const FRACAO_DO_TRONCO := 0.58
+const MEIA_LARGURA_DA_CABECA := 0.24
+const MEIA_LARGURA_DO_TRONCO := 0.36
+## Quanto o modelo pode passar do `altura` do dado (o chapéu, o cabelo) e de quanto em quanto
+## tempo se mede de novo (s).
+const EXCESSO_DO_MODELO := 1.12
+const INTERVALO_DA_MEDIDA := 1.5
+## A folga (px) entre a placa e a cabeça que ela deixa livre, e o quanto a cabeça pode ser
+## tocada de lado sem contar (a caixa encolhe tanto).
+const FOLGA_DO_ROSTO := 4.0
+const ENCOLHE_DO_ROSTO := 3.0
+## O quanto a placa pode subir (px) para liberar uma cabeça antes de desistir, e quanto mais aguenta
+## quem já tem a placa. Quem importa sobe mais.
+const SUBIDA_MAXIMA := 90.0
+const SUBIDA_MAXIMA_DE_QUEM_IMPORTA := 220.0
+const SUBIDA_DE_QUEM_JA_TEM := 1.25
+const VELOCIDADE_DA_SUBIDA := 480.0
+const DESCE_SO_DEPOIS := 8.0
+## A placa de quem está mais longe que isto (m) de um personagem ou balão que ela cobre esmaece:
+## nada até `PROFUNDIDADE_MINIMA`, cheio em `PROFUNDIDADE_PLENA`; e `COBERTURA_PLENA` é a fração
+## coberta da placa que já conta como cheia.
+const PROFUNDIDADE_MINIMA := 0.6
+const PROFUNDIDADE_PLENA := 5.0
+const COBERTURA_PLENA := 0.4
+const ALFA_ATRAS := 0.22
+const ALFA_ATRAS_DE_QUEM_IMPORTA := 0.6
+const SEGUNDOS_DO_ALFA_ATRAS := 0.25
 ## SÓ DE PERTO (#90): inteira até PLACA_PERTO, esmaecendo até PLACA_LONGE, e nada
 ## além — na live os nomes da praça inteira apareciam a vinte e duas unidades.
 const PLACA_PERTO := 6.0
@@ -90,12 +141,19 @@ var _placas: Dictionary = {}
 var _permitido := true
 ## Quantas placas ligadas, no máximo (o portão da falsificação sobe isto).
 var maximo := MAXIMO_DE_PLACAS
+## Falso desliga o rosto e a profundidade (#184): o jogo de antes, para o portão reprovar.
+var respeita_rostos := true
 ## Morador -> a mola da placa dele, e o quanto ela está acesa (0 a 1).
 var _molas: Dictionary = {}
 var _alfa: Dictionary = {}
 ## Quem ganhou a vaga no quadro passado.
 var _vaga: Dictionary = {}
 var _oclusao: Dictionary = {}
+## Morador -> quanto a placa sobe (px) para liberar uma cabeça, e o alfa que a profundidade deixa a ela.
+var _subida: Dictionary = {}
+var _alfa_atras: Dictionary = {}
+## Personagem -> {"topo": altura real (m), "ate": até quando vale, em s}, a medida do modelo (ver `_altura_real`).
+var _medidas: Dictionary = {}
 
 
 func _init() -> void:
@@ -132,6 +190,10 @@ func _process(delta: float) -> void:
 	var dono_do_e: Node3D = null
 	var da_missao: Node3D = null
 	var frente := Vector3.ZERO
+	# #184: as cabeças (para a placa não cair no rosto de ninguém) e o que está na tela com a sua
+	# distância à câmera (para a placa de quem está atrás de um deles esmaecer).
+	var rostos: Array[Rect2] = []
+	var no_caminho: Array = []
 	if liberado:
 		baloes = PopupsDoMundo.retangulos_dos_baloes(self)
 		dicas = PopupsDoMundo.retangulos(self, PopupsDoMundo.GRUPO_DICAS)
@@ -146,6 +208,11 @@ func _process(delta: float) -> void:
 		frente = -camera.global_transform.basis.z
 		frente.y = 0.0
 		frente = frente.normalized()
+		if respeita_rostos:
+			for personagem: Dictionary in _caixas_dos_personagens(camera):
+				rostos.append(encolhida(personagem["cabeca"] as Rect2, ENCOLHE_DO_ROSTO))
+				no_caminho.append({"no": personagem["no"], "caixa": personagem["corpo"], "distancia": personagem["distancia"]})
+			no_caminho.append_array(_baloes_com_profundidade(camera))
 	var limite := maximo - (1 if not baloes.is_empty() else 0)
 	var util := Rect2(Vector2.ZERO, tela).grow(-MARGEM_DA_TELA)
 	var paineis := PopupsDoMundo.paineis_do_hud(tela)
@@ -163,8 +230,11 @@ func _process(delta: float) -> void:
 			_alfa.erase(morador)
 			_vaga.erase(morador)
 			_oclusao.erase(morador)
+			_subida.erase(morador)
+			_alfa_atras.erase(morador)
+			_medidas.erase(morador)
 			continue
-		var topo := morador.global_position + Vector3(0, float(morador.get("altura")) + ACIMA_DA_CABECA, 0)
+		var topo := morador.global_position + Vector3(0, _altura_real(morador) + ACIMA_DA_CABECA, 0)
 		if not liberado or not morador.is_visible_in_tree() or camera.is_position_behind(topo):
 			_apagar_ja(morador)
 			continue
@@ -192,6 +262,12 @@ func _process(delta: float) -> void:
 		var tinha := _vaga.has(morador)
 		if _concorre_com_arvore(caixa, dicas_arvore, tinha):
 			continue
+		# NUNCA NO ROSTO (#184): sobe até liberar toda cabeça que cobriria, ou desiste se for demais.
+		var precisa := subida_do_rosto(caixa, rostos, FOLGA_DO_ROSTO)
+		var teto := (SUBIDA_MAXIMA_DE_QUEM_IMPORTA if importa else SUBIDA_MAXIMA) * (SUBIDA_DE_QUEM_JA_TEM if tinha else 1.0)
+		if precisa > teto:
+			continue
+		caixa.position.y -= _acertar_subida(morador, precisa, delta)
 		var tolerancia := SOBREPOSTA_PARA_SAIR if tinha else SOBREPOSTA_PARA_ENTRAR
 		var area_util := util.grow(MARGEM_DE_QUEM_JA_TEM) if tinha else util
 		if not area_util.encloses(caixa) or _encosta_em_algum(caixa, paineis, tolerancia) or _encosta_em_algum(caixa, baloes, tolerancia):
@@ -215,10 +291,15 @@ func _process(delta: float) -> void:
 			"no": morador, "distancia": distancia, "rumo": rumo, "caixa": caixa,
 			"dono_do_e": morador == dono_do_e, "da_missao": morador == da_missao,
 			"tinha": tinha,
+			"fundo": alfa_por_profundidade(caixa, camera.global_position.distance_to(morador.global_position),
+				no_caminho, ALFA_ATRAS_DE_QUEM_IMPORTA if importa else ALFA_ATRAS, morador),
 		})
 	var vencedores := {}
+	# Quanto o que está mais perto deixa a placa de cada vencedor acesa (1 sem nada na frente).
+	var fundos := {}
 	for indice in escolher(candidatos, limite):
 		vencedores[candidatos[indice]["no"]] = true
+		fundos[candidatos[indice]["no"]] = float(candidatos[indice]["fundo"])
 	_vaga = vencedores
 	var ligadas := 0
 	for placa: PanelContainer in _placas.values():
@@ -229,6 +310,7 @@ func _process(delta: float) -> void:
 		var mola: SuavizadorDeTela = _molas[morador]
 		var alfa := float(_alfa.get(morador, 0.0))
 		var quer := 1.0 if vencedores.has(morador) else 0.0
+		var sobe := Vector2(0.0, float(_subida.get(morador, 0.0)))
 		if alfa <= 0.0:
 			if quer <= 0.0:
 				continue
@@ -236,14 +318,20 @@ func _process(delta: float) -> void:
 			if ligadas >= maximo:
 				continue
 			ligadas += 1
-			mola.reiniciar(ancoras[morador])
+			mola.reiniciar(ancoras[morador] - sobe)
+			_alfa_atras[morador] = float(fundos.get(morador, 1.0))
 		alfa = move_toward(alfa, quer, maxf(delta, 1.0 / 60.0) / SEGUNDOS_DO_FADE)
 		_alfa[morador] = alfa
-		placa.modulate.a = alfa * float(perto.get(morador, 1.0))
+		# A PROFUNDIDADE (#184): o que está na frente da placa a esmaece aos poucos.
+		var atras := float(_alfa_atras.get(morador, 1.0))
+		if fundos.has(morador):
+			atras = move_toward(atras, float(fundos[morador]), maxf(delta, 1.0 / 60.0) / SEGUNDOS_DO_ALFA_ATRAS)
+			_alfa_atras[morador] = atras
+		placa.modulate.a = alfa * float(perto.get(morador, 1.0)) * atras
 		placa.visible = alfa > 0.0
 		if placa.visible:
 			placa.reset_size()
-			var onde := mola.seguir(ancoras[morador], delta, TEMPO_DE_SEGUIR,
+			var onde := mola.seguir(ancoras[morador] - sobe, delta, TEMPO_DE_SEGUIR,
 				SuavizadorDeTela.VELOCIDADE_MAXIMA, SuavizadorDeTela.ZONA_MORTA, CORREIA)
 			placa.position = (onde - Vector2(placa.size.x * placa.scale.x * 0.5, placa.size.y * placa.scale.y)).round()
 
@@ -320,6 +408,142 @@ static func _concorre_com_arvore(caixa: Rect2, dicas: Array[Rect2], tinha: bool)
 	return false
 
 
+## A caixa de um rosto sem a beirada de `px` de cada lado (o roçar de lado não é cobrir), nunca mais que
+## um quarto da largura e da altura dela: o rosto de quem está longe tem poucos pixels. Pura.
+static func encolhida(caixa: Rect2, px: float) -> Rect2:
+	var dx := minf(px, caixa.size.x * 0.25)
+	var dy := minf(px, caixa.size.y * 0.25)
+	return Rect2(caixa.position + Vector2(dx, dy), caixa.size - Vector2(dx, dy) * 2.0)
+
+
+## O QUANTO A PLACA SOBE (px) para liberar um rosto, medido sobre a caixa sem subida: `precisa`
+## é o que falta agora e `_subida` o que a placa já subiu. Sobe na hora (a mola da placa
+## suaviza); só desce depois de a folga passar de `DESCE_SO_DEPOIS` px, para a cabeça que
+## respira não fazer a placa tremer.
+func _acertar_subida(morador: Node3D, precisa: float, delta: float) -> float:
+	var atual := float(_subida.get(morador, 0.0))
+	var alvo := atual
+	if precisa > atual or precisa < atual - DESCE_SO_DEPOIS:
+		alvo = precisa
+	atual = move_toward(atual, alvo, VELOCIDADE_DA_SUBIDA * maxf(delta, 1.0 / 60.0))
+	_subida[morador] = atual
+	return atual
+
+
+## O QUANTO A PLACA SOBE para ficar livre de toda cabeça de `rostos` que ela cobriria: só o que
+## falta, empilhando sobre várias (do rosto mais baixo na tela para o mais alto). Pura.
+static func subida_do_rosto(caixa: Rect2, rostos: Array[Rect2], folga: float) -> float:
+	if rostos.is_empty() or caixa.size == Vector2.ZERO:
+		return 0.0
+	return maxf(caixa.position.y - PopupsDoMundo.afastar_de(caixa, rostos, folga).position.y, 0.0)
+
+
+## O ALFA QUE A PROFUNDIDADE DEIXA À PLACA (#184): `caixa` é a placa de alguém a `distancia` da câmera,
+## `atras` o que há na tela — cada um {"no", "caixa", "distancia"}, personagens e balões. A placa
+## só esmaece por quem está MAIS PERTO da câmera que ela (por mais que `PROFUNDIDADE_MINIMA`) e que ela
+## cobre, e esmaece mais com mais cobertura e com mais diferença de distância; nunca abaixo de
+## `minimo`. `ignorar` é o dono da placa (o corpo dele não conta). Pura.
+static func alfa_por_profundidade(caixa: Rect2, distancia: float, atras: Array, minimo: float, ignorar: Object = null) -> float:
+	var area := caixa.get_area()
+	if area <= 0.0:
+		return 1.0
+	var alfa := 1.0
+	for outro: Dictionary in atras:
+		if ignorar != null and outro.get("no") == ignorar:
+			continue
+		var diferenca := distancia - float(outro.get("distancia", distancia))
+		if diferenca <= PROFUNDIDADE_MINIMA:
+			continue
+		var coberta := PopupsDoMundo.cobertura(caixa, outro.get("caixa", Rect2())) / area
+		if coberta <= 0.0:
+			continue
+		var peso := clampf(coberta / COBERTURA_PLENA, 0.0, 1.0) * smoothstep(PROFUNDIDADE_MINIMA, PROFUNDIDADE_PLENA, diferenca)
+		alfa = minf(alfa, lerpf(1.0, minimo, peso))
+	return alfa
+
+
+## A caixa, em tela, de uma fatia do corpo (de `de` a `ate` metros de altura, com `meia_largura` para cada
+## lado no plano da câmera) de quem está em `pes`. Vazia se algum canto fica atrás da câmera.
+static func caixa_na_tela(camera: Camera3D, pes: Vector3, de: float, ate: float, meia_largura: float) -> Rect2:
+	var lado := camera.global_basis.x * meia_largura
+	var minimo := Vector2(INF, INF)
+	var maximo := Vector2(-INF, -INF)
+	for altura in [de, ate]:
+		for sinal in [-1.0, 1.0]:
+			var ponto: Vector3 = pes + Vector3.UP * float(altura) + lado * float(sinal)
+			if camera.is_position_behind(ponto):
+				return Rect2()
+			var tela := camera.unproject_position(ponto)
+			minimo = minimo.min(tela)
+			maximo = maximo.max(tela)
+	return Rect2(minimo, maximo - minimo)
+
+
+## Cada personagem à vista (os moradores e o jogador): {"no", "cabeca", "corpo", "distancia"}. A cabeça
+## é a caixa do rosto e do chapéu; o corpo, a cabeça com o tronco.
+func _caixas_dos_personagens(camera: Camera3D) -> Array:
+	var saida: Array = []
+	var todos: Array = _placas.keys()
+	if _jogador != null:
+		todos.append(_jogador)
+	for no: Node3D in todos:
+		if not is_instance_valid(no) or not no.is_visible_in_tree():
+			continue
+		var altura := _altura_real(no)
+		var pes := no.global_position
+		var cabeca := caixa_na_tela(camera, pes, altura * (1.0 - FRACAO_DA_CABECA), altura, MEIA_LARGURA_DA_CABECA)
+		if cabeca.size == Vector2.ZERO:
+			continue
+		var tronco := caixa_na_tela(camera, pes, altura * (1.0 - FRACAO_DO_TRONCO), altura * (1.0 - FRACAO_DA_CABECA), MEIA_LARGURA_DO_TRONCO)
+		saida.append({"no": no, "cabeca": cabeca, "corpo": cabeca.merge(tronco) if tronco.size != Vector2.ZERO else cabeca,
+			"distancia": camera.global_position.distance_to(pes)})
+	return saida
+
+
+## Os balões no ar com a distância de quem fala à câmera, na forma de `alfa_por_profundidade`.
+func _baloes_com_profundidade(camera: Camera3D) -> Array:
+	var saida: Array = []
+	for balao: Node in get_tree().get_nodes_in_group(PopupsDoMundo.GRUPO_BALOES):
+		if not balao.has_method("retangulo"):
+			continue
+		var caixa: Rect2 = balao.call("retangulo")
+		var quem = balao.get("alvo")
+		if caixa.size == Vector2.ZERO or not quem is Node3D:
+			continue
+		saida.append({"no": quem, "caixa": caixa, "distancia": camera.global_position.distance_to((quem as Node3D).global_position)})
+	return saida
+
+
+## A altura do personagem para o rosto e a placa: a do dado (`altura` no morador,
+## `character_height` no jogador) ou, se o modelo passa dela (chapéu, cabelo), a malha mais alta,
+## até `EXCESSO_DO_MODELO`. Medida de tempos em tempos, e não a cada quadro.
+func _altura_real(no: Node3D) -> float:
+	var dado := float(no.get("altura")) if no.get("altura") != null else float(no.get("character_height"))
+	var agora := Time.get_ticks_msec() / 1000.0
+	var medida: Dictionary = _medidas.get(no, {})
+	if medida.is_empty() or agora >= float(medida["ate"]):
+		var topo := dado
+		var visual = no.get("visual")
+		if visual is Node3D:
+			var maior := _topo_das_malhas(visual as Node3D)
+			if is_finite(maior):
+				topo = clampf(maior - no.global_position.y, dado, dado * EXCESSO_DO_MODELO)
+		medida = {"topo": topo, "ate": agora + INTERVALO_DA_MEDIDA + float(no.get_instance_id() % 10) * 0.1}
+		_medidas[no] = medida
+	return float(medida["topo"])
+
+
+## O ponto mais alto (y global) das malhas visíveis sob `no`; -INF sem nenhuma.
+static func _topo_das_malhas(no: Node) -> float:
+	var maior := -INF
+	if no is MeshInstance3D and (no as MeshInstance3D).mesh != null and (no as MeshInstance3D).is_visible_in_tree():
+		var malha := no as MeshInstance3D
+		maior = (malha.global_transform * malha.get_aabb()).end.y
+	for filho in no.get_children():
+		maior = maxf(maior, _topo_das_malhas(filho))
+	return maior
+
+
 ## Cabeça e torso: pessoa parcialmente visível mantém nome; três amostras cobertas
 ## o escondem. Áreas de interação, corpos dos moradores e folhagem marcada não são
 ## paredes. A consulta é espaçada e exige estabilidade nas bordas dos obstáculos.
@@ -381,10 +605,10 @@ func _raio_livre(camera: Camera3D, ponto: Vector3, ignorados: Array[RID]) -> boo
 func _coluna_da_dica(camera: Camera3D, dono: Node3D, dicas: Array[Rect2]) -> Rect2:
 	if dono == null or not _placas.has(dono):
 		return Rect2()
-	var topo := dono.global_position + Vector3(0, float(dono.get("altura")) + ACIMA_DA_CABECA, 0)
+	var topo := dono.global_position + Vector3(0, _altura_real(dono) + ACIMA_DA_CABECA, 0)
 	if camera.is_position_behind(topo):
 		return Rect2()
-	var ancora := camera.unproject_position(topo)
+	var ancora := camera.unproject_position(topo) - Vector2(0.0, float(_subida.get(dono, 0.0)))
 	var placa := (_placas[dono] as PanelContainer).get_combined_minimum_size()
 	var dica := Vector2(96.0, 34.0)
 	for acesa in dicas:

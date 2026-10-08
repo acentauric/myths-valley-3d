@@ -52,6 +52,7 @@ const CRESCIMENTO := 12.0
 static func fonte(caminho: String, peso: int, espaco_letras: int = 0) -> FontVariation:
 	var variacao := FontVariation.new()
 	variacao.base_font = load(caminho) as Font
+	variacao.fallbacks = reservas_cjk()
 	variacao.variation_opentype = {TextServerManager.get_primary_interface().name_to_tag("wght"): peso}
 	variacao.spacing_glyph = espaco_letras
 	return variacao
@@ -64,8 +65,40 @@ static func fonte(caminho: String, peso: int, espaco_letras: int = 0) -> FontVar
 static func fonte_do_hud() -> FontVariation:
 	var variacao := FontVariation.new()
 	variacao.base_font = ThemeDB.fallback_font
-	variacao.fallbacks = [load(FONTE_TEXTO) as Font]
+	var reservas: Array[Font] = [load(FONTE_TEXTO) as Font]
+	reservas.append_array(reservas_cjk())
+	variacao.fallbacks = reservas
 	return variacao
+
+
+## A RESERVA DO CHINÊS (#199). Nem a sans do HUD nem a Cinzel nem a Cormorant desenham
+## ideograma: antes, o chinês dependia do que o Godot achasse no sistema, sem nome nem
+## ordem. Agora a reserva é declarada: a primeira destas famílias que a máquina tiver, e só
+## depois a busca livre (`allow_system_fallback`). Fica por último nas reservas, de modo
+## que o latim sai sempre da fonte do jogo. Uma só instância: a leitura, o título e o
+## rótulo a dividem, e o cache de glifos também.
+const FAMILIAS_CJK := ["Microsoft YaHei UI", "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC",
+	"Noto Sans SC", "Source Han Sans SC", "WenQuanYi Micro Hei", "SimHei", "sans-serif"]
+static var _cjk: SystemFont
+
+
+## A reserva só entra com o jogo em chinês. Fonte de reserva entra na altura de linha dos
+## rótulos, e o Microsoft YaHei é mais alto que a Cormorant: com ela sempre ligada, o número
+## da barra de mão e toda linha de texto latino mudavam de tamanho (portão `plaquetas_de_tecla`).
+## Fora do chinês a lista é vazia e o layout é o de sempre.
+static func reservas_cjk() -> Array[Font]:
+	var reservas: Array[Font] = []
+	if TranslationServer.get_locale().begins_with("zh"):
+		reservas.append(fonte_cjk())
+	return reservas
+
+
+static func fonte_cjk() -> SystemFont:
+	if _cjk == null:
+		_cjk = SystemFont.new()
+		_cjk.font_names = PackedStringArray(FAMILIAS_CJK)
+		_cjk.allow_system_fallback = true
+	return _cjk
 
 
 ## OS PAPÉIS DA TIPOGRAFIA DOS MODAIS (#199). Quatro funções, cada uma com a sua

@@ -63,6 +63,24 @@
   traduzido em en/es. Portões `tools/jev/test_idioma_botoes.gd` e, no `test_robo.py`, o do robô
   que acorda em recuperação e sai pela porta (#207, #191, #192, #206, #180).
 
+- **A plaquinha de nome não cai no rosto de ninguém e esmaece atrás de quem está mais perto
+  (#184).** Cada personagem à vista (os moradores e o jogador) projeta na tela uma caixa da
+  cabeça, do chapéu ao queixo, e outra do tronco, pela altura real do modelo (a malha mais alta,
+  até 12% acima do `altura` do dado, medida a cada 1,5 s). A placa que cairia sobre qualquer
+  cabeça (a do próprio dono com a câmera perto e baixa, a de quem está atrás de outro, o
+  viajante) sobe só o que falta para liberar o rosto, com 4 px de folga, empilhando sobre
+  várias; se isso pedir mais de 90 px (220 para o dono do E e o alvo da missão) ela não
+  aparece. A subida sobe na hora e só desce quando a folga passa de 8 px, e a mola da placa a
+  suaviza. Quando a placa de quem está mais longe da câmera (por mais de 0,6 m) passa na
+  frente do tronco de um personagem ou de um balão mais perto, ela esmaece, mais com mais
+  cobertura e mais diferença de distância, até 22% de alfa (60% para quem importa), em um
+  quarto de segundo, e volta quando ele sai da frente. O portão novo `placas_sem_rosto`
+  confere as contas puras e, no vale, com a câmera perto, média e longe: o rosto do dono, a
+  cabeça de outro posta sob a placa, a profundidade e o alfa de volta, a praça em cacho com o
+  alvo da missão, o morador falando e a câmera girando sem a vaga piscar; com
+  `MV_FALSIFICAR=rosto` (a placa de antes) ele reprova, e a placa de "Dona Zefa" cobria a
+  cabeça do viajante a 2,2 m. A dica do E e os balões, como âncoras, seguem como estavam.
+
 - **Primeiros clipes do Mixamo nos moradores.** Seis animações do Mixamo entram
   redirecionadas para o esqueleto Tripo de cada um (`tools/prototipo_3d/mixamo/redirecionar.gd`,
   só rotações e o quadril, pé no chão, no lugar): o Pedro treina capoeira no posto quando o
@@ -160,24 +178,38 @@
   `terras_por_posicao`.
 
 - **Todo modal recolhe a interface do vale, e o texto para ler sai da Cormorant fina
-  (#199, parcial).** Arraial, Diário, Teia, Coleção, folheto, menu do Esc, Controles,
+  (#199).** Arraial, Diário, Teia, Coleção, folheto, menu do Esc, Controles,
   Apoios e Ajustes escondem missão, relógio, barras, atalhos, minimapa, dicas e avisos por
   um ponto só (`Prototype.modal_aberto`, a regra da #143 generalizada); os Ajustes ganham
   camada própria. A Identidade e o tema ganham quatro papéis de tipografia: título e
   rótulo (Cinzel), leitura (a sans do HUD, em creme) e ênfase (Cormorant itálico). Em K ›
   Fé, o nome de cada fé vira subtítulo de ouro, o corpo das regras vai para a sans em
   linhas curtas, e o rodapé de teclas vira plaquetas. O cinza apagado de antes (abaixo de
-  4,5:1 sobre a laca) fica mais claro. Portão `modais_escondem_o_hud`. Falta conferir no
-  jogo em zh e nas fichas do Diário que ainda usam a Cormorant itálica.
+  4,5:1 sobre a laca) fica mais claro. Fecha a issue: o chinês ganha fonte de reserva
+  declarada (`Identidade.fonte_cjk`, uma SystemFont com Microsoft YaHei, PingFang, Noto
+  Sans CJK e companhia, só ligada com o jogo em chinês para não mexer na altura de linha
+  do texto latino) na sans de leitura e nas fontes dos papéis; a quantidade da faixa de
+  ingredientes e o "dada por" da ficha do Diário passam a usar os papéis de leitura e de
+  ênfase; e o portão `modais_escondem_o_hud` confere a reserva, a escala de texto dos
+  Ajustes nos quatro papéis e que o rótulo de seção dos Ajustes cabe numa linha em pt, en,
+  es e zh, em todas as abas.
 
-- **O Diário de missões cabe sem rolagem (#202, parcial).** Com uma aba só, a coluna das
+- **O Diário de missões cabe sem rolagem (#202).** Com uma aba só, a coluna das
   abas some e a página ganha a largura; com várias, ela encolhe. A ficha vira duas
   colunas (a voz de quem pediu em resumo à esquerda, os objetivos à direita, só eles
   rolando se faltar altura) e um rodapé fixo com a recompensa e o botão "Acompanhar",
-  que nunca sai da caixa. A fala do Pedro aparece em até 200 letras, cortada em frase
-  inteira (`CadeiaDeMissoes.fala_curta`; o campo `diario` do passo, opcional, sobrescreve
-  com um resumo escrito à mão), em fonte de leitura. Portão `diario_sem_rolagem`. Falta
-  revisar à mão as falas mais longas e conferir a mesma regra nas outras abas.
+  que nunca sai da caixa. A fala aparece em até 200 letras, cortada em frase
+  inteira (`CadeiaDeMissoes.fala_curta`), em fonte de leitura. Fecha a issue: as 17 falas
+  mais longas (de 334 a 664 letras, no quintal, na Zefa, na lombada, na fé, no mirante, na
+  chapada, na ponte, no saveiro, no Tonho e no coveiro) ganham resumo escrito à mão em
+  `diario`, `diario_en` e `diario_es`, em prosa curta, com a voz de quem pede e sem repetir o
+  que os objetivos já dizem (o chinês cai no inglês, como o resto das missões); a ficha do
+  Arraial (P) deixa de rolar (a caixa passa de 620 para 660 px e a ficha se aperta: retrato
+  de 76 px, margens de 24 e respiros menores; com o grau mais alto e o gosto à mostra faltavam
+  74 px); e o portão `diario_sem_rolagem` cobra o resumo escrito de toda fala acima de 330
+  letras nos três idiomas, e que as abas do Diário, a Teia, a Coleção e a ficha do Arraial
+  (a mais cheia, em pt, en e es) caibam sem barra de rolagem. A janela de 1280×720 é a mesma
+  de 1080p: o jogo escala a tela.
 
 - **A dica do E ganha plaqueta grande, alvo em ouro e requisito em branco.** Em "Tronco
   caído / Ponha na mão: Machado" a plaqueta do E passa a ocupar a altura das duas linhas

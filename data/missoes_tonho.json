@@ -31,6 +31,9 @@
       "raio": 9.0,
       "audio": "",
       "texto": "Agora eu vou te pedir uma coisa, e não é peixe — peixe eu pego. Minha rede ficou do outro lado do rio numa noite de março, e desde então eu pesco de linha, um por um: dá pra comer, não dá pra pagar o armazém. Rede não se compra aqui, se faz. Você tem a bancada na beira do roçado: torce cinco cordas lá e traz. Traz três tábuas também, que a bancada onde eu amarrava apodreceu.",
+      "diario": "Minha rede ficou do outro lado do rio numa noite de março, e desde então eu pesco de linha, um por um: dá pra comer, não dá pra pagar o armazém. Rede aqui não se compra, se faz.",
+      "diario_en": "My net stayed on the far side of the river one March night, and since then I fish by line, one by one: enough to eat, not enough to pay the store. Nets aren't bought here, they're made.",
+      "diario_es": "Mi red se quedó al otro lado del río una noche de marzo, y desde entonces pesco con línea, uno por uno: alcanza para comer, no para pagar el almacén. Aquí la red no se compra, se hace.",
       "recompensa": {"xp": 10,  "pirao": 2, "cocada": 1 },
       "meta": {
         "tipo": "levar",

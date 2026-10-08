@@ -1072,7 +1072,7 @@ func _desenhar_o_diario(missao: Dictionary) -> void:
 	var sub := _texto_do_diario(linha_de_quem, 15, Identidade.OURO)
 	sub.name = "QuemDeu"
 	# Ênfase curta, a única em itálico da página.
-	sub.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_ITALICO, 500))
+	Identidade.papel_enfase(sub, 15, Identidade.OURO)
 	titulos.add_child(sub)
 
 	var filete := Identidade.filete_centrado(1.0)
@@ -1586,7 +1586,7 @@ func _decorar_linha(botao: Button, indice: int) -> void:
 		icone.modulate = Color.WHITE if tem else Color(0.5, 0.5, 0.5, 0.65)
 		grupo.add_child(icone)
 		var quantidade := _rotulo("×%d" % quantos, 17, COR_FIXADA if tem else COR_APAGADA)
-		quantidade.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_TEXTO, 500))
+		Identidade.papel_leitura(quantidade, 17, COR_FIXADA if tem else COR_APAGADA)
 		quantidade.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		grupo.add_child(quantidade)
 	if indice == _cursor:
