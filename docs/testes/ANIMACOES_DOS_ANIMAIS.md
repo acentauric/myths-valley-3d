@@ -130,3 +130,17 @@ onça pintada foi consertada pela mesma regra e conferida só na simulação; a 
 (`criatura_vale.gd`) ainda não inclina com a encosta; aves, bode e a corrida dos gatos
 seguem como acima. Pesquisa de Mesh2Motion e do rig do Tripo:
 [ANIMACAO_DE_ANIMAIS.md](../ferramentas/ANIMACAO_DE_ANIMAIS.md).
+
+## Conferência do cachorro e dos portões (08/10/2026, terceira fatia)
+
+Os portões novos 4b, 5b e 5c de `animais_animacao`, que a fatia anterior não rodou,
+passam, junto de `ritmo_do_bicho`, `passeio_das_especies`, `bichos_de_casa` e
+`bichos_de_casa_procedural`. `bicho_parado` reprova com "o clipe do filhote_caramelo
+não parou em 4 s", defeito da pata parada que é de outra frente e segue como está.
+
+O passe visual do Caramelo (`passeio_das_especies.gd --visual --somente-caramelo`, 20
+quadros de passeio, 20 de corrida e 20 de parado, com o GLB real e a correção do
+ombro e do pescoço) mostra o cão nas quatro patas, com o corpo paralelo ao chão, andando,
+correndo e parado; a cabeça fica no lugar e as patas da frente alternam. Quadros locais em
+`D:/MythsValleyPlaytestRuns/animais149-caramelo-08-10/`. Continuam pendentes a rampa e o
+cão seguindo o Pedro no cenário, as aves sem rig, o bode e a corrida dos gatos.

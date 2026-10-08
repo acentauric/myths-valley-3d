@@ -81,6 +81,31 @@
   `MV_FALSIFICAR=rosto` (a placa de antes) ele reprova, e a placa de "Dona Zefa" cobria a
   cabeça do viajante a 2,2 m. A dica do E e os balões, como âncoras, seguem como estavam.
 
+- **Os troncos das árvores se conferem de perto, e a #156 se fecha.** Com janela e sem
+  HUD, fotos de três ângulos do tronco mais perto da Zefa de cada espécie (jenipapeiro,
+  jequitibá, aroeira, embaúba, jatobá) e do ipê e da pitangueira, as duas da lista de
+  duas faces: todos os troncos aparecem inteiros, sem fenda nem parede interna. O sinal
+  da conta do portão `troncos_fechados` foi conferido (a frente é a ordem horária do
+  Godot, e a medida das íntegras, de 0 a 6%, só faz sentido assim). A conferência do
+  ingazeiro (#141) achou que ainda sobra sob as raízes um cavaco de terra laranja de
+  beiras vivas, e a #141 segue aberta.
+
+- **Os moradores viram para o rumo como o viajante.** O corpo do morador passa a girar
+  com o teto angular do viajante (640°/s, sem salto de um quadro) e o passo espera o
+  corpo se alinhar: de lado ou na meia-volta ele gira no lugar um instante e só então
+  anda, sem patinar de lado. O olhar para quem chega perto ganha o mesmo teto por
+  quadro, e girar no lugar não conta como estar preso. Portão `giro_dos_moradores`;
+  falta o giro da cabeça (opcional), o vídeo antes e depois e as ações do testador (#209).
+
+- **A árvore barra o corpo no peito e deixa a copa passar, espécie por espécie.** Um
+  portão novo monta o vale, acorda o conjunto de cilindros ao lado de um tronco de cada
+  espécie e varre a cápsula do jogador (os mesmos 0,28 de raio) pelo eixo do tronco, ao
+  nível do peito, dos dois lados: ela para na borda do cilindro mais o corpo (de 0,45 u
+  no mamoeiro a 0,94 u na mangueira) e nunca entra na madeira; varrida acima do cilindro,
+  onde só há folhagem, ela passa. Reprova com cilindros esticados até a copa e com
+  cilindros fora da camada de colisão. Com a auditoria de raios, o eixo do corpo na
+  madeira, a rota que contorna o tronco e o corte, fecham os critérios da #150.
+
 - **Primeiros clipes do Mixamo nos moradores.** Seis animações do Mixamo entram
   redirecionadas para o esqueleto Tripo de cada um (`tools/prototipo_3d/mixamo/redirecionar.gd`,
   só rotações e o quadril, pé no chão, no lugar): o Pedro treina capoeira no posto quando o

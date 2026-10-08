@@ -60,9 +60,29 @@ números, não a física):
 
 ## O que fica em aberto
 
-A passagem a pé do jogador e dos moradores junto de bases e raízes, e a
-coerência com a rota no jogo aberto, pedem o passeio: as bases largas (mangue,
-bambu, sapopemas da gameleira) passam por cima dos cilindros por
-projeto, e se isso incomoda no jogo o caminho é cilindro maior só nelas, junto da
-reserva da malha de navegação. A oclusão da câmera é da #126, e a posição das
-árvores e das bases no terreno, da #141.
+## A passada do corpo (08/10/2026, fecha a #150)
+
+`tests/arvores_barram_o_corpo.gd` monta o vale e, com o conjunto de cilindros
+acordado ao lado de um tronco de cada espécie, varre a cápsula do jogador (os mesmos
+0,28 de raio) pelo eixo do tronco, ao nível do peito, dos dois lados:
+
+- ela **para na borda do cilindro mais o corpo** (±0,12 u) e nunca entra na madeira;
+  pedra, cerca ou vizinho que barre um lado não contam, e ao menos um lado tem de ser
+  barrado por um cilindro de árvore;
+- varrida **acima do cilindro**, onde só há folhagem, ela **passa**: nenhuma copa barra.
+
+Mede umas vinte espécies por rodada, as que o conjunto acorda (as demais, como aroeira,
+bambu e ingazeiro, ficam sem vaga por nascerem em moita; a
+cobertura do conjunto é a pergunta 1 de `colisao_das_arvores`, e o conjunto muda com o
+ponto do jogador). Paradas de 0,45 u (mamoeiro) a 0,94 u (mangueira) do eixo.
+`--falsificar=copa` (cilindros até 9 m) e `--falsificar=sem_corpo` (cilindros fora da
+camada de colisão) reprovam o portão.
+
+Junto com `colisao_das_arvores` (eixo do corpo na madeira, inclusive palmeira
+inclinada), `corte_das_arvores` (interação), `navegacao` e `rota_por_terra`
+(a rota contorna o tronco, o morador não o atravessa) e a auditoria acima, os critérios
+da #150 estão cobertos. As bases largas (mangue, bambu, sapopemas da gameleira) seguem
+passando por cima dos cilindros por projeto: se isso incomodar no jogo aberto, o
+caminho é cilindro maior só nelas, junto da reserva da malha de navegação, em issue
+própria. A oclusão da câmera é da #126, e a posição das árvores e das bases no
+terreno, da #141.
