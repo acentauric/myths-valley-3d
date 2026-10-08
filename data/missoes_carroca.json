@@ -36,9 +36,9 @@
       "lugar": "oficina",
       "raio": 6.0,
       "audio": "",
-      "texto": "Tábua boa. Agora corda pra amarrar o cocho e pedra pra calçar a roda enquanto o eixo entra: quatro de cada. Pedra tem no lajedo do roçado e no do poço.",
-      "texto_en": "Good planks. Now rope to lash the trough and stone to wedge the wheel while the axle goes in: four of each. There's stone at the rock slab by the field and the one by the well.",
-      "texto_es": "Buenas tablas. Ahora cuerda para amarrar el cajón y piedra para calzar la rueda mientras entra el eje: cuatro de cada una. Piedra hay en la laja del sembrado y en la del pozo.",
+      "texto": "Tábua boa. Agora corda pra amarrar o cocho e pedra pra calçar a roda enquanto o eixo entra: quatro de cada. Pedra solta tem pelo vale, fora da rua — na beira do roçado, no meio do mato; o lajedo, esse só cede à picareta de aço e a braço treinado.",
+      "texto_en": "Good planks. Now rope to lash the trough and stone to wedge the wheel while the axle goes in: four of each. There's loose stone all over the valley, off the road — at the edge of the field, out in the scrub; the rock slab only gives way to a steel pickaxe and a trained arm.",
+      "texto_es": "Buenas tablas. Ahora cuerda para amarrar el cajón y piedra para calzar la rueda mientras entra el eje: cuatro de cada una. Piedra suelta hay por todo el valle, fuera del camino: a la orilla del sembrado, en medio del monte; la laja solo cede al pico de acero y a un brazo entrenado.",
       "meta": { "tipo": "juntar", "itens": { "corda": 4, "pedra": 4 } }
     },
     {

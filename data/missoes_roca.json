@@ -39,9 +39,9 @@
       "lugar": "fogueira",
       "raio": 6,
       "audio": "",
-      "texto": "Mandioca crua não é comida, é raiz. Rala, prensa e torra: duas raízes e uma lenha dão uma farinha. O fogo do terreiro dá conta — o J na fogueira.",
-      "texto_en": "Raw cassava isn't food, it's a root. Grate it, press it and toast it: two roots and one piece of firewood make one flour. The yard fire will do — J at the fire.",
-      "texto_es": "La yuca cruda no es comida, es raíz. Rállala, prénsala y tuéstala: dos raíces y una leña dan una harina. El fuego del patio alcanza: la J en la fogata.",
+      "texto": "Mandioca crua não é comida, é raiz. Rala, prensa e torra: duas raízes e uma lenha dão uma farinha. O fogo do terreiro dá conta — encosta na fogueira e aperta E.",
+      "texto_en": "Raw cassava isn't food, it's a root. Grate it, press it and toast it: two roots and one piece of firewood make one flour. The yard fire will do — go up to the fire and press E.",
+      "texto_es": "La yuca cruda no es comida, es raíz. Rállala, prénsala y tuéstala: dos raíces y una leña dan una harina. El fuego del patio alcanza: acércate a la fogata y pulsa E.",
       "meta": {
         "tipo": "evento",
         "evento": "cozinhou:farinha"

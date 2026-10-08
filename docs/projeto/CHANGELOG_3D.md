@@ -39,6 +39,26 @@
   cemitério que não diz que corda é lenha, a dívida do Tonho que zera sem pagamento e é paga
   duas vezes, o Cosme que embarca num saveiro de amanhã e não sai do vale); o resumo está em
   `docs/falas/README.md`.
+- **As falas que pediam código** (08/10: "faça todas as correções, tanto na tabela quanto no
+  jogo"). A entrega de um passo `levar` aceita réis (`CadeiaDeMissoes.REIS`): a carga "reis"
+  sai da bolsa (`Jogo.dinheiro`), e o resumo diz "1900 réis" — é como a conta do Tonho passa a
+  ser paga de verdade. A resposta de uma oferenda (a ostra que a onda leva, a toalha aberta na
+  mesa) vira aviso do HUD, sem nome nem balão (`narrou`), e não fala do dono da fila, que está
+  longe dali. As três broncas do Damião em cima da cova saem do código para
+  `data/lapides_3d.json`, nos três idiomas e com o áudio de cada uma.
+- **As correções das falas, primeira leva: a travessia e as lições do Pedro.** A travessia
+  atravessa a noite — o saveiro sai com a maré da meia-noite e chega com o dia clareando,
+  que é quando o jogo começa (6h30) —, e o desembarque fala de "uma noite inteira em pé num
+  saveiro". Na água, a barra do meio é o **ar** de quem nada (o rótulo do HUD, o aviso da
+  água funda e a explicação do corpo): "fôlego" é a reserva do dia, e o jogador recém-ensinado
+  confundia os dois. O Tonho é apresentado "de linha na mão" (a rede é o pedido dele); a pedra
+  do poço e a da carroça vêm das pedras soltas, e o lajedo fica para a picareta de aço e o
+  braço treinado; a farinha se torra no E da fogueira; a ponte ensina o E além do J; a casa
+  do Pedro é "pra lá da igreja"; o mungunzá é da avó dele, e a força dele acaba no
+  dia seguinte (não "cobra"); os avós não contam que o povo chegou à fazenda; a lombada fica a
+  poente da chapada, e a chuva foi na semana antes de chegar; o curral manda ao K sem dizer
+  que ele já foi mostrado; a Dona Zefa fica na casa dela, ao lado da do jogador; e a chapada
+  do Seu Benedito não promete compra de terra, que o vale não tem.
 - **O resumo do passo conta o material** (07–08/10: "na parte de levar tábuas e pedras ao
   Damião não informou o quantitativo; mesmo que o jogador já tenha no inventário, esse dado
   deve ser informado"; "a missão continuou indicando para construir a cerca como se eu

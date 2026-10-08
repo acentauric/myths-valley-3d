@@ -437,10 +437,11 @@ func _atualizar_vida() -> void:
 ## o passo encurta e a corrida não responde (ver `Energia.cansou`), e sem o
 ## aviso quem joga pensa que o jogo travou.
 ##
-## NA ÁGUA a mesma barra vira o FÔLEGO DO NADO, azul ("a azul, a do meio, é o
-## fôlego: o ar de quem nada"): o ar do corpo, que o jogador guarda
-## (`folego_atual`). O nado gasta o vigor primeiro e depois o fôlego, e sem
-## fôlego a água tira da vida ("afogamento"). Ao sair da água a barra volta à
+## NA ÁGUA a mesma barra vira o AR DO NADO, azul ("a azul, a do meio, é o ar de
+## quem nada"; até 08/10 o rótulo dizia "Fôlego", o nome da reserva, e o jogador
+## recém-ensinado confundia os dois): o ar do corpo, que o jogador guarda
+## (`folego_atual`). O nado gasta o vigor primeiro e depois o ar, e sem
+## ar a água tira da vida ("afogamento"). Ao sair da água a barra volta à
 ## reserva (`nado_mudou`).
 ##
 ## A BARRA DE BAIXO é o VIGOR, o fôlego curto do corpo (`vigor_atual`): corrida,

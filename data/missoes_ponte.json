@@ -52,16 +52,16 @@
       "titulo": "Os machados do avô",
       "titulo_en": "Grandfather's axes",
       "titulo_es": "Las hachas del abuelo",
-      "resumo": "Siga o Pedro até a casa dele, perto do píer",
-      "resumo_en": "Follow Pedro to his house, near the pier",
-      "resumo_es": "Sigue a Pedro hasta su casa, cerca del muelle",
+      "resumo": "Siga o Pedro até a casa dele, depois da igreja",
+      "resumo_en": "Follow Pedro to his house, past the church",
+      "resumo_es": "Sigue a Pedro hasta su casa, pasando la iglesia",
       "lugar": "casa_do_pedro",
       "raio": 5,
       "audio": "",
       "conduz": true,
-      "texto": "Vem comigo. A casa é aqui perto do píer — eu vou na frente.",
-      "texto_en": "Come with me. The house is near the pier — I'll lead the way.",
-      "texto_es": "Ven conmigo. La casa está aquí cerca del muelle; yo voy delante.",
+      "texto": "Vem comigo. A casa é pra lá da igreja — eu vou na frente.",
+      "texto_en": "Come with me. The house is past the church — I'll lead the way.",
+      "texto_es": "Ven conmigo. La casa está pasando la iglesia; yo voy delante.",
       "meta": {}
     },
     {
@@ -132,9 +132,9 @@
       "lugar": "ponte_do_rio_grande",
       "raio": 9,
       "audio": "",
-      "texto": "Material pronto. Agora é carregar até o rio. Chegue à cabeceira da ponte com tudo nas costas e abra o J, na aba de obras: o conserto está lá. Esteio novo no meio, o tabuado amarrado, e a cerca vai pro chão.",
-      "texto_en": "The material is ready. Now carry it to the river. Get to the bridgehead with it all on your back and open J, on the works tab: the repair is there. New posts in the middle, the planking lashed down, and the fence comes down.",
-      "texto_es": "El material está listo. Ahora hay que cargarlo hasta el río. Llega a la cabecera del puente con todo a cuestas y abre la J, en la pestaña de obras: el arreglo está ahí. Pilotes nuevos en el medio, el tablado amarrado, y la cerca al suelo.",
+      "texto": "Material pronto. Agora é carregar até o rio. Chegue à cabeceira da ponte com tudo nas costas e aperte E — ou abra o J, na aba de obras: o conserto está lá. Esteio novo no meio, o tabuado amarrado, e a cerca vai pro chão.",
+      "texto_en": "The material is ready. Now carry it to the river. Get to the bridgehead with it all on your back and press E — or open J, on the works tab: the repair is there. New posts in the middle, the planking lashed down, and the fence comes down.",
+      "texto_es": "El material está listo. Ahora hay que cargarlo hasta el río. Llega a la cabecera del puente con todo a cuestas y pulsa E, o abre la J, en la pestaña de obras: el arreglo está ahí. Pilotes nuevos en el medio, el tablado amarrado, y la cerca al suelo.",
       "meta": {
         "tipo": "obra",
         "construcao": "ponte",
@@ -163,9 +163,9 @@
       "meta": {
         "tipo": "falar",
         "a_quem": "pedro",
-        "resposta": "De pé. Primeira coisa que muda aqui em vinte anos, e fomos nós. No que meus avós contam, foi assim que o povo chegou naquela fazenda: abrindo caminho, um ajudando o outro.",
-        "resposta_en": "Standing. The first thing to change here in twenty years, and it was us. The way my grandparents tell it, that's how people reached that farm: opening the way, one helping the other.",
-        "resposta_es": "En pie. La primera cosa que cambia aquí en veinte años, y fuimos nosotros. Por lo que cuentan mis abuelos, así llegó la gente a aquella hacienda: abriendo camino, uno ayudando al otro."
+        "resposta": "De pé. Primeira coisa que muda aqui em vinte anos, e fomos nós. Meus avós dizem que caminho de fazenda velha se abre assim: um ajudando o outro.",
+        "resposta_en": "Standing. The first thing to change here in twenty years, and it was us. My grandparents say the road to an old farm is opened like this: one helping the other.",
+        "resposta_es": "En pie. La primera cosa que cambia aquí en veinte años, y fuimos nosotros. Mis abuelos dicen que el camino a una hacienda vieja se abre así: uno ayudando al otro."
       }
     }
   ],
@@ -176,9 +176,9 @@
       "texto_es": "Para. Mírate la cara. Hoy ya no te echas ese hacha al hombro."
     },
     {
-      "texto": "Minha mãe fez mungunzá de manhã e mandou trazer a panela inteira. Milho branco, leite de coco e canela, da panela de ferro.",
-      "texto_en": "My mother made mungunzá this morning and sent the whole pot. White corn, coconut milk and cinnamon, from the iron pot.",
-      "texto_es": "Mi madre hizo mungunzá en la mañana y mandó traer la olla entera. Maíz blanco, leche de coco y canela, de la olla de hierro."
+      "texto": "Minha avó fez mungunzá de manhã e mandou trazer a panela inteira. Milho branco, leite de coco e canela, da panela de ferro.",
+      "texto_en": "My grandmother made mungunzá this morning and sent the whole pot. White corn, coconut milk and cinnamon, from the iron pot.",
+      "texto_es": "Mi abuela hizo mungunzá en la mañana y mandó traer la olla entera. Maíz blanco, leche de coco y canela, de la olla de hierro."
     },
     {
       "texto": "Tem seis cuias aí. Come uma agora e as outras quando o braço pesar de novo: o I abre a mochila, e o F em cima da cuia come.",
@@ -191,9 +191,9 @@
       "texto_es": "Eso sostiene el cuerpo hasta que el puente suba. Se puede terminar todo hoy, si no paras."
     },
     {
-      "texto": "Só que é hoje, viu? Amanhã o corpo cobra o que você gastou. Aqui as coisas sempre foram assim.",
-      "texto_en": "But just for today, all right? Tomorrow the body charges for what you spent. Things here have always been like that.",
-      "texto_es": "Pero es solo hoy, ¿eh? Mañana el cuerpo cobra lo que gastaste. Aquí las cosas siempre fueron así."
+      "texto": "Só que é hoje, viu? Amanhã a força da panela acaba, e o corpo volta a pesar. Mungunzá de vó dá o dia, não dá a semana.",
+      "texto_en": "But just for today, all right? Tomorrow the pot's strength runs out, and the body gets heavy again. Grandma's mungunzá gives you the day, not the week.",
+      "texto_es": "Pero es solo hoy, ¿eh? Mañana la fuerza de la olla se acaba, y el cuerpo vuelve a pesar. El mungunzá de la abuela da para el día, no para la semana."
     }
   ],
   "arremate": {
