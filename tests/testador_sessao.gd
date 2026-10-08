@@ -9,15 +9,17 @@ extends SceneTree
 ## tools/jev/test_escada.py, com respostas falsas e sem rede.
 
 const TestadorApoios = preload("res://scripts/prototipo_3d/testador_apoios.gd")
-const PainelSessao = preload("res://tools/jev/painel_sessao.gd")
 const AcaoEmPalavras = preload("res://tools/jev/acao_em_palavras.gd")
 const IdiomaMenu = preload("res://scripts/prototipo_3d/idioma_menu.gd")
 
+## Carregado em tempo de execução: o painel usa o autoload Audio, que um preload não enxerga.
+var PainelSessao
 var falhas := 0
 var textos: Dictionary
 
 
 func _initialize() -> void:
+	PainelSessao = load("res://tools/jev/painel_sessao.gd")
 	_run.call_deferred()
 
 
@@ -84,7 +86,7 @@ func _acoes_em_palavras() -> void:
 
 
 func _painel() -> void:
-	var painel := PainelSessao.new()
+	var painel: PanelContainer = PainelSessao.new()
 	root.add_child(painel)
 	painel.montar(Callable(self, "_t"))
 	painel.mostrar({"titulo": _t("titulo_teste"), "nivel": "", "sub": "0 ações", "acao": _t("aguardando_robot"), "decisoes": []})
@@ -132,7 +134,7 @@ func _painel() -> void:
 			teclas.append("F8")
 	_conferir(teclas.size() == 1, "a tecla F8 vem numa plaqueta ao lado do Parar")
 	_conferir(is_equal_approx(painel.size.x, PainelSessao.LARGURA) and painel.size.y > inicial.y, "o painel cresce com o conteúdo")
-	_conferir(painel.size.y <= 460.0, "o painel não passa de ~460 px")
+	_conferir(painel.size.y <= 460.0, "o painel não passa de ~460 px (%.0f)" % painel.size.y)
 	var moldura := painel.get_theme_stylebox("panel") as StyleBoxFlat
 	_conferir(moldura != null and moldura.border_width_left == 1 and moldura.corner_detail == 1, "o painel usa a laca com borda e canto chanfrado do HUD")
 	_conferir(moldura != null and moldura.bg_color.g > moldura.bg_color.r and moldura.border_color.r > moldura.border_color.b, "fundo verde-escuro e borda dourada")
@@ -149,12 +151,12 @@ func _painel() -> void:
 	var mao := Rect2(Vector2(345, 650), Vector2(590, 52))
 	var minimapa := Rect2(Vector2(14, 560), Vector2(170, 146))
 	var tamanho := painel.get_combined_minimum_size()
-	var livre := PainelSessao.escolher(janela, tamanho, [mao, minimapa])
+	var livre: int = PainelSessao.escolher(janela, tamanho, [mao, minimapa])
 	var area: Rect2 = PainelSessao.candidatos(janela, tamanho)[livre]
 	_conferir(not area.intersects(mao.grow(PainelSessao.FOLGA)) and not area.intersects(minimapa.grow(PainelSessao.FOLGA)), "o painel não cobre a barra de mão nem o minimapa")
 	_conferir(Rect2(Vector2.ZERO, janela).encloses(area), "o painel cabe na janela")
 	var coluna := Rect2(Vector2(janela.x - 120, 0), Vector2(120, janela.y))
-	var com_coluna := PainelSessao.escolher(janela, tamanho, [mao, minimapa, coluna])
+	var com_coluna: int = PainelSessao.escolher(janela, tamanho, [mao, minimapa, coluna])
 	var area_2: Rect2 = PainelSessao.candidatos(janela, tamanho)[com_coluna]
 	_conferir(not area_2.intersects(coluna.grow(PainelSessao.FOLGA)) and not area_2.intersects(mao), "uma coluna de atalhos à direita empurra o painel para outro canto")
 	_conferir(PainelSessao.escolher(janela, tamanho, [mao, minimapa], livre) == livre, "o painel não pula enquanto o canto continua livre")
@@ -199,7 +201,7 @@ func _modal() -> void:
 		_conferir(tudo.contains("Sem chave da OpenAI no .env"), "o GPT desativado diz por quê")
 		_conferir(tudo.contains("43,5% · O mirante 2/6 · 412 ações"), "o modal reaberto mostra a última sessão")
 		_conferir(abertura.panel.find_child("IniciarTeste", true, false) != null, "o modal tem o botão Iniciar")
-		var campos := abertura.panel.find_children("*", "SpinBox", true, false)
+		var campos: Array = abertura.panel.find_children("*", "SpinBox", true, false)
 		_conferir(campos.size() == 2, "o modal tem orçamento e duração")
 		if campos.size() == 2:
 			_conferir(is_equal_approx((campos[0] as SpinBox).max_value, 0.5), "o orçamento tem o teto autorizado")

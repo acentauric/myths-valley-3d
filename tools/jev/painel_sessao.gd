@@ -14,6 +14,7 @@ const MARGEM := 14.0
 const MARGEM_DE_BAIXO := 104.0       # acima da barra de mão e do nome do item
 const FOLGA := 8.0                   # respiro mínimo entre o painel e o que ele não pode cobrir
 const TOPO := 70.0                   # abaixo do relógio e dos botões do alto
+const LARGURA_UTIL := LARGURA - 28.0   # a largura menos as duas margens de 14 do filete
 const MAX_DECISOES := 4
 const NOTA := Color("c9b98f")
 const ALERTA := Identidade.TERRACOTA
@@ -108,6 +109,7 @@ func montar(t: Callable) -> void:
 	caixa.add_child(rodape)
 	_gasto = _rotulo(rodape, 14, NOTA)
 	_gasto.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_gasto.custom_minimum_size.x = 150.0
 	rodape.add_child(_plaqueta_da_tecla("F8"))
 	# O Parar é um botão do jogo, só que pequeno: a tecla vem na plaqueta ao lado, como nos atalhos.
 	_parar = Button.new()
@@ -179,6 +181,10 @@ static func _plaqueta_da_tecla(letra: String) -> PanelContainer:
 func _rotulo(pai: Control, tamanho: int, cor := Color.WHITE, fonte: Font = null) -> Label:
 	var r := Label.new()
 	r.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	# Sem largura conhecida o rótulo quebra letra a letra e o painel nasce com milhares de pixels;
+	# na coluna, a largura é a do painel menos as margens.
+	if pai is VBoxContainer:
+		r.custom_minimum_size.x = LARGURA_UTIL
 	r.add_theme_font_size_override("font_size", tamanho)
 	r.add_theme_color_override("font_color", cor)
 	if fonte != null:
