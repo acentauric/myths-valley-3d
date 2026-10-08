@@ -37,7 +37,7 @@ const ARQUIVO := "res://data/npcs_3d.json"
 const PASTA_VOZES := "res://assets/audio/vozes/"
 const PREFERENCIAS := "user://preferencias_visuais.cfg"
 ## As listas de fala do arquivo. O `anoitecer` do Pedro é um objeto só e entra à parte (`_entradas`).
-const LISTAS := ["saudacoes", "falas", "saudacoes_noite", "falas_noite", "falas_depois"]
+const LISTAS := ["saudacoes", "falas", "saudacoes_noite", "falas_noite", "falas_depois", "atencao", "situacoes"]
 ## Os catorze moradores que ganharam voz e texto em chinês juntos.
 const NOVOS := ["padre", "sacristao", "beata", "mercador", "guarda", "pescador", "marisqueira", "lavadeira",
 	"rendeira", "quituteira", "carpinteiro", "menino", "menina", "mestre_saveiro"]

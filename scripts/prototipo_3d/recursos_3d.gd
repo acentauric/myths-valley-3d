@@ -128,6 +128,10 @@ const QUEDA_DEPOIS_DO_GOLPE_S := 0.35
 signal derrubado(id: String, rende: String, quantidade: int)
 ## Bateu e não deu: sem ferramenta, ou sem fôlego. O HUD conta ao jogador.
 signal recusado(motivo: String)
+## Bateu num alvo que pede uma ferramenta que o jogador não tem (nem na mão nem na mochila): o viajante comenta.
+signal sem_ferramenta(ferramenta: String)
+## Bateu num alvo e carrega a ferramenta certa, mas não na mão (`ferramenta` é o item): os moradores dão a dica (#204).
+signal fora_da_mao(ferramenta: String)
 ## Um impacto que soou: o nome do arquivo de `assets/audio/efeitos` (sem o .mp3) e se
 ## foi o último golpe do alvo. Quem quer saber o que tocou — o portão — escuta aqui.
 signal golpe_sonoro(nome: String, ultimo: bool)
@@ -746,11 +750,17 @@ func _recusa_do_golpe(id: String) -> String:
 
 
 ## Diz a recusa do golpe e, quando é de ferramenta, guarda qual e onde ela está (#207):
-## "na_mochila" (carregada, mas não na mão) ou "falta".
+## "na_mochila" (carregada, mas não na mão) ou "falta", e avisa quem comenta isso.
 func _recusar_golpe(id: String, recusa: String) -> void:
 	var ferramenta := str(_alvos[id]["ficha"].get("ferramenta", "")) if _alvos.has(id) else ""
 	if ferramenta != "" and not _tem_ferramenta(ferramenta):
-		_recusar(recusa, ferramenta, "na_mochila" if _carrega(ferramenta) else "falta")
+		var carrega := _carrega(ferramenta)
+		_recusar(recusa, ferramenta, "na_mochila" if carrega else "falta")
+		# Os moradores dão a dica de pôr na mão (#204); sem ela, o viajante comenta.
+		if carrega:
+			fora_da_mao.emit(ferramenta)
+		else:
+			sem_ferramenta.emit(ferramenta)
 	else:
 		_recusar(recusa)
 

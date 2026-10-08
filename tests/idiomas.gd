@@ -143,13 +143,18 @@ const TRADUZIDOS := {
 	# entardecer): TODAS nos quatro idiomas do menu — o chinês também (`TAMBEM_EM_CHINES`). A voz é só em
 	# português; quem cobra o chinês de verdade (ideogramas, nunca cópia) e a voz é tests/vozes_dos_moradores.gd.
 	"res://data/npcs_3d.json": ["texto"],
+	# As falas do viajante (#187): só em voz, mas o texto (os dez gatilhos, o sono e o despertar) mora nos dados nos
+	# quatro idiomas, para a legenda de um dia e para este portão.
+	"res://data/falas_viajante.json": ["texto"],
+	# As dicas que os moradores dão a quem está perdido (#204): pt, en e es (a voz é só pt-BR).
+	"res://data/dicas_dos_moradores.json": ["texto"],
 	# Os sustos da mata: o aviso de quando o mapa enlouquece, o de quando o norte volta e o do sinal anotado.
 	"res://data/sustos.json": ["texto"],
 }
 
 ## Os arquivos que também nascem em chinês (`campo_zh`): o jogo tem quatro idiomas no menu, e o chinês cai no
 ## inglês onde falta. Aqui só entra o que já nasceu inteiro nos quatro; o resto segue em `_en` e `_es`.
-const TAMBEM_EM_CHINES := ["res://data/npcs_3d.json", "res://data/sustos.json"]
+const TAMBEM_EM_CHINES := ["res://data/npcs_3d.json", "res://data/falas_viajante.json", "res://data/sustos.json"]
 
 ## O QUE AINDA NÃO ESTÁ NOS TRÊS, e por quê. Esvaziar esta lista é o trabalho;
 ## deixá-la sem razão escrita é como ela vira lista de tudo.

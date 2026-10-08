@@ -74,9 +74,14 @@ luz, som ou moradores do 3D.
   número vai no corpo, não no assunto.
 - **Fechou a issue, atualize o plano** em `PLANO.md` no mesmo commit, e
   registre a mudança em `docs/projeto/CHANGELOG_3D.md`, na seção "Em desenvolvimento" do
-  dia. O `data/historico_3d.json` (o que o rodapé do jogo mostra,
-  nos três idiomas) só muda quando um build é fechado — numerar build é decisão
-  de release, não de fatia.
+  dia. O `data/historico_3d.json` (o que o rodapé do jogo mostra, em pt/en/es)
+  acompanha os dias: cada dia com entrega visível ao jogador ganha entrada, e
+  dias curtos se juntam numa só, com a data em intervalo (`01–02/10/2026`);
+  dias cheios têm entrada própria. Escreva para o jogador (uma linha curta por
+  mudança, um termo central entre `*asteriscos*`), conferindo o `git log` do dia
+  e o CHANGELOG, e deixe de fora ferramenta interna, auditoria, docs e `.uid`.
+  Numerar build (`versao_atual`/`build_numero`) continua sendo decisão de
+  release: só muda quando um build é fechado.
 - **Issue `modelos-3d` gasta crédito**: o custo do lote é aprovado na conversa
   antes de gerar, como manda "Geração paga".
 

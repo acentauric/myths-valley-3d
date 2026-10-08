@@ -100,6 +100,8 @@ const LIMIAR_DO_CORPO := 0.3
 const LEMBRANCA_DO_CORPO := "explicou:corpo"
 const PASSO_DA_PORTA := "casa"
 const PASSO_DO_BAU := "pegar"
+## O passo em que ele leva o jogador até a Dona Candinha.
+const PASSO_DA_CANDINHA := "chave"
 ## Mais que ESPERA_QUEM_FICA: quem cansou e parou fica a essa distância dele.
 const PERTO_PARA_EXPLICAR := 8.0
 
@@ -123,6 +125,39 @@ var _quadro_da_conducao := -1
 var _cansou_na_caminhada := false
 ## A próxima das falas de depois do tutorial (`falas_depois` no npcs_3d.json).
 var _proxima_fala_depois := -1
+
+## AS FALAS SITUACIONAIS (#179). Fora do roteiro o Pedro ficava calado: o jogador some, para, cai
+## na água, cansa, e a condução parecia mecânica. Dez comentários curtos (`situacoes` no
+## npcs_3d.json, cada um com o `gatilho` e a voz), disparados pelo que acontece com o jogador
+## ENQUANTO ELE CONDUZ o tutorial (`_na_chegada`); acabada a chegada, calam. O gatilho PEDE a fala
+## (`_pedir_situacao`) e ela sai quando a palavra está livre (`_dizer_situacao`): sem atropelar a
+## narração, a caixa de fala, o anúncio do passo nem o balão de outro morador, com a pausa
+## SITUACAO_PAUSA entre quaisquer duas e sem repetir a mesma antes do `intervalo` dela (sem
+## `intervalo`, uma vez por partida: a lembrança `disse:<gatilho>` vai no save). O pedido vence em
+## `validade` segundos: o comentário sobre o mar não sai com o jogador já em terra.
+const SITUACAO_PAUSA := 25.0
+## Quanto tempo o jogador parado, na condução, antes do "pode olhar à vontade".
+const PARADO_DEMAIS := 20.0
+## Quanto tempo ele barra o caminho do Pedro antes do "com licença".
+const BARRADO_DEMAIS := 1.2
+## Quantas amostras seguidas (uma por segundo) o jogador se afasta do destino, andando, para ser o lado errado.
+const AFASTANDO_DEMAIS := 5
+## O vigor do jogador que conta como zerado, e o que o reabilita para uma próxima vez.
+const VIGOR_ZERADO := 0.02
+const VIGOR_RECUPERADO := 0.5
+## O peixe que o Tonho paga no bom-dia: o primeiro item que o jogador pega na mão.
+const PEIXE_DO_TONHO := "peixe"
+var _situacao_ultima_ms := -1000000
+var _situacao_dita_em: Dictionary = {}
+## Gatilho -> quando o pedido vence (ms).
+var _situacao_pedidas: Dictionary = {}
+var _jogador_parado_s := 0.0
+var _barrado_s := 0.0
+var _afastando := 0
+var _distancia_ao_destino := -1.0
+var _amostra_s := 0.0
+var _vigor_zerado := false
+var _nado_ligado := false
 
 
 ## --- as janelas para dentro da cadeia -------------------------------------
@@ -170,6 +205,16 @@ func _ready() -> void:
 	_cadeia.pagou.connect(func(texto: String) -> void: pagou.emit(texto))
 	_cadeia.entregou.connect(func(texto: String) -> void: entregou.emit(texto))
 	add_child(_cadeia)
+	Inventario.mao_trocada.connect(_ao_trocar_a_mao)
+	Dia.periodo_mudou.connect(_ao_mudar_o_periodo)
+
+
+func _exit_tree() -> void:
+	if Inventario.mao_trocada.is_connected(_ao_trocar_a_mao):
+		Inventario.mao_trocada.disconnect(_ao_trocar_a_mao)
+	if Dia.periodo_mudou.is_connected(_ao_mudar_o_periodo):
+		Dia.periodo_mudou.disconnect(_ao_mudar_o_periodo)
+	super()
 
 
 ## O TUTORIAL ACABOU — as nove primeiras missões e a despedida —, e o Pedro
@@ -255,6 +300,10 @@ func _physics_process(delta: float) -> void:
 	# estar de pé, e ela não anda sem saber de quem se aproximar.
 	if _cadeia.jogador == null:
 		_cadeia.jogador = jogador
+	# O NADO DO JOGADOR chega aqui pelo sinal dele, ligado na primeira vez em que ele existe (#179).
+	if not _nado_ligado and jogador.has_signal("nado_mudou"):
+		_nado_ligado = true
+		jogador.connect("nado_mudou", _ao_nadar)
 	if terminou_o_tutorial():
 		# DEPOIS DO TUTORIAL ELE AINDA CONDUZ quando uma fila dele pede: a jornada da
 		# fazenda, em que ele leva o jogador pela ponte até o portão, como no 2D.
@@ -271,6 +320,8 @@ func _physics_process(delta: float) -> void:
 		_atualizar_interacao(delta)
 		return
 	_ver_se_explica_o_corpo()
+	_vigiar_o_jogador(delta)
+	_ver_situacoes()
 	# NA CHEGADA ELE VAI NA FRENTE, ou fica na ponta da prancha (ver CONDUZ_ATE).
 	var passo := _cadeia.passo_atual() if _cadeia.iniciado else {}
 	if bool(passo.get("fica", false)):
@@ -336,10 +387,13 @@ func _conduzir(delta: float, cadeia: Node = null) -> void:
 		_esperando_quem_ficou = do_jogador > VOLTA_A_ANDAR
 	elif do_jogador > ESPERA_QUEM_FICA:
 		_esperando_quem_ficou = true
+		_pedir_situacao("ficou_atras", 10.0)
 	var falta := destino - global_position
 	falta.y = 0.0
 	# O JOGADOR NÃO PODE ANDAR (a caixa de fala aberta, o corpo parado): ele espera.
 	var jogador_preso: bool = not jogador.is_physics_processing() or Dialogo.ocupado()
+	if cadeia == null:
+		_vigiar_o_rumo(delta, onde_esta, destino, falta.length(), jogador_preso)
 	# O MARCO: andou um trecho, para e espera o jogador chegar perto — a não ser que o
 	# destino já esteja logo ali.
 	if _no_marco:
@@ -358,6 +412,8 @@ func _conduzir(delta: float, cadeia: Node = null) -> void:
 		_olhar_para(onde_esta, delta)
 		if falta.length() <= CONDUZ_ATE:
 			_andado_desde_o_marco = 0.0
+			if cadeia == null and do_jogador <= ESPERA_QUEM_FICA and str(_cadeia.passo_atual().get("id", "")) == PASSO_DA_CANDINHA:
+				_pedir_situacao("chegada_candinha", 15.0)
 		return
 	var ponto := _ponto_do_caminho(destino, delta)
 	var rumo := ponto - global_position
@@ -425,15 +481,25 @@ func _pedir_passagem(rumo: Vector3) -> void:
 	if rumo.length_squared() < 0.0025:
 		return
 	var direcao := Vector3(rumo.x, 0.0, rumo.z).normalized()
+	var barrado_pelo_jogador := false
 	for i in get_slide_collision_count():
 		var colisao := get_slide_collision(i)
 		var corpo := colisao.get_collider()
-		if corpo == null or corpo == self or not corpo.has_method("dar_passagem"):
-			continue
 		var empurrao := -colisao.get_normal()
 		empurrao.y = 0.0
+		# O jogador no meio do caminho dele: o "com licença" (#179), e não um pedido de passagem.
+		if corpo != null and corpo == jogador:
+			barrado_pelo_jogador = barrado_pelo_jogador or (empurrao.length_squared() > 0.0001 and empurrao.normalized().dot(direcao) > 0.3)
+			continue
+		if corpo == null or corpo == self or not corpo.has_method("dar_passagem"):
+			continue
 		if empurrao.length_squared() > 0.0001 and empurrao.normalized().dot(direcao) > 0.3:
 			corpo.dar_passagem(empurrao)
+	var delta := get_physics_process_delta_time()
+	_barrado_s = _barrado_s + delta if barrado_pelo_jogador else maxf(_barrado_s - delta * 2.0, 0.0)
+	if _barrado_s >= BARRADO_DEMAIS:
+		_barrado_s = 0.0
+		_pedir_situacao("passagem", 6.0)
 
 
 func _avisar_quem_ficou(sim: bool) -> void:
@@ -486,6 +552,11 @@ func _outra_que_conduz() -> Node:
 	return null
 
 
+## PODE VIR AJUDAR O JOGADOR (#204): só depois do tutorial, e não enquanto conduz uma fila dele (a jornada da fazenda).
+func pode_vir_ajudar() -> bool:
+	return terminou_o_tutorial() and _outra_que_conduz() == null and super()
+
+
 ## O vigor do jogador, de 0 a 1 (ver `player_controller.vigor_atual`).
 func _fracao_do_vigor() -> float:
 	if jogador == null or not jogador.has_method("vigor_atual"):
@@ -524,6 +595,8 @@ func _ver_se_explica_o_corpo() -> void:
 ## barra de stamina e similares, crie os audios para ele narrar".
 func explicar_o_corpo(cansado: bool) -> void:
 	_cadeia._levados[LEMBRANCA_DO_CORPO] = true
+	# Depois da explicação do corpo, nenhum comentário situacional emenda (ver SITUACAO_PAUSA).
+	_situacao_ultima_ms = Time.get_ticks_msec()
 	var linhas: Array = []
 	var vozes: Array = []
 	var interfaces: Array = []
@@ -544,6 +617,162 @@ func explicar_o_corpo(cansado: bool) -> void:
 ## sem refazer a fala.
 func retomar() -> void:
 	_cadeia.retomar()
+
+
+## --- as falas situacionais (#179) ------------------------------------------
+
+## Está na chegada: a cadeia dela começou e o tutorial não acabou. Só aqui ele comenta.
+func _na_chegada() -> bool:
+	return _cadeia.iniciado and not terminou_o_tutorial()
+
+
+## A fala do gatilho (`situacoes` no npcs_3d.json), ou {}.
+func _fala_da_situacao(gatilho: String) -> Dictionary:
+	for fala in dados.get("situacoes", []):
+		if fala is Dictionary and str((fala as Dictionary).get("gatilho", "")) == gatilho:
+			return fala
+	return {}
+
+
+## O gatilho ainda pode falar? Sem `intervalo`, uma vez por partida (a lembrança vai no save); com
+## ele, de novo só passado o tempo.
+func _pode_a_situacao(gatilho: String) -> bool:
+	var fala := _fala_da_situacao(gatilho)
+	if fala.is_empty():
+		return false
+	var intervalo := float(fala.get("intervalo", 0.0))
+	if intervalo <= 0.0:
+		return not bool(_cadeia._levados.get("disse:" + gatilho, false))
+	return not _situacao_dita_em.has(gatilho) or Time.get_ticks_msec() - int(_situacao_dita_em[gatilho]) >= int(intervalo * 1000.0)
+
+
+## O gatilho disparou: pede a fala, que sai quando a palavra estiver livre (`_ver_situacoes`) e
+## vence em `validade` segundos.
+func _pedir_situacao(gatilho: String, validade: float) -> void:
+	if not _na_chegada() or _situacao_pedidas.has(gatilho) or not _pode_a_situacao(gatilho):
+		return
+	_situacao_pedidas[gatilho] = Time.get_ticks_msec() + int(validade * 1000.0)
+
+
+## Um pulso: diz, se a palavra está livre, uma das falas pedidas; larga as vencidas e as que já não valem.
+func _ver_situacoes() -> void:
+	if _situacao_pedidas.is_empty():
+		return
+	var agora := Time.get_ticks_msec()
+	for gatilho: String in _situacao_pedidas.keys():
+		if agora > int(_situacao_pedidas[gatilho]) or not _na_chegada() or not _pode_a_situacao(gatilho):
+			_situacao_pedidas.erase(gatilho)
+		elif _dizer_situacao(gatilho):
+			_situacao_pedidas.erase(gatilho)
+			return
+
+
+## Diz a fala do gatilho AGORA, se a palavra está livre: a narração, a caixa de fala, o anúncio do
+## passo (`espera`) e o balão de outro morador têm a vez antes, e duas falas situacionais não saem
+## coladas (SITUACAO_PAUSA). Devolve se disse. Classe PASSAGEM: a fila cede a vez ao que importa.
+func _dizer_situacao(gatilho: String) -> bool:
+	var fala := _fala_da_situacao(gatilho)
+	if fala.is_empty() or not _pode_a_situacao(gatilho):
+		return false
+	var agora := Time.get_ticks_msec()
+	if agora - _situacao_ultima_ms < int(SITUACAO_PAUSA * 1000.0):
+		return false
+	if _cadeia.espera > 0.0 or Dialogo.ocupado() or _narracao_na_tela() or not _palavra_livre():
+		return false
+	var texto := String(IdiomaMenu.campo(fala, "texto", ""))
+	if texto.strip_edges() == "":
+		return false
+	_situacao_ultima_ms = agora
+	_situacao_dita_em[gatilho] = agora
+	if float(fala.get("intervalo", 0.0)) <= 0.0:
+		_cadeia._levados["disse:" + gatilho] = true
+	var fluxo := _voz_do_arquivo(String(fala.get("audio", "")))
+	_pedir_fala({
+		"texto": texto, "inteira": texto, "voz": fluxo, "classe": FilaDeFalas.Classe.PASSAGEM,
+		"segundos": FilaDeFalas.duracao(texto, _tempo_da_voz(fluxo)), "gesto": _gesto_de_saudacao(),
+	})
+	return true
+
+
+## O que o jogador faz, a cada quadro da chegada: parado demais na condução, vigor zerado.
+func _vigiar_o_jogador(delta: float) -> void:
+	if not _na_chegada():
+		return
+	var passo := _cadeia.passo_atual()
+	# PARADO DEMAIS: na condução, sem caixa de fala aberta e sem ter chegado ao destino do passo.
+	var livre: bool = jogador.is_physics_processing() and not Dialogo.ocupado()
+	if bool(passo.get("conduz", false)) and livre and _velocidade_do_jogador() < 0.2:
+		_jogador_parado_s += delta
+		if _jogador_parado_s >= PARADO_DEMAIS:
+			_jogador_parado_s = 0.0
+			if not _chegou_ao_destino():
+				_pedir_situacao("parado", 10.0)
+	else:
+		_jogador_parado_s = 0.0
+	# VIGOR ZERADO: o corpo de quem acabou de chegar. A explicação do corpo (que ele dá cansado na
+	# caminhada) tem a vez; este comentário é para quem zera fora dela.
+	var vigor := _fracao_do_vigor()
+	if vigor <= VIGOR_ZERADO:
+		if not _vigor_zerado:
+			_vigor_zerado = true
+			if not _cansou_na_caminhada or bool(_cadeia._levados.get(LEMBRANCA_DO_CORPO, false)):
+				_pedir_situacao("vigor_zerado", 8.0)
+	elif vigor >= VIGOR_RECUPERADO:
+		_vigor_zerado = false
+
+
+func _velocidade_do_jogador() -> float:
+	if jogador == null or not ("velocity" in jogador):
+		return 0.0
+	return Vector2(jogador.velocity.x, jogador.velocity.z).length()
+
+
+## O LADO ERRADO: a cada segundo da condução mede quanto falta do jogador ao destino. Andando e
+## cada vez mais longe dele, AFASTANDO_DEMAIS amostras seguidas, e já mais longe que o Pedro, é o
+## outro caminho. Quem só ficou para trás volta para o Pedro, e a distância cai.
+func _vigiar_o_rumo(delta: float, onde_esta: Vector3, destino: Vector3, falta_dele: float, preso: bool) -> void:
+	_amostra_s += delta
+	if _amostra_s < 1.0:
+		return
+	_amostra_s = 0.0
+	var distancia := Vector2(onde_esta.x - destino.x, onde_esta.z - destino.z).length()
+	var antes := _distancia_ao_destino
+	_distancia_ao_destino = distancia
+	if preso or antes < 0.0 or falta_dele <= CONDUZ_ATE or _velocidade_do_jogador() < 1.5 or distancia < antes + 1.0:
+		_afastando = 0
+		return
+	_afastando += 1
+	if _afastando >= AFASTANDO_DEMAIS and distancia > falta_dele + 6.0:
+		_afastando = 0
+		_pedir_situacao("lado_errado", 10.0)
+
+
+func _ao_nadar(nadando: bool) -> void:
+	if nadando:
+		_pedir_situacao("nadou", 6.0)
+
+
+func _ao_trocar_a_mao(_indice: int) -> void:
+	if Inventario.na_mao() == PEIXE_DO_TONHO:
+		_pedir_situacao("primeiro_peixe", 60.0)
+
+
+## A hora virou durante a condução. O entardecer tem o aviso dele (`_verificar_anoitecer`).
+func _ao_mudar_o_periodo(periodo: String) -> void:
+	if periodo != "entardecer" and Engine.get_physics_frames() - _quadro_da_conducao <= 5:
+		_pedir_situacao("tempo_virou", 15.0)
+
+
+## O JOGADOR CONVERSOU COM `outro` (`tecla_dos_moradores`): no meio da condução e com quem o passo
+## não manda procurar, o Pedro espera.
+func o_jogador_falou_com(outro: Node) -> void:
+	if outro == self or not _na_chegada() or Engine.get_physics_frames() - _quadro_da_conducao > 5:
+		return
+	var quem := str((_cadeia.passo_atual().get("meta", {}) as Dictionary).get("a_quem", ""))
+	var dele = outro.get("dados")
+	var id := str((dele as Dictionary).get("id", "")) if dele is Dictionary else ""
+	if id != quem:
+		_pedir_situacao("outro_morador", 20.0)
 
 
 ## A SAUDAÇÃO DO PEDRO É A DA CHEGADA NO PÍER, e só cabe uma vez por partida.

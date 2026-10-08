@@ -13,6 +13,8 @@ extends Node
 
 signal mudou
 signal item_recebido(id: String, quantidade: int)
+## Quiseram guardar `id` e não coube: a mochila está cheia (o viajante comenta, `falas_do_viajante.gd`).
+signal sem_espaco(id: String)
 ## A MÃO mudou de espaço — e só isso.
 ##
 ## Separado de `mudou` porque os dois têm plateias diferentes. `mudou` dispara
@@ -119,6 +121,7 @@ func adicionar(id: String, quantidade: int = 1) -> bool:
 			item_recebido.emit(id, quantidade)
 			return true
 
+	sem_espaco.emit(id)
 	return false   # inventário cheio
 
 

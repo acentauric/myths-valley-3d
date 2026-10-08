@@ -293,7 +293,11 @@ func _oferecer_terra(morador: Node3D, terra: String) -> void:
 		morador.mostrar_balao(Terras.texto("comprou"), 6.0)
 
 
+## A frase de atenção de quem para ao ver o jogador chegar (`npc._dar_atencao`, #198) não conta: o E nele
+## continua valendo, e a dica "Falar com ..." fica firme enquanto ele espera.
 func _fala_ativa(morador: Node3D) -> bool:
+	if morador.has_method("atencao_no_ar") and bool(morador.call("atencao_no_ar")):
+		return false
 	return morador.has_method("falando_agora") and bool(morador.call("falando_agora"))
 
 
@@ -304,6 +308,7 @@ func _id_social(morador: Node3D) -> String:
 
 
 func _registrar_conversa(morador: Node3D) -> void:
+	_avisar_que_falou_com(morador)
 	var id := _id_social(morador)
 	if id == "" or (morador.has_method("eh_mudo") and bool(morador.eh_mudo())):
 		return
@@ -312,6 +317,16 @@ func _registrar_conversa(morador: Node3D) -> void:
 	# No teto, os pontos não mudam, mas o selo diário da tela P muda.
 	if podia and ganhou == 0:
 		Afinidade.mudou.emit(id)
+
+
+## O Pedro, que conduz a chegada, fica sabendo de quem o jogador acabou de falar (#179): conversa
+## com quem o passo não manda procurar, no meio da condução, é o "conversa à vontade, eu espero".
+func _avisar_que_falou_com(morador: Node3D) -> void:
+	if not _quem_mora.is_valid():
+		return
+	for no in _quem_mora.call():
+		if no != morador and is_instance_valid(no) and no.has_method("o_jogador_falou_com"):
+			no.call("o_jogador_falou_com", morador)
 
 
 func _item_de_presente(item: String) -> bool:

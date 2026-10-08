@@ -16,6 +16,7 @@ const CameraMouse = preload("res://scripts/prototipo_3d/camera_mouse.gd")
 const Identidade = preload("res://scripts/prototipo_3d/identidade.gd")
 const CaixaDePergunta = preload("res://scripts/prototipo_3d/caixa_de_pergunta.gd")
 const SustosDaMata = preload("res://scripts/prototipo_3d/sustos_da_mata.gd")
+const DicasDosMoradores = preload("res://scripts/prototipo_3d/dicas_dos_moradores.gd")
 
 ## × do cabeçalho (o anfitrião fecha o modal).
 signal fechar_pedido
@@ -243,6 +244,8 @@ func _aba_geral(esquerda: VBoxContainer, direita: VBoxContainer) -> void:
 	# A CÂMERA DO MOUSE. Só muda o modo com que o jogo ABRE; a tecla da câmera
 	# continua alternando na hora, como sempre fez.
 	_escolha("Câmera do mouse", CameraMouse.rotulos(), CameraMouse.modo(), CameraMouse.definir, CameraMouse.PADRAO)
+	# Os moradores que vêm dar uma dica a quem está perdido (#204): Ligadas, Poucas ou Desligadas.
+	_escolha("Dicas dos moradores", DicasDosMoradores.ROTULOS, DicasDosMoradores.modo(), DicasDosMoradores.definir_modo, DicasDosMoradores.PADRAO)
 	_pai = direita
 	_secao("Volume")
 	_volume("Música", Audio.volume_musica, Audio.definir_volume_musica, "musica")
