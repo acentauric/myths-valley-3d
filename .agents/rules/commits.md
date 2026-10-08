@@ -46,7 +46,9 @@ conta o quê.
 - **Cada fatia é um commit, com portão e falsificação** (regra 4 do
   [PLANO.md](../../docs/projeto/PLANO.md)). Commit que muda comportamento sem mexer em
   portão nenhum é commit que ninguém vai conseguir defender depois.
-- Rode `.\tools\prototipo_3d\testar.ps1` antes de commitar e antes de cada
-  `git push`. Ele escolhe sozinho os portões afetados pela mudança e reaproveita
-  os verdes; a bateria completa (`-Tudo`) é para fechar build, não para cada
-  vírgula.
+- Commite à vontade e rode `.\tools\prototipo_3d\testar.ps1` uma vez por
+  lote: ele compara com o último verde desta máquina e cobre todos os commits
+  desde ele. Antes de cada `git push`, `testar.ps1 -Push`. Ele escolhe sozinho
+  os portões afetados e reaproveita os verdes; comentário e formatação não
+  rodam portão; a bateria completa (`-Tudo`) é para fechar build, não para
+  cada vírgula.
