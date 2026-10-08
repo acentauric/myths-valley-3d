@@ -49,6 +49,7 @@ const ROTULOS_FONTES := ["Crônica", "Padrão", "Almendra", "Miva"]
 const PADRAO_HORA := 1
 const PADRAO_TRILHA := 0
 const PADRAO_BOTOES := 1
+const PADRAO_AGUA := 0
 const PADRAO_PAISAGEM := 3
 const PADRAO_CENARIO := 1
 
@@ -204,7 +205,7 @@ func _aba_atalhos(esquerda: VBoxContainer, direita: VBoxContainer) -> void:
 			Atalhos.definir(acao, int(codigos[i]))
 			Atalhos.aplicar()
 			# Reconstrói a aba: numa troca (swap) a linha da outra ação também muda.
-			_reconstruir(3), codigos.find(int(Atalhos.DEFINICOES[acao]["padrao"])))
+			_reconstruir(3), codigos.find(int(Atalhos.DEFINICOES[acao]["padrao"])), "Atalhos")
 
 
 ## Sons: à esquerda as escolhas sonoras do menu (no jogo, só o som dos botões), à direita
@@ -217,28 +218,10 @@ func _aba_sons(esquerda: VBoxContainer, direita: VBoxContainer) -> void:
 	_escolha("Som dos botões", ["Original", "Madeira"], Audio.efeitos_menu_opcao - 1, func(i):
 		Audio.definir_efeitos_menu(i + 1)
 		Audio.testar_efeito_menu(), PADRAO_BOTOES)
-	# Passos na água: sons originais ou os novos (_v2), com prévia ao lado.
-	var anterior_agua := _abrir_campo()
-	_rotulo_do_campo("Passos na água", "Passos na água")
-	var linha_agua := HBoxContainer.new()
-	linha_agua.add_theme_constant_override("separation", 10)
-	_pai.add_child(linha_agua)
-	var seletor_agua := OptionButton.new()
-	seletor_agua.custom_minimum_size.y = ALTURA_CONTROLE
-	seletor_agua.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	for opcao in ["Original", "Novos"]:
-		seletor_agua.add_item(opcao)
-	seletor_agua.select(Audio.sons_agua_opcao - 1)
-	seletor_agua.item_selected.connect(func(i: int) -> void: Audio.definir_sons_agua(i + 1))
-	linha_agua.add_child(seletor_agua)
-	var ouvir := Button.new()
-	ouvir.text = "Ouvir"
-	ouvir.custom_minimum_size = Vector2(84, ALTURA_CONTROLE)
-	ouvir.mouse_entered.connect(func(): Audio.efeito("ui_hover"))
-	ouvir.pressed.connect(func() -> void:
-		Audio.previa_efeito("passo_agua_v2" if Audio.sons_agua_opcao == 2 else "passo_agua"))
-	linha_agua.add_child(ouvir)
-	_pai = anterior_agua
+	# Passos na água: sons originais ou os novos (_v2); trocar já toca a prévia do passo.
+	_escolha("Passos na água", ["Original", "Novos"], Audio.sons_agua_opcao - 1, func(i: int) -> void:
+		Audio.definir_sons_agua(i + 1)
+		Audio.previa_efeito("passo_agua_v2" if Audio.sons_agua_opcao == 2 else "passo_agua"), PADRAO_AGUA)
 	if not no_jogo:
 		_escolha("Paisagem sonora do menu", ["Silêncio", "Mar", "Aves", "Mar e aves"], Audio.ambiente_menu_opcao, Audio.definir_ambiente_menu, PADRAO_PAISAGEM)
 	_pai = direita
@@ -284,7 +267,7 @@ func _aba_cenario(esquerda: VBoxContainer, direita: VBoxContainer) -> void:
 		for fator: float in Tela.ESCALAS_COMPONENTE:
 			opcoes.append("%d%%" % roundi(fator * 100.0))
 		_escolha(str(IdiomaMenu.campo(textos[chave], "texto")), opcoes, Tela.tamanho_componente(chave),
-			func(i: int) -> void: Tela.definir_componente(chave, i), Tela.PADRAO_COMPONENTE)
+			func(i: int) -> void: Tela.definir_componente(chave, i), Tela.PADRAO_COMPONENTE, "interface:" + chave)
 	var restaurar := Button.new()
 	restaurar.text = str(IdiomaMenu.campo(textos["restaurar"], "texto"))
 	_pai.add_child(restaurar)
@@ -492,10 +475,11 @@ func _botao_restaurar(pai: Container, texto: String, canais: Array, dica: String
 
 
 ## Seleção com o botão de voltar ao padrão (`padrao`, índice da opção de fábrica) no
-## fim da linha, apagado quando já está no padrão.
-func _escolha(titulo: String, opcoes: Array, selecionada: int, ao_escolher: Callable, padrao: int = -1) -> OptionButton:
+## fim da linha, apagado quando já está no padrão. `chave_ajuda` é a chave do texto do "?"
+## quando o título não serve (vem traduzido ou com a letra do atalho); vazia, vale o título.
+func _escolha(titulo: String, opcoes: Array, selecionada: int, ao_escolher: Callable, padrao: int = -1, chave_ajuda: String = "") -> OptionButton:
 	var anterior := _abrir_campo()
-	_rotulo_do_campo(titulo, titulo)
+	_rotulo_do_campo(titulo, titulo, chave_ajuda)
 	var linha := HBoxContainer.new()
 	linha.add_theme_constant_override("separation", 10)
 	_pai.add_child(linha)
@@ -591,12 +575,14 @@ func _secao(titulo: String) -> void:
 	_pai.add_child(respiro)
 
 
-## Rótulo de um campo com o botão "?" à esquerda, que abre a ajuda do campo.
-func _rotulo_do_campo(titulo: String, texto: String) -> Label:
+## Rótulo de um campo com o botão "?" à esquerda, que abre a ajuda do campo (a chave do
+## texto é o título, ou `chave_ajuda` quando o título muda com o idioma ou com a tecla).
+func _rotulo_do_campo(titulo: String, texto: String, chave_ajuda: String = "") -> Label:
+	var chave := chave_ajuda if not chave_ajuda.is_empty() else titulo
 	var linha := HBoxContainer.new()
 	linha.add_theme_constant_override("separation", 8)
 	_pai.add_child(linha)
-	if AjudaMenu.tem(titulo):
+	if AjudaMenu.tem(chave):
 		var ajuda := Button.new()
 		ajuda.text = "?"
 		ajuda.theme_type_variation = &"BotaoAjuda"
@@ -605,7 +591,7 @@ func _rotulo_do_campo(titulo: String, texto: String) -> Label:
 		ajuda.add_theme_font_size_override("font_size", 13)
 		ajuda.pressed.connect(func() -> void:
 			Audio.efeito("ui_confirmar")
-			_abrir_ajuda(titulo))
+			_abrir_ajuda(titulo, chave))
 		linha.add_child(ajuda)
 	var rotulo := _texto(texto, 16)
 	rotulo.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -615,7 +601,7 @@ func _rotulo_do_campo(titulo: String, texto: String) -> Label:
 
 ## Modal de ajuda por cima de tudo: escurece o fundo, mostra título e texto do campo;
 ## fecha com ×, Esc (quem hospeda chama fechar_ajuda) ou clique fora.
-func _abrir_ajuda(titulo: String) -> void:
+func _abrir_ajuda(titulo: String, chave: String) -> void:
 	fechar_ajuda()
 	_ajuda = Control.new()
 	_ajuda.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -642,7 +628,7 @@ func _abrir_ajuda(titulo: String) -> void:
 	caixa.add_child(coluna)
 	var fechar := cabecalho(coluna, titulo, fechar_ajuda, "Como funciona este ajuste.")
 	var corpo := Label.new()
-	corpo.text = AjudaMenu.texto(titulo, IdiomaMenu.indice())
+	corpo.text = AjudaMenu.texto(chave, IdiomaMenu.indice())
 	corpo.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	corpo.custom_minimum_size.x = 584
 	corpo.add_theme_font_size_override("font_size", 18)

@@ -128,15 +128,111 @@ const TEXTOS := {
 		"Which monitor the game opens on, when more than one is connected. The list has one item per screen, in the system's order, with each one's size.\n\nThe window moves to the chosen monitor right away, in fullscreen or windowed mode, and the choice is saved for the next launches. The default is the primary monitor; a screen that no longer exists falls back to it.",
 		"En qué monitor se abre el juego, con más de uno conectado. La lista tiene un elemento por pantalla, en el orden del sistema, con el tamaño de cada una.\n\nLa ventana pasa al monitor elegido al momento, en pantalla completa o en ventana, y la elección queda guardada para las próximas aperturas. El predeterminado es el monitor principal; una pantalla que dejó de existir vuelve a él.",
 	],
+	"Passos na água": [
+		"Sons dos passos quando o personagem anda na água rasa.\n\nOriginal: os sons de sempre.\nNovos: a gravação mais recente dos passos na água.\n\nAo trocar, o som escolhido toca uma vez como prévia.",
+		"Sounds of the footsteps when the character walks in shallow water.\n\nOriginal: the usual sounds.\nNew: the most recent recording of the water footsteps.\n\nWhen you switch, the chosen sound plays once as a preview.",
+		"Sonidos de los pasos cuando el personaje camina en agua poco profunda.\n\nOriginal: los sonidos de siempre.\nNuevos: la grabación más reciente de los pasos en el agua.\n\nAl cambiar, el sonido elegido suena una vez como muestra.",
+	],
+	"Nomes dos personagens": [
+		"Mostra ou esconde os nomes que aparecem sobre os moradores no vale.\n\nOcultar deixa a cena mais limpa para quem já conhece todo mundo. O tamanho dos nomes tem ajuste próprio em Tamanho de cada interface.",
+		"Shows or hides the names that appear above the residents in the valley.\n\nHiding them leaves the scene cleaner for those who already know everyone. The size of the names has its own setting in Individual interface sizes.",
+		"Muestra u oculta los nombres que aparecen sobre los habitantes en el valle.\n\nOcultarlos deja la escena más limpia para quien ya conoce a todos. El tamaño de los nombres tiene su propio ajuste en Tamaño de cada interfaz.",
+	],
+	"Minimapa": [
+		"Mostra ou esconde o minimapa do canto da tela dentro do vale.\n\nA escolha vale na hora e fica salva. O tamanho do minimapa tem ajuste próprio em Tamanho de cada interface.",
+		"Shows or hides the minimap in the corner of the screen inside the valley.\n\nThe choice applies right away and is saved. The size of the minimap has its own setting in Individual interface sizes.",
+		"Muestra u oculta el mapa pequeño de la esquina de la pantalla dentro del valle.\n\nLa elección vale al momento y queda guardada. El tamaño del mapa pequeño tiene su propio ajuste en Tamaño de cada interfaz.",
+	],
+	"Maré": [
+		"Como o mar da baía sobe e desce.\n\nSem maré: a água fica sempre cheia.\nCiclo do lugar: duas altas e duas baixas por dia de jogo, como na baía de verdade; a preamar cai às 7h e às 19h, e a baixa-mar às 13h e à 1h.\nCiclo lento: uma alta e uma baixa por dia de jogo.\nRápida: um ciclo inteiro em cerca de 90 segundos reais, para ver a maré acontecer.\n\nNa baixa-mar a praia seca e a lama aparece.",
+		"How the bay's sea rises and falls.\n\nNo tide: the water always stays full.\nPlace cycle: two highs and two lows per game day, like the real bay; high tide at 7 am and 7 pm, low tide at 1 pm and 1 am.\nSlow cycle: one high and one low per game day.\nFast: a whole cycle in about 90 real seconds, to watch the tide happen.\n\nAt low tide the beach dries and the mud shows.",
+		"Cómo sube y baja el mar de la bahía.\n\nSin marea: el agua queda siempre llena.\nCiclo del lugar: dos pleamares y dos bajamares por día de juego, como en la bahía de verdad; la pleamar cae a las 7 y a las 19 h, y la bajamar a las 13 y a la 1 h.\nCiclo lento: una pleamar y una bajamar por día de juego.\nRápida: un ciclo entero en unos 90 segundos reales, para ver la marea suceder.\n\nEn la bajamar la playa se seca y aparece el fango.",
+	],
+	"Sustos": [
+		"Os sustos da mata: o vulto que parece fechar o jogo e o rastro do Curupira, cujas pegadas enlouquecem o mapa.\n\nLigados: eles podem acontecer enquanto você anda pelo vale.\nDesligados: a mata fica sossegada.\n\nNa edição do Tripothon os sustos vêm desligados; quem quiser liga aqui.",
+		"The forest scares: the shape that seems to close the game and the Curupira's trail, whose footprints drive the map mad.\n\nOn: they may happen while you walk the valley.\nOff: the forest stays calm.\n\nIn the Tripothon edition the scares start off; turn them on here if you want.",
+		"Los sustos de la mata: la sombra que parece cerrar el juego y el rastro del Curupira, cuyas huellas enloquecen el mapa.\n\nActivados: pueden ocurrir mientras caminas por el valle.\nDesactivados: la mata queda tranquila.\n\nEn la edición del Tripothon los sustos vienen desactivados; quien quiera los activa aquí.",
+	],
+	"Câmera do mouse": [
+		"Como o mouse controla a câmera.\n\nLivre: o mouse gira a câmera direto, sem apertar nada, e o cursor fica preso na tela.\nArrastar: o cursor fica visível e a câmera só gira com o botão esquerdo segurado.\nAutomática: a câmera acompanha o caminho que você percorre, com o cursor visível.\n\nDentro do vale, a tecla de alternar a câmera (C, por padrão) percorre os três modos. A escolha fica salva.",
+		"How the mouse controls the camera.\n\nFree: the mouse turns the camera directly, with no button, and the cursor stays locked to the screen.\nDrag: the cursor stays visible and the camera only turns while the left button is held.\nAutomatic: the camera follows the path you walk, with the cursor visible.\n\nInside the valley, the camera key (C by default) cycles through the three modes. The choice is saved.",
+		"Cómo el ratón controla la cámara.\n\nLibre: el ratón gira la cámara directamente, sin pulsar nada, y el cursor queda atrapado en la pantalla.\nArrastrar: el cursor queda visible y la cámara solo gira con el botón izquierdo mantenido.\nAutomática: la cámara sigue el camino que recorres, con el cursor visible.\n\nDentro del valle, la tecla de cambiar la cámara (C, por defecto) recorre los tres modos. La elección queda guardada.",
+	],
+	"Atalhos": [
+		"A letra que abre cada tela ou faz cada ação no vale. Escolha a letra no seletor; o ↺ volta à letra de fábrica.\n\nW, A, S e D ficam de fora, porque andam e navegam as telas. Se a letra escolhida já era de outra ação, as duas trocam de letra, e nunca fica uma letra com duas funções.\n\nO rodapé de controles e as dicas do jogo mostram as letras escolhidas.",
+		"The letter that opens each screen or performs each action in the valley. Pick the letter in the selector; ↺ goes back to the default letter.\n\nW, A, S and D are left out, because they move and navigate the screens. If the chosen letter already belonged to another action, the two swap letters, so a letter never has two jobs.\n\nThe controls bar and the game hints show the chosen letters.",
+		"La letra que abre cada pantalla o hace cada acción en el valle. Elige la letra en el selector; ↺ vuelve a la letra de fábrica.\n\nW, A, S y D quedan fuera, porque mueven y navegan las pantallas. Si la letra elegida ya era de otra acción, las dos intercambian letra, y nunca una letra tiene dos funciones.\n\nLa barra de controles y las pistas del juego muestran las letras elegidas.",
+	],
+	"Golpe de ferramenta (vigor do braço)": [
+		"Quanto vigor do braço cada golpe de ferramenta gasta, antes de contar a dureza do alvo e a eficiência do personagem.\n\nO vigor volta com o descanso. Com 0, os golpes saem de graça; valores maiores deixam o trabalho mais cansativo.",
+		"How much arm stamina each tool swing spends, before counting the target's hardness and the character's efficiency.\n\nStamina comes back with rest. At 0 swings are free; higher values make the work more tiring.",
+		"Cuánta resistencia del brazo gasta cada golpe de herramienta, antes de contar la dureza del objetivo y la eficiencia del personaje.\n\nLa resistencia vuelve con el descanso. Con 0 los golpes son gratis; valores mayores hacen el trabajo más cansado.",
+	],
+	"Bater (machado, picareta)": [
+		"Quanto fôlego gasta cada pancada de machado ou picareta, antes de contar a dureza do alvo e a eficiência do personagem.\n\nAlvo duro custa mais que este valor. Com 0, bater sai de graça.",
+		"How much energy each axe or pickaxe blow spends, before counting the target's hardness and the character's efficiency.\n\nA hard target costs more than this value. At 0 hitting is free.",
+		"Cuánto aliento gasta cada golpe de hacha o pico, antes de contar la dureza del objetivo y la eficiencia del personaje.\n\nUn objetivo duro cuesta más que este valor. Con 0 golpear es gratis.",
+	],
+	"Arar": [
+		"Quanto fôlego gasta cada pedaço de terra arado, antes de contar a eficiência do personagem.\n\nCom 0, arar sai de graça.",
+		"How much energy each plot of ploughed soil spends, before counting the character's efficiency.\n\nAt 0 ploughing is free.",
+		"Cuánto aliento gasta cada parcela de tierra arada, antes de contar la eficiencia del personaje.\n\nCon 0 arar es gratis.",
+	],
+	"Plantar": [
+		"Quanto fôlego gasta cada semente plantada, antes de contar a eficiência do personagem.\n\nCom 0, plantar sai de graça.",
+		"How much energy each planted seed spends, before counting the character's efficiency.\n\nAt 0 planting is free.",
+		"Cuánto aliento gasta cada semilla plantada, antes de contar la eficiencia del personaje.\n\nCon 0 plantar es gratis.",
+	],
+	"Regar": [
+		"Quanto fôlego gasta cada rega, antes de contar a eficiência do personagem.\n\nCom 0, regar sai de graça.",
+		"How much energy each watering spends, before counting the character's efficiency.\n\nAt 0 watering is free.",
+		"Cuánto aliento gasta cada riego, antes de contar la eficiencia del personaje.\n\nCon 0 regar es gratis.",
+	],
+	"Colher": [
+		"Quanto fôlego gasta cada colheita, antes de contar a eficiência do personagem.\n\nCom 0, colher sai de graça.",
+		"How much energy each harvest spends, before counting the character's efficiency.\n\nAt 0 harvesting is free.",
+		"Cuánto aliento gasta cada cosecha, antes de contar la eficiencia del personaje.\n\nCon 0 cosechar es gratis.",
+	],
+	"Rito": [
+		"Quanto fôlego gasta cada rito de fé, antes de contar a eficiência do personagem.\n\nÉ o custo mais alto da tabela de fôlego, porque um rito pede o corpo inteiro. Com 0, os ritos saem de graça.",
+		"How much energy each rite of faith spends, before counting the character's efficiency.\n\nIt is the highest cost in the energy table, because a rite asks for the whole body. At 0 rites are free.",
+		"Cuánto aliento gasta cada rito de fe, antes de contar la eficiencia del personaje.\n\nEs el costo más alto de la tabla de aliento, porque un rito pide el cuerpo entero. Con 0 los ritos son gratis.",
+	],
 }
 
 
+const ARQUIVO_INTERFACE := "res://data/interface_tamanhos.json"
+const PREFIXO_INTERFACE := "interface:"
+## O que fecha o texto de cada interface de "Tamanho de cada interface" (a descrição vem de
+## `interface_tamanhos.json`, campo `ajuda`): [pt, en, es].
+const FECHO_INTERFACE := [
+	"\n\nEscolha de 65% a 150%; 100% é o tamanho de fábrica. A troca vale na hora e fica salva. O ↺ volta ao tamanho de fábrica, e o botão Restaurar todas as interfaces devolve todas de uma vez.",
+	"\n\nPick from 65% to 150%; 100% is the default size. The change applies right away and is saved. ↺ goes back to the default size, and the Reset all interfaces button restores all of them at once.",
+	"\n\nElige de 65% a 150%; 100% es el tamaño de fábrica. El cambio vale al momento y queda guardado. ↺ vuelve al tamaño de fábrica, y el botón Restaurar todas las interfaces las devuelve todas de una vez.",
+]
+
+
+## A entrada de `interface_tamanhos.json` de uma chave "interface:<componente>" (vazia se não houver).
+static func _interface(titulo: String) -> Dictionary:
+	if not titulo.begins_with(PREFIXO_INTERFACE):
+		return {}
+	var dados: Variant = JSON.parse_string(FileAccess.get_file_as_string(ARQUIVO_INTERFACE))
+	if not (dados is Dictionary):
+		return {}
+	var entrada: Variant = (dados as Dictionary).get(titulo.trim_prefix(PREFIXO_INTERFACE), {})
+	return entrada if entrada is Dictionary and (entrada as Dictionary).has("ajuda") else {}
+
+
 static func tem(titulo: String) -> bool:
-	return TEXTOS.has(titulo)
+	return TEXTOS.has(titulo) or not _interface(titulo).is_empty()
 
 
 static func texto(titulo: String, idioma: int) -> String:
-	var textos: Array = TEXTOS.get(titulo, [""])
 	if idioma == 3:
 		idioma = 1 # Chinês em preparação: ajuda em inglês.
+	var interface := _interface(titulo)
+	if not interface.is_empty():
+		var campo: String = ["ajuda", "ajuda_en", "ajuda_es"][clampi(idioma, 0, 2)]
+		return str(interface.get(campo, interface["ajuda"])) + String(FECHO_INTERFACE[clampi(idioma, 0, 2)])
+	var textos: Array = TEXTOS.get(titulo, [""])
 	return textos[idioma] if idioma < textos.size() else textos[0]

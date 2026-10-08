@@ -2,6 +2,15 @@
 
 ## Em desenvolvimento — 08/10/2026
 
+- **Todo campo de Ajustes tem o "?" de ajuda, e "Passos na água" ganha o ↺.** O campo
+  era montado à mão, com um botão Ouvir que encurtava o seletor: agora é uma escolha
+  como as vizinhas (Original ou Novos, ↺ volta a Original) e trocar a opção já toca a
+  prévia do passo. Ganharam texto de ajuda em português, inglês e espanhol: Passos na
+  água, Nomes dos personagens, Minimapa, Maré, Sustos, Câmera do mouse, os Atalhos, os
+  sete custos da aba Esforço e os 32 tamanhos de "Tamanho de cada interface" (Missão,
+  Relógio, Vida, Fôlego, Vigor...). Um portão varre as cinco abas, no menu e no jogo,
+  nos três idiomas, e reprova campo sem "?" (#168).
+
 - **O Gravar do painel Modelos só fica ativo com ajuste pendente.** Sem nada a
   gravar o disquete aparece apagado, sem hover, sem clique e fora do foco do
   teclado, com a dica "Nada para gravar"; editar um campo o acende na hora e

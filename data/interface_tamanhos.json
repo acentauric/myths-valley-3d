@@ -12,125 +12,257 @@
   "missao": {
     "texto": "Missão",
     "texto_en": "Quest",
-    "texto_es": "Misión"
+    "texto_es": "Misión",
+    "ajuda": "O quadro da missão no alto da tela, com a tarefa de agora.",
+    "ajuda_en": "The quest panel at the top of the screen, with the current task.",
+    "ajuda_es": "El cuadro de la misión en la parte superior de la pantalla, con la tarea actual."
   },
   "relogio": {
     "texto": "Relógio",
     "texto_en": "Clock",
-    "texto_es": "Reloj"
+    "texto_es": "Reloj",
+    "ajuda": "O relógio do vale, com a hora e o dia.",
+    "ajuda_en": "The valley clock, with the time and the day.",
+    "ajuda_es": "El reloj del valle, con la hora y el día."
   },
   "vida": {
     "texto": "Vida",
     "texto_en": "Health",
-    "texto_es": "Salud"
+    "texto_es": "Salud",
+    "ajuda": "A barra de vida do personagem.",
+    "ajuda_en": "The character's health bar.",
+    "ajuda_es": "La barra de salud del personaje."
   },
   "folego": {
     "texto": "Fôlego",
     "texto_en": "Energy",
-    "texto_es": "Aliento"
+    "texto_es": "Aliento",
+    "ajuda": "A barra de fôlego, que gasta com a lavoura e o esforço e volta com o descanso.",
+    "ajuda_en": "The energy bar, which drains with farming and effort and comes back with rest.",
+    "ajuda_es": "La barra de aliento, que se gasta con la labranza y el esfuerzo y vuelve con el descanso."
   },
   "vigor": {
     "texto": "Vigor",
     "texto_en": "Stamina",
-    "texto_es": "Resistencia"
+    "texto_es": "Resistencia",
+    "ajuda": "A barra de vigor do braço, que gasta a cada golpe de ferramenta.",
+    "ajuda_en": "The arm stamina bar, which drains with every tool swing.",
+    "ajuda_es": "La barra de resistencia del brazo, que se gasta con cada golpe de herramienta."
   },
   "minimapa": {
     "texto": "Minimapa",
     "texto_en": "Minimap",
-    "texto_es": "Mapa pequeño"
+    "texto_es": "Mapa pequeño",
+    "ajuda": "O minimapa do canto da tela.",
+    "ajuda_en": "The minimap in the corner of the screen.",
+    "ajuda_es": "El mapa pequeño de la esquina de la pantalla."
   },
   "mao": {
     "texto": "Barra de mão",
     "texto_en": "Quick slots",
-    "texto_es": "Barra de mano"
+    "texto_es": "Barra de mano",
+    "ajuda": "A barra de mão, com os itens e ferramentas que você carrega à mão.",
+    "ajuda_en": "The quick slots bar, with the items and tools you carry in hand.",
+    "ajuda_es": "La barra de mano, con los objetos y herramientas que llevas en la mano."
   },
   "fala": {
     "texto": "Balões de fala",
     "texto_en": "Speech bubbles",
-    "texto_es": "Bocadillos de diálogo"
+    "texto_es": "Bocadillos de diálogo",
+    "ajuda": "Os balões de fala sobre a cabeça de quem conversa.",
+    "ajuda_en": "The speech bubbles above the heads of whoever is talking.",
+    "ajuda_es": "Los bocadillos de diálogo sobre la cabeza de quien conversa."
   },
   "nomes": {
     "texto": "Nomes dos moradores",
     "texto_en": "Resident names",
-    "texto_es": "Nombres de habitantes"
+    "texto_es": "Nombres de habitantes",
+    "ajuda": "Os nomes que aparecem sobre os moradores.",
+    "ajuda_en": "The names that appear above the residents.",
+    "ajuda_es": "Los nombres que aparecen sobre los habitantes."
   },
   "interacao": {
     "texto": "Interação (E)",
     "texto_en": "Interaction (E)",
-    "texto_es": "Interacción (E)"
+    "texto_es": "Interacción (E)",
+    "ajuda": "A dica da tecla de interagir, que aparece quando você chega perto de algo.",
+    "ajuda_en": "The interact key hint that shows up when you get close to something.",
+    "ajuda_es": "La pista de la tecla de interactuar, que aparece cuando te acercas a algo."
   },
   "avisos": {
     "texto": "Avisos",
     "texto_en": "Notifications",
-    "texto_es": "Notificaciones"
+    "texto_es": "Notificaciones",
+    "ajuda": "A faixa de aviso no alto da tela, como a de espera.",
+    "ajuda_en": "The notice strip at the top of the screen, such as the waiting one.",
+    "ajuda_es": "La franja de aviso en la parte superior de la pantalla, como la de espera."
   },
   "mochila": {
     "texto": "Mochila e baú",
     "texto_en": "Backpack and chest",
-    "texto_es": "Mochila y cofre"
+    "texto_es": "Mochila y cofre",
+    "ajuda": "A janela da mochila e a do baú.",
+    "ajuda_en": "The backpack and chest windows.",
+    "ajuda_es": "La ventana de la mochila y la del baúl."
   },
   "caderneta": {
     "texto": "Caderneta",
     "texto_en": "Journal",
-    "texto_es": "Cuaderno"
+    "texto_es": "Cuaderno",
+    "ajuda": "O painel da tecla J, com missões, cartas, obras, venda e o menu do jogo.",
+    "ajuda_en": "The J key panel, with quests, cards, works, selling and the game menu.",
+    "ajuda_es": "El panel de la tecla J, con misiones, cartas, obras, venta y el menú del juego."
   },
   "almanaque": {
     "texto": "Almanaque",
     "texto_en": "Almanac",
-    "texto_es": "Libro del valle"
+    "texto_es": "Libro del valle",
+    "ajuda": "A janela do almanaque, a coleção de plantas, cordéis, sinais e bichos.",
+    "ajuda_en": "The almanac window, the collection of plants, cordel poems, signs and animals.",
+    "ajuda_es": "La ventana del almanaque, la colección de plantas, cordeles, señales y bichos."
   },
   "talentos": {
     "texto": "Talentos",
     "texto_en": "Talents",
-    "texto_es": "Árbol de talentos"
+    "texto_es": "Árbol de talentos",
+    "ajuda": "A janela da árvore de talentos.",
+    "ajuda_en": "The talent tree window.",
+    "ajuda_es": "La ventana del árbol de talentos."
   },
   "social": {
     "texto": "Laços do povoado",
     "texto_en": "Village relationships",
-    "texto_es": "Vínculos del pueblo"
+    "texto_es": "Vínculos del pueblo",
+    "ajuda": "A janela dos laços do povoado, com quem mora no arraial e o quanto gosta de você.",
+    "ajuda_en": "The village relationships window, with who lives in the village and how much they like you.",
+    "ajuda_es": "La ventana de los lazos del poblado, con quién vive en el arraial y cuánto te aprecia."
   },
   "pausa": {
     "texto": "Menu de pausa",
     "texto_en": "Pause menu",
-    "texto_es": "Menú de pausa"
+    "texto_es": "Menú de pausa",
+    "ajuda": "O menu de pausa que o Esc abre dentro do vale.",
+    "ajuda_en": "The pause menu that Esc opens inside the valley.",
+    "ajuda_es": "El menú de pausa que abre Esc dentro del valle."
   },
   "atalhos": {
     "texto": "Atalhos laterais",
     "texto_en": "Side shortcuts",
-    "texto_es": "Atajos laterales"
+    "texto_es": "Atajos laterales",
+    "ajuda": "Os botões redondos do canto da tela, como Home, ajustes e som.",
+    "ajuda_en": "The round buttons in the corner of the screen, such as Home, settings and sound.",
+    "ajuda_es": "Los botones redondos de la esquina de la pantalla, como Inicio, ajustes y sonido."
   },
   "mapa": {
     "texto": "Marcadores do mapa",
     "texto_en": "Map markers",
-    "texto_es": "Marcadores del mapa"
+    "texto_es": "Marcadores del mapa",
+    "ajuda": "O marcador do seu ponto e dos lugares sobre o mapa.",
+    "ajuda_en": "The marker of your position and of places on the map.",
+    "ajuda_es": "El marcador de tu posición y de los lugares sobre el mapa."
   },
   "controles": {
     "texto": "Controles",
     "texto_en": "Controls",
-    "texto_es": "Teclas de control"
+    "texto_es": "Teclas de control",
+    "ajuda": "A tela de controles, com as teclas do vale e os atalhos que dá para trocar ali.",
+    "ajuda_en": "The controls screen, with the valley keys and the shortcuts you can change there.",
+    "ajuda_es": "La pantalla de controles, con las teclas del valle y los atajos que se pueden cambiar allí."
   },
   "apoios": {
     "texto": "Cartas e habilidades de apoio",
     "texto_en": "Support cards and abilities",
-    "texto_es": "Cartas y habilidades de apoyo"
+    "texto_es": "Cartas y habilidades de apoyo",
+    "ajuda": "As cartas e habilidades de apoio ativas na tela.",
+    "ajuda_en": "The support cards and abilities active on screen.",
+    "ajuda_es": "Las cartas y habilidades de apoyo activas en pantalla."
   },
   "ajuda": {
     "texto": "Ajuda dos ajustes",
     "texto_en": "Settings help",
-    "texto_es": "Ayuda de los ajustes"
+    "texto_es": "Ayuda de los ajustes",
+    "ajuda": "Esta janela de ajuda, aberta pelo botão ? de cada ajuste.",
+    "ajuda_en": "This help window, opened by the ? button of each setting.",
+    "ajuda_es": "Esta ventana de ayuda, que abre el botón ? de cada ajuste."
   },
-  "menu": {"texto": "Menu principal", "texto_en": "Main menu", "texto_es": "Menú principal"},
-  "folheto": {"texto": "Folheto de cordel", "texto_en": "Cordel booklet", "texto_es": "Folleto de cordel"},
-  "historico": {"texto": "Histórico de versões", "texto_en": "Version history", "texto_es": "Historial de versiones"},
-  "ajustes": {"texto": "Painel de ajustes", "texto_en": "Settings panel", "texto_es": "Panel de configuración"},
-  "vagas": {"texto": "Vagas e nome da partida", "texto_en": "Save slots and player name", "texto_es": "Partidas guardadas y nombre"},
-  "sobre": {"texto": "Sobre e créditos", "texto_en": "About and credits", "texto_es": "Información y créditos"},
-  "travessia": {"texto": "Legenda da travessia", "texto_en": "Crossing subtitles", "texto_es": "Subtítulos de la travesía"},
-  "modelos": {"texto": "Galeria de modelos", "texto_en": "Model gallery", "texto_es": "Galería de modelos"},
-  "pergunta": {"texto": "Perguntas e confirmação", "texto_en": "Questions and confirmations", "texto_es": "Preguntas y confirmaciones"},
+  "menu": {
+    "texto": "Menu principal",
+    "texto_en": "Main menu",
+    "texto_es": "Menú principal",
+    "ajuda": "O menu principal, com JOGAR, EXPLORAR e os demais botões.",
+    "ajuda_en": "The main menu, with PLAY, EXPLORE and the other buttons.",
+    "ajuda_es": "El menú principal, con JUGAR, EXPLORAR y los demás botones."
+  },
+  "folheto": {
+    "texto": "Folheto de cordel",
+    "texto_en": "Cordel booklet",
+    "texto_es": "Folleto de cordel",
+    "ajuda": "O folheto de cordel aberto na tela quando você lê um verso.",
+    "ajuda_en": "The cordel booklet opened on screen when you read a verse.",
+    "ajuda_es": "El folleto de cordel abierto en pantalla cuando lees un verso."
+  },
+  "historico": {
+    "texto": "Histórico de versões",
+    "texto_en": "Version history",
+    "texto_es": "Historial de versiones",
+    "ajuda": "A janela do histórico de versões.",
+    "ajuda_en": "The version history window.",
+    "ajuda_es": "La ventana del historial de versiones."
+  },
+  "ajustes": {
+    "texto": "Painel de ajustes",
+    "texto_en": "Settings panel",
+    "texto_es": "Panel de configuración",
+    "ajuda": "Este painel de ajustes.",
+    "ajuda_en": "This settings panel.",
+    "ajuda_es": "Este panel de ajustes."
+  },
+  "vagas": {
+    "texto": "Vagas e nome da partida",
+    "texto_en": "Save slots and player name",
+    "texto_es": "Partidas guardadas y nombre",
+    "ajuda": "A janela das vagas de jogo salvo e do nome da partida.",
+    "ajuda_en": "The window of save slots and the game name.",
+    "ajuda_es": "La ventana de los espacios de partida y del nombre de la partida."
+  },
+  "sobre": {
+    "texto": "Sobre e créditos",
+    "texto_en": "About and credits",
+    "texto_es": "Información y créditos",
+    "ajuda": "A janela Sobre, com os créditos.",
+    "ajuda_en": "The About window, with the credits.",
+    "ajuda_es": "La ventana Acerca de, con los créditos."
+  },
+  "travessia": {
+    "texto": "Legenda da travessia",
+    "texto_en": "Crossing subtitles",
+    "texto_es": "Subtítulos de la travesía",
+    "ajuda": "A legenda que acompanha a narração da travessia.",
+    "ajuda_en": "The subtitle that goes with the crossing narration.",
+    "ajuda_es": "El subtítulo que acompaña la narración de la travesía."
+  },
+  "modelos": {
+    "texto": "Galeria de modelos",
+    "texto_en": "Model gallery",
+    "texto_es": "Galería de modelos",
+    "ajuda": "A galeria de modelos, onde se veem os modelos 3D do jogo.",
+    "ajuda_en": "The model gallery, where the game's 3D models are viewed.",
+    "ajuda_es": "La galería de modelos, donde se ven los modelos 3D del juego."
+  },
+  "pergunta": {
+    "texto": "Perguntas e confirmação",
+    "texto_en": "Questions and confirmations",
+    "texto_es": "Preguntas y confirmaciones",
+    "ajuda": "As janelas de pergunta e confirmação, como as de Sim e Não.",
+    "ajuda_en": "The question and confirmation windows, such as Yes and No.",
+    "ajuda_es": "Las ventanas de pregunta y confirmación, como las de Sí y No."
+  },
   "dialogo": {
     "texto": "Conversa e tutorial",
     "texto_en": "Dialogue and tutorial",
-    "texto_es": "Conversación y tutorial"
+    "texto_es": "Conversación y tutorial",
+    "ajuda": "A caixa de conversa dos moradores e as dicas do tutorial.",
+    "ajuda_en": "The residents' conversation box and the tutorial hints.",
+    "ajuda_es": "La caja de conversación de los habitantes y las pistas del tutorial."
   }
 }
