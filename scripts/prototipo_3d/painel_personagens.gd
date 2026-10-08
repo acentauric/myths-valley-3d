@@ -92,6 +92,8 @@ var _distancia_inicial := 1.0
 var _elevacao := 0.06
 ## Âncoras do vale montado atrás do menu (destinos possíveis dos postos).
 var _ancoras: Array[String] = []
+## A grade que está montada: colunas e linhas da última `_montar_cartoes` (zero sem cartões).
+var _capacidade_montada := Vector2i.ZERO
 
 
 ## Monta o painel centrado, no estilo dos outros painéis do menu (tema recebido).
@@ -170,6 +172,7 @@ func abrir(tema: Theme) -> void:
 	_rodape.custom_minimum_size.y = SETA.y
 	coluna.add_child(_rodape)
 	_trocar_aba(0)
+	coluna.sort_children.connect(_conferir_capacidade)
 	fechar.grab_focus()
 
 
@@ -500,13 +503,31 @@ func _cartoes_por_pagina() -> int:
 	return capacidade.x * capacidade.y
 
 
+## A primeira montagem mede o cabeçalho antes de a coluna ter largura: o título, com quebra
+## de linha, pede uma letra por linha, e a grade nascia com uma linha só. Quando a coluna se
+## dispõe e a capacidade muda, a grade se remonta com as linhas que de fato cabem.
+func _conferir_capacidade() -> void:
+	if selecionado.is_empty() and _capacidade_montada != Vector2i.ZERO and _capacidade() != _capacidade_montada:
+		_capacidade_montada = Vector2i.ZERO
+		_remontar_grade.call_deferred()
+
+
+func _remontar_grade() -> void:
+	_reconstruir_lista()
+	# A caixa cresceu com o cabeçalho esticado da primeira medida e não encolhe sozinha:
+	# volta ao mínimo, centrada.
+	_caixa.set_anchors_and_offsets_preset(Control.PRESET_CENTER, Control.PRESET_MODE_MINSIZE)
+
+
 ## Cartões paginados, preenchendo a largura e a altura da lista, os mesmos nas duas abas.
 func _montar_cartoes() -> void:
 	var itens := _itens()
+	_capacidade_montada = Vector2i.ZERO
 	if itens.is_empty():
 		_detalhe(tr("Nada com esse nome por aqui."))
 		return
 	var capacidade := _capacidade()
+	_capacidade_montada = capacidade
 	var por_pagina := capacidade.x * capacidade.y
 	var paginas := ceili(float(itens.size()) / por_pagina)
 	_paginas[aba] = clampi(_paginas[aba], 0, paginas - 1)
@@ -516,9 +537,13 @@ func _montar_cartoes() -> void:
 	grade.add_theme_constant_override("h_separation", SEPARACAO_GRADE)
 	grade.add_theme_constant_override("v_separation", SEPARACAO_GRADE)
 	_lista.add_child(grade)
-	# Cartões mais altos que o mínimo ocupam a sobra, sem faixa vazia antes da navegação.
-	var altura_cartao := floorf((_espaco_cartoes().y - SEPARACAO_GRADE * (capacidade.y - 1)) / capacidade.y)
-	for item: Array in itens.slice(_paginas[aba] * por_pagina, (_paginas[aba] + 1) * por_pagina):
+	# Cartões mais altos que o mínimo ocupam a sobra, sem faixa vazia antes da navegação. A
+	# página que não enche a grade (24 moradores numa grade de 30) divide a altura pelas
+	# linhas que usa, até 1,6 vez o mínimo, para a última página filtrada não virar tijolo.
+	var da_pagina := itens.slice(_paginas[aba] * por_pagina, (_paginas[aba] + 1) * por_pagina)
+	var linhas := clampi(ceili(float(da_pagina.size()) / capacidade.x), 1, capacidade.y)
+	var altura_cartao := minf(floorf((_espaco_cartoes().y - SEPARACAO_GRADE * (linhas - 1)) / linhas), CARTAO_MIN.y * 1.6)
+	for item: Array in da_pagina:
 		var chave: String = item[0]
 		var cartao := Button.new()
 		cartao.name = ("Morador_" if aba == 0 else "Peca_") + chave
