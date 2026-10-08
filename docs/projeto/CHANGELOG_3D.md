@@ -33,6 +33,12 @@
   demais, vale a estreita inteira). E o passo suaviza nas curvas: perto do ponto da vez o
   rumo já se mistura com o trecho seguinte, e o corpo vira com calma. Portão novo
   `folga_dos_moradores`.
+- **O Pedro volta por quem ficou sem trancos** (07/10, à noite). No caminho de volta o ponto
+  da vez só avança: recomeçar do primeiro a cada quadro o mandava de volta ao ponto que
+  acabara de passar, e ele vinha a 1,2 u por segundo com passo de 2,1. Quem fica antes do
+  começo da linha (o caminho acabara de ser refeito) conta como atraso. O portão `chegada`
+  põe o jogador para trás na linha do percurso, num ponto que a malha alcança (doze passos
+  em linha reta, da praça para o píer, caíam no mar).
 - **A tarefa concluída se vê e se ouve** (07/10, à noite: "precisamos evidenciar melhor
   que o jogador concluiu uma tarefa da missão... talvez um efeito brilhante no balão de
   missão"). A festa de tela inteira continua só no fim da missão; cada passo do meio

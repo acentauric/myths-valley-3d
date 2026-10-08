@@ -70,12 +70,11 @@ const ESPERA_FORA := ["casa"]
 const CONDUZ_ATE := 2.4
 const VOLTA_POR_QUEM_FICA := 5.5
 const VOLTA_A_ANDAR := 3.0
-## O jogador para trás do começo do caminho (a projeção dele cai no começo e ele está a
-## mais disto de lado): a conta é a reta, e não a linha.
-const FORA_DA_LINHA := 1.0
 ## De quanto em quanto se refaz o caminho de volta até quem ficou.
 const REFAZER_A_VOLTA := 0.8
 var _volta: PackedVector3Array = PackedVector3Array()
+## O ponto da vez da volta (índice em `_volta`): só avança.
+var _volta_ponto := 1
 var _volta_em := 0.0
 ## NÃO FICA ATOLADO NO MEIO DO CAMINHO. A malha pode mandar por um corpo que ela não conhecia (uma peça
 ## nova da cena, a casca de um prédio): o Pedro anda contra ele sem sair do lugar, o jogador espera atrás
@@ -359,8 +358,13 @@ func _conduzir(delta: float, cadeia: Node = null) -> void:
 	if _caminho.size() >= 2:
 		var meu := _progresso_de(global_position)
 		var dele := _progresso_de(onde_esta)
-		var de_lado := _afastamento_da_linha(onde_esta)
-		if not (dele <= 0.5 and de_lado > FORA_DA_LINHA):
+		if dele <= 0.5:
+			# O JOGADOR ANTES DO COMEÇO DA LINHA (o caminho acabou de ser refeito de onde o Pedro
+			# estava, e o jogador ficou atrás disso): o atraso é o que o Pedro andou na linha mais
+			# o que falta ao jogador para chegar ao começo dela — e não só o andado, que era pouco
+			# e deixava o Pedro seguir em frente por quem ficou doze passos atrás (07/10).
+			atraso = meu + Vector2(onde_esta.x - _caminho[0].x, onde_esta.z - _caminho[0].z).length()
+		else:
 			atraso = meu - dele
 	if _esperando_quem_ficou:
 		_esperando_quem_ficou = atraso > VOLTA_A_ANDAR and do_jogador > VOLTA_A_ANDAR
@@ -378,12 +382,15 @@ func _conduzir(delta: float, cadeia: Node = null) -> void:
 			_volta_em = REFAZER_A_VOLTA
 			var navegacao := get_tree().get_first_node_in_group("navegacao")
 			_volta = navegacao.caminho(global_position, onde_esta) if navegacao != null and navegacao.esta_pronta() else PackedVector3Array()
+			_volta_ponto = 1
 		var alvo := onde_esta
 		if _volta.size() > 1:
-			var k := 1
-			while k < _volta.size() - 1 and Vector2(_volta[k].x - global_position.x, _volta[k].z - global_position.z).length() < PONTO_ALCANCADO:
-				k += 1
-			alvo = _volta[k]
+			# O PONTO DA VEZ DA VOLTA NÃO RECUA: alcançado, fica para trás de vez. Recomeçar do
+			# primeiro a cada quadro mandava o Pedro de volta ao ponto que acabara de passar, e ele
+			# vinha aos trancos (07/10: 1,2 u por segundo, a 2,1 de passo).
+			while _volta_ponto < _volta.size() - 1 and Vector2(_volta[_volta_ponto].x - global_position.x, _volta[_volta_ponto].z - global_position.z).length() < PONTO_ALCANCADO:
+				_volta_ponto += 1
+			alvo = _volta[clampi(_volta_ponto, 0, _volta.size() - 1)]
 		rumo = alvo - global_position
 	else:
 		_volta = PackedVector3Array()
