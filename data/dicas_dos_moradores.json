@@ -1,0 +1,347 @@
+{
+  "observacao": "AS DICAS DOS MORADORES (#204): quando o jogador está perdido, um morador coerente com o assunto vem até ele, diz UMA frase curta (voz pt-BR do próprio morador e balão curto) e volta à rotina (scripts/prototipo_3d/dicas_dos_moradores.gd). `situacoes` é o que o código reconhece (o nome é o que `situacao_do_passo`, `_situacao_da_recusa` e os outros devolvem): `assunto` é o tema do cooldown (um por assunto, longo, para não virar babá) e `dicas` são as frases, cada uma de um `quem` (o id do morador em npcs_3d.json, que fala com a voz dele). Escolhe-se a do morador mais perto que pode vir; sem ninguém perto, a do Pedro. Texto em pt/en/es; a voz é só pt-BR (dica_<situacao>_<quem>, gerada por tools/elevenlabs/gerar-falas-moradores.ps1 com a voz de cada morador). Sem o mp3 a dica sai só no balão.",
+  "voz_pendente": "Os áudios dica_* (#204) esperam a geração no ElevenLabs: a sessão que escreveu as dicas não tinha a chave. Rode tools/elevenlabs/gerar-falas-moradores.ps1 (sem -Morador, ou -Morador pedro, carpinteiro...) numa máquina com a chave, importe os mp3 e tire esta marca (o portão reprova a que sobrar).",
+  "situacoes": {
+    "ponha_machado": {
+      "assunto": "madeira",
+      "dicas": [
+        {
+          "quem": "carpinteiro",
+          "texto": "Moço, pau não se derruba com a mão. Põe o machado na mão primeiro.",
+          "texto_en": "Young man, you don't fell a tree with your bare hand. Put the axe in your hand first.",
+          "texto_es": "Muchacho, un árbol no se tumba con la mano. Primero pon el hacha en la mano.",
+          "tts": "[firmly] Moço, pau não se derruba com a mão. [warmly] Põe o machado na mão primeiro.",
+          "audio": "dica_ponha_machado_carpinteiro"
+        },
+        {
+          "quem": "pedro",
+          "texto": "Ô, moço, o machado tem que estar na mão. É só apertar o número dele na barra.",
+          "texto_en": "Hey, young man, the axe has to be in your hand. Just press its number on the bar.",
+          "texto_es": "¡Ey, muchacho, el hacha tiene que estar en la mano! Solo pulsa su número en la barra.",
+          "tts": "[cheerfully] Ô, moço, o machado tem que estar na mão. [warmly] É só apertar o número dele na barra.",
+          "audio": "dica_ponha_machado_pedro"
+        }
+      ]
+    },
+    "picareta_na_madeira": {
+      "assunto": "madeira",
+      "dicas": [
+        {
+          "quem": "carpinteiro",
+          "texto": "Picareta é pra pedra. Pra pau, machado.",
+          "texto_en": "The pickaxe is for stone. For wood, the axe.",
+          "texto_es": "El pico es para la piedra. Para la madera, el hacha.",
+          "tts": "[firmly] Picareta é pra pedra. [warmly] Pra pau, machado.",
+          "audio": "dica_picareta_na_madeira_carpinteiro"
+        },
+        {
+          "quem": "pedro",
+          "texto": "Moço, picareta é pra pedra. Pra derrubar pau é o machado.",
+          "texto_en": "Young man, the pickaxe is for stone. To fell a tree you need the axe.",
+          "texto_es": "Muchacho, el pico es para la piedra. Para tumbar un árbol se usa el hacha.",
+          "tts": "[warmly] Moço, picareta é pra pedra. [cheerfully] Pra derrubar pau é o machado.",
+          "audio": "dica_picareta_na_madeira_pedro"
+        }
+      ]
+    },
+    "sem_machado": {
+      "assunto": "madeira",
+      "dicas": [
+        {
+          "quem": "carpinteiro",
+          "texto": "Sem machado não tem lenha, moço. Os do avô do Pedro tão na casa dele, perto do píer.",
+          "texto_en": "No axe, no firewood, young man. Pedro's grandfather's are at his house, near the pier.",
+          "texto_es": "Sin hacha no hay leña, muchacho. Las del abuelo de Pedro están en su casa, cerca del muelle.",
+          "tts": "[warmly] Sem machado não tem lenha, moço. Os do avô do Pedro tão na casa dele, perto do píer.",
+          "audio": "dica_sem_machado_carpinteiro"
+        },
+        {
+          "quem": "pedro",
+          "texto": "Machado? Os do meu avô tão lá em casa, perto do píer. Vai lá e pega.",
+          "texto_en": "An axe? My grandfather's are at my place, near the pier. Go get one.",
+          "texto_es": "¿Hacha? Las de mi abuelo están en mi casa, cerca del muelle. Ve y toma una.",
+          "tts": "[cheerfully] Machado? Os do meu avô tão lá em casa, perto do píer. [warmly] Vai lá e pega.",
+          "audio": "dica_sem_machado_pedro"
+        }
+      ]
+    },
+    "lenha": {
+      "assunto": "madeira",
+      "dicas": [
+        {
+          "quem": "carpinteiro",
+          "texto": "Tem tronco caído atrás da sua casa, moço. A seta lá em cima mostra o mais perto.",
+          "texto_en": "There are fallen logs behind your house, young man. The arrow up there shows the nearest one.",
+          "texto_es": "Hay troncos caídos detrás de tu casa, muchacho. La flecha de arriba muestra el más cercano.",
+          "tts": "[warmly] Tem tronco caído atrás da sua casa, moço. A seta lá em cima mostra o mais perto.",
+          "audio": "dica_lenha_carpinteiro"
+        },
+        {
+          "quem": "pedro",
+          "texto": "Lenha sai de tronco caído, moço, que é mais ligeiro que derrubar árvore. A seta mostra o mais perto.",
+          "texto_en": "Firewood comes from fallen logs, young man, which is quicker than felling trees. The arrow shows the nearest.",
+          "texto_es": "La leña sale de los troncos caídos, muchacho, que es más rápido que tumbar árboles. La flecha muestra el más cercano.",
+          "tts": "[cheerfully] Lenha sai de tronco caído, moço, que é mais ligeiro que derrubar árvore. [warmly] A seta mostra o mais perto.",
+          "audio": "dica_lenha_pedro"
+        }
+      ]
+    },
+    "bancada": {
+      "assunto": "madeira",
+      "dicas": [
+        {
+          "quem": "carpinteiro",
+          "texto": "Tábua e corda se fazem na bancada da oficina, moço. Leva a lenha lá.",
+          "texto_en": "Planks and rope are made at the workshop bench, young man. Take the firewood there.",
+          "texto_es": "Las tablas y la cuerda se hacen en el banco del taller, muchacho. Lleva allí la leña.",
+          "tts": "[warmly] Tábua e corda se fazem na bancada da oficina, moço. Leva a lenha lá.",
+          "audio": "dica_bancada_carpinteiro"
+        },
+        {
+          "quem": "pedro",
+          "texto": "A lenha vira tábua e corda na bancada da oficina. Leva lá e usa.",
+          "texto_en": "Firewood becomes planks and rope at the workshop bench. Take it there and use it.",
+          "texto_es": "La leña se vuelve tabla y cuerda en el banco del taller. Llévala y úsalo.",
+          "tts": "[cheerfully] A lenha vira tábua e corda na bancada da oficina. [warmly] Leva lá e usa.",
+          "audio": "dica_bancada_pedro"
+        }
+      ]
+    },
+    "ponha_picareta": {
+      "assunto": "pedra",
+      "dicas": [
+        {
+          "quem": "carpinteiro",
+          "texto": "Pedra pede picareta, moço. Põe ela na mão e bate.",
+          "texto_en": "Stone calls for a pickaxe, young man. Put it in your hand and strike.",
+          "texto_es": "La piedra pide pico, muchacho. Ponlo en la mano y golpea.",
+          "tts": "[firmly] Pedra pede picareta, moço. [warmly] Põe ela na mão e bate.",
+          "audio": "dica_ponha_picareta_carpinteiro"
+        },
+        {
+          "quem": "pedro",
+          "texto": "Pedra não sai de mão limpa. Põe a picareta na mão, que ela dá conta.",
+          "texto_en": "Stone won't come loose with bare hands. Put the pickaxe in your hand and it'll do the job.",
+          "texto_es": "La piedra no sale con las manos limpias. Pon el pico en la mano y él se encarga.",
+          "tts": "[cheerfully] Pedra não sai de mão limpa. [warmly] Põe a picareta na mão, que ela dá conta.",
+          "audio": "dica_ponha_picareta_pedro"
+        }
+      ]
+    },
+    "pedra": {
+      "assunto": "pedra",
+      "dicas": [
+        {
+          "quem": "carpinteiro",
+          "texto": "Pedra solta tem perto do poço e do roçado, moço. Picareta na mão, e a seta mostra a mais perto.",
+          "texto_en": "There's loose stone near the well and the field, young man. Pickaxe in hand, and the arrow shows the nearest.",
+          "texto_es": "Hay piedra suelta cerca del pozo y del rozado, muchacho. Pico en la mano, y la flecha muestra la más cercana.",
+          "tts": "[warmly] Pedra solta tem perto do poço e do roçado, moço. Picareta na mão, e a seta mostra a mais perto.",
+          "audio": "dica_pedra_carpinteiro"
+        },
+        {
+          "quem": "pedro",
+          "texto": "Pedra pro poço sai ali perto dele. Picareta na mão e segue a seta.",
+          "texto_en": "The stone for the well comes from right near it. Pickaxe in hand, and follow the arrow.",
+          "texto_es": "La piedra para el pozo sale muy cerca de él. Pico en la mano y sigue la flecha.",
+          "tts": "[cheerfully] Pedra pro poço sai ali perto dele. [warmly] Picareta na mão e segue a seta.",
+          "audio": "dica_pedra_pedro"
+        }
+      ]
+    },
+    "ponha_outra": {
+      "assunto": "ferramenta",
+      "dicas": [
+        {
+          "quem": "carpinteiro",
+          "texto": "Ferramenta boa é a que está na mão, moço. Aperta o número dela na barra.",
+          "texto_en": "A good tool is the one in your hand, young man. Press its number on the bar.",
+          "texto_es": "La buena herramienta es la que está en la mano, muchacho. Pulsa su número en la barra.",
+          "tts": "[warmly] Ferramenta boa é a que está na mão, moço. Aperta o número dela na barra.",
+          "audio": "dica_ponha_outra_carpinteiro"
+        },
+        {
+          "quem": "pedro",
+          "texto": "Ferramenta na mochila não trabalha, moço. Põe na mão: é o número dela na barra.",
+          "texto_en": "A tool in the backpack doesn't work, young man. Put it in your hand: it's its number on the bar.",
+          "texto_es": "Una herramienta en la mochila no trabaja, muchacho. Ponla en la mano: es su número en la barra.",
+          "tts": "[cheerfully] Ferramenta na mochila não trabalha, moço. [warmly] Põe na mão: é o número dela na barra.",
+          "audio": "dica_ponha_outra_pedro"
+        }
+      ]
+    },
+    "sem_ferramenta": {
+      "assunto": "ferramenta",
+      "dicas": [
+        {
+          "quem": "carpinteiro",
+          "texto": "Cada serviço quer a sua ferramenta, moço. Abre a mochila e vê o que falta.",
+          "texto_en": "Each job wants its own tool, young man. Open your backpack and see what's missing.",
+          "texto_es": "Cada trabajo quiere su herramienta, muchacho. Abre la mochila y mira qué falta.",
+          "tts": "[warmly] Cada serviço quer a sua ferramenta, moço. Abre a mochila e vê o que falta.",
+          "audio": "dica_sem_ferramenta_carpinteiro"
+        },
+        {
+          "quem": "pedro",
+          "texto": "Sem a ferramenta certa não tem o que fazer. Olha na mochila o que você tem.",
+          "texto_en": "Without the right tool there's nothing to be done. Check what you have in the backpack.",
+          "texto_es": "Sin la herramienta correcta no hay nada que hacer. Mira qué tienes en la mochila.",
+          "tts": "[cheerfully] Sem a ferramenta certa não tem o que fazer. [warmly] Olha na mochila o que você tem.",
+          "audio": "dica_sem_ferramenta_pedro"
+        }
+      ]
+    },
+    "lavoura": {
+      "assunto": "lavoura",
+      "dicas": [
+        {
+          "quem": "cosme",
+          "texto": "A enxada abre o leito, a semente se planta e o balde molha. Nessa ordem, moço.",
+          "texto_en": "The hoe opens the bed, the seed gets planted and the bucket waters it. In that order, young man.",
+          "texto_es": "La azada abre el surco, la semilla se siembra y el balde riega. En ese orden, muchacho.",
+          "tts": "[warmly] A enxada abre o leito, a semente se planta e o balde molha. [cheerfully] Nessa ordem, moço.",
+          "audio": "dica_lavoura_cosme"
+        },
+        {
+          "quem": "pedro",
+          "texto": "Roça é um passo de cada vez: enxada pra abrir, semente pra plantar, balde pra molhar.",
+          "texto_en": "Farming is one step at a time: hoe to open, seed to plant, bucket to water.",
+          "texto_es": "El rozado va un paso a la vez: azada para abrir, semilla para sembrar, balde para regar.",
+          "tts": "[cheerfully] Roça é um passo de cada vez: [warmly] enxada pra abrir, semente pra plantar, balde pra molhar.",
+          "audio": "dica_lavoura_pedro"
+        }
+      ]
+    },
+    "obra": {
+      "assunto": "obras",
+      "dicas": [
+        {
+          "quem": "carpinteiro",
+          "texto": "Obra pede material na mochila, moço. Chega perto do que tá quebrado e usa, ou abre o caderno em Obras.",
+          "texto_en": "A job needs materials in your backpack, young man. Go up to what's broken and use it, or open the journal at Works.",
+          "texto_es": "Una obra pide material en la mochila, muchacho. Acércate a lo roto y úsalo, o abre el cuaderno en Obras.",
+          "tts": "[warmly] Obra pede material na mochila, moço. Chega perto do que tá quebrado e usa, ou abre o caderno em Obras.",
+          "audio": "dica_obra_carpinteiro"
+        },
+        {
+          "quem": "pedro",
+          "texto": "Pra consertar, leva o material e chega perto da obra. O caderno também tem a lista de Obras.",
+          "texto_en": "To fix something, bring the material and go up to the job. The journal also has the Works list.",
+          "texto_es": "Para arreglar, lleva el material y acércate a la obra. El cuaderno también tiene la lista de Obras.",
+          "tts": "[cheerfully] Pra consertar, leva o material e chega perto da obra. [warmly] O caderno também tem a lista de Obras.",
+          "audio": "dica_obra_pedro"
+        }
+      ]
+    },
+    "ponte": {
+      "assunto": "obras",
+      "dicas": [
+        {
+          "quem": "pedro",
+          "texto": "A ponte quer tábua e corda, moço. Leva o material pro pé dela e usa.",
+          "texto_en": "The bridge needs planks and rope, young man. Take the material to its foot and use it.",
+          "texto_es": "El puente pide tablas y cuerda, muchacho. Lleva el material al pie de él y úsalo.",
+          "tts": "[warmly] A ponte quer tábua e corda, moço. [cheerfully] Leva o material pro pé dela e usa.",
+          "audio": "dica_ponte_pedro"
+        },
+        {
+          "quem": "carpinteiro",
+          "texto": "Ponte se levanta com tábua e corda, moço. Leva tudo pro pé dela e usa.",
+          "texto_en": "A bridge goes up with planks and rope, young man. Take it all to its foot and use it.",
+          "texto_es": "Un puente se levanta con tablas y cuerda, muchacho. Llévalo todo al pie de él y úsalo.",
+          "tts": "[warmly] Ponte se levanta com tábua e corda, moço. Leva tudo pro pé dela e usa.",
+          "audio": "dica_ponte_carpinteiro"
+        }
+      ]
+    },
+    "pesca": {
+      "assunto": "pesca",
+      "dicas": [
+        {
+          "quem": "pescador",
+          "texto": "Vara na mão, joga a linha na água. Quando o peixe morder, joga de novo pra ferrar.",
+          "texto_en": "Rod in hand, cast the line into the water. When the fish bites, cast again to hook it.",
+          "texto_es": "Caña en la mano, lanza la línea al agua. Cuando el pez pique, lánzala de nuevo para clavarlo.",
+          "tts": "[warmly] Vara na mão, joga a linha na água. [cheerfully] Quando o peixe morder, joga de novo pra ferrar.",
+          "audio": "dica_pesca_pescador"
+        },
+        {
+          "quem": "pedro",
+          "texto": "Pra pescar é a vara na mão e a linha na água. Quando morder, joga de novo pra ferrar.",
+          "texto_en": "To fish, rod in hand and line in the water. When it bites, cast again to hook it.",
+          "texto_es": "Para pescar, caña en la mano y la línea al agua. Cuando pique, lánzala otra vez para clavarlo.",
+          "tts": "[cheerfully] Pra pescar é a vara na mão e a linha na água. [warmly] Quando morder, joga de novo pra ferrar.",
+          "audio": "dica_pesca_pedro"
+        }
+      ]
+    },
+    "cansado": {
+      "assunto": "corpo",
+      "dicas": [
+        {
+          "quem": "quituteira",
+          "texto": "Senta um pouco, come alguma coisa, que o corpo agradece.",
+          "texto_en": "Sit down a while, have something to eat, your body will thank you.",
+          "texto_es": "Siéntate un rato, come algo, que el cuerpo lo agradece.",
+          "tts": "[warmly] Senta um pouco, come alguma coisa, que o corpo agradece.",
+          "audio": "dica_cansado_quituteira"
+        },
+        {
+          "quem": "pedro",
+          "texto": "Você tá cansado, moço. Come alguma coisa e descansa um pouco.",
+          "texto_en": "You look tired, young man. Eat something and rest a while.",
+          "texto_es": "Se te ve cansado, muchacho. Come algo y descansa un rato.",
+          "tts": "[warmly] Você tá cansado, moço. [cheerfully] Come alguma coisa e descansa um pouco.",
+          "audio": "dica_cansado_pedro"
+        }
+      ]
+    },
+    "noite": {
+      "assunto": "noite",
+      "dicas": [
+        {
+          "quem": "guarda",
+          "texto": "Já é noite, moço. Amanhã cedo rende mais.",
+          "texto_en": "It's already night, young man. Tomorrow morning goes further.",
+          "texto_es": "Ya es de noche, muchacho. Mañana temprano rinde más.",
+          "tts": "[firmly] Já é noite, moço. [warmly] Amanhã cedo rende mais.",
+          "audio": "dica_noite_guarda"
+        },
+        {
+          "quem": "pedro",
+          "texto": "Já é noite, moço. Vai pra casa dormir, que amanhã cedo rende mais.",
+          "texto_en": "It's night already, young man. Go home and sleep, tomorrow morning goes further.",
+          "texto_es": "Ya es de noche, muchacho. Vete a casa a dormir, que mañana temprano rinde más.",
+          "tts": "[warmly] Já é noite, moço. Vai pra casa dormir, que amanhã cedo rende mais.",
+          "audio": "dica_noite_pedro"
+        }
+      ]
+    },
+    "lado_errado": {
+      "assunto": "rumo",
+      "dicas": [
+        {
+          "quem": "pedro",
+          "texto": "Ô, moço, é pro outro lado! Olha a seta lá em cima.",
+          "texto_en": "Hey, young man, it's the other way! Look at the arrow up there.",
+          "texto_es": "¡Ey, muchacho, es para el otro lado! Mira la flecha de arriba.",
+          "tts": "[cheerfully] Ô, moço, é pro outro lado! [warmly] Olha a seta lá em cima.",
+          "audio": "dica_lado_errado_pedro"
+        }
+      ]
+    },
+    "geral": {
+      "assunto": "geral",
+      "dicas": [
+        {
+          "quem": "pedro",
+          "texto": "Se tá perdido, moço, olha a seta lá em cima e abre o caderno pra ver o que a missão pede.",
+          "texto_en": "If you're lost, young man, look at the arrow up there and open the journal to see what the mission asks.",
+          "texto_es": "Si estás perdido, muchacho, mira la flecha de arriba y abre el cuaderno para ver qué pide la misión.",
+          "tts": "[warmly] Se tá perdido, moço, olha a seta lá em cima e abre o caderno pra ver o que a missão pede.",
+          "audio": "dica_geral_pedro"
+        }
+      ]
+    }
+  }
+}

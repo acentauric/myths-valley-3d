@@ -552,6 +552,11 @@ func _outra_que_conduz() -> Node:
 	return null
 
 
+## PODE VIR AJUDAR O JOGADOR (#204): só depois do tutorial, e não enquanto conduz uma fila dele (a jornada da fazenda).
+func pode_vir_ajudar() -> bool:
+	return terminou_o_tutorial() and _outra_que_conduz() == null and super()
+
+
 ## O vigor do jogador, de 0 a 1 (ver `player_controller.vigor_atual`).
 func _fracao_do_vigor() -> float:
 	if jogador == null or not jogador.has_method("vigor_atual"):

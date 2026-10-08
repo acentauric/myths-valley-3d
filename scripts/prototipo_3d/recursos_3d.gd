@@ -109,6 +109,8 @@ signal derrubado(id: String, rende: String, quantidade: int)
 signal recusado(motivo: String)
 ## Bateu num alvo que pede uma ferramenta que o jogador não tem (nem na mão nem na mochila): o viajante comenta.
 signal sem_ferramenta(ferramenta: String)
+## Bateu num alvo e carrega a ferramenta certa, mas não na mão (`ferramenta` é o item): os moradores dão a dica (#204).
+signal fora_da_mao(ferramenta: String)
 ## Um impacto que soou: o nome do arquivo de `assets/audio/efeitos` (sem o .mp3) e se
 ## foi o último golpe do alvo. Quem quer saber o que tocou — o portão — escuta aqui.
 signal golpe_sonoro(nome: String, ultimo: bool)
@@ -605,6 +607,7 @@ func bater() -> bool:
 		# Carregando a certa e segurando outra (ou nada): diz qual pôr na mão.
 		if _carrega(ferramenta):
 			recusado.emit(tr("Ponha na mão: %s.") % _nome_do_item(ferramenta))
+			fora_da_mao.emit(ferramenta)
 		else:
 			recusado.emit("Precisa de %s." % _nome_do_item(ferramenta))
 			sem_ferramenta.emit(ferramenta)

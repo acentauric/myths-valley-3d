@@ -45,7 +45,7 @@ func _conferir(ok: bool, rotulo: String) -> void:
 func _run() -> void:
 	var arquivo = JSON.parse_string(FileAccess.get_file_as_string("res://data/falas_viajante.json"))
 	_conferir(arquivo is Dictionary, "o falas_viajante.json não abre")
-	if not arquivo is Dictionary:
+	if not (arquivo is Dictionary):
 		_fechar()
 		return
 	var dados: Dictionary = arquivo

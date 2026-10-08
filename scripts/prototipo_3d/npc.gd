@@ -1242,6 +1242,34 @@ func narrar(nome_audio: String, texto: String, pedido: Dictionary = {}) -> void:
 	_pedir_fala(fala)
 
 
+## PODE VIR AJUDAR O JOGADOR (#204)? Está na rua e acordado, sem fala no ar, sem estar nadando, dando passagem,
+## atendendo o jogador (a atenção do #198) nem indo a um ponto avulso (outra ordem). O Pedro soma a isto o fim do
+## tutorial e a jornada da fazenda (`guia_pedro.gd`).
+func pode_vir_ajudar() -> bool:
+	return is_inside_tree() and visible and not _recolhido and not _dormindo and not _nadando \
+		and _passagem_resta <= 0.0 and _atencao_resta <= 0.0 and not _destino_avulso.is_finite() \
+		and _fala_no_ar.is_empty()
+
+
+## DÁ UMA DICA (#204): a fala curta de quem veio até o jogador, com balão e a voz do arquivo (se já existir), o gesto de
+## apontar e SEM segurar o relógio. Entra na fila de falas como fala de missão: espera a vez da narração, da
+## conversa do E e de quem já fala, e não corta ninguém. `ao_terminar` avisa quando ela acaba, de qualquer jeito
+## (dita, cortada ou descartada).
+func dar_dica(nome_audio: String, texto: String, ao_terminar: Callable = Callable()) -> void:
+	if texto.strip_edges() == "":
+		if ao_terminar.is_valid():
+			ao_terminar.call()
+		return
+	var fluxo := _voz_do_arquivo(nome_audio)
+	var fala := {
+		"texto": texto, "inteira": texto, "voz": fluxo, "classe": FilaDeFalas.Classe.MISSAO, "origem": "dica",
+		"segundos": FilaDeFalas.duracao(texto, _tempo_da_voz(fluxo)), "gesto": 2,
+	}
+	if ao_terminar.is_valid():
+		fala["ao_terminar"] = ao_terminar
+	_pedir_fala(fala)
+
+
 ## PEDE A VEZ À FILA DE FALAS (`fila_de_falas.gd`) e diz a ela como este morador
 ## fala: o balão, a voz, o relógio e o gesto começam em `_comecar_a_fala` e
 ## acabam em `_parar_a_fala`. Sem a fila (um portão que monta um morador só),

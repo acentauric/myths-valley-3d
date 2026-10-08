@@ -146,6 +146,8 @@ const TRADUZIDOS := {
 	# As falas do viajante (#187): só em voz, mas o texto (os dez gatilhos, o sono e o despertar) mora nos dados nos
 	# quatro idiomas, para a legenda de um dia e para este portão.
 	"res://data/falas_viajante.json": ["texto"],
+	# As dicas que os moradores dão a quem está perdido (#204): pt, en e es (a voz é só pt-BR).
+	"res://data/dicas_dos_moradores.json": ["texto"],
 	# Os sustos da mata: o aviso de quando o mapa enlouquece, o de quando o norte volta e o do sinal anotado.
 	"res://data/sustos.json": ["texto"],
 }

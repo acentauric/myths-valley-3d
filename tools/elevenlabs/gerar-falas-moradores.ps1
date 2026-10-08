@@ -16,6 +16,8 @@
 #   anoitecer        (um só)         só o guia: o aviso do entardecer
 #   sono             sono            só o viajante (data/falas_viajante.json): ao deitar (viajante_sono_<n>; #187)
 #   despertar        despertar       só o viajante: ao acordar (viajante_despertar_<n>)
+#   (dicas)          dica            as dicas que o morador dá a quem está perdido (data/dicas_dos_moradores.json,
+#                                    dica_<situacao>_<quem>; #204): entram na lista de cada `quem`, com a voz dele
 #
 # O VIAJANTE (o personagem do jogador) mora em data/falas_viajante.json, e não no npcs_3d.json: o gerador o
 # trata como mais uma pessoa (-Morador viajante). As dez falas dos gatilhos estão na lista `falas` dele, com o
@@ -56,6 +58,19 @@ $pessoas = @($dados.guia) + @($dados.moradores)
 # O viajante, do arquivo dele (o mesmo formato: `voz`, `voz_pendente` e as listas de fala).
 $arquivoViajante = Join-Path $raiz "data/falas_viajante.json"
 if (Test-Path $arquivoViajante) { $pessoas += (Get-Content $arquivoViajante -Raw -Encoding UTF8 | ConvertFrom-Json) }
+# As dicas dos moradores (#204, data/dicas_dos_moradores.json): cada frase é de um `quem`, que a fala com a voz
+# dele (audio dica_<situacao>_<quem>); entram na lista de fala desse morador.
+$dicasPorQuem = @{}
+$arquivoDicas = Join-Path $raiz "data/dicas_dos_moradores.json"
+if (Test-Path $arquivoDicas) {
+    $dicasDosMoradores = Get-Content $arquivoDicas -Raw -Encoding UTF8 | ConvertFrom-Json
+    foreach ($situacao in $dicasDosMoradores.situacoes.PSObject.Properties) {
+        foreach ($d in @($situacao.Value.dicas)) {
+            if (-not $dicasPorQuem.ContainsKey([string]$d.quem)) { $dicasPorQuem[[string]$d.quem] = @() }
+            $dicasPorQuem[[string]$d.quem] += $d
+        }
+    }
+}
 $feitas = 0
 $letras = 0
 $falhas = 0
@@ -72,6 +87,7 @@ foreach ($m in $pessoas) {
         foreach ($item in @($itens)) { $entradas += $item }
     }
     if ($m.anoitecer) { $entradas += $m.anoitecer }
+    if ($dicasPorQuem.ContainsKey([string]$m.id)) { $entradas += $dicasPorQuem[[string]$m.id] }
 
     foreach ($f in $entradas) {
         $nome = [string]$f.audio
