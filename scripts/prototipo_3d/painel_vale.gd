@@ -866,7 +866,7 @@ func _desenhar_cartas() -> void:
 			cor = COR_CURSOR
 		_adicionar_linha("  %s  %s" % [marca, Cartas.nome(id)], cor)
 	if todas.is_empty():
-		_adicionar_linha("Você ainda não tem carta nenhuma.", COR_APAGADA, true)
+		_adicionar_linha("Você ainda não tem carta nenhuma.", COR_APAGADA, true, "", true)
 		_rodape.text = "[Tab] outra aba · [Esc] fechar"
 		return
 	var escolhida := str(todas[_cursor]) if _cursor < todas.size() else ""
@@ -1378,7 +1378,7 @@ func _precos(custo: Dictionary) -> String:
 
 func _desenhar_ajustes() -> void:
 	_titulo.text = "Jogo — %s" % Relogio.texto_do_dia(Relogio.dia_absoluto())
-	_adicionar_linha("  %s" % _quando_foi_salvo(), COR_APAGADA, true)
+	_adicionar_linha("  %s" % _quando_foi_salvo(), COR_APAGADA, true, "", true)
 	_adicionar_linha("", COR_TEXTO, true)
 	for i in ACOES.size():
 		var pedindo := _confirmando == i
@@ -1391,13 +1391,13 @@ func _desenhar_ajustes() -> void:
 	_adicionar_linha("", COR_TEXTO, true)
 	_adicionar_linha("TECLAS", COR_APAGADA, true)
 	_adicionar_linha("  [%s] este painel  ·  [%s] mapa  ·  [%s] avança a hora" % [
-		Atalhos.letra("painel"), Atalhos.letra("mapa"), Atalhos.letra("hora")], COR_APAGADA, true)
+		Atalhos.letra("painel"), Atalhos.letra("mapa"), Atalhos.letra("hora")], COR_APAGADA, true, "", true)
 	_adicionar_linha("  [%s] ler / interagir, e golpe perto do bicho  ·  [%s] ginga" % [
-		Atalhos.letra("interagir"), Atalhos.letra("gingar")], COR_APAGADA, true)
+		Atalhos.letra("interagir"), Atalhos.letra("gingar")], COR_APAGADA, true, "", true)
 	_adicionar_linha("  [%s] observar  ·  [%s] reinicia  ·  [Tab] câmera  ·  roda: zoom  ·  1 a 0: item da mão" % [
-		Atalhos.letra("observar"), Atalhos.letra("reiniciar")], COR_APAGADA, true)
+		Atalhos.letra("observar"), Atalhos.letra("reiniciar")], COR_APAGADA, true, "", true)
 	_adicionar_linha("  [%s] mochila  ·  [%s] almanaque  ·  [%s] árvore de habilidades  ·  [%s] o arraial" % [
-		Atalhos.letra("mochila"), Atalhos.letra("almanaque"), Atalhos.letra("talentos"), Atalhos.letra("arraial")], COR_APAGADA, true)
+		Atalhos.letra("mochila"), Atalhos.letra("almanaque"), Atalhos.letra("talentos"), Atalhos.letra("arraial")], COR_APAGADA, true, "", true)
 
 	_adicionar_linha("", COR_TEXTO, true)
 	_adicionar_linha("AJUSTES DE TESTE — mexem no balanço da partida", COR_APAGADA, true)
@@ -1470,11 +1470,17 @@ func _quando_foi_salvo() -> String:
 
 ## Uma linha da lista: título de grupo sai como texto, o resto como BOTÃO de
 ## verdade — foco, realce ao passar o mouse, mãozinha (ver o 2D).
-func _adicionar_linha(texto: String, cor: Color, cabecalho: bool = false, distintivo: String = "") -> void:
+func _adicionar_linha(texto: String, cor: Color, cabecalho: bool = false, distintivo: String = "", leitura: bool = false) -> void:
 	if cabecalho:
 		if distintivo == "":
 			# Cabeçalho de grupo: rótulo de seção, Cinzel menor em ouro (#199).
-			var etiqueta := Identidade.papel_rotulo(_rotulo(texto, LETRA_DICA, cor), LETRA_DICA)
+			# `leitura` marca a frase solta (estado, dica, teclas): sans do HUD,
+			# na cor passada, e não título decorativo.
+			var etiqueta := _rotulo(texto, LETRA_DICA, cor)
+			if leitura:
+				Identidade.papel_leitura(etiqueta, LETRA_DICA, cor)
+			else:
+				Identidade.papel_rotulo(etiqueta, LETRA_DICA)
 			_lista.add_child(etiqueta)
 			_linhas.append(etiqueta)
 		else:

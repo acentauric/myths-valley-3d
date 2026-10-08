@@ -615,7 +615,7 @@ func _linha_da_cadeia(texto: String, conta: String, nivel: int, escolhida: bool)
 		botao.text += "    " + conta
 	botao.add_theme_font_override("font",
 		Identidade.fonte(Identidade.FONTE_TITULO, 600) if nivel == 0 else Identidade.fonte_do_hud())
-	botao.add_theme_font_size_override("font_size", 16 if nivel == 0 else 16)
+	botao.add_theme_font_size_override("font_size", 16)
 	botao.add_theme_color_override("font_color", OURO if nivel == 0 else PAPEL)
 	botao.add_theme_color_override("font_hover_color", Identidade.CREME)
 	for estado in ["normal", "hover", "pressed"]:
