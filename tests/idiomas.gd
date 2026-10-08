@@ -150,11 +150,14 @@ const TRADUZIDOS := {
 	"res://data/dicas_dos_moradores.json": ["texto"],
 	# Os sustos da mata: o aviso de quando o mapa enlouquece, o de quando o norte volta e o do sinal anotado.
 	"res://data/sustos.json": ["texto"],
+	# As animações da ficha em Modelos (#190): o rótulo de cada clipe, do Tripo e do Mixamo, e o gatilho dele
+	# no jogo (a dica do botão), nos quatro idiomas.
+	"res://data/mixamo_uso.json": ["rotulo", "gatilho"],
 }
 
 ## Os arquivos que também nascem em chinês (`campo_zh`): o jogo tem quatro idiomas no menu, e o chinês cai no
 ## inglês onde falta. Aqui só entra o que já nasceu inteiro nos quatro; o resto segue em `_en` e `_es`.
-const TAMBEM_EM_CHINES := ["res://data/npcs_3d.json", "res://data/falas_viajante.json", "res://data/sustos.json"]
+const TAMBEM_EM_CHINES := ["res://data/npcs_3d.json", "res://data/falas_viajante.json", "res://data/sustos.json", "res://data/mixamo_uso.json"]
 
 ## O QUE AINDA NÃO ESTÁ NOS TRÊS, e por quê. Esvaziar esta lista é o trabalho;
 ## deixá-la sem razão escrita é como ela vira lista de tudo.

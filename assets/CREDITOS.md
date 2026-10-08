@@ -75,6 +75,18 @@ moradores, só em português. O teto de crédito da chave de API acabou no meio 
 gerar fica declarado em `voz_pendente` no `data/npcs_3d.json` (e cobrado por
 `tests/vozes_dos_moradores.gd`), e as linhas deste registro valem para o lote inteiro.
 
+### Animações do Mixamo (08/10/2026, #190)
+
+| Arquivos | O que são | Registro |
+| --- | --- | --- |
+| `assets/prototipo_3d/personagens/mixamo/{pedro,pescador,beata}.res` | seis clipes da biblioteca do [Mixamo](https://www.mixamo.com) (Adobe) — Capoeira, Pointing Forward, Fishing Idle, Fishing Cast, Praying e Kneeling Idle —, baixados pela conta do autor sem pele a 30 fps e redirecionados para o esqueleto Tripo de cada morador por `tools/prototipo_3d/mixamo/redirecionar.gd` | `assets/prototipo_3d/personagens/mixamo/LEIAME.md` e `data/mixamo_uso.json` |
+
+A licença do Mixamo permite usar as animações em projetos, inclusive comerciais,
+quando incorporadas ao jogo, e proíbe redistribuí-las como arquivos soltos. Por
+isso os FBX não entram no repositório (que é público) nem no site: o jogo leva só
+o movimento redirecionado para cada corpo. Conferir os termos vigentes da Adobe
+antes de publicar.
+
 ### Dados geográficos do protótipo 3D
 
 | Arquivo | Fonte | Registro |

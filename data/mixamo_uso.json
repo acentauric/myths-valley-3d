@@ -1,0 +1,922 @@
+{
+  "observacao": "ANIMAÇÕES DO MIXAMO NOS PERSONAGENS (#190). \"catalogo\" é o levantamento da biblioteca do Mixamo (mixamo.com, filtro type=Motion,MotionPack, 52 páginas de 48), e \"baixados\" os FBX que a conta do autor baixou para escolher (sem pele, 30 quadros por segundo). Os FBX NÃO entram no repositório, que é público: a licença do Mixamo deixa usar o movimento dentro do jogo, mas não redistribuir o arquivo solto. Entra só o resultado, já no esqueleto de cada morador (assets/prototipo_3d/personagens/mixamo/<modelo>.res, por tools/prototipo_3d/mixamo/redirecionar.gd). \"personagens\" é o inventário de cada um: os clipes do Tripo (do GLB) e os do Mixamo, com o rótulo e o gatilho no jogo; \"meta_por_personagem\" é a meta de clipes Mixamo de cada um, de onde sai o percentual de uso do site (exportar_site.gd). \"acao\" liga o clipe à ação da rotina (npcs_3d.json, agenda) e \"a_cada\" o intercala, de tantos em tantos segundos, com o clipe principal da mesma ação.",
+  "meta_por_personagem": 2,
+  "catalogo": {
+    "fonte": "mixamo.com",
+    "coletado_em": "2026-10-08",
+    "filtro": "type=Motion,MotionPack",
+    "paginas": 52,
+    "itens_por_pagina": 48,
+    "total_itens": 2484,
+    "movimentos": 2446,
+    "pacotes": 38,
+    "personagens_fora_do_total": 108,
+    "contagens_por_busca": {
+      "capoeira": 39,
+      "punching": 30,
+      "jump": 139,
+      "sitting idle": 18,
+      "praying": 16,
+      "kneeling": 29,
+      "waving": 16,
+      "pointing": 11,
+      "talking": 348,
+      "standing up": 125,
+      "farm": 365,
+      "hammering": 0,
+      "scrubbing": 0,
+      "washing": 1,
+      "out of breath": 0,
+      "child": 0
+    },
+    "lista_de_pacotes": [
+      "Action Adventure Pack",
+      "Male Locomotion Pack",
+      "Longbow Locomotion Pack",
+      "Sword and Shield Pack",
+      "Capoeira Pack",
+      "Pro Melee Axe Pack",
+      "Basic Shooter Pack",
+      "Pro Longbow Pack",
+      "Shooter Pack",
+      "Lite Rifle Pack",
+      "Lite Magic Pack",
+      "Soccer Game Pack",
+      "Scary Zombie Pack",
+      "Farming Pack",
+      "Locomotion Pack",
+      "Slim Shooter Pack",
+      "Lite Sword and Shield Pack",
+      "Female Locomotion Pack",
+      "Creature Pack",
+      "Basic Locomotion Pack",
+      "Pro Rifle Pack",
+      "Free Test Pack",
+      "Breakdance Pack",
+      "Magic Spell Pack",
+      "Magic Locomotion Pack",
+      "Creature NPC Pack",
+      "Lite Longbow Pack",
+      "Great Sword Pack",
+      "Not So Scary Zombie Pack",
+      "Pistol/Handgun Locomotion Pack",
+      "Longbow Aiming Pack",
+      "Male Injured Pack",
+      "Pro Sword and Shield Pack",
+      "Rifle 8-Way Locomotion Pack",
+      "Pro Magic Pack",
+      "Gestures Pack Basic",
+      "Male Drunk Pack",
+      "Female Basic Locomotion Pack"
+    ]
+  },
+  "baixados": [
+    {
+      "fbx": "capoeira.fbx",
+      "nome_mixamo": "Capoeira",
+      "descricao_mixamo": "Capoeira Idle",
+      "in_place": false
+    },
+    {
+      "fbx": "strut_walking.fbx",
+      "nome_mixamo": "Strut Walking",
+      "descricao_mixamo": "Male Strut Walk",
+      "in_place": true
+    },
+    {
+      "fbx": "punching.fbx",
+      "nome_mixamo": "Punching",
+      "descricao_mixamo": "Jab Punch",
+      "in_place": false
+    },
+    {
+      "fbx": "salute.fbx",
+      "nome_mixamo": "Salute",
+      "descricao_mixamo": "Formal Military Salute",
+      "in_place": false
+    },
+    {
+      "fbx": "opening_door.fbx",
+      "nome_mixamo": "Opening Door Inwards",
+      "descricao_mixamo": "Male Walking And Opening A Door Inwards",
+      "in_place": false
+    },
+    {
+      "fbx": "jump.fbx",
+      "nome_mixamo": "Jump",
+      "descricao_mixamo": "Jumping In Place",
+      "in_place": false
+    },
+    {
+      "fbx": "sitting_yell.fbx",
+      "nome_mixamo": "Sitting Yell",
+      "descricao_mixamo": "Yelling While Sitting Forward",
+      "in_place": false
+    },
+    {
+      "fbx": "sitting_idle.fbx",
+      "nome_mixamo": "Sitting Idle",
+      "descricao_mixamo": "Sitting With Breathing Idle",
+      "in_place": false
+    },
+    {
+      "fbx": "sitting_talking.fbx",
+      "nome_mixamo": "Sitting Talking",
+      "descricao_mixamo": "Sitting And Talking To Another Person",
+      "in_place": false
+    },
+    {
+      "fbx": "praying.fbx",
+      "nome_mixamo": "Praying",
+      "descricao_mixamo": "Kneeling In Prayer",
+      "in_place": false
+    },
+    {
+      "fbx": "kneeling_idle.fbx",
+      "nome_mixamo": "Kneeling Idle",
+      "descricao_mixamo": "Kneeling Idle",
+      "in_place": false
+    },
+    {
+      "fbx": "fishing_cast.fbx",
+      "nome_mixamo": "Fishing Cast",
+      "descricao_mixamo": "Fishing Cast And Reel In",
+      "in_place": false
+    },
+    {
+      "fbx": "fishing_idle.fbx",
+      "nome_mixamo": "Fishing Idle",
+      "descricao_mixamo": "Fishing Idle",
+      "in_place": false
+    },
+    {
+      "fbx": "pulling_rope.fbx",
+      "nome_mixamo": "Pulling A Rope",
+      "descricao_mixamo": "Mime Pulling A Rope",
+      "in_place": false
+    },
+    {
+      "fbx": "picking_up.fbx",
+      "nome_mixamo": "Picking Up",
+      "descricao_mixamo": "Picking Up An Object",
+      "in_place": false
+    },
+    {
+      "fbx": "counting.fbx",
+      "nome_mixamo": "Counting",
+      "descricao_mixamo": "Counting To Five On One Hand",
+      "in_place": false
+    },
+    {
+      "fbx": "writing.fbx",
+      "nome_mixamo": "Writing",
+      "descricao_mixamo": "Male Writing While Seated",
+      "in_place": false
+    },
+    {
+      "fbx": "pointing.fbx",
+      "nome_mixamo": "Pointing Forward",
+      "descricao_mixamo": "Looking Down Then Pointing Forward",
+      "in_place": false
+    },
+    {
+      "fbx": "waving.fbx",
+      "nome_mixamo": "Waving",
+      "descricao_mixamo": "Waving",
+      "in_place": false
+    },
+    {
+      "fbx": "stretching_yawn.fbx",
+      "nome_mixamo": "Yawn",
+      "descricao_mixamo": "Big Yawn While Standing",
+      "in_place": false
+    },
+    {
+      "fbx": "waking_up_sitting.fbx",
+      "nome_mixamo": "Waking",
+      "descricao_mixamo": "Waking Up While Sitting",
+      "in_place": false
+    },
+    {
+      "fbx": "getting_up.fbx",
+      "nome_mixamo": "Stand Up",
+      "descricao_mixamo": "Standing Up From Back",
+      "in_place": false
+    },
+    {
+      "fbx": "tired_breathing_idle.fbx",
+      "nome_mixamo": "Breathing Idle",
+      "descricao_mixamo": "Breathing Idle",
+      "in_place": false
+    },
+    {
+      "fbx": "wiping_sweat.fbx",
+      "nome_mixamo": "Wiping Sweat",
+      "descricao_mixamo": "Wiping Sweat Idle",
+      "in_place": false
+    },
+    {
+      "fbx": "happy_walk.fbx",
+      "nome_mixamo": "Happy Walk",
+      "descricao_mixamo": "Happy Walking Forward",
+      "in_place": true
+    },
+    {
+      "fbx": "old_man_walk.fbx",
+      "nome_mixamo": "Old Man Walk",
+      "descricao_mixamo": "Slow Old Man Shuffle Walk",
+      "in_place": true
+    },
+    {
+      "fbx": "old_man_idle.fbx",
+      "nome_mixamo": "Old Man Idle",
+      "descricao_mixamo": "Old Man Standing Idle",
+      "in_place": false
+    },
+    {
+      "fbx": "digging.fbx",
+      "nome_mixamo": "Digging",
+      "descricao_mixamo": "Digging Hole With Shovel",
+      "in_place": false
+    },
+    {
+      "fbx": "harvesting.fbx",
+      "nome_mixamo": "Harvesting",
+      "descricao_mixamo": "Harvesting With A Sythe",
+      "in_place": true
+    },
+    {
+      "fbx": "running_tired.fbx",
+      "nome_mixamo": "Running Tired",
+      "descricao_mixamo": "Running Tired To Dizzy",
+      "in_place": false
+    },
+    {
+      "fbx": "girl_bench_swing.fbx",
+      "nome_mixamo": "Sitting",
+      "descricao_mixamo": "Little Girl Sitting On A Bench Swinging Her Legs",
+      "in_place": false
+    }
+  ],
+  "rotulos_tripo": {
+    "idle": {
+      "rotulo": "Parado",
+      "rotulo_en": "Idle",
+      "rotulo_es": "Quieto",
+      "rotulo_zh": "站立"
+    },
+    "walk": {
+      "rotulo": "Andar",
+      "rotulo_en": "Walk",
+      "rotulo_es": "Caminar",
+      "rotulo_zh": "行走"
+    },
+    "run": {
+      "rotulo": "Corrida",
+      "rotulo_en": "Run",
+      "rotulo_es": "Carrera",
+      "rotulo_zh": "奔跑"
+    },
+    "swim": {
+      "rotulo": "Nado",
+      "rotulo_en": "Swim",
+      "rotulo_es": "Natación",
+      "rotulo_zh": "游泳"
+    },
+    "run_upstairs": {
+      "rotulo": "Subir escada",
+      "rotulo_en": "Climb stairs",
+      "rotulo_es": "Subir escaleras",
+      "rotulo_zh": "上楼梯"
+    },
+    "greet_01": {
+      "rotulo": "Saudação",
+      "rotulo_en": "Greeting",
+      "rotulo_es": "Saludo",
+      "rotulo_zh": "打招呼"
+    },
+    "wave_goodbye_02": {
+      "rotulo": "Dar tchau",
+      "rotulo_en": "Wave goodbye",
+      "rotulo_es": "Decir adiós",
+      "rotulo_zh": "挥手告别"
+    },
+    "agree": {
+      "rotulo": "Concordar",
+      "rotulo_en": "Agree",
+      "rotulo_es": "Asentir",
+      "rotulo_zh": "点头同意"
+    },
+    "look_around": {
+      "rotulo": "Olhar ao redor",
+      "rotulo_en": "Look around",
+      "rotulo_es": "Mirar alrededor",
+      "rotulo_zh": "环顾四周"
+    },
+    "afraid": {
+      "rotulo": "Com medo",
+      "rotulo_en": "Afraid",
+      "rotulo_es": "Con miedo",
+      "rotulo_zh": "害怕"
+    },
+    "fold_arms": {
+      "rotulo": "Cruzar os braços",
+      "rotulo_en": "Fold arms",
+      "rotulo_es": "Cruzar los brazos",
+      "rotulo_zh": "抱臂"
+    },
+    "chop": {
+      "rotulo": "Golpear",
+      "rotulo_en": "Chop",
+      "rotulo_es": "Dar un golpe",
+      "rotulo_zh": "劈砍"
+    },
+    "jump_down": {
+      "rotulo": "Pular baixo",
+      "rotulo_en": "Hop down",
+      "rotulo_es": "Saltar abajo",
+      "rotulo_zh": "跳下"
+    },
+    "dig": {
+      "rotulo": "Cavar",
+      "rotulo_en": "Dig",
+      "rotulo_es": "Excavar",
+      "rotulo_zh": "挖掘"
+    },
+    "lift_heavy": {
+      "rotulo": "Erguer peso",
+      "rotulo_en": "Lift heavy",
+      "rotulo_es": "Levantar peso",
+      "rotulo_zh": "举重物"
+    },
+    "bow": {
+      "rotulo": "Reverência",
+      "rotulo_en": "Bow",
+      "rotulo_es": "Reverencia",
+      "rotulo_zh": "鞠躬"
+    },
+    "sit": {
+      "rotulo": "Sentar",
+      "rotulo_en": "Sit",
+      "rotulo_es": "Sentarse",
+      "rotulo_zh": "坐下"
+    }
+  },
+  "personagens": [
+    {
+      "id": "pedro",
+      "nome": "Pedro",
+      "modelo": "pedro",
+      "clipes_tripo": [
+        "agree",
+        "greet_01",
+        "idle",
+        "look_around",
+        "run",
+        "swim",
+        "walk",
+        "wave_goodbye_02"
+      ],
+      "clipes_mixamo": [
+        {
+          "id": "capoeira",
+          "fbx": "capoeira.fbx",
+          "nome_mixamo": "Capoeira",
+          "descricao_mixamo": "Capoeira Idle",
+          "laco": true,
+          "rotulo": "Capoeira",
+          "rotulo_en": "Capoeira ginga",
+          "rotulo_es": "Ginga de capoeira",
+          "rotulo_zh": "卡波耶拉金加步",
+          "gatilho": "Treina a ginga de vez em quando, parado no posto e com o viajante longe; termina o golpe e para quando ele chega perto.",
+          "gatilho_en": "Practices the ginga now and then, idle at his post with the traveler far away; finishes the move and stops as the traveler approaches.",
+          "gatilho_es": "Entrena la ginga de vez en cuando, quieto en su puesto y con el viajero lejos; termina el golpe y para cuando el viajero se acerca.",
+          "gatilho_zh": "在岗位上空闲、旅人离得远时，偶尔练习金加步；旅人走近时，他打完这一招就停下。",
+          "gatilho_id": "treino"
+        },
+        {
+          "id": "pointing",
+          "fbx": "pointing.fbx",
+          "nome_mixamo": "Pointing Forward",
+          "descricao_mixamo": "Looking Down Then Pointing Forward",
+          "laco": false,
+          "rotulo": "Apontar o caminho",
+          "rotulo_en": "Point the way",
+          "rotulo_es": "Señalar el camino",
+          "rotulo_zh": "指路",
+          "gatilho": "Na condução, ao parar no marco para esperar o viajante, e ao chegar a quem apresenta: aponta o rumo.",
+          "gatilho_en": "While guiding, when he stops at a waypoint to wait for the traveler and when he reaches the person he introduces: he points the way.",
+          "gatilho_es": "Al guiar, cuando se detiene en un hito para esperar al viajero y al llegar a quien presenta: señala el rumbo.",
+          "gatilho_zh": "带路时，在路标处停下等旅人、以及走到要介绍的人面前时，他会指明方向。",
+          "gatilho_id": "conducao"
+        }
+      ]
+    },
+    {
+      "id": "benedito",
+      "nome": "Seu Benedito",
+      "modelo": "benedito",
+      "clipes_tripo": [
+        "agree",
+        "greet_01",
+        "idle",
+        "look_around",
+        "run",
+        "walk",
+        "wave_goodbye_02"
+      ],
+      "clipes_mixamo": []
+    },
+    {
+      "id": "zefa",
+      "nome": "Dona Zefa",
+      "modelo": "zefa",
+      "clipes_tripo": [
+        "agree",
+        "greet_01",
+        "idle",
+        "look_around",
+        "run",
+        "walk",
+        "wave_goodbye_02"
+      ],
+      "clipes_mixamo": []
+    },
+    {
+      "id": "cosme",
+      "nome": "Cosme",
+      "modelo": "cosme",
+      "clipes_tripo": [
+        "agree",
+        "greet_01",
+        "idle",
+        "look_around",
+        "run",
+        "walk",
+        "wave_goodbye_02"
+      ],
+      "clipes_mixamo": []
+    },
+    {
+      "id": "tonho",
+      "nome": "Tonho",
+      "modelo": "tonho",
+      "clipes_tripo": [
+        "agree",
+        "greet_01",
+        "idle",
+        "look_around",
+        "run",
+        "walk",
+        "wave_goodbye_02"
+      ],
+      "clipes_mixamo": []
+    },
+    {
+      "id": "filo",
+      "nome": "Dona Filó",
+      "modelo": "filo",
+      "clipes_tripo": [
+        "agree",
+        "greet_01",
+        "idle",
+        "look_around",
+        "run",
+        "walk",
+        "wave_goodbye_02"
+      ],
+      "clipes_mixamo": []
+    },
+    {
+      "id": "candinha",
+      "nome": "Dona Candinha",
+      "modelo": "candinha",
+      "clipes_tripo": [
+        "agree",
+        "greet_01",
+        "idle",
+        "look_around",
+        "run",
+        "walk",
+        "wave_goodbye_02"
+      ],
+      "clipes_mixamo": []
+    },
+    {
+      "id": "damiao",
+      "nome": "Damião",
+      "modelo": "damiao",
+      "clipes_tripo": [
+        "agree",
+        "greet_01",
+        "idle",
+        "look_around",
+        "run",
+        "walk",
+        "wave_goodbye_02"
+      ],
+      "clipes_mixamo": []
+    },
+    {
+      "id": "quirino",
+      "nome": "Mestre Quirino",
+      "modelo": "quirino",
+      "clipes_tripo": [
+        "agree",
+        "greet_01",
+        "idle",
+        "look_around",
+        "run",
+        "walk",
+        "wave_goodbye_02"
+      ],
+      "clipes_mixamo": []
+    },
+    {
+      "id": "padre",
+      "nome": "Padre Anselmo",
+      "modelo": "padre",
+      "clipes_tripo": [
+        "afraid",
+        "agree",
+        "bow",
+        "chop",
+        "dig",
+        "fold_arms",
+        "greet_01",
+        "idle",
+        "look_around",
+        "run",
+        "sit",
+        "walk",
+        "wave_goodbye_02"
+      ],
+      "clipes_mixamo": []
+    },
+    {
+      "id": "sacristao",
+      "nome": "Sacristão Zacarias",
+      "modelo": "sacristao",
+      "clipes_tripo": [
+        "afraid",
+        "agree",
+        "bow",
+        "chop",
+        "dig",
+        "fold_arms",
+        "greet_01",
+        "idle",
+        "look_around",
+        "run",
+        "sit",
+        "walk",
+        "wave_goodbye_02"
+      ],
+      "clipes_mixamo": []
+    },
+    {
+      "id": "beata",
+      "nome": "Sá Joaquina",
+      "modelo": "beata",
+      "clipes_tripo": [
+        "afraid",
+        "agree",
+        "bow",
+        "chop",
+        "dig",
+        "fold_arms",
+        "greet_01",
+        "idle",
+        "look_around",
+        "run",
+        "sit",
+        "walk",
+        "wave_goodbye_02"
+      ],
+      "clipes_mixamo": [
+        {
+          "id": "praying",
+          "fbx": "praying.fbx",
+          "nome_mixamo": "Praying",
+          "descricao_mixamo": "Kneeling In Prayer",
+          "laco": true,
+          "rotulo": "Rezar de joelhos",
+          "rotulo_en": "Kneeling prayer",
+          "rotulo_es": "Rezar de rodillas",
+          "rotulo_zh": "跪地祈祷",
+          "gatilho": "Na igreja e no cruzeiro, nas horas de reza da rotina: a ação \"rezar\".",
+          "gatilho_en": "At the church and at the wayside cross, during her prayer hours: the \"pray\" action.",
+          "gatilho_es": "En la iglesia y en el crucero, en sus horas de rezo: la acción \"rezar\".",
+          "gatilho_zh": "在教堂和十字架前，在她日程中的祈祷时间：\"祈祷\"动作。",
+          "acao": "rezar"
+        },
+        {
+          "id": "kneeling_idle",
+          "fbx": "kneeling_idle.fbx",
+          "nome_mixamo": "Kneeling Idle",
+          "descricao_mixamo": "Kneeling Idle",
+          "laco": true,
+          "rotulo": "De joelhos, em silêncio",
+          "rotulo_en": "Kneeling in silence",
+          "rotulo_es": "De rodillas, en silencio",
+          "rotulo_zh": "静静跪着",
+          "gatilho": "Entre um terço e outro, ainda ajoelhada, descansa as mãos e olha o altar.",
+          "gatilho_en": "Between one rosary and the next, still kneeling, she rests her hands and looks at the altar.",
+          "gatilho_es": "Entre un rosario y otro, aún arrodillada, descansa las manos y mira el altar.",
+          "gatilho_zh": "一串念珠与下一串之间，她仍跪着，放下双手望着祭坛。",
+          "acao": "rezar",
+          "a_cada": [
+            20.0,
+            35.0
+          ]
+        }
+      ]
+    },
+    {
+      "id": "mercador",
+      "nome": "Seu Nicolau",
+      "modelo": "mercador",
+      "clipes_tripo": [
+        "afraid",
+        "agree",
+        "chop",
+        "dig",
+        "fold_arms",
+        "greet_01",
+        "idle",
+        "lift_heavy",
+        "look_around",
+        "run",
+        "sit",
+        "walk",
+        "wave_goodbye_02"
+      ],
+      "clipes_mixamo": []
+    },
+    {
+      "id": "guarda",
+      "nome": "Guarda Aristides",
+      "modelo": "guarda",
+      "clipes_tripo": [
+        "afraid",
+        "agree",
+        "chop",
+        "dig",
+        "fold_arms",
+        "greet_01",
+        "idle",
+        "look_around",
+        "run",
+        "sit",
+        "walk",
+        "wave_goodbye_02"
+      ],
+      "clipes_mixamo": []
+    },
+    {
+      "id": "pescador",
+      "nome": "Seu Jerônimo",
+      "modelo": "pescador",
+      "clipes_tripo": [
+        "afraid",
+        "agree",
+        "chop",
+        "dig",
+        "fold_arms",
+        "greet_01",
+        "idle",
+        "look_around",
+        "run",
+        "sit",
+        "swim",
+        "walk",
+        "wave_goodbye_02"
+      ],
+      "clipes_mixamo": [
+        {
+          "id": "fishing_idle",
+          "fbx": "fishing_idle.fbx",
+          "nome_mixamo": "Fishing Idle",
+          "descricao_mixamo": "Fishing Idle",
+          "laco": true,
+          "rotulo": "Pescar de vara",
+          "rotulo_en": "Rod fishing",
+          "rotulo_es": "Pescar con caña",
+          "rotulo_zh": "持竿垂钓",
+          "gatilho": "De manhã, no rio, segurando a vara: a ação \"pescar\" da rotina.",
+          "gatilho_en": "In the morning, at the river, holding the rod: the \"fish\" action of his routine.",
+          "gatilho_es": "Por la mañana, en el río, sosteniendo la caña: la acción \"pescar\" de su rutina.",
+          "gatilho_zh": "早上在河边握着钓竿：日程中的\"钓鱼\"动作。",
+          "acao": "pescar"
+        },
+        {
+          "id": "fishing_cast",
+          "fbx": "fishing_cast.fbx",
+          "nome_mixamo": "Fishing Cast",
+          "descricao_mixamo": "Fishing Cast And Reel In",
+          "laco": false,
+          "rotulo": "Lançar a linha",
+          "rotulo_en": "Cast the line",
+          "rotulo_es": "Lanzar el sedal",
+          "rotulo_zh": "甩竿收线",
+          "gatilho": "Enquanto pesca, de tempos em tempos lança a linha e recolhe.",
+          "gatilho_en": "While fishing, every so often he casts the line and reels it in.",
+          "gatilho_es": "Mientras pesca, de vez en cuando lanza el sedal y lo recoge.",
+          "gatilho_zh": "钓鱼时，他不时甩出钓线再收回。",
+          "acao": "pescar",
+          "a_cada": [
+            14.0,
+            26.0
+          ]
+        }
+      ]
+    },
+    {
+      "id": "marisqueira",
+      "nome": "Dona Rosa",
+      "modelo": "marisqueira",
+      "clipes_tripo": [
+        "afraid",
+        "agree",
+        "chop",
+        "dig",
+        "fold_arms",
+        "greet_01",
+        "idle",
+        "look_around",
+        "run",
+        "sit",
+        "swim",
+        "walk",
+        "wave_goodbye_02"
+      ],
+      "clipes_mixamo": []
+    },
+    {
+      "id": "lavadeira",
+      "nome": "Sá Rita",
+      "modelo": "lavadeira",
+      "clipes_tripo": [
+        "afraid",
+        "agree",
+        "chop",
+        "dig",
+        "fold_arms",
+        "greet_01",
+        "idle",
+        "lift_heavy",
+        "look_around",
+        "run",
+        "sit",
+        "walk",
+        "wave_goodbye_02"
+      ],
+      "clipes_mixamo": []
+    },
+    {
+      "id": "rendeira",
+      "nome": "Dona Estefânia",
+      "modelo": "rendeira",
+      "clipes_tripo": [
+        "afraid",
+        "agree",
+        "chop",
+        "dig",
+        "fold_arms",
+        "greet_01",
+        "idle",
+        "look_around",
+        "run",
+        "sit",
+        "walk",
+        "wave_goodbye_02"
+      ],
+      "clipes_mixamo": []
+    },
+    {
+      "id": "quituteira",
+      "nome": "Dona Ambrósia",
+      "modelo": "quituteira",
+      "clipes_tripo": [
+        "afraid",
+        "agree",
+        "chop",
+        "dig",
+        "fold_arms",
+        "greet_01",
+        "idle",
+        "look_around",
+        "run",
+        "sit",
+        "walk",
+        "wave_goodbye_02"
+      ],
+      "clipes_mixamo": []
+    },
+    {
+      "id": "carpinteiro",
+      "nome": "Seu Epifânio",
+      "modelo": "carpinteiro",
+      "clipes_tripo": [
+        "afraid",
+        "agree",
+        "chop",
+        "dig",
+        "fold_arms",
+        "greet_01",
+        "idle",
+        "lift_heavy",
+        "look_around",
+        "run",
+        "sit",
+        "walk",
+        "wave_goodbye_02"
+      ],
+      "clipes_mixamo": []
+    },
+    {
+      "id": "menino",
+      "nome": "Tonico",
+      "modelo": "menino",
+      "clipes_tripo": [
+        "afraid",
+        "agree",
+        "chop",
+        "dig",
+        "fold_arms",
+        "greet_01",
+        "idle",
+        "look_around",
+        "run",
+        "sit",
+        "swim",
+        "walk",
+        "wave_goodbye_02"
+      ],
+      "clipes_mixamo": []
+    },
+    {
+      "id": "menina",
+      "nome": "Mariinha",
+      "modelo": "menina",
+      "clipes_tripo": [
+        "afraid",
+        "agree",
+        "chop",
+        "dig",
+        "fold_arms",
+        "greet_01",
+        "idle",
+        "look_around",
+        "run",
+        "sit",
+        "swim",
+        "walk",
+        "wave_goodbye_02"
+      ],
+      "clipes_mixamo": []
+    },
+    {
+      "id": "mestre_saveiro",
+      "nome": "Seu Ladislau",
+      "modelo": "mestre_saveiro",
+      "clipes_tripo": [
+        "afraid",
+        "agree",
+        "chop",
+        "dig",
+        "fold_arms",
+        "greet_01",
+        "idle",
+        "look_around",
+        "run",
+        "sit",
+        "swim",
+        "walk",
+        "wave_goodbye_02"
+      ],
+      "clipes_mixamo": []
+    },
+    {
+      "id": "viajante",
+      "nome": "Viajante",
+      "modelo": "viajante",
+      "clipes_tripo": [
+        "afraid",
+        "agree",
+        "chop",
+        "fold_arms",
+        "greet_01",
+        "idle",
+        "jump_down",
+        "look_around",
+        "run",
+        "run_upstairs",
+        "swim",
+        "walk",
+        "wave_goodbye_02"
+      ],
+      "clipes_mixamo": []
+    }
+  ]
+}
