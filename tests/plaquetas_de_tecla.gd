@@ -27,6 +27,19 @@ func _run() -> void:
 				marca.position = icone.position
 			conferir(not marca.get_global_rect().intersects(icone.get_global_rect()), "plaqueta cobre o ícone")
 			conferir(marca.mouse_filter == Control.MOUSE_FILTER_IGNORE, "plaqueta captura cliques")
+			# #182: à direita do botão, centrada na vertical, dentro da tela, e a dica
+			# (que abre à esquerda) fica livre dela.
+			var placa := canto.get_global_rect()
+			var retangulo := marca.get_global_rect()
+			conferir(retangulo.get_center().x > placa.end.x, "plaqueta não está à direita do botão (escala %s)" % escala)
+			conferir(retangulo.position.x <= placa.end.x, "plaqueta solta da borda do botão (escala %s)" % escala)
+			conferir(absf(retangulo.get_center().y - placa.get_center().y) <= 1.5, "plaqueta fora do centro vertical (escala %s)" % escala)
+			conferir(retangulo.end.x <= root.get_visible_rect().size.x, "plaqueta sai da tela (escala %s)" % escala)
+			var dica: Control = canto.get_meta("dica")
+			dica.visible = true
+			await process_frame
+			conferir(not retangulo.intersects(dica.get_global_rect()), "plaqueta disputa o lugar da dica (escala %s)" % escala)
+			dica.visible = false
 			var fundo := marca.get_theme_stylebox("normal") as StyleBoxFlat
 			conferir(fundo != null and fundo.bg_color.a == 1, "tecla depende do fundo do mundo")
 			var tinta := marca.get_theme_color("font_color")

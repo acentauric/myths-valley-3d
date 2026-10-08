@@ -169,8 +169,7 @@ static func _geometria(canto: PanelContainer, e: float) -> void:
 	icone.position = Vector2.ONE * (interno - visivel) * 0.5
 	var tecla := botao.get_node_or_null("TeclaDeAtalho") as Label
 	if tecla:
-		tecla.scale = Vector2.ONE * e
-		tecla.position = Vector2(-20 * e, 0)
+		_posicionar_tecla(tecla, e)
 	var dica := canto.get_meta("dica") as Control
 	dica.offset_right = -MARGEM - lado - 10.0
 	dica.offset_left = dica.offset_right
@@ -184,10 +183,24 @@ static func marcar_atalho(botao: Button, tecla: String) -> Label:
 	marca.name = "TeclaDeAtalho"
 	marca.text = tecla
 	estilizar_tecla(marca)
-	marca.scale = Vector2.ONE * escala()
-	marca.position = Vector2(-20 * escala(), 0)
+	_posicionar_tecla(marca, escala())
 	botao.add_child(marca)
 	return marca
+
+
+## A plaqueta fica à DIREITA do botão, centrada na vertical e colada à borda da placa
+## (a dica abre à esquerda e não disputa o lugar). Em coordenadas do botão, que fica
+## `folga` para dentro da placa. Como a coluna está a MARGEM da borda da tela, a
+## plaqueta encolhe o que for preciso para nunca sair dela, em qualquer escala do HUD.
+static func _posicionar_tecla(marca: Label, e: float) -> void:
+	var lado := roundf(LADO * e)
+	var folga := roundf(4.0 * e)
+	var interno := lado - 2.0 * folga
+	var tamanho := marca.get_combined_minimum_size()
+	var s := minf(e, (MARGEM - 4.0) / maxf(tamanho.x, 1.0))
+	marca.scale = Vector2.ONE * s
+	# 2 px da plaqueta cobrem a borda da placa, para ela parecer parte do botão.
+	marca.position = Vector2(interno + folga - 2.0, (interno - tamanho.y * s) * 0.5)
 
 
 ## Plaqueta de tecla comum aos atalhos e números da mão.

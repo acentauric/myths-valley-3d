@@ -2,6 +2,14 @@
 
 ## Em desenvolvimento — 08/10/2026
 
+- **A plaqueta da tecla dos atalhos laterais passa para a direita do botão, centrada.**
+  O M, o C e o J ficavam no canto superior esquerdo do botão, soltos e no caminho da dica
+  que abre à esquerda. Agora ficam à direita, no meio da altura, coladas à borda da placa,
+  e encolhem o que for preciso para nunca sair da tela em nenhuma escala do HUD. A
+  posição vem de uma função só (`_posicionar_tecla`), usada ao criar e ao reescalar; as
+  plaquetas dos números da barra de mão não mudam. O portão das plaquetas confere lado,
+  centro, tela e dica livre nas três escalas (#182).
+
 - **O vale ganha o botão Tela cheia na coluna de atalhos, como o do menu.** Em janela,
   dentro do vale, não havia como voltar à tela cheia sem conhecer o F11. O botão fica na
   vaga 5 da coluna (logo abaixo do mapa, a mesma do menu), alterna tela cheia e janela,
