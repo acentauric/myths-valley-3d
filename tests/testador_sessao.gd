@@ -125,7 +125,8 @@ func _painel() -> void:
 		if (no as Label).text.begins_with("● ") and (no as Label).visible:
 			marcadores += 1
 	_conferir(marcadores == PainelSessao.MAX_DECISOES, "as últimas decisões aparecem em lista curta (%d)" % marcadores)
-	var botoes := painel.find_children("*", "Button", true, false)
+	# Sem `manual_botao`, o botão do F7 (#206) fica escondido: o único visível é o Parar.
+	var botoes := painel.find_children("*", "Button", true, false).filter(func(b: Node) -> bool: return (b as Button).visible)
 	_conferir(botoes.size() == 1 and (botoes[0] as Button).text == "Parar", "o Parar é um botão curto")
 	_conferir((botoes[0] as Button).size.y <= 36.0 and (botoes[0] as Button).size.x <= 90.0, "o Parar é pequeno e discreto")
 	var teclas: Array[String] = []
@@ -145,6 +146,15 @@ func _painel() -> void:
 	painel.parar_pedido.connect(func() -> void: parou[0] = true)
 	(botoes[0] as Button).pressed.emit()
 	_conferir(parou[0], "o Parar avisa a sessão")
+	# O F7 (#206) mora no painel novo: com `manual_botao`, o botão aparece e pede a troca de mãos.
+	painel.mostrar({"titulo": "Testando", "nivel": "", "sub": "", "acao": "", "decisoes": [], "manual_botao": _t("assumir")})
+	var manual := painel.find_child("Manual", true, false) as Button
+	_conferir(manual != null and manual.visible and manual.text == _t("assumir"), "o botão de assumir o controle (F7) aparece no painel")
+	var trocou := [false]
+	painel.manual_pedido.connect(func() -> void: trocou[0] = true)
+	if manual != null:
+		manual.pressed.emit()
+	_conferir(trocou[0], "o botão do F7 avisa a sessão")
 	# Sem cobrir o HUD: barra de mão no meio de baixo, minimapa embaixo à esquerda, e no canto
 	# da direita uma coluna de dicas que forçam o painel a subir ou mudar de lado.
 	var janela := Vector2(1280, 720)
