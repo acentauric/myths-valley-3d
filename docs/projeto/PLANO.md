@@ -65,8 +65,10 @@ A #150 ganha a auditoria de todas as espécies contra a madeira desenhada: o
 raio do cilindro de 29 das 32 espécies de tronco fica a menos de 0,35 u do
 raio visível, nenhum cilindro cobre copa, e mangue, bambu e gameleira (raízes
 escoras, colmos, sapopemas) estão anotadas com a razão. Nenhum raio
-mudou; um portão sem vale guarda a fonte dos números. A passada a pé junto de
-bases e raízes fica para o jogo aberto. Ver
+mudou; um portão sem vale guarda a fonte dos números. Um segundo portão varre a
+cápsula do jogador pelo eixo do tronco de cada espécie: ela para na borda do
+cilindro ao nível do peito e passa acima dele, onde só há copa. **#150 fechada**
+(08/10/2026); bases largas por cima dos cilindros seguem por projeto. Ver
 [COLISAO_DAS_ARVORES.md](../testes/COLISAO_DAS_ARVORES.md).
 
 A #141 avança pelo caso do ingazeiro: o GLB trazia a árvore numa laje de terra

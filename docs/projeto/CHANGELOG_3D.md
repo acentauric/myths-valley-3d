@@ -2,6 +2,15 @@
 
 ## Em desenvolvimento — 08/10/2026
 
+- **A árvore barra o corpo no peito e deixa a copa passar, espécie por espécie.** Um
+  portão novo monta o vale, acorda o conjunto de cilindros ao lado de um tronco de cada
+  espécie e varre a cápsula do jogador (os mesmos 0,28 de raio) pelo eixo do tronco, ao
+  nível do peito, dos dois lados: ela para na borda do cilindro mais o corpo (de 0,45 u
+  no mamoeiro a 0,94 u na mangueira) e nunca entra na madeira; varrida acima do cilindro,
+  onde só há folhagem, ela passa. Reprova com cilindros esticados até a copa e com
+  cilindros fora da camada de colisão. Com a auditoria de raios, o eixo do corpo na
+  madeira, a rota que contorna o tronco e o corte, fecham os critérios da #150.
+
 - **Primeiros clipes do Mixamo nos moradores.** Seis animações do Mixamo entram
   redirecionadas para o esqueleto Tripo de cada um (`tools/prototipo_3d/mixamo/redirecionar.gd`,
   só rotações e o quadril, pé no chão, no lugar): o Pedro treina capoeira no posto quando o
