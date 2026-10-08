@@ -39,6 +39,20 @@ var relogio_motivo_desde := 0
 var relogio_alertado := false
 var relogio_hora_vista := -1.0
 var relogio_hora_mudou_em := 0
+## O CONTROLE MANUAL (#206): F7 tira o testador do volante sem encerrar a sessão. Nenhuma
+## decisão é pedida nem ação executada enquanto `manual` vale; o teclado e o mouse são de
+## quem assiste. F7 de novo devolve, e a ponte manda o robô recalcular do estado novo. F8
+## continua encerrando a sessão em qualquer estado.
+var manual := false
+var manual_desde := 0
+var manual_antes: Dictionary = {}
+var manual_captura := ""
+## A devolução ainda está a caminho da ponte: o laço espera, para o robô recalcular antes de decidir.
+var manual_devolvendo := false
+var faixa_manual: PanelContainer
+var botao_manual: Button
+## As teclas que o testador pode estar segurando quando a mão passa para o humano.
+const TECLAS_DO_TESTADOR := [KEY_W, KEY_A, KEY_S, KEY_D, KEY_E, KEY_F, KEY_V, KEY_SHIFT, KEY_SPACE]
 
 
 func _ponto_de_material(item: String) -> Vector3:
@@ -85,6 +99,7 @@ func _run() -> void:
 	idioma = load("res://scripts/prototipo_3d/idioma_menu.gd")
 	_aplicar_idioma_da_sessao(OS.get_environment("MV_JEV_IDIOMA"))
 	_montar_painel()
+	root.window_input.connect(_ao_entrar_evento)
 	change_scene_to_file("res://scenes/prototipo_3d/inicio.tscn")
 	await process_frame
 	while not parar:
@@ -92,6 +107,12 @@ func _run() -> void:
 			break
 		if duracao > 0 and inicio_jogo >= 0 and _segundos() >= duracao:
 			break
+		if manual_devolvendo:
+			await process_frame
+			continue
+		if manual:
+			await _aguardar_manual()
+			continue
 		var cena := current_scene
 		if cena == null:
 			await _esperar(0.5)
@@ -128,6 +149,9 @@ func _run() -> void:
 			ultima_acao = "bridge_error"
 			parar = true
 			break
+		if manual:
+			# A mão passou ao humano enquanto a ponte decidia: a escolha velha é descartada.
+			continue
 		chamadas = int(resposta.get("calls", 0))
 		custo = float(resposta.get("estimated_usd", 0.0))
 		ultima_acao = str(resposta.choice)
@@ -138,6 +162,8 @@ func _run() -> void:
 		amostrar_em = 0
 		_amostrar_movimento()
 		var resultado: String = await _executar(ultima_acao)
+		if manual and not parar:
+			resultado = "interrupted_manual_control"
 		var depois: Dictionary = _estado()
 		_amostrar_movimento(true)
 		var evento := {"action": ultima_acao, "result": resultado, "before": antes, "after": depois, "movement_samples": amostras_movimento.duplicate(true)}
@@ -151,6 +177,8 @@ func _run() -> void:
 		if historico.size() > 24:
 			historico.pop_front()
 		await _esperar(0.15 if OS.get_environment("MV_JEV_ROBOT") == "1" else 2.0)
+	if manual:
+		await _fechar_manual("session_end")
 	var motivo := "duration" if duracao > 0 and inicio_jogo >= 0 and _segundos() >= duracao else (ultima_acao if parar else "user_stop")
 	await _post("/stop", {"reason": motivo})
 	_capturar()
@@ -189,8 +217,9 @@ func _montar_painel() -> void:
 	painel.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)
 	painel.offset_left = -294
 	painel.offset_right = -14
-	painel.offset_top = -128
+	painel.offset_top = -160
 	painel.offset_bottom = -14
+	painel.grow_vertical = Control.GROW_DIRECTION_BEGIN
 	var margens := MarginContainer.new()
 	for lado in ["left", "right", "top", "bottom"]:
 		margens.add_theme_constant_override("margin_" + lado, 8)
@@ -206,10 +235,35 @@ func _montar_painel() -> void:
 	acao_rotulo.add_theme_font_size_override("font_size", 12)
 	acao_rotulo.text = _texto("aguardando_robot" if OS.get_environment("MV_JEV_ROBOT") == "1" else "aguardando")
 	caixa.add_child(acao_rotulo)
+	botao_manual = Button.new()
+	botao_manual.text = _texto("assumir")
+	botao_manual.focus_mode = Control.FOCUS_NONE
+	botao_manual.pressed.connect(_alternar_manual)
+	caixa.add_child(botao_manual)
 	var botao := Button.new()
 	botao.text = _texto("parar")
+	botao.focus_mode = Control.FOCUS_NONE
 	botao.pressed.connect(func(): ultima_acao = "user_stop"; parar = true)
 	caixa.add_child(botao)
+	# A faixa de cima só existe com o humano no controle, e fica à vista mesmo com telas abertas.
+	faixa_manual = PanelContainer.new()
+	faixa_manual.visible = false
+	faixa_manual.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var fundo := StyleBoxFlat.new()
+	fundo.bg_color = Color(0.45, 0.07, 0.05, 0.92)
+	fundo.border_color = Color(0.93, 0.74, 0.28)
+	fundo.set_border_width_all(2)
+	fundo.set_content_margin_all(8)
+	faixa_manual.add_theme_stylebox_override("panel", fundo)
+	var aviso := Label.new()
+	aviso.name = "Aviso"
+	aviso.add_theme_font_size_override("font_size", 18)
+	aviso.add_theme_color_override("font_color", Color(1.0, 0.93, 0.7))
+	aviso.text = _texto("manual_faixa")
+	faixa_manual.add_child(aviso)
+	camada.add_child(faixa_manual)
+	faixa_manual.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP, Control.PRESET_MODE_MINSIZE, 10)
+	faixa_manual.grow_horizontal = Control.GROW_DIRECTION_BOTH
 	_atualizar_painel()
 
 
@@ -218,9 +272,92 @@ func _atualizar_painel() -> void:
 	if OS.get_environment("MV_JEV_ROBOT") == "1":
 		titulo = _texto("robot")
 	rotulo.text = _texto("estado_robot") % chamadas if OS.get_environment("MV_JEV_ROBOT") == "1" else _texto("estado") % [titulo, chamadas, custo, orcamento]
+	if faixa_manual != null:
+		faixa_manual.visible = manual
+		faixa_manual.get_node("Aviso").text = _texto("manual_faixa")
+		botao_manual.text = _texto("devolver" if manual else "assumir")
+		if manual:
+			acao_rotulo.text = _texto("manual_acao")
 	# Telas grandes e diálogos precisam de toda a área; F8 permanece ativo.
 	if _no_vale() and bool(current_scene.get("carga_ok")):
 		painel_observador.visible = current_scene.get("telas").aberta().is_empty() and not root.get_node("Dialogo").ativo
+
+
+## O testador deve largar o que faz: a sessão acabou ou a mão passou ao humano (#206).
+func _cede() -> bool:
+	return parar or manual
+
+
+## F7, vindo da janela: vale na hora, mesmo no meio de uma decisão ou de um trajeto.
+func _ao_entrar_evento(evento: InputEvent) -> void:
+	var tecla := evento as InputEventKey
+	if tecla != null and tecla.pressed and not tecla.echo and (tecla.keycode == KEY_F7 or tecla.physical_keycode == KEY_F7):
+		_alternar_manual()
+
+
+func _alternar_manual() -> void:
+	if parar or inicio_jogo < 0 or not _no_vale() or not bool(current_scene.get("carga_ok")):
+		return
+	if manual:
+		_fechar_manual("f7")
+	else:
+		_abrir_manual()
+
+
+## O que a ponte precisa saber do mundo nas pontas do controle manual: posição, missão, itens e mão.
+func _resumo_manual() -> Dictionary:
+	var jogador: Node3D = current_scene.get("player")
+	var inventario := root.get_node("Inventario")
+	var objetivo: Dictionary = _json_seguro(root.get_node("CadernoDoVale").atual())
+	return {"position": _vetor(jogador.global_position), "seconds": _segundos(),
+		"objective": {"id": objetivo.get("id", ""), "feito": objetivo.get("feito", 0), "total": objetivo.get("total", 0)},
+		"inventory": {"slots": inventario.espacos.duplicate(true), "in_hand": inventario.na_mao()}}
+
+
+func _abrir_manual() -> void:
+	manual = true
+	manual_desde = Time.get_ticks_msec()
+	manual_antes = _resumo_manual()
+	# A fila do testador morre aqui: o que ele segurava é solto e a caminhada guiada, cancelada.
+	for tecla in TECLAS_DO_TESTADOR:
+		_pressionar(tecla, false)
+	current_scene.get("player")._cancel_walk()
+	manual_captura = _capturar()
+	_atualizar_painel()
+	print("JEV: controle manual assumido (F7)")
+	_post("/manual", {"phase": "start", "before": manual_antes, "capture": manual_captura, "last_action": ultima_acao})
+
+
+## Devolve a mão ao testador (F7) ou fecha o trecho porque a sessão acaba. O robô recalcula do
+## estado novo; o relógio é rearmado para o vigia não acusar o que o humano deixou parado.
+func _fechar_manual(motivo: String) -> void:
+	manual = false
+	manual_devolvendo = true
+	var duracao_s := snappedf((Time.get_ticks_msec() - manual_desde) / 1000.0, 0.1)
+	var depois := _resumo_manual()
+	var captura := _capturar()
+	relogio_motivo = ""
+	relogio_alertado = false
+	relogio_hora_mudou_em = _agora()
+	_atualizar_painel()
+	print("JEV: controle manual devolvido (%s) apos %.1f s" % [motivo, duracao_s])
+	await _post("/manual", {"phase": "end", "reason": motivo, "duration_s": duracao_s, "before": manual_antes,
+		"after": depois, "capture": captura, "start_capture": manual_captura})
+	manual_devolvendo = false
+
+
+func _aguardar_manual() -> void:
+	while manual and not parar:
+		if Input.is_physical_key_pressed(KEY_F8):
+			ultima_acao = "user_stop"
+			parar = true
+			break
+		if duracao > 0 and inicio_jogo >= 0 and _segundos() >= duracao:
+			break
+		_atualizar_painel()
+		if inicio_jogo >= 0 and _segundos() - ultima_captura >= 30:
+			_capturar()
+		await process_frame
 
 
 func _segundos() -> int:
@@ -722,7 +859,7 @@ func _caminhar(alvo, seguir: bool, exato: bool = false, passagem_da_porta: bool 
 	var recalcular := 0
 	var destino := Vector3.INF
 	var trajeto := PackedVector3Array()
-	while not parar and Time.get_ticks_msec() - comeco < (12000 if seguir else 15000):
+	while not _cede() and Time.get_ticks_msec() - comeco < (12000 if seguir else 15000):
 		if Input.is_physical_key_pressed(KEY_F8):
 			ultima_acao = "user_stop"
 			parar = true
@@ -809,7 +946,7 @@ func _aproximar_guia(pedro: Node3D) -> bool:
 	var leitura = load("res://tools/jev/rota_do_guia.gd")
 	var reta_apoiada := false
 	_pressionar(KEY_W, true)
-	while not parar and not paused and not root.get_node("Dialogo").ativo and Time.get_ticks_msec() < limite:
+	while not _cede() and not paused and not root.get_node("Dialogo").ativo and Time.get_ticks_msec() < limite:
 		if Input.is_physical_key_pressed(KEY_F8):
 			ultima_acao = "user_stop"
 			parar = true
@@ -868,7 +1005,7 @@ func _conferir_chegada(alvo, ponto: Vector3, _seguir: bool) -> String:
 	# Finish with ordinary W input, without teleporting or forcing interaction.
 	var limite := Time.get_ticks_msec() + 2500
 	_pressionar(KEY_W, true)
-	while Time.get_ticks_msec() < limite and not parar and not paused:
+	while Time.get_ticks_msec() < limite and not _cede() and not paused:
 		if root.get_node("Dialogo").ativo:
 			break
 		if Input.is_physical_key_pressed(KEY_F8):
@@ -906,7 +1043,7 @@ func _pressionar(codigo: int, pressionado: bool) -> void:
 
 func _esperar(segundos: float) -> void:
 	var fim := Time.get_ticks_msec() + int(segundos * 1000.0)
-	while Time.get_ticks_msec() < fim and not parar:
+	while Time.get_ticks_msec() < fim and not _cede():
 		if Input.is_physical_key_pressed(KEY_F8):
 			ultima_acao = "user_stop"
 			parar = true

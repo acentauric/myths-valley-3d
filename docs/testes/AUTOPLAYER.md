@@ -37,7 +37,7 @@ fechando tudo.
 Não há limite padrão de tempo. F8 ou fechar a janela encerra a sessão;
 `JOGAR_SOL.cmd --seconds 600` limita uma execução a dez minutos. O robô local
 não usa API do Jev nem consome créditos. Seu painel ocupa o canto inferior
-direito e se esconde durante telas e diálogos modais; F8 continua funcionando.
+direito e se esconde durante telas e diálogos modais; F8 e F7 continuam funcionando.
 
 ## Como decide
 
@@ -66,6 +66,19 @@ lugar), força a saída duas vezes e então sonda uma direção livre; a saída 
 entra no relatório como bloqueio. Acabado o tutorial o Pedro não conduz mais: `follow_pedro`
 sai do catálogo e ele passa a ser abordado como morador (`approach_MoradorPedro`), no máximo
 seis vezes por pergunta pela próxima cadeia.
+
+**F7 assume o controle (#206).** Quem assiste pega o jogo na mão sem encerrar a sessão:
+F7 (ou o botão "Assumir o controle") suspende o testador, determinístico, Jev ou GPT. A fila
+dele morre na hora (a decisão em voo é descartada, as teclas que ele segurava são soltas e
+a caminhada guiada é cancelada), uma faixa vermelha no topo diz "Controle manual · F7
+devolve" mesmo com telas abertas, e o teclado e o mouse são do humano; o relógio, a física e
+o resto do jogo seguem normais. F7 de novo devolve: a ponte manda o robô esquecer o plano
+velho (rota, contorno, tentativas, cobertura) e ele recalcula do estado novo, de missão,
+inventário e posição. F8 continua encerrando a sessão em qualquer estado, e se ela acaba
+durante o controle manual o trecho é fechado antes. O relatório ganha a seção "Controle
+manual (F7)", uma linha por trecho: quando, por quantos segundos, a última ação do testador
+antes, o que mudou (missão, itens, mão, deslocamento) e as capturas do início e do fim,
+para virarem regra nova do determinístico ou caso da escada da #183.
 
 **A ferramenta que o alvo pede vem como dado (#207).** O estado traz `tool_requirement`
 (o alvo ao alcance, a família da ferramenta, onde ela está: `na_mao`, `na_barra`,

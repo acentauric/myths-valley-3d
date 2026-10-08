@@ -179,6 +179,19 @@ class JogadorAutomatico:
             return asked["ferramenta"]
         return ""
 
+    def replan(self):
+        """O humano devolveu o controle (F7, #206): o plano velho (rota, contorno, tentativas, cobertura,
+        ferramenta em troca) não vale mais. Fica só o que o robô já sabe do mundo (lugares visitados)."""
+        self.attempts.clear()
+        getattr(self, "coverage", Counter()).clear()
+        self.navigation_leg, self.escape_leg = {}, {}
+        self.equipping, self.tool_note = "", ""
+        self.recovery = self.route_failed = False
+        self.last_goal = self.last_observation = self.progress_signature = None
+        self.repeated_observations = self.room_still = self.room_exit_tries = 0
+        self.checkpoint_pending = False
+        self.last_action = ""
+
     def _explore(self, state, actions, select):
         """Experimentar o que está ao alcance antes de ampliar a busca."""
         context = self._context(state)

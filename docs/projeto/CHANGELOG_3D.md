@@ -2,6 +2,14 @@
 
 ## Em desenvolvimento — 08/10/2026
 
+- **F7 tira o testador do volante e devolve, sem encerrar a sessão.** Quem assiste pega o
+  jogo na mão: o testador para na hora (a decisão em voo é descartada e as teclas que ele
+  segurava são soltas), uma faixa vermelha diz "Controle manual · F7 devolve" e o painel
+  ganha o botão de assumir e devolver, nos quatro idiomas. F7 de novo devolve e o robô
+  recalcula do estado novo, sem repetir o plano velho; F8 segue encerrando em qualquer
+  estado. O relatório ganha a seção "Controle manual (F7)" com a duração de cada trecho e o
+  que mudou (missão, itens, mão, deslocamento), para ensinar o determinístico (#206).
+
 - **O testador entende "Ponha na mão: Machado" e põe a ferramenta certa na mão.** Antes ele
   passou umas 250 ações na lenha sem escolher o machado, porque ele estava só na mochila e o
   robô só olhava a barra de mão. Agora o estado traz, como dado, a barra de mão inteira, o

@@ -48,6 +48,24 @@ class SpendingTests(unittest.TestCase):
             report = generate(directory).read_text(encoding="utf-8")
             self.assertIn("padrão do jogo", report)
 
+    def test_manual_control_is_logged_and_makes_the_robot_replan_on_return(self):
+        # F7 (#206): o início só registra; a devolução registra o trecho e manda o robô recalcular.
+        from robo import JogadorAutomatico
+        with tempfile.TemporaryDirectory() as folder:
+            directory = Path(folder)
+            session = Session(directory, {})
+            session.robot = JogadorAutomatico()
+            session.robot.navigation_leg = {"goal": "x"}
+            session.manual_control({"phase": "start", "before": {}, "last_action": "wait"})
+            self.assertEqual(session.robot.navigation_leg, {"goal": "x"})
+            session.manual_control({"phase": "end", "reason": "f7", "duration_s": 12.5, "before": {}, "after": {}})
+            self.assertEqual(session.robot.navigation_leg, {})
+            events = [json.loads(line) for line in (directory / "eventos.jsonl").read_text(encoding="utf-8").splitlines()]
+            phases = [e["phase"] for e in events if e["kind"] == "manual_control"]
+            self.assertEqual(phases, ["start", "end"])
+            with self.assertRaises(ValueError):
+                session.manual_control({"phase": "other"})
+
     def test_menu_waits_for_the_first_authenticated_call_of_the_session_window(self):
         # O menu só fecha depois de a janela do testador subir (#175): o arquivo nasce na primeira chamada do jogo.
         import threading

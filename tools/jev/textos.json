@@ -42,5 +42,21 @@
   "acao": "Ação: %s · confiança %.0f%%",
   "acao_en": "Action: %s · confidence %.0f%%",
   "acao_es": "Acción: %s · confianza %.0f%%",
-  "acao_zh": "动作：%s · 置信度 %.0f%%"
+  "acao_zh": "动作：%s · 置信度 %.0f%%",
+  "assumir": "Assumir o controle (F7)",
+  "assumir_en": "Take control (F7)",
+  "assumir_es": "Tomar el control (F7)",
+  "assumir_zh": "接管控制 (F7)",
+  "devolver": "Devolver ao testador (F7)",
+  "devolver_en": "Hand back to the tester (F7)",
+  "devolver_es": "Devolver al probador (F7)",
+  "devolver_zh": "交还给测试员 (F7)",
+  "manual_faixa": "Controle manual · F7 devolve",
+  "manual_faixa_en": "Manual control · F7 hands back",
+  "manual_faixa_es": "Control manual · F7 devuelve",
+  "manual_faixa_zh": "手动控制 · 按 F7 交还",
+  "manual_acao": "Você está jogando; o testador espera.",
+  "manual_acao_en": "You are playing; the tester is waiting.",
+  "manual_acao_es": "Estás jugando; el probador espera.",
+  "manual_acao_zh": "您正在游玩；测试员在等待。"
 }

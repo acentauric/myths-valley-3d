@@ -578,6 +578,22 @@ class PlayerTests(unittest.TestCase):
             self.assertIn(bot.choose(state, actions, {}), actions)
         self.assertIn("Falta ferramenta machado", bot.reason)
 
+    def test_replan_after_manual_control_drops_the_old_plan(self):
+        # F7 devolvido (#206): a rota, o contorno e a troca de ferramenta velhos não valem mais.
+        bot, state = self.player(), self.axe_in_the_backpack()
+        task = {"step": {"meta": {"tipo": "juntar", "item": "lenha", "quantos": 36}}}
+        actions = {"inspect_inventory": "I", "objective": "go", "hand_1": "h", "wait": "wait"}
+        self.assertEqual(bot.choose(dict(state), actions, task), "inspect_inventory")
+        self.assertEqual(bot.equipping, "machado")
+        bot.navigation_leg = {"goal": "x", "action": "objective", "target": [9, 0, 9], "distance": 12}
+        bot.escape_leg = {"action": "walk_left", "origin": [0, 0, 0], "goal": "x"}
+        bot.replan()
+        self.assertEqual((bot.equipping, bot.navigation_leg, bot.escape_leg, bot.last_action), ("", {}, {}, ""))
+        self.assertFalse(bot.recovery)
+        # Com o machado agora na mão (o humano o pôs), o robô não reabre a mochila: segue ao recurso.
+        state["inventory"]["in_hand"] = "machado"
+        self.assertEqual(bot.choose(dict(state), actions, task), "objective")
+
     def test_clock_and_walking_do_not_count_as_mission_progress(self):
         bot = self.player()
         state = self.state()
@@ -733,6 +749,38 @@ class ReportTests(unittest.TestCase):
             self.assertIn("sem avanço de missão", report)
             self.assertIn("não demonstrado", report)
             self.assertIn("2.00", report)
+
+    def test_report_lists_manual_control_with_duration_and_effect(self):
+        # F7 (#206): cada trecho em que o humano jogou entra no relatório com a duração e o que mudou.
+        with tempfile.TemporaryDirectory() as folder:
+            directory = Path(folder)
+            slots_before = [{"id": "picareta", "qtd": 1}, {"id": "machado", "qtd": 1}]
+            before = {"position": [0, 0, 0], "objective": {"id": "pedro_lenha", "feito": 2, "total": 36},
+                      "inventory": {"in_hand": "picareta", "slots": slots_before}}
+            after = {"position": [3, 0, 4], "objective": {"id": "pedro_lenha", "feito": 5, "total": 36},
+                     "inventory": {"in_hand": "machado", "slots": slots_before + [{"id": "lenha", "qtd": 3}]}}
+            records = [{"kind": "game_ready", "elapsed": 1},
+                       {"kind": "manual_control", "elapsed": 100, "phase": "start", "before": before, "capture": "quadro_0100.jpg", "last_action": "wait"},
+                       {"kind": "manual_control", "elapsed": 125, "phase": "end", "reason": "f7", "duration_s": 25.0,
+                        "before": before, "after": after, "capture": "quadro_0125.jpg", "start_capture": "quadro_0100.jpg"},
+                       {"kind": "manual_control", "elapsed": 200, "phase": "start", "before": after, "last_action": "objective"}]
+            (directory / "eventos.jsonl").write_text("\n".join(json.dumps(r) for r in records) + "\n", encoding="utf-8")
+            report = generate(directory).read_text(encoding="utf-8")
+            self.assertIn("## Controle manual (F7)", report)
+            self.assertIn("por 25.0 s", report)
+            self.assertIn("missão pedro_lenha 2/36 → pedro_lenha 5/36", report)
+            self.assertIn("+3 lenha", report)
+            self.assertIn("mão: picareta → machado", report)
+            self.assertIn("deslocou 5.0 unidades", report)
+            self.assertIn("Última ação do testador antes: wait", report)
+            self.assertIn("](quadro_0125.jpg)", report)
+            self.assertIn("ainda está jogando", report)
+
+    def test_report_without_manual_control_says_so(self):
+        with tempfile.TemporaryDirectory() as folder:
+            directory = Path(folder)
+            (directory / "eventos.jsonl").write_text("", encoding="utf-8")
+            self.assertIn("Nenhuma vez o humano assumiu o controle", generate(directory).read_text(encoding="utf-8"))
 
     def test_report_lists_clock_stops_with_last_action_and_capture(self):
         with tempfile.TemporaryDirectory() as folder:

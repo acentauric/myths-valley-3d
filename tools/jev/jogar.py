@@ -228,6 +228,17 @@ class Session:
                 except OSError as error:
                     self.log("window_up_error", reason=type(error).__name__)
 
+    def manual_control(self, data):
+        """O controle manual (#206): registra o início e o fim do trecho com o antes e o depois, e
+        faz o robô recalcular a partir do estado novo ao voltar. Nenhuma decisão é pedida no meio."""
+        phase = str(data.get("phase", ""))
+        if phase not in ("start", "end"):
+            raise ValueError("fase desconhecida")
+        fields = {k: data[k] for k in ("reason", "duration_s", "before", "after", "capture", "start_capture", "last_action") if k in data}
+        self.log("manual_control", phase=phase, **fields)
+        if phase == "end" and self.robot is not None and hasattr(self.robot, "replan"):
+            self.robot.replan()
+
     def status(self):
         elapsed = 0 if self.game_started is None else time.monotonic() - self.game_started
         return {"calls": self.calls, "input_tokens": self.tokens,
@@ -542,6 +553,11 @@ def make_handler(session):
                     if session.progress.observe(data.get("after", {})):
                         session.stop_reason = f"no_progress_{session.progress.idle_seconds}s"
                         session.log("guard_stop", reason=session.stop_reason)
+                    result = session.status()
+                elif self.path == "/manual":
+                    # F7 (#206): o humano assumiu ou devolveu o controle. Vai para o relatório e,
+                    # na devolução, o robô esquece o plano velho.
+                    session.manual_control(data)
                     result = session.status()
                 elif self.path == "/achado":
                     # Achado do controlador do jogo (ex.: relógio parado, #192): vai para o
