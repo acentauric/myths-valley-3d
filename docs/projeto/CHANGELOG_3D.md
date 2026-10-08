@@ -133,14 +133,22 @@
   Ajustes nos quatro papéis e que o rótulo de seção dos Ajustes cabe numa linha em pt, en,
   es e zh, em todas as abas.
 
-- **O Diário de missões cabe sem rolagem (#202, parcial).** Com uma aba só, a coluna das
+- **O Diário de missões cabe sem rolagem (#202).** Com uma aba só, a coluna das
   abas some e a página ganha a largura; com várias, ela encolhe. A ficha vira duas
   colunas (a voz de quem pediu em resumo à esquerda, os objetivos à direita, só eles
   rolando se faltar altura) e um rodapé fixo com a recompensa e o botão "Acompanhar",
-  que nunca sai da caixa. A fala do Pedro aparece em até 200 letras, cortada em frase
-  inteira (`CadeiaDeMissoes.fala_curta`; o campo `diario` do passo, opcional, sobrescreve
-  com um resumo escrito à mão), em fonte de leitura. Portão `diario_sem_rolagem`. Falta
-  revisar à mão as falas mais longas e conferir a mesma regra nas outras abas.
+  que nunca sai da caixa. A fala aparece em até 200 letras, cortada em frase
+  inteira (`CadeiaDeMissoes.fala_curta`), em fonte de leitura. Fecha a issue: as 17 falas
+  mais longas (de 334 a 664 letras, no quintal, na Zefa, na lombada, na fé, no mirante, na
+  chapada, na ponte, no saveiro, no Tonho e no coveiro) ganham resumo escrito à mão em
+  `diario`, `diario_en` e `diario_es`, em prosa curta, com a voz de quem pede e sem repetir o
+  que os objetivos já dizem (o chinês cai no inglês, como o resto das missões); a ficha do
+  Arraial (P) deixa de rolar (a caixa passa de 620 para 660 px e a ficha se aperta: retrato
+  de 76 px, margens de 24 e respiros menores; com o grau mais alto e o gosto à mostra faltavam
+  74 px); e o portão `diario_sem_rolagem` cobra o resumo escrito de toda fala acima de 330
+  letras nos três idiomas, e que as abas do Diário, a Teia, a Coleção e a ficha do Arraial
+  (a mais cheia, em pt, en e es) caibam sem barra de rolagem. A janela de 1280×720 é a mesma
+  de 1080p: o jogo escala a tela.
 
 - **A dica do E ganha plaqueta grande, alvo em ouro e requisito em branco.** Em "Tronco
   caído / Ponha na mão: Machado" a plaqueta do E passa a ocupar a altura das duas linhas

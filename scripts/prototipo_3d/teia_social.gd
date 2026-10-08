@@ -52,14 +52,16 @@ const IconeRelacao = preload("res://scripts/prototipo_3d/icone_relacao.gd")
 ## moldura: ouro aqui é enfeite, e o coração é dado.
 const COR_CORACAO := Color("e2857a")
 
-const TAMANHO := Vector2(980, 620)
+## A ficha de quem se escolhe não rola (#202): em 1280×720 a mais cheia (grau de Gente boa para
+## cima, com o gosto e o que não aceita) pedia 74 px a mais que a caixa de 620.
+const TAMANHO := Vector2(980, 660)
 const LARGURA_DA_COLUNA := 330.0
 const ALTURA_DA_LINHA := 56.0
 ## O canto direito de cada linha: corações do grau e os gestos de hoje.
 const LARGURA_DOS_SINAIS := 76.0
 const LADO_DO_CORACAO_PEQUENO := 13.0
 const LADO_DO_CORACAO := 22.0
-const LADO_DO_RETRATO_GRANDE := 88.0
+const LADO_DO_RETRATO_GRANDE := 76.0
 ## A ficha de um presente na grade da página.
 const LADO_DA_FICHA := 52.0
 ## O RETRATO DE CADA UM, como no 2D: o mesmo boneco que anda no mapa, de frente
@@ -123,7 +125,7 @@ func _montar() -> void:
 	estilo.border_color = Color(Identidade.OURO.r, Identidade.OURO.g, Identidade.OURO.b, 0.55)
 	estilo.set_border_width_all(1)
 	estilo.set_corner_radius_all(4)
-	estilo.set_content_margin_all(26)
+	estilo.set_content_margin_all(24)
 	_caixa.add_theme_stylebox_override("panel", estilo)
 	_caixa.set_anchors_preset(Control.PRESET_CENTER)
 	_caixa.grow_horizontal = Control.GROW_DIRECTION_BOTH
@@ -175,7 +177,7 @@ func _montar() -> void:
 	lado_a_lado.add_child(rolagem_pagina)
 	_pagina = VBoxContainer.new()
 	_pagina.name = "Pagina"
-	_pagina.add_theme_constant_override("separation", 6)
+	_pagina.add_theme_constant_override("separation", 4)
 	_pagina.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	rolagem_pagina.add_child(_pagina)
 
@@ -524,7 +526,7 @@ func _titulo_de_bloco(texto: String) -> Control:
 	var caixa := VBoxContainer.new()
 	caixa.add_theme_constant_override("separation", 2)
 	var respiro := Control.new()
-	respiro.custom_minimum_size = Vector2(0, 6)
+	respiro.custom_minimum_size = Vector2(0, 4)
 	caixa.add_child(respiro)
 	var rotulo := Label.new()
 	rotulo.text = texto.to_upper()

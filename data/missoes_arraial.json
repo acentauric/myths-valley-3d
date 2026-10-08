@@ -39,6 +39,9 @@
       "texto": "Lembra da outra mesa do seu terreno? Aquela do lado da bancada da oficina. Você serrou tábua a semana inteira e nunca chegou perto dela — eu reparei. Não é culpa sua: elas parecem a mesma coisa e não são. A bancada é serrote: entra lenha, sai tábua. A do lado é prumo: ali não sai nada, ali você risca. E obra riscada antes sai mais barata que obra improvisada; meu avô dizia que quem mede duas vezes corta uma. Junte oito tábuas e doze lenhas. É pouco, e o que ela te devolve não é pouco.",
       "texto_en": "Remember the other table on your land? The one next to the workshop bench. You sawed boards all week and never went near it — I noticed. It's not your fault: they look like the same thing and they aren't. The bench is a saw: firewood goes in, boards come out. The one beside it is a plumb line: nothing comes out of it, there you draw. And work drawn beforehand comes out cheaper than work improvised; my grandfather used to say whoever measures twice cuts once. Gather eight boards and twelve pieces of firewood. It's little, and what it gives back is not little.",
       "texto_es": "¿Te acuerdas de la otra mesa de tu terreno? La que está al lado del banco del taller. Aserraste tablas la semana entera y nunca te acercaste a ella; me di cuenta. No es culpa tuya: parecen la misma cosa y no lo son. El banco es serrucho: entra leña, sale tabla. La de al lado es plomada: de ahí no sale nada, ahí trazas. Y la obra trazada antes sale más barata que la improvisada; mi abuelo decía que quien mide dos veces corta una. Junta ocho tablas y doce leñas. Es poco, y lo que te devuelve no es poco.",
+      "diario": "Aquela outra mesa do seu terreno parece a bancada e não é: a bancada é serrote, ela é prumo, onde a obra se risca antes. Meu avô dizia que quem mede duas vezes corta uma.",
+      "diario_en": "That other table on your land looks like the bench and isn't: the bench is a saw, this one is a plumb line, where the work is drawn first. My grandfather said whoever measures twice cuts once.",
+      "diario_es": "Esa otra mesa de tu terreno parece el banco y no lo es: el banco es serrucho, esta es plomada, donde la obra se traza antes. Mi abuelo decía que quien mide dos veces corta una.",
       "meta": {
         "tipo": "juntar",
         "itens": {
@@ -81,6 +84,9 @@
       "raio": 9,
       "audio": "",
       "texto": "Agora que você sabe riscar obra, tem outra coisa que eu quero te mostrar, e é subindo. Saia da praça pelo poente e pegue a estrada que serpenteia até o alto. Lá em cima tem um mirante: dali se vê a baía inteira, e no dia limpo dá pra ver saveiro chegando antes de ele chegar. Era assim que a gente sabia quem vinha. Vá ver como ele está.",
+      "diario": "Agora que você sabe riscar obra, tenho outra coisa pra te mostrar, lá no alto. Dali se vê a baía inteira, e no dia limpo o saveiro chegando antes de ele chegar.",
+      "diario_en": "Now that you know how to draw up a job, there's another thing I want to show you, up high. From there you see the whole bay, and on a clear day the sailboat coming before it arrives.",
+      "diario_es": "Ahora que sabes trazar obra, hay otra cosa que quiero mostrarte, allá arriba. Desde ahí se ve toda la bahía, y en un día limpio el velero llegando antes de llegar.",
       "meta": {}
     },
     {
@@ -93,6 +99,9 @@
       "raio": 9,
       "audio": "",
       "texto": "Tá vendo? Os esteios ficaram, mas o tabuado range e o guarda-corpo apodreceu. Foi uma chuva de março, faz uns vinte anos, e ninguém subiu mais — nem consertou, que é o que a gente faz aqui: espera cair, depois espera alguém. O que falta é tabuado corrido, pedra pro calço e corda pro guarda-corpo. Vinte tábuas, doze pedras e seis cordas, menos o que a prancheta do canteiro abate; tábua e corda saem da oficina. Ponte é chão, mirante é altura: o que sustenta gente no alto tem que ser mais do que o que sustenta gente no raso.",
+      "diario": "Os esteios ficaram, mas o tabuado range e o guarda-corpo apodreceu: faz uns vinte anos que ninguém sobe nem conserta. Ponte é chão, mirante é altura, e tem de ser mais firme.",
+      "diario_en": "The posts held, but the planking creaks and the railing has rotted; for twenty years nobody has climbed up or fixed it. A bridge is ground, a lookout is height: it has to be sturdier.",
+      "diario_es": "Los postes quedaron, pero el tablado cruje y la baranda se pudrió; hace veinte años que nadie sube ni lo arregla. Un puente es suelo, un mirador es altura: tiene que ser más firme.",
       "meta": {
         "tipo": "juntar",
         "da_obra": "mirante_levantar"

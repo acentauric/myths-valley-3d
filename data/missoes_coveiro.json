@@ -64,6 +64,9 @@
       "texto": "Agora dá pra ver o resto do estrago. Capim é o de menos: olha aquelas embaúbas nascendo no meio das covas — embaúba pega em qualquer fresta, e raiz de embaúba levanta laje. E os troncos que a trovoada de janeiro derrubou por cima dos mortos. Machado o senhor tem. Dizem que lenha de cemitério ninguém queima em casa; pra serviço de cemitério, serve.",
       "texto_en": "Now you can see the rest of the damage. The grass is the least of it: look at those embaúbas sprouting between the graves — an embaúba takes hold in any crack, and an embaúba root lifts a slab. And the trunks the January storm brought down over the dead. You've got the axe. They say nobody burns cemetery wood at home; for cemetery work, it'll do.",
       "texto_es": "Ahora se ve el resto del destrozo. La maleza es lo de menos: mire esas embaúbas brotando entre las tumbas — la embaúba prende en cualquier grieta, y raíz de embaúba levanta lápida. Y los troncos que la tormenta de enero tumbó encima de los muertos. Hacha usted tiene. Dicen que leña de cementerio nadie la quema en casa; para trabajo de cementerio, sirve.",
+      "diario": "O capim é o de menos: raiz de embaúba levanta laje, e a trovoada de janeiro deixou o resto do estrago. Lenha de cemitério ninguém queima em casa; pra serviço de cemitério, serve.",
+      "diario_en": "The grass is the least of it: an embaúba root lifts a slab, and the January storm left the rest of the damage. Nobody burns cemetery wood at home; for cemetery work, it'll do.",
+      "diario_es": "La maleza es lo de menos: la raíz de la embaúba levanta lápidas, y la tormenta de enero dejó el resto del destrozo. Leña de cementerio nadie la quema en casa; para trabajo de cementerio, sirve.",
       "meta": { "tipo": "derrubar", "alvo": "mato_do_cemiterio", "quantos": 7 }
     },
     {
@@ -80,6 +83,9 @@
       "texto": "Dá pra ler os nomes. Faz dois anos que não dava pra ler os nomes. Mas olha aquelas três lajes: a raiz levantou, e laje torta é cova aberta pra bicho. Preciso de quatro pedras pro calço e de duas tábuas, pras cruzes que apodreceram. Pedra solta tem aí pelo outeiro, é só catar; tábua sai da oficina, da lenha que o senhor tirou daqui.",
       "texto_en": "You can read the names. Two years now you couldn't read the names. But look at those three slabs: the roots lifted them, and a crooked slab is an open grave for any critter. I need four stones to wedge them and two boards for the crosses that rotted. There are loose stones all over the hill, just pick them up; boards come from the workshop, out of the wood you cleared from here.",
       "texto_es": "Se pueden leer los nombres. Hace dos años que no se podían leer los nombres. Pero mire esas tres lápidas: la raíz las levantó, y lápida torcida es tumba abierta para cualquier bicho. Necesito cuatro piedras para calzarlas y dos tablas para las cruces que se pudrieron. Piedra suelta hay por todo el cerro, es solo recogerla; la tabla sale del taller, de la leña que usted sacó de aquí.",
+      "diario": "Dá pra ler os nomes; faz dois anos que não dava. Mas a raiz levantou três lajes, e laje torta é cova aberta pra bicho. Pedra solta tem por todo o outeiro, é só catar.",
+      "diario_en": "You can read the names now; for two years you couldn't. But the roots lifted three slabs, and a crooked slab is an open grave for any critter. Loose stones lie all over the hill, just pick them up.",
+      "diario_es": "Se pueden leer los nombres; hace dos años que no. Pero la raíz levantó tres lápidas, y lápida torcida es tumba abierta para cualquier bicho. Piedra suelta hay por todo el cerro, solo recójala.",
       "meta": {
         "tipo": "levar",
         "itens": { "pedra": 4, "tabua": 2 },
