@@ -227,6 +227,23 @@ func _o_afastamento() -> void:
 	var empilhada: Rect2 = PopupsDoMundo.afastar_de(dica, duas, 3.0)
 	_conferir(empilhada.end.y <= 260.0 - 3.0 + 0.01, "a dica sobre duas placas empilhadas parou em y=%.1f, e a de cima começa em 260" % empilhada.end.y)
 
+	# A dica do E também respeita o HUD (#184): desce para baixo da barra, encosta ao lado, ou se apaga.
+	var tela := Vector2(1280.0, 720.0)
+	var barra := Rect2(20.0, 40.0, 300.0, 24.0)
+	var no_hud: Array[Rect2] = [barra]
+	var por_cima := Rect2(100.0, 30.0, 120.0, 36.0)
+	var desceu: Rect2 = PopupsDoMundo.livre_do_hud(por_cima, no_hud, 6.0, tela)
+	_conferir(desceu.size != Vector2.ZERO and desceu.position.y >= barra.end.y + 6.0 - 0.01 and desceu.position.x == por_cima.position.x,
+		"a dica sobre a barra de vigor não desceu para baixo dela (ficou em %s)" % str(desceu))
+	var longe_da_barra := Rect2(600.0, 300.0, 120.0, 36.0)
+	_conferir(PopupsDoMundo.livre_do_hud(longe_da_barra, no_hud, 6.0, tela) == longe_da_barra, "a dica longe do HUD foi mexida")
+	var tapando: Array[Rect2] = [Rect2(0.0, 0.0, 1280.0, 720.0)]
+	_conferir(PopupsDoMundo.livre_do_hud(longe_da_barra, tapando, 6.0, tela).size == Vector2.ZERO, "a dica sem lugar nenhum não pediu para se apagar")
+	var lado: Array[Rect2] = [Rect2(100.0, 0.0, 130.0, 720.0)]
+	var encostou: Rect2 = PopupsDoMundo.livre_do_hud(Rect2(110.0, 300.0, 120.0, 36.0), lado, 6.0, tela)
+	_conferir(encostou.size != Vector2.ZERO and (encostou.end.x <= 100.0 - 6.0 + 0.01 or encostou.position.x >= 230.0 + 6.0 - 0.01),
+		"a dica sobre um painel alto não encostou ao lado dele (ficou em %s)" % str(encostou))
+
 
 # --- 2. AS REGRAS, SEM MUNDO -------------------------------------------------------------------
 

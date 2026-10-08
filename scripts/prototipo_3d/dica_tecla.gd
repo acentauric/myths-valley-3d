@@ -36,6 +36,8 @@ const CORREIA := 110.0
 const FOLGA_DAS_PLACAS := 3.0
 const TEMPO_DO_EMPURRAO := 0.12
 const CORREIA_DO_EMPURRAO := 400.0
+## Entre a dica e o painel do HUD de que ela se afasta (#184).
+const FOLGA_DO_HUD := 6.0
 
 
 static func criar(pai: Control, tecla_texto: String, acao: String) -> PanelContainer:
@@ -148,15 +150,23 @@ static func mostrar_em(dica: PanelContainer, camera: Camera3D, ponto: Vector3, a
 	var origem := dica.global_position - dica.position if dica.is_inside_tree() else Vector2.ZERO
 	var caixa := Rect2((onde - Vector2(tamanho.x * 0.5, tamanho.y)).round() + origem, tamanho)
 	var afastada := PopupsDoMundo.afastar_de(caixa, PopupsDoMundo.retangulos(dica, PopupsDoMundo.GRUPO_PLACAS), FOLGA_DAS_PLACAS)
+	# DEPOIS DAS PLACAS, O HUD (#184): a dica do E, dona da vaga, também respeita as barras, o relógio
+	# e os painéis essenciais. Desce para baixo deles, encosta ao lado ou, sem lugar, se apaga.
+	var tela := dica.get_viewport_rect().size
+	var paineis := PopupsDoMundo.retangulos(dica, PopupsDoMundo.GRUPO_HUD, dica, PopupsDoMundo.PRIORIDADE_INTERACAO + 1)
+	var livre := PopupsDoMundo.livre_do_hud(afastada, paineis, FOLGA_DO_HUD, tela)
+	if livre.size == Vector2.ZERO:
+		dica.visible = false
+		return
 	# O empurrão também tem peso: a placa que some (o morador começou a falar) não faz a dica
 	# despencar de uma vez, e a que chega não a faz saltar.
 	var empurrao := _mola_do_empurrao(dica)
-	var alvo_do_empurrao := Vector2(0.0, afastada.position.y - caixa.position.y)
+	var alvo_do_empurrao := livre.position - caixa.position
 	if not estava_acesa:
 		empurrao.reiniciar(alvo_do_empurrao)
 	var sobe := empurrao.seguir(alvo_do_empurrao, dica.get_process_delta_time(), TEMPO_DO_EMPURRAO,
 		SuavizadorDeTela.VELOCIDADE_MAXIMA, 0.0, CORREIA_DO_EMPURRAO)
-	dica.position = (Vector2(caixa.position.x, caixa.position.y + sobe.y) - origem).round()
+	dica.position = (caixa.position + sobe - origem).round()
 
 
 ## O alvo e o requisito, independentemente do idioma. Não quebra nomes procurando

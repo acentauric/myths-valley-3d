@@ -99,3 +99,38 @@ static func afastar_de(caixa: Rect2, obstaculos: Array[Rect2], folga: float) -> 
 			continue
 		caixa.position.y = minf(caixa.position.y, obstaculo.position.y - folga - caixa.size.y)
 	return caixa
+
+
+## `caixa` fora dos painéis do HUD (#184): a dica do E, dona da vaga, também respeita as barras,
+## o relógio e os painéis, e não só as placas de nome. Sem tocar em nenhum, fica onde está. Se
+## cobriria algum, vai para o lugar mais perto que o deixa livre de todos, inteiro na tela:
+## DESCE para baixo do painel, ENCOSTA ao lado dele (esquerda ou direita) ou, se estiver embaixo,
+## sobe acima. Sem lugar nenhum, devolve um retângulo vazio: quem chama APAGA a dica.
+static func livre_do_hud(caixa: Rect2, paineis: Array[Rect2], folga: float, tela: Vector2) -> Rect2:
+	if not _cobre_algum(caixa, paineis, folga):
+		return caixa
+	var candidatos: Array[Rect2] = []
+	for painel: Rect2 in paineis:
+		if not caixa.grow(folga).intersects(painel):
+			continue
+		candidatos.append(Rect2(Vector2(caixa.position.x, painel.end.y + folga), caixa.size))
+		candidatos.append(Rect2(Vector2(painel.position.x - folga - caixa.size.x, caixa.position.y), caixa.size))
+		candidatos.append(Rect2(Vector2(painel.end.x + folga, caixa.position.y), caixa.size))
+		candidatos.append(Rect2(Vector2(caixa.position.x, painel.position.y - folga - caixa.size.y), caixa.size))
+	# O mais perto primeiro: o menor deslocamento é o que menos muda a dica de lugar.
+	candidatos.sort_custom(func(a: Rect2, b: Rect2) -> bool:
+		return a.position.distance_squared_to(caixa.position) < b.position.distance_squared_to(caixa.position))
+	var area := Rect2(Vector2.ZERO, tela)
+	for candidato: Rect2 in candidatos:
+		if area.encloses(candidato) and not _cobre_algum(candidato, paineis, folga):
+			return candidato
+	return Rect2()
+
+
+static func _cobre_algum(caixa: Rect2, paineis: Array[Rect2], folga: float) -> bool:
+	# Um pouco menos que a folga: o candidato que encosta na folga exata não conta como cobrindo.
+	var larga := caixa.grow(maxf(folga - 0.05, 0.0))
+	for painel: Rect2 in paineis:
+		if larga.intersects(painel):
+			return true
+	return false
