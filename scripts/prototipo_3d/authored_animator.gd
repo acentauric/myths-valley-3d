@@ -45,6 +45,25 @@ var _medido := false
 ## O TRABALHO EM CURSO (`trabalhar`): o nome do clipe que roda enquanto o corpo está
 ## parado (a cópia em laço da biblioteca "trabalho", quando o original não é laço).
 var _trabalho := ""
+## O nome-base do trabalho em curso ("capoeira", "dig"), para quem pergunta o que ele faz.
+var _trabalho_base := ""
+## A VARIAÇÃO NO MEIO DO TRABALHO (`intercalar`): o clipe que toca uma vez e devolve
+## o corpo ao trabalho (o pescador lança a linha e volta a esperar o peixe).
+var _intercalado := ""
+## PARAR NO FIM DO GOLPE (`parar_no_fim_do_golpe`): o instante do clipe de trabalho
+## (s) em que ele para e volta ao parado; -1 sem parada pedida. `_posicao_antes` vê
+## o laço dar a volta.
+var _parar_em := -1.0
+var _posicao_antes := 0.0
+## Os pontos de parada do trabalho em curso (o "paradas" que o redirecionamento grava no clipe).
+var _paradas: PackedFloat32Array = PackedFloat32Array()
+
+const MixamoUso = preload("res://scripts/prototipo_3d/mixamo_uso.gd")
+## A mistura ao entrar num clipe do Mixamo e ao sair dele: o corpo muda mais de pose
+## (ajoelhar, a ginga) que entre os clipes do Tripo, e 0,18 s pareceria um salto.
+const MISTURA_MIXAMO := 0.45
+## Os clipes do Mixamo deste corpo (os nomes-base), na ordem da biblioteca.
+var _mixamo: PackedStringArray = PackedStringArray()
 
 
 func configure(model_root: Node, estabilizar_raiz: bool = false) -> bool:
@@ -66,6 +85,58 @@ func configure(model_root: Node, estabilizar_raiz: bool = false) -> bool:
 		if _clips.has(clip):
 			animation_player.get_animation(_clips[clip]).loop_mode = Animation.LOOP_LINEAR
 	_play_motion("idle", 1.0)
+	return true
+
+
+## OS CLIPES DO MIXAMO DO MODELO (#190): pendura a biblioteca redirecionada dele
+## (`MixamoUso.biblioteca`) no tocador, e cada clipe passa a se chamar pelo id, como
+## os do Tripo. Devolve os nomes; vazio quando o modelo não tem nenhum.
+func carregar_mixamo(modelo: String) -> PackedStringArray:
+	_mixamo = PackedStringArray()
+	if animation_player == null:
+		return _mixamo
+	var biblioteca := MixamoUso.biblioteca(modelo)
+	if biblioteca == null:
+		return _mixamo
+	if not animation_player.has_animation_library(MixamoUso.BIBLIOTECA):
+		animation_player.add_animation_library(MixamoUso.BIBLIOTECA, biblioteca)
+	for nome: StringName in biblioteca.get_animation_list():
+		_clips[String(nome)] = MixamoUso.BIBLIOTECA + "/" + String(nome)
+		_mixamo.append(String(nome))
+	return _mixamo
+
+
+func clipes_mixamo() -> PackedStringArray:
+	return _mixamo
+
+
+func tem_clipe(nome: String) -> bool:
+	return _clips.has(nome)
+
+
+## A duração (s) do clipe de nome-base `nome`, ou 0.
+func duracao_do_clipe(nome: String) -> float:
+	var real := String(_clips.get(nome, ""))
+	if animation_player == null or real.is_empty():
+		return 0.0
+	return animation_player.get_animation(real).length
+
+
+## O GESTO PELO NOME, uma vez (o Pedro aponta o caminho): como `play_gesture`, mas
+## para os clipes que não estão em GESTURES. Acaba sozinho, de volta ao parado, ou
+## quando o corpo anda.
+func gesto(nome: String) -> bool:
+	var real := String(_clips.get(nome, ""))
+	if animation_player == null or real.is_empty():
+		return false
+	parar_trabalho()
+	real = _copia_de_trabalho(real, false)
+	_gesture_active = true
+	_jump_active = false
+	_chop_repetitions_left = 0
+	_current_motion = ""
+	animation_player.speed_scale = 1.0
+	animation_player.play(real, MISTURA_MIXAMO if nome in _mixamo else 0.18)
 	return true
 
 
@@ -135,6 +206,7 @@ const FIM_DO_GOLPE := 0.5
 
 
 func _process(_delta: float) -> void:
+	_vigiar_a_parada()
 	if not chop_ativo():
 		return
 	var clip := String(_clips.get("chop", ""))
@@ -386,15 +458,84 @@ func trabalhar(clipe: String, em_laco: bool = true) -> bool:
 	if animation_player == null or real.is_empty():
 		return false
 	parar_trabalho()
+	var original := animation_player.get_animation(real)
+	_paradas = original.get_meta("paradas", PackedFloat32Array()) if original != null else PackedFloat32Array()
 	real = _copia_de_trabalho(real, em_laco)
 	_trabalho = real
+	_trabalho_base = clipe
 	_gesture_active = false
 	_jump_active = false
 	_chop_repetitions_left = 0
 	_current_motion = ""
 	animation_player.speed_scale = 1.0
-	animation_player.play(real, 0.3)
+	animation_player.play(real, MISTURA_MIXAMO if clipe in _mixamo else 0.3)
 	return true
+
+
+## O nome-base do trabalho em curso ("capoeira", "fishing_idle"), ou "".
+func trabalhando_em() -> String:
+	return _trabalho_base if not _trabalho.is_empty() else ""
+
+
+## UMA VARIAÇÃO NO MEIO DO TRABALHO: toca o clipe `clipe` uma vez e volta ao
+## trabalho em curso, sem passar pelo parado (o pescador lança a linha, a beata
+## descansa as mãos entre um terço e outro). Só com o corpo trabalhando.
+func intercalar(clipe: String) -> bool:
+	var real := String(_clips.get(clipe, ""))
+	if animation_player == null or real.is_empty() or _trabalho.is_empty() or not _intercalado.is_empty():
+		return false
+	_intercalado = _copia_de_trabalho(real, false)
+	_parar_em = -1.0
+	animation_player.play(_intercalado, MISTURA_MIXAMO if clipe in _mixamo else 0.3)
+	return true
+
+
+func intercalando() -> bool:
+	return not _intercalado.is_empty()
+
+
+## PARAR NO FIM DO GOLPE: o trabalho em laço não corta no meio do movimento (o
+## Pedro na ginga, quando o jogador chega perto): segue até o próximo ponto de
+## parada do clipe (`_paradas`, a pose que volta à do começo; o fim do laço, sem
+## elas) e só ali volta ao parado. Sem trabalho, nada.
+func parar_no_fim_do_golpe() -> void:
+	if _trabalho.is_empty() or animation_player == null:
+		return
+	if not _intercalado.is_empty():
+		_intercalado = ""
+		animation_player.play(_trabalho, 0.2)
+	var duracao := animation_player.get_animation(_trabalho).length
+	var agora := animation_player.current_animation_position
+	_parar_em = duracao
+	for ponto in _paradas:
+		if ponto > agora + 0.05 and ponto < _parar_em:
+			_parar_em = ponto
+	_posicao_antes = agora
+
+
+func parando() -> bool:
+	return _parar_em >= 0.0
+
+
+## Um pulso: o trabalho que espera o fim do golpe chegou ao ponto (ou o laço deu a volta).
+func _vigiar_a_parada() -> void:
+	if _parar_em < 0.0:
+		return
+	if _trabalho.is_empty() or animation_player == null:
+		_parar_em = -1.0
+		return
+	var agora := animation_player.current_animation_position
+	var deu_a_volta := agora + 0.01 < _posicao_antes
+	_posicao_antes = agora
+	if agora < _parar_em - 0.001 and not deu_a_volta:
+		return
+	_parar_em = -1.0
+	parar_trabalho()
+	var parado := String(_clips.get(MOTION_CLIPS["idle"], ""))
+	if not parado.is_empty():
+		_current_motion = "idle"
+		animation_player.speed_scale = 1.0
+		animation_player.play(parado, MISTURA_MIXAMO)
 
 
 ## O laço do trabalho vai numa CÓPIA do clipe, numa biblioteca só deste corpo. A
@@ -424,6 +565,9 @@ func parar_trabalho() -> void:
 	if _trabalho.is_empty():
 		return
 	_trabalho = ""
+	_trabalho_base = ""
+	_intercalado = ""
+	_parar_em = -1.0
 	_current_motion = ""
 
 
@@ -467,7 +611,7 @@ func acordar_parado(papel: String = "idle") -> String:
 		return ""
 	if _chop_repetitions_left > 0:
 		golpe_cancelado.emit()
-	_trabalho = ""
+	parar_trabalho()
 	_gesture_active = false
 	_jump_active = false
 	_chop_repetitions_left = 0
@@ -529,6 +673,12 @@ func _play_motion(role: String, speed_scale: float) -> void:
 
 
 func _on_animation_finished(animation_name: StringName) -> void:
+	# A variação acabou: o corpo volta ao trabalho em curso.
+	if not _intercalado.is_empty() and String(animation_name) == _intercalado:
+		_intercalado = ""
+		if not _trabalho.is_empty():
+			animation_player.play(_trabalho, MISTURA_MIXAMO)
+		return
 	if not _gesture_active or _jump_active:
 		return
 	if _chop_repetitions_left > 0 and String(animation_name) == String(_clips.get("chop", "")):

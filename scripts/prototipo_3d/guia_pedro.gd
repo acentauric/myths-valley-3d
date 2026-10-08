@@ -159,6 +159,38 @@ var _amostra_s := 0.0
 var _vigor_zerado := false
 var _nado_ligado := false
 
+## A CAPOEIRA DO PEDRO (#190). "Quando o Pedro está ocioso e longe do jogador, de
+## vez em quando ele treina capoeira no lugar: ginga e movimentos, em ciclos
+## curtos. Quando o jogador vai chegando perto, ele termina o golpe e para, volta
+## ao idle e se vira para o jogador." É o clipe Capoeira Idle do Mixamo, em laço,
+## no posto dele depois do tutorial (o píer, a praça). Começa só com o jogador além
+## de TREINO_LONGE e para a TREINO_PARA — esperando o fim do golpe
+## (`authored_animator.parar_no_fim_do_golpe`) —, nunca na condução, em missão
+## em curso com ele, em conversa, dentro de cômodo, à noite, nem com gente a menos
+## de TREINO_FOLGA (a ginga anda de lado mais de meio metro).
+const TREINO_CLIPE := "capoeira"
+const TREINO_LONGE := 12.0
+const TREINO_PARA := 9.0
+const TREINO_FOLGA := 2.0
+## Quanto dura um treino e quanto ele descansa entre dois (s, sorteados na faixa).
+const TREINO_DURA := Vector2(8.0, 16.0)
+const TREINO_PAUSA := Vector2(18.0, 45.0)
+const PERIODOS_DO_TREINO := ["manha", "tarde", "entardecer"]
+## Parado o treino porque o jogador chegou, ele se vira para ele por este tempo (s).
+const TREINO_VIRA_POR := 5.0
+var _treino_resta := 0.0
+var _treino_espera := 8.0
+var _treino_virar_s := 0.0
+
+## APONTAR O CAMINHO (#190, o Pointing do Mixamo): na condução, quando ele para no
+## marco para esperar o jogador e quando chega a quem o passo apresenta, ele olha o
+## rumo e aponta. Uma vez por parada.
+const APONTAR_CLIPE := "pointing"
+var _marco_antes := false
+var _chegou_antes := false
+var _apontar_para := Vector3.INF
+var _apontando_s := 0.0
+
 
 ## --- as janelas para dentro da cadeia -------------------------------------
 
@@ -309,11 +341,13 @@ func _physics_process(delta: float) -> void:
 		# fazenda, em que ele leva o jogador pela ponte até o portão, como no 2D.
 		var conduzindo := _outra_que_conduz()
 		if conduzindo != null:
+			_largar_o_treino()
 			_conduzir(delta, conduzindo)
 			_atualizar_animacao(delta)
 			_atualizar_interacao(delta)
 			return
 		super(delta)
+		_treinar_capoeira(delta)
 		return
 	if _andar_dando_passagem(delta):
 		_atualizar_animacao(delta)
@@ -406,15 +440,22 @@ func _conduzir(delta: float, cadeia: Node = null) -> void:
 	# ele apresenta, a porta da casa), e quem anda por ali está fazendo o passo.
 	_quadro_da_conducao = Engine.get_physics_frames()
 	_avisar_quem_ficou((_esperando_quem_ficou or _no_marco) and not jogador_preso and falta.length() > CONDUZ_ATE)
+	_ver_se_aponta(falta.length() <= CONDUZ_ATE, destino)
 	if _esperando_quem_ficou or _no_marco or jogador_preso or falta.length() <= CONDUZ_ATE:
 		_atolado_s = 0.0
 		_mover(Vector3.ZERO, ANDAR, delta)
-		_olhar_para(onde_esta, delta)
+		if _apontando_s > 0.0:
+			# Apontando, ele olha o rumo, e não o jogador.
+			_apontando_s -= delta
+			_olhar_para(_apontar_para, delta)
+		else:
+			_olhar_para(onde_esta, delta)
 		if falta.length() <= CONDUZ_ATE:
 			_andado_desde_o_marco = 0.0
 			if cadeia == null and do_jogador <= ESPERA_QUEM_FICA and str(_cadeia.passo_atual().get("id", "")) == PASSO_DA_CANDINHA:
 				_pedir_situacao("chegada_candinha", 15.0)
 		return
+	_apontando_s = 0.0
 	var ponto := _ponto_do_caminho(destino, delta)
 	var rumo := ponto - global_position
 	rumo.y = 0.0
@@ -555,6 +596,118 @@ func _outra_que_conduz() -> Node:
 ## PODE VIR AJUDAR O JOGADOR (#204): só depois do tutorial, e não enquanto conduz uma fila dele (a jornada da fazenda).
 func pode_vir_ajudar() -> bool:
 	return terminou_o_tutorial() and _outra_que_conduz() == null and super()
+
+
+## APONTA NA PARADA DA CONDUÇÃO (ver APONTAR_CLIPE): quando o marco começa, para o
+## próximo ponto do caminho; quando ele chega, para o destino. Uma vez por parada.
+func _ver_se_aponta(chegou: bool, destino: Vector3) -> void:
+	var marco := _no_marco
+	if (marco and not _marco_antes) or (chegou and not _chegou_antes):
+		var rumo := destino
+		if marco and not chegou and _ponto_da_vez >= 0 and _ponto_da_vez < _caminho.size():
+			rumo = _caminho[_ponto_da_vez]
+		if animador != null and animador.has_method("gesto") and bool(animador.gesto(APONTAR_CLIPE)):
+			_apontar_para = rumo
+			_apontando_s = float(animador.duracao_do_clipe(APONTAR_CLIPE))
+	_marco_antes = marco
+	_chegou_antes = chegou
+
+
+## PODE TREINAR CAPOEIRA AGORA? (ver TREINO_CLIPE) A regra sem mundo, para o portão
+## conferir: `distancia` do jogador e o `limite` (TREINO_LONGE para começar,
+## TREINO_PARA para seguir), `parado` no posto, e os impedimentos.
+static func pode_treinar(distancia: float, limite: float, parado: bool, conduzindo: bool, em_missao: bool,
+		conversando_agora: bool, dentro: bool, periodo: String, gente_perto: bool) -> bool:
+	return distancia > limite and parado and not conduzindo and not em_missao and not conversando_agora \
+		and not dentro and periodo in PERIODOS_DO_TREINO and not gente_perto
+
+
+## Um pulso do treino, depois do tutorial e fora da condução: começa quando pode e o
+## descanso acabou; com o jogador chegando, termina o golpe e para, e se vira para
+## ele; com conversa, missão ou cômodo, para já.
+func _treinar_capoeira(delta: float) -> void:
+	if animador == null or not animador.has_method("tem_clipe") or not bool(animador.tem_clipe(TREINO_CLIPE)):
+		return
+	var falta := jogador.global_position - global_position
+	falta.y = 0.0
+	var distancia := falta.length()
+	var treinando := str(animador.trabalhando_em()) == TREINO_CLIPE
+	if treinando:
+		if bool(animador.parando()):
+			return
+		_treino_resta -= delta
+		if _impedido_de_treinar():
+			# Conversa, missão ou cômodo: para já, sem esperar o golpe.
+			_largar_o_treino()
+			return
+		if not _pode_treinar_aqui(TREINO_PARA):
+			_treino_virar_s = TREINO_VIRA_POR
+			_treino_espera = randf_range(TREINO_PAUSA.x, TREINO_PAUSA.y)
+			animador.parar_no_fim_do_golpe()
+		elif _treino_resta <= 0.0:
+			_treino_espera = randf_range(TREINO_PAUSA.x, TREINO_PAUSA.y)
+			animador.parar_no_fim_do_golpe()
+		return
+	if _treino_virar_s > 0.0:
+		_treino_virar_s -= delta
+		if distancia < TREINO_LONGE + 2.0 and _velocidade_atual < 0.1:
+			_olhar_para(jogador.global_position, delta)
+	_treino_espera -= delta
+	if _treino_espera > 0.0:
+		return
+	if _pode_treinar_aqui(TREINO_LONGE) and animador.trabalhar(TREINO_CLIPE, true):
+		_treino_resta = randf_range(TREINO_DURA.x, TREINO_DURA.y)
+	else:
+		_treino_espera = 3.0
+
+
+## O treino parado já, sem esperar o golpe (a condução que começa, a conversa).
+func _largar_o_treino() -> void:
+	if animador != null and animador.has_method("trabalhando_em") and str(animador.trabalhando_em()) == TREINO_CLIPE:
+		animador.parar_trabalho()
+	_treino_espera = maxf(_treino_espera, TREINO_PAUSA.x)
+
+
+func _impedido_de_treinar() -> bool:
+	return conversando() or Dialogo.ocupado() or falando_agora() or _atencao_resta > 0.0 \
+		or _missao_em_curso() or _dentro_de_comodo()
+
+
+func _pode_treinar_aqui(limite: float) -> bool:
+	var falta := jogador.global_position - global_position
+	falta.y = 0.0
+	var chegou := Vector2(_alvo.x - global_position.x, _alvo.z - global_position.z).length() < 0.8
+	var parado := chegou and _velocidade_atual < 0.1 and not _nadando and not _recolhido and not _dormindo \
+		and not _destino_avulso.is_finite()
+	return pode_treinar(falta.length(), limite, parado, _outra_que_conduz() != null, _missao_em_curso(),
+		conversando() or Dialogo.ocupado() or falando_agora() or _atencao_resta > 0.0, _dentro_de_comodo(),
+		Dia.periodo(), _gente_perto(TREINO_FOLGA))
+
+
+## UMA MISSÃO EM CURSO COM ELE: uma fila viva, já começada e não acabada, que o envolve
+## (a que só espera o jogador chegar perto para começar não conta).
+func _missao_em_curso() -> bool:
+	for cadeia in get_tree().get_nodes_in_group(GRUPO_DAS_CADEIAS):
+		if not ("iniciado" in cadeia) or not cadeia.has_method("acabou") or not cadeia.has_method("envolve"):
+			continue
+		if bool(cadeia.iniciado) and not bool(cadeia.acabou()) and bool(cadeia.envolve(self)):
+			return true
+	return false
+
+
+func _dentro_de_comodo() -> bool:
+	var interiores := get_tree().get_first_node_in_group("interiores")
+	return interiores != null and str(interiores.contem(global_position)) != ""
+
+
+## Outro morador (à vista) a menos de `raio` dele.
+func _gente_perto(raio: float) -> bool:
+	for outro in get_tree().get_nodes_in_group("moradores"):
+		if outro == self or not (outro is Node3D) or not (outro as Node3D).visible:
+			continue
+		if (outro as Node3D).global_position.distance_squared_to(global_position) < raio * raio:
+			return true
+	return false
 
 
 ## O vigor do jogador, de 0 a 1 (ver `player_controller.vigor_atual`).

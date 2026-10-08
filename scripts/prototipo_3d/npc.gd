@@ -11,6 +11,7 @@ const EspumaAgua = preload("res://scripts/prototipo_3d/espuma_agua.gd")
 const Vestimenta3D = preload("res://scripts/prototipo_3d/vestimenta_3d.gd")
 const FilaDeFalas = preload("res://scripts/prototipo_3d/fila_de_falas.gd")
 const FalasDosMoradores = preload("res://scripts/prototipo_3d/falas_dos_moradores.gd")
+const MixamoUso = preload("res://scripts/prototipo_3d/mixamo_uso.gd")
 
 signal saudou(morador: MoradorNPC, texto: String)
 
@@ -391,6 +392,8 @@ func _montar_modelo() -> void:
 			var autoral: Node = load("res://scripts/prototipo_3d/authored_animator.gd").new()
 			add_child(autoral)
 			autoral.configure(modelo, corpo == "beata")
+			# Os clipes do Mixamo redirecionados para este corpo (#190), quando há.
+			autoral.carregar_mixamo(corpo)
 			animador = autoral
 		if modelo == null:
 			# NO ESTILO TRIPO, QUEM AINDA NÃO TEM MODELO É CAIXA CINZA, e não o boneco
@@ -1753,14 +1756,48 @@ func _atualizar_trabalho() -> void:
 		_comecar_o_trabalho()
 	elif not parado and _trabalhando():
 		animador.parar_trabalho()
+	elif parado and _trabalhando():
+		_intercalar_variacao()
 	for no in _levados_andando:
 		if is_instance_valid(no):
 			(no as Node3D).visible = not parado
 
 
+## A VARIAÇÃO DA AÇÃO (#190): o clipe Mixamo com `a_cada` se intercala com o
+## principal de tempos em tempos (o pescador lança a linha e volta a esperar). Longe
+## (o esqueleto dormindo) e no meio de outra variação, espera.
+var _variacao_em_ms := -1
+
+
+func _intercalar_variacao() -> void:
+	if _dormindo or animador == null or not animador.has_method("intercalar") or bool(animador.intercalando()):
+		return
+	var variacoes := MixamoUso.variacoes_da_acao(String(dados.get("id", "")), _acao)
+	if variacoes.is_empty():
+		return
+	var agora := Time.get_ticks_msec()
+	var escolhida: Dictionary = variacoes[randi() % variacoes.size()]
+	if _variacao_em_ms < 0:
+		_variacao_em_ms = agora + int(MixamoUso.espera_da_variacao(escolhida, randf()) * 1000.0)
+		return
+	if agora < _variacao_em_ms:
+		return
+	animador.intercalar(String(escolhida.get("id", "")))
+	_variacao_em_ms = agora + int(MixamoUso.espera_da_variacao(escolhida, randf()) * 1000.0)
+
+
 func _comecar_o_trabalho() -> void:
+	if animador == null or not animador.has_method("trabalhar"):
+		return
+	# O clipe do Mixamo da ação, quando este morador tem um (#190), vence o do Tripo.
+	var id := String(dados.get("id", ""))
+	var do_mixamo := MixamoUso.clipe_da_acao(id, _acao)
+	if do_mixamo != "" and animador.has_method("tem_clipe") and bool(animador.tem_clipe(do_mixamo)):
+		_variacao_em_ms = -1
+		if animador.trabalhar(do_mixamo, MixamoUso.em_laco(id, do_mixamo)):
+			return
 	var clipe := String(ACOES.get(_acao, ""))
-	if clipe == "" or animador == null or not animador.has_method("trabalhar"):
+	if clipe == "":
 		return
 	if not animador.trabalhar(clipe, not clipe in SEM_LACO):
 		var outro := String(SUBSTITUTO.get(clipe, ""))
