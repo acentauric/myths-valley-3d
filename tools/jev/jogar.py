@@ -23,6 +23,29 @@ MAX_TOKENS = 64_000  # Reserve a full context before each call, including failur
 MAX_BODY = 128_000  # Text/JSON game context, within the 64k model context.
 
 
+LANGUAGES = {"pt": "Português", "en": "English", "es": "Español", "zh": "中文"}
+
+
+def language_code(value):
+    """pt, en, es ou zh (aceita pt_BR, zh-CN...); None sem parâmetro. Outro valor é erro."""
+    if value is None or str(value).strip() == "":
+        return None
+    code = str(value).strip().lower().replace("-", "_").split("_")[0]
+    if code not in LANGUAGES:
+        raise ValueError("Idioma desconhecido: " + str(value) + " (use pt, en, es ou zh).")
+    return code
+
+
+def reopen_menu(godot, project=PROJECT):
+    """Reabre o menu do jogo, com o perfil normal do jogador (#175).
+
+    O menu que abriu o testador se fechou quando a janela da sessão subiu; ao fim da sessão
+    (F8, tempo ou erro) o jogo volta ao menu, e o jogador não fica sem janela. O processo
+    herda o ambiente do lançador, não o do perfil isolado, e sobrevive a este script."""
+    flags = getattr(subprocess, "DETACHED_PROCESS", 0) | getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0)
+    return subprocess.Popen([str(godot), "--path", str(project)], cwd=project, creationflags=flags)
+
+
 def pending_stop_requires_termination(reason, finished, elapsed):
     """Let Godot send its final event/capture and quit before the watchdog kills it."""
     return bool(reason) and not finished and elapsed >= 10.0
@@ -46,7 +69,7 @@ def game_reference():
         "goal": "Finish the playable main story, not just Pedro's tutorial. Prioritize main chains, their prerequisites, survival and required work.",
         "implemented_story_endpoint": "Finish missoes_fazenda.json (fazenda_chegada). Chapters after the farm courtyard are not implemented in this build; never call this the complete planned game.",
         "story_prerequisites": "Tutorial, bridge rebuilt and a faith chosen; the farm day comes the following morning. Side chains supply tools/resources. Follow the live chains and journal for exact requirements.",
-        "controls": "WASD/arrow keys move; Shift toggles running; Space jumps; E interacts/works/advances dialogue; 1..9,0 toggle hand slots; I inventory; J mission/crafting/building panel; F uses/equips the selected inventory item; WASD navigate panels, E confirms/moves items, Tab switches tabs, Escape closes; M map; K talents; P social; L almanac; T time panel; V dodge.",
+        "controls": "WASD/arrow keys move; Shift toggles running; Space jumps; E interacts/works/advances dialogue; 1..9,0 toggle hand slots; I inventory; J mission/crafting/building panel; F uses/equips the selected inventory item; WASD navigate panels, E confirms/moves items, Tab switches tabs, Escape closes; M map; K talents; P social; L almanac; V dodge. The clock belongs to the player: never pause it, change its speed or advance the hour.",
         "guide_rules": "Pedro leads on a conducting step. He waits if you get over 6.5 units away and resumes below 4. Stay with him until guide_destination_reached, then approach the actual NPC/door. Do not alternate a far mission marker with Pedro while he is guiding. E on Pedro repeats his advice and does not complete talking to another NPC.",
         "mission_definitions": missions,
         "context_scope": "All mission definitions in data/missoes_*.json, live chains/requirements, journal, inventory, clock, map, NPCs, UI and current interaction. No images or hidden asset/source dumps. Each decision is stateless: use supplied history and completion state."}
@@ -142,8 +165,12 @@ def configuration() -> dict[str, str]:
 
 class Session:
     def __init__(self, directory: Path, config: dict, seconds=600, calls=300,
-                 budget="0.10", offline=False, idle_seconds=30):
+                 budget="0.10", offline=False, idle_seconds=30, language=None, ready_file=None):
         self.directory = directory
+        # A janela do jogo da sessão subiu? O menu que chamou o testador espera este arquivo (#175).
+        self.ready_file = Path(ready_file) if ready_file else None
+        self.window_up = False
+        self.language = language_code(language)
         self.config = config
         self.seconds = seconds
         self.max_calls = calls
@@ -166,6 +193,9 @@ class Session:
         self.reference = game_reference()
         self.sol = False
         self.robot = None
+        # O idioma da sessão vai para o relatório (#180): o do jogador, ou o padrão do perfil isolado.
+        self.log("session_language", language=self.language or "",
+                 label=LANGUAGES[self.language] if self.language else "padrão do jogo (sem --idioma)")
         self.log("context_manifest", goal=self.reference["goal"],
                  mission_files=[x["file"] for x in self.reference["mission_definitions"]],
                  reference_bytes=len(json.dumps(self.reference, ensure_ascii=False).encode("utf-8")),
@@ -183,6 +213,31 @@ class Session:
                 except OSError as error:
                     self.log("report_error", reason=type(error).__name__)
                 self.last_markdown = time.monotonic()
+
+    def mark_window_up(self):
+        """A primeira chamada autenticada do jogo prova que a janela da sessão abriu."""
+        with self.lock:
+            if self.window_up:
+                return
+            self.window_up = True
+            self.log("window_up")
+            if self.ready_file is not None:
+                try:
+                    self.ready_file.parent.mkdir(parents=True, exist_ok=True)
+                    self.ready_file.write_text("ok", encoding="ascii")
+                except OSError as error:
+                    self.log("window_up_error", reason=type(error).__name__)
+
+    def manual_control(self, data):
+        """O controle manual (#206): registra o início e o fim do trecho com o antes e o depois, e
+        faz o robô recalcular a partir do estado novo ao voltar. Nenhuma decisão é pedida no meio."""
+        phase = str(data.get("phase", ""))
+        if phase not in ("start", "end"):
+            raise ValueError("fase desconhecida")
+        fields = {k: data[k] for k in ("reason", "duration_s", "before", "after", "capture", "start_capture", "last_action") if k in data}
+        self.log("manual_control", phase=phase, **fields)
+        if phase == "end" and self.robot is not None and hasattr(self.robot, "replan"):
+            self.robot.replan()
 
     def status(self):
         elapsed = 0 if self.game_started is None else time.monotonic() - self.game_started
@@ -451,7 +506,7 @@ class Session:
             step = outcome.get("after", {}).get("objective", {}).get("id")
             if step and step not in steps:
                 steps.append(step)
-        summary = {**self.status(), "mode": "robot" if self.robot is not None else ("sol" if self.sol else ("offline" if self.offline else "jev")),
+        summary = {**self.status(), "language": self.language or "", "mode": "robot" if self.robot is not None else ("sol" if self.sol else ("offline" if self.offline else "jev")),
                    "gameplay_seconds": 0 if self.game_started is None else round(time.monotonic() - self.game_started, 1),
                    "godot_exit_code": exit_code, "decisions": len(self.decisions),
                    "outcomes": self.results, "observed_mission_steps": steps,
@@ -478,6 +533,7 @@ def make_handler(session):
             if self.headers.get("Authorization") != "Bearer " + session.token:
                 self.send_error(403)
                 return
+            session.mark_window_up()
             try:
                 length = int(self.headers.get("Content-Length", "0"))
                 if not 0 < length <= MAX_BODY:
@@ -497,6 +553,16 @@ def make_handler(session):
                     if session.progress.observe(data.get("after", {})):
                         session.stop_reason = f"no_progress_{session.progress.idle_seconds}s"
                         session.log("guard_stop", reason=session.stop_reason)
+                    result = session.status()
+                elif self.path == "/manual":
+                    # F7 (#206): o humano assumiu ou devolveu o controle. Vai para o relatório e,
+                    # na devolução, o robô esquece o plano velho.
+                    session.manual_control(data)
+                    result = session.status()
+                elif self.path == "/achado":
+                    # Achado do controlador do jogo (ex.: relógio parado, #192): vai para o
+                    # relatório com a última ação e a captura, sem decidir nada.
+                    session.log("achado", **{k: v for k, v in data.items() if k != "kind"})
                     result = session.status()
                 elif self.path == "/stop":
                     session.stop_reason = str(data.get("reason", "user_stop"))[:80]
@@ -531,6 +597,12 @@ def main():
     parser.add_argument("--headless", action="store_true")
     parser.add_argument("--godot", default=r"C:\Tools\Godot\Godot_v4.7.2-stable_win64_console.exe")
     parser.add_argument("--output", type=Path)
+    parser.add_argument("--idioma", help="Idioma da sessão (pt, en, es ou zh). O perfil é isolado e só o idioma atravessa; "
+                        "sem o parâmetro vale o padrão do jogo.")
+    parser.add_argument("--pronto", type=Path,
+                        help="Arquivo criado quando a janela do jogo da sessão sobe; o menu que chamou o testador espera por ele para se fechar.")
+    parser.add_argument("--voltar-ao-menu", action="store_true",
+                        help="Ao encerrar a sessão, reabre o menu do jogo (se a janela do testador chegou a subir).")
     parser.add_argument("--profile", type=Path, help="Reuse an explicitly selected isolated playtest profile; report output remains new.")
     args = parser.parse_args()
     if args.seconds < 0 or args.calls < 0 or args.idle_seconds < 0 or not Decimal("0") < Decimal(args.budget) <= Decimal("0.50"):
@@ -539,6 +611,10 @@ def main():
         parser.error("SOL e offline sao modos distintos.")
     if (args.offline or args.sol) and args.seconds == 0:
         parser.error("Validacao offline exige --seconds positivo, pois nao consome o orcamento.")
+    try:
+        language = language_code(args.idioma)
+    except ValueError as error:
+        parser.error(str(error))
     config = {} if args.offline or args.sol or args.robot else configuration()
     if not args.offline and not args.sol and not args.robot and not config.get("TYPESAFE_API_KEY"):
         parser.error("Preencha TYPESAFE_API_KEY no .env local; a chave nunca sera exibida.")
@@ -548,7 +624,9 @@ def main():
         parser.error("Executavel do Godot nao encontrado.")
     directory = args.output or PROJECT / "tools/temp/jev" / (time.strftime("%Y%m%d-%H%M%S") + "-" + secrets.token_hex(3))
     directory.mkdir(parents=True, exist_ok=False)
-    session = Session(directory, config, args.seconds, args.calls, args.budget, args.offline, args.idle_seconds)
+    if args.pronto is not None:
+        args.pronto.unlink(missing_ok=True)  # sinal velho de outra sessão não vale
+    session = Session(directory, config, args.seconds, args.calls, args.budget, args.offline, args.idle_seconds, language, args.pronto)
     session.sol = args.sol
     if args.robot:
         from robo import JogadorAutomatico
@@ -562,8 +640,11 @@ def main():
     for name in ("APPDATA", "XDG_DATA_HOME", "XDG_CONFIG_HOME"):
         environment[name] = str(profile.resolve())
     for name in list(environment):
-        if "API_KEY" in name or name.startswith("TYPESAFE_"):
+        if "API_KEY" in name or name.startswith("TYPESAFE_") or name == "MV_JEV_IDIOMA":
             del environment[name]
+    if language:
+        # Só o idioma atravessa o perfil isolado; o sessao.gd o grava no perfil novo.
+        environment["MV_JEV_IDIOMA"] = language
     environment.update(MV_JEV_URL=f"http://127.0.0.1:{server.server_port}", MV_JEV_TOKEN=session.token,
                        MV_JEV_OUTPUT=str(directory.resolve()), MV_JEV_SECONDS=str(args.seconds),
                        MV_JEV_BUDGET=str(args.budget), MV_JEV_ROBOT="1" if args.robot else "0", MV_JEV_SOL="1" if args.sol else "0",
@@ -608,6 +689,9 @@ def main():
     session.stop_reason = session.stop_reason or "window_closed"
     summary = session.report(game.returncode)
     print(f"Fim: {summary['stop']} | {session.calls} chamadas | US$ {session.cost:.6f}", flush=True)
+    if args.voltar_ao_menu and session.window_up:
+        # Só se o menu de origem chegou a se fechar (a janela do testador subiu): senão ele ainda está aberto.
+        reopen_menu(args.godot)
     return 0 if summary["stop"] == "implemented_story_completed" or (game.returncode == 0 and summary["stop"] in {"duration", "budget", "call_limit", "user_stop", "window_closed"}) else 1
 
 

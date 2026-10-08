@@ -26,6 +26,36 @@ var jogada
 var amostras_movimento: Array = []
 var amostrar_em := 0
 var fontes_de_material: Dictionary = {}
+## O VIGIA DO RELÓGIO (#192): o testador nunca pausa nem acelera o relógio, e se o
+## dia parar sem tela, fala ou motivo à vista o relatório registra o que houve.
+const RELOGIO_PARADO_APOS_MS := {"pausado": 2000, "velocidade_zero": 2000, "segurado": 45000, "hora_parada": 0}
+const RELOGIO_SEM_ANDAR_MS := 20000
+## Os controles do jogador que mexem no tempo; o robô não os clica nem os confirma.
+const NOMES_DO_RELOGIO := ["clock", "relogio", "relógio", "velocidade", "speed"]
+## Do menu de pausa, o robô só confirma a linha de Salvar jogo.
+const ICONES_LIVRES_NO_MENU := ["restaurar"]
+var relogio_motivo := ""
+var relogio_motivo_desde := 0
+var relogio_alertado := false
+var relogio_hora_vista := -1.0
+var relogio_hora_mudou_em := 0
+## O CONTROLE MANUAL (#206): F7 tira o testador do volante sem encerrar a sessão. Nenhuma
+## decisão é pedida nem ação executada enquanto `manual` vale; o teclado e o mouse são de
+## quem assiste. F7 de novo devolve, e a ponte manda o robô recalcular do estado novo. F8
+## continua encerrando a sessão em qualquer estado.
+var manual := false
+var manual_desde := 0
+var manual_antes: Dictionary = {}
+var manual_captura := ""
+## A devolução ainda está a caminho da ponte: o laço espera, para o robô recalcular antes de decidir.
+var manual_devolvendo := false
+var faixa_manual: PanelContainer
+var botao_manual: Button
+## A câmera da sessão de teste (#201): desvia de poste, tronco, parede e árvore para o
+## viajante não sumir da tela. Só existe aqui; a câmera do jogo comum não muda.
+var camera_do_teste: Node
+## As teclas que o testador pode estar segurando quando a mão passa para o humano.
+const TECLAS_DO_TESTADOR := [KEY_W, KEY_A, KEY_S, KEY_D, KEY_E, KEY_F, KEY_V, KEY_SHIFT, KEY_SPACE]
 
 
 func _ponto_de_material(item: String) -> Vector3:
@@ -70,7 +100,9 @@ func _run() -> void:
 		return
 	textos = JSON.parse_string(FileAccess.get_file_as_string("res://tools/jev/textos.json"))
 	idioma = load("res://scripts/prototipo_3d/idioma_menu.gd")
+	_aplicar_idioma_da_sessao(OS.get_environment("MV_JEV_IDIOMA"))
 	_montar_painel()
+	root.window_input.connect(_ao_entrar_evento)
 	change_scene_to_file("res://scenes/prototipo_3d/inicio.tscn")
 	await process_frame
 	while not parar:
@@ -78,6 +110,12 @@ func _run() -> void:
 			break
 		if duracao > 0 and inicio_jogo >= 0 and _segundos() >= duracao:
 			break
+		if manual_devolvendo:
+			await process_frame
+			continue
+		if manual:
+			await _aguardar_manual()
+			continue
 		var cena := current_scene
 		if cena == null:
 			await _esperar(0.5)
@@ -94,8 +132,13 @@ func _run() -> void:
 			# Reuse the game's approach geometry; walking below never calls its teleport helper.
 			jogada = load("res://tests/fixtures/jogada.gd").new(self, cena, null, func(_t): pass, func(_t): pass)
 			jogada.teleporte = false
+			camera_do_teste = load("res://tools/jev/camera_do_teste.gd").new()
+			camera_do_teste.jogador = cena.get("player")
+			camera_do_teste.encoberto_demais.connect(_ao_ficar_encoberto)
+			root.add_child(camera_do_teste)
 			await _post("/ready", {})
 			_capturar()
+		_vigiar_o_relogio()
 		var estado := _estado()
 		var opcoes: Dictionary = _acoes(estado)
 		if opcoes.is_empty():
@@ -113,6 +156,9 @@ func _run() -> void:
 			ultima_acao = "bridge_error"
 			parar = true
 			break
+		if manual:
+			# A mão passou ao humano enquanto a ponte decidia: a escolha velha é descartada.
+			continue
 		chamadas = int(resposta.get("calls", 0))
 		custo = float(resposta.get("estimated_usd", 0.0))
 		ultima_acao = str(resposta.choice)
@@ -123,6 +169,8 @@ func _run() -> void:
 		amostrar_em = 0
 		_amostrar_movimento()
 		var resultado: String = await _executar(ultima_acao)
+		if manual and not parar:
+			resultado = "interrupted_manual_control"
 		var depois: Dictionary = _estado()
 		_amostrar_movimento(true)
 		var evento := {"action": ultima_acao, "result": resultado, "before": antes, "after": depois, "movement_samples": amostras_movimento.duplicate(true)}
@@ -136,10 +184,27 @@ func _run() -> void:
 		if historico.size() > 24:
 			historico.pop_front()
 		await _esperar(0.15 if OS.get_environment("MV_JEV_ROBOT") == "1" else 2.0)
+	if manual:
+		await _fechar_manual("session_end")
 	var motivo := "duration" if duracao > 0 and inicio_jogo >= 0 and _segundos() >= duracao else (ultima_acao if parar else "user_stop")
 	await _post("/stop", {"reason": motivo})
 	_capturar()
 	quit()
+
+
+## O IDIOMA DO JOGADOR atravessa o perfil isolado (#180): `jogar.py --idioma` o manda por
+## MV_JEV_IDIOMA e ele é gravado no `user://` novo da sessão, de onde o menu, a carga, o
+## HUD, as falas e o painel do testador o leem. O save e o progresso do jogador não vêm.
+## Devolve o índice aplicado, ou -1 sem idioma pedido (ou desconhecido): vale o padrão.
+func _aplicar_idioma_da_sessao(codigo: String) -> int:
+	if codigo.is_empty():
+		return -1
+	var indice: int = idioma.idioma_do_sistema(codigo)
+	if indice < 0:
+		push_warning("JEV: idioma desconhecido '%s'; vale o padrão do jogo." % codigo)
+		return -1
+	idioma.definir(indice)
+	return indice
 
 
 func _texto(chave: String) -> String:
@@ -159,8 +224,9 @@ func _montar_painel() -> void:
 	painel.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)
 	painel.offset_left = -294
 	painel.offset_right = -14
-	painel.offset_top = -128
+	painel.offset_top = -160
 	painel.offset_bottom = -14
+	painel.grow_vertical = Control.GROW_DIRECTION_BEGIN
 	var margens := MarginContainer.new()
 	for lado in ["left", "right", "top", "bottom"]:
 		margens.add_theme_constant_override("margin_" + lado, 8)
@@ -176,10 +242,35 @@ func _montar_painel() -> void:
 	acao_rotulo.add_theme_font_size_override("font_size", 12)
 	acao_rotulo.text = _texto("aguardando_robot" if OS.get_environment("MV_JEV_ROBOT") == "1" else "aguardando")
 	caixa.add_child(acao_rotulo)
+	botao_manual = Button.new()
+	botao_manual.text = _texto("assumir")
+	botao_manual.focus_mode = Control.FOCUS_NONE
+	botao_manual.pressed.connect(_alternar_manual)
+	caixa.add_child(botao_manual)
 	var botao := Button.new()
 	botao.text = _texto("parar")
+	botao.focus_mode = Control.FOCUS_NONE
 	botao.pressed.connect(func(): ultima_acao = "user_stop"; parar = true)
 	caixa.add_child(botao)
+	# A faixa de cima só existe com o humano no controle, e fica à vista mesmo com telas abertas.
+	faixa_manual = PanelContainer.new()
+	faixa_manual.visible = false
+	faixa_manual.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var fundo := StyleBoxFlat.new()
+	fundo.bg_color = Color(0.45, 0.07, 0.05, 0.92)
+	fundo.border_color = Color(0.93, 0.74, 0.28)
+	fundo.set_border_width_all(2)
+	fundo.set_content_margin_all(8)
+	faixa_manual.add_theme_stylebox_override("panel", fundo)
+	var aviso := Label.new()
+	aviso.name = "Aviso"
+	aviso.add_theme_font_size_override("font_size", 18)
+	aviso.add_theme_color_override("font_color", Color(1.0, 0.93, 0.7))
+	aviso.text = _texto("manual_faixa")
+	faixa_manual.add_child(aviso)
+	camada.add_child(faixa_manual)
+	faixa_manual.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP, Control.PRESET_MODE_MINSIZE, 10)
+	faixa_manual.grow_horizontal = Control.GROW_DIRECTION_BOTH
 	_atualizar_painel()
 
 
@@ -188,9 +279,92 @@ func _atualizar_painel() -> void:
 	if OS.get_environment("MV_JEV_ROBOT") == "1":
 		titulo = _texto("robot")
 	rotulo.text = _texto("estado_robot") % chamadas if OS.get_environment("MV_JEV_ROBOT") == "1" else _texto("estado") % [titulo, chamadas, custo, orcamento]
+	if faixa_manual != null:
+		faixa_manual.visible = manual
+		faixa_manual.get_node("Aviso").text = _texto("manual_faixa")
+		botao_manual.text = _texto("devolver" if manual else "assumir")
+		if manual:
+			acao_rotulo.text = _texto("manual_acao")
 	# Telas grandes e diálogos precisam de toda a área; F8 permanece ativo.
 	if _no_vale() and bool(current_scene.get("carga_ok")):
 		painel_observador.visible = current_scene.get("telas").aberta().is_empty() and not root.get_node("Dialogo").ativo
+
+
+## O testador deve largar o que faz: a sessão acabou ou a mão passou ao humano (#206).
+func _cede() -> bool:
+	return parar or manual
+
+
+## F7, vindo da janela: vale na hora, mesmo no meio de uma decisão ou de um trajeto.
+func _ao_entrar_evento(evento: InputEvent) -> void:
+	var tecla := evento as InputEventKey
+	if tecla != null and tecla.pressed and not tecla.echo and (tecla.keycode == KEY_F7 or tecla.physical_keycode == KEY_F7):
+		_alternar_manual()
+
+
+func _alternar_manual() -> void:
+	if parar or inicio_jogo < 0 or not _no_vale() or not bool(current_scene.get("carga_ok")):
+		return
+	if manual:
+		_fechar_manual("f7")
+	else:
+		_abrir_manual()
+
+
+## O que a ponte precisa saber do mundo nas pontas do controle manual: posição, missão, itens e mão.
+func _resumo_manual() -> Dictionary:
+	var jogador: Node3D = current_scene.get("player")
+	var inventario := root.get_node("Inventario")
+	var objetivo: Dictionary = _json_seguro(root.get_node("CadernoDoVale").atual())
+	return {"position": _vetor(jogador.global_position), "seconds": _segundos(),
+		"objective": {"id": objetivo.get("id", ""), "feito": objetivo.get("feito", 0), "total": objetivo.get("total", 0)},
+		"inventory": {"slots": inventario.espacos.duplicate(true), "in_hand": inventario.na_mao()}}
+
+
+func _abrir_manual() -> void:
+	manual = true
+	manual_desde = Time.get_ticks_msec()
+	manual_antes = _resumo_manual()
+	# A fila do testador morre aqui: o que ele segurava é solto e a caminhada guiada, cancelada.
+	for tecla in TECLAS_DO_TESTADOR:
+		_pressionar(tecla, false)
+	current_scene.get("player")._cancel_walk()
+	manual_captura = _capturar()
+	_atualizar_painel()
+	print("JEV: controle manual assumido (F7)")
+	_post("/manual", {"phase": "start", "before": manual_antes, "capture": manual_captura, "last_action": ultima_acao})
+
+
+## Devolve a mão ao testador (F7) ou fecha o trecho porque a sessão acaba. O robô recalcula do
+## estado novo; o relógio é rearmado para o vigia não acusar o que o humano deixou parado.
+func _fechar_manual(motivo: String) -> void:
+	manual = false
+	manual_devolvendo = true
+	var duracao_s := snappedf((Time.get_ticks_msec() - manual_desde) / 1000.0, 0.1)
+	var depois := _resumo_manual()
+	var captura := _capturar()
+	relogio_motivo = ""
+	relogio_alertado = false
+	relogio_hora_mudou_em = _agora()
+	_atualizar_painel()
+	print("JEV: controle manual devolvido (%s) apos %.1f s" % [motivo, duracao_s])
+	await _post("/manual", {"phase": "end", "reason": motivo, "duration_s": duracao_s, "before": manual_antes,
+		"after": depois, "capture": captura, "start_capture": manual_captura})
+	manual_devolvendo = false
+
+
+func _aguardar_manual() -> void:
+	while manual and not parar:
+		if Input.is_physical_key_pressed(KEY_F8):
+			ultima_acao = "user_stop"
+			parar = true
+			break
+		if duracao > 0 and inicio_jogo >= 0 and _segundos() >= duracao:
+			break
+		_atualizar_painel()
+		if inicio_jogo >= 0 and _segundos() - ultima_captura >= 30:
+			_capturar()
+		await process_frame
 
 
 func _segundos() -> int:
@@ -240,7 +414,8 @@ func _estado() -> Dictionary:
 		for indice in pausa._itens.size():
 			if str(pausa._itens[indice].get("icone", "")) == "restaurar":
 				salvar_indice = indice
-		estado["pause_menu"] = {"cursor": pausa._cursor, "save_index": salvar_indice, "notice": pausa._aviso}
+		estado["pause_menu"] = {"cursor": pausa._cursor, "save_index": salvar_indice, "notice": pausa._aviso,
+			"cursor_icon": _icone_da_linha_do_menu(pausa)}
 	if bool(current_scene.get("mapa").get("aberto")):
 		estado["screen"] = "world_map"
 	if current_scene.get("aviso_da_primeira_vez").aberto():
@@ -254,13 +429,33 @@ func _estado() -> Dictionary:
 	var inventario := root.get_node("Inventario")
 	estado["inventory"] = {"slots": inventario.espacos.duplicate(true), "selected": inventario.selecionado, "in_hand": inventario.na_mao()}
 	estado.inventory["food_items"] = []
+	# A BARRA DE MÃO INTEIRA, vaga por vaga, com a família de cada item (#207): "o machado de
+	# aço" é machado para o alvo que pede machado, e o robô não deve adivinhar isso pelo nome.
+	var barra_de_mao: Array = []
 	var catalogo_itens = load("res://scripts/compartilhado/catalogo.gd")
+	for vaga in 10:
+		var id_da_vaga := str(inventario.espacos[vaga].get("id", ""))
+		barra_de_mao.append({"slot": vaga, "id": id_da_vaga,
+			"family": str(catalogo_itens.familia(id_da_vaga)) if id_da_vaga != "" else ""})
+	estado.inventory["hand_bar"] = barra_de_mao
+	# O REQUISITO DE FERRAMENTA do alvo ao alcance e a ÚLTIMA RECUSA, como dado e não só como
+	# a frase da tela ("Ponha na mão: Machado", "Precisa de Machado") — #207.
+	var recursos_do_vale: Node = current_scene.get_node_or_null("Recursos3D")
+	if recursos_do_vale != null and recursos_do_vale.has_method("requisito_de_ferramenta"):
+		estado["tool_requirement"] = recursos_do_vale.requisito_de_ferramenta()
+		var recusa: Dictionary = (recursos_do_vale.get("ultima_recusa") as Dictionary).duplicate()
+		if not recusa.is_empty():
+			recusa["ago_ms"] = Time.get_ticks_msec() - int(recusa.get("quando_ms", 0))
+			recusa.erase("quando_ms")
+		estado["last_refusal"] = recusa
 	for espaco: Dictionary in inventario.espacos:
 		var id := str(espaco.get("id", ""))
 		if root.get_node("Cozinha").e_comida(id) and float(catalogo_itens.dados(id).get("folego", 0.0)) > 0.0:
 			estado.inventory.food_items.append(id)
 	var relogio := root.get_node("Relogio")
-	estado["clock"] = {"day": relogio.dia, "season": relogio.estacao, "year": relogio.ano, "time": relogio.texto(), "paused": relogio.pausado}
+	var dia = _dia()
+	estado["clock"] = {"day": relogio.dia, "season": relogio.estacao, "year": relogio.ano, "time": relogio.texto(), "paused": relogio.pausado,
+		"player_paused": bool(dia.pausado), "speed": int(dia.velocidade), "held_by": dia.motivos_da_segurada()}
 	estado["interior"] = current_scene.get("interiores").dentro()
 	estado["world_map"] = _json_seguro(current_scene.get("world").ancoras)
 	estado["map_orientation_keys"] = "Keys ending Frente/Direcao/Lado are orientations, not travel destinations. Other entries are world positions."
@@ -331,7 +526,8 @@ func _estado() -> Dictionary:
 	var pedro: Node3D = current_scene.get("pedro")
 	if is_instance_valid(pedro):
 		estado["pedro"] = {"speaking": pedro.has_method("falando_agora") and pedro.falando_agora(), "distance": snappedf(jogador.global_position.distance_to(pedro.global_position), 0.1),
-			"step": pedro.get("missao"), "text": pedro.texto_da_missao(), "position": _vetor(pedro.global_position)}
+			"step": pedro.get("missao"), "text": pedro.texto_da_missao(), "position": _vetor(pedro.global_position),
+			"tutorial_finished": bool(pedro.terminou_o_tutorial())}
 		var cadeia: Node = pedro.get("_cadeia")
 		var outra: Node = pedro._outra_que_conduz()
 		if outra != null:
@@ -413,7 +609,7 @@ func _acoes(estado: Dictionary) -> Dictionary:
 			return {"name_player": "Type a deterministic test name into the visible player name field and press Enter"}
 		# Safe menu allowlist: never expose quit, delete, update or settings.
 		for botao in current_scene.find_children("*", "BaseButton", true, false):
-			if not botao.is_visible_in_tree() or botao.disabled:
+			if not botao.is_visible_in_tree() or botao.disabled or _e_controle_do_relogio(botao):
 				continue
 			var permitido: bool = str(botao.name) in ["Idioma0", "Vaga1"]
 			var texto_botao := str(botao.get("text"))
@@ -435,19 +631,31 @@ func _acoes(estado: Dictionary) -> Dictionary:
 	if estado.get("screen", "") == "world_map":
 		return {"close_screen": "Press Escape to close the world map and release movement controls"}
 	if str(estado.get("screen", "")) != "" or paused:
-		return {"close_screen": "Press Escape to close the screen or dismiss the visible tutorial notice",
+		var da_tela := {"close_screen": "Press Escape to close the screen or dismiss the visible tutorial notice",
 			"confirm_screen": "Press E to confirm the visible selection or pick/move the selected inventory item",
 			"screen_tab": "Press Tab to inspect the next tab", "screen_up": "Press W to select the previous row",
 			"screen_down": "Press S to select the next row", "screen_left": "Press A to move left/decrease quantity",
 			"screen_right": "Press D to move right/increase quantity", "screen_use": "Press F to use/equip/eat the selected inventory item"}
+		# No menu de pausa o E só vale na linha de Salvar: as do relógio e da
+		# velocidade (e as de sair) não são do testador (#192).
+		if not _menu_de_pausa_permite_confirmar():
+			da_tela.erase("confirm_screen")
+		return da_tela
 	var jogador: Node3D = current_scene.get("player")
 	if not jogador.is_physics_processing():
 		return {"wait": "Wait for the current narration/animation to release the controls"}
 	opcoes["inspect_pause"] = "Press Escape to open the normal pause menu, including Save game"
 	var pedro: Node3D = current_scene.get("pedro")
 	if is_instance_valid(pedro):
-		catalogo["follow_pedro"] = pedro
-		opcoes["follow_pedro"] = "Keep following moving Pedro for up to 12 seconds, staying near so he does not stop. Continues even after catching up, until he reaches guide_destination. Essential when conducting=true and guide_destination_reached=false."
+		if _guia_conduz(pedro):
+			catalogo["follow_pedro"] = pedro
+			opcoes["follow_pedro"] = "Keep following moving Pedro for up to 12 seconds, staying near so he does not stop. Continues even after catching up, until he reaches guide_destination. Essential when conducting=true and guide_destination_reached=false."
+		else:
+			# Acabado o tutorial ele não conduz mais (#191): é um morador no posto dele, e seguir
+			# alguém parado não leva a lugar nenhum. Quem precisa dele o aborda, como aos outros.
+			var id_do_guia := "approach_" + str(pedro.name)
+			catalogo[id_do_guia] = pedro
+			opcoes[id_do_guia] = "Approach Pedro, the guide, now at his post and no longer leading, %.1f units away" % jogador.global_position.distance_to(pedro.global_position)
 	if str(estado.get("interaction_target", "")) != "":
 		opcoes["interact"] = "Press E to interact with " + str(estado.interaction_target)
 	var objetivo: Dictionary = root.get_node("CadernoDoVale").atual()
@@ -472,6 +680,13 @@ func _acoes(estado: Dictionary) -> Dictionary:
 			var id := "face_" + str(oferta.source)
 			catalogo[id] = Vector3(float(p[0]), float(p[1]), float(p[2]))
 			opcoes[id] = "Turn to face the nearby E interaction source %s, then check interaction_target and use E" % str(oferta.source)
+	var interior := str(estado.get("interior", ""))
+	if interior != "" and interior != "casa":
+		# A igreja, o casarão e as casas por dados saem pela mesma regra da casa herdada (#191).
+		var sala_atual: Node3D = current_scene.get("interiores").sala_de(interior)
+		if sala_atual != null:
+			catalogo["exit_room"] = sala_atual
+			opcoes["exit_room"] = "Walk to the inside threshold of this room (%s), then cross the exterior doorway using W" % interior
 	var sala: Node3D = current_scene.get("casa").quarto()
 	if sala != null:
 		if not sala.trancada() and str(estado.get("interior", "")) != "casa":
@@ -500,7 +715,6 @@ func _acoes(estado: Dictionary) -> Dictionary:
 	opcoes["inspect_talents"] = "Press K to inspect talent tree"
 	opcoes["inspect_social"] = "Press P to inspect villagers"
 	opcoes["inspect_almanac"] = "Press L to inspect almanac"
-	opcoes["inspect_time"] = "Press T to inspect the time controls"
 	opcoes["observe"] = "Press F to observe the object in front"
 	opcoes["dodge"] = "Hold V briefly to dodge/ginga"
 	var inventario := root.get_node("Inventario")
@@ -516,6 +730,7 @@ func _acoes(estado: Dictionary) -> Dictionary:
 		opcoes["run_" + rumo] = "Run " + rumo + " relative to the camera for 4 seconds using Shift and movement keys; this direction is clear nearby"
 		opcoes["walk_" + rumo] = "Walk " + rumo + " relative to the camera for 2 seconds; try another direction if the previous movement was blocked"
 	opcoes["wait"] = "Wait 4 seconds for dialogue/narration or stamina recovery"
+	_marcar_alvos_fora_do_comodo(estado, opcoes)
 	return opcoes
 
 
@@ -524,9 +739,13 @@ func _executar(escolha: String) -> String:
 		var botao: BaseButton = catalogo.get(escolha)
 		if not is_instance_valid(botao) or not botao.is_visible_in_tree():
 			return "button_no_longer_visible"
+		if _e_controle_do_relogio(botao):
+			return "clock_control_not_allowed"
 		botao.pressed.emit()
 		await _esperar(1.0)
 		return "button_clicked"
+	if _acao_do_relogio(escolha):
+		return "clock_control_not_allowed"
 	match escolha:
 		"name_player":
 			var campo: LineEdit = catalogo.get(escolha)
@@ -542,18 +761,21 @@ func _executar(escolha: String) -> String:
 					await process_frame
 			await _tecla(KEY_ENTER)
 			return "test_name_typed_and_submitted"
-		"enter_home", "exit_home":
+		"enter_home", "exit_home", "exit_room":
 			var sala: Node3D = catalogo.get(escolha)
 			if sala == null or sala.trancada():
 				return "home_door_locked_or_unavailable"
-			var fora: Vector3 = sala.soleira_de_dentro() if escolha == "exit_home" else sala.soleira_de_fora()
+			var saindo := escolha != "enter_home"
+			var fora: Vector3 = sala.soleira_de_dentro() if saindo else sala.soleira_de_fora()
 			var jogador: Node3D = current_scene.get("player")
 			if Vector2(jogador.global_position.x - fora.x, jogador.global_position.z - fora.z).length() > 0.6:
-				var chegada := await _caminhar(fora, false, true, escolha == "exit_home")
+				var chegada := await _caminhar(fora, false, true, saindo)
 				if chegada != "arrived":
 					return chegada
-			return await _caminhar(sala.soleira_de_fora() if escolha == "exit_home" else sala.soleira_de_dentro(), false, true, true)
+			return await _caminhar(sala.soleira_de_fora() if saindo else sala.soleira_de_dentro(), false, true, true)
 		"dialogue_next", "interact", "confirm_screen":
+			if escolha == "confirm_screen" and not _menu_de_pausa_permite_confirmar():
+				return "clock_or_other_menu_line_not_allowed"
 			await _tecla(KEY_E)
 			return "E_pressed"
 		"answer_yes", "answer_no":
@@ -576,8 +798,8 @@ func _executar(escolha: String) -> String:
 		"inspect_inventory":
 			await _tecla(KEY_I)
 			return "I_pressed"
-		"inspect_map", "inspect_talents", "inspect_social", "inspect_almanac", "inspect_time", "observe":
-			var teclas := {"inspect_map": KEY_M, "inspect_talents": KEY_K, "inspect_social": KEY_P, "inspect_almanac": KEY_L, "inspect_time": KEY_T, "observe": KEY_F}
+		"inspect_map", "inspect_talents", "inspect_social", "inspect_almanac", "observe":
+			var teclas := {"inspect_map": KEY_M, "inspect_talents": KEY_K, "inspect_social": KEY_P, "inspect_almanac": KEY_L, "observe": KEY_F}
 			await _tecla(int(teclas[escolha]))
 			return "inspection_key_pressed"
 		"work_E", "dodge":
@@ -644,13 +866,14 @@ func _caminhar(alvo, seguir: bool, exato: bool = false, passagem_da_porta: bool 
 	var recalcular := 0
 	var destino := Vector3.INF
 	var trajeto := PackedVector3Array()
-	while not parar and Time.get_ticks_msec() - comeco < (12000 if seguir else 15000):
+	while not _cede() and Time.get_ticks_msec() - comeco < (12000 if seguir else 15000):
 		if Input.is_physical_key_pressed(KEY_F8):
 			ultima_acao = "user_stop"
 			parar = true
 			_pressionar(KEY_W, false)
 			return "user_stop"
 		_atualizar_painel()
+		_vigiar_o_relogio()
 		_amostrar_movimento()
 		if _segundos() - ultima_captura >= 30:
 			_capturar()
@@ -730,7 +953,7 @@ func _aproximar_guia(pedro: Node3D) -> bool:
 	var leitura = load("res://tools/jev/rota_do_guia.gd")
 	var reta_apoiada := false
 	_pressionar(KEY_W, true)
-	while not parar and not paused and not root.get_node("Dialogo").ativo and Time.get_ticks_msec() < limite:
+	while not _cede() and not paused and not root.get_node("Dialogo").ativo and Time.get_ticks_msec() < limite:
 		if Input.is_physical_key_pressed(KEY_F8):
 			ultima_acao = "user_stop"
 			parar = true
@@ -789,7 +1012,7 @@ func _conferir_chegada(alvo, ponto: Vector3, _seguir: bool) -> String:
 	# Finish with ordinary W input, without teleporting or forcing interaction.
 	var limite := Time.get_ticks_msec() + 2500
 	_pressionar(KEY_W, true)
-	while Time.get_ticks_msec() < limite and not parar and not paused:
+	while Time.get_ticks_msec() < limite and not _cede() and not paused:
 		if root.get_node("Dialogo").ativo:
 			break
 		if Input.is_physical_key_pressed(KEY_F8):
@@ -827,11 +1050,12 @@ func _pressionar(codigo: int, pressionado: bool) -> void:
 
 func _esperar(segundos: float) -> void:
 	var fim := Time.get_ticks_msec() + int(segundos * 1000.0)
-	while Time.get_ticks_msec() < fim and not parar:
+	while Time.get_ticks_msec() < fim and not _cede():
 		if Input.is_physical_key_pressed(KEY_F8):
 			ultima_acao = "user_stop"
 			parar = true
 		_atualizar_painel()
+		_vigiar_o_relogio()
 		_amostrar_movimento()
 		if duracao > 0 and inicio_jogo >= 0 and _segundos() >= duracao:
 			return
@@ -840,11 +1064,200 @@ func _esperar(segundos: float) -> void:
 		await process_frame
 
 
-func _capturar() -> void:
+func _capturar() -> String:
 	if DisplayServer.get_name() == "headless":
-		return
+		return ""
+	# SÓ SE CAPTURA COM O VIAJANTE À VISTA (#201): encoberto, a câmera é reposicionada na hora
+	# e o quadro sai depois de ela alcançar o ponto. O nome já vale, para os achados o citarem.
+	if camera_do_teste != null and is_instance_valid(camera_do_teste) and camera_do_teste.liberar_ja():
+		var nome := "quadro_%04d.jpg" % _segundos()
+		ultima_captura = _segundos()
+		_salvar_quadro_depois(nome)
+		return nome
+	return _salvar_quadro()
+
+
+func _salvar_quadro() -> String:
 	var imagem := root.get_texture().get_image()
 	if imagem != null and not imagem.is_empty():
 		# Evidência contínua em JPEG evita encher o disco numa campanha longa.
-		imagem.save_jpg(pasta.path_join("quadro_%04d.jpg" % _segundos()), 0.85)
+		var nome := "quadro_%04d.jpg" % _segundos()
+		imagem.save_jpg(pasta.path_join(nome), 0.85)
 		ultima_captura = _segundos()
+		return nome
+	return ""
+
+
+## A câmera leva uns quadros para alcançar o ponto novo (o encaixe dela dura três ticks de física).
+func _salvar_quadro_depois(nome: String) -> void:
+	for _quadro in 6:
+		await process_frame
+	var imagem := root.get_texture().get_image()
+	if imagem != null and not imagem.is_empty():
+		imagem.save_jpg(pasta.path_join(nome), 0.85)
+
+
+## O viajante ficou encoberto além do aceitável e a câmera não resolveu: vira achado do relatório.
+func _ao_ficar_encoberto(segundos: float) -> void:
+	var achado := {"type": "viajante_encoberto", "duration_s": snappedf(segundos, 0.1), "action": ultima_acao,
+		"seconds": _segundos(), "position": _vetor(current_scene.get("player").global_position), "capture": _capturar()}
+	achados.append(achado)
+	if achados.size() > 6:
+		achados.pop_front()
+	print("JEV: viajante encoberto por %.1f s apos a acao %s" % [segundos, ultima_acao])
+	_post("/achado", achado)
+
+
+# --- o relógio é do jogador (#192) ----------------------------------------------
+
+func _dia():
+	return root.get_node("Dia")
+
+
+## O relógio do jogo em milissegundos; o teste troca por um relógio dele.
+func _agora() -> int:
+	return Time.get_ticks_msec()
+
+
+## A ação aperta um controle de tempo do jogador (pausa, velocidade, hora)? Nenhuma
+## entra no catálogo; esta checagem é a segunda tranca, na hora de executar.
+func _acao_do_relogio(escolha: String) -> bool:
+	return escolha == "inspect_time" or escolha.begins_with("clock_") or escolha.begins_with("speed_") or escolha.begins_with("time_")
+
+
+## O botão é um controle do relógio do jogador? Pelo nome dele ou de quem o carrega
+## (`_clock_button`, a placa central do relógio, a velocidade): o testador não clica.
+func _e_controle_do_relogio(no: Node) -> bool:
+	var cena := current_scene
+	var hud = cena.get("hud") if cena != null else null
+	if hud != null:
+		for campo in ["_clock_button", "_clock_panel", "_clock_hint"]:
+			var controle = hud.get(campo)
+			if controle is Node and is_instance_valid(controle) and (no == controle or controle.is_ancestor_of(no)):
+				return true
+	var atual := no
+	while atual != null and atual != cena and atual != root:
+		var nome := str(atual.name).to_lower()
+		for marca in NOMES_DO_RELOGIO:
+			if nome.contains(marca):
+				return true
+		atual = atual.get_parent()
+	return false
+
+
+## O ícone da linha onde está o cursor do menu de pausa ("restaurar" é o Salvar jogo).
+func _icone_da_linha_do_menu(pausa) -> String:
+	var cursor := int(pausa._cursor)
+	if cursor < 0 or cursor >= pausa._itens.size():
+		return ""
+	return str(pausa._itens[cursor].get("icone", ""))
+
+
+## Com o menu de pausa aberto, o E só pode confirmar a linha de Salvar jogo. As do
+## relógio, da velocidade e de sair ficam com o jogador.
+func _menu_de_pausa_permite_confirmar() -> bool:
+	var pausa = current_scene.get("menu_pausa") if current_scene != null else null
+	if pausa == null or not bool(pausa.aberto):
+		return true
+	return _icone_da_linha_do_menu(pausa) in ICONES_LIVRES_NO_MENU
+
+
+## Tela, fala, mapa ou pergunta: o relógio parar ali é de propósito.
+func _ha_modal() -> bool:
+	if paused or root.get_node("Dialogo").ativo:
+		return true
+	var cena := current_scene
+	if not str(cena.get("telas").aberta()).is_empty() or bool(cena.get("mapa").get("aberto")):
+		return true
+	return cena.get("aviso_da_primeira_vez").aberto() or cena.get("_pergunta_do_relogio") != null
+
+
+## Por que o dia está parado agora, ou "" se anda (ou se parou de propósito).
+func _motivo_do_relogio_parado() -> String:
+	var agora := _agora()
+	var dia = _dia()
+	var hora := float(dia.hora)
+	if absf(hora - relogio_hora_vista) > 0.0001:
+		relogio_hora_vista = hora
+		relogio_hora_mudou_em = agora
+	if _ha_modal() or bool(dia.congelado_na_carga):
+		relogio_hora_mudou_em = agora
+		return ""
+	if bool(dia.pausado):
+		return "pausado"
+	if int(dia.velocidade) == 0:
+		return "velocidade_zero"
+	if dia.segurado():
+		relogio_hora_mudou_em = agora
+		return "segurado"
+	return "hora_parada" if agora - relogio_hora_mudou_em >= RELOGIO_SEM_ANDAR_MS else ""
+
+
+## Chamado a cada volta dos laços do testador. Registra UMA vez por parada, e rearma
+## quando o relógio volta a andar.
+func _vigiar_o_relogio() -> void:
+	if inicio_jogo < 0 or not _no_vale() or not bool(current_scene.get("carga_ok")):
+		return
+	var motivo := _motivo_do_relogio_parado()
+	if motivo.is_empty():
+		relogio_motivo = ""
+		relogio_alertado = false
+		return
+	var agora := _agora()
+	if motivo != relogio_motivo:
+		relogio_motivo = motivo
+		relogio_motivo_desde = agora
+		relogio_alertado = false
+	if relogio_alertado or agora - relogio_motivo_desde < int(RELOGIO_PARADO_APOS_MS[motivo]):
+		return
+	relogio_alertado = true
+	_registrar_relogio_parado(motivo)
+
+
+func _registrar_relogio_parado(motivo: String) -> void:
+	var dia = _dia()
+	var achado := {"type": "relogio_parado", "reason": motivo, "action": ultima_acao, "seconds": _segundos(),
+		"time": str(root.get_node("Relogio").texto()), "player_paused": bool(dia.pausado), "speed": int(dia.velocidade),
+		"held_by": dia.motivos_da_segurada(), "position": _vetor(current_scene.get("player").global_position),
+		"capture": _capturar()}
+	achados.append(achado)
+	if achados.size() > 6:
+		achados.pop_front()
+	print("JEV: relogio parado (%s) apos a acao %s" % [motivo, ultima_acao])
+	_post("/achado", achado)
+
+
+# --- o guia e os cômodos (#191) --------------------------------------------------
+
+## O Pedro ainda conduz? Durante o tutorial, ou quando uma fila dele pede (a jornada da
+## fazenda). Fora disso ele fica no posto, e não há o que seguir.
+func _guia_conduz(pedro: Node3D) -> bool:
+	if not pedro.has_method("terminou_o_tutorial"):
+		return true
+	return not pedro.terminou_o_tutorial() or pedro._outra_que_conduz() != null
+
+
+## Dentro de um cômodo, quais destinos do catálogo ficam do lado de fora dele. O robô
+## sai pela porta antes de qualquer um deles: andar em linha reta para o outro lado da
+## parede é o que o prendia no canto da casa. A igreja e o casarão valem igual.
+func _marcar_alvos_fora_do_comodo(estado: Dictionary, opcoes: Dictionary) -> void:
+	var dentro := str(estado.get("interior", ""))
+	if dentro.is_empty():
+		return
+	var sala: Node3D = current_scene.get("interiores").sala_de(dentro)
+	if sala == null:
+		return
+	var fora: Array = []
+	for id in opcoes:
+		if str(id).begins_with("exit_") or str(id).begins_with("enter_") or not catalogo.has(id):
+			continue
+		var alvo = catalogo[id]
+		var ponto := Vector3.INF
+		if alvo is Vector3:
+			ponto = alvo
+		elif alvo is Node3D:
+			ponto = (alvo as Node3D).global_position
+		if ponto.is_finite() and not sala.contem(ponto, 0.5):
+			fora.append(str(id))
+	estado["room"] = {"name": dentro, "inside_threshold": _vetor(sala.soleira_de_dentro()),
+		"outside_threshold": _vetor(sala.soleira_de_fora()), "outside_targets": fora}

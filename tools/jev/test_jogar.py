@@ -8,7 +8,7 @@ import unittest
 from unittest.mock import patch
 from urllib.error import HTTPError
 
-from jogar import MAX_BODY, MAX_TOKENS, PRICE, ProgressGuard, Session, game_reference, current_task
+from jogar import MAX_BODY, MAX_TOKENS, PRICE, ProgressGuard, Session, game_reference, current_task, language_code, make_handler, reopen_menu
 
 
 class SpendingTests(unittest.TestCase):
@@ -22,6 +22,103 @@ class SpendingTests(unittest.TestCase):
         self.assertNotIn("itens", step["meta"])
         task["step"]["meta"]["itens"]["tabua"] = 999
         self.assertEqual(state["work_costs"]["mirante_levantar"]["tabua"], 18)
+
+    def test_session_language_accepts_the_four_languages_and_rejects_the_rest(self):
+        # O idioma do jogador atravessa o perfil isolado (#180); sem parâmetro, nada muda.
+        self.assertIsNone(language_code(None))
+        self.assertIsNone(language_code(""))
+        for given, code in (("pt", "pt"), ("pt_BR", "pt"), ("EN", "en"), ("es", "es"), ("zh_CN", "zh"), ("zh-CN", "zh")):
+            self.assertEqual(language_code(given), code)
+        with self.assertRaises(ValueError):
+            language_code("fr")
+
+    def test_session_records_the_language_in_log_summary_and_report(self):
+        from relatorio import generate
+        with tempfile.TemporaryDirectory() as folder:
+            directory = Path(folder)
+            session = Session(directory, {}, language="en")
+            self.assertEqual(session.language, "en")
+            events = [json.loads(line) for line in (directory / "eventos.jsonl").read_text(encoding="utf-8").splitlines()]
+            self.assertEqual(next(e for e in events if e["kind"] == "session_language")["language"], "en")
+            self.assertIn("Idioma da sessão: **English**", generate(directory).read_text(encoding="utf-8"))
+        with tempfile.TemporaryDirectory() as folder:
+            directory = Path(folder)
+            session = Session(directory, {})
+            self.assertIsNone(session.language)
+            report = generate(directory).read_text(encoding="utf-8")
+            self.assertIn("padrão do jogo", report)
+
+    def test_manual_control_is_logged_and_makes_the_robot_replan_on_return(self):
+        # F7 (#206): o início só registra; a devolução registra o trecho e manda o robô recalcular.
+        from robo import JogadorAutomatico
+        with tempfile.TemporaryDirectory() as folder:
+            directory = Path(folder)
+            session = Session(directory, {})
+            session.robot = JogadorAutomatico()
+            session.robot.navigation_leg = {"goal": "x"}
+            session.manual_control({"phase": "start", "before": {}, "last_action": "wait"})
+            self.assertEqual(session.robot.navigation_leg, {"goal": "x"})
+            session.manual_control({"phase": "end", "reason": "f7", "duration_s": 12.5, "before": {}, "after": {}})
+            self.assertEqual(session.robot.navigation_leg, {})
+            events = [json.loads(line) for line in (directory / "eventos.jsonl").read_text(encoding="utf-8").splitlines()]
+            phases = [e["phase"] for e in events if e["kind"] == "manual_control"]
+            self.assertEqual(phases, ["start", "end"])
+            with self.assertRaises(ValueError):
+                session.manual_control({"phase": "other"})
+
+    def test_menu_waits_for_the_first_authenticated_call_of_the_session_window(self):
+        # O menu só fecha depois de a janela do testador subir (#175): o arquivo nasce na primeira chamada do jogo.
+        import threading
+        import urllib.request
+        from http.server import ThreadingHTTPServer
+        with tempfile.TemporaryDirectory() as folder:
+            ready = Path(folder) / "pronto.txt"
+            session = Session(Path(folder), {}, ready_file=ready)
+            self.assertFalse(session.window_up)
+            self.assertFalse(ready.exists())
+            server = ThreadingHTTPServer(("127.0.0.1", 0), make_handler(session))
+            threading.Thread(target=server.serve_forever, daemon=True).start()
+            self.addCleanup(server.server_close)
+            self.addCleanup(server.shutdown)
+
+            def call(token):
+                request = urllib.request.Request(f"http://127.0.0.1:{server.server_port}/ready", data=b"{}", method="POST",
+                                                 headers={"Authorization": "Bearer " + token, "Content-Type": "application/json"})
+                try:
+                    return urllib.request.urlopen(request, timeout=5).status
+                except urllib.error.HTTPError as error:
+                    return error.code
+            self.assertEqual(call("errado"), 403)
+            self.assertFalse(ready.exists(), "chamada sem o token não prova que a janela subiu")
+            self.assertEqual(call(session.token), 200)
+            self.assertTrue(ready.exists())
+            self.assertTrue(session.window_up)
+            kinds = [json.loads(line)["kind"] for line in (Path(folder) / "eventos.jsonl").read_text(encoding="utf-8").splitlines()]
+            self.assertEqual(kinds.count("window_up"), 1)
+            call(session.token)
+            kinds = [json.loads(line)["kind"] for line in (Path(folder) / "eventos.jsonl").read_text(encoding="utf-8").splitlines()]
+            self.assertEqual(kinds.count("window_up"), 1)
+
+    def test_session_without_ready_file_still_works(self):
+        with tempfile.TemporaryDirectory() as folder:
+            session = Session(Path(folder), {})
+            session.mark_window_up()
+            self.assertTrue(session.window_up)
+
+    def test_menu_reopens_with_the_players_normal_profile(self):
+        with patch("jogar.subprocess.Popen") as popen:
+            reopen_menu("godot.exe", Path("proj"))
+        args, kwargs = popen.call_args
+        self.assertEqual(args[0], ["godot.exe", "--path", "proj"])
+        self.assertNotIn("env", kwargs)
+
+    def test_finished_tutorial_guide_is_approached_like_a_resident(self):
+        # Sem follow_pedro (o tutorial acabou), o destinatário Pedro vem pela aproximação (#191).
+        step = {"id": "volta", "meta": {"tipo": "falar", "a_quem": "pedro"}}
+        state = {"objective": {"id": "pedro_volta"}, "pedro": {"conducting": False, "distance": 40},
+                 "mission_chains": [{"started": True, "main": True, "current_step": step}]}
+        task = current_task(state, {"approach_MoradorPedro": "post", "wait": "wait"})
+        self.assertEqual(task["actions_matching_the_current_requirement"], ["approach_MoradorPedro"])
 
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
@@ -216,9 +313,9 @@ class SpendingTests(unittest.TestCase):
     def test_panel_translations_preserve_format_fields(self):
         texts = json.loads((Path(__file__).parent / "textos.json").read_text(encoding="utf-8"))
         import re
-        for key in [name for name in texts if not name.endswith(("_en", "_es"))]:
+        for key in [name for name in texts if not name.endswith(("_en", "_es", "_zh"))]:
             placeholders = re.findall(r"%[.\d]*[sdf]", texts[key])
-            for suffix in ("_en", "_es"):
+            for suffix in ("_en", "_es", "_zh"):
                 self.assertTrue(texts[key + suffix])
                 self.assertNotEqual(texts[key], texts[key + suffix])
                 self.assertEqual(placeholders, re.findall(r"%[.\d]*[sdf]", texts[key + suffix]))

@@ -20,15 +20,24 @@ confirmada na parada real por F8: botão do menu abriu perfil novo, 19 decisões
 ## Como iniciar e encerrar
 
 No menu inicial, escolha **Testar**, ao lado de Explorar, ou execute
-`JOGAR_SOL.cmd`. O lançador abre outra janela com uma partida nova em perfil
+`JOGAR_SOL.cmd`. O lançador abre uma janela com uma partida nova em perfil
 isolado, preservando os saves do jogador. Requer o projeto de desenvolvimento,
 Python 3.10+ disponível como `python` e Godot. O botão fica desativado nas
 exportações que não contêm a ponte Python.
 
+**Fica uma janela só (#175).** Pelo botão Testar, o menu não se fecha ao disparar o
+`jogar.py`: espera a ponte criar o arquivo `user://testador_pronto.txt`, o que ela faz na
+primeira chamada autenticada do jogo da sessão (`--pronto`), e só então se fecha, com o
+áudio dele. Se o python sair antes disso, o menu continua aberto e mostra o erro. Ao
+encerrar a sessão (F8, tempo, janela fechada ou erro), o `jogar.py --voltar-ao-menu`
+reabre o menu com o perfil normal do jogador, para ele não ficar sem janela; o
+`JOGAR_SOL.cmd` e as execuções pela linha de comando não passam esse parâmetro e seguem
+fechando tudo.
+
 Não há limite padrão de tempo. F8 ou fechar a janela encerra a sessão;
 `JOGAR_SOL.cmd --seconds 600` limita uma execução a dez minutos. O robô local
 não usa API do Jev nem consome créditos. Seu painel ocupa o canto inferior
-direito e se esconde durante telas e diálogos modais; F8 continua funcionando.
+direito e se esconde durante telas e diálogos modais; F8 e F7 continuam funcionando.
 
 ## Como decide
 
@@ -47,6 +56,63 @@ conversa com Pedro por engano. Aguarda pessoas que já estão falando.
 
 O robô usa os controles normais de movimento e interação, sem teleportar,
 injetar itens ou alterar o progresso das missões.
+
+**Dentro de um cômodo, a porta vem primeiro (#191).** Com o robô na casa, na igreja
+ou no casarão, o estado traz `room` com a lista de destinos do catálogo que ficam do
+lado de fora; escolher seguir, aproximar, explorar ou o objetivo para um deles vira
+"ir à soleira de dentro e sair" (`exit_home` na casa herdada, `exit_room` nos outros),
+e só depois a rota para o alvo. Preso num canto (três ações de deslocamento sem sair do
+lugar), força a saída duas vezes e então sonda uma direção livre; a saída sem efeito
+entra no relatório como bloqueio. Acabado o tutorial o Pedro não conduz mais: `follow_pedro`
+sai do catálogo e ele passa a ser abordado como morador (`approach_MoradorPedro`), no máximo
+seis vezes por pergunta pela próxima cadeia.
+
+**A câmera não esconde o viajante (#201).** Só na sessão de teste (o nó
+`tools/jev/camera_do_teste.gd`, criado pelo `sessao.gd`; o jogo comum e as camadas da câmera
+ficam como estão), a cada quadro um raio vai da câmera ao peito e à cabeça do viajante. Se
+algo opaco barra (poste, tronco, parede, árvore ou chão; morador e bicho não contam), depois
+de 0,2 s a câmera gira em órbita para o lado livre mais próximo, no ritmo máximo de 3,2 rad/s,
+e se nenhum lado serve ela aproxima até passar à frente do obstáculo, nunca abaixo de 1,6 m.
+Livre por 1,5 s, a distância volta ao que era, devagar. Cômodo (câmera de cima) e nado ficam
+de fora. As capturas do relatório só saem com o viajante à vista: encoberto, a câmera é
+reposicionada na hora e o quadro sai uns quadros depois. Encoberto por mais de 1,5 s vira a
+seção "Viajante encoberto pela câmera" do relatório, com o tempo, o lugar e a captura. O
+portão de geometria é `tools/jev/test_camera.gd` (poste, parede, morador), e o trecho de 50
+ações paradas em 2/36 é um caso do `test_robo.py`.
+
+**F7 assume o controle (#206).** Quem assiste pega o jogo na mão sem encerrar a sessão:
+F7 (ou o botão "Assumir o controle") suspende o testador, determinístico, Jev ou GPT. A fila
+dele morre na hora (a decisão em voo é descartada, as teclas que ele segurava são soltas e
+a caminhada guiada é cancelada), uma faixa vermelha no topo diz "Controle manual · F7
+devolve" mesmo com telas abertas, e o teclado e o mouse são do humano; o relógio, a física e
+o resto do jogo seguem normais. F7 de novo devolve: a ponte manda o robô esquecer o plano
+velho (rota, contorno, tentativas, cobertura) e ele recalcula do estado novo, de missão,
+inventário e posição. F8 continua encerrando a sessão em qualquer estado, e se ela acaba
+durante o controle manual o trecho é fechado antes. O relatório ganha a seção "Controle
+manual (F7)", uma linha por trecho: quando, por quantos segundos, a última ação do testador
+antes, o que mudou (missão, itens, mão, deslocamento) e as capturas do início e do fim,
+para virarem regra nova do determinístico ou caso da escada da #183.
+
+**A ferramenta que o alvo pede vem como dado (#207).** O estado traz `tool_requirement`
+(o alvo ao alcance, a família da ferramenta, onde ela está: `na_mao`, `na_barra`,
+`na_mochila` ou `falta`, a vaga e o texto da dica do E), `last_refusal` (a última recusa do
+golpe, com a ferramenta e há quantos ms) e `inventory.hand_bar` (a barra de mão inteira,
+vaga por vaga, com a família de cada item). Diante de "Ponha na mão: X" ou "Precisa de X",
+o robô decide sem IA: X na barra vira `hand_N`; X só na mochila vira abrir a mochila,
+pegar com E, soltar numa vaga livre da barra, fechar e `hand_N`; X inexistente vira a nota
+"Falta ferramenta X" na justificativa. O passo para depois de 40 ações sem a ferramenta
+chegar à mão. Coberto por `tools/jev/test_robo.py`, com a picareta na mão e o machado na
+mochila.
+
+**O relógio é do jogador (#192).** O testador nunca pausa, acelera nem adianta o
+relógio: a tecla de adiantar a hora (T) saiu do catálogo, os botões e a placa do
+relógio e da velocidade ficam fora dos cliques, e no menu de pausa o E só vale na
+linha de Salvar jogo (as do relógio, da velocidade e de sair não são dele). Um
+vigia no `sessao.gd` olha o dia a cada volta: sem tela, fala nem pergunta aberta,
+se o relógio fica pausado ou em Parada por dois segundos, seguro por um motivo por
+45 s, ou com a hora sem andar por 20 s, o relatório ganha uma linha em "Relógio
+parado" com a causa, a última ação, quem segurava e a captura. Cada parada é
+registrada uma vez e o vigia rearma quando o dia volta a andar.
 
 Após 30 segundos sem progresso de missão, inventário ou obra, ou tentativas
 repetidas no mesmo contexto, entra a exploração. Ela experimenta interações
@@ -107,6 +173,14 @@ cada cinco minutos ou depois de obter oito materiais. Espera golpes em curso,
 navega até Salvar, confirma e registra a resposta antes de voltar ao jogo.
 Falha ou interrupção retoma o último save disponível; observações posteriores
 ao save não são transformadas artificialmente em progresso.
+
+**O idioma do jogador atravessa o perfil isolado (#180).** O botão Testar manda o idioma
+atual do menu para o `jogar.py` (`--idioma pt|en|es|zh`); o `sessao.gd` o grava no
+`user://` novo da sessão antes da primeira cena, e daí o menu, a tela de carga, o HUD,
+as falas em texto e o painel do testador (`tools/jev/textos.json`, nos quatro idiomas) saem
+nele. Só o idioma passa: o save e o progresso do jogador não entram. Sem `--idioma`, rodar
+o `jogar.py` pela linha de comando segue como antes. O relatório traz a linha "Idioma da
+sessão" e o `resumo.json` o campo `language`.
 
 `--profile tools/temp/meu-perfil-de-teste` retoma explicitamente um perfil
 isolado já usado, mantendo a saída de relatório nova. Sem essa opção, cada

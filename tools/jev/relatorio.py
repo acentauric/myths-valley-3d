@@ -14,6 +14,61 @@ def cell(value):
     return str(value).replace("|", "\\|").replace("\n", " ")
 
 
+CLOCK_REASONS = {
+    "pausado": "o relógio está pausado (Dia.pausado) sem tela aberta",
+    "velocidade_zero": "a velocidade do relógio está em Parada",
+    "segurado": "o relógio está seguro por um motivo há muito tempo",
+    "hora_parada": "a hora não andou, sem pausa nem motivo",
+}
+
+
+def clock_stop_line(stop):
+    """Uma linha do relatório para um relógio parado: a causa, a última ação e a captura."""
+    reason = str(stop.get("reason", "?"))
+    held = ", ".join(str(x) for x in stop.get("held_by", [])) or "—"
+    capture = str(stop.get("capture", ""))
+    link = f" [{capture}]({capture})" if capture else ""
+    return (f"- {float(stop.get('elapsed', 0)):.1f} s — relógio parado às {cell(stop.get('time', '?'))}: "
+            f"{cell(CLOCK_REASONS.get(reason, reason))} (motivo: {cell(reason)}; segurado por: {cell(held)}; "
+            f"velocidade: {cell(stop.get('speed', '?'))}). Última ação: {cell(stop.get('action', '?'))}.{link}")
+
+
+def manual_effect(before, after):
+    """O que o humano mudou durante o controle manual (F7): missão, itens, mão e deslocamento."""
+    old, new = before.get("objective", {}) or {}, after.get("objective", {}) or {}
+    def progress(goal):
+        return f"{goal.get('id', '—')} {goal.get('feito', 0)}/{goal.get('total', 0)}" if goal.get("id") else "—"
+    mission = ("missão sem avanço (" + progress(new) + ")" if (old.get("id"), old.get("feito")) == (new.get("id"), new.get("feito"))
+               else "missão " + progress(old) + " → " + progress(new))
+    gained, lost = inventory(after) - inventory(before), inventory(before) - inventory(after)
+    items = ", ".join([f"+{n} {item}" for item, n in sorted(gained.items())] + [f"−{n} {item}" for item, n in sorted(lost.items())]) or "itens iguais"
+    hand_old, hand_new = before.get("inventory", {}).get("in_hand") or "mão livre", after.get("inventory", {}).get("in_hand") or "mão livre"
+    hand = "mão: " + (hand_old if hand_old == hand_new else f"{hand_old} → {hand_new}")
+    return f"{mission}; {items}; {hand}; deslocou {distance(before, after):.1f} unidades"
+
+
+def manual_line(start, end):
+    """Uma linha do relatório por trecho de controle manual: quando, quanto tempo, o que mudou."""
+    at = float(start.get("elapsed", 0)) if start else float(end.get("elapsed", 0)) - float(end.get("duration_s", 0))
+    last = cell(start.get("last_action", "?")) if start else "?"
+    captures = " ".join(f"[{name}]({name})" for name in (end.get("start_capture") or "", end.get("capture") or "") if name) if end else ""
+    if end is None:
+        return f"- {at:.1f} s — o humano assumiu o controle (F7) e ainda está jogando. Última ação do testador: {last}."
+    reason = " (a sessão acabou durante o controle manual)" if end.get("reason") == "session_end" else ""
+    return (f"- {at:.1f} s — o humano assumiu o controle (F7) por {float(end.get('duration_s', 0)):.1f} s{reason}. "
+            f"Efeito: {cell(manual_effect(end.get('before', {}), end.get('after', {})))}. "
+            f"Última ação do testador antes: {last}. {captures}".rstrip())
+
+
+def hidden_line(hidden):
+    """Uma linha do relatório por vez que a câmera não achou lado livre: quanto tempo e a captura."""
+    capture = str(hidden.get("capture", ""))
+    link = f" [{capture}]({capture})" if capture else ""
+    position = ", ".join(f"{float(v):.1f}" for v in hidden.get("position", [])) or "—"
+    return (f"- {float(hidden.get('elapsed', 0)):.1f} s — o viajante ficou encoberto por {float(hidden.get('duration_s', 0)):.1f} s "
+            f"em {position}. Última ação: {cell(hidden.get('action', '?'))}.{link}")
+
+
 def distance(before, after):
     a, b = before.get("position", []), after.get("position", [])
     return math.dist(a, b) if len(a) == len(b) == 3 else 0.0
@@ -32,6 +87,10 @@ def generate(directory, live=True):
     source = directory / "eventos.jsonl"
     counts, durations, steps = Counter(), Counter(), {}
     rows, issues, movement = [], [], 0.0
+    clock_stops = []
+    manual_stretches, manual_open = [], None
+    hidden_traveller = []
+    language = ""
     sampled_movement, presentation_seconds = 0.0, 0.0
     stalled, stall_start, stall_goal, stall_count = [], None, "", 0
     previous_decision = None
@@ -51,6 +110,18 @@ def generate(directory, live=True):
             kind = event.get("kind")
             if kind == "game_ready":
                 start = event.get("elapsed", 0)
+            if kind == "session_language":
+                language = str(event.get("label", ""))
+            if kind == "achado" and event.get("type") == "relogio_parado":
+                clock_stops.append(event)
+            if kind == "achado" and event.get("type") == "viajante_encoberto":
+                hidden_traveller.append(event)
+            if kind == "manual_control":
+                if event.get("phase") == "start":
+                    manual_open = event
+                else:
+                    manual_stretches.append((manual_open, event))
+                    manual_open = None
             if kind == "decision":
                 previous_decision = event
                 presentation_seconds += max(0, float(event.get("latency_ms", 0))) / 1000
@@ -107,6 +178,7 @@ def generate(directory, live=True):
              f"Estado: **{cell(stop)}**. História implementada concluída: **{'sim' if complete else 'não demonstrado'}**.", "",
              f"Tempo registrado: {elapsed:.1f} s; desde o jogo pronto: {max(0, elapsed - start):.1f} s." if start is not None else f"Tempo registrado: {elapsed:.1f} s; carregamento sem marcador de início.",
              f"Ações: {sum(counts.values())}. Deslocamento acumulado entre observações: {movement:.2f} unidades.", "",
+             *([f"Idioma da sessão: **{cell(language)}**.", ""] if language else []),
              f"Trajeto amostrado durante movimentos: {sampled_movement:.2f} unidades; tempo de decisão/apresentação: {presentation_seconds:.2f} s.", "",
              "O trajeto amostrado soma segmentos a cada meio segundo, incluindo desvios e retornos; não mede cada frame. "
              "O deslocamento soma distâncias entre início e fim das ações; não mede cada curva do trajeto. "
@@ -120,6 +192,17 @@ def generate(directory, live=True):
         lines.append(f"| {cell(action)} | {count} | {durations[action]:.2f} |")
     lines += ["", "## Bloqueios reportados pelo controlador", ""]
     lines += [f"- {at:.1f} s — {cell(goal)} / {cell(action)}: {cell(result)}" for at, goal, action, result in issues] or ["Nenhum bloqueio explícito registrado. Isso não prova ausência de problemas."]
+    lines += ["", "## Relógio parado", ""]
+    lines += [clock_stop_line(stop) for stop in clock_stops] or [
+        "Nenhum relógio parado sem tela, fala ou motivo à vista. O testador não pausa nem acelera o relógio."]
+    if manual_open is not None:
+        manual_stretches.append((manual_open, None))
+    lines += ["", "## Viajante encoberto pela câmera", ""]
+    lines += [hidden_line(hidden) for hidden in hidden_traveller] or [
+        "O viajante não ficou encoberto por mais de 1,5 s. A câmera da sessão desvia de poste, tronco, parede e árvore, e só se captura com ele à vista."]
+    lines += ["", "## Controle manual (F7)", ""]
+    lines += [manual_line(begin, end) for begin, end in manual_stretches] or [
+        "Nenhuma vez o humano assumiu o controle. Cada trecho de F7 vira exemplo para ensinar o determinístico ou para a escada da #183: aqui o testador precisou de ajuda."]
     if stall_start is not None and elapsed - stall_start >= 30:
         stalled.append((stall_goal, stall_start, elapsed, stall_count))
     lines += ["", "## Períodos sem progresso de missão, inventário ou obra", ""]

@@ -153,6 +153,49 @@
   leva à página do cartão dela. O portão do painel cobra ao menos 5 × 5 e a ausência da
   faixa vazia (#171).
 
+- **Na sessão de teste a câmera não deixa o viajante escondido atrás de um poste.** A cada
+  quadro um raio vai da câmera ao peito e à cabeça dele; se um poste, tronco, parede ou árvore
+  barra, a câmera gira para o lado livre mais próximo com movimento suave, ou aproxima até
+  passar à frente do obstáculo. As capturas do relatório só saem com ele à vista, e encoberto
+  por mais de 1,5 s vira um achado. Só a sessão de teste muda: a câmera do jogo normal e as
+  camadas dela ficam como estão (#201).
+
+- **F7 tira o testador do volante e devolve, sem encerrar a sessão.** Quem assiste pega o
+  jogo na mão: o testador para na hora (a decisão em voo é descartada e as teclas que ele
+  segurava são soltas), uma faixa vermelha diz "Controle manual · F7 devolve" e o painel
+  ganha o botão de assumir e devolver, nos quatro idiomas. F7 de novo devolve e o robô
+  recalcula do estado novo, sem repetir o plano velho; F8 segue encerrando em qualquer
+  estado. O relatório ganha a seção "Controle manual (F7)" com a duração de cada trecho e o
+  que mudou (missão, itens, mão, deslocamento), para ensinar o determinístico (#206).
+
+- **O testador entende "Ponha na mão: Machado" e põe a ferramenta certa na mão.** Antes ele
+  passou umas 250 ações na lenha sem escolher o machado, porque ele estava só na mochila e o
+  robô só olhava a barra de mão. Agora o estado traz, como dado, a barra de mão inteira, o
+  requisito de ferramenta da dica do E e a última recusa; X na barra vira a tecla da vaga, X
+  só na mochila vira abrir a mochila, trazê-lo para uma vaga livre da barra e selecioná-lo, e
+  X inexistente vira a nota "Falta ferramenta X" no relatório (#207).
+
+- **Ao clicar em Testar, o menu se fecha quando a janela do testador abre, e volta quando a
+  sessão acaba.** Antes ficavam duas janelas do jogo, o dobro de memória e o áudio do menu
+  junto com a sessão. Agora o menu espera o sinal de que o jogo da sessão subiu e só então
+  se fecha; se o testador não iniciar, continua aberto e mostra o erro. Ao encerrar a
+  sessão (F8, tempo ou erro) o menu é reaberto com o perfil normal do jogador. Dica e avisos
+  foram atualizados em português, inglês e espanhol (#175).
+
+- **A sessão do testador abre no idioma que o jogador escolheu.** O botão Testar manda o
+  idioma atual (português, English, Español ou 中文) para o `jogar.py --idioma`, que o
+  grava no perfil isolado da sessão: menu, tela de carga, HUD, falas em texto e o painel
+  do testador, agora também em chinês, saem nele, sem copiar save nem progresso. O
+  relatório registra o idioma usado, e rodar o `jogar.py` sem o parâmetro segue igual
+  (#180).
+
+- **O testador sai pela porta antes de ir a qualquer alvo de fora, e para de seguir o
+  Pedro quando o tutorial acaba.** Dentro da casa, da igreja ou do casarão, seguir,
+  aproximar, explorar ou ir ao objetivo passa primeiro pela soleira de dentro; preso num
+  canto, ele força a saída duas vezes e sonda uma direção livre. Acabado o tutorial
+  `follow_pedro` sai das ações e o Pedro é abordado como morador no posto dele, com
+  limite de tentativas (#191).
+
 - **Todo campo de Ajustes tem o "?" de ajuda, e "Passos na água" ganha o ↺.** O campo
   era montado à mão, com um botão Ouvir que encurtava o seletor: agora é uma escolha
   como as vizinhas (Original ou Novos, ↺ volta a Original) e trocar a opção já toca a

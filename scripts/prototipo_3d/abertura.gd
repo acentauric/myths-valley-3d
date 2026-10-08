@@ -3,6 +3,9 @@ extends Node3D
 const AudioToggleIcon = preload("res://scripts/prototipo_3d/audio_toggle_icon.gd")
 const ClockIcon = preload("res://scripts/prototipo_3d/clock_icon.gd")
 const IdiomaMenu = preload("res://scripts/prototipo_3d/idioma_menu.gd")
+## O arquivo que o `jogar.py` cria quando a janela do jogo da sessão sobe (a primeira chamada
+## da ponte). Só então o menu se fecha: se o testador falhar, o jogador não fica sem janela.
+const TESTADOR_PRONTO := "user://testador_pronto.txt"
 const BotaoCanto = preload("res://scripts/prototipo_3d/botao_canto.gd")
 const HudIcon = preload("res://scripts/prototipo_3d/hud_icon.gd")
 const TemaMenu = preload("res://scripts/prototipo_3d/tema_menu.gd")
@@ -83,6 +86,8 @@ var version_link: Button
 var linha_atualizacao: Button
 var caption: Label
 var estado_testador: Label
+## O PID do python que sobe o testador, enquanto o menu espera a janela da sessão (#175).
+var _testador_pid := 0
 ## Quanto falta do trecho da travessia na tela (1 → 0), para o jogador saber quando passa.
 var line_bar: ProgressBar
 var line_total := 1.0
@@ -265,6 +270,7 @@ func _abrir_mapa_apos_carga() -> void:
 	_open_map()
 
 func _process(delta: float) -> void:
+	_vigiar_testador()
 	if lobby_em_video:
 		# Sem câmera para mover: só as falas da travessia andam, com o tempo delas.
 		if line_index >= 0:
@@ -1030,7 +1036,7 @@ func _home() -> void:
 	_placa("JOGAR", _vagas).grab_focus()
 	_placa("EXPLORAR", _explorar)
 	var teste := _placa("TESTAR", _teste_automatico)
-	teste.tooltip_text = tr("O testador joga uma partida separada. F8 encerra a sessão.")
+	teste.tooltip_text = tr("O testador joga uma partida separada, e esta janela se fecha quando ela abrir. F8 encerra a sessão e volta ao menu.")
 	if not FileAccess.file_exists("res://tools/jev/jogar.py") or not FileAccess.file_exists("res://project.godot"):
 		teste.disabled = true
 		teste.tooltip_text = tr("Disponível no projeto de desenvolvimento com Python instalado.")
@@ -1829,15 +1835,42 @@ func _explorar() -> void:
 
 ## Testador local do projeto: a ponte abre seu próprio perfil, sem usar vagas
 ## pessoais. O launcher automático escolhe JOGAR, não este botão, evitando recursão.
+##
+## SÓ FICA UMA JANELA DO JOGO (#175). O menu não se fecha ao disparar o python — ele só sabe que
+## o processo começou, não que a janela do testador abriu —: espera o arquivo `TESTADOR_PRONTO`,
+## que a ponte cria na primeira chamada do jogo da sessão, e então se fecha (`_vigiar_testador`).
+## Se o python morrer antes disso o menu continua aberto e diz o que houve. Ao fim da sessão
+## (F8, tempo ou erro) o `jogar.py --voltar-ao-menu` reabre o menu, para o jogador não ficar sem janela.
 func _teste_automatico() -> void:
+	if _testador_pid > 0:
+		return
 	var script := ProjectSettings.globalize_path("res://tools/jev/jogar.py")
+	var pronto := ProjectSettings.globalize_path(TESTADOR_PRONTO)
+	DirAccess.remove_absolute(pronto)
+	# O perfil do testador é isolado e só o idioma atravessa (#180): pt, en, es ou zh.
+	var idioma_atual: String = IdiomaMenu.LOCALES[IdiomaMenu.indice()].get_slice("_", 0)
 	var pid := OS.create_process("python", PackedStringArray([
-		script, "--robot", "--seconds", "0", "--godot", OS.get_executable_path()]))
+		script, "--robot", "--seconds", "0", "--idioma", idioma_atual,
+		"--pronto", pronto, "--voltar-ao-menu", "--godot", OS.get_executable_path()]))
 	if pid <= 0:
 		estado_testador.text = tr("Não foi possível iniciar o testador. Confira a instalação do Python.")
 	else:
-		estado_testador.text = tr("Teste automático iniciado em outra janela. F8 encerra a sessão.")
+		_testador_pid = pid
+		estado_testador.text = tr("Abrindo o teste automático. Esta janela se fecha quando a sessão começar; F8 encerra a sessão e volta ao menu.")
 	estado_testador.show()
+
+
+## O menu fecha quando a janela do testador subiu; se o python saiu antes, avisa e segue aberto.
+func _vigiar_testador() -> void:
+	if _testador_pid <= 0:
+		return
+	if FileAccess.file_exists(TESTADOR_PRONTO):
+		DirAccess.remove_absolute(ProjectSettings.globalize_path(TESTADOR_PRONTO))
+		_testador_pid = 0
+		get_tree().quit()
+	elif not OS.is_process_running(_testador_pid):
+		_testador_pid = 0
+		estado_testador.text = tr("O teste automático não abriu a janela da sessão. Esta janela continua aberta; confira a instalação do Python.")
 
 
 func _modal_header(title: String, action: Callable, subtitle: String = "", icon: String = "fechar") -> Button:
