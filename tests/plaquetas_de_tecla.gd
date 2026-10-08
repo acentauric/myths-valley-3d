@@ -29,7 +29,7 @@ func _run() -> void:
 			conferir(marca.mouse_filter == Control.MOUSE_FILTER_IGNORE, "plaqueta captura cliques")
 			# #182: à direita do botão, centrada na vertical, dentro da tela, e a dica
 			# (que abre à esquerda) fica livre dela.
-			var placa := canto.get_global_rect()
+			var placa: Rect2 = canto.get_global_rect()
 			var retangulo := marca.get_global_rect()
 			conferir(retangulo.get_center().x > placa.end.x, "plaqueta não está à direita do botão (escala %s)" % escala)
 			conferir(retangulo.position.x <= placa.end.x, "plaqueta solta da borda do botão (escala %s)" % escala)

@@ -16,7 +16,9 @@ extends SceneTree
 ##      cheia de objetivos cumpridos.
 ##   5. A FICHA NÃO ROLA: a coluna dos objetivos cabe sem barra de rolagem.
 
-const CadeiaDeMissoes = preload("res://scripts/prototipo_3d/cadeia_de_missoes.gd")
+## Carregado no _run, não por preload: no --script o preload compila antes de os autoloads
+## (o Afinidade da cadeia) virarem nomes globais, e o portão não abria.
+var CadeiaDeMissoes: GDScript
 
 var falhas := 0
 
@@ -35,15 +37,16 @@ func _conferir(ok: bool, rotulo: String) -> void:
 
 
 func _run() -> void:
+	CadeiaDeMissoes = load("res://scripts/prototipo_3d/cadeia_de_missoes.gd")
 	# --- 1. O CORTE DA FALA ----------------------------------------------------
 	var curta := "Chega aqui. Aperta E."
 	_conferir(CadeiaDeMissoes.fala_curta(curta) == curta, "a fala curta foi mexida")
-	var cortada := CadeiaDeMissoes.fala_curta(FALA_LONGA)
+	var cortada: String = CadeiaDeMissoes.fala_curta(FALA_LONGA)
 	_conferir(cortada.length() <= CadeiaDeMissoes.LETRAS_DA_FALA_NO_DIARIO, "a fala cortada passa de %d letras: %d" % [CadeiaDeMissoes.LETRAS_DA_FALA_NO_DIARIO, cortada.length()])
 	_conferir(cortada.ends_with(".") and FALA_LONGA.begins_with(cortada), "o corte não termina numa frase inteira: '%s'" % cortada)
 	_conferir(cortada.contains("Toma."), "o corte perdeu a primeira frase")
 	var sem_ponto := "Uma frase que não acaba nunca e continua e continua falando de tudo o que vem pela frente sem pontuação nenhuma pra segurar o fôlego de quem lê até que o texto passe, e muito, do limite da página do diário e ainda sobra bastante coisa pra dizer depois disso tudo"
-	var palavra := CadeiaDeMissoes.fala_curta(sem_ponto)
+	var palavra: String = CadeiaDeMissoes.fala_curta(sem_ponto)
 	_conferir(palavra.ends_with("…") and palavra.length() <= CadeiaDeMissoes.LETRAS_DA_FALA_NO_DIARIO + 1, "sem frase para cortar, o corte não foi na palavra com reticência: '%s'" % palavra)
 
 	# --- o vale e o painel ---------------------------------------------------

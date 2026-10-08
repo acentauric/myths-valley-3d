@@ -1,11 +1,14 @@
 extends SceneTree
 ## #134/#120: layout real em três idiomas/resoluções e seleção sem rótulo persistente.
-var Dica = preload("res://scripts/prototipo_3d/dica_tecla.gd")
+## Carregado no _run, não por preload: no --script o preload compila antes de os autoloads
+## (o Tela da dica) virarem nomes globais, e o portão não abria.
+var caminho_dica := "res://scripts/prototipo_3d/dica_tecla.gd"
+var Dica: GDScript
 var caminho_barra := "res://scripts/prototipo_3d/barra_de_mao.gd"
 var falhas := 0
 func _initialize() -> void:
 	if "--antes" in OS.get_cmdline_user_args():
-		Dica = load("res://tools/temp/dica-mao-antes/dica_tecla.gd")
+		caminho_dica = "res://tools/temp/dica-mao-antes/dica_tecla.gd"
 		caminho_barra = "res://tools/temp/dica-mao-antes/barra_de_mao.gd"
 	_run.call_deferred()
 func conferir(ok: bool, motivo: String) -> void:
@@ -16,6 +19,7 @@ func quadros() -> void:
 	for _i in 4:
 		await process_frame
 func _run() -> void:
+	Dica = load(caminho_dica)
 	var camada := Control.new()
 	root.add_child(camada)
 	var camera := Camera3D.new()
