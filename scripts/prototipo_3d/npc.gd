@@ -12,6 +12,8 @@ const Vestimenta3D = preload("res://scripts/prototipo_3d/vestimenta_3d.gd")
 const FilaDeFalas = preload("res://scripts/prototipo_3d/fila_de_falas.gd")
 const FalasDosMoradores = preload("res://scripts/prototipo_3d/falas_dos_moradores.gd")
 const MixamoUso = preload("res://scripts/prototipo_3d/mixamo_uso.gd")
+## O giro e o alinhamento do passo são os do viajante (#209): ninguém anda de lado.
+const GiroDoViajante = preload("res://scripts/prototipo_3d/player_controller.gd")
 
 signal saudou(morador: MoradorNPC, texto: String)
 
@@ -603,6 +605,14 @@ func _mover(direcao: Vector3, velocidade: float, delta: float) -> void:
 		_atualizar_nado()
 	if _nadando:
 		velocidade = minf(velocidade, VELOCIDADE_NADO)
+	# Sem deslize lateral (#209): o passo espera o corpo virar para o rumo, como o do
+	# viajante. Na meia-volta ele gira no lugar um instante e só então pega velocidade.
+	# O giro vem antes do repouso abaixo: quem espera o corpo virar está com a velocidade
+	# zerada e não pode sair cedo sem virar.
+	if direcao.length_squared() > 0.01:
+		var rumo := atan2(direcao.x, direcao.z)
+		velocidade *= GiroDoViajante.alinhamento_do_passo(visual.rotation.y, rumo)
+		visual.rotation.y += GiroDoViajante.passo_de_giro(visual.rotation.y, rumo, delta)
 	velocity.x = move_toward(velocity.x, direcao.x * velocidade, 12.0 * delta)
 	velocity.z = move_toward(velocity.z, direcao.z * velocidade, 12.0 * delta)
 	if _nadando:
@@ -624,8 +634,6 @@ func _mover(direcao: Vector3, velocidade: float, delta: float) -> void:
 	move_and_slide()
 	_subir_degrau(direcao)
 	_medir_bloqueio(direcao, velocidade, delta)
-	if direcao.length_squared() > 0.01:
-		visual.rotation.y = lerp_angle(visual.rotation.y, atan2(direcao.x, direcao.z), 1.0 - exp(-9.0 * delta))
 	# O que o corpo andou de fato (depois das colisões), não o que ele pediu: barrado pelo
 	# jogador, pelo píer ou por uma parede, o clipe é de parado, não de andar no lugar.
 	_velocidade_atual = Vector2(get_real_velocity().x, get_real_velocity().z).length()
@@ -744,7 +752,8 @@ const PASSO_A_FRENTE := 1.6
 ## Andando sem sair do lugar (parede, casa, cerca, borda): contorna seguindo a parede;
 ## depois de várias tentativas sem sair dali, desiste por um tempo e olha em volta.
 func _medir_bloqueio(direcao: Vector3, velocidade: float, delta: float) -> void:
-	if direcao.length_squared() < 0.01:
+	# Girando no lugar (o passo espera o corpo virar, #209) não é estar preso.
+	if direcao.length_squared() < 0.01 or velocidade < 0.05:
 		return
 	var andou := Vector2(get_real_velocity().x, get_real_velocity().z).length()
 	if andou > velocidade * 0.3:
@@ -788,7 +797,11 @@ func _olhar_para(ponto: Vector3, delta: float) -> void:
 	direcao.y = 0.0
 	if direcao.length_squared() < 0.04:
 		return
-	visual.rotation.y = lerp_angle(visual.rotation.y, atan2(direcao.x, direcao.z), 1.0 - exp(-6.0 * delta))
+	# Parado, olha com mais calma que andando (6 em vez de 14), mas com o mesmo teto
+	# angular do giro do viajante: nunca um salto de um quadro.
+	var falta := angle_difference(visual.rotation.y, atan2(direcao.x, direcao.z))
+	var teto: float = GiroDoViajante.VELOCIDADE_DE_GIRO * maxf(delta, 0.0)
+	visual.rotation.y += clampf(falta * (1.0 - exp(-6.0 * delta)), -teto, teto)
 
 
 func _atualizar_animacao(delta: float) -> void:

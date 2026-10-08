@@ -2,6 +2,13 @@
 
 ## Em desenvolvimento — 08/10/2026
 
+- **Os moradores viram para o rumo como o viajante.** O corpo do morador passa a girar
+  com o teto angular do viajante (640°/s, sem salto de um quadro) e o passo espera o
+  corpo se alinhar: de lado ou na meia-volta ele gira no lugar um instante e só então
+  anda, sem patinar de lado. O olhar para quem chega perto ganha o mesmo teto por
+  quadro, e girar no lugar não conta como estar preso. Portão `giro_dos_moradores`;
+  falta o giro da cabeça (opcional), o vídeo antes e depois e as ações do testador (#209).
+
 - **A árvore barra o corpo no peito e deixa a copa passar, espécie por espécie.** Um
   portão novo monta o vale, acorda o conjunto de cilindros ao lado de um tronco de cada
   espécie e varre a cápsula do jogador (os mesmos 0,28 de raio) pelo eixo do tronco, ao
