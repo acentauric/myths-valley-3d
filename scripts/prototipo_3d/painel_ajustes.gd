@@ -28,7 +28,16 @@ signal cenario_menu_mudou(sobrevoo: bool)
 ## Mesma altura dos outros modais do menu; só a largura varia. Abas que passam da altura
 ## rolam por dentro.
 const TAMANHO := Vector2(900, 600)
-const ABAS := ["Geral", "Sons do vale", "Cenário", "Atalhos", "Esforço"]
+## As abas, na ordem dos índices (`aba`, `_reconstruir`, `Abertura._options`). Cada uma aparece só
+## como o ícone de `ICONES_ABAS`; o nome sai no tooltip, também com o foco do teclado ou do controle.
+const ABAS := ["Geral", "Sons", "Cenário", "Interface", "Atalhos", "Esforço"]
+const ICONES_ABAS := ["ajustes", "som", "cenario", "interface", "teclado", "esforco"]
+const ABA_GERAL := 0
+const ABA_SONS := 1
+const ABA_CENARIO := 2
+const ABA_INTERFACE := 3
+const ABA_ATALHOS := 4
+const ABA_ESFORCO := 5
 ## Altura de cada campo e do controle dentro dele (seleção ou volume).
 const ALTURA_CAMPO := 56.0
 const ALTURA_CONTROLE := 32.0
@@ -65,6 +74,8 @@ var _ajuda: Control
 ## O seletor da passagem do tempo, para "não" na pergunta do "Parada" o devolver.
 var _seletor_do_tempo: OptionButton
 var _pergunta_do_tempo = null	# caixa_de_pergunta.gd
+## Ligado enquanto o painel entrega o foco inicial à aba aberta (a dica só vale ao navegar).
+var _sem_dica_no_foco := false
 
 
 func _init(dentro_do_jogo := false) -> void:
@@ -85,20 +96,28 @@ func construir(content: VBoxContainer, camada: Node, nova_aba: int = 0) -> void:
 	var fechar := cabecalho(content, "Ajustes", func() -> void: fechar_pedido.emit(),
 		"Tempo, sons e aparência do vale." if no_jogo else "Idioma, tempo, sons e aparência do vale.")
 	var abas := HBoxContainer.new()
+	abas.name = "Abas"
 	abas.add_theme_constant_override("separation", 8)
 	content.add_child(abas)
 	var ativa: Button
 	for indice in range(ABAS.size()):
 		var botao := Button.new()
-		botao.text = ABAS[indice]
+		botao.name = "Aba" + String(ABAS[indice])
 		botao.toggle_mode = true
 		botao.button_pressed = indice == aba
 		botao.custom_minimum_size.y = 40
 		botao.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		botao.tooltip_text = tr(String(ABAS[indice]))
+		# Só o ícone, dourado na aba aberta, no meio do botão; o nome vai no tooltip.
+		var glifo: HudIcon = HudIcon.new().configurar(String(ICONES_ABAS[indice]))
+		glifo.definir(indice == aba)
+		glifo.size = Vector2(24, 24)
+		glifo.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		botao.add_child(glifo)
+		glifo.set_anchors_and_offsets_preset(Control.PRESET_CENTER, Control.PRESET_MODE_KEEP_SIZE)
 		_foco_sem_aura(botao)
+		_dica_no_foco(botao, tr(String(ABAS[indice])))
 		if indice == aba:
-			for cor in ["font_color", "font_pressed_color", "font_focus_color"]:
-				botao.add_theme_color_override(cor, Color("e2c47f"))
 			ativa = botao
 		botao.pressed.connect(func() -> void:
 			Audio.efeito("ui_confirmar")
@@ -118,16 +137,23 @@ func construir(content: VBoxContainer, camada: Node, nova_aba: int = 0) -> void:
 	var esquerda := _coluna(colunas)
 	var direita := _coluna(colunas)
 	match aba:
-		1: _aba_sons(esquerda, direita)
-		2: _aba_cenario(esquerda, direita)
-		3: _aba_atalhos(esquerda, direita)
-		4: _aba_esforco(esquerda, direita)
+		ABA_SONS: _aba_sons(esquerda, direita)
+		ABA_CENARIO: _aba_cenario(esquerda, direita)
+		ABA_INTERFACE: _aba_interface(esquerda, direita)
+		ABA_ATALHOS: _aba_atalhos(esquerda, direita)
+		ABA_ESFORCO: _aba_esforco(esquerda, direita)
 		_: _aba_geral(esquerda, direita)
-	# Os volumes moram em Geral e em Sons do vale; os botões de restaurar vão ao cabeçalho,
-	# à esquerda do ×, e nas outras abas o cabeçalho fica só com ele.
-	if aba in [0, 1]:
+	# Os volumes moram em Geral e em Sons, e os tamanhos de cada interface em Interface; os
+	# botões de restaurar vão ao cabeçalho, à esquerda do ×, e nas outras abas o cabeçalho
+	# fica só com ele.
+	if aba in [ABA_GERAL, ABA_SONS]:
 		_restaurar_volumes(fechar)
+	elif aba == ABA_INTERFACE:
+		_restaurar_interfaces(fechar)
+	# O foco inicial na aba aberta não mostra a dica: ela é para quem navega pelas abas.
+	_sem_dica_no_foco = true
 	ativa.grab_focus()
+	_sem_dica_no_foco = false
 
 
 ## O foco da aba é o aro do tema por cima da borda dela: com a aba ativa (que recebe o foco
@@ -140,6 +166,31 @@ func _foco_sem_aura(botao: Button) -> void:
 		if foco:
 			foco.set_expand_margin_all(0)
 			botao.add_theme_stylebox_override("focus", foco))
+
+
+## Dica da aba com o foco do teclado ou do controle, abaixo do botão e no estilo dos tooltips do
+## tema (o tooltip do Godot só aparece com o mouse). Depois de um clique ela não fica presa.
+func _dica_no_foco(botao: Button, nome: String) -> void:
+	var dica := PanelContainer.new()
+	dica.name = "DicaDoFoco"
+	dica.theme_type_variation = &"TooltipPanel"
+	dica.top_level = true
+	dica.z_index = 20
+	dica.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	dica.visible = false
+	var rotulo := Label.new()
+	rotulo.theme_type_variation = &"TooltipLabel"
+	rotulo.text = nome
+	dica.add_child(rotulo)
+	botao.add_child(dica)
+	botao.focus_entered.connect(func() -> void:
+		if _sem_dica_no_foco or Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
+			return
+		dica.reset_size()
+		var canto := botao.get_global_transform() * Vector2(0.0, botao.size.y + 6.0)
+		dica.global_position = canto
+		dica.visible = true)
+	botao.focus_exited.connect(func() -> void: dica.visible = false)
 
 
 func ajuda_aberta() -> bool:
@@ -219,7 +270,7 @@ func _aba_atalhos(esquerda: VBoxContainer, direita: VBoxContainer) -> void:
 			Atalhos.definir(acao, int(codigos[i]))
 			Atalhos.aplicar()
 			# Reconstrói a aba: numa troca (swap) a linha da outra ação também muda.
-			_reconstruir(3), codigos.find(int(Atalhos.DEFINICOES[acao]["padrao"])), "Atalhos")
+			_reconstruir(ABA_ATALHOS), codigos.find(int(Atalhos.DEFINICOES[acao]["padrao"])), "Atalhos")
 
 
 ## Sons: à esquerda as escolhas sonoras do menu (no jogo, só o som dos botões), à direita
@@ -244,7 +295,8 @@ func _aba_sons(esquerda: VBoxContainer, direita: VBoxContainer) -> void:
 		_volume(String(Audio.ROTULOS_CAMADAS[camada]), float(Audio.volume_camadas[camada]), func(v: float) -> void: Audio.definir_volume_camada(camada, v), camada)
 
 
-## Cenário: estilo visual do vale (Tripo ou procedural), o cursor e, no menu, o fundo e a fonte.
+## Cenário: o vale (estilo visual, nomes, minimapa, maré e sustos) e, no menu, o fundo e a fonte.
+## O que é da interface mora em Interface (`_aba_interface`).
 func _aba_cenario(esquerda: VBoxContainer, direita: VBoxContainer) -> void:
 	_pai = esquerda
 	_secao("Vale")
@@ -268,28 +320,9 @@ func _aba_cenario(esquerda: VBoxContainer, direita: VBoxContainer) -> void:
 	# O vulto da mata e o rastro do Curupira (sustos_da_mata.gd): ligados, menos na edição Tripothon.
 	_escolha("Sustos", ["Ligados", "Desligados"], 0 if SustosDaMata.ligado() else 1,
 		func(i: int) -> void: SustosDaMata.definir_ligado(i == 0), 0 if SustosDaMata.padrao_de_fabrica() else 1)
-	_pai = direita
-	_secao("Interface")
-	_escolha("Cursor do mouse", Tela.ROTULOS_CURSOR, Tela.cursor, Tela.definir_cursor, Tela.PADRAO_CURSOR)
-	_escolha("Tamanho do texto", Tela.ROTULOS_TAMANHO, Tela.tamanho_texto, Tela.definir_tamanho_texto, Tela.PADRAO_TAMANHO)
-	_escolha("Tamanho do HUD", Tela.ROTULOS_TAMANHO, Tela.tamanho_hud, Tela.definir_tamanho_hud, Tela.PADRAO_TAMANHO)
-	_escolha("Monitor", Tela.monitores(), Tela.monitor, Tela.definir_monitor, Tela.monitor_padrao())
-	var textos: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://data/interface_tamanhos.json"))
-	_secao(str(IdiomaMenu.campo(textos["titulo"], "texto")))
-	for chave: String in Tela.COMPONENTES:
-		var opcoes: Array = []
-		for fator: float in Tela.ESCALAS_COMPONENTE:
-			opcoes.append("%d%%" % roundi(fator * 100.0))
-		_escolha(str(IdiomaMenu.campo(textos[chave], "texto")), opcoes, Tela.tamanho_componente(chave),
-			func(i: int) -> void: Tela.definir_componente(chave, i), Tela.PADRAO_COMPONENTE, "interface:" + chave)
-	var restaurar := Button.new()
-	restaurar.text = str(IdiomaMenu.campo(textos["restaurar"], "texto"))
-	_pai.add_child(restaurar)
-	restaurar.pressed.connect(func() -> void:
-		Tela.restaurar_componentes()
-		_reconstruir(2))
 	if no_jogo:
 		return
+	_pai = direita
 	_secao("Menu")
 	var preferencias := ConfigFile.new()
 	preferencias.load(PREFERENCIAS_VISUAIS)
@@ -301,7 +334,34 @@ func _aba_cenario(esquerda: VBoxContainer, direita: VBoxContainer) -> void:
 	_escolha("Fonte do menu", ROTULOS_FONTES, fonte, func(i: int) -> void:
 		_salvar_preferencia("fonte_menu", i)
 		fonte_menu_mudou.emit(i)
-		_reconstruir(2), 0)
+		_reconstruir(ABA_CENARIO), 0)
+
+
+## Interface: à esquerda o cursor, o tamanho do texto e do HUD e o monitor, seguidos do começo
+## de "Tamanho de cada interface"; à direita o resto dessa lista (o restaurar vai ao cabeçalho).
+func _aba_interface(esquerda: VBoxContainer, direita: VBoxContainer) -> void:
+	_pai = esquerda
+	_secao("Interface")
+	_escolha("Cursor do mouse", Tela.ROTULOS_CURSOR, Tela.cursor, Tela.definir_cursor, Tela.PADRAO_CURSOR)
+	_escolha("Tamanho do texto", Tela.ROTULOS_TAMANHO, Tela.tamanho_texto, Tela.definir_tamanho_texto, Tela.PADRAO_TAMANHO)
+	_escolha("Tamanho do HUD", Tela.ROTULOS_TAMANHO, Tela.tamanho_hud, Tela.definir_tamanho_hud, Tela.PADRAO_TAMANHO)
+	_escolha("Monitor", Tela.monitores(), Tela.monitor, Tela.definir_monitor, Tela.monitor_padrao())
+	var textos: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://data/interface_tamanhos.json"))
+	_secao(str(IdiomaMenu.campo(textos["titulo"], "texto")))
+	# Quatro campos já ocupam a esquerda: ela leva `Tela.COMPONENTES.size() / 2 - 2` interfaces,
+	# e a direita (com um título em branco, como em Atalhos) o resto, para as colunas terminarem juntas.
+	var na_esquerda := ceili(Tela.COMPONENTES.size() / 2.0) - 2
+	var indice := 0
+	for chave: String in Tela.COMPONENTES:
+		if indice == na_esquerda:
+			_pai = direita
+			_secao(" ")
+		indice += 1
+		var opcoes: Array = []
+		for fator: float in Tela.ESCALAS_COMPONENTE:
+			opcoes.append("%d%%" % roundi(fator * 100.0))
+		_escolha(str(IdiomaMenu.campo(textos[chave], "texto")), opcoes, Tela.tamanho_componente(chave),
+			func(i: int) -> void: Tela.definir_componente(chave, i), Tela.PADRAO_COMPONENTE, "interface:" + chave)
 
 
 ## O ESFORÇO DO CORPO: o custo-base de cada ação em fôlego/vigor (`Energia.custos`),
@@ -456,19 +516,29 @@ func _volume(titulo: String, valor: float, ao_mudar: Callable, canal: String) ->
 func _restaurar_volumes(fechar: Button) -> void:
 	var linha := fechar.get_parent() as HBoxContainer
 	linha.add_theme_constant_override("separation", 8)
-	var desta_aba: Array = Audio.CAMADAS_AMBIENTE if aba == 1 else Audio.CANAIS_GERAIS
+	var desta_aba: Array = Audio.CAMADAS_AMBIENTE if aba == ABA_SONS else Audio.CANAIS_GERAIS
 	_botao_restaurar(fechar, "Restaurar estes", desta_aba,
-		"Sons do vale voltam ao padrão." if aba == 1 else "Música, narração, falas, efeitos e ambiente voltam ao padrão.")
+		"Sons voltam ao padrão." if aba == ABA_SONS else "Música, narração, falas, efeitos e ambiente voltam ao padrão.")
 	_botao_restaurar(fechar, "Restaurar todos", [], "Todos os volumes, das duas abas, voltam ao padrão.")
 
 
+## "Restaurar todas as interfaces" da aba Interface, no cabeçalho como os de volume: devolve
+## cada "Tamanho de cada interface" a 100%.
+func _restaurar_interfaces(fechar: Button) -> void:
+	var textos: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://data/interface_tamanhos.json"))
+	var linha := fechar.get_parent() as HBoxContainer
+	linha.add_theme_constant_override("separation", 8)
+	_botao_restaurar(fechar, str(IdiomaMenu.campo(textos["restaurar"], "texto")), [], "", "RestaurarInterfaces",
+		func() -> void: Tela.restaurar_componentes())
+
+
 ## Botão do cabeçalho com o ↺ à esquerda (o mesmo dos ajustes de cada linha), inserido
-## antes do ×.
-func _botao_restaurar(fechar: Button, texto: String, canais: Array, dica: String) -> void:
+## antes do ×. Sem `acao`, restaura os volumes de `canais` (vazio: todos).
+func _botao_restaurar(fechar: Button, texto: String, canais: Array, dica: String, nome := "", acao := Callable()) -> void:
 	var botao := Button.new()
-	botao.name = "Restaurar" + ("Todos" if canais.is_empty() else "Estes")
+	botao.name = nome if not nome.is_empty() else "Restaurar" + ("Todos" if canais.is_empty() else "Estes")
 	botao.text = texto
-	botao.tooltip_text = tr(dica)
+	botao.tooltip_text = tr(dica) if not dica.is_empty() else ""
 	botao.custom_minimum_size = Vector2(0, ALTURA_CABECALHO)
 	botao.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	var icone: HudIcon = HudIcon.new().configurar("restaurar")
@@ -480,7 +550,10 @@ func _botao_restaurar(fechar: Button, texto: String, canais: Array, dica: String
 	botao.mouse_entered.connect(func(): Audio.efeito("ui_hover"))
 	botao.pressed.connect(func() -> void:
 		Audio.efeito("ui_confirmar")
-		Audio.restaurar_padroes(canais)
+		if acao.is_valid():
+			acao.call()
+		else:
+			Audio.restaurar_padroes(canais)
 		_reconstruir(aba))
 	# Espaço à esquerda para o ícone em todos os estados (o estilo vem do tema herdado).
 	botao.ready.connect(func() -> void:

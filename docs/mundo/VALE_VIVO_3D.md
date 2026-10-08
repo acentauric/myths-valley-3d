@@ -80,7 +80,7 @@ Recôncavo já usadas no menu. Os loops da mata são estridentes, por isso só
 aparecem em episódios curtos (6–12 s, 5 dB abaixo do ambiente) separados por
 pausas de 1 a 2,5 min; aves, mar, riacho e fogueira seguem contínuos.
 Cada camada (aves, mar, riacho, fogueira, insetos e grilos) tem volume próprio
-em AJUSTAR, aba Sons do vale; `fonte()` recebe a camada da fonte posicional. Por proximidade (`AudioStreamPlayer3D`): o mar no
+em AJUSTAR, aba Sons; `fonte()` recebe a camada da fonte posicional. Por proximidade (`AudioStreamPlayer3D`): o mar no
 píer, o riacho nos dois pontos do rio e a fogueira do roçado quando está acesa.
 Os loops de 24 s vieram do ElevenLabs Sound Effects e ficam em
 `assets/audio/ambiente/` (`mata_dia`, `mata_noite`, `riacho`, `fogueira`).

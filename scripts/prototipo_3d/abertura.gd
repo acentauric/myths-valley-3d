@@ -1498,7 +1498,7 @@ func _confirm_exit() -> void:
 	_placa("CANCELAR", _home, false, false).grab_focus()
 	_placa("SAIR", func() -> void: get_tree().quit(), true, false)
 
-## AJUSTAR (painel_ajustes.gd) no modal central. `tab`: Geral, Sons do vale ou Cenário.
+## AJUSTAR (painel_ajustes.gd) no modal central. `tab`: o índice de PainelAjustes.ABAS (Geral, Sons, Cenário, Interface, Atalhos, Esforço).
 func _options(tab: int = 0) -> void:
 	_clear()
 	_place_modal(PainelAjustes.TAMANHO, "ajustes")

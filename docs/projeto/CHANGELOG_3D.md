@@ -2,6 +2,17 @@
 
 ## Em desenvolvimento — 08/10/2026
 
+- **Ajustes ganha a aba Interface, e as abas viram ícones com tooltip.** Cursor, Tamanho do
+  texto, Tamanho do HUD, Monitor e "Tamanho de cada interface" saem de Cenário para a aba
+  nova, repartidos em duas colunas de 18 campos; o "Restaurar todas as interfaces" sobe
+  para o cabeçalho, ao lado do ×, como os de volume. Cenário fica só com o vale (estilo,
+  nomes, minimapa, maré, sustos) e, no menu, a seção Menu. As seis abas (Geral, Sons,
+  Cenário, Interface, Atalhos, Esforço) mostram só um ícone, dourado na aberta, e o nome
+  aparece no tooltip do mouse e também com o foco do teclado ou do controle. "Sons do vale"
+  vira "Sons" na aba, na frase do restaurar e na ajuda do Ambiente; "Sons" e "Esforço"
+  ganharam tradução para inglês e espanhol. O portão de Ajustes cobre as seis abas, os
+  tooltips nos três idiomas, a dica no foco e onde mora cada campo (#169).
+
 - **A fonte padrão da interface fica um pouco menor, e os Ajustes mostram mais itens por
   coluna.** O Médio do Tamanho do texto passa a ter corpo 17 (era 19) e botões 14 (era 15);
   Pequeno, Grande e Muito grande continuam multiplicando o novo padrão. Os tamanhos que o
