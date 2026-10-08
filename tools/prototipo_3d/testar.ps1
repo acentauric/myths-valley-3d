@@ -173,6 +173,15 @@ function Git-Linhas([string[]]$argumentos) {
 	return @($saida)
 }
 
+# O git respondeu com sucesso? (Resposta vazia de função vira $null no
+# PowerShell, então `merge-base --is-ancestor` se lê pelo código de saída.)
+function Git-Ok([string[]]$argumentos) {
+	$antes = $ErrorActionPreference
+	$ErrorActionPreference = "Continue"
+	try { & git @argumentos 2>$null | Out-Null } finally { $ErrorActionPreference = $antes }
+	return ($LASTEXITCODE -eq 0)
+}
+
 # A primeira linha da resposta do git, ou $null. (Função devolve array de um item
 # como o item: `(Git-Linhas ...)[0]` de um hash só daria o primeiro caractere.)
 function Git-Linha([string[]]$argumentos) {
@@ -365,9 +374,9 @@ if (-not $Tudo) {
 		if (-not $Push -and (Test-Path -LiteralPath $arquivoVerde)) {
 			try { $verde = (Ler-Log $arquivoVerde) | ConvertFrom-Json } catch { $verde = $null }
 		}
-		if ($null -ne $verde -and $verde.motor -eq $motor -and $null -ne (Git-Linhas @("merge-base", "--is-ancestor", [string]$verde.commit, "HEAD"))) {
+		if ($null -ne $verde -and $verde.motor -eq $motor -and (Git-Ok @("merge-base", "--is-ancestor", [string]$verde.commit, "HEAD"))) {
 			# O verde mais velho que a saída da main não acrescenta nada: a main é verde por regra.
-			$velho = ($null -ne $saidaDaMain -and [string]$verde.commit -ne $saidaDaMain -and $null -ne (Git-Linhas @("merge-base", "--is-ancestor", [string]$verde.commit, $saidaDaMain)))
+			$velho = ($null -ne $saidaDaMain -and [string]$verde.commit -ne $saidaDaMain -and (Git-Ok @("merge-base", "--is-ancestor", [string]$verde.commit, $saidaDaMain)))
 			if (-not $velho) { Juntar-Base ([string]$verde.commit) "ultimo verde desta maquina" @($verde.portoes) }
 		}
 		if ($null -ne $saidaDaMain) { Juntar-Base $saidaDaMain "saida da origin/main" $null }
@@ -549,8 +558,8 @@ foreach ($nome in $analisados) {
 		if ($Detalhar) { $texto = $mudados -join ", " }
 		elseif ($mudados.Count -gt 2) { $texto += " (+" + ($mudados.Count - 2) + ")" }
 		$motivos[$nome] = "mudou: " + $texto
-		# Igual ao HEAD no que conta, mas o HEAD nunca ficou verde aqui.
-		if ($comoNoHead) { $motivos[$nome] = "sem verde do HEAD nesta maquina (desde a base mudou: " + $texto + ")" }
+		# Igual a uma referência no que conta, mas ninguém viu este conteúdo verde aqui.
+		if ($comoNoHead) { $motivos[$nome] = "sem verde registrado para este conteudo (desde a base mudou: " + $texto + ")" }
 	} elseif ($bases.Count -eq 0) { $motivos[$nome] = "sem verde registrado" }
 	else { $motivos[$nome] = "sem verde com este motor" }
 }
