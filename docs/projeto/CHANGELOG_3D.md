@@ -84,6 +84,15 @@
   jogador; o Pedro chama o jogador para dentro ("Vem logo atrás de mim. Se eu travar, me puxa."); a moça
   sorriu para o Pedro a manhã inteira, que é quando eles entraram na casa;
   e a conta da Matinta fica como coisa que se diz ("e dizem que ela cobra").
+- **As correções das falas, quinta leva: as conversas dos moradores.** Dezoito falas de conversa e de
+  cumprimento deixam de envelhecer ou de chegar antes da hora, nos quatro idiomas e com o TTS de mesma
+  marca: o Tonho de linha na mão e sem a dívida (que se paga), a Dona Filó e o Seu Nicolau sem ela, o
+  convite sem assinatura virando "papel sem assinatura", a fazenda sem dono no lugar do convite que ainda não
+  chegou, o Damião e o sacristão sem o "sem foice", a Sá Rita agradecendo o mutirão do poço que já houve, a
+  garapa fresquinha (gelo não havia no arraial de 1887), e o Benedito, a Dona Zefa, o Cosme, o padre e a
+  Mariinha sem se apresentar de novo a cada conversa. Todas tinham voz gravada: o áudio continua apontado
+  para o arquivo de antes (a voz antiga toca com o texto novo até a regravação), e o documento das falas as
+  lista em "Áudios a regravar".
 - **O resumo do passo conta o material** (07–08/10: "na parte de levar tábuas e pedras ao
   Damião não informou o quantitativo; mesmo que o jogador já tenha no inventário, esse dado
   deve ser informado"; "a missão continuou indicando para construir a cerca como se eu
