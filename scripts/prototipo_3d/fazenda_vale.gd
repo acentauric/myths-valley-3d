@@ -18,8 +18,11 @@ extends Node3D
 ## casa — "acorda, que é hoje" — e conduz o jogador pela ponte até o portão. Lá
 ## ele fala do portão que não guarda nada, o escuro sobe e a voz do mundo conta a
 ## chegada (`narracao_do_vale.gd`); quando o escuro desce, os dois estão dentro do
-## pátio, e o Pedro conduz até a escadaria. A fala dele fecha a fatia: o 2D para
-## aqui, e o vale também.
+## pátio, e o Pedro conduz até a escadaria. A fala dele fecha a fatia 6.1: o 2D
+## para aqui. O vale segue na 6.2 (#114): o silêncio, as duas mulheres na
+## escadaria, o chamado aos corajosos e o Pedro que vai; depois a subida, o salão
+## redondo, a porta estreita e os cinco que voltam — e o Pedro, que fica. É o
+## fim do capítulo 6 (`o_chamado_aos_corajosos`, `a_porta_estreita`).
 ##
 ## O que vai no save é da fila da fazenda, como acontecimentos dela: o dia marcado
 ## ("dia_da_fazenda"), o chamado na porta, o portão aberto, o pátio, e o arraial
@@ -241,6 +244,67 @@ func chegou_ao_patio() -> void:
 		return
 	_cadeia.registrar_evento("patio")
 	await Dialogo.falar(_nome_do_pedro(), _falas("chegada_fim"))
+
+
+## O CHAMADO AOS CORAJOSOS (a `cena` do passo do chamado; #114, fatia 6.2 do
+## capítulo 6): o silêncio, as duas mulheres no alto da escadaria, a fala da mais
+## velha, os homens de pé — e o Pedro, que não fica para trás e chama o jogador
+## (P3 do plano do 2D: a história é dele, e o jogador o acompanha).
+func o_chamado_aos_corajosos() -> void:
+	if _em_cena or _cadeia == null:
+		return
+	_em_cena = true
+	var espera_antes: float = _cadeia.espera
+	_cadeia.espera = 1000.0
+	_cadeia.registrar_evento("corajosos")
+	await _narrar(_falas("silencio"))
+	await Dialogo.falar(_nome("anfitria"), _falas("chamado_aos_corajosos"))
+	await _narrar(_falas("de_pe"))
+	await Dialogo.falar(_nome_do_pedro(), _falas("pedro_vai"))
+	_cadeia.espera = minf(espera_antes, 0.8) if espera_antes > 0.0 else 0.8
+	_em_cena = false
+
+
+## A PORTA ESTREITA (a `cena` do passo da porta; #114): a subida, o salão
+## redondo, a fala da moça, as mulheres que cercam, a interrupção da mais velha
+## ("só um"), a porta de onde vêm os gemidos, os cinco que voltam — e o Pedro,
+## que fica. O capítulo 6 acaba aqui (P1 do plano do 2D: a sedução fica nas
+## falas, nada de despir em cena); o 7 é a próxima fatia. O salão ainda não é um
+## cômodo: a voz do mundo o conta, com o escuro.
+func a_porta_estreita() -> void:
+	if _em_cena or _cadeia == null:
+		return
+	_em_cena = true
+	var espera_antes: float = _cadeia.espera
+	_cadeia.espera = 1000.0
+	_cadeia.registrar_evento("porta_estreita")
+	await _narrar(_falas("subida"))
+	await Dialogo.falar(_nome("moca"), _falas("desafio"))
+	await _narrar(_falas("cerco"))
+	await Dialogo.falar(_nome("anfitria"), _falas("so_um"))
+	await _narrar(_falas("porta"))
+	await Dialogo.falar(_nome_do_pedro(), _falas("pedro_fica"))
+	_cadeia.espera = minf(espera_antes, 0.8) if espera_antes > 0.0 else 0.8
+	_em_cena = false
+
+
+## A voz do mundo conta, com o jogador parado, e devolve o corpo ao fim.
+func _narrar(frases: Array) -> void:
+	var narracao = _vale.get("narracao")
+	if narracao == null or frases.is_empty():
+		return
+	var jogador: Node3D = _vale.player
+	if jogador != null:
+		jogador.set_physics_process(false)
+	narracao.narrar(frases)
+	await narracao.terminou
+	if jogador != null:
+		jogador.set_physics_process(true)
+
+
+## O nome de quem fala, na língua do jogo ("anfitria", "moca").
+func _nome(chave: String) -> String:
+	return str(IdiomaMenu.campo(Jogo.dados(ARQUIVO).get(chave, {}), "nome", chave))
 
 
 # --- quem está lá ---------------------------------------------------------------

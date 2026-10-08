@@ -1,0 +1,48 @@
+{
+  "observacao": "O FAVOR DE TONICO, O MENINO (fase 1 de docs/projeto/MISSOES_SECUNDARIAS.md, 07/10/2026: \"criar missões secundárias para interação com esses NPCs\"). Uma fila curta, de um passo, só com mecânica que o vale já tem (a meta \"levar\" e itens com fonte), na voz que o morador já tinha em data/dialogos/aldeoes.json — 'Cocada! Você é o melhor adulto do arraial', a praça escondida da mãe e o caminho na mata até a pedra com desenho, gancho da fase 3. Trancada pela afinidade: abre quando o morador conhece o jogador (grau 1, \"Conhecido de vista\"; a tabela data/favores_dos_moradores.json diz o grau) e a chegada do Pedro acabou. Fechar a fila é o favor da afinidade (Afinidade.POR_FAVOR, cadeia_de_missoes._dar_o_favor).",
+  "dono": "menino",
+  "nome": "A cocada escondida",
+  "nome_en": "The hidden cocada",
+  "nome_es": "La cocada escondida",
+  "trancada": "Eu não falo com estranho. Minha mãe disse. Você é estranho ainda — mas tá quase.",
+  "trancada_en": "I don't talk to strangers. My mother said so. You're still a stranger — but almost not.",
+  "trancada_es": "Yo no hablo con extraños. Mi madre lo dijo. Tú todavía eres extraño — pero ya casi no.",
+  "principal": false,
+  "passos": [
+    {
+      "id": "menino_cocada",
+      "titulo": "A cocada escondida",
+      "titulo_en": "The hidden cocada",
+      "titulo_es": "La cocada escondida",
+      "resumo": "Leve uma cocada ao Tonico",
+      "resumo_en": "Take a cocada to Tonico",
+      "resumo_es": "Lleva una cocada a Tonico",
+      "lugar": "casa_do_carpinteiro",
+      "raio": 6,
+      "audio": "",
+      "texto": "Psiu. Você é o do saveiro, que quase caiu da prancha. Minha mãe não deixa, mas se você me trouxer uma cocada eu te conto do caminho na mata que ninguém conhece. Não conta pra ela que eu tô na praça.",
+      "texto_en": "Psst. You're the one from the sloop, who almost fell off the plank. My mother won't allow it, but if you bring me a cocada I'll tell you about the path in the woods nobody knows. Don't tell her I'm in the square.",
+      "texto_es": "Psst. Tú eres el del saveiro, el que casi se cae de la plancha. Mi madre no me deja, pero si me traes una cocada te cuento del camino en el monte que nadie conoce. No le digas que estoy en la plaza.",
+      "recompensa": {
+        "xp": 15,
+        "manga": 1
+      },
+      "meta": {
+        "tipo": "levar",
+        "item": "cocada",
+        "quantos": 1,
+        "a_quem": "menino",
+        "raio": 3.4,
+        "resposta": "Cocada! Você é o melhor adulto do arraial. O caminho eu não levo ninguém — meu pai disse que quem leva fica com dívida. Mas eu posso dizer por onde começa. Depois. Amanhã eu te mostro o lagarto.",
+        "resposta_en": "Cocada! You're the best grown-up in the village. The path I don't take anyone to — my father said whoever does ends up in debt. But I can tell you where it starts. Later. Tomorrow I'll show you the lizard.",
+        "resposta_es": "¡Cocada! Eres el mejor adulto del poblado. Al camino no llevo a nadie — mi padre dijo que quien lleva queda en deuda. Pero puedo decirte por dónde empieza. Después. Mañana te muestro el lagarto."
+      }
+    }
+  ],
+  "arremate": {
+    "texto": "O Tonico comeu a cocada escondido da mãe, e ficou devendo ao jogador o começo de um caminho na mata.",
+    "texto_en": "Tonico ate the cocada behind his mother's back, and now owes the player the start of a path in the woods.",
+    "texto_es": "Tonico se comió la cocada a escondidas de su madre, y le quedó debiendo al jugador el comienzo de un camino en el monte.",
+    "narra": false
+  }
+}

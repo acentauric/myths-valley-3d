@@ -1,0 +1,50 @@
+{
+  "observacao": "O FAVOR DE SEU EPIFÂNIO, O CARPINTEIRO (fase 1 de docs/projeto/MISSOES_SECUNDARIAS.md, 07/10/2026: \"criar missões secundárias para interação com esses NPCs\"). Uma fila curta, de um passo, só com mecânica que o vale já tem (a meta \"levar\" e itens com fonte), na voz que o morador já tinha em data/dialogos/aldeoes.json — canoa, remo, porta e caixão (ele gosta de tábua, madeira de coqueiro e corda), as três batidas no tronco e a canoa do Tonho, gancho da fase 3. Trancada pela afinidade: abre quando o morador conhece o jogador (grau 1, \"Conhecido de vista\"; a tabela data/favores_dos_moradores.json diz o grau) e a chegada do Pedro acabou. Fechar a fila é o favor da afinidade (Afinidade.POR_FAVOR, cadeia_de_missoes._dar_o_favor).",
+  "dono": "carpinteiro",
+  "nome": "Madeira para a canoa",
+  "nome_en": "Wood for the canoe",
+  "nome_es": "Madera para la canoa",
+  "trancada": "O mato só dá se a gente pede, e eu só peço a quem conheço. Volte quando o Tonico já souber o seu nome.",
+  "trancada_en": "The woods only give if you ask, and I only ask people I know. Come back when Tonico already knows your name.",
+  "trancada_es": "El monte solo da si uno pide, y yo solo le pido a quien conozco. Vuelve cuando Tonico ya sepa tu nombre.",
+  "principal": false,
+  "passos": [
+    {
+      "id": "carpinteiro_madeira",
+      "titulo": "Madeira para a canoa",
+      "titulo_en": "Wood for the canoe",
+      "titulo_es": "Madera para la canoa",
+      "resumo": "Leve duas madeiras de coqueiro e uma corda ao Seu Epifânio",
+      "resumo_en": "Take two coconut-palm logs and a rope to Seu Epifânio",
+      "resumo_es": "Lleva dos maderas de cocotero y una cuerda al Señor Epifânio",
+      "lugar": "casa_do_carpinteiro",
+      "raio": 6,
+      "audio": "",
+      "texto": "Epifânio faz canoa, remo, porta e caixão, nessa ordem. A canoa da vez pede corda pra amarrar o molde e madeira de coqueiro pros bancos. Duas madeiras e uma corda — e eu lhe pago em tábua, que você vai precisar.",
+      "texto_en": "Epifânio makes canoes, paddles, doors and coffins, in that order. This canoe needs rope to bind the mould and coconut-palm wood for the seats. Two logs and one rope — and I'll pay you in planks, which you're going to need.",
+      "texto_es": "Epifânio hace canoas, remos, puertas y ataúdes, en ese orden. La canoa de turno pide cuerda para atar el molde y madera de cocotero para los bancos. Dos maderas y una cuerda — y te pago en tablas, que vas a necesitar.",
+      "recompensa": {
+        "xp": 15,
+        "tabua": 3
+      },
+      "meta": {
+        "tipo": "levar",
+        "itens": {
+          "madeira_de_coqueiro": 2,
+          "corda": 1
+        },
+        "a_quem": "carpinteiro",
+        "raio": 3.4,
+        "resposta": "Madeira boa. Antes de cortar você bateu três vezes no tronco? Não? Da próxima bata. Toma as tábuas. A canoa do Tonho fui eu que fiz, há dez anos — pergunte a ele por que não usa.",
+        "resposta_en": "Good wood. Did you knock three times on the trunk before cutting? No? Next time, knock. Take the planks. Tonho's canoe was my work, ten years ago — ask him why he doesn't use it.",
+        "resposta_es": "Madera buena. ¿Golpeaste tres veces el tronco antes de cortar? ¿No? La próxima, golpea. Toma las tablas. La canoa de Tonho la hice yo, hace diez años — pregúntale por qué no la usa."
+      }
+    }
+  ],
+  "arremate": {
+    "texto": "A canoa do Seu Epifânio tem bancos, e o jogador saiu com três tábuas e uma pergunta para fazer ao Tonho.",
+    "texto_en": "Seu Epifânio's canoe has its seats, and the player left with three planks and a question to ask Tonho.",
+    "texto_es": "La canoa del Señor Epifânio tiene bancos, y el jugador salió con tres tablas y una pregunta para hacerle a Tonho.",
+    "narra": false
+  }
+}

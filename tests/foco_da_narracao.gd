@@ -15,10 +15,12 @@ func _run() -> void:
 	root.add_child(hud)
 	await process_frame
 	var dialogo := root.get_node("Dialogo")
-	dialogo.transform = Transform2D(0.0, Vector2(2, 2), 0.0, Vector2.ZERO)
+	# A caixa de fala é desenhada na tela do vale, 1280×720 (`Prototype._na_tela_do_vale`):
+	# não é mais o quadro do 2D ampliado duas vezes.
+	dialogo.transform = Transform2D.IDENTITY
 	hud.set_objective("Abra a casa")
 	await create_timer(0.2).timeout
-	var aviso: Panel = hud._notice_panel
+	var aviso: Control = hud._notice_panel
 	hud.set_notice("Aviso antes da conversa")
 	var cor := aviso.modulate
 	dialogo.falar("Pedro", ["Vida", "Vigor"], [], [["vida"], ["vigor"]])

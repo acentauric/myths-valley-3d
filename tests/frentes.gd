@@ -21,6 +21,8 @@ extends SceneTree
 ##   7. A CAPOEIRA: só abre com o candomblé e a mesa da folha; a ginga se ensina
 ##      no anúncio, três esquivas fazem a lição, e ela fecha voltando ao Cosme.
 ##   8. A META: dez caititus abrem a do gibão sozinha, e o E no Pedro paga.
+##   8b. A META DA ONÇA (#117): duas onças abrem a do patuá sozinha, na Dona
+##      Zefa; o couro de onça levado a ela paga o patuá.
 ##   9. A CONTA SOBREVIVE A RECARREGAR: o save leva quantas vezes já aconteceu.
 ##  10. A CAPOEIRA ATÉ O FIM: a meia-lua volta ao Cosme, a rasteira (duas tonteadas, mungunzá) e a
 ##      volta final fecham a fila.
@@ -177,6 +179,29 @@ func _run() -> void:
 	await _quadros(5)
 	tecla.usar(pedro)
 	_conferir(await _ate(func() -> bool: return metas.acabou(), 8.0), "o E no Pedro não fechou a meta do gibão")
+
+	# --- 8b. A META DA ONÇA (#117) -----------------------------------------------------
+	var metas_da_onca = vale._cadeias.get("zefa_metas")
+	var zefa = vale._achar_morador("zefa")
+	_conferir(metas_da_onca != null and zefa != null, "o vale não pendurou a meta da onça na Dona Zefa")
+	if metas_da_onca != null and zefa != null:
+		_conferir(not metas_da_onca.iniciado, "a meta da onça abriu antes das duas")
+		luta.abates["onca"] = 2
+		_conferir(await _ate(func() -> bool: return metas_da_onca.iniciado, 6.0), "com duas onças, a meta do patuá não abriu")
+		await _ate(func() -> bool: return metas_da_onca.espera <= 0.0, 12.0)
+		_conferir(str(metas_da_onca.passo_atual().get("id", "")) == "meta_onca", "a meta da onça não abriu no passo do couro")
+		inv.adicionar("couro_de_onca", 1)
+		var patuas: int = inv.quantidade("patua")
+		for i in 3:
+			jogador.teleportar(zefa.global_position + Vector3(1.0, 0.1, 0.6), 0.0)
+			await _quadros(3)
+			tecla.usar(zefa)
+			await _ate(func() -> bool: return metas_da_onca.acabou(), 2.0)
+			if metas_da_onca.acabou():
+				break
+		_conferir(metas_da_onca.acabou(), "levar o couro de onça à Dona Zefa não fechou a meta do patuá")
+		_conferir(not inv.tem("couro_de_onca"), "a Dona Zefa não ficou com o couro de onça")
+		_conferir(inv.quantidade("patua") == patuas + 1, "a meta da onça não pagou o patuá")
 	_conferir(inv.tem("gibao_de_couro") or root.get_node("/root/Equipamento").em_uso("gibao_de_couro"), "a meta não deu o gibão de couro")
 
 	# --- 9. A CONTA SOBREVIVE A RECARREGAR ------------------------------------------------

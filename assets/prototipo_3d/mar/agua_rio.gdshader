@@ -16,8 +16,11 @@ uniform vec3 cor_margem : source_color = vec3(0.3, 0.27, 0.14);
 uniform vec3 cor_fundo : source_color = vec3(0.13, 0.13, 0.07);
 // Céu refletido na lâmina (visto de cima é o que faz parecer água, não lama).
 uniform vec3 cor_ceu : source_color = vec3(0.62, 0.7, 0.68);
-// Velocidade da correnteza em larguras do rio por segundo.
+// Velocidade da correnteza em larguras do rio por segundo, e o sentido dela:
+// +1 corre para o fim da faixa (UV.y crescente), -1 para o começo. Quem monta o
+// rio põe o sentido da foz (GeoRegionRenderer._sentido_da_correnteza, #115).
 uniform float correnteza = 0.12;
+uniform float sentido = 1.0;
 uniform float ondulacao = 0.14;
 uniform float transparencia : hint_range(0.0, 1.0) = 1.0;
 uniform float comprimento = 1.0;
@@ -27,8 +30,8 @@ uniform bool suavizar_fim = false;
 
 void fragment() {
 	// UV.y está em larguras do rio: escala parecida nos dois eixos, sem esticar.
-	vec3 a = texture(ondas_a, UV * vec2(0.9, 0.45) + vec2(0.0, -TIME * correnteza)).xyz;
-	vec3 b = texture(ondas_b, UV * vec2(1.7, 0.8) + vec2(0.03, -TIME * correnteza * 1.7)).xyz;
+	vec3 a = texture(ondas_a, UV * vec2(0.9, 0.45) + vec2(0.0, -TIME * correnteza * sentido)).xyz;
+	vec3 b = texture(ondas_b, UV * vec2(1.7, 0.8) + vec2(0.03, -TIME * correnteza * 1.7 * sentido)).xyz;
 	NORMAL_MAP = normalize(a + b - 1.0) * 0.5 + 0.5;
 	NORMAL_MAP_DEPTH = ondulacao;
 	// Talvegue: mais escuro e mais opaco no meio, âmbar raso nas margens.

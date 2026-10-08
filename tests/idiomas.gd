@@ -57,10 +57,44 @@ const TRADUZIDOS := {
 	"res://data/missoes_oficio.json": ["texto", "resumo", "nome", "titulo", "resposta"],
 	"res://data/missoes_capoeira.json": ["texto", "resumo", "nome", "titulo", "resposta"],
 	"res://data/missoes_metas.json": ["texto", "resumo", "nome", "titulo", "resposta"],
+	"res://data/missoes_metas_onca.json": ["texto", "resumo", "nome", "titulo", "resposta"],
 	"res://data/missoes_ponte.json": ["texto", "resumo", "nome", "titulo", "resposta"],
 	"res://data/missoes_chapada.json": ["texto", "resumo", "nome", "titulo", "resposta"],
 	"res://data/missoes_lombada.json": ["texto", "resumo", "nome", "titulo", "resposta"],
 	"res://data/missoes_fazenda.json": ["texto", "resumo", "nome", "titulo", "resposta"],
+	"res://data/missoes_quintal.json": ["texto", "resumo", "nome", "titulo", "resposta"],
+	"res://data/missoes_revoar.json": ["texto", "resumo", "nome", "titulo", "resposta", "oferta", "pergunta"],
+	# Os favores dos moradores (docs/projeto/MISSOES_SECUNDARIAS.md, fase 1): nasceram nos três
+	# idiomas, com o aviso da fila trancada (que o missoes_elos cobra à parte).
+	"res://data/missoes_rendeira.json": ["texto", "resumo", "nome", "titulo", "resposta", "trancada"],
+	"res://data/missoes_sacristao.json": ["texto", "resumo", "nome", "titulo", "resposta", "trancada"],
+	"res://data/missoes_beata.json": ["texto", "resumo", "nome", "titulo", "resposta", "trancada"],
+	"res://data/missoes_mercador.json": ["texto", "resumo", "nome", "titulo", "resposta", "trancada"],
+	"res://data/missoes_guarda.json": ["texto", "resumo", "nome", "titulo", "resposta", "trancada"],
+	"res://data/missoes_pescador.json": ["texto", "resumo", "nome", "titulo", "resposta", "trancada"],
+	"res://data/missoes_marisqueira.json": ["texto", "resumo", "nome", "titulo", "resposta", "trancada"],
+	"res://data/missoes_lavadeira.json": ["texto", "resumo", "nome", "titulo", "resposta", "trancada"],
+	"res://data/missoes_quituteira.json": ["texto", "resumo", "nome", "titulo", "resposta", "trancada"],
+	"res://data/missoes_carpinteiro.json": ["texto", "resumo", "nome", "titulo", "resposta", "trancada"],
+	"res://data/missoes_menino.json": ["texto", "resumo", "nome", "titulo", "resposta", "trancada"],
+	"res://data/missoes_menina.json": ["texto", "resumo", "nome", "titulo", "resposta", "trancada"],
+	"res://data/missoes_mestre_saveiro.json": ["texto", "resumo", "nome", "titulo", "resposta", "trancada"],
+	"res://data/missoes_padre.json": ["texto", "resumo", "nome", "titulo", "resposta", "trancada"],
+	# E os quatro arcos de enredo deles (fase 2).
+	"res://data/missoes_rendeira_toalha.json": ["texto", "resumo", "nome", "titulo", "resposta", "trancada"],
+	"res://data/missoes_sacristao_pedra.json": ["texto", "resumo", "nome", "titulo", "resposta", "trancada"],
+	"res://data/missoes_pescador_madeira.json": ["texto", "resumo", "nome", "titulo", "resposta", "trancada"],
+	"res://data/missoes_mestre_saveiro_luz.json": ["texto", "resumo", "nome", "titulo", "resposta", "trancada"],
+	# E as nove pontes entre moradores e missões de ação (fase 3).
+	"res://data/missoes_menina_roda.json": ["texto", "resumo", "nome", "titulo", "resposta", "trancada"],
+	"res://data/missoes_guarda_ronda.json": ["texto", "resumo", "nome", "titulo", "resposta", "trancada"],
+	"res://data/missoes_padre_sino.json": ["texto", "resumo", "nome", "titulo", "resposta", "trancada"],
+	"res://data/missoes_marisqueira_mare.json": ["texto", "resumo", "nome", "titulo", "resposta", "trancada"],
+	"res://data/missoes_carpinteiro_canoa.json": ["texto", "resumo", "nome", "titulo", "resposta", "trancada"],
+	"res://data/missoes_mercador_fiado.json": ["texto", "resumo", "nome", "titulo", "resposta", "trancada"],
+	"res://data/missoes_menino_caminho.json": ["texto", "resumo", "nome", "titulo", "resposta", "trancada"],
+	"res://data/missoes_beata_promessa.json": ["texto", "resumo", "nome", "titulo", "resposta", "trancada"],
+	"res://data/missoes_lavadeira_rio.json": ["texto", "resumo", "nome", "titulo", "resposta", "trancada"],
 	"res://data/documentos.json": ["nome", "linhas"],
 	"res://data/historico_3d.json": ["titulo", "estado"],
 	# A fé (#52): o que os marcos dizem.
@@ -78,6 +112,9 @@ const TRADUZIDOS := {
 	"res://data/interiores_casas.json": ["nome"],
 	# E a lavoura (#8): o que a tecla diz no leito e os recados do gesto.
 	"res://data/lavoura.json": ["texto"],
+	# A lenha da fogueira (07/10): a dica do E, os recados do HUD e a aba do fogão.
+	"res://data/fogueira.json": ["texto"],
+	"res://data/quintal.json": ["texto"],
 	# A missão do cemitério: os três passos do 2D declaram a pendência um a um,
 	# e o mato, o conserto, o cercado e o arremate nasceram nos três idiomas.
 	"res://data/missoes_coveiro.json": ["texto", "resumo", "nome", "titulo", "resposta"],
@@ -92,6 +129,8 @@ const TRADUZIDOS := {
 	# O saveiro do mestre Quirino: a cadeia do Seu Benedito que o ensina, e o que o
 	# saveiro diz — a chegada, a encomenda da estação e a aba dele no painel.
 	"res://data/missoes_saveiro.json": ["texto", "resumo", "nome", "titulo", "resposta"],
+	# As criaturas da mata (#109): o nome que o HUD diz ao derrubar.
+	"res://data/criaturas_3d.json": ["nome"],
 	"res://data/saveiro.json": ["chegou", "partiu", "encomenda_titulo", "encomenda_texto", "encomenda_linha", "agrado",
 		"painel_titulo", "painel_linha", "painel_dica", "painel_rodape", "ja_levou", "nao_tem"],
 	# O que a dica do E diz em cima do poço, da ponte, do mirante, do cemitério e da

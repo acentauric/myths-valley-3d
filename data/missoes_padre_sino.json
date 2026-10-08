@@ -1,0 +1,93 @@
+{
+  "observacao": "A VIGÍLIA DO SINO (fase 3 de docs/projeto/MISSOES_SECUNDARIAS.md, 07/10/2026): o gancho do padre em aldeoes.json ('Tem noite em que o sino toca sozinho, e eu vou ver, e não tem ninguém... Alguma coisa cuida disto aqui'). Uma vigília de madrugada na igreja ('visitar' com 'horas' que viram a meia-noite). Abre com o favor do beiju feito e o padre 'Gente boa'.",
+  "dono": "padre",
+  "nome": "O sino que toca sozinho",
+  "nome_en": "The bell that rings by itself",
+  "nome_es": "La campana que toca sola",
+  "trancada": "O que me tira o sono eu conto a quem senta no banco mais de uma vez, meu filho. Volte.",
+  "trancada_en": "What keeps me awake I tell those who sit in the pew more than once, my son. Come back.",
+  "trancada_es": "Lo que me quita el sueño se lo cuento a quien se sienta en el banco más de una vez, hijo mío. Vuelve.",
+  "principal": false,
+  "passos": [
+    {
+      "id": "sino_insonia",
+      "titulo": "O sono do padre",
+      "titulo_en": "The priest's sleep",
+      "titulo_es": "El sueño del cura",
+      "resumo": "Ouça o Padre Anselmo sobre o sino",
+      "resumo_en": "Hear Father Anselmo about the bell",
+      "resumo_es": "Escucha al Padre Anselmo sobre la campana",
+      "lugar": "casa_do_padre",
+      "raio": 6,
+      "audio": "",
+      "texto": "Tem noite em que o sino toca sozinho, meu filho. Eu vou ver, e não tem ninguém. Rezo, fecho a porta, e no outro dia o arraial acorda igual. Eu não durmo mais. Vele a igreja por mim uma madrugada, entre a meia-noite e as cinco — e me diga o que vir, ou o que não vir.",
+      "texto_en": "There are nights when the bell rings by itself, my son. I go and look, and there's no one. I pray, close the door, and the next day the village wakes up the same. I don't sleep anymore. Keep watch in the church for me one night, between midnight and five — and tell me what you see, or what you don't.",
+      "texto_es": "Hay noches en que la campana suena sola, hijo mío. Voy a ver, y no hay nadie. Rezo, cierro la puerta, y al otro día el poblado despierta igual. Ya no duermo. Vela la iglesia por mí una madrugada, entre la medianoche y las cinco — y dime lo que veas, o lo que no veas.",
+      "recompensa": {
+        "xp": 10
+      },
+      "meta": {}
+    },
+    {
+      "id": "sino_madrugada",
+      "titulo": "A vigília",
+      "titulo_en": "The vigil",
+      "titulo_es": "La vigilia",
+      "resumo": "Vele a igreja de madrugada (da meia-noite às 5)",
+      "resumo_en": "Keep watch in the church before dawn (midnight to 5 am)",
+      "resumo_es": "Vela la iglesia de madrugada (de medianoche a las 5)",
+      "lugar": "igreja",
+      "raio": 8,
+      "audio": "",
+      "texto": "Na igreja, entre a meia-noite e as cinco. Escute.",
+      "texto_en": "In the church, between midnight and five. Listen.",
+      "texto_es": "En la iglesia, entre la medianoche y las cinco. Escucha.",
+      "recompensa": {
+        "xp": 10
+      },
+      "meta": {
+        "tipo": "visitar",
+        "lugares": [
+          "igreja"
+        ],
+        "raio": 8,
+        "horas": [
+          0,
+          5
+        ]
+      }
+    },
+    {
+      "id": "sino_contado",
+      "titulo": "O que a madrugada disse",
+      "titulo_en": "What the small hours said",
+      "titulo_es": "Lo que dijo la madrugada",
+      "resumo": "Conte ao Padre Anselmo o que viu",
+      "resumo_en": "Tell Father Anselmo what you saw",
+      "resumo_es": "Cuéntale al Padre Anselmo lo que viste",
+      "lugar": "casa_do_padre",
+      "raio": 6,
+      "audio": "",
+      "texto": "Conte ao padre a sua madrugada.",
+      "texto_en": "Tell the priest about your night.",
+      "texto_es": "Cuéntale al cura tu madrugada.",
+      "recompensa": {
+        "xp": 15
+      },
+      "meta": {
+        "tipo": "falar",
+        "a_quem": "padre",
+        "raio": 3.4,
+        "resposta": "Não tocou? Então foi comigo que ele quis falar, e não com você. Ou tocou, e você teve o bom senso de não dizer. De qualquer jeito, hoje eu durmo. Deus tem ouvido maior que o meu, meu filho — e alguma coisa cuida disto aqui. Eu só tomo conta da minha parte.",
+        "resposta_en": "It didn't ring? Then it was me it wanted to speak to, not you. Or it rang, and you had the good sense not to say so. Either way, tonight I sleep. God's ear is bigger than mine, my son — and something looks after this place. I only mind my part.",
+        "resposta_es": "¿No sonó? Entonces era conmigo con quien quería hablar, no contigo. O sonó, y tuviste el buen juicio de no decirlo. De cualquier modo, hoy duermo. Dios tiene un oído más grande que el mío, hijo — y algo cuida de esto. Yo solo me ocupo de mi parte."
+      }
+    }
+  ],
+  "arremate": {
+    "texto": "Você velou a igreja de madrugada. O sino não tocou — ou tocou, e vocês dois resolveram não dizer. O padre dormiu. Alguma coisa cuida disto aqui.",
+    "texto_en": "You kept watch in the church before dawn. The bell didn't ring — or it did, and the two of you decided not to say. The priest slept. Something looks after this place.",
+    "texto_es": "Velaste la iglesia de madrugada. La campana no sonó — o sonó, y los dos decidieron no decirlo. El cura durmió. Algo cuida de esto.",
+    "narra": false
+  }
+}

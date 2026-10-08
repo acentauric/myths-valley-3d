@@ -31,7 +31,7 @@
       "raio": 7.0,
       "audio": "",
       "texto": "Seis. Traga aqui no meio da praça que eu moo na hora, e o que sair é seu e meu, meio a meio.",
-      "recompensa": { "garapa": 3 },
+      "recompensa": {"xp": 10,  "garapa": 3 },
       "meta": {
         "tipo": "levar",
         "item": "cana",

@@ -1,0 +1,90 @@
+{
+  "observacao": "A MADEIRA COM LETRA (fase 2 de docs/projeto/MISSOES_SECUNDARIAS.md, 07/10/2026): o gancho que o pescador já tinha em aldeoes.json ('a linha prendeu em algo que não era pedra, e quando puxei veio um pedaço de madeira lavrada, com letra. Guardei no telhado. Se você souber ler, eu te mostro'). Três passos: ele entrega a madeira (documento novo, tabua_lavrada, texto em data/documentos.json), o jogador a lê ('leu:tabua_lavrada'), e a leva ao padre, que lê o que falta — o nome do barco do engenho e o brasão que a água apagou, o mesmo que falta no selo do convite. Abre com o favor da corda feito e a afinidade em 'Gente boa'.",
+  "dono": "pescador",
+  "nome": "A madeira com letra",
+  "nome_en": "The lettered wood",
+  "nome_es": "La madera con letras",
+  "trancada": "O que a linha puxou do fundo eu mostro a quem lê e a quem eu conheço. Você lê, eu sei. Falta o resto.",
+  "trancada_en": "What the line pulled from the bottom I show to those who read and those I know. You read, I know that. The rest is missing.",
+  "trancada_es": "Lo que el sedal sacó del fondo se lo muestro a quien lee y a quien conozco. Tú lees, lo sé. Falta el resto.",
+  "principal": false,
+  "passos": [
+    {
+      "id": "madeira_do_telhado",
+      "titulo": "A madeira do telhado",
+      "titulo_en": "The wood from the roof",
+      "titulo_es": "La madera del techo",
+      "resumo": "Pegue a madeira lavrada com o Seu Jerônimo",
+      "resumo_en": "Get the carved wood from Seu Jerônimo",
+      "resumo_es": "Recoge la madera labrada con el Señor Jerônimo",
+      "lugar": "casa_do_pescador",
+      "raio": 6,
+      "audio": "",
+      "texto": "Espere aí que eu subo. Esta. A linha prendeu nela numa quarta de maré baixa, e quando puxei veio isto: madeira lavrada, com letra funda, comida de sal. Guardei no telhado pra não molhar mais. Você lê; eu não. Leve e me diga o que diz — ou não diga, se for coisa de defunto.",
+      "texto_en": "Wait, I'll climb up. This one. The line snagged on it one Wednesday at low tide, and when I pulled, this came up: carved wood, with deep letters, eaten by salt. I kept it on the roof so it wouldn't get wetter. You read; I don't. Take it and tell me what it says — or don't, if it's a dead man's business.",
+      "texto_es": "Espera que subo. Esta. El sedal se enganchó en ella un miércoles de marea baja, y cuando tiré salió esto: madera labrada, con letras hondas, comidas por la sal. La guardé en el techo para que no se mojara más. Tú lees; yo no. Llévala y dime qué dice — o no digas, si es cosa de difunto.",
+      "entrega": {
+        "item": "tabua_lavrada",
+        "quantidade": 1
+      },
+      "recompensa": {
+        "xp": 10
+      },
+      "meta": {}
+    },
+    {
+      "id": "madeira_lida",
+      "titulo": "As letras fundas",
+      "titulo_en": "The deep letters",
+      "titulo_es": "Las letras hondas",
+      "resumo": "Leia a madeira lavrada (F na mochila)",
+      "resumo_en": "Read the carved wood (F in the bag)",
+      "resumo_es": "Lee la madera labrada (F en la mochila)",
+      "lugar": "casa_de_taipa",
+      "raio": 8,
+      "audio": "",
+      "texto": "Leia a madeira com calma, à luz do dia.",
+      "texto_en": "Read the wood calmly, in daylight.",
+      "texto_es": "Lee la madera con calma, a la luz del día.",
+      "recompensa": {
+        "xp": 10
+      },
+      "meta": {
+        "tipo": "evento",
+        "evento": "leu:tabua_lavrada"
+      }
+    },
+    {
+      "id": "madeira_ao_padre",
+      "titulo": "A letra de igreja",
+      "titulo_en": "Church lettering",
+      "titulo_es": "La letra de iglesia",
+      "resumo": "Mostre a madeira ao Padre Anselmo",
+      "resumo_en": "Show the wood to Father Anselmo",
+      "resumo_es": "Muestra la madera al Padre Anselmo",
+      "lugar": "casa_do_padre",
+      "raio": 6,
+      "audio": "",
+      "texto": "Falta metade. Letra de igreja quem lê é o padre.",
+      "texto_en": "Half is missing. Church lettering is for the priest to read.",
+      "texto_es": "Falta la mitad. La letra de iglesia la lee el cura.",
+      "recompensa": {
+        "xp": 15
+      },
+      "meta": {
+        "tipo": "falar",
+        "a_quem": "padre",
+        "raio": 3.4,
+        "resposta": "Deixe ver. É letra de igreja, e não é desta. 'Senhora da Boa Viagem' — era o barco do engenho, meu filho, o que levava o açúcar à cidade. Afundou na foz do rio grande, no ano em que o dono sumiu. Este brasão apagado é o do engenho. Repare: é o que falta no selo do seu convite.",
+        "resposta_en": "Let me see. It's church lettering, and not from this church. 'Senhora da Boa Viagem' — that was the sugar mill's boat, my son, the one that carried the sugar to the city. It sank at the mouth of the great river, the year the owner vanished. This erased coat of arms is the mill's. Look closely: it's the one missing from the seal of your invitation.",
+        "resposta_es": "Déjame ver. Es letra de iglesia, y no de esta. 'Senhora da Boa Viagem' — era el barco del ingenio, hijo mío, el que llevaba el azúcar a la ciudad. Se hundió en la desembocadura del río grande, el año en que el dueño desapareció. Este escudo borrado es el del ingenio. Fíjate: es el que falta en el sello de tu invitación."
+      }
+    }
+  ],
+  "arremate": {
+    "texto": "A madeira é da proa de um barco do engenho, a Senhora da Boa Viagem, que afundou na foz. O brasão que a água apagou é o que falta no selo vermelho do convite.",
+    "texto_en": "The wood is from the prow of a boat from the sugar mill, the Senhora da Boa Viagem, which sank at the river mouth. The coat of arms the water erased is the one missing from the red seal of the invitation.",
+    "texto_es": "La madera es de la proa de un barco del ingenio, la Senhora da Boa Viagem, que se hundió en la desembocadura. El escudo que el agua borró es el que falta en el sello rojo de la invitación.",
+    "narra": false
+  }
+}

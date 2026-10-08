@@ -1,5 +1,6 @@
 extends SceneTree
-## O RIO GRANDE NÃO DÁ PASSAGEM FORA DA PONTE (#81).
+## O RIO GRANDE NÃO DÁ PASSAGEM FORA DA PONTE (#81), E QUEM CAI NELE VOLTA PELA
+## MARGEM DE CÁ (#115).
 ##
 ##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/rio_grande.gd
 ##
@@ -11,7 +12,8 @@ extends SceneTree
 ##
 ##   1. O VAU ACABOU: "vau" não resolve; "ponte_do_rio_grande" resolve na ponte.
 ##   2. A CALHA É FUNDA ao longo do rio inteiro: no meio não dá pé (lâmina acima
-##      do limiar do nado), e do lado de cá se entra andando (beira rasa).
+##      do limiar do nado), e do lado de cá o leito sobe em RAMPA QUE SE ANDA
+##      (#115): da profundidade do nado à margem, nada passa de 42 graus.
 ##   3. O BARRANCO: ao longo do rio inteiro e da cabeceira até a moldura, o chão a
 ##      um passo da beira de lá fica mais alto que a água por mais que o degrau
 ##      sobe, e a face da calha ao alto passa de 60 graus.
@@ -22,11 +24,18 @@ extends SceneTree
 ##      fundo, sempre aquém da linha da beira.
 ##   6. SOB A PONTE a estrada não é rampa pelo lado de lá: entre a água e a
 ##      cabeceira não há chão na altura da água.
+##   7. NADANDO PARA CÁ, em cinco pontos do rio e dos dois lados da ponte, o
+##      corpo sai da água e pisa na margem de cá (#115: "cai no rio e não
+##      consigo voltar para nenhum dos 2 lados").
+##   8. A ÁGUA CORRE PARA A FOZ (#115): a correnteza do shader segue para o
+##      extremo do rio que toca a costa, e não ao contrário.
 
 const PASSO := 2.0
 ## Quanto a cabeceira de lá fica acima da água, no mínimo (o degrau sobe 0,4).
 const ACIMA_DA_AGUA := 0.8
 const TANGENTE_60 := 1.732
+## O que a beira de cá pode subir por unidade (42 graus; o corpo sobe 46).
+const TANGENTE_42 := 0.9
 ## Quanto a estrada pode subir por unidade andada (40 graus; o corpo sobe 45).
 const RAMPA_QUE_SE_ANDA := 0.84
 
@@ -78,7 +87,7 @@ func _run() -> void:
 	var rasas := 0
 	var baixas := 0
 	var suaves := 0
-	var de_ca_fundas := 0
+	var ingremes := 0
 	var ultimo_do_rio := pontos.size() - 1
 	for i in range(linha.size() - 1):
 		var a := linha[i]
@@ -107,9 +116,18 @@ func _run() -> void:
 				# No rio: a calha funda no meio, a beira de cá rasa, e a parede de lá.
 				if mundo.water_depth_at(no_meio) < nada_a_partir:
 					rasas += 1
-				var de_ca := c - normal * (meia - 0.2)
-				if mundo.water_depth_at(Vector3(de_ca.x, 0.0, de_ca.y)) >= nada_a_partir * 0.5:
-					de_ca_fundas += 1
+				# A BEIRA DE CÁ É RAMPA QUE SE ANDA (#115): da profundidade do nado à
+				# margem, nenhum quarto de unidade sobe mais que 42 graus.
+				var anterior_h := INF
+				var d := 0.75
+				while d <= meia + 1.6:
+					var ali := c - normal * d
+					var h: float = mundo.ground_height_at(Vector3(ali.x, 0.0, ali.y))
+					if anterior_h != INF and h - anterior_h > 0.25 * TANGENTE_42:
+						ingremes += 1
+						break
+					anterior_h = h
+					d += 0.25
 				if is_finite(agua) and alto - agua < ACIMA_DA_AGUA:
 					baixas += 1
 			else:
@@ -123,7 +141,7 @@ func _run() -> void:
 	_conferir(rasas == 0, "em %d de %d amostras o meio do rio grande dá pé" % [rasas, amostras])
 	_conferir(baixas == 0, "em %d de %d amostras a beira de lá fica a menos de %.1f u acima da água (ou do lado de cá)" % [baixas, amostras, ACIMA_DA_AGUA])
 	_conferir(suaves == 0, "em %d de %d amostras a face do barranco tem menos de 60 graus" % [suaves, amostras])
-	_conferir(de_ca_fundas * 4 < amostras, "a beira de cá é funda em %d de %d amostras: não se entra andando" % [de_ca_fundas, amostras])
+	_conferir(ingremes == 0, "em %d de %d amostras a beira de cá sobe mais de 42 graus: quem cai não sai" % [ingremes, amostras])
 
 	# --- 4. A PONTE ASSENTA NO ATERRO ---------------------------------------------
 	var ponte_do_rio = vale.get("ponte_do_rio")
@@ -231,6 +249,63 @@ func _run() -> void:
 	_conferir(provas == 3, "só %d provas de nado" % provas)
 	_conferir(escapou == 0, "nadando para lá, o corpo saiu da água do lado de lá em %d de %d provas" % [escapou, provas])
 	_conferir(parou_cedo == 0, "em %d provas o corpo nem chegou perto da beira de lá: a prova não provou nada" % parou_cedo)
+
+	# --- 7. NADANDO PARA CÁ, o corpo sai (#115) ---------------------------------------
+	var partidas: Array[float] = []
+	for fracao: float in [0.1, 0.3, 0.5, 0.7, 0.9]:
+		partidas.append(comprimento_total * fracao)
+	if na_ponte.is_finite():
+		var perto_da_ponte := _ao_longo_mais_perto(pontos, Vector2(na_ponte.x, na_ponte.z))
+		partidas.append(perto_da_ponte - 6.0)
+		partidas.append(perto_da_ponte + 6.0)
+	var presos := 0
+	for ao_longo_s in partidas:
+		var ponto := _ponto_ao_longo(pontos, clampf(ao_longo_s, 1.0, comprimento_total - 1.0))
+		var c: Vector2 = ponto["c"]
+		var normal: Vector2 = ponto["normal"]
+		if float(regiao._lado_do_barranco(c + normal * 1.0)) < 0.0:
+			normal = -normal
+		var rumo_de_ca := -normal
+		var agua: float = mundo.water_level_at(Vector3(c.x, 0.0, c.y))
+		var partida := c + rumo_de_ca * 0.4
+		jogador.teleportar(Vector3(partida.x, agua + 0.3, partida.y), atan2(rumo_de_ca.x, rumo_de_ca.y))
+		await _passos_de_fisica(10)
+		Input.action_press("mv_forward")
+		var saiu := false
+		for tique in 360:
+			if tique % 30 == 0:
+				Input.action_press("mv_animation_9")
+			elif tique % 30 == 2:
+				Input.action_release("mv_animation_9")
+			await physics_frame
+			var avancou: float = (Vector2(jogador.global_position.x, jogador.global_position.z) - c).dot(rumo_de_ca)
+			var chao: float = mundo.ground_height_at(jogador.global_position)
+			if not jogador.is_swimming() and chao - agua > -0.1 and avancou >= meia + 1.2:
+				saiu = true
+				break
+		Input.action_release("mv_forward")
+		Input.action_release("mv_animation_9")
+		if not saiu:
+			presos += 1
+			var onde := Vector2(jogador.global_position.x, jogador.global_position.z)
+			print("  preso a %.0f u do início do rio (ponte a %.1f): parou em %s, a %.2f u do meio, chão %.2f da água, nadando %s" % [ao_longo_s, Vector2(na_ponte.x, na_ponte.z).distance_to(c) if na_ponte.is_finite() else INF, str(onde), (onde - c).dot(rumo_de_ca), mundo.ground_height_at(jogador.global_position) - agua, str(jogador.is_swimming())])
+	_conferir(presos == 0, "nadando para cá, o corpo ficou preso na água em %d de %d pontos" % [presos, partidas.size()])
+
+	# --- 8. A ÁGUA CORRE PARA A FOZ (#115) ----------------------------------------------
+	var foz_no_fim: bool = regiao._tem_foz_no_extremo(pontos, true)
+	var foz_no_inicio: bool = regiao._tem_foz_no_extremo(pontos, false)
+	_conferir(foz_no_fim != foz_no_inicio, "o rio grande não tem a foz num só extremo (início %s, fim %s)" % [str(foz_no_inicio), str(foz_no_fim)])
+	var esperado := 1.0 if foz_no_fim else -1.0
+	_conferir(is_equal_approx(float(regiao._sentido_da_correnteza(rio)), esperado), "o sentido da correnteza do rio grande é %.0f, e a foz pede %.0f" % [float(regiao._sentido_da_correnteza(rio)), esperado])
+	var agua_rio = load("res://assets/prototipo_3d/mar/agua_rio.gdshader")
+	var sentidos: Array[float] = []
+	for malha in regiao.find_children("*", "MeshInstance3D", true, false):
+		var material: Material = malha.material_override
+		if material == null and malha.mesh != null and malha.mesh.get_surface_count() > 0:
+			material = malha.mesh.surface_get_material(0)
+		if material is ShaderMaterial and (material as ShaderMaterial).shader == agua_rio:
+			sentidos.append(float((material as ShaderMaterial).get_shader_parameter("sentido")))
+	_conferir(esperado in sentidos, "nenhuma água de rio no vale corre com o sentido %.0f (sentidos postos: %s)" % [esperado, str(sentidos)])
 	_fechar()
 
 
@@ -239,10 +314,40 @@ func _fechar() -> void:
 	Input.action_release("mv_animation_9")
 	print("")
 	if falhas == 0:
-		print("RIO_GRANDE_OK: o vau acabou; o rio grande é fundo no meio e raso só na beira de cá; a margem de lá é barranco acima da água, com face de mais de 60 graus, do mar à moldura; a ponte assenta num aterro plano com rampa que se anda, sem rampa pelo lado de lá; e nadando para lá, com o pulo, o corpo não sai da água; cair junto à ponte permite retornar pela margem do vale")
+		print("RIO_GRANDE_OK: o vau acabou; o rio grande é fundo no meio e sobe em rampa que se anda pela beira de cá; a margem de lá é barranco acima da água, com face de mais de 60 graus, do mar à moldura; a ponte assenta num aterro plano com rampa que se anda, sem rampa pelo lado de lá; nadando para lá, com o pulo, o corpo não sai da água; nadando para cá, sai em todo ponto, inclusive ao lado da ponte; cair junto à ponte permite retornar pela margem do vale; e a água corre para a foz")
 	else:
 		print("rio_grande: %d falha(s)" % falhas)
 	quit(1 if falhas > 0 else 0)
+
+
+## O ponto a `alvo` unidades do início da linha do rio, e a normal dela ali.
+func _ponto_ao_longo(linha: PackedVector2Array, alvo: float) -> Dictionary:
+	var andado := 0.0
+	for i in range(linha.size() - 1):
+		var trecho := linha[i].distance_to(linha[i + 1])
+		if andado + trecho < alvo and i < linha.size() - 2:
+			andado += trecho
+			continue
+		var ao_longo := (linha[i + 1] - linha[i]) / maxf(trecho, 0.001)
+		return {"c": linha[i] + ao_longo * clampf(alvo - andado, 0.0, trecho), "normal": Vector2(-ao_longo.y, ao_longo.x)}
+	return {"c": linha[0], "normal": Vector2.UP}
+
+
+## Quanto do rio já se andou até o ponto da linha mais perto de `p`.
+func _ao_longo_mais_perto(linha: PackedVector2Array, p: Vector2) -> float:
+	var melhor := INF
+	var s_melhor := 0.0
+	var andado := 0.0
+	for i in range(linha.size() - 1):
+		var trecho := linha[i].distance_to(linha[i + 1])
+		var seg := linha[i + 1] - linha[i]
+		var t := clampf((p - linha[i]).dot(seg) / maxf(seg.length_squared(), 0.001), 0.0, 1.0)
+		var d := p.distance_to(linha[i] + seg * t)
+		if d < melhor:
+			melhor = d
+			s_melhor = andado + trecho * t
+		andado += trecho
+	return s_melhor
 
 
 func _passos_de_fisica(n: int) -> void:

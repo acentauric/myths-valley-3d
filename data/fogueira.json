@@ -1,0 +1,38 @@
+{
+  "observacao": "Os recados da lenha da fogueira (playtest de 07/10: 'para cozinhar na fogueira, considere exigir recarregar ela com madeira a cada X comidas cozinhadas'). O fogo dá para alguns pratos (prototype.PRATOS_POR_LENHA), cada prato gasta um, e o E na fogueira com a lenha na mão repõe. Lidos por prototype.texto_da_fogueira, tecla_das_bancadas (a dica do E) e painel_vale (a aba do fogão), no idioma do menu — texto de jogador não mora em constante (AGENTS.md).",
+  "por_lenha": {
+    "texto": "Pôr lenha na fogueira",
+    "texto_en": "Put firewood on the fire",
+    "texto_es": "Poner leña en la hoguera"
+  },
+  "cheia": {
+    "texto": "A fogueira já está cheia de lenha: fogo para %d pratos.",
+    "texto_en": "The fire is already full of wood: enough for %d dishes.",
+    "texto_es": "La hoguera ya está llena de leña: fuego para %d platos."
+  },
+  "sem_lenha": {
+    "texto": "Sem lenha na mochila para pôr na fogueira.",
+    "texto_en": "No firewood in the bag to put on the fire.",
+    "texto_es": "Sin leña en la mochila para poner en la hoguera."
+  },
+  "pos": {
+    "texto": "Lenha na fogueira: fogo para %d prato(s).",
+    "texto_en": "Wood on the fire: enough for %d dish(es).",
+    "texto_es": "Leña en la hoguera: fuego para %d plato(s)."
+  },
+  "apagou": {
+    "texto": "A fogueira apagou. Ponha lenha nela: E na fogueira, com a lenha na mão.",
+    "texto_en": "The fire went out. Put wood on it: E at the fire, with firewood in hand.",
+    "texto_es": "La hoguera se apagó. Ponle leña: E en la hoguera, con la leña en la mano."
+  },
+  "fogo_para": {
+    "texto": "fogo para %d prato(s)",
+    "texto_en": "fire for %d dish(es)",
+    "texto_es": "fuego para %d plato(s)"
+  },
+  "apagada": {
+    "texto": "fogueira apagada",
+    "texto_en": "fire out",
+    "texto_es": "hoguera apagada"
+  }
+}

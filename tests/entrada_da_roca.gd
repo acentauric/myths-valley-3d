@@ -20,11 +20,17 @@ func _run() -> void:
 	var itens := Paisagismo.aderecos(null, [zona], receitas, reservas)
 	var cercas := 0
 	var portoes := 0
+	var entradas := 0
 	for item in itens:
 		if item.chave == "porteira": portoes += 1
 		if item.chave == "cerca_varas": cercas += 1
+		if item.chave == "entrada": entradas += 1
+	var da_cerca: Dictionary = receitas.aderecos.cerca
+	var lances := Paisagismo._lances_do_cercado(zona.poligono, float(da_cerca.passo),
+		float(da_cerca.get("simplificar", 1.6)), float(da_cerca.get("para_fora", 0.9)))
 	conferir(portoes == 0, "a entrada recebe um portão imóvel")
-	conferir(cercas == 15, "a entrada remove mais que seu lance de 3 u: %d cercas" % cercas)
+	conferir(entradas == 1, "a roça tem %d entrada(s), e não uma" % entradas)
+	conferir(cercas == lances.size() - 1, "a entrada remove mais que seu lance: %d cercas de %d lances" % [cercas, lances.size()])
 	root.get_node("Estilo").modo = "tripo"
 	change_scene_to_file("res://scenes/prototipo_3d/vale.tscn")
 	for i in 8000:
@@ -35,11 +41,11 @@ func _run() -> void:
 		load("res://scripts/prototipo_3d/catalogo_assets.gd").instanciar("porteira", mundo, mundo.ancoras["Cemitério"])
 	for no in mundo.get_children():
 		conferir(str(no.get_meta("peca", "")) != "porteira", "a porteira decorativa continua no vale")
-	var lances := 0
+	var no_vale := 0
 	for item in mundo.paisagismo_aderecos:
 		conferir(item.chave != "porteira", "o plano mantém uma porteira isolada")
-		if item.chave == "cerca_varas": lances += 1
-	conferir(lances >= 30, "a retirada eliminou as cercas das roças")
+		if item.chave == "cerca_varas": no_vale += 1
+	conferir(no_vale >= 30, "a retirada eliminou as cercas das roças")
 	if "--capturar" in OS.get_cmdline_user_args():
 		var camera := Camera3D.new()
 		current_scene.add_child(camera)

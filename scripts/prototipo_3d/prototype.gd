@@ -52,6 +52,9 @@ const CemiterioVale = preload("res://scripts/prototipo_3d/cemiterio_vale.gd")
 const PonteVale = preload("res://scripts/prototipo_3d/ponte_vale.gd")
 const LombadaVale = preload("res://scripts/prototipo_3d/lombada_vale.gd")
 const FazendaVale = preload("res://scripts/prototipo_3d/fazenda_vale.gd")
+const CurralVale = preload("res://scripts/prototipo_3d/curral_vale.gd")
+const RevoarVale = preload("res://scripts/prototipo_3d/revoar_vale.gd")
+const Plantacao = preload("res://scripts/prototipo_3d/plantacao.gd")
 const NarracaoDoVale = preload("res://scripts/prototipo_3d/narracao_do_vale.gd")
 const SustosDaMata = preload("res://scripts/prototipo_3d/sustos_da_mata.gd")
 const MENU_SCENE := "res://scenes/prototipo_3d/abertura.tscn"
@@ -103,7 +106,16 @@ var saveiro
 ## `guia_pedro.gd` e é salva pelo nome antigo (`pedro.missao`), que o save do
 ## vale já guardava antes de existir a segunda cadeia.
 var _cadeias: Dictionary = {}
-var _relogio_pausado_antes := false
+## AS TELAS SEGURAM O DIA POR MOTIVO, CONTADAS (#100): cada tela aberta por cima
+## de outra soma um, e o dia só volta quando a última fecha. Antes um booleano
+## guardava "estava pausado antes?", e duas telas aninhadas (a mochila por
+## cima de uma fala, o mapa por cima do J) deixavam `Dia.pausado` preso ao
+## fechar — o relógio travado às 07:14 na live de 06/10. `Dia.pausado` agora é
+## só a pausa que o jogador pediu; o HUD mostra quem segura (`Dia.segurado`).
+const MOTIVO_DA_TELA := "tela"
+## A camada das plaquinhas de nome (#103): abaixo dos balões (10) e do HUD (20).
+const CAMADA_DAS_PLACAS := 8
+var _telas_que_param := 0
 ## A pergunta da tecla de adiantar a hora, enquanto está aberta.
 var _pergunta_do_relogio = null
 ## OS MARCOS DE FÉ (#52): o cruzeiro, a igreja, a capela velha, o cemitério, o
@@ -152,6 +164,10 @@ var ponte_do_rio: Node3D
 var lombada: Node3D
 ## A fazenda do convite e o dia dela (`fazenda_vale.gd`).
 var fazenda: Node3D
+## O curral do quintal: o galinheiro do talento Curral e os ovos (`curral_vale.gd`, #160).
+var curral: Node3D
+## O capítulo 7, o revoar das asas negras: as ruínas, a torre, a fera e a estátua (`revoar_vale.gd`, #31).
+var revoar: Node3D
 ## A voz do mundo, sem nome, sobre o escuro (`narracao_do_vale.gd`).
 var narracao: CanvasLayer
 ## As plaquinhas de nome dos moradores; somem com tela aberta (placas_nomes.gd).
@@ -280,7 +296,7 @@ func _ready() -> void:
 	# Partida nova conta conquista, com o relógio correndo e o registro dele em
 	# branco; a salva diz o que o jogador já fez com ele.
 	Dia.zerar_a_partida()
-	_relogio_pausado_antes = false
+	_telas_que_param = 0
 	# Vindo do menu, o relógio esperou a montagem na hora_inicial (abertura._start_game).
 	Dia.congelado_na_carga = false
 	var spawn: Vector3 = _ponto_de_chegada()
@@ -310,8 +326,9 @@ func _ready() -> void:
 	hud.connect("style_changed", func() -> void:
 		# Novo estilo visual: reconstrói o vale inteiro, com a tela de carregamento.
 		get_tree().paused = false
-		# Os ajustes tinham parado o relógio; ele volta como estava antes de abri-los.
-		Dia.pausado = _relogio_pausado_antes
+		# Os ajustes seguravam o dia; a tela solta, e o relógio fica como o jogador o deixou.
+		_telas_que_param = 0
+		Dia.soltar(MOTIVO_DA_TELA)
 		_saindo = true
 		# Trocar o estilo RECARREGA o vale, e o vale recarregado lê a vaga:
 		# sem salvar aqui, o jogador voltaria ao último save.
@@ -326,6 +343,8 @@ func _ready() -> void:
 	add_child(tecla_das_bancadas)
 	tecla_das_bancadas.configurar(world, player, hud, abrir_o_painel,
 		func() -> bool: return not _lendo() and (telas == null or telas.aberta() == ""))
+	# O E NA FOGUEIRA COM A LENHA NA MÃO a alimenta (07/10).
+	tecla_das_bancadas.alimentar = alimentar_a_fogueira
 	lapides = Lapides.new()
 	lapides.name = "Lapides"
 	add_child(lapides)
@@ -384,6 +403,7 @@ func _ready() -> void:
 	# abre por tecla, é o mundo que fala. Ver `_ao_abrir_a_fala`.
 	Dialogo.abriu.connect(_ao_abrir_a_fala)
 	Dialogo.terminou.connect(_ao_calar_a_fala)
+	Dialogo.linha_mudou.connect(_ao_mudar_a_linha_da_fala)
 	telas.ocupado = func() -> bool: return Dialogo.ocupado() or Amanhecer.aberto \
 		or (aviso_da_primeira_vez != null and aviso_da_primeira_vez.aberto())
 	# O FOLHETO (#21) é tela, mas quem o abre é o mundo: o cordel achado, ou o
@@ -449,10 +469,9 @@ func _ready() -> void:
 			"fazer": func() -> void: Audio.definir_som_ativo(not Audio.som_ativo)},
 		# O RELÓGIO DIZ O QUE O JOGADOR ESCOLHEU, e não o que o menu fez.
 		#
-		# Com o menu aberto o `Dia` está SEMPRE parado — é o menu que o para —,
-		# e a linha lia `Dia.pausado`: dizia "parado" com o relógio andando, e
-		# apertá-la não mudava o texto. A escolha do jogador mora em
-		# `_relogio_pausado_antes`, que é o que o fechamento devolve ao `Dia`.
+		# Com o menu aberto o `Dia` está segurado pela tela (MOTIVO_DA_TELA), e
+		# `Dia.pausado` é só a escolha do jogador (#100): a linha lê e muda isso,
+		# e o fechamento do menu não mexe nele.
 		#
 		# PARAR PERGUNTA. Parar o relógio desliga as conquistas da partida dali
 		# em diante (`Dia.relogio_alterado`, que vai no save), e o menu abre uma
@@ -464,25 +483,25 @@ func _ready() -> void:
 		# (`Dia.registro_do_relogio`). Com a pausa bloqueada no AJUSTAR, a linha
 		# não para e diz por quê — e religar continua podendo.
 		{"rotulo": func() -> String:
-				var estado := tr("parado") if _relogio_pausado_antes else tr("andando")
+				var estado := tr("parado") if Dia.pausado else tr("andando")
 				if Dia.relogio_alterado:
 					return tr("Relógio: %s · sem conquistas") % estado
-				if not Dia.pausa_no_jogo and not _relogio_pausado_antes:
+				if not Dia.pausa_no_jogo and not Dia.pausado:
 					return tr("Relógio: %s · pausa bloqueada") % estado
 				return tr("Relógio: %s") % estado,
 			"icone": "relogio",
-			"ligado": func() -> bool: return not _relogio_pausado_antes,
+			"ligado": func() -> bool: return not Dia.pausado,
 			"confirmar": func() -> Dictionary:
-				if _relogio_pausado_antes or not Dia.pausa_no_jogo:
+				if Dia.pausado or not Dia.pausa_no_jogo:
 					return {}
 				return Dia.aviso_de_parar(),
 			"fazer": func():
-				if not _relogio_pausado_antes and not Dia.pausa_no_jogo:
+				if not Dia.pausado and not Dia.pausa_no_jogo:
 					Audio.efeito("ui_trava")
 					return tr("Pausar o relógio está bloqueado em AJUSTAR → Geral.")
 				Audio.efeito("ui_confirmar")
-				_relogio_pausado_antes = not _relogio_pausado_antes
-				if _relogio_pausado_antes:
+				Dia.pausado = not Dia.pausado
+				if Dia.pausado:
 					Dia.marcar_relogio_alterado()
 					Dia.registrar_no_relogio("parou", "menu")
 				else:
@@ -638,6 +657,11 @@ func _ready() -> void:
 		if fila != null:
 			fila.depois_de = depois_do_machado if quem in ["damiao", "tonho"] else depois_da_chegada
 	fiado_tonho.configurar(player, hud, interiores, _cadeias.get("tonho"))
+	# OS FAVORES DOS MORADORES (07/10, docs/projeto/MISSOES_SECUNDARIAS.md): as filas
+	# secundárias de cada morador do arraial, penduradas pela tabela e trancadas pela
+	# afinidade — abrem quando o morador conhece o jogador, e as que seguem outra, quando
+	# a de antes acabou.
+	_pendurar_as_secundarias(moradores, depois_da_chegada)
 	# A PONTE DO RIO GRANDE (data/missoes_ponte.json), a frente da trilha do 2D:
 	# ver a ponte cercada, a lenha, as tábuas e a obra. É enredo — a fazenda do
 	# convite fica do outro lado do rio —, e por isso é a PRIMEIRA fila que o E
@@ -722,6 +746,7 @@ func _ready() -> void:
 	lavoura.plantou.connect(_avisar_as_cadeias.bind("plantou"))
 	lavoura.regou.connect(_avisar_as_cadeias.bind("regou"))
 	lavoura.colheu.connect(_avisar_as_cadeias.bind("colheu"))
+	lavoura.plantou_cultura.connect(_ao_plantar)
 	noite.deitou.connect(_ao_deitar)
 	Mochila.abrir_documento = _ler_documento
 	Mochila.letra_de_fechar = _letra_da_mochila
@@ -751,6 +776,12 @@ func _ready() -> void:
 	fazenda.name = "Fazenda"
 	add_child(fazenda)
 	fazenda.configurar(world, self)
+	# O CAPÍTULO 7 (#31): as ruínas do palacete atrás do monte, a torre da capela, a fera e
+	# a estátua; a fila segue a da fazenda (data/missoes_revoar.json).
+	revoar = RevoarVale.new()
+	revoar.name = "Revoar"
+	add_child(revoar)
+	revoar.configurar(world, self)
 	interiores.entrou.connect(_ao_mudar_de_lado.unbind(1))
 	interiores.saiu.connect(_ao_mudar_de_lado.unbind(1))
 	# O E NOS MORADORES (tecla_dos_moradores.gd): conversar, cumprir o passo que
@@ -891,6 +922,47 @@ func _chegar_pelo_saveiro(spawn: Vector3) -> void:
 		pedro.velocity = Vector3.ZERO
 		_saudar_quando_pronto.call_deferred()
 	_acertar_a_porta_da_casa()
+	_tonho_para_a_areia()
+
+
+## O TONHO ESPERA A CHEGADA NA AREIA (playtest de 07/10: "no início do jogo, talvez
+## faça mais sentido o Tonho estar na areia da praia para não ficar com o píer muito
+## poluído"): na partida nova ele sai do tabuado para a areia ao lado do píer
+## (`ancoras["Areia"]`), onde o Pedro leva o jogador para o bom-dia, e volta à rotina
+## dele quando a chegada passa da casa (ou acaba) — `_acertar_o_tonho_da_chegada`.
+var _tonho_na_areia := false
+
+
+func _tonho_para_a_areia() -> void:
+	var tonho := _achar_morador("tonho")
+	var areia: Vector3 = world.ancoras.get("Areia", Vector3.INF)
+	if tonho == null or not areia.is_finite() or not tonho.has_method("ir_ate"):
+		return
+	tonho.global_position = areia + Vector3(0.0, 0.05, 0.0)
+	tonho.velocity = Vector3.ZERO
+	tonho.ir_ate(areia)
+	_tonho_na_areia = true
+
+
+## Ele volta à rotina quando a chegada passou do bom-dia E ninguém está olhando (o
+## jogador a mais de LONGE_DO_TONHO), para não sair andando na cara de quem acabou de
+## cumprimentá-lo — ou na hora em que a festa de uma fé o chama à roda.
+const LONGE_DO_TONHO := 14.0
+
+
+func _acertar_o_tonho_da_chegada() -> void:
+	if not _tonho_na_areia:
+		return
+	var tonho := _achar_morador("tonho")
+	if tonho == null or not tonho.has_method("liberar"):
+		_tonho_na_areia = false
+		return
+	var na_festa: bool = str(tonho.get("_posto")) == "festa"
+	var passou_a_praia: bool = pedro == null or pedro.terminou_o_tutorial() or pedro.passou("bom_dia")
+	var longe: bool = player == null or player.global_position.distance_to(tonho.global_position) > LONGE_DO_TONHO
+	if na_festa or (passou_a_praia and longe):
+		_tonho_na_areia = false
+		tonho.liberar()
 
 
 ## Posicionar no convés não inicia voz ou contagem do tutorial sob a carga.
@@ -990,10 +1062,28 @@ func _pendurar_as_frentes_do_2d() -> void:
 		# A JORNADA DA FAZENDA (data/missoes_fazenda.json): não abre no E; quem a
 		# começa é o dia dela (`fazenda_vale.gd`).
 		_pendurar_cadeia(pedro, "res://data/missoes_fazenda.json", 0.0, "pedro_fazenda")
-		var bichos = JSON.parse_string(FileAccess.get_file_as_string("res://data/colecionaveis/bichos.json"))
-		if bichos is Dictionary:
-			var caititu: Dictionary = ((bichos as Dictionary).get("bichos", {}) as Dictionary).get("caititu", {})
-			_caititus_da_meta = int((caititu.get("meta", {}) as Dictionary).get("conta", _caititus_da_meta))
+		# O SEGUNDO TUTORIAL (data/missoes_quintal.json; MISSOES_DO_2D.md, 2; #160): o
+		# pomar, o curral e o capataz. Não abre no E: começa sozinho na sexta colheita,
+		# como no 2D (`_conferir_o_quintal`).
+		_pendurar_cadeia(pedro, "res://data/missoes_quintal.json", 0.0, "pedro_quintal")
+		# O CAPÍTULO 7 (data/missoes_revoar.json; #31): não abre no E; começa quando a
+		# porta estreita se fecha atrás do Pedro (`revoar_vale.gd`).
+		_pendurar_cadeia(pedro, "res://data/missoes_revoar.json", 0.0, "pedro_revoar")
+	# A META DA ONÇA é da Dona Zefa (data/missoes_metas_onca.json, #117): abre
+	# sozinha quando a conta de abatidos chega, como a dos caititus, e fecha
+	# levando o couro a ela.
+	var zefa := _achar_morador("zefa")
+	if zefa != null:
+		_pendurar_cadeia(zefa, "res://data/missoes_metas_onca.json", 0.0, "zefa_metas")
+	# AS CONTAS DAS METAS vêm do caderno dos bichos (`meta.conta` de cada
+	# espécie), e cada meta sabe a fila que a paga (CADEIA_DA_META).
+	var bichos = JSON.parse_string(FileAccess.get_file_as_string("res://data/colecionaveis/bichos.json"))
+	if bichos is Dictionary:
+		for especie in ((bichos as Dictionary).get("bichos", {}) as Dictionary):
+			var meta: Dictionary = (((bichos as Dictionary)["bichos"] as Dictionary)[especie] as Dictionary).get("meta", {})
+			var cadeia := str(CADEIA_DA_META.get(str(meta.get("missao", "")), ""))
+			if cadeia != "" and meta.has("conta"):
+				_metas_dos_bichos[str(especie)] = {"conta": int(meta["conta"]), "cadeia": cadeia}
 	var cosme := _achar_morador("cosme")
 	if cosme != null:
 		var capoeira = _pendurar_cadeia(cosme, "res://data/missoes_capoeira.json", 4.0, "cosme_capoeira")
@@ -1005,7 +1095,12 @@ func _pendurar_as_frentes_do_2d() -> void:
 
 
 ## Quantos caititus abrem a meta do gibão (`bichos.json`, a parede da Guilda).
-var _caititus_da_meta := 10
+## As metas do caderno dos bichos: espécie → {conta, cadeia}, lidas de
+## bichos.json em `_pendurar_as_frentes_do_2d` (#117).
+const CADEIA_DA_META := {"meta_caititu": "pedro_metas", "meta_onca": "zefa_metas"}
+## Quantas colheitas abrem o segundo tutorial (data/missoes_quintal.json): a sexta, como no 2D.
+const COLHEITAS_DO_QUINTAL := 6
+var _metas_dos_bichos: Dictionary = {}
 
 
 ## A META ABRE SOZINHA: com a conta de caititus derrubados, o Pedro chama.
@@ -1040,10 +1135,41 @@ func _conferir_o_socorro() -> void:
 	Audio.efeito("pegar")
 
 
+## A PONTE ABRE SOZINHA QUANDO O TUTORIAL ACABA (07/10: "depois que conclui as 16
+## atividades iniciais, não abriu nenhuma outra missão"). É o enredo — a trava da
+## jornada da fazenda —, e no 2D o enredo entra na frente da lista sem esperar E.
+## O Pedro está ao lado do jogador na despedida, e anuncia o passo ali mesmo. As
+## frentes de ofício dele (as armas, o ofício, a lombada) seguem abrindo no E.
+## E SÓ COM O PEDRO AO LADO (PERTO_PARA_A_PONTE): é ele quem anuncia, e anunciar de
+## longe seria um balão que ninguém vê. Na despedida ele está junto do jogador.
+const PERTO_PARA_A_PONTE := 8.0
+
+
+func _conferir_a_ponte() -> void:
+	var da_ponte = _cadeias.get("pedro_ponte")
+	if da_ponte == null or da_ponte.iniciado or pedro == null or player == null:
+		return
+	if pedro.terminou_o_tutorial() and player.global_position.distance_to(pedro.global_position) <= PERTO_PARA_A_PONTE:
+		da_ponte.comecar(2.0)
+
+
+## O SEGUNDO TUTORIAL ABRE SOZINHO NA SEXTA COLHEITA, como no 2D (`tutorial.gd` de lá):
+## com o tutorial acabado, a fila do quintal começa e o Pedro chama (#160). Sem E e sem
+## aviso de fila trancada: ele dá cada aviso uma vez, e já tem o da chapada a dar.
+func _conferir_o_quintal() -> void:
+	var quintal = _cadeias.get("pedro_quintal")
+	if quintal == null or quintal.iniciado or pedro == null or lavoura == null:
+		return
+	if pedro.terminou_o_tutorial() and lavoura.colheitas >= COLHEITAS_DO_QUINTAL:
+		quintal.comecar(2.0)
+
+
 func _conferir_as_metas() -> void:
-	var metas = _cadeias.get("pedro_metas")
-	if metas != null and not metas.iniciado and Luta.abatidos("caititu") >= _caititus_da_meta:
-		metas.comecar(1.0)
+	for especie in _metas_dos_bichos:
+		var meta: Dictionary = _metas_dos_bichos[especie]
+		var fila = _cadeias.get(str(meta["cadeia"]))
+		if fila != null and not fila.iniciado and Luta.abatidos(str(especie)) >= int(meta["conta"]):
+			fila.comecar(1.0)
 
 
 ## OS ACONTECIMENTOS DAS FRENTES: o golpe que acertou, o bicho que caiu, o que
@@ -1066,21 +1192,36 @@ func _ao_pescar(_peixe: String, quantos: int) -> void:
 		_avisar_as_cadeias("pescou")
 
 
+## PLANTOU, E O QUÊ: "plantou:bananeira", e "plantou:fruteira" para as culturas perenes —
+## o pomar do segundo tutorial fecha com qualquer fruteira (#160).
+func _ao_plantar(cultura: String) -> void:
+	_avisar_as_cadeias("plantou:" + cultura)
+	if bool((Plantacao.CULTURAS.get(cultura, {}) as Dictionary).get("perene", false)):
+		_avisar_as_cadeias("plantou:fruteira")
+
+
 ## Destravou um nó da teia: o `Talentos` só diz que mudou, e a carga do save
 ## também muda — por isso a conta começa DEPOIS da partida salva
 ## (`_ligar_os_acontecimentos_das_frentes`), e só a que cresce avisa.
 var _talentos_destravados := -1
+var _talentos_vistos: Array = []
 
 
 func _ao_mudar_os_talentos() -> void:
 	var agora: int = Talentos.destravados.size()
 	if _talentos_destravados >= 0 and agora > _talentos_destravados:
 		_avisar_as_cadeias("destravou_talento")
+		# E QUAL FOI (#160): "destravou:curral" fecha o passo do curral do segundo tutorial.
+		for no in Talentos.destravados:
+			if not _talentos_vistos.has(no):
+				_avisar_as_cadeias("destravou:" + str(no))
+	_talentos_vistos = Talentos.destravados.duplicate()
 	_talentos_destravados = agora
 
 
 func _ligar_os_acontecimentos_das_frentes() -> void:
 	_talentos_destravados = Talentos.destravados.size()
+	_talentos_vistos = Talentos.destravados.duplicate()
 	for ligado in [[Luta.acertou, _ao_acertar], [Luta.esquivou, _ao_esquivar],
 			[Pesca.terminou, _ao_pescar], [Talentos.mudou, _ao_mudar_os_talentos]]:
 		if not (ligado[0] as Signal).is_connected(ligado[1]):
@@ -1202,7 +1343,20 @@ func _montar_moradores(spawn: Vector3) -> void:
 	placas = PlacasNomes.new()
 	placas.name = "PlacasNomes"
 	add_child(placas)
-	placas.configurar(player, hud.map_layer())
+	# AS PLAQUINHAS ABAIXO DOS BALÕES (#103): numa camada própria, sob a dos
+	# balões de fala (10) e a do HUD (20). No `map_layer` do HUD elas ficavam por
+	# cima do balão — "a camada do chat deve ser acima da camada do nome" —, e o
+	# HUD segue cobrindo as duas.
+	var camada_das_placas := CanvasLayer.new()
+	camada_das_placas.name = "CamadaDasPlacas"
+	camada_das_placas.layer = CAMADA_DAS_PLACAS
+	add_child(camada_das_placas)
+	var chao_das_placas := Control.new()
+	chao_das_placas.name = "Placas"
+	chao_das_placas.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	chao_das_placas.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	camada_das_placas.add_child(chao_das_placas)
+	placas.configurar(player, chao_das_placas)
 	# Seta da missão: cone e anel no mundo + chevron na borda da tela seguem o
 	# alvo DA MISSÃO ACOMPANHADA (ver `_mostrar_a_acompanhada`).
 	_seta = SetaMissao.new()
@@ -1241,6 +1395,12 @@ func _montar_moradores(spawn: Vector3) -> void:
 	lavoura.name = "Lavoura"
 	add_child(lavoura)
 	lavoura.configurar(world, player, hud)
+	# O CURRAL DO QUINTAL (#160): o galinheiro que o talento Curral levanta, as três
+	# galinhas e os ovos de cada manhã.
+	curral = CurralVale.new()
+	curral.name = "Curral"
+	add_child(curral)
+	curral.configurar(world, self, player, hud)
 	# A pesca (pesca_vale.gd). Entra ANTES dos achados: com a vara na mão, o E
 	# ainda pega o cordel do píer. Ferrar o peixe escuta em `_input`, e esse
 	# vem antes de tudo — a janela é de três quartos de segundo.
@@ -1339,6 +1499,9 @@ func _process(_delta: float) -> void:
 		_conferir_a_porta_em = 0.5
 		_acertar_a_porta_da_casa()
 		_conferir_as_metas()
+		_conferir_o_quintal()
+		_conferir_a_ponte()
+		_acertar_o_tonho_da_chegada()
 	# O SOCORRO A CADA QUADRO, e não a cada meio segundo: com o corpo de três
 	# barras quem cansa é o vigor, que volta sozinho a vinte por segundo — em meio
 	# segundo o braço que não aguentava bater já aguenta, e a panela nunca vinha.
@@ -1603,16 +1766,25 @@ func _pause_valley() -> void:
 	# menu que não se clica — mas nada devolvia o modo depois. Quem jogava no
 	# modo livre voltava do menu no modo de arrastar, sem ter pedido.
 	player.set_captured(false)
-	_relogio_pausado_antes = Dia.pausado
-	Dia.pausado = true
+	_telas_que_param += 1
+	Dia.segurar(MOTIVO_DA_TELA)
 	get_tree().paused = true
+	# O HUD para com a árvore: o estado do relógio se atualiza aqui.
+	if is_instance_valid(hud):
+		hud.atualizar_estado_do_relogio()
 	_prender_o_calendario()
 
 
 ## Desfaz o `_pause_valley`, INCLUSIVE a câmera.
 func _retomar_o_vale() -> void:
+	# Fecha uma tela; com outra ainda aberta por baixo, o vale segue parado.
+	_telas_que_param = maxi(0, _telas_que_param - 1)
+	if _telas_que_param > 0:
+		return
 	get_tree().paused = false
-	Dia.pausado = _relogio_pausado_antes
+	Dia.soltar(MOTIVO_DA_TELA)
+	if is_instance_valid(hud):
+		hud.atualizar_estado_do_relogio()
 	_camera_da_preferencia()
 	_prender_o_calendario()
 
@@ -1669,7 +1841,27 @@ func _acertar_as_placas() -> void:
 ## E CALOU. Falas encadeadas abrem na linha seguinte do mesmo `await`, então o
 ## vale espera o fim do quadro antes de voltar a andar: se outra fala já abriu,
 ## ele continua parado, sem soltar e prender o cursor entre uma e outra.
+## A BARRA DA VEZ NA EXPLICAÇÃO DO CORPO (#106): cada linha do Pedro acende a
+## barra de que fala e apaga o resto — a vida, o fôlego (a do meio, também no
+## nado), o vigor; no respiro, tudo escuro. Linha de outra fala não mexe.
+const BARRA_DA_VOZ := {
+	"pedro_corpo_respiro": "",
+	"pedro_corpo_vida": "Vida",
+	"pedro_corpo_folego": "Folego",
+	"pedro_corpo_nado": "Folego",
+	"pedro_corpo_vigor": "Stamina",
+	"pedro_corpo_vigor_cansado": "Stamina",
+}
+
+
+func _ao_mudar_a_linha_da_fala(voz: String) -> void:
+	if BARRA_DA_VOZ.has(voz) and hud != null:
+		hud.destacar_barra(str(BARRA_DA_VOZ[voz]))
+
+
 func _ao_calar_a_fala() -> void:
+	if hud != null:
+		hud.apagar_destaque()
 	_retomar_se_a_fala_acabou.call_deferred()
 
 
@@ -1799,22 +1991,18 @@ func _ao_derrubar(_id: String, rende: String, quantidade: int) -> void:
 
 ## A MOCHILA NA CAMADA E NO TAMANHO DO VALE (#2).
 ##
-## Ela é tela do 2D, desenhada para os 640×360 de lá (`mochila.gd`, espaço de
-## 28 px). No vale de 1280×720 abria com metade do tamanho, na camada 15 — por
-## baixo do HUD, que é a 20, desenhava por cima dela e ficava com os cliques.
-## O arquivo é compartilhado e não se mexe nele daqui: o vale acerta a CAMADA
-## dela. Escala em volta do centro da tela, porque os filhos dela se ancoram
-## na tela inteira e o painel fica no meio. O mouse continua certo: a camada
-## leva o clique de volta à coordenada dela.
-##
-## A 90% do encaixe, e não a 100%: o painel dela mede 647 px, já passa dos
-## 640 de lá, e em 2× saía 7 px de cada lado da janela. A 1,8× cada espaço
-## fica com 50 px, ao lado dos 52 da barra de mão.
-## O quadro em que as telas do 2D são desenhadas: a janela inteira de lá.
-const QUADRO_DO_2D := Vector2(640, 360)
-## E a tela do vale, onde as telas redesenhadas em alta são medidas (o folheto).
+## Ela é tela do 2D (`mochila.gd`), e no vale abria na camada 15 — por baixo do
+## HUD, que é a 20, desenhava por cima dela e ficava com os cliques. O arquivo do
+## 2D não se mexe daqui: o vale acerta a CAMADA dela e, desde 07/10, a desenha
+## pela `mochila_vale.gd`, que estende o arquivo do 2D com as medidas da tela do
+## vale (1280×720) e a identidade dos menus dele. Até então ela era desenhada
+## nos 640×360 de lá e ampliada 1,8× — e a letra saía serrilhada. Escala em volta
+## do centro da tela, e só quando a janela não é a do vale, porque os filhos
+## dela se ancoram na tela inteira e o painel fica no meio. O mouse continua
+## certo: a camada leva o clique de volta à coordenada dela.
+## A tela do vale, em que as telas que vieram do 2D são desenhadas: a caixa de
+## fala, a mochila, o cartão do amanhecer e o folheto.
 const TELA_DO_VALE := Vector2(1280, 720)
-const MOCHILA_FOLGA := 0.9
 ## A camada das telas do vale (a do painel J); só uma abre por vez.
 const CAMADA_DAS_TELAS := 25
 ## O cartão do amanhecer (#21), acima da tela preta da queda (30, `queda.gd`):
@@ -1824,7 +2012,7 @@ const CAMADA_DO_AMANHECER := 31
 
 func _ajustar_a_mochila() -> void:
 	var tela := get_viewport().get_visible_rect().size
-	var escala := minf(tela.x / QUADRO_DO_2D.x, tela.y / QUADRO_DO_2D.y) * MOCHILA_FOLGA
+	var escala := minf(tela.x / TELA_DO_VALE.x, tela.y / TELA_DO_VALE.y)
 	Mochila.layer = CAMADA_DAS_TELAS
 	Mochila.transform = Transform2D(0.0, Vector2(escala, escala), 0.0, tela * 0.5 * (1.0 - escala))
 
@@ -1835,28 +2023,22 @@ func _ajustar_as_telas_do_2d() -> void:
 	_ajustar_a_mochila()
 	# A fala longa (#21) fica na camada das telas: por cima do HUD, e nenhuma
 	# tela fica aberta com ela (ver `_ao_abrir_a_fala`).
-	_no_quadro_do_2d(Dialogo, CAMADA_DAS_TELAS)
+	# TODAS NA TELA DO VALE (07/10): a caixa de fala e o cartão do amanhecer eram
+	# desenhados no quadro de 640×360 do 2D e ampliados duas vezes — "a qualidade
+	# tá muito serrilhada". Cada um passou a ter o dobro das medidas de lá
+	# (`dialogo_vale.gd`, `amanhecer_vale.gd`), como o folheto desde 06/10.
+	_na_tela_do_vale(Dialogo, CAMADA_DAS_TELAS)
 	_na_tela_do_vale(Folheto, CAMADA_DAS_TELAS)
-	_no_quadro_do_2d(Amanhecer, CAMADA_DO_AMANHECER)
+	_na_tela_do_vale(Amanhecer, CAMADA_DO_AMANHECER)
 
 
-## UMA TELA DESENHADA NO QUADRO DE 640×360 DO 2D, inteira na janela.
-##
-## Diferente da mochila: estas desenham a partir do canto do quadro (a caixa
-## de fala ancora no rodapé DELE, e não no da janela), então a escala parte do
-## canto, e a sobra da janela que não é 16:9 fica dividida dos dois lados.
-func _no_quadro_do_2d(camada: CanvasLayer, numero: int) -> void:
-	var tela := get_viewport().get_visible_rect().size
-	var escala := minf(tela.x / QUADRO_DO_2D.x, tela.y / QUADRO_DO_2D.y)
-	camada.layer = numero
-	camada.transform = Transform2D(0.0, Vector2(escala, escala), 0.0,
-		(tela - QUADRO_DO_2D * escala) * 0.5)
-
-
-## UMA TELA REDESENHADA NA TELA DO VALE (1280×720), inteira na janela: o
-## folheto, que veio do 2D no quadro de 640×360 e era ampliado duas vezes — a
-## letra borrava. Agora ele é medido na tela do vale, e a escala só existe se a
-## janela não for a do vale.
+## UMA TELA DESENHADA NA TELA DO VALE (1280×720), inteira na janela: o folheto,
+## a caixa de fala e o cartão do amanhecer, que vieram do 2D no quadro de
+## 640×360 e eram ampliados duas vezes — a letra borrava. Medidos na tela do
+## vale, a escala só existe se a janela não for a do vale. Estas desenham a
+## partir do canto da tela (a caixa de fala ancora no rodapé DELA), então a
+## escala parte do canto, e a sobra da janela que não é 16:9 fica dividida dos
+## dois lados.
 func _na_tela_do_vale(camada: CanvasLayer, numero: int) -> void:
 	var tela := get_viewport().get_visible_rect().size
 	var escala := minf(tela.x / TELA_DO_VALE.x, tela.y / TELA_DO_VALE.y)
@@ -1943,10 +2125,9 @@ func estado_para_salvar() -> Dictionary:
 		# E O REGISTRO DO RELÓGIO: quando e como o jogador mexeu nele (ver
 		# `Dia.registro_do_relogio`). A marca diz se; o registro, quando.
 		"registro_do_relogio": Dia.registro_do_relogio.duplicate(true),
-		# O RELÓGIO PARADO PELO JOGADOR: carregar não o religa calado. Com uma
-		# tela aberta o `Dia` está parado pela tela, e a escolha do jogador é a
-		# que ela vai devolver ao fechar.
-		"pausado": _relogio_pausado_antes if get_tree().paused else Dia.pausado,
+		# O RELÓGIO PARADO PELO JOGADOR: carregar não o religa calado. As telas
+		# seguram o dia por motivo (#100), e `Dia.pausado` é só a escolha dele.
+		"pausado": Dia.pausado,
 		"barra_de_ferramentas_migrada": _barra_de_ferramentas_migrada,
 		"visitados": _visited.keys(),
 		"segundos_apresentacao": apresentacao_do_povoado.segundos if apresentacao_do_povoado != null else _segundos_apresentacao,
@@ -2002,6 +2183,11 @@ func estado_para_salvar() -> Dictionary:
 	# A LAVOURA inteira: cada leito é escolha do jogador, e nada se recalcula.
 	if lavoura != null:
 		estado["lavoura"] = lavoura.estado_para_salvar()
+	# O NINHO: os ovos e o dia da postura (o galinheiro é o talento, que já vai).
+	if curral != null:
+		estado["curral"] = curral.estado_para_salvar()
+	# O FOGO DA FOGUEIRA: para quantos pratos ainda dá (07/10).
+	estado["fogueira"] = fogo_da_fogueira
 	return estado
 
 
@@ -2025,8 +2211,7 @@ func restaurar_do_save(estado: Dictionary) -> void:
 	Dia.relogio_alterado = bool(estado.get("relogio_alterado", false))
 	var registro = estado.get("registro_do_relogio", [])
 	Dia.registro_do_relogio = (registro as Array).duplicate(true) if registro is Array else []
-	_relogio_pausado_antes = bool(estado.get("pausado", false))
-	Dia.pausado = _relogio_pausado_antes or get_tree().paused
+	Dia.pausado = bool(estado.get("pausado", false))
 	_barra_de_ferramentas_migrada = bool(estado.get("barra_de_ferramentas_migrada", false))
 	_avisou_agua_funda = bool(estado.get("avisou_agua_funda", false))
 	if estado.has("hora"):
@@ -2096,6 +2281,9 @@ func restaurar_do_save(estado: Dictionary) -> void:
 	_conferir_a_enxada_do_finado()
 	if lavoura != null and estado.has("lavoura"):
 		lavoura.restaurar(estado["lavoura"])
+	if curral != null and estado.has("curral"):
+		curral.restaurar(estado["curral"])
+	fogo_da_fogueira = int(estado.get("fogueira", PRATOS_POR_LENHA))
 	# As lajes e o cercado acompanham a fila e a obra que acabaram de voltar.
 	if cemiterio != null:
 		cemiterio.acertar()
@@ -2253,11 +2441,14 @@ func _exit_tree() -> void:
 		Dialogo.abriu.disconnect(_ao_abrir_a_fala)
 	if Dialogo.terminou.is_connected(_ao_calar_a_fala):
 		Dialogo.terminou.disconnect(_ao_calar_a_fala)
+	if Dialogo.linha_mudou.is_connected(_ao_mudar_a_linha_da_fala):
+		Dialogo.linha_mudou.disconnect(_ao_mudar_a_linha_da_fala)
 	Dialogo.calar()
 	if _fala_parou_o_vale:
 		_fala_parou_o_vale = false
 		get_tree().paused = false
-		Dia.pausado = _relogio_pausado_antes
+		_telas_que_param = 0
+		Dia.soltar(MOTIVO_DA_TELA)
 	# O save não fica segurando um vale que saiu da árvore. Hoje não quebraria
 	# (o Godot compara o objeto liberado igual a null, e o Salvamento pergunta
 	# `_mundo != null`), mas é essa a comparação de que ele deixa de depender.
@@ -2319,6 +2510,58 @@ func _avisar_as_cadeias(evento: String) -> void:
 
 func _ao_cozinhar(id: String, _quantos: int) -> void:
 	_avisar_as_cadeias("cozinhou:" + id)
+	# CADA PRATO GASTA O FOGO (07/10).
+	fogo_da_fogueira = maxi(0, fogo_da_fogueira - 1)
+
+
+## A LENHA DA FOGUEIRA (playtest de 07/10: "para cozinhar na fogueira, considere
+## exigir recarregar ela com madeira a cada X comidas cozinhadas"). A fogueira do
+## terreiro guarda fogo para alguns pratos; cada prato cozido gasta um, e uma lenha
+## posta nela — o E na fogueira com a lenha na mão (`tecla_das_bancadas`) — devolve
+## PRATOS_POR_LENHA, até o teto. Começa com fogo para três: o Pedro a acendeu na
+## chegada, e a primeira janta não pede lenha a mais. Vai no save ("fogueira").
+const PRATOS_POR_LENHA := 3
+const FOGO_MAXIMO := 9
+var fogo_da_fogueira := PRATOS_POR_LENHA
+
+
+func fogueira_acesa() -> bool:
+	return fogo_da_fogueira > 0
+
+
+func pratos_no_fogo() -> int:
+	return fogo_da_fogueira
+
+
+## Põe uma lenha na fogueira. Devolve se pôs: sem lenha na mochila, ou com o fogo no
+## teto, não põe (e o HUD diz por quê).
+func alimentar_a_fogueira() -> bool:
+	if fogo_da_fogueira > FOGO_MAXIMO - PRATOS_POR_LENHA:
+		if hud != null:
+			hud.set_notice(texto_da_fogueira("cheia") % fogo_da_fogueira)
+		return false
+	if not Inventario.consumir("lenha", 1):
+		if hud != null:
+			hud.set_notice(texto_da_fogueira("sem_lenha"))
+		return false
+	fogo_da_fogueira += PRATOS_POR_LENHA
+	Audio.efeito("pegar")
+	if hud != null:
+		hud.set_notice(texto_da_fogueira("pos") % fogo_da_fogueira)
+	return true
+
+
+## Os recados da fogueira (data/fogueira.json), no idioma do menu: texto de jogador
+## não mora em constante (AGENTS.md). A dica do E e a aba do fogão leem daqui também.
+const TEXTOS_DA_FOGUEIRA := "res://data/fogueira.json"
+var _textos_da_fogueira: Dictionary = {}
+
+
+func texto_da_fogueira(chave: String) -> String:
+	if _textos_da_fogueira.is_empty():
+		var lido = JSON.parse_string(FileAccess.get_file_as_string(TEXTOS_DA_FOGUEIRA))
+		_textos_da_fogueira = lido if lido is Dictionary else {"vazio": true}
+	return str(IdiomaMenu.campo(_textos_da_fogueira.get(chave, {}), "texto", chave))
 
 
 func _ao_comer(id: String) -> void:
@@ -2362,8 +2605,8 @@ func _achar_morador(quem: String) -> Node3D:
 
 
 ## AS CENAS DOS PASSOS (`cena` no dado da missão, `CadeiaDeMissoes.cena`): a luz
-## dourada da chegada à chapada, a cabra que desce da lombada, o portão da fazenda
-## e o pé da escadaria.
+## dourada da chegada à chapada, a cabra que desce da lombada, o portão da fazenda,
+## o pé da escadaria, o chamado aos corajosos e a porta estreita (#114).
 func _tocar_a_cena(nome: String) -> void:
 	match nome:
 		"luz_dourada":
@@ -2378,6 +2621,31 @@ func _tocar_a_cena(nome: String) -> void:
 		"chegou_ao_patio":
 			if fazenda != null:
 				fazenda.chegou_ao_patio()
+		"chamado_aos_corajosos":
+			if fazenda != null:
+				fazenda.o_chamado_aos_corajosos()
+		"porta_estreita":
+			if fazenda != null:
+				fazenda.a_porta_estreita()
+		# O capítulo 7 (`revoar_vale.gd`, #31).
+		"o_quarto":
+			if revoar != null:
+				revoar.o_quarto()
+		"a_fuga":
+			if revoar != null:
+				revoar.a_fuga()
+		"o_relato":
+			if revoar != null:
+				revoar.o_relato()
+		"a_fera_vem":
+			if revoar != null:
+				revoar.a_fera_vem()
+		"a_pedra":
+			if revoar != null:
+				revoar.a_pedra()
+		"o_amanhecer":
+			if revoar != null:
+				revoar.o_amanhecer()
 
 
 func _pendurar_cadeia(morador: Node3D, arquivo: String, perto: float, chave: String = "") -> Node:
@@ -2401,3 +2669,42 @@ func _pendurar_cadeia(morador: Node3D, arquivo: String, perto: float, chave: Str
 	morador.add_child(cadeia)
 	_cadeias[chave if chave != "" else str(morador.dados.get("id", ""))] = cadeia
 	return cadeia
+
+
+## A tabela dos favores dos moradores: dono, arquivo, chave, o grau de afinidade que abre
+## e a fila que tem de ter acabado antes (ver o arquivo).
+const FAVORES_DOS_MORADORES := "res://data/favores_dos_moradores.json"
+## A partir de quantos pontos de afinidade o morador avisa que o favor espera conhecer melhor
+## ("passe aqui mais vezes"): meio caminho até "Conhecido de vista" — umas conversas ou um
+## presente. Antes disso ele só conversa; o aviso sai uma vez (`aviso_repete`).
+const AFINIDADE_PARA_O_AVISO := 5
+
+
+func _pendurar_as_secundarias(moradores: Array, depois_da_chegada: Callable) -> void:
+	var tabela: Dictionary = Jogo.dados(FAVORES_DOS_MORADORES)
+	for entrada in tabela.get("filas", []):
+		var dono_id := str(entrada.get("dono", ""))
+		var morador: Node3D = null
+		for candidato in moradores:
+			if String(candidato.dados.get("id", "")) == dono_id:
+				morador = candidato
+				break
+		if morador == null:
+			continue
+		var chave := str(entrada.get("chave", dono_id + "_favor"))
+		var fila = _pendurar_cadeia(morador, str(entrada.get("arquivo", "")), 4.0, chave)
+		if fila == null:
+			continue
+		var grau := int(entrada.get("grau", 1))
+		var depois := str(entrada.get("depois", ""))
+		fila.aviso_repete = false
+		fila.avisa_a_trancada = func() -> bool: return Afinidade.de(dono_id) >= AFINIDADE_PARA_O_AVISO
+		fila.depois_de = func() -> bool:
+			if not bool(depois_da_chegada.call()):
+				return false
+			if Afinidade.grau(dono_id) < grau:
+				return false
+			if depois != "":
+				var anterior = _cadeias.get(depois)
+				return anterior != null and bool(anterior.acabou())
+			return true

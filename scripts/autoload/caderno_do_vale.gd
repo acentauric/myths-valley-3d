@@ -55,6 +55,12 @@ extends Node
 signal mudou
 signal abriu(id: String)
 signal concluiu(id: String)
+## A FESTA DA MISSÃO CUMPRIDA (`conquista_da_missao.gd`): só quando a MISSÃO INTEIRA
+## acaba, e não a cada passo (playtest de 07/10: "cumprir uma atividade meio em
+## 'Siga o Pedro até a Dona Zefa' não deve aparecer o efeito, apenas quando completar
+## 'Chegada ao arraial'"). Quem conclui diz se festeja (`concluir`), com o nome da
+## missão no lugar do passo.
+signal festeja(dados: Dictionary)
 
 ## As missões em curso, na ordem em que foram abertas.
 var ativas: Array[Dictionary] = []
@@ -176,7 +182,10 @@ func alvo_de(id: String) -> Vector3:
 	return ativas[i]["alvo"] if i >= 0 else Vector3.ZERO
 
 
-func concluir(id: String) -> void:
+## `festa`: nada (ou false) para o passo do meio, que fecha calado; `true` para
+## festejar com os dados da missão como estão; um dicionário para festejar com
+## eles por cima (o nome da missão inteira no lugar do título do passo).
+func concluir(id: String, festa = null) -> void:
 	var i := indice(id)
 	if i < 0:
 		return
@@ -192,6 +201,11 @@ func concluir(id: String) -> void:
 	# `atual` cai na primeira da lista.
 	concluiu.emit(id)
 	mudou.emit()
+	if festa is Dictionary or (festa is bool and festa):
+		var dados: Dictionary = ultima_concluida.duplicate(true)
+		if festa is Dictionary:
+			dados.merge(festa, true)
+		festeja.emit(dados)
 
 
 ## ENCERRA SEM CUMPRIR: a missão sai das ativas e não entra nas cumpridas. É a

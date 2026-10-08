@@ -68,7 +68,9 @@ func _run() -> void:
 	var partida = root.get_node("/root/Partida")
 	caderno.abrir_missao("pedro_chave", "Quem guardou a chave", "pedro", true, "A partida apagada.")
 	caderno.abrir_missao("pedro_bom_dia", "Quem chega, cumprimenta", "pedro", true, "")
-	caderno.concluir("pedro_bom_dia")
+	# A festa só vem pedida (07/10: a missão inteira festeja, o passo do meio não); aqui o que
+	# se mede é a HORA dela, então o portão a pede com os dados do passo.
+	caderno.concluir("pedro_bom_dia", true)
 	caderno.fixar("pedro_chave")
 	partida.comecar(1, true)
 	_conferir(caderno.ativas.is_empty() and caderno.cumpridas.is_empty() and caderno.foco == "",
@@ -130,6 +132,7 @@ func _run() -> void:
 	_conferir(pedro.passo_em_curso() == "desembarque", "ao lado do Pedro o desembarque fechou sozinho, sem o E")
 	_conferir(tecla.perto() == pedro, "ao lado do Pedro, o E não está nele")
 	_apertar_e(tecla)
+	caderno.festeja.emit({"id": "pedro_desembarque", "titulo": "As pernas de terra firme", "missao": "Chegada ao arraial", "quem": "Pedro"})
 	# A resposta é dele, na vez dele: quem ainda falava (a Dona Filó) termina antes.
 	var respondeu := await _ate(func() -> bool: return _no_balao(pedro).contains("Bom Jesus dos Pobres"), 30.0)
 	_conferir(respondeu, "o E no Pedro não trouxe a resposta do desembarque: '%s'" % _no_balao(pedro))
@@ -158,20 +161,17 @@ func _run() -> void:
 			"durante a festa da missão, as plaquinhas de nome dos moradores continuam acesas por cima dela")
 		_conferir(str(conquista.mostrada.get("titulo", "")) == "As pernas de terra firme",
 			"a conquista mostra '%s', e o passo cumprido é 'As pernas de terra firme'" % str(conquista.mostrada.get("titulo", "")))
-		# SUAVE: a sombra sobe numa curva de segundos (`ENTRA`), e não num estalo —
-		# com um terço de segundo ela ainda mal começou. Medido em segundo de
-		# relógio, e não em quadros: sem tela, o quadro dura o que a máquina deixa.
+		# O CARTÃO COMPACTO (#130): a conquista não escurece nem embranquece o vale —
+		# ocupa um cartão — e dura o que dura (ENTRA + FICA + SAI), sem tomar o jogo.
 		var sombra: ColorRect = conquista.get("_sombra")
-		await _ate(func() -> bool: return false, 0.3)
-		_conferir(sombra != null and sombra.color.a < 0.2,
-			"a sombra da conquista já estava em %.2f com um terço de segundo: a entrada é um estalo" % (sombra.color.a if sombra != null else -1.0))
-		var escureceu: bool = sombra != null and await _ate(func() -> bool: return sombra.color.a > 0.3, 3.0)
-		_conferir(escureceu, "a conquista não escureceu a tela (sombra %.2f)" % (sombra.color.a if sombra != null else -1.0))
+		await _ate(func() -> bool: return false, 1.0)
+		_conferir(sombra == null or sombra.color.a == 0.0,
+			"a conquista escureceu o vale (sombra %.2f): o cartão compacto não escurece" % (sombra.color.a if sombra != null else -1.0))
 		_conferir(str(conquista.get("_titulo").text) == "MISSÃO CONCLUÍDA", "o título da conquista é '%s'" % str(conquista.get("_titulo").text))
-		# MAIS TEMPO NA TELA: "aumentar o tempo de efeito dela em tela".
 		_conferir(await _ate(func() -> bool: return not conquista.ativa(), 14.0), "a tela da conquista não sumiu sozinha")
 		var durou := (Time.get_ticks_msec() - desde) / 1000.0
-		_conferir(durou >= 5.0, "a conquista ficou %.1f s na tela, e o pedido é ela durar mais" % durou)
+		var prevista: float = conquista.ENTRA + conquista.FICA + conquista.SAI
+		_conferir(durou >= prevista * 0.8, "a conquista ficou %.1f s na tela, e o cartão dura %.1f s" % [durou, prevista])
 		_conferir(not dia_do_vale.segurado("conquista"), "a festa acabou e o relógio continuou segurado por ela")
 		_conferir(vale.placas._permitido, "a festa acabou e as plaquinhas de nome dos moradores não voltaram")
 

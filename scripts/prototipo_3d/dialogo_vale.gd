@@ -13,7 +13,7 @@ extends CanvasLayer
 ## CÓPIA ADAPTADA, DECLARADA (regra 3 do plano), como o painel J. Vem do
 ## `scripts/ui/dialogo.gd` do 2D, e vieram iguais a API, a fila de falas, as
 ## duas travas (o E que não responde sem escolha feita e a carência do martelo)
-## e o quadro de 640×360 com a caixa no rodapé. O desenho, não: desde 06/10 a
+## e a caixa no rodapé. O desenho, não: desde 06/10 a
 ## caixa veste a identidade do vale 3D (`identidade.gd`), como o balão de fala —
 ## a laca com o filete de ouro, o nome em Cinzel, a fala em Cormorant — e não
 ## mais o marrom e as letras da `dialogo.tscn`. O que mudou, e por quê:
@@ -31,9 +31,11 @@ extends CanvasLayer
 ##   outro projeto; os nós são os mesmos, montados em `_montar`.
 ## - O RODAPÉ MORA EM `data/dialogo.json`, com as palavras do 2D: texto de
 ##   jogador não mora em constante (AGENTS.md).
-## - DESENHA NUM QUADRO DE 640×360, e o vale escala a camada para a tela dele
-##   (`prototype._ajustar_as_telas_do_2d`). No 2D a janela inteira é desse
-##   tamanho; aqui a caixa ancorada na janela de 1280×720 sairia com metade.
+## - DESENHA NA TELA DO VALE, de 1280×720 (`prototype._ajustar_as_telas_do_2d`,
+##   `_na_tela_do_vale`). Até 07/10 desenhava no quadro de 640×360 do 2D e o vale
+##   ampliava a camada duas vezes: a letra saía serrilhada ("a qualidade tá muito
+##   serrilhada"). Agora a letra e a moldura têm o dobro das medidas de lá e são
+##   desenhadas no tamanho em que aparecem.
 ##
 ## VOLTA A SER UM ARQUIVO SÓ quando o 2D trocar a chamada ao `Telas` e a pausa
 ## do `Relogio` por quem ouve `abriu` e `terminou` — a porta que a mochila já
@@ -43,6 +45,9 @@ signal terminou
 ## Quem abriu a boca, pelo nome que a caixa mostra. No vale é o sinal que para
 ## o vale atrás da caixa.
 signal abriu(quem: String)
+## A linha da vez mudou, com o nome da voz dela (vazio sem voz): é por aqui
+## que o vale acende a barra de que o Pedro fala (#106).
+signal linha_mudou(voz: String)
 
 const IdiomaMenu = preload("res://scripts/prototipo_3d/idioma_menu.gd")
 const Identidade = preload("res://scripts/prototipo_3d/identidade.gd")
@@ -52,8 +57,8 @@ const TEXTOS := "res://data/dialogo.json"
 ## barra de stamina e similares, crie os audios para ele narrar." A linha que
 ## passa no E cala a voz dela e começa a da seguinte.
 const PASTA_VOZES := "res://assets/audio/vozes/"
-## O quadro em que a caixa é desenhada, o mesmo da tela do 2D.
-const DESENHADA_PARA := Vector2(640, 360)
+## O quadro em que a caixa é desenhada: a tela do vale (ver o cabeçalho).
+const DESENHADA_PARA := Vector2(1280, 720)
 
 ## O nome de quem está falando agora, ou "" quando é narração ou a caixa está
 ## fechada. Não é o mesmo que o rótulo da caixa: "Mural" e "Cruzeiro" também
@@ -245,17 +250,17 @@ func _montar() -> void:
 	# verde-escura dos menus e do HUD com o filete de ouro, como o balão de fala
 	# (`balao_fala.gd`) — a caixa longa e o balão curto são a mesma voz.
 	var estilo := StyleBoxFlat.new()
-	estilo.content_margin_left = 14.0
-	estilo.content_margin_top = 7.0
-	estilo.content_margin_right = 14.0
-	estilo.content_margin_bottom = 6.0
+	estilo.content_margin_left = 28.0
+	estilo.content_margin_top = 14.0
+	estilo.content_margin_right = 28.0
+	estilo.content_margin_bottom = 12.0
 	estilo.bg_color = Color(Identidade.LACA, 0.95)
 	estilo.set_border_width_all(1)
 	estilo.border_color = Color(Identidade.OURO, 0.8)
-	estilo.set_corner_radius_all(6)
+	estilo.set_corner_radius_all(10)
 	estilo.shadow_color = Color(0, 0, 0, 0.35)
-	estilo.shadow_size = 6
-	estilo.shadow_offset = Vector2(0, 2)
+	estilo.shadow_size = 10
+	estilo.shadow_offset = Vector2(0, 3)
 
 	_painel = PanelContainer.new()
 	_painel.name = "Painel"
@@ -263,37 +268,37 @@ func _montar() -> void:
 	quadro.add_child(_painel)
 	Tela.vincular_componente(_painel, "dialogo", Vector2(0.5, 1))
 	_painel.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
-	_painel.offset_left = 40.0
-	_painel.offset_top = -78.0
-	_painel.offset_right = -40.0
-	_painel.offset_bottom = -12.0
+	_painel.offset_left = 80.0
+	_painel.offset_top = -156.0
+	_painel.offset_right = -80.0
+	_painel.offset_bottom = -24.0
 	_painel.grow_horizontal = Control.GROW_DIRECTION_BOTH
 	_painel.grow_vertical = Control.GROW_DIRECTION_BEGIN
 	_painel.add_theme_stylebox_override("panel", estilo)
 
 	var caixa := VBoxContainer.new()
 	caixa.name = "Caixa"
-	caixa.add_theme_constant_override("separation", 4)
+	caixa.add_theme_constant_override("separation", 8)
 	_painel.add_child(caixa)
 
 	# O nome em Cinzel versalete dourado, o fio de ouro, a fala em Cormorant e o
 	# rodapé em Cinzel miúdo — os mesmos traços do balão e dos títulos do menu.
-	_nome = _rotulo("Nome", Identidade.ROTULO, 11, Identidade.fonte(Identidade.FONTE_TITULO, 600, 2))
+	_nome = _rotulo("Nome", Identidade.ROTULO, 22, Identidade.fonte(Identidade.FONTE_TITULO, 600, 2))
 	_nome.uppercase = true
 	caixa.add_child(_nome)
 	var fio := ColorRect.new()
 	fio.name = "Fio"
 	fio.color = Color(Identidade.OURO, 0.35)
-	fio.custom_minimum_size = Vector2(0, 1)
+	fio.custom_minimum_size = Vector2(0, 2)
 	fio.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	caixa.add_child(fio)
-	_texto = _rotulo("Texto", Identidade.TEXTO, 13, Identidade.fonte(Identidade.FONTE_TEXTO, 600))
-	_texto.custom_minimum_size = Vector2(0, 30)
+	_texto = _rotulo("Texto", Identidade.TEXTO, 26, Identidade.fonte(Identidade.FONTE_TEXTO, 600))
+	_texto.custom_minimum_size = Vector2(0, 60)
 	_texto.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_texto.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_texto.add_theme_constant_override("line_spacing", -1)
+	_texto.add_theme_constant_override("line_spacing", -2)
 	caixa.add_child(_texto)
-	_rodape = _rotulo("Rodape", Color(Identidade.ROTULO, 0.85), 9, Identidade.fonte(Identidade.FONTE_TITULO, 600, 1))
+	_rodape = _rotulo("Rodape", Color(Identidade.ROTULO, 0.85), 18, Identidade.fonte(Identidade.FONTE_TITULO, 600, 1))
 	_rodape.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	caixa.add_child(_rodape)
 
@@ -316,6 +321,7 @@ func _escrito(chave: String) -> String:
 func _mostrar_fala() -> void:
 	_texto.text = str(_falas[_indice])
 	_tocar_a_voz()
+	linha_mudou.emit(str(_vozes[_indice]) if _indice < _vozes.size() else "")
 	# Cada linha nova ganha o seu respiro. Ver `CARENCIA_DA_LINHA`.
 	_aceita_depois_de = maxf(_aceita_depois_de,
 		Time.get_ticks_msec() / 1000.0 + CARENCIA_DA_LINHA)

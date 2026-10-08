@@ -209,7 +209,10 @@ func _unhandled_key_input(event: InputEvent) -> void:
 			_fechar()
 		get_viewport().set_input_as_handled()
 	elif _em_golpe >= 0:
-		_parar_golpe(true)
+		# O E REPETIDO NÃO INTERROMPE O CORTE (#112): parava o golpe, e quem
+		# apertava E sem parar ligava e desligava o machado sem a árvore sentir
+		# golpe nenhum. O corte para quando o corpo anda (`update_motion`) ou
+		# quando acabam os golpes que cabem; o E é consumido para não cair na mão.
 		get_viewport().set_input_as_handled()
 	elif _fibra_perto >= 0 and _cortavel_perto < 0:
 		_tirar_a_fibra(_fibra_perto)
@@ -241,7 +244,8 @@ func _unhandled_key_input(event: InputEvent) -> void:
 
 ## O QUE O E FARIA AQUI, para o foco (`foco_do_e.gd`), na ordem do
 ## `_unhandled_key_input`: a ficha aberta e o golpe em curso (que levam o E
-## sempre), a fibra, o corte, e a ficha da espécie que o almanaque ainda não tem.
+## sempre — o golpe o engole, #112), a fibra, o corte, e a ficha da espécie que
+## o almanaque ainda não tem.
 func alvo_do_e() -> Dictionary:
 	if _jogador == null or not _jogador.is_physics_processing():
 		return {}

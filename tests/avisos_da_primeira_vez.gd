@@ -69,7 +69,8 @@ func _run() -> void:
 		_conferir(dito.contains("Almanaque (L)"), "o aviso do cordel não diz que ele fica no almanaque, na tecla dele: '%s'" % dito)
 		# O papel no jogo (#88): colecionável, com outros pelo vale e a conta no almanaque.
 		_conferir(dito.contains("colecion") and dito.contains("faltam"), "o aviso do cordel não diz que ele é um colecionável nem que o almanaque conta os que faltam: '%s'" % dito)
-		_conferir(paused and dia.pausado, "com o aviso aberto, o vale (%s) ou o relógio (%s) seguiu andando" % [str(paused), str(dia.pausado)])
+		# O aviso segura o relógio pelo motivo dele (#100): o que se cobra é `parado()`.
+		_conferir(paused and dia.parado(), "com o aviso aberto, o vale (%s) ou o relógio (%s) seguiu andando" % [str(paused), str(dia.parado())])
 		# NADA DO HUD POR CIMA DO CARTÃO: ele mora acima do HUD, como a caixa de
 		# fala e o folheto, e as plaquinhas de nome dos moradores se recolhem.
 		_conferir(aviso.layer > vale.hud.layer,
@@ -94,8 +95,8 @@ func _run() -> void:
 			"fechado o aviso, as plaquinhas de nome voltaram por cima do papel do cordel")
 		vale.telas.fechar_tudo()
 		await _ate(func() -> bool: return not paused, 3.0)
-		_conferir(not paused and not dia.pausado,
-			"guardado o papel do primeiro cordel, o vale (%s) ou o relógio (%s) ficou parado" % [str(paused), str(dia.pausado)])
+		_conferir(not paused and not dia.parado(),
+			"guardado o papel do primeiro cordel, o vale (%s) ou o relógio (%s) ficou parado" % [str(paused), str(dia.parado())])
 		_conferir(vale.placas._permitido, "guardado o papel, as plaquinhas de nome dos moradores não voltaram")
 	await _guardar_tudo()
 
@@ -148,7 +149,7 @@ func _run() -> void:
 		_conferir(aviso.qual == "agua_funda", "o aviso do primeiro nado é o de '%s'" % aviso.qual)
 		_conferir(dito_na_agua.contains("boiar") and dito_na_agua.contains("fôlego"),
 			"o aviso da água funda não diz que parar é boiar e que o fôlego volta: '%s'" % dito_na_agua)
-		_conferir(paused and dia.pausado, "com o aviso da água funda aberto, o vale (%s) ou o relógio (%s) seguiu andando" % [str(paused), str(dia.pausado)])
+		_conferir(paused and dia.parado(), "com o aviso da água funda aberto, o vale (%s) ou o relógio (%s) seguiu andando" % [str(paused), str(dia.parado())])
 	await _guardar_tudo()
 	# --- 6. O SEGUNDO NÃO, E O SAVE LEMBRA ---------------------------------------------------
 	jogador._definir_nado(false)

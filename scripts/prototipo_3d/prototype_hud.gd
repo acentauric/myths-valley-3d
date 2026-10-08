@@ -94,7 +94,7 @@ var _speed_icon	# hud_icon.gd
 var _camera_icon	# hud_icon.gd
 var _camera_hint: Label
 var _notice_label: Label
-var _notice_panel: Panel
+var _notice_panel: PanelContainer
 var _objective_label: Label
 var _heading: Panel
 var _control_mode_label: Label
@@ -110,7 +110,13 @@ var _house_info_panel: Panel
 var _house_info_label: Label
 var _house_info_heading: Label
 var _clock_label: Label
+## A largura máxima do aviso do rodapé (#102): cabe entre o minimapa e os botões.
+const LARGURA_DO_AVISO := 640.0
 var _clock_panel: Panel
+var _clock_estado: Label
+## A altura do painel do relógio, e quanto cresce com a linha do estado.
+const ALTURA_DO_RELOGIO := 72
+const ALTURA_DO_ESTADO := 14
 var _icones_medidores: Dictionary = {}
 var _menu_confirm = null	# caixa_de_pergunta.gd
 var _map_icon	# hud_icon.gd
@@ -259,54 +265,79 @@ func _ready() -> void:
 	_layout_controls_modal()
 	get_viewport().size_changed.connect(_layout_controls_modal)
 
-	_notice_panel = _panel(Color(0.055, 0.085, 0.075, 0.82))
+	# O AVISO (#102): a fala do Pedro, o que se recebeu, o que se entregou. Era
+	# uma faixa de largura inteira no rodapé, atrás do minimapa e por cima do
+	# "mão livre" da barra. Agora é uma caixa no meio, acima da barra de mão, de
+	# até LARGURA_DO_AVISO, que quebra a linha e cresce para cima — na identidade
+	# do vale, como a caixa de fala: a laca, o filete de ouro, a Cormorant.
+	var estilo_do_aviso := StyleBoxFlat.new()
+	estilo_do_aviso.bg_color = Color(Identidade.LACA, 0.94)
+	estilo_do_aviso.border_color = Color(Identidade.OURO, 0.75)
+	estilo_do_aviso.set_border_width_all(1)
+	estilo_do_aviso.set_corner_radius_all(6)
+	estilo_do_aviso.content_margin_left = 14.0
+	estilo_do_aviso.content_margin_right = 14.0
+	estilo_do_aviso.content_margin_top = 6.0
+	estilo_do_aviso.content_margin_bottom = 6.0
+	estilo_do_aviso.shadow_color = Color(0, 0, 0, 0.35)
+	estilo_do_aviso.shadow_size = 5
+	_notice_panel = PanelContainer.new()
 	_notice_panel.name = "Aviso"
 	_notice_panel.add_to_group(PopupsDoMundo.GRUPO_HUD)
 	_notice_panel.set_meta("popup_prioridade", PopupsDoMundo.PRIORIDADE_AVISO)
+	_notice_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_notice_panel.add_theme_stylebox_override("panel", estilo_do_aviso)
 	_root.add_child(_notice_panel)
-	_notice_panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER_BOTTOM)
-	_notice_panel.offset_left = -285
-	_notice_panel.offset_right = 285
-	# ACIMA DA BARRA DE MÃO, e a medida vem dela. O aviso ficava a 31–64 px do
-	# rodapé, que é exatamente onde a barra desenha — e a barra entra depois no
-	# HUD, então o cobria. Ver `BarraDeMao.altura_ocupada`.
+	# ACIMA DA BARRA DE MÃO, e a medida vem dela (`BarraDeMao.altura_ocupada`);
+	# ancorada no rodapé e crescendo para cima conforme o texto.
 	var acima := BarraDeMao.altura_ocupada()
-	_notice_panel.offset_top = -acima - 33.0
-	_notice_panel.offset_bottom = -acima
+	_notice_panel.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
+	_notice_panel.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	_notice_panel.grow_vertical = Control.GROW_DIRECTION_BEGIN
+	_notice_panel.offset_left = -LARGURA_DO_AVISO * 0.5
+	_notice_panel.offset_right = LARGURA_DO_AVISO * 0.5
+	_notice_panel.offset_top = -acima - 8.0 - 30.0
+	_notice_panel.offset_bottom = -acima - 8.0
 	_notice_panel.visible = not _notice.is_empty()
-	_notice_label = _label(_notice, 14, GOLD)
-	_root.add_child(_notice_label)
-	_notice_label.set_anchors_and_offsets_preset(Control.PRESET_CENTER_BOTTOM)
+	_notice_label = _label(_notice, 16, Identidade.TEXTO)
+	_notice_label.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_TEXTO, 600))
 	_notice_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_notice_label.offset_left = 30
-	_notice_label.offset_right = -30
-	# Junto com o painel dele, acima da barra.
-	_notice_label.offset_top = -acima - 29.0
-	_notice_label.offset_bottom = -acima - 4.0
 	_notice_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_notice_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_notice_panel.add_child(_notice_label)
 
 	# Relógio do vale: só a hora e o período do dia.
-	var clock_panel := _panel(Color(0.055, 0.085, 0.075, 0.82))
-	_clock_panel = clock_panel
-	clock_panel.name = "RelogioCompacto"
-	_root.add_child(clock_panel)
-	clock_panel.add_to_group("obstaculos_do_hud")
-	clock_panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP)
-	clock_panel.offset_left = -70
-	clock_panel.offset_right = 70
-	clock_panel.offset_top = 18
-	clock_panel.offset_bottom = 72
+	_clock_panel = _panel(Color(0.055, 0.085, 0.075, 0.82))
+	_clock_panel.name = "RelogioCompacto"
+	_root.add_child(_clock_panel)
+	_clock_panel.add_to_group("obstaculos_do_hud")
+	_clock_panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP)
+	_clock_panel.offset_left = -70
+	_clock_panel.offset_right = 70
+	_clock_panel.offset_top = 18
+	_clock_panel.offset_bottom = ALTURA_DO_RELOGIO
 	_clock_label = _label("", 12, GOLD)
-	clock_panel.add_child(_clock_label)
+	_clock_panel.add_child(_clock_label)
 	_clock_label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_clock_label.offset_left = 26
 	var mostrador := ClockIcon.new()
-	clock_panel.add_child(mostrador)
+	_clock_panel.add_child(mostrador)
 	mostrador.position = Vector2(7, 14)
 	mostrador.size = Vector2(20, 20)
 	mostrador.set_running(true)
 	_clock_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_clock_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	# O ESTADO DO RELÓGIO (#100): "parado" pela pausa do jogador, ou quem o
+	# segura — fala, tela, conquista, narração —, para o dia parado ter motivo
+	# na tela. Vazio com o dia andando.
+	_clock_estado = _label("", 10, Color(0.85, 0.7, 0.36, 0.95))
+	_clock_estado.name = "EstadoDoRelogio"
+	_clock_panel.add_child(_clock_estado)
+	_clock_estado.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
+	_clock_estado.offset_top = -16
+	_clock_estado.offset_bottom = -3
+	_clock_estado.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_clock_estado.visible = false
 
 	_criar_barra_de_vida()
 	_criar_barra_de_folego()
@@ -348,7 +379,7 @@ func _ready() -> void:
 	_almanaque = almanaque
 
 	_agrupar_componente([_heading, _region_label, _mission_step, _quest_label, _objective_label], "missao", Vector2(18, 18))
-	_agrupar_componente([_notice_panel, _notice_label], "avisos", Vector2(_root.size.x * 0.5, _root.size.y - BarraDeMao.altura_ocupada()))
+	_agrupar_componente([_notice_panel], "avisos", Vector2(_root.size.x * 0.5, _root.size.y - BarraDeMao.altura_ocupada()))
 	var foco = load("res://scripts/prototipo_3d/foco_da_narracao.gd").new()
 	foco.hud = self
 	_root.add_child(foco)
@@ -618,7 +649,8 @@ func _layout_medidores() -> void:
 		topo = 18.0 + _heading.size.y * Tela.escala_componente("missao") + 12.0
 	_clock_panel.set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT)
 	_clock_panel.position = Vector2(inicio, topo)
-	_clock_panel.size = Vector2(100, 52)
+	# Cresce ALTURA_DO_ESTADO quando a linha do estado ("parado") aparece.
+	_clock_panel.size = Vector2(100, 52 + (ALTURA_DO_ESTADO if is_instance_valid(_clock_estado) and _clock_estado.visible else 0))
 	var indice := 0
 	var altura := topo
 	for barra: ProgressBar in [barra_vida, barra_folego, barra_stamina]:
@@ -655,6 +687,44 @@ func _process(delta: float) -> void:
 	if _refresh_time >= 0.35:
 		_refresh_time = 0.0
 		_update_telemetry()
+		_update_clock_state()
+
+
+## O ESTADO DO RELÓGIO ao lado da hora (#100): a pausa do jogador, ou o motivo
+## que o segura; nada com o dia andando. Quem para a árvore (as telas) chama
+## `atualizar_estado_do_relogio` na hora, porque este `_process` para junto.
+func atualizar_estado_do_relogio() -> void:
+	_update_clock_state()
+
+
+func _update_clock_state() -> void:
+	if not is_instance_valid(_clock_estado):
+		return
+	# SÓ A PAUSA DO JOGADOR TEM RÓTULO (07/10). Os motivos que seguram o relógio —
+	# a fala, a tela, a festa, a narração — estão na tela por si: escrever "fala"
+	# ao lado da hora era ruído, e a barra da vida cobria a palavra. Quem quiser o
+	# motivo ainda o tem em `Dia.motivos_da_segurada` e em `texto_do_motivo`.
+	var estado := ""
+	if Dia.pausado or Dia.velocidade == 0:
+		estado = tr("parado")
+	if estado != _clock_estado.text or _clock_estado.visible != (estado != ""):
+		_clock_estado.text = estado
+		_clock_estado.visible = estado != ""
+		_layout_medidores()
+		_update_clock_hint()
+
+
+## O motivo de `Dia.segurar` em palavra do jogador: "fala:tonho" é fala.
+func texto_do_motivo(motivo: String) -> String:
+	if motivo.begins_with("fala"):
+		return tr("fala")
+	if motivo.begins_with("tela"):
+		return tr("tela")
+	if motivo.begins_with("conquista"):
+		return tr("conquista")
+	if motivo.begins_with("narracao"):
+		return tr("narração")
+	return motivo
 
 
 func set_model_status(value: String) -> void:
@@ -708,20 +778,18 @@ func _layout_notice() -> void:
 	if is_instance_valid(_notice_label):
 		_notice_label.text = _notice
 		_notice_panel.visible = not _notice.is_empty()
+		# A caixa se mede pelo texto: curta para um aviso curto, até a largura
+		# máxima (LARGURA_DO_AVISO, ou o que a janela e a escala dos avisos deixam)
+		# para a fala do Pedro, que então quebra a linha e cresce para cima — o
+		# rótulo mora dentro da caixa, e ela acompanha a altura dele.
 		var font := _notice_label.get_theme_font("font")
-		var largura := maxf(160.0, _root.get_viewport_rect().size.x * 0.68 / Tela.escala_componente("avisos"))
-		var half := minf(largura, font.get_string_size(_notice, HORIZONTAL_ALIGNMENT_LEFT, -1, _notice_label.get_theme_font_size("font_size")).x) * 0.5 + 24.0
+		var largura := minf(LARGURA_DO_AVISO, maxf(160.0, _root.get_viewport_rect().size.x * 0.68 / Tela.escala_componente("avisos")))
+		var half := minf(font.get_string_size(_notice, HORIZONTAL_ALIGNMENT_LEFT, -1, _notice_label.get_theme_font_size("font_size")).x * 0.5 + 30.0, largura * 0.5)
+		var acima := BarraDeMao.altura_ocupada()
 		_notice_panel.offset_left = -half
 		_notice_panel.offset_right = half
-		_notice_label.offset_left = -half + 24.0
-		_notice_label.offset_right = half - 24.0
-		var altura := maxf(25.0, _notice_label.get_minimum_size().y)
-		var acima := BarraDeMao.altura_ocupada()
-		_notice_label.size = Vector2(half * 2.0 - 48.0, altura)
-		_notice_label.offset_top = -acima - 4.0 - altura
-		_notice_label.offset_bottom = -acima - 4.0
-		_notice_panel.offset_top = -acima - altura - 8.0
-		_notice_panel.offset_bottom = -acima
+		_notice_panel.offset_top = -acima - 8.0 - 30.0
+		_notice_panel.offset_bottom = -acima - 8.0
 
 
 func set_notice(value: String, segundos: float = -1.0) -> void:
@@ -855,6 +923,58 @@ func set_objective(value: String, missao: String = "") -> void:
 ## no painel J, que é onde se lê.
 
 
+## O DESTAQUE DE UMA BARRA (#106): quando o Pedro explica o corpo, a tela
+## escurece — um véu entre o mundo e a caixa de fala, na camada CAMADA_DO_VEU —
+## e o HUD apaga tudo menos a barra da vez ("Vida", "Folego", "Stamina"; vazio
+## apaga tudo, que é o respiro). `apagar_destaque` devolve tudo.
+const CAMADA_DO_VEU := 5
+const APAGADO := Color(0.3, 0.3, 0.3, 1.0)
+var _veu_do_destaque: CanvasLayer
+var _destacada := ""
+var _destacando := false
+
+
+func destacar_barra(nome: String) -> void:
+	if _veu_do_destaque == null:
+		_veu_do_destaque = CanvasLayer.new()
+		_veu_do_destaque.name = "VeuDoDestaque"
+		_veu_do_destaque.layer = CAMADA_DO_VEU
+		var escuro := ColorRect.new()
+		escuro.name = "Escuro"
+		escuro.color = Color(0.0, 0.0, 0.0, 0.68)
+		escuro.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		escuro.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		_veu_do_destaque.add_child(escuro)
+		add_child(_veu_do_destaque)
+	_veu_do_destaque.visible = true
+	_destacando = true
+	_destacada = nome
+	for filho in _root.get_children():
+		if filho is CanvasItem:
+			(filho as CanvasItem).modulate = Color.WHITE if String(filho.name) == nome else APAGADO
+
+
+func apagar_destaque() -> void:
+	if not _destacando:
+		return
+	_destacando = false
+	_destacada = ""
+	if _veu_do_destaque != null:
+		_veu_do_destaque.visible = false
+	for filho in _root.get_children():
+		if filho is CanvasItem:
+			(filho as CanvasItem).modulate = Color.WHITE
+
+
+## A barra acesa agora ("" com tudo apagado, ou sem destaque).
+func barra_destacada() -> String:
+	return _destacada
+
+
+func destacando() -> bool:
+	return _destacando
+
+
 func set_clock(value: String) -> void:
 	if is_instance_valid(_clock_label):
 		_clock_label.text = value
@@ -960,7 +1080,7 @@ func _update_telemetry() -> void:
 func _update_clock_hint() -> void:
 	if not is_instance_valid(_clock_hint):
 		return
-	var andando: bool = not Dia.pausado and Dia.velocidade > 0
+	var andando: bool = not Dia.pausado and Dia.velocidade > 0 and not Dia.segurado()
 	if is_instance_valid(_clock_icon):
 		_clock_icon.set_running(andando)
 	if is_instance_valid(_clock_button):
@@ -1372,7 +1492,7 @@ func componentes_da_narracao() -> Dictionary:
 		"missao": [_heading, _region_label, _mission_step, _quest_label, _objective_label],
 		"relogio": [_clock_panel], "vida": [barra_vida],
 		"folego": [barra_folego], "vigor": [barra_stamina],
-		"mao": [_barra], "avisos": [_notice_panel, _notice_label],
+		"mao": [_barra], "avisos": [_notice_panel],
 		"espera": [_espera_panel],
 		"casa": [_house_info_panel], "desempenho": [_performance_panel],
 	}

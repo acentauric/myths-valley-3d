@@ -1,0 +1,13 @@
+{
+  "_sobre": "O que se lê no galinheiro do quintal (`curral_vale.gd`, data/missoes_quintal.json): a dica da tecla e os recados do E. O galinheiro sobe com o talento Curral (raiz Pastoreio), com três galinhas, e elas botam todo dia; o E recolhe o que está no ninho. Os textos nos três idiomas (campo, campo_en, campo_es).",
+  "acoes": {
+    "recolher": {"texto": "Recolher %d ovo(s)", "texto_en": "Collect %d egg(s)", "texto_es": "Recoger %d huevo(s)"},
+    "olhar": {"texto": "Ver o ninho", "texto_en": "Look at the nest", "texto_es": "Mirar el nido"}
+  },
+  "recados": {
+    "recolheu": {"texto": "Você recolheu %d ovo(s) do galinheiro.", "texto_en": "You collected %d egg(s) from the coop.", "texto_es": "Recogiste %d huevo(s) del gallinero."},
+    "vazio": {"texto": "Ninho vazio. Elas já deram o de hoje; volte amanhã.", "texto_en": "Empty nest. They've already given today's; come back tomorrow.", "texto_es": "Nido vacío. Ya dieron lo de hoy; vuelve mañana."},
+    "mochila_cheia": {"texto": "A mochila está cheia: o ovo fica no ninho.", "texto_en": "Your pack is full: the egg stays in the nest.", "texto_es": "La mochila está llena: el huevo se queda en el nido."},
+    "levantou": {"texto": "O galinheiro está de pé no quintal, com três galinhas.", "texto_en": "The coop is up in the yard, with three hens.", "texto_es": "El gallinero está de pie en el patio, con tres gallinas."}
+  }
+}

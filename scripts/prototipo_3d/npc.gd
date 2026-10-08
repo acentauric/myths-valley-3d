@@ -935,7 +935,7 @@ func _fila_que_avisa() -> Node:
 		if bool(cadeia.em_andamento()) or str(cadeia.o_que_o_e_faz(self)) == "abrir":
 			return null
 		if avisa == null and str(cadeia.dica_da_trancada()) != "" \
-				and (_repete_o_aviso() or not _avisos_dados.has(str(cadeia.name))):
+				and ((_repete_o_aviso() and bool(cadeia.get("aviso_repete"))) or not _avisos_dados.has(str(cadeia.name))):
 			avisa = cadeia
 	return avisa
 

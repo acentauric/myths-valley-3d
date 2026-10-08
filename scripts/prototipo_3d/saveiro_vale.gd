@@ -583,7 +583,8 @@ func _ver_a_encomenda_entregue() -> void:
 	Jogo.dinheiro += agrado
 	if _hud != null:
 		_hud.set_notice(texto("agrado") % agrado)
-	CadernoDoVale.concluir(_id_da_encomenda())
+	# A encomenda é missão inteira de um passo só: festeja (07/10).
+	CadernoDoVale.concluir(_id_da_encomenda(), true)
 
 
 ## A ENCOMENDA NO CADERNO: aberta no começo de cada estação, com a conta da

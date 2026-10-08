@@ -49,3 +49,14 @@ novamente o corpo, e o portão reprova. Não foi adicionada exceção para cerca
 Com a prova física da Candinha, os limites reorganizados e as cinco capturas
 já conferidas, as #125 e #142 satisfazem seus critérios. A #99 ainda aguarda
 a execução da bateria inteira; a arte específica do cemitério é a #111.
+
+## Junção com a main da equipe em 08/10/2026
+
+A main trouxe as cercas em lances retos de canto a canto (`_lances_do_cercado`),
+em pé (1,35) e com caixa de 1,9, numa camada `Camadas.CERCA` fora da navegação.
+Na junção ficou um corpo só por lance, o de `plantar_cercas`, na camada `MUNDO`
+e na `CERCA` ao mesmo tempo, com o grupo `cercas_do_paisagismo`: o jogador não
+pula a cerca e os moradores a contornam. `colisao_de_cercas_repetidas` saiu do
+catálogo, porque desenhava um segundo corpo, na medida antiga, sobre o mesmo lance.
+A entrada da roça (#152) continua livre: no lance dela fica só a marca `entrada`,
+sem malha, que `cercas.gd` cobra por roça cercada.

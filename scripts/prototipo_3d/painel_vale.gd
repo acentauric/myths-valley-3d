@@ -49,6 +49,14 @@ const COR_BORDA := Color(0.84, 0.73, 0.47, 0.8)
 
 enum Aba { MISSOES, CARTAS, OBRAS, OFICINA, COZINHA, VENDA, TRABALHO, AJUSTES, SAVEIRO, VAGAS }
 const NOME_DA_ABA := ["Missões", "Cartas", "Obras", "Oficina", "Cozinha", "Venda", "Trabalho", "Jogo", "Saveiro", "Vagas"]
+const ICONES_DO_PAINEL := {
+	"obra": preload("res://assets/sprites/icones/obra.png"),
+	"folego": preload("res://assets/sprites/icones/folego.png"),
+	"saveiro": preload("res://assets/sprites/icones/saveiro.png"),
+	"pacto": preload("res://assets/sprites/icones/pacto.png"),
+	"apoio": preload("res://assets/sprites/icones/apoio.png"),
+	"ritual": preload("res://assets/sprites/icones/ritual.png"),
+}
 
 ## Maior que a do 2D desde que a aba de missões virou DIÁRIO, com a lista e a
 ## página da missão lado a lado: cabe em 1280×720 com folga de 100 e de 50.
@@ -342,6 +350,12 @@ func _confirmar() -> void:
 			var pratos := Cozinha.receitas()
 			if _cursor >= pratos.size():
 				return
+			# SEM FOGO NÃO SE COZINHA (07/10): a fogueira pede lenha a cada tantos pratos.
+			var vale_da_fogueira = get_tree().current_scene
+			if vale_da_fogueira != null and vale_da_fogueira.has_method("fogueira_acesa") and not bool(vale_da_fogueira.fogueira_acesa()):
+				Audio.efeito("ui_trava")
+				_dica.text = str(vale_da_fogueira.texto_da_fogueira("apagou"))
+				return
 			if not Cozinha.cozinhar(str(pratos[_cursor])):
 				return
 		Aba.VENDA:
@@ -586,11 +600,21 @@ func _montar_abas() -> void:
 		linha.custom_minimum_size = Vector2(0, ALTURA_DA_LINHA + 4.0)
 		linha.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		linha.text = ("▾ " if aberta else "▸ ") + (texto_vagas("titulo") if qual == Aba.VAGAS else str(NOME_DA_ABA[qual]))
-		linha.icon = Catalogo.icone(["cordel", "carta", "tabua", "machado", "farinha", "corda", "enxada", "carta", "peixe", "carta"][qual])
-		linha.expand_icon = true
-		linha.add_theme_constant_override("icon_max_width", 24)
-		linha.add_theme_constant_override("h_separation", 8)
-		linha.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+		# A aba com distintivo próprio (#108) o mostra à esquerda; as outras levam
+		# o ícone do item que as representa.
+		var distintivo := _distintivo_da_aba(qual)
+		if distintivo != "":
+			var figura := _icone_distintivo(distintivo, 22.0)
+			figura.set_anchors_preset(Control.PRESET_CENTER_LEFT)
+			figura.position = Vector2(9.0, -11.0)
+			figura.size = Vector2(22.0, 22.0)
+			linha.add_child(figura)
+		else:
+			linha.icon = Catalogo.icone(["cordel", "carta", "tabua", "machado", "farinha", "corda", "enxada", "carta", "peixe", "carta"][qual])
+			linha.expand_icon = true
+			linha.add_theme_constant_override("icon_max_width", 24)
+			linha.add_theme_constant_override("h_separation", 8)
+			linha.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 		var conta := _conta_da_aba(qual)
 		if conta != "":
 			linha.text += "    " + conta
@@ -599,7 +623,7 @@ func _montar_abas() -> void:
 		linha.add_theme_color_override("font_color", Identidade.OURO if aberta else COR_APAGADA)
 		linha.add_theme_color_override("font_hover_color", Identidade.CREME)
 		for estado in ["normal", "hover", "pressed"]:
-			linha.add_theme_stylebox_override(estado, _estilo_da_aba(aberta, estado != "normal"))
+			linha.add_theme_stylebox_override(estado, _estilo_da_aba(aberta, estado != "normal", distintivo != ""))
 		linha.pressed.connect(func() -> void: _ir_para_aba(qual))
 		_abas_coluna.add_child(linha)
 
@@ -616,6 +640,30 @@ func _conta_da_aba(qual: int) -> String:
 			return ""
 
 
+func _distintivo_da_aba(qual: int) -> String:
+	match qual:
+		Aba.OBRAS:
+			return "obra"
+		Aba.SAVEIRO:
+			return "saveiro"
+		_:
+			return ""
+
+
+func _icone_distintivo(chave: String, lado: float = 22.0) -> TextureRect:
+	if not ICONES_DO_PAINEL.has(chave):
+		push_error("Distintivo sem asset no painel: " + chave)
+		return null
+	var figura := TextureRect.new()
+	figura.name = "Icone_" + chave
+	figura.texture = ICONES_DO_PAINEL[chave]
+	figura.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	figura.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	figura.custom_minimum_size = Vector2(lado, lado)
+	figura.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	return figura
+
+
 func _ir_para_aba(qual: int) -> void:
 	if _aba == qual:
 		return
@@ -626,7 +674,7 @@ func _ir_para_aba(qual: int) -> void:
 	_redesenhar()
 
 
-func _estilo_da_aba(aberta: bool, realce: bool) -> StyleBoxFlat:
+func _estilo_da_aba(aberta: bool, realce: bool, com_icone: bool = false) -> StyleBoxFlat:
 	var estilo := StyleBoxFlat.new()
 	if aberta:
 		estilo.bg_color = Color(0.19, 0.21, 0.15, 0.96)
@@ -636,7 +684,7 @@ func _estilo_da_aba(aberta: bool, realce: bool) -> StyleBoxFlat:
 		estilo.bg_color = Color(0.13, 0.16, 0.12, 0.9)
 	else:
 		estilo.bg_color = Color(0.0, 0.0, 0.0, 0.0)
-	estilo.content_margin_left = 10
+	estilo.content_margin_left = 38 if com_icone else 10
 	estilo.content_margin_right = 10
 	return estilo
 
@@ -723,7 +771,15 @@ func _quantas_faltam(todas: Array) -> String:
 
 
 func _desenhar_cozinha() -> void:
-	_titulo.text = "Fogão      %s %d/%d" % [Energia.nome_recurso(), int(Energia.atual), int(Energia.maximo())]
+	# O FOGO DA FOGUEIRA no título (07/10): para quantos pratos ainda dá.
+	var vale_da_fogueira = get_tree().current_scene
+	var fogo := -1
+	if vale_da_fogueira != null and vale_da_fogueira.has_method("pratos_no_fogo"):
+		fogo = int(vale_da_fogueira.pratos_no_fogo())
+	var do_fogo := "" if fogo < 0 else ("   ·   " + (str(vale_da_fogueira.texto_da_fogueira("fogo_para")) % fogo if fogo > 0 else str(vale_da_fogueira.texto_da_fogueira("apagada"))))
+	_titulo.text = "Fogão%s      %s %d/%d" % [do_fogo, Energia.nome_recurso(), int(Energia.atual), int(Energia.maximo())]
+	if fogo == 0:
+		_adicionar_linha(str(vale_da_fogueira.texto_da_fogueira("apagou")), COR_APAGADA)
 	var pratos := Cozinha.receitas()
 	if pratos.is_empty():
 		_adicionar_linha("Você ainda não sabe cozinhar nada.", COR_APAGADA)
@@ -766,7 +822,7 @@ func _desenhar_cartas() -> void:
 			var cabecalho := str(CABECALHO_DA_NATUREZA.get(qual, qual.to_upper()))
 			if qual == "apoio":
 				cabecalho = cabecalho % Atalhos.letra("apoios")
-			_adicionar_linha(cabecalho, COR_APAGADA, true)
+			_adicionar_linha(cabecalho, COR_APAGADA, true, qual)
 		var marca := "·"
 		var cor := COR_TEXTO
 		match qual:
@@ -857,6 +913,33 @@ func _desenhar_oficina() -> void:
 ## aqui.
 ##
 ##
+## OS ÍCONES DA RECOMPENSA (#107): os réis e o XP não são itens do catálogo;
+## os desenhos deles vêm de `assets/sprites/icones/` (gerados por imagem, ver o
+## ORIGEM.md de lá). Os itens usam o ícone do catálogo, o mesmo da barra de mão.
+const ICONE_DOS_REIS := "res://assets/sprites/icones/reis.png"
+const ICONE_DO_XP := "res://assets/sprites/icones/xp.png"
+
+
+func _icone_da_recompensa(chave: String) -> Texture2D:
+	match chave:
+		"reis":
+			return load(ICONE_DOS_REIS) as Texture2D if ResourceLoader.exists(ICONE_DOS_REIS) else null
+		"xp":
+			return load(ICONE_DO_XP) as Texture2D if ResourceLoader.exists(ICONE_DO_XP) else null
+		_:
+			return Catalogo.icone(chave)
+
+
+func _nome_da_recompensa(chave: String, quanto: int) -> String:
+	match chave:
+		"reis":
+			return tr("%d réis") % quanto
+		"xp":
+			return "%d XP" % quanto
+		_:
+			return "×%d  %s" % [quanto, str(Catalogo.ITENS.get(chave, {}).get("nome", chave))]
+
+
 ## O DIÁRIO, COMO NO WITCHER
 ##
 ## "No MENU J, de missões, eu tô clicando para trocar a missão de resumo, mas
@@ -1008,6 +1091,35 @@ func _desenhar_o_diario(missao: Dictionary) -> void:
 		barra.add_theme_stylebox_override("background", fundo)
 		barra.add_theme_stylebox_override("fill", cheio)
 		_detalhe.add_child(barra)
+
+	# A RECOMPENSA DO PASSO (#107), em ícones: os itens com o ícone de cada um, os
+	# réis e o XP com os deles (`assets/sprites/icones/`), e a conta ao lado.
+	var recompensa: Dictionary = missao.get("recompensa", {})
+	if not recompensa.is_empty():
+		var titulo_da_recompensa := _texto_do_diario("RECOMPENSA", 13, Identidade.OURO)
+		titulo_da_recompensa.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_TEXTO, 600))
+		_detalhe.add_child(titulo_da_recompensa)
+		var linha_da_recompensa := HBoxContainer.new()
+		linha_da_recompensa.name = "Recompensa"
+		linha_da_recompensa.add_theme_constant_override("separation", 16)
+		_detalhe.add_child(linha_da_recompensa)
+		for chave in recompensa:
+			var item := HBoxContainer.new()
+			item.add_theme_constant_override("separation", 6)
+			var icone := _icone_da_recompensa(str(chave))
+			if icone != null:
+				var figura := TextureRect.new()
+				figura.name = "Icone_" + str(chave)
+				figura.texture = icone
+				figura.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+				figura.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+				figura.custom_minimum_size = Vector2(28, 28)
+				figura.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS if str(chave) in ["reis", "xp"] else CanvasItem.TEXTURE_FILTER_NEAREST
+				item.add_child(figura)
+			var conta := _texto_do_diario(_nome_da_recompensa(str(chave), int(recompensa[chave])), 15, COR_TEXTO)
+			conta.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+			item.add_child(conta)
+			linha_da_recompensa.add_child(item)
 
 	# ACOMPANHAR, o botão do Witcher. Acompanhada, ele diz que é e não faz nada.
 	var respiro := Control.new()
@@ -1293,11 +1405,21 @@ func _quando_foi_salvo() -> String:
 
 ## Uma linha da lista: título de grupo sai como texto, o resto como BOTÃO de
 ## verdade — foco, realce ao passar o mouse, mãozinha (ver o 2D).
-func _adicionar_linha(texto: String, cor: Color, cabecalho: bool = false) -> void:
+func _adicionar_linha(texto: String, cor: Color, cabecalho: bool = false, distintivo: String = "") -> void:
 	if cabecalho:
-		var etiqueta := _rotulo(texto, LETRA_DICA, cor)
-		_lista.add_child(etiqueta)
-		_linhas.append(etiqueta)
+		if distintivo == "":
+			var etiqueta := _rotulo(texto, LETRA_DICA, cor)
+			_lista.add_child(etiqueta)
+			_linhas.append(etiqueta)
+		else:
+			var fila := HBoxContainer.new()
+			fila.name = "Cabecalho_" + distintivo
+			fila.add_theme_constant_override("separation", 8)
+			fila.custom_minimum_size.y = ALTURA_DA_LINHA
+			fila.add_child(_icone_distintivo(distintivo, 22.0))
+			fila.add_child(_rotulo(texto, LETRA_DICA, cor))
+			_lista.add_child(fila)
+			_linhas.append(fila)
 		return
 	var indice := _escolhiveis.size()
 	var botao := Button.new()
@@ -1432,6 +1554,8 @@ func _adicionar_campo(i: int) -> void:
 	fila.custom_minimum_size = Vector2(0, ALTURA_DA_LINHA)
 	moldura.add_child(fila)
 	fila.add_child(_botao_pequeno("◀", func(): _mexer_no_campo(i, -1)))
+	if str(campo["campo"]) == "energia_maxima":
+		fila.add_child(_icone_distintivo("folego", 22.0))
 	var etiqueta := _rotulo("%-18s  %6.2f" % [campo["rotulo"], Progressao.get(campo["campo"])],
 		LETRA_LINHA, COR_CURSOR if escolhida else COR_TEXTO)
 	etiqueta.size_flags_horizontal = Control.SIZE_EXPAND_FILL

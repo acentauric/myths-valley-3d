@@ -20,7 +20,7 @@
       "texto": "O monte debaixo da gameleira é concha, milhões, e quem juntou não deixou nome. Quem é do caboclo paga o monte: cata ostra nas pedras da maré, ali perto das pedras da ponta da praia, e põe as suas conchas em cima das deles. Seis bastam para a primeira vez. Não é oferenda. É continuar uma coisa que começou antes de todo mundo.",
       "texto_en": "The mound under the gameleira is shell, millions, and whoever gathered it left no name. Those who follow the Caboclo pay the mound: pick oysters from the tide rocks, there by the rocks at the tip of the beach, and put your shells on top of theirs. Six are enough the first time. It is not an offering. It is carrying on something that began before everyone.",
       "texto_es": "El montículo debajo de la gameleira es concha, millones, y quien lo juntó no dejó nombre. Quien es del caboclo paga el montículo: junta ostras en las piedras de la marea, ahí cerca de las piedras de la punta de la playa, y pone sus conchas encima de las de ellos. Seis bastan la primera vez. No es ofrenda. Es continuar algo que empezó antes que todos.",
-      "recompensa": { "peixe_assado": 2 },
+      "recompensa": {"xp": 10,  "peixe_assado": 2 },
       "xp_de_fe": true,
       "meta": {
         "tipo": "oferendar",

@@ -1,6 +1,7 @@
 extends SceneTree
-## Confere A JORNADA DA FAZENDA, fatia 6.1, A IDA (docs/projeto/MISSOES_DO_2D.md, 4;
-## data/missoes_fazenda.json; scripts/prototipo_3d/fazenda_vale.gd).
+## Confere A JORNADA DA FAZENDA, fatias 6.1, A IDA, e 6.2, O CHAMADO (#114)
+## (docs/projeto/MISSOES_DO_2D.md, 4; data/missoes_fazenda.json;
+## scripts/prototipo_3d/fazenda_vale.gd).
 ##
 ##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/fazenda.gd
 ##
@@ -17,7 +18,13 @@ extends SceneTree
 ##   4. A ESCOLTA: no passo da ida, o Pedro anda para o portão com o jogador.
 ##   5. O PORTÃO SE ABRE: chegar ao portão fecha a ida; o Pedro fala, a voz do mundo
 ##      narra, e o jogador está dentro do pátio, com o portão aberto.
-##   6. O PÁTIO: chegar ao pé da escadaria fecha a fatia, com a fala do Pedro.
+##   6. O PÁTIO: chegar ao pé da escadaria fecha a ida, com a fala do Pedro.
+##   6b. O CHAMADO AOS CORAJOSOS (#114): no pátio, o passo fecha sozinho; a voz do
+##      mundo conta o silêncio, a anfitriã fala da escadaria, a voz conta os homens
+##      de pé, e o Pedro diz que vai.
+##   6c. A PORTA ESTREITA (#114): falar com o Pedro fecha a fila; a voz conta a
+##      subida, a moça e a anfitriã falam, a voz conta a porta e os cinco que
+##      voltam, e o Pedro fica. O capítulo 6 acaba com a fila acabada.
 ##   7. A VOLTA PARA CASA: na manhã seguinte o arraial sai do pátio.
 ##   8. O SAVE: a partida que volta tem o dia marcado, o portão aberto e a fila
 ##      acabada.
@@ -163,10 +170,82 @@ func _run() -> void:
 	await _ate(func() -> bool: return jornada.espera <= 0.0, 12.0)
 	_conferir(str(jornada.passo_atual().get("id", "")) == "fazenda_chegada", "depois do portão não veio o pátio")
 	jogador.teleportar(mundo.ground_position(patio, 0.1), PI)
-	_conferir(await _ate(func() -> bool: return jornada.acabou(), 6.0), "chegar ao pé da escadaria não fechou a fatia")
+	_conferir(await _ate(func() -> bool: return jornada.missao >= 2, 6.0), "chegar ao pé da escadaria não fechou o passo do pátio")
 	_conferir(await _ate(func() -> bool: return dialogo.ativo, 4.0), "no pé da escadaria, o Pedro não falou")
 	_conferir(jornada.aconteceu("patio"), "o pátio não ficou lembrado na fila")
 	await _fechar_a_fala()
+
+	# --- 6b. O CHAMADO AOS CORAJOSOS (#114) ---------------------------------------------
+	await _ate(func() -> bool: return jornada.espera <= 0.0, 12.0)
+	_conferir(await _ate(func() -> bool: return jornada.missao >= 3 or narracao.tocando(), 8.0), "com o jogador no pátio, o passo do chamado não fechou")
+	_conferir(await _ate(func() -> bool: return narracao.tocando(), 6.0), "a voz do mundo não contou o silêncio")
+	await _ate(func() -> bool: return narracao.frase() != "", 3.0)
+	_conferir(narracao.frase().contains("silêncio"), "a cena do chamado não começou pelo silêncio: '%s'" % narracao.frase())
+	await _pular_a_narracao(narracao)
+	_conferir(await _ate(func() -> bool: return dialogo.ativo, 6.0), "a anfitriã não falou da escadaria")
+	_conferir(dialogo._falas.size() > 0 and str(dialogo._falas[0]).contains("Bem-vindos"), "a anfitriã não deu as boas-vindas: '%s'" % (str(dialogo._falas[0]) if dialogo._falas.size() > 0 else ""))
+	await _fechar_a_fala()
+	_conferir(await _ate(func() -> bool: return narracao.tocando(), 6.0), "a voz do mundo não contou os homens de pé")
+	await _pular_a_narracao(narracao)
+	_conferir(await _ate(func() -> bool: return dialogo.ativo, 6.0), "o Pedro não disse que vai")
+	_conferir(dialogo._falas.size() > 0 and str(dialogo._falas[0]).contains("Eu vou"), "o Pedro não disse 'Eu vou': '%s'" % (str(dialogo._falas[0]) if dialogo._falas.size() > 0 else ""))
+	await _fechar_a_fala()
+	_conferir(jornada.aconteceu("corajosos"), "o chamado aos corajosos não ficou lembrado na fila")
+	_conferir(await _ate(func() -> bool: return not fazenda._em_cena, 4.0), "a cena do chamado não terminou")
+
+	# --- 6c. A PORTA ESTREITA (#114) --------------------------------------------------------
+	await _ate(func() -> bool: return jornada.espera <= 0.0 and not dialogo.ativo, 12.0)
+	_conferir(str(jornada.passo_atual().get("id", "")) == "fazenda_porta_estreita", "depois do chamado não veio a porta estreita: '%s'" % str(jornada.passo_atual().get("id", "")))
+	jogador.teleportar(pedro.global_position + Vector3(1.0, 0.0, 0.6), 0.0)
+	await _quadros(2)
+	# Nova conversa espera a fala do Pedro acabar (#121, `TeclaDosMoradores.usar`).
+	await _ate(func() -> bool: return not pedro.falando_agora(), 30.0)
+	vale.get("tecla_dos_moradores").usar(pedro)
+	# UM AVISO DA PRIMEIRA VEZ pode abrir por cima (o da água funda, o da árvore):
+	# ele para o vale, e a fila só anda com ele fechado — como o jogador faria.
+	var aviso_6c = vale.get("aviso_da_primeira_vez")
+	var limite_6c := Time.get_ticks_msec() + 8000
+	while Time.get_ticks_msec() < limite_6c and not jornada.acabou():
+		if aviso_6c != null and aviso_6c.aberto():
+			print("  (6c) o aviso da primeira vez '%s' abriu depois do E no Pedro; fechado" % str(aviso_6c.qual))
+			aviso_6c.fechar()
+			await _quadros(3)
+		await process_frame
+	if not jornada.acabou():
+		_pausa("6c depois do E no Pedro (falhou)")
+		var amanhecer = root.get_node_or_null("/root/Amanhecer")
+		print("  [pausa] amanhecer visível=%s; dialogo quem=%s falas=%s; queda escuro=%s" % [str(amanhecer.get("visible") if amanhecer != null else "?"), str(dialogo.quem_fala), str(dialogo._falas), str(vale.get("queda").get("_preto").modulate.a if vale.get("queda") != null else "?")])
+		# Quem levou o E: o que cada fila do vale diz que o E faz no Pedro, e o passo da jornada.
+		var quem_leva: Array[String] = []
+		for cadeia in get_nodes_in_group(load("res://scripts/prototipo_3d/cadeia_de_missoes.gd").GRUPO):
+			var faz := str(cadeia.o_que_o_e_faz(pedro))
+			if faz != "":
+				quem_leva.append("%s=%s" % [str(cadeia.name), faz])
+		var fila = get_first_node_in_group(load("res://scripts/prototipo_3d/fila_de_falas.gd").GRUPO)
+		var no_ar := str(fila._atual.get("origem", "")) + "/" + str(fila._atual.get("classe", "")) + "/modal=" + str(fila._atual.get("modal", false)) if fila != null and not fila._atual.is_empty() else "(nada no ar)"
+		var na_fila: Array[String] = []
+		if fila != null:
+			for fala in fila._fila:
+				na_fila.append(str(fala.get("origem", "")) + "/" + str(fala.get("classe", "")))
+		_conferir(false, "falar com o Pedro não fechou a porta estreita (passo %s, missao %d, espera %.2f, levados %s, o_que_o_e_faz=%s, recebe=%s, pedro id=%s visível=%s, filas no E do Pedro: %s, dialogo %s, fala do Pedro %s, paused %s, fila no ar %s, fila esperando %s, cena %s)" % [str(jornada.passo_atual().get("id", "")), jornada.missao, jornada.espera, str(jornada._levados), str(jornada.o_que_o_e_faz(pedro)), str(jornada._recebe(jornada.passo_atual(), pedro)), str((pedro.get("dados") as Dictionary).get("id", "?")), str(pedro.is_visible_in_tree()), str(quem_leva), str(dialogo.ativo), str(pedro.balao.visible), str(paused), no_ar, str(na_fila), str(fazenda._em_cena)])
+	await _fechar_a_fala()
+	var vozes := 0
+	var falas := 0
+	var ate_o_fim_da_cena := Time.get_ticks_msec() + 40000
+	while Time.get_ticks_msec() < ate_o_fim_da_cena:
+		if narracao.tocando():
+			vozes += 1
+			await _pular_a_narracao(narracao)
+		elif dialogo.ativo:
+			falas += 1
+			await _fechar_a_fala()
+		elif jornada.aconteceu("porta_estreita") and not fazenda._em_cena:
+			break
+		else:
+			await process_frame
+	_conferir(jornada.aconteceu("porta_estreita") and not fazenda._em_cena, "a cena da porta estreita não terminou")
+	_conferir(vozes >= 3 and falas >= 3, "a porta estreita teve %d narração(ões) e %d fala(s): faltam a subida, a moça, o cerco, a anfitriã, a porta ou o Pedro" % [vozes, falas])
+	_conferir(jornada.acabou(), "a fila da fazenda não acabou no fim do capítulo 6")
 
 	# --- 7. A VOLTA PARA CASA -------------------------------------------------------------------
 	relogio.dia_comecou.emit(4, 0, 1)
@@ -221,11 +300,27 @@ func _cabras_passearam(cabras: Array, visto: Dictionary) -> bool:
 	return visto["andaram"] >= 30
 
 
+## Quem segura o vale neste instante (diagnóstico #114 pós-junção).
+func _pausa(rotulo: String) -> void:
+	var aviso = vale.get("aviso_da_primeira_vez")
+	var conquista = vale.get("conquista")
+	print("  [pausa] %s: paused=%s telas_que_param=%d fala_parou=%s telas='%s' aviso=%s festa=%s dialogo=%s narracao=%s Dia=%s" % [rotulo, str(paused), int(vale.get("_telas_que_param")), str(vale.get("_fala_parou_o_vale")), str(vale.telas.aberta()), str(aviso.aberto() if aviso != null else "?"), str(conquista.ativa() if conquista != null else "?"), str(dialogo.ativo), str(vale.get("narracao").tocando()), str(root.get_node("/root/Dia").motivos_da_segurada())])
+
+
 func _indice(cadeia, id: String) -> int:
 	for i in cadeia.passos.size():
 		if str((cadeia.passos[i] as Dictionary).get("id", "")) == id:
 			return i
 	return -1
+
+
+## Pula a narração frase a frase até ela terminar.
+func _pular_a_narracao(narracao) -> void:
+	var ate := Time.get_ticks_msec() + 30000
+	while narracao.tocando() and Time.get_ticks_msec() < ate:
+		narracao.pular()
+		await _quadros(3)
+	await _quadros(3)
 
 
 func _fechar_a_fala() -> void:
@@ -239,7 +334,7 @@ func _fechar_a_fala() -> void:
 func _fechar() -> void:
 	print("")
 	if falhas == 0:
-		print("FAZENDA_OK: a fazenda fica do outro lado do rio grande, com o portão baixo do capítulo 6, fechado, e sem tronco no pátio; o dia espera a ponte e a fé e vem na manhã seguinte, com o arraial sentado no pátio e o Pedro na porta; o chamado abre a caixa; o Pedro conduz para o portão; no portão ele fala, a voz do mundo narra e o jogador passa para dentro com o portão aberto; o pé da escadaria fecha a fatia com a fala dele; no dia seguinte o arraial volta para casa; e a partida que volta lembra tudo")
+		print("FAZENDA_OK: a fazenda fica do outro lado do rio grande, com o portão baixo do capítulo 6, fechado, e sem tronco no pátio; o dia espera a ponte e a fé e vem na manhã seguinte, com o arraial sentado no pátio e o Pedro na porta; o chamado abre a caixa; o Pedro conduz para o portão; no portão ele fala, a voz do mundo narra e o jogador passa para dentro com o portão aberto; o pé da escadaria fecha a ida com a fala dele; no pátio a voz conta o silêncio, a anfitriã chama os corajosos e o Pedro vai; falar com ele fecha a porta estreita, com a subida, a moça, a anfitriã, a porta e o Pedro que fica, e o capítulo 6 acaba; no dia seguinte o arraial volta para casa; e a partida que volta lembra tudo")
 	else:
 		print("fazenda: %d falha(s)" % falhas)
 	quit(1 if falhas > 0 else 0)

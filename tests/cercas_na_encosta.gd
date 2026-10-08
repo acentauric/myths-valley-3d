@@ -130,6 +130,24 @@ func _run() -> void:
 	# --- 5. HÁ ENCOSTA -------------------------------------------------------------------
 	print("  o maior desnível entre pontas de um lance: %.2f u" % _maior_desnivel)
 	_conferir(_maior_desnivel > FOLGA, "nenhum lance do vale está em encosta (desnível máximo %.2f): o portão não prova nada" % _maior_desnivel)
+
+	# --- 6. AS CERCAS DE VARAS TÊM CORPO (#104) --------------------------------------------
+	# Nasceram sem colisão; agora cada lance tem a caixa dele, assentada no lance,
+	# na camada das cercas, que o jogador vê, e na camada do mundo, que a malha dos
+	# moradores lê (#125) — e fora da camada da câmera.
+	var corpos: Node = regiao.get_node_or_null("CorposDasCercas_cerca_varas")
+	var quantos_corpos := corpos.get_child_count() if corpos != null else 0
+	_conferir(corpos != null and quantos_corpos == plantadas.size(), "as cercas de varas têm %d corpo(s) para %d lance(s)" % [quantos_corpos, plantadas.size()])
+	if corpos != null and quantos_corpos > 0 and not plantadas.is_empty() and not modelo.is_empty():
+		var corpo: StaticBody3D = corpos.get_child(0)
+		var forma := corpo.get_child(0) as CollisionShape3D
+		var caixa_do_corpo := forma.shape as BoxShape3D
+		var pe: Vector3 = corpo.global_transform * Vector3(0.0, -caixa_do_corpo.size.y * 0.5, 0.0)
+		var primeiro: Transform3D = (plantadas[0] as Transform3D) * (modelo.base as Transform3D).affine_inverse()
+		_conferir(pe.distance_to(primeiro.origin) < 0.05, "o corpo da primeira cerca de varas não assenta no lance (%.2f u)" % pe.distance_to(primeiro.origin))
+		_conferir((corpo.collision_layer & (1 << 3)) != 0 and (corpo.collision_layer & 1) != 0 and (corpo.collision_layer & (1 << 13)) == 0,
+			"o corpo da cerca de varas não está nas camadas das cercas e do mundo, fora da câmera (camada %d): o jogador ou os moradores a atravessariam, ou ela barraria a câmera" % corpo.collision_layer)
+		_conferir((vale.player.collision_mask & (1 << 3)) != 0, "o corpo do jogador não vê a camada das cercas")
 	_fechar()
 
 

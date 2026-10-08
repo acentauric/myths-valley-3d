@@ -1,0 +1,90 @@
+{
+  "observacao": "A PEDRA ATRÁS DO ALTAR (fase 2 de docs/projeto/MISSOES_SECUNDARIAS.md, 07/10/2026): o gancho que o sacristão já tinha em aldeoes.json ('a igreja tem uma pedra solta atrás do altar, e dentro dela tem um papel com nomes. Não li. Mas o nome do seu tio está lá'). Três passos: ele entrega o papel (documento novo, papel_dos_nomes, texto em data/documentos.json), o jogador o lê em casa (acontecimento 'leu:papel_dos_nomes', que o vale emite ao ler um papel), e volta a falar com ele. Os nomes são os que a fazenda chama — e o do tio está riscado. Abre com o favor da garapa feito e a afinidade em 'Gente boa'.",
+  "dono": "sacristao",
+  "nome": "A pedra atrás do altar",
+  "nome_en": "The stone behind the altar",
+  "nome_es": "La piedra detrás del altar",
+  "trancada": "O que tem atrás do altar não é conversa de adro, moço. Quando a gente se conhecer melhor, e não tiver ninguém olhando.",
+  "trancada_en": "What's behind the altar isn't churchyard talk, young man. When we know each other better, and nobody's watching.",
+  "trancada_es": "Lo que hay detrás del altar no es charla de atrio, muchacho. Cuando nos conozcamos mejor, y no haya nadie mirando.",
+  "principal": false,
+  "passos": [
+    {
+      "id": "papel_da_pedra",
+      "titulo": "O papel da pedra",
+      "titulo_en": "The paper in the stone",
+      "titulo_es": "El papel de la piedra",
+      "resumo": "Pegue o papel com o Sacristão Zacarias",
+      "resumo_en": "Get the paper from Sexton Zacarias",
+      "resumo_es": "Recoge el papel con el Sacristán Zacarias",
+      "lugar": "igreja",
+      "raio": 8,
+      "audio": "",
+      "texto": "Olhe pros lados. Ninguém? Então toma. Estava dentro da pedra solta atrás do altar, enrolado, desde antes de eu ser sacristão. Eu não li — não sei ler direito, e não quero. Mas o nome do seu tio está lá, isso eu vi. Leia em casa, longe do adro, e não me conte.",
+      "texto_en": "Look around. Nobody? Then take it. It was inside the loose stone behind the altar, rolled up, since before I was sexton. I didn't read it — I can't read well, and I don't want to. But your uncle's name is on it, that much I saw. Read it at home, away from the churchyard, and don't tell me.",
+      "texto_es": "Mira a los lados. ¿Nadie? Entonces toma. Estaba dentro de la piedra suelta detrás del altar, enrollado, desde antes de que yo fuera sacristán. No lo leí — no sé leer bien, y no quiero. Pero el nombre de tu tío está ahí, eso lo vi. Léelo en casa, lejos del atrio, y no me lo cuentes.",
+      "entrega": {
+        "item": "papel_dos_nomes",
+        "quantidade": 1
+      },
+      "recompensa": {
+        "xp": 10
+      },
+      "meta": {}
+    },
+    {
+      "id": "papel_lido",
+      "titulo": "Os nomes",
+      "titulo_en": "The names",
+      "titulo_es": "Los nombres",
+      "resumo": "Leia o papel dos nomes em casa (F na mochila)",
+      "resumo_en": "Read the paper of names at home (F in the bag)",
+      "resumo_es": "Lee el papel de los nombres en casa (F en la mochila)",
+      "lugar": "casa_de_taipa",
+      "raio": 8,
+      "audio": "",
+      "texto": "Em casa, com a porta fechada, leia o papel.",
+      "texto_en": "At home, with the door shut, read the paper.",
+      "texto_es": "En casa, con la puerta cerrada, lee el papel.",
+      "recompensa": {
+        "xp": 10
+      },
+      "meta": {
+        "tipo": "evento",
+        "evento": "leu:papel_dos_nomes"
+      }
+    },
+    {
+      "id": "papel_de_volta",
+      "titulo": "O que o papel diz",
+      "titulo_en": "What the paper says",
+      "titulo_es": "Lo que dice el papel",
+      "resumo": "Volte a falar com o Sacristão Zacarias",
+      "resumo_en": "Go back and talk to Sexton Zacarias",
+      "resumo_es": "Vuelve a hablar con el Sacristán Zacarias",
+      "lugar": "igreja",
+      "raio": 8,
+      "audio": "",
+      "texto": "Leu? Não me conte. Só me diga uma coisa: tem o seu nome?",
+      "texto_en": "Did you read it? Don't tell me. Just tell me one thing: is your name on it?",
+      "texto_es": "¿Lo leíste? No me lo cuentes. Solo dime una cosa: ¿está tu nombre?",
+      "recompensa": {
+        "xp": 15
+      },
+      "meta": {
+        "tipo": "falar",
+        "a_quem": "sacristao",
+        "raio": 3.4,
+        "resposta": "Não? Então ainda dá tempo. Guarde o papel. E se alguém da fazenda perguntar pela pedra, ela nunca esteve solta.",
+        "resposta_en": "No? Then there's still time. Keep the paper. And if anyone from the farm asks about the stone, it was never loose.",
+        "resposta_es": "¿No? Entonces todavía hay tiempo. Guarda el papel. Y si alguien de la hacienda pregunta por la piedra, nunca estuvo suelta."
+      }
+    }
+  ],
+  "arremate": {
+    "texto": "Os nomes do papel são os que o convite chama à fazenda. O do seu tio está lá, riscado. O seu não está — ainda.",
+    "texto_en": "The names on the paper are the ones the invitation calls to the farm. Your uncle's is there, crossed out. Yours isn't — yet.",
+    "texto_es": "Los nombres del papel son los que la invitación llama a la hacienda. El de tu tío está ahí, tachado. El tuyo no está — todavía.",
+    "narra": false
+  }
+}

@@ -1,0 +1,95 @@
+{
+  "observacao": "A RONDA DA NOITE (fase 3 de docs/projeto/MISSOES_SECUNDARIAS.md, 07/10/2026): o gancho do guarda em aldeoes.json ('De noite eu dou a volta na praça três vezes e durmo na porta da venda... duas vezes ouvi passo no adro sem ninguém no adro'). As três voltas são três lugares da praça visitados de noite ('visitar' com 'horas'). Abre com o favor do peixe feito e o guarda 'Gente boa'.",
+  "dono": "guarda",
+  "nome": "A ronda da noite",
+  "nome_en": "The night watch",
+  "nome_es": "La ronda de la noche",
+  "trancada": "Ronda é coisa de dois quando os dois se conhecem, moço. Por enquanto eu rondo sozinho.",
+  "trancada_en": "A watch is a two-man thing when the two know each other, young man. For now I walk it alone.",
+  "trancada_es": "La ronda es cosa de dos cuando los dos se conocen, muchacho. Por ahora rondo solo.",
+  "principal": false,
+  "passos": [
+    {
+      "id": "ronda_convite",
+      "titulo": "O convite da ronda",
+      "titulo_en": "The invitation to the watch",
+      "titulo_es": "La invitación a la ronda",
+      "resumo": "Ouça o Guarda Aristides sobre a ronda",
+      "resumo_en": "Hear Guard Aristides about the watch",
+      "resumo_es": "Escucha al Guardia Aristides sobre la ronda",
+      "lugar": "praca",
+      "raio": 8,
+      "audio": "",
+      "texto": "Hoje você ronda comigo. Três voltas: a praça, o adro da igreja e a porta da venda, depois das oito. Não é pra pegar ninguém — aqui ninguém rouba. É pra escutar. Duas vezes eu ouvi passo no adro sem ninguém no adro. Quero outra orelha.",
+      "texto_en": "Tonight you walk the watch with me. Three turns: the square, the churchyard and the shop door, after eight. It's not to catch anyone — nobody steals here. It's to listen. Twice I heard a footstep in the churchyard with no one in the churchyard. I want a second pair of ears.",
+      "texto_es": "Hoy rondas conmigo. Tres vueltas: la plaza, el atrio de la iglesia y la puerta de la venta, después de las ocho. No es para atrapar a nadie — aquí nadie roba. Es para escuchar. Dos veces oí un paso en el atrio sin nadie en el atrio. Quiero otra oreja.",
+      "recompensa": {
+        "xp": 10
+      },
+      "meta": {}
+    },
+    {
+      "id": "ronda_tres_voltas",
+      "titulo": "As três voltas",
+      "titulo_en": "The three turns",
+      "titulo_es": "Las tres vueltas",
+      "resumo": "De noite (depois das 20), passe pela praça, pela igreja e pela venda",
+      "resumo_en": "At night (after 8 pm), pass by the square, the church and the shop",
+      "resumo_es": "De noche (después de las 20), pasa por la plaza, la iglesia y la venta",
+      "lugar": "praca",
+      "raio": 8,
+      "audio": "",
+      "texto": "Depois das oito: a praça, o adro da igreja, a porta da venda. Devagar, e de ouvido.",
+      "texto_en": "After eight: the square, the churchyard, the shop door. Slowly, and listening.",
+      "texto_es": "Después de las ocho: la plaza, el atrio de la iglesia, la puerta de la venta. Despacio, y con el oído.",
+      "recompensa": {
+        "xp": 10
+      },
+      "meta": {
+        "tipo": "visitar",
+        "lugares": [
+          "praca",
+          "igreja",
+          "bar"
+        ],
+        "raio": 8,
+        "horas": [
+          20,
+          24
+        ]
+      }
+    },
+    {
+      "id": "ronda_passo_no_adro",
+      "titulo": "O passo no adro",
+      "titulo_en": "The footstep in the churchyard",
+      "titulo_es": "El paso en el atrio",
+      "resumo": "Fale com o Guarda Aristides depois da ronda",
+      "resumo_en": "Talk to Guard Aristides after the watch",
+      "resumo_es": "Habla con el Guardia Aristides después de la ronda",
+      "lugar": "praca",
+      "raio": 8,
+      "audio": "",
+      "texto": "Acabou a ronda. Diga ao guarda o que ouviu.",
+      "texto_en": "The watch is over. Tell the guard what you heard.",
+      "texto_es": "Terminó la ronda. Dile al guardia lo que oíste.",
+      "recompensa": {
+        "xp": 15
+      },
+      "meta": {
+        "tipo": "falar",
+        "a_quem": "guarda",
+        "raio": 3.4,
+        "resposta": "Você ouviu também. Então não sou eu. Meu pai dizia que o adro guarda quem foi enterrado antes de haver cemitério — e que passo de defunto não se prende. Eu não grito pra defunto. Mas agora rondo acompanhado.",
+        "resposta_en": "You heard it too. So it isn't me. My father used to say the churchyard keeps those buried before there was a cemetery — and that a dead man's footstep can't be arrested. I don't shout at the dead. But now I walk the watch with company.",
+        "resposta_es": "Tú también lo oíste. Entonces no soy yo. Mi padre decía que el atrio guarda a los enterrados antes de que hubiera cementerio — y que el paso de un difunto no se arresta. Yo no le grito a un difunto. Pero ahora rondo acompañado."
+      }
+    }
+  ],
+  "arremate": {
+    "texto": "Três voltas na praça, de noite, com o Guarda Aristides. No adro, um passo — e ninguém. Ele não gritou. Você também não.",
+    "texto_en": "Three turns around the square at night with Guard Aristides. In the churchyard, a footstep — and no one. He didn't shout. Neither did you.",
+    "texto_es": "Tres vueltas a la plaza, de noche, con el Guardia Aristides. En el atrio, un paso — y nadie. Él no gritó. Tú tampoco.",
+    "narra": false
+  }
+}

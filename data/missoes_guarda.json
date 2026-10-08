@@ -1,0 +1,47 @@
+{
+  "observacao": "O FAVOR DE ARISTIDES, O GUARDA (fase 1 de docs/projeto/MISSOES_SECUNDARIAS.md, 07/10/2026: \"criar missões secundárias para interação com esses NPCs\"). Uma fila curta, de um passo, só com mecânica que o vale já tem (a meta \"levar\" e itens com fonte), na voz que o morador já tinha em data/dialogos/aldeoes.json — 'Peixe assado! Isso é pra guarda de verdade' e a ronda da noite, com os passos no adro que ninguém pegou. Trancada pela afinidade: abre quando o morador conhece o jogador (grau 1, \"Conhecido de vista\"; a tabela data/favores_dos_moradores.json diz o grau) e a chegada do Pedro acabou. Fechar a fila é o favor da afinidade (Afinidade.POR_FAVOR, cadeia_de_missoes._dar_o_favor).",
+  "dono": "guarda",
+  "nome": "Peixe para a ronda",
+  "nome_en": "Fish for the night watch",
+  "nome_es": "Pescado para la ronda",
+  "trancada": "Meu serviço é saber quem chegou. Você chegou, eu sei. O resto é com o tempo, moço.",
+  "trancada_en": "My job is to know who arrived. You arrived, I know that much. The rest is up to time, young man.",
+  "trancada_es": "Mi trabajo es saber quién llegó. Tú llegaste, eso lo sé. El resto es cosa del tiempo, muchacho.",
+  "principal": false,
+  "passos": [
+    {
+      "id": "guarda_peixe",
+      "titulo": "Peixe para a ronda",
+      "titulo_en": "Fish for the night watch",
+      "titulo_es": "Pescado para la ronda",
+      "resumo": "Leve um peixe assado ao Guarda Aristides",
+      "resumo_en": "Take a roast fish to Guard Aristides",
+      "resumo_es": "Lleva un pescado asado al Guardia Aristides",
+      "lugar": "praca",
+      "raio": 6,
+      "audio": "",
+      "texto": "Aristides dá três voltas na praça de noite e dorme na porta da venda — escutando, não dormindo. Ronda de barriga vazia é ronda curta. Um peixe assado do seu fogão, moço, e hoje eu escuto o adro inteiro.",
+      "texto_en": "Aristides walks the square three times a night and sleeps at the shop door — listening, not sleeping. A watch on an empty stomach is a short watch. One roast fish from your stove, young man, and tonight I'll listen to the whole churchyard.",
+      "texto_es": "Aristides da tres vueltas a la plaza de noche y duerme en la puerta de la venta — escuchando, no durmiendo. Ronda con la barriga vacía es ronda corta. Un pescado asado de tu fogón, muchacho, y hoy escucho el atrio entero.",
+      "recompensa": {
+        "xp": 15
+      },
+      "meta": {
+        "tipo": "levar",
+        "item": "peixe_assado",
+        "quantos": 1,
+        "a_quem": "guarda",
+        "raio": 3.4,
+        "resposta": "Peixe assado! Isso é pra guarda de verdade. Hoje a ronda vai ser mais atenta. E se eu ouvir o passo no adro de novo, você vai ser o primeiro a saber.",
+        "resposta_en": "Roast fish! That's food for a real guard. Tonight's watch will be sharper. And if I hear the footstep in the churchyard again, you'll be the first to know.",
+        "resposta_es": "¡Pescado asado! Eso es para un guardia de verdad. Hoy la ronda será más atenta. Y si oigo el paso en el atrio otra vez, tú serás el primero en saberlo."
+      }
+    }
+  ],
+  "arremate": {
+    "texto": "O Guarda Aristides rondou de barriga cheia, e prometeu ao jogador o primeiro aviso do passo no adro.",
+    "texto_en": "Guard Aristides walked his rounds on a full stomach, and promised the player the first word of the footstep in the churchyard.",
+    "texto_es": "El Guardia Aristides hizo la ronda con la barriga llena, y le prometió al jugador el primer aviso del paso en el atrio.",
+    "narra": false
+  }
+}

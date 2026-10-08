@@ -73,6 +73,7 @@
       },
       "quem_paga": "filo",
       "recompensa": {
+        "xp": 10,
         "pirao": 1
       }
     },

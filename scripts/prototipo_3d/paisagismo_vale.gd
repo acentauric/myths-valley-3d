@@ -498,6 +498,10 @@ static func reservas_do_mundo(wb: Node, receitas: Dictionary) -> Dictionary:
 	for nome: String in wb.ancoras:
 		if nome.ends_with("Frente") or nome.ends_with("Direcao") or nome.ends_with("Lado"):
 			continue
+		# A PISTA DA CORRIDA E A AREIA (07/10) são pontos de passagem na praia, e não
+		# lugares: reservá-los tirava uma piaçabeira do píer, e o saveiro pede oito.
+		if nome in SEM_RESERVA:
+			continue
 		var ancora: Variant = wb.ancoras[nome]
 		if not ancora is Vector3:
 			continue
@@ -743,6 +747,136 @@ static func _amostras_do_perimetro(poligono: PackedVector2Array, passo: float) -
 	return saida
 
 
+## O LANCE QUE VIRA PORTEIRA: o que chega mais perto da rua, até `alcance`; sem nenhum
+## tão perto, o mais perto da rua que houver; e numa roça longe de toda rua (o milho do
+## Poente, onde a medida da rua nem alcança), o que fica mais perto da praça — roça
+## cercada sem porteira é roça fechada, agora que a cerca não se pula (07/10). Devolve
+## -1 só sem lance em que a porteira caiba.
+static func _lance_da_porteira(lances: Array[Dictionary], reservas: Dictionary, regras: Dictionary, rua: Variant, alcance: float, praca: Vector2) -> int:
+	var portao := -1
+	var menor := alcance
+	var cabem: Array[int] = []
+	for i in lances.size():
+		var meio: Vector2 = lances[i]["meio"]
+		if not _cabe(reservas, regras, meio, 1.2, true):
+			continue
+		cabem.append(i)
+		var d := float((rua as Callable).call(meio)) if rua is Callable else INF
+		if d < menor:
+			menor = d
+			portao = i
+	if portao >= 0 or cabem.is_empty():
+		return portao
+	var melhor := INF
+	for i in cabem:
+		var meio: Vector2 = lances[i]["meio"]
+		var d := float((rua as Callable).call(meio)) if rua is Callable else INF
+		if d == INF:
+			d = 100000.0 + meio.distance_to(praca)
+		if d < melhor:
+			melhor = d
+			portao = i
+	return portao
+
+
+## O CERCADO DE UMA ROÇA EM LANCES (07/10): o contorno simplificado (`_simplificar`, a
+## tolerância em unidades — os degraus de dois passos do polígono viram uma reta), um
+## palmo para fora dela (`para_fora`, para a cerca não passar por cima do pé da beira),
+## e cada lado cortado em lances iguais que cabem inteiros nele — os cantos são cantos,
+## com um poste em cada, e nenhum lance corta caminho por dentro da roça. Devolve, na
+## ordem do contorno, [{"de", "ate", "meio", "giro"}].
+static func _lances_do_cercado(poligono: PackedVector2Array, passo: float, tolerancia: float, para_fora: float) -> Array[Dictionary]:
+	var contorno := _simplificar(poligono, tolerancia)
+	if para_fora > 0.0:
+		var maior := PackedVector2Array()
+		for parte: PackedVector2Array in Geometry2D.offset_polygon(contorno, para_fora, Geometry2D.JOIN_MITER):
+			if parte.size() > maior.size():
+				maior = parte
+		if maior.size() >= 3:
+			contorno = _simplificar(maior, tolerancia * 0.25)
+	var saida: Array[Dictionary] = []
+	for i in contorno.size():
+		var a := contorno[i]
+		var b := contorno[(i + 1) % contorno.size()]
+		var comprimento := a.distance_to(b)
+		if comprimento < 0.3:
+			continue
+		var quantos := maxi(1, roundi(comprimento / passo))
+		for j in quantos:
+			var de := a.lerp(b, float(j) / quantos)
+			var ate := a.lerp(b, float(j + 1) / quantos)
+			var direcao := ate - de
+			saida.append({"de": de, "ate": ate, "meio": (de + ate) * 0.5, "giro": atan2(-direcao.y, direcao.x)})
+	return saida
+
+
+## Simplifica um polígono fechado (Ramer–Douglas–Peucker): sai todo vértice a menos de
+## `tolerancia` da reta entre os vizinhos que ficam. Âncoras: o primeiro vértice e o mais
+## longe dele, para as duas metades serem linhas abertas.
+static func _simplificar(poligono: PackedVector2Array, tolerancia: float) -> PackedVector2Array:
+	var n := poligono.size()
+	if n <= 3 or tolerancia <= 0.0:
+		return poligono
+	var longe := 0
+	for i in range(1, n):
+		if poligono[i].distance_squared_to(poligono[0]) > poligono[longe].distance_squared_to(poligono[0]):
+			longe = i
+	var primeira := PackedVector2Array()
+	for i in range(0, longe + 1):
+		primeira.append(poligono[i])
+	var segunda := PackedVector2Array()
+	for i in range(longe, n):
+		segunda.append(poligono[i])
+	segunda.append(poligono[0])
+	var saida := _rdp(primeira, tolerancia)
+	var volta := _rdp(segunda, tolerancia)
+	for i in range(1, volta.size() - 1):
+		saida.append(volta[i])
+	return saida if saida.size() >= 3 else poligono
+
+
+static func _rdp(linha: PackedVector2Array, tolerancia: float) -> PackedVector2Array:
+	if linha.size() <= 2:
+		return linha
+	var a := linha[0]
+	var b := linha[linha.size() - 1]
+	var pior := 0.0
+	var onde := 0
+	for i in range(1, linha.size() - 1):
+		var d := linha[i].distance_to(Geometry2D.get_closest_point_to_segment(linha[i], a, b))
+		if d > pior:
+			pior = d
+			onde = i
+	if pior <= tolerancia:
+		return PackedVector2Array([a, b])
+	var saida := _rdp(linha.slice(0, onde + 1), tolerancia)
+	var direita := _rdp(linha.slice(onde), tolerancia)
+	for i in range(1, direita.size()):
+		saida.append(direita[i])
+	return saida
+
+
+## O lance corre colado a uma cerca de OUTRA roça já posta? Paralelo a ela (a menos de 45°)
+## e com as duas pontas a menos de `folga` do lance dela — o lance que só encosta de
+## través (o canto de uma roça na divisa da outra) não conta.
+static func _colado_a_outra_cerca(itens: Array, lance: Dictionary, zona: String, folga: float) -> bool:
+	var de: Vector2 = lance["de"]
+	var ate: Vector2 = lance["ate"]
+	var rumo: Vector2 = (ate - de).normalized()
+	for item: Dictionary in itens:
+		if not item.has("de") or String(item["zona"]) == zona:
+			continue
+		var outro_de: Vector2 = item["de"]
+		var outro_ate: Vector2 = item["ate"]
+		var outro_rumo: Vector2 = (outro_ate - outro_de).normalized()
+		if absf(rumo.dot(outro_rumo)) < 0.7:
+			continue
+		if de.distance_to(Geometry2D.get_closest_point_to_segment(de, outro_de, outro_ate)) < folga \
+				and ate.distance_to(Geometry2D.get_closest_point_to_segment(ate, outro_de, outro_ate)) < folga:
+			return true
+	return false
+
+
 static func _no_corredor(reservas: Dictionary, regras: Dictionary, p: Vector2, folga: float) -> bool:
 	return reservas.has("voo") and no_corredor_do_voo(reservas["voo"], p, folga, regras)
 
@@ -769,6 +903,10 @@ static func _area(poligono: PackedVector2Array) -> float:
 		var b := poligono[(i + 1) % poligono.size()]
 		soma += a.x * b.y - b.x * a.y
 	return soma * 0.5
+
+
+## Âncoras que não reservam chão: pontos de passagem, e não lugares (ver as reservas).
+const SEM_RESERVA := ["Corrida", "Areia"]
 
 
 static func _item(chave: String, ponto: Vector2, giro: float, zona: String, raio: float, corpo: bool) -> Dictionary:
@@ -802,42 +940,64 @@ static func aderecos(wb: Node, zonas: Array, receitas: Dictionary, reservas: Dic
 		if not carro.is_empty() and receita == String(carro.get("receita", "")) and area > area_do_carro:
 			area_do_carro = area
 			zona_do_carro = nome
-		# Entrada livre onde a roça chega à rua. A porteira decorativa não
-		# abre e ficava isolada entre lances removidos pelas reservas (#152).
+		# A CERCA DE VARAS em volta da roça, com a entrada livre onde a roça chega mais
+		# perto da rua: a porteira decorativa não abria e ficava isolada entre lances
+		# removidos pelas reservas (#152); a entrada é só o lance que não se planta.
+		#
+		# EM LANCES RETOS DE CANTO A CANTO (07/10: "as cercas continuam mal posicionadas"):
+		# o contorno da roça simplificado (os degraus de dois passos do polígono viram uma
+		# reta), um palmo para fora dela, e cada lado cortado em lances que cabem inteiros
+		# nele (`_lances_do_cercado`). Antes a cerca era amostrada a passo constante pelo
+		# perímetro, e o lance cortava caminho nos cantos — por dentro da roça, cruzando o
+		# da roça vizinha. Cada lance guarda as pontas ("de", "ate"): é por elas que se
+		# planta, no comprimento certo (`plantar_cercas`).
 		if not cerca.is_empty() and (cerca.get("receitas", []) as Array).has(receita):
-			var amostras := _amostras_do_perimetro(poligono, float(cerca.get("passo", 3.0)))
+			var lances := _lances_do_cercado(poligono, float(cerca.get("passo", 3.0)),
+				float(cerca.get("simplificar", 1.6)), float(cerca.get("para_fora", 0.9)))
 			var portao := -1
-			var menor := float(porteira.get("alcance_da_rua", 8.0))
-			if not porteira.is_empty() and rua is Callable:
-				for i in amostras.size():
-					var d := float((rua as Callable).call(amostras[i]))
-					if d < menor and _cabe(reservas, regras, (amostras[i] + amostras[(i + 1) % amostras.size()]) * 0.5, 1.2, true):
-						menor = d
-						portao = i
-			var n := amostras.size()
+			if not porteira.is_empty():
+				var praca = wb.ancoras.get("Praça", Vector3.ZERO) if wb != null and "ancoras" in wb else Vector3.ZERO
+				portao = _lance_da_porteira(lances, reservas, regras, rua, float(porteira.get("alcance_da_rua", 8.0)), Vector2(praca.x, praca.z))
+			var n := lances.size()
 			var livres: Array[bool] = []
 			for i in n:
-				var a := amostras[i]
-				var b := amostras[(i + 1) % n]
-				var cabe := i != portao and a.distance_squared_to(b) >= 0.01
-				# A reserva vale para o lance inteiro, incluindo suas extremidades.
-				for fracao in [0.0, 0.25, 0.5, 0.75, 1.0]:
-					if bloqueado(reservas, regras, a.lerp(b, fracao), float(cerca.get("folga", 0.6))) != "":
+				var lance: Dictionary = lances[i]
+				var de: Vector2 = lance["de"]
+				var ate: Vector2 = lance["ate"]
+				# A reserva vale para o lance inteiro: o corpo com a folga da cerca, e as
+				# pontas sem folga — ponta de cerca na rua é cerca na rua.
+				var cabe := i != portao
+				for fracao in [0.25, 0.5, 0.75]:
+					if bloqueado(reservas, regras, de.lerp(ate, fracao), float(cerca.get("folga", 0.6))) != "":
 						cabe = false
+				if bloqueado(reservas, regras, de, 0.0) != "" or bloqueado(reservas, regras, ate, 0.0) != "":
+					cabe = false
 				livres.append(cabe)
 			for i in n:
-				# Uma vara entre duas reservas nao delimita terreno nenhum.
+				var lance: Dictionary = lances[i]
+				var meio: Vector2 = lance["meio"]
+				var giro: float = lance["giro"]
+				# A ENTRADA (#152): nada se planta no lance dela, nem porteira imóvel nem
+				# vara; fica a marca "entrada", sem malha, que reserva a passagem para
+				# a vegetação e diz a quem confere onde a roça se abre.
+				if i == portao:
+					var passagem := _item("entrada", meio, giro, nome, 1.8, false)
+					passagem["de"] = lance["de"]
+					passagem["ate"] = lance["ate"]
+					saida.append(passagem)
+					continue
+				# Uma vara entre duas reservas não delimita terreno nenhum.
 				if not livres[i] or (not livres[(i - 1 + n) % n] and not livres[(i + 1) % n]):
 					continue
-				var a := amostras[i]
-				var b := amostras[(i + 1) % n]
-				var direcao := b - a
-				var item := _item(String(cerca.get("chave", "cerca_varas")), (a + b) * 0.5,
-					atan2(-direcao.y, direcao.x), nome, 0.9, false)
-				item["de"] = a
-				item["ate"] = b
+				# UMA CERCA SÓ ENTRE DUAS ROÇAS VIZINHAS: o lance que corre colado a um já posto
+				# por outra roça (a divisa) não entra — eram duas cercas que se cruzavam nove
+				# vezes entre a mandioca e o milho do Poente.
+				if _colado_a_outra_cerca(saida, lance, nome, float(cerca.get("entre_rocas", 3.0))):
+					continue
+				var item := _item(String(cerca.get("chave", "cerca_varas")), meio, giro, nome, 0.9, false)
+				item["de"] = lance["de"]
+				item["ate"] = lance["ate"]
 				saida.append(item)
-
 		# O ESTALEIRO DE FUMO dentro da roça de fumo.
 		if not estaleiro.is_empty() and receita == String(estaleiro.get("receita", "")):
 			var raio := float(estaleiro.get("raio", 2.6))
@@ -1032,33 +1192,70 @@ static func plantar_cercas(regiao: Node3D, itens: Array, receitas: Dictionary) -
 		if not cercas.has(item["chave"]):
 			cercas[item["chave"]] = []
 		cercas[item["chave"]].append(item)
-	var lod := float(((receitas.get("aderecos", {}) as Dictionary).get("cerca", {}) as Dictionary).get("lod", 110.0))
+	var da_cerca: Dictionary = (receitas.get("aderecos", {}) as Dictionary).get("cerca", {})
+	var lod := float(da_cerca.get("lod", 110.0))
 	for chave in cercas:
 		var modelo: Dictionary = CatalogoAssets.malha(chave, 1.0)
 		if modelo.is_empty():
 			continue
 		var base: Transform3D = modelo.base
-		# Meia largura da malha ao longo do X dela, já no quadro do catálogo: as
-		# pontas do lance ficam a essa distância do ponto, pelo giro.
-		var meia: float = (base * (modelo.mesh as Mesh).get_aabb()).size.x * 0.5
+		var caixa := base * (modelo.mesh as Mesh).get_aabb()
+		# Meia largura da malha ao longo do X dela, já no quadro do catálogo: é o lance
+		# natural; o posto é esticado ou encolhido no X até o comprimento dele.
+		var meia: float = caixa.size.x * 0.5
+		# EM PÉ (07/10: "aumente elas para realmente serem cercas que impedem a passagem"):
+		# a malha do catálogo mede 0,64 de altura — cerca de canteiro, que o jogador
+		# passava por cima. Esticada no Y até a "altura" da receita (1,35).
+		var esticar := float(da_cerca.get("altura", 0.0)) / maxf(caixa.size.y, 0.01) if float(da_cerca.get("altura", 0.0)) > 0.0 else 1.0
 		var transforms: Array[Transform3D] = []
+		var lances: Array[Dictionary] = []
 		for item: Dictionary in cercas[chave]:
 			# Cada lance de ponta a ponta no chão, deitado na encosta (#93), e não
-			# reto na altura de uma amostra no centro.
+			# reto na altura de uma amostra no centro. As pontas são as do plano
+			# (`_lances_do_cercado`); sem elas, meia malha para cada lado do ponto.
 			var ponto: Vector2 = item["ponto"]
 			var giro := float(item["giro"])
 			var centro := Vector3(ponto.x, 0.0, ponto.y)
 			var rumo := Vector3(cos(giro), 0.0, -sin(giro)) * meia
-			var inicio: Vector2 = item.get("de", Vector2((centro - rumo).x, (centro - rumo).z))
-			var fim: Vector2 = item.get("ate", Vector2((centro + rumo).x, (centro + rumo).z))
-			var de: Vector3 = regiao.ground_position(Vector3(inicio.x, 0.0, inicio.y))
-			var ate: Vector3 = regiao.ground_position(Vector3(fim.x, 0.0, fim.y))
-			var apoio := CatalogoAssets.base_do_lance(de, ate)
-			apoio.x *= de.distance_to(ate) / maxf(meia * 2.0, 0.01)
-			transforms.append(Transform3D(apoio, de.lerp(ate, 0.5) - Vector3(0.0, 0.02, 0.0)) * base)
-
+			var pe_de: Vector3 = Vector3((item["de"] as Vector2).x, 0.0, (item["de"] as Vector2).y) if item.has("de") else centro - rumo
+			var pe_ate: Vector3 = Vector3((item["ate"] as Vector2).x, 0.0, (item["ate"] as Vector2).y) if item.has("ate") else centro + rumo
+			var de: Vector3 = regiao.ground_position(pe_de)
+			var ate: Vector3 = regiao.ground_position(pe_ate)
+			var comprimento := de.distance_to(ate)
+			var lance := Transform3D(CatalogoAssets.base_do_lance(de, ate), de.lerp(ate, 0.5) - Vector3(0.0, 0.02, 0.0))
+			var ajuste := Transform3D(Basis.from_scale(Vector3(clampf(comprimento / maxf(meia * 2.0, 0.01), 0.3, 2.0), esticar, 1.0)), Vector3.ZERO)
+			lances.append({"transform": lance, "comprimento": comprimento})
+			transforms.append(lance * ajuste * base)
 		# O que foi plantado, para quem confere: o renderizador vazio dos portões
 		# não devolve as transformações do MultiMesh.
 		regiao.set_meta("cercas_" + String(chave), transforms)
+		# CORPO EM CADA LANCE (#104): as cercas de varas nasceram sem colisão (os
+		# "adereços sem corpo") e o jogador as atravessava. Uma caixa por lance, na
+		# medida do lance plantado, na camada `MUNDO` e na das cercas
+		# (`Camadas.CERCA`): barra o corpo do jogador e o dos moradores — a malha
+		# de navegação lê o mesmo corpo, e a Candinha chega à Zefa contornando as
+		# roças (#125, `cercas_e_circulacao`) —, e deixa a câmera passar. A entrada
+		# continua passagem. O nome do nó não leva dois-pontos: o Godot o trocaria
+		# por sublinhado.
+		# A CAIXA SOBE ATÉ "altura_do_corpo" (1,9; 07/10): a cerca em pé mede 1,35, e o
+		# pulo do jogador chega a 1,5 — a caixa mais alta que a cerca é o que faz dela
+		# cerca que impede a passagem, e não um degrau.
+		var altura_do_corpo := maxf(caixa.size.y * esticar, float(da_cerca.get("altura_do_corpo", 0.0)))
+		var corpos := Node3D.new()
+		corpos.name = "CorposDasCercas_" + String(chave)
+		regiao.add_child(corpos)
+		for posto: Dictionary in lances:
+			var lance: Transform3D = posto["transform"]
+			var corpo := StaticBody3D.new()
+			corpo.name = "CercaDeVarasColisao"
+			corpo.collision_layer = 1 | (1 << 3)  # `Camadas.MUNDO | Camadas.CERCA`
+			corpo.set_meta("cerca_do_paisagismo", true)
+			corpo.add_to_group("cercas_do_paisagismo")
+			var forma := CollisionShape3D.new()
+			var formato := BoxShape3D.new()
+			formato.size = Vector3(float(posto["comprimento"]), altura_do_corpo, maxf(caixa.size.z, 0.25))
+			forma.shape = formato
+			corpo.add_child(forma)
+			corpos.add_child(corpo)
+			corpo.transform = Transform3D(lance.basis, lance.origin + lance.basis.y * altura_do_corpo * 0.5)
 		regiao._multimesh_em_blocos("Paisagismo: " + String(chave), modelo.mesh, transforms, lod)
-		CatalogoAssets.colisao_de_cercas_repetidas(regiao, String(chave), modelo, transforms)

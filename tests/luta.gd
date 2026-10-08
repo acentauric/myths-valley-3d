@@ -68,6 +68,7 @@ func _run() -> void:
 		return
 	Criatura = load("res://scripts/prototipo_3d/criatura_vale.gd")
 	# --- 1. OS NÚMEROS SÃO OS DO 2D ------------------------------------------
+	_conferir(FileAccess.file_exists(Criatura.ARQUIVO_DAS_ESPECIES), "a tabela das criaturas não está em %s" % Criatura.ARQUIVO_DAS_ESPECIES)
 	var caititu: Dictionary = Criatura.ESPECIES["caititu"]
 	_conferir(caititu["vida"] == 12.0 and caititu["dano"] == 4.0 and caititu["passo"] == 46.0,
 		"o caititu não tem vida, dano e passo do 2D: %s" % str(caititu))

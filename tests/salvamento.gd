@@ -46,6 +46,8 @@ const DO_MUNDO := {
 	# alteração no backlog do save"), e `pausado` é o relógio que ELE parou:
 	# carregar não o religa calado.
 	"Dia": ["hora", "horas_decorridas", "relogio_alterado", "registro_do_relogio", "pausado"],
+	# O fogo da fogueira (07/10): para quantos pratos ainda dá antes de pedir lenha.
+	"Fogueira": ["fogueira"],
 	# O CADERNO DO VALE não é guardado campo a campo: o `estado()` dele devolve
 	# os três de uma vez e o `restaurar()` os põe de volta, porque `ativas` é
 	# lista de dicionários e o alvo de cada missão é um Vector3 — coisa que o

@@ -184,6 +184,13 @@ func _run() -> void:
 	_conferir(not cadeia.iniciado, "a cadeia do saveiro abriu com o tutorial do Pedro em curso")
 	pedro.missao = pedro.MISSOES.size()
 	pedro.set("_despedida_feita", true)
+	# A PONTE ABRE SOZINHA com o tutorial acabado (07/10), e o Pedro a anuncia: o balão dele
+	# por cima do píer esconderia a placa do mestre. Aqui ela já está feita, no mesmo quadro.
+	var da_ponte = vale._cadeias.get("pedro_ponte")
+	if da_ponte != null:
+		da_ponte.iniciado = true
+		da_ponte.missao = da_ponte.passos.size()
+		da_ponte.despedida_feita = true
 	inventario.consumir("facao", inventario.quantidade("facao"))
 	root.get_node("/root/Equipamento").desequipar("maos")
 	inventario.consumir("facao", inventario.quantidade("facao"))
@@ -274,6 +281,13 @@ func _run() -> void:
 	_conferir(placas != null and placas._placas.has(quirino), "o mestre não tem placa de nome")
 	if placas != null and placas._placas.has(quirino):
 		var placa: Control = placas._placas[quirino]
+		# O CARTÃO DA PRIMEIRA VEZ (a água funda, o cordel) para a árvore inteira, e a placa
+		# não se mede com o vale parado: fecha, como o jogador faria.
+		var aviso = vale.get("aviso_da_primeira_vez")
+		for i in 6:
+			if aviso != null and aviso.aberto():
+				aviso.fechar()
+			await process_frame
 		await _no_dia(saveiro.dia, 9.0)
 		await _de_frente_para(jogador, quirino, mundo)
 		# A placa se mede DEPOIS de ele calar: o balão esconde a placa (já traz o nome), e as falas do
@@ -285,7 +299,10 @@ func _run() -> void:
 		if not await _ate(func() -> bool: return placa.visible, 5.0):
 			_conferir(false, "no dia do saveiro, de frente para o mestre, calado, a placa com o nome dele não aparece (%s)" % _estado_da_placa(placas, quirino, jogador))
 		await _no_dia(saveiro.dia + 1, 9.0)
-		_conferir(not await _ate(func() -> bool: return placa.visible, 1.5), "fora do dia do saveiro, a placa com o nome do mestre flutua sobre o píer vazio")
+		# A placa apaga num fade curto quando ele some (e a festa da encomenda, se estiver na tela,
+		# recolhe todas): primeiro ela some, depois fica sumida.
+		_conferir(await _ate(func() -> bool: return not placa.visible, 3.0), "fora do dia do saveiro, a placa com o nome do mestre flutua sobre o píer vazio")
+		_conferir(not await _ate(func() -> bool: return placa.visible, 1.0), "fora do dia do saveiro, a placa com o nome do mestre voltou a aparecer sobre o píer vazio")
 	_fechar()
 
 

@@ -46,7 +46,7 @@
       "texto": "Ela quer que você veja os três com os seus olhos. O cruzeiro, diante da igreja — esse você já passou por ele cem vezes sem olhar. O terreiro: sobe a rua do mirante e, antes da curva grande, sai uma vereda pro poente que entra na mata e some. Você não acha de longe, e é de propósito: em ano de hoje, terreiro que se vê da estrada é terreiro que a polícia fecha. E a gameleira do sambaqui, na ponta da praia, perto das pedras: aquele monte branco embaixo dela é concha. Vá nos três. Chegue perto e olhe. Não tem o que fazer ainda — só olhar.",
       "texto_en": "She wants you to see all three with your own eyes. The wayside cross, before the church — you have walked past it a hundred times without looking. The terreiro: go up the lookout road and, before the big bend, a footpath leaves toward the west, enters the forest and disappears. You will not find it from afar, and that is on purpose: in this day and age, a terreiro seen from the road is a terreiro the police close down. And the gameleira on the shell mound, at the tip of the beach, near the rocks: that white mound under it is shell. Go to all three. Come close and look. There is nothing to do yet — just look.",
       "texto_es": "Ella quiere que veas los tres con tus propios ojos. El crucero, frente a la iglesia: ese ya lo pasaste cien veces sin mirar. El terreiro: sube la calle del mirador y, antes de la curva grande, sale un sendero hacia el poniente que entra en el monte y se pierde. No lo encuentras de lejos, y es a propósito: en los tiempos que corren, terreiro que se ve desde el camino es terreiro que la policía cierra. Y la gameleira del sambaquí, en la punta de la playa, cerca de las piedras: ese montículo blanco debajo es concha. Ve a los tres. Acércate y mira. Todavía no hay nada que hacer: solo mirar.",
-      "recompensa": { "cocada": 2 },
+      "recompensa": {"xp": 10,  "cocada": 2 },
       "meta": {
         "tipo": "visitar",
         "lugares": ["cruzeiro", "terreiro", "gameleira"],
@@ -91,7 +91,7 @@
       "texto": "É com os pés, não é com a boca, ela disse. Volte no lugar que te chamou — o cruzeiro, o terreiro ou a gameleira —, chegue de frente e aceite ali.",
       "texto_en": "It is done with the feet, not with the mouth, she said. Go back to the place that called you — the wayside cross, the terreiro or the gameleira —, face it and accept there.",
       "texto_es": "Es con los pies, no con la boca, dijo ella. Vuelve al lugar que te llamó —el crucero, el terreiro o la gameleira—, ponte de frente y acepta allí.",
-      "recompensa": { "beiju": 2, "garapa": 2 },
+      "recompensa": {"xp": 10,  "beiju": 2, "garapa": 2 },
       "xp_de_fe": true,
       "meta": {
         "tipo": "evento",

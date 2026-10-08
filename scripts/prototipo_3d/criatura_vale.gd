@@ -42,66 +42,47 @@ extends CharacterBody3D
 ## quem foge da mata se livra dela de verdade.
 
 const Animador = preload("res://scripts/prototipo_3d/animador_bicho.gd")
+const IdiomaMenu = preload("res://scripts/prototipo_3d/idioma_menu.gd")
 
 signal mordeu(quanto: float)
 signal morreu(criatura)
 ## Viu o jogador e começou a caçar (só quem tem `VISTA`).
 signal avistou(criatura)
 
-## Os números do 2D, verbatim (`Criatura.ESPECIES`), menos os da ONÇA, que desde
-## 06/10/2026 são do 3D: ela é o perigo da mata, e o jogador a achou lenta e
-## fraca. Distâncias e passo em pixels; tempos em segundos. `corpo` e `desenho_y`
-## do 2D ficaram de fora: são da folha de sprite, e aqui o corpo é `CORPO`.
-##
-## A ONÇA, NÚMERO POR NÚMERO. Mata em DUAS mordidas quem não corre, e escapa quem
-## corre:
-##   - `passo` 120 px = 4,06 u/s: quase o dobro do passo do jogador (2,1) e abaixo
-##     da carreira dele (5,2) — quem anda é alcançado; quem corre se afasta 1,1 u
-##     por segundo e ela desiste.
-##   - `dano` 16 e `dano_da_vida` 0,55: a mordida tira o maior entre os dois, e
-##     dois golpes de 55 % passam de 100 % para qualquer vida cheia (30 de início,
-##     mais 10 por talento de vigor), com ou sem gibão (que tira 1 de cada golpe).
-##   - `passeio` 0,4: ronda o penedo a 1,6 u/s, e não a 2.
-const ESPECIES := {
-	"caititu": {"nome": "Caititu", "vida": 12.0, "dano": 4.0, "passo": 46.0,
-		"fareja": 96.0, "desiste": 176.0, "mordida": 14.0, "entre_mordidas": 0.6,
-		"cai": "carne_de_caca", "quantos_caem": 1, "volta": 3, "folego": 4.0,
-		"bote": 0.75, "bote_acerta": 0.55, "salto": 6.0},
-	"onca": {"nome": "Onça", "vida": 36.0, "dano": 16.0, "passo": 120.0,
-		"fareja": 128.0, "desiste": 224.0, "mordida": 18.0, "entre_mordidas": 0.8,
-		"cai": "couro_de_onca", "quantos_caem": 1, "volta": 5, "folego": 12.0,
-		"bote": 0.7, "bote_acerta": 0.6, "salto": 18.0, "dano_da_vida": 0.55, "passeio": 0.4},
-	"jararaca": {"nome": "Jararaca", "vida": 8.0, "dano": 2.0, "passo": 30.0,
-		"fareja": 56.0, "desiste": 112.0, "mordida": 12.0, "entre_mordidas": 1.0,
-		"cai": "banha_de_jararaca", "quantos_caem": 1, "volta": 4,
-		"bote": 0.55, "bote_acerta": 0.6, "salto": 10.0,
-		"peconha": {"dura": 12.0, "por_segundo": 0.5}},
-}
+## OS NÚMEROS DE CADA ESPÉCIE MORAM EM `data/criaturas_3d.json` (#109): vida,
+## dano, passo, faro, mordida, o que deixa no chão, o corpo, o modelo e a vista,
+## um bloco por bicho — como `bichos_de_casa.json` para os de quintal. As quatro
+## tabelas são lidas de lá uma vez: `ESPECIES` traz os números do 2D verbatim
+## (distâncias e passo em pixels, convertidos por `u_por_px`; `corpo` e
+## `desenho_y` do 2D ficaram de fora, que são da folha de sprite), `CORPO` a
+## caixa em unidades (largura, altura, comprimento; o comprimento aponta para a
+## frente, +Z), `MODELOS` a chave do catálogo (a onça tem um por pelagem) e
+## `VISTA` só o que é do 3D, já em unidades: até onde enxerga de dia e de noite,
+## a abertura do cone em graus, a coleira (`desiste`, do jogador; `territorio`,
+## do ninho), quanto tempo espreita antes da carga e o raio da ronda.
+const ARQUIVO_DAS_ESPECIES := "res://data/criaturas_3d.json"
+static var _especies_lidas: Dictionary = {}
+static var ESPECIES: Dictionary = _tabela("")
+static var CORPO: Dictionary = _tabela("corpo")
+static var MODELOS: Dictionary = _tabela("modelo")
+static var VISTA: Dictionary = _tabela("vista")
 
-## A caixa de cada espécie, em unidades: largura, altura, comprimento (o
-## comprimento aponta para a frente, +Z). Proporção de bicho, não de sprite.
-const CORPO := {
-	"caititu": Vector3(0.45, 0.45, 0.9),
-	"onca": Vector3(0.55, 0.7, 1.5),
-	"jararaca": Vector3(0.16, 0.12, 1.1),
-}
 
-## O modelo de cada espécie no catálogo (estilo Tripo). A onça tem dois, pela
-## pelagem; sem pelagem, a pintada.
-const MODELOS := {
-	"caititu": "caititu",
-	"jararaca": "jararaca",
-	"onca": {"pintada": "onca_pintada", "preta": "onca_preta"},
-}
+## Uma das tabelas, lida do arquivo: `campo` vazio é a espécie inteira.
+static func _tabela(campo: String) -> Dictionary:
+	if _especies_lidas.is_empty():
+		var lido: Variant = JSON.parse_string(FileAccess.get_file_as_string(ARQUIVO_DAS_ESPECIES))
+		_especies_lidas = (lido as Dictionary).get("especies", {}) if lido is Dictionary else {}
+	var tabela: Dictionary = {}
+	for especie in _especies_lidas:
+		var dado: Dictionary = _especies_lidas[especie]
+		if campo == "":
+			tabela[especie] = dado
+		elif dado.has(campo):
+			var valor: Variant = dado[campo]
+			tabela[especie] = Vector3(float(valor[0]), float(valor[1]), float(valor[2])) if campo == "corpo" else valor
+	return tabela
 
-## A VISTA, só do 3D e já em unidades (não é número do 2D, que só farejava):
-## até onde enxerga de dia e de noite, a abertura do cone em graus, a coleira
-## (`desiste`, do jogador; `territorio`, do ninho), quanto tempo espreita antes
-## da carga e o raio da ronda.
-const VISTA := {
-	"onca": {"alcance": 16.0, "alcance_noite": 10.0, "cone": 140.0, "desiste": 36.0,
-		"territorio": 48.0, "espreita": 1.5, "ronda": 9.0},
-}
 ## De quanto em quanto tempo ela olha (s): o raio de física não é de graça.
 const OLHAR_A_CADA := 0.25
 ## Altura dos olhos e do peito de quem é visto, para a linha.
@@ -194,8 +175,9 @@ func dados() -> Dictionary:
 	return ESPECIES.get(especie, {})
 
 
+## O nome no idioma do jogo ("Onça", "Jaguar"): o HUD o diz ao derrubar.
 func nome() -> String:
-	return str(dados().get("nome", especie))
+	return str(IdiomaMenu.campo(dados(), "nome", especie))
 
 
 ## A chave do catálogo do corpo desta criatura.
@@ -270,7 +252,8 @@ func _montar() -> void:
 	# A caixa tem cabeça na frente: sem ela não teria frente, e o bote precisa
 	# de uma — é para ela que o jogador olha.
 	var chave := chave_do_modelo()
-	_modelo = Animador.vestir(chave, pose, tamanho, COR_DO_CORPO)
+	# A ESCALA da espécie ("escala", #31): a Matinta é o urubu do catálogo em dobro e meio.
+	_modelo = Animador.vestir(chave, pose, tamanho, COR_DO_CORPO, 0.0, float(dados().get("escala", 1.0)))
 	_animador = Animador.new()
 	_animador.name = "Animador"
 	add_child(_animador)
@@ -282,7 +265,8 @@ func _montar() -> void:
 	# de dia e de noite, e na onça-preta também.
 	_tinta_do_aviso = _tinta_por_cima(COR_DO_AVISO, 0.5)
 	_tinta_da_pancada = _tinta_por_cima(COR_DA_PANCADA, 0.6)
-	if pelagem == "preta":
+	# Os olhos acesos: a onça-preta, e a espécie que os pede ("olhos": a Matinta, de noite).
+	if pelagem == "preta" or bool(dados().get("olhos", false)):
 		_montar_os_olhos(tamanho)
 
 	# A MARCA NO CHÃO: do focinho até onde a mordida alcança, na largura do
@@ -416,6 +400,15 @@ func _morrer() -> void:
 
 func tonto() -> bool:
 	return _relogio < _tonto_ate
+
+
+## FICA TONTA DE FORA, sem pancada: o sinal do senhor da fazenda no embate do capítulo 7
+## (`revoar_vale.gd`, #31) — ela para, não caça e não morde por `segundos`.
+func tontear(segundos: float) -> void:
+	if vida <= 0.0 or segundos <= 0.0:
+		return
+	_tonto_ate = _relogio + segundos
+	_parar_o_bote()
 
 
 func no_bote() -> bool:

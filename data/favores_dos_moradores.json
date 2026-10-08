@@ -1,0 +1,180 @@
+{
+  "observacao": "OS FAVORES DOS MORADORES (docs/projeto/MISSOES_SECUNDARIAS.md): as filas secundárias que o vale pendura em cada morador do arraial (prototype._pendurar_as_secundarias). 'grau' é o grau de afinidade (Afinidade.GRAUS: 1 = Conhecido de vista) a partir do qual o E no morador abre a fila; 'depois' é a chave de outra fila que tem de ter acabado antes (os arcos da fase 2 seguem o favor da fase 1). Toda fila espera também a chegada do Pedro, como as dos outros moradores. O nome deste arquivo não começa com 'missoes_' de propósito: o portão missoes_elos lê como fila todo data/missoes_*.json, e isto é a tabela, não uma fila.",
+  "filas": [
+    {
+      "dono": "rendeira",
+      "arquivo": "res://data/missoes_rendeira.json",
+      "chave": "rendeira_favor",
+      "grau": 1
+    },
+    {
+      "dono": "sacristao",
+      "arquivo": "res://data/missoes_sacristao.json",
+      "chave": "sacristao_favor",
+      "grau": 1
+    },
+    {
+      "dono": "beata",
+      "arquivo": "res://data/missoes_beata.json",
+      "chave": "beata_favor",
+      "grau": 1
+    },
+    {
+      "dono": "mercador",
+      "arquivo": "res://data/missoes_mercador.json",
+      "chave": "mercador_favor",
+      "grau": 1
+    },
+    {
+      "dono": "guarda",
+      "arquivo": "res://data/missoes_guarda.json",
+      "chave": "guarda_favor",
+      "grau": 1
+    },
+    {
+      "dono": "pescador",
+      "arquivo": "res://data/missoes_pescador.json",
+      "chave": "pescador_favor",
+      "grau": 1
+    },
+    {
+      "dono": "marisqueira",
+      "arquivo": "res://data/missoes_marisqueira.json",
+      "chave": "marisqueira_favor",
+      "grau": 1
+    },
+    {
+      "dono": "lavadeira",
+      "arquivo": "res://data/missoes_lavadeira.json",
+      "chave": "lavadeira_favor",
+      "grau": 1
+    },
+    {
+      "dono": "quituteira",
+      "arquivo": "res://data/missoes_quituteira.json",
+      "chave": "quituteira_favor",
+      "grau": 1
+    },
+    {
+      "dono": "carpinteiro",
+      "arquivo": "res://data/missoes_carpinteiro.json",
+      "chave": "carpinteiro_favor",
+      "grau": 1
+    },
+    {
+      "dono": "menino",
+      "arquivo": "res://data/missoes_menino.json",
+      "chave": "menino_favor",
+      "grau": 1
+    },
+    {
+      "dono": "menina",
+      "arquivo": "res://data/missoes_menina.json",
+      "chave": "menina_favor",
+      "grau": 1
+    },
+    {
+      "dono": "mestre_saveiro",
+      "arquivo": "res://data/missoes_mestre_saveiro.json",
+      "chave": "ladislau_favor",
+      "grau": 1
+    },
+    {
+      "dono": "padre",
+      "arquivo": "res://data/missoes_padre.json",
+      "chave": "padre_favor",
+      "grau": 1
+    },
+    {
+      "dono": "rendeira",
+      "arquivo": "res://data/missoes_rendeira_toalha.json",
+      "chave": "rendeira_toalha",
+      "grau": 2,
+      "depois": "rendeira_favor"
+    },
+    {
+      "dono": "sacristao",
+      "arquivo": "res://data/missoes_sacristao_pedra.json",
+      "chave": "sacristao_pedra",
+      "grau": 2,
+      "depois": "sacristao_favor"
+    },
+    {
+      "dono": "pescador",
+      "arquivo": "res://data/missoes_pescador_madeira.json",
+      "chave": "pescador_madeira",
+      "grau": 2,
+      "depois": "pescador_favor"
+    },
+    {
+      "dono": "mestre_saveiro",
+      "arquivo": "res://data/missoes_mestre_saveiro_luz.json",
+      "chave": "ladislau_luz",
+      "grau": 2,
+      "depois": "ladislau_favor"
+    },
+    {
+      "dono": "menina",
+      "arquivo": "res://data/missoes_menina_roda.json",
+      "chave": "menina_roda",
+      "grau": 2,
+      "depois": "menina_favor"
+    },
+    {
+      "dono": "guarda",
+      "arquivo": "res://data/missoes_guarda_ronda.json",
+      "chave": "guarda_ronda",
+      "grau": 2,
+      "depois": "guarda_favor"
+    },
+    {
+      "dono": "padre",
+      "arquivo": "res://data/missoes_padre_sino.json",
+      "chave": "padre_sino",
+      "grau": 2,
+      "depois": "padre_favor"
+    },
+    {
+      "dono": "marisqueira",
+      "arquivo": "res://data/missoes_marisqueira_mare.json",
+      "chave": "marisqueira_mare",
+      "grau": 2,
+      "depois": "marisqueira_favor"
+    },
+    {
+      "dono": "carpinteiro",
+      "arquivo": "res://data/missoes_carpinteiro_canoa.json",
+      "chave": "carpinteiro_canoa",
+      "grau": 2,
+      "depois": "carpinteiro_favor"
+    },
+    {
+      "dono": "mercador",
+      "arquivo": "res://data/missoes_mercador_fiado.json",
+      "chave": "mercador_fiado",
+      "grau": 2,
+      "depois": "mercador_favor"
+    },
+    {
+      "dono": "menino",
+      "arquivo": "res://data/missoes_menino_caminho.json",
+      "chave": "menino_caminho",
+      "grau": 3,
+      "depois": "menino_favor"
+    },
+    {
+      "dono": "beata",
+      "arquivo": "res://data/missoes_beata_promessa.json",
+      "chave": "beata_promessa",
+      "grau": 2,
+      "depois": "beata_favor"
+    },
+    {
+      "dono": "lavadeira",
+      "arquivo": "res://data/missoes_lavadeira_rio.json",
+      "chave": "lavadeira_rio",
+      "grau": 2,
+      "depois": "lavadeira_favor"
+    }
+  ]
+}

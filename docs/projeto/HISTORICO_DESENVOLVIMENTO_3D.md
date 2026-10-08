@@ -809,7 +809,10 @@ era a penúltima — era pré-requisito da 2ᵃ.
 > dentro dele, sem passar por lá.
 >
 > **O amanhecer saiu** (#21), inteiro também: `scripts/ui/amanhecer.gd` é o do
-> 2D, conferido byte a byte por `tests/amanhecer.gd`. Entra onde o vale vira o
+> 2D, conferido byte a byte por `tests/amanhecer.gd` (desde 07/10 o vale o desenha
+> pela `amanhecer_vale.gd`, que estende o arquivo do 2D só em `_montar` — a tela
+> do vale, 1280×720, a letra do vale —, como a `mochila_vale.gd` faz com a
+> mochila: a regra segue no arquivo do 2D, regra 3). Entra onde o vale vira o
 > dia, que é a queda: o cartão aparece no escuro, acima da tela preta (como no 2D
 > fica acima do véu), com o dia novo já virado e os lembretes do 2D — o dia da
 > fazenda ou a festa da fé —, e só depois a tela clareia. A fala de quem caiu

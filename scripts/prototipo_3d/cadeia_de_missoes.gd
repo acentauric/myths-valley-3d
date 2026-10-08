@@ -39,6 +39,8 @@ extends Node
 ##
 ##   juntar    conta item na mochila (lenha, pedra)
 ##   derrubar  conta ALVOS DE TRABALHO que caíram, por peça
+##   (`visitar` aceita `horas: [de, ate]`, a janela do relógio do vale em que chegar
+##   conta — a roda na praia de noite, a maré das cinco; ver `_na_hora`.)
 ##
 ## (Vieram outros depois — levar, falar, evento, obra —, e com a fé, #52, mais
 ## dois: `visitar`, que risca cada lugar de uma lista ao chegar perto dele — os
@@ -256,6 +258,19 @@ func total() -> int:
 	return passos.size()
 
 
+## O FAVOR FEITO: a fila inteira de um morador fechou, e a afinidade dele dá o salto
+## (`Afinidade.POR_FAVOR`, +25 — de "Conhecido de vista" a "Gente boa"). Até 07/10 ninguém
+## chamava `fez_o_favor`: conversa e presente subiam a afinidade, e cumprir o pedido do
+## morador, que é o salto do 2D, não valia nada. Só para quem está na teia
+## (`Afinidade.MORADORES`, data/dialogos/aldeoes.json): o Pedro e as vozes da fé ficam fora.
+func _dar_o_favor() -> void:
+	if dono == null or not ("dados" in dono):
+		return
+	var id := str(dono.dados.get("id", ""))
+	if id != "" and Afinidade.MORADORES.has(id):
+		Afinidade.fez_o_favor(id)
+
+
 func acabou() -> bool:
 	return missao >= passos.size()
 
@@ -293,7 +308,9 @@ func correr(delta: float, _palavra_livre: bool = true) -> void:
 			# pedida: o Pedro só volta à vida de pescador depois de dizer a última
 			# frase do tutorial, e não com ela esperando a vez na fila.
 			_arremate_pedido = true
-			if not _falar("", str(arremate["texto"]), FilaDeFalas.Classe.MISSAO, "arremate:%d" % get_instance_id(),
+			# COM A VOZ DELE, quando o arremate a tem ("audio", a da chegada: 07/10, "crie um
+			# áudio para o Pedro narrar a interação depois que o jogador lê o convite").
+			if not _falar(str(arremate.get("audio", "")), str(arremate["texto"]), FilaDeFalas.Classe.MISSAO, "arremate:%d" % get_instance_id(),
 					{"ao_terminar": _arremate_dito}):
 				_arremate_dito()
 		else:
@@ -553,6 +570,8 @@ func _registrar_no_caderno(passo: Dictionary) -> void:
 		"resumo": resumo_do_passo(passo),
 		"passo": missao + 1,
 		"passos": passos.size(),
+		# O que o passo paga, para o diário mostrar em ícones (#107).
+		"recompensa": (passo.get("recompensa", {}) as Dictionary).duplicate(),
 		"feitos": _feitos(),
 	})
 	var alvo := posicao_do_passo(missao)
@@ -876,6 +895,10 @@ func _pagar(passo: Dictionary) -> void:
 		if str(chave) == "reis":
 			Jogo.dinheiro += quanto
 			entrou.append(tr("%d réis") % quanto)
+		elif str(chave) == "xp":
+			# As missões pagam XP (#107, decisão do autor em 06/10): pela teia de
+			# talentos, como as obras e o trabalho.
+			Talentos.ganhar_pontos(float(quanto))
 		elif Catalogo.existe(str(chave)):
 			var nome := "%d %s" % [quanto, _nome_do_item(str(chave)).to_lower()]
 			if _dar(str(chave), quanto, false):
@@ -904,6 +927,8 @@ func _texto_da_recompensa(passo: Dictionary) -> String:
 		var quanto := int(recompensa[chave])
 		if str(chave) == "reis":
 			partes.append(tr("%d réis") % quanto)
+		elif str(chave) == "xp":
+			partes.append("%d XP" % quanto)
 		else:
 			partes.append("%d %s" % [quanto, _nome_do_item(str(chave)).to_lower()])
 	return ", ".join(partes)
@@ -927,7 +952,16 @@ func avancar() -> void:
 		if bool(fechando.get("xp_de_fe", false)):
 			Fe.ganhar("missao")
 			Talentos.ganhar("missao")
-		CadernoDoVale.concluir(_id_no_caderno(fechando))
+		# A FESTA SÓ NO ÚLTIMO PASSO (07/10), com o nome da missão inteira em vez do
+		# passo: "Chegada ao arraial", e não "A chave com a Dona Zefa".
+		var ultimo := missao + 1 >= passos.size()
+		# O FAVOR DA AFINIDADE (07/10, docs/projeto/MISSOES_SECUNDARIAS.md): fechar a fila
+		# inteira de um morador da teia é o salto da afinidade, como no 2D.
+		if ultimo:
+			_dar_o_favor()
+		CadernoDoVale.concluir(_id_no_caderno(fechando),
+			{"titulo": nome_da_missao if nome_da_missao != "" else _titulo_do_passo(fechando), "missao": "",
+				"quem": _nome_do_dono()} if ultimo else null)
 		if str(fechando.get("cena", "")) != "":
 			cena.emit(str(fechando["cena"]))
 	missao += 1
@@ -1161,6 +1195,15 @@ func posicao_do_passo(indice: int) -> Vector3:
 ## "o ideal é o Pedro ensinar a apertar E para iniciar as interações com os
 ## NPCs".
 var comeca_perto_de := 0.0
+## O AVISO DA TRANCADA SÓ SE DÁ QUANDO ISTO RESPONDER VERDADEIRO (07/10, os favores dos
+## moradores, docs/projeto/MISSOES_SECUNDARIAS.md). Uma fila trancada pela AFINIDADE não pode
+## tomar a conversa do morador no primeiro encontro: o aviso ("a gente mal se conhece") no
+## lugar da fala dele era o que o jogador ouvia sempre — e a conversa diária, que é o que sobe
+## a afinidade, nunca acontecia. Sem resposta, o aviso vale como antes (o Damião, o Tonho).
+var avisa_a_trancada: Callable = Callable()
+## O AVISO SE REPETE A CADA E? Sim para quem só tem isso a dizer (o Damião sem o machado); não
+## para a fila trancada pela afinidade, que avisa uma vez e devolve a conversa ao morador.
+var aviso_repete := true
 ## SÓ DEPOIS DE OUTRA COISA: a cadeia não abre enquanto isto responder falso.
 ## A do mirante espera o Pedro terminar o tutorial — no 2D as missões do
 ## arraial vêm "depois que o Pedro termina de ensinar a sobreviver".
@@ -1398,6 +1441,11 @@ func _encontrar(passo: Dictionary, quem: Node3D) -> void:
 ## (`visitou`), para contar o que se vê dali.
 func _tentar_visita(passo: Dictionary, meta: Dictionary) -> void:
 	var id := str(passo.get("id", ""))
+	# A HORA DO PASSO (07/10, docs/projeto/MISSOES_SECUNDARIAS.md, fase 3): a roda na praia é de
+	# noite, a maré das cinco é de madrugada, a vigília do sino vira a meia-noite. Fora da janela,
+	# chegar não risca o lugar.
+	if not _na_hora(meta):
+		return
 	for lugar in _lugares_da_meta(meta):
 		var chave_da_visita := _chave_da_visita(id, str(lugar))
 		if bool(_levados.get(chave_da_visita, false)):
@@ -1429,6 +1477,20 @@ func _tentar_oferenda(passo: Dictionary, meta: Dictionary) -> void:
 	var resposta := str(meta.get("resposta", ""))
 	if resposta != "":
 		_falar("", resposta, FilaDeFalas.Classe.CONVERSA, "resposta:%d:%s" % [get_instance_id(), id])
+
+
+## A JANELA DE HORAS DA META, `"horas": [de, ate]` no relógio do vale (`Dia.hora`, 0 a 24): sem
+## ela, qualquer hora serve; com ela, só dentro — e a janela pode virar a meia-noite ([20, 5]).
+func _na_hora(meta: Dictionary) -> bool:
+	var horas: Array = meta.get("horas", [])
+	if horas.size() < 2:
+		return true
+	var agora := float(Dia.hora)
+	var de := float(horas[0])
+	var ate := float(horas[1])
+	if de <= ate:
+		return agora >= de and agora < ate
+	return agora >= de or agora < ate
 
 
 ## Os lugares da meta que o vale tem. Lugar que ainda não existe some da conta,
@@ -1626,4 +1688,6 @@ func em_andamento() -> bool:
 ## escreveu o aviso (`trancada`). "Só conversa de passagem" deixava o jogador sem saber
 ## o que lhe faltava.
 func dica_da_trancada() -> String:
+	if avisa_a_trancada.is_valid() and not bool(avisa_a_trancada.call()):
+		return ""
 	return trancada_texto if esta_trancada() else ""

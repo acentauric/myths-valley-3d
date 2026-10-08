@@ -1,0 +1,36 @@
+{
+	"_sobre": "AS CRIATURAS DA MATA do vale 3D (#109): o que cada espécie tem de seu, um bloco por bicho, como bichos_de_casa.json para os de quintal. Os números de cada espécie são os do 2D, verbatim (Criatura.ESPECIES de lá), MENOS OS DA ONÇA, que desde 06/10/2026 são do 3D (ela é o perigo da mata, e o jogador a achou lenta e fraca): passo 120 px = 4,06 u/s, quase o dobro do passo do jogador (2,1) e abaixo da carreira dele (5,2) — quem anda é alcançado, quem corre escapa; dano 16 e dano_da_vida 0,55 — a mordida tira o maior dos dois, e duas passam de 100% de qualquer vida cheia, com ou sem gibão; passeio 0,4 — ronda o penedo a 1,6 u/s; a coleira 36/48 u e a espreita de 1,5 s na vista. 'vida' e 'dano' em pontos; 'passo', 'fareja', 'desiste', 'mordida' e 'salto' em PIXELS do 2D, convertidos para unidades do vale por criatura_vale.u_por_px; 'entre_mordidas', 'bote' (duração), 'folego' e 'volta' (dias até a mata repor) em segundos ou dias; 'bote_acerta' é a fração do bote em que a boca fecha; 'cai' e 'quantos_caem' o que fica no chão. 'corpo' é a caixa do procedural em unidades (largura, altura, comprimento; o comprimento aponta para a frente, +Z). 'modelo' é a chave do catálogo (Tripo); a onça tem um por pelagem. 'vista' só existe no 3D e já está em unidades: até onde enxerga de dia e de noite, o cone em graus, a coleira ('desiste' do jogador, 'territorio' do ninho), quanto tempo espreita antes da carga e o raio da ronda. 'nome' é o que o HUD diz ao derrubar, nos três idiomas. Ver scripts/prototipo_3d/criatura_vale.gd.",
+	"especies": {
+		"caititu": {
+			"nome": "Caititu", "nome_en": "Collared peccary", "nome_es": "Pecarí de collar",
+			"vida": 12.0, "dano": 4.0, "passo": 46.0,
+			"fareja": 96.0, "desiste": 176.0, "mordida": 14.0, "entre_mordidas": 0.6,
+			"cai": "carne_de_caca", "quantos_caem": 1, "volta": 3, "folego": 4.0,
+			"bote": 0.75, "bote_acerta": 0.55, "salto": 6.0,
+			"corpo": [0.45, 0.45, 0.9],
+			"modelo": "caititu"
+		},
+		"onca": {
+			"nome": "Onça", "nome_en": "Jaguar", "nome_es": "Jaguar",
+			"vida": 36.0, "dano": 16.0, "passo": 120.0,
+			"fareja": 128.0, "desiste": 224.0, "mordida": 18.0, "entre_mordidas": 0.8,
+			"cai": "couro_de_onca", "quantos_caem": 1, "volta": 5, "folego": 12.0,
+			"bote": 0.7, "bote_acerta": 0.6, "salto": 18.0, "dano_da_vida": 0.55, "passeio": 0.4,
+			"corpo": [0.55, 0.7, 1.5],
+			"modelo": {"pintada": "onca_pintada", "preta": "onca_preta"},
+			"vista": {"alcance": 16.0, "alcance_noite": 10.0, "cone": 140.0, "desiste": 36.0,
+				"territorio": 48.0, "espreita": 1.5, "ronda": 9.0}
+		},
+		"jararaca": {
+			"nome": "Jararaca", "nome_en": "Jararaca pit viper", "nome_es": "Yarará",
+			"vida": 8.0, "dano": 2.0, "passo": 30.0,
+			"fareja": 56.0, "desiste": 112.0, "mordida": 12.0, "entre_mordidas": 1.0,
+			"cai": "banha_de_jararaca", "quantos_caem": 1, "volta": 4,
+			"bote": 0.55, "bote_acerta": 0.6, "salto": 10.0,
+			"peconha": {"dura": 12.0, "por_segundo": 0.5},
+			"corpo": [0.16, 0.12, 1.1],
+			"modelo": "jararaca"
+		},
+    "matinta": {"nome":"Matinta Pereira","nome_en":"The Matinta Pereira","nome_es":"La Matinta Pereira","vida":70,"dano":14,"passo":110,"fareja":420,"desiste":1400,"mordida":22,"entre_mordidas":1.1,"cai":"","quantos_caem":0,"volta":0,"unica":true,"folego":20,"bote":0.8,"bote_acerta":0.6,"salto":22,"corpo":[1.1,1,2],"modelo":"urubu","escala":2.4,"olhos":true,"_sobre":"A FERA DO CAPÍTULO 7 (#31): a Matinta Pereira em forma de coruja rasga-mortalha, nascida pelo revoar_vale quando a lança bate no escudo, e que cai uma vez só ('unica': não volta com os dias). Vida 70 contra a lança de safiras (dano 9; o forte, 16); dano 14 antes do escudo (defesa 4) e do gibão (1); passo 110 px = 3,7 u/s, entre o andar e a carreira do jogador; fareja 420 px = 14 u e desiste a 1400 = 47 u, para não largar as ruínas. Sem 'dano_da_vida': a mordida dela é a conta de sempre. O corpo é o urubu do catálogo em dobro e meio ('escala'), de olhos acesos ('olhos'), que é como se vê a fera de noite."}
+  }
+}

@@ -13,7 +13,8 @@ func _run() -> void:
 	root.add_child(festa)
 	var caderno = root.get_node("CadernoDoVale")
 	caderno.abrir_missao("teste_conquista", "Uma leira pronta", "pedro")
-	caderno.concluir("teste_conquista")
+	# A festa só vem pedida (07/10: a missão inteira festeja, o passo do meio não).
+	caderno.concluir("teste_conquista", true)
 	await create_timer(0.9).timeout
 	if "--falsificar-clarao" in OS.get_cmdline_user_args():
 		festa._clarao.material.blend_mode = CanvasItemMaterial.BLEND_MODE_ADD

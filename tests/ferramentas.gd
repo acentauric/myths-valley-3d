@@ -391,7 +391,9 @@ func _run() -> void:
 ## que o vale liga um a um; os de prefixo levam o id do que aconteceu, e o id tem
 ## de existir — "cozinhou:farinha" pede uma receita da cozinha chamada farinha.
 const EVENTOS_FIXOS := ["abriu_arraial", "adotou_fe", "arou", "plantou", "regou", "colheu", "dormiu", "correu",
-	"pescou", "esquivou", "tonteou", "destravou_talento", "abriu_painel"]
+	"pescou", "esquivou", "tonteou", "destravou_talento", "abriu_painel",
+	# O livro de fiado do armazém avisa a fila do Tonho direto (`FiadoTonho`, #68).
+	"livro_tonho_lido", "divida_tonho_quitada"]
 
 func _o_vale_avisa(evento: String) -> bool:
 	if evento in EVENTOS_FIXOS:

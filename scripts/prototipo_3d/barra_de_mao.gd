@@ -40,6 +40,8 @@ func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	# Continua ouvindo com o jogo pausado: é ela que fecha a mochila.
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	# A COMIDA NA MÃO VOTA NO FOCO DO E (ver `alvo_do_e`).
+	add_to_group(FocoDoE.GRUPO)
 	# A BARRA OCUPA A TELA INTEIRA e põe a fila onde quer, em vez de tentar ser
 	# uma faixa no rodapé.
 	#
@@ -193,7 +195,11 @@ func _nome_na_mao() -> String:
 	var id := Inventario.na_mao()
 	if id == "":
 		return "mão livre"
-	return str(Catalogo.ITENS.get(id, {}).get("nome", id))
+	var nome := str(Catalogo.ITENS.get(id, {}).get("nome", id))
+	# O papel na mão diz a tecla que o lê (#113).
+	if Catalogo.tipo(id) == "documento":
+		return "%s  ·  %s lê" % [nome, Atalhos.letra("interagir")]
+	return nome
 
 
 func _moldura(na_mao: bool) -> StyleBoxFlat:
@@ -241,11 +247,40 @@ func _unhandled_key_input(event: InputEvent) -> void:
 			get_viewport().set_input_as_handled()
 			return
 
-	# O E COME O QUE ESTÁ NA MÃO, e é o último da fila do E: só quando o foco não
-	# deu a tecla a ninguém (`foco_do_e.gd`). Ver `_comer_da_mao`.
+	# O E COME O QUE ESTÁ NA MÃO — ou LÊ, se é papel (#113) — quando o foco do E é
+	# da barra (`alvo_do_e`): com comida ou papel na mão, ela vota, e vence tudo
+	# menos a conversa com quem está ao alcance. Ver `_comer_da_mao` e `_ler_da_mao`.
 	if event.physical_keycode == Atalhos.tecla("interagir") and _corpo_de_pe() \
-			and not FocoDoE.alguem(self) and _comer_da_mao():
+			and FocoDoE.e_dele(self) and (_comer_da_mao() or _ler_da_mao()):
 		get_viewport().set_input_as_handled()
+
+
+## O QUE O E FARIA AQUI, para o foco (`foco_do_e.gd`): comer a comida (ou ler o
+## papel) que está na mão.
+##
+## "Ao tentar usar o botão E para consumir o consumível, não consegui, precisei
+## clicar com o mouse" (playtest de 07/10). A barra era a última da fila do E e só
+## comia quando ninguém mais levava a tecla — e no vale quase sempre alguém leva: o
+## leito da lavoura sob os pés, a árvore do lado, a bancada, o toco. Comida na mão é
+## escolha do jogador (ele a pôs ali pelo número), então a barra entra no foco com
+## viés e vence o que está em volta — menos a CONVERSA: com gente ao alcance o E é
+## de quem fala (`tecla_dos_moradores`), que para comer basta dar um passo.
+const VIES_DA_MAO := 1.0
+
+
+func alvo_do_e() -> Dictionary:
+	var id := Inventario.na_mao()
+	if id == "" or not (Cozinha.e_comida(id) or Catalogo.tipo(id) == "documento") or not _corpo_de_pe():
+		return {}
+	if not is_inside_tree():
+		return {}
+	var jogador := get_tree().get_first_node_in_group("map_player")
+	if jogador == null:
+		return {}
+	for fonte in get_tree().get_nodes_in_group(FocoDoE.GRUPO):
+		if fonte != self and fonte.has_method("ao_alcance") and fonte.has_method("escolher_entre") and fonte.ao_alcance() != null:
+			return {}
+	return {"ponto": (jogador as Node3D).global_position, "vies": VIES_DA_MAO}
 
 
 ## O CORPO DO JOGADOR ESTÁ DE PÉ? No escuro da queda (e no susto do tubarão) ele
@@ -315,7 +350,38 @@ func _comer_da_mao() -> bool:
 	var id := Inventario.na_mao()
 	if not Cozinha.e_comida(id):
 		return false
+	# ACIMA DO TETO, PERGUNTA (#105): o que a comida repõe além do máximo da
+	# reserva vai fora. A caixa pergunta, e só o "sim" come — o item fica na mão
+	# até lá. Pedido do autor, duas vezes.
+	var sobra: float = Energia.atual + Cozinha.reposicao(id) - Energia.maximo()
+	if sobra > 0.5:
+		_perguntar_e_comer(id, sobra)
+		return true
 	return Cozinha.comer(id)
+
+
+func _perguntar_e_comer(id: String, sobra: float) -> void:
+	var sim: bool = await Dialogo.perguntar("", tr("Comer agora joga fora %d de fôlego. Comer assim mesmo?") % roundi(sobra))
+	if sim and Inventario.na_mao() == id:
+		Cozinha.comer(id)
+
+
+## O E LÊ O PAPEL QUE ESTÁ NA MÃO (#113): "o convite que chega deve ser possível
+## acessar apertando E também; a mesma regra se aplica a qualquer coisa de
+## leitura que vai parar no inventário". Ler era só o F em cima do papel, na
+## mochila (`Mochila._ler`), para o convite não ser relido por tropeço perto do
+## mural; com o papel NA MÃO, o E é vontade, não tropeço. Quem lê é quem a
+## mochila chama (`Mochila.abrir_documento`, que o `prototype.gd` liga: a caixa
+## de fala com as linhas de `data/documentos.json`, e o aviso "leu:<id>" às
+## cadeias — é assim que o último passo da chegada fecha).
+func _ler_da_mao() -> bool:
+	var id := Inventario.na_mao()
+	if id == "" or Catalogo.tipo(id) != "documento":
+		return false
+	if not Mochila.abrir_documento.is_valid():
+		return false
+	Mochila.abrir_documento.call(id)
+	return true
 
 
 ## Clique num espaço da barra: põe na mão, e no que já está na mão, come.

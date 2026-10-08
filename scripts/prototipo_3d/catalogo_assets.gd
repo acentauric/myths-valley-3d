@@ -71,6 +71,11 @@ const PECAS := {
 	# Medida em 06/10 (`scratch/diag/medir_ponte.gd`): o tabuleiro fica a 0,95 do
 	# fundo, com os esteios por baixo; afundado 0,75, ele fica a 0,2 da estrada.
 	"ponte": {"tripo": "construcoes/ponte_tripo.glb", "largura": 9.0, "afundar": 0.75, "piso": 0.2, "girar": [0, 90, 0]},
+	# A PONTE GRANDE DA VILA (07/10: "na vila, pode colocar o modelo da ponte grande,
+	# como era antes; deixa a pequena somente para ir à mansão"): a ponte de madeira do
+	# lote de 26/09, que as duas travessias usaram até 06/10, de volta à do rio
+	# central, com as medidas de então. A do rio grande fica com a de pé e a caída (#94).
+	"ponte_grande": {"tripo": "construcoes/ponte_grande_tripo.glb", "largura": 9.0, "afundar": 1.1, "piso": 0.2},
 	# A PONTE CAÍDA (#94): o mesmo vão, sem tabuleiro que se ande — nem colisão nem
 	# laje da câmera; a obra `ponte_levantar` a troca pela de pé (`ponte_vale.gd`).
 	# Medida em 06/10: os tabuleiros das pontas ficam a 1,9 do fundo, e o vão caído
@@ -427,6 +432,7 @@ const TAMANHO_DA_CASA := 4.5
 const SEM_ALCANCE := {
 	"pier": "o primeiro que se vê da baía e o jogador anda nele: uma peça só",
 	"ponte": "o jogador anda nela e se vê da estrada: uma peça só",
+	"ponte_grande": "a ponte grande da vila, no rio central: uma peça só, como a ponte",
 	"ponte_caida": "a ponte caída no rio, que a obra põe de pé: uma peça só, como a ponte",
 	"mirante": "torre aberta vista de todo o vale: uma peça só, e uma caixa não a imita",
 	"saveiro": "o barco da chegada: anda pela baía, e some no horizonte se for cortado",
@@ -699,7 +705,7 @@ static func colisao(chave: String, node: Node3D, parent: Node, origin: Vector3, 
 	# chamava sem `yaw` (as pedras da praia, giradas ao acaso) tinha a caixa
 	# reta e o desenho torto.
 	yaw = node.rotation.y
-	if chave in ["ponte", "pier"]:
+	if chave in ["ponte", "ponte_grande", "pier"]:
 		# A superfície caminhável acompanha a malha importada da ponte e do píer.
 		for child in node.find_children("*", "MeshInstance3D", true, false):
 			(child as MeshInstance3D).create_trimesh_collision()
@@ -771,30 +777,6 @@ static func largura_da_cerca(parent: Node, tamanho: float, senao: float) -> floa
 	parent.remove_child(prova)
 	prova.free()
 	return maxf(largura, 0.1)
-
-
-## Colisão das cercas em MultiMesh: mesma caixa e transformação do desenho.
-## Camada de mundo, sem câmera; a navegação lê estes corpos junto das casas.
-static func colisao_de_cercas_repetidas(parent: Node3D, chave: String,
-		modelo: Dictionary, transforms: Array[Transform3D]) -> void:
-	if modelo.is_empty() or transforms.is_empty():
-		return
-	var caixa: AABB = (modelo.base as Transform3D) * (modelo.mesh as Mesh).get_aabb()
-	var forma := BoxShape3D.new()
-	forma.size = Vector3(caixa.size.x, caixa.size.y, maxf(caixa.size.z, 0.12))
-	var corpo := StaticBody3D.new()
-	corpo.name = "CercasDaRoca_" + chave
-	corpo.set_meta("cerca_do_paisagismo", true)
-	corpo.collision_layer = Camadas.MUNDO
-	corpo.collision_mask = Camadas.MUNDO
-	parent.add_child(corpo)
-	var inversa: Transform3D = (modelo.base as Transform3D).affine_inverse()
-	for transformacao in transforms:
-		var colisao := CollisionShape3D.new()
-		colisao.shape = forma
-		corpo.add_child(colisao)
-		colisao.transform = transformacao * inversa * Transform3D(Basis(), caixa.get_center())
-	corpo.add_to_group("cercas_do_paisagismo")
 
 
 ## A BASE DE UM LANCE (#93): o X vai de `de` a `ate` — com o desnível entre as

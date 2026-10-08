@@ -151,7 +151,9 @@ func _run() -> void:
 	lavoura.usar(a)
 	_conferir(inventario.quantidade("milho") > milhos + 2, "colher o milho de primeira deu %d" % (inventario.quantidade("milho") - milhos))
 	_conferir(inventario.quantidade("semente_milho") == sementes + 1, "colher o milho não devolveu a semente")
-	_conferir(plantacao.arado(a) and plantacao.cultura_em(a) == "", "colhido, o leito não ficou arado e vazio")
+	# Colhido, o leito volta a chão bruto: a enxada de novo antes de plantar (07/10).
+	_conferir(not plantacao.arado(a) and plantacao.cultura_em(a) == "", "colhido, o leito devia voltar a chão bruto, e ficou arado")
+	_conferir(plantacao.arar(a), "colhido, o chão bruto não deixou arar de novo")
 
 	# --- 5. A CANA REBROTA -------------------------------------------------------------
 	_na_mao("rebolo_cana", 2)

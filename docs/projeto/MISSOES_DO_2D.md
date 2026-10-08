@@ -177,10 +177,10 @@ Abre na **sexta colheita**, depois do primeiro tutorial. Fila única.
 
 | # | id | Título | Objetivo | Fecha quando | Paga | 3D |
 |---|---|---|---|---|---|---|
-| 1 | `pomar` | Quem planta manga | Plante uma muda de fruteira no seu roçado | plantou; o Pedro dá 2 mudas de banana e 1 de manga | 2 beijus | falta |
-| 2 | `curral_aprender` | O que o quintal dá | Destrave o Curral na raiz Pastoreio (tecla K) | talento Curral; o galinheiro sobe com 3 galinhas (pula se já tinha o talento) | — | falta |
-| 3 | `curral` | O que o quintal dá | Recolha 2 ovos das galinhas | 2 ovos | 2 cocadas | falta |
-| 4 | `capataz` | O braço que não é o seu | Mande um morador seu trabalhar em alguma coisa | designou trabalho a um morador de terra sua | — | falta |
+| 1 | `pomar` | Quem planta manga | Plante uma muda de fruteira no seu roçado | plantou; o Pedro dá 2 mudas de banana e 1 de manga | 2 beijus | **pronta** (#160, 07/10/2026: `missoes_quintal.json`, que abre sozinha na sexta colheita como no 2D — `lavoura.colheitas`, que vai no save; fecha com qualquer cultura perene plantada, 'plantou:fruteira') |
+| 2 | `curral_aprender` | O que o quintal dá | Destrave o Curral na raiz Pastoreio (tecla K) | talento Curral; o galinheiro sobe com 3 galinhas (pula se já tinha o talento) | — | **pronta** (#160: o nó Curral passa a levantar o galinheiro do Tripo no quintal da casa de taipa, com três galinhas — `curral_vale.gd`; quem já tinha o talento pula o passo) |
+| 3 | `curral` | O que o quintal dá | Recolha 2 ovos das galinhas | 2 ovos | 2 cocadas | **pronta** (#160: as galinhas botam um ovo cada por dia, até seis no ninho; o E no galinheiro recolhe — "ele deu, acabou; volte amanhã") |
+| 4 | `capataz` | O braço que não é o seu | Mande um morador seu trabalhar em alguma coisa | designou trabalho a um morador de terra sua | — | **adaptada** (#160: o vale não tem terrenos nem a aba de trabalho; a lição é a mesma e o gesto é combinar um dia de roçado com o Cosme, neto da Dona Zefa — `falar` —, e dormir: de manhã a mandioca e a lenha estão na mochila, pagas por ele) |
 
 ---
 
@@ -292,7 +292,7 @@ caçando. Lidas de `data/colecionaveis/bichos.json`.
 | id | Título | Objetivo | Conta | Quem paga | Paga | 3D |
 |---|---|---|---|---|---|---|
 | `meta_caititu` | O gibão do pai do Pedro | Fale com o Pedro | 10 caititus | Pedro | gibão de couro | **pronta** (`missoes_metas.json`, abre sozinha na conta) |
-| `meta_onca` | O patuá da Dona Zefa | Leve um couro de onça à Dona Zefa | 2 onças | Dona Zefa | patuá | falta escrever: a onça chegou ao vale em 05/10/2026 (`luta_vale.oncas`, a pintada e a preta, que largam `couro_de_onca`), e a meta ainda não está em `missoes_metas.json` |
+| `meta_onca` | O patuá da Dona Zefa | Leve um couro de onça à Dona Zefa | 2 onças | Dona Zefa | patuá | **pronta** (#117, 06/10/2026: `missoes_metas_onca.json`, pendurada na Dona Zefa; abre sozinha na conta do caderno, como a do caititu, e o couro levado a ela paga o patuá) |
 
 ---
 
@@ -306,17 +306,26 @@ acordar o jogador.
 |---|---|---|---|---|---|
 | 1 | `fazenda_ida` | É hoje | Atravesse o rio com o Pedro até o portão da fazenda | chegou ao portão (o Pedro leva); o portão abre e a narração da chegada roda | **pronta** (`missoes_fazenda.json`, `fazenda_vale.gd`: o dia vem na manhã seguinte à fé escolhida, com a ponte de pé; o Pedro vem à porta e conduz; a narração é `narracao_do_vale.gd`) |
 | 2 | `fazenda_chegada` | O pátio da fazenda | Atravesse o pátio até a escadaria do casarão | chegou ao pátio | **pronta** (`fazenda_chegada`: o arraial sentado nos banquinhos, as mesas cobertas e as cabras soltas; o fim é a fala do Pedro) |
+| 3 | `fazenda_chamado` | O chamado aos corajosos | Sente-se com o Pedro e espere quem vai falar | no pátio, fecha sozinho; a cena: o silêncio, as duas mulheres na escadaria, a fala da anfitriã mais velha, os homens de pé e o Pedro que vai | **pronta só no 3D** (#114, 06/10/2026; fatia 6.2 do plano do 2D, momento `discurso`) |
+| 4 | `fazenda_porta_estreita` | A porta estreita | Fale com o Pedro e suba a escadaria com ele | falar com o Pedro; a cena: a subida, o salão redondo, a fala da moça, o cerco, o "só um" da anfitriã, a porta de onde vêm os gemidos, os cinco que voltam e o Pedro que fica | **pronta só no 3D** (#114; momento `desafio`; o salão ainda não é cômodo — a voz do mundo o conta — e a sedução fica nas falas, P1) |
 
-Sem recompensa: é a história começando. O 2D para aqui (fatia 6.1). O resto dos
-capítulos está só na prosa (`docs/enredo/` do 2D e `data/enredo/enredo.json`) e
-não tem missão em nenhum dos dois jogos:
+Sem recompensa: é a história começando. O 2D para na fatia 6.1; o 3D fecha o
+capítulo 6 com a 6.2 e segue no 7, que o 2D nunca teve como missão (só a prosa
+em `docs/enredo/` e o corte em fatias do PLANO de lá, Fase 6):
 
-- **Capítulo 6, Um Convite ao Acaso:** o chamado aos corajosos (a anfitriã mais
-  velha), o salão circular e a porta estreita.
-- **Capítulo 7, O Revoar das Asas Negras:** o quarto sem janelas, as miragens e a
-  mão estendida, a fuga pelos corredores, o revoar da coruja (a Matinta Pereira),
-  o abrigo nas ruínas do palacete, o relato das escravas, o escudo e a lança de
-  safiras, o embate final, a libertação e o quilombo.
+| # | id | Título | Objetivo | Fecha quando | 3D |
+|---|---|---|---|---|---|
+| 5 | `revoar_quarto` | O quarto sem janelas | Passe a porta estreita com o Pedro | no pátio, fecha sozinho; a cena: a voz conta a cama e a velha, e a velha oferece **três trocas** (sim ou não): aceitar tira 40% do fôlego e paga o que ela oferece; recusar é o caminho; as três levam ao chão; depois as miragens voltam-se ao Pedro | **pronta só no 3D** (#31, 07/10/2026; fatia 7.1; `missoes_revoar.json`, `revoar_vale.gd`; começa quando a porta estreita se fecha) |
+| 6 | `revoar_mao` | A mão do Pedro | Puxe o Pedro pela mão (E) | falar com o Pedro (é o jogador quem o reconhece das histórias dos avós e o puxa); a cena: a fumaça e a coruja entalhada, os corredores, o entardecer, a moça pedindo perdão, o estrondo e o revoar; o arraial corre para as ruínas | **pronta só no 3D** (#31; 7.1 e 7.2) |
+| 7 | `revoar_abrigo` | O abrigo nas ruínas | Fuja até as ruínas do palacete (o Pedro conduz) | chegou às ruínas; a cena: a noite, o relato da anciã (as trocas, o senhor da fazenda, a lança, o palacete), e o Pedro que vai à torre | **pronta só no 3D** (#31; 7.2; as ruínas, a torre da capela com a rampa e a estátua ficam atrás do monte a oeste da fazenda, no fim da terra) |
+| 8 | `revoar_armas` | Escudo e lança | Suba a torre e pegue o escudo e a lança (E) | a lança de safiras na mochila (o E nos destroços dá os dois) | **pronta só no 3D** (#31; 7.3; itens `lanca_de_safira`, dano 9, e `escudo_de_safira`, Mãos, defesa 4) |
+| 9 | `revoar_chamado` | Chame a fera | Com a lança na mão e o escudo nas Mãos, bata uma no outro no alto da torre (E) | 'chamou_a_fera'; a cena: o grito, as asas, a luz azul; a fera nasce nas ruínas e o espírito do senhor aparece ao lado do jogador | **pronta só no 3D** (#31; 7.3) |
+| 10 | `revoar_embate` | O embate | Derrube a Matinta com a lança | 'derrubou:matinta' — luta de verdade (decisão do autor): a Matinta é criatura (`criaturas_3d.json`, vida 70, única), a luz da safira cresce com ela perto, e abaixo de um terço da vida o senhor avança e ela fica tonta (o sinal); a cena: a chama azul, os dois de pedra | **pronta só no 3D** (#31; 7.4; a estátua fica nas ruínas) |
+| 11 | `revoar_libertacao` | A libertação | Vá até a estátua e ouça a anciã (E) | 'libertou' — a escolha: **deixar** o escudo (vira pedra ao lado da coruja) ou **levar** (a conta da Matinta vai junto, na fala); a cena: o amanhecer, o canto, a despedida da moça, os dois rumos | **pronta só no 3D** (#31; 7.5; o arraial volta para casa no dia seguinte, como a fazenda já fazia) |
+
+A escolha do escudo fica na memória da fila ('escudo_ficou' / 'escudo_levado');
+a carta de relíquia e a cobrança da Matinta que o plano do 2D imaginou para quem
+leva o escudo ficam para o sistema de cartas (docs/sistemas/CARTAS.md).
 
 ---
 
@@ -337,8 +346,12 @@ não tem missão em nenhum dos dois jogos:
    menos a meta da onça. Ela esperava a onça no vale, e a onça chegou no mesmo
    dia (a pintada e a preta, com couro): **a meta da onça é o próximo passo
    pequeno**, e não espera mais nada.
-7. **O segundo tutorial** (2): pomar, curral e capataz pedem sistemas que o 3D
-   ainda não tem.
+7. ~~O segundo tutorial~~ (2): **pronto** em 07/10/2026 (#160) — o pomar com as
+   mudas do catálogo, o curral que o talento levanta de verdade (galinheiro, três
+   galinhas, ovos por dia) e o capataz adaptado ao Cosme, sem terrenos.
+9. ~~O capítulo 7~~ (4): **pronto só no 3D** em 07/10/2026 (#31), nas sete
+   fatias do plano do 2D, com as ruínas do palacete atrás do monte a oeste da
+   fazenda. Com ele, toda a lista do 2D está no vale.
 8. ~~Os passos de apoio do tutorial~~ (`comer`, `pesca`, `talentos`,
    `caderneta`): **prontos** em 05/10/2026.
 

@@ -363,6 +363,11 @@ func _montar_o_penedo(onca) -> void:
 
 
 func _ao_morrer(bicho) -> void:
+	# A ESPÉCIE ÚNICA (a Matinta, "unica", #31) cai uma vez e não volta com os dias.
+	if bool(bicho.dados().get("unica", false)):
+		criaturas.erase(bicho)
+		oncas.erase(bicho)
+		return
 	var volta := int(bicho.dados().get("volta", 3))
 	var morte := {"especie": bicho.especie, "ninho": bicho._ninho,
 		"volta_em": Relogio.dia_absoluto() + volta}

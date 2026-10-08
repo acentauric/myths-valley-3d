@@ -18,6 +18,9 @@ func _run() -> void:
 			break
 	var vale = current_scene
 	var mundo = vale.world
+	# A apresentação do povoado religa a física de quem o jogador encontra: aqui a
+	# beata anda só pelo portão.
+	vale.apresentacao_do_povoado.set_process(false)
 	var beata
 	for morador in vale.moradores:
 		morador.set_physics_process(false)

@@ -110,6 +110,8 @@ Com a **vara de pescar** na mão (vende no balcão) e a água à frente — o p�
 no chão: chegue perto e use E; ele fica ali e no save até ser recolhido.
 Armas entram pela barra de mão; o encaixe Mãos é para luvas. Cordéis
 achados com E entram no almanaque (L) e abrem a folha de leitura.
+Papel que vai para a mochila — o convite da fazenda — se lê com o F em
+cima dele na mochila (I), ou com o E com ele na mão: a barra diz "E lê".
 Mochila, missões, fé, receitas, luta, obras, venda, pesca, cartas e
 salvamento têm interfaces e gatilhos no vale. A lavoura permite arar,
 plantar, regar e colher; o terreno já é editável. A conclusão integral
@@ -118,7 +120,6 @@ e regiões incompletas em #22–#30. Os saves ficam em
 `MythsValleyPrototype3D`, separados do 2D. O
 [board](https://github.com/acentauric/myths-valley-3d/issues) registra
 o trabalho restante.
-
 
 ## Como a animação funciona
 

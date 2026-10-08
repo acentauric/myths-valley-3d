@@ -47,7 +47,7 @@ func _run() -> void:
 					"marcaÃ§Ã£o 3D invade a cÃ¢mera interna")
 			var id := "efeito_%s_%s" % [interior, hora]
 			caderno.abrir_missao(id, "Uma leira pronta", "pedro")
-			caderno.concluir(id)
+			caderno.concluir(id, true) # a festa só vem pedida (07/10)
 			var limite := Time.get_ticks_msec() + 10000
 			while not vale.conquista.ativa() and Time.get_ticks_msec() < limite:
 				await process_frame

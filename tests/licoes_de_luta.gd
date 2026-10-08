@@ -62,7 +62,8 @@ func _run() -> void:
 	var metas = vale._cadeias["pedro_metas"]
 	metas.iniciado = false
 	# Eventos pelo sinal de Luta, sem escrever a conta nem chamar registrar_evento.
-	for i in range(int(vale._caititus_da_meta) - 1):
+	# A conta da meta vem do caderno dos bichos (`_metas_dos_bichos`, #117).
+	for i in range(int(vale._metas_dos_bichos["caititu"]["conta"]) - 1):
 		luta.acertou.emit("golpe", "caititu", true, false)
 	vale._conferir_as_metas()
 	conferir(not metas.iniciado, "a recompensa espera a conta inteira de caititus")

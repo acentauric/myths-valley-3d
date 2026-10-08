@@ -96,7 +96,8 @@ func _run() -> void:
 	_conferir(painel.layer > vale.hud.layer, "o painel ficou por baixo do HUD")
 	_conferir(not player.is_physics_processing(), "com o painel aberto o jogador continua andando")
 	_conferir(Input.mouse_mode != Input.MOUSE_MODE_CAPTURED, "com o painel aberto o cursor continua preso")
-	_conferir(dia.pausado, "com o painel aberto o relógio do vale continua andando")
+	# Desde a #100 as telas seguram o dia por motivo, e `Dia.pausado` é só a pausa do jogador: `parado()` junta os dois.
+	_conferir(dia.parado(), "com o painel aberto o relógio do vale continua andando")
 	# A ÁRVORE PARA ATRÁS DELE — e esta linha dizia o contrário.
 	#
 	# O painel nasceu parando só o relógio: o jogador para, o `Dia` para, a
@@ -127,19 +128,19 @@ func _run() -> void:
 	vale.telas.abrir("painel")
 	await _frames(2)
 	_conferir(not painel.aberto, "o J pelo dono das telas não fechou o painel")
-	_conferir(not dia.pausado, "abri e fechei o J e o relógio ficou parado")
+	_conferir(not dia.parado(), "abri e fechei o J e o relógio ficou parado")
 	_conferir(not paused, "abri e fechei o J e o vale ficou parado")
 	# 2) o × do painel, com o mouse (é o que a lista de missões mostra);
 	vale.hud.quests_requested.emit()
 	await _frames(2)
-	_conferir(painel.aberto and dia.pausado and paused, "o botão de missões do HUD não abriu o painel parando o vale")
+	_conferir(painel.aberto and dia.parado() and paused, "o botão de missões do HUD não abriu o painel parando o vale")
 	var botao_fechar: Button = painel.find_child("Fechar", true, false)
 	_conferir(botao_fechar != null, "o painel não tem botão de fechar")
 	if botao_fechar != null:
 		botao_fechar.pressed.emit()
 		await _frames(2)
 		_conferir(not painel.aberto and vale.telas.aberta() == "", "o × não fechou o painel")
-		_conferir(not dia.pausado, "fechei pelo × e o relógio ficou parado")
+		_conferir(not dia.parado(), "fechei pelo × e o relógio ficou parado")
 		_conferir(not paused, "fechei pelo × e o vale ficou parado")
 		_conferir(player.is_physics_processing(), "fechei pelo × e o jogador continuou parado")
 	# 3) o J dentro do painel é a pergunta da seção 3. Reabre para seguir.
@@ -172,6 +173,40 @@ func _run() -> void:
 					% (primeira.text if primeira != null else "—"))
 		_conferir(so_missoes or coluna.get_child_count() > 1,
 			"há mais de uma aba válida e a coluna mostra só %d" % coluna.get_child_count())
+
+	# OS SEIS DISTINTIVOS DO PAINEL (#108): abas, fôlego e naturezas de carta.
+	for distintivo in ["obra", "folego", "saveiro", "pacto", "apoio", "ritual"]:
+		var figura: TextureRect = painel._icone_distintivo(distintivo)
+		_conferir(figura.texture != null and figura.texture.get_width() == 96
+				and figura.texture.get_height() == 96,
+			"o distintivo '%s' não carregou em 96×96" % distintivo)
+		figura.free()
+	var obra_anterior: String = painel.obra_em_foco
+	var saveiro_anterior: Node = painel.saveiro
+	var saveiro_de_teste := Node.new()
+	painel.obra_em_foco = "oficina"
+	painel.saveiro = saveiro_de_teste
+	painel._montar_abas()
+	for distintivo in ["obra", "saveiro"]:
+		var figuras := painel.find_children("Icone_" + distintivo, "TextureRect", true, false)
+		_conferir(figuras.size() == 1 and (figuras[0] as TextureRect).texture != null,
+			"a aba de %s não exibe o distintivo" % distintivo)
+	painel.obra_em_foco = obra_anterior
+	painel.saveiro = saveiro_anterior
+	saveiro_de_teste.free()
+	for distintivo in ["pacto", "apoio", "ritual"]:
+		painel._adicionar_linha(distintivo.to_upper(), Color.WHITE, true, distintivo)
+		var figuras := painel.find_children("Icone_" + distintivo, "TextureRect", true, false)
+		_conferir(figuras.size() == 1 and (figuras[0] as TextureRect).texture != null,
+			"o cabeçalho da natureza '%s' não exibe o distintivo" % distintivo)
+	var aba_anterior: int = painel.aba()
+	painel._aba = painel.Aba.AJUSTES
+	painel._redesenhar()
+	var folego := painel.find_children("Icone_folego", "TextureRect", true, false)
+	_conferir(folego.size() == 1 and (folego[0] as TextureRect).texture != null,
+		"o ajuste de fôlego máximo não exibe o distintivo")
+	painel._aba = aba_anterior
+	painel._redesenhar()
 
 	var caixa := painel.find_children("Caixa", "", true, false)
 	_conferir(not caixa.is_empty(), "não achei a caixa do painel")
@@ -276,8 +311,15 @@ func _run() -> void:
 	await _frames(2)
 	_conferir(str(vale.hud.get("_objective")) == "Outro passo",
 		"acompanhei 'Outro passo' no diário e o HUD diz '%s'" % str(vale.hud.get("_objective")))
+	# A RECOMPENSA EM ÍCONES (#107): o diário da missão escolhida mostra o que o
+	# passo paga — réis, XP e item, cada um com o ícone.
+	caderno.descrever("teste_do_painel", {"recompensa": {"reis": 12, "xp": 10, "peixe": 1}})
 	painel.escolher(0)
 	await _frames(2)
+	_conferir(painel.find_children("Recompensa", "HBoxContainer", true, false).size() == 1, "o diário não mostra a linha da recompensa")
+	for icone in ["Icone_reis", "Icone_xp", "Icone_peixe"]:
+		var figuras := painel.find_children(icone, "TextureRect", true, false)
+		_conferir(figuras.size() == 1 and (figuras[0] as TextureRect).texture != null, "a recompensa no diário não tem o ícone %s" % icone)
 	var acompanhar: Button = null
 	for no in painel.find_children("Acompanhar", "Button", true, false):
 		acompanhar = no as Button
@@ -302,7 +344,7 @@ func _run() -> void:
 	await _frames(2)
 	_conferir(not painel.aberto, "o J não fechou o painel")
 	_conferir(player.is_physics_processing(), "fechou o painel e o jogador continuou parado")
-	_conferir(not dia.pausado, "fechou o painel e o relógio continuou parado")
+	_conferir(not dia.parado(), "fechou o painel e o relógio continuou parado")
 	_conferir(not paused, "fechou o painel e o vale continuou parado")
 
 	# --- 4. ABA DE LUGAR POR PROXIMIDADE ----------------------------------------
@@ -376,7 +418,7 @@ func _fechar() -> void:
 	_devolver_os_saves_de_verdade()
 	print("")
 	if falhas == 0:
-		print("PAINEL_OK: o J é do painel; abrir para o jogador, o relógio e o vale inteiro, por cima do HUD e dentro da janela, com as abas em coluna como no almanaque; Tab, E e J funcionam dentro; a venda aparece no balcão e compra e vende pelo preço; a aba do jogo é sozinha, salva a vaga e pede o segundo E para sair")
+		print("PAINEL_OK: o J é do painel; abrir para o jogador, o relógio e o vale inteiro, por cima do HUD e dentro da janela, com abas em coluna e distintivos de obra, fôlego, saveiro e cartas; Tab, E e J funcionam dentro; a venda aparece no balcão e compra e vende pelo preço; a aba do jogo é sozinha, salva a vaga e pede o segundo E para sair")
 	else:
 		print("painel: %d falha(s)" % falhas)
 	quit(1 if falhas > 0 else 0)

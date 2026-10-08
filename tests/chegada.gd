@@ -110,6 +110,17 @@ func _run() -> void:
 	_conferir(Vector2(pedro.global_position.x - onde_espera.x, pedro.global_position.z - onde_espera.z).length() < 1.0,
 		"no desembarque o Pedro saiu da ponta da prancha atrás do jogador, que ainda está no barco")
 
+	# O TONHO ESPERA NA AREIA, ao lado do píer, e não no tabuado (07/10: "para não ficar com o
+	# píer muito poluído"); ele volta à rotina quando a chegada passa da casa (parte 7).
+	var lugares_t = root.get_node("/root/Lugares")
+	var tonho_t = vale._achar_morador("tonho")
+	var areia: Vector3 = lugares_t.ponto("areia")
+	_conferir(areia != lugares_t.NENHUM and mundo.is_on_land(areia), "a areia ao lado do píer não resolve em terra firme: %s" % str(areia))
+	_conferir(bool(vale.get("_tonho_na_areia")), "na chegada o Tonho não foi para a areia")
+	if tonho_t != null and areia != lugares_t.NENHUM:
+		_conferir(_no_chao(tonho_t.global_position, areia) < 2.5, "na chegada o Tonho está a %.1f da areia (em %s)" % [_no_chao(tonho_t.global_position, areia), str(tonho_t.global_position)])
+		_conferir(_no_chao(tonho_t.global_position, mundo.ancoras["PierPiso"]) > 3.0, "na chegada o Tonho continua no tabuado do píer")
+
 	# --- 3. A PRANCHA LEVA AO TABUADO -------------------------------------------------
 	var piso: Vector3 = mundo.ancoras["PierPiso"]
 	Input.action_press("mv_forward")
@@ -131,6 +142,15 @@ func _run() -> void:
 	# --- 4. CORRER É UM PASSO --------------------------------------------------------
 	_conferir(pedro.passo_em_curso() == "correr", "depois do desembarque não vem a corrida (vem '%s')" % pedro.passo_em_curso())
 	await _ate(func() -> bool: return float(pedro.get("_espera")) <= 0.0, 15.0)
+	# A SETA DA CORRIDA APONTA A PISTA, em terra, e não o Tonho (07/10: "quando manda correr, está
+	# marcando o Tonho; isso tá confuso para o jogador").
+	var pista: Vector3 = lugares_t.ponto("corrida")
+	_conferir(pista != lugares_t.NENHUM and mundo.is_on_land(pista), "a pista da corrida não resolve em terra firme: %s" % str(pista))
+	var alvo_da_corrida: Vector3 = pedro._cadeia.posicao_do_passo(pedro._cadeia.missao)
+	_conferir(alvo_da_corrida.distance_to(pista) < 0.5, "o passo da corrida aponta %s, e não a pista %s" % [str(alvo_da_corrida), str(pista)])
+	if tonho_t != null:
+		_conferir(_no_chao(alvo_da_corrida, tonho_t.global_position) > 5.0, "a seta da corrida cai em cima do Tonho (a %.1f dele)" % _no_chao(alvo_da_corrida, tonho_t.global_position))
+	_conferir(_no_chao(pista, mundo.ancoras["PierPiso"]) > 8.0, "a pista da corrida fica em cima do píer")
 	# Tocar o Shift parado não é correr.
 	_tocar_o_shift(jogador)
 	await _passos_de_fisica(90)
@@ -165,6 +185,24 @@ func _run() -> void:
 				andou = true
 				break
 		_conferir(andou, "na chave o Pedro não foi na frente até a Dona Candinha (estava a %.1f e ficou a %.1f)" % [antes, _no_chao(pedro.global_position, candinha.global_position)])
+		# OS MARCOS DA ESTRADA (07/10): com o jogador a quatro passos — perto, mas sem acompanhar de
+		# colado —, o Pedro anda um trecho e para num marco até o jogador chegar a três passos.
+		var marcou := false
+		var marco_limite := Time.get_ticks_msec() + 14000
+		while Time.get_ticks_msec() < marco_limite and not marcou:
+			var para_a_candinha: Vector3 = candinha.global_position - pedro.global_position
+			para_a_candinha.y = 0.0
+			var atras: Vector3 = -para_a_candinha.normalized() * 4.0 if para_a_candinha.length() > 0.1 else Vector3(4.0, 0.0, 0.0)
+			jogador.teleportar(pedro.global_position + atras + Vector3(0.0, 0.1, 0.0), 0.0)
+			await _passos_de_fisica(6)
+			marcou = bool(pedro.get("_no_marco"))
+		_conferir(marcou, "o Pedro não parou num marco da estrada com o jogador a quatro passos")
+		if marcou:
+			var no_marco_em: Vector3 = pedro.global_position
+			await _passos_de_fisica(30)
+			_conferir(_no_chao(pedro.global_position, no_marco_em) < 0.3, "no marco, o Pedro não ficou esperando")
+			jogador.teleportar(pedro.global_position + Vector3(1.0, 0.1, 1.0), 0.0)
+			_conferir(await _ate(func() -> bool: return not bool(pedro.get("_no_marco")), 3.0), "com o jogador ao lado, o Pedro não saiu do marco")
 		# Longe do jogador, ele espera.
 		jogador.teleportar(pedro.global_position + Vector3(14.0, 0.1, 0.0), 0.0)
 		await _passos_de_fisica(30)
@@ -204,7 +242,31 @@ func _run() -> void:
 			var audio := str((fala as Dictionary).get("audio", ""))
 			_conferir(audio != "" and ResourceLoader.exists("res://assets/audio/vozes/%s.mp3" % audio),
 				"a linha do corpo '%s…' não tem a narração do Pedro ('%s')" % [str((fala as Dictionary).get("texto", "")).left(30), audio])
+		# E O ARREMATE DA CHEGADA, depois do convite lido, na voz dele (07/10).
+		var audio_do_arremate := str((pedro._cadeia.arremate as Dictionary).get("audio", ""))
+		_conferir(audio_do_arremate != "" and ResourceLoader.exists("res://assets/audio/vozes/%s.mp3" % audio_do_arremate),
+			"o arremate da chegada não tem a narração do Pedro ('%s')" % audio_do_arremate)
+	if explicou:
+		# A TELA ESCURECE E A BARRA DA VEZ ACENDE (#106): no respiro tudo apagado;
+		# cada linha seguinte acende a barra de que fala e apaga as outras; fechada
+		# a caixa, o véu some e o HUD volta inteiro.
+		var hud_do_vale = vale.hud
+		_conferir(hud_do_vale.destacando() and hud_do_vale._veu_do_destaque != null and hud_do_vale._veu_do_destaque.visible, "a explicação do corpo não escureceu a tela")
+		_conferir(hud_do_vale.barra_destacada() == "", "no respiro já havia uma barra acesa ('%s')" % hud_do_vale.barra_destacada())
+		var barras := {"Vida": hud_do_vale.barra_vida, "Folego": hud_do_vale.barra_folego, "Stamina": hud_do_vale.barra_stamina}
+		while dialogo._indice < dialogo._falas.size() - 1:
+			dialogo._indice += 1
+			dialogo._mostrar_fala()
+			await process_frame
+			var voz := str(dialogo._vozes[dialogo._indice]) if dialogo._indice < dialogo._vozes.size() else ""
+			var esperada := str(vale.BARRA_DA_VOZ.get(voz, "?"))
+			_conferir(hud_do_vale.barra_destacada() == esperada, "na linha '%s' a barra acesa é '%s', e devia ser '%s'" % [voz, hud_do_vale.barra_destacada(), esperada])
+			for nome in barras:
+				var acesa: bool = (barras[nome] as CanvasItem).modulate == Color.WHITE
+				_conferir(acesa == (nome == esperada), "na linha '%s' a barra %s está %s" % [voz, nome, "acesa" if acesa else "apagada"])
 	await _fechar_a_fala()
+	_conferir(not vale.hud.destacando() and (vale.hud._veu_do_destaque == null or not vale.hud._veu_do_destaque.visible) and vale.hud.barra_vida.modulate == Color.WHITE,
+		"fechada a explicação, a tela continuou escura ou o HUD apagado")
 	_conferir(pedro.lembrancas().has(pedro.LEMBRANCA_DO_CORPO), "a explicação do corpo não ficou na lembrança que vai no save")
 	jogador.definir_vigor(jogador.vigor_maximo() * 0.2)
 	var repetiu := await _ate(func() -> bool: return dialogo.ativo, 4.0)
@@ -226,6 +288,10 @@ func _run() -> void:
 		for monte in casa.bau:
 			tem[str(monte.get("id", ""))] = int(monte.get("qtd", 0))
 		_conferir(tem.has("enxada") and tem.has("balde") and int(tem.get("semente_mandioca", 0)) >= 1, "o baú da casa não tem a enxada, o balde e a maniva do finado: %s" % str(tem))
+		# E O TONHO VOLTA À ROTINA quando a chegada passa da casa (07/10).
+		pedro.ir_ao_passo("pegar")
+		pedro.retomar()
+		_conferir(await _ate(func() -> bool: return not bool(vale.get("_tonho_na_areia")), 3.0), "passada a casa, o Tonho continua preso na areia")
 
 	# --- 8. O SAVEIRO LARGA ---------------------------------------------------------------------
 	relogio.dia = 2

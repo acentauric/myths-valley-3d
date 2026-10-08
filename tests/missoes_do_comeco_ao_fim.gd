@@ -1619,8 +1619,11 @@ func _fechar() -> void:
 	print("")
 	var contas := _contar_os_passos()
 	print("passos jogados: %d de 85 (pela memória das filas: %d)" % [passos_do_vale, int(contas["feitos"])])
+	# 85 DESDE 06/10 — OU 86: o capítulo 7 (data/missoes_revoar.json, #31) começa sozinho quando a porta
+	# estreita se fecha, e o quarto fecha no pátio onde o jogador já está; conforme o quadro em que a
+	# partida acaba, ele já passou. O segundo tutorial (#160) não entra: pede seis colheitas.
 	if ate_a_fase == "" and falhas == 0:
-		_conferir(int(contas["feitos"]) == 85, "as filas passaram %d dos 85 passos; faltam: %s" % [int(contas["feitos"]), ", ".join(contas["faltam"])])
+		_conferir(int(contas["feitos"]) == 85 or int(contas["feitos"]) == 86, "as filas passaram %d dos 85 passos (86 com o quarto do capítulo 7); faltam: %s" % [int(contas["feitos"]), ", ".join(contas["faltam"])])
 	if not maos.atalhos.is_empty():
 		print("o que NÃO foi o caminho do jogador:")
 		for a in maos.atalhos:

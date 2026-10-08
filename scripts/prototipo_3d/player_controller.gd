@@ -299,6 +299,8 @@ func _ready() -> void:
 	# SÓ A CAMADA DA CÂMERA barra o braço (`camadas.gd`): o chão, as paredes, a
 	# borda do quadro e a superfície da água (ela não mergulha).
 	spring.collision_mask = Camadas.CAMERA
+	# As cercas de varas (#104) barram o corpo; a malha dos moradores não as lê.
+	collision_mask |= Camadas.CERCA
 	spring.add_excluded_object(get_rid())
 	camera_pivot.add_child(spring)
 	# A MESMA pergunta do braço, feita por nós a cada quadro (`_braco_livre`): o

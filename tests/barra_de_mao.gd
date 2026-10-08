@@ -23,6 +23,8 @@ extends SceneTree
 ##      outro jeito de um Control existir sem aparecer.
 ##   5. O QUE ENTRA NA MOCHILA APARECE NELA, e o que está na mão se destaca —
 ##      inclusive o machado, que o número põe na mão.
+##
+## E, depois, o que a mão faz com o E: come (7–10, #105), e LÊ o papel (#113).
 
 var falhas := 0
 var Inv: Node = null
@@ -202,7 +204,7 @@ func _run() -> void:
 		_conferir(Inv.na_mao() == "pirao", "não consegui pôr o pirão na mão")
 		# Abre espaço no fôlego para o pirão ter o que repor: cheio, comer não
 		# mudaria número nenhum e a pergunta não valeria nada.
-		energia.repor(-30.0)
+		energia.repor(-80.0)
 		var antes_folego: float = energia.atual
 		var antes_conta: int = Inv.quantidade("pirao")
 		_conferir(barra._comer_da_mao(), "a mão recusou comer o pirão, que é comida")
@@ -229,13 +231,14 @@ func _run() -> void:
 		_conferir(not barra._comer_da_mao(), "a mão comeu a picareta")
 		_conferir(Inv.tem("picareta"), "a picareta desapareceu da mochila")
 
-	# --- 8. O E DA MÃO É O ÚLTIMO DA FILA ------------------------------------
+	# --- 8. COMIDA NA MÃO, O E COME — mesmo com um tronco ao alcance (07/10) ---------
 	#
-	# Perto de um tronco o E golpeia; perto de uma árvore lê a ficha. Comer é o
-	# que sobra, e sobra por ORDEM DE ÁRVORE: a barra mora dentro do HUD, que
-	# entra no vale antes dos nós do mundo, e o Godot entrega o evento de baixo
-	# para cima. Ordem de árvore é coisa que muda quando alguém acrescenta um nó,
-	# então aqui se mede a precedência de verdade.
+	# Era o contrário: a barra era a última da fila do E e só comia quando ninguém mais
+	# levava a tecla, e no vale quase sempre alguém leva (o leito, a árvore, o toco) — "ao
+	# tentar usar o E para consumir o consumível, não consegui, precisei clicar com o
+	# mouse". Agora a comida na mão vota no foco do E (`BarraDeMao.alvo_do_e`) e vence o
+	# tronco; só a conversa com quem está ao alcance passa na frente. Com a ferramenta na
+	# mão, o tronco segue levando o E (parte 9).
 	var recursos := current_scene.get_node_or_null("Recursos3D")
 	var jogador = current_scene.get("player")
 	if recursos != null and jogador != null and not recursos._alvos.is_empty():
@@ -249,11 +252,22 @@ func _run() -> void:
 				if str((Inv.espacos[i] as Dictionary).get("id", "")) == "pirao":
 					Inv.selecionar(i)
 			await _frames(2)
+			energia.repor(-80.0)
+			var foco8 = get_first_node_in_group("foco_do_e")
+			_conferir(foco8 == null or foco8.dono() == barra, "com o pirão na mão ao lado do tronco, o E é de %s, e não da barra" % (str(foco8.dono()) if foco8 != null else "?"))
 			var pirao_antes: int = Inv.quantidade("pirao")
+			var golpes8: int = 0
+			for id8 in recursos._alvos:
+				golpes8 += int(recursos._alvos[id8]["golpes_dados"])
 			_tecla_de_interagir()
 			await _frames(3)
-			_conferir(Inv.quantidade("pirao") == pirao_antes,
-				"com um tronco ao alcance, o E comeu o pirão em vez de golpear: a fila do E inverteu")
+			_conferir(Inv.quantidade("pirao") == pirao_antes - 1,
+				"com o pirão na mão ao lado do tronco, o E não comeu (tinha %d, ficou %d)" % [pirao_antes, Inv.quantidade("pirao")])
+			var golpes8_depois: int = 0
+			for id8 in recursos._alvos:
+				golpes8_depois += int(recursos._alvos[id8]["golpes_dados"])
+			_conferir(golpes8_depois == golpes8, "com o pirão na mão, o E golpeou o tronco")
+			Inv.selecionar(Inv.MAO_LIVRE)
 
 	# --- 9. COM O CORPO PARADO, O E NÃO VALE PARA O MUNDO NEM PARA A MÃO -----
 	#
@@ -270,7 +284,7 @@ func _run() -> void:
 			_conferir(alvo9 != "", "não achei um tronco ao alcance para a pergunta do corpo parado")
 			if alvo9 != "":
 				_por_o_pirao_na_mao()
-				energia.repor(-30.0)
+				energia.repor(-80.0)
 				var golpes9 := int(recursos._alvos[alvo9]["golpes_dados"])
 				var pirao9: int = Inv.quantidade("pirao")
 				# "BATER FOI TENTADO" é golpe dado OU recusa dita ("Precisa de
@@ -346,7 +360,7 @@ func _run() -> void:
 			_conferir(Inv.selecionado == mao, "com '%s' aberto, o número trocou a mão" % nome)
 			# O pirão volta à mão, para a pergunta do E não depender da de cima.
 			_por_o_pirao_na_mao()
-			energia.repor(-30.0)
+			energia.repor(-80.0)
 			var pirao10: int = Inv.quantidade("pirao")
 			_tecla_de_interagir()
 			await _frames(3)
@@ -354,13 +368,81 @@ func _run() -> void:
 			telas.fechar_tudo()
 			await _frames(3)
 
+	# --- A COMIDA ACIMA DO TETO PERGUNTA (#105) -------------------------------------------
+	# Com a reserva cheia, o E na comida abre a pergunta da caixa de fala — o que
+	# passa do teto vai fora —; "não" deixa o item na mão, "sim" come. (O pirão
+	# repõe 62: as outras partes abrem 80 de espaço para comer sem pergunta.)
+	var dialogo = root.get_node("/root/Dialogo")
+	Inv.adicionar("pirao", 1)
+	var espaco_cheio := -1
+	for i in Inv.ESPACOS_MAO:
+		if str((Inv.espacos[i] as Dictionary).get("id", "")) == "pirao":
+			espaco_cheio = i
+	_conferir(espaco_cheio >= 0, "(#105) o pirão não está num espaço de mão")
+	if espaco_cheio >= 0:
+		Inv.selecionar(espaco_cheio)
+		await _frames(2)
+		energia.encher()
+		var conta: int = Inv.quantidade("pirao")
+		_conferir(barra._comer_da_mao(), "com a reserva cheia a mão recusou o E na comida")
+		await _frames(2)
+		_conferir(dialogo.ativo and dialogo._modo == dialogo.Modo.PERGUNTA and str(dialogo._falas[0]).contains("joga fora"),
+			"com a reserva cheia o E na comida não perguntou se joga a reposição fora (ativo %s: '%s')" % [str(dialogo.ativo), str(dialogo._falas[0]) if dialogo._falas.size() > 0 else ""])
+		_conferir(Inv.quantidade("pirao") == conta, "a pergunta ainda no ar e o pirão já foi comido")
+		dialogo._escolha = false
+		dialogo._escolheu = true
+		dialogo._fechar()
+		await _frames(3)
+		_conferir(Inv.quantidade("pirao") == conta, "respondi não e o pirão foi comido")
+		_conferir(barra._comer_da_mao(), "(#105) a mão recusou o segundo E na comida")
+		await _frames(2)
+		dialogo._escolha = true
+		dialogo._escolheu = true
+		dialogo._fechar()
+		await _frames(3)
+		_conferir(Inv.quantidade("pirao") == conta - 1, "respondi sim e o pirão não foi comido")
+		_conferir(energia.atual <= energia.maximo() + 0.01, "comer acima do teto passou do máximo (%.1f de %.1f)" % [energia.atual, energia.maximo()])
+		await _frames(3)
+
+	# --- O PAPEL NA MÃO SE LÊ COM O E (#113) ----------------------------------------------
+	# "O convite que chega deve ser possível acessar apertando E também." Ler era
+	# só o F na mochila; com o convite na mão, o E lê pelo mesmo caminho da
+	# mochila (`Mochila.abrir_documento`), aqui trocado por quem anota o id. E a
+	# ferramenta na mão não se lê.
+	var mochila = root.get_node("/root/Mochila")
+	var lidos: Array[String] = []
+	var leitor_antes: Callable = mochila.abrir_documento
+	mochila.abrir_documento = func(id: String) -> void: lidos.append(id)
+	if not Inv.tem("convite"):
+		Inv.adicionar("convite", 1)
+	var espaco_do_convite := -1
+	for i in Inv.ESPACOS_MAO:
+		if str((Inv.espacos[i] as Dictionary).get("id", "")) == "convite":
+			espaco_do_convite = i
+	_conferir(espaco_do_convite >= 0, "(#113) o convite não entrou num espaço da mão")
+	if espaco_do_convite >= 0:
+		Inv.selecionar(espaco_do_convite)
+		await _frames(2)
+		_conferir(Inv.na_mao() == "convite", "(#113) não consegui pôr o convite na mão")
+		var rotulo_da_mao := barra.get_node_or_null("NaMao") as Label
+		_conferir(rotulo_da_mao != null and rotulo_da_mao.text.to_lower().contains("lê"),
+			"(#113) com o convite na mão o rótulo não diz que o E lê: '%s'" % (rotulo_da_mao.text if rotulo_da_mao != null else ""))
+		_conferir(not barra._comer_da_mao(), "(#113) a mão comeu o convite")
+		_conferir(barra._ler_da_mao(), "(#113) a mão recusou ler o convite, que é papel")
+		await _frames(2)
+		_conferir(lidos == ["convite"], "(#113) o E no convite abriu '%s' em vez do convite" % str(lidos))
+		_conferir(Inv.tem("convite"), "(#113) ler gastou o convite")
+		_por_o_pirao_na_mao()
+		_conferir(not barra._ler_da_mao(), "(#113) a mão leu o pirão")
+	mochila.abrir_documento = leitor_antes
+
 	_fechar()
 
 
 func _fechar() -> void:
 	print("")
 	if falhas == 0:
-		print("BARRA_OK: a barra existe, tem tamanho, está no rodapé dentro da tela, tem os dez espaços, o que entra na mochila aparece nela, o que está na mão se come pela tecla e não se come quando é ferramenta, com um tronco ao alcance o E golpeia em vez de comer, com o corpo parado o E não bate nem come, e com tela aberta as teclas da mão são dela")
+		print("BARRA_OK: a barra existe, tem tamanho, está no rodapé dentro da tela, tem os dez espaços, o que entra na mochila aparece nela, o que está na mão se come pela tecla e não se come quando é ferramenta, com um tronco ao alcance o E golpeia em vez de comer, com o corpo parado o E não bate nem come, com tela aberta as teclas da mão são dela, e com o papel na mão o E lê")
 	else:
 		print("barra: %d falha(s)" % falhas)
 	quit(1 if falhas > 0 else 0)

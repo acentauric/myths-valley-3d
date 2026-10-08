@@ -70,8 +70,10 @@
    "capim": {"copa": 0.4, "altura": 0.9, "tronco": false}
   },
  "aderecos": {
-  "observacao": "Os adereços de roça e de quintal que o paisagismo põe (paisagismo_vale.gd, aderecos): a cerca de varas em volta das roças com entrada livre onde elas chegam mais perto da rua, o estaleiro de fumo na roça de fumo, o carro de boi parado junto da estrada da maior roça de mandioca, o monjolo na beira do rio e as barracas de feira na praça. A chave porteira regula a proximidade da entrada; o portão decorativo imóvel não é mais plantado (#152). Nada é sorteado: tudo sai da forma das zonas e das reservas, e os pés das zonas plantam em volta deles.",
-  "cerca": {"chave": "cerca_varas", "passo": 3.0, "folga": 0.6, "lod": 75.0, "receitas": ["roca_mandioca", "roca_milho_fumo"]},
+  "observacao": "Os adereços de roça e de quintal que o paisagismo põe (paisagismo_vale.gd, aderecos): a cerca de varas em volta das roças com entrada livre onde elas chegam mais perto da rua, o estaleiro de fumo na roça de fumo, o carro de boi parado junto da estrada da maior roça de mandioca, o monjolo na beira do rio e as barracas de feira na praça. A chave porteira regula a proximidade da entrada; o portão decorativo imóvel não é mais plantado (#152): no lance da entrada fica só a marca 'entrada', sem malha. Nada é sorteado: tudo sai da forma das zonas e das reservas, e os pés das zonas plantam em volta deles.",
+  "cerca": {"chave": "cerca_varas", "passo": 3.0, "folga": 0.6, "lod": 75.0, "receitas": ["roca_mandioca", "roca_milho_fumo"],
+    "altura": 1.35, "altura_do_corpo": 1.9, "simplificar": 1.6, "para_fora": 0.9, "entre_rocas": 3.0,
+    "observacao_07_10": "Lances retos de canto a canto sobre o contorno simplificado ('simplificar', a tolerância em unidades: os degraus de dois passos viram uma reta), um palmo 'para_fora' da roça, cada lado cortado em lances de uns 'passo'; duas roças vizinhas dividem uma cerca só (o lance colado a um de outra roça a menos de 'entre_rocas' não entra). A cerca em pé mede 'altura' e a caixa de colisão 'altura_do_corpo' — mais que o pulo do jogador (1,5): cerca que impede a passagem, e não um degrau."},
   "porteira": {"chave": "porteira", "alcance_da_rua": 8.0},
   "estaleiro_fumo": {"chave": "estaleiro_fumo", "receita": "roca_milho_fumo", "quantidade": 2, "raio": 2.6, "recuo": 7.0, "afastar": 14.0},
   "carro_de_boi": {"chave": "carro_de_boi", "receita": "roca_mandioca", "raio": 2.6, "fora": 3.8, "alcance_da_rua": 8.0},

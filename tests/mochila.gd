@@ -5,7 +5,8 @@ extends SceneTree
 ##
 ## A regra de dentro dela — trinta espaços, o que se veste, o que se come — é
 ## dos autoloads compartilhados, com portão no 2D. A tela também é arquivo do
-## 2D (`scripts/ui/mochila.gd`), e não se mexe nela daqui. O que este portão
+## 2D (`scripts/ui/mochila.gd`), e não se mexe nela daqui: o vale a estende só
+## no desenho (`mochila_vale.gd`, 07/10). O que este portão
 ## pergunta é o que o VALE tem de fazer para ela funcionar em cima do 3D:
 ##
 ##   1. O I ABRE E FECHA, pelo dono das telas, e o vale para atrás dela. O Esc
@@ -95,6 +96,11 @@ func _run() -> void:
 		var largura_da_mao: float = load(BARRA_DE_MAO).LARGURA
 		_conferir(espaco.size.x >= largura_da_mao * 0.8,
 			"cada espaço da mochila tem %.0f px na tela, e o da barra de mão tem %.0f: ela abriu no tamanho do 2D" % [espaco.size.x, largura_da_mao])
+		# EM ALTA E NA IDENTIDADE DO VALE (07/10): desenhada na tela do vale, e não o
+		# quadro do 2D esticado; com a talha de ouro dos painéis dele.
+		_conferir(mochila.transform.get_scale().x <= 1.05,
+			"a mochila é ampliada %.2f vezes: é o quadro do 2D esticado, e a letra serrilha" % mochila.transform.get_scale().x)
+		_conferir(mochila.get_node_or_null("Moldura") != null, "a mochila não tem a moldura de talha dos painéis do vale")
 	vale.telas.fechar_tudo()
 	await _frames(2)
 

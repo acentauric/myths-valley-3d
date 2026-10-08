@@ -43,6 +43,10 @@ const DE_PARA := {
 	"bar": "Bar",
 	"casa_de_pasto": "Restaurante",
 	"pier": "Pier",
+	# A PISTA DA CORRIDA da chegada e a AREIA ao lado do píer (07/10): o passo "correr"
+	# aponta a pista, e o Tonho espera a chegada na areia (`world_builder`, o píer).
+	"corrida": "Corrida",
+	"areia": "Areia",
 	"ponte_da_vila": "Ponte",
 	# O RIO GRANDE é o rio do norte do mapa, fundo e com barranco na margem norte
 	# (#81), e a ponte dele é a "Ponte" do KML, onde a Rua Principal o cruza:
@@ -91,13 +95,37 @@ const DE_PARA := {
 	# de cada um (`WorldBuilder.casas_dos_moradores`).
 	"casa_do_pedro": "Casa do Pedro",
 	"casa_da_zefa": "Casa da Zefa",
+	# O GALINHEIRO do quintal da casa de taipa (`curral_vale.gd`, #160): a âncora fica
+	# posta desde o começo, levantado ou não — o passo do curral aponta para lá.
+	"galinheiro": "Galinheiro",
+	"curral": "Galinheiro",
+	# AS RUÍNAS DO PALACETE, a torre da capela e a estátua da coruja, atrás do monte a
+	# oeste da fazenda (`revoar_vale.gd`, data/missoes_revoar.json, #31): o capítulo 7.
+	"ruinas_do_palacete": "Ruínas do palacete",
+	"torre_da_capela": "Torre da capela",
+	"estatua_da_coruja": "Estátua da coruja",
+	# AS CASAS DOS MORADORES DO ARRAIAL E A BEIRA DO RIO (07/10, as missões secundárias,
+	# docs/projeto/MISSOES_SECUNDARIAS.md): onde cada favor é pedido. As casas são as
+	# âncoras que o world_builder assenta com o nome da casa de npcs_3d.json; o padre, o
+	# sacristão, a beata e o saveirista moram nas casas numeradas do arraial.
+	"casa_do_padre": "Casa do arraial 7",
+	"casa_do_sacristao": "Casa do arraial 1",
+	"casa_da_beata": "Casa do arraial 1",
+	"casa_do_ladislau": "Casa do arraial 4",
+	"casa_do_guarda": "Casa do guarda",
+	"casa_do_pescador": "Casa do pescador",
+	"casa_da_marisqueira": "Casa da marisqueira",
+	"casa_da_lavadeira": "Casa da lavadeira",
+	"casa_da_rendeira": "Casa da rendeira",
+	"casa_da_quituteira": "Casa da quituteira",
+	"casa_do_carpinteiro": "Casa do carpinteiro",
+	"beira_do_rio": "Rio 2",
 }
 
 ## Nomes conhecidos que não resolvem por âncora fixa: regiões ainda ausentes
 ## e alvos dinâmicos resolvidos em outro sistema, com a razão de cada caso.
 const FALTAM_NO_VALE := {
 	"lagoa": "a lagoa a leste do Seu Benedito — Fase 2.5",
-	"curral": "o curral da fazenda ainda não tem âncora no vale (#25)",
 	# Estes nomes descrevem alvos móveis ou interiores, não marcos fixos.
 	# A campanha 3D os encontra nos responsáveis abaixo; Lugares não inventa
 	# uma coordenada estática para eles. Permanecem conhecidos pelo contrato.

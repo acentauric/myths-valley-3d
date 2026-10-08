@@ -412,10 +412,13 @@ func _desenhados(pecas: Array[Node3D], de: Vector3, com_alcance: bool) -> int:
 func _triangulos(todas: Array[Node3D]) -> void:
 	print("")
 	print("5. o que se desenha cai")
-	# Só as peças do cenário: o bicho tem o corte dele, que não é o daqui.
+	# Só as peças do cenário: o bicho tem o corte dele, que não é o daqui. E só as que
+	# ainda existem: entre a colheita da lista e esta parte, o mapa alto e a volta à
+	# câmera de passeio deixam o corte trocar um modelo distante pelo substituto — o
+	# modelo sai, e perguntar a um nó liberado derrubava o portão no perfil limpo.
 	var pecas: Array[Node3D] = []
 	for modelo in todas:
-		if modelo.is_in_group(PecasDistantes.GRUPO):
+		if is_instance_valid(modelo) and modelo.is_in_group(PecasDistantes.GRUPO):
 			pecas.append(modelo)
 	var mirante: Vector3 = world.ancoras.get("Mirante", Vector3.ZERO)
 	var praca: Vector3 = Vector3.ZERO

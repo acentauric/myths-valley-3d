@@ -372,6 +372,8 @@ const EN := {
 	"Falar": "Talk",
 	"Entregar": "Hand over",
 	"Falar com %s": "Talk to %s",
+	# O E na comida acima do teto da reserva (#105).
+	"Comer agora joga fora %d de fôlego. Comer assim mesmo?": "Eating now wastes %d breath. Eat anyway?",
 	"Entregar a %s": "Hand over to %s",
 	"Missão concluída": "Quest complete",
 	# O E na bancada da oficina e na fogueira (tecla_das_bancadas.gd).
@@ -411,6 +413,11 @@ const EN := {
 	"à mão": "by hand",
 	"andando": "running",
 	"parado": "stopped",
+	# O estado do relógio no HUD (#100).
+	"fala": "talk",
+	"tela": "screen",
+	"conquista": "quest",
+	"narração": "narration",
 	"Controles": "Controls",
 	"Teclas fixas": "Fixed keys",
 	"Restaurar padrão": "Restore defaults",
@@ -800,6 +807,8 @@ const ES := {
 	"Falar": "Hablar",
 	"Entregar": "Dar",
 	"Falar com %s": "Hablar con %s",
+	# O E na comida acima do teto da reserva (#105).
+	"Comer agora joga fora %d de fôlego. Comer assim mesmo?": "Comer ahora tira %d de aliento. ¿Comer igual?",
 	"Entregar a %s": "Entregar a %s",
 	"Missão concluída": "Misión cumplida",
 	# O E na bancada da oficina e na fogueira (tecla_das_bancadas.gd).
@@ -838,6 +847,11 @@ const ES := {
 	"à mão": "a mano",
 	"andando": "en marcha",
 	"parado": "detenido",
+	# O estado do relógio no HUD (#100).
+	"fala": "charla",
+	"tela": "pantalla",
+	"conquista": "logro",
+	"narração": "narración",
 	"Controles": "Controles",
 	"Teclas fixas": "Teclas fijas",
 	"Restaurar padrão": "Restaurar valores",

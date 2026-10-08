@@ -20,7 +20,7 @@
       "texto": "Terreiro não se entra de mão vazia, e a primeira mesa é sua. Folha da serra, peixe da maré e cana da roça: o que o mato dá, o que a água dá e o que a mão plantou. Três ervas, dois peixes, duas canas. Leve tudo junto ao terreiro. Lá se aprende em roda; ninguém aprende sozinho.",
       "texto_en": "No one enters a terreiro empty-handed, and the first table is yours. Leaf from the hills, fish from the tide and cane from the field: what the bush gives, what the water gives and what the hand has planted. Three herbs, two fish, two canes. Bring it all together to the terreiro. There one learns in a circle; no one learns alone.",
       "texto_es": "Al terreiro no se entra con las manos vacías, y la primera mesa es tuya. Hoja de la sierra, pez de la marea y caña de la roza: lo que da el monte, lo que da el agua y lo que plantó la mano. Tres hierbas, dos peces, dos cañas. Llévalo todo junto al terreiro. Allí se aprende en rueda; nadie aprende solo.",
-      "recompensa": { "pirao": 2 },
+      "recompensa": {"xp": 10,  "pirao": 2 },
       "xp_de_fe": true,
       "meta": {
         "tipo": "oferendar",

@@ -78,6 +78,11 @@ var _perto := ""
 var _rotulos: Dictionary = {}
 
 
+## PÕE LENHA NA FOGUEIRA (07/10): o vale liga aqui `alimentar_a_fogueira`, e o E na
+## fogueira com a lenha na mão a chama em vez de abrir o fogão.
+var alimentar: Callable = Callable()
+
+
 func configurar(world, jogador: Node3D, hud, abrir: Callable, livre: Callable) -> void:
 	_world = world
 	_jogador = jogador
@@ -132,6 +137,8 @@ func _tem_obra(qual: String) -> bool:
 
 
 func _rotulo(qual: String) -> String:
+	if qual == "cozinha" and alimentar.is_valid() and Inventario.na_mao() == "lenha":
+		return str(IdiomaMenu.campo(Jogo.dados("res://data/fogueira.json").get("por_lenha", {}), "texto", "por_lenha"))
 	if LUGARES.has(qual):
 		return tr(str(LUGARES[qual]["rotulo"]))
 	return str(_rotulos.get(qual, ""))
@@ -179,6 +186,11 @@ func _unhandled_key_input(event: InputEvent) -> void:
 ## mais perto pela regra do J. Público para o portão chamar sem simular tecla.
 func usar(qual: String) -> void:
 	if not _abrir.is_valid():
+		return
+	# A LENHA NA MÃO VAI PARA A FOGUEIRA, e o fogão não abre (07/10).
+	if qual == "cozinha" and alimentar.is_valid() and Inventario.na_mao() == "lenha":
+		alimentar.call()
+		_dica.visible = false
 		return
 	var aba := -1
 	var obra := ""

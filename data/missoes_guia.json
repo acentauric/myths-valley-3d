@@ -35,16 +35,16 @@
       "titulo": "Pressa de quem chega",
       "titulo_en": "In a hurry",
       "titulo_es": "Prisa de quien llega",
-      "resumo": "Toque Shift e corra um trecho",
-      "resumo_en": "Tap Shift and run a stretch",
-      "resumo_es": "Pulsa Shift y corre un tramo",
-      "lugar": "pier",
+      "resumo": "Corra até ali (Shift), um trecho",
+      "resumo_en": "Run over there (Shift), a stretch",
+      "resumo_es": "Corre hasta allí (Shift), un tramo",
+      "lugar": "corrida",
       "raio": 7,
       "audio": "",
       "fica": true,
-      "texto": "Se precisar de pressa, toca o Shift: o corpo corre, e outro toque volta ao passo. Corre um trecho aí, pra ver. Mas repara: correr cansa, e cansado o corpo não obedece.",
-      "texto_en": "If you're in a hurry, tap Shift: your body runs, and another tap brings it back to a walk. Run a stretch there, to see. But mind: running tires you, and a tired body won't obey.",
-      "texto_es": "Si tienes prisa, pulsa Shift: el cuerpo corre, y otro toque lo devuelve al paso. Corre un tramo ahí, para ver. Pero ojo: correr cansa, y cansado el cuerpo no obedece.",
+      "texto": "Se precisar de pressa, toca o Shift: o corpo corre, e outro toque volta ao passo. Corre até ali, onde a seta aponta, pra ver. Mas repara: correr cansa, e cansado o corpo não obedece.",
+      "texto_en": "If you're in a hurry, tap Shift: your body runs, and another tap brings it back to a walk. Run over there, where the arrow points, to see. But mind: running tires you, and a tired body won't obey.",
+      "texto_es": "Si tienes prisa, pulsa Shift: el cuerpo corre, y otro toque lo devuelve al paso. Corre hasta allí, adonde apunta la flecha, para ver. Pero ojo: correr cansa, y cansado el cuerpo no obedece.",
       "meta": {
         "tipo": "evento",
         "evento": "correu"
@@ -74,6 +74,7 @@
       },
       "quem_paga": "tonho",
       "recompensa": {
+        "xp": 10,
         "peixe": 1
       },
       "conduz": true
@@ -102,6 +103,7 @@
       },
       "quem_paga": "candinha",
       "recompensa": {
+        "xp": 10,
         "garapa": 1
       },
       "conduz": true
@@ -130,6 +132,7 @@
       },
       "quem_paga": "zefa",
       "recompensa": {
+        "xp": 10,
         "cocada": 1
       },
       "conduz": true
@@ -240,6 +243,7 @@
       },
       "quem_paga": "cosme",
       "recompensa": {
+        "xp": 10,
         "beiju": 1
       }
     },
@@ -263,6 +267,7 @@
         "quantos": 4
       },
       "recompensa": {
+        "xp": 10,
         "beiju": 1
       }
     },
@@ -335,6 +340,7 @@
       },
       "quem_paga": "zefa",
       "recompensa": {
+        "xp": 10,
         "cocada": 2
       }
     },
@@ -376,6 +382,7 @@
         "evento": "dormiu"
       },
       "recompensa": {
+        "xp": 10,
         "mungunza": 1
       }
     },
@@ -404,6 +411,8 @@
     }
   ],
   "arremate": {
+    "audio": "pedro_convite_arremate",
+    "tts": "[skeptical] Só isso? \"Haverá um grande evento\" — e nem quem assina. [thoughtful] É da fazenda do outro lado do rio, que ninguém nunca viu o dono. Meus avós já decidiram que vão, e eu vou junto. [warmly] Até lá, cuide do que é seu: a roça cresce um palmo por dia regado. Eu volto pro píer — é lá que você me acha, e agora o arraial te conhece.",
     "texto": "Só isso? \"Haverá um grande evento\" — e nem quem assina. É da fazenda do outro lado do rio, que ninguém nunca viu o dono. Meus avós já decidiram que vão, e eu vou junto. Até lá, cuide do que é seu: a roça cresce um palmo por dia regado. Eu volto pro píer — é lá que você me acha, e agora o arraial te conhece.",
     "texto_en": "That's all? \"There will be a great event\" — and not even a signature. It's from the farm across the river, whose owner nobody has ever seen. My grandparents have already decided to go, and I'm going with them. Until then, look after what's yours: the field grows a hand's width every watered day. I'm heading back to the pier — that's where you'll find me, and now the village knows you.",
     "texto_es": "¿Eso es todo? \"Habrá un gran evento\", y ni siquiera la firma. Es de la hacienda del otro lado del río, cuyo dueño nadie ha visto nunca. Mis abuelos ya decidieron ir, y yo voy con ellos. Hasta entonces, cuida lo tuyo: el sembrado crece un palmo por cada día regado. Vuelvo al muelle: ahí me encuentras, y ahora el pueblo te conoce."

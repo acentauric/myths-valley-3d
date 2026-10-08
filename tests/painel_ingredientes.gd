@@ -39,7 +39,9 @@ func rodar() -> void:
 		var lenha: Control = faixa.get_node("lenha")
 		var pedido := int(lenha.get_meta("pedido"))
 		conferir(bool(lenha.get_meta("suficiente")) == (pedido <= 2), "custo acende por ingrediente, não por receita")
-	for aba: Button in painel._abas_coluna.get_children(): conferir(aba.icon != null, "abas têm ícones")
+	# O ícone da aba é o do item, ou o distintivo próprio dela (Obras, Saveiro: #108).
+	for aba: Button in painel._abas_coluna.get_children():
+		conferir(aba.icon != null or not aba.find_children("Icone_*", "TextureRect", false, false).is_empty(), "abas têm ícones")
 	var indice: int = lista.find("tabua")
 	painel.escolher(indice)
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE

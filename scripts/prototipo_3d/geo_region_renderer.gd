@@ -121,6 +121,27 @@ const BARRANCO_DESCIDA := 4.0
 ## O aterro da ponte some aos poucos entre 70 % disto e isto, de distância da ponte:
 ## somado à descida da faixa, é o que deixa a estrada em rampa que se anda.
 const ATERRO_DA_PONTE := 12.0
+## A BEIRA DE CÁ (#115): "cai no rio e não consigo voltar para nenhum dos 2
+## lados". Com a calha funda da #81 o leito subia 1,6 u em meio metro dos dois
+## lados — 66 graus, acima do que o corpo sobe (46) — e quem caía nadava até a
+## parede e ficava. Do lado de cá o leito agora sobe em rampa que se anda
+## (`_beira_de_ca`): o fundo no meio, até BEIRA_FUNDA_ATE da linha; a nado até a
+## profundidade em que o corpo volta a andar (BEIRA_NADO_PROFUNDIDADE, abaixo de
+## ANDA_ATE do jogador), em BEIRA_NADO_ATE; e de lá até a margem, BEIRA_RAMPA
+## além da beira d'água, a menos de 40 graus. A água do rio grande se alarga
+## BEIRA_RAMPA para cada lado para cobrir a rampa (`_largura_da_agua`; do lado
+## de lá ela some dentro do barranco), e o aterro da ponte sobe da água em
+## ATERRO_SUBIDA_DE_CA do lado de cá — a ponte tem 9 u, e a cabeceira fica além
+## disso. O lado de lá não muda: a calha funda até a parede, e a parede.
+const BEIRA_FUNDA_ATE := 0.4
+const BEIRA_NADO_ATE := 0.75
+const BEIRA_NADO_PROFUNDIDADE := 1.3
+const BEIRA_RAMPA := 0.9
+const ATERRO_SUBIDA_DE_CA := 2.4
+## O aterro de cá é um CORREDOR: parede da água ao alto só até isto da linha da
+## estrada, sob o tabuleiro (a cabeceira fica a 1,4 u da beira d'água e tem de
+## estar na altura da de lá); daí a 1,5 u além, a subida vira a rampa da beira.
+const ATERRO_CORREDOR := 1.0
 ## O PLATÔ DA GAMELEIRA (#87): o sambaqui e a árvore assentam numa amostra só do
 ## terreno, no centro (`world_builder._build_gameleira`), e com o chão novo de
 ## 05/10 a encosta ali inclinou — a árvore apareceu desnivelada. O terreno em
@@ -475,13 +496,15 @@ func build_region(kml_json_path: String, scenario_json_path: String) -> void:
 		var comprimento_rio := 0.0
 		for i in range(river.points.size() - 1):
 			comprimento_rio += river.points[i].distance_to(river.points[i + 1])
-		material_rio.set_shader_parameter("comprimento", comprimento_rio / float(river.width))
+		var largura_da_agua := _largura_da_agua(river)
+		material_rio.set_shader_parameter("comprimento", comprimento_rio / largura_da_agua)
+		material_rio.set_shader_parameter("sentido", _sentido_da_correnteza(river))
 		# Na foz central a malha da foz cobre a junta. Dissolver a ponta do
 		# canal revelava a areia do leito como uma faixa atravessando a agua.
 		material_rio.set_shader_parameter("suavizar_inicio", false)
 		material_rio.set_shader_parameter("suavizar_fim", false)
 		material_rio.set_shader_parameter("transicao_foz_larguras", _units(100.0, 25.0) / float(river.width) if northern else 1.0)
-		_add_ribbon("Rio", river.points, river.width, RIVER_WATER_OFFSET, RIVER_COLOR, false, material_rio, NAN, 6, 1.5, 0.0, null, false, northern, false, 0.015 if not northern else NAN, true)
+		_add_ribbon("Rio", river.points, largura_da_agua, RIVER_WATER_OFFSET, RIVER_COLOR, false, material_rio, NAN, 6, 1.5, 0.0, null, false, northern, false, 0.015 if not northern else NAN, true)
 	for mouth in _mouth_extensions:
 		var bank_width := _units(12.0, 3.0)
 		var total_width := float(mouth.width) + bank_width * 2.0
@@ -602,13 +625,16 @@ func _riverbed_profile(point: Vector2) -> float:
 			continue
 		var distance := _distance_to_line(point, river.points)
 		var shape := 1.0 - smoothstep(width * 0.25, width * 0.58, distance)
-		if bool(river.get("grande", false)):
-			shape = lerpf(shape, 1.0 - smoothstep(width * 0.15, width * 0.5 + 4.0, distance), _peso_retorno_de_ca(point))
 		# No rio grande, do lado do barranco, a calha segue funda até a beira
-		# d'água: não há onde pôr o pé antes da parede (ver RIO GRANDE).
-		if bool(river.get("grande", false)) and _lado_do_barranco(point) > 0.0:
-			shape = 1.0 - smoothstep(width * 0.5 - 0.2, width * 0.5 + 0.1, distance)
-		deepest = maxf(deepest, float(river.get("profundidade", RIVER_BED_DEPTH)) * shape)
+		# d'água: não há onde pôr o pé antes da parede (ver RIO GRANDE). Do lado
+		# de cá ela sobe em rampa que se anda (ver A BEIRA DE CÁ).
+		var profundidade := float(river.get("profundidade", RIVER_BED_DEPTH))
+		if bool(river.get("grande", false)):
+			if _lado_do_barranco(point) > 0.0:
+				shape = 1.0 - smoothstep(width * 0.5 - 0.2, width * 0.5 + 0.1, distance)
+			else:
+				shape = _beira_de_ca(distance, width * 0.5, profundidade)
+		deepest = maxf(deepest, profundidade * shape)
 	for mouth in _mouth_extensions:
 		if not (mouth.bounds as Rect2).has_point(point):
 			continue
@@ -617,6 +643,44 @@ func _riverbed_profile(point: Vector2) -> float:
 		var shape := 1.0 - smoothstep(width * 0.25, width * 0.58, distance)
 		deepest = maxf(deepest, RIVER_BED_DEPTH * shape)
 	return deepest
+
+
+## A fração da profundidade da calha do rio grande a `distancia` da linha, do
+## lado de cá (ver A BEIRA DE CÁ): 1 no fundo, a nado até BEIRA_NADO_ATE, e a
+## rampa que se anda até zero em `meia` + BEIRA_RAMPA.
+func _beira_de_ca(distancia: float, meia: float, profundidade: float) -> float:
+	if distancia <= BEIRA_FUNDA_ATE:
+		return 1.0
+	var a_nado := minf(BEIRA_NADO_PROFUNDIDADE / maxf(profundidade, 0.01), 1.0)
+	if distancia <= BEIRA_NADO_ATE:
+		return lerpf(1.0, a_nado, (distancia - BEIRA_FUNDA_ATE) / (BEIRA_NADO_ATE - BEIRA_FUNDA_ATE))
+	var fim := meia + BEIRA_RAMPA
+	return a_nado * clampf((fim - distancia) / maxf(fim - BEIRA_NADO_ATE, 0.01), 0.0, 1.0)
+
+
+## A largura da água de um rio: no rio grande, a calha mais a rampa da beira de
+## cá de cada lado (ver A BEIRA DE CÁ).
+func _largura_da_agua(river: Dictionary) -> float:
+	return float(river.width) + (BEIRA_RAMPA * 2.0 if bool(river.get("grande", false)) else 0.0)
+
+
+## PARA ONDE A ÁGUA CORRE (#115): "a água subindo o rio e não correndo para o
+## mar". O shader desliza as ondas no sentido em que a faixa foi traçada (UV.y
+## cresce do primeiro ponto ao último), e o rio grande do KML é traçado da foz à
+## cabeceira: a água subia. O sentido é o da foz — o extremo perto da costa
+## (`_tem_foz_no_extremo`, como as peças da foz); sem foz num só extremo, o
+## extremo mais baixo do terreno.
+func _sentido_da_correnteza(river: Dictionary) -> float:
+	var points: PackedVector2Array = river.points
+	if points.size() < 2:
+		return 1.0
+	var foz_no_fim := _tem_foz_no_extremo(points, true)
+	var foz_no_inicio := _tem_foz_no_extremo(points, false)
+	if foz_no_fim != foz_no_inicio:
+		return 1.0 if foz_no_fim else -1.0
+	var a := points[0]
+	var b := points[points.size() - 1]
+	return 1.0 if _terrain_height_at(Vector3(b.x, 0.0, b.y)) <= _terrain_height_at(Vector3(a.x, 0.0, a.y)) else -1.0
 
 
 func _riverbed_lowering(point: Vector2) -> float:
@@ -712,24 +776,23 @@ func _barranco(point: Vector2) -> float:
 		return 0.0
 	var na_ponta := int(lado_e_trecho.y) >= (_rio_grande.points as PackedVector2Array).size() - 1
 	var altura := BARRANCO_ALTURA_DA_PONTA if na_ponta else BARRANCO_ALTURA
-	var subida := smoothstep(0.0, BARRANCO_SUBIDA, dentro)
-	subida = lerpf(subida, smoothstep(0.0, 3.5, dentro), _peso_retorno_de_ca(point))
+	# Do lado de cá, fora do corredor da estrada, o aterro só começa a subir onde
+	# a rampa da beira termina (BEIRA_RAMPA além da beira d'água) e sobe devagar:
+	# somadas, as duas passavam de 45 graus. Sob o tabuleiro ele é a parede de
+	# sempre, para a cabeceira de cá ficar na altura da de lá (ATERRO_CORREDOR).
+	# É também o que deixa voltar da água quem cai junto à ponte (#161).
+	var inicio := 0.0
+	var rampa := BARRANCO_SUBIDA
+	if lado < 0.0:
+		var i := clampi(int(lado_e_trecho.y), 0, _linha_do_barranco.size() - 2)
+		var tangente := (_linha_do_barranco[i + 1] - _linha_do_barranco[i]).normalized()
+		var ao_longo := absf((point - _ponte_do_rio_grande).dot(tangente))
+		var fora := smoothstep(ATERRO_CORREDOR, ATERRO_CORREDOR + 1.5, ao_longo)
+		inicio = BEIRA_RAMPA * fora
+		rampa = lerpf(BARRANCO_SUBIDA, ATERRO_SUBIDA_DE_CA, fora)
+	var subida := smoothstep(inicio, inicio + rampa, dentro)
 	var descida := 1.0 - smoothstep(BARRANCO_LARGURA - BARRANCO_DESCIDA, BARRANCO_LARGURA, dentro)
 	return altura * subida * descida * peso
-
-
-## Só ao lado da ponte, na margem do vale: mantém cabeceira, cerca e
-## barranco oposto, permitindo voltar da água depois de cair.
-func _peso_retorno_de_ca(point: Vector2) -> float:
-	if not _ponte_do_rio_grande.is_finite() or point.distance_to(_ponte_do_rio_grande) >= ATERRO_DA_PONTE:
-		return 0.0
-	var lado_e_trecho := _lado_e_trecho(point)
-	if lado_e_trecho.x >= 0.0:
-		return 0.0
-	var trecho := clampi(int(lado_e_trecho.y), 0, _linha_do_barranco.size() - 2)
-	var ao_longo := (_linha_do_barranco[trecho + 1] - _linha_do_barranco[trecho]).normalized()
-	var lateral := absf((point - _ponte_do_rio_grande).dot(ao_longo))
-	return smoothstep(2.5, 4.0, lateral) * (1.0 - smoothstep(ATERRO_DA_PONTE * 0.7, ATERRO_DA_PONTE, point.distance_to(_ponte_do_rio_grande)))
 
 
 ## A areia elevada da margem afunda antes de alcançar o mar, sem um degrau
@@ -769,7 +832,7 @@ func river_water_level_at(position: Vector3) -> float:
 	if _land.size() < 3 or not Geometry2D.is_point_in_polygon(point, _land):
 		return -INF
 	for river in _rivers:
-		var width := float(river.width)
+		var width := _largura_da_agua(river)
 		if (river.bounds as Rect2).has_point(point) and _distance_to_line(point, river.points) <= width * 0.5:
 			var offset := _coastal_ribbon_height(point, RIVER_WATER_OFFSET, 0.015) if not _is_northern_river(river) else RIVER_WATER_OFFSET
 			return _terrain_height_at(position) + offset
@@ -2061,30 +2124,31 @@ func _add_river_mouths() -> void:
 			var mouth_widths := PackedFloat32Array()
 			# A foz central abre com suavidade no trecho final do rio e termina
 			# um pouco mais larga que o canal, sem o alargamento excessivo anterior.
-			var width_start := float(river.width)
+			var largura_da_agua := _largura_da_agua(river)
+			var width_start := largura_da_agua
 			var flare_length := maxf(shore_length - float(river.width) + tail * 0.7, float(river.width) * 1.5)
 			var flare_amount := 0.8
 			var traveled := 0.0
 			for i in range(mouth.size() - 1):
 				var widening := clampf((traveled - width_start) / flare_length, 0.0, 1.0)
 				widening = widening * widening * (3.0 - 2.0 * widening)
-				mouth_widths.append(float(river.width) * (1.0 + flare_amount * widening))
+				mouth_widths.append(largura_da_agua * (1.0 + flare_amount * widening))
 				traveled += mouth[i].distance_to(mouth[i + 1])
 			var widening_final := clampf((length - float(river.width)) / flare_length, 0.0, 1.0)
 			widening_final = widening_final * widening_final * (3.0 - 2.0 * widening_final)
-			mouth_widths.append(float(river.width) * (1.0 + flare_amount * widening_final))
+			mouth_widths.append(largura_da_agua * (1.0 + flare_amount * widening_final))
 			var material := ShaderMaterial.new()
 			material.shader = FOZ_RIO
 			material.set_shader_parameter("ondas_a", Mar.textura_ruido("ondas_a", 0.035, true))
 			material.set_shader_parameter("ondas_b", Mar.textura_ruido("ondas_b", 0.05, true))
-			material.set_shader_parameter("comprimento", length / float(river.width))
+			material.set_shader_parameter("comprimento", length / largura_da_agua)
 			material.set_shader_parameter("inicio_sumir", clampf((shore_length - float(river.width) * 0.15) / length, 0.0, 0.96))
 			material.set_shader_parameter("entrada_suave", float(river.width) / length)
 			material.set_shader_parameter("limite_na_costa", false)
 			var overlap_lengths := 1.0
-			material.set_shader_parameter("deslocamento_percurso", comprimento_rio / float(river.width) - overlap_lengths if from_end else overlap_lengths)
+			material.set_shader_parameter("deslocamento_percurso", comprimento_rio / largura_da_agua - overlap_lengths if from_end else overlap_lengths)
 			material.set_shader_parameter("sentido_percurso", 1.0 if from_end else -1.0)
-			_add_ribbon("Foz do rio", mouth, float(river.width), RIVER_WATER_OFFSET + 0.01, RIVER_COLOR, false, material, NAN, 10, 1.0, 0.0, mouth_widths, false, false, false, 0.015, true)
+			_add_ribbon("Foz do rio", mouth, largura_da_agua, RIVER_WATER_OFFSET + 0.01, RIVER_COLOR, false, material, NAN, 10, 1.0, 0.0, mouth_widths, false, false, false, 0.015, true)
 
 
 func _distance_to_line(point: Vector2, line: PackedVector2Array) -> float:

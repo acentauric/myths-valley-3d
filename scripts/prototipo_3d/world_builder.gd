@@ -20,6 +20,7 @@ const MAP_CATALOG := "res://data/mapas/regioes.json"
 const ComposicaoVale = preload("res://scripts/prototipo_3d/composicao_vale.gd")
 const LombadaVale = preload("res://scripts/prototipo_3d/lombada_vale.gd")
 const FazendaVale = preload("res://scripts/prototipo_3d/fazenda_vale.gd")
+const RevoarVale = preload("res://scripts/prototipo_3d/revoar_vale.gd")
 const CemiterioLayout = preload("res://scripts/prototipo_3d/cemiterio_layout.gd")
 const TERREIRO_CASA := preload("res://scenes/prototipo_3d/terreiro_casa.tscn")
 const CASA_TAIPA_CAL_TEXTURE := preload("res://assets/prototipo_3d/materiais/cal_taipa_envelhecida_v1.png")
@@ -97,6 +98,9 @@ func _clareiras_das_frentes() -> Array[Vector2]:
 		chapada, chapada + Vector2(1.0, -11.0)]
 	# E A FAZENDA: o portão e a guarita, o pátio e o casarão (`FazendaVale.CLAREIRAS_M`).
 	for ponto: Vector2 in FazendaVale.CLAREIRAS_M:
+		lista.append(ponto / _meters_per_unit)
+	# E AS RUÍNAS DO PALACETE, a torre e a estátua do capítulo 7 (`RevoarVale.CLAREIRAS_M`, #31).
+	for ponto: Vector2 in RevoarVale.CLAREIRAS_M:
 		lista.append(ponto / _meters_per_unit)
 	return lista
 
@@ -927,7 +931,7 @@ func _construcao(chave: String, origin: Vector3, yaw: float, procedural: Callabl
 				# O modelo Tripo tem o próprio tabuado e recebe colisão pela malha.
 				var pier_deck_top := piso_position.y + piso_size.y * 0.5
 				ancoras["PierPiso"] = Vector3(placed_origin.x, pier_deck_top, placed_origin.z)
-			elif chave != "ponte" and autoria.has("terreiro"):
+			elif not chave.begins_with("ponte") and autoria.has("terreiro"):
 				# Terreiro autoral (Decal editado em composicao_vale.tscn), relativo à casa assentada.
 				var dados: Dictionary = autoria["terreiro"]
 				if bool(dados.get("visible", true)):
@@ -937,7 +941,7 @@ func _construcao(chave: String, origin: Vector3, yaw: float, procedural: Callabl
 					decal.modulate = dados["modulate"]
 					add_child(decal)
 					decal.global_transform = Transform3D(Basis(Vector3.UP, yaw), placed_origin) * (dados["transform"] as Transform3D)
-			elif chave != "ponte":
+			elif not chave.begins_with("ponte"):
 				# Terreiro de chão batido drapeado no próprio terreno (acompanha o declive):
 				# uma caixa plana ficava flutuando do lado baixo do lote.
 				var meio := Vector2(piso_size.x, piso_size.z) * 0.5
@@ -1783,7 +1787,10 @@ func _erguer_ponte(point: Vector3, anchor: String) -> void:
 	bridge.y = _footprint_height(bridge, 5.5) + 0.1
 	ancoras[anchor] = bridge
 	var bridge_yaw := _road_yaw_at(bridge)
-	var modelo := _construcao("ponte", bridge, bridge_yaw, func():
+	# A PONTE GRANDE NA VILA (07/10): a travessia do rio central volta ao modelo de
+	# 26/09, maior; o rio grande fica com a ponte de pé e a caída da obra (#94).
+	var peca := "ponte_grande" if anchor == "Ponte do rio central" and CatalogoAssets.tem_tripo("ponte_grande") else "ponte"
+	var modelo := _construcao(peca, bridge, bridge_yaw, func():
 		_box(Vector3(11, 0.35, 6), bridge + Vector3(0, 0.22, 0), Color("987b57"), true, null, bridge_yaw)
 		for side in [-2.8, 2.8]:
 			var rail_offset := Vector3(0, 0.95, side).rotated(Vector3.UP, bridge_yaw)
@@ -1805,7 +1812,7 @@ func _erguer_ponte(point: Vector3, anchor: String) -> void:
 	# tabuleiro até a obra `ponte_levantar`, e a caída aparece no lugar — quem
 	# troca é o `ponte_vale.gd`, pela obra. Sem o modelo do Tripo (o estilo
 	# procedural), a ponte é só a de pé, cercada.
-	if modelo != null and estilo_tripo():
+	if modelo != null and estilo_tripo() and peca == "ponte":
 		var caida := CatalogoAssets.instanciar("ponte_caida", self, bridge, 1.0, bridge_yaw)
 		if caida != null:
 			caida.name = "PonteCaidaTripo"
@@ -1858,6 +1865,18 @@ func _build_landmark_details() -> void:
 	ancoras["PierPiso"] = Vector3(pier_base.x, pier_floor_top, pier_base.z)
 	ancoras["PierDirecao"] = pier_direction
 	ancoras["PierLado"] = Vector3(cos(pier_yaw), 0.0, -sin(pier_yaw))
+	# A PISTA DA CORRIDA E A AREIA (playtest de 07/10). O passo "correr" da chegada
+	# apontava o píer, e o marcador caía em cima do Tonho — "isso tá confuso para o
+	# jogador": a seta agora aponta um ponto em terra, estrada adentro, a uns doze
+	# passos da cabeça do píer ("corra até ali"). E na chegada o Tonho espera na
+	# AREIA, ao lado do píer, para o tabuado não ficar cheio (ele volta à rotina
+	# dele depois): o primeiro ponto em terra firme, de um lado ou do outro.
+	var para_a_terra := -pier_direction
+	var cabeca: Vector3 = pier_origin + para_a_terra * 8.5
+	ancoras["Corrida"] = _ponto_em_terra([cabeca + para_a_terra * 12.0, cabeca + para_a_terra * 8.0, cabeca + para_a_terra * 5.0], cabeca)
+	var lado: Vector3 = ancoras["PierLado"]
+	ancoras["Areia"] = _ponto_em_terra([cabeca + para_a_terra * 3.0 + lado * 4.5, cabeca + para_a_terra * 3.0 - lado * 4.5,
+		cabeca + para_a_terra * 5.0 + lado * 3.0, cabeca + para_a_terra * 5.0 - lado * 3.0], ancoras["Corrida"])
 	_construcao("pier", pier_origin, pier_yaw, func():
 		_box(Vector3(4.5, 0.2, 17), pier + Vector3(0, -0.1, 0), Color("85684b"), true)
 		for offset in [-7.0, 0.0, 7.0]:
@@ -2129,6 +2148,14 @@ func _build_pecas() -> void:
 			var item_position: Vector3 = item[1]
 			item_position.y = maxf(item_position.y, ground_height_at(item_position))
 			CatalogoAssets.instanciar(String(item[0]), self, item_position, 1.0, float(item[2]))
+
+
+## O primeiro dos `candidatos` que é terra firme, no chão; sem nenhum, `senao` no chão.
+func _ponto_em_terra(candidatos: Array, senao: Vector3) -> Vector3:
+	for ponto: Vector3 in candidatos:
+		if is_on_land(ponto):
+			return ground_position(ponto, 0.0)
+	return ground_position(senao, 0.0)
 
 
 func _posicao_no_pier(lateral: float, longitudinal: float) -> Vector3:

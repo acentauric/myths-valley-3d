@@ -165,8 +165,11 @@ const ITENS := {
 		"folego": 19.0, "icone": "caju", "empilhavel": true,
 	},
 	# --- do curral ------------------------------------------------------------
+	## O OVO das galinhas do quintal (`curral_vale.gd`, #160): botam todo dia, e o E
+	## no galinheiro recolhe.
 	"ovo": {
 		"nome": "Ovo", "tipo": "recurso", "icone": "ovo", "empilhavel": true,
+		"resumo": "Das galinhas do seu quintal. Botam todo dia; recolha de manhã, no galinheiro.",
 	},
 	"leite": {
 		"nome": "Leite de cabra", "tipo": "recurso", "icone": "leite", "empilhavel": true,
@@ -378,6 +381,42 @@ const ITENS := {
 		"leitura": "convite_texto",
 		"empilhavel": false,
 	},
+	## OS PAPÉIS E O PANO DOS ARCOS DOS MORADORES (07/10, docs/projeto/MISSOES_SECUNDARIAS.md,
+	## fase 2): o papel da pedra do altar e a madeira lavrada da linha do pescador se LEEM
+	## (documentos, texto em data/documentos.json, ícones de coisas que já existem); a
+	## toalha do tio se põe na mesa da casa de taipa (oferenda).
+	"papel_dos_nomes": {
+		"nome": "Papel com nomes",
+		"tipo": "documento",
+		"resumo": "Enrolado, amarelo, com a dobra da pedra ainda marcada.",
+		"icone": "carta",
+		"leitura": "papel_dos_nomes",
+		"empilhavel": false,
+	},
+	"tabua_lavrada": {
+		"nome": "Madeira lavrada",
+		"tipo": "documento",
+		"resumo": "Um pedaço de proa com letras fundas, comidas de sal.",
+		"icone": "tabua",
+		"leitura": "tabua_lavrada",
+		"empilhavel": false,
+	},
+	"toalha_de_renda": {
+		"nome": "Toalha de renda",
+		"tipo": "material",
+		"resumo": "Branca de todo, com um nome na borda em ponto cheio.",
+		"icone": "toalha_de_renda",
+		"empilhavel": false,
+	},
+	## A carta da filha da Dona Rosa (fase 3): vai ao padre e volta, e se lê.
+	"carta_da_rosa": {
+		"nome": "Carta da filha da Dona Rosa",
+		"tipo": "documento",
+		"resumo": "Letra redonda, de Salvador, sem data.",
+		"icone": "carta",
+		"leitura": "carta_da_rosa",
+		"empilhavel": false,
+	},
 	## OS RITUAIS PREPARADOS, que são o que o oratório produz.
 	##
 	## Tipo próprio (`ritual`) e não `comida`: os dois se consomem da mochila e
@@ -453,6 +492,28 @@ const ITENS := {
 		"efeito": {"eficiencia": -0.05},
 		"resumo": "Couro curtido de vaqueiro. Com as mãos guardadas, a lida cansa menos.",
 		"icone": "luvas_de_couro",
+		"empilhavel": false,
+	},
+	## A LANÇA E O ESCUDO DE SAFIRAS do capítulo 7 (data/missoes_revoar.json, #31): os
+	## do senhor da fazenda, achados entre os destroços da torre da capela das
+	## ruínas. A lança é a arma do embate com a Matinta — mais que o dobro do facão;
+	## o escudo vai nas Mãos e segura a mordida como quatro gibões. "Reluziam uma
+	## luminosidade azul cada vez mais intensa" perto da fera: é a luz do `revoar_vale`.
+	"lanca_de_safira": {
+		"nome": "Lança de safiras",
+		"tipo": "ferramenta",
+		"resumo": "Esculpida num material azul, com adornos de ouro e safiras. A lança do senhor da fazenda, que atravessou a fera uma vez.",
+		"icone": "lanca_de_safira",
+		"empilhavel": false,
+		"dano": 9.0,
+	},
+	"escudo_de_safira": {
+		"nome": "Escudo de safiras",
+		"tipo": "equipamento",
+		"encaixe": "maos",
+		"efeito": {"defesa": 4.0},
+		"resumo": "Forte, azul, com safiras grandes. No braço, a mordida da fera chega pela metade. Deixá-lo ao lado da coruja é o que as mulheres pedem.",
+		"icone": "escudo_de_safira",
 		"empilhavel": false,
 	},
 	"facao": {

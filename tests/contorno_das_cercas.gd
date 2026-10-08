@@ -27,8 +27,13 @@ func _run() -> void:
 		"porteira": {"alcance_da_rua": 8.0}}, "reservas": {"rua": 0.0}}
 	var zona := {"nome": "Roça", "receita": "roca", "poligono": poligono}
 	var reservas := {"rua": func(p: Vector2) -> float: return p.y + 5.0}
-	var itens := Paisagismo.aderecos(null, [zona], receitas, reservas)
-	conferir(itens.size() == amostras.size() - 1, "há uma abertura e o resto forma o limite")
+	# O cercado sai dos lances de canto a canto (`_lances_do_cercado`): só o lance
+	# da entrada fica sem vara.
+	var lances := Paisagismo._lances_do_cercado(poligono, 3.0, 1.6, 0.9)
+	for lance in lances:
+		conferir(is_equal_approx(lance.de.x, lance.ate.x) or is_equal_approx(lance.de.y, lance.ate.y), "um lance do cercado corta a esquina")
+	var itens := _cercas(Paisagismo.aderecos(null, [zona], receitas, reservas))
+	conferir(itens.size() == lances.size() - 1, "há uma abertura e o resto forma o limite")
 	for item in itens:
 		var de: Vector2 = item.get("de", Vector2.INF)
 		var ate: Vector2 = item.get("ate", Vector2.INF)
@@ -37,7 +42,7 @@ func _run() -> void:
 	# Duas reservas nas laterais deixam uma peça central sem função: ela sai.
 	reservas.rua = func(p: Vector2) -> float:
 		return 0.0 if p.y < 0.1 and (p.x < 4.0 or p.x > 6.0) else 100.0
-	itens = Paisagismo.aderecos(null, [zona], receitas, reservas)
+	itens = _cercas(Paisagismo.aderecos(null, [zona], receitas, reservas))
 	for item in itens:
 		var vizinhos := 0
 		for outro in itens:
@@ -46,3 +51,6 @@ func _run() -> void:
 		conferir(vizinhos > 0, "não sobra uma peça isolada entre reservas")
 	print("CONTORNO_DAS_CERCAS: %d falha(s)" % falhas)
 	quit(1 if falhas else 0)
+
+func _cercas(itens: Array) -> Array:
+	return itens.filter(func(item: Dictionary) -> bool: return item.chave == "cerca_varas")

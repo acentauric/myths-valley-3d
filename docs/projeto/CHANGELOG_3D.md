@@ -1,5 +1,17 @@
 # Histórico de mudanças — Myths' Valley 3D
 
+## Em desenvolvimento — 08/10/2026
+
+- **A main da equipe (playtest e missões secundárias de 07/10) junta-se às
+  fatias locais de 07/10.** As cercas das roças ficam em lances retos de
+  canto a canto, em pé e com um corpo só por lance, que barra o jogador e
+  os moradores; a entrada da roça continua livre, sem a porteira imóvel
+  (#152). A volta de quem cai no rio grande segue a rampa da beira de cá da
+  main (#115), que cobre também o caso junto à ponte (#161). O aviso do
+  rodapé é a caixa da identidade do vale, com prazo e cedendo às falas; a
+  enxada mantém o próprio ritmo e o golpe de sempre termina quando a mão
+  volta.
+
 ## 07/10/2026: cobertura das cadeias de idiomas (#47)
 
 O teste passa a cobrar Candinha, Filo, Tonho, Zefa, arraial e recursos, incluindo os títulos. Toda cadeia `missoes_*.json` precisa declarar cobertura ou pendência. A grafia espanhola de "Tronco caído" tem uma exceção restrita aos cinco recursos revisados. O portão verifica 694 campos; remover `titulo_en` em memória com `--falsificar-titulo` provoca a falha esperada sem alterar o conteúdo da partida. As 8 entradas e 15 arquivos pendentes continuam registrados.
@@ -525,6 +537,112 @@ O teste passa a cobrar Candinha, Filo, Tonho, Zefa, arraial e recursos, incluind
 
 ## Em desenvolvimento — 06/10/2026 (playtest da Build 9B)
 
+- **Playtest de 07/10, primeira fatia.** Colhido, o leito volta a chão bruto e a
+  enxada abre outro. Com comida (ou papel) na mão o E come (ou lê): a barra de mão
+  vota no foco do E e vence o leito, a árvore e o toco — só a conversa com quem está
+  ao alcance passa na frente. Ao lado da hora só "parado" tem rótulo: os motivos
+  (fala, tela, festa, narração) estão na tela por si, e a palavra ficava sob a barra
+  da vida. A festa de missão cumprida só vem no fim da missão inteira, com o nome dela
+  ("Chegada ao arraial"), e não a cada passo. A galhada seca do terreiro rende cinco
+  vezes e acaba. Acabado o tutorial, a ponte do rio grande abre sozinha e o Pedro a
+  anuncia na despedida — antes nenhuma missão abria. E o relógio não fica preso: a
+  festa segura com prazo e solta quando se recolhe, e um motivo sem prazo que dure
+  mais de 150 s se solta sozinho, avisando no console.
+- **Playtest de 07/10, quinta fatia: a fogueira e as pedras.** A fogueira do terreiro
+  guarda fogo para três pratos; cada prato gasta um, e o E nela com a lenha na mão
+  devolve três, até nove — a aba do fogão diz quando apagou, e os recados moram em
+  `data/fogueira.json`, nos três idiomas. Quarenta pedras soltas nascem espalhadas
+  pelo vale, com semente, longe das ruas, das casas e dos lugares da vila. As pedras
+  grandes (os lajedos, as rochas e os matacões) deixam de ser cenário e viram alvo
+  de dias: pedem a picareta de aço e o talento Mão de pedra, rendem duas pedras a
+  cada quatro golpes, e a dica conta o trabalho ("Lajedo 12/96"); a seta de "junte
+  pedras" não aponta a pedra grande a quem só tem a picareta de ferro. As árvores já
+  seguiam a regra (madeira branca, de lei e dura, com nível e aço).
+- **As missões secundárias dos moradores, fase 3: as pontes entre moradores e as
+  missões de ação** (docs/projeto/MISSOES_SECUNDARIAS.md). Nove filas, abertas pelo
+  favor feito e a afinidade (a do Tonico pede "Amigo"): a roda na praia (Mariinha e a
+  Dona Rosa, de noite), a ronda do guarda (três lugares da praça depois das oito), a
+  vigília do sino (a igreja de madrugada), a maré das cinco e a carta da filha da Dona
+  Rosa (que o padre lê duas vezes; documento novo `carta_da_rosa`), a canoa do Tonho
+  (o carpinteiro a conserta com a madeira que o jogador leva), o livro de fiado (a conta
+  do Tonho paga em peixe), o caminho do Tonico até a lapa (a dívida é um cordel), a
+  promessa de Sá Joaquina (uma ostra na areia, por oferenda) e a água do rio grande.
+  Mecânica nova, uma só: `"horas": [de, ate]` na meta `visitar` — a janela do relógio
+  do vale em que chegar conta, e pode virar a meia-noite. O `missoes_elos` conta 52
+  arquivos e 154 passos.
+- **As missões secundárias dos moradores, fase 2: os quatro arcos de enredo**
+  (docs/projeto/MISSOES_SECUNDARIAS.md). Abrem com o favor do morador feito e ele
+  "Gente boa". A toalha do tio (a rendeira a entrega na janela; posta na mesa da casa
+  de taipa, por oferenda), a pedra atrás do altar (o sacristão dá o papel com os
+  nomes que a fazenda chama — o do tio riscado), a madeira com letra (a proa da
+  Senhora da Boa Viagem, que o padre lê: o brasão apagado é o que falta no selo do
+  convite) e a luz na água (a foz do rio grande, e o Quirino confirma no dia do
+  saveiro). Itens novos: `toalha_de_renda` (ícone novo), e os documentos
+  `papel_dos_nomes` e `tabua_lavrada`, com texto em `data/documentos.json`. O
+  `missoes_elos` conta 43 arquivos e 125 passos.
+- **As missões secundárias dos moradores, fases 0 e 1** (docs/projeto/MISSOES_SECUNDARIAS.md).
+  Catorze moradores do arraial só cumprimentavam e recebiam presente; cada um ganha
+  um favor de um passo (`data/missoes_<morador>.json`, meta "levar", a recompensa em
+  coisa que ele tem), na voz que já tinha em `aldeoes.json` — o lampião do Nicolau é
+  o da Estefânia, a cocada da Ambrósia é a do Tonico. As filas são penduradas pela
+  tabela `data/favores_dos_moradores.json` e trancadas pela afinidade: abrem quando o
+  morador conhece o jogador (grau 1) e a chegada acabou, com o aviso nos três idiomas —
+  que fica quieto até cinco pontos e sai uma vez, para não tomar a conversa do morador.
+  Fechar a fila de um morador da teia passa a dar o favor da afinidade (+25), que
+  ninguém dava. As casas dos moradores e a beira do rio entram no `Lugares`. Portão
+  novo `missoes_secundarias`; o `missoes_elos` conta 39 arquivos e 114 passos.
+- **Playtest de 07/10, sexta fatia: a voz do arremate.** O Pedro narra, na voz dele, a
+  fala de depois do convite lido (`pedro_convite_arremate`, gerada no ElevenLabs pela
+  ferramenta das falas do guia, com a leitura marcada para o v3).
+- **Playtest de 07/10, quarta fatia: a vila e as cercas.** A travessia do rio
+  central volta à ponte grande de 26/09 (`ponte_grande`, o modelo de então
+  recuperado); o rio grande fica com a ponte pequena de pé e a caída da obra. As
+  cercas de varas das roças passam a ser traçadas em lances retos de canto a canto
+  sobre o contorno simplificado da roça, um palmo para fora dela — antes a cerca
+  era amostrada a passo constante pelo perímetro e cortava caminho nos cantos, por
+  dentro da roça e cruzando a da vizinha (nove cruzamentos entre a mandioca e o
+  milho do Poente); duas roças vizinhas dividem uma cerca só. A cerca sobe a 1,35
+  e o corpo dela a 1,9 — mais que o pulo: cerca que impede a passagem, e não um
+  degrau; cada roça cercada ganha a porteira (a do milho do Poente, longe de toda
+  rua, abre para o lado da praça). Portão novo `cercas`.
+- **Playtest de 07/10, terceira fatia: as telas.** A caixa de fala, a mochila e o
+  cartão do amanhecer eram desenhados no quadro de 640×360 do 2D e ampliados duas
+  vezes — a letra saía serrilhada. Passam a ser desenhados na tela do vale
+  (1280×720), com o dobro das medidas de lá. A mochila e o cartão continuam sendo
+  os arquivos do 2D: o vale os ESTENDE só no desenho (`mochila_vale.gd` e
+  `amanhecer_vale.gd`, os autoloads `Mochila` e `Amanhecer`; regra 3 do
+  HISTORICO — a regra fica no 2D). E a mochila entra na identidade dos menus do
+  vale: a laca verde-escura, o filete e a talha de ouro, o título em Cinzel e o
+  texto em Cormorant, como o painel do J e o menu das obras; o espaço dela tem os
+  52 px da barra de mão, e o boneco acompanha.
+- **Playtest de 07/10, segunda fatia: a chegada.** A seta da corrida aponta uma pista
+  em terra, estrada adentro, e não o Tonho. Na chegada o Tonho espera na areia, ao
+  lado do píer, e volta à rotina quando a chegada passou do bom-dia e ninguém está
+  olhando (o jogador a mais de catorze passos), ou quando a festa de uma fé o chama
+  à roda. O Pedro espera nos marcos da estrada: a cada onze passos andados para e
+  vira-se até o jogador chegar a três; não anda enquanto o jogador está preso na
+  caixa de fala; e só corre se o jogador corre de fato. A ponte do rio grande só se
+  anuncia com o Pedro ao lado do jogador, e a pista e a areia não reservam chão no
+  paisagismo — o píer segue com as oito piaçabeiras que o saveiro pede.
+
+- **Toda a lista de missões do 2D está no vale** (docs/projeto/MISSOES_DO_2D.md).
+  O segundo tutorial (#160, `missoes_quintal.json`) abre sozinho na sexta colheita,
+  como no 2D: o pomar entrega duas mudas de bananeira e uma de mangueira e
+  fecha com a fruteira plantada; o talento Curral (raiz Pastoreio) passa a levantar
+  o galinheiro no quintal da casa de taipa, com três galinhas que botam um ovo
+  cada por dia — o E no galinheiro recolhe (`curral_vale.gd`); e o capataz, que no
+  2D pedia a aba de trabalho dos terrenos, vira um dia de roçado combinado com o
+  Cosme, pago de manhã na mochila. O capítulo 7 (#31, `missoes_revoar.json`,
+  `revoar_vale.gd`) segue a porta estreita: o quarto sem janelas e as três trocas
+  da velha (aceitar tira fôlego e paga; recusar é o caminho), a mão do Pedro que o
+  jogador puxa, a fuga e o revoar, o abrigo nas ruínas do palacete — levantadas
+  atrás do monte a oeste da fazenda, com a torre da capela e a rampa de pedra —, o
+  relato das escravas, a lança e o escudo de safiras entre os destroços, a fera
+  chamada pela lança batida no escudo e o embate de verdade com a Matinta como
+  criatura (`criaturas_3d.json`), a luz azul, o espírito do senhor e o sinal dele,
+  a estátua que fica, e a escolha do escudo ao amanhecer. Portões `quintal` e
+  `revoar`; `missoes_elos` passa a contar 25 filas e 100 passos.
+
 - **As missões voltam a fechar, e um portão joga todas do começo ao fim.** A
   bateria cheia da main tinha 12 portões vermelhos depois da junção do ramo de
   desempenho. As filas de colheita (Zefa, coveiro, pedra do poço, corte) caíam
@@ -781,6 +899,151 @@ O teste passa a cobrar Candinha, Filo, Tonho, Zefa, arraial e recursos, incluind
   fio de ouro, a fala em Cormorant, o rodapé "[E] continuar" em Cinzel miúdo
   (`dialogo_vale._montar`). A API, a fila de falas e o quadro de 640×360 não
   mudaram.
+- **O relógio não fica preso atrás de telas aninhadas, e diz por que parou
+  (#100).** Na live de 06/10 o dia travou às 07:14. As telas guardavam "estava
+  pausado antes?" num booleano só, e a segunda tela aberta por cima da primeira
+  (a mochila sobre uma fala, o mapa sobre o J) devolvia "pausado" ao fechar.
+  Agora as telas seguram o dia por motivo, contadas (`prototype._pause_valley`
+  / `_retomar_o_vale`, `Dia.segurar("tela")`), e `Dia.pausado` é só a pausa
+  que o jogador pediu — o menu, o save e o restore leem isso direto. O relógio
+  do HUD ganha uma linha de estado: "parado" pela pausa do jogador, ou quem o
+  segura (fala, tela, conquista, narração), nos três idiomas. Portão
+  `relogio`, parte 4.
+- **O balão dura o tempo de ler, e o Pedro espera a vez (#101).** Na live a
+  fala do Pedro cobriu a resposta da Dona Zefa, que sumiu antes de ser lida: o
+  balão de `narrar` durava 8 s fixos e o anúncio do passo seguinte esperava a
+  palavra no máximo 6 s. Agora todo balão dura o tempo de ler (4 s mais 0,05 s
+  por letra, até 8; `npc.tempo_de_leitura`), a palavra é de quem fala por esse
+  tempo, o anúncio espera até 8 s (`ESPERA_MAXIMA_PELA_VEZ`), e o E no Pedro
+  com alguém falando ao alcance entra na fila (`guia_pedro._repetir_quando_der`).
+  Portão `interacao`, parte 8.
+- **O aviso do rodapé vira uma caixa no meio, acima da barra de mão (#102).** A
+  fala do Pedro (`hud.set_notice`) era uma faixa de largura inteira, atrás do
+  minimapa e por cima do "mão livre". Agora é uma caixa centrada de até 640
+  px que quebra a linha e cresce para cima, na identidade do vale (laca,
+  filete, Cormorant). Portão `tarefa_no_hud`, parte 5.
+- **O balão de fala fica por cima da plaquinha de nome (#103).** As plaquinhas
+  moravam no `map_layer` do HUD (camada 20), acima dos balões (10): a
+  plaquinha de um morador cobria o balão de outro. Elas vão para a camada
+  própria 8, abaixo dos balões e do HUD. Portão `placas_e_baloes`, parte 4.
+- **As cercas de varas das roças ganham corpo (#104).** As 204 cercas do
+  paisagismo nasceram sem colisão; agora cada lance tem a caixa dele, na
+  medida da malha, numa camada própria (`Camadas.CERCA`) que barra o jogador e
+  o clique (`PaisagismoVale.plantar_cercas`). A malha de navegação dos
+  moradores não a lê: cerca como obstáculo deles muda as rotas do vale inteiro
+  e fica para outro passo. Portão `cercas_na_encosta`, parte 6.
+- **O E na comida come, e pergunta quando a reposição iria fora (#105).** Pedido
+  antigo do autor que nunca tinha entrado: `Cozinha.comer` consumia sempre e o
+  que passava do teto da reserva se perdia calado. Agora, acima do teto, a
+  caixa de fala pergunta "Comer agora joga fora X de fôlego. Comer assim
+  mesmo?" (Sim/Não, três idiomas; `barra_de_mao._comer_da_mao`,
+  `Cozinha.reposicao`); "não" deixa o item na mão. Portão `barra_de_mao`.
+- **A explicação das barras escurece a tela e acende a barra da vez (#106).**
+  Quando o Pedro explica o corpo, um véu escuro entra entre o mundo e a caixa
+  de fala (camada 5) e o HUD apaga tudo menos a barra de que ele fala — a vida,
+  a do meio (fôlego e nado), o vigor; no respiro, tudo escuro. A caixa de fala
+  avisa a linha da vez (`Dialogo.linha_mudou`, com a voz), o vale mapeia a voz
+  à barra (`prototype.BARRA_DA_VOZ`) e o HUD acende e apaga
+  (`destacar_barra`, `apagar_destaque`); ao fechar a caixa tudo volta. Portão
+  `chegada`, parte 6.
+- **As missões pagam XP, e o diário mostra a recompensa em ícones (#107).**
+  Decisão do autor em 06/10: todo passo com recompensa paga 10 de XP
+  (`recompensa.xp` nos `missoes_*.json`, pela teia de talentos:
+  `Talentos.ganhar_pontos`), e o HUD o diz ("Recebido de Tonho: 1 peixe, 10
+  XP"). No diário do J a página da missão ganha a linha RECOMPENSA: os itens
+  com o ícone de cada um (o da barra de mão), os réis e o XP com ícones
+  próprios, gerados por imagem (`assets/sprites/icones/`, `tools/openai/
+  gerar-icones.ps1` e `promover_icones.gd`, que recorta cada um pela forma).
+  Portões `painel` e `pedidos_do_arraial`.
+- **Cada criatura da mata com os números dela, em dado e não em constante
+  (#109).** "Cada bicho deve ter seu próprio atributo de velocidade, dano etc."
+  Os números de cada espécie da mata moram em `data/criaturas_3d.json` (vida,
+  dano, passo, faro, mordida, o que cai, corpo, modelo e vista, com o nome nos
+  três idiomas), que `criatura_vale.gd` lê uma vez; os bichos de quintal seguem
+  com passo e corrida em `bichos_de_casa.json`. A onça leva os números do 3D
+  da noite de 06/10 (passo 120 px, dano 16 e `dano_da_vida` 0,55, coleira
+  36/48 u, espreita 1,5 s). O esticar e o mancar dos bichos (a outra metade da
+  #109) ficaram com a solução da equipe da mesma noite: o clipe do GLB
+  recentrado onde veio torto, a perna dura copiando a diagonal, a respiração
+  fora da altura (`animador_bicho`, portão `animais_animacao`); a busca de
+  pernas pela pele do GLB escrita de manhã saiu na junção das duas mains.
+  Portões `luta`, `onca`, `idiomas`, `bichos_de_casa`.
+- **As abas do J ganham distintivos (#108, primeira fatia).** Obras e Saveiro
+  na coluna de abas, o fôlego máximo em Ajustes e os cabeçalhos das três
+  naturezas de carta (pacto, apoio, ritual) ganham um distintivo de 22 px na
+  identidade do vale (`painel_vale._icone_distintivo`): seis ícones gerados
+  por imagem no mesmo lote dos réis e do XP (`gpt-image-1`, autorizado pelo
+  autor em 06/10; prompts em `tools/openai/icones.json`, recortados em
+  quadrado arredondado e reduzidos a 96 px pelo `promover_icones.gd`;
+  `sprites/icones/ORIGEM.md` e `assets/CREDITOS.md`). Os ícones de
+  interface passam a importar sem compressão (Lossless, sem mipmaps), como
+  manda o `AGENTS.md`. O layout das linhas com ícone do item, ingredientes
+  com "×n" e a tecla da ação, em todas as abas, fica para a próxima fatia da
+  #108. Portão `painel`.
+- **Quem cai no rio grande volta pela margem de cá, e a água corre para o mar
+  (#115).** "Cai no rio e não consigo voltar para nenhum dos 2 lados." Com a
+  calha funda da #81 o leito subia 1,6 u em meio metro dos dois lados — 66
+  graus, acima do que o corpo sobe (46) — e quem caía nadava até a parede e
+  ficava, inclusive ao lado da ponte. Do lado de cá o leito agora sobe em rampa
+  que se anda (`GeoRegionRenderer._beira_de_ca`: fundo no meio, a nado até a
+  profundidade em que o corpo volta a andar, e dali à margem a menos de 40
+  graus), a água do rio grande se alarga para cobrir a rampa, e o aterro da
+  ponte vira um corredor: parede só sob o tabuleiro (a cabeceira de cá fica na
+  altura da de lá), rampa ao lado. A margem de lá não muda. E "a água subindo o
+  rio": o shader deslizava as ondas no sentido em que a faixa foi traçada, e o
+  rio grande do KML é traçado da foz à cabeceira; agora o sentido é o da foz
+  (`_sentido_da_correnteza`, `agua_rio.gdshader` ganha `sentido`), como as
+  peças da foz já faziam. Portão `rio_grande` (reescrito nas partes 2 e 7, com a
+  8 nova): a beira de cá a menos de 42 graus, sete nados para cá que saem da
+  água, inclusive dos dois lados da ponte, e a correnteza para a foz. As pedras
+  da margem íngreme (#116) esperam o lote do Tripo
+  (`tools/tripo/lote_2026-10-06_pedras.json`, ~380 créditos, geração paga).
+- **O convite, e todo papel que vai para a mochila, abre com o E (#113).** Ler
+  era só o F em cima do papel, na mochila; com o papel na mão, o E lê
+  (`barra_de_mao._ler_da_mao`, pelo mesmo `Mochila.abrir_documento` que o
+  `prototype.gd` liga: a caixa de fala com as linhas de `documentos.json` e o
+  aviso "leu:<id>" às cadeias), depois de o mundo não ter ficado com a tecla; e
+  o rótulo da mão diz "E lê". Portão `barra_de_mao`.
+- **A série da fazenda ganha o fim do capítulo 6 (#114, fatia 6.2 do plano
+  do 2D).** "Devem ser adicionadas mais missões ao fim da série." Depois do
+  pátio, dois passos novos em `missoes_fazenda.json`, nos três idiomas, tirados
+  do capítulo 6 (`docs/enredo/capitulo-06.md`) sem contradizê-lo: "O chamado aos
+  corajosos" (no pátio, fecha sozinho: a voz do mundo conta o silêncio e as duas
+  mulheres na escadaria, a anfitriã mais velha chama os homens corajosos, a voz
+  conta os que se levantam, e o Pedro vai — e chama o jogador, P3) e "A porta
+  estreita" (falar com o Pedro fecha: a subida, o salão redondo, a fala da moça,
+  o cerco, o "só um" da anfitriã, a porta de onde vêm os gemidos, os cinco que
+  voltam, e o Pedro que fica). O salão ainda não é cômodo — a voz do mundo o
+  conta, com o escuro —, e a sedução fica nas falas (P1). O arremate muda: "Só o
+  Pedro ficou no salão redondo…". Cenas em `fazenda_vale` e `prototype`; o
+  plano em `MISSOES_DO_2D.md`. Portões `fazenda` (as partes 6b e 6c) e
+  `idiomas`.
+- **Apertar E repetidas vezes num coletável cobra só o golpe que acontece
+  (#112).** "Consome a stamina várias vezes, mas só acontece uma animação e o
+  item não vai parar no inventário até que a animação termine." A reserva era
+  cobrada no aperto do E, o golpe acontecia no impacto do clipe, e o clipe de
+  golpe do personagem (`chop_001`, 6,63 s) tem o golpe só na primeira metade —
+  a mão bate aos 32 % e volta ao repouso aos 50 %; o animador emitia o impacto
+  aos 50 %, com a mão já parada, e travava o corpo os 3,5 s inteiros; a trava do
+  recurso caía a 1,25 s e o E seguinte era cobrado sem reiniciar o clipe. Agora
+  o impacto sai onde a mão bate e o golpe termina onde ela volta
+  (`authored_animator`: IMPACTO_DO_GOLPE, FIM_DO_GOLPE, `duracao_do_golpe`);
+  em `recursos_3d` o E só confere se há com que pagar, a cobrança e o golpe
+  saem juntos no impacto, a trava dura o clipe inteiro e um clipe que morre
+  (o corpo se mexeu) solta a trava sem cobrar nem bater; o E durante o golpe não
+  faz nada. Na árvore, o E repetido não interrompe mais o corte (ligava e
+  desligava o machado sem a árvore sentir golpe). Portão novo `golpe_repetido`:
+  o E a cada 0,15 s no lajedo, cada cobrança no instante de um golpe com impacto
+  de animação, a conta fechando; e na árvore o corte avança e cada golpe custa o
+  seu.
+- **Os portões das telas cobram o relógio parado pelo motivo, como a #100
+  manda.** Desde fd54ef1 as telas seguram o relógio por `Dia.segurar(motivo)`
+  e `Dia.pausado` é só a escolha do jogador; `painel` e `relogio` passaram a
+  perguntar `Dia.parado()`, mas `escolha`, `folheto` e
+  `avisos_da_primeira_vez` ainda liam a bandeira antiga e estavam vermelhos
+  na main (a bateria inteira de 06/10 à noite: 3 de 121). Os três perguntam
+  `parado()` onde a tela segura o relógio, e seguem lendo `pausado` onde a
+  pergunta é a pausa do jogador.
 
 ## Build #9 — 05/10/2026 (edição Tripothon)
 
@@ -814,6 +1077,22 @@ O teste passa a cobrar Candinha, Filo, Tonho, Zefa, arraial e recursos, incluind
   três idiomas, com o que mudou na build de desempenho: carga sem o congelamento de
   19 s, FPS dobrado (sombra, faces de trás, mata mais leve), mata pela metade com
   clareiras de árvore-destaque, minimapa pintado e estático, e o lobby em vídeo.
+- **A meta da onça: o patuá da Dona Zefa (#117).** Pela lista de missões do 2D
+  (`MISSOES_DO_2D.md`, 3.11), a segunda meta do caderno dos bichos estava por
+  escrever desde que a onça chegou ao vale. Agora `data/missoes_metas_onca.json`,
+  pendurada na Dona Zefa, abre sozinha quando a conta de abatidos de onça chega
+  à do caderno (`bichos.json`: duas), como a do caititu; o couro de onça levado
+  a ela fecha a meta e paga o patuá e o XP, nos três idiomas. As contas das
+  metas passam a ser lidas do caderno para toda espécie que tenha uma
+  (`prototype.CADEIA_DA_META`, `_conferir_as_metas`). Portões `frentes` (a
+  parte 8b) e `idiomas`.
+- **Os portões da equipe acompanham as fatias de 06/10.** `missoes_elos` conta
+  23 filas e 88 passos (os dois do fim do capítulo 6, #114, e a meta da onça,
+  #117). `colisoes_de_passeio` lista como exceção, com a razão, o corpo que
+  prende nas cercas de varas das roças: as cercas ganharam corpo na #104 e a
+  malha de navegação não as lê de propósito — as rotas revistas são a #125. O
+  mesmo `missoes_elos` reprova na própria main da equipe, às 17h30, com o E ao
+  lado do Tonho (#128): não é da junção, e fica aberto.
 
 ## Em desenvolvimento — 05/10/2026
 

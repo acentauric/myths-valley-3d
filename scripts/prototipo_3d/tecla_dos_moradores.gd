@@ -65,6 +65,13 @@ func perto() -> Node3D:
 	return _ao_alcance() if FocoDoE.e_dele(self) else null
 
 
+## Quem está ao alcance da conversa, com o E ou sem ele: é a quem a barra de mão
+## cede o E (`BarraDeMao.alvo_do_e`). `perto()` só responde com o foco já dado, e
+## perguntar por ele de dentro da votação do foco seria perguntar pelo resultado.
+func ao_alcance() -> Node3D:
+	return _ao_alcance()
+
+
 ## O QUE O E FARIA AQUI, para o foco (`foco_do_e.gd`): conversar com quem está
 ## ao alcance.
 func alvo_do_e() -> Dictionary:

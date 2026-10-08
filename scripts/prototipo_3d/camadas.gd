@@ -16,6 +16,10 @@ extends RefCounted
 
 ## Tudo o que tem corpo no vale: chão, paredes, troncos, moradores, peças.
 const MUNDO := 1
+## As cercas de varas das roças (#104): barram o corpo do jogador (a máscara
+## dele tem o bit). Desde #125 elas também estão na camada `MUNDO`, que a malha
+## de navegação dos moradores lê: as rotas do vale contornam as roças.
+const CERCA := 1 << 3
 ## As áreas de clique das casas (`world_builder.gd`, `HOUSE_INTERACTION_LAYER`).
 const CLIQUE_CASA := 1 << 12
 ## O que barra o braço da câmera. É o mesmo bit que nasceu para a superfície da

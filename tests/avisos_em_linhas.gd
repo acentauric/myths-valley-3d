@@ -18,7 +18,7 @@ func _run() -> void:
    hud._notice_label.autowrap_mode = TextServer.AUTOWRAP_OFF
   for _i in 4: await process_frame
   var texto: Label = hud._notice_label
-  var fundo: Panel = hud._notice_panel
+  var fundo: Control = hud._notice_panel
   conferir(texto.get_line_count() >= 2, "fala longa quebra em linhas")
   conferir(texto.size.y >= texto.get_minimum_size().y, "todas as linhas cabem")
   conferir(fundo.get_global_rect().encloses(texto.get_global_rect()), "fundo acompanha altura do texto")

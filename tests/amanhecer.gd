@@ -53,7 +53,8 @@ func _run() -> void:
 	vale = current_scene
 
 	# --- 2. O CARTÃO CABE NA TELA ----------------------------------------------
-	var quadro := Rect2(Vector2.ZERO, Vector2(640, 360))
+	# O quadro da tela do vale (`amanhecer_vale.gd`): o cartão deixou o 640×360 do 2D em 07/10.
+	var quadro := Rect2(Vector2.ZERO, amanhecer.DESENHADA_PARA)
 	var guardado := [relogio.dia, relogio.estacao, relogio.ano]
 	for caso in [{"dia": 1, "estacao": 0, "ano": 1, "lembretes": []},
 			{"dia": 28, "estacao": 3, "ano": 12, "lembretes": []},
@@ -89,6 +90,8 @@ func _run() -> void:
 	_conferir(Rect2(Vector2.ZERO, tela).encloses(na_tela.grow(-0.5)),
 		"o cartão sai da janela: %s numa tela de %s" % [str(na_tela), str(tela)])
 	_conferir(na_tela.size.x >= tela.x * 0.9, "o cartão tem %.0f px numa tela de %.0f: abriu no tamanho do 2D" % [na_tela.size.x, tela.x])
+	_conferir(amanhecer.transform.get_scale().x <= 1.05,
+		"o cartão é ampliado %.2f vezes: é o quadro do 2D esticado, e a letra serrilha" % amanhecer.transform.get_scale().x)
 
 	# --- 4. A QUEDA MOSTRA O CARTÃO --------------------------------------------
 	dia.pausado = true

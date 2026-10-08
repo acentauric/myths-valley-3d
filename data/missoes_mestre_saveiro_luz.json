@@ -1,0 +1,89 @@
+{
+  "observacao": "A LUZ NA ÁGUA (fase 2 de docs/projeto/MISSOES_SECUNDARIAS.md, 07/10/2026): o gancho que o saveirista já tinha em aldeoes.json ('vi luz na água perto da foz do rio grande. Não era barco. Andava contra o vento. O Quirino diz que foi cachaça. O Quirino não bebe, e também viu'). Três passos: ele conta, o jogador vai olhar a água na ponte do rio grande (meta 'visitar'), e pergunta ao mestre Quirino no dia do saveiro (meta 'falar'; o Quirino só vem com o saveiro, e o portão missoes_elos sabe). Abre com o favor da corda feito e a afinidade em 'Gente boa'.",
+  "dono": "mestre_saveiro",
+  "nome": "A luz na água",
+  "nome_en": "The light on the water",
+  "nome_es": "La luz en el agua",
+  "trancada": "Essa história eu conto com o vento a favor e a gente mais conhecida. Hoje o vento está contra.",
+  "trancada_en": "That story I tell with the wind in our favor and when we know each other better. Today the wind is against us.",
+  "trancada_es": "Esa historia la cuento con el viento a favor y cuando nos conozcamos más. Hoy el viento está en contra.",
+  "principal": false,
+  "passos": [
+    {
+      "id": "luz_contada",
+      "titulo": "O que o Ladislau viu",
+      "titulo_en": "What Ladislau saw",
+      "titulo_es": "Lo que vio Ladislau",
+      "resumo": "Ouça a história do Seu Ladislau",
+      "resumo_en": "Hear Seu Ladislau's story",
+      "resumo_es": "Escucha la historia del Señor Ladislau",
+      "lugar": "beira_do_rio",
+      "raio": 8,
+      "audio": "",
+      "texto": "O vento virou a favor. Então ouça. Uma noite, voltando de Maragogipe, vi luz na água perto da foz do rio grande. Não era barco: andava contra o vento, baixa, e parou onde o rio encontra o mar. O Quirino diz que foi cachaça. O Quirino não bebe — e também viu. Vá até a ponte do rio grande de noite e olhe a água. Depois pergunte a ele.",
+      "texto_en": "The wind turned in our favor. So listen. One night, coming back from Maragogipe, I saw a light on the water near the mouth of the great river. It wasn't a boat: it moved against the wind, low, and stopped where the river meets the sea. Quirino says it was the drink. Quirino doesn't drink — and he saw it too. Go to the great river's bridge at night and look at the water. Then ask him.",
+      "texto_es": "El viento cambió a favor. Entonces escucha. Una noche, volviendo de Maragogipe, vi una luz en el agua cerca de la desembocadura del río grande. No era un barco: andaba contra el viento, baja, y se detuvo donde el río encuentra el mar. Quirino dice que fue cachaça. Quirino no bebe — y también la vio. Ve al puente del río grande de noche y mira el agua. Después pregúntale a él.",
+      "recompensa": {
+        "xp": 10
+      },
+      "meta": {}
+    },
+    {
+      "id": "luz_na_foz",
+      "titulo": "A foz do rio grande",
+      "titulo_en": "The mouth of the great river",
+      "titulo_es": "La desembocadura del río grande",
+      "resumo": "Vá à ponte do rio grande e olhe a água",
+      "resumo_en": "Go to the great river's bridge and look at the water",
+      "resumo_es": "Ve al puente del río grande y mira el agua",
+      "lugar": "ponte_do_rio_grande",
+      "raio": 8,
+      "audio": "",
+      "texto": "Da ponte do rio grande se vê a foz. Olhe a água.",
+      "texto_en": "From the great river's bridge you can see the mouth. Look at the water.",
+      "texto_es": "Desde el puente del río grande se ve la desembocadura. Mira el agua.",
+      "recompensa": {
+        "xp": 10
+      },
+      "meta": {
+        "tipo": "visitar",
+        "lugares": [
+          "ponte_do_rio_grande"
+        ],
+        "raio": 8
+      }
+    },
+    {
+      "id": "luz_com_quirino",
+      "titulo": "O que o Quirino viu",
+      "titulo_en": "What Quirino saw",
+      "titulo_es": "Lo que vio Quirino",
+      "resumo": "Pergunte ao Mestre Quirino, no dia do saveiro",
+      "resumo_en": "Ask Master Quirino, on the sloop's day",
+      "resumo_es": "Pregunta al Maestro Quirino, el día del saveiro",
+      "lugar": "pier",
+      "raio": 10,
+      "audio": "",
+      "texto": "O Quirino só vem com o saveiro. Quando ele atracar, pergunte da luz.",
+      "texto_en": "Quirino only comes with the sloop. When it docks, ask him about the light.",
+      "texto_es": "Quirino solo viene con el saveiro. Cuando atraque, pregúntale por la luz.",
+      "recompensa": {
+        "xp": 15
+      },
+      "meta": {
+        "tipo": "falar",
+        "a_quem": "quirino",
+        "raio": 4,
+        "resposta": "O Ladislau falou. Pois eu vi, sim. Não era barco, não era fogo de pescador. Andava contra o vento e parou em cima do lugar onde a Senhora da Boa Viagem afundou — todo mestre desta baía sabe onde é. Eu não bebo, moço. E não volto lá de noite.",
+        "resposta_en": "Ladislau told you. Well, I saw it, yes. It wasn't a boat, it wasn't a fisherman's fire. It moved against the wind and stopped right over the place where the Senhora da Boa Viagem sank — every master in this bay knows where that is. I don't drink, young man. And I don't go back there at night.",
+        "resposta_es": "Ladislau habló. Pues sí, yo la vi. No era un barco, no era fuego de pescador. Andaba contra el viento y se detuvo sobre el lugar donde se hundió la Senhora da Boa Viagem — todo maestro de esta bahía sabe dónde es. Yo no bebo, muchacho. Y no vuelvo allá de noche."
+      }
+    }
+  ],
+  "arremate": {
+    "texto": "Dois homens que não bebem viram a mesma luz andar contra o vento na foz do rio grande. Ela parou onde o rio encontra o mar — onde a Senhora da Boa Viagem afundou.",
+    "texto_en": "Two men who don't drink saw the same light move against the wind at the mouth of the great river. It stopped where the river meets the sea — where the Senhora da Boa Viagem sank.",
+    "texto_es": "Dos hombres que no beben vieron la misma luz andar contra el viento en la desembocadura del río grande. Se detuvo donde el río encuentra el mar — donde se hundió la Senhora da Boa Viagem.",
+    "narra": false
+  }
+}

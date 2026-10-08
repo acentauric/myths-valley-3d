@@ -1,0 +1,47 @@
+{
+  "observacao": "O FAVOR DE SÁ RITA, A LAVADEIRA (fase 1 de docs/projeto/MISSOES_SECUNDARIAS.md, 07/10/2026: \"criar missões secundárias para interação com esses NPCs\"). Uma fila curta, de um passo, só com mecânica que o vale já tem (a meta \"levar\" e itens com fonte), na voz que o morador já tinha em data/dialogos/aldeoes.json — 'a roupa conta a vida de quem veste' (ela gosta de lenha: 'Leve pra Sá Rita', diz a rendeira) e o riacho de Oxum. Trancada pela afinidade: abre quando o morador conhece o jogador (grau 1, \"Conhecido de vista\"; a tabela data/favores_dos_moradores.json diz o grau) e a chegada do Pedro acabou. Fechar a fila é o favor da afinidade (Afinidade.POR_FAVOR, cadeia_de_missoes._dar_o_favor).",
+  "dono": "lavadeira",
+  "nome": "Lenha para a fervura",
+  "nome_en": "Firewood for the boil",
+  "nome_es": "Leña para el hervor",
+  "trancada": "A sua roupa eu lavo de graça na primeira semana, mas pedido eu só faço a quem conheço. Volte, que a roupa conta a vida de quem veste.",
+  "trancada_en": "Your clothes I wash for free the first week, but I only ask favors of people I know. Come back — clothes tell the life of whoever wears them.",
+  "trancada_es": "Tu ropa la lavo gratis la primera semana, pero pedidos solo le hago a quien conozco. Vuelve, que la ropa cuenta la vida de quien la viste.",
+  "principal": false,
+  "passos": [
+    {
+      "id": "lavadeira_lenha",
+      "titulo": "Lenha para a fervura",
+      "titulo_en": "Firewood for the boil",
+      "titulo_es": "Leña para el hervor",
+      "resumo": "Leve três lenhas a Sá Rita",
+      "resumo_en": "Take three pieces of firewood to Sá Rita",
+      "resumo_es": "Lleva tres leñas a Sá Rita",
+      "lugar": "casa_da_lavadeira",
+      "raio": 6,
+      "audio": "",
+      "texto": "Rita lava a roupa do padre e da venda na beira do riacho, e roupa de branco só sai branca fervida. Lenha seca, três braçadas, e a sua roupa eu lavo de graça mais uma semana — a primeira já foi.",
+      "texto_en": "Rita washes the priest's and the shop's clothes by the creek, and whites only come out white when boiled. Dry firewood, three armfuls, and I'll wash your clothes for free one more week — the first one's already gone.",
+      "texto_es": "Rita lava la ropa del cura y de la venta a la orilla del arroyo, y la ropa blanca solo sale blanca hervida. Leña seca, tres brazadas, y tu ropa la lavo gratis una semana más — la primera ya pasó.",
+      "recompensa": {
+        "xp": 15
+      },
+      "meta": {
+        "tipo": "levar",
+        "item": "lenha",
+        "quantos": 3,
+        "a_quem": "lavadeira",
+        "raio": 3.4,
+        "resposta": "Lenha boa, seca. Agora a água ferve e a roupa conta a vida de quem veste. A sua ainda conta pouco. Isso muda.",
+        "resposta_en": "Good dry firewood. Now the water boils and the clothes tell the life of whoever wears them. Yours still tell little. That changes.",
+        "resposta_es": "Leña buena, seca. Ahora el agua hierve y la ropa cuenta la vida de quien la viste. La tuya todavía cuenta poco. Eso cambia."
+      }
+    }
+  ],
+  "arremate": {
+    "texto": "A água de Sá Rita ferve, e a roupa do jogador sai branca mais uma semana.",
+    "texto_en": "Sá Rita's water boils, and the player's clothes come out white for one more week.",
+    "texto_es": "El agua de Sá Rita hierve, y la ropa del jugador sale blanca una semana más.",
+    "narra": false
+  }
+}

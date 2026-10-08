@@ -1,0 +1,23 @@
+﻿{
+  "observacao": "OS ÍCONES DO HUD E DO J (#107, #108): os réis e o XP, que não são itens do catálogo e não têm desenho, e os distintivos das abas do painel — obra, fôlego, saveiro e as três naturezas de carta (pacto, apoio, ritual). Gerados no OpenAI (gpt-image-1: o gpt-image-2 não aceita fundo transparente) pelo tools/openai/gerar-icones.ps1, com fundo transparente, e promovidos para assets/sprites/icones/<id>.png (o Godot os importa). GERAÇÃO PAGA — só com pedido explícito, e o custo estimado aparece antes (-Estimar). Autorização do autor em 06/10/2026 ('pode gerar as imagens').",
+  "modelo": "gpt-image-1",
+  "tamanho": "1024x1024",
+  "qualidade": "medium",
+  "preco_estimado_usd": {
+    "observacao": "Por imagem de 1024x1024, teto conservador (o preço de 1024x1536 em high, conferido em 03/10/2026).",
+    "low": 0.011,
+    "medium": 0.042,
+    "high": 0.167
+  },
+  "estilo": "A game UI icon, hand-painted, warm and readable at small size, centered, filling most of the square frame, soft even lighting, the visual identity of a 19th-century Bahian village game: polished gold, cream, cobalt-blue Portuguese tile, dark green lacquer. Isolated on a fully transparent background, no text, no border, no frame.",
+  "icones": {
+    "reis": "Subject: an old Brazilian imperial coin from 1887, the réis, seen face on: worn gold relief with a small imperial crown and laurel wreath, a little tilted to show its thickness and shine.",
+    "xp": "Subject: an experience-points emblem: a cobalt-blue Portuguese tile diamond (azulejo) with a thin gold fillet border and a small eight-pointed gold star glowing softly in the center.",
+    "obra": "Subject: a rounded-square badge with a thin polished-gold fillet border, filling the frame, dark green lacquer field, bearing a carpenter's hammer crossed with a plumb line (prumo) in polished gold.",
+    "folego": "Subject: a rounded-square badge with a thin polished-gold fillet border, filling the frame, dark green lacquer field, bearing three soft curved lines of breath, like a gentle gust of wind, in cream and gold.",
+    "saveiro": "Subject: a rounded-square badge with a thin polished-gold fillet border, filling the frame, cobalt-blue Portuguese tile field, bearing a small Bahian wooden sailboat (saveiro) in profile with a cream sail, in gold and cream.",
+    "pacto": "Subject: a rounded-square badge with a thin polished-gold fillet border, filling the frame, dark green lacquer field, bearing two clasped hands over a small sprig of forest leaves, in polished gold.",
+    "apoio": "Subject: a rounded-square badge with a thin polished-gold fillet border, filling the frame, cobalt-blue Portuguese tile field, bearing a single open hand holding a small glowing ember, in gold and cream.",
+    "ritual": "Subject: a rounded-square badge with a thin polished-gold fillet border, filling the frame, dark green lacquer field, bearing a lit candle in a small clay holder with three tiny stars above the flame, in gold and cream."
+  }
+}

@@ -142,6 +142,11 @@ func _run() -> void:
 	guia.despedida_feita = true
 	await _quadros(3)
 	_conferir(pedro.terminou_o_tutorial(), "o caso não se montou: o tutorial não acabou")
+	# A PONTE ABRE SOZINHA com o tutorial acabado (07/10): é o enredo, e o Pedro a anuncia na
+	# despedida. Em curso no primeiro passo, antes do machado: o Damião segue trancado.
+	var da_ponte = vale._cadeias["pedro_ponte"]
+	jogador.teleportar(pedro.global_position + Vector3(1.4, 0.0, 0.6), -2.0)
+	_conferir(await relogio.ate(func() -> bool: return da_ponte.iniciado, 4.0), "acabado o tutorial, com o Pedro ao lado, a ponte do rio grande não abriu sozinha")
 	_conferir(not da_zefa.esta_trancada() and zefa._dica_da_fila_trancada() == "",
 		"acabado o tutorial, a Dona Zefa continua dizendo 'volte depois'")
 	var do_damiao = vale._cadeias["damiao"]
@@ -176,13 +181,13 @@ func _run() -> void:
 				de_depois_do_pedro.append(str(fala[chave]))
 	_conferir(not de_depois_do_pedro.is_empty(), "o Pedro não tem `falas_depois` no npcs_3d.json")
 	var da_chapada = vale._cadeias["pedro_chapada"]
-	var da_ponte = vale._cadeias["pedro_ponte"]
+	var das_armas = vale._cadeias["pedro_armas"]
 	var aviso_da_chapada := str(da_chapada.dica_da_trancada())
-	_conferir(da_chapada.esta_trancada() and aviso_da_chapada != "" and not da_ponte.esta_trancada() and not da_ponte.iniciado,
-		"o caso do Pedro não se montou: a chapada devia estar trancada (com aviso) e a ponte por abrir")
-	# Com a ponte por abrir, ele não tem aviso a dar: o E é dela.
+	_conferir(da_chapada.esta_trancada() and aviso_da_chapada != "" and not das_armas.esta_trancada() and not das_armas.iniciado,
+		"o caso do Pedro não se montou: a chapada devia estar trancada (com aviso) e as armas por abrir")
+	# Com as armas por abrir, ele não tem aviso a dar: o E é delas.
 	_conferir(pedro._dica_da_fila_trancada() == "",
-		"com a ponte por abrir, o Pedro ainda tem aviso de fila trancada a dar: '%s'" % pedro._dica_da_fila_trancada())
+		"com as armas por abrir, o Pedro ainda tem aviso de fila trancada a dar: '%s'" % pedro._dica_da_fila_trancada())
 	jogador.teleportar(pedro.global_position + Vector3(1.4, 0.0, 0.6), -2.0)
 	await _quadros(3)
 	pedro.conversar()

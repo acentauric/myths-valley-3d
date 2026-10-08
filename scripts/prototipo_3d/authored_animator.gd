@@ -35,7 +35,7 @@ var _gesture_active := false
 var _jump_active := false
 var _chop_repetitions_left := 0
 var _chop_impacto_emitido := false
-var _chop_fase_impacto := 0.5
+var _chop_fase_impacto := IMPACTO_DO_GOLPE
 ## Na água funda o movimento vira nado (clipe "swim" em laço, se o modelo tiver).
 var _swimming := false
 ## Velocidade de chão (unidades/s, escala 1) de cada clipe de passo, medida pelo pé de
@@ -123,16 +123,48 @@ func _congelar_altura_da_pose_de_escada() -> void:
 			animation.track_set_key_value(track, key, posicao)
 
 
+## O GOLPE DENTRO DO CLIPE (#112, a sonda da mão de 06/10): `chop_001` dura
+## 6,63 s, mas o golpe é só a primeira metade — a mão sobe aos 21 %, bate aos
+## 32 % e volta ao repouso aos 50 %; da metade ao fim o corpo fica parado. O
+## impacto saía aos 50 % (depois de a mão já estar em repouso) e o corpo ficava
+## travado os 6,63 s inteiros (3,5 s na velocidade do golpe): o golpe parecia
+## lento e fora do tempo, e quem apertava E de novo era cobrado sem ver nada.
+## Agora o impacto sai onde a mão bate, e o golpe termina onde ela volta.
+const IMPACTO_DO_GOLPE := 0.325
+const FIM_DO_GOLPE := 0.5
+
+
 func _process(_delta: float) -> void:
-	if not chop_ativo() or _chop_impacto_emitido:
+	if not chop_ativo():
 		return
 	var clip := String(_clips.get("chop", ""))
 	if clip.is_empty():
 		return
 	var duracao := animation_player.get_animation(clip).length
-	if duracao > 0.0 and animation_player.current_animation_position >= duracao * _chop_fase_impacto:
+	if duracao <= 0.0:
+		return
+	var posicao := animation_player.current_animation_position
+	if not _chop_impacto_emitido and posicao >= duracao * _chop_fase_impacto:
 		_chop_impacto_emitido = true
 		golpe_impacto.emit()
+	# O fim nunca vem antes do impacto pedido (a enxada bate aos 45 %).
+	if posicao >= duracao * maxf(FIM_DO_GOLPE, _chop_fase_impacto + 0.05):
+		_concluir_o_golpe(clip)
+
+
+## O golpe acabou (a mão voltou ao repouso): avisa, e repete do começo se ainda
+## há repetições, senão volta ao idle.
+func _concluir_o_golpe(clip: String) -> void:
+	golpe_concluido.emit()
+	if _chop_repetitions_left > 1:
+		_chop_repetitions_left -= 1
+		_chop_impacto_emitido = false
+		animation_player.play(clip, 0.08)
+		animation_player.seek(0.0, true)
+		return
+	_chop_repetitions_left = 0
+	_gesture_active = false
+	_play_motion("idle", 1.0)
 
 
 func update_motion(speed: float, _delta: float) -> void:
@@ -186,7 +218,24 @@ func play_gesture(index: int) -> String:
 	return label
 
 
-func play_chop(repeticoes: int = 2, ritmo: float = 1.875, fase_impacto: float = 0.5) -> String:
+## A velocidade do clipe de golpe, e quanto um golpe dura (s) do `play_chop` à
+## mão de volta ao repouso (FIM_DO_GOLPE) — 0 sem clipe. Quem trava o corpo pelo
+## golpe (`recursos_3d`) pergunta, em vez de chutar um teto (#112).
+const VELOCIDADE_DO_GOLPE := 1.875
+
+
+func duracao_do_golpe() -> float:
+	if animation_player == null:
+		return 0.0
+	var clip: String = _clips.get("chop", "")
+	if clip.is_empty():
+		return 0.0
+	return animation_player.get_animation(clip).length * FIM_DO_GOLPE / VELOCIDADE_DO_GOLPE
+
+
+## `ritmo` e `fase_impacto` são do gesto que pede outro tempo — a enxada bate
+## mais devagar e mais tarde (#145); o golpe de sempre usa os do clipe (#112).
+func play_chop(repeticoes: int = 2, ritmo: float = VELOCIDADE_DO_GOLPE, fase_impacto: float = IMPACTO_DO_GOLPE) -> String:
 	if animation_player == null:
 		return ""
 	var clip: String = _clips.get("chop", "")

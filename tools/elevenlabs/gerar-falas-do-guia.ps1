@@ -1,6 +1,7 @@
 # Gera as falas do Pedro que moram fora do npcs_3d.json: a explicação do corpo
-# (o "corpo" de data/missoes_guia.json — a vida, o fôlego e o vigor), na voz do
-# guia (npcs_3d.json, "guia.voz"), com o modelo dela (eleven_v3).
+# (o "corpo" de data/missoes_guia.json — a vida, o fôlego e o vigor) e o arremate
+# da chegada (a fala depois do convite lido; 07/10), na voz do guia (npcs_3d.json,
+# "guia.voz"), com o modelo dela (eleven_v3).
 #
 # "Na explicação do pedro sobre a barra de stamina e similares, crie os audios
 # para ele narrar." Cada fala com "audio" vira assets/audio/vozes/<audio>.mp3,
@@ -25,7 +26,9 @@ $pasta = "$raiz\assets\audio\vozes"
 $bruto = Join-Path $env:TEMP "mv_falas_brutas"
 New-Item -ItemType Directory -Force $bruto | Out-Null
 
-foreach ($f in $guia.corpo) {
+$falas = @($guia.corpo)
+if ($guia.arremate -and $guia.arremate.audio) { $falas += $guia.arremate }
+foreach ($f in $falas) {
     if (-not $f.audio) { continue }
     $destino = "$pasta\$($f.audio).mp3"
     if ((Test-Path $destino) -and -not $Forcar) { "ja existe: $($f.audio)"; continue }
