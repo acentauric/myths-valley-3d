@@ -2,6 +2,13 @@
 
 ## Em desenvolvimento — 08/10/2026
 
+- **Os varais dos quintais voltam à escala de gente.** Os três varais Tripo eram
+  medidos pela largura da corda (3,6 a 4,2 u), e como os modelos são altos e estreitos
+  as estacas chegavam a 3,5 u, passando da cabeça do viajante. Agora são medidos pela
+  altura (1,9 u, contra 1,75 u do viajante); a corda fica com 2,2 a 2,7 u. A âncora
+  "Casa/Varal" da lavadeira não muda de lugar. Um portão novo mede os três varais
+  instanciados e reprova altura fora de 1,7 a 2,1 u (#194).
+
 - **Todo campo de Ajustes tem o "?" de ajuda, e "Passos na água" ganha o ↺.** O campo
   era montado à mão, com um botão Ouvir que encurtava o seletor: agora é uma escolha
   como as vizinhas (Original ou Novos, ↺ volta a Original) e trocar a opção já toca a
