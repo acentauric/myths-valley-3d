@@ -14,7 +14,9 @@
   as estacas chegavam a 3,5 u, passando da cabeça do viajante. Agora são medidos pela
   altura (1,9 u, contra 1,75 u do viajante); a corda fica com 2,2 a 2,7 u. A âncora
   "Casa/Varal" da lavadeira não muda de lugar. Um portão novo mede os três varais
-  instanciados e reprova altura fora de 1,7 a 2,1 u (#194).
+  instanciados e reprova altura fora de 1,7 a 2,1 u. Falta conferir na galeria de
+  Modelos os três lado a lado com o viajante e olhar a roupa no varal em escala humana;
+  o portão só confere a altura que o catálogo já define, não a roupa (#194).
 
 - **Todo campo de Ajustes tem o "?" de ajuda, e "Passos na água" ganha o ↺.** O campo
   era montado à mão, com um botão Ouvir que encurtava o seletor: agora é uma escolha
