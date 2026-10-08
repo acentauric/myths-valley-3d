@@ -21,7 +21,9 @@ extends Node3D
 ## anda e fica onde estaria (ver `perto` nos dois scripts). Cada bicho tem a sua
 ## histerese para não piscar na fronteira. O corte do bando inteiro (`visible`)
 ## nunca é visto: cada ave já some sozinha pelo `visibility_range` com fade
-## (`Animador.vestir`), e o corte só acontece depois (#193).
+## (`Animador.vestir`), e o corte só acontece depois (#193). O bicho de quatro patas segue a
+## mesma regra (`alcance_do_bicho`): só aparece com a malha além do fade, e só é cortado depois
+## que sumiu. O portão `aves_sem_piscar` registra a opacidade quadro a quadro.
 
 const BichoDeCasa = preload("res://scripts/prototipo_3d/bicho_de_casa.gd")
 const BandoDeChao = preload("res://scripts/prototipo_3d/bando_de_chao.gd")
@@ -37,6 +39,8 @@ const FOLGA_DO_BANDO := 6.0
 ## Largura (u) do fade da malha das aves (`Animador.vestir`): entre o alcance e o
 ## alcance + a margem a ave é parcialmente transparente, e só depois some.
 const MARGEM_DO_FADE := 4.0
+## Folga (u) do corpo do bicho: o centro dele está a até isto da parte mais próxima.
+const FOLGA_DO_BICHO := 2.0
 ## De quanto em quanto tempo (s) se confere a distância, e se procura o dono.
 const CONFERIR_A_CADA := 0.5
 const PROCURAR_O_DONO_A_CADA := 1.0
@@ -176,7 +180,9 @@ func _conferir_a_distancia() -> void:
 		if is_instance_valid(bicho):
 			if not bool(bicho.get_meta("presenca_liberada", true)):
 				continue
-			bicho.perto = _perto(bicho.global_position, olho, bicho.perto)
+			# Como o bando: o bicho só aparece quando a malha dele já está além do fade (84 u)
+			# e só é cortado depois que ela sumiu; antes ele surgia opaco a 72 u (#193).
+			bicho.perto = _perto(bicho.global_position, olho, bicho.perto, alcance_do_bicho())
 			bicho.visible = bicho.perto
 			bicho.fisica = _perto(bicho.global_position, olho, bicho.fisica, BichoDeCasa.FISICA_ATE)
 	for bando in bandos:
@@ -196,6 +202,12 @@ func _conferir_a_distancia() -> void:
 ## (alcance - histerese) e já tenha sumido quando ele é cortado (alcance + histerese).
 static func alcance_do_bando(raio: float) -> float:
 	return ALCANCE + MARGEM_DO_FADE + raio + FOLGA_DO_BANDO + HISTERESE
+
+
+## Alcance (u) do bicho de quatro patas para `_perto`: aparece com o centro a
+## ALCANCE + fade + folga do corpo da câmera, e some a essa distância + a histerese.
+static func alcance_do_bicho() -> float:
+	return ALCANCE + MARGEM_DO_FADE + FOLGA_DO_BICHO + HISTERESE
 
 
 static func _perto(onde: Vector3, olho: Vector3, estava_perto: bool, alcance: float = ALCANCE) -> bool:

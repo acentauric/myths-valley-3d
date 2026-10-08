@@ -15,6 +15,16 @@
   `mare_ligada` e `rio_grande`. O gráfico `validar_franja_da_areia.gd` ganhou a laje da foz e o
   hash a 300 u da origem, cada um com a sua falsificação (#197, #138).
 
+- **Os pavões e os outros bichos de casa não aparecem nem somem de repente.** Um portão novo
+  (`aves_sem_piscar`) leva o jogador a pé e correndo pela estrada da igreja, de 110 u do adro até
+  colado nele e de volta, com a câmera atrás, à frente e longe, e registra quadro a quadro a
+  opacidade de cada ave e de cada bicho: ele achou os cães, gatos, porcos e cabras surgindo
+  opacos a ~71 u e sumindo a ~78 u (o corte era do gerente, a 72 u, e da apresentação do povoado,
+  que media pelo jogador e não pela câmera) e um pavão sumindo a 81 u. O bicho de quatro patas
+  passa a aparecer só quando a malha já está além do fade (84 u) e a apresentação só o tira quando
+  a câmera também está longe; o leque troca de modelo sem buraco. Com o corte de antes o portão
+  reprova (`--falsificar-corte`) (#193).
+
 - **Primeiros clipes do Mixamo nos moradores.** Seis animações do Mixamo entram
   redirecionadas para o esqueleto Tripo de cada um (`tools/prototipo_3d/mixamo/redirecionar.gd`,
   só rotações e o quadril, pé no chão, no lugar): o Pedro treina capoeira no posto quando o
