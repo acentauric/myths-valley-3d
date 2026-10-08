@@ -5,7 +5,7 @@ extends Control
 ## shader. Antes era um SubViewport no mesmo mundo do vale, com câmera ortográfica:
 ## o vale era desenhado DUAS vezes por quadro (7 a 12 ms de GPU) só para encher um
 ## círculo de 170 px. Agora o quadro só desliza o UV da textura. Por cima, um desenho
-## leve: triângulo dourado do jogador (gira com o modelo), ponto claro do Pedro e
+## leve: seta dourada do jogador (gira com o modelo), ponto claro do Pedro e
 ## losango âmbar do alvo da missão (fora da vista, encosta na borda). A preferência
 ## "interface/minimapa" (AJUSTAR → Cenário) mostra ou esconde e é relida de tempos em
 ## tempos; com outra câmera ativa (mapa grande) ou o painel CONTROLES aberto no mesmo

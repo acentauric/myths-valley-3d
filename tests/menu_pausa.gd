@@ -218,8 +218,8 @@ func _run() -> void:
 	_conferir(hud != null, "não achei o HUD")
 	if hud != null:
 		var atalhos = load("res://scripts/prototipo_3d/atalhos.gd")
-		var teclas_da_coluna := {4: "mapa", 5: "camera", 9: "painel"}
-		_conferir(hud._corner_nodes.size() == 20, "faltam atalhos ou dicas na coluna do HUD")
+		var teclas_da_coluna := {4: "mapa", 6: "camera", 10: "painel"}
+		_conferir(hud._corner_nodes.size() == 22, "faltam atalhos ou dicas na coluna do HUD")
 		for i in range(0, hud._corner_nodes.size() - 1, 2):
 			var canto: Control = hud._corner_nodes[i]
 			var dica: Control = hud._corner_nodes[i + 1]
