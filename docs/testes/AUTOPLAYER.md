@@ -67,6 +67,17 @@ entra no relatório como bloqueio. Acabado o tutorial o Pedro não conduz mais: 
 sai do catálogo e ele passa a ser abordado como morador (`approach_MoradorPedro`), no máximo
 seis vezes por pergunta pela próxima cadeia.
 
+**A ferramenta que o alvo pede vem como dado (#207).** O estado traz `tool_requirement`
+(o alvo ao alcance, a família da ferramenta, onde ela está: `na_mao`, `na_barra`,
+`na_mochila` ou `falta`, a vaga e o texto da dica do E), `last_refusal` (a última recusa do
+golpe, com a ferramenta e há quantos ms) e `inventory.hand_bar` (a barra de mão inteira,
+vaga por vaga, com a família de cada item). Diante de "Ponha na mão: X" ou "Precisa de X",
+o robô decide sem IA: X na barra vira `hand_N`; X só na mochila vira abrir a mochila,
+pegar com E, soltar numa vaga livre da barra, fechar e `hand_N`; X inexistente vira a nota
+"Falta ferramenta X" na justificativa. O passo para depois de 40 ações sem a ferramenta
+chegar à mão. Coberto por `tools/jev/test_robo.py`, com a picareta na mão e o machado na
+mochila.
+
 **O relógio é do jogador (#192).** O testador nunca pausa, acelera nem adianta o
 relógio: a tecla de adiantar a hora (T) saiu do catálogo, os botões e a placa do
 relógio e da velocidade ficam fora dos cliques, e no menu de pausa o E só vale na

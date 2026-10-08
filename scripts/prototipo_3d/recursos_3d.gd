@@ -585,6 +585,45 @@ func _tem_ferramenta(id: String) -> bool:
 	return id == "" or Equipamento.da_familia_em_uso(id) != ""
 
 
+## A ÚLTIMA RECUSA, COMO DADO (#207). O HUD mostra o texto e esquece; quem testa
+## o jogo (o testador automático) precisa do que foi recusado e do item que
+## faltava, sem ler a frase da tela: `motivo` é o texto, `ferramenta` a família
+## que o alvo pede ("" quando a recusa não é de ferramenta) e `situacao` onde ela
+## está ("na_mochila", "falta" ou ""). `quando_ms` é o `Time.get_ticks_msec()`.
+var ultima_recusa: Dictionary = {}
+
+
+func _recusar(motivo: String, ferramenta: String = "", situacao: String = "") -> void:
+	ultima_recusa = {"motivo": motivo, "ferramenta": ferramenta, "situacao": situacao,
+		"quando_ms": Time.get_ticks_msec()}
+	recusado.emit(motivo)
+
+
+## O REQUISITO DE FERRAMENTA DO ALVO AO ALCANCE, COMO DADO (#207): a mesma conta
+## de `_o_que_falta` (a dica do E), sem passar pelo texto. Vazio quando não há
+## alvo ao alcance ou ele não pede ferramenta. `situacao`: "na_mao" (já serve),
+## "na_barra" (está na barra de mão, `vaga` é o índice) ou "na_mochila" (só na
+## mochila, `vaga` é o índice global) ou "falta" (não está em lugar nenhum).
+func requisito_de_ferramenta() -> Dictionary:
+	if _perto == "" or not _alvos.has(_perto):
+		return {}
+	var ferramenta := str(_alvos[_perto]["ficha"].get("ferramenta", ""))
+	if ferramenta == "":
+		return {}
+	var situacao := "na_mao"
+	var vaga := -1
+	if not _tem_ferramenta(ferramenta):
+		situacao = "falta"
+		for indice in Inventario.ESPACOS:
+			var id := str(Inventario.espacos[indice].get("id", ""))
+			if id != "" and Catalogo.familia(id) == ferramenta:
+				situacao = "na_barra" if indice < Inventario.ESPACOS_MAO else "na_mochila"
+				vaga = indice
+				break
+	return {"alvo": _perto, "ferramenta": ferramenta, "situacao": situacao, "vaga": vaga,
+		"dica": _o_que_falta(_alvos[_perto]["ficha"])}
+
+
 ## O GOLPE.
 ##
 ## A ordem das recusas importa e é a do 2D: primeiro a ferramenta, depois o
@@ -602,18 +641,18 @@ func bater() -> bool:
 	if not _tem_ferramenta(ferramenta):
 		# Carregando a certa e segurando outra (ou nada): diz qual pôr na mão.
 		if _carrega(ferramenta):
-			recusado.emit(tr("Ponha na mão: %s.") % _nome_do_item(ferramenta))
+			_recusar(tr("Ponha na mão: %s.") % _nome_do_item(ferramenta), ferramenta, "na_mochila")
 		else:
-			recusado.emit("Precisa de %s." % _nome_do_item(ferramenta))
+			_recusar("Precisa de %s." % _nome_do_item(ferramenta), ferramenta, "falta")
 		return false
 	# A certa na mão e o alvo duro demais para ela, ou para quem a segura.
 	var impede := _o_que_impede(ficha, true)
 	if impede != "":
-		recusado.emit(impede)
+		_recusar(impede)
 		return false
 	var dureza := _dureza(ficha)
 	if not Energia.aguenta("bater", dureza):
-		recusado.emit("Sem %s para bater." % Energia.nome_recurso())
+		_recusar("Sem %s para bater." % Energia.nome_recurso())
 		return false
 	# Recursos recolhidos à mão não usam ferramenta nem animação de golpe:
 	# cobram e resolvem já, para não manter a trava entre coletas próximas.
@@ -633,7 +672,7 @@ func bater() -> bool:
 ## que o golpe leva à teia que abre o alvo mais duro.
 func _cobrar(dureza: float) -> bool:
 	if not Energia.gastar("bater", dureza):
-		recusado.emit("Sem %s para bater." % Energia.nome_recurso())
+		_recusar("Sem %s para bater." % Energia.nome_recurso())
 		return false
 	Talentos.ganhar("bater_duro" if dureza > 1.5 else "bater")
 	return true

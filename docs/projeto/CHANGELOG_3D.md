@@ -2,6 +2,13 @@
 
 ## Em desenvolvimento — 08/10/2026
 
+- **O testador entende "Ponha na mão: Machado" e põe a ferramenta certa na mão.** Antes ele
+  passou umas 250 ações na lenha sem escolher o machado, porque ele estava só na mochila e o
+  robô só olhava a barra de mão. Agora o estado traz, como dado, a barra de mão inteira, o
+  requisito de ferramenta da dica do E e a última recusa; X na barra vira a tecla da vaga, X
+  só na mochila vira abrir a mochila, trazê-lo para uma vaga livre da barra e selecioná-lo, e
+  X inexistente vira a nota "Falta ferramenta X" no relatório (#207).
+
 - **Ao clicar em Testar, o menu se fecha quando a janela do testador abre, e volta quando a
   sessão acaba.** Antes ficavam duas janelas do jogo, o dobro de memória e o áudio do menu
   junto com a sessão. Agora o menu espera o sinal de que o jogo da sessão subiu e só então

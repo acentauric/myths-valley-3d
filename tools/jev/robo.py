@@ -25,6 +25,8 @@ GUIDE_APPROACH = "approach_MoradorPedro"
 # Ações que levam o testador para outro lugar; sem sair do lugar, contam como travado.
 TRAVEL_ACTIONS = ("follow_pedro", "approach_", "explore_", "objective", "gather_", "walk_", "run_", "enter_home", "exit_")
 STAY_INSIDE_ACTIONS = ("approach_bed", "approach_chest")
+# Quantas ações seguidas o robô gasta para pôr uma ferramenta na mão antes de desistir (#207).
+EQUIP_STEPS_LIMIT = 40
 EXIT_ACTIONS = ("exit_home", "exit_room")
 
 
@@ -76,6 +78,106 @@ class JogadorAutomatico:
         if exit_action and action != exit_action and action in outside:
             return exit_action, "Sair pela porta antes de ir a " + action + " (o alvo esta fora do comodo)"
         return action, reason
+
+    # A FERRAMENTA QUE O ALVO PEDE (#207). Regra determinística, antes de qualquer IA: diante
+    # de "Ponha na mão: X" (dica do E ou recusa) ou "Precisa de X", o robô acha X na barra de
+    # mão e seleciona a vaga; se X está só na mochila, troca com uma vaga da barra pela tela da
+    # mochila (E pega, E solta) e então seleciona; se X não existe, anota que falta.
+    @staticmethod
+    def _tool_family(state, item):
+        """A família de um item da barra de mão ("machado_de_aco" é machado), ou ele mesmo."""
+        for slot in state.get("inventory", {}).get("hand_bar", []):
+            if item and slot.get("id") == item and slot.get("family"):
+                return slot["family"]
+        return item
+
+    def _holds(self, state, family):
+        return bool(family) and self._tool_family(state, state.get("inventory", {}).get("in_hand")) == family
+
+    @staticmethod
+    def _tool_places(state, family):
+        """(vaga da barra, vaga da mochila) da ferramenta da família; -1 onde não há."""
+        inv = state.get("inventory", {})
+        slots = inv.get("slots", [])
+        bar = next((s["slot"] for s in inv.get("hand_bar", []) if s.get("id") and s.get("family") == family), -1)
+        if bar < 0:
+            bar = next((i for i, s in enumerate(slots[:10]) if s.get("id", s.get("item")) == family), -1)
+        asked = state.get("tool_requirement") or {}
+        pack = int(asked.get("vaga", -1)) if asked.get("ferramenta") == family and asked.get("situacao") == "na_mochila" else -1
+        if pack < 10:
+            pack = next((i for i, s in enumerate(slots) if i >= 10 and s.get("id", s.get("item")) == family), -1)
+        return bar, pack
+
+    def _equip_tool(self, state, actions, select, family):
+        """Próxima ação para pôr a ferramenta `family` na mão, ou None se já está nela (ou falta).
+        Limitado: depois de EQUIP_STEPS_LIMIT ações sem a ferramenta chegar à mão, desiste (o
+        relatório mostra a nota) e deixa o resto da escada decidir."""
+        key = ("equip", family)
+        if not family:
+            return None
+        if self.attempts[key] >= EQUIP_STEPS_LIMIT:
+            self.equipping = ""
+            self.tool_note = "Nao consegui pôr " + family + " na mao"
+            return None
+        action = self._equip_step(state, actions, select, family)
+        if action:
+            self.attempts[key] += 1
+        elif self._holds(state, family):
+            self.attempts[key] = 0
+        return action
+
+    def _equip_step(self, state, actions, select, family):
+        screen = state.get("screen")
+        if self._holds(state, family):
+            was_equipping = self.equipping == family
+            self.equipping = ""
+            if was_equipping and screen:
+                return select("close_screen", "Ferramenta na mao: fechar a mochila e voltar ao alvo")
+            return None
+        bar, pack = self._tool_places(state, family)
+        if bar >= 0:
+            self.equipping = family
+            if screen or state.get("inventory_screen"):
+                return select("close_screen", "Ferramenta ja esta na barra: fechar a mochila e seleciona-la")
+            return select("hand_%d" % bar, "Selecionar na barra de mao a ferramenta que o alvo pede: " + family)
+        if pack < 0:
+            self.equipping = ""
+            self.tool_note = "Falta ferramenta " + family
+            if screen and state.get("inventory_screen"):
+                return select("close_screen", "Fechar a mochila: nao ha onde pegar a ferramenta")
+            return None
+        self.equipping = family
+        slots = state.get("inventory", {}).get("slots", [])
+        if not screen:
+            return select("inspect_inventory", "Ferramenta so na mochila: abrir a mochila para poe-la na barra de mao")
+        ui = state.get("inventory_screen", {})
+        if not ui or ui.get("chest"):
+            return select("close_screen", "Fechar outra interface para acessar a mochila")
+        cursor = int(ui.get("cursor", 0))
+        held = ui.get("held_slot")
+        held = -1 if held is None else int(held)
+        empty = next((i for i in range(10) if i >= len(slots) or not slots[i].get("id", slots[i].get("item"))), 9)
+        target = pack if held < 0 else (empty if held == pack else held)
+        if cursor == target:
+            return select("confirm_screen", ("Pegar a ferramenta " if held < 0 else "Soltar na barra de mao ") + family)
+        if cursor >= max(len(slots), 30):
+            return select("screen_left", "Voltar dos encaixes aos itens da mochila")
+        if cursor // 10 != target // 10:
+            return select("screen_down" if cursor // 10 < target // 10 else "screen_up", "Chegar a fileira da ferramenta")
+        return select("screen_right" if cursor < target else "screen_left", "Chegar a vaga da ferramenta")
+
+    def _tool_demanded(self, state):
+        """A ferramenta que a recusa recente ou a dica do E, lidas como dado, mandam pôr na mão."""
+        if self.equipping:
+            return self.equipping
+        refusal = state.get("last_refusal") or {}
+        if refusal.get("ferramenta") and float(refusal.get("ago_ms", 1e9)) < 20000:
+            return refusal["ferramenta"]
+        asked = state.get("tool_requirement") or {}
+        tried_the_target = self.last_action in ("interact", "work_E") or self.last_action.startswith("face_")
+        if asked.get("ferramenta") and asked.get("situacao") in ("na_barra", "na_mochila") and tried_the_target:
+            return asked["ferramenta"]
+        return ""
 
     def _explore(self, state, actions, select):
         """Experimentar o que está ao alcance antes de ampliar a busca."""
@@ -192,8 +294,10 @@ class JogadorAutomatico:
         for key, value in {"coverage": Counter(), "visited": Counter(), "screen_probes": 0,
                            "previous_context": None, "progress_signature": None,
                            "last_progress_time": 0.0, "recovery": False, "last_valid_objective": {},
-                           "room_position": [], "room_still": 0, "room_exit_tries": 0}.items():
+                           "room_position": [], "room_still": 0, "room_exit_tries": 0,
+                           "equipping": "", "tool_note": ""}.items():
             self.__dict__.setdefault(key, value)
+        self.tool_note = ""
         context = self._context(state)
         self.region = json.dumps([round(v / 12) for v in state.get("position", [])])
         self.route_failed = bool(task.get("last_action_failed")) and self.last_action.startswith(("approach_", "explore_", "gather_", "objective", "follow_pedro"))
@@ -242,7 +346,7 @@ class JogadorAutomatico:
                 if len(marker) == len(position) == 3:
                     self.navigation_leg = {"goal": goal, "action": action, "target": marker,
                                            "distance": sum((position[i] - marker[i]) ** 2 for i in (0, 2)) ** 0.5}
-                self.reason = reason
+                self.reason = (self.tool_note + ": " if self.tool_note else "") + reason
                 self.attempts[action] += 1
                 self.last_action = action
                 self.coverage[(context, action)] += 1
@@ -454,13 +558,17 @@ class JogadorAutomatico:
                     return select("approach_bed", "Chegar a cama para recuperar folego sem comida")
             elif "enter_home" in actions:
                 return select("enter_home", "Folego baixo e sem comida: voltar pela porta para descansar")
+        demanded = self._tool_demanded(state)
+        if demanded:
+            equip = self._equip_tool(state, actions, select, demanded)
+            if equip:
+                return equip
         if resource_meta.get("tipo") == "juntar" and resource_item in ("lenha", "pedra") and self._inventory(state).get(resource_item, 0) < resource_quantity:
             hand = state.get("inventory", {})
-            required_tool = "picareta" if resource_item == "pedra" else ("machado" if any(slot.get("id") == "machado" for slot in hand.get("slots", [])[:10]) else None)
-            if required_tool and hand.get("in_hand") != required_tool:
-                for index, slot in enumerate(hand.get("slots", [])[:10]):
-                    if slot.get("id", slot.get("item")) == required_tool and "hand_%d" % index in actions:
-                        return select("hand_%d" % index, "Equipar a ferramenta disponivel antes de qualquer tentativa no recurso")
+            required_tool = "picareta" if resource_item == "pedra" else "machado"
+            equip = self._equip_tool(state, actions, select, required_tool)
+            if equip:
+                return equip
             marker = state.get("resource_targets", {}).get(resource_item, state.get("objective", {}).get("alvo", []))
             for candidate in state.get("interaction_candidates", []):
                 point = candidate.get("target", {}).get("ponto", [])
@@ -672,11 +780,10 @@ class JogadorAutomatico:
         # do baú (itens). O marcador vivo aponta o galho que pode ser coletado.
         resource_item = meta.get("item")
         if meta.get("tipo") == "juntar" and resource_item in ("lenha", "pedra") and items[resource_item] < meta.get("quantos", state.get("objective", {}).get("total", 1)):
-            tool = "picareta" if resource_item == "pedra" else ("machado" if any(slot.get("id") == "machado" for slot in slots[:10]) else None)
-            if tool and inv.get("in_hand") != tool:
-                for index, slot in enumerate(slots[:10]):
-                    if slot.get("id", slot.get("item")) == tool:
-                        return select(f"hand_{index}", "Equipar a picareta antes de aproximar da pedra")
+            tool = "picareta" if resource_item == "pedra" else ("machado" if self._tool_places(state, "machado") != (-1, -1) else None)
+            equip = self._equip_tool(state, actions, select, tool)
+            if equip:
+                return equip
             resource = next((c for c in state.get("interaction_candidates", [])
                              if c.get("source") == "Recursos3D"), {})
             point = resource.get("target", {}).get("ponto", [])

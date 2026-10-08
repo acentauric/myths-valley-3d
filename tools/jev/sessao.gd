@@ -285,7 +285,25 @@ func _estado() -> Dictionary:
 	var inventario := root.get_node("Inventario")
 	estado["inventory"] = {"slots": inventario.espacos.duplicate(true), "selected": inventario.selecionado, "in_hand": inventario.na_mao()}
 	estado.inventory["food_items"] = []
+	# A BARRA DE MÃO INTEIRA, vaga por vaga, com a família de cada item (#207): "o machado de
+	# aço" é machado para o alvo que pede machado, e o robô não deve adivinhar isso pelo nome.
+	var barra_de_mao: Array = []
 	var catalogo_itens = load("res://scripts/compartilhado/catalogo.gd")
+	for vaga in 10:
+		var id_da_vaga := str(inventario.espacos[vaga].get("id", ""))
+		barra_de_mao.append({"slot": vaga, "id": id_da_vaga,
+			"family": str(catalogo_itens.familia(id_da_vaga)) if id_da_vaga != "" else ""})
+	estado.inventory["hand_bar"] = barra_de_mao
+	# O REQUISITO DE FERRAMENTA do alvo ao alcance e a ÚLTIMA RECUSA, como dado e não só como
+	# a frase da tela ("Ponha na mão: Machado", "Precisa de Machado") — #207.
+	var recursos_do_vale: Node = current_scene.get_node_or_null("Recursos3D")
+	if recursos_do_vale != null and recursos_do_vale.has_method("requisito_de_ferramenta"):
+		estado["tool_requirement"] = recursos_do_vale.requisito_de_ferramenta()
+		var recusa: Dictionary = (recursos_do_vale.get("ultima_recusa") as Dictionary).duplicate()
+		if not recusa.is_empty():
+			recusa["ago_ms"] = Time.get_ticks_msec() - int(recusa.get("quando_ms", 0))
+			recusa.erase("quando_ms")
+		estado["last_refusal"] = recusa
 	for espaco: Dictionary in inventario.espacos:
 		var id := str(espaco.get("id", ""))
 		if root.get_node("Cozinha").e_comida(id) and float(catalogo_itens.dados(id).get("folego", 0.0)) > 0.0:

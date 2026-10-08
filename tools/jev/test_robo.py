@@ -482,6 +482,102 @@ class PlayerTests(unittest.TestCase):
         self.assertEqual(bot.choose(self.state(), {"objective": "move", "hand_1": "equip"},
                                     {"step": {"meta": {"tipo": "juntar", "item": "pedra", "quantos": 3}}}), "hand_1")
 
+    def axe_in_the_backpack(self):
+        """A picareta na mão e o machado só na mochila (vaga 12): o caso da lenha parada em 2/36 (#207)."""
+        slots = [{} for _ in range(30)]
+        slots[0], slots[1], slots[12] = {"id": "balde", "qtd": 1}, {"id": "picareta", "qtd": 1}, {"id": "machado", "qtd": 1}
+        state = self.state()
+        state["objective"].update(id="pedro_lenha", total=36)
+        state["inventory"] = {"in_hand": "picareta", "slots": slots}
+        self.refresh_hand_bar(state)
+        return state
+
+    @staticmethod
+    def refresh_hand_bar(state):
+        families = {"machado_de_aco": "machado"}
+        slots = state["inventory"]["slots"]
+        state["inventory"]["hand_bar"] = [{"slot": i, "id": slots[i].get("id", ""), "family": families.get(slots[i].get("id", ""), slots[i].get("id", ""))}
+                                          for i in range(min(10, len(slots)))]
+
+    def swap_in_the_screen(self, state, held, cursor):
+        slots = state["inventory"]["slots"]
+        if held >= 0 and cursor != held:
+            slots[held], slots[cursor] = slots[cursor], slots[held]
+            self.refresh_hand_bar(state)
+
+    def test_axe_only_in_the_backpack_goes_to_the_hand_bar_then_is_selected(self):
+        # "Ponha na mão: Machado" (#207): abre a mochila, pega o machado, solta na barra, fecha, seleciona.
+        bot, state = self.player(), self.axe_in_the_backpack()
+        task = {"step": {"meta": {"tipo": "juntar", "item": "lenha", "quantos": 36}}}
+        actions = {name: name for name in ("objective", "inspect_inventory", "close_screen", "confirm_screen", "screen_up", "screen_down",
+                                             "screen_left", "screen_right", "hand_0", "hand_1", "hand_2", "hand_3", "work_E", "wait")}
+        state["tool_requirement"] = {"alvo": "Tronco", "ferramenta": "machado", "situacao": "na_mochila", "vaga": 12, "dica": "ponha na mão: Machado"}
+        picks = [bot.choose(dict(state), actions, task)]
+        self.assertEqual(picks[0], "inspect_inventory")
+        state.update(screen="mochila", inventory_screen={"cursor": 0, "held_slot": -1, "chest": []})
+        for _ in range(12):
+            pick = bot.choose(dict(state), actions, task)
+            picks.append(pick)
+            ui = state.get("inventory_screen", {})
+            if pick == "screen_down":
+                ui["cursor"] += 10
+            elif pick == "screen_up":
+                ui["cursor"] -= 10
+            elif pick == "screen_right":
+                ui["cursor"] += 1
+            elif pick == "screen_left":
+                ui["cursor"] -= 1
+            elif pick == "confirm_screen":
+                if ui["held_slot"] < 0:
+                    ui["held_slot"] = ui["cursor"]
+                else:
+                    self.swap_in_the_screen(state, ui["held_slot"], ui["cursor"])
+                    ui["held_slot"] = -1
+            elif pick == "close_screen":
+                state.pop("screen")
+                state.pop("inventory_screen")
+            elif pick.startswith("hand_"):
+                break
+        self.assertEqual(picks[-1], "hand_2", picks)
+        self.assertLessEqual(len(picks), 12)
+        self.assertIn("confirm_screen", picks)
+        # Com o machado na mão o robô volta ao recurso, sem mexer na mochila de novo.
+        state["inventory"]["in_hand"] = "machado"
+        state["tool_requirement"].update(situacao="na_mao", vaga=-1)
+        self.assertEqual(bot.choose(dict(state), actions, task), "objective")
+        # E, chegando ao tronco caído com o machado na mão, corta: vira o golpe (E segurado).
+        state.update(interaction_target="Recursos3D", objective=dict(state["objective"], alvo=[1, 0, 1]),
+                     interaction_candidates=[{"source": "Recursos3D", "kind": "log", "target": {"ponto": [1, 0, 1]}}])
+        self.assertEqual(bot.choose(dict(state), actions, task), "work_E")
+
+    def test_refusal_as_data_selects_the_tool_slot_in_the_bar(self):
+        # "Ponha na mão"/"Precisa de" lidos como dado: vale até com o machado de aço, que é da família do machado.
+        bot, state = self.player(), self.state()
+        state["inventory"] = {"in_hand": "balde", "slots": [{"id": "balde", "qtd": 1}, {"id": "picareta", "qtd": 1}, {}, {"id": "machado_de_aco", "qtd": 1}]}
+        self.refresh_hand_bar(state)
+        state["last_refusal"] = {"motivo": "Ponha na mão: Machado.", "ferramenta": "machado", "situacao": "na_mochila", "ago_ms": 900}
+        actions = {"hand_0": "h", "hand_1": "h", "hand_3": "h", "interact": "E", "wait": "wait"}
+        self.assertEqual(bot.choose(state, actions, {}), "hand_3")
+        state["inventory"]["in_hand"] = "machado_de_aco"
+        self.assertNotEqual(bot.choose(state, actions, {}), "hand_3")
+
+    def test_hint_of_the_E_key_selects_the_tool_after_a_try(self):
+        bot, state = self.player(), self.axe_in_the_backpack()
+        state["inventory"]["slots"][3], state["inventory"]["slots"][12] = state["inventory"]["slots"][12], {}
+        self.refresh_hand_bar(state)
+        state["tool_requirement"] = {"alvo": "Tronco", "ferramenta": "machado", "situacao": "na_barra", "vaga": 3, "dica": "selecione Machado (4)"}
+        actions = {"hand_3": "h", "interact": "E", "wait": "wait", "observe": "F"}
+        bot.last_action = "interact"
+        self.assertEqual(bot.choose(state, actions, {}), "hand_3")
+
+    def test_missing_tool_is_noted_in_the_reason_and_not_looped(self):
+        bot, state = self.player(), self.state()
+        state["last_refusal"] = {"motivo": "Precisa de Machado.", "ferramenta": "machado", "situacao": "falta", "ago_ms": 500}
+        actions = {"objective": "go", "wait": "wait", "observe": "F"}
+        for _ in range(3):
+            self.assertIn(bot.choose(state, actions, {}), actions)
+        self.assertIn("Falta ferramenta machado", bot.reason)
+
     def test_clock_and_walking_do_not_count_as_mission_progress(self):
         bot = self.player()
         state = self.state()
