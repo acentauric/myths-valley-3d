@@ -2,6 +2,13 @@
 
 ## Em desenvolvimento — 08/10/2026
 
+- **Os cartões do painel Modelos preenchem o modal.** A grade deixa de ter 4 × 3 fixos:
+  colunas e linhas saem do espaço que sobra à lista (6 × 5 no tamanho padrão, 30 por
+  página; Assets cai de 21 para 10 páginas), os cartões esticam para ocupar a altura que
+  sobrava antes da navegação, o nome cortado aparece inteiro no tooltip e voltar da ficha
+  leva à página do cartão dela. O portão do painel cobra ao menos 5 × 5 e a ausência da
+  faixa vazia (#171).
+
 - **Todo campo de Ajustes tem o "?" de ajuda, e "Passos na água" ganha o ↺.** O campo
   era montado à mão, com um botão Ouvir que encurtava o seletor: agora é uma escolha
   como as vizinhas (Original ou Novos, ↺ volta a Original) e trocar a opção já toca a

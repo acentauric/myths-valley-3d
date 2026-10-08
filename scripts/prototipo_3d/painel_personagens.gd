@@ -20,7 +20,13 @@ const Identidade = preload("res://scripts/prototipo_3d/identidade.gd")
 const IdiomaMenu = preload("res://scripts/prototipo_3d/idioma_menu.gd")
 const HudIcon = preload("res://scripts/prototipo_3d/hud_icon.gd")
 const Humanoide = preload("res://scripts/prototipo_3d/personagem_procedural.gd")
-const CARTOES_POR_PAGINA := 12
+## Cartão da grade: tamanho mínimo e separação. Colunas e linhas por página saem do espaço
+## que o modal deixa à lista (`_capacidade()`), e os cartões esticam para preencher a grade.
+const CARTAO_MIN := Vector2(140, 56)
+const SEPARACAO_GRADE := 8
+## Margens internas do modal (as da moldura) e separação entre os blocos da coluna.
+const MARGEM_CAIXA := Vector2(56, 44)
+const SEPARACAO_COLUNA := 10
 
 ## Pode fechar: o anfitrião volta à Home e libera o painel.
 signal fechado
@@ -397,6 +403,11 @@ func _carregar_pessoas() -> void:
 
 ## Trocar de aba (ou clicar na aba aberta) volta aos cartões.
 func _trocar_aba(nova: int) -> void:
+	# Voltar da ficha leva à página em que o cartão dela está, e não à que ficou aberta antes.
+	if not selecionado.is_empty() and nova == aba:
+		var posicao := _itens().map(func(item: Array) -> String: return item[0]).find(selecionado)
+		if posicao >= 0:
+			_paginas[aba] = floori(float(posicao) / _cartoes_por_pagina())
 	aba = nova
 	selecionado = ""
 	editando = false
@@ -454,29 +465,68 @@ func _itens() -> Array:
 	return itens
 
 
-## Cartões paginados (4 por linha), os mesmos nas duas abas.
+## Espaço que sobra à lista de cartões: o interior do modal menos o que os outros blocos da
+## coluna (cabeçalho, abas, filtro e navegação) pedem. É medido dos mínimos dos próprios
+## blocos, e não do tamanho atual da rolagem, para não depender de a coluna já ter sido
+## disposta nem de uma ficha anterior ter esticado o modal.
+func _espaco_cartoes() -> Vector2:
+	var coluna := _rolagem.get_parent() as Control
+	var altura := TAMANHO.y - MARGEM_CAIXA.y
+	var visiveis := 0
+	for filho in coluna.get_children():
+		var bloco := filho as Control
+		if bloco == null or not bloco.visible:
+			continue
+		visiveis += 1
+		if bloco != _rolagem:
+			altura -= bloco.get_combined_minimum_size().y
+	altura -= SEPARACAO_COLUNA * maxi(visiveis - 1, 0)
+	return Vector2(TAMANHO.x - MARGEM_CAIXA.x, altura)
+
+
+## Colunas e linhas que cabem no espaço da lista, com o cartão no tamanho mínimo.
+func _capacidade() -> Vector2i:
+	var espaco := _espaco_cartoes()
+	var colunas := maxi(1, floori((espaco.x + SEPARACAO_GRADE) / (CARTAO_MIN.x + SEPARACAO_GRADE)))
+	var linhas := maxi(1, floori((espaco.y + SEPARACAO_GRADE) / (CARTAO_MIN.y + SEPARACAO_GRADE)))
+	return Vector2i(colunas, linhas)
+
+
+## Cartões por página: a grade inteira, nas duas abas.
+func _cartoes_por_pagina() -> int:
+	var capacidade := _capacidade()
+	return capacidade.x * capacidade.y
+
+
+## Cartões paginados, preenchendo a largura e a altura da lista, os mesmos nas duas abas.
 func _montar_cartoes() -> void:
 	var itens := _itens()
 	if itens.is_empty():
 		_detalhe(tr("Nada com esse nome por aqui."))
 		return
-	var paginas := ceili(float(itens.size()) / CARTOES_POR_PAGINA)
+	var capacidade := _capacidade()
+	var por_pagina := capacidade.x * capacidade.y
+	var paginas := ceili(float(itens.size()) / por_pagina)
 	_paginas[aba] = clampi(_paginas[aba], 0, paginas - 1)
 	var grade := GridContainer.new()
 	grade.name = "GradeMoradores" if aba == 0 else "GradeAssets"
-	grade.columns = 4
-	grade.add_theme_constant_override("h_separation", 8)
-	grade.add_theme_constant_override("v_separation", 8)
+	grade.columns = capacidade.x
+	grade.add_theme_constant_override("h_separation", SEPARACAO_GRADE)
+	grade.add_theme_constant_override("v_separation", SEPARACAO_GRADE)
 	_lista.add_child(grade)
-	for item: Array in itens.slice(_paginas[aba] * CARTOES_POR_PAGINA, (_paginas[aba] + 1) * CARTOES_POR_PAGINA):
+	# Cartões mais altos que o mínimo ocupam a sobra, sem faixa vazia antes da navegação.
+	var altura_cartao := floorf((_espaco_cartoes().y - SEPARACAO_GRADE * (capacidade.y - 1)) / capacidade.y)
+	for item: Array in itens.slice(_paginas[aba] * por_pagina, (_paginas[aba] + 1) * por_pagina):
 		var chave: String = item[0]
 		var cartao := Button.new()
 		cartao.name = ("Morador_" if aba == 0 else "Peca_") + chave
 		cartao.text = str(item[1]) + ("  •" if item[2] else "")
-		cartao.tooltip_text = chave
+		# O nome pode cortar no cartão: o tooltip o mostra inteiro, e a chave embaixo.
+		cartao.tooltip_text = str(item[1]) if str(item[1]) == chave else "%s
+%s" % [item[1], chave]
 		cartao.clip_text = true
 		cartao.add_theme_font_size_override("font_size", 14)
-		cartao.custom_minimum_size = Vector2(170, 64)
+		cartao.custom_minimum_size = Vector2(CARTAO_MIN.x, maxf(CARTAO_MIN.y, altura_cartao))
 		cartao.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		cartao.pressed.connect(func() -> void: _abrir(chave))
 		grade.add_child(cartao)
