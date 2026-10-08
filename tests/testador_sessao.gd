@@ -158,6 +158,14 @@ func _painel() -> void:
 	var area_2: Rect2 = PainelSessao.candidatos(janela, tamanho)[com_coluna]
 	_conferir(not area_2.intersects(coluna.grow(PainelSessao.FOLGA)) and not area_2.intersects(mao), "uma coluna de atalhos à direita empurra o painel para outro canto")
 	_conferir(PainelSessao.escolher(janela, tamanho, [mao, minimapa], livre) == livre, "o painel não pula enquanto o canto continua livre")
+	# O conteúdo diminui (espera: some motivo, trava e progresso): a altura acompanha o mínimo, sem faixa vazia.
+	var alto := painel.size.y
+	painel.mostrar({"titulo": "Testando", "nivel": "", "sub": "0 ações", "acao": _t("aguardando_robot"), "decisoes": []})
+	await process_frame
+	await process_frame
+	_conferir(painel.size.y < alto and is_equal_approx(painel.size.y, painel.get_combined_minimum_size().y), "o painel encolhe quando o conteúdo diminui (%.0f -> %.0f)" % [alto, painel.size.y])
+	painel.posicionar([mao, minimapa])
+	_conferir(is_equal_approx(painel.size.y, painel.get_combined_minimum_size().y), "posicionar mantém a altura no mínimo do conteúdo")
 	painel.queue_free()
 
 

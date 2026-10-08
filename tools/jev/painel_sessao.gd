@@ -246,6 +246,9 @@ func mostrar(d: Dictionary) -> void:
 	_listar(d.get("decisoes", []))
 	_gasto.text = str(d.get("gasto", ""))
 	_parar.text = str(_t.call("parar_curto"))
+	# Um Control solto cresce com o conteúdo mas não encolhe sozinho: sem isto a altura mais alta
+	# que o painel já teve ficaria como faixa vazia embaixo quando motivo, trava ou progresso somem.
+	reset_size()
 
 
 func _listar(todos: Array) -> void:
@@ -312,6 +315,7 @@ var _canto := -1
 ## Põe o painel no canto livre. `obstaculos` são os retângulos do HUD em coordenadas da tela.
 func posicionar(obstaculos: Array) -> void:
 	var janela := get_viewport_rect().size
+	reset_size()
 	var tamanho := get_combined_minimum_size()
 	_canto = escolher(janela, tamanho, obstaculos, _canto)
 	position = candidatos(janela, tamanho)[_canto].position
