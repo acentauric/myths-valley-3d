@@ -7,7 +7,7 @@ extends Node
 ## para a legenda de um dia e para o tests/idiomas.gd).
 ##
 ##
-## OS GATILHOS (o `_pedir("...")` de cada um; o portão tests/falas_do_viajante.gd confere a lista)
+## OS GATILHOS (a chamada `_pedir` de cada um; o portão tests/falas_do_viajante.gd confere a lista)
 ##
 ##   desceu_do_saveiro   saiu do convés do saveiro da chegada para o píer
 ##   cansou_correndo     o vigor zerou no esforço (a corrida, o pulo), em terra

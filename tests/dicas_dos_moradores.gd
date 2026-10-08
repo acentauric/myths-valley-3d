@@ -196,6 +196,12 @@ func _run() -> void:
 	pedro.missao = pedro.MISSOES.size()
 	pedro.set("_despedida_feita", true)
 	_conferir(pedro.terminou_o_tutorial(), "não consegui dar a chegada do Pedro por acabada")
+	# Dada por acabada na marra, a cadeia dele ficou com o anúncio do passo pela metade, e a palavra nunca
+	# livraria; no jogo o tutorial acaba sem anúncio pendente.
+	pedro._cadeia.espera = 0.0
+	await _frames(2)
+	# A saudação do Pedro ainda está no ar (ele só pode vir ajudar com a palavra livre): deixa-a passar.
+	await _palavra_livre(fila, SEGUNDOS_DE_PALAVRA)
 	await _frames(2)
 	d._espera_s = 0.0
 	d._ultima_dica_ms = -1000000

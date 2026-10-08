@@ -96,6 +96,8 @@ func _run() -> void:
 
 	# 3. O nado do jogador pede a fala dele, e ela sai.
 	pedro._situacao_ultima_ms = -1000000
+	# O cartão da água funda (aviso da primeira vez) para o vale; este portão é do Pedro, não dele.
+	jogo.set("_avisou_agua_funda", true)
 	jogador.nado_mudou.emit(true)
 	_conferir(pedro._situacao_pedidas.has("nadou"), "o nado do jogador não pediu a fala do Pedro")
 	await _palavra_livre(func() -> bool: return pedro.pode_falar(), SEGUNDOS_DE_PALAVRA)
