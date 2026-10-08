@@ -37,8 +37,8 @@ func _run() -> void:
 	var dia := root.get_node("/root/Dia")
 	# `load()` depois de o vale subir: um `preload` aqui compila antes dos autoloads (AGENTS.md).
 	var IdiomaMenu = load("res://scripts/prototipo_3d/idioma_menu.gd")
-	_conferir(hud != null and hud.get("_clock_hint") != null, "o HUD não tem a dica do relógio")
-	if hud == null or hud.get("_clock_hint") == null:
+	_conferir(hud != null and hud.get("_clock_button") != null, "o HUD não tem o botão do relógio central")
+	if hud == null or hud.get("_clock_button") == null:
 		_fechar()
 		return
 	var dados = JSON.parse_string(FileAccess.get_file_as_string("res://data/hud_3d.json"))
@@ -52,10 +52,10 @@ func _run() -> void:
 	dia.definir_hora(9.0)
 	await _frames(4)
 	hud._update_clock_hint()
-	var sem_mare: String = hud._clock_hint.text
+	var sem_mare: String = hud._clock_hint
 	_conferir(not sem_mare.contains("maré") and not sem_mare.contains("tide") and not sem_mare.contains("marea"),
 		"com a maré desligada o relógio fala dela: '%s'" % sem_mare)
-	_conferir(String(hud._clock_button.tooltip_text) == "", "com a maré desligada o botão do relógio tem balão: '%s'" % hud._clock_button.tooltip_text)
+	_conferir(String(hud._clock_button.tooltip_text) == sem_mare, "com a maré desligada o balão do relógio é só a dica curta: '%s'" % hud._clock_button.tooltip_text)
 
 	# --- 2 e 3. COM MARÉ, PARA QUE LADO VAI, NOS TRÊS IDIOMAS --------------------------
 	mare.modo = 1
@@ -75,8 +75,9 @@ func _run() -> void:
 			var curto := str(IdiomaMenu.campo_no_idioma(textos, caso[0], idioma))
 			var dica := str(IdiomaMenu.campo_no_idioma(textos, "dica_" + str(caso[0]), idioma))
 			_conferir(curto != "" and dica != "", "falta o texto da %s no idioma %d" % [caso[0], idioma])
-			_conferir(String(hud._clock_hint.text).ends_with(curto), "[%s, idioma %d] a dica do relógio é '%s' e devia terminar em '%s'" % [caso[0], idioma, hud._clock_hint.text, curto])
-			_conferir(String(hud._clock_button.tooltip_text) == dica, "[%s, idioma %d] o balão do botão é '%s' e devia ser '%s'" % [caso[0], idioma, hud._clock_button.tooltip_text, dica])
+			_conferir(String(hud._clock_hint).ends_with(curto), "[%s, idioma %d] a dica do relógio é '%s' e devia terminar em '%s'" % [caso[0], idioma, hud._clock_hint, curto])
+			_conferir(String(hud._clock_button.tooltip_text) == String(hud._clock_hint) + "
+" + dica, "[%s, idioma %d] o balão do relógio é '%s' e devia ser a dica curta e a longa ('%s')" % [caso[0], idioma, hud._clock_button.tooltip_text, dica])
 			ditos["%s/%d" % [caso[0], idioma]] = curto
 			ditos["dica_%s/%d" % [caso[0], idioma]] = dica
 	for caso in casos:
@@ -86,11 +87,11 @@ func _run() -> void:
 	# A maré virou, e a dica foi junto.
 	IdiomaMenu.definir(0)
 	hud._update_clock_hint()
-	_conferir(String(hud._clock_hint.text).ends_with(str(textos.get("enchente", "?"))), "depois da virada a dica não diz que enche: '%s'" % hud._clock_hint.text)
+	_conferir(String(hud._clock_hint).ends_with(str(textos.get("enchente", "?"))), "depois da virada a dica não diz que enche: '%s'" % hud._clock_hint)
 	dia.definir_hora(fposmod(preamar_h + 2.0, 24.0))
 	await _frames(6)
 	hud._update_clock_hint()
-	_conferir(String(hud._clock_hint.text).ends_with(str(textos.get("vazante", "?"))), "a dica não acompanhou a maré para a vazante: '%s'" % hud._clock_hint.text)
+	_conferir(String(hud._clock_hint).ends_with(str(textos.get("vazante", "?"))), "a dica não acompanhou a maré para a vazante: '%s'" % hud._clock_hint)
 	# Fora do código: nenhuma das frases mora no script do HUD.
 	for chave in ["enchente", "vazante"]:
 		_conferir(not codigo.contains(str(textos.get(chave, "?"))), "'%s' ainda está escrito no script do HUD" % textos.get(chave, ""))

@@ -23,18 +23,23 @@ func _draw() -> void:
 	var ouro := Color("e2c47f")
 	match tipo:
 		"vida":
-			# Coração: dois lobos e ponta, legível sem depender de fonte.
-			draw_circle(Vector2(8, 8), 4.5, tinta)
-			draw_circle(Vector2(16, 8), 4.5, tinta)
-			draw_colored_polygon(PackedVector2Array([Vector2(3.5, 9), Vector2(20.5, 9), Vector2(12, 21)]), tinta)
+			# Coração: dois lobos e ponta, legível sem depender de fonte. Os três
+			# medidores (vida, reserva, vigor) desenham na mesma caixa, de 4 a 20 na
+			# largura e de 3 a 21 na altura, para a coluna dos ícones sair uniforme.
+			draw_circle(Vector2(8.5, 8.5), 4.5, tinta)
+			draw_circle(Vector2(15.5, 8.5), 4.5, tinta)
+			draw_colored_polygon(PackedVector2Array([Vector2(4.2, 10.5), Vector2(19.8, 10.5), Vector2(12, 21)]), tinta)
 		"reserva":
-			# Bateria: reserva diária que não retorna sozinha.
-			draw_rect(Rect2(4, 7, 16, 12), tinta, false, 1.8)
-			draw_rect(Rect2(9, 4, 6, 3), tinta)
-			draw_rect(Rect2(7, 10, 10, 6), tinta)
+			# Bateria em pé, com o polo no alto e três faixas de carga: a reserva
+			# diária, que não retorna sozinha. (A primeira, deitada e com o polo no
+			# meio de cima, lia-se como maleta.)
+			draw_rect(Rect2(6.5, 6, 11, 15), tinta, false, 1.8)
+			draw_rect(Rect2(9.5, 3, 5, 3), tinta)
+			for faixa in range(3):
+				draw_rect(Rect2(8.6, 8.2 + faixa * 4.2, 6.8, 2.6), tinta)
 		"vigor":
 			# Raio: esforço curto que se recupera.
-			draw_colored_polygon(PackedVector2Array([Vector2(14, 2), Vector2(5, 13), Vector2(11, 13), Vector2(9, 22), Vector2(20, 10), Vector2(14, 10)]), tinta)
+			draw_colored_polygon(PackedVector2Array([Vector2(14.5, 3), Vector2(5.5, 13.2), Vector2(11, 13.2), Vector2(9.5, 21), Vector2(18.5, 10.2), Vector2(13, 10.2)]), tinta)
 		"externo":
 			# Link externo: caixa aberta no canto e seta saindo para fora.
 			var ouro_link := ouro if not ativo else Color("f5e3b3")

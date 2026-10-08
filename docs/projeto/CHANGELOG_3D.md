@@ -2,6 +2,18 @@
 
 ## Em desenvolvimento — 08/10/2026
 
+- **O relógio do topo vira o controle do tempo, e o bloco do topo se alinha.** A placa do
+  relógio ganha duas colunas (o ícone centrado na vertical à esquerda, hora e período à
+  direita, margens iguais) e passa a ter a mesma altura da pilha das três barras, 51 px
+  em cima e embaixo, no lugar de 72 contra 84. As barras ficam mais finas (de 18 para
+  15 px), com o número por dentro, e os ícones de coração, bateria e raio têm o mesmo
+  tamanho e a mesma coluna; a reserva (barra amarela) ganha uma bateria em pé, com polo
+  e três faixas, que não se confunde mais com uma maleta. O botão de relógio da coluna da
+  direita saiu: clicar no relógio central pausa e retoma, com mão no cursor, realce
+  dourado e balão com a hora e a maré. Os demais atalhos subiram uma vaga, sem mudar de
+  ordem nem de tecla (o Tela cheia do vale agora é a vaga 4). O ícone do relógio, que
+  vivia na coluna, mora na placa e acompanha o dia parado (#177).
+
 - **A barra de mão (1 a 0) nasce menor.** Usa o padrão por componente da missão: a Mão
   abre em 80% (os dez espaços passam de ~76 para ~61 px em 1080p), o ↺ de Ajustes volta
   para esse valor, e quem já gravou um tamanho mantém a escolha. Plaquetas, ícones,

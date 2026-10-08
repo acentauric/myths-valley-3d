@@ -54,7 +54,7 @@ func _run() -> void:
 		var icone: Control = canto.get_meta("icone")
 		if icone.get("tipo") == "tela_cheia":
 			botao_tela = canto.get_meta("botao")
-			_conferir(int(canto.get_meta("posicao")) == 5, "Tela cheia fica na posição 5, como no menu")
+			_conferir(int(canto.get_meta("posicao")) == 4, "Tela cheia fica na posição 4 (o relógio saiu da coluna do vale)")
 			tela.definir(true)
 			_conferir(icone.get("ativo") == true, "ícone dourado em tela cheia")
 			tela.definir(false)

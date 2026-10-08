@@ -21,9 +21,9 @@
     "texto": "Relógio",
     "texto_en": "Clock",
     "texto_es": "Reloj",
-    "ajuda": "O relógio do vale, com a hora e o dia.",
-    "ajuda_en": "The valley clock, with the time and the day.",
-    "ajuda_es": "El reloj del valle, con la hora y el día."
+    "ajuda": "O relógio do vale, com a hora e o período do dia. Clique nele para pausar e retomar o tempo.",
+    "ajuda_en": "The valley clock, with the time and the period of the day. Click it to pause and resume time.",
+    "ajuda_es": "El reloj del valle, con la hora y el período del día. Haz clic para pausar y reanudar el tiempo."
   },
   "vida": {
     "texto": "Vida",

@@ -275,3 +275,29 @@ func _conferir_apresentacao(hud, jogador) -> void:
 			if anterior.size != Vector2.ZERO:
 				_conferir(quadro.position.x == anterior.position.x and quadro.size == anterior.size and quadro.position.y >= anterior.end.y, "medidores não ficam alinhados e separados")
 			anterior = quadro
+		# --- O BLOCO DO TOPO (#177): relógio em duas colunas e a mesma altura da pilha ---
+		var primeira: Rect2 = hud.barra_vida.get_global_rect()
+		var ultima: Rect2 = hud.barra_stamina.get_global_rect()
+		if is_equal_approx(hud._clock_panel.scale.y, hud.barra_vida.scale.y) and is_equal_approx(hud.barra_vida.scale.y, hud.barra_stamina.scale.y):
+			_conferir(absf(relogio.position.y - primeira.position.y) <= 1.5, "relógio e barras não alinham em cima: %s x %s" % [str(relogio), str(primeira)])
+			_conferir(absf(relogio.end.y - ultima.end.y) <= 1.5, "relógio e barras não alinham embaixo: %s x %s" % [str(relogio), str(ultima)])
+		_conferir(primeira.size.y <= 16.0 * maxf(hud.barra_vida.scale.y, 1.0), "as barras não ficaram finas: %s" % str(primeira.size))
+		var mostrador: Control = hud._clock_icon
+		var texto_do_relogio: Control = hud._clock_label.get_parent()
+		var quadro_icone := mostrador.get_global_rect()
+		_conferir(absf(quadro_icone.get_center().y - relogio.get_center().y) <= 1.5, "o ícone do relógio não está centrado na vertical")
+		_conferir(quadro_icone.end.x <= texto_do_relogio.get_global_rect().position.x + 0.5, "o ícone do relógio não ocupa uma coluna própria, antes do texto")
+		var margem_esquerda := quadro_icone.position.x - relogio.position.x
+		var margem_direita := relogio.end.x - texto_do_relogio.get_global_rect().end.x
+		_conferir(absf(margem_esquerda - margem_direita) <= 2.0, "margens do relógio diferentes: %.1f e %.1f" % [margem_esquerda, margem_direita])
+		var primeiro_icone = hud._icones_medidores["vida"]
+		for chave in ["reserva", "vigor"]:
+			var icone = hud._icones_medidores[chave]
+			_conferir(icone.scale == primeiro_icone.scale and icone.position == primeiro_icone.position, "o ícone '%s' não tem o tamanho e a coluna dos outros" % chave)
+		_conferir(24.0 * primeiro_icone.scale.y + primeiro_icone.position.y <= hud.barra_vida.size.y, "o ícone das barras não cabe na barra fina")
+		# O controle do tempo é só do relógio central: clicável, com mão e balão; a coluna da direita não tem relógio.
+		_conferir(hud._clock_button != null and hud._clock_button.get_parent() == hud._clock_panel and hud._clock_button.mouse_filter == Control.MOUSE_FILTER_STOP, "o relógio central não é clicável")
+		_conferir(String(hud._clock_button.tooltip_text) != "", "o relógio central está sem balão")
+		var icone_do_relogio = load("res://scripts/prototipo_3d/clock_icon.gd")
+		for canto in get_nodes_in_group("botoes_canto"):
+			_conferir((canto.get_meta("icone") as Control).get_script() != icone_do_relogio, "a coluna da direita ainda tem o botão de relógio")

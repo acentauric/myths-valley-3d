@@ -218,8 +218,9 @@ func _run() -> void:
 	_conferir(hud != null, "não achei o HUD")
 	if hud != null:
 		var atalhos = load("res://scripts/prototipo_3d/atalhos.gd")
-		var teclas_da_coluna := {4: "mapa", 6: "camera", 10: "painel"}
-		_conferir(hud._corner_nodes.size() == 22, "faltam atalhos ou dicas na coluna do HUD")
+		# O relógio saiu da coluna (#177): o controle do tempo é o relógio central.
+		var teclas_da_coluna := {3: "mapa", 5: "camera", 9: "painel"}
+		_conferir(hud._corner_nodes.size() == 20, "faltam atalhos ou dicas na coluna do HUD")
 		for i in range(0, hud._corner_nodes.size() - 1, 2):
 			var canto: Control = hud._corner_nodes[i]
 			var dica: Control = hud._corner_nodes[i + 1]
@@ -455,7 +456,7 @@ func _run() -> void:
 	dia_retomada.definir_velocidade(0)
 	dia_retomada.pausado = false
 	hud._update_clock_hint()
-	_conferir(hud._clock_hint.text.contains("Retomar"),
+	_conferir(hud._clock_hint.contains("Retomar"),
 		"o relógio parado não indica que o botão pode retomar o tempo")
 	hud._clock_button.pressed.emit()
 	_conferir(dia_retomada.velocidade == 2 and not dia_retomada.pausado,

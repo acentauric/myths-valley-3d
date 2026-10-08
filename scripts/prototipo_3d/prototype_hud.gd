@@ -103,7 +103,9 @@ var _controls_panel: PanelContainer
 var _controls_screen_open := false
 var _help_icon	# hud_icon.gd
 var _camera_lock_button: Button
-var _clock_hint: Label
+## A dica do relógio ("07:25 · Pausar"); é também o balão do botão do relógio.
+var _clock_hint := ""
+## O botão transparente por cima da placa central: o controle do tempo mora aqui (#177).
 var _clock_button: Button
 var _clock_icon
 var _house_info_panel: Panel
@@ -114,9 +116,12 @@ var _clock_label: Label
 const LARGURA_DO_AVISO := 640.0
 var _clock_panel: Panel
 var _clock_estado: Label
-## A altura do painel do relógio, e quanto cresce com a linha do estado.
-const ALTURA_DO_RELOGIO := 72
-const ALTURA_DO_ESTADO := 14
+## O BLOCO DO TOPO (#177): a placa do relógio e a pilha das três barras têm a
+## mesma altura, ALTURA_DO_BLOCO = 3 barras de ALTURA_DA_BARRA + 2 folgas.
+const LARGURA_DO_RELOGIO := 120.0
+const ALTURA_DA_BARRA := 15.0
+const FOLGA_DAS_BARRAS := 3.0
+const ALTURA_DO_BLOCO := ALTURA_DA_BARRA * 3.0 + FOLGA_DAS_BARRAS * 2.0
 var _icones_medidores: Dictionary = {}
 var _menu_confirm = null	# caixa_de_pergunta.gd
 var _map_icon	# hud_icon.gd
@@ -311,38 +316,51 @@ func _ready() -> void:
 	_notice_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_notice_panel.add_child(_notice_label)
 
-	# Relógio do vale: só a hora e o período do dia.
+	# Relógio do vale: o ícone na coluna 1, centrado na vertical; a hora e o
+	# período na coluna 2. O conjunto (ícone + texto) é centrado na placa, para as
+	# margens dos dois lados saírem iguais, e a placa tem a altura da pilha de
+	# barras ao lado (`ALTURA_DO_BLOCO`): os dois formam um bloco só (#177).
 	_clock_panel = _panel(Color(0.055, 0.085, 0.075, 0.82))
 	_clock_panel.name = "RelogioCompacto"
 	_root.add_child(_clock_panel)
 	_clock_panel.add_to_group("obstaculos_do_hud")
 	_clock_panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP)
-	_clock_panel.offset_left = -70
-	_clock_panel.offset_right = 70
+	_clock_panel.offset_left = -LARGURA_DO_RELOGIO * 0.5
+	_clock_panel.offset_right = LARGURA_DO_RELOGIO * 0.5
 	_clock_panel.offset_top = 18
-	_clock_panel.offset_bottom = ALTURA_DO_RELOGIO
-	_clock_label = _label("", 12, GOLD)
-	_clock_panel.add_child(_clock_label)
-	_clock_label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	_clock_label.offset_left = 26
+	_clock_panel.offset_bottom = 18 + ALTURA_DO_BLOCO
+	var centro := CenterContainer.new()
+	centro.name = "ConteudoDoRelogio"
+	centro.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_clock_panel.add_child(centro)
+	centro.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	var colunas := HBoxContainer.new()
+	colunas.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	colunas.add_theme_constant_override("separation", 8)
+	centro.add_child(colunas)
 	var mostrador := ClockIcon.new()
-	_clock_panel.add_child(mostrador)
-	mostrador.position = Vector2(7, 14)
-	mostrador.size = Vector2(20, 20)
+	mostrador.custom_minimum_size = Vector2(22, 22)
+	mostrador.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	mostrador.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	mostrador.set_running(true)
-	_clock_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_clock_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	colunas.add_child(mostrador)
+	_clock_icon = mostrador
+	var texto_do_relogio := VBoxContainer.new()
+	texto_do_relogio.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	texto_do_relogio.add_theme_constant_override("separation", 0)
+	colunas.add_child(texto_do_relogio)
+	_clock_label = _label("", 12, GOLD)
+	_clock_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	texto_do_relogio.add_child(_clock_label)
 	# O ESTADO DO RELÓGIO (#100): "parado" pela pausa do jogador, ou quem o
 	# segura — fala, tela, conquista, narração —, para o dia parado ter motivo
-	# na tela. Vazio com o dia andando.
+	# na tela. Vazio com o dia andando; escondido, não ocupa linha, e a placa
+	# não cresce (a altura é a do bloco).
 	_clock_estado = _label("", 10, Color(0.85, 0.7, 0.36, 0.95))
 	_clock_estado.name = "EstadoDoRelogio"
-	_clock_panel.add_child(_clock_estado)
-	_clock_estado.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
-	_clock_estado.offset_top = -16
-	_clock_estado.offset_bottom = -3
-	_clock_estado.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	texto_do_relogio.add_child(_clock_estado)
 	_clock_estado.visible = false
+	_criar_botao_do_relogio()
 
 	_criar_barra_de_vida()
 	_criar_barra_de_folego()
@@ -350,8 +368,10 @@ func _ready() -> void:
 	for dado in [[barra_vida, "vida"], [barra_folego, "reserva"], [barra_stamina, "vigor"]]:
 		var icone = HudIcon.new().configurar(dado[1])
 		dado[0].add_child(icone)
-		icone.position = Vector2(2, 0)
-		icone.scale = Vector2.ONE * 0.75
+		# Os três no mesmo tamanho e na mesma coluna: a grade de 24 do ícone
+		# encolhida para caber na barra fina (#177).
+		icone.scale = Vector2.ONE * (ALTURA_DA_BARRA - 1.0) / 24.0
+		icone.position = Vector2(4, 0.5)
 		icone.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		_icones_medidores[dado[1]] = icone
 	_layout_medidores()
@@ -645,7 +665,7 @@ func _layout_medidores() -> void:
 	var largura := _root.size.x
 	# Missao termina em 378; atalhos comecam a 78 da borda direita.
 	var esquerda := 18.0 + HEADING_WIDTH * Tela.escala_componente("missao") + 12.0
-	var relogio := 100.0 * Tela.escala_componente("relogio")
+	var relogio := LARGURA_DO_RELOGIO * Tela.escala_componente("relogio")
 	var barras := 160.0 * maxf(Tela.escala_componente("vida"), maxf(Tela.escala_componente("folego"), Tela.escala_componente("vigor")))
 	var inicio := maxf(esquerda, (largura - relogio - barras - 8.0) * 0.5)
 	var topo := 18.0
@@ -654,15 +674,15 @@ func _layout_medidores() -> void:
 		topo = 18.0 + _heading.size.y * Tela.escala_componente("missao") + 12.0
 	_clock_panel.set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT)
 	_clock_panel.position = Vector2(inicio, topo)
-	# Cresce ALTURA_DO_ESTADO quando a linha do estado ("parado") aparece.
-	_clock_panel.size = Vector2(100, 52 + (ALTURA_DO_ESTADO if is_instance_valid(_clock_estado) and _clock_estado.visible else 0))
+	# A MESMA ALTURA da pilha de barras (a linha do estado cabe dentro dela).
+	_clock_panel.size = Vector2(LARGURA_DO_RELOGIO, ALTURA_DO_BLOCO)
 	var indice := 0
 	var altura := topo
 	for barra: ProgressBar in [barra_vida, barra_folego, barra_stamina]:
 		barra.set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT)
 		barra.position = Vector2(inicio + relogio + 8.0, altura)
-		barra.size = Vector2(160, 18)
-		altura += 18.0 * Tela.escala_componente(["vida", "folego", "vigor"][indice]) + 2.0
+		barra.size = Vector2(160, ALTURA_DA_BARRA)
+		altura += (ALTURA_DA_BARRA + FOLGA_DAS_BARRAS) * Tela.escala_componente(["vida", "folego", "vigor"][indice])
 		indice += 1
 	for texto: Label in [_vida_texto, _folego_texto, _stamina_texto]:
 		texto.offset_left = 22
@@ -1083,25 +1103,65 @@ func _update_telemetry() -> void:
 
 
 func _update_clock_hint() -> void:
-	if not is_instance_valid(_clock_hint):
+	if not is_instance_valid(_clock_button):
 		return
 	var andando: bool = not Dia.pausado and Dia.velocidade > 0 and not Dia.segurado()
 	if is_instance_valid(_clock_icon):
 		_clock_icon.set_running(andando)
-	if is_instance_valid(_clock_button):
-		_clock_button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND if not andando or Dia.pausa_no_jogo else Control.CURSOR_ARROW
+	_clock_button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND if not andando or Dia.pausa_no_jogo else Control.CURSOR_ARROW
 	var texto := Dia.texto_hora()
 	if not andando:
-		texto = "%s · Retomar" % texto
+		texto = "%s · %s" % [texto, tr("Retomar")]
 	elif Dia.pausa_no_jogo:
-		texto = "%s · Pausar" % texto
+		texto = "%s · %s" % [texto, tr("Pausar")]
 	# A MARÉ, ao lado da hora: com ela ligada, a dica diz se a água sobe ou desce (e o que isso faz na praia).
 	var mare := _texto_da_mare("")
 	if mare != "":
 		texto += " · " + mare
-	_clock_hint.text = texto
-	if is_instance_valid(_clock_button):
-		_clock_button.tooltip_text = _texto_da_mare("dica_")
+	_clock_hint = texto
+	# O balão do relógio: a dica curta e, com a maré ligada, a frase longa dela.
+	var dica_da_mare := _texto_da_mare("dica_")
+	_clock_button.tooltip_text = texto if dica_da_mare == "" else "%s\n%s" % [texto, dica_da_mare]
+
+
+## O CLIQUE DO TEMPO MORA NO RELÓGIO CENTRAL (#177): um botão transparente sobre
+## a placa, com mão no cursor, realce ao passar o mouse e o balão da dica. Pausa
+## e retoma como o botão da coluna da direita fazia (que saiu da coluna); o
+## aviso de "relógio travado" é o mesmo som de trava.
+func _criar_botao_do_relogio() -> void:
+	_clock_button = Button.new()
+	_clock_button.name = "BotaoDoRelogio"
+	_clock_button.flat = true
+	_clock_button.focus_mode = Control.FOCUS_NONE
+	_clock_panel.add_child(_clock_button)
+	_clock_button.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	var vazio := StyleBoxEmpty.new()
+	var realce := StyleBoxFlat.new()
+	realce.bg_color = Color(GOLD, 0.1)
+	realce.border_color = Color(GOLD, 0.7)
+	realce.set_border_width_all(1)
+	realce.set_corner_radius_all(10)
+	for estado in ["normal", "focus"]:
+		_clock_button.add_theme_stylebox_override(estado, vazio)
+	for estado in ["hover", "pressed", "hover_pressed"]:
+		_clock_button.add_theme_stylebox_override(estado, realce)
+	# O painel é transparente ao mouse; o botão por cima leva o clique.
+	_corner_setup(_clock_button, func() -> void:
+		if Dia.velocidade == 0:
+			Dia.definir_velocidade(2)
+			Dia.pausado = false
+		elif Dia.pausado:
+			Dia.pausado = false
+		elif Dia.pausa_no_jogo:
+			Dia.pausado = true
+		else:
+			Audio.efeito("ui_trava")
+			return
+		Audio.efeito("ui_confirmar")
+		_update_telemetry(), false)
+	_update_clock_hint()
+	Dia.hora_mudou.connect(_update_clock_hint.unbind(1))
+	Mare.mare_mudou.connect(_update_clock_hint.unbind(1))
 
 
 ## A frase curta da maré, enchente ou vazante (ou a dica longa, com `prefixo` "dica_"), no idioma do jogador; "" com a maré desligada.
@@ -1155,30 +1215,6 @@ func _create_corner_buttons() -> void:
 		Audio.definir_som_ativo(not Audio.som_ativo)
 		audio_icon.set_active(Audio.som_ativo)
 		audio_hint.text = "Desativar" if Audio.som_ativo else "Ativar")
-
-	top += 1
-	var clock_icon := ClockIcon.new()
-	clock_icon.set_running(not Dia.pausado)
-	var clock: Array = BotaoCanto.criar(_root, top, clock_icon, 28.0)
-	_clock_icon = clock_icon
-	_clock_button = clock[0]
-	_clock_hint = clock[1]
-	_corner_setup(clock[0], func() -> void:
-		if Dia.velocidade == 0:
-			Dia.definir_velocidade(2)
-			Dia.pausado = false
-		elif Dia.pausado:
-			Dia.pausado = false
-		elif Dia.pausa_no_jogo:
-			Dia.pausado = true
-		else:
-			Audio.efeito("ui_trava")
-			return
-		Audio.efeito("ui_confirmar")
-		_update_telemetry(), false)
-	_update_clock_hint()
-	Dia.hora_mudou.connect(_update_clock_hint.unbind(1))
-	Mare.mare_mudou.connect(_update_clock_hint.unbind(1))
 
 	top += 1
 	_map_icon = HudIcon.new().configurar("mapa")
