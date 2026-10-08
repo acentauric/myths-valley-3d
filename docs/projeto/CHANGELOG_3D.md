@@ -25,6 +25,16 @@
   a câmera também está longe; o leque troca de modelo sem buraco. Com o corte de antes o portão
   reprova (`--falsificar-corte`) (#193).
 
+- **O dendezal e os varais conferidos.** O dendezal foi fotografado de cima e rente ao chão nas
+  quatro estações (a mancha de folhiço aparece sob as palmas, de borda rasgada, sem cor estourada)
+  e o tempo de quadro nas duas vistas foi medido antes e depois com o vsync desligado (a máquina é
+  compartilhada e a placa oscila de estado: a variação entre rodadas, de 10 a 16 ms, é maior que a
+  diferença entre antes e depois, e o chão lê as mesmas camadas). Cachos e palha em malha seguem
+  sem modelo no catálogo: a palha seca é a do folhiço do chão (#195). Os três varais foram
+  postos lado a lado com o viajante (`tools/prototipo_3d/fotografar_varais.gd`): estacas de 1,9 u
+  contra 1,78 u dele, roupa na altura do peito, e `casa_sem_varal` e `rotina_dos_moradores`
+  seguem verdes (#194).
+
 - **Primeiros clipes do Mixamo nos moradores.** Seis animações do Mixamo entram
   redirecionadas para o esqueleto Tripo de cada um (`tools/prototipo_3d/mixamo/redirecionar.gd`,
   só rotações e o quadril, pé no chão, no lugar): o Pedro treina capoeira no posto quando o
