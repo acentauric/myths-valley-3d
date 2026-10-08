@@ -5,15 +5,18 @@ terminar sem erros de script ou de importação de recursos. O runner verifica e
 erros; código de saída zero sozinho não demonstra que o jogo abriu.
 
 ```powershell
-.\tools\prototipo_3d\testar.ps1
+.\tools\prototipo_3d\testar.ps1                  # o lote: o que mudou desde o último verde
+.\tools\prototipo_3d\testar.ps1 -Push            # obrigatório antes de git push
+.\tools\prototipo_3d\testar.ps1 -Explicar        # o que rodaria, e por quê
 .\tools\prototipo_3d\testar.ps1 -Teste salvamento
-.\tools\prototipo_3d\testar.ps1 -Teste reservas_do_corpo
-.\tools\prototipo_3d\testar.ps1 -Teste agua_rasa -QuadrosFixos
-.\tools\prototipo_3d\testar.ps1 -Teste painel -QuadrosFixos
-.\tools\prototipo_3d\testar.ps1 -Teste reservas_do_corpo -ComJanela -Compatibility -ArgumentosTeste @('--somente-hud', '--capture')
-# Deve reprovar: simula a cobrança do nado ausente, somente em memória.
-.\tools\prototipo_3d\testar.ps1 -Teste reservas_do_corpo -ArgumentosTeste '--falsificar'
+.\tools\prototipo_3d\testar.ps1 -Tudo            # bateria completa, antes de fechar build
+.\tools\prototipo_3d\testar_analise_teste.ps1    # os testes do próprio runner, sem Godot
 ```
+
+A escolha dos portões ignora comentário, linha em branco e formatação de JSON
+(a impressão digital é semântica); só o portão que lê código como texto vê o
+comentário do arquivo que ele lê. Recurso sem importação e `class_name` novo
+fora do cache de classes disparam uma importação única antes da bateria.
 
 Cada portão usa APPDATA temporário próprio. Um travamento reprova e somente
 os PIDs levantados pelo runner podem ser encerrados. A régua ordem_da_visita

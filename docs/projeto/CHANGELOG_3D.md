@@ -61,6 +61,23 @@
   fica dourado em tela cheia e a dica ensina o atalho nos três idiomas; acompanha também
   o F11. Menu e vale agora usam o mesmo código, `BotaoCanto.criar_tela_cheia` (#181).
 
+- **O testar.ps1 roda por lote e não roda nada por comentário.** A impressão
+  digital de cada portão passa a ser semântica: o .gd sem comentário, linha em
+  branco e espaço no fim (o '#' dentro de string fica), o .json sem espaço fora
+  das strings (a ordem das chaves fica), e doc fora; só o portão que lê código
+  como texto vê o comentário do que ele lê. A base padrão deixa de ser a
+  origin/main crua: é o último commit que a máquina viu verde e o merge-base
+  com a origin/main, então commita-se à vontade e testa-se uma vez por lote, com
+  `-Push` obrigatório antes de enviar. A análise foi para C#
+  (`testar_analise.cs`): o `-Explicar` cai de ~60 s para ~8 s com a máquina
+  livre. Um comentário no tela.gd rodava os 216 portões e agora roda os 6 que
+  leem o código como texto; reformatar o missoes_guia.json rodava 171 e agora
+  roda 5. Cache de importação quebrado (o .glb com as texturas extraídas fora do
+  disco, comum em worktree nova) é refeito numa importação única antes da
+  bateria, em vez de reprovar cada portão como "NAO ABRE"; o paralelo desconta
+  os portões de outras baterias na mesma máquina. O recorte por função de
+  autoload foi medido e recusado (razões no topo do runner).
+
 - **Todo campo de Ajustes tem o "?" de ajuda, e "Passos na água" ganha o ↺.** O campo
   era montado à mão, com um botão Ouvir que encurtava o seletor: agora é uma escolha
   como as vizinhas (Original ou Novos, ↺ volta a Original) e trocar a opção já toca a
