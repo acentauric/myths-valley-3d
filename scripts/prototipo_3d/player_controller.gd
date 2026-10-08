@@ -30,6 +30,31 @@ const JUMP_GRAVITY_DOWN := 25.0 * JUMP_SPEED_MULTIPLIER * JUMP_SPEED_MULTIPLIER
 const JUMP_BUFFER_TIME := 0.16
 const JUMP_COYOTE_TIME := 0.16
 const RUN_STOP_SPEED := 0.15
+
+## GIRO DO CORPO (#209): o viajante nunca anda de lado nem desliza. O corpo gira
+## para o rumo com velocidade angular limitada (sem salto de um quadro) e o passo
+## só pega velocidade conforme o corpo se alinha com o rumo: dentro de
+## ALINHADO_PLENO anda inteiro, a partir de ALINHADO_NENHUM gira no lugar.
+const VELOCIDADE_DE_GIRO := deg_to_rad(640.0)
+const SUAVIDADE_DO_GIRO := 14.0
+const ALINHADO_PLENO := deg_to_rad(30.0)
+const ALINHADO_NENHUM := deg_to_rad(100.0)
+
+
+## Quanto o corpo avança neste quadro rumo ao `alvo` (rad), com a suavidade de
+## sempre perto do rumo e o teto de VELOCIDADE_DE_GIRO nas viradas grandes.
+static func passo_de_giro(atual: float, alvo: float, delta: float) -> float:
+	var falta := angle_difference(atual, alvo)
+	var suave := falta * (1.0 - exp(-SUAVIDADE_DO_GIRO * delta))
+	var teto := VELOCIDADE_DE_GIRO * maxf(delta, 0.0)
+	return clampf(suave, -teto, teto)
+
+
+## Fração do passo que vale com o corpo a `atual` e o rumo em `alvo` (rad): 1
+## alinhado, 0 de costas ou de lado. É o que impede o deslize lateral.
+static func alinhamento_do_passo(atual: float, alvo: float) -> float:
+	var desvio := absf(angle_difference(atual, alvo))
+	return 1.0 - smoothstep(ALINHADO_PLENO, ALINHADO_NENHUM, desvio)
 const VIGOR_MAXIMO := 100.0
 const FOLEGO_MAXIMO := 100.0
 const CUSTO_FOLEGO_NADO_POR_SEGUNDO := 5.0
@@ -581,6 +606,10 @@ func _physics_process(delta: float) -> void:
 	# Energia acompanha o vigor do corpo. Abaixo de um quinto do teto,
 	# a regra de cansaço encurta o passo para 62%.
 	speed *= multiplicador_do_passo()
+	# Sem deslize lateral (#209): no chão, o passo espera o corpo virar para o rumo.
+	# No ar o pulo mantém o impulso que já tem.
+	if direction.length_squared() > 0.01 and not _jumping and is_instance_valid(visual):
+		speed *= alinhamento_do_passo(visual.rotation.y, atan2(direction.x, direction.z))
 	if _knockback_remaining > 0.0:
 		# Empurrão (ex.: o coveiro): o impulso manda até o fim, sem controle do jogador.
 		_knockback_remaining -= delta
@@ -635,7 +664,7 @@ func _physics_process(delta: float) -> void:
 		if _stuck_time > 1.4:
 			_retry_walk()
 	if direction.length_squared() > 0.01:
-		visual.rotation.y = lerp_angle(visual.rotation.y, atan2(direction.x, direction.z), 1.0 - exp(-12.0 * delta))
+		visual.rotation.y += passo_de_giro(visual.rotation.y, atan2(direction.x, direction.z), delta)
 	if animator:
 		animator.update_motion(Vector2(velocity.x, velocity.z).length(), delta)
 	_atualizar_altura_visual_nado()

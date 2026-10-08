@@ -513,8 +513,10 @@ func _acoes(estado: Dictionary) -> Dictionary:
 	for rumo in ["forward", "backward", "left", "right"]:
 		if bool((direcoes.get(rumo, {}) as Dictionary).get("blocked", false)):
 			continue
-		opcoes["run_" + rumo] = "Run " + rumo + " relative to the camera for 4 seconds using Shift and movement keys; this direction is clear nearby"
-		opcoes["walk_" + rumo] = "Walk " + rumo + " relative to the camera for 2 seconds; try another direction if the previous movement was blocked"
+		# Não é passo lateral: o viajante vira o corpo para o rumo e anda para a frente
+		# (giro suave, #209). O nome só diz para que lado da câmera ele vai.
+		opcoes["run_" + rumo] = "Turn toward the " + rumo + " side of the camera and run that way for 4 seconds (the body faces where it goes; no sideways stepping); this direction is clear nearby"
+		opcoes["walk_" + rumo] = "Turn toward the " + rumo + " side of the camera and walk that way for 2 seconds (the body faces where it goes; no sideways stepping); try another direction if the previous movement was blocked"
 	opcoes["wait"] = "Wait 4 seconds for dialogue/narration or stamina recovery"
 	return opcoes
 
