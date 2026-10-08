@@ -76,6 +76,8 @@ const MEIA_LARGURA_DO_TRONCO := 0.36
 ## Quanto o modelo pode passar do `altura` do dado (o chapéu, o cabelo) e de quanto em quanto
 ## tempo se mede de novo (s).
 const EXCESSO_DO_MODELO := 1.12
+## A altura (m) de quem não declara `altura` nem `character_height`.
+const ALTURA_DE_QUEM_NAO_DIZ := 1.75
 const INTERVALO_DA_MEDIDA := 1.5
 ## A folga (px) entre a placa e a cabeça que ela deixa livre, e o quanto a cabeça pode ser
 ## tocada de lado sem contar (a caixa encolhe tanto).
@@ -518,7 +520,12 @@ func _baloes_com_profundidade(camera: Camera3D) -> Array:
 ## `character_height` no jogador) ou, se o modelo passa dela (chapéu, cabelo), a malha mais alta,
 ## até `EXCESSO_DO_MODELO`. Medida de tempos em tempos, e não a cada quadro.
 func _altura_real(no: Node3D) -> float:
-	var dado := float(no.get("altura")) if no.get("altura") != null else float(no.get("character_height"))
+	# O morador diz `altura`, o jogador `character_height`; quem não diz nenhum (um boneco de portão) fica
+	# na altura de gente comum, em vez de quebrar o quadro.
+	var bruto: Variant = no.get("altura")
+	if bruto == null:
+		bruto = no.get("character_height")
+	var dado := float(bruto) if bruto != null else ALTURA_DE_QUEM_NAO_DIZ
 	var agora := Time.get_ticks_msec() / 1000.0
 	var medida: Dictionary = _medidas.get(no, {})
 	if medida.is_empty() or agora >= float(medida["ate"]):

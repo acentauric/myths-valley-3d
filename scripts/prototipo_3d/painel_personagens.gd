@@ -669,6 +669,10 @@ func _dados_morador(pessoa: Dictionary) -> void:
 		_linha_fala(falas[i] if i < falas.size() and falas[i] is Dictionary else {})
 
 
+## A altura (px) da linha Animações, com ou sem botão do Mixamo.
+const ALTURA_DA_LINHA_DE_ANIMACOES := 30.0
+
+
 ## AS ANIMAÇÕES DO MORADOR (#190), numa linha só, como as outras da ficha: os clipes
 ## do Mixamo, cada um num botão com o selo dourado ("Capoeira · Mixamo"), e os do
 ## Tripo num menu ("Tripo (8)"). O clique toca o clipe na prévia; o segundo, no
@@ -678,6 +682,9 @@ func _animacoes(id: String) -> void:
 	var linha := HBoxContainer.new()
 	linha.name = "Animacoes"
 	linha.add_theme_constant_override("separation", 6)
+	# A ALTURA É A MESMA PARA TODOS: o botão do Mixamo saía um pixel mais alto que o menu do Tripo, e a
+	# ficha de quem tem Mixamo descia as falas meio pixel em relação à de quem não tem.
+	linha.custom_minimum_size.y = ALTURA_DA_LINHA_DE_ANIMACOES
 	_lista.add_child(linha)
 	var rotulo := Label.new()
 	rotulo.text = tr("Animações")

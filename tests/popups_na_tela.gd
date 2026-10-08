@@ -525,8 +525,11 @@ func _o_peso_das_placas() -> void:
 			# da distância (de 6 a 10 m), e quando as vagas caem nos moradores de 7 a 9 m (os de perto atrás de uma
 			# casa ou sob a coluna da dica) nenhuma placa passava de 0,99 e a varredura não media nada.
 			if placa.visible and float(placas._alfa.get(morador, 0.0)) >= 1.0:
-				var topo: Vector3 = morador.global_position + Vector3(0, float(morador.get("altura")) + 0.1, 0)
-				saida[morador] = [placa.position, camera.unproject_position(topo) - Vector2(placa.size.x * 0.5, placa.size.y)]
+				# O alvo é o mesmo da placa: a altura real do modelo (o chapéu, o cabelo, #184) e o quanto
+				# ela subiu para liberar um rosto.
+				var topo: Vector3 = morador.global_position + Vector3(0, placas._altura_real(morador) + placas.ACIMA_DA_CABECA, 0)
+				var sobe := Vector2(0.0, float(placas._subida.get(morador, 0.0)))
+				saida[morador] = [placa.position, camera.unproject_position(topo) - sobe - Vector2(placa.size.x * 0.5, placa.size.y)]
 		return saida)
 	var pico := _picos(amostras)
 	print("  placas: pico de %.0f px/s na tela contra %.0f px/s da cabeça (%d quadros)" % [pico[0], pico[1], amostras.size()])

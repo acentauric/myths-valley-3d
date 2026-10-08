@@ -137,6 +137,12 @@ func _run() -> void:
 		var nome := str(sem_missao.dados.get("id", "?"))
 		var palavra := await _palavra_livre(func() -> bool: return sem_missao.pode_falar(), SEGUNDOS_DE_PALAVRA)
 		_conferir(palavra, "a palavra não ficou livre perto de %s" % nome)
+		# O TELEPORTE TIRA O JOGADOR DO SAVEIRO, e o viajante diria "Então é aqui…" (agora com voz, uns
+		# segundos): a fala dele toma a vez, e o cumprimento que encontra a vez ocupada cai e se dá por feito.
+		# Aqui só interessa o cumprimento: a chegada do viajante conta como já dita.
+		var viajante = jogo.get("viajante")
+		if viajante != null:
+			viajante._ditas["desceu_do_saveiro"] = true
 		jogador.teleportar(sem_missao.global_position + Vector3(1.0, 0.0, 0.8), 0.0)
 		var saudou := await _ate(func() -> bool: return not ditas.is_empty(), SEGUNDOS_PARA_SAUDAR)
 		_conferir(saudou, "%s não tem missão e não cumprimentou" % nome)
