@@ -51,8 +51,9 @@ func _run() -> void:
 	_conferir(parado != "", "o modelo do jogador não tem o clipe idle")
 
 	# --- 1. O ANIMADOR LARGA O QUE FAZIA --------------------------------------
+	# Sem esperar quadro: o processo físico do jogador, rodando, chamaria update_motion(0) e
+	# traria o parado de volta antes da conferência.
 	animador.update_motion(6.0, 0.016)
-	await _frames(3)
 	_conferir(String(animador.get_current_animation()) != parado, "montagem: correndo, o clipe já era o parado")
 	animador.play_chop(2)
 	await _frames(2)
