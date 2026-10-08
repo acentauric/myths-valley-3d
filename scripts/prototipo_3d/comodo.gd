@@ -39,6 +39,12 @@ const CAMADA_DOS_CORPOS := 1 << 11
 ## pouco por dentro (a palhoça, a capelinha) leva parede fina, para a sala não
 ## sair de dentro dela nem ficar menor que um quarto de gente (ver `configurar`).
 const PAREDE := 0.4
+## O PERFIL DA FACHADA (#205): de quantos em quantos metros se mede a face de fora dela, e até onde,
+## da parede para fora, a colisão acompanha uma saliência (pilar de alpendre, balcão, banco).
+const PASSO_DA_FACHADA := 0.05
+## Colunas vizinhas cuja face difere até isto (m) viram uma caixa só.
+const TOLERANCIA_DA_FACHADA := 0.1
+const SALIENCIA_MAXIMA := 3.0
 
 const CAL := Color("efe8d8")
 const MADEIRA := Color("5b3a22")
@@ -65,12 +71,14 @@ var borda_do_alicerce := 0.0
 ## frente dela, até o primeiro estorvo.
 var afastamento_de_fora := 1.6
 ## A CASCA DE FORA (#205): quanto a colisão avança para fora, além da parede (`parede`), até a face
-## visível da parede do modelo, em cada lado e no fundo; e onde, no cômodo (z), está a face de fora
-## da fachada fora do vão — 0 sem medida. Ver `_montar_a_casca_de_fora`.
+## visível da parede do modelo, em cada lado e no fundo; e o PERFIL DA FACHADA, a face de fora dela
+## coluna a coluna (x do cômodo, z da face), de `PASSO_DA_FACHADA` em `PASSO_DA_FACHADA` — vazio sem
+## medida. A fachada de uma venda tem alpendre, balcão e pilar, e uma face só (a mediana) errava a
+## casa inteira. Ver `_montar_a_casca_de_fora`.
 var fora_direita := 0.0
 var fora_esquerda := 0.0
 var fora_fundo := 0.0
-var fachada_de_fora := 0.0
+var perfil_da_fachada: Array[Vector2] = []
 ## A PORTA: onde ela fica na fachada (do meio para +X) e o tamanho do vão.
 var porta_x := 0.0
 var largura_da_porta := 1.2
@@ -128,7 +136,9 @@ func configurar(medidas: Dictionary) -> void:
 	fora_direita = maxf(float(medidas.get("fora_direita", 0.0)), 0.0)
 	fora_esquerda = maxf(float(medidas.get("fora_esquerda", 0.0)), 0.0)
 	fora_fundo = maxf(float(medidas.get("fora_fundo", 0.0)), 0.0)
-	fachada_de_fora = float(medidas.get("fachada_de_fora", 0.0))
+	perfil_da_fachada.clear()
+	for coluna in medidas.get("perfil_da_fachada", []):
+		perfil_da_fachada.append(coluna as Vector2)
 	# A porta não sai da fachada: o vão inteiro cabe entre as paredes do lado.
 	var folga := largura * 0.5 - largura_da_porta * 0.5 - 0.1
 	porta_x = clampf(float(medidas.get("porta_x", porta_x)), -folga, folga)
@@ -229,39 +239,60 @@ func _montar_casca() -> void:
 ## de dentro da casca do modelo, e a parede do modelo tem a espessura dela: o corpo que chegava por
 ## fora parava com o ombro dentro do reboco — e, ao lado da porta, onde a fachada tem o fundo do
 ## vão e só o batente de 20 cm era sólido, entrava na parede. Aqui entram, só de colisão e sem
-## desenho, o que falta até a face de fora: as duas laterais e o fundo (`fora_*`) e a fachada de
-## cada lado do vão, da parede de dentro à face de fora — as ombreiras da porta são sólidas.
+## desenho e sem barrar a câmera (ela atravessava a casca antes, e o braço dela não ganha parede),
+## o que falta até a face de fora: as duas laterais e o fundo (`fora_*`) e a fachada de
+## cada lado do vão, coluna a coluna (`perfil_da_fachada`) — as ombreiras da porta são sólidas, e o
+## pilar do alpendre e o balcão que saem da fachada também.
 func _montar_a_casca_de_fora() -> void:
-	var z_frente := _face_de_fora_da_fachada()
+	var z_frente := parede + fundo_da_porta
 	var x_direita := largura * 0.5 + parede + fora_direita
 	var x_esquerda := -(largura * 0.5 + parede + fora_esquerda)
 	var z_fundo := -comprimento - parede - fora_fundo
 	if fora_direita > 0.02:
 		_caixa(Vector3(fora_direita, pe_direito, z_frente - z_fundo),
-			Vector3(largura * 0.5 + parede + fora_direita * 0.5, pe_direito * 0.5, (z_frente + z_fundo) * 0.5), null, true, "ParedeFora")
+			Vector3(largura * 0.5 + parede + fora_direita * 0.5, pe_direito * 0.5, (z_frente + z_fundo) * 0.5), null, true, "ParedeFora", false)
 	if fora_esquerda > 0.02:
 		_caixa(Vector3(fora_esquerda, pe_direito, z_frente - z_fundo),
-			Vector3(-(largura * 0.5 + parede + fora_esquerda * 0.5), pe_direito * 0.5, (z_frente + z_fundo) * 0.5), null, true, "ParedeFora")
+			Vector3(-(largura * 0.5 + parede + fora_esquerda * 0.5), pe_direito * 0.5, (z_frente + z_fundo) * 0.5), null, true, "ParedeFora", false)
 	if fora_fundo > 0.02:
 		_caixa(Vector3(x_direita - x_esquerda, pe_direito, fora_fundo),
-			Vector3((x_direita + x_esquerda) * 0.5, pe_direito * 0.5, -comprimento - parede - fora_fundo * 0.5), null, true, "FundosFora")
-	var fundo_da_fachada := z_frente - parede
-	if fundo_da_fachada > 0.02:
-		var meia := largura_da_porta * 0.5
-		for lado in [-1.0, 1.0]:
-			var junto_da_porta: float = porta_x + lado * meia
-			var ponta: float = x_direita if lado > 0.0 else x_esquerda
-			var trecho: float = absf(ponta - junto_da_porta)
-			if trecho > 0.02:
-				_caixa(Vector3(trecho, pe_direito, fundo_da_fachada),
-					Vector3((junto_da_porta + ponta) * 0.5, pe_direito * 0.5, parede + fundo_da_fachada * 0.5), null, true, "FachadaFora")
+			Vector3((x_direita + x_esquerda) * 0.5, pe_direito * 0.5, -comprimento - parede - fora_fundo * 0.5), null, true, "FundosFora", false)
+	_montar_a_fachada_de_fora()
 
 
-## Onde, no cômodo (z), está a face de fora da fachada: a do vão da porta (`parede + fundo_da_porta`),
-## ou a medida fora do vão (`fachada_de_fora`), a que avançar mais — porta rebaixada na parede.
-func _face_de_fora_da_fachada() -> float:
-	var no_vao := parede + fundo_da_porta
-	return clampf(maxf(no_vao, fachada_de_fora), no_vao, no_vao + 1.0)
+## A fachada de fora, de cada lado do vão da porta: colunas do perfil medido, fora do vão e dentro da
+## casca, cada uma com a face dela (de `parede` a `parede + SALIENCIA_MAXIMA`) e engordada pela
+## vizinha mais saliente (a saliência mais estreita que o passo não escapa entre duas colunas).
+## Colunas vizinhas de face parecida (até `TOLERANCIA_DA_FACHADA` de diferença) viram uma caixa só.
+func _montar_a_fachada_de_fora() -> void:
+	var borda := largura * 0.5 + parede
+	var meia_porta := largura_da_porta * 0.5
+	var xs: Array[float] = []
+	var zs: Array[float] = []
+	for coluna in perfil_da_fachada:
+		if absf(coluna.x) > borda or absf(coluna.x - porta_x) < meia_porta:
+			continue
+		xs.append(coluna.x)
+		zs.append(clampf(coluna.y, 0.0, parede + SALIENCIA_MAXIMA))
+	var gordas: Array[float] = zs.duplicate()
+	for i in xs.size():
+		for vizinha in [i - 1, i + 1]:
+			if vizinha >= 0 and vizinha < xs.size() and absf(xs[vizinha] - xs[i]) <= PASSO_DA_FACHADA * 1.01:
+				gordas[i] = maxf(gordas[i], zs[vizinha])
+	var i := 0
+	while i < xs.size():
+		var j := i
+		var z := gordas[i]
+		while j + 1 < xs.size() and absf(xs[j + 1] - xs[j]) <= PASSO_DA_FACHADA * 1.01 and absf(gordas[j + 1] - gordas[i]) <= TOLERANCIA_DA_FACHADA:
+			j += 1
+			z = maxf(z, gordas[j])
+		var fundura := z - parede
+		if fundura > 0.02:
+			var de_x := maxf(xs[i] - PASSO_DA_FACHADA * 0.5, -borda)
+			var ate_x := minf(xs[j] + PASSO_DA_FACHADA * 0.5, borda)
+			_caixa(Vector3(ate_x - de_x, pe_direito, fundura),
+				Vector3((de_x + ate_x) * 0.5, pe_direito * 0.5, parede + fundura * 0.5), null, true, "FachadaFora", false)
+		i = j + 1
 
 
 ## O chão do cômodo, de parede a parede.

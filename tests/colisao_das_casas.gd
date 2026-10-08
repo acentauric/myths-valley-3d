@@ -132,16 +132,18 @@ func _auditar(qual: String, sem_a_casca_de_fora: bool) -> void:
 		for fracao in [-0.35, -0.1, 0.2, 0.4]:
 			var ponto: Vector3 = sala.to_global(Vector3(sala.largura * float(fracao), float(h), -sala.comprimento * 0.5))
 			buracos += _medir(espaco, sala, ponto, -z, fundos)
-		# A fachada, de cada lado do vão da porta e até a quina.
-		for lado in [-1.0, 1.0]:
-			for recuo in [0.3, 0.6, 1.0]:
-				var xl: float = sala.porta_x + lado * (sala.largura_da_porta * 0.5 + float(recuo))
-				if absf(xl) >= meia_largura - 0.05:
-					continue
-				var ponto: Vector3 = sala.to_global(Vector3(xl, float(h), 0.0))
-				buracos += _medir(espaco, sala, ponto, z, fachada)
-			var da_quina: Vector3 = sala.to_global(Vector3(lado * (meia_largura - 0.1), float(h), 0.0))
-			buracos += _medir(espaco, sala, da_quina, z, fachada)
+	# A fachada, de cada lado do vão da porta e até a quina. O corpo tem altura: a coluna vale o
+	# que a face mais saliente das duas alturas pede (um balcão só na altura do joelho, ou uma
+	# viga só na do peito, é obstáculo do mesmo jeito), e não cada altura sozinha.
+	for lado in [-1.0, 1.0]:
+		var colunas: Array[float] = []
+		for recuo in [0.3, 0.6, 1.0]:
+			var xl: float = sala.porta_x + lado * (sala.largura_da_porta * 0.5 + float(recuo))
+			if absf(xl) < meia_largura - 0.05:
+				colunas.append(xl)
+		colunas.append(lado * (meia_largura - 0.1))
+		for xl in colunas:
+			buracos += _medir_coluna(espaco, sala, xl, z, fachada)
 	_detectar(espaco, sala, corpo)
 	corpo.queue_free()
 	_construcoes_medidas += 1
@@ -175,6 +177,26 @@ func _medir(espaco: PhysicsDirectSpaceState3D, sala: Node3D, ponto: Vector3, par
 	if not is_finite(fundura):
 		return 1
 	lista.append(fundura)
+	return 0
+
+
+## O mesmo, para uma coluna da fachada (`xl` no cômodo): a fundura que vale é a da face mais
+## saliente das alturas (positivo: o corpo que encosta já está dentro do reboco; negativo: a
+## colisão está mais fora do que qualquer parte visível da coluna, parede de ar). Devolve 1 se um
+## raio achou a casca e a coluna não tem colisão (um buraco).
+func _medir_coluna(espaco: PhysicsDirectSpaceState3D, sala: Node3D, xl: float, z: Vector3, lista: Array[float]) -> int:
+	var pior := -INF
+	for h in ALTURAS:
+		var ponto: Vector3 = sala.to_global(Vector3(xl, float(h), 0.0))
+		var face := Auditoria.face_visivel(espaco, ponto + z * 30.0, ponto)
+		if not face.is_finite():
+			continue
+		var fundura := Auditoria.fundura_da_colisao(espaco, face, -z.normalized(), sala)
+		if not is_finite(fundura):
+			return 1
+		pior = maxf(pior, fundura)
+	if is_finite(pior):
+		lista.append(pior)
 	return 0
 
 
