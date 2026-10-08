@@ -1183,6 +1183,10 @@ func _create_corner_buttons() -> void:
 	_shortcut_badges["mapa"] = BotaoCanto.marcar_atalho(map[0], Atalhos.letra("mapa"))
 	_corner_setup(map[0], func() -> void: map_requested.emit())
 
+	# TELA CHEIA na mesma vaga do menu (logo abaixo do mapa), com o mesmo código.
+	top += 1
+	var tela: Array = BotaoCanto.criar_tela_cheia(_root, top)
+	(tela[0] as Button).focus_mode = Control.FOCUS_NONE
 
 	top += 1
 	_camera_icon = HudIcon.new().configurar("camera")

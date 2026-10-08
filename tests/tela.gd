@@ -44,6 +44,30 @@ func _run() -> void:
 	var idioma = load("res://scripts/prototipo_3d/idioma_menu.gd")
 	for frase in ["Tela cheia (F11)", "Modo janela (F11)"]:
 		_conferir(idioma.EN.has(frase) and idioma.ES.has(frase), "dica traduzida: %s" % frase)
+	# #181: o vale tem o botão Tela cheia na coluna, do mesmo código do menu, e ele
+	# acompanha o modo (também quando muda pelo F11).
+	var hud = load("res://scripts/prototipo_3d/prototype_hud.gd").new()
+	root.add_child(hud)
+	await process_frame
+	var botao_tela: Button = null
+	for canto in get_nodes_in_group("botoes_canto"):
+		var icone: Control = canto.get_meta("icone")
+		if icone.get("tipo") == "tela_cheia":
+			botao_tela = canto.get_meta("botao")
+			_conferir(int(canto.get_meta("posicao")) == 5, "Tela cheia fica na posição 5, como no menu")
+			tela.definir(true)
+			_conferir(icone.get("ativo") == true, "ícone dourado em tela cheia")
+			tela.definir(false)
+			_conferir(icone.get("ativo") == false, "ícone volta ao normal em janela")
+			var dica: PanelContainer = canto.get_meta("dica")
+			_conferir((dica.get_child(0) as Label).text == tela.dica(), "a dica acompanha o modo")
+			var antes: bool = tela.cheia
+			botao_tela.pressed.emit()
+			_conferir(tela.cheia != antes, "clicar alterna o modo")
+			tela.definir(true)
+	_conferir(botao_tela != null, "o vale não tem o botão Tela cheia na coluna de atalhos")
+	hud.queue_free()
+	await process_frame
 	# Cursor de hardware: cada conjunto (seta e mão) chega sem compressão de VRAM.
 	for conjunto: Array in tela.CURSORES:
 		for i in [0, 2]:

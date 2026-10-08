@@ -858,20 +858,7 @@ func _create_map_button(layer: CanvasLayer) -> void:
 ## TELA CHEIA na coluna do canto, abaixo do mapa: alterna tela cheia e janela, como o
 ## F11 (o autoload `Tela`), e a dica ensina o atalho. Dourado em tela cheia.
 func _create_tela_button(layer: CanvasLayer) -> void:
-	var tela_icon: Control = HudIcon.new().configurar("tela_cheia")
-	var parts := BotaoCanto.criar(layer, 5, tela_icon)
-	var hint_label: Label = parts[1]
-	var atualizar := func(cheia: bool) -> void:
-		tela_icon.definir(cheia)
-		hint_label.text = Tela.dica()
-	atualizar.call(Tela.cheia)
-	Tela.modo_mudou.connect(atualizar)
-	tree_exiting.connect(func() -> void: Tela.modo_mudou.disconnect(atualizar))
-	(parts[0] as Button).pressed.connect(func() -> void:
-		if starting:
-			return
-		Audio.efeito("ui_confirmar")
-		Tela.alternar())
+	BotaoCanto.criar_tela_cheia(layer, 5, func() -> bool: return not starting)
 
 
 ## Na Home a casa fica dourada e não responde (já se está lá); em qualquer outra tela

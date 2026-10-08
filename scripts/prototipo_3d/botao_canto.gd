@@ -90,6 +90,38 @@ static func criar(pai: Node, posicao: int, icone: Control, lado_icone := 24.0) -
 	return [botao, rotulo]
 
 
+## TELA CHEIA da coluna do canto (menu e vale usam este mesmo código): alterna tela
+## cheia e janela, como o F11 (o autoload `Tela`); o ícone fica dourado em tela cheia e
+## a dica ensina o atalho. Acompanha `Tela.modo_mudou`, então também muda com o F11.
+## `pode` (opcional) devolve falso quando o clique deve ser ignorado (o menu, ao partir
+## para o vale). Devolve [Button, Label da dica], como `criar`.
+static func criar_tela_cheia(pai: Node, posicao: int, pode := Callable()) -> Array:
+	var arvore := pai.get_tree()
+	var tela := arvore.root.get_node_or_null("Tela")
+	var icone: Control = preload("res://scripts/prototipo_3d/hud_icon.gd").new().configurar("tela_cheia")
+	var partes := criar(pai, posicao, icone)
+	var botao: Button = partes[0]
+	var dica: Label = partes[1]
+	if tela == null:
+		return partes
+	var atualizar := func(cheia: bool) -> void:
+		icone.definir(cheia)
+		dica.text = tela.dica()
+	atualizar.call(tela.get("cheia"))
+	tela.modo_mudou.connect(atualizar)
+	botao.tree_exiting.connect(func() -> void:
+		if tela.modo_mudou.is_connected(atualizar):
+			tela.modo_mudou.disconnect(atualizar))
+	botao.pressed.connect(func() -> void:
+		if pode.is_valid() and not pode.call():
+			return
+		var audio := arvore.root.get_node_or_null("Audio")
+		if audio:
+			audio.efeito("ui_confirmar")
+		tela.alternar())
+	return partes
+
+
 ## Escala do HUD escolhida em AJUSTAR; 1 sem o autoload (testes com --script).
 static func escala() -> float:
 	var arvore := Engine.get_main_loop() as SceneTree

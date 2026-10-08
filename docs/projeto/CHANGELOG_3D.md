@@ -2,6 +2,12 @@
 
 ## Em desenvolvimento — 08/10/2026
 
+- **O vale ganha o botão Tela cheia na coluna de atalhos, como o do menu.** Em janela,
+  dentro do vale, não havia como voltar à tela cheia sem conhecer o F11. O botão fica na
+  vaga 5 da coluna (logo abaixo do mapa, a mesma do menu), alterna tela cheia e janela,
+  fica dourado em tela cheia e a dica ensina o atalho nos três idiomas; acompanha também
+  o F11. Menu e vale agora usam o mesmo código, `BotaoCanto.criar_tela_cheia` (#181).
+
 - **Todo campo de Ajustes tem o "?" de ajuda, e "Passos na água" ganha o ↺.** O campo
   era montado à mão, com um botão Ouvir que encurtava o seletor: agora é uma escolha
   como as vizinhas (Original ou Novos, ↺ volta a Original) e trocar a opção já toca a
