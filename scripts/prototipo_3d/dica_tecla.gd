@@ -87,7 +87,13 @@ static func criar(pai: Control, tecla_texto: String, acao: String) -> PanelConta
 	letra.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_TITULO, 700))
 	letra.add_theme_font_size_override("font_size", TAMANHO_MINIMO_DA_LETRA)
 	letra.add_theme_color_override("font_color", TINTA)
-	tecla.add_child(letra)
+	# A letra mora num miolo sem tamanho mínimo, presa às bordas dele: se ela pedisse altura à
+	# plaqueta, a letra que cresce com a plaqueta a faria crescer de novo, sem fim.
+	var miolo := Control.new()
+	miolo.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	tecla.add_child(miolo)
+	letra.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	miolo.add_child(letra)
 	# Quadrada e com a letra na medida: quando o HBox dá a altura à plaqueta, a largura a iguala.
 	tecla.resized.connect(_quadrar_a_tecla.bind(tecla, letra))
 	var textos := VBoxContainer.new()

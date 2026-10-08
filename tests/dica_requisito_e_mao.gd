@@ -18,6 +18,12 @@ func conferir(ok: bool, motivo: String) -> void:
 func quadros() -> void:
 	for _i in 4:
 		await process_frame
+## Como o jogo: quem mostra a dica chama todo quadro. Chamada uma vez só, a dica guardava o
+## tamanho da primeira medida, feita antes de os rótulos terem largura.
+func mostrar(dica: PanelContainer, camera: Camera3D, acao: String) -> void:
+	for _i in 4:
+		Dica.mostrar_em(dica, camera, Vector3.ZERO, acao)
+		await process_frame
 func _run() -> void:
 	Dica = load(caminho_dica)
 	var camada := Control.new()
@@ -30,8 +36,7 @@ func _run() -> void:
 		root.size = Vector2i(largura, largura * 9 / 16)
 		for exemplo in exemplos:
 			var dica: PanelContainer = Dica.criar(camada, "E", exemplo)
-			Dica.mostrar_em(dica, camera, Vector3.ZERO, exemplo)
-			await quadros()
+			await mostrar(dica, camera, exemplo)
 			var texto := dica.find_child("Acao", true, false) as Label
 			var requisito := dica.find_child("Requisito", true, false) as Label
 			var tecla := dica.find_child("Tecla", true, false) as Control
@@ -51,11 +56,9 @@ func _run() -> void:
 			conferir(absf(tecla.size.x - tecla.size.y) <= 2.0, "plaqueta quadrada (%.1f x %.1f)" % [tecla.size.x, tecla.size.y])
 			conferir(letra.get_theme_font_size("font_size") > 14, "letra da plaqueta grande")
 			var longa: String = exemplo + " e os materiais necessários para preparar este terreno com segurança"
-			Dica.mostrar_em(dica, camera, Vector3.ZERO, longa)
-			await quadros()
+			await mostrar(dica, camera, longa)
 			conferir(requisito.get_line_count() > 1 and dica.size.x < largura * 0.65, "requisito longo quebra por largura")
-			Dica.mostrar_em(dica, camera, Vector3.ZERO, "Olhar")
-			await quadros()
+			await mostrar(dica, camera, "Olhar")
 			conferir(not requisito.visible and texto.get_line_count() == 1 and dica.size.y < 40, "interação simples volta ao tamanho compacto")
 			conferir(absf(tecla.size.y - texto.size.y) <= 3.0 and absf(tecla.size.x - tecla.size.y) <= 2.0, "plaqueta da altura da linha única e quadrada (%.1f x %.1f)" % [tecla.size.x, tecla.size.y])
 			dica.queue_free()
