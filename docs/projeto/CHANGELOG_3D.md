@@ -2,6 +2,14 @@
 
 ## Em desenvolvimento — 08/10/2026
 
+- **O marcador do jogador no minimapa se lê de relance.** O triângulo dourado, pequeno
+  e da cor da areia, sumia no terreno claro e ao lado do losango da missão. Agora é uma
+  seta (chevron com entalhe na base) cerca de 55% maior, dourado-claro, com contorno
+  escuro de 2 px e um halo translúcido por baixo, que o destacam sobre areia, terra,
+  grama, telhado e mar. O alvo da missão continua um losango âmbar, agora com contorno
+  escuro próprio. Segue a escala "Minimapa" de Ajustes e o erro de direção do mapa
+  doido; o portão do minimapa confere tamanho, entalhe, contorno e halo (#200).
+
 - **A plaqueta da tecla dos atalhos laterais passa para a direita do botão, centrada.**
   O M, o C e o J ficavam no canto superior esquerdo do botão, soltos e no caminho da dica
   que abre à esquerda. Agora ficam à direita, no meio da altura, coladas à borda da placa,

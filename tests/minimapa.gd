@@ -185,13 +185,37 @@ func _run() -> void:
 			"o jogador andou 20 u a leste e o centro foi de %s para %s" % [str(antes), str(depois)])
 		jogador.global_position = ponto
 
+	# --- 9. O MARCADOR DO JOGADOR SE LÊ DE RELANCE (#200) --------------------
+	#
+	# Era um triângulo de 9 de ponta, sem contorno, da cor da areia e do losango da
+	# missão. Agora é uma seta maior (40 a 60% acima), com entalhe na base, contorno
+	# escuro e halo, e o alvo tem forma e contorno próprios.
+	for direcao in [Vector2(0, 1), Vector2(1, 0), Vector2(-0.6, 0.8)]:
+		var seta: PackedVector2Array = bussola.pontos_do_jogador(Vector2.ZERO, direcao)
+		_conferir(seta.size() == 4, "a seta do jogador tem %d pontos: sem o entalhe da base" % seta.size())
+		if seta.size() == 4:
+			_conferir(seta[0].length() >= 9.0 * 1.4 and seta[0].length() <= 9.0 * 1.6 + 2.0,
+				"a ponta da seta mede %.1f: deveria ser 40 a 60%% maior que os 9 de antes" % seta[0].length())
+			_conferir(seta[0].normalized().is_equal_approx(direcao.normalized()),
+				"a ponta da seta não aponta para onde o jogador olha")
+			# O entalhe fica atrás da ponta e na frente da linha das asas.
+			var base: Vector2 = (seta[1] + seta[3]) * 0.5
+			_conferir(seta[2].dot(direcao) > base.dot(direcao) and seta[2].dot(direcao) < 0.0,
+				"a base da seta não tem entalhe (chevron)")
+	_conferir(bussola.CONTORNO.v < 0.2 and bussola.CONTORNO.a >= 0.9 and bussola.LARGURA_CONTORNO >= 1.5 and bussola.LARGURA_CONTORNO <= 2.0,
+		"o contorno da seta não é escuro e de 1,5 a 2 px")
+	_conferir(bussola.HALO.a > 0.0 and bussola.RAIO_HALO >= bussola.PONTA_JOGADOR - 2.0,
+		"a seta não tem halo por baixo")
+	_conferir(bussola.JOGADOR.v > bussola.AMBAR.v and bussola.JOGADOR.s < bussola.AMBAR.s,
+		"o jogador não é mais claro e menos saturado que o âmbar do alvo")
+
 	_fechar()
 
 
 func _fechar() -> void:
 	print("")
 	if falhas == 0:
-		print("MINIMAPA_OK: a bússola está no HUD, é quadrada e cabe na janela; a vista (textura com shader, sem SubViewport) tem máscara redonda e o aro fecha o círculo; sem missão em foco não aponta nada; com missão em foco o losango cai do lado certo; alvo longe encosta no aro e fica dentro do círculo em vez da quina; fixar outra missão vira o marcador; missão cumprida limpa o alvo; e o centro da foto acompanha o jogador sem segundo render")
+		print("MINIMAPA_OK: a seta do jogador é maior, com entalhe, contorno e halo; a bússola está no HUD, é quadrada e cabe na janela; a vista (textura com shader, sem SubViewport) tem máscara redonda e o aro fecha o círculo; sem missão em foco não aponta nada; com missão em foco o losango cai do lado certo; alvo longe encosta no aro e fica dentro do círculo em vez da quina; fixar outra missão vira o marcador; missão cumprida limpa o alvo; e o centro da foto acompanha o jogador sem segundo render")
 	else:
 		print("minimapa: %d falha(s)" % falhas)
 	quit(1 if falhas > 0 else 0)

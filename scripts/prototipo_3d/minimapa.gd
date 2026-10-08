@@ -32,9 +32,24 @@ const MAPA_DADOS := "res://assets/prototipo_3d/identidade/minimapa/mapa_vale.jso
 const PREFERENCIAS := "user://preferencias_visuais.cfg"
 const FUNDO := Color(0.055, 0.085, 0.075, 0.9)
 const OURO := Color("b49a60")
-const DOURADO := Color("d6ba78")
 const CLARO := Color("f5e3b3")
 const AMBAR := Color("e2a93b")
+## O MARCADOR DO JOGADOR é o elemento mais legível da bússola: seta (chevron com entalhe
+## na base) dourado-claro, com contorno escuro e um halo translúcido por baixo, que o
+## destacam sobre areia, terra, grama, telhado e mar. Medidas em px, antes da escala
+## "Minimapa" de Ajustes (o nó inteiro escala, o desenho vai junto). Era um triângulo
+## de 9 de ponta e 7 de base, sem contorno (#200).
+const JOGADOR := Color("f6e3a1")
+const CONTORNO := Color(0.043, 0.063, 0.055, 0.95)
+const HALO := Color(0.043, 0.063, 0.055, 0.32)
+const PONTA_JOGADOR := 14.0
+const ASA_JOGADOR := 11.0
+## Ângulo das asas contado a partir da frente, e quanto o entalhe fica à frente do
+## centro (negativo: atrás) — o recorte em V da base da seta.
+const ANGULO_ASA := 2.5
+const ENTALHE_JOGADOR := -4.0
+const LARGURA_CONTORNO := 2.0
+const RAIO_HALO := 13.0
 
 ## A VISTA REDONDA: amostra a foto em volta de `centro_uv` e apaga o que cai fora do
 ## círculo.
@@ -290,22 +305,36 @@ func _desenhar() -> void:
 		var a := _no_quadro(_alvo, centro, escala)
 		var losango := PackedVector2Array([a + Vector2(0, -6), a + Vector2(5, 0), a + Vector2(0, 6), a + Vector2(-5, 0)])
 		_sobre.draw_colored_polygon(losango, AMBAR)
-	# Triângulo do jogador: a frente do modelo é o +Z do nó `visual`, e o topo da foto
+		# Contorno próprio (escuro, fino): o alvo é um losango âmbar contornado, e o
+		# jogador, uma seta maior e clara; as duas formas não se confundem.
+		losango.append(losango[0])
+		_sobre.draw_polyline(losango, CONTORNO, 1.5, true)
+	# Seta do jogador: a frente do modelo é o +Z do nó `visual`, e o topo da foto
 	# é o norte (-Z), então a direção na tela é (sin yaw, cos yaw).
 	var direcao := Vector2(0, 1)
 	var visual := _jogador.get("visual") as Node3D
 	if visual != null:
 		var yaw := visual.global_rotation.y
 		direcao = Vector2(sin(yaw), cos(yaw))
-	# E o triângulo do jogador aponta para o lado errado (zero fora da loucura).
+	# E a seta do jogador aponta para o lado errado (zero fora da loucura).
 	if louca != null and louca.erro_da_seta() != 0.0:
 		direcao = direcao.rotated(louca.erro_da_seta())
-	var pontos := PackedVector2Array([
-		centro + direcao * 9.0,
-		centro + direcao.rotated(2.6) * 7.0,
-		centro + direcao.rotated(-2.6) * 7.0,
+	var pontos := pontos_do_jogador(centro, direcao)
+	# Halo por baixo, depois o preenchimento claro e o contorno escuro por cima.
+	_sobre.draw_circle(centro, RAIO_HALO, HALO)
+	_sobre.draw_colored_polygon(pontos, JOGADOR)
+	pontos.append(pontos[0])
+	_sobre.draw_polyline(pontos, CONTORNO, LARGURA_CONTORNO, true)
+
+
+## A seta do jogador (chevron): ponta, asa, entalhe da base, asa. `direcao` é unitária.
+static func pontos_do_jogador(centro: Vector2, direcao: Vector2) -> PackedVector2Array:
+	return PackedVector2Array([
+		centro + direcao * PONTA_JOGADOR,
+		centro + direcao.rotated(ANGULO_ASA) * ASA_JOGADOR,
+		centro + direcao * ENTALHE_JOGADOR,
+		centro + direcao.rotated(-ANGULO_ASA) * ASA_JOGADOR,
 	])
-	_sobre.draw_colored_polygon(pontos, DOURADO)
 
 
 ## Ponto do mundo no quadro, centrado no jogador. Fora da vista, ENCOSTA NO ARO —
