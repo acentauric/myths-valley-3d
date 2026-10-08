@@ -2,6 +2,16 @@
 
 ## Em desenvolvimento — 08/10/2026
 
+- **A colisão das árvores é auditada espécie por espécie.** Um script lê cada
+  GLB, atira raios horizontais no eixo do tronco e compara o raio da madeira com o
+  cilindro do catálogo: 29 das 32 espécies de tronco ficam entre -0,21 e +0,32 u (o
+  corpo do jogador soma 0,28), nenhum cilindro passa de 3 m, e as que não têm
+  fuste único (mangue, ingazeiro, bambu, gameleira) ficam anotadas com a razão.
+  Nenhum raio mudou. Um portão sem montar o vale cobra o teto de 3,5 m do
+  cilindro, colisão em toda árvore de ficha e o paisagismo repetindo o raio e a
+  altura do catálogo. A passada a pé junto de bases e raízes fica para o jogo
+  aberto (#150).
+
 - **Os troncos do ipê, da pitangueira e de mais oito árvores deixam de parecer
   ocos.** O Tripo fechou o fuste dessas árvores com os triângulos virados para
   dentro, e o descarte das faces de trás (ligado nos GLBs para ganhar quadros)

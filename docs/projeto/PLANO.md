@@ -57,6 +57,14 @@ troncos à altura do corpo. Igreja nos dois sentidos e navegação passam;
 mutantes reproduzem umbral e tronco da orla. A quina da ponte central e
 a revisão completa seguem pendentes. Ver [ROTAS_PORTAS_E_TRONCOS.md](../testes/ROTAS_PORTAS_E_TRONCOS.md).
 
+A #150 ganha a auditoria de todas as espécies contra a madeira desenhada: o
+raio do cilindro de 29 das 32 espécies de tronco fica a menos de 0,35 u do
+raio visível, nenhum cilindro cobre copa, e mangue, ingazeiro, bambu e gameleira
+(raízes, vários fustes, sapopemas) estão anotadas com a razão. Nenhum raio
+mudou; um portão sem vale guarda a fonte dos números. A passada a pé junto de
+bases e raízes fica para o jogo aberto. Ver
+[COLISAO_DAS_ARVORES.md](../testes/COLISAO_DAS_ARVORES.md).
+
 As cercas repetidas ganham corpos com as transformações do desenho na
 camada de mundo (#125). Navegação e encosta passam; a Candinha alcança
 Zefa andando com colisões. A revisão permanece aberta porque o passeio
