@@ -229,6 +229,65 @@ func liberar() -> void:
 	_destino_avulso = Vector3.INF
 
 
+## EM CENA (cena_vale.gd, 07/10): a cena manda — `ir_ate` leva, `encarar` vira, `gesto` mexe
+## os braços — e a rotina, o posto, o seguir o jogador e o dar passagem esperam. É o
+## `_em_cena` do Pedro do 2D (`assumir_cena`/`liberar_cena`).
+var _em_cena := false
+var _encarando := Vector3.INF
+## O gesto pelo nome, nos dois animadores: [autoral (GESTURES), procedural (GESTOS)].
+const GESTOS_DA_CENA := {
+	"acenar": [0, 0], "tchau": [1, 0], "concordar": [2, 1], "apontar": [3, 2],
+	"olhar_em_volta": [3, 7], "chamar": [0, 5], "medo": [4, 3], "bracos_cruzados": [5, 4],
+	"reverencia": [2, 6],
+}
+
+
+func assumir_cena() -> void:
+	_em_cena = true
+
+
+func liberar_cena() -> void:
+	_em_cena = false
+	_encarando = Vector3.INF
+
+
+func em_cena() -> bool:
+	return _em_cena
+
+
+## Fica virado para `ponto` enquanto estiver parado em cena.
+func encarar(ponto: Vector3) -> void:
+	_encarando = ponto
+
+
+## Um gesto dos braços pelo nome (`GESTOS_DA_CENA`); devolve o rótulo do gesto, ou "".
+func gesto(nome: String) -> String:
+	if animador == null or not animador.has_method("play_gesture") or not GESTOS_DA_CENA.has(nome):
+		return ""
+	var par: Array = GESTOS_DA_CENA[nome]
+	var autoral: bool = animador.has_method("is_using_authored_clips")
+	return str(animador.play_gesture(int(par[0] if autoral else par[1])))
+
+
+## O pulso de quem está em cena: vai ao destino avulso pela malha, ou fica parado encarando.
+func _passo_da_cena(delta: float) -> void:
+	var direcao := Vector3.ZERO
+	if _destino_avulso.is_finite():
+		var deslocamento := _destino_avulso - global_position
+		deslocamento.y = 0.0
+		var distancia := deslocamento.length()
+		if distancia > 0.2:
+			var rumo := _ponto_do_caminho(_destino_avulso, delta) - global_position
+			rumo.y = 0.0
+			if not _esperando_a_malha:
+				direcao = rumo.normalized() if rumo.length() > 0.05 else deslocamento / distancia
+	_mover(direcao, _velocidade_avulsa, delta)
+	if direcao == Vector3.ZERO and _encarando.is_finite():
+		_olhar_para(_encarando, delta)
+	_atualizar_animacao(delta)
+	_atualizar_interacao(delta)
+
+
 ## Já no posto do período, sem andar até ele: a carga de uma partida põe cada
 ## um onde ele estaria.
 func ir_ao_posto_agora() -> void:
@@ -423,6 +482,10 @@ func _corpo_provisorio() -> Node3D:
 
 
 func _physics_process(delta: float) -> void:
+	# EM CENA, a cena manda (cena_vale.gd).
+	if _em_cena:
+		_passo_da_cena(delta)
+		return
 	if _andar_dando_passagem(delta):
 		_atualizar_animacao(delta)
 		_atualizar_interacao(delta)

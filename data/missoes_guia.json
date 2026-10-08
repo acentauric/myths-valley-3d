@@ -32,6 +32,7 @@
     },
     {
       "id": "correr",
+      "cena": "apresentacao_do_tonho",
       "titulo": "Pressa de quem chega",
       "titulo_en": "In a hurry",
       "titulo_es": "Prisa de quien llega",
@@ -52,6 +53,7 @@
     },
     {
       "id": "bom_dia",
+      "cena": "vista_da_praca",
       "titulo": "Quem chega, cumprimenta",
       "titulo_en": "Whoever arrives, says hello",
       "titulo_es": "Quien llega, saluda",
@@ -110,6 +112,7 @@
     },
     {
       "id": "chave_zefa",
+      "cena": "a_casa_do_tio",
       "titulo": "A chave com a Dona Zefa",
       "titulo_en": "The key with Dona Zefa",
       "titulo_es": "La llave con doña Zefa",

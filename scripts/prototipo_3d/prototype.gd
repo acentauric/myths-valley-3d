@@ -165,6 +165,9 @@ var fazenda: Node3D
 var curral: Node3D
 ## O capítulo 7, o revoar das asas negras: as ruínas, a torre, a fera e a estátua (`revoar_vale.gd`, #31).
 var revoar: Node3D
+## AS CENAS DOS DADOS (cena_vale.gd, data/cenas.json): a chegada apresenta o Tonho, mostra a
+## praça e chega à casa do tio.
+var cenas: CenaVale
 ## A voz do mundo, sem nome, sobre o escuro (`narracao_do_vale.gd`).
 var narracao: CanvasLayer
 ## As plaquinhas de nome dos moradores; somem com tela aberta (placas_nomes.gd).
@@ -767,6 +770,11 @@ func _ready() -> void:
 	revoar.name = "Revoar"
 	add_child(revoar)
 	revoar.configurar(world, self)
+	# AS CENAS PELOS DADOS (07/10, cena_vale.gd): a fila que fecha um passo com `cena` as toca.
+	cenas = CenaVale.new()
+	cenas.name = "Cenas"
+	add_child(cenas)
+	cenas.configurar(self)
 	interiores.entrou.connect(_ao_mudar_de_lado.unbind(1))
 	interiores.saiu.connect(_ao_mudar_de_lado.unbind(1))
 	# O E NOS MORADORES (tecla_dos_moradores.gd): conversar, cumprir o passo que
@@ -1308,6 +1316,8 @@ func _montar_moradores(spawn: Vector3) -> void:
 		# O QUE A CHEGADA PAGA é dito no HUD, como nas filas dos moradores.
 		pedro.pagou.connect(func(texto: String) -> void: hud.set_notice(texto))
 		pedro._cadeia.passo_cumprido.connect(hud.tarefa_concluida)
+		# AS CENAS DA CHEGADA (data/cenas.json): a apresentação do Tonho, a vista da praça, a casa.
+		pedro._cadeia.cena.connect(_tocar_a_cena.bind(pedro._cadeia))
 		pedro.entregou.connect(func(texto: String) -> void: hud.set_notice(texto))
 		# QUEM FICOU PARA TRÁS NA CONDUÇÃO vê, no alto da tela, o aviso de voltar.
 		pedro.esperando_quem_ficou.connect(func(esperando: bool) -> void:
@@ -2540,10 +2550,18 @@ func _achar_morador(quem: String) -> Node3D:
 	return null
 
 
+## AS CENAS ESCRITAS À MÃO, por nome: as da chapada, da fazenda e do revoar. O que não está
+## aqui é cena dos dados (`CenaVale`, data/cenas.json) — o portão `cenas_do_vale` confere que
+## toda cena pedida por um passo está num lugar ou no outro.
+const CENAS_ESCRITAS_A_MAO := ["luz_dourada", "cabra_desce", "portao_se_abre", "chegou_ao_patio",
+	"chamado_aos_corajosos", "porta_estreita", "o_quarto", "a_fuga", "o_relato", "a_fera_vem",
+	"a_pedra", "o_amanhecer"]
+
+
 ## AS CENAS DOS PASSOS (`cena` no dado da missão, `CadeiaDeMissoes.cena`): a luz
 ## dourada da chegada à chapada, a cabra que desce da lombada, o portão da fazenda,
 ## o pé da escadaria, o chamado aos corajosos e a porta estreita (#114).
-func _tocar_a_cena(nome: String) -> void:
+func _tocar_a_cena(nome: String, cadeia: Node = null) -> void:
 	match nome:
 		"luz_dourada":
 			if luz_dourada != null:
@@ -2582,6 +2600,10 @@ func _tocar_a_cena(nome: String) -> void:
 		"o_amanhecer":
 			if revoar != null:
 				revoar.o_amanhecer()
+		_:
+			# As cenas dos dados (cena_vale.gd): a fila que pediu fica segura até o `anuncia`.
+			if cenas != null:
+				cenas.tocar(nome, cadeia)
 
 
 func _pendurar_cadeia(morador: Node3D, arquivo: String, perto: float, chave: String = "") -> Node:
@@ -2603,7 +2625,7 @@ func _pendurar_cadeia(morador: Node3D, arquivo: String, perto: float, chave: Str
 	cadeia.passo_cumprido.connect(hud.tarefa_concluida)
 	# A FERRAMENTA ENTREGUE fica na barra, e o HUD diz o número que a põe na mão.
 	cadeia.entregou.connect(func(texto: String) -> void: hud.set_notice(texto))
-	cadeia.cena.connect(_tocar_a_cena)
+	cadeia.cena.connect(_tocar_a_cena.bind(cadeia))
 	morador.add_child(cadeia)
 	_cadeias[chave if chave != "" else str(morador.dados.get("id", ""))] = cadeia
 	return cadeia

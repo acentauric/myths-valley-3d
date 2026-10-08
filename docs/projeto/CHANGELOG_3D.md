@@ -23,6 +23,18 @@
   cada quatro golpes, e a dica conta o trabalho ("Lajedo 12/96"); a seta de "junte
   pedras" não aponta a pedra grande a quem só tem a picareta de ferro. As árvores já
   seguiam a regra (madeira branca, de lei e dura, com nível e aço).
+- **As cenas do vale, pelos dados** (07/10, à noite: "implementar a mesma lógica de cutscene
+  que fizemos no 2D: travando a tela e comandos do jogador e a própria engine conduzindo os
+  personagens para uma interação com fala; explorar a vista, o cenário, aproximar dos
+  personagens, mexer os braços"). `cena_vale.gd` toca cenas escritas em `data/cenas.json`
+  como listas de comandos — segura (jogador parado, sem E, tarjas, fila segura), camera
+  (olha / vista / aproxima), anda, encara, gesto (acenar, apontar, chamar...), fala,
+  anuncia (a fala do passo seguinte é a fala da cena), espera, solta —, com teto em tudo;
+  o passo que declara `cena` a toca ao fechar, e a fila que pediu fica segura até o
+  `anuncia`. Moradores ganham `assumir_cena`/`liberar_cena`/`encarar`/`gesto`, e o Pedro
+  obedece à cena antes da chegada e da condução. A chegada ganha três: a apresentação do
+  Tonho (o Pedro chama, vai na frente e aponta), a vista da praça (a câmera varre do Pedro
+  à igreja) e a casa do tio (a câmera chega à casa de taipa). Portão novo `cenas_do_vale`.
 - **Os moradores andam com folga das paredes e das árvores** (07/10, à noite: "muito NPC
   andando colado na parede, batendo em árvore; o deslocamento entre esses objetos deve
   ser suave"). Uma segunda malha de navegação, LARGA (raio 0,6, num mapa só dela, assada

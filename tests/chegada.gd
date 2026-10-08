@@ -79,6 +79,10 @@ func _run() -> void:
 	dia = root.get_node("/root/Dia")
 	dialogo = root.get_node("/root/Dialogo")
 	var vale = current_scene
+	# AS CENAS FICAM DESLIGADAS: este portão dirige a chegada na mão (teleporta, aperta o E) e mede a
+	# condução do Pedro; com a apresentação do Tonho tocando, ele anda em cena, e não conduz.
+	if vale.get("cenas") != null:
+		vale.cenas.desligadas = true
 	var jogador = vale.player
 	var mundo = vale.world
 	var pedro = vale.get("pedro")

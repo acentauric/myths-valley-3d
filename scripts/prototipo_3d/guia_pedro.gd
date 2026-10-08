@@ -260,6 +260,10 @@ func _physics_process(delta: float) -> void:
 	# estar de pé, e ela não anda sem saber de quem se aproximar.
 	if _cadeia.jogador == null:
 		_cadeia.jogador = jogador
+	# EM CENA (cena_vale.gd), a cena manda nele, como no 2D (`Pedro._em_cena`).
+	if _em_cena:
+		_passo_da_cena(delta)
+		return
 	if terminou_o_tutorial():
 		# DEPOIS DO TUTORIAL ELE AINDA CONDUZ quando uma fila dele pede: a jornada da
 		# fazenda, em que ele leva o jogador pela ponte até o portão, como no 2D.
