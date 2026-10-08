@@ -19,11 +19,25 @@ confirmada na parada real por F8: botão do menu abriu perfil novo, 19 decisões
 
 ## Como iniciar e encerrar
 
-No menu inicial, escolha **Testar**, ao lado de Explorar, ou execute
-`JOGAR_SOL.cmd`. O lançador abre uma janela com uma partida nova em perfil
-isolado, preservando os saves do jogador. Requer o projeto de desenvolvimento,
-Python 3.10+ disponível como `python` e Godot. O botão fica desativado nas
-exportações que não contêm a ponte Python.
+No menu inicial, escolha **Testar**, ao lado de Explorar. Abre um modal com os apoios que
+a ponte encontrou na máquina, o orçamento e a duração; **Iniciar** abre uma janela com uma
+partida nova em perfil isolado, preservando os saves do jogador. `JOGAR_SOL.cmd` segue
+iniciando o determinístico direto. Requer o projeto de desenvolvimento, Python 3.10+
+disponível como `python` e Godot. O botão fica desativado nas exportações que não contêm a
+ponte Python.
+
+| Apoio | Papel | Disponível quando |
+|---|---|---|
+| **Determinístico** | base, sempre ligado: o robô local joga pelas regras do jogo, sem custo | sempre |
+| **Jev** (TypeSafe) | segundo nível, quando o determinístico trava | `TYPESAFE_API_KEY` no `.env` ou no ambiente e o endpoint atende |
+| **GPT** (OpenAI) | terceiro nível, quando o Jev também não destrava | `OPENAI_API_KEY` no `.env` ou no ambiente e o endpoint atende |
+
+A detecção é a própria ponte (`python tools/jev/jogar.py --detectar`, que imprime um JSON): ela
+diz se a chave existe e se a porta do serviço responde, **nunca o valor da chave**. Apoio
+indisponível aparece desativado, com o motivo ("Sem chave TypeSafe no .env"). O orçamento
+padrão é US$ 0,10, com teto autorizado de US$ 0,50, e só vale com Jev ou GPT marcados; a
+duração em minutos é opcional (zero, sem limite). Ao reabrir o modal, a linha **Última
+sessão** mostra o progresso da sessão anterior ("43,5% · O mirante 2/6 · 412 ações").
 
 **Fica uma janela só (#175).** Pelo botão Testar, o menu não se fecha ao disparar o
 `jogar.py`: espera a ponte criar o arquivo `user://testador_pronto.txt`, o que ela faz na
@@ -35,9 +49,78 @@ reabre o menu com o perfil normal do jogador, para ele não ficar sem janela; o
 fechando tudo.
 
 Não há limite padrão de tempo. F8 ou fechar a janela encerra a sessão;
-`JOGAR_SOL.cmd --seconds 600` limita uma execução a dez minutos. O robô local
-não usa API do Jev nem consome créditos. Seu painel ocupa o canto inferior
-direito e se esconde durante telas e diálogos modais; F8 e F7 continuam funcionando.
+`JOGAR_SOL.cmd --seconds 600` limita uma execução a dez minutos. Só o determinístico não
+usa API nem consome créditos. Com Jev ou GPT marcados, o gasto é estimado localmente e
+barrado no orçamento da sessão. F8 e F7 continuam funcionando com telas e diálogos modais.
+
+A câmera do teste abre um pouco mais afastada (cinco passos do `mv_zoom_out`, de 8 m para
+cerca de 9,75 m) para quem assiste ver o personagem, os moradores e o caminho; a preferência
+de câmera do jogador fora do teste não muda.
+
+### O painel da sessão
+
+Usa o visual do HUD (laca verde-escura, borda dourada suave, canto chanfrado e o tema do
+menu). Fica num canto livre da tela (o primeiro que não encosta na barra de mão, no minimapa
+nem no resto do HUD, grupo `obstaculos_do_hud`; na carga, sai de cima do "CARREGANDO", da
+rosa girando, da marca e do almanaque) e mostra: quem decidiu a ação atual
+(Determinístico, Jev ou GPT, com cor e, no plano, "plano 2 de 3"; em recuperação local,
+"recuperação local"); a **ação em palavras** ("Aproximar de Tonho") com o nome técnico na
+dica; o motivo; a missão em curso e o contador; a **barra de progresso até zerar o jogo**,
+dividida em marcos por capítulo, com a linha "Capítulo: Chegada ao arraial · 13/16 · 43,5% da
+história", o próximo objetivo e a estimativa de ações e tempo restantes no ritmo atual; as
+últimas quatro decisões; os sinais de trava; e o gasto. O **Parar** é um botão pequeno do
+jogo no rodapé, com o F8 numa plaqueta de papel ao lado, como nas dicas de interação.
+
+## Escada de decisão
+
+O determinístico joga sozinho. A camada `tools/jev/escada.py` só observa se ele travou e
+sobe um degrau de cada vez. Qualquer um destes sinais sobe o degrau:
+
+- o passo da missão, o contador (`2/3`), as cadeias, o inventário e as obras não mudam por 25
+  ações ou 90 s de jogo;
+- laço de posição: 20 ações seguidas num raio de 6 m sem progresso;
+- recusa repetida: o mesmo aviso do HUD ("Precisa de Machado.") aparece de novo;
+- a dica do E aponta para um morador que o passo não pede, por 15 ações;
+- `possible_stuck` do vigia do controlador.
+
+Os três últimos são sinais leves: só valem depois de 8 ações sem progresso.
+
+1. **Recuperação local**, barata: renova as tentativas do robô e o põe em modo de recuperação
+   (alvo recalculado pelo pedido atual, ferramenta exigida, material mais próximo) por 12
+   ações.
+2. Sem progresso, o **Jev** recebe um contexto enxuto (passo, requisito, inventário e mão,
+   últimas 10 ações, recusas, alvos próximos) e devolve um **plano de 3 ações**. O
+   determinístico executa o plano.
+3. Se o progresso anda, volta ao determinístico e o contador zera. Se não anda, o **GPT**
+   recebe o mesmo contexto mais o plano que falhou e devolve outro (2 a 5 ações).
+4. Se o GPT também falha, a sessão registra o **bloqueio** (passo, posição, requisito,
+   inventário, recusas, tentativas e a captura final) e encerra com `blocked_step`; não há
+   atalho de teste que pule passo, e o testador nunca altera a missão.
+
+Freios de custo: no máximo 2 chamadas do Jev e 1 do GPT por passo de missão (uma resposta
+inválida repete o mesmo apoio dentro do teto), 15 s mínimos entre dois pedidos, reserva de
+orçamento antes de cada chamada (a mesma conta do modo Jev) e o painel mostrando quando e por
+que escalou. Sem Jev nem GPT marcados a escada só faz a recuperação local; nunca encerra.
+
+**Aprendizado barato:** quando um apoio destrava um passo, o par (sinais, plano que
+funcionou) vai para `aprendizado.json` da sessão e para o relatório, como candidato a regra
+nova do determinístico.
+
+`--escada-simulada` roda a escada com planos locais no lugar do Jev e do GPT (zero chamadas
+e custo zero), para ver o painel e o relatório sem gastar crédito. As chamadas reais ao Jev
+(`step_1..step_3`, uma escolha por posição do plano) e ao GPT (JSON com `plan` e `reason`)
+foram escritas e testadas só com respostas falsas (`tools/jev/test_escada.py`): o formato
+precisa de uma sessão curta real para ser conferido, e a tarifa do GPT em `jogar.py` deve ser
+confirmada antes.
+
+## Progresso até zerar o jogo
+
+O painel e o `relatorio.md` medem quanto falta para zerar a história implementada: os passos
+cumpridos das cadeias de enredo (`main`) sobre o total delas, lidos do estado das cadeias de
+missão (`cadeia_de_missoes.gd`). Cada cadeia é um capítulo e um marco na barra. O relatório
+traz a porcentagem final, o capítulo, o ritmo (ações e tempo por passo e a estimativa até
+zerar), o **ponto mais distante** da sessão, a curva progresso × ações e quem destravou cada
+capítulo (determinístico, Jev ou GPT).
 
 ## Como decide
 

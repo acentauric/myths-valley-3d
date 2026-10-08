@@ -1,8 +1,19 @@
 # Jev jogando o vale
 
-O modo local **Teste automático**, sem API, está documentado em
+O modo local **Teste automático** está documentado em
 [AUTOPLAYER.md](../../docs/testes/AUTOPLAYER.md). Inicie por `JOGAR_SOL.cmd`
-ou pelo botão do menu de desenvolvimento.
+ou pelo botão **Testar** do menu de desenvolvimento, que abre o modal com o
+determinístico, o Jev e o GPT em escada (o Jev e o GPT só entram quando o
+determinístico trava, sob o orçamento da sessão).
+
+```powershell
+python tools/jev/jogar.py --detectar                      # apoios disponíveis, sem expor chave
+python tools/jev/jogar.py --robot --apoio-jev --budget 0.10   # determinístico + Jev (gasta crédito)
+python tools/jev/jogar.py --robot --apoio-jev --apoio-gpt --budget 0.50
+python tools/jev/jogar.py --robot --apoio-jev --apoio-gpt --escada-simulada --seconds 600   # sem API
+python tools/jev/test_escada.py                           # escada, progresso e detecção, sem rede
+```
+
 O relatório `relatorio.md` na pasta da sessão registra tempos, movimentos,
 decisões e bloqueios; atualiza a cada 30 segundos e no encerramento.
 

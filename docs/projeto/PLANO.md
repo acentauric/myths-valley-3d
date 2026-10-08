@@ -83,6 +83,17 @@ do testador respeita waypoints e exige apoio contínuo para seguir em reta.
 com captura final, código Godot 0 e custo zero; 87 testes Python passam.
 Evidência em [NAVEGACAO_FAZENDA.md](../testes/NAVEGACAO_FAZENDA.md).
 
+A #183 acrescenta ao testador a escada determinístico, Jev e GPT, com o modal do
+botão Testar, o painel com quem decidiu e a barra de quanto falta para zerar o
+jogo, e o relatório de escalonamentos e progresso. O determinístico segue como
+base e a IA só entra quando ele trava, sob o orçamento da sessão; as chamadas
+reais ao Jev e ao GPT estão escritas e validadas com respostas falsas
+(`tools/jev/test_escada.py`, `tests/testador_sessao.gd`), à espera de uma sessão
+curta real autorizada. A #174 veste o painel dessa sessão com o visual do HUD
+(laca, filete de ouro, Cinzel e Cormorant), a ação em palavras e o Parar com a
+tecla numa plaqueta, fora do CARREGANDO e do HUD do vale. Documentação em
+[AUTOPLAYER.md](../testes/AUTOPLAYER.md).
+
 A #154 aponta o passo de entrada à soleira externa real, em vez do centro
 da casa; Pedro espera ao lado da passagem. Os portões casa, casa_procedural
 e missões passam. O mutante que restaura o alvo na parede reprova, e a

@@ -196,6 +196,38 @@
   `follow_pedro` sai das ações e o Pedro é abordado como morador no posto dele, com
   limite de tentativas (#191).
 
+- **O painel do teste automático ganha o visual do HUD.** Deixa de ser a caixa escura
+  padrão do Godot: fundo de laca verde-escura, borda dourada suave e canto chanfrado,
+  o tema do menu (Cinzel e Cormorant), título curto em destaque ("Testando") com a
+  etiqueta de quem decidiu ao lado e, abaixo, a contagem de ações e o tempo. A ação
+  atual aparece em palavras de jogador ("Aproximar de Tonho", "Andar para a frente"),
+  com o nome técnico só na dica ao passar o mouse e no relatório. O Parar vira um botão
+  do jogo, pequeno, com o F8 numa plaqueta de papel como nas dicas de interação. Na
+  tela de carregamento o painel sai de cima do "CARREGANDO", da rosa girando, da marca
+  e do almanaque, e no vale deixa livres a barra de mão, o minimapa e o resto do HUD.
+  Textos em português, inglês e espanhol (#174).
+
+- **O botão Testar abre um modal com o determinístico, o Jev e o GPT em escada, e o
+  painel da sessão mostra quem decidiu e quanto falta para zerar.** O modal usa o
+  cabeçalho dos outros: o determinístico é a base e está sempre ligado; o Jev e o
+  GPT aparecem como opção marcável, desativada e explicada quando a chave não
+  existe ou o serviço não responde ("Sem chave TypeSafe no .env"), com orçamento
+  (padrão US$ 0,10, teto US$ 0,50) e duração opcionais; a ponte só diz se a chave
+  existe, nunca o valor. Na sessão, o determinístico joga sozinho e, ao travar (25
+  ações ou 90 s sem progresso, laço de posição, a mesma recusa duas vezes, o E mirando
+  quem a missão não pede, `possible_stuck`), faz primeiro uma recuperação local e só
+  depois pede ao Jev um plano curto, ao GPT outro com o plano que falhou, e por fim
+  registra o bloqueio; no máximo 2 chamadas do Jev e 1 do GPT por passo, sob o orçamento
+  da sessão, e o que destravou vira candidato a regra nova. O painel traz o nível que
+  decidiu, a ação em palavras, o motivo, a missão, as últimas quatro decisões, o gasto,
+  um "F8 parar" pequeno e a barra de quanto falta para zerar o jogo, com um marco por
+  capítulo, o capítulo atual, o próximo objetivo e a estimativa de ações e tempo; fica
+  no canto livre do HUD. O relatório registra cada escalonamento (quem, por quê,
+  custo), o bloqueio, o aprendizado, o progresso e o ponto mais distante, e a câmera
+  do teste abre mais afastada. As chamadas ao Jev e ao GPT foram escritas e testadas só
+  com respostas falsas, e `--escada-simulada` roda a escada sem crédito; nenhuma chamada
+  paga foi feita (#183).
+
 - **Todo campo de Ajustes tem o "?" de ajuda, e "Passos na água" ganha o ↺.** O campo
   era montado à mão, com um botão Ouvir que encurtava o seletor: agora é uma escolha
   como as vizinhas (Original ou Novos, ↺ volta a Original) e trocar a opção já toca a

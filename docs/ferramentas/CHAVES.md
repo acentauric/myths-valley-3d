@@ -24,4 +24,10 @@ configurável de US$ 0,50 por `--budget`, pela tarifa publicada
 configurada na ponte, sem limite padrão de tempo ou chamadas. `--seconds` e
 `--calls` acrescentam limites opcionais. `--offline --seconds 15` permite
 validar os controles sem usar a API ou crédito.
+O botão **Testar** do menu usa a mesma ponte para a escada do testador automático:
+o Jev (TypeSafe) e o GPT (`OPENAI_API_KEY` e, se quiser trocar o modelo,
+`OPENAI_TEXT_MODEL`) só entram quando o determinístico trava. O modal pergunta à
+ponte (`jogar.py --detectar`) se cada chave existe e se o serviço responde, e nunca
+recebe o valor. O GPT só é chamado com `--apoio-gpt` (ou a opção marcada no modal),
+sob o mesmo orçamento da sessão.
 Operação, limites e relatórios estão em [tools/jev/README.md](../../tools/jev/README.md).
