@@ -287,6 +287,16 @@ func larga_pronta() -> bool:
 	return _larga_pronta
 
 
+## O mapa e a região da malha larga são do servidor de navegação: devolvidos ao sair, ou vazam.
+func _exit_tree() -> void:
+	if _regiao_larga.is_valid():
+		NavigationServer3D.free_rid(_regiao_larga)
+		_regiao_larga = RID()
+	if _mapa_largo.is_valid():
+		NavigationServer3D.free_rid(_mapa_largo)
+		_mapa_largo = RID()
+
+
 ## O caminho só pela malha larga, cru (sem as emendas), para os portões medirem.
 func caminho_largo(de: Vector3, para: Vector3) -> PackedVector3Array:
 	if not _larga_pronta:
