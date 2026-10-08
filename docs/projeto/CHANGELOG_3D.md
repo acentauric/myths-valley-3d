@@ -117,15 +117,21 @@
   `terras_por_posicao`.
 
 - **Todo modal recolhe a interface do vale, e o texto para ler sai da Cormorant fina
-  (#199, parcial).** Arraial, Diário, Teia, Coleção, folheto, menu do Esc, Controles,
+  (#199).** Arraial, Diário, Teia, Coleção, folheto, menu do Esc, Controles,
   Apoios e Ajustes escondem missão, relógio, barras, atalhos, minimapa, dicas e avisos por
   um ponto só (`Prototype.modal_aberto`, a regra da #143 generalizada); os Ajustes ganham
   camada própria. A Identidade e o tema ganham quatro papéis de tipografia: título e
   rótulo (Cinzel), leitura (a sans do HUD, em creme) e ênfase (Cormorant itálico). Em K ›
   Fé, o nome de cada fé vira subtítulo de ouro, o corpo das regras vai para a sans em
   linhas curtas, e o rodapé de teclas vira plaquetas. O cinza apagado de antes (abaixo de
-  4,5:1 sobre a laca) fica mais claro. Portão `modais_escondem_o_hud`. Falta conferir no
-  jogo em zh e nas fichas do Diário que ainda usam a Cormorant itálica.
+  4,5:1 sobre a laca) fica mais claro. Fecha a issue: o chinês ganha fonte de reserva
+  declarada (`Identidade.fonte_cjk`, uma SystemFont com Microsoft YaHei, PingFang, Noto
+  Sans CJK e companhia, só ligada com o jogo em chinês para não mexer na altura de linha
+  do texto latino) na sans de leitura e nas fontes dos papéis; a quantidade da faixa de
+  ingredientes e o "dada por" da ficha do Diário passam a usar os papéis de leitura e de
+  ênfase; e o portão `modais_escondem_o_hud` confere a reserva, a escala de texto dos
+  Ajustes nos quatro papéis e que o rótulo de seção dos Ajustes cabe numa linha em pt, en,
+  es e zh, em todas as abas.
 
 - **O Diário de missões cabe sem rolagem (#202, parcial).** Com uma aba só, a coluna das
   abas some e a página ganha a largura; com várias, ela encolhe. A ficha vira duas
