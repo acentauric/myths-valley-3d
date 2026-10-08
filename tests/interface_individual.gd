@@ -49,11 +49,12 @@ func _run() -> void:
 	conferir(mapa.scale == Vector2.ONE and barra.scale.x < 1.0, "restaurar um preserva o outro")
 	tela.restaurar_componentes()
 	conferir(barra.scale == Vector2.ONE, "restaurar todos")
-	# Padrão por componente (#176): a missão nasce em 80%, o resto em 100%.
+	# Padrão por componente (#176, #178): missão e mão nascem em 80%, o resto em 100%.
 	conferir(is_equal_approx(tela.escala_componente("missao"), 0.8), "a missão nasce em 80%")
-	conferir(tela.padrao_componente("missao") == 1, "o ↺ de Missão volta para 80%")
+	conferir(is_equal_approx(tela.escala_componente("mao"), 0.8), "a mão nasce em 80%")
+	conferir(tela.padrao_componente("missao") == 1 and tela.padrao_componente("mao") == 1, "o ↺ de Missão e de Mão volta para 80%")
 	for chave: String in tela.COMPONENTES:
-		if chave != "missao":
+		if chave != "missao" and chave != "mao":
 			conferir(tela.tamanho_componente(chave) == tela.PADRAO_COMPONENTE, "%s segue em 100%%" % chave)
 	var hud = load("res://scripts/prototipo_3d/prototype_hud.gd").new()
 	root.add_child(hud)

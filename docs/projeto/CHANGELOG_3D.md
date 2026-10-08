@@ -2,6 +2,12 @@
 
 ## Em desenvolvimento — 08/10/2026
 
+- **A barra de mão (1 a 0) nasce menor.** Usa o padrão por componente da missão: a Mão
+  abre em 80% (os dez espaços passam de ~76 para ~61 px em 1080p), o ↺ de Ajustes volta
+  para esse valor, e quem já gravou um tamanho mantém a escolha. Plaquetas, ícones,
+  quantidades, clique, arrastar e tooltip seguem a mesma escala do componente, e a
+  reserva de baixo dos avisos e das dicas acompanha o tamanho novo (#178).
+
 - **O painel de missão nasce menor e abraça o texto.** Cada componente da interface
   passa a ter o próprio tamanho padrão (`Tela.PADROES_COMPONENTE`, 100% para quem não
   está na lista), e a Missão abre em 80%; o ↺ de Ajustes volta para esse valor, e quem
