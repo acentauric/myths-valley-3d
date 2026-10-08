@@ -2,6 +2,13 @@
 
 ## Em desenvolvimento — 08/10/2026
 
+- **Na sessão de teste a câmera não deixa o viajante escondido atrás de um poste.** A cada
+  quadro um raio vai da câmera ao peito e à cabeça dele; se um poste, tronco, parede ou árvore
+  barra, a câmera gira para o lado livre mais próximo com movimento suave, ou aproxima até
+  passar à frente do obstáculo. As capturas do relatório só saem com ele à vista, e encoberto
+  por mais de 1,5 s vira um achado. Só a sessão de teste muda: a câmera do jogo normal e as
+  camadas dela ficam como estão (#201).
+
 - **F7 tira o testador do volante e devolve, sem encerrar a sessão.** Quem assiste pega o
   jogo na mão: o testador para na hora (a decisão em voo é descartada e as teclas que ele
   segurava são soltas), uma faixa vermelha diz "Controle manual · F7 devolve" e o painel

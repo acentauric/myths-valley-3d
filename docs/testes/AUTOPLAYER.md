@@ -67,6 +67,19 @@ entra no relatório como bloqueio. Acabado o tutorial o Pedro não conduz mais: 
 sai do catálogo e ele passa a ser abordado como morador (`approach_MoradorPedro`), no máximo
 seis vezes por pergunta pela próxima cadeia.
 
+**A câmera não esconde o viajante (#201).** Só na sessão de teste (o nó
+`tools/jev/camera_do_teste.gd`, criado pelo `sessao.gd`; o jogo comum e as camadas da câmera
+ficam como estão), a cada quadro um raio vai da câmera ao peito e à cabeça do viajante. Se
+algo opaco barra (poste, tronco, parede, árvore ou chão; morador e bicho não contam), depois
+de 0,2 s a câmera gira em órbita para o lado livre mais próximo, no ritmo máximo de 3,2 rad/s,
+e se nenhum lado serve ela aproxima até passar à frente do obstáculo, nunca abaixo de 1,6 m.
+Livre por 1,5 s, a distância volta ao que era, devagar. Cômodo (câmera de cima) e nado ficam
+de fora. As capturas do relatório só saem com o viajante à vista: encoberto, a câmera é
+reposicionada na hora e o quadro sai uns quadros depois. Encoberto por mais de 1,5 s vira a
+seção "Viajante encoberto pela câmera" do relatório, com o tempo, o lugar e a captura. O
+portão de geometria é `tools/jev/test_camera.gd` (poste, parede, morador), e o trecho de 50
+ações paradas em 2/36 é um caso do `test_robo.py`.
+
 **F7 assume o controle (#206).** Quem assiste pega o jogo na mão sem encerrar a sessão:
 F7 (ou o botão "Assumir o controle") suspende o testador, determinístico, Jev ou GPT. A fila
 dele morre na hora (a decisão em voo é descartada, as teclas que ele segurava são soltas e

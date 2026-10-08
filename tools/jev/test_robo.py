@@ -550,6 +550,46 @@ class PlayerTests(unittest.TestCase):
                      interaction_candidates=[{"source": "Recursos3D", "kind": "log", "target": {"ponto": [1, 0, 1]}}])
         self.assertEqual(bot.choose(dict(state), actions, task), "work_E")
 
+    def test_stuck_wood_at_2_of_36_is_worked_within_a_dozen_actions_instead_of_fifty_waits(self):
+        # O trecho de ~50 ações parado em 2/36 (#201, caso da escada da #183): o testador alternava
+        # explore e wait ao lado do tronco porque a picareta estava na mão e o machado na mochila.
+        bot, state = self.player(), self.axe_in_the_backpack()
+        state["objective"].update(feito=2, total=36, alvo=[1, 0, 1])
+        state.update(interaction_target="Recursos3D", interaction_candidates=[{"source": "Recursos3D", "kind": "log", "target": {"ponto": [1, 0, 1]}}])
+        state["tool_requirement"] = {"alvo": "Tronco", "ferramenta": "machado", "situacao": "na_mochila", "vaga": 12, "dica": "ponha na mão: Machado"}
+        state["last_refusal"] = {"motivo": "Precisa de Machado.", "ferramenta": "machado", "situacao": "na_mochila", "ago_ms": 400}
+        task = {"step": {"meta": {"tipo": "juntar", "item": "lenha", "quantos": 36}}}
+        actions = {name: name for name in ("objective", "inspect_inventory", "close_screen", "confirm_screen", "screen_up", "screen_down",
+                                             "screen_left", "screen_right", "hand_0", "hand_1", "hand_2", "hand_3", "work_E", "interact", "wait", "explore_Praia")}
+        picks = []
+        for _ in range(50):
+            pick = bot.choose(dict(state), actions, task)
+            picks.append(pick)
+            ui = state.get("inventory_screen", {})
+            if pick in ("screen_down", "screen_up", "screen_right", "screen_left"):
+                ui["cursor"] += {"screen_down": 10, "screen_up": -10, "screen_right": 1, "screen_left": -1}[pick]
+            elif pick == "inspect_inventory":
+                state.update(screen="mochila", inventory_screen={"cursor": 0, "held_slot": -1, "chest": []})
+            elif pick == "confirm_screen":
+                if ui["held_slot"] < 0:
+                    ui["held_slot"] = ui["cursor"]
+                else:
+                    self.swap_in_the_screen(state, ui["held_slot"], ui["cursor"])
+                    ui["held_slot"] = -1
+            elif pick == "close_screen":
+                state.pop("screen", None)
+                state.pop("inventory_screen", None)
+            elif pick.startswith("hand_"):
+                state["inventory"]["in_hand"] = state["inventory"]["slots"][int(pick[5:])]["id"]
+                state["tool_requirement"].update(situacao="na_mao", vaga=-1)
+                state["last_refusal"] = {}
+            elif pick in ("work_E", "interact"):
+                break
+        self.assertIn(picks[-1], ("work_E", "interact"), picks)
+        self.assertLessEqual(len(picks), 14, picks)
+        self.assertEqual(state["inventory"]["in_hand"], "machado")
+        self.assertNotIn("wait", picks)
+
     def test_refusal_as_data_selects_the_tool_slot_in_the_bar(self):
         # "Ponha na mão"/"Precisa de" lidos como dado: vale até com o machado de aço, que é da família do machado.
         bot, state = self.player(), self.state()
@@ -775,6 +815,22 @@ class ReportTests(unittest.TestCase):
             self.assertIn("Última ação do testador antes: wait", report)
             self.assertIn("](quadro_0125.jpg)", report)
             self.assertIn("ainda está jogando", report)
+
+    def test_report_lists_the_traveller_hidden_by_the_camera_with_capture(self):
+        # #201: o viajante encoberto além do aceitável vira achado, com tempo, lugar e captura.
+        with tempfile.TemporaryDirectory() as folder:
+            directory = Path(folder)
+            records = [{"kind": "game_ready", "elapsed": 1},
+                       {"kind": "achado", "elapsed": 90, "type": "viajante_encoberto", "duration_s": 2.4, "action": "wait",
+                        "position": [10.0, 0.0, -3.5], "capture": "quadro_0089.jpg"}]
+            (directory / "eventos.jsonl").write_text(chr(10).join(json.dumps(r) for r in records) + chr(10), encoding="utf-8")
+            report = generate(directory).read_text(encoding="utf-8")
+            self.assertIn("## Viajante encoberto pela câmera", report)
+            self.assertIn("encoberto por 2.4 s", report)
+            self.assertIn("](quadro_0089.jpg)", report)
+        with tempfile.TemporaryDirectory() as folder:
+            (Path(folder) / "eventos.jsonl").write_text("", encoding="utf-8")
+            self.assertIn("não ficou encoberto por mais de 1,5 s", generate(Path(folder)).read_text(encoding="utf-8"))
 
     def test_report_without_manual_control_says_so(self):
         with tempfile.TemporaryDirectory() as folder:

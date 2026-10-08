@@ -51,6 +51,9 @@ var manual_captura := ""
 var manual_devolvendo := false
 var faixa_manual: PanelContainer
 var botao_manual: Button
+## A câmera da sessão de teste (#201): desvia de poste, tronco, parede e árvore para o
+## viajante não sumir da tela. Só existe aqui; a câmera do jogo comum não muda.
+var camera_do_teste: Node
 ## As teclas que o testador pode estar segurando quando a mão passa para o humano.
 const TECLAS_DO_TESTADOR := [KEY_W, KEY_A, KEY_S, KEY_D, KEY_E, KEY_F, KEY_V, KEY_SHIFT, KEY_SPACE]
 
@@ -129,6 +132,10 @@ func _run() -> void:
 			# Reuse the game's approach geometry; walking below never calls its teleport helper.
 			jogada = load("res://tests/fixtures/jogada.gd").new(self, cena, null, func(_t): pass, func(_t): pass)
 			jogada.teleporte = false
+			camera_do_teste = load("res://tools/jev/camera_do_teste.gd").new()
+			camera_do_teste.jogador = cena.get("player")
+			camera_do_teste.encoberto_demais.connect(_ao_ficar_encoberto)
+			root.add_child(camera_do_teste)
 			await _post("/ready", {})
 			_capturar()
 		_vigiar_o_relogio()
@@ -1060,6 +1067,17 @@ func _esperar(segundos: float) -> void:
 func _capturar() -> String:
 	if DisplayServer.get_name() == "headless":
 		return ""
+	# SÓ SE CAPTURA COM O VIAJANTE À VISTA (#201): encoberto, a câmera é reposicionada na hora
+	# e o quadro sai depois de ela alcançar o ponto. O nome já vale, para os achados o citarem.
+	if camera_do_teste != null and is_instance_valid(camera_do_teste) and camera_do_teste.liberar_ja():
+		var nome := "quadro_%04d.jpg" % _segundos()
+		ultima_captura = _segundos()
+		_salvar_quadro_depois(nome)
+		return nome
+	return _salvar_quadro()
+
+
+func _salvar_quadro() -> String:
 	var imagem := root.get_texture().get_image()
 	if imagem != null and not imagem.is_empty():
 		# Evidência contínua em JPEG evita encher o disco numa campanha longa.
@@ -1068,6 +1086,26 @@ func _capturar() -> String:
 		ultima_captura = _segundos()
 		return nome
 	return ""
+
+
+## A câmera leva uns quadros para alcançar o ponto novo (o encaixe dela dura três ticks de física).
+func _salvar_quadro_depois(nome: String) -> void:
+	for _quadro in 6:
+		await process_frame
+	var imagem := root.get_texture().get_image()
+	if imagem != null and not imagem.is_empty():
+		imagem.save_jpg(pasta.path_join(nome), 0.85)
+
+
+## O viajante ficou encoberto além do aceitável e a câmera não resolveu: vira achado do relatório.
+func _ao_ficar_encoberto(segundos: float) -> void:
+	var achado := {"type": "viajante_encoberto", "duration_s": snappedf(segundos, 0.1), "action": ultima_acao,
+		"seconds": _segundos(), "position": _vetor(current_scene.get("player").global_position), "capture": _capturar()}
+	achados.append(achado)
+	if achados.size() > 6:
+		achados.pop_front()
+	print("JEV: viajante encoberto por %.1f s apos a acao %s" % [segundos, ultima_acao])
+	_post("/achado", achado)
 
 
 # --- o relógio é do jogador (#192) ----------------------------------------------

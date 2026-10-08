@@ -60,6 +60,15 @@ def manual_line(start, end):
             f"Última ação do testador antes: {last}. {captures}".rstrip())
 
 
+def hidden_line(hidden):
+    """Uma linha do relatório por vez que a câmera não achou lado livre: quanto tempo e a captura."""
+    capture = str(hidden.get("capture", ""))
+    link = f" [{capture}]({capture})" if capture else ""
+    position = ", ".join(f"{float(v):.1f}" for v in hidden.get("position", [])) or "—"
+    return (f"- {float(hidden.get('elapsed', 0)):.1f} s — o viajante ficou encoberto por {float(hidden.get('duration_s', 0)):.1f} s "
+            f"em {position}. Última ação: {cell(hidden.get('action', '?'))}.{link}")
+
+
 def distance(before, after):
     a, b = before.get("position", []), after.get("position", [])
     return math.dist(a, b) if len(a) == len(b) == 3 else 0.0
@@ -80,6 +89,7 @@ def generate(directory, live=True):
     rows, issues, movement = [], [], 0.0
     clock_stops = []
     manual_stretches, manual_open = [], None
+    hidden_traveller = []
     language = ""
     sampled_movement, presentation_seconds = 0.0, 0.0
     stalled, stall_start, stall_goal, stall_count = [], None, "", 0
@@ -104,6 +114,8 @@ def generate(directory, live=True):
                 language = str(event.get("label", ""))
             if kind == "achado" and event.get("type") == "relogio_parado":
                 clock_stops.append(event)
+            if kind == "achado" and event.get("type") == "viajante_encoberto":
+                hidden_traveller.append(event)
             if kind == "manual_control":
                 if event.get("phase") == "start":
                     manual_open = event
@@ -185,6 +197,9 @@ def generate(directory, live=True):
         "Nenhum relógio parado sem tela, fala ou motivo à vista. O testador não pausa nem acelera o relógio."]
     if manual_open is not None:
         manual_stretches.append((manual_open, None))
+    lines += ["", "## Viajante encoberto pela câmera", ""]
+    lines += [hidden_line(hidden) for hidden in hidden_traveller] or [
+        "O viajante não ficou encoberto por mais de 1,5 s. A câmera da sessão desvia de poste, tronco, parede e árvore, e só se captura com ele à vista."]
     lines += ["", "## Controle manual (F7)", ""]
     lines += [manual_line(begin, end) for begin, end in manual_stretches] or [
         "Nenhuma vez o humano assumiu o controle. Cada trecho de F7 vira exemplo para ensinar o determinístico ou para a escada da #183: aqui o testador precisou de ajuda."]
