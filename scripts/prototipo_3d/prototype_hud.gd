@@ -1116,13 +1116,14 @@ func _fit_heading() -> void:
 	if not is_instance_valid(_heading):
 		return
 	var lines := maxi(1, _objective_label.get_line_count())
-	# 52 é onde o texto começa (ver `_montar`); com o nome da missão em cima,
-	# ele desce 22. 14 de respiro embaixo: o painel abraça o texto.
+	# 52 é o y ABSOLUTO onde o texto começa (ver `_montar`; o painel fica em y=18,
+	# então são 34 px abaixo do topo dele); com o nome da missão em cima, ele
+	# desce 22. 14 de respiro embaixo: o painel abraça o texto.
 	var topo := 52.0 + (22.0 if _missao != "" else 0.0)
 	_objective_label.position.y = _heading.position.y + topo - 18.0
 	var altura_texto := lines * _objective_label.get_line_height()
 	_objective_label.size.y = altura_texto
-	var altura := topo + altura_texto + 14.0
+	var altura := topo - 18.0 + altura_texto + 14.0
 	_heading.size.y = altura
 	if is_instance_valid(_house_info_panel):
 		_house_info_panel.position.y = 18.0 + altura * Tela.escala_componente("missao") + 12.0

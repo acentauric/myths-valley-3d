@@ -13,7 +13,7 @@
   está na lista), e a Missão abre em 80%; o ↺ de Ajustes volta para esse valor, e quem
   já gravou um tamanho mantém a escolha. O texto branco do objetivo desce de 17 para
   15 px, o contador "N de M" encosta na borda direita do painel (estava a 34 px, não
-  15) e a sobra embaixo do objetivo cai de 18 para 14 px. O portão
+  15) e a sobra embaixo do objetivo cai de 36 para 14 px (a altura do painel contava o y absoluto do texto como se fosse relativo ao painel, 18 px a mais). O portão
   `interface_individual` confere os padrões (#176).
 
 - **O marcador do jogador no minimapa se lê de relance.** O triângulo dourado, pequeno

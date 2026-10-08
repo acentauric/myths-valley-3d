@@ -70,6 +70,9 @@ func _run() -> void:
 	_conferir(hud._heading.size.y <= 170.0, "o quadro cresceu demais com a tarefa longa: %.0f px" % hud._heading.size.y)
 	_conferir(hud._heading.size.y >= hud._objective_label.position.y - hud._heading.position.y + hud._objective_label.size.y,
 		"a tarefa sai do quadro por baixo")
+	# Sem faixa vazia embaixo do objetivo (#176): no máximo 14 px de respiro (+1 de folga).
+	_conferir(hud._heading.size.y - (hud._objective_label.position.y - hud._heading.position.y + hud._objective_label.size.y) <= 15.0,
+		"sobra faixa vazia embaixo do objetivo: %.0f px" % (hud._heading.size.y - (hud._objective_label.position.y - hud._heading.position.y + hud._objective_label.size.y)))
 
 	# --- 4. SEM MISSÃO ---------------------------------------------------------------
 	hud.set_objective("Explore o vale")
