@@ -51,7 +51,9 @@ var falhas := 0
 const SEGUNDOS_POR_PASSO := 30.0
 ## Teto real para o anúncio sair, que é onde a ferramenta é entregue.
 const SEGUNDOS_PARA_ANUNCIAR := 12.0
-## O teto do resumo de missão no HUD, com a conta "(2/4)" dentro.
+## O teto do resumo de missão no HUD, SEM a conta do fim: "(2/4)", ou o material da obra
+## ("corda de piaçava 1/1, pedra 3/3", 08/10), que é gerada, cabe nas três linhas do quadro
+## (tests/tarefa_no_hud.gd) e não é o resumo escrito à mão que esta régua mede.
 const LETRAS_DO_RESUMO := 60
 
 
@@ -183,9 +185,12 @@ func _run() -> void:
 		# missão (J)." O HUD recebia a fala com o nome na frente.
 		var objetivo := str(current_scene.hud.get("_objective"))
 		var fala := str(passo.get("texto", ""))
-		_conferir(objetivo.length() <= LETRAS_DO_RESUMO,
-			"o objetivo do HUD no passo '%s' tem %d letras, e resumo é até %d: '%s'"
-				% [id, objetivo.length(), LETRAS_DO_RESUMO, objetivo])
+		var sem_a_conta := objetivo
+		if sem_a_conta.ends_with(")") and sem_a_conta.rfind(" (") > 0:
+			sem_a_conta = sem_a_conta.left(sem_a_conta.rfind(" ("))
+		_conferir(sem_a_conta.length() <= LETRAS_DO_RESUMO,
+			"o objetivo do HUD no passo '%s' tem %d letras sem a conta, e resumo é até %d: '%s'"
+				% [id, sem_a_conta.length(), LETRAS_DO_RESUMO, objetivo])
 		_conferir(fala.length() <= LETRAS_DO_RESUMO or not objetivo.contains(fala),
 			"o objetivo do HUD no passo '%s' é a fala inteira: '%s'" % [id, objetivo])
 		if caderno.tem(no_caderno):
