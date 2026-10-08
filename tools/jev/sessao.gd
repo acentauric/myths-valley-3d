@@ -103,6 +103,10 @@ func _material_acessivel(fonte: Node, item: String, de: Vector3) -> Vector3:
 	return fonte.mais_perto_que_rende(item, de)
 
 
+## O índice (pt 0, en 1, es 2, zh 3) do idioma pedido à sessão; sem pedido vale o português.
+var indice_do_idioma := 0
+
+
 func _initialize() -> void:
 	_run.call_deferred()
 
@@ -119,7 +123,7 @@ func _run() -> void:
 		return
 	textos = JSON.parse_string(FileAccess.get_file_as_string("res://tools/jev/textos.json"))
 	idioma = load("res://scripts/prototipo_3d/idioma_menu.gd")
-	_aplicar_idioma_da_sessao(OS.get_environment("MV_JEV_IDIOMA"))
+	indice_do_idioma = maxi(_aplicar_idioma_da_sessao(OS.get_environment("MV_JEV_IDIOMA")), 0)
 	_montar_painel()
 	root.window_input.connect(_ao_entrar_evento)
 	change_scene_to_file("res://scenes/prototipo_3d/inicio.tscn")
@@ -155,6 +159,8 @@ func _run() -> void:
 			camera_do_teste.jogador = cena.get("player")
 			camera_do_teste.encoberto_demais.connect(_ao_ficar_encoberto)
 			root.add_child(camera_do_teste)
+			if not OS.get_environment("MV_JEV_CENARIO").is_empty():
+				await _aplicar_cenario(OS.get_environment("MV_JEV_CENARIO"))
 			await _post("/ready", {})
 			_capturar()
 		_vigiar_o_relogio()
@@ -212,6 +218,137 @@ func _run() -> void:
 	await _post("/stop", {"reason": motivo})
 	_capturar()
 	quit()
+
+
+## O CENÁRIO DE VERIFICAÇÃO (`jogar.py --cenario`): só para provar uma regra do testador sem
+## jogar três horas de campanha. Arruma o estado pelas mesmas propriedades que os portões do
+## jogo usam e deixa o resto para o robô: ele nunca teleporta nem mexe em missão ou item.
+## `lenha` (#207): o tutorial feito, a ponte pedindo os 36 paus, a picareta na mão, o machado
+## só na mochila e o viajante a uns passos do tronco que o marcador aponta.
+func _aplicar_cenario(nome: String) -> void:
+	if not nome in ["lenha", "noite", "varal", "f7"]:
+		push_error("JEV: cenário desconhecido: " + nome)
+		return
+	var vale := current_scene
+	var pedro = vale.get("pedro")
+	var cadeia = vale.get("_cadeias").get("pedro_ponte")
+	var inventario := root.get_node("Inventario")
+	pedro._cadeia.iniciado = true
+	pedro.missao = pedro.MISSOES.size()
+	pedro._cadeia.despedida_feita = true
+	cadeia.iniciado = true
+	for i in cadeia.passos.size():
+		if str((cadeia.passos[i] as Dictionary).get("id", "")) == "ponte_lenha":
+			cadeia.missao = i
+	# O passo se anuncia (objetivo, caderno e a entrega do machado, que depois vai só para a mochila).
+	cadeia.retomar()
+	for i in inventario.ESPACOS:
+		inventario.espacos[i] = {}
+	inventario.espacos[0] = {"id": "balde", "qtd": 1}
+	inventario.espacos[1] = {"id": "picareta", "qtd": 1}
+	inventario.espacos[inventario.ESPACOS_MAO + 2] = {"id": "machado", "qtd": 1}
+	inventario.selecionar(1)
+	inventario.mudou.emit()
+	var jogador: Node3D = vale.get("player")
+	var tronco: Vector3 = cadeia.posicao_do_passo(cadeia.missao)
+	if nome == "varal":
+		await _cenario_varal(vale, jogador)
+		return
+	if nome == "noite":
+		# #192/#191: o tutorial feito, a hora das dez da noite, o fôlego curto e a porta de casa a uns
+		# passos. O robô deve ir deitar, o relógio seguir andando e, de manhã, ele sair pela porta.
+		var porta: Vector3 = root.get_node("Lugares").ponto("casa_de_taipa")
+		root.get_node("Dia").definir_hora(22.0)
+		root.get_node("Energia").definir(18.0)
+		if porta.is_finite():
+			var mundo_da_casa = vale.get("world")
+			jogador.teleportar(mundo_da_casa.ground_position(porta + Vector3(0.0, 0.0, 9.0), 0.1), 0.0)
+	elif tronco.is_finite():
+		var mundo = vale.get("world")
+		jogador.teleportar(mundo.ground_position(tronco + Vector3(6.0, 0.0, 0.0), 0.1), PI * 0.5)
+	await _esperar(1.0)
+	_registrar_cenario(nome, tronco)
+	if nome == "f7":
+		_apertar_f7_no_cenario()
+
+
+## `varal` (#201): o viajante junto do poste do varal da Casa do arraial 5, com a câmera do
+## jogador atrás do poste (o giro em que o raio da câmera ao peito bate no mourão). Depois de
+## uns segundos a câmera da sessão tem de ter girado ou aproximado: o viajante à vista.
+func _cenario_varal(vale: Node, jogador: CharacterBody3D) -> void:
+	var CameraDoTeste = load("res://tools/jev/camera_do_teste.gd")
+	var mundo = vale.get("world")
+	var poste: Vector3 = mundo.ancoras.get("Casa do arraial 5/Varal", Vector3.INF)
+	if not poste.is_finite():
+		push_error("JEV: sem a âncora Casa do arraial 5/Varal")
+		return
+	var espaco: PhysicsDirectSpaceState3D = jogador.get_world_3d().direct_space_state
+	var fora: Array[RID] = [jogador.get_rid()]
+	var escolhido := false
+	for graus in range(0, 360, 20):
+		var lado := Vector3(sin(deg_to_rad(graus)), 0.0, cos(deg_to_rad(graus)))
+		var chao: Vector3 = mundo.ground_position(poste + lado * 2.4, 0.1)
+		jogador.teleportar(chao, 0.0)
+		await physics_frame
+		await physics_frame
+		espaco = jogador.get_world_3d().direct_space_state
+		var pivo := chao + Vector3(0.0, 1.18, 0.0)
+		for giro in range(0, 360, 15):
+			var yaw := deg_to_rad(giro)
+			var camera: Vector3 = CameraDoTeste.posicao_da_camera(pivo, yaw, float(jogador.get("_pitch")), 8.0)
+			if CameraDoTeste.encoberto_de(espaco, camera, chao + Vector3(0, 1.1, 0), chao + Vector3(0, 1.65, 0), fora):
+				jogador.set("_yaw", yaw)
+				escolhido = true
+				break
+		if escolhido:
+			break
+	print("JEV_CENARIO: varal poste=", poste, " encoberto_na_partida=", escolhido)
+	await _esperar(4.0)
+	var camera_viva: Camera3D = jogador.get_viewport().get_camera_3d()
+	var peito: Vector3 = jogador.global_position + Vector3(0, 1.1, 0)
+	var cabeca: Vector3 = jogador.global_position + Vector3(0, 1.65, 0)
+	espaco = jogador.get_world_3d().direct_space_state
+	var ainda: bool = CameraDoTeste.encoberto_de(espaco, camera_viva.global_position, peito, cabeca, fora)
+	print("JEV_CENARIO: varal depois de 4 s encoberto=", ainda, " tempo_encoberto=", camera_do_teste.encoberto_s)
+
+
+## `f7` (#206): a lenha, e um F7 de verdade, entrado pela janela como o teclado faria. Depois de
+## 12 s o F7 assume o controle; 8 s com a mão do humano (o testador não pode agir nem decidir); outro
+## F7 devolve, e o testador recalcula e volta a agir. O relatório conta o trecho (seção "Controle manual").
+func _apertar_f7_no_cenario() -> void:
+	await _esperar(12.0)
+	var acoes_antes := chamadas
+	_enviar_tecla_f7()
+	await _esperar(0.5)
+	var assumiu := manual
+	var posicao_antes: Vector3 = (current_scene.get("player") as Node3D).global_position
+	var inicio := Time.get_ticks_msec()
+	while Time.get_ticks_msec() - inicio < 8000 and not parar:
+		await process_frame
+	var parado: bool = (current_scene.get("player") as Node3D).global_position.distance_to(posicao_antes) < 0.5 and chamadas == acoes_antes
+	_enviar_tecla_f7()
+	var devolveu := false
+	var voltou := false
+	var limite := Time.get_ticks_msec() + 25000
+	while Time.get_ticks_msec() < limite and not parar and not voltou:
+		await process_frame
+		devolveu = devolveu or (not manual and not manual_devolvendo)
+		voltou = devolveu and chamadas > acoes_antes
+	print("JEV_CENARIO: f7 assumiu=", assumiu, " testador_parado_no_manual=", parado, " devolveu=", devolveu, " voltou_a_agir=", voltou)
+
+
+func _enviar_tecla_f7() -> void:
+	for apertada in [true, false]:
+		var evento := InputEventKey.new()
+		evento.keycode = KEY_F7
+		evento.physical_keycode = KEY_F7
+		evento.pressed = apertada
+		Input.parse_input_event(evento)
+		await process_frame
+
+
+func _registrar_cenario(nome: String, tronco: Vector3) -> void:
+	print("JEV_CENARIO: ", nome, " tronco=", tronco)
 
 
 ## O IDIOMA DO JOGADOR atravessa o perfil isolado (#180): `jogar.py --idioma` o manda por
@@ -699,7 +836,9 @@ func _acoes(estado: Dictionary) -> Dictionary:
 		for botao in current_scene.find_children("*", "BaseButton", true, false):
 			if not botao.is_visible_in_tree() or botao.disabled or _e_controle_do_relogio(botao):
 				continue
-			var permitido: bool = str(botao.name) in ["Idioma0", "Vaga1"]
+			# A tela de idioma: o robô confirma o idioma da sessão (#180), nunca outro. Clicar
+			# em "Português" ali regravava a preferência e a partida inteira abria em pt.
+			var permitido: bool = str(botao.name) in ["Idioma%d" % indice_do_idioma, "Vaga1"]
 			var texto_botao := str(botao.get("text"))
 			permitido = permitido or texto_botao in ["JOGAR", "CONTINUAR", "PULAR"]
 			if permitido:

@@ -55,6 +55,23 @@ class PlayerTests(unittest.TestCase):
                 self.assertEqual(bot._leave_room_first(state, {exit_action: "door", target: "go"}, target, "x")[0], exit_action)
             self.assertEqual(bot._leave_room_first(state, {exit_action: "door", "approach_bed": "go"}, "approach_bed", "x")[0], "approach_bed")
 
+    def test_recovery_inside_the_house_leaves_by_the_door_instead_of_probing_the_bed(self):
+        # Acordou em casa com o objetivo lá fora e o robô já em recuperação (ao vivo, 08/10): ele
+        # experimentava o E da cama, respondia "sim" e dormia de novo, manhã após manhã (#191).
+        bot, state = self.player(), self.awake_with_finished_tutorial()
+        state.update(home_interaction="cama", interaction_target="CasaDoJogador", objective={"id": "pedro_ponte_lenha", "alvo": [30, 0, 30]})
+        bot.choose(dict(state), {"wait": "wait"}, {})      # arma os contadores do robô
+        bot.recovery = True
+        context = bot._context(state)
+        for action in ("objective", "gather_lenha", "approach_MoradorPedro"):
+            bot.coverage[(context, action)] = 5          # as rotas diretas já foram tentadas aqui
+        actions = {"exit_home": "door", "interact": "sleep", "face_CasaDoJogador": "bed", "work_E": "work", "objective": "go",
+                   "inspect_journal": "J", "wait": "wait"}
+        task = {"step": {"id": "ponte_lenha", "meta": {"tipo": "juntar", "item": "lenha", "quantos": 36}}}
+        picks = [bot.choose(dict(state), actions, task) for _ in range(3)]
+        self.assertEqual(picks, ["exit_home"] * 3)
+        self.assertNotIn("interact", picks)
+
     def test_target_inside_the_room_is_not_replaced_by_the_door(self):
         bot, state = self.player(), self.awake_with_finished_tutorial()
         state.update(home_interaction="cama", interaction_target="CasaDoJogador", farm={"awaiting_morning": True})

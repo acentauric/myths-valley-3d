@@ -210,6 +210,14 @@ class JogadorAutomatico:
                     return select(action, "Exploração: testar uma seleção/aba ainda não experimentada")
             return select("close_screen", "Exploração: voltar ao mundo")
         self.screen_probes = 0
+        # Em recuperação dentro de um cômodo com tudo o que resta lá fora (#191): a porta vem antes de
+        # experimentar o E da cama, que pergunta "dormir?" e, respondido, vira a noite de novo. Ao
+        # vivo, o robô acordou em casa e dormiu seis manhãs seguidas sem pôr o pé na rua.
+        exit_action = self._room_exit(actions)
+        if (exit_action and (state.get("room") or {}).get("outside_targets") and self.room_exit_tries < 2
+                and not state.get("interaction_target") in ("Recursos3D",)):
+            self.room_exit_tries += 1
+            return select(exit_action, "Exploração: sair pela porta, o que resta fazer esta fora do comodo")
         # A route can cross a collider missing from the navigation mesh. Probe
         # a physically clear direction before retrying another distant route.
         failed = state.get("current_task", {}).get("last_action_failed", [])
@@ -633,8 +641,11 @@ class JogadorAutomatico:
             wanted = craft_event.split(":", 1)[1]
         if state.get("interior") == "casa" and not state.get("screen"):
             outside_goals = {"pedro_roca", "pedro_lenha", "pedro_pedra_do_poco", "pedro_corda", "pedro_poco"}
-            if not task.get("step") or state.get("objective", {}).get("id") in outside_goals or any(
-                    recipe.get("id") == wanted for recipes in state.get("crafting", {}).values() for recipe in recipes):
+            # O objetivo fora do cômodo também vale (a ponte tem a sua lenha, `pedro_ponte_lenha`): a lista
+            # fixa acima não pode ser a única a mandar sair, ao vivo ela deixou o robô dormindo em casa.
+            if (not task.get("step") or state.get("objective", {}).get("id") in outside_goals
+                    or "objective" in (state.get("room") or {}).get("outside_targets", []) or any(
+                    recipe.get("id") == wanted for recipes in state.get("crafting", {}).values() for recipe in recipes)):
                 if "exit_home" in actions:
                     return select("exit_home", "Sair pela soleira real antes de buscar o objetivo externo")
         missing_recipe = next(((station, recipe) for station, recipes in state.get("crafting", {}).items()

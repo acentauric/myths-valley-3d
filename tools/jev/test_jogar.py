@@ -54,6 +54,20 @@ class SpendingTests(unittest.TestCase):
             report = generate(directory).read_text(encoding="utf-8")
             self.assertIn("padrão do jogo", report)
 
+    def test_scenario_is_recorded_in_the_report_and_only_when_asked(self):
+        # `--cenario` (verificação ao vivo): a partida abre no meio de um caso, e o relatório diz isso.
+        from relatorio import generate
+        with tempfile.TemporaryDirectory() as folder:
+            directory = Path(folder)
+            session = Session(directory, {})
+            session.log("session_scenario", name="lenha")
+            report = generate(directory).read_text(encoding="utf-8")
+            self.assertIn("Cenário de verificação: **lenha**", report)
+        with tempfile.TemporaryDirectory() as folder:
+            directory = Path(folder)
+            Session(directory, {})
+            self.assertNotIn("Cenário de verificação", generate(directory).read_text(encoding="utf-8"))
+
     def test_manual_control_is_logged_and_makes_the_robot_replan_on_return(self):
         # F7 (#206): o início só registra; a devolução registra o trecho e manda o robô recalcular.
         from robo import JogadorAutomatico

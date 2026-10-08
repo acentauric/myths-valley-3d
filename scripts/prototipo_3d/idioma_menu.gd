@@ -13,6 +13,11 @@ const ROTULOS := ["Português", "English", "Español", "中文"]
 const SUFIXOS := ["", "_en", "_es", "_zh"]
 
 const EN := {
+	"Madrugada": "Small hours",
+	"Manhã": "Morning",
+	"Tarde": "Afternoon",
+	"Entardecer": "Dusk",
+	"Noite": "Night",
 	"[setas] escolher · [E] arrumar · [F] vestir ou comer · [%s] fechar": "[arrows] choose · [E] arrange · [F] wear or eat · [%s] close",
 	"clique de novo para vestir ou comer · arraste para arrumar · [%s] fechar": "click again to wear or eat · drag to arrange · [%s] close",
 	# Início
@@ -496,6 +501,11 @@ const EN := {
 }
 
 const ES := {
+	"Madrugada": "Madrugada",
+	"Manhã": "Mañana",
+	"Tarde": "Tarde",
+	"Entardecer": "Atardecer",
+	"Noite": "Noche",
 	"[setas] escolher · [E] arrumar · [F] vestir ou comer · [%s] fechar": "[flechas] elegir · [E] ordenar · [F] vestir o comer · [%s] cerrar",
 	"clique de novo para vestir ou comer · arraste para arrumar · [%s] fechar": "haz clic de nuevo para vestir o comer · arrastra para ordenar · [%s] cerrar",
 	"Um vale cheio de histórias.": "Un valle lleno de historias.",

@@ -1552,7 +1552,7 @@ func _ver_se_correu(delta: float) -> void:
 
 
 func _atualizar_relogio() -> void:
-	hud.set_clock("%s\n%s" % [Dia.texto_hora(), PERIODOS.get(Dia.periodo(), "")])
+	hud.set_clock("%s\n%s" % [Dia.texto_hora(), tr(PERIODOS.get(Dia.periodo(), ""))])
 
 
 func _on_periodo_mudou(periodo: String) -> void:
@@ -1710,7 +1710,7 @@ func _adiantar_o_relogio() -> void:
 func _adiantar_uma_hora() -> void:
 	Dia.avancar(1.0)
 	Dia.registrar_no_relogio("adiantou", "tecla")
-	hud.set_notice("Relógio adiantado: %s (%s)" % [Dia.texto_hora(), PERIODOS.get(Dia.periodo(), "")])
+	hud.set_notice("Relógio adiantado: %s (%s)" % [Dia.texto_hora(), tr(PERIODOS.get(Dia.periodo(), ""))])
 
 
 ## A PARTIDA QUE COMEÇA COM O TEMPO EM "PARADA" (escolhido no AJUSTAR, com o

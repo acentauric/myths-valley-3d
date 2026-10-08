@@ -114,6 +114,15 @@ curta real autorizada. A #174 veste o painel dessa sessão com o visual do HUD
 tecla numa plaqueta, fora do CARREGANDO e do HUD do vale. Documentação em
 [AUTOPLAYER.md](../testes/AUTOPLAYER.md).
 
+O testador foi rodado ao vivo, sem API, em quatro cenários (`jogar.py --cenario lenha|noite|varal|f7`,
+08/10): a #207 fecha (com a picareta na mão e o machado na mochila, ele põe o machado na barra,
+seleciona e a lenha sobe de 0 a 17), a #191 fecha (acordou em casa, saiu pela porta e seguiu a
+lenha; o robô não dorme mais de novo em recuperação) e a #192 fecha (a noite virou três vezes com
+o relógio andando antes e depois do amanhecer), e a #206 fecha com um F7 de verdade entrado pela
+janela. A #201 segue aberta (o viajante ainda some atrás de uma palmeira fina e sob o beiral de
+uma casa), e a #175 e a #180 também: o idioma agora atravessa a tela de idioma, mas o motivo do
+robô no painel segue em português.
+
 A #154 aponta o passo de entrada à soleira externa real, em vez do centro
 da casa; Pedro espera ao lado da passagem. Os portões casa, casa_procedural
 e missões passam. O mutante que restaura o alvo na parede reprova, e a

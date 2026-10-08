@@ -100,6 +100,7 @@ def generate(directory, live=True):
     manual_stretches, manual_open = [], None
     hidden_traveller = []
     language = ""
+    scenario = ""
     sampled_movement, presentation_seconds = 0.0, 0.0
     stalled, stall_start, stall_goal, stall_count = [], None, "", 0
     previous_decision = None
@@ -121,6 +122,8 @@ def generate(directory, live=True):
             kind = event.get("kind")
             if kind == "game_ready":
                 start = event.get("elapsed", 0)
+            if kind == "session_scenario":
+                scenario = str(event.get("name", ""))
             if kind == "session_language":
                 language = str(event.get("label", ""))
             if kind == "achado" and event.get("type") == "relogio_parado":
@@ -196,6 +199,7 @@ def generate(directory, live=True):
              f"Tempo registrado: {elapsed:.1f} s; desde o jogo pronto: {max(0, elapsed - start):.1f} s." if start is not None else f"Tempo registrado: {elapsed:.1f} s; carregamento sem marcador de início.",
              f"Ações: {sum(counts.values())}. Deslocamento acumulado entre observações: {movement:.2f} unidades.", "",
              *([f"Idioma da sessão: **{cell(language)}**.", ""] if language else []),
+             *([f"Cenário de verificação: **{cell(scenario)}** (a partida abriu no meio do caso; não é a campanha inteira).", ""] if scenario else []),
              f"Trajeto amostrado durante movimentos: {sampled_movement:.2f} unidades; tempo de decisão/apresentação: {presentation_seconds:.2f} s.", "",
              "O trajeto amostrado soma segmentos a cada meio segundo, incluindo desvios e retornos; não mede cada frame. "
              "O deslocamento soma distâncias entre início e fim das ações; não mede cada curva do trajeto. "

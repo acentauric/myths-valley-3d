@@ -113,7 +113,7 @@ func montar(t: Callable) -> void:
 	_manual.focus_mode = Control.FOCUS_NONE
 	_manual.add_theme_font_size_override("font_size", 12)
 	_manual.add_theme_constant_override("outline_size", 0)
-	_manual.mouse_entered.connect(func() -> void: Audio.efeito("ui_hover"))
+	_manual.mouse_entered.connect(_som_de_passar_o_mouse)
 	_manual.pressed.connect(func() -> void: manual_pedido.emit())
 	caixa.add_child(_manual)
 	var rodape := HBoxContainer.new()
@@ -129,7 +129,7 @@ func montar(t: Callable) -> void:
 	_parar.theme_type_variation = &"BotaoNegativo"
 	_parar.add_theme_font_size_override("font_size", 12)
 	_parar.add_theme_constant_override("outline_size", 0)
-	_parar.mouse_entered.connect(func() -> void: Audio.efeito("ui_hover"))
+	_parar.mouse_entered.connect(_som_de_passar_o_mouse)
 	_parar.pressed.connect(func() -> void: parar_pedido.emit())
 	rodape.add_child(_parar)
 	# Largura fixa, altura do conteúdo; a posição é escolhida por `posicionar`.
@@ -339,3 +339,11 @@ func posicionar(obstaculos: Array) -> void:
 	var tamanho := get_combined_minimum_size()
 	_canto = escolher(janela, tamanho, obstaculos, _canto)
 	position = candidatos(janela, tamanho)[_canto].position
+
+
+## O som de passar o mouse. No --script o autoload `Audio` ainda não é nome global quando este
+## arquivo compila (o `sessao.gd` o carrega por preload), então o nó é buscado na árvore.
+func _som_de_passar_o_mouse() -> void:
+	var audio := get_node_or_null("/root/Audio")
+	if audio != null:
+		audio.efeito("ui_hover")
