@@ -68,7 +68,7 @@ const FUNDO := Color(0.02, 0.03, 0.03, 0.72)
 const PAINEL := Color(0.055, 0.082, 0.070, 0.985)
 const OURO := Identidade.OURO
 const PAPEL := Identidade.TEXTO
-const APAGADO := Color(0.55, 0.58, 0.52)
+const APAGADO := Identidade.COR_LEITURA_APAGADA
 const REALCE := Color(0.13, 0.16, 0.12, 0.9)
 const ESCOLHIDO := Color(0.19, 0.21, 0.15, 0.96)
 
@@ -324,9 +324,7 @@ func _montar() -> void:
 
 	_rodape = Label.new()
 	_rodape.name = "Rodape"
-	_rodape.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_TEXTO, 400))
-	_rodape.add_theme_font_size_override("font_size", 14)
-	_rodape.add_theme_color_override("font_color", APAGADO)
+	Identidade.papel_leitura(_rodape, 14, APAGADO)
 	coluna.add_child(_rodape)
 
 
@@ -566,9 +564,7 @@ func _pagina_da_planta() -> void:
 	if cientifico != "":
 		var latim := Label.new()
 		latim.text = cientifico
-		latim.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_ITALICO, 400))
-		latim.add_theme_font_size_override("font_size", 18)
-		latim.add_theme_color_override("font_color", APAGADO)
+		Identidade.papel_enfase(latim, 18, APAGADO)
 		_pagina.add_child(latim)
 	_pagina.add_child(_filete())
 	for pagina in ficha.get("paginas", []):
@@ -595,9 +591,8 @@ func _filete() -> TextureRect:
 func _corpo(texto: String) -> Label:
 	var rotulo := Label.new()
 	rotulo.text = texto
-	rotulo.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_TEXTO, 400))
-	rotulo.add_theme_font_size_override("font_size", 19)
-	rotulo.add_theme_color_override("font_color", PAPEL)
+	# Texto para ler: a sans do HUD em creme (papel de leitura, #199).
+	Identidade.papel_leitura(rotulo, 18, PAPEL)
 	rotulo.add_theme_constant_override("line_spacing", 4)
 	rotulo.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	rotulo.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -618,9 +613,9 @@ func _linha_da_cadeia(texto: String, conta: String, nivel: int, escolhida: bool)
 	botao.text = "    ".repeat(nivel) + marca + texto
 	if conta != "":
 		botao.text += "    " + conta
-	var fonte := Identidade.FONTE_TITULO if nivel == 0 else Identidade.FONTE_TEXTO
-	botao.add_theme_font_override("font", Identidade.fonte(fonte, 600 if nivel == 0 else 400))
-	botao.add_theme_font_size_override("font_size", 16 if nivel == 0 else 17)
+	botao.add_theme_font_override("font",
+		Identidade.fonte(Identidade.FONTE_TITULO, 600) if nivel == 0 else Identidade.fonte_do_hud())
+	botao.add_theme_font_size_override("font_size", 16 if nivel == 0 else 16)
 	botao.add_theme_color_override("font_color", OURO if nivel == 0 else PAPEL)
 	botao.add_theme_color_override("font_hover_color", Identidade.CREME)
 	for estado in ["normal", "hover", "pressed"]:

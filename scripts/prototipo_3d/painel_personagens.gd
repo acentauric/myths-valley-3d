@@ -615,8 +615,7 @@ func _linhas(linhas: Array) -> void:
 		valor.clip_text = true
 		valor.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 		valor.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		valor.add_theme_font_size_override("font_size", 13)
-		valor.add_theme_color_override("font_color", COR_DETALHE)
+		Identidade.papel_leitura(valor, 13, COR_DETALHE)
 		grade.add_child(valor)
 
 
@@ -935,7 +934,7 @@ func _linha_fala(fala: Dictionary) -> void:
 	texto.max_lines_visible = 2
 	texto.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	texto.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	texto.add_theme_font_size_override("font_size", 13)
+	Identidade.papel_leitura(texto, 13)
 	linha.add_child(texto)
 
 
@@ -1088,8 +1087,8 @@ func _titulo_bloco(texto: String, tamanho: int) -> void:
 	var rotulo := Label.new()
 	rotulo.name = "Titulo"
 	rotulo.text = texto
-	rotulo.add_theme_font_size_override("font_size", tamanho)
-	rotulo.add_theme_color_override("font_color", DOURADO)
+	# Título da ficha: Cinzel em ouro (papel da tipografia, #199).
+	Identidade.papel_rotulo(rotulo, tamanho, DOURADO)
 	_lista.add_child(rotulo)
 
 
@@ -1098,8 +1097,7 @@ func _detalhe(texto: String) -> void:
 	var rotulo := Label.new()
 	rotulo.text = texto
 	rotulo.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	rotulo.add_theme_font_size_override("font_size", 14)
-	rotulo.add_theme_color_override("font_color", COR_DETALHE)
+	Identidade.papel_leitura(rotulo, 14, COR_DETALHE)
 	_lista.add_child(rotulo)
 
 

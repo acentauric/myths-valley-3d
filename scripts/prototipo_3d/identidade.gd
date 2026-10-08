@@ -68,6 +68,133 @@ static func fonte_do_hud() -> FontVariation:
 	return variacao
 
 
+## OS PAPÉIS DA TIPOGRAFIA DOS MODAIS (#199). Quatro funções, cada uma com a sua
+## fonte, em vez de cada tela escolher a fonte que lhe pareceu bonita:
+##
+##   título    Cinzel versalete  — cabeçalhos, o nome grande da ficha, o "FÉ › ..."
+##   rótulo    Cinzel menor, ouro — "ATÉ O PRÓXIMO GRAU", "HOJE", o nome de cada fé
+##   leitura   a sans do HUD     — frase, regra, dica, valor, nome na lista, rodapé
+##   ênfase    Cormorant itálico — só o destaque curto ("Desconhecido")
+##
+## A Cormorant fina é bela no título e cansa no texto corrido: em tela menor ou à
+## distância ela some. Quem tem de ser LIDO usa a sans do HUD, em creme. O mesmo
+## quarteto existe no tema como variações de Label (`TemaMenu`): TituloModal,
+## RotuloSecao, TextoLeitura e Enfase. O tamanho passa por add_theme_font_size_override,
+## então o "Tamanho do texto" dos Ajustes continua valendo para todos.
+const COR_LEITURA := Color("f6ead0")
+## O creme apagado do texto secundário: legível sobre a laca (o cinza de antes,
+## 0,55/0,58/0,52, ficava abaixo de 4,5:1 nos corpos pequenos).
+const COR_LEITURA_APAGADA := Color("cfc7b0")
+const TAMANHO_TITULO_MODAL := 22
+const TAMANHO_ROTULO := 14
+const TAMANHO_LEITURA := 17
+const TAMANHO_ENFASE := 18
+
+
+static func papel_titulo(rotulo: Label, tamanho: int = TAMANHO_TITULO_MODAL, cor: Color = CREME) -> Label:
+	rotulo.add_theme_font_override("font", fonte(FONTE_TITULO, 600, 1))
+	rotulo.add_theme_font_size_override("font_size", tamanho)
+	rotulo.add_theme_color_override("font_color", cor)
+	sombra_texto(rotulo)
+	return rotulo
+
+
+static func papel_rotulo(rotulo: Label, tamanho: int = TAMANHO_ROTULO, cor: Color = OURO) -> Label:
+	rotulo.add_theme_font_override("font", fonte(FONTE_TITULO, 600, 2))
+	rotulo.add_theme_font_size_override("font_size", tamanho)
+	rotulo.add_theme_color_override("font_color", cor)
+	return rotulo
+
+
+static func papel_leitura(rotulo: Label, tamanho: int = TAMANHO_LEITURA, cor: Color = COR_LEITURA) -> Label:
+	rotulo.add_theme_font_override("font", fonte_do_hud())
+	rotulo.add_theme_font_size_override("font_size", tamanho)
+	rotulo.add_theme_color_override("font_color", cor)
+	return rotulo
+
+
+static func papel_enfase(rotulo: Label, tamanho: int = TAMANHO_ENFASE, cor: Color = OURO) -> Label:
+	rotulo.add_theme_font_override("font", fonte(FONTE_ITALICO, 500))
+	rotulo.add_theme_font_size_override("font_size", tamanho)
+	rotulo.add_theme_color_override("font_color", cor)
+	return rotulo
+
+
+## O rodapé de teclas dos modais: "↑↓ ou W/S: andar · P ou Esc: fechar" vira uma
+## fila de plaquetas (uma por tecla) com a ação em leitura ao lado, como os
+## atalhos do HUD, e não texto corrido apagado. Devolve o HFlowContainer vazio, que
+## quebra a linha em janela estreita; `refazer_rodape_de_teclas` o enche.
+static func rodape_de_teclas(texto: String = "", tamanho: int = 14) -> HFlowContainer:
+	var fila := HFlowContainer.new()
+	fila.name = "Rodape"
+	fila.add_theme_constant_override("h_separation", 18)
+	fila.add_theme_constant_override("v_separation", 6)
+	fila.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	fila.set_meta("tamanho_das_teclas", tamanho)
+	refazer_rodape_de_teclas(fila, texto)
+	return fila
+
+
+## Esvazia e enche a fila a partir do texto de sempre ("tecla: ação · tecla: ação"
+## ou "[tecla] ação · [tecla] ação"), para a tradução e as teclas remapeadas
+## continuarem vindo de quem monta a frase.
+static func refazer_rodape_de_teclas(fila: HFlowContainer, texto: String) -> void:
+	for filho in fila.get_children():
+		fila.remove_child(filho)
+		filho.queue_free()
+	var tamanho: int = int(fila.get_meta("tamanho_das_teclas", 14))
+	for par in pares_do_rodape(texto):
+		var item := HBoxContainer.new()
+		item.add_theme_constant_override("separation", 6)
+		item.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		if str(par[0]) != "":
+			var plaqueta := PanelContainer.new()
+			plaqueta.name = "Plaqueta"
+			var estilo := StyleBoxFlat.new()
+			estilo.bg_color = Color(0.16, 0.2, 0.15, 0.95)
+			estilo.border_color = Color(OURO, 0.7)
+			estilo.set_border_width_all(1)
+			estilo.set_corner_radius_all(4)
+			estilo.content_margin_left = 7
+			estilo.content_margin_right = 7
+			estilo.content_margin_top = 1
+			estilo.content_margin_bottom = 2
+			plaqueta.add_theme_stylebox_override("panel", estilo)
+			plaqueta.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			var tecla := papel_leitura(Label.new(), tamanho, CREME)
+			tecla.name = "Tecla"
+			tecla.text = str(par[0])
+			tecla.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			plaqueta.add_child(tecla)
+			item.add_child(plaqueta)
+		var acao := papel_leitura(Label.new(), tamanho, COR_LEITURA_APAGADA)
+		acao.name = "Acao"
+		acao.text = str(par[1])
+		acao.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		item.add_child(acao)
+		fila.add_child(item)
+
+
+## Parte o rodapé em [teclas, ação]. Os separadores são o "·" entre os pares, o
+## "[tecla] ação" do painel e o "teclas: ação" das teias; o que não tem tecla
+## (um recado) entra com as teclas vazias.
+static func pares_do_rodape(texto: String) -> Array:
+	var saida: Array = []
+	for pedaco in texto.split("·"):
+		var item := pedaco.strip_edges()
+		if item.is_empty():
+			continue
+		if item.begins_with("[") and item.contains("]"):
+			var fim := item.find("]")
+			saida.append([item.substr(1, fim - 1), item.substr(fim + 1).strip_edges()])
+		elif item.contains(": "):
+			var corte := item.find(": ")
+			saida.append([item.substr(0, corte).strip_edges(), item.substr(corte + 2).strip_edges()])
+		else:
+			saida.append(["", item])
+	return saida
+
+
 ## A mesma talha SVG para painéis que desenham a moldura no próprio stylebox.
 static func estilo_moldura(margem_h: float = 40, margem_v: float = 40) -> StyleBoxTexture:
 	var estilo := StyleBoxTexture.new()

@@ -2,7 +2,8 @@ extends RefCounted
 ## Tema da interface na identidade "Crônica do Recôncavo" (menu, modais e HUD): corpo
 ## em Cormorant Garamond, ações em Cinzel versalete sobre laca verde-escura com bordas
 ## de ouro e canto chanfrado. Variações: BotaoCronica e BotaoCronicaNegativo (placas da
-## home), BotaoLegenda (travessia), BotaoNegativo (SAIR), BotaoIcone e BotaoAjuda.
+## home), BotaoLegenda (travessia), BotaoNegativo (SAIR), BotaoIcone e BotaoAjuda; e, nos
+## rótulos, os papéis TituloModal, RotuloSecao, TextoLeitura e Enfase (#199).
 
 const Identidade = preload("res://scripts/prototipo_3d/identidade.gd")
 
@@ -78,6 +79,25 @@ static func criar(fonte: String = "") -> Theme:
 		for corpo in ["OptionButton", "PopupMenu", "LineEdit", "TextEdit", "SpinBox"]:
 			theme.set_font("font", corpo, theme.default_font)
 			theme.set_font_size("font_size", corpo, FONTE_CORPO)
+	# OS PAPÉIS DA TIPOGRAFIA (#199), como variações de Label: o que é título, o que
+	# é rótulo de seção, o que se lê e o que é só ênfase. As mesmas fontes de
+	# `Identidade.papel_*`, para quem monta tela por código e para quem usa o tema.
+	theme.set_type_variation("TituloModal", "Label")
+	theme.set_font("font", "TituloModal", Identidade.fonte(Identidade.FONTE_TITULO, 600, 1))
+	theme.set_font_size("font_size", "TituloModal", FONTE_TITULO_MODAL)
+	theme.set_color("font_color", "TituloModal", Identidade.CREME)
+	theme.set_type_variation("RotuloSecao", "Label")
+	theme.set_font("font", "RotuloSecao", Identidade.fonte(Identidade.FONTE_TITULO, 600, 2))
+	theme.set_font_size("font_size", "RotuloSecao", FONTE_ROTULO)
+	theme.set_color("font_color", "RotuloSecao", Identidade.OURO)
+	theme.set_type_variation("TextoLeitura", "Label")
+	theme.set_font("font", "TextoLeitura", Identidade.fonte_do_hud())
+	theme.set_font_size("font_size", "TextoLeitura", FONTE_CORPO)
+	theme.set_color("font_color", "TextoLeitura", Identidade.COR_LEITURA)
+	theme.set_type_variation("Enfase", "Label")
+	theme.set_font("font", "Enfase", Identidade.fonte(Identidade.FONTE_ITALICO, 500))
+	theme.set_font_size("font_size", "Enfase", Identidade.TAMANHO_ENFASE)
+	theme.set_color("font_color", "Enfase", Identidade.OURO)
 	# Placas do retábulo (home e confirmação de sair): Cinzel maior, canto chanfrado
 	# e brilho dourado no foco — as rosas dos ventos entram por fora (abertura.gd).
 	theme.set_type_variation("BotaoCronica", "Button")

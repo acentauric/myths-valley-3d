@@ -330,6 +330,8 @@ func _ready() -> void:
 		_telas_que_param = 0
 		Dia.soltar(MOTIVO_DA_TELA)
 		_saindo = true
+		hud.esconder_ajustes()
+		_acertar_as_placas()
 		# Trocar o estilo RECARREGA o vale, e o vale recarregado lê a vaga:
 		# sem salvar aqui, o jogador voltaria ao último save.
 		Partida.salvar()
@@ -1731,6 +1733,7 @@ func _open_settings() -> void:
 		_toggle_map()
 	_pause_valley()
 	hud.open_settings()
+	_acertar_as_placas()
 
 
 
@@ -1818,6 +1821,14 @@ func _ao_abrir_a_fala(_quem: String) -> void:
 	_acertar_as_placas()
 
 
+## Há um modal na frente do vale? As telas registradas em `telas` (que já contam a
+## mochila e o baú, abertos por ali) e os Ajustes do HUD, que não são tela.
+func modal_aberto() -> bool:
+	if Mochila.aberta or (hud != null and hud.settings_open()):
+		return true
+	return telas != null and telas.aberta() != ""
+
+
 ## AS PLAQUINHAS DE NOME SÃO DO MUNDO, e somem com o que se põe na frente dele:
 ## uma tela aberta, o cartão da primeira vez e a festa da missão. As três
 ## perguntas num lugar só, porque uma coisa fecha com a outra ainda na tela — o
@@ -1825,11 +1836,14 @@ func _ao_abrir_a_fala(_quem: String) -> void:
 ## aberto —, e quem devolvesse as placas por conta própria as acenderia por cima
 ## da que ficou.
 func _acertar_as_placas() -> void:
-	# Mochila e baú são autoloads em outra camada. Ocultar o ancestral do
-	# HUD recolhe também minimapa, atalhos, dicas e avisos sem reativar filhos
-	# expirados quando a tela fecha (#143).
+	# TODO MODAL RECOLHE A INTERFACE DO VALE (#143, #199). Mochila, baú, Arraial,
+	# Diário, Teia, Coleção, folheto, menu do Esc, Controles, Apoios e Ajustes são
+	# todos camadas à parte; ocultar o ancestral do HUD recolhe também missão,
+	# relógio, barras, atalhos, minimapa, dicas, avisos e a seta, sem reativar
+	# filhos expirados quando a tela fecha. A regra mora SÓ aqui: tela nova que
+	# entra em `telas` já a herda. O mapa (M) tem a dele em `hud.set_map_open`.
 	if hud_layer != null:
-		hud_layer.visible = not Mochila.aberta
+		hud_layer.visible = _saindo or not modal_aberto()
 	if placas == null:
 		return
 	var coberto: bool = Dialogo.ativo or (telas != null and telas.aberta() != "") \
@@ -1953,6 +1967,8 @@ func _ask_return_to_menu() -> void:
 
 func _on_menu_cancelled() -> void:
 	_retomar_o_vale()
+	# Os Ajustes fecharam por aqui: a interface do vale volta se nada mais cobre.
+	_acertar_as_placas()
 
 
 ## Volta ao menu com a tela de carregamento (o menu monta o vale de novo ao abrir).
@@ -1960,6 +1976,7 @@ func _return_to_menu() -> void:
 	if _saindo:
 		return
 	_saindo = true
+	_acertar_as_placas()
 	Partida.salvar()
 	get_tree().paused = false
 	player.set_captured(false)

@@ -37,7 +37,7 @@ const TAMANHO := Vector2(760, 620)
 const ALTURA_DA_LINHA := 38.0
 const LARGURA_DA_TECLA := 132.0
 const COR_FUNDO := Color(0.055, 0.082, 0.070, 0.985)
-const COR_APAGADA := Color(0.55, 0.58, 0.52)
+const COR_APAGADA := Identidade.COR_LEITURA_APAGADA
 
 var aberta := false
 
@@ -135,8 +135,7 @@ func _montar() -> void:
 	_rodape = Label.new()
 	_rodape.name = "Rodape"
 	_rodape.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_rodape.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_TEXTO, 400))
-	_rodape.add_theme_font_size_override("font_size", 14)
+	Identidade.papel_leitura(_rodape, 14, COR_APAGADA)
 	_rodape.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	coluna.add_child(_rodape)
 

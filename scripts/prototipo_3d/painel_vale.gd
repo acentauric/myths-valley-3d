@@ -572,9 +572,7 @@ func _montar() -> void:
 	_rolagem.add_child(_lista)
 
 	_dica = Label.new()
-	_dica.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_TEXTO, 400))
-	_dica.add_theme_font_size_override("font_size", 18)
-	_dica.add_theme_color_override("font_color", COR_TEXTO)
+	Identidade.papel_leitura(_dica, 18, COR_TEXTO)
 	_dica.add_theme_constant_override("line_spacing", 3)
 	_dica.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_dica.custom_minimum_size = Vector2(0, 52)

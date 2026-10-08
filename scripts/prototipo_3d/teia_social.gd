@@ -43,7 +43,7 @@ const Atalhos = preload("res://scripts/prototipo_3d/atalhos.gd")
 
 const COR_FUNDO := Color(0.055, 0.082, 0.070, 0.985)
 const COR_TEXTO := Identidade.TEXTO
-const COR_APAGADA := Color(0.55, 0.58, 0.52)
+const COR_APAGADA := Identidade.COR_LEITURA_APAGADA
 const COR_BOM := Color("9fd89a")
 const COR_RUIM := Identidade.TERRACOTA
 
@@ -89,7 +89,7 @@ var _caixa: PanelContainer
 var _caminho: Label
 var _coluna: VBoxContainer
 var _pagina: VBoxContainer
-var _rodape: Label
+var _rodape: HFlowContainer
 
 var _quem := ""
 
@@ -179,11 +179,8 @@ func _montar() -> void:
 	_pagina.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	rolagem_pagina.add_child(_pagina)
 
-	_rodape = Label.new()
-	_rodape.name = "Rodape"
-	_rodape.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_TEXTO, 400))
-	_rodape.add_theme_font_size_override("font_size", 14)
-	_rodape.add_theme_color_override("font_color", COR_APAGADA)
+	# Rodapé de teclas em plaquetas e leitura, como os atalhos do HUD (#199).
+	_rodape = Identidade.rodape_de_teclas()
 	coluna_geral.add_child(_rodape)
 
 
@@ -210,8 +207,8 @@ func _encher() -> void:
 	_caminho.text = "O arraial  ›  %s" % _nome_de(_quem)
 	_montar_coluna()
 	_montar_pagina()
-	_rodape.text = "↑↓ ou W/S: andar    ·    %s ou Esc: fechar" \
-		% OS.get_keycode_string(Atalhos.tecla("arraial"))
+	Identidade.refazer_rodape_de_teclas(_rodape, tr("↑↓ ou W/S: andar    ·    %s ou Esc: fechar") \
+		% OS.get_keycode_string(Atalhos.tecla("arraial")))
 
 
 func _nome_de(id: String) -> String:
@@ -242,7 +239,8 @@ func _montar_coluna() -> void:
 		linha.custom_minimum_size = Vector2(0, ALTURA_DA_LINHA)
 		linha.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		linha.text = "%s\n%s" % [_nome_de(id), Afinidade.nome_do_grau(id)]
-		linha.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_TEXTO, 500))
+		# Nome e grau na lista são para ler: a sans do HUD (#199).
+		linha.add_theme_font_override("font", Identidade.fonte_do_hud())
 		linha.add_theme_font_size_override("font_size", 15)
 		linha.add_theme_color_override("font_color",
 			Identidade.CREME if escolhido else COR_TEXTO)
@@ -361,19 +359,14 @@ func _montar_pagina() -> void:
 	topo.add_child(quem)
 	var nome := Label.new()
 	nome.text = _nome_de(_quem)
-	nome.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_TITULO, 600, 1))
-	nome.add_theme_font_size_override("font_size", 26)
-	nome.add_theme_color_override("font_color", Identidade.CREME)
-	Identidade.sombra_texto(nome)
+	Identidade.papel_titulo(nome, 26)
 	quem.add_child(nome)
 	var coracoes := _coracoes(Afinidade.grau(_quem), LADO_DO_CORACAO)
 	coracoes.name = "Coracoes"
 	quem.add_child(coracoes)
 	var grau := Label.new()
 	grau.text = Afinidade.nome_do_grau(_quem)
-	grau.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_ITALICO, 400))
-	grau.add_theme_font_size_override("font_size", 18)
-	grau.add_theme_color_override("font_color", Identidade.OURO)
+	Identidade.papel_enfase(grau)
 	quem.add_child(grau)
 	var fe_dele := str(Afinidade.fe_de(_quem))
 	if fe_dele != "" and Afinidade.grau(_quem) >= GRAU_DO_GOSTO:
@@ -535,9 +528,7 @@ func _titulo_de_bloco(texto: String) -> Control:
 	caixa.add_child(respiro)
 	var rotulo := Label.new()
 	rotulo.text = texto.to_upper()
-	rotulo.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_TEXTO, 600))
-	rotulo.add_theme_font_size_override("font_size", 13)
-	rotulo.add_theme_color_override("font_color", Identidade.OURO)
+	Identidade.papel_rotulo(rotulo, 14)
 	caixa.add_child(rotulo)
 	return caixa
 
@@ -750,12 +741,11 @@ func _nomes_dos_itens(itens: Array) -> String:
 	return ", ".join(nomes)
 
 
+## Texto para ler: a sans do HUD, em creme (papel de leitura, #199).
 func _corpo(texto: String) -> Label:
 	var rotulo := Label.new()
 	rotulo.text = texto
-	rotulo.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_TEXTO, 400))
-	rotulo.add_theme_font_size_override("font_size", 18)
-	rotulo.add_theme_color_override("font_color", COR_TEXTO)
+	Identidade.papel_leitura(rotulo)
 	rotulo.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	rotulo.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	return rotulo

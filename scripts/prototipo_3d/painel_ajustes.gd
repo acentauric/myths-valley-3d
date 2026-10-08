@@ -660,8 +660,9 @@ func _abrir_campo() -> Container:
 
 ## Título de seção de uma coluna, com respiro antes dos campos.
 func _secao(titulo: String) -> void:
-	var rotulo := _texto(titulo, TemaMenu.FONTE_SECAO)
-	rotulo.add_theme_color_override("font_color", Color("e2c47f"))
+	# Rótulo de seção: Cinzel menor em ouro (papel da tipografia, #199).
+	var rotulo := _texto(titulo, TemaMenu.FONTE_ROTULO)
+	Identidade.papel_rotulo(rotulo, TemaMenu.FONTE_ROTULO, Color("e2c47f"))
 	_pai.add_child(rotulo)
 	var respiro := Control.new()
 	respiro.custom_minimum_size.y = 6
@@ -724,7 +725,8 @@ func _abrir_ajuda(titulo: String, chave: String) -> void:
 	corpo.text = AjudaMenu.texto(chave, IdiomaMenu.indice())
 	corpo.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	corpo.custom_minimum_size.x = 584
-	corpo.add_theme_font_size_override("font_size", TemaMenu.FONTE_CORPO)
+	# A explicação é para ler: a sans do HUD em creme (#199).
+	Identidade.papel_leitura(corpo, TemaMenu.FONTE_CORPO)
 	coluna.add_child(corpo)
 	fechar.grab_focus()
 
