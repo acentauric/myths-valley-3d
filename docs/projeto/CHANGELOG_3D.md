@@ -23,6 +23,22 @@
   cada quatro golpes, e a dica conta o trabalho ("Lajedo 12/96"); a seta de "junte
   pedras" não aponta a pedra grande a quem só tem a picareta de ferro. As árvores já
   seguiam a regra (madeira branca, de lei e dura, com nível e aço).
+- **O documento das falas** (08/10: "um documento estruturando todas as falas dos
+  personagens, de diálogo e de missão, para validar e de referência para a geração de áudio;
+  depois, analise a linha do tempo de cada fala contra a história e a mecânica").
+  `docs/falas/FALAS.xlsx` (e `.csv`) reúne as 1.291 falas — 659 que tocam no 3D e 632
+  herdadas do 2D, marcadas como "não toca" — na ordem da história, com 39 colunas: fase e
+  quando abre, quem diz e como toca, o passo e a mecânica dele, os quatro idiomas, a voz, o
+  arquivo e o TTS, checagens automáticas (tradução, teclas, números contra a meta, hora do
+  dia, recém-chegado, áudio) e a análise. Abas de problemas, alertas, personagens (o tamanho
+  do que falta gravar), missões na ordem em que abrem e áudios sem fala. O gerador é
+  `tools/falas/gerar_documento_das_falas.js`, que lê as falas de onde o jogo as lê e escreve
+  o .xlsx sem dependência; a revisão mora em `docs/falas/analise_das_falas.json`, por ID, e
+  o hash do texto diz quando uma fala revisada mudou. A revisão apontou 87 falas (8 de
+  prioridade alta: a pedra do poço e da carroça no lajedo que pede aço, o cercado do
+  cemitério que não diz que corda é lenha, a dívida do Tonho que zera sem pagamento e é paga
+  duas vezes, o Cosme que embarca num saveiro de amanhã e não sai do vale); o resumo está em
+  `docs/falas/README.md`.
 - **O resumo do passo conta o material** (07–08/10: "na parte de levar tábuas e pedras ao
   Damião não informou o quantitativo; mesmo que o jogador já tenha no inventário, esse dado
   deve ser informado"; "a missão continuou indicando para construir a cerca como se eu
