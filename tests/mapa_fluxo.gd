@@ -147,7 +147,10 @@ func _run() -> void:
 	var start_position: Vector3 = player.global_position
 	player.set_captured(true)
 	Input.action_press("mv_forward")
-	await _physics_frames(90)
+	# O andar leva para dentro do vale, de costas para o píer: o corpo faz primeiro a
+	# meia-volta (GIRO DO CORPO, #209: o passo espera o corpo virar), e só depois pega
+	# o passo inteiro. Daí os 150 quadros, e não os 90 de quando o corpo girava de uma vez.
+	await _physics_frames(150)
 	Input.action_release("mv_forward")
 	print("MAPA_WALK mode=", Input.mouse_mode, " start=", start_position, " end=", player.global_position, " floor=", player.is_on_floor())
 	_assert(player.global_position.distance_to(start_position) > 3.0, "caminhada")
@@ -170,6 +173,9 @@ func _run() -> void:
 	var road_target := _closest_point_on_road(region.get("_roads")[0].points, Vector2(player.global_position.x, player.global_position.z))
 	var route := road_target - Vector2(player.global_position.x, player.global_position.z)
 	player._yaw = atan2(-route.x, -route.y)
+	# O corpo já de frente para o rumo da tecla (o andar da câmera para a frente é _yaw + PI):
+	# o teste mede a travessia, não a meia-volta do giro do corpo (#209).
+	player.visual.rotation.y = player._yaw + PI
 	player._apply_camera()
 	player.set_captured(true)
 	Input.action_press("mv_forward")
