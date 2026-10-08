@@ -3,11 +3,10 @@
   "id": "viajante",
   "nome": "Viajante",
   "voz": {
-    "id": "TxGEqnHWrfWFTfGW9XjX",
-    "nome": "Josh",
+    "id": "oArP4WehPe3qjqvCwHNo",
+    "nome": "Matheus (Clear)",
     "modelo": "eleven_v3"
   },
-  "voz_pendente": "Os áudios viajante_* (#187) esperam a geração no ElevenLabs: a sessão que escreveu as falas não tinha a chave. Rode tools/elevenlabs/gerar-falas-moradores.ps1 -Morador viajante -Limite 1 numa máquina com a chave, OUÇA a voz (Josh é a escolha provisória: jovem, da cidade; troque o `voz` aqui e use -Forcar se não servir), rode o resto, importe os mp3 e tire esta marca (o portão reprova a que sobrar).",
   "pausa": 20,
   "falas": [
     {

@@ -2,6 +2,16 @@
 
 ## Em desenvolvimento — 08/10/2026
 
+- **O Pedro, o viajante e quem dá as dicas passam a falar em voz.** Os 67 áudios pt-BR que
+  as sessões anteriores deixaram pendentes foram gerados no ElevenLabs e normalizados em -18 LUFS:
+  as 6 frases de atenção e as 10 situacionais do Pedro (#198, #179), as 19 falas do viajante (#187),
+  que ganhou a voz "Matheus (Clear)" no lugar do Josh provisório, e as 32 dicas dos moradores, cada
+  uma na voz de quem a diz (#204). O `voz_pendente` saiu dos três arquivos de dados. Com a voz
+  pronta e o portão `dicas_dos_moradores` cobrindo o 2/36 da lenha (parado no passo, a dica do passo
+  chega, o morador vem, fala e volta), a #204 fecha. A voz do viajante ainda precisa ser ouvida
+  por uma pessoa (#187), e a frase de atenção do Pedro ainda não foi vista com o testador
+  automático (#198).
+
 - **Primeiros clipes do Mixamo nos moradores.** Seis animações do Mixamo entram
   redirecionadas para o esqueleto Tripo de cada um (`tools/prototipo_3d/mixamo/redirecionar.gd`,
   só rotações e o quadril, pé no chão, no lugar): o Pedro treina capoeira no posto quando o

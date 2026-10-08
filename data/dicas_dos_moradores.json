@@ -1,6 +1,5 @@
 {
   "observacao": "AS DICAS DOS MORADORES (#204): quando o jogador está perdido, um morador coerente com o assunto vem até ele, diz UMA frase curta (voz pt-BR do próprio morador e balão curto) e volta à rotina (scripts/prototipo_3d/dicas_dos_moradores.gd). `situacoes` é o que o código reconhece (o nome é o que `situacao_do_passo`, `_situacao_da_recusa` e os outros devolvem): `assunto` é o tema do cooldown (um por assunto, longo, para não virar babá) e `dicas` são as frases, cada uma de um `quem` (o id do morador em npcs_3d.json, que fala com a voz dele). Escolhe-se a do morador mais perto que pode vir; sem ninguém perto, a do Pedro. Texto em pt/en/es; a voz é só pt-BR (dica_<situacao>_<quem>, gerada por tools/elevenlabs/gerar-falas-moradores.ps1 com a voz de cada morador). Sem o mp3 a dica sai só no balão.",
-  "voz_pendente": "Os áudios dica_* (#204) esperam a geração no ElevenLabs: a sessão que escreveu as dicas não tinha a chave. Rode tools/elevenlabs/gerar-falas-moradores.ps1 (sem -Morador, ou -Morador pedro, carpinteiro...) numa máquina com a chave, importe os mp3 e tire esta marca (o portão reprova a que sobrar).",
   "situacoes": {
     "ponha_machado": {
       "assunto": "madeira",

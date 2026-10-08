@@ -13,7 +13,6 @@
       "nome": "Weverton - Youthful, Energetic and Clear",
       "modelo": "eleven_v3"
     },
-    "voz_pendente": "Os áudios pedro_atencao_1 a 6 (#198) e pedro_situacao_* (#179) esperam a geração no ElevenLabs: rode tools/elevenlabs/gerar-falas-moradores.ps1 -Morador pedro numa máquina com a chave e tire esta marca (o portão reprova a que sobrar).",
     "falas": [
       {
         "texto": "Opa! É você o moço da capital, né? O sobrinho do finado. Me chamo Pedro, pescador aqui do arraial.",
