@@ -2,6 +2,24 @@
 
 ## Em desenvolvimento — 08/10/2026
 
+- **O testador automático volta a abrir, e foi rodado ao vivo em quatro cenários.** O painel
+  novo da sessão chamava o autoload `Audio` no `--script`, onde ele ainda não é nome global:
+  nenhuma sessão subia (`Compile Error: Identifier not found: Audio`), e os testes Python não
+  viam isso. Agora o painel busca o `Audio` na árvore. O `jogar.py --cenario` (só para
+  verificação, registrado no relatório) abre a partida no meio de um caso: `lenha` (a ponte
+  pedindo 36 paus, a picareta na mão, o machado só na mochila), `noite` (tutorial feito, dez da
+  noite, fôlego curto), `varal` (o viajante junto do poste do varal da Casa do arraial 5, com a
+  câmera atrás dele) e `f7` (a lenha com um F7 entrado pela janela). Resultados: o robô põe o
+  machado na barra e corta (lenha 0 → 17, #207); acorda em casa, sai pela porta e segue a lenha
+  no dia seguinte, em vez de dormir de novo manhã após manhã — a regra de sair só valia para uma
+  lista fixa de objetivos e não incluía `pedro_ponte_lenha` (#191); o relógio andou antes e
+  depois de três amanheceres (#192); F7 assume, o testador para, F7 devolve e ele recalcula, com o
+  trecho no relatório (#206). Na tela de idioma o robô clicava sempre em "Português" e regravava
+  a preferência: a sessão em English abria toda em português; agora confirma o idioma da sessão
+  (#180). O período do relógio (Manhã, Tarde, Entardecer, Noite, Madrugada) passa a ser
+  traduzido em en/es. Portões `tools/jev/test_idioma_botoes.gd` e, no `test_robo.py`, o do robô
+  que acorda em recuperação e sai pela porta (#207, #191, #192, #206, #180).
+
 - **Primeiros clipes do Mixamo nos moradores.** Seis animações do Mixamo entram
   redirecionadas para o esqueleto Tripo de cada um (`tools/prototipo_3d/mixamo/redirecionar.gd`,
   só rotações e o quadril, pé no chão, no lugar): o Pedro treina capoeira no posto quando o

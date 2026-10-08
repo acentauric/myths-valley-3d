@@ -889,6 +889,12 @@ def main():
     parser.add_argument("--output", type=Path)
     parser.add_argument("--idioma", help="Idioma da sessão (pt, en, es ou zh). O perfil é isolado e só o idioma atravessa; "
                         "sem o parâmetro vale o padrão do jogo.")
+    parser.add_argument("--cenario", choices=("lenha", "noite", "varal", "f7"),
+                        help="Só para verificar o testador: abre a partida já no meio de um caso (lenha: a ponte pede 36 paus, "
+                             "a picareta na mão, o machado só na mochila, perto de um tronco; noite: o tutorial feito, "
+                             "dez da noite, fôlego curto, perto da porta de casa; varal: o viajante junto do poste do varal da "
+                             "Casa do arraial 5, com a câmera atrás dele; f7: a lenha, com um F7 de verdade que assume e devolve o controle). O relatório registra o cenário; "
+                             "sem o parâmetro a sessão é a campanha de verdade.")
     parser.add_argument("--pronto", type=Path,
                         help="Arquivo criado quando a janela do jogo da sessão sobe; o menu que chamou o testador espera por ele para se fechar.")
     parser.add_argument("--voltar-ao-menu", action="store_true",
@@ -929,6 +935,8 @@ def main():
         args.pronto.unlink(missing_ok=True)  # sinal velho de outra sessão não vale
     session = Session(directory, config, args.seconds, args.calls, args.budget, args.offline, args.idle_seconds, language, args.pronto)
     session.sol = args.sol
+    if args.cenario:
+        session.log("session_scenario", name=args.cenario)
     if args.robot:
         from robo import JogadorAutomatico
         session.robot = JogadorAutomatico()
@@ -945,11 +953,13 @@ def main():
     for name in ("APPDATA", "XDG_DATA_HOME", "XDG_CONFIG_HOME"):
         environment[name] = str(profile.resolve())
     for name in list(environment):
-        if "API_KEY" in name or name.startswith("TYPESAFE_") or name == "MV_JEV_IDIOMA":
+        if "API_KEY" in name or name.startswith("TYPESAFE_") or name in ("MV_JEV_IDIOMA", "MV_JEV_CENARIO"):
             del environment[name]
     if language:
         # Só o idioma atravessa o perfil isolado; o sessao.gd o grava no perfil novo.
         environment["MV_JEV_IDIOMA"] = language
+    if args.cenario:
+        environment["MV_JEV_CENARIO"] = args.cenario
     environment.update(MV_JEV_URL=f"http://127.0.0.1:{server.server_port}", MV_JEV_TOKEN=session.token,
                        MV_JEV_OUTPUT=str(directory.resolve()), MV_JEV_SECONDS=str(args.seconds),
                        MV_JEV_BUDGET=str(args.budget), MV_JEV_ROBOT="1" if args.robot else "0", MV_JEV_SOL="1" if args.sol else "0",

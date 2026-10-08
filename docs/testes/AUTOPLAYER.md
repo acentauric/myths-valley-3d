@@ -71,6 +71,31 @@ história", o próximo objetivo e a estimativa de ações e tempo restantes no r
 últimas quatro decisões; os sinais de trava; e o gasto. O **Parar** é um botão pequeno do
 jogo no rodapé, com o F8 numa plaqueta de papel ao lado, como nas dicas de interação.
 
+## Cenários de verificação ao vivo
+
+`python tools/jev/jogar.py --robot --cenario <nome> --seconds N` abre a partida já no meio de um
+caso, para provar uma regra do testador sem jogar a campanha toda. Só existe para verificação:
+o relatório registra "Cenário de verificação" e, sem o parâmetro, a sessão é a campanha de
+verdade. O robô continua sem teleportar nem mexer em missão ou item; quem arruma o estado é o
+`sessao.gd` (`_aplicar_cenario`), pelas mesmas propriedades que os portões do jogo usam.
+
+| Cenário | Estado de partida | O que prova |
+|---|---|---|
+| `lenha` | tutorial feito, a ponte em "Trinta e seis paus", a picareta na mão, o machado só na mochila, a 6 m do tronco do marcador | #207: põe o machado na barra, seleciona e a lenha sobe |
+| `noite` | o mesmo, às 22h, fôlego 18, a 9 m da porta de casa | #192 (o relógio anda antes e depois do amanhecer) e #191 (acorda em casa e sai pela porta) |
+| `varal` | o viajante a 2,4 m do poste do varal da Casa do arraial 5, com a câmera atrás do poste | #201: a câmera da sessão gira para o lado livre |
+| `f7` | como `lenha`; aos 12 s entra um F7 pela janela, 8 s depois outro | #206: assume, o testador para, devolve, recalcula |
+
+Evidência de 08/10/2026 (perfil novo, sem API, custo zero): `lenha` pôs o machado na barra em 6
+ações e a lenha foi de 0 a 17; `noite` virou a noite, acordou às 06h00 do dia 2, saiu pela porta
+(`exit_home`) aos 278 s e seguiu o objetivo, e o relógio andou de 22h a 13h; `f7` imprimiu
+`assumiu=true testador_parado_no_manual=true devolveu=true voltou_a_agir=true` e o relatório
+contou 8,5 s de controle manual. Em `varal` a câmera saiu de trás do poste em menos de 4 s, mas
+dois quadros mostraram o viajante parcialmente coberto por uma palmeira fina e pelo beiral de uma
+casa, que não barram o raio: a #201 segue aberta. A sessão em English mostrou HUD, painel e
+missão em inglês depois do ajuste da tela de idioma; o motivo da decisão ("Aguardar a fala…")
+ainda sai em português.
+
 ## Escada de decisão
 
 O determinístico joga sozinho. A camada `tools/jev/escada.py` só observa se ele travou e
