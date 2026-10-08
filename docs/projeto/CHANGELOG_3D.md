@@ -2,6 +2,8 @@
 
 ## Em desenvolvimento — 08/10/2026
 
+- **O viajante tem voz própria, aprovada de ouvido.** A voz "Viajante (Myths' Valley)", criada no
+  Voice Design do ElevenLabs para ele, substitui a do Damião nas dezenove falas, no sono e no despertar (#187).
 - **O Pedro, o viajante e quem dá as dicas passam a falar em voz.** Os 67 áudios pt-BR que
   as sessões anteriores deixaram pendentes foram gerados no ElevenLabs e normalizados em -18 LUFS:
   as 6 frases de atenção e as 10 situacionais do Pedro (#198, #179), as 19 falas do viajante (#187),
