@@ -22,7 +22,7 @@ fechar a issue: [TRANSICAO_DA_COSTA.md](../testes/TRANSICAO_DA_COSTA.md).
 
 A #9 avança parcialmente com compra/posse nativas: Zefa/Benedito, preços
 históricos, confirmação pelo E, desconto de favor na terra e persistência
-por vaga. O mapa mostra contornos cadastrais por âncora; a vila não se move.
+por vaga. O mapa mostra divisas orgânicas tracejadas por âncora, com legenda de posse ou venda (#203); a vila não se move.
 Compra, afinidade, save, vagas e mapa passam; retirar o consumidor de favor
 reprova. Construção portátil G/E, validação de assentamento e revisão visual
 dos contornos continuam pendentes, portanto a issue permanece aberta.

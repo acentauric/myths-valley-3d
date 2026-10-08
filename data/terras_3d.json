@@ -19,5 +19,11 @@
   "sem_dinheiro_es": "Esta tierra cuesta %d réis. Te faltan %d.",
   "sua": "Sua terra",
   "sua_en": "Your land",
-  "sua_es": "Tu tierra"
+  "sua_es": "Tu tierra",
+  "a_venda": "à venda por %d réis",
+  "a_venda_en": "for sale, %d réis",
+  "a_venda_es": "en venta por %d réis",
+  "de_dono": "de %s",
+  "de_dono_en": "owned by %s",
+  "de_dono_es": "de %s"
 }

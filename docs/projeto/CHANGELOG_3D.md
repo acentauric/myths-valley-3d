@@ -2,6 +2,16 @@
 
 ## Em desenvolvimento — 08/10/2026
 
+- **As divisas de terra no mapa deixam de ser retângulos amarelos soltos (#203).**
+  O lote do cadastro vira um contorno orgânico de 48 pontos, de cantos redondos e
+  ondulação leve por lote, traçado em tracejado fino sépia/ouro (verde-musgo nas suas
+  terras), com preenchimento quase imperceptível. A legenda diz a situação ("Terra da
+  Dona Zefa · à venda por 1800 réis", "· de Seu Benedito", "· Sua terra"), na sans de
+  leitura, com uma plaquinha de casa, placa de venda ou marco, e foge de "Você" e dos
+  marcadores dos lugares. As suas terras e as à venda aparecem sempre; as dos outros só
+  no zoom de perto e somem ao afastar. O minimapa não herda divisas. Portão em
+  `terras_por_posicao`.
+
 - **Todo modal recolhe a interface do vale, e o texto para ler sai da Cormorant fina
   (#199, parcial).** Arraial, Diário, Teia, Coleção, folheto, menu do Esc, Controles,
   Apoios e Ajustes escondem missão, relógio, barras, atalhos, minimapa, dicas e avisos por
