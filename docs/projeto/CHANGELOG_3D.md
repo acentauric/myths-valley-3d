@@ -2,6 +2,19 @@
 
 ## Em desenvolvimento — 08/10/2026
 
+- **O chão perde as quinas retas e as escadinhas.** Na praça e nas ruas da igreja, a terra
+  da rua, o pasto, a areia e a mancha escura junto às casas se encontravam em "L" e em
+  degraus de pixel, porque o mapa de solo pintava retângulos de 1 pixel por unidade e a
+  rua era suavizada pela metade das outras. Agora a pintura é subamostrada (2 x 2 por
+  pixel), toda camada larga tem rampa de ~4 u (a rua incluída), a copa de cada árvore é
+  uma mancha redonda e irregular em vez de um quadrado, o traço estreito (trilhas, pé de
+  árvore) ganha camada própria de rampa curta e o shader desvia a leitura do mapa por
+  ruído, de modo que as fronteiras serpenteiam; a areia também passa a esconder o pasto
+  sem degrau. Piso de casa, calçada e cerca não estão no mapa e seguem retos. O portão
+  `mapa_de_solo` mede o maior salto entre pixels vizinhos de cada camada e tem
+  `--falsificar-quinas`. Falta voar de cima pela vila, praça, praia e fazenda e conferir
+  antes e depois (#197).
+
 - **O dendezal ganha chão próprio.** Os dendezeiros ficavam plantados na grama lisa: o
   mapa de solo pulava o dendê (e o coqueiro) ao pintar o folhiço sob as copas. Agora o
   dendê pinta a mancha de folhiço e palha caída com 3,5 a 6,5 u (peso 0,7, a borda é

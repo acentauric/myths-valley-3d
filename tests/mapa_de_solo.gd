@@ -7,9 +7,15 @@ extends SceneTree
 ##
 ##   Godot --headless --path . --script res://tests/mapa_de_solo.gd
 ##   ... -- --falsificar-solo     zera o mapa: o portão TEM de reprovar.
+##   ... -- --falsificar-quinas   publica o mapa sem suavização: as rampas TÊM de reprovar (#197).
 
 const MapaDeSolo = preload("res://scripts/prototipo_3d/mapa_de_solo.gd")
 const Camada = MapaDeSolo.Camada
+
+## Maior salto de peso entre dois pixels vizinhos (0 a 1): um corte seco dá 1,0; a rampa
+## de ~4 u dá ~0,3 (a cúbica sobre blocos de 4 u pode chegar a 0,4); a da trilha, ~0,6.
+const LIMITE_DO_DEGRAU := 0.6
+const LIMITE_DO_DEGRAU_DA_TRILHA := 0.85
 
 var falhas := 0
 var verificacoes := 0
@@ -42,6 +48,12 @@ func _run() -> void:
 			solo.limpar(camada)
 		solo.publicar()
 
+	if OS.get_cmdline_user_args().has("--falsificar-quinas"):
+		print("FALSIFICANDO: o mapa de solo foi publicado sem suavização, de propósito")
+		for i in solo.passos.size():
+			solo.passos[i] = 0
+		solo.publicar()
+
 	_a_praca(regiao, solo)
 	_a_costa(regiao, solo)
 	_o_rio(regiao, solo)
@@ -51,6 +63,8 @@ func _run() -> void:
 	_as_trilhas(mundo, regiao, solo)
 	_as_normais(regiao)
 	_o_material(regiao)
+	_as_rampas(solo)
+	_a_mancha_redonda()
 	_fechar()
 
 
@@ -217,6 +231,45 @@ func _as_trilhas(mundo, regiao, solo) -> void:
 			com_trilha += 1
 	_verificar(medidas >= 2, "casas com trilha longa até a rua medidas (%d)" % medidas)
 	_verificar(com_trilha >= medidas * 0.9, "a trilha de pé é terra em %d de %d casas" % [com_trilha, medidas])
+
+
+## Regra do chão (#197): nenhuma fronteira em degrau de 1 pixel. O maior salto entre
+## dois pixels vizinhos de cada camada suave tem de caber numa rampa de vários pixels:
+## ~4 u nas camadas largas (salto de um corte seco = 1,0), ~2 u na trilha. Pisos e
+## calçadas humanas não estão no mapa (são malhas próprias), então não há exceção a
+## listar aqui. A régua é conferida antes num corte seco de verdade, que ela tem de ver.
+func _as_rampas(solo) -> void:
+	var seco = MapaDeSolo.new()
+	seco.comecar(Rect2(0.0, 0.0, 64.0, 64.0))
+	for i in seco.passos.size():
+		seco.passos[i] = 0
+	seco.poligono(Camada.TERRA, PackedVector2Array([Vector2(10, 10), Vector2(40, 10), Vector2(40, 40), Vector2(10, 40)]))
+	seco.publicar()
+	_verificar(seco.degrau_maximo(Camada.TERRA) >= 0.95, "a régua de degrau enxerga um corte seco de 1 pixel (%.2f)" % seco.degrau_maximo(Camada.TERRA))
+	var suave = MapaDeSolo.new()
+	suave.comecar(Rect2(0.0, 0.0, 64.0, 64.0))
+	suave.poligono(Camada.TERRA, PackedVector2Array([Vector2(10, 10), Vector2(40, 10), Vector2(40, 40), Vector2(10, 40)]))
+	suave.publicar()
+	_verificar(suave.degrau_maximo(Camada.TERRA) <= LIMITE_DO_DEGRAU, "o mesmo quadrado, suavizado, não passa de %.2f por pixel (%.2f)" % [LIMITE_DO_DEGRAU, suave.degrau_maximo(Camada.TERRA)])
+	for camada in MapaDeSolo.NOMES.size():
+		var limite := LIMITE_DO_DEGRAU_DA_TRILHA if camada == Camada.TRILHA else LIMITE_DO_DEGRAU
+		var degrau: float = solo.degrau_maximo(camada)
+		_verificar(degrau <= limite, "a camada %s não tem degrau seco: maior salto por pixel %.2f (limite %.2f)" % [MapaDeSolo.NOMES[camada], degrau, limite])
+
+
+## A copa é uma mancha redonda e irregular desde a origem, não um quadrado à espera
+## da suavização: sem suavizar, o canto da caixa fica de fora e o meio da borda, dentro.
+func _a_mancha_redonda() -> void:
+	var cru = MapaDeSolo.new()
+	cru.comecar(Rect2(0.0, 0.0, 64.0, 64.0))
+	for i in cru.passos.size():
+		cru.passos[i] = 0
+	var centro := Vector2(30.0, 30.0)
+	cru.mancha(Camada.COPA, centro, 12.0)
+	cru.publicar()
+	_verificar(cru.peso(Camada.COPA, centro) > 0.9, "o miolo da mancha da copa é cheio (%.2f)" % cru.peso(Camada.COPA, centro))
+	_verificar(cru.peso(Camada.COPA, centro + Vector2(4.5, 0.0)) > 0.9, "o meio da borda da mancha ainda é copa (%.2f)" % cru.peso(Camada.COPA, centro + Vector2(4.5, 0.0)))
+	_verificar(cru.peso(Camada.COPA, centro + Vector2(5.8, 5.8)) < 0.1, "o canto da caixa da mancha é de fora, não de quadrado (%.2f)" % cru.peso(Camada.COPA, centro + Vector2(5.8, 5.8)))
 
 
 ## Normais suaves na terra: todas para cima, sem faces viradas para baixo.

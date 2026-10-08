@@ -50,11 +50,16 @@ uniform vec3 tinta_pedrisco : source_color = vec3(1.0);
 uniform vec3 tinta_areia : source_color = vec3(1.0);
 uniform vec3 tinta_lama : source_color = vec3(1.0);
 
-// Mapa de solo: camadas 0 terra, 1 areia, 2 lama, 3 pasto, 4 copa.
+// Mapa de solo: camadas 0 terra, 1 areia, 2 lama, 3 pasto, 4 copa, 5 trilha (terra
+// estreita, de rampa curta: o peso de terra é o maior entre a 0 e a 5).
 uniform bool solo_ativo = false;
 uniform sampler2DArray solo : filter_linear, repeat_disable;
 uniform vec2 solo_origem = vec2(0.0);
 uniform vec2 solo_tamanho = vec2(1.0);
+// Quanto o ruído empurra o ponto lido no mapa de solo (u). As bordas das camadas
+// serpenteiam em vez de seguir a grade do mapa: nenhuma quina reta (#197). 0 liga o
+// mapa cru.
+uniform float desvio_borda = 0.0;
 // 0 desliga barro e pedrisco do declive e do alto do morro.
 uniform float forca_declive = 0.0;
 // Altura (u) a partir da qual o topo do morro vira pedrisco.
@@ -128,11 +133,14 @@ void fragment() {
 	float s_pasto = 0.0;
 	float s_copa = 0.0;
 	if (solo_ativo) {
-		s_terra = camada_solo(xz, 0.0);
-		s_areia = camada_solo(xz, 1.0);
-		s_lama = camada_solo(xz, 2.0);
-		s_pasto = camada_solo(xz, 3.0);
-		s_copa = camada_solo(xz, 4.0);
+		// O ponto lido no mapa é desviado por dois ruídos de manchas de ~6 u, para a
+		// fronteira de cada camada ondular em vez de ficar no degrau da grade de 1 px.
+		vec2 xz_solo = xz + (vec2(ruido2(xz / 6.0 + vec2(3.7, 9.1)), ruido2(xz / 6.0 + vec2(41.3, 17.9))) - 0.5) * 2.0 * desvio_borda;
+		s_terra = max(camada_solo(xz_solo, 0.0), camada_solo(xz_solo, 5.0));
+		s_areia = camada_solo(xz_solo, 1.0);
+		s_lama = camada_solo(xz_solo, 2.0);
+		s_pasto = camada_solo(xz_solo, 3.0);
+		s_copa = camada_solo(xz_solo, 4.0);
 	}
 	// Declive: 1 - cos do ângulo. 11° = 0,018; 20° = 0,060; 22° = 0,073.
 	float declive = 1.0 - clamp(normal_mundo.y, 0.0, 1.0);
@@ -141,7 +149,8 @@ void fragment() {
 	float w_terra = smoothstep(0.28, 0.72, s_terra + tremor * 0.55 + (n_fino - 0.5) * 0.18);
 	float w_areia = smoothstep(0.3, 0.7, s_areia + tremor * 0.45);
 	float w_lama = smoothstep(0.55, 0.85, s_lama + tremor * 0.3);
-	float w_capim = smoothstep(0.42, 0.78, s_pasto * (0.45 + n_grande * 0.9) + tremor * 0.15);
+	// A areia esconde o pasto sem degrau: a de cima cobre a de baixo pelo peso inteiro.
+	float w_capim = smoothstep(0.42, 0.78, s_pasto * (0.45 + n_grande * 0.9) + tremor * 0.15) * (1.0 - w_areia);
 	float w_folhico = smoothstep(0.32, 0.78, s_copa + tremor * 0.4) * (1.0 - w_areia);
 	float w_barro = forca_declive * clamp(
 		smoothstep(0.018, 0.06, declive + tremor * 0.015)
