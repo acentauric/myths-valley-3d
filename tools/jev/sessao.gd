@@ -26,6 +26,11 @@ var jogada
 var amostras_movimento: Array = []
 var amostrar_em := 0
 var fontes_de_material: Dictionary = {}
+## A casca de cada construção ao alcance, como o olho a vê, para saber quando o centro do viajante entra
+## numa malha opaca (#205): nome do lote -> {"corpo", "desde"}; e quando o último achado dela foi.
+const AuditoriaDeGeometria = preload("res://scripts/prototipo_3d/auditoria_de_geometria.gd")
+var cascas_auditadas: Dictionary = {}
+var dentro_de_geometria_visto: Dictionary = {}
 
 
 func _ponto_de_material(item: String) -> Vector3:
@@ -637,6 +642,54 @@ func _amostrar_movimento(forcar: bool = false) -> void:
 	var jogador: Node3D = current_scene.get("player")
 	amostras_movimento.append({"seconds": (Time.get_ticks_msec() - inicio_jogo) / 1000.0, "position": _vetor(jogador.global_position)})
 	amostrar_em = Time.get_ticks_msec() + 500
+	_conferir_dentro_de_geometria(jogador)
+
+
+## O CENTRO DO VIAJANTE DENTRO DE UMA MALHA OPACA (#205): perto de uma construção, a casca dela vai
+## para uma camada de auditoria e o peito do viajante é conferido contra ela. Fora do cômodo e do
+## corredor da porta (a porta atravessa a casca de propósito), é colisão que deixou entrar na parede,
+## e o testador registra "player_inside_geometry".
+func _conferir_dentro_de_geometria(jogador: Node3D) -> void:
+	var mundo = current_scene.get("world")
+	var interiores = current_scene.get("interiores")
+	if mundo == null:
+		return
+	var construcoes = mundo.get("construcoes")
+	if not (construcoes is Dictionary):
+		return
+	if interiores != null:
+		if str(interiores.contem(jogador.global_position)) != "":
+			return
+		for qual in interiores.quais():
+			var sala = interiores.sala_de(str(qual))
+			if sala != null and sala.no_vao(jogador.global_position):
+				return
+	var espaco: PhysicsDirectSpaceState3D = mundo.get_world_3d().direct_space_state
+	var peito := jogador.global_position + Vector3.UP * 0.9
+	for nome in construcoes:
+		var modelo = (construcoes[nome] as Dictionary).get("modelo")
+		if not (modelo is Node3D) or not is_instance_valid(modelo):
+			continue
+		var longe := Vector2(jogador.global_position.x - (modelo as Node3D).global_position.x, jogador.global_position.z - (modelo as Node3D).global_position.z).length()
+		var casca = cascas_auditadas.get(nome)
+		if longe > 40.0:
+			if casca != null:
+				if is_instance_valid(casca.corpo):
+					casca.corpo.queue_free()
+				cascas_auditadas.erase(nome)
+			continue
+		if longe > 12.0:
+			continue
+		if casca == null:
+			cascas_auditadas[nome] = {"corpo": AuditoriaDeGeometria.corpo_da_casca(mundo, modelo), "desde": Engine.get_physics_frames()}
+			continue
+		if Engine.get_physics_frames() - int(casca.desde) < 3:
+			continue
+		if AuditoriaDeGeometria.dentro_da_malha(espaco, peito) and _segundos() - float(dentro_de_geometria_visto.get(nome, -100.0)) > 10.0:
+			achados.append({"type": "player_inside_geometry", "building": str(nome), "position": _vetor(jogador.global_position), "action": ultima_acao})
+			if achados.size() > 6:
+				achados.pop_front()
+			dentro_de_geometria_visto[nome] = _segundos()
 
 
 func _caminhar(alvo, seguir: bool, exato: bool = false, passagem_da_porta: bool = false) -> String:

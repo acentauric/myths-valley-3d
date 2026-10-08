@@ -2,6 +2,21 @@
 
 ## Em desenvolvimento — 08/10/2026
 
+- **A colisão das casas acompanha a parede visível, e o viajante para encostado em vez de
+  entrar nela.** Na casa da Dona Zefa metade do corpo atravessava a quina da fachada, ao lado
+  da porta. Eram duas faltas na colisão que o cômodo põe no lugar da caixa inteira: a parede
+  acabava um palmo para dentro da face de dentro da casca (e a parede do modelo tem a
+  espessura dela), e ao lado do vão a fachada só tinha 20 cm sólidos no fundo da porta. Agora
+  a montagem mede a face de fora da casca por raios (laterais, fundo e a fachada fora do vão,
+  em duas alturas de peito, pela mediana) e o cômodo cobre o que falta até ela, só de colisão,
+  com as ombreiras da porta sólidas e a fachada inteira de cada lado do vão, até o teto.
+  Varanda e rampa da soleira ficam encostadas em parede sólida, sem atalho para dentro. O
+  portão novo `colisao_das_casas` põe a malha visível de cada construção numa camada de
+  auditoria e mede, por fora, quanto a colisão está dentro da face visível (fachada, laterais,
+  fundo), sem parede de ar nem buraco; e o testador automático registra
+  `player_inside_geometry` quando o peito do viajante entra numa malha fora do cômodo e do
+  corredor da porta (#205).
+
 - **O golpe de ferramenta só sai encostado e de frente para o alvo.** O machado dava
   machadadas no ar: o alcance era 3,2 m somados à meia-pegada da peça, e o corpo nem
   virava. Agora o golpe vale a 1,2 m da FACE da colisão (caixa girada, quina e cilindro,

@@ -29,6 +29,9 @@ const CAMERA := 1 << 13
 const CAMERA_VEGETACAO := 1 << 15
 ## A medição temporária da casca de uma construção (`interiores.gd`).
 const MEDIR := 1 << 19
+## A casca de uma construção como a vê o olho, para auditar a colisão contra ela (#205,
+## `auditoria_de_geometria.gd`): só o portão e o testador a criam, e nunca barra ninguém.
+const AUDITORIA := 1 << 20
 
 ## Camada de quem barra o corpo E a câmera.
 const MUNDO_E_CAMERA := MUNDO | CAMERA
