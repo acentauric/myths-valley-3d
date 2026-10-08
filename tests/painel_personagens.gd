@@ -26,7 +26,13 @@ func _run() -> void:
 	# MORADORES abre em cartões, como ASSETS.
 	var cartoes: GridContainer = painel._lista.get_node("GradeMoradores")
 	# Com os moradores novos de 05/10 são mais de uma página de cartões: a primeira vem cheia, e o viajante fecha a lista.
-	_assert(cartoes.columns == 4 and cartoes.get_child_count() == mini(painel._pessoas.size(), painel.CARTOES_POR_PAGINA), "moradores em cartões")
+	var capacidade: Vector2i = painel._capacidade()
+	_assert(cartoes.columns == capacidade.x and cartoes.get_child_count() == mini(painel._pessoas.size(), capacidade.x * capacidade.y), "moradores em cartões")
+	# #171: a grade ocupa o modal, no mínimo 5 colunas por 5 linhas, e não deixa faixa vazia antes da navegação.
+	_assert(capacidade.x >= 5 and capacidade.y >= 5, "grade de cartões com ao menos 5 x 5 (%s)" % capacidade)
+	var vazio_embaixo: float = painel._rodape.get_global_rect().position.y - cartoes.get_global_rect().end.y
+	_assert(vazio_embaixo < 40.0, "sem faixa vazia entre a grade e a navegação (%.0f px)" % vazio_embaixo)
+	_assert(painel._rolagem.get_global_rect().encloses(cartoes.get_global_rect()), "a grade cabe na rolagem")
 	_assert(str(cartoes.get_child(0).name) == "Morador_pedro" and str((painel._pessoas.back() as Dictionary).get("id", "")) == "viajante", "Pedro abre os cartões e o viajante fecha")
 	var ids_na_lista: Array = []
 	for pessoa: Dictionary in painel._pessoas:
@@ -154,7 +160,9 @@ func _run() -> void:
 	await _frames(3)
 	var grade: GridContainer = painel._lista.get_node("GradeAssets")
 	var primeiro_cartao := str(grade.get_child(0).name)
-	_assert(grade.columns == 4 and grade.get_child_count() == 12, "assets em grade paginada")
+	_assert(grade.columns == capacidade.x and grade.get_child_count() == capacidade.x * capacidade.y, "assets em grade paginada")
+	# Nome que corta no cartão aparece inteiro no tooltip.
+	_assert(str(grade.get_child(0).tooltip_text).begins_with(str(grade.get_child(0).text).strip_edges().trim_suffix("•").strip_edges()), "o tooltip do cartão traz o nome inteiro")
 	_assert(painel._lista.find_children("*", "SpinBox", true, false).is_empty(), "grade não abre editores")
 	_assert(painel._rolagem.get_global_rect().encloses(painel._lista.get_global_rect()), "grade cabe sem rolagem")
 	for chave: String in CatalogoAssets.PECAS:
@@ -181,6 +189,26 @@ func _run() -> void:
 	painel._trocar_aba(1)
 	await _frames(2)
 	_assert(painel._lista.has_node("GradeAssets") and painel.selecionado.is_empty(), "clicar na aba volta aos cartões")
+	_assert(painel._lista.get_node("GradeAssets").has_node("Peca_mangueira"), "voltar da ficha leva à página do cartão dela")
+	# Um cartão cujo índice cai em páginas diferentes conforme o filtro (visível nos cartões,
+	# escondido na ficha) está ou não contado: voltar da ficha tem de usar a capacidade dos cartões.
+	var por_pagina_cartoes: int = capacidade.x * capacidade.y
+	painel._abrir("mangueira")
+	await _frames(3)
+	var por_pagina_ficha: int = painel._cartoes_por_pagina()
+	var chaves_aba: Array = painel._itens().map(func(item: Array) -> String: return item[0])
+	var indice_critico := -1
+	for indice in range(chaves_aba.size()):
+		if floori(float(indice) / por_pagina_cartoes) != floori(float(indice) / por_pagina_ficha):
+			indice_critico = indice
+			break
+	_assert(indice_critico >= 0, "há uma peça cujo índice muda de página com o filtro escondido")
+	if indice_critico >= 0:
+		painel._abrir(chaves_aba[indice_critico])
+		await _frames(3)
+		painel._trocar_aba(1)
+		await _frames(2)
+		_assert(painel._lista.get_node("GradeAssets").has_node("Peca_" + chaves_aba[indice_critico]), "voltar da ficha cai na página dos cartões, não na da ficha (%d)" % indice_critico)
 	# Restaurar volta ao padrão do projeto, e sem pendência o × fecha direto.
 	var antes := float(CatalogoAssets.PECAS["mangueira"]["altura"])
 	AjustesConteudo.restaurar_morador("benedito")

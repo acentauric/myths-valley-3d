@@ -56,7 +56,7 @@ func abrir(world: Node3D, jogador: Node3D, pai_ui: Control) -> void:
 	pai_ui.move_child(_marcadores_raiz, 0)
 	var divisas = load("res://scripts/prototipo_3d/divisas_no_mapa.gd").new()
 	_marcadores_raiz.add_child(divisas)
-	divisas.configurar(world, _camera)
+	divisas.configurar(world, _camera, _retangulos_ocupados)
 	for landmark: Dictionary in world.landmarks:
 		_marcador(String(landmark["name"]), landmark["position"])
 	for area: Dictionary in world.areas:
@@ -164,6 +164,18 @@ func _atualizar() -> void:
 		if louca != null:
 			_voce.position += louca.deriva_na_tela(70.0)
 		_voce.visible = Rect2(Vector2.ZERO, tela).has_point(ponto)
+
+
+## Onde há texto na tela (marcadores dos lugares e "Você"): a legenda das divisas foge deles (#203).
+func _retangulos_ocupados() -> Array[Rect2]:
+	var lista: Array[Rect2] = []
+	for entrada in _marcadores:
+		var marcador: Button = entrada["control"]
+		if is_instance_valid(marcador) and marcador.visible:
+			lista.append(Rect2(marcador.position, marcador.size * marcador.scale).grow(2.0))
+	if is_instance_valid(_voce) and _voce.visible:
+		lista.append(Rect2(_voce.position, _voce.size * _voce.scale).grow(2.0))
+	return lista
 
 
 ## O nó da loucura do mapa (`loucura_do_mapa.gd`), achado pelo grupo; null sem ele.

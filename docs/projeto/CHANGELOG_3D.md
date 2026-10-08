@@ -78,6 +78,81 @@
   os portões de outras baterias na mesma máquina. O recorte por função de
   autoload foi medido e recusado (razões no topo do runner).
 
+- **As divisas de terra no mapa deixam de ser retângulos amarelos soltos (#203).**
+  O lote do cadastro vira um contorno orgânico de 48 pontos, de cantos redondos e
+  ondulação leve por lote, traçado em tracejado fino sépia/ouro (verde-musgo nas suas
+  terras), com preenchimento quase imperceptível. A legenda diz a situação ("Terra da
+  Dona Zefa · à venda por 1800 réis", "· de Seu Benedito", "· Sua terra"), na sans de
+  leitura, com uma plaquinha de casa, placa de venda ou marco, e foge de "Você" e dos
+  marcadores dos lugares. As suas terras e as à venda aparecem sempre; as dos outros só
+  no zoom de perto e somem ao afastar. O minimapa não herda divisas. Portão em
+  `terras_por_posicao`.
+
+- **Todo modal recolhe a interface do vale, e o texto para ler sai da Cormorant fina
+  (#199, parcial).** Arraial, Diário, Teia, Coleção, folheto, menu do Esc, Controles,
+  Apoios e Ajustes escondem missão, relógio, barras, atalhos, minimapa, dicas e avisos por
+  um ponto só (`Prototype.modal_aberto`, a regra da #143 generalizada); os Ajustes ganham
+  camada própria. A Identidade e o tema ganham quatro papéis de tipografia: título e
+  rótulo (Cinzel), leitura (a sans do HUD, em creme) e ênfase (Cormorant itálico). Em K ›
+  Fé, o nome de cada fé vira subtítulo de ouro, o corpo das regras vai para a sans em
+  linhas curtas, e o rodapé de teclas vira plaquetas. O cinza apagado de antes (abaixo de
+  4,5:1 sobre a laca) fica mais claro. Portão `modais_escondem_o_hud`. Falta conferir no
+  jogo em zh e nas fichas do Diário que ainda usam a Cormorant itálica.
+
+- **O Diário de missões cabe sem rolagem (#202, parcial).** Com uma aba só, a coluna das
+  abas some e a página ganha a largura; com várias, ela encolhe. A ficha vira duas
+  colunas (a voz de quem pediu em resumo à esquerda, os objetivos à direita, só eles
+  rolando se faltar altura) e um rodapé fixo com a recompensa e o botão "Acompanhar",
+  que nunca sai da caixa. A fala do Pedro aparece em até 200 letras, cortada em frase
+  inteira (`CadeiaDeMissoes.fala_curta`; o campo `diario` do passo, opcional, sobrescreve
+  com um resumo escrito à mão), em fonte de leitura. Portão `diario_sem_rolagem`. Falta
+  revisar à mão as falas mais longas e conferir a mesma regra nas outras abas.
+
+- **A dica do E ganha plaqueta grande, alvo em ouro e requisito em branco.** Em "Tronco
+  caído / Ponha na mão: Machado" a plaqueta do E passa a ocupar a altura das duas linhas
+  (quadrada, com a letra grande, o que o jogador procura de relance); o alvo vira título,
+  em Cinzel ouro, e o requisito vira leitura, na sans legível do HUD, em creme e menor,
+  como o aviso de baixo. A dica de uma linha mostra só o título, com a plaqueta da altura
+  dela, e a caixa fica justa ao conteúdo, com margens parelhas. O padrão vale para toda
+  dica do E (pegar, falar, cortar, entrar), que nascem da mesma peça. O portão
+  `dica_requisito_e_mao` cobra rótulos separados, cores, fontes, plaqueta quadrada e a
+  altura nas dicas de uma e de duas linhas, em pt/en/es (#188).
+
+- **Ajustes ganha a aba Interface, e as abas viram ícones com tooltip.** Cursor, Tamanho do
+  texto, Tamanho do HUD, Monitor e "Tamanho de cada interface" saem de Cenário para a aba
+  nova, repartidos em duas colunas de 18 campos; o "Restaurar todas as interfaces" sobe
+  para o cabeçalho, ao lado do ×, como os de volume. Cenário fica só com o vale (estilo,
+  nomes, minimapa, maré, sustos) e, no menu, a seção Menu. As seis abas (Geral, Sons,
+  Cenário, Interface, Atalhos, Esforço) mostram só um ícone, dourado na aberta, e o nome
+  aparece no tooltip do mouse e também com o foco do teclado ou do controle. "Sons do vale"
+  vira "Sons" na aba, na frase do restaurar e na ajuda do Ambiente; "Sons" e "Esforço"
+  ganharam tradução para inglês e espanhol. O portão de Ajustes cobre as seis abas, os
+  tooltips nos três idiomas, a dica no foco e onde mora cada campo (#169).
+
+- **A fonte padrão da interface fica um pouco menor, e os Ajustes mostram mais itens por
+  coluna.** O Médio do Tamanho do texto passa a ter corpo 17 (era 19) e botões 14 (era 15);
+  Pequeno, Grande e Muito grande continuam multiplicando o novo padrão. Os tamanhos que o
+  painel de Ajustes fixava no código (rótulo, seção, título e subtítulo do cabeçalho, texto
+  e "?" da ajuda) viraram constantes do tema (`FONTE_ROTULO`, `FONTE_SECAO`...) e escalam
+  junto; os campos ficam 56 px de altura (era 66) e os controles 32 (era 36). As placas da
+  home mantêm os 15 de antes. O portão da tela cobra o padrão menor e proíbe número solto de
+  fonte no painel (#167).
+
+- **Restaurar volumes sobe para o cabeçalho de Ajustes, e a aba ativa tem uma moldura só.**
+  "Restaurar estes" e "Restaurar todos" (com o ↺) ficam à esquerda do ×, na altura dele, em
+  Geral e em Sons do vale; o rodapé deixou de existir e a lista ganha a altura, sem cortar
+  "Teclas de movimento" e "Ambiente". Nas outras abas o cabeçalho fica só com o ×, no mesmo
+  lugar. O aro de foco das abas perdeu a margem de expansão que o desenhava por fora da
+  borda: a ativa mostra uma moldura do tamanho das outras, e o foco por teclado continua
+  visível. O portão de Ajustes cobre posição, altura, ausência de rodapé e o foco (#166).
+
+- **Os cartões do painel Modelos preenchem o modal.** A grade deixa de ter 4 × 3 fixos:
+  colunas e linhas saem do espaço que sobra à lista (6 × 5 no tamanho padrão, 30 por
+  página; Assets cai de 21 para 10 páginas), os cartões esticam para ocupar a altura que
+  sobrava antes da navegação, o nome cortado aparece inteiro no tooltip e voltar da ficha
+  leva à página do cartão dela. O portão do painel cobra ao menos 5 × 5 e a ausência da
+  faixa vazia (#171).
+
 - **Todo campo de Ajustes tem o "?" de ajuda, e "Passos na água" ganha o ↺.** O campo
   era montado à mão, com um botão Ouvir que encurtava o seletor: agora é uma escolha
   como as vizinhas (Original ou Novos, ↺ volta a Original) e trocar a opção já toca a

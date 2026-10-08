@@ -49,9 +49,9 @@ const TEXTOS := {
 		"Volumen de los efectos de sonido: pasos sobre tierra, hierba o arena, la carrera y los sonidos de los botones del menú.",
 	],
 	"Ambiente": [
-		"Volume geral dos sons do lugar: aves, mar, riacho, fogueira e insetos.\n\nCada um desses sons tem ainda um controle próprio na aba Sons do vale, aplicado por cima deste volume geral.",
-		"Overall volume of the place's sounds: birds, sea, stream, campfire and insects.\n\nEach of these sounds also has its own control in the Valley sounds tab, applied on top of this overall volume.",
-		"Volumen general de los sonidos del lugar: aves, mar, arroyo, hoguera e insectos.\n\nCada uno de esos sonidos tiene además su propio control en la pestaña Sonidos del valle, aplicado sobre este volumen general.",
+		"Volume geral dos sons do lugar: aves, mar, riacho, fogueira e insetos.\n\nCada um desses sons tem ainda um controle próprio na aba Sons, aplicado por cima deste volume geral.",
+		"Overall volume of the place's sounds: birds, sea, stream, campfire and insects.\n\nEach of these sounds also has its own control in the Sounds tab, applied on top of this overall volume.",
+		"Volumen general de los sonidos del lugar: aves, mar, arroyo, hoguera e insectos.\n\nCada uno de esos sonidos tiene además su propio control en la pestaña Sonidos, aplicado sobre este volumen general.",
 	],
 	"Aves": [
 		"Canto das aves do Recôncavo. Toca de dia e fica mais forte ao amanhecer e no fim da tarde; à noite some.\n\nTambém é usado na paisagem sonora do menu.",

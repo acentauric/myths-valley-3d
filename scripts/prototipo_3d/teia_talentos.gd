@@ -59,13 +59,16 @@ const Atalhos = preload("res://scripts/prototipo_3d/atalhos.gd")
 
 const COR_FUNDO := Color(0.055, 0.082, 0.070, 0.985)
 const COR_TEXTO := Identidade.TEXTO
-const COR_APAGADA := Color(0.55, 0.58, 0.52)
+const COR_APAGADA := Identidade.COR_LEITURA_APAGADA
 const COR_PRONTO := Color("9fd89a")
 const COR_TRAVADO := Color(0.46, 0.49, 0.44)
 
 const TAMANHO := Vector2(980, 600)
 const LARGURA_DAS_RAIZES := 250.0
 const ALTURA_DA_LINHA := 30.0
+## A largura do texto da página da fé: linhas curtas, de uns 60 caracteres, que se
+## leem sem pular de uma ponta à outra (#199).
+const LARGURA_DO_TEXTO_DA_FE := 560.0
 
 ## Medidas do desenho da árvore, em pixels.
 const NO_LARGURA := 168.0
@@ -104,7 +107,7 @@ var _caminho: Label
 var _raizes_coluna: VBoxContainer
 var _tela_da_arvore: Control
 var _ficha: VBoxContainer
-var _rodape: Label
+var _rodape: HFlowContainer
 
 ## Raiz aberta, e o nó em foco dentro dela.
 var _raiz := ""
@@ -221,11 +224,8 @@ func _montar() -> void:
 	_ficha.custom_minimum_size = Vector2(0, 104)
 	direita.add_child(_ficha)
 
-	_rodape = Label.new()
-	_rodape.name = "Rodape"
-	_rodape.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_TEXTO, 400))
-	_rodape.add_theme_font_size_override("font_size", 14)
-	_rodape.add_theme_color_override("font_color", COR_APAGADA)
+	# O rodapé de teclas é plaqueta + ação em leitura, como os atalhos do HUD (#199).
+	_rodape = Identidade.rodape_de_teclas()
 	coluna.add_child(_rodape)
 
 
@@ -291,8 +291,8 @@ func _encher() -> void:
 	_montar_raizes()
 	_montar_arvore()
 	_montar_ficha()
-	_rodape.text = tr("↑↓ ou W/S: andar    ·    ←→ ou A/D: trocar de raiz    ·    E ou Enter: destravar    ·    Tab: %s    ·    %s ou Esc: fechar") \
-		% [tr("a teia da fé") if _modo == MODO_OFICIO else tr("a teia de ofício"), OS.get_keycode_string(Atalhos.tecla("talentos"))]
+	Identidade.refazer_rodape_de_teclas(_rodape, tr("↑↓ ou W/S: andar    ·    ←→ ou A/D: trocar de raiz    ·    E ou Enter: destravar    ·    Tab: %s    ·    %s ou Esc: fechar") \
+		% [tr("a teia da fé") if _modo == MODO_OFICIO else tr("a teia de ofício"), OS.get_keycode_string(Atalhos.tecla("talentos"))])
 
 
 func _nome_da_raiz(raiz: String) -> String:
@@ -527,9 +527,7 @@ func _montar_ficha() -> void:
 
 	var nome := Label.new()
 	nome.text = str(dado.get("nome", _no))
-	nome.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_TITULO, 600, 1))
-	nome.add_theme_font_size_override("font_size", 22)
-	nome.add_theme_color_override("font_color", Identidade.CREME)
+	Identidade.papel_titulo(nome)
 	_ficha.add_child(nome)
 	_ficha.add_child(_corpo(str(dado.get("resumo", ""))))
 
@@ -551,50 +549,97 @@ func _montar_ficha() -> void:
 ## A PÁGINA DA FÉ QUE NÃO É ÁRVORE: sem fé, as três e onde cada uma se pratica;
 ## com fé, as regras — o que ela cobra e o que ela dá agora. Tudo lido do `Fe`
 ## e do `Ritos`; esta tela não guarda regra nenhuma.
+##
+## É TEXTO PARA LER, então segue os papéis da tipografia (#199): o nome de cada fé
+## (e de cada marco) é subtítulo em ouro na Cinzel, o corpo é a sans do HUD em
+## creme, em linhas curtas e parágrafos com respiro.
 func _montar_pagina_da_fe() -> void:
 	var pagina := VBoxContainer.new()
 	pagina.name = "PaginaDaFe"
-	pagina.add_theme_constant_override("separation", 10)
-	pagina.custom_minimum_size = Vector2(TAMANHO.x - LARGURA_DAS_RAIZES - 110.0, 0)
+	pagina.add_theme_constant_override("separation", 14)
+	pagina.custom_minimum_size = Vector2(LARGURA_DO_TEXTO_DA_FE + 10.0, 0)
 	_tela_da_arvore.add_child(pagina)
-	for linha in linhas_da_pagina_da_fe():
-		var rotulo := _corpo(str(linha))
-		rotulo.custom_minimum_size = Vector2(TAMANHO.x - LARGURA_DAS_RAIZES - 120.0, 0)
-		pagina.add_child(rotulo)
-	_tela_da_arvore.custom_minimum_size = Vector2(TAMANHO.x - LARGURA_DAS_RAIZES - 110.0, 10.0)
+	for bloco in blocos_da_pagina_da_fe():
+		var caixa := VBoxContainer.new()
+		caixa.add_theme_constant_override("separation", 3)
+		if bool(bloco.get("recuo", false)):
+			var recuado := MarginContainer.new()
+			recuado.add_theme_constant_override("margin_left", 18)
+			recuado.add_child(caixa)
+			pagina.add_child(recuado)
+		else:
+			pagina.add_child(caixa)
+		var titulo := str(bloco.get("titulo", ""))
+		if titulo != "":
+			var subtitulo := Identidade.papel_rotulo(Label.new(), 17)
+			subtitulo.name = "NomeDaFe"
+			subtitulo.text = titulo
+			caixa.add_child(subtitulo)
+		for paragrafo in (bloco.get("paragrafos", []) as Array):
+			var rotulo := _corpo(str(paragrafo))
+			rotulo.custom_minimum_size = Vector2(LARGURA_DO_TEXTO_DA_FE, 0)
+			rotulo.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+			caixa.add_child(rotulo)
+	_tela_da_arvore.custom_minimum_size = Vector2(LARGURA_DO_TEXTO_DA_FE + 10.0, 10.0)
 
 
-## As linhas da página (ver `_montar_pagina_da_fe`). Pública para o portão ler.
+## As linhas da página, sem a divisão em blocos. Pública para o portão ler.
 func linhas_da_pagina_da_fe() -> Array:
 	var linhas: Array = []
+	for bloco in blocos_da_pagina_da_fe():
+		var titulo := str(bloco.get("titulo", ""))
+		var partes := PackedStringArray()
+		for paragrafo in (bloco.get("paragrafos", []) as Array):
+			partes.append(str(paragrafo))
+		var corpo := " ".join(partes)
+		linhas.append(corpo if titulo == "" else "%s — %s" % [titulo, corpo])
+	return linhas
+
+
+## Os blocos da página (ver `_montar_pagina_da_fe`): cada um é {titulo, paragrafos,
+## recuo}. O título vazio é um parágrafo solto; `recuo` é o marco dentro da lista.
+func blocos_da_pagina_da_fe() -> Array:
+	var blocos: Array = []
 	if Fe.ativa == "":
-		linhas.append(tr("Você ainda não é de fé nenhuma. No arraial há três, e cada uma se escolhe com os pés: no marco dela."))
+		blocos.append(_bloco("", [tr("Você ainda não é de fé nenhuma. No arraial há três, e cada uma se escolhe com os pés: no marco dela.")]))
 		for fe in Fe.ids():
-			linhas.append("%s — %s %s" % [_da_fe(str(fe), "nome"), _da_fe(str(fe), "resumo"), _da_fe(str(fe), "pratica")])
-		linhas.append(tr("Uma fé por vez. A que você deixar congela inteira, e trocar de novo não apaga nada."))
-		return linhas
-	linhas.append(tr("Você é %s: nível %d, %d ponto(s) para gastar.") % [_da_fe(Fe.ativa, "de"), Fe.nivel, Fe.pontos])
+			blocos.append(_bloco(_da_fe(str(fe), "nome"), [_da_fe(str(fe), "resumo"), _da_fe(str(fe), "pratica")]))
+		blocos.append(_bloco("", [tr("Uma fé por vez. A que você deixar congela inteira, e trocar de novo não apaga nada.")]))
+		return blocos
+	blocos.append(_bloco("", [tr("Você é %s: nível %d, %d ponto(s) para gastar.") % [_da_fe(Fe.ativa, "de"), Fe.nivel, Fe.pontos]]))
 	for fe in Fe.ids():
 		if str(fe) != Fe.ativa and Fe.conhecida(str(fe)):
-			linhas.append(tr("%s está congelada no nível %d, com %d ponto(s) e %d de acumulado. Voltar a ela devolve a teia como ficou.") % [
-				_da_fe(str(fe), "nome"), Fe.nivel_da(str(fe)), Fe.pontos_da(str(fe)), Fe.total(str(fe))])
-	linhas.append(tr("Cada marco da sua fé dá graça uma vez a cada %d dia(s): fôlego, experiência de fé e uma bênção que dura %d dia(s).") % [Ritos.espera(), Ritos.duracao()])
+			blocos.append(_bloco("", [tr("%s está congelada no nível %d, com %d ponto(s) e %d de acumulado. Voltar a ela devolve a teia como ficou.") % [
+				_da_fe(str(fe), "nome"), Fe.nivel_da(str(fe)), Fe.pontos_da(str(fe)), Fe.total(str(fe))]]))
+	blocos.append(_bloco("", [tr("Cada marco da sua fé dá graça uma vez a cada %d dia(s): fôlego, experiência de fé e uma bênção que dura %d dia(s).") % [Ritos.espera(), Ritos.duracao()]]))
 	for marco in (Fe.dados_da_fe(Fe.ativa).get("marcos", []) as Array):
 		var nome := tr(str(NOMES_DOS_MARCOS.get(str(marco), str(marco))))
+		var estado: String
 		if Ritos.pode_celebrar(str(marco)):
-			linhas.append("    %s: %s" % [nome, tr("dá graça hoje")])
+			estado = tr("dá graça hoje")
 		else:
-			linhas.append("    %s: %s" % [nome, tr("a graça volta no %s") % Relogio.texto_do_dia(Ritos.dia_liberado(str(marco)))])
+			estado = tr("a graça volta no %s") % Relogio.texto_do_dia(Ritos.dia_liberado(str(marco)))
+		var bloco := _bloco(nome, [estado])
+		bloco["recuo"] = true
+		blocos.append(bloco)
 	var bencao := Ritos.bencao_ativa()
 	if bencao != "":
-		linhas.append(tr("Bênção de agora: %s, por mais %d dia(s).") % [bencao, Ritos.dias_de_bencao()])
+		blocos.append(_bloco("", [tr("Bênção de agora: %s, por mais %d dia(s).") % [bencao, Ritos.dias_de_bencao()]]))
 	else:
-		linhas.append(tr("Nenhuma bênção agora."))
+		blocos.append(_bloco("", [tr("Nenhuma bênção agora.")]))
 	var festa: Dictionary = Fe.festa(Fe.ativa)
 	if not festa.is_empty():
-		linhas.append(tr("A festa da sua fé: %s. Nesse dia o marco dá graça mesmo fora do prazo, e quem é da fé se junta lá à tarde.") % str(festa.get("nome", "")))
-	linhas.append(tr("Trocar de fé não apaga nada: a teia de agora congela inteira e para de valer. Levar o acumulado junto custa caro: de cada cem pontos, chegam quinze."))
-	return linhas
+		blocos.append(_bloco("", [tr("A festa da sua fé: %s. Nesse dia o marco dá graça mesmo fora do prazo, e quem é da fé se junta lá à tarde.") % str(festa.get("nome", ""))]))
+	blocos.append(_bloco("", [tr("Trocar de fé não apaga nada: a teia de agora congela inteira e para de valer. Levar o acumulado junto custa caro: de cada cem pontos, chegam quinze.")]))
+	return blocos
+
+
+func _bloco(titulo: String, paragrafos: Array) -> Dictionary:
+	var limpos: Array = []
+	for paragrafo in paragrafos:
+		if str(paragrafo).strip_edges() != "":
+			limpos.append(str(paragrafo))
+	return {"titulo": titulo, "paragrafos": limpos, "recuo": false}
 
 
 func _da_fe(fe: String, campo: String) -> String:
@@ -603,12 +648,11 @@ func _da_fe(fe: String, campo: String) -> String:
 	return escrito if escrito != "" else Fe.nome(fe)
 
 
+## Texto para ler: a sans do HUD, em creme (papel de leitura, #199).
 func _corpo(texto: String) -> Label:
 	var rotulo := Label.new()
 	rotulo.text = texto
-	rotulo.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_TEXTO, 400))
-	rotulo.add_theme_font_size_override("font_size", 18)
-	rotulo.add_theme_color_override("font_color", COR_TEXTO)
+	Identidade.papel_leitura(rotulo)
 	rotulo.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	rotulo.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	return rotulo

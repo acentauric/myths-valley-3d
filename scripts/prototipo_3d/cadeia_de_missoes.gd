@@ -194,6 +194,9 @@ func carregar(caminho: String) -> bool:
 		passo["texto"] = str(IdiomaMenu.campo(passo, "texto"))
 		passo["resumo"] = str(IdiomaMenu.campo(passo, "resumo", ""))
 		passo["titulo"] = str(IdiomaMenu.campo(passo, "titulo", ""))
+		# O RESUMO DA FALA PARA O DIÁRIO (#202), escrito à mão quando o corte
+		# automático não basta: `diario`, `diario_en`, `diario_es`.
+		passo["diario"] = str(IdiomaMenu.campo(passo, "diario", ""))
 		# A RESPOSTA DE QUEM RECEBE também é fala do jogador ler, e também nasce
 		# nos três idiomas (`resposta`, `resposta_en`, `resposta_es`).
 		var meta: Dictionary = passo.get("meta", {})
@@ -541,6 +544,32 @@ func resumo_do_passo(passo: Dictionary) -> String:
 ## tela de quem a abrir: vale uma reticência, não vale um parágrafo.
 const LETRAS_DO_TITULO := 52
 
+## A FALA NO DIÁRIO É RESUMO (#202). O diário do J não rola, e a página da missão
+## divide a altura com os objetivos: a fala inteira — que repete o que os
+## objetivos já dizem ("encoste no tronco e aperte E") — continua no diálogo do
+## jogo. Aqui entram as frases inteiras que cabem em `LETRAS_DA_FALA_NO_DIARIO`;
+## a primeira frase sempre entra, e se ela sozinha passa do limite, corta na
+## palavra, com reticência. Quem quiser um resumo melhor escreve `diario` no passo.
+const LETRAS_DA_FALA_NO_DIARIO := 200
+
+static func fala_curta(fala: String, limite: int = LETRAS_DA_FALA_NO_DIARIO) -> String:
+	var inteira := fala.strip_edges()
+	if inteira.length() <= limite:
+		return inteira
+	# A última frase que ainda cabe: o ponto, a exclamação ou a interrogação
+	# seguidos de espaço (não o ":" nem o ";", que abrem frase e não fecham).
+	var fim := -1
+	for i in range(mini(limite, inteira.length() - 1)):
+		if inteira[i] in [".", "!", "?", "…"] and inteira[i + 1] == " ":
+			fim = i + 1
+	if fim > 0:
+		return inteira.substr(0, fim).strip_edges()
+	var corte := inteira.rfind(" ", limite)
+	if corte <= 0:
+		corte = limite
+	return inteira.substr(0, corte).strip_edges().rstrip(",;:—-") + "…"
+
+
 static func _titulo_do_passo(passo: Dictionary) -> String:
 	var nome := str(passo.get("titulo", "")).strip_edges()
 	if nome != "":
@@ -578,6 +607,8 @@ func _registrar_no_caderno(passo: Dictionary) -> void:
 		"missao": nome_da_missao if nome_da_missao != "" else _titulo_do_passo(passo),
 		"quem": _nome_do_dono(),
 		"resumo": resumo_do_passo(passo),
+		# A fala em resumo para o diário (#202); a inteira fica no `texto`.
+		"fala_curta": _fala_no_diario(passo),
 		"passo": missao + 1,
 		"passos": passos.size(),
 		# O que o passo paga, para o diário mostrar em ícones (#107).
@@ -588,6 +619,12 @@ func _registrar_no_caderno(passo: Dictionary) -> void:
 	if alvo != Vector3.ZERO:
 		CadernoDoVale.apontar(id, alvo)
 	_acertar_o_caderno(passo)
+
+
+## O que o diário mostra da fala deste passo: o resumo escrito à mão, ou o corte.
+func _fala_no_diario(passo: Dictionary) -> String:
+	var escrito := str(passo.get("diario", "")).strip_edges()
+	return escrito if escrito != "" else fala_curta(str(passo.get("texto", "")))
 
 
 ## O id do passo no caderno, com o dono na frente para duas cadeias não colidirem

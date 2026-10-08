@@ -105,7 +105,8 @@ func _run() -> void:
 	# objetivo (e a do diário) as desenha sem recorrer ao sistema.
 	var cadeia = load("res://scripts/prototipo_3d/cadeia_de_missoes.gd")
 	var fonte_do_objetivo: Font = hud._objective_label.get_theme_font("font")
-	var fonte_do_diario: Font = load("res://scripts/prototipo_3d/identidade.gd").fonte(load("res://scripts/prototipo_3d/identidade.gd").FONTE_TEXTO, 400)
+	# O diário usa a sans de leitura do HUD (#199, #202), com a Cormorant de reserva.
+	var fonte_do_diario: Font = load("res://scripts/prototipo_3d/identidade.gd").fonte_do_hud()
 	for marca in [cadeia.MARCA_FEITA, cadeia.MARCA_PENDENTE]:
 		_conferir(fonte_do_objetivo.has_char(marca.unicode_at(0)), "a fonte do objetivo não desenha '%s'" % marca)
 		_conferir(fonte_do_diario.has_char(marca.unicode_at(0)), "a fonte do diário não desenha '%s'" % marca)

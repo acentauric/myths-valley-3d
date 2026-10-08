@@ -127,6 +127,7 @@ var _menu_confirm = null	# caixa_de_pergunta.gd
 var _map_icon	# hud_icon.gd
 var _settings_icon	# hud_icon.gd
 var _settings: Control
+var _camada_ajustes: CanvasLayer
 var _ajustes	# painel_ajustes.gd
 ## Painéis escondidos enquanto o mapa está aberto (a coluna do canto continua).
 var _hidden_for_map: Array[Control] = []
@@ -1385,7 +1386,13 @@ func open_settings() -> void:
 	var overlay := Sobreposicao.new()
 	overlay.theme = tema
 	_settings = overlay
-	_root.add_child(overlay)
+	# CAMADA PRÓPRIA (#199): com a interface do vale recolhida atrás de todo modal
+	# (`Prototype._acertar_as_placas`), os Ajustes não podem morar dentro dela.
+	_camada_ajustes = CanvasLayer.new()
+	_camada_ajustes.name = "CamadaAjustes"
+	_camada_ajustes.layer = 28
+	add_child(_camada_ajustes)
+	_camada_ajustes.add_child(overlay)
 	var shade := ColorRect.new()
 	shade.color = Color(0, 0, 0, 0.45)
 	shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -1416,12 +1423,22 @@ func open_settings() -> void:
 		_settings_icon.definir(true)
 
 
+## Os Ajustes saem da vista sem fechar (trocar o estilo recarrega o vale e a tela de
+## carregamento, na camada do HUD, ficaria sob a camada deles).
+func esconder_ajustes() -> void:
+	if is_instance_valid(_camada_ajustes):
+		_camada_ajustes.visible = false
+
+
 func close_settings() -> void:
 	if not settings_open():
 		return
 	_ajustes.fechar_ajuda()
 	_settings.queue_free()
 	_settings = null
+	if is_instance_valid(_camada_ajustes):
+		_camada_ajustes.queue_free()
+	_camada_ajustes = null
 	if is_instance_valid(_settings_icon):
 		_settings_icon.definir(false)
 	settings_closed.emit()

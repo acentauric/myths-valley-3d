@@ -109,11 +109,22 @@ func _run() -> void:
 	var lavoura = load("res://scripts/prototipo_3d/lavoura_vale.gd")
 	conferir(is_equal_approx(pontos[0].distance_to(pontos[1]), lavoura.COLUNAS * lavoura.ESPACO), "contorno não acompanha tamanho da lavoura")
 	conferir(is_equal_approx(pontos[1].distance_to(pontos[2]), lavoura.LINHAS * lavoura.ESPACO), "profundidade não acompanha lavoura")
+	# #203: a divisa do mapa é um contorno orgânico (muitos pontos, cantos redondos), nunca o retângulo do cadastro.
+	var divisas_gd = load("res://scripts/prototipo_3d/divisas_no_mapa.gd")
+	var organico: PackedVector3Array = divisas_gd.contorno_organico("terreno_zefa", mundo)
+	var cadastro: PackedVector3Array = terras.poligono("terreno_zefa", mundo)
+	conferir(organico.size() == divisas_gd.PONTOS and organico.size() > 8, "divisa do mapa continua um retângulo de poucos pontos")
+	var centro_cadastro := (cadastro[0] + cadastro[1] + cadastro[2] + cadastro[3]) * 0.25
+	var canto_fora := true
+	for ponto in organico:
+		for canto in cadastro:
+			canto_fora = canto_fora and ponto.distance_to(canto) > 0.5
+	conferir(canto_fora and organico[0].distance_to(centro_cadastro) > 1.0, "divisa orgânica ainda toca os cantos retos do cadastro")
 	mapa.fechar()
 	root.get_node("Partida").comecar(2)
 	conferir(not terras.meu("terreno_zefa") and terras.meu("rocado"), "nova vaga herdou terra comprada")
 	conferir(salvamento.carregar(gravado) and terras.meu("terreno_zefa"), "troca de vaga perdeu posse gravada")
-	for chave in ["pergunta", "comprou", "sem_divisa", "sem_dinheiro", "sua"]:
+	for chave in ["pergunta", "comprou", "sem_divisa", "sem_dinheiro", "sua", "a_venda", "de_dono"]:
 		var textos: Dictionary = jogo.dados(terras.ARQUIVO)
 		conferir(str(textos.get(chave + "_en", "")) != "" and str(textos.get(chave + "_es", "")) != "", "texto sem idioma: " + chave)
 	mapa.queue_free()

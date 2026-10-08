@@ -125,6 +125,15 @@ func _run() -> void:
 	tela.definir_tamanho_hud(1)
 	for no in [fixo, do_tema, novo]:
 		no.queue_free()
+	# #167: o corpo e os botões do tema ficaram menores que os de antes (19 e 15), e o painel de
+	# Ajustes não fixa tamanho de fonte com número solto: tudo sai de TemaMenu e escala junto.
+	var tema_menu = load("res://scripts/prototipo_3d/tema_menu.gd")
+	_conferir(tema_menu.FONTE_CORPO < 19 and tema_menu.FONTE_BOTAO < 15, "o padrão (Médio) do corpo e dos botões ficou menor")
+	_conferir(tema_menu.criar().default_font_size == tema_menu.FONTE_CORPO, "o tema usa a fonte do corpo da tabela")
+	var fonte_painel := FileAccess.get_file_as_string("res://scripts/prototipo_3d/painel_ajustes.gd")
+	var solto := RegEx.create_from_string("font_size\", [0-9]")
+	_conferir(solto.search(fonte_painel) == null, "o painel de Ajustes não fixa tamanho de fonte fora do tema")
+	_conferir(RegEx.create_from_string("_texto\\([^\\n]*, [0-9]+\\)").search(fonte_painel) == null, "os rótulos do painel pedem o tamanho ao tema")
 	# O jogador nasce sob a tela de carregamento: prender o cursor no _ready
 	# sumia com o mouse durante a montagem do vale.
 	var jogador := FileAccess.get_file_as_string("res://scripts/prototipo_3d/player_controller.gd")

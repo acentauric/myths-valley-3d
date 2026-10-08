@@ -69,7 +69,7 @@ const COR_SAIDA := Identidade.TERRACOTA
 
 const COR_FUNDO := Color(0.055, 0.082, 0.070, 0.985)
 const COR_TEXTO := Identidade.TEXTO
-const COR_APAGADA := Color(0.55, 0.58, 0.52)
+const COR_APAGADA := Identidade.COR_LEITURA_APAGADA
 const TAMANHO := Vector2(520, 560)
 const ALTURA_DA_LINHA := 40.0
 
@@ -159,9 +159,7 @@ func _montar() -> void:
 
 	_rodape = Label.new()
 	_rodape.name = "Rodape"
-	_rodape.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_TEXTO, 400))
-	_rodape.add_theme_font_size_override("font_size", 14)
-	_rodape.add_theme_color_override("font_color", COR_APAGADA)
+	Identidade.papel_leitura(_rodape, 14, COR_APAGADA)
 	_rodape.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	coluna.add_child(_rodape)
 

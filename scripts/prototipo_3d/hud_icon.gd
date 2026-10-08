@@ -1,7 +1,7 @@
 extends Control
 ## Ícones vetoriais dos botões de canto do HUD, no mesmo traço do som e do relógio:
 ## "casa" (HOME), "ajustes" (engrenagem), "restaurar" (seta circular), "mapa", "ajuda" (?), "tela_cheia" (cantos para fora em janela, para dentro em tela cheia), "fechar" (×), "salvar" (disquete), "tocar" (play), "pausar", "concluir" (✓), "externo" (link que sai do jogo), "camera" (anel dourado quando travada), "velocidade" (setas conforme
-## a Passagem do tempo, 0–3) e "estilo" (cubo para Tripo, chaves para Procedural), "editar" (lápis, um só:
+## a Passagem do tempo, 0–3) e "som", "cenario", "interface", "teclado" e "esforco" (as abas de Ajustes, com o "ajustes" na Geral), "estilo" (cubo para Tripo, chaves para Procedural), "editar" (lápis, um só:
 ## o do nome da vaga e o do painel MODELOS) e "apagar" (lixeira, vermelha pedindo a confirmação) dos
 ## cartões das vagas.
 
@@ -40,6 +40,39 @@ func _draw() -> void:
 		"vigor":
 			# Raio: esforço curto que se recupera.
 			draw_colored_polygon(PackedVector2Array([Vector2(14.5, 3), Vector2(5.5, 13.2), Vector2(11, 13.2), Vector2(9.5, 21), Vector2(18.5, 10.2), Vector2(13, 10.2)]), tinta)
+		"som":
+			# Alto-falante com duas ondas: a aba Sons de Ajustes; dourado com a aba aberta.
+			var cor_som := ouro if ativo else tinta
+			draw_polyline(PackedVector2Array([Vector2(3.5, 9.5), Vector2(7.5, 9.5), Vector2(12.5, 5), Vector2(12.5, 19), Vector2(7.5, 14.5), Vector2(3.5, 14.5), Vector2(3.5, 9.5)]), cor_som, 1.7, true)
+			draw_arc(Vector2(12.5, 12), 4.5, deg_to_rad(-50.0), deg_to_rad(50.0), 10, cor_som, 1.6, true)
+			draw_arc(Vector2(12.5, 12), 8.0, deg_to_rad(-50.0), deg_to_rad(50.0), 12, cor_som, 1.6, true)
+		"cenario":
+			# Paisagem: sol e duas serras sobre o chão; a aba Cenário (o vale) de Ajustes.
+			var cor_cenario := ouro if ativo else tinta
+			draw_circle(Vector2(17, 7.5), 2.4, cor_cenario)
+			draw_polyline(PackedVector2Array([Vector2(3, 19), Vector2(9, 9.5), Vector2(13.5, 16), Vector2(16, 12.5), Vector2(21, 19), Vector2(3, 19)]), cor_cenario, 1.7, true)
+		"interface":
+			# Janela com barra de título e dois controles deslizantes; a aba Interface de Ajustes.
+			var cor_janela := ouro if ativo else tinta
+			draw_rect(Rect2(3, 4.5, 18, 15), cor_janela, false, 1.7, true)
+			draw_line(Vector2(3, 8.5), Vector2(21, 8.5), cor_janela, 1.5, true)
+			draw_line(Vector2(6.5, 12.5), Vector2(17.5, 12.5), cor_janela, 1.4, true)
+			draw_line(Vector2(6.5, 16), Vector2(17.5, 16), cor_janela, 1.4, true)
+			draw_circle(Vector2(10.5, 12.5), 1.6, cor_janela)
+			draw_circle(Vector2(14.5, 16), 1.6, cor_janela)
+		"teclado":
+			# Teclado: caixa, duas fileiras de teclas e a barra de espaço; a aba Atalhos de Ajustes.
+			var cor_teclado := ouro if ativo else tinta
+			draw_rect(Rect2(2.5, 6.5, 19, 12), cor_teclado, false, 1.7, true)
+			for x in [6.5, 10.5, 14.5, 18.0]:
+				draw_circle(Vector2(x, 10.3), 1.0, cor_teclado)
+			for x in [8.5, 12.5, 16.5]:
+				draw_circle(Vector2(x, 13.3), 1.0, cor_teclado)
+			draw_line(Vector2(8, 16.2), Vector2(16, 16.2), cor_teclado, 1.5, true)
+		"esforco":
+			# Raio vazado: o custo de cada ação em fôlego e vigor; a aba Esforço de Ajustes.
+			var cor_esforco := ouro if ativo else tinta
+			draw_polyline(PackedVector2Array([Vector2(14, 2.5), Vector2(5.5, 13), Vector2(11, 13), Vector2(9.5, 21.5), Vector2(19, 10), Vector2(13.5, 10), Vector2(14, 2.5)]), cor_esforco, 1.7, true)
 		"externo":
 			# Link externo: caixa aberta no canto e seta saindo para fora.
 			var ouro_link := ouro if not ativo else Color("f5e3b3")
