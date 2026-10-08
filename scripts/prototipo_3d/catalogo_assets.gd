@@ -387,6 +387,29 @@ const DUAS_FACES := [
 	"cerca", "cerca_varas", "barraca_feira", "ervas_secando",
 ]
 
+## Árvores cujo TRONCO vem de costas no GLB (#156): o Tripo fechou o fuste com o
+## sentido dos triângulos para dentro, e com o descarte de costas ligado o lado de
+## fora do tronco some e se vê o lado de dentro da parede do fundo, como um tronco
+## oco ou com fenda (o ipê do adro, a pitangueira do quintal de toda casa).
+## `tests/troncos_fechados.gd` mede cada árvore de tronco: de cada raio horizontal
+## que cruza o pé dela, a fração cujo primeiro triângulo é de costas. As espécies
+## íntegras dão de 0 a 6%; estas dão de 12% a 79%. Ficam com as duas faces, e as
+## normais do GLB acompanham o sentido dos triângulos, então a face de trás sai
+## bem iluminada. As outras seguem com o descarte ligado: não é ajuste global, e a
+## lista só cresce com a medida (o portão reprova árvore que passa do limite e
+## fora daqui, e entrada que já não precisa).
+const TRONCO_DE_COSTAS := [
+	"pitangueira", "pitangueira_leve", "ipe_amarelo", "licurizeiro",
+	"clusia_leve", "jenipapeiro_leve", "mangue_leve", "mangue_longe",
+	"castanhola_longe", "piacava_longe",
+]
+
+
+## A peça precisa das duas faces: fina e aberta (`DUAS_FACES`) ou árvore de tronco
+## de costas (`TRONCO_DE_COSTAS`).
+static func precisa_das_duas_faces(chave: String) -> bool:
+	return DUAS_FACES.has(chave) or TRONCO_DE_COSTAS.has(chave)
+
 ## O ALCANCE DAS PEÇAS DO CENÁRIO (`dar_alcance`, chamado ao fim de `instanciar`).
 ##
 ## ~300 peças do cenário (28 construções de 10 mil triângulos, 50 árvores de 10 a 20
@@ -477,8 +500,8 @@ static func cena(chave: String) -> PackedScene:
 		_cenas[chave] = null
 		return null
 	var scene := load(path) as PackedScene
-	if scene != null and not DUAS_FACES.has(chave):
-		_descartar_costas(scene, path.contains("/arvores/"))
+	if scene != null:
+		_descartar_costas(scene, path.contains("/arvores/"), precisa_das_duas_faces(chave))
 	_cenas[chave] = scene
 	return scene
 
@@ -488,7 +511,7 @@ static func cena(chave: String) -> PackedScene:
 ## cascatas de sombra; medido de -14 a -18 ms). O ajuste vai NO PRÓPRIO material, que é
 ## compartilhado por todas as instâncias da cena e pela malha que `malha()` entrega ao
 ## MultiMesh da mata e do paisagismo. Material com transparência fica como está.
-static func _descartar_costas(scene: PackedScene, vegetacao: bool = false) -> void:
+static func _descartar_costas(scene: PackedScene, vegetacao: bool = false, duas_faces: bool = false) -> void:
 	var raiz := scene.instantiate()
 	for filho in raiz.find_children("*", "MeshInstance3D", true, false):
 		var instancia := filho as MeshInstance3D
@@ -497,9 +520,12 @@ static func _descartar_costas(scene: PackedScene, vegetacao: bool = false) -> vo
 		for s in instancia.mesh.get_surface_count():
 			if vegetacao:
 				preload("res://scripts/prototipo_3d/estacoes_vale.gd").registrar(instancia.get_active_material(s) as BaseMaterial3D)
+			if duas_faces:
+				continue
 			_tratar_material(instancia.get_surface_override_material(s))
 			_tratar_material(instancia.mesh.surface_get_material(s))
-		_tratar_material(instancia.material_override)
+		if not duas_faces:
+			_tratar_material(instancia.material_override)
 	raiz.free()
 
 

@@ -2,6 +2,20 @@
 
 ## Em desenvolvimento — 08/10/2026
 
+- **Os troncos do ipê, da pitangueira e de mais oito árvores deixam de parecer
+  ocos.** O Tripo fechou o fuste dessas árvores com os triângulos virados para
+  dentro, e o descarte das faces de trás (ligado nos GLBs para ganhar quadros)
+  fazia sumir a parede da frente do tronco: via-se o lado de dentro da parede do
+  fundo, como fenda. Todos os materiais dos GLBs já eram de duas faces, então o
+  defeito era o sentido da malha, não o material. Um portão mede cada árvore de
+  tronco por raios horizontais ao pé dela: as íntegras dão 0 a 6% de primeiro
+  triângulo de costas, as dez afetadas (pitangueira e a leve, ipê-amarelo,
+  licurizeiro, clusia leve, jenipapeiro leve, mangue leve e de longe, castanhola
+  de longe, piaçava de longe) 12% a 79%. Só essas voltam às duas faces
+  (`TRONCO_DE_COSTAS`), com as normais do GLB já acompanhando o sentido da malha,
+  e as demais seguem com o descarte ligado. Nenhum GLB, textura ou escala mudou
+  (#156).
+
 - **Todo campo de Ajustes tem o "?" de ajuda, e "Passos na água" ganha o ↺.** O campo
   era montado à mão, com um botão Ouvir que encurtava o seletor: agora é uma escolha
   como as vizinhas (Original ou Novos, ↺ volta a Original) e trocar a opção já toca a
