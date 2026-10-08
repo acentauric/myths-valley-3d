@@ -146,6 +146,36 @@ func _run() -> void:
 	# 3) o J dentro do painel é a pergunta da seção 3. Reabre para seguir.
 	vale.abrir_o_painel()
 	await _frames(2)
+	# --- A RECOMPENSA SE LÊ NA HORIZONTAL (07/10) ---------------------------
+	#
+	# "O texto das recompensas tá escrito na vertical": o rótulo de cada parte da
+	# recompensa, na linha de ícones, encolhia a zero e empilhava uma letra por linha.
+	var caderno = root.get_node("/root/CadernoDoVale")
+	caderno.abrir_missao("teste_da_recompensa", "A recompensa de teste", "pedro", true, "Um passo com recompensa, para o rótulo dela.")
+	var i_teste: int = caderno.indice("teste_da_recompensa")
+	_conferir(i_teste >= 0, "não consegui abrir uma missão de teste no caderno")
+	if i_teste >= 0:
+		caderno.ativas[i_teste]["recompensa"] = {"xp": 10, "peixe_assado": 2, "reis": 800}
+		painel._aba = painel.Aba.MISSOES
+		var na_lista := 0
+		var lista: Array = caderno.por_importancia()
+		for i in lista.size():
+			if str((lista[i] as Dictionary).get("id", "")) == "teste_da_recompensa":
+				na_lista = i
+		painel.escolher(na_lista)
+		await _frames(2)
+		var linha := painel.find_children("Recompensa", "", true, false)
+		_conferir(not linha.is_empty(), "o detalhe da missão não mostra a linha da recompensa")
+		if not linha.is_empty():
+			var rotulos: Array = (linha[0] as Node).find_children("", "Label", true, false)
+			_conferir(rotulos.size() == 3, "a recompensa de três partes tem %d rótulo(s)" % rotulos.size())
+			for rotulo in rotulos:
+				var etiqueta := rotulo as Label
+				_conferir(etiqueta.get_line_count() == 1 and etiqueta.size.x >= 24.0,
+					"a recompensa '%s' está na vertical: %d linha(s), %.0f px de largura" % [etiqueta.text, etiqueta.get_line_count(), etiqueta.size.x])
+		caderno.encerrar("teste_da_recompensa")
+		painel._redesenhar()
+		await _frames(1)
 	# --- A FORMA: ÍNDICE À ESQUERDA, PÁGINA À DIREITA ------------------------
 	#
 	# O painel passou a ter a cara do almanaque — "tente deixar o menu de missão

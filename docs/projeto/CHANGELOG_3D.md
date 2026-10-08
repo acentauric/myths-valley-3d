@@ -31,6 +31,11 @@
   (0/8)"; no resumo escrito à mão, "tábua 2/2, pedra 4/4"), e o passo de obra diz o que há
   na mochila do que a obra pede ("lenha 0/6, corda 2/2") — a conta é da mochila, agora, e
   não do passo: as seis lenhas que viraram as duas cordas aparecem como lenha 0/6.
+- **A recompensa do diário se lê na horizontal** (07/10: "o texto das recompensas das
+  missões tá escrito na vertical"). O rótulo de cada parte da recompensa, na linha de ícones
+  do detalhe da missão (J), tinha quebra automática e largura a preencher dentro de uma linha
+  que encolhe ao conteúdo: ficava com zero de largura e uma letra por linha. Sem quebra, no
+  tamanho do texto; o portão `painel` abre uma missão com recompensa e confere.
 - **As cenas do vale, pelos dados** (07/10, à noite: "implementar a mesma lógica de cutscene
   que fizemos no 2D: travando a tela e comandos do jogador e a própria engine conduzindo os
   personagens para uma interação com fala; explorar a vista, o cenário, aproximar dos
