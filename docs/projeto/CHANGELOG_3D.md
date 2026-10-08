@@ -2,6 +2,16 @@
 
 ## Em desenvolvimento — 08/10/2026
 
+- **A dica do E ganha plaqueta grande, alvo em ouro e requisito em branco.** Em "Tronco
+  caído / Ponha na mão: Machado" a plaqueta do E passa a ocupar a altura das duas linhas
+  (quadrada, com a letra grande, o que o jogador procura de relance); o alvo vira título,
+  em Cinzel ouro, e o requisito vira leitura, na sans legível do HUD, em creme e menor,
+  como o aviso de baixo. A dica de uma linha mostra só o título, com a plaqueta da altura
+  dela, e a caixa fica justa ao conteúdo, com margens parelhas. O padrão vale para toda
+  dica do E (pegar, falar, cortar, entrar), que nascem da mesma peça. O portão
+  `dica_requisito_e_mao` cobra rótulos separados, cores, fontes, plaqueta quadrada e a
+  altura nas dicas de uma e de duas linhas, em pt/en/es (#188).
+
 - **Ajustes ganha a aba Interface, e as abas viram ícones com tooltip.** Cursor, Tamanho do
   texto, Tamanho do HUD, Monitor e "Tamanho de cada interface" saem de Cenário para a aba
   nova, repartidos em duas colunas de 18 campos; o "Restaurar todas as interfaces" sobe

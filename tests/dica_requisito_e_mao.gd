@@ -29,16 +29,31 @@ func _run() -> void:
 			Dica.mostrar_em(dica, camera, Vector3.ZERO, exemplo)
 			await quadros()
 			var texto := dica.find_child("Acao", true, false) as Label
-			conferir(texto.text.contains("\n") and texto.get_line_count() >= 2, "requisito em duas linhas: " + exemplo)
+			var requisito := dica.find_child("Requisito", true, false) as Label
+			var tecla := dica.find_child("Tecla", true, false) as Control
+			var letra := dica.find_child("Letra", true, false) as Label
+			# #188: o alvo é título (ouro, Cinzel); o requisito, leitura (creme, sans do HUD, menor).
+			conferir(requisito != null and requisito.visible and requisito.text != "" and texto.text.find(char(10)) < 0, "alvo e requisito em rótulos separados: " + exemplo)
 			conferir(dica.size.x < largura * 0.65 and dica.size.y > 40, "altura e largura adaptam às linhas")
 			conferir(texto.size.x <= 282 and texto.size.y >= texto.get_minimum_size().y, "texto cabe sem corte")
+			conferir(requisito.size.x <= 282 and requisito.size.y >= requisito.get_minimum_size().y, "requisito cabe sem corte")
+			conferir(texto.get_theme_color("font_color").is_equal_approx(Dica.COR_DO_ALVO), "alvo em ouro")
+			conferir(requisito.get_theme_color("font_color").is_equal_approx(Dica.COR_DO_REQUISITO), "requisito em creme")
+			conferir(requisito.get_theme_font("font") != texto.get_theme_font("font"), "alvo e requisito em fontes diferentes")
+			conferir(requisito.get_theme_font_size("font_size") < texto.get_theme_font_size("font_size"), "requisito menor que o alvo")
+			# A plaqueta do E tem a altura das duas linhas, é quadrada e a letra cresce com ela.
+			var altura_das_linhas: float = texto.size.y + requisito.size.y
+			conferir(absf(tecla.size.y - altura_das_linhas) <= 3.0, "plaqueta com a altura das duas linhas (%.1f x %.1f)" % [tecla.size.y, altura_das_linhas])
+			conferir(absf(tecla.size.x - tecla.size.y) <= 2.0, "plaqueta quadrada (%.1f x %.1f)" % [tecla.size.x, tecla.size.y])
+			conferir(letra.get_theme_font_size("font_size") > 14, "letra da plaqueta grande")
 			var longa: String = exemplo + " e os materiais necessários para preparar este terreno com segurança"
 			Dica.mostrar_em(dica, camera, Vector3.ZERO, longa)
 			await quadros()
-			conferir(texto.get_line_count() > 2 and dica.size.x < largura * 0.65, "requisito longo quebra por largura")
+			conferir(requisito.get_line_count() > 1 and dica.size.x < largura * 0.65, "requisito longo quebra por largura")
 			Dica.mostrar_em(dica, camera, Vector3.ZERO, "Olhar")
 			await quadros()
-			conferir(texto.get_line_count() == 1 and dica.size.y < 40, "interação simples volta ao tamanho compacto")
+			conferir(not requisito.visible and texto.get_line_count() == 1 and dica.size.y < 40, "interação simples volta ao tamanho compacto")
+			conferir(absf(tecla.size.y - texto.size.y) <= 3.0 and absf(tecla.size.x - tecla.size.y) <= 2.0, "plaqueta da altura da linha única e quadrada (%.1f x %.1f)" % [tecla.size.x, tecla.size.y])
 			dica.queue_free()
 			await process_frame
 	var inv = root.get_node("Inventario")
