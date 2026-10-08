@@ -66,6 +66,10 @@ extends Node
 signal missao_mudou(texto: String, alvo: Vector3, indice: int, total: int)
 ## Um passo fechou e pagou (ver `_pagar`): o texto diz de quem e o quê.
 signal pagou(texto: String)
+## UM PASSO DO MEIO DA MISSÃO FECHOU (07/10): o resumo dele, para o HUD marcar a tarefa
+## cumprida — pulso, risco e sinete (`PrototypeHUD.tarefa_concluida`). O último passo não
+## passa por aqui: ele é a festa da missão inteira (`CadernoDoVale.festeja`).
+signal passo_cumprido(resumo: String)
 ## O morador entregou uma ferramenta (ver `entregar`): o texto diz o número da
 ## barra que a põe na mão.
 signal entregou(texto: String)
@@ -952,6 +956,8 @@ func avancar() -> void:
 		# inteira de um morador da teia é o salto da afinidade, como no 2D.
 		if ultimo:
 			_dar_o_favor()
+		else:
+			passo_cumprido.emit(resumo_do_passo(fechando))
 		CadernoDoVale.concluir(_id_no_caderno(fechando),
 			{"titulo": nome_da_missao if nome_da_missao != "" else _titulo_do_passo(fechando), "missao": "",
 				"quem": _nome_do_dono()} if ultimo else null)

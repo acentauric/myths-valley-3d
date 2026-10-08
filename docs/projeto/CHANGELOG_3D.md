@@ -23,6 +23,12 @@
   cada quatro golpes, e a dica conta o trabalho ("Lajedo 12/96"); a seta de "junte
   pedras" não aponta a pedra grande a quem só tem a picareta de ferro. As árvores já
   seguiam a regra (madeira branca, de lei e dura, com nível e aço).
+- **A tarefa concluída se vê e se ouve** (07/10, à noite: "precisamos evidenciar melhor
+  que o jogador concluiu uma tarefa da missão... talvez um efeito brilhante no balão de
+  missão"). A festa de tela inteira continua só no fim da missão; cada passo do meio
+  pulsa o quadro da missão em ouro, desce dele um risco "✓ tarefa" que se apaga sozinho,
+  e soa um sinete curto (`tarefa_concluida.mp3`, dois sinos sintetizados, originais). A
+  fila avisa pelo sinal `passo_cumprido`; portão novo `tarefa_concluida`.
 - **O Pedro conduz pela estrada e pela ponte, e volta por quem ficou** (07/10, à noite:
   "ao sair da praça, o Pedro tá correndo por trás da casa ao invés de pegar a estrada; o
   mesmo na água do rio, ao invés de passar na ponte"; "o Pedro tem que andar já na

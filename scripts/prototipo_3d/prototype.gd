@@ -1307,6 +1307,7 @@ func _montar_moradores(spawn: Vector3) -> void:
 		pedro.narrou.connect(func(texto: String) -> void: hud.set_notice("Pedro: " + texto))
 		# O QUE A CHEGADA PAGA é dito no HUD, como nas filas dos moradores.
 		pedro.pagou.connect(func(texto: String) -> void: hud.set_notice(texto))
+		pedro._cadeia.passo_cumprido.connect(hud.tarefa_concluida)
 		pedro.entregou.connect(func(texto: String) -> void: hud.set_notice(texto))
 		# QUEM FICOU PARA TRÁS NA CONDUÇÃO vê, no alto da tela, o aviso de voltar.
 		pedro.esperando_quem_ficou.connect(func(esperando: bool) -> void:
@@ -2598,6 +2599,8 @@ func _pendurar_cadeia(morador: Node3D, arquivo: String, perto: float, chave: Str
 		missao_do_vale_mudou.emit(t, a, i, n))
 	# A RECOMPENSA DO PASSO (#48) é dita no HUD, como no 2D.
 	cadeia.pagou.connect(func(texto: String) -> void: hud.set_notice(texto))
+	# A TAREFA CUMPRIDA no meio da missão: o quadro pulsa, o risco desce, o sinete soa.
+	cadeia.passo_cumprido.connect(hud.tarefa_concluida)
 	# A FERRAMENTA ENTREGUE fica na barra, e o HUD diz o número que a põe na mão.
 	cadeia.entregou.connect(func(texto: String) -> void: hud.set_notice(texto))
 	cadeia.cena.connect(_tocar_a_cena)

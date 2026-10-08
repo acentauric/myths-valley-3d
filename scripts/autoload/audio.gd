@@ -447,8 +447,13 @@ func _sumir_narracao() -> void:
 	_trecho_fade.tween_callback(_narracao.stop)
 
 
+## O último efeito pedido, pelo nome resolvido: é como um portão "ouve" o sinete da tarefa.
+var ultimo_efeito := ""
+
+
 func efeito(nome: String) -> void:
 	var nome_base: String = ALIASES_DE_EFEITO.get(nome, nome)
+	ultimo_efeito = nome_base
 	# Os sons de interface saem pelo tocador de interface (e ganham a variante _madeira): o "não pode"
 	# da mochila (`menu_negado`) é um deles, para não cortar o golpe que acabou de soar.
 	var menu := nome_base in SONS_DE_INTERFACE
