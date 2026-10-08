@@ -248,6 +248,16 @@ func _obstaculos_do_hud() -> Array:
 			continue
 		var controle := no as Control
 		itens.append(controle.get_global_transform_with_canvas() * Rect2(Vector2.ZERO, controle.size))
+	# Na carga, o CARREGANDO com a rosa girando, a marca e o almanaque são obstáculos: as peças
+	# soltas da tela (as camadas de capa e véus ocupam a janela inteira e não contam).
+	var janela := painel_observador.get_viewport_rect().size
+	for tela in get_nodes_in_group("telas_de_carregamento"):
+		for filho in tela.get_children():
+			if not (filho is Control) or not (filho as Control).visible:
+				continue
+			var rect := (filho as Control).get_global_rect()
+			if rect.size.x * rect.size.y < janela.x * janela.y * 0.35:
+				itens.append(rect)
 	return itens
 
 

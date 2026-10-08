@@ -89,7 +89,10 @@ jogo, e o relatório de escalonamentos e progresso. O determinístico segue como
 base e a IA só entra quando ele trava, sob o orçamento da sessão; as chamadas
 reais ao Jev e ao GPT estão escritas e validadas com respostas falsas
 (`tools/jev/test_escada.py`, `tests/testador_sessao.gd`), à espera de uma sessão
-curta real autorizada. Documentação em [AUTOPLAYER.md](../testes/AUTOPLAYER.md).
+curta real autorizada. A #174 veste o painel dessa sessão com o visual do HUD
+(laca, filete de ouro, Cinzel e Cormorant), a ação em palavras e o Parar com a
+tecla numa plaqueta, fora do CARREGANDO e do HUD do vale. Documentação em
+[AUTOPLAYER.md](../testes/AUTOPLAYER.md).
 
 A #154 aponta o passo de entrada à soleira externa real, em vez do centro
 da casa; Pedro espera ao lado da passagem. Os portões casa, casa_procedural

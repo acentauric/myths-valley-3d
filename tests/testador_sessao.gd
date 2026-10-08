@@ -124,10 +124,21 @@ func _painel() -> void:
 			marcadores += 1
 	_conferir(marcadores == PainelSessao.MAX_DECISOES, "as últimas decisões aparecem em lista curta (%d)" % marcadores)
 	var botoes := painel.find_children("*", "Button", true, false)
-	_conferir(botoes.size() == 1 and (botoes[0] as Button).text == "F8 parar", "o Parar é uma plaqueta curta com a tecla")
-	_conferir((botoes[0] as Button).size.y <= 28.0, "o Parar é pequeno")
+	_conferir(botoes.size() == 1 and (botoes[0] as Button).text == "Parar", "o Parar é um botão curto")
+	_conferir((botoes[0] as Button).size.y <= 36.0 and (botoes[0] as Button).size.x <= 90.0, "o Parar é pequeno e discreto")
+	var teclas: Array[String] = []
+	for no in painel.find_children("*", "Label", true, false):
+		if (no as Label).text == "F8":
+			teclas.append("F8")
+	_conferir(teclas.size() == 1, "a tecla F8 vem numa plaqueta ao lado do Parar")
 	_conferir(is_equal_approx(painel.size.x, PainelSessao.LARGURA) and painel.size.y > inicial.y, "o painel cresce com o conteúdo")
 	_conferir(painel.size.y <= 460.0, "o painel não passa de ~460 px")
+	var moldura := painel.get_theme_stylebox("panel") as StyleBoxFlat
+	_conferir(moldura != null and moldura.border_width_left == 1 and moldura.corner_detail == 1, "o painel usa a laca com borda e canto chanfrado do HUD")
+	_conferir(moldura != null and moldura.bg_color.g > moldura.bg_color.r and moldura.border_color.r > moldura.border_color.b, "fundo verde-escuro e borda dourada")
+	_conferir(painel.theme != null and painel.theme.has_stylebox("normal", "BotaoNegativo"), "o painel carrega o tema do menu")
+	var titulo := painel.find_children("*", "Label", true, false)[0] as Label
+	_conferir(titulo.uppercase and titulo.get_theme_font("font") != ThemeDB.fallback_font, "o título tem destaque na fonte do jogo")
 	var parou := [false]
 	painel.parar_pedido.connect(func() -> void: parou[0] = true)
 	(botoes[0] as Button).pressed.emit()

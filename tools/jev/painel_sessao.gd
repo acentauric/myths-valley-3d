@@ -4,6 +4,8 @@ extends PanelContainer
 ## `sessao.gd` junta os dados (`mostrar`) e escuta o pedido de parar.
 
 const TestadorApoios = preload("res://scripts/prototipo_3d/testador_apoios.gd")
+const Identidade = preload("res://scripts/prototipo_3d/identidade.gd")
+const TemaMenu = preload("res://scripts/prototipo_3d/tema_menu.gd")
 
 signal parar_pedido
 
@@ -13,12 +15,11 @@ const MARGEM_DE_BAIXO := 104.0       # acima da barra de mão e do nome do item
 const FOLGA := 8.0                   # respiro mínimo entre o painel e o que ele não pode cobrir
 const TOPO := 70.0                   # abaixo do relógio e dos botões do alto
 const MAX_DECISOES := 4
-const OURO := Color("e8c46a")
 const NOTA := Color("c9b98f")
-const ALERTA := Color("e39475")
+const ALERTA := Identidade.TERRACOTA
 const CORES := {
 	"deterministic": Color("8fd1a5"),
-	"jev": Color("e8c46a"),
+	"jev": Identidade.OURO,
 	"gpt": Color("8fb4e8"),
 }
 
@@ -49,6 +50,7 @@ class BarraMarcos extends Control:
 
 var _t: Callable                  # chave -> frase no idioma da sessão
 var _titulo: Label
+var _pilula: PanelContainer
 var _nivel: Label
 var _sub: Label
 var _acao: Label
@@ -66,38 +68,54 @@ var _parar: Button
 
 func montar(t: Callable) -> void:
 	_t = t
-	var margens := MarginContainer.new()
-	for lado in ["left", "right", "top", "bottom"]:
-		margens.add_theme_constant_override("margin_" + lado, 10)
-	add_child(margens)
+	# O tema do menu e do HUD: botões em Cinzel com a laca verde e o filete de ouro.
+	theme = TemaMenu.criar()
+	add_theme_stylebox_override("panel", _estilo_do_painel())
 	var caixa := VBoxContainer.new()
 	caixa.add_theme_constant_override("separation", 5)
-	margens.add_child(caixa)
+	add_child(caixa)
 	var cabeca := HBoxContainer.new()
+	cabeca.add_theme_constant_override("separation", 8)
 	caixa.add_child(cabeca)
-	_titulo = _rotulo(cabeca, 16)
+	_titulo = _rotulo(cabeca, 15, Identidade.CREME, Identidade.fonte(Identidade.FONTE_TITULO, 600, 3))
+	_titulo.uppercase = true
+	_titulo.autowrap_mode = TextServer.AUTOWRAP_OFF
 	_titulo.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_nivel = _rotulo(cabeca, 13)
-	_sub = _rotulo(caixa, 12, NOTA)
-	_acao = _rotulo(caixa, 15)
-	_motivo = _rotulo(caixa, 12, NOTA)
-	_objetivo = _rotulo(caixa, 13)
+	_pilula = PanelContainer.new()
+	_pilula.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	cabeca.add_child(_pilula)
+	_nivel = _rotulo(_pilula, 11, Color.WHITE, Identidade.fonte(Identidade.FONTE_TITULO, 700, 1))
+	_nivel.autowrap_mode = TextServer.AUTOWRAP_OFF
+	_nivel.uppercase = true
+	_sub = _rotulo(caixa, 15, NOTA, Identidade.fonte(Identidade.FONTE_ITALICO, 500))
+	caixa.add_child(Identidade.divisor())
+	_acao = _rotulo(caixa, 19, Identidade.CREME, Identidade.fonte(Identidade.FONTE_TEXTO, 700))
+	# O nome técnico da ação fica na dica: o Label ignora o mouse por padrão e não a mostraria.
+	_acao.mouse_filter = Control.MOUSE_FILTER_STOP
+	_motivo = _rotulo(caixa, 15, NOTA)
+	_objetivo = _rotulo(caixa, 16, Identidade.TEXTO)
 	_barra = BarraMarcos.new()
 	caixa.add_child(_barra)
-	_capitulo = _rotulo(caixa, 12)
-	_agora = _rotulo(caixa, 12, NOTA)
-	_ritmo = _rotulo(caixa, 12, NOTA)
-	_travado = _rotulo(caixa, 12, ALERTA)
+	_capitulo = _rotulo(caixa, 15, Identidade.TEXTO)
+	_agora = _rotulo(caixa, 15, NOTA)
+	_ritmo = _rotulo(caixa, 15, NOTA)
+	_travado = _rotulo(caixa, 15, ALERTA)
 	_decisoes = VBoxContainer.new()
-	_decisoes.add_theme_constant_override("separation", 1)
+	_decisoes.add_theme_constant_override("separation", 0)
 	caixa.add_child(_decisoes)
 	var rodape := HBoxContainer.new()
+	rodape.add_theme_constant_override("separation", 8)
 	caixa.add_child(rodape)
-	_gasto = _rotulo(rodape, 12, NOTA)
+	_gasto = _rotulo(rodape, 14, NOTA)
 	_gasto.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	rodape.add_child(_plaqueta_da_tecla("F8"))
+	# O Parar é um botão do jogo, só que pequeno: a tecla vem na plaqueta ao lado, como nos atalhos.
 	_parar = Button.new()
 	_parar.focus_mode = Control.FOCUS_NONE
-	_parar.add_theme_font_size_override("font_size", 11)
+	_parar.theme_type_variation = &"BotaoNegativo"
+	_parar.add_theme_font_size_override("font_size", 12)
+	_parar.add_theme_constant_override("outline_size", 0)
+	_parar.mouse_entered.connect(func() -> void: Audio.efeito("ui_hover"))
 	_parar.pressed.connect(func() -> void: parar_pedido.emit())
 	rodape.add_child(_parar)
 	# Largura fixa, altura do conteúdo; a posição é escolhida por `posicionar`.
@@ -105,11 +123,66 @@ func montar(t: Callable) -> void:
 	custom_minimum_size = Vector2(LARGURA, 0.0)
 
 
-func _rotulo(pai: Control, tamanho: int, cor := Color.WHITE) -> Label:
+## A laca verde-escura com o filete dourado suave e o canto chanfrado, como as plaquinhas do HUD.
+static func _estilo_do_painel() -> StyleBoxFlat:
+	var estilo := StyleBoxFlat.new()
+	estilo.bg_color = Color(Identidade.LACA, 0.93)
+	estilo.border_color = TemaMenu.BORDA_SUAVE
+	estilo.set_border_width_all(1)
+	estilo.set_corner_radius_all(6)
+	estilo.corner_detail = 1
+	estilo.shadow_color = Color(0, 0, 0, 0.35)
+	estilo.shadow_size = 6
+	estilo.content_margin_left = 14
+	estilo.content_margin_right = 14
+	estilo.content_margin_top = 11
+	estilo.content_margin_bottom = 11
+	return estilo
+
+
+## A etiqueta de quem decidiu: cor do nível sobre um fundo do mesmo tom.
+static func _estilo_da_pilula(cor: Color) -> StyleBoxFlat:
+	var estilo := StyleBoxFlat.new()
+	estilo.bg_color = Color(cor, 0.16)
+	estilo.border_color = Color(cor, 0.7)
+	estilo.set_border_width_all(1)
+	estilo.set_corner_radius_all(4)
+	estilo.corner_detail = 1
+	estilo.content_margin_left = 7
+	estilo.content_margin_right = 7
+	estilo.content_margin_top = 1
+	estilo.content_margin_bottom = 1
+	return estilo
+
+
+## A tecla em papel claro, como nas dicas de interação (`dica_tecla.gd`).
+static func _plaqueta_da_tecla(letra: String) -> PanelContainer:
+	var tecla := PanelContainer.new()
+	tecla.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	var estilo := StyleBoxFlat.new()
+	estilo.bg_color = Identidade.CREME
+	estilo.set_corner_radius_all(4)
+	estilo.content_margin_left = 6
+	estilo.content_margin_right = 6
+	estilo.content_margin_top = 1
+	estilo.content_margin_bottom = 1
+	tecla.add_theme_stylebox_override("panel", estilo)
+	var rotulo := Label.new()
+	rotulo.text = letra
+	rotulo.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_TITULO, 700))
+	rotulo.add_theme_font_size_override("font_size", 12)
+	rotulo.add_theme_color_override("font_color", Color("2b2a22"))
+	tecla.add_child(rotulo)
+	return tecla
+
+
+func _rotulo(pai: Control, tamanho: int, cor := Color.WHITE, fonte: Font = null) -> Label:
 	var r := Label.new()
 	r.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	r.add_theme_font_size_override("font_size", tamanho)
 	r.add_theme_color_override("font_color", cor)
+	if fonte != null:
+		r.add_theme_font_override("font", fonte)
 	pai.add_child(r)
 	return r
 
@@ -118,7 +191,7 @@ func _rotulo(pai: Control, tamanho: int, cor := Color.WHITE) -> Label:
 func mostrar(d: Dictionary) -> void:
 	_titulo.text = str(d.get("titulo", ""))
 	var nivel := str(d.get("nivel", ""))
-	_nivel.visible = nivel != ""
+	_pilula.visible = nivel != ""
 	if nivel != "":
 		var etiqueta: String = _t.call("nivel_" + nivel)
 		var modo := str(d.get("modo", "normal"))
@@ -127,7 +200,9 @@ func mostrar(d: Dictionary) -> void:
 		elif modo == "plan" and d.get("plano") is Array:
 			etiqueta += " · " + str(_t.call("modo_plan")) % [int(d["plano"][0]), int(d["plano"][1])]
 		_nivel.text = etiqueta
-		_nivel.add_theme_color_override("font_color", CORES.get(nivel, Color.WHITE))
+		var cor: Color = CORES.get(nivel, Color.WHITE)
+		_nivel.add_theme_color_override("font_color", cor)
+		_pilula.add_theme_stylebox_override("panel", _estilo_da_pilula(cor))
 	_sub.text = str(d.get("sub", ""))
 	_acao.text = str(d.get("acao", ""))
 	_acao.tooltip_text = str(d.get("acao_tecnica", ""))
@@ -186,7 +261,8 @@ func _listar(todos: Array) -> void:
 			r = existentes[i]
 		else:
 			r = Label.new()
-			r.add_theme_font_size_override("font_size", 11)
+			r.add_theme_font_size_override("font_size", 14)
+			r.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_TEXTO, 600))
 			r.clip_text = true
 			_decisoes.add_child(r)
 		r.text = "● " + str(itens[i]["texto"])

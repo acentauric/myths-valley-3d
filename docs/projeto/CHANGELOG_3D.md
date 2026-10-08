@@ -2,6 +2,17 @@
 
 ## Em desenvolvimento — 08/10/2026
 
+- **O painel do teste automático ganha o visual do HUD.** Deixa de ser a caixa escura
+  padrão do Godot: fundo de laca verde-escura, borda dourada suave e canto chanfrado,
+  o tema do menu (Cinzel e Cormorant), título curto em destaque ("Testando") com a
+  etiqueta de quem decidiu ao lado e, abaixo, a contagem de ações e o tempo. A ação
+  atual aparece em palavras de jogador ("Aproximar de Tonho", "Andar para a frente"),
+  com o nome técnico só na dica ao passar o mouse e no relatório. O Parar vira um botão
+  do jogo, pequeno, com o F8 numa plaqueta de papel como nas dicas de interação. Na
+  tela de carregamento o painel sai de cima do "CARREGANDO", da rosa girando, da marca
+  e do almanaque, e no vale deixa livres a barra de mão, o minimapa e o resto do HUD.
+  Textos em português, inglês e espanhol (#174).
+
 - **O botão Testar abre um modal com o determinístico, o Jev e o GPT em escada, e o
   painel da sessão mostra quem decidiu e quanto falta para zerar.** O modal usa o
   cabeçalho dos outros: o determinístico é a base e está sempre ligado; o Jev e o

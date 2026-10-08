@@ -50,15 +50,17 @@ de câmera do jogador fora do teste não muda.
 
 ### O painel da sessão
 
-Fica num canto livre da tela (o primeiro que não encosta na barra de mão, no minimapa nem
-no resto do HUD, grupo `obstaculos_do_hud`) e mostra: quem decidiu a ação atual
+Usa o visual do HUD (laca verde-escura, borda dourada suave, canto chanfrado e o tema do
+menu). Fica num canto livre da tela (o primeiro que não encosta na barra de mão, no minimapa
+nem no resto do HUD, grupo `obstaculos_do_hud`; na carga, sai de cima do "CARREGANDO", da
+rosa girando, da marca e do almanaque) e mostra: quem decidiu a ação atual
 (Determinístico, Jev ou GPT, com cor e, no plano, "plano 2 de 3"; em recuperação local,
 "recuperação local"); a **ação em palavras** ("Aproximar de Tonho") com o nome técnico na
 dica; o motivo; a missão em curso e o contador; a **barra de progresso até zerar o jogo**,
 dividida em marcos por capítulo, com a linha "Capítulo: Chegada ao arraial · 13/16 · 43,5% da
 história", o próximo objetivo e a estimativa de ações e tempo restantes no ritmo atual; as
-últimas quatro decisões; os sinais de trava; e o gasto. O **F8 parar** é uma plaqueta
-pequena no rodapé.
+últimas quatro decisões; os sinais de trava; e o gasto. O **Parar** é um botão pequeno do
+jogo no rodapé, com o F8 numa plaqueta de papel ao lado, como nas dicas de interação.
 
 ## Escada de decisão
 
