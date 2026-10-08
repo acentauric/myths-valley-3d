@@ -52,6 +52,7 @@ def generate(directory, live=True):
     counts, durations, steps = Counter(), Counter(), {}
     rows, issues, movement = [], [], 0.0
     clock_stops = []
+    language = ""
     sampled_movement, presentation_seconds = 0.0, 0.0
     stalled, stall_start, stall_goal, stall_count = [], None, "", 0
     previous_decision = None
@@ -71,6 +72,8 @@ def generate(directory, live=True):
             kind = event.get("kind")
             if kind == "game_ready":
                 start = event.get("elapsed", 0)
+            if kind == "session_language":
+                language = str(event.get("label", ""))
             if kind == "achado" and event.get("type") == "relogio_parado":
                 clock_stops.append(event)
             if kind == "decision":
@@ -129,6 +132,7 @@ def generate(directory, live=True):
              f"Estado: **{cell(stop)}**. História implementada concluída: **{'sim' if complete else 'não demonstrado'}**.", "",
              f"Tempo registrado: {elapsed:.1f} s; desde o jogo pronto: {max(0, elapsed - start):.1f} s." if start is not None else f"Tempo registrado: {elapsed:.1f} s; carregamento sem marcador de início.",
              f"Ações: {sum(counts.values())}. Deslocamento acumulado entre observações: {movement:.2f} unidades.", "",
+             *([f"Idioma da sessão: **{cell(language)}**.", ""] if language else []),
              f"Trajeto amostrado durante movimentos: {sampled_movement:.2f} unidades; tempo de decisão/apresentação: {presentation_seconds:.2f} s.", "",
              "O trajeto amostrado soma segmentos a cada meio segundo, incluindo desvios e retornos; não mede cada frame. "
              "O deslocamento soma distâncias entre início e fim das ações; não mede cada curva do trajeto. "

@@ -23,6 +23,19 @@ MAX_TOKENS = 64_000  # Reserve a full context before each call, including failur
 MAX_BODY = 128_000  # Text/JSON game context, within the 64k model context.
 
 
+LANGUAGES = {"pt": "Português", "en": "English", "es": "Español", "zh": "中文"}
+
+
+def language_code(value):
+    """pt, en, es ou zh (aceita pt_BR, zh-CN...); None sem parâmetro. Outro valor é erro."""
+    if value is None or str(value).strip() == "":
+        return None
+    code = str(value).strip().lower().replace("-", "_").split("_")[0]
+    if code not in LANGUAGES:
+        raise ValueError("Idioma desconhecido: " + str(value) + " (use pt, en, es ou zh).")
+    return code
+
+
 def pending_stop_requires_termination(reason, finished, elapsed):
     """Let Godot send its final event/capture and quit before the watchdog kills it."""
     return bool(reason) and not finished and elapsed >= 10.0
@@ -142,8 +155,9 @@ def configuration() -> dict[str, str]:
 
 class Session:
     def __init__(self, directory: Path, config: dict, seconds=600, calls=300,
-                 budget="0.10", offline=False, idle_seconds=30):
+                 budget="0.10", offline=False, idle_seconds=30, language=None):
         self.directory = directory
+        self.language = language_code(language)
         self.config = config
         self.seconds = seconds
         self.max_calls = calls
@@ -166,6 +180,9 @@ class Session:
         self.reference = game_reference()
         self.sol = False
         self.robot = None
+        # O idioma da sessão vai para o relatório (#180): o do jogador, ou o padrão do perfil isolado.
+        self.log("session_language", language=self.language or "",
+                 label=LANGUAGES[self.language] if self.language else "padrão do jogo (sem --idioma)")
         self.log("context_manifest", goal=self.reference["goal"],
                  mission_files=[x["file"] for x in self.reference["mission_definitions"]],
                  reference_bytes=len(json.dumps(self.reference, ensure_ascii=False).encode("utf-8")),
@@ -451,7 +468,7 @@ class Session:
             step = outcome.get("after", {}).get("objective", {}).get("id")
             if step and step not in steps:
                 steps.append(step)
-        summary = {**self.status(), "mode": "robot" if self.robot is not None else ("sol" if self.sol else ("offline" if self.offline else "jev")),
+        summary = {**self.status(), "language": self.language or "", "mode": "robot" if self.robot is not None else ("sol" if self.sol else ("offline" if self.offline else "jev")),
                    "gameplay_seconds": 0 if self.game_started is None else round(time.monotonic() - self.game_started, 1),
                    "godot_exit_code": exit_code, "decisions": len(self.decisions),
                    "outcomes": self.results, "observed_mission_steps": steps,
@@ -536,6 +553,8 @@ def main():
     parser.add_argument("--headless", action="store_true")
     parser.add_argument("--godot", default=r"C:\Tools\Godot\Godot_v4.7.2-stable_win64_console.exe")
     parser.add_argument("--output", type=Path)
+    parser.add_argument("--idioma", help="Idioma da sessão (pt, en, es ou zh). O perfil é isolado e só o idioma atravessa; "
+                        "sem o parâmetro vale o padrão do jogo.")
     parser.add_argument("--profile", type=Path, help="Reuse an explicitly selected isolated playtest profile; report output remains new.")
     args = parser.parse_args()
     if args.seconds < 0 or args.calls < 0 or args.idle_seconds < 0 or not Decimal("0") < Decimal(args.budget) <= Decimal("0.50"):
@@ -544,6 +563,10 @@ def main():
         parser.error("SOL e offline sao modos distintos.")
     if (args.offline or args.sol) and args.seconds == 0:
         parser.error("Validacao offline exige --seconds positivo, pois nao consome o orcamento.")
+    try:
+        language = language_code(args.idioma)
+    except ValueError as error:
+        parser.error(str(error))
     config = {} if args.offline or args.sol or args.robot else configuration()
     if not args.offline and not args.sol and not args.robot and not config.get("TYPESAFE_API_KEY"):
         parser.error("Preencha TYPESAFE_API_KEY no .env local; a chave nunca sera exibida.")
@@ -553,7 +576,7 @@ def main():
         parser.error("Executavel do Godot nao encontrado.")
     directory = args.output or PROJECT / "tools/temp/jev" / (time.strftime("%Y%m%d-%H%M%S") + "-" + secrets.token_hex(3))
     directory.mkdir(parents=True, exist_ok=False)
-    session = Session(directory, config, args.seconds, args.calls, args.budget, args.offline, args.idle_seconds)
+    session = Session(directory, config, args.seconds, args.calls, args.budget, args.offline, args.idle_seconds, language)
     session.sol = args.sol
     if args.robot:
         from robo import JogadorAutomatico
@@ -567,8 +590,11 @@ def main():
     for name in ("APPDATA", "XDG_DATA_HOME", "XDG_CONFIG_HOME"):
         environment[name] = str(profile.resolve())
     for name in list(environment):
-        if "API_KEY" in name or name.startswith("TYPESAFE_"):
+        if "API_KEY" in name or name.startswith("TYPESAFE_") or name == "MV_JEV_IDIOMA":
             del environment[name]
+    if language:
+        # Só o idioma atravessa o perfil isolado; o sessao.gd o grava no perfil novo.
+        environment["MV_JEV_IDIOMA"] = language
     environment.update(MV_JEV_URL=f"http://127.0.0.1:{server.server_port}", MV_JEV_TOKEN=session.token,
                        MV_JEV_OUTPUT=str(directory.resolve()), MV_JEV_SECONDS=str(args.seconds),
                        MV_JEV_BUDGET=str(args.budget), MV_JEV_ROBOT="1" if args.robot else "0", MV_JEV_SOL="1" if args.sol else "0",

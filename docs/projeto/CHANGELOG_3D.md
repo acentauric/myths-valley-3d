@@ -2,6 +2,13 @@
 
 ## Em desenvolvimento — 08/10/2026
 
+- **A sessão do testador abre no idioma que o jogador escolheu.** O botão Testar manda o
+  idioma atual (português, English, Español ou 中文) para o `jogar.py --idioma`, que o
+  grava no perfil isolado da sessão: menu, tela de carga, HUD, falas em texto e o painel
+  do testador, agora também em chinês, saem nele, sem copiar save nem progresso. O
+  relatório registra o idioma usado, e rodar o `jogar.py` sem o parâmetro segue igual
+  (#180).
+
 - **O testador sai pela porta antes de ir a qualquer alvo de fora, e para de seguir o
   Pedro quando o tutorial acaba.** Dentro da casa, da igreja ou do casarão, seguir,
   aproximar, explorar ou ir ao objetivo passa primeiro pela soleira de dentro; preso num

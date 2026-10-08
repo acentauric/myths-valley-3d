@@ -1844,8 +1844,10 @@ func _explorar() -> void:
 ## pessoais. O launcher automático escolhe JOGAR, não este botão, evitando recursão.
 func _teste_automatico() -> void:
 	var script := ProjectSettings.globalize_path("res://tools/jev/jogar.py")
+	# O perfil do testador é isolado e só o idioma atravessa (#180): pt, en, es ou zh.
+	var idioma_atual: String = IdiomaMenu.LOCALES[IdiomaMenu.indice()].get_slice("_", 0)
 	var pid := OS.create_process("python", PackedStringArray([
-		script, "--robot", "--seconds", "0", "--godot", OS.get_executable_path()]))
+		script, "--robot", "--seconds", "0", "--idioma", idioma_atual, "--godot", OS.get_executable_path()]))
 	if pid <= 0:
 		estado_testador.text = tr("Não foi possível iniciar o testador. Confira a instalação do Python.")
 	else:

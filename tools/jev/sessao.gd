@@ -83,6 +83,7 @@ func _run() -> void:
 		return
 	textos = JSON.parse_string(FileAccess.get_file_as_string("res://tools/jev/textos.json"))
 	idioma = load("res://scripts/prototipo_3d/idioma_menu.gd")
+	_aplicar_idioma_da_sessao(OS.get_environment("MV_JEV_IDIOMA"))
 	_montar_painel()
 	change_scene_to_file("res://scenes/prototipo_3d/inicio.tscn")
 	await process_frame
@@ -154,6 +155,21 @@ func _run() -> void:
 	await _post("/stop", {"reason": motivo})
 	_capturar()
 	quit()
+
+
+## O IDIOMA DO JOGADOR atravessa o perfil isolado (#180): `jogar.py --idioma` o manda por
+## MV_JEV_IDIOMA e ele é gravado no `user://` novo da sessão, de onde o menu, a carga, o
+## HUD, as falas e o painel do testador o leem. O save e o progresso do jogador não vêm.
+## Devolve o índice aplicado, ou -1 sem idioma pedido (ou desconhecido): vale o padrão.
+func _aplicar_idioma_da_sessao(codigo: String) -> int:
+	if codigo.is_empty():
+		return -1
+	var indice: int = idioma.idioma_do_sistema(codigo)
+	if indice < 0:
+		push_warning("JEV: idioma desconhecido '%s'; vale o padrão do jogo." % codigo)
+		return -1
+	idioma.definir(indice)
+	return indice
 
 
 func _texto(chave: String) -> String:

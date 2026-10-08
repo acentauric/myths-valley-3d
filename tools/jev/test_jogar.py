@@ -8,7 +8,7 @@ import unittest
 from unittest.mock import patch
 from urllib.error import HTTPError
 
-from jogar import MAX_BODY, MAX_TOKENS, PRICE, ProgressGuard, Session, game_reference, current_task
+from jogar import MAX_BODY, MAX_TOKENS, PRICE, ProgressGuard, Session, game_reference, current_task, language_code
 
 
 class SpendingTests(unittest.TestCase):
@@ -22,6 +22,31 @@ class SpendingTests(unittest.TestCase):
         self.assertNotIn("itens", step["meta"])
         task["step"]["meta"]["itens"]["tabua"] = 999
         self.assertEqual(state["work_costs"]["mirante_levantar"]["tabua"], 18)
+
+    def test_session_language_accepts_the_four_languages_and_rejects_the_rest(self):
+        # O idioma do jogador atravessa o perfil isolado (#180); sem parâmetro, nada muda.
+        self.assertIsNone(language_code(None))
+        self.assertIsNone(language_code(""))
+        for given, code in (("pt", "pt"), ("pt_BR", "pt"), ("EN", "en"), ("es", "es"), ("zh_CN", "zh"), ("zh-CN", "zh")):
+            self.assertEqual(language_code(given), code)
+        with self.assertRaises(ValueError):
+            language_code("fr")
+
+    def test_session_records_the_language_in_log_summary_and_report(self):
+        from relatorio import generate
+        with tempfile.TemporaryDirectory() as folder:
+            directory = Path(folder)
+            session = Session(directory, {}, language="en")
+            self.assertEqual(session.language, "en")
+            events = [json.loads(line) for line in (directory / "eventos.jsonl").read_text(encoding="utf-8").splitlines()]
+            self.assertEqual(next(e for e in events if e["kind"] == "session_language")["language"], "en")
+            self.assertIn("Idioma da sessão: **English**", generate(directory).read_text(encoding="utf-8"))
+        with tempfile.TemporaryDirectory() as folder:
+            directory = Path(folder)
+            session = Session(directory, {})
+            self.assertIsNone(session.language)
+            report = generate(directory).read_text(encoding="utf-8")
+            self.assertIn("padrão do jogo", report)
 
     def test_finished_tutorial_guide_is_approached_like_a_resident(self):
         # Sem follow_pedro (o tutorial acabou), o destinatário Pedro vem pela aproximação (#191).
@@ -224,9 +249,9 @@ class SpendingTests(unittest.TestCase):
     def test_panel_translations_preserve_format_fields(self):
         texts = json.loads((Path(__file__).parent / "textos.json").read_text(encoding="utf-8"))
         import re
-        for key in [name for name in texts if not name.endswith(("_en", "_es"))]:
+        for key in [name for name in texts if not name.endswith(("_en", "_es", "_zh"))]:
             placeholders = re.findall(r"%[.\d]*[sdf]", texts[key])
-            for suffix in ("_en", "_es"):
+            for suffix in ("_en", "_es", "_zh"):
                 self.assertTrue(texts[key + suffix])
                 self.assertNotEqual(texts[key], texts[key + suffix])
                 self.assertEqual(placeholders, re.findall(r"%[.\d]*[sdf]", texts[key + suffix]))

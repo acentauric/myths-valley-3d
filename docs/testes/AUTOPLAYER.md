@@ -128,6 +128,14 @@ navega até Salvar, confirma e registra a resposta antes de voltar ao jogo.
 Falha ou interrupção retoma o último save disponível; observações posteriores
 ao save não são transformadas artificialmente em progresso.
 
+**O idioma do jogador atravessa o perfil isolado (#180).** O botão Testar manda o idioma
+atual do menu para o `jogar.py` (`--idioma pt|en|es|zh`); o `sessao.gd` o grava no
+`user://` novo da sessão antes da primeira cena, e daí o menu, a tela de carga, o HUD,
+as falas em texto e o painel do testador (`tools/jev/textos.json`, nos quatro idiomas) saem
+nele. Só o idioma passa: o save e o progresso do jogador não entram. Sem `--idioma`, rodar
+o `jogar.py` pela linha de comando segue como antes. O relatório traz a linha "Idioma da
+sessão" e o `resumo.json` o campo `language`.
+
 `--profile tools/temp/meu-perfil-de-teste` retoma explicitamente um perfil
 isolado já usado, mantendo a saída de relatório nova. Sem essa opção, cada
 execução conserva a partida nova em seu próprio perfil. Não use o perfil de
