@@ -181,6 +181,12 @@ var _refazer_em := 0.0
 ## seguinte e raspar nela.
 const REFAZER_CAMINHO := 4.0
 const PONTO_ALCANCADO := 0.35
+## O PASSO SUAVE NAS CURVAS (07/10): a menos de SUAVIZA_DESDE do ponto da vez, o rumo já se
+## mistura com o do trecho seguinte — a curva vira arco, e não a quina. A mistura mira no
+## máximo ESPIA_ADIANTE para dentro do trecho seguinte: mais que isso cortava a quina para
+## dentro da folga que a malha larga dá da parede.
+const SUAVIZA_DESDE := 0.8
+const ESPIA_ADIANTE := 0.6
 ## CAMINHO VAZIO: a malha acabou de mudar (reassou) e ainda não respondeu, ou o corpo está
 ## num ponto que ela não cobre. Refaz em `REFAZER_SEM_CAMINHO`, e enquanto espera FICA
 ## PARADO (`_esperando_a_malha`): andar reto até o destino era andar para dentro da água, do
@@ -491,7 +497,8 @@ func _mover(direcao: Vector3, velocidade: float, delta: float) -> void:
 	_subir_degrau(direcao)
 	_medir_bloqueio(direcao, velocidade, delta)
 	if direcao.length_squared() > 0.01:
-		visual.rotation.y = lerp_angle(visual.rotation.y, atan2(direcao.x, direcao.z), 1.0 - exp(-9.0 * delta))
+		# Vira com calma (6/s, e não 9): a troca de rumo numa curva é um giro, e não um estalo.
+		visual.rotation.y = lerp_angle(visual.rotation.y, atan2(direcao.x, direcao.z), 1.0 - exp(-6.0 * delta))
 	# O que o corpo andou de fato (depois das colisões), não o que ele pediu: barrado pelo
 	# jogador, pelo píer ou por uma parede, o clipe é de parado, não de andar no lugar.
 	_velocidade_atual = Vector2(get_real_velocity().x, get_real_velocity().z).length()
@@ -1330,7 +1337,17 @@ func _ponto_do_caminho(destino: Vector3, delta: float) -> Vector3:
 	while _ponto_da_vez < _caminho.size() - 1 \
 			and Vector2(_caminho[_ponto_da_vez].x - global_position.x, _caminho[_ponto_da_vez].z - global_position.z).length() < PONTO_ALCANCADO:
 		_ponto_da_vez += 1
-	return destino if _ponto_da_vez >= _caminho.size() - 1 else _caminho[_ponto_da_vez]
+	if _ponto_da_vez >= _caminho.size() - 1:
+		return destino
+	var alvo: Vector3 = _caminho[_ponto_da_vez]
+	var falta := Vector2(alvo.x - global_position.x, alvo.z - global_position.z).length()
+	if falta < SUAVIZA_DESDE:
+		var seguinte: Vector3 = _caminho[_ponto_da_vez + 1]
+		var trecho := seguinte - alvo
+		if trecho.length() > ESPIA_ADIANTE:
+			seguinte = alvo + trecho.normalized() * ESPIA_ADIANTE
+		alvo = alvo.lerp(seguinte, 1.0 - falta / SUAVIZA_DESDE)
+	return alvo
 
 
 ## Nome do posto para o período: "manha", "tarde", "entardecer", "noite" ou "madrugada".

@@ -23,6 +23,16 @@
   cada quatro golpes, e a dica conta o trabalho ("Lajedo 12/96"); a seta de "junte
   pedras" não aponta a pedra grande a quem só tem a picareta de ferro. As árvores já
   seguiam a regra (madeira branca, de lei e dura, com nível e aço).
+- **Os moradores andam com folga das paredes e das árvores** (07/10, à noite: "muito NPC
+  andando colado na parede, batendo em árvore; o deslocamento entre esses objetos deve
+  ser suave"). Uma segunda malha de navegação, LARGA (raio 0,6, num mapa só dela, assada
+  logo depois da estreita), para o passeio ao ar livre: o caminho dela passa a meio corpo
+  das paredes, dos troncos e das cercas. A estreita (0,2) fica para onde a larga não passa
+  — a porta da igreja, o tabuado do píer, o vão entre duas casas: `caminho` vai pela
+  larga e emenda pela estreita as pontas que ela não alcança (e, se a emenda sai comprida
+  demais, vale a estreita inteira). E o passo suaviza nas curvas: perto do ponto da vez o
+  rumo já se mistura com o trecho seguinte, e o corpo vira com calma. Portão novo
+  `folga_dos_moradores`.
 - **A tarefa concluída se vê e se ouve** (07/10, à noite: "precisamos evidenciar melhor
   que o jogador concluiu uma tarefa da missão... talvez um efeito brilhante no balão de
   missão"). A festa de tela inteira continua só no fim da missão; cada passo do meio

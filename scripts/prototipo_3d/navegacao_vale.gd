@@ -55,6 +55,20 @@ signal pronta
 const CELULA := 0.2
 const ALTURA_DA_CELULA := 0.2
 const RAIO := 0.2
+## A MALHA LARGA (07/10: "muito NPC andando colado na parede, batendo em árvore"): a mesma
+## malha assada com o raio de uma pessoa com folga, num mapa só dela, para o passeio ao ar
+## livre — o caminho dela passa a RAIO_LARGO das paredes, dos troncos e das cercas. A
+## estreita continua existindo para onde a larga não passa (a porta da igreja, o tabuado do
+## píer, o vão entre duas casas): `caminho` vai pela larga e EMENDA pela estreita as pontas
+## que a larga não alcança.
+const RAIO_LARGO := 0.6
+## Até onde da partida e da chegada o caminho da larga conta como "chegou": mais longe que
+## isso, a estreita emenda o resto.
+const CHEGA_LARGO := 1.3
+## A emenda que fica mais comprida que isto vezes o caminho estreito (e mais a sobra) é a
+## larga indo para o lado errado (outra ilha, a outra margem): vale o caminho estreito.
+const DESVIO_MAXIMO_DA_LARGA := 1.5
+const SOBRA_DA_LARGA := 3.0
 const ALTURA := 1.6
 const DEGRAU := 0.4
 const RAMPA := 40.0
@@ -72,6 +86,12 @@ var _mundo
 var _raiz: Node
 var _regiao: NavigationRegion3D
 var _pronta := false
+var _malha_larga: NavigationMesh
+var _mapa_largo: RID
+var _regiao_larga: RID
+var _larga_pronta := false
+var _larga_de_novo := false
+var _fonte_da_vez: NavigationMeshSourceGeometryData3D
 var _malha: NavigationMesh
 var _agua := -INF
 var _sonda := Vector3.INF
@@ -108,6 +128,15 @@ func configurar(mundo, raiz: Node) -> void:
 	var mapa: RID = get_world_3d().navigation_map
 	NavigationServer3D.map_set_cell_size(mapa, CELULA)
 	NavigationServer3D.map_set_cell_height(mapa, ALTURA_DA_CELULA)
+	# A malha larga, num mapa só dela.
+	_malha_larga = _malha.duplicate()
+	_malha_larga.agent_radius = RAIO_LARGO
+	_mapa_largo = NavigationServer3D.map_create()
+	NavigationServer3D.map_set_cell_size(_mapa_largo, CELULA)
+	NavigationServer3D.map_set_cell_height(_mapa_largo, ALTURA_DA_CELULA)
+	NavigationServer3D.map_set_active(_mapa_largo, true)
+	_regiao_larga = NavigationServer3D.region_create()
+	NavigationServer3D.region_set_map(_regiao_larga, _mapa_largo)
 	# Adiada: o `_ready` do vale ainda cria o saveiro, o cercado da ponte e o cemitério.
 	_adiada = true
 	_primeira_assada.call_deferred()
@@ -151,6 +180,7 @@ func _assar() -> void:
 	_leito_dos_rios(fonte, _malha.filter_baking_aabb)
 	_casco_do_saveiro(fonte)
 	_alicerces(fonte)
+	_fonte_da_vez = fonte
 	NavigationServer3D.bake_from_source_geometry_data_async(_malha, fonte, _ao_assar)
 
 
@@ -220,7 +250,52 @@ func esta_pronta() -> bool:
 func caminho(de: Vector3, para: Vector3) -> PackedVector3Array:
 	if not _pronta:
 		return PackedVector3Array()
+	var estreito := caminho_estreito(de, para)
+	if not _larga_pronta or estreito.size() < 2:
+		return estreito
+	# PELA LARGA, que anda longe das paredes e dos troncos. Onde ela não sai de onde o
+	# morador está ou não chega ao destino (a porta, o píer), a estreita emenda a ponta.
+	var largo := NavigationServer3D.map_get_path(_mapa_largo, de, para, true)
+	if largo.size() < 2:
+		return estreito
+	var pontos := PackedVector3Array()
+	if _plano(largo[0], de) > CHEGA_LARGO:
+		var ate_a_larga := caminho_estreito(de, largo[0])
+		if ate_a_larga.size() < 2:
+			return estreito
+		pontos.append_array(ate_a_larga)
+	pontos.append_array(largo)
+	if _plano(largo[largo.size() - 1], para) > CHEGA_LARGO:
+		var da_larga := caminho_estreito(largo[largo.size() - 1], para)
+		if da_larga.size() < 2:
+			return estreito
+		pontos.append_array(da_larga)
+	if _comprimento(pontos) > _comprimento(estreito) * DESVIO_MAXIMO_DA_LARGA + SOBRA_DA_LARGA:
+		return estreito
+	return pontos
+
+
+## O caminho só pela malha estreita (a das portas): o de sempre até 07/10.
+func caminho_estreito(de: Vector3, para: Vector3) -> PackedVector3Array:
+	if not _pronta:
+		return PackedVector3Array()
 	return NavigationServer3D.map_get_path(get_world_3d().navigation_map, de, para, true)
+
+
+## A malha larga já respondeu? (Para os portões: o caminho ao ar livre é o dela.)
+func larga_pronta() -> bool:
+	return _larga_pronta
+
+
+## O caminho só pela malha larga, cru (sem as emendas), para os portões medirem.
+func caminho_largo(de: Vector3, para: Vector3) -> PackedVector3Array:
+	if not _larga_pronta:
+		return PackedVector3Array()
+	return NavigationServer3D.map_get_path(_mapa_largo, de, para, true)
+
+
+static func _plano(a: Vector3, b: Vector3) -> float:
+	return Vector2(a.x - b.x, a.z - b.z).length()
 
 
 ## O CAMINHO PELA ESTRADA (07/10: "ao sair da praça, o Pedro tá correndo por trás da casa ao
@@ -601,9 +676,59 @@ func _ao_assar() -> void:
 	versao += 1
 	_assando = false
 	pronta.emit()
+	# E A LARGA, depois da estreita, da mesma leitura do vale.
+	_assar_a_larga()
 	if _de_novo:
 		_de_novo = false
 		_assar()
+
+
+## A assada da malha larga, com a leitura do vale que a estreita acabou de usar. Se a larga
+## ainda está assando a anterior, fica pedida a próxima.
+func _assar_a_larga() -> void:
+	if _malha_larga == null or _fonte_da_vez == null:
+		return
+	if NavigationServer3D.is_baking_navigation_mesh(_malha_larga):
+		_larga_de_novo = true
+		return
+	_larga_de_novo = false
+	var fonte := _fonte_da_vez
+	_fonte_da_vez = null
+	NavigationServer3D.bake_from_source_geometry_data_async(_malha_larga, fonte, _ao_assar_larga)
+
+
+## A malha larga assou: só o chão seco dela, no mapa dela.
+func _ao_assar_larga() -> void:
+	var vertices := _malha_larga.get_vertices()
+	var chao := NavigationMesh.new()
+	chao.cell_size = _malha_larga.cell_size
+	chao.cell_height = _malha_larga.cell_height
+	chao.agent_radius = _malha_larga.agent_radius
+	chao.agent_height = _malha_larga.agent_height
+	chao.agent_max_climb = _malha_larga.agent_max_climb
+	chao.agent_max_slope = _malha_larga.agent_max_slope
+	chao.set_vertices(vertices)
+	for i in _malha_larga.get_polygon_count():
+		var poligono := _malha_larga.get_polygon(i)
+		var meio := Vector3.ZERO
+		for indice in poligono:
+			meio += vertices[indice]
+		meio /= float(poligono.size())
+		if is_finite(_agua) and meio.y < _agua + 0.05:
+			continue
+		chao.add_polygon(poligono)
+	var iteracao := NavigationServer3D.map_get_iteration_id(_mapa_largo)
+	NavigationServer3D.region_set_navigation_mesh(_regiao_larga, chao)
+	for i in 600:
+		await get_tree().physics_frame
+		if NavigationServer3D.map_get_iteration_id(_mapa_largo) == iteracao:
+			continue
+		var perto := NavigationServer3D.map_get_closest_point(_mapa_largo, _sonda) if _sonda.is_finite() else Vector3.ZERO
+		if perto != Vector3.ZERO:
+			break
+	_larga_pronta = true
+	if _larga_de_novo and _fonte_da_vez != null:
+		_assar_a_larga()
 
 
 ## O PEDAÇO LIGADO MAIOR: os polígonos que se tocam por aresta formam pedaços;
