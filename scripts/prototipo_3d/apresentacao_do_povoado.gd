@@ -56,7 +56,7 @@ func _escolher(atores: Array[Node], limite: int, moradores: bool) -> void:
 		var id := ator.get_instance_id()
 		var distancia: float = onde_esta(ator).distance_to(jogador)
 		var conhecido := _vistos.has(id)
-		var perto := distancia < (SAIDA if conhecido else RAIO)
+		var perto := distancia < (SAIDA + alcance_do_ator(ator) if conhecido else RAIO)
 		var mostrar := essencial or (perto and (conhecido or apresentados < limite))
 		if mostrar and not essencial:
 			apresentados += 1
@@ -67,6 +67,15 @@ func _escolher(atores: Array[Node], limite: int, moradores: bool) -> void:
 			_definir(ator, true, true)
 		elif not mostrar and not _ocultos.has(id):
 			_definir(ator, false, false)
+
+## Quanto (u) o ator se estende além do centro. O bando só some de vez depois que a
+## ave mais próxima do jogador já saiu do fade da malha (80 a 84 u): a saída seca
+## passa a contar o raio do terreiro e a folga do voo (#193).
+static func alcance_do_ator(ator: Node3D) -> float:
+	if not (ator.get("centro") is Vector3):
+		return 0.0
+	return float(ator.get("raio")) + 6.0
+
 
 ## Onde o ator está de verdade. O bando de aves é um nó parado na origem do vale
 ## (as aves andam, cada uma com a sua posição): quem mede pelo nó acha que todo

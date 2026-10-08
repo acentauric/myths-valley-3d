@@ -45,6 +45,8 @@ func _run() -> void:
 	# O bando de aves é medido pelo terreiro, e não pelo nó parado na origem (#193).
 	for bando in get_nodes_in_group("bandos_de_chao"):
 		conferir(diretor.onde_esta(bando).is_equal_approx(bando.centro), "o bando da %s é medido pelo centro do terreiro" % bando.casa)
+		conferir(not diretor.onde_esta(bando).is_equal_approx(bando.global_position), "o bando da %s não é medido pelo nó parado na origem" % bando.casa)
+		conferir(diretor.alcance_do_ator(bando) >= float(bando.raio) + 6.0, "o bando da %s sai de cena só depois de o terreiro inteiro passar do fade" % bando.casa)
 	for id in ["pedro", "tonho", "candinha", "zefa"]:
 		var ator: Node = vale.pedro if id == "pedro" else vale._achar_morador(id)
 		conferir(ator.is_physics_processing(), "essencial disponível: " + id)
