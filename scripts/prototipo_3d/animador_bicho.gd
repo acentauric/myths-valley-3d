@@ -38,9 +38,22 @@ extends Node
 ## × q`), e o desvio é limitado a `TETO_DO_DESVIO`. Só a perna não basta: o osso do
 ## ombro, que carrega a perna da frente, fica fora da cadeia dela.
 ##
+## O PESCOÇO FIRME (#149, "o cachorro anda em pé nas patas de trás"). Recentrar não
+## basta nesses dois modelos: o clipe move o OMBRO e o PESCOÇO como se fossem perna
+## (o osso que carrega a cabeça balança até 28° e o do pescoço mais 28°), e como a
+## frente inteira do bicho pende desses ossos, ela empina e abaixa a cada passo: o
+## peito sobe quase 35° e a pata da frente pede esmola no ar. Todo osso que leva a
+## cabeça e balança além de `PESCOCO_FIRME_ACIMA` fica parado no repouso (a coluna, que
+## balança 3 a 7°, fica como está), e as pernas da frente, que o clipe então deixa
+## duras, entram na regra abaixo.
+##
 ## PERNA PARADA. Em alguns modelos o clipe deixa uma perna dura (a traseira da
 ## onça-preta, uma do cão malhado). Essa perna copia o balanço da perna da diagonal
-## oposta, em torno do eixo esquerda-direita do bicho.
+## oposta, em torno do eixo esquerda-direita do bicho. Quando duas pernas duras têm
+## a mesma parceira (as duas da frente do cão caramelo, cuja única cadeia de trás
+## move as duas patas), cada uma copia a parceira num ponto diferente do ciclo, meio
+## ciclo uma da outra: as patas da frente se alternam, e não saltam juntas. Parando, a
+## defasagem se desfaz em um quarto de segundo, e o bicho para de pé.
 
 ## Até quanto o clipe acelera antes de a corrida virar só inclinação e galope, e
 ## de quanto ele desacelera no mínimo.
@@ -60,6 +73,8 @@ const CORRIDA_A_PARTIR := 1.35
 const GALOPE_ATE := 3.0
 const GALOPE_SOBE := 0.05
 const GALOPE_CABECEIA := 0.035
+## Com que pressa (1/s) o corpo segue a inclinação do chão.
+const INCLINA_NO_CHAO_COM_PRESSA := 5.0
 ## O bicar: ângulo (rad) e duração (s).
 const BICA := deg_to_rad(35.0)
 const DURA_O_BICAR := 0.42
@@ -75,11 +90,23 @@ const OLHA_COM_PRESSA := 0.7
 const CLIPE_TORTO := ["cachorro_caramelo", "onca_pintada"]
 ## O quanto uma trilha recentrada se afasta da média do clipe, no máximo (rad).
 const TETO_DO_DESVIO := 0.35
+## Osso que leva a cabeça e balança mais que isto (rad, ~10°) no clipe cru é ombro ou
+## pescoço tratado como perna: fica parado no repouso (ver o cabeçalho). A coluna passa
+## longe (3 a 7°).
+const PESCOCO_FIRME_ACIMA := 0.17
+## A defasagem das pernas duras que dividem a mesma parceira some em 1/isto de segundo
+## quando o bicho para, e volta quando ele anda.
+const DESFAZ_A_DEFASAGEM := 0.25
 ## Pé é ponta de cadeia nos 30 % de baixo da altura do esqueleto, que não seja
 ## da cabeça nem da cauda.
 const PE_ATE := 0.30
 ## Perna parada é a que anda menos que esta fração da perna do meio.
 const PERNA_PARADA_ABAIXO := 0.3
+## Só as pernas que andam ao menos esta fração da maior pernada entram na conta da perna
+## do meio.
+const PERNA_QUE_ANDA := 0.25
+## Uma trilha que não passa disto (rad) do primeiro quadro é osso que o clipe não mexe.
+const DURA_ABAIXO := 0.01
 ## O pé conta para a passada se anda ao menos esta fração da maior pernada.
 const PE_QUE_ANDA := 0.35
 
@@ -122,12 +149,16 @@ var velocidade_do_passo := 1.0
 var velocidade := 0.0
 ## Para onde a altura do corpo vai (1 de pé; 0,85 espreitando).
 var altura_alvo := 1.0
+## Quanto o focinho inclina para acompanhar o chão (rad; negativo sobe), posto por quem
+## anda: o bicho de casa mede a encosta debaixo dele. A pose o persegue sem salto.
+var inclinacao_do_chao := 0.0
 
 var _clipe := ""
 var _tempo := 0.0
 var _fase := 0.0
 ## A altura que o corpo persegue, sem o fôlego (ver o cabeçalho).
 var _altura := 1.0
+var _inclinacao_no_chao := 0.0
 var _bicando := -1.0
 var _angulo_do_bicar := BICA
 var _susto := -1.0
@@ -146,6 +177,10 @@ var _esqueleto: Skeleton3D
 ## As pernas paradas do clipe: cada uma, os pares de ossos {osso, parceiro, pai, repouso}.
 var _paradas: Array[Dictionary] = []
 var _eixo_lateral := Vector3.RIGHT
+## Osso -> trilha de rotação do clipe, para amostrar a parceira em outro ponto do ciclo.
+var _trilha_do_osso: Dictionary = {}
+## Quanto da defasagem das pernas duras vale agora (1 andando, 0 parado).
+var _defasagem_viva := 1.0
 
 
 ## `pose` é o nó que este animador mexe; `modelo`, o que está dentro dele (o GLB
@@ -358,6 +393,7 @@ func _process(delta: float) -> void:
 				animacao.seek(onde, true)
 				_parado_no_quadro = true
 		if not _paradas.is_empty():
+			_defasagem_viva = move_toward(_defasagem_viva, 1.0 if andando else 0.0, delta / DESFAZ_A_DEFASAGEM)
 			_mexer_as_pernas_paradas()
 	elif andando:
 		# O balanço do passo, sem perna: sobe e desce duas vezes por passada.
@@ -407,6 +443,8 @@ func _process(delta: float) -> void:
 	if _tremor > 0.0:
 		_tremor -= delta
 		ginga += sin(_tempo * 55.0) * 0.035
+	_inclinacao_no_chao = lerpf(_inclinacao_no_chao, inclinacao_do_chao, minf(1.0, delta * INCLINA_NO_CHAO_COM_PRESSA))
+	inclina += _inclinacao_no_chao
 	pose.position.y = y
 	pose.rotation = Vector3(inclina, _olhar, ginga)
 	pose.scale = Vector3(escala_xz, escala_y, escala_xz)
@@ -445,8 +483,9 @@ static func _forma_do_bote(t: float) -> Vector3:
 ## RECENTRA o clipe de andar em volta do repouso do esqueleto (ver o cabeçalho):
 ## cada trilha de rotação vira `repouso × média⁻¹ × q`, com o desvio da média limitado
 ## a `TETO_DO_DESVIO`. O clipe é um recurso dividido por todo bicho do modelo; ele
-## leva a marca `recentrado` e só se recentra uma vez.
-static func recentrar_o_clipe(clipe: Animation, esqueleto: Skeleton3D, teto: float = TETO_DO_DESVIO) -> void:
+## leva a marca `recentrado` e só se recentra uma vez. `firmar_o_pescoco` falso é só
+## para o portão mostrar o que o pescoço firme conserta.
+static func recentrar_o_clipe(clipe: Animation, esqueleto: Skeleton3D, teto: float = TETO_DO_DESVIO, firmar_o_pescoco: bool = true) -> void:
 	if clipe.has_meta("recentrado"):
 		return
 	clipe.set_meta("recentrado", true)
@@ -470,11 +509,25 @@ static func recentrar_o_clipe(clipe: Animation, esqueleto: Skeleton3D, teto: flo
 			maior = maxf(maior, media.angle_to(clipe.track_get_key_value(t, k)))
 		var fator := 1.0 if maior <= teto else teto / maior
 		var repouso := esqueleto.get_bone_rest(osso).basis.get_rotation_quaternion()
+		if firmar_o_pescoco and maior > PESCOCO_FIRME_ACIMA and _leva_a_cabeca(esqueleto, osso):
+			# Ombro ou pescoço que o clipe balança como perna: fica no repouso.
+			for k in chaves:
+				clipe.track_set_key_value(t, k, repouso)
+			clipe.set_meta("pescoco_firme", true)
+			continue
 		for k in chaves:
 			var desvio: Quaternion = media.inverse() * (clipe.track_get_key_value(t, k) as Quaternion)
 			if fator < 1.0:
 				desvio = Quaternion.IDENTITY.slerp(desvio, fator)
 			clipe.track_set_key_value(t, k, repouso * desvio)
+
+
+## O osso é a cabeça (o nome diz `head`) ou carrega uma?
+static func _leva_a_cabeca(esqueleto: Skeleton3D, osso: int) -> bool:
+	for i in esqueleto.get_bone_count():
+		if "head" in esqueleto.get_bone_name(i).to_lower() and _desce_ou_e(esqueleto, i, osso):
+			return true
+	return false
 
 
 ## Os PÉS do esqueleto: pontas de cadeia (osso sem filho) nos `PE_ATE` de baixo da
@@ -630,24 +683,38 @@ func _analisar_o_clipe() -> Dictionary:
 
 
 ## As pernas que o clipe não mexe: o pé anda menos que `PERNA_PARADA_ABAIXO` da perna do
-## meio. Cada uma ganha como parceira a perna que anda em diagonal (frente×lado
-## trocados), e guarda a cadeia de ossos dela e a da parceira, do topo para o pé.
+## meio (a mediana das pernas que de fato andam: duas pernas duras não puxam a conta para
+## zero), ou, no clipe de pescoço firme, a cadeia inteira da perna é dura mesmo que a
+## coluna a leve um pouco. Cada uma ganha como parceira a perna que anda em diagonal
+## (frente×lado trocados), e guarda a cadeia de ossos dela e a da parceira, do topo para
+## o pé. Parceira que serve a mais de uma perna dura divide o ciclo: cada uma ganha uma
+## `fase` (fração do ciclo), e as outras ficam em 0.
 func _achar_as_pernas_paradas(pes: Array[int], viagens: Array[float], repouso: Array[Vector3]) -> Array:
-	var ordenadas := viagens.duplicate()
-	ordenadas.sort()
-	var meio: float = ordenadas[ordenadas.size() / 2]
+	var maior_viagem := 0.0
+	for v in viagens:
+		maior_viagem = maxf(maior_viagem, v)
+	var andam: Array[float] = []
+	for v in viagens:
+		if v >= maior_viagem * PERNA_QUE_ANDA:
+			andam.append(v)
+	andam.sort()
+	var meio: float = andam[andam.size() / 2] if not andam.is_empty() else 0.0
 	if meio < 0.02:
 		return []
+	var firme := animacao.get_animation(_clipe).has_meta("pescoco_firme")
+	var duras: Array[int] = []
+	for j in pes.size():
+		if viagens[j] < meio * PERNA_PARADA_ABAIXO or (firme and _cadeia_dura(cadeia_da_perna(_esqueleto, pes[j], pes))):
+			duras.append(j)
 	var centro := Vector3.ZERO
 	for p in repouso:
 		centro += p / float(repouso.size())
 	var paradas: Array = []
-	for j in pes.size():
-		if viagens[j] >= meio * PERNA_PARADA_ABAIXO:
-			continue
+	var parceiros_usados: Dictionary = {}
+	for j in duras:
 		var parceiro := -1
 		for outro in pes.size():
-			if outro == j or viagens[outro] < meio * 0.6:
+			if outro == j or outro in duras or viagens[outro] < meio * 0.6:
 				continue
 			var oposta: bool = signf(repouso[outro].x - centro.x) == -signf(repouso[j].x - centro.x) \
 				and signf(repouso[outro].z - centro.z) == -signf(repouso[j].z - centro.z)
@@ -659,16 +726,51 @@ func _achar_as_pernas_paradas(pes: Array[int], viagens: Array[float], repouso: A
 		var cadeia_parceira := cadeia_da_perna(_esqueleto, pes[parceiro], pes)
 		cadeia.reverse()
 		cadeia_parceira.reverse()
-		paradas.append({"ossos": cadeia, "parceiros": cadeia_parceira})
+		paradas.append({"ossos": cadeia, "parceiros": cadeia_parceira, "fase": 0.0, "parceira_do_pe": parceiro})
+		parceiros_usados[parceiro] = int(parceiros_usados.get(parceiro, 0)) + 1
+	# Duas pernas duras com a mesma parceira: meio ciclo uma da outra, e ambas fora
+	# do compasso dela (um quarto de ciclo de cada lado).
+	for parceiro: int in parceiros_usados:
+		var quantas: int = parceiros_usados[parceiro]
+		if quantas < 2:
+			continue
+		var vez := 0
+		for perna: Dictionary in paradas:
+			if int(perna["parceira_do_pe"]) == parceiro:
+				perna["fase"] = 0.25 + 0.5 * float(vez) / float(quantas - 1)
+				vez += 1
 	return paradas
+
+
+## A cadeia da perna (do pé ao topo) não tem trilha que se mexa no clipe?
+func _cadeia_dura(cadeia: Array[int]) -> bool:
+	var clipe := animacao.get_animation(_clipe)
+	for t in clipe.get_track_count():
+		if clipe.track_get_type(t) != Animation.TYPE_ROTATION_3D or clipe.track_is_compressed(t):
+			continue
+		var osso := _esqueleto.find_bone(String(clipe.track_get_path(t).get_concatenated_subnames()))
+		if osso < 0 or not osso in cadeia:
+			continue
+		var primeira: Quaternion = clipe.track_get_key_value(t, 0)
+		for k in range(1, clipe.track_get_key_count(t)):
+			if primeira.angle_to(clipe.track_get_key_value(t, k)) > DURA_ABAIXO:
+				return false
+	return true
 
 
 func _ligar_as_pernas_paradas(paradas: Array) -> void:
 	_paradas.clear()
+	_trilha_do_osso.clear()
 	if _esqueleto == null or paradas.is_empty():
 		return
 	# O eixo esquerda-direita do bicho, no referencial do esqueleto.
 	_eixo_lateral = (_esqueleto.global_basis.inverse() * (pose.global_basis * Vector3.RIGHT)).normalized()
+	var clipe := animacao.get_animation(_clipe)
+	for t in clipe.get_track_count():
+		if clipe.track_get_type(t) == Animation.TYPE_ROTATION_3D and not clipe.track_is_compressed(t):
+			var osso := _esqueleto.find_bone(String(clipe.track_get_path(t).get_concatenated_subnames()))
+			if osso >= 0:
+				_trilha_do_osso[osso] = t
 	for perna: Dictionary in paradas:
 		var ossos: Array = perna["ossos"]
 		var parceiros: Array = perna["parceiros"]
@@ -678,19 +780,35 @@ func _ligar_as_pernas_paradas(paradas: Array) -> void:
 			var parceiro: int = parceiros[k]
 			pares.append({"osso": osso, "parceiro": parceiro, "pai": _esqueleto.get_bone_parent(osso),
 				"osso_repouso": _esqueleto.get_bone_global_rest(osso).basis.orthonormalized().get_rotation_quaternion(),
-				"parceiro_repouso": _esqueleto.get_bone_global_rest(parceiro).basis.orthonormalized().get_rotation_quaternion()})
-		_paradas.append({"pares": pares})
+				"parceiro_repouso": _esqueleto.get_bone_global_rest(parceiro).basis.orthonormalized().get_rotation_quaternion(),
+				"parceiro_local_repouso": _esqueleto.get_bone_rest(parceiro).basis.orthonormalized().get_rotation_quaternion()})
+		var acima := -1
+		if not pares.is_empty():
+			acima = _esqueleto.get_bone_parent(int(pares[0]["parceiro"]))
+		_paradas.append({"pares": pares, "fase": float(perna.get("fase", 0.0)), "acima_da_parceira": acima})
 
 
 ## A perna parada copia o balanço da parceira, osso a osso, do topo para o pé: o giro de
 ## cada osso dela em torno do eixo esquerda-direita (a parte de giro, a "twist", do desvio
 ## em relação ao repouso) vai para o osso de mesma altura na perna parada, sobre o
 ## repouso dele. Roda depois do tocador (o animador é filho mais novo do corpo), por
-## isso vale por cima do clipe.
+## isso vale por cima do clipe. Com `fase` a parceira é lida noutro ponto do ciclo (ver
+## `_giros_da_parceira`), na medida de `_defasagem_viva`.
 func _mexer_as_pernas_paradas() -> void:
+	var clipe := animacao.get_animation(_clipe)
 	for perna in _paradas:
+		var fase: float = float(perna["fase"]) * _defasagem_viva
+		var defasados: Array[Quaternion] = []
+		if absf(fase) > 0.001:
+			defasados = _giros_da_parceira(perna, clipe, fase)
+		var k := 0
 		for par in perna["pares"]:
-			var agora: Quaternion = _esqueleto.get_bone_global_pose(par["parceiro"]).basis.orthonormalized().get_rotation_quaternion()
+			var agora: Quaternion
+			if k < defasados.size():
+				agora = defasados[k]
+			else:
+				agora = _esqueleto.get_bone_global_pose(par["parceiro"]).basis.orthonormalized().get_rotation_quaternion()
+			k += 1
 			var desvio: Quaternion = agora * (par["parceiro_repouso"] as Quaternion).inverse()
 			if desvio.w < 0.0:
 				desvio = Quaternion(-desvio.x, -desvio.y, -desvio.z, -desvio.w)
@@ -700,6 +818,26 @@ func _mexer_as_pernas_paradas() -> void:
 			if pai >= 0:
 				alvo = _esqueleto.get_bone_global_pose(pai).basis.orthonormalized().get_rotation_quaternion().inverse() * alvo
 			_esqueleto.set_bone_pose_rotation(par["osso"], alvo)
+
+
+## Os giros globais dos ossos da parceira (do topo para o pé) `fase` de ciclo adiante do
+## quadro de agora: o osso acima do topo dela fica como está, e cada osso desce com a
+## rotação que a trilha do clipe dá naquele momento (o repouso, se o clipe não o mexe).
+func _giros_da_parceira(perna: Dictionary, clipe: Animation, fase: float) -> Array[Quaternion]:
+	var momento := fposmod(animacao.current_animation_position + fase * clipe.length, clipe.length)
+	var giro := Quaternion.IDENTITY
+	var acima: int = perna["acima_da_parceira"]
+	if acima >= 0:
+		giro = _esqueleto.get_bone_global_pose(acima).basis.orthonormalized().get_rotation_quaternion()
+	var giros: Array[Quaternion] = []
+	for par in perna["pares"]:
+		var local: Quaternion = par["parceiro_local_repouso"]
+		var trilha: int = _trilha_do_osso.get(par["parceiro"], -1)
+		if trilha >= 0:
+			local = clipe.rotation_track_interpolate(trilha, momento)
+		giro = giro * local
+		giros.append(giro)
+	return giros
 
 
 ## O primeiro quadro de pé que o clipe cruzou desde o último quadro de processo, ou

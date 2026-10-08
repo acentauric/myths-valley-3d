@@ -298,6 +298,14 @@
 
 - **O Histórico do jogo chega a 07/10, agrupando os dias curtos.** O rodapé do menu parava em 05/10 e pulava dias. Entram 06/10 (casas por dentro, vozes, maré, bichos e sustos) e 07/10 (favores dos moradores, estações, lavoura, compra de terra, nome do viajante) com entrada própria; 27/09 junta-se a 28/09 (`27–28/09/2026`) e 02/10 a 01/10 (`01–02/10/2026`), e as três linhas de 02/10 que estavam na entrada de 03/10 voltaram para o dia delas. Cada linha vem em pt/en/es com um termo dourado. `build_numero` segue 9: numerar build continua sendo decisão de release. A regra no `AGENTS.md` agora diz que o histórico acompanha os dias (#170).
 
+- **O cachorro anda nas quatro patas.** O Caramelo seguia o Pedro empinado nas patas de
+  trás: o clipe do GLB balançava o ombro e o pescoço como se fossem perna e a frente
+  inteira subia e descia (o mesmo na onça pintada). Agora esses ossos ficam no repouso,
+  as duas patas da frente andam em contratempo copiando a de trás e param juntas, e o
+  corpo do bicho de casa inclina o focinho com a rampa. A #149 segue aberta (aves, bode,
+  corrida dos gatos); pesquisa de Mesh2Motion e do rig do Tripo em
+  docs/ferramentas/ANIMACAO_DE_ANIMAIS.md.
+
 - **Todo campo de Ajustes tem o "?" de ajuda, e "Passos na água" ganha o ↺.** O campo
   era montado à mão, com um botão Ouvir que encurtava o seletor: agora é uma escolha
   como as vizinhas (Original ou Novos, ↺ volta a Original) e trocar a opção já toca a

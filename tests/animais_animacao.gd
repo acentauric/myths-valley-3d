@@ -20,13 +20,22 @@ extends SceneTree
 ##      caramelo vinham tortos: a pata subia à altura da cabeça).
 ##   5. PERNA PARADA: onde o clipe deixa uma perna dura (onça preta, cão malhado), ela
 ##      balança no ritmo da diagonal.
+##   4b. O PESCOÇO FICA FIRME (#149): o clipe do cão caramelo e da onça pintada balançava o
+##      ombro e o pescoço como perna, e a frente do bicho empinava a cada passo (o cachorro "em
+##      pé nas patas de trás"). Com o clipe pronto a cabeça sai do lugar no máximo `CABECA_FIRME`
+##      da altura (era 9 % no cão e 14 % na onça).
+##   5b. AS PATAS DA FRENTE DO CÃO ANDAM, em contratempo: o clipe as deixa duras, o código as
+##      balança copiando a pata de trás, meio ciclo uma da outra, e parado a defasagem some.
+##   5c. O CORPO ACOMPANHA A RAMPA: o focinho sobe com o chão que sobe (`BichoDeCasa.inclinacao_da_encosta`)
+##      e a pose segue a inclinação sem salto.
 ##   6. PARADO, ELE CONGELA NO QUADRO DE PÉ, e o bote (armar, pular, assentar) mexe em
 ##      posição e giro, sem esticar o corpo.
 ##   7. A CABRA DE CENA anda com o clipe, no ritmo do chão, e para.
 ##
 ## FALSIFICAÇÃO: com `--falsificar-clipe` o portão mede o clipe CRU (o GLB recarregado
 ## sem cache, como veio do Tripo) dos dois modelos tortos — a pergunta 4 tem de FALHAR.
-## Com `--falsificar-respiro` ele refaz a realimentação da escala (a de antes) por fora do
+## Com `--falsificar-pescoco` ele recentra o clipe cru dos dois modelos SEM firmar o pescoço — a 4b tem
+## de FALHAR nos dois. Com `--falsificar-respiro` ele refaz a realimentação da escala (a de antes) por fora do
 ## animador — a pergunta 1 tem de FALHAR nos 60 quadros por segundo ou mais.
 
 const MODELOS := ["onca_pintada", "onca_preta", "cachorro_caramelo", "cachorro_malhado", "filhote_caramelo",
@@ -39,12 +48,19 @@ const CABECA_ATE := 0.20
 ## para escorregar de verdade, mas não alcança o chão).
 const PE_NO_PASSO := 0.9
 const PE_NA_CORRIDA := 0.25
+## A cabeça do clipe pronto (recentrado e de pescoço firme) sai do lugar, no máximo, esta fração da
+## altura: o balanço da coluna (4 a 6 %) cabe, a frente empinando (9 a 14 %) não.
+const CABECA_FIRME := 0.08
+## O pé da frente do cão anda, no mínimo, esta fração da altura em cada passo (sem o balanço
+## do código, a coluna sozinha o leva a 7 %).
+const PE_DA_FRENTE_ANDA := 0.10
 ## O rig do bode não tem a perna de baixo: o clipe não mexe pé, e não há passada a medir.
 const SEM_PASSADA := ["bode"]
 
 var falhas := 0
 var falsificar_clipe := false
 var falsificar_respiro := false
+var falsificar_pescoco := false
 var Animador
 var CabraDeCena
 var Cardume
@@ -67,6 +83,7 @@ func _conferir(ok: bool, rotulo: String) -> void:
 func _run() -> void:
 	falsificar_clipe = "--falsificar-clipe" in OS.get_cmdline_user_args()
 	falsificar_respiro = "--falsificar-respiro" in OS.get_cmdline_user_args()
+	falsificar_pescoco = "--falsificar-pescoco" in OS.get_cmdline_user_args()
 	root.get_node("/root/Estilo").modo = "tripo"
 	_conferir(change_scene_to_file("res://scenes/prototipo_3d/vale.tscn") == OK, "o vale não carregou")
 	await _frames(6)
@@ -157,6 +174,21 @@ func _run() -> void:
 	for chave in ["onca_pintada", "cachorro_caramelo"]:
 		_conferir(animais[chave]["an"].clipe_recentrado(), "o clipe torto de %s não foi recentrado" % chave)
 
+	# --- 4b. O PESCOÇO FICA FIRME ------------------------------------------------------------------
+	print("ANIMAIS: a cabeça do clipe torto, depois do pescoço firme (em %% da altura, teto %.0f %%)" % (CABECA_FIRME * 100.0))
+	for chave in ["onca_pintada", "cachorro_caramelo"]:
+		var an = animais[chave]["an"]
+		var saude_firme: Dictionary
+		if falsificar_pescoco:
+			saude_firme = _saude_do_clipe_cru(chave, true)
+		else:
+			saude_firme = _saude(an.animacao, an._esqueleto, an.pose, an._clipe)
+		print("   %-18s cabeça %4.1f %%" % [chave, saude_firme["cabeca"] * 100.0])
+		_conferir(saude_firme["cabeca"] <= CABECA_FIRME,
+			"%s: a cabeça sai %.1f %% da altura do lugar no clipe pronto (o teto é %.0f %%): o ombro e o pescoço ainda balançam como perna e a frente empina" % [chave, saude_firme["cabeca"] * 100.0, CABECA_FIRME * 100.0])
+	var clipe_do_cao: Animation = animais["cachorro_caramelo"]["an"].animacao.get_animation(animais["cachorro_caramelo"]["an"]._clipe)
+	_conferir(clipe_do_cao.has_meta("pescoco_firme"), "o clipe do cão caramelo não teve o pescoço firmado")
+
 	# --- 5. PERNA PARADA ---------------------------------------------------------------------------
 	for chave in ["onca_preta", "cachorro_malhado"]:
 		var an = animais[chave]["an"]
@@ -164,6 +196,42 @@ func _run() -> void:
 		if an.pernas_paradas() >= 1:
 			var viagem := _viagem_da_perna_parada(an)
 			_conferir(viagem >= 0.05, "%s: a perna dura balança só %.1f %% da altura (devia passar de 5 %%)" % [chave, viagem * 100.0])
+
+	# --- 5b. AS PATAS DA FRENTE DO CÃO ANDAM, EM CONTRATEMPO -----------------------------------------
+	var cao = animais["cachorro_caramelo"]["an"]
+	_conferir(cao.pernas_paradas() == 2, "cachorro_caramelo: as duas patas da frente deviam ser pernas duras com balanço do código (são %d)" % cao.pernas_paradas())
+	if cao.pernas_paradas() == 2:
+		var curso := _curso_das_pernas_paradas(cao)
+		var altura_do_cao: float = curso["altura"]
+		for z in curso["viagens"]:
+			_conferir(float(z) / altura_do_cao >= PE_DA_FRENTE_ANDA,
+				"cachorro_caramelo: a pata da frente anda só %.1f %% da altura por passo (o mínimo é %.0f %%)" % [float(z) / altura_do_cao * 100.0, PE_DA_FRENTE_ANDA * 100.0])
+		var par: Array = curso["series"]
+		var contratempo := _correlacao(par[0], par[1])
+		_conferir(contratempo < -0.3, "cachorro_caramelo: as duas patas da frente andam juntas (correlação %.2f), e deviam alternar" % contratempo)
+		cao.velocidade = 0.0
+		for i in 120:
+			cao.animacao.advance(dt)
+			cao._process(dt)
+		_conferir(cao._defasagem_viva < 0.01, "cachorro_caramelo: parado, a defasagem das patas da frente não se desfez (%.2f)" % cao._defasagem_viva)
+
+	# --- 5c. O CORPO ACOMPANHA A RAMPA ---------------------------------------------------------------
+	# O focinho sobe com o chão que sobe, desce com o que desce, e a inclinação tem teto.
+	var BichoDeCasa = load("res://scripts/prototipo_3d/bicho_de_casa.gd")
+	_conferir(BichoDeCasa.inclinacao_da_encosta(0.3, 0.0) < -0.2, "subindo a rampa o focinho não sobe (%.2f rad)" % BichoDeCasa.inclinacao_da_encosta(0.3, 0.0))
+	_conferir(BichoDeCasa.inclinacao_da_encosta(0.0, 0.3) > 0.2, "descendo a rampa o focinho não desce (%.2f rad)" % BichoDeCasa.inclinacao_da_encosta(0.0, 0.3))
+	_conferir(absf(BichoDeCasa.inclinacao_da_encosta(0.0, 0.0)) < 0.001, "no plano o corpo inclina")
+	_conferir(absf(BichoDeCasa.inclinacao_da_encosta(5.0, 0.0)) <= BichoDeCasa.ENCOSTA_ATE + 0.001, "a inclinação da encosta não tem teto")
+	for rampa in [-0.3, 0.3]:
+		cao.velocidade = 0.0
+		cao.inclinacao_do_chao = rampa
+		for i in 90:
+			cao._process(dt)
+		_conferir(absf(cao.pose.rotation.x - rampa) < 0.03, "cachorro_caramelo: na rampa de %.2f rad o corpo inclinou %.2f rad" % [rampa, cao.pose.rotation.x])
+	cao.inclinacao_do_chao = 0.0
+	for i in 90:
+		cao._process(dt)
+	_conferir(absf(cao.pose.rotation.x) < 0.03, "cachorro_caramelo: de volta ao plano o corpo seguiu inclinado (%.2f rad)" % cao.pose.rotation.x)
 
 	# --- 6. PARADO CONGELA NO QUADRO DE PÉ; O BOTE NÃO ESTICA --------------------------------------------
 	for chave in ["cachorro_malhado", "onca_pintada", "gato_malhado", "porco"]:
@@ -288,7 +356,7 @@ func _run() -> void:
 func _fechar() -> void:
 	print("")
 	if falhas == 0:
-		print("ANIMAIS_ANIMACAO_OK: parado o bicho respira sem esticar (±4 % a 30, 60, 144 e 240 qps, de pé e abaixado), com o jogo pausado nada se mexe (nem o osso, nem o clipe, nem o nado dos peixes), o clipe toca no ritmo do chão e a pata acompanha o corpo, os 14 clipes são saudáveis (o da onça pintada e o do cão caramelo, recentrados), a perna dura da onça preta e do cão malhado balança, parado ele congela no quadro de pé, o bote pula sem esticar e a cabra de cena anda com o clipe")
+		print("ANIMAIS_ANIMACAO_OK: parado o bicho respira sem esticar (±4 % a 30, 60, 144 e 240 qps, de pé e abaixado), com o jogo pausado nada se mexe (nem o osso, nem o clipe, nem o nado dos peixes), o clipe toca no ritmo do chão e a pata acompanha o corpo, os 14 clipes são saudáveis (o da onça pintada e o do cão caramelo, recentrados e de pescoço firme, a frente sem empinar), a perna dura da onça preta e do cão malhado balança, as patas da frente do cão alternam, o corpo acompanha a rampa, parado ele congela no quadro de pé, o bote pula sem esticar e a cabra de cena anda com o clipe")
 	else:
 		print("animais_animacao: %d falha(s)" % falhas)
 	quit(1 if falhas > 0 else 0)
@@ -394,8 +462,9 @@ func _saude(tocador: AnimationPlayer, esqueleto: Skeleton3D, referencia_no: Node
 
 
 ## O clipe CRU: o GLB recarregado sem cache (as trilhas como vieram do Tripo, sem o recentro),
-## para a falsificação mostrar o que o portão pega.
-func _saude_do_clipe_cru(chave: String) -> Dictionary:
+## para a falsificação mostrar o que o portão pega. Com `recentrar_sem_pescoco` ele é recentrado, mas
+## sem firmar o pescoço (o estado de antes da #149).
+func _saude_do_clipe_cru(chave: String, recentrar_sem_pescoco: bool = false) -> Dictionary:
 	var caminho: String = "res://assets/prototipo_3d/" + str(_pecas()[chave]["tripo"])
 	var cena := ResourceLoader.load(caminho, "", ResourceLoader.CACHE_MODE_IGNORE_DEEP) as PackedScene
 	var no := cena.instantiate() as Node3D
@@ -406,6 +475,8 @@ func _saude_do_clipe_cru(chave: String) -> Dictionary:
 	for n in tocador.get_animation_list():
 		if "walk" in String(n).to_lower():
 			nome = String(n)
+	if recentrar_sem_pescoco:
+		Animador.recentrar_o_clipe(tocador.get_animation(nome), esqueleto, Animador.TETO_DO_DESVIO, false)
 	var saude := _saude(tocador, esqueleto, no, nome)
 	no.queue_free()
 	return saude
@@ -448,6 +519,64 @@ func _viagem_da_perna_parada(an) -> float:
 		maximo = maxf(maximo, z)
 	an.velocidade = 0.0
 	return (maximo - minimo) / altura
+
+
+## O curso do pé de cada perna parada, com o animador rodando: o Z do pé em 25 poses do ciclo
+## (`series`), quanto ele percorre (`viagens`) e a altura do esqueleto.
+func _curso_das_pernas_paradas(an) -> Dictionary:
+	var esqueleto: Skeleton3D = an._esqueleto
+	var para_o_bicho: Transform3D = an.pose.global_transform.affine_inverse() * esqueleto.global_transform
+	var pes: Array[int] = Animador.achar_os_pes(esqueleto, para_o_bicho)
+	var altura := -INF
+	var baixo := INF
+	for i in esqueleto.get_bone_count():
+		var y := (para_o_bicho * esqueleto.get_bone_global_rest(i).origin).y
+		altura = maxf(altura, y)
+		baixo = minf(baixo, y)
+	altura -= baixo
+	var series: Array = []
+	var viagens: Array = []
+	var clipe: Animation = an.animacao.get_animation(an._clipe)
+	an.velocidade = maxf(an.passada, 0.3)
+	for perna in an._paradas:
+		var topo: int = perna["pares"][0]["osso"]
+		var pe := -1
+		for candidato in pes:
+			if Animador.cadeia_da_perna(esqueleto, candidato, pes).back() == topo:
+				pe = candidato
+		var zs: Array = []
+		if pe >= 0:
+			for k in 25:
+				an.animacao.play(an._clipe)
+				an.animacao.seek(k * clipe.length / 24.0, true)
+				an._process(0.0)
+				zs.append((para_o_bicho * esqueleto.get_bone_global_pose(pe).origin).z)
+		series.append(zs)
+		viagens.append((zs.max() - zs.min()) if not zs.is_empty() else 0.0)
+	an.velocidade = 0.0
+	return {"series": series, "viagens": viagens, "altura": altura}
+
+
+## Correlação de Pearson de duas séries do mesmo tamanho (0 se alguma é constante).
+func _correlacao(a: Array, b: Array) -> float:
+	var n := mini(a.size(), b.size())
+	if n < 2:
+		return 0.0
+	var ma := 0.0
+	var mb := 0.0
+	for i in n:
+		ma += float(a[i]) / n
+		mb += float(b[i]) / n
+	var sab := 0.0
+	var saa := 0.0
+	var sbb := 0.0
+	for i in n:
+		sab += (float(a[i]) - ma) * (float(b[i]) - mb)
+		saa += (float(a[i]) - ma) * (float(a[i]) - ma)
+		sbb += (float(b[i]) - mb) * (float(b[i]) - mb)
+	if saa < 0.0000001 or sbb < 0.0000001:
+		return 0.0
+	return sab / sqrt(saa * sbb)
 
 
 ## O estado de cada bicho, para comparar antes e durante a pausa: pose, posição do clipe e
