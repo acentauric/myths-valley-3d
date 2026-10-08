@@ -33,6 +33,8 @@ extends SceneTree
 var falhas := 0
 ## Raio que o `Recursos3D` usa para aceitar o golpe. Se mudar lá, muda aqui.
 const ALCANCE := 3.2
+## E o do GOLPE (#208): da face do alvo ao corpo, no máximo isto, e o E de mais longe anda até lá.
+const ALCANCE_DO_GOLPE := 1.2
 ## Quantos pontos em volta do alvo precisam estar livres para dizer que se
 ## chega a pé. Oito direções; exigir todas seria exigir alvo no meio do campo.
 const LIVRES_MINIMO := 3
@@ -221,12 +223,23 @@ func _run() -> void:
 		var vizinho := ""
 		var menor_folga := INF
 		for lado: Vector3 in LADOS:
-			var encostado := centro + lado * (meia + RAIO_DO_CORPO)
+			# ONDE O CORPO PARA é a face de verdade da colisão (caixa girada, quina) mais o corpo, e
+			# não a meia-pegada: o tronco girado a 90° tem a face a 0,25 do centro (#208).
+			var encostado := _encostado(recursos, str(id), centro, lado)
 			jogador.global_position = encostado
 			var respondeu: String = recursos._mais_perto()
 			_conferir(respondeu == str(id),
-				"encostado no '%s' pelo lado %s o jogo oferece '%s': a peça tem %.2f de pegada e o alcance é %.2f — o corpo para na face antes de o golpe valer, ou outro alvo está mais perto"
-					% [str(id), str(lado), respondeu if respondeu != "" else "nada", meia, float(recursos.ALCANCE)])
+				"encostado no '%s' pelo lado %s o jogo oferece '%s': o alcance do E é %.2f da face — o corpo para na face antes de o E valer, ou outro alvo está mais perto"
+					% [str(id), str(lado), respondeu if respondeu != "" else "nada", float(recursos.ALCANCE)])
+			# O GOLPE É DE BRAÇO (#208): encostado, a face está ao alcance curto do golpe — e o ponto
+			# de parar do E de longe (`ponto_de_golpe`) também, sem entrar na peça.
+			var da_face: float = recursos.distancia_da_face(str(id), encostado)
+			_conferir(da_face <= ALCANCE_DO_GOLPE,
+				"encostado no '%s' pelo lado %s a face está a %.2f, além do alcance curto do golpe (%.2f)" % [str(id), str(lado), da_face, ALCANCE_DO_GOLPE])
+			var parada: Vector3 = recursos.ponto_de_golpe(str(id), lado)
+			var da_parada: float = recursos.distancia_da_face(str(id), parada) if parada.is_finite() else INF
+			_conferir(parada.is_finite() and da_parada <= ALCANCE_DO_GOLPE and da_parada >= RAIO_DO_CORPO,
+				"o ponto de parar do E de longe no '%s' pelo lado %s fica a %.2f da face: tem de ficar entre o corpo (%.2f) e o alcance do golpe (%.2f)" % [str(id), str(lado), da_parada, RAIO_DO_CORPO, ALCANCE_DO_GOLPE])
 			var disputa := _disputa(recursos, str(id), encostado)
 			if float(disputa[1]) < menor_folga:
 				vizinho = str(disputa[0])
@@ -234,8 +247,8 @@ func _run() -> void:
 			_conferir(float(disputa[1]) >= FOLGA_MINIMA,
 				"encostado no '%s' pelo lado %s o '%s' fica só %.2f além: um passo de lado e o E oferece o outro"
 					% [str(id), str(lado), str(disputa[0]), float(disputa[1])])
-		print("  braço    %-18s meia-pegada=%.2f  encostado a %.2f  4 lados  %s"
-			% [str(id), meia, meia + RAIO_DO_CORPO,
+		print("  braço    %-18s meia-pegada=%.2f  encostado pela face  4 lados  %s"
+			% [str(id), meia,
 				("vizinho '%s' %.2f além" % [vizinho, menor_folga]) if vizinho != "" else "sem vizinho ao alcance"])
 	jogador.set_physics_process(corpo_solto)
 
@@ -511,17 +524,29 @@ func _a_casa_e_bloco(mundo: Node, jogador: Node) -> void:
 ## entre os outros ao alcance, e quanto ele fica além de `id`. Sem disputa,
 ## ["", INF].
 func _disputa(recursos: Node, id: String, ponto: Vector3) -> Array:
-	var sobra_dele := _plano(ponto, recursos._alvos[id]["pos"]) - float(recursos._alvos[id].get("meia_pegada", 0.0))
+	var sobra_dele: float = recursos.distancia_da_face(id, ponto)
 	var quem := ""
 	var folga := INF
 	for outro in recursos._alvos:
 		if str(outro) == id:
 			continue
-		var sobra := _plano(ponto, recursos._alvos[outro]["pos"]) - float(recursos._alvos[outro].get("meia_pegada", 0.0))
+		var sobra: float = recursos.distancia_da_face(str(outro), ponto)
 		if sobra < float(recursos.ALCANCE) and sobra - sobra_dele < folga:
 			quem = str(outro)
 			folga = sobra - sobra_dele
 	return [quem, folga]
+
+
+## Onde o corpo para ao encostar no alvo `id` pelo `lado`: o primeiro ponto, saindo do centro,
+## cuja distância à face da colisão alcança o raio do corpo.
+func _encostado(recursos: Node, id: String, centro: Vector3, lado: Vector3) -> Vector3:
+	var t := 0.0
+	while t < 30.0:
+		var ponto := centro + lado * t
+		if float(recursos.distancia_da_face(id, ponto)) >= RAIO_DO_CORPO:
+			return ponto
+		t += 0.02
+	return centro + lado * RAIO_DO_CORPO
 
 
 ## Quantas das oito direções em volta têm chão livre ao alcance do golpe.

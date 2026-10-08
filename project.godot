@@ -92,6 +92,7 @@ texture={
 3d_physics/layer_13="clique_casa"
 3d_physics/layer_14="camera"
 3d_physics/layer_20="medir"
+3d_physics/layer_21="auditoria"
 
 [physics]
 

@@ -114,6 +114,16 @@ const CAMADA_DE_MEDIR := 1 << 19
 const FOLGA := 0.1
 ## Quanto além da porta quem já está dentro continua dentro (m).
 const FOLGA_DE_SAIR := 0.25
+## A COLISÃO ACOMPANHA A PAREDE VISÍVEL (#205): a parede do cômodo acaba um palmo (`FOLGA`) para
+## dentro da face de dentro da casca, e a parede do modelo tem a espessura dela — o corpo que
+## chegava por fora parava com o ombro dentro do reboco. A casca de fora (`Comodo._montar_a_casca_de_fora`)
+## cobre o que falta, até a face de fora medida (`_medir_a_face_de_fora`), com esta margem para
+## fora (m) e no máximo este tanto de espessura a mais (m) — acima dele a medida é de beiral,
+## alpendre ou escada, e não de parede.
+const MARGEM_DE_FORA := 0.03
+const LIMITE_DA_CASCA_DE_FORA := 1.0
+## Quanto além da face de dentro das laterais o perfil da fachada mede (m): cobre a espessura da parede.
+const FOLGA_DO_PERFIL := 0.45
 
 var _mundo: Node3D
 var _jogador: Node3D
@@ -465,6 +475,12 @@ func _abrir(qual: String) -> int:
 		"porta_x": float(dado["porta_x"]),
 		"largura_da_porta": float(dado["largura_da_porta"]),
 		"altura_da_porta": float(dado["altura_da_porta"]),
+		# A casca de fora (#205): quanto a colisão ainda tem de avançar para fora, por lado,
+		# até a face visível da parede; e onde, no cômodo, está a face de fora da fachada.
+		"fora_direita": _sobra_de_fora(medida, "fora_direita", float(medida["lado"])),
+		"fora_esquerda": _sobra_de_fora(medida, "fora_esquerda", float(medida["lado"])),
+		"fora_fundo": _sobra_de_fora(medida, "fora_fundo", float(medida["fundo"])),
+		"perfil_da_fachada": _perfil_no_comodo(medida, ate_a_frente),
 	})
 	sala.name = "Interior_" + qual
 	# A casca que some para a câmera de cima: o modelo, ou as malhas do lote.
@@ -702,6 +718,7 @@ func _medir(malhas: Array, centro: Vector3, frente: Vector3, caixa_inteira: Node
 		var estorvo: Vector3 = espaco.intersect_ray(adiante).get("position", Vector3.INF)
 		if estorvo.is_finite():
 			medida["livre"] = minf(float(medida["livre"]), (estorvo - de).dot(frente) + 0.05)
+	_medir_a_face_de_fora(espaco, centro, frente, medida)
 	corpo.queue_free()
 	_sobrepor(medida, dado)
 	# Do centro à parede da frente pode ser pouco (a venda e o restaurante têm o meio da
@@ -711,6 +728,90 @@ func _medir(malhas: Array, centro: Vector3, frente: Vector3, caixa_inteira: Node
 			push_warning("Interiores: a casca da construção não mediu '%s' (%s); o cômodo não foi montado." % [chave, str(medida[chave])])
 			return {}
 	return medida
+
+
+## Quanto a parede do cômodo, que acaba `FOLGA` para dentro da face de dentro (`dentro`, do
+## centro), ainda tem de avançar para fora até a face de fora medida (`chave`). Sem medida, ou
+## com a medida de um beiral, zero.
+func _sobra_de_fora(medida: Dictionary, chave: String, dentro: float) -> float:
+	if not medida.has(chave):
+		return 0.0
+	var sobra: float = float(medida[chave]) - (dentro - FOLGA) + MARGEM_DE_FORA
+	return clampf(sobra, 0.0, LIMITE_DA_CASCA_DE_FORA)
+
+
+## A FACE DE FORA DAS PAREDES (#205), contra a mesma colisão provisória da casca: raios vindos
+## de longe, da direita, da esquerda, de trás e da frente, em duas alturas de peito e em cinco
+## pontos de cada parede. De cada ponto vale a face mais saliente das duas alturas; da parede,
+## a MEDIANA dos pontos — o pilar do alpendre ou a quina que sai num ponto só não engorda a
+## colisão da parede inteira. Escreve em `medida`: fora_direita, fora_esquerda e fora_fundo
+## (do centro à face), e fachada_perfil (a face da fachada coluna a coluna, de ponta a ponta).
+func _medir_a_face_de_fora(espaco: PhysicsDirectSpaceState3D, centro: Vector3, frente: Vector3, medida: Dictionary) -> void:
+	for chave in ["lado", "frente", "fundo", "chao"]:
+		if not is_finite(float(medida.get(chave, INF))):
+			return
+	var direita := Vector3.UP.cross(frente).normalized()
+	var piso: float = centro.y + float(medida["chao"])
+	var fracoes := [-0.6, -0.3, 0.0, 0.3, 0.6]
+	var alturas := [0.7, 1.3]
+	for sinal in [1.0, -1.0]:
+		var distancias: Array[float] = []
+		for fracao in fracoes:
+			var ao_longo: float = float(fracao) * (float(medida["frente"]) if fracao > 0.0 else float(medida["fundo"]))
+			var ponto := Vector3(centro.x, 0.0, centro.z) + frente * ao_longo
+			var d := _face_mais_saliente(espaco, ponto, piso, alturas, direita * sinal)
+			if is_finite(d):
+				distancias.append(d)
+		if not distancias.is_empty():
+			medida["fora_direita" if sinal > 0.0 else "fora_esquerda"] = _mediana(distancias)
+	var do_fundo: Array[float] = []
+	for fracao in [-0.8, -0.55, -0.3, 0.0, 0.3, 0.55, 0.8]:
+		var x: float = float(fracao) * float(medida["lado"])
+		var ponto := Vector3(centro.x, 0.0, centro.z) + direita * x
+		var d_fundo := _face_mais_saliente(espaco, ponto, piso, alturas, -frente)
+		if is_finite(d_fundo):
+			do_fundo.append(d_fundo)
+	if not do_fundo.is_empty():
+		medida["fora_fundo"] = _mediana(do_fundo)
+	# A fachada não tem uma face só (alpendre, balcão, pilar): é medida coluna a coluna, de ponta a
+	# ponta da casca, e a colisão do cômodo a acompanha (`Comodo._montar_a_fachada_de_fora`).
+	var perfil: Array[Vector2] = []
+	var meia := float(medida["lado"]) + FOLGA_DO_PERFIL
+	var x_do_perfil := -meia
+	while x_do_perfil <= meia:
+		var d_frente := _face_mais_saliente(espaco, Vector3(centro.x, 0.0, centro.z) + direita * x_do_perfil, piso, alturas, frente)
+		if is_finite(d_frente):
+			perfil.append(Vector2(x_do_perfil, d_frente))
+		x_do_perfil += Comodo.PASSO_DA_FACHADA
+	medida["fachada_perfil"] = perfil
+
+
+## O perfil da fachada medido (x do cômodo, distância do centro à face) no referencial do cômodo
+## (z da face, com a mesma margem das laterais), pronto para o `Comodo`.
+func _perfil_no_comodo(medida: Dictionary, ate_a_frente: float) -> Array[Vector2]:
+	var perfil: Array[Vector2] = []
+	for coluna in medida.get("fachada_perfil", []):
+		var medido: Vector2 = coluna
+		perfil.append(Vector2(medido.x, medido.y - ate_a_frente + MARGEM_DE_FORA))
+	return perfil
+
+
+## A distância, do ponto (no plano) até a face de fora mais saliente da casca na direção `para_fora`,
+## nas `alturas` acima do `piso`, ou INF se nenhum raio bate.
+func _face_mais_saliente(espaco: PhysicsDirectSpaceState3D, ponto: Vector3, piso: float, alturas: Array, para_fora: Vector3) -> float:
+	var melhor := -INF
+	for altura in alturas:
+		var de := Vector3(ponto.x, piso + float(altura), ponto.z)
+		var bate := _raio(espaco, de + para_fora * 30.0, de)
+		if bate.is_finite():
+			melhor = maxf(melhor, (bate - de).dot(para_fora))
+	return melhor if is_finite(melhor) else INF
+
+
+static func _mediana(valores: Array[float]) -> float:
+	var ordem := valores.duplicate()
+	ordem.sort()
+	return float(ordem[int(ordem.size() / 2.0)])
 
 
 ## Troca da medida o que o modelo traz medido à mão (`medida` do `data/interiores_casas.json`).

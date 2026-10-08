@@ -30,6 +30,31 @@ const JUMP_GRAVITY_DOWN := 25.0 * JUMP_SPEED_MULTIPLIER * JUMP_SPEED_MULTIPLIER
 const JUMP_BUFFER_TIME := 0.16
 const JUMP_COYOTE_TIME := 0.16
 const RUN_STOP_SPEED := 0.15
+
+## GIRO DO CORPO (#209): o viajante nunca anda de lado nem desliza. O corpo gira
+## para o rumo com velocidade angular limitada (sem salto de um quadro) e o passo
+## só pega velocidade conforme o corpo se alinha com o rumo: dentro de
+## ALINHADO_PLENO anda inteiro, a partir de ALINHADO_NENHUM gira no lugar.
+const VELOCIDADE_DE_GIRO := deg_to_rad(640.0)
+const SUAVIDADE_DO_GIRO := 14.0
+const ALINHADO_PLENO := deg_to_rad(30.0)
+const ALINHADO_NENHUM := deg_to_rad(100.0)
+
+
+## Quanto o corpo avança neste quadro rumo ao `alvo` (rad), com a suavidade de
+## sempre perto do rumo e o teto de VELOCIDADE_DE_GIRO nas viradas grandes.
+static func passo_de_giro(atual: float, alvo: float, delta: float) -> float:
+	var falta := angle_difference(atual, alvo)
+	var suave := falta * (1.0 - exp(-SUAVIDADE_DO_GIRO * delta))
+	var teto := VELOCIDADE_DE_GIRO * maxf(delta, 0.0)
+	return clampf(suave, -teto, teto)
+
+
+## Fração do passo que vale com o corpo a `atual` e o rumo em `alvo` (rad): 1
+## alinhado, 0 de costas ou de lado. É o que impede o deslize lateral.
+static func alinhamento_do_passo(atual: float, alvo: float) -> float:
+	var desvio := absf(angle_difference(atual, alvo))
+	return 1.0 - smoothstep(ALINHADO_PLENO, ALINHADO_NENHUM, desvio)
 const VIGOR_MAXIMO := 100.0
 const FOLEGO_MAXIMO := 100.0
 const CUSTO_FOLEGO_NADO_POR_SEGUNDO := 5.0
@@ -168,6 +193,8 @@ var _navigator = ClickNavigation.new()
 var _walk_path := PackedVector3Array()
 var _walk_index := 0
 var _walk_destination := Vector3.INF
+var _walk_chegada := ARRIVAL_DISTANCE
+var _walk_ate_o_fim := false
 var _stuck_time := 0.0
 var _replan_attempts := 0
 var _hovered_house: Object
@@ -581,6 +608,10 @@ func _physics_process(delta: float) -> void:
 	# Energia acompanha o vigor do corpo. Abaixo de um quinto do teto,
 	# a regra de cansaço encurta o passo para 62%.
 	speed *= multiplicador_do_passo()
+	# Sem deslize lateral (#209): no chão, o passo espera o corpo virar para o rumo.
+	# No ar o pulo mantém o impulso que já tem.
+	if direction.length_squared() > 0.01 and not _jumping and is_instance_valid(visual):
+		speed *= alinhamento_do_passo(visual.rotation.y, atan2(direction.x, direction.z))
 	if _knockback_remaining > 0.0:
 		# Empurrão (ex.: o coveiro): o impulso manda até o fim, sem controle do jogador.
 		_knockback_remaining -= delta
@@ -635,7 +666,7 @@ func _physics_process(delta: float) -> void:
 		if _stuck_time > 1.4:
 			_retry_walk()
 	if direction.length_squared() > 0.01:
-		visual.rotation.y = lerp_angle(visual.rotation.y, atan2(direction.x, direction.z), 1.0 - exp(-12.0 * delta))
+		visual.rotation.y += passo_de_giro(visual.rotation.y, atan2(direction.x, direction.z), delta)
 	if animator:
 		animator.update_motion(Vector2(velocity.x, velocity.z).length(), delta)
 	_atualizar_altura_visual_nado()
@@ -1005,6 +1036,28 @@ func sair_do_nado_ao_renascer() -> void:
 		visual.position.y = 0.0
 
 
+## ACORDAR PARADO (#189): depois de dormir, desmaiar ou cair, o corpo está em pé
+## e quieto, com a pose do `papel` (hoje o parado; "levantar da cama" um dia) já
+## no primeiro quadro, e nada do que fazia antes sobrevive à noite: corrida
+## ligada, passeio clicado, pulo, nado, golpe e ferramenta em uso. O processo
+## físico está desligado nessa hora, e é ele quem, andando, trocaria o clipe.
+func acordar_parado(papel: String = "idle") -> void:
+	_cancel_walk()
+	velocity = Vector3.ZERO
+	_run_toggled = false
+	_ran_since_toggle = false
+	_jumping = false
+	_jump_buffer_remaining = 0.0
+	_grounded_grace_remaining = 0.0
+	_knockback_remaining = 0.0
+	_uso_restante = 0.0
+	_sacolejo = 0.0
+	liberar_acao_de_golpe()
+	_definir_nado(false)
+	if animator and animator.has_method("acordar_parado"):
+		animator.acordar_parado(papel)
+
+
 ## Chão sob os pés para o som do passo: madeira no píer, na ponte e na canoa; água rasa
 ## ou funda conforme a lâmina; senão o que o cenário diz (grama, terra, areia).
 func chao_dos_pes() -> String:
@@ -1236,21 +1289,40 @@ func _request_walk_at_cursor(mouse: Vector2, run_to_destination: bool = false) -
 
 ## Inicia o mesmo caminho usado pelo clique, para interações que precisam de
 ## uma aproximação antes de acontecer (como parar diante de um tronco).
-func caminhar_ate(destino: Vector3) -> bool:
+##
+## `chegada` é a que distância do último ponto o corpo dá o trajeto por feito (o de sempre para
+## 0,7 m: quem clica no chão para um pouco antes), e `ate_o_fim` leva o trajeto até o destino
+## mesmo quando a grade (células de 2,5 m) o põe numa célula barrada, onde ela acaba na célula
+## livre mais perto, longe dele — o que o golpe de braço (#208) não aceita: ele precisa chegar
+## à face do alvo.
+func caminhar_ate(destino: Vector3, chegada: float = ARRIVAL_DISTANCE, ate_o_fim: bool = false) -> bool:
 	if _click_world == null or not _click_world.is_walkable_point(destino):
 		return false
 	_cancel_walk()
-	var caminho: PackedVector3Array = _navigator.find_path(global_position, destino)
+	var caminho := _planejar_caminho(global_position, destino, ate_o_fim)
 	if caminho.is_empty():
 		return false
 	_walk_path = caminho
 	_walk_run = false
 	_walk_index = 0
 	_walk_destination = destino
+	_walk_chegada = chegada
+	_walk_ate_o_fim = ate_o_fim
 	_stuck_time = 0.0
 	_replan_attempts = 0
 	navigation_status.emit("Caminhando até o ponto selecionado. %s cancela o trajeto." % TeclasMovimento.rotulo())
 	return true
+
+
+## O trajeto da grade de `de` a `ate`; com `ate_o_fim`, acrescenta o próprio destino quando a grade
+## acabou longe dele.
+func _planejar_caminho(de: Vector3, ate: Vector3, ate_o_fim: bool) -> PackedVector3Array:
+	var caminho: PackedVector3Array = _navigator.find_path(de, ate)
+	if ate_o_fim and not caminho.is_empty():
+		var fim := caminho[caminho.size() - 1]
+		if Vector2(fim.x - ate.x, fim.z - ate.z).length() > ARRIVAL_DISTANCE:
+			caminho.append(_click_world.ground_position(ate, 0.08))
+	return caminho
 
 
 func caminhando_para(destino: Vector3) -> bool:
@@ -1273,7 +1345,7 @@ func _next_walk_direction() -> Vector3:
 	while _walk_index < _walk_path.size():
 		var waypoint := _walk_path[_walk_index]
 		var offset := Vector3(waypoint.x - global_position.x, 0, waypoint.z - global_position.z)
-		if offset.length() >= ARRIVAL_DISTANCE:
+		if offset.length() >= _walk_chegada:
 			return offset.normalized()
 		_walk_index += 1
 	_cancel_walk()
@@ -1295,7 +1367,7 @@ func _retry_walk() -> void:
 		_cancel_walk()
 		navigation_status.emit("Caminho bloqueado. Escolha outro destino.")
 		return
-	var path: PackedVector3Array = _navigator.find_path(global_position, _walk_destination)
+	var path := _planejar_caminho(global_position, _walk_destination, _walk_ate_o_fim)
 	if path.is_empty():
 		_cancel_walk()
 		navigation_status.emit("Caminho bloqueado. Escolha outro destino.")
@@ -1309,6 +1381,8 @@ func _cancel_walk() -> void:
 	_walk_run = false
 	_walk_index = 0
 	_walk_destination = Vector3.INF
+	_walk_chegada = ARRIVAL_DISTANCE
+	_walk_ate_o_fim = false
 	_stuck_time = 0.0
 	_replan_attempts = 0
 

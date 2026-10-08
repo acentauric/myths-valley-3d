@@ -753,6 +753,12 @@ func _build_lighting() -> void:
 	_aplicar_estacao(Relogio.estacao)
 
 
+## Dentro de um cômodo de câmera de cima (a casa) a sombra do sol cobre só o que a câmera vê (#185).
+func sombra_de_dentro(dentro: bool) -> void:
+	if _ceu != null:
+		_ceu.sombra_de_dentro(dentro)
+
+
 func _aplicar_estacao(estacao: int) -> void:
 	preload("res://scripts/prototipo_3d/estacoes_vale.gd").aplicar(estacao)
 	_aplicar_hora(Dia.hora)

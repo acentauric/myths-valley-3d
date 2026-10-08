@@ -79,7 +79,7 @@ func _run() -> void:
 		var ficha: Dictionary = alvo["ficha"]
 		var dureza := float(ficha.get("dureza", 1.0))
 		var custo: float = Energia.custo("bater", dureza)
-		await _chegar_perto(jogador, mundo, alvo["pos"], 1.4 + float(alvo.get("meia_pegada", 0.0)))
+		await _chegar_perto(jogador, mundo, alvo["pos"], 0.8 + float(alvo.get("meia_pegada", 0.0)))
 		_conferir(recursos._perto == id, "perto do lajedo o alvo do E é '%s'" % recursos._perto)
 		Energia.repor(1000.0)
 		await process_frame

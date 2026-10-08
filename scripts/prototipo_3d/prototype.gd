@@ -884,6 +884,9 @@ func _ao_mudar_de_lado() -> void:
 	var qual: String = interiores.dentro()
 	if ambiente != null:
 		ambiente.abafado = 1.0 if qual != "" else 0.0
+	# O sol só faz sombra até onde a câmera de cima alcança (#185); a de passeio vê o vale.
+	var sala = interiores.sala_de(qual) if qual != "" else null
+	world.sombra_de_dentro(sala != null and bool(sala.camera_de_cima))
 	if qual != "":
 		hud.set_region_title(interiores.nome_de(qual))
 		# ENTRAR É ACONTECIMENTO: a chegada espera o jogador entrar na casa

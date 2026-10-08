@@ -39,6 +39,12 @@ const CAMADA_DOS_CORPOS := 1 << 11
 ## pouco por dentro (a palhoça, a capelinha) leva parede fina, para a sala não
 ## sair de dentro dela nem ficar menor que um quarto de gente (ver `configurar`).
 const PAREDE := 0.4
+## O PERFIL DA FACHADA (#205): de quantos em quantos metros se mede a face de fora dela, e até onde,
+## da parede para fora, a colisão acompanha uma saliência (pilar de alpendre, balcão, banco).
+const PASSO_DA_FACHADA := 0.05
+## Colunas vizinhas cuja face difere até isto (m) viram uma caixa só.
+const TOLERANCIA_DA_FACHADA := 0.1
+const SALIENCIA_MAXIMA := 3.0
 
 const CAL := Color("efe8d8")
 const MADEIRA := Color("5b3a22")
@@ -64,6 +70,15 @@ var borda_do_alicerce := 0.0
 ## Quanto a soleira de fora se afasta da porta: o quanto há de chão livre na
 ## frente dela, até o primeiro estorvo.
 var afastamento_de_fora := 1.6
+## A CASCA DE FORA (#205): quanto a colisão avança para fora, além da parede (`parede`), até a face
+## visível da parede do modelo, em cada lado e no fundo; e o PERFIL DA FACHADA, a face de fora dela
+## coluna a coluna (x do cômodo, z da face), de `PASSO_DA_FACHADA` em `PASSO_DA_FACHADA` — vazio sem
+## medida. A fachada de uma venda tem alpendre, balcão e pilar, e uma face só (a mediana) errava a
+## casa inteira. Ver `_montar_a_casca_de_fora`.
+var fora_direita := 0.0
+var fora_esquerda := 0.0
+var fora_fundo := 0.0
+var perfil_da_fachada: Array[Vector2] = []
 ## A PORTA: onde ela fica na fachada (do meio para +X) e o tamanho do vão.
 var porta_x := 0.0
 var largura_da_porta := 1.2
@@ -90,6 +105,9 @@ var camera_de_cima := false
 ## raio, a tomava por parede e parava na porta.
 var rampa_da_porta_inteira := false
 var casca: Array = []
+## Se o teto e a casca estão só na sombra agora (`por_dentro`), e as malhas que ficaram assim.
+var _casca_so_na_sombra := false
+var _geometrias_da_casca: Array = []
 var _teto: Array[Node] = []
 ## Os corpos do cômodo (paredes, móveis): a câmera de cima não bate neles, e
 ## fica por cima da parede em vez de encolher até a cabeça do jogador.
@@ -115,6 +133,12 @@ func configurar(medidas: Dictionary) -> void:
 	afastamento_de_fora = clampf(float(medidas.get("livre", 3.0)) - 0.6, 0.7, 1.6)
 	largura_da_porta = clampf(float(medidas.get("largura_da_porta", largura_da_porta)), 0.8, 2.0)
 	altura_da_porta = clampf(float(medidas.get("altura_da_porta", altura_da_porta)), 1.9, pe_direito)
+	fora_direita = maxf(float(medidas.get("fora_direita", 0.0)), 0.0)
+	fora_esquerda = maxf(float(medidas.get("fora_esquerda", 0.0)), 0.0)
+	fora_fundo = maxf(float(medidas.get("fora_fundo", 0.0)), 0.0)
+	perfil_da_fachada.clear()
+	for coluna in medidas.get("perfil_da_fachada", []):
+		perfil_da_fachada.append(coluna as Vector2)
 	# A porta não sai da fachada: o vão inteiro cabe entre as paredes do lado.
 	var folga := largura * 0.5 - largura_da_porta * 0.5 - 0.1
 	porta_x = clampf(float(medidas.get("porta_x", porta_x)), -folga, folga)
@@ -198,6 +222,7 @@ func _montar_casca() -> void:
 	_caixa(Vector3(largura + parede * 2.0, pe_direito, parede), Vector3(0, pe_direito * 0.5, -comprimento - parede * 0.5),
 		_parede(), true, "Fundos")
 	_barra_do_fundo()
+	_montar_a_casca_de_fora()
 	# O forro, e as vigas por baixo dele, de lado a lado.
 	_teto.append(_caixa(Vector3(largura + parede * 2.0, 0.2, comprimento + parede * 2.0), Vector3(0, pe_direito + 0.1, meio_z),
 		_forro(), not camera_de_cima, "Forro"))
@@ -208,6 +233,66 @@ func _montar_casca() -> void:
 	for lado in [-1.0, 1.0]:
 		_teto.append(_caixa(Vector3(0.18, 0.2, comprimento), Vector3(lado * (largura * 0.5 - 0.09), pe_direito - 0.1, meio_z),
 			_cor(MADEIRA), false, "Cimalha"))
+
+
+## A COLISÃO ATÉ A PAREDE VISÍVEL (#205). As paredes do cômodo acabam um palmo para dentro da face
+## de dentro da casca do modelo, e a parede do modelo tem a espessura dela: o corpo que chegava por
+## fora parava com o ombro dentro do reboco — e, ao lado da porta, onde a fachada tem o fundo do
+## vão e só o batente de 20 cm era sólido, entrava na parede. Aqui entram, só de colisão e sem
+## desenho e sem barrar a câmera (ela atravessava a casca antes, e o braço dela não ganha parede),
+## o que falta até a face de fora: as duas laterais e o fundo (`fora_*`) e a fachada de
+## cada lado do vão, coluna a coluna (`perfil_da_fachada`) — as ombreiras da porta são sólidas, e o
+## pilar do alpendre e o balcão que saem da fachada também.
+func _montar_a_casca_de_fora() -> void:
+	var z_frente := parede + fundo_da_porta
+	var x_direita := largura * 0.5 + parede + fora_direita
+	var x_esquerda := -(largura * 0.5 + parede + fora_esquerda)
+	var z_fundo := -comprimento - parede - fora_fundo
+	if fora_direita > 0.02:
+		_caixa(Vector3(fora_direita, pe_direito, z_frente - z_fundo),
+			Vector3(largura * 0.5 + parede + fora_direita * 0.5, pe_direito * 0.5, (z_frente + z_fundo) * 0.5), null, true, "ParedeFora", false)
+	if fora_esquerda > 0.02:
+		_caixa(Vector3(fora_esquerda, pe_direito, z_frente - z_fundo),
+			Vector3(-(largura * 0.5 + parede + fora_esquerda * 0.5), pe_direito * 0.5, (z_frente + z_fundo) * 0.5), null, true, "ParedeFora", false)
+	if fora_fundo > 0.02:
+		_caixa(Vector3(x_direita - x_esquerda, pe_direito, fora_fundo),
+			Vector3((x_direita + x_esquerda) * 0.5, pe_direito * 0.5, -comprimento - parede - fora_fundo * 0.5), null, true, "FundosFora", false)
+	_montar_a_fachada_de_fora()
+
+
+## A fachada de fora, de cada lado do vão da porta: colunas do perfil medido, fora do vão e dentro da
+## casca, cada uma com a face dela (de `parede` a `parede + SALIENCIA_MAXIMA`) e engordada pela
+## vizinha mais saliente (a saliência mais estreita que o passo não escapa entre duas colunas).
+## Colunas vizinhas de face parecida (até `TOLERANCIA_DA_FACHADA` de diferença) viram uma caixa só.
+func _montar_a_fachada_de_fora() -> void:
+	var borda := largura * 0.5 + parede
+	var meia_porta := largura_da_porta * 0.5
+	var xs: Array[float] = []
+	var zs: Array[float] = []
+	for coluna in perfil_da_fachada:
+		if absf(coluna.x) > borda or absf(coluna.x - porta_x) < meia_porta:
+			continue
+		xs.append(coluna.x)
+		zs.append(clampf(coluna.y, 0.0, parede + SALIENCIA_MAXIMA))
+	var gordas: Array[float] = zs.duplicate()
+	for i in xs.size():
+		for vizinha in [i - 1, i + 1]:
+			if vizinha >= 0 and vizinha < xs.size() and absf(xs[vizinha] - xs[i]) <= PASSO_DA_FACHADA * 1.01:
+				gordas[i] = maxf(gordas[i], zs[vizinha])
+	var i := 0
+	while i < xs.size():
+		var j := i
+		var z := gordas[i]
+		while j + 1 < xs.size() and absf(xs[j + 1] - xs[j]) <= PASSO_DA_FACHADA * 1.01 and absf(gordas[j + 1] - gordas[i]) <= TOLERANCIA_DA_FACHADA:
+			j += 1
+			z = maxf(z, gordas[j])
+		var fundura := z - parede
+		if fundura > 0.02:
+			var de_x := maxf(xs[i] - PASSO_DA_FACHADA * 0.5, -borda)
+			var ate_x := minf(xs[j] + PASSO_DA_FACHADA * 0.5, borda)
+			_caixa(Vector3(ate_x - de_x, pe_direito, fundura),
+				Vector3((de_x + ate_x) * 0.5, pe_direito * 0.5, parede + fundura * 0.5), null, true, "FachadaFora", false)
+		i = j + 1
 
 
 ## O chão do cômodo, de parede a parede.
@@ -395,17 +480,31 @@ func corpos_do_comodo() -> Array[RID]:
 ## O TETO SOME PARA A CÂMERA DE CIMA (ver `camera_de_cima`): o forro, as vigas
 ## e a casca da construção ficam só na sombra enquanto o jogador está dentro.
 ## Na construção sem câmera de cima, nada muda.
+##
+## SÓ MEXE QUANDO O ESTADO MUDA (#185). `Interiores` avisa TODAS as construções a cada
+## troca de lado, e cada aviso varria a casca inteira atrás das malhas (`find_children`)
+## para pôr nelas o modo que já tinham: na travessia da porta, a varredura de todas as
+## casas do vale caía num quadro só, e cada `cast_shadow` regravado refaz o registro da
+## malha no passe de sombra. Agora as malhas são achadas uma vez, na entrada, e quem já
+## está no estado pedido não faz nada.
 func por_dentro(dentro: bool) -> void:
-	if not camera_de_cima:
+	if not camera_de_cima or dentro == _casca_so_na_sombra:
 		return
+	_casca_so_na_sombra = dentro
+	if dentro:
+		_geometrias_da_casca.clear()
+		for no in _teto + casca:
+			if not is_instance_valid(no):
+				continue
+			if no is GeometryInstance3D:
+				_geometrias_da_casca.append(no)
+			_geometrias_da_casca.append_array((no as Node).find_children("*", "GeometryInstance3D", true, false))
 	var modo := GeometryInstance3D.SHADOW_CASTING_SETTING_SHADOWS_ONLY if dentro else GeometryInstance3D.SHADOW_CASTING_SETTING_ON
-	for no in _teto + casca:
-		if not is_instance_valid(no):
-			continue
-		var geometrias: Array = [no] if no is GeometryInstance3D else []
-		geometrias.append_array((no as Node).find_children("*", "GeometryInstance3D", true, false))
-		for geometria in geometrias:
+	for geometria in _geometrias_da_casca:
+		if is_instance_valid(geometria):
 			(geometria as GeometryInstance3D).cast_shadow = modo
+	if not dentro:
+		_geometrias_da_casca.clear()
 
 
 ## UMA RAMPA INVISÍVEL, para o corpo subir o que, como degrau, travaria: uma

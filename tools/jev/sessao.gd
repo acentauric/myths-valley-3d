@@ -70,6 +70,11 @@ var botao_manual: Button
 var camera_do_teste: Node
 ## As teclas que o testador pode estar segurando quando a mão passa para o humano.
 const TECLAS_DO_TESTADOR := [KEY_W, KEY_A, KEY_S, KEY_D, KEY_E, KEY_F, KEY_V, KEY_SHIFT, KEY_SPACE]
+## A casca de cada construção ao alcance, como o olho a vê, para saber quando o centro do viajante entra
+## numa malha opaca (#205): nome do lote -> {"corpo", "desde"}; e quando o último achado dela foi.
+const AuditoriaDeGeometria = preload("res://scripts/prototipo_3d/auditoria_de_geometria.gd")
+var cascas_auditadas: Dictionary = {}
+var dentro_de_geometria_visto: Dictionary = {}
 
 
 func _ponto_de_material(item: String) -> Vector3:
@@ -565,7 +570,11 @@ func _estado() -> Dictionary:
 		var oferta: Dictionary = fonte.alvo_do_e()
 		if not oferta.is_empty():
 			if fonte == recursos_observados:
-				oferta["em_trabalho"] = bool(fonte.get("_golpe_animando")) or str(fonte.get("_golpe_pendente")) != ""
+				# O E de longe anda até o alvo e gira antes de bater (#208): o testador espera por isso também.
+				if fonte.has_method("em_andamento"):
+					oferta["em_trabalho"] = bool(fonte.call("em_andamento"))
+				else:
+					oferta["em_trabalho"] = bool(fonte.get("_golpe_animando")) or str(fonte.get("_golpe_pendente")) != ""
 			estado.interaction_candidates.append({"source": str(fonte.name), "kind": "tree" if fonte.has_meta("recurso_arvore") else "", "target": _json_seguro(oferta), "path": str(fonte.get_path())})
 	estado["mission_chains"] = []
 	estado["work_costs"] = {}
@@ -807,8 +816,10 @@ func _acoes(estado: Dictionary) -> Dictionary:
 	for rumo in ["forward", "backward", "left", "right"]:
 		if bool((direcoes.get(rumo, {}) as Dictionary).get("blocked", false)):
 			continue
-		opcoes["run_" + rumo] = "Run " + rumo + " relative to the camera for 4 seconds using Shift and movement keys; this direction is clear nearby"
-		opcoes["walk_" + rumo] = "Walk " + rumo + " relative to the camera for 2 seconds; try another direction if the previous movement was blocked"
+		# Não é passo lateral: o viajante vira o corpo para o rumo e anda para a frente
+		# (giro suave, #209). O nome só diz para que lado da câmera ele vai.
+		opcoes["run_" + rumo] = "Turn toward the " + rumo + " side of the camera and run that way for 4 seconds (the body faces where it goes; no sideways stepping); this direction is clear nearby"
+		opcoes["walk_" + rumo] = "Turn toward the " + rumo + " side of the camera and walk that way for 2 seconds (the body faces where it goes; no sideways stepping); try another direction if the previous movement was blocked"
 	opcoes["wait"] = "Wait 4 seconds for dialogue/narration or stamina recovery"
 	_marcar_alvos_fora_do_comodo(estado, opcoes)
 	return opcoes
@@ -933,6 +944,54 @@ func _amostrar_movimento(forcar: bool = false) -> void:
 	var jogador: Node3D = current_scene.get("player")
 	amostras_movimento.append({"seconds": (Time.get_ticks_msec() - inicio_jogo) / 1000.0, "position": _vetor(jogador.global_position)})
 	amostrar_em = Time.get_ticks_msec() + 500
+	_conferir_dentro_de_geometria(jogador)
+
+
+## O CENTRO DO VIAJANTE DENTRO DE UMA MALHA OPACA (#205): perto de uma construção, a casca dela vai
+## para uma camada de auditoria e o peito do viajante é conferido contra ela. Fora do cômodo e do
+## corredor da porta (a porta atravessa a casca de propósito), é colisão que deixou entrar na parede,
+## e o testador registra "player_inside_geometry".
+func _conferir_dentro_de_geometria(jogador: Node3D) -> void:
+	var mundo = current_scene.get("world")
+	var interiores = current_scene.get("interiores")
+	if mundo == null:
+		return
+	var construcoes = mundo.get("construcoes")
+	if not (construcoes is Dictionary):
+		return
+	if interiores != null:
+		if str(interiores.contem(jogador.global_position)) != "":
+			return
+		for qual in interiores.quais():
+			var sala = interiores.sala_de(str(qual))
+			if sala != null and sala.no_vao(jogador.global_position):
+				return
+	var espaco: PhysicsDirectSpaceState3D = mundo.get_world_3d().direct_space_state
+	var peito := jogador.global_position + Vector3.UP * 0.9
+	for nome in construcoes:
+		var modelo = (construcoes[nome] as Dictionary).get("modelo")
+		if not (modelo is Node3D) or not is_instance_valid(modelo):
+			continue
+		var longe := Vector2(jogador.global_position.x - (modelo as Node3D).global_position.x, jogador.global_position.z - (modelo as Node3D).global_position.z).length()
+		var casca = cascas_auditadas.get(nome)
+		if longe > 40.0:
+			if casca != null:
+				if is_instance_valid(casca.corpo):
+					casca.corpo.queue_free()
+				cascas_auditadas.erase(nome)
+			continue
+		if longe > 12.0:
+			continue
+		if casca == null:
+			cascas_auditadas[nome] = {"corpo": AuditoriaDeGeometria.corpo_da_casca(mundo, modelo), "desde": Engine.get_physics_frames()}
+			continue
+		if Engine.get_physics_frames() - int(casca.desde) < 3:
+			continue
+		if AuditoriaDeGeometria.dentro_da_malha(espaco, peito) and _segundos() - float(dentro_de_geometria_visto.get(nome, -100.0)) > 10.0:
+			achados.append({"type": "player_inside_geometry", "building": str(nome), "position": _vetor(jogador.global_position), "action": ultima_acao})
+			if achados.size() > 6:
+				achados.pop_front()
+			dentro_de_geometria_visto[nome] = _segundos()
 
 
 func _caminhar(alvo, seguir: bool, exato: bool = false, passagem_da_porta: bool = false) -> String:

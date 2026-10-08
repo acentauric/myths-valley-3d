@@ -228,6 +228,45 @@
   com respostas falsas, e `--escada-simulada` roda a escada sem crédito; nenhuma chamada
   paga foi feita (#183).
 
+- **A colisão das casas acompanha a parede visível, e o viajante para encostado em vez de
+  entrar nela.** Na casa da Dona Zefa metade do corpo atravessava a quina da fachada, ao lado
+  da porta. Eram duas faltas na colisão que o cômodo põe no lugar da caixa inteira: a parede
+  acabava um palmo para dentro da face de dentro da casca (e a parede do modelo tem a
+  espessura dela), e ao lado do vão a fachada só tinha 20 cm sólidos no fundo da porta. Agora
+  a montagem mede a face de fora da casca por raios (laterais, fundo e a fachada fora do vão,
+  em duas alturas de peito, pela mediana) e o cômodo cobre o que falta até ela, só de colisão,
+  com as ombreiras da porta sólidas e a fachada inteira de cada lado do vão, até o teto.
+  Varanda e rampa da soleira ficam encostadas em parede sólida, sem atalho para dentro. O
+  portão novo `colisao_das_casas` põe a malha visível de cada construção numa camada de
+  auditoria e mede, por fora, quanto a colisão está dentro da face visível (fachada, laterais,
+  fundo), sem parede de ar nem buraco; e o testador automático registra
+  `player_inside_geometry` quando o peito do viajante entra numa malha fora do cômodo e do
+  corredor da porta (#205).
+
+- **O golpe de ferramenta só sai encostado e de frente para o alvo.** O machado dava
+  machadadas no ar: o alcance era 3,2 m somados à meia-pegada da peça, e o corpo nem
+  virava. Agora o golpe vale a 1,2 m da FACE da colisão (caixa girada, quina e cilindro,
+  e não mais o raio da meia-pegada); o E ainda se oferece até 3,2 m da face, e de mais
+  longe de 1,2 m o viajante anda até um ponto a 0,8 m da face, gira para o alvo e só
+  então bate (a dica diz "ir até lá"). Um impacto com o corpo levado para longe no meio
+  do clipe não cobra nem derruba. O lajedo e as outras peças grandes seguem alcançáveis,
+  porque a distância é da face. A pilha de lenha ficou na altura da cintura (de 1,6 m
+  nos roçados para 0,9 m) e o tronco caído com uns 50 cm de diâmetro (era 65 cm). O
+  testador espera o viajante andar e girar antes de contar o golpe. O portão
+  `alcance_dos_alvos` mede o alcance curto dos quatro lados pela face, e o novo
+  `golpe_de_braco` confere a escala, o E de longe e o impacto fora do alcance (#208).
+
+- **Quem dorme, desmaia ou cai acorda parado, em pé, no clipe do parado.** O corpo
+  acordava na pose de antes (correndo, nadando, de machado na mão) porque o processo
+  físico fica desligado durante a noite e é ele quem troca o clipe. Agora, com a tela
+  ainda no escuro, o viajante larga corrida ligada, passeio clicado, pulo, nado, golpe
+  e ferramenta em uso, e o animador toca o parado do primeiro quadro, sem mistura com
+  o clipe anterior; vale para a cama, o desmaio das 2h e a queda. A pose de acordar
+  sai de uma tabela por motivo (`POSE_DE_ACORDAR` em `queda.gd`), o gancho para um
+  "levantar da cama" no lugar do parado. O portão `tests/acordar_parado.gd` dorme no
+  meio de uma corrida, de um golpe e do nado pelas três portas e confere clipe,
+  velocidade e posição (#189).
+
 - **Todo campo de Ajustes tem o "?" de ajuda, e "Passos na água" ganha o ↺.** O campo
   era montado à mão, com um botão Ouvir que encurtava o seletor: agora é uma escolha
   como as vizinhas (Original ou Novos, ↺ volta a Original) e trocar a opção já toca a

@@ -73,6 +73,9 @@ python docs\projeto\desempenho_05_10_2026\ferramentas\comparar.py docs\projeto\d
 # A/B de GPU numa vista escolhida
 ... -- --saida=ab.json --lugar=praca --fases=censo,abgpu --ab_gpu_em=mirante:270
 
+# a casa herdada por dentro (#185): vista de fora e de dentro, e o A/B das hipóteses da issue
+... -- --saida=casa.json --lugar=casa_de_taipa --fases=censo,vistas,abgpu --lugares=praca,casa_de_taipa --rumos=4 --ab_gpu_em=casa_de_taipa:135 --so=casa:
+
 # experimentos em memória (não mexem no projeto)
 ... -- --saida=x.json --lugar=praca --fases=vistas --patch_costa=1 --aplicar=passos3,minimapa_6hz,msaa0_fxaa,sombra60,atlas2048,cull_back,mata050
 ```
@@ -84,3 +87,12 @@ Três cuidados que custaram tempo nesta investigação:
 3. **O medidor não roda no modelo de exportação *release*:** esse binário recusa `--path`. Para medir a build exportada, use o FPS do HUD e um cronômetro.
 
 Depois de corrigido o cache da costa no projeto, `--patch_costa=1` passa a responder "nao achei a funcao" e deixa de ser necessário.
+
+## Casa herdada: o que a #185 já mudou e o que falta medir
+
+Lida no código, sem rodar o jogo (a medição fica para a rodada de teste da trilha):
+
+- A câmera de cima olha a 69° para baixo, de 4,4 m: o frustum não pega a mata nem o vale, então a hipótese 1 da issue (câmera enxergando o vale inteiro) é a menos provável.
+- O que não depende da câmera é o que sobra dentro de casa: o passe de sombra do sol (~760 malhas até 70 u) e as luzes dos cômodos. `CeuVale.sombra_de_dentro` encurta a sombra a 24 u enquanto o jogador está num cômodo de câmera de cima (a casa); a câmera só vê uns 9 u.
+- `Comodo.por_dentro` varria a casca de toda construção do vale (`find_children` + `cast_shadow`) a cada troca de lado, sem checar se o estado mudava: um tranco de um quadro na porta. Agora só mexe quando o estado muda.
+- Pendente de número: casca escondida em vez de `SHADOWS_ONLY`, `far` da câmera, luzes e sonda de reflexo. As alternâncias `casa: ...` do `medir_fps.gd` medem cada uma na vista `casa_de_taipa`.
