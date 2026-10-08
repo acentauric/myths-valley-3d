@@ -84,7 +84,8 @@ func _run() -> void:
 				chaves[str((no as Node3D).get_meta("chave"))] = true
 		tem[qual] = chaves
 		var parede = sala._parede()
-		cor[qual] = parede.get_shader_parameter("cor") if parede is ShaderMaterial else null
+		# A cal é material padrão com textura no Tripo (8e66ba3: a cor mora em `albedo_color`) e shader no procedural.
+		cor[qual] = parede.albedo_color if parede is StandardMaterial3D else (parede.get_shader_parameter("cor") if parede is ShaderMaterial else null)
 		print("  %s (%s): %s" % [qual, sala.perfil, ", ".join(chaves.keys())])
 	if tem.has("casa_pedro"):
 		var pedro_tem: Dictionary = tem["casa_pedro"]

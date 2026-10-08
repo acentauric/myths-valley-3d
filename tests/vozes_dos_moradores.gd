@@ -55,6 +55,9 @@ const VOZ_SEGUNDOS := Vector2(1.0, 24.0)
 const LETRAS_POR_SEGUNDO := Vector2(5.0, 30.0)
 const IDIOMA_ZH := 3
 
+const PovoadoLiberado = preload("res://tests/fixtures/povoado_liberado.gd")
+const ConversaDoE = preload("res://tests/fixtures/conversa_do_e.gd")
+
 var falhas := 0
 var falsificar := false
 var relogio: Node
@@ -116,6 +119,8 @@ func _run() -> void:
 	await _quadros(8)
 	relogio.ficar_lento()
 	vale = current_scene
+	# O povoado se apresenta aos poucos na chegada (#155): este portão fala com moradores de longe.
+	await PovoadoLiberado.todos(self, vale)
 	fila = vale.get("fila_de_falas")
 	jogador = vale.player
 	tecla = vale.get("tecla_dos_moradores")
@@ -352,7 +357,7 @@ func _voz_de_um_morador(m, idiomas: bool) -> void:
 	# A CONVERSA DO E: a primeira fala (de dia a rotação começa nela).
 	m.set("_proxima_fala", 0)
 	antes = _comecaram.size()
-	tecla.usar(m)
+	await ConversaDoE.usar(tecla, m)
 	var conversou: bool = await relogio.ate(func() -> bool: return _veio(m, antes, FilaDeFalas.Classe.CONVERSA), 8.0)
 	_conferir(conversou, "o E em '%s' não abriu uma conversa pela fila" % id)
 	if conversou:
@@ -374,7 +379,7 @@ func _idiomas_no_balao(m, do_arquivo: Dictionary) -> void:
 	_escrever_idioma(IDIOMA_ZH)
 	m.set("_proxima_fala", 1)
 	var antes := _comecaram.size()
-	tecla.usar(m)
+	await ConversaDoE.usar(tecla, m)
 	var disse: bool = await relogio.ate(func() -> bool: return _veio(m, antes, FilaDeFalas.Classe.CONVERSA), 8.0)
 	_conferir(disse, "com o menu em chinês o E em '%s' não abriu uma conversa" % id)
 	if disse:
@@ -390,7 +395,7 @@ func _idiomas_no_balao(m, do_arquivo: Dictionary) -> void:
 	(m.dados["falas"][2] as Dictionary).erase("texto_zh")
 	m.set("_proxima_fala", 2)
 	antes = _comecaram.size()
-	tecla.usar(m)
+	await ConversaDoE.usar(tecla, m)
 	var caiu: bool = await relogio.ate(func() -> bool: return _veio(m, antes, FilaDeFalas.Classe.CONVERSA), 8.0)
 	_conferir(caiu, "sem o texto_zh o E em '%s' não abriu uma conversa" % id)
 	if caiu:
@@ -445,7 +450,7 @@ func _voz_da_noite(m) -> void:
 	m.set("_humor_da_conversa", "noite")
 	m.set("_proxima_fala", (d["falas"] as Array).size())
 	antes = _comecaram.size()
-	tecla.usar(m)
+	await ConversaDoE.usar(tecla, m)
 	var conversou: bool = await relogio.ate(func() -> bool: return _veio(m, antes, FilaDeFalas.Classe.CONVERSA), 8.0)
 	_conferir(conversou, "de noite o E no guarda não abriu uma conversa pela fila")
 	if conversou:

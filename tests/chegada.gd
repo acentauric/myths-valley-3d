@@ -134,6 +134,11 @@ func _run() -> void:
 	# CHEGAR PERTO NÃO BASTA: o E é que conversa, e é o Pedro quem ensina.
 	await _passos_de_fisica(30)
 	_conferir(pedro.passo_em_curso() == "desembarque", "o desembarque fechou só de chegar perto do Pedro, sem o E")
+	# FALA NO AR TIRA O E (#121, `tecla_dos_moradores._fala_ativa`): quem chegou ao Pedro enquanto ele ainda
+	# saúda (a saudação dura a voz inteira, uns 10 s, em relógio de PAREDE) espera a fala acabar para apertar
+	# o E, e o portão espera igual. Sem isto o resultado dependia de a máquina andar depressa: o jogo (em
+	# segundos de jogo) anda mais devagar que a fala, e o jogador chegava com ela ainda no ar.
+	_conferir(await _ate(func() -> bool: return not pedro.falando_agora(), 30.0), "a saudação do Pedro não acabou: o E nunca voltaria para ele")
 	_conferir(vale.tecla_dos_moradores.perto() == pedro, "ao lado do Pedro, o E não está nele (está em %s)" % str(vale.tecla_dos_moradores.perto()))
 	_apertar_e(vale)
 	_conferir(await _ate(func() -> bool: return pedro.passo_em_curso() != "desembarque", 10.0),

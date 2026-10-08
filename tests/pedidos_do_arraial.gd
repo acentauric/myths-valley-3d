@@ -21,6 +21,9 @@ extends SceneTree
 ## As esperas são em segundo real, pela razão do cabeçalho do portão da chegada:
 ## a palavra dos moradores é medida em relógio de parede.
 
+const PovoadoLiberado = preload("res://tests/fixtures/povoado_liberado.gd")
+const ConversaDoE = preload("res://tests/fixtures/conversa_do_e.gd")
+
 var falhas := 0
 const SEGUNDOS := 15.0
 ## O que o jogador junta e o que a carroça pede (data/construcoes/obras.json).
@@ -45,6 +48,8 @@ func _run() -> void:
 	await _mundo_pronto()
 	await _frames(3)
 	var jogo := current_scene
+	# O povoado se apresenta aos poucos na chegada (#155): este portão fala com moradores de longe.
+	await PovoadoLiberado.todos(self, jogo)
 	var pedro = jogo.get("pedro")
 	var jogador = jogo.get("player")
 	var inv := root.get_node("/root/Inventario")
@@ -97,13 +102,13 @@ func _run() -> void:
 	if roca != null:
 		jogador.teleportar(cosme.global_position + Vector3(1.2, 0.0, 1.0), 0.0)
 		await _ate(func() -> bool: return false, 1.5)
-		jogo.get("tecla_dos_moradores").usar(cosme)
+		await ConversaDoE.usar(jogo.get("tecla_dos_moradores"), cosme)
 		_conferir(not roca.iniciado, "a roça abriu antes da primeira leira da chegada")
 		_conferir(pedro.ir_ao_passo("convite"), "a chegada não tem o passo do convite")
 		jogador.teleportar(cosme.global_position + Vector3(1.2, 0.0, 1.0), 0.0)
 		await _ate(func() -> bool: return false, 1.0)
 		_conferir(not roca.iniciado, "ao lado do Cosme, a roça abriu sozinha, sem o E")
-		jogo.get("tecla_dos_moradores").usar(cosme)
+		await ConversaDoE.usar(jogo.get("tecla_dos_moradores"), cosme)
 		_conferir(await _ate(func() -> bool: return roca.iniciado, SEGUNDOS),
 			"passada a leira, o E no Cosme não abriu a roça")
 		await _ate(func() -> bool: return roca.espera <= 0.0, SEGUNDOS)
@@ -123,7 +128,7 @@ func _run() -> void:
 		var filo: Node3D = moradores["filo"]
 		jogador.teleportar(filo.global_position + Vector3(1.0, 0.0, 0.6), 0.0)
 		await _ate(func() -> bool: return roca.espera <= 0.0, SEGUNDOS)
-		jogo.get("tecla_dos_moradores").usar(filo)
+		await ConversaDoE.usar(jogo.get("tecla_dos_moradores"), filo)
 		_conferir(await _ate(func() -> bool: return roca.missao >= 3, SEGUNDOS),
 			"com o E na Dona Filó, com a farinha, a cuia não foi entregue")
 		_conferir(inv.quantidade("pirao") >= 1, "a Dona Filó não deu o pirão")
@@ -151,16 +156,20 @@ func _run() -> void:
 	_conferir(not carroca.iniciado, "a carroça abriu antes de o jogador juntar a piaçava do saveiro")
 	do_saveiro.iniciado = true
 	do_saveiro.missao = _indice_de(do_saveiro, "saveiro_piacava") + 1
+	# MÃO LIVRE: o E num morador cuja fila não tem nada a fazer, com um item de comer ou de fazer na mão, pergunta se
+	# é presente (`tecla_dos_moradores._oferecer_presente`, 7683910) e a pergunta aberta tira o E de todos os outros: a
+	# mochila deste portão ficou com o pirão e a farinha na mão, e o segundo E no Seu Benedito caía na pergunta.
+	inv.selecionar(inv.MAO_LIVRE)
 	# A CARROÇA É DE MADEIRA: oito tábuas e quatro cordas esperam os machados do
 	# avô do Pedro, na ponte (`prototype._ja_recebeu_o_machado`).
-	jogo.get("tecla_dos_moradores").usar(benedito)
+	await ConversaDoE.usar(jogo.get("tecla_dos_moradores"), benedito)
 	await _ate(func() -> bool: return false, 1.0)
 	_conferir(not carroca.iniciado, "a carroça abriu antes dos machados do avô: ela pede madeira, e ainda não há machado")
 	var da_ponte = jogo._cadeias.get("pedro_ponte")
 	if da_ponte != null:
 		da_ponte.iniciado = true
 		da_ponte.missao = _indice_de(da_ponte, "buscar_machado") + 1
-	jogo.get("tecla_dos_moradores").usar(benedito)
+	await ConversaDoE.usar(jogo.get("tecla_dos_moradores"), benedito)
 	_conferir(await _ate(func() -> bool: return carroca.iniciado, SEGUNDOS),
 		"juntada a piaçava e com o machado da ponte, o E no Seu Benedito não abriu a carroça")
 	await _ate(func() -> bool: return carroca.espera <= 0.0, SEGUNDOS)

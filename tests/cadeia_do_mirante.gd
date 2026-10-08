@@ -26,6 +26,9 @@ extends SceneTree
 ##   7. A OBRA FECHA O ÚLTIMO, E PAGA (#48): os 1200 réis da vaquinha do arraial
 ##      e o pirão do Pedro, uma vez — e o HUD diz o que veio.
 
+const PovoadoLiberado = preload("res://tests/fixtures/povoado_liberado.gd")
+const ConversaDoE = preload("res://tests/fixtures/conversa_do_e.gd")
+
 var falhas := 0
 const SEGUNDOS := 15.0
 
@@ -47,6 +50,8 @@ func _run() -> void:
 	await _mundo_pronto()
 	await _frames(3)
 	var vale = current_scene
+	# O povoado se apresenta aos poucos na chegada (#155): este portão fala com moradores de longe.
+	await PovoadoLiberado.todos(self, vale)
 	var jogador = vale.get("player")
 	var pedro = vale.get("pedro")
 	var inv := root.get_node("/root/Inventario")
@@ -78,7 +83,7 @@ func _run() -> void:
 	_conferir(not cadeia.iniciado, "ao lado do Pedro, a cadeia do mirante abriu sozinha, sem o E")
 	var ponte = vale._cadeias.get("pedro_ponte")
 	_conferir(ponte != null, "o Pedro não tem a frente da ponte")
-	vale.tecla_dos_moradores.usar(pedro)
+	await ConversaDoE.usar(vale.tecla_dos_moradores, pedro)
 	await _frames(3)
 	_conferir(not cadeia.iniciado and ponte != null and ponte.iniciado,
 		"acabado o tutorial, o primeiro E no Pedro abriu o mirante, e a ponte vem antes dele")
@@ -87,7 +92,7 @@ func _run() -> void:
 		ponte.missao = ponte.passos.size()
 		ponte.despedida_feita = true
 	await _frames(3)
-	vale.tecla_dos_moradores.usar(pedro)
+	await ConversaDoE.usar(vale.tecla_dos_moradores, pedro)
 	var abriu := await _ate(func() -> bool: return bool(cadeia.iniciado), SEGUNDOS)
 	_conferir(abriu, "com o tutorial terminado e o E no Pedro, a cadeia do mirante não abriu")
 	if not abriu:

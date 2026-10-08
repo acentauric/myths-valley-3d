@@ -59,6 +59,9 @@ const NOITE_DE := 18.8
 const NOITE_NA_RUA := 0.5
 const PASTA_VOZES := "res://assets/audio/vozes/"
 
+const PovoadoLiberado = preload("res://tests/fixtures/povoado_liberado.gd")
+const ConversaDoE = preload("res://tests/fixtures/conversa_do_e.gd")
+
 var falhas := 0
 var falsificar := false
 var relogio: Node
@@ -97,6 +100,8 @@ func _run() -> void:
 	await _quadros(8)
 	relogio.ficar_lento()
 	vale = current_scene
+	# O povoado se apresenta aos poucos na chegada (#155): este portão fala com moradores de longe.
+	await PovoadoLiberado.todos(self, vale)
 	fila = vale.get("fila_de_falas")
 	var jogador = vale.player
 	var tecla = vale.get("tecla_dos_moradores")
@@ -169,6 +174,12 @@ func _run() -> void:
 		dia.definir_hora(21.0)
 		_conferir(dia.periodo() == "noite", "às 21 h o período devia ser noite, e é '%s'" % dia.periodo())
 		guarda.ir_ao_posto_agora()
+		# O cumprimento de quem chega perto (`_atualizar_interacao`) só sai passados 45 s DE PAREDE do último, e
+		# o portão leva mais que isso do dia à noite numa máquina ocupada: aí o guarda cumprimentava sozinho ao
+		# ser posto ao lado do jogador, gastava "Boa noite" e o `saudar()` do portão caía na segunda saudação.
+		# Quem quer a primeira de noite é o portão, que chama `saudar()`: o da proximidade fica fora.
+		guarda.intervalo_saudacao_ms = 3600000
+		guarda.set("_ultima_saudacao_ms", Time.get_ticks_msec())
 		await _quadros(2)
 		_ao_lado_de(jogador, guarda)
 		await _quadros(2)
@@ -190,7 +201,7 @@ func _run() -> void:
 			_ao_lado_de(jogador, sacristao)
 			await _quadros(2)
 			await _vez_livre()
-			tecla.usar(sacristao)
+			await ConversaDoE.usar(tecla, sacristao)
 			var falou: bool = await relogio.ate(func() -> bool: return sacristao.falando_agora(), 6.0)
 			_conferir(falou, "o E no sacristão varrendo não o fez falar")
 			await relogio.esperar(0.4)
@@ -444,14 +455,15 @@ func _cumprimentar_e_conversar(m, d: Dictionary, tecla, hora: float, de_noite: b
 		_conferir(avisos.size() == 1 and inteiras.has(avisos[0]) and m.balao_curto(avisos[0]) == no_balao,
 			"o aviso do HUD de '%s' não levou a saudação inteira (%s)" % [id, str(avisos)])
 
-	# A CONVERSA DO E: uma das falas, inteira, na vez dele (corta o cumprimento), segurando o relógio.
+	# A CONVERSA DO E: uma das falas, inteira, na vez dele, segurando o relógio. O cumprimento é fala no ar e tira o E
+	# (#121): o jogador espera o balão sumir, e `ConversaDoE.usar` faz o mesmo.
 	if not de_noite:
 		m.set("_proxima_fala", 0)
 	var antes_do_e := _comecaram.size()
 	var esperadas: Array[String] = []
 	for fala in falas:
 		esperadas.append(str(IdiomaMenu.campo(fala, "texto", "")))
-	tecla.usar(m)
+	await ConversaDoE.usar(tecla, m)
 	var conversou: bool = await relogio.ate(func() -> bool:
 		return _veio_da_fila(m, antes_do_e, FilaDeFalas.Classe.CONVERSA, "") and m.balao.visible and esperadas.has(_no_balao(m)), 8.0)
 	_conferir(conversou, "o E em '%s' não abriu uma conversa de uma fala dele pela fila de falas (balão: '%s')" % [id, _no_balao(m).left(50)])

@@ -60,6 +60,8 @@ const COM_AS_DUAS_TECLAS := ["mutirao_poco", "carroca_mutirao"]
 ## lápide" não entra na conta deste portão.
 const AFASTADO_DAS_LAPIDES := 2.6
 
+const PovoadoLiberado = preload("res://tests/fixtures/povoado_liberado.gd")
+
 var falhas := 0
 var vale
 var jogador
@@ -92,6 +94,8 @@ func _run() -> void:
 	await _mundo_pronto()
 	await _quadros(8)
 	vale = current_scene
+	# O povoado se apresenta aos poucos na chegada (#155): este portão fala com moradores de longe.
+	await PovoadoLiberado.todos(self, vale)
 	jogador = vale.player
 	foco = vale.get("foco_do_e")
 	bancadas = vale.get("tecla_das_bancadas")
@@ -191,6 +195,11 @@ func _um_sitio(sitio: Dictionary, primeiro: bool) -> void:
 	pedro.global_position = lado + Vector3.UP * 0.1
 	_recolocar_ajudantes(fila, passo)
 	await _quadros(3)
+	# O Pedro anuncia o passo que acaba de abrir, e FALA NO AR TIRA O E (#121, `tecla_dos_moradores._fala_ativa`): com ele
+	# falando não há conversa ao alcance, e o caso do E tomado não se monta. Este portão é da precedência do E,
+	# e não da fala dele: cala o anúncio.
+	vale.get("fila_de_falas").calar_falante(pedro)
+	await _quadros(2)
 	var perto_do_pedro: Vector2 = Vector2(pedro.global_position.x - jogador.global_position.x, pedro.global_position.z - jogador.global_position.z)
 	_conferir(perto_do_pedro.length() < 2.0 and moradores._ao_alcance() != null,
 		"%s: não há morador ao alcance da conversa (Pedro a %.2f): o caso do E tomado não se montou" % [qual, perto_do_pedro.length()])
@@ -241,6 +250,10 @@ func _um_sitio(sitio: Dictionary, primeiro: bool) -> void:
 		pedro.global_position = lado + Vector3.UP * 0.1
 		_afastar_ajudantes(passo)
 		await _quadros(3)
+		# Só o Pedro ao alcance: os que passeiam perto do poço (o Menino) saem, e o anúncio dele cala.
+		_afastar_curiosos(ponto)
+		vale.get("fila_de_falas").calar_falante(pedro)
+		await _quadros(2)
 		_conferir(moradores._ao_alcance() == pedro,
 			"%s: o Pedro devia ser o único morador ao alcance, e é '%s'" % [qual, _nome(moradores._ao_alcance())])
 		_conferir(foco.dono() == moradores,
@@ -329,6 +342,14 @@ func _afastar_ajudantes(passo: Dictionary) -> void:
 		var ajudante = vale._achar_morador(str(quem))
 		if ajudante != null:
 			ajudante.global_position = vale.world.ground_position(ajudante.global_position + Vector3(30.0, 0.0, 30.0), 0.1)
+
+
+## Quem passeia perto do sítio e não é o Pedro, longe dele (quarenta passos para o lado): com todo o povoado em cena
+## (`PovoadoLiberado`) o Menino cruza o poço, e o gabarito de "só o Pedro ao alcance" some.
+func _afastar_curiosos(ponto: Vector3) -> void:
+	for m in get_nodes_in_group("moradores"):
+		if m != vale.pedro and (m as Node3D).global_position.distance_to(ponto) < 8.0:
+			(m as Node3D).global_position = vale.world.ground_position((m as Node3D).global_position + Vector3(40.0, 0.0, 40.0), 0.1)
 
 
 ## A roda do mutirão de volta ao lugar: quem ajuda fica onde a cadeia o chamou.

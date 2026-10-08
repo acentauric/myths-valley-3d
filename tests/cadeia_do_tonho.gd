@@ -41,6 +41,9 @@ extends SceneTree
 ##      Tonho fecha o último, e é ele quem entrega a terra.
 ##   7. A CADEIA ENTRA NO CADERNO DO VALE e sobrevive a recarregar.
 
+const PovoadoLiberado = preload("res://tests/fixtures/povoado_liberado.gd")
+const ConversaDoE = preload("res://tests/fixtures/conversa_do_e.gd")
+
 var falhas := 0
 const SEGUNDOS_PARA_ANUNCIAR := 12.0
 const SEGUNDOS_POR_PASSO := 15.0
@@ -70,6 +73,8 @@ func _run() -> void:
 	await _frames(3)
 
 	var jogo := current_scene
+	# O povoado se apresenta aos poucos na chegada (#155): este portão fala com moradores de longe.
+	await PovoadoLiberado.todos(self, jogo)
 	var jogador = jogo.get("player")
 	var inv := root.get_node("/root/Inventario")
 	var lugares := root.get_node("/root/Lugares")
@@ -246,8 +251,14 @@ func _run() -> void:
 		"o armazém está a %.1f u do píer: não é travessia, é um passo ao lado" % travessia)
 	jogador.global_position = ponto_do_armazem
 	await _frames(3)
+	# O PASSO DO ARMAZÉM É DE EVENTO (#68, 54a17bb): chegar ao armazém não o fecha, o que o fecha é ler o livro
+	# do baú e quitar a dívida (`livro_no_armazem` anda o baú de verdade). Aqui a leitura e a quitação vêm do
+	# estado do livro, pelo mesmo caminho do jogo (`FiadoTonho.restaurar` registra os eventos na fila).
+	await _ate(func() -> bool: return cadeia.missao > no_pier, 2.0)
+	_conferir(cadeia.missao == no_pier, "só chegar ao armazém fechou o passo do livro: ele pede ler o livro e quitar a dívida")
+	jogo.get("fiado_tonho").restaurar({"divida": 0, "rede": true, "lido": true})
 	var chegou := await _ate(func() -> bool: return cadeia.missao > no_pier, SEGUNDOS_POR_PASSO)
-	_conferir(chegou, "cheguei ao armazém e o passo não fechou")
+	_conferir(chegou, "li o livro no armazém, a dívida está quitada e o passo não fechou")
 	print("  %-16s %s  (travessia de %.1f u)"
 		% ["tonho_livro", "fechou" if chegou else "PRESO", travessia])
 
@@ -308,7 +319,7 @@ func _run() -> void:
 ## O E AO LADO DE QUEM SE FALA, pelo caminho do jogo (`tecla_dos_moradores.gd`):
 ## conversar, abrir a fila do morador, cumprir o passo que manda a ele.
 func _falar_com(morador) -> void:
-	current_scene.get("tecla_dos_moradores").usar(morador)
+	await ConversaDoE.usar(current_scene.get("tecla_dos_moradores"), morador)
 	await process_frame
 
 

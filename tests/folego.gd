@@ -88,7 +88,9 @@ func _run() -> void:
 	# --- 3. O CORPO SENTE -----------------------------------------------------
 	var fonte := FileAccess.get_file_as_string("res://scripts/prototipo_3d/player_controller.gd")
 	_conferir(fonte != "", "não consegui ler o player_controller")
-	_conferir(fonte.contains("speed *= Energia.passo()"),
+	# O passo do Energia chega ao corpo por `multiplicador_do_passo` (que também soma o talento
+	# e a fé ativa, 0611ca8): o controle multiplica a velocidade por ele, e ele pelo cansaço.
+	_conferir(fonte.contains("speed *= multiplicador_do_passo()") and fonte.contains("* Energia.passo()"),
 		"o controle do jogador não multiplica a velocidade pelo passo do Energia: o cansaço não chega ao corpo")
 
 	# --- 4. QUEM PODE GASTAR FÔLEGO, E SÓ ELES -------------------------------

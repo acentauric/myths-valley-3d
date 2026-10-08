@@ -79,6 +79,9 @@ extends SceneTree
 
 const RelogioDeJogo = preload("res://tests/fixtures/relogio_de_jogo.gd")
 
+const PovoadoLiberado = preload("res://tests/fixtures/povoado_liberado.gd")
+const ConversaDoE = preload("res://tests/fixtures/conversa_do_e.gd")
+
 var falhas := 0
 var relogio: Node
 const SEGUNDOS_POR_PASSO := 15.0
@@ -115,6 +118,8 @@ func _run() -> void:
 	relogio.ficar_lento()
 
 	var jogo := current_scene
+	# O povoado se apresenta aos poucos na chegada (#155): este portão fala com moradores de longe.
+	await PovoadoLiberado.todos(self, jogo)
 	var jogador = jogo.get("player")
 	var recursos := jogo.get_node_or_null("Recursos3D")
 	var inv := root.get_node("/root/Inventario")
@@ -675,7 +680,7 @@ static func _ferramenta_do_passo(recursos, meta: Dictionary) -> String:
 ## O E AO LADO DE QUEM SE FALA, pelo caminho do jogo (`tecla_dos_moradores.gd`):
 ## conversar, abrir a fila do morador, cumprir o passo que manda a ele.
 func _falar_com(morador) -> void:
-	current_scene.get("tecla_dos_moradores").usar(morador)
+	await ConversaDoE.usar(current_scene.get("tecla_dos_moradores"), morador)
 	await process_frame
 
 

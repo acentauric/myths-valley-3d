@@ -41,6 +41,9 @@ extends SceneTree
 const ESPERA_MAXIMA := 16.0
 const FOLGA := 4.0
 
+const PovoadoLiberado = preload("res://tests/fixtures/povoado_liberado.gd")
+const ConversaDoE = preload("res://tests/fixtures/conversa_do_e.gd")
+
 var falhas := 0
 var falsificar := false
 var dialogo
@@ -82,6 +85,8 @@ func _run() -> void:
 	await _quadros(8)
 	dialogo = root.get_node("/root/Dialogo")
 	vale = current_scene
+	# O povoado se apresenta aos poucos na chegada (#155): este portão fala com moradores de longe.
+	await PovoadoLiberado.todos(self, vale)
 	var jogador = vale.player
 	var pedro = vale.get("pedro")
 	var tecla = vale.get("tecla_dos_moradores")
@@ -130,6 +135,9 @@ func _run() -> void:
 	_ao_lado_de(jogador, pedro, Vector3(1.0, 0.1, 0.6))
 	await _passos_de_fisica(60)
 	_conferir(pedro.passo_em_curso() == "desembarque", "ao lado do Pedro o desembarque fechou sozinho, sem o E")
+	# FALA NO AR TIRA O E (#121, `tecla_dos_moradores._fala_ativa`): o anúncio do desembarque é do Pedro e dura a leitura
+	# inteira, em relógio de parede; o jogador que chegou com ele falando espera acabar para apertar o E.
+	await _ate(func() -> bool: return not pedro.falando_agora(), 30.0)
 	_conferir(tecla.perto() == pedro, "ao lado do Pedro, o E não está nele")
 	_apertar_e(tecla)
 	caderno.festeja.emit({"id": "pedro_desembarque", "titulo": "As pernas de terra firme", "missao": "Chegada ao arraial", "quem": "Pedro"})
@@ -265,7 +273,7 @@ func _run() -> void:
 		# Ao lado dele: a trava do relógio só pega com o jogador ao alcance da conversa.
 		_ao_lado_de(jogador, calado, Vector3(1.0, 0.1, 0.6))
 		await _passos_de_fisica(4)
-		tecla.usar(calado)
+		await ConversaDoE.usar(tecla, calado)
 		await _quadros(2)
 		_conferir(float(calado._balao_tempo) <= 0.0, "o E em quem não fala (%s) abriu um balão sem texto" % str(calado.dados.get("id", "")))
 		_conferir(not calado.conversando(), "o E em quem não fala segurou o relógio do vale por uma fala que não há")
