@@ -28,6 +28,61 @@ class PlayerTests(unittest.TestCase):
             seen.add(bot.choose(dict(state, seconds=attempt * 31, position=[attempt * 40, 0, 0]), actions, {}))
         self.assertNotIn("inspect_time", seen)
 
+    def awake_with_finished_tutorial(self):
+        """Acordou na casa herdada com o tutorial concluído: o Pedro já não conduz (#191)."""
+        state = self.state()
+        state.update(interior="casa", objective={}, journal={"ativas": []}, pedro={"conducting": False, "tutorial_finished": True},
+                     mission_chains=[{"key": "pedro", "name": "mirante", "main": True, "started": False, "completed": False, "locked": False}],
+                     room={"name": "casa", "outside_targets": ["approach_MoradorPedro", "objective", "explore_Praia"]})
+        return state
+
+    def test_finished_tutorial_inside_house_leaves_by_the_door_then_walks_to_the_guide_post(self):
+        bot, state = self.player(), self.awake_with_finished_tutorial()
+        actions = {"exit_home": "door", "approach_MoradorPedro": "post", "approach_bed": "bed", "wait": "wait"}
+        self.assertEqual(bot.choose(state, actions, {}), "exit_home")
+        state.update(interior="", room={})
+        self.assertEqual(bot.choose(dict(state, position=[12, 0, 6]), actions, {}), "approach_MoradorPedro")
+
+    def test_inside_any_room_a_target_outside_is_reached_through_the_door(self):
+        # A igreja e o casarão saem pela mesma regra da casa (#191).
+        for room, exit_action in (("igreja", "exit_room"), ("casarao", "exit_room"), ("casa", "exit_home")):
+            bot, state = self.player(), self.state()
+            state.update(interior=room, objective={"id": "x", "alvo": [30, 0, 30]}, room={"name": room, "outside_targets": ["objective", "follow_pedro", "explore_Praia"]})
+            actions = {exit_action: "door", "objective": "go", "wait": "wait"}
+            self.assertEqual(bot.choose(dict(state), actions, {"step": {"id": "x"}}), exit_action)
+            for target in ("objective", "follow_pedro", "explore_Praia", "approach_MoradorPedro"):
+                state["room"]["outside_targets"].append("approach_MoradorPedro")
+                self.assertEqual(bot._leave_room_first(state, {exit_action: "door", target: "go"}, target, "x")[0], exit_action)
+            self.assertEqual(bot._leave_room_first(state, {exit_action: "door", "approach_bed": "go"}, "approach_bed", "x")[0], "approach_bed")
+
+    def test_target_inside_the_room_is_not_replaced_by_the_door(self):
+        bot, state = self.player(), self.awake_with_finished_tutorial()
+        state.update(home_interaction="cama", interaction_target="CasaDoJogador", farm={"awaiting_morning": True})
+        actions = {"exit_home": "door", "interact": "sleep", "approach_bed": "bed"}
+        self.assertEqual(bot.choose(state, actions, {}), "interact")
+
+    def test_guide_walk_is_bounded_when_he_never_gets_closer(self):
+        bot, state = self.player(), self.state()
+        state.update(interior="", objective={}, journal={"ativas": []}, pedro={"conducting": False},
+                     mission_chains=[{"key": "pedro", "name": "mirante", "main": True, "started": False, "completed": False, "locked": False}])
+        actions = {"approach_MoradorPedro": "post", "wait": "wait", "observe": "look"}
+        picks = [bot.choose(dict(state), actions, {}) for _ in range(10)]
+        self.assertEqual(picks[:6], ["approach_MoradorPedro"] * 6)
+        self.assertNotIn("approach_MoradorPedro", picks[6:])
+
+    def test_corner_in_a_room_forces_the_door_then_probes_a_free_direction(self):
+        bot, state = self.player(), self.state()
+        state.update(interior="casa", objective={"id": "x", "alvo": [1, 0, 1]}, room={"name": "casa", "outside_targets": []},
+                     directions={"left": {"blocked": False, "walk_endpoint": [-2, 0, 0], "walk_endpoint_walkable": True}})
+        actions = {"exit_home": "door", "objective": "go", "walk_left": "left", "wait": "wait"}
+        task = {"step": {"id": "x", "meta": {}}}
+        picks = [bot.choose(dict(state), actions, task) for _ in range(7)]
+        # Três tentativas de ir ao objetivo sem sair do lugar: a saída forçada vem duas vezes
+        # e então o testador sonda uma direção livre, sem ficar repetindo.
+        self.assertEqual(picks[:3], ["objective"] * 3)
+        self.assertEqual(picks[3:5], ["exit_home", "exit_home"])
+        self.assertEqual(picks[5], "walk_left")
+
     def test_farm_guide_after_sleep_leaves_house_before_following(self):
         bot, state = self.player(), self.state()
         state.update(energy=77.8, interior="casa", objective={"id": "pedro_fazenda_ida"},

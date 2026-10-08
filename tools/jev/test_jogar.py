@@ -23,6 +23,14 @@ class SpendingTests(unittest.TestCase):
         task["step"]["meta"]["itens"]["tabua"] = 999
         self.assertEqual(state["work_costs"]["mirante_levantar"]["tabua"], 18)
 
+    def test_finished_tutorial_guide_is_approached_like_a_resident(self):
+        # Sem follow_pedro (o tutorial acabou), o destinatário Pedro vem pela aproximação (#191).
+        step = {"id": "volta", "meta": {"tipo": "falar", "a_quem": "pedro"}}
+        state = {"objective": {"id": "pedro_volta"}, "pedro": {"conducting": False, "distance": 40},
+                 "mission_chains": [{"started": True, "main": True, "current_step": step}]}
+        task = current_task(state, {"approach_MoradorPedro": "post", "wait": "wait"})
+        self.assertEqual(task["actions_matching_the_current_requirement"], ["approach_MoradorPedro"])
+
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)

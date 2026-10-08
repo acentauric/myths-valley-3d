@@ -19,6 +19,15 @@ def mexe_no_relogio(action, description=""):
     return action.startswith("button_") and any(mark in text for mark in MARCAS_DO_RELOGIO)
 
 
+# O Pedro, depois do tutorial, é um morador no posto dele (#191): sem "follow_pedro",
+# o testador vai até ele como a qualquer outro, por esta ação.
+GUIDE_APPROACH = "approach_MoradorPedro"
+# Ações que levam o testador para outro lugar; sem sair do lugar, contam como travado.
+TRAVEL_ACTIONS = ("follow_pedro", "approach_", "explore_", "objective", "gather_", "walk_", "run_", "enter_home", "exit_")
+STAY_INSIDE_ACTIONS = ("approach_bed", "approach_chest")
+EXIT_ACTIONS = ("exit_home", "exit_room")
+
+
 class JogadorAutomatico:
     def __init__(self):
         self.attempts = Counter()
@@ -49,6 +58,24 @@ class JogadorAutomatico:
                            "items": self._inventory(state), "screen": state.get("screen"),
                            "panel": {k: state.get("panel", {}).get(k) for k in ("tab", "cursor", "allowed_tabs")}, "ui": state.get("inventory_screen", {})},
                           sort_keys=True)
+
+    @staticmethod
+    def _guide_walk(actions):
+        """Como ir ao Pedro: seguindo, enquanto ele conduz; senão, aproximando como a um morador."""
+        return "follow_pedro" if "follow_pedro" in actions else (GUIDE_APPROACH if GUIDE_APPROACH in actions else None)
+
+    @staticmethod
+    def _room_exit(actions):
+        return next((a for a in EXIT_ACTIONS if a in actions), None)
+
+    def _leave_room_first(self, state, actions, action, reason):
+        """Dentro de um cômodo, o alvo de fora pede a porta primeiro (#191): a soleira de dentro,
+        a saída, e só então a rota para o alvo. Vale para seguir, aproximar, explorar e objetivo."""
+        exit_action = self._room_exit(actions)
+        outside = (state.get("room") or {}).get("outside_targets", [])
+        if exit_action and action != exit_action and action in outside:
+            return exit_action, "Sair pela porta antes de ir a " + action + " (o alvo esta fora do comodo)"
+        return action, reason
 
     def _explore(self, state, actions, select):
         """Experimentar o que está ao alcance antes de ampliar a busca."""
@@ -148,6 +175,7 @@ class JogadorAutomatico:
         # A regra contextual pode pedir algo que a ponte deixou de oferecer.
         # Continuar com uma opção real; nunca encerrar a partida por essa lacuna.
         def permitted(action, reason):
+            action, reason = self._leave_room_first(state, actions, action, reason)
             if action not in actions:
                 return None
             self.reason = "Acao contextual indisponivel; " + reason
@@ -163,7 +191,8 @@ class JogadorAutomatico:
         # sessão antiga, sem descartar sua memória.
         for key, value in {"coverage": Counter(), "visited": Counter(), "screen_probes": 0,
                            "previous_context": None, "progress_signature": None,
-                           "last_progress_time": 0.0, "recovery": False, "last_valid_objective": {}}.items():
+                           "last_progress_time": 0.0, "recovery": False, "last_valid_objective": {},
+                           "room_position": [], "room_still": 0, "room_exit_tries": 0}.items():
             self.__dict__.setdefault(key, value)
         context = self._context(state)
         self.region = json.dumps([round(v / 12) for v in state.get("position", [])])
@@ -194,10 +223,11 @@ class JogadorAutomatico:
         self.last_observation = observation
 
         def select(action, reason):
+            action, reason = self._leave_room_first(state, actions, action, reason)
             if action in actions:
                 marker = (state.get("objective", {}).get("alvo", []) if action == "objective" else
                           state.get("world_map", {}).get(action[8:], []) if action.startswith("explore_") else [])
-                if action == "follow_pedro":
+                if action in ("follow_pedro", GUIDE_APPROACH):
                     marker = next((n.get("position", []) for n in state.get("npcs", [])
                                    if n.get("node") == "MoradorPedro" or n.get("name") == "Pedro"), state.get("pedro", {}).get("position", []))
                 position = state.get("position", [])
@@ -270,6 +300,26 @@ class JogadorAutomatico:
             self.checkpoint_pending = True
             return select("inspect_pause", "Guardar checkpoint antes de continuar viagens e lotes de material")
 
+        # Preso num canto do cômodo (#191): a posição quase não muda por três ações de
+        # deslocamento seguidas. Força "soleira de dentro -> sair -> recalcular"; se nem a
+        # saída resolver em duas tentativas, sonda uma direção livre (e o deslocamento
+        # sem efeito da saída já entra no relatório como bloqueio).
+        room, here = state.get("room") or {}, state.get("position", [])
+        moved = len(here) == len(self.room_position) == 3 and sum((here[i] - self.room_position[i]) ** 2 for i in (0, 2)) ** 0.5 >= 0.5
+        travelled = self.last_action.startswith(TRAVEL_ACTIONS) and self.last_action not in STAY_INSIDE_ACTIONS
+        self.room_still = self.room_still + 1 if room and travelled and not moved else 0
+        if moved or not room:
+            self.room_exit_tries = 0
+        self.room_position = list(here)
+        exit_action = self._room_exit(actions)
+        if room and exit_action and not state.get("screen") and self.room_still >= 3:
+            if self.room_exit_tries < 2:
+                self.room_exit_tries += 1
+                return select(exit_action, "Preso num canto do comodo: ir a soleira de dentro, sair e recalcular a rota")
+            self.route_failed = True
+            self.room_still = 0
+            return self._explore(state, actions, select)
+
         pending_main = [m for m in state.get("journal", {}).get("ativas", []) if m.get("principal")]
         # Uma etapa concluída sai da lista e a próxima entra no fim. A ordem
         # de inserção não deve trocar a cadeia do guia pela missão de outro NPC.
@@ -294,8 +344,12 @@ class JogadorAutomatico:
                 if state.get("interaction_target") in ("Pedro", "MoradorPedro") and "interact" in actions:
                     self.attempts[probe] += 1
                     return select("interact", "Perguntar ao guia pela proxima cadeia liberada da historia")
-                if "follow_pedro" in actions:
-                    return select("follow_pedro", "Voltar ao guia para descobrir a proxima cadeia liberada")
+                walk = self._guide_walk(actions)
+                walks = probe + ("walk",)
+                if walk and self.attempts[walks] < 6:
+                    # Limitado: o guia fora de alcance não prende o testador numa viagem sem fim (#191).
+                    self.attempts[walks] += 1
+                    return select(walk, "Voltar ao guia para descobrir a proxima cadeia liberada")
         if main_mission and state.get("objective", {}).get("id") != main_mission.get("id"):
             # A sondagem pode mudar o foco: retomar a principal pela seleção
             # visível da caderneta, sem alterar seu estado diretamente.
@@ -502,8 +556,9 @@ class JogadorAutomatico:
                 return select("wait", "Ouvir o guia antes de pedir o proximo trabalho")
             if state.get("interaction_target") in ("MoradorPedro", "Pedro") and self.coverage[(context, "interact")] < 2:
                 return select("interact", "Pedir ao guia a proxima cadeia depois de terminar a anterior")
-            if "follow_pedro" in actions and self.coverage[(context, "follow_pedro")] < 2:
-                return select("follow_pedro", "Procurar o guia para iniciar a proxima cadeia da historia")
+            walk = self._guide_walk(actions)
+            if walk and self.coverage[(context, walk)] < 2:
+                return select(walk, "Procurar o guia para iniciar a proxima cadeia da historia")
         work_meta = task.get("step", {}).get("meta", {})
         if work_meta.get("tipo") == "obra" and state.get("panel"):
             panel = state["panel"]

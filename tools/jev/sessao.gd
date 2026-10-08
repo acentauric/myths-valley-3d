@@ -348,7 +348,8 @@ func _estado() -> Dictionary:
 	var pedro: Node3D = current_scene.get("pedro")
 	if is_instance_valid(pedro):
 		estado["pedro"] = {"speaking": pedro.has_method("falando_agora") and pedro.falando_agora(), "distance": snappedf(jogador.global_position.distance_to(pedro.global_position), 0.1),
-			"step": pedro.get("missao"), "text": pedro.texto_da_missao(), "position": _vetor(pedro.global_position)}
+			"step": pedro.get("missao"), "text": pedro.texto_da_missao(), "position": _vetor(pedro.global_position),
+			"tutorial_finished": bool(pedro.terminou_o_tutorial())}
 		var cadeia: Node = pedro.get("_cadeia")
 		var outra: Node = pedro._outra_que_conduz()
 		if outra != null:
@@ -468,8 +469,15 @@ func _acoes(estado: Dictionary) -> Dictionary:
 	opcoes["inspect_pause"] = "Press Escape to open the normal pause menu, including Save game"
 	var pedro: Node3D = current_scene.get("pedro")
 	if is_instance_valid(pedro):
-		catalogo["follow_pedro"] = pedro
-		opcoes["follow_pedro"] = "Keep following moving Pedro for up to 12 seconds, staying near so he does not stop. Continues even after catching up, until he reaches guide_destination. Essential when conducting=true and guide_destination_reached=false."
+		if _guia_conduz(pedro):
+			catalogo["follow_pedro"] = pedro
+			opcoes["follow_pedro"] = "Keep following moving Pedro for up to 12 seconds, staying near so he does not stop. Continues even after catching up, until he reaches guide_destination. Essential when conducting=true and guide_destination_reached=false."
+		else:
+			# Acabado o tutorial ele não conduz mais (#191): é um morador no posto dele, e seguir
+			# alguém parado não leva a lugar nenhum. Quem precisa dele o aborda, como aos outros.
+			var id_do_guia := "approach_" + str(pedro.name)
+			catalogo[id_do_guia] = pedro
+			opcoes[id_do_guia] = "Approach Pedro, the guide, now at his post and no longer leading, %.1f units away" % jogador.global_position.distance_to(pedro.global_position)
 	if str(estado.get("interaction_target", "")) != "":
 		opcoes["interact"] = "Press E to interact with " + str(estado.interaction_target)
 	var objetivo: Dictionary = root.get_node("CadernoDoVale").atual()
@@ -494,6 +502,13 @@ func _acoes(estado: Dictionary) -> Dictionary:
 			var id := "face_" + str(oferta.source)
 			catalogo[id] = Vector3(float(p[0]), float(p[1]), float(p[2]))
 			opcoes[id] = "Turn to face the nearby E interaction source %s, then check interaction_target and use E" % str(oferta.source)
+	var interior := str(estado.get("interior", ""))
+	if interior != "" and interior != "casa":
+		# A igreja, o casarão e as casas por dados saem pela mesma regra da casa herdada (#191).
+		var sala_atual: Node3D = current_scene.get("interiores").sala_de(interior)
+		if sala_atual != null:
+			catalogo["exit_room"] = sala_atual
+			opcoes["exit_room"] = "Walk to the inside threshold of this room (%s), then cross the exterior doorway using W" % interior
 	var sala: Node3D = current_scene.get("casa").quarto()
 	if sala != null:
 		if not sala.trancada() and str(estado.get("interior", "")) != "casa":
@@ -537,6 +552,7 @@ func _acoes(estado: Dictionary) -> Dictionary:
 		opcoes["run_" + rumo] = "Run " + rumo + " relative to the camera for 4 seconds using Shift and movement keys; this direction is clear nearby"
 		opcoes["walk_" + rumo] = "Walk " + rumo + " relative to the camera for 2 seconds; try another direction if the previous movement was blocked"
 	opcoes["wait"] = "Wait 4 seconds for dialogue/narration or stamina recovery"
+	_marcar_alvos_fora_do_comodo(estado, opcoes)
 	return opcoes
 
 
@@ -567,17 +583,18 @@ func _executar(escolha: String) -> String:
 					await process_frame
 			await _tecla(KEY_ENTER)
 			return "test_name_typed_and_submitted"
-		"enter_home", "exit_home":
+		"enter_home", "exit_home", "exit_room":
 			var sala: Node3D = catalogo.get(escolha)
 			if sala == null or sala.trancada():
 				return "home_door_locked_or_unavailable"
-			var fora: Vector3 = sala.soleira_de_dentro() if escolha == "exit_home" else sala.soleira_de_fora()
+			var saindo := escolha != "enter_home"
+			var fora: Vector3 = sala.soleira_de_dentro() if saindo else sala.soleira_de_fora()
 			var jogador: Node3D = current_scene.get("player")
 			if Vector2(jogador.global_position.x - fora.x, jogador.global_position.z - fora.z).length() > 0.6:
-				var chegada := await _caminhar(fora, false, true, escolha == "exit_home")
+				var chegada := await _caminhar(fora, false, true, saindo)
 				if chegada != "arrived":
 					return chegada
-			return await _caminhar(sala.soleira_de_fora() if escolha == "exit_home" else sala.soleira_de_dentro(), false, true, true)
+			return await _caminhar(sala.soleira_de_fora() if saindo else sala.soleira_de_dentro(), false, true, true)
 		"dialogue_next", "interact", "confirm_screen":
 			if escolha == "confirm_screen" and not _menu_de_pausa_permite_confirmar():
 				return "clock_or_other_menu_line_not_allowed"
@@ -999,3 +1016,39 @@ func _registrar_relogio_parado(motivo: String) -> void:
 		achados.pop_front()
 	print("JEV: relogio parado (%s) apos a acao %s" % [motivo, ultima_acao])
 	_post("/achado", achado)
+
+
+# --- o guia e os cômodos (#191) --------------------------------------------------
+
+## O Pedro ainda conduz? Durante o tutorial, ou quando uma fila dele pede (a jornada da
+## fazenda). Fora disso ele fica no posto, e não há o que seguir.
+func _guia_conduz(pedro: Node3D) -> bool:
+	if not pedro.has_method("terminou_o_tutorial"):
+		return true
+	return not pedro.terminou_o_tutorial() or pedro._outra_que_conduz() != null
+
+
+## Dentro de um cômodo, quais destinos do catálogo ficam do lado de fora dele. O robô
+## sai pela porta antes de qualquer um deles: andar em linha reta para o outro lado da
+## parede é o que o prendia no canto da casa. A igreja e o casarão valem igual.
+func _marcar_alvos_fora_do_comodo(estado: Dictionary, opcoes: Dictionary) -> void:
+	var dentro := str(estado.get("interior", ""))
+	if dentro.is_empty():
+		return
+	var sala: Node3D = current_scene.get("interiores").sala_de(dentro)
+	if sala == null:
+		return
+	var fora: Array = []
+	for id in opcoes:
+		if str(id).begins_with("exit_") or str(id).begins_with("enter_") or not catalogo.has(id):
+			continue
+		var alvo = catalogo[id]
+		var ponto := Vector3.INF
+		if alvo is Vector3:
+			ponto = alvo
+		elif alvo is Node3D:
+			ponto = (alvo as Node3D).global_position
+		if ponto.is_finite() and not sala.contem(ponto, 0.5):
+			fora.append(str(id))
+	estado["room"] = {"name": dentro, "inside_threshold": _vetor(sala.soleira_de_dentro()),
+		"outside_threshold": _vetor(sala.soleira_de_fora()), "outside_targets": fora}

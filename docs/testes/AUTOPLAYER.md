@@ -48,6 +48,16 @@ conversa com Pedro por engano. Aguarda pessoas que já estão falando.
 O robô usa os controles normais de movimento e interação, sem teleportar,
 injetar itens ou alterar o progresso das missões.
 
+**Dentro de um cômodo, a porta vem primeiro (#191).** Com o robô na casa, na igreja
+ou no casarão, o estado traz `room` com a lista de destinos do catálogo que ficam do
+lado de fora; escolher seguir, aproximar, explorar ou o objetivo para um deles vira
+"ir à soleira de dentro e sair" (`exit_home` na casa herdada, `exit_room` nos outros),
+e só depois a rota para o alvo. Preso num canto (três ações de deslocamento sem sair do
+lugar), força a saída duas vezes e então sonda uma direção livre; a saída sem efeito
+entra no relatório como bloqueio. Acabado o tutorial o Pedro não conduz mais: `follow_pedro`
+sai do catálogo e ele passa a ser abordado como morador (`approach_MoradorPedro`), no máximo
+seis vezes por pergunta pela próxima cadeia.
+
 **O relógio é do jogador (#192).** O testador nunca pausa, acelera nem adianta o
 relógio: a tecla de adiantar a hora (T) saiu do catálogo, os botões e a placa do
 relógio e da velocidade ficam fora dos cliques, e no menu de pausa o E só vale na

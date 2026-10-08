@@ -2,6 +2,13 @@
 
 ## Em desenvolvimento — 08/10/2026
 
+- **O testador sai pela porta antes de ir a qualquer alvo de fora, e para de seguir o
+  Pedro quando o tutorial acaba.** Dentro da casa, da igreja ou do casarão, seguir,
+  aproximar, explorar ou ir ao objetivo passa primeiro pela soleira de dentro; preso num
+  canto, ele força a saída duas vezes e sonda uma direção livre. Acabado o tutorial
+  `follow_pedro` sai das ações e o Pedro é abordado como morador no posto dele, com
+  limite de tentativas (#191).
+
 - **Todo campo de Ajustes tem o "?" de ajuda, e "Passos na água" ganha o ↺.** O campo
   era montado à mão, com um botão Ouvir que encurtava o seletor: agora é uma escolha
   como as vizinhas (Original ou Novos, ↺ volta a Original) e trocar a opção já toca a
