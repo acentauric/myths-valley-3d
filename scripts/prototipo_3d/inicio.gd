@@ -13,6 +13,10 @@ const LARGURA_PAINEL := 560.0
 ## acima e abaixo.
 const RESPIRO_TITULO := 6.0
 const RESPIRO_BOTOES := 24.0
+## O × de sair em repouso: fundo e opacidade da placa. O efetivo (produto) fica perto de 0,5,
+## visível sobre o céu claro e ainda abaixo dos botões de idioma (opacos).
+const FUNDO_REPOUSO_SAIR := 0.6
+const OPACIDADE_REPOUSO_SAIR := 0.8
 
 var carregando := false
 var _camada: CanvasLayer
@@ -190,22 +194,22 @@ func _criar_sair() -> void:
 		get_tree().quit())
 
 
-## O × da entrada não pode disputar atenção com a escolha do idioma: sem borda e quase
-## sem fundo, meio apagada. Com o mouse em cima (ou o foco), acende e a
+## O × da entrada não pode disputar atenção com a escolha do idioma: sem borda e com
+## fundo ralo, meio apagada (mas legível sobre o céu). Com o mouse em cima (ou o foco), acende e a
 ## borda aparece no mesmo ouro da dica, junto com ela.
 func _discreto(botao: Button) -> void:
 	var placa := botao.get_parent() as PanelContainer
 	var apagado := (placa.get_theme_stylebox("panel") as StyleBoxFlat).duplicate() as StyleBoxFlat
-	apagado.bg_color = Color(apagado.bg_color, 0.35)
+	apagado.bg_color = Color(apagado.bg_color, FUNDO_REPOUSO_SAIR)
 	apagado.border_color = Color(apagado.border_color, 0.0)
 	apagado.shadow_size = 0
 	var aceso := apagado.duplicate() as StyleBoxFlat
 	aceso.bg_color = Color(aceso.bg_color, 0.94)
 	aceso.border_color = Color(TemaMenu.Identidade.OURO, 0.45)
 	placa.add_theme_stylebox_override("panel", apagado)
-	placa.modulate.a = 0.6
+	placa.modulate.a = OPACIDADE_REPOUSO_SAIR
 	var acender := func(ligado: bool) -> void:
-		placa.modulate.a = 1.0 if ligado else 0.6
+		placa.modulate.a = 1.0 if ligado else OPACIDADE_REPOUSO_SAIR
 		placa.add_theme_stylebox_override("panel", aceso if ligado else apagado)
 	botao.mouse_entered.connect(acender.bind(true))
 	botao.mouse_exited.connect(func() -> void: acender.call(botao.has_focus()))

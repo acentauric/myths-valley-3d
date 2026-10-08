@@ -84,6 +84,13 @@ func _run() -> void:
 	_conferir(botoes.size() == 4, "quatro idiomas selecionáveis")
 	var sair := tela.find_child("SairIdioma", true, false) as Button
 	_conferir(sair != null and sair.get_global_rect().position.x > tela.get_global_rect().size.x * 0.9 and sair.get_global_rect().position.y < 80.0, "× de sair no canto superior direito")
+	var placa_sair := sair.get_parent() as PanelContainer
+	var fundo_sair := (placa_sair.get_theme_stylebox("panel") as StyleBoxFlat).bg_color.a * placa_sair.modulate.a
+	_conferir(fundo_sair >= 0.4 and fundo_sair < 0.8, "× de sair visível em repouso, mas mais discreto que os botões (fundo efetivo %.2f)" % fundo_sair)
+	sair.mouse_entered.emit()
+	_conferir(placa_sair.modulate.a == 1.0 and (placa_sair.get_theme_stylebox("panel") as StyleBoxFlat).bg_color.a > 0.9, "× de sair acende com o mouse em cima")
+	sair.mouse_exited.emit()
+	_conferir(placa_sair.modulate.a < 1.0, "× de sair volta ao repouso quando o mouse sai")
 	for sufixo in idioma.SUFIXOS:
 		_conferir(not str(dados.get("sair" + sufixo, "")).is_empty(), "dica de sair no idioma '%s'" % sufixo)
 	_conferir(get_root().gui_get_focus_owner() == botoes[salvo], "foco lembra a escolha salva")

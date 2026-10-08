@@ -2,6 +2,11 @@
 
 ## Em desenvolvimento — 08/10/2026
 
+- **O × da tela de idioma fica um pouco mais evidente em repouso.** O fundo da
+  placa sobe de 0,35 para 0,6 e a opacidade de 0,6 para 0,8 (efetivo perto de
+  0,5, antes 0,21), legível sobre o céu claro e ainda mais discreto que os
+  botões de idioma; o hover e o foco acendem como antes (#165).
+
 - **A main da equipe (playtest e missões secundárias de 07/10) junta-se às
   fatias locais de 07/10.** As cercas das roças ficam em lances retos de
   canto a canto, em pé e com um corpo só por lance, que barra o jogador e
