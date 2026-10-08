@@ -13,6 +13,7 @@
       "nome": "Weverton - Youthful, Energetic and Clear",
       "modelo": "eleven_v3"
     },
+    "voz_pendente": "Os áudios pedro_atencao_1 a 6 (#198) esperam a geração no ElevenLabs: rode tools/elevenlabs/gerar-falas-moradores.ps1 -Morador pedro numa máquina com a chave e tire esta marca (o portão reprova a que sobrar).",
     "falas": [
       {
         "texto": "Opa! É você o moço da capital, né? O sobrinho do finado. Me chamo Pedro, pescador aqui do arraial.",
@@ -94,6 +95,59 @@
         "texto_zh": "累了就歇着。这儿没人追着太阳跑，它天天都照样回来。",
         "tts": "[warmly] Se cansar, descansa. Ninguém aqui corre atrás do sol, que ele volta todo dia do mesmo jeito.",
         "audio": "pedro_depois_7"
+      }
+    ],
+    "observacao_atencao": "QUEM A MISSÃO MANDA PROCURAR DÁ ATENÇÃO (#198, npc._dar_atencao): com um passo de falar ou de entregar apontando o Pedro, o jogador chega a 3 m (vindo na direção dele, ou parado por ali um instante) e ele PARA, vira-se e solta uma destas frases curtas, sorteada sem repetir a anterior. `quando`: \"fim_do_dia\" só ao entardecer, de noite e de madrugada; \"relato\" só no passo em que o jogador volta com a resposta do que foi ver. Voz pt-BR (pedro_atencao_<n>, gerada por tools/elevenlabs/gerar-falas-moradores.ps1); qualquer morador pode ganhar a lista `atencao`, e quem não a tem só para e olha.",
+    "atencao": [
+      {
+        "texto": "Opa! Tá me procurando?",
+        "texto_en": "Hey! Looking for me?",
+        "texto_es": "¡Opa! ¿Me andas buscando?",
+        "texto_zh": "哟！你在找我吗？",
+        "tts": "[cheerfully] Opa! Tá me procurando?",
+        "audio": "pedro_atencao_1"
+      },
+      {
+        "texto": "Diga, moço.",
+        "texto_en": "Go ahead, young man.",
+        "texto_es": "Dime, muchacho.",
+        "texto_zh": "说吧，小伙子。",
+        "tts": "[warmly] Diga, moço.",
+        "audio": "pedro_atencao_2"
+      },
+      {
+        "texto": "Ô, chegou! Pode falar.",
+        "texto_en": "Oh, you're here! Go ahead.",
+        "texto_es": "¡Ah, llegaste! Puedes hablar.",
+        "texto_zh": "哦，你来了！说吧。",
+        "tts": "[cheerfully] Ô, chegou! Pode falar.",
+        "audio": "pedro_atencao_3"
+      },
+      {
+        "texto": "Hum? Fala comigo.",
+        "texto_en": "Hm? Talk to me.",
+        "texto_es": "¿Mm? Habla conmigo.",
+        "texto_zh": "嗯？跟我说吧。",
+        "tts": "[warmly] Hum? Fala comigo.",
+        "audio": "pedro_atencao_4"
+      },
+      {
+        "texto": "Já tava indo pra casa… mas diga.",
+        "texto_en": "I was already heading home... but go on.",
+        "texto_es": "Ya iba para casa… pero dime.",
+        "texto_zh": "我正要回家……不过你说吧。",
+        "tts": "[warmly] Já tava indo pra casa… mas diga.",
+        "quando": "fim_do_dia",
+        "audio": "pedro_atencao_5"
+      },
+      {
+        "texto": "E aí, viu o que eu falei?",
+        "texto_en": "So, did you see what I told you about?",
+        "texto_es": "¿Y entonces, viste lo que te dije?",
+        "texto_zh": "怎么样，看到我说的地方了吗？",
+        "tts": "[curious] E aí, viu o que eu falei?",
+        "quando": "relato",
+        "audio": "pedro_atencao_6"
       }
     ],
     "anoitecer": {

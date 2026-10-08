@@ -208,6 +208,25 @@ var _sem_antecipar := false
 var _relogio_saltou := false
 var _avisados: Dictionary = {}
 
+## A ATENÇÃO A QUEM O PROCURA (#198). O passo "Volte ao Pedro e conte o que viu" mandava o jogador
+## ao Pedro, que seguia andando na rotina: o jogador ia atrás dele, colado, e o alvo do E saía do
+## alcance antes de a dica firmar. Quem a missão manda procurar (um passo de falar ou de entregar
+## que o aponta e que ele já pode receber, `CadeiaDeMissoes.o_que_o_e_faz`) dá atenção a quem
+## chega perto: PARA, vira-se para o jogador e, se tem `atencao` no npcs_3d.json, solta uma frase
+## curta. Gatilho: o jogador a ATENCAO_RAIO dele e vindo na direção dele, ou parado por ali por
+## ATENCAO_APOS segundos. Espera ATENCAO_ESPERA segundos; se o jogador se afasta mais que
+## ATENCAO_SAIU, ou a conversa fecha o passo, ele volta à rotina. ATENCAO_PAUSA evita que ele
+## pare de novo no mesmo instante em que acabou de esperar.
+const ATENCAO_RAIO := 3.0
+const ATENCAO_APOS := 0.7
+const ATENCAO_ESPERA := 7.0
+const ATENCAO_SAIU := 5.5
+const ATENCAO_PAUSA := 4.0
+var _atencao_perto := 0.0
+var _atencao_resta := 0.0
+var _atencao_pausa := 0.0
+var _atencao_ultima := -1
+
 
 ## Anda até `ponto` (em vez do posto do período), na `velocidade` dada, até liberar().
 func ir_ate(ponto: Vector3, velocidade: float = 2.6) -> void:
@@ -437,6 +456,8 @@ func _physics_process(delta: float) -> void:
 	if _andar_longe(delta):
 		_atualizar_trabalho()
 		return
+	if _dar_atencao(delta):
+		return
 	# Destino avulso (ir_ate) vale mais que o posto até ser liberado.
 	var destino := _destino_avulso if _destino_avulso.is_finite() else _alvo
 	var deslocamento := destino - global_position
@@ -457,6 +478,118 @@ func _physics_process(delta: float) -> void:
 	_atualizar_animacao(delta)
 	_atualizar_trabalho()
 	_atualizar_interacao(delta)
+
+
+## Um pulso da atenção (ver ATENCAO_RAIO). Devolve se ele ficou parado, virado para o jogador,
+## neste quadro — e então o resto do passo (andar pela rotina) não roda.
+func _dar_atencao(delta: float) -> bool:
+	if jogador == null or not is_inside_tree():
+		return false
+	if _atencao_pausa > 0.0:
+		_atencao_pausa -= delta
+	var falta := jogador.global_position - global_position
+	var desnivel := absf(falta.y)
+	falta.y = 0.0
+	var perto := falta.length()
+	if _atencao_resta <= 0.0:
+		if _atencao_pausa > 0.0 or perto > ATENCAO_RAIO or desnivel > 2.0 or _passo_que_me_procura().is_empty():
+			_atencao_perto = 0.0
+			return false
+		_atencao_perto += delta
+		if _atencao_perto < ATENCAO_APOS and not _jogador_vindo_para_ca(falta):
+			return false
+		_comecar_a_atencao()
+	else:
+		# A caixa de fala aberta (a conversa começou) ou a frase dele no ar não gastam a espera.
+		if not Dialogo.ocupado():
+			_atencao_resta -= delta
+		var ainda_procura := not _passo_que_me_procura().is_empty() or Dialogo.ocupado() or falando_agora()
+		if _atencao_resta <= 0.0 or perto > ATENCAO_SAIU or desnivel > 2.0 or not ainda_procura:
+			_largar_a_atencao()
+			return false
+	_mover(Vector3.ZERO, _velocidade_de_passo(), delta)
+	if not _trabalhando():
+		_olhar_para(jogador.global_position, delta)
+	_atualizar_animacao(delta)
+	_atualizar_trabalho()
+	_atualizar_interacao(delta)
+	return true
+
+
+func _largar_a_atencao() -> void:
+	_atencao_resta = 0.0
+	_atencao_perto = 0.0
+	_atencao_pausa = ATENCAO_PAUSA
+
+
+## O jogador anda na direção dele? `falta` é do morador ao jogador, no chão.
+func _jogador_vindo_para_ca(falta: Vector3) -> bool:
+	if not ("velocity" in jogador) or falta.length_squared() < 0.0001:
+		return false
+	var v: Vector3 = jogador.velocity
+	v.y = 0.0
+	return v.length() > 0.5 and v.normalized().dot((-falta).normalized()) > 0.5
+
+
+## O passo de falar ou de entregar que manda o jogador a ESTE morador e que ele já pode receber,
+## de qualquer fila viva; {} se nenhum. Ver `CadeiaDeMissoes.o_que_o_e_faz`.
+func _passo_que_me_procura() -> Dictionary:
+	for cadeia in get_tree().get_nodes_in_group(GRUPO_DAS_CADEIAS):
+		if not cadeia.has_method("o_que_o_e_faz") or not cadeia.has_method("passo_atual"):
+			continue
+		var faz := str(cadeia.o_que_o_e_faz(self))
+		if faz == "falar" or faz == "entregar":
+			return cadeia.passo_atual()
+	return {}
+
+
+func _comecar_a_atencao() -> void:
+	_atencao_resta = ATENCAO_ESPERA
+	var passo := _passo_que_me_procura()
+	var meta: Dictionary = passo.get("meta", {})
+	# É RELATO quando o passo é a volta de quem foi ver algo e traz a resposta dele.
+	var relato := str(meta.get("tipo", "")) == "falar" and str(meta.get("resposta", "")) != ""
+	var fim_do_dia := Dia.periodo() in ["entardecer", "noite", "madrugada"]
+	var lista: Array = dados.get("atencao", [])
+	var escolhida := escolher_atencao(lista, _atencao_ultima, fim_do_dia, relato, randf())
+	if escolhida < 0 or not pode_falar() or fala_perto_de(jogador.global_position):
+		return
+	_atencao_ultima = escolhida
+	var fala: Dictionary = lista[escolhida]
+	var texto := String(IdiomaMenu.campo(fala, "texto", ""))
+	if texto.strip_edges() == "":
+		return
+	var fluxo := _voz_do_arquivo(String(fala.get("audio", "")))
+	# PASSAGEM: a fila cede a vez à narração e à conversa do E, que a cortam.
+	_pedir_fala({
+		"texto": texto, "inteira": texto, "voz": fluxo, "classe": FilaDeFalas.Classe.PASSAGEM,
+		"segundos": FilaDeFalas.duracao(texto, _tempo_da_voz(fluxo)), "gesto": _gesto_de_saudacao(),
+		"atencao": true,
+	})
+
+
+## A frase de atenção dele está no ar? Ela não esconde a dica do E nem tira o E dele
+## (`tecla_dos_moradores._fala_ativa`): é justamente o aceno que diz "pode falar".
+func atencao_no_ar() -> bool:
+	return not _fala_no_ar.is_empty() and bool(_fala_no_ar.get("atencao", false))
+
+
+## QUAL FRASE DE ATENÇÃO: o índice em `lista` (as `atencao` do morador), ou -1 sem nenhuma que valha.
+## Vale a que não tem `quando` e a do momento ("fim_do_dia", "relato"); nunca a `anterior`, havendo
+## outra; `sorteio` (0 a 1) escolhe entre as que sobram. Pública e sem mundo para o portão conferir.
+static func escolher_atencao(lista: Array, anterior: int, fim_do_dia: bool, relato: bool, sorteio: float) -> int:
+	var valem: Array[int] = []
+	for i in lista.size():
+		if not (lista[i] is Dictionary):
+			continue
+		var quando := str((lista[i] as Dictionary).get("quando", ""))
+		if quando == "" or (quando == "fim_do_dia" and fim_do_dia) or (quando == "relato" and relato):
+			valem.append(i)
+	if valem.size() > 1:
+		valem.erase(anterior)
+	if valem.is_empty():
+		return -1
+	return valem[clampi(int(sorteio * valem.size()), 0, valem.size() - 1)]
 
 
 ## Movimento com gravidade e colisão; vira o corpo para a direção do passo.

@@ -11,6 +11,7 @@
 #   saudacoes_noite  saudacao_noite  o cumprimento de quem passa, de noite
 #   falas_noite      fala_noite      a conversa do E, de noite
 #   falas_depois     depois          só o guia: o que o Pedro diz depois do tutorial (pedro_depois_<n>)
+#   atencao          atencao         só o guia: a frase de quem a missão manda procurar e para ao ver o jogador (pedro_atencao_<n>; #198)
 #   anoitecer        (um só)         só o guia: o aviso do entardecer
 #
 # "tts" é o que a voz lê, com marcações de interpretação do v3 entre colchetes ([whispers],
@@ -40,7 +41,7 @@ $bruto = Join-Path $env:TEMP "mv_falas_brutas"
 if (-not $SoContar) { New-Item -ItemType Directory -Force $bruto | Out-Null }
 
 # As listas do arquivo que têm voz (o "anoitecer" do guia é um objeto só, tratado à parte).
-$listas = @("falas", "saudacoes", "saudacoes_noite", "falas_noite", "falas_depois")
+$listas = @("falas", "saudacoes", "saudacoes_noite", "falas_noite", "falas_depois", "atencao")
 # Falhas seguidas que param a rodada: voz que não existe, crédito acabado e chave errada se repetem.
 $maximo_de_falhas_seguidas = 3
 

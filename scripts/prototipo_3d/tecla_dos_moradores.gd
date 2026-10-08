@@ -293,7 +293,11 @@ func _oferecer_terra(morador: Node3D, terra: String) -> void:
 		morador.mostrar_balao(Terras.texto("comprou"), 6.0)
 
 
+## A frase de atenção de quem para ao ver o jogador chegar (`npc._dar_atencao`, #198) não conta: o E nele
+## continua valendo, e a dica "Falar com ..." fica firme enquanto ele espera.
 func _fala_ativa(morador: Node3D) -> bool:
+	if morador.has_method("atencao_no_ar") and bool(morador.call("atencao_no_ar")):
+		return false
 	return morador.has_method("falando_agora") and bool(morador.call("falando_agora"))
 
 
