@@ -41,6 +41,11 @@
   tabuleiro — e não se havia água sobre os pés. Agora só se nada com água acima dos pés
   (0,15 u); o portão `ponte` põe o jogador em cima do tabuleiro feito e confere que ele fica
   de pé.
+- **O Pedro só se apresenta no primeiro encontro** (07/10: "do nada, em algum momento
+  aleatório, o áudio do Pedro do início do jogo — 'chegou, homem, o mestre do saveiro...' —
+  foi reproduzido sem nexo"). As falas do píer só valiam até a chegada começar pela
+  aproximação, mas o E nele voltava a elas entre o último passo e a despedida; desde que a
+  chegada começou, o E no Pedro usa as falas de quem já conhece o jogador.
 - **As cenas do vale, pelos dados** (07/10, à noite: "implementar a mesma lógica de cutscene
   que fizemos no 2D: travando a tela e comandos do jogador e a própria engine conduzindo os
   personagens para uma interação com fala; explorar a vista, o cenário, aproximar dos

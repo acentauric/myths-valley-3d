@@ -664,7 +664,11 @@ func conversar() -> void:
 ## outros moradores.
 func _escolher_a_fala() -> Dictionary:
 	var depois: Array = dados.get("falas_depois", [])
-	if not terminou_o_tutorial() or depois.is_empty():
+	# DESDE QUE A CHEGADA COMEÇOU, e não só depois do tutorial (07/10: "do nada, o áudio do Pedro
+	# do início do jogo — 'chegou, homem, o mestre do saveiro...' — foi reproduzido sem nexo"):
+	# as falas do primeiro encontro são só do primeiro encontro. Entre o último passo e a
+	# despedida, e no E sem passo a repetir, ele caía nelas de novo.
+	if not _cadeia.iniciado or depois.is_empty():
 		return super()
 	if _proxima_fala_depois < 0:
 		_proxima_fala_depois = randi() % depois.size()
