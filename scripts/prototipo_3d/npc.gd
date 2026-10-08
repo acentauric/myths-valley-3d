@@ -6,6 +6,7 @@ extends CharacterBody3D
 ## humanoide procedural ou o modelo do Tripo, conforme o estilo escolhido em AJUSTAR.
 
 const IdiomaMenu = preload("res://scripts/prototipo_3d/idioma_menu.gd")
+const Identidade = preload("res://scripts/prototipo_3d/identidade.gd")
 const BalaoFala = preload("res://scripts/prototipo_3d/balao_fala.gd")
 const EspumaAgua = preload("res://scripts/prototipo_3d/espuma_agua.gd")
 const Vestimenta3D = preload("res://scripts/prototipo_3d/vestimenta_3d.gd")
@@ -394,6 +395,7 @@ func _ready() -> void:
 	balao = BalaoFala.new()
 	camada_balao.add_child(balao)
 	balao.configurar(self, altura + 0.45, String(dados.get("nome", "Morador")))
+	_montar_o_marcador()
 	voz = AudioStreamPlayer3D.new()
 	voz.name = "Voz"
 	voz.max_distance = 30.0
@@ -723,6 +725,7 @@ func _atualizar_animacao(delta: float) -> void:
 
 
 func _atualizar_interacao(delta: float) -> void:
+	_atualizar_o_marcador(delta)
 	# Sem a fila no vale, o balão conta o próprio tempo; com ela, quem conta é a
 	# fila, em relógio de parede (`_tique_da_fala`).
 	if _balao_tempo > 0.0 and _fila() == null:
@@ -767,6 +770,79 @@ func _so_cumprimento_no_ar() -> bool:
 ## O MORADOR TEM MISSÃO COM O JOGADOR AGORA? Pergunta a toda cadeia viva — a dele
 ## e a dos outros, que podem mandar o jogador até ele. Ver
 ## `CadeiaDeMissoes.envolve`.
+## O "!" SOBRE A CABEÇA (08/10: "colocar uma exclamação ou algo parecido em cima da cabeça do
+## NPC com quest disponível", como nos RPGs): "!" para a fila que o E abre neste morador
+## (`CadeiaDeMissoes.o_que_o_e_faz` == "abrir"), "?" para quem o passo de agora manda procurar
+## (falar, entregar — com a carga na mochila). Um Label3D que acompanha a cabeça e balança
+## devagar; a pergunta às filas é a cada MARCADOR_A_CADA s, que são muitas filas para perguntar
+## a cada quadro. Some com o morador recolhido e a mais de MARCADOR_ATE do jogador.
+const MARCADOR_A_CADA := 0.4
+const MARCADOR_ACIMA := 0.95
+const MARCADOR_ATE := 55.0
+var _marcador: Label3D
+var _marcador_em := 0.0
+var _marcador_texto := ""
+var _marcador_t := 0.0
+
+
+## O que o marcador diz agora: "!", "?" ou "".
+func marcador_de_missao() -> String:
+	return _marcador_texto
+
+
+func _montar_o_marcador() -> void:
+	if _marcador != null:
+		return
+	_marcador = Label3D.new()
+	_marcador.name = "MarcadorDeMissao"
+	_marcador.text = ""
+	_marcador.font = Identidade.fonte(Identidade.FONTE_TITULO, 700)
+	_marcador.font_size = 96
+	_marcador.pixel_size = 0.0055
+	_marcador.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	_marcador.no_depth_test = true
+	_marcador.modulate = Identidade.OURO
+	_marcador.outline_size = 14
+	_marcador.outline_modulate = Color(0.1, 0.07, 0.02, 0.9)
+	_marcador.visibility_range_end = MARCADOR_ATE
+	_marcador.position = Vector3(0.0, altura + MARCADOR_ACIMA, 0.0)
+	_marcador.visible = false
+	add_child(_marcador)
+
+
+func _o_que_as_filas_pedem_aqui() -> String:
+	if not is_inside_tree():
+		return ""
+	var pede := ""
+	for cadeia in get_tree().get_nodes_in_group(GRUPO_DAS_CADEIAS):
+		if not cadeia.has_method("o_que_o_e_faz"):
+			continue
+		match str(cadeia.o_que_o_e_faz(self)):
+			"abrir":
+				return "!"
+			"falar", "entregar":
+				pede = "?"
+	return pede
+
+
+func _atualizar_o_marcador(delta: float) -> void:
+	_marcador_em -= delta
+	if _marcador_em <= 0.0:
+		_marcador_em = MARCADOR_A_CADA
+		_marcador_texto = "" if _recolhido else _o_que_as_filas_pedem_aqui()
+	if _marcador == null:
+		return
+	var a_vista := _marcador_texto != "" and not _recolhido
+	if _marcador.visible != a_vista:
+		_marcador.visible = a_vista
+	if not a_vista:
+		return
+	if _marcador.text != _marcador_texto:
+		_marcador.text = _marcador_texto
+	_marcador_t += delta
+	_marcador.position.y = altura + MARCADOR_ACIMA + sin(_marcador_t * 2.4) * 0.06
+
+
 func tem_missao() -> bool:
 	if not is_inside_tree():
 		return false

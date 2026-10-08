@@ -97,6 +97,10 @@ func _run() -> void:
 	await _quadros(8)
 	relogio.ficar_lento()
 	vale = current_scene
+	# O ACEITE É AUTOMÁTICO AQUI (08/10): este portão abre filas pelo E e segue; a tela de aceite
+	# pausaria o vale no meio da medida (a tela tem portão próprio, tests/missao_a_vista.gd).
+	if vale.get("aceite") != null:
+		vale.aceite.automatico = true
 	fila = vale.get("fila_de_falas")
 	var jogador = vale.player
 	var tecla = vale.get("tecla_dos_moradores")

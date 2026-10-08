@@ -15,6 +15,7 @@ const Lapides = preload("res://scripts/prototipo_3d/lapides.gd")
 const TeclaDasBancadas = preload("res://scripts/prototipo_3d/tecla_das_bancadas.gd")
 const TeclaDosMoradores = preload("res://scripts/prototipo_3d/tecla_dos_moradores.gd")
 const FocoDoE = preload("res://scripts/prototipo_3d/foco_do_e.gd")
+const AceiteDeMissao = preload("res://scripts/prototipo_3d/aceite_de_missao.gd")
 const FilaDeFalas = preload("res://scripts/prototipo_3d/fila_de_falas.gd")
 const AvisoDaPrimeiraVez = preload("res://scripts/prototipo_3d/aviso_da_primeira_vez.gd")
 const CapaDeCordel = preload("res://scripts/prototipo_3d/capa_de_cordel.gd")
@@ -186,6 +187,8 @@ var pesca	# pesca_vale.gd — a vara na mão e o E na beira da água
 var tecla_das_bancadas: Node
 ## O E nos moradores: conversar e cumprir passo (`tecla_dos_moradores.gd`).
 var tecla_dos_moradores: Node
+## A tela de aceite da missão (aceite_de_missao.gd): o E na fila por abrir passa por ela.
+var aceite: Node
 ## Quem leva o E entre tudo o que o aceita (`foco_do_e.gd`).
 var foco_do_e: Node
 ## Uma fala de cada vez no vale (`fila_de_falas.gd`).
@@ -382,6 +385,17 @@ func _ready() -> void:
 		func() -> bool: return Mochila.aberta,
 		func() -> void: Mochila.abrir(),
 		func() -> void: Mochila.fechar())
+	# A TELA DE ACEITE DA MISSÃO (08/10): tela do vale sem tecla própria — o E no morador com
+	# fila por abrir a pede (`tecla_dos_moradores.usar`); o Esc recusa.
+	aceite = AceiteDeMissao.new()
+	aceite.name = "AceiteDeMissao"
+	add_child(aceite)
+	aceite.configurar(telas)
+	telas.registrar("aceite",
+		func(_e: InputEvent) -> bool: return false,
+		func() -> bool: return aceite.aberto,
+		func() -> void: pass,
+		func() -> void: aceite.recusar())
 	_ajustar_as_telas_do_2d()
 	get_viewport().size_changed.connect(_ajustar_as_telas_do_2d)
 	# O BONECO DA MOCHILA: "ao lado dos itens equipados, coloque o 3D do boneco
@@ -794,6 +808,7 @@ func _ready() -> void:
 	# árvore, lápide, alvo de trabalho, bancada, marco, lavoura, casa, pesca e
 	# luta —, só um leva a tecla e acende a dica: o da frente do jogador, e mais
 	# perto. Antes quem levava era o último nó posto no vale.
+	tecla_dos_moradores.aceite = aceite
 	foco_do_e = FocoDoE.new()
 	foco_do_e.name = "FocoDoE"
 	add_child(foco_do_e)

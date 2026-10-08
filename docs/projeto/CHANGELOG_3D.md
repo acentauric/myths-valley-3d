@@ -57,6 +57,17 @@
   embaúba fina cai em dois golpes e dá uma lenha, a mangueira grossa pede quatro e dá três.
   Portões `cadeia_do_coveiro`
   e `corte_das_arvores` conferem.
+- **A missão à vista: o "!" sobre a cabeça e a tela de aceite** (08/10: "continuo sem
+  missões depois da introdução à vila; eu preciso falar com o NPC para destravar, mas isso
+  não é óbvio para o jogador. Precisa seguir boas práticas de jogos de RPG e colocar uma
+  exclamação em cima da cabeça do NPC com quest disponível. Também deve ter uma tela resumo
+  sobre a missão para o jogador aceitar ela ou não"). Quem tem fila por abrir no E leva um
+  "!" dourado sobre a cabeça (`npc._marcador`, um Label3D que acompanha e balança); quem o
+  passo de agora manda procurar, com a carga na mochila, leva um "?". E o E na fila por
+  abrir não a começa na hora: abre a tela de aceite (`aceite_de_missao.gd`), com o vale
+  parado — o nome da missão, quem pede, o que ele diz, o primeiro passo, quantos passos e a
+  recompensa somada —, com Aceitar [E] e Agora não [Esc]; recusar não começa nada e o "!"
+  fica. Nos três idiomas. Portão novo `missao_a_vista`.
 - **As cenas do vale, pelos dados** (07/10, à noite: "implementar a mesma lógica de cutscene
   que fizemos no 2D: travando a tela e comandos do jogador e a própria engine conduzindo os
   personagens para uma interação com fala; explorar a vista, o cenário, aproximar dos

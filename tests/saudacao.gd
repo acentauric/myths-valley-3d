@@ -51,6 +51,10 @@ func _run() -> void:
 	await _frames(3)
 
 	var jogo := current_scene
+	# O ACEITE É AUTOMÁTICO AQUI (08/10): este portão abre filas pelo E e segue; a tela de aceite
+	# pausaria o vale no meio da medida (a tela tem portão próprio, tests/missao_a_vista.gd).
+	if jogo.get("aceite") != null:
+		jogo.aceite.automatico = true
 	var jogador = jogo.get("player")
 	var pedro = jogo.get("pedro")
 	var moradores: Array = jogo.get("moradores")
