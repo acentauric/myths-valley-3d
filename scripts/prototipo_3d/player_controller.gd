@@ -47,6 +47,10 @@ const VIGOR_RECUPERACAO_PARADO := 20.0
 ## passa do peito (fração da altura) ele nada, com os ombros e a cabeça de fora. Entra
 ## no nado e volta a andar em profundidades diferentes, para não ficar alternando.
 const NADA_A_PARTIR := 0.72
+## SÓ SE NADA COM ÁGUA ACIMA DOS PÉS (07/10: "depois de consertar a ponte, ao atravessá-la, o
+## boneco começou a nadar no ar"): em cima do tabuleiro a lâmina do rio lá embaixo é funda, mas
+## sobre os pés não há água nenhuma. Quanto de água acima dos pés o nado exige.
+const ACIMA_DOS_PES_PARA_NADAR := 0.15
 const ANDA_ATE := 0.66
 const VELOCIDADE_NA_AGUA := 0.45
 const VELOCIDADE_NADO := 1.5
@@ -857,7 +861,10 @@ func _fundo_da_agua() -> float:
 
 func _atualizar_nado() -> void:
 	var fundo := _fundo_da_agua()
-	var nadar := fundo > character_height * (ANDA_ATE if _nadando else NADA_A_PARTIR) and not _sobre_barco()
+	# A lâmina do fundo decide, mas só com água de fato acima dos pés (`_profundidade`): o
+	# tabuleiro da ponte, o tabuado do píer e a pedra do rio ficam fora do nado.
+	var nadar := fundo > character_height * (ANDA_ATE if _nadando else NADA_A_PARTIR) and not _sobre_barco() \
+		and _profundidade() > ACIMA_DOS_PES_PARA_NADAR
 	if nadar == _nadando:
 		return
 	_definir_nado(nadar)

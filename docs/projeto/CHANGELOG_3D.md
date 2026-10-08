@@ -36,6 +36,11 @@
   do detalhe da missão (J), tinha quebra automática e largura a preencher dentro de uma linha
   que encolhe ao conteúdo: ficava com zero de largura e uma letra por linha. Sem quebra, no
   tamanho do texto; o portão `painel` abre uma missão com recompensa e confere.
+- **Em cima da ponte não se nada** (07/10: "depois de consertar a ponte, ao atravessá-la, o
+  boneco começou a nadar no ar"). O nado olhava a lâmina do rio no ponto — funda debaixo do
+  tabuleiro — e não se havia água sobre os pés. Agora só se nada com água acima dos pés
+  (0,15 u); o portão `ponte` põe o jogador em cima do tabuleiro feito e confere que ele fica
+  de pé.
 - **As cenas do vale, pelos dados** (07/10, à noite: "implementar a mesma lógica de cutscene
   que fizemos no 2D: travando a tela e comandos do jogador e a própria engine conduzindo os
   personagens para uma interação com fala; explorar a vista, o cenário, aproximar dos
