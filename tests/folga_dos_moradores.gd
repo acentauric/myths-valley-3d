@@ -91,8 +91,14 @@ func _run() -> void:
 		if not de.is_finite() or not para.is_finite():
 			_conferir(false, "%s: um dos lugares não resolve" % rotulo)
 			continue
+		# DE ONDE UM MORADOR SAI DE VERDADE: a âncora de uma casa é o meio dela, e corpo nenhum
+		# fica dentro da parede; o morador está na malha estreita (a dois palmos da porta).
+		var de_cru: PackedVector3Array = navegacao.caminho_estreito(de, para)
+		if de_cru.size() >= 2:
+			de = de_cru[0]
 		var largo: PackedVector3Array = navegacao.caminho(de, para)
 		var estreito: PackedVector3Array = navegacao.caminho_estreito(de, para)
+		var cru: PackedVector3Array = navegacao.caminho_largo(de, para)
 		_conferir(largo.size() >= 2, "%s: sem caminho" % rotulo)
 		if largo.size() < 2:
 			continue
@@ -101,6 +107,7 @@ func _run() -> void:
 		var raspou_tronco := 0
 		var raspou_casa := 0
 		var pior_tronco := INF
+		var onde: Array[String] = []
 		var total := _comprimento(largo)
 		var andado := 0.0
 		for i in range(1, largo.size()):
@@ -118,14 +125,20 @@ func _run() -> void:
 					pior_tronco = minf(pior_tronco, d)
 					if d < FOLGA:
 						raspou_tronco += 1
+						onde.append("tronco %.2f em %s (%.0f u do início, %s)" % [d, str(Vector2(p.x, p.z)), aqui, "na larga" if _na_linha(cru, p) else "numa emenda estreita"])
 						break
 				for casa: Dictionary in casas:
 					var local: Vector3 = (p - (casa["centro"] as Vector3)).rotated(Vector3.UP, -float(casa["giro"]))
 					if absf(local.x) < float((casa["meia"] as Vector2).x) + FOLGA and absf(local.z) < float((casa["meia"] as Vector2).y) + FOLGA:
 						raspou_casa += 1
+						onde.append("%s em %s (%.0f u do início, %s)" % [str(casa["nome"]), str(Vector2(p.x, p.z)), aqui, "na larga" if _na_linha(cru, p) else "numa emenda estreita"])
 						break
 			andado += trecho
-		print("  %-28s %5.1f u, %3d pontos%s; tronco mais perto a %.2f" % [rotulo, total, largo.size(), "" if largo != estreito else " [= estreita]", pior_tronco])
+		var emenda_inicio := _plano(cru[0], de) if cru.size() >= 2 else INF
+		var emenda_fim := _plano(cru[cru.size() - 1], para) if cru.size() >= 2 else INF
+		print("  %-28s %5.1f u, %3d pontos%s; tronco mais perto a %.2f; larga crua %.1f u, sai a %.2f e chega a %.2f" % [rotulo, total, largo.size(), "" if largo != estreito else " [= estreita]", pior_tronco, _comprimento(cru), emenda_inicio, emenda_fim])
+		for linha in onde:
+			print("      ", linha)
 		_conferir(raspou_tronco == 0, "%s: %d ponto(s) do caminho a menos de %.1f de um tronco (o mais perto: %.2f)" % [rotulo, raspou_tronco, FOLGA, pior_tronco])
 		_conferir(raspou_casa == 0, "%s: %d ponto(s) do caminho colados numa casa (a menos de %.1f da parede)" % [rotulo, raspou_casa, FOLGA])
 	_conferir(diferentes >= 1, "a malha larga não mudou nenhum passeio: o caminho é o da estreita em todos")
@@ -181,6 +194,17 @@ func _run() -> void:
 
 static func _plano(a: Vector3, b: Vector3) -> float:
 	return Vector2(a.x - b.x, a.z - b.z).length()
+
+
+## O ponto está (a menos de 0,1) sobre a linha quebrada?
+static func _na_linha(linha: PackedVector3Array, p: Vector3) -> bool:
+	var q := Vector2(p.x, p.z)
+	for i in range(1, linha.size()):
+		var a := Vector2(linha[i - 1].x, linha[i - 1].z)
+		var b := Vector2(linha[i].x, linha[i].z)
+		if Geometry2D.get_closest_point_to_segment(q, a, b).distance_to(q) < 0.1:
+			return true
+	return false
 
 
 static func _comprimento(pontos: PackedVector3Array) -> float:
