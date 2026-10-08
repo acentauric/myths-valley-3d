@@ -2,6 +2,16 @@
 
 ## Em desenvolvimento — 08/10/2026
 
+- **Primeiros clipes do Mixamo nos moradores.** Seis animações do Mixamo entram
+  redirecionadas para o esqueleto Tripo de cada um (`tools/prototipo_3d/mixamo/redirecionar.gd`,
+  só rotações e o quadril, pé no chão, no lugar): o Pedro treina capoeira no posto quando o
+  jogador está longe e para ao fim do golpe quando ele chega, e aponta o caminho na condução;
+  o pescador pesca de vara e lança a linha de tempos em tempos; a beata reza de joelhos na
+  igreja e no cruzeiro. A ficha em Modelos ganha a linha Animações, com o selo "Mixamo" e a
+  prévia tocando o clipe; `data/mixamo_uso.json` traz o catálogo (2.484 itens) e o inventário
+  por personagem, e o exportador do site, a seção `mixamo` com o percentual de uso. Os FBX não
+  entram no repositório (licença). Portão `animacoes_mixamo` (#190).
+
 - **A seta da missão orbita o jogador em vez de grudar na borda sobre o HUD.** Com o alvo
   fora da visão, o chevron dourado ia para a borda da tela e ficava por cima das barras, do
   relógio, da missão, dos atalhos e do minimapa. Agora gira numa elipse ao redor do

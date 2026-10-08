@@ -62,6 +62,20 @@ func _run() -> void:
 	_assert(not painel._campo_filtro.visible and painel._botao_editar.visible, "na ficha o filtro some e EDITAR aparece")
 	var falas: Array = painel._lista.find_children("Fala*", "HBoxContainer", true, false)
 	_assert(falas.size() == 3, "as três falas na ficha")
+	# #190: a linha Animações traz os clipes do Mixamo com o selo ("Capoeira · Mixamo", no idioma do menu) e os do
+	# Tripo num menu, e o clique toca o clipe na prévia.
+	var capoeira := painel._lista.find_child("Clipe_capoeira", true, false) as Button
+	_assert(capoeira != null and capoeira.text.contains("apoeira") and capoeira.text.ends_with(" · Mixamo") and str(capoeira.get_meta("origem", "")) == "Mixamo", "a ficha do Pedro mostra 'Capoeira · Mixamo'")
+	var menu_tripo := painel._lista.find_child("ClipesTripo", true, false) as MenuButton
+	_assert(menu_tripo != null and menu_tripo.get_popup().item_count >= 7, "os clipes do Tripo ficam no menu da linha Animações")
+	if capoeira != null and painel._tocador_da_previa() != null:
+		capoeira.button_pressed = true
+		capoeira.pressed.emit()
+		_assert(painel._clipe_na_previa == "mixamo/capoeira" and painel._tocador_da_previa().current_animation == &"mixamo/capoeira", "o clique na Capoeira a toca na prévia")
+		_assert(painel._preview_viewport.render_target_update_mode == SubViewport.UPDATE_ALWAYS, "com o clipe tocando a prévia se redesenha a cada quadro")
+		capoeira.button_pressed = false
+		capoeira.pressed.emit()
+		_assert(painel._clipe_na_previa == "", "o segundo clique volta a prévia à pose parada")
 	for fala: HBoxContainer in falas:
 		var texto := fala.get_child(1) as Label
 		_assert(texto.max_lines_visible == 2 and texto.get_visible_line_count() <= 2, "fala em até duas linhas")

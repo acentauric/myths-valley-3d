@@ -20,6 +20,7 @@ const Identidade = preload("res://scripts/prototipo_3d/identidade.gd")
 const IdiomaMenu = preload("res://scripts/prototipo_3d/idioma_menu.gd")
 const HudIcon = preload("res://scripts/prototipo_3d/hud_icon.gd")
 const Humanoide = preload("res://scripts/prototipo_3d/personagem_procedural.gd")
+const MixamoUso = preload("res://scripts/prototipo_3d/mixamo_uso.gd")
 ## Cartão da grade: tamanho mínimo e separação. Colunas e linhas por página saem do espaço
 ## que o modal deixa à lista (`_capacidade()`), e os cartões esticam para preencher a grade.
 const CARTAO_MIN := Vector2(140, 56)
@@ -94,6 +95,8 @@ var _elevacao := 0.06
 var _ancoras: Array[String] = []
 ## A grade que está montada: colunas e linhas da última `_montar_cartoes` (zero sem cartões).
 var _capacidade_montada := Vector2i.ZERO
+## O clipe tocando na prévia (o nome no tocador), ou "" com o modelo parado na pose do idle.
+var _clipe_na_previa := ""
 
 
 ## Monta o painel centrado, no estilo dos outros painéis do menu (tema recebido).
@@ -660,9 +663,112 @@ func _dados_morador(pessoa: Dictionary) -> void:
 		nota = tr("Sem posto fixo: acompanha o viajante pelo vale.")
 	linhas.append([tr("Nota"), nota])
 	_linhas(linhas)
+	_animacoes(id)
 	var falas: Array = pessoa.get("falas", [])
 	for i in FALAS_NA_FICHA:
 		_linha_fala(falas[i] if i < falas.size() and falas[i] is Dictionary else {})
+
+
+## AS ANIMAÇÕES DO MORADOR (#190), numa linha só, como as outras da ficha: os clipes
+## do Mixamo, cada um num botão com o selo dourado ("Capoeira · Mixamo"), e os do
+## Tripo num menu ("Tripo (8)"). O clique toca o clipe na prévia; o segundo, no
+## mesmo botão, volta à pose parada. A linha existe para todo morador, com ou sem
+## Mixamo, para a ficha não mudar de forma.
+func _animacoes(id: String) -> void:
+	var linha := HBoxContainer.new()
+	linha.name = "Animacoes"
+	linha.add_theme_constant_override("separation", 6)
+	_lista.add_child(linha)
+	var rotulo := Label.new()
+	rotulo.text = tr("Animações")
+	rotulo.custom_minimum_size.x = 96
+	rotulo.add_theme_font_size_override("font_size", 13)
+	rotulo.add_theme_color_override("font_color", Color(DOURADO, 0.8))
+	linha.add_child(rotulo)
+	var campo := func(dados: Dictionary, chave: String) -> String: return str(IdiomaMenu.campo(dados, chave))
+	for clipe: Dictionary in MixamoUso.clipes(id):
+		var nome := str(clipe.get("id", ""))
+		var botao := Button.new()
+		botao.name = "Clipe_" + nome
+		botao.text = "%s · %s" % [campo.call(clipe, "rotulo"), MixamoUso.ORIGEM]
+		botao.tooltip_text = "%s\n%s: %s" % [campo.call(clipe, "gatilho"), MixamoUso.ORIGEM, str(clipe.get("descricao_mixamo", ""))]
+		botao.toggle_mode = true
+		botao.focus_mode = Control.FOCUS_NONE
+		botao.add_theme_font_size_override("font_size", 12)
+		botao.add_theme_color_override("font_color", DOURADO)
+		botao.add_theme_color_override("font_pressed_color", DOURADO)
+		botao.add_theme_color_override("font_hover_color", DOURADO)
+		botao.set_meta("origem", MixamoUso.ORIGEM)
+		botao.pressed.connect(func() -> void: _tocar_na_previa(nome, botao))
+		linha.add_child(botao)
+	var tripo: Array = MixamoUso.personagem(id).get("clipes_tripo", [])
+	var menu := MenuButton.new()
+	menu.name = "ClipesTripo"
+	menu.text = "Tripo (%d)" % tripo.size()
+	menu.tooltip_text = tr("Clipes que vieram com o modelo do Tripo: escolha um para ver na prévia")
+	menu.flat = false
+	menu.disabled = tripo.is_empty()
+	menu.add_theme_font_size_override("font_size", 12)
+	menu.set_meta("origem", "Tripo")
+	for nome in tripo:
+		menu.get_popup().add_item(MixamoUso.rotulo_tripo(str(nome), campo))
+	menu.get_popup().index_pressed.connect(func(indice: int) -> void: _tocar_na_previa(str(tripo[indice]), null))
+	linha.add_child(menu)
+
+
+## O CLIPE NA PRÉVIA: toca `nome` (o id do Mixamo ou o nome-base do Tripo) no modelo
+## da prévia, e a prévia passa a se redesenhar a cada quadro enquanto ele toca. O
+## mesmo botão de novo (ou um nome que o modelo não tem) volta à pose parada.
+func _tocar_na_previa(nome: String, botao: Button) -> void:
+	Audio.efeito("ui_confirmar")
+	for outro in _lista.find_children("Clipe_*", "Button", true, false):
+		if outro != botao:
+			(outro as Button).set_pressed_no_signal(false)
+	var tocador := _tocador_da_previa()
+	var real := _clipe_real(tocador, nome)
+	if tocador == null or real.is_empty() or (botao != null and not botao.button_pressed) or real == _clipe_na_previa:
+		if botao != null:
+			botao.set_pressed_no_signal(false)
+		_parar_clipe_da_previa()
+		return
+	_clipe_na_previa = real
+	tocador.play(real, 0.2)
+	_preview_viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS
+
+
+## O nome do clipe no tocador da prévia: a biblioteca do Mixamo ou o clipe do GLB
+## pelo nome-base ("walk" → "walk_001").
+func _clipe_real(tocador: AnimationPlayer, nome: String) -> String:
+	if tocador == null:
+		return ""
+	if tocador.has_animation(MixamoUso.BIBLIOTECA + "/" + nome):
+		return MixamoUso.BIBLIOTECA + "/" + nome
+	for clipe: StringName in tocador.get_animation_list():
+		var texto := String(clipe)
+		if texto == nome or (texto.begins_with(nome) and RegEx.create_from_string("^" + nome + "[._]\\d{3}$").search(texto) != null):
+			return texto
+	return ""
+
+
+func _tocador_da_previa() -> AnimationPlayer:
+	if _preview_modelo == null or not is_instance_valid(_preview_modelo):
+		return null
+	var tocadores := _preview_modelo.find_children("*", "AnimationPlayer", true, false)
+	return tocadores[0] as AnimationPlayer if not tocadores.is_empty() else null
+
+
+## Volta a prévia à pose parada (o idle, pausado) e ao redesenho sob demanda.
+func _parar_clipe_da_previa() -> void:
+	_clipe_na_previa = ""
+	var tocador := _tocador_da_previa()
+	if tocador != null:
+		var parado := _clipe_real(tocador, "idle")
+		if not parado.is_empty():
+			tocador.play(parado)
+			tocador.advance(0.2)
+			tocador.pause()
+	if _preview_viewport != null:
+		_preview_viewport.render_target_update_mode = SubViewport.UPDATE_ONCE
 
 
 ## Peça: arquivo, medida, tronco, afundar, piso e as marcações do catálogo.
@@ -790,6 +896,7 @@ func _montar_previa(pai: Control, chave: String, altura: float = 0) -> void:
 		aviso.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		fundo.add_child(aviso)
 		return
+	_clipe_na_previa = ""
 	# Usa uma pose do idle autoral, em vez de apresentar o rig em T.
 	for tocador: AnimationPlayer in modelo.find_children("*", "AnimationPlayer", true, false):
 		for clipe: StringName in tocador.get_animation_list():
@@ -798,6 +905,12 @@ func _montar_previa(pai: Control, chave: String, altura: float = 0) -> void:
 				tocador.advance(0.2)
 				tocador.pause()
 				break
+	# Os clipes do Mixamo do morador entram no tocador da prévia (a linha Animações os
+	# toca), depois da pose parada: "fishing_idle" não é o idle do modelo.
+	var biblioteca: AnimationLibrary = MixamoUso.biblioteca(chave) if altura > 0 else null
+	var tocador_da_previa := _tocador_da_previa()
+	if biblioteca != null and tocador_da_previa != null and not tocador_da_previa.has_animation_library(MixamoUso.BIBLIOTECA):
+		tocador_da_previa.add_animation_library(MixamoUso.BIBLIOTECA, biblioteca)
 	# Sombra concêntrica: disco com gradiente radial, logo acima do chão, sob o modelo.
 	var raio := 0.42 if altura > 0 else maxf(dimensao.x, dimensao.z) * 0.6
 	var disco := MeshInstance3D.new()
@@ -847,7 +960,9 @@ func _aplicar_camera() -> void:
 	var direcao := Vector3(0.15, _elevacao, 1.0).normalized()
 	_camera.position = _alvo + direcao * _distancia
 	_camera.look_at(_alvo)
-	_preview_viewport.render_target_update_mode = SubViewport.UPDATE_ONCE
+	# Com um clipe tocando, a prévia já se redesenha a cada quadro.
+	if _clipe_na_previa.is_empty():
+		_preview_viewport.render_target_update_mode = SubViewport.UPDATE_ONCE
 
 
 ## Controles da prévia: arrastar com o esquerdo gira o modelo (horizontal) e inclina a

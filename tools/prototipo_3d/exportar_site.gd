@@ -80,6 +80,7 @@ func _run() -> void:
 	dados["atalhos"] = _atalhos()
 	dados["missoes"] = _missoes()
 	dados["dialogos"] = _dialogos()
+	dados["mixamo"] = _mixamo()
 	dados["estatisticas"] = _estatisticas(dados)
 	dados["_fonte"] = _bloco_fonte()
 
@@ -1653,6 +1654,62 @@ func _conta(personagens: Dictionary, id: String, nome: String, origem: String, q
 		personagens[id] = {"id": id, "nome": nome, "total": 0, "por_origem": {}}
 	personagens[id]["por_origem"][origem] = int(personagens[id]["por_origem"].get(origem, 0)) + quantas
 	personagens[id]["total"] = int(personagens[id]["total"]) + quantas
+
+
+# --- animações do Mixamo (#190) -----------------------------------------------------
+
+## A SEÇÃO MIXAMO DO SITE: o tamanho do catálogo do Mixamo, quantos clipes o vale
+## usa, e por personagem a lista dos clipes com a origem (Tripo ou Mixamo) e o
+## percentual de uso — clipes Mixamo ÷ a meta de cada um (`meta_por_personagem`).
+## Nenhum FBX sai daqui: só nomes e contagens (a licença não deixa redistribuir o arquivo).
+func _mixamo() -> Dictionary:
+	_fonte_de("mixamo", ["data/mixamo_uso.json (catálogo, baixados, rótulos e clipes por personagem)",
+		"assets/prototipo_3d/personagens/mixamo/*.res (as bibliotecas redirecionadas que o jogo de fato carrega)"])
+	var uso := _ler_json("res://data/mixamo_uso.json")
+	var meta := maxi(int(uso.get("meta_por_personagem", 2)), 1)
+	var rotulos: Dictionary = uso.get("rotulos_tripo", {})
+	var personagens: Array = []
+	var usados := 0
+	for pessoa: Dictionary in uso.get("personagens", []):
+		var modelo := str(pessoa.get("modelo", pessoa.get("id", "")))
+		var caminho := "res://assets/prototipo_3d/personagens/mixamo/%s.res" % modelo
+		var no_jogo: Array = []
+		if ResourceLoader.exists(caminho):
+			var biblioteca := load(caminho) as AnimationLibrary
+			if biblioteca != null:
+				for nome: StringName in biblioteca.get_animation_list():
+					no_jogo.append(String(nome))
+		var clipes: Array = []
+		for nome in pessoa.get("clipes_tripo", []):
+			var r: Dictionary = rotulos.get(str(nome), {})
+			clipes.append({"id": str(nome), "origem": "Tripo", "rotulo": str(r.get("rotulo", nome)),
+				"rotulo_en": str(r.get("rotulo_en", nome)), "rotulo_es": str(r.get("rotulo_es", nome))})
+		var do_mixamo := 0
+		for c: Dictionary in pessoa.get("clipes_mixamo", []):
+			var id := str(c.get("id", ""))
+			if not id in no_jogo:
+				_avisar("o clipe Mixamo '%s' de %s está no mixamo_uso.json e não na biblioteca %s" % [id, pessoa.get("id", ""), caminho])
+				continue
+			do_mixamo += 1
+			clipes.append({"id": id, "origem": "Mixamo", "nome_mixamo": str(c.get("nome_mixamo", "")),
+				"rotulo": str(c.get("rotulo", id)), "rotulo_en": str(c.get("rotulo_en", id)), "rotulo_es": str(c.get("rotulo_es", id)),
+				"gatilho": str(c.get("gatilho", "")), "gatilho_en": str(c.get("gatilho_en", "")), "gatilho_es": str(c.get("gatilho_es", ""))})
+		usados += do_mixamo
+		personagens.append({"id": str(pessoa.get("id", "")), "nome": str(pessoa.get("nome", "")),
+			"clipes_tripo": (pessoa.get("clipes_tripo", []) as Array).size(), "clipes_mixamo": do_mixamo,
+			"meta_mixamo": meta, "uso_da_meta": snappedf(minf(float(do_mixamo) / meta, 1.0), 0.01),
+			"parte_mixamo": snappedf(float(do_mixamo) / maxf(float(clipes.size()), 1.0), 0.01), "clipes": clipes})
+	var catalogo: Dictionary = uso.get("catalogo", {})
+	return {
+		"regra": "cada personagem ganha clipes do Mixamo aos poucos, %d por rodada, cada um com um gatilho no jogo e conferido antes de entrar; os FBX não são publicados, só o movimento já redirecionado para o esqueleto de cada um, dentro do jogo" % meta,
+		"catalogo": _limpo(catalogo),
+		"total_no_catalogo": int(catalogo.get("total_itens", 0)),
+		"baixados_para_escolha": (uso.get("baixados", []) as Array).size(),
+		"usados_no_jogo": usados,
+		"personagens_com_mixamo": personagens.filter(func(p: Dictionary) -> bool: return int(p["clipes_mixamo"]) > 0).size(),
+		"meta_por_personagem": meta,
+		"por_personagem": personagens,
+	}
 
 
 # --- estatísticas -------------------------------------------------------------------
