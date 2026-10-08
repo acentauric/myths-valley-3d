@@ -65,6 +65,26 @@ func _run() -> void:
 	var objetivo_antes := str(hud.get("_objective"))
 	_conferir(resumo_do_primeiro != "" and objetivo_antes.contains(resumo_do_primeiro),
 		"anunciado o passo da rede do Tonho, o HUD não mostra a tarefa dele ('%s' não tem '%s')" % [objetivo_antes, resumo_do_primeiro])
+	# O QUANTITATIVO (07/10: "não informou o quantitativo; mesmo que o jogador já tenha no
+	# inventário, esse dado deve ser informado"): o passo gerado diz quanto de cada um, e a conta.
+	_conferir(resumo_do_primeiro.contains("×5") and resumo_do_primeiro.contains("×3") and resumo_do_primeiro.ends_with("/8)"),
+		"o passo da rede não diz quanto levar nem a conta: '%s'" % resumo_do_primeiro)
+	# E O MATERIAL DA OBRA, CONTADO À PARTE DO PASSO (08/10: a cerca do cemitério dizia "construa"
+	# com a lenha já gasta nas cordas): o resumo diz o que há na mochila do que a obra pede.
+	var coveiro = vale._cadeias.get("damiao")
+	_conferir(coveiro != null and coveiro.passos.size() == 6, "não achei a fila do Damião com seis passos")
+	if coveiro != null and coveiro.passos.size() == 6:
+		var inv = root.get_node("/root/Inventario")
+		var reparo := str(coveiro.resumo_do_passo(coveiro.passos[4]))
+		_conferir(reparo.contains("0/2") and reparo.contains("0/4"), "o conserto das lajes não conta cada material: '%s'" % reparo)
+		var cercado := str(coveiro.resumo_do_passo(coveiro.passos[5]))
+		_conferir(cercado.contains("lenha 0/6") and cercado.contains("0/2"), "a obra do cercado não conta o material da mochila: '%s'" % cercado)
+		inv.adicionar("corda", 2)
+		cercado = str(coveiro.resumo_do_passo(coveiro.passos[5]))
+		_conferir(cercado.contains("lenha 0/6") and cercado.contains("2/2"),
+			"com as cordas feitas e a lenha gasta, a obra não diz lenha 0/6 e corda 2/2: '%s'" % cercado)
+		inv.consumir("corda", 2)
+		print("  reparo: '%s' · cercado: '%s'" % [reparo, cercado])
 	audio.ultimo_efeito = ""
 	cadeia.avancar()
 	await _frames(3)

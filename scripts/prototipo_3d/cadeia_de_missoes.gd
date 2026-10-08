@@ -477,6 +477,22 @@ func resumo_do_passo(passo: Dictionary) -> String:
 		"obra":
 			var obra := str(meta.get("obra", ""))
 			gerado = tr("Faça a obra: %s") % str(Obras.dados(obra).get("nome", obra))
+			# O MATERIAL DA OBRA, CONTADO À PARTE DO PASSO (08/10: "a missão continuou indicando
+			# para construir a cerca como se eu tivesse o material, mesmo sem material; é
+			# importante ter o contador de material independente do status da missão" — as seis
+			# lenhas tinham virado as duas cordas). A mochila agora, do que a obra pede.
+			var custo: Dictionary = Obras.custo(obra)
+			var materiais: Array[String] = []
+			var tem := 0
+			var pede := 0
+			for qual in custo:
+				var quantos := int(custo[qual])
+				var na_mochila := mini(quantos, Inventario.quantidade(str(qual)))
+				materiais.append("%s %d/%d" % [_nome_do_item(str(qual)).to_lower(), na_mochila, quantos])
+				tem += na_mochila
+				pede += quantos
+			if not custo.is_empty():
+				conta = ", ".join(materiais) if materiais.size() <= 2 else "%d/%d" % [tem, pede]
 		"derrubar":
 			var quantos_pes := int(meta.get("quantos", 1))
 			var caidos := 0
@@ -485,9 +501,24 @@ func resumo_do_passo(passo: Dictionary) -> String:
 			conta = "%d/%d" % [caidos, quantos_pes]
 			gerado = tr("Corte %s") % _nome_do_item(str(meta.get("alvo", ""))).to_lower()
 		"levar":
+			# O QUANTITATIVO (07/10: "não informou o quantitativo; mesmo que o jogador já tenha no
+			# inventário, esse dado deve ser informado"): no texto gerado, cada item com o que se
+			# pede ("corda ×5") e a conta total no fim; no resumo escrito à mão, a conta de cada
+			# item ("tábua 2/2, pedra 4/4"; com três ou mais, o total).
+			var carga := _carga_da_meta(meta)
 			var itens: Array[String] = []
-			for qual in _carga_da_meta(meta):
-				itens.append(_nome_do_item(str(qual)).to_lower())
+			var por_item: Array[String] = []
+			var tem := 0
+			var pede := 0
+			for qual in carga:
+				var quantos := int(carga[qual])
+				var na_mochila := mini(quantos, Inventario.quantidade(str(qual)))
+				var nome := _nome_do_item(str(qual)).to_lower()
+				itens.append("%s ×%d" % [nome, quantos] if quantos > 1 else nome)
+				por_item.append("%s %d/%d" % [nome, na_mochila, quantos])
+				tem += na_mochila
+				pede += quantos
+			conta = "%d/%d" % [tem, pede] if escrito == "" or por_item.size() > 2 else ", ".join(por_item)
 			gerado = tr("Leve %s a %s") % [", ".join(itens), _nome_de(str(meta.get("a_quem", "")))]
 		"falar":
 			gerado = tr("Fale com %s") % _nome_de(str(meta.get("a_quem", "")))

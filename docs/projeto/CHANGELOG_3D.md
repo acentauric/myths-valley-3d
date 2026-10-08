@@ -23,6 +23,14 @@
   cada quatro golpes, e a dica conta o trabalho ("Lajedo 12/96"); a seta de "junte
   pedras" não aponta a pedra grande a quem só tem a picareta de ferro. As árvores já
   seguiam a regra (madeira branca, de lei e dura, com nível e aço).
+- **O resumo do passo conta o material** (07–08/10: "na parte de levar tábuas e pedras ao
+  Damião não informou o quantitativo; mesmo que o jogador já tenha no inventário, esse dado
+  deve ser informado"; "a missão continuou indicando para construir a cerca como se eu
+  tivesse o material; é importante ter o contador de material independente do status da
+  missão"). A entrega diz quanto de cada item ("corda de piaçava ×5, tábua serrada ×3 ...
+  (0/8)"; no resumo escrito à mão, "tábua 2/2, pedra 4/4"), e o passo de obra diz o que há
+  na mochila do que a obra pede ("lenha 0/6, corda 2/2") — a conta é da mochila, agora, e
+  não do passo: as seis lenhas que viraram as duas cordas aparecem como lenha 0/6.
 - **As cenas do vale, pelos dados** (07/10, à noite: "implementar a mesma lógica de cutscene
   que fizemos no 2D: travando a tela e comandos do jogador e a própria engine conduzindo os
   personagens para uma interação com fala; explorar a vista, o cenário, aproximar dos
