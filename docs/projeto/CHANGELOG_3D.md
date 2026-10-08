@@ -59,6 +59,20 @@
   poente da chapada, e a chuva foi na semana antes de chegar; o curral manda ao K sem dizer
   que ele já foi mostrado; a Dona Zefa fica na casa dela, ao lado da do jogador; e a chapada
   do Seu Benedito não promete compra de terra, que o vale não tem.
+- **As correções das falas, segunda leva: as filas dos moradores.** A Dona Filó, a Dona Zefa, a Dona
+  Candinha, o Tonho e o começo do Damião ganham inglês e espanhol (o portão dos idiomas passa a cobrá-los).
+  O Cosme fica: a Dona Zefa deixa a escolha com ele, e o último passo é falar com o mestre Quirino no píer no
+  dia do saveiro (o dia 14), que conta que o menino lhe deu uma carta para o primo e ficou — antes o passo
+  fechava no píer a qualquer dia, sem barco, e o arremate o punha num "saveiro das seis" que não existe. A
+  conta do Tonho se paga de verdade: o passo do livro é levar 1.900 réis da bolsa ao Seu Nicolau, que risca
+  o nome, e o fim é o primeiro peixe da rede nova (um robalo), e não a terra do outro lado da estrada, que o
+  vale não tem. O livro de fiado do Nicolau passa a ter o Damião como devedor, e a dívida do Tonho deixa de
+  ser paga duas vezes. A Dona Zefa, a Dona Candinha e o Damião só oferecem a foice a quem não tem; o
+  cercado do cemitério diz que são doze lenhas (seis viram as duas cordas) e ensina o E; a Santa Casa paga
+  o cercado; e o resumo do pedido da Dona Filó é o pedido, e não a casa. Os portões do Tonho e da Zefa jogam
+  o pagamento e o dia do saveiro; o que joga tudo do começo ao fim põe na bolsa os réis que faltarem, como
+  atalho anotado. Nenhuma dessas falas tinha voz gravada; a resposta nova do mestre Quirino toca sem
+  voz, como as outras dele.
 - **O resumo do passo conta o material** (07–08/10: "na parte de levar tábuas e pedras ao
   Damião não informou o quantitativo; mesmo que o jogador já tenha no inventário, esse dado
   deve ser informado"; "a missão continuou indicando para construir a cerca como se eu

@@ -1,5 +1,5 @@
 {
-  "observacao": "O PIRÃO DA DONA FILÓ, trazido do jogo 2D (data/dialogos/arraial.json, passo filo_almoco). É a primeira missão do vale que se cumpre LEVANDO uma coisa a alguém, e não juntando nem derrubando — daí a meta 'levar'. A resposta é do Tonho, e não da Dona Filó: quem fala no fim é quem recebe, senão o jogador ouve o agradecimento do outro lado do vale. 'lugar' é nome de contrato do autoload Lugares. TRADUÇÃO: só em português neste primeiro momento; inglês e espanhol estão declarados como pendentes e são do Ramon.",
+  "observacao": "O PIRÃO DA DONA FILÓ, trazido do jogo 2D (data/dialogos/arraial.json, passo filo_almoco). É a primeira missão do vale que se cumpre LEVANDO uma coisa a alguém, e não juntando nem derrubando — daí a meta 'levar'. A resposta é do Tonho, e não da Dona Filó: quem fala no fim é quem recebe, senão o jogador ouve o agradecimento do outro lado do vale. 'lugar' é nome de contrato do autoload Lugares. TRADUÇÃO: nos três idiomas desde 08/10 (a correção das falas, docs/falas).",
   "dono": "filo",
   "nome": "O pirão da Dona Filó",
   "nome_en": "Dona Filó's pirão",
@@ -8,27 +8,34 @@
   "trancada_en": "Not yet, dear. Come back after you finish settling in with Pedro, then we'll talk about my pirão.",
   "trancada_es": "Todavía no, querido. Vuelve cuando acabes la faena de llegada con Pedro, que entonces hablamos de mi pirão.",
   "abre_em": "casa_da_estrada",
-  "traducao": "pendente",
   "passos": [
     {
       "id": "filo_pedido",
       "titulo": "O pirão da Dona Filó",
-      "resumo": "Vá até a casa da Dona Filó, na estrada",
-      "resumo_en": "Go to Dona Filó's house by the road",
-      "resumo_es": "Ve a la casa de doña Filó, junto al camino",
+      "titulo_en": "Dona Filó's pirão",
+      "titulo_es": "El pirão de doña Filó",
+      "resumo": "Ouça o pedido da Dona Filó",
+      "resumo_en": "Hear Dona Filó's request",
+      "resumo_es": "Escucha el pedido de doña Filó",
       "lugar": "casa_da_estrada",
       "raio": 6.0,
       "audio": "",
       "texto": "Meu filho, você que anda pra tudo quanto é canto. Me faz um favor? Fiz pirão de manhã e o Tonho saiu antes, como sempre. Ele desce pro pontal com o dia escuro e só volta quando a maré vira.",
+      "texto_en": "My son, you who walk to every corner of this place. Will you do me a favor? I made pirão this morning and Tonho left before it was ready, as always. He goes down to the point while it's still dark and only comes back when the tide turns.",
+      "texto_es": "Hijo mío, tú que andas por todos los rincones. ¿Me haces un favor? Hice pirão en la mañana y Tonho salió antes, como siempre. Baja a la punta con el día oscuro y solo vuelve cuando cambia la marea.",
       "meta": {}
     },
     {
       "id": "filo_pirao",
       "titulo": "Levar o pirão ao Tonho",
+      "titulo_en": "Take the pirão to Tonho",
+      "titulo_es": "Llevar el pirão a Tonho",
       "lugar": "pier",
       "raio": 6.0,
       "audio": "",
       "texto": "Eu já não desço aquela ladeira — minhas pernas param na terceira pedra. Leve pra ele. Eu fico olhando a estrada daqui, como sempre, e hoje pelo menos vou saber que ele comeu.",
+      "texto_en": "I don't go down that slope anymore — my legs stop at the third stone. Take it to him. I'll keep watching the road from here, as always, and today at least I'll know he ate.",
+      "texto_es": "Yo ya no bajo esa cuesta: mis piernas se paran en la tercera piedra. Llévaselo. Yo me quedo mirando el camino desde aquí, como siempre, y hoy por lo menos voy a saber que comió.",
       "entrega": { "item": "pirao", "quantidade": 1 },
       "recompensa": {"xp": 10,  "cocada": 2 },
       "meta": {
@@ -36,13 +43,16 @@
         "item": "pirao",
         "a_quem": "tonho",
         "raio": 3.2,
-        "resposta": "Ela mandou? Ela mandou. Toda manhã ela faz e toda manhã eu saio antes; a gente briga por isso desde que meu pai não voltou. Ela acha que se eu comer direito o mar não me leva, e eu não digo que não é assim. Diga a ela que eu comi — não invente que estava bom, ela sabe que estava. Diga só que eu comi."
+        "resposta": "Ela mandou? Ela mandou. Toda manhã ela faz e toda manhã eu saio antes; a gente briga por isso desde que meu pai não voltou. Ela acha que se eu comer direito o mar não me leva, e eu não digo que não é assim. Diga a ela que eu comi — não invente que estava bom, ela sabe que estava. Diga só que eu comi.",
+        "resposta_en": "She sent it? She sent it. Every morning she makes it and every morning I leave before; we've fought about it since my father didn't come back. She thinks that if I eat properly the sea won't take me, and I don't tell her it isn't so. Tell her I ate — don't make up that it was good, she knows it was. Just tell her I ate.",
+        "resposta_es": "¿Ella lo mandó? Ella lo mandó. Cada mañana lo hace y cada mañana yo salgo antes; peleamos por eso desde que mi padre no volvió. Ella cree que si como bien el mar no me lleva, y yo no le digo que no es así. Dile que comí — no inventes que estaba bueno, ella sabe que lo estaba. Dile solo que comí."
       }
     }
   ],
   "arremate": {
     "texto": "O Tonho comeu, e pediu que se diga só isso à mãe.",
-    "narra": false,
-    "traducao": "pendente"
+    "texto_en": "Tonho ate, and asked that his mother be told only that.",
+    "texto_es": "Tonho comió, y pidió que a su madre se le diga solo eso.",
+    "narra": false
   }
 }

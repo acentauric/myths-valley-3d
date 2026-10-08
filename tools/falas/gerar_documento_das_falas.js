@@ -792,8 +792,13 @@ const iStatus = COLUNAS.findIndex((c) => c[0] === "status");
 const abaFalas = aba("Falas", COLUNAS, linhas, { listas: [{ coluna: iStatus, valores: STATUS }] });
 
 const ORDEM_DA_PRIORIDADE = { alta: 0, "média": 1, baixa: 2 };
+// O QUE JÁ FOI RESOLVIDO (status "corrigida" ou "aprovada") fica na aba, como histórico, mas depois do
+// que ainda está em aberto: quem abre a aba vê primeiro o que falta fazer.
+const RESOLVIDO = new Set(["corrigida", "aprovada"]);
 const comProblema = linhas.filter((l) => l.problema || ["atenção", "problema"].includes(l.historia) || ["atenção", "problema"].includes(l.mecanica))
-  .sort((a, b) => (ORDEM_DA_PRIORIDADE[a.prioridade] ?? 3) - (ORDEM_DA_PRIORIDADE[b.prioridade] ?? 3) || a.ordem - b.ordem);
+  .sort((a, b) => (RESOLVIDO.has(a.status) ? 1 : 0) - (RESOLVIDO.has(b.status) ? 1 : 0)
+    || (ORDEM_DA_PRIORIDADE[a.prioridade] ?? 3) - (ORDEM_DA_PRIORIDADE[b.prioridade] ?? 3) || a.ordem - b.ordem);
+const emAberto = comProblema.filter((l) => !RESOLVIDO.has(l.status));
 const COLUNAS_PROBLEMAS = [
   ["prioridade", "Prioridade", 10, "analise", false], ["id", "ID", 28, "ident", false], ["ordem", "Ordem", 7, "ident", false],
   ["fase", "Fase", 18, "tempo", true], ["personagem", "Personagem", 16, "quem", true], ["tipo", "Tipo", 18, "quem", true],
@@ -878,7 +883,7 @@ const LEGENDA = [
   ["Áudio a regravar?", "SIM quando o texto da fala mudou depois da gravação: o áudio ainda diz a frase antiga (docs/falas/audios_gravados.json guarda o texto de cada gravação). A aba 'Áudios a regravar' lista o texto antigo, o novo e o do TTS. Depois de regravar, rode o gerador com --fotografar-audios."],
   ["Alertas automáticos", "O que o gerador acha sozinho: tradução que falta, tecla citada fora da tabela, número no texto que não bate com a mecânica, hora do dia em fala que toca a qualquer hora, fala de recém-chegado que repete o jogo todo, áudio faltando ou desatualizado, marcador que impede áudio fixo, texto repetido."],
   ["Coerência com a história / com a mecânica", "A revisão: ok, atenção, problema; 'não revisada' é fala nova; 'revisar (o texto mudou)' é fala que mudou depois da revisão."],
-  ["Problema / Correção / Prioridade / Observações", "O que a revisão encontrou, o que mudar e com que urgência (alta: quebra a história ou ensina errado; média: estranha ao jogador; baixa: polimento)."],
+  ["Problema / Correção / Prioridade / Observações", "O que a revisão encontrou, o que mudar e com que urgência (alta: quebra a história ou ensina errado; média: estranha ao jogador; baixa: polimento). Depois de resolvida, a fala fica com o problema e a correção como histórico, e a observação diz o que foi feito e quando; na aba Problemas, as resolvidas vêm depois das que estão em aberto."],
   ["Status da validação", "Para o time: pendente, aprovada, corrigir, corrigida, descartar (lista de escolha)."],
   ["Em uso no 3D?", "sim = toca no jogo; 'sim (texto ..., sem voz)' = aparece, mas sem voz; não = escrita para o 2D e o 3D não diz."],
   ["Onde editar", "O arquivo e o caminho dentro dele. As falas mudam lá — este documento é refeito pelo gerador."],
@@ -909,5 +914,5 @@ if (DESPEJO) {
 const emUso = linhas.filter((l) => !s(l.em_uso).startsWith("não"));
 console.log(`falas: ${linhas.length} (${emUso.length} em uso no 3D, ${linhas.length - emUso.length} herdadas do 2D)`);
 console.log(`áudios a regravar (o texto mudou depois da gravação): ${A_REGRAVAR.length}`);
-console.log(`com alerta automático: ${comAlerta.length}; com problema apontado: ${comProblema.length}; áudios sem fala: ${orfaos.length}`);
+console.log(`com alerta automático: ${comAlerta.length}; com problema apontado: ${comProblema.length} (${emAberto.length} em aberto, ${comProblema.length - emAberto.length} resolvidas); áudios sem fala: ${orfaos.length}`);
 console.log(`escrito: docs/falas/FALAS.xlsx e docs/falas/FALAS.csv`);

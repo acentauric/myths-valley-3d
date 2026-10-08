@@ -1,5 +1,5 @@
 {
-  "observacao": "A GARAPA DA PRAÇA, trazida do jogo 2D (data/dialogos/arraial.json, passos candinha_cana / candinha_cana_fim). A Dona Candinha mói cana na praça e quer seis da do jogador, do roçado dele, para não comprar do engenho do outro lado da vila. É a primeira cadeia do vale que junta TRABALHO e ENTREGA: corta-se com a foice no roçado e leva-se à mão dela, ao contrário do pirão da Filó (que vem pronto) e da conversa da Zefa (que não pede nada). Por ela nasceu a conta na meta 'levar': até aqui a entrega levava UM item, e o 2D pede seis. A RECOMPENSA DO 2D VEIO (#48): as 3 garapas, pagas quando a cana chega à Candinha (campo 'recompensa' do passo); a informação da praça continua só na fala. TRADUÇÃO: só em português neste primeiro momento; inglês e espanhol são do Ramon.",
+  "observacao": "A GARAPA DA PRAÇA, trazida do jogo 2D (data/dialogos/arraial.json, passos candinha_cana / candinha_cana_fim). A Dona Candinha mói cana na praça e quer seis da do jogador, do roçado dele, para não comprar do engenho do outro lado da vila. É a primeira cadeia do vale que junta TRABALHO e ENTREGA: corta-se com a foice no roçado e leva-se à mão dela, ao contrário do pirão da Filó (que vem pronto) e da conversa da Zefa (que não pede nada). Por ela nasceu a conta na meta 'levar': até aqui a entrega levava UM item, e o 2D pede seis. A RECOMPENSA DO 2D VEIO (#48): as 3 garapas, pagas quando a cana chega à Candinha (campo 'recompensa' do passo); a informação da praça continua só na fala. TRADUÇÃO: nos três idiomas desde 08/10 (docs/falas), quando a foice passou a vir só a quem não tem ('e se não tiver foice, leve a minha').",
   "dono": "candinha",
   "nome": "A garapa da praça",
   "nome_en": "The square's cane juice",
@@ -9,28 +9,35 @@
   "trancada_es": "Todavía no es hora, joven. Vuelve cuando acabes lo que Pedro te enseña al llegar, que entonces hay garapa que hacer.",
   "principal": false,
   "abre_em": "praca",
-  "traducao": "pendente",
   "passos": [
     {
       "id": "candinha_cana",
       "titulo": "A garapa da praça",
+      "titulo_en": "The square's cane juice",
+      "titulo_es": "El guarapo de la plaza",
       "resumo": "Junte cana",
       "resumo_en": "Gather sugarcane",
       "resumo_es": "Junta caña",
       "lugar": "praca",
       "raio": 7.0,
       "audio": "",
-      "texto": "Ô meu filho, chega aqui. Você planta cana naquele seu pedaço, não planta? Eu vi o verde de longe. Meu fornecedor é o engenho do outro lado da vila, e o homem de lá anda cobrando o que a cana não vale. Corte seis canas da sua — toma a foice, que de mão não se corta cana. Não precisa ser hoje.",
+      "texto": "Ô meu filho, chega aqui. Você planta cana naquele seu pedaço, não planta? Eu vi o verde de longe. Meu fornecedor é o engenho do outro lado da vila, e o homem de lá anda cobrando o que a cana não vale. Corte seis canas da sua — e se não tiver foice, leve a minha, que de mão não se corta cana. Não precisa ser hoje.",
+      "texto_en": "Oh, my son, come here. You grow cane on that patch of yours, don't you? I saw the green from afar. My supplier is the sugar mill on the other side of the village, and the man there has been charging more than the cane is worth. Cut six canes of yours — and if you don't have a scythe, take mine, since cane isn't cut by hand. It doesn't have to be today.",
+      "texto_es": "Ay, hijo mío, ven acá. Tú siembras caña en ese pedazo tuyo, ¿no? Vi el verde de lejos. Mi proveedor es el ingenio del otro lado del pueblo, y el hombre de allá anda cobrando lo que la caña no vale. Corta seis cañas de las tuyas — y si no tienes hoz, llévate la mía, que la caña no se corta con la mano. No tiene que ser hoy.",
       "entrega": { "item": "foice", "quantidade": 1 },
       "meta": { "tipo": "juntar", "item": "cana", "quantos": 6 }
     },
     {
       "id": "candinha_garapa",
       "titulo": "As seis canas da Candinha",
+      "titulo_en": "Candinha's six canes",
+      "titulo_es": "Las seis cañas de Candinha",
       "lugar": "praca",
       "raio": 7.0,
       "audio": "",
       "texto": "Seis. Traga aqui no meio da praça que eu moo na hora, e o que sair é seu e meu, meio a meio.",
+      "texto_en": "Six. Bring them here to the middle of the square and I'll press them right away, and what comes out is yours and mine, half and half.",
+      "texto_es": "Seis. Tráelas aquí al medio de la plaza que las muelo al momento, y lo que salga es tuyo y mío, mitad y mitad.",
       "recompensa": {"xp": 10,  "garapa": 3 },
       "meta": {
         "tipo": "levar",
@@ -38,13 +45,16 @@
         "quantos": 6,
         "a_quem": "candinha",
         "raio": 3.4,
-        "resposta": "Olha o caldo. Tá vendo a cor? Cana de terra boa dá essa cor. O engenho vende garapa de cana velha, que fica parada no carro de boi três dias — a sua veio do pé pra minha mão. De agora em diante você bebe de graça aqui. E quando quiser saber quem chegou, quem saiu e quem tá devendo, é só perguntar."
+        "resposta": "Olha o caldo. Tá vendo a cor? Cana de terra boa dá essa cor. O engenho vende garapa de cana velha, que fica parada no carro de boi três dias — a sua veio do pé pra minha mão. De agora em diante você bebe de graça aqui. E quando quiser saber quem chegou, quem saiu e quem tá devendo, é só perguntar.",
+        "resposta_en": "Look at the juice. See the color? Cane from good soil gives that color. The mill sells juice from old cane, which sits on the ox cart for three days — yours came from the stalk to my hand. From now on you drink for free here. And whenever you want to know who arrived, who left and who owes what, just ask.",
+        "resposta_es": "Mira el caldo. ¿Ves el color? La caña de tierra buena da ese color. El ingenio vende guarapo de caña vieja, que se queda parada en la carreta de bueyes tres días — la tuya vino de la mata a mi mano. De ahora en adelante bebes gratis aquí. Y cuando quieras saber quién llegó, quién se fue y quién anda debiendo, solo pregunta."
       }
     }
   ],
   "arremate": {
     "texto": "A Dona Candinha mói a sua cana na praça, e o que ela sabe da praça agora você também sabe.",
-    "narra": false,
-    "traducao": "pendente"
+    "texto_en": "Dona Candinha presses your cane in the square, and what she knows about the square, now you know too.",
+    "texto_es": "Doña Candinha muele tu caña en la plaza, y lo que ella sabe de la plaza ahora tú también lo sabes.",
+    "narra": false
   }
 }

@@ -1,5 +1,5 @@
 {
-  "observacao": "A CONVERSA DA DONA ZEFA, trazida do jogo 2D (data/dialogos/arraial.json, passos zefa_ervas / zefa_cosme / zefa_conversa / zefa_terra). É a cadeia mais falada do vale, e a ORDEM É A DE LÁ: as ervas vêm antes do Cosme porque a última linha do zefa_ervas_fim é ela mandando falar com o neto. O passo do saveiro é o zefa_terra de lá, o 'Encontre os dois no píer'. O primeiro passo manda à serra, os dois do meio vão de uma pessoa a outra, e é assim que a história do Cosme se conta. Usa a meta 'falar', que é a de 'levar' sem o item. O texto é o de lá, encurtado no que cabe num balão; a prosa inteira está no arraial.json e volta quando o vale tiver caixa de diálogo (#21). TRADUÇÃO: só em português neste primeiro momento; inglês e espanhol são do Ramon.",
+  "observacao": "A CONVERSA DA DONA ZEFA, trazida do jogo 2D (data/dialogos/arraial.json, passos zefa_ervas / zefa_cosme / zefa_conversa / zefa_terra). É a cadeia mais falada do vale, e a ORDEM É A DE LÁ: as ervas vêm antes do Cosme porque a última linha do zefa_ervas_fim é ela mandando falar com o neto. O passo do saveiro é o zefa_terra de lá, o 'Encontre os dois no píer'. O primeiro passo manda à serra, os dois do meio vão de uma pessoa a outra, e é assim que a história do Cosme se conta. Usa a meta 'falar', que é a de 'levar' sem o item. O texto é o de lá, encurtado no que cabe num balão; a prosa inteira está no arraial.json e volta quando o vale tiver caixa de diálogo (#21). TRADUÇÃO: nos três idiomas desde 08/10 (docs/falas). O COSME FICA (08/10, docs/falas): o saveiro só encosta no dia 14 (saveiro.json), e nada no vale tira o Cosme dele — ele segue na roça, na capoeira, no capataz do quintal e no mutirão da carroça. Então a conversa o liberta, e o último passo é falar com o mestre Quirino no píer, no dia do saveiro: o menino entregou a ele uma carta para o primo e ficou. O primeiro passo não lembra mais 'do chão e da troca' (era uma conversa do 2D que o vale não mostra), e a foice vem só a quem não tem (`CadeiaDeMissoes.entregar`).",
   "dono": "zefa",
   "nome": "O que a serra guarda",
   "nome_en": "What the hills keep",
@@ -9,15 +9,18 @@
   "trancada_es": "Ahora no, hijo. Termina primero la faena de llegada con Pedro y vuelve después, que entonces tengo algo que pedirte.",
   "principal": true,
   "abre_em": "casa_de_taipa",
-  "traducao": "pendente",
   "passos": [
     {
       "id": "zefa_ervas",
       "titulo": "O que só nasce lá em cima",
+      "titulo_en": "What only grows up there",
+      "titulo_es": "Lo que solo nace allá arriba",
       "lugar": "mirante",
       "raio": 9.0,
       "audio": "",
-      "texto": "Você lembra do que eu te falei, do chão e da troca? Pois é hoje que eu peço. Alecrim-do-campo, arruda brava, folha de mamona — não nasce aqui embaixo: precisa de ar seco e de sol de manhã, e isso só tem lá em cima, na serra. Sobe pela picada do mirante e procura onde a mata abre, que é na clareira que o sol bate. Na grota da nascente não adianta, que lá é sombra e água, e não se mete no fundo, que lá é do caititu. Cinco maços, e não arranque pela raiz: corte no meio do pé, que o que se arranca não volta e eu vou precisar no ano que vem também. Toma a foice, e vá com calma que eu não vou a lugar nenhum.",
+      "texto": "Eu tenho um pedido, e é coisa de serra. Alecrim-do-campo, arruda brava, folha de mamona — não nasce aqui embaixo: precisa de ar seco e de sol de manhã, e isso só tem lá em cima, na serra. Sobe pela picada do mirante e procura onde a mata abre, que é na clareira que o sol bate. Na grota da nascente não adianta, que lá é sombra e água, e não se mete no fundo, que lá é do caititu. Cinco maços, e não arranque pela raiz: corte no meio do pé, que o que se arranca não volta e eu vou precisar no ano que vem também. Tem foice? Se não tiver, leve a minha, e vá com calma que eu não vou a lugar nenhum.",
+      "texto_en": "I have a favor to ask, and it's a hill errand. Field rosemary, wild rue, castor-bean leaf — they don't grow down here: they need dry air and morning sun, and that's only up there, in the hills. Go up the lookout trail and look for where the woods open, since it's in the clearing that the sun hits. The spring hollow is no use, it's all shade and water there, and don't go into the deep woods, that belongs to the peccaries. Five bunches, and don't pull them up by the root: cut them halfway up the stem, because what's pulled up doesn't come back and I'll need it next year too. Have you got a scythe? If not, take mine, and go easy, I'm not going anywhere.",
+      "texto_es": "Tengo un pedido, y es cosa de sierra. Romero del campo, ruda brava, hoja de higuerilla — no nace aquí abajo: necesita aire seco y sol de mañana, y eso solo hay allá arriba, en la sierra. Sube por la senda del mirador y busca donde el monte se abre, que es en el claro donde da el sol. En la hondonada del manantial no sirve, que allá es sombra y agua, y no te metas en lo hondo, que eso es del pecarí. Cinco manojos, y no los arranques de raíz: córtalos a media mata, que lo que se arranca no vuelve y lo voy a necesitar el año que viene también. ¿Tienes hoz? Si no tienes, llévate la mía, y ve con calma, que yo no me voy a ningún lado.",
       "entrega": { "item": "foice", "quantidade": 1 },
       "recompensa": {"xp": 10,  "cocada": 2 },
       "meta": {
@@ -26,55 +29,81 @@
         "quantos": 5,
         "a_quem": "zefa",
         "raio": 3.4,
-        "resposta": "Deixa aqui na mesa. Olha o cheiro — sentiu? Isso é alecrim que pegou sol de manhã. Vinte anos eu subia aquela serra de madrugada e descia antes do sol firmar; agora eu chego na metade da picada e o joelho manda eu voltar. Pronto: agora eu tenho remédio pro inverno inteiro. E a gente tem a conversa que eu te prometi — mas hoje não, hoje eu quero pilar isso enquanto está verde. Fala com o meu neto antes: ele tem uma coisa pra te contar e tá enrolando faz uma semana."
+        "resposta": "Deixa aqui na mesa. Olha o cheiro — sentiu? Isso é alecrim que pegou sol de manhã. Vinte anos eu subia aquela serra de madrugada e descia antes do sol firmar; agora eu chego na metade da picada e o joelho manda eu voltar. Pronto: agora eu tenho remédio pro inverno inteiro. E eu te devo uma conversa — mas hoje não, hoje eu quero pilar isso enquanto está verde. Fala com o meu neto antes: ele tem uma coisa pra te contar e tá enrolando faz uma semana.",
+        "resposta_en": "Leave it here on the table. Smell that — did you catch it? That's rosemary that took the morning sun. For twenty years I climbed those hills before dawn and came down before the sun was high; now I get halfway up the trail and my knee tells me to turn back. There: now I have medicine for the whole winter. And I owe you a talk — but not today, today I want to pound this while it's green. Talk to my grandson first: he has something to tell you and he's been stalling for a week.",
+        "resposta_es": "Déjalo aquí en la mesa. Huele — ¿lo sentiste? Eso es romero que tomó sol de mañana. Veinte años subí esa sierra de madrugada y bajaba antes de que el sol apretara; ahora llego a la mitad de la senda y la rodilla me manda volver. Listo: ahora tengo remedio para el invierno entero. Y te debo una conversación — pero hoy no, hoy quiero machacar esto mientras está verde. Habla con mi nieto antes: tiene algo que contarte y lleva una semana dándole vueltas."
       }
     },
     {
       "id": "zefa_cosme",
       "titulo": "O que o Cosme não contou",
+      "titulo_en": "What Cosme didn't tell",
+      "titulo_es": "Lo que Cosme no contó",
       "lugar": "casa_de_taipa",
       "raio": 7.0,
       "audio": "",
       "texto": "Fala com o meu neto antes de mais nada. Ele tem uma coisa pra te contar e tá enrolando faz uma semana.",
+      "texto_en": "Talk to my grandson before anything else. He has something to tell you and he's been stalling for a week.",
+      "texto_es": "Habla con mi nieto antes que nada. Tiene algo que contarte y lleva una semana dándole vueltas.",
       "meta": {
         "tipo": "falar",
         "a_quem": "cosme",
         "raio": 3.4,
-        "resposta": "Ela te mandou falar comigo, né. Eu sabia. Tem um primo meu em Salvador que arrumou lugar pra mim numa casa de secos e molhados. Eu tenho vinte e dois anos e nunca vi rua calçada. Mas ela me criou desde os sete, e aquele chão ali não se planta sozinho. Então eu disse que não — faz uma semana que eu disse que não, e faz uma semana que eu não durmo. Não conta pra ela."
+        "resposta": "Ela te mandou falar comigo, né. Eu sabia. Tem um primo meu em Salvador que arrumou lugar pra mim numa casa de secos e molhados. Eu tenho vinte e dois anos e nunca vi rua calçada. Mas ela me criou desde os sete, e aquele chão ali não se planta sozinho. Então eu disse que não — faz uma semana que eu disse que não, e faz uma semana que eu não durmo. Não conta pra ela.",
+        "resposta_en": "She sent you to talk to me, huh. I knew it. I've got a cousin in Salvador who found me a place at a dry-goods store. I'm twenty-two and I've never seen a paved street. But she's raised me since I was seven, and that ground over there doesn't plant itself. So I said no — a week ago I said no, and for a week I haven't slept. Don't tell her.",
+        "resposta_es": "Ella te mandó a hablar conmigo, ¿no? Lo sabía. Tengo un primo en Salvador que me consiguió un puesto en una tienda de ultramarinos. Tengo veintidós años y nunca vi una calle empedrada. Pero ella me crió desde los siete, y esa tierra de ahí no se siembra sola. Así que dije que no — hace una semana que dije que no, y hace una semana que no duermo. No se lo cuentes."
       }
     },
     {
       "id": "zefa_conversa",
       "titulo": "A conversa que ela prometeu",
+      "titulo_en": "The talk she promised",
+      "titulo_es": "La conversación que prometió",
       "lugar": "casa_de_taipa",
       "raio": 7.0,
       "audio": "",
       "texto": "Agora volte aqui. A conversa que eu te prometi é esta, e é melhor sentado.",
+      "texto_en": "Now come back here. The talk I promised you is this one, and it's better sitting down.",
+      "texto_es": "Ahora vuelve aquí. La conversación que te prometí es esta, y es mejor sentado.",
       "recompensa": {"xp": 10,  "beiju": 2 },
       "meta": {
         "tipo": "falar",
         "a_quem": "zefa",
         "raio": 3.4,
-        "resposta": "Senta. Eu sei do emprego — sei desde o dia que a carta chegou, porque quem lê carta pra ele nesta casa sou eu. Ele acha que tá me escondendo; deixa ele achar mais um pouco. Eu não vou segurar o menino. Minha mãe segurou o meu irmão e ele morreu aqui mesmo, com sessenta e dois anos, achando que a vida ia começar depois. Amanhã tem saveiro pra Salvador. Me encontre no píer."
+        "resposta": "Senta. Eu sei do emprego — sei desde o dia que a carta chegou, porque quem lê carta pra ele nesta casa sou eu. Ele acha que tá me escondendo; deixa ele achar mais um pouco. Eu não vou segurar o menino. Minha mãe segurou o meu irmão e ele morreu aqui mesmo, com sessenta e dois anos, achando que a vida ia começar depois. Eu vou dizer a ele que sei, e que a escolha é dele. No dia catorze o mestre Quirino encosta o saveiro: vá ao píer nesse dia e veja o que o menino escolheu.",
+        "resposta_en": "Sit. I know about the job — I've known since the day the letter came, because in this house I'm the one who reads his letters to him. He thinks he's hiding it from me; let him think so a little longer. I won't hold the boy back. My mother held my brother back and he died right here, at sixty-two, thinking life would start later. I'll tell him I know, and that the choice is his. On the fourteenth master Quirino brings the saveiro in: go to the pier that day and see what the boy chose.",
+        "resposta_es": "Siéntate. Sé lo del empleo — lo sé desde el día que llegó la carta, porque en esta casa la que le lee las cartas soy yo. Él cree que me lo está escondiendo; déjalo creerlo un poco más. Yo no voy a retener al muchacho. Mi madre retuvo a mi hermano y él se murió aquí mismo, a los sesenta y dos años, creyendo que la vida iba a empezar después. Le voy a decir que lo sé, y que la decisión es suya. El día catorce el maestre Quirino atraca el saveiro: ve al muelle ese día y mira lo que eligió el muchacho."
       }
     },
     {
       "id": "zefa_saveiro",
-      "titulo": "O saveiro das seis",
-      "resumo": "Esteja no píer para o saveiro",
-      "resumo_en": "Be at the pier for the sailboat",
-      "resumo_es": "Estate en el muelle para el velero",
+      "titulo": "O saveiro do dia catorze",
+      "titulo_en": "The fourteenth's saveiro",
+      "titulo_es": "El saveiro del día catorce",
+      "resumo": "No dia 14, fale com o mestre Quirino no píer",
+      "resumo_en": "On day 14, talk to Master Quirino at the pier",
+      "resumo_es": "El día 14, habla con el maestro Quirino en el muelle",
       "lugar": "pier",
       "raio": 8.0,
       "audio": "",
-      "texto": "Amanhã tem saveiro pra Salvador. Me encontre no píer — e não se atrase, que saveiro não espera ninguém.",
+      "texto": "No dia catorze o mestre Quirino encosta o saveiro no píer. Vá lá nesse dia e fale com ele — saveiro não espera ninguém.",
+      "texto_en": "On the fourteenth Master Quirino brings the saveiro to the pier. Go there that day and talk to him — a saveiro waits for no one.",
+      "texto_es": "El día catorce el maestro Quirino atraca el saveiro en el muelle. Ve allá ese día y habla con él — el saveiro no espera a nadie.",
       "recompensa": {"xp": 10,  "cocada": 3, "pirao": 1 },
-      "meta": {}
+      "meta": {
+        "tipo": "falar",
+        "a_quem": "quirino",
+        "raio": 4,
+        "resposta": "O neto da Dona Zefa? Veio cedinho, com a avó do lado. Me deu esta carta pro primo, lá em Salvador, e ficou em terra. Disse que vai um dia, mas no dia dele, e não no de ninguém. A velha voltou pra casa mais leve do que ele. Saveiro eu levo; escolha, cada um carrega a sua.",
+        "resposta_en": "Dona Zefa's grandson? He came at first light, with his grandmother beside him. He gave me this letter for his cousin, over in Salvador, and stayed ashore. Said he'll go one day, but on his own day, not anyone else's. The old woman went home lighter than he did. A saveiro I can carry; a choice, everyone carries their own.",
+        "resposta_es": "¿El nieto de doña Zefa? Vino tempranito, con la abuela al lado. Me dio esta carta para el primo, allá en Salvador, y se quedó en tierra. Dijo que va a ir un día, pero en su día, no en el de nadie. La vieja volvió a casa más liviana que él. El saveiro lo llevo yo; la decisión, cada uno carga la suya."
+      }
     }
   ],
   "arremate": {
-    "texto": "O Cosme foi no saveiro das seis, e foi leve. Era só isso que ela queria.",
-    "narra": false,
-    "traducao": "pendente"
+    "texto": "O Cosme podia ir no saveiro do dia catorze, e ficou: agora é escolha dele. Era só isso que ela queria.",
+    "texto_en": "Cosme could have gone on the fourteenth's saveiro, and he stayed: now it's his choice. That's all she wanted.",
+    "texto_es": "Cosme podía irse en el saveiro del día catorce, y se quedó: ahora es decisión suya. Era todo lo que ella quería.",
+    "narra": false
   }
 }

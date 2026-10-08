@@ -530,9 +530,17 @@ func _o_e_neste_passo(cadeia, indice: int, meta: Dictionary, quem, jogador, tecl
 	cadeia.espera = 0.0
 	var posto_do_pedro: Vector3 = vale.pedro.global_position
 	var injetados := {}
+	# OS RÉIS (a conta do Tonho, 08/10): a entrega de réis paga com a bolsa (`CadeiaDeMissoes.REIS`),
+	# e não com a mochila; o que se põe na bolsa sai dela no fim, como o item injetado.
+	var bolsa := root.get_node("/root/Jogo")
+	var reis_injetados := 0
 	if str(meta.get("tipo", "")) == "levar":
 		var carga := _carga(meta)
 		for item in carga:
+			if str(item) == "reis":
+				reis_injetados = maxi(0, int(carga[item]) - int(bolsa.dinheiro))
+				bolsa.dinheiro = int(bolsa.dinheiro) + reis_injetados
+				continue
 			var falta := int(carga[item]) - int(inventario.quantidade(str(item)))
 			if falta > 0 and inventario.adicionar(str(item), falta):
 				injetados[str(item)] = falta
@@ -586,6 +594,7 @@ func _o_e_neste_passo(cadeia, indice: int, meta: Dictionary, quem, jogador, tecl
 					queixa += " [a fila '%s' (passo %d, '%s') diz '%s' com %s]" % [outra.name, outra.missao, str((outra.passo_atual() as Dictionary).get("id", "")), faz, jogada.nome_de(perto)]
 	for item in injetados:
 		inventario.consumir(item, int(injetados[item]))
+	bolsa.dinheiro = maxi(0, int(bolsa.dinheiro) - reis_injetados)
 	fe.ativa = fe_guardada
 	guia.iniciado = bool(do_guia["iniciado"])
 	guia.missao = int(do_guia["missao"])

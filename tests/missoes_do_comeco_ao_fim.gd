@@ -554,13 +554,14 @@ func _carga(meta: Dictionary) -> Dictionary:
 
 # --- material --------------------------------------------------------------------------------
 
-## O que falta na mochila para a meta do passo, ou, sem passo, para `carga` na mochila.
+## O que falta na mochila para a meta do passo, ou, sem passo, para `carga` na mochila (os réis, na bolsa).
 func _falta_a_carga(cadeia, meta: Dictionary, passo: Dictionary) -> bool:
 	if not passo.is_empty():
 		return cadeia.falta_a_meta(passo)
 	var carga := _carga(meta)
 	for item in carga:
-		if inv.quantidade(str(item)) < int(carga[item]):
+		var tem: int = int(root.get_node("/root/Jogo").dinheiro) if str(item) == "reis" else int(inv.quantidade(str(item)))
+		if tem < int(carga[item]):
 			return true
 	return false
 
@@ -568,6 +569,19 @@ func _falta_a_carga(cadeia, meta: Dictionary, passo: Dictionary) -> bool:
 ## Faz o jogador ter o que a meta pede: a matéria-prima, batendo no alvo; as peças, na bancada.
 func _ter_a_carga(cadeia, meta: Dictionary, id: String, passo: Dictionary = {}) -> void:
 	var carga := _carga(meta)
+	# OS RÉIS DA CONTA DO TONHO (08/10, docs/falas): a entrega de réis paga com a bolsa
+	# (`CadeiaDeMissoes.REIS`), e não é item que se colhe. O que faltar na bolsa o portão põe e
+	# anota como atalho: o jogador venderia piaçava, peixe e farinha na Venda e no saveiro.
+	if carga.has("reis"):
+		var bolsa := root.get_node("/root/Jogo")
+		var faltam_reis: int = int(carga["reis"]) - int(bolsa.dinheiro)
+		if faltam_reis > 0:
+			maos.atalho("passo '%s': faltavam réis na bolsa para a conta, postos pelo portão (o jogador venderia na Venda e no saveiro)" % id)
+			_conta("    ... %s: faltavam %d réis na bolsa (tinha %d), postos pelo portão" % [id, faltam_reis, int(bolsa.dinheiro)])
+			bolsa.dinheiro = int(bolsa.dinheiro) + faltam_reis
+		carga.erase("reis")
+		if carga.is_empty():
+			return
 	var voltas := 0
 	while _falta_a_carga(cadeia, meta, passo) and voltas < 12:
 		voltas += 1

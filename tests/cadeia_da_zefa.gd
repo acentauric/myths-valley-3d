@@ -7,7 +7,10 @@ extends SceneTree
 ## zefa_cosme / zefa_conversa / zefa_terra). Ela manda subir a serra por cinco
 ## maços de erva; manda falar com o neto; o Cosme conta que tem emprego em
 ## Salvador e pede segredo; ela já sabia desde que a carta chegou, porque quem lê
-## carta naquela casa é ela; e o fim é no píer, no saveiro das seis.
+## carta naquela casa é ela, e deixa a escolha com ele; e o fim é no píer, no dia
+## do saveiro, com o mestre Quirino contando que o Cosme lhe deu uma carta para o
+## primo e ficou (08/10, docs/falas: o saveiro só encosta no dia 14, e nada no
+## vale tira o Cosme dele — o fim antigo, "o saveiro das seis", não acontecia).
 ##
 ## A ORDEM É A DE LÁ, e as ervas vêm primeiro: a última linha do
 ## `zefa_ervas_fim` é ela mandando falar com o neto. A cadeia entrou aqui sem
@@ -303,25 +306,52 @@ func _run() -> void:
 	_conferir(voltou, "voltei à Dona Zefa e o passo não fechou")
 	print("  %-16s %s" % ["zefa_conversa", "fechou" if voltou else "PRESO"])
 
-	# --- 7b. O ÚLTIMO PASSO: ENCONTRAR OS DOIS NO PÍER (`zefa_saveiro`) ----
+	# --- 7b. O ÚLTIMO PASSO: O MESTRE QUIRINO, NO DIA DO SAVEIRO (`zefa_saveiro`) ----
 	#
-	# Nenhum portão chegava a ele: o último que se conferia era `zefa_conversa`, e o passo do píer
-	# (a visita de 8 u, com a cocada e o pirão de recompensa) nunca era jogado. Joga-se aqui com o
-	# jogador ANDANDO até lá, pelo controle dele (`tests/fixtures/jogada.gd`), e não posto no píer.
+	# O COSME FICA (08/10, docs/falas): o saveiro só encosta no dia 14 (saveiro.json), e o passo é
+	# falar com o mestre Quirino no píer nesse dia — ele conta que o Cosme lhe deu uma carta para o
+	# primo e ficou. Até 08/10 o passo era uma visita ao píer, que fechava a qualquer dia, sem barco.
+	# Joga-se com o jogador ANDANDO até lá, pelo controle dele (`tests/fixtures/jogada.gd`).
 	var no_pier: int = cadeia.missao
 	_conferir(no_pier == cadeia.passos.size() - 1 and str(cadeia.passos[no_pier].get("id", "")) == "zefa_saveiro",
 		"depois da conversa o passo devia ser o do píer (zefa_saveiro), e é o %d" % (no_pier + 1))
+	var do_saveiro: Dictionary = (cadeia.passos[no_pier] as Dictionary).get("meta", {})
+	_conferir(str(do_saveiro.get("tipo", "")) == "falar" and str(do_saveiro.get("a_quem", "")) == "quirino",
+		"o último passo da Dona Zefa não é falar com o mestre Quirino: %s" % str(do_saveiro))
 	var anunciou4 := await _ate(func() -> bool: return cadeia.espera <= 0.0, SEGUNDOS_PARA_ANUNCIAR)
 	_conferir(anunciou4, "o passo do píer não chegou a anunciar")
 	await _frames(5)
 	_conferir(cadeia.missao == no_pier, "o passo do píer fechou com o jogador ainda ao lado da Dona Zefa")
+	var saveiro = jogo.get("saveiro")
+	var calendario := root.get_node("/root/Relogio")
+	var horas := root.get_node("/root/Dia")
+	_conferir(saveiro != null and saveiro.comprador != null, "o vale não tem o saveiro do mestre Quirino")
 	var cocadas_antes: int = inv.quantidade("cocada")
 	var piroes_antes: int = inv.quantidade("pirao")
 	var maos := Jogada.new(self, jogo, relogio, func(t: String) -> void: _conferir(false, t), func(t: String) -> void: print(t))
+	# FORA DO DIA DO SAVEIRO o mestre não está, e chegar ao píer não fecha nada.
+	calendario.dia = 10
+	horas.definir_hora(10.0)
+	await _frames(3)
 	var chegou_ao_pier: bool = await maos.ir_ate(lugares.ponto("pier"), 0.0, false, 60.0, 6.0)
 	_conferir(chegou_ao_pier, "o jogador não conseguiu andar até o píer")
-	var fechou_o_pier := await _ate(func() -> bool: return cadeia.missao > no_pier, SEGUNDOS_POR_PASSO)
-	_conferir(fechou_o_pier, "chegar ao píer não fechou o último passo da Dona Zefa")
+	await _ate(func() -> bool: return cadeia.missao > no_pier, 4.0)
+	_conferir(cadeia.missao == no_pier,
+		"fora do dia do saveiro, chegar ao píer fechou o último passo da Dona Zefa (sem barco e sem o mestre)")
+	# NO DIA DELE, o E no mestre fecha o passo, e quem responde é ele.
+	var fechou_o_pier := false
+	if saveiro != null and saveiro.comprador != null:
+		calendario.dia = int(saveiro.dia)
+		horas.definir_hora(10.0)
+		var veio: bool = await maos.esperar(func() -> bool: return saveiro.presente(), 20.0)
+		_conferir(veio, "no dia do saveiro (%d), às 10 h, o mestre Quirino não chegou ao píer" % int(saveiro.dia))
+		var quirino: Node3D = saveiro.comprador
+		await maos.e_no_morador(quirino, "o mestre Quirino, no dia do saveiro")
+		fechou_o_pier = await _ate(func() -> bool: return cadeia.missao > no_pier, SEGUNDOS_POR_PASSO)
+		_conferir(fechou_o_pier, "no dia do saveiro, o E no mestre Quirino não fechou o último passo da Dona Zefa")
+		# A RESPOSTA ESPERA A VEZ na fila de falas: quem chega ao píer ouve antes o Tonho e o Pedro.
+		var contou := await _ate(func() -> bool: return _balao_diz(quirino, ["neto da Dona Zefa"]), SEGUNDOS_POR_PASSO)
+		_conferir(contou, "quem conta o fim não é o mestre Quirino: '%s'" % str(quirino.balao.get("_texto").text))
 	print("  %-16s %s" % ["zefa_saveiro", "fechou" if fechou_o_pier else "PRESO"])
 	_conferir(cadeia.acabou(), "o último passo fechou e a fila da Dona Zefa não acabou")
 	_conferir(inv.quantidade("cocada") >= cocadas_antes + 3 and inv.quantidade("pirao") >= piroes_antes + 1,
@@ -358,10 +388,21 @@ func _falar_com(morador) -> void:
 	await process_frame
 
 
+## O balão do morador está aberto e diz um destes trechos?
+func _balao_diz(morador, trechos: Array) -> bool:
+	if morador._balao_tempo <= 0.0:
+		return false
+	var dito := str(morador.balao.get("_texto").text)
+	for trecho in trechos:
+		if dito.contains(str(trecho)):
+			return true
+	return false
+
+
 func _fechar() -> void:
 	print("")
 	if falhas == 0:
-		print("ZEFA_OK: a fila é da Dona Zefa, é de enredo, tem os quatro passos e todos apontam lugar que o vale resolve; ela dá a foice e a serra tem moita de erva que cai de foice e rende maço; quatro maços NÃO fecham a entrega de cinco nem comem erva, e cinco fecham tirando os cinco; o passo que pede o Cosme não fecha ao lado de quem mandou, fecha ao chegar nele e quem responde é ele; voltar a ela fecha a conversa; o último passo (o píer) fecha com o jogador chegando lá a pé, e paga a cocada e o pirão; e recarregar não manda subir a serra nem conversar de novo")
+		print("ZEFA_OK: a fila é da Dona Zefa, é de enredo, tem os quatro passos e todos apontam lugar que o vale resolve; ela dá a foice e a serra tem moita de erva que cai de foice e rende maço; quatro maços NÃO fecham a entrega de cinco nem comem erva, e cinco fecham tirando os cinco; o passo que pede o Cosme não fecha ao lado de quem mandou, fecha ao chegar nele e quem responde é ele; voltar a ela fecha a conversa; o último passo não fecha no píer fora do dia do saveiro, e no dia dele fecha no E no mestre Quirino, que responde e paga a cocada e o pirão; e recarregar não manda subir a serra nem conversar de novo")
 	else:
 		print("zefa: %d falha(s)" % falhas)
 	quit(1 if falhas > 0 else 0)

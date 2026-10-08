@@ -12,6 +12,8 @@
     {
       "id": "coveiro_ver",
       "titulo": "O zelador do cemitério",
+      "titulo_en": "The cemetery keeper",
+      "titulo_es": "El cuidador del cementerio",
       "resumo": "Vá até o cemitério",
       "resumo_en": "Go to the cemetery",
       "resumo_es": "Ve al cementerio",
@@ -19,12 +21,15 @@
       "raio": 8.0,
       "audio": "",
       "texto": "O senhor subiu. Pouca gente sobe. Olha em volta: capim de dois anos por cima de gente que teve nome. Eu arranco uns três pés por manhã, e o capim faz trinta na mesma manhã. Não é falta de vontade, moço. É falta de ferro.",
-      "meta": {},
-      "traducao": "pendente"
+      "texto_en": "You came up. Few people come up. Look around: two years of grass over people who had names. I pull about three tufts a morning, and the grass puts out thirty in the same morning. It isn't lack of will, mister. It's lack of iron.",
+      "texto_es": "Usted subió. Poca gente sube. Mire alrededor: maleza de dos años encima de gente que tuvo nombre. Yo arranco unas tres matas por mañana, y la maleza echa treinta en la misma mañana. No es falta de ganas, joven. Es falta de hierro.",
+      "meta": {}
     },
     {
       "id": "coveiro_cabo",
       "titulo": "Encabar a foice do Damião",
+      "titulo_en": "A handle for Damião's scythe",
+      "titulo_es": "Un mango para la hoz de Damião",
       "resumo": "Junte lenha para o cabo da foice",
       "resumo_en": "Gather firewood for the scythe handle",
       "resumo_es": "Junta leña para el mango de la hoz",
@@ -32,23 +37,27 @@
       "raio": 8.0,
       "audio": "",
       "texto": "Eu tenho a lâmina da foice do meu sogro, enferrujada mas inteira. O que eu não tenho é cabo. Me traga duas achas de madeira boa — cabo de foice racha se for de pau mole, e racha sempre na hora errada. Põe o machado na mão, que de mão vazia não sai acha.",
-      "meta": { "tipo": "juntar", "item": "lenha", "quantos": 2 },
-      "traducao": "pendente"
+      "texto_en": "I have the blade of my father-in-law's scythe, rusty but whole. What I don't have is a handle. Bring me two pieces of good wood — a scythe handle splits if it's soft wood, and it always splits at the wrong moment. Put the axe in your hand: an empty hand cuts no wood.",
+      "texto_es": "Tengo la hoja de la hoz de mi suegro, oxidada pero entera. Lo que no tengo es mango. Tráigame dos rajas de madera buena — el mango de hoz se raja si es de palo blando, y se raja siempre en el peor momento. Póngase el hacha en la mano, que con la mano vacía no sale raja.",
+      "meta": { "tipo": "juntar", "item": "lenha", "quantos": 2 }
     },
     {
       "id": "coveiro_limpar",
       "titulo": "Limpar o cemitério",
+      "titulo_en": "Clearing the cemetery",
+      "titulo_es": "Limpiar el cementerio",
       "resumo": "Corte o capim com a foice",
       "resumo_en": "Cut the grass with the scythe",
       "resumo_es": "Corta la maleza con la hoz",
       "lugar": "cemiterio",
       "raio": 8.0,
       "audio": "",
-      "texto": "Pronto. Essa é a minha, e essa aqui é a sua — duas achas dão dois cabos, e eu não ia fazer uma só e ficar com ela. Agora desce comigo aquele capim. Corta rente: capim cortado pela metade volta em três semanas, e volta mais forte.",
+      "texto": "Pronto. Essa é a minha, e essa aqui é a sua, se você ainda não tem foice — duas achas dão dois cabos, e eu não ia fazer uma só e ficar com ela. Agora desce comigo aquele capim. Corta rente: capim cortado pela metade volta em três semanas, e volta mais forte.",
+      "texto_en": "There. This one's mine, and this one here is yours, if you don't have a scythe yet — two pieces of wood make two handles, and I wasn't going to make just one and keep it. Now come cut that grass down with me. Cut it close: grass cut halfway comes back in three weeks, and comes back stronger.",
+      "texto_es": "Listo. Esta es la mía, y esta aquí es la suya, si todavía no tiene hoz — dos rajas dan dos mangos, y yo no iba a hacer uno solo y quedármelo. Ahora baje conmigo esa maleza. Corte al ras: la maleza cortada por la mitad vuelve en tres semanas, y vuelve más fuerte.",
       "entrega": { "item": "foice", "quantidade": 1 },
       "recompensa": {"xp": 10,  "reis": 800 },
-      "meta": { "tipo": "derrubar", "alvo": "capim", "quantos": 8 },
-      "traducao": "pendente"
+      "meta": { "tipo": "derrubar", "alvo": "capim", "quantos": 8 }
     },
     {
       "id": "coveiro_mato",
@@ -101,16 +110,16 @@
       "lugar": "cemiterio",
       "raio": 8.0,
       "audio": "",
-      "texto": "Falta uma coisa, e é a que segura as outras. Cabrito pasta em cima de cova, e porco fuça — porco solto já fuçou duas. Um cercado de pau roliço em volta, amarrado de corda, com a entrada do lado da rua. A obra se toca no J, na aba de obras, aqui mesmo no cemitério. Pau o senhor tem; corda sai da oficina.",
-      "texto_en": "One thing left, and it's the one that holds the rest together. Goats graze on top of the graves, and pigs root — a loose pig has rooted up two already. A fence of round poles all around, lashed with rope, with the way in on the road side. The work is done in the J menu, on the works tab, right here at the cemetery. Poles you have; rope comes from the workshop.",
-      "texto_es": "Falta una cosa, y es la que sostiene las demás. Las cabras pastan encima de las tumbas, y el cerdo hoza — un cerdo suelto ya hozó dos. Una cerca de palos redondos alrededor, atada con cuerda, con la entrada del lado de la calle. La obra se hace en la J, en la pestaña de obras, aquí mismo en el cementerio. Palos usted tiene; la cuerda sale del taller.",
+      "texto": "Falta uma coisa, e é a que segura as outras. Cabrito pasta em cima de cova, e porco fuça — porco solto já fuçou duas. Um cercado de pau roliço em volta, amarrado de corda, com a entrada do lado da rua: seis lenhas e duas cordas. E corda também é lenha, três por corda — junte doze lenhas, que seis viram corda na oficina. A obra se toca aqui mesmo no cemitério: o E, ou o J na aba de obras.",
+      "texto_en": "One thing left, and it's the one that holds the rest together. Goats graze on top of the graves, and pigs root — a loose pig has rooted up two already. A fence of round poles all around, lashed with rope, with the way in on the road side: six pieces of firewood and two ropes. And rope is firewood too, three per rope — gather twelve pieces, since six turn into rope at the workshop. The work is done right here at the cemetery: E, or J on the works tab.",
+      "texto_es": "Falta una cosa, y es la que sostiene las demás. Las cabras pastan encima de las tumbas, y el cerdo hoza — un cerdo suelto ya hozó dos. Una cerca de palos redondos alrededor, atada con cuerda, con la entrada del lado de la calle: seis leñas y dos cuerdas. Y la cuerda también es leña, tres por cuerda — junte doce leñas, que seis se vuelven cuerda en el taller. La obra se hace aquí mismo en el cementerio: la E, o la J en la pestaña de obras.",
       "meta": { "tipo": "obra", "construcao": "cemiterio", "obra": "cemiterio_cercado" },
       "recompensa": {"xp": 10,  "reis": 1000 }
     }
   ],
   "arremate": {
-    "texto": "Cercado, limpo e com as lajes no prumo. O senhor fez em dias o que eu não ia fazer nunca. A irmandade do Bom Jesus mandou esses réis, que cemitério cercado é obrigação dela, e quem fez foi o senhor. E daqui pra frente o mato é comigo — foice na mão e cercado de pé, é comigo.",
-    "texto_en": "Fenced, clean, and the slabs standing true. You did in days what I was never going to do. The Bom Jesus brotherhood sent these coins — a fenced cemetery is their duty, and you're the one who did it. And from here on the scrub is mine — scythe in hand and the fence standing, it's mine.",
-    "texto_es": "Cercado, limpio y con las lápidas a plomo. Usted hizo en días lo que yo no iba a hacer nunca. La hermandad del Bom Jesus mandó estos reales, que cementerio cercado es obligación de ella, y quien lo hizo fue usted. Y de aquí en adelante el monte es cosa mía — hoz en mano y la cerca en pie, es cosa mía."
+    "texto": "Cercado, limpo e com as lajes no prumo. O senhor fez em dias o que eu não ia fazer nunca. A Santa Casa mandou esses réis, que cemitério cercado é obrigação dela, e quem fez foi o senhor. E daqui pra frente o mato é comigo — foice na mão e cercado de pé, é comigo.",
+    "texto_en": "Fenced, clean, and the slabs standing true. You did in days what I was never going to do. The Santa Casa sent these coins — a fenced cemetery is its duty, and you're the one who did it. And from here on the scrub is mine — scythe in hand and the fence standing, it's mine.",
+    "texto_es": "Cercado, limpio y con las lápidas a plomo. Usted hizo en días lo que yo no iba a hacer nunca. La Santa Casa mandó estos reales, que cementerio cercado es obligación de ella, y quien lo hizo fue usted. Y de aquí en adelante el monte es cosa mía — hoz en mano y la cerca en pie, es cosa mía."
   }
 }
