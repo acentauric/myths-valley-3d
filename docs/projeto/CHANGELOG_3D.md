@@ -2,6 +2,19 @@
 
 ## Em desenvolvimento — 08/10/2026
 
+- **O golpe de ferramenta só sai encostado e de frente para o alvo.** O machado dava
+  machadadas no ar: o alcance era 3,2 m somados à meia-pegada da peça, e o corpo nem
+  virava. Agora o golpe vale a 1,2 m da FACE da colisão (caixa girada, quina e cilindro,
+  e não mais o raio da meia-pegada); o E ainda se oferece até 3,2 m da face, e de mais
+  longe de 1,2 m o viajante anda até um ponto a 0,8 m da face, gira para o alvo e só
+  então bate (a dica diz "ir até lá"). Um impacto com o corpo levado para longe no meio
+  do clipe não cobra nem derruba. O lajedo e as outras peças grandes seguem alcançáveis,
+  porque a distância é da face. A pilha de lenha ficou na altura da cintura (de 1,6 m
+  nos roçados para 0,9 m) e o tronco caído com uns 50 cm de diâmetro (era 65 cm). O
+  testador espera o viajante andar e girar antes de contar o golpe. O portão
+  `alcance_dos_alvos` mede o alcance curto dos quatro lados pela face, e o novo
+  `golpe_de_braco` confere a escala, o E de longe e o impacto fora do alcance (#208).
+
 - **Quem dorme, desmaia ou cai acorda parado, em pé, no clipe do parado.** O corpo
   acordava na pose de antes (correndo, nadando, de machado na mão) porque o processo
   físico fica desligado durante a noite e é ele quem troca o clipe. Agora, com a tela

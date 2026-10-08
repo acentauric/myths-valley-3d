@@ -65,10 +65,28 @@ const CatalogoAssets = preload("res://scripts/prototipo_3d/catalogo_assets.gd")
 const IdiomaMenu = preload("res://scripts/prototipo_3d/idioma_menu.gd")
 const CoqueiroCortado = preload("res://scripts/prototipo_3d/coqueiro_cortado.gd")
 const FocoDoE = preload("res://scripts/prototipo_3d/foco_do_e.gd")
+const Jogador = preload("res://scripts/prototipo_3d/player_controller.gd")
 
 const DADOS := "res://data/recursos_3d.json"
-## Distância no chão para a dica aparecer e para o golpe valer.
+## ATÉ ONDE O E SE OFERECE, medida da FACE do alvo (a dica aparece e o E vale). O golpe,
+## não: ele só acontece a `ALCANCE_DO_GOLPE` da face, e o E de mais longe leva o viajante
+## até lá antes de bater (#208). Era um alcance só, de 3,2 m, e o machado acertava o ar.
 const ALCANCE := 3.2
+## O GOLPE É DE BRAÇO: da face do alvo ao corpo, no máximo isto, e de frente para ele
+## (#208). Medido da superfície, e não do centro: a peça grande continua alcançável
+## — o lajedo de 6,6 m de lado se golpeia encostado em qualquer ponto da face.
+const ALCANCE_DO_GOLPE := 1.2
+## A que distância da face o viajante para quando anda até o alvo: dentro do braço, sem
+## encostar o ombro.
+const DISTANCIA_DE_GOLPE := 0.8
+## Folga na conta de "parou perto o bastante" (o corpo para um pouco antes ou depois do
+## ponto) e na do impacto (o corpo escorrega um pouco no quadro do golpe).
+const FOLGA_DO_PARAR := 0.3
+const FOLGA_NO_IMPACTO := 0.6
+## De frente é até este desvio entre o corpo e o alvo; o giro suave desiste e encaixa
+## depois deste tempo.
+const DESVIO_DE_FRENTE := deg_to_rad(12.0)
+const TEMPO_MAXIMO_VIRANDO := 0.6
 const ALTURA_DICA := 1.6
 const TEMPO_ATE_IMPACTO := 0.3
 const TEMPO_LIMITE_IMPACTO := 1.5
@@ -122,6 +140,12 @@ var _golpe_animando := false
 var _quadros_sem_clipe := 0
 var _timer_impacto: Timer
 var _timer_fim_golpe: Timer
+## O E de longe (#208): o alvo para onde o viajante anda, o ponto onde ele vai parar, e o
+## alvo para o qual ele gira antes de bater.
+var _aproximando_de := ""
+var _destino_do_golpe := Vector3.INF
+var _virando_para := ""
+var _tempo_virando := 0.0
 ## id → {"no", "pos", "ficha", "golpes_dados"}
 var _alvos: Dictionary = {}
 var _perto := ""
@@ -247,17 +271,28 @@ func _erguer_alvo(ficha: Dictionary, pos: Vector3) -> void:
 	# A MEIA-PEGADA: o quanto este alvo empurra o jogador para longe do
 	# próprio centro. É o que o alcance do golpe soma, para "encoste e
 	# aperte E" valer em peça de qualquer tamanho. Ver `_mais_perto`.
+	#
+	# E A FACE DE VERDADE (#208): além da meia-pegada, o alvo guarda as formas da colisão
+	# (`formas`), para medir a distância do corpo à SUPERFÍCIE — caixa girada, quina e
+	# cilindro. A meia-pegada sozinha errava a peça comprida e girada (um tronco de
+	# 2,6 m de lado a 90° tem a face a 0,25 do centro, e não a 1,3).
 	var meia := 0.0
+	var formas: Array[Dictionary] = []
 	for corpo in corpos:
 		for forma_no in (corpo as Node).get_children():
 			if not (forma_no is CollisionShape3D):
 				continue
 			var forma = (forma_no as CollisionShape3D).shape
+			var lugar_da_forma: Transform3D = (corpo as Node3D).transform * (forma_no as Node3D).transform
+			if (forma_no as Node3D).is_inside_tree():
+				lugar_da_forma = (forma_no as Node3D).global_transform
 			if forma is BoxShape3D:
 				var caixa := (forma as BoxShape3D).size
 				meia = maxf(meia, maxf(caixa.x, caixa.z) * 0.5)
+				formas.append({"inversa": lugar_da_forma.affine_inverse(), "meia": caixa * 0.5})
 			elif forma is CylinderShape3D:
 				meia = maxf(meia, (forma as CylinderShape3D).radius)
+				formas.append({"centro": lugar_da_forma.origin, "raio": (forma as CylinderShape3D).radius})
 
 	var peca := str(ficha.get("peca", ""))
 	_postos[peca] = int(_postos.get(peca, 0)) + 1
@@ -265,7 +300,7 @@ func _erguer_alvo(ficha: Dictionary, pos: Vector3) -> void:
 	if grupo != "":
 		_postos[grupo] = int(_postos.get(grupo, 0)) + 1
 	_alvos[id] = {"no": no, "pos": pos, "ficha": ficha, "golpes_dados": 0,
-		"corpos": corpos, "meia_pegada": meia}
+		"corpos": corpos, "meia_pegada": meia, "formas": formas}
 
 
 ## AS PEDRAS ESPALHADAS PELO VALE (playtest de 07/10: "espalhe mais pedras pelo mapa, de
@@ -405,7 +440,8 @@ func _por_a_colisao(peca: String, no: Node3D, pos: Vector3, tamanho: float, giro
 	return corpos
 
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
+	_andar_e_virar_para_o_golpe(delta)
 	# O CLIPE MORREU NO CAMINHO (o corpo se mexeu: `update_motion` corta o gesto)
 	# e o impacto não vai vir: solta a trava já, sem cobrar (#112). Dois quadros
 	# de folga para o `play` entrar.
@@ -439,9 +475,41 @@ func _process(_delta: float) -> void:
 	var nome_na_dica := str(IdiomaMenu.campo(ficha, "nome"))
 	if int(ficha.get("golpes", 3)) >= GOLPES_DE_TRABALHO_LONGO:
 		nome_na_dica = "%s %d/%d" % [nome_na_dica, int(alvo["golpes_dados"]), int(ficha.get("golpes", 3))]
+	var texto_da_dica := "%s · %s" % [nome_na_dica, _o_que_falta(ficha)]
+	# LONGE DO BRAÇO, o E leva até o alvo (#208): a dica avisa, quando o golpe é possível.
+	if _distancia_do_jogador_a(_perto) > ALCANCE_DO_GOLPE and _recusa_do_golpe(_perto) == "":
+		texto_da_dica += " · " + tr("ir até lá")
 	DicaTecla.mostrar_em(_dica, get_viewport().get_camera_3d(),
-		alvo["pos"] + Vector3(0.0, ALTURA_DICA, 0.0),
-		"%s · %s" % [nome_na_dica, _o_que_falta(ficha)])
+		alvo["pos"] + Vector3(0.0, ALTURA_DICA, 0.0), texto_da_dica)
+
+
+## A DISTÂNCIA NO CHÃO DE `de` ATÉ A FACE do alvo `id` (0 dentro da pegada dele), pelas
+## formas da colisão: caixa (girada ou não) e cilindro. Sem colisão, do centro.
+func distancia_da_face(id: String, de: Vector3) -> float:
+	if not _alvos.has(id):
+		return INF
+	var alvo: Dictionary = _alvos[id]
+	var formas: Array = alvo.get("formas", [])
+	if formas.is_empty():
+		var d: Vector3 = (alvo["pos"] as Vector3) - de
+		d.y = 0.0
+		return d.length()
+	var menor := INF
+	for forma: Dictionary in formas:
+		var dela := 0.0
+		if forma.has("meia"):
+			var p: Vector3 = (forma["inversa"] as Transform3D) * de
+			var meia: Vector3 = forma["meia"]
+			dela = Vector2(maxf(absf(p.x) - meia.x, 0.0), maxf(absf(p.z) - meia.z, 0.0)).length()
+		else:
+			var c: Vector3 = forma["centro"]
+			dela = maxf(Vector2(de.x - c.x, de.z - c.z).length() - float(forma["raio"]), 0.0)
+		menor = minf(menor, dela)
+	return menor
+
+
+func _distancia_do_jogador_a(id: String) -> float:
+	return distancia_da_face(id, _jogador.global_position)
 
 
 ## O alvo ao alcance, ou "" — o mais perto quando há mais de um.
@@ -459,9 +527,10 @@ func _process(_delta: float) -> void:
 ## inalcançável.
 ##
 ## Medir do centro só funciona enquanto os alvos são pequenos. Agora o alcance
-## é somado à meia-pegada de cada um, que é o quanto ele empurra o jogador para
-## longe do próprio centro — e aí "encoste e aperte E" volta a ser verdade para
-## qualquer tamanho de peça.
+## é medido da FACE da colisão de cada um (`distancia_da_face`) — e aí "encoste
+## e aperte E" volta a ser verdade para qualquer tamanho de peça. O E se oferece
+## até `ALCANCE` da face; o golpe só sai a `ALCANCE_DO_GOLPE` (#208), e de mais
+## longe o E anda até lá (`_aproximar`).
 ##
 ## NA LAVOURA, A TECLA É DELA: os pés de cana e a lenha da beira do roçado
 ## ficam a um alcance do campo, e o E que ara o leito batia na cana.
@@ -479,9 +548,7 @@ func _mais_perto() -> String:
 	var interiores := get_tree().get_first_node_in_group("interiores") if is_inside_tree() else null
 	var lado_do_jogador: String = interiores.contem(_jogador.global_position) if interiores != null else ""
 	for id in _alvos:
-		var d: Vector3 = _alvos[id]["pos"] - _jogador.global_position
-		d.y = 0.0
-		var sobra: float = d.length() - float(_alvos[id].get("meia_pegada", 0.0))
+		var sobra := _distancia_do_jogador_a(id)
 		if sobra < ALCANCE and sobra < menor:
 			if interiores != null and interiores.contem(_alvos[id]["pos"]) != lado_do_jogador:
 				continue
@@ -590,42 +657,183 @@ func _tem_ferramenta(id: String) -> bool:
 ## A ordem das recusas importa e é a do 2D: primeiro a ferramenta, depois o
 ## fôlego. Quem não tem machado precisa saber que é do machado que precisa, e
 ## não que está cansado — a segunda informação não ajuda em nada.
-func bater() -> bool:
+func bater(com_giro: bool = false) -> bool:
 	if _perto == "":
 		return false
-	if _golpe_pendente != "" or _golpe_animando:
+	if _golpe_pendente != "" or _golpe_animando or _aproximando_de != "" or _virando_para != "":
 		return false
-	var alvo: Dictionary = _alvos[_perto]
-	var ficha: Dictionary = alvo["ficha"]
-	var ferramenta := str(ficha.get("ferramenta", ""))
+	var id := _perto
+	var recusa := _recusa_do_golpe(id)
+	if recusa != "":
+		recusado.emit(recusa)
+		return false
+	# O GOLPE É DE BRAÇO (#208): longe da face, o E leva o viajante até lá e o golpe sai
+	# na chegada; perto, ele vira de frente (com giro suave no E do jogador, na hora nos
+	# portões) e bate.
+	if _distancia_do_jogador_a(id) > ALCANCE_DO_GOLPE:
+		return _aproximar(id)
+	if com_giro and not _de_frente_para(id):
+		_virando_para = id
+		_tempo_virando = 0.0
+		return true
+	_virar_ja(id)
+	return _executar_o_golpe(id)
 
+
+## O QUE IMPEDE O GOLPE NESTE ALVO, dito ao jogador, ou "". A ordem das recusas importa e
+## é a do 2D: primeiro a ferramenta, depois o fôlego. Quem não tem machado precisa saber
+## que é do machado que precisa, e não que está cansado — a segunda informação não ajuda
+## em nada.
+func _recusa_do_golpe(id: String) -> String:
+	if not _alvos.has(id):
+		return "-"
+	var ficha: Dictionary = _alvos[id]["ficha"]
+	var ferramenta := str(ficha.get("ferramenta", ""))
 	if not _tem_ferramenta(ferramenta):
 		# Carregando a certa e segurando outra (ou nada): diz qual pôr na mão.
 		if _carrega(ferramenta):
-			recusado.emit(tr("Ponha na mão: %s.") % _nome_do_item(ferramenta))
-		else:
-			recusado.emit("Precisa de %s." % _nome_do_item(ferramenta))
-		return false
+			return tr("Ponha na mão: %s.") % _nome_do_item(ferramenta)
+		return "Precisa de %s." % _nome_do_item(ferramenta)
 	# A certa na mão e o alvo duro demais para ela, ou para quem a segura.
 	var impede := _o_que_impede(ficha, true)
 	if impede != "":
-		recusado.emit(impede)
-		return false
-	var dureza := _dureza(ficha)
-	if not Energia.aguenta("bater", dureza):
-		recusado.emit("Sem %s para bater." % Energia.nome_recurso())
-		return false
+		return impede
+	if not Energia.aguenta("bater", _dureza(ficha)):
+		return "Sem %s para bater." % Energia.nome_recurso()
+	return ""
+
+
+## O GOLPE EM SI, com tudo conferido: o recurso à mão cobra e resolve já, e o de
+## ferramenta começa o clipe (a cobrança sai no impacto).
+func _executar_o_golpe(id: String) -> bool:
+	var ficha: Dictionary = _alvos[id]["ficha"]
 	# Recursos recolhidos à mão não usam ferramenta nem animação de golpe:
 	# cobram e resolvem já, para não manter a trava entre coletas próximas.
-	if ferramenta == "":
-		if not _cobrar(dureza):
+	if str(ficha.get("ferramenta", "")) == "":
+		if not _cobrar(_dureza(ficha)):
 			return false
-		_aplicar_golpe(_perto)
+		_aplicar_golpe(id)
 		return true
 	# COM FERRAMENTA A COBRANÇA SAI NO IMPACTO (#112), junto com o golpe: ver
 	# `_ao_impacto_do_golpe`. Aqui só se conferiu que há com que pagar.
-	_iniciar_golpe(_perto)
+	_iniciar_golpe(id)
 	return true
+
+
+## O E DE LONGE (#208): anda até um ponto a `DISTANCIA_DE_GOLPE` da face do alvo, pelo
+## lado em que o viajante está (ou o primeiro lado de onde há caminho), e o golpe sai na
+## chegada (`_andar_e_virar_para_o_golpe`).
+func _aproximar(id: String) -> bool:
+	var pos: Vector3 = _alvos[id]["pos"]
+	var de_fora := _jogador.global_position - pos
+	de_fora.y = 0.0
+	if de_fora.length_squared() < 0.01:
+		de_fora = Vector3.BACK
+	de_fora = de_fora.normalized()
+	for angulo in [0.0, PI * 0.25, -PI * 0.25, PI * 0.5, -PI * 0.5, PI * 0.75, -PI * 0.75, PI]:
+		var destino := ponto_de_golpe(id, de_fora.rotated(Vector3.UP, angulo))
+		if not destino.is_finite():
+			continue
+		if bool(_jogador.call("caminhar_ate", destino)):
+			_aproximando_de = id
+			_destino_do_golpe = destino
+			return true
+	recusado.emit(tr("Não encontrei um caminho até o alvo."))
+	return false
+
+
+## O PONTO DE PARAR para bater em `id` por onde aponta `rumo` (do alvo para fora): o
+## primeiro ponto desse rumo a `DISTANCIA_DE_GOLPE` da face, ou `Vector3.INF`.
+func ponto_de_golpe(id: String, rumo: Vector3) -> Vector3:
+	if not _alvos.has(id):
+		return Vector3.INF
+	var centro: Vector3 = _alvos[id]["pos"]
+	var passo := 0.1
+	var t := 0.0
+	while t < 30.0:
+		var ponto := centro + rumo * t
+		if distancia_da_face(id, ponto) >= DISTANCIA_DE_GOLPE:
+			return ponto
+		t += passo
+	return Vector3.INF
+
+
+## O corpo está virado para o alvo, até `DESVIO_DE_FRENTE`?
+func _de_frente_para(id: String) -> bool:
+	var visual = _jogador.get("visual")
+	if not (visual is Node3D):
+		return true
+	var rumo := _rumo_para(id, (visual as Node3D).rotation.y)
+	return absf(angle_difference((visual as Node3D).rotation.y, rumo)) <= DESVIO_DE_FRENTE
+
+
+## O ângulo (em Y) do corpo para o alvo; `se_colado` se o alvo está debaixo dos pés.
+func _rumo_para(id: String, se_colado: float) -> float:
+	var falta: Vector3 = (_alvos[id]["pos"] as Vector3) - _jogador.global_position
+	falta.y = 0.0
+	if falta.length() < 0.05:
+		return se_colado
+	return atan2(falta.x, falta.z)
+
+
+func _virar_ja(id: String) -> void:
+	var visual = _jogador.get("visual")
+	if visual is Node3D:
+		(visual as Node3D).rotation.y = _rumo_para(id, (visual as Node3D).rotation.y)
+
+
+## Chegando ao alvo, o viajante ANDA ATÉ o ponto de golpe, GIRA para o alvo e só então
+## bate (#208). Cancela sozinho se o alvo some, se o caminho acaba longe dele (o jogador
+## tomou o volante) ou se o golpe começou por outro lado.
+func _andar_e_virar_para_o_golpe(delta: float) -> void:
+	if _jogador == null:
+		return
+	if _aproximando_de != "":
+		var id := _aproximando_de
+		if not _alvos.has(id) or _golpe_pendente != "" or _golpe_animando:
+			_desistir_de_chegar()
+			return
+		if bool(_jogador.call("caminhando_para", _destino_do_golpe)):
+			return
+		_aproximando_de = ""
+		_destino_do_golpe = Vector3.INF
+		if _distancia_do_jogador_a(id) > ALCANCE_DO_GOLPE + FOLGA_DO_PARAR:
+			return
+		_virando_para = id
+		_tempo_virando = 0.0
+	if _virando_para == "":
+		return
+	var alvo_id := _virando_para
+	var visual = _jogador.get("visual")
+	if not _alvos.has(alvo_id) or _golpe_pendente != "" or _golpe_animando or not (visual is Node3D):
+		_virando_para = ""
+		return
+	var corpo := visual as Node3D
+	var rumo := _rumo_para(alvo_id, corpo.rotation.y)
+	_tempo_virando += delta
+	corpo.rotation.y += Jogador.passo_de_giro(corpo.rotation.y, rumo, delta)
+	if absf(angle_difference(corpo.rotation.y, rumo)) > DESVIO_DE_FRENTE and _tempo_virando < TEMPO_MAXIMO_VIRANDO:
+		return
+	corpo.rotation.y = rumo
+	_virando_para = ""
+	# Tudo é conferido de novo: nesse meio-tempo a reserva, a ferramenta ou o lugar mudaram.
+	var recusa := _recusa_do_golpe(alvo_id)
+	if recusa != "":
+		recusado.emit(recusa)
+		return
+	if _distancia_do_jogador_a(alvo_id) <= ALCANCE_DO_GOLPE + FOLGA_DO_PARAR:
+		_executar_o_golpe(alvo_id)
+
+
+func _desistir_de_chegar() -> void:
+	_aproximando_de = ""
+	_destino_do_golpe = Vector3.INF
+	_virando_para = ""
+
+
+## O viajante está andando ou girando para bater, ou batendo: o testador espera.
+func em_andamento() -> bool:
+	return _aproximando_de != "" or _virando_para != "" or _golpe_pendente != "" or _golpe_animando
 
 
 ## COBRA UM GOLPE: a reserva (bater × dureza) e o que o trabalho ensina. QUEM
@@ -678,6 +886,12 @@ func _ao_impacto_do_golpe() -> void:
 	var id := _golpe_pendente
 	_golpe_pendente = ""
 	if not _alvos.has(id):
+		return
+	# O GOLPE SÓ CONTA NO ALCANCE DO BRAÇO (#208): se o corpo foi levado para longe do
+	# alvo no meio do clipe, a ferramenta bateu no ar — nem cobra nem derruba.
+	if _distancia_do_jogador_a(id) > ALCANCE_DO_GOLPE + FOLGA_NO_IMPACTO:
+		if not _golpe_animando and _jogador.has_method("liberar_acao_de_golpe"):
+			_jogador.call("liberar_acao_de_golpe")
 		return
 	if _cobrar(_dureza(_alvos[id]["ficha"])):
 		_aplicar_golpe(id)
@@ -904,7 +1118,7 @@ func _unhandled_key_input(event: InputEvent) -> void:
 	# batia no tronco ao lado dela sem corpo nenhum de pé para bater.
 	if not _jogador.is_physics_processing() or not FocoDoE.e_dele(self):
 		return
-	bater()
+	bater(true)
 	get_viewport().set_input_as_handled()
 
 

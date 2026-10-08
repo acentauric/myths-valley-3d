@@ -292,7 +292,11 @@ func _estado() -> Dictionary:
 		var oferta: Dictionary = fonte.alvo_do_e()
 		if not oferta.is_empty():
 			if fonte == recursos_observados:
-				oferta["em_trabalho"] = bool(fonte.get("_golpe_animando")) or str(fonte.get("_golpe_pendente")) != ""
+				# O E de longe anda até o alvo e gira antes de bater (#208): o testador espera por isso também.
+				if fonte.has_method("em_andamento"):
+					oferta["em_trabalho"] = bool(fonte.call("em_andamento"))
+				else:
+					oferta["em_trabalho"] = bool(fonte.get("_golpe_animando")) or str(fonte.get("_golpe_pendente")) != ""
 			estado.interaction_candidates.append({"source": str(fonte.name), "kind": "tree" if fonte.has_meta("recurso_arvore") else "", "target": _json_seguro(oferta), "path": str(fonte.get_path())})
 	estado["mission_chains"] = []
 	estado["work_costs"] = {}

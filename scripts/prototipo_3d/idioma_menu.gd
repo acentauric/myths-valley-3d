@@ -340,6 +340,8 @@ const EN := {
 	"DEIXAR CORRER": "KEEP RUNNING",
 	"PARAR O RELÓGIO": "STOP THE CLOCK",
 	"Ponha na mão: %s.": "Put it in hand: %s.",
+	"ir até lá": "go there",
+	"Não encontrei um caminho até o alvo.": "I couldn't find a path to the target.",
 	# O alvo duro: o aço que falta na mão e o talento que falta na teia (Recursos3D._o_que_impede).
 	"Pede %s e o talento %s.": "Needs %s and the talent %s.",
 	"pede %s e o talento %s": "needs %s and the talent %s",
@@ -778,6 +780,8 @@ const ES := {
 	"DEIXAR CORRER": "DEJAR QUE CORRA",
 	"PARAR O RELÓGIO": "DETENER EL RELOJ",
 	"Ponha na mão: %s.": "Tómalo en la mano: %s.",
+	"ir até lá": "ir hasta allí",
+	"Não encontrei um caminho até o alvo.": "No encontré un camino hasta el objetivo.",
 	"Pede %s e o talento %s.": "Pide %s y el talento %s.",
 	"pede %s e o talento %s": "pide %s y el talento %s",
 	"Pede %s.": "Pide %s.",

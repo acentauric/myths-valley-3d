@@ -105,9 +105,12 @@ const PECAS := {
 	"tumulo": {"tripo": "aderecos/tumulo_tripo.glb", "largura": 1.6},
 	"carroca": {"tripo": "aderecos/carroca_tripo.glb", "largura": 3.2, "caixa": true},
 	"varal": {"tripo": "aderecos/varal_tripo.glb", "largura": 3.8},
-	"lenha": {"tripo": "aderecos/lenha_tripo.glb", "largura": 1.5, "caixa": true},
-	# O tronco que a trovoada derrubou no cemitério: vem de comprido no Z.
-	"tronco_caido": {"tripo": "aderecos/tronco_caido_tripo.glb", "largura": 2.6, "caixa": true},
+	# A PILHA DE LENHA fica na altura da cintura (0,9 m a tamanho 1; o viajante tem ~1,75). Era
+	# 1,5 de largura: 1,12 m de altura a tamanho 1 e 1,57 m nos roçados (#208).
+	"lenha": {"tripo": "aderecos/lenha_tripo.glb", "largura": 1.2, "caixa": true},
+	# O tronco que a trovoada derrubou no cemitério: vem de comprido no Z. Deitado, de uns 50 cm de
+	# diâmetro (o GLB tem 0,24 de altura por 0,98 de comprimento): a 2,6 de largura eram 65 cm.
+	"tronco_caido": {"tripo": "aderecos/tronco_caido_tripo.glb", "largura": 2.0, "caixa": true},
 	"pote": {"tripo": "aderecos/pote_tripo.glb", "altura": 0.95},
 	"banco": {"tripo": "aderecos/banco_tripo.glb", "altura": 1.0, "caixa": true},
 	"lampiao_poste": {"tripo": "aderecos/lampiao_poste_tripo.glb", "altura": 3.4, "tronco": 0.15},
