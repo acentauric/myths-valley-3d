@@ -161,7 +161,7 @@ func _virar_a_noite(motivo: String) -> void:
 	escurece.tween_property(_preto, "modulate:a", 1.0, ESCURECER)
 	await escurece.finished
 
-	_levar_para_casa()
+	_levar_para_casa(motivo)
 	# Na cama o corpo descansa; no chão, só o fôlego do desmaio (como no 2D).
 	if motivo == "cama":
 		Energia.dormir()
@@ -204,11 +204,25 @@ func _virar_a_noite(motivo: String) -> void:
 			await Dialogo.falar("", _falas_do_desmaio())
 
 
-func _levar_para_casa() -> void:
+## O QUE O CORPO FAZ AO ACORDAR, por motivo (#189): hoje é sempre o parado. O
+## gancho para "levantar da cama" é trocar a entrada da cama por um papel novo
+## do animador (um clipe que `MOTION_CLIPS` conheça), sem mexer em mais nada.
+const POSE_DE_ACORDAR := {"cama": "idle", "desmaio": "idle", "queda": "idle"}
+
+
+## Tudo o que o corpo fazia fica na noite: acorda em pé, quieto, no clipe do
+## parado, antes de o escuro clarear (o primeiro quadro visível já é ele).
+func _acordar_parado(motivo: String) -> void:
+	if _player.has_method("acordar_parado"):
+		_player.acordar_parado(str(POSE_DE_ACORDAR.get(motivo, "idle")))
+
+
+func _levar_para_casa(motivo: String = "queda") -> void:
 	var destino := ponto_de_casa()
 	if not destino.is_finite():
 		_player.reset_position()
 		_player.sair_do_nado_ao_renascer()
+		_acordar_parado(motivo)
 		return
 	_player.global_position = destino
 	_player.velocity = Vector3.ZERO
@@ -223,6 +237,7 @@ func _levar_para_casa() -> void:
 	# chão, ela o traz para cá, e não para onde ele estava antes de cair.
 	if "_last_land" in _player:
 		_player._last_land = destino
+	_acordar_parado(motivo)
 	# O PEDRO VEM JUNTO (#92): enquanto o tutorial dura, quem apagou nadando
 	# acordava em casa e ele ficava no mar. Ele espera na porta, do lado de
 	# fora, e a condução recomeça dali.

@@ -457,6 +457,34 @@ func dormir(dormindo: bool) -> void:
 		animation_player.play()
 
 
+## ACORDAR PARADO (#189): quem dorme tem o processo físico desligado, e o
+## `update_motion` não roda para trocar o clipe: o corpo acordava na pose de
+## antes (correndo, nadando, de machado na mão). Larga tudo — trabalho, gesto,
+## golpe, pulo, nado — e põe o `papel` (o parado; um dia, "levantar da cama") no
+## primeiro quadro, sem mistura com o clipe anterior. Devolve o clipe que tocou.
+func acordar_parado(papel: String = "idle") -> String:
+	if animation_player == null:
+		return ""
+	if _chop_repetitions_left > 0:
+		golpe_cancelado.emit()
+	_trabalho = ""
+	_gesture_active = false
+	_jump_active = false
+	_chop_repetitions_left = 0
+	_swimming = false
+	var clip: String = _clips.get(MOTION_CLIPS.get(papel, papel), "")
+	if clip.is_empty():
+		clip = _clips.get(MOTION_CLIPS["idle"], "")
+		papel = "idle"
+	if clip.is_empty():
+		return ""
+	_current_motion = papel
+	animation_player.speed_scale = 1.0
+	animation_player.play(clip, 0.0)
+	animation_player.seek(0.0, true)
+	return clip
+
+
 func set_swimming(swimming: bool) -> void:
 	if _swimming == swimming:
 		return

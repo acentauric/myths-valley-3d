@@ -2,6 +2,17 @@
 
 ## Em desenvolvimento — 08/10/2026
 
+- **Quem dorme, desmaia ou cai acorda parado, em pé, no clipe do parado.** O corpo
+  acordava na pose de antes (correndo, nadando, de machado na mão) porque o processo
+  físico fica desligado durante a noite e é ele quem troca o clipe. Agora, com a tela
+  ainda no escuro, o viajante larga corrida ligada, passeio clicado, pulo, nado, golpe
+  e ferramenta em uso, e o animador toca o parado do primeiro quadro, sem mistura com
+  o clipe anterior; vale para a cama, o desmaio das 2h e a queda. A pose de acordar
+  sai de uma tabela por motivo (`POSE_DE_ACORDAR` em `queda.gd`), o gancho para um
+  "levantar da cama" no lugar do parado. O portão `tests/acordar_parado.gd` dorme no
+  meio de uma corrida, de um golpe e do nado pelas três portas e confere clipe,
+  velocidade e posição (#189).
+
 - **Todo campo de Ajustes tem o "?" de ajuda, e "Passos na água" ganha o ↺.** O campo
   era montado à mão, com um botão Ouvir que encurtava o seletor: agora é uma escolha
   como as vizinhas (Original ou Novos, ↺ volta a Original) e trocar a opção já toca a

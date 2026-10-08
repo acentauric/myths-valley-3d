@@ -1005,6 +1005,28 @@ func sair_do_nado_ao_renascer() -> void:
 		visual.position.y = 0.0
 
 
+## ACORDAR PARADO (#189): depois de dormir, desmaiar ou cair, o corpo está em pé
+## e quieto, com a pose do `papel` (hoje o parado; "levantar da cama" um dia) já
+## no primeiro quadro, e nada do que fazia antes sobrevive à noite: corrida
+## ligada, passeio clicado, pulo, nado, golpe e ferramenta em uso. O processo
+## físico está desligado nessa hora, e é ele quem, andando, trocaria o clipe.
+func acordar_parado(papel: String = "idle") -> void:
+	_cancel_walk()
+	velocity = Vector3.ZERO
+	_run_toggled = false
+	_ran_since_toggle = false
+	_jumping = false
+	_jump_buffer_remaining = 0.0
+	_grounded_grace_remaining = 0.0
+	_knockback_remaining = 0.0
+	_uso_restante = 0.0
+	_sacolejo = 0.0
+	liberar_acao_de_golpe()
+	_definir_nado(false)
+	if animator and animator.has_method("acordar_parado"):
+		animator.acordar_parado(papel)
+
+
 ## Chão sob os pés para o som do passo: madeira no píer, na ponte e na canoa; água rasa
 ## ou funda conforme a lâmina; senão o que o cenário diz (grama, terra, areia).
 func chao_dos_pes() -> String:
