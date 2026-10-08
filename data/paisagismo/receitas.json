@@ -166,7 +166,7 @@
    "escala": [0.85, 1.25],
    "lod": 140.0,
    "chao": "folhico",
-   "forro": {"samambaia": 0.5, "heliconia": 0.2}
+   "forro": {"samambaia": 0.5, "heliconia": 0.2, "capim": 0.35}
   },
   "mata_ciliar": {
    "nome": "Mata ciliar",

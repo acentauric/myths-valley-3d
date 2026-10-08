@@ -267,6 +267,35 @@
   meio de uma corrida, de um golpe e do nado pelas três portas e confere clipe,
   velocidade e posição (#189).
 
+- **O chão perde as quinas retas e as escadinhas.** Na praça e nas ruas da igreja, a terra
+  da rua, o pasto, a areia e a mancha escura junto às casas se encontravam em "L" e em
+  degraus de pixel, porque o mapa de solo pintava retângulos de 1 pixel por unidade e a
+  rua era suavizada pela metade das outras. Agora a pintura é subamostrada (2 x 2 por
+  pixel), toda camada larga tem rampa de ~4 u (a rua incluída), a copa de cada árvore é
+  uma mancha redonda e irregular em vez de um quadrado, o traço estreito (trilhas, pé de
+  árvore) ganha camada própria de rampa curta e o shader desvia a leitura do mapa por
+  ruído, de modo que as fronteiras serpenteiam; a areia também passa a esconder o pasto
+  sem degrau. Piso de casa, calçada e cerca não estão no mapa e seguem retos. O portão
+  `mapa_de_solo` mede o maior salto entre pixels vizinhos de cada camada e tem
+  `--falsificar-quinas`. Falta voar de cima pela vila, praça, praia e fazenda e conferir
+  antes e depois (#197).
+
+- **O dendezal ganha chão próprio.** Os dendezeiros ficavam plantados na grama lisa: o
+  mapa de solo pulava o dendê (e o coqueiro) ao pintar o folhiço sob as copas. Agora o
+  dendê pinta a mancha de folhiço e palha caída com 3,5 a 6,5 u (peso 0,7, a borda é
+  rasgada pelo ruído do shader e deixa a grama aparecer entre os pés), o coqueiral da
+  orla segue de areia, e o forro do dendezal ganha capim entre as samambaias. Falta
+  medir o FPS e ver nas quatro estações (#195).
+
+- **Os varais dos quintais voltam à escala de gente.** Os três varais Tripo eram
+  medidos pela largura da corda (3,6 a 4,2 u), e como os modelos são altos e estreitos
+  as estacas chegavam a 3,5 u, passando da cabeça do viajante. Agora são medidos pela
+  altura (1,9 u, contra 1,75 u do viajante); a corda fica com 2,2 a 2,7 u. A âncora
+  "Casa/Varal" da lavadeira não muda de lugar. Um portão novo mede os três varais
+  instanciados e reprova altura fora de 1,7 a 2,1 u. Falta conferir na galeria de
+  Modelos os três lado a lado com o viajante e olhar a roupa no varal em escala humana;
+  o portão só confere a altura que o catálogo já define, não a roupa (#194).
+
 - **Todo campo de Ajustes tem o "?" de ajuda, e "Passos na água" ganha o ↺.** O campo
   era montado à mão, com um botão Ouvir que encurtava o seletor: agora é uma escolha
   como as vizinhas (Original ou Novos, ↺ volta a Original) e trocar a opção já toca a

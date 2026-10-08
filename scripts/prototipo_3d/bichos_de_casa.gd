@@ -19,7 +19,9 @@ extends Node3D
 ##
 ## NÍVEL DE DETALHE pela distância à câmera (`ALCANCE`): longe, o bicho some, não
 ## anda e fica onde estaria (ver `perto` nos dois scripts). Cada bicho tem a sua
-## histerese para não piscar na fronteira.
+## histerese para não piscar na fronteira. O corte do bando inteiro (`visible`)
+## nunca é visto: cada ave já some sozinha pelo `visibility_range` com fade
+## (`Animador.vestir`), e o corte só acontece depois (#193).
 
 const BichoDeCasa = preload("res://scripts/prototipo_3d/bicho_de_casa.gd")
 const BandoDeChao = preload("res://scripts/prototipo_3d/bando_de_chao.gd")
@@ -29,6 +31,12 @@ const ARQUIVO := "res://data/bichos_de_casa.json"
 ## Até onde (u) da câmera os bichos andam e se veem, e a folga da histerese.
 const ALCANCE := 80.0
 const HISTERESE := 8.0
+## Folga (u) do corte do bando além do raio do terreiro: a ave que foge ou voa
+## ao poleiro passa do raio, e o fade da malha (4 u) termina depois do alcance.
+const FOLGA_DO_BANDO := 6.0
+## Largura (u) do fade da malha das aves (`Animador.vestir`): entre o alcance e o
+## alcance + a margem a ave é parcialmente transparente, e só depois some.
+const MARGEM_DO_FADE := 4.0
 ## De quanto em quanto tempo (s) se confere a distância, e se procura o dono.
 const CONFERIR_A_CADA := 0.5
 const PROCURAR_O_DONO_A_CADA := 1.0
@@ -175,8 +183,19 @@ func _conferir_a_distancia() -> void:
 		if is_instance_valid(bando):
 			if not bool(bando.get_meta("presenca_liberada", true)):
 				continue
-			bando.perto = _perto(bando.centro, olho, bando.perto)
+			# O corte seco do bando só vale depois que a ave mais próxima já sumiu
+			# pelo fade da própria malha, e o bando só reaparece quando ela ainda
+			# está além do fade: nenhuma ave entra ou sai opaca.
+			bando.perto = _perto(bando.centro, olho, bando.perto, alcance_do_bando(float(bando.raio)))
 			bando.visible = bando.perto
+
+
+## Alcance (u) do bando inteiro, para `_perto`: o centro do terreiro precisa estar
+## além do alcance das aves + o fade + o raio do terreiro + a folga do voo, para
+## que a ave mais próxima da câmera esteja fora do fade quando o bando aparece
+## (alcance - histerese) e já tenha sumido quando ele é cortado (alcance + histerese).
+static func alcance_do_bando(raio: float) -> float:
+	return ALCANCE + MARGEM_DO_FADE + raio + FOLGA_DO_BANDO + HISTERESE
 
 
 static func _perto(onde: Vector3, olho: Vector3, estava_perto: bool, alcance: float = ALCANCE) -> bool:

@@ -49,6 +49,9 @@ const CAMADAS_DO_CHAO := {
 	"areia": [preload("res://assets/prototipo_3d/materiais/areia_restinga_v1.png"), 5.0, Color(1.0, 1.0, 1.0)],
 	"lama": [preload("res://assets/prototipo_3d/materiais/lama_mangue_v1.png"), 4.0, Color(1.0, 1.0, 1.0)],
 }
+## Quanto do folhiço o dendezeiro pinta sob a copa: menos que a mata (1,0), para a
+## grama aparecer entre as palmas e a borda não virar um disco (#195).
+const PESO_DA_COPA_DO_DENDE := 0.7
 ## Tinta da estrada, quente como a terra batida da vila em volta dela.
 const TINTA_ESTRADA := Color("e8d2ae")
 const TINTA_ESTRADA_PRINCIPAL := Color("eedbb8")
@@ -1171,6 +1174,8 @@ func _terrain_texture_material() -> ShaderMaterial:
 	material.set_shader_parameter("sand_texture", AREIA_TEXTURE)
 	material.set_shader_parameter("forca_declive", 1.0)
 	material.set_shader_parameter("variacao_grande", 0.1)
+	# As fronteiras das camadas do mapa serpenteiam até 1,4 u (#197).
+	material.set_shader_parameter("desvio_borda", 1.4)
 	# O Mirante tem 45,6 u: o pedrisco cobre o topo, acima de 38.
 	material.set_shader_parameter("altura_pedrisco", 38.0)
 	# A copa é pintada antes de o bloco de árvores sumir (LOD_MATA + a margem, medidos
@@ -1252,17 +1257,23 @@ func pintar_vida(arvores: Array, portas: Array) -> void:
 		return
 	solo.limpar(MapaDeSolo.Camada.COPA)
 	# O mangue cobre pela metade (a copa é rala e a lama aparece); o coqueiro não
-	# cobre: a orla continua de areia. Os de peso cheio por último, por cima.
+	# cobre: a orla continua de areia. O dendezeiro cobre quase tudo, em mancha
+	# larga e sem encostar umas nas outras (a malha do dendezal tem 7 u): palha e
+	# folhiço sob as palmas, a grama aparecendo nas bordas rasgadas pelo ruído do
+	# shader (#195). Os de peso cheio por último, por cima.
 	for cheio in [false, true]:
 		for arvore: Dictionary in arvores:
 			var especie := String(arvore.get("especie", ""))
-			if especie.contains("coqueiro") or especie.contains("dende"):
+			if especie.contains("coqueiro"):
 				continue
-			if (especie == "mangue") == cheio:
+			var dende := especie.contains("dende")
+			if (especie == "mangue" or dende) == cheio:
 				continue
 			var pe: Vector3 = arvore["pos"]
-			var lado := clampf(float(arvore.get("raio", 0.4)) * 7.0, 2.0, 5.0) * 1.7
-			solo.mancha(MapaDeSolo.Camada.COPA, Vector2(pe.x, pe.z), lado, 1.0 if cheio else 0.5)
+			var raio := float(arvore.get("raio", 0.4))
+			var lado := clampf(raio * 14.0, 3.5, 6.5) if dende else clampf(raio * 7.0, 2.0, 5.0) * 1.7
+			var peso := PESO_DA_COPA_DO_DENDE if dende else (1.0 if cheio else 0.5)
+			solo.mancha(MapaDeSolo.Camada.COPA, Vector2(pe.x, pe.z), lado, peso)
 	# O folhiço das clareiras que não são de terra batida: a camada da copa foi
 	# apagada acima, e o descampado, sem árvore da mata, não a repintaria.
 	for clareira: Dictionary in clareiras_da_mata:
@@ -1271,8 +1282,8 @@ func pintar_vida(arvores: Array, portas: Array) -> void:
 	for porta: Vector2 in portas:
 		var rua := _ponto_mais_perto_das_ruas(porta, 40.0)
 		if rua.is_finite():
-			solo.faixa(MapaDeSolo.Camada.TERRA, PackedVector2Array([porta, rua]), 1.0)
-	solo.publicar([MapaDeSolo.Camada.TERRA, MapaDeSolo.Camada.COPA])
+			solo.faixa(MapaDeSolo.Camada.TRILHA, PackedVector2Array([porta, rua]), 1.0)
+	solo.publicar([MapaDeSolo.Camada.TRILHA, MapaDeSolo.Camada.COPA])
 
 
 ## LÊ AS CLAREIRAS-DESTAQUE DA MATA (ver `clareiras_da_mata`). Depois das ruas em
@@ -1335,12 +1346,12 @@ func _contorno_da_clareira(clareira: Dictionary, fracao: float) -> PackedVector2
 func _pintar_clareiras_da_mata() -> void:
 	for clareira: Dictionary in clareiras_da_mata:
 		var trilha: PackedVector2Array = clareira["trilha"]
-		solo.faixa(MapaDeSolo.Camada.TERRA, trilha, MEIA_LARGURA_DA_TRILHA)
+		solo.faixa(MapaDeSolo.Camada.TRILHA, trilha, MEIA_LARGURA_DA_TRILHA)
 		if String(clareira["chao"]) == "terra":
 			solo.poligono(MapaDeSolo.Camada.TERRA, _contorno_da_clareira(clareira, 0.72), 1.0)
 		else:
 			# Terra só no pé da árvore e nas bordas das pedras; o resto é folhiço.
-			solo.poligono(MapaDeSolo.Camada.TERRA, _contorno_da_clareira(clareira, 0.26), 1.0)
+			solo.poligono(MapaDeSolo.Camada.TRILHA, _contorno_da_clareira(clareira, 0.26), 1.0)
 
 
 ## Ponto do eixo de rua mais perto de `ponto`, até `alcance` u; INF se nenhum.

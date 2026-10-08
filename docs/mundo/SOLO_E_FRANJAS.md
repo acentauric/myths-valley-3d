@@ -9,7 +9,7 @@ transições (rua, praça, praia, rio) se desfazem sobre um chão da mesma famí
 
 **Três regras misturam as oito camadas** no `terreno.gdshader` (a malha "Terra"):
 
-1. o **mapa de solo** (`mapa_de_solo.gd`): terra, areia, lama, pasto e copa, uma imagem por
+1. o **mapa de solo** (`mapa_de_solo.gd`): terra, areia, lama, pasto, copa e trilha, uma imagem por
    camada, 1 pixel por unidade, sobre o retângulo da terra;
 2. o **declive** (normal suave da malha): barro vermelho no barranco (11° a 20°), pedrisco na
    encosta forte e no topo do Mirante (acima de 38 u);
@@ -22,7 +22,7 @@ por cima da terra e a pedra por cima da lama, em vez de um degradê de duas imag
 |---|---|---|
 | grama baixa | base | 4 u |
 | capim seco | pasto (Fazenda inteira, a vila ralo), em manchas | 5 u |
-| folhiço | sob a copa de cada árvore (menos o coqueiral) | 3,5 u |
+| folhiço | sob a copa de cada árvore (menos o coqueiral; o dendezal, mais ralo) | 3,5 u |
 | terra batida varrida | ruas, praça, cruzamentos, trilhas de pé | 4 u |
 | barro vermelho | declive; halo da rua em declive | 5 u |
 | pedrisco | declive forte; topo do Mirante | 3 u |
@@ -33,12 +33,42 @@ Contra a repetição, o shader gira e amplia a grama de 30 a 80 u da câmera, e 
 brilho varia as manchas grandes em ±10 %. As derivadas do `xz` saem fora dos `if` e as camadas
 usam `textureGrad`, senão aparece costura de mipmap.
 
+### Regra do chão: nenhuma quina reta (#197)
+
+**Nenhuma transição do chão em ângulo reto**, exceto onde a forma é humana e reta de propósito:
+piso de casa, calçada da igreja, canteiro, cerca. Essas exceções **não estão no mapa de solo**:
+são malhas e decalques próprios, assentados por cima do chão, e por isso nunca são amolecidas. Tudo
+que o mapa pinta (terra, areia, lama, pasto, copa) tem fronteira orgânica:
+
+- **Pintura subamostrada.** A imagem crua tem 2 x 2 subamostras por pixel (`ESCALA`); a primeira
+  redução é a média delas, e a fronteira cai entre pixels em vez de em escada de 1 pixel.
+- **Rampa de ~4 u em tudo que é largo** (terra de rua e praça, areia, lama, pasto, copa:
+  `SUAVIZACAO = 2`). A rua deixou de ter rampa menor que as outras.
+- **Trilha à parte.** Traço de ~2 u (trilha de pé, pé de árvore, terreiro) vira a camada
+  `TRILHA`, de rampa de 2 u, senão se diluiria na rampa de 4 u. `peso(TERRA)` devolve o maior
+  de `TERRA` e `TRILHA`, então o passo e os portões leem uma terra só.
+- **Manchas redondas e irregulares.** A copa de cada árvore é uma elipse de mesma área que o
+  quadrado de antes, com os semi-eixos sorteados pela posição (0,88 a 1,12), nunca um quadrado
+  esperando a suavização.
+- **Desvio de borda no shader** (`desvio_borda`, 1,4 u): o ponto lido no mapa é empurrado por dois
+  ruídos de manchas de ~6 u, e toda fronteira serpenteia.
+- **Prioridade.** A areia esconde o pasto pelo peso inteiro (`w_capim *= 1 - w_areia`), como já
+  fazia com o folhiço e o barro.
+
+Sobre o custo: o mapa segue em primitivas de C++; a pintura faz o dobro de linhas e as copas, uma
+faixa por pixel de altura da mancha em vez de um retângulo, sem laço por pixel.
+
+O portão `tests/mapa_de_solo.gd` mede o maior salto entre pixels vizinhos de cada camada suave
+(`degrau_maximo`: 1,0 é corte seco, ~0,3 é rampa de 4 u) e reprova acima de 0,6 (0,85 na trilha);
+a régua é provada antes num quadrado sem suavização, e `-- --falsificar-quinas` publica o mapa
+sem suavização para ver o portão reprovar.
+
 ### Mapa de solo
 
 `mapa_de_solo.gd` (sem `class_name`, `preload` na região). Só primitivas em C++: as faixas viram
 polígonos por `Geometry2D.offset_polyline`, os polígonos se pintam linha a linha com
 `intersect_polyline_with_polygon` e `fill_rect`, a suavização é `shrink_x2` seguido de `resize`
-cúbico (rampas de 2 a 4 u, que o shader ainda recorta com ruído). Tudo vai numa
+cúbico (rampas de 2 a 4 u, que o shader ainda recorta com ruído e desvia). Tudo vai numa
 `Texture2DArray`, um sampler só. Nada de laço por pixel em GDScript.
 
 - **Camadas fixas**, em `geo_region_renderer._montar_mapa_de_solo()`, logo depois das ruas em
@@ -46,8 +76,8 @@ cúbico (rampas de 2 a 4 u, que o shader ainda recorta com ruído). Tudo vai num
   longo da costa; lama ao longo dos rios (núcleo 3,5 u, cauda de umidade 7 u); pasto na
   Fazenda (1,0) e na vila (0,35).
 - **Vida**, em `pintar_vida()`, chamada de `world_builder._build_bases_das_arvores` quando as
-  árvores e as casas já existem: a copa de cada árvore (mangue pela metade, coqueiro e dendê
-  não cobrem) e as trilhas de pé da porta de cada casa até a rua mais perto (1,2 u).
+  árvores e as casas já existem: a copa de cada árvore (mangue pela metade; o dendê, em mancha larga de 3,5 a 6,5 u com
+  peso 0,7, para a grama aparecer na borda; o coqueiro não cobre) e as trilhas de pé da porta de cada casa até a rua mais perto (1,2 u).
 - Sai sempre do KML, da composição e das casas do momento: mudou o mapa, o chão acompanha.
 
 ### Copa ao longe

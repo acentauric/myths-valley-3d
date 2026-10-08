@@ -104,7 +104,9 @@ const PECAS := {
 		[Vector3(2.62, 0.9, 0.5), Vector3(0.0, 3.45, 0.0)]]},
 	"tumulo": {"tripo": "aderecos/tumulo_tripo.glb", "largura": 1.6},
 	"carroca": {"tripo": "aderecos/carroca_tripo.glb", "largura": 3.2, "caixa": true},
-	"varal": {"tripo": "aderecos/varal_tripo.glb", "largura": 3.8},
+	# Os três varais medem pela ALTURA (estacas por volta de 1,9 u, o viajante tem
+	# 1,75): pela largura da corda, o modelo magro e alto inflava até 3,5 u (#194).
+	"varal": {"tripo": "aderecos/varal_tripo.glb", "altura": 1.9},
 	# A PILHA DE LENHA fica na altura da cintura (0,9 m a tamanho 1; o viajante tem ~1,75). Era
 	# 1,5 de largura: 1,12 m de altura a tamanho 1 e 1,57 m nos roçados (#208).
 	"lenha": {"tripo": "aderecos/lenha_tripo.glb", "largura": 1.2, "caixa": true},
@@ -325,8 +327,8 @@ const PECAS := {
 	"casa_varanda": {"tripo": "construcoes/casa_varanda_tripo.glb", "largura": 7.0, "caixa": true, "camera": true},
 	"casa_meia_agua": {"tripo": "construcoes/casa_meia_agua_tripo.glb", "largura": 5.0, "caixa": true, "camera": true},
 	# Quintais: varais, galinheiro, chiqueiro e cocho (lote de 05/10/2026)
-	"varal_bambu": {"tripo": "aderecos/varal_bambu_tripo.glb", "largura": 3.6},
-	"varal_estacas": {"tripo": "aderecos/varal_estacas_tripo.glb", "largura": 4.2},
+	"varal_bambu": {"tripo": "aderecos/varal_bambu_tripo.glb", "altura": 1.9},
+	"varal_estacas": {"tripo": "aderecos/varal_estacas_tripo.glb", "altura": 1.9},
 	"galinheiro": {"tripo": "aderecos/galinheiro_tripo.glb", "largura": 2.2, "caixa": true},
 	"chiqueiro": {"tripo": "aderecos/chiqueiro_tripo.glb", "largura": 3.0},
 	"cocho": {"tripo": "aderecos/cocho_tripo.glb", "largura": 1.6, "caixa": true},
