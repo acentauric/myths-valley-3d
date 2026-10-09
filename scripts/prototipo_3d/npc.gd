@@ -1038,6 +1038,9 @@ const MARCADOR_ATE := 55.0
 ## o retângulo que as interfaces evitam (#216).
 const MARCADOR_ALTURA_M := 0.62
 const MARCADOR_LARGURA := 0.62
+## O quanto o glifo sobe e desce no balanço (m). O retângulo que as interfaces evitam cobre o balanço
+## inteiro: um obstáculo que balança faria a dica e a placa balançarem junto.
+const MARCADOR_BALANCO := 0.06
 var _marcador: Label3D
 var _marcador_em := 0.0
 var _marcador_texto := ""
@@ -1081,16 +1084,18 @@ func retangulo_do_marcador() -> Rect2:
 	var camera := get_viewport().get_camera_3d()
 	if camera == null:
 		return Rect2()
-	var centro := _marcador.global_position
+	# O centro do balanço, e não onde o glifo está neste quadro: o retângulo fica parado enquanto ele balança.
+	var centro := to_global(Vector3(0.0, altura + MARCADOR_ACIMA, 0.0))
 	if camera.is_position_behind(centro) or camera.global_position.distance_to(centro) > MARCADOR_ATE:
 		return Rect2()
-	var meia := camera.global_basis.y * (MARCADOR_ALTURA_M * 0.5)
+	var meia := camera.global_basis.y * (MARCADOR_ALTURA_M * 0.5 + MARCADOR_BALANCO)
 	var cima := camera.unproject_position(centro + meia)
 	var baixo := camera.unproject_position(centro - meia)
 	var alto_px := absf(baixo.y - cima.y)
 	if alto_px < 1.0:
 		return Rect2()
-	var tamanho := Vector2(alto_px * MARCADOR_LARGURA, alto_px)
+	var glifo_px := alto_px * MARCADOR_ALTURA_M / (MARCADOR_ALTURA_M + 2.0 * MARCADOR_BALANCO)
+	var tamanho := Vector2(glifo_px * MARCADOR_LARGURA, alto_px)
 	return Rect2((cima + baixo) * 0.5 - tamanho * 0.5, tamanho)
 
 
@@ -1124,7 +1129,7 @@ func _atualizar_o_marcador(delta: float) -> void:
 	if _marcador.text != _marcador_texto:
 		_marcador.text = _marcador_texto
 	_marcador_t += delta
-	_marcador.position.y = altura + MARCADOR_ACIMA + sin(_marcador_t * 2.4) * 0.06
+	_marcador.position.y = altura + MARCADOR_ACIMA + sin(_marcador_t * 2.4) * MARCADOR_BALANCO
 
 
 func tem_missao() -> bool:

@@ -410,9 +410,15 @@ func _ninguem_cobre_ninguem(aqui: Vector3) -> void:
 		return
 	# ALGUÉM ATRÁS DELE, na mesma linha da câmera, e a missão apontando para esse alguém: a placa dele cairia sob
 	# a dica do E (e, depois, sob o balão). Ela cede, em vez de empurrar a dica para longe de quem a recebe.
-	await _esperar(1.0)
+	# #188: a placa do dono fica à vista sob a dica, e a dica sobe acima dela: o lugar "de antes" é o de
+	# depois de a placa acender e de o empurrão dela assentar.
 	var placa_do_dono: Control = placas._placas[dele]
+	await relogio.ate(func() -> bool: return placa_do_dono.visible and float(placas._alfa.get(dele, 0.0)) >= 1.0, 4.0)
+	await _esperar(1.0)
 	var dica_antes: Rect2 = teclas._dica.get_global_rect()
+	# A dica mora logo acima da placa do dono; a placa dele sobe quando uma cabeça entra sob ela (#184), e a
+	# dica sobe junto. O que se mede é a folga entre as duas, e não a altura na tela.
+	var folga_antes: float = placa_do_dono.get_global_rect().position.y - dica_antes.end.y
 	var atras: Node3D = roda[3]
 	var onde_estava_atras: Vector3 = pontos[3]
 	# Esta pessoa só disputa identificação na tela. Na profundidade livre ela
@@ -445,7 +451,8 @@ func _ninguem_cobre_ninguem(aqui: Vector3) -> void:
 	var cairia := Rect2(camera.unproject_position(topo_de_tras) - Vector2(tamanho_de_tras.x * 0.5, tamanho_de_tras.y), tamanho_de_tras)
 	_conferir(cairia.intersects(dica_antes), "o portão não montou a cena: a placa de quem está atrás (%s) não cairia sob a dica do E (%s)" % [str(cairia), str(dica_antes)])
 	_conferir(not (placa_de_tras.visible and placa_de_tras.modulate.a > 0.25), "a placa de quem está atrás de quem recebe o E ficou na tela, por cima da dica dele")
-	_conferir(absf(dica_agora.position.y - dica_antes.position.y) <= 2.0, "a placa de quem está atrás empurrou a dica do E para longe do dono dela (de y=%.0f para y=%.0f)" % [dica_antes.position.y, dica_agora.position.y])
+	var folga_agora: float = placa_do_dono.get_global_rect().position.y - dica_agora.end.y
+	_conferir(absf(folga_agora - folga_antes) <= 2.0, "a placa de quem está atrás empurrou a dica do E para longe da placa do dono dela (folga de %.0f px para %.0f px)" % [folga_antes, folga_agora])
 	for outra in placas._placas.values():
 		if outra.visible and outra.modulate.a > 0.25 and outra.get_global_rect().intersects(dica_agora):
 			_conferir(false, "uma placa de nome ficou sob a dica do E de quem vai receber o E (placa %s, dica %s)" % [str(outra.get_global_rect()), str(dica_agora)])
@@ -467,7 +474,8 @@ func _ninguem_cobre_ninguem(aqui: Vector3) -> void:
 	# #188: a dica diz só "Conversar", e quem é o morador a placa de nome diz — ela fica à vista, sob a dica.
 	_conferir(dono_visivel.visible and dono_visivel.modulate.a > 0.25, "a dica do E diz só 'Conversar': a placa de nome do dono tem de ficar à vista (#188)" + estado_das_placas)
 	_conferir(not dono_visivel.get_global_rect().intersects(teclas._dica.get_global_rect()), "a dica do E cobre a placa de nome do dono" + estado_das_placas)
-	_conferir(absf(teclas._dica.get_global_rect().position.y - dica_antes.position.y) <= 3.0, "a dica do E não voltou ao lugar de antes (y=%.0f, e era y=%.0f)%s" % [teclas._dica.get_global_rect().position.y, dica_antes.position.y, estado_das_placas])
+	var folga_de_volta: float = dono_visivel.get_global_rect().position.y - teclas._dica.get_global_rect().end.y
+	_conferir(absf(folga_de_volta - folga_antes) <= 3.0, "a dica do E não voltou ao lugar de antes, logo acima da placa do dono (folga de %.0f px, e era %.0f px)%s" % [folga_de_volta, folga_antes, estado_das_placas])
 	var placa: Control = placas._placas[dele]
 	var cobriria_longe := false
 	for distancia in [5.0, 12.0]:
@@ -557,7 +565,7 @@ func _o_marcador_por_cima(aqui: Vector3) -> void:
 			"marcador: o balão (%s) ficou sobre o \"?\" de missão (%s)" % [str(do_balao), str(marcador_agora)])
 	print("  marcador: a dica do E e o balão ficam fora do \"?\" de missão")
 	dele.mostrar_balao("", 0.0)
-	dele.set("_marcador_em", 0.0)
+	_calar_o_marcador(dele)
 	await _esperar(0.6)
 	_fixar(dele, posto_de_dele)
 
@@ -600,7 +608,8 @@ func _o_peso_da_dica() -> void:
 	await _esperar(0.5)
 	var amostras: Array = await _varrer(16.0, 0.5, 1.6, func() -> Dictionary:
 		DicaTecla.mostrar_em(dica, camera, ponto)
-		return {"dica": [dica.position, camera.unproject_position(ponto) - Vector2(dica.size.x * 0.5, dica.size.y)]})
+		# A dica nasce na escala do componente `interacao` (80%, #188): o ponto de chegada é o da caixa escalada.
+		return {"dica": [dica.position, camera.unproject_position(ponto) - Vector2(dica.size.x * 0.5, dica.size.y) * dica.scale]})
 	var pico := _picos(amostras)
 	print("  dica do E: pico de %.0f px/s na tela contra %.0f px/s do ponto" % [pico[0], pico[1]])
 	_conferir(pico[1] > 300.0, "a varredura da câmera só moveu o ponto da dica a %.0f px/s" % pico[1])
@@ -979,6 +988,10 @@ func _montar_a_roda(aqui: Vector3) -> void:
 		# Ninguém cumprimenta no meio da medida: o balão de quem passa muda o teto (duas placas) e some com a placa dele.
 		morador.set("_ultima_saudacao_ms", Time.get_ticks_msec())
 		morador.set("intervalo_saudacao_ms", 100000000)
+		# Sem o "!"/"?" de missão (#216): metade da roda tem fila por abrir, e o marcador é obstáculo de
+		# placa e dica; as medidas daqui são das regras entre placas, dica e balão. O marcador tem a
+		# medida dele (5b), com o "?" posto à mão.
+		_calar_o_marcador(morador)
 		morador.ir_ate(onde, 1.0)
 		morador.global_position = onde
 		roda.append(morador)
@@ -992,6 +1005,12 @@ func _montar_a_roda(aqui: Vector3) -> void:
 		sobra.set("intervalo_saudacao_ms", 100000000)
 		sobra.global_position = vale.world.ground_position(aqui + Vector3(0.0, 0.0, -80.0 - 4.0 * float(j)), 0.1)
 		sobra.process_mode = Node.PROCESS_MODE_DISABLED
+
+
+## O marcador de missão parado e apagado: a pergunta às filas (a cada 0,4 s) fica para depois do portão.
+func _calar_o_marcador(morador: Node3D) -> void:
+	morador.set("_marcador_em", 1.0e9)
+	morador.set("_marcador_texto", "")
 
 
 func _fixar(morador: Node3D, onde: Vector3) -> void:
