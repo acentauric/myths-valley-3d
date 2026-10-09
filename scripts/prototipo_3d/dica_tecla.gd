@@ -155,7 +155,11 @@ static func mostrar_em(dica: PanelContainer, camera: Camera3D, ponto: Vector3, a
 	# As placas estão em coordenadas de tela; a dica, nas do pai (o mesmo, na prática).
 	var origem := dica.global_position - dica.position if dica.is_inside_tree() else Vector2.ZERO
 	var caixa := Rect2((onde - Vector2(tamanho.x * 0.5, tamanho.y)).round() + origem, tamanho)
-	var afastada := PopupsDoMundo.afastar_de(caixa, PopupsDoMundo.retangulos(dica, PopupsDoMundo.GRUPO_PLACAS), FOLGA_DAS_PLACAS)
+	# O "?"/"!" de missão sobre a cabeça de um morador também é obstáculo (#216): ele é do mundo 3D e
+	# fica sempre por baixo de qualquer interface, então é a dica que sobe para cima dele.
+	var obstaculos := PopupsDoMundo.retangulos(dica, PopupsDoMundo.GRUPO_PLACAS)
+	obstaculos.append_array(PopupsDoMundo.retangulos_dos_marcadores(dica))
+	var afastada := PopupsDoMundo.afastar_de(caixa, obstaculos, FOLGA_DAS_PLACAS)
 	# DEPOIS DAS PLACAS, O HUD (#184): a dica do E, dona da vaga, também respeita as barras, o relógio
 	# e os painéis essenciais. Desce para baixo deles, encosta ao lado ou, sem lugar, se apaga.
 	var tela := dica.get_viewport_rect().size

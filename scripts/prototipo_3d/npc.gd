@@ -11,6 +11,7 @@ const BalaoFala = preload("res://scripts/prototipo_3d/balao_fala.gd")
 const EspumaAgua = preload("res://scripts/prototipo_3d/espuma_agua.gd")
 const Vestimenta3D = preload("res://scripts/prototipo_3d/vestimenta_3d.gd")
 const FilaDeFalas = preload("res://scripts/prototipo_3d/fila_de_falas.gd")
+const PopupsDoMundo = preload("res://scripts/prototipo_3d/popups_do_mundo.gd")
 const FalasDosMoradores = preload("res://scripts/prototipo_3d/falas_dos_moradores.gd")
 const MixamoUso = preload("res://scripts/prototipo_3d/mixamo_uso.gd")
 ## O giro e o alinhamento do passo são os do viajante (#209): ninguém anda de lado.
@@ -943,6 +944,10 @@ func _so_cumprimento_no_ar() -> bool:
 const MARCADOR_A_CADA := 0.4
 const MARCADOR_ACIMA := 0.95
 const MARCADOR_ATE := 55.0
+## A altura do glifo no mundo (96 px × 0,0055 m) com o contorno, e a largura dele em relação à altura:
+## o retângulo que as interfaces evitam (#216).
+const MARCADOR_ALTURA_M := 0.62
+const MARCADOR_LARGURA := 0.62
 var _marcador: Label3D
 var _marcador_em := 0.0
 var _marcador_texto := ""
@@ -972,6 +977,31 @@ func _montar_o_marcador() -> void:
 	_marcador.position = Vector3(0.0, altura + MARCADOR_ACIMA, 0.0)
 	_marcador.visible = false
 	add_child(_marcador)
+	# O marcador é do mundo 3D e fica por baixo de toda interface: dica, placa e balão o evitam
+	# pelo retângulo que este morador informa (`popups_do_mundo.gd`, #216).
+	add_to_group(PopupsDoMundo.GRUPO_MARCADORES)
+
+
+## Onde o "!"/"?" está na tela agora (coordenadas do viewport), com a câmera de agora; vazio se não
+## está à vista (sem texto, recolhido, atrás da câmera, além de MARCADOR_ATE). É o que a dica do E,
+## as placas e os balões evitam para nunca o cobrir (#216).
+func retangulo_do_marcador() -> Rect2:
+	if _marcador == null or _marcador_texto == "" or not _marcador.is_visible_in_tree():
+		return Rect2()
+	var camera := get_viewport().get_camera_3d()
+	if camera == null:
+		return Rect2()
+	var centro := _marcador.global_position
+	if camera.is_position_behind(centro) or camera.global_position.distance_to(centro) > MARCADOR_ATE:
+		return Rect2()
+	var meia := camera.global_basis.y * (MARCADOR_ALTURA_M * 0.5)
+	var cima := camera.unproject_position(centro + meia)
+	var baixo := camera.unproject_position(centro - meia)
+	var alto_px := absf(baixo.y - cima.y)
+	if alto_px < 1.0:
+		return Rect2()
+	var tamanho := Vector2(alto_px * MARCADOR_LARGURA, alto_px)
+	return Rect2((cima + baixo) * 0.5 - tamanho * 0.5, tamanho)
 
 
 func _o_que_as_filas_pedem_aqui() -> String:

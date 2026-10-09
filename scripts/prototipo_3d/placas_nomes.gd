@@ -215,6 +215,9 @@ func _process(delta: float) -> void:
 				rostos.append(encolhida(personagem["cabeca"] as Rect2, ENCOLHE_DO_ROSTO))
 				no_caminho.append({"no": personagem["no"], "caixa": personagem["corpo"], "distancia": personagem["distancia"]})
 			no_caminho.append_array(_baloes_com_profundidade(camera))
+			# O "?"/"!" de missão (#216) é do mundo 3D e fica por baixo de toda placa: a placa sobe
+			# para não o cobrir, ou desiste se fosse subir demais, como faz com um rosto.
+			rostos.append_array(PopupsDoMundo.retangulos_dos_marcadores(self))
 	var limite := maximo - (1 if not baloes.is_empty() else 0)
 	var util := Rect2(Vector2.ZERO, tela).grow(-MARGEM_DA_TELA)
 	var paineis := PopupsDoMundo.paineis_do_hud(tela)

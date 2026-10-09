@@ -28,6 +28,9 @@ extends SceneTree
 ##      da dica, cede — e volta quando a dica some —; com o morador falando, a placa dele some,
 ##      o balão deixa a dica embaixo, nenhuma placa fica sob o balão, e são no máximo duas
 ##      placas e quatro popups de personagem.
+##   5b. O "?"/"!" DE MISSÃO POR CIMA (#216): o marcador sobre a cabeça é do mundo 3D e o mundo desenha
+##      antes de toda interface; a dica do E e o balão saem da frente dele (a dica sem a regra
+##      o cobriria), com a câmera perto.
 ##   6. O PESO NA CÂMERA: numa varredura rápida a placa, a dica do E, o chevron da missão, a
 ##      vida da árvore e o balão andam menos depressa que o ponto a que estão presos e assentam
 ##      sem passar dele; o tremor de um pixel da câmera não move a dica; o chevron e a vida da
@@ -138,6 +141,7 @@ func _run() -> void:
 	await _o_teto()
 	await _quem_passa_na_frente()
 	await _ninguem_cobre_ninguem(aqui)
+	await _o_marcador_por_cima(aqui)
 	await _o_peso_das_placas()
 	await _o_peso_da_dica()
 	await _o_peso_do_chevron()
@@ -510,6 +514,49 @@ func _ninguem_cobre_ninguem(aqui: Vector3) -> void:
 	atras.process_mode = processo_de_atras
 	if seta != null:
 		seta.limpar()
+
+
+## 5b. O "?" sobre a cabeça de quem recebe o E nunca fica sob a dica nem sob o balão (#216).
+func _o_marcador_por_cima(aqui: Vector3) -> void:
+	var teclas = vale.get("tecla_dos_moradores")
+	var dele: Node3D = roda[2]
+	var posto_de_dele: Vector3 = pontos[2]
+	var a_dois_passos: Vector3 = vale.world.ground_position(aqui + Vector3(0.0, 0.0, 1.0) * 2.2, 0.1)
+	_fixar(dele, a_dois_passos)
+	var dono: bool = await relogio.ate(func() -> bool: return teclas.perto() == dele and teclas._dica.visible, 6.0)
+	_conferir(dono, "marcador: a dois passos do %s a dica do E não acendeu" % dele.name)
+	if not dono:
+		return
+	await _esperar(1.5)
+	var sem_marcador: Rect2 = teclas._dica.get_global_rect()
+	# Congela o "?" como se a missão mandasse falar com ele (a pergunta às filas é a cada 0,4 s).
+	dele.set("_marcador_em", 1.0e9)
+	dele.set("_marcador_texto", "?")
+	dele._marcador.text = "?"
+	dele._marcador.visible = true
+	await _esperar(1.5)
+	var marcador: Rect2 = dele.retangulo_do_marcador()
+	_conferir(marcador.size != Vector2.ZERO, "marcador: o retângulo do \"?\" sobre %s está vazio com ele à vista" % dele.name)
+	_conferir(marcador.size != Vector2.ZERO and marcador.intersects(sem_marcador),
+		"marcador: o portão não montou a cena: a dica sem a regra (%s) nem cairia sobre o \"?\" (%s)" % [str(sem_marcador), str(marcador)])
+	var dica: Rect2 = teclas._dica.get_global_rect()
+	_conferir(not dica.intersects(marcador),
+		"marcador: a dica do E (%s) ficou sobre o \"?\" de missão (%s)" % [str(dica), str(marcador)])
+	# O balão do mesmo morador também sai da frente do marcador.
+	dele.mostrar_balao(FALA_CURTA, 12.0)
+	var falou: bool = await relogio.ate(func() -> bool: return dele.balao.visible and dele.balao.retangulo().size != Vector2.ZERO, 3.0)
+	_conferir(falou, "marcador: %s não abriu o balão" % dele.name)
+	await _esperar(1.4)
+	if falou:
+		var do_balao: Rect2 = dele.balao.retangulo()
+		var marcador_agora: Rect2 = dele.retangulo_do_marcador()
+		_conferir(marcador_agora.size != Vector2.ZERO and not do_balao.intersects(marcador_agora),
+			"marcador: o balão (%s) ficou sobre o \"?\" de missão (%s)" % [str(do_balao), str(marcador_agora)])
+	print("  marcador: a dica do E e o balão ficam fora do \"?\" de missão")
+	dele.mostrar_balao("", 0.0)
+	dele.set("_marcador_em", 0.0)
+	await _esperar(0.6)
+	_fixar(dele, posto_de_dele)
 
 
 # --- 6. O PESO NA CÂMERA ------------------------------------------------------------------------
