@@ -38,6 +38,7 @@ func _run() -> void:
 	textos = JSON.parse_string(FileAccess.get_file_as_string("res://tools/jev/textos.json"))
 	_ponte()
 	_acoes_em_palavras()
+	_sem_passo_lateral()
 	await _painel()
 	await _modal()
 	print("TESTADOR_SESSAO: %d falha(s)" % falhas)
@@ -68,6 +69,24 @@ func _ponte() -> void:
 	_conferir(pago[pago.find("--seconds") + 1] == "300", "minutos viram segundos")
 	var so_jev := TestadorApoios.argumentos(true, false, 0.0, 1, "godot.exe")
 	_conferir(so_jev[so_jev.find("--budget") + 1] == "0.01", "orçamento mínimo de um centavo")
+
+
+## #209: o testador só ANDA RUMO A (vira o corpo e aperta o W). Nenhuma ação de movimento dele
+## aperta A, D ou S: o código que executa `walk_*`/`run_*` e o que desentala o guia não pode
+## ter essas teclas fora das telas (answer_yes/no e screen_* usam A e D para escolher, não para andar).
+func _sem_passo_lateral() -> void:
+	var fonte := FileAccess.get_file_as_string("res://tools/jev/sessao.gd")
+	var inicio := fonte.find("if escolha.begins_with(\"run_\") or escolha.begins_with(\"walk_\"):")
+	_conferir(inicio >= 0, "o bloco de walk_/run_ do testador mudou de lugar")
+	var fim := fonte.find("if not catalogo.has(escolha)", inicio)
+	var bloco := fonte.substr(inicio, fim - inicio).replace("KEY_SHIFT", "").replace("KEY_SPACE", "")
+	for tecla in ["KEY_A", "KEY_D", "KEY_S"]:
+		_conferir(not bloco.contains(tecla), "walk_/run_ do testador aperta %s: é passo lateral" % tecla)
+	_conferir(bloco.contains("jogada.virar_para") and bloco.contains("KEY_W"), "walk_/run_ deve virar o corpo e apertar o W")
+	var guia_inicio := fonte.find("func _aproximar_guia")
+	var guia := fonte.substr(guia_inicio, fonte.find("\nfunc ", guia_inicio + 10) - guia_inicio).replace("KEY_SHIFT", "").replace("KEY_SPACE", "")
+	for tecla in ["KEY_A", "KEY_D", "KEY_S"]:
+		_conferir(not guia.contains(tecla), "o desentalar do guia aperta %s: é passo lateral" % tecla)
 
 
 func _acoes_em_palavras() -> void:

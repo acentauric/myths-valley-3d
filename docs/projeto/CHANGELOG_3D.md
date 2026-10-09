@@ -149,7 +149,16 @@ Fechada em 09/10/2026 com as correções das issues de 08/10, as vozes, o Mixamo
   corpo se alinhar: de lado ou na meia-volta ele gira no lugar um instante e só então
   anda, sem patinar de lado. O olhar para quem chega perto ganha o mesmo teto por
   quadro, e girar no lugar não conta como estar preso. Portão `giro_dos_moradores`;
-  falta o giro da cabeça (opcional), o vídeo antes e depois e as ações do testador (#209).
+  falta o giro da cabeça (opcional) e o vídeo antes e depois (#209).
+
+- **O testador nunca dá passo lateral: vira o corpo e anda para a frente.** As ações `walk_left`,
+  `walk_right`, `walk_backward` e as de corrida deixam de apertar A, D e S: a ação escolhe o lado da
+  câmera, vira o corpo para ele e só aperta o W, como o `follow_route`. O desentalar do guia também
+  deixou de apertar o D: gira o corpo 60° e segue com o W. O `robo.py` chama esses rumos de
+  `RUMOS_VIRADOS` e continua os deixando como último recurso. O portão `testador_sessao` lê o
+  `sessao.gd` e falha se a execução de `walk_`/`run_` ou o desentalar do guia voltar a usar A, D ou
+  S, e o `beata_locomocao` confere que a velocidade do clipe no chão (passada medida vezes
+  `speed_scale`) segue a velocidade real no andar e na corrida, para o pé não deslizar (#209).
 
 - **A árvore barra o corpo no peito e deixa a copa passar, espécie por espécie.** Um
   portão novo monta o vale, acorda o conjunto de cilindros ao lado de um tronco de cada

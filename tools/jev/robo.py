@@ -35,8 +35,10 @@ EXIT_ACTIONS = ("exit_home", "exit_room")
 ROUTE_ACTION = "follow_route"
 UNREACHABLE_DECISIONS = 40
 ROUTE_TARGET_RADIUS = 2.5      # metros: a ação vai ao mesmo alvo da rota
-# Andar de lado ou de costas não é deslocamento normal (#240): só como último recurso para desentalar.
-STRAFE_ACTIONS = ("walk_left", "walk_right", "walk_backward")
+# O testador nunca dá passo lateral (#209): `walk_left`, `walk_right` e `walk_backward` viram o
+# corpo para aquele lado da câmera e andam para a frente (o sessao.gd só aperta o W). Mesmo assim
+# a meia-volta não é deslocamento normal (#240): só como último recurso para desentalar.
+RUMOS_VIRADOS = ("walk_left", "walk_right", "walk_backward")
 # A ROTA ALTERNATIVA (#183/#239), depois do modal de bloqueio: alvo direto pela rota, sem o guia;
 # depois outra missão disponível; depois explorar; e o ciclo recomeça. Decisões por etapa:
 ALTERNATE_STAGES = {"target": 40, "mission": 20, "play": 120, "explore": 60}
@@ -410,7 +412,7 @@ class JogadorAutomatico:
             def escape_rank(action):
                 point = state.get("directions", {}).get(action[5:], {}).get("walk_endpoint", [])
                 distance = sum((point[i] - marker[i]) ** 2 for i in (0, 2)) if len(point) == len(marker) == 3 else float("inf")
-                return (action in STRAFE_ACTIONS, distance, tried[(self.region, "escape", action)], action)
+                return (action in RUMOS_VIRADOS, distance, tried[(self.region, "escape", action)], action)
             for action in sorted((a for a in actions if a.startswith("walk_")), key=escape_rank):
                 direction = state.get("directions", {}).get(action[5:], {})
                 if (not direction.get("blocked", True) and direction.get("walk_endpoint_walkable") is True
@@ -464,10 +466,10 @@ class JogadorAutomatico:
             visits, distance, action = min(ranked)
             self.visited[action] += 1
             return select(action, "Exploração: visitar o próximo alvo acessível (%.1f unidades)" % distance)
-        # Andar de lado ou de costas não explora (#240): só para frente, salvo quando a rota colidiu.
-        strafe_ok = self.last_action in failed or getattr(self, "route_failed", False)
-        for action in sorted((a for a in actions if a.startswith("walk_")), key=lambda a: (a in STRAFE_ACTIONS, a)):
-            if action in STRAFE_ACTIONS and not strafe_ok:
+        # Virar para o lado ou para trás não explora (#240): só para frente, salvo quando a rota colidiu.
+        virar_ok = self.last_action in failed or getattr(self, "route_failed", False)
+        for action in sorted((a for a in actions if a.startswith("walk_")), key=lambda a: (a in RUMOS_VIRADOS, a)):
+            if action in RUMOS_VIRADOS and not virar_ok:
                 continue
             if fresh(action) and state.get("directions", {}).get(action[5:], {}).get("walk_endpoint_walkable") is not False:
                 return select(action, "Exploração: sondar passagem livre após esgotar interações")
@@ -1028,7 +1030,7 @@ class JogadorAutomatico:
                            not state.get("directions", {}).get(a[5:], {}).get("blocked", False) and
                            state.get("directions", {}).get(a[5:], {}).get("walk_endpoint_walkable") is not False]
                 if choices:
-                    return select(min(choices, key=lambda a: (a in STRAFE_ACTIONS, self.attempts[a])), "Contornar o obstáculo até o galho seco")
+                    return select(min(choices, key=lambda a: (a in RUMOS_VIRADOS, self.attempts[a])), "Contornar o obstáculo até o galho seco")
             return select("objective", "Seguir o marcador do recurso até alcançar sua interação")
         if task.get("last_action_failed"):
             choices = [a for a in actions if a.startswith("walk_") and a not in task.get("last_action_failed", []) and
@@ -1039,7 +1041,7 @@ class JogadorAutomatico:
                 def toward_goal(action):
                     point = state.get("directions", {}).get(action[5:], {}).get("walk_endpoint", [])
                     distance = sum((point[i] - marker[i]) ** 2 for i in (0, 2)) if len(point) == len(marker) == 3 else float("inf")
-                    return (action in STRAFE_ACTIONS, distance, self.attempts[action], action)
+                    return (action in RUMOS_VIRADOS, distance, self.attempts[action], action)
                 action = min(choices, key=toward_goal)
                 return select(action, "Sair do bloqueio por outra direção")
         direct = task.get("actions_matching_the_current_requirement", [])
