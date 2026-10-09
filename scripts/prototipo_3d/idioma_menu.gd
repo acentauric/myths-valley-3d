@@ -247,6 +247,7 @@ const EN := {
 	"Desligados": "Off",
 	# As dicas dos moradores (dicas_dos_moradores.gd, #204).
 	"Dicas dos moradores": "Resident hints",
+	"Legendas do viajante": "Traveler captions",
 	"Ligadas": "On",
 	"Poucas": "Few",
 	"Desligadas": "Off",
@@ -748,6 +749,7 @@ const ES := {
 	"Ligados": "Activados",
 	"Desligados": "Desactivados",
 	"Dicas dos moradores": "Pistas de los habitantes",
+	"Legendas do viajante": "Subtítulos del viajero",
 	"Ligadas": "Activadas",
 	"Poucas": "Pocas",
 	"Desligadas": "Desactivadas",
