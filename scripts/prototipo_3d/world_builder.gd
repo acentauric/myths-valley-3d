@@ -1814,6 +1814,12 @@ func _erguer_ponte(point: Vector3, anchor: String) -> void:
 		if limites.size.z > limites.size.x:
 			ao_longo = Vector3(sin(bridge_yaw), 0.0, cos(bridge_yaw))
 	pontes[anchor] = {"centro": bridge, "ao_longo": ao_longo, "comprimento": comprimento, "largura": largura}
+	# O CORRIMÃO DA PONTE GRANDE, MEDIDO NO GLB (09/10): o tabuleiro dela vai até uns 2,0 u do eixo e os
+	# corrimãos e os mourões da cabeceira ficam de 1,4 a 2,3 u. Sem o modelo de pé/caído da pequena
+	# (`modelos`), a malha dos moradores não tinha como saber onde ele fica: ela tira as faces do
+	# corrimão e deixava o mourão da entrada como chão (`NavegacaoVale._obstaculos_das_pontes`).
+	if peca == "ponte_grande":
+		pontes[anchor]["corrimao"] = Vector2(0.31, 0.52) * largura
 	# A PONTE CAÍDA (#94), no mesmo vão: o modelo de pé fica escondido e sem
 	# tabuleiro até a obra `ponte_levantar`, e a caída aparece no lugar — quem
 	# troca é o `ponte_vale.gd`, pela obra. Sem o modelo do Tripo (o estilo
