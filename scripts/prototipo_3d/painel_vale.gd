@@ -34,6 +34,7 @@ signal pediu(acao: String)
 const Atalhos = preload("res://scripts/prototipo_3d/atalhos.gd")
 const Identidade = preload("res://scripts/prototipo_3d/identidade.gd")
 const CadeiaDeMissoes = preload("res://scripts/prototipo_3d/cadeia_de_missoes.gd")
+const TeclasDeLista = preload("res://scripts/prototipo_3d/teclas_de_lista.gd")
 const IdiomaMenu = preload("res://scripts/prototipo_3d/idioma_menu.gd")
 const VAGAS_TEXTOS := "res://data/vagas_no_jogo.json"
 var _textos_vagas: Dictionary = {}
@@ -195,25 +196,34 @@ func fechar() -> void:
 	fechou.emit()
 
 
+## AS SETAS ESCOLHEM, COMO W/S (#227): ↑↓ andam na lista, ←→ trocam de aba (o `_ajustar`), Enter confirma como o E, e
+## o direcional e o A do controle fazem o mesmo (`teclas_de_lista.gd`). As teclas de movimento de Ajustes
+## continuam valendo junto; o E remapeado e o Espaço também confirmam.
 func _unhandled_input(evento: InputEvent) -> void:
 	if not aberto:
 		return
-	if not (evento is InputEventKey and evento.pressed and not evento.echo):
-		return
-	var tecla: int = evento.physical_keycode
-	if tecla == KEY_ESCAPE or tecla == Atalhos.tecla("painel"):
-		fechar()
-	elif tecla == KEY_TAB:
-		_proxima_aba(-1 if evento.shift_pressed else 1)
-	elif evento.is_action_pressed("mv_forward"):
+	var comando := TeclasDeLista.comando(evento)
+	if evento is InputEventKey and evento.pressed and not evento.echo:
+		var tecla: int = evento.physical_keycode
+		if tecla == KEY_ESCAPE or tecla == Atalhos.tecla("painel"):
+			fechar()
+			get_viewport().set_input_as_handled()
+			return
+		if tecla == KEY_TAB:
+			_proxima_aba(-1 if evento.shift_pressed else 1)
+			get_viewport().set_input_as_handled()
+			return
+		if tecla == Atalhos.tecla("interagir") or tecla == KEY_SPACE:
+			comando = TeclasDeLista.CONFIRMAR
+	if comando == TeclasDeLista.CIMA:
 		_mover(-1)
-	elif evento.is_action_pressed("mv_back"):
+	elif comando == TeclasDeLista.BAIXO:
 		_mover(1)
-	elif evento.is_action_pressed("mv_left"):
+	elif comando == TeclasDeLista.ESQUERDA:
 		_ajustar(-1)
-	elif evento.is_action_pressed("mv_right"):
+	elif comando == TeclasDeLista.DIREITA:
 		_ajustar(1)
-	elif tecla == Atalhos.tecla("interagir") or tecla == KEY_ENTER or tecla == KEY_KP_ENTER or tecla == KEY_SPACE:
+	elif comando == TeclasDeLista.CONFIRMAR:
 		_confirmar()
 	else:
 		return
@@ -822,7 +832,7 @@ func _desenhar_cozinha() -> void:
 		impede if impede != "" else "Gasta: %s   ·   e %d de %s pra fazer" % [
 			Cozinha.custo_em_texto(escolhido), int(Cozinha.dados(escolhido).get("folego", 0)), Energia.nome_recurso()]
 		) + _quantas_faltam(Cozinha.RECEITAS.keys())
-	_rodape.text = "[W/S] escolher · [E] cozinhar · [Esc] fechar"
+	_rodape.text = "[↑↓ ou W/S] escolher · [E ou Enter] cozinhar · [Esc] fechar"
 
 
 ## As cartas, agrupadas pelo que são: cada natureza se usa de um jeito.
@@ -918,7 +928,7 @@ func _desenhar_oficina() -> void:
 		impede if impede != "" else "Gasta: %s   ·   rende %d" % [
 			Oficina.custo_em_texto(escolhida), Oficina.rende(escolhida)]
 		) + _quantas_faltam(Oficina.RECEITAS.keys())
-	_rodape.text = "[W/S] escolher · [E] fabricar · [Tab] outra aba · [Esc] fechar"
+	_rodape.text = "[↑↓ ou W/S] escolher · [E ou Enter] fabricar · [Tab] outra aba · [Esc] fechar"
 
 
 ## A ABA DE MISSÕES LÊ O CADERNO DO VALE, e não o `Missoes` do 2D.
@@ -1000,7 +1010,7 @@ func _desenhar_missoes() -> void:
 		_adicionar_linha("%s  %s" % [marca, _nome_da_missao(missao)], cor)
 	var escolhida: Dictionary = abertas[clampi(_cursor, 0, abertas.size() - 1)]
 	_desenhar_o_diario(escolhida)
-	_rodape.text = "[W/S] escolher · [E] acompanhar · [Esc] fechar"
+	_rodape.text = "[↑↓ ou W/S] escolher · [E ou Enter] acompanhar · [Esc] fechar"
 
 
 func _nome_da_missao(missao: Dictionary) -> String:
@@ -1300,7 +1310,7 @@ func _desenhar_obras() -> void:
 	_dica.text = _aviso if _aviso != "" else str(dado.get("resumo", "")) + _ganho_da_obra(escolhida) + "\n" + (
 		impede if impede != "" else "Custa: " + _precos(Obras.custo(escolhida)) + abatido
 		) + _quantas_faltam(Obras.todas_de(obra_em_foco))
-	_rodape.text = "[W/S] escolher · [E] tocar a obra · [Tab] outra aba · [Esc] fechar"
+	_rodape.text = "[↑↓ ou W/S] escolher · [E ou Enter] tocar a obra · [Tab] outra aba · [Esc] fechar"
 
 
 const NOME_DO_ATRIBUTO := {
@@ -1350,10 +1360,10 @@ func _desenhar_venda() -> void:
 			"Custa %d réis, e é para sempre." % Receitas.preco(escolhida)
 			if Jogo.dinheiro >= Receitas.preco(escolhida)
 			else "Faltam %d réis." % (Receitas.preco(escolhida) - Jogo.dinheiro))
-		_rodape.text = "[W/S] escolher · [E] comprar a receita · [Tab] outra aba · [Esc] fechar"
+		_rodape.text = "[↑↓ ou W/S] escolher · [E ou Enter] comprar a receita · [Tab] outra aba · [Esc] fechar"
 		return
 	_dica.text = "O que o arraial produz sai barato e entra caro. Mandioca e lenha vendem bem na estiagem."
-	_rodape.text = "[W/S] escolher · [E] comprar · [A] vender · [Tab] outra aba · [Esc] fechar"
+	_rodape.text = "[↑↓ ou W/S] escolher · [E ou Enter] comprar · [A ou ←] vender · [Tab] outra aba · [Esc] fechar"
 
 
 ## A ABA DO SAVEIRO: o que o mestre Quirino compra, quanto paga por um, quanto
@@ -1410,7 +1420,7 @@ func _desenhar_ajustes() -> void:
 
 	var tudo: Array = ACOES + CAMPOS
 	_dica.text = _aviso if _aviso != "" else (texto_vagas("dica_acao") if _cursor < ACOES.size() and ACOES[_cursor]["acao"] == "vagas" else (str(tudo[_cursor]["dica"]) if _cursor < tudo.size() else ""))
-	_rodape.text = "[W/S] escolher · [A/D] mudar o valor · [E] usar · [Esc] fechar"
+	_rodape.text = "[↑↓ ou W/S] escolher · [←→ ou A/D] mudar o valor · [E ou Enter] usar · [Esc] fechar"
 
 
 func texto_vagas(chave: String) -> String:

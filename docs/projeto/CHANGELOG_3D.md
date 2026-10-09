@@ -2,6 +2,17 @@
 
 ## Em desenvolvimento — 10/10/2026
 
+- **As setas do teclado escolhem nos painéis com lista, e o Enter confirma como o E.** Na Oficina (painel do J)
+  só W/S moviam a seleção: o painel escutava as ações de movimento, que no padrão são só WASD, e as
+  setas ficavam mudas. Agora ↑↓ escolhem e ←→ trocam de aba (como A/D) no painel inteiro (Missões, Obras,
+  Oficina, Cozinha, Venda, Saveiro, Vagas e a aba Jogo), o Enter e o Enter do teclado numérico confirmam,
+  e o direcional e o botão A do controle fazem o mesmo; as teclas de movimento de Ajustes e o E remapeado
+  continuam valendo junto, e a tecla segurada não pula linhas. A regra mora em `teclas_de_lista.gd`, para a
+  próxima tela já nascer com ela (o Almanaque, a Teia, o menu do Esc, os Controles e a Mochila já aceitavam as
+  setas). Os rodapés dizem as duas formas, em pt, en e es ("[↑↓ ou W/S] escolher · [E ou Enter] fabricar").
+  O portão novo `navegacao_por_setas` cobra o comando, a Oficina (com a volta no alto da lista), o Diário
+  (o Enter acompanha), as Vagas, a Mochila e os rodapés (#227).
+
 - **Os botões da esquerda do lobby explicam o que fazem num popover, e não num tooltip de meia tela.**
   JOGAR, EXPLORAR, TESTAR, MODELOS, SOBRE e SAIR ganham uma caixa compacta (no máximo ~340 px, o texto
   quebra em duas a quatro linhas) na identidade do menu (laca escura, filete de ouro, canto chanfrado, letra

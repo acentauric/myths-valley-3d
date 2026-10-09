@@ -14,6 +14,13 @@ const SUFIXOS := ["", "_en", "_es", "_zh"]
 
 const EN := {
 	"Madrugada": "Small hours",
+	"[↑↓ ou W/S] escolher · [E ou Enter] cozinhar · [Esc] fechar": "[↑↓ or W/S] choose · [E or Enter] cook · [Esc] close",
+	"[↑↓ ou W/S] escolher · [E ou Enter] fabricar · [Tab] outra aba · [Esc] fechar": "[↑↓ or W/S] choose · [E or Enter] craft · [Tab] other tab · [Esc] close",
+	"[↑↓ ou W/S] escolher · [E ou Enter] acompanhar · [Esc] fechar": "[↑↓ or W/S] choose · [E or Enter] follow · [Esc] close",
+	"[↑↓ ou W/S] escolher · [E ou Enter] tocar a obra · [Tab] outra aba · [Esc] fechar": "[↑↓ or W/S] choose · [E or Enter] carry on the build · [Tab] other tab · [Esc] close",
+	"[↑↓ ou W/S] escolher · [E ou Enter] comprar a receita · [Tab] outra aba · [Esc] fechar": "[↑↓ or W/S] choose · [E or Enter] buy the recipe · [Tab] other tab · [Esc] close",
+	"[↑↓ ou W/S] escolher · [E ou Enter] comprar · [A ou ←] vender · [Tab] outra aba · [Esc] fechar": "[↑↓ or W/S] choose · [E or Enter] buy · [A or ←] sell · [Tab] other tab · [Esc] close",
+	"[↑↓ ou W/S] escolher · [←→ ou A/D] mudar o valor · [E ou Enter] usar · [Esc] fechar": "[↑↓ or W/S] choose · [←→ or A/D] change the value · [E or Enter] use · [Esc] close",
 	"Manhã": "Morning",
 	"Tarde": "Afternoon",
 	"Entardecer": "Dusk",
@@ -527,6 +534,13 @@ const EN := {
 
 const ES := {
 	"Madrugada": "Madrugada",
+	"[↑↓ ou W/S] escolher · [E ou Enter] cozinhar · [Esc] fechar": "[↑↓ o W/S] elegir · [E o Enter] cocinar · [Esc] cerrar",
+	"[↑↓ ou W/S] escolher · [E ou Enter] fabricar · [Tab] outra aba · [Esc] fechar": "[↑↓ o W/S] elegir · [E o Enter] fabricar · [Tab] otra pestaña · [Esc] cerrar",
+	"[↑↓ ou W/S] escolher · [E ou Enter] acompanhar · [Esc] fechar": "[↑↓ o W/S] elegir · [E o Enter] seguir · [Esc] cerrar",
+	"[↑↓ ou W/S] escolher · [E ou Enter] tocar a obra · [Tab] outra aba · [Esc] fechar": "[↑↓ o W/S] elegir · [E o Enter] seguir con la obra · [Tab] otra pestaña · [Esc] cerrar",
+	"[↑↓ ou W/S] escolher · [E ou Enter] comprar a receita · [Tab] outra aba · [Esc] fechar": "[↑↓ o W/S] elegir · [E o Enter] comprar la receta · [Tab] otra pestaña · [Esc] cerrar",
+	"[↑↓ ou W/S] escolher · [E ou Enter] comprar · [A ou ←] vender · [Tab] outra aba · [Esc] fechar": "[↑↓ o W/S] elegir · [E o Enter] comprar · [A o ←] vender · [Tab] otra pestaña · [Esc] cerrar",
+	"[↑↓ ou W/S] escolher · [←→ ou A/D] mudar o valor · [E ou Enter] usar · [Esc] fechar": "[↑↓ o W/S] elegir · [←→ o A/D] cambiar el valor · [E o Enter] usar · [Esc] cerrar",
 	"Manhã": "Mañana",
 	"Tarde": "Tarde",
 	"Entardecer": "Atardecer",

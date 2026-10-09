@@ -35,9 +35,9 @@
     "texto_es": "Guardar esta partida y abrir %s? Pulsa E otra vez para confirmar."
   },
   "rodape": {
-    "texto": "[W/S] escolher - [E] confirmar duas vezes - [Esc] cancelar",
-    "texto_en": "[W/S] select - [E] confirm twice - [Esc] cancel",
-    "texto_es": "[W/S] elegir - [E] confirmar dos veces - [Esc] cancelar"
+    "texto": "[↑↓ ou W/S] escolher - [E ou Enter] confirmar duas vezes - [Esc] cancelar",
+    "texto_en": "[↑↓ or W/S] select - [E or Enter] confirm twice - [Esc] cancel",
+    "texto_es": "[↑↓ o W/S] elegir - [E o Enter] confirmar dos veces - [Esc] cancelar"
   },
   "ja_atual": {
     "texto": "Esta vaga já está em uso.",
