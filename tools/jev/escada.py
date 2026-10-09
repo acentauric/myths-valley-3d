@@ -162,6 +162,23 @@ class DetectorDeTrava:
         return duros
 
 
+# Resultados do controlador que contam como ação que falhou (#239), além dos planos que falharam.
+RESULTADOS_DE_FALHA = ("fail", "blocked", "stuck", "refus", "no_navigation", "no_walkable", "locked", "unavailable")
+
+
+def acoes_que_falharam(historico, falhos):
+    """{ação: vezes} das ações que já falharam neste passo: planos falhos e resultados de falha."""
+    contagem = Counter()
+    for falho in falhos or []:
+        for acao in falho.get("plan", []) or []:
+            contagem[acao] += 1
+    for h in list(historico or [])[-10:]:
+        resultado = str(h.get("result", "")).lower()
+        if h.get("action") and any(marca in resultado for marca in RESULTADOS_DE_FALHA):
+            contagem[h["action"]] += 1
+    return dict(contagem.most_common())
+
+
 def contexto_enxuto(state, actions, task, historico, sinais, recusas, falhos, nivel):
     """O que o Jev/GPT recebem: só o necessário para um plano curto, nunca o estado inteiro."""
     objetivo = state.get("objective", {}) or {}
@@ -188,6 +205,9 @@ def contexto_enxuto(state, actions, task, historico, sinais, recusas, falhos, ni
         "refusals": sorted(recusas),
         "stuck_signals": sinais,
         "failed_plans": falhos,
+        "failed_actions": acoes_que_falharam(historico, falhos),
+        "do_not_repeat": "The actions in failed_actions already failed here (with how many times). Do NOT repeat them; "
+                         "a plan made only of failed actions is rejected. Choose different actions.",
         "available_actions": sorted(actions),
     }
 
@@ -405,6 +425,19 @@ class Escada:
                 "recusas": sorted(self.detector.recusas),
                 "requisito": ((task or {}).get("step", {}) or {}).get("meta", {}),
                 "inventario": inventario(state), "na_mao": (state.get("inventory", {}) or {}).get("in_hand")}
+
+    def retomar(self, agora=0.0, motivo=""):
+        """Depois do modal de bloqueio (#183): o humano devolveu o controle ou a rota alternativa
+        começou. Zera a trava e volta ao normal; os tetos de chamadas do passo continuam valendo."""
+        self.fase = "normal"
+        self.plano = None
+        self.proximo_nivel = None
+        self.local_restante = 0
+        self.falhos = []
+        self.detector.assinatura = None
+        self.detector.reiniciar(agora)
+        self.sinais = []
+        self.registrar("ladder_resumed", motivo=motivo, passo=self.passo)
 
     def resumo(self):
         return {"apoios": list(self.ia), "escalonamentos": list(self.escalonamentos),

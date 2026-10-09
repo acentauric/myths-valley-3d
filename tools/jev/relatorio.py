@@ -12,7 +12,11 @@ import time
 
 ESCADA_EVENTOS = {"escalation": "escalations", "escalation_result": "results", "escalation_denied": "denied",
                   "stuck_signal": "signals", "local_recovery": "locals", "blocked_step": "blocked",
-                  "learned_pattern": "learned", "progress": "progress"}
+                  "learned_pattern": "learned", "progress": "progress", "blocked_prompt": "prompts",
+                  "blocked_choice": "choices", "alternate_route": "alternates", "unreachable_target": "unreachable",
+                  "plan_rejected": "rejected", "gpt_invalid_answer": "invalid"}
+ESCOLHAS = {"takeover": "assumir o controle (F7)", "alternate": "tentar outra rota", "stop": "encerrar",
+            "timeout": "sem resposta: outra rota"}
 NIVEIS = {"deterministic": "Determinístico", "jev": "Jev", "gpt": "GPT"}
 SINAIS = {"sem_progresso_acoes": "ações sem progresso", "sem_progresso_tempo": "tempo sem progresso",
           "laco_de_posicao": "laço de posição", "recusa_repetida": "recusa repetida",
@@ -110,7 +114,8 @@ def generate(directory, live=True):
     stop = "em andamento" if live else "encerrado (consulte resumo.json)"
     start = None
     escada = {"escalations": [], "results": [], "denied": [], "signals": [], "locals": [], "blocked": None,
-              "learned": [], "progress": []}
+              "learned": [], "progress": [], "prompts": [], "choices": [], "alternates": [], "unreachable": [],
+              "rejected": [], "invalid": []}
     # Stream: don't retain repeated full world observations in memory.
     with source.open(encoding="utf-8") as stream:
         for line in stream:
@@ -308,8 +313,22 @@ def escada_linhas(escada, summary_path):
                      f"Posição {cell(bloqueio.get('posicao'))}; requisito {cell(bloqueio.get('requisito'))}; "
                      f"na mão {cell(bloqueio.get('na_mao'))}; recusas {cell(bloqueio.get('recusas'))}. "
                      "A captura final da sessão registra o que estava na tela.")
-    else:
+    elif not escada.get("prompts"):
         saida.append("Nenhum passo esgotou os apoios.")
+    for aviso in escada.get("prompts", []):
+        saida.append(f"- {aviso['elapsed']:.1f} s — modal de bloqueio no passo `{cell(aviso.get('step'))}`: {cell(aviso.get('reason'))}.")
+    for escolha in escada.get("choices", []):
+        saida.append(f"- {escolha['elapsed']:.1f} s — escolha: {ESCOLHAS.get(escolha.get('choice'), cell(escolha.get('choice')))}.")
+    for etapa in escada.get("alternates", []):
+        saida.append(f"- {etapa['elapsed']:.1f} s — rota alternativa: {cell(etapa.get('stage'))}"
+                     + (f" ({cell(etapa.get('why') or etapa.get('mission'))})" if etapa.get("why") or etapa.get("mission") else "") + ".")
+    for alvo in escada.get("unreachable", []):
+        saida.append(f"- {alvo['elapsed']:.1f} s — alvo sem rota na malha: {cell(alvo.get('target'))} (evitado por {alvo.get('for_decisions')} decisões).")
+    for recusa in escada.get("rejected", []):
+        saida.append(f"- {recusa['elapsed']:.1f} s — plano do {NIVEIS.get(recusa.get('level'), recusa.get('level'))} recusado: "
+                     f"só repetia ações que falharam ({cell(' → '.join(recusa.get('plan', [])))}).")
+    for invalida in escada.get("invalid", []):
+        saida.append(f"- {invalida['elapsed']:.1f} s — GPT sem plano válido (finish_reason {cell(invalida.get('finish_reason'))}).")
     saida += ["", "### Aprendizado (sinal → plano que funcionou)", ""]
     saida += [f"- {', '.join(SINAIS.get(x, x) for x in e.get('sinais', []))} → {NIVEIS.get(e.get('nivel'))}: "
               f"{' → '.join(e.get('plano', []))} (passo {cell(e.get('passo'))}). Candidato a regra do determinístico."

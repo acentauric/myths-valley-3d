@@ -114,13 +114,37 @@ Os três últimos são sinais leves: só valem depois de 8 ações sem progresso
    (alvo recalculado pelo pedido atual, ferramenta exigida, material mais próximo) por 12
    ações.
 2. Sem progresso, o **Jev** recebe um contexto enxuto (passo, requisito, inventário e mão,
-   últimas 10 ações, recusas, alvos próximos) e devolve um **plano de 3 ações**. O
-   determinístico executa o plano.
+   últimas 10 ações, recusas, alvos próximos e `failed_actions`, as ações que já falharam com
+   quantas vezes, com a ordem de não repeti-las) e devolve um **plano de 3 ações**. Um plano
+   feito só de ações que falharam é recusado (`plan_rejected`) e pedido de novo uma vez, com
+   palavras mais duras e sem essas ações nas opções. O determinístico executa o plano.
 3. Se o progresso anda, volta ao determinístico e o contador zera. Se não anda, o **GPT**
    recebe o mesmo contexto mais o plano que falhou e devolve outro (2 a 5 ações).
-4. Se o GPT também falha, a sessão registra o **bloqueio** (passo, posição, requisito,
-   inventário, recusas, tentativas e a captura final) e encerra com `blocked_step`; não há
-   atalho de teste que pule passo, e o testador nunca altera a missão.
+4. Se o GPT também falha, a sessão **não encerra** (#183): a resposta da ponte traz, uma vez,
+   `"blocked": {"step", "reason", "tries"}` e o jogo abre o modal "Deseja assumir o controle?".
+   No pedido seguinte o jogo manda `"blocked_choice"`: `stop` encerra como antes, com
+   `blocked_step` no relatório; `takeover` espera o F7 e, na devolução, zera a trava; `alternate`
+   ou `timeout` (ninguém respondeu) entram na **rota alternativa**: direto ao alvo pela rota da
+   malha, sem o guia; depois outra missão disponível; depois explorar; em ciclo, até o tempo ou o
+   orçamento acabarem. Cada etapa vai para o relatório (`blocked_prompt`, `blocked_choice`,
+   `alternate_route`). Não há atalho de teste que pule passo, e o testador nunca altera a missão.
+
+O GPT padrão é o **GPT-6 Luna** (`gpt-6-luna`; `OPENAI_TEXT_MODEL` no `.env` manda), com até
+4000 tokens de saída e `reasoning_effort: low`. Resposta vazia ou JSON inválido grava
+`gpt_invalid_answer` (o `finish_reason` e os primeiros 200 caracteres, sem chaves) e repete a
+chamada uma vez.
+
+**Rota na malha (#240).** O `sessao.gd` manda em `route` a rota até o alvo do objetivo
+(`target`, `target_name`, `points`, `next`, `reachable`, `length`) e oferece `follow_route`. Indo a
+esse alvo, o robô segue a rota em vez de andar por direção; alvo sem rota (`reachable: false`)
+fica evitado por 40 decisões (`unreachable_target`) e o robô vai a outro do mesmo tipo ou
+explora. Andar de lado ou de costas só serve de último recurso para desentalar.
+
+**Continuar (#235).** Ao fim da sessão e a cada passo concluído, a ponte grava
+`tools/temp/jev/ultima_sessao.json` (`perfil` e `resumo`: passo, capítulo, %, ações, custo,
+quando). `--detectar` devolve esse resumo em `ultima_sessao.continuar`, e
+`jogar.py --robot --continuar` reabre o mesmo perfil e escolhe CONTINUAR (ou a vaga 1) em vez
+de partida nova.
 
 Freios de custo: no máximo 2 chamadas do Jev e 1 do GPT por passo de missão (uma resposta
 inválida repete o mesmo apoio dentro do teto), 15 s mínimos entre dois pedidos, reserva de

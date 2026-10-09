@@ -884,5 +884,80 @@ class ReportTests(unittest.TestCase):
             self.assertNotIn("miss\u00e3o avan\u00e7ou", report)
 
 
+class RouteTests(unittest.TestCase):
+    """A rota na malha (#240), a rota alternativa do modal (#183) e o --continuar (#235)."""
+
+    def player(self):
+        bot = JogadorAutomatico()
+        bot.action_delay = bot.work_delay = 0
+        return bot
+
+    def state(self, reachable=True, name="Arvore 3"):
+        return {"seconds": 0, "position": [0, 0, 0], "objective": {"id": "lenha", "feito": 0, "alvo": [20, 0, 0]},
+                "inventory": {"in_hand": "", "slots": []},
+                "world_map": {"Arvore 3": [20, 0, 0], "Arvore 5": [8, 0, 6], "Praia": [90, 0, 0]},
+                "route": {"target": [20, 0, 0], "target_name": name, "points": [[0, 0, 0], [10, 0, 0], [20, 0, 0]],
+                          "next": [10, 0, 0], "reachable": reachable, "length": 20.0}}
+
+    ACTIONS = {"objective": "Go to marker", "follow_route": "Seguir a rota até o alvo", "explore_Arvore 3": "go",
+               "explore_Arvore 5": "go", "explore_Praia": "go", "walk_forward": "W", "walk_left": "A",
+               "walk_right": "D", "walk_backward": "S", "wait": "wait"}
+
+    def test_reachable_route_replaces_the_marker_walk(self):
+        bot = self.player()
+        self.assertEqual(bot.choose(self.state(), dict(self.ACTIONS), {}), "follow_route")
+        self.assertIn("rota", bot.reason)
+
+    def test_unreachable_target_is_marked_logged_and_another_of_the_same_kind_is_chosen(self):
+        bot = self.player()
+        choice = bot.choose(self.state(reachable=False), dict(self.ACTIONS), {})
+        self.assertEqual(choice, "explore_Arvore 5")
+        events = bot.drain_events()
+        self.assertEqual(events[0]["kind"], "unreachable_target")
+        self.assertEqual(events[0]["target"], "Arvore 3")
+        self.assertIn("Arvore 3", bot.unreachable)
+        # O alvo segue evitado nas decisões seguintes, sem novo evento.
+        self.assertNotIn(bot.choose(self.state(reachable=False), dict(self.ACTIONS), {}), ("objective", "follow_route"))
+        self.assertEqual([e for e in bot.drain_events() if e["kind"] == "unreachable_target"], [])
+
+    def test_unreachable_target_without_another_of_its_kind_explores(self):
+        bot = self.player()
+        actions = {k: v for k, v in self.ACTIONS.items() if k != "explore_Arvore 5"}
+        self.assertNotIn(bot.choose(self.state(reachable=False), actions, {}), ("objective", "follow_route"))
+
+    def test_exploration_never_strafes_as_normal_movement(self):
+        bot = self.player()
+        state = self.state()
+        state.pop("route")
+        state["world_map"] = {}
+        seen = set()
+        for i in range(30):
+            seen.add(bot.choose(dict(state, seconds=i * 40, position=[i * 50, 0, 0]),
+                                {"walk_forward": "W", "walk_left": "A", "walk_right": "D", "walk_backward": "S", "wait": "w"}, {}))
+        self.assertFalse(seen & {"walk_left", "walk_right", "walk_backward"})
+
+    def test_alternate_route_goes_to_the_target_without_the_guide_then_other_mission_then_explores(self):
+        bot = self.player()
+        bot.start_alternate("lenha", "timeout")
+        state = self.state()
+        state["pedro"] = {"conducting": True}
+        state["journal"] = {"ativas": [{"id": "lenha", "principal": True, "dono": "pedro"}, {"id": "zefa_ervas", "dono": "zefa"}]}
+        actions = dict(self.ACTIONS, follow_pedro="Follow Pedro", inspect_journal="J")
+        self.assertEqual(bot.choose(state, actions, {}), "follow_route")
+        bot.alternate["steps"] = 99          # etapa do alvo esgotada
+        self.assertEqual(bot.choose(state, actions, {}), "inspect_journal")
+        self.assertEqual(bot.alternate["stage"], "mission")
+        stages = [e["stage"] for e in bot.drain_events() if e["kind"] == "alternate_route"]
+        self.assertEqual(stages[:2], ["target", "mission"])
+
+    def test_continue_flag_loads_the_saved_slot_instead_of_a_new_game(self):
+        actions = {"button_0": "Click JOGAR", "button_1": "Click CONTINUAR"}
+        bot = self.player()
+        self.assertEqual(bot.choose({}, dict(actions), {}), "button_0")
+        bot = self.player()
+        bot.continuar = True
+        self.assertEqual(bot.choose({}, dict(actions), {}), "button_1")
+
+
 if __name__ == "__main__":
     unittest.main()

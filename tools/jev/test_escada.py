@@ -11,7 +11,7 @@ import unittest
 from unittest.mock import patch
 
 from escada import DETERMINISTICO, GPT, JEV, DetectorDeTrava, Escada, contexto_enxuto, plano_simulado
-from jogar import Session, detectar_apoios, ultima_sessao
+from jogar import GPT_MODELO_PADRAO, Session, detectar_apoios, ler_ponteiro, ultima_sessao
 from progresso import Ritmo, capitulos, medir
 
 
@@ -328,10 +328,14 @@ class SessaoComApoiosTests(unittest.TestCase):
         class Robo:
             reason = "regra local"
             recovery = False
+            alternate = None
             attempts = __import__("collections").Counter()
 
             def choose(self, state, actions, task):
                 return "wait"
+
+            def start_alternate(self, goal=None, why=""):
+                self.alternate = {"stage": "target", "goal": goal}
         self.session.robot = Robo()
 
     def jev_ok(self, escolhas=("gather_pedra", "work_E", "gather_pedra"), tokens=900):
@@ -429,19 +433,117 @@ class SessaoComApoiosTests(unittest.TestCase):
         self.assertEqual(decisoes[-1]["level"], JEV)
         self.assertEqual(self.session.cost, 0)
 
-    def test_block_stops_the_session_with_the_context_logged(self):
+    def ate_o_modal(self):
+        """Roda a escada simulada até a ponte pedir o modal de bloqueio; devolve (decisão, i)."""
         self.session.simulada = True
         for i in range(400):
             self.relogio.agora += 60
             decisao = self.session.decide_robot(estado(i * 2, posicao=(i * 3.0, 0, 0)), dict(ACOES))
-            if decisao.get("stop"):
-                break
+            self.assertFalse(decisao.get("stop"))
+            if decisao.get("blocked"):
+                return decisao, i
+        self.fail("a escada nunca pediu o modal")
+
+    def eventos(self):
+        return [json.loads(l) for l in (Path(self.temp.name) / "eventos.jsonl").read_text(encoding="utf-8").splitlines()]
+
+    def test_block_opens_the_modal_once_and_waits_for_the_choice(self):
+        decisao, i = self.ate_o_modal()
+        self.assertEqual(decisao["blocked"]["step"], "pedro_pedra")
+        self.assertTrue(decisao["blocked"]["reason"])
+        self.assertTrue(decisao["blocked"]["tries"])
+        self.assertEqual(decisao["choice"], "wait")
+        self.assertTrue(decisao["capture"])
+        # Sem resposta ainda: espera, sem repetir o pedido do modal.
+        seguinte = self.session.decide_robot(estado(i * 2 + 2), dict(ACOES))
+        self.assertEqual((seguinte["choice"], seguinte["mode"]), ("wait", "blocked"))
+        self.assertNotIn("blocked", seguinte)
+
+    def test_block_stops_the_session_with_the_context_logged(self):
+        decisao, i = self.ate_o_modal()
+        decisao = self.session.decide_robot(estado(i * 2 + 2, blocked_choice="stop"), dict(ACOES))
         self.assertEqual(decisao["stop"], "blocked_step")
         self.assertTrue(decisao["capture"])
-        eventos = [json.loads(l) for l in (Path(self.temp.name) / "eventos.jsonl").read_text(encoding="utf-8").splitlines()]
-        bloqueio = next(e for e in eventos if e["kind"] == "blocked_step")
+        bloqueio = next(e for e in self.eventos() if e["kind"] == "blocked_step")
         self.assertEqual(bloqueio["passo"], "pedro_pedra")
         self.assertIn("posicao", bloqueio)
+
+    def test_block_alternate_or_timeout_never_ends_the_session(self):
+        for escolha in ("timeout", "alternate"):
+            with self.subTest(escolha=escolha):
+                self.setUp()
+                decisao, i = self.ate_o_modal()
+                pedidos = 1
+                decisao = self.session.decide_robot(estado(i * 2 + 2, blocked_choice=escolha), dict(ACOES))
+                self.assertEqual(decisao["mode"], "alternate")
+                for j in range(300):
+                    self.relogio.agora += 60
+                    decisao = self.session.decide_robot(estado(1000 + j * 2, posicao=(j * 3.0, 0, 0)), dict(ACOES))
+                    self.assertFalse(decisao.get("stop"))
+                    pedidos += bool(decisao.get("blocked"))
+                self.assertEqual(pedidos, 1)
+                tipos = [e["kind"] for e in self.eventos()]
+                self.assertIn("blocked_choice", tipos)
+                self.assertIn("alternate_route", tipos)
+                self.assertNotIn("blocked_step", tipos)
+
+    def test_block_takeover_waits_for_the_human_and_resets_the_counters_on_return(self):
+        decisao, i = self.ate_o_modal()
+        decisao = self.session.decide_robot(estado(i * 2 + 2, blocked_choice="takeover"), dict(ACOES))
+        self.assertFalse(decisao.get("stop"))
+        self.assertEqual(self.session.escada.fase, "normal")
+        self.session.manual_control({"phase": "end", "after": {"seconds": 5000}})
+        self.assertEqual(self.session.escada.detector.acoes, 0)
+        self.assertIn("ladder_resumed", [e["kind"] for e in self.eventos()])
+
+    def test_jev_plan_made_only_of_failed_actions_is_rejected_and_asked_again_harder(self):
+        self.session.results = [{"action": "walk_left", "result": "movement_blocked_no_displacement_try_other_direction"}] * 2
+        respostas = [self.jev_ok(("walk_left", "walk_left", "walk_left")), self.jev_ok()]
+        with patch("jogar.urlopen", side_effect=lambda *a, **k: respostas.pop(0)) as pedido:
+            decisoes = self.empurrar()
+        self.assertEqual(pedido.call_count, 2)
+        primeiro = json.loads(pedido.call_args_list[0].args[0].data)
+        self.assertEqual(json.loads(primeiro["state"])["failed_actions"], {"walk_left": 2})
+        self.assertIn("Do NOT repeat", primeiro["questions"]["step_1"]["instructions"])
+        segundo = json.loads(pedido.call_args_list[1].args[0].data)
+        self.assertNotIn("walk_left", segundo["questions"]["step_1"]["criteria"])
+        self.assertIn("REJECTED", segundo["questions"]["step_1"]["instructions"])
+        self.assertEqual((decisoes[-1]["level"], decisoes[-1]["choice"]), (JEV, "gather_pedra"))
+        self.assertIn("plan_rejected", [e["kind"] for e in self.eventos()])
+
+    def test_gpt_invalid_answer_is_logged_and_retried_once(self):
+        self.session.escada = Escada((GPT,), relogio=self.relogio, registrar=self.session.log_escada)
+        vazio = {"choices": [{"message": {"content": ""}, "finish_reason": "length"}],
+                 "usage": {"prompt_tokens": 1200, "completion_tokens": 4000}}
+        respostas = [io.BytesIO(json.dumps(vazio).encode()), self.gpt_ok()]
+        with patch("jogar.urlopen", side_effect=lambda *a, **k: respostas.pop(0)) as pedido:
+            decisoes = self.empurrar()
+        self.assertEqual(pedido.call_count, 2)
+        corpo = json.loads(pedido.call_args.args[0].data)
+        self.assertEqual((corpo["model"], corpo["reasoning_effort"], corpo["max_completion_tokens"]),
+                         (GPT_MODELO_PADRAO, "low", 4000))
+        self.assertEqual(GPT_MODELO_PADRAO, "gpt-6-luna")
+        self.assertEqual(decisoes[-1]["level"], GPT)
+        invalida = next(e for e in self.eventos() if e["kind"] == "gpt_invalid_answer")
+        self.assertEqual((invalida["finish_reason"], invalida["empty"]), ("length", True))
+        self.assertNotIn("fake-gpt", (Path(self.temp.name) / "eventos.jsonl").read_text(encoding="utf-8"))
+
+    def test_resume_pointer_is_written_and_read_back_for_the_modal(self):
+        pasta = Path(self.temp.name) / "jev"
+        perfil = Path(self.temp.name) / "perfil"
+        perfil.mkdir()
+        self.session.ponteiro = pasta / "ultima_sessao.json"
+        self.session.perfil = perfil
+        self.session.decide_robot(estado(0, mission_chains=ProgressoTests.CADEIAS), dict(ACOES))
+        self.session.gravar_ponteiro()
+        ponteiro = ler_ponteiro(self.session.ponteiro)
+        self.assertEqual(ponteiro["perfil"], str(perfil))
+        self.assertEqual(ponteiro["resumo"]["passo"], "pedro_pedra")
+        self.assertEqual(sorted(ponteiro["resumo"]), ["acoes", "capitulo", "custo", "passo", "pct", "quando"])
+        resumo = ultima_sessao(pasta)
+        self.assertTrue(resumo["continuar"]["disponivel"])
+        self.assertEqual(resumo["continuar"]["passo"], "pedro_pedra")
+        self.assertIsNone(ler_ponteiro(pasta / "nao-existe.json"))
 
     def test_resolved_stuck_writes_the_learned_pattern_file(self):
         self.session.simulada = True
@@ -472,7 +574,8 @@ class SessaoComApoiosTests(unittest.TestCase):
             if i == 3:
                 cadeias[1]["step"] = 3
             decisao = self.session.decide_robot(estado(i * 2, posicao=(i * 3.0, 0, 0), mission_chains=cadeias), dict(ACOES))
-            if decisao.get("stop"):
+            if decisao.get("blocked"):
+                self.session.decide_robot(estado(i * 2 + 1, blocked_choice="stop"), dict(ACOES))
                 break
         for nome in ("stdout.log", "stderr.log"):
             (Path(self.temp.name) / nome).write_text("", encoding="utf-8")

@@ -23,11 +23,35 @@ def mexe_no_relogio(action, description=""):
 # o testador vai até ele como a qualquer outro, por esta ação.
 GUIDE_APPROACH = "approach_MoradorPedro"
 # Ações que levam o testador para outro lugar; sem sair do lugar, contam como travado.
-TRAVEL_ACTIONS = ("follow_pedro", "approach_", "explore_", "objective", "gather_", "walk_", "run_", "enter_home", "exit_")
+TRAVEL_ACTIONS = ("follow_pedro", "follow_route", "approach_", "explore_", "objective", "gather_", "walk_", "run_", "enter_home", "exit_")
 STAY_INSIDE_ACTIONS = ("approach_bed", "approach_chest")
 # Quantas ações seguidas o robô gasta para pôr uma ferramenta na mão antes de desistir (#207).
 EQUIP_STEPS_LIMIT = 40
 EXIT_ACTIONS = ("exit_home", "exit_room")
+# A ROTA NA MALHA (#240). O sessao.gd calcula em state["route"] a rota até o alvo do objetivo
+# ({"target", "target_name", "points", "next", "reachable", "length"}) e oferece "follow_route".
+# Indo a esse alvo, o robô segue a rota em vez de andar por direção; alvo sem rota fica marcado
+# como inalcançável por algumas decisões, e o robô vai a outro do mesmo tipo (ou explora).
+ROUTE_ACTION = "follow_route"
+UNREACHABLE_DECISIONS = 40
+ROUTE_TARGET_RADIUS = 2.5      # metros: a ação vai ao mesmo alvo da rota
+# Andar de lado ou de costas não é deslocamento normal (#240): só como último recurso para desentalar.
+STRAFE_ACTIONS = ("walk_left", "walk_right", "walk_backward")
+# A ROTA ALTERNATIVA (#183/#239), depois do modal de bloqueio: alvo direto pela rota, sem o guia;
+# depois outra missão disponível; depois explorar; e o ciclo recomeça. Decisões por etapa:
+ALTERNATE_STAGES = {"target": 40, "mission": 20, "play": 120, "explore": 60}
+ALTERNATE_ORDER = ("target", "mission", "play", "explore")
+
+
+def _flat_distance(a, b):
+    if not (isinstance(a, (list, tuple)) and isinstance(b, (list, tuple)) and len(a) == len(b) == 3):
+        return float("inf")
+    return ((a[0] - b[0]) ** 2 + (a[2] - b[2]) ** 2) ** 0.5
+
+
+def _kind(name):
+    """O tipo de um alvo pelo nome: "Arvore 3" e "Arvore_5" são do mesmo tipo."""
+    return str(name).rstrip("0123456789 _-#").lower()
 
 
 class JogadorAutomatico:
@@ -40,6 +64,163 @@ class JogadorAutomatico:
         self.last_action = ""
         self.action_delay = 0.7
         self.work_delay = 1.4
+        self.unreachable = {}     # nome do alvo -> decisões que ainda faltam para tentar de novo
+        self.events = []          # eventos para o relatório, recolhidos pela ponte
+        self.alternate = None     # rota alternativa depois do modal de bloqueio
+        self.continuar = False    # --continuar: carregar a vaga 1 em vez de partida nova (#235)
+
+    def drain_events(self):
+        events, self.events = list(getattr(self, "events", [])), []
+        return events
+
+    def start_alternate(self, goal=None, why=""):
+        """A rota alternativa (#183): direto ao alvo pela rota, sem o guia; outra missão; explorar."""
+        self.alternate = {"stage": "target", "steps": 0, "goal": goal, "tried": [], "cycle": 0}
+        self.__dict__.setdefault("events", []).append({"kind": "alternate_route", "stage": "target", "goal": goal, "why": why})
+
+    def end_alternate(self, why=""):
+        if getattr(self, "alternate", None):
+            self.__dict__.setdefault("events", []).append({"kind": "alternate_route", "stage": "end", "why": why,
+                                                           "goal": self.alternate.get("goal")})
+        self.alternate = None
+
+    def _next_alternate_stage(self, why):
+        alt = self.alternate
+        index = (ALTERNATE_ORDER.index(alt["stage"]) + 1) % len(ALTERNATE_ORDER)
+        alt["cycle"] += index == 0
+        alt["stage"], alt["steps"] = ALTERNATE_ORDER[index], 0
+        if index == 0:
+            alt["tried"] = []
+        self.events.append({"kind": "alternate_route", "stage": alt["stage"], "why": why, "goal": alt.get("goal")})
+
+    def _journal_select(self, state, select, mission_id, label):
+        """Selecionar `mission_id` na caderneta, pelas teclas normais. None se ela não aparece."""
+        if not state.get("screen"):
+            return select("inspect_journal", label + ": abrir a caderneta")
+        panel = state.get("panel", {})
+        if not panel or 0 not in panel.get("allowed_tabs", [0]):
+            return select("close_screen", label + ": voltar a caderneta")
+        if panel.get("tab") != 0:
+            return select("screen_tab", label + ": aba Missoes")
+        entries = panel.get("entries", [])
+        index = next((i for i, e in enumerate(entries) if isinstance(e, dict) and e.get("id") == mission_id), None)
+        if index is None:
+            return None
+        cursor = int(panel.get("cursor", 0))
+        return select("confirm_screen" if cursor == index else "screen_down" if cursor < index else "screen_up",
+                      label + ": " + str(mission_id))
+
+    def _alternate_choice(self, state, actions, select, objective_id):
+        """Uma decisão da rota alternativa, ou None para o jogo normal decidir (etapa "play")."""
+        alt = self.alternate
+        alt["steps"] += 1
+        if alt["steps"] > ALTERNATE_STAGES[alt["stage"]]:
+            self._next_alternate_stage("limite da etapa")
+        stage = alt["stage"]
+        if stage == "target":
+            if state.get("screen"):
+                return select("close_screen", "Rota alternativa: fechar a tela e ir direto ao alvo")
+            route = state.get("route") or {}
+            arrived = route.get("reachable") and (route.get("next") is None or float(route.get("length", 99)) <= ROUTE_TARGET_RADIUS)
+            target = state.get("interaction_target")
+            if arrived and target and target not in ("Pedro", "MoradorPedro"):
+                for action in ("work_E", "interact"):
+                    if action in actions and self.coverage[("alternate", objective_id, action)] < 2:
+                        self.coverage[("alternate", objective_id, action)] += 1
+                        return select(action, "Rota alternativa: no alvo, sem o guia, experimentar o E")
+            if not arrived and self._route_ok:
+                return select(ROUTE_ACTION, "Rota alternativa: seguir a rota direto ao alvo, sem o guia")
+            if not arrived and "objective" in actions and not self._route_blocked and self.attempts[("alternate", "objective")] < 8:
+                self.attempts[("alternate", "objective")] += 1
+                return select("objective", "Rota alternativa: ir ao alvo do objetivo, sem o guia")
+            self._next_alternate_stage("alvo sem rota" if self._route_blocked else "alvo tentado")
+            stage = alt["stage"]
+        if stage == "mission":
+            others = [m.get("id") for m in state.get("journal", {}).get("ativas", [])
+                      if m.get("id") and m.get("id") != objective_id and m.get("id") not in alt["tried"]]
+            if others:
+                choice = self._journal_select(state, select, others[0], "Rota alternativa: tentar outra missao disponivel")
+                if choice == "confirm_screen":
+                    alt["tried"].append(others[0])
+                    self.events.append({"kind": "alternate_route", "stage": "mission", "mission": others[0]})
+                    self._next_alternate_stage("outra missao selecionada")
+                if choice:
+                    return choice
+                alt["tried"].append(others[0])
+                return select("close_screen", "Rota alternativa: a missao nao aparece na lista") if state.get("screen") else None
+            self._next_alternate_stage("nenhuma outra missao")
+            stage = alt["stage"]
+        if stage == "play":
+            return None
+        return self._explore(state, actions, select)
+
+    def _route_marker(self, state, action):
+        """O ponto aonde a ação leva (para saber se é o mesmo alvo da rota)."""
+        if action == "objective":
+            return state.get("objective", {}).get("alvo", [])
+        if action.startswith("explore_"):
+            return state.get("world_map", {}).get(action[8:], [])
+        if action.startswith("gather_"):
+            return state.get("resource_targets", {}).get(action[7:], [])
+        if action.startswith("approach_"):
+            return next((n.get("position", []) for n in state.get("npcs", []) if "approach_" + str(n.get("node", "")) == action), [])
+        return []
+
+    def _same_kind_target(self, state, actions, route):
+        """Outro alvo do mesmo tipo do inalcançável (outra árvore, outra pedra), o mais perto."""
+        kind = _kind(route.get("target_name", ""))
+        if not kind:
+            return None
+        position = state.get("position", [])
+        options = []
+        for name, point in state.get("world_map", {}).items():
+            if _kind(name) == kind and name != route.get("target_name") and name not in self.unreachable:
+                options.append(("explore_" + name, point))
+        for npc in state.get("npcs", []):
+            name = str(npc.get("name", npc.get("node", "")))
+            if _kind(name) == kind and name != route.get("target_name") and name not in self.unreachable:
+                options.append(("approach_" + str(npc.get("node", "")), npc.get("position", [])))
+        options = [(_flat_distance(position, point), action) for action, point in options if action in actions]
+        return min(options)[1] if options else None
+
+    def _observe_route(self, state, actions, task, goal):
+        """Lê state["route"]: marca alvo inalcançável (evento) e decide se a rota vale nesta decisão."""
+        route = state.get("route") or {}
+        for name in list(self.unreachable):
+            self.unreachable[name] -= 1
+            if self.unreachable[name] <= 0:
+                del self.unreachable[name]
+        name = str(route.get("target_name") or route.get("target") or "")
+        has_target = route.get("target") is not None
+        if has_target and route.get("reachable") is False and name not in self.unreachable:
+            self.unreachable[name] = UNREACHABLE_DECISIONS
+            self.events.append({"kind": "unreachable_target", "target": name, "point": route.get("target"),
+                                "goal": goal, "for_decisions": UNREACHABLE_DECISIONS})
+        self._route = route
+        self._route_blocked = has_target and name in self.unreachable
+        self._route_ok = (has_target and route.get("reachable") is True and not self._route_blocked
+                          and ROUTE_ACTION in actions and ROUTE_ACTION not in task.get("last_action_failed", []))
+
+    def _route_substitute(self, state, actions, task, action, reason):
+        """Indo ao alvo da rota: a rota da malha no lugar da direção ou do marcador.
+        Alvo inalcançável: outro do mesmo tipo, ou nada (o robô explora)."""
+        route = getattr(self, "_route", {}) or {}
+        target = route.get("target")
+        goes_there = action == "objective" or (
+            action.startswith(("gather_", "explore_", "approach_"))
+            and _flat_distance(self._route_marker(state, action), target) <= ROUTE_TARGET_RADIUS)
+        if getattr(self, "_route_blocked", False) and (goes_there or action == ROUTE_ACTION):
+            other = self._same_kind_target(state, actions, route)
+            if other:
+                return other, "Alvo sem rota na malha (" + str(route.get("target_name", "")) + "): ir a outro do mesmo tipo"
+            return None, reason
+        if not getattr(self, "_route_ok", False) or action == ROUTE_ACTION:
+            return action, reason
+        directional = (action.startswith("walk_") and not self.route_failed and not task.get("last_action_failed")
+                       and not getattr(self, "escape_leg", {}))
+        if goes_there or directional:
+            return ROUTE_ACTION, "Seguir a rota da malha ate o alvo (" + reason + ")"
+        return action, reason
 
     @staticmethod
     def _inventory(state):
@@ -187,6 +368,7 @@ class JogadorAutomatico:
         self.navigation_leg, self.escape_leg = {}, {}
         self.equipping, self.tool_note = "", ""
         self.recovery = self.route_failed = False
+        self.unreachable = {}
         self.last_goal = self.last_observation = self.progress_signature = None
         self.repeated_observations = self.room_still = self.room_exit_tries = 0
         self.checkpoint_pending = False
@@ -228,7 +410,7 @@ class JogadorAutomatico:
             def escape_rank(action):
                 point = state.get("directions", {}).get(action[5:], {}).get("walk_endpoint", [])
                 distance = sum((point[i] - marker[i]) ** 2 for i in (0, 2)) if len(point) == len(marker) == 3 else float("inf")
-                return (distance, tried[(self.region, "escape", action)], action)
+                return (action in STRAFE_ACTIONS, distance, tried[(self.region, "escape", action)], action)
             for action in sorted((a for a in actions if a.startswith("walk_")), key=escape_rank):
                 direction = state.get("directions", {}).get(action[5:], {})
                 if (not direction.get("blocked", True) and direction.get("walk_endpoint_walkable") is True
@@ -282,7 +464,11 @@ class JogadorAutomatico:
             visits, distance, action = min(ranked)
             self.visited[action] += 1
             return select(action, "Exploração: visitar o próximo alvo acessível (%.1f unidades)" % distance)
-        for action in sorted(a for a in actions if a.startswith("walk_")):
+        # Andar de lado ou de costas não explora (#240): só para frente, salvo quando a rota colidiu.
+        strafe_ok = self.last_action in failed or getattr(self, "route_failed", False)
+        for action in sorted((a for a in actions if a.startswith("walk_")), key=lambda a: (a in STRAFE_ACTIONS, a)):
+            if action in STRAFE_ACTIONS and not strafe_ok:
+                continue
             if fresh(action) and state.get("directions", {}).get(action[5:], {}).get("walk_endpoint_walkable") is not False:
                 return select(action, "Exploração: sondar passagem livre após esgotar interações")
         return select("wait", "Exploração: aguardar mudança no mundo após esgotar ações disponíveis") or select(next(iter(actions)), "Exploração: ação disponível")
@@ -316,12 +502,13 @@ class JogadorAutomatico:
                            "previous_context": None, "progress_signature": None,
                            "last_progress_time": 0.0, "recovery": False, "last_valid_objective": {},
                            "room_position": [], "room_still": 0, "room_exit_tries": 0,
-                           "equipping": "", "tool_note": ""}.items():
+                           "equipping": "", "tool_note": "", "unreachable": {}, "events": [],
+                           "alternate": None, "continuar": False}.items():
             self.__dict__.setdefault(key, value)
         self.tool_note = ""
         context = self._context(state)
         self.region = json.dumps([round(v / 12) for v in state.get("position", [])])
-        self.route_failed = bool(task.get("last_action_failed")) and self.last_action.startswith(("approach_", "explore_", "gather_", "objective", "follow_pedro"))
+        self.route_failed = bool(task.get("last_action_failed")) and self.last_action.startswith(("approach_", "explore_", "gather_", "objective", "follow_pedro", ROUTE_ACTION))
         now = float(state.get("seconds", time.monotonic()))
         # Texto/alvo podem mudar sem cumprir uma etapa: conta somente meta,
         # quantidade feita, inventário e obras construídas como progresso.
@@ -341,6 +528,7 @@ class JogadorAutomatico:
         if (goal, progress) != self.last_goal:
             self.attempts.clear()
             self.last_goal = (goal, progress)
+        self._observe_route(state, actions, task, goal)
         observation = json.dumps({k: state.get(k) for k in
                                   ("position", "objective", "screen", "inventory", "inventory_screen",
                                    "interaction_target", "home_interaction", "resource_work")}, sort_keys=True)
@@ -348,9 +536,13 @@ class JogadorAutomatico:
         self.last_observation = observation
 
         def select(action, reason):
-            action, reason = self._leave_room_first(state, actions, action, reason)
+            left = self._leave_room_first(state, actions, action, reason)
+            if left[0] == action:
+                left = self._route_substitute(state, actions, task, action, reason)
+            action, reason = left
             if action in actions:
                 marker = (state.get("objective", {}).get("alvo", []) if action == "objective" else
+                          (getattr(self, "_route", {}) or {}).get("target") or [] if action == ROUTE_ACTION else
                           state.get("world_map", {}).get(action[8:], []) if action.startswith("explore_") else [])
                 if action in ("follow_pedro", GUIDE_APPROACH):
                     marker = next((n.get("position", []) for n in state.get("npcs", [])
@@ -376,7 +568,7 @@ class JogadorAutomatico:
                 work = task.get("step", {}).get("meta", {}).get("eventos", [])
                 delay = self.work_delay if action in ("interact", "work_E") and any(
                     e in work for e in ("arou", "plantou", "regou")) else self.action_delay
-                if action.startswith(("walk_", "run_", "approach_", "explore_", "gather_")) or action in ("objective", "follow_pedro", "wait"):
+                if action.startswith(("walk_", "run_", "approach_", "explore_", "gather_")) or action in ("objective", "follow_pedro", ROUTE_ACTION, "wait"):
                     delay = 0.0
                 time.sleep(delay)
                 return action
@@ -392,7 +584,14 @@ class JogadorAutomatico:
             return select("name_player", "Preencher o nome visivel da partida de teste e confirmar Enter")
         buttons = [a for a in actions if a.startswith("button_")]
         if buttons:
-            return select(buttons[0], "Avançar a abertura em partida nova")
+            # --continuar (#235): CONTINUAR (ou a vaga 1, que carrega o save) antes de partida nova.
+            # Sem ele, a partida é nova: CONTINUAR fica por último.
+            resume = [a for a in buttons if "CONTINUAR" in str(actions[a]).upper() or "CONTINUE" in str(actions[a]).upper()]
+            if self.continuar:
+                ordered = resume + [a for a in buttons if "VAGA1" in str(actions[a]).upper()] + buttons
+                return select(ordered[0], "Continuar a partida salva da ultima sessao (vaga 1)")
+            ordered = [a for a in buttons if a not in resume] + resume
+            return select(ordered[0], "Avançar a abertura em partida nova")
         for action in ("answer_yes", "dialogue_next"):
             if action in actions:
                 return select(action, "Responder ou avançar a fala atual")
@@ -445,6 +644,10 @@ class JogadorAutomatico:
             self.room_still = 0
             return self._explore(state, actions, select)
 
+        if self.alternate:
+            alternate = self._alternate_choice(state, actions, select, state.get("objective", {}).get("id"))
+            if alternate:
+                return alternate
         pending_main = [m for m in state.get("journal", {}).get("ativas", []) if m.get("principal")]
         # Uma etapa concluída sai da lista e a próxima entra no fim. A ordem
         # de inserção não deve trocar a cadeia do guia pela missão de outro NPC.
@@ -475,7 +678,7 @@ class JogadorAutomatico:
                     # Limitado: o guia fora de alcance não prende o testador numa viagem sem fim (#191).
                     self.attempts[walks] += 1
                     return select(walk, "Voltar ao guia para descobrir a proxima cadeia liberada")
-        if main_mission and state.get("objective", {}).get("id") != main_mission.get("id"):
+        if main_mission and state.get("objective", {}).get("id") != main_mission.get("id") and not self.alternate:
             # A sondagem pode mudar o foco: retomar a principal pela seleção
             # visível da caderneta, sem alterar seu estado diretamente.
             if not state.get("screen"):
@@ -825,7 +1028,7 @@ class JogadorAutomatico:
                            not state.get("directions", {}).get(a[5:], {}).get("blocked", False) and
                            state.get("directions", {}).get(a[5:], {}).get("walk_endpoint_walkable") is not False]
                 if choices:
-                    return select(min(choices, key=lambda a: self.attempts[a]), "Contornar o obstáculo até o galho seco")
+                    return select(min(choices, key=lambda a: (a in STRAFE_ACTIONS, self.attempts[a])), "Contornar o obstáculo até o galho seco")
             return select("objective", "Seguir o marcador do recurso até alcançar sua interação")
         if task.get("last_action_failed"):
             choices = [a for a in actions if a.startswith("walk_") and a not in task.get("last_action_failed", []) and
@@ -836,7 +1039,7 @@ class JogadorAutomatico:
                 def toward_goal(action):
                     point = state.get("directions", {}).get(action[5:], {}).get("walk_endpoint", [])
                     distance = sum((point[i] - marker[i]) ** 2 for i in (0, 2)) if len(point) == len(marker) == 3 else float("inf")
-                    return (distance, self.attempts[action], action)
+                    return (action in STRAFE_ACTIONS, distance, self.attempts[action], action)
                 action = min(choices, key=toward_goal)
                 return select(action, "Sair do bloqueio por outra direção")
         direct = task.get("actions_matching_the_current_requirement", [])
