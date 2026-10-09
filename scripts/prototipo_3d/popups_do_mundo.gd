@@ -18,6 +18,11 @@ const GRUPO_PLACAS := "placas_de_nome"
 const GRUPO_DICAS := "dicas_de_tecla"
 const GRUPO_BALOES := "baloes_de_fala"
 const GRUPO_SETA := "seta_da_missao"
+## O "!"/"?" de missão sobre a cabeça de um morador (`npc.gd`) mora no mundo 3D, e o mundo desenha
+## ANTES de toda interface: nenhuma ordem de camada o põe por cima da dica ou da placa. Então quem
+## é interface é que sai da frente (#216): o morador se anuncia neste grupo e responde
+## `retangulo_do_marcador()` com onde o marcador está na tela agora.
+const GRUPO_MARCADORES := "marcadores_de_missao"
 const GRUPO_HUD := "obstaculos_do_hud"
 ## Matriz: HUD essencial > E > fala > aviso contextual > nome.
 const PRIORIDADE_HUD := 100
@@ -72,6 +77,21 @@ static func retangulos_dos_baloes(no: Node, ignorar: Node = null) -> Array[Rect2
 		if balao == ignorar or not balao.has_method("retangulo"):
 			continue
 		var caixa: Rect2 = balao.call("retangulo")
+		if caixa.size != Vector2.ZERO:
+			saida.append(caixa)
+	return saida
+
+
+## Os retângulos (em tela) dos marcadores "!"/"?" de missão à vista, calculados na hora (o morador
+## projeta o marcador com a câmera de agora, e não de um quadro atrás). Sem o de `ignorar`.
+static func retangulos_dos_marcadores(no: Node, ignorar: Object = null) -> Array[Rect2]:
+	var saida: Array[Rect2] = []
+	if no == null or not no.is_inside_tree():
+		return saida
+	for morador in no.get_tree().get_nodes_in_group(GRUPO_MARCADORES):
+		if morador == ignorar or not morador.has_method("retangulo_do_marcador"):
+			continue
+		var caixa: Rect2 = morador.call("retangulo_do_marcador")
 		if caixa.size != Vector2.ZERO:
 			saida.append(caixa)
 	return saida

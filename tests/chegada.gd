@@ -240,14 +240,50 @@ func _run() -> void:
 		if not atras_na_linha.is_finite():
 			atras_na_linha = pedro.global_position + Vector3(0.0, 0.0, 12.0)
 		print("  o jogador para trás em %s, a %.1f do Pedro" % [str(Vector2(atras_na_linha.x, atras_na_linha.z)), _no_chao(atras_na_linha, pedro.global_position)])
-		jogador.teleportar(atras_na_linha + Vector3(0.0, 0.1, 0.0), 0.0)
+		# A CONDUÇÃO PELA VISTA (#238): o Pedro à vista do jogador SEGUE, por mais atrás que ele esteja na
+		# linha, e só fora da tela espera e depois volta. Primeiro o jogador doze passos atrás COM O PEDRO
+		# NA TELA (a câmera virada para ele)...
+		var rumo_a_ele := atan2(pedro.global_position.x - atras_na_linha.x, pedro.global_position.z - atras_na_linha.z)
+		var rumos := {"para_ele": rumo_a_ele, "para_longe": rumo_a_ele + PI}
+		var com_ele_na_tela := false
+		for chave in ["para_ele", "para_longe"]:
+			jogador.teleportar(atras_na_linha + Vector3(0.0, 0.1, 0.0), float(rumos[chave]))
+			await _quadros(8)
+			if pedro.esta_na_tela_do_jogador():
+				com_ele_na_tela = true
+				rumos["para_longe"] = float(rumos[chave]) + PI
+				break
+		if com_ele_na_tela:
+			var antes_da_vista: float = _no_chao(pedro.global_position, candinha.global_position)
+			await _passos_de_fisica(100)
+			_conferir(not bool(pedro.get("_esperando_quem_ficou")), "com o Pedro na tela do jogador, a doze passos, ele voltou para buscá-lo")
+			_conferir(_no_chao(pedro.global_position, candinha.global_position) < antes_da_vista - 1.0 or pedro._chegou_ao_destino(),
+				"com o Pedro na tela do jogador, ele parou no caminho (estava a %.1f da Candinha e ficou a %.1f)" % [antes_da_vista, _no_chao(pedro.global_position, candinha.global_position)])
+		else:
+			print("  a vista do Pedro estava coberta nos dois rumos: a parte 'à vista' não foi conferida")
+		# ...e agora com a câmera virada para o outro lado: fora da tela ele não volta de pronto (a vista
+		# só muda depois de OCULTO_APOS), espera parado, e só depois de ESPERA_ANTES_DE_VOLTAR volta.
+		jogador.teleportar(atras_na_linha + Vector3(0.0, 0.1, 0.0), float(rumos["para_longe"]))
+		await _quadros(8)
+		_conferir(not pedro.esta_na_tela_do_jogador(), "com a câmera virada para o outro lado, o Pedro continua na tela")
 		await _passos_de_fisica(20)
+		_conferir(not bool(pedro.get("_esperando_quem_ficou")), "o Pedro saiu da tela e voltou no mesmo instante, sem a espera")
 		var longe_antes: float = _no_chao(pedro.global_position, jogador.global_position)
 		var de_onde: Vector3 = pedro.global_position
 		var serie: Array[String] = []
-		for i in 6:
+		var parado_desde := Vector3.INF
+		var maior_distancia := longe_antes
+		for i in 48:
 			await _passos_de_fisica(10)
 			serie.append("%s %.2f v%.2f" % ["E" if bool(pedro.get("_esperando_quem_ficou")) else "-", _no_chao(pedro.global_position, jogador.global_position), Vector2(pedro.velocity.x, pedro.velocity.z).length()])
+			maior_distancia = maxf(maior_distancia, _no_chao(pedro.global_position, jogador.global_position))
+			# Fora da tela há OCULTO_APOS (2 s) até ele ser dado por oculto e ESPERA_ANTES_DE_VOLTAR (3 s) até voltar:
+			# entre os 3 e os 4,5 s (20 passos de antes, mais i * 10) ele espera parado.
+			if i == 15:
+				parado_desde = pedro.global_position
+			if i == 24 and parado_desde.is_finite():
+				_conferir(_no_chao(pedro.global_position, parado_desde) < 1.0 and not bool(pedro.get("_esperando_quem_ficou")),
+					"fora da tela, o Pedro não esperou parado antes de voltar (andou %.1f)" % _no_chao(pedro.global_position, parado_desde))
 		print("  a série (a cada 10 passos: esperando, distância, velocidade): ", " | ".join(serie))
 		var longe_depois: float = _no_chao(pedro.global_position, jogador.global_position)
 		# O caminho da volta, para o diagnóstico: o composto (larga + emendas), o estreito e o largo cru.
@@ -262,8 +298,8 @@ func _run() -> void:
 			_no_chao(pedro.global_position, de_onde)])
 		_conferir(bool(pedro.get("_esperando_quem_ficou")) or longe_depois < VOLTA_A_ANDAR_DO_PEDRO,
 			"com o jogador doze passos para trás, o Pedro não foi buscá-lo")
-		_conferir(longe_depois < longe_antes - 1.5 or longe_depois < VOLTA_A_ANDAR_DO_PEDRO,
-			"com o jogador para trás, o Pedro não veio na direção dele (estava a %.1f e ficou a %.1f)" % [longe_antes, longe_depois])
+		_conferir(longe_depois < maior_distancia - 1.5 or longe_depois < VOLTA_A_ANDAR_DO_PEDRO,
+			"com o jogador para trás, o Pedro não veio na direção dele (chegou a estar a %.1f e ficou a %.1f)" % [maior_distancia, longe_depois])
 		# E A TELA DIZ QUE ELE PAROU: "deve aparecer um aviso em tela informando para
 		# se reaproximar do NPC". Voltando para perto, o aviso sai.
 		_conferir(str(vale.hud.aviso_de_espera()).contains("buscar") or longe_depois < VOLTA_A_ANDAR_DO_PEDRO,
@@ -338,6 +374,17 @@ func _run() -> void:
 		pedro.retomar()
 		await _quadros(3)
 		_conferir(not sala.trancada(), "com a chave dada, a casa herdada continua trancada")
+		# A CHAVE É UM ITEM (#217): quem chega ao passo da casa sem ela (passo pulado, save antigo) a recebe, e a
+		# porta só abre porque ela está na mochila; tirada a chave, a porta tranca de novo.
+		var mochila = root.get_node("/root/Inventario")
+		_conferir(mochila.tem("chave_da_casa"), "no passo da casa, a chave da Dona Zefa não está na mochila")
+		mochila.consumir("chave_da_casa", mochila.quantidade("chave_da_casa"))
+		await _quadros(2)
+		_conferir(sala.trancada(), "sem a chave na mochila, a porta da casa herdada abre")
+		pedro.retomar()
+		await _quadros(2)
+		_conferir(mochila.quantidade("chave_da_casa") == 1, "quem chega ao passo da casa sem a chave não a recebe de volta (%d)" % mochila.quantidade("chave_da_casa"))
+		_conferir(not sala.trancada(), "com a chave de volta na mochila, a casa herdada continua trancada")
 		var casa = vale.get("casa")
 		var tem := {}
 		for monte in casa.bau:

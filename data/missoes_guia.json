@@ -135,6 +135,7 @@
       },
       "quem_paga": "zefa",
       "recompensa": {
+        "chave_da_casa": 1,
         "xp": 10,
         "cocada": 1
       },
@@ -158,7 +159,14 @@
       "meta": {
         "tipo": "evento",
         "evento": "entrou:casa"
-      }
+      },
+      "gasta": {
+        "chave_da_casa": 1
+      },
+      "aviso_gasta": "A chave gira na porta e fica no prego, ao lado do batente.",
+      "aviso_gasta_en": "The key turns in the lock and stays on the nail beside the doorframe.",
+      "aviso_gasta_es": "La llave gira en la cerradura y queda en el clavo, junto al marco de la puerta.",
+      "aviso_gasta_zh": "钥匙在锁里转了一圈，然后留在门框旁的钉子上。"
     },
     {
       "id": "pegar",

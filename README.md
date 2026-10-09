@@ -194,12 +194,27 @@ New-Item -ItemType Directory -Path build/windows -Force
 & 'C:\Tools\Godot\Godot_v4.7.2-stable_win64_console.exe' --headless --path . --export-release 'Windows Desktop' build/windows/MythsValley3D.exe
 ```
 
+O ícone do executável (e o nome da empresa, do produto e a descrição) só é
+gravado se o **rcedit** estiver configurado no editor: sem ele a exportação
+passa sem erro e o `.exe` sai com o ícone do Godot. Pré-requisitos e conferência
+em [Exportar para Windows](docs/ferramentas/EXPORTAR_WINDOWS.md).
+
 O preset embute os recursos em um único executável. O pacote publicado traz
 esse EXE e, opcionalmente, instruções. A atualização consulta o site, limita
 o download à origem permitida, verifica tamanho e SHA-256 e valida o ZIP antes
 de extrair. Conserva o executável anterior durante a troca. A distribuição
 ainda confia no servidor HTTPS: o hash vindo do mesmo servidor não equivale
 a uma assinatura independente da publicação.
+
+Os limites do atualizador (`MAX_ZIP` de 4 GB e `MAX_EXTRAIDO` de 6 GB em
+`scripts/autoload/atualizacao.gd`) acompanham o tamanho do jogo, e o atualizador
+confere o espaço livre em disco antes de baixar. Build que ele não pode instalar
+(grande demais, sem espaço) nunca fica em silêncio: o menu diz o motivo e oferece
+a página de download. Ao fechar a build, rode
+`.\tools\prototipo_3d\conferir_fechamento_de_build.ps1 -Zip <zip>` (com `-Registrar`
+depois de publicada): ele reprova zip ou executável acima dos limites do código,
+avisa quando o dobro já não caberia e quando a build anterior, com os limites que
+embutiu (`data/atualizador_builds.json`), não vai enxergar esta atualização.
 
 O jogo e os testes não precisam de chaves. Credenciais locais, caches,
 builds e arquivos brutos ficam fora do Git. As ferramentas de produção de IA

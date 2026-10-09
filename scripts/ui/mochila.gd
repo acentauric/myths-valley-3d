@@ -858,7 +858,7 @@ func _descrever() -> String:
 		id = str((_bau[k] as Dictionary).get("id", ""))
 		if id == "":
 			return "Vaga vazia do baú."
-		return "%s — %s" % [Catalogo.nome(id), str(Catalogo.dados(id).get("resumo", "no baú"))]
+		return "%s — %s" % [Catalogo.nome(id), (Catalogo.resumo(id) if Catalogo.dados(id).has("resumo") else "no baú")]
 	if _nos_encaixes():
 		id = Equipamento.no_encaixe(_encaixe_do_cursor())
 		if id == "":
@@ -873,7 +873,7 @@ func _descrever() -> String:
 	var dados := Catalogo.dados(id)
 	var texto := Catalogo.nome(id)
 	if dados.has("resumo"):
-		texto += " — " + str(dados["resumo"])
+		texto += " — " + Catalogo.resumo(id)
 	if Equipamento.e_equipamento(id):
 		texto += "   [%s]" % Equipamento.NOME_DO_ENCAIXE.get(Equipamento.encaixe_de(id), "")
 	elif Catalogo.tipo(id) == "comida":

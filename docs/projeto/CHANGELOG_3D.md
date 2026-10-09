@@ -1,5 +1,37 @@
 # Histórico de mudanças — Myths' Valley 3D
 
+## Em desenvolvimento — 10/10/2026
+
+- **O jogo passa a ter o ícone do Myths' Valley, e não o do Godot.** O M dourado do logotipo, numa
+  pastilha de laca escura com filete de ouro, vira o ícone da janela e da barra de tarefas
+  (`icone.png`, 512 px) e do `.exe` (`icone.ico`, de 16 a 256 px), declarado no `project.godot`
+  e nos dois presets de Windows, com empresa, produto e descrição (#230). O splash já não mostra
+  imagem. O ícone do `.exe` só é gravado com o rcedit configurado no editor, e isso agora é
+  pré-requisito documentado (`docs/ferramentas/EXPORTAR_WINDOWS.md`). O portão `icone_do_jogo` cobra a
+  configuração, e `tools/prototipo_3d/conferir_icone_do_exe.ps1` compara o ícone do `.exe`
+  exportado com o do jogo (reprova o do Godot). Falta ver o executável exportado no Explorer, na barra
+  de tarefas e no Alt+Tab, com o rcedit instalado na máquina.
+
+- **O atualizador deixa de ignorar em silêncio a build que ele não consegue instalar.** Os limites eram
+  de uma build de 360 MB (768 MB de zip, 1 GB de jogo), e a Build 9, com mais de 1 GB, nunca viu a 10:
+  o manifesto era reprovado por tamanho e o menu ficava "em dia". Os limites sobem para 4 GB de zip e
+  6 GB de jogo extraído, o atualizador confere o espaço livre em disco (zip e jogo, juntos quando é o
+  mesmo disco) antes de baixar, e a build grande demais ou sem espaço vira "Não deu para atualizar
+  sozinho · Baixar no site", com o motivo na dica e o clique abrindo a página de download (pt/en/es).
+  O portão `atualizacao` cobra o manifesto com o tamanho real da Build 10 e com o dobro dele,
+  e `tools/prototipo_3d/conferir_fechamento_de_build.ps1` confere, ao fechar uma build, os limites
+  do código e os da build anterior (`data/atualizador_builds.json`). Quem tem a Build 9 (e a 10,
+  com os mesmos limites) baixa a próxima pelo site uma vez; a atualização ponta a ponta e o aviso na
+  página Jogar do site seguem pendentes (#231).
+
+- **A chave da casa do tio passa a existir, e a porta só abre com ela.** A Dona Zefa entrega o item
+  "Chave da casa do tio" (pt/en/es/zh, com ícone) no fim do passo 5/16; sem ela na mochila a porta da casa
+  herdada fica trancada, e entrar no passo 6/16 a gasta: o aviso diz que ela fica no prego, ao lado do
+  batente. A chave vai no save entre os dois passos, quem chega ao passo da casa sem ela (save antigo,
+  passo pulado) a recebe, e o nome dos itens passa a acompanhar o idioma do jogo (`Catalogo.nome` e
+  `Catalogo.resumo`). Os portões `cadeia_das_missoes`, `chegada` e `entregas_da_cadeia` cobram a
+  entrega, a porta e o save (#217).
+
 ## Build #10 — 08/10/2026
 
 Fechada em 09/10/2026 com as correções das issues de 08/10, as vozes, o Mixamo e a main da equipe de 08/10.

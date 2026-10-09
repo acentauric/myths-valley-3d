@@ -1,0 +1,17 @@
+{
+  "leia_me": "Tamanhos medidos de cada build fechada e os limites do atualizador que ela leva embutidos (MAX_ZIP e MAX_EXTRAIDO de scripts/autoload/atualizacao.gd). Quem tem a build N só se atualiza sozinho para builds cujo zip e cujo executável cabem nos limites da N. tools/prototipo_3d/conferir_fechamento_de_build.ps1 confere a build que fecha contra estes números (e registra a nova com -Registrar); tests/atualizacao.gd cobra que os limites do código sigam 2x a última build registrada (#231).",
+  "builds": {
+    "9": {
+      "max_zip": 805306368,
+      "max_extraido": 1073741824,
+      "nota": "Já tinha 1,08 GB de zip e não vê a Build 10: o limite embutido não pode ser corrigido de fora, quem tem a 9 baixa a 10 pelo site uma vez."
+    },
+    "10": {
+      "zip_bytes": 1139515623,
+      "exe_bytes": 1447722056,
+      "max_zip": 805306368,
+      "max_extraido": 1073741824,
+      "nota": "Mesmos limites da 9: não se atualiza sozinha para a 11 (1,14 GB de zip contra 768 MB), e a 11 já traz 4 GB e 6 GB."
+    }
+  }
+}

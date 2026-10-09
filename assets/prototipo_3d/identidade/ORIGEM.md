@@ -13,6 +13,7 @@ hoje e para outros usos que ainda vão ser definidos (menu, capa, loja, crédito
 | `moldura_retabulo.png` | Moldura de talha dourada com fio cobalto, volutas de acanto e losangos de azulejo nos cantos; interior em laca lisa (achatado por script), 994×1502, fundo externo transparente | NinePatch do retábulo da home e de todos os modais (identidade.gd, margens 140/150/140/160, escala 0,3) |
 | `cursor_seta.png`, `cursor_mao.png` | Cursor Clássico: seta e mão em ouro com contorno de laca, 40×40 (`tools/prototipo_3d/cursor/gerar_cursor.py`) | opção Clássico do cursor (`Tela.CURSORES`) |
 | `cursores/*.png` | Os outros cinco conjuntos de cursor (ouro, azulejo, talha, pergaminho, lampião), seta e mão, 40×40, desenhados em SVG em `tools/prototipo_3d/cursor/desenhos.js` e rasterizados por `gerar_cursores.js` | escolha do cursor em AJUSTAR > Cenário; o padrão é o Ouro polido |
+| `icone/icone.png`, `icone/icone.ico` | Ícone do jogo: o M dourado do logotipo, recortado do fundo, numa pastilha de laca escura com filete de ouro; PNG 512×512 e .ico com 16, 24, 32, 48, 64, 128 e 256 px (quadros BMP), gerados por `tools/prototipo_3d/icone/gerar_icone.py` a partir de `logo_myths_valley.png` | `application/config/icon`, `windows_native_icon` e o `.exe` exportado (#230) |
 
 ## Como foram feitas
 

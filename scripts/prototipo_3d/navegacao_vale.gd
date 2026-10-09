@@ -208,6 +208,9 @@ static func _copia_da_fonte(fonte: NavigationMeshSourceGeometryData3D) -> Naviga
 func _obstaculos_das_pontes(fonte: NavigationMeshSourceGeometryData3D) -> void:
 	for ponte in _mundo.pontes.values():
 		var modelo: Node3D = (ponte.get("modelos", {}) as Dictionary).get("de_pe")
+		if modelo == null and ponte.has("corrimao"):
+			_obstaculos_da_ponte_grande(fonte, ponte)
+			continue
 		if modelo == null or not modelo.visible or not modelo.has_meta("piso_do_tabuleiro"):
 			continue
 		var centro: Vector3 = ponte.centro
@@ -220,6 +223,31 @@ func _obstaculos_das_pontes(fonte: NavigationMeshSourceGeometryData3D) -> void:
 			for canto in [Vector2(-4.5, 0.5), Vector2(4.5, 0.5), Vector2(4.5, 1.1), Vector2(-4.5, 1.1)]:
 				contorno.append(centro + (eixo * canto.x + lado * canto.y * sinal) * fator)
 			fonte.add_projected_obstruction(contorno, piso - 0.2, ALTURA + 0.4, false)
+
+
+## A PONTE GRANDE DA VILA NÃO TEM `modelos` (só a pequena, a do rio grande, tem a de pé e a
+## caída), e então não tinha obstrução nenhuma: `_corrimaos_das_pontes` tirava as faces do
+## corrimão e dos mourões da cabeceira da fonte e a malha estreita passava a tê-los como chão
+## — o caminho da emenda raspava o mourão da entrada e o Pedro empacava nele (#219). A faixa
+## do corrimão (`corrimao`, de dentro para fora, medida no GLB) entra como obstáculo projetado
+## nos dois lados, do chão da ponte até acima da cabeça, e um palmo além das cabeceiras.
+const ALEM_DA_CABECEIRA := 0.3
+const PISO_DA_PONTE_GRANDE := 0.7
+
+
+func _obstaculos_da_ponte_grande(fonte: NavigationMeshSourceGeometryData3D, ponte: Dictionary) -> void:
+	var centro: Vector3 = ponte.centro
+	var eixo: Vector3 = ponte.ao_longo
+	var lado := Vector3(-eixo.z, 0, eixo.x)
+	var faixa: Vector2 = ponte.corrimao
+	var meio := float(ponte.comprimento) * 0.5 + ALEM_DA_CABECEIRA
+	for sinal: float in [-1.0, 1.0]:
+		var contorno := PackedVector3Array()
+		for canto in [Vector2(-meio, faixa.x), Vector2(meio, faixa.x), Vector2(meio, faixa.y), Vector2(-meio, faixa.y)]:
+			contorno.append(centro + eixo * canto.x + lado * canto.y * sinal)
+		# Do meio palmo abaixo do tabuleiro (a tábua mais alta chega a 0,7 sobre o centro da ponte) até
+		# dois metros acima: o leito debaixo do corrimão também sai, e ninguém passa por baixo da ponte.
+		fonte.add_projected_obstruction(contorno, centro.y - 0.5, ALTURA + 1.4, false)
 
 
 ## O corrimão importado não é piso. Remover suas faces da fonte evita
@@ -241,6 +269,10 @@ func _corrimaos_das_pontes(fonte: NavigationMeshSourceGeometryData3D) -> void:
 			var centro: Vector3 = ponte.centro
 			var modelo: Node3D = (ponte.get("modelos", {}) as Dictionary).get("de_pe")
 			var piso := float(modelo.get_meta("piso_do_tabuleiro", centro.y + 0.31)) if modelo != null else centro.y + 0.31
+			if modelo == null and ponte.has("corrimao"):
+				# A tábua mais alta da ponte grande fica a 0,7 sobre o centro dela (medido no GLB): com o
+				# piso em 0,31 as tábuas altas saíam da malha junto com o corrimão, e o tabuleiro ficava furado.
+				piso = centro.y + PISO_DA_PONTE_GRANDE
 			var eixo: Vector3 = ponte.ao_longo
 			var lado := Vector3(-eixo.z, 0, eixo.x)
 			var relativo := meio - centro
@@ -451,6 +483,11 @@ var _grafo_das_ruas := {}
 
 
 func caminho_pela_estrada(de: Vector3, para: Vector3) -> PackedVector3Array:
+	return alinhar_nas_pontes(_caminho_pela_estrada_cru(de, para))
+
+
+## O CAMINHO PELA ESTRADA, antes de alinhar nas pontes (ver `alinhar_nas_pontes`).
+func _caminho_pela_estrada_cru(de: Vector3, para: Vector3) -> PackedVector3Array:
 	var direto := caminho(de, para)
 	if direto.is_empty():
 		return direto
@@ -481,12 +518,50 @@ func caminho_pela_estrada(de: Vector3, para: Vector3) -> PackedVector3Array:
 	var primeiro := _na_malha(nos[no_entrada], de.y)
 	var ultimo := _na_malha(nos[no_saida], para.y)
 	pontos.append_array(caminho(de, primeiro))
+	# CADA TRECHO DA RUA SEGUE A MALHA (#237, #219). Os vértices da rua são esparsos, e a reta entre
+	# dois deles não sabe de cerca, de mourão nem de pilar: o Pedro entrava no corredor das roças, dava
+	# na cerca nova e voltava para a cidade, e na ponte a reta raspava a cabeceira. O trecho agora é o
+	# caminho da malha entre os dois vértices; se algum não tem caminho que chegue ao outro, a rua
+	# não é andável por aí e vale o caminho da malha inteiro.
+	var anterior := primeiro
 	for i in pela_rua:
-		pontos.append(_na_malha(nos[i], de.y))
+		var ponto := _na_malha(nos[i], de.y)
+		if _plano(anterior, ponto) < 0.05:
+			continue
+		var elo := _elo_da_rua(anterior, ponto)
+		if elo.is_empty():
+			return direto
+		pontos.append_array(elo)
+		anterior = ponto
 	pontos.append_array(caminho(ultimo, para))
 	if _comprimento(pontos) > _comprimento(direto) * DESVIO_MAXIMO_PELA_RUA:
 		return direto
 	return pontos
+
+
+## Quanto o elo da rua pode passar da reta entre os dois vértices (mais a sobra) antes de a rua
+## ali ser tida por barrada; e a que distância do vértice o caminho da malha ainda "chegou".
+const DESVIO_DO_ELO := 2.0
+const SOBRA_DO_ELO := 6.0
+const CHEGA_NO_ELO := 1.5
+
+
+## O trecho da rua de `a` a `b` (sem o `a`, com o `b` no fim) pela malha. Vazio quando a malha não
+## liga os dois, ou só os liga por um desvio enorme: a cerca fecha a rua. Trecho que toca uma ponte fica
+## reto: o caminho da malha por ali passa pelo leito raso debaixo dela, e quem põe o Pedro no tabuleiro
+## é o alinhamento (`alinhar_nas_pontes`).
+func _elo_da_rua(a: Vector3, b: Vector3) -> PackedVector3Array:
+	var reto := PackedVector3Array([b])
+	if _toca_alguma_ponte(a, b):
+		return reto
+	var via := caminho(a, b)
+	if via.size() < 2 or _plano(via[via.size() - 1], b) > CHEGA_NO_ELO:
+		return PackedVector3Array()
+	if _comprimento(via) > _plano(a, b) * DESVIO_DO_ELO + SOBRA_DO_ELO:
+		return PackedVector3Array()
+	var elo := via.slice(1)
+	elo.append(b)
+	return elo
 
 
 ## O ponto da malha mais perto de um ponto da rua: a altura certa (a ponte, e não o leito
@@ -503,6 +578,144 @@ static func _comprimento(pontos: PackedVector3Array) -> float:
 	for i in range(1, pontos.size()):
 		total += Vector2(pontos[i].x - pontos[i - 1].x, pontos[i].z - pontos[i - 1].z).length()
 	return total
+
+
+## O CAMINHO ATRAVESSA A PONTE PELO EIXO DELA (#219). "O Pedro fica parado na cabeceira de baixo,
+## encostado no pilar": o caminho que chegava à ponte vinha em reta de vértice de rua a vértice de
+## rua, ou da emenda da malha estreita, e entrava na cabeceira de viés, pelo mourão. A ponte tem
+## um corredor andado e provado de ponta a ponta (`travessia_da_ponte_central`: a cápsula pelo
+## eixo, nos dois sentidos), e é nele que todo caminho que a cruza passa a entrar: uma chegada
+## alinhada a CHEGADA_NA_PONTE da cabeceira, a cabeceira, o meio, a outra cabeceira e a saída.
+## A ponte interditada (a do rio grande, cercada até a obra) não é atravessada, e o caminho que
+## só passa perto dela, ou que parte de cima dela, fica como está.
+const FOLGA_DA_ZONA_DA_PONTE := 2.5
+const CHEGADA_NA_PONTE := 3.5
+const PASSO_DA_AMOSTRA := 0.5
+const DENTRO_DA_CABECEIRA := 0.5
+
+
+func alinhar_nas_pontes(pontos: PackedVector3Array) -> PackedVector3Array:
+	if _mundo == null or pontos.size() < 2:
+		return pontos
+	var pontes = _mundo.get("pontes")
+	if not (pontes is Dictionary):
+		return pontos
+	var saida := pontos
+	for nome in (pontes as Dictionary):
+		var ponte: Dictionary = (pontes as Dictionary)[nome]
+		if not _ponte_pervia(str(nome)):
+			continue
+		var altura_do_centro := float((ponte.centro as Vector3).y)
+		saida = alinhar_pela_ponte(saida, ponte.centro, ponte.ao_longo, float(ponte.comprimento), float(ponte.largura),
+			func(xz: Vector2) -> Vector3: return _no_da_ponte(xz, altura_do_centro))
+	return saida
+
+
+## A ponte de nome `nome` pode ser atravessada agora? Só a do rio grande fecha (a cerca até a obra).
+func _ponte_pervia(nome: String) -> bool:
+	if nome != "Ponte" or not is_inside_tree():
+		return true
+	var obra := get_tree().get_first_node_in_group("ponte_do_rio")
+	return obra == null or not obra.has_method("interditada") or not bool(obra.interditada())
+
+
+## O segmento de `a` a `b` entra na zona de alguma ponte pervia?
+func _toca_alguma_ponte(a: Vector3, b: Vector3) -> bool:
+	if _mundo == null:
+		return false
+	var pontes = _mundo.get("pontes")
+	if not (pontes is Dictionary):
+		return false
+	for nome in (pontes as Dictionary):
+		var ponte: Dictionary = (pontes as Dictionary)[nome]
+		if not _ponte_pervia(str(nome)):
+			continue
+		var comprimento := _plano(a, b)
+		var passos := maxi(1, ceili(comprimento / 1.0))
+		for k in passos + 1:
+			var p := a.lerp(b, float(k) / float(passos))
+			if _na_zona_da_ponte(Vector2(p.x, p.z), ponte.centro, ponte.ao_longo, float(ponte.comprimento), float(ponte.largura)):
+				return true
+	return false
+
+
+static func _na_zona_da_ponte(p: Vector2, centro: Vector3, eixo: Vector3, comprimento: float, largura: float) -> bool:
+	var e := Vector2(eixo.x, eixo.z).normalized()
+	var rel := p - Vector2(centro.x, centro.z)
+	return absf(rel.dot(e)) <= comprimento * 0.5 + FOLGA_DA_ZONA_DA_PONTE and absf(rel.dot(Vector2(-e.y, e.x))) <= largura * 0.5 + FOLGA_DA_ZONA_DA_PONTE
+
+
+## A regra sem mundo, para o portão conferir: `pontos` (o caminho) alinhado na ponte de `centro`,
+## `eixo` (unitário, horizontal), `comprimento` e `largura`. `no_lugar` põe um ponto do plano (x, z)
+## na altura certa. O caminho que não a cruza de uma cabeceira à outra volta igual.
+static func alinhar_pela_ponte(pontos: PackedVector3Array, centro: Vector3, eixo: Vector3, comprimento: float, largura: float, no_lugar: Callable) -> PackedVector3Array:
+	var e := Vector2(eixo.x, eixo.z)
+	if pontos.size() < 2 or e.length() < 0.001:
+		return pontos
+	e = e.normalized()
+	var c := Vector2(centro.x, centro.z)
+	var meio := comprimento * 0.5
+	var primeiro := -1
+	var ultimo := -1
+	var u_entra := 0.0
+	var u_sai := 0.0
+	for i in range(pontos.size() - 1):
+		var a := Vector2(pontos[i].x, pontos[i].z)
+		var b := Vector2(pontos[i + 1].x, pontos[i + 1].z)
+		var passos := maxi(1, ceili(a.distance_to(b) / PASSO_DA_AMOSTRA))
+		for k in passos + 1:
+			var q := a.lerp(b, float(k) / float(passos))
+			if not _na_zona_da_ponte(q, centro, eixo, comprimento, largura):
+				continue
+			var u := (q - c).dot(e)
+			if primeiro < 0:
+				primeiro = i
+				u_entra = u
+			ultimo = i
+			u_sai = u
+	# Só o que ENTRA por uma cabeceira e SAI pela outra: de uma ponta à outra do corredor.
+	if primeiro < 0 or absf(u_entra) < meio * 0.5 or absf(u_sai) < meio * 0.5 or u_entra * u_sai >= 0.0:
+		return pontos
+	var sinal := signf(u_entra)
+	var saida := PackedVector3Array()
+	for i in range(0, primeiro + 1):
+		if i == 0 or not _na_zona_da_ponte(Vector2(pontos[i].x, pontos[i].z), centro, eixo, comprimento, largura):
+			saida.append(pontos[i])
+	# Quem já parte dentro da zona, junto da cabeceira, não volta atrás para a chegada alinhada.
+	var parte_de_dentro := primeiro == 0 and _na_zona_da_ponte(Vector2(pontos[0].x, pontos[0].z), centro, eixo, comprimento, largura)
+	for u: float in [meio + CHEGADA_NA_PONTE, meio + DENTRO_DA_CABECEIRA, meio - DENTRO_DA_CABECEIRA, 0.0]:
+		if parte_de_dentro and u > meio + DENTRO_DA_CABECEIRA:
+			continue
+		saida.append(no_lugar.call(c + e * u * sinal))
+	for u: float in [meio - DENTRO_DA_CABECEIRA, meio + DENTRO_DA_CABECEIRA, meio + CHEGADA_NA_PONTE]:
+		saida.append(no_lugar.call(c - e * u * sinal))
+	for i in range(ultimo + 1, pontos.size()):
+		if i == pontos.size() - 1 or not _na_zona_da_ponte(Vector2(pontos[i].x, pontos[i].z), centro, eixo, comprimento, largura):
+			saida.append(pontos[i])
+	return saida
+
+
+## O ponto da ponte (ou do chão junto dela) em `xz`: a altura é a do primeiro corpo sólido visto de
+## cima — o tabuleiro, ou o chão da cabeceira —, sem contar moradores nem o jogador, que andam por cima.
+func _no_da_ponte(xz: Vector2, altura_do_centro: float) -> Vector3:
+	var altura := altura_do_centro
+	if is_inside_tree():
+		var espaco := get_world_3d().direct_space_state
+		var de := Vector3(xz.x, altura_do_centro + 6.0, xz.y)
+		var ate := Vector3(xz.x, altura_do_centro - 3.0, xz.y)
+		var fora: Array[RID] = []
+		for tentativa in 6:
+			var pergunta := PhysicsRayQueryParameters3D.create(de, ate, 1)
+			pergunta.exclude = fora
+			var achou := espaco.intersect_ray(pergunta)
+			if achou.is_empty():
+				break
+			if achou.collider is CharacterBody3D:
+				fora.append((achou.collider as CollisionObject3D).get_rid())
+				continue
+			altura = (achou.position as Vector3).y
+			break
+	return Vector3(xz.x, altura + 0.05, xz.y)
 
 
 ## As ruas da região viram um grafo: os pontos das linhas delas são os nós, os trechos

@@ -135,6 +135,24 @@ func _run() -> void:
 	for i in guardados.size():
 		inv.espacos[i] = guardados[i]
 	inv.mudou.emit()
+
+	# --- 4. A CHAVE DA CASA SOBREVIVE AO SAVE, UMA SÓ (#217) -----------------------
+	# Entre o passo da Dona Zefa e o da casa a chave mora na mochila. Salvar e carregar nesse trecho a devolve,
+	# e uma só: o `_conferir_a_chave_da_casa` do vale só completa quem chegou sem ela.
+	_tirar_tudo("chave_da_casa")
+	_conferir(pedro.ir_ao_passo("casa"), "a chegada não tem o passo da casa")
+	pedro.retomar()
+	await _quadros(3)
+	_conferir(inv.quantidade("chave_da_casa") == 1, "no passo da casa, a mochila tem %d chave(s)" % inv.quantidade("chave_da_casa"))
+	vale.restaurar_do_save(vale.estado_para_salvar())
+	await _quadros(3)
+	_conferir(inv.quantidade("chave_da_casa") == 1,
+		"salvo e recarregado entre o passo da Dona Zefa e o da casa, a mochila tem %d chave(s)" % inv.quantidade("chave_da_casa"))
+	# Passada a casa, a chave que sobrou (passo pulado) é guardada no prego: a mochila não a carrega mais.
+	_conferir(pedro.ir_ao_passo("pegar"), "a chegada não tem o passo das ferramentas do finado")
+	pedro.retomar()
+	await _quadros(3)
+	_conferir(inv.quantidade("chave_da_casa") == 0, "passada a casa, a chave continua na mochila (%d)" % inv.quantidade("chave_da_casa"))
 	_fechar()
 
 
@@ -166,7 +184,7 @@ func _devendo(item: String) -> bool:
 func _fechar() -> void:
 	print("")
 	if falhas == 0:
-		print("ENTREGAS_DA_CADEIA_OK: salvo no respiro entre dois passos, recarregar entrega a picareta do passo — uma vez só, e não de novo a cada recarga; com a mochila cheia a ferramenta e a recompensa não somem nem viram 'Recebido': o HUD diz que falta espaço, o que não coube vai no save e entra sozinho quando um espaço abre")
+		print("ENTREGAS_DA_CADEIA_OK: salvo no respiro entre dois passos, recarregar entrega a picareta do passo — uma vez só, e não de novo a cada recarga; com a mochila cheia a ferramenta e a recompensa não somem nem viram 'Recebido': o HUD diz que falta espaço, o que não coube vai no save e entra sozinho quando um espaço abre; a chave da casa do tio entra no passo da Dona Zefa, sobrevive ao save sem dobrar e sai da mochila ao passar da casa")
 	else:
 		print("entregas_da_cadeia: %d falha(s)" % falhas)
 	quit(1 if falhas > 0 else 0)

@@ -11,6 +11,7 @@ const BalaoFala = preload("res://scripts/prototipo_3d/balao_fala.gd")
 const EspumaAgua = preload("res://scripts/prototipo_3d/espuma_agua.gd")
 const Vestimenta3D = preload("res://scripts/prototipo_3d/vestimenta_3d.gd")
 const FilaDeFalas = preload("res://scripts/prototipo_3d/fila_de_falas.gd")
+const PopupsDoMundo = preload("res://scripts/prototipo_3d/popups_do_mundo.gd")
 const FalasDosMoradores = preload("res://scripts/prototipo_3d/falas_dos_moradores.gd")
 const MixamoUso = preload("res://scripts/prototipo_3d/mixamo_uso.gd")
 ## O giro e o alinhamento do passo são os do viajante (#209): ninguém anda de lado.
@@ -345,14 +346,103 @@ func dar_passagem(empurrao: Vector3) -> void:
 	var de := global_transform.translated(Vector3.UP * 0.12)
 	for saida in [lado, -lado, rumo, (rumo + lado).normalized(), (rumo - lado).normalized()]:
 		var passo: Vector3 = saida * PASSAGEM_PASSO
-		if not test_move(de, passo):
+		# SÓ SOBRE CHÃO FIRME (#236): `test_move` só diz que nada barra o passo, e a água não barra. No
+		# tabuado estreito do píer os dois lados são mar, e o Pedro "abria passagem" caindo nele quase toda vez.
+		if not test_move(de, passo) and chao_firme_em(global_position + passo):
 			_passagem_ate = global_position + passo
 			_passagem_resta = PASSAGEM_DURA
 			return
+	# SEM SAÍDA SOBRE CHÃO FIRME (o tabuado estreito, a ponte): ele fica onde está, encostado, e quem passa
+	# o atravessa raspando por PASSAGEM_DURA segundos, sem física empurrando um para fora da borda.
+	_passagem_ate = global_position
+	_passagem_resta = PASSAGEM_DURA
+	_deixar_passar_por_cima()
 
 
 func dando_passagem() -> bool:
 	return _passagem_resta > 0.0
+
+
+## HÁ CHÃO FIRME EM `ponto`? Um raio de cima para baixo (de meio metro acima a um e vinte abaixo): precisa
+## achar chão, a no máximo QUEDA_MAXIMA abaixo dos pés, que não seja gente nem mar (o tabuado, a praia e a
+## ponte estão acima da lâmina; o fundo do mar a um passo do píer, não). É o que `dar_passagem` consulta
+## antes de escolher para onde sair.
+const QUEDA_MAXIMA := 0.5
+const FIRME_ACIMA_DA_AGUA := 0.1
+
+
+func chao_firme_em(ponto: Vector3) -> bool:
+	if not is_inside_tree():
+		return true
+	var pergunta := PhysicsRayQueryParameters3D.create(ponto + Vector3.UP * 0.5, ponto + Vector3.DOWN * 1.2, 1)
+	pergunta.exclude = [get_rid()]
+	var achou := get_world_3d().direct_space_state.intersect_ray(pergunta)
+	if achou.is_empty() or achou.collider is CharacterBody3D:
+		return false
+	var chao := (achou.position as Vector3).y
+	if chao < global_position.y - QUEDA_MAXIMA:
+		return false
+	if terreno != null and terreno.has_method("water_level_at"):
+		var agua := float(terreno.water_level_at(achou.position as Vector3))
+		if is_finite(agua) and chao < agua - FIRME_ACIMA_DA_AGUA:
+			return false
+	return true
+
+
+## O JOGADOR PASSA POR CIMA dele por PASSAGEM_DURA segundos: a exceção de colisão do corpo do jogador com este.
+var _deixa_passar := false
+
+
+func _deixar_passar_por_cima() -> void:
+	if _deixa_passar or not (jogador is PhysicsBody3D) or not is_inside_tree():
+		return
+	_deixa_passar = true
+	(jogador as PhysicsBody3D).add_collision_exception_with(self)
+	get_tree().create_timer(PASSAGEM_DURA).timeout.connect(func() -> void:
+		_deixa_passar = false
+		if is_instance_valid(self) and is_instance_valid(jogador) and jogador is PhysicsBody3D:
+			(jogador as PhysicsBody3D).remove_collision_exception_with(self))
+
+
+## SE MESMO ASSIM CAIR (#236): quem estava em chão firme há pouco, a no máximo CAIU_ATE_PERTO dali, e está
+## na água há CAIU_APOS segundos, volta ao último chão firme — pelo ponto mais perto, e não na cara do
+## jogador: só quando ele não o vê, ou depois de CAIU_FORCA segundos de braçada. É proteção, não a regra
+## (a regra é `dar_passagem` só sobre chão firme).
+const FIRME_A_CADA := 0.5
+const CAIU_APOS := 1.0
+const CAIU_FORCA := 6.0
+const CAIU_ATE_PERTO := 7.0
+var _firme_em := Vector3.INF
+var _firme_s := 0.0
+var _na_agua_s := 0.0
+
+
+func _vigiar_a_queda(delta: float) -> void:
+	if not _nadando:
+		_na_agua_s = 0.0
+		_firme_s += delta
+		if _firme_s >= FIRME_A_CADA and is_on_floor():
+			_firme_s = 0.0
+			_firme_em = global_position
+		return
+	_na_agua_s += delta
+	if not _firme_em.is_finite() or _na_agua_s < CAIU_APOS or global_position.distance_to(_firme_em) > CAIU_ATE_PERTO:
+		return
+	if _na_agua_s < CAIU_FORCA and _a_vista(global_position):
+		return
+	global_position = _firme_em + Vector3(0.0, 0.05, 0.0)
+	velocity = Vector3.ZERO
+	_nadando = false
+	_na_agua_s = 0.0
+	_preso = 0.0
+	_desvios = 0
+	_desvio_tempo = 0.0
+	_ponto_bloqueio = Vector3.INF
+	_caminho_ate = Vector3.INF
+	if animador != null and animador.has_method("set_swimming"):
+		animador.set_swimming(false)
+	if visual != null:
+		visual.position.y = 0.0
 
 
 ## Um pulso de quem está dando passagem: anda até o lugar de fora do caminho e
@@ -673,6 +763,7 @@ static func escolher_atencao(lista: Array, anterior: int, fim_do_dia: bool, rela
 
 ## Movimento com gravidade e colisão; vira o corpo para a direção do passo.
 func _mover(direcao: Vector3, velocidade: float, delta: float) -> void:
+	_vigiar_a_queda(delta)
 	direcao = _contornar_bloqueio(direcao, delta)
 	_tique_nado += 1
 	if (_tique_nado + _fase_de_custo) % NADO_A_CADA == 0:
@@ -943,6 +1034,10 @@ func _so_cumprimento_no_ar() -> bool:
 const MARCADOR_A_CADA := 0.4
 const MARCADOR_ACIMA := 0.95
 const MARCADOR_ATE := 55.0
+## A altura do glifo no mundo (96 px × 0,0055 m) com o contorno, e a largura dele em relação à altura:
+## o retângulo que as interfaces evitam (#216).
+const MARCADOR_ALTURA_M := 0.62
+const MARCADOR_LARGURA := 0.62
 var _marcador: Label3D
 var _marcador_em := 0.0
 var _marcador_texto := ""
@@ -972,6 +1067,31 @@ func _montar_o_marcador() -> void:
 	_marcador.position = Vector3(0.0, altura + MARCADOR_ACIMA, 0.0)
 	_marcador.visible = false
 	add_child(_marcador)
+	# O marcador é do mundo 3D e fica por baixo de toda interface: dica, placa e balão o evitam
+	# pelo retângulo que este morador informa (`popups_do_mundo.gd`, #216).
+	add_to_group(PopupsDoMundo.GRUPO_MARCADORES)
+
+
+## Onde o "!"/"?" está na tela agora (coordenadas do viewport), com a câmera de agora; vazio se não
+## está à vista (sem texto, recolhido, atrás da câmera, além de MARCADOR_ATE). É o que a dica do E,
+## as placas e os balões evitam para nunca o cobrir (#216).
+func retangulo_do_marcador() -> Rect2:
+	if _marcador == null or _marcador_texto == "" or not _marcador.is_visible_in_tree():
+		return Rect2()
+	var camera := get_viewport().get_camera_3d()
+	if camera == null:
+		return Rect2()
+	var centro := _marcador.global_position
+	if camera.is_position_behind(centro) or camera.global_position.distance_to(centro) > MARCADOR_ATE:
+		return Rect2()
+	var meia := camera.global_basis.y * (MARCADOR_ALTURA_M * 0.5)
+	var cima := camera.unproject_position(centro + meia)
+	var baixo := camera.unproject_position(centro - meia)
+	var alto_px := absf(baixo.y - cima.y)
+	if alto_px < 1.0:
+		return Rect2()
+	var tamanho := Vector2(alto_px * MARCADOR_LARGURA, alto_px)
+	return Rect2((cima + baixo) * 0.5 - tamanho * 0.5, tamanho)
 
 
 func _o_que_as_filas_pedem_aqui() -> String:

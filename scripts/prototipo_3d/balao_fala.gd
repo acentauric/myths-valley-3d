@@ -326,6 +326,8 @@ func _posicionar(delta: float) -> void:
 	var hud := PopupsDoMundo.paineis_do_hud(tela, self, PopupsDoMundo.PRIORIDADE_FALA)
 	var placas := PopupsDoMundo.retangulos(self, PopupsDoMundo.GRUPO_PLACAS)
 	var dicas := PopupsDoMundo.retangulos(self, PopupsDoMundo.GRUPO_DICAS)
+	# O "?"/"!" de missão sobre as cabeças (#216) fica por baixo de toda interface: o balão o evita.
+	var marcadores := PopupsDoMundo.retangulos_dos_marcadores(self)
 	var candidatos := _candidatos(tamanho, falante)
 	# Cada painel reserva seu retângulo real, inclusive barras e aviso do guia.
 	for obstaculo in hud:
@@ -341,6 +343,8 @@ func _posicionar(delta: float) -> void:
 			nota += _cobertura(caixa, placa) * 2.0
 		for dica in dicas:
 			nota += _cobertura(caixa, dica) * 2.5
+		for marcador in marcadores:
+			nota += _cobertura(caixa, marcador) * 3.0
 		# Deslocado pela borda da tela, o balão se afasta da cabeça: pesa um pouco.
 		nota += caixa.position.distance_to(candidatos[indice]) * 4.0 + indice * 30.0
 		notas.append(nota)
@@ -368,6 +372,8 @@ func _posicionar(delta: float) -> void:
 	var caixa_final := _dentro_da_tela(Rect2(canto - Vector2(0.0, tamanho.y), tamanho), tela)
 	# DEIXA LUGAR PARA A DICA: a de outra coisa que cairia por cima fica por baixo dele.
 	caixa_final = _dentro_da_tela(PopupsDoMundo.afastar_de(caixa_final, dicas, FOLGA_DAS_DICAS), tela)
+	# E o marcador de missão: o balão sobe para cima dele em vez de o esconder (#216).
+	caixa_final = _dentro_da_tela(PopupsDoMundo.afastar_de(caixa_final, marcadores, FOLGA_DAS_DICAS), tela)
 	# A mola também pode atravessar o HUD ao trocar de canto. Durante essa
 	# travessia, use o destino livre para manter a fala legível.
 	for obstaculo in hud:

@@ -9,6 +9,7 @@ class_name Catalogo
 ## 34px de altura e o ícone tinha metade disso.
 
 const PASTA := "res://assets/sprites/itens/"
+const IdiomaMenu = preload("res://scripts/prototipo_3d/idioma_menu.gd")
 
 const ITENS := {
 	"enxada": {
@@ -611,6 +612,25 @@ const ITENS := {
 		"icone": "cocada",
 		"empilhavel": true,
 	},
+	## A CHAVE DA CASA DO TIO (#217): a Dona Zefa a entrega no fim do passo `chave_zefa`
+	## (data/missoes_guia.json, `recompensa`), e a porta da casa herdada só abre com ela
+	## (`Prototype._acertar_a_porta_da_casa`). Abrir a porta a USA: o passo `casa` a gasta
+	## (`gasta`) e o aviso diz que ela fica no prego, ao lado da porta. Tipo próprio
+	## (`chave`): não se come, não se lê, não se veste e não se dá de presente, e o nome dela
+	## nos quatro idiomas mora aqui mesmo (`nome_en`, `nome_es`, `nome_zh`; ver `nome`).
+	"chave_da_casa": {
+		"nome": "Chave da casa do tio",
+		"nome_en": "Uncle's house key",
+		"nome_es": "Llave de la casa del tío",
+		"nome_zh": "叔叔家的钥匙",
+		"tipo": "chave",
+		"resumo": "Ferro velho, do tamanho da palma. A Dona Zefa a guardou depois que fechou a porta.",
+		"resumo_en": "Old iron, the size of a palm. Dona Zefa kept it after she shut the door.",
+		"resumo_es": "Hierro viejo, del tamaño de la palma. Doña Zefa la guardó después de cerrar la puerta.",
+		"resumo_zh": "旧铁钥匙，有手掌那么大。关上门之后，泽法夫人一直替他收着。",
+		"icone": "chave_da_casa",
+		"empilhavel": false,
+	},
 }
 
 ## Cache de textura por id: `load` a cada quadro derruba o desempenho da barra
@@ -626,8 +646,21 @@ static func dados(id: String) -> Dictionary:
 	return ITENS.get(id, {})
 
 
+## O nome no idioma do jogo. Item sem `nome_en` (a maioria) tem só o português, e a conta
+## fica em um `has`: este método roda a cada quadro em barra, aviso e painel.
 static func nome(id: String) -> String:
-	return ITENS.get(id, {}).get("nome", id)
+	var dado: Dictionary = ITENS.get(id, {})
+	if not dado.has("nome_en"):
+		return str(dado.get("nome", id))
+	return str(IdiomaMenu.campo(dado, "nome", id))
+
+
+## O resumo (a linha que a mochila mostra) no idioma do jogo; "" quando o item não tem.
+static func resumo(id: String) -> String:
+	var dado: Dictionary = ITENS.get(id, {})
+	if not dado.has("resumo_en"):
+		return str(dado.get("resumo", ""))
+	return str(IdiomaMenu.campo(dado, "resumo", ""))
 
 
 ## Quanto uma ferramenta tira de uma criatura por golpe; zero para o que não é

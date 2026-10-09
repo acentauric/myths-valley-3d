@@ -113,8 +113,10 @@ func _process(_delta: float) -> void:
 		return
 	var camera := get_viewport().get_camera_3d()
 	var altura := float(_perto.get("altura")) if _perto.get("altura") != null else 1.75
-	_dica.set_meta("nome_identificado", _perto if _nome_de(_perto) != "" else null)
-	DicaTecla.mostrar_em(_dica, camera, _perto.global_position + Vector3.UP * (altura + ACIMA_DA_CABECA), _dica_de(_perto))
+	# Só a dica que diz o nome (a entrega) dispensa a placa de nome do morador.
+	var rotulo := _rotulo(_perto)
+	_dica.set_meta("nome_identificado", _perto if _nome_de(_perto) != "" and rotulo.contains("%s") else null)
+	DicaTecla.mostrar_em(_dica, camera, _perto.global_position + Vector3.UP * (altura + ACIMA_DA_CABECA), _dica_de(_perto, rotulo))
 
 
 ## QUEM LEVA A CONVERSA ENTRE OS QUE ESTÃO AO ALCANCE: primeiro o que as filas de
@@ -195,24 +197,25 @@ static func _vem_antes(a: Dictionary, b: Dictionary) -> bool:
 	return float(a["distancia"]) < float(b["distancia"])
 
 
-## "Entregar a %s" quando a conversa entrega o que um passo pede; "Falar com %s",
-## senão — o molde, que é o que se traduz; o nome entra em `_dica_de`.
+## "Entregar a %s" quando a conversa entrega o que um passo pede; "Conversar", senão — o
+## molde, que é o que se traduz; o nome entra em `_dica_de`. A conversa não repete o nome de
+## quem é: a placa de nome já o diz (#188). Quem recebe uma entrega continua nomeado.
 func _rotulo(morador: Node3D) -> String:
 	var entrega := false
 	for cadeia in get_tree().get_nodes_in_group(CadeiaDeMissoes.GRUPO):
 		if cadeia.has_method("o_que_o_e_faz") and cadeia.o_que_o_e_faz(morador) == "entregar":
 			entrega = true
 			break
-	if _nome_de(morador) == "":
-		return "Entregar" if entrega else "Falar"
-	return "Entregar a %s" if entrega else "Falar com %s"
+	if not entrega:
+		return "Conversar"
+	return "Entregar a %s" if _nome_de(morador) != "" else "Entregar"
 
 
-## A DICA DIZ O ALVO (#97): "Falar com Tonho", "Entregar a Candinha". O foco do E
-## escolhe um morador só, e a dica dizia "Falar" sem dizer a quem — com um
-## morador ao lado do cordel, na live, o jogador não sabia para quem o E ia.
-func _dica_de(morador: Node3D) -> String:
-	var molde := tr(_rotulo(morador))
+## A DICA DIZ O QUE O E FAZ (#188), e o ALVO só na entrega (#97): "Conversar", "Entregar a Candinha".
+## O foco do E escolhe um morador só, e quem ele é a placa de nome diz (a dica fica na coluna
+## acima dela); na entrega a dica diz a quem, e a placa redundante some.
+func _dica_de(morador: Node3D, rotulo: String = "") -> String:
+	var molde := tr(rotulo if rotulo != "" else _rotulo(morador))
 	return molde % _nome_de(morador) if molde.contains("%s") else molde
 
 
@@ -312,7 +315,7 @@ func _oferecer_terra(morador: Node3D, terra: String) -> void:
 
 
 ## A frase de atenção de quem para ao ver o jogador chegar (`npc._dar_atencao`, #198) não conta: o E nele
-## continua valendo, e a dica "Falar com ..." fica firme enquanto ele espera.
+## continua valendo, e a dica "Conversar" fica firme enquanto ele espera.
 func _fala_ativa(morador: Node3D) -> bool:
 	if morador.has_method("atencao_no_ar") and bool(morador.call("atencao_no_ar")):
 		return false
@@ -349,7 +352,7 @@ func _avisar_que_falou_com(morador: Node3D) -> void:
 
 func _item_de_presente(item: String) -> bool:
 	return item != "" and Catalogo.existe(item) \
-		and Catalogo.tipo(item) not in ["ferramenta", "equipamento"]
+		and Catalogo.tipo(item) not in ["ferramenta", "equipamento", "chave"]
 
 
 func _texto_social(chave: String) -> String:

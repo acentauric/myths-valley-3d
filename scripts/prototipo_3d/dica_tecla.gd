@@ -7,10 +7,13 @@ extends RefCounted
 ## balões de interação de acordo com o visual do MythsValley 3D".
 ##
 ## OS PAPÉIS DA TIPOGRAFIA (#188, os mesmos da #199): a plaqueta do E ocupa a altura das
-## duas linhas, quadrada, com a letra grande (é o que o jogador procura de relance); a
-## linha de cima, o ALVO ("Tronco caído"), é o título, em Cinzel ouro; a de baixo, o
-## REQUISITO ("Ponha na mão: Machado"), é leitura, na sans legível do HUD, em creme e
-## menor. Dica de uma linha só: o título em ouro, com a plaqueta da altura dessa linha.
+## duas linhas, quadrada, com a letra grande (é o que o jogador procura de relance) e COM TETO:
+## nunca passa de duas linhas de título, por mais linhas que o requisito tenha; a linha de cima,
+## o ALVO ("Tronco caído"), é o título, em Cinzel ouro; do requisito em diante ("Ponha na mão:
+## Machado"), é leitura, na sans legível do HUD, em creme e menor, sem versalete, quebrando como
+## texto corrido; as teclas no meio dele, "[5]" e "[E]", saem em negrito. Dica de uma linha só: o
+## título em ouro, com a plaqueta da altura dessa linha. O tamanho de tudo isso ainda se
+## multiplica pelo padrão do componente `interacao` (80%, #188), que o jogador ajusta em Ajustes.
 
 const Identidade = preload("res://scripts/prototipo_3d/identidade.gd")
 const SuavizadorDeTela = preload("res://scripts/prototipo_3d/suavizador_de_tela.gd")
@@ -23,8 +26,12 @@ const TINTA := Color("2b2a22")
 ## O alvo é título (ouro, Cinzel); o requisito, leitura (creme, a sans do HUD, menor).
 const COR_DO_ALVO := Identidade.OURO
 const COR_DO_REQUISITO := Identidade.TEXTO
-const TAMANHO_DO_ALVO := 15
-const TAMANHO_DO_REQUISITO := 14
+const TAMANHO_DO_ALVO := 14
+const TAMANHO_DO_REQUISITO := 13
+## Largura máxima do texto: cabe um requisito de leitura em uma ou duas linhas, nos três idiomas.
+const LARGURA_MAXIMA := 360.0
+## Uma tecla entre colchetes no texto de leitura ("[5]", "[E]"), já com o "[" escapado: sai em negrito.
+const TECLA_NO_TEXTO := "\\[lb\\]([^\\[\\]]{1,12})\\]"
 ## A letra da plaqueta é esta fração da altura dela (mínimo de `TAMANHO_MINIMO_DA_LETRA`).
 const PROPORCAO_DA_LETRA := 0.56
 const TAMANHO_MINIMO_DA_LETRA := 14
@@ -52,22 +59,22 @@ static func criar(pai: Control, tecla_texto: String, acao: String) -> PanelConta
 	estilo.set_border_width_all(1)
 	estilo.set_corner_radius_all(7)
 	# Margens parelhas: a caixa é justa ao conteúdo, sem sobra de nenhum lado.
-	estilo.content_margin_left = 6
-	estilo.content_margin_right = 11
-	estilo.content_margin_top = 6
-	estilo.content_margin_bottom = 6
+	estilo.content_margin_left = 5
+	estilo.content_margin_right = 9
+	estilo.content_margin_top = 5
+	estilo.content_margin_bottom = 5
 	estilo.shadow_color = Color(0, 0, 0, 0.3)
 	estilo.shadow_size = 4
 	dica.add_theme_stylebox_override("panel", estilo)
 	pai.add_child(dica)
 	var linha := HBoxContainer.new()
-	linha.add_theme_constant_override("separation", 9)
+	linha.add_theme_constant_override("separation", 7)
 	linha.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	dica.add_child(linha)
 	var tecla := PanelContainer.new()
 	tecla.name = "Tecla"
-	# Enche a altura das duas linhas (o HBox a estica); a largura a faz quadrada (abaixo).
-	tecla.size_flags_vertical = Control.SIZE_FILL
+	# Tem a altura das linhas, até o teto de duas linhas de título (`_quadrar_a_tecla`), centrada.
+	tecla.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	tecla.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var estilo_tecla := StyleBoxFlat.new()
 	estilo_tecla.bg_color = PAPEL
@@ -94,8 +101,6 @@ static func criar(pai: Control, tecla_texto: String, acao: String) -> PanelConta
 	tecla.add_child(miolo)
 	letra.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	miolo.add_child(letra)
-	# Quadrada e com a letra na medida: quando o HBox dá a altura à plaqueta, a largura a iguala.
-	tecla.resized.connect(_quadrar_a_tecla.bind(tecla, letra))
 	var textos := VBoxContainer.new()
 	textos.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	textos.add_theme_constant_override("separation", 1)
@@ -110,15 +115,29 @@ static func criar(pai: Control, tecla_texto: String, acao: String) -> PanelConta
 	texto.add_theme_color_override("font_color", COR_DO_ALVO)
 	texto.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	textos.add_child(texto)
-	var requisito := Label.new()
+	# O requisito é texto de leitura corrido: um RichTextLabel, para a tecla do meio do texto sair em negrito.
+	var requisito := RichTextLabel.new()
 	requisito.name = "Requisito"
 	requisito.visible = false
 	requisito.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	requisito.add_theme_font_override("font", Identidade.fonte_do_hud())
-	requisito.add_theme_font_size_override("font_size", TAMANHO_DO_REQUISITO)
-	requisito.add_theme_color_override("font_color", COR_DO_REQUISITO)
+	requisito.bbcode_enabled = true
+	requisito.fit_content = true
+	requisito.scroll_active = false
+	requisito.selection_enabled = false
+	requisito.context_menu_enabled = false
+	requisito.shortcut_keys_enabled = false
+	var leitura := Identidade.fonte_do_hud()
+	var negrito := Identidade.fonte_do_hud()
+	negrito.variation_embolden = 0.7
+	requisito.add_theme_font_override("normal_font", leitura)
+	requisito.add_theme_font_override("bold_font", negrito)
+	requisito.add_theme_font_size_override("normal_font_size", TAMANHO_DO_REQUISITO)
+	requisito.add_theme_font_size_override("bold_font_size", TAMANHO_DO_REQUISITO)
+	requisito.add_theme_color_override("default_color", COR_DO_REQUISITO)
 	requisito.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	textos.add_child(requisito)
+	# A plaqueta acompanha a altura dos textos, até o teto; a letra cresce com ela.
+	textos.resized.connect(_quadrar_a_tecla.bind(tecla, letra, textos, texto))
 	_preparar_texto(dica, acao)
 	return dica
 
@@ -155,7 +174,11 @@ static func mostrar_em(dica: PanelContainer, camera: Camera3D, ponto: Vector3, a
 	# As placas estão em coordenadas de tela; a dica, nas do pai (o mesmo, na prática).
 	var origem := dica.global_position - dica.position if dica.is_inside_tree() else Vector2.ZERO
 	var caixa := Rect2((onde - Vector2(tamanho.x * 0.5, tamanho.y)).round() + origem, tamanho)
-	var afastada := PopupsDoMundo.afastar_de(caixa, PopupsDoMundo.retangulos(dica, PopupsDoMundo.GRUPO_PLACAS), FOLGA_DAS_PLACAS)
+	# O "?"/"!" de missão sobre a cabeça de um morador também é obstáculo (#216): ele é do mundo 3D e
+	# fica sempre por baixo de qualquer interface, então é a dica que sobe para cima dele.
+	var obstaculos := PopupsDoMundo.retangulos(dica, PopupsDoMundo.GRUPO_PLACAS)
+	obstaculos.append_array(PopupsDoMundo.retangulos_dos_marcadores(dica))
+	var afastada := PopupsDoMundo.afastar_de(caixa, obstaculos, FOLGA_DAS_PLACAS)
 	# DEPOIS DAS PLACAS, O HUD (#184): a dica do E, dona da vaga, também respeita as barras, o relógio
 	# e os painéis essenciais. Desce para baixo deles, encosta ao lado ou, sem lugar, se apaga.
 	var tela := dica.get_viewport_rect().size
@@ -176,9 +199,12 @@ static func mostrar_em(dica: PanelContainer, camera: Camera3D, ponto: Vector3, a
 
 
 ## O alvo e o requisito, independentemente do idioma. Não quebra nomes procurando
-## palavras traduzidas; as fontes já separam as partes com ·. Sem requisito, o segundo é "".
+## palavras traduzidas; as fontes já separam as partes com · ou com uma quebra de linha (a
+## orientação da lavoura). Sem requisito, o segundo é "".
 static func _partes(acao: String) -> PackedStringArray:
 	var partes := acao.split(" · ", true, 1)
+	if partes.size() < 2:
+		partes = acao.split("\n", true, 1)
 	if partes.size() < 2:
 		return PackedStringArray([acao, ""])
 	var requisito := partes[1].strip_edges()
@@ -189,31 +215,41 @@ static func _partes(acao: String) -> PackedStringArray:
 
 static func _preparar_texto(dica: PanelContainer, acao: String) -> void:
 	var alvo := dica.find_child("Acao", true, false) as Label
-	var requisito := dica.find_child("Requisito", true, false) as Label
+	var requisito := dica.find_child("Requisito", true, false) as RichTextLabel
 	var partes := _partes(acao)
 	alvo.text = partes[0]
-	requisito.text = partes[1]
+	var com_teclas := _com_teclas_em_negrito(partes[1])
+	if requisito.text != com_teclas:
+		requisito.text = com_teclas
 	requisito.visible = partes[1] != ""
 	# A caixa acompanha a linha mais longa, cada uma medida na sua própria fonte.
-	var largura := 24.0
-	for etiqueta: Label in [alvo, requisito]:
-		if not etiqueta.visible:
-			continue
-		var fonte := etiqueta.get_theme_font("font")
-		var tamanho := etiqueta.get_theme_font_size("font_size")
-		largura = maxf(largura, fonte.get_string_size(etiqueta.text, HORIZONTAL_ALIGNMENT_LEFT, -1, tamanho).x + 2.0)
+	var largura := maxf(24.0, alvo.get_theme_font("font").get_string_size(alvo.text, HORIZONTAL_ALIGNMENT_LEFT, -1,
+		alvo.get_theme_font_size("font_size")).x + 2.0)
+	if requisito.visible:
+		# As teclas em negrito são mais largas: a folga cobre a diferença.
+		largura = maxf(largura, requisito.get_theme_font("normal_font").get_string_size(partes[1], HORIZONTAL_ALIGNMENT_LEFT, -1,
+			requisito.get_theme_font_size("normal_font_size")).x + 6.0)
 	# A dica simples mantém largura natural; requisitos longos ganham mais linhas
 	# em janelas menores, em vez de cortar o E ou ocupar a largura toda da tela.
-	var limite := minf(280.0, maxf(120.0, dica.get_viewport_rect().size.x * 0.4))
+	var limite := minf(LARGURA_MAXIMA, maxf(120.0, dica.get_viewport_rect().size.x * 0.4))
 	alvo.custom_minimum_size.x = minf(largura, limite)
 	requisito.custom_minimum_size.x = minf(largura, limite)
 
 
-## A plaqueta do E é quadrada, da altura das linhas, e a letra cresce com ela.
-static func _quadrar_a_tecla(tecla: PanelContainer, letra: Label) -> void:
-	var lado := roundf(tecla.size.y)
-	if lado >= 1.0 and not is_equal_approx(tecla.custom_minimum_size.x, lado):
-		tecla.custom_minimum_size.x = lado
+## As teclas entre colchetes ("[5]", "[E]") viram negrito; o resto do texto entra sem ser lido
+## como marcação.
+static func _com_teclas_em_negrito(texto: String) -> String:
+	var expressao := RegEx.create_from_string(TECLA_NO_TEXTO)
+	return expressao.sub(texto.replace("[", "[lb]"), "[b]$1[/b]", true)
+
+
+## A plaqueta do E é quadrada, da altura dos textos, com TETO de duas linhas de título (#188):
+## com um requisito de três linhas ela não cresce junto. A letra cresce com ela.
+static func _quadrar_a_tecla(tecla: PanelContainer, letra: Label, textos: Control, alvo: Label) -> void:
+	var teto := roundf(2.0 * alvo.get_theme_font("font").get_height(alvo.get_theme_font_size("font_size")))
+	var lado := roundf(minf(textos.size.y, teto))
+	if lado >= 1.0 and not tecla.custom_minimum_size.is_equal_approx(Vector2(lado, lado)):
+		tecla.custom_minimum_size = Vector2(lado, lado)
 	var tamanho := maxi(TAMANHO_MINIMO_DA_LETRA, int(lado * PROPORCAO_DA_LETRA))
 	if letra.get_theme_font_size("font_size") != tamanho:
 		letra.add_theme_font_size_override("font_size", tamanho)

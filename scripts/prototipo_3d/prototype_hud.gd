@@ -1037,7 +1037,14 @@ func destacar_barra(nome: String) -> void:
 	_destacada = nome
 	for filho in _root.get_children():
 		if filho is CanvasItem:
-			(filho as CanvasItem).modulate = Color.WHITE if String(filho.name) == nome else APAGADO
+			_pintar_o_destaque(filho as CanvasItem, Color.WHITE if String(filho.name) == nome else APAGADO)
+
+
+## O destaque mexe só na COR: a opacidade é de quem recolhe o componente (`foco_da_narracao.gd`,
+## #222), e uma barra que a caixa de fala cobre não reaparece por baixo dela.
+static func _pintar_o_destaque(item: CanvasItem, cor: Color) -> void:
+	cor.a = item.modulate.a
+	item.modulate = cor
 
 
 func apagar_destaque() -> void:
@@ -1049,7 +1056,7 @@ func apagar_destaque() -> void:
 		_veu_do_destaque.visible = false
 	for filho in _root.get_children():
 		if filho is CanvasItem:
-			(filho as CanvasItem).modulate = Color.WHITE
+			_pintar_o_destaque(filho as CanvasItem, Color.WHITE)
 
 
 ## A barra acesa agora ("" com tudo apagado, ou sem destaque).
