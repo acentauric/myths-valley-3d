@@ -2,6 +2,11 @@
 
 ## Em desenvolvimento — 10/10/2026
 
+- **O objetivo em inglês de "As ferramentas do finado" cabe nas três linhas do HUD.** O resumo do passo
+  `pegar` tinha 63 letras ("Take the hoe, the bucket and the cassava cutting from the chest") e o
+  portão `cadeia_das_missoes` mede 60; agora é "Take the hoe, bucket and cassava cutting from the
+  chest" (55). Foi o último motivo que sobrava para o portão reprovar (#37).
+
 - **O aviso do rodapé passa para o canto superior esquerdo.** A fala do Pedro, o que se recebeu e
   o que se entregou (`set_notice`) saem de cima da barra de mão e vão para a coluna da missão: uma
   caixa de até 360 px, a largura do quadro da tarefa, logo abaixo dele (e das informações da casa,
