@@ -141,3 +141,16 @@ Para repetir:
 ```
 
 Com `--passo=casa` e `--lugar=casa_de_taipa`, o jogador já começa dentro da casa e a árvore do jogo fica pausada durante a rodada. As vistas saem com `pausado: true` e não valem. Comece em `--lugar=praca`.
+
+## Queda de 07–09/10 (#226): a causa achada pela leitura, a medição fica para a rodada de teste
+
+A captura de 8 FPS ao lado da casa do tio, de manhã, estava no passo 12/16, "Torça uma corda na bancada" (`corda`, meta `juntar` de 1 corda). É o mesmo defeito da casa herdada (#185): enquanto o passo pede um item que árvore nenhuma rende (corda, enxada, balde, maniva), `cadeia_de_missoes.gd → _acertar_o_caderno → posicao_do_passo → _alvo_material` perguntava a `ArvoresInfo.mais_perto_que_rende` a cada tick de física, e a busca dava uma volta por todas as árvores do vale duplicando a ficha da espécie em cada uma (54 ms por tick, a física no teto de 5 passos por quadro). Os 3 FPS dentro da casa e os 8 FPS ao lado dela têm a mesma origem, e a variação de 3 a 60 FPS do mesmo dia acompanha os passos do guia.
+
+A busca nasceu em `97d3467` (07/10 07:06, "A missão encontra madeira depois dos troncos caídos"), depois do relatório de 05/10, e é a que a #185 corrigiu (as espécies que rendem o item se escolhem antes das árvores). `tests/alvo_de_madeira.gd` agora cobra a pergunta por `corda` também, com 50 mil árvores e menos de 5 ms.
+
+Os outros suspeitos da issue foram lidos no código e não explicam sozinhos um quadro de 8 FPS ao ar livre:
+
+- O alcance (`CatalogoAssets.dar_alcance`) vale para tudo o que passa por `CatalogoAssets.instanciar`: as pedras soltas e os alvos de `recursos_3d.gd`, os adereços das roças e o curral (`curral_vale.gd`), a fazenda, as casas coloridas e o paisagismo. As cercas de varas são `MultiMesh` em blocos da região (`paisagismo_vale.gd → plantar_cercas`), com o corte do bloco. Bichos têm o corte do `animador_bicho.gd`, e o morador longe dorme (`npc.gd → _andar_longe`).
+- `tests/lod_das_pecas.gd` já reprovava peça de cenário sem classe de alcance e o substituto de casa e árvore ausente; agora também reprova **pasta nova do catálogo** que não foi escolhida (cenário com classe, ou o que anda, vai na mão ou mora dentro), que era o caminho para uma peça nova entrar desenhada inteira a qualquer distância.
+
+Falta, com a GPU em P0 e a máquina livre: o censo de malhas visíveis a 150, 300 e 500 m (`--fases=censo`), e o FPS na casa do tio de dia, na praça e na roça no passo `corda`, comparado com o de 05/10 (`--passo=corda`, ver acima).

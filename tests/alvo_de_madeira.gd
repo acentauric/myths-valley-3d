@@ -79,10 +79,10 @@ func _run() -> void:
 	arvores._cortaveis = muitas
 	conferir(arvores.mais_perto_que_rende("lenha", Vector3.ZERO) == Vector3.ZERO, "com o vale cheio, a lenha ainda acha a árvore mais perto")
 	var antes := Time.get_ticks_usec()
-	for item in ["enxada", "balde", "semente_mandioca"]:
+	for item in ["enxada", "balde", "semente_mandioca", "corda"]:
 		conferir(arvores.mais_perto_que_rende(item, Vector3.ZERO) == Vector3.INF, "%s não sai de árvore" % item)
 	var gasto_ms := (Time.get_ticks_usec() - antes) / 1000.0
-	conferir(gasto_ms < 5.0, "perguntar por três itens que árvore não rende custou %.1f ms com 50 mil árvores (a física da casa caía a 3 FPS)" % gasto_ms)
+	conferir(gasto_ms < 5.0, "perguntar por quatro itens que árvore não rende custou %.1f ms com 50 mil árvores (a física da casa caía a 3 FPS)" % gasto_ms)
 	arvores.free()
 	print("ALVO_MADEIRA: ", falhas, " falhas")
 	quit(1 if falhas else 0)

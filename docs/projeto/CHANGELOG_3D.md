@@ -14,6 +14,8 @@
   os lugares `dentro:`/`porta:`, a travessia da porta e a entrada da chegada. Os números estão no
   anexo de desempenho.
 
+- **O jogo deixa de cair a 8 FPS ao lado da casa do tio no passo da corda (#226).** A queda que o autor viu no passo 12/16 era o mesmo defeito da casa herdada: enquanto o passo pede um item que árvore nenhuma rende, a cadeia do Pedro varria todas as árvores do vale a cada tick de física, desde 07/10. A correção da busca (#185) vale aqui também; o portão do alcance das peças agora reprova pasta nova do catálogo que ninguém classificou, e o portão da madeira cobra a pergunta pela corda. O censo de malhas e o FPS por lugar ficam para a rodada de medição.
+
 ## Build #10 — 08/10/2026
 
 Fechada em 09/10/2026 com as correções das issues de 08/10, as vozes, o Mixamo e a main da equipe de 08/10.

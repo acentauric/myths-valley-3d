@@ -111,11 +111,18 @@ func _catalogo() -> void:
 	print("1. o catálogo")
 	var classes := ["", "construcao", "arvore", "adereco", "planta"]
 	var sem_classe_por_pasta := ["personagens/", "animais/", "peixes/", "mar/", "itens/", "moveis/"]
+	# #226: pasta nova no catálogo precisa ser escolhida (cenário, com alcance, ou o que anda, vai na
+	# mão ou mora dentro): senão a peça entra "sem classe" calada e é desenhada inteira a qualquer distância.
+	var com_classe_por_pasta := ["construcoes/", "casas/", "arvores/", "aderecos/"]
 	var construcoes_sem_substituto: Array[String] = []
 	for chave: String in CatalogoAssets.PECAS:
 		var classe: String = CatalogoAssets.classe_de_alcance(chave)
 		_conferir(classe in classes, "%s: classe de alcance '%s' não existe" % [chave, classe])
 		var arquivo := String(CatalogoAssets.PECAS[chave]["tripo"])
+		var pasta_conhecida := false
+		for pasta in sem_classe_por_pasta + com_classe_por_pasta:
+			pasta_conhecida = pasta_conhecida or arquivo.begins_with(pasta)
+		_conferir(pasta_conhecida, "%s mora em '%s', uma pasta que o portão do alcance não conhece: escolha se é cenário (com classe) ou se anda, vai na mão ou mora dentro" % [chave, arquivo.get_base_dir()])
 		for pasta in sem_classe_por_pasta:
 			if arquivo.begins_with(pasta):
 				_conferir(classe == "", "%s mora em %s e não pode ter alcance (anda, vai na mão ou está dentro do cômodo)" % [chave, pasta])
