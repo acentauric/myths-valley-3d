@@ -111,6 +111,12 @@ const ATRASO_VOLTA := 10.0
 const ATRASO_MAXIMO := 0.6
 ## A câmera de cima entra e sai do cômodo em tanto tempo (s).
 const DE_CIMA_TRANSICAO := 0.3
+## O OMBRO DA CÂMERA NA CHEGADA (#119): com a câmera atrás do viajante no convés, o Pedro esperava na mesma linha,
+## escondido atrás dele, e a vela e o mastro ficavam entre a câmera e o píer. Na chegada o pivô — o ponto que a
+## câmera orbita e mira — desloca-se de lado (`enquadrar_de_ombro`): o viajante vai para um canto do quadro e o
+## píer e o Pedro ficam à vista. O ombro se solta, à velocidade abaixo (m/s), quando o viajante anda ou mexe a
+## câmera, e a partir daí a câmera é a de sempre.
+const OMBRO_SOLTA := 1.2
 ## A CÂMERA RESILIENTE: o que a câmera NUNCA faz, venha o que vier do cenário
 ## (parede, porta, teleporte, maré). Duas garantias, e nenhuma depende de o
 ## `SpringArm3D` ter visto o obstáculo — o corte dele IGNORA o que já cobre a
@@ -173,6 +179,9 @@ var _espera_para_sair := 0.0
 var _encaixe_restante := 3
 var _atraso_y := 0.0
 var _y_anterior := NAN
+## O deslocamento do pivô no chão (m, no mundo), e se ele já está se soltando (`enquadrar_de_ombro`).
+var _ombro := Vector3.ZERO
+var _ombro_soltando := false
 ## A altura do pivô sem o atraso: a do corpo andando, a da cabeça nadando.
 var _altura_do_pivo: float = PIVO_CAMERA
 var _transicao_de_cima: Tween
@@ -934,6 +943,8 @@ func _acompanhar_camera(delta: float) -> void:
 
 
 func _rotate_camera(relative: Vector2) -> void:
+	if _ombro != Vector3.ZERO:
+		_ombro_soltando = true
 	_yaw -= relative.x * mouse_sensitivity
 	if _de_cima:
 		_pitch = clampf(_pitch - relative.y * mouse_sensitivity, -1.4, -0.85)
@@ -1189,6 +1200,8 @@ func teleportar(destino: Vector3, rumo: float) -> void:
 	_jump_buffer_remaining = 0.0
 	visual.rotation.y = rumo
 	_yaw = rumo + PI
+	_ombro = Vector3.ZERO
+	_ombro_soltando = false
 	# O cômodo do lugar novo decide, AGORA, se a câmera é a de cima: encaixar a
 	# câmera antes disso a media com as paredes (e o modo) do lugar de onde o corpo saiu.
 	var interiores := get_tree().get_first_node_in_group("interiores") if is_inside_tree() else null
@@ -1217,9 +1230,36 @@ func reset_position() -> void:
 	_yaw = 0.0
 	_pitch = -0.19
 	_distance = 8.0
+	_ombro = Vector3.ZERO
+	_ombro_soltando = false
 	inspecting = false
 	_apply_camera()
 	_encaixar_a_camera()
+
+
+## O OMBRO DA CÂMERA (#119): desloca o pivô da câmera `deslocamento` metros no chão (no mundo), sem mexer no giro
+## dela — o movimento é relativo ao giro, e o "para frente" continua o mesmo. Chamado logo depois de `teleportar`.
+func enquadrar_de_ombro(deslocamento: Vector3) -> void:
+	deslocamento.y = 0.0
+	_ombro = deslocamento
+	_ombro_soltando = false
+	_encaixar_a_camera()
+
+
+## O deslocamento do pivô agora, no chão (m, no mundo): zero quando não há ombro.
+func ombro_da_camera() -> Vector3:
+	return _ombro
+
+
+## O ombro se solta quando o viajante anda, nada ou entra no cômodo de cima, ou quando mexe na câmera (`_rotate_camera`):
+## a partir daí volta a zero sem salto.
+func _soltar_o_ombro(delta: float) -> void:
+	if _ombro == Vector3.ZERO:
+		return
+	if not _ombro_soltando and (Vector2(velocity.x, velocity.z).length_squared() > 0.25 or _de_cima or is_swimming()):
+		_ombro_soltando = true
+	if _ombro_soltando:
+		_ombro = _ombro.move_toward(Vector3.ZERO, OMBRO_SOLTA * delta)
 
 
 ## Na chegada nova, o jogador olha para a praia e a câmera fica à frente dele.
@@ -1232,6 +1272,8 @@ func iniciar_de_frente(direcao: Vector3) -> void:
 	_yaw = visual.rotation.y
 	_pitch = -0.19
 	_distance = 8.0
+	_ombro = Vector3.ZERO
+	_ombro_soltando = false
 	inspecting = false
 	_apply_camera()
 	_encaixar_a_camera()
@@ -1591,7 +1633,8 @@ func _posicionar_camera(delta: float) -> void:
 		_atraso_y = clampf(_atraso_y - (y - _y_anterior), -ATRASO_MAXIMO, ATRASO_MAXIMO)
 		_atraso_y *= exp(-ATRASO_VOLTA * delta)
 	_y_anterior = y
-	camera_pivot.position.y = _altura_do_pivo + _atraso_y
+	_soltar_o_ombro(delta)
+	camera_pivot.position = Vector3(_ombro.x, _altura_do_pivo + _atraso_y, _ombro.z)
 	# O BRAÇO LIVRE, medido agora, na inclinação em que a câmera está: a do jogador
 	# mais a elevação que a parede pediu. Se ele não chega ao mínimo, a câmera sobe
 	# por cima da cabeça em vez de encolher até ela (`_elevacao_que_liberta`).
