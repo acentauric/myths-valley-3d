@@ -14,7 +14,7 @@ func _confere_nomes(painel, grade: GridContainer, rotulo: String) -> void:
 		var tamanho := cartao.get_theme_font_size("font_size")
 		var caixa := cartao.get_theme_stylebox("normal")
 		var util := cartao.size.x - caixa.get_margin(SIDE_LEFT) - caixa.get_margin(SIDE_RIGHT)
-		var linhas := cartao.text.split(chr(10))
+		var linhas := cartao.text.split("\n")
 		_assert(linhas.size() <= 2, "%s: o nome de '%s' ocupa %d linhas" % [rotulo, cartao.name, linhas.size()])
 		for linha in linhas:
 			_assert(fonte.get_string_size(linha, HORIZONTAL_ALIGNMENT_LEFT, -1, tamanho).x <= util, "%s: '%s' corta no cartão (%.0f de %.0f px)" % [rotulo, linha, fonte.get_string_size(linha, HORIZONTAL_ALIGNMENT_LEFT, -1, tamanho).x, util])
@@ -196,7 +196,7 @@ func _run() -> void:
 	var primeiro_cartao := str(grade.get_child(0).name)
 	_assert(grade.columns == capacidade.x and grade.get_child_count() == capacidade.x * capacidade.y, "assets em grade paginada")
 	# Nome que corta no cartão aparece inteiro no tooltip.
-	_assert(str(grade.get_child(0).tooltip_text).begins_with(str(grade.get_child(0).text).replace(chr(10), " ").strip_edges().trim_suffix("•").strip_edges()), "o tooltip do cartão traz o nome inteiro")
+	_assert(str(grade.get_child(0).tooltip_text).begins_with(str(grade.get_child(0).text).replace("\n", " ").strip_edges().trim_suffix("•").strip_edges()), "o tooltip do cartão traz o nome inteiro")
 	_assert(not painel._rolagem.get_v_scroll_bar().visible, "a grade de assets não rola")
 	_confere_nomes(painel, grade, "assets")
 	_assert(painel._lista.find_children("*", "SpinBox", true, false).is_empty(), "grade não abre editores")
