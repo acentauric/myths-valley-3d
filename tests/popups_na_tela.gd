@@ -401,8 +401,7 @@ func _ninguem_cobre_ninguem(aqui: Vector3) -> void:
 	# O morador a dois passos, de frente: quem vai levar o E.
 	var dele: Node3D = roda[2]
 	var posto_de_dele: Vector3 = pontos[2]
-	var frente := Vector3(0.0, 0.0, 1.0)
-	var a_dois_passos: Vector3 = vale.world.ground_position(aqui + frente * 2.2, 0.1)
+	var a_dois_passos: Vector3 = _a_dois_passos(aqui, dele)
 	_fixar(dele, a_dois_passos)
 	var dono: bool = await relogio.ate(func() -> bool: return teclas.perto() == dele and teclas._dica.visible, 6.0)
 	_conferir(dono, "a dois passos do %s, de frente, a dica do E não acendeu sobre ele (perto: %s)" % [dele.name, str(teclas.perto())])
@@ -527,12 +526,30 @@ func _ninguem_cobre_ninguem(aqui: Vector3) -> void:
 		seta.limpar()
 
 
+## Onde o dono do E fica, a dois passos à frente do jogador: o primeiro ponto (de frente, ou um pouco
+## de lado) de onde a câmera vê a cabeça dele. Bem em frente fica o poço da praça, entre a câmera e a
+## cabeça, e a placa de quem a câmera não vê não acende (#184) — com a placa do dono à vista (#188),
+## o portão precisa de um dono à vista.
+func _a_dois_passos(aqui: Vector3, dele: Node3D) -> Vector3:
+	var frente := Vector3(0.0, 0.0, 1.0)
+	var direita := frente.cross(Vector3.UP)
+	var excluir: Array[RID] = [jogador.get_rid()]
+	for morador in placas._placas.keys():
+		if is_instance_valid(morador) and morador is CollisionObject3D:
+			excluir.append((morador as CollisionObject3D).get_rid())
+	for lado in [0.0, 1.0, -1.0, 1.6, -1.6]:
+		var onde: Vector3 = vale.world.ground_position(aqui + frente * 2.2 + direita * float(lado), 0.1)
+		if placas._raio_livre(camera, onde + Vector3.UP * float(dele.get("altura")) * 0.9, excluir):
+			return onde
+	return vale.world.ground_position(aqui + frente * 2.2, 0.1)
+
+
 ## 5b. O "?" sobre a cabeça de quem recebe o E nunca fica sob a dica nem sob o balão (#216).
 func _o_marcador_por_cima(aqui: Vector3) -> void:
 	var teclas = vale.get("tecla_dos_moradores")
 	var dele: Node3D = roda[2]
 	var posto_de_dele: Vector3 = pontos[2]
-	var a_dois_passos: Vector3 = vale.world.ground_position(aqui + Vector3(0.0, 0.0, 1.0) * 2.2, 0.1)
+	var a_dois_passos: Vector3 = _a_dois_passos(aqui, dele)
 	_fixar(dele, a_dois_passos)
 	var dono: bool = await relogio.ate(func() -> bool: return teclas.perto() == dele and teclas._dica.visible, 6.0)
 	_conferir(dono, "marcador: a dois passos do %s a dica do E não acendeu" % dele.name)
