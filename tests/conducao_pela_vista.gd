@@ -17,7 +17,9 @@ extends SceneTree
 ##
 ## `--falsificar` volta à regra de antes (a vista não conta) e a parte 1 reprova.
 
-const Guia = preload("res://scripts/prototipo_3d/guia_pedro.gd")
+## Carregado na hora, e não por preload: o guia cita autoloads (o Inventario), e um preload o
+## compilaria junto com este script, antes de o --script ter os autoloads.
+var Guia = null
 
 var falhas := 0
 
@@ -37,6 +39,7 @@ func _conferir(ok: bool, rotulo: String) -> void:
 
 
 func _run() -> void:
+	Guia = load("res://scripts/prototipo_3d/guia_pedro.gd")
 	var regra: GDScript = Guia
 	if "--falsificar" in OS.get_cmdline_user_args():
 		regra = load("res://scripts/prototipo_3d/guia_pedro.gd")
