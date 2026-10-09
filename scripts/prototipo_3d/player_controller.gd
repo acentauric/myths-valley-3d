@@ -743,7 +743,8 @@ func _unhandled_input(event: InputEvent) -> void:
 			if event.ctrl_pressed:
 				_aproximar_a_camera(para_cima)
 			else:
-				Inventario.selecionar(Inventario.anterior_da_mao() if para_cima else Inventario.proximo_da_mao())
+				preload("res://scripts/prototipo_3d/barra_de_mao.gd").trocar_a_mao(
+					Inventario.anterior_da_mao() if para_cima else Inventario.proximo_da_mao(), false)
 				get_viewport().set_input_as_handled()
 		_apply_camera()
 	if event.is_action_pressed("mv_zoom_in", true):

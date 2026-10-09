@@ -28,9 +28,14 @@ extends SceneTree
 ##      `porta_fechar` toca; cada sinal tem UMA ligação (o som não sai dobrado).
 ##   6. O "NÃO PODE" DA MOCHILA (`menu_negado`) soa, pelo tocador de interface, e não corta o som de
 ##      efeito que acabou de tocar.
+##   7. TROCAR O ITEM DA MÃO SOA (#223): o clique curto de `barra_de_mao.trocar_a_mao` toca pelo tocador
+##      de interface, com o tom variando, e fica mudo ao reescolher a vaga que já está na mão; os três
+##      gestos (tecla 1 a 0, roda, clique) passam por ele, o volume de Efeitos o governa, e arar, regar e
+##      plantar na lavoura pedem os seus efeitos (`arar`, `regar`, `plantar`).
 ##
 ## FALSIFICAÇÃO: apague `assets/audio/efeitos/menu_negado.mp3` (ou escreva `Audio.efeito("nao_existe")`
-## num script): a pergunta 1 reprova; tire `_ligar_as_portas` do `ambiente_vale.gd`: a 5 reprova.
+## num script): a pergunta 1 reprova; tire `_ligar_as_portas` do `ambiente_vale.gd`: a 5 reprova; tire o
+## `Audio.efeito` de `trocar_a_mao` (ou volte a roda para `Inventario.selecionar`): a 7 reprova.
 
 const PASTA := "res://assets/audio/efeitos/"
 ## Os apelidos e os sons de interface vêm do próprio Audio, para este portão não os copiar.
@@ -78,8 +83,9 @@ func _run() -> void:
 	_tabela_do_golpe_completa()
 	_as_portas_soam()
 	_o_nao_pode_da_mochila()
+	_trocar_a_mao_soa()
 	if falhas == 0:
-		print("SONS_DO_JOGO_OK: todo som pedido tem arquivo, todo arquivo tem dono, a tabela do golpe usa os sons novos, as portas e o 'não pode' soam")
+		print("SONS_DO_JOGO_OK: todo som pedido tem arquivo, todo arquivo tem dono, a tabela do golpe usa os sons novos, as portas, o 'não pode' e a troca do item na mão soam")
 	quit(0 if falhas == 0 else 1)
 
 
@@ -204,6 +210,67 @@ func _o_nao_pode_da_mochila() -> void:
 	audio.efeito("menu_negado")
 	_conferir(_tocando(audio._interface).begins_with("menu_negado"), "o 'não pode' da mochila tocou '%s' no tocador de interface" % _tocando(audio._interface))
 	_conferir(_tocando(audio._efeitos) == "porta_abrir", "o 'não pode' cortou o efeito que soava (tocador de efeitos: '%s')" % _tocando(audio._efeitos))
+
+
+# --- 7. TROCAR O ITEM DA MÃO --------------------------------------------------------
+
+func _trocar_a_mao_soa() -> void:
+	var barra = load("res://scripts/prototipo_3d/barra_de_mao.gd")
+	var inventario = root.get_node("/root/Inventario")
+	var antes: int = inventario.selecionado
+	inventario.selecionar(inventario.MAO_LIVRE)
+	audio._interface.stream = null
+	audio.ultimo_efeito = ""
+	audio._ultimo_movimento_ms = -1000
+	# Escolher uma vaga nova toca o clique, pelo tocador de interface.
+	barra.trocar_a_mao(2, false)
+	_conferir(inventario.selecionado == 2, "trocar_a_mao(2) não pôs a vaga 3 na mão")
+	_conferir(audio.ultimo_efeito == "menu_mover" and audio._interface.stream != null, "trocar o item da mão não tocou o clique (último efeito: '%s')" % audio.ultimo_efeito)
+	# Reescolher a vaga que já está na mão, sem alternar, fica em silêncio.
+	audio._interface.stream = null
+	audio.ultimo_efeito = ""
+	barra.trocar_a_mao(2, false)
+	_conferir(audio.ultimo_efeito == "" and audio._interface.stream == null, "reescolher a vaga que já estava na mão tocou o clique")
+	# O mesmo número, alternando, guarda o item (mão livre): é uma troca, e soa.
+	barra.trocar_a_mao(2, true)
+	_conferir(inventario.selecionado == inventario.MAO_LIVRE and audio.ultimo_efeito == "menu_mover", "guardar o item da mão (mesmo número) não tocou o clique")
+	# O Inventario puro (carregar o jogo, portões) não estala.
+	audio.ultimo_efeito = ""
+	inventario.selecionar(4)
+	_conferir(audio.ultimo_efeito == "", "Inventario.selecionar sozinho tocou som: só o gesto do jogador toca")
+	# O tom varia: dez trocas não saem todas com o mesmo.
+	var tons := {}
+	audio._ultimo_movimento_ms = -1000
+	for i in 10:
+		audio.efeito("mao_troca", 0.06)
+		tons[snappedf(audio._interface.pitch_scale, 0.0001)] = true
+		audio._interface.stop()
+		audio._ultimo_movimento_ms = -1000
+	_conferir(tons.size() > 1, "o clique da troca sai sempre no mesmo tom")
+	for tom: float in tons:
+		_conferir(absf(tom - 1.0) <= 0.0601, "o tom da troca (%.3f) passa da variação de 6%%" % tom)
+	# O volume de Efeitos governa o clique (o mudo é do barramento geral, e vale para tudo).
+	var volume_antes: float = audio.volume_efeitos
+	audio.definir_volume_efeitos(0.8)
+	var db_alto: float = audio._interface.volume_db
+	audio.definir_volume_efeitos(0.2)
+	var db_baixo: float = audio._interface.volume_db
+	audio.definir_volume_efeitos(volume_antes)
+	_conferir(db_baixo < db_alto, "o volume de Efeitos não muda o clique da troca (%.1f dB contra %.1f dB)" % [db_baixo, db_alto])
+	# Os três gestos passam por trocar_a_mao, e nenhum chama o Inventario direto.
+	var barra_fonte := FileAccess.get_file_as_string("res://scripts/prototipo_3d/barra_de_mao.gd")
+	var jogador_fonte := FileAccess.get_file_as_string("res://scripts/prototipo_3d/player_controller.gd")
+	_conferir(barra_fonte.count("trocar_a_mao(") >= 4, "a tecla e o clique da barra não chamam trocar_a_mao")
+	_conferir(jogador_fonte.contains("trocar_a_mao("), "a roda do mouse não chama trocar_a_mao")
+	_conferir(not jogador_fonte.contains("Inventario.selecionar("), "a roda do mouse voltou a chamar Inventario.selecionar direto (sem som)")
+	for gesto in ["Inventario.alternar(i)", "Inventario.alternar(qual)", "Inventario.selecionar(qual)"]:
+		_conferir(not barra_fonte.contains(gesto), "a barra de mão chama '%s' direto (sem som)" % gesto)
+	# Lavoura: arar, regar e plantar pedem os seus efeitos.
+	var lavoura := FileAccess.get_file_as_string("res://scripts/prototipo_3d/lavoura_vale.gd")
+	for som in ["arar", "regar", "plantar"]:
+		_conferir(lavoura.contains("Audio.efeito(\"%s\")" % som), "a lavoura não pede o efeito '%s'" % som)
+		_conferir(audio.arquivo_do_efeito(som) != "", "o efeito '%s' da lavoura não tem arquivo" % som)
+	inventario.selecionar(antes)
 
 
 # --- apoio ---------------------------------------------------------------------------

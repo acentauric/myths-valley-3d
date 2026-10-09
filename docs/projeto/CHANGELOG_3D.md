@@ -2,6 +2,13 @@
 
 ## Em desenvolvimento — 10/10/2026
 
+- **Trocar o item na mão passa a fazer barulho.** A tecla 1 a 0, a roda do mouse e o clique na barra tocam
+  o clique curto do "Som dos botões" (o da escolha em Ajustes), com o tom variando uns 6% para não
+  soar sempre igual, e ficam em silêncio quando a vaga já era a da mão. O som sai pelo canal de Efeitos
+  e vale o mudo. Arar, regar e plantar já tocavam `arar`, `regar` e `plantar` (o issue partia de uma
+  leitura antiga do código): o portão `sons_do_jogo` agora cobra os três, o clique da troca, o silêncio
+  ao reescolher a vaga, o tom variável e o volume de Efeitos (#223).
+
 - **O jogo passa a ter o ícone do Myths' Valley, e não o do Godot.** O M dourado do logotipo, numa
   pastilha de laca escura com filete de ouro, vira o ícone da janela e da barra de tarefas
   (`icone.png`, 512 px) e do `.exe` (`icone.ico`, de 16 a 256 px), declarado no `project.godot`
