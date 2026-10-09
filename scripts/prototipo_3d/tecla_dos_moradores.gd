@@ -349,7 +349,7 @@ func _avisar_que_falou_com(morador: Node3D) -> void:
 
 func _item_de_presente(item: String) -> bool:
 	return item != "" and Catalogo.existe(item) \
-		and Catalogo.tipo(item) not in ["ferramenta", "equipamento"]
+		and Catalogo.tipo(item) not in ["ferramenta", "equipamento", "chave"]
 
 
 func _texto_social(chave: String) -> String:

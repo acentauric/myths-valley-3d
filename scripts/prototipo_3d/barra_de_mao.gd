@@ -174,7 +174,7 @@ func _repintar() -> void:
 
 		var textura := Catalogo.icone(id)
 		icone.texture = textura
-		var nome := str(Catalogo.ITENS.get(id, {}).get("nome", id))
+		var nome := Catalogo.nome(id)
 		espaco.tooltip_text = tr(Jogo.texto(nome))
 		# Com ícone, o texto é só a quantidade; sem ícone, a inicial faz as
 		# vezes dele — é o que o 2D faz com nó de talento sem arte.
@@ -195,7 +195,7 @@ func _nome_na_mao() -> String:
 	var id := Inventario.na_mao()
 	if id == "":
 		return "mão livre"
-	var nome := str(Catalogo.ITENS.get(id, {}).get("nome", id))
+	var nome := Catalogo.nome(id)
 	# O papel na mão diz a tecla que o lê (#113).
 	if Catalogo.tipo(id) == "documento":
 		return "%s  ·  %s lê" % [nome, Atalhos.letra("interagir")]

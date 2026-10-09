@@ -1,5 +1,15 @@
 # Histórico de mudanças — Myths' Valley 3D
 
+## Em desenvolvimento — 10/10/2026
+
+- **A chave da casa do tio passa a existir, e a porta só abre com ela.** A Dona Zefa entrega o item
+  "Chave da casa do tio" (pt/en/es/zh, com ícone) no fim do passo 5/16; sem ela na mochila a porta da casa
+  herdada fica trancada, e entrar no passo 6/16 a gasta: o aviso diz que ela fica no prego, ao lado do
+  batente. A chave vai no save entre os dois passos, quem chega ao passo da casa sem ela (save antigo,
+  passo pulado) a recebe, e o nome dos itens passa a acompanhar o idioma do jogo (`Catalogo.nome` e
+  `Catalogo.resumo`). Os portões `cadeia_das_missoes`, `chegada` e `entregas_da_cadeia` cobram a
+  entrega, a porta e o save (#217).
+
 ## Build #10 — 08/10/2026
 
 Fechada em 09/10/2026 com as correções das issues de 08/10, as vozes, o Mixamo e a main da equipe de 08/10.

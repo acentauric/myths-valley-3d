@@ -284,6 +284,11 @@ func passou(id: String) -> bool:
 	return _cadeia.passou(id)
 
 
+## O item que um passo da chegada deve e ainda não coube na mochila (#217: a chave da casa)?
+func esta_devendo(item: String) -> bool:
+	return _cadeia._devendo(item)
+
+
 ## O passo em curso o segura parado (`fica`)? É o desembarque: a carga de uma
 ## partida salva no convés o devolve à ponta da prancha, e não ao lado do jogador.
 func fica_no_passo() -> bool:

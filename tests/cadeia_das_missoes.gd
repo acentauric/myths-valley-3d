@@ -252,6 +252,17 @@ func _run() -> void:
 					% [id, indice + 1, total, str(SEGUNDOS_POR_PASSO), pedro._espera,
 						jogador.global_position.distance_to(onde_esta),
 						str(passo.get("raio", "?")), str(meta)])
+		# A CHAVE DA CASA DO TIO (#217): a Dona Zefa a entrega ao fechar `chave_zefa`, e entrar na casa (o passo
+		# `casa`) a gasta. Sem a chave na mochila entre os dois passos, "A chave tá com você" mentiria.
+		if fechou and id == "chave_zefa":
+			_conferir(inv.quantidade("chave_da_casa") == 1,
+				"fechado o passo da Dona Zefa, a chave da casa não está na mochila (%d)" % inv.quantidade("chave_da_casa"))
+			var sala_da_casa = jogo.interiores.sala_de("casa")
+			_conferir(sala_da_casa != null and not sala_da_casa.trancada(),
+				"com a chave na mochila, a porta da casa do tio continua trancada")
+		if fechou and id == "casa":
+			_conferir(inv.quantidade("chave_da_casa") == 0,
+				"entrada a casa, a chave continua na mochila: ela devia ficar no prego da porta")
 		print("  %-14s %s" % [id, "fechou" if fechou else "PRESO"])
 		if not fechou:
 			break

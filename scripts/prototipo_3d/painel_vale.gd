@@ -959,7 +959,7 @@ func _nome_da_recompensa(chave: String, quanto: int) -> String:
 		"xp":
 			return "%d XP" % quanto
 		_:
-			return "×%d  %s" % [quanto, str(Catalogo.ITENS.get(chave, {}).get("nome", chave))]
+			return "×%d  %s" % [quanto, Catalogo.nome(chave)]
 
 
 ## O DIÁRIO, COMO NO WITCHER

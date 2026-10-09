@@ -682,7 +682,7 @@ func _id_no_caderno(passo: Dictionary) -> String:
 func _nome_do_item(item: String) -> String:
 	if item == REIS:
 		return tr("réis")
-	return str(Catalogo.ITENS.get(item, {}).get("nome", item))
+	return Catalogo.nome(item)
 
 
 func _nome_de(quem: String) -> String:
@@ -861,7 +861,7 @@ func _por_na_barra(item: String) -> void:
 		return
 	if Catalogo.tipo(item) != "ferramenta":
 		return
-	var nome := tr(str(Catalogo.dados(item).get("nome", item)))
+	var nome := tr(Catalogo.nome(item))
 	for i in Inventario.ESPACOS_MAO:
 		if str((Inventario.espacos[i] as Dictionary).get("id", "")) == item:
 			entregou.emit(tr("Recebido: %s. Aperte %s para usar.") % [nome, Inventario.rotulo_do_espaco(i)])
@@ -1006,6 +1006,23 @@ func _pagar(passo: Dictionary) -> void:
 		entregou.emit(_aviso("mochila_cheia") % [", ".join(ficou), _quem_paga(passo)])
 
 
+## O QUE O PASSO GASTA (`gasta`, #217): a chave que a Dona Zefa deu é usada ao abrir a porta da casa do
+## tio, e o passo `casa`, que fecha quando o jogador entra, a tira da mochila ("gasta": {"chave_da_casa": 1}).
+## O aviso do que aconteceu é o `aviso_gasta` do passo (nos idiomas do jogo), e vai pelo mesmo canal da entrega
+## (`entregou`). Gasta só o que há: passo pulado, sem a chave, não deve nada.
+func _gastar(passo: Dictionary) -> void:
+	var gasta = passo.get("gasta", {})
+	if not (gasta is Dictionary) or (gasta as Dictionary).is_empty():
+		return
+	var gastou := false
+	for item in gasta:
+		if Catalogo.existe(str(item)) and Inventario.consumir(str(item), int(gasta[item])):
+			gastou = true
+	var aviso := str(IdiomaMenu.campo(passo, "aviso_gasta", ""))
+	if gastou and aviso != "":
+		entregou.emit(aviso)
+
+
 ## QUEM PAGA é quem pediu. O Pedro conduz a chegada, mas o peixe é do Tonho e a
 ## garapa é da Dona Candinha: o HUD dizer "Recebido de Pedro" seria pôr na boca
 ## dele o agrado dos outros. Sem `quem_paga`, é o dono da cadeia, como sempre.
@@ -1040,6 +1057,7 @@ func avancar() -> void:
 		# a fala inteira continua no caderno (J).
 		_calar_o_anuncio(fechando)
 		_pagar(fechando)
+		_gastar(fechando)
 		_dispensar_o_mutirao(fechando)
 		# MISSÃO DE FÉ RENDE NA FÉ ATIVA, e no ofício também, como no 2D
 		# (`Arraial._fechar_a_missao_da_fe`). Sem fé ainda, o `Fe` não credita.

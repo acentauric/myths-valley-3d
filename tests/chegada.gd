@@ -338,6 +338,17 @@ func _run() -> void:
 		pedro.retomar()
 		await _quadros(3)
 		_conferir(not sala.trancada(), "com a chave dada, a casa herdada continua trancada")
+		# A CHAVE É UM ITEM (#217): quem chega ao passo da casa sem ela (passo pulado, save antigo) a recebe, e a
+		# porta só abre porque ela está na mochila; tirada a chave, a porta tranca de novo.
+		var mochila = root.get_node("/root/Inventario")
+		_conferir(mochila.tem("chave_da_casa"), "no passo da casa, a chave da Dona Zefa não está na mochila")
+		mochila.consumir("chave_da_casa", mochila.quantidade("chave_da_casa"))
+		await _quadros(2)
+		_conferir(sala.trancada(), "sem a chave na mochila, a porta da casa herdada abre")
+		pedro.retomar()
+		await _quadros(2)
+		_conferir(mochila.quantidade("chave_da_casa") == 1, "quem chega ao passo da casa sem a chave não a recebe de volta (%d)" % mochila.quantidade("chave_da_casa"))
+		_conferir(not sala.trancada(), "com a chave de volta na mochila, a casa herdada continua trancada")
 		var casa = vale.get("casa")
 		var tem := {}
 		for monte in casa.bau:

@@ -913,7 +913,7 @@ func _ready() -> void:
 	apresentacao_do_povoado.segundos = _segundos_apresentacao
 	apresentacao_do_povoado.configurar(self)
 	if pedro != null:
-		pedro.missao_mudou.connect(func(_t: String, _a: Vector3, _i: int, _n: int) -> void: _acertar_a_porta_da_casa())
+		pedro.missao_mudou.connect(func(_t: String, _a: Vector3, _i: int, _n: int) -> void: _conferir_a_chave_da_casa())
 	_atualizar_relogio()
 	print("PROTOTYPE_READY: estilo=%s hora=%s moradores=%d user_dir=%s" % [Estilo.modo, Dia.texto_hora(), moradores.size(), OS.get_user_data_dir()])
 	_pedir_os_retratos()
@@ -940,17 +940,45 @@ func _ao_mudar_de_lado() -> void:
 
 
 ## A CASA HERDADA FICA TRANCADA ATÉ A CHAVE. Na chegada quem guarda a chave é a
-## Dona Zefa (o passo `chave_zefa`), e a porta só abre depois dela: "o Pedro deve
-## conduzir o jogador até a casa dele", e quem chega antes não acha a casa
-## aberta. Fora da chegada — tutorial acabado, ou nem começado — a porta é livre,
-## e nunca tranca com o jogador lá dentro.
+## Dona Zefa: ela entrega o item `chave_da_casa` no fim do passo `chave_zefa`
+## (#217), e a porta só abre com a chave na mochila — "o Pedro deve conduzir o
+## jogador até a casa dele", e quem chega antes não acha a casa aberta. O passo
+## `casa` gasta a chave ao abrir a porta (`gasta` em data/missoes_guia.json), e
+## dali em diante a porta fica livre (`passou("casa")`). Fora da chegada —
+## tutorial acabado, ou nem começado — a porta é livre, e nunca tranca com o
+## jogador lá dentro.
 func _acertar_a_porta_da_casa() -> void:
 	var sala = interiores.sala_de("casa") if interiores != null else null
-	if sala == null or not sala.has_method("trancar"):
+	if sala == null or not sala.has_method("trancar") or player == null:
 		return
 	var na_chegada: bool = pedro != null and bool(pedro.get("_iniciado")) and not pedro.terminou_o_tutorial()
-	var trancada: bool = na_chegada and not pedro.passou("chave_zefa") and not sala.contem(player.global_position)
+	var com_a_chave: bool = Inventario.tem(CHAVE_DA_CASA) or (na_chegada and pedro.passou("casa"))
+	var trancada: bool = na_chegada and not com_a_chave and not sala.contem(player.global_position)
 	sala.trancar(trancada)
+
+
+## O ITEM QUE ABRE A CASA HERDADA (catalogo.gd) e os dois passos da chegada que o cercam.
+const CHAVE_DA_CASA := "chave_da_casa"
+
+
+## A CHAVE DE QUEM JÁ PASSOU PELA DONA ZEFA SEM TÊ-LA (#217): a partida salva antes de a chave existir, ou
+## o passo pulado de propósito (`ir_ao_passo`, nos portões), chega ao passo da casa de mãos vazias — e a
+## porta que só abre com a chave não abriria nunca. Entre `chave_zefa` e `casa` a chave se completa; depois
+## de `casa` ela já foi usada, e a que sobrou na mochila (passo pulado) é guardada no prego. Só roda quando
+## a cadeia muda de passo e quando uma partida volta: a mochila cheia não vira recado a cada item.
+func _conferir_a_chave_da_casa() -> void:
+	if pedro == null or not bool(pedro.get("_iniciado")) or pedro.terminou_o_tutorial():
+		return
+	if pedro.passou("casa"):
+		Inventario.consumir(CHAVE_DA_CASA, Inventario.quantidade(CHAVE_DA_CASA))
+	elif pedro.passou("chave_zefa") and not Inventario.tem(CHAVE_DA_CASA) and not pedro.esta_devendo(CHAVE_DA_CASA):
+		Inventario.adicionar(CHAVE_DA_CASA)
+	_acertar_a_porta_da_casa()
+
+
+## Mexeu na mochila: a chave que chegou (ou que acabou de ser gasta) acerta a porta.
+func _ao_mudar_a_mochila() -> void:
+	_acertar_a_porta_da_casa()
 
 
 ## A CHEGADA PELO SAVEIRO, na partida nova: o jogador no convés, olhando o píer;
@@ -1271,7 +1299,8 @@ func _ligar_os_acontecimentos_das_frentes() -> void:
 	_talentos_destravados = Talentos.destravados.size()
 	_talentos_vistos = Talentos.destravados.duplicate()
 	for ligado in [[Luta.acertou, _ao_acertar], [Luta.esquivou, _ao_esquivar],
-			[Pesca.terminou, _ao_pescar], [Talentos.mudou, _ao_mudar_os_talentos]]:
+			[Pesca.terminou, _ao_pescar], [Talentos.mudou, _ao_mudar_os_talentos],
+			[Inventario.mudou, _ao_mudar_a_mochila]]:
 		if not (ligado[0] as Signal).is_connected(ligado[1]):
 			(ligado[0] as Signal).connect(ligado[1])
 	# O J ABERTO (a caderneta da chegada).
@@ -2361,6 +2390,7 @@ func restaurar_do_save(estado: Dictionary) -> void:
 	if fiado_tonho != null:
 		fiado_tonho.restaurar(estado.get("fiado_tonho", {}))
 	_conferir_a_enxada_do_finado()
+	_conferir_a_chave_da_casa()
 	if lavoura != null and estado.has("lavoura"):
 		lavoura.restaurar(estado["lavoura"])
 	if curral != null and estado.has("curral"):
@@ -2514,7 +2544,7 @@ func _exit_tree() -> void:
 		Mochila.abrir_documento = Callable()
 	for ligado in [[Cozinha.cozinhou, _ao_cozinhar], [Cozinha.comeu, _ao_comer], [Oficina.fabricou, _ao_fabricar],
 			[Luta.acertou, _ao_acertar], [Luta.esquivou, _ao_esquivar], [Pesca.terminou, _ao_pescar],
-			[Talentos.mudou, _ao_mudar_os_talentos]]:
+			[Talentos.mudou, _ao_mudar_os_talentos], [Inventario.mudou, _ao_mudar_a_mochila]]:
 		if (ligado[0] as Signal).is_connected(ligado[1]):
 			(ligado[0] as Signal).disconnect(ligado[1])
 	# UMA FALA ABERTA NÃO SOBREVIVE AO VALE (#21). O `Dialogo` é autoload e fica;
