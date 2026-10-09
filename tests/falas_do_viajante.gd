@@ -24,6 +24,7 @@ const GATILHOS := [
 	"desceu_do_saveiro", "cansou_correndo", "entrou_no_mar", "entrou_em_casa", "primeira_noite",
 	"mochila_cheia", "sem_ferramenta", "primeira_colheita", "chuva_comecando", "perto_do_escuro",
 ]
+const PopupsDoMundo = preload("res://scripts/prototipo_3d/popups_do_mundo.gd")
 const PASTA_VOZES := "res://assets/audio/vozes/"
 const SEGUNDOS_DE_PALAVRA := 25.0
 ## A classe PASSAGEM da fila de falas (`FilaDeFalas.Classe`): a que não fura ninguém.
@@ -285,6 +286,11 @@ func _o_selo(jogo: Node, jogador: Node, v: Node, Selo: GDScript) -> void:
 		return
 	selo.coberto = Callable()
 	selo.permitir(true)
+	# O "?"/"!" de quem espera o jogador (o Pedro, logo atrás dele no começo) cai sobre a cabeça do viajante
+	# nesta câmera, e o selo cede a ele de propósito. Aqui se mede o selo com a cabeça livre: os marcadores
+	# saem do grupo que o selo consulta (a cessão a um popup é a da dica do E, mais abaixo).
+	for morador in get_nodes_in_group(PopupsDoMundo.GRUPO_MARCADORES):
+		morador.remove_from_group(PopupsDoMundo.GRUPO_MARCADORES)
 	Selo.definir_legendas(1)
 	Selo.esquecer_as_legendas()
 	var camera: Camera3D = root.get_camera_3d()
