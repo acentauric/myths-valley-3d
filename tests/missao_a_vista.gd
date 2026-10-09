@@ -81,6 +81,9 @@ func _run() -> void:
 	# --- 2. A TELA DE ACEITE -------------------------------------------------------------------
 	var respostas: Array = []
 	aceite.respondeu.connect(func(sim: bool) -> void: respostas.append(sim))
+	# O E NÃO CORTA QUEM ESTÁ FALANDO (`tecla_dos_moradores._fala_ativa`): o Pedro abre o vale com a
+	# saudação dele, e o E espera ele terminar.
+	await _ate(func() -> bool: return not tecla._fala_ativa(pedro), 20.0)
 	tecla.usar(pedro)
 	await _frames(3)
 	_conferir(bool(aceite.aberto), "o E no Pedro com a ponte por abrir não abriu a tela de aceite")
@@ -99,6 +102,7 @@ func _run() -> void:
 	_conferir(respostas == [false], "a resposta da recusa não saiu: %s" % str(respostas))
 	await _ate(func() -> bool: return str(pedro.marcador_de_missao()) == "!", 2.0)
 	_conferir(str(pedro.marcador_de_missao()) == "!", "recusada a missão, o '!' do Pedro sumiu")
+	await _ate(func() -> bool: return not tecla._fala_ativa(pedro), 20.0)
 	tecla.usar(pedro)
 	await _frames(3)
 	_conferir(bool(aceite.aberto), "o segundo E no Pedro não reabriu a tela de aceite")

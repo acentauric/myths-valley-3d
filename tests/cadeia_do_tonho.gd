@@ -50,7 +50,6 @@ extends SceneTree
 
 const PovoadoLiberado = preload("res://tests/fixtures/povoado_liberado.gd")
 const ConversaDoE = preload("res://tests/fixtures/conversa_do_e.gd")
-const FiadoTonho = preload("res://scripts/prototipo_3d/fiado_tonho.gd")
 
 var falhas := 0
 const SEGUNDOS_PARA_ANUNCIAR := 12.0
@@ -144,8 +143,11 @@ func _run() -> void:
 	_conferir(str(livro.get("tipo", "")) == "evento" and (livro.get("eventos", []) as Array).has("livro_tonho_lido")
 			and (livro.get("eventos", []) as Array).has("divida_tonho_quitada"),
 		"o passo do livro não pede ler o livro e quitar a dívida: %s" % str(livro))
-	_conferir(FiadoTonho.DIVIDA == CONTA_DO_TONHO,
-		"a conta do Tonho no livro é de %d réis, e este portão mede %d" % [FiadoTonho.DIVIDA, CONTA_DO_TONHO])
+	# O livro vem do vale (e não de um preload: o script dele usa os autoloads, que um
+	# SceneTree de portão ainda não tem quando compila).
+	var divida_do_livro: int = int(jogo.get("fiado_tonho").DIVIDA) if jogo.get("fiado_tonho") != null else -1
+	_conferir(divida_do_livro == CONTA_DO_TONHO,
+		"a conta do Tonho no livro é de %d réis, e este portão mede %d" % [divida_do_livro, CONTA_DO_TONHO])
 	var nicolau: Node3D = null
 	for morador in jogo.get("moradores"):
 		if str((morador.dados as Dictionary).get("id", "")) == "mercador":
