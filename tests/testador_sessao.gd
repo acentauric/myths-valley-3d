@@ -39,6 +39,7 @@ func _run() -> void:
 	_ponte()
 	_acoes_em_palavras()
 	_sem_passo_lateral()
+	_sem_cobrir_a_narracao()
 	await _painel()
 	await _modal()
 	print("TESTADOR_SESSAO: %d falha(s)" % falhas)
@@ -87,6 +88,16 @@ func _sem_passo_lateral() -> void:
 	var guia := fonte.substr(guia_inicio, fonte.find("\nfunc ", guia_inicio + 10) - guia_inicio).replace("KEY_SHIFT", "").replace("KEY_SPACE", "")
 	for tecla in ["KEY_A", "KEY_D", "KEY_S"]:
 		_conferir(not guia.contains(tecla), "o desentalar do guia aperta %s: é passo lateral" % tecla)
+
+
+## #106: o painel do testador não cobre a narração. Ele mora no grupo `obstaculos_do_hud` (o
+## `foco_da_narracao` apaga o que cobre a caixa) e o `sessao.gd` o tira de cena com a caixa aberta; o
+## F8 que interrompe o teste é lido por `Input`, não pelo painel, e continua valendo.
+func _sem_cobrir_a_narracao() -> void:
+	var fonte := FileAccess.get_file_as_string("res://tools/jev/sessao.gd")
+	_conferir(fonte.contains("painel.add_to_group(\"obstaculos_do_hud\")"), "o painel do testador saiu do grupo obstaculos_do_hud: a narração não o apaga mais")
+	_conferir(fonte.contains("and not root.get_node(\"Dialogo\").ativo"), "o painel do testador não sai de cena com a narração aberta")
+	_conferir(fonte.contains("Input.is_physical_key_pressed(KEY_F8)"), "o F8 do testador deixou de ser lido por Input")
 
 
 func _acoes_em_palavras() -> void:

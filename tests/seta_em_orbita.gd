@@ -111,8 +111,31 @@ func _run() -> void:
 	conferir(depois.distance_to(peito) <= raios.x + 2.0, "o chevron fugiu do painel para longe do jogador: %s" % str(depois))
 	conferir(chevron.visible and chevron.modulate.a > 0.99, "o chevron sumiu em vez de desviar do painel")
 
-	# O alvo volta à vista e perto: o chevron apaga (o cone sobre o alvo basta).
+	# A NARRAÇÃO MANDA (#106): a caixa longa do Dialogo é painel de que o chevron também foge.
 	painel.queue_free()
+	var dialogo := root.get_node_or_null("Dialogo")
+	if dialogo != null:
+		dialogo.transform = Transform2D.IDENTITY
+		dialogo.falar("Pedro", ["Uma fala longa de narração para a caixa abrir."])
+		await process_frame
+		await process_frame
+		var caixa: Rect2 = dialogo.retangulo_da_caixa()
+		conferir(caixa.has_area(), "a caixa da narração aberta devia ter retângulo")
+		# A caixa vai exatamente para onde o chevron estava.
+		var meio: Vector2 = chevron.position + chevron.pivot_offset
+		dialogo._painel.global_position += meio - caixa.get_center()
+		caixa = dialogo.retangulo_da_caixa()
+		conferir(caixa.has_point(meio), "o portão não conseguiu pôr a caixa sob o chevron (caixa %s, chevron %s)" % [str(caixa), str(meio)])
+		for i in 80:
+			seta._atualizar_chevron(0.1)
+		var sob_a_caixa: Vector2 = chevron.position + chevron.pivot_offset
+		conferir(not caixa.intersects(Rect2(sob_a_caixa - Vector2(14, 14), Vector2(28, 28))), "o chevron ficou sobre a caixa da narração: %s em %s" % [str(sob_a_caixa), str(caixa)])
+		conferir(chevron.visible and chevron.modulate.a > 0.99, "o chevron sumiu em vez de desviar da caixa da narração")
+		dialogo.calar()
+		await process_frame
+		await process_frame
+
+	# O alvo volta à vista e perto: o chevron apaga (o cone sobre o alvo basta).
 	seta.definir_alvo(Vector3(2, 0, 0), "")
 	for i in 40:
 		seta._atualizar_chevron(0.1)

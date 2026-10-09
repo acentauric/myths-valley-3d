@@ -2,6 +2,18 @@
 
 ## Em desenvolvimento — 10/10/2026
 
+- **A narração manda na interface: nada fica por cima da caixa longa.** Com o Pedro (ou qualquer
+  fala da caixa do Dialogo) aberto, o `foco_da_narracao` apagava só os painéis que o HUD nomeava;
+  agora apaga QUALQUER painel do grupo `obstaculos_do_hud` que a cubra, o do testador incluído, e os
+  devolve como estavam ao fechar. A seta da missão passa a tratar a caixa como painel de que o chevron
+  foge, e a matriz de prioridades ganha a narração (120) acima do HUD essencial, em
+  `PopupsDoMundo.PRIORIDADE_NARRACAO` e em `PRIORIDADES_DOS_BALOES.md`. O F8 do testador segue lido por
+  `Input`, então interromper o teste continua valendo com o painel recolhido. Portões `foco_da_narracao`
+  (painel sobre a caixa se apaga e volta, o longe fica), `seta_em_orbita` (o chevron sai de baixo da
+  caixa), `prioridade_dos_avisos` (a ordem da matriz), `testador_sessao` (o painel do testador no grupo e
+  fora de cena com a caixa aberta) e `chegada` (na explicação das barras, nenhum painel visível cobre a
+  caixa). Falta conferir jogando as outras explicações de interface e as escalas individuais (#106).
+
 - **O aviso do rodapé passa para o canto superior esquerdo.** A fala do Pedro, o que se recebeu e
   o que se entregou (`set_notice`) saem de cima da barra de mão e vão para a coluna da missão: uma
   caixa de até 360 px, a largura do quadro da tarefa, logo abaixo dele (e das informações da casa,

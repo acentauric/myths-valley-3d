@@ -19,7 +19,11 @@ const GRUPO_DICAS := "dicas_de_tecla"
 const GRUPO_BALOES := "baloes_de_fala"
 const GRUPO_SETA := "seta_da_missao"
 const GRUPO_HUD := "obstaculos_do_hud"
-## Matriz: HUD essencial > E > fala > aviso contextual > nome.
+## Matriz: narração > HUD essencial > E > fala > aviso contextual > nome.
+## A NARRAÇÃO (a caixa longa do Dialogo, #106) está acima de tudo: o que a cobre, seja HUD, seta ou
+## painel do testador, se recolhe enquanto ela está aberta (`foco_da_narracao.gd`), e só o que ela
+## mesma explica (a barra da vez) fica aceso.
+const PRIORIDADE_NARRACAO := 120
 const PRIORIDADE_HUD := 100
 const PRIORIDADE_INTERACAO := 90
 const PRIORIDADE_FALA := 80

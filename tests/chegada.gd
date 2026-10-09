@@ -63,6 +63,25 @@ func _initialize() -> void:
 	_run.call_deferred()
 
 
+
+## A NARRAÇÃO LIVRE (#106): com a caixa longa aberta, nenhum painel do grupo `obstaculos_do_hud`
+## (minimapa, barra de mão, avisos, o painel do testador...) fica visível por cima dela. Cada um que a
+## cobre tem de estar apagado (alfa efetivo, contando os pais); os que não a tocam não importam.
+func _conferir_a_narracao_livre(dialogo: Node) -> void:
+	var caixa: Rect2 = dialogo.retangulo_da_caixa()
+	_conferir(caixa.has_area(), "a caixa da narração aberta não tem retângulo")
+	for no in get_nodes_in_group("obstaculos_do_hud"):
+		var controle := no as Control
+		if controle == null or not controle.is_visible_in_tree():
+			continue
+		var alfa := 1.0
+		var atual: Node = controle
+		while atual is CanvasItem:
+			alfa *= (atual as CanvasItem).modulate.a
+			atual = atual.get_parent()
+		var rect: Rect2 = controle.get_global_transform_with_canvas() * Rect2(Vector2.ZERO, controle.size)
+		_conferir(alfa < 0.05 or not rect.intersects(caixa), "o painel '%s' fica por cima da caixa da narração (alfa %.2f)" % [controle.name, alfa])
+
 func _conferir(ok: bool, rotulo: String) -> void:
 	if not ok:
 		push_error("CHEGADA_FALHOU: " + rotulo)
@@ -314,6 +333,9 @@ func _run() -> void:
 		var hud_do_vale = vale.hud
 		_conferir(hud_do_vale.destacando() and hud_do_vale._veu_do_destaque != null and hud_do_vale._veu_do_destaque.visible, "a explicação do corpo não escureceu a tela")
 		_conferir(hud_do_vale.barra_destacada() == "", "no respiro já havia uma barra acesa ('%s')" % hud_do_vale.barra_destacada())
+		await process_frame
+		await process_frame
+		_conferir_a_narracao_livre(dialogo)
 		var barras := {"Vida": hud_do_vale.barra_vida, "Folego": hud_do_vale.barra_folego, "Stamina": hud_do_vale.barra_stamina}
 		while dialogo._indice < dialogo._falas.size() - 1:
 			dialogo._indice += 1

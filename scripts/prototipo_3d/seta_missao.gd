@@ -219,6 +219,10 @@ func _atualizar_chevron(delta: float) -> void:
 	var giro := _chevron.rotation
 	if not some:
 		var obstaculos := PopupsDoMundo.paineis_do_hud(tamanho, self)
+		# A NARRAÇÃO MANDA (#106): a caixa longa do Dialogo também é um painel de que o chevron foge.
+		var caixa := _caixa_da_narracao()
+		if caixa.has_area():
+			obstaculos.append(caixa)
 		if na_tela:
 			# Visível mas longe: paira sobre o ponto, apontando para baixo, para ele.
 			pos = projecao - Vector2(0, 46)
@@ -286,6 +290,14 @@ func _centro_da_orbita(camera: Camera3D, area: Rect2, padrao: Vector2) -> Vector
 			var p := camera.unproject_position(peito)
 			return Vector2(clampf(p.x, area.position.x, area.end.x), clampf(p.y, area.position.y, area.end.y))
 	return padrao
+
+
+## A caixa da narração aberta, em tela; vazia com ela fechada (ou sem o autoload, num portão solto).
+func _caixa_da_narracao() -> Rect2:
+	var dialogo: Node = get_node_or_null("/root/Dialogo") if is_inside_tree() else null
+	if dialogo == null or not dialogo.has_method("retangulo_da_caixa"):
+		return Rect2()
+	return dialogo.call("retangulo_da_caixa")
 
 
 ## Os dois raios da elipse (px): proporcionais à altura da janela e ao tamanho do HUD de Ajustes.

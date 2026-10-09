@@ -1,5 +1,12 @@
 extends Control
 ## A caixa longa reserva seu espaço sem alterar o estado dos avisos do mundo.
+##
+## A NARRAÇÃO TEM A PRIORIDADE MÁXIMA (#106, `PopupsDoMundo.PRIORIDADE_NARRACAO`): enquanto a caixa
+## está aberta, tudo o que a cobre se apaga (o HUD nomeado em `componentes_da_narracao` e QUALQUER
+## outro painel do grupo `obstaculos_do_hud`, como o do testador), e volta como estava ao fechar. O
+## que a fala explica ganha um contorno dourado.
+const PopupsDoMundo = preload("res://scripts/prototipo_3d/popups_do_mundo.gd")
+
 var hud: CanvasLayer
 var _recolhidos: Dictionary = {}
 var _destaques: Array[Rect2] = []
@@ -16,9 +23,10 @@ func _process(_delta: float) -> void:
 	if hud == null:
 		return
 	var dialogo := get_node("/root/Dialogo")
-	var caixa := retangulo(dialogo._painel) if dialogo.ativo else Rect2()
+	var caixa: Rect2 = dialogo.retangulo_da_caixa()
 	var focos: Array = dialogo.interfaces_em_foco()
 	var componentes: Dictionary = hud.componentes_da_narracao()
+	_somar_os_outros_paineis(componentes)
 	_destaques.clear()
 	for chave: String in componentes:
 		var controles: Array = componentes[chave]
@@ -42,6 +50,18 @@ func _process(_delta: float) -> void:
 			if dialogo.ativo and chave in focos and not sobreposto and controle.is_visible_in_tree():
 				_destaques.append(retangulo(controle).grow(4.0))
 	queue_redraw()
+
+## Os painéis do grupo `obstaculos_do_hud` que o HUD não nomeou (o do testador, o que vier) cedem
+## do mesmo jeito à caixa.
+func _somar_os_outros_paineis(componentes: Dictionary) -> void:
+	var nomeados: Dictionary = {}
+	for controles: Array in componentes.values():
+		for controle in controles:
+			nomeados[controle] = true
+	for no in get_tree().get_nodes_in_group(PopupsDoMundo.GRUPO_HUD):
+		var controle := no as Control
+		if controle != null and not nomeados.has(controle):
+			componentes["outro_%d" % controle.get_instance_id()] = [controle]
 
 func _draw() -> void:
 	var inversa := get_global_transform_with_canvas().affine_inverse()
