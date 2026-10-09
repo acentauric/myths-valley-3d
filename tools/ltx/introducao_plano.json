@@ -1,0 +1,90 @@
+{
+  "descricao": "A travessia em vídeo (#129): um clipe LTX por trecho da narração, image-to-video ltx-2-5-pro 1920x1080 sem áudio. A duração do clipe cobre o trecho e o respiro de 0,8 s da legenda; o último segue até o saveiro chegar à igreja.",
+  "estilo": "Hand-painted oil-on-canvas look with visible brush strokes, warm natural light, Brazilian Reconcavo coast of Bahia in 1887, melancholic and solemn mood, smooth slow steady cinematic camera, no text, no captions, no watermark.",
+  "modelo": "ltx-2-5-pro",
+  "resolucao": "1920x1080",
+  "trechos": [
+    {
+      "trecho": 1,
+      "texto": "Salvador, 1887. Numa gaveta do cartório, uma carta esperou três meses por alguém que a quisesse.",
+      "duracao_audio": 7.94,
+      "duracao_clipe": 10,
+      "imagem": ".assets-raw/ltx/introducao/entrada/cartorio_carta.png",
+      "camera": "dolly_in",
+      "prompt": "A dim, silent notary's office in Salvador: the camera pushes in very slowly toward a forgotten sealed letter lying on the dark wooden desk beside the half-open drawer, dust floating in a warm shaft of late-afternoon light from the window, nobody comes, lonely and sad."
+    },
+    {
+      "trecho": 2,
+      "texto": "Um tio que você mal conheceu morreu no Recôncavo e deixou o que tinha: uma casa de taipa, um roçado cercado e nenhuma dívida.",
+      "duracao_audio": 8.57,
+      "duracao_clipe": 10,
+      "imagem": "../myths-valley-APP/public/images/pinturas/casa_de_taipa_07h_045.webp",
+      "camera": "dolly_left",
+      "prompt": "An empty wattle-and-daub house with a clay-tile roof and a small fenced field, abandoned after its owner died: the door stays shut, no one in sight, leaves stirring in a soft breeze, long quiet shadows, the camera drifts slowly sideways past the house, mournful and still."
+    },
+    {
+      "trecho": 3,
+      "texto": "Os outros herdeiros riram. Terra de fundo de baía não vale a passagem, disseram. E não foram.",
+      "duracao_audio": 7.29,
+      "duracao_clipe": 10,
+      "imagem": ".assets-raw/ltx/introducao/entrada/cartorio_carta.png",
+      "camera": "dolly_right",
+      "prompt": "The same empty notary's office: the camera glides slowly toward the open window, away from the abandoned letter, revealing the rooftops of Salvador and the wide bay beyond with a far, faint shore on the horizon, golden light fading, a quiet bitter loneliness."
+    },
+    {
+      "trecho": 4,
+      "texto": "Você foi.",
+      "duracao_audio": 1.93,
+      "duracao_clipe": 6,
+      "imagem": "assets/prototipo_3d/identidade/capa_noite.webp",
+      "camera": "dolly_in",
+      "prompt": "Night under a full moon: a lone traveler holding a small lantern walks slowly away from the camera toward the dark sea, the lantern flame flickering, moonlight on the water, the camera follows gently, determined and solitary."
+    },
+    {
+      "trecho": 5,
+      "texto": "O saveiro saiu da Rampa do Mercado com a maré da meia-noite, carregado de telha, sal e três passageiros.",
+      "duracao_audio": 7.0,
+      "duracao_clipe": 8,
+      "imagem": "../myths-valley-APP/public/images/pinturas/pier_20h_120.webp",
+      "camera": "dolly_out",
+      "prompt": "Midnight at the old wooden landing: a lantern glows on the pier as a small wooden sailing boat with a single sail slowly casts off and glides out onto the dark moonlit water, gentle ripples, the camera pulls back slowly, quiet and heavy-hearted."
+    },
+    {
+      "trecho": 6,
+      "texto": "A Baía de Todos os Santos é maior do que parece no mapa: levou a noite inteira para o outro lado virar mais que uma linha escura.",
+      "duracao_audio": 7.76,
+      "duracao_clipe": 10,
+      "imagem": "../myths-valley-APP/public/images/pinturas/pier_20h_120.webp",
+      "recorte": "crop=1000:562:0:0",
+      "camera": "dolly_in",
+      "prompt": "The open bay at night, immense and dark under a starry sky, moonlight shimmering on slow swells, a small sailing boat crossing far away with one tiny lantern, the opposite shore only a thin dark line on the horizon, the camera glides slowly forward over the water, vast and lonely."
+    },
+    {
+      "trecho": 7,
+      "texto": "Com o dia clareando, o mestre apontou uma fresta de areia entre os coqueiros e disse o nome do lugar: Bom Jesus dos Pobres.",
+      "duracao_audio": 8.1,
+      "duracao_clipe": 10,
+      "imagem": "../myths-valley-APP/public/images/pinturas/vista_do_mar_igreja.webp",
+      "camera": "dolly_in",
+      "prompt": "Daybreak seen from the sea: the camera glides slowly over calm water toward a narrow strip of sand between coconut palms, a small village with a white church appearing through light morning mist, the first warm light touching the shore, hushed and hopeful."
+    },
+    {
+      "trecho": 8,
+      "texto": "Disse também, sem tirar a mão do leme, que ali a gente aprende a não andar na mata depois que escurece.",
+      "duracao_audio": 5.98,
+      "duracao_clipe": 8,
+      "imagem": "../myths-valley-APP/public/images/pinturas/pier_17h_120.webp",
+      "camera": "dolly_right",
+      "prompt": "Approaching the shore at early morning: palm trees and a small wooden pier, behind them the dense dark forest stays in deep shadow, leaves moving slightly as if something watches from inside, the camera drifts slowly sideways along the shoreline, ominous and quiet."
+    },
+    {
+      "trecho": 9,
+      "texto": "Você achou graça. Ele não.",
+      "duracao_audio": 2.8,
+      "duracao_clipe": 10,
+      "imagem": "assets/prototipo_3d/identidade/capa_dia.webp",
+      "camera": "dolly_in",
+      "prompt": "Arrival: the wooden sailing boat with its white sail glides slowly across the calm bay toward the shore and the old wooden pier below the white colonial church, warm golden light, birds crossing the sky, the camera moves in gently and comes to rest held on the church on the hill, solemn ending."
+    }
+  ]
+}

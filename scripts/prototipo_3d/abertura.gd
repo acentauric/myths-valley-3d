@@ -25,6 +25,14 @@ const TestadorApoios = preload("res://scripts/prototipo_3d/testador_apoios.gd")
 const VIDEO_LOBBY := TelaCarregamento.VIDEO_SOBREVOO
 var lobby_em_video := false
 var _video_lobby: VideoStreamPlayer
+## A TRAVESSIA EM VÍDEO (#129): um clipe pintado do LTX por trecho da narração
+## (tools/ltx/gerar-introducao.ps1 e compor_introducao.py), atrás da legenda e por cima
+## do lobby. Cada fala troca o clipe numa fusão; o último segue até o saveiro chegar à
+## igreja. O vídeo é o mesmo nos três idiomas; só a legenda muda. Sem os arquivos, a
+## travessia segue como era (o lobby ou o vale atrás da legenda).
+const PASTA_VIDEO_TRAVESSIA := "res://assets/prototipo_3d/identidade/video/introducao/"
+const FUSAO_VIDEO_TRAVESSIA := 0.8
+var _camada_travessia: CanvasLayer
 ## O PORTÃO QUE MEDE O VALE 3D DE FUNDO (o sobrevoo conferido contra as árvores e as
 ## casas, o MAPA, a vegetação do HOME) pede o lobby 3D por aqui, ANTES de instanciar a
 ## cena: o `--lobby-3d` só existe na linha de comando, e o runner não passa argumento a
@@ -1031,6 +1039,8 @@ func _home() -> void:
 	# Saindo da travessia, a voz some suave e a trilha do menu volta.
 	if line_index >= 0:
 		Audio.encerrar_travessia(true)
+		_fechar_video_da_travessia()
+		_aplicar_video_do_lobby()
 	else:
 		Audio.parar_narracao()
 	line_index = -1
@@ -2131,6 +2141,9 @@ func _intro() -> void:
 		acoes.add_child(botao)
 	line_bar = fio_base
 	line_bar.value = 1.0
+	# O lobby fica parado debaixo dos clipes da travessia (o _home o devolve).
+	if _video_lobby != null and ResourceLoader.exists(_video_do_trecho(0)):
+		_video_lobby.paused = true
 	Audio.iniciar_travessia()
 	lines = IdiomaMenu.campo(dialog_data, "travessia", [])
 	line_index = -1
@@ -2159,6 +2172,11 @@ func _next_line() -> void:
 	# em português). A legenda dura o trecho e um respiro; sem o áudio, o tempo de leitura.
 	var restante := Audio.tocar_trecho_travessia(line_index)
 	line_time = restante + PAUSA_ENTRE_TRECHOS if restante > 0.0 else maxf(6.0, caption.text.length() * 0.065)
+	var clipe := _tocar_video_da_travessia(line_index)
+	# A última fala é curta, mas o plano dela é o saveiro chegando à igreja: a legenda
+	# espera o clipe acabar antes de a partida começar.
+	if line_index == lines.size() - 1 and clipe > line_time:
+		line_time = clipe
 	line_total = line_time
 	line_bar.value = 1.0
 
@@ -2169,6 +2187,8 @@ func _start_game() -> void:
 	set_process(false)
 	# PULAR no meio de uma fala: ela some suave em vez de cortar.
 	Audio.encerrar_travessia(false)
+	# A tela de carregamento é estática: o vídeo engasgava com o vale montando.
+	_fechar_video_da_travessia()
 	# A tela de carregamento e a partida seguem o idioma escolhido no menu.
 	var loading := _show_loading()
 	Dia.pausado = false
@@ -2190,3 +2210,61 @@ func _formatar_escala(meters_per_unit: float) -> String:
 	if is_equal_approx(meters_per_unit, roundf(meters_per_unit)):
 		return str(int(roundf(meters_per_unit)))
 	return String.num(meters_per_unit, 2)
+
+
+func _video_do_trecho(indice: int) -> String:
+	return PASTA_VIDEO_TRAVESSIA + "trecho_%02d.ogv" % (indice + 1)
+
+
+## Toca o clipe do trecho `indice` por cima do anterior, entrando numa fusão; o anterior
+## sai quando ela termina. Devolve a duração do clipe (0 sem o arquivo).
+func _tocar_video_da_travessia(indice: int) -> float:
+	var caminho := _video_do_trecho(indice)
+	if not ResourceLoader.exists(caminho):
+		return 0.0
+	var fluxo := load(caminho) as VideoStream
+	if fluxo == null:
+		return 0.0
+	if _camada_travessia == null:
+		# Entre o lobby (-1) e o retábulo (1); o fundo preto é de onde o primeiro entra.
+		_camada_travessia = CanvasLayer.new()
+		_camada_travessia.name = "VideoDaTravessia"
+		_camada_travessia.layer = 0
+		add_child(_camada_travessia)
+		var preto := ColorRect.new()
+		preto.color = Color.BLACK
+		preto.set_anchors_preset(Control.PRESET_FULL_RECT)
+		preto.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		_camada_travessia.add_child(preto)
+	var caixa := Control.new()
+	caixa.clip_contents = true
+	caixa.set_anchors_preset(Control.PRESET_FULL_RECT)
+	caixa.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	caixa.modulate.a = 0.0
+	var player := VideoStreamPlayer.new()
+	player.stream = fluxo
+	player.volume_db = -80.0
+	player.expand = true
+	player.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	caixa.add_child(player)
+	caixa.resized.connect(TelaCarregamento.cobrir_com_video.bind(caixa, player))
+	_camada_travessia.add_child(caixa)
+	TelaCarregamento.cobrir_com_video(caixa, player)
+	player.play()
+	var anteriores: Array[Node] = []
+	for filho in _camada_travessia.get_children():
+		if filho != caixa and not filho is ColorRect:
+			anteriores.append(filho)
+	var fusao := caixa.create_tween()
+	fusao.tween_property(caixa, "modulate:a", 1.0, FUSAO_VIDEO_TRAVESSIA)
+	fusao.tween_callback(func() -> void:
+		for velho in anteriores:
+			if is_instance_valid(velho):
+				velho.queue_free())
+	return player.get_stream_length()
+
+
+func _fechar_video_da_travessia() -> void:
+	if _camada_travessia != null:
+		_camada_travessia.queue_free()
+		_camada_travessia = null
