@@ -782,6 +782,13 @@ func _sincronizar_prioridade_dos_avisos() -> void:
 		_notice_panel.visible = permitido and not _notice.is_empty() and livre
 		_notice_label.visible = _notice_panel.visible
 	if is_instance_valid(_espera_panel):
+		# O AVISO DE ESPERA DESCE ANTES DE CEDER: ele é o que manda o jogador voltar para perto
+		# de quem conduz, e a fala desse mesmo condutor, no balão por cima da cabeça dele, costuma
+		# estar ao lado (08/10: a fala corrigida do Pedro, mais longa, encostava seis pixels no
+		# aviso e o apagava). Só some se, abaixo do balão, ainda não couber.
+		for caixa in superiores:
+			if caixa.intersects(_espera_panel.get_global_rect()):
+				_espera_panel.position.y = maxf(_espera_panel.position.y, caixa.end.y + 12.0)
 		var livre := true
 		for caixa in superiores:
 			if caixa.intersects(_espera_panel.get_global_rect()):
