@@ -96,6 +96,14 @@ func _run() -> void:
 		var de_cru: PackedVector3Array = navegacao.caminho_estreito(de, para)
 		if de_cru.size() >= 2:
 			de = de_cru[0]
+		# A ÂNCORA DENTRO DE UM CÔMODO (a casa de taipa é a casa do jogador, com cômodo): desde #205
+		# a casca fecha, a malha larga lá dentro é uma ilha, e quem sai sai pela porta
+		# (`navegacao.caminho` emenda a soleira). O passeio ao ar livre começa na soleira de fora.
+		var interiores = vale.get("interiores")
+		if interiores != null and str(interiores.contem(de)) != "":
+			var sala = interiores.sala_de(str(interiores.contem(de)))
+			if sala != null:
+				de = sala.soleira_de_fora()
 		var largo: PackedVector3Array = navegacao.caminho(de, para)
 		var estreito: PackedVector3Array = navegacao.caminho_estreito(de, para)
 		var cru: PackedVector3Array = navegacao.caminho_largo(de, para)

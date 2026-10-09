@@ -183,10 +183,24 @@ func _assar() -> void:
 	_leito_dos_rios(fonte, _malha.filter_baking_aabb)
 	_casco_do_saveiro(fonte)
 	_alicerces(fonte)
+	_pecas_rentes_ao_degrau(fonte)
+	# A LARGA ASSA DA FONTE ANTES DOS CORRIMÃOS: tirar as faces deles e pôr a obstrução dos lados é
+	# conta da estreita (o raio dela cabe no tabuleiro e subiria no corrimão); na larga, de 0,6, o
+	# corrimão inteiro é o que segura o caminho no meio da ponte, como era até 08/10.
+	_fonte_da_vez = _copia_da_fonte(fonte)
 	_corrimaos_das_pontes(fonte)
 	_obstaculos_das_pontes(fonte)
-	_fonte_da_vez = fonte
 	NavigationServer3D.bake_from_source_geometry_data_async(_malha, fonte, _ao_assar)
+
+
+## Uma cópia da fonte lida (os triângulos e as obstruções), para a malha larga assar sem o que
+## só a estreita mexe depois.
+static func _copia_da_fonte(fonte: NavigationMeshSourceGeometryData3D) -> NavigationMeshSourceGeometryData3D:
+	var copia := NavigationMeshSourceGeometryData3D.new()
+	copia.set_vertices(fonte.get_vertices())
+	copia.set_indices(fonte.get_indices())
+	copia.set_projected_obstructions(fonte.get_projected_obstructions())
+	return copia
 
 
 ## O tabuleiro fica livre; a pegada dos corrimãos não vira piso nem atalho
@@ -269,6 +283,32 @@ const LADO_MINIMO_DO_ALICERCE := 3.0
 func _alicerces(fonte: NavigationMeshSourceGeometryData3D) -> void:
 	for alicerce in alicerces():
 		fonte.add_projected_obstruction(alicerce["contorno"], float(alicerce["base"]) - 0.2, float(alicerce["altura"]) + 0.4, false)
+
+
+## AS PEÇAS RENTES AO DEGRAU (o cocho da casa do carro quebrado: 0,44 de altura). Mais altas que o
+## degrau do corpo (`DEGRAU`), elas barram quem anda; mas a malha mede a altura em células de
+## `ALTURA_DA_CELULA`, e uma caixa só um palmo acima do degrau, no chão inclinado, cai na conta como
+## degrau que se sobe — o caminho passava por cima dela e o corpo prendia (`colisoes_de_passeio`,
+## 08/10, com a malha larga). Entram como obstáculo projetado, sem folga: o raio do agente a dá.
+func _pecas_rentes_ao_degrau(fonte: NavigationMeshSourceGeometryData3D) -> void:
+	if _mundo == null:
+		return
+	for corpo in _mundo.get_children():
+		if corpo is not StaticBody3D or ((corpo as StaticBody3D).collision_layer & 1) == 0:
+			continue
+		for filho in corpo.get_children():
+			if filho is not CollisionShape3D or (filho as CollisionShape3D).disabled or (filho as CollisionShape3D).shape is not BoxShape3D:
+				continue
+			var caixa: Vector3 = ((filho as CollisionShape3D).shape as BoxShape3D).size
+			if caixa.y <= DEGRAU or caixa.y >= DEGRAU + 0.1:
+				continue
+			var t: Transform3D = (filho as CollisionShape3D).global_transform
+			var contorno := PackedVector3Array()
+			for sinal in [Vector2(-1.0, -1.0), Vector2(1.0, -1.0), Vector2(1.0, 1.0), Vector2(-1.0, 1.0)]:
+				var canto: Vector3 = t * Vector3(sinal.x * caixa.x * 0.5 / maxf(t.basis.x.length(), 0.0001), 0.0, sinal.y * caixa.z * 0.5 / maxf(t.basis.z.length(), 0.0001))
+				canto.y = 0.0
+				contorno.append(canto)
+			fonte.add_projected_obstruction(contorno, t.origin.y - caixa.y * 0.5 - 0.2, caixa.y + 0.4, false)
 
 
 ## Os alicerces do mundo: {"nome", "contorno" (a pegada com folga, no chão), "base", "altura"}.
