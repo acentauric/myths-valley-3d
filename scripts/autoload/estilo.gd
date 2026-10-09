@@ -3,7 +3,6 @@ extends Node
 ## mestra) ou "procedural" (tudo construído por código, inclusive o personagem).
 ## A escolha fica em AJUSTAR e vale para o cenário inteiro; trocar reconstrói o vale.
 
-signal estilo_alterado(novo: String)
 ## Plaquinhas com o nome dos personagens (AJUSTAR → Cenário).
 signal nomes_alterados(mostrar: bool)
 
@@ -50,7 +49,6 @@ func definir(novo: String) -> void:
 	preferencias.set_value("estilo", "modo", modo)
 	if preferencias.save(ARQUIVO) != OK:
 		push_warning("Não foi possível salvar o estilo visual.")
-	estilo_alterado.emit(modo)
 
 
 func definir_nomes(mostrar: bool) -> void:
@@ -63,7 +61,3 @@ func definir_nomes(mostrar: bool) -> void:
 	if preferencias.save(ARQUIVO) != OK:
 		push_warning("Não foi possível salvar a preferência dos nomes.")
 	nomes_alterados.emit(mostrar)
-
-
-func rotulo() -> String:
-	return "Tripo" if tripo() else "Procedural"
