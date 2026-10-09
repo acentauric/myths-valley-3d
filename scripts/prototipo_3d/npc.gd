@@ -809,17 +809,34 @@ func _mover(direcao: Vector3, velocidade: float, delta: float) -> void:
 
 ## Bordas baixas (terreiro das casas, meio-fio, praia saindo da água) viram parede para o
 ## CharacterBody3D: se o que barra o passo cabe em DEGRAU, sobe nele.
+##
+## A BORDA TORTA TAMBÉM É DEGRAU, como no viajante (`player_controller._subir_degrau`): a face da
+## ponta do tabuleiro da ponte grande sobe a uns 56 graus, mais íngreme que o chão e menos que a
+## parede, e o Pedro parava de frente para ela nas duas cabeceiras, com a malha dando o caminho por
+## cima (#219). Sobe também essas, desde que seja só uma borda: a 0,6 m dali o chão não passa de
+## DEGRAU acima dos pés — a ladeira íngreme de verdade continua parede.
 const DEGRAU := 0.4
 
 
 func _subir_degrau(direcao: Vector3) -> void:
-	if _nadando or not is_on_wall() or direcao.length_squared() < 0.01 or get_wall_normal().y > 0.3:
+	if _nadando or not is_on_wall() or direcao.length_squared() < 0.01:
 		return
 	var passo := Vector3(direcao.x, 0.0, direcao.z).normalized() * 0.2
 	var em_cima := global_transform.translated(Vector3.UP * DEGRAU)
 	if test_move(global_transform, Vector3.UP * DEGRAU) or test_move(em_cima, passo):
 		return
+	if get_wall_normal().y > 0.3 and not _so_uma_borda(passo.normalized()):
+		return
 	global_position += Vector3.UP * DEGRAU + passo
+
+
+## O chão, 0,6 m adiante de `rumo`, não passa de DEGRAU acima dos pés?
+func _so_uma_borda(rumo: Vector3) -> bool:
+	var de := global_position + rumo * 0.6 + Vector3.UP * (DEGRAU + 0.6)
+	var raio := PhysicsRayQueryParameters3D.create(de, de + Vector3.DOWN * 2.0, collision_mask)
+	raio.exclude = [get_rid()]
+	var bateu := get_world_3d().direct_space_state.intersect_ray(raio)
+	return not bateu.is_empty() and float(bateu["position"].y) <= global_position.y + DEGRAU + 0.02
 
 
 func _atualizar_nado() -> void:
