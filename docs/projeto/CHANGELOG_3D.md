@@ -1,5 +1,55 @@
 # Histórico de mudanças — Myths' Valley 3D
 
+## Em desenvolvimento — 10/10/2026
+
+- **O aviso do rodapé passa para o canto superior esquerdo.** A fala do Pedro, o que se recebeu e
+  o que se entregou (`set_notice`) saem de cima da barra de mão e vão para a coluna da missão: uma
+  caixa de até 360 px, a largura do quadro da tarefa, logo abaixo dele (e das informações da casa,
+  do relógio quando a janela estreita o faz descer, e do aviso de espera), que quebra a linha e
+  cresce para baixo. O rodapé fica só com o minimapa e a mão. O portão `tarefa_no_hud` mede, em
+  1280×720, 1920×1080 e 1000×700, a missão, o aviso e a espera ao mesmo tempo sem se cobrirem, e o
+  `foco_da_narracao` passa a esperar o aviso de pé quando a caixa da narração abre embaixo (#102).
+
+- **Os cartões de Modelos ficam baixos, e o nome de cada morador cabe inteiro.** Em Modelos, a grade
+  de Moradores e a de Assets passam de cartões altos em fonte 14 (que cortavam "SEU BENEDIT", "DONA
+  CANDI", "SACRISTÃO Z") para cartões de 42 a 64 px em fonte 12, com a capacidade de 6 colunas por
+  5 linhas ou mais e sem rolagem. O nome que não cabe numa linha quebra em duas entre as palavras
+  ("SACRISTÃO / ZACARIAS"), e o tooltip segue trazendo o nome inteiro. O portão `painel_personagens`
+  mede, em cada cartão dos Moradores e dos Assets, que cada linha do nome cabe na largura útil do botão,
+  que o cartão cabe no teto e comporta as linhas, que a grade tem ao menos 6×5 e que a faixa vazia
+  embaixo é menor que uma linha de cartões (#213).
+
+- **Com um balão de fala no ar, nenhuma plaquinha de nome fica na tela.** Antes só a placa de quem
+  falava saía, e a Dona Estefânia aparecia ao lado do balão da Dona Zefa no poço. Agora o balão
+  (conversa, fala solta, o Pedro conduzindo) tem prioridade: as plaquinhas apagam no fade de sempre,
+  inclusive a do alvo da missão e a do dono do E, e só voltam `SILENCIO_APOS_O_BALAO` (0,6 s) depois
+  do último balão, de modo que duas falas seguidas não as fazem piscar. Os portões `placas_e_baloes`
+  (com falsificação `--falsificar`), `matriz_dos_baloes` e `popups_na_tela` medem a ausência de placas
+  com a fala no ar, o vão entre duas falas e a volta (#218).
+
+- **O balão de fala fica sobre quem fala, com a ponta para ele.** O lugar do balão saía de uma soma de
+  multas em que cobrir uma dica ou uma placa valia mais que atravessar a tela: o Pedro no canto
+  esquerdo tinha o balão no canto direito superior. Agora a escolha é uma conta pura (`BalaoFala.avaliar`):
+  sete lugares em volta da cabeça, o ideal acima dela com o pé a 44 px; o que cairia sobre o HUD
+  desliza o mínimo; a distância à cabeça e o rosto de quem fala e do jogador têm preço; com o falante
+  fora da tela o balão encosta na borda do lado dele. A página da fala longa mantém o pé no lugar. O portão
+  novo `balao_sobre_quem_fala` mede o falante perto, longe, na borda, fora da tela e sob o bloco da
+  missão (o caso da captura), e reprova com `--falsificar` (#224).
+
+- **Entrar na casa herdada no passo do baú não derruba mais o jogo a 3 FPS (#185).** A queda vinha
+  do passo, e não da casa. Enquanto o passo pede enxada, balde e maniva, a cadeia do Pedro procura a
+  cada tick de física a fonte de cada item, e a busca por árvore dava uma volta pelo vale inteiro
+  duplicando a ficha da espécie em cada árvore: 54 ms por tick para não achar nada. A física entrava
+  em espiral (5 passos por quadro, 280 ms por quadro). A busca agora escolhe antes as espécies que
+  rendem o item. Medido na GTX 1660 Ti em P0, às 18 h: dentro da casa nesse passo, de 3,5 para
+  100–124 FPS (física de 275 para 2 ms por quadro). A soleira fica em 98–116 FPS. A igreja (61 → 65)
+  e o casarão (89 → 91) também não perdem FPS ao entrar. As hipóteses de render da issue (casca
+  escondida, luzes, sonda, `far`, sombra) foram medidas e nenhuma passa de 0,7 ms. O medidor ganhou
+  os lugares `dentro:`/`porta:`, a travessia da porta e a entrada da chegada. Os números estão no
+  anexo de desempenho.
+
+- **O jogo deixa de cair a 8 FPS ao lado da casa do tio no passo da corda (#226).** A queda que o autor viu no passo 12/16 era o mesmo defeito da casa herdada: enquanto o passo pede um item que árvore nenhuma rende, a cadeia do Pedro varria todas as árvores do vale a cada tick de física, desde 07/10. A correção da busca (#185) vale aqui também; o portão do alcance das peças agora reprova pasta nova do catálogo que ninguém classificou, e o portão da madeira cobra a pergunta pela corda. O censo de malhas e o FPS por lugar ficam para a rodada de medição.
+
 ## Build #10 — 08/10/2026
 
 Fechada em 09/10/2026 com as correções das issues de 08/10, as vozes, o Mixamo e a main da equipe de 08/10.

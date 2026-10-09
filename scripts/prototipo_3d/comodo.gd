@@ -72,13 +72,13 @@ var borda_do_alicerce := 0.0
 var afastamento_de_fora := 1.6
 ## A CASCA DE FORA (#205): quanto a colisão avança para fora, além da parede (`parede`), até a face
 ## visível da parede do modelo, em cada lado e no fundo; e o PERFIL DA FACHADA, a face de fora dela
-## coluna a coluna (x do cômodo, z da face), de `PASSO_DA_FACHADA` em `PASSO_DA_FACHADA` — vazio sem
-## medida. A fachada de uma venda tem alpendre, balcão e pilar, e uma face só (a mediana) errava a
-## casa inteira. Ver `_montar_a_casca_de_fora`.
+## coluna a coluna (x do cômodo, z da face da frente, z da face de trás: 0 para "da parede", ou a de trás de
+## um pilar solto dela), de `PASSO_DA_FACHADA` em `PASSO_DA_FACHADA` — vazio sem medida. A fachada de uma venda
+## tem alpendre, balcão e pilar, e uma face só (a mediana) errava a casa inteira. Ver `_montar_a_casca_de_fora`.
 var fora_direita := 0.0
 var fora_esquerda := 0.0
 var fora_fundo := 0.0
-var perfil_da_fachada: Array[Vector2] = []
+var perfil_da_fachada: Array[Vector3] = []
 ## A PORTA: onde ela fica na fachada (do meio para +X) e o tamanho do vão.
 var porta_x := 0.0
 var largura_da_porta := 1.2
@@ -138,7 +138,7 @@ func configurar(medidas: Dictionary) -> void:
 	fora_fundo = maxf(float(medidas.get("fora_fundo", 0.0)), 0.0)
 	perfil_da_fachada.clear()
 	for coluna in medidas.get("perfil_da_fachada", []):
-		perfil_da_fachada.append(coluna as Vector2)
+		perfil_da_fachada.append(coluna as Vector3)
 	# A porta não sai da fachada: o vão inteiro cabe entre as paredes do lado.
 	var folga := largura * 0.5 - largura_da_porta * 0.5 - 0.1
 	porta_x = clampf(float(medidas.get("porta_x", porta_x)), -folga, folga)
@@ -180,6 +180,15 @@ func contem(ponto: Vector3, mais: float = 0.0) -> bool:
 	var local := to_local(ponto)
 	return absf(local.x) <= largura * 0.5 + 0.15 + mais and local.z <= 0.15 + mais \
 		and local.z >= -comprimento - 0.15 - mais and local.y >= -0.6 - mais and local.y <= pe_direito + 0.4 + mais
+
+
+## O ponto está sobre a planta do cômodo (de parede a parede), qualquer que seja a altura? Uma âncora do
+## vale (o meio da casa) tem o y do terreno, ou nenhum — o `contem` a deixa de fora quando o chão do cômodo
+## fica a mais de meio metro acima do terreno —, e quem pergunta "o destino é dentro de casa?" é por onde
+## ele fica no chão.
+func contem_na_planta(ponto: Vector3) -> bool:
+	var local := to_local(ponto)
+	return absf(local.x) <= largura * 0.5 + 0.15 and local.z <= 0.15 and local.z >= -comprimento - 0.15
 
 
 ## O ponto de passagem por dentro da porta, e o de fora dela, no chão.
@@ -261,37 +270,55 @@ func _montar_a_casca_de_fora() -> void:
 
 
 ## A fachada de fora, de cada lado do vão da porta: colunas do perfil medido, fora do vão e dentro da
-## casca, cada uma com a face dela (de `parede` a `parede + SALIENCIA_MAXIMA`) e engordada pela
-## vizinha mais saliente (a saliência mais estreita que o passo não escapa entre duas colunas).
-## Colunas vizinhas de face parecida (até `TOLERANCIA_DA_FACHADA` de diferença) viram uma caixa só.
+## casca, cada uma com o sólido dela (da face de trás à da frente, até `parede + SALIENCIA_MAXIMA`) e
+## engordada pela vizinha cujo sólido a encosta (a saliência mais estreita que o passo não escapa entre
+## duas colunas). A saliência colada na parede é cheia, da parede à frente; a SOLTA dela — o pilar do
+## alpendre — é só o pilar, e o chão entre ele e a parede fica livre: com o cheio, o alpendre inteiro
+## virava um muro de ar, e o corpo que saía da porta de viés rasgava nele (#205).
+## Colunas vizinhas de faces parecidas (até `TOLERANCIA_DA_FACHADA` de diferença) viram uma caixa só.
 func _montar_a_fachada_de_fora() -> void:
 	var borda := largura * 0.5 + parede
 	var meia_porta := largura_da_porta * 0.5
 	var xs: Array[float] = []
-	var zs: Array[float] = []
+	var frentes: Array[float] = []
+	var trases: Array[float] = []
 	for coluna in perfil_da_fachada:
 		if absf(coluna.x) > borda or absf(coluna.x - porta_x) < meia_porta:
 			continue
+		var frente := clampf(coluna.y, 0.0, parede + SALIENCIA_MAXIMA)
 		xs.append(coluna.x)
-		zs.append(clampf(coluna.y, 0.0, parede + SALIENCIA_MAXIMA))
-	var gordas: Array[float] = zs.duplicate()
+		frentes.append(frente)
+		trases.append(clampf(coluna.z, parede, maxf(frente, parede)))
+	var gordas: Array[float] = frentes.duplicate()
+	var gordas_tras: Array[float] = trases.duplicate()
 	for i in xs.size():
 		for vizinha in [i - 1, i + 1]:
-			if vizinha >= 0 and vizinha < xs.size() and absf(xs[vizinha] - xs[i]) <= PASSO_DA_FACHADA * 1.01:
-				gordas[i] = maxf(gordas[i], zs[vizinha])
+			if vizinha < 0 or vizinha >= xs.size() or absf(xs[vizinha] - xs[i]) > PASSO_DA_FACHADA * 1.01:
+				continue
+			# Só a vizinha que encosta no sólido da coluna engorda ela: a parede lisa ao lado de um pilar solto não vira
+			# parede até o pilar.
+			if trases[vizinha] > frentes[i] + PASSO_DA_FACHADA or trases[i] > frentes[vizinha] + PASSO_DA_FACHADA:
+				continue
+			gordas[i] = maxf(gordas[i], frentes[vizinha])
+			gordas_tras[i] = minf(gordas_tras[i], trases[vizinha])
 	var i := 0
 	while i < xs.size():
 		var j := i
 		var z := gordas[i]
-		while j + 1 < xs.size() and absf(xs[j + 1] - xs[j]) <= PASSO_DA_FACHADA * 1.01 and absf(gordas[j + 1] - gordas[i]) <= TOLERANCIA_DA_FACHADA:
+		var z_tras := gordas_tras[i]
+		while j + 1 < xs.size():
+			var parecida: bool = absf(xs[j + 1] - xs[j]) <= PASSO_DA_FACHADA * 1.01 and absf(gordas[j + 1] - gordas[i]) <= TOLERANCIA_DA_FACHADA and absf(gordas_tras[j + 1] - gordas_tras[i]) <= TOLERANCIA_DA_FACHADA
+			if not parecida:
+				break
 			j += 1
 			z = maxf(z, gordas[j])
-		var fundura := z - parede
+			z_tras = minf(z_tras, gordas_tras[j])
+		var fundura := z - z_tras
 		if fundura > 0.02:
 			var de_x := maxf(xs[i] - PASSO_DA_FACHADA * 0.5, -borda)
 			var ate_x := minf(xs[j] + PASSO_DA_FACHADA * 0.5, borda)
 			_caixa(Vector3(ate_x - de_x, pe_direito, fundura),
-				Vector3((de_x + ate_x) * 0.5, pe_direito * 0.5, parede + fundura * 0.5), null, true, "FachadaFora", false)
+				Vector3((de_x + ate_x) * 0.5, pe_direito * 0.5, z_tras + fundura * 0.5), null, true, "FachadaFora", false)
 		i = j + 1
 
 

@@ -1,9 +1,20 @@
 extends Node
 ## Plaquinhas com o nome de cada morador, na identidade do HUD (painel escuro, borda e
-## nome dourados), presas acima da cabeça. Somem enquanto o morador fala (o balão já
-## traz o nome), longe demais ou atrás da câmera, com o morador fora do vale (o mestre
-## Quirino fora do dia do saveiro: o rótulo dele continua `visible`, quem some é ele) e
-## quando AJUSTAR → Cenário → Nomes dos personagens está em Ocultar.
+## nome dourados), presas acima da cabeça. Somem com QUALQUER balão de fala no ar (o balão
+## já traz o nome de quem fala, e é ele que manda: #218), longe demais ou atrás da câmera,
+## com o morador fora do vale (o mestre Quirino fora do dia do saveiro: o rótulo dele continua
+## `visible`, quem some é ele) e quando AJUSTAR → Cenário → Nomes dos personagens está em Ocultar.
+##
+##
+## O BALÃO TEM PRIORIDADE, E TODAS AS PLACAS SOMEM (#218)
+##
+## "Enquanto um morador fala, as plaquinhas dos outros continuam na tela, disputando atenção
+## com o balão": a Dona Zefa falava no poço e a placa da Dona Estefânia aparecia ao lado.
+## Com um balão no ar (conversa, fala solta, o Pedro conduzindo, as cenas — todos moram no
+## grupo `baloes_de_fala`), NENHUMA placa fica na tela, nem a do alvo da missão nem a do dono
+## do E: as que estavam acesas apagam no fade de sempre (`SEGUNDOS_DO_FADE`), e as que voltam,
+## voltam no mesmo fade. Falas seguidas não fazem piscar: as placas só voltam depois de
+## `SILENCIO_APOS_O_BALAO` sem nenhum balão no ar, e um balão novo dentro desse prazo reinicia a espera.
 ##
 ##
 ## NO MÁXIMO TRÊS DE CADA VEZ
@@ -13,8 +24,8 @@ extends Node
 ##
 ## A praça junta de seis a treze moradores ao longo do dia, e todos estavam a menos
 ## de 22 m: até treze plaquinhas de uma vez, mais a dica do E, o balão e a seta.
-## Agora só `MAXIMO_DE_PLACAS` aparecem (duas, com um balão no ar: o balão e o
-## nome de quem fala já são dois popups de personagem), e quem leva uma é, nesta ordem:
+## Agora só `MAXIMO_DE_PLACAS` aparecem (e nenhuma com um balão no ar, ver abaixo), e quem
+## leva uma é, nesta ordem:
 ##
 ##   1. quem vai receber o E (o nome de quem se vai procurar tem de estar na tela);
 ##   2. quem a missão acompanhada aponta;
@@ -66,6 +77,9 @@ const INTERVALO_OCLUSAO := 0.12
 const ESTABILIZAR_OCLUSAO := 0.18
 
 const MAXIMO_DE_PLACAS := 3
+## #218. Quanto tempo (s) as placas seguem apagadas depois que o último balão de fala se vai: cobre o
+## vão entre duas falas seguidas (a fila pausa uma fração de segundo entre elas) sem piscar.
+const SILENCIO_APOS_O_BALAO := 0.6
 ## #184. As caixas de um personagem na tela (metros, a partir dos pés): a cabeça vai do queixo ao
 ## alto do modelo (`FRACAO_DA_CABECA` da altura); o tronco, dali até `FRACAO_DO_TRONCO` da altura
 ## abaixo do topo. As meias-larguras são em metros no plano da câmera.
@@ -145,6 +159,11 @@ var _permitido := true
 var maximo := MAXIMO_DE_PLACAS
 ## Falso desliga o rosto e a profundidade (#184): o jogo de antes, para o portão reprovar.
 var respeita_rostos := true
+## Falso tira a prioridade do balão (#218): o jogo de antes, que só descontava uma vaga com um balão
+## no ar, para o portão reprovar.
+var cala_com_balao := true
+## Quanto falta (s) para as placas poderem voltar depois do último balão (ver `SILENCIO_APOS_O_BALAO`).
+var _silencio := 0.0
 ## Morador -> a mola da placa dele, e o quanto ela está acesa (0 a 1).
 var _molas: Dictionary = {}
 var _alfa: Dictionary = {}
@@ -162,6 +181,11 @@ func _init() -> void:
 	# Antes de tudo: as dicas do E e o balão leem o retângulo fresco das placas
 	# (`popups_do_mundo.gd`).
 	process_priority = -20
+
+
+## As placas estão apagadas pela prioridade do balão (ou pelo instante que se segue a ele)? Para o portão.
+func em_silencio() -> bool:
+	return cala_com_balao and _silencio > 0.0
 
 
 func configurar(jogador: Node3D, camada: Control) -> void:
@@ -215,7 +239,12 @@ func _process(delta: float) -> void:
 				rostos.append(encolhida(personagem["cabeca"] as Rect2, ENCOLHE_DO_ROSTO))
 				no_caminho.append({"no": personagem["no"], "caixa": personagem["corpo"], "distancia": personagem["distancia"]})
 			no_caminho.append_array(_baloes_com_profundidade(camera))
-	var limite := maximo - (1 if not baloes.is_empty() else 0)
+	# O BALÃO TEM PRIORIDADE (#218): com um no ar, ou nos instantes depois dele, ninguém leva placa.
+	if cala_com_balao and not baloes.is_empty():
+		_silencio = SILENCIO_APOS_O_BALAO
+	else:
+		_silencio = maxf(_silencio - delta, 0.0)
+	var limite := 0 if cala_com_balao and _silencio > 0.0 else maximo - (1 if not baloes.is_empty() else 0)
 	var util := Rect2(Vector2.ZERO, tela).grow(-MARGEM_DA_TELA)
 	var paineis := PopupsDoMundo.paineis_do_hud(tela)
 	# A projeção da cabeça de todo morador à frente da câmera (a placa que apaga a segue

@@ -94,6 +94,8 @@ var _mapa_largo: RID
 var _regiao_larga: RID
 var _larga_pronta := false
 var _larga_de_novo := false
+## A larga assou e ainda entra no mapa dela (alguns quadros de física).
+var _larga_assentando := false
 var _fonte_da_vez: NavigationMeshSourceGeometryData3D
 var _malha: NavigationMesh
 var _agua := -INF
@@ -340,6 +342,17 @@ func esta_pronta() -> bool:
 	return _pronta
 
 
+## A MALHA ESTÁ EM DIA: pronta, sem assada em curso nem pedida, a estreita e a larga já no mapa. `esta_pronta`
+## só diz que a primeira entrou; quem confere o caminho com o vale mudado (um cômodo que abriu de perto,
+## o cercado, o barco) espera por este.
+func em_dia() -> bool:
+	if not _pronta or _adiada or _assando or _de_novo:
+		return false
+	if not _larga_pronta or _larga_de_novo or _larga_assentando or _fonte_da_vez != null:
+		return false
+	return _malha_larga == null or not NavigationServer3D.is_baking_navigation_mesh(_malha_larga)
+
+
 ## O caminho de `de` até `para` pela malha, ou vazio sem malha.
 ## Entre cômodos, chega pela soleira e cruza o vão alinhado. Cortar a quina
 ## do umbral prendia a cápsula da igreja com a passagem central livre.
@@ -351,6 +364,10 @@ func caminho(de: Vector3, para: Vector3) -> PackedVector3Array:
 		return _caminho_na_malha(de, para)
 	var saida: String = interiores.contem(de)
 	var entrada: String = interiores.contem(para)
+	# O DESTINO É DENTRO DE CASA pela planta: a âncora do meio da casa tem o y do terreno (ou nenhum), e a altura do
+	# chão do cômodo a deixava "fora" — o caminho ia direto pela malha e acabava na parede (#205).
+	if entrada == "" and saida == "":
+		entrada = interiores.contem_na_planta(para)
 	if saida == entrada:
 		return _caminho_na_malha(de, para)
 	var sala_saida: Node3D = interiores.sala_de(saida)
@@ -873,6 +890,7 @@ func _ao_assar_larga() -> void:
 			continue
 		chao.add_polygon(poligono)
 	var iteracao := NavigationServer3D.map_get_iteration_id(_mapa_largo)
+	_larga_assentando = true
 	NavigationServer3D.region_set_navigation_mesh(_regiao_larga, chao)
 	for i in 600:
 		await get_tree().physics_frame
@@ -882,6 +900,7 @@ func _ao_assar_larga() -> void:
 		if perto != Vector3.ZERO:
 			break
 	_larga_pronta = true
+	_larga_assentando = false
 	if _larga_de_novo and _fonte_da_vez != null:
 		_assar_a_larga()
 
