@@ -2,6 +2,16 @@
 
 ## Em desenvolvimento — 10/10/2026
 
+- **O jogo passa a ter o ícone do Myths' Valley, e não o do Godot.** O M dourado do logotipo, numa
+  pastilha de laca escura com filete de ouro, vira o ícone da janela e da barra de tarefas
+  (`icone.png`, 512 px) e do `.exe` (`icone.ico`, de 16 a 256 px), declarado no `project.godot`
+  e nos dois presets de Windows, com empresa, produto e descrição (#230). O splash já não mostra
+  imagem. O ícone do `.exe` só é gravado com o rcedit configurado no editor, e isso agora é
+  pré-requisito documentado (`docs/ferramentas/EXPORTAR_WINDOWS.md`). O portão `icone_do_jogo` cobra a
+  configuração, e `tools/prototipo_3d/conferir_icone_do_exe.ps1` compara o ícone do `.exe`
+  exportado com o do jogo (reprova o do Godot). Falta ver o executável exportado no Explorer, na barra
+  de tarefas e no Alt+Tab, com o rcedit instalado na máquina.
+
 - **O atualizador deixa de ignorar em silêncio a build que ele não consegue instalar.** Os limites eram
   de uma build de 360 MB (768 MB de zip, 1 GB de jogo), e a Build 9, com mais de 1 GB, nunca viu a 10:
   o manifesto era reprovado por tamanho e o menu ficava "em dia". Os limites sobem para 4 GB de zip e

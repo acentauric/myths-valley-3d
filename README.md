@@ -194,6 +194,11 @@ New-Item -ItemType Directory -Path build/windows -Force
 & 'C:\Tools\Godot\Godot_v4.7.2-stable_win64_console.exe' --headless --path . --export-release 'Windows Desktop' build/windows/MythsValley3D.exe
 ```
 
+O ícone do executável (e o nome da empresa, do produto e a descrição) só é
+gravado se o **rcedit** estiver configurado no editor: sem ele a exportação
+passa sem erro e o `.exe` sai com o ícone do Godot. Pré-requisitos e conferência
+em [Exportar para Windows](docs/ferramentas/EXPORTAR_WINDOWS.md).
+
 O preset embute os recursos em um único executável. O pacote publicado traz
 esse EXE e, opcionalmente, instruções. A atualização consulta o site, limita
 o download à origem permitida, verifica tamanho e SHA-256 e valida o ZIP antes
