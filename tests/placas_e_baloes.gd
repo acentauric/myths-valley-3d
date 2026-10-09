@@ -121,7 +121,9 @@ func _run() -> void:
 	candinha.balao.esconder()
 	candinha.global_position = tonho.global_position + Vector3(2.0, 0.0, 0.0)
 	candinha.velocity = Vector3.ZERO
-	_pôr_o_jogador_a(jogador, mundo, tonho, 3.0)
+	# A cinco passos, como na seção 1: mais perto, a dica do E já diz o nome de quem a recebe e a placa
+	# dele cede a ela (`placas_nomes._nome_ja_identificado`) — e a medida não teria placa nenhuma acesa.
+	_pôr_o_jogador_a(jogador, mundo, tonho, perto - 1.0)
 	var acesas_antes := false
 	for _tentativa in 40:
 		await _esperar(0.1)
