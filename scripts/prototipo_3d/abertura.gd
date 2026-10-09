@@ -73,7 +73,12 @@ const TESTADOR_SIZE := Vector2(640, 700)
 const NOME_LARGURA := 600.0
 const NOME_TAMANHO_AJUDA := 18
 const NOME_TAMANHO_ERRO := 16
-const HISTORY_ROWS := 10
+## O HISTÓRICO USA A LARGURA E A ALTURA QUE TEM (#212): era um modal de 640 px com linhas de ~260 px, mais da metade
+## vazia à direita e 26 páginas para 17 dias. Largo, cada linha junta as mudanças relacionadas de um mesmo dia
+## (`data/historico_3d.json`, um grupo por dia), e cabem até `HISTORY_ROWS` linhas por página: uma página por dia
+## sempre que couber. Os modais Vagas e Sobre seguem em `HISTORY_SIZE`.
+const HISTORICO_SIZE := Vector2(780, 680)
+const HISTORY_ROWS := 14
 ## Lista do histórico: fonte base (desce até o mínimo se a linha não couber) e respiro.
 const HISTORY_FONTE := 15
 const HISTORY_FONTE_MIN := 13
@@ -1378,8 +1383,9 @@ func _open_history() -> void:
 	_render_history()
 
 
-## Entradas longas viram páginas extras, mantendo cada alteração inteira.
-func _paginar_historico(entradas: Array) -> Array:
+## Entradas longas viram páginas extras, mantendo cada alteração inteira. Estática, para o portão do histórico
+## (`tests/historico_em_linhas_longas.gd`) conferir a conta sem montar o menu.
+static func _paginar_historico(entradas: Array) -> Array:
 	var paginas: Array = []
 	for entrada: Dictionary in entradas:
 		var quantidade := 0
@@ -1422,8 +1428,8 @@ func _change_history(step: int) -> void:
 
 func _render_history() -> void:
 	_clear()
-	# Resumos em uma linha, até dez por página, sem área de rolagem.
-	_place_modal(HISTORY_SIZE, "historico")
+	# Resumos em uma linha, até catorze por página, sem área de rolagem.
+	_place_modal(HISTORICO_SIZE, "historico")
 	history_open = true
 	var entry: Dictionary = history_entries[history_index]
 	# Sem foco em botão: as teclas ← → ficam livres para trocar de página.
@@ -1447,7 +1453,7 @@ func _render_history() -> void:
 		var fonte := change_label.get_theme_font("normal_font")
 		var tamanho := HISTORY_FONTE
 		var texto_simples := "• " + str(change).replace("*", "")
-		while tamanho > HISTORY_FONTE_MIN and fonte.get_string_size(texto_simples, HORIZONTAL_ALIGNMENT_LEFT, -1, tamanho).x > HISTORY_SIZE.x - 56:
+		while tamanho > HISTORY_FONTE_MIN and fonte.get_string_size(texto_simples, HORIZONTAL_ALIGNMENT_LEFT, -1, tamanho).x > HISTORICO_SIZE.x - 56:
 			tamanho -= 1
 		change_label.add_theme_font_size_override("normal_font_size", tamanho)
 		change_label.add_theme_color_override("default_color", Color.WHITE)
