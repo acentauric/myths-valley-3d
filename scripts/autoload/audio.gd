@@ -27,7 +27,7 @@ const PERIODO_VIZINHO := {"entardecer": "tarde", "madrugada": "noite"}
 const MUSICA_MATA := "res://assets/audio/musica/musica_mata.mp3"
 ## Os apelidos que o código do jogo usa para os sons de interface (`efeito("ui_hover")`), e os nomes
 ## de interface: tocam no tocador de interface e têm a variante _madeira (AJUSTAR → Sons).
-const ALIASES_DE_EFEITO := {"ui_confirmar": "menu_confirma", "ui_hover": "menu_mover", "ui_voltar": "menu_voltar", "ui_trava": "menu_trava"}
+const ALIASES_DE_EFEITO := {"ui_confirmar": "menu_confirma", "ui_hover": "menu_mover", "ui_voltar": "menu_voltar", "ui_trava": "menu_trava", "mao_troca": "menu_mover"}
 const SONS_DE_INTERFACE := ["menu_mover", "menu_confirma", "menu_voltar", "menu_trava", "menu_negado"]
 ## Travessia (introdução): música própria e a narração em trechos, um por legenda
 ## (tools/elevenlabs/gerar-travessia.ps1 e alinhar_travessia.py).
@@ -451,7 +451,9 @@ func _sumir_narracao() -> void:
 var ultimo_efeito := ""
 
 
-func efeito(nome: String) -> void:
+## `variacao` é o quanto o tom pode fugir de 1,0 para mais e para menos (0,06 = 6%): o clique que se
+## repete o tempo todo, como o da troca do item na mão, não soa sempre igual.
+func efeito(nome: String, variacao: float = 0.0) -> void:
 	var nome_base: String = ALIASES_DE_EFEITO.get(nome, nome)
 	ultimo_efeito = nome_base
 	# Os sons de interface saem pelo tocador de interface (e ganham a variante _madeira): o "não pode"
@@ -469,7 +471,7 @@ func efeito(nome: String) -> void:
 		return
 	var tocador := _interface if menu else _efeitos
 	tocador.stream = fluxo
-	tocador.pitch_scale = 1.0
+	tocador.pitch_scale = 1.0 + _rng.randf_range(-variacao, variacao) if variacao > 0.0 else 1.0
 	tocador.play()
 
 

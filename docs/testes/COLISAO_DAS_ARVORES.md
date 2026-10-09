@@ -37,7 +37,7 @@ calibrado, e nenhum cilindro cobre copa — todos têm no máximo 3 m (o cajueir
 | mangue | 0,60 | 0,17 no fuste | raízes escoras se abrem a 1,2–1,6 u; o cilindro cobre o miolo |
 | ingazeiro | 0,40 | 0,28 | media 0,12–1,9 antes de tirar a laje de terra que vinha no GLB (#141); agora é um fuste só |
 | touceira de bambu | 0,90 | 0,14 por colmo | os colmos se abrem a 1,3 u; o cilindro cobre o miolo |
-| gameleira | 1,2 × 1,3 | 3,3 nas sapopemas | o tronco liso mede 1,1–1,9 u acima das sapopemas (medida de 03/10); as sapopemas são abas baixas que se pisam |
+| gameleira | 0,95 × 1,0 | 2,5 nas sapopemas | o tronco liso mede 1,2–1,4 u entre 2 e 2,5 m do pé (medida de 09/10, depois de a árvore descer de 18 m para 11, #228); as sapopemas são abas baixas que se pisam |
 
 Mangue, bambu e gameleira estão em `SEM_TRONCO_UNICO` no portão, com a razão (as três de fora da faixa). O ipê-amarelo
 e a pitangueira, cuja medida sai estreita (0,03 e 0,13), são as de malha de

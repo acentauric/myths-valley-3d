@@ -306,7 +306,10 @@ const PECAS := {
 	"cedro": {"tripo": "arvores/cedro_tripo.glb", "altura": 9.0, "tronco": 0.4},
 	"angico": {"tripo": "arvores/angico_tripo.glb", "altura": 7.5, "tronco": 0.35},
 	"massaranduba": {"tripo": "arvores/massaranduba_tripo.glb", "altura": 10.0, "tronco": 0.45},
-	"gameleira": {"tripo": "arvores/gameleira_tripo.glb", "altura": 14.0, "tronco": 1.2},
+	# A GAMELEIRA TEM 11 M (#228), e não os 14 × 1,3 = 18,2 m com que o vale a punha: as sapopemas
+	# chegavam a 9 m do tronco, muito além do monte de concha (5 m), e a base ficava pousada numa
+	# bandeja. O `tronco` (1,2 aos 14 m) desceu na mesma proporção, 0,95.
+	"gameleira": {"tripo": "arvores/gameleira_tripo.glb", "altura": 11.0, "tronco": 0.95},
 	"canteiro_couve": {"tripo": "arvores/canteiro_couve_tripo.glb", "largura": 2.4},
 	"pe_de_pimenta": {"tripo": "arvores/pe_de_pimenta_tripo.glb", "altura": 0.8},
 	"quiabeiro": {"tripo": "arvores/quiabeiro_tripo.glb", "altura": 1.2},
@@ -314,8 +317,15 @@ const PECAS := {
 	"abobora_rasteira": {"tripo": "arvores/abobora_rasteira_tripo.glb", "largura": 2.0},
 	"algodoeiro_praia": {"tripo": "arvores/algodoeiro_praia_tripo.glb", "altura": 5.0, "tronco": 0.3},
 	# Casas e construções novas (lote de 05/10/2026)
-	"casa_taipa_azul": {"tripo": "construcoes/casa_taipa_azul_tripo.glb", "largura": 6.5, "caixa": true, "camera": true},
-	"casa_taipa_ocre": {"tripo": "construcoes/casa_taipa_ocre_tripo.glb", "largura": 6.5, "caixa": true, "camera": true},
+	# AS CASAS DE TAIPA COLORIDAS NA ESCALA DAS BRANCAS (#211). Os GLBs coloridos têm planta mais
+	# quadrada, telhado mais alto e beiral maior que a `casa_taipa`; normalizados pela mesma
+	# largura de 6,5, ficavam 25% a 100% mais altos e com até 40% a mais de volume. A largura de
+	# cada um foi baixada até a altura e o volume de caixa (6,5 x 5,6 x 4,4 = 161 m3 na branca)
+	# ficarem a menos de 15% e a 20% da branca: azul 5,4, ocre 5,5, verde 5,7. A rosa já cabia
+	# (planta estreita) e segue com 6,5. A porta, o vão e o pé-direito de dentro (`data/interiores_casas.json`)
+	# encolheram na mesma proporção. Medida e faixa: `tests/casas_taipa_em_escala.gd`.
+	"casa_taipa_azul": {"tripo": "construcoes/casa_taipa_azul_tripo.glb", "largura": 5.4, "caixa": true, "camera": true},
+	"casa_taipa_ocre": {"tripo": "construcoes/casa_taipa_ocre_tripo.glb", "largura": 5.5, "caixa": true, "camera": true},
 	"casa_pescador": {"tripo": "construcoes/casa_pescador_tripo.glb", "largura": 5.6, "caixa": true, "camera": true},
 	"casa_palha": {"tripo": "construcoes/casa_palha_tripo.glb", "largura": 5.2, "caixa": true, "camera": true},
 	"casa_farinha": {"tripo": "construcoes/casa_farinha_tripo.glb", "largura": 8.0, "caixa": true, "camera": true},
@@ -323,7 +333,7 @@ const PECAS := {
 	"cadeia": {"tripo": "construcoes/cadeia_tripo.glb", "largura": 7.0, "caixa": true, "camera": true},
 	"casa_paroquial": {"tripo": "construcoes/casa_paroquial_tripo.glb", "largura": 7.5, "caixa": true, "camera": true},
 	"casa_taipa_rosa": {"tripo": "construcoes/casa_taipa_rosa_tripo.glb", "largura": 6.5, "caixa": true, "camera": true},
-	"casa_taipa_verde": {"tripo": "construcoes/casa_taipa_verde_tripo.glb", "largura": 6.5, "caixa": true, "camera": true},
+	"casa_taipa_verde": {"tripo": "construcoes/casa_taipa_verde_tripo.glb", "largura": 5.7, "caixa": true, "camera": true},
 	"casa_varanda": {"tripo": "construcoes/casa_varanda_tripo.glb", "largura": 7.0, "caixa": true, "camera": true},
 	"casa_meia_agua": {"tripo": "construcoes/casa_meia_agua_tripo.glb", "largura": 5.0, "caixa": true, "camera": true},
 	# Quintais: varais, galinheiro, chiqueiro e cocho (lote de 05/10/2026)

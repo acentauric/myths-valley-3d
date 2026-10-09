@@ -13,9 +13,19 @@ extends SceneTree
 ##   2. O MONTE NÃO FLUTUA: a borda do domo (raio 5, enterrado meia unidade)
 ##      fica abaixo do chão em todo o anel.
 ##   3. O MARCO É O TRONCO: `Lugares.ponto("gameleira")` é a âncora do tronco.
+##   4. A ÁRVORE ASSENTA E TEM ESCALA (#228): o pé dela fica no chão do platô (e não no alto do monte,
+##      que deixava as pontas das raízes pousadas numa bandeja); as raízes baixas (até 0,7 m do pé)
+##      não passam do platô; a altura posta fica entre 9,5 e 12 m; o pano das fitas está centrado no
+##      tronco e não o passa de mais de 0,7 m.
 
 const RAIO_DO_ANEL := 5.5
 const TOLERANCIA := 0.2
+const ALTURA_MINIMA := 9.5
+const ALTURA_MAXIMA := 12.0
+## As raízes baixas: até esta altura do pé. O platô plano (`PLATO_RAIO` do renderer) as segura no chão.
+const RAIZ_BAIXA := 0.7
+const PLATO_PLANO := 7.0
+const RAIO_MAXIMO_DO_PANO := 2.0
 
 var falhas := 0
 
@@ -63,13 +73,51 @@ func _run() -> void:
 	# --- 3. O MARCO É O TRONCO -------------------------------------------------------
 	var marco: Vector3 = lugares.ponto("gameleira")
 	_conferir(marco.is_finite() and marco.distance_to(topo) < 0.01, "o marco da gameleira (%s) não é a âncora do tronco (%s)" % [str(marco), str(topo)])
+	_a_arvore_assenta(mundo, topo, centro)
 	_fechar()
+
+
+## Pergunta 4: a gameleira posta, medida pela malha (como a vê o jogador).
+func _a_arvore_assenta(mundo, topo: Vector3, chao_do_centro: float) -> void:
+	var arvore: Node3D = mundo.get_node_or_null("GameleiraTripo")
+	if arvore == null:
+		_conferir(false, "o vale não tem o modelo da gameleira (GameleiraTripo)")
+		return
+	var limites: AABB = arvore.get_meta("limites")
+	_conferir(limites.size.y >= ALTURA_MINIMA and limites.size.y <= ALTURA_MAXIMA,
+		"a gameleira posta tem %.1f m (esperado %.1f a %.1f)" % [limites.size.y, ALTURA_MINIMA, ALTURA_MAXIMA])
+	var pe_y := arvore.global_position.y + limites.position.y
+	_conferir(pe_y <= chao_do_centro + 0.05 and pe_y >= chao_do_centro - 0.3,
+		"o pé da gameleira está a %.2f m do chão do platô (esperado entre -0,3 e +0,05): ou boia sobre o monte, ou afunda" % (pe_y - chao_do_centro))
+	var raiz_mais_longe := 0.0
+	for no in arvore.find_children("*", "MeshInstance3D", true, false):
+		var malha := (no as MeshInstance3D).mesh
+		if malha == null:
+			continue
+		for superficie in malha.get_surface_count():
+			var vertices: PackedVector3Array = malha.surface_get_arrays(superficie)[Mesh.ARRAY_VERTEX]
+			for v in vertices:
+				var global: Vector3 = (no as Node3D).global_transform * v
+				if global.y - pe_y <= RAIZ_BAIXA:
+					raiz_mais_longe = maxf(raiz_mais_longe, Vector2(global.x - topo.x, global.z - topo.z).length())
+	_conferir(raiz_mais_longe <= PLATO_PLANO,
+		"as raízes baixas da gameleira chegam a %.1f m do tronco, além do platô plano (%.1f m): as pontas pairam sobre o relevo" % [raiz_mais_longe, PLATO_PLANO])
+	var pano: Node3D = mundo.get_node_or_null("Fitas GameleiraTripo")
+	_conferir(pano != null, "o pano e as fitas da gameleira sumiram")
+	if pano != null:
+		# O nó da peça fica na origem do modelo; o meio dela é o meio da caixa (`limites`, sem giro).
+		var caixa_do_pano: AABB = pano.get_meta("limites")
+		var meio := pano.global_position + caixa_do_pano.get_center()
+		var longe := Vector2(meio.x - topo.x, meio.z - topo.z).length()
+		_conferir(longe <= 0.5, "o pano da gameleira está a %.2f m do eixo do tronco" % longe)
+		var meia_largura := maxf(caixa_do_pano.size.x, caixa_do_pano.size.z) * 0.5
+		_conferir(meia_largura <= RAIO_MAXIMO_DO_PANO, "o pano da gameleira tem %.2f m de raio (máximo %.1f): boia longe do tronco" % [meia_largura, RAIO_MAXIMO_DO_PANO])
 
 
 func _fechar() -> void:
 	print("")
 	if falhas == 0:
-		print("GAMELEIRA_OK: o chão em volta do sambaqui é plano, a borda do monte não flutua, e o marco do caboclo é o tronco")
+		print("GAMELEIRA_OK: o chão em volta do sambaqui é plano, a borda do monte não flutua, o marco do caboclo é o tronco, e a árvore assenta no chão, na escala e com o pano no tronco")
 	else:
 		print("gameleira: %d falha(s)" % falhas)
 	quit(1 if falhas > 0 else 0)

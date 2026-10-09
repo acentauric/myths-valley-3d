@@ -41,7 +41,7 @@ const TOLERANCIA_DA_FICHA := 0.3
 ## Árvores cujo tronco desenhado não é um fuste só, e por isso o raio do
 ## catálogo cobre o miolo e não a madeira toda. A razão fica ao lado.
 const SEM_TRONCO_UNICO := {
-	"gameleira": "sapopemas de 4 a 5 u de raio; o tronco liso mede 1,1 a 1,9 u acima delas, e o cilindro (1,2 x a escala) cobre o tronco",
+	"gameleira": "sapopemas de 2,5 a 3 u de raio aos 11 m; o tronco liso mede 1,2 a 1,4 u acima delas, e o cilindro (0,95 x a escala) cobre o miolo dele",
 	"mangue": "raízes escoras abertas em volta do fuste",
 	"touceira_bambu": "touceira de colmos, o raio cobre o miolo dela",
 }

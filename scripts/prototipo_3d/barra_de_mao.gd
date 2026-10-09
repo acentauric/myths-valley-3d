@@ -25,6 +25,9 @@ const LARGURA := 52.0
 const ALTURA := 52.0
 const VAO := 6.0
 const MARGEM_DE_BAIXO := 18.0
+## O som de trocar o item da mão (apelido de `menu_mover` em `Audio`) e o quanto o tom varia.
+const SOM_DA_TROCA := "mao_troca"
+const VARIACAO_DA_TROCA := 0.06
 
 const FUNDO := Color(0.055, 0.085, 0.075, 0.86)
 const BORDA := Color(0.42, 0.36, 0.22, 0.9)
@@ -211,6 +214,23 @@ func _moldura(na_mao: bool) -> StyleBoxFlat:
 	return estilo
 
 
+## TROCAR O ITEM DA MÃO TEM SOM (#223): o clique curto do "Som dos botões", com o tom
+## variando um pouco para não soar sempre igual. É o caminho dos três gestos do
+## jogador — tecla 1 a 0, roda do mouse e clique na barra —, e não o do
+## `Inventario.selecionar` puro, que o carregar do jogo e os portões também chamam
+## e que não devem estalar. `alternando`: o mesmo número guarda o item (mão livre).
+## Se a mão não mudou (a vaga já era a escolhida), fica em silêncio. O volume é o de
+## Efeitos de Ajustes e o mudo vale, porque o som sai pelo tocador de interface.
+static func trocar_a_mao(indice: int, alternando: bool) -> void:
+	var antes: int = Inventario.selecionado
+	if alternando:
+		Inventario.alternar(indice)
+	else:
+		Inventario.selecionar(indice)
+	if Inventario.selecionado != antes:
+		Audio.efeito(SOM_DA_TROCA, VARIACAO_DA_TROCA)
+
+
 ## AS TECLAS DA MÃO, 1 a 0.
 ##
 ## A regra é a do 2D e vem do `Inventario`: apertar o número que já está na mão
@@ -243,7 +263,7 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		return
 	for i in Inventario.ESPACOS_MAO:
 		if event.is_action_pressed("mv_mao_%d" % (i + 1)):
-			Inventario.alternar(i)
+			trocar_a_mao(i, true)
 			get_viewport().set_input_as_handled()
 			return
 
@@ -396,7 +416,7 @@ func _ao_clicar_no_espaco(evento: InputEvent, qual: int) -> void:
 		return
 	if Inventario.selecionado == qual:
 		if not _comer_da_mao():
-			Inventario.alternar(qual)
+			trocar_a_mao(qual, true)
 	else:
-		Inventario.selecionar(qual)
+		trocar_a_mao(qual, false)
 	accept_event()
