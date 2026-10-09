@@ -26,6 +26,12 @@ extends Node
 ## estado fica PARADO para sempre e a abertura mostra a linha desativada
 ## (`edicao_estatica()`).
 ##
+## NUNCA EM SILÊNCIO (#231): build nova que o atualizador não pode instalar (zip ou
+## executável acima dos limites, ou pouco espaço em disco) NÃO vira "em dia". O estado é
+## FALHOU, com o motivo (`erro`) e a oferta de baixar pelo site (`so_pelo_site`). Em
+## outubro de 2026 os limites eram de uma build de 360 MB, o jogo passou de 1 GB, e a Build 9
+## ficou sem ver a 10 sem dizer nada a ninguém.
+##
 ## NADA DE REDE SEM PEDIDO: a consulta só parte quando a abertura chama
 ## `verificar()`, uma vez por sessão, e só numa build exportada (ou com
 ## `--atualizacao-url=` dado à mão). No editor e na bateria de testes, que abrem
@@ -40,8 +46,14 @@ const PASTA_EXTRACAO := ".atualizacao"
 const SUFIXO_ANTIGO := ".old"
 const TEMPO_CONSULTA := 8.0
 const ORIGEM := "https://mythsvalley.app.br"
-const MAX_ZIP := 768 * 1024 * 1024
-const MAX_EXTRAIDO := 1024 * 1024 * 1024
+## OS LIMITES SEGUEM O JOGO, E COM FOLGA. A Build 10 tem 1,14 GB de zip e 1,45 GB de executável
+## (data/atualizador_builds.json guarda os tamanhos medidos de cada build, e o portão
+## tests/atualizacao.gd cobra 2x os da última). Os 4 GB do zip são também o teto do ZIP sem
+## ZIP64, que é o único formato que `conferir_zip` aceita.
+const MAX_ZIP := 4 * 1024 * 1024 * 1024
+const MAX_EXTRAIDO := 6 * 1024 * 1024 * 1024
+## Folga de disco além do que se baixa e se extrai.
+const MARGEM_DE_ESPACO := 512 * 1024 * 1024
 const MAX_ENTRADAS := 16
 
 enum Estado { PARADO, VERIFICANDO, EM_DIA, DISPONIVEL, BAIXANDO, CONFERINDO, INSTALANDO, PRONTA, FALHOU }
@@ -51,6 +63,9 @@ var manifesto: Dictionary = {}
 ## 0 a 1 enquanto baixa.
 var progresso := 0.0
 var erro := ""
+## A falha não se resolve tentando de novo: o botão leva à página de download (build
+## grande demais para os limites, ou sem espaço em disco).
+var so_pelo_site := false
 
 ## Só para o portão (tests/atualizacao.gd): finge a feature `tripothon` sem exportar.
 static var forcar_estatica := false
@@ -118,8 +133,14 @@ func instala_sozinho() -> bool:
 func atualizar() -> void:
 	if edicao_estatica() or estado not in [Estado.DISPONIVEL, Estado.FALHOU]:
 		return
-	if not instala_sozinho():
+	if so_pelo_site or not instala_sozinho():
 		OS.shell_open(pagina_de_download())
+		return
+	# O ESPAÇO VEM ANTES DO DOWNLOAD: 1 GB baixado para descobrir que não cabe é pior que dizer já.
+	var sem_espaco := _conferir_espaco()
+	if not sem_espaco.is_empty():
+		so_pelo_site = true
+		_falhar(sem_espaco)
 		return
 	DirAccess.make_dir_recursive_absolute(PASTA_DOWNLOAD)
 	# O servidor não escolhe um caminho no computador do jogador.
@@ -178,11 +199,16 @@ func _ao_receber_manifesto(resultado: int, codigo: int, _cabecalhos: PackedStrin
 		_mudar(Estado.EM_DIA)
 		return
 	var dados = JSON.parse_string(corpo.get_string_from_utf8())
-	if dados is Dictionary and manifesto_valido(dados) and ha_versao_nova(dados, _build_atual()):
-		manifesto = dados
-		_mudar(Estado.DISPONIVEL)
-	else:
+	if not (dados is Dictionary) or not manifesto_bem_formado(dados) or int(dados["build"]) <= _build_atual():
 		_mudar(Estado.EM_DIA)
+		return
+	manifesto = dados
+	# Manifesto certo e build nova, mas fora dos limites: o jogador precisa saber (#231).
+	if grande_demais(dados):
+		so_pelo_site = true
+		_falhar(_motivo_de_grande_demais(dados))
+	else:
+		_mudar(Estado.DISPONIVEL)
 
 
 func _ao_baixar(resultado: int, codigo: int, cabecalhos: PackedStringArray, _corpo: PackedByteArray, arquivo: String) -> void:
@@ -248,6 +274,34 @@ func _terminar(falha: String) -> void:
 		_falhar(falha)
 
 
+## O que o jogador lê quando a build nova passa dos limites do atualizador.
+func _motivo_de_grande_demais(dados: Dictionary) -> String:
+	if float(dados["bytes"]) > MAX_ZIP:
+		return tr("A Build %d tem %s de download e a atualização automática aceita até %s. Baixe pelo site.") \
+			% [int(dados["build"]), tamanho_legivel(int(dados["bytes"])), tamanho_legivel(MAX_ZIP)]
+	return tr("A Build %d ocupa %s instalada e a atualização automática aceita até %s. Baixe pelo site.") \
+		% [int(dados["build"]), tamanho_legivel(int(dados["extraido"])), tamanho_legivel(MAX_EXTRAIDO)]
+
+
+## Há espaço para baixar o zip e extrair o jogo ao lado do executável? "" se sim; senão, o recado.
+func _conferir_espaco() -> String:
+	DirAccess.make_dir_recursive_absolute(PASTA_DOWNLOAD)
+	var pasta_zip := ProjectSettings.globalize_path(PASTA_DOWNLOAD)
+	var pasta_jogo := OS.get_executable_path().get_base_dir()
+	var falta := espaco_que_falta(int(manifesto["bytes"]), extraido_estimado(manifesto),
+		_espaco_livre(pasta_zip), _espaco_livre(pasta_jogo), mesmo_disco(pasta_zip, pasta_jogo))
+	if falta.is_empty():
+		return ""
+	return tr("Falta espaço em disco para a Build %d: são precisos %s livres %s e há %s. Libere espaço ou baixe pelo site.") \
+		% [build_nova(), tamanho_legivel(int(falta["precisa"])), tr(str(falta["onde"])), tamanho_legivel(int(falta["livre"]))]
+
+
+## Bytes livres no disco da pasta; 0 quando o sistema não responde (e então não se barra ninguém).
+static func _espaco_livre(pasta: String) -> int:
+	var dir := DirAccess.open(pasta)
+	return dir.get_space_left() if dir != null else 0
+
+
 func _falhar(motivo: String) -> void:
 	erro = motivo
 	push_warning("Atualizacao: " + motivo)
@@ -296,12 +350,16 @@ static func _instalavel() -> bool:
 # ---------------------------------------------------------------------------
 # A lógica pura, sem rede nem estado — é o que o portão (tests/atualizacao.gd) cobra.
 
-## O manifesto tem o que a instalação precisa, e de onde se espera.
-static func manifesto_valido(dados: Dictionary) -> bool:
+## O manifesto tem o que a instalação precisa, e de onde se espera. Os tamanhos não são
+## julgados aqui: manifesto de build gigante é um manifesto certo, e quem o recusa precisa
+## dizer por quê (`grande_demais`). `extraido` (bytes do jogo instalado) é opcional.
+static func manifesto_bem_formado(dados: Dictionary) -> bool:
 	for campo in ["sha256", "url", "arquivo"]:
 		if not dados.get(campo) is String:
 			return false
-	for campo in ["build", "bytes"]:
+	for campo in ["build", "bytes", "extraido"]:
+		if campo == "extraido" and not dados.has(campo):
+			continue
 		if not (dados.get(campo) is int or dados.get(campo) is float):
 			return false
 		var numero := float(dados[campo])
@@ -309,9 +367,54 @@ static func manifesto_valido(dados: Dictionary) -> bool:
 			return false
 	var sha: String = dados["sha256"]
 	var arquivo: String = dados["arquivo"]
-	return float(dados["build"]) < 1000000 and float(dados["bytes"]) <= MAX_ZIP \
+	return float(dados["build"]) < 1000000 \
 		and url_confiavel(dados["url"]) and nome_seguro(arquivo) and not "/" in arquivo \
 		and arquivo.ends_with(".zip") and sha.length() == 64 and sha.is_valid_hex_number()
+
+
+## Bem formado e instalável: dentro dos limites de zip e de jogo extraído.
+static func manifesto_valido(dados: Dictionary) -> bool:
+	return manifesto_bem_formado(dados) and not grande_demais(dados)
+
+
+## Bem formado, mas o zip (ou o jogo extraído, quando o manifesto o declara) passa dos limites.
+static func grande_demais(dados: Dictionary) -> bool:
+	return manifesto_bem_formado(dados) \
+		and (float(dados["bytes"]) > MAX_ZIP or float(dados.get("extraido", 0)) > MAX_EXTRAIDO)
+
+
+## O jogo instalado em bytes: o que o manifesto declara, ou 1,5x o zip (a Build 10 dá 1,27x).
+static func extraido_estimado(dados: Dictionary) -> int:
+	return int(dados["extraido"]) if dados.has("extraido") else int(float(dados["bytes"]) * 1.5)
+
+
+## O que falta de espaço, ou {} se cabe. Baixar pede o zip mais a margem; extrair, o jogo
+## mais a margem; no mesmo disco, tudo junto. `livre` 0 é "não sei" e não barra ninguém.
+## Devolve {"precisa", "livre", "onde"}.
+static func espaco_que_falta(bytes: int, extraido: int, livre_download: int, livre_instalacao: int, no_mesmo_disco: bool) -> Dictionary:
+	if no_mesmo_disco:
+		var livre := mini(livre_download, livre_instalacao) if livre_download > 0 and livre_instalacao > 0 else maxi(livre_download, livre_instalacao)
+		var junto := bytes + extraido + MARGEM_DE_ESPACO
+		return {"precisa": junto, "livre": livre, "onde": "no disco do jogo"} if livre > 0 and livre < junto else {}
+	var para_baixar := bytes + MARGEM_DE_ESPACO
+	if livre_download > 0 and livre_download < para_baixar:
+		return {"precisa": para_baixar, "livre": livre_download, "onde": "na pasta de dados do jogo"}
+	var para_extrair := extraido + MARGEM_DE_ESPACO
+	if livre_instalacao > 0 and livre_instalacao < para_extrair:
+		return {"precisa": para_extrair, "livre": livre_instalacao, "onde": "na pasta do jogo"}
+	return {}
+
+
+## As duas pastas estão na mesma unidade (C:, D:)? Caminho sem letra de unidade: não se sabe, false.
+static func mesmo_disco(a: String, b: String) -> bool:
+	return a.length() > 1 and b.length() > 1 and a[1] == ":" and b[1] == ":" and a[0].to_lower() == b[0].to_lower()
+
+
+## "1.14 GB", "480 MB": o tamanho como o Explorer o conta (múltiplos de 1024).
+static func tamanho_legivel(bytes: int) -> String:
+	if bytes >= 1024 * 1024 * 1024:
+		return "%.2f GB" % (bytes / 1073741824.0)
+	return "%d MB" % int(ceil(bytes / 1048576.0))
 
 
 static func url_confiavel(url: String) -> bool:

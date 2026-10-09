@@ -508,6 +508,13 @@ const EN := {
 	"Instalando a Build %d…": "Installing Build %d…",
 	"Build %d instalada · Reiniciar o jogo": "Build %d installed · Restart the game",
 	"A atualização falhou · Tentar de novo": "The update failed · Try again",
+	"Não deu para atualizar sozinho · Baixar no site": "Could not update by itself · Download from the site",
+	"A Build %d tem %s de download e a atualização automática aceita até %s. Baixe pelo site.": "Build %d is a %s download and the automatic update accepts up to %s. Download it from the site.",
+	"A Build %d ocupa %s instalada e a atualização automática aceita até %s. Baixe pelo site.": "Build %d takes %s once installed and the automatic update accepts up to %s. Download it from the site.",
+	"Falta espaço em disco para a Build %d: são precisos %s livres %s e há %s. Libere espaço ou baixe pelo site.": "Not enough disk space for Build %d: it needs %s free %s and there is %s. Free some space or download it from the site.",
+	"no disco do jogo": "on the game's disk",
+	"na pasta de dados do jogo": "in the game's data folder",
+	"na pasta do jogo": "in the game's folder",
 	"Edição Tripothon · atualização desativada": "Tripothon Edition · updates turned off",
 }
 
@@ -993,6 +1000,13 @@ const ES := {
 	"Instalando a Build %d…": "Instalando la Build %d…",
 	"Build %d instalada · Reiniciar o jogo": "Build %d instalada · Reiniciar el juego",
 	"A atualização falhou · Tentar de novo": "La actualización falló · Intentar de nuevo",
+	"Não deu para atualizar sozinho · Baixar no site": "No se pudo actualizar solo · Descargar del sitio",
+	"A Build %d tem %s de download e a atualização automática aceita até %s. Baixe pelo site.": "La Build %d pesa %s de descarga y la actualización automática acepta hasta %s. Descárgala del sitio.",
+	"A Build %d ocupa %s instalada e a atualização automática aceita até %s. Baixe pelo site.": "La Build %d ocupa %s instalada y la actualización automática acepta hasta %s. Descárgala del sitio.",
+	"Falta espaço em disco para a Build %d: são precisos %s livres %s e há %s. Libere espaço ou baixe pelo site.": "Falta espacio en disco para la Build %d: se necesitan %s libres %s y hay %s. Libera espacio o descárgala del sitio.",
+	"no disco do jogo": "en el disco del juego",
+	"na pasta de dados do jogo": "en la carpeta de datos del juego",
+	"na pasta do jogo": "en la carpeta del juego",
 	"Edição Tripothon · atualização desativada": "Edición Tripothon · actualización desactivada",
 }
 

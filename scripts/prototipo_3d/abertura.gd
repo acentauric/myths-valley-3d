@@ -990,7 +990,8 @@ func _atualizar_oferta() -> void:
 	elif estado == E.PRONTA:
 		texto = tr("Build %d instalada · Reiniciar o jogo") % build
 	elif estado == E.FALHOU:
-		texto = tr("A atualização falhou · Tentar de novo")
+		# Falha que tentar de novo não resolve (build grande demais, sem espaço, #231): o clique abre o site.
+		texto = tr("Não deu para atualizar sozinho · Baixar no site") if Atualizacao.so_pelo_site else tr("A atualização falhou · Tentar de novo")
 	linha_atualizacao.visible = not texto.is_empty()
 	linha_atualizacao.text = texto
 	linha_atualizacao.tooltip_text = Atualizacao.erro if estado == E.FALHOU else ""

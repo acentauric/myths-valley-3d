@@ -201,6 +201,16 @@ de extrair. Conserva o executável anterior durante a troca. A distribuição
 ainda confia no servidor HTTPS: o hash vindo do mesmo servidor não equivale
 a uma assinatura independente da publicação.
 
+Os limites do atualizador (`MAX_ZIP` de 4 GB e `MAX_EXTRAIDO` de 6 GB em
+`scripts/autoload/atualizacao.gd`) acompanham o tamanho do jogo, e o atualizador
+confere o espaço livre em disco antes de baixar. Build que ele não pode instalar
+(grande demais, sem espaço) nunca fica em silêncio: o menu diz o motivo e oferece
+a página de download. Ao fechar a build, rode
+`.\tools\prototipo_3d\conferir_fechamento_de_build.ps1 -Zip <zip>` (com `-Registrar`
+depois de publicada): ele reprova zip ou executável acima dos limites do código,
+avisa quando o dobro já não caberia e quando a build anterior, com os limites que
+embutiu (`data/atualizador_builds.json`), não vai enxergar esta atualização.
+
 O jogo e os testes não precisam de chaves. Credenciais locais, caches,
 builds e arquivos brutos ficam fora do Git. As ferramentas de produção de IA
 usam credenciais externas ao código e só geram conteúdo pago quando solicitado.
