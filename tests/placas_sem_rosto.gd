@@ -115,6 +115,10 @@ func _run() -> void:
 		var morador = livres[i]
 		morador.set("_ultima_saudacao_ms", Time.get_ticks_msec())
 		morador.set("intervalo_saudacao_ms", 100000000)
+		# Sem o "!"/"?" de missão (#216), que também é obstáculo da placa: este portão mede os rostos e a
+		# profundidade, e o marcador tem a medida dele em popups_na_tela.
+		morador.set("_marcador_em", 1.0e9)
+		morador.set("_marcador_texto", "")
 		if i >= 3:
 			morador.global_position = vale.world.ground_position(aqui + Vector3(0.0, 0.0, -80.0 - 4.0 * float(i)), 0.1)
 			morador.process_mode = Node.PROCESS_MODE_DISABLED
