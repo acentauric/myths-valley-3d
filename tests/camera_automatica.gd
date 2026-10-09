@@ -74,7 +74,8 @@ func _run() -> void:
 	var mundo = current_scene.world
 	var a: Dictionary = mundo.ancoras
 	var pontos: Dictionary = {
-		"vegetacao": mundo.ground_position(a["Gameleira"] + Vector3(4, 0, 0), 0.1),
+		# Entre as raízes da gameleira: a 2,6 m do tronco na árvore de 11 m (#228); eram 4 m na de 18,2 m.
+		"vegetacao": mundo.ground_position(a["Gameleira"] + Vector3(2.6, 0, 0), 0.1),
 		"casa": mundo.ground_position(a["Casa de taipa"] + a["Casa de taipaFrente"] * 7, 0.1),
 		"pier": a["PierPiso"],
 		"pedro": mundo.ground_position(current_scene.pedro.global_position + Vector3(3, 0, 0), 0.1),
