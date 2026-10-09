@@ -2,6 +2,19 @@
 
 ## Em desenvolvimento — 10/10/2026
 
+- **A árvore de encosta assenta pelo pé do tronco, e o ingazeiro perde o cavaco de terra laranja.** O
+  plantio punha a árvore na altura do chão do ponto de plantio (o meio da caixa do GLB), mas o tronco sai
+  de até um metro e meio dele: na encosta o pé ficava a 0,5 u (aroeira) e 0,7 u (ingazeiro) do chão,
+  flutuando de um lado e enterrado do outro. A mata, a beira do rio, a restinga, o paisagismo e as árvores
+  nomeadas agora medem o pé uma vez por malha e põem a árvore na altura do chão dele (até 1,2 u), e o
+  `ground` do tronco, que a colisão, o corte e o crescimento leem, acompanha. Sob as raízes do ingazeiro
+  sobrava um cavaco de terra laranja de beiras vivas, resto da laje: 39 triângulos (1,6 m²) no GLB
+  principal e 11 (0,65 m²) no leve saíram, pela cor da terra, a planura e o contato com o chão
+  (`tirar_base_de_terra.py --cavaco`), e a altura do ingazeiro leve foi de 7,07 para 7,0 para ele seguir
+  do tamanho que tinha. Os portões `pe_das_arvores_na_encosta` (com `--falsificar`) e `bases_das_arvores`
+  (cavaco, com `--falsificar=cavaco`) medem os dois. A base reta do jatobá e as abas do cedro seguem como
+  estavam (#141).
+
 - **A noite ganha fases da lua: cheia clara, nova escura.** A fase sai do dia do calendário, num ciclo
   de oito dias de jogo (o dia 1 é quarto crescente, o 3 é lua cheia, o 7 é lua nova), sem nada novo no
   save. Na cheia a luz da lua passa de 0,26 para 0,33, azul-prateada, e faz sombra definida; na nova cai

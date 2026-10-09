@@ -54,7 +54,7 @@
    "goiabeira": {"copa": 1.7, "altura": 4.6, "tronco": true, "raio": 0.22, "ficha": "goiabeira"},
    "mamoeiro": {"copa": 1.3, "altura": 4.2, "tronco": true, "raio": 0.14, "ficha": "mamoeiro"},
    "touceira_bambu": {"copa": 3.6, "altura": 9.0, "tronco": true, "raio": 0.9, "ficha": "bambu"},
-   "ingazeiro_leve": {"copa": 2.9, "altura": 7.07, "tronco": true, "raio": 0.4, "ficha": "ingazeiro"},
+   "ingazeiro_leve": {"copa": 2.9, "altura": 7.0, "tronco": true, "raio": 0.4, "ficha": "ingazeiro"},
    "jenipapeiro_leve": {"copa": 2.9, "altura": 8.5, "tronco": true, "raio": 0.4, "ficha": "jenipapeiro"},
    "aroeira_leve": {"copa": 1.6, "altura": 4.5, "tronco": true, "raio": 0.4, "ficha": "aroeira"},
    "piacava_leve": {"copa": 2.3, "altura": 5.5, "tronco": true, "raio": 0.45, "ficha": "piacava"},

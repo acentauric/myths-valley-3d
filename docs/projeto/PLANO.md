@@ -83,6 +83,15 @@ do raio que a ferramenta poupou), e o pé do tronco fica a até 0,5 u (aroeira) 
 ficam a menos de 0,3 u. A base reta do jatobá e da embaúba e as abas do cedro
 não foram tocadas.
 
+Em 10/10 a #141 avançou nos dois achados. O cavaco de terra laranja saiu dos GLBs do ingazeiro
+principal e leve (`tirar_base_de_terra.py --cavaco 0.3`: terra laranja, quase plana, colada ao chão) e o
+portão `bases_das_arvores` passou a medi-lo. O plantio da mata, da beira do rio, da restinga, do
+paisagismo e das árvores nomeadas passou a assentar a árvore pela altura do chão do pé do tronco
+(`GeoRegionRenderer.desnivel_do_pe`, com trava de 1,2 u), e o `ground` do tronco acompanha; o portão
+`pe_das_arvores_na_encosta` mede o erro de assento contra o da regra antiga. Seguem pendentes, sem
+mexer no desenho, a base reta do jatobá e da embaúba e as abas do cedro, e a conferência a olho no
+jogo (o ingazeiro do caminho da chegada) com os portões de colisão, circulação e sobrevoo.
+
 Os troncos que pareciam vazados (#156) eram dez malhas com o fuste virado para
 dentro; só elas voltam às duas faces, e a conferência com janela, de três ângulos,
 nas árvores ao redor da Zefa e nas duas da lista (ipê e pitangueira) mostra todos
