@@ -1744,6 +1744,9 @@ func _unhandled_key_input(event: InputEvent) -> void:
 			# menu?", que virou UMA das linhas dele.
 			if mapa.aberto:
 				_toggle_map()
+			elif tecla_dos_moradores != null and tecla_dos_moradores.fechar_a_fala():
+				# A conversa aberta é o que está aberto (#220): o Esc a fecha, e o menu fica para o próximo.
+				pass
 			elif telas != null:
 				telas.abrir("menu_pausa")
 		elif event.is_action_pressed("mv_mapa"):

@@ -894,6 +894,13 @@ func _estado() -> Dictionary:
 		estado.pedro.merge({"conducting": bool(cadeia.passo_atual().get("conduz", false)),
 			"waiting_for_player": bool(pedro.get("_esperando_quem_ficou")), "guide_destination": _vetor(destino),
 			"guide_destination_reached": distancia <= 2.9, "distance_to_guide_destination": snappedf(distancia, 0.1)})
+	# A FALA ABERTA ESPERA O E (#220): o balão fica até o jogador passar a página, e o testador também.
+	estado["speech_awaiting_e"] = ""
+	for npc in current_scene.get("moradores"):
+		if is_instance_valid(npc) and npc.has_method("espera_o_e") and bool(npc.espera_o_e()):
+			estado["speech_awaiting_e"] = str(npc.name)
+			estado["speech_has_more_pages"] = bool(npc.fala_tem_mais())
+			break
 	var dono: Object = current_scene.get("foco_do_e").dono()
 	estado["interaction_target"] = str(dono.name) if dono is Node else ""
 	if dono != null and dono.has_method("perto"):
@@ -1006,6 +1013,9 @@ func _acoes(estado: Dictionary) -> Dictionary:
 	if not jogador.is_physics_processing():
 		return {"wait": "Wait for the current narration/animation to release the controls"}
 	opcoes["inspect_pause"] = "Press Escape to open the normal pause menu, including Save game"
+	if str(estado.get("speech_awaiting_e", "")) != "":
+		opcoes["speech_next"] = "Press E to advance the open speech balloon of %s: next page, or close it on the last page (more pages: %s). Do not walk away from it" % [
+			str(estado["speech_awaiting_e"]), str(estado.get("speech_has_more_pages", false))]
 	var pedro: Node3D = current_scene.get("pedro")
 	if is_instance_valid(pedro):
 		if _guia_conduz(pedro):
@@ -1140,7 +1150,7 @@ func _executar(escolha: String) -> String:
 				if chegada != "arrived":
 					return chegada
 			return await _caminhar(sala.soleira_de_fora() if saindo else sala.soleira_de_dentro(), false, true, true)
-		"dialogue_next", "interact", "confirm_screen":
+		"dialogue_next", "interact", "confirm_screen", "speech_next":
 			if escolha == "confirm_screen" and not _menu_de_pausa_permite_confirmar():
 				return "clock_or_other_menu_line_not_allowed"
 			await _tecla(KEY_E)

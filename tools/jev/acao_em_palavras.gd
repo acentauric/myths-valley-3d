@@ -13,7 +13,7 @@ static func descrever(acao: String, estado: Dictionary, t: Callable, botoes: Dic
 		return ""
 	var exatas := {
 		"follow_pedro": "a_follow", "interact": "a_interact", "work_E": "a_work", "objective": "a_objective",
-		"wait": "a_wait", "dialogue_next": "a_dialogue", "answer_yes": "a_yes", "answer_no": "a_no",
+		"wait": "a_wait", "dialogue_next": "a_dialogue", "speech_next": "a_dialogue", "answer_yes": "a_yes", "answer_no": "a_no",
 		"close_screen": "a_close", "confirm_screen": "a_confirm", "screen_tab": "a_tab", "screen_use": "a_use",
 		"screen_up": "a_nav", "screen_down": "a_nav", "screen_left": "a_nav", "screen_right": "a_nav",
 		"inspect_pause": "a_pause", "inspect_journal": "a_journal", "inspect_inventory": "a_inventory",

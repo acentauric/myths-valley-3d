@@ -1316,7 +1316,9 @@ func conversar() -> void:
 	var fila := _fila()
 	if fila != null:
 		if fila.falando(self) and int(fila.atual().get("classe", -1)) != FilaDeFalas.Classe.PASSAGEM:
-			fila.pular()
+			# O E de quem a lê passa a página (e fecha na última); o de quem não a espera passa a fala toda.
+			if not avancar_a_fala():
+				fila.pular()
 			return
 		if fila.pendente(self) and fila.apressar(self):
 			return
@@ -1336,7 +1338,7 @@ func conversar() -> void:
 	_pedir_fala({
 		"texto": texto, "inteira": texto, "voz": fluxo,
 		"classe": FilaDeFalas.Classe.CONVERSA, "no_lugar": true,
-		"segura": true, "aviso": true, "gesto": _gesto_de_saudacao(),
+		"segura": true, "aviso": true, "gesto": _gesto_de_saudacao(), "por_e": true,
 	})
 
 
@@ -1541,6 +1543,9 @@ func narrar(nome_audio: String, texto: String, pedido: Dictionary = {}) -> void:
 		"no_lugar": bool(pedido.get("no_lugar", false)),
 		# Autoral: 2 = concordar; procedural: 2 = apontar.
 		"segura": true, "gesto": 2, "narrada": true,
+		# O E CONTROLA A FALA DA MISSÃO e a resposta de quem recebe (#220); o aviso solto, o da cena
+		# e o que a narração do mundo dá passam sozinhos (`"por_e": false` no pedido).
+		"por_e": bool(pedido.get("por_e", int(pedido.get("classe", FilaDeFalas.Classe.MISSAO)) <= FilaDeFalas.Classe.MISSAO)),
 	}
 	for gancho in ["ao_comecar", "ao_terminar"]:
 		if pedido.get(gancho) is Callable:
@@ -1591,6 +1596,8 @@ func _pedir_fala(fala: Dictionary) -> void:
 	fala["parar"] = _parar_a_fala
 	fala["suspender"] = _suspender_a_fala
 	fala["tique"] = _tique_da_fala
+	if bool(fala.get("por_e", false)):
+		fala["espera_e"] = _jogador_ao_alcance_da_fala
 	var fila := _fila()
 	if fila != null:
 		var id: int = fila.pedir(fala)
@@ -1618,6 +1625,7 @@ func _comecar_a_fala(fala: Dictionary) -> void:
 	nome_label.visible = false
 	var fluxo = fala.get("voz")
 	if fluxo is AudioStream:
+		_aprumar_a_voz()
 		voz.stop()
 		voz.stream = fluxo
 		voz.stream_paused = false
@@ -1646,8 +1654,12 @@ func _parar_a_fala(fala: Dictionary, _cortada: bool) -> void:
 	balao.esconder()
 	nome_label.visible = true
 	if fala.get("voz") is AudioStream:
-		voz.stop()
-		voz.stream_paused = false
+		if bool(fala.get("fechada_pelo_e", false)):
+			_apagar_a_voz()
+		else:
+			_aprumar_a_voz()
+			voz.stop()
+			voz.stream_paused = false
 	_falando.erase(self)
 	_soltar_o_relogio()
 
@@ -1668,6 +1680,92 @@ func _suspender_a_fala(fala: Dictionary, sim: bool) -> void:
 func _tique_da_fala(resta: float) -> void:
 	_balao_tempo = resta
 	_falando[self] = Time.get_ticks_msec() + int((resta + PAUSA_ENTRE_FALAS) * 1000.0)
+	# A fala que espera o E para o tempo dela, e o dia segue parado com ela: o prazo se renova.
+	if _segura_o_relogio and espera_o_e():
+		Dia.segurar(_motivo_do_relogio(), resta + 1.0)
+
+
+## O E CONTROLA A CONVERSA (#220). A fala que o jogador procurou ou que a missão deu (`"por_e"`) fica
+## no balão enquanto ele está ao alcance dela: o E passa a página, e na última a fecha. Fora do
+## alcance, ou sem ele apertar nada por `FilaDeFalas.ESPERA_DO_E_MAXIMA`, a fala acaba pelo tempo.
+const RAIO_DO_E_NA_FALA := 6.0
+var _apagando_a_voz: Tween = null
+
+
+## O jogador está ao alcance do E desta fala (a do ar)? É o `espera_e` que a fila pergunta.
+func _jogador_ao_alcance_da_fala() -> bool:
+	if jogador == null or not is_instance_valid(jogador) or not is_inside_tree():
+		return false
+	var falta := jogador.global_position - global_position
+	# À vista: o balão fora da câmera (de costas, longe) não é lido, e o tempo dele corre.
+	return absf(falta.y) <= 2.0 and Vector2(falta.x, falta.z).length() <= RAIO_DO_E_NA_FALA \
+		and balao != null and balao.a_vista()
+
+
+## A fala dele no ar espera o E agora: é "por_e", está à vista (não suspensa por uma tela) e o jogador
+## está ao alcance. É isto que liga a dica, o indicador do balão e o E (`tecla_dos_moradores`).
+func espera_o_e() -> bool:
+	if _fala_no_ar.is_empty() or not bool(_fala_no_ar.get("por_e", false)):
+		return false
+	var fila := _fila()
+	if fila != null:
+		return fila.espera_o_e(self)
+	return FilaDeFalas.segura_pelo_e and _jogador_ao_alcance_da_fala()
+
+
+## Há mais páginas na fala de agora (o E avança) ou é a última (o E fecha)?
+func fala_tem_mais() -> bool:
+	return balao.ha_mais()
+
+
+## O E NA FALA QUE ESPERA O E: passa para a página seguinte, cortando a voz com um fade (a voz é da
+## fala inteira, e a página de antes já foi lida); na última página, fecha a fala e devolve o controle.
+## Devolve se havia o que avançar.
+func avancar_a_fala() -> bool:
+	if not espera_o_e():
+		return false
+	if balao.passar_a_pagina():
+		_apagar_a_voz()
+		return true
+	return fechar_a_fala()
+
+
+## FECHA A FALA QUE ESPERA O E, de qualquer página (o Esc, ou o E na última): a voz sai com um fade, e
+## a vez volta para a fila como a de uma fala que acabou. Devolve se havia o que fechar.
+func fechar_a_fala() -> bool:
+	if not espera_o_e():
+		return false
+	_fala_no_ar["fechada_pelo_e"] = true
+	var fila := _fila()
+	if fila != null:
+		fila.fechar(self)
+	else:
+		_parar_a_fala(_fala_no_ar, false)
+	return true
+
+
+## A voz sai com um fade curto, e não cortada no meio da sílaba.
+func _apagar_a_voz() -> void:
+	if voz == null or not voz.playing:
+		return
+	if _apagando_a_voz != null and _apagando_a_voz.is_valid():
+		_apagando_a_voz.kill()
+	_apagando_a_voz = create_tween()
+	_apagando_a_voz.tween_property(voz, "volume_db", -60.0, 0.25)
+	_apagando_a_voz.tween_callback(_acabou_o_fade)
+
+
+func _acabou_o_fade() -> void:
+	voz.stop()
+	voz.stream_paused = false
+	_aplicar_volume()
+
+
+## Desfaz o fade que ainda corre: o volume volta ao do morador.
+func _aprumar_a_voz() -> void:
+	if _apagando_a_voz != null and _apagando_a_voz.is_valid():
+		_apagando_a_voz.kill()
+	_aplicar_volume()
 
 
 ## Cala o que este morador estiver dizendo ou esperando dizer.

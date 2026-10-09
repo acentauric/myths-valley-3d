@@ -595,6 +595,10 @@ class JogadorAutomatico:
         for action in ("answer_yes", "dialogue_next"):
             if action in actions:
                 return select(action, "Responder ou avançar a fala atual")
+        # A fala aberta no balão espera o E (#220): passa a página, e na última a fecha. Antes de seguir o
+        # Pedro ou de abordar alguém, para a conversa não ficar de pé nem ser repetida.
+        if "speech_next" in actions:
+            return select("speech_next", "Avançar a fala aberta com E (página seguinte ou fim)")
 
         # Checkpoint é feito pelo menu normal: Esc, escolher Salvar, E e Esc.
         # O estado observado não é copiado para o save pelo testador.

@@ -456,6 +456,8 @@ func _falar(p: Dictionary) -> void:
 	var acabou_a_fala := [false]
 	quem.narrar(str(p.get("audio", "")), texto, {
 		"classe": FilaDeFalas.Classe.CONVERSA,
+		# Na cena o jogador assiste, e o E dela é de pular (#220): a fala passa pelo tempo, sem esperar o E.
+		"por_e": false,
 		"ao_terminar": func() -> void: acabou_a_fala[0] = true,
 	})
 	if not bool(p.get("espera", true)):

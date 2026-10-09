@@ -2,6 +2,17 @@
 
 ## Em desenvolvimento — 10/10/2026
 
+- **O E controla a conversa.** A fala que o jogador abriu com o E e a da missão (a condução do Pedro
+  inclusive) ficam no balão enquanto ele está perto para ler, a até 6 m e com o balão à vista: o E passa
+  a página, uma a uma, e na última a fecha; o Esc a fecha de qualquer página. O balão mostra o "E »" de
+  que há mais e o "E ×" do fim, a dica do E diz "Continuar" ou "Fechar", e a conversa aberta leva o E
+  antes de qualquer outro alvo (a árvore ao lado não apanha o toque). A voz da página lida sai com um
+  fade. Longe, ou sem apertar nada por 25 s, a fala acaba pelo tempo, e a condução do Pedro nunca
+  trava; o cumprimento de quem passa, o aviso solto e as falas das cenas seguem automáticos. O testador
+  ganha a ação `speech_next` e avança as falas com E. O portão `fala_pelo_e` cobra o tempo parado, as
+  páginas uma a uma, o fechamento na última, o Esc, o afastamento e o que passa sozinho (#220). Falta
+  jogar a condução do píer lendo as falas no ritmo do E.
+
 - **O jogo passa a ter o ícone do Myths' Valley, e não o do Godot.** O M dourado do logotipo, numa
   pastilha de laca escura com filete de ouro, vira o ícone da janela e da barra de tarefas
   (`icone.png`, 512 px) e do `.exe` (`icone.ico`, de 16 a 256 px), declarado no `project.godot`

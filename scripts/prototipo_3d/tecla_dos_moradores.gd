@@ -36,6 +36,8 @@ const ACIMA_DA_CABECA := 0.45
 const ACAO_PEDIDA := 0
 const ACAO_QUE_ABRE := 1
 const ACAO_NENHUMA := 2
+## O viés (`foco_do_e.gd`) do morador cuja fala espera o E: vence qualquer outro alvo ao alcance.
+const VIES_DA_FALA_ABERTA := 1000.0
 
 var _jogador: Node3D
 ## Os moradores e o Pedro, perguntados ao vale a cada quadro (o mestre Quirino
@@ -80,6 +82,10 @@ func alvo_do_e() -> Dictionary:
 	var quem := _ao_alcance()
 	if quem == null:
 		return {}
+	# A FALA ABERTA LEVA O E ANTES DE TUDO (#220): enquanto a conversa espera o jogador, o E é dela, e
+	# não da árvore, do cordel ou do outro morador ao lado.
+	if _espera_o_e(quem):
+		return {"ponto": quem.global_position, "vies": VIES_DA_FALA_ABERTA}
 	# QUEM O PASSO MANDA PROCURAR LEVA O E COM FOLGA, como o sítio de obra que a missão pede: o jogador
 	# parado de frente para ele, a dois passos, perdia a tecla para o toco de lenha ao lado do Damião e
 	# para o canteiro do roçado ao lado do Cosme ("não consegui interagir"). O viés é a DISTÂNCIA até ele,
@@ -100,8 +106,32 @@ func _ao_alcance() -> Node3D:
 	var em_jogo: bool = camera != null and camera == _jogador.get("camera")
 	if em_jogo and _jogador.is_physics_processing() and not Dialogo.ocupado() \
 			and (not _livre.is_valid() or bool(_livre.call())):
-		return _mais_perto()
+		var falando := _quem_espera_o_e()
+		return falando if falando != null else _mais_perto()
 	return null
+
+
+## QUEM TEM UMA FALA ESPERANDO O E agora (#220), ou null: o morador cuja fala o jogador, ao alcance
+## dela, lê no balão. Com a fala aberta, o E é dele: passa a página, e na última a fecha.
+func _quem_espera_o_e() -> Node3D:
+	if not _quem_mora.is_valid():
+		return null
+	for no in _quem_mora.call():
+		var morador := no as Node3D
+		if morador != null and is_instance_valid(morador) and _espera_o_e(morador):
+			return morador
+	return null
+
+
+## O ESC FECHA A CONVERSA ABERTA, a qualquer hora (#220). Devolve se havia o que fechar: o Esc que
+## não fechou nada segue para o menu.
+func fechar_a_fala() -> bool:
+	var morador := _quem_espera_o_e()
+	return morador != null and morador.has_method("fechar_a_fala") and bool(morador.call("fechar_a_fala"))
+
+
+func _espera_o_e(morador: Node3D) -> bool:
+	return morador.has_method("espera_o_e") and bool(morador.call("espera_o_e"))
 
 
 func _process(_delta: float) -> void:
@@ -201,6 +231,9 @@ static func _vem_antes(a: Dictionary, b: Dictionary) -> bool:
 ## molde, que é o que se traduz; o nome entra em `_dica_de`. A conversa não repete o nome de
 ## quem é: a placa de nome já o diz (#188). Quem recebe uma entrega continua nomeado.
 func _rotulo(morador: Node3D) -> String:
+	# Com a fala aberta, a dica diz o que o E faz nela: segue, ou fecha (#220).
+	if _espera_o_e(morador):
+		return "Continuar" if bool(morador.call("fala_tem_mais")) else "Fechar"
 	var entrega := false
 	for cadeia in get_tree().get_nodes_in_group(CadeiaDeMissoes.GRUPO):
 		if cadeia.has_method("o_que_o_e_faz") and cadeia.o_que_o_e_faz(morador) == "entregar":
@@ -244,7 +277,13 @@ func _unhandled_key_input(event: InputEvent) -> void:
 ## com ele — o pirão da Dona Filó levado ao Tonho —, e só depois abrir a fila
 ## dele, que de outro modo tomaria a conversa.
 func usar(morador: Node3D) -> void:
-	if morador == null or _perguntando_presente or _perguntando_terra or _fala_ativa(morador):
+	if morador == null or _perguntando_presente or _perguntando_terra:
+		return
+	# O E NA FALA QUE ESPERA O E (#220): passa a página, e na última fecha. Não conversa de novo.
+	if _espera_o_e(morador) and morador.has_method("avancar_a_fala"):
+		morador.call("avancar_a_fala")
+		return
+	if _fala_ativa(morador):
 		return
 	_dica.visible = false
 	var cadeias := get_tree().get_nodes_in_group(CadeiaDeMissoes.GRUPO)
@@ -316,6 +355,10 @@ func _oferecer_terra(morador: Node3D, terra: String) -> void:
 
 ## A frase de atenção de quem para ao ver o jogador chegar (`npc._dar_atencao`, #198) não conta: o E nele
 ## continua valendo, e a dica "Conversar" fica firme enquanto ele espera.
+##
+## A REGRA DO #121 (nova conversa espera a fala acabar) vale para a fala que passa sozinha: o cumprimento, o
+## aviso solto. A fala que ESPERA O E (#220) é o contrário: o E dela é de passar a página e de fechar, e `usar`
+## o trata antes de chegar aqui.
 func _fala_ativa(morador: Node3D) -> bool:
 	if morador.has_method("atencao_no_ar") and bool(morador.call("atencao_no_ar")):
 		return false
