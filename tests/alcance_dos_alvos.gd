@@ -471,6 +471,14 @@ func _corpo_em(jogador: Node, ponto: Vector3) -> String:
 		var corpo = achado.get("collider")
 		if corpo is not Node or corpo is CharacterBody3D:
 			continue
+		# A CERCA DE VARAS DA ROÇA não entra nesta conta: desde #125 ela está na camada MUNDO (a
+		# malha dos moradores a lê), e a grade do clique, de 2,5 u, passa rente a um lance e o
+		# corpo desliza por ele. Era assim até 08/10 (a cerca só na camada CERCA, fora desta
+		# pergunta); com a segunda passada das cercas (as reservas das plantas não derrubam mais
+		# lance), a quina da roça do caminho da chapada ficou rente à entrada do cemitério. O
+		# que a cerca barra é dos portões `cercas`, `cercas_e_circulacao` e `entrada_da_roca`.
+		if (corpo as Node).is_in_group("cercas_do_paisagismo"):
+			continue
 		var nome := String((corpo as Node).name)
 		if nome.begins_with("Colisão ") or nome == "Chão do mar" or nome == "Borda do quadro":
 			continue

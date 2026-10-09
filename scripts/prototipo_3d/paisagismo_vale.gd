@@ -855,7 +855,7 @@ static func _lance_barrado(wb: Node, reservas: Dictionary, lance: Dictionary) ->
 
 ## Alguma ponta ou o meio do lance cai dentro da caixa de colisão de uma construção (com FOLGA_DA_CASA)?
 static func _dentro_de_construcao(wb: Node, lance: Dictionary) -> bool:
-	if not ("construcoes" in wb):
+	if wb == null or not ("construcoes" in wb):
 		return false
 	var construcoes: Dictionary = wb.construcoes
 	for nome in construcoes:
@@ -1064,10 +1064,8 @@ static func aderecos(wb: Node, zonas: Array, receitas: Dictionary, reservas: Dic
 					anterior_ficou = false
 					caiu_colado = {}
 					continue
-				if portao >= 0 and (i == (portao + 1) % n or i == (portao + n - 1) % n):
-					anterior_ficou = false
-					caiu_colado = {}
-					continue
+				# A ENTRADA É SÓ O LANCE DELA (1a7f185): os vizinhos ficam de pé e encostam nela, e
+				# a roça não ganha um vão de três lances junto à rua.
 				# SÓ O QUE A CERCA NÃO ATRAVESSA A DERRUBA (`_lance_barrado`): a água, a rua em
 				# cima, uma construção. As reservas das plantas não: derrubavam, e o cercado
 				# ficava falhado ao longo de toda estrada (a mandioca do Poente perdia onze
