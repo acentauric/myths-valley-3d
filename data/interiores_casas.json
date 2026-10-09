@@ -33,9 +33,9 @@
 	"modelos": {
 		"casa_taipa": {"porta_x": 0.92, "largura_da_porta": 1.05, "altura_da_porta": 2.15, "sonda": 1.6},
 		"casa_carro_quebrado": {"porta_x": 1.07, "largura_da_porta": 0.8, "altura_da_porta": 1.9, "sonda": 1.6},
-		"casa_taipa_ocre": {"porta_x": 0.75, "largura_da_porta": 1.35, "altura_da_porta": 2.7, "sonda": 1.6, "pe_direito_max": 3.4},
-		"casa_taipa_verde": {"porta_x": 0.0, "largura_da_porta": 1.6, "altura_da_porta": 2.6, "sonda": 1.6, "pe_direito_max": 3.4},
-		"casa_taipa_azul": {"porta_x": -1.5, "largura_da_porta": 1.45, "altura_da_porta": 2.7, "sonda": 1.6, "pe_direito_max": 3.4},
+		"casa_taipa_ocre": {"porta_x": 0.63, "largura_da_porta": 1.15, "altura_da_porta": 2.28, "sonda": 1.6, "pe_direito_max": 2.9},
+		"casa_taipa_verde": {"porta_x": 0.0, "largura_da_porta": 1.4, "altura_da_porta": 2.28, "sonda": 1.6, "pe_direito_max": 3.0},
+		"casa_taipa_azul": {"porta_x": -1.25, "largura_da_porta": 1.2, "altura_da_porta": 2.25, "sonda": 1.6, "pe_direito_max": 2.8},
 		"casa_taipa_rosa": {"porta_x": 0.0, "largura_da_porta": 1.0, "altura_da_porta": 2.1, "sonda": 1.6},
 		"casa_pescador": {"porta_x": 0.0, "largura_da_porta": 1.1, "altura_da_porta": 2.0, "sonda": 1.6},
 		"casa_meia_agua": {"porta_x": -0.8, "largura_da_porta": 1.1, "altura_da_porta": 1.9, "sonda": 1.6},

@@ -2,6 +2,14 @@
 
 ## Em desenvolvimento — 10/10/2026
 
+- **As casas de taipa coloridas voltam à escala das brancas.** A ocre, a verde e a azul eram normalizadas
+  pela mesma largura da branca (6,5 m), mas os modelos têm telhado mais alto e planta mais quadrada: saíam
+  até 33% mais altas e com 40% a mais de volume. A largura caiu para 5,5 (ocre), 5,7 (verde) e 5,4 (azul),
+  deixando altura e volume a menos de 15% da branca; a rosa já cabia e ficou como estava. A porta, o vão
+  e o pé-direito de dentro encolheram na mesma proporção (porta de 2,25 a 2,3 m, e não 2,7). O portão
+  `casas_taipa_em_escala` mede toda `casa_taipa_*` do catálogo contra a branca. Falta conferir na galeria
+  de Modelos e no vale, e arrumar à mão os quintais (Varal, Galinheiro) que ficaram uns 50 cm mais afastados (#211).
+
 - **Trocar o item na mão passa a fazer barulho.** A tecla 1 a 0, a roda do mouse e o clique na barra tocam
   o clique curto do "Som dos botões" (o da escolha em Ajustes), com o tom variando uns 6% para não
   soar sempre igual, e ficam em silêncio quando a vaga já era a da mão. O som sai pelo canal de Efeitos
