@@ -19,10 +19,12 @@ func _conferir(certo: bool, motivo: String) -> void:
 		print("FALHA: " + motivo)
 		falhas += 1
 
+## O grande demais é o que passa dos limites do atualizador, e não um número fixo: os limites
+## seguem o tamanho do jogo (#231, `data/atualizador_builds.json`).
 func _manifestos() -> void:
 	var bom := {"build": 9, "url": "https://mythsvalley.app.br/baixar/windows?origem=jogo", "arquivo": "build9.zip", "bytes": 100, "sha256": "a".repeat(64)}
 	_conferir(Atualizacao.manifesto_valido(bom), "o manifesto do site não passa")
-	for troca in [{"arquivo": "../fora.zip"}, {"arquivo": "C:/fora.zip"}, {"arquivo": "x.zip:alvo.zip"}, {"url": "https://example.invalid/x.zip"}, {"url": "https://mythsvalley.app.br.evil.invalid/x.zip"}, {"url": "https://mythsvalley.app.br@evil.invalid/x.zip"}, {"bytes": -1}, {"bytes": 2147483648}]:
+	for troca in [{"arquivo": "../fora.zip"}, {"arquivo": "C:/fora.zip"}, {"arquivo": "x.zip:alvo.zip"}, {"url": "https://example.invalid/x.zip"}, {"url": "https://mythsvalley.app.br.evil.invalid/x.zip"}, {"url": "https://mythsvalley.app.br@evil.invalid/x.zip"}, {"bytes": -1}, {"bytes": Atualizacao.MAX_ZIP + 1}, {"extraido": Atualizacao.MAX_EXTRAIDO + 1}]:
 		var dado := bom.duplicate()
 		dado.merge(troca, true)
 		_conferir(not Atualizacao.manifesto_valido(dado), "manifesto inseguro aceito: " + str(troca))
