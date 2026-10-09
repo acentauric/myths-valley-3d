@@ -19,7 +19,9 @@ extends SceneTree
 ## FALSIFICAÇÃO: `-- --falsificar=cheio` mede o pilar como antes (da parede à frente) e o portão TEM de achar o
 ## vão fechado. A variável `MV_FALSIFICAR` faz o mesmo.
 
-const Comodo = preload("res://scripts/prototipo_3d/comodo.gd")
+## Carregado em `_run`, e não com preload: `comodo.gd` usa o autoload `Estilo`, que ainda não existe quando o
+## portão compila.
+var Comodo
 
 ## A espessura da parede do cômodo no portão, e onde estão a parede lisa e as saliências, no cômodo (z para fora).
 const PAREDE := 0.4
@@ -59,6 +61,7 @@ func _run() -> void:
 	var cheio := _pedido_de_falsificacao() == "cheio"
 	if cheio:
 		print("  FALSIFICAÇÃO: o pilar é medido como antes, da parede à frente: o portão TEM de achar o vão fechado")
+	Comodo = load("res://scripts/prototipo_3d/comodo.gd")
 	sala = Comodo.new()
 	var perfil: Array[Vector3] = []
 	var x := -2.7
