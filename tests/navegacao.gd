@@ -3,7 +3,7 @@ extends SceneTree
 ##
 ##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/navegacao.gd
 ##
-## Sete perguntas:
+## Dez perguntas:
 ##
 ##   1. A MALHA FICA PRONTA logo depois de o vale montar, e cobre os lugares
 ##      por onde os moradores andam.
@@ -34,6 +34,8 @@ extends SceneTree
 ##      e na cheia o Pedro e os moradores seguiam um caminho que entra no mar.
 ##   9. O ALICERCE DA CAPELINHA TEM FOLGA: a malha o trata como obstáculo com margem (`alicerces()`), e não
 ##      passa rente à quina dele (`tests/colisoes_de_passeio.gd` anda o caminho e não tem mais a exceção).
+##  10. O CÔMODO QUE ABRE DE PERTO ENTRA NA MALHA: a casa da estrada abre, a malha se assa de novo com ela (#205), e
+##      o caminho da praça ao meio dela passa pelo vão da porta.
 ##
 ## AS ESPERAS SÃO EM SEGUNDOS DE JOGO, E NÃO DE PAREDE (`tests/fixtures/relogio_de_jogo.gd`):
 ## com a física limitada a 3 passos por quadro, o jogo anda mais devagar que a parede
@@ -279,6 +281,9 @@ func _run() -> void:
 				da_capela = str(alicerce["nome"])
 	print("NAVEGACAO: %d alicerce(s) com folga na malha; o da capelinha: %s" % [alicerces.size(), da_capela if da_capela != "" else "NÃO ACHADO"])
 	_conferir(da_capela != "", "o alicerce da capelinha não é obstáculo com folga na malha dos moradores (%d alicerce(s) achados)" % alicerces.size())
+
+	# --- 10. O CÔMODO QUE ABRE DE PERTO ENTRA NA MALHA ----------------------------------
+	await _comodo_de_perto_na_malha(vale, navegacao, a)
 	mare.modo = 0
 	_fechar()
 
@@ -348,6 +353,48 @@ func _casco_do_saveiro(vale, navegacao) -> void:
 	_conferir(prancha == null or prancha.collision_layer == 0, "o saveiro largou e a prancha continua com camada: a malha a lê como rampa")
 	_conferir(await _ate(func() -> bool: return int(navegacao.versao) > versao_antes and navegacao.esta_pronta(), 40.0),
 		"o saveiro largou e a malha dos moradores não se assou de novo (versão %d)" % int(navegacao.versao))
+
+
+## A CASA POR DADOS ABRE DE PERTO (`Interiores`), e a malha dos moradores se assou com a caixa inteira dela (#205):
+## o cômodo que se monta troca a caixa pelas paredes até a face visível, o vão da porta e o chão por dentro, e a
+## malha tem de se assar de novo com ele — senão o caminho até a casa raspa na parede nova e acaba rente à caixa
+## velha. A casa da estrada é de perto: o portão a abre, espera a malha em dia e confere que o caminho da praça
+## ao meio dela entra pela porta. `-- --falsificar=sem_aviso` desliga o aviso do cômodo à malha, e o portão TEM
+## de reprovar na espera.
+func _comodo_de_perto_na_malha(vale, navegacao, ancoras: Dictionary) -> void:
+	var interiores = vale.get("interiores")
+	_conferir(interiores != null and interiores.todas().has("estrada"), "o vale não tem a casa da estrada entre as construções que abrem")
+	if interiores == null or not interiores.todas().has("estrada"):
+		return
+	var pedido := OS.get_environment("MV_FALSIFICAR")
+	for argumento in OS.get_cmdline_user_args():
+		if str(argumento).begins_with("--falsificar="):
+			pedido = str(argumento).trim_prefix("--falsificar=")
+	if pedido == "sem_aviso":
+		interiores.avisa_a_malha = false
+		print("  FALSIFICAÇÃO: o cômodo não avisa a malha: o portão TEM de reprovar")
+	_conferir(await _ate(func() -> bool: return navegacao.em_dia(), 40.0), "a malha não ficou em dia antes de abrir a casa da estrada")
+	var abriu_antes: bool = interiores.sala_de("estrada") != null
+	var versao_antes: int = navegacao.versao
+	_conferir(await interiores.garantir("estrada"), "a casa da estrada não abriu")
+	var sala = interiores.sala_de("estrada")
+	if sala == null:
+		return
+	# Já aberta antes (outra rota do vale a abriu): a malha já a leu, e só o caminho vale.
+	if not abriu_antes:
+		_conferir(await _ate(func() -> bool: return int(navegacao.versao) > versao_antes and navegacao.em_dia(), 40.0),
+			"a casa da estrada abriu de perto e a malha dos moradores não se assou de novo com ela (versão %d)" % int(navegacao.versao))
+	var world = vale.world
+	var de: Vector3 = world.ground_position(ancoras["Praça"], 0.0)
+	var caminho: PackedVector3Array = navegacao.caminho(de, ancoras["Casa da estrada"])
+	_conferir(caminho.size() >= 2, "não há caminho da praça à casa da estrada, aberta")
+	var pela_porta := false
+	for k in range(1, caminho.size()):
+		var passos := maxi(1, int(caminho[k - 1].distance_to(caminho[k]) / 0.25))
+		for i in passos + 1:
+			if sala.no_vao(caminho[k - 1].lerp(caminho[k], float(i) / float(passos))):
+				pela_porta = true
+	_conferir(pela_porta, "o caminho da praça ao meio da casa da estrada, aberta, não passa pelo vão da porta: atravessa a parede")
 
 
 func _plano(a: Vector3, b: Vector3) -> float:

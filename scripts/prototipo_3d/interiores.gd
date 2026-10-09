@@ -124,6 +124,10 @@ const MARGEM_DE_FORA := 0.03
 const LIMITE_DA_CASCA_DE_FORA := 1.0
 ## Quanto além da face de dentro das laterais o perfil da fachada mede (m): cobre a espessura da parede.
 const FOLGA_DO_PERFIL := 0.45
+## Entre a parede e a face de trás de uma saliência da fachada (m): menos que isto é sapata, balcão ou erro de
+## modelagem, e a saliência vale como cheia até a parede; mais, é vão de alpendre, e só o pilar é sólido. Um vão
+## de palmo e meio não deixa passar o corpo (0,56 de largura), mas fechá-lo é muro de ar: a colisão segue a malha.
+const VAO_DO_ALPENDRE := 0.3
 
 var _mundo: Node3D
 var _jogador: Node3D
@@ -143,6 +147,9 @@ var _onde_da_ronda := Vector3.INF
 ## O jogador que chega de uma vez ao pé de uma casa ainda não montada espera o cômodo (`_montar_de_perto`).
 ## Só o portão que falsifica (`--falsificar=sem_freio`) o desliga.
 var segura_o_jogador := true
+## O cômodo que se monta avisa a malha de navegação dos moradores (`_avisar_a_malha`). Só o portão que
+## falsifica (`tests/navegacao.gd --falsificar=sem_aviso`) o desliga.
+var avisa_a_malha := true
 
 
 ## Monta os cômodos de tabela fixa. É uma corrotina: a medida espera dois quadros de
@@ -156,7 +163,9 @@ func configurar(mundo: Node3D, jogador: Node3D) -> void:
 	add_to_group("interiores")
 	_ler_as_casas()
 	for qual in CONSTRUCOES:
-		await _abrir(qual)
+		var resultado: int = await _abrir(qual)
+		if resultado == MONTOU:
+			_avisar_a_malha()
 	if Estilo.tripo():
 		for qual in _tabela:
 			if not CONSTRUCOES.has(qual) and not _construcoes.has(qual):
@@ -222,10 +231,24 @@ func garantir(qual: String) -> bool:
 		# jogador lá dentro logo que `garantir` volta (o save, o portão) cairia pelo piso.
 		await get_tree().physics_frame
 		await get_tree().physics_frame
+		_avisar_a_malha()
 	_montando = ""
 	if resultado != ADIAR:
 		_pendentes.erase(qual)
 	return _construcoes.has(qual) or _galpoes.has(qual)
+
+
+## A MALHA DOS MORADORES VÊ O CÔMODO QUE SE MONTOU (#205). A casa por dados abre de perto, e a malha se
+## assou com a caixa inteira dela: a colisão do cômodo (paredes até a face visível, o vão da porta, o chão por
+## dentro) é outra, e o caminho que a malha velha traçava rente à caixa raspava na parede nova — o portão
+## `colisoes_de_passeio` andava até o meio da casa da estrada e prendia nela, e era exceção. Assa de novo
+## (`reassar` junta os pedidos de uma rajada de cômodos numa só assada a mais).
+func _avisar_a_malha() -> void:
+	if not avisa_a_malha:
+		return
+	var navegacao := get_tree().get_first_node_in_group("navegacao") if is_inside_tree() else null
+	if navegacao != null and navegacao.has_method("reassar"):
+		navegacao.reassar()
 
 
 ## O PEDRO NÃO ENTRA nos cômodos pequenos das casas por dados: como na casa herdada
@@ -265,6 +288,15 @@ func nome_de(qual: String) -> String:
 func contem(ponto: Vector3) -> String:
 	for qual in _construcoes:
 		if (_construcoes[qual]["sala"] as Node3D).contem(ponto):
+			return qual
+	return ""
+
+
+## Em que cômodo este ponto cai NA PLANTA, qualquer que seja a altura dele, ou "": o destino que é âncora do
+## vale (o meio da casa) não tem o y do chão do cômodo (ver `Comodo.contem_na_planta`).
+func contem_na_planta(ponto: Vector3) -> String:
+	for qual in _construcoes:
+		if (_construcoes[qual]["sala"] as Node3D).contem_na_planta(ponto):
 			return qual
 	return ""
 
@@ -775,25 +807,56 @@ func _medir_a_face_de_fora(espaco: PhysicsDirectSpaceState3D, centro: Vector3, f
 		medida["fora_fundo"] = _mediana(do_fundo)
 	# A fachada não tem uma face só (alpendre, balcão, pilar): é medida coluna a coluna, de ponta a
 	# ponta da casca, e a colisão do cômodo a acompanha (`Comodo._montar_a_fachada_de_fora`).
-	var perfil: Array[Vector2] = []
+	var perfil: Array[Vector3] = []
 	var meia := float(medida["lado"]) + FOLGA_DO_PERFIL
 	var x_do_perfil := -meia
 	while x_do_perfil <= meia:
-		var d_frente := _face_mais_saliente(espaco, Vector3(centro.x, 0.0, centro.z) + direita * x_do_perfil, piso, alturas, frente)
-		if is_finite(d_frente):
-			perfil.append(Vector2(x_do_perfil, d_frente))
+		var coluna := _coluna_da_fachada(espaco, Vector3(centro.x, 0.0, centro.z) + direita * x_do_perfil, piso, alturas, frente)
+		if is_finite(coluna.x):
+			perfil.append(Vector3(x_do_perfil, coluna.x, coluna.y))
 		x_do_perfil += Comodo.PASSO_DA_FACHADA
 	medida["fachada_perfil"] = perfil
 
 
-## O perfil da fachada medido (x do cômodo, distância do centro à face) no referencial do cômodo
-## (z da face, com a mesma margem das laterais), pronto para o `Comodo`.
-func _perfil_no_comodo(medida: Dictionary, ate_a_frente: float) -> Array[Vector2]:
-	var perfil: Array[Vector2] = []
+## O perfil da fachada medido (x do cômodo, distância do centro à face da frente e à de trás da
+## saliência) no referencial do cômodo (z das duas faces, com a mesma margem das laterais), pronto
+## para o `Comodo`. A SALIÊNCIA SOLTA DA PAREDE (o pilar do alpendre) leva só o sólido dela, da face de
+## trás à da frente: entre o pilar e a parede o chão é de passar, como se vê. A que cola na parede (a
+## de trás a menos de `VAO_DO_ALPENDRE` da fachada: balcão, sapata, banco) segue cheia, da parede à frente.
+func _perfil_no_comodo(medida: Dictionary, ate_a_frente: float) -> Array[Vector3]:
+	var perfil: Array[Vector3] = []
+	var fachada := float(medida.get("fachada", ate_a_frente))
 	for coluna in medida.get("fachada_perfil", []):
-		var medido: Vector2 = coluna
-		perfil.append(Vector2(medido.x, medido.y - ate_a_frente + MARGEM_DE_FORA))
+		var medido: Vector3 = coluna
+		# 0 é "da parede": o `Comodo` começa a caixa na parede dele (inclusive o fundo do vão da porta).
+		var tras_no_comodo := 0.0
+		if is_finite(medido.z) and medido.z - fachada >= VAO_DO_ALPENDRE and medido.y - medido.z >= 0.02:
+			tras_no_comodo = medido.z - MARGEM_DE_FORA - ate_a_frente
+		perfil.append(Vector3(medido.x, medido.y - ate_a_frente + MARGEM_DE_FORA, tras_no_comodo))
 	return perfil
+
+
+## A COLUNA DA FACHADA em `ponto` (no plano do centro): x é a distância até a face mais saliente da
+## casca (nas `alturas`, a primeira batida de fora para dentro) e y a da face de trás dessa saliência,
+## de onde o raio, já dentro do sólido, sai dele — INF quando não sai (casca aberta) ou não há saliência.
+## (INF, INF) quando nenhum raio bate.
+func _coluna_da_fachada(espaco: PhysicsDirectSpaceState3D, ponto: Vector3, piso: float, alturas: Array, para_fora: Vector3) -> Vector2:
+	var melhor := -INF
+	var tras := INF
+	for altura in alturas:
+		var de := Vector3(ponto.x, piso + float(altura), ponto.z)
+		var primeira := _raio(espaco, de + para_fora * 30.0, de)
+		if not primeira.is_finite():
+			continue
+		var d := (primeira - de).dot(para_fora)
+		if d <= melhor:
+			continue
+		melhor = d
+		tras = INF
+		var segunda := _raio(espaco, primeira - para_fora * 0.02, de)
+		if segunda.is_finite():
+			tras = (segunda - de).dot(para_fora)
+	return Vector2(melhor if is_finite(melhor) else INF, tras)
 
 
 ## A distância, do ponto (no plano) até a face de fora mais saliente da casca na direção `para_fora`,
