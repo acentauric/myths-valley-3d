@@ -22,6 +22,11 @@ extends SceneTree
 ##
 ## FALSIFICAÇÃO: `-- --falsificar=limite` baixa o limite a 0,2 m² e deve reprovar em
 ## toda árvore de raiz larga; `-- --falsificar=abas` tira a exceção da gameleira.
+##
+## A GAMELEIRA TAMBÉM É COBERTA (#228): as abas são raízes, mas sem teto elas escondiam a árvore
+## posta numa bandeja de 18 m (14 × 1,3). Ela segue fora do `LIMITE` de laje, e passa a ter o seu,
+## `LIMITE_DAS_ABAS`, que o tamanho de 11 m cumpre e o de 14 m ou mais não (a altura posta em si é
+## cobrada em `tests/gameleira.gd`).
 
 const Catalogo = preload("res://scripts/prototipo_3d/catalogo_assets.gd")
 
@@ -31,6 +36,9 @@ const LIMITE := 5.0
 ## Até onde a base conta, do pé para cima (m), e quanto da normal tem de olhar para baixo.
 const ALTURA_DA_BASE := 0.7
 const VIRADA_PARA_BAIXO := 0.7
+## O teto das abas de raiz (m²): a gameleira de 11 m soma de 28 a 40 (segundo o lado da face que
+## o Godot dá ao triângulo); aos 14 m somaria de 42 a 62, e aos 18 m, mais de 70.
+const LIMITE_DAS_ABAS := 44.0
 const ABAS_DE_RAIZ := {
 	"gameleira": "sapopemas abertas em abas de 4 a 5 u de raio, de que o tronco sai (medido em 03/10/2026)",
 }
@@ -82,6 +90,9 @@ func _run() -> void:
 			maior = area
 			maior_chave = chave
 		print("  %-20s base virada para baixo: %5.2f m²%s" % [chave, area, "  (abas de raiz)" if abas else ""])
+		if abas:
+			var teto := 0.2 if falsificar == "limite" else LIMITE_DAS_ABAS
+			_conferir(area <= teto, "'%s' tem %.2f m² de base virada para baixo (teto das abas de raiz %.1f): grande demais para a medida do catálogo" % [chave, area, teto])
 		if not abas:
 			_conferir(area <= limite, "'%s' tem %.2f m² de base virada para baixo (limite %.1f): vem em cima de uma laje de terra" % [chave, area, limite])
 	_conferir(medidas >= 40, "mediu só %d árvores" % medidas)

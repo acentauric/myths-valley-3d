@@ -2473,18 +2473,24 @@ func _build_terreiro() -> void:
 const RAIO_DO_SAMBAQUI := 5.0
 const ALTURA_DO_SAMBAQUI := 1.5
 const ENTERRADO := 0.5
-## Onde o pano das fitas é amarrado, do alto do monte para cima: no tronco liso,
-## acima das sapopemas e abaixo dos galhos (medido em 03/10/2026: o tronco tem
-## de 1,1 a 1,9 de raio entre dois e quatro metros e meio).
-const ALTURA_DAS_FITAS := 3.3
-## A escala do modelo da gameleira (14 m de altura): a árvore mais alta do vale.
-const GAMELEIRA_TAMANHO := 1.3
+## Onde o pano das fitas é amarrado, do PÉ da árvore para cima: no tronco liso, acima das
+## sapopemas e abaixo dos galhos. Na gameleira de 11 m (#228) o tronco é limpo, com uns 1,2 de raio,
+## entre 2,05 e 2,55 m (medido no GLB em 09/10/2026); abaixo, até 1,7 m, as sapopemas ainda abrem a
+## 2,5 de raio: foi medir nelas, com a faixa larga de antes (±1,2), que deixava o pano boiando longe
+## do tronco. O raio se mede nessa faixa (ALTURA_DAS_FITAS ± MEIA_FAIXA_DAS_FITAS), e o alto do pano
+## fica no alto dela.
+const ALTURA_DAS_FITAS := 2.3
+const MEIA_FAIXA_DAS_FITAS := 0.25
+## A escala do modelo da gameleira: 1,0 sobre os 11 m do catálogo, a mesma altura da mata alta.
+## Era 1,3 sobre 14 m (18,2 m): esmagava o vale.
+const GAMELEIRA_TAMANHO := 1.0
 
 
-## O RAIO DO TRONCO perto de `altura` acima de `centro`: o vértice mais afastado
-## do eixo numa faixa de pouco mais de dois metros, sem os galhos (longe dele).
+## O RAIO DO TRONCO a `altura` acima de `centro`: os vértices numa faixa estreita (MEIA_FAIXA_DAS_FITAS
+## para cada lado), sem os galhos nem as sapopemas (longe do eixo, ou noutra altura), e o raio é o
+## quase-máximo (90%) das distâncias ao eixo, para um vértice solto não inchar o pano.
 func _raio_do_tronco(modelo: Node3D, centro: Vector3, altura: float) -> float:
-	var raio := 0.0
+	var distancias: Array[float] = []
 	for no in modelo.find_children("*", "MeshInstance3D", true, false):
 		var mi := no as MeshInstance3D
 		if mi.mesh == null:
@@ -2493,12 +2499,15 @@ func _raio_do_tronco(modelo: Node3D, centro: Vector3, altura: float) -> float:
 			var vertices: PackedVector3Array = mi.mesh.surface_get_arrays(superficie)[Mesh.ARRAY_VERTEX]
 			for v in vertices:
 				var global: Vector3 = mi.global_transform * v
-				if absf(global.y - centro.y - altura) > 1.2:
+				if absf(global.y - centro.y - altura) > MEIA_FAIXA_DAS_FITAS:
 					continue
 				var d := Vector2(global.x - centro.x, global.z - centro.z).length()
-				if d < 3.0:
-					raio = maxf(raio, d)
-	return raio
+				if d < 2.0:
+					distancias.append(d)
+	if distancias.is_empty():
+		return 0.0
+	distancias.sort()
+	return distancias[int(floor(float(distancias.size() - 1) * 0.9))]
 
 
 ## O PÉ DO TRONCO de um modelo: o meio dos vértices mais baixos, no mundo. As
@@ -2577,31 +2586,37 @@ func _build_gameleira() -> void:
 	var topo := chao + Vector3.UP * (ALTURA_DO_SAMBAQUI - ENTERRADO)
 	ancoras["Gameleira"] = topo
 	# MAIOR QUE A MATA EM VOLTA: a gameleira é "maior do que qualquer coisa que
-	# o arraial construiu". Tem modelo próprio (`gameleira`, 14 m, com as
+	# o arraial construiu". Tem modelo próprio (`gameleira`, 11 m, com as
 	# sapopemas): é a única, e a mata em volta é de jatobá e jequitibá.
 	var tamanho := GAMELEIRA_TAMANHO
 	var arvore: Node3D = null
+	# O PÉ DA ÁRVORE É O CHÃO, e não o alto do monte (#228). As sapopemas se abrem a uns 5 m do
+	# tronco, quase o raio do monte, e o monte cai de 1 m no centro a zero na borda: com o pé no
+	# alto dele, as pontas das raízes ficavam 1 m acima da areia, pousadas numa bandeja com sombra
+	# por baixo. Com o pé no chão (o platô em volta é plano), as raízes nascem da areia, e o monte
+	# de concha cobre o miolo delas — "as raízes descem por cima de um monte baixo e branco".
+	var pe_da_arvore := Vector3(topo.x, chao.y - _region.ARVORE_AFUNDADA, topo.z)
 	if estilo_tripo():
-		arvore = CatalogoAssets.instanciar("gameleira", self, topo - Vector3(0.0, _region.ARVORE_AFUNDADA, 0.0), tamanho, 0.7)
+		arvore = CatalogoAssets.instanciar("gameleira", self, pe_da_arvore, tamanho, 0.7)
 		if arvore != null:
 			# O TRONCO NO MEIO DO MONTE: o pivô do modelo não é o pé do tronco, e
 			# a árvore nascia ao lado do sambaqui em vez de em cima dele.
 			var pe := _pe_do_tronco(arvore)
 			if pe.is_finite():
 				arvore.global_position += Vector3(topo.x - pe.x, 0.0, topo.z - pe.z)
-			CatalogoAssets.colisao("gameleira", arvore, self, topo, tamanho, 0.7)
+			CatalogoAssets.colisao("gameleira", arvore, self, pe_da_arvore, tamanho, 0.7)
 			# AS FITAS NO TRONCO: o pano branco amarrado em volta dele, com as
 			# fitas coloridas pendendo — "a gameleira é morada de Iroko". Acima
-			# das sapopemas, que se abrem até quatro, cinco de raio no primeiro
-			# metro e meio; e na medida do tronco ali, um tanto folgada.
-			var raio := _raio_do_tronco(arvore, topo, ALTURA_DAS_FITAS)
+			# das sapopemas, no trecho limpo do tronco (ALTURA_DAS_FITAS), e na
+			# medida do tronco ali, um tanto folgada.
+			var raio := _raio_do_tronco(arvore, pe_da_arvore, ALTURA_DAS_FITAS)
 			if raio > 0.1:
 				var roda := (raio + 0.15) * 2.0
-				var fitas := CatalogoAssets.instanciar("fitas_gameleira", self, topo, roda / float(CatalogoAssets.PECAS["fitas_gameleira"]["largura"]), 0.0)
+				var fitas := CatalogoAssets.instanciar("fitas_gameleira", self, pe_da_arvore, roda / float(CatalogoAssets.PECAS["fitas_gameleira"]["largura"]), 0.0)
 				if fitas != null:
 					# O pano é o alto da peça; as fitas pendem dele.
 					var alto: float = (fitas.get_meta("limites") as AABB).size.y
-					fitas.global_position.y += ALTURA_DAS_FITAS + 0.4 - alto
+					fitas.global_position.y += ALTURA_DAS_FITAS + MEIA_FAIXA_DAS_FITAS - alto
 	if arvore == null:
 		var feita: Dictionary = FloraReconcavo.especie("mata_alta", tamanho * 1.15)
 		var malha := MeshInstance3D.new()

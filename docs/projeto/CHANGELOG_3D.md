@@ -2,6 +2,17 @@
 
 ## Em desenvolvimento — 10/10/2026
 
+- **A gameleira da praia deixa de boiar e de esmagar o vale.** Ela estava com 18,2 m (14 do catálogo vezes
+  1,3 da cena) e as sapopemas se abriam a 9 m do tronco, muito além do monte de concha (5 m), com o pé da
+  árvore no alto do monte: as pontas das raízes ficavam 1 m acima da areia, pousadas numa bandeja com
+  sombra por baixo. Agora tem 11 m (a altura da mata alta), o pé no chão do platô, e o monte de concha
+  cobre o miolo das raízes. O pano das fitas media o tronco numa faixa de 2,4 m, que pegava as sapopemas
+  e o inflava até quase o dobro; passa a medir só o trecho limpo do tronco, a 2,3 m do pé, e a boiar
+  menos. O cilindro de colisão desceu junto (0,95). O portão `gameleira` cobra a altura posta, o pé no
+  chão, as raízes baixas dentro do platô e o pano no eixo do tronco, e o `bases_das_arvores` põe teto
+  nas abas de raiz dela. Falta ver o resultado no vale, e conferir o encaixe dos potes entre as raízes
+  (#228).
+
 - **As casas de taipa coloridas voltam à escala das brancas.** A ocre, a verde e a azul eram normalizadas
   pela mesma largura da branca (6,5 m), mas os modelos têm telhado mais alto e planta mais quadrada: saíam
   até 33% mais altas e com 40% a mais de volume. A largura caiu para 5,5 (ocre), 5,7 (verde) e 5,4 (azul),

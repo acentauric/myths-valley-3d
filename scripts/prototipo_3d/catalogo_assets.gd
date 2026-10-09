@@ -306,7 +306,10 @@ const PECAS := {
 	"cedro": {"tripo": "arvores/cedro_tripo.glb", "altura": 9.0, "tronco": 0.4},
 	"angico": {"tripo": "arvores/angico_tripo.glb", "altura": 7.5, "tronco": 0.35},
 	"massaranduba": {"tripo": "arvores/massaranduba_tripo.glb", "altura": 10.0, "tronco": 0.45},
-	"gameleira": {"tripo": "arvores/gameleira_tripo.glb", "altura": 14.0, "tronco": 1.2},
+	# A GAMELEIRA TEM 11 M (#228), e não os 14 × 1,3 = 18,2 m com que o vale a punha: as sapopemas
+	# chegavam a 9 m do tronco, muito além do monte de concha (5 m), e a base ficava pousada numa
+	# bandeja. O `tronco` (1,2 aos 14 m) desceu na mesma proporção, 0,95.
+	"gameleira": {"tripo": "arvores/gameleira_tripo.glb", "altura": 11.0, "tronco": 0.95},
 	"canteiro_couve": {"tripo": "arvores/canteiro_couve_tripo.glb", "largura": 2.4},
 	"pe_de_pimenta": {"tripo": "arvores/pe_de_pimenta_tripo.glb", "altura": 0.8},
 	"quiabeiro": {"tripo": "arvores/quiabeiro_tripo.glb", "altura": 1.2},
