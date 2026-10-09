@@ -73,9 +73,12 @@ static func motivo(chave: String) -> String:
 
 ## Os argumentos da ponte para o que o modal marcou. O orçamento só vai com um apoio pago
 ## marcado, e nunca passa do teto autorizado; duração zero é "sem limite".
-static func argumentos(jev: bool, gpt: bool, orcamento: float, minutos: int, godot: String) -> PackedStringArray:
+static func argumentos(jev: bool, gpt: bool, orcamento: float, minutos: int, godot: String, continuar := false) -> PackedStringArray:
 	var args := PackedStringArray([ProjectSettings.globalize_path(PONTE), "--robot",
 		"--seconds", str(maxi(0, minutos) * 60), "--godot", godot])
+	# Retomar a última sessão de onde parou (#235): o mesmo perfil isolado e a mesma vaga.
+	if continuar:
+		args.append("--continuar")
 	if jev:
 		args.append("--apoio-jev")
 	if gpt:
@@ -83,6 +86,35 @@ static func argumentos(jev: bool, gpt: bool, orcamento: float, minutos: int, god
 	if jev or gpt:
 		args.append_array(["--budget", "%.2f" % clampf(orcamento, 0.01, ORCAMENTO_TETO)])
 	return args
+
+
+## AS OPÇÕES DO MODAL ENTRE UM TESTE E OUTRO (#235), em `user://preferencias_visuais.cfg`,
+## seção [testador]: jev, gpt, orcamento, duracao_min e continuar. `orcamento` é null sem nada
+## guardado (vale o padrão da ponte).
+const SECAO := "testador"
+
+
+static func preferencias() -> Dictionary:
+	var arquivo := ConfigFile.new()
+	var ok := arquivo.load(IdiomaMenu.ARQUIVO) == OK
+	var ler := func(chave: String, padrao: Variant) -> Variant:
+		return arquivo.get_value(SECAO, chave, padrao) if ok else padrao
+	var orcamento: Variant = ler.call("orcamento", null)
+	return {"jev": bool(ler.call("jev", false)), "gpt": bool(ler.call("gpt", false)),
+		"orcamento": float(orcamento) if orcamento != null else null,
+		"duracao_min": maxi(0, int(ler.call("duracao_min", 0))), "continuar": bool(ler.call("continuar", true))}
+
+
+static func guardar_preferencias(jev: bool, gpt: bool, orcamento: float, duracao_min: int, continuar: bool) -> void:
+	var arquivo := ConfigFile.new()
+	arquivo.load(IdiomaMenu.ARQUIVO)
+	arquivo.set_value(SECAO, "jev", jev)
+	arquivo.set_value(SECAO, "gpt", gpt)
+	arquivo.set_value(SECAO, "orcamento", snappedf(clampf(orcamento, 0.01, ORCAMENTO_TETO), 0.01))
+	arquivo.set_value(SECAO, "duracao_min", maxi(0, duracao_min))
+	arquivo.set_value(SECAO, "continuar", continuar)
+	if arquivo.save(IdiomaMenu.ARQUIVO) != OK:
+		push_warning("Não foi possível guardar as opções do testador.")
 
 
 ## A linha da última sessão para o modal reaberto: "43,5% · O mirante 2/6 · 412 ações".

@@ -6,6 +6,9 @@ const IdiomaMenu = preload("res://scripts/prototipo_3d/idioma_menu.gd")
 ## O arquivo que o `jogar.py` cria quando a janela do jogo da sessão sobe (a primeira chamada
 ## da ponte). Só então o menu se fecha: se o testador falhar, o jogador não fica sem janela.
 const TESTADOR_PRONTO := "user://testador_pronto.txt"
+## O que a ponte grava quando a janela da sessão sobe: só diz que ela abriu, não fecha o menu.
+## Quem fecha o menu é o TESTADOR_PRONTO, que a sessão grava com o vale carregado (#175).
+const TESTADOR_JANELA := "user://testador_janela.txt"
 const BotaoCanto = preload("res://scripts/prototipo_3d/botao_canto.gd")
 const HudIcon = preload("res://scripts/prototipo_3d/hud_icon.gd")
 const TemaMenu = preload("res://scripts/prototipo_3d/tema_menu.gd")
@@ -52,7 +55,7 @@ const TOLERANCIA_ANCORA_U := 0.05
 ## lerp antigo (7 m em média) cortava as curvas por dentro, em cima das árvores.
 const CHEGADA_SEGUNDOS := 2.0
 const HISTORY_SIZE := Vector2(640, 600)
-const TESTADOR_SIZE := Vector2(640, 660)
+const TESTADOR_SIZE := Vector2(640, 700)
 const HISTORY_ROWS := 10
 ## Lista do histórico: fonte base (desce até o mínimo se a linha não couber) e respiro.
 const HISTORY_FONTE := 15
@@ -1856,12 +1859,22 @@ func _modal_testador(deteccao: Dictionary) -> void:
 	var voltar := _modal_header("Testar o jogo", _home, "Escolha quem joga e quanto pode gastar.")
 	var apoios: Dictionary = deteccao["apoios"]
 	_apoio_linha("Determinístico", "Base, sempre ligado: o robô local escolhe pelas regras do jogo, sem custo.", apoios["deterministic"], true)
-	var jev := _apoio_linha("Jev (TypeSafe)", "Segundo nível: decide a continuidade quando o determinístico trava.", apoios["jev"], false)
-	var gpt := _apoio_linha("GPT (OpenAI)", "Terceiro nível: entra quando o Jev também não destrava.", apoios["gpt"], false)
+	# AS OPÇÕES DO ÚLTIMO TESTE (#235): Jev, GPT, orçamento e duração voltam como ficaram. Um apoio
+	# indisponível aparece desligado, e a preferência fica guardada para quando ele voltar.
+	var guardadas := TestadorApoios.preferencias()
+	var jev := _apoio_linha("Jev (TypeSafe)", "Segundo nível: decide a continuidade quando o determinístico trava.", apoios["jev"], false, bool(guardadas["jev"]))
+	var gpt := _apoio_linha("GPT (OpenAI)", "Terceiro nível: entra quando o Jev também não destrava.", apoios["gpt"], false, bool(guardadas["gpt"]))
 	var teto: float = float(deteccao["orcamento"]["teto"])
-	var orcamento := _campo_numerico("Orçamento (US$)", 0.01, teto, 0.01, float(deteccao["orcamento"]["padrao"]),
+	var orcamento_inicial := float(guardadas["orcamento"]) if guardadas["orcamento"] != null else float(deteccao["orcamento"]["padrao"])
+	var orcamento := _campo_numerico("Orçamento (US$)", 0.01, teto, 0.01, clampf(orcamento_inicial, 0.01, teto),
 		tr("Só vale com Jev ou GPT marcados. Teto autorizado: US$ %.2f.") % teto)
-	var duracao := _campo_numerico("Duração (minutos)", 0.0, 600.0, 1.0, 0.0, tr("Zero deixa a sessão sem limite de tempo."))
+	var duracao := _campo_numerico("Duração (minutos)", 0.0, 600.0, 1.0, float(guardadas["duracao_min"]), tr("Zero deixa a sessão sem limite de tempo."))
+	var jev_disponivel := bool(apoios["jev"]["disponivel"])
+	var gpt_disponivel := bool(apoios["gpt"]["disponivel"])
+	# Indisponível, o botão não diz nada da vontade de quem joga: guarda-se o que já estava.
+	var guardar := func(continuar: bool) -> void:
+		TestadorApoios.guardar_preferencias(jev.button_pressed if jev_disponivel else bool(guardadas["jev"]),
+			gpt.button_pressed if gpt_disponivel else bool(guardadas["gpt"]), orcamento.value, int(duracao.value), continuar)
 	var pago := func() -> void:
 		var algum := jev.button_pressed or gpt.button_pressed
 		orcamento.editable = algum
@@ -1869,32 +1882,45 @@ func _modal_testador(deteccao: Dictionary) -> void:
 	jev.toggled.connect(func(_ligado: bool) -> void: pago.call())
 	gpt.toggled.connect(func(_ligado: bool) -> void: pago.call())
 	pago.call()
+	jev.toggled.connect(func(_ligado: bool) -> void: guardar.call(bool(guardadas["continuar"])))
+	gpt.toggled.connect(func(_ligado: bool) -> void: guardar.call(bool(guardadas["continuar"])))
 	var ultima := TestadorApoios.resumo_da_ultima(deteccao["ultima_sessao"])
+	# CONTINUAR OU NOVA (#235): com uma sessão anterior, a escolha entre retomar de onde ela
+	# parou e começar do zero. Sem anterior, é sempre nova.
+	var continuar: Button = null
 	if ultima != "":
 		var titulo := _label(tr("Última sessão"), 15)
 		titulo.add_theme_color_override("font_color", Color("e2c47f"))
 		var nota := _label(ultima, 16)
 		nota.add_theme_color_override("font_color", Color("c9b98f"))
 		content.add_child(TestadorApoios.barra(float(deteccao["ultima_sessao"].get("percentual", 0.0))))
+		var grupo := ButtonGroup.new()
+		var linha := HBoxContainer.new()
+		linha.add_theme_constant_override("separation", 10)
+		content.add_child(linha)
+		continuar = _opcao_da_sessao(linha, grupo, "ContinuarSessao", "Continuar a última sessão", bool(guardadas["continuar"]))
+		_opcao_da_sessao(linha, grupo, "NovaSessao", "Nova sessão", not bool(guardadas["continuar"]))
 	if bool(deteccao["erro"]):
 		var aviso := _label(tr("Sem Python por perto: só o determinístico está disponível."), 15)
 		aviso.add_theme_color_override("font_color", Color("c9b98f"))
 	var iniciar := _button("INICIAR", func() -> void:
-		_iniciar_teste(jev.button_pressed, gpt.button_pressed, orcamento.value, int(duracao.value)))
+		var retomar := continuar != null and continuar.button_pressed
+		guardar.call(retomar if continuar != null else bool(guardadas["continuar"]))
+		_iniciar_teste(jev.button_pressed, gpt.button_pressed, orcamento.value, int(duracao.value), retomar))
 	iniciar.name = "IniciarTeste"
 	voltar.grab_focus()
 
 
 ## Uma linha de apoio: botão de alternar e, embaixo, o papel dele ou, desligado, o motivo.
 ## Devolve o botão. Indisponível fica desativado e explicado; o determinístico, ligado e fixo.
-func _apoio_linha(titulo: String, papel: String, apoio: Dictionary, fixo: bool) -> Button:
+func _apoio_linha(titulo: String, papel: String, apoio: Dictionary, fixo: bool, preferido := false) -> Button:
 	var botao := Button.new()
 	botao.toggle_mode = true
 	botao.custom_minimum_size.y = 44
 	botao.alignment = HORIZONTAL_ALIGNMENT_LEFT
 	var disponivel := bool(apoio["disponivel"])
 	botao.disabled = fixo or not disponivel
-	botao.button_pressed = fixo
+	botao.button_pressed = fixo or (preferido and disponivel)
 	botao.mouse_entered.connect(func() -> void: Audio.efeito("ui_hover"))
 	var atualizar := func() -> void:
 		var estado := tr("SEMPRE LIGADO") if fixo else (tr("LIGADO") if botao.button_pressed else (tr("DESLIGADO") if disponivel else tr("INDISPONÍVEL")))
@@ -1907,6 +1933,22 @@ func _apoio_linha(titulo: String, papel: String, apoio: Dictionary, fixo: bool) 
 	var texto := tr(papel) if (disponivel or fixo) else TestadorApoios.motivo(str(apoio["motivo"]))
 	var nota := _label(texto, 15)
 	nota.add_theme_color_override("font_color", Color("c9b98f") if (disponivel or fixo) else Color("e39475"))
+	return botao
+
+
+## Uma das duas escolhas da sessão (continuar ou nova): botão de alternar no mesmo grupo.
+func _opcao_da_sessao(linha: HBoxContainer, grupo: ButtonGroup, nome: String, texto: String, ligado: bool) -> Button:
+	var botao := Button.new()
+	botao.name = nome
+	botao.toggle_mode = true
+	botao.button_group = grupo
+	botao.button_pressed = ligado
+	botao.text = tr(texto)
+	botao.custom_minimum_size.y = 40
+	botao.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	botao.mouse_entered.connect(func() -> void: Audio.efeito("ui_hover"))
+	botao.toggled.connect(func(_ligado: bool) -> void: Audio.efeito("ui_confirmar"))
+	linha.add_child(botao)
 	return botao
 
 
@@ -1931,15 +1973,21 @@ func _campo_numerico(rotulo: String, minimo: float, maximo: float, passo: float,
 
 
 ## Dispara a ponte com o que o modal marcou e volta ao menu, que mostra o estado da partida.
-func _iniciar_teste(jev: bool, gpt: bool, orcamento: float, minutos: int) -> void:
+func _iniciar_teste(jev: bool, gpt: bool, orcamento: float, minutos: int, continuar := false) -> void:
 	if _testador_pid > 0:
 		return
 	var pronto := ProjectSettings.globalize_path(TESTADOR_PRONTO)
+	var janela := ProjectSettings.globalize_path(TESTADOR_JANELA)
 	DirAccess.remove_absolute(pronto)
-	var argumentos := TestadorApoios.argumentos(jev, gpt, orcamento, minutos, OS.get_executable_path())
+	DirAccess.remove_absolute(janela)
+	var argumentos := TestadorApoios.argumentos(jev, gpt, orcamento, minutos, OS.get_executable_path(), continuar)
 	# O perfil do testador é isolado e só o idioma atravessa (#180): pt, en, es ou zh.
 	var idioma_atual: String = IdiomaMenu.LOCALES[IdiomaMenu.indice()].get_slice("_", 0)
-	argumentos.append_array(PackedStringArray(["--idioma", idioma_atual, "--pronto", pronto, "--voltar-ao-menu"]))
+	# O MENU SÓ FECHA COM O VALE CARREGADO (#175): a ponte grava o `--pronto` quando a janela da
+	# sessão sobe, cedo demais; o arquivo que fecha o menu vai pelo ambiente (o python o repassa
+	# ao jogo) e a sessão o grava com a carga feita (`sessao.gd`, `_avisar_o_menu_que_o_vale_abriu`).
+	OS.set_environment("MV_JEV_PRONTO_VALE", pronto)
+	argumentos.append_array(PackedStringArray(["--idioma", idioma_atual, "--pronto", janela, "--voltar-ao-menu"]))
 	var pid := OS.create_process("python", argumentos)
 	_home()
 	if pid <= 0:
@@ -1956,6 +2004,7 @@ func _vigiar_testador() -> void:
 		return
 	if FileAccess.file_exists(TESTADOR_PRONTO):
 		DirAccess.remove_absolute(ProjectSettings.globalize_path(TESTADOR_PRONTO))
+		DirAccess.remove_absolute(ProjectSettings.globalize_path(TESTADOR_JANELA))
 		_testador_pid = 0
 		get_tree().quit()
 	elif not OS.is_process_running(_testador_pid):
