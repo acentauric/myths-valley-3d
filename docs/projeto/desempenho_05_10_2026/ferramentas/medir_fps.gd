@@ -16,6 +16,9 @@ extends SceneTree
 ##   godot --path <repo> --script <este arquivo> -- --saida=<json> [--fases=censo,vistas,ab,horas,passeio]
 ##       [--tela=cheia|janela] [--janela=1280x720] [--lugares=a,b,c] [--rumos=8] [--ab_em=pior|<lugar>:<rumo>]
 ##       [--teto=1500] [--lugar=praca]   (o --lugar e lido pelo jogo: pula a chegada de saveiro)
+##       [--hora=9] [--passo=<id da chegada>] [--so=trecho1|trecho2] [--porta_de=casa] [--travessias=3]
+## Lugares: os do autoload Lugares, ou "dentro:<comodo>" (o meio do piso, com a camera que o
+## jogador tem la dentro) e "porta:<comodo>" (a soleira de fora), por exemplo dentro:casa.
 
 const CENA := "res://scenes/prototipo_3d/vale.tscn"
 const LUGARES_PADRAO := ["pier", "praca", "igreja", "venda", "casa_de_taipa", "lavoura", "rocado", "fogueira",
@@ -111,6 +114,10 @@ func _run() -> void:
 	_r["jogo_pronto_ms"] = Time.get_ticks_msec() - t0
 	_jogador = get_first_node_in_group("map_player") as Node3D
 	await _esperar(4.0)
+	await _garantir_comodos()
+	if String(_o.get("passo", "")) != "":
+		_r["passo"] = _por_a_chegada_no_passo(String(_o["passo"]))
+		print("MEDIR_FPS: chegada no passo ", _r["passo"])
 	_r["estabilizado_ms"] = Time.get_ticks_msec() - t0
 	_r["relogio"] = {"velocidade": _dia.get("velocidade"), "segundos_por_hora": (_dia.get("VELOCIDADES") as Array)[int(_dia.get("velocidade"))], "pausado_ao_chegar": _dia.get("pausado")}
 	_dia.set("pausado", true)
@@ -140,6 +147,12 @@ func _run() -> void:
 		print("MEDIR_FPS: aplicado (so neste processo): ", _r["aplicado"])
 		await _esperar(1.5)
 		_r["config_com_pacote"] = _config()
+	if "entrada" in fases:
+		await _fase_entrada()
+		_gravar()
+	if "porta" in fases:
+		await _fase_porta()
+		_gravar()
 	if "vistas" in fases:
 		await _fase_vistas()
 		_gravar()
@@ -868,20 +881,76 @@ func _monitores() -> Dictionary:
 # ----------------------------------------------------------------------------
 
 func _por_o_jogador(ponto: Vector3, rumo: float) -> void:
-	_jogador.global_position = _mundo.call("ground_position", ponto, 0.07)
+	var interiores_no := _jogo.get_node_or_null("Interiores") if _jogo != null else null
+	# Dentro de um comodo o ponto ja e o do piso (o chao do terreno fica embaixo dele).
+	var no_comodo := interiores_no != null and interiores_no.has_method("contem") and String(interiores_no.call("contem", ponto)) != ""
+	_jogador.global_position = ponto if no_comodo else _mundo.call("ground_position", ponto, 0.07)
 	_jogador.set("velocity", Vector3.ZERO)
 	_jogador.set("_yaw", rumo)
-	_jogador.set("_pitch", -0.19)
+	# O comodo decide AGORA se a camera e a de cima (como no `teleportar` do jogador), e a
+	# inclinacao e a dela: a -0,19 da de passeio, dentro da casa, nao e o que o jogador ve.
+	if interiores_no != null and interiores_no.has_method("atualizar_agora"):
+		interiores_no.call("atualizar_agora")
+	var de_cima := _jogador.has_method("esta_de_cima") and bool(_jogador.call("esta_de_cima"))
+	_jogador.set("_pitch", float(_jogador.get("DE_CIMA_INCLINACAO")) if de_cima else -0.19)
+	if de_cima:
+		_jogador.set("_distance", float(_jogador.get("DE_CIMA_DISTANCIA")))
 	_jogador.call("_apply_camera")
 	_jogador.call("_encaixar_a_camera")
 
 
+## O PONTO DE UM LUGAR: o nome do autoload Lugares, ou (#185) "dentro:<comodo>", o meio do
+## piso do comodo (casa, casarao, igreja...), e "porta:<comodo>", a soleira de fora dele.
+## O comodo precisa estar de pe (`_garantir_comodos`).
+func _ponto_do_lugar(nome: String) -> Vector3:
+	if nome.begins_with("dentro:") or nome.begins_with("porta:"):
+		var interiores_no := _jogo.get_node_or_null("Interiores") if _jogo != null else null
+		var sala: Node3D = interiores_no.call("sala_de", nome.get_slice(":", 1)) if interiores_no != null else null
+		if sala == null:
+			return Vector3.INF
+		if nome.begins_with("porta:"):
+			return sala.call("soleira_de_fora")
+		return sala.to_global(Vector3(0.0, 0.05, -float(sala.get("comprimento")) * 0.5))
+	return root.get_node("/root/Lugares").call("ponto", nome)
+
+
+## A CHEGADA NUM PASSO (--passo=<id>, #185): a cadeia do Pedro comeca, se ainda nao, e vai
+## ao passo pedido, como `tests/chegada.gd` faz. Com --passo=casa, a vista "dentro:casa"
+## e a entrada da issue: o "entrou:casa" fecha o passo e o Pedro narra o do bau.
+func _por_a_chegada_no_passo(id: String) -> String:
+	var pedro: Node = _jogo.get("pedro") if _jogo != null else null
+	if pedro == null:
+		_r["avisos"].append("sem Pedro: --passo ignorado")
+		return ""
+	var cadeia: Object = pedro.get("_cadeia")
+	if cadeia != null and not bool(cadeia.get("iniciado")):
+		cadeia.call("comecar", 0.0)
+	if not bool(pedro.call("ir_ao_passo", id)):
+		_r["avisos"].append("passo nao existe: " + id)
+	pedro.call("retomar")
+	if _jogo.has_method("_acertar_a_porta_da_casa"):
+		_jogo.call("_acertar_a_porta_da_casa")
+	return String(pedro.call("passo_em_curso"))
+
+
+## Monta os comodos que os lugares "dentro:" e "porta:" pedem (a ronda so monta o de perto).
+func _garantir_comodos() -> void:
+	var interiores_no := _jogo.get_node_or_null("Interiores") if _jogo != null else null
+	if interiores_no == null:
+		return
+	var texto := "%s,%s,%s,%s" % [_o["lugares"], _o["ab_em"], _o["ab_cpu_em"], _o["ab_gpu_em"]]
+	for pedido in texto.split(",", false):
+		if pedido.begins_with("dentro:") or pedido.begins_with("porta:"):
+			var qual := pedido.get_slice(":", 1)
+			if not bool(await interiores_no.call("garantir", qual)):
+				_r["avisos"].append("comodo nao montou: " + qual)
+
+
 func _lugares() -> Array:
-	var lugares := root.get_node("/root/Lugares")
 	var pedidos: Array = Array(String(_o["lugares"]).split(",", false)) if String(_o["lugares"]) != "" else LUGARES_PADRAO
 	var saida: Array = []
 	for nome in pedidos:
-		var p: Vector3 = lugares.call("ponto", String(nome))
+		var p: Vector3 = _ponto_do_lugar(String(nome))
 		if p.is_finite():
 			saida.append({"nome": String(nome), "ponto": p})
 		else:
@@ -904,6 +973,9 @@ func _fase_vistas() -> void:
 			m["lugar"] = lugar["nome"]
 			m["rumo_graus"] = roundi(rad_to_deg(rumo))
 			m["posicao"] = [snappedf(_jogador.global_position.x, 0.1), snappedf(_jogador.global_position.y, 0.1), snappedf(_jogador.global_position.z, 0.1)]
+			m["camera_de_cima"] = _jogador.has_method("esta_de_cima") and bool(_jogador.call("esta_de_cima"))
+			var interiores_v := _jogo.get_node_or_null("Interiores")
+			m["dentro"] = String(interiores_v.call("dentro")) if interiores_v != null else ""
 			_r["vistas"].append(m)
 		var ultimas: Array = _r["vistas"].slice(-rumos)
 		var pior: Dictionary = ultimas[0]
@@ -918,13 +990,162 @@ func _fase_vistas() -> void:
 	_dia.set("pausado", true)
 
 
+## A TRAVESSIA DA PORTA (#185, --fases=porta --porta_de=casa --travessias=3): o jogador vai
+## da soleira de fora ao meio do comodo (e volta) em 1,5 s, e cada quadro e cronometrado do
+## comeco ate 1 s depois. A primeira entrada e a do jogador novo (pipelines do comodo ainda
+## frias, se o perfil for novo); as outras dizem se o tranco se repete a cada porta.
+func _fase_porta() -> void:
+	var qual := String(_o.get("porta_de", "casa"))
+	var interiores_no := _jogo.get_node_or_null("Interiores")
+	var sala: Node3D = interiores_no.call("sala_de", qual) if interiores_no != null else null
+	if sala == null:
+		_r["avisos"].append("porta: sem comodo " + qual)
+		return
+	var fora: Vector3 = sala.call("soleira_de_fora")
+	var meio := _ponto_do_lugar("dentro:" + qual)
+	var para_dentro := meio - fora
+	var rumo := atan2(para_dentro.x, para_dentro.z) + PI
+	_dia.set("pausado", false)
+	_dia.call("definir_hora", float(_o["hora"]))
+	_r["porta"] = []
+	for volta in int(_o.get("travessias", "3")):
+		for entra in [true, false]:
+			var de: Vector3 = fora if entra else meio
+			var para: Vector3 = meio if entra else fora
+			_por_o_jogador(de, rumo if entra else rumo + PI)
+			await _esperar(1.5)
+			var antes := String(interiores_no.call("dentro"))
+			var serie: Array = []
+			var troca_no_quadro := -1
+			var ini := Time.get_ticks_msec()
+			var t_ant := Time.get_ticks_usec()
+			while Time.get_ticks_msec() - ini < 2500:
+				var f := clampf(float(Time.get_ticks_msec() - ini) / 1500.0, 0.0, 1.0)
+				_jogador.global_position = de.lerp(para, f)
+				_jogador.set("velocity", Vector3.ZERO)
+				await process_frame
+				var agora := Time.get_ticks_usec()
+				serie.append(snappedf((agora - t_ant) / 1000.0, 0.1))
+				t_ant = agora
+				if troca_no_quadro < 0 and String(interiores_no.call("dentro")) != antes:
+					troca_no_quadro = serie.size() - 1
+			var maior := 0.0
+			var soma := 0.0
+			var lentos := 0
+			for ms in serie:
+				maior = maxf(maior, float(ms))
+				soma += float(ms)
+				if float(ms) > 33.4:
+					lentos += 1
+			var linha := {"volta": volta, "sentido": "entra" if entra else "sai", "quadros": serie.size(),
+				"media_ms": snappedf(soma / maxf(serie.size(), 1), 0.01), "max_ms": maior, "quadros_acima_33ms": lentos,
+				"troca_no_quadro": troca_no_quadro, "ms_no_quadro_da_troca": serie[troca_no_quadro] if troca_no_quadro >= 0 else -1.0,
+				"camera_de_cima": bool(_jogador.call("esta_de_cima")) if _jogador.has_method("esta_de_cima") else false,
+				"serie_ms": serie}
+			_r["porta"].append(linha)
+			print("MEDIR_FPS porta %s volta %d %-5s media %.2f ms max %.1f ms (%d quadros > 33 ms) troca no quadro %d (%.1f ms)" % [
+				qual, volta, linha["sentido"], linha["media_ms"], maior, lentos, troca_no_quadro, float(linha["ms_no_quadro_da_troca"])])
+	_dia.set("pausado", true)
+
+
+## A ENTRADA DA CHEGADA (#185, --fases=entrada --passo=casa): como a sessao do testador de
+## 07/10. O jogador para na soleira, as falas de antes se fecham (o testador aperta E), ele
+## entra andando, o "entrou:casa" fecha o passo e o Pedro narra o do bau. Mede janelas de
+## 3 s na porta e la dentro, com a narracao aberta e depois de fechada.
+func _fase_entrada() -> void:
+	var interiores_no := _jogo.get_node_or_null("Interiores")
+	var sala: Node3D = interiores_no.call("sala_de", "casa") if interiores_no != null else null
+	var dialogo := root.get_node_or_null("/root/Dialogo")
+	var pedro: Node = _jogo.get("pedro")
+	if sala == null or dialogo == null:
+		_r["avisos"].append("entrada: sem casa ou sem Dialogo")
+		return
+	var fora: Vector3 = sala.call("soleira_de_fora")
+	var meio := _ponto_do_lugar("dentro:casa")
+	var rumo := atan2((meio - fora).x, (meio - fora).z) + PI
+	_dia.set("pausado", false)
+	_dia.call("definir_hora", float(_o["hora"]))
+	_por_o_jogador(fora, rumo)
+	_r["entrada"] = []
+	await _janela_da_entrada("porta, com as falas de antes", dialogo, pedro, 3.0)
+	await _fechar_as_falas(dialogo)
+	await _janela_da_entrada("porta, falas fechadas", dialogo, pedro, 3.0)
+	var ini := Time.get_ticks_msec()
+	while Time.get_ticks_msec() - ini < 1500:
+		_jogador.global_position = fora.lerp(meio, clampf(float(Time.get_ticks_msec() - ini) / 1500.0, 0.0, 1.0))
+		_jogador.set("velocity", Vector3.ZERO)
+		await process_frame
+	for i in 4:
+		await _janela_da_entrada("dentro %d, como ficou" % i, dialogo, pedro, 3.0)
+	await _fechar_as_falas(dialogo)
+	for i in 2:
+		await _janela_da_entrada("dentro %d, falas fechadas" % i, dialogo, pedro, 3.0)
+	_r["entrada_cadeias"] = _custo_das_cadeias()
+	_dia.set("pausado", true)
+
+
+## QUANTO CADA CADEIA DE MISSOES CUSTA NUM TICK (us), e, na mais cara, cada pedaco do `correr`.
+func _custo_das_cadeias() -> Dictionary:
+	var custos: Array = []
+	var pilha: Array[Node] = [root]
+	while not pilha.is_empty():
+		var no: Node = pilha.pop_back()
+		pilha.append_array(no.get_children())
+		if _script_de(no).ends_with("cadeia_de_missoes.gd") and no.is_physics_processing():
+			var t := Time.get_ticks_usec()
+			no.call("_physics_process", 1.0 / 60.0)
+			custos.append({"no": str(no.get_path()), "us": Time.get_ticks_usec() - t, "missao": no.get("missao"), "iniciado": no.get("iniciado")})
+	custos.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return int(a["us"]) > int(b["us"]))
+	var pedacos := {}
+	if not custos.is_empty():
+		var cara: Node = root.get_node(NodePath(String(custos[0]["no"])))
+		var passo: Dictionary = cara.call("passo_atual")
+		for nome in ["_entregar_o_que_ficou", "_tentar_encontro", "_receber_o_mutirao", "_acertar_o_caderno", "falta_a_meta", "resumo_do_passo"]:
+			var t2 := Time.get_ticks_usec()
+			if nome == "_entregar_o_que_ficou":
+				cara.call(nome)
+			else:
+				cara.call(nome, passo)
+			pedacos[nome] = Time.get_ticks_usec() - t2
+		for nome_c in ["depois_de", "so_enquanto"]:
+			var cb: Callable = cara.get(nome_c)
+			if cb.is_valid():
+				var t3 := Time.get_ticks_usec()
+				cb.call()
+				pedacos[nome_c] = Time.get_ticks_usec() - t3
+	print("MEDIR_FPS cadeias (us): ", custos.slice(0, 5), " pedacos da mais cara: ", pedacos)
+	return {"custos": custos.slice(0, 10), "pedacos": pedacos}
+
+
+func _janela_da_entrada(rotulo: String, dialogo: Node, pedro: Node, segundos: float) -> void:
+	var m := await _medir(segundos, 0.2)
+	m["rotulo"] = rotulo
+	m["dialogo_ativo"] = bool(dialogo.get("ativo"))
+	m["passo"] = String(pedro.call("passo_em_curso")) if pedro != null else ""
+	m["dentro"] = String(_jogo.get_node("Interiores").call("dentro"))
+	m["camera_de_cima"] = _jogador.has_method("esta_de_cima") and bool(_jogador.call("esta_de_cima"))
+	m["hud_destacando"] = bool(_jogo.get("hud").call("destacando")) if _jogo.get("hud") != null and _jogo.get("hud").has_method("destacando") else false
+	m["pedro_em"] = [snappedf((pedro as Node3D).global_position.x, 0.1), snappedf((pedro as Node3D).global_position.z, 0.1)] if pedro is Node3D else []
+	_r["entrada"].append(m)
+	print("MEDIR_FPS entrada %-28s %6.1f FPS  max %.1f ms  gpu %.1f  proc %.2f  fis %.2f x%.1f  draws %d  tri %d  pausado %s fala %s passo %s dentro '%s' de_cima %s" % [
+		rotulo, m["fps"], m["max_ms"], m["rs_gpu_ms"], m["process_scripts_ms"], m["fisica_scripts_ms"], m["fisica_passos_por_quadro"],
+		m["draws"], m["primitivas"], str(m["pausado"]), str(m["dialogo_ativo"]), m["passo"], m["dentro"], str(m["camera_de_cima"])])
+
+
+func _fechar_as_falas(dialogo: Node) -> void:
+	var ate := Time.get_ticks_msec() + 6000
+	while bool(dialogo.get("ativo")) and Time.get_ticks_msec() < ate:
+		dialogo.call("_fechar")
+		await process_frame
+	await _esperar(0.5)
+
+
 func _vista_escolhida(pedido: String = "") -> Dictionary:
 	if pedido == "":
 		pedido = String(_o["ab_em"])
-	var lugares := root.get_node("/root/Lugares")
 	if pedido != "pior" and pedido.contains(":"):
-		var partes := pedido.split(":")
-		var p: Vector3 = lugares.call("ponto", partes[0])
+		var partes := pedido.rsplit(":", true, 1)
+		var p: Vector3 = _ponto_do_lugar(partes[0])
 		if p.is_finite():
 			return {"lugar": partes[0], "ponto": p, "rumo": deg_to_rad(float(partes[1]))}
 	var pior := {}
@@ -932,9 +1153,9 @@ func _vista_escolhida(pedido: String = "") -> Dictionary:
 		if pior.is_empty() or float(v["fps"]) < float(pior["fps"]):
 			pior = v
 	if pior.is_empty():
-		var p2: Vector3 = lugares.call("ponto", "praca")
+		var p2: Vector3 = _ponto_do_lugar("praca")
 		return {"lugar": "praca", "ponto": p2, "rumo": 0.0}
-	var p3: Vector3 = lugares.call("ponto", String(pior["lugar"]))
+	var p3: Vector3 = _ponto_do_lugar(String(pior["lugar"]))
 	return {"lugar": pior["lugar"], "ponto": p3, "rumo": deg_to_rad(float(pior["rumo_graus"]))}
 
 

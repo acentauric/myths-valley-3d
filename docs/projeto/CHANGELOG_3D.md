@@ -1,5 +1,19 @@
 # Histórico de mudanças — Myths' Valley 3D
 
+## Em desenvolvimento — 10/10/2026
+
+- **Entrar na casa herdada no passo do baú não derruba mais o jogo a 3 FPS (#185).** A queda vinha
+  do passo, e não da casa. Enquanto o passo pede enxada, balde e maniva, a cadeia do Pedro procura a
+  cada tick de física a fonte de cada item, e a busca por árvore dava uma volta pelo vale inteiro
+  duplicando a ficha da espécie em cada árvore: 54 ms por tick para não achar nada. A física entrava
+  em espiral (5 passos por quadro, 280 ms por quadro). A busca agora escolhe antes as espécies que
+  rendem o item. Medido na GTX 1660 Ti em P0, às 18 h: dentro da casa nesse passo, de 3,5 para
+  100–124 FPS (física de 275 para 2 ms por quadro). A soleira fica em 98–116 FPS. A igreja (61 → 65)
+  e o casarão (89 → 91) também não perdem FPS ao entrar. As hipóteses de render da issue (casca
+  escondida, luzes, sonda, `far`, sombra) foram medidas e nenhuma passa de 0,7 ms. O medidor ganhou
+  os lugares `dentro:`/`porta:`, a travessia da porta e a entrada da chegada. Os números estão no
+  anexo de desempenho.
+
 ## Build #10 — 08/10/2026
 
 Fechada em 09/10/2026 com as correções das issues de 08/10, as vozes, o Mixamo e a main da equipe de 08/10.

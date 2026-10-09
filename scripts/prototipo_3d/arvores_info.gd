@@ -74,6 +74,9 @@ var _pontos: Array[Dictionary] = []
 ## "dia_do_corte", "escala"}. Por quadra em `_cortaveis_por_quadra`.
 var _cortaveis: Array[Dictionary] = []
 var _cortaveis_por_quadra: Dictionary = {}
+## As espécies presentes em `_cortaveis` (ver `_especies_que_rendem`), e o tamanho dela quando contadas.
+var _especies_do_vale: Dictionary = {}
+var _especies_contadas_em := -1
 var _por_quadra: Dictionary = {}
 var _world: Node3D
 var _jogador: Node3D
@@ -481,17 +484,22 @@ func madeira_de(especie: String) -> Dictionary:
 
 ## Alternativa aos troncos caídos esgotados: só madeira acessível ao machado
 ## e ao talento atuais, sem apontar tocos, espécies protegidas ou outro produto.
+##
+## AS ESPÉCIES SE ESCOLHEM ANTES DAS ÁRVORES (#185). A cadeia pergunta isto a cada tick de
+## física enquanto o passo pede juntar, e a pergunta valia uma volta por TODAS as árvores do
+## vale com `madeira_de` (um molde duplicado) em cada uma. No passo do baú da chegada, que
+## pede enxada, balde e maniva — nada que árvore renda —, eram três voltas inteiras por tick
+## para não achar nada: 55 ms, e a física em espiral derrubava o jogo a 3 FPS dentro da casa.
+## Agora as espécies que rendem o item e cedem ao machado de agora se escolhem uma vez; sem
+## nenhuma, a resposta sai sem olhar árvore, e com elas a volta só compara o nome.
 func mais_perto_que_rende(item: String, de: Vector3) -> Vector3:
 	var melhor := Vector3.INF
+	var serve := _especies_que_rendem(item)
+	if serve.is_empty():
+		return melhor
 	var menor := INF
 	for arvore: Dictionary in _cortaveis:
-		var especie := str(arvore.get("especie", ""))
-		if bool(arvore.get("cortado", false)) or _nao_se_corta.has(especie):
-			continue
-		var madeira := madeira_de(especie)
-		if str(madeira.get("rende", "lenha")) != item or Progressao.nivel("machado") < int(madeira.get("nivel", 1)):
-			continue
-		if bool(madeira.get("aco", false)) and Catalogo.grau(Equipamento.da_familia_em_uso("machado")) < 2:
+		if bool(arvore.get("cortado", false)) or not serve.has(str(arvore.get("especie", ""))):
 			continue
 		var pos: Vector3 = arvore["pos"]
 		var distancia := Vector2(de.x, de.z).distance_squared_to(Vector2(pos.x, pos.z))
@@ -528,6 +536,32 @@ func golpes_da(indice: int) -> int:
 func rendimento_da(indice: int) -> int:
 	var base := int(madeira_de(String(_cortaveis[indice]["especie"])).get("quantidade", 1))
 	return maxi(roundi(float(base) * tamanho_da(indice)), 1) if base > 0 else 0
+
+
+## As espécies cujas árvores rendem `item` e cedem ao machado e ao talento de agora (fora as
+## que não se cortam). O molde de cada espécie se pede uma vez, e não uma por árvore.
+func _especies_que_rendem(item: String) -> Dictionary:
+	var serve := {}
+	# As espécies que o vale tem, contadas de novo só se a lista de árvores mudar de tamanho.
+	if _especies_contadas_em != _cortaveis.size():
+		_especies_contadas_em = _cortaveis.size()
+		_especies_do_vale.clear()
+		for arvore: Dictionary in _cortaveis:
+			_especies_do_vale[str(arvore.get("especie", ""))] = true
+	if _especies_do_vale.is_empty():
+		return serve
+	var nivel := Progressao.nivel("machado")
+	var de_aco := Catalogo.grau(Equipamento.da_familia_em_uso("machado")) >= 2
+	for especie: String in _especies_do_vale:
+		if _nao_se_corta.has(especie):
+			continue
+		var madeira := madeira_de(especie)
+		if str(madeira.get("rende", "lenha")) != item or nivel < int(madeira.get("nivel", 1)):
+			continue
+		if bool(madeira.get("aco", false)) and not de_aco:
+			continue
+		serve[especie] = true
+	return serve
 
 
 func _golpes_da(indice: int) -> int:

@@ -71,6 +71,18 @@ func _run() -> void:
 	arvores._cortaveis[5]["cortado"] = true
 	arvores._cortaveis[6]["cortado"] = true
 	conferir(arvores.mais_perto_que_rende("lenha", Vector3.ZERO) == Vector3.INF, "esgotamento não oferece árvore impossível")
+	# O PASSO DO BAÚ (#185): a cadeia pergunta a cada tick de física pelo que nenhuma árvore
+	# rende (enxada, balde, maniva). A resposta sai das espécies, sem uma volta pelo vale inteiro.
+	var muitas: Array[Dictionary] = []
+	for i in 50000:
+		muitas.append({"especie": "comum", "pos": Vector3(i, 0, 0)})
+	arvores._cortaveis = muitas
+	conferir(arvores.mais_perto_que_rende("lenha", Vector3.ZERO) == Vector3.ZERO, "com o vale cheio, a lenha ainda acha a árvore mais perto")
+	var antes := Time.get_ticks_usec()
+	for item in ["enxada", "balde", "semente_mandioca"]:
+		conferir(arvores.mais_perto_que_rende(item, Vector3.ZERO) == Vector3.INF, "%s não sai de árvore" % item)
+	var gasto_ms := (Time.get_ticks_usec() - antes) / 1000.0
+	conferir(gasto_ms < 5.0, "perguntar por três itens que árvore não rende custou %.1f ms com 50 mil árvores (a física da casa caía a 3 FPS)" % gasto_ms)
 	arvores.free()
 	print("ALVO_MADEIRA: ", falhas, " falhas")
 	quit(1 if falhas else 0)
