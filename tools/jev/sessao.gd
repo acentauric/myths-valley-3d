@@ -865,7 +865,9 @@ func _estado() -> Dictionary:
 	estado["npcs"] = []
 	for npc in current_scene.get("moradores"):
 		if is_instance_valid(npc):
-			estado.npcs.append({"speaking": npc.has_method("falando_agora") and npc.falando_agora(), "node": str(npc.name), "id": npc.dados.get("id", ""), "name": npc.dados.get("nome", ""),
+			# A frase curta de atenção (#198) não é conversa: o E já vale com ela no ar, e o robô não espera por ela.
+			estado.npcs.append({"speaking": npc.has_method("falando_agora") and npc.falando_agora() and not npc.atencao_no_ar(),
+				"attending": npc.has_method("atencao_no_ar") and npc.atencao_no_ar(), "node": str(npc.name), "id": npc.dados.get("id", ""), "name": npc.dados.get("nome", ""),
 				"position": _vetor(npc.global_position), "distance": snappedf(jogador.global_position.distance_to(npc.global_position), 0.1)})
 	var mochila := root.get_node("Mochila")
 	estado["home_interaction"] = current_scene.get("casa").perto()
@@ -882,7 +884,8 @@ func _estado() -> Dictionary:
 			"rows": _json_seguro(painel.get("_linhas")), "advice": painel.get("_dica").text}
 	var pedro: Node3D = current_scene.get("pedro")
 	if is_instance_valid(pedro):
-		estado["pedro"] = {"speaking": pedro.has_method("falando_agora") and pedro.falando_agora(), "distance": snappedf(jogador.global_position.distance_to(pedro.global_position), 0.1),
+		estado["pedro"] = {"speaking": pedro.has_method("falando_agora") and pedro.falando_agora() and not pedro.atencao_no_ar(),
+			"attending": pedro.has_method("atencao_no_ar") and pedro.atencao_no_ar(), "distance": snappedf(jogador.global_position.distance_to(pedro.global_position), 0.1),
 			"step": pedro.get("missao"), "text": pedro.texto_da_missao(), "position": _vetor(pedro.global_position),
 			"tutorial_finished": bool(pedro.terminou_o_tutorial())}
 		var cadeia: Node = pedro.get("_cadeia")
@@ -896,7 +899,10 @@ func _estado() -> Dictionary:
 			"guide_destination_reached": distancia <= 2.9, "distance_to_guide_destination": snappedf(distancia, 0.1)})
 	# A FALA ABERTA ESPERA O E (#220): o balão fica até o jogador passar a página, e o testador também.
 	estado["speech_awaiting_e"] = ""
-	for npc in current_scene.get("moradores"):
+	var com_fala: Array = (current_scene.get("moradores") as Array).duplicate()
+	if is_instance_valid(pedro):
+		com_fala.append(pedro)
+	for npc in com_fala:
 		if is_instance_valid(npc) and npc.has_method("espera_o_e") and bool(npc.espera_o_e()):
 			estado["speech_awaiting_e"] = str(npc.name)
 			estado["speech_has_more_pages"] = bool(npc.fala_tem_mais())

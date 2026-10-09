@@ -753,6 +753,28 @@ class PlayerTests(unittest.TestCase):
         task = {"required_npc": {"speaking": True, "distance": 2}, "actions_matching_the_current_requirement": ["follow_pedro"]}
         self.assertEqual(bot.choose(self.state(), {"wait": "wait", "follow_pedro": "follow"}, task), "wait")
 
+    def test_open_speech_waiting_for_e_is_advanced_before_following_or_approaching(self):
+        # A fala aberta no balão espera o E (#220): passa a página e fecha na última, antes de seguir o Pedro.
+        bot = self.player()
+        state = self.state()
+        state.update(speech_awaiting_e="MoradorPedro", speech_has_more_pages=True, interaction_target="Pedro")
+        actions = {"speech_next": "E", "interact": "E", "follow_pedro": "follow", "wait": "wait"}
+        task = {"step": {"meta": {"tipo": "falar", "a_quem": "pedro"}}, "required_npc": {"node": "MoradorPedro", "name": "Pedro", "speaking": False},
+                "actions_matching_the_current_requirement": ["interact"]}
+        self.assertEqual(bot.choose(state, actions, task), "speech_next")
+
+    def test_pedro_stopped_for_attention_gets_the_step_delivered_without_repeating_follow(self):
+        # "Volte ao Pedro e conte o que viu" (#198): ele para e dá atenção, a dica do E firma, e o robô entrega o passo.
+        bot = self.player()
+        state = self.state()
+        state.update(interaction_target="Pedro")
+        state["pedro"] = {"speaking": False, "attending": True, "distance": 1.6, "conducting": False}
+        actions = {"interact": "E", "follow_pedro": "follow", "wait": "wait"}
+        task = {"step": {"meta": {"tipo": "falar", "a_quem": "pedro"}}, "required_npc": {"node": "MoradorPedro", "name": "Pedro", "speaking": False, "distance": 1.6},
+                "actions_matching_the_current_requirement": ["interact"]}
+        for repeticao in range(3):
+            self.assertEqual(bot.choose(dict(state, seconds=repeticao * 2), actions, task), "interact")
+
     def test_resource_candidate_has_priority_over_pedro_during_recovery(self):
         bot = self.player()
         state = self.state()

@@ -2,6 +2,14 @@
 
 ## Em desenvolvimento — 10/10/2026
 
+- **O testador entrega o passo ao Pedro que parou para dar atenção.** A frase curta de atenção dele
+  (#198) deixa de contar como "falando" no estado do testador, que passa a ter o campo `attending`: com a
+  dica do E firme, a política escolhe `interact` no "Volte ao Pedro e conte o que viu", e não espera a
+  frase nem repete `follow_pedro`. A atenção já vale para todo morador que um passo manda procurar
+  (`npc._dar_atencao`; quem não tem a lista `atencao` só para e olha), e o portão `atencao_do_morador`
+  cobre o Tonho. Dois testes novos do robô cobrem o passo ao Pedro parado e a fala aberta esperando o E.
+  Falta rodar o testador no passo da ponte e ver a entrega sem repetição.
+
 - **O E controla a conversa.** A fala que o jogador abriu com o E e a da missão (a condução do Pedro
   inclusive) ficam no balão enquanto ele está perto para ler, a até 6 m e com o balão à vista: o E passa
   a página, uma a uma, e na última a fecha; o Esc a fecha de qualquer página. O balão mostra o "E »" de
