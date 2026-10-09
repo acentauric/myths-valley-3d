@@ -56,6 +56,11 @@ const TOLERANCIA_ANCORA_U := 0.05
 const CHEGADA_SEGUNDOS := 2.0
 const HISTORY_SIZE := Vector2(640, 600)
 const TESTADOR_SIZE := Vector2(640, 700)
+## O modal do nome (#214): largo para a ajuda caber em duas linhas nos três idiomas, e a ajuda no
+## tamanho do corpo dos outros modais; o aviso de erro, um pouco menor.
+const NOME_LARGURA := 600.0
+const NOME_TAMANHO_AJUDA := 18
+const NOME_TAMANHO_ERRO := 16
 const HISTORY_ROWS := 10
 ## Lista do histórico: fonte base (desce até o mínimo se a linha não couber) e respiro.
 const HISTORY_FONTE := 15
@@ -788,6 +793,7 @@ func _clear() -> void:
 
 func _place_panel(centered: bool) -> void:
 	panel.set_meta("sem_moldura", false)
+	panel.grow_vertical = Control.GROW_DIRECTION_END
 	panel.custom_minimum_size = Vector2(440, 640)
 	panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER if centered else Control.PRESET_TOP_LEFT)
 	panel.offset_left = -220 if centered else 36
@@ -796,11 +802,15 @@ func _place_panel(centered: bool) -> void:
 	panel.offset_bottom = 320 if centered else 672
 	Tela.vincular_componente(panel, "menu", Vector2(0.5, 0.5) if centered else Vector2.ZERO)
 
-## Modal centrado de tamanho fixo (histórico, ajustes): não muda entre páginas.
-func _place_modal(modal_size: Vector2, componente := "menu") -> void:
+## Modal centrado de tamanho fixo (histórico, ajustes): não muda entre páginas. Com `abraca`, a
+## altura de `modal_size` é só o mínimo: o modal tem a altura do que há dentro e cresce para os dois
+## lados a partir do centro, sem faixa vazia embaixo (#214).
+func _place_modal(modal_size: Vector2, componente := "menu", abraca := false) -> void:
 	_place_panel(true)
 	_decoracao_modo("modal")
 	modal_open = true
+	if abraca:
+		panel.grow_vertical = Control.GROW_DIRECTION_BOTH
 	panel.custom_minimum_size = modal_size
 	panel.offset_left = -modal_size.x * 0.5
 	panel.offset_right = modal_size.x * 0.5
@@ -1800,17 +1810,23 @@ func _abrir_vaga(slot: int, nova: bool, nome: String = "") -> void:
 ## começa nem limpa a partida; só a confirmação restaura o estado de fábrica.
 func _pedir_nome(slot: int) -> void:
 	_clear()
-	_place_modal(Vector2(560, 310), "vagas")
+	# Mais largo e sem altura fixa (#214): a ajuda em leitura de corpo cabe em duas linhas nos três
+	# idiomas, e o modal abraça o conteúdo.
+	_place_modal(Vector2(NOME_LARGURA, 0), "vagas", true)
 	var dados: Dictionary = Jogo.dados("res://data/nome_jogador.json")
 	_modal_header(str(IdiomaMenu.campo(dados, "titulo")), _vagas)
-	_label(str(IdiomaMenu.campo(dados, "ajuda")), 15)
+	# A ajuda é texto para ler (papel de leitura da #199): a sans do HUD, em creme, no tamanho do corpo
+	# dos outros modais e proporcional ao título e ao campo; o aviso de erro vai um pouco menor.
+	var ajuda := Identidade.papel_leitura(_label(str(IdiomaMenu.campo(dados, "ajuda"))), NOME_TAMANHO_AJUDA)
+	ajuda.name = "AjudaNome"
 	var campo := LineEdit.new()
 	campo.name = "NomeJogador"
 	campo.placeholder_text = str(IdiomaMenu.campo(dados, "campo"))
 	campo.max_length = Partida.NOME_MAXIMO
 	campo.custom_minimum_size.y = 44
 	content.add_child(campo)
-	var erro := _label(str(IdiomaMenu.campo(dados, "erro")), 14)
+	var erro := Identidade.papel_leitura(_label(str(IdiomaMenu.campo(dados, "erro"))), NOME_TAMANHO_ERRO, Identidade.TERRACOTA)
+	erro.name = "ErroNome"
 	erro.hide()
 	var feito := [false]
 	var confirmar := func() -> void:

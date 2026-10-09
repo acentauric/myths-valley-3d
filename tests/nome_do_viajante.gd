@@ -29,6 +29,18 @@ func _run() -> void:
 		conferir(campo != null, "vaga nova não pede o nome")
 		if campo == null: continue
 		conferir(campo.placeholder_text == str(idioma.campo(textos, "campo")), "campo não acompanha o idioma")
+		# #214: a ajuda é texto de leitura no tamanho do corpo, cabe em duas linhas e o modal abraça o conteúdo.
+		var ajuda := menu.content.get_node_or_null("AjudaNome") as Label
+		var erro := menu.content.get_node_or_null("ErroNome") as Label
+		conferir(ajuda != null and erro != null, "o modal do nome perdeu a ajuda ou o aviso de erro (idioma %d)" % lingua)
+		if ajuda != null and erro != null:
+			var tam_ajuda := ajuda.get_theme_font_size("font_size")
+			var tam_erro := erro.get_theme_font_size("font_size")
+			conferir(tam_ajuda >= 17, "a ajuda do nome está pequena (%d px) perto do título e do campo (idioma %d)" % [tam_ajuda, lingua])
+			conferir(tam_erro < tam_ajuda and tam_erro >= 15, "o aviso de erro (%d px) não acompanha a ajuda (%d px) (idioma %d)" % [tam_erro, tam_ajuda, lingua])
+			conferir(ajuda.get_line_count() <= 2, "a ajuda do nome quebrou em %d linhas (idioma %d)" % [ajuda.get_line_count(), lingua])
+			var sobra: float = menu.panel.size.y - menu.panel.get_combined_minimum_size().y
+			conferir(sobra <= 2.0, "sobram %.0f px vazios no modal do nome (idioma %d)" % [sobra, lingua])
 		var slot_antes: int = salvamento.slot_atual
 		var nome_antes: String = jogo.nome_jogador
 		campo.text = "   "
