@@ -3143,7 +3143,7 @@
         "manha": [
           "Casa do carpinteiro/Canoa",
           [
-            0.0,
+            -1.5,
             0,
             2.2
           ]
@@ -3151,7 +3151,7 @@
         "tarde": [
           "Casa do carpinteiro/Canoa",
           [
-            0.0,
+            -1.5,
             0,
             2.2
           ]
@@ -3159,7 +3159,7 @@
         "entardecer": [
           "Casa do carpinteiro/Canoa",
           [
-            0.0,
+            -1.5,
             0,
             2.2
           ]
@@ -3178,7 +3178,7 @@
           "de": 6.5,
           "lugar": "Casa/canoa_em_obra",
           "desloc": [
-            0.0,
+            -1.5,
             0,
             2.2
           ],
@@ -3198,7 +3198,7 @@
           "de": 13.0,
           "lugar": "Casa/canoa_em_obra",
           "desloc": [
-            0.0,
+            -1.5,
             0,
             2.2
           ],
