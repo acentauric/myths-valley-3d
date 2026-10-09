@@ -2,6 +2,14 @@
 
 ## Em desenvolvimento — 10/10/2026
 
+- **Na chegada, os bichos de casa ficam longe do caminho e só entram aos poucos depois.** O autor viu, perto
+  da Dona Candinha (passo 4/16), três cabras e o bode soltos entre os moradores, com 19 FPS. Até o Pedro entrar com o
+  viajante na casa do tio, as cabras, o bode, os porcos, os cães, os gatos e os bandos de galinhas só entram em
+  cena a 40 u ou mais do jogador e da câmera, no máximo um de cada, e o tempo não os amplia; fora de cena não
+  andam, não animam e não colidem. Terminada a introdução entram dois quadrúpedes e um bando, mais um a cada 12 e
+  20 s, e não o elenco inteiro de uma vez. O portão `apresentacao_do_povoado` cobra as duas fases. A medição de FPS
+  antes e depois fica para a rodada de medição (#155).
+
 - **A árvore de encosta assenta pelo pé do tronco, e o ingazeiro perde o cavaco de terra laranja.** O
   plantio punha a árvore na altura do chão do ponto de plantio (o meio da caixa do GLB), mas o tronco sai
   de até um metro e meio dele: na encosta o pé ficava a 0,5 u (aroeira) e 0,7 u (ingazeiro) do chão,

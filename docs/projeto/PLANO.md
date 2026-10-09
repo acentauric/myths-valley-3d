@@ -16,6 +16,15 @@ forçar a visita fora do dia reproduz duas falhas.
 Liberar o elenco completo também persiste ao recalcular a visita, sem
 revogar a ausência de Quirino fora do calendário. Gate e mutante conferidos.
 
+A #155 foi reaberta em 09/10 (passo 4/16, perto da Candinha: três cabras e o bode soltos entre os
+moradores, 19 e 9 FPS). Até o Pedro entrar com o viajante na casa do tio, os bichos de casa e os
+bandos de aves só entram em cena a 40 u ou mais do jogador e da câmera, no máximo um de cada, e o
+tempo não os amplia; terminada a introdução entram aos poucos (dois quadrúpedes e um bando, mais um
+a cada 12 e 20 s), e não de uma vez. Fora de cena não andam, não animam e não colidem. O portão
+`apresentacao_do_povoado` cobra as duas fases; a medição de FPS antes e depois, na mesma cena
+(Candinha, 09 h, GPU em P-state alto), fica para a rodada de medição:
+[POPULACAO_GRADUAL.md](../testes/POPULACAO_GRADUAL.md).
+
 A #138 fechou: a extremidade marítima da areia se desfaz em manchas e a laje
 da foz também, os retângulos de borda reta do chão e da praia (o hash do
 ruído) saíram, com prova gráfica e passagem/maré preservadas:
