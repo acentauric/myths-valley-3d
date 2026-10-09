@@ -190,7 +190,22 @@ func _assar() -> void:
 	# conta da estreita (o raio dela cabe no tabuleiro e subiria no corrimão); na larga, de 0,6, o
 	# corrimão inteiro é o que segura o caminho no meio da ponte, como era até 08/10.
 	_fonte_da_vez = _copia_da_fonte(fonte)
-	_corrimaos_das_pontes(fonte)
+	# OS CORRIMÃOS SAEM FORA DA LINHA PRINCIPAL: a volta pelos triângulos do vale (`_sem_corrimaos`)
+	# roda numa linha de trabalho, e o quadro segue enquanto ela conta.
+	var zonas := _zonas_das_pontes()
+	if not zonas.is_empty():
+		var vertices := fonte.get_vertices()
+		var indices := fonte.get_indices()
+		var saida: Array = []
+		var tarefa := WorkerThreadPool.add_task(func() -> void: saida.append(_sem_corrimaos(vertices, indices, zonas[0], zonas[1])))
+		var arvore := get_tree()
+		while not WorkerThreadPool.is_task_completed(tarefa) and arvore != null:
+			await arvore.process_frame
+		WorkerThreadPool.wait_for_task_completion(tarefa)
+		if not is_inside_tree():
+			_assando = false
+			return
+		fonte.set_indices(saida[0])
 	_obstaculos_das_pontes(fonte)
 	NavigationServer3D.bake_from_source_geometry_data_async(_malha, fonte, _ao_assar)
 
@@ -228,30 +243,70 @@ func _obstaculos_das_pontes(fonte: NavigationMeshSourceGeometryData3D) -> void:
 ## que a simplificação ligue um caminho sobre ele ao tabuleiro. A geometria
 ## de colisão e o modelo permanecem completos; somente a leitura da malha muda.
 func _corrimaos_das_pontes(fonte: NavigationMeshSourceGeometryData3D) -> void:
-	var vertices := fonte.get_vertices()
-	var indices := fonte.get_indices()
+	var zonas := _zonas_das_pontes()
+	if not zonas.is_empty():
+		fonte.set_indices(_sem_corrimaos(fonte.get_vertices(), fonte.get_indices(), zonas[0], zonas[1]))
+
+
+## As pontes medidas para `_sem_corrimaos`, na linha principal: [as zonas, os limites], ou vazio sem
+## ponte. Cada zona: centro (x, z), eixo (x, z), a altura acima da qual a face é corrimão, e as meias
+## medidas com a folga. O eixo é horizontal (`world_builder`), e o lado é ele girado. Os limites: o
+## retângulo (x, z) que cobre todas as pontes e a altura mais baixa de corrimão.
+func _zonas_das_pontes() -> Array:
+	var zonas: Array[PackedFloat64Array] = []
+	var limites := PackedFloat64Array([INF, -INF, INF, -INF, INF])
+	for ponte in _mundo.pontes.values():
+		var centro: Vector3 = ponte.centro
+		var modelo: Node3D = (ponte.get("modelos", {}) as Dictionary).get("de_pe")
+		var piso := float(modelo.get_meta("piso_do_tabuleiro", centro.y + 0.31)) if modelo != null else centro.y + 0.31
+		var eixo: Vector3 = ponte.ao_longo
+		var meio_comprimento := float(ponte.comprimento) * 0.5 + 0.3
+		var meia_largura := float(ponte.largura) * 0.5 + 0.3
+		zonas.append(PackedFloat64Array([centro.x, centro.z, eixo.x, eixo.z, piso + 0.09, meio_comprimento, meia_largura]))
+		var alcance := sqrt(meio_comprimento * meio_comprimento + meia_largura * meia_largura)
+		limites[0] = minf(limites[0], centro.x - alcance)
+		limites[1] = maxf(limites[1], centro.x + alcance)
+		limites[2] = minf(limites[2], centro.z - alcance)
+		limites[3] = maxf(limites[3], centro.z + alcance)
+		limites[4] = minf(limites[4], piso + 0.09)
+	return [] if zonas.is_empty() else [zonas, limites]
+
+
+## OS ÍNDICES SEM AS FACES DE CORRIMÃO: a face cujo meio cai na pegada de uma ponte (com a folga) e que
+## sobe acima do tabuleiro dela. Conta pura, sem cena: roda fora da linha principal (`_assar`). A volta
+## passa por todos os triângulos do vale (meio milhão); o que cai fora do retângulo de todas as pontes
+## sai com duas contas, e o que fica se escreve no lugar. A versão que pedia a ponte (e o `get_meta`
+## do modelo) a cada triângulo parava o quadro 5,5 s por assada — e a casa que abre de perto pede
+## uma (`Interiores._avisar_a_malha`, #205).
+static func _sem_corrimaos(vertices: PackedFloat32Array, indices: PackedInt32Array, zonas: Array[PackedFloat64Array], limites: PackedFloat64Array) -> PackedInt32Array:
 	var filtrados := PackedInt32Array()
+	filtrados.resize(indices.size())
+	var n := 0
 	for i in range(0, indices.size(), 3):
-		var meio := Vector3.ZERO
-		var alto := -INF
-		for j in 3:
-			var v := indices[i + j] * 3
-			meio += Vector3(vertices[v], vertices[v + 1], vertices[v + 2]) / 3.0
-			alto = maxf(alto, vertices[v + 1])
+		var a := indices[i] * 3
+		var b := indices[i + 1] * 3
+		var c := indices[i + 2] * 3
+		var mx := (vertices[a] + vertices[b] + vertices[c]) / 3.0
+		var mz := (vertices[a + 2] + vertices[b + 2] + vertices[c + 2]) / 3.0
 		var corrimao := false
-		for ponte in _mundo.pontes.values():
-			var centro: Vector3 = ponte.centro
-			var modelo: Node3D = (ponte.get("modelos", {}) as Dictionary).get("de_pe")
-			var piso := float(modelo.get_meta("piso_do_tabuleiro", centro.y + 0.31)) if modelo != null else centro.y + 0.31
-			var eixo: Vector3 = ponte.ao_longo
-			var lado := Vector3(-eixo.z, 0, eixo.x)
-			var relativo := meio - centro
-			if alto > piso + 0.09 and absf(relativo.dot(eixo)) < float(ponte.comprimento) * 0.5 + 0.3 and absf(relativo.dot(lado)) < float(ponte.largura) * 0.5 + 0.3:
-				corrimao = true
-				break
+		if mx > limites[0] and mx < limites[1] and mz > limites[2] and mz < limites[3]:
+			var alto := maxf(vertices[a + 1], maxf(vertices[b + 1], vertices[c + 1]))
+			if alto > limites[4]:
+				for zona in zonas:
+					if alto <= zona[4]:
+						continue
+					var rx := mx - zona[0]
+					var rz := mz - zona[1]
+					if absf(rx * zona[2] + rz * zona[3]) < zona[5] and absf(rz * zona[2] - rx * zona[3]) < zona[6]:
+						corrimao = true
+						break
 		if not corrimao:
-			filtrados.append_array(indices.slice(i, i + 3))
-	fonte.set_indices(filtrados)
+			filtrados[n] = indices[i]
+			filtrados[n + 1] = indices[i + 1]
+			filtrados[n + 2] = indices[i + 2]
+			n += 3
+	filtrados.resize(n)
+	return filtrados
 
 
 ## O CASCO DO SAVEIRO ATRACADO como obstáculo: o retângulo dele (`SaveiroVale.pegada_do_casco`),
