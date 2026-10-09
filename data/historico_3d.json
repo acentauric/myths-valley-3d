@@ -1,7 +1,46 @@
 {
  "versao_atual": "0.1.0-dev",
- "build_numero": 9,
+ "build_numero": 10,
  "entradas": [
+  {
+   "data": "08/10/2026",
+   "estado": "EM DESENVOLVIMENTO",
+   "estado_en": "IN DEVELOPMENT",
+   "estado_es": "EN DESARROLLO",
+   "titulo": "Build 10: o vale fala e se mostra melhor",
+   "titulo_en": "Build 10: the valley speaks and shows itself better",
+   "titulo_es": "Build 10: el valle habla y se muestra mejor",
+   "mudancas": [
+    "*HUD* mais enxuto: relógio em duas colunas, missão e barra de mão menores, seta em volta de você.",
+    "*Vozes* do Pedro, das dicas dos moradores e do viajante, que ganhou voz própria.",
+    "*Ajustes* com aba Interface, abas em ícones e ajuda em todos os campos.",
+    "*Plaquinhas* de nome que não cobrem rostos, e a dica do E mais legível.",
+    "*Mixamo*: o Pedro treina capoeira, o pescador pesca e a beata reza.",
+    "*Chão* sem quinas retas, dendezal com folhiço e árvores que barram no tronco.",
+    "*Caramelo* anda nas quatro patas, e você vira para onde anda.",
+    "*Testar*: o testador sobe em degraus, com F7 para assumir o controle."
+   ],
+   "mudancas_en": [
+    "*Leaner HUD*: two-column clock, smaller quest panel and hand bar, an arrow that circles you.",
+    "*Voices* for Pedro, the villagers' hints and the traveler, who now has his own voice.",
+    "*Settings* with an Interface tab, icon tabs and help on every field.",
+    "*Name tags* that never cover faces, and a clearer E prompt.",
+    "*Mixamo*: Pedro trains capoeira, the fisherman casts and the pious lady prays.",
+    "*Ground* without hard corners, palm grove litter and trees that block at the trunk.",
+    "*Caramelo* walks on four legs, and you turn to face where you go.",
+    "*Test*: the playtester escalates in steps, with F7 to take control."
+   ],
+   "mudancas_es": [
+    "*HUD* más limpio: reloj en dos columnas, misión y barra de mano más pequeñas, flecha que gira a tu alrededor.",
+    "*Voces* de Pedro, de los consejos de los vecinos y del viajero, que ahora tiene voz propia.",
+    "*Ajustes* con pestaña Interfaz, pestañas con íconos y ayuda en cada campo.",
+    "*Carteles* de nombre que no tapan rostros, y el aviso de la E más legible.",
+    "*Mixamo*: Pedro entrena capoeira, el pescador pesca y la beata reza.",
+    "*Suelo* sin esquinas rectas, hojarasca en el palmar y árboles que frenan en el tronco.",
+    "*Caramelo* camina en cuatro patas, y tú giras hacia donde caminas.",
+    "*Probar*: el probador escala por niveles, con F7 para tomar el control."
+   ]
+  },
   {
    "data": "07/10/2026",
    "estado": "EM DESENVOLVIMENTO",

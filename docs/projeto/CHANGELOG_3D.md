@@ -1,6 +1,8 @@
 # Histórico de mudanças — Myths' Valley 3D
 
-## Em desenvolvimento — 08/10/2026
+## Build #10 — 08/10/2026
+
+Fechada em 09/10/2026 com as correções das issues de 08/10, as vozes, o Mixamo e a main da equipe de 08/10.
 
 - **O viajante tem voz própria, aprovada de ouvido.** A voz "Viajante (Myths' Valley)", criada no
   Voice Design do ElevenLabs para ele, substitui a do Damião nas dezenove falas, no sono e no despertar (#187).
