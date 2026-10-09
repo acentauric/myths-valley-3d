@@ -43,6 +43,13 @@
     "Fundeando as canoas": "停泊独木舟",
     "Acendendo os lampiões": "点亮灯笼",
     "Pronto": "准备就绪",
-    "Conversar": "交谈"
+    "Conversar": "交谈",
+    "Começar ou continuar uma partida: escolha uma das vagas de save.": "开始或继续一局游戏：选择一个存档位。",
+    "Passear pelo vale sem missões.": "在山谷里自由漫步，没有任务。",
+    "O testador automático joga numa janela separada, e esta fecha quando ela abrir. F7 assume o controle; F8 encerra e volta ao menu.": "自动测试员在另一个窗口里玩，它打开后本窗口会关闭。F7 接管控制，F8 结束并返回菜单。",
+    "Disponível no projeto de desenvolvimento com Python instalado.": "仅在装有 Python 的开发项目中可用。",
+    "Galeria de moradores e assets, com edição.": "居民与素材图库，可编辑。",
+    "Quem faz o vale e de onde ele vem.": "谁在建造这座山谷，它来自何处。",
+    "Fechar o jogo.": "关闭游戏。"
   }
 }

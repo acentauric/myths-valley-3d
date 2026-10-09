@@ -17,6 +17,18 @@ const PainelPersonagens = preload("res://scripts/prototipo_3d/painel_personagens
 const TelaCarregamento = preload("res://scripts/prototipo_3d/tela_carregamento.gd")
 const Identidade = preload("res://scripts/prototipo_3d/identidade.gd")
 const TestadorApoios = preload("res://scripts/prototipo_3d/testador_apoios.gd")
+const PopoverMenu = preload("res://scripts/prototipo_3d/popover_menu.gd")
+## O que cada placa da coluna da esquerda diz no popover (#232): a chave em português, traduzida na hora
+## (`idioma_menu.gd`; o chinês vem de `menu_zh` em `data/selecao_idioma.json`).
+const DICAS_DAS_PLACAS := {
+	"JOGAR": "Começar ou continuar uma partida: escolha uma das vagas de save.",
+	"EXPLORAR": "Passear pelo vale sem missões.",
+	"TESTAR": "O testador automático joga numa janela separada, e esta fecha quando ela abrir. F7 assume o controle; F8 encerra e volta ao menu.",
+	"TESTAR_INDISPONIVEL": "Disponível no projeto de desenvolvimento com Python instalado.",
+	"MODELOS": "Galeria de moradores e assets, com edição.",
+	"SOBRE": "Quem faz o vale e de onde ele vem.",
+	"SAIR": "Fechar o jogo.",
+}
 ## O LOBBY EM VÍDEO: o sobrevoo pintado do LTX em laço, no lugar do
 ## vale 3D de fundo. O menu deixava a primeira carga em ~27 s só para montar o vale inteiro
 ## por trás do voo, e depois o desenhava a cada quadro. Vale em toda build e no editor
@@ -941,7 +953,7 @@ func _create_version_link() -> void:
 	content.add_child(filete)
 	version_link = Button.new()
 	version_link.text = version_text
-	version_link.tooltip_text = "Ver o histórico"
+	# A versão no rodapé não ganha tooltip nem popover (#232): é só o texto "v0.1.0-dev · Build #N".
 	version_link.flat = true
 	version_link.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	version_link.add_theme_font_override("font", Identidade.fonte_numeros(600))
@@ -1049,16 +1061,21 @@ func _home() -> void:
 	camera.fov = 55
 	_clear()
 	_marca()
-	_placa("JOGAR", _vagas).grab_focus()
-	_placa("EXPLORAR", _explorar)
+	# Cada placa da coluna explica o que faz num POPOVER (popover_menu.gd, #232), e não no tooltip em linha.
+	var camada_do_menu := panel.get_parent()
+	var jogar := _placa("JOGAR", _vagas)
+	jogar.grab_focus()
+	PopoverMenu.ligar(jogar, DICAS_DAS_PLACAS["JOGAR"], camada_do_menu)
+	PopoverMenu.ligar(_placa("EXPLORAR", _explorar), DICAS_DAS_PLACAS["EXPLORAR"], camada_do_menu)
 	var teste := _placa("TESTAR", _teste_automatico)
-	teste.tooltip_text = tr("O testador joga uma partida separada, e esta janela se fecha quando ela abrir. F8 encerra a sessão e volta ao menu.")
+	var dica_do_teste: String = DICAS_DAS_PLACAS["TESTAR"]
 	if not TestadorApoios.ponte_instalada():
 		teste.disabled = true
-		teste.tooltip_text = tr("Disponível no projeto de desenvolvimento com Python instalado.")
-	_placa("MODELOS", _abrir_personagens)
-	_placa("SOBRE", _credits)
-	_placa("SAIR", _confirm_exit, true)
+		dica_do_teste = DICAS_DAS_PLACAS["TESTAR_INDISPONIVEL"]
+	PopoverMenu.ligar(teste, dica_do_teste, camada_do_menu)
+	PopoverMenu.ligar(_placa("MODELOS", _abrir_personagens), DICAS_DAS_PLACAS["MODELOS"], camada_do_menu)
+	PopoverMenu.ligar(_placa("SOBRE", _credits), DICAS_DAS_PLACAS["SOBRE"], camada_do_menu)
+	PopoverMenu.ligar(_placa("SAIR", _confirm_exit, true), DICAS_DAS_PLACAS["SAIR"], camada_do_menu)
 	estado_testador = _label("", 13)
 	estado_testador.hide()
 	if not history_entries.is_empty():

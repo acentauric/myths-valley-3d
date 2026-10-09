@@ -2,6 +2,18 @@
 
 ## Em desenvolvimento — 10/10/2026
 
+- **Os botões da esquerda do lobby explicam o que fazem num popover, e não num tooltip de meia tela.**
+  JOGAR, EXPLORAR, TESTAR, MODELOS, SOBRE e SAIR ganham uma caixa compacta (no máximo ~340 px, o texto
+  quebra em duas a quatro linhas) na identidade do menu (laca escura, filete de ouro, canto chanfrado, letra
+  de leitura) com uma seta apontando para o centro do botão, à direita da coluna. Ela aparece depois de
+  um pequeno atraso, com fade, com o mouse e com o foco do teclado ou do controle (o foco que o menu põe em
+  JOGAR sozinho, ou que o mouse puxa, não a deixa presa), vira para a esquerda se não couber e nunca cobre
+  os outros botões. Os textos curtos estão em pt, en, es e zh; o do TESTAR agora diz que F7 assume o controle
+  e F8 encerra. O HUD da direita mantém a dica de sempre e o texto da versão no rodapé fica sem tooltip.
+  O componente é `popover_menu.gd` (`PopoverMenu.ligar(botao, texto, camada)`), para qualquer menu usar,
+  e o portão novo `popover_do_menu` cobra o atraso, o lado, a seta, o teclado, a borda da tela, os quatro
+  idiomas e que nada cobre nada (#232).
+
 - **O jogo passa a ter o ícone do Myths' Valley, e não o do Godot.** O M dourado do logotipo, numa
   pastilha de laca escura com filete de ouro, vira o ícone da janela e da barra de tarefas
   (`icone.png`, 512 px) e do `.exe` (`icone.ico`, de 16 a 256 px), declarado no `project.godot`
