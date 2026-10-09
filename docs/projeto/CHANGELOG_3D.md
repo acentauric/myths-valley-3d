@@ -2,6 +2,17 @@
 
 ## Em desenvolvimento — 10/10/2026
 
+- **A noite ganha fases da lua: cheia clara, nova escura.** A fase sai do dia do calendário, num ciclo
+  de oito dias de jogo (o dia 1 é quarto crescente, o 3 é lua cheia, o 7 é lua nova), sem nada novo no
+  save. Na cheia a luz da lua passa de 0,26 para 0,33, azul-prateada, e faz sombra definida; na nova cai
+  para 0,06, o ambiente da noite baixa a pouco mais da metade, o disco some do céu e as estrelas
+  aparecem mais. O disco leva a fase (crescente acesa à esquerda, como no hemisfério sul). Lampião,
+  candeeiro e fogueira ganham 40% de energia na nova, e um brilho de lampião de 6,5 m anda com o
+  viajante nas noites sem lua, para a mata não virar breu. Em Ajustes → Cenário, "Noites escuras: Sim /
+  Suaves" encolhe a diferença para quem tem monitor escuro. O portão `fases_da_lua` mede a conta, o
+  ajuste e, no vale, a luz da lua, o ambiente, a sombra, o lampião e o viajante em oito fases das quatro
+  estações, e reprova com `--falsificar` (#229).
+
 - **O aviso do rodapé passa para o canto superior esquerdo.** A fala do Pedro, o que se recebeu e
   o que se entregou (`set_notice`) saem de cima da barra de mão e vão para a coluna da missão: uma
   caixa de até 360 px, a largura do quadro da tarefa, logo abaixo dele (e das informações da casa,

@@ -22,6 +22,7 @@ extends RefCounted
 ## o Mirante fica acima dela. Nada de partícula: tudo é shader e Environment.
 
 const SHADER := preload("res://assets/prototipo_3d/ceu/ceu_vale.gdshader")
+const FasesDaLua = preload("res://scripts/prototipo_3d/fases_da_lua.gd")
 
 ## Densidade da névoa exponencial (/u) por período.
 const DENSIDADE_DIA := 0.0011
@@ -104,7 +105,10 @@ func montar(pai: Node3D) -> void:
 	lua = DirectionalLight3D.new()
 	lua.name = "Lua"
 	lua.light_color = Color("9fb3d6")
+	# A sombra da lua só liga na lua cheia (#229, `aplicar`); o alcance é o mesmo do sol.
 	lua.shadow_enabled = false
+	lua.directional_shadow_max_distance = SOMBRA_AO_AR_LIVRE
+	lua.directional_shadow_mode = DirectionalLight3D.SHADOW_PARALLEL_2_SPLITS
 	pai.add_child(lua)
 	nos.assign([mundo, sol, lua])
 
@@ -113,6 +117,8 @@ func montar(pai: Node3D) -> void:
 func sombra_de_dentro(dentro: bool) -> void:
 	if sol != null:
 		sol.directional_shadow_max_distance = SOMBRA_DE_DENTRO if dentro else SOMBRA_AO_AR_LIVRE
+	if lua != null:
+		lua.directional_shadow_max_distance = SOMBRA_DE_DENTRO if dentro else SOMBRA_AO_AR_LIVRE
 
 
 ## Curvas de cor por hora: madrugada azul, alvorada rosada, meio-dia cobalto,
@@ -138,8 +144,15 @@ func aplicar(hora: float) -> void:
 	var horizontal := Vector3(-luz_solar.x, 0.0, -luz_solar.z).normalized()
 	var luz_lunar := horizontal * cos(deg_to_rad(52.0)) + Vector3(0.0, -sin(deg_to_rad(52.0)), 0.0)
 	lua.basis = Basis.looking_at(luz_lunar, Vector3.UP)
-	lua.light_energy = lerpf(0.26, 0.0, luz)
+	# A FASE DA LUA (#229) muda a luz da noite: a cheia é clara e azul-prateada, com sombra definida;
+	# a nova é escura, e quem brilha é o lampião. A fase vem do dia do calendário.
+	var suaves := FasesDaLua.suaves()
+	var fase := FasesDaLua.fase_do_dia(Relogio.dia_absoluto())
+	lua.light_energy = lerpf(0.26, 0.0, luz) * FasesDaLua.fator_da_lua(fase, suaves)
+	lua.light_color = FasesDaLua.cor_da_luz(fase)
 	lua.visible = luz < 0.98
+	lua.shadow_opacity = FasesDaLua.opacidade_da_sombra(fase, luz)
+	lua.shadow_enabled = lua.shadow_opacity > 0.01 and lua.visible
 
 	var noite := 1.0 - luz
 	var zenite := ZENITE_DIA.lerp(ZENITE_NOITE, noite).lerp(ZENITE_DOURADO, crepusculo * luz * 0.55)
@@ -151,6 +164,8 @@ func aplicar(hora: float) -> void:
 	var cor_sol := Color("fff4dc").lerp(Color("ffb066"), horizonte)
 	material.set_shader_parameter("sol_dir", para_o_sol)
 	material.set_shader_parameter("lua_dir", -luz_lunar)
+	material.set_shader_parameter("lua_fase", fase)
+	material.set_shader_parameter("lua_brilho", FasesDaLua.iluminacao(fase))
 	material.set_shader_parameter("luz", luz)
 	material.set_shader_parameter("horizonte", crepusculo)
 	material.set_shader_parameter("cor_zenite", zenite)
@@ -166,7 +181,7 @@ func aplicar(hora: float) -> void:
 	material.set_shader_parameter("esfera_celeste", esfera_celeste(hora, Dia.latitude))
 
 	ambiente.ambient_light_color = Color("cad9d5").lerp(Color("2b3454"), noite)
-	ambiente.ambient_light_energy = lerpf(0.3, 0.65, luz)
+	ambiente.ambient_light_energy = lerpf(0.3 * FasesDaLua.fator_do_ambiente(fase, suaves), 0.65, luz)
 	# Com a perspectiva aérea a cor vem do céu; esta só vale enquanto o reflexo não
 	# ficou pronto, e é a do horizonte, não mais o bege de antes.
 	ambiente.fog_light_color = horizonte_cor
