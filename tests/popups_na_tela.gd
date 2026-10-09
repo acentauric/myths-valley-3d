@@ -117,6 +117,10 @@ func _run() -> void:
 	await _quadros(4)
 	if falsificar:
 		placas.maximo = 99
+	# #218: com um balão no ar nenhuma placa fica na tela. As medidas do teto, da frente e do peso
+	# precisam das placas acesas e não esperam a fala solta do vale passar: o silêncio com balão liga
+	# só na seção 5, onde o morador fala, e tem o portão próprio em `placas_e_baloes`.
+	placas.cala_com_balao = false
 	_as_regras()
 
 	# A cena: o jogador na praça, o Pedro fora do caminho (ele segue o jogador e falaria).
@@ -482,6 +486,7 @@ func _ninguem_cobre_ninguem(aqui: Vector3) -> void:
 	jogador.call("_apply_camera")
 
 	# O MESMO MORADOR FALANDO: a placa dele some, o balão sobe acima da dica, e ninguém cobre o balão.
+	placas.cala_com_balao = not falsificar
 	dele.mostrar_balao(FALA_CURTA, 12.0)
 	var falou: bool = await relogio.ate(func() -> bool: return dele.balao.visible and dele.balao.retangulo().size != Vector2.ZERO, 3.0)
 	_conferir(falou, "%s não abriu o balão" % dele.name)
@@ -499,11 +504,12 @@ func _ninguem_cobre_ninguem(aqui: Vector3) -> void:
 			if outro.get_global_rect().intersects(do_balao):
 				sob_o_balao += 1
 	_conferir(sob_o_balao == 0, "%d placa(s) de nome sob o balão de quem fala" % sob_o_balao)
-	_conferir(ligadas <= placas.MAXIMO_DE_PLACAS - 1, "com um balão no ar há %d placas (no máximo %d)" % [ligadas, placas.MAXIMO_DE_PLACAS - 1])
+	_conferir(ligadas == 0 or falsificar, "com um balão no ar há %d placas de nome na tela; o balão tem prioridade e nenhuma fica (#218)" % ligadas)
 	var no_total := ligadas + 1 + (1 if teclas._dica.visible else 0)
 	_conferir(no_total <= 4 or falsificar, "%d popups de personagem ao mesmo tempo (%d placas, o balão e a dica): o teto é de quatro" % [no_total, ligadas])
 	print("  cobrir: a dica sobe acima da placa em câmera perto e longe; falando, a placa some, são %d popups de personagem" % no_total)
 	dele.mostrar_balao("", 0.0)
+	placas.cala_com_balao = false
 	await _esperar(0.6)
 	_fixar(dele, posto_de_dele)
 	_fixar(atras, onde_estava_atras)

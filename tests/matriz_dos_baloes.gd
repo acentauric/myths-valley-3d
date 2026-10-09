@@ -17,6 +17,10 @@ class Morador extends CharacterBody3D:
 		return fala
 	func conversar() -> void:
 		conversas += 1
+## Um balão de fala de mentira: só o que a matriz lê dele (o grupo e o retângulo).
+class Fala extends Control:
+	func retangulo() -> Rect2:
+		return get_global_rect() if visible else Rect2()
 class Hud extends RefCounted:
 	var camada: Control
 	func map_layer() -> Control:
@@ -147,6 +151,31 @@ func _run() -> void:
 		camera.size = 12
 		await esperar(0.8)
 		conferir(placas._placas[pessoa].visible, "câmera mudou: placa recupera visão no modo %d" % modo)
+	# #218: com um balão de fala no ar nenhuma plaquinha fica na tela, e elas voltam com o fade quando
+	# a fala acaba, sem piscar entre duas falas seguidas.
+	var vizinha_acesa: bool = placas._placas[vizinha].visible
+	conferir(placas._placas[pessoa].visible, "antes da fala, a plaquinha do Pedro está acesa")
+	var fala := Fala.new()
+	camada.add_child(fala)
+	fala.add_to_group(Popups.GRUPO_BALOES)
+	fala.position = Vector2(900, 40)
+	fala.size = Vector2(220, 60)
+	await esperar(0.5)
+	conferir(not placas._placas[pessoa].visible and not placas._placas[vizinha].visible, "com um balão no ar ainda há plaquinha de nome")
+	conferir(placas.em_silencio(), "as placas não sabem que estão em silêncio por causa do balão")
+	fala.hide()
+	var piscou := false
+	for _quadro in 12:
+		await process_frame
+		piscou = piscou or placas._placas[pessoa].visible or placas._placas[vizinha].visible
+	fala.show()
+	await esperar(0.5)
+	conferir(not piscou, "as plaquinhas piscaram no vão entre duas falas")
+	conferir(not placas._placas[pessoa].visible and not placas._placas[vizinha].visible, "a segunda fala não manteve as plaquinhas apagadas")
+	fala.hide()
+	await esperar(1.2)
+	conferir(placas._placas[pessoa].visible and placas._placas[vizinha].visible == vizinha_acesa, "as plaquinhas não voltaram quando a fala acabou")
+	fala.queue_free()
 	placas.queue_free()
 	teclas.queue_free()
 	mundo.queue_free()

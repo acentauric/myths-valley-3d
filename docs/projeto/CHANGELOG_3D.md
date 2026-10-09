@@ -19,6 +19,14 @@
   que o cartão cabe no teto e comporta as linhas, que a grade tem ao menos 6×5 e que a faixa vazia
   embaixo é menor que uma linha de cartões (#213).
 
+- **Com um balão de fala no ar, nenhuma plaquinha de nome fica na tela.** Antes só a placa de quem
+  falava saía, e a Dona Estefânia aparecia ao lado do balão da Dona Zefa no poço. Agora o balão
+  (conversa, fala solta, o Pedro conduzindo) tem prioridade: as plaquinhas apagam no fade de sempre,
+  inclusive a do alvo da missão e a do dono do E, e só voltam `SILENCIO_APOS_O_BALAO` (0,6 s) depois
+  do último balão, de modo que duas falas seguidas não as fazem piscar. Os portões `placas_e_baloes`
+  (com falsificação `--falsificar`), `matriz_dos_baloes` e `popups_na_tela` medem a ausência de placas
+  com a fala no ar, o vão entre duas falas e a volta (#218).
+
 ## Build #10 — 08/10/2026
 
 Fechada em 09/10/2026 com as correções das issues de 08/10, as vozes, o Mixamo e a main da equipe de 08/10.
