@@ -10,6 +10,8 @@ const TemaMenu = preload("res://scripts/prototipo_3d/tema_menu.gd")
 signal parar_pedido
 ## F7 em botão (#206): tirar o testador do volante ou devolver.
 signal manual_pedido
+## F6 (#234): minimizar ou maximizar o painel.
+signal minimizar_pedido
 
 const LARGURA := 340.0
 const MARGEM := 14.0
@@ -68,6 +70,13 @@ var _decisoes: VBoxContainer
 var _gasto: Label
 var _parar: Button
 var _manual: Button
+## F6 (#234): minimiza o painel numa faixa de uma linha e maximiza de novo.
+var _minimizar: Button
+var _corpo: VBoxContainer
+var _faixa: Label
+var _comandos_em_pe: VBoxContainer
+var _comandos_deitados: HBoxContainer
+var minimizado := false
 
 
 func montar(t: Callable) -> void:
@@ -76,11 +85,25 @@ func montar(t: Callable) -> void:
 	theme = TemaMenu.criar()
 	add_theme_stylebox_override("panel", _estilo_do_painel())
 	var caixa := VBoxContainer.new()
-	caixa.add_theme_constant_override("separation", 5)
+	caixa.add_theme_constant_override("separation", 6)
 	add_child(caixa)
+	# A FAIXA MINIMIZADA (F6, #234): "TESTANDO · Determinístico · 32 ações · 5,4%".
+	_faixa = Label.new()
+	_faixa.name = "Faixa"
+	_faixa.autowrap_mode = TextServer.AUTOWRAP_OFF
+	_faixa.uppercase = true
+	_faixa.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_TITULO, 600, 1))
+	_faixa.add_theme_font_size_override("font_size", 13)
+	_faixa.add_theme_color_override("font_color", Identidade.CREME)
+	_faixa.visible = false
+	caixa.add_child(_faixa)
+	_corpo = VBoxContainer.new()
+	_corpo.name = "Corpo"
+	_corpo.add_theme_constant_override("separation", 5)
+	caixa.add_child(_corpo)
 	var cabeca := HBoxContainer.new()
 	cabeca.add_theme_constant_override("separation", 8)
-	caixa.add_child(cabeca)
+	_corpo.add_child(cabeca)
 	_titulo = _rotulo(cabeca, 15, Identidade.CREME, Identidade.fonte(Identidade.FONTE_TITULO, 600, 3))
 	_titulo.uppercase = true
 	_titulo.autowrap_mode = TextServer.AUTOWRAP_OFF
@@ -91,50 +114,102 @@ func montar(t: Callable) -> void:
 	_nivel = _rotulo(_pilula, 11, Color.WHITE, Identidade.fonte(Identidade.FONTE_TITULO, 700, 1))
 	_nivel.autowrap_mode = TextServer.AUTOWRAP_OFF
 	_nivel.uppercase = true
-	_sub = _rotulo(caixa, 15, NOTA, Identidade.fonte(Identidade.FONTE_ITALICO, 500))
-	caixa.add_child(Identidade.divisor())
-	_acao = _rotulo(caixa, 19, Identidade.CREME, Identidade.fonte(Identidade.FONTE_TEXTO, 700))
+	_sub = _rotulo(_corpo, 15, NOTA, Identidade.fonte(Identidade.FONTE_ITALICO, 500))
+	_corpo.add_child(Identidade.divisor())
+	_acao = _rotulo(_corpo, 19, Identidade.CREME, Identidade.fonte(Identidade.FONTE_TEXTO, 700))
 	# O nome técnico da ação fica na dica: o Label ignora o mouse por padrão e não a mostraria.
 	_acao.mouse_filter = Control.MOUSE_FILTER_STOP
-	_motivo = _rotulo(caixa, 15, NOTA)
-	_objetivo = _rotulo(caixa, 16, Identidade.TEXTO)
+	_motivo = _rotulo(_corpo, 15, NOTA)
+	_objetivo = _rotulo(_corpo, 16, Identidade.TEXTO)
 	_barra = BarraMarcos.new()
-	caixa.add_child(_barra)
-	_capitulo = _rotulo(caixa, 15, Identidade.TEXTO)
-	_agora = _rotulo(caixa, 15, NOTA)
-	_ritmo = _rotulo(caixa, 15, NOTA)
-	_travado = _rotulo(caixa, 15, ALERTA)
+	_corpo.add_child(_barra)
+	_capitulo = _rotulo(_corpo, 15, Identidade.TEXTO)
+	_agora = _rotulo(_corpo, 15, NOTA)
+	_ritmo = _rotulo(_corpo, 15, NOTA)
+	_travado = _rotulo(_corpo, 15, ALERTA)
 	_decisoes = VBoxContainer.new()
 	_decisoes.add_theme_constant_override("separation", 0)
-	caixa.add_child(_decisoes)
+	_corpo.add_child(_decisoes)
+	_gasto = _rotulo(_corpo, 14, NOTA)
+	# OS COMANDOS NO MESMO PADRÃO (#234): plaqueta da tecla e rótulo curto, do mesmo tamanho.
+	# Maximizado ficam empilhados (F6, F7, F8); minimizado, lado a lado embaixo da faixa.
+	_comandos_em_pe = VBoxContainer.new()
+	_comandos_em_pe.add_theme_constant_override("separation", 4)
+	caixa.add_child(_comandos_em_pe)
+	_comandos_deitados = HBoxContainer.new()
+	_comandos_deitados.add_theme_constant_override("separation", 4)
+	_comandos_deitados.visible = false
+	caixa.add_child(_comandos_deitados)
+	_minimizar = _comando("Minimizar", "F6", &"", func() -> void: minimizar_pedido.emit())
 	# Assumir o controle (F7) ou devolver ao testador: o texto vem de `mostrar` (`manual_botao`).
-	_manual = Button.new()
-	_manual.name = "Manual"
-	_manual.focus_mode = Control.FOCUS_NONE
-	_manual.add_theme_font_size_override("font_size", 12)
-	_manual.add_theme_constant_override("outline_size", 0)
-	_manual.mouse_entered.connect(_som_de_passar_o_mouse)
-	_manual.pressed.connect(func() -> void: manual_pedido.emit())
-	caixa.add_child(_manual)
-	var rodape := HBoxContainer.new()
-	rodape.add_theme_constant_override("separation", 8)
-	caixa.add_child(rodape)
-	_gasto = _rotulo(rodape, 14, NOTA)
-	_gasto.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_gasto.custom_minimum_size.x = 150.0
-	rodape.add_child(_plaqueta_da_tecla("F8"))
-	# O Parar é um botão do jogo, só que pequeno: a tecla vem na plaqueta ao lado, como nos atalhos.
-	_parar = Button.new()
-	_parar.focus_mode = Control.FOCUS_NONE
-	_parar.theme_type_variation = &"BotaoNegativo"
-	_parar.add_theme_font_size_override("font_size", 12)
-	_parar.add_theme_constant_override("outline_size", 0)
-	_parar.mouse_entered.connect(_som_de_passar_o_mouse)
-	_parar.pressed.connect(func() -> void: parar_pedido.emit())
-	rodape.add_child(_parar)
+	_manual = _comando("Manual", "F7", &"", func() -> void: manual_pedido.emit())
+	# Parar continua em vermelho: é a ação destrutiva.
+	_parar = _comando("Parar", "F8", &"BotaoNegativo", func() -> void: parar_pedido.emit())
+	for botao in [_minimizar, _manual, _parar]:
+		_comandos_em_pe.add_child(botao)
 	# Largura fixa, altura do conteúdo; a posição é escolhida por `posicionar`.
 	set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT)
 	custom_minimum_size = Vector2(LARGURA, 0.0)
+
+
+## Um comando do rodapé: botão do jogo, pequeno, com a plaqueta da tecla e o rótulo dentro.
+## O `text` do botão fica vazio; o rótulo é o Label "Rotulo" (o portão o lê por `rotulo_de`).
+func _comando(nome: String, tecla: String, variacao: StringName, acao: Callable) -> Button:
+	var botao := Button.new()
+	botao.name = nome
+	botao.focus_mode = Control.FOCUS_NONE
+	botao.custom_minimum_size = Vector2(0.0, 30.0)
+	botao.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	if variacao != &"":
+		botao.theme_type_variation = variacao
+	botao.clip_contents = true
+	botao.mouse_entered.connect(_som_de_passar_o_mouse)
+	botao.pressed.connect(acao)
+	var linha := HBoxContainer.new()
+	linha.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	linha.add_theme_constant_override("separation", 7)
+	botao.add_child(linha)
+	linha.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	linha.offset_left = 6.0
+	linha.offset_right = -6.0
+	var plaqueta := _plaqueta_da_tecla(tecla)
+	plaqueta.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	linha.add_child(plaqueta)
+	var rotulo := Label.new()
+	rotulo.name = "Rotulo"
+	rotulo.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	rotulo.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	rotulo.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	rotulo.clip_text = true
+	rotulo.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	rotulo.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_TITULO, 600))
+	rotulo.add_theme_font_size_override("font_size", 12)
+	rotulo.add_theme_color_override("font_color", Identidade.CREME)
+	linha.add_child(rotulo)
+	return botao
+
+
+static func rotulo_de(botao: Button) -> String:
+	var r := botao.find_child("Rotulo", true, false) as Label
+	return r.text if r != null else botao.text
+
+
+func _rotular(botao: Button, texto: String) -> void:
+	(botao.find_child("Rotulo", true, false) as Label).text = texto
+	botao.tooltip_text = texto
+
+
+## Troca entre o painel completo e a faixa de uma linha, levando os comandos junto.
+func _arrumar_modo() -> void:
+	_faixa.visible = minimizado
+	_corpo.visible = not minimizado
+	var destino: BoxContainer = _comandos_deitados if minimizado else _comandos_em_pe
+	_comandos_deitados.visible = minimizado
+	_comandos_em_pe.visible = not minimizado
+	for botao in [_minimizar, _manual, _parar]:
+		if botao.get_parent() != destino:
+			botao.get_parent().remove_child(botao)
+			destino.add_child(botao)
 
 
 ## A laca verde-escura com o filete dourado suave e o canto chanfrado, como as plaquinhas do HUD.
@@ -263,9 +338,14 @@ func mostrar(d: Dictionary) -> void:
 		_travado.text = str(_t.call("travado")) % ", ".join(palavras)
 	_listar(d.get("decisoes", []))
 	_gasto.text = str(d.get("gasto", ""))
-	_parar.text = str(_t.call("parar_curto"))
-	_manual.text = str(d.get("manual_botao", ""))
-	_manual.visible = _manual.text != ""
+	_gasto.visible = _gasto.text != ""
+	minimizado = bool(d.get("minimizado", false))
+	_faixa.text = str(d.get("faixa", ""))
+	_arrumar_modo()
+	_rotular(_minimizar, str(d.get("minimizar_botao", _t.call("cmd_maximizar" if minimizado else "cmd_minimizar"))))
+	_rotular(_parar, str(_t.call("parar_curto")))
+	_rotular(_manual, str(d.get("manual_botao", "")))
+	_manual.visible = str(d.get("manual_botao", "")) != ""
 	# Um Control solto cresce com o conteúdo mas não encolhe sozinho: sem isto a altura mais alta
 	# que o painel já teve ficaria como faixa vazia embaixo quando motivo, trava ou progresso somem.
 	reset_size()
@@ -296,21 +376,30 @@ static func duracao(segundos: int) -> String:
 	return "%d min %02d s" % [floori(segundos / 60.0), segundos % 60] if segundos >= 60 else "%d s" % segundos
 
 
-## Os cantos onde o painel pode ficar, do preferido ao último recurso: canto de baixo, acima
-## da barra de mão, meio da direita, alto da direita e alto da esquerda.
-static func candidatos(janela: Vector2, tamanho: Vector2) -> Array:
+## Os lugares onde o painel pode ficar, do preferido ao último recurso (#234). Com a coluna de
+## atalhos da direita conhecida (`coluna`), o preferido é À ESQUERDA DELA, no alto, entre as
+## barras do topo e a coluna, e depois mais abaixo, ainda colado à coluna. Os de sempre seguem:
+## canto de baixo, acima da barra de mão, meio da direita, alto da direita e alto da esquerda.
+static func candidatos(janela: Vector2, tamanho: Vector2, coluna := Rect2()) -> Array:
+	var lista: Array = []
+	if coluna.has_area():
+		var x := coluna.position.x - FOLGA * 2.0 - tamanho.x
+		lista.append(Rect2(Vector2(x, coluna.position.y), tamanho))
+		lista.append(Rect2(Vector2(x, maxf(coluna.position.y, (janela.y - tamanho.y) * 0.5)), tamanho))
+		lista.append(Rect2(Vector2(x, maxf(coluna.position.y, coluna.end.y - tamanho.y)), tamanho))
 	var direita := janela.x - MARGEM - tamanho.x
-	return [Rect2(Vector2(direita, janela.y - MARGEM - tamanho.y), tamanho),
+	lista.append_array([Rect2(Vector2(direita, janela.y - MARGEM - tamanho.y), tamanho),
 		Rect2(Vector2(direita, janela.y - MARGEM_DE_BAIXO - tamanho.y), tamanho),
 		Rect2(Vector2(direita, (janela.y - tamanho.y) * 0.5), tamanho),
 		Rect2(Vector2(direita, TOPO), tamanho),
-		Rect2(Vector2(MARGEM, TOPO), tamanho)]
+		Rect2(Vector2(MARGEM, TOPO), tamanho)])
+	return lista
 
 
-## O primeiro canto que não encosta em nenhum obstáculo (o `atual` ganha a preferência
+## O primeiro lugar que não encosta em nenhum obstáculo (o `atual` ganha a preferência
 ## enquanto continuar livre, para o painel não pular). Se todos encostam, o que cobre menos.
-static func escolher(janela: Vector2, tamanho: Vector2, obstaculos: Array, atual := -1) -> int:
-	var lista := candidatos(janela, tamanho)
+static func escolher(janela: Vector2, tamanho: Vector2, obstaculos: Array, atual := -1, coluna := Rect2()) -> int:
+	var lista := candidatos(janela, tamanho, coluna)
 	var cobertura: Array = []
 	for rect: Rect2 in lista:
 		var coberto := 0.0
@@ -330,15 +419,24 @@ static func escolher(janela: Vector2, tamanho: Vector2, obstaculos: Array, atual
 
 
 var _canto := -1
+var _modo_do_canto := false
 
 
-## Põe o painel no canto livre. `obstaculos` são os retângulos do HUD em coordenadas da tela.
-func posicionar(obstaculos: Array) -> void:
+## Põe o painel no lugar livre. `obstaculos` são os retângulos do HUD em coordenadas da tela;
+## `coluna`, o retângulo da coluna de atalhos da direita (também é obstáculo).
+func posicionar(obstaculos: Array, coluna := Rect2()) -> void:
 	var janela := get_viewport_rect().size
 	reset_size()
 	var tamanho := get_combined_minimum_size()
-	_canto = escolher(janela, tamanho, obstaculos, _canto)
-	position = candidatos(janela, tamanho)[_canto].position
+	# Trocar entre minimizado e maximizado escolhe de novo, do preferido.
+	if _modo_do_canto != minimizado:
+		_modo_do_canto = minimizado
+		_canto = -1
+	var todos := obstaculos.duplicate()
+	if coluna.has_area():
+		todos.append(coluna)
+	_canto = escolher(janela, tamanho, todos, _canto, coluna)
+	position = candidatos(janela, tamanho, coluna)[_canto].position
 
 
 ## O som de passar o mouse. No --script o autoload `Audio` ainda não é nome global quando este

@@ -4,6 +4,7 @@ extends SceneTree
 
 const PainelSessao = preload("res://tools/jev/painel_sessao.gd")
 const AcaoEmPalavras = preload("res://tools/jev/acao_em_palavras.gd")
+const ModalBloqueio = preload("res://tools/jev/modal_bloqueio.gd")
 ## Pedido de 07/10: no teste a câmera abre um pouco mais afastada (o `mv_zoom_out`), para quem
 ## assiste ver o personagem, os moradores e o caminho. Cinco passos de 0,35 m sobre os 8 m
 ## de fábrica. Só vale na sessão do testador: a preferência do jogador não muda.
@@ -75,6 +76,19 @@ const TECLAS_DO_TESTADOR := [KEY_W, KEY_A, KEY_S, KEY_D, KEY_E, KEY_F, KEY_V, KE
 const AuditoriaDeGeometria = preload("res://scripts/prototipo_3d/auditoria_de_geometria.gd")
 var cascas_auditadas: Dictionary = {}
 var dentro_de_geometria_visto: Dictionary = {}
+## O BLOQUEIO (#183): a ponte manda `blocked` quando a escada não destrava; o modal pergunta e
+## a escolha vai no estado do pedido seguinte (`blocked_choice`).
+var modal_bloqueio: ModalBloqueio
+var escolha_do_bloqueio := ""
+## F6 (#234): o painel minimizado numa faixa; a escolha vale a sessão inteira.
+var minimizado := false
+var botao_f6: Button
+## O idioma pedido pelo menu (#180), ou -1: conferido a cada volta e reaplicado se escapar.
+var idioma_pedido := -1
+## O arquivo de pronto do menu (#175) só nasce com o vale carregado.
+var pronto_avisado := false
+## As copas na frente do viajante (#201): esmaecidas só na sessão de teste.
+var copas_do_teste: Node
 
 
 func _ponto_de_material(item: String) -> Vector3:
@@ -123,7 +137,8 @@ func _run() -> void:
 		return
 	textos = JSON.parse_string(FileAccess.get_file_as_string("res://tools/jev/textos.json"))
 	idioma = load("res://scripts/prototipo_3d/idioma_menu.gd")
-	indice_do_idioma = maxi(_aplicar_idioma_da_sessao(OS.get_environment("MV_JEV_IDIOMA")), 0)
+	idioma_pedido = _aplicar_idioma_da_sessao(OS.get_environment("MV_JEV_IDIOMA"))
+	indice_do_idioma = maxi(idioma_pedido, 0)
 	_montar_painel()
 	root.window_input.connect(_ao_entrar_evento)
 	change_scene_to_file("res://scenes/prototipo_3d/inicio.tscn")
@@ -139,6 +154,7 @@ func _run() -> void:
 		if manual:
 			await _aguardar_manual()
 			continue
+		_garantir_idioma()
 		var cena := current_scene
 		if cena == null:
 			await _esperar(0.5)
@@ -159,10 +175,15 @@ func _run() -> void:
 			camera_do_teste.jogador = cena.get("player")
 			camera_do_teste.encoberto_demais.connect(_ao_ficar_encoberto)
 			root.add_child(camera_do_teste)
+			copas_do_teste = load("res://tools/jev/copas_do_teste.gd").new()
+			copas_do_teste.jogador = cena.get("player")
+			root.add_child(copas_do_teste)
 			if not OS.get_environment("MV_JEV_CENARIO").is_empty():
 				await _aplicar_cenario(OS.get_environment("MV_JEV_CENARIO"))
 			await _post("/ready", {})
 			_capturar()
+		if vale:
+			_avisar_o_menu_que_o_vale_abriu()
 		_vigiar_o_relogio()
 		_afastar_camera()
 		var estado := _estado()
@@ -170,15 +191,30 @@ func _run() -> void:
 		if opcoes.is_empty():
 			await _esperar(0.5)
 			continue
+		var escolha_enviada := escolha_do_bloqueio
+		if escolha_enviada != "":
+			estado["blocked_choice"] = escolha_enviada
+			escolha_do_bloqueio = ""
 		aguardando = true
 		estado_recente = estado
 		var resposta: Dictionary = await _post("/decision", {"state": estado, "actions": opcoes})
 		if parar:
 			break
+		if escolha_enviada == "stop":
+			# Encerrar no modal do bloqueio: como o F8, com o bloqueio no relatório.
+			ultima_acao = "blocked_step"
+			parar = true
+			break
 		if not str(resposta.get("stop", "")).is_empty():
 			ultima_acao = str(resposta.stop)
 			parar = true
 			break
+		var bloqueio = resposta.get("blocked")
+		if bloqueio is Dictionary and not (bloqueio as Dictionary).is_empty():
+			chamadas = int(resposta.get("calls", chamadas))
+			custo = float(resposta.get("estimated_usd", custo))
+			await _tratar_bloqueio(bloqueio)
+			continue
 		if not resposta.has("choice"):
 			ultima_acao = "bridge_error"
 			parar = true
@@ -390,6 +426,23 @@ func _montar_painel() -> void:
 		parar = true)
 	botao_manual = painel._manual
 	painel.manual_pedido.connect(_alternar_manual)
+	painel.minimizar_pedido.connect(_alternar_minimizado)
+	# O botão próprio do F6, à direita do FPS (o primeiro da coluna de atalhos).
+	botao_f6 = Button.new()
+	botao_f6.name = "MinimizarF6"
+	botao_f6.text = "F6"
+	botao_f6.focus_mode = Control.FOCUS_NONE
+	botao_f6.theme = painel.theme
+	botao_f6.add_theme_font_size_override("font_size", 10)
+	botao_f6.custom_minimum_size = Vector2(28.0, 24.0)
+	botao_f6.visible = false
+	botao_f6.pressed.connect(_alternar_minimizado)
+	botao_f6.add_to_group("obstaculos_do_hud")
+	camada.add_child(botao_f6)
+	# O modal do bloqueio (#183), escondido até a ponte mandar `blocked`.
+	modal_bloqueio = ModalBloqueio.new()
+	camada.add_child(modal_bloqueio)
+	modal_bloqueio.montar(_texto)
 	# A faixa de cima só existe com o humano no controle, e fica à vista mesmo com telas abertas.
 	faixa_manual = PanelContainer.new()
 	faixa_manual.visible = false
@@ -418,6 +471,9 @@ func _registrar_decisao(resposta: Dictionary, estado: Dictionary) -> void:
 	aguardando = false
 	var nivel := str(resposta.get("level", ""))
 	var palavras := AcaoEmPalavras.descrever(ultima_acao, estado, _texto, rotulos_botoes)
+	if ultima_acao == "follow_route":
+		var nome_do_alvo := str((estado.get("route", {}) as Dictionary).get("target_name", ""))
+		palavras = _texto("a_follow_route") % (nome_do_alvo if nome_do_alvo != "" else _texto("alvo_da_rota"))
 	decisao_atual = {"nivel": nivel, "modo": str(resposta.get("mode", "normal")), "plano": resposta.get("plan"),
 		"motivo": str(resposta.get("rationale", "")), "sinais": resposta.get("signals", []),
 		"escalonamentos": int(resposta.get("escalations", 0)), "progresso": resposta.get("progress", {}),
@@ -448,9 +504,16 @@ func _atualizar_painel() -> void:
 	elif not robo:
 		gasto = ""
 	var espera := aguardando or d.is_empty()
+	var nivel_atual := str(d.get("nivel", "")) if robo else ""
+	var faixa: Array = [_texto("testando")]
+	if nivel_atual != "":
+		faixa.append(_texto("nivel_" + nivel_atual))
+	faixa.append(_texto("n_acoes") % chamadas)
+	if int(progresso.get("total", 0)) > 0:
+		faixa.append(PainelSessao.TestadorApoios.numero(float(progresso.get("percentual", 0.0)), 1) + "%")
 	painel_observador.mostrar({
 		"titulo": titulo,
-		"nivel": str(d.get("nivel", "")) if robo else "",
+		"nivel": nivel_atual,
 		"modo": d.get("modo", "normal"), "plano": d.get("plano"),
 		"sub": _texto("subtitulo") % [chamadas, PainelSessao.duracao(_segundos())] if robo else _texto("estado") % [titulo, chamadas, custo, orcamento],
 		"acao": _texto("manual_acao") if manual else (_texto("aguardando_robot" if robo else "aguardando") if espera else str(d.get("acao_texto", ""))),
@@ -459,17 +522,76 @@ func _atualizar_painel() -> void:
 		"objetivo": _objetivo_atual(), "progresso": progresso, "ritmo": progresso.get("pace", {}),
 		"sinais": d.get("sinais", []), "bloqueado": ultima_acao == "blocked_step",
 		"decisoes": decisoes_recentes, "gasto": gasto,
-		"manual_botao": _texto("devolver" if manual else "assumir")})
+		"minimizado": minimizado, "faixa": " · ".join(faixa),
+		"minimizar_botao": _texto("cmd_maximizar" if minimizado else "cmd_minimizar"),
+		# Maximizado, o rótulo inteiro; na faixa, o curto, para os três caberem lado a lado.
+		"manual_botao": _texto(("cmd_devolver" if manual else "cmd_assumir") + ("_curto" if minimizado else ""))})
 	if faixa_manual != null:
 		faixa_manual.visible = manual
 		faixa_manual.get_node("Aviso").text = _texto("manual_faixa")
-	# Telas grandes e diálogos precisam de toda a área; F8 permanece ativo.
+	# Telas grandes, diálogos e cutscenes precisam de toda a área; F8 permanece ativo.
 	if _no_vale() and bool(current_scene.get("carga_ok")):
-		painel_observador.visible = current_scene.get("telas").aberta().is_empty() and not root.get_node("Dialogo").ativo
-	# Sem cobrir a barra de mão, o minimapa nem o resto do HUD: a cada meio segundo, no canto livre.
+		painel_observador.visible = current_scene.get("telas").aberta().is_empty() and not root.get_node("Dialogo").ativo \
+			and not _em_cutscene()
+	_posicionar_botao_f6()
+	# Sem cobrir a barra de mão, o minimapa, a coluna de atalhos nem o resto do HUD: a cada meio
+	# segundo, no lugar livre (o preferido é à esquerda da coluna, #234).
 	if Time.get_ticks_msec() >= reposicionar_em:
 		reposicionar_em = Time.get_ticks_msec() + 500
-		painel_observador.posicionar(_obstaculos_do_hud())
+		painel_observador.posicionar(_obstaculos_do_hud(), _coluna_de_atalhos())
+
+
+## F6: o painel vira a faixa de uma linha, ou volta inteiro.
+func _alternar_minimizado() -> void:
+	minimizado = not minimizado
+	reposicionar_em = 0
+	_atualizar_painel()
+
+
+## A coluna de atalhos da direita (os `botoes_canto` do HUD), em coordenadas da tela, já com o
+## botão do F6 ao lado do FPS. Vazio fora do vale.
+func _coluna_de_atalhos() -> Rect2:
+	var coluna := Rect2()
+	if not _no_vale():
+		return coluna
+	for no in get_nodes_in_group("botoes_canto"):
+		if not (no is Control) or not (no as Control).is_visible_in_tree():
+			continue
+		var rect := (no as Control).get_global_rect()
+		coluna = rect if not coluna.has_area() else coluna.merge(rect)
+	if coluna.has_area() and botao_f6 != null and botao_f6.visible:
+		coluna = coluna.merge(botao_f6.get_global_rect())
+	return coluna
+
+
+## O botão do F6 mora à direita do botão de FPS, centrado nele; some com o painel.
+func _posicionar_botao_f6() -> void:
+	if botao_f6 == null:
+		return
+	var hud = current_scene.get("hud") if _no_vale() else null
+	var fps = hud.get("_performance_button") if hud != null else null
+	if not (fps is Control) or not is_instance_valid(fps) or not (fps as Control).is_visible_in_tree():
+		botao_f6.visible = false
+		return
+	botao_f6.visible = painel_observador.visible
+	var rect := (fps as Control).get_global_rect()
+	var tamanho := botao_f6.get_combined_minimum_size()
+	var janela := painel_observador.get_viewport_rect().size
+	var x := minf(rect.end.x + 4.0, janela.x - tamanho.x - 2.0)
+	botao_f6.position = Vector2(x, rect.position.y + (rect.size.y - tamanho.y) * 0.5).floor()
+	botao_f6.size = tamanho
+	botao_f6.tooltip_text = _texto("cmd_maximizar" if minimizado else "cmd_minimizar")
+
+
+## Uma cutscene (as cenas dos dados ou as do revoar) está tocando? O painel e o modal saem.
+func _em_cutscene() -> bool:
+	if not _no_vale():
+		return false
+	for campo in ["cenas", "revoar"]:
+		var sistema = current_scene.get(campo)
+		if sistema is Object and is_instance_valid(sistema) and sistema.has_method("em_cena") and bool(sistema.em_cena()):
+			return true
+	return false
 
 
 ## Os retângulos do HUD que o painel não pode cobrir (o grupo `obstaculos_do_hud`).
@@ -516,7 +638,15 @@ func _cede() -> bool:
 ## F7, vindo da janela: vale na hora, mesmo no meio de uma decisão ou de um trajeto.
 func _ao_entrar_evento(evento: InputEvent) -> void:
 	var tecla := evento as InputEventKey
-	if tecla != null and tecla.pressed and not tecla.echo and (tecla.keycode == KEY_F7 or tecla.physical_keycode == KEY_F7):
+	if tecla == null or not tecla.pressed or tecla.echo:
+		return
+	if tecla.keycode == KEY_F6 or tecla.physical_keycode == KEY_F6:
+		_alternar_minimizado()
+	elif tecla.keycode == KEY_F7 or tecla.physical_keycode == KEY_F7:
+		# Com o modal do bloqueio aberto, o F7 é a resposta "assumir o controle".
+		if modal_bloqueio != null and modal_bloqueio.aberto():
+			modal_bloqueio.escolher("takeover")
+			return
 		_alternar_manual()
 
 
@@ -677,6 +807,9 @@ func _estado() -> Dictionary:
 	estado["clock"] = {"day": relogio.dia, "season": relogio.estacao, "year": relogio.ano, "time": relogio.texto(), "paused": relogio.pausado,
 		"player_paused": bool(dia.pausado), "speed": int(dia.velocidade), "held_by": dia.motivos_da_segurada()}
 	estado["interior"] = current_scene.get("interiores").dentro()
+	estado["route"] = _rota()
+	estado["language"] = {"requested": str(idioma.LOCALES[idioma_pedido]) if idioma_pedido >= 0 else "",
+		"applied": TranslationServer.get_locale()}
 	estado["world_map"] = _json_seguro(current_scene.get("world").ancoras)
 	estado["map_orientation_keys"] = "Keys ending Frente/Direcao/Lado are orientations, not travel destinations. Other entries are world positions."
 	estado["crafting"] = {}
@@ -891,6 +1024,10 @@ func _acoes(estado: Dictionary) -> Dictionary:
 	if ponto is Vector3 and ponto.is_finite() and ponto != Vector3.ZERO:
 		catalogo["objective"] = ponto
 		opcoes["objective"] = "Walk toward current mission marker for up to 15 seconds"
+		var rota: Dictionary = estado.get("route", {})
+		if bool(rota.get("reachable", false)) and rota.get("next") != null:
+			catalogo["follow_route"] = ponto
+			opcoes["follow_route"] = "Follow the navigation-mesh route (state.route) to the current objective target, turning to face each waypoint and walking forward (no strafe), re-pathing every 0.5 s, for up to 15 seconds; %.1f units of path left" % float(rota.get("length", 0.0))
 	for item in estado.get("resource_targets", {}):
 		var posicao: Array = estado.resource_targets[item]
 		catalogo["gather_" + str(item)] = Vector3(posicao[0], posicao[1], posicao[2])
@@ -1074,6 +1211,8 @@ func _executar(escolha: String) -> String:
 	if not catalogo.has(escolha) or not _no_vale():
 		return "action_unavailable"
 	visitas[escolha] = int(visitas.get(escolha, 0)) + 1
+	if escolha == "follow_route":
+		return await _seguir_rota()
 	return await _caminhar(catalogo[escolha], escolha == "follow_pedro")
 
 
@@ -1539,3 +1678,207 @@ func _marcar_alvos_fora_do_comodo(estado: Dictionary, opcoes: Dictionary) -> voi
 			fora.append(str(id))
 	estado["room"] = {"name": dentro, "inside_threshold": _vetor(sala.soleira_de_dentro()),
 		"outside_threshold": _vetor(sala.soleira_de_fora()), "outside_targets": fora}
+
+
+# --- a rota pela malha (#240) ----------------------------------------------------
+
+## O alvo do objetivo de agora (o mesmo do `objective`), ou INF.
+func _alvo_do_objetivo() -> Vector3:
+	var ponto = root.get_node("CadernoDoVale").atual().get("alvo", Vector3.INF)
+	if ponto is Vector3 and (ponto as Vector3).is_finite() and ponto != Vector3.ZERO:
+		return ponto
+	return Vector3.INF
+
+
+## O caminho pela malha de navegação do vale (a dos moradores: `navegacao_vale.gd`, que usa
+## `NavigationServer3D.map_get_path`); sem ela pronta, a grade do clique do jogador.
+func _caminho_da_rota(de: Vector3, para: Vector3) -> PackedVector3Array:
+	var navegacao = current_scene.get("navegacao")
+	var pontos := PackedVector3Array()
+	if navegacao != null and is_instance_valid(navegacao) and navegacao.esta_pronta():
+		pontos = navegacao.caminho(de, para)
+	if pontos.size() < 2 and jogada != null:
+		pontos = jogada.caminho_ate(para, de)
+	return pontos
+
+
+static func _no_plano(a: Vector3, b: Vector3) -> float:
+	return Vector2(a.x - b.x, a.z - b.z).length()
+
+
+## A rota do viajante ao alvo do objetivo, para a ponte: os pontos, o próximo, se chega e o tamanho.
+func _rota() -> Dictionary:
+	var objetivo: Dictionary = root.get_node("CadernoDoVale").atual()
+	var rota := {"target": null, "target_name": str(objetivo.get("titulo", "")), "points": [], "next": null,
+		"reachable": false, "length": 0.0}
+	var alvo := _alvo_do_objetivo()
+	if not alvo.is_finite():
+		return rota
+	rota["target"] = _vetor(alvo)
+	var jogador: Node3D = current_scene.get("player")
+	var de := jogador.global_position
+	var pontos := _caminho_da_rota(de, alvo)
+	if pontos.is_empty():
+		return rota
+	var lista: Array = []
+	var comprimento := 0.0
+	var anterior := de
+	var proximo = null
+	for p in pontos:
+		comprimento += _no_plano(anterior, p)
+		anterior = p
+		if proximo == null and _no_plano(p, de) >= 0.7:
+			proximo = _vetor(p)
+		if lista.size() < 48:
+			lista.append(_vetor(p))
+	rota["points"] = lista
+	rota["next"] = proximo if proximo != null else _vetor(pontos[pontos.size() - 1])
+	rota["length"] = snappedf(comprimento, 0.1)
+	rota["reachable"] = _no_plano(pontos[pontos.size() - 1], alvo) <= 2.5
+	return rota
+
+
+## SEGUIR A ROTA: de ponto em ponto da malha, virando o corpo para cada um e andando para a
+## frente (W, sem passo lateral, #209), recalculando a cada meio segundo, por até 15 s.
+func _seguir_rota() -> String:
+	var jogador: Node3D = current_scene.get("player")
+	jogador._cancel_walk()
+	if bool(jogador.get("_run_toggled")):
+		await _tecla(KEY_SHIFT)
+	var comeco := Time.get_ticks_msec()
+	var ver_pos: Vector3 = jogador.global_position
+	var ver_tempo := comeco
+	var recalcular := 0
+	var pontos := PackedVector3Array()
+	var alvo := _alvo_do_objetivo()
+	while not _cede() and Time.get_ticks_msec() - comeco < 15000:
+		if Input.is_physical_key_pressed(KEY_F8):
+			ultima_acao = "user_stop"
+			parar = true
+			break
+		_atualizar_painel()
+		_vigiar_o_relogio()
+		_amostrar_movimento()
+		if _segundos() - ultima_captura >= 30:
+			_capturar()
+		if duracao > 0 and inicio_jogo >= 0 and _segundos() >= duracao:
+			_pressionar(KEY_W, false)
+			return "session_end"
+		if root.get_node("Dialogo").ativo or paused:
+			_pressionar(KEY_W, false)
+			return "interrupted_by_dialogue_or_screen"
+		if Time.get_ticks_msec() >= recalcular:
+			recalcular = Time.get_ticks_msec() + 500
+			alvo = _alvo_do_objetivo()
+			if not alvo.is_finite():
+				_pressionar(KEY_W, false)
+				return "no_route_target"
+			pontos = _caminho_da_rota(jogador.global_position, alvo)
+			if pontos.is_empty():
+				_pressionar(KEY_W, false)
+				return "no_navigation_path_target_unreachable"
+		if _no_plano(jogador.global_position, alvo) < 1.2:
+			_pressionar(KEY_W, false)
+			jogada.virar_para(alvo)
+			return "arrived_at_route_target"
+		while pontos.size() > 1 and _no_plano(pontos[0], jogador.global_position) < 0.7:
+			pontos.remove_at(0)
+		jogada.virar_para(pontos[0] if not pontos.is_empty() else alvo)
+		_pressionar(KEY_W, true)
+		if Time.get_ticks_msec() - ver_tempo > 2000:
+			if jogador.global_position.distance_to(ver_pos) < 0.3:
+				achados.append({"type": "possible_stuck", "position": _vetor(jogador.global_position), "action": "follow_route"})
+				if achados.size() > 6:
+					achados.pop_front()
+				_pressionar(KEY_W, false)
+				return "possible_stuck_requires_review"
+			ver_pos = jogador.global_position
+			ver_tempo = Time.get_ticks_msec()
+		await physics_frame
+	_pressionar(KEY_W, false)
+	await physics_frame
+	return "walking_chunk_complete"
+
+
+# --- o bloqueio (#183) -------------------------------------------------------------
+
+## A ponte desistiu do passo: o testador para de agir e pergunta a quem assiste. Fora de
+## cutscene; com uma tocando, o modal espera (e a contagem também). A escolha segue no estado
+## do próximo pedido; "takeover" entra no controle manual do F7.
+func _tratar_bloqueio(bloqueio: Dictionary) -> void:
+	ultima_acao = "blocked_step"
+	for tecla in TECLAS_DO_TESTADOR:
+		_pressionar(tecla, false)
+	if _no_vale() and current_scene.get("player") != null:
+		current_scene.get("player")._cancel_walk()
+	print("JEV: bloqueio em %s (%s); perguntando" % [str(bloqueio.get("step", "")), str(bloqueio.get("reason", ""))])
+	var escolha := [""]
+	var ouvir := func(valor: String) -> void: escolha[0] = valor
+	modal_bloqueio.escolhido.connect(ouvir)
+	var aberto := false
+	var anterior := Time.get_ticks_msec()
+	while escolha[0] == "" and not parar:
+		var agora := Time.get_ticks_msec()
+		var delta := (agora - anterior) / 1000.0
+		anterior = agora
+		if Input.is_physical_key_pressed(KEY_F8):
+			if aberto:
+				modal_bloqueio.escolher("stop")
+			else:
+				escolha[0] = "stop"
+			break
+		if _em_cutscene():
+			modal_bloqueio.esconder_por_um_instante(true)
+		elif not aberto:
+			modal_bloqueio.abrir(bloqueio)
+			aberto = true
+		else:
+			modal_bloqueio.esconder_por_um_instante(false)
+			modal_bloqueio.avancar(delta)
+		_atualizar_painel()
+		_vigiar_o_relogio()
+		await process_frame
+	if modal_bloqueio.aberto():
+		modal_bloqueio.escolher("stop")
+	modal_bloqueio.escolhido.disconnect(ouvir)
+	var final: String = escolha[0] if escolha[0] != "" else "stop"
+	escolha_do_bloqueio = final
+	print("JEV: bloqueio respondido: ", final)
+	if final == "takeover" and not manual:
+		_abrir_manual()
+	_atualizar_painel()
+
+
+# --- o menu e o idioma (#175, #180) -----------------------------------------------
+
+## O menu que lançou a sessão só se fecha quando o vale abriu de verdade: o arquivo de pronto
+## (caminho em MV_JEV_PRONTO_VALE, posto pelo `abertura.gd`) nasce com a carga feita e a tela de
+## carregamento fora, e não quando a janela da sessão aparece.
+func _avisar_o_menu_que_o_vale_abriu() -> void:
+	if pronto_avisado or not bool(current_scene.get("carga_ok")):
+		return
+	if not get_nodes_in_group("telas_de_carregamento").is_empty():
+		return
+	pronto_avisado = true
+	var caminho := OS.get_environment("MV_JEV_PRONTO_VALE")
+	print("JEV_PRONTO: vale carregado; idioma=", TranslationServer.get_locale())
+	if caminho.is_empty():
+		return
+	var arquivo := FileAccess.open(caminho, FileAccess.WRITE)
+	if arquivo == null:
+		push_warning("JEV: não foi possível gravar o aviso de pronto em " + caminho)
+		return
+	arquivo.store_string("ok")
+	arquivo.close()
+
+
+## O idioma da sessão vale ao vivo: se algo o trocou (ou a cena nova nasceu com outro locale),
+## a escolha do menu é reaplicada.
+func _garantir_idioma() -> void:
+	if idioma_pedido < 0:
+		return
+	if int(idioma.indice()) != idioma_pedido:
+		print("JEV: idioma da sessão reaplicado (%s)" % idioma.LOCALES[idioma_pedido])
+		idioma.definir(idioma_pedido)
+	elif TranslationServer.get_locale() != str(idioma.LOCALES[idioma_pedido]):
+		idioma.aplicar_jogo()
