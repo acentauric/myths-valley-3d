@@ -27,6 +27,15 @@
   (com falsificação `--falsificar`), `matriz_dos_baloes` e `popups_na_tela` medem a ausência de placas
   com a fala no ar, o vão entre duas falas e a volta (#218).
 
+- **O balão de fala fica sobre quem fala, com a ponta para ele.** O lugar do balão saía de uma soma de
+  multas em que cobrir uma dica ou uma placa valia mais que atravessar a tela: o Pedro no canto
+  esquerdo tinha o balão no canto direito superior. Agora a escolha é uma conta pura (`BalaoFala.avaliar`):
+  sete lugares em volta da cabeça, o ideal acima dela com o pé a 44 px; o que cairia sobre o HUD
+  desliza o mínimo; a distância à cabeça e o rosto de quem fala e do jogador têm preço; com o falante
+  fora da tela o balão encosta na borda do lado dele. A página da fala longa mantém o pé no lugar. O portão
+  novo `balao_sobre_quem_fala` mede o falante perto, longe, na borda, fora da tela e sob o bloco da
+  missão (o caso da captura), e reprova com `--falsificar` (#224).
+
 ## Build #10 — 08/10/2026
 
 Fechada em 09/10/2026 com as correções das issues de 08/10, as vozes, o Mixamo e a main da equipe de 08/10.

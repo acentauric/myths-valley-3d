@@ -375,6 +375,8 @@ anda por dentro e a parede do fundo segura.
 
 As falas dos moradores e do Pedro aparecem em balões de interface (`balao_fala.gd`): fundo claro, nome de quem fala e ponta apontando para a cabeça do personagem. O balão tem tamanho fixo na tela, então continua legível à distância; some quando o personagem sai da câmera ou passa de 45 m, e encosta nas bordas sem cobrir o relógio, o objetivo nem o rodapé de controles.
 
+O lugar do balão é uma conta (`BalaoFala.avaliar`, #224): o ideal é acima da cabeça, com o pé a 44 px dela e a ponta para ela; o que cairia sobre o HUD desliza o mínimo (para o lado, para cima ou para baixo do painel); a distância à cabeça e o rosto de quem fala e do jogador têm preço, para o balão nunca atravessar a tela por causa de uma dica; com o falante fora da tela ele encosta na borda do lado dele. Com um balão no ar, nenhuma plaquinha de nome fica na tela (#218). O portão `balao_sobre_quem_fala` mede o falante perto, longe, na borda, fora da tela e sob o bloco da missão.
+
 ### Sobrevoo da abertura (#34)
 
 O fundo do menu voa do píer até a praça, com a câmera olhando para a frente
