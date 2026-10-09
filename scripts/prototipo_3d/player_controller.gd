@@ -117,6 +117,9 @@ const DE_CIMA_TRANSICAO := 0.3
 ## píer e o Pedro ficam à vista. O ombro se solta, à velocidade abaixo (m/s), quando o viajante anda ou mexe a
 ## câmera, e a partir daí a câmera é a de sempre.
 const OMBRO_SOLTA := 1.2
+## O corpo que pula mais que isto (m) de um quadro para o outro foi posto em outro lugar, e não andou nem foi levado
+## pelo barco: o ombro da chegada cai na hora, e a câmera do lugar novo é a de sempre.
+const OMBRO_SALTO := 3.0
 ## A CÂMERA RESILIENTE: o que a câmera NUNCA faz, venha o que vier do cenário
 ## (parede, porta, teleporte, maré). Duas garantias, e nenhuma depende de o
 ## `SpringArm3D` ter visto o obstáculo — o corte dele IGNORA o que já cobre a
@@ -182,6 +185,8 @@ var _y_anterior := NAN
 ## O deslocamento do pivô no chão (m, no mundo), e se ele já está se soltando (`enquadrar_de_ombro`).
 var _ombro := Vector3.ZERO
 var _ombro_soltando := false
+## Onde o corpo estava no quadro anterior, enquanto há ombro (`_soltar_o_ombro`).
+var _ombro_onde := Vector3.INF
 ## A altura do pivô sem o atraso: a do corpo andando, a da cabeça nadando.
 var _altura_do_pivo: float = PIVO_CAMERA
 var _transicao_de_cima: Tween
@@ -1243,6 +1248,7 @@ func enquadrar_de_ombro(deslocamento: Vector3) -> void:
 	deslocamento.y = 0.0
 	_ombro = deslocamento
 	_ombro_soltando = false
+	_ombro_onde = global_position
 	_encaixar_a_camera()
 
 
@@ -1252,9 +1258,17 @@ func ombro_da_camera() -> Vector3:
 
 
 ## O ombro se solta quando o viajante anda, nada ou entra no cômodo de cima, ou quando mexe na câmera (`_rotate_camera`):
-## a partir daí volta a zero sem salto.
+## a partir daí volta a zero sem salto. O corpo posto em outro lugar sem `teleportar` (o portão que o leva de um
+## lugar a outro, um salto de `OMBRO_SALTO` num quadro) perde o ombro na hora: ele é da chegada, e não do lugar novo.
 func _soltar_o_ombro(delta: float) -> void:
 	if _ombro == Vector3.ZERO:
+		return
+	var aqui := global_position
+	var saltou := _ombro_onde.is_finite() and Vector2(aqui.x - _ombro_onde.x, aqui.z - _ombro_onde.z).length() > OMBRO_SALTO
+	_ombro_onde = aqui
+	if saltou:
+		_ombro = Vector3.ZERO
+		_ombro_soltando = false
 		return
 	if not _ombro_soltando and (Vector2(velocity.x, velocity.z).length_squared() > 0.25 or _de_cima or is_swimming()):
 		_ombro_soltando = true
