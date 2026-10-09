@@ -82,6 +82,11 @@ var _volta_em := 0.0
 ## de jogo parada na rua da praça. Depois de DESATOLA_APOS segundos de passo sem sair do lugar, ele salta
 ## para o ponto livre do caminho mais adiante (o primeiro de DESATOLA_PULOS que não tem corpo em cima).
 const DESATOLA_APOS := 10.0
+## BARRADO, ELE NÃO VOLTA (#237): o "Pedro voltou para te buscar" é para o jogador que ficou para
+## trás, e não para o Pedro que deu na cerca ou no mourão e não sai do lugar. Há esse tempo andando
+## sem avançar, ele fica onde está tentando passar (e, passado DESATOLA_APOS, salta para o ponto livre
+## do caminho) em vez de largar a rota e voltar à cidade.
+const ATOLADO_SEM_VOLTAR := 1.5
 const DESATOLA_PULOS := [6.0, 10.0, 14.0, 20.0]
 var _atolado_s := 0.0
 ## AS CASAS ELE CONDUZ ATÉ A PORTA, do lado de fora: a herdada, onde ele não
@@ -467,7 +472,7 @@ func _conduzir(delta: float, cadeia: Node = null) -> void:
 			atraso = meu - dele
 	if _esperando_quem_ficou:
 		_esperando_quem_ficou = atraso > VOLTA_A_ANDAR and do_jogador > VOLTA_A_ANDAR
-	elif atraso > VOLTA_POR_QUEM_FICA and do_jogador > VOLTA_POR_QUEM_FICA:
+	elif atraso > VOLTA_POR_QUEM_FICA and do_jogador > VOLTA_POR_QUEM_FICA and _atolado_s < ATOLADO_SEM_VOLTAR:
 		_esperando_quem_ficou = true
 		_pedir_situacao("ficou_atras", 10.0)
 	_avisar_quem_ficou(_esperando_quem_ficou)
