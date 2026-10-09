@@ -36,6 +36,23 @@ func _run() -> void:
 	conferir(not Seta._cobre(desviado, coberto), "o chevron ficou sobre o painel do HUD: %s" % str(desviado))
 	conferir(desviado.distance_to(centro) <= raio.x + 1.0, "o chevron fugiu do painel para longe do jogador: %s" % str(desviado))
 	conferir(desviado != nominal, "o painel não tirou o chevron do lugar")
+	# Com a tela inteira coberta não há lugar livre: devolve INF (o chevron se apaga, não vai sobre o painel).
+	var tudo: Array[Rect2] = [Rect2(Vector2.ZERO, tela)]
+	conferir(not Seta.lugar_livre(centro, Vector2(1, 0), raio, tudo, area).is_finite(), "sem lugar livre o chevron devia pedir para apagar")
+	# O retângulo de um painel ampliado pelo componente de Ajustes (pivô + scale) vale o tamanho ampliado.
+	var PopupsDoMundo = load("res://scripts/prototipo_3d/popups_do_mundo.gd")
+	var ampliado := Control.new()
+	root.add_child(ampliado)
+	ampliado.position = Vector2(100, 100)
+	ampliado.size = Vector2(200, 100)
+	ampliado.pivot_offset = Vector2.ZERO
+	ampliado.scale = Vector2(1.5, 1.5)
+	var medido: Rect2 = PopupsDoMundo.retangulo_na_tela(ampliado)
+	conferir(medido.is_equal_approx(Rect2(100, 100, 300, 150)), "o painel ampliado devia medir 300x150, mediu %s" % str(medido))
+	ampliado.add_to_group("obstaculos_do_hud")
+	var vistos: Array[Rect2] = PopupsDoMundo.retangulos(root, "obstaculos_do_hud")
+	conferir(vistos.has(medido), "os painéis do HUD não trazem o retângulo ampliado")
+	ampliado.queue_free()
 	# O raio proporcional à janela e ao tamanho do HUD.
 	var seta_solta = Seta.new()
 	root.add_child(seta_solta)

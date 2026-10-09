@@ -179,7 +179,10 @@ Fechada em 09/10/2026 com as correções das issues de 08/10, as vozes, o Mixamo
   incluído), ele desliza pela elipse até sair, ou diminui o raio; com o alvo à vista mas longe,
   o chevron que paira sobre ele se apaga se for cair sobre um painel. A mola, o giro e o fade
   de antes seguem iguais, então a volta para o cone sobre o alvo continua suave. O portão
-  `seta_em_orbita` confere órbita, raio, rumo e desvio de painel (#196).
+  `seta_em_orbita` confere órbita, raio, rumo e desvio de painel (#196). Na revisão de 09/10, a conta
+  dos painéis passa a medir o retângulo com a escala do componente de Ajustes (um painel ampliado a 150%
+  cobria mais do que o `get_global_rect` dizia), e sem nenhum lugar livre na volta inteira o chevron se
+  apaga em vez de cair sobre o painel; o portão confere os dois casos.
 
 - **O relógio do topo vira o controle do tempo, e o bloco do topo se alinha.** A placa do
   relógio ganha duas colunas (o ícone centrado na vertical à esquerda, hora e período à

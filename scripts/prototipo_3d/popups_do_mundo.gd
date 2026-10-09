@@ -59,8 +59,15 @@ static func retangulos(no: Node, grupo: String, ignorar: Node = null, prioridade
 		if controle == null or controle == ignorar or not controle.is_visible_in_tree() \
 				or controle.modulate.a < OPACIDADE_MINIMA:
 			continue
-		saida.append(controle.get_global_rect())
+		saida.append(retangulo_na_tela(controle))
 	return saida
+
+
+## O retângulo de `controle` em tela COM a escala que ele (ou um pai) carrega: o
+## `get_global_rect` do Godot mede só a posição e o `size`, e um painel ampliado pelo tamanho
+## do componente de Ajustes (pivô + `scale`) ocupa mais do que ele diz (#196).
+static func retangulo_na_tela(controle: Control) -> Rect2:
+	return controle.get_global_transform() * Rect2(Vector2.ZERO, controle.size)
 
 
 ## Os retângulos dos balões de fala no ar, menos o de `ignorar`.
