@@ -100,7 +100,7 @@ const FOLGA_DAS_DICAS := 4.0
 const LINHAS_SEM_PAGINA := 3
 const LINHAS_POR_PAGINA := 2
 ## Largura de cada pontinho do indicador de página.
-const ESPACO_DO_PONTO := 9.0
+const ESPACO_DO_PONTO := 13.0
 
 var alvo: Node3D
 var altura := 2.0
@@ -359,7 +359,7 @@ func _aplicar_pagina(indice: int) -> void:
 	var da_linha := float(_texto.get_line_height())
 	var entre := float(_texto.get_theme_constant("line_spacing"))
 	_texto.custom_minimum_size.y = nesta * da_linha + (nesta - 1) * entre
-	_pontos.custom_minimum_size = Vector2(_paginas * ESPACO_DO_PONTO, 10.0)
+	_pontos.custom_minimum_size = Vector2(_paginas * ESPACO_DO_PONTO, 12.0)
 	_pontos.queue_redraw()
 	_painel.reset_size()
 
@@ -532,5 +532,6 @@ func _desenhar_pontos() -> void:
 		return
 	var meio := _pontos.size.y * 0.5
 	for indice in _paginas:
-		var cor := Color(Identidade.OURO, 0.95 if indice == _pagina else 0.3)
-		_pontos.draw_circle(Vector2(ESPACO_DO_PONTO * (indice + 0.5), meio), 2.8 if indice == _pagina else 2.0, cor)
+		# A página que ainda não passou fica legível (0,45), e não apagada: o jogador vê quantas faltam (#215).
+		var cor := Color(Identidade.OURO, 0.98 if indice == _pagina else 0.45)
+		_pontos.draw_circle(Vector2(ESPACO_DO_PONTO * (indice + 0.5), meio), 4.0 if indice == _pagina else 3.0, cor)

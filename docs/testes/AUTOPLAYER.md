@@ -205,6 +205,10 @@ robô está a até 6 m e à vista dela, e quem passa a página (e na última a f
 `speech_next` (E), que a política escolhe antes de seguir o Pedro ou de abordar alguém. Afastado, ou
 sem apertar nada por 25 s, a fala acaba pelo tempo e a condução não trava.
 
+**Na cena do vale o painel sai (#215).** Enquanto uma cena dos dados toca, o painel TESTANDO (a camada
+`JevObservador`, menos o modal do bloqueio) fica escondido e volta no fim; o jogador está parado e o
+catálogo oferece só `wait`, e a cena tem teto de 28 s, então o robô a atravessa sem fazer nada.
+
 **O morador que dá atenção não é "falando" (#198).** A frase curta de quem para ao ver o jogador chegar
 (`npc.atencao_no_ar`) sai do `speaking` do estado e vai para `attending`: o E já vale com ela no ar, e a
 política escolhe `interact` no passo "Volte ao Pedro" em vez de esperar a frase ou de repetir `follow_pedro`.

@@ -2,6 +2,20 @@
 
 ## Em desenvolvimento — 10/10/2026
 
+- **Na cena do vale só ficam o balão de fala e as tarjas, a câmera desliza e o E pula.** Com uma cena
+  tocando (a apresentação do Tonho, a vista da praça, a casa do tio), o painel de missão, o relógio e as
+  barras, os atalhos, o minimapa, a barra de mão, a seta da missão, as plaquinhas, o "?"/"!" sobre as
+  cabeças, a dica do E e o painel TESTANDO se recolhem e voltam no fim. A câmera parte da do jogador, sem
+  corte, e cada plano desliza com aceleração e desaceleração, com a velocidade média e o giro limitados
+  (o plano longo demora mais); nunca chega a menos de 2,4 m do viajante (1,6 m dos outros), para antes
+  de uma parede, e só corta seco onde o dado traz `"corte": true`. O modo novo `dupla` enquadra dois
+  personagens de lado, com o que fala perto do centro, e entra nos dois planos da apresentação do
+  Tonho. O E e o Esc pulam a cena depois de 0,8 s (um aviso na tarja de baixo diz isso): o que faltava
+  corre sem espera, o Pedro chega ao Tonho, o passo seguinte é anunciado. O portão `cena_so_com_balao`
+  cobra o recolhimento da interface, o mínimo de distância do viajante, a ausência de salto e o pulo.
+  Os pontinhos de página do balão ficam maiores (#215). Falta jogar as três cenas nos três idiomas e
+  conferir o enquadramento e as falas longas em en/es.
+
 - **O testador entrega o passo ao Pedro que parou para dar atenção.** A frase curta de atenção dele
   (#198) deixa de contar como "falando" no estado do testador, que passa a ter o campo `attending`: com a
   dica do E firme, a política escolhe `interact` no "Volte ao Pedro e conte o que viu", e não espera a

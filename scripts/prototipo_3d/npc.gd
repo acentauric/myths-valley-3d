@@ -1138,7 +1138,8 @@ func _atualizar_o_marcador(delta: float) -> void:
 		_marcador_texto = "" if _recolhido else _o_que_as_filas_pedem_aqui()
 	if _marcador == null:
 		return
-	var a_vista := _marcador_texto != "" and not _recolhido
+	# NO MODO CENA o "?"/"!" some com o resto da interface (#215).
+	var a_vista := _marcador_texto != "" and not _recolhido and not _cena_tocando()
 	if _marcador.visible != a_vista:
 		_marcador.visible = a_vista
 	if not a_vista:
@@ -1147,6 +1148,14 @@ func _atualizar_o_marcador(delta: float) -> void:
 		_marcador.text = _marcador_texto
 	_marcador_t += delta
 	_marcador.position.y = altura + MARCADOR_ACIMA + sin(_marcador_t * 2.4) * MARCADOR_BALANCO
+
+
+## Há uma cena dos dados tocando (`cena_vale.gd`)? Pelo grupo, e não pelo nome da classe.
+func _cena_tocando() -> bool:
+	if not is_inside_tree():
+		return false
+	var cenas := get_tree().get_first_node_in_group("cenas_do_vale")
+	return cenas != null and cenas.has_method("em_cena") and bool(cenas.call("em_cena"))
 
 
 func tem_missao() -> bool:
@@ -1697,7 +1706,10 @@ func _jogador_ao_alcance_da_fala() -> bool:
 	if jogador == null or not is_instance_valid(jogador) or not is_inside_tree():
 		return false
 	var falta := jogador.global_position - global_position
-	# À vista: o balão fora da câmera (de costas, longe) não é lido, e o tempo dele corre.
+	# À vista: o balão fora da câmera (de costas, longe) não é lido, e o tempo dele corre. E nunca na cena
+	# (#215): ali o jogador assiste, o E é de pular, e a fala segue pelo tempo.
+	if _cena_tocando():
+		return false
 	return absf(falta.y) <= 2.0 and Vector2(falta.x, falta.z).length() <= RAIO_DO_E_NA_FALA \
 		and balao != null and balao.a_vista()
 

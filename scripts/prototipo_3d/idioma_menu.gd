@@ -429,6 +429,8 @@ const EN := {
 	"Conversar": "Talk",
 	# Com a fala aberta o E segue para a página seguinte ou a fecha (#220).
 	"Continuar": "Continue",
+	# O aviso na tarja de baixo da cena (cena_vale.gd, #215).
+	"Pular a cena": "Skip scene",
 	# O E na comida acima do teto da reserva (#105).
 	"Comer agora joga fora %d de fôlego. Comer assim mesmo?": "Eating now wastes %d breath. Eat anyway?",
 	"Entregar a %s": "Hand over to %s",
@@ -926,6 +928,7 @@ const ES := {
 	"Falar com %s": "Hablar con %s",
 	"Conversar": "Hablar",
 	"Continuar": "Continuar",
+	"Pular a cena": "Saltar la escena",
 	# O E na comida acima do teto da reserva (#105).
 	"Comer agora joga fora %d de fôlego. Comer assim mesmo?": "Comer ahora tira %d de aliento. ¿Comer igual?",
 	"Entregar a %s": "Entregar a %s",

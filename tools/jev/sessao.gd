@@ -410,12 +410,32 @@ func _robo() -> bool:
 	return OS.get_environment("MV_JEV_ROBOT") == "1"
 
 
+## A camada do painel TESTANDO (e do F6, do modal do bloqueio e da faixa manual).
+var camada_observador: CanvasLayer
+
+
+## NA CENA O PAINEL SAI (#215): com a cena dos dados tocando, o jogador assiste e só ficam o balão de fala e as
+## tarjas; o painel do testador, que ficava por cima de tudo, se recolhe e volta no fim dela. O modal do
+## bloqueio, que pede uma decisão, não se esconde.
+func _acertar_o_painel_na_cena() -> void:
+	if camada_observador == null or not is_instance_valid(camada_observador):
+		return
+	var cenas = current_scene.get("cenas") if _no_vale() else null
+	var na_cena: bool = cenas != null and bool(cenas.em_cena())
+	if modal_bloqueio != null and modal_bloqueio.visible:
+		na_cena = false
+	if camada_observador.visible == na_cena:
+		camada_observador.visible = not na_cena
+
+
 func _montar_painel() -> void:
 	var camada := CanvasLayer.new()
 	camada.name = "JevObservador"
 	camada.layer = 110
 	camada.process_mode = Node.PROCESS_MODE_ALWAYS
 	root.add_child(camada)
+	camada_observador = camada
+	process_frame.connect(_acertar_o_painel_na_cena)
 	var painel := PainelSessao.new()
 	painel_observador = painel
 	painel.add_to_group("obstaculos_do_hud")
