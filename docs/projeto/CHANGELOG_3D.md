@@ -13,6 +13,10 @@
   caixa), `prioridade_dos_avisos` (a ordem da matriz), `testador_sessao` (o painel do testador no grupo e
   fora de cena com a caixa aberta) e `chegada` (na explicação das barras, nenhum painel visível cobre a
   caixa). Falta conferir jogando as outras explicações de interface e as escalas individuais (#106).
+- **O objetivo em inglês de "As ferramentas do finado" cabe nas três linhas do HUD.** O resumo do passo
+  `pegar` tinha 63 letras ("Take the hoe, the bucket and the cassava cutting from the chest") e o
+  portão `cadeia_das_missoes` mede 60; agora é "Take the hoe, bucket and cassava cutting from the
+  chest" (55). Foi o último motivo que sobrava para o portão reprovar (#37).
 
 - **O aviso do rodapé passa para o canto superior esquerdo.** A fala do Pedro, o que se recebeu e
   o que se entregou (`set_notice`) saem de cima da barra de mão e vão para a coluna da missão: uma
