@@ -27,8 +27,9 @@ func _run() -> void:
 	await process_frame
 	await process_frame
 	if "--sem-reserva" in OS.get_cmdline_user_args():
-		aviso.modulate = cor
-	conferir(aviso.modulate.a == 0.0, "o aviso sob a caixa cede")
+		hud._barra.modulate = cor
+	# O aviso mora no canto superior esquerdo (#102): a caixa da narração fica embaixo e não o cobre.
+	conferir(aviso.modulate.a == 1.0, "o aviso do canto superior não cede à caixa da narração")
 	conferir(hud._barra.modulate.a == 0.0, "a barra de mao sob a caixa cede")
 	conferir(hud._heading.modulate.a == 1.0, "a missao fora da caixa permanece")
 	var foco: Control

@@ -15,8 +15,10 @@ limitam a ampliação à janela; os cantos e centros de ancoragem permanecem.
 O HUD calcula o espaço usando a escala de cada medidor. Caso falte largura,
 o relógio e os medidores passam para baixo da missão. A matriz dos balões
 recebe os retângulos reais da missão, minimapa e barra. Avisos de espera
-procuram espaço abaixo do HUD ampliado e cedem diante da fala; o rodapé
-acompanha a altura da barra de mão.
+procuram espaço abaixo do HUD ampliado e cedem diante da fala. O aviso de
+recebimento e resultado mora no canto superior esquerdo, abaixo da missão (e
+das informações da casa), e desce junto com ela; o rodapé acompanha a altura
+da barra de mão.
 
 ## Evidência
 

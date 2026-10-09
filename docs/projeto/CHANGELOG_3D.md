@@ -1,5 +1,15 @@
 # Histórico de mudanças — Myths' Valley 3D
 
+## Em desenvolvimento — 10/10/2026
+
+- **O aviso do rodapé passa para o canto superior esquerdo.** A fala do Pedro, o que se recebeu e
+  o que se entregou (`set_notice`) saem de cima da barra de mão e vão para a coluna da missão: uma
+  caixa de até 360 px, a largura do quadro da tarefa, logo abaixo dele (e das informações da casa,
+  do relógio quando a janela estreita o faz descer, e do aviso de espera), que quebra a linha e
+  cresce para baixo. O rodapé fica só com o minimapa e a mão. O portão `tarefa_no_hud` mede, em
+  1280×720, 1920×1080 e 1000×700, a missão, o aviso e a espera ao mesmo tempo sem se cobrirem, e o
+  `foco_da_narracao` passa a esperar o aviso de pé quando a caixa da narração abre embaixo (#102).
+
 ## Build #10 — 08/10/2026
 
 Fechada em 09/10/2026 com as correções das issues de 08/10, as vozes, o Mixamo e a main da equipe de 08/10.
