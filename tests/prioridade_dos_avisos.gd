@@ -16,6 +16,7 @@ func _run() -> void:
 	var hud = load("res://scripts/prototipo_3d/prototype_hud.gd").new()
 	root.add_child(hud)
 	await process_frame
+	conferir(Popups.PRIORIDADE_NARRACAO > Popups.PRIORIDADE_HUD and Popups.PRIORIDADE_HUD > Popups.PRIORIDADE_INTERACAO 		and Popups.PRIORIDADE_INTERACAO > Popups.PRIORIDADE_FALA and Popups.PRIORIDADE_FALA > Popups.PRIORIDADE_AVISO 		and Popups.PRIORIDADE_AVISO > Popups.PRIORIDADE_NOME, "a matriz perdeu a ordem: narração > HUD > E > fala > aviso > nome")
 	hud.set_aviso_de_espera("Volte para perto do guia.")
 	hud.set_notice("Recebido: 1 peixe", 20.0)
 	await process_frame

@@ -2,6 +2,18 @@
 
 ## Em desenvolvimento — 10/10/2026
 
+- **A narração manda na interface: nada fica por cima da caixa longa.** Com o Pedro (ou qualquer
+  fala da caixa do Dialogo) aberto, o `foco_da_narracao` apagava só os painéis que o HUD nomeava;
+  agora apaga QUALQUER painel do grupo `obstaculos_do_hud` que a cubra, o do testador incluído, e os
+  devolve como estavam ao fechar. A seta da missão passa a tratar a caixa como painel de que o chevron
+  foge, e a matriz de prioridades ganha a narração (120) acima do HUD essencial, em
+  `PopupsDoMundo.PRIORIDADE_NARRACAO` e em `PRIORIDADES_DOS_BALOES.md`. O F8 do testador segue lido por
+  `Input`, então interromper o teste continua valendo com o painel recolhido. Portões `foco_da_narracao`
+  (painel sobre a caixa se apaga e volta, o longe fica), `seta_em_orbita` (o chevron sai de baixo da
+  caixa), `prioridade_dos_avisos` (a ordem da matriz), `testador_sessao` (o painel do testador no grupo e
+  fora de cena com a caixa aberta) e `chegada` (na explicação das barras, nenhum painel visível cobre a
+  caixa). Falta conferir jogando as outras explicações de interface e as escalas individuais (#106).
+
 - **O aviso do rodapé passa para o canto superior esquerdo.** A fala do Pedro, o que se recebeu e
   o que se entregou (`set_notice`) saem de cima da barra de mão e vão para a coluna da missão: uma
   caixa de até 360 px, a largura do quadro da tarefa, logo abaixo dele (e das informações da casa,
@@ -149,7 +161,16 @@ Fechada em 09/10/2026 com as correções das issues de 08/10, as vozes, o Mixamo
   corpo se alinhar: de lado ou na meia-volta ele gira no lugar um instante e só então
   anda, sem patinar de lado. O olhar para quem chega perto ganha o mesmo teto por
   quadro, e girar no lugar não conta como estar preso. Portão `giro_dos_moradores`;
-  falta o giro da cabeça (opcional), o vídeo antes e depois e as ações do testador (#209).
+  falta o giro da cabeça (opcional) e o vídeo antes e depois (#209).
+
+- **O testador nunca dá passo lateral: vira o corpo e anda para a frente.** As ações `walk_left`,
+  `walk_right`, `walk_backward` e as de corrida deixam de apertar A, D e S: a ação escolhe o lado da
+  câmera, vira o corpo para ele e só aperta o W, como o `follow_route`. O desentalar do guia também
+  deixou de apertar o D: gira o corpo 60° e segue com o W. O `robo.py` chama esses rumos de
+  `RUMOS_VIRADOS` e continua os deixando como último recurso. O portão `testador_sessao` lê o
+  `sessao.gd` e falha se a execução de `walk_`/`run_` ou o desentalar do guia voltar a usar A, D ou
+  S, e o `beata_locomocao` confere que a velocidade do clipe no chão (passada medida vezes
+  `speed_scale`) segue a velocidade real no andar e na corrida, para o pé não deslizar (#209).
 
 - **A árvore barra o corpo no peito e deixa a copa passar, espécie por espécie.** Um
   portão novo monta o vale, acorda o conjunto de cilindros ao lado de um tronco de cada
@@ -179,7 +200,10 @@ Fechada em 09/10/2026 com as correções das issues de 08/10, as vozes, o Mixamo
   incluído), ele desliza pela elipse até sair, ou diminui o raio; com o alvo à vista mas longe,
   o chevron que paira sobre ele se apaga se for cair sobre um painel. A mola, o giro e o fade
   de antes seguem iguais, então a volta para o cone sobre o alvo continua suave. O portão
-  `seta_em_orbita` confere órbita, raio, rumo e desvio de painel (#196).
+  `seta_em_orbita` confere órbita, raio, rumo e desvio de painel (#196). Na revisão de 09/10, a conta
+  dos painéis passa a medir o retângulo com a escala do componente de Ajustes (um painel ampliado a 150%
+  cobria mais do que o `get_global_rect` dizia), e sem nenhum lugar livre na volta inteira o chevron se
+  apaga em vez de cair sobre o painel; o portão confere os dois casos.
 
 - **O relógio do topo vira o controle do tempo, e o bloco do topo se alinha.** A placa do
   relógio ganha duas colunas (o ícone centrado na vertical à esquerda, hora e período à

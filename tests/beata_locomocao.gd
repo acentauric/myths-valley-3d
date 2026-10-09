@@ -49,6 +49,19 @@ func _run() -> void:
 	animador.update_motion(0.9, 1.0 / 60)
 	conferir(animador.get_current_animation() == StringName(animador._clips["walk"]), "caminhar não usa o clipe escolhido")
 	conferir(float(animador._passada.get("walk", 0)) > 0, "a passada não é medida pela velocidade")
+	# PÉ SEM DESLIZAR (#209): a velocidade do clipe no chão (passada medida x speed_scale) acompanha a
+	# velocidade horizontal real, no andar e na corrida, dentro do que o clipe aguenta (0,5 a 2,5 vezes).
+	var natural_andar := float(animador._passada.get("walk", 0))
+	for fator in [0.7, 1.0, 1.8]:
+		var real: float = natural_andar * fator
+		animador.update_motion(real, 1.0 / 60)
+		conferir(animador.get_current_animation() == StringName(animador._clips["walk"]), "a %.2f da passada o viajante devia andar" % fator)
+		conferir(absf(animador.animation_player.speed_scale * natural_andar - real) < 0.02, "o pé desliza no andar: clipe a %.2f u/s para %.2f u/s reais" % [animador.animation_player.speed_scale * natural_andar, real])
+	var natural_correr := float(animador._passada.get("run", 0))
+	if natural_correr > animador._limite_da_corrida():
+		animador.update_motion(natural_correr, 1.0 / 60)
+		conferir(animador.get_current_animation() == StringName(animador._clips["run"]), "à passada da corrida o viajante devia correr")
+		conferir(absf(animador.animation_player.speed_scale * natural_correr - natural_correr) < 0.02, "o pé desliza na corrida")
 	animador.update_motion(0.0, 1.0 / 60)
 	conferir(animador.get_current_animation() == StringName(animador._clips["idle"]), "parar não volta ao repouso")
 	if "--capturar" in OS.get_cmdline_user_args():
