@@ -10,6 +10,15 @@
   1280×720, 1920×1080 e 1000×700, a missão, o aviso e a espera ao mesmo tempo sem se cobrirem, e o
   `foco_da_narracao` passa a esperar o aviso de pé quando a caixa da narração abre embaixo (#102).
 
+- **Os cartões de Modelos ficam baixos, e o nome de cada morador cabe inteiro.** Em Modelos, a grade
+  de Moradores e a de Assets passam de cartões altos em fonte 14 (que cortavam "SEU BENEDIT", "DONA
+  CANDI", "SACRISTÃO Z") para cartões de 42 a 64 px em fonte 12, com a capacidade de 6 colunas por
+  5 linhas ou mais e sem rolagem. O nome que não cabe numa linha quebra em duas entre as palavras
+  ("SACRISTÃO / ZACARIAS"), e o tooltip segue trazendo o nome inteiro. O portão `painel_personagens`
+  mede, em cada cartão dos Moradores e dos Assets, que cada linha do nome cabe na largura útil do botão,
+  que o cartão cabe no teto e comporta as linhas, que a grade tem ao menos 6×5 e que a faixa vazia
+  embaixo é menor que uma linha de cartões (#213).
+
 ## Build #10 — 08/10/2026
 
 Fechada em 09/10/2026 com as correções das issues de 08/10, as vozes, o Mixamo e a main da equipe de 08/10.
