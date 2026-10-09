@@ -97,6 +97,8 @@ var _larga_de_novo := false
 ## A larga assou e ainda entra no mapa dela (alguns quadros de física).
 var _larga_assentando := false
 var _fonte_da_vez: NavigationMeshSourceGeometryData3D
+## A conta dos corrimãos em curso no WorkerThreadPool (`_assar`), ou -1. Quem sai da árvore espera por ela.
+var _tarefa_dos_corrimaos := -1
 var _malha: NavigationMesh
 var _agua := -INF
 var _sonda := Vector3.INF
@@ -198,13 +200,16 @@ func _assar() -> void:
 		var indices := fonte.get_indices()
 		var saida: Array = []
 		var tarefa := WorkerThreadPool.add_task(func() -> void: saida.append(_sem_corrimaos(vertices, indices, zonas[0], zonas[1])))
+		_tarefa_dos_corrimaos = tarefa
 		var arvore := get_tree()
-		while not WorkerThreadPool.is_task_completed(tarefa) and arvore != null:
+		while not WorkerThreadPool.is_task_completed(tarefa) and arvore != null and is_inside_tree():
 			await arvore.process_frame
-		WorkerThreadPool.wait_for_task_completion(tarefa)
-		if not is_inside_tree():
+		# Saindo da árvore, o `_exit_tree` já esperou a conta e a assada não segue.
+		if _tarefa_dos_corrimaos != tarefa or not is_inside_tree():
 			_assando = false
 			return
+		WorkerThreadPool.wait_for_task_completion(tarefa)
+		_tarefa_dos_corrimaos = -1
 		fonte.set_indices(saida[0])
 	_obstaculos_das_pontes(fonte)
 	NavigationServer3D.bake_from_source_geometry_data_async(_malha, fonte, _ao_assar)
@@ -487,6 +492,10 @@ func larga_pronta() -> bool:
 
 ## O mapa e a região da malha larga são do servidor de navegação: devolvidos ao sair, ou vazam.
 func _exit_tree() -> void:
+	# A conta dos corrimãos roda noutra linha com o código deste nó: o jogo que fecha no meio dela espera o fim.
+	if _tarefa_dos_corrimaos >= 0:
+		WorkerThreadPool.wait_for_task_completion(_tarefa_dos_corrimaos)
+		_tarefa_dos_corrimaos = -1
 	if _regiao_larga.is_valid():
 		NavigationServer3D.free_rid(_regiao_larga)
 		_regiao_larga = RID()
