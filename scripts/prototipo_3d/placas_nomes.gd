@@ -519,6 +519,22 @@ func _baloes_com_profundidade(camera: Camera3D) -> Array:
 	return saida
 
 
+## A altura de `no` (o jogador ou um morador) como a placa a mede, para quem põe um popup acima da cabeça
+## (o selo de fala do viajante, #225).
+func altura_do(no: Node3D) -> float:
+	return _altura_real(no)
+
+
+## As caixas das CABEÇAS de quem está à vista (os moradores e o jogador), menos a de `ignorar`: o que um popup
+## acima da cabeça de outro não pode cobrir.
+func cabecas_a_vista(camera: Camera3D, ignorar: Node3D = null) -> Array[Rect2]:
+	var saida: Array[Rect2] = []
+	for caixa: Dictionary in _caixas_dos_personagens(camera):
+		if caixa["no"] != ignorar:
+			saida.append(caixa["cabeca"])
+	return saida
+
+
 ## A altura do personagem para o rosto e a placa: a do dado (`altura` no morador,
 ## `character_height` no jogador) ou, se o modelo passa dela (chapéu, cabelo), a malha mais alta,
 ## até `EXCESSO_DO_MODELO`. Medida de tempos em tempos, e não a cada quadro.

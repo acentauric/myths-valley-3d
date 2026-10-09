@@ -3,8 +3,8 @@ extends Node
 ##
 ## Todos ao redor falavam — o Pedro conduz, os moradores comentam — e o viajante nunca reagia ao que
 ## acontecia com ele. Aqui ele ganha comentários curtos, ditos para si mesmo, SÓ EM VOZ: nenhum balão,
-## nenhuma caixa de fala, nada na tela (`data/falas_viajante.json`, o texto pt/en/es/zh fica guardado lá
-## para a legenda de um dia e para o tests/idiomas.gd).
+## nenhuma caixa de fala (`data/falas_viajante.json`, o texto pt/en/es/zh fica guardado lá para a legenda
+## opcional e para o tests/idiomas.gd); sobre a cabeça dele só o selo discreto de ondas (#225, abaixo).
 ##
 ##
 ## OS GATILHOS (a chamada `_pedir` de cada um; o portão tests/falas_do_viajante.gd confere a lista)
@@ -37,6 +37,18 @@ extends Node
 ## deles), a `uma_vez` vai no save e as outras só voltam depois do `intervalo`.
 ## O volume é o de "Falas dos personagens" (Ajustes). Sem o arquivo de voz a fala fica muda e NÃO conta
 ## como dita: ela sai quando o áudio existir.
+##
+##
+## O SELO (#225)
+##
+## Sem balão, nada na tela dizia que era ELE falando: a voz soava e o jogador podia achar que era um morador por
+## perto. Esta classe só AVISA (`comecou_a_falar`, `calou_a_voz`); quem desenha o ícone de ondas sobre a cabeça
+## dele, e a legenda opcional de Ajustes, é o `selo_do_viajante.gd`. Continua sem balão, caixa de fala nem aviso.
+
+## A voz começou, com o texto da fala no idioma de agora (para a legenda) e quanto ela dura (s).
+signal comecou_a_falar(texto: String, segundos: float)
+## A voz acabou (ou foi cortada).
+signal calou_a_voz
 
 const FilaDeFalas = preload("res://scripts/prototipo_3d/fila_de_falas.gd")
 const IdiomaMenu = preload("res://scripts/prototipo_3d/idioma_menu.gd")
@@ -101,6 +113,7 @@ func _ready() -> void:
 	add_child(_voz)
 	_aplicar_volume()
 	Audio.volumes_alterados.connect(_aplicar_volume)
+	_voz.finished.connect(_ao_acabar_a_voz)
 	Dia.periodo_mudou.connect(_ao_mudar_o_periodo)
 	Relogio.estacao_mudou.connect(_ao_mudar_a_estacao)
 	Inventario.sem_espaco.connect(_ao_faltar_espaco)
@@ -343,12 +356,21 @@ func _tocar(no_ar: Dictionary) -> void:
 	_voz.stream = no_ar["fluxo"]
 	_voz.stream_paused = false
 	_voz.play()
+	var fluxo: AudioStream = no_ar["fluxo"]
+	var texto := String(IdiomaMenu.campo(no_ar["fala"], "texto", ""))
+	comecou_a_falar.emit(texto, FilaDeFalas.duracao(texto, fluxo.get_length()))
 
 
 func _parou(_pedido: Dictionary, cortada: bool) -> void:
 	if cortada:
 		_voz.stop()
 	_no_ar = {}
+	calou_a_voz.emit()
+
+
+## O áudio chegou ao fim (o corte da fila passa por `_parou`).
+func _ao_acabar_a_voz() -> void:
+	calou_a_voz.emit()
 
 
 ## A caixa ou uma tela cobriu o vale: a voz pausa e volta de onde parou. O SONO NÃO: ele é dito no escuro da

@@ -34,6 +34,28 @@
   ganha a ação `speech_next` e avança as falas com E. O portão `fala_pelo_e` cobra o tempo parado, as
   páginas uma a uma, o fechamento na última, o Esc, o afastamento e o que passa sozinho (#220). Falta
   jogar a condução do píer lendo as falas no ritmo do E.
+- **As setas do teclado escolhem nos painéis com lista, e o Enter confirma como o E.** Na Oficina (painel do J)
+  só W/S moviam a seleção: o painel escutava as ações de movimento, que no padrão são só WASD, e as
+  setas ficavam mudas. Agora ↑↓ escolhem e ←→ trocam de aba (como A/D) no painel inteiro (Missões, Obras,
+  Oficina, Cozinha, Venda, Saveiro, Vagas e a aba Jogo), o Enter e o Enter do teclado numérico confirmam,
+  e o direcional e o botão A do controle fazem o mesmo; as teclas de movimento de Ajustes e o E remapeado
+  continuam valendo junto, e a tecla segurada não pula linhas. A regra mora em `teclas_de_lista.gd`, para a
+  próxima tela já nascer com ela (o Almanaque, a Teia, o menu do Esc, os Controles e a Mochila já aceitavam as
+  setas). Os rodapés dizem as duas formas, em pt, en e es ("[↑↓ ou W/S] escolher · [E ou Enter] fabricar").
+  O portão novo `navegacao_por_setas` cobra o comando, a Oficina (com a volta no alto da lista), o Diário
+  (o Enter acompanha), as Vagas, a Mochila e os rodapés (#227).
+
+- **Os botões da esquerda do lobby explicam o que fazem num popover, e não num tooltip de meia tela.**
+  JOGAR, EXPLORAR, TESTAR, MODELOS, SOBRE e SAIR ganham uma caixa compacta (no máximo ~340 px, o texto
+  quebra em duas a quatro linhas) na identidade do menu (laca escura, filete de ouro, canto chanfrado, letra
+  de leitura) com uma seta apontando para o centro do botão, à direita da coluna. Ela aparece depois de
+  um pequeno atraso, com fade, com o mouse e com o foco do teclado ou do controle (o foco que o menu põe em
+  JOGAR sozinho, ou que o mouse puxa, não a deixa presa), vira para a esquerda se não couber e nunca cobre
+  os outros botões. Os textos curtos estão em pt, en, es e zh; o do TESTAR agora diz que F7 assume o controle
+  e F8 encerra. O HUD da direita mantém a dica de sempre e o texto da versão no rodapé fica sem tooltip.
+  O componente é `popover_menu.gd` (`PopoverMenu.ligar(botao, texto, camada)`), para qualquer menu usar,
+  e o portão novo `popover_do_menu` cobra o atraso, o lado, a seta, o teclado, a borda da tela, os quatro
+  idiomas e que nada cobre nada (#232).
 
 - **O jogo passa a ter o ícone do Myths' Valley, e não o do Godot.** O M dourado do logotipo, numa
   pastilha de laca escura com filete de ouro, vira o ícone da janela e da barra de tarefas

@@ -210,10 +210,12 @@ func _run() -> void:
 				_conferir(item.get_line_count() == 1 and item.get_content_width() <= item.size.x + 1 and item.get_content_height() <= item.size.y + 1, "item inteiro em uma linha %d/%d" % [lingua, pagina])
 			_conferir(abertura.panel.get_global_rect().encloses(lista.get_global_rect()), "lista cabe no modal %d/%d" % [lingua, pagina])
 			_conferir(not abertura.bloco_almanaque.visible, "notas ocultas no modal %d/%d" % [lingua, pagina])
-	# Uma entrada futura com mais de dez itens preserva todos em páginas extras.
+	# Uma entrada futura com mais linhas que cabem numa página preserva todas em páginas extras (#212: 14 por página).
 	var itens := range(23)
+	var por_pagina: int = abertura.HISTORY_ROWS
+	var paginas_esperadas := ceili(23.0 / por_pagina)
 	var extras: Array = abertura._paginar_historico([{"mudancas": itens, "mudancas_en": itens, "mudancas_es": itens}])
-	_conferir(extras.size() == 3 and extras[2].mudancas == [20, 21, 22], "paginação preserva itens excedentes")
+	_conferir(extras.size() == paginas_esperadas and extras[paginas_esperadas - 1].mudancas == range(por_pagina * (paginas_esperadas - 1), 23), "paginação preserva itens excedentes")
 	idioma.definir(2)
 	# Na travessia, a legenda continua sem moldura; voltar restaura a talha.
 	abertura._place_legenda()

@@ -17,6 +17,7 @@ const Identidade = preload("res://scripts/prototipo_3d/identidade.gd")
 const CaixaDePergunta = preload("res://scripts/prototipo_3d/caixa_de_pergunta.gd")
 const SustosDaMata = preload("res://scripts/prototipo_3d/sustos_da_mata.gd")
 const DicasDosMoradores = preload("res://scripts/prototipo_3d/dicas_dos_moradores.gd")
+const SeloDoViajante = preload("res://scripts/prototipo_3d/selo_do_viajante.gd")
 
 ## × do cabeçalho (o anfitrião fecha o modal).
 signal fechar_pedido
@@ -246,6 +247,8 @@ func _aba_geral(esquerda: VBoxContainer, direita: VBoxContainer) -> void:
 	_escolha("Câmera do mouse", CameraMouse.rotulos(), CameraMouse.modo(), CameraMouse.definir, CameraMouse.PADRAO)
 	# Os moradores que vêm dar uma dica a quem está perdido (#204): Ligadas, Poucas ou Desligadas.
 	_escolha("Dicas dos moradores", DicasDosMoradores.ROTULOS, DicasDosMoradores.modo(), DicasDosMoradores.definir_modo, DicasDosMoradores.PADRAO)
+	# A legenda do que o viajante diz em voz (#225): desligada no padrão, que é a decisão de "sem balão".
+	_escolha("Legendas do viajante", SeloDoViajante.ROTULOS, SeloDoViajante.modo_das_legendas(), SeloDoViajante.definir_legendas, SeloDoViajante.PADRAO)
 	_pai = direita
 	_secao("Volume")
 	_volume("Música", Audio.volume_musica, Audio.definir_volume_musica, "musica")

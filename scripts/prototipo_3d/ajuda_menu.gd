@@ -158,6 +158,26 @@ const TEXTOS := {
 		"The residents help when you're lost: when the tracked mission doesn't move for a good while, or the same mistake keeps happening (a tool out of your hand, say), the resident who knows the subject walks over, gives a short hint and goes back to what they were doing.\n\nOn: help comes after a few minutes without progress.\nFew: it takes twice as long and comes less often.\nOff: nobody comes; the arrow and the journal (J) still work.\n\nIt never interrupts a conversation, the narration or Pedro, and each subject only comes back after a good while.",
 		"Los habitantes ayudan a quien está perdido: cuando la misión seguida no avanza durante un buen rato, o se repite el mismo error (la herramienta fuera de la mano, por ejemplo), el habitante que entiende del asunto se acerca, da una pista corta y vuelve a lo que hacía.\n\nActivadas: la ayuda llega tras unos minutos sin avance.\nPocas: tarda el doble y llega menos veces.\nDesactivadas: nadie viene; la flecha y el cuaderno (J) siguen valiendo.\n\nNunca interrumpe una conversación, la narración ni a Pedro, y cada asunto solo vuelve tras un buen rato.",
 	],
+	"Legendas do viajante": [
+		"O viajante, que é você, comenta em voz baixa o que acontece (a chuva que começa, a mochila cheia, a noite que cai). Quando ele fala, um ícone de ondas de som dourado pulsa sobre a cabeça dele.
+
+Desligadas: só o ícone e a voz, sem texto na tela.
+Ligadas: o que ele diz também aparece escrito, numa caixa pequena acima do ícone.
+
+O texto cede a balões, dicas do E e painéis, e o ícone nunca cobre o rosto de ninguém.",
+		"The traveler, who is you, mutters about what happens (the rain starting, a full backpack, nightfall). When he speaks, a golden sound-wave icon pulses above his head.
+
+Off: just the icon and the voice, with no text on screen.
+On: what he says also appears written, in a small box above the icon.
+
+The text yields to balloons, E hints and panels, and the icon never covers anyone's face.",
+		"El viajero, que eres tú, comenta en voz baja lo que pasa (la lluvia que empieza, la mochila llena, la noche que cae). Cuando habla, un icono dorado de ondas de sonido palpita sobre su cabeza.
+
+Desactivadas: solo el icono y la voz, sin texto en pantalla.
+Activadas: lo que dice también aparece escrito, en una cajita sobre el icono.
+
+El texto cede ante globos, pistas de la E y paneles, y el icono nunca cubre el rostro de nadie.",
+	],
 	"Câmera do mouse": [
 		"Como o mouse controla a câmera.\n\nLivre: o mouse gira a câmera direto, sem apertar nada, e o cursor fica preso na tela.\nArrastar: o cursor fica visível e a câmera só gira com o botão esquerdo segurado.\nAutomática: a câmera acompanha o caminho que você percorre, com o cursor visível.\n\nDentro do vale, a tecla de alternar a câmera (C, por padrão) percorre os três modos. A escolha fica salva.",
 		"How the mouse controls the camera.\n\nFree: the mouse turns the camera directly, with no button, and the cursor stays locked to the screen.\nDrag: the cursor stays visible and the camera only turns while the left button is held.\nAutomatic: the camera follows the path you walk, with the cursor visible.\n\nInside the valley, the camera key (C by default) cycles through the three modes. The choice is saved.",

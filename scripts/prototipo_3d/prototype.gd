@@ -18,6 +18,7 @@ const FocoDoE = preload("res://scripts/prototipo_3d/foco_do_e.gd")
 const AceiteDeMissao = preload("res://scripts/prototipo_3d/aceite_de_missao.gd")
 const FilaDeFalas = preload("res://scripts/prototipo_3d/fila_de_falas.gd")
 const FalasDoViajante = preload("res://scripts/prototipo_3d/falas_do_viajante.gd")
+const SeloDoViajante = preload("res://scripts/prototipo_3d/selo_do_viajante.gd")
 const DicasDosMoradores = preload("res://scripts/prototipo_3d/dicas_dos_moradores.gd")
 const AvisoDaPrimeiraVez = preload("res://scripts/prototipo_3d/aviso_da_primeira_vez.gd")
 const CapaDeCordel = preload("res://scripts/prototipo_3d/capa_de_cordel.gd")
@@ -200,6 +201,10 @@ var foco_do_e: Node
 var fila_de_falas: Node
 ## O viajante comenta o que acontece, só em voz e sem balão (`falas_do_viajante.gd`, #187).
 var viajante: Node
+## O selo de ondas sobre a cabeça dele enquanto a voz toca, e a legenda opcional (`selo_do_viajante.gd`, #225).
+var selo_do_viajante: Control
+## A camada das placas, onde moram as placas de nome e o selo do viajante.
+var _chao_das_placas: Control
 ## Os moradores que vêm dar uma dica a quem está perdido (`dicas_dos_moradores.gd`, #204).
 var dicas_dos_moradores: Node
 ## O cartão do primeiro cordel e da primeira árvore (`aviso_da_primeira_vez.gd`).
@@ -882,6 +887,15 @@ func _ready() -> void:
 	viajante.name = "FalasDoViajante"
 	add_child(viajante)
 	viajante.configurar(player, world, pedro, saveiro, interiores, lavoura, _recursos, noite)
+	# O SELO DO VIAJANTE (#225): sem balão, um ícone de ondas sobre a cabeça dele diz que é ele falando. Mora na
+	# camada das placas (sob o balão e o HUD) e cede a balão, dica do E e painéis.
+	selo_do_viajante = SeloDoViajante.new()
+	selo_do_viajante.name = "SeloDoViajante"
+	_chao_das_placas.add_child(selo_do_viajante)
+	selo_do_viajante.configurar(player, placas, viajante)
+	selo_do_viajante.coberto = func() -> bool:
+		var em_cena: bool = cenas != null and bool(cenas.em_cena())
+		return (conquista != null and conquista.ativa()) or (narracao != null and narracao.tocando()) or em_cena
 	# OS MORADORES AJUDAM QUEM ESTÁ PERDIDO (#204): a missão acompanhada parada, a mesma recusa de novo ou o lado
 	# errado chamam o morador que entende do assunto (Ajustes: Ligadas, Poucas ou Desligadas).
 	dicas_dos_moradores = DicasDosMoradores.new()
@@ -1439,6 +1453,7 @@ func _montar_moradores(spawn: Vector3) -> void:
 	chao_das_placas.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	chao_das_placas.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	camada_das_placas.add_child(chao_das_placas)
+	_chao_das_placas = chao_das_placas
 	placas.configurar(player, chao_das_placas)
 	# Seta da missão: cone e anel no mundo + chevron na borda da tela seguem o
 	# alvo DA MISSÃO ACOMPANHADA (ver `_mostrar_a_acompanhada`).
@@ -1954,6 +1969,8 @@ func _acertar_as_placas() -> void:
 		or (aviso_da_primeira_vez != null and aviso_da_primeira_vez.aberto()) \
 		or (conquista != null and conquista.ativa()) or na_cena
 	placas.permitir(not coberto)
+	if selo_do_viajante != null:
+		selo_do_viajante.permitir(not coberto)
 
 
 ## E CALOU. Falas encadeadas abrem na linha seguinte do mesmo `await`, então o

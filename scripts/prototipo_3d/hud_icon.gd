@@ -1,7 +1,8 @@
 extends Control
 ## Ícones vetoriais dos botões de canto do HUD, no mesmo traço do som e do relógio:
 ## "casa" (HOME), "ajustes" (engrenagem), "restaurar" (seta circular), "mapa", "ajuda" (?), "tela_cheia" (cantos para fora em janela, para dentro em tela cheia), "fechar" (×), "salvar" (disquete), "tocar" (play), "pausar", "concluir" (✓), "externo" (link que sai do jogo), "camera" (anel dourado quando travada), "velocidade" (setas conforme
-## a Passagem do tempo, 0–3) e "som", "cenario", "interface", "teclado" e "esforco" (as abas de Ajustes, com o "ajustes" na Geral), "estilo" (cubo para Tripo, chaves para Procedural), "editar" (lápis, um só:
+## a Passagem do tempo, 0–3), "fala" (ondas de som em ouro que acendem uma a uma: o selo do viajante falando,
+## `selo_do_viajante.gd`, com o `nivel` de 0 a 3 dizendo quantas ondas estão acesas) e "som", "cenario", "interface", "teclado" e "esforco" (as abas de Ajustes, com o "ajustes" na Geral), "estilo" (cubo para Tripo, chaves para Procedural), "editar" (lápis, um só:
 ## o do nome da vaga e o do painel MODELOS) e "apagar" (lixeira, vermelha pedindo a confirmação) dos
 ## cartões das vagas.
 
@@ -73,6 +74,14 @@ func _draw() -> void:
 			# Raio vazado: o custo de cada ação em fôlego e vigor; a aba Esforço de Ajustes.
 			var cor_esforco := ouro if ativo else tinta
 			draw_polyline(PackedVector2Array([Vector2(14, 2.5), Vector2(5.5, 13), Vector2(11, 13), Vector2(9.5, 21.5), Vector2(19, 10), Vector2(13.5, 10), Vector2(14, 2.5)]), cor_esforco, 1.7, true)
+		"fala":
+			# Ondas de som saindo de um ponto: o viajante falando (#225). O `nivel` (0 a 3) é quantas ondas
+			# estão acesas; as outras ficam fracas, e é o selo que as faz subir no ritmo da fala.
+			draw_circle(Vector2(5.5, 12), 2.2, ouro)
+			for onda in range(3):
+				var acesa := onda < nivel
+				draw_arc(Vector2(5.5, 12), 5.2 + onda * 4.3, deg_to_rad(-48.0), deg_to_rad(48.0), 12,
+					Color(ouro, 1.0 if acesa else 0.28), 1.9, true)
 		"externo":
 			# Link externo: caixa aberta no canto e seta saindo para fora.
 			var ouro_link := ouro if not ativo else Color("f5e3b3")
