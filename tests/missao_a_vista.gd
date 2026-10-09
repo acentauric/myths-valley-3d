@@ -82,8 +82,14 @@ func _run() -> void:
 	var respostas: Array = []
 	aceite.respondeu.connect(func(sim: bool) -> void: respostas.append(sim))
 	# O E NÃO CORTA QUEM ESTÁ FALANDO (`tecla_dos_moradores._fala_ativa`): o Pedro abre o vale com a
-	# saudação dele, e o E espera ele terminar.
+	# saudação dele, e o E espera ele terminar. Enquanto isso o jogador fica longe dele: acabado o
+	# tutorial, com o Pedro ao lado, a ponte abre sozinha (`prototype._conferir_a_ponte`), e aqui se
+	# pergunta pelo E dela. Volta ao lado dele no mesmo quadro do E.
+	var jogador: Node3D = vale.player
+	var perto_do_pedro: Vector3 = jogador.global_position
+	jogador.global_position = pedro.global_position + Vector3(30.0, 0.0, 0.0)
 	await _ate(func() -> bool: return not tecla._fala_ativa(pedro), 20.0)
+	jogador.global_position = perto_do_pedro
 	tecla.usar(pedro)
 	await _frames(3)
 	_conferir(bool(aceite.aberto), "o E no Pedro com a ponte por abrir não abriu a tela de aceite")
@@ -102,7 +108,9 @@ func _run() -> void:
 	_conferir(respostas == [false], "a resposta da recusa não saiu: %s" % str(respostas))
 	await _ate(func() -> bool: return str(pedro.marcador_de_missao()) == "!", 2.0)
 	_conferir(str(pedro.marcador_de_missao()) == "!", "recusada a missão, o '!' do Pedro sumiu")
+	jogador.global_position = pedro.global_position + Vector3(30.0, 0.0, 0.0)
 	await _ate(func() -> bool: return not tecla._fala_ativa(pedro), 20.0)
+	jogador.global_position = perto_do_pedro
 	tecla.usar(pedro)
 	await _frames(3)
 	_conferir(bool(aceite.aberto), "o segundo E no Pedro não reabriu a tela de aceite")

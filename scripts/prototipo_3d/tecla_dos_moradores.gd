@@ -256,12 +256,18 @@ func usar(morador: Node3D) -> void:
 	# aceitar ela ou não"): a fila que o E abriria neste morador passa pela tela de aceite
 	# (`AceiteDeMissao`). Quem aceita vê a fila começar como antes; quem recusa fica com o "!"
 	# sobre a cabeça dele, e nada começa.
+	# Com mais de uma fila por abrir no mesmo morador (o Pedro, acabada a chegada: a ponte, as
+	# armas e o ofício), a tela propõe primeiro a da história (`principal`), e não a que a ordem
+	# do grupo puser antes.
+	var por_abrir: Node = null
 	for cadeia in cadeias:
 		if cadeia.has_method("o_que_o_e_faz") and str(cadeia.o_que_o_e_faz(morador)) == "abrir":
-			if aceite != null and aceite.has_method("propor"):
-				aceite.propor(cadeia, morador, func() -> void: cadeia.interagir(morador))
-				return
-			break
+			if por_abrir == null or (bool(cadeia.get("principal")) and not bool(por_abrir.get("principal"))):
+				por_abrir = cadeia
+	if por_abrir != null and aceite != null and aceite.has_method("propor"):
+		var escolhida: Node = por_abrir
+		aceite.propor(escolhida, morador, func() -> void: escolhida.interagir(morador))
+		return
 	for cadeia in cadeias:
 		if cadeia.has_method("interagir") and cadeia.interagir(morador):
 			_registrar_conversa(morador)
