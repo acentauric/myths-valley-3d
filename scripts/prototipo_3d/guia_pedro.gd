@@ -62,14 +62,41 @@ const ESPERA_FORA := ["casa"]
 ## de NPC deve ter uma linha de percurso para saber se o jogador já está mais à frente").
 ## O caminho da condução é a régua: quanto cada um já andou dela (`_progresso_de`) diz
 ## quem está na frente. Com o jogador À FRENTE, o Pedro não espera ninguém — segue, e
-## corre se ficou para trás. Com o jogador PARA TRÁS mais que VOLTA_POR_QUEM_FICA, ele
-## VOLTA pelo caminho até ele, em vez de parar no meio da estrada esperando uma
-## aproximação que o jogador não entendia; a VOLTA_A_ANDAR dele, retoma. Enquanto o
+## corre se ficou para trás. Com o jogador PARA TRÁS mais que VOLTA_POR_QUEM_FICA E SEM VÊ-LO
+## (ver Conducao: à vista ele segue, mesmo longe), ele espera e depois VOLTA pelo caminho até ele,
+## em vez de parar no meio da estrada esperando uma aproximação que o jogador não entendia; a
+## VOLTA_A_ANDAR dele, ou assim que o jogador volta a vê-lo, retoma. Enquanto o
 ## jogador não pode andar (a caixa de fala aberta, o corpo parado), ele espera. Os
 ## marcos de antes (parar a cada onze passos) saíram: eram a espera que confundia.
 const CONDUZ_ATE := 2.4
 const VOLTA_POR_QUEM_FICA := 5.5
 const VOLTA_A_ANDAR := 3.0
+## O AFASTAMENTO PELA VISTA DO JOGADOR (#238). O Pedro andava colado e voltava sempre que o jogador
+## se afastava VOLTA_POR_QUEM_FICA: com o jogador um pouco lento (ou o testador hesitando) ele ia e
+## voltava, e a caminhada arrastava. Quem decide agora é se o jogador PODE VÊ-LO:
+##  - À VISTA (dentro do campo da câmera, sem obstáculo cobrindo e a até LEGIVEL_ATE do jogador) ele
+##    SEGUE até o objetivo, por maior que seja o atraso: o jogador sabe para onde ir;
+##  - FORA DA VISTA por OCULTO_APOS segundos ele ESPERA onde está, e só depois de ESPERA_ANTES_DE_VOLTAR
+##    segundos, se o jogador não vem na direção dele (VINDO_MINIMO u/s), VOLTA — o "Pedro voltou para
+##    te buscar".
+## A decisão não pisca: a vista só muda de estado depois de VISTO_APOS (ao reaparecer) ou OCULTO_APOS
+## (ao sumir) seguidos, medida a cada AMOSTRA_DA_VISTA.
+enum Conducao { SEGUE, ESPERA, VOLTA }
+const LEGIVEL_ATE := 18.0
+const VISTO_APOS := 0.6
+const OCULTO_APOS := 2.0
+const ESPERA_ANTES_DE_VOLTAR := 3.0
+const AMOSTRA_DA_VISTA := 0.2
+const VINDO_MINIMO := 0.8
+var _a_vista_estavel := true
+var _visto_s := 0.0
+var _oculto_s := 0.0
+var _amostra_vista_s := 0.0
+var _na_tela_agora := true
+var _espera_oculto_s := 0.0
+var _distancia_antes := -1.0
+var _amostra_vindo_s := 0.0
+var _vindo := false
 ## De quanto em quanto se refaz o caminho de volta até quem ficou.
 const REFAZER_A_VOLTA := 0.8
 var _volta: PackedVector3Array = PackedVector3Array()
@@ -433,6 +460,8 @@ func _conduzir(delta: float, cadeia: Node = null) -> void:
 	var do_jogador := Vector2(onde_esta.x - global_position.x, onde_esta.z - global_position.z).length()
 	var falta := destino - global_position
 	falta.y = 0.0
+	if Engine.get_physics_frames() - _quadro_da_conducao > 30:
+		_reiniciar_a_leitura_da_vista()
 	_quadro_da_conducao = Engine.get_physics_frames()
 	# O JOGADOR NÃO PODE ANDAR (a caixa de fala aberta, o corpo parado): ele espera. E chegado,
 	# o que o passo pede é perto dele (quem ele apresenta, a porta da casa).
@@ -470,12 +499,26 @@ func _conduzir(delta: float, cadeia: Node = null) -> void:
 			atraso = meu + Vector2(onde_esta.x - _caminho[0].x, onde_esta.z - _caminho[0].z).length()
 		else:
 			atraso = meu - dele
-	if _esperando_quem_ficou:
-		_esperando_quem_ficou = atraso > VOLTA_A_ANDAR and do_jogador > VOLTA_A_ANDAR
-	elif atraso > VOLTA_POR_QUEM_FICA and do_jogador > VOLTA_POR_QUEM_FICA and _atolado_s < ATOLADO_SEM_VOLTAR:
-		_esperando_quem_ficou = true
+	var a_vista := _a_vista_do_jogador(delta, do_jogador)
+	var decisao := decidir_a_conducao(a_vista, atraso, do_jogador, _esperando_quem_ficou, _espera_oculto_s,
+		_jogador_vindo(delta, do_jogador), _atolado_s >= ATOLADO_SEM_VOLTAR)
+	if decisao == Conducao.VOLTA and not _esperando_quem_ficou:
 		_pedir_situacao("ficou_atras", 10.0)
+	_esperando_quem_ficou = decisao == Conducao.VOLTA
+	if decisao == Conducao.ESPERA:
+		# FORA DA VISTA E LONGE: espera onde está, virado para o jogador. Quem anda para o lado errado
+		# ouve o "é por aqui" antes de ele voltar.
+		if _espera_oculto_s <= 0.0 and _afastando > 0:
+			_pedir_situacao("lado_errado", 10.0)
+		_espera_oculto_s += delta
+	else:
+		_espera_oculto_s = 0.0
 	_avisar_quem_ficou(_esperando_quem_ficou)
+	if decisao == Conducao.ESPERA:
+		_atolado_s = 0.0
+		_mover(Vector3.ZERO, ANDAR, delta)
+		_olhar_para(onde_esta, delta)
+		return
 	var depressa: float = Vector2(jogador.velocity.x, jogador.velocity.z).length() if "velocity" in jogador else 0.0
 	var correndo := jogador.has_method("is_running") and bool(jogador.call("is_running")) and depressa > ANDAR * 1.2
 	var rumo: Vector3
@@ -517,6 +560,89 @@ func _conduzir(delta: float, cadeia: Node = null) -> void:
 			_saltar_para_o_caminho_livre()
 	else:
 		_atolado_s = maxf(_atolado_s - delta * 2.0, 0.0)
+
+
+## A DECISÃO DA CONDUÇÃO, sem mundo (ver Conducao): `a_vista` é a vista já estabilizada; `atraso` o quanto
+## o jogador ficou para trás na linha do percurso; `do_jogador` a distância dele; `voltando` se ele já
+## está voltando; `esperou_s` há quanto espera fora da vista; `vindo` se o jogador anda na direção dele;
+## `barrado` se ele mesmo está atolado (cerca, mourão: a falha é da rota, e não do jogador).
+static func decidir_a_conducao(a_vista: bool, atraso: float, do_jogador: float, voltando: bool, esperou_s: float, vindo: bool, barrado: bool) -> int:
+	if voltando:
+		return Conducao.VOLTA if (atraso > VOLTA_A_ANDAR and do_jogador > VOLTA_A_ANDAR and not a_vista) else Conducao.SEGUE
+	if a_vista or barrado:
+		return Conducao.SEGUE
+	if atraso <= VOLTA_POR_QUEM_FICA or do_jogador <= VOLTA_POR_QUEM_FICA:
+		return Conducao.SEGUE
+	if esperou_s >= ESPERA_ANTES_DE_VOLTAR and not vindo:
+		return Conducao.VOLTA
+	return Conducao.ESPERA
+
+
+## O jogador pode ver o Pedro agora, sem histerese: perto o bastante para ler (LEGIVEL_ATE), dentro do
+## campo da câmera dele e sem corpo do mundo (casa, morro, árvore) entre a câmera e o peito do Pedro.
+func esta_na_tela_do_jogador() -> bool:
+	if jogador == null or not is_inside_tree():
+		return false
+	if Vector2(jogador.global_position.x - global_position.x, jogador.global_position.z - global_position.z).length() > LEGIVEL_ATE:
+		return false
+	var camera := get_viewport().get_camera_3d()
+	if camera == null:
+		return true
+	var peito := global_position + Vector3.UP * altura * 0.6
+	if not camera.is_position_in_frustum(peito):
+		return false
+	var fora: Array[RID] = [get_rid()]
+	if jogador is CollisionObject3D:
+		fora.append((jogador as CollisionObject3D).get_rid())
+	var pergunta := PhysicsRayQueryParameters3D.create(camera.global_position, peito, 1)
+	pergunta.exclude = fora
+	var achou := get_world_3d().direct_space_state.intersect_ray(pergunta)
+	return achou.is_empty() or camera.global_position.distance_to(achou.position as Vector3) > camera.global_position.distance_to(peito) - 0.6
+
+
+## A vista já estabilizada (ver Conducao): amostra a cada AMOSTRA_DA_VISTA e só troca de estado depois de
+## VISTO_APOS / OCULTO_APOS seguidos.
+func _a_vista_do_jogador(delta: float, _do_jogador: float) -> bool:
+	_amostra_vista_s += delta
+	if _amostra_vista_s < AMOSTRA_DA_VISTA:
+		return _a_vista_estavel
+	var passou := _amostra_vista_s
+	_amostra_vista_s = 0.0
+	_na_tela_agora = esta_na_tela_do_jogador()
+	if _na_tela_agora:
+		_visto_s += passou
+		_oculto_s = 0.0
+		if _visto_s >= VISTO_APOS:
+			_a_vista_estavel = true
+	else:
+		_oculto_s += passou
+		_visto_s = 0.0
+		if _oculto_s >= OCULTO_APOS:
+			_a_vista_estavel = false
+	return _a_vista_estavel
+
+
+## O jogador anda na direção do Pedro? A distância medida a cada meio segundo; cai ao menos VINDO_MINIMO u/s.
+func _jogador_vindo(delta: float, do_jogador: float) -> bool:
+	_amostra_vindo_s += delta
+	if _amostra_vindo_s >= 0.5:
+		_vindo = _distancia_antes >= 0.0 and _distancia_antes - do_jogador >= VINDO_MINIMO * _amostra_vindo_s
+		_distancia_antes = do_jogador
+		_amostra_vindo_s = 0.0
+	return _vindo
+
+
+## A condução recomeça (passo novo, ou depois de parada): a vista parte de "visto" e a espera zera.
+func _reiniciar_a_leitura_da_vista() -> void:
+	_a_vista_estavel = true
+	_na_tela_agora = true
+	_visto_s = 0.0
+	_oculto_s = 0.0
+	_amostra_vista_s = 0.0
+	_espera_oculto_s = 0.0
+	_distancia_antes = -1.0
+	_amostra_vindo_s = 0.0
+	_vindo = false
 
 
 ## QUANTO DO CAMINHO (`_caminho`, pela malha e pela estrada) já ficou para trás de `p`: o
